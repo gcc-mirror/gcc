@@ -1,5 +1,47 @@
 2004-09-01  Zdenek Dvorak  <rakdver@atrey.karlin.mff.cuni.cz>
 
+	* Makefile.in (rtl-profile.o, value-prof.o): Add GCC_H dependency.
+	* common.opt (fspeculative-prefetching): New.
+	* flags.h (flag_speculative_prefetching_set): Declare.
+	* gcov-io.c (gcov_write_counter, gcov_read_counter): Allow negative
+	values.
+	* opts.c (flag_sepculative_prefetching_set): New variable.
+	(common_handle_option): Handle -fspeculative-prefetching.
+	* passes.c (rest_of_compilation): Ditto.
+	* profile.c (instrument_values, compute_value_histograms, branch_prob):
+	Use vectors instead of arrays.
+	* toplev.c (process_options): Handle -fspeculative-prefetching.
+	* rtl-profile.c: Include ggc.h.
+	(rtl_gen_interval_profiler, rtl_gen_pow2_profiler,
+	rtl_gen_one_value_profiler_no_edge_manipulation,
+	rtl_gen_one_value_profiler, rtl_gen_const_delta_profiler): Type of
+	argument changed.
+	* tree-profile.c (tree_gen_interval_profiler, tree_gen_pow2_profiler,
+	tree_gen_one_value_profiler, tree_gen_const_delta_profiler): Type of
+	argument changed.
+	* value-prof.c: Include ggc.h.
+	(NOPREFETCH_RANGE_MIN, NOPREFETCH_RANGE_MAX): New
+	macros.
+	(insn_prefetch_values_to_profile, find_mem_reference_1,
+	find_mem_reference_2, find_mem_reference, gen_speculative_prefetch,
+	speculative_prefetching_transform): New.
+	(value_profile_transformations): Call speculative_prefetching_transform.
+	(insn_values_to_profile): Call insn_prefetch_values_to_profile.
+	(insn_divmod_values_to_profile, rtl_find_values_to_profile,
+	tree_find_values_to_profile, find_values to profile): Use vectors
+	instead of arrays.
+	(free_profiled_values): Removed.
+	* value-prof.h (struct histogram_value): Renamed to
+	struct histogram_value_t.
+	(histogram_value, histogram_values): New types.
+	(find_values_to_profile): Declaration changed.
+	(free_profiled_values): Removed.
+	(struct profile_hooks): Type of argument of the hooks changed to
+	histogram_value.
+	* doc/invoke.texi (-fspeculative-prefetching): Document.
+
+2004-09-01  Zdenek Dvorak  <rakdver@atrey.karlin.mff.cuni.cz>
+
 	PR rtl-optimization/16408
 	* gcse.c (replace_store_insn): Fix LIBCALL/RETVAL notes.
 

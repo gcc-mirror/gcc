@@ -257,6 +257,10 @@ extern int flag_remove_unreachable_functions;
 /* Nonzero if we should track variables.  */
 extern int flag_var_tracking;
 
+/* True if flag_speculative_prefetching was set by user.  Used to suppress
+   warning message in case flag was set by -fprofile-{generate,use}.  */
+extern bool flag_speculative_prefetching_set;
+
 /* A string that's used when a random name is required.  NULL means
    to make it really random.  */
 

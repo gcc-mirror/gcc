@@ -33,11 +33,20 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include "recog.h"
 #include "optabs.h"
 #include "regs.h"
+#include "ggc.h"
 
 static struct value_prof_hooks *value_prof_hooks;
 
-/* In this file value profile based optimizations will be placed (none are
-   here just now, but they are hopefully coming soon).
+/* In this file value profile based optimizations are placed.  Currently the
+   following optimizations are implemented (for more detailed descriptions
+   see comments at value_profile_transformations):
+
+   1) Division/modulo specialisation.  Provided that we can determine that the
+      operands of the division have some special properties, we may use it to
+      produce more effective code.
+   2) Speculative prefetching.  If we are able to determine that the difference
+      between addresses accessed by a memory reference is usually constant, we
+      may add the prefetch instructions.
 
    Every such optimization should add its requirements for profiled values to
    insn_values_to_profile function.  This function is called from branch_prob
@@ -52,35 +61,51 @@ static struct value_prof_hooks *value_prof_hooks;
    -- the expression that is profiled
    -- list of counters starting from the first one.  */
 
-static void insn_divmod_values_to_profile (rtx, unsigned *,
-					   struct histogram_value **);
-static void insn_values_to_profile (rtx, unsigned *, struct histogram_value **);
+/* For speculative prefetching, the range in that we do not prefetch (because
+   we assume that it will be in cache anyway).  The assymetry between min and
+   max range is trying to reflect the fact that the sequential prefetching
+   of the data is commonly done directly by hardware.  Nevertheless, these
+   values are just a guess and should of course be target-specific.  */
+
+#ifndef NOPREFETCH_RANGE_MIN
+#define NOPREFETCH_RANGE_MIN (-16)
+#endif
+#ifndef NOPREFETCH_RANGE_MAX
+#define NOPREFETCH_RANGE_MAX 32
+#endif
+
+static void insn_divmod_values_to_profile (rtx, histogram_values *);
+#ifdef HAVE_prefetch
+static bool insn_prefetch_values_to_profile (rtx, histogram_values *);
+static int find_mem_reference_1 (rtx *, void *);
+static void find_mem_reference_2 (rtx, rtx, void *);
+static bool find_mem_reference (rtx, rtx *, int *);
+#endif
+
+static void insn_values_to_profile (rtx, histogram_values *);
 static rtx gen_divmod_fixed_value (enum machine_mode, enum rtx_code, rtx, rtx,
 				   rtx, gcov_type, int);
 static rtx gen_mod_pow2 (enum machine_mode, enum rtx_code, rtx, rtx, rtx, int);
 static rtx gen_mod_subtract (enum machine_mode, enum rtx_code, rtx, rtx, rtx,
 			     int, int, int);
+#ifdef HAVE_prefetch
+static rtx gen_speculative_prefetch (rtx, gcov_type, int);
+#endif
 static bool divmod_fixed_value_transform (rtx insn);
 static bool mod_pow2_value_transform (rtx);
 static bool mod_subtract_transform (rtx);
+#ifdef HAVE_prefetch
+static bool speculative_prefetching_transform (rtx);
+#endif
 
-/* Release the list of VALUES of length N_VALUES for that we want to measure
-   histograms.  */
-void
-free_profiled_values (unsigned n_values ATTRIBUTE_UNUSED,
-		      struct histogram_value *values)
-{
-  free (values);
-}
-
 /* Find values inside INSN for that we want to measure histograms for
-   division/modulo optimization.  */
+   division/modulo optimization and stores them to VALUES.  */
 static void
-insn_divmod_values_to_profile (rtx insn, unsigned *n_values,
-			       struct histogram_value **values)
+insn_divmod_values_to_profile (rtx insn, histogram_values *values)
 {
   rtx set, set_src, op1, op2;
   enum machine_mode mode;
+  histogram_value hist;
 
   if (!INSN_P (insn))
     return;
@@ -108,30 +133,26 @@ insn_divmod_values_to_profile (rtx insn, unsigned *n_values,
       /* Check for a special case where the divisor is power of 2.  */
       if ((GET_CODE (set_src) == UMOD) && !CONSTANT_P (op2))
 	{
-	  *values = xrealloc (*values,
-			      (*n_values + 1)
-				* sizeof (struct histogram_value));
-	  (*values)[*n_values].value = op2;
-	  (*values)[*n_values].seq = NULL_RTX;
-	  (*values)[*n_values].mode = mode;
-	  (*values)[*n_values].insn = insn;
-	  (*values)[*n_values].type = HIST_TYPE_POW2;
-	  (*values)[*n_values].hdata.pow2.may_be_other = 1;
-	  (*n_values)++;
+	  hist = ggc_alloc (sizeof (*hist));
+	  hist->value = op2;
+	  hist->seq = NULL_RTX;
+	  hist->mode = mode;
+	  hist->insn = insn;
+	  hist->type = HIST_TYPE_POW2;
+	  hist->hdata.pow2.may_be_other = 1;
+	  VEC_safe_push (histogram_value, *values, hist);
 	}
 
       /* Check whether the divisor is not in fact a constant.  */
       if (!CONSTANT_P (op2))
 	{
-	  *values = xrealloc (*values,
-			      (*n_values + 1)
-				* sizeof (struct histogram_value));
-	  (*values)[*n_values].value = op2;
-	  (*values)[*n_values].mode = mode;
-	  (*values)[*n_values].seq = NULL_RTX;
-	  (*values)[*n_values].insn = insn;
-	  (*values)[*n_values].type = HIST_TYPE_SINGLE_VALUE;
-	  (*n_values)++;
+	  hist = ggc_alloc (sizeof (*hist));
+	  hist->value = op2;
+	  hist->mode = mode;
+	  hist->seq = NULL_RTX;
+	  hist->insn = insn;
+	  hist->type = HIST_TYPE_SINGLE_VALUE;
+	  VEC_safe_push (histogram_value, *values, hist);
 	}
 
       /* For mod, check whether it is not often a noop (or replaceable by
@@ -140,22 +161,20 @@ insn_divmod_values_to_profile (rtx insn, unsigned *n_values,
 	{
 	  rtx tmp;
 
-	  *values = xrealloc (*values,
-			      (*n_values + 1)
-				* sizeof (struct histogram_value));
+	  hist = ggc_alloc (sizeof (*hist));
 	  start_sequence ();
 	  tmp = simplify_gen_binary (DIV, mode, copy_rtx (op1), copy_rtx (op2));
-	  (*values)[*n_values].value = force_operand (tmp, NULL_RTX);
-	  (*values)[*n_values].seq = get_insns ();
+	  hist->value = force_operand (tmp, NULL_RTX);
+	  hist->seq = get_insns ();
 	  end_sequence ();
-	  (*values)[*n_values].mode = mode;
-	  (*values)[*n_values].insn = insn;
-	  (*values)[*n_values].type = HIST_TYPE_INTERVAL;
-	  (*values)[*n_values].hdata.intvl.int_start = 0;
-	  (*values)[*n_values].hdata.intvl.steps = 2;
-	  (*values)[*n_values].hdata.intvl.may_be_less = 1;
-	  (*values)[*n_values].hdata.intvl.may_be_more = 1;
-	  (*n_values)++;
+	  hist->mode = mode;
+	  hist->insn = insn;
+	  hist->type = HIST_TYPE_INTERVAL;
+	  hist->hdata.intvl.int_start = 0;
+	  hist->hdata.intvl.steps = 2;
+	  hist->hdata.intvl.may_be_less = 1;
+	  hist->hdata.intvl.may_be_more = 1;
+	  VEC_safe_push (histogram_value, *values, hist);
 	}
       return;
 
@@ -164,72 +183,162 @@ insn_divmod_values_to_profile (rtx insn, unsigned *n_values,
     }
 }
 
+#ifdef HAVE_prefetch
+
+/* Called from find_mem_reference through for_each_rtx, finds a memory
+   reference.  I.e. if *EXPR is a MEM, the reference to this MEM is stored
+   to *RET and the traversing of the expression is interrupted by returning 1.
+   Otherwise 0 is returned.  */
+
+static int
+find_mem_reference_1 (rtx *expr, void *ret)
+{
+  rtx *mem = ret;
+
+  if (GET_CODE (*expr) == MEM)
+    {
+      *mem = *expr;
+      return 1;
+    }
+  return 0;
+}
+
+/* Called form find_mem_reference through note_stores to find out whether
+   the memory reference MEM is a store.  I.e. if EXPR == MEM, the variable
+   FMR2_WRITE is set to true.  */
+
+static int fmr2_write;
+static void
+find_mem_reference_2 (rtx expr, rtx pat ATTRIBUTE_UNUSED, void *mem)
+{
+  if (expr == mem)
+    fmr2_write = true;
+}
+
+/* Find a memory reference inside INSN, return it in MEM. Set WRITE to true
+   if it is a write of the mem.  Return false if no memory reference is found,
+   true otherwise.  */
+
+static bool
+find_mem_reference (rtx insn, rtx *mem, int *write)
+{
+  *mem = NULL_RTX;
+  for_each_rtx (&PATTERN (insn), find_mem_reference_1, mem);
+
+  if (!*mem)
+    return false;
+  
+  fmr2_write = false;
+  note_stores (PATTERN (insn), find_mem_reference_2, *mem);
+  *write = fmr2_write;
+  return true;
+}
+
+/* Find values inside INSN for that we want to measure histograms for
+   a speculative prefetching.  Add them to the list VALUES.
+   Returns true if such we found any such value, false otherwise.  */
+
+static bool
+insn_prefetch_values_to_profile (rtx insn, histogram_values *values)
+{
+  rtx mem, address;
+  int write;
+  histogram_value hist;
+
+  if (!INSN_P (insn))
+    return false;
+
+  if (!find_mem_reference (insn, &mem, &write))
+    return false;
+
+  address = XEXP (mem, 0);
+  if (side_effects_p (address))
+    return false;
+      
+  if (CONSTANT_P (address))
+    return false;
+
+  hist = ggc_alloc (sizeof (*hist));
+  hist->value = address;
+  hist->mode = GET_MODE (address);
+  hist->seq = NULL_RTX;
+  hist->insn = insn;
+  hist->type = HIST_TYPE_CONST_DELTA;
+  VEC_safe_push (histogram_value, *values, hist);
+
+  return true;
+}
+#endif
 /* Find values inside INSN for that we want to measure histograms and adds
    them to list VALUES (increasing the record of its length in N_VALUES).  */
 static void
-insn_values_to_profile (rtx insn,
-			unsigned *n_values,
-			struct histogram_value **values)
+insn_values_to_profile (rtx insn, histogram_values *values)
 {
   if (flag_value_profile_transformations)
-    insn_divmod_values_to_profile (insn, n_values, values);
+    insn_divmod_values_to_profile (insn, values);
+
+#ifdef HAVE_prefetch
+  if (flag_speculative_prefetching)
+    insn_prefetch_values_to_profile (insn, values);
+#endif
 }
 
 /* Find list of values for that we want to measure histograms.  */
 static void
-rtl_find_values_to_profile (unsigned *n_values, struct histogram_value **values)
+rtl_find_values_to_profile (histogram_values *values)
 {
   rtx insn;
   unsigned i;
 
   life_analysis (NULL, PROP_DEATH_NOTES);
 
-  *n_values = 0;
-  *values = NULL;
+  *values = VEC_alloc (histogram_value, 0);
   for (insn = get_insns (); insn; insn = NEXT_INSN (insn))
-    insn_values_to_profile (insn, n_values, values);
+    insn_values_to_profile (insn, values);
 
-  for (i = 0; i < *n_values; i++)
+  for (i = 0; i < VEC_length (histogram_value, *values); i++)
     {
-      switch ((*values)[i].type)
+      histogram_value hist = VEC_index (histogram_value, *values, i);
+
+      switch (hist->type)
 	{
 	case HIST_TYPE_INTERVAL:
 	  if (dump_file)
 	    fprintf (dump_file,
 		     "Interval counter for insn %d, range %d -- %d.\n",
-		     INSN_UID ((rtx)(*values)[i].insn),
-		     (*values)[i].hdata.intvl.int_start,
-		     ((*values)[i].hdata.intvl.int_start
-		      + (*values)[i].hdata.intvl.steps - 1));
-	  (*values)[i].n_counters = (*values)[i].hdata.intvl.steps +
-		  ((*values)[i].hdata.intvl.may_be_less ? 1 : 0) +
-		  ((*values)[i].hdata.intvl.may_be_more ? 1 : 0);
+		     INSN_UID ((rtx)hist->insn),
+		     hist->hdata.intvl.int_start,
+		     (hist->hdata.intvl.int_start
+		      + hist->hdata.intvl.steps - 1));
+	  hist->n_counters = hist->hdata.intvl.steps +
+		  (hist->hdata.intvl.may_be_less ? 1 : 0) +
+		  (hist->hdata.intvl.may_be_more ? 1 : 0);
 	  break;
 
 	case HIST_TYPE_POW2:
 	  if (dump_file)
 	    fprintf (dump_file,
 		     "Pow2 counter for insn %d.\n",
-		     INSN_UID ((rtx)(*values)[i].insn));
-	  (*values)[i].n_counters 
-		= GET_MODE_BITSIZE ((*values)[i].mode)
-		  +  ((*values)[i].hdata.pow2.may_be_other ? 1 : 0);
+		     INSN_UID ((rtx)hist->insn));
+	  hist->n_counters 
+		= GET_MODE_BITSIZE (hist->mode)
+		  +  (hist->hdata.pow2.may_be_other ? 1 : 0);
 	  break;
 
 	case HIST_TYPE_SINGLE_VALUE:
 	  if (dump_file)
 	    fprintf (dump_file,
 		     "Single value counter for insn %d.\n",
-		     INSN_UID ((rtx)(*values)[i].insn));
-	  (*values)[i].n_counters = 3;
+		     INSN_UID ((rtx)hist->insn));
+	  hist->n_counters = 3;
 	  break;
 
 	case HIST_TYPE_CONST_DELTA:
 	  if (dump_file)
 	    fprintf (dump_file,
 		     "Constant delta counter for insn %d.\n",
-		     INSN_UID ((rtx)(*values)[i].insn));
-	  (*values)[i].n_counters = 4;
+		     INSN_UID ((rtx)hist->insn));
+	  hist->n_counters = 4;
 	  break;
 
 	default:
@@ -300,6 +409,23 @@ rtl_find_values_to_profile (unsigned *n_values, struct histogram_value **values)
    It would be possible to continue analogically for K * b for other small
    K's, but it is probably not useful.
 
+   5)
+
+   Read or write of mem[address], where the value of address changes usually
+   by a constant C != 0 between the following accesses to the computation; with
+   -fspeculative-prefetching we then add a prefetch of address + C before
+   the insn.  This handles prefetching of several interesting cases in addition
+   to a simple prefetching for addresses that are induction variables, e. g.
+   linked lists allocated sequentially (even in case they are processed
+   recursively).
+
+   TODO -- we should also check whether there is not (usually) a small
+	   difference with the adjacent memory references, so that we do
+	   not issue overlapping prefetches.  Also we should employ some
+	   heuristics to eliminate cases where prefetching evidently spoils
+	   the code.
+	-- it should somehow cooperate with the loop optimizer prefetching
+
    TODO:
 
    There are other useful cases that could be handled by a similar mechanism,
@@ -353,6 +479,11 @@ rtl_value_profile_transformations (void)
 	      || divmod_fixed_value_transform (insn)
 	      || mod_pow2_value_transform (insn)))
 	changed = true;
+#ifdef HAVE_prefetch
+      if (flag_speculative_prefetching
+	  && speculative_prefetching_transform (insn))
+	changed = true;
+#endif
     }
 
   if (changed)
@@ -754,12 +885,118 @@ mod_subtract_transform (rtx insn)
 
   return true;
 }
+
+#ifdef HAVE_prefetch
+/* Generate code for transformation 5 for mem with ADDRESS and a constant
+   step DELTA.  WRITE is true if the reference is a store to mem.  */
+
+static rtx
+gen_speculative_prefetch (rtx address, gcov_type delta, int write)
+{
+  rtx tmp;
+  rtx sequence;
+
+  /* TODO: we do the prefetching for just one iteration ahead, which
+     often is not enough.  */
+  start_sequence ();
+  if (offsettable_address_p (0, VOIDmode, address))
+    tmp = plus_constant (copy_rtx (address), delta);
+  else
+    {
+      tmp = simplify_gen_binary (PLUS, Pmode,
+				 copy_rtx (address), GEN_INT (delta));
+      tmp = force_operand (tmp, NULL);
+    }
+  if (! (*insn_data[(int)CODE_FOR_prefetch].operand[0].predicate)
+      (tmp, insn_data[(int)CODE_FOR_prefetch].operand[0].mode))
+    tmp = force_reg (Pmode, tmp);
+  emit_insn (gen_prefetch (tmp, GEN_INT (write), GEN_INT (3)));
+  sequence = get_insns ();
+  end_sequence ();
+
+  return sequence;
+}
+
+/* Do transform 5) on INSN if applicable.  */
+
+static bool
+speculative_prefetching_transform (rtx insn)
+{
+  rtx histogram, value;
+  gcov_type val, count, all;
+  edge e;
+  rtx mem, address;
+  int write;
+
+  if (!maybe_hot_bb_p (BLOCK_FOR_INSN (insn)))
+    return false;
+
+  if (!find_mem_reference (insn, &mem, &write))
+    return false;
+
+  address = XEXP (mem, 0);
+  if (side_effects_p (address))
+    return false;
+      
+  if (CONSTANT_P (address))
+    return false;
+
+  for (histogram = REG_NOTES (insn);
+       histogram;
+       histogram = XEXP (histogram, 1))
+    if (REG_NOTE_KIND (histogram) == REG_VALUE_PROFILE
+	&& XEXP (XEXP (histogram, 0), 0) == GEN_INT (HIST_TYPE_CONST_DELTA))
+      break;
+
+  if (!histogram)
+    return false;
+
+  histogram = XEXP (XEXP (histogram, 0), 1);
+  value = XEXP (histogram, 0);
+  histogram = XEXP (histogram, 1);
+  /* Skip last value referenced.  */
+  histogram = XEXP (histogram, 1);
+  val = INTVAL (XEXP (histogram, 0));
+  histogram = XEXP (histogram, 1);
+  count = INTVAL (XEXP (histogram, 0));
+  histogram = XEXP (histogram, 1);
+  all = INTVAL (XEXP (histogram, 0));
+
+  /* With that few executions we do not really have a reason to optimize the
+     statement, and more importantly, the data about differences of addresses
+     are spoiled by the first item that had no previous value to compare
+     with.  */
+  if (all < 4)
+    return false;
+
+  /* We require that count is at least half of all; this means
+     that for the transformation to fire the value must be constant
+     at least 50% of time (and 75% gives the garantee of usage).  */
+  if (!rtx_equal_p (address, value) || 2 * count < all)
+    return false;
+
+  /* If the difference is too small, it does not make too much sense to
+     prefetch, as the memory is probably already in cache.  */
+  if (val >= NOPREFETCH_RANGE_MIN && val <= NOPREFETCH_RANGE_MAX)
+    return false;
+
+  if (dump_file)
+    fprintf (dump_file, "Speculative prefetching for insn %d\n",
+	     INSN_UID (insn));
+
+  e = split_block (BLOCK_FOR_INSN (insn), PREV_INSN (insn));
+  
+  insert_insn_on_edge (gen_speculative_prefetch (address, val, write), e);
+
+  return true;
+}
+#endif  /* HAVE_prefetch */
 
 /* Connection to the outside world.  */
 /* Struct for IR-dependent hooks.  */
 struct value_prof_hooks {
   /* Find list of values for which we want to measure histograms.  */
-  void (*find_values_to_profile) (unsigned *, struct histogram_value **);
+  void (*find_values_to_profile) (histogram_values *);
 
   /* Identify and exploit properties of values that are hard to analyze
      statically.  See value-prof.c for more detail.  */
@@ -783,10 +1020,8 @@ rtl_register_value_prof_hooks (void)
 
 /* Tree-based versions are stubs for now.  */
 static void
-tree_find_values_to_profile (unsigned *n_values, struct histogram_value **values)
+tree_find_values_to_profile (histogram_values *values ATTRIBUTE_UNUSED)
 {
-  (void)n_values;
-  (void)values;
   abort ();
 }
 
@@ -811,9 +1046,9 @@ tree_register_value_prof_hooks (void)
 
 /* IR-independent entry points.  */
 void
-find_values_to_profile (unsigned *n_values, struct histogram_value **values)
+find_values_to_profile (histogram_values *values)
 {
-  (value_prof_hooks->find_values_to_profile) (n_values, values);
+  (value_prof_hooks->find_values_to_profile) (values);
 }
 
 bool

@@ -62,6 +62,7 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include "coverage.h"
 #include "value-prof.h"
 #include "tree.h"
+#include "ggc.h"
 
 /* Output instructions as RTL to increment the edge execution count.  */
 
@@ -93,8 +94,7 @@ rtl_gen_edge_profiler (int edgeno, edge e)
    section for counters, BASE is offset of the counter position.  */
 
 static void
-rtl_gen_interval_profiler (struct histogram_value *value, unsigned tag,
-		       unsigned base)
+rtl_gen_interval_profiler (histogram_value value, unsigned tag, unsigned base)
 {
   unsigned gcov_size = tree_low_cst (TYPE_SIZE (GCOV_TYPE_NODE), 1);
   enum machine_mode mode = mode_for_size (gcov_size, MODE_INT, 0);
@@ -196,8 +196,7 @@ rtl_gen_interval_profiler (struct histogram_value *value, unsigned tag,
    section for counters, BASE is offset of the counter position.  */
 
 static void
-rtl_gen_pow2_profiler (struct histogram_value *value, unsigned tag, 
-			unsigned base)
+rtl_gen_pow2_profiler (histogram_value value, unsigned tag, unsigned base)
 {
   unsigned gcov_size = tree_low_cst (TYPE_SIZE (GCOV_TYPE_NODE), 1);
   enum machine_mode mode = mode_for_size (gcov_size, MODE_INT, 0);
@@ -272,8 +271,8 @@ rtl_gen_pow2_profiler (struct histogram_value *value, unsigned tag,
    section for counters, BASE is offset of the counter position.  */
 
 static rtx
-rtl_gen_one_value_profiler_no_edge_manipulation (struct histogram_value *value,
-						unsigned tag, unsigned base)
+rtl_gen_one_value_profiler_no_edge_manipulation (histogram_value value,
+						 unsigned tag, unsigned base)
 {
   unsigned gcov_size = tree_low_cst (TYPE_SIZE (GCOV_TYPE_NODE), 1);
   enum machine_mode mode = mode_for_size (gcov_size, MODE_INT, 0);
@@ -351,8 +350,7 @@ rtl_gen_one_value_profiler_no_edge_manipulation (struct histogram_value *value,
    section for counters, BASE is offset of the counter position.  */
 
 static void
-rtl_gen_one_value_profiler (struct histogram_value *value, unsigned tag,
-			unsigned base)
+rtl_gen_one_value_profiler (histogram_value value, unsigned tag, unsigned base)
 {
   edge e = split_block (BLOCK_FOR_INSN ((rtx)value->insn),
 		   PREV_INSN ((rtx)value->insn));
@@ -368,10 +366,9 @@ rtl_gen_one_value_profiler (struct histogram_value *value, unsigned tag,
    section for counters, BASE is offset of the counter position.  */
 
 static void
-rtl_gen_const_delta_profiler (struct histogram_value *value, unsigned tag,
-			  unsigned base)
+rtl_gen_const_delta_profiler (histogram_value value, unsigned tag, unsigned base)
 {
-  struct histogram_value one_value_delta;
+  histogram_value one_value_delta;
   unsigned gcov_size = tree_low_cst (TYPE_SIZE (GCOV_TYPE_NODE), 1);
   enum machine_mode mode = mode_for_size (gcov_size, MODE_INT, 0);
   rtx stored_value_ref, stored_value, tmp, uval;
@@ -393,13 +390,14 @@ rtl_gen_const_delta_profiler (struct histogram_value *value, unsigned tag,
 			     copy_rtx (uval), copy_rtx (stored_value),
 			     NULL_RTX, 0, OPTAB_WIDEN);
 
-  one_value_delta.value = tmp;
-  one_value_delta.mode = mode;
-  one_value_delta.seq = NULL_RTX;
-  one_value_delta.insn = value->insn;
-  one_value_delta.type = HIST_TYPE_SINGLE_VALUE;
-  emit_insn (rtl_gen_one_value_profiler_no_edge_manipulation (&one_value_delta,
-					     tag, base + 1));
+  one_value_delta = ggc_alloc (sizeof (*one_value_delta));
+  one_value_delta->value = tmp;
+  one_value_delta->mode = mode;
+  one_value_delta->seq = NULL_RTX;
+  one_value_delta->insn = value->insn;
+  one_value_delta->type = HIST_TYPE_SINGLE_VALUE;
+  emit_insn (rtl_gen_one_value_profiler_no_edge_manipulation (one_value_delta,
+							      tag, base + 1));
   emit_move_insn (copy_rtx (stored_value), uval);
   sequence = get_insns ();
   end_sequence ();

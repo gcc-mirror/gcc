@@ -268,9 +268,6 @@ gcov_write_counter (gcov_type value)
     buffer[1] = (gcov_unsigned_t) (value >> 32);
   else
     buffer[1] = 0;
-  
-  if (value < 0)
-    gcov_var.error = -1;
 }
 #endif /* IN_LIBGCOV */
 
@@ -453,9 +450,7 @@ gcov_read_counter (void)
     value |= ((gcov_type) from_file (buffer[1])) << 32;
   else if (buffer[1])
     gcov_var.error = -1;
-  
-  if (value < 0)
-    gcov_var.error = -1;
+
   return value;
 }
 
