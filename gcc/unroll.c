@@ -3451,7 +3451,8 @@ loop_iterations (loop)
   rtx comparison, comparison_value;
   rtx iteration_var, initial_value, increment, final_value;
   enum rtx_code comparison_code;
-  HOST_WIDE_INT abs_inc;
+  HOST_WIDE_INT inc;
+  unsigned HOST_WIDE_INT abs_inc;
   unsigned HOST_WIDE_INT abs_diff;
   int off_by_one;
   int increment_dir;
@@ -3951,18 +3952,27 @@ loop_iterations (loop)
      so correct for that.  Note that abs_diff and n_iterations are
      unsigned, because they can be as large as 2^n - 1.  */
 
-  abs_inc = INTVAL (increment);
-  if (abs_inc > 0)
-    abs_diff = INTVAL (final_value) - INTVAL (initial_value);
-  else if (abs_inc < 0)
+  inc = INTVAL (increment);
+  if (inc > 0)
+    {
+      abs_diff = INTVAL (final_value) - INTVAL (initial_value);
+      abs_inc = inc;
+    }
+  else if (inc < 0)
     {
       abs_diff = INTVAL (initial_value) - INTVAL (final_value);
-      abs_inc = -abs_inc;
+      abs_inc = -inc;
     }
   else
     abort ();
 
-  abs_diff = trunc_int_for_mode (abs_diff, GET_MODE (iteration_var));
+  /* Given that iteration_var is going to iterate over its own mode,
+     not HOST_WIDE_INT, disregard higher bits that might have come
+     into the picture due to sign extension of initial and final
+     values.  */
+  abs_diff &= ((unsigned HOST_WIDE_INT)1
+	       << (GET_MODE_BITSIZE (GET_MODE (iteration_var)) - 1)
+	       << 1) - 1;
 
   /* For NE tests, make sure that the iteration variable won't miss
      the final value.  If abs_diff mod abs_incr is not zero, then the
