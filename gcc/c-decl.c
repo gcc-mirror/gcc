@@ -1107,7 +1107,7 @@ delete_block (block)
 
 /* Insert BLOCK at the end of the list of subblocks of the
    current binding level.  This is used when a BIND_EXPR is expanded,
-   to handle the BLOCK node inside teh BIND_EXPR.  */
+   to handle the BLOCK node inside the BIND_EXPR.  */
 
 void
 insert_block (block)
