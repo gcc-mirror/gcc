@@ -10593,15 +10593,24 @@ ix86_split_long_move (operands)
 	 Do an lea to the last part and use only one colliding move.  */
       else if (collisions > 1)
 	{
+	  rtx base;
+
 	  collisions = 1;
-	  emit_insn (gen_rtx_SET (VOIDmode, part[0][nparts - 1],
-				  XEXP (part[1][0], 0)));
-	  part[1][0] = change_address (part[1][0],
-				       TARGET_64BIT ? DImode : SImode,
-				       part[0][nparts - 1]);
-	  part[1][1] = adjust_address (part[1][0], VOIDmode, UNITS_PER_WORD);
+
+	  base = part[0][nparts - 1];
+
+	  /* Handle the case when the last part isn't valid for lea.
+	     Happens in 64-bit mode storing the 12-byte XFmode.  */
+	  if (GET_MODE (base) != Pmode)
+	    base = gen_rtx_REG (Pmode, REGNO (base));
+
+	  emit_insn (gen_rtx_SET (VOIDmode, base, XEXP (part[1][0], 0)));
+	  part[1][0] = replace_equiv_address (part[1][0], base);
+	  part[1][1] = replace_equiv_address (part[1][1],
+				      plus_constant (base, UNITS_PER_WORD));
 	  if (nparts == 3)
-	    part[1][2] = adjust_address (part[1][0], VOIDmode, 8);
+	    part[1][2] = replace_equiv_address (part[1][2],
+				      plus_constant (base, 8));
 	}
     }
 
