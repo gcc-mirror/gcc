@@ -381,7 +381,7 @@ case ${target} in
     no)
       fbsd_tm_file="${fbsd_tm_file} freebsd-nthr.h"
       ;;
-    "" | yes | pthreads | posix)
+    "" | yes | posix)
       thread_file='posix'
       tmake_file="${tmake_file} t-freebsd-thread"
       # Before 5.0, FreeBSD can't bind shared libraries to -lc
@@ -567,8 +567,8 @@ alpha*-dec-osf[45]*)
 	    target_cpu_default=MASK_SUPPORT_ARCH
 	    ;;
 	esac
-	case x${enable_threads} in
-	x | xyes | xpthreads | xposix)
+	case ${enable_threads} in
+	  "" | yes | posix)
 	    thread_file='posix'
 	    tmake_file="${tmake_file} alpha/t-osf-pthread"
 	    ;;
@@ -620,10 +620,10 @@ arm*-*-linux*)			# ARM GNU/Linux with ELF
 	tmake_file="t-slibgcc-elf-ver t-linux arm/t-linux"
 	extra_parts="crtbegin.o crtbeginS.o crtend.o crtendS.o"
 	gnu_ld=yes
-	case x${enable_threads} in
-	x | xyes | xpthreads | xposix)
-		thread_file='posix'
-		;;
+	case ${enable_threads} in
+	  "" | yes | posix)
+	    thread_file='posix'
+	    ;;
 	esac
 	;;
 arm*-*-uclinux*)		# ARM ucLinux
@@ -1609,10 +1609,10 @@ powerpc-*-netbsd*)
 powerpc-*-chorusos*)
 	tm_file="${tm_file} dbxelf.h elfos.h svr4.h freebsd-spec.h rs6000/sysv4.h chorus.h"
 	tmake_file="rs6000/t-fprules rs6000/t-ppcos rs6000/t-ppccomm"
-	case x${enable_threads} in
-	  xyes | xpthreads | xposix)
-		thread_file='posix'
-		;;
+	case ${enable_threads} in
+	  yes | posix)
+	    thread_file='posix'
+	    ;;
 	esac
 	use_fixproto=yes
 	;;

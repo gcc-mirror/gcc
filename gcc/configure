@@ -5248,8 +5248,8 @@ case ${enable_threads_flag} in
     # default
     target_thread_file='single'
     ;;
-  decosf1 | irix | mach | os2 | posix | pthreads | single | \
-  solaris | win32 | dce | rtems| vxworks | aix | gnat)
+  aix | dce | gnat | irix | posix | rtems | \
+  single | solaris | vxworks | win32 )
     target_thread_file=${enable_threads_flag}
     ;;
   *)

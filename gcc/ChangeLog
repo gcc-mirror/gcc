@@ -1,3 +1,12 @@
+2003-10-08  Nathanael Nerode  <neroden@gcc.gnu.org>
+
+	* config.gcc: Don't accept --enable-threads=pthreads.  Clean
+	up related case statements.
+	* configure.in: Don't accept --enable-threads=pthreads,
+	decosf1, mach, or os2 (none of which work anyway).  Alphabetize
+	supported thread files in case clause.
+	* configure: Regenerate.
+
 2003-10-08  Geoffrey Keating  <geoffk@apple.com>
 
 	* function.c (pad_to_arg_alignment): Move 'boundary_in_bytes'
