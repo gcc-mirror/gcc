@@ -495,10 +495,11 @@ gen_expand (expand)
       else if (GET_CODE (next) == CODE_LABEL)
 	printf ("  emit_label (");
       else if (GET_CODE (next) == MATCH_OPERAND
-	       || GET_CODE (next) == MATCH_OPERATOR
-	       || GET_CODE (next) == MATCH_PARALLEL
-	       || GET_CODE (next) == MATCH_OP_DUP
 	       || GET_CODE (next) == MATCH_DUP
+	       || GET_CODE (next) == MATCH_OPERATOR
+	       || GET_CODE (next) == MATCH_OP_DUP
+	       || GET_CODE (next) == MATCH_PARALLEL
+	       || GET_CODE (next) == MATCH_PAR_DUP
 	       || GET_CODE (next) == PARALLEL)
 	printf ("  emit (");
       else

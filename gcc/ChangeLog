@@ -1,3 +1,8 @@
+Sun Aug 15 12:41:21 1999  Jim Wilson  <wilson@cygnus.com>
+
+	* genemit.c (gen_expand): If next is MATCH_PAR_DUP, then output
+	emit call instead of emit_insn call.
+
 Sat Aug 14 15:04:06 1999  Mumit Khan  <khan@xraylith.wisc.edu>
 
 	* configure.in: Handle --disable/enable-win32-registry.
