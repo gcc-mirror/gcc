@@ -656,6 +656,10 @@ cris_fatal (char *arg)
   return 0;
 }
 
+/* This variable belongs to cris_target_asm_function_prologue but must
+   be located outside it for GTY reasons.  */
+static GTY(()) unsigned long cfa_label_num = 0;
+
 /* Textual function prologue.  */
 
 static void
@@ -670,7 +674,7 @@ cris_target_asm_function_prologue (FILE *file, HOST_WIDE_INT size)
   int framesize;
   int faked_args_size = 0;
   int cfa_write_offset = 0;
-  char *cfa_label = NULL;
+  static char cfa_label[30];
   int return_address_on_stack
     = regs_ever_live[CRIS_SRP_REGNUM]
     || cfun->machine->needs_return_address_on_stack != 0;
@@ -723,7 +727,8 @@ cris_target_asm_function_prologue (FILE *file, HOST_WIDE_INT size)
 	  cfa_offset += cris_initial_frame_pointer_offset ();
 	}
 
-      cfa_label = dwarf2out_cfi_label ();
+      ASM_GENERATE_INTERNAL_LABEL (cfa_label, "LCFIT",
+				   cfa_label_num++);
       dwarf2out_def_cfa (cfa_label, cfa_reg, cfa_offset);
 
       cfa_write_offset = - faked_args_size - 4;
@@ -920,6 +925,9 @@ cris_target_asm_function_prologue (FILE *file, HOST_WIDE_INT size)
     fprintf (file, "\tmove.d $pc,$%s\n\tsub.d .:GOTOFF,$%s\n",
 	     reg_names[PIC_OFFSET_TABLE_REGNUM],
 	     reg_names[PIC_OFFSET_TABLE_REGNUM]);
+
+  if (doing_dwarf)
+    ASM_OUTPUT_LABEL (file, cfa_label);
 
   if (TARGET_PDEBUG)
     fprintf (file,
