@@ -1,3 +1,8 @@
+2003-03-30  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/7647
+	* g++.dg/lookup-class-member-2.C: New test.
+
 2003-03-30  Glen Nakamura  <glen@imodulo.com>
 
         * gcc.dg/20030324-1.c: Add comments and abort if test fails.
