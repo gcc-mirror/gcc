@@ -37,6 +37,8 @@ Wed Sep 22 06:25:15 1999  Jim Kingdon  <http://developer.redhat.com>
 
 Wed Sep 22 06:06:57 1999  Jeffrey A Law  (law@cygnus.com)
 
+	* pa.md (return, return_internal): Use bve for PA2.0.
+
 	* pa.md (fused multiply): Add variants which reduce height for the
 	fused multiply, but which still generate 2 insns.
 	(fnegabs): Similarly.
