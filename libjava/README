@@ -1,14 +1,14 @@
 This is libgcj: the runtime library for gcj, the GNU Compiler for Java. 
 libgcj provides a partial implementation of the Java Class Libraries.
 
-libgcj is free software.  See the file COPYING.LIB for copying permission.
+libgcj is free software.  See the file LIBGCJ_LICENSE for copying permission.
 
 
 DOCUMENTATION
 =============
 
 All documentation, including detailed installation and usage instructions,
-can be found on the gcj web pages at the following URL:
+can be found on the gcj web pages at this URL:
 
 		http://sourceware.cygnus.com/java/
 
@@ -18,30 +18,26 @@ QUICK INSTALLATION
 
   > mkdir build
   > cd build
-  > ../libgcj/configure --enable-java-gc=<GC TYPE> \
-    --enable-threads=<THREADS TYPE>
+  > ../libgcj/configure --enable-threads=<THREADS_TYPE>
   > make
   > make install
 
 where:
 
-<GC TYPE> specifies the Garbage Collection library to be used by libgcj. 
-Currently the only supported value is "boehm".
-
-<THREADS TYPE> specifies the threads library to be used by libgcj. Currently 
+<THREADS_TYPE> specifies the threads library to be used by libgcj. Currently 
 the possible values are "posix" and "none". This value must be the same as
 the value used when configuring gcc itself.
 
 Consult the gcj web pages for additional "configure" arguments.
 
-NOTE: libgcj can not be configured/built in the source directory. You must
+NOTE: libgcj can not be built in the same directory as `configure'. You must 
 create a separate build directory. 
 
 
 BUGS
 ====
 
-Please submit bug reports to the following URL:
+Please submit bug reports via this URL:
 
 	http://sourceware.cygnus.com/cgi-bin/gnatsweb.pl?database=java
 
