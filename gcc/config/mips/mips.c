@@ -244,6 +244,9 @@ enum mips_abicalls_type mips_abicalls;
    initialized in override_options.  */
 REAL_VALUE_TYPE dfhigh, dflow, sfhigh, sflow;
 
+/* Mode used for saving/restoring general purpose registers.  */
+static static enum machine_mode gpr_mode;
+
 /* Array giving truth value on whether or not a given hard register
    can support a given mode.  */
 char mips_hard_regno_mode_ok[(int)MAX_MACHINE_MODE][FIRST_PSEUDO_REGISTER];
@@ -4449,6 +4452,9 @@ override_options ()
 	  mips_hard_regno_mode_ok[(int)mode][regno] = temp;
 	}
     }
+
+  /* Save GPR registers in word_mode sized hunks.  */
+  gpr_mode = word_mode;
 }
 
 /* On the mips16, we want to allocate $24 (T_REG) before other
@@ -5495,7 +5501,7 @@ compute_frame_size (size)
 		  || (GET_MODE_SIZE (DECL_MODE (DECL_RESULT (current_function_decl)))
 		      <= 4))))
 	{
-	  gp_reg_size += UNITS_PER_WORD;
+	  gp_reg_size += GET_MODE_SIZE (gpr_mode);
 	  mask |= 1L << (regno - GP_REG_FIRST);
 
 	  /* The entry and exit pseudo instructions can not save $17
@@ -5582,9 +5588,10 @@ compute_frame_size (size)
          top of the stack.  */
       if (! mips_entry)
 	offset = (args_size + extra_size + var_size
-		  + gp_reg_size - UNITS_PER_WORD);
+		  + gp_reg_size - GET_MODE_SIZE (gpr_mode));
       else
-	offset = total_size - UNITS_PER_WORD;
+	offset = total_size - GET_MODE_SIZE (gpr_mode);
+
       current_frame_info.gp_sp_offset = offset;
       current_frame_info.gp_save_offset = offset - total_size;
     }
@@ -5660,7 +5667,8 @@ save_restore_insns (store_p, large_reg, large_offset, file)
 
       gp_offset = current_frame_info.gp_sp_offset;
       end_offset
-	= gp_offset - (current_frame_info.gp_reg_size - UNITS_PER_WORD);
+	= gp_offset - (current_frame_info.gp_reg_size
+		       - GET_MODE_SIZE (gpr_mode));
 
       if (gp_offset < 0 || end_offset < 0)
 	fatal ("gp_offset (%ld) or end_offset (%ld) is less than zero.",
@@ -5771,7 +5779,7 @@ save_restore_insns (store_p, large_reg, large_offset, file)
 	      {
 		rtx reg_rtx;
 		rtx mem_rtx
-		  = gen_rtx (MEM, word_mode,
+		  = gen_rtx (MEM, gpr_mode,
 			     gen_rtx (PLUS, Pmode, base_reg_rtx,
 				      GEN_INT (gp_offset - base_offset)));
 
@@ -5781,23 +5789,23 @@ save_restore_insns (store_p, large_reg, large_offset, file)
                    $31, so we load $7 instead, and work things out
                    in the caller.  */
 		if (TARGET_MIPS16 && ! store_p && regno == GP_REG_FIRST + 31)
-		  reg_rtx = gen_rtx (REG, word_mode, GP_REG_FIRST + 7);
+		  reg_rtx = gen_rtx (REG, gpr_mode, GP_REG_FIRST + 7);
 		/* The mips16 sometimes needs to save $18.  */
 		else if (TARGET_MIPS16
 			 && regno != GP_REG_FIRST + 31
 			 && ! M16_REG_P (regno))
 		  {
 		    if (! store_p)
-		      reg_rtx = gen_rtx (REG, word_mode, 6);
+		      reg_rtx = gen_rtx (REG, gpr_mode, 6);
 		    else
 		      {
-			reg_rtx = gen_rtx (REG, word_mode, 3);
+			reg_rtx = gen_rtx (REG, gpr_mode, 3);
 			emit_move_insn (reg_rtx,
-					gen_rtx (REG, word_mode, regno));
+					gen_rtx (REG, gpr_mode, regno));
 		      }
 		  }
 		else
-		  reg_rtx = gen_rtx (REG, word_mode, regno);
+		  reg_rtx = gen_rtx (REG, gpr_mode, regno);
 
 		if (store_p)
 		  {
@@ -5811,7 +5819,7 @@ save_restore_insns (store_p, large_reg, large_offset, file)
 		    if (TARGET_MIPS16
 			&& regno != GP_REG_FIRST + 31
 			&& ! M16_REG_P (regno))
-		      emit_move_insn (gen_rtx (REG, word_mode, regno),
+		      emit_move_insn (gen_rtx (REG, gpr_mode, regno),
 				      reg_rtx);
 		  }
 	      }
@@ -5857,7 +5865,7 @@ save_restore_insns (store_p, large_reg, large_offset, file)
 		  }
 
 	      }
-	    gp_offset -= UNITS_PER_WORD;
+	    gp_offset -= GET_MODE_SIZE (gpr_mode);
 	  }
     }
   else
@@ -6331,9 +6339,10 @@ mips_expand_prologue ()
 	{
 	  if (offset != 0)
 	    ptr = gen_rtx (PLUS, Pmode, stack_pointer_rtx, GEN_INT (offset));
-	  emit_move_insn (gen_rtx (MEM, word_mode, ptr),
-			  gen_rtx (REG, word_mode, regno));
-	  offset += UNITS_PER_WORD;
+	  emit_move_insn (gen_rtx (MEM, gpr_mode, ptr),
+			  gen_rtx (REG, gpr_mode, regno));
+
+	  offset += GET_MODE_SIZE (gpr_mode);
 	}
     }
 
@@ -6378,7 +6387,7 @@ mips_expand_prologue ()
 	 moment.  */
       if (TARGET_MIPS16 && BITSET_P (current_frame_info.mask, 18))
 	{
-	  rtx reg_rtx = gen_rtx (REG, word_mode, GP_REG_FIRST + 3);
+	  rtx reg_rtx = gen_rtx (REG, gpr_mode, GP_REG_FIRST + 3);
 	  long gp_offset, base_offset;
 
 	  gp_offset = current_frame_info.gp_sp_offset;
@@ -6394,8 +6403,8 @@ mips_expand_prologue ()
 	    base_offset = 0;
 	  start_sequence ();
 	  emit_move_insn (reg_rtx,
-			  gen_rtx (REG, word_mode, GP_REG_FIRST + 18));
-	  emit_move_insn (gen_rtx (MEM, word_mode,
+			  gen_rtx (REG, gpr_mode, GP_REG_FIRST + 18));
+	  emit_move_insn (gen_rtx (MEM, gpr_mode,
 				   gen_rtx (PLUS, Pmode, stack_pointer_rtx,
 					    GEN_INT (gp_offset
 						     - base_offset))),
