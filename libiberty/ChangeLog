@@ -1,3 +1,7 @@
+2002-03-04  Neil Booth  <neil@daikokuya.demon.co.uk>
+
+	* xmalloc.c (xmalloc_fail): Clarify error message further.
+
 2002-03-03  Neil Booth  <neil@daikokuya.demon.co.uk>
 
 	* xmalloc.c (xmalloc_fail): Clarify error message.
