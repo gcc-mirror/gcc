@@ -1,3 +1,7 @@
+2003-12-19  Fariborz Jahanian <fjahanian@apple.com>
+        * config/rs6000/rs6000.c (legitimate_lo_sum_address_p): Add code to
+        recognize macho-style lo_sum adrress patterns.
+
 2003-12-19  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* dwarfout.c: Remove uses of "register" specifier in
