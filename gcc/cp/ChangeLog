@@ -1,3 +1,24 @@
+1999-11-10  Mark Mitchell  <mark@codesourcery.com>
+
+	* error.c (dump_function_name): Don't crash if given a friend
+	pseudo-instantiation.
+
+	* cp-tree.h (build_enumerator): Change prototype.
+	* decl.c (enum_next_value): Remove.
+	(enum_overflow): Likewise.
+	(init_decl_processing): Don't register enum_next_value as a root.
+	(start_enum): Clear TYPE_VALUES for a redefined enum.
+	(finish_enum): Reset the type of enumeration constants.
+	(build_enumerator): Fix indentation.  Don't copy CONST_DECLs when
+	we don't need to.  Maintain the TYPE_VALUES list and look there
+	for the previously defined enumeration constant.  Let enumeration
+	constants have the type of their values until the enumeration type
+	is complete.
+	* parse.y (enumlist_opt, enumlist, enumerator): Don't return a value.
+	(structsp): Adjust.
+	* parse.c: Regenerated.
+	* pt.c (tsubst_enum): Adjust according to build_enumerator changes.
+	
 Wed Nov 10 12:43:21 1999  Philippe De Muyter  <phdm@macqel.be>
                           Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 

@@ -1283,6 +1283,7 @@ dump_function_name (t, flags)
     dump_decl (name, flags);
 
   if (DECL_LANG_SPECIFIC (t) && DECL_TEMPLATE_INFO (t)
+      && !DECL_FRIEND_PSEUDO_TEMPLATE_INSTANTIATION (t)
       && (DECL_TEMPLATE_SPECIALIZATION (t) 
 	  || TREE_CODE (DECL_TI_TEMPLATE (t)) != TEMPLATE_DECL
 	  || DECL_TEMPLATE_SPECIALIZATION (DECL_TI_TEMPLATE (t))
