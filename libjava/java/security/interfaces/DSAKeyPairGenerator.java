@@ -1,5 +1,5 @@
 /* DSAKeyPairGenerator.java -- Initialize a DSA key generator
-   Copyright (C) 1998 Free Software Foundation, Inc.
+   Copyright (C) 1998, 2004 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -37,8 +37,8 @@ exception statement from your version. */
 
 package java.security.interfaces;
 
-import java.security.SecureRandom;
 import java.security.InvalidParameterException;
+import java.security.SecureRandom;
 
 /**
  * This interface contains methods for intializing a Digital Signature

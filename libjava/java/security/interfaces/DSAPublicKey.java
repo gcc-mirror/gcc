@@ -1,5 +1,5 @@
 /* DSAPublicKey.java -- A Digital Signature Algorithm public key
-   Copyright (C) 1998, 2000 Free Software Foundation, Inc.
+   Copyright (C) 1998, 2000, 2004 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -37,8 +37,8 @@ exception statement from your version. */
 
 package java.security.interfaces;
 
-import java.security.PublicKey;
 import java.math.BigInteger;
+import java.security.PublicKey;
 
 /**
  * This interface models a Digital Signature Algorithm (DSA) public key
