@@ -1,3 +1,8 @@
+Tue Apr 20 23:37:01 1999   Nathan Sidwell  <nathan@acm.org>
+
+	* Make-lang.in (ch/chill.info): Put MAKEINFO parameters in correct
+	order.
+
 Wed Apr 14 21:07:30 1999  Mumit Khan  <khan@xraylith.wisc.edu>
 
 	* config-lang.in (compilers): Add exeext.

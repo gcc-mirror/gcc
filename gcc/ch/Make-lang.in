@@ -110,7 +110,7 @@ CHILL.dvi: chill.dvi
 CHILL.info: ch/chill.info
 
 ch/chill.info: $(srcdir)/ch/chill.texi
-	$(MAKEINFO) -I$(srcdir)/ch $(srcdir)/ch/chill.texi -o ch/chill.info
+	$(MAKEINFO) -I$(srcdir)/ch -o ch/chill.info $(srcdir)/ch/chill.texi
 
 chill.dvi: $(srcdir)/ch/chill.texi $(srcdir)/extend.texi $(srcdir)/invoke.texi $(srcdir)/md.texi $(srcdir)/rtl.texi $(srcdir)/tm.texi
 	cd ch ; \
