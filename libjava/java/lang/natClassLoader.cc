@@ -58,15 +58,6 @@ java::lang::ClassLoader::getSystemClassLoader (void)
   return system;
 }
 
-void
-java::lang::ClassLoader::defineClass2 (jclass klass, jbyteArray data,
-				       jint offset, jint length)
-{
-#ifdef INTERPRETER
-  _Jv_DefineClass (klass, data, offset, length);
-#endif
-}
-
 java::lang::Class *
 java::lang::ClassLoader::defineClass0 (jstring name,
 				       jbyteArray data, 
@@ -94,11 +85,11 @@ java::lang::ClassLoader::defineClass0 (jstring name,
       klass->name = name2;
     }
 
-  // this will do the magic.  loadInto also operates
-  // as an exception trampoline for now...
-  Throwable *ex = defineClass1 (klass, data, offset, length);
-    
-  if (ex)  // we failed to load it
+  try
+    {
+      _Jv_DefineClass (klass, data, offset, length);
+    }
+  catch (java::lang::Throwable *ex)
     {
       klass->state = JV_STATE_ERROR;
       klass->notifyAll ();
@@ -106,15 +97,15 @@ java::lang::ClassLoader::defineClass0 (jstring name,
       _Jv_UnregisterClass (klass);
 
       _Jv_MonitorExit (klass);
-	  
+
       // FIXME: Here we may want to test that EX does
       // indeed represent a valid exception.  That is,
       // anything but ClassNotFoundException, 
       // or some kind of Error.
-	  
+
       JvThrow (ex);
     }
-    
+
   // if everything proceeded sucessfully, we're loaded.
   JvAssert (klass->state == JV_STATE_LOADED);
 

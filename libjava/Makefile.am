@@ -267,11 +267,6 @@ gnu/gcj/runtime/VMClassLoader.h: gnu/gcj/runtime/VMClassLoader.class libgcj.zip
 	    -friend 'java::lang::ClassLoader;' \
 	    $(basename $<)
 
-gnu/gcj/runtime/MethodInvocation.h: gnu/gcj/runtime/MethodInvocation.class libgcj.zip
-	$(GCJH) -classpath $(top_builddir) \
-	    -friend 'class _Jv_InterpMethod;' \
-	    $(basename $<)
-
 ## Headers we maintain by hand and which we want to install.
 extra_headers = java/lang/Object.h java/lang/Class.h
 
@@ -525,7 +520,6 @@ ordinary_java_source_files =  $(convert_source_files) \
 gnu/gcj/io/DefaultMimeTypes.java \
 gnu/gcj/io/MimeTypes.java \
 gnu/gcj/jni/NativeThread.java \
-gnu/gcj/runtime/MethodInvocation.java \
 gnu/gcj/runtime/VMClassLoader.java \
 gnu/gcj/text/BaseBreakIterator.java \
 gnu/gcj/text/CharacterBreakIterator.java \

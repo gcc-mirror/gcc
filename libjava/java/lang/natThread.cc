@@ -263,9 +263,9 @@ java::lang::Thread::sleep (jlong millis, jint nanos)
 }
 
 void
-java::lang::Thread::finish_ (void)
+java::lang::Thread::finish_ ()
 {
-  // Notify all threads waiting to join this thread.
+  // Notify all threads waiting to join this this.
   _Jv_MonitorEnter (this);
   alive_flag = false;
 
@@ -285,10 +285,28 @@ java::lang::Thread::finish_ (void)
 }
 
 void
-java::lang::Thread::run__ (jobject obj)
+java::lang::Thread::run_ (jobject obj)
 {
   java::lang::Thread *thread = (java::lang::Thread *) obj;
-  thread->run_ ();
+  try
+    {
+      thread->run ();
+    }
+  catch (java::lang::Throwable *t)
+    {
+      // Uncaught exceptions are forwarded to the ThreadGroup.  If
+      // this results in an uncaught exception, that is ignored.
+      try
+	{
+	  thread->group->uncaughtException (thread, t);
+	}
+      catch (java::lang::Throwable *f)
+	{
+	  // Nothing.
+	}
+    }
+
+  thread->finish_ ();
 }
 
 void
@@ -301,7 +319,7 @@ java::lang::Thread::start (void)
 
   alive_flag = true;
   natThread *nt = (natThread *) data;
-  _Jv_ThreadStart (this, nt->thread, (_Jv_ThreadStartFunc *) &run__);
+  _Jv_ThreadStart (this, nt->thread, (_Jv_ThreadStartFunc *) &run_);
 }
 
 void

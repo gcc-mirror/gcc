@@ -1,6 +1,6 @@
 // Object.java - The root of all evil.
 
-/* Copyright (C) 1998, 1999  Red Hat, Inc.
+/* Copyright (C) 1998, 1999, 2000  Red Hat, Inc.
 
    This file is part of libgcj.
 
@@ -65,21 +65,6 @@ public class Object
   // This initializes the sync_info member.  It is here for
   // completeness (some day we'll be able to auto-generate Object.h).
   private final native void sync_init ();
-
-  // This exists as a workaround for the fact that we can't catch a
-  // Java Exception from C++.  This is from section 12.6 of the Java
-  // Language Spec.  FIXME: remove this once exception processing
-  // works.
-  private static final void hack12_6 (Object f)
-  {
-    try
-      {
-	f.finalize();
-      }
-    catch (Throwable x)
-      {
-      }
-  }
 
   // Note that we don't mention the sync_info field here.  If we do,
   // jc1 will not work correctly.

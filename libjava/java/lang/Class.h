@@ -157,9 +157,6 @@ public:
 private:
   void checkMemberAccess (jint flags);
 
-  // Various functions to handle class initialization.
-  java::lang::Throwable *hackTrampoline (jint, java::lang::Throwable *);
-  void hackRunInitializers (void);
   void initializeClass (void);
 
   // Friend functions implemented in natClass.cc.

@@ -152,21 +152,6 @@ get_ffi_type (jclass klass)
   return r;
 }
 
-// Actually perform an FFI call.
-void
-java::lang::reflect::Method::hack_call (gnu::gcj::RawData *rcif,
-					gnu::gcj::RawData *rmethod,
-					gnu::gcj::RawData *rret_value,
-					gnu::gcj::RawData *rvalues)
-{
-  ffi_cif *cif = (ffi_cif *) rcif;
-  void (*method) (...) = (void (*) (...)) rmethod;
-  void *ret_value = (void *) rret_value;
-  void **values = (void **) rvalues;
-
-  ffi_call (cif, method, ret_value, values);
-}
-
 jobject
 java::lang::reflect::Method::invoke (jobject obj, jobjectArray args)
 {
@@ -419,19 +404,23 @@ _Jv_CallAnyMethodA (jobject obj,
 
   // FIXME: initialize class here.
 
-  java::lang::Throwable *ex;
   using namespace java::lang;
   using namespace java::lang::reflect;
-  ex = Method::hack_trampoline ((gnu::gcj::RawData *) &cif,
-				(gnu::gcj::RawData *) meth->ncode,
-				(gnu::gcj::RawData *) result,
-				(gnu::gcj::RawData *) values);
 
-  if (ex)
-    // FIXME: this is wrong for JNI.  But if we just return the
-    // exception, then the non-JNI cases won't be able to distinguish
-    // it from exceptions we might generate ourselves.  Sigh.
-    ex = new InvocationTargetException (ex);
+  Throwable *ex = NULL;
+
+  try
+    {
+      ffi_call (&cif, (void (*) (...)) meth->ncode, result, values);
+    }
+  catch (Throwable *ex2)
+    {
+      // FIXME: this is wrong for JNI.  But if we just return the
+      // exception, then the non-JNI cases won't be able to
+      // distinguish it from exceptions we might generate ourselves.
+      // Sigh.
+      ex = new InvocationTargetException (ex2);
+    }
 
   if (is_constructor)
     result->l = obj;

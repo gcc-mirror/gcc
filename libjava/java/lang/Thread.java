@@ -116,8 +116,8 @@ public class Thread implements Runnable
   public final native void resume ();
 
   // This method exists only to avoid a warning from the C++ compiler.
-  private static final native void run__ (Object obj);
-  private native final void finish_ ();
+  private static final native void run_ (Object obj);
+  private final native void finish_ ();
 
   // Convenience method to check and clear the thread's interrupted status.  
   private boolean isInterrupted_ ()
@@ -127,28 +127,6 @@ public class Thread implements Runnable
     return r;
   }
   
-  private final void run_ ()
-  {
-    try
-      {
-	run ();
-      }
-    catch (Throwable e)
-      {
-	// Uncaught exceptions are forwarded to the ThreadGroup.  If
-	// this results in an uncaught exception, that is ignored.
-	try
-	  {
-	    group.uncaughtException(this, e);
-	  }
-	catch (Throwable f)
-	  {
-	    // Nothing.
-	  }
-      }
-    finish_ ();
-  }
-
   public void run ()
   {
     if (runnable != null)

@@ -1,6 +1,6 @@
 // ClassLoader.java - Define policies for loading Java classes.
 
-/* Copyright (C) 1998, 1999  Red Hat, Inc.
+/* Copyright (C) 1998, 1999, 2000  Red Hat, Inc.
 
    This file is part of libgcj.
 
@@ -233,28 +233,6 @@ public abstract class ClassLoader {
 				     int len)
     throws java.lang.ClassNotFoundException, java.lang.LinkageError;
 
-
-  /** This is called by defineClass0, once the "raw" and uninitialized
-   * class object has been created, and handles exceptions generated
-   * while actually defining the class (_Jv_DefineClass).  defineClass0
-   * holds the lock on the new class object, so it needs to capture
-   * these exceptions.  */
-
-  private static Throwable defineClass1 (Class klass, byte[] data,
-					 int offset, int length)
-  {
-    try {
-      defineClass2 (klass, data, offset, length);
-    } catch (Throwable x) {
-      return x;
-    }
-    return null;
-  }
- 
-  /** This is just a wrapper for _Jv_DefineClass */
-  private static native void defineClass2 (Class klass, byte[] data, 
-				    int offset, int length)
-    throws Throwable;
 
   /** 
    * Link the given class.  This will bring the class to a state where

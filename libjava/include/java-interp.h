@@ -20,7 +20,6 @@ details.  */
 
 #include <java/lang/Class.h>
 #include <java/lang/ClassLoader.h>
-#include <gnu/gcj/runtime/MethodInvocation.h>
 
 extern "C" {
 #include <ffi.h>
@@ -135,7 +134,6 @@ class _Jv_InterpMethod : public _Jv_MethodBase
 
   friend class _Jv_ClassReader;
   friend class _Jv_InterpMethodInvocation;
-  friend class gnu::gcj::runtime::MethodInvocation;
 
   friend void _Jv_PrepareClass(jclass);
 };

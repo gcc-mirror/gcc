@@ -1,3 +1,72 @@
+2000-03-02  Tom Tromey  <tromey@cygnus.com>
+
+	* include/java-interp.h: Don't include MethodInvocation.h.
+	(class _Jv_InterpMethod): Don't make MethodInvocation a friend.
+	* Makefile.in: Rebuilt.
+	* Makefile.am (gnu/gcj/runtime/MethodInvocation.h): Removed.
+	(ordinary_java_source_files): Don't mention
+	MethodInvocation.java.
+	* gnu/gcj/runtime/MethodInvocation.java: Removed.
+	* interpret.cc (MethodInvocation::continue1): Removed.
+	(run): Handle exceptions here.
+	* java/lang/ClassLoader.java (defineClass1, defineClass2):
+	Removed.
+	* java/lang/natClassLoader.cc (defineClass0): Catch exceptions
+	here.
+	(defineClass2): Removed.
+
+	* java/lang/reflect/Method.java (hack_trampoline, hack_call):
+	Removed.
+	* java/lang/reflect/natMethod.cc (_Jv_CallAnyMethodA): Catch
+	exceptions here.
+	(hack_call): Removed.
+
+	* java/lang/Class.h (Class): Removed hackRunInitializers,
+	hackTrampoline.
+	* java/lang/natClass.cc (hackRunInitializers): Removed.
+	(initializeClass): Catch exceptions here.
+	Include ExceptionInInitializerError.h.
+	* java/lang/Class.java (hackTrampoline, hackRunInitializers):
+	Removed.
+
+	* java/lang/Object.h (Object): Don't mention hack12_6.
+	* java/lang/natObject.cc (_Jv_FinalizeObject): Catch exceptions
+	here.
+	* java/lang/Object.java (hack12_6): Removed.
+
+	* java/lang/natThread.cc (run_): Renamed.  Catch exceptions here.
+	(start): Use run_, not run__.
+	* java/lang/Thread.java (run_): Renamed from run__; old run_
+	removed.
+
+	* jni.cc (_Jv_JNI_FindClass): Handle exceptions.
+	(_Jv_JNI_EnsureLocalCapacity): Likewise.
+	(_Jv_JNI_DefineClass): Likewise.
+	(_Jv_JNI_ThrowNew): Likewise.
+	(_Jv_JNI_AllocObject): Likewise.
+	(_Jv_JNI_GetAnyMethodID): Likewise.
+	(_Jv_JNI_CallAnyMethodV): Likewise.
+	(_Jv_JNI_CallAnyMethodA): Likewise.
+	(_Jv_JNI_CallAnyVoidMethodV): Likewise.
+	(_Jv_JNI_CallAnyVoidMethodA): Likewise.
+	(_Jv_JNI_GetAnyFieldID): Likewise.
+	(_Jv_JNI_NewString): Likewise.
+	(_Jv_JNI_NewStringUTF): Likewise.
+	(_Jv_JNI_GetStringUTFChars): Likewise.
+	(_Jv_JNI_NewObjectArray): Likewise.
+	(_Jv_JNI_NewPrimitiveArray): Likewise.
+	(_Jv_JNI_GetPrimitiveArrayRegion): Likewise.
+	(_Jv_JNI_GetStringRegion): Likewise.
+	(_Jv_JNI_GetStringUTFRegion): Likewise.
+	(_Jv_JNI_SetPrimitiveArrayRegion): Likewise.
+	(_Jv_JNI_MonitorEnter): Likewise.
+	(_Jv_JNI_MonitorExit): Likewise.
+	(_Jv_JNI_ToReflectedField): Likewise.
+	(_Jv_JNI_ToReflectedMethod): Likewise.
+	(_Jv_JNI_RegisterNatives): Likewise.
+	(_Jv_JNI_AttachCurrentThread): Likewise.
+	(_Jv_JNI_DestroyJavaVM): Likewise.
+
 2000-02-28  Mo DeJong  <mdejong@cygnus.com>
 
 	* java/util/zip/ZipOutputStream.java(closeEntry) : Fixed

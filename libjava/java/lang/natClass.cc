@@ -27,6 +27,7 @@ details.  */
 #include <java/lang/reflect/Constructor.h>
 #include <java/lang/AbstractMethodError.h>
 #include <java/lang/ClassNotFoundException.h>
+#include <java/lang/ExceptionInInitializerError.h>
 #include <java/lang/IllegalAccessException.h>
 #include <java/lang/IllegalAccessError.h>
 #include <java/lang/IncompatibleClassChangeError.h>
@@ -690,15 +691,6 @@ java::lang::Class::finalize (void)
 #endif
 }
 
-// FIXME.
-void
-java::lang::Class::hackRunInitializers (void)
-{
-  _Jv_Method *meth = _Jv_GetMethodLocal (this, clinit_name, void_signature);
-  if (meth)
-    ((void (*) (void)) meth->ncode) ();
-}
-
 // This implements the initialization process for a class.  From Spec
 // section 12.4.2.
 void
@@ -764,46 +756,53 @@ java::lang::Class::initializeClass (void)
   // Step 7.
   if (! isInterface () && superclass)
     {
-      // FIXME: We can't currently catch a Java exception in C++ code.
-      // So instead we call a Java trampoline.  It returns an
-      // exception, or null.
-      jobject except = superclass->hackTrampoline(0, NULL);
-      if (except)
+      try
+	{
+	  superclass->initializeClass ();
+	}
+      catch (java::lang::Throwable *except)
 	{
 	  // Caught an exception.
 	  _Jv_MonitorEnter (this);
 	  state = JV_STATE_ERROR;
 	  notifyAll ();
 	  _Jv_MonitorExit (this);
-	  JvThrow (except);
+	  throw except;
 	}
     }
 
-  // Step 8.
-  // FIXME: once again we have to go through a trampoline.
-  java::lang::Throwable *except = hackTrampoline (1, NULL);
-
-  // Steps 9, 10, 11.
-  if (! except)
+  // Steps 8, 9, 10, 11.
+  try
     {
-      _Jv_MonitorEnter (this);
-      state = JV_STATE_DONE;
+      _Jv_Method *meth = _Jv_GetMethodLocal (this, clinit_name,
+					     void_signature);
+      if (meth)
+	((void (*) (void)) meth->ncode) ();
     }
-  else
+  catch (java::lang::Throwable *except)
     {
       if (! ErrorClass.isInstance(except))
 	{
-	  // Once again we must use the trampoline.  In this case we
-	  // have to detect an OutOfMemoryError.
-	  except = hackTrampoline(2, except);
+	  try
+	    {
+	      except = new ExceptionInInitializerError (except);
+	    }
+	  catch (java::lang::Throwable *t)
+	    {
+	      except = t;
+	    }
 	}
       _Jv_MonitorEnter (this);
       state = JV_STATE_ERROR;
+      notifyAll ();
+      _Jv_MonitorExit (this);
+      JvThrow (except);
     }
+
+  _Jv_MonitorEnter (this);
+  state = JV_STATE_DONE;
   notifyAll ();
   _Jv_MonitorExit (this);
-  if (except)
-    JvThrow (except);
 }
 
 

@@ -33,19 +33,7 @@ details.  */
 #include <java-insns.h>
 #include <java-signal.h>
 
-#ifndef INTERPRETER
-
-#include <gnu/gcj/runtime/MethodInvocation.h>
-
-/* This should never happen. */
-void 
-gnu::gcj::runtime::MethodInvocation::continue1 (gnu::gcj::RawData *,
-						gnu::gcj::RawData *)
-{
-  JvFail ("no interpreter");
-}
-
-#else
+#ifdef INTERPRETER
 
 #define ClassError _CL_Q34java4lang5Error
 extern java::lang::Class ClassError;
@@ -216,10 +204,17 @@ _Jv_InterpMethod::run (ffi_cif* cif,
   memcpy ((void*) locals, (void*) args, args_raw_size);
 
  next_segment:
-  /* this will call the method _Jv_InterpMethod::continue0, see below */
-  jobject ex = 
-    gnu::gcj::runtime::MethodInvocation::continue0
-    ((gnu::gcj::RawData *)this, (gnu::gcj::RawData *)inv);
+
+  jobject ex = NULL;
+
+  try
+    {
+      continue1 (inv);
+    }
+  catch (java::lang::Throwable *ex2)
+    {
+      ex = ex2;
+    }
 
   if (ex == 0)			// no exception...
     {
@@ -280,7 +275,6 @@ _Jv_InterpMethod::run (ffi_cif* cif,
 	default:
 	  throw_internal_error ("unknown return type");
 	}
-
     }
 
   /** handle an exception */
@@ -377,16 +371,6 @@ void _Jv_InterpMethod::run_synch_class (ffi_cif* cif,
   _Jv_MonitorExit (sync);
 
   if (ex != 0) _Jv_Throw (ex);
-}
-
-/* this is the exception handler hack, for the interpreter */
-void 
-gnu::gcj::runtime::MethodInvocation::continue1 (gnu::gcj::RawData *meth,
-						gnu::gcj::RawData *inv)
-{
-  _Jv_InterpMethod           *meth0 = (_Jv_InterpMethod*)meth;
-  _Jv_InterpMethodInvocation *inv0  = (_Jv_InterpMethodInvocation*)inv;
-  meth0->continue1 (inv0);
 }
 
 /*
