@@ -1,3 +1,31 @@
+2003-02-05  Benjamin Kosnik  <bkoz@redhat.com>
+
+	* include/bits/locale_facets.tcc (time_put::do_put): Use __write.
+	(money_put::do_put): Same.
+
+2003-02-05  Jerry Quinn  <jlquinn@optonline.net>
+
+	* include/bits/ios_base.h (ios_base): Document reserved storage.
+
+	* include/bits/locale_facets.h:	(struct __pad): Comment on
+	implementation.
+	(__verify_grouping): Same.
+	(__add_grouping): Same.		
+	* include/bits/locale_facets.tcc (__verify_grouping): Move
+	comments to declaration.
+	(__add_grouping): Same.
+	
+	* include/bits/locale_facets.tcc: 
+	(__write<_CharT, _OutIter>): New function.
+	(__write<_CharT>): New function specialization.
+	(num_put::_M_insert): Remove explicit loop over iterator.  Use
+	__write.
+	(num_put::_M_widen_float): Remove __basefield. 
+	(num_put::_M_widen_int): Move __basefield to within grouping block.
+	
+	* include/bits/streambuf_iterator.h: Include <streambuf>.
+	(ostreambuf_iterator::_M_put): Add.
+
 2003-02-05  Paolo Carlini  <pcarlini@unitus.it>
 
 	* testsuite/26_numerics/valarray_name_lookup.cc: Fix typo.

@@ -1,6 +1,6 @@
 // Iostreams base classes -*- C++ -*-
 
-// Copyright (C) 1997, 1998, 1999, 2000, 2001, 2002
+// Copyright (C) 1997, 1998, 1999, 2000, 2001, 2002, 2003
 // Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
@@ -416,6 +416,7 @@ namespace std
     _Words  		_M_word_zero;    
 
     // Guaranteed storage.
+    // The first 5 iword and pword slots are reserved for internal use.
     static const int 	_S_local_word_size = 8;
     _Words  		_M_local_word[_S_local_word_size];  
 
