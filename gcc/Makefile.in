@@ -1990,7 +1990,7 @@ global.o : global.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(RTL_H) $(FLAGS
    toplev.h $(TM_P_H)
 varray.o : varray.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) varray.h $(GGC_H) errors.h \
    $(HASHTAB_H)
-vec.o : vec.c $(CONFIG_H) coretypes.h vec.h ggc.h errors.h
+vec.o : vec.c $(CONFIG_H) coretypes.h vec.h $(GGC_H) errors.h
 ra.o : ra.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(RTL_H) $(TM_P_H) insn-config.h \
    $(RECOG_H) $(INTEGRATE_H) function.h $(REGS_H) $(OBSTACK_H) hard-reg-set.h \
    $(BASIC_BLOCK_H) $(DF_H) $(EXPR_H) output.h toplev.h $(FLAGS_H) reload.h $(RA_H)

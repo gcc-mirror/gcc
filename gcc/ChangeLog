@@ -1,3 +1,7 @@
+2004-06-28  Andreas Tobler <a.tobler@schweiz.ch>
+
+	* Makefile.in: Fix parallel make dependency problem on vec.o.
+
 2004-06-28  Dhananjay Deshpande  <dhananjayd@kpitcummins.com>
 
 	PR target/14041
