@@ -1,5 +1,9 @@
 2001-07-03  Joseph S. Myers  <jsm28@cam.ac.uk>
 
+	* doc/cppinternals.texi: Improve formatting and logical markup.
+
+2001-07-03  Joseph S. Myers  <jsm28@cam.ac.uk>
+
 	* doc/cppinternals.texi: Merge from mainline.
 
 	* doc/extend.texi, doc/gcc.texi, doc/invoke.texi, doc/md.texi,
