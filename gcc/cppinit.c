@@ -418,6 +418,7 @@ cpp_reader_init (pfile)
   CPP_OPTION (pfile, cplusplus_comments) = 1;
   CPP_OPTION (pfile, warn_import) = 1;
   CPP_OPTION (pfile, warn_paste) = 1;
+  CPP_OPTION (pfile, digraphs) = 1;
   CPP_OPTION (pfile, discard_comments) = 1;
   CPP_OPTION (pfile, show_column) = 1;
   CPP_OPTION (pfile, tabstop) = 8;
@@ -1270,6 +1271,7 @@ handle_option (pfile, argc, argv)
 	  CPP_OPTION (pfile, traditional) = 1;
 	  CPP_OPTION (pfile, cplusplus_comments) = 0;
 	  CPP_OPTION (pfile, trigraphs) = 0;
+	  CPP_OPTION (pfile, digraphs) = 0;
 	  CPP_OPTION (pfile, warn_trigraphs) = 0;
 	  break;
 	case OPT_trigraphs:
@@ -1291,16 +1293,8 @@ handle_option (pfile, argc, argv)
 	  CPP_OPTION (pfile, cplusplus_comments) = 1;
 	  CPP_OPTION (pfile, c89) = 0;
 	  CPP_OPTION (pfile, c99) = 1;
+	  CPP_OPTION (pfile, digraphs) = 1;
 	  CPP_OPTION (pfile, objc) = 0;
-	  break;
-	case OPT_lang_c89:
-	  CPP_OPTION (pfile, cplusplus) = 0;
-	  CPP_OPTION (pfile, cplusplus_comments) = 0;
-	  CPP_OPTION (pfile, c89) = 1;
-	  CPP_OPTION (pfile, c99) = 0;
-	  CPP_OPTION (pfile, objc) = 0;
-	  CPP_OPTION (pfile, trigraphs) = 1;
-	  new_pending_directive (pend, "__STRICT_ANSI__", cpp_define);
 	  break;
 	case OPT_lang_cplusplus:
 	  CPP_OPTION (pfile, cplusplus) = 1;
@@ -1308,6 +1302,7 @@ handle_option (pfile, argc, argv)
 	  CPP_OPTION (pfile, c89) = 0;
 	  CPP_OPTION (pfile, c99) = 0;
 	  CPP_OPTION (pfile, objc) = 0;
+	  CPP_OPTION (pfile, digraphs) = 1;
 	  new_pending_directive (pend, "__cplusplus", cpp_define);
 	  break;
 	case OPT_lang_objcplusplus:
@@ -1353,6 +1348,7 @@ handle_option (pfile, argc, argv)
 	  CPP_OPTION (pfile, c89) = 1;
 	  CPP_OPTION (pfile, c99) = 0;
 	  CPP_OPTION (pfile, objc) = 0;
+	  CPP_OPTION (pfile, digraphs) = 1;
 	  break;
 	case OPT_std_gnu9x:
 	case OPT_std_gnu99:
@@ -1360,6 +1356,7 @@ handle_option (pfile, argc, argv)
 	  CPP_OPTION (pfile, cplusplus_comments) = 1;
 	  CPP_OPTION (pfile, c89) = 0;
 	  CPP_OPTION (pfile, c99) = 1;
+	  CPP_OPTION (pfile, digraphs) = 1;
 	  CPP_OPTION (pfile, objc) = 0;
 	  new_pending_directive (CPP_OPTION (pfile, pending),
 				 "__STDC_VERSION__=199901L", cpp_define);
@@ -1370,14 +1367,15 @@ handle_option (pfile, argc, argv)
 	  /* Fall through */
 	case OPT_std_iso9899_1990:
 	case OPT_std_c89:
+	case OPT_lang_c89:
 	  CPP_OPTION (pfile, cplusplus) = 0;
 	  CPP_OPTION (pfile, cplusplus_comments) = 0;
 	  CPP_OPTION (pfile, c89) = 1;
 	  CPP_OPTION (pfile, c99) = 0;
 	  CPP_OPTION (pfile, objc) = 0;
+	  CPP_OPTION (pfile, digraphs) = opt_code == OPT_std_iso9899_199409;
 	  CPP_OPTION (pfile, trigraphs) = 1;
-	  new_pending_directive (CPP_OPTION (pfile, pending),
-				 "__STRICT_ANSI__", cpp_define);
+	  new_pending_directive (pend, "__STRICT_ANSI__", cpp_define);
 	  break;
 	case OPT_std_iso9899_199x:
 	case OPT_std_iso9899_1999:
@@ -1388,6 +1386,7 @@ handle_option (pfile, argc, argv)
 	  CPP_OPTION (pfile, c89) = 0;
 	  CPP_OPTION (pfile, c99) = 1;
 	  CPP_OPTION (pfile, objc) = 0;
+	  CPP_OPTION (pfile, digraphs) = 1;
 	  CPP_OPTION (pfile, trigraphs) = 1;
 	  new_pending_directive (CPP_OPTION (pfile, pending),
 				 "__STRICT_ANSI__", cpp_define);

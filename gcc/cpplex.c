@@ -24,7 +24,6 @@ Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.  */
 
 Cleanups to do:-
 
-o Get use of digraphs in sync with the standard reqd on the command line.
 o -dM and with _cpp_dump_list: too many \n output.
 o Put a printer object in cpp_reader?
 o Check line numbers assigned to all errors.
@@ -1572,14 +1571,17 @@ lex_line (pfile, list)
 	      if (PREV_TOKEN_TYPE == CPP_COLON
 		  && CPP_OPTION (pfile, cplusplus))
 		BACKUP_TOKEN (CPP_SCOPE);
-	      /* Digraph: "<:" is a '['  */
-	      else if (PREV_TOKEN_TYPE == CPP_LESS)
-		BACKUP_DIGRAPH (CPP_OPEN_SQUARE);
-	      /* Digraph: "%:" is a '#'  */
-	      else if (PREV_TOKEN_TYPE == CPP_MOD)
+	      else if (CPP_OPTION (pfile, digraphs))
 		{
-		  (--cur_token)->flags |= DIGRAPH;
-		  goto make_hash;
+		  /* Digraph: "<:" is a '['  */
+		  if (PREV_TOKEN_TYPE == CPP_LESS)
+		    BACKUP_DIGRAPH (CPP_OPEN_SQUARE);
+		  /* Digraph: "%:" is a '#'  */
+		  else if (PREV_TOKEN_TYPE == CPP_MOD)
+		    {
+		      (--cur_token)->flags |= DIGRAPH;
+		      goto make_hash;
+		    }
 		}
 	    }
 	  cur_token++;
@@ -1623,12 +1625,15 @@ lex_line (pfile, list)
 		BACKUP_TOKEN (CPP_RSHIFT);
 	      else if (PREV_TOKEN_TYPE == CPP_MINUS)
 		BACKUP_TOKEN (CPP_DEREF);
-	      /* Digraph: ":>" is a ']'  */
-	      else if (PREV_TOKEN_TYPE == CPP_COLON)
-		BACKUP_DIGRAPH (CPP_CLOSE_SQUARE);
-	      /* Digraph: "%>" is a '}'  */
-	      else if (PREV_TOKEN_TYPE == CPP_MOD)
-		BACKUP_DIGRAPH (CPP_CLOSE_BRACE);
+	      else if (CPP_OPTION (pfile, digraphs))
+		{
+		  /* Digraph: ":>" is a ']'  */
+		  if (PREV_TOKEN_TYPE == CPP_COLON)
+		    BACKUP_DIGRAPH (CPP_CLOSE_SQUARE);
+		  /* Digraph: "%>" is a '}'  */
+		  else if (PREV_TOKEN_TYPE == CPP_MOD)
+		    BACKUP_DIGRAPH (CPP_CLOSE_BRACE);
+		}
 	    }
 	  cur_token++;
 	  break;
@@ -1652,7 +1657,8 @@ lex_line (pfile, list)
 	case '%':
 	  /* Digraph: "<%" is a '{'  */
 	  cur_token->type = CPP_MOD;
-	  if (IMMED_TOKEN () && PREV_TOKEN_TYPE == CPP_LESS)
+	  if (IMMED_TOKEN () && PREV_TOKEN_TYPE == CPP_LESS
+	      && CPP_OPTION (pfile, digraphs))
 	    BACKUP_DIGRAPH (CPP_OPEN_BRACE);
 	  cur_token++;
 	  break;
@@ -2421,10 +2427,13 @@ can_paste (pfile, token1, token2, digraph)
       if (b == a) return CPP_LSHIFT;
       if (b == CPP_QUERY && cxx)	return CPP_MIN;
       if (b == CPP_LESS_EQ)	return CPP_LSHIFT_EQ;
-      if (b == CPP_COLON)
-	{*digraph = 1; return CPP_OPEN_SQUARE;} /* <: digraph */
-      if (b == CPP_MOD)
-	{*digraph = 1; return CPP_OPEN_BRACE;}	/* <% digraph */
+      if (CPP_OPTION (pfile, digraphs))
+	{
+	  if (b == CPP_COLON)
+	    {*digraph = 1; return CPP_OPEN_SQUARE;} /* <: digraph */
+	  if (b == CPP_MOD)
+	    {*digraph = 1; return CPP_OPEN_BRACE;}	/* <% digraph */
+	}
       break;
 
     case CPP_PLUS: if (b == a)	return CPP_PLUS_PLUS; break;
@@ -2437,15 +2446,18 @@ can_paste (pfile, token1, token2, digraph)
       break;
     case CPP_COLON:
       if (b == a && cxx)	return CPP_SCOPE;
-      if (b == CPP_GREATER)
+      if (b == CPP_GREATER && CPP_OPTION (pfile, digraphs))
 	{*digraph = 1; return CPP_CLOSE_SQUARE;} /* :> digraph */
       break;
 
     case CPP_MOD:
-      if (b == CPP_GREATER)
-	{*digraph = 1; return CPP_CLOSE_BRACE;}  /* %> digraph */
-      if (b == CPP_COLON)
-	{*digraph = 1; return CPP_HASH;}         /* %: digraph */
+      if (CPP_OPTION (pfile, digraphs))
+	{
+	  if (b == CPP_GREATER)
+	    {*digraph = 1; return CPP_CLOSE_BRACE;}  /* %> digraph */
+	  if (b == CPP_COLON)
+	    {*digraph = 1; return CPP_HASH;}         /* %: digraph */
+	}
       break;
     case CPP_DEREF:
       if (b == CPP_MULT && cxx)	return CPP_DEREF_STAR;
