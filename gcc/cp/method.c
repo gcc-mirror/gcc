@@ -2188,7 +2188,6 @@ do_build_copy_constructor (fndecl)
   else if (TYPE_HAS_TRIVIAL_INIT_REF (current_class_type))
     {
       t = build (INIT_EXPR, void_type_node, current_class_ref, parm);
-      TREE_SIDE_EFFECTS (t) = 1;
       finish_expr_stmt (t);
     }
   else
@@ -2270,7 +2269,6 @@ do_build_assign_ref (fndecl)
   else if (TYPE_HAS_TRIVIAL_ASSIGN_REF (current_class_type))
     {
       tree t = build (MODIFY_EXPR, void_type_node, current_class_ref, parm);
-      TREE_SIDE_EFFECTS (t) = 1;
       finish_expr_stmt (t);
     }
   else

@@ -1,3 +1,20 @@
+1999-10-04  Mark Mitchell  <mark@codesourcery.com>
+
+	* call.c (build_over_call): Don't set TREE_SIDE_EFFECTS for
+	situations where make_node will do it automatically.
+	* decl.c (grok_reference_init): Likewise.
+	(expand_static_init): Likewise.
+	(do_static_initialization): Likewise.
+	* init.c (perform_member_init): Likewise.
+	(expand_aggr_init_1): Likewise.
+	(build_new_1): Likewise.
+	* method.c (do_build_copy_constructor): Likewise.
+	(do_build_assign_ref): Likewise.
+	* search.c (expand_upcast_fixups): Likewise.
+	* semantics.c (finish_stmt_expr): Likewise.
+	* typeck.c (build_unary_op): Likewise.
+	(check_return_expr): Likewise.
+
 1999-10-04  Jason Merrill  <jason@yorick.cygnus.com>
 
 	* init.c (build_vec_delete_1): Fold COND_EXPRs.

@@ -4567,7 +4567,6 @@ build_unary_op (code, xarg, noconvert)
 				     || code == POSTINCREMENT_EXPR)
 				    ? PLUS_EXPR : MINUS_EXPR),
 				   argtype, value, inc);
-	      TREE_SIDE_EFFECTS (incremented) = 1;
 
 	      modify = build_modify_expr (arg, NOP_EXPR, incremented);
 	      compound = build (COMPOUND_EXPR, TREE_TYPE (arg), modify, value);
@@ -4605,7 +4604,6 @@ build_unary_op (code, xarg, noconvert)
 		arg = stabilize_reference (arg);
 		val = build (MODIFY_EXPR, TREE_TYPE (arg), arg,
 			     boolean_true_node);
-		TREE_SIDE_EFFECTS (val) = 1;
 		arg = save_expr (arg);
 		val = build (COMPOUND_EXPR, TREE_TYPE (arg), val, arg);
 		val = build (COMPOUND_EXPR, TREE_TYPE (arg), arg, val);
@@ -6854,10 +6852,7 @@ check_return_expr (retval)
   
   /* Actually copy the value returned into the appropriate location.  */
   if (retval && retval != result)
-    {
-      retval = build (INIT_EXPR, TREE_TYPE (result), result, retval);
-      TREE_SIDE_EFFECTS (retval) = 1;
-    }
+    retval = build (INIT_EXPR, TREE_TYPE (result), result, retval);
 
   /* All done.  Remember that this function did return a value.  */
   current_function_returns_value = 1;
