@@ -71,6 +71,14 @@ case $os in
 		os=
 		basic_machine=$1
 		;;
+	-sco4)
+		os=-sco3.2v4
+		basic_machine=`echo $1 | sed -e 's/86-.*/86-unknown/'`
+		;;
+	-sco3.2.[4-9]*)
+		os=`echo $os | sed -e 's/sco3.2./sco3.2v/'`
+		basic_machine=`echo $1 | sed -e 's/86-.*/86-unknown/'`
+		;;
 	-sco3.2v[4-9]*)
 		# Don't forget version if it is 3.2v4 or newer.
 		basic_machine=`echo $1 | sed -e 's/86-.*/86-unknown/'`
