@@ -1315,17 +1315,7 @@ sched_analyze (deps, head, tail)
       /* See comments on reemit_notes as to why we do this.
 	 ??? Actually, the reemit_notes just say what is done, not why.  */
 
-      else if (GET_CODE (insn) == NOTE
-	       && (NOTE_LINE_NUMBER (insn) == NOTE_INSN_RANGE_BEG
-		   || NOTE_LINE_NUMBER (insn) == NOTE_INSN_RANGE_END))
-	{
-	  loop_notes = alloc_EXPR_LIST (REG_SAVE_NOTE, NOTE_RANGE_INFO (insn),
-					loop_notes);
-	  loop_notes = alloc_EXPR_LIST (REG_SAVE_NOTE,
-					GEN_INT (NOTE_LINE_NUMBER (insn)),
-					loop_notes);
-	}
-      else if (GET_CODE (insn) == NOTE
+      if (GET_CODE (insn) == NOTE
 	       && (NOTE_LINE_NUMBER (insn) == NOTE_INSN_LOOP_BEG
 		   || NOTE_LINE_NUMBER (insn) == NOTE_INSN_LOOP_END
 		   || NOTE_LINE_NUMBER (insn) == NOTE_INSN_EH_REGION_BEG

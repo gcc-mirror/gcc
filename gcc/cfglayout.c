@@ -779,8 +779,6 @@ duplicate_insn_chain (from, to)
 	         reordering is in the progress.  */
 	    case NOTE_INSN_EH_REGION_BEG:
 	    case NOTE_INSN_EH_REGION_END:
-	    case NOTE_INSN_RANGE_BEG:
-	    case NOTE_INSN_RANGE_END:
 	      /* Should never exist at BB duplication time.  */
 	      abort ();
 	      break;
