@@ -1,3 +1,9 @@
+2004-12-12  Roger Sayle  <roger@eyesopen.com>
+
+	PR middle-end/12454
+	* cp-gimplify.c (gimplify_if_stmt): Optimize the case where the
+	condition is a constant and the unexecuted clause is empty.
+
 2004-12-10  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
 
 	PR c++/18731
