@@ -1,3 +1,8 @@
+2001-11-26  Alan Modra  <amodra@bigpond.net.au>
+
+	* final.c: (insn_lengths): Make it an int *, so that large jump
+	tables don't overflow.
+
 2001-11-25  Joseph S. Myers  <jsm28@cam.ac.uk>
 
 	* c-format.c (FMT_FLAG_DOLLAR_GAP_POINTER_OK): New.
