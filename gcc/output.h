@@ -1,6 +1,6 @@
 /* Declarations for insn-output.c.  These functions are defined in recog.c,
    final.c, and varasm.c.
-   Copyright (C) 1987, 1991 Free Software Foundation, Inc.
+   Copyright (C) 1987, 1991, 1994 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -32,7 +32,7 @@ extern void output_asm_insn PROTO((char *, rtx *));
 
 /* Output a string of assembler code, substituting numbers, strings
    and fixed syntactic prefixes.  */
-extern void asm_fprintf ();
+extern void asm_fprintf STDIO_PROTO((FILE *file, char *p, ...));
 
 /* Print an integer constant expression in assembler syntax.
    Addition and subtraction are the only arithmetic
