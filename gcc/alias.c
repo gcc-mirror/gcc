@@ -1780,21 +1780,22 @@ nonoverlapping_memrefs_p (x, y)
   rtlx = DECL_RTL (MEM_DECL (x));
   rtly = DECL_RTL (MEM_DECL (y));
 
-  /* If either RTL is a REG, they can't overlap unless they are the same
-     because we never reuse that part of the stack frame used for locals for
-     spilled pseudos.  */
-  if ((REG_P (rtlx) || REG_P (rtly)) && ! rtx_equal_p (rtlx, rtly))
+  /* If either RTL is not a MEM, it must be a REG or CONCAT, meaning they
+     can't overlap unless they are the same because we never reuse that part
+     of the stack frame used for locals for spilled pseudos.  */
+  if ((GET_CODE (rtlx) != MEM || GET_CODE (rtly) != MEM)
+      && ! rtx_equal_p (rtlx, rtly))
     return 1;
 
   /* Get the base and offsets of both decls.  If either is a register, we
      know both are and are the same, so use that as the base.  The only
      we can avoid overlap is if we can deduce that they are nonoverlapping
      pieces of that decl, which is very rare.  */
-  basex = REG_P (rtlx) ? rtlx : XEXP (rtlx, 0);
+  basex = GET_CODE (rtlx) == MEM ? XEXP (rtlx, 0) : rtlx;
   if (GET_CODE (basex) == PLUS && GET_CODE (XEXP (basex, 1)) == CONST_INT)
     offsetx = INTVAL (XEXP (basex, 1)), basex = XEXP (basex, 0);
 
-  basey = REG_P (rtly) ? rtly : XEXP (rtly, 0);
+  basey = GET_CODE (rtly) == MEM ? XEXP (rtly, 0) : rtly;
   if (GET_CODE (basey) == PLUS && GET_CODE (XEXP (basey, 1)) == CONST_INT)
     offsety = INTVAL (XEXP (basey, 1)), basey = XEXP (basey, 0);
 
@@ -1809,10 +1810,10 @@ nonoverlapping_memrefs_p (x, y)
 	      || (CONSTANT_P (basey) && REG_P (basex)
 		  && REGNO (basex) <= LAST_VIRTUAL_REGISTER));
 
-  sizex = (REG_P (rtlx) ? GET_MODE_SIZE (GET_MODE (rtlx))
+  sizex = (GET_CODE (rtlx) != MEM ? GET_MODE_SIZE (GET_MODE (rtlx))
 	   : MEM_SIZE (rtlx) ? INTVAL (MEM_SIZE (rtlx))
 	   : -1);
-  sizey = (REG_P (rtly) ? GET_MODE_SIZE (GET_MODE (rtly))
+  sizey = (GET_CODE (rtly) != MEM ? GET_MODE_SIZE (GET_MODE (rtly))
 	   : MEM_SIZE (rtly) ? INTVAL (MEM_SIZE (rtly)) :
 	   -1);
 
