@@ -665,6 +665,8 @@ slpeel_make_loop_iterate_ntimes (struct loop *loop, tree niters)
   tree exit_label = tree_block_label (loop->single_exit->dest);
   tree init = build_int_cst (TREE_TYPE (niters), 0);
   tree step = build_int_cst (TREE_TYPE (niters), 1);
+  tree then_label;
+  tree else_label;
 
   orig_cond = get_loop_exit_condition (loop);
   gcc_assert (orig_cond);
@@ -677,14 +679,20 @@ slpeel_make_loop_iterate_ntimes (struct loop *loop, tree niters)
   gcc_assert (bsi_stmt (loop_exit_bsi) == orig_cond);
 
   if (exit_edge->flags & EDGE_TRUE_VALUE) /* 'then' edge exits the loop.  */
-    cond = build2 (GE_EXPR, boolean_type_node, indx_after_incr, niters);
+    {
+      cond = build2 (GE_EXPR, boolean_type_node, indx_after_incr, niters);
+      then_label = build1 (GOTO_EXPR, void_type_node, exit_label);
+      else_label = build1 (GOTO_EXPR, void_type_node, begin_label);
+    }
   else /* 'then' edge loops back.  */
-    cond = build2 (LT_EXPR, boolean_type_node, indx_after_incr, niters);
+    {
+      cond = build2 (LT_EXPR, boolean_type_node, indx_after_incr, niters);
+      then_label = build1 (GOTO_EXPR, void_type_node, begin_label);
+      else_label = build1 (GOTO_EXPR, void_type_node, exit_label);
+    }
 
-  begin_label = build1 (GOTO_EXPR, void_type_node, begin_label);
-  exit_label = build1 (GOTO_EXPR, void_type_node, exit_label);
   cond_stmt = build3 (COND_EXPR, TREE_TYPE (orig_cond), cond,
-		     begin_label, exit_label);
+		     then_label, else_label);
   bsi_insert_before (&loop_exit_bsi, cond_stmt, BSI_SAME_STMT);
 
   /* Remove old loop exit test:  */
