@@ -158,7 +158,7 @@ static struct pred_table
      {"push_operand", {MEM}},
      {"memory_operand", {SUBREG, MEM}},
      {"indirect_operand", {SUBREG, MEM}},
-     {"comparison_operator", {EQ, NE, LE, LT, GE, LT, LEU, LTU, GEU, GTU}},
+     {"comparison_operator", {EQ, NE, LE, LT, GE, GT, LEU, LTU, GEU, GTU}},
      {"mode_independent_operand", {CONST_INT, CONST_DOUBLE, CONST, SYMBOL_REF,
 				   LABEL_REF, SUBREG, REG, MEM}}};
 
