@@ -1,3 +1,8 @@
+2004-08-31  Kaz Kojima  <kkojima@gcc.gnu.org>
+
+	* config/sh/sh.c (output_branch): Check the insn length possibly
+	in the delayed slot.
+
 2004-08-31  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* tree-pretty-print.c (dump_generic_node, case CONVERT_EXPR): Add
