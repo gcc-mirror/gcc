@@ -29,7 +29,9 @@ Boston, MA 02111-1307, USA.  */
 #include "cp-tree.h"
 
 static tree extract_aggr_init PROTO((tree, tree));
+#if 0
 static tree extract_scalar_init PROTO((tree, tree));
+#endif
 static rtx cplus_expand_expr PROTO((tree, rtx, enum machine_mode,
 				    enum expand_modifier));
 
@@ -244,6 +246,7 @@ extract_aggr_init (decl, init)
   return 0;
 }
 
+#if 0
 static tree
 extract_scalar_init (decl, init)
      tree decl, init;
@@ -294,6 +297,7 @@ extract_scalar_init (decl, init)
 
   return t; 
 }
+#endif
 
 int
 extract_init (decl, init)
