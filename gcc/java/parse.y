@@ -5581,7 +5581,7 @@ java_complete_class ()
   /* Process imports */
   process_imports ();
 
-  /* Rever things so we have the right order */
+  /* Reverse things so we have the right order */
   ctxp->class_list = nreverse (ctxp->class_list);
   ctxp->classd_list = reverse_jdep_list (ctxp);
 
@@ -5752,7 +5752,7 @@ resolve_class (enclosing, class_type, decl, cl)
     return NULL_TREE;
   resolved_type = TREE_TYPE (resolved_type_decl);
 
-  /* 3- If we have and array, reconstruct the array down to its nesting */
+  /* 3- If we have an array, reconstruct the array down to its nesting */
   if (array_dims)
     {
       for (; array_dims; array_dims--)
@@ -5778,37 +5778,58 @@ do_resolve_class (enclosing, class_type, decl, cl)
   tree decl_result;
   htab_t circularity_hash;
 
-  /* This hash table is used to register the classes we're going
-     through when searching the current class as an inner class, in
-     order to detect circular references. Remember to free it before
-     returning the section 0- of this function. */
-  circularity_hash = htab_create (20, htab_hash_pointer, htab_eq_pointer,
-				  NULL);
-
-  /* 0- Search in the current class as an inner class.
-     Maybe some code here should be added to load the class or
-     something, at least if the class isn't an inner class and ended
-     being loaded from class file. FIXME. */
-  while (enclosing)
+  if (QUALIFIED_P (TYPE_NAME (class_type)))
     {
-      new_class_decl = resolve_inner_class (circularity_hash, cl, &enclosing,
-					    &super, class_type);
-      if (new_class_decl)
-	break;
-
-      /* If we haven't found anything because SUPER reached Object and
-	 ENCLOSING happens to be an innerclass, try the enclosing context. */
-      if ((!super || super == object_type_node) &&
-	  enclosing && INNER_CLASS_DECL_P (enclosing))
-	enclosing = DECL_CONTEXT (enclosing);
-      else
-	enclosing = NULL_TREE;
+      /* If the type name is of the form `Q . Id', then Q is either a
+	 package name or a class name.  First we try to find Q as a
+	 class and then treat Id as a member type.  If we can't find Q
+	 as a class then we fall through.  */
+      tree q, left, left_type, right;
+      breakdown_qualified (&left, &right, TYPE_NAME (class_type));
+      BUILD_PTR_FROM_NAME (left_type, left);
+      q = do_resolve_class (enclosing, left_type, decl, cl);
+      if (q)
+	{
+	  enclosing = q;
+	  saved_enclosing_type = TREE_TYPE (q);
+	  BUILD_PTR_FROM_NAME (class_type, right);
+	}
     }
 
-  htab_delete (circularity_hash);
+  if (enclosing)
+    {
+      /* This hash table is used to register the classes we're going
+	 through when searching the current class as an inner class, in
+	 order to detect circular references. Remember to free it before
+	 returning the section 0- of this function. */
+      circularity_hash = htab_create (20, htab_hash_pointer, htab_eq_pointer,
+				      NULL);
 
-  if (new_class_decl)
-    return new_class_decl;
+      /* 0- Search in the current class as an inner class.
+	 Maybe some code here should be added to load the class or
+	 something, at least if the class isn't an inner class and ended
+	 being loaded from class file. FIXME. */
+      while (enclosing)
+	{
+	  new_class_decl = resolve_inner_class (circularity_hash, cl, &enclosing,
+						&super, class_type);
+	  if (new_class_decl)
+	    break;
+
+	  /* If we haven't found anything because SUPER reached Object and
+	     ENCLOSING happens to be an innerclass, try the enclosing context. */
+	  if ((!super || super == object_type_node) &&
+	      enclosing && INNER_CLASS_DECL_P (enclosing))
+	    enclosing = DECL_CONTEXT (enclosing);
+	  else
+	    enclosing = NULL_TREE;
+	}
+
+      htab_delete (circularity_hash);
+
+      if (new_class_decl)
+	return new_class_decl;
+    }
 
   /* 1- Check for the type in single imports. This will change
      TYPE_NAME() if something relevant is found */
@@ -5837,7 +5858,7 @@ do_resolve_class (enclosing, class_type, decl, cl)
     if (find_in_imports_on_demand (saved_enclosing_type, class_type))
       return NULL_TREE;
 
-  /* If found in find_in_imports_on_demant, the type has already been
+  /* If found in find_in_imports_on_demand, the type has already been
      loaded. */
   if ((new_class_decl = IDENTIFIER_CLASS_VALUE (TYPE_NAME (class_type))))
     return new_class_decl;
@@ -5858,7 +5879,7 @@ do_resolve_class (enclosing, class_type, decl, cl)
 	  return new_class_decl;
     }
 
-  /* 5- Check an other compilation unit that bears the name of type */
+  /* 5- Check another compilation unit that bears the name of type */
   load_class (TYPE_NAME (class_type), 0);
 
   if (!cl)
@@ -7029,7 +7050,7 @@ find_in_imports_on_demand (enclosing_type, class_type)
     return (seen_once < 0 ? 0 : seen_once); /* It's ok not to have found */
 }
 
-/* Add package NAME to the list of package encountered so far. To
+/* Add package NAME to the list of packages encountered so far. To
    speed up class lookup in do_resolve_class, we make sure a
    particular package is added only once.  */
 
@@ -11440,17 +11461,17 @@ breakdown_qualified (left, right, source)
     tree *left, *right, source;
 {
   char *p, *base;
-  int   l = IDENTIFIER_LENGTH (source);
+  int l = IDENTIFIER_LENGTH (source);
 
   base = alloca (l + 1);
   memcpy (base, IDENTIFIER_POINTER (source), l + 1);
 
-  /* Breakdown NAME into REMAINDER . IDENTIFIER */
+  /* Breakdown NAME into REMAINDER . IDENTIFIER.  */
   p = base + l - 1;
   while (*p != '.' && p != base)
     p--;
 
-  /* We didn't find a '.'. Return an error */
+  /* We didn't find a '.'. Return an error.  */
   if (p == base)
     return 1;
 
