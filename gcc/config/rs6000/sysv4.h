@@ -27,22 +27,18 @@ Boston, MA 02111-1307, USA.  */
 #define MASK_RELOCATABLE	0x10000000	/* GOT pointers are PC relative */
 #define	MASK_SDATA		0x08000000	/* use eabi .sdata/.sdata2/.sbss relocations */
 #define MASK_LITTLE_ENDIAN	0x04000000	/* target is little endian */
-#define MASK_CALLS_1		0x02000000	/* First ABI bit (AIX, AIXDESC) */
+#define MASK_REGNAMES		0x02000000	/* use alternate register names.  */
 #define MASK_PROTOTYPE		0x01000000	/* Only prototyped fcns pass variable args */
-#define	MASK_CALLS_2		0x00800000	/* Second ABI bit (NT) */
-
-#define	MASK_CALLS		(MASK_CALLS_1 | MASK_CALLS_2)
-#define	MASK_CALLS_V4		0
-#define	MASK_CALLS_AIX		MASK_CALLS_1
-#define	MASK_CALLS_NT		MASK_CALLS_2
-#define	MASK_CALLS_AIXDESC	MASK_CALLS
+#define	MASK_EABI		0x00800000	/* Adhere to eabi, not System V spec */
 
 #define	TARGET_NO_BITFIELD_TYPE	(target_flags & MASK_NO_BITFIELD_TYPE)
 #define TARGET_STRICT_ALIGN	(target_flags & MASK_STRICT_ALIGN)
 #define TARGET_RELOCATABLE	(target_flags & MASK_RELOCATABLE)
 #define TARGET_SDATA		(target_flags & MASK_SDATA)
 #define TARGET_LITTLE_ENDIAN	(target_flags & MASK_LITTLE_ENDIAN)
+#define TARGET_REGNAMES		(target_flags & MASK_REGNAMES)
 #define	TARGET_PROTOTYPE	(target_flags & MASK_PROTOTYPE)
+#define TARGET_EABI		(target_flags & MASK_EABI)
 #define	TARGET_TOC		((target_flags & (MASK_64BIT		\
 						 | MASK_RELOCATABLE	\
 						 | MASK_MINIMAL_TOC))	\
@@ -53,11 +49,7 @@ Boston, MA 02111-1307, USA.  */
 #define TARGET_BIG_ENDIAN	(! TARGET_LITTLE_ENDIAN)
 #define	TARGET_NO_PROTOTYPE	(! TARGET_PROTOTYPE)
 #define	TARGET_NO_TOC		(! TARGET_TOC)
-
-#define TARGET_AIX_CALLS	(target_flags & MASK_CALLS_1)	/* either -mcall-aix or -mcall-aixdesc */
-#define TARGET_V4_CALLS		((target_flags & MASK_CALLS) == MASK_CALLS_V4)
-#define TARGET_NT_CALLS		((target_flags & MASK_CALLS) == MASK_CALLS_NT)
-#define TARGET_AIXDESC_CALLS	((target_flags & MASK_CALLS) == MASK_CALLS_AIXDESC)
+#define TARGET_NO_EABI		(! TARGET_EABI)
 
 /* Pseudo target to indicate whether the object format is ELF
    (to get around not having conditional compilation in the md file)  */
@@ -85,19 +77,25 @@ Boston, MA 02111-1307, USA.  */
   { "no-toc",		 0 },						\
   { "toc",		 MASK_MINIMAL_TOC },				\
   { "full-toc",		 MASK_MINIMAL_TOC },				\
-  { "call-aix",		 MASK_CALLS_AIX },				\
-  { "call-aix",		-MASK_CALLS_NT },				\
-  { "call-aixdesc",	 MASK_CALLS_AIXDESC },				\
-  { "call-aixdesc",	-MASK_LITTLE_ENDIAN },				\
-  { "call-sysv",	-MASK_CALLS },					\
-  { "call-nt",		 MASK_CALLS_NT | MASK_LITTLE_ENDIAN },		\
-  { "call-nt",		-MASK_CALLS_AIX },				\
   { "prototype",	 MASK_PROTOTYPE },				\
   { "no-prototype",	-MASK_PROTOTYPE },				\
   { "no-traceback",	 0 },						\
+  { "eabi",		 MASK_EABI },					\
+  { "no-eabi",		-MASK_EABI },					\
+  { "regnames",		  MASK_REGNAMES },				\
+  { "no-regnames",	 -MASK_REGNAMES },				\
   { "sim",		 0 },						\
   { "mvme",		 0 },						\
   { "emb",		 0 },						\
+  { "newlib",		 0 },
+
+/* Which abi to adhere to */
+extern char *rs6000_abi_name;
+
+/* Default ABI to use */
+#define RS6000_ABI_NAME "sysv"
+
+#define SUBTARGET_OPTIONS {"call-",  &rs6000_abi_name}
 
 /* Max # of bytes for variables to automatically be put into the .sdata
    or .sdata2 sections.  */
@@ -122,10 +120,34 @@ do {									\
   if (!g_switch_set)							\
     g_switch_value = SDATA_DEFAULT_SIZE;				\
 									\
-  rs6000_current_abi = ((TARGET_AIXDESC_CALLS) ? ABI_AIX :		\
-			(TARGET_NT_CALLS)      ? ABI_NT :		\
-			(TARGET_AIX_CALLS)     ? ABI_AIX_NODESC :	\
-						 ABI_V4);		\
+  if (!strcmp (rs6000_abi_name, "sysv"))				\
+    rs6000_current_abi = ABI_V4;					\
+  else if (!strcmp (rs6000_abi_name, "sysv-noeabi"))			\
+    {									\
+      rs6000_current_abi = ABI_V4;					\
+      target_flags &= ~ MASK_EABI;					\
+    }									\
+  else if (!strcmp (rs6000_abi_name, "sysv-eabi")			\
+	   || !strcmp (rs6000_abi_name, "eabi"))			\
+    {									\
+      rs6000_current_abi = ABI_V4;					\
+      target_flags |= MASK_EABI;					\
+    }									\
+  else if (!strcmp (rs6000_abi_name, "aix"))				\
+    rs6000_current_abi = ABI_AIX_NODESC;				\
+  else if (!strcmp (rs6000_abi_name, "aixdesc"))			\
+    rs6000_current_abi = ABI_AIX;					\
+  else if (!strcmp (rs6000_abi_name, "nt"))				\
+    rs6000_current_abi = ABI_NT;					\
+  else if (!strcmp (rs6000_abi_name, "linux"))				\
+    rs6000_current_abi = ABI_V4;					\
+  else if (!strcmp (rs6000_abi_name, "solaris"))			\
+    rs6000_current_abi = ABI_SOLARIS;					\
+  else									\
+    {									\
+      rs6000_current_abi = ABI_V4;					\
+      error ("Bad value for -mcall-%s", rs6000_abi_name);		\
+    }									\
 									\
   if (TARGET_RELOCATABLE && TARGET_SDATA)				\
     {									\
@@ -133,7 +155,8 @@ do {									\
       error ("-mrelocatable and -msdata are incompatible.");		\
     }									\
 									\
-  if (TARGET_SDATA && DEFAULT_ABI != ABI_V4)				\
+  if (TARGET_SDATA && DEFAULT_ABI != ABI_V4				\
+      && DEFAULT_ABI != ABI_SOLARIS)					\
     {									\
       target_flags &= ~MASK_SDATA;					\
       error ("-msdata and -mcall-aix are incompatible.");		\
@@ -145,25 +168,21 @@ do {									\
       error ("-mrelocatable and -mno-minimal-toc are incompatible.");	\
     }									\
 									\
-  if (TARGET_RELOCATABLE && TARGET_AIXDESC_CALLS)			\
+  if (TARGET_RELOCATABLE &&						\
+      (rs6000_current_abi == ABI_AIX || rs6000_current_abi == ABI_NT))	\
     {									\
       target_flags &= ~MASK_RELOCATABLE;				\
-      error ("-mrelocatable and -mcall-aixdesc are incompatible.");	\
+      error ("-mrelocatable and -mcall-%s are incompatible.",		\
+	     rs6000_abi_name);						\
     }									\
 									\
-  if (TARGET_RELOCATABLE && TARGET_NT_CALLS)				\
-    {									\
-      target_flags &= ~MASK_MINIMAL_TOC;				\
-      error ("-mrelocatable and -mcall-nt are incompatible.");		\
-    }									\
-									\
-  if (TARGET_AIXDESC_CALLS && TARGET_LITTLE_ENDIAN)			\
+  if (rs6000_current_abi == ABI_AIX && TARGET_LITTLE_ENDIAN)		\
     {									\
       target_flags &= ~MASK_LITTLE_ENDIAN;				\
       error ("-mcall-aixdesc must be big endian");			\
     }									\
 									\
-  if (TARGET_NT_CALLS && TARGET_BIG_ENDIAN)				\
+  if (rs6000_current_abi == ABI_NT && TARGET_BIG_ENDIAN)		\
     {									\
       target_flags |= MASK_LITTLE_ENDIAN;				\
       error ("-mcall-nt must be little endian");			\
@@ -184,7 +203,8 @@ do {									\
 /* System V.4 passes the first 8 floating arguments in registers,
    instead of the first 13 like AIX does.  */
 #undef	FP_ARG_MAX_REG
-#define	FP_ARG_MAX_REG ((TARGET_AIX_CALLS) ? FP_ARG_AIX_MAX_REG : FP_ARG_V4_MAX_REG)
+#define	FP_ARG_MAX_REG ((DEFAULT_ABI == ABI_AIX || DEFAULT_ABI == ABI_AIX_NODESC) \
+			? FP_ARG_AIX_MAX_REG : FP_ARG_V4_MAX_REG)
 
 /* Size of the V.4 varargs area if needed */
 #undef	RS6000_VARARGS_AREA
@@ -206,13 +226,16 @@ do {									\
 
 /* Size of the outgoing register save area */
 #undef	RS6000_REG_SAVE
-#define RS6000_REG_SAVE (TARGET_AIX_CALLS ? (TARGET_64BIT ? 64 : 32) : 0)
+#define RS6000_REG_SAVE ((DEFAULT_ABI == ABI_AIX			\
+			  || DEFAULT_ABI == ABI_AIX_NODESC)		\
+			 ? (TARGET_64BIT ? 64 : 32)			\
+			 : 0)
 
 /* Size of the fixed area on the stack.  For AIX, use the standard 6 word
    area, otherwise use 2 words to store back chain & LR.  */
 #undef	RS6000_SAVE_AREA
 #define RS6000_SAVE_AREA \
-  ((TARGET_AIX_CALLS ? 24 : 8) << (TARGET_64BIT ? 1 : 0))
+  (((DEFAULT_ABI == ABI_AIX || DEFAULT_ABI == ABI_AIX_NODESC) ? 24 : 8) << (TARGET_64BIT ? 1 : 0))
 
 /* Define cutoff for using external functions to save floating point.
    Currently on V.4, always use inline stores */
@@ -270,16 +293,31 @@ do {									\
 #undef	WCHAR_TYPE_SIZE
 #define WCHAR_TYPE_SIZE 16
 
-/* Align stack to 16 byte boundaries */
+/* Make int foo : 8 not cause structures to be aligned to an int boundary */
+
+#undef	PCC_BITFIELD_TYPE_MATTERS
+#define	PCC_BITFIELD_TYPE_MATTERS (TARGET_BITFIELD_TYPE)
+
+/* Define this macro to be the value 1 if instructions will fail to
+   work if given data not on the nominal alignment.  If instructions
+   will merely go slower in that case, define this macro as 0.
+
+   Note, little endian systems trap on unaligned addresses, so never
+   turn off strict alignment in that case. */
+#undef	STRICT_ALIGNMENT
+#define	STRICT_ALIGNMENT (TARGET_STRICT_ALIGN || TARGET_LITTLE_ENDIAN)
+
+/* Align stack to 8 byte boundaries for eabi, 16 byte boundaries for System V.4  */
 #undef	STACK_BOUNDARY
-#define	STACK_BOUNDARY	128
+#define	STACK_BOUNDARY	((TARGET_EABI) ? 64 : 128)
 
 /* No data type wants to be aligned rounder than this.  */
 #undef	BIGGEST_ALIGNMENT
+#define BIGGEST_ALIGNMENT ((TARGET_EABI) ? 64 : 128)
+
 #undef  BIGGEST_FIELD_ALIGNMENT
 #undef  ADJUST_FIELD_ALIGN
 #undef  ROUND_TYPE_ALIGN
-#define BIGGEST_ALIGNMENT 128
 
 /* Use ELF style section commands.  */
 
@@ -292,9 +330,32 @@ do {									\
 #undef BSS_SECTION_ASM_OP
 #define BSS_SECTION_ASM_OP	"\t.section \".bss\""
 
+#undef INIT_SECTION_ASM_OP
+#define INIT_SECTION_ASM_OP "\t.section \".init\",\"ax\""
+
+#undef FINI_SECTION_ASM_OP
+#define FINI_SECTION_ASM_OP "\t.section \".fini\",\"ax\""
+
+#define TOC_SECTION_ASM_OP "\t.section \".got\",\"aw\""
+
+/* Put PC relative got entries in .got2 */
+#define MINIMAL_TOC_SECTION_ASM_OP \
+  ((TARGET_RELOCATABLE) ? "\t.section\t\".got2\",\"aw\"" : "\t.section\t\".got1\",\"aw\"")
+
+/* Put relocatable data in .data, not .rodata so initialized pointers can be updated */
+#undef	CONST_SECTION_ASM_OP
+#define CONST_SECTION_ASM_OP \
+  ((TARGET_RELOCATABLE) ? "\t.section\t\".data\"\t# .rodata" : "\t.section\t\".rodata\"")
+
+
+#define SDATA_SECTION_ASM_OP "\t.section \".sdata\",\"aw\""
+#define SDATA2_SECTION_ASM_OP "\t.section \".sdata2\",\"a\""
+#define SBSS_SECTION_ASM_OP "\t.section \".sbss\",\"aw\",@nobits"
+
+
 /* Besides the usual ELF sections, we need a toc section.  */
 #undef EXTRA_SECTIONS
-#define EXTRA_SECTIONS in_const, in_ctors, in_dtors, in_toc, in_sdata, in_sdata2, in_sbss
+#define EXTRA_SECTIONS in_const, in_ctors, in_dtors, in_toc, in_sdata, in_sdata2, in_sbss, in_init, in_fini
 
 #undef EXTRA_SECTION_FUNCTIONS
 #define EXTRA_SECTION_FUNCTIONS						\
@@ -304,7 +365,9 @@ do {									\
   TOC_SECTION_FUNCTION							\
   SDATA_SECTION_FUNCTION						\
   SDATA2_SECTION_FUNCTION						\
-  SBSS_SECTION_FUNCTION
+  SBSS_SECTION_FUNCTION							\
+  INIT_SECTION_FUNCTION							\
+  FINI_SECTION_FUNCTION
 
 extern void toc_section (), sdata_section (), sdata2_section ();
 extern void sbss_section ();
@@ -355,13 +418,6 @@ toc_section ()								\
     }									\
 }
 
-#define TOC_SECTION_ASM_OP "\t.section \".got\",\"aw\""
-#define MINIMAL_TOC_SECTION_ASM_OP "\t.section \".got1\",\"aw\""
-
-#define SDATA_SECTION_ASM_OP "\t.section \".sdata\",\"aw\""
-#define SDATA2_SECTION_ASM_OP "\t.section \".sdata2\",\"a\""
-#define SBSS_SECTION_ASM_OP "\t.section \".sbss\",\"aw\",@nobits"
-
 #define SDATA_SECTION_FUNCTION						\
 void									\
 sdata_section ()							\
@@ -392,6 +448,28 @@ sbss_section ()								\
     {									\
       in_section = in_sbss;						\
       fprintf (asm_out_file, "%s\n", SBSS_SECTION_ASM_OP);		\
+    }									\
+}
+
+#define INIT_SECTION_FUNCTION						\
+void									\
+init_section ()								\
+{									\
+  if (in_section != in_init)						\
+    {									\
+      in_section = in_init;						\
+      fprintf (asm_out_file, "%s\n", INIT_SECTION_ASM_OP);		\
+    }									\
+}
+
+#define FINI_SECTION_FUNCTION						\
+void									\
+fini_section ()								\
+{									\
+  if (in_section != in_fini)						\
+    {									\
+      in_section = in_fini;						\
+      fprintf (asm_out_file, "%s\n", FINI_SECTION_ASM_OP);		\
     }									\
 }
 
@@ -509,6 +587,13 @@ extern int rs6000_pic_labelno;
 #define ASM_OUTPUT_INTERNAL_LABEL_PREFIX(FILE,PREFIX)	\
   fprintf (FILE, ".%s", PREFIX)
 
+/* This is how to allocate empty space in some section.  Use .space
+   instead of .zero because the Solaris PowerPC assembler doesn't
+   like it, and gas accepts either syntax.  */
+
+#undef	SKIP_ASM_OP
+#define SKIP_ASM_OP	".space"
+
 /* This says how to output assembler code to declare an
    uninitialized internal linkage data object.  Under SVR4,
    the linker seems to want the alignment of data objects
@@ -537,17 +622,6 @@ do {									\
   ASM_GLOBALIZE_LABEL (FILE, NAME);					\
   ASM_OUTPUT_ALIGNED_LOCAL (FILE, NAME, SIZE, ALIGN);			\
 } while (0)
-
-/* Pass various options to the assembler */
-#undef ASM_SPEC
-#define ASM_SPEC "-u %(asm_cpu) \
-%{v:-V} %{Qy:} %{!Qn:-Qy} %{n} %{T} %{Ym,*} %{Yd,*} %{Wa,*:%*} \
-%{mrelocatable} %{mrelocatable-lib} %{memb} %{msdata: -memb} \
-%{mlittle} %{mlittle-endian} %{mbig} %{mbig-endian}"
-
-#undef CC1_SPEC
-/* Pass -G xxx to the compiler */
-#define CC1_SPEC "%{G*}"
 
 /* Switch  Recognition by gcc.c.  Add -G xx support */
 
@@ -624,8 +698,11 @@ do {									\
 
 /* This is the end of what might become sysv4.h.  */
 
-/* Allow stabs and dwarf, prefer dwarf.  */
-#define PREFERRED_DEBUGGING_TYPE DWARF_DEBUG
+/* Allow stabs and dwarf, for now, make stabs the default debugging type,
+   not dwarf since G++ doesn't support dwarf. */
+#undef	PREFERRED_DEBUGGING_TYPE
+#define PREFERRED_DEBUGGING_TYPE DBX_DEBUG
+
 #define	DBX_DEBUGGING_INFO
 #define	DWARF_DEBUGGING_INFO
 
@@ -656,7 +733,8 @@ do {									\
 	    XSTR (sym_ref, 0) = str;					\
 	  }								\
       }									\
-    else if (TARGET_SDATA && DEFAULT_ABI == ABI_V4			\
+    else if (TARGET_SDATA						\
+	     && (DEFAULT_ABI == ABI_V4 || DEFAULT_ABI == ABI_SOLARIS)	\
 	     && TREE_CODE (DECL) == VAR_DECL)				\
       {									\
 	int size = int_size_in_bytes (TREE_TYPE (DECL));		\
@@ -707,6 +785,31 @@ do {									\
   fputs (_name, FILE);							\
 } while (0)
 
+#if 0
+/* The Solaris 2.51 linker has a bug in that it doesn't properly
+   resolve references from the .init and .fini sections.  So fall
+   back to the old way of handling constructors and destructors.  */
+#undef ASM_OUTPUT_CONSTRUCTOR
+#define ASM_OUTPUT_CONSTRUCTOR(FILE,NAME)				\
+  do {									\
+    init_section ();							\
+    fputs ("\tbl ", FILE);						\
+    assemble_name (FILE, NAME);						\
+    fputs ((flag_pic) ? "@plt\n" : "\n", FILE);				\
+  } while (0)
+
+/* A C statement (sans semicolon) to output an element in the table of
+   global destructors.  */
+#undef ASM_OUTPUT_DESTRUCTOR
+#define ASM_OUTPUT_DESTRUCTOR(FILE,NAME)       				\
+  do {									\
+    fini_section ();							\
+    fputs ("\tbl ", FILE);						\
+    assemble_name (FILE, NAME);						\
+    fputs ((flag_pic) ? "@plt\n" : "\n", FILE);				\
+  } while (0)
+#endif
+
 /* But, to make this work, we have to output the stabs for the function
    name *first*...  */
 
@@ -721,6 +824,29 @@ do {									\
 #define CPP_PREDEFINES \
   "-DPPC -Dunix -D__svr4__ -Asystem(unix) -Asystem(svr4) -Acpu(powerpc) -Amachine(powerpc)"
 
+/* Pass various options to the assembler */
+#undef ASM_SPEC
+#define ASM_SPEC "-u %(asm_cpu) %{mregnames} \
+%{v:-V} %{Qy:} %{!Qn:-Qy} %{n} %{T} %{Ym,*} %{Yd,*} %{Wa,*:%*} \
+%{mrelocatable} %{mrelocatable-lib} %{memb} %{msdata: -memb} \
+%{mlittle} %{mlittle-endian} %{mbig} %{mbig-endian} \
+%{!mlittle: %{!mlittle-endian: %{!mbig: %{!mbig-endian: \
+    %{mcall-solaris: -mlittle} %{mcall-linux: -mbig} }}}}"
+
+#undef CC1_SPEC
+/* Pass -G xxx to the compiler and set correct endian mode */
+#define CC1_SPEC "%{G*} \
+%{!mlittle: %{!mlittle-endian: %{!mbig: %{!mbig-endian: \
+    %{mcall-nt: -mlittle } \
+    %{mcall-aixdesc: -mbig } \
+    %{mcall-solaris: -mlittle } \
+    %{mcall-linux: -mbig} }}}} \
+%{mcall-solaris: -mno-main-init -mregnames } \
+%{meabi: %{!mcall-*: -mcall-sysv }} \
+%{!meabi: %{!mno-eabi: \
+    %{mcall-solaris: -mno-eabi } \
+    %{mcall-linux: -mno-eabi }}}"
+
 /* Don't put -Y P,<path> for cross compilers */
 #undef LINK_PATH_SPEC
 #ifndef CROSS_COMPILE
@@ -732,6 +858,20 @@ do {									\
 #define LINK_PATH_SPEC ""
 #endif
 
+/* Default starting address if specified */
+#ifndef LINK_START_SPEC
+#define LINK_START_SPEC "\
+%{mmvme: %(link_start_mvme) } \
+%{msim: %(link_start_sim) } \
+%{mcall-linux: %(link_start_linux) } \
+%{mcall-solaris: %(link_start_solaris) } \
+%{!mmvme: %{!msim: %{!mcall-linux: %{!mcall-solaris: %(link_start_default) }}}}"
+#endif
+
+#ifndef	LINK_START_DEFUALT_SPEC
+#define LINK_START_DEFUALT_SPEC ""
+#endif
+
 #undef LINK_SPEC
 #define LINK_SPEC "\
 %{h*} %{v:-V} %{G*} \
@@ -741,10 +881,15 @@ do {									\
 %{symbolic:-Bsymbolic -G -dy -z text %{!h*:%{o*:-h %*}}} \
 %{G:-G} \
 %{YP,*} \
-%(link_path) %(link_start) \
+%(link_path) \
+%{!Ttext*: %(link_start) } \
 %{Qy:} %{!Qn:-Qy} \
 %{mlittle: -oformat elf32-powerpcle } %{mlittle-endian: -oformat elf32-powerpcle } \
-%{mbig: -oformat elf32-powerpc } %{mbig-endian: -oformat elf32-powerpc }"
+%{mbig: -oformat elf32-powerpc } %{mbig-endian: -oformat elf32-powerpc } \
+%{!mlittle: %{!mlittle-endian: %{!mbig: %{!mbig-endian: \
+    %{mcall-solaris: -oformat elf32-powerpcle} \
+    %{mcall-linux: -oformat elf32-powerpc} }}}}"
+
 
 #undef	CPP_SYSV_SPEC
 #define CPP_SYSV_SPEC \
@@ -757,14 +902,212 @@ do {									\
 #undef	CPP_SYSV_DEFAULT_SPEC
 #define	CPP_SYSV_DEFAULT_SPEC "-D_CALL_SYSV"
 
+/* For solaris, don't define _LITTLE_ENDIAN, it conflicts with a header file.  */
 #undef	CPP_ENDIAN_SPEC
 #define	CPP_ENDIAN_SPEC \
 "%{mlittle: -D_LITTLE_ENDIAN -Amachine(littleendian)} \
 %{mlittle-endian: -D_LITTLE_ENDIAN -Amachine(littleendian)} \
-%{!mlittle: %{!mlittle-endian: -D_BIG_ENDIAN -Amachine(bigendian)}}"
+%{mbig: -D_BIG_ENDIAN -Amachine(bigendian)} \
+%{mbig-endian: -D_BIG_ENDIAN -Amachine(bigendian)} \
+%{!mlittle: %{!mlittle-endian: %{!mbig: %{!mbig-endian: \
+    %{mcall-solaris: -Amachine(littleendian)} \
+    %{mcall-nt: -D_LITTLE_ENDIAN -Amachine(littleendian)} \
+    %{mcall-linux: -D_BIG_ENDIAN -Amachine(bigendian)} \
+    %{mcall-aixdesc:  -D_BIG_ENDIAN -Amachine(bigendian)} \
+    %{!mcall-solaris: %{!mcall-linux: %{!mcall-nt: %{!mcall-aixdesc: %(cpp_endian_default_spec) }}}}}}}}"
+
+#undef	CPP_ENDIAN_DEFAULT_SPEC
+#define	CPP_ENDIAN_DEFAULT_SPEC "-D_BIG_ENDIAN -Amachine(bigendian)"
 
 #undef CPP_SPEC
-#define CPP_SPEC "%{posix: -D_POSIX_SOURCE} %(cpp_sysv) %(cpp_endian) %(cpp_cpu)"
+#define CPP_SPEC "%{posix: -D_POSIX_SOURCE} %(cpp_sysv) %(cpp_endian) %(cpp_cpu) \
+%{mmvme: %(cpp_os_mvme) } \
+%{msim: %(cpp_os_sim) } \
+%{mcall-linux: %(cpp_os_linux) } \
+%{mcall-solaris: %(cpp_os_solaris) } \
+%{!mmvme: %{!msim: %{!mcall-linux: %{!mcall-solaris: %(cpp_os_default) }}}}"
+
+#ifndef CPP_OS_DEFAULT_SPEC
+#define CPP_OS_DEFAULT_SPEC ""
+#endif
+
+#undef  STARTFILE_SPEC
+#define	STARTFILE_SPEC "\
+%{mmvme: %(startfile_mvme) } \
+%{msim: %(startfile_sim) } \
+%{mcall-linux: %(startfile_linux) } \
+%{mcall-solaris: %(startfile_solaris) } \
+%{!mmvme: %{!msim: %{!mcall-linux: %{!mcall-solaris: %(startfile_default) }}}}"
+
+#undef	STARTFILE_DEFAULT_SPEC
+#define	STARTFILE_DEFAULT_SPEC ""
+
+#undef	LIB_SPEC
+#define	LIB_SPEC "\
+%{mmvme: %(lib_mvme) } \
+%{msim: %(lib_sim) } \
+%{mcall-linux: %(lib_linux) } \
+%{mcall-solaris: %(lib_solaris) } \
+%{!mmvme: %{!msim: %{!mcall-linux: %{!mcall-solaris: %(lib_default) }}}}"
+
+#undef	LIBGCC_SPEC
+#define	LIBGCC_SPEC "libgcc.a%s"
+
+#undef	ENDFILE_SPEC
+#define	ENDFILE_SPEC "\
+%{mmvme: ecrtn.o%s} \
+%{msim: ecrtn.o%s} \
+%{mcall-linux: } \
+%{mcall-solaris: scrtn.o%s} \
+%{!mmvme: %{!msim: %{!mcall-linux: %{!mcall-solaris: %(endfile_default) }}}}"
+
+#undef	ENDFILE_DEFAULT_SPEC
+#define	ENDFILE_DEFAULT_SPEC ""
+
+/* Motorola MVME support.  */
+#ifndef	LIB_MVME_SPEC
+#define LIB_MVME_SPEC "-( -lmvme -lc -) }"
+#endif
+
+#ifndef	STARTFILE_MVME_SPEC
+#define	STARTFILE_MVME_SPEC "ecrti.o%s mvme-crt0.o%s"
+#endif
+
+#ifndef	ENDFILE_MVME_SPEC
+#define	ENDFILE_MVME_SPEC "ecrtn.o%s"
+#endif
+
+#ifndef LINK_START_MVME_SPEC
+#define LINK_START_MVME_SPEC ""
+#endif
+
+#ifndef CPP_OS_MVME_SPEC
+#define CPP_OS_MVME_SPEC ""
+#endif
+
+/* PowerPC simulator based on netbsd system calls support.  */
+#ifndef	LIB_SIM_SPEC
+#define LIB_SIM_SPEC "-( -lsim -lc -) }"
+#endif
+
+#ifndef	STARTFILE_SIM_SPEC
+#define	STARTFILE_SIM_SPEC "ecrti.o%s sim-crt0.o%s"
+#endif
+
+#ifndef	ENDFILE_SIM_SPEC
+#define	ENDFILE_SIM_SPEC "ecrtn.o%s"
+#endif
+
+#ifndef LINK_START_SIM_SPEC
+#define LINK_START_SIM_SPEC "-Ttext 0x10000074"
+#endif
+
+#ifndef CPP_OS_SIM_SPEC
+#define CPP_OS_SIM_SPEC ""
+#endif
+
+/* Linux support.  */
+#ifndef	LIB_LINUX_SPEC
+#define LIB_LINUX_SPEC "%{mnewlib: -( -llinux -lc -) } %{!mnewlib: -lc }"
+#endif
+
+#ifndef	STARTFILE_LINUX_SPEC
+#define	STARTFILE_LINUX_SPEC "crt0.o%s"
+#endif
+
+#ifndef	ENDFILE_LINUX_SPEC
+#define	ENDFILE_LINUX_SPEC ""
+#endif
+
+#ifndef LINK_START_LINUX_SPEC
+#define LINK_START_LINUX_SPEC "-Ttext 0x400074"
+#endif
+
+#ifndef CPP_OS_LINUX_SPEC
+#define CPP_OS_LINUX_SPEC "-D__unix__ -D__linux__ \
+%{!ansi: -Dunix -Dlinux } \
+-Asystem(unix) -Asystem(linux)"
+#endif
+
+#ifndef CPP_OS_LINUX_SPEC
+#define CPP_OS_LINUX_SPEC ""
+#endif
+
+/* Solaris support.  */
+/* For Solaris, Gcc automatically adds in one of the files
+   /usr/ccs/lib/values-Xc.o, /usr/ccs/lib/values-Xa.o, or
+   /usr/ccs/lib/values-Xt.o for each final link step (depending upon the other
+   gcc options selected, such as -traditional and -ansi).  These files each
+   contain one (initialized) copy of a special variable called `_lib_version'.
+   Each one of these files has `_lib_version' initialized to a different (enum)
+   value.  The SVR4 library routines query the value of `_lib_version' at run
+   to decide how they should behave.  Specifically, they decide (based upon the
+   value of `_lib_version') if they will act in a strictly ANSI conforming
+   manner or not.  */
+
+#ifndef	LIB_SOLARIS_SPEC
+#define LIB_SOLARIS_SPEC "\
+%{mnewlib: -( -lsolaris -lc -) } \
+%{!mnewlib: \
+    %{ansi:values-Xc.o%s} \
+    %{!ansi: \
+	%{traditional:values-Xt.o%s} \
+	%{!traditional:values-Xa.o%s}} \
+	%{compat-bsd:-lucb -lsocket -lnsl -lelf -laio} \
+    %{!shared: %{!symbolic: -lc }}}"
+#endif
+
+#ifndef	STARTFILE_SOLARIS_SPEC
+#define	STARTFILE_SOLARIS_SPEC "scrti.o%s scrt0.o%s"
+#endif
+
+#ifndef	ENDFILE_SOLARIS_SPEC
+#define	ENDFILE_SOLARIS_SPEC "scrtn.o%s"
+#endif
+
+#ifndef LINK_START_SOLARIS_SPEC
+#ifdef CROSS_COMPILER
+#define LINK_START_SOLARIS_SPEC "-Ttext 0x2000074"
+#else
+#define LINK_START_SOLARIS_SPEC ""
+#endif
+#endif
+
+#ifndef CPP_OS_SOLARIS_SPEC
+#define CPP_OS_SOLARIS_SPEC "-D__ppc -D__sun__=1 -D__unix__ -D__svr4__  -D__SVR4__ \
+%{!ansi: -Dsun=1 -Dunix -DSVR4 -D__EXTENSIONS__ } \
+-Asystem(unix) -Asystem(svr4) -Amachine(prep)"
+#endif
+
+/* Define any extra SPECS that the compiler needs to generate.  */
+#undef	SUBTARGET_EXTRA_SPECS
+#define SUBTARGET_EXTRA_SPECS						\
+  { "lib_mvme",			LIB_MVME_SPEC },			\
+  { "lib_sim",			LIB_SIM_SPEC },				\
+  { "lib_linux",		LIB_LINUX_SPEC },			\
+  { "lib_solaris",		LIB_SOLARIS_SPEC },			\
+  { "lib_default",		LIB_DEFAULT_SPEC },			\
+  { "startfile_mvme",		STARTFILE_MVME_SPEC },			\
+  { "startfile_sim",		STARTFILE_SIM_SPEC },			\
+  { "startfile_linux",		STARTFILE_LINUX_SPEC },			\
+  { "startfile_solaris",	STARTFILE_SOLARIS_SPEC },		\
+  { "startfile_default",	STARTFILE_DEFAULT_SPEC },		\
+  { "endfile_mvme",		ENDFILE_MVME_SPEC },			\
+  { "endfile_sim",		ENDFILE_SIM_SPEC },			\
+  { "endfile_linux",		ENDFILE_LINUX_SPEC },			\
+  { "endfile_solaris",		ENDFILE_SOLARIS_SPEC },			\
+  { "endfile_default",		ENDFILE_DEFAULT_SPEC },			\
+  { "link_start_mvme",		LINK_START_MVME_SPEC },			\
+  { "link_start_sim",		LINK_START_SIM_SPEC },			\
+  { "link_start_linux",		LINK_START_LINUX_SPEC },		\
+  { "link_start_solaris",	LINK_START_SOLARIS_SPEC },		\
+  { "link_start_default",	LINK_START_DEFAULT_SPEC },		\
+  { "cpp_os_mvme",		CPP_OS_MVME_SPEC },			\
+  { "cpp_os_sim",		CPP_OS_SIM_SPEC },			\
+  { "cpp_os_linux",		CPP_OS_LINUX_SPEC },			\
+  { "cpp_os_solaris",		CPP_OS_SOLARIS_SPEC },			\
+  { "cpp_os_default",		CPP_OS_DEFAULT_SPEC },			\
+  { "link_path",		LINK_PATH_SPEC },
 
 /* Define this macro as a C expression for the initializer of an
    array of string to tell the driver program which options are
@@ -776,4 +1119,4 @@ do {									\
    `MULTILIB_OPTIONS' are set by default.  *Note Target Fragment::.  */
 
 #undef	MULTILIB_DEFAULTS
-#define	MULTILIB_DEFAULTS { "mbig", "mbig-endian", "mcall-sysv", "mno-sdata" }
+#define	MULTILIB_DEFAULTS { "mbig", "mbig-endian", "mcall-sysv-noeabi", "mno-sdata" }

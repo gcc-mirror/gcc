@@ -6,7 +6,7 @@ EXTRA_HEADERS = $(srcdir)/ginclude/ppc-asm.h
 
 # These are really part of libgcc1, but this will cause them to be
 # built correctly, so... [taken from t-sparclite]
-LIB2FUNCS_EXTRA = fp-bit.c dp-bit.c
+LIB2FUNCS_EXTRA = fp-bit.c dp-bit.c eabi.S eabi-ctors.c
 
 dp-bit.c: $(srcdir)/config/fp-bit.c
 	cat $(srcdir)/config/fp-bit.c > dp-bit.c
@@ -15,15 +15,87 @@ fp-bit.c: $(srcdir)/config/fp-bit.c
 	echo '#define FLOAT' > fp-bit.c
 	cat $(srcdir)/config/fp-bit.c >> fp-bit.c
 
+eabi.S: $(srcdir)/config/rs6000/eabi.asm
+	cat $(srcdir)/config/rs6000/eabi.asm > eabi.S
+
+eabi-ctors.c: $(srcdir)/config/rs6000/eabi-ctors.c
+	cat $(srcdir)/config/rs6000/eabi-ctors.c > eabi-ctors.c
+
 # Build libgcc.a with different options.  If no gas support, don't build
 # explicit little endian or big endian libraries, since it depends on the
-# -mbig/-mlittle switches passed to gas.
+# -mbig/-mlittle switches passed to gas.  The -mrelocatable support also needs
+# -mrelocatable passed to gas, so don't use it either.
+MULTILIB_OPTIONS	= msoft-float \
+			  mcall-sysv-noeabi/mcall-sysv-eabi/mcall-aix
 
-MULTILIB_OPTIONS	= msoft-float
-MULTILIB_DIRNAMES	= soft-float
-MULTILIB_MATCHES	= msoft-float=mcpu?403 \
+MULTILIB_DIRNAMES	= nof \
+			  le be \
+			  cs ce ca
+
+MULTILIB_MATCHES	= mlittle=mlittle-endian \
+			  mbig=mbig-endian \
+			  mlittle=mcall-solaris \
+			  mbig=mcall-linux \
+			  msoft-float=mcpu?403 \
 			  msoft-float=mcpu?821 \
-			  msoft-float=mcpu?860
+			  msoft-float=mcpu?860 \
+			  mcall-sysv-noeabi=mcall-solaris \
+			  mcall-sysv-noeabi=mcall-linux \
+			  mcall-sysv-eabi=meabi \
+			  mcall-sysv-noeabi=mno-eabi
 
-LIBGCC = stmp-multilib
-INSTALL_LIBGCC = install-multilib
+MULTILIB_EXCEPTIONS	=
+
+LIBGCC = stmp-multilib stmp-crt
+INSTALL_LIBGCC = install-multilib install-crt
+
+# For eabi we build crti.o and crtn.o which serve to add begin and
+# end labels to all of the special sections used when we link using gcc.
+
+# Assemble startup files.
+ecrti.S: $(srcdir)/config/rs6000/eabi-ci.asm
+	cat $(srcdir)/config/rs6000/eabi-ci.asm >ecrti.S
+
+ecrtn.S: $(srcdir)/config/rs6000/eabi-cn.asm
+	cat $(srcdir)/config/rs6000/eabi-cn.asm >ecrtn.S
+
+scrti.S: $(srcdir)/config/rs6000/sol-ci.asm
+	cat $(srcdir)/config/rs6000/sol-ci.asm >scrti.S
+
+scrtn.S: $(srcdir)/config/rs6000/sol-cn.asm
+	cat $(srcdir)/config/rs6000/sol-cn.asm >scrtn.S
+
+scrt0.c: $(srcdir)/config/rs6000/sol-c0.c
+	cat $(srcdir)/config/rs6000/sol-c0.c >scrt0.c
+
+# Build multiple copies of crt{i,n}.o, one for each target switch.
+stmp-crt: ecrti.S ecrtn.S scrti.S scrtn.S scrt0.c $(GCC_PASSES) $(EXTRA_HEADERS) stmp-multilib config.status
+	for i in `$(GCC_FOR_TARGET) --print-multi-lib`; do \
+	  dir=`echo $$i | sed -e 's/;.*$$//'`; \
+	  flags=`echo $$i | sed -e 's/^[^;]*;//' -e 's/@/ -/g'`; \
+	  $(MAKE) GCC_FOR_TARGET="$(GCC_FOR_TARGET)" \
+	    LIBGCC2_CFLAGS="$(LIBGCC2_CFLAGS) $${flags}" \
+	    dir="$${dir}" stmp-crt-sub; \
+	  if [ $$? -eq 0 ] ; then true; else exit 1; fi; \
+	done
+	touch stmp-crt
+
+# Subroutine of stmp-crt so make -n works.
+stmp-crt-sub:
+	$(GCC_FOR_TARGET) $(LIBGCC2_CFLAGS) -c -o $(dir)/ecrti.o ecrti.S
+	$(GCC_FOR_TARGET) $(LIBGCC2_CFLAGS) -c -o $(dir)/ecrtn.o ecrtn.S
+	$(GCC_FOR_TARGET) $(LIBGCC2_CFLAGS) -c -o $(dir)/scrti.o scrti.S
+	$(GCC_FOR_TARGET) $(LIBGCC2_CFLAGS) -c -o $(dir)/scrtn.o scrtn.S
+	$(GCC_FOR_TARGET) $(LIBGCC2_CFLAGS) -c -o $(dir)/scrt0.o scrt0.c
+
+# Install multiple versions of crt[in].o
+install-crt: stmp-crt install-dir install-multilib
+	for i in `$(GCC_FOR_TARGET) --print-multi-lib`; do \
+	  dir=`echo $$i | sed -e 's/;.*$$//'`; \
+	  rm -f $(libsubdir)/$${dir}/[es]crt[in0].o; \
+	  $(INSTALL_DATA) $${dir}/ecrti.o $(libsubdir)/$${dir}/ecrti.o; \
+	  $(INSTALL_DATA) $${dir}/ecrtn.o $(libsubdir)/$${dir}/ecrtn.o; \
+	  $(INSTALL_DATA) $${dir}/scrti.o $(libsubdir)/$${dir}/scrti.o; \
+	  $(INSTALL_DATA) $${dir}/scrtn.o $(libsubdir)/$${dir}/scrtn.o; \
+	  $(INSTALL_DATA) $${dir}/scrt0.o $(libsubdir)/$${dir}/scrt0.o; \
+	done

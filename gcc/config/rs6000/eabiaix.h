@@ -21,8 +21,9 @@ Boston, MA 02111-1307, USA.  */
 
 #include "rs6000/eabi.h"
 
-#undef TARGET_DEFAULT
-#define TARGET_DEFAULT (MASK_POWERPC | MASK_NEW_MNEMONICS | MASK_AIX_CALLS)
+/* Default ABI to use */
+#undef	RS6000_ABI_NAME
+#define RS6000_ABI_NAME "aix"
 
 #undef	CPP_SYSV_DEFAULT_SPEC
 #define	CPP_SYSV_DEFAULT_SPEC "-D_CALL_AIX"

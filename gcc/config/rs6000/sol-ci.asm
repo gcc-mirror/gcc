@@ -1,4 +1,4 @@
-# crtn.s for eabi
+# crti.s for solaris
 
 #   Copyright (C) 1996 Free Software Foundation, Inc.
 #   Written By Michael Meissner
@@ -33,77 +33,38 @@
 #    the executable file might be covered by the GNU General Public License.
 # 
 
-# This file just supplies labeled ending points for the .got* and other
-# special sections.  It is linked in last after other modules.
+# This file just supplies labeled starting points for the .got* and other
+# special sections.  It is linked in first before other modules.
  
-	.file	"crtn.s"
-	.ident	"GNU C crtn.s"
+	.file	"scrti.s"
+	.ident	"GNU C scrti.s"
 
-	.section ".got","aw"
-	.globl	__GOT_END__
-	.type	__GOT_END__,@object
-__GOT_END__:
-
-	.section ".got1","aw"
-	.globl	__GOT1_END__
-	.type	__GOT1_END__,@object
-__GOT1_END__:
-
-	.section ".got2","aw"
-	.globl	__GOT2_END__
-	.type	__GOT2_END__,@object
-__GOT2_END__:
-
-	.section ".fixup","aw"
-	.globl	__FIXUP_END__
-	.type	__FIXUP_END__,@object
-__FIXUP_END__:
-
+# List of C++ constructors
 	.section ".ctors","aw"
-	.globl	__CTOR_END__
-	.type	__CTOR_END__,@object
-__CTOR_END__:
+	.globl	__CTOR_LIST__
+	.type	__CTOR_LIST__,@object
+__CTOR_LIST__:
 
+# List of C++ destructors
 	.section ".dtors","aw"
-	.globl	__DTOR_END__
-	.type	__DTOR_END__,@object
-__DTOR_END__:
+	.globl	__DTOR_LIST__
+	.type	__DTOR_LIST__,@object
+__DTOR_LIST__:
 
-	.section ".sdata","aw"
-	.globl	__SDATA_END__
-	.type	__SDATA_END__,@object
-__SDATA_END__:
-
-	.section ".sbss","aw",@nobits
-	.globl	__SBSS_END__
-	.type	__SBSS_END__,@object
-__SBSS_END__:
-
-	.section ".sdata2","a"
-	.globl	__SDATA2_END__
-	.type	__SDATA2_END__,@object
-__SDATA2_END__:
-
-	.section ".sbss2","a"
-	.globl	__SBSS2_END__
-	.type	__SBSS2_END__,@object
-__SBSS2_END__:
-
-	.section ".gcc_except_table","aw"
-	.globl	__EXCEPT_END__
-	.type	__EXCEPT_END__,@object
-__EXCEPT_END__:
-
-# Tail of __init used for static constructors in Solaris
+# Head of __init function used for static constructors in Solaris
 	.section ".init","ax"
-	lwz 0,12(1)
-	mtlr 0
-	addi 1,1,8
-	blr
+	.align 2
+	.globl __init
+	.type __init,@function
+__init:	stwu %r1,-16(%r1)
+	mflr %r0
+	stw %r0,12(%r1)
 
-# Tail of __fini used for static destructors in Solaris
+# Head of __fini function used for static destructors in Solaris
 	.section ".fini","ax"
-	lwz 0,12(1)
-	mtlr 0
-	addi 1,1,8
-	blr
+	.align 2
+	.globl __fini
+	.type __fini,@function
+__fini:	stwu %r1,-16(%r1)
+	mflr %r0
+	stw %r0,12(%r1)
