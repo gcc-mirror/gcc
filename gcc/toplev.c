@@ -959,7 +959,7 @@ get_run_time ()
   return (rusage.ru_utime.tv_sec * 1000000 + rusage.ru_utime.tv_usec
 	  + rusage.ru_stime.tv_sec * 1000000 + rusage.ru_stime.tv_usec);
 #else /* VMS */
-  times (&vms_times);
+  times ((void *) &vms_times);
   return (vms_times.proc_user_time + vms_times.proc_system_time) * 10000;
 #endif
 #endif
