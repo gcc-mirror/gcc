@@ -3801,10 +3801,14 @@ build_index_type (maxval)
      tree maxval;
 {
   register tree itype = make_node (INTEGER_TYPE);
+
   TYPE_PRECISION (itype) = TYPE_PRECISION (sizetype);
-  TYPE_MIN_VALUE (itype) = build_int_2 (0, 0);
-  TREE_TYPE (TYPE_MIN_VALUE (itype)) = sizetype;
+  TYPE_MIN_VALUE (itype) = size_zero_node;
+
+  push_obstacks (TYPE_OBSTACK (itype), TYPE_OBSTACK (itype));
   TYPE_MAX_VALUE (itype) = convert (sizetype, maxval);
+  pop_obstacks ();
+
   TYPE_MODE (itype) = TYPE_MODE (sizetype);
   TYPE_SIZE (itype) = TYPE_SIZE (sizetype);
   TYPE_ALIGN (itype) = TYPE_ALIGN (sizetype);
@@ -3834,12 +3838,17 @@ build_range_type (type, lowval, highval)
      tree type, lowval, highval;
 {
   register tree itype = make_node (INTEGER_TYPE);
+
   TREE_TYPE (itype) = type;
   if (type == NULL_TREE)
     type = sizetype;
-  TYPE_PRECISION (itype) = TYPE_PRECISION (type);
+
+  push_obstacks (TYPE_OBSTACK (itype), TYPE_OBSTACK (itype));
   TYPE_MIN_VALUE (itype) = convert (type, lowval);
   TYPE_MAX_VALUE (itype) = convert (type, highval);
+  pop_obstacks ();
+
+  TYPE_PRECISION (itype) = TYPE_PRECISION (type);
   TYPE_MODE (itype) = TYPE_MODE (type);
   TYPE_SIZE (itype) = TYPE_SIZE (type);
   TYPE_ALIGN (itype) = TYPE_ALIGN (type);
