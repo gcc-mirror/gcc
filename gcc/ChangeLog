@@ -1,5 +1,19 @@
 2002-10-27  Kazu Hirata  <kazu@cs.umass.edu>
 
+	* combine.c: Fix comment formatting.
+	* loop.c: Likewise.
+	* real.c: Likewise.
+	* regclass.c: Likewise.
+	* regmove.c: Likewise.
+	* regrename.c: Likewise.
+	* reg-stack.c: Likewise.
+	* reload1.c: Likewise.
+	* reload.c: Likewise.
+	* reload.h: Likewise.
+	* unroll.c: Likewise.
+
+2002-10-27  Kazu Hirata  <kazu@cs.umass.edu>
+
 	* reload1.c (reload): Fix a comment typo.
 
 Sun Oct 27 10:15:24 CET 2002  Jan Hubicka  <jh@suse.cz>

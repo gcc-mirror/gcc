@@ -11913,7 +11913,7 @@ mark_used_regs_combine (x)
 	{
 	  unsigned int endregno, r;
 
-	  /* None of this applies to the stack, frame or arg pointers */
+	  /* None of this applies to the stack, frame or arg pointers.  */
 	  if (regno == STACK_POINTER_REGNUM
 #if FRAME_POINTER_REGNUM != HARD_FRAME_POINTER_REGNUM
 	      || regno == HARD_FRAME_POINTER_REGNUM
@@ -12021,7 +12021,7 @@ move_deaths (x, maybe_kill_insn, from_cuid, to_insn, pnotes)
       rtx where_dead = reg_last_death[regno];
       rtx before_dead, after_dead;
 
-      /* Don't move the register if it gets killed in between from and to */
+      /* Don't move the register if it gets killed in between from and to.  */
       if (maybe_kill_insn && reg_set_p (x, maybe_kill_insn)
 	  && ! reg_referenced_p (x, maybe_kill_insn))
 	return;

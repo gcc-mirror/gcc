@@ -738,7 +738,7 @@ scan_rtx (insn, loc, class, action, type, earlyclobber)
     }
 }
 
-/* Build def/use chain */
+/* Build def/use chain.  */
 
 static struct du_chain *
 build_def_use (bb)
