@@ -1775,8 +1775,7 @@ can_reverse_comparison_p (comparison, insn)
 #endif
       )
     {
-      rtx prev = prev_nonnote_insn (insn);
-      rtx set;
+      rtx prev, set;
 
       /* First see if the condition code mode alone if enough to say we can
 	 reverse the condition.  If not, then search backwards for a set of
@@ -1788,6 +1787,9 @@ can_reverse_comparison_p (comparison, insn)
 	  && REVERSIBLE_CC_MODE (GET_MODE (arg0)))
 	return 1;
 #endif
+
+      if (! insn)
+	return 0;
 	
       for (prev = prev_nonnote_insn (insn);
 	   prev != 0 && GET_CODE (prev) != CODE_LABEL;
