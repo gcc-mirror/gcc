@@ -2881,6 +2881,17 @@ purge_addressof_1 (loc, insn, force, store)
 
 	      rtx val, seq;
 
+	      /* We cannot do this if we are trying to pick out
+		 an integral piece, smaller than a word, of a
+		 floating point value.  */
+	      if (INTEGRAL_MODE_P (GET_MODE (x))
+		  && GET_MODE_SIZE (GET_MODE (x)) < UNITS_PER_WORD
+		  && FLOAT_MODE_P (GET_MODE (sub)))
+		{
+		  put_addressof_into_stack (XEXP (x, 0));
+		  return;
+		}
+
 	      if (store)
 		{
 		  /* If we can't replace with a register, be afraid.  */
