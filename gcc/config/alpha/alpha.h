@@ -231,7 +231,7 @@ extern int alpha_tls_size;
 #define MASK_SMALL_TEXT (1 << 15)
 #define TARGET_SMALL_TEXT (target_flags & MASK_SMALL_TEXT)
 
-/* This means use IEEE quad-format for long double.  Assumes the 
+/* This means use IEEE quad-format for long double.  Assumes the
    presence of the GEM support library routines.  */
 #define MASK_LONG_DOUBLE_128 (1 << 16)
 #define TARGET_LONG_DOUBLE_128 (target_flags & MASK_LONG_DOUBLE_128)
@@ -466,7 +466,7 @@ extern const char *alpha_tls_size_string; /* For -mtls-size= */
 #define	WCHAR_TYPE_SIZE 32
 
 /* Define this macro if it is advisable to hold scalars in registers
-   in a wider mode than that declared by the program.  In such cases, 
+   in a wider mode than that declared by the program.  In such cases,
    the value is constrained to be within the bounds of the declared
    type, but kept valid in the wider mode.  The signedness of the
    extension may differ from that of the type.
@@ -572,7 +572,7 @@ extern const char *alpha_tls_size_string; /* For -mtls-size= */
    We define all 32 integer registers, even though $31 is always zero,
    and all 32 floating-point registers, even though $f31 is also
    always zero.  We do not bother defining the FP status register and
-   there are no other registers. 
+   there are no other registers.
 
    Since $31 is always zero, we will use register number 31 as the
    argument pointer.  It will never appear in the generated code
@@ -649,12 +649,6 @@ extern const char *alpha_tls_size_string; /* For -mtls-size= */
    ? (MODE) == SFmode || (MODE) == DFmode || (MODE) == DImode		\
    : 1)
 
-/* Value is 1 if MODE is a supported vector mode.  */
-
-#define VECTOR_MODE_SUPPORTED_P(MODE) \
-  (TARGET_MAX \
-   && ((MODE) == V8QImode || (MODE) == V4HImode || (MODE) == V2SImode))
-
 /* A C expression that is nonzero if a value of mode
    MODE1 is accessible in mode MODE2 without copying.
 
@@ -690,7 +684,7 @@ extern const char *alpha_tls_size_string; /* For -mtls-size= */
 /* Base register for access to local variables of function.  */
 #define FRAME_POINTER_REGNUM 63
 
-/* Register in which static-chain is passed to a function. 
+/* Register in which static-chain is passed to a function.
 
    For the Alpha, this is based on an example; the calling sequence
    doesn't seem to specify this.  */
@@ -727,7 +721,7 @@ extern const char *alpha_tls_size_string; /* For -mtls-size= */
 
    For any two classes, it is very desirable that there be another
    class that represents their union.  */
-   
+
 enum reg_class {
   NO_REGS, R0_REG, R24_REG, R25_REG, R27_REG,
   GENERAL_REGS, FLOAT_REGS, ALL_REGS,
@@ -820,7 +814,7 @@ enum reg_class {
    `R' is a SYMBOL_REF that has SYMBOL_REF_FLAG set or is the current
    function.
 
-   'S' is a 6-bit constant (valid for a shift insn).  
+   'S' is a 6-bit constant (valid for a shift insn).
 
    'T' is a HIGH.
 
@@ -880,7 +874,7 @@ enum reg_class {
    ? reg_classes_intersect_p (FLOAT_REGS, CLASS) : 0)
 
 /* Define the cost of moving between registers of various classes.  Moving
-   between FLOAT_REGS and anything else except float regs is expensive. 
+   between FLOAT_REGS and anything else except float regs is expensive.
    In fact, we make it quite expensive because we really don't want to
    do these moves unless it is clearly worth it.  Optimizations may
    reduce the impact of not being able to allocate a pseudo to a
@@ -1111,7 +1105,7 @@ extern struct alpha_compare alpha_compare;
 
 #define ASM_DECLARE_FUNCTION_SIZE(FILE,NAME,DECL) \
   alpha_end_function(FILE,NAME,DECL)
-   
+
 /* Output any profiling code before the prologue.  */
 
 #define PROFILE_BEFORE_PROLOGUE 1
@@ -1141,7 +1135,7 @@ extern struct alpha_compare alpha_compare;
    of a trampoline, leaving space for the variable parts.
 
    The trampoline should set the static chain pointer to value placed
-   into the trampoline and should branch to the specified routine.  
+   into the trampoline and should branch to the specified routine.
    Note that $27 has been set to the address of the trampoline, so we can
    use it for addressability of the two data items.  */
 
@@ -1301,7 +1295,7 @@ do {								\
 /* Try a machine-dependent way of reloading an illegitimate address
    operand.  If we find one, push the reload and jump to WIN.  This
    macro is used in only one place: `find_reloads_address' in reload.c.  */
-   
+
 #define LEGITIMIZE_RELOAD_ADDRESS(X,MODE,OPNUM,TYPE,IND_L,WIN)		     \
 do {									     \
   rtx new_x = alpha_legitimize_reload_address (X, MODE, OPNUM, TYPE, IND_L); \
@@ -1356,7 +1350,7 @@ do {									     \
 
 /* Nonzero if access to memory by bytes is no faster than for words.
    Also nonzero if doing byte operations (specifically shifts) in registers
-   is undesirable. 
+   is undesirable.
 
    On the Alpha, we want to not use the byte operation and instead use
    masking operations to access fields; these will save instructions.  */

@@ -875,6 +875,7 @@ static tree ix86_build_builtin_va_list (void);
 static void ix86_setup_incoming_varargs (CUMULATIVE_ARGS *, enum machine_mode,
 					 tree, int *, int);
 static tree ix86_gimplify_va_arg (tree, tree, tree *, tree *);
+static bool ix86_vector_mode_supported_p (enum machine_mode);
 
 static int ix86_address_cost (rtx);
 static bool ix86_cannot_force_const_mem (rtx);
@@ -1064,6 +1065,9 @@ static void init_ext_80387_constants (void);
 
 #undef TARGET_GIMPLIFY_VA_ARG_EXPR
 #define TARGET_GIMPLIFY_VA_ARG_EXPR ix86_gimplify_va_arg
+
+#undef TARGET_VECTOR_MODE_SUPPORTED_P
+#define TARGET_VECTOR_MODE_SUPPORTED_P ix86_vector_mode_supported_p
 
 #ifdef SUBTARGET_INSERT_ATTRIBUTES
 #undef TARGET_INSERT_ATTRIBUTES
@@ -1815,7 +1819,7 @@ ix86_function_regparm (tree type, tree decl)
   return regparm;
 }
 
-/* Return true if EAX is live at the start of the function.  Used by 
+/* Return true if EAX is live at the start of the function.  Used by
    ix86_expand_prologue to determine if we need special help before
    calling allocate_stack_worker.  */
 
@@ -3406,7 +3410,7 @@ ix86_gimplify_va_arg (tree valist, tree type, tree *pre_p, tree *post_p)
 	  t = build1 (ADDR_EXPR, build_pointer_type (type), temp);
 	  t = build2 (MODIFY_EXPR, void_type_node, addr, t);
 	  gimplify_and_add (t, pre_p);
-	  
+
 	  for (i = 0; i < XVECLEN (container, 0); i++)
 	    {
 	      rtx slot = XVECEXP (container, 0, i);
@@ -10173,7 +10177,7 @@ ix86_expand_movmem (rtx dst, rtx src, rtx count_exp, rtx align_exp)
 				       GEN_INT ((count >> (size == 4 ? 2 : 3))
 						& (TARGET_64BIT ? -1 : 0x3fffffff)));
 	  countreg = ix86_zero_extend_to_Pmode (countreg);
-	  
+
 	  destexp = gen_rtx_ASHIFT (Pmode, countreg,
 				    GEN_INT (size == 4 ? 2 : 3));
 	  srcexp = gen_rtx_PLUS (Pmode, destexp, srcreg);
@@ -14034,7 +14038,7 @@ ix86_rtx_costs (rtx x, int code, int outer_code, int *total)
 	      if (is_mulwiden)
 	        op0 = XEXP (op0, 0), mode = GET_MODE (op0);
 	    }
-  
+
   	  *total = COSTS_N_INSNS (ix86_cost->mult_init[MODE_INDEX (mode)]
 			          + nbits * ix86_cost->mult_bit)
 	           + rtx_cost (op0, outer_code) + rtx_cost (op1, outer_code);
@@ -14511,8 +14515,8 @@ x86_output_mi_thunk (FILE *file ATTRIBUTE_UNUSED,
 	if (TARGET_MACHO)
 	  {
 	    rtx sym_ref = XEXP (DECL_RTL (function), 0);
-	    tmp = (gen_rtx_SYMBOL_REF 
-		   (Pmode, 
+	    tmp = (gen_rtx_SYMBOL_REF
+		   (Pmode,
 		    machopic_indirection_name (sym_ref, /*stub_p=*/true)));
 	    tmp = gen_rtx_MEM (QImode, tmp);
 	    xops[0] = tmp;
@@ -14851,13 +14855,13 @@ ix86_expand_vector_init (rtx target, rtx vals)
   int elt_size = GET_MODE_SIZE (GET_MODE_INNER (mode));
   int n_elts = (GET_MODE_SIZE (mode) / elt_size);
   int i;
-  
+
   for (i = n_elts - 1; i >= 0; i--)
     if (GET_CODE (XVECEXP (vals, 0, i)) != CONST_INT
 	&& GET_CODE (XVECEXP (vals, 0, i)) != CONST_DOUBLE)
       break;
 
-  /* Few special cases first...  
+  /* Few special cases first...
      ... constants are best loaded from constant pool.  */
   if (i < 0)
     {
@@ -14931,6 +14935,26 @@ ix86_expand_vector_init (rtx target, rtx vals)
     }
 }
 
+/* Implements target hook vector_mode_supported_p.  */
+static bool
+ix86_vector_mode_supported_p (enum machine_mode mode)
+{
+  if (TARGET_SSE
+      && VALID_SSE_REG_MODE (mode))
+    return true;
+
+  else if (TARGET_MMX
+	   && VALID_MMX_REG_MODE (mode))
+    return true;
+
+  else if (TARGET_3DNOW
+	   && VALID_MMX_REG_MODE_3DNOW (mode))
+    return true;
+
+  else
+    return false;
+}
+
 /* Worker function for TARGET_MD_ASM_CLOBBERS.
 
    We do this in the new i386 backend to maintain source compatibility
@@ -14939,12 +14963,12 @@ ix86_expand_vector_init (rtx target, rtx vals)
 static tree
 ix86_md_asm_clobbers (tree clobbers)
 {
-  clobbers = tree_cons (NULL_TREE, build_string (5, "flags"),	
-			clobbers);				
-  clobbers = tree_cons (NULL_TREE, build_string (4, "fpsr"),	
-			clobbers);				
-  clobbers = tree_cons (NULL_TREE, build_string (7, "dirflag"),	
-			clobbers);				
+  clobbers = tree_cons (NULL_TREE, build_string (5, "flags"),
+			clobbers);
+  clobbers = tree_cons (NULL_TREE, build_string (4, "fpsr"),
+			clobbers);
+  clobbers = tree_cons (NULL_TREE, build_string (7, "dirflag"),
+			clobbers);
   return clobbers;
 }
 
@@ -14992,17 +15016,17 @@ ix86_emit_fp_unordered_jump (rtx label)
     {
       emit_insn (gen_x86_sahf_1 (reg));
 
-      temp = gen_rtx_REG (CCmode, FLAGS_REG); 
+      temp = gen_rtx_REG (CCmode, FLAGS_REG);
       temp = gen_rtx_UNORDERED (VOIDmode, temp, const0_rtx);
     }
   else
     {
       emit_insn (gen_testqi_ext_ccno_0 (reg, GEN_INT (0x04)));
 
-      temp = gen_rtx_REG (CCNOmode, FLAGS_REG); 
+      temp = gen_rtx_REG (CCNOmode, FLAGS_REG);
       temp = gen_rtx_NE (VOIDmode, temp, const0_rtx);
     }
-  
+
   temp = gen_rtx_IF_THEN_ELSE (VOIDmode, temp,
 			      gen_rtx_LABEL_REF (VOIDmode, label),
 			      pc_rtx);
@@ -15039,5 +15063,5 @@ void ix86_emit_i387_log1p (rtx op0, rtx op1)
 
   emit_label (label2);
 }
-     
+
 #include "gt-i386.h"

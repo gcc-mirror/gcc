@@ -44,6 +44,7 @@ extern int arm_return_in_memory (tree);
 extern void arm_encode_call_attribute (tree, int);
 #endif
 #ifdef RTX_CODE
+extern bool arm_vector_mode_supported_p (enum machine_mode);
 extern int arm_hard_regno_mode_ok (unsigned int, enum machine_mode);
 extern int const_ok_for_arm (HOST_WIDE_INT);
 extern int arm_split_constant (RTX_CODE, enum machine_mode, rtx,
@@ -162,7 +163,7 @@ extern bool arm_needs_doubleword_align (enum machine_mode, tree);
 extern rtx arm_function_value(tree, tree);
 #endif
 
-#if defined AOF_ASSEMBLER 
+#if defined AOF_ASSEMBLER
 extern rtx aof_pic_entry (rtx);
 extern char *aof_text_section (void);
 extern char *aof_data_section (void);

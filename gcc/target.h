@@ -134,7 +134,7 @@ struct gcc_target
 
     /* Tell assembler to switch to the readonly data section associated
        with function DECL.  */
-    void (* function_rodata_section) (tree); 
+    void (* function_rodata_section) (tree);
 
     /* Output a constructor for a symbol with a given priority.  */
     void (* constructor) (rtx, int);
@@ -270,12 +270,12 @@ struct gcc_target
 
     /* The following member value is a pointer to a function called
        by the insn scheduler.  It should return true if there exists a
-       dependence which is considered costly by the target, between 
-       the insn passed as the first parameter, and the insn passed as 
-       the second parameter.  The third parameter is the INSN_DEPEND 
+       dependence which is considered costly by the target, between
+       the insn passed as the first parameter, and the insn passed as
+       the second parameter.  The third parameter is the INSN_DEPEND
        link that represents the dependence between the two insns.  The
        fourth argument is the cost of the dependence as estimated by
-       the scheduler.  The last argument is the distance in cycles 
+       the scheduler.  The last argument is the distance in cycles
        between the already scheduled insn (first parameter) and the
        the second insn (second parameter).  */
     bool (* is_costly_dependence) (rtx, rtx, rtx, int, int);
@@ -380,6 +380,9 @@ struct gcc_target
 
   /* True if MODE is valid for a pointer in __attribute__((mode("MODE"))).  */
   bool (* valid_pointer_mode) (enum machine_mode mode);
+
+  /* True if MODE is valid for a vector.  */
+  bool (* vector_mode_supported_p) (enum machine_mode mode);
 
   /* True if a vector is opaque.  */
   bool (* vector_opaque_p) (tree);

@@ -507,7 +507,7 @@ extern void fancy_abort (const char *, int, const char *) ATTRIBUTE_NORETURN;
 
 /* Provide a fake boolean type.  We make no attempt to use the
    C99 _Bool, as it may not be available in the bootstrap compiler,
-   and even if it is, it is liable to be buggy.  
+   and even if it is, it is liable to be buggy.
    This must be after all inclusion of system headers, as some of
    them will mess us up.  */
 
@@ -600,7 +600,8 @@ extern void fancy_abort (const char *, int, const char *) ATTRIBUTE_NORETURN;
 	SETUP_INCOMING_VARARGS EXPAND_BUILTIN_SAVEREGS			\
 	DEFAULT_SHORT_ENUMS SPLIT_COMPLEX_ARGS MD_ASM_CLOBBERS		\
 	HANDLE_PRAGMA_REDEFINE_EXTNAME HANDLE_PRAGMA_EXTERN_PREFIX	\
-	MUST_PASS_IN_STACK FUNCTION_ARG_PASS_BY_REFERENCE
+	MUST_PASS_IN_STACK FUNCTION_ARG_PASS_BY_REFERENCE               \
+        VECTOR_MODE_SUPPORTED_P
 
 /* Other obsolete target macros, or macros that used to be in target
    headers and were not used, and may be obsolete or may never have

@@ -41,10 +41,10 @@ struct processor_costs {
   const int lea;		/* cost of a lea instruction */
   const int shift_var;		/* variable shift costs */
   const int shift_const;	/* constant shift costs */
-  const int mult_init[5];	/* cost of starting a multiply 
+  const int mult_init[5];	/* cost of starting a multiply
 				   in QImode, HImode, SImode, DImode, TImode*/
   const int mult_bit;		/* cost of multiply per each bit set */
-  const int divide[5];		/* cost of a divide/mod 
+  const int divide[5];		/* cost of a divide/mod
 				   in QImode, HImode, SImode, DImode, TImode*/
   int movsx;			/* The cost of movsx operation.  */
   int movzx;			/* The cost of movzx operation.  */
@@ -1081,11 +1081,6 @@ do {									\
     ((MODE) == DImode || (MODE) == V8QImode || (MODE) == V4HImode	\
      || (MODE) == V2SImode || (MODE) == SImode)
 
-#define VECTOR_MODE_SUPPORTED_P(MODE)					\
-    (VALID_SSE_REG_MODE (MODE) && TARGET_SSE ? 1			\
-     : VALID_MMX_REG_MODE (MODE) && TARGET_MMX ? 1			\
-     : VALID_MMX_REG_MODE_3DNOW (MODE) && TARGET_3DNOW ? 1 : 0)
-
 #define UNITS_PER_SIMD_WORD \
     (TARGET_SSE ? 16 : TARGET_MMX || TARGET_3DNOW ? 8 : 0)
 
@@ -1595,7 +1590,7 @@ enum reg_class
    || ((CLASS) == FP_SECOND_REG))
 
 /* Return a class of registers that cannot change FROM mode to TO mode.
-  
+
    x87 registers can't do subreg as all values are reformated to extended
    precision.  XMM registers does not support with nonzero offsets equal
    to 4, 8 and 12 otherwise valid for integer registers. Since we can't

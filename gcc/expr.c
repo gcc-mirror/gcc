@@ -7836,17 +7836,17 @@ expand_expr_real_1 (tree exp, rtx target, enum machine_mode tmode,
 	  tree pred = TREE_OPERAND (exp, 0);
   	  tree then_ = TREE_OPERAND (exp, 1);
   	  tree else_ = TREE_OPERAND (exp, 2);
-  
+
 	  if (TREE_CODE (then_) != GOTO_EXPR
 	      || TREE_CODE (GOTO_DESTINATION (then_)) != LABEL_DECL
 	      || TREE_CODE (else_) != GOTO_EXPR
 	      || TREE_CODE (GOTO_DESTINATION (else_)) != LABEL_DECL)
 	    abort ();
-  
+
 	  jumpif (pred, label_rtx (GOTO_DESTINATION (then_)));
 	  return expand_expr (else_, const0_rtx, VOIDmode, 0);
   	}
-  
+
         /* Note that COND_EXPRs whose type is a structure or union
   	 are required to be constructed to contain assignments of
   	 a temporary variable, so that we can evaluate them here
@@ -7857,12 +7857,12 @@ expand_expr_real_1 (tree exp, rtx target, enum machine_mode tmode,
  	  || TREE_TYPE (TREE_OPERAND (exp, 1)) == void_type_node
  	  || TREE_TYPE (TREE_OPERAND (exp, 2)) == void_type_node)
  	abort ();
-       
+
        /* If we are not to produce a result, we have no target.  Otherwise,
  	 if a target was specified use it; it will not be used as an
  	 intermediate target unless it is safe.  If no target, use a
  	 temporary.  */
-       
+
        if (modifier != EXPAND_STACK_PARM
  	  && original_target
  	  && safe_from_p (original_target, TREE_OPERAND (exp, 0), 1)
@@ -7875,7 +7875,7 @@ expand_expr_real_1 (tree exp, rtx target, enum machine_mode tmode,
  	temp = original_target;
        else
  	temp = assign_temp (type, 0, 0, 1);
-       
+
        do_pending_stack_adjust ();
        NO_DEFER_POP;
        op0 = gen_label_rtx ();
@@ -7883,17 +7883,17 @@ expand_expr_real_1 (tree exp, rtx target, enum machine_mode tmode,
        jumpifnot (TREE_OPERAND (exp, 0), op0);
        store_expr (TREE_OPERAND (exp, 1), temp,
  		  modifier == EXPAND_STACK_PARM ? 2 : 0);
-       
+
        emit_jump_insn (gen_jump (op1));
        emit_barrier ();
        emit_label (op0);
        store_expr (TREE_OPERAND (exp, 2), temp,
  		  modifier == EXPAND_STACK_PARM ? 2 : 0);
-       
+
        emit_label (op1);
        OK_DEFER_POP;
        return temp;
-  
+
     case MODIFY_EXPR:
       {
 	/* If lhs is complex, expand calls in rhs before computing it.
@@ -8791,7 +8791,7 @@ vector_mode_valid_p (enum machine_mode mode)
     return 0;
 
   /* Hardware support.  Woo hoo!  */
-  if (VECTOR_MODE_SUPPORTED_P (mode))
+  if (targetm.vector_mode_supported_p (mode))
     return 1;
 
   innermode = GET_MODE_INNER (mode);

@@ -243,7 +243,7 @@ do { fputs (integer_asm_op (POINTER_SIZE / BITS_PER_UNIT, TRUE), FILE); \
    archive's table of contents.  Defining this macro to be nonzero has
    the consequence that certain symbols will not be made weak that
    otherwise would be.  The C++ ABI requires this macro to be zero;
-   see the documentation. */ 
+   see the documentation. */
 #ifndef TARGET_WEAK_NOT_IN_ARCHIVE_TOC
 #define TARGET_WEAK_NOT_IN_ARCHIVE_TOC 0
 #endif
@@ -259,7 +259,7 @@ do { fputs (integer_asm_op (POINTER_SIZE / BITS_PER_UNIT, TRUE), FILE); \
 #endif
 
 /* If the target supports weak symbols, define TARGET_ATTRIBUTE_WEAK to
-   provide a weak attribute.  Else define it to nothing. 
+   provide a weak attribute.  Else define it to nothing.
 
    This would normally belong in ansidecl.h, but SUPPORTS_WEAK is
    not available at that time.
@@ -331,7 +331,7 @@ do { fputs (integer_asm_op (POINTER_SIZE / BITS_PER_UNIT, TRUE), FILE); \
 
 /* By default, we generate a label at the beginning and end of the
    text section, and compute the size of the text section by
-   subtracting the two.  However, on some platforms that doesn't 
+   subtracting the two.  However, on some platforms that doesn't
    work, and we use the section itself, rather than a label at the
    beginning of it, to indicate the start of the section.  On such
    platforms, define this to zero.  */
@@ -479,7 +479,7 @@ do { fputs (integer_asm_op (POINTER_SIZE / BITS_PER_UNIT, TRUE), FILE); \
 /* By default, the C++ compiler will use function addresses in the
    vtable entries.  Setting this nonzero tells the compiler to use
    function descriptors instead.  The value of this macro says how
-   many words wide the descriptor is (normally 2).  It is assumed 
+   many words wide the descriptor is (normally 2).  It is assumed
    that the address of a function descriptor may be treated as a
    pointer to a function.  */
 #ifndef TARGET_VTABLE_USES_DESCRIPTORS
@@ -660,10 +660,6 @@ You Lose!  You must define PREFERRED_DEBUGGING_TYPE!
 #define HAS_LONG_UNCOND_BRANCH 0
 #endif
 
-#ifndef VECTOR_MODE_SUPPORTED_P
-#define VECTOR_MODE_SUPPORTED_P(MODE) 0
-#endif
-
 #ifndef UNITS_PER_SIMD_WORD
 #define UNITS_PER_SIMD_WORD 0
 #endif
@@ -724,10 +720,10 @@ You Lose!  You must define PREFERRED_DEBUGGING_TYPE!
 #endif
 
 /* Indicate that CLZ and CTZ are undefined at zero.  */
-#ifndef CLZ_DEFINED_VALUE_AT_ZERO 
+#ifndef CLZ_DEFINED_VALUE_AT_ZERO
 #define CLZ_DEFINED_VALUE_AT_ZERO(MODE, VALUE)  0
 #endif
-#ifndef CTZ_DEFINED_VALUE_AT_ZERO 
+#ifndef CTZ_DEFINED_VALUE_AT_ZERO
 #define CTZ_DEFINED_VALUE_AT_ZERO(MODE, VALUE)  0
 #endif
 

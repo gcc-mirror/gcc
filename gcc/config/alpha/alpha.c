@@ -1,6 +1,6 @@
 /* Subroutines used for code generation on the DEC Alpha.
    Copyright (C) 1992, 1993, 1994, 1995, 1996, 1997, 1998, 1999,
-   2000, 2001, 2002, 2003, 2004 Free Software Foundation, Inc. 
+   2000, 2001, 2002, 2003, 2004 Free Software Foundation, Inc.
    Contributed by Richard Kenner (kenner@vlsi1.ultra.nyu.edu)
 
 This file is part of GCC.
@@ -57,7 +57,7 @@ Boston, MA 02111-1307, USA.  */
 /* Specify which cpu to schedule for.  */
 
 enum processor_type alpha_cpu;
-static const char * const alpha_cpu_name[] = 
+static const char * const alpha_cpu_name[] =
 {
   "ev4", "ev5", "ev6"
 };
@@ -247,7 +247,7 @@ override_options (void)
     { "21264a",	PROCESSOR_EV6, EV6_MASK|MASK_CIX },
     { 0, 0, 0 }
   };
-                  
+
   /* Unicos/Mk doesn't have shared libraries.  */
   if (TARGET_ABI_UNICOSMK && flag_pic)
     {
@@ -256,7 +256,7 @@ override_options (void)
       flag_pic = 0;
     }
 
-  /* On Unicos/Mk, the native compiler consistently generates /d suffices for 
+  /* On Unicos/Mk, the native compiler consistently generates /d suffices for
      floating-point instructions.  Make that the default for this target.  */
   if (TARGET_ABI_UNICOSMK)
     alpha_fprm = ALPHA_FPRM_DYN;
@@ -266,7 +266,7 @@ override_options (void)
   alpha_tp = ALPHA_TP_PROG;
   alpha_fptm = ALPHA_FPTM_N;
 
-  /* We cannot use su and sui qualifiers for conversion instructions on 
+  /* We cannot use su and sui qualifiers for conversion instructions on
      Unicos/Mk.  I'm not sure if this is due to assembler or hardware
      limitations.  Right now, we issue a warning if -mieee is specified
      and then ignore it; eventually, we should either get it right or
@@ -432,7 +432,7 @@ override_options (void)
 	     && ISDIGIT ((unsigned char)alpha_mlat_string[1])
 	     && alpha_mlat_string[2] == '\0')
       {
-	static int const cache_latency[][4] = 
+	static int const cache_latency[][4] =
 	{
 	  { 3, 30, -1 },	/* ev4 -- Bcache is a guess */
 	  { 2, 12, 38 },	/* ev5 -- Bcache from PC164 LMbench numbers */
@@ -519,7 +519,7 @@ zap_mask (HOST_WIDE_INT value)
   return 1;
 }
 
-/* Return true if OP is valid for a particular TLS relocation. 
+/* Return true if OP is valid for a particular TLS relocation.
    We are already guaranteed that OP is a CONST.  */
 
 int
@@ -668,6 +668,19 @@ alpha_extra_constraint (rtx value, int c)
     default:
       return false;
     }
+}
+
+/* Implements target hook vector_mode_supported_p.  */
+static bool
+alpha_vector_mode_supported_p (enum machine_mode mode)
+{
+  if (TARGET_MAX
+      && ((mode == V8QImode)
+	  || (mode == V4HImode)
+	  || (mode == V2SImode)))
+    return true;
+
+  return false;
 }
 
 /* Return 1 if this function can directly return via $26.  */
@@ -1015,7 +1028,7 @@ alpha_legitimize_address (rtx x, rtx scratch,
 	  tga = get_tls_get_addr ();
 	  dest = gen_reg_rtx (Pmode);
 	  seq = GEN_INT (alpha_next_sequence_number++);
-	  
+
 	  emit_insn (gen_movdi_er_tlsgd (r16, pic_offset_table_rtx, x, seq));
 	  insn = gen_call_value_osf_tlsgd (r0, tga, seq);
 	  insn = emit_call_insn (insn);
@@ -1157,7 +1170,7 @@ alpha_function_ok_for_sibcall (tree decl, tree exp ATTRIBUTE_UNUSED)
    small symbolic operand until after reload.  At which point we need
    to replace (mem (symbol_ref)) with (mem (lo_sum $29 symbol_ref))
    so that sched2 has the proper dependency information.  */
-/* 
+/*
   {"some_small_symbolic_operand", {SET, PARALLEL, PREFETCH, UNSPEC,	\
 				   UNSPEC_VOLATILE}},
 */
@@ -1232,10 +1245,10 @@ alpha_cannot_copy_insn_p (rtx insn)
     return false;
 }
 
-  
+
 /* Try a machine-dependent way of reloading an illegitimate address
    operand.  If we find one, push the reload and return the new rtx.  */
-   
+
 rtx
 alpha_legitimize_reload_address (rtx x,
 				 enum machine_mode mode ATTRIBUTE_UNUSED,
@@ -1331,7 +1344,7 @@ alpha_rtx_costs (rtx x, int code, int outer_code, int *total)
       else
 	*total = COSTS_N_INSNS (2);
       return true;
-      
+
     case CONST:
     case SYMBOL_REF:
     case LABEL_REF:
@@ -1347,7 +1360,7 @@ alpha_rtx_costs (rtx x, int code, int outer_code, int *total)
 	/* Otherwise we do a load from the GOT.  */
 	*total = COSTS_N_INSNS (optimize_size ? 1 : alpha_memory_latency);
       return true;
-    
+
     case PLUS:
     case MINUS:
       if (float_mode_p)
@@ -1477,7 +1490,7 @@ get_aligned_mem (rtx ref, rtx *paligned_mem, rtx *pbitnum)
     *pbitnum = GEN_INT ((offset & 3) * 8);
 }
 
-/* Similar, but just get the address.  Handle the two reload cases.  
+/* Similar, but just get the address.  Handle the two reload cases.
    Add EXTRA_OFFSET to the address we return.  */
 
 rtx
@@ -1509,7 +1522,7 @@ get_unaligned_address (rtx ref, int extra_offset)
 }
 
 /* On the Alpha, all (non-symbolic) constants except zero go into
-   a floating-point register via memory.  Note that we cannot 
+   a floating-point register via memory.  Note that we cannot
    return anything that is not a subset of CLASS, and that some
    symbolic constants cannot be dropped to memory.  */
 
@@ -1542,10 +1555,10 @@ alpha_preferred_reload_class(rtx x, enum reg_class class)
 /* Loading and storing HImode or QImode values to and from memory
    usually requires a scratch register.  The exceptions are loading
    QImode and HImode from an aligned address to a general register
-   unless byte instructions are permitted. 
+   unless byte instructions are permitted.
 
    We also cannot load an unaligned address or a paradoxical SUBREG
-   into an FP register. 
+   into an FP register.
 
    We also cannot do integral arithmetic into FP regs, as might result
    from register elimination into a DImode fp register.  */
@@ -1626,7 +1639,7 @@ alpha_set_memflags (rtx insn, rtx ref)
   if (GET_CODE (ref) != MEM)
     return;
 
-  /* This is only called from alpha.md, after having had something 
+  /* This is only called from alpha.md, after having had something
      generated from one of the insn patterns.  So if everything is
      zero, the pattern is already up-to-date.  */
   if (!MEM_VOLATILE_P (ref)
@@ -1682,7 +1695,7 @@ alpha_emit_set_const_1 (rtx target, enum machine_mode mode,
 	{
 	  /* We used to use copy_to_suggested_reg (GEN_INT (c), target, mode)
 	     but that meant that we can't handle INT_MIN on 32-bit machines
-	     (like NT/Alpha), because we recurse indefinitely through 
+	     (like NT/Alpha), because we recurse indefinitely through
 	     emit_move_insn to gen_movdi.  So instead, since we know exactly
 	     what we want, create it explicitly.  */
 
@@ -2333,7 +2346,7 @@ alpha_emit_conditional_branch (enum rtx_code code)
       else
 	{
 	  /* ??? We mark the branch mode to be CCmode to prevent the
-	     compare and branch from being combined, since the compare 
+	     compare and branch from being combined, since the compare
 	     insn follows IEEE rules that the branch does not.  */
 	  branch_mode = CCmode;
 	}
@@ -2738,7 +2751,7 @@ struct xfloating_op GTY(())
   rtx libcall;
 };
 
-static GTY(()) struct xfloating_op xfloating_ops[] = 
+static GTY(()) struct xfloating_op xfloating_ops[] =
 {
   { PLUS,		"_OtsAddX", "OTS$ADD_X", 0 },
   { MINUS,		"_OtsSubX", "OTS$SUB_X", 0 },
@@ -2832,7 +2845,7 @@ alpha_compute_xfloating_mode_arg (enum rtx_code code,
 
    Note that these functions do not follow normal calling conventions:
    TFmode arguments are passed in two integer registers (as opposed to
-   indirect); TFmode return values appear in R16+R17. 
+   indirect); TFmode return values appear in R16+R17.
 
    FUNC is the function to call.
    TARGET is where the output belongs.
@@ -2923,7 +2936,7 @@ alpha_emit_xfloating_arith (enum rtx_code code, rtx operands[])
   out_operands[0] = operands[1];
   out_operands[1] = operands[2];
   out_operands[2] = GEN_INT (mode);
-  alpha_emit_xfloating_libcall (func, operands[0], out_operands, 3,  
+  alpha_emit_xfloating_libcall (func, operands[0], out_operands, 3,
 				gen_rtx_fmt_ee (code, TFmode, operands[1],
 						operands[2]));
 }
@@ -3025,8 +3038,8 @@ alpha_split_tfmode_pair (rtx operands[4])
     abort ();
 }
 
-/* Implement negtf2 or abstf2.  Op0 is destination, op1 is source, 
-   op2 is a register containing the sign bit, operation is the 
+/* Implement negtf2 or abstf2.  Op0 is destination, op1 is source,
+   op2 is a register containing the sign bit, operation is the
    logical operation to be performed.  */
 
 void
@@ -3114,18 +3127,18 @@ alpha_expand_unaligned_load (rtx tgt, rtx mem, HOST_WIDE_INT size,
     mema = force_reg (Pmode, mema);
 
   /* AND addresses cannot be in any alias set, since they may implicitly
-     alias surrounding code.  Ideally we'd have some alias set that 
+     alias surrounding code.  Ideally we'd have some alias set that
      covered all types except those with alignment 8 or higher.  */
 
   tmp = change_address (mem, DImode,
-			gen_rtx_AND (DImode, 
+			gen_rtx_AND (DImode,
 				     plus_constant (mema, ofs),
 				     GEN_INT (-8)));
   set_mem_alias_set (tmp, 0);
   emit_move_insn (meml, tmp);
 
   tmp = change_address (mem, DImode,
-			gen_rtx_AND (DImode, 
+			gen_rtx_AND (DImode,
 				     plus_constant (mema, ofs + size - 1),
 				     GEN_INT (-8)));
   set_mem_alias_set (tmp, 0);
@@ -3153,7 +3166,7 @@ alpha_expand_unaligned_load (rtx tgt, rtx mem, HOST_WIDE_INT size,
 	 addr for the target, because addr is marked as a pointer and combine
 	 knows that pointers are always sign-extended 32 bit values.  */
       addr = expand_binop (DImode, ior_optab, extl, exth, tgt, 1, OPTAB_WIDEN);
-      addr = expand_binop (DImode, ashr_optab, addr, GEN_INT (48), 
+      addr = expand_binop (DImode, ashr_optab, addr, GEN_INT (48),
 			   addr, 1, OPTAB_WIDEN);
     }
   else
@@ -3225,7 +3238,7 @@ alpha_expand_unaligned_store (rtx dst, rtx src,
 			      HOST_WIDE_INT size, HOST_WIDE_INT ofs)
 {
   rtx dstl, dsth, addr, insl, insh, meml, memh, dsta;
-  
+
   dstl = gen_reg_rtx (DImode);
   dsth = gen_reg_rtx (DImode);
   insl = gen_reg_rtx (DImode);
@@ -3236,17 +3249,17 @@ alpha_expand_unaligned_store (rtx dst, rtx src,
     dsta = force_reg (Pmode, dsta);
 
   /* AND addresses cannot be in any alias set, since they may implicitly
-     alias surrounding code.  Ideally we'd have some alias set that 
+     alias surrounding code.  Ideally we'd have some alias set that
      covered all types except those with alignment 8 or higher.  */
 
   meml = change_address (dst, DImode,
-			 gen_rtx_AND (DImode, 
+			 gen_rtx_AND (DImode,
 				      plus_constant (dsta, ofs),
 				      GEN_INT (-8)));
   set_mem_alias_set (meml, 0);
 
   memh = change_address (dst, DImode,
-			 gen_rtx_AND (DImode, 
+			 gen_rtx_AND (DImode,
 				      plus_constant (dsta, ofs + size - 1),
 				      GEN_INT (-8)));
   set_mem_alias_set (memh, 0);
@@ -3340,7 +3353,7 @@ alpha_expand_unaligned_store (rtx dst, rtx src,
       dsth = expand_binop (DImode, ior_optab, insh, dsth, dsth, 0, OPTAB_WIDEN);
       dstl = expand_binop (DImode, ior_optab, insl, dstl, dstl, 0, OPTAB_WIDEN);
     }
- 
+
   if (WORDS_BIG_ENDIAN)
     {
       emit_move_insn (meml, dstl);
@@ -3388,7 +3401,7 @@ alpha_expand_unaligned_load_words (rtx *out_regs, rtx smem,
 
   if (ofs != 0)
     smem = adjust_address (smem, GET_MODE (smem), ofs);
-  
+
   /* Load up all of the source data.  */
   for (i = 0; i < words; ++i)
     {
@@ -3408,11 +3421,11 @@ alpha_expand_unaligned_load_words (rtx *out_regs, rtx smem,
   emit_move_insn (data_regs[words], tmp);
 
   /* Extract the half-word fragments.  Unfortunately DEC decided to make
-     extxh with offset zero a noop instead of zeroing the register, so 
+     extxh with offset zero a noop instead of zeroing the register, so
      we must take care of that edge condition ourselves with cmov.  */
 
   sreg = copy_addr_to_reg (smema);
-  areg = expand_binop (DImode, and_optab, sreg, GEN_INT (7), NULL, 
+  areg = expand_binop (DImode, and_optab, sreg, GEN_INT (7), NULL,
 		       1, OPTAB_WIDEN);
   if (WORDS_BIG_ENDIAN)
     emit_move_insn (sreg, plus_constant (sreg, 7));
@@ -3467,7 +3480,7 @@ alpha_expand_unaligned_store_words (rtx *data_regs, rtx dmem,
       ins_tmps[i] = gen_reg_rtx(DImode);
   st_tmp_1 = gen_reg_rtx(DImode);
   st_tmp_2 = gen_reg_rtx(DImode);
-  
+
   if (ofs != 0)
     dmem = adjust_address (dmem, GET_MODE (dmem), ofs);
 
@@ -3575,7 +3588,7 @@ alpha_expand_block_move (rtx operands[])
   rtx data_regs[2 * MAX_MOVE_WORDS + 16];
   rtx tmp;
   unsigned int i, words, ofs, nregs = 0;
-  
+
   if (orig_bytes <= 0)
     return 1;
   else if (orig_bytes > MAX_MOVE_WORDS * UNITS_PER_WORD)
@@ -3603,7 +3616,7 @@ alpha_expand_block_move (rtx operands[])
 	    src_align = 16;
 	}
     }
-	
+
   tmp = XEXP (orig_dst, 0);
   if (GET_CODE (tmp) == REG)
     dst_align = MAX (dst_align, REGNO_POINTER_ALIGN (REGNO (tmp)));
@@ -3767,7 +3780,7 @@ alpha_expand_block_move (rtx operands[])
       else
         alpha_expand_unaligned_store_words (data_regs + i, orig_dst,
 					    words, ofs);
-     
+
       i += words;
       ofs += words * 8;
     }
@@ -3822,7 +3835,7 @@ alpha_expand_block_clear (rtx operands[])
   rtx orig_dst = operands[0];
   rtx tmp;
   int i, words, ofs = 0;
-  
+
   if (orig_bytes <= 0)
     return 1;
   if (orig_bytes > MAX_MOVE_WORDS * UNITS_PER_WORD)
@@ -4229,7 +4242,7 @@ struct machine_function GTY(())
 static struct machine_function *
 alpha_init_machine_status (void)
 {
-  return ((struct machine_function *) 
+  return ((struct machine_function *)
 		ggc_alloc_cleared (sizeof (struct machine_function)));
 }
 
@@ -4372,7 +4385,7 @@ get_round_mode_suffix (void)
 	{
 	case ALPHA_FPRM_NORM:
 	  return NULL;
-	case ALPHA_FPRM_MINF: 
+	case ALPHA_FPRM_MINF:
 	  return "m";
 	case ALPHA_FPRM_CHOP:
 	  return "c";
@@ -4661,7 +4674,7 @@ print_operand (FILE *file, rtx x, int code)
       if (GET_CODE (x) != CONST_INT
 	  || (unsigned HOST_WIDE_INT) INTVAL (x) >= (WORDS_BIG_ENDIAN
 						     ? 56
-						     : 64)  
+						     : 64)
 	  || (INTVAL (x) & 7) != 0)
 	output_operand_lossage ("invalid %%s value");
 
@@ -4825,7 +4838,7 @@ print_operand_address (FILE *file, rtx addr)
 
       if (offset)
 	fprintf (file, "+" HOST_WIDE_INT_PRINT_DEC, offset);
-      
+
       addr = XEXP (addr, 0);
       if (GET_CODE (addr) == REG)
 	basereg = REGNO (addr);
@@ -4876,7 +4889,7 @@ print_operand_address (FILE *file, rtx addr)
    code.  CXT is an RTX for the static chain value for the function.
 
    The three offset parameters are for the individual template's
-   layout.  A JMPOFS < 0 indicates that the trampoline does not 
+   layout.  A JMPOFS < 0 indicates that the trampoline does not
    contain instructions at all.
 
    We assume here that a function will be called many more times than
@@ -5110,7 +5123,7 @@ alpha_return_in_memory (tree type, tree fndecl ATTRIBUTE_UNUSED)
       break;
 
     default:
-      /* ??? We get called on all sorts of random stuff from 
+      /* ??? We get called on all sorts of random stuff from
 	 aggregate_value_p.  We can't abort, but it's not clear
 	 what's safe to return.  Pretend it's a struct I guess.  */
       return true;
@@ -5190,7 +5203,7 @@ function_value (tree valtype, tree func ATTRIBUTE_UNUSED,
   return gen_rtx_REG (mode, regnum);
 }
 
-/* TCmode complex values are passed by invisible reference.  We 
+/* TCmode complex values are passed by invisible reference.  We
    should not split these values.  */
 
 static bool
@@ -5336,7 +5349,7 @@ alpha_va_start (tree valist, rtx nextarg ATTRIBUTE_UNUSED)
      in order to account for the integer arg registers which are counted
      in argsize above, but which are not actually stored on the stack.
      Must further be careful here about structures straddling the last
-     integer argument register; that futzes with pretend_args_size, 
+     integer argument register; that futzes with pretend_args_size,
      which changes the meaning of AP.  */
 
   if (NUM_ARGS <= 6)
@@ -5869,7 +5882,7 @@ alpha_sa_mask (unsigned long *imaskP, unsigned long *fmaskP)
 	 zero in the prologue of _Unwind_RaiseException et al.  */
       imask |= 1UL << 31;
     }
-     
+
   /* If any register spilled, then spill the return address also.  */
   /* ??? This is required by the Digital stack unwind specification
      and isn't needed if we're doing Dwarf2 unwinding.  */
@@ -6070,7 +6083,7 @@ alpha_does_function_need_gp (void)
   if (current_function_has_nonlocal_goto)
     return 1;
 
-  /* If we need a GP (we have a LDSYM insn or a CALL_INSN), load it first. 
+  /* If we need a GP (we have a LDSYM insn or a CALL_INSN), load it first.
      Even if we are a static function, we still need to do this in case
      our address is taken and passed to something like qsort.  */
 
@@ -6159,7 +6172,7 @@ alpha_expand_prologue (void)
 
   frame_size = get_frame_size ();
   if (TARGET_ABI_OPEN_VMS)
-    frame_size = ALPHA_ROUND (sa_size 
+    frame_size = ALPHA_ROUND (sa_size
 			      + (alpha_procedure_type == PT_STACK ? 8 : 0)
 			      + frame_size
 			      + current_function_pretend_args_size);
@@ -6205,7 +6218,7 @@ alpha_expand_prologue (void)
      4096 bytes (we can probably get away without the latter test) and
      every 8192 bytes in between.  If the frame size is > 32768, we
      do this in a loop.  Otherwise, we generate the explicit probe
-     instructions. 
+     instructions.
 
      Note that we are only allowed to adjust sp once in the prologue.  */
 
@@ -6266,7 +6279,7 @@ alpha_expand_prologue (void)
 	  /* For NT stack unwind (done by 'reverse execution'), it's
 	     not OK to take the result of a loop, even though the value
 	     is already in ptr, so we reload it via a single operation
-	     and subtract it to sp. 
+	     and subtract it to sp.
 
 	     Yes, that's correct -- we have to reload the whole constant
 	     into a temporary via ldah+lda then subtract from sp.  */
@@ -6311,14 +6324,14 @@ alpha_expand_prologue (void)
 
 	  if (low + sa_size <= 0x8000)
 	    bias = reg_offset - low, reg_offset = low;
-	  else 
+	  else
 	    bias = reg_offset, reg_offset = 0;
 
 	  sa_reg = gen_rtx_REG (DImode, 24);
 	  FRP (emit_insn (gen_adddi3 (sa_reg, stack_pointer_rtx,
 				      GEN_INT (bias))));
 	}
-    
+
       /* Save regs in stack order.  Beginning with VMS PV.  */
       if (TARGET_ABI_OPEN_VMS && alpha_procedure_type == PT_STACK)
 	{
@@ -6421,12 +6434,12 @@ alpha_expand_prologue (void)
       if (current_function_outgoing_args_size != 0)
 	{
 	  rtx seq
-	    = emit_move_insn (stack_pointer_rtx, 
+	    = emit_move_insn (stack_pointer_rtx,
 			      plus_constant
 			      (hard_frame_pointer_rtx,
 			       - (ALPHA_ROUND
 				  (current_function_outgoing_args_size))));
-	  
+
 	  /* Only set FRAME_RELATED_P on the stack adjustment we just emitted
 	     if ! frame_pointer_needed. Setting the bit will change the CFA
 	     computation rule to use sp again, which would be wrong if we had
@@ -6466,7 +6479,7 @@ alpha_expand_prologue (void)
      (clobber:BLK (scratch)), but this doesn't work for fp insns.  So we
      have to prevent all such scheduling with a blockage.
 
-     Linux, on the other hand, never bothered to implement OSF/1's 
+     Linux, on the other hand, never bothered to implement OSF/1's
      exception handling, and so doesn't care about such things.  Anyone
      planning to use dwarf2 frame-unwind info can also omit the blockage.  */
 
@@ -6504,7 +6517,7 @@ alpha_start_function (FILE *file, const char *fnname,
 
   frame_size = get_frame_size ();
   if (TARGET_ABI_OPEN_VMS)
-    frame_size = ALPHA_ROUND (sa_size 
+    frame_size = ALPHA_ROUND (sa_size
 			      + (alpha_procedure_type == PT_STACK ? 8 : 0)
 			      + frame_size
 			      + current_function_pretend_args_size);
@@ -6675,7 +6688,7 @@ alpha_output_function_end_prologue (FILE *file)
 
 /* Write function epilogue.  */
 
-/* ??? At some point we will want to support full unwind, and so will 
+/* ??? At some point we will want to support full unwind, and so will
    need to mark the epilogue as well.  At the moment, we just confuse
    dwarf2out.  */
 #undef FRP
@@ -6703,7 +6716,7 @@ alpha_expand_epilogue (void)
 
   frame_size = get_frame_size ();
   if (TARGET_ABI_OPEN_VMS)
-    frame_size = ALPHA_ROUND (sa_size 
+    frame_size = ALPHA_ROUND (sa_size
 			      + (alpha_procedure_type == PT_STACK ? 8 : 0)
 			      + frame_size
 			      + current_function_pretend_args_size);
@@ -6757,7 +6770,7 @@ alpha_expand_epilogue (void)
 
 	  if (low + sa_size <= 0x8000)
 	    bias = reg_offset - low, reg_offset = low;
-	  else 
+	  else
 	    bias = reg_offset, reg_offset = 0;
 
 	  sa_reg = gen_rtx_REG (DImode, 22);
@@ -6765,7 +6778,7 @@ alpha_expand_epilogue (void)
 
 	  FRP (emit_move_insn (sa_reg, sa_reg_exp));
 	}
-	  
+
       /* Restore registers in order, excepting a true frame pointer.  */
 
       mem = gen_rtx_MEM (DImode, plus_constant (sa_reg, reg_offset));
@@ -6920,7 +6933,7 @@ alpha_expand_epilogue (void)
 	FRP (emit_move_insn (stack_pointer_rtx,
 			     gen_rtx_PLUS (DImode, sp_adj1, sp_adj2)));
     }
-  else 
+  else
     {
       if (TARGET_ABI_OPEN_VMS && alpha_procedure_type == PT_REGISTER)
         {
@@ -7266,7 +7279,7 @@ summarize_insn (rtx x, struct shadow_summary *sum, int set)
     case NEG:  case NOT:  case SIGN_EXTEND:  case ZERO_EXTEND:
     case TRUNCATE:  case FLOAT_EXTEND:  case FLOAT_TRUNCATE:  case FLOAT:
     case FIX:  case UNSIGNED_FLOAT:  case UNSIGNED_FIX:  case ABS:
-    case SQRT:  case FFS: 
+    case SQRT:  case FFS:
       summarize_insn (XEXP (x, 0), sum, 0);
       break;
 
@@ -7339,7 +7352,7 @@ alpha_handle_trap_shadows (void)
   shadow.used.fp = 0;
   shadow.used.mem = 0;
   shadow.defd = shadow.used;
-  
+
   for (i = get_insns (); i ; i = NEXT_INSN (i))
     {
       if (GET_CODE (i) == NOTE)
@@ -7571,9 +7584,9 @@ alphaev5_insn_pipe (rtx insn)
     }
 }
 
-/* IN_USE is a mask of the slots currently filled within the insn group. 
+/* IN_USE is a mask of the slots currently filled within the insn group.
    The mask bits come from alphaev4_pipe above.  If EV4_IBX is set, then
-   the insn in EV4_IB0 can be swapped by the hardware into EV4_IB1. 
+   the insn in EV4_IB0 can be swapped by the hardware into EV4_IB1.
 
    LEN is, of course, the length of the group in bytes.  */
 
@@ -7641,7 +7654,7 @@ alphaev4_next_group (rtx insn, int *pin_use, int *plen)
 	  abort();
 	}
       len += 4;
-      
+
       /* Haifa doesn't do well scheduling branches.  */
       if (GET_CODE (insn) == JUMP_INSN)
 	goto next_and_done;
@@ -7669,9 +7682,9 @@ alphaev4_next_group (rtx insn, int *pin_use, int *plen)
   return insn;
 }
 
-/* IN_USE is a mask of the slots currently filled within the insn group. 
+/* IN_USE is a mask of the slots currently filled within the insn group.
    The mask bits come from alphaev5_pipe above.  If EV5_E01 is set, then
-   the insn in EV5_E0 can be swapped by the hardware into EV5_E1. 
+   the insn in EV5_E0 can be swapped by the hardware into EV5_E1.
 
    LEN is, of course, the length of the group in bytes.  */
 
@@ -7708,9 +7721,9 @@ alphaev5_next_group (rtx insn, int *pin_use, int *plen)
 	    len = get_attr_length (insn);
 	  goto next_and_done;
 
-	/* ??? Most of the places below, we would like to abort, as 
-	   it would indicate an error either in Haifa, or in the 
-	   scheduling description.  Unfortunately, Haifa never 
+	/* ??? Most of the places below, we would like to abort, as
+	   it would indicate an error either in Haifa, or in the
+	   scheduling description.  Unfortunately, Haifa never
 	   schedules the last instruction of the BB, so we don't
 	   have an accurate TI bit to go off.  */
 	case EV5_E01:
@@ -7770,7 +7783,7 @@ alphaev5_next_group (rtx insn, int *pin_use, int *plen)
 	  abort();
 	}
       len += 4;
-      
+
       /* Haifa doesn't do well scheduling branches.  */
       /* ??? If this is predicted not-taken, slotting continues, except
 	 that no more IBR, FBR, or JSR insns may be slotted.  */
@@ -7969,7 +7982,7 @@ alpha_align_insns (unsigned int max_align,
 	  else
 	    where = i;
 
-	  do 
+	  do
 	    emit_insn_before ((*next_nop)(&prev_in_use), where);
 	  while (--nop_count);
 	  ofs = 0;
@@ -8033,7 +8046,7 @@ alpha_file_start (void)
   if (TARGET_SUPPORT_ARCH | TARGET_BWX | TARGET_MAX | TARGET_FIX | TARGET_CIX)
     fprintf (asm_out_file,
 	     "\t.arch %s\n",
-	     TARGET_CPU_EV6 ? "ev6"	   
+	     TARGET_CPU_EV6 ? "ev6"
 	     : (TARGET_CPU_EV5
 		? (TARGET_MAX ? "pca56" : TARGET_BWX ? "ev56" : "ev5")
 		: "ev4"));
@@ -8141,7 +8154,7 @@ alpha_need_linkage (const char *name, int is_local)
       if (!alpha_funcs_tree)
         alpha_funcs_tree = splay_tree_new_ggc ((splay_tree_compare_fn)
 					       splay_tree_compare_pointers);
-    
+
       cfaf = (struct alpha_funcs *) ggc_alloc (sizeof (struct alpha_funcs));
 
       cfaf->links = 0;
@@ -8271,7 +8284,7 @@ alpha_use_linkage (rtx linkage, tree cfundecl, int lflag, int rflag)
     al->rkind = KIND_CODEADDR;
   else
     al->rkind = KIND_LINKAGE;
-      
+
   if (lflag)
     return gen_rtx_MEM (Pmode, plus_constant (al->linkage, 8));
   else
@@ -8394,7 +8407,7 @@ vms_asm_named_section (const char *name, unsigned int flags)
 
 /* Record an element in the table of global constructors.  SYMBOL is
    a SYMBOL_REF of the function to be called; PRIORITY is a number
-   between 0 and MAX_INIT_PRIORITY.  
+   between 0 and MAX_INIT_PRIORITY.
 
    Differs from default_ctors_section_asm_out_constructor in that the
    width of the .ctors entry is always 64 bits, rather than the 32 bits
@@ -8462,13 +8475,13 @@ int
 unicosmk_initial_elimination_offset (int from, int to)
 {
   int fixed_size;
-  
+
   fixed_size = alpha_sa_size();
   if (fixed_size != 0)
     fixed_size += 48;
 
   if (from == FRAME_POINTER_REGNUM && to == HARD_FRAME_POINTER_REGNUM)
-    return -fixed_size; 
+    return -fixed_size;
   else if (from == ARG_POINTER_REGNUM && to == HARD_FRAME_POINTER_REGNUM)
     return 0;
   else if (from == FRAME_POINTER_REGNUM && to == STACK_POINTER_REGNUM)
@@ -8476,7 +8489,7 @@ unicosmk_initial_elimination_offset (int from, int to)
 	    + ALPHA_ROUND (get_frame_size()));
   else if (from == ARG_POINTER_REGNUM && to == STACK_POINTER_REGNUM)
     return (ALPHA_ROUND (fixed_size)
-	    + ALPHA_ROUND (get_frame_size() 
+	    + ALPHA_ROUND (get_frame_size()
 			   + current_function_outgoing_args_size));
   else
     abort ();
@@ -8493,7 +8506,7 @@ unicosmk_output_module_name (FILE *file)
   unsigned len = strlen (name);
   char *clean_name = alloca (len + 2);
   char *ptr = clean_name;
-  
+
   /* CAM only accepts module names that start with a letter or '$'. We
      prefix the module name with a '$' if necessary.  */
 
@@ -8563,7 +8576,7 @@ unicosmk_unique_section (tree decl, int reloc ATTRIBUTE_UNUSED)
   const char *name;
   int len;
 
-  if (!decl) 
+  if (!decl)
     abort ();
 
   name = IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (decl));
@@ -8574,8 +8587,8 @@ unicosmk_unique_section (tree decl, int reloc ATTRIBUTE_UNUSED)
     {
       char *string;
 
-      /* It is essential that we prefix the section name here because 
-	 otherwise the section names generated for constructors and 
+      /* It is essential that we prefix the section name here because
+	 otherwise the section names generated for constructors and
 	 destructors confuse collect2.  */
 
       string = alloca (len + 6);
@@ -8636,7 +8649,7 @@ unicosmk_insert_attributes (tree decl, tree *attr_ptr ATTRIBUTE_UNUSED)
 
 /* Output an alignment directive. We have to use the macro 'gcc@code@align'
    in code sections because .align fill unused space with zeroes.  */
-      
+
 void
 unicosmk_output_align (FILE *file, int align)
 {
@@ -8654,10 +8667,10 @@ void
 unicosmk_defer_case_vector (rtx lab, rtx vec)
 {
   struct machine_function *machine = cfun->machine;
-  
+
   vec = gen_rtx_EXPR_LIST (VOIDmode, lab, vec);
   machine->addr_list = gen_rtx_EXPR_LIST (VOIDmode, vec,
-					  machine->addr_list); 
+					  machine->addr_list);
 }
 
 /* Output a case vector.  */
@@ -8703,7 +8716,7 @@ unicosmk_output_deferred_case_vectors (FILE *file)
 static const char *
 unicosmk_ssib_name (void)
 {
-  /* This is ok since CAM won't be able to deal with names longer than that 
+  /* This is ok since CAM won't be able to deal with names longer than that
      anyway.  */
 
   static char name[256];
@@ -8731,8 +8744,8 @@ unicosmk_ssib_name (void)
   return name;
 }
 
-/* Set up the dynamic subprogram information block (DSIB) and update the 
-   frame pointer register ($15) for subroutines which have a frame. If the 
+/* Set up the dynamic subprogram information block (DSIB) and update the
+   frame pointer register ($15) for subroutines which have a frame. If the
    subroutine doesn't have a frame, simply increment $15.  */
 
 static void
@@ -8889,7 +8902,7 @@ char *
 unicosmk_text_section (void)
 {
   static int count = 0;
-  sprintf (unicosmk_section_buf, "\t.endp\n\n\t.psect\tgcc@text___%d,code", 
+  sprintf (unicosmk_section_buf, "\t.endp\n\n\t.psect\tgcc@text___%d,code",
 				 count++);
   return unicosmk_section_buf;
 }
@@ -8898,7 +8911,7 @@ char *
 unicosmk_data_section (void)
 {
   static int count = 1;
-  sprintf (unicosmk_section_buf, "\t.endp\n\n\t.psect\tgcc@data___%d,data", 
+  sprintf (unicosmk_section_buf, "\t.endp\n\n\t.psect\tgcc@data___%d,data",
 				 count++);
   return unicosmk_section_buf;
 }
@@ -8952,14 +8965,14 @@ unicosmk_output_externs (FILE *file)
   len = strlen (user_label_prefix);
   for (p = unicosmk_extern_head; p != 0; p = p->next)
     {
-      /* We have to strip the encoding and possibly remove user_label_prefix 
+      /* We have to strip the encoding and possibly remove user_label_prefix
 	 from the identifier in order to handle -fleading-underscore and
 	 explicit asm names correctly (cf. gcc.dg/asm-names-1.c).  */
       real_name = default_strip_name_encoding (p->name);
       if (len && p->name[0] == '*'
 	  && !memcmp (real_name, user_label_prefix, len))
 	real_name += len;
-	
+
       name_tree = get_identifier (real_name);
       if (! TREE_ASM_WRITTEN (name_tree))
 	{
@@ -8970,7 +8983,7 @@ unicosmk_output_externs (FILE *file)
 	}
     }
 }
-      
+
 /* Record an extern.  */
 
 void
@@ -8998,10 +9011,10 @@ struct unicosmk_dex {
   const char *name;
 };
 
-/* List of identifiers which have been replaced by DEX expressions. The DEX 
+/* List of identifiers which have been replaced by DEX expressions. The DEX
    number is determined by the position in the list.  */
 
-static struct unicosmk_dex *unicosmk_dex_list = NULL; 
+static struct unicosmk_dex *unicosmk_dex_list = NULL;
 
 /* The number of elements in the DEX list.  */
 
@@ -9044,7 +9057,7 @@ unicosmk_need_dex (rtx x)
   struct unicosmk_dex *dex;
   const char *name;
   int i;
-  
+
   if (GET_CODE (x) != SYMBOL_REF)
     return 0;
 
@@ -9059,7 +9072,7 @@ unicosmk_need_dex (rtx x)
         return i;
       --i;
     }
-      
+
   dex = (struct unicosmk_dex *) xmalloc (sizeof (struct unicosmk_dex));
   dex->name = name;
   dex->next = unicosmk_dex_list;
@@ -9090,13 +9103,13 @@ unicosmk_output_dex (FILE *file)
       putc ('\n', file);
       --i;
     }
-  
+
   fprintf (file, "\t.dexend\n");
 }
 
 /* Output text that to appear at the beginning of an assembler file.  */
 
-static void 
+static void
 unicosmk_file_start (void)
 {
   int i;
@@ -9159,7 +9172,7 @@ unicosmk_file_end (void)
 
   unicosmk_output_externs (asm_out_file);
 
-  /* Output dex definitions used for functions whose names conflict with 
+  /* Output dex definitions used for functions whose names conflict with
      register names.  */
 
   unicosmk_output_dex (asm_out_file);
@@ -9349,6 +9362,8 @@ alpha_init_libfuncs (void)
 #define TARGET_SPLIT_COMPLEX_ARG alpha_split_complex_arg
 #undef TARGET_GIMPLIFY_VA_ARG_EXPR
 #define TARGET_GIMPLIFY_VA_ARG_EXPR alpha_gimplify_va_arg
+#undef TARGET_VECTOR_MODE_SUPPORTED_P
+#define TARGET_VECTOR_MODE_SUPPORTED_P alpha_vector_mode_supported_p
 
 #undef TARGET_BUILD_BUILTIN_VA_LIST
 #define TARGET_BUILD_BUILTIN_VA_LIST alpha_build_builtin_va_list
@@ -9357,4 +9372,3 @@ struct gcc_target targetm = TARGET_INITIALIZER;
 
 
 #include "gt-alpha.h"
-

@@ -1303,14 +1303,6 @@ extern char sh_additional_register_names[ADDREGNAMES_SIZE] \
    : (REGNO) == FPSCR_REG ? (MODE) == PSImode \
    : 1)
 
-/* Value is 1 if MODE is a supported vector mode.  */
-#define VECTOR_MODE_SUPPORTED_P(MODE) \
-  ((TARGET_FPU_ANY \
-    && ((MODE) == V2SFmode || (MODE) == V4SFmode || (MODE) == V16SFmode)) \
-   || (TARGET_SHMEDIA \
-       && ((MODE) == V8QImode || (MODE) == V2HImode || (MODE) == V4HImode \
-	   || (MODE) == V2SImode)))
-
 /* Value is 1 if it is a good idea to tie two pseudo registers
    when one has mode MODE1 and one has mode MODE2.
    If HARD_REGNO_MODE_OK could produce different values for MODE1 and MODE2,

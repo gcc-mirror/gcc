@@ -9666,7 +9666,7 @@ mov.l\\t1f,r0\\n\\
 	(match_operand 1 "sh_rep_vec" ""))]
   "TARGET_SHMEDIA && reload_completed
    && GET_MODE (operands[0]) == GET_MODE (operands[1])
-   && VECTOR_MODE_SUPPORTED_P (GET_MODE (operands[0]))
+   && sh_vector_mode_supported_p (GET_MODE (operands[0]))
    && GET_MODE_SIZE (GET_MODE (operands[0])) == 8
    && (XVECEXP (operands[1], 0, 0) != const0_rtx
        || XVECEXP (operands[1], 0, 1) != const0_rtx)
@@ -9710,7 +9710,7 @@ mov.l\\t1f,r0\\n\\
 	(match_operand 1 "sh_const_vec" ""))]
   "TARGET_SHMEDIA && reload_completed
    && GET_MODE (operands[0]) == GET_MODE (operands[1])
-   && VECTOR_MODE_SUPPORTED_P (GET_MODE (operands[0]))
+   && sh_vector_mode_supported_p (GET_MODE (operands[0]))
    && operands[1] != CONST0_RTX (GET_MODE (operands[1]))"
   [(set (match_dup 0) (match_dup 1))]
   "
@@ -10946,4 +10946,3 @@ mov.l\\t1f,r0\\n\\
   return \"\";
 }"
   [(set_attr "type" "other")])
-
