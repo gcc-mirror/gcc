@@ -146,7 +146,7 @@ link between two basic blocks: the @code{src} member of an edge
 points to the predecessor basic block of the @code{dest} basic block.
 The members @code{pred} and @code{succ} of the @code{basic_block} data
 type point to single linked lists of edges to the predecessors and
-successorts of the block.  The edges are linked via the
+successors of the block.  The edges are linked via the
 @code{succ_next} and @code{pred_next} members of the @code{edge} data
 type.
 
