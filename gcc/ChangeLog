@@ -1,5 +1,10 @@
 Thu Feb 25 23:33:06 1999  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
+	* cppexp.c (left_shift, right_shift, parse_charconst, COMPARE,
+	cpp_parse_expr): Replace uses of long/HOST_BITS_PER_LONG with
+	HOST_WIDEST_INT/HOST_BITS_PER_WIDEST_INT.
+
+
 	* Makefile.in (cppmain.o, cpplib.o, cpphash.o, cppalloc.o,
  	cpperror.o, cppexp.o, cppfiles.o, cppinit.o, fix-header.o,
  	scan-decls.o): Don't depend on machmode.h.
