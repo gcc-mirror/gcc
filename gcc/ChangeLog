@@ -1,3 +1,12 @@
+Wed Nov  3 23:05:14 1999  Mark Mitchell  <mark@codesourcery.com>
+
+	* flags.h (flag_renumber_insns): Declare.
+	* emit-rtl.c (renumber_insns): Check flag_renumber_insns.  Print
+	renumbering table.
+	* rtl.h (renumber_insns): Change prototype.
+	* toplev.c (flag_renumber_insns): Define.
+	(rest_of_compilation): Pass rtl_dump_file to flag_renumber_insns.
+	
 Wed Nov  3 15:11:27 1999  David S. Miller  <davem@redhat.com>
 
 	* config/sparc/sparc.md: Remove insn type fpsqrt, add fpsqrts

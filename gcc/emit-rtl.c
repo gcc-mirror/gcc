@@ -1898,21 +1898,33 @@ get_max_uid ()
   return cur_insn_uid;
 }
 
+/* Renumber instructions so that no instruction UIDs are wasted.  */
+
 void
-renumber_insns ()
+renumber_insns (stream)
+     FILE *stream;
 {
   rtx insn;
   int old_max_uid = cur_insn_uid;
 
+  /* If we're not supposed to renumber instructions, don't.  */
+  if (!flag_renumber_insns)
+    return;
+
   /* If there aren't that many instructions, then it's not really
      worth renumbering them.  */
-  if (get_max_uid () < 25000)
+  if (flag_renumber_insns == 1 && get_max_uid () < 25000)
     return;
 
   cur_insn_uid = 1;
 
   for (insn = get_insns (); insn; insn = NEXT_INSN (insn))
-    INSN_UID (insn) = cur_insn_uid++;
+    {
+      if (stream)
+	fprintf (stream, "Renumbering insn %d to %d\n", 
+		 INSN_UID (insn), cur_insn_uid);
+      INSN_UID (insn) = cur_insn_uid++;
+    }
 }
 
 /* Return the next insn.  If it is a SEQUENCE, return the first insn
@@ -2593,7 +2605,6 @@ remove_unncessary_notes ()
 {
   rtx insn;
   rtx next;
-  varray_type block_stack;
 
   /* Remove NOTE_INSN_DELETED notes.  We must not remove the first
      instruction in the function because the compiler depends on the

@@ -771,6 +771,11 @@ int flag_bounded_pointers = 0;
    For CHILL: defaults to off.  */
 int flag_bounds_check = 0;
 
+/* If one, renumber instruction UIDs to reduce the number of
+   unused UIDs if there are a lot of instructions.  If greater than
+   one, unconditionally renumber instruction UIDs.  */
+int flag_renumber_insns = 1;
+
 /* Values of the -falign-* flags: how much to align labels in code. 
    0 means `use default', 1 means `don't align'.  
    For each variable, there is an _log variant which is the power
@@ -3776,6 +3781,17 @@ rest_of_compilation (decl)
   TIMEVAR (jump_time, jump_optimize (insns, !JUMP_CROSS_JUMP, !JUMP_NOOP_MOVES,
 				     JUMP_AFTER_REGSCAN));
 
+  /* Jump optimization, and the removal of NULL pointer checks, may
+     have reduced the number of instructions substantially.  CSE, and
+     future passes, allocate arrays whose dimensions involve the maximum
+     instruction UID, so if we can reduce the maximum UID we'll save big on
+     memory.  */
+  renumber_insns (rtl_dump_file);
+
+  /* Dump rtl code after jump, if we are doing that.  */
+  if (jump_opt_dump)
+    close_dump_file (print_rtl, insns);
+
   /* Now is when we stop if -fsyntax-only and -Wreturn-type.  */
   if (rtl_dump_and_exit || flag_syntax_only || DECL_DEFER_OUTPUT (decl))
     goto exit_rest_of_compilation;
@@ -3784,19 +3800,8 @@ rest_of_compilation (decl)
   if (flag_delete_null_pointer_checks)
     TIMEVAR (jump_time, delete_null_pointer_checks (get_insns ()));
 
-  /* Dump rtl code after jump, if we are doing that.  */
-  if (jump_opt_dump)
-    close_dump_file (print_rtl, insns);
-
   if (ggc_p)
     ggc_collect ();
-
-  /* Jump optimization, and the removal of NULL pointer checks, may
-     have reduced the number of instructions substantially.  CSE, and
-     future passes, allocate arrays whose dimensions involve the maximum
-     instruction UID, so if we can reduce the maximum UID we'll save big on
-     memory.  */
-  renumber_insns ();
 
   /* Perform common subexpression elimination.
      Nonzero value from `cse_main' means that jumps were simplified
@@ -3832,18 +3837,17 @@ rest_of_compilation (decl)
       if (flag_delete_null_pointer_checks)
 	TIMEVAR (jump_time, delete_null_pointer_checks (get_insns ()));
 
-      /* Dump rtl code after cse, if we are doing that.  */
+      /* The second pass of jump optimization is likely to have
+         removed a bunch more instructions.  */
+      renumber_insns (rtl_dump_file);
 
+      /* Dump rtl code after cse, if we are doing that.  */
       if (cse_dump)
 	{
 	  close_dump_file (print_rtl, insns);
 	  if (graph_dump_format != no_graph)
 	    print_rtl_graph_with_bb (dump_base_name, ".02.cse", insns);
 	}
-
-      /* The second pass of jump optimization is likely to have
-         removed a bunch more instructions.  */
-      renumber_insns ();
     }
 
   purge_addressof (insns);
@@ -3970,7 +3974,6 @@ rest_of_compilation (decl)
 	}
 
       /* Dump rtl code after cse, if we are doing that.  */
-
       if (cse2_dump)
 	{
 	  close_dump_file (print_rtl, insns);
