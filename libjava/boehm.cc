@@ -368,28 +368,10 @@ _Jv_GCTotalMemory (void)
   return GC_get_heap_size ();
 }
 
-/* Sum size of each hblk.  */
-static void
-sum_blocks (struct hblk *h, word arg)
-{
-  long *sump = (long *) arg;
-  /* This evil computation is from boehm-gc/checksums.c.  */
-  hdr *hhdr = HDR (h);
-  int bytes = WORDS_TO_BYTES (hhdr->hb_sz);
-  bytes += HDR_BYTES + HBLKSIZE - 1;
-  bytes &= ~ (HBLKSIZE - 1);
-  *sump += bytes;
-}
-
-/* This turns out to be expensive to implement.  For now, we don't
-   care.  We could make it less expensive, perhaps, but that would
-   require some changes to the collector.  */
 long
 _Jv_GCFreeMemory (void)
 {
-  long sum = 0;
-  GC_apply_to_all_blocks (sum_blocks, &sum);
-  return sum;
+  return GC_get_free_bytes ();
 }
 
 void
@@ -422,6 +404,8 @@ _Jv_InitGC (void)
       return;
     }
   initialized = 1;
+
+  GC_java_finalization = 1;
 
   // Set up state for marking and allocation of Java objects.
   obj_free_list = (ptr_t *) GC_generic_malloc_inner ((MAXOBJSZ + 1)
