@@ -1010,8 +1010,8 @@ $(srcdir)/objc-parse.c : $(srcdir)/objc-parse.y
 $(srcdir)/objc-parse.y: $(srcdir)/c-parse.in
 	sed -e "/^ifc$$/,/^end ifc$$/d" \
 	  -e "/^ifobjc$$/d" -e "/^end ifobjc$$/d" \
-	  $(srcdir)/c-parse.in >tmp-objc-parse.y
-	$(srcdir)/move-if-change tmp-objc-parse.y $(srcdir)/objc-parse.y
+	  $(srcdir)/c-parse.in >tmp-objc-prse.y
+	$(srcdir)/move-if-change tmp-objc-prs.y $(srcdir)/objc-parse.y
 
 objc-act.o : objc-act.c $(CONFIG_H) $(TREE_H) $(RTL_H) c-tree.h c-lex.h \
    flags.h objc-act.h input.h function.h $(srcdir)/c-parse.h
@@ -1790,7 +1790,7 @@ mostlyclean: bytecode.mostlyclean lang.mostlyclean
 # Delete other temporary files.
 	-rm -f tmp-float.h tmp-gcc.xtar.gz
 	-rm -f tmp-foo1 tmp-foo2 tmp-proto.* tmp-unproto.1 tmp-SYSCALLS.s
-	-rm -f tmp-c-parse.y tmp-objc-parse.y tmp-gperf.h
+	-rm -f tmp-c-parse.y tmp-objc-prs.y tmp-gperf.h
 	-rm -f tmp-specs t-float.h-cross tmp-xlimits.h
 	-rm -f tmp-fixtmp.c xsys-protos.hT
 # Delete the stamp files.
