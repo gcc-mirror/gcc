@@ -825,10 +825,12 @@ can_combine_p (insn, i3, pred, succ, pdest, psrc)
 	 If the insns are adjacent, a use can't cross a set even though we
 	 think it might (this can happen for a sequence of insns each setting
 	 the same destination; reg_last_set of that register might point to
-	 a NOTE).  Also, don't move a volatile asm across any other insns.  */
+	 a NOTE).  Also, don't move a volatile asm or UNSPEC_VOLATILE across
+	 any other insns.  */
       || (! all_adjacent
 	  && (use_crosses_set_p (src, INSN_CUID (insn))
-	      || (GET_CODE (src) == ASM_OPERANDS && MEM_VOLATILE_P (src))))
+	      || (GET_CODE (src) == ASM_OPERANDS && MEM_VOLATILE_P (src))
+	      || GET_CODE (src) == UNSPEC_VOLATILE))
       /* If there is a REG_NO_CONFLICT note for DEST in I3 or SUCC, we get
 	 better register allocation by not doing the combine.  */
       || find_reg_note (i3, REG_NO_CONFLICT, dest)
