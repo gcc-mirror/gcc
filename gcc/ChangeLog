@@ -1,3 +1,10 @@
+2004-01-12  Markus F.X.J. Oberhumer  <markus@oberhumer.com>
+
+	PR c/12148
+	* config/m68k/fpgnulib.c: Fix `-mshort' bugs: Use `long' instead of
+	`int' in a number of places to make sure we always have a SImode
+	and not a HImode.  Add a 'L' suffix to a number of constants.
+
 2004-01-11  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
 	* pa.c: Don't include obstack.h.
