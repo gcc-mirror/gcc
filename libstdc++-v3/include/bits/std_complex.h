@@ -177,7 +177,6 @@ namespace std
     friend class complex<long double>;
 
     // friend float abs<>(const complex<float>&);
-    friend float arg<>(const complex<float>&);
 
     friend complex<float> conj<>(const complex<float>&);
 
@@ -254,7 +253,6 @@ namespace std
     friend class complex<long double>;
 
     // friend double abs<>(const complex<double>&);
-    friend double arg<>(const complex<double>&);
 
     friend complex<double> conj<>(const complex<double>&);
     friend complex<double> cos<>(const complex<double>&);
@@ -331,7 +329,6 @@ namespace std
     friend class complex<double>;
 
     // friend long double abs<>(const complex<long double>&);
-    friend long double arg<>(const complex<long double>&);
 
     friend complex<long double> conj<>(const complex<long double>&);
     friend complex<long double> cos<>(const complex<long double>&);
@@ -886,12 +883,12 @@ namespace std
   template<typename _Tp>
     inline bool
     operator==(const complex<_Tp>& __x, const _Tp& __y)
-    { return __x.real() == __y && __x.imag() == 0; }
+    { return __x.real() == __y && __x.imag() == _Tp(); }
 
   template<typename _Tp>
     inline bool
     operator==(const _Tp& __x, const complex<_Tp>& __y)
-    { return __x == __y.real() && 0 == __y.imag(); }
+    { return __x == __y.real() && _Tp() == __y.imag(); }
 
   template<typename _Tp>
     inline bool
@@ -901,12 +898,12 @@ namespace std
   template<typename _Tp>
     inline bool
     operator!=(const complex<_Tp>& __x, const _Tp& __y)
-    { return __x.real() != __y || __x.imag() != 0; }
+    { return __x.real() != __y || __x.imag() != _Tp(); }
 
   template<typename _Tp>
     inline bool
     operator!=(const _Tp& __x, const complex<_Tp>& __y)
-    { return __x != __y.real() || 0 != __y.imag(); }
+    { return __x != __y.real() || _Tp() != __y.imag(); }
 
   template<typename _Tp, typename _CharT, class _Traits>
     basic_istream<_CharT, _Traits>&
@@ -940,7 +937,22 @@ namespace std
       __x /= __s; __y /= __s;
       return __s * sqrt(__x * __x + __y * __y);
     }
-    
+
+  template<typename _Tp>
+    inline _Tp
+    arg(const complex<_Tp>& __z)
+    { return atan2(__z.imag(), __z.real()); }
+
+
+  template<typename _Tp>
+    inline complex<_Tp>
+    polar(const _Tp& __rho, const _Tp& __theta)
+    { return complex<_Tp>(__rho * cos(__theta), __rho * sin(__theta)); }
+
+  template<typename _Tp>
+    inline complex<_Tp>
+    conj(const complex<_Tp>& __z)
+    { return complex<_Tp>(__z.real(), -__z.imag()); }
 
   // We use here a few more specializations.
   template<>

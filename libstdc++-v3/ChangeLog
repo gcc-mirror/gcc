@@ -1,5 +1,15 @@
 2000-10-31  Gabriel Dos Reis  <gdr@codesourcery.com>
 
+	* src/complex.cc (arg, polar): Comment out specializations.
+
+	* include/bits/std_complex.h (complex<>): Remove arg<> friend
+	declaration. 
+	(arg): Define primary template.
+	(polar): Likewise.
+	(conj): Likewise.
+
+2000-10-31  Gabriel Dos Reis  <gdr@codesourcery.com>
+
 	* include/c/bits/std_cwctype.h: #undef possible function-like
 	macro definitions of iswxxx functions, which might be brought in
 	by <wctype.h>.  Those macro definitions prevent build on some
