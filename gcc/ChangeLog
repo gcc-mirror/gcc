@@ -1,3 +1,11 @@
+2002-05-13  Neil Booth  <neil@daikokuya.demon.co.uk>
+
+	* gcc.c (SWITCH_TAKES_ARG): Remove 'V'.
+	(translate_options): Remove 'V'.
+	(process_command): Similarly.
+doc:
+	* invoke.texi: Remove documentation of 'V'.
+
 2002-05-13  Ulrich Weigand  <uweigand@de.ibm.com>
 
 	* config/s390/linux.h: Revert 2002-04-22 changes.
