@@ -1,5 +1,32 @@
 2004-12-09  Nathan Sidwell  <nathan@codesourcery.com>
 
+	* tree.def (SET_TYPE): Remove.
+	(CONSTRUCTOR): Update description.
+	* builtins.c (type_to_class) Remove SET_TYPE case.
+	* dbxout.c (dbxout_type): Likewise.
+	* dwarf2out.c (is_base_type): Likewise.
+	(gen_set_type_die): Remove.
+	(gen_type_die): Remove SET_TYPE case.
+	* expr.c (count_type_elements): Likewise.
+	(mostly_zeroes_p): Likewise.
+	(store_constructor): Likewise.
+	* print_tree.c (print_node): Likewise.
+	* stor-layout.c (layout_type): Likewise.
+	* tree-browser.c (browse_tree): Likewise.
+	* tree-inline.c (remap_type): Likewise.
+	* tree-pretty-print.c (dump_generic_node): Likewise.
+	* tree.c (type_contains_plaeholder_1, type_hash_eq,
+	variably_modified_type_p, initializer_zerop): Likewise.
+	* tree.h (SET_OR_ARRAY_CHECK): Remove.
+	(AGGREGATE_TYPE_P): Remove SET_TYPE check.
+	(TYPE_DOMAIN): Use ARRAY_TYPE_CHECK.
+	* typeclass.h (enum type_class): Remove set_type_class.
+	* varasm.c (const_hash_1): Remove SET_TYPE case.
+	(compare_constant, copy_constant, output_constant): Likewise.
+	* config/i386/i386.c (classify_argument): Likewise.
+	* config/ia64/ia64.c (hfa_element_mode): Likewise.
+	* config/sparc/sparc.c (sparc_type_code): Likewise.
+
 	PR c++/16681
 	* tree-inline.c (estimate_num_insns_1): Add RANGE_EXPR case.
 

@@ -39,7 +39,7 @@ enum type_class
   real_type_class, complex_type_class,
   function_type_class, method_type_class,
   record_type_class, union_type_class,
-  array_type_class, string_type_class, set_type_class, file_type_class,
+  array_type_class, string_type_class, file_type_class,
   lang_type_class
 };
 

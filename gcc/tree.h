@@ -648,9 +648,6 @@ extern void tree_operand_check_failed (int, enum tree_code,
 #define FUNC_OR_METHOD_CHECK(T)	TREE_CHECK2 (T, FUNCTION_TYPE, METHOD_TYPE)
 #define PTR_OR_REF_CHECK(T)	TREE_CHECK2 (T, POINTER_TYPE, REFERENCE_TYPE)
 
-#define SET_OR_ARRAY_CHECK(T) \
-  TREE_CHECK2 (T, ARRAY_TYPE, SET_TYPE)
-
 #define RECORD_OR_UNION_CHECK(T)	\
   TREE_CHECK3 (T, RECORD_TYPE, UNION_TYPE, QUAL_UNION_TYPE)
 #define NOT_RECORD_OR_UNION_CHECK(T) \
@@ -773,8 +770,7 @@ extern void tree_operand_check_failed (int, enum tree_code,
 
 #define AGGREGATE_TYPE_P(TYPE) \
   (TREE_CODE (TYPE) == ARRAY_TYPE || TREE_CODE (TYPE) == RECORD_TYPE \
-   || TREE_CODE (TYPE) == UNION_TYPE || TREE_CODE (TYPE) == QUAL_UNION_TYPE \
-   || TREE_CODE (TYPE) == SET_TYPE)
+   || TREE_CODE (TYPE) == UNION_TYPE || TREE_CODE (TYPE) == QUAL_UNION_TYPE)
 
 /* Nonzero if TYPE represents a pointer or reference type.
    (It should be renamed to INDIRECT_TYPE_P.)  */
@@ -1476,7 +1472,7 @@ struct tree_block GTY(())
 #define TYPE_SIZE_UNIT(NODE) (TYPE_CHECK (NODE)->type.size_unit)
 #define TYPE_MODE(NODE) (TYPE_CHECK (NODE)->type.mode)
 #define TYPE_VALUES(NODE) (ENUMERAL_TYPE_CHECK (NODE)->type.values)
-#define TYPE_DOMAIN(NODE) (SET_OR_ARRAY_CHECK (NODE)->type.values)
+#define TYPE_DOMAIN(NODE) (ARRAY_TYPE_CHECK (NODE)->type.values)
 #define TYPE_FIELDS(NODE) (RECORD_OR_UNION_CHECK (NODE)->type.values)
 #define TYPE_CACHED_VALUES(NODE) (TYPE_CHECK(NODE)->type.values)
 #define TYPE_ORIG_SIZE_TYPE(NODE)			\

@@ -323,7 +323,6 @@ remap_type (tree type, inline_data *id)
       break;
 
     case FILE_TYPE:
-    case SET_TYPE:
     case OFFSET_TYPE:
     default:
       /* Shouldn't have been thought variable sized.  */
