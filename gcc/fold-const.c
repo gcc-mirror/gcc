@@ -10799,9 +10799,7 @@ build_fold_addr_expr_with_type (tree t, tree ptrtype)
     {
       tree base = t;
 
-      while (handled_component_p (base)
-	     || TREE_CODE (base) == REALPART_EXPR
-	     || TREE_CODE (base) == IMAGPART_EXPR)
+      while (handled_component_p (base))
 	base = TREE_OPERAND (base, 0);
       if (DECL_P (base))
 	TREE_ADDRESSABLE (base) = 1;

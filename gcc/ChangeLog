@@ -1,3 +1,19 @@
+2004-11-29  Richard Henderson  <rth@redhat.com>
+
+	* expr.c (get_inner_reference): Handle REAL/IMAGPART_EXPR.
+	(handled_component_p): Likewise.
+	* alias.c (can_address_p): Reformat and simplify.  Handle
+	REAL/IMAGPART_EXPR.  Do not disable addressability based on
+	alias set zero.
+	* fold-const.c (build_fold_addr_expr_with_type): Remove duplicate
+	check for REAL/IMAGPART_EXPR.
+	* gimplify.c (gimplify_compound_lval): Likewise.
+	* tree-cfg.c (verify_expr): Likewise.
+	* tree-gimple.c (is_gimple_addressable, get_base_address): Likewise.
+	* tree-nested.c (build_addr, convert_nonlocal_reference): Likewise.
+	(convert_local_reference): Likewise.
+	* tree-ssa-loop-ivopts.c (prepare_decl_rtl): Likewise.
+
 2004-11-30  Alan Modra  <amodra@bigpond.net.au>
 
 	* expr.c (emit_group_load_1): Don't die on const_int orig_src.

@@ -2162,10 +2162,9 @@ prepare_decl_rtl (tree *expr_p, int *ws, void *data)
     {
     case ADDR_EXPR:
       for (expr_p = &TREE_OPERAND (*expr_p, 0);
-	   (handled_component_p (*expr_p)
-	    || TREE_CODE (*expr_p) == REALPART_EXPR
-	    || TREE_CODE (*expr_p) == IMAGPART_EXPR);
-	   expr_p = &TREE_OPERAND (*expr_p, 0));
+	   handled_component_p (*expr_p);
+	   expr_p = &TREE_OPERAND (*expr_p, 0))
+	continue;
       obj = *expr_p;
       if (DECL_P (obj))
         x = produce_memory_decl_rtl (obj, regno);

@@ -161,10 +161,7 @@ bool
 is_gimple_addressable (tree t)
 {
   return (is_gimple_id (t) || handled_component_p (t)
-	  || TREE_CODE (t) == REALPART_EXPR
-	  || TREE_CODE (t) == IMAGPART_EXPR
 	  || INDIRECT_REF_P (t));
-
 }
 
 /* Return true if T is function invariant.  Or rather a restricted
@@ -430,8 +427,7 @@ get_call_expr_in (tree t)
 tree
 get_base_address (tree t)
 {
-  while (TREE_CODE (t) == REALPART_EXPR || TREE_CODE (t) == IMAGPART_EXPR
-	 || handled_component_p (t))
+  while (handled_component_p (t))
     t = TREE_OPERAND (t, 0);
   
   if (SSA_VAR_P (t)
