@@ -119,11 +119,7 @@ proc old-dejagnu-stat { } {
 # Returns 0 if successful, 1 if their were any errors.
 # PROG is the full path name of the file to compile.
 #
-# CFLAGS_VAR is the name of the global variable containing compiler flags.
-# We ignore this now.
-#
-# CFLAGS is the options to always pass to the compiler.
-# This is also ignored.
+# CFLAGSX is the options to always pass to the compiler.
 #
 # DEFAULT_CFLAGS are additional options if the testcase has none.
 #
@@ -137,7 +133,7 @@ proc old-dejagnu-stat { } {
 #
 # Think of "cflags" here as "compiler flags", not "C compiler flags".
 
-proc old-dejagnu { compiler prog cflagsx default_cflags libs } {
+proc old-dejagnu { compiler prog name cflagsx default_cflags libs } {
     global verbose
     global tool
     global subdir		;# eg: g++.old-dejagnu
@@ -199,7 +195,8 @@ proc old-dejagnu { compiler prog cflagsx default_cflags libs } {
 # Other keywords: "Build don't link:", "Build don't run:", "Build then link:",
 #                 "Additional sources: <file>.cc ..."
 
-    set name "[file tail [file dirname $prog]]/[file tail $prog]"
+# $name is now passed in.
+#    set name "[file tail [file dirname $prog]]/[file tail $prog]"
 
     set tmp [grep $prog "FIXME -.*"]
     if ![string match "" $tmp] then {
