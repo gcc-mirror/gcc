@@ -1,3 +1,10 @@
+2004-09-07  Jan Hubicka  <jh@suse.cz>
+
+	* tree-ssa-pre.c (grand_bitmap_obstack): New.
+	(value_insert_into_set_bitmap, bitmap_set_new): Use the obstack.
+	(init_pre): Initialize obstack.
+	(fini_pre): Free obstack.
+
 2004-09-07  David Daney  <ddaney@avtrex.com>
 
 	* config.gcc: Added support for --with-divide=[breaks|traps] for
