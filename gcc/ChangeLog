@@ -1,5 +1,17 @@
 2002-04-16  Jakub Jelinek  <jakub@redhat.com>
 
+	PR target/6303
+	* dwarf2out.c (rtl_for_decl_location): Call ASM_SIMPLIFY_DWARF_ADDR
+	before returning.
+	* config/i386/i386.c (i386_simplify_dwarf_addr): Simplify @GOT only
+	when inside of MEM by eliminating the indirection too.
+	* config/s390/s390.h (ASM_SIMPLIFY_DWARF_ADDR): Define.
+	* config/s390/s390.c (s390_simplify_dwarf_addr): New.
+	* config/s390/s390-protos.h (s390_simplify_dwarf_addr): Add
+	prototype.
+
+2002-04-16  Jakub Jelinek  <jakub@redhat.com>
+
 	PR middle-end/6279
 	* expr.c (store_expr): Don't copy if DECL_RTL (exp) == target.
 
