@@ -3,7 +3,9 @@
 /* { dg-options "-dA" } */
 /* { dg-final { scan-assembler "xyzzy" } } */
 
-long foo(long p)
+long p;
+
+long foo(void)
 {
   if (1)
     {
