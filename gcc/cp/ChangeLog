@@ -1,3 +1,13 @@
+1998-11-08  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* pt.c (tsubst_decl): Don't mess with the global value of an 
+	un-mangled DECL_ASSEMBLER_NAME.
+
+1998-11-03  Christopher Faylor <cgf@cygnus.com>
+
+	* decl.c (init_decl_processing): Remove CYGWIN conditional
+	since CYGWIN is now able to deal with trapping signals.
+
 Sat Nov  7 15:48:02 1998  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* cp-tree.h: Don't include gansidecl.h.
@@ -159,7 +169,7 @@ Sat Nov  7 15:48:02 1998  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 1998-10-28  Zack Weinberg  <zack@rabi.phys.columbia.edu>
 	
-	* cp/lex.c: Call check_newline from lang_init always.	After
+	* lex.c: Call check_newline from lang_init always.  After
 	calling cpp_start_read, set yy_cur and yy_lim to read from the
 	cpplib token buffer.
 
@@ -522,9 +532,9 @@ Sat Oct 17 23:27:20 1998  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 1998-10-16  Mark Mitchell  <mark@markmitchell.com>
 
 	* decl.c (lookup_name_real): Handle template parameters for member
-	temlates where said parameters have the same name as the
+	templates where said parameters have the same name as the
 	surrounding class.
-	
+
 	* decl.c (expand_static_init): Build cleanups before entering the
 	anonymous function used to do them to avoid access-checking
 	confusion.

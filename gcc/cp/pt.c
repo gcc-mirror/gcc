@@ -5367,6 +5367,7 @@ tsubst_decl (t, args, type, in_decl)
 	       mess up our TREE_CHAIN because it doesn't find a
 	       previous decl.  Sigh.  */
 	    if (member
+		&& ! uses_template_parms (r)
 		&& (IDENTIFIER_GLOBAL_VALUE (DECL_ASSEMBLER_NAME (r)) 
 		    == NULL_TREE))
 	      SET_IDENTIFIER_GLOBAL_VALUE (DECL_ASSEMBLER_NAME (r), r);
