@@ -2310,17 +2310,6 @@ extern int rs6000_compare_fp_p;
    the end of the line.  */
 #define ASM_COMMENT_START " #"
 
-/* We define this to prevent the name mangler from putting dollar signs into
-   function names.  */
-
-#define NO_DOLLAR_IN_LABEL
-
-/* We define this to 0 so that gcc will never accept a dollar sign in a
-   variable name.  This is needed because the AIX assembler will not accept
-   dollar signs.  */
-
-#define DOLLARS_IN_IDENTIFIERS 0
-
 /* Implicit library calls should use memcpy, not bcopy, etc.  */
 
 #define TARGET_MEM_FUNCTIONS
@@ -2331,43 +2320,8 @@ extern int rs6000_compare_fp_p;
 
 #define EXCEPTION_SECTION data_section
 
-/* If we are referencing a function that is static or is known to be
-   in this file, make the SYMBOL_REF special.  We can use this to indicate
-   that we can branch to this function without emitting a no-op after the
-   call.  Do not set this flag if the function is weakly defined. */
-
-#define ENCODE_SECTION_INFO(DECL)			\
-  if (TREE_CODE (DECL) == FUNCTION_DECL			\
-      && (TREE_ASM_WRITTEN (DECL) || ! TREE_PUBLIC (DECL)) \
-      && ! DECL_WEAK (DECL))				\
-    SYMBOL_REF_FLAG (XEXP (DECL_RTL (DECL), 0)) = 1;
-
 /* Flag to say the TOC is initialized */
 extern int toc_initialized;
-
-/* Return non-zero if this entry is to be written into the constant
-   pool in a special way.  We do so if this is a SYMBOL_REF, LABEL_REF
-   or a CONST containing one of them.  If -mfp-in-toc (the default),
-   we also do this for floating-point constants.  We actually can only
-   do this if the FP formats of the target and host machines are the
-   same, but we can't check that since not every file that uses
-   GO_IF_LEGITIMATE_ADDRESS_P includes real.h.  We also do this when
-   we can write the entry into the TOC and the entry is not larger
-   than a TOC entry.  */
-
-#define ASM_OUTPUT_SPECIAL_POOL_ENTRY_P(X, MODE)			\
-  (TARGET_TOC								\
-   && (GET_CODE (X) == SYMBOL_REF					\
-       || (GET_CODE (X) == CONST && GET_CODE (XEXP (X, 0)) == PLUS	\
-	   && GET_CODE (XEXP (XEXP (X, 0), 0)) == SYMBOL_REF)		\
-       || GET_CODE (X) == LABEL_REF					\
-       || (GET_CODE (X) == CONST_INT 					\
-	   && GET_MODE_BITSIZE (MODE) <= GET_MODE_BITSIZE (Pmode))	\
-       || (GET_CODE (X) == CONST_DOUBLE					\
-	   && (TARGET_POWERPC64						\
-	       || TARGET_MINIMAL_TOC					\
-	       || (GET_MODE_CLASS (GET_MODE (X)) == MODE_FLOAT		\
-		   && ! TARGET_NO_FP_IN_TOC)))))
 
 /* Macro to output a special constant pool entry.  Go to WIN if we output
    it.  Otherwise, it is written the usual way.

@@ -5149,7 +5149,12 @@ locate_and_pad_parm (passed_mode, type, in_regs, fndecl,
 			      - offset_ptr->constant);
 
 #else /* !ARGS_GROW_DOWNWARD */
-  pad_to_arg_alignment (initial_offset_ptr, boundary, alignment_pad);
+  if (!in_regs
+#ifdef REG_PARM_STACK_SPACE
+      || REG_PARM_STACK_SPACE (fndecl) > 0
+#endif
+      )
+    pad_to_arg_alignment (initial_offset_ptr, boundary, alignment_pad);
   *offset_ptr = *initial_offset_ptr;
 
 #ifdef PUSH_ROUNDING
