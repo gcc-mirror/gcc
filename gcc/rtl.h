@@ -1212,6 +1212,7 @@ extern int modified_between_p		PARAMS ((rtx, rtx, rtx));
 extern int no_labels_between_p		PARAMS ((rtx, rtx));
 extern int no_jumps_between_p		PARAMS ((rtx, rtx));
 extern int modified_in_p		PARAMS ((rtx, rtx));
+extern int insn_dependant_p		PARAMS ((rtx, rtx));
 extern int reg_set_p			PARAMS ((rtx, rtx));
 extern rtx single_set			PARAMS ((rtx));
 extern int multiple_sets		PARAMS ((rtx));
