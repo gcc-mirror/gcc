@@ -42,12 +42,6 @@
 #ifndef __CXXABI_H
 #define __CXXABI_H 1
 
-#if defined(__cplusplus) && (!defined(__GXX_ABI_VERSION) || __GXX_ABI_VERSION < 100)
-/* These structures only make sense when targeting the new abi, catch a
-   bonehead error early rather than let the user get very confused.  */
-#error "Not targetting the new abi, supply -fnew-abi"
-#endif
-
 #ifdef __cplusplus
 
 // We use the compiler builtins __SIZE_TYPE__ and __PTRDIFF_TYPE__ instead of

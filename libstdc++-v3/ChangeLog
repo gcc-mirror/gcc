@@ -1,3 +1,15 @@
+2001-02-15  Mark Mitchell  <mark@codesourcery.com>
+
+	Remove old ABI support from libsupc++.
+	* libsupc++/cxxabi.h: Remove conditionally compiled code.
+	* libsupc++/exception_support.cc: Likewise.
+	* libsupc++/pure.cc: Likewise.
+	* libsupc++/tinfo.cc: Likewise.
+	* libsupc++/tinfo.h: Likewise.
+	* libsupc++/tinfo2.cc: Likewise.
+	* libsupc++/typeinfo: Likewise.
+	* libsupc++/vec.cc: Likewise.
+
 2001-02-15  Benjamin Kosnik  <bkoz@redhat.com>
 
 	Add support for -fno-exceptions.
