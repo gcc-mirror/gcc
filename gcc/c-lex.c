@@ -1109,12 +1109,16 @@ parse_float (data)
 	case 'f': case 'F':
 	  if (fflag)
 	    error ("more than one `f' in numeric constant");
+	  else if (warn_traditional && !in_system_header)
+	    warning ("traditional C rejects the `%c' suffix", args->c);
 	  fflag = 1;
 	  break;
 
 	case 'l': case 'L':
 	  if (lflag)
 	    error ("more than one `l' in numeric constant");
+	  else if (warn_traditional && !in_system_header)
+	    warning ("traditional C rejects the `%c' suffix", args->c);
 	  lflag = 1;
 	  break;
 
@@ -1773,6 +1777,8 @@ yylex ()
 		  {
 		    if (spec_unsigned)
 		      error ("two `u's in integer constant");
+ 		    else if (warn_traditional && !in_system_header)
+ 		      warning ("traditional C rejects the `%c' suffix", c);
 		    spec_unsigned = 1;
 		    if (spec_long)
 		      suffix_lu = 1;

@@ -218,6 +218,8 @@ parse_number (pfile, tok)
 	goto invalid_suffix;
       op.unsignedp = sufftab[i].u;
 
+      if (CPP_WTRADITIONAL (pfile) && sufftab[i].u)
+	cpp_warning (pfile, "traditional C rejects the `U' suffix");
       if (CPP_OPTION (pfile, c89) && sufftab[i].l == 2)
 	SYNTAX_ERROR ("too many 'l' suffixes in integer constant");
     }
