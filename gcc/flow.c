@@ -435,7 +435,7 @@ find_basic_blocks (f, nregs, file, do_cleanup)
   calculate_loop_depth (f);
 
   /* Kill the data we won't maintain.  */
-  label_value_list = 0;
+  label_value_list = NULL_RTX;
 
 #ifdef ENABLE_CHECKING
   verify_flow_info ();
@@ -633,7 +633,7 @@ find_basic_blocks_1 (f)
 	  else
 	    {
 	      /* ??? Make a special check for table jumps.  The way this 
-		 happens is truely and amazingly gross.  We are about to
+		 happens is truly and amazingly gross.  We are about to
 		 create a basic block that contains just a code label and
 		 an addr*vec jump insn.  Worse, an addr_diff_vec creates
 		 its own natural loop.
@@ -985,7 +985,7 @@ make_edges (label_value_list)
 	      if (bb->eh_beg >= 0)
 		make_eh_edge (eh_nest_info, bb, NULL_RTX, bb->eh_beg);
 
-	      for (x = bb->head; x != bb->end; x = PREV_INSN (x))
+	      for (x = bb->head; x != bb->end; x = NEXT_INSN (x))
 		if (GET_CODE (x) == NOTE
 		    && (NOTE_LINE_NUMBER (x) == NOTE_INSN_EH_REGION_BEG
 		        || NOTE_LINE_NUMBER (x) == NOTE_INSN_EH_REGION_END))

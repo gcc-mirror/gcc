@@ -1,3 +1,9 @@
+Mon Oct  4 20:25:13 1999  Anthony Green  <green@cygnus.com>
+
+	* flow.c (make_edges): Fix insn iteration.
+	(find_basic_blocks): Assign NULL_RTX, not 0, to rtx.
+	(find_basic_blocks_1): Fix spelling mistake.
+
 Mon Oct  4 16:56:11 1999  Richard Henderson  <rth@cygnus.com>
 
 	* tree.c (build1): Set TREE_SIDE_EFFECTS for expressions that
