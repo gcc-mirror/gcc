@@ -278,8 +278,9 @@ static struct token tokentab2[] = {
 /* Read one token.  */
 
 struct operation
-cpp_lex (pfile)
+cpp_lex (pfile, skip_evaluation)
      cpp_reader *pfile;
+     int skip_evaluation;
 {
   register int c;
   register int namelen;
@@ -443,6 +444,9 @@ cpp_lex (pfile)
       return op;
 
     case CPP_NAME:
+      if (CPP_WARN_UNDEF (pfile) && !skip_evaluation)
+	cpp_warning (pfile, "`%.*s' is not defined",
+		     (int) (tok_end - tok_start), tok_start);
       return parse_number (pfile, "0", 0);
 
     case CPP_OTHER:
@@ -684,7 +688,7 @@ cpp_parse_expr (pfile)
       char flags = 0;
 
       /* Read a token */
-      op =  cpp_lex (pfile);
+      op =  cpp_lex (pfile, skip_evaluation);
 
       /* See if the token is an operand, in which case go to set_value.
 	 If the token is an operator, figure out its left and right
@@ -693,8 +697,7 @@ cpp_parse_expr (pfile)
       switch (op.op)
 	{
 	case NAME:
-	  top->value = 0, top->unsignedp = 0;
-	  goto set_value;
+	  abort ();
 	case INT:  case CHAR:
 	  top->value = op.value;
 	  top->unsignedp = op.unsignedp;
