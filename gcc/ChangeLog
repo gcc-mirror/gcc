@@ -1,3 +1,15 @@
+2005-03-01  Hans-Peter Nilsson  <hp@axis.com>
+
+	* config/cris/cris.c (cris_eligible_for_epilogue_delay)
+	(cris_delay_slots_for_epilogue): Remove.
+	(save_last): Move into cris_target_asm_function_epilogue.
+	(cris_target_asm_function_epilogue): Remove tests for file being
+	NULL.
+	* config/cris/cris-protos.h (cris_eligible_for_epilogue_delay)
+	(cris_delay_slots_for_epilogue): Remove prototypes.
+	* config/cris/cris.h (DELAY_SLOTS_FOR_EPILOGUE)
+	(ELIGIBLE_FOR_EPILOGUE_DELAY): Do not define.
+
 2005-03-01  David Edelsohn  <edelsohn@gnu.org>
 
 	* config/rs6000/predicates.md (branch_comparison_operator): Change
