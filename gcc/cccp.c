@@ -4028,6 +4028,26 @@ get_filename:
     goto fail;
 
   default:
+#ifdef VMS
+    /*
+     * Support '#include xyz' like VAX-C to allow for easy use of all the
+     * decwindow include files. It defaults to '#include <xyz.h>' (so the
+     * code from case '<' is repeated here) and generates a warning.
+     */
+    if (isalpha(*(--fbeg))) {
+      fend = fbeg;
+      while (fend != limit && (!isspace(*fend))) fend++;
+      warning ("VAX-C-style include specification found, use '#include <filename.h>' !");
+      if (fend  == limit) {
+	angle_brackets = 1;
+	/* If -I-, start with the first -I dir after the -I-.  */
+	if (first_bracket_include)
+	  search_start = first_bracket_include;
+	break;
+      }
+    }
+#endif
+
   fail:
     if (retried) {
       error ("`#%s' expects \"FILENAME\" or <FILENAME>", keyword->name);
@@ -4067,8 +4087,9 @@ get_filename:
 
   /* Allocate this permanently, because it gets stored in the definitions
      of macros.  */
-  fname = (char *) xmalloc (max_include_len + flen + 2);
+  fname = (char *) xmalloc (max_include_len + flen + 4);
   /* + 2 above for slash and terminating null.  */
+  /* + 2 added for '.h' on VMS (to support '#include filename') */
 
   /* If specified file name is absolute, just open it.  */
 
@@ -4111,6 +4132,10 @@ get_filename:
       	/* This is a normal VMS filespec, so use it unchanged.  */
 	strncpy (fname, fbeg, flen);
 	fname[flen] = 0;
+	/* if it's '#include filename', add the missing .h */
+	if (index(fname,'.')==NULL) {
+	  strcat (fname, ".h");
+	}
       }
 #endif /* VMS */
       if (importing)
@@ -9377,6 +9402,18 @@ hack_vms_include_specification (fname)
     cp++;
   } else {
     cp = index (fname, '/');	/* Look for the "/" */
+  }
+
+  /*
+   * Check if we have a vax-c style '#include filename'
+   * and add the missing .h
+   */
+  if (cp == 0) {
+    if (index(fname,'.') == 0)
+      strcat(fname, ".h");
+  } else {
+    if (index(cp,'.') == 0)
+      strcat(cp, ".h");
   }
 
   cp2 = Local;			/* initialize */
