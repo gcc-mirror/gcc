@@ -524,19 +524,29 @@ extern enum reg_class regclass_map[FIRST_PSEUDO_REGISTER];
    reloaded into floating registers (since no move-insn can do that)
    and we ensure that QImodes aren't reloaded into the esi or edi reg.  */
 
-/* Don't put float CONST_DOUBLE into any regs.
+/* Don't put float CONST_DOUBLE into fp regs.
    QImode must go into class Q_REGS.
    MODE_INT must not go into FLOAT_REGS. */
 
 #define PREFERRED_RELOAD_CLASS(X,CLASS)	\
-  (GET_CODE (X) == CONST_DOUBLE && GET_MODE (X) != VOIDmode		\
-   ? NO_REGS								\
-   : GET_MODE (X) == QImode						\
-   ? (! reg_class_subset_p ((CLASS), Q_REGS) ? Q_REGS : (CLASS))	\
+  (GET_CODE (X) == CONST_DOUBLE && GET_MODE (X) != VOIDmode ? NO_REGS	\
+   : GET_MODE (X) == QImode && ! reg_class_subset_p (CLASS, Q_REGS) ? Q_REGS \
    : ((CLASS) == FLOAT_REGS						\
       && (GET_MODE (X) == VOIDmode					\
-	  || GET_MODE_CLASS (GET_MODE (X)) == MODE_INT) ?		\
-      GENERAL_REGS : (CLASS)))
+	  || GET_MODE_CLASS (GET_MODE (X)) == MODE_INT)) ? GENERAL_REGS	\
+   : (CLASS) == ALL_REGS ? GENERAL_REGS					\
+   : (CLASS))
+
+#define PREFERRED_OUTPUT_RELOAD_CLASS(X,CLASS)	\
+  ((CLASS) == ALL_REGS ? GENERAL_REGS		\
+   : (CLASS))
+
+/* If we are copying between general and FP registers, we need a memory
+   location.  */
+
+#define SECONDARY_MEMORY_NEEDED(CLASS1,CLASS2,MODE) \
+  (((CLASS1) == FLOAT_REGS && (CLASS2) != FLOAT_REGS)	\
+   || ((CLASS2) == FLOAT_REGS && (CLASS1) != FLOAT_REGS))
 
 /* Return the maximum number of consecutive registers
    needed to represent mode MODE in a register of class CLASS.  */
