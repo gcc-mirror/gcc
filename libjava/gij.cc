@@ -40,7 +40,7 @@ help ()
 static void
 version ()
 {
-  printf ("gij (GNU libgcj) version %s\n\n", VERSION);
+  printf ("gij (GNU libgcj) version %s\n\n", GCJVERSION);
   printf ("Copyright (C) 2001 Free Software Foundation.\n");
   printf ("This is free software; see the source for copying conditions.  There is NO\n");
   printf ("warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.\n");
