@@ -1386,8 +1386,8 @@ check_member_template (tmpl)
 	 with member templates.  */ 
       DECL_IGNORED_P (tmpl) = 1;
     } 
-  else if (TREE_CODE (decl) == TYPE_DECL &&
-	   AGGREGATE_TYPE_P (TREE_TYPE (decl)))
+  else if (TREE_CODE (decl) == TYPE_DECL
+	   && IS_AGGR_TYPE (TREE_TYPE (decl)))
     {
       if (current_function_decl)
 	/* 14.5.2.2 [temp.mem]

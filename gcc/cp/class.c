@@ -4375,6 +4375,8 @@ finish_struct (t, list_of_fieldlists, attributes, warn_anon)
 	  /* Check for inconsistent use of this name in the class body.
              Enums, types and static vars have already been checked.  */
 	  if (TREE_CODE (x) != TYPE_DECL && TREE_CODE (x) != USING_DECL
+	      && ! (TREE_CODE (x) == TEMPLATE_DECL
+		    && TREE_CODE (DECL_RESULT (x)) == TYPE_DECL)
 	      && TREE_CODE (x) != CONST_DECL && TREE_CODE (x) != VAR_DECL)
 	    {
 	      tree name = DECL_NAME (x);

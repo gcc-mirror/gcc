@@ -3503,13 +3503,24 @@ pushdecl_with_scope (x, level)
      tree x;
      struct binding_level *level;
 {
-  register struct binding_level *b = current_binding_level;
+  register struct binding_level *b;
   tree function_decl = current_function_decl;
 
   current_function_decl = NULL_TREE;
-  current_binding_level = level;
-  x = pushdecl (x);
-  current_binding_level = b;
+  if (level->parm_flag == 2)
+    {
+      b = class_binding_level;
+      class_binding_level = level;
+      pushdecl_class_level (x);
+      class_binding_level = b;
+    }
+  else
+    {
+      b = current_binding_level;
+      current_binding_level = level;
+      x = pushdecl (x);
+      current_binding_level = b;
+    }
   current_function_decl = function_decl;
   return x;
 }

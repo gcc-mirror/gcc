@@ -1,3 +1,19 @@
+Fri Feb 27 11:17:50 1998  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* pt.c (get_class_bindings): Add outer_args parm.
+	(most_specialized_class): Likewise.
+	(instantiate_class_template): Pass it.
+	(more_specialized_class): Likewise.
+	(lookup_template_class): Get context from template if none
+	was specified.
+	(finish_member_template_decl): Don't do anything with a
+	partial specialization.
+	* decl2.c (check_member_template): Use IS_AGGR_TYPE instead of
+	AGGREGATE_TYPE_P.
+	* class.c (finish_struct): Member class templates have already been
+	checked for name clashes.
+	* decl.c (pushdecl_with_scope): Handle pushing at class level.
+
 Fri Feb 27 02:25:16 1998  Jason Merrill  <jason@yorick.cygnus.com>
 
 	* pt.c (tsubst, TEMPLATE_DECL): Support member class templates.
