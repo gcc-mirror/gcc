@@ -268,6 +268,10 @@ do {				 				\
 
 #define DBX_DEBUGGING_INFO
 
+/* When generating stabs debugging, use N_BINCL entries.  */
+
+#define DBX_USE_BINCL
+
 /* Use DWARF debugging info by default.  */
 
 #ifndef PREFERRED_DEBUGGING_TYPE

@@ -20,4 +20,8 @@ Boston, MA 02111-1307, USA.  */
 
 #define SUNOS4_SHARED_LIBRARIES 1
 
+/* Use N_BINCL stabs.  */
+
+#define DBX_USE_BINCL
+
 #include "sparc/sparc.h"
