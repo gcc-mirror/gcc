@@ -969,6 +969,7 @@ libgcc2.a: libgcc2.c libgcc2.ready $(CONFIG_H) $(LIB2FUNCS_EXTRA) \
 	        if [ $$? -eq 0 ] ; then true; else exit 1; fi; \
 	        $(AR) $(AR_FLAGS) tmplibgcc2.a $${f}; \
 	        rm -f $${f}; \
+	      else true; \
 	      fi; done; \
 	    else \
 	      echo $${name}; \
@@ -2553,6 +2554,7 @@ stage1-start:
 	-if $(RANLIB_TEST) ; then $(RANLIB) stage1/libgcc.a; else true; fi
 	-for f in .. $(EXTRA_MULTILIB_PARTS); do if [ x$${f} != x.. ]; then \
 	  cp stage1/$${f} . ; \
+	else true; \
 	fi; done
 stage1: force stage1-start lang.stage1
 
@@ -2573,6 +2575,7 @@ stage2-start:
 	-if $(RANLIB_TEST) ; then $(RANLIB) stage2/libgcc.a; else true; fi
 	-for f in .. $(EXTRA_MULTILIB_PARTS); do if [ x$${f} != x.. ]; then \
 	  cp stage2/$${f} . ; \
+	else true; \
 	fi; done
 stage2: force stage2-start lang.stage2
 
@@ -2593,6 +2596,7 @@ stage3-start:
 	-if $(RANLIB_TEST) ; then $(RANLIB) stage3/libgcc.a; else true; fi
 	-for f in .. $(EXTRA_MULTILIB_PARTS); do if [ x$${f} != x.. ]; then \
 	  cp stage3/$${f} . ; \
+	else true; \
 	fi; done
 stage3: force stage3-start lang.stage3
 
@@ -2613,6 +2617,7 @@ stage4-start:
 	-if $(RANLIB_TEST) ; then $(RANLIB) stage4/libgcc.a; else true; fi
 	-for f in .. $(EXTRA_MULTILIB_PARTS); do if [ x$${f} != x.. ]; then \
 	  cp stage4/$${f} . ; \
+	else true; \
 	fi; done
 stage4: force stage4-start lang.stage4
 
