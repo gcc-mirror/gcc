@@ -401,6 +401,17 @@ static struct globals
      zero otherwise.  We allocate them all together, to enable a
      better runtime data access pattern.  */
   unsigned long **save_in_use;
+
+#ifdef ENABLE_GC_ALWAYS_COLLECT
+  /* List of free objects to be verified as actually free on the
+     next collection.  */
+  struct free_object
+  {
+    void *object;
+    struct free_object *next;
+  } *free_object_list;
+#endif
+
 #ifdef GATHER_STATISTICS
   struct
   {
@@ -894,7 +905,7 @@ adjust_depth (void)
 
 /* For a page that is no longer needed, put it on the free page list.  */
 
-static inline void
+static void
 free_page (page_entry *entry)
 {
   if (GGC_DEBUG_LEVEL >= 2)
@@ -1049,16 +1060,19 @@ ggc_alloc_zone (size_t size, struct alloc_zone *zone ATTRIBUTE_UNUSED)
 void *
 ggc_alloc (size_t size)
 {
-  unsigned order, word, bit, object_offset;
+  size_t order, word, bit, object_offset, object_size;
   struct page_entry *entry;
   void *result;
 
   if (size <= 256)
-    order = size_lookup[size];
+    {
+      order = size_lookup[size];
+      object_size = OBJECT_SIZE (order);
+    }
   else
     {
       order = 9;
-      while (size > OBJECT_SIZE (order))
+      while (size > (object_size = OBJECT_SIZE (order)))
 	order++;
     }
 
@@ -1121,7 +1135,7 @@ ggc_alloc (size_t size)
       /* Next time, try the next bit.  */
       entry->next_bit_hint = hint + 1;
 
-      object_offset = hint * OBJECT_SIZE (order);
+      object_offset = hint * object_size;
     }
 
   /* Set the in-use bit.  */
@@ -1149,16 +1163,16 @@ ggc_alloc (size_t size)
      exact same semantics in presence of memory bugs, regardless of
      ENABLE_VALGRIND_CHECKING.  We override this request below.  Drop the
      handle to avoid handle leak.  */
-  VALGRIND_DISCARD (VALGRIND_MAKE_WRITABLE (result, OBJECT_SIZE (order)));
+  VALGRIND_DISCARD (VALGRIND_MAKE_WRITABLE (result, object_size));
 
   /* `Poison' the entire allocated object, including any padding at
      the end.  */
-  memset (result, 0xaf, OBJECT_SIZE (order));
+  memset (result, 0xaf, object_size);
 
   /* Make the bytes after the end of the object unaccessible.  Discard the
      handle to avoid handle leak.  */
   VALGRIND_DISCARD (VALGRIND_MAKE_NOACCESS ((char *) result + size,
-					    OBJECT_SIZE (order) - size));
+					    object_size - size));
 #endif
 
   /* Tell Valgrind that the memory is there, but its content isn't
@@ -1168,37 +1182,39 @@ ggc_alloc (size_t size)
 
   /* Keep track of how many bytes are being allocated.  This
      information is used in deciding when to collect.  */
-  G.allocated += OBJECT_SIZE (order);
+  G.allocated += object_size;
 
 #ifdef GATHER_STATISTICS
   {
-    G.stats.total_overhead += OBJECT_SIZE (order) - size;
-    G.stats.total_allocated += OBJECT_SIZE(order);
-    G.stats.total_overhead_per_order[order] += OBJECT_SIZE (order) - size;
-    G.stats.total_allocated_per_order[order] += OBJECT_SIZE (order);
+    size_t overhead = object_size - size;
 
-    if (size <= 32){
-      G.stats.total_overhead_under32 += OBJECT_SIZE (order) - size;
-      G.stats.total_allocated_under32 += OBJECT_SIZE(order);
-    }
+    G.stats.total_overhead += overhead;
+    G.stats.total_allocated += object_size;
+    G.stats.total_overhead_per_order[order] += overhead;
+    G.stats.total_allocated_per_order[order] += object_size;
 
-    if (size <= 64){
-      G.stats.total_overhead_under64 += OBJECT_SIZE (order) - size;
-      G.stats.total_allocated_under64 += OBJECT_SIZE(order);
-    }
-  
-    if (size <= 128){
-      G.stats.total_overhead_under128 += OBJECT_SIZE (order) - size;
-      G.stats.total_allocated_under128 += OBJECT_SIZE(order);
-    }
-
+    if (size <= 32)
+      {
+	G.stats.total_overhead_under32 += overhead;
+	G.stats.total_allocated_under32 += object_size;
+      }
+    if (size <= 64)
+      {
+	G.stats.total_overhead_under64 += overhead;
+	G.stats.total_allocated_under64 += object_size;
+      }
+    if (size <= 128)
+      {
+	G.stats.total_overhead_under128 += overhead;
+	G.stats.total_allocated_under128 += object_size;
+      }
   }
 #endif
-  
+
   if (GGC_DEBUG_LEVEL >= 3)
     fprintf (G.debug_file,
 	     "Allocating object, requested size=%lu, actual=%lu at %p on %p\n",
-	     (unsigned long) size, (unsigned long) OBJECT_SIZE (order), result,
+	     (unsigned long) size, (unsigned long) object_size, result,
 	     (void *) entry);
 
   return result;
@@ -1278,6 +1294,78 @@ ggc_get_size (const void *p)
 {
   page_entry *pe = lookup_page_table_entry (p);
   return OBJECT_SIZE (pe->order);
+}
+
+/* Release the memory for object P.  */
+
+void
+ggc_free (void *p)
+{
+  page_entry *pe = lookup_page_table_entry (p);
+  size_t order = pe->order;
+  size_t size = OBJECT_SIZE (order);
+
+  if (GGC_DEBUG_LEVEL >= 3)
+    fprintf (G.debug_file,
+	     "Freeing object, actual size=%lu, at %p on %p\n",
+	     (unsigned long) size, p, (void *) pe);
+
+#ifdef ENABLE_GC_CHECKING
+  /* Poison the data, to indicate the data is garbage.  */
+  VALGRIND_DISCARD (VALGRIND_MAKE_WRITABLE (p, size));
+  memset (p, 0xa5, size);
+#endif
+  /* Let valgrind know the object is free.  */
+  VALGRIND_DISCARD (VALGRIND_MAKE_NOACCESS (p, size));
+
+#ifdef ENABLE_GC_ALWAYS_COLLECT
+  /* In the completely-anal-checking mode, we do *not* immediately free
+     the data, but instead verify that the data is *actually* not 
+     reachable the next time we collect.  */
+  {
+    struct free_object *fo = xmalloc (sizeof (struct free_object));
+    fo->object = p;
+    fo->next = G.free_object_list;
+    G.free_object_list = fo;
+  }
+#else
+  {
+    unsigned int bit_offset, word, bit;
+
+    G.allocated -= size;
+
+    /* Mark the object not-in-use.  */
+    bit_offset = OFFSET_TO_BIT (((const char *) p) - pe->page, order);
+    word = bit_offset / HOST_BITS_PER_LONG;
+    bit = bit_offset % HOST_BITS_PER_LONG;
+    pe->in_use_p[word] &= ~(1UL << bit);
+
+    if (pe->num_free_objects++ == 0)
+      {
+	/* If the page is completely full, then it's supposed to
+	   be after all pages that aren't.  Since we've freed one
+	   object from a page that was full, we need to move the
+	   page to the head of the list.  */
+
+	page_entry *p, *q;
+	for (q = NULL, p = G.pages[order]; ; q = p, p = p->next)
+	  if (p == pe)
+	    break;
+	if (q && q->num_free_objects == 0)
+	  {
+	    p = pe->next;
+	    q->next = p;
+	    if (!p)
+	      G.page_tails[order] = q;
+	    pe->next = G.pages[order];
+	    G.pages[order] = pe;
+	  }
+
+	/* Reset the hint bit to point to the only free object.  */
+	pe->next_bit_hint = bit_offset;
+      }
+  }
+#endif
 }
 
 /* Subroutine of init_ggc which computes the pair of numbers used to
@@ -1788,6 +1876,8 @@ ggc_collect (void)
   timevar_push (TV_GC);
   if (!quiet_flag)
     fprintf (stderr, " {GC %luk -> ", (unsigned long) G.allocated / 1024);
+  if (GGC_DEBUG_LEVEL >= 2)
+    fprintf (G.debug_file, "BEGIN COLLECTING\n");
 
   /* Zero the total allocated bytes.  This will be recalculated in the
      sweep phase.  */
@@ -1809,12 +1899,42 @@ ggc_collect (void)
 
   sweep_pages ();
 
+#ifdef ENABLE_GC_ALWAYS_COLLECT
+  /* Validate that the reportedly free objects actually are.  */
+  {
+    struct free_object *f, *n;
+    for (f = G.free_object_list; f ; f = n)
+      {
+	page_entry *pe = lookup_page_table_entry (f->object);
+
+	/* If the page entry is null, that means the entire page is free.
+	   Otherwise, we have to examine the in-use bit for the object.  */
+	if (pe != NULL)
+	  {
+	    size_t bit, word;
+	    bit = OFFSET_TO_BIT ((char *)f->object - pe->page, pe->order);
+	    word = bit / HOST_BITS_PER_LONG;
+	    bit = bit % HOST_BITS_PER_LONG;
+
+	    if (pe->in_use_p[word] & (1UL << bit))
+	      abort ();
+	  }
+
+	n = f->next;
+	free (f);
+      }
+    G.free_object_list = NULL;
+  }
+#endif
+
   G.allocated_last_gc = G.allocated;
 
   timevar_pop (TV_GC);
 
   if (!quiet_flag)
     fprintf (stderr, "%luk}", (unsigned long) G.allocated / 1024);
+  if (GGC_DEBUG_LEVEL >= 2)
+    fprintf (G.debug_file, "END COLLECTING\n");
 }
 
 /* Print allocation statistics.  */
