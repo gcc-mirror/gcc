@@ -1923,7 +1923,15 @@ demangle_prefix (work, mangled, declp)
 	    }
 	  else
 	    {
-	      demangle_function_name (work, mangled, declp, scan);
+              const char *tmp;
+              /* Look for the LAST occurrence of __, allowing names to have
+                 the '__' sequence embedded in them.*/
+              while ((tmp = mystrstr (scan+2, "__")) != NULL)
+                scan = tmp;
+              if (*(scan + 2) == '\0')
+                success = 0;
+              else
+                demangle_function_name (work, mangled, declp, scan);
 	    }
 	}
     }
