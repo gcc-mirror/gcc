@@ -482,8 +482,9 @@ while (0)
 {									\
   if (LEVEL)								\
     {									\
-      flag_omit_frame_pointer		= TRUE;				\
-      flag_schedule_insns_after_reload	= TRUE;				\
+      flag_omit_frame_pointer	       = TRUE;				\
+      flag_schedule_insns_after_reload = TRUE;				\
+      target_flags &= MASK_GPOPT;					\
     }									\
 }
 
@@ -609,7 +610,6 @@ while (0)
 
 #ifndef CC1_SPEC
 #define CC1_SPEC "\
-%{O*: %{!mno-gpOPT:%{!mno-gpopt: -mgpopt}}} \
 %{gline:%{!g:%{!g0:%{!g1:%{!g2: -g1}}}}} \
 %{G*} \
 %{pic-none:   -mno-half-pic} \
@@ -645,7 +645,7 @@ while (0)
 
 /* Print subsidiary information on the compiler version in use.  */
 
-#define MIPS_VERSION "[AL 1.1, MM 39]"
+#define MIPS_VERSION "[AL 1.1, MM 40]"
 
 #ifndef MACHINE_TYPE
 #define MACHINE_TYPE "BSD Mips"
