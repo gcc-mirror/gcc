@@ -21,21 +21,27 @@
 
 ;;- See file "rtl.def" for documentation on define_insn, match_*, et. al.
 
+;; Processor type -- this attribute must exactly match the processor_type
+;; enumeration in alpha.h.
+
+(define_attr "cpu" "ev4,ev5"
+  (const (symbol_ref "alpha_cpu")))
+
 ;; Define an insn type attribute.  This is used in function unit delay
 ;; computations, among other purposes.  For the most part, we use the names
 ;; defined in the EV4 documentation, but add a few that we have to know about
 ;; separately.
 
 (define_attr "type"
-  "ld,st,ibr,fbr,jsr,iaddlog,shiftcm,icmp,imull,imulq,fpop,fdivs,fdivt,ldsym,isubr"
-  (const_string "shiftcm"))
+  "ld,st,ibr,fbr,jsr,iadd,ilog,shift,cmov,icmp,imull,imulq,fadd,fmul,fcpys,fdivs,fdivt,ldsym,isubr"
+  (const_string "iadd"))
 
 ;; The TRAP_TYPE attribute marks instructions that may generate traps
 ;; (which are imprecise and may need a trapb if software complention
 ;; is desired).
 (define_attr "trap" "yes,no" (const_string "no"))
 
-;; We include four function units: ABOX, which computes the address,
+;; For the EV4 we include four function units: ABOX, which computes the address,
 ;; BBOX, used for branches, EBOX, used for integer operations, and FBOX,
 ;; used for FP operations.
 ;;
@@ -45,33 +51,161 @@
 ;; issues.
 
 ;; Memory delivers its result in three cycles.
-(define_function_unit "abox" 1 0 (eq_attr "type" "ld,ldsym,st") 6 2)
+(define_function_unit "ev4_abox" 1 0
+  (and (eq_attr "cpu" "ev4")
+       (eq_attr "type" "ld,st"))
+  6 2)
 
 ;; Branches have no delay cost, but do tie up the unit for two cycles.
-(define_function_unit "bbox" 1 1 (eq_attr "type" "ibr,fbr,jsr") 4 4)
+(define_function_unit "ev4_bbox" 1 1
+  (and (eq_attr "cpu" "ev4")
+       (eq_attr "type" "ibr,fbr,jsr"))
+  4 4)
 
 ;; Arithmetic insns are normally have their results available after two
 ;; cycles.  There are a number of exceptions.  They are encoded in
 ;; ADJUST_COST.  Some of the other insns have similar exceptions.
 
-(define_function_unit "ebox" 1 0 (eq_attr "type" "iaddlog,shiftcm,icmp") 4 2)
+(define_function_unit "ev4_ebox" 1 0
+  (and (eq_attr "cpu" "ev4")
+       (eq_attr "type" "iadd,ilog,ldsym,shift,cmov,icmp"))
+  4 2)
 
 ;; These really don't take up the integer pipeline, but they do occupy
 ;; IBOX1; we approximate here.
 
-(define_function_unit "ebox" 1 0 (eq_attr "type" "imull") 42 2)
-(define_function_unit "ebox" 1 0 (eq_attr "type" "imulq") 46 2)
+(define_function_unit "ev4_ebox" 1 0
+  (and (eq_attr "cpu" "ev4")
+       (eq_attr "type" "imull"))
+  42 2)
 
-(define_function_unit "imult" 1 0 (eq_attr "type" "imull") 42 38)
-(define_function_unit "imult" 1 0 (eq_attr "type" "imulq") 46 42)
+(define_function_unit "ev4_ebox" 1 0
+  (and (eq_attr "cpu" "ev4")
+       (eq_attr "type" "imulq"))
+  46 2)
 
-(define_function_unit "fbox" 1 0 (eq_attr "type" "fpop") 12 2)
+(define_function_unit "ev4_imult" 1 0
+  (and (eq_attr "cpu" "ev4")
+       (eq_attr "type" "imull"))
+  42 38)
 
-(define_function_unit "fbox" 1 0 (eq_attr "type" "fdivs") 68 0)
-(define_function_unit "fbox" 1 0 (eq_attr "type" "fdivt") 126 0)
+(define_function_unit "ev4_imult" 1 0
+  (and (eq_attr "cpu" "ev4")
+       (eq_attr "type" "imulq"))
+  46 42)
 
-(define_function_unit "divider" 1 0 (eq_attr "type" "fdivs") 68 60)
-(define_function_unit "divider" 1 0 (eq_attr "type" "fdivt") 126 118)
+(define_function_unit "ev4_fbox" 1 0
+  (and (eq_attr "cpu" "ev4")
+       (eq_attr "type" "fadd,fmul,fcpys"))
+  12 2)
+
+(define_function_unit "ev4_fbox" 1 0
+  (and (eq_attr "cpu" "ev4")
+       (eq_attr "type" "fdivs"))
+  68 0)
+
+(define_function_unit "ev4_fbox" 1 0
+  (and (eq_attr "cpu" "ev4")
+       (eq_attr "type" "fdivt"))
+  126 0)
+
+(define_function_unit "ev4_divider" 1 0
+  (and (eq_attr "cpu" "ev4")
+       (eq_attr "type" "fdivs"))
+  68 60)
+
+(define_function_unit "ev4_divider" 1 0
+  (and (eq_attr "cpu" "ev4")
+       (eq_attr "type" "fdivt"))
+  126 118)
+
+;; EV5 scheduling.  EV5 can issue 4 insns per clock.
+;; Multiply all costs by 4.
+
+;; EV5 has two integer units.
+(define_function_unit "ev5_ebox" 2 0
+  (and (eq_attr "cpu" "ev5")
+       (eq_attr "type" "iadd,ilog,icmp,ldsym"))
+  4 4)
+
+;; Memory takes at least 2 clocks.
+;; Conditional moves always take 2 ticks.
+(define_function_unit "ev5_ebox" 2 0
+  (and (eq_attr "cpu" "ev5")
+       (eq_attr "type" "ld,cmov"))
+  8 4)
+
+;; Loads can dual issue.  Store cannot; nor can loads + stores.
+;; Model this with a mythical load/store unit.
+(define_function_unit "ev5_ldst" 1 0
+  (and (eq_attr "cpu" "ev5")
+       (eq_attr "type" "ld"))
+  8 4 [(eq_attr "type" "st")])
+
+(define_function_unit "ev5_ldst" 1 0
+  (and (eq_attr "cpu" "ev5")
+       (eq_attr "type" "st"))
+  4 4)
+
+(define_function_unit "ev5_ebox" 2 0
+  (and (eq_attr "cpu" "ev5")
+       (eq_attr "type" "imull"))
+  32 4)
+
+(define_function_unit "ev5_ebox" 2 0
+  (and (eq_attr "cpu" "ev5")
+       (eq_attr "type" "imulq"))
+  48 4)
+
+;; Multiplies also use the integer multiplier.
+(define_function_unit "ev5_imult" 1 0
+  (and (eq_attr "cpu" "ev5")
+       (eq_attr "type" "imull"))
+  16 8)
+
+(define_function_unit "ev5_imult" 1 0
+  (and (eq_attr "cpu" "ev5")
+       (eq_attr "type" "imulq"))
+  48 32)
+
+;; There is only 1 shifter/zapper.
+(define_function_unit "ev5_shift" 1 0
+  (and (eq_attr "cpu" "ev5")
+       (eq_attr "type" "shift"))
+  4 4)
+
+;; We pretend EV5 has symmetrical 2 fpus,
+;; even though cpys is the only insn that can issue on either unit.
+(define_function_unit "ev5_fpu" 2 0
+  (and (eq_attr "cpu" "ev5")
+       (eq_attr "type" "fadd,fmul,fcpys"))
+  16 4)
+  
+;; Multiplies (resp. adds) also use the fmul (resp. fadd) units.
+(define_function_unit "ev5_fpmul" 1 0
+  (and (eq_attr "cpu" "ev5")
+       (eq_attr "type" "fmul"))
+  16 4)
+
+(define_function_unit "ev5_fpadd" 1 0
+  (and (eq_attr "cpu" "ev5")
+       (eq_attr "type" "fadd"))
+  16 4)
+
+(define_function_unit "ev5_fpadd" 1 0
+  (and (eq_attr "cpu" "ev5")
+       (eq_attr "type" "fbr"))
+  4 4)
+
+(define_function_unit "ev5_fpadd" 1 0
+  (and (eq_attr "cpu" "ev5")
+       (eq_attr "type" "fdivs"))
+  60 4)
+
+(define_function_unit "ev5_fpadd" 1 0
+  (and (eq_attr "cpu" "ev5")
+       (eq_attr "type" "fdivt"))
+  88 4)
 
 ;; First define the arithmetic insns.  Note that the 32-bit forms also
 ;; sign-extend.
@@ -89,7 +223,7 @@
    addl %1,$31,%0
    ldl %0,%1
    cvtql %1,%0\;cvtlq %0,%0"
-  [(set_attr "type" "iaddlog,ld,fpop")])
+  [(set_attr "type" "iadd,ld,fadd")])
 
 ;; Do addsi3 the way expand_binop would do if we didn't have one.  This
 ;; generates better code.  We have the anonymous addsi3 pattern below in
@@ -116,8 +250,7 @@
    addl %r1,%2,%0
    subl %r1,%n2,%0
    lda %0,%2(%r1)
-   ldah %0,%h2(%r1)"
-  [(set_attr "type" "iaddlog")])
+   ldah %0,%h2(%r1)")
 
 (define_split
   [(set (match_operand:SI 0 "register_operand" "")
@@ -144,8 +277,7 @@
   ""
   "@
    addl %r1,%2,%0
-   subl %r1,%n2,%0"
-  [(set_attr "type" "iaddlog")])
+   subl %r1,%n2,%0")
 
 (define_split
   [(set (match_operand:DI 0 "register_operand" "")
@@ -198,8 +330,7 @@
    addq %r1,%2,%0
    subq %r1,%n2,%0
    lda %0,%2(%r1)
-   ldah %0,%h2(%r1)"
-  [(set_attr "type" "iaddlog")])
+   ldah %0,%h2(%r1)")
 
 ;; Don't do this if we are adjusting SP since we don't want to do
 ;; it in two steps. 
@@ -229,8 +360,7 @@
   ""
   "@
    s%2addl %r1,%3,%0
-   s%2subl %r1,%n3,%0"
-  [(set_attr "type" "iaddlog")])
+   s%2subl %r1,%n3,%0")
 
 (define_insn ""
   [(set (match_operand:DI 0 "register_operand" "=r,r")
@@ -241,8 +371,7 @@
   ""
   "@
    s%2addl %r1,%3,%0
-   s%2subl %r1,%n3,%0"
-  [(set_attr "type" "iaddlog")])
+   s%2subl %r1,%n3,%0")
 
 (define_split
   [(set (match_operand:DI 0 "register_operand" "")
@@ -273,8 +402,7 @@
   ""
   "@
    s%2addq %r1,%3,%0
-   s%2subq %1,%n3,%0"
-  [(set_attr "type" "iaddlog")])
+   s%2subq %1,%n3,%0")
 
 ;; These variants of the above insns can occur if the third operand
 ;; is the frame pointer.  This is a kludge, but there doesn't
@@ -286,8 +414,7 @@
 			  (match_operand:DI 2 "some_operand" "r"))
 		 (match_operand:DI 3 "some_operand" "rIOKL")))]
   "reload_in_progress"
-  "#"
-  [(set_attr "type" "iaddlog")])
+  "#")
 
 (define_split
   [(set (match_operand:DI 0 "register_operand" "")
@@ -306,8 +433,7 @@
 			  (match_operand:SI 3 "some_operand" "r"))
 		 (match_operand:SI 4 "some_operand" "rIOKL")))]
   "reload_in_progress"
-  "#"
-  [(set_attr "type" "iaddlog")])
+  "#")
 
 (define_split
   [(set (match_operand:SI 0 "register_operand" "r")
@@ -330,8 +456,7 @@
 		   (match_operand:SI 3 "some_operand" "r"))
 		  (match_operand:SI 4 "some_operand" "rIOKL"))))]
   "reload_in_progress"
-  "#"
-  [(set_attr "type" "iaddlog")])
+  "#")
 
 (define_split
   [(set (match_operand:DI 0 "register_operand" "")
@@ -356,8 +481,7 @@
 			  (match_operand:DI 3 "some_operand" "r"))
 		 (match_operand:DI 4 "some_operand" "rIOKL")))]
   "reload_in_progress"
-  "#"
-  [(set_attr "type" "iaddlog")])
+  "#")
 
 (define_split
   [(set (match_operand:DI 0 "register_operand" "=")
@@ -375,23 +499,20 @@
   [(set (match_operand:SI 0 "register_operand" "=r")
 	(neg:SI (match_operand:SI 1 "reg_or_8bit_operand" "rI")))]
   ""
-  "subl $31,%1,%0"
-  [(set_attr "type" "iaddlog")])
+  "subl $31,%1,%0")
 
 (define_insn ""
   [(set (match_operand:DI 0 "register_operand" "=r")
 	(sign_extend:DI (neg:SI
 			 (match_operand:SI 1 "reg_or_8bit_operand" "rI"))))]
   ""
-  "subl $31,%1,%0"
-  [(set_attr "type" "iaddlog")])
+  "subl $31,%1,%0")
 
 (define_insn "negdi2"
   [(set (match_operand:DI 0 "register_operand" "=r")
 	(neg:DI (match_operand:DI 1 "reg_or_8bit_operand" "rI")))]
   ""
-  "subq $31,%1,%0"
-  [(set_attr "type" "iaddlog")])
+  "subq $31,%1,%0")
 
 (define_expand "subsi3"
   [(set (match_operand:SI 0 "register_operand" "")
@@ -412,24 +533,21 @@
 	(minus:SI (match_operand:SI 1 "reg_or_0_operand" "rJ")
 		  (match_operand:SI 2 "reg_or_8bit_operand" "rI")))]
   ""
-  "subl %r1,%2,%0"
-  [(set_attr "type" "iaddlog")])
+  "subl %r1,%2,%0")
 
 (define_insn ""
   [(set (match_operand:DI 0 "register_operand" "=r")
 	(sign_extend:DI (minus:SI (match_operand:SI 1 "reg_or_0_operand" "rJ")
 				  (match_operand:SI 2 "reg_or_8bit_operand" "rI"))))]
   ""
-  "subl %r1,%2,%0"
-  [(set_attr "type" "iaddlog")])
+  "subl %r1,%2,%0")
 
 (define_insn "subdi3"
   [(set (match_operand:DI 0 "register_operand" "=r")
 	(minus:DI (match_operand:DI 1 "reg_or_0_operand" "rJ")
 		  (match_operand:DI 2 "reg_or_8bit_operand" "rI")))]
   ""
-  "subq %r1,%2,%0"
-  [(set_attr "type" "iaddlog")])
+  "subq %r1,%2,%0")
 
 (define_insn ""
   [(set (match_operand:SI 0 "register_operand" "=r")
@@ -437,8 +555,7 @@
 			   (match_operand:SI 2 "const48_operand" "I"))
 		  (match_operand:SI 3 "reg_or_8bit_operand" "rI")))]
   ""
-  "s%2subl %r1,%3,%0"
-  [(set_attr "type" "iaddlog")])
+  "s%2subl %r1,%3,%0")
 
 (define_insn ""
   [(set (match_operand:DI 0 "register_operand" "=r")
@@ -447,8 +564,7 @@
 			    (match_operand:SI 2 "const48_operand" "I"))
 		   (match_operand:SI 3 "reg_or_8bit_operand" "rI"))))]
   ""
-  "s%2subl %r1,%3,%0"
-  [(set_attr "type" "iaddlog")])
+  "s%2subl %r1,%3,%0")
 
 (define_insn ""
   [(set (match_operand:DI 0 "register_operand" "=r")
@@ -456,8 +572,7 @@
 			   (match_operand:DI 2 "const48_operand" "I"))
 		  (match_operand:DI 3 "reg_or_8bit_operand" "rI")))]
   ""
-  "s%2subq %r1,%3,%0"
-  [(set_attr "type" "iaddlog")])
+  "s%2subq %r1,%3,%0")
 
 (define_insn "mulsi3"
   [(set (match_operand:SI 0 "register_operand" "=r")
@@ -643,7 +758,7 @@
    and %r1,%2,%0
    bic %r1,%N2,%0
    zapnot %r1,%m2,%0"
-  [(set_attr "type" "iaddlog,iaddlog,shiftcm")])
+  [(set_attr "type" "ilog,ilog,shift")])
 
 ;; There are times when we can split an AND into two AND insns.  This occurs
 ;; when we can first clear any bytes and then clear anything else.  For
@@ -681,42 +796,42 @@
 	(zero_extend:HI (match_operand:QI 1 "register_operand" "r")))]
   ""
   "zapnot %1,1,%0"
-  [(set_attr "type" "iaddlog")])
+  [(set_attr "type" "shift")])
 
 (define_insn "zero_extendqisi2"
   [(set (match_operand:SI 0 "register_operand" "=r")
 	(zero_extend:SI (match_operand:QI 1 "register_operand" "r")))]
   ""
   "zapnot %1,1,%0"
-  [(set_attr "type" "iaddlog")])
+  [(set_attr "type" "shift")])
 
 (define_insn "zero_extendqidi2"
   [(set (match_operand:DI 0 "register_operand" "=r")
 	(zero_extend:DI (match_operand:QI 1 "register_operand" "r")))]
   ""
   "zapnot %1,1,%0"
-  [(set_attr "type" "iaddlog")])
+  [(set_attr "type" "shift")])
 
 (define_insn "zero_extendhisi2"
   [(set (match_operand:SI 0 "register_operand" "=r")
 	(zero_extend:SI (match_operand:HI 1 "register_operand" "r")))]
   ""
   "zapnot %1,3,%0"
-  [(set_attr "type" "iaddlog")])
+  [(set_attr "type" "shift")])
 
 (define_insn "zero_extendhidi2"
   [(set (match_operand:DI 0 "register_operand" "=r")
 	(zero_extend:DI (match_operand:HI 1 "register_operand" "r")))]
   ""
   "zapnot %1,3,%0"
-  [(set_attr "type" "iaddlog")])
+  [(set_attr "type" "shift")])
 
 (define_insn "zero_extendsidi2"
   [(set (match_operand:DI 0 "register_operand" "=r")
 	(zero_extend:DI (match_operand:SI 1 "register_operand" "r")))]
   ""
   "zapnot %1,15,%0"
-  [(set_attr "type" "iaddlog")])
+  [(set_attr "type" "shift")])
 
 (define_insn  ""
   [(set (match_operand:DI 0 "register_operand" "=r")
@@ -724,7 +839,7 @@
 		(match_operand:DI 2 "reg_or_0_operand" "rJ")))]
   ""
   "bic %r2,%1,%0"
-  [(set_attr "type" "iaddlog")])
+  [(set_attr "type" "ilog")])
 
 (define_insn "iordi3"
   [(set (match_operand:DI 0 "register_operand" "=r,r")
@@ -734,14 +849,14 @@
   "@
    bis %r1,%2,%0
    ornot %r1,%N2,%0"
-  [(set_attr "type" "iaddlog")])
+  [(set_attr "type" "ilog")])
 
 (define_insn "one_cmpldi2"
   [(set (match_operand:DI 0 "register_operand" "=r")
 	(not:DI (match_operand:DI 1 "reg_or_8bit_operand" "rI")))]
   ""
   "ornot $31,%1,%0"
-  [(set_attr "type" "iaddlog")])
+  [(set_attr "type" "ilog")])
 
 (define_insn ""
   [(set (match_operand:DI 0 "register_operand" "=r")
@@ -749,7 +864,7 @@
 		(match_operand:DI 2 "reg_or_0_operand" "rJ")))]
   ""
   "ornot %r2,%1,%0"
-  [(set_attr "type" "iaddlog")])
+  [(set_attr "type" "ilog")])
 
 (define_insn "xordi3"
   [(set (match_operand:DI 0 "register_operand" "=r,r")
@@ -759,7 +874,7 @@
   "@
    xor %r1,%2,%0
    eqv %r1,%N2,%0"
-  [(set_attr "type" "iaddlog")])
+  [(set_attr "type" "ilog")])
 
 (define_insn ""
   [(set (match_operand:DI 0 "register_operand" "=r")
@@ -767,7 +882,7 @@
 			(match_operand:DI 2 "register_operand" "rI"))))]
   ""
   "eqv %r1,%2,%0"
-  [(set_attr "type" "iaddlog")])
+  [(set_attr "type" "ilog")])
 
 ;; Next come the shifts and the various extract and insert operations.
 
@@ -789,7 +904,7 @@
       return \"sll %r1,%2,%0\";
     }
 }"
-  [(set_attr "type" "iaddlog,shiftcm")])
+  [(set_attr "type" "iadd,shift")])
 
 ;; ??? The following pattern is made by combine, but earlier phases
 ;; (specifically flow) can't handle it.  This occurs in jump.c.  Deal
@@ -808,21 +923,23 @@
 ;;  else
 ;;    return \"s%P2addl %r1,0,%0\";
 ;; }"
-;;  [(set_attr "type" "iaddlog")])
+;;  [(set_attr "type" "iadd")])
 			  
 (define_insn "lshrdi3"
   [(set (match_operand:DI 0 "register_operand" "=r")
 	(lshiftrt:DI (match_operand:DI 1 "reg_or_0_operand" "rJ")
 		     (match_operand:DI 2 "reg_or_6bit_operand" "rI")))]
   ""
-  "srl %r1,%2,%0")
+  "srl %r1,%2,%0"
+  [(set_attr "type" "shift")])
 
 (define_insn "ashrdi3"
   [(set (match_operand:DI 0 "register_operand" "=r")
 	(ashiftrt:DI (match_operand:DI 1 "reg_or_0_operand" "rJ")
 		     (match_operand:DI 2 "reg_or_6bit_operand" "rI")))]
   ""
-  "sra %r1,%2,%0")
+  "sra %r1,%2,%0"
+  [(set_attr "type" "shift")])
 
 (define_expand "extendqihi2"
   [(set (match_dup 2)
@@ -1005,7 +1122,8 @@
 			 (match_operand:DI 2 "mode_width_operand" "n")
 			 (match_operand:DI 3 "mul8_operand" "I")))]
   ""
-  "ext%M2l %r1,%s3,%0")
+  "ext%M2l %r1,%s3,%0"
+  [(set_attr "type" "shift")])
 
 (define_insn ""
   [(set (match_operand:DI 0 "register_operand" "=r")
@@ -1014,7 +1132,8 @@
 			 (ashift:DI (match_operand:DI 3 "reg_or_8bit_operand" "rI")
 				    (const_int 3))))]
   ""
-  "ext%M2l %r1,%3,%0")
+  "ext%M2l %r1,%3,%0"
+  [(set_attr "type" "shift")])
 
 (define_insn ""
   [(set (match_operand:DI 0 "register_operand" "=r")
@@ -1028,7 +1147,8 @@
 		      (const_int 7))
 		     (const_int 3)))))]
   ""
-  "extqh %r1,%2,%0")
+  "extqh %r1,%2,%0"
+  [(set_attr "type" "shift")])
 
 (define_insn ""
   [(set (match_operand:DI 0 "register_operand" "=r")
@@ -1043,7 +1163,8 @@
 		      (const_int 7))
 		     (const_int 3)))))]
   ""
-  "extlh %r1,%2,%0")
+  "extlh %r1,%2,%0"
+  [(set_attr "type" "shift")])
 
 (define_insn ""
   [(set (match_operand:DI 0 "register_operand" "=r")
@@ -1058,7 +1179,8 @@
 		      (const_int 7))
 		     (const_int 3)))))]
   ""
-  "extwh %r1,%2,%0")
+  "extwh %r1,%2,%0"
+  [(set_attr "type" "shift")])
 
 ;; This converts an extXl into an extXh with an appropriate adjustment
 ;; to the address calculation.
@@ -1091,21 +1213,24 @@
 	(ashift:DI (zero_extend:DI (match_operand:QI 1 "register_operand" "r"))
 		   (match_operand:DI 2 "mul8_operand" "I")))]
   ""
-  "insbl %1,%s2,%0")
+  "insbl %1,%s2,%0"
+  [(set_attr "type" "shift")])
 
 (define_insn ""
   [(set (match_operand:DI 0 "register_operand" "=r")
 	(ashift:DI (zero_extend:DI (match_operand:HI 1 "register_operand" "r"))
 		   (match_operand:DI 2 "mul8_operand" "I")))]
   ""
-  "inswl %1,%s2,%0")
+  "inswl %1,%s2,%0"
+  [(set_attr "type" "shift")])
 
 (define_insn ""
   [(set (match_operand:DI 0 "register_operand" "=r")
 	(ashift:DI (zero_extend:DI (match_operand:SI 1 "register_operand" "r"))
 		   (match_operand:DI 2 "mul8_operand" "I")))]
   ""
-  "insll %1,%s2,%0")
+  "insll %1,%s2,%0"
+  [(set_attr "type" "shift")])
 
 (define_insn ""
   [(set (match_operand:DI 0 "register_operand" "=r")
@@ -1113,7 +1238,8 @@
 		   (ashift:DI (match_operand:DI 2 "reg_or_8bit_operand" "rI")
 			      (const_int 3))))]
   ""
-  "insbl %1,%2,%0")
+  "insbl %1,%2,%0"
+  [(set_attr "type" "shift")])
 
 (define_insn ""
   [(set (match_operand:DI 0 "register_operand" "=r")
@@ -1121,7 +1247,8 @@
 		   (ashift:DI (match_operand:DI 2 "reg_or_8bit_operand" "rI")
 			      (const_int 3))))]
   ""
-  "inswl %1,%2,%0")
+  "inswl %1,%2,%0"
+  [(set_attr "type" "shift")])
 
 (define_insn ""
   [(set (match_operand:DI 0 "register_operand" "=r")
@@ -1129,7 +1256,8 @@
 		   (ashift:DI (match_operand:DI 2 "reg_or_8bit_operand" "rI")
 			      (const_int 3))))]
   ""
-  "insll %1,%2,%0")
+  "insll %1,%2,%0"
+  [(set_attr "type" "shift")])
 
 ;; We do not include the insXh insns because they are complex to express
 ;; and it does not appear that we would ever want to generate them.
@@ -1143,7 +1271,8 @@
 			  (const_int 3))))
 		(match_operand:DI 1 "reg_or_0_operand" "rJ")))]
   ""
-  "msk%U2l %r1,%3,%0")
+  "msk%U2l %r1,%3,%0"
+  [(set_attr "type" "shift")])
 
 ;; We do not include the mskXh insns because it does not appear we would ever
 ;; generate one.
@@ -1157,28 +1286,28 @@
 	(abs:SF (match_operand:SF 1 "reg_or_fp0_operand" "fG")))]
   "TARGET_FP"
   "cpys $f31,%R1,%0"
-  [(set_attr "type" "fpop")])
+  [(set_attr "type" "fcpys")])
 
 (define_insn "absdf2"
   [(set (match_operand:DF 0 "register_operand" "=f")
 	(abs:DF (match_operand:DF 1 "reg_or_fp0_operand" "fG")))]
   "TARGET_FP"
   "cpys $f31,%R1,%0"
-  [(set_attr "type" "fpop")])
+  [(set_attr "type" "fcpys")])
 
 (define_insn "negsf2"
   [(set (match_operand:SF 0 "register_operand" "=f")
 	(neg:SF (match_operand:SF 1 "reg_or_fp0_operand" "fG")))]
   "TARGET_FP"
   "cpysn %R1,%R1,%0"
-  [(set_attr "type" "fpop")])
+  [(set_attr "type" "fadd")])
 
 (define_insn "negdf2"
   [(set (match_operand:DF 0 "register_operand" "=f")
 	(neg:DF (match_operand:DF 1 "reg_or_fp0_operand" "fG")))]
   "TARGET_FP"
   "cpysn %R1,%R1,%0"
-  [(set_attr "type" "fpop")])
+  [(set_attr "type" "fadd")])
 
 (define_insn ""
   [(set (match_operand:SF 0 "register_operand" "=&f")
@@ -1186,7 +1315,7 @@
 		 (match_operand:SF 2 "reg_or_fp0_operand" "fG")))]
   "TARGET_FP && (alpha_tp == ALPHA_TP_INSN)"
   "adds%)%& %R1,%R2,%0"
-  [(set_attr "type" "fpop")
+  [(set_attr "type" "fadd")
    (set_attr "trap" "yes")])
 
 (define_insn "addsf3"
@@ -1195,7 +1324,7 @@
 		 (match_operand:SF 2 "reg_or_fp0_operand" "fG")))]
   "TARGET_FP"
   "adds%)%& %R1,%R2,%0"
-  [(set_attr "type" "fpop")
+  [(set_attr "type" "fadd")
    (set_attr "trap" "yes")])
 
 (define_insn ""
@@ -1204,7 +1333,7 @@
 		 (match_operand:DF 2 "reg_or_fp0_operand" "fG")))]
   "TARGET_FP && (alpha_tp == ALPHA_TP_INSN)"
   "addt%)%& %R1,%R2,%0"
-  [(set_attr "type" "fpop")
+  [(set_attr "type" "fadd")
    (set_attr "trap" "yes")])
 
 (define_insn "adddf3"
@@ -1213,7 +1342,7 @@
 		 (match_operand:DF 2 "reg_or_fp0_operand" "fG")))]
   "TARGET_FP"
   "addt%)%& %R1,%R2,%0"
-  [(set_attr "type" "fpop")
+  [(set_attr "type" "fadd")
    (set_attr "trap" "yes")])
 
 (define_insn ""
@@ -1223,7 +1352,7 @@
 		 (match_operand:DF 2 "reg_or_fp0_operand" "fG")))]
   "TARGET_FP && (alpha_tp == ALPHA_TP_INSN)"
   "addt%)%& %R1,%R2,%0"
-  [(set_attr "type" "fpop")
+  [(set_attr "type" "fadd")
    (set_attr "trap" "yes")])
 
 (define_insn ""
@@ -1233,7 +1362,7 @@
 		 (match_operand:DF 2 "reg_or_fp0_operand" "fG")))]
   "TARGET_FP"
   "addt%)%& %R1,%R2,%0"
-  [(set_attr "type" "fpop")
+  [(set_attr "type" "fadd")
    (set_attr "trap" "yes")])
 
 (define_insn ""
@@ -1244,7 +1373,7 @@
 		  (match_operand:SF 2 "reg_or_fp0_operand" "fG"))))]
   "TARGET_FP && (alpha_tp == ALPHA_TP_INSN)"
   "addt%)%& %R1,%R2,%0"
-  [(set_attr "type" "fpop")
+  [(set_attr "type" "fadd")
    (set_attr "trap" "yes")])
 
 (define_insn ""
@@ -1255,7 +1384,7 @@
 		  (match_operand:SF 2 "reg_or_fp0_operand" "fG"))))]
   "TARGET_FP"
   "addt%)%& %R1,%R2,%0"
-  [(set_attr "type" "fpop")
+  [(set_attr "type" "fadd")
    (set_attr "trap" "yes")])
 
 (define_insn "fix_truncdfdi2"
@@ -1263,7 +1392,7 @@
 	(fix:DI (match_operand:DF 1 "reg_or_fp0_operand" "fG")))]
   "TARGET_FP"
   "cvttqc %R1,%0"
-  [(set_attr "type" "fpop")])
+  [(set_attr "type" "fadd")])
 
 (define_insn "fix_truncsfdi2"
   [(set (match_operand:DI 0 "register_operand" "=f")
@@ -1271,14 +1400,14 @@
 		 (match_operand:SF 1 "reg_or_fp0_operand" "fG"))))]
   "TARGET_FP"
   "cvttqc %R1,%0"
-  [(set_attr "type" "fpop")])
+  [(set_attr "type" "fadd")])
 
 (define_insn ""
   [(set (match_operand:SF 0 "register_operand" "=&f")
 	(float:SF (match_operand:DI 1 "register_operand" "f")))]
   "TARGET_FP && (alpha_tp == ALPHA_TP_INSN)"
   "cvtqs%+%& %1,%0"
-  [(set_attr "type" "fpop")
+  [(set_attr "type" "fadd")
    (set_attr "trap" "yes")])
 
 (define_insn "floatdisf2"
@@ -1286,7 +1415,7 @@
 	(float:SF (match_operand:DI 1 "register_operand" "f")))]
   "TARGET_FP"
   "cvtqs%+%& %1,%0"
-  [(set_attr "type" "fpop")
+  [(set_attr "type" "fadd")
    (set_attr "trap" "yes")])
 
 (define_insn ""
@@ -1294,7 +1423,7 @@
 	(float:DF (match_operand:DI 1 "register_operand" "f")))]
   "TARGET_FP && (alpha_tp == ALPHA_TP_INSN)"
   "cvtqt%+%& %1,%0"
-  [(set_attr "type" "fpop")
+  [(set_attr "type" "fadd")
    (set_attr "trap" "yes")])
 
 (define_insn "floatdidf2"
@@ -1302,7 +1431,7 @@
 	(float:DF (match_operand:DI 1 "register_operand" "f")))]
   "TARGET_FP"
   "cvtqt%+%& %1,%0"
-  [(set_attr "type" "fpop")
+  [(set_attr "type" "fadd")
    (set_attr "trap" "yes")])
 
 (define_insn ""
@@ -1312,7 +1441,7 @@
   "@
    addt%)%& $f31,%1,%0
    lds %0,%1"
-  [(set_attr "type" "fpop,ld")
+  [(set_attr "type" "fadd,ld")
    (set_attr "trap" "yes")])
 
 (define_insn "extendsfdf2"
@@ -1322,7 +1451,7 @@
   "@
    addt%)%& $f31,%1,%0
    lds %0,%1"
-  [(set_attr "type" "fpop,ld")
+  [(set_attr "type" "fadd,ld")
    (set_attr "trap" "yes")])
 
 (define_insn ""
@@ -1330,7 +1459,7 @@
 	(float_truncate:SF (match_operand:DF 1 "reg_or_fp0_operand" "fG")))]
   "TARGET_FP && (alpha_tp == ALPHA_TP_INSN)"
   "cvtts%)%& %R1,%0"
-  [(set_attr "type" "fpop")
+  [(set_attr "type" "fadd")
    (set_attr "trap" "yes")])
 
 (define_insn "truncdfsf2"
@@ -1338,7 +1467,7 @@
 	(float_truncate:SF (match_operand:DF 1 "reg_or_fp0_operand" "fG")))]
   "TARGET_FP"
   "cvtts%)%& %R1,%0"
-  [(set_attr "type" "fpop")
+  [(set_attr "type" "fadd")
    (set_attr "trap" "yes")])
 
 (define_insn ""
@@ -1439,7 +1568,7 @@
 		 (match_operand:SF 2 "reg_or_fp0_operand" "fG")))]
   "TARGET_FP && (alpha_tp == ALPHA_TP_INSN)"
   "muls%)%& %R1,%R2,%0"
-  [(set_attr "type" "fpop")
+  [(set_attr "type" "fmul")
    (set_attr "trap" "yes")])
 
 (define_insn "mulsf3"
@@ -1448,7 +1577,7 @@
 		 (match_operand:SF 2 "reg_or_fp0_operand" "fG")))]
   "TARGET_FP"
   "muls%)%& %R1,%R2,%0"
-  [(set_attr "type" "fpop")
+  [(set_attr "type" "fmul")
    (set_attr "trap" "yes")])
 
 (define_insn ""
@@ -1457,7 +1586,7 @@
 		 (match_operand:DF 2 "reg_or_fp0_operand" "fG")))]
   "TARGET_FP && (alpha_tp == ALPHA_TP_INSN)"
   "mult%)%& %R1,%R2,%0"
-  [(set_attr "type" "fpop")
+  [(set_attr "type" "fmul")
    (set_attr "trap" "yes")])
 
 (define_insn "muldf3"
@@ -1466,7 +1595,7 @@
 		 (match_operand:DF 2 "reg_or_fp0_operand" "fG")))]
   "TARGET_FP"
   "mult%)%& %R1,%R2,%0"
-  [(set_attr "type" "fpop")
+  [(set_attr "type" "fmul")
    (set_attr "trap" "yes")])
 
 (define_insn ""
@@ -1476,7 +1605,7 @@
 		 (match_operand:DF 2 "reg_or_fp0_operand" "fG")))]
   "TARGET_FP && (alpha_tp == ALPHA_TP_INSN)"
   "mult%)%& %R1,%R2,%0"
-  [(set_attr "type" "fpop")
+  [(set_attr "type" "fmul")
    (set_attr "trap" "yes")])
 
 (define_insn ""
@@ -1486,7 +1615,7 @@
 		 (match_operand:DF 2 "reg_or_fp0_operand" "fG")))]
   "TARGET_FP"
   "mult%)%& %R1,%R2,%0"
-  [(set_attr "type" "fpop")
+  [(set_attr "type" "fmul")
    (set_attr "trap" "yes")])
 
 (define_insn ""
@@ -1497,7 +1626,7 @@
 		  (match_operand:SF 2 "reg_or_fp0_operand" "fG"))))]
   "TARGET_FP && (alpha_tp == ALPHA_TP_INSN)"
   "mult%)%& %R1,%R2,%0"
-  [(set_attr "type" "fpop")
+  [(set_attr "type" "fmul")
    (set_attr "trap" "yes")])
 
 (define_insn ""
@@ -1508,7 +1637,7 @@
 		  (match_operand:SF 2 "reg_or_fp0_operand" "fG"))))]
   "TARGET_FP"
   "mult%)%& %R1,%R2,%0"
-  [(set_attr "type" "fpop")
+  [(set_attr "type" "fmul")
    (set_attr "trap" "yes")])
 
 (define_insn ""
@@ -1517,7 +1646,7 @@
 		  (match_operand:SF 2 "reg_or_fp0_operand" "fG")))]
   "TARGET_FP && (alpha_tp == ALPHA_TP_INSN)"
   "subs%)%& %R1,%R2,%0"
-  [(set_attr "type" "fpop")
+  [(set_attr "type" "fadd")
    (set_attr "trap" "yes")])
 
 (define_insn "subsf3"
@@ -1526,7 +1655,7 @@
 		  (match_operand:SF 2 "reg_or_fp0_operand" "fG")))]
   "TARGET_FP"
   "subs%)%& %R1,%R2,%0"
-  [(set_attr "type" "fpop")
+  [(set_attr "type" "fadd")
    (set_attr "trap" "yes")])
 
 (define_insn ""
@@ -1535,7 +1664,7 @@
 		  (match_operand:DF 2 "reg_or_fp0_operand" "fG")))]
   "TARGET_FP && (alpha_tp == ALPHA_TP_INSN)"
   "subt%)%& %R1,%R2,%0"
-  [(set_attr "type" "fpop")
+  [(set_attr "type" "fadd")
    (set_attr "trap" "yes")])
 
 (define_insn "subdf3"
@@ -1544,7 +1673,7 @@
 		  (match_operand:DF 2 "reg_or_fp0_operand" "fG")))]
   "TARGET_FP"
   "subt%)%& %R1,%R2,%0"
-  [(set_attr "type" "fpop")
+  [(set_attr "type" "fadd")
    (set_attr "trap" "yes")])
 
 (define_insn ""
@@ -1554,7 +1683,7 @@
 		  (match_operand:DF 2 "reg_or_fp0_operand" "fG")))]
   "TARGET_FP && (alpha_tp == ALPHA_TP_INSN)"
   "subt%)%& %R1,%R2,%0"
-  [(set_attr "type" "fpop")
+  [(set_attr "type" "fadd")
    (set_attr "trap" "yes")])
 
 (define_insn ""
@@ -1564,7 +1693,7 @@
 		  (match_operand:DF 2 "reg_or_fp0_operand" "fG")))]
   "TARGET_FP"
   "subt%)%& %R1,%R2,%0"
-  [(set_attr "type" "fpop")
+  [(set_attr "type" "fadd")
    (set_attr "trap" "yes")])
 
 (define_insn ""
@@ -1574,7 +1703,7 @@
 		   (match_operand:SF 2 "reg_or_fp0_operand" "fG"))))]
   "TARGET_FP && (alpha_tp == ALPHA_TP_INSN)"
   "subt%)%& %R1,%R2,%0"
-  [(set_attr "type" "fpop")
+  [(set_attr "type" "fadd")
    (set_attr "trap" "yes")])
 
 (define_insn ""
@@ -1584,7 +1713,7 @@
 		   (match_operand:SF 2 "reg_or_fp0_operand" "fG"))))]
   "TARGET_FP"
   "subt%)%& %R1,%R2,%0"
-  [(set_attr "type" "fpop")
+  [(set_attr "type" "fadd")
    (set_attr "trap" "yes")])
 
 (define_insn ""
@@ -1595,7 +1724,7 @@
 		   (match_operand:SF 2 "reg_or_fp0_operand" "fG"))))]
   "TARGET_FP && (alpha_tp == ALPHA_TP_INSN)"
   "subt%)%& %R1,%R2,%0"
-  [(set_attr "type" "fpop")
+  [(set_attr "type" "fadd")
    (set_attr "trap" "yes")])
 
 (define_insn ""
@@ -1606,7 +1735,7 @@
 		   (match_operand:SF 2 "reg_or_fp0_operand" "fG"))))]
   "TARGET_FP"
   "subt%)%& %R1,%R2,%0"
-  [(set_attr "type" "fpop")
+  [(set_attr "type" "fadd")
    (set_attr "trap" "yes")])
 
 ;; Next are all the integer comparisons, and conditional moves and branches
@@ -1664,7 +1793,8 @@
    cmov%C2 %r3,%1,%0
    cmov%D2 %r3,%5,%0
    cmov%c2 %r4,%1,%0
-   cmov%d2 %r4,%5,%0")
+   cmov%d2 %r4,%5,%0"
+  [(set_attr "type" "cmov")])
 
 (define_insn ""
   [(set (match_operand:DI 0 "register_operand" "=r,r,r,r")
@@ -1679,7 +1809,8 @@
    cmov%C2 %r3,%1,%0
    cmov%D2 %r3,%5,%0
    cmov%c2 %r4,%1,%0
-   cmov%d2 %r4,%5,%0")
+   cmov%d2 %r4,%5,%0"
+  [(set_attr "type" "cmov")])
 
 (define_insn ""
   [(set (match_operand:DI 0 "register_operand" "=r,r")
@@ -1693,7 +1824,8 @@
   ""
   "@
    cmovlbc %r2,%1,%0
-   cmovlbs %r2,%3,%0")
+   cmovlbs %r2,%3,%0"
+  [(set_attr "type" "cmov")])
 
 (define_insn ""
   [(set (match_operand:DI 0 "register_operand" "=r,r")
@@ -1707,7 +1839,8 @@
   ""
   "@
    cmovlbs %r2,%1,%0
-   cmovlbc %r2,%3,%0")
+   cmovlbc %r2,%3,%0"
+  [(set_attr "type" "cmov")])
 
 ;; This form is added since combine thinks that an IF_THEN_ELSE with both
 ;; arms constant is a single insn, so it won't try to form it if combine
@@ -1725,7 +1858,8 @@
 	 (match_dup 0)))
    (clobber (match_scratch:DI 4 "=&r"))]
   ""
-  "addq %0,%1,%4\;cmov%C2 %r3,%4,%0")
+  "addq %0,%1,%4\;cmov%C2 %r3,%4,%0"
+  [(set_attr "type" "cmov")])
 
 (define_split
   [(set (match_operand:DI 0 "register_operand" "")
@@ -1871,7 +2005,8 @@
 	(smax:DI (match_operand:DI 1 "register_operand" "0")
 		 (const_int 0)))]
   ""
-  "cmovlt %0,0,%0")
+  "cmovlt %0,0,%0"
+  [(set_attr "type" "cmov")])
 
 (define_expand "smindi3"
   [(set (match_dup 3)
@@ -1901,7 +2036,8 @@
 	(smin:DI (match_operand:DI 1 "register_operand" "0")
 		 (const_int 0)))]
   ""
-  "cmovgt %0,0,%0")
+  "cmovgt %0,0,%0"
+  [(set_attr "type" "cmov")])
 
 (define_expand "umaxdi3"
   [(set (match_dup 3) 
@@ -2023,7 +2159,7 @@
 			    (match_operand:DF 3 "reg_or_fp0_operand" "fG")]))]
   "TARGET_FP && (alpha_tp == ALPHA_TP_INSN)"
   "cmpt%C1%' %R2,%R3,%0"
-  [(set_attr "type" "fpop")
+  [(set_attr "type" "fadd")
    (set_attr "trap" "yes")])
 
 (define_insn ""
@@ -2033,7 +2169,7 @@
 			    (match_operand:DF 3 "reg_or_fp0_operand" "fG")]))]
   "TARGET_FP"
   "cmpt%C1%' %R2,%R3,%0"
-  [(set_attr "type" "fpop")
+  [(set_attr "type" "fadd")
    (set_attr "trap" "yes")])
 
 (define_insn ""
@@ -2044,7 +2180,7 @@
 			    (match_operand:DF 3 "reg_or_fp0_operand" "fG")]))]
   "TARGET_FP && (alpha_tp == ALPHA_TP_INSN)"
   "cmpt%C1%' %R2,%R3,%0"
-  [(set_attr "type" "fpop")
+  [(set_attr "type" "fadd")
    (set_attr "trap" "yes")])
 
 (define_insn ""
@@ -2055,7 +2191,7 @@
 			    (match_operand:DF 3 "reg_or_fp0_operand" "fG")]))]
   "TARGET_FP"
   "cmpt%C1%' %R2,%R3,%0"
-  [(set_attr "type" "fpop")
+  [(set_attr "type" "fadd")
    (set_attr "trap" "yes")])
 
 (define_insn ""
@@ -2066,7 +2202,7 @@
 			     (match_operand:SF 3 "reg_or_fp0_operand" "fG"))]))]
   "TARGET_FP && (alpha_tp == ALPHA_TP_INSN)"
   "cmpt%C1%' %R2,%R3,%0"
-  [(set_attr "type" "fpop")
+  [(set_attr "type" "fadd")
    (set_attr "trap" "yes")])
 
 (define_insn ""
@@ -2077,7 +2213,7 @@
 			     (match_operand:SF 3 "reg_or_fp0_operand" "fG"))]))]
   "TARGET_FP"
   "cmpt%C1%' %R2,%R3,%0"
-  [(set_attr "type" "fpop")
+  [(set_attr "type" "fadd")
    (set_attr "trap" "yes")])
 
 (define_insn ""
@@ -2089,7 +2225,7 @@
 			     (match_operand:SF 3 "reg_or_fp0_operand" "fG"))]))]
   "TARGET_FP && (alpha_tp == ALPHA_TP_INSN)"
   "cmpt%C1%' %R2,%R3,%0"
-  [(set_attr "type" "fpop")
+  [(set_attr "type" "fadd")
    (set_attr "trap" "yes")])
 
 (define_insn ""
@@ -2101,7 +2237,7 @@
 			     (match_operand:SF 3 "reg_or_fp0_operand" "fG"))]))]
   "TARGET_FP"
   "cmpt%C1%' %R2,%R3,%0"
-  [(set_attr "type" "fpop")
+  [(set_attr "type" "fadd")
    (set_attr "trap" "yes")])
 
 (define_insn ""
@@ -2116,7 +2252,7 @@
   "@
    fcmov%C3 %R4,%R1,%0
    fcmov%D3 %R4,%R5,%0"
-  [(set_attr "type" "fpop")])
+  [(set_attr "type" "fadd")])
 
 (define_insn ""
   [(set (match_operand:DF 0 "register_operand" "=f,f")
@@ -2130,7 +2266,7 @@
   "@
    fcmov%C3 %R4,%R1,%0
    fcmov%D3 %R4,%R5,%0"
-  [(set_attr "type" "fpop")])
+  [(set_attr "type" "fadd")])
 
 (define_insn ""
   [(set (match_operand:SF 0 "register_operand" "=&f,f")
@@ -2144,7 +2280,7 @@
   "@
    fcmov%C3 %R4,%R1,%0
    fcmov%D3 %R4,%R5,%0"
-  [(set_attr "type" "fpop")])
+  [(set_attr "type" "fadd")])
 
 (define_insn ""
   [(set (match_operand:SF 0 "register_operand" "=f,f")
@@ -2158,7 +2294,7 @@
   "@
    fcmov%C3 %R4,%R1,%0
    fcmov%D3 %R4,%R5,%0"
-  [(set_attr "type" "fpop")])
+  [(set_attr "type" "fadd")])
 
 (define_insn ""
   [(set (match_operand:DF 0 "register_operand" "=&f,f")
@@ -2172,7 +2308,7 @@
   "@
    fcmov%C3 %R4,%R1,%0
    fcmov%D3 %R4,%R5,%0"
-  [(set_attr "type" "fpop")])
+  [(set_attr "type" "fadd")])
 
 (define_insn ""
   [(set (match_operand:DF 0 "register_operand" "=&f,f")
@@ -2187,7 +2323,7 @@
   "@
    fcmov%C3 %R4,%R1,%0
    fcmov%D3 %R4,%R5,%0"
-  [(set_attr "type" "fpop")])
+  [(set_attr "type" "fadd")])
 
 (define_insn ""
   [(set (match_operand:DF 0 "register_operand" "=f,f")
@@ -2201,7 +2337,7 @@
   "@
    fcmov%C3 %R4,%R1,%0
    fcmov%D3 %R4,%R5,%0"
-  [(set_attr "type" "fpop")])
+  [(set_attr "type" "fadd")])
 
 (define_insn ""
   [(set (match_operand:DF 0 "register_operand" "=f,f")
@@ -2216,7 +2352,7 @@
   "@
    fcmov%C3 %R4,%R1,%0
    fcmov%D3 %R4,%R5,%0"
-  [(set_attr "type" "fpop")])
+  [(set_attr "type" "fadd")])
 
 (define_insn ""
   [(set (match_operand:SF 0 "register_operand" "=&f,f")
@@ -2231,7 +2367,7 @@
   "@
    fcmov%C3 %R4,%R1,%0
    fcmov%D3 %R4,%R5,%0"
-  [(set_attr "type" "fpop")])
+  [(set_attr "type" "fadd")])
 
 (define_insn ""
   [(set (match_operand:SF 0 "register_operand" "=f,f")
@@ -2246,7 +2382,7 @@
   "@
    fcmov%C3 %R4,%R1,%0
    fcmov%D3 %R4,%R5,%0"
-  [(set_attr "type" "fpop")])
+  [(set_attr "type" "fadd")])
 
 (define_insn ""
   [(set (match_operand:DF 0 "register_operand" "=&f,f")
@@ -2261,7 +2397,7 @@
   "@
    fcmov%C3 %R4,%R1,%0
    fcmov%D3 %R4,%R5,%0"
-  [(set_attr "type" "fpop")])
+  [(set_attr "type" "fadd")])
 
 (define_insn ""
   [(set (match_operand:DF 0 "register_operand" "=f,f")
@@ -2276,7 +2412,7 @@
   "@
    fcmov%C3 %R4,%R1,%0
    fcmov%D3 %R4,%R5,%0"
-  [(set_attr "type" "fpop")])
+  [(set_attr "type" "fadd")])
 
 (define_expand "maxdf3"
   [(set (match_dup 3)
@@ -3198,7 +3334,7 @@
   [(const_int 0)]
   ""
   "bis $31,$31,$31"
-  [(set_attr "type" "iaddlog")])
+  [(set_attr "type" "ilog")])
 
 (define_expand "tablejump"
   [(use (match_operand:SI 0 "register_operand" ""))
@@ -3327,7 +3463,8 @@
 (define_insn ""
   [(unspec_volatile [(const_int 0)] 0)]
   ""
-  "call_pal 0x86")
+  "call_pal 0x86"
+  [(set_attr "type" "isubr")])
 
 ;; Finally, we have the basic data motion insns.  The byte and word insns
 ;; are done via define_expand.  Start with the floating-point insns, since
@@ -3346,7 +3483,7 @@
    cpys $f31,$f31,%0
    lds %0,%1
    sts %R1,%0"
-  [(set_attr "type" "iaddlog,ld,st,fpop,fpop,ld,st")])
+  [(set_attr "type" "ilog,ld,st,fcpys,fcpys,ld,st")])
 
 (define_insn ""
   [(set (match_operand:DF 0 "nonimmediate_operand" "=r,r,m,f,f,f,m")
@@ -3361,7 +3498,7 @@
    cpys $f31,$f31,%0
    ldt %0,%1
    stt %R1,%0"
-  [(set_attr "type" "iaddlog,ld,st,fpop,fpop,ld,st")])
+  [(set_attr "type" "ilog,ld,st,fcpys,fcpys,ld,st")])
 
 (define_expand "movsf"
   [(set (match_operand:SF 0 "nonimmediate_operand" "")
@@ -3402,7 +3539,7 @@
    cpys $f31,$f31,%0
    lds %0,%1
    sts %R1,%0"
-  [(set_attr "type" "iaddlog,iaddlog,iaddlog,iaddlog,iaddlog,ld,st,fpop,fpop,ld,st")])
+  [(set_attr "type" "ilog,ilog,ilog,iadd,iadd,ld,st,fcpys,fcpys,ld,st")])
 
 (define_insn ""
   [(set (match_operand:SI 0 "nonimmediate_operand" "=r,r,r,r,r,r,r,m,f,f,f,m")
@@ -3422,7 +3559,7 @@
    cpys $f31,$f31,%0
    lds %0,%1
    sts %R1,%0"
-  [(set_attr "type" "iaddlog,iaddlog,iaddlog,iaddlog,iaddlog,ldsym,ld,st,fpop,fpop,ld,st")])
+  [(set_attr "type" "ilog,ilog,ilog,iadd,iadd,ldsym,ld,st,fcpys,fcpys,ld,st")])
 
 (define_insn ""
   [(set (match_operand:HI 0 "nonimmediate_operand" "=r,r,r,r,f,f")
@@ -3436,7 +3573,7 @@
    lda %0,%L1
    cpys %1,%1,%0
    cpys $f31,$f31,%0"
-  [(set_attr "type" "iaddlog,iaddlog,iaddlog,iaddlog,fpop,fpop")])
+  [(set_attr "type" "ilog,ilog,ilog,iadd,fcpys,fcpys")])
 
 (define_insn ""
   [(set (match_operand:QI 0 "nonimmediate_operand" "=r,r,r,r,f,f")
@@ -3450,7 +3587,7 @@
    lda %0,%L1
    cpys %1,%1,%0
    cpys $f31,$f31,%0"
-  [(set_attr "type" "iaddlog,iaddlog,iaddlog,iaddlog,fpop,fpop")])
+  [(set_attr "type" "ilog,ilog,ilog,iadd,fcpys,fcpys")])
 
 ;; We do two major things here: handle mem->mem and construct long
 ;; constants.
@@ -3513,7 +3650,7 @@
    cpys $f31,$f31,%0
    ldt %0,%1
    stt %R1,%0"
-  [(set_attr "type" "iaddlog,iaddlog,iaddlog,iaddlog,iaddlog,ldsym,ld,st,fpop,fpop,ld,st")])
+  [(set_attr "type" "ilog,ilog,ilog,iadd,iadd,ldsym,ld,st,fcpys,fcpys,ld,st")])
 
 ;; We do three major things here: handle mem->mem, put 64-bit constants in
 ;; memory, and construct long 32-bit constants.
