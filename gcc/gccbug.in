@@ -82,25 +82,16 @@ if [ @have_mktemp_command@ = yes ]; then
 	TEMP=`mktemp $TMPDIR/pXXXXXX` || exit 1
 	BAD=`mktemp $TMPDIR/pbadXXXXXX` || exit 1
 	REF=`mktemp $TMPDIR/pfXXXXXX` || exit 1
+	REMOVE_TEMP="rm -f $TEMP0 $TEMP $BAD $REF"
 else
-	TEMP0=$TMPDIR/po$$
-	TEMP=$TMPDIR/p$$
-	BAD=$TMPDIR/pbad$$
-	REF=$TMPDIR/pf$$
-	# set -C _may_ use O_EXCL, but it need not.
-	set -C
-	bad_temp=0
-	: > $TEMP0 || bad_temp=1
-	: > $TEMP || bad_temp=1
-	: > $BAD || bad_temp=1
-	: > $REF || bad_temp=1
-	if [ $bad_temp = 1 ]; then
-		rm -f $TEMP0 $TEMP $BAD $REF
-		exit 1;
-	fi
-	set +C
+	TEMPD=$TMPDIR/pd$$
+	TEMP0=$TEMPD/po$$
+	TEMP=$TEMPD/p$$
+	BAD=$TEMPD/pbad$$
+	REF=$TEMPD/pf$$
+	mkdir $TEMPD || exit 1
+	REMOVE_TEMP="rm -rf $TEMPD"
 fi
-REMOVE_TEMP="rm -f $TEMP0 $TEMP $BAD $REF"
 
 # find a user name
 if [ "$LOGNAME" = "" ]; then
