@@ -1,3 +1,13 @@
+2003-08-08  SUGIOKA Toshinobu  <sugioka@itonet.co.jp>
+
+	* config.gcc: Do not override sh/t-linux with sh/t-le.
+
+2003-08-08  Kaz Kojima  <kkojima@gcc.gnu.org>
+
+	* config/sh/linux.h (SUBTARGET_LINK_SPEC): Don't set rpath.
+	(LIB_SPEC): Set -lpthread always when -pthread set.  Set -lieee
+	when -mieee-fp set and -shared not set.
+
 2003-08-08  Richard Henderson  <rth@redhat.com>
 
 	PR target/11535
