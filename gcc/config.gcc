@@ -2559,9 +2559,16 @@ romp-*-openbsd*)
 powerpc-*-openbsd*)
 	tmake_file="${tmake_file} rs6000/t-rs6000 rs6000/t-openbsd"
 	;;
+powerpc64-*-linux*)
+	tm_file="${tm_file} svr4.h rs6000/sysv4.h rs6000/linux64.h"
+	out_file=rs6000/rs6000.c
+	tmake_file="rs6000/t-ppcos t-slibgcc-elf-ver t-linux rs6000/t-ppccomm"
+	xmake_file=x-linux
+	extra_headers=ppc-asm.h
+	;;
 powerpc-*-beos*)
 	cpu_type=rs6000
-	tm_file="${tm_file} rs6000/aix.h rs6000/beos.h"
+	tm_file="${tm_file} rs6000/aix.h rs6000/beos.h rs6000/xcoff.h"
 	xm_defines=POSIX
 	xm_file=rs6000/xm-beos.h
 	tmake_file=rs6000/t-beos
@@ -2700,27 +2707,27 @@ powerpcle-*-solaris2*)
 	;;
 rs6000-ibm-aix3.[01]*)
 	xm_defines=POSIX
-	tm_file="${tm_file} rs6000/aix.h rs6000/aix31.h"
+	tm_file="${tm_file} rs6000/aix.h rs6000/aix31.h rs6000/xcoff.h"
 	float_format=none
 	use_collect2=yes
 	;;
 rs6000-ibm-aix3.2.[456789]* | powerpc-ibm-aix3.2.[456789]*)
 	xm_defines=POSIX
-	tm_file="${tm_file} rs6000/aix.h rs6000/aix3newas.h"
+	tm_file="${tm_file} rs6000/aix.h rs6000/aix3newas.h rs6000/xcoff.h"
 	tmake_file=rs6000/t-newas
 	float_format=none
 	use_collect2=yes
 	;;
 rs6000-ibm-aix4.[12]* | powerpc-ibm-aix4.[12]*)
 	xm_defines=POSIX
-	tm_file="${tm_file} rs6000/aix.h rs6000/aix41.h"
+	tm_file="${tm_file} rs6000/aix.h rs6000/aix41.h rs6000/xcoff.h"
 	tmake_file=rs6000/t-newas
 	float_format=none
 	use_collect2=yes
 	;;
 rs6000-ibm-aix4.[3456789]* | powerpc-ibm-aix4.[3456789]*)
 	xm_defines=POSIX
-	tm_file="${tm_file} rs6000/aix.h rs6000/aix43.h"
+	tm_file="${tm_file} rs6000/aix.h rs6000/aix43.h rs6000/xcoff.h"
 	tmake_file=rs6000/t-aix43
 	float_format=none
 	use_collect2=yes
@@ -2728,7 +2735,7 @@ rs6000-ibm-aix4.[3456789]* | powerpc-ibm-aix4.[3456789]*)
 	;;
 rs6000-ibm-aix[56789].* | powerpc-ibm-aix[56789].*)
 	xm_defines=POSIX
-	tm_file="${tm_file} rs6000/aix.h rs6000/aix51.h"
+	tm_file="${tm_file} rs6000/aix.h rs6000/aix51.h rs6000/xcoff.h"
 	tmake_file=rs6000/t-aix43
 	float_format=none
 	use_collect2=yes
@@ -2736,13 +2743,13 @@ rs6000-ibm-aix[56789].* | powerpc-ibm-aix[56789].*)
 	;;
 rs6000-ibm-aix*)
 	xm_defines=POSIX
-	tm_file="${tm_file} rs6000/aix.h"
+	tm_file="${tm_file} rs6000/aix.h rs6000/xcoff.h"
 	float_format=none
 	use_collect2=yes
 	;;
 rs6000-bull-bosx)
 	xm_defines=POSIX
-	tm_file="${tm_file} rs6000/aix.h"
+	tm_file="${tm_file} rs6000/aix.h rs6000/xcoff.h"
 	float_format=none
 	use_collect2=yes
 	;;

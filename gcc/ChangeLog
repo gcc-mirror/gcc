@@ -1,3 +1,49 @@
+2001-07-31  Daniel Berlin  <dan@cgsoftware.com>
+
+	PowerPC reorg and support for powerpc64-*-linux*.
+
+	Also fixes emitting of constants on 32 bit and 64 bit
+	platforms.
+	
+	* config.gcc: powerpc64-*-linux* is a new target.
+	Things that needed aix.h now also include xcoff.h	
+
+	* config/rs6000/rs6000.h: Split XCOFF specific stuff into
+	xcoff.h. 
+	Move AIX specific stuff into aix.h.
+	(ASM_LONG): Use DOUBLE_INT_ASM_OP if we are on a 64 bit target.
+	(ASM_OUTPUT_DOUBLE_INT): Ditto.
+	(TARGET_AIX): Renamed to TARGET_XCOFF, since the AIX ABI is used
+	with more than just XCOFF now.
+	(SET_ASM_OP): Remove, now defined where needed.
+	(FUNCTION_PROLOGUE): New macro definition.
+	(FUNCTION_EPILOGUE): New macro definition.
+	(CONST_OK_FOR_LETTER_P): Change N to require that value is
+	positive, too.
+	(ASM_OPEN_PAREN, ASM_CLOSE_PAREN): New macro definition.
+	(PREDICATE_CODES): Added exact_log2_cint_operand,
+	reg_or_add_cint64_operand, reg_or_sub_cint64_operand.
+
+	* config/rs6000/rs6000.c: #ifdef XCOFF debugging info stuff on
+	XCOFF_DEBUGGING_INFO.
+	Use DOUBLE_INT_ASM_OP where approriate.
+	(rs6000_emit_set_long_const): New function.
+	(rs6000_emit_set_const): New function.
+	(reg_or_sub_cint64_operand): New function.
+	(reg_or_add_cint64_operand): New function.
+	(exact_log2_cint_operand): New function.
+
+	* config/rs6000/rs6000.md: Fix emitting of constants.
+	Fix patterns that were AIX ABI specific, but depended on
+	!TARGET_ELF (instead of DEFAULT_ABI == ABI_AIX).	
+	
+	* config/rs6000/xcoff.h: New file.
+
+	* config/rs6000/linux64.h: New file.
+
+	* config/rs6000/darwin.h: Copy needed AIX alignment definitions.
+	
+
 2001-07-31  Graham Stott <grahams@redhat.com>
 
 	* function.c (pad_below): Revert 2001-07-26 patch.

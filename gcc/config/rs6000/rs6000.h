@@ -33,9 +33,13 @@ Boston, MA 02111-1307, USA.  */
 #define OBJECT_MACHO 4
 
 #define TARGET_ELF (TARGET_OBJECT_FORMAT == OBJECT_ELF)
-#define TARGET_AIX (TARGET_OBJECT_FORMAT == OBJECT_XCOFF)
+#define TARGET_XCOFF (TARGET_OBJECT_FORMAT == OBJECT_XCOFF)
 #define TARGET_MACOS (TARGET_OBJECT_FORMAT == OBJECT_PEF)
 #define TARGET_MACHO (TARGET_OBJECT_FORMAT == OBJECT_MACHO)
+
+#ifndef TARGET_AIX
+#define TARGET_AIX 0
+#endif
 
 /* Print subsidiary information on the compiler version in use.  */
 #define TARGET_VERSION ;
@@ -44,82 +48,6 @@ Boston, MA 02111-1307, USA.  */
 #ifndef TARGET_CPU_DEFAULT
 #define TARGET_CPU_DEFAULT ((char *)0)
 #endif
-
-/* Common CPP definitions used by CPP_SPEC among the various targets
-   for handling -mcpu=xxx switches.  */
-#define CPP_CPU_SPEC \
-"%{!mcpu*: \
-  %{mpower: %{!mpower2: -D_ARCH_PWR}} \
-  %{mpower2: -D_ARCH_PWR2} \
-  %{mpowerpc*: -D_ARCH_PPC} \
-  %{mno-power: %{!mpowerpc*: -D_ARCH_COM}} \
-  %{!mno-power: %{!mpower2: %(cpp_default)}}} \
-%{mcpu=common: -D_ARCH_COM} \
-%{mcpu=power: -D_ARCH_PWR} \
-%{mcpu=power2: -D_ARCH_PWR2} \
-%{mcpu=powerpc: -D_ARCH_PPC} \
-%{mcpu=rios: -D_ARCH_PWR} \
-%{mcpu=rios1: -D_ARCH_PWR} \
-%{mcpu=rios2: -D_ARCH_PWR2} \
-%{mcpu=rsc: -D_ARCH_PWR} \
-%{mcpu=rsc1: -D_ARCH_PWR} \
-%{mcpu=401: -D_ARCH_PPC} \
-%{mcpu=403: -D_ARCH_PPC} \
-%{mcpu=505: -D_ARCH_PPC} \
-%{mcpu=601: -D_ARCH_PPC -D_ARCH_PWR} \
-%{mcpu=602: -D_ARCH_PPC} \
-%{mcpu=603: -D_ARCH_PPC} \
-%{mcpu=603e: -D_ARCH_PPC} \
-%{mcpu=ec603e: -D_ARCH_PPC} \
-%{mcpu=604: -D_ARCH_PPC} \
-%{mcpu=604e: -D_ARCH_PPC} \
-%{mcpu=620: -D_ARCH_PPC} \
-%{mcpu=740: -D_ARCH_PPC} \
-%{mcpu=750: -D_ARCH_PPC} \
-%{mcpu=801: -D_ARCH_PPC} \
-%{mcpu=821: -D_ARCH_PPC} \
-%{mcpu=823: -D_ARCH_PPC} \
-%{mcpu=860: -D_ARCH_PPC}"
-
-#define CPP_DEFAULT_SPEC "-D_ARCH_PWR"
-
-/* Common ASM definitions used by ASM_SPEC among the various targets
-   for handling -mcpu=xxx switches.  */
-#define ASM_CPU_SPEC \
-"%{!mcpu*: \
-  %{mpower: %{!mpower2: -mpwr}} \
-  %{mpower2: -mpwrx} \
-  %{mpowerpc*: -mppc} \
-  %{mno-power: %{!mpowerpc*: -mcom}} \
-  %{!mno-power: %{!mpower2: %(asm_default)}}} \
-%{mcpu=common: -mcom} \
-%{mcpu=power: -mpwr} \
-%{mcpu=power2: -mpwrx} \
-%{mcpu=powerpc: -mppc} \
-%{mcpu=rios: -mpwr} \
-%{mcpu=rios1: -mpwr} \
-%{mcpu=rios2: -mpwrx} \
-%{mcpu=rsc: -mpwr} \
-%{mcpu=rsc1: -mpwr} \
-%{mcpu=401: -mppc} \
-%{mcpu=403: -mppc} \
-%{mcpu=505: -mppc} \
-%{mcpu=601: -m601} \
-%{mcpu=602: -mppc} \
-%{mcpu=603: -mppc} \
-%{mcpu=603e: -mppc} \
-%{mcpu=ec603e: -mppc} \
-%{mcpu=604: -mppc} \
-%{mcpu=604e: -mppc} \
-%{mcpu=620: -mppc} \
-%{mcpu=740: -mppc} \
-%{mcpu=750: -mppc} \
-%{mcpu=801: -mppc} \
-%{mcpu=821: -mppc} \
-%{mcpu=823: -mppc} \
-%{mcpu=860: -mppc}"
-
-#define ASM_DEFAULT_SPEC ""
 
 /* This macro defines names of additional specifications to put in the specs
    that can be used in various specifications like CC1_SPEC.  Its definition
@@ -574,13 +502,6 @@ extern int rs6000_debug_arg;		/* debug argument handling */
 /* Handle #pragma pack.  */
 #define HANDLE_PRAGMA_PACK 1
 
-/* AIX word-aligns FP doubles but doubleword-aligns 64-bit ints.  */
-#define ADJUST_FIELD_ALIGN(FIELD, COMPUTED) \
-  (TYPE_MODE (TREE_CODE (TREE_TYPE (FIELD)) == ARRAY_TYPE \
-	      ? get_inner_array_type (FIELD) \
-	      : TREE_TYPE (FIELD)) == DFmode \
-   ? MIN ((COMPUTED), 32) : (COMPUTED))
-
 /* Alignment of field after `int : 0' in a structure.  */
 #define EMPTY_FIELD_BOUNDARY 32
 
@@ -589,17 +510,6 @@ extern int rs6000_debug_arg;		/* debug argument handling */
 
 /* A bitfield declared as `int' forces `int' alignment for the struct.  */
 #define PCC_BITFIELD_TYPE_MATTERS 1
-
-/* AIX increases natural record alignment to doubleword if the first
-   field is an FP double while the FP fields remain word aligned.  */
-#define ROUND_TYPE_ALIGN(STRUCT, COMPUTED, SPECIFIED)	\
-  ((TREE_CODE (STRUCT) == RECORD_TYPE			\
-    || TREE_CODE (STRUCT) == UNION_TYPE			\
-    || TREE_CODE (STRUCT) == QUAL_UNION_TYPE)		\
-   && TYPE_FIELDS (STRUCT) != 0				\
-   && DECL_MODE (TYPE_FIELDS (STRUCT)) == DFmode	\
-   ? MAX (MAX ((COMPUTED), (SPECIFIED)), BIGGEST_ALIGNMENT) \
-   : MAX ((COMPUTED), (SPECIFIED)))
 
 /* Make strings word-aligned so strcpy from constants will be faster.  */
 #define CONSTANT_ALIGNMENT(EXP, ALIGN)  \
@@ -796,7 +706,7 @@ extern int rs6000_debug_arg;		/* debug argument handling */
    registers is expensive.  */
 
 #define REGISTER_MOVE_COST(MODE, CLASS1, CLASS2)		\
-  ((CLASS1) == FLOAT_REGS && (CLASS2) == FLOAT_REGS ? 2		\
+   ((CLASS1) == FLOAT_REGS && (CLASS2) == FLOAT_REGS ? 2		\
    : (CLASS1) == FLOAT_REGS && (CLASS2) != FLOAT_REGS ? 10	\
    : (CLASS1) != FLOAT_REGS && (CLASS2) == FLOAT_REGS ? 10	\
    : (((CLASS1) == SPECIAL_REGS || (CLASS1) == MQ_REGS		\
@@ -1050,7 +960,7 @@ enum reg_class
    `K' is a constant with only the low-order 16 bits non-zero
    `L' is a signed 16-bit constant shifted left 16 bits
    `M' is a constant that is greater than 31
-   `N' is a constant that is an exact power of two
+   `N' is a positive constant that is an exact power of two
    `O' is the constant zero
    `P' is a constant whose negation is a signed 16-bit constant */
 
@@ -1061,7 +971,7 @@ enum reg_class
    : (C) == 'L' ? (((VALUE) & 0xffff) == 0				\
 		   && ((VALUE) >> 31 == -1 || (VALUE) >> 31 == 0))	\
    : (C) == 'M' ? (VALUE) > 31						\
-   : (C) == 'N' ? exact_log2 (VALUE) >= 0				\
+   : (C) == 'N' ? (VALUE) > 0 && exact_log2 (VALUE) >= 0		\
    : (C) == 'O' ? (VALUE) == 0						\
    : (C) == 'P' ? (unsigned HOST_WIDE_INT) ((- (VALUE)) + 0x8000) < 0x10000 \
    : 0)
@@ -1384,8 +1294,8 @@ typedef struct rs6000_stack {
 /* 1 if N is a possible register number for function argument passing.
    On RS/6000, these are r3-r10 and fp1-fp13.  */
 #define FUNCTION_ARG_REGNO_P(N)						\
-  (((unsigned)((N) - GP_ARG_MIN_REG) < (unsigned)(GP_ARG_NUM_REG))	\
-   || ((unsigned)((N) - FP_ARG_MIN_REG) < (unsigned)(FP_ARG_NUM_REG)))
+  ((((N) - GP_ARG_MIN_REG) < (GP_ARG_NUM_REG))	\
+   || (((N) - FP_ARG_MIN_REG) < (FP_ARG_NUM_REG)))
 
 
 /* A C structure for machine-specific, per-function data.
@@ -1551,6 +1461,16 @@ typedef struct rs6000_args
    argument is passed depends on whether or not it is a named argument.  */
 #define STRICT_ARGUMENT_NAMING 1
 
+/* This macro generates the assembly code for function entry.
+   FILE is a stdio stream to output the code to.
+   SIZE is an int: how many units of temporary storage to allocate.
+   Refer to the array `regs_ever_live' to determine which registers
+   to save; `regs_ever_live[I]' is nonzero if register number I
+   is ever used in the function.  This macro is responsible for
+   knowing which registers should not be saved even if used.  */
+
+#define FUNCTION_PROLOGUE(FILE, SIZE) output_prolog (FILE, SIZE)
+
 /* Output assembler code to FILE to increment profiler label # LABELNO
    for profiling a function entry.  */
 
@@ -1575,6 +1495,18 @@ typedef struct rs6000_args
    || (current_function_calls_eh_return				\
        && TARGET_AIX						\
        && (REGNO) == TOC_REGISTER))
+
+/* This macro generates the assembly code for function exit,
+   on machines that need it.  If FUNCTION_EPILOGUE is not defined
+   then individual return instructions are generated for each
+   return statement.  Args are same as for FUNCTION_PROLOGUE.
+
+   The function epilogue should not depend on the current stack pointer!
+   It should use the frame pointer only.  This is mandatory because
+   of alloca; we also take advantage of it to omit stack adjustments
+   before returning.  */
+
+#define FUNCTION_EPILOGUE(FILE, SIZE) output_epilog (FILE, SIZE)
 
 /* TRAMPOLINE_TEMPLATE deleted */
 
@@ -2281,10 +2213,6 @@ extern int toc_initialized;
     }									  \
 }
 
-/* This is how we tell the assembler that two symbols have the same value.  */
-
-#define SET_ASM_OP "\t.set\t"
-
 /* This implementes the `alias' attribute.  */
 
 #define ASM_OUTPUT_DEF_FROM_DECLS(FILE,decl,target)	\
@@ -2498,7 +2426,7 @@ do {									\
     }									\
   else									\
     {									\
-      fputs ("\t.llong ", FILE);					\
+      fprintf (FILE, "\t%s ", DOUBLE_INT_ASM_OP);			\
       output_addr_const (FILE, (VALUE));				\
       putc ('\n', FILE);						\
     }									\
@@ -2527,7 +2455,7 @@ do {									\
   fprintf (FILE, "\t.byte 0x%x\n", (VALUE))
 
 /* This is used by the definition of ASM_OUTPUT_ADDR_ELT in defaults.h.  */
-#define ASM_LONG (TARGET_32BIT ? ".long" : ".quad")
+#define ASM_LONG (TARGET_32BIT ? ".long" : DOUBLE_INT_ASM_OP)
 
 /* This is how to output an element of a case-vector that is relative.  */
 
@@ -2550,19 +2478,6 @@ do {									\
   if ((LOG) != 0)			\
     fprintf (FILE, "\t.align %d\n", (LOG))
 
-/* This says how to output an assembler line
-   to define a local common symbol.
-   Alignment cannot be specified, but we can try to maintain
-   alignment after preceding TOC section if it was aligned
-   for 64-bit mode.  */
-
-#define ASM_OUTPUT_LOCAL(FILE, NAME, SIZE, ROUNDED)	\
-  do { fputs (".lcomm ", (FILE));			\
-       RS6000_OUTPUT_BASENAME ((FILE), (NAME));		\
-       fprintf ((FILE), ",%d,%s\n", (TARGET_32BIT ? (SIZE) : (ROUNDED)), \
-		xcoff_bss_section_name);		\
-     } while (0)
-
 /* Store in OUTPUT a string (made with alloca) containing
    an assembler-name for a local static variable named NAME.
    LABELNO is an integer which is different for each call.  */
@@ -2570,6 +2485,12 @@ do {									\
 #define ASM_FORMAT_PRIVATE_NAME(OUTPUT, NAME, LABELNO)	\
 ( (OUTPUT) = (char *) alloca (strlen ((NAME)) + 10),	\
   sprintf ((OUTPUT), "%s.%d", (NAME), (LABELNO)))
+
+/* Define the parentheses used to group arithmetic operations
+   in assembler code.  */
+
+#define ASM_OPEN_PAREN "("
+#define ASM_CLOSE_PAREN ")"
 
 /* Pick up the return address upon entry to a procedure. Used for
    dwarf2 unwind information.  This also enables the table driven
@@ -2603,6 +2524,7 @@ do {									\
   {"short_cint_operand", {CONST_INT}},					   \
   {"u_short_cint_operand", {CONST_INT}},				   \
   {"non_short_cint_operand", {CONST_INT}},				   \
+  {"exact_log2_cint_operand", {CONST_INT}},				   \
   {"gpc_reg_operand", {SUBREG, REG}},					   \
   {"cc_reg_operand", {SUBREG, REG}},					   \
   {"cc_reg_not_cr0_operand", {SUBREG, REG}},				   \
@@ -2611,6 +2533,8 @@ do {									\
   {"reg_or_u_short_operand", {SUBREG, REG, CONST_INT}},			   \
   {"reg_or_cint_operand", {SUBREG, REG, CONST_INT}},			   \
   {"reg_or_arith_cint_operand", {SUBREG, REG, CONST_INT}},		   \
+  {"reg_or_add_cint64_operand", {SUBREG, REG, CONST_INT}},		   \
+  {"reg_or_sub_cint64_operand", {SUBREG, REG, CONST_INT}},		   \
   {"reg_or_logical_cint_operand", {SUBREG, REG, CONST_INT, CONST_DOUBLE}}, \
   {"got_operand", {SYMBOL_REF, CONST, LABEL_REF}},			   \
   {"got_no_const_operand", {SYMBOL_REF, LABEL_REF}},			   \
