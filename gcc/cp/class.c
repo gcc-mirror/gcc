@@ -4155,7 +4155,7 @@ finish_struct_1 (t, warn_anon)
     {
       /* Use size_int so values are memoized in common cases.  */
       tree itype = build_index_type (size_int (has_virtual));
-      tree atype = build_array_type (vtable_entry_type, itype);
+      tree atype = build_cplus_array_type (vtable_entry_type, itype);
 
       layout_type (atype);
 

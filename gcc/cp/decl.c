@@ -6208,7 +6208,7 @@ init_decl_processing ()
   record_builtin_type (RID_MAX, VTBL_PTR_TYPE, vtable_entry_type);
 
   vtbl_type_node
-    = build_array_type (vtable_entry_type, NULL_TREE);
+    = build_cplus_array_type (vtable_entry_type, NULL_TREE);
   layout_type (vtbl_type_node);
   vtbl_type_node = build_qualified_type (vtbl_type_node, TYPE_QUAL_CONST);
   record_builtin_type (RID_MAX, NULL_PTR, vtbl_type_node);
