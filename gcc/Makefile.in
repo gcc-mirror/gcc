@@ -87,13 +87,15 @@ CCLIBFLAGS = -O
 # Version of ar to use when compiling libgcc1.a.
 OLDAR = ar
 
-# The GCC to use for compiling libgcc2.a.  Usually the one we just built.
+# The GCC to use for compiling libgcc2.a, enquire, and cross-test.
+# Usually the one we just built.
 # Don't use this as a dependency--use $(GCC_PASSES) or $(GCC_PARTS).
 GCC_FOR_TARGET = ./xgcc
 
 # This is used instead of ALL_CFLAGS when compiling with GCC_FOR_TARGET.
 # It omits XCFLAGS, and specifies -B./.
-GCC_CFLAGS=$(INTERNAL_CFLAGS) $(X_CFLAGS) $(T_CFLAGS) $(CFLAGS) -B./
+# It also specifies -B$(tooldir)/ to find as and ld for a cross compiler.
+GCC_CFLAGS=$(INTERNAL_CFLAGS) $(X_CFLAGS) $(T_CFLAGS) $(CFLAGS) -B./ -B$(tooldir)/
 
 # Special flags for compiling enquire.
 # We disable optimization to make floating point more reliable.
@@ -327,12 +329,12 @@ SUBDIR_INCLUDES = -I.. -I../$(srcdir) -I../$(srcdir)/config
 COMPILERS = cc1 cc1plus cc1obj
 
 # Language-specific object files for C.
-C_OBJS = c-parse.o c-lang.o \
-   c-lex.o c-decl.o c-typeck.o c-convert.o c-aux-info.o c-common.o
+C_OBJS = c-parse.o c-lang.o c-lex.o \
+   c-decl.o c-typeck.o c-convert.o c-aux-info.o c-common.o c-pragma.o
 
 # Language-specific object files for Objectionable C.
 OBJC_OBJS = objc-parse.o objc-actions.o \
-   c-lex.o c-decl.o c-typeck.o c-convert.o c-aux-info.o c-common.o
+   c-lex.o c-decl.o c-typeck.o c-convert.o c-aux-info.o c-common.o c-pragma.o
 
 # Language-specific object files for C++.
 CPLUS_OBJS = cp-parse.o cp-decl.o cp-decl2.o \
@@ -384,7 +386,7 @@ LIB2FUNCS = _muldi3 _divdi3 _moddi3 _udivdi3 _umoddi3 _negdi2 \
      _lshrdi3 _lshldi3 _ashldi3 _ashrdi3  \
     _udivmoddi4 _cmpdi2 _ucmpdi2 _floatdidf _floatdisf \
     _fixunsdfsi _fixunssfsi _fixunsdfdi _fixdfdi _fixunssfdi _fixsfdi \
-    _varargs _eprintf _builtin_new _builtin_New _builtin_del \
+    _varargs _eprintf _builtin_new _caps_New _builtin_del \
     _bb _shtab _clear_cache _trampoline __main _exit
 
 # Header files that are made available under the same name
@@ -672,6 +674,7 @@ c-lex.o : c-lex.c $(CONFIG_H) $(TREE_H) c-lex.h c-tree.h c-parse.h \
     input.h flags.h
 c-aux-info.o : c-aux-info.c  $(CONFIG_H) $(TREE_H) c-tree.h flags.h
 c-convert.o : c-convert.c $(CONFIG_H) $(TREE_H) flags.h
+c-pragma.o: c-pragma.c $(CONFIG_H) $(TREE_H)
 
 # C++ language specific files.
 
@@ -837,7 +840,7 @@ sched.o : sched.c $(CONFIG_H) $(RTL_H) basic-block.h regs.h hard-reg-set.h \
    flags.h insn-config.h insn-attr.h
 final.o : final.c $(CONFIG_H) $(RTL_H) gvarargs.h flags.h regs.h \
    recog.h conditions.h insn-config.h insn-attr.h real.h output.h \
-   hard-reg-set.h insn-codes.h gstab.h xcoffout.h
+   hard-reg-set.h insn-flags.h insn-codes.h gstab.h xcoffout.h
 recog.o : recog.c $(CONFIG_H) $(RTL_H)  \
    regs.h recog.h hard-reg-set.h flags.h insn-config.h insn-attr.h \
    insn-flags.h insn-codes.h real.h
@@ -1600,17 +1603,17 @@ bootstrap: force
 # To prevent `make install' from compiling alloca.o and then relinking cc1
 # because alloca.o is newer, we permit these recursive makes to compile
 # alloca.o.  Then cc1 is newer, so it won't have to be relinked.
-	$(MAKE) CC="stage1/gcc -Bstage1/" CFLAGS="$(BOOT_CFLAGS)" libdir=$(libdir) LANGUAGES="$(LANGUAGES)"
+	$(MAKE) CC="stage1/xgcc -Bstage1/" CFLAGS="$(BOOT_CFLAGS)" libdir=$(libdir) LANGUAGES="$(LANGUAGES)"
 	$(MAKE) stage2
-	$(MAKE) CC="stage2/gcc -Bstage2/" CFLAGS="$(BOOT_CFLAGS)" libdir=$(libdir) LANGUAGES="$(LANGUAGES)"
+	$(MAKE) CC="stage2/xgcc -Bstage2/" CFLAGS="$(BOOT_CFLAGS)" libdir=$(libdir) LANGUAGES="$(LANGUAGES)"
 
 bootstrap2: force
-	$(MAKE) CC="stage1/gcc -Bstage1/" CFLAGS="$(BOOT_CFLAGS)" libdir=$(libdir) LANGUAGES="$(LANGUAGES)"
+	$(MAKE) CC="stage1/xgcc -Bstage1/" CFLAGS="$(BOOT_CFLAGS)" libdir=$(libdir) LANGUAGES="$(LANGUAGES)"
 	$(MAKE) stage2
-	$(MAKE) CC="stage2/gcc -Bstage2/" CFLAGS="$(BOOT_CFLAGS)" libdir=$(libdir) LANGUAGES="$(LANGUAGES)"
+	$(MAKE) CC="stage2/xgcc -Bstage2/" CFLAGS="$(BOOT_CFLAGS)" libdir=$(libdir) LANGUAGES="$(LANGUAGES)"
 
 bootstrap3: force
-	$(MAKE) CC="stage2/gcc -Bstage2/" CFLAGS="$(BOOT_CFLAGS)" libdir=$(libdir) LANGUAGES="$(LANGUAGES)"
+	$(MAKE) CC="stage2/xgcc -Bstage2/" CFLAGS="$(BOOT_CFLAGS)" libdir=$(libdir) LANGUAGES="$(LANGUAGES)"
 
 # Compare the object files in the current directory with those in the
 # stage2 directory.
