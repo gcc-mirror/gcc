@@ -3,7 +3,7 @@
 #   Copyright (C) 1992, 1993, 1994, 1995, 1996, 1997, 1998, 1999,
 #   2000, 2001, 2002 Free Software Foundation, Inc.
 
-timestamp='2002-11-30'
+timestamp='2002-12-11'
 
 # This file is free software; you can redistribute it and/or modify it
 # under the terms of the GNU General Public License as published by
@@ -635,10 +635,21 @@ EOF
               }
 EOF
 		    (CCOPTS= $CC_FOR_BUILD -o $dummy $dummy.c 2>/dev/null) && HP_ARCH=`$dummy`
-		    if test -z "$HP_ARCH"; then HP_ARCH=hppa; fi
+		    test -z "$HP_ARCH" && HP_ARCH=hppa
 		    rm -f $dummy.c $dummy && rmdir $tmpdir
 		fi ;;
 	esac
+	if [ ${HP_ARCH} = "hppa2.0w" ]
+	then
+	    # avoid double evaluation of $set_cc_for_build
+	    test -n "$CC_FOR_BUILD" || eval $set_cc_for_build
+	    if echo __LP64__ | (CCOPTS= $CC_FOR_BUILD -E -) | grep __LP64__ >/dev/null
+	    then
+		HP_ARCH="hppa2.0w"
+	    else
+		HP_ARCH="hppa64"
+	    fi
+	fi
 	echo ${HP_ARCH}-hp-hpux${HPUX_REV}
 	exit 0 ;;
     ia64:HP-UX:*:*)

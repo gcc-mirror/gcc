@@ -1,3 +1,8 @@
+2002-12-17  Svein E. Seldal  <Svein.Seldal@solidas.com>
+
+	* config.sub: Import from master repository
+	* config.guess: Ditto
+
 2002-12-16  Jason Merrill  <jason@redhat.com>
 
 	* Makefile.tpl (all-gcc): Use 'make quickstrap' if there was a
