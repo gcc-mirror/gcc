@@ -1,3 +1,8 @@
+Mon Jan  8 13:46:02 MET 2001  Jan Hubicka  <jh@suse.cz>
+
+	* i386.c (ix86_expand_int_movcc): Take care to reverse fp conditions
+	properly.
+
 Sun Jan  7 18:37:43 2001  Mark P Mitchell  <mark@codesourcery.com>
 
 	* ggc-page.c (max_alignment): New structure.
