@@ -325,8 +325,8 @@ mark_stmt_if_obviously_necessary (tree stmt, bool aggressive)
       break;
 
     case GOTO_EXPR:
-      if (! simple_goto_p (stmt))
-	mark_stmt_necessary (stmt, true);
+      gcc_assert (!simple_goto_p (stmt));
+      mark_stmt_necessary (stmt, true);
       return;
 
     case COND_EXPR:
