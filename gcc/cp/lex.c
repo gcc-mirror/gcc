@@ -336,7 +336,11 @@ cxx_init (void)
   /* We cannot just assign to input_filename because it has already
      been initialized and will be used later as an N_BINCL for stabs+
      debugging.  */
-  push_srcloc ("<internal>", 0);
+#ifdef USE_MAPPED_LOCATION
+  push_srcloc (BUILTINS_LOCATION);
+#else
+  push_srcloc ("<built-in>", 0);
+#endif
 
   init_reswords ();
   init_tree ();

@@ -1,3 +1,22 @@
+2004-06-30  Per Bothner  <per@bothner.com>
+
+	Conditionally compile support for --enable-mapped_location.
+	* decl.c (pop_label):  Handle (imperfectly) USE_MAPPED_LOCATION case.
+	* decl2.c:  If USE_MAPPED_LOCATION, don't do some line number
+	adjustments - which I don't understand.
+	* error.c (dump_decl):  Rename "<interrnal>" to "<built-in>".
+	* error.c:  Use LOCATION_FILE and EXPR_LOCATION macros.
+	(print_instantiation_partial_context):  Use expand_location.
+	* decl.c (duplicate_decl):  Use new DECL_IS_BUILTIN macro.
+	* name-lookup.c:  Likewise.
+	* lex.c (cxx_init):  Likewise.  Also use BUILTINS_LOCATION.
+	* name-lookup.c:  Use input_line macro.
+	* parser.c (cp_lexer_get_preprocessor_token):  Use UNKNOWN_LOCATION.
+	(cp_parser_statement):  Rename locaal variable statement_locus to
+	statement_location and use SET_EXPR_LOCATION macro.
+	* pt.c:  Handle USE_MAPPED_LOCATION case.  Use new macros.
+	* tree.c (cp_walk_subtrees):  Likewise.
+
 2004-06-29  Per Bothner  <per@bothner.com>
 
 	* tree.c (build_min_nt, build_min, build_min_non_dep):

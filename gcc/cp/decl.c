@@ -363,8 +363,12 @@ pop_label (tree label, tree old_value)
 	  location_t location;
 
 	  cp_error_at ("label `%D' used but not defined", label);
+#ifdef USE_MAPPED_LOCATION
+	  location = input_location; /* FIXME want (input_filename, (line)0) */
+#else
  	  location.file = input_filename;
 	  location.line = 0;
+#endif
 	  /* Avoid crashing later.  */
 	  define_label (location, DECL_NAME (label));
 	}
@@ -1635,7 +1639,7 @@ duplicate_decls (tree newdecl, tree olddecl)
 							 TYPE_RAISES_EXCEPTIONS (oldtype));
 
 	  if ((pedantic || ! DECL_IN_SYSTEM_HEADER (olddecl))
-	      && DECL_SOURCE_LINE (olddecl) != 0
+	      && ! DECL_IS_BUILTIN (olddecl)
 	      && flag_exceptions
 	      && !comp_except_specs (TYPE_RAISES_EXCEPTIONS (TREE_TYPE (newdecl)),
 	                             TYPE_RAISES_EXCEPTIONS (TREE_TYPE (olddecl)), 1))

@@ -4871,7 +4871,7 @@ push_tinst_level (tree d)
     }
 
   new = make_node (TINST_LEVEL);
-  annotate_with_locus (new, input_location);
+  SET_EXPR_LOCATION (new, input_location);
   TINST_DECL (new) = d;
   TREE_CHAIN (new) = current_tinst_level;
   current_tinst_level = new;
@@ -4896,7 +4896,7 @@ pop_tinst_level (void)
 
   /* Restore the filename and line number stashed away when we started
      this instantiation.  */
-  input_location = *EXPR_LOCUS (old);
+  input_location = EXPR_LOCATION (old);
   extract_interface_info ();
   
   current_tinst_level = TREE_CHAIN (old);
@@ -6930,8 +6930,12 @@ tsubst (tree t, tree args, tsubst_flags_t complain, tree in_decl)
 	       message to avoid spewing a ton of messages during a
 	       single bad template instantiation.  */
 	    if (complain & tf_error
+#ifdef USE_MAPPED_LOCATION
+		&& last_loc != input_location)
+#else
 		&& (last_loc.line != input_line
 		    || last_loc.file != input_filename))
+#endif
 	      {
 		if (TREE_CODE (type) == VOID_TYPE)
 		  error ("forming reference to void");
@@ -7713,8 +7717,8 @@ tsubst_expr (tree t, tree args, tsubst_flags_t complain, tree in_decl)
   if (t == NULL_TREE || t == error_mark_node)
     return t;
 
-  if (EXPR_LOCUS (t))
-    input_location = *EXPR_LOCUS (t);
+  if (EXPR_HAS_LOCATION (t))
+    input_location = EXPR_LOCATION (t);
   if (STATEMENT_CODE_P (TREE_CODE (t)))
     current_stmt_tree ()->stmts_are_full_exprs_p = STMT_IS_FULL_EXPR_P (t);
 

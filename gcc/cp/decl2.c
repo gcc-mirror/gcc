@@ -2419,7 +2419,11 @@ generate_ctor_or_dtor_function (bool constructor_p, int priority,
   size_t i;
 
   input_location = *locus;
+#ifdef USE_MAPPED_LOCATION
+  /* ??? */
+#else
   locus->line++;
+#endif
   
   /* We use `I' to indicate initialization and `D' to indicate
      destruction.  */
@@ -2556,9 +2560,13 @@ finish_file (void)
   if (pch_file)
     c_common_write_pch ();
 
+#ifdef USE_MAPPED_LOCATION
+  /* FIXME - huh? */
+#else
   /* Otherwise, GDB can get confused, because in only knows
      about source for LINENO-1 lines.  */
   input_line -= 1;
+#endif
 
   interface_unknown = 1;
   interface_only = 0;
@@ -2714,7 +2722,11 @@ finish_file (void)
 	     instantiations, etc.  */
 	  reconsider = true;
 	  ssdf_count++;
+#ifdef USE_MAPPED_LOCATION
+	  /* ??? */
+#else
 	  locus.line++;
+#endif
 	}
       
       for (i = 0; i < deferred_fns_used; ++i)

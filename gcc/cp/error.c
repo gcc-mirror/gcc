@@ -835,7 +835,7 @@ dump_decl (tree t, int flags)
       if (DECL_GLOBAL_CTOR_P (t) || DECL_GLOBAL_DTOR_P (t))
 	dump_global_iord (t);
       else if (! DECL_LANG_SPECIFIC (t))
-	pp_identifier (cxx_pp, "<internal>");
+	pp_identifier (cxx_pp, "<built-in>");
       else
         dump_function_decl (t, flags);
       break;
@@ -2145,9 +2145,8 @@ cp_print_error_function (diagnostic_context *context,
   if (diagnostic_last_function_changed (context))
     {
       const char *old_prefix = context->printer->prefix;
-      char *new_prefix = diagnostic->location.file
-        ? file_name_as_prefix (diagnostic->location.file)
-        : NULL;
+      const char *file = LOCATION_FILE (diagnostic->location);
+      char *new_prefix = file ? file_name_as_prefix (file) : NULL;
 
       pp_base_set_prefix (context->printer, new_prefix);
 
@@ -2208,11 +2207,12 @@ print_instantiation_full_context (diagnostic_context *context)
 	    /* Avoid redundancy with the the "In function" line.  */;
 	  else
 	    pp_verbatim (context->printer,
-                         "%s: In instantiation of `%s':\n", location.file,
+                         "%s: In instantiation of `%s':\n",
+			 LOCATION_FILE (location),
                          decl_as_string (TINST_DECL (p),
                                          TFF_DECL_SPECIFIERS | TFF_RETURN_TYPE));
 
-	  location = *EXPR_LOCUS (p);
+	  location = EXPR_LOCATION (p);
 	  p = TREE_CHAIN (p);
 	}
     }
@@ -2225,16 +2225,20 @@ static void
 print_instantiation_partial_context (diagnostic_context *context,
                                      tree t, location_t loc)
 {
-  for (; t; t = TREE_CHAIN (t))
+  expanded_location xloc;
+  for (; ; t = TREE_CHAIN (t))
     {
+      xloc = expand_location (loc);
+      if (t == NULL_TREE)
+	break;
       pp_verbatim (context->printer, "%s:%d:   instantiated from `%s'\n",
-                   loc.file, loc.line,
+                   xloc.file, xloc.line,
                    decl_as_string (TINST_DECL (t),
                                    TFF_DECL_SPECIFIERS | TFF_RETURN_TYPE));
-      loc = *EXPR_LOCUS (t);
+      loc = EXPR_LOCATION (t);
     }
   pp_verbatim (context->printer, "%s:%d:   instantiated from here\n",
-               loc.file, loc.line);
+               xloc.file, xloc.line);
 }
 
 /* Called from cp_thing to print the template context for an error.  */

@@ -597,8 +597,7 @@ cp_lexer_get_preprocessor_token (cp_lexer *lexer ATTRIBUTE_UNUSED ,
   if (lexer != NULL && !lexer->main_lexer_p)
     {
       token->type = CPP_EOF;
-      token->location.line = 0;
-      token->location.file = NULL;
+      token->location = UNKNOWN_LOCATION;
       token->value = NULL_TREE;
       token->keyword = RID_MAX;
 
@@ -5890,14 +5889,14 @@ cp_parser_statement (cp_parser* parser, tree in_statement_expr)
 {
   tree statement;
   cp_token *token;
-  location_t statement_locus;
+  location_t statement_location;
 
   /* There is no statement yet.  */
   statement = NULL_TREE;
   /* Peek at the next token.  */
   token = cp_lexer_peek_token (parser->lexer);
   /* Remember the location of the first token in the statement.  */
-  statement_locus = token->location;
+  statement_location = token->location;
   /* If this is a keyword, then that will often determine what kind of
      statement we have.  */
   if (token->type == CPP_KEYWORD)
@@ -5973,10 +5972,7 @@ cp_parser_statement (cp_parser* parser, tree in_statement_expr)
 
   /* Set the line number for the statement.  */
   if (statement && STATEMENT_CODE_P (TREE_CODE (statement)))
-    {
-      SET_EXPR_LOCUS (statement, NULL);
-      annotate_with_locus (statement, statement_locus);
-    }
+    SET_EXPR_LOCATION (statement, statement_location);
 }
 
 /* Parse a labeled-statement.
