@@ -238,16 +238,16 @@ public class ThreadGroup
    * Check whether this ThreadGroup is an ancestor of the specified
    * ThreadGroup, or if they are the same.
    *
-   * @param g the group to test on
+   * @param group the group to test on
    * @return whether this ThreadGroup is a parent of the specified group
    */
-  public final boolean parentOf(ThreadGroup tg)
+  public final boolean parentOf(ThreadGroup group)
   {
-    while (tg != null)
+    while (group != null)
       {
-        if (tg == this)
+        if (group == this)
           return true;
-        tg = tg.parent;
+        group = group.parent;
       }
     return false;
   }
@@ -535,7 +535,7 @@ public class ThreadGroup
    * manner.
    *
    * @param thread the thread that exited
-   * @param exception the uncaught exception
+   * @param t the uncaught throwable
    * @throws NullPointerException if t is null
    * @see ThreadDeath
    * @see System#err

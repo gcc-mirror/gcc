@@ -220,9 +220,9 @@ public final class Integer extends Number implements Comparable
    * within <code>MIN_VALUE</code> to <code>MAX_VALUE</code>, inclusive.
    * Unlike Double.parseDouble, you may not have a leading '+'.
    *
-   * @param s the <code>String</code> to convert
+   * @param str the <code>String</code> to convert
    * @param radix the radix (base) to use in the conversion
-   * @return the <code>String</code> argument converted to </code>int</code>
+   * @return the <code>String</code> argument converted to <code>int</code>
    * @throws NumberFormatException if <code>s</code> cannot be parsed as an
    *         <code>int</code>
    */
@@ -414,7 +414,7 @@ public final class Integer extends Number implements Comparable
    * interpret the value of the property.
    *
    * @param nm the name of the system property
-   * @param val the default value
+   * @param def the default value
    * @return the value of the system property, or the default
    * @throws SecurityException if accessing the system property is forbidden
    * @see System#getProperty(String)
@@ -461,7 +461,7 @@ public final class Integer extends Number implements Comparable
    * Finally, the value must be in the range <code>MIN_VALUE</code> to
    * <code>MAX_VALUE</code>, or an exception is thrown.
    *
-   * @param s the <code>String</code> to interpret
+   * @param str the <code>String</code> to interpret
    * @return the value of the String as an <code>Integer</code>
    * @throws NumberFormatException if <code>s</code> cannot be parsed as a
    *         <code>int</code>

@@ -396,7 +396,7 @@ public final class StringBuffer implements Serializable, CharSequence
   /**
    * Append the <code>char</code> to this <code>StringBuffer</code>.
    *
-   * @param c the <code>char</code> to append
+   * @param ch the <code>char</code> to append
    * @return this <code>StringBuffer</code>
    */
   public synchronized StringBuffer append(char ch)

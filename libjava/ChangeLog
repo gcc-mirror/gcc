@@ -1,5 +1,30 @@
 2004-04-20  Michael Koch  <konqueror@gmx.de>
 
+	* java/lang/Byte.java,
+	java/lang/CharSequence.java,
+	java/lang/ClassLoader.java,
+	java/lang/Compiler.java,
+	java/lang/Double.java,
+	java/lang/Float.java,
+	java/lang/Integer.java,
+	java/lang/Long.java,
+	java/lang/Math.java,
+	java/lang/Number.java,
+	java/lang/Package.java,
+	java/lang/Runtime.java,
+	java/lang/RuntimePermission.java,
+	java/lang/SecurityManager.java,
+	java/lang/Short.java,
+	java/lang/StringBuffer.java,
+	java/lang/System.java,
+	java/lang/ThreadGroup.java,
+	java/lang/Throwable.java,
+	java/lang/reflect/InvocationHandler.java,
+	java/lang/reflect/Proxy.java:
+	Fixed javadocs, coding style and argument names all over.
+
+2004-04-20  Michael Koch  <konqueror@gmx.de>
+
 	* java/io/BufferedWriter.java,
 	java/io/ByteArrayInputStream.java,
 	java/io/CharArrayWriter.java,

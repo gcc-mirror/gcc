@@ -223,9 +223,9 @@ public final class Long extends Number implements Comparable
    * 'L' as the last character is only valid in radices 22 or greater, where
    * it is a digit and not a type indicator.
    *
-   * @param s the <code>String</code> to convert
+   * @param str the <code>String</code> to convert
    * @param radix the radix (base) to use in the conversion
-   * @return the <code>String</code> argument converted to </code>long</code>
+   * @return the <code>String</code> argument converted to <code>long</code>
    * @throws NumberFormatException if <code>s</code> cannot be parsed as a
    *         <code>long</code>
    */
@@ -306,7 +306,7 @@ public final class Long extends Number implements Comparable
    * <code>MAX_VALUE</code>, or an exception is thrown. Note that you cannot
    * use a trailing 'l' or 'L', unlike in Java source code.
    *
-   * @param s the <code>String</code> to interpret
+   * @param str the <code>String</code> to interpret
    * @return the value of the String as a <code>Long</code>
    * @throws NumberFormatException if <code>s</code> cannot be parsed as a
    *         <code>long</code>
@@ -455,7 +455,7 @@ public final class Long extends Number implements Comparable
    * interpret the value of the property.
    *
    * @param nm the name of the system property
-   * @param val the default value
+   * @param def the default value
    * @return the value of the system property, or the default
    * @throws SecurityException if accessing the system property is forbidden
    * @see System#getProperty(String)

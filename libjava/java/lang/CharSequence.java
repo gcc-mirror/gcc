@@ -78,7 +78,7 @@ public interface CharSequence
   int length();
 
   /**
-   * Returns a new <code>CharSequence</char> of the indicated range.
+   * Returns a new <code>CharSequence</code> of the indicated range.
    *
    * @param begin the start index (inclusive)
    * @param end the end index (exclusive)

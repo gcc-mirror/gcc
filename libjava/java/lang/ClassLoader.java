@@ -249,7 +249,7 @@ public abstract class ClassLoader
    * it. Calls <code>loadClass(name, false)</code>.
    *
    * <p>Subclasses should not override this method but should override
-   * <code>findClass()</code> which is called by this method.
+   * <code>findClass()</code> which is called by this method.</p>
    *
    * @param name the name of the class relative to this ClassLoader
    * @return the loaded class
@@ -266,14 +266,14 @@ public abstract class ClassLoader
    * out if the class has already been loaded through this classloader by
    * calling <code>findLoadedClass()</code>. Then it calls
    * <code>loadClass()</code> on the parent classloader (or when there is
-   * no parent it uses the VM bootclassloader)</code>). If the class is still
+   * no parent it uses the VM bootclassloader). If the class is still
    * not loaded it tries to create a new class by calling
    * <code>findClass()</code>. Finally when <code>resolve</code> is
    * <code>true</code> it also calls <code>resolveClass()</code> on the
    * newly loaded class.
    *
    * <p>Subclasses should not override this method but should override
-   * <code>findClass()</code> which is called by this method.
+   * <code>findClass()</code> which is called by this method.</p>
    *
    * @param name the fully qualified name of the class to load
    * @param resolve whether or not to resolve the class
@@ -384,7 +384,7 @@ public abstract class ClassLoader
    * <code>findClass()</code> implementation. The name should use '.'
    * separators, and discard the trailing ".class".  The default protection
    * domain has the permissions of
-   * <code>Policy.getPolicy().getPermissions(new CodeSource(null, null))<code>.
+   * <code>Policy.getPolicy().getPermissions(new CodeSource(null, null))</code>.
    *
    * @param name the name to give the class, or null if unknown
    * @param data the data representing the classfile, in classfile format
@@ -407,7 +407,7 @@ public abstract class ClassLoader
    * Helper to define a class using a string of bytes. Subclasses should call
    * this method from their <code>findClass()</code> implementation. If the
    * domain is null, the default of
-   * <code>Policy.getPolicy().getPermissions(new CodeSource(null, null))<code>
+   * <code>Policy.getPolicy().getPermissions(new CodeSource(null, null))</code>
    * is used. Once a class has been defined in a package, all further classes
    * in that package must have the same set of certificates or a
    * SecurityException is thrown.
@@ -475,6 +475,7 @@ public abstract class ClassLoader
    * <code>null</code>. A security check may be performed on
    * <code>RuntimePermission("getClassLoader")</code>.
    *
+   * @return the parent <code>ClassLoader</code>
    * @throws SecurityException if the security check fails
    * @since 1.2
    */
@@ -554,13 +555,13 @@ public abstract class ClassLoader
    * multiple resources with the same name that come from multiple locations.
    * It can also occur that a parent classloader offers a resource with a
    * certain name and the child classloader also offers a resource with that
-   * same name. <code>getResource() only offers the first resource (of the
+   * same name. <code>getResource()</code> only offers the first resource (of the
    * parent) with a given name. This method lists all resources with the
    * same name. The name should use '/' as path separators.
    *
    * <p>The Enumeration is created by first calling <code>getResources()</code>
    * on the parent classloader and then calling <code>findResources()</code>
-   * on this classloader.
+   * on this classloader.</p>
    *
    * @param name the resource name
    * @return an enumaration of all resources found

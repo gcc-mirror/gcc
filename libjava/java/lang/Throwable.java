@@ -392,7 +392,7 @@ public class Throwable implements Serializable
    * then a line starting with three spaces and the string "... X more" is
    * printed, where X is the number of remaining stackframes.
    *
-   * @param w the PrintWriter to write the trace to
+   * @param pw the PrintWriter to write the trace to
    * @since 1.1
    */
   public void printStackTrace (PrintWriter pw)

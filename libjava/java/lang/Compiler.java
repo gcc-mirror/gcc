@@ -81,7 +81,7 @@ public final class Compiler
   }
 
   /**
-   * Compile the classes whose name matches <code>classNames/code>.
+   * Compile the classes whose name matches <code>classNames</code>.
    *
    * @param classNames the name of classes to compile
    * @return <code>false</code> if no compiler is available or

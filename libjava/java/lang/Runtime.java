@@ -95,8 +95,9 @@ public class Runtime
    *  System.loadLibrary calls Runtime.getRuntime, triggering initialization
    *   Runtime.<clinit> calls Properties.<init>, triggering initialization
    *    Dictionary, Hashtable, and Properties have no dependencies
-   *   Runtime.<clinit> calls insertSystemProperties; the VM must make sure
-   *      that there are not any harmful dependencies
+   *   Runtime.<clinit> calls VMRuntime.insertSystemProperties, triggering
+   *      initialization of VMRuntime; the VM must make sure that there are
+   *      not any harmful dependencies
    *   Runtime.<clinit> calls Runtime.<init>
    *    Runtime.<init> calls StringTokenizer.<init>, triggering initialization
    *     StringTokenizer has no dependencies
@@ -170,13 +171,13 @@ public class Runtime
    *
    * <p>First, all shutdown hooks are run, in unspecified order, and
    * concurrently. Next, if finalization on exit has been enabled, all pending
-   * finalizers are run. Finally, the system calls <code>halt</code>.
+   * finalizers are run. Finally, the system calls <code>halt</code>.</p>
    *
    * <p>If this is run a second time after shutdown has already started, there
    * are two actions. If shutdown hooks are still executing, it blocks
    * indefinitely. Otherwise, if the status is nonzero it halts immediately;
    * if it is zero, it blocks indefinitely. This is typically called by
-   * <code>System.exit</code>.
+   * <code>System.exit</code>.</p>
    *
    * @param status the status to exit with
    * @throws SecurityException if permission is denied
@@ -285,23 +286,23 @@ public class Runtime
    * <code>System.exit</code> was invoked), or when the user terminates
    * the virtual machine (such as by typing ^C, or logging off). There is
    * a security check to add hooks,
-   * <code>RuntimePermission("shutdownHooks")<code>.
+   * <code>RuntimePermission("shutdownHooks")</code>.
    *
    * <p>The hook must be an initialized, but unstarted Thread. The threads
    * are run concurrently, and started in an arbitrary order; and user
    * threads or daemons may still be running. Once shutdown hooks have
    * started, they must all complete, or else you must use <code>halt</code>,
    * to actually finish the shutdown sequence. Attempts to modify hooks
-   * after shutdown has started result in IllegalStateExceptions.
+   * after shutdown has started result in IllegalStateExceptions.</p>
    *
    * <p>It is imperative that you code shutdown hooks defensively, as you
    * do not want to deadlock, and have no idea what other hooks will be
    * running concurrently. It is also a good idea to finish quickly, as the
-   * virtual machine really wants to shut down!
+   * virtual machine really wants to shut down!</p>
    *
    * <p>There are no guarantees that such hooks will run, as there are ways
    * to forcibly kill a process. But in such a drastic case, shutdown hooks
-   * would do little for you in the first place.
+   * would do little for you in the first place.</p>
    *
    * @param hook an initialized, unstarted Thread
    * @throws IllegalArgumentException if the hook is already registered or run
@@ -334,7 +335,7 @@ public class Runtime
   /**
    * De-register a shutdown hook. As when you registered it, there is a
    * security check to remove hooks,
-   * <code>RuntimePermission("shutdownHooks")<code>.
+   * <code>RuntimePermission("shutdownHooks")</code>.
    *
    * @param hook the hook to remove
    * @return true if the hook was successfully removed, false if it was not
@@ -408,7 +409,7 @@ public class Runtime
 
   /**
    * Create a new subprocess with the specified command line. Calls
-   * <code>exec(cmdline, null, null)<code>. A security check is performed,
+   * <code>exec(cmdline, null, null)</code>. A security check is performed,
    * <code>checkExec</code>.
    *
    * @param cmdline the command to call
@@ -635,9 +636,11 @@ public class Runtime
    * <code>System.mapLibraryName(libname)</code>. There may be a security
    * check, of <code>checkLink</code>.
    *
-   * @param filename the file to load
+   * @param libname the library to load
+   *
    * @throws SecurityException if permission is denied
    * @throws UnsatisfiedLinkError if the library is not found
+   *
    * @see System#mapLibraryName(String)
    * @see ClassLoader#findLibrary(String)
    */

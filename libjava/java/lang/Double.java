@@ -1,5 +1,6 @@
 /* Double.java -- object wrapper for double
-   Copyright (C) 1998, 1999, 2000, 2001, 2002 Free Software Foundation, Inc.
+   Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003
+   Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -34,7 +35,6 @@ or based on this library.  If you modify this library, you may extend
 this exception to your version of the library, but you are not
 obligated to do so.  If you do not wish to do so, delete this
 exception statement from your version. */
-
 
 package java.lang;
 
@@ -243,7 +243,7 @@ public final class Double extends Number implements Comparable
    * @see #NEGATIVE_INFINITY
    * @since 1.2
    */
-  public static native double parseDouble(String s);
+  public static native double parseDouble(String str);
 
   /**
    * Return <code>true</code> if the <code>double</code> has the same
@@ -392,9 +392,9 @@ public final class Double extends Number implements Comparable
    * <code>Double.NaN</code> as equal, but treats <code>0.0</code> and
    * <code>-0.0</code> as unequal.
    *
-   * <p>Note that <code>d1.equals(d2)<code> is identical to
+   * <p>Note that <code>d1.equals(d2)</code> is identical to
    * <code>doubleToLongBits(d1.doubleValue()) ==
-   *    doubleToLongBits(d2.doubleValue())<code>.
+   *    doubleToLongBits(d2.doubleValue())</code>.
    *
    * @param obj the object to compare
    * @return whether the objects are semantically equal

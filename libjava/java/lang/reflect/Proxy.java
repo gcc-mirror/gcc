@@ -211,35 +211,36 @@ public class Proxy implements Serializable
    * Returns the proxy {@link Class} for the given ClassLoader and array
    * of interfaces, dynamically generating it if necessary.
    *
-   * There are several restrictions on this method, the violation of
+   * <p>There are several restrictions on this method, the violation of
    * which will result in an IllegalArgumentException or
-   * NullPointerException:
+   * NullPointerException:</p>
+   * 
    * <ul>
-   *  <li>All objects in `interfaces' must represent distinct interfaces.
-   *      Classes, primitive types, null, and duplicates are forbidden.</li>
-   *  <li>The interfaces must be visible in the specified ClassLoader.
-   *      In other words, for each interface i:
-   *      <code>Class.forName(i.getName(), false, loader) == i</code>
-   *      must be true.</li>
-   *  <li>All non-public interfaces (if any) must reside in the same
-   *      package, or the proxy class would be non-instantiable.  If
-   *      there are no non-public interfaces, the package of the proxy
-   *      class is unspecified.</li>
-   *  <li>All interfaces must be compatible - if two declare a method
-   *      with the same name and parameters, the return type must be
-   *      the same and the throws clause of the proxy class will be
-   *      the maximal subset of subclasses of the throws clauses for
-   *      each method that is overridden.</li>
-   *  <li>VM constraints limit the number of interfaces a proxy class
-   *      may directly implement (however, the indirect inheritance
-   *      of {@link Serializable} does not count against this limit).
-   *      Even though most VMs can theoretically have 65535
-   *      superinterfaces for a class, the actual limit is smaller
-   *      because a class's constant pool is limited to 65535 entries,
-   *      and not all entries can be interfaces.</li>
-   * </ul><p>
+   * <li>All objects in `interfaces' must represent distinct interfaces.
+   *     Classes, primitive types, null, and duplicates are forbidden.</li>
+   * <li>The interfaces must be visible in the specified ClassLoader.
+   *     In other words, for each interface i:
+   *     <code>Class.forName(i.getName(), false, loader) == i</code>
+   *     must be true.</li>
+   * <li>All non-public interfaces (if any) must reside in the same
+   *     package, or the proxy class would be non-instantiable.  If
+   *     there are no non-public interfaces, the package of the proxy
+   *     class is unspecified.</li>
+   * <li>All interfaces must be compatible - if two declare a method
+   *     with the same name and parameters, the return type must be
+   *     the same and the throws clause of the proxy class will be
+   *     the maximal subset of subclasses of the throws clauses for
+   *     each method that is overridden.</li>
+   * <li>VM constraints limit the number of interfaces a proxy class
+   *     may directly implement (however, the indirect inheritance
+   *     of {@link Serializable} does not count against this limit).
+   *     Even though most VMs can theoretically have 65535
+   *     superinterfaces for a class, the actual limit is smaller
+   *     because a class's constant pool is limited to 65535 entries,
+   *     and not all entries can be interfaces.</li>
+   * </ul>
    *
-   * Note that different orders of interfaces produce distinct classes.
+   * <p>Note that different orders of interfaces produce distinct classes.</p>
    *
    * @param loader the class loader to define the proxy class in; null
    *        implies the bootstrap class loader

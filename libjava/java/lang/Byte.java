@@ -147,7 +147,7 @@ public final class Byte extends Number implements Comparable
    *
    * @param s the <code>String</code> to convert
    * @param radix the radix (base) to use in the conversion
-   * @return the <code>String</code> argument converted to </code>byte</code>
+   * @return the <code>String</code> argument converted to <code>byte</code>
    * @throws NumberFormatException if <code>s</code> cannot be parsed as a
    *         <code>byte</code>
    */
