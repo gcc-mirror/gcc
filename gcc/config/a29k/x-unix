@@ -1,0 +1,2 @@
+# Needed for missing functions in Sym1.
+CLIB=-lsysv -liberty
