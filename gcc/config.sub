@@ -212,6 +212,10 @@ case $basic_machine in
 		basic_machine=m88k-motorola
 		os=-sysv3
 		;;
+	dpx20 | dpx20-*)
+		basic_machine=rs6000-bull
+		os=-bosx
+		;;
 	dpx2* | dpx2*-bull)
 		basic_machine=m68k-bull
 		os=-sysv3
@@ -534,7 +538,8 @@ case $os in
 	      | -amigados* | -msdos* | -newsos* | -unicos* | -aos* \
 	      | -nindy* | -vxworks* | -ebmon* | -hms* | -mvs* | -clix* \
 	      | -riscos* | -linux* | -uniplus* | -iris* | -rtu* | -xenix* \
-	      | -hiux* | -386bsd* | -netbsd* | -freebsd* | -riscix* | -lynxos*)
+	      | -hiux* | -386bsd* | -netbsd* | -freebsd* | -riscix* \
+	      | -lynxos* | -bosx* )
 		;;
 	-sunos5*)
 		os=`echo $os | sed -e 's|sunos5|solaris2|'`
