@@ -1,7 +1,6 @@
 /* Definitions for Intel 386 running Interactive Unix System V,
    using dbx-in-coff encapsulation.
-   Specifically, this is for recent versions that support POSIX;
-   for version 2.0.2, use configuration option i386-sysv instead.
+   Specifically, this is for recent versions that support POSIX.
    Copyright (C) 1992 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
