@@ -94,6 +94,13 @@ static const char * const ia64_output_reg_names[8] =
 /* String used with the -mfixed-range= option.  */
 const char *ia64_fixed_range_string;
 
+/* Determines whether we use adds, addl, or movl to generate our
+   TLS immediate offsets.  */
+int ia64_tls_size = 22;
+
+/* String used with the -mtls-size= option.  */
+const char *ia64_tls_size_string;
+
 /* Determines whether we run our final scheduling pass or not.  We always
    avoid the normal second scheduling pass.  */
 static int ia64_flag_schedule_insns2;
@@ -103,6 +110,8 @@ static int ia64_flag_schedule_insns2;
 
 unsigned int ia64_section_threshold;
 
+static rtx gen_tls_get_addr PARAMS ((void));
+static rtx gen_thread_pointer PARAMS ((void));
 static int find_gr_spill PARAMS ((int));
 static int next_scratch_gr_reg PARAMS ((void));
 static void mark_reg_gr_used_mask PARAMS ((rtx, void *));
@@ -230,6 +239,11 @@ static const struct attribute_spec ia64_attribute_table[] =
 #undef TARGET_SCHED_REORDER2
 #define TARGET_SCHED_REORDER2 ia64_sched_reorder2
 
+#ifdef HAVE_AS_TLS
+#undef TARGET_HAVE_TLS
+#define TARGET_HAVE_TLS true
+#endif
+
 struct gcc_target targetm = TARGET_INITIALIZER;
 
 /* Return 1 if OP is a valid operand for the MEM of a CALL insn.  */
@@ -266,7 +280,10 @@ sdata_symbolic_operand (op, mode)
       if (CONSTANT_POOL_ADDRESS_P (op))
 	return GET_MODE_SIZE (get_pool_mode (op)) <= ia64_section_threshold;
       else
-        return XSTR (op, 0)[0] == SDATA_NAME_FLAG_CHAR;
+	{
+	  const char *str = XSTR (op, 0);
+          return (str[0] == ENCODE_SECTION_INFO_CHAR && str[1] == 's');
+	}
 
     default:
       break;
@@ -339,6 +356,35 @@ symbolic_operand (op, mode)
     }
   return 0;
 }
+
+/* Return tls_model if OP refers to a TLS symbol.  */
+
+int
+tls_symbolic_operand (op, mode)
+     rtx op;
+     enum machine_mode mode ATTRIBUTE_UNUSED;
+{
+  const char *str;
+
+  if (GET_CODE (op) != SYMBOL_REF)
+    return 0;
+  str = XSTR (op, 0);
+  if (str[0] != ENCODE_SECTION_INFO_CHAR)
+    return 0;
+  switch (str[1])
+    {
+    case 'G':
+      return TLS_MODEL_GLOBAL_DYNAMIC;
+    case 'L':
+      return TLS_MODEL_LOCAL_DYNAMIC;
+    case 'i':
+      return TLS_MODEL_INITIAL_EXEC;
+    case 'l':
+      return TLS_MODEL_LOCAL_EXEC;
+    }
+  return 0;
+}
+
 
 /* Return 1 if OP refers to a function.  */
 
@@ -953,6 +999,9 @@ ia64_expand_load_address (dest, src, scratch)
   else
     temp = dest;
 
+  if (tls_symbolic_operand (src, Pmode))
+    abort ();
+
   if (TARGET_AUTO_PIC)
     emit_insn (gen_load_gprel64 (temp, src));
   else if (GET_CODE (src) == SYMBOL_REF && SYMBOL_REF_FLAG (src))
@@ -993,6 +1042,185 @@ ia64_expand_load_address (dest, src, scratch)
 
   if (temp != dest)
     emit_move_insn (dest, temp);
+}
+
+static rtx
+gen_tls_get_addr ()
+{
+  static rtx tga;
+  if (!tga)
+    {
+      tga = init_one_libfunc ("__tls_get_addr");
+      ggc_add_rtx_root (&tga, 1);
+    }
+  return tga;
+}
+
+static rtx
+gen_thread_pointer ()
+{
+  static rtx tp;
+  if (!tp)
+    {
+      tp = gen_rtx_REG (Pmode, 13);
+      RTX_UNCHANGING_P (tp);
+      ggc_add_rtx_root (&tp, 1);
+    }
+  return tp;
+}
+
+rtx
+ia64_expand_move (op0, op1)
+     rtx op0, op1;
+{
+  enum machine_mode mode = GET_MODE (op0);
+
+  if (!reload_in_progress && !reload_completed && !ia64_move_ok (op0, op1))
+    op1 = force_reg (mode, op1);
+
+  if (mode == Pmode)
+    {
+      enum tls_model tls_kind;
+      if ((tls_kind = tls_symbolic_operand (op1, Pmode)))
+	{
+	  rtx tga_op1, tga_op2, tga_ret, tga_eqv, tmp, insns;
+
+	  switch (tls_kind)
+	    {
+	    case TLS_MODEL_GLOBAL_DYNAMIC:
+	      start_sequence ();
+
+	      tga_op1 = gen_reg_rtx (Pmode);
+	      emit_insn (gen_load_ltoff_dtpmod (tga_op1, op1));
+	      tga_op1 = gen_rtx_MEM (Pmode, tga_op1);
+	      RTX_UNCHANGING_P (tga_op1) = 1;
+
+	      tga_op2 = gen_reg_rtx (Pmode);
+	      emit_insn (gen_load_ltoff_dtprel (tga_op2, op1));
+	      tga_op2 = gen_rtx_MEM (Pmode, tga_op2);
+	      RTX_UNCHANGING_P (tga_op2) = 1;
+	      
+	      tga_ret = emit_library_call_value (gen_tls_get_addr (), NULL_RTX,
+						 LCT_CONST, Pmode, 2, tga_op1,
+						 Pmode, tga_op2, Pmode);
+
+	      insns = get_insns ();
+	      end_sequence ();
+
+	      emit_libcall_block (insns, op0, tga_ret, op1);
+	      return NULL_RTX;
+
+	    case TLS_MODEL_LOCAL_DYNAMIC:
+	      /* ??? This isn't the completely proper way to do local-dynamic
+		 If the call to __tls_get_addr is used only by a single symbol,
+		 then we should (somehow) move the dtprel to the second arg
+		 to avoid the extra add.  */
+	      start_sequence ();
+
+	      tga_op1 = gen_reg_rtx (Pmode);
+	      emit_insn (gen_load_ltoff_dtpmod (tga_op1, op1));
+	      tga_op1 = gen_rtx_MEM (Pmode, tga_op1);
+	      RTX_UNCHANGING_P (tga_op1) = 1;
+
+	      tga_op2 = const0_rtx;
+
+	      tga_ret = emit_library_call_value (gen_tls_get_addr (), NULL_RTX,
+						 LCT_CONST, Pmode, 2, tga_op1,
+						 Pmode, tga_op2, Pmode);
+
+	      insns = get_insns ();
+	      end_sequence ();
+
+	      tga_eqv = gen_rtx_UNSPEC (Pmode, gen_rtvec (1, const0_rtx),
+					UNSPEC_LD_BASE);
+	      tmp = gen_reg_rtx (Pmode);
+	      emit_libcall_block (insns, tmp, tga_ret, tga_eqv);
+
+	      if (register_operand (op0, Pmode))
+		tga_ret = op0;
+	      else
+		tga_ret = gen_reg_rtx (Pmode);
+	      if (TARGET_TLS64)
+		{
+		  emit_insn (gen_load_dtprel (tga_ret, op1));
+		  emit_insn (gen_adddi3 (tga_ret, tmp, tga_ret));
+		}
+	      else
+		emit_insn (gen_add_dtprel (tga_ret, tmp, op1));
+	      if (tga_ret == op0)
+		return NULL_RTX;
+	      op1 = tga_ret;
+	      break;
+
+	    case TLS_MODEL_INITIAL_EXEC:
+	      tmp = gen_reg_rtx (Pmode);
+	      emit_insn (gen_load_ltoff_tprel (tmp, op1));
+	      tmp = gen_rtx_MEM (Pmode, tmp);
+	      RTX_UNCHANGING_P (tmp) = 1;
+	      tmp = force_reg (Pmode, tmp);
+
+	      if (register_operand (op0, Pmode))
+		op1 = op0;
+	      else
+		op1 = gen_reg_rtx (Pmode);
+	      emit_insn (gen_adddi3 (op1, tmp, gen_thread_pointer ()));
+	      if (op1 == op0)
+		return NULL_RTX;
+	      break;
+
+	    case TLS_MODEL_LOCAL_EXEC:
+	      if (register_operand (op0, Pmode))
+		tmp = op0;
+	      else
+		tmp = gen_reg_rtx (Pmode);
+	      if (TARGET_TLS64)
+		{
+		  emit_insn (gen_load_tprel (tmp, op1));
+		  emit_insn (gen_adddi3 (tmp, gen_thread_pointer (), tmp));
+		}
+	      else
+		emit_insn (gen_add_tprel (tmp, gen_thread_pointer (), op1));
+	      if (tmp == op0)
+		return NULL_RTX;
+	      op1 = tmp;
+	      break;
+
+	    default:
+	      abort ();
+	    }
+	}
+      else if (!TARGET_NO_PIC && symbolic_operand (op1, DImode))
+	{
+	  /* Before optimization starts, delay committing to any particular
+	     type of PIC address load.  If this function gets deferred, we
+	     may acquire information that changes the value of the
+	     sdata_symbolic_operand predicate.
+
+	     But don't delay for function pointers.  Loading a function address
+	     actually loads the address of the descriptor not the function.
+	     If we represent these as SYMBOL_REFs, then they get cse'd with
+	     calls, and we end up with calls to the descriptor address instead
+	     of calls to the function address.  Functions are not candidates
+	     for sdata anyways.
+
+	     Don't delay for LABEL_REF because the splitter loses REG_LABEL
+	     notes.  Don't delay for pool addresses on general principals;
+	     they'll never become non-local behind our back.  */
+
+	  if (rtx_equal_function_value_matters
+	      && GET_CODE (op1) != LABEL_REF
+	      && ! (GET_CODE (op1) == SYMBOL_REF
+		    && (SYMBOL_REF_FLAG (op1)
+			|| CONSTANT_POOL_ADDRESS_P (op1)
+			|| STRING_POOL_ADDRESS_P (op1))))
+	    emit_insn (gen_movdi_symbolic (op0, op1));
+	  else
+	    ia64_expand_load_address (op0, op1, NULL_RTX);
+	  return NULL_RTX;
+	}
+    }
+
+  return op1;
 }
 
 rtx
@@ -3975,6 +4203,16 @@ ia64_override_options ()
   if (ia64_fixed_range_string)
     fix_range (ia64_fixed_range_string);
 
+  if (ia64_tls_size_string)
+    {
+      char *end;
+      unsigned long tmp = strtoul (ia64_tls_size_string, &end, 10);
+      if (*end || (tmp != 14 && tmp != 22 && tmp != 64))
+	error ("bad value (%s) for -mtls-size= switch", ia64_tls_size_string);
+      else
+	ia64_tls_size = tmp;
+    }
+
   ia64_flag_schedule_insns2 = flag_schedule_insns_after_reload;
   flag_schedule_insns_after_reload = 0;
 
@@ -4595,6 +4833,20 @@ rtx_needs_barrier (x, flags, pred)
     case UNSPEC:
       switch (XINT (x, 1))
 	{
+	case UNSPEC_LTOFF_DTPMOD:
+	case UNSPEC_LTOFF_DTPREL:
+	case UNSPEC_DTPREL:
+	case UNSPEC_LTOFF_TPREL:
+	case UNSPEC_TPREL:
+	case UNSPEC_PRED_REL_MUTEX:
+	case UNSPEC_PIC_CALL:
+        case UNSPEC_MF:
+        case UNSPEC_FETCHADD_ACQ:
+	case UNSPEC_BSP_VALUE:
+	case UNSPEC_FLUSHRS:
+	case UNSPEC_BUNDLE_SELECTOR:
+          break;
+
 	case UNSPEC_GR_SPILL:
 	case UNSPEC_GR_RESTORE:
 	  {
@@ -4613,15 +4865,6 @@ rtx_needs_barrier (x, flags, pred)
 	case UNSPEC_POPCNT:
 	  need_barrier = rtx_needs_barrier (XVECEXP (x, 0, 0), flags, pred);
 	  break;
-
-	case UNSPEC_PRED_REL_MUTEX:
-	case UNSPEC_PIC_CALL:
-        case UNSPEC_MF:
-        case UNSPEC_FETCHADD_ACQ:
-	case UNSPEC_BSP_VALUE:
-	case UNSPEC_FLUSHRS:
-	case UNSPEC_BUNDLE_SELECTOR:
-          break;
 
         case UNSPEC_ADDP4:
 	  need_barrier = rtx_needs_barrier (XVECEXP (x, 0, 0), flags, pred);
@@ -6910,8 +7153,9 @@ ia64_encode_section_info (decl, first)
      int first ATTRIBUTE_UNUSED;
 {
   const char *symbol_str;
-  bool is_local, is_small;
+  bool is_local;
   rtx symbol;
+  char encoding = 0;
 
   if (TREE_CODE (decl) == FUNCTION_DECL)
     {
@@ -6930,40 +7174,66 @@ ia64_encode_section_info (decl, first)
 
   is_local = (*targetm.binds_local_p) (decl);
 
+  if (TREE_CODE (decl) == VAR_DECL && DECL_THREAD_LOCAL (decl))
+    {
+      enum tls_model kind;
+      if (!flag_pic)
+	{
+	  if (is_local)
+	    kind = TLS_MODEL_LOCAL_EXEC;
+	  else
+	    kind = TLS_MODEL_INITIAL_EXEC;
+	}
+      else if (is_local)
+	kind = TLS_MODEL_LOCAL_DYNAMIC;
+      else
+	kind = TLS_MODEL_GLOBAL_DYNAMIC;
+      if (kind < flag_tls_default)
+	kind = flag_tls_default;
+
+      encoding = " GLil"[kind];
+    }
   /* Determine if DECL will wind up in .sdata/.sbss.  */
-  is_small = ia64_in_small_data_p (decl);
+  else if (is_local && ia64_in_small_data_p (decl))
+    encoding = 's';
 
   /* Finally, encode this into the symbol string.  */
-  if (is_local && is_small)
+  if (encoding)
     {
       char *newstr;
       size_t len;
 
-      if (symbol_str[0] == SDATA_NAME_FLAG_CHAR)
-	return;
+      if (symbol_str[0] == ENCODE_SECTION_INFO_CHAR)
+	{
+	  if (encoding == symbol_str[1])
+	    return;
+	  /* ??? Sdata became thread or thread becaome not thread.  Lose.  */
+	  abort ();
+	}
 
-      len = strlen (symbol_str) + 1;
-      newstr = alloca (len + 1);
-      newstr[0] = SDATA_NAME_FLAG_CHAR;
-      memcpy (newstr + 1, symbol_str, len);
+      len = strlen (symbol_str);
+      newstr = alloca (len + 3);
+      newstr[0] = ENCODE_SECTION_INFO_CHAR;
+      newstr[1] = encoding;
+      memcpy (newstr + 2, symbol_str, len + 1);
 
-      XSTR (symbol, 0) = ggc_alloc_string (newstr, len);
+      XSTR (symbol, 0) = ggc_alloc_string (newstr, len + 2);
     }
 
-  /* This decl is marked as being in small data/bss but it shouldn't
-     be; one likely explanation for this is that the decl has been
-     moved into a different section from the one it was in when
-     targetm.encode_section_info was first called.  Remove the '@'.  */
-  else if (symbol_str[0] == SDATA_NAME_FLAG_CHAR)
-    XSTR (symbol, 0) = ggc_strdup (symbol_str + 1);
+  /* This decl is marked as being in small data/bss but it shouldn't be;
+     one likely explanation for this is that the decl has been moved into
+     a different section from the one it was in when encode_section_info
+     was first called.  Remove the encoding.  */
+  else if (symbol_str[0] == ENCODE_SECTION_INFO_CHAR)
+    XSTR (symbol, 0) = ggc_strdup (symbol_str + 2);
 }
 
 static const char *
 ia64_strip_name_encoding (str)
      const char *str;
 {
-  if (str[0] == SDATA_NAME_FLAG_CHAR)
-    str++;
+  if (str[0] == ENCODE_SECTION_INFO_CHAR)
+    str += 2;
   if (str[0] == '*')
     str++;
   return str;

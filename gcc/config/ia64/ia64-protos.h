@@ -31,6 +31,7 @@ extern int call_operand PARAMS((rtx, enum machine_mode));
 extern int sdata_symbolic_operand PARAMS((rtx, enum machine_mode));
 extern int got_symbolic_operand PARAMS((rtx, enum machine_mode));
 extern int symbolic_operand PARAMS((rtx, enum machine_mode));
+extern int tls_symbolic_operand PARAMS((rtx, enum machine_mode));
 extern int function_operand PARAMS((rtx, enum machine_mode));
 extern int setjmp_operand PARAMS((rtx, enum machine_mode));
 extern int move_operand PARAMS((rtx, enum machine_mode));
@@ -68,6 +69,7 @@ extern int destination_tfmode_operand PARAMS((rtx, enum machine_mode));
 extern int tfreg_or_fp01_operand PARAMS((rtx, enum machine_mode));
 extern int basereg_operand PARAMS((rtx, enum machine_mode));
 
+extern rtx ia64_expand_move PARAMS ((rtx, rtx));
 extern int ia64_move_ok PARAMS((rtx, rtx));
 extern int ia64_depz_field_mask PARAMS((rtx, rtx));
 extern rtx ia64_gp_save_reg PARAMS((int));

@@ -42,8 +42,7 @@ extern int size_directive_output;
 #undef ASM_OUTPUT_ALIGNED_LOCAL
 #define ASM_OUTPUT_ALIGNED_DECL_LOCAL(FILE, DECL, NAME, SIZE, ALIGN) \
 do {									\
-  if ((DECL)								\
-      && XSTR (XEXP (DECL_RTL (DECL), 0), 0)[0] == SDATA_NAME_FLAG_CHAR) \
+  if ((DECL) && sdata_symbolic_operand (XEXP (DECL_RTL (DECL), 0), Pmode)) \
     sbss_section ();							\
   else									\
     bss_section ();							\
@@ -62,8 +61,8 @@ do {									\
 #define ASM_OUTPUT_LABELREF(STREAM, NAME)	\
 do {						\
   const char *name_ = NAME;			\
-  if (*name_ == SDATA_NAME_FLAG_CHAR)		\
-    name_++;					\
+  if (*name_ == ENCODE_SECTION_INFO_CHAR)	\
+    name_ += 2;					\
   if (*name_ == '*')				\
     name_++;					\
   else						\

@@ -1743,6 +1743,23 @@ foo:	.long	25
 	tls_first_major=2
 	tls_first_minor=13
 	;;
+  ia64-*-*)
+    conftest_s='
+	.section ".tdata","awT",@progbits
+foo:	data8	25
+	.text
+	addl	r16 = @ltoff(@dtpmod(foo#)), gp
+	addl	r17 = @ltoff(@dtprel(foo#)), gp
+	addl	r18 = @ltoff(@tprel(foo#)), gp
+	addl	r19 = @dtprel(foo#), gp
+	adds	r21 = @dtprel(foo#), r13
+	movl	r23 = @dtprel(foo#)
+	addl	r20 = @tprel(foo#), gp
+	adds	r22 = @tprel(foo#), r13
+	movl	r24 = @tprel(foo#)'
+	tls_first_major=2
+	tls_first_minor=13
+	;;
 esac
 if test -z "$tls_first_major"; then
   :
