@@ -1,5 +1,19 @@
 2004-09-07  Nathan Sidwell  <nathan@codesourcery.com>
 
+	* builtins.c (fold_builtin_strchr): Use build_int_cst, not
+	fold_convert.
+	(fold_builtin_strpbrk): Likewise.
+	* expr.c (array_ref_low_bound): Likewise.
+	* tree-scalar-evolution.c (chrec_is_positive, add_to_evolution_1,
+	interpret_rhs_modify_expr, number_of_iterations_in_loop): Likewise.
+	* tree-sra.c (generate_element_zero): Likewise.
+	* tree-ssa-dom.c (simplify_rhs_and_lookup_avail_expr): Likewise.
+	* tree-ssa-loop-ivopts.c (determine_biv_step, idx_find_step,
+	add_old_iv_candidates, add_iv_candidates): Likewise.
+	* tree-tailcall.c (tree_optimize_tail_calls_1): Likewise.
+
+2004-09-07  Nathan Sidwell  <nathan@codesourcery.com>
+
 	* c-aux-info.c (gen_type): Use gcc_assert or gcc_unreachable.
 	* c-common.c (c_type_hash, c_common_nodes_and_builtins,
 	c_expand_expr, boolean_increment, nonnull_check_p,

@@ -1537,7 +1537,7 @@ generate_element_zero (struct sra_elt *elt, tree *list_p)
       tree t;
 
       if (elt->is_scalar)
-	t = fold_convert (elt->type, integer_zero_node);
+	t = build_int_cst (elt->type, 0);
       else
 	/* We generated a replacement for a non-scalar?  */
 	abort ();

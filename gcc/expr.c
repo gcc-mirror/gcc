@@ -5514,7 +5514,7 @@ array_ref_low_bound (tree exp)
     return SUBSTITUTE_PLACEHOLDER_IN_EXPR (TYPE_MIN_VALUE (domain_type), exp);
 
   /* Otherwise, return a zero of the appropriate type.  */
-  return fold_convert (TREE_TYPE (TREE_OPERAND (exp, 1)), integer_zero_node);
+  return build_int_cst (TREE_TYPE (TREE_OPERAND (exp, 1)), 0);
 }
 
 /* Return a tree representing the upper bound of the array mentioned in

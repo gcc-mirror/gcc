@@ -571,7 +571,7 @@ chrec_is_positive (tree chrec, bool *value)
 
       nb_iter = chrec_fold_minus 
 	(chrec_type (nb_iter), nb_iter,
-	 fold_convert (chrec_type (nb_iter), integer_one_node));
+	 build_int_cst (chrec_type (nb_iter), 1));
 
 #if 0
       /* TODO -- If the test is after the exit, we may decrease the number of
@@ -579,7 +579,7 @@ chrec_is_positive (tree chrec, bool *value)
       if (after_exit)
 	nb_iter = chrec_fold_minus 
 		(chrec_type (nb_iter), nb_iter,
-		 fold_convert (chrec_type (nb_iter), integer_one_node));
+		 build_int_cst (chrec_type (nb_iter), 1));
 #endif
 
       end_value = chrec_apply (CHREC_VARIABLE (chrec), chrec, nb_iter);
@@ -704,7 +704,7 @@ add_to_evolution_1 (unsigned loop_nb,
 	    {
 	      var = loop_nb;
 	      left = chrec_before;
-	      right = fold_convert (type, integer_zero_node);
+	      right = build_int_cst (type, 0);
 	    }
 	  else
 	    {
@@ -1748,8 +1748,7 @@ interpret_rhs_modify_expr (struct loop *loop,
       opnd10 = TREE_OPERAND (opnd1, 0);
       chrec10 = analyze_scalar_evolution (loop, opnd10);
       chrec10 = chrec_convert (type, chrec10);
-      res = chrec_fold_minus (type, fold_convert (type, integer_zero_node), 
-			      chrec10);
+      res = chrec_fold_minus (type, build_int_cst (type, 0), chrec10);
       break;
 
     case MULT_EXPR:
@@ -2192,7 +2191,7 @@ number_of_iterations_in_loop (struct loop *loop)
 
   type = TREE_TYPE (niter_desc.niter);
   if (integer_nonzerop (niter_desc.may_be_zero))
-    res = fold_convert (type, integer_zero_node);
+    res = build_int_cst (type, 0);
   else if (integer_zerop (niter_desc.may_be_zero))
     res = niter_desc.niter;
   else
