@@ -29,7 +29,11 @@ _FOR fix =][=
 
   _IF test_text _exist ! =][=
     _IF replace _exist ! =]
-echo No test for [=hackname=][=
+echo No test for [=hackname=] in inc/[=
+      _IF files _exist =][=
+        files[0] =][=
+      _ELSE =]testing.h[=
+      _ENDIF =][=
     _ENDIF =][=
   _ELSE =]
 cat >> inc/[=

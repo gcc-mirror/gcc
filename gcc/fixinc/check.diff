@@ -444,14 +444,90 @@
 *** inc/sys/wait.h
 --- res/sys/wait.h
 ***************
-*** 2,6 ****
---- 2,7 ----
+*** 2,7 ****
+--- 2,8 ----
   
   #ifndef AIX_SYSWAIT_CHECK
   /* bos325, */
 + struct rusage;
   extern pid_t wait3();
+  /* pid_t wait3(int *, int, struct rusage *); */
   #endif  /* AIX_SYSWAIT_CHECK */
+*** inc/testing.h
+--- res/testing.h
+***************
+*** 1,33 ****
+  
+  
+  #ifndef IO_QUOTES_DEF_CHECK
+! #define BSD43__IOWR(n, x) (('n'<<8)+x)
+  #endif  /* IO_QUOTES_DEF_CHECK */
+  
+  
+  #ifndef IO_QUOTES_USE_CHECK
+! #define TIOCFOO BSD43__IOWR(T, 1)
+  #endif  /* IO_QUOTES_USE_CHECK */
+  
+  
+  #ifndef CTRL_QUOTES_DEF_CHECK
+! #define BSD43_CTRL(n, x) (('n'<<8)+x)
+  #endif  /* CTRL_QUOTES_DEF_CHECK */
+  
+  
+  #ifndef CTRL_QUOTES_USE_CHECK
+! #define TIOCFOO BSD43_CTRL(T, 1)
+  #endif  /* CTRL_QUOTES_USE_CHECK */
+  
+  
+  #ifndef MACHINE_NAME_CHECK
+! #ifdef i386 /* no uniform machine_name test, so
+                 this only works on i?86 machines */
+  #endif  /* MACHINE_NAME_CHECK */
+  
+  
+  #ifndef UNDEFINE_NULL_CHECK
+  #define NULL 0UL
+  #define NULL	((void*)0)
+  
+  #endif  /* UNDEFINE_NULL_CHECK */
+--- 1,37 ----
+  
+  
+  #ifndef IO_QUOTES_DEF_CHECK
+! #define BSD43__IOWR(n, x) ((n<<8)+x)
+  #endif  /* IO_QUOTES_DEF_CHECK */
+  
+  
+  #ifndef IO_QUOTES_USE_CHECK
+! #define TIOCFOO BSD43__IOWR('T', 1)
+  #endif  /* IO_QUOTES_USE_CHECK */
+  
+  
+  #ifndef CTRL_QUOTES_DEF_CHECK
+! #define BSD43_CTRL(n, x) ((n<<8)+x)
+  #endif  /* CTRL_QUOTES_DEF_CHECK */
+  
+  
+  #ifndef CTRL_QUOTES_USE_CHECK
+! #define TIOCFOO BSD43_CTRL('T', 1)
+  #endif  /* CTRL_QUOTES_USE_CHECK */
+  
+  
+  #ifndef MACHINE_NAME_CHECK
+! #ifdef __i386__ /* no uniform machine_name test, so
+                 this only works on i?86 machines */
+  #endif  /* MACHINE_NAME_CHECK */
+  
+  
+  #ifndef UNDEFINE_NULL_CHECK
++ #ifndef NULL
+  #define NULL 0UL
++ #endif
++ #ifndef NULL
+  #define NULL	((void*)0)
++ #endif
+  
+  #endif  /* UNDEFINE_NULL_CHECK */
 *** inc/time.h
 --- res/time.h
 ***************
@@ -480,5 +556,5 @@
   
   
   #ifndef ALPHA_SBRK_CHECK
-! extern void* sbrk(ptrdiff_t increment);
+! extern void *sbrk(ptrdiff_t increment);
   #endif  /* ALPHA_SBRK_CHECK */

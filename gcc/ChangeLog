@@ -14,8 +14,11 @@
 	* fixinc/fixlib.h(must_malloc): + reformatting
 	* fixinc/inclhack.def: replace the "1i" and "$a" sed commands
 	with usages of ``c_fix = wrap;''
+	Add several tests and use the ``c_fix = format'' fixer more.
 	* fixinc/fixincl.x: regen
 	* fixinc/check.diff: regen
+	* fixinc/check.tpl: emit the associated header with the missing
+	test message
 
 Sun May 14 17:58:59 2000  Hans-Peter Nilsson  <hp@axis.com>
 
