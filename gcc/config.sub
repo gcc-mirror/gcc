@@ -162,6 +162,10 @@ case $basic_machine in
 	thumb | thumbel)
 		basic_machine=$basic_machine-unknown
 		;;
+	thumb-pe) # CYGNUS LOCAL nickc/thumb-pe
+		basic_machine=$basic_machine-unknown
+		;;
+	# END CYGNUS LOCAL nickc/thumb-pe
 	# We use `pc' rather than `unknown'
 	# because (1) that's what they normally are, and
 	# (2) the word "unknown" tends to confuse beginning users.

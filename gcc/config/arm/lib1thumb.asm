@@ -605,98 +605,91 @@ SYM (__div0):
    one of these labels is called via a BL instruction.  This puts the 
    return address into the link register with the bottom bit set, and the 
    code here switches to the correct mode before executing the function.  */
-
+	
 	.text
 	.align 0
-	
-	.globl	SYM (_call_via_r0)
-	.thumb_func
-SYM (_call_via_r0):
-	bx	r0 
-	nop
 
-	.globl	SYM (_call_via_r1)
+.macro call_via register
+	.globl	SYM (_call_via_\register)
 	.thumb_func
-SYM (_call_via_r1):
-	bx 	r1
+SYM (_call_via_\register):
+	bx	\register
 	nop
+.endm
 
-	.globl	SYM (_call_via_r2)
-	.thumb_func
-SYM (_call_via_r2):
-	bx 	r2 
-	nop
-
-	.globl	SYM (_call_via_r3)
-	.thumb_func
-SYM (_call_via_r3):
-	bx 	r3 
-	nop
-
-	.globl	SYM (_call_via_r4)
-	.thumb_func
-SYM (_call_via_r4):
-	bx 	r4
-	nop
-
-	.globl	SYM (_call_via_r5)
-	.thumb_func
-SYM (_call_via_r5):
-	bx 	r5
-	nop
-
-	.globl	SYM (_call_via_r6)
-	.thumb_func
-SYM (_call_via_r6):
-	bx 	r6
-	nop
-
-	.globl	SYM (_call_via_r7)
-	.thumb_func
-SYM (_call_via_r7):
-	bx 	r7
-	nop
-
-	.globl	SYM (_call_via_r8)
-	.thumb_func
-SYM (_call_via_r8):
-	bx 	r8
-	nop
-
-	.globl	SYM (_call_via_r9)
-	.thumb_func
-SYM (_call_via_r9):
-	bx 	r9
-	nop
-
-	.globl	SYM (_call_via_sl)
-	.thumb_func
-SYM (_call_via_sl):
-	bx 	sl 
-	nop
-
-	.globl	SYM (_call_via_fp)
-	.thumb_func
-SYM (_call_via_fp):
-	bx 	fp 
-	nop
-
-	.globl	SYM (_call_via_ip)
-	.thumb_func
-SYM (_call_via_ip):
-	bx 	ip
-	nop
-
-	.globl	SYM (_call_via_sp)
-	.thumb_func
-SYM (_call_via_sp):
-	bx 	sp 
-	nop
-
-	.globl	SYM (_call_via_lr)
-	.thumb_func
-SYM (_call_via_lr):
-	bx 	lr 
-	nop
+	call_via r0
+	call_via r1
+	call_via r2
+	call_via r3
+	call_via r4
+	call_via r5
+	call_via r6
+	call_via r7
+	call_via r8
+	call_via r9
+	call_via sl
+	call_via fp
+	call_via ip
+	call_via sp
+	call_via lr
 
 #endif /* L_call_via_rX */
+
+#ifdef L_interwork_call_via_rX
+
+/* These labels & instructions are used by the Arm/Thumb interworking code,
+   when the target address is in an unknown instruction set.  The address 
+   of function to be called is loaded into a register and then one of these
+   labels is called via a BL instruction.  This puts the return address 
+   into the link register with the bottom bit set, and the code here 
+   switches to the correct mode before executing the function.  Unfortunately
+   the target code cannot be relied upon to return via a BX instruction, so
+   instead we have to store the resturn address on the stack and allow the
+   called function to return here instead.  Upon return we recover the real
+   return address and use a BX to get back to Thumb mode.  */
+	
+	.text
+	.align 0
+
+	.code 32
+_arm_return:		
+	ldmia 	r13!, {r12}
+	bx 	r12
+	.code 16
+
+.macro interwork register					
+	.globl	SYM (_interwork_call_via_\register)
+	.thumb_func
+SYM (_interwork_call_via_\register):
+	bx 	pc
+	nop
+	
+	.code 32
+	.globl .Lchange_\register
+.Lchange_\register:
+	tst	\register, #1
+	stmeqdb	r13!, {lr}
+	adreq	lr, _arm_return
+	bx	\register
+	.code 16
+.endm
+	
+	interwork r0
+	interwork r1
+	interwork r2
+	interwork r3
+	interwork r4
+	interwork r5
+	interwork r6
+	interwork r7
+	interwork r8
+	interwork r9
+	interwork sl
+	interwork fp
+	interwork ip
+	interwork sp
+	interwork lr
+		
+#endif /* L_interwork_call_via_rX */
+
+	

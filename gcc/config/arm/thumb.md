@@ -989,19 +989,20 @@
 (define_insn "*call_indirect"
   [(call (mem:SI (match_operand:SI 0 "register_operand" "l*r"))
 	 (match_operand 1 "" ""))]
-  "TARGET_THUMB_INTERWORK"
+  "! TARGET_CALLER_INTERWORKING"
   "bl\\t__call_via_%0"
 [(set_attr "length" "4")])
+;; The non THUMB_INTERWORK, non TARGET_CALLER_INTERWORKING version
+;; used to be: "mov\\tlr,pc\;bx\\t%0", but the mov does not set
+;; the bottom bit of lr so that a function return (using bx)
+;; would switch back into ARM mode...
 
-
-(define_insn "*call_indirect"
+(define_insn "*call_indirect_interwork"
   [(call (mem:SI (match_operand:SI 0 "register_operand" "l*r"))
 	 (match_operand 1 "" ""))]
-  "! TARGET_THUMB_INTERWORK"
-  "bl\\t__call_via_%0"
+  "TARGET_CALLER_INTERWORKING"
+  "bl\\t__interwork_call_via_%0"
 [(set_attr "length" "4")])
-;; used to be: "mov\\tlr,pc\;bx\\t%0"
-;; but this does not set bottom bit of lr
 
 (define_expand "call_value"
   [(set (match_operand 0 "" "")
@@ -1014,19 +1015,19 @@
   [(set (match_operand 0 "" "=l")
 	(call (mem:SI (match_operand:SI 1 "register_operand" "l*r"))
 	      (match_operand 2 "" "")))]
-  "TARGET_THUMB_INTERWORK"
+  "! TARGET_CALLER_INTERWORKING"
   "bl\\t__call_via_%1"
 [(set_attr "length" "4")])
+;; See comment for call_indirect pattern
 
-(define_insn "*call_value_indirect"
+(define_insn "*call_value_indirect_interwork"
   [(set (match_operand 0 "" "=l")
 	(call (mem:SI (match_operand:SI 1 "register_operand" "l*r"))
 	      (match_operand 2 "" "")))]
-  "! TARGET_THUMB_INTERWORK"
-  "bl\\t__call_via_%1"
+  "TARGET_CALLER_INTERWORKING"
+  "bl\\t__interwork_call_via_%1"
 [(set_attr "length" "4")])
-;; used to be  "mov\\tlr,pc\;bx\\t%1"
-;; but this does not set bottom bit of lr
+
 
 (define_insn "*call_insn"
   [(call (mem:SI (match_operand:SI 0 "" "i"))

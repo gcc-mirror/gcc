@@ -55,36 +55,63 @@ Boston, MA 02111-1307, USA.  */
 #define TARGET_VERSION  fputs (" (ARM/THUMB:generic)", stderr);
 
 /* Nonzero if we should compile with BYTES_BIG_ENDIAN set to 1.  */
-#define THUMB_FLAG_BIG_END      	(0x0001)
-#define THUMB_FLAG_BACKTRACE    	(0x0002)
-#define THUMB_FLAG_LEAF_BACKTRACE	(0x0004)
-#define ARM_FLAG_THUMB			(0x1000)	/* same as in arm.h */
+#define THUMB_FLAG_BIG_END      		0x0001
+#define THUMB_FLAG_BACKTRACE    		0x0002
+#define THUMB_FLAG_LEAF_BACKTRACE		0x0004
+#define ARM_FLAG_THUMB				0x1000	/* same as in arm.h */
+#define THUMB_FLAG_CALLEE_SUPER_INTERWORKING	0x40000 /* CYGNUS LOCAL nickc */
+#define THUMB_FLAG_CALLER_SUPER_INTERWORKING	0x80000 /* CYGNUS LOCAL nickc */
+
 
 /* Run-time compilation parameters selecting different hardware/software subsets.  */
 extern int target_flags;
 #define TARGET_DEFAULT          0 /* ARM_FLAG_THUMB */
 #define TARGET_BIG_END          (target_flags & THUMB_FLAG_BIG_END)
 #define TARGET_THUMB_INTERWORK	(target_flags & ARM_FLAG_THUMB)
-#define TARGET_BACKTRACE	(leaf_function_p()				\
-				 ? (target_flags & THUMB_FLAG_LEAF_BACKTRACE)	\
+#define TARGET_BACKTRACE	(leaf_function_p()			      \
+				 ? (target_flags & THUMB_FLAG_LEAF_BACKTRACE) \
 				 : (target_flags & THUMB_FLAG_BACKTRACE))
 
-#define TARGET_SWITCHES                                 \
-{                                                       \
-  {"big-endian",		THUMB_FLAG_BIG_END},	\
-  {"little-endian",	       -THUMB_FLAG_BIG_END},	\
-  {"thumb-interwork",		ARM_FLAG_THUMB},	\
-  {"no-thumb-interwork",       -ARM_FLAG_THUMB},	\
-  {"tpcs-frame",		THUMB_FLAG_BACKTRACE},	\
-  {"no-tpcs-frame",            -THUMB_FLAG_BACKTRACE},	\
-  {"tpcs-leaf-frame",		THUMB_FLAG_LEAF_BACKTRACE},	\
-  {"no-tpcs-leaf-frame",       -THUMB_FLAG_LEAF_BACKTRACE},	\
-  {"",                          TARGET_DEFAULT}         \
+/* CYGNUS LOCAL nickc/super-interworking */
+/* Set if externally visable functions should assume that they
+   might be called in ARM mode, from a non-thumb aware code.  */
+#define TARGET_CALLEE_INTERWORKING	\
+     (target_flags & THUMB_FLAG_CALLEE_SUPER_INTERWORKING)
+
+/* Set if calls via function pointers should assume that their
+   destination is non-Thumb aware.  */
+#define TARGET_CALLER_INTERWORKING	\
+     (target_flags & THUMB_FLAG_CALLER_SUPER_INTERWORKING)
+/* END CYGNUS LOCAL */
+
+/* SUBTARGET_SWITCHES is used to add flags on a per-config basis. */
+#ifndef SUBTARGET_SWITCHES
+#define SUBTARGET_SWITCHES
+#endif
+
+#define TARGET_SWITCHES                                 	\
+{                                                       	\
+  {"big-endian",		    THUMB_FLAG_BIG_END},	\
+  {"little-endian",	           -THUMB_FLAG_BIG_END},	\
+  {"thumb-interwork",		    ARM_FLAG_THUMB},		\
+  {"no-thumb-interwork",           -ARM_FLAG_THUMB},		\
+  {"tpcs-frame",		    THUMB_FLAG_BACKTRACE},	\
+  {"no-tpcs-frame",                -THUMB_FLAG_BACKTRACE},	\
+  {"tpcs-leaf-frame",	  	    THUMB_FLAG_LEAF_BACKTRACE},	\
+  {"no-tpcs-leaf-frame",           -THUMB_FLAG_LEAF_BACKTRACE},	\
+  /* CYGNUS LOCAL nickc/super-interworking */ \
+  {"callee-super-interworking",	    THUMB_FLAG_CALLEE_SUPER_INTERWORKING}, \
+  {"no-callee-super-interworking", -THUMB_FLAG_CALLEE_SUPER_INTERWORKING}, \
+  {"caller-super-interworking",	    THUMB_FLAG_CALLER_SUPER_INTERWORKING}, \
+  {"no-caller-super-interworking", -THUMB_FLAG_CALLER_SUPER_INTERWORKING}, \
+  /* END CYGNUS LOCAL */ \
+  SUBTARGET_SWITCHES						\
+  {"",                          TARGET_DEFAULT}         	\
 }
 
-#define TARGET_OPTIONS					\
-{							\
-  { "structure-size-boundary=", & structure_size_string }, \
+#define TARGET_OPTIONS						\
+{								\
+  { "structure-size-boundary=", & structure_size_string }, 	\
 }
 
 #define REGISTER_PREFIX ""
@@ -1026,7 +1053,12 @@ int thumb_shiftable_const ();
 /* Emit a special directive when defining a function name.
    This is used by the assembler to assit with interworking.  */
 #define ASM_DECLARE_FUNCTION_NAME(file, name, decl)             \
-  fprintf (file, ".thumb_func\n") ; 				\
+/* CYGNUS LOCAL nickc/supr-interworking */ \
+  if (! is_called_in_ARM_mode (decl))			\
+    fprintf (file, "\t.thumb_func\n") ;			\
+  else							\
+    fprintf (file, "\t.code\t32\n") ;			\
+/* END CYGNUS LOCAL */ \
   ASM_OUTPUT_LABEL (file, name)
 
 #define ASM_OUTPUT_REG_PUSH(STREAM,REGNO)			\
@@ -1095,8 +1127,10 @@ int thumb_shiftable_const ();
 int thumb_trivial_epilogue ();
 #define USE_RETURN (reload_completed && thumb_trivial_epilogue ())
 
-extern char *thumb_unexpanded_epilogue ();
-extern char *output_move_mem_multiple ();
-extern char *thumb_load_double_from_address ();
-extern char *output_return ();
-extern int   far_jump_used_p();
+extern char * thumb_unexpanded_epilogue ();
+extern char * output_move_mem_multiple ();
+extern char * thumb_load_double_from_address ();
+extern char * output_return ();
+extern int    far_jump_used_p();
+extern int    is_called_in_ARM_mode (); /* CYGNUS LOCAL */
+

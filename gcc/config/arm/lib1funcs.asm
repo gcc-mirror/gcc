@@ -402,3 +402,120 @@ SYM (__div0):
 	RET	pc, lr
 
 #endif /* L_divmodsi_tools */
+
+#ifdef L_dvmd_lnx
+@ GNU/Linux division-by zero handler.  Used in place of L_dvmd_tls
+
+#include <asm/unistd.h>
+#define SIGFPE	8			@ cant use <asm/signal.h> as it
+					@ contains too much C rubbish
+	.globl SYM (__div0)
+	.align 0
+SYM (__div0):
+	stmfd	sp!, {r1, lr}
+	swi	__NR_getpid
+	cmn	r0, #1000
+	ldmgefd	sp!, {r1, pc}RETCOND	@ not much we can do
+	mov	r1, #SIGFPE
+	swi	__NR_kill
+	ldmfd	sp!, {r1, pc}RETCOND
+
+#endif /* L_dvmd_lnx */
+
+/* These next two sections are here despite the fact that they contain Thumb 
+   assembler because their presence allows interworked code to be linked even
+   when the GCC library is this one.  */
+		
+#ifdef L_call_via_rX
+
+/* These labels & instructions are used by the Arm/Thumb interworking code. 
+   The address of function to be called is loaded into a register and then 
+   one of these labels is called via a BL instruction.  This puts the 
+   return address into the link register with the bottom bit set, and the 
+   code here switches to the correct mode before executing the function.  */
+	
+	.text
+	.align 0
+	.code 16
+.macro call_via register
+	.globl	SYM (_call_via_\register)
+	.thumb_func
+SYM (_call_via_\register):
+	bx	\register
+	nop
+.endm
+
+	call_via r0
+	call_via r1
+	call_via r2
+	call_via r3
+	call_via r4
+	call_via r5
+	call_via r6
+	call_via r7
+	call_via r8
+	call_via r9
+	call_via sl
+	call_via fp
+	call_via ip
+	call_via sp
+	call_via lr
+
+#endif /* L_call_via_rX */
+
+#ifdef L_interwork_call_via_rX
+
+/* These labels & instructions are used by the Arm/Thumb interworking code,
+   when the target address is in an unknown instruction set.  The address 
+   of function to be called is loaded into a register and then one of these
+   labels is called via a BL instruction.  This puts the return address 
+   into the link register with the bottom bit set, and the code here 
+   switches to the correct mode before executing the function.  Unfortunately
+   the target code cannot be relied upon to return via a BX instruction, so
+   instead we have to store the resturn address on the stack and allow the
+   called function to return here instead.  Upon return we recover the real
+   return address and use a BX to get back to Thumb mode.  */
+	
+	.text
+	.align 0
+
+	.code   32
+_arm_return:		
+	ldmia 	r13!, {r12}
+	bx 	r12
+	.code   16
+
+.macro interwork register					
+	.code   16
+	.globl	SYM (_interwork_call_via_\register)
+	.thumb_func
+SYM (_interwork_call_via_\register):
+	bx 	pc
+	nop
+	
+	.code   32
+	.globl .Lchange_\register
+.Lchange_\register:
+	tst	\register, #1
+	stmeqdb	r13!, {lr}
+	adreq	lr, _arm_return
+	bx	\register
+.endm
+	
+	interwork r0
+	interwork r1
+	interwork r2
+	interwork r3
+	interwork r4
+	interwork r5
+	interwork r6
+	interwork r7
+	interwork r8
+	interwork r9
+	interwork sl
+	interwork fp
+	interwork ip
+	interwork sp
+	interwork lr
+		
+#endif /* L_interwork_call_via_rX */
