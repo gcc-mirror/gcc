@@ -2869,7 +2869,7 @@ attach_deaths (x, insn, set_p)
 		   for the case where the SET_DEST is a subreg of regno, as
 		   dead_or_set_p handles subregs specially.  */
 		if (! all_needed && ! dead_or_set_p (insn, x)
-		    && ! find_regno_note (insn, REG_UNUSED, regno))
+		    && ! find_reg_note (insn, REG_UNUSED, x))
 		  {
 		    /* Check for the case where the register dying partially
 		       overlaps the register set by this insn.  */
