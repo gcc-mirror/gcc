@@ -1,6 +1,6 @@
 /* -*- indented-text -*- */
 /* Process source files and output type information.
-   Copyright (C) 2002, 2003, 2004 Free Software Foundation, Inc.
+   Copyright (C) 2002, 2003, 2004, 2005 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -271,8 +271,6 @@ ITYPE	{IWORD}({WS}{IWORD})*
 "/*"				{ BEGIN(in_struct_comment); }
 
 ^"%{"				{ BEGIN(in_yacc_escape); } /* } */
-
-^"@@".*				/* Used for c-parse.in C/ObjC demarcation.  */
 
 {WS}				{ update_lineno (yytext, yyleng); }
 

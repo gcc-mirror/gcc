@@ -2,7 +2,7 @@
    that are called from within the C and C++ front-ends,
    respectively.
    Copyright (C) 1991, 1995, 1997, 1998,
-   1999, 2000, 2001, 2002, 2003, 2004 Free Software Foundation, Inc.
+   1999, 2000, 2001, 2002, 2003, 2004, 2005 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -253,4 +253,48 @@ int
 objc_is_public (tree ARG_UNUSED (expr), tree ARG_UNUSED (identifier))
 {
   return 1;
+}
+
+tree
+objc_get_class_ivars (tree ARG_UNUSED (class_name))
+{
+  return 0;
+}
+
+tree
+objc_build_throw_stmt (tree ARG_UNUSED (throw_expr))
+{
+  return 0;
+}
+
+void
+objc_build_synchronized (location_t ARG_UNUSED (start_locus),
+			 tree ARG_UNUSED (mutex), tree ARG_UNUSED (body))
+{
+}
+
+void
+objc_begin_try_stmt (location_t ARG_UNUSED (try_locus), tree ARG_UNUSED (body))
+{
+}
+   
+void
+objc_begin_catch_clause (tree ARG_UNUSED (decl))
+{
+}
+
+void
+objc_finish_catch_clause (void)
+{
+}
+
+void
+objc_build_finally_clause (location_t ARG_UNUSED (finally_locus),
+			   tree ARG_UNUSED (body))
+{
+}
+
+void
+objc_finish_try_stmt (void)
+{
 }

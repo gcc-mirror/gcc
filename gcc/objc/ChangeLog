@@ -1,3 +1,11 @@
+2005-02-25  Joseph S. Myers  <joseph@codesourcery.com>
+
+	* Make-lang.in (objc/objc-parse.o-warn, objc/objc-parse.o,
+	objc/objc-parse.c, objc/objc-parse.y): Remove
+	(OBJC_OBJS, objc.srcextra, objc.tags, objc.mostlyclean,
+	objc.distclean, objc.maintainer-clean): Update for new parser.
+	* config-lang.in (gtfiles): Update for new parser.
+
 2005-01-29  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* lang-specs.h, objc-act.c, objc-act.h, objc-lang.c: Update
