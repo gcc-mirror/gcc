@@ -1,5 +1,14 @@
 2003-08-22  Kazu Hirata  <kazu@cs.umass.edu>
 
+	* cfgcleanup.c: Fix comment typos.
+	* emit-rtl.c: Likewise.
+	* optabs.c: Likewise.
+	* ra-build.c: Likewise.
+	* rtlanal.c: Likewise.
+	* tree.h: Likewise.
+
+2003-08-22  Kazu Hirata  <kazu@cs.umass.edu>
+
 	* c-decl.c: Fix comment formatting.
 	* cfgrtl.c: Likewise.
 	* combine.c: Likewise.

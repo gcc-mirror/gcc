@@ -227,7 +227,7 @@ mark_effect (rtx exp, regset nonequal)
     }
 }
 
-/* Return nonzero if X is an register set in regset DATA.
+/* Return nonzero if X is a register set in regset DATA.
    Called via for_each_rtx.  */
 static int
 mentions_nonequal_regs (rtx *x, void *data)

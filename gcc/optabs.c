@@ -3175,7 +3175,7 @@ emit_no_conflict_block (rtx insns, rtx target, rtx op0, rtx op1, rtx equiv)
 
       next = NEXT_INSN (insn);
 
-      /* Some ports (cris) create an libcall regions at their own.  We must
+      /* Some ports (cris) create a libcall regions at their own.  We must
 	 avoid any potential nesting of LIBCALLs.  */
       if ((note = find_reg_note (insn, REG_LIBCALL, NULL)) != NULL)
 	remove_note (insn, note);
@@ -3342,7 +3342,7 @@ emit_libcall_block (rtx insns, rtx target, rtx result, rtx equiv)
       rtx set = single_set (insn);
       rtx note;
 
-      /* Some ports (cris) create an libcall regions at their own.  We must
+      /* Some ports (cris) create a libcall regions at their own.  We must
 	 avoid any potential nesting of LIBCALLs.  */
       if ((note = find_reg_note (insn, REG_LIBCALL, NULL)) != NULL)
 	remove_note (insn, note);
