@@ -22,10 +22,14 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #include "m88k/m88k.h"
 
 #undef CPP_PREDEFINES
-#define CPP_PREDEFINES "-Dm88000 -Dm88k"
+#define CPP_PREDEFINES "-Dm88000 -Dm88k -Acpu(m88k) -Amachine(m88k)"
 
 #undef DBX_DEBUGGING_INFO
 #define SDB_DEBUGGING_INFO
+
+/* Output DBX (stabs) debugging information if using -gstabs.  */
+
+#define DBX_DEBUGGING_INFO
 
 #undef PREFERRED_DEBUGGING_TYPE
 #define PREFERRED_DEBUGGING_TYPE SDB_DEBUG
