@@ -1,6 +1,6 @@
 /* Subroutines for insn-output.c for MIL-STD-1750.
    Copyright (C) 1994, 1995 Free Software Foundation, Inc.
-   Contributed by O.M.Kellogg, DASA (okellogg@salyko.cube.net).
+   Contributed by O.M.Kellogg, DASA (kellogg@space.otn.dasa.de)
 
 This file is part of GNU CC.
 
@@ -52,24 +52,18 @@ notice_update_cc (exp)
       /* Jumps do not alter the cc's.  */
       if (SET_DEST (exp) == pc_rtx)
 	return;
-      /* Moving register into memory doesn't alter the cc's.
-	 It may invalidate the RTX's which we remember the cc's came from.  */
-      if (GET_CODE (SET_DEST (exp)) == MEM)
-	{
-	  if (cc_status.value1 && GET_CODE (cc_status.value1) == MEM)
-	    cc_status.value1 = 0;
-	  if (cc_status.value2 && GET_CODE (cc_status.value2) == MEM)
-	    cc_status.value2 = 0;
-	  return;
-	}
+      /* Moving a register or constant into memory doesn't alter the cc's. */
+      if (GET_CODE (SET_DEST (exp)) == MEM
+	  && (src_code == REG || src_code == CONST_INT))
+	return;
       /* Function calls clobber the cc's.  */
-      else if (src_code == CALL)
+      if (src_code == CALL)
 	{
 	  CC_STATUS_INIT;
 	  return;
 	}
       /* Emulated longword bit-ops leave cc's incorrect */
-      else if (GET_MODE (SET_DEST (exp)) == HImode ?
+      if (GET_MODE (SET_DEST (exp)) == HImode ?
 	       src_code == AND || src_code == IOR ||
 	       src_code == XOR || src_code == NOT : 0)
 	{
@@ -77,24 +71,17 @@ notice_update_cc (exp)
 	  return;
 	}
       /* Tests and compares set the cc's in predictable ways.  */
-      else if (SET_DEST (exp) == cc0_rtx)
+      if (SET_DEST (exp) == cc0_rtx)
 	{
 	  CC_STATUS_INIT;
 	  cc_status.value1 = SET_SRC (exp);
 	  return;
 	}
-      /* Anything that lands in a reg will set cc_status. */
-      else if (REG_P (SET_DEST (exp)))
-	{
-	  cc_status.flags = CC_NO_OVERFLOW;
-	  cc_status.value1 = SET_SRC (exp);
-	  cc_status.value2 = SET_DEST (exp);
-	  return;
-	}
-      else
-	{
-	  CC_STATUS_INIT;
-	}
+      /* Anything else will set cc_status. */
+      cc_status.flags = CC_NO_OVERFLOW;
+      cc_status.value1 = SET_SRC (exp);
+      cc_status.value2 = SET_DEST (exp);
+      return;
     }
   else if (GET_CODE (exp) == PARALLEL
 	   && GET_CODE (XVECEXP (exp, 0, 0)) == SET)
@@ -340,6 +327,40 @@ branch_or_jump (condition, targetlabel_number)
       }
   sprintf (buf, "jc %s,%%l0", condition);
   return buf;
+}
+
+
+int
+unsigned_comparison_operator (insn)
+     rtx insn;
+{
+  switch (GET_CODE (insn))
+    {
+    case GEU:
+    case GTU:
+    case LEU:
+    case LTU:
+      return 1;
+    default:
+      return 0;
+    }
+}
+
+int
+next_cc_user_is_unsigned (insn)
+     rtx insn;
+{
+  if ( !(insn = next_cc0_user (insn)))
+    abort ();
+  else if (GET_CODE (insn) == JUMP_INSN
+	   && GET_CODE (PATTERN (insn)) == SET
+	   && GET_CODE (SET_SRC (PATTERN (insn))) == IF_THEN_ELSE)
+    return unsigned_comparison_operator (XEXP (SET_SRC (PATTERN (insn)), 0));
+  else if (GET_CODE (insn) == INSN
+	   && GET_CODE (PATTERN (insn)) == SET)
+    return unsigned_comparison_operator (SET_SRC (PATTERN (insn)));
+  else
+    abort ();
 }
 
 
