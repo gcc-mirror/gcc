@@ -117,14 +117,13 @@ struct _cpp_buff
   unsigned char *base, *cur, *limit;
 };
 
-extern _cpp_buff *_cpp_get_buff PARAMS ((cpp_reader *, size_t));
-extern void _cpp_release_buff PARAMS ((cpp_reader *, _cpp_buff *));
-extern void _cpp_extend_buff PARAMS ((cpp_reader *, _cpp_buff **, size_t));
-extern _cpp_buff *_cpp_append_extend_buff PARAMS ((cpp_reader *, _cpp_buff *,
-						   size_t));
-extern void _cpp_free_buff PARAMS ((_cpp_buff *));
-extern unsigned char *_cpp_aligned_alloc PARAMS ((cpp_reader *, size_t));
-extern unsigned char *_cpp_unaligned_alloc PARAMS ((cpp_reader *, size_t));
+extern _cpp_buff *_cpp_get_buff (cpp_reader *, size_t);
+extern void _cpp_release_buff (cpp_reader *, _cpp_buff *);
+extern void _cpp_extend_buff (cpp_reader *, _cpp_buff **, size_t);
+extern _cpp_buff *_cpp_append_extend_buff (cpp_reader *, _cpp_buff *, size_t);
+extern void _cpp_free_buff (_cpp_buff *);
+extern unsigned char *_cpp_aligned_alloc (cpp_reader *, size_t);
+extern unsigned char *_cpp_unaligned_alloc (cpp_reader *, size_t);
 
 #define BUFF_ROOM(BUFF) (size_t) ((BUFF)->limit - (BUFF)->cur)
 #define BUFF_FRONT(BUFF) ((BUFF)->cur)
@@ -468,90 +467,79 @@ extern unsigned char _cpp_trigraph_map[UCHAR_MAX + 1];
 #define CPP_WTRADITIONAL(PF) CPP_OPTION (PF, warn_traditional)
 
 /* In cpperror.c  */
-extern int _cpp_begin_message PARAMS ((cpp_reader *, int,
-				       unsigned int, unsigned int));
+extern int _cpp_begin_message (cpp_reader *, int, unsigned int, unsigned int);
 
 /* In cppmacro.c */
-extern void _cpp_free_definition	PARAMS ((cpp_hashnode *));
-extern bool _cpp_create_definition	PARAMS ((cpp_reader *, cpp_hashnode *));
-extern void _cpp_pop_context		PARAMS ((cpp_reader *));
-extern void _cpp_push_text_context	PARAMS ((cpp_reader *, cpp_hashnode *,
-						 const uchar *, size_t));
-extern bool _cpp_save_parameter		PARAMS ((cpp_reader *, cpp_macro *,
-						 cpp_hashnode *));
-extern bool _cpp_arguments_ok		PARAMS ((cpp_reader *, cpp_macro *,
-						 const cpp_hashnode *,
-						 unsigned int));
-extern const uchar *_cpp_builtin_macro_text PARAMS ((cpp_reader *,
-						     cpp_hashnode *));
-int _cpp_warn_if_unused_macro		PARAMS ((cpp_reader *, cpp_hashnode *,
-						 void *));
+extern void _cpp_free_definition (cpp_hashnode *);
+extern bool _cpp_create_definition (cpp_reader *, cpp_hashnode *);
+extern void _cpp_pop_context (cpp_reader *);
+extern void _cpp_push_text_context (cpp_reader *, cpp_hashnode *,
+				    const uchar *, size_t);
+extern bool _cpp_save_parameter (cpp_reader *, cpp_macro *, cpp_hashnode *);
+extern bool _cpp_arguments_ok (cpp_reader *, cpp_macro *, const cpp_hashnode *,
+			       unsigned int);
+extern const uchar *_cpp_builtin_macro_text (cpp_reader *, cpp_hashnode *);
+int _cpp_warn_if_unused_macro (cpp_reader *, cpp_hashnode *, void *);
 /* In cpphash.c */
-extern void _cpp_init_hashtable		PARAMS ((cpp_reader *, hash_table *));
-extern void _cpp_destroy_hashtable	PARAMS ((cpp_reader *));
+extern void _cpp_init_hashtable (cpp_reader *, hash_table *);
+extern void _cpp_destroy_hashtable (cpp_reader *);
 
 /* In cppfiles.c */
-extern void _cpp_fake_include		PARAMS ((cpp_reader *, const char *));
-extern void _cpp_never_reread		PARAMS ((struct include_file *));
-extern bool _cpp_read_file		PARAMS ((cpp_reader *, const char *));
-extern bool _cpp_execute_include	PARAMS ((cpp_reader *, const char *,
-						 int, enum include_type));
-extern int _cpp_compare_file_date       PARAMS ((cpp_reader *, const char *,
-						 int));
-extern void _cpp_report_missing_guards	PARAMS ((cpp_reader *));
-extern void _cpp_init_includes		PARAMS ((cpp_reader *));
-extern void _cpp_cleanup_includes	PARAMS ((cpp_reader *));
-extern void _cpp_pop_file_buffer	PARAMS ((cpp_reader *,
-						 struct include_file *));
+extern void _cpp_fake_include (cpp_reader *, const char *);
+extern void _cpp_never_reread (struct include_file *);
+extern bool _cpp_read_file (cpp_reader *, const char *);
+extern bool _cpp_execute_include (cpp_reader *, const char *, int,
+				  enum include_type);
+extern int _cpp_compare_file_date (cpp_reader *, const char *, int);
+extern void _cpp_report_missing_guards (cpp_reader *);
+extern void _cpp_init_includes (cpp_reader *);
+extern void _cpp_cleanup_includes (cpp_reader *);
+extern void _cpp_pop_file_buffer (cpp_reader *, struct include_file *);
 
 /* In cppexp.c */
-extern bool _cpp_parse_expr		PARAMS ((cpp_reader *));
-extern struct op *_cpp_expand_op_stack	PARAMS ((cpp_reader *));
+extern bool _cpp_parse_expr (cpp_reader *);
+extern struct op *_cpp_expand_op_stack (cpp_reader *);
 
 /* In cpplex.c */
-extern void _cpp_process_line_notes	PARAMS ((cpp_reader *, int));
-extern void _cpp_clean_line		PARAMS ((cpp_reader *));
-extern bool _cpp_get_fresh_line		PARAMS ((cpp_reader *));
-extern bool _cpp_skip_block_comment	PARAMS ((cpp_reader *));
-extern cpp_token *_cpp_temp_token	PARAMS ((cpp_reader *));
-extern const cpp_token *_cpp_lex_token	PARAMS ((cpp_reader *));
-extern cpp_token *_cpp_lex_direct	PARAMS ((cpp_reader *));
-extern int _cpp_equiv_tokens		PARAMS ((const cpp_token *,
-						 const cpp_token *));
-extern void _cpp_init_tokenrun		PARAMS ((tokenrun *, unsigned int));
+extern void _cpp_process_line_notes (cpp_reader *, int);
+extern void _cpp_clean_line (cpp_reader *);
+extern bool _cpp_get_fresh_line (cpp_reader *);
+extern bool _cpp_skip_block_comment (cpp_reader *);
+extern cpp_token *_cpp_temp_token (cpp_reader *);
+extern const cpp_token *_cpp_lex_token (cpp_reader *);
+extern cpp_token *_cpp_lex_direct (cpp_reader *);
+extern int _cpp_equiv_tokens (const cpp_token *, const cpp_token *);
+extern void _cpp_init_tokenrun (tokenrun *, unsigned int);
 
 /* In cppinit.c.  */
-extern void _cpp_maybe_push_include_file PARAMS ((cpp_reader *));
+extern void _cpp_maybe_push_include_file (cpp_reader *);
 
 /* In cpplib.c */
-extern int _cpp_test_assertion PARAMS ((cpp_reader *, unsigned int *));
-extern int _cpp_handle_directive PARAMS ((cpp_reader *, int));
-extern void _cpp_define_builtin	PARAMS ((cpp_reader *, const char *));
-extern char ** _cpp_save_pragma_names PARAMS ((cpp_reader *));
-extern void _cpp_restore_pragma_names PARAMS ((cpp_reader *, char **));
-extern void _cpp_do__Pragma	PARAMS ((cpp_reader *));
-extern void _cpp_init_directives PARAMS ((cpp_reader *));
-extern void _cpp_init_internal_pragmas PARAMS ((cpp_reader *));
-extern void _cpp_do_file_change PARAMS ((cpp_reader *, enum lc_reason,
-					 const char *,
-					 unsigned int, unsigned int));
-extern void _cpp_pop_buffer PARAMS ((cpp_reader *));
+extern int _cpp_test_assertion (cpp_reader *, unsigned int *);
+extern int _cpp_handle_directive (cpp_reader *, int);
+extern void _cpp_define_builtin (cpp_reader *, const char *);
+extern char ** _cpp_save_pragma_names (cpp_reader *);
+extern void _cpp_restore_pragma_names (cpp_reader *, char **);
+extern void _cpp_do__Pragma (cpp_reader *);
+extern void _cpp_init_directives (cpp_reader *);
+extern void _cpp_init_internal_pragmas (cpp_reader *);
+extern void _cpp_do_file_change (cpp_reader *, enum lc_reason, const char *,
+				 unsigned int, unsigned int);
+extern void _cpp_pop_buffer (cpp_reader *);
 
 /* In cpptrad.c.  */
-extern bool scan_out_logical_line PARAMS ((cpp_reader *, cpp_macro *));
-extern bool _cpp_read_logical_line_trad PARAMS ((cpp_reader *));
-extern void _cpp_overlay_buffer PARAMS ((cpp_reader *pfile, const uchar *,
-					 size_t));
-extern void _cpp_remove_overlay PARAMS ((cpp_reader *));
-extern bool _cpp_create_trad_definition PARAMS ((cpp_reader *, cpp_macro *));
-extern bool _cpp_expansions_different_trad PARAMS ((const cpp_macro *,
-						    const cpp_macro *));
-extern uchar *_cpp_copy_replacement_text PARAMS ((const cpp_macro *, uchar *));
-extern size_t _cpp_replacement_text_len PARAMS ((const cpp_macro *));
+extern bool scan_out_logical_line (cpp_reader *, cpp_macro *);
+extern bool _cpp_read_logical_line_trad (cpp_reader *);
+extern void _cpp_overlay_buffer (cpp_reader *pfile, const uchar *, size_t);
+extern void _cpp_remove_overlay (cpp_reader *);
+extern bool _cpp_create_trad_definition (cpp_reader *, cpp_macro *);
+extern bool _cpp_expansions_different_trad (const cpp_macro *,
+					    const cpp_macro *);
+extern uchar *_cpp_copy_replacement_text (const cpp_macro *, uchar *);
+extern size_t _cpp_replacement_text_len (const cpp_macro *);
 
 /* In cppcharset.c.  */
-cppchar_t _cpp_valid_ucn PARAMS ((cpp_reader *, const uchar **,
-				  int identifer_p));
+cppchar_t _cpp_valid_ucn (cpp_reader *, const uchar **, int identifer_p);
 
 /* Utility routines and macros.  */
 #define DSC(str) (const uchar *)str, sizeof str - 1
@@ -563,55 +551,45 @@ cppchar_t _cpp_valid_ucn PARAMS ((cpp_reader *, const uchar **,
 
 /* These are inline functions instead of macros so we can get type
    checking.  */
-static inline int ustrcmp	PARAMS ((const uchar *, const uchar *));
-static inline int ustrncmp	PARAMS ((const uchar *, const uchar *,
-					 size_t));
-static inline size_t ustrlen	PARAMS ((const uchar *));
-static inline uchar *uxstrdup	PARAMS ((const uchar *));
-static inline uchar *ustrchr	PARAMS ((const uchar *, int));
-static inline int ufputs	PARAMS ((const uchar *, FILE *));
+static inline int ustrcmp (const uchar *, const uchar *);
+static inline int ustrncmp (const uchar *, const uchar *, size_t);
+static inline size_t ustrlen (const uchar *);
+static inline uchar *uxstrdup (const uchar *);
+static inline uchar *ustrchr (const uchar *, int);
+static inline int ufputs (const uchar *, FILE *);
 
 static inline int
-ustrcmp (s1, s2)
-     const uchar *s1, *s2;
+ustrcmp (const uchar *s1, const uchar *s2)
 {
   return strcmp ((const char *)s1, (const char *)s2);
 }
 
 static inline int
-ustrncmp (s1, s2, n)
-     const uchar *s1, *s2;
-     size_t n;
+ustrncmp (const uchar *s1, const uchar *s2, size_t n)
 {
   return strncmp ((const char *)s1, (const char *)s2, n);
 }
 
 static inline size_t
-ustrlen (s1)
-     const uchar *s1;
+ustrlen (const uchar *s1)
 {
   return strlen ((const char *)s1);
 }
 
 static inline uchar *
-uxstrdup (s1)
-     const uchar *s1;
+uxstrdup (const uchar *s1)
 {
   return (uchar *) xstrdup ((const char *)s1);
 }
 
 static inline uchar *
-ustrchr (s1, c)
-     const uchar *s1;
-     int c;
+ustrchr (const uchar *s1, int c)
 {
   return (uchar *) strchr ((const char *)s1, c);
 }
 
 static inline int
-ufputs (s, f)
-     const uchar *s;
-     FILE *f;
+ufputs (const uchar *s, FILE *f)
 {
   return fputs ((const char *)s, f);
 }

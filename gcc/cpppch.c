@@ -24,16 +24,16 @@ Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.  */
 #include "hashtab.h"
 #include "mkdeps.h"
 
-static int write_macdef PARAMS ((cpp_reader *, cpp_hashnode *, void *));
-static int save_idents PARAMS ((cpp_reader *, cpp_hashnode *, void *));
-static hashval_t hashmem PARAMS ((const void *, size_t));
-static hashval_t cpp_string_hash PARAMS ((const void *));
-static int cpp_string_eq PARAMS ((const void *, const void *));
-static int count_defs PARAMS ((cpp_reader *, cpp_hashnode *, void *));
-static int comp_hashnodes PARAMS ((const void *, const void *));
-static int collect_ht_nodes PARAMS ((cpp_reader *, cpp_hashnode *, void *));
-static int write_defs PARAMS ((cpp_reader *, cpp_hashnode *, void *));
-static int save_macros PARAMS ((cpp_reader *, cpp_hashnode *, void *));
+static int write_macdef (cpp_reader *, cpp_hashnode *, void *);
+static int save_idents (cpp_reader *, cpp_hashnode *, void *);
+static hashval_t hashmem (const void *, size_t);
+static hashval_t cpp_string_hash (const void *);
+static int cpp_string_eq (const void *, const void *);
+static int count_defs (cpp_reader *, cpp_hashnode *, void *);
+static int comp_hashnodes (const void *, const void *);
+static int collect_ht_nodes (cpp_reader *, cpp_hashnode *, void *);
+static int write_defs (cpp_reader *, cpp_hashnode *, void *);
+static int save_macros (cpp_reader *, cpp_hashnode *, void *);
 
 /* This structure represents a macro definition on disk.  */
 struct macrodef_struct 
@@ -47,10 +47,7 @@ struct macrodef_struct
    Suitable for being called by cpp_forall_identifiers.  */
 
 static int
-write_macdef (pfile, hn, file_p)
-     cpp_reader *pfile;
-     cpp_hashnode *hn;
-     void *file_p;
+write_macdef (cpp_reader *pfile, cpp_hashnode *hn, void *file_p)
 {
   FILE *f = (FILE *) file_p;
   switch (hn->type)
@@ -123,10 +120,7 @@ struct cpp_savedstate
    put the definition in 'definedstrs'.  */
 
 static int
-save_idents (pfile, hn, ss_p)
-     cpp_reader *pfile ATTRIBUTE_UNUSED;
-     cpp_hashnode *hn;
-     void *ss_p;
+save_idents (cpp_reader *pfile ATTRIBUTE_UNUSED, cpp_hashnode *hn, void *ss_p)
 {
   struct cpp_savedstate *const ss = (struct cpp_savedstate *)ss_p;
   
@@ -158,9 +152,7 @@ save_idents (pfile, hn, ss_p)
 /* Hash some memory in a generic way.  */
 
 static hashval_t
-hashmem (p_p, sz)
-     const void *p_p;
-     size_t sz;
+hashmem (const void *p_p, size_t sz)
 {
   const unsigned char *p = (const unsigned char *)p_p;
   size_t i;
@@ -175,8 +167,7 @@ hashmem (p_p, sz)
 /* Hash a cpp string for the hashtable machinery.  */
 
 static hashval_t
-cpp_string_hash (a_p)
-     const void *a_p;
+cpp_string_hash (const void *a_p)
 {
   const struct cpp_string *a = (const struct cpp_string *) a_p;
   return hashmem (a->text, a->len);
@@ -185,9 +176,7 @@ cpp_string_hash (a_p)
 /* Compare two cpp strings for the hashtable machinery.  */
 
 static int
-cpp_string_eq (a_p, b_p)
-     const void *a_p;
-     const void *b_p;
+cpp_string_eq (const void *a_p, const void *b_p)
 {
   const struct cpp_string *a = (const struct cpp_string *) a_p;
   const struct cpp_string *b = (const struct cpp_string *) b_p;
@@ -201,9 +190,7 @@ cpp_string_eq (a_p, b_p)
    would be called when reading the precompiled header back in.  */
 
 int
-cpp_save_state (r, f)
-     cpp_reader *r;
-     FILE *f;
+cpp_save_state (cpp_reader *r, FILE *f)
 {
   /* Save the list of non-void identifiers for the dependency checking.  */
   r->savedstate = xmalloc (sizeof (struct cpp_savedstate));
@@ -220,10 +207,7 @@ cpp_save_state (r, f)
 /* Calculate the 'hashsize' field of the saved state.  */
 
 static int
-count_defs (pfile, hn, ss_p)
-     cpp_reader *pfile ATTRIBUTE_UNUSED;
-     cpp_hashnode *hn;
-     void *ss_p;
+count_defs (cpp_reader *pfile ATTRIBUTE_UNUSED, cpp_hashnode *hn, void *ss_p)
 {
   struct cpp_savedstate *const ss = (struct cpp_savedstate *)ss_p;
   
@@ -262,10 +246,7 @@ count_defs (pfile, hn, ss_p)
 
 /* Collect the identifiers into the state's string table. */
 static int
-write_defs (pfile, hn, ss_p)
-     cpp_reader *pfile ATTRIBUTE_UNUSED;
-     cpp_hashnode *hn;
-     void *ss_p;
+write_defs (cpp_reader *pfile ATTRIBUTE_UNUSED, cpp_hashnode *hn, void *ss_p)
 {
   struct cpp_savedstate *const ss = (struct cpp_savedstate *)ss_p;
   
@@ -305,9 +286,7 @@ write_defs (pfile, hn, ss_p)
 /* Comparison function for qsort.  The arguments point to pointers of
    type ht_hashnode *.  */
 static int
-comp_hashnodes (px, py)
-     const void *px;
-     const void *py;
+comp_hashnodes (const void *px, const void *py)
 {
   cpp_hashnode *x = *(cpp_hashnode **) px;
   cpp_hashnode *y = *(cpp_hashnode **) py;
@@ -318,9 +297,7 @@ comp_hashnodes (px, py)
    called after the PCH is ready to be saved.  */
 
 int
-cpp_write_pch_deps (r, f)
-     cpp_reader *r;
-     FILE *f;
+cpp_write_pch_deps (cpp_reader *r, FILE *f)
 {
   struct macrodef_struct z;
   struct cpp_savedstate *const ss = r->savedstate;
@@ -367,9 +344,7 @@ cpp_write_pch_deps (r, f)
    cpp_read_state.  */
 
 int
-cpp_write_pch_state (r, f)
-     cpp_reader *r;
-     FILE *f;
+cpp_write_pch_state (cpp_reader *r, FILE *f)
 {
   struct macrodef_struct z;
 
@@ -410,10 +385,8 @@ struct ht_node_list
 /* Callback for collecting identifiers from hash table */
 
 static int
-collect_ht_nodes (pfile, hn, nl_p)
-     cpp_reader *pfile ATTRIBUTE_UNUSED;
-     cpp_hashnode *hn;
-     void *nl_p;
+collect_ht_nodes (cpp_reader *pfile ATTRIBUTE_UNUSED, cpp_hashnode *hn,
+		  void *nl_p)
 {
   struct ht_node_list *const nl = (struct ht_node_list *)nl_p;
 
@@ -446,10 +419,7 @@ collect_ht_nodes (pfile, hn, nl_p)
 */
 
 int
-cpp_valid_state (r, name, fd)
-     cpp_reader *r;
-     const char *name;
-     int fd;
+cpp_valid_state (cpp_reader *r, const char *name, int fd)
 {
   struct macrodef_struct m;
   size_t namebufsz = 256;
@@ -583,10 +553,7 @@ struct save_macro_data
    a PCH restore.  */
 
 static int 
-save_macros (r, h, data_p)
-     cpp_reader *r ATTRIBUTE_UNUSED;
-     cpp_hashnode *h;
-     void *data_p;
+save_macros (cpp_reader *r ATTRIBUTE_UNUSED, cpp_hashnode *h, void *data_p)
 {
   struct save_macro_data *data = (struct save_macro_data *)data_p;
   if (h->type != NT_VOID
@@ -614,9 +581,7 @@ save_macros (r, h, data_p)
    macros in 'data'.  */
 
 void
-cpp_prepare_state (r, data)
-     cpp_reader *r;
-     struct save_macro_data **data;
+cpp_prepare_state (cpp_reader *r, struct save_macro_data **data)
 {
   struct save_macro_data *d = xmalloc (sizeof (struct save_macro_data));
   
@@ -632,11 +597,8 @@ cpp_prepare_state (r, data)
    DEPNAME is passed to deps_restore.  */
 
 int
-cpp_read_state (r, name, f, data)
-     cpp_reader *r;
-     const char *name;
-     FILE *f;
-     struct save_macro_data *data;
+cpp_read_state (cpp_reader *r, const char *name, FILE *f,
+		struct save_macro_data *data)
 {
   struct macrodef_struct m;
   size_t defnlen = 256;

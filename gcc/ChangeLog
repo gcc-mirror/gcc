@@ -1,3 +1,12 @@
+2003-06-16  Zack Weinberg  <zack@codesourcery.com>
+
+	* cpplib.h, cpphash.h, cppcharset.c, cpperror.c, cppexp.c
+	* cppfiles.c, cpphash.c, cppinit.c, cpplex.c, cpplib.c
+	* cppmacro.c, cpppch.c, cpptrad.c, cppspec.c: Convert to
+	ISO C: new-style function declarations, no need for PARAMS,
+	no special punctuation on indirect function calls, use string
+	constant concatenation where convenient.
+
 2003-06-17  Andreas Jaeger  <aj@suse.de>
 
 	* rtl.h: Remove declarations from coverage.h.
@@ -16,11 +25,11 @@
 	* config/sparc/aout.h, config/sparc/biarch64.h, config/sparc/elf.h,
 	config/sparc/freebsd.h, config/sparc/linux.h, config/sparc/linux64.h,
 	config/sparc/lite.h, config/sparc/litecoff.h, config/sparc/liteelf.h,
-	config/sparc/netbsd-elf.h, config/sparc/openbsd.h, 
+	config/sparc/netbsd-elf.h, config/sparc/openbsd.h,
 	config/sparc/rtemself.h, config/sparc/sol2-64.h,
 	config/sparc/sol2-bi.h, config/sparc/sol2-gas-bi.h,
 	config/sparc/sol2-gld-bi.h, config/sparc/sol2-gld.h,
-	config/sparc/sol2.h, config/sparc/sp64-aout.h, 
+	config/sparc/sol2.h, config/sparc/sp64-aout.h,
 	config/sparc/sp64-elf.h, config/sparc/sp86x-elf.h,
 	config/sparc/sparc-protos.h, config/sparc/sysv4-only.h: Replace
 	"GNU compiler", "GNU CC" with "GCC".
@@ -82,7 +91,7 @@
 	* builtin-attrs.def, builtin-attrs.def, builtins.c, cpplex.c,
 	cpplib.c, gencheck.c, gengenrtl.c, machmode.def, protoize.c: Don't
 	use macros from "symcat.h", instead rely on ISO C.
-	
+
 	* system.h: Don't include "symcat.h".
 	* configure.in (AC_C_STRINGIZE): Delete.
 	* config.in, configure: Regenerate.

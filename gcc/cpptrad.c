@@ -81,29 +81,24 @@ enum ls {ls_none = 0,		/* Normal state.  */
 /* Lexing TODO: Maybe handle space in escaped newlines.  Stop cpplex.c
    from recognizing comments and directives during its lexing pass.  */
 
-static const uchar *skip_whitespace PARAMS ((cpp_reader *, const uchar *,
-					     int));
-static cpp_hashnode *lex_identifier PARAMS ((cpp_reader *, const uchar *));
-static const uchar *copy_comment PARAMS ((cpp_reader *, const uchar *, int));
-static void check_output_buffer PARAMS ((cpp_reader *, size_t));
-static void push_replacement_text PARAMS ((cpp_reader *, cpp_hashnode *));
-static bool scan_parameters PARAMS ((cpp_reader *, cpp_macro *));
-static bool recursive_macro PARAMS ((cpp_reader *, cpp_hashnode *));
-static void save_replacement_text PARAMS ((cpp_reader *, cpp_macro *,
-					   unsigned int));
-static void maybe_start_funlike PARAMS ((cpp_reader *, cpp_hashnode *,
-					 const uchar *, struct fun_macro *));
-static void save_argument PARAMS ((struct fun_macro *, size_t));
-static void replace_args_and_push PARAMS ((cpp_reader *, struct fun_macro *));
-static size_t canonicalize_text PARAMS ((uchar *, const uchar *, size_t,
-					 uchar *));
+static const uchar *skip_whitespace (cpp_reader *, const uchar *, int);
+static cpp_hashnode *lex_identifier (cpp_reader *, const uchar *);
+static const uchar *copy_comment (cpp_reader *, const uchar *, int);
+static void check_output_buffer (cpp_reader *, size_t);
+static void push_replacement_text (cpp_reader *, cpp_hashnode *);
+static bool scan_parameters (cpp_reader *, cpp_macro *);
+static bool recursive_macro (cpp_reader *, cpp_hashnode *);
+static void save_replacement_text (cpp_reader *, cpp_macro *, unsigned int);
+static void maybe_start_funlike (cpp_reader *, cpp_hashnode *, const uchar *,
+				 struct fun_macro *);
+static void save_argument (struct fun_macro *, size_t);
+static void replace_args_and_push (cpp_reader *, struct fun_macro *);
+static size_t canonicalize_text (uchar *, const uchar *, size_t, uchar *);
 
 /* Ensures we have N bytes' space in the output buffer, and
    reallocates it if not.  */
 static void
-check_output_buffer (pfile, n)
-     cpp_reader *pfile;
-     size_t n;
+check_output_buffer (cpp_reader *pfile, size_t n)
 {
   /* We might need two bytes to terminate an unterminated comment, and
      one more to terminate the line with a NUL.  */
@@ -134,10 +129,7 @@ check_output_buffer (pfile, n)
    Returns a pointer to the first character after the comment in the
    input buffer.  */
 static const uchar *
-copy_comment (pfile, cur, in_define)
-     cpp_reader *pfile;
-     const uchar *cur;
-     int in_define;
+copy_comment (cpp_reader *pfile, const uchar *cur, int in_define)
 {
   bool unterminated, copy = false;
   unsigned int from_line = pfile->line;
@@ -197,10 +189,7 @@ copy_comment (pfile, cur, in_define)
    Returns a pointer to the first character after the whitespace in
    the input buffer.  */
 static const uchar *
-skip_whitespace (pfile, cur, skip_comments)
-     cpp_reader *pfile;
-     const uchar *cur;
-     int skip_comments;
+skip_whitespace (cpp_reader *pfile, const uchar *cur, int skip_comments)
 {
   uchar *out = pfile->out.cur;
 
@@ -232,9 +221,7 @@ skip_whitespace (pfile, cur, skip_comments)
    to point to a valid first character of an identifier.  Returns
    the hashnode, and updates out.cur.  */
 static cpp_hashnode *
-lex_identifier (pfile, cur)
-     cpp_reader *pfile;
-     const uchar *cur;
+lex_identifier (cpp_reader *pfile, const uchar *cur)
 {
   size_t len;
   uchar *out = pfile->out.cur;
@@ -256,10 +243,7 @@ lex_identifier (pfile, cur)
    starting at START.  The true buffer is restored upon calling
    restore_buff().  */
 void
-_cpp_overlay_buffer (pfile, start, len)
-     cpp_reader *pfile;
-     const uchar *start;
-     size_t len;
+_cpp_overlay_buffer (cpp_reader *pfile, const uchar *start, size_t len)
 {
   cpp_buffer *buffer = pfile->buffer;
 
@@ -276,8 +260,7 @@ _cpp_overlay_buffer (pfile, start, len)
 
 /* Restores a buffer overlaid by _cpp_overlay_buffer().  */
 void
-_cpp_remove_overlay (pfile)
-     cpp_reader *pfile;
+_cpp_remove_overlay (cpp_reader *pfile)
 {
   cpp_buffer *buffer = pfile->overlaid_buffer;
 
@@ -292,8 +275,7 @@ _cpp_remove_overlay (pfile)
 /* Reads a logical line into the output buffer.  Returns TRUE if there
    is more text left in the buffer.  */
 bool
-_cpp_read_logical_line_trad (pfile)
-     cpp_reader *pfile;
+_cpp_read_logical_line_trad (cpp_reader *pfile)
 {
   do
     {
@@ -308,11 +290,7 @@ _cpp_read_logical_line_trad (pfile)
 /* Set up state for finding the opening '(' of a function-like
    macro.  */
 static void
-maybe_start_funlike (pfile, node, start, macro)
-     cpp_reader *pfile;
-     cpp_hashnode *node;
-     const uchar *start;
-     struct fun_macro *macro;
+maybe_start_funlike (cpp_reader *pfile, cpp_hashnode *node, const uchar *start, struct fun_macro *macro)
 {
   unsigned int n = node->value.macro->paramc + 1;
 
@@ -327,9 +305,7 @@ maybe_start_funlike (pfile, node, start, macro)
 
 /* Save the OFFSET of the start of the next argument to MACRO.  */
 static void
-save_argument (macro, offset)
-     struct fun_macro *macro;
-     size_t offset;
+save_argument (struct fun_macro *macro, size_t offset)
 {
   macro->argc++;
   if (macro->argc <= macro->node->value.macro->paramc)
@@ -344,9 +320,7 @@ save_argument (macro, offset)
    MACRO, and we call save_replacement_text() every time we meet an
    argument.  */
 bool
-scan_out_logical_line (pfile, macro)
-     cpp_reader *pfile;
-     cpp_macro *macro;
+scan_out_logical_line (cpp_reader *pfile, cpp_macro *macro)
 {
   bool result = true;
   cpp_context *context;
@@ -683,9 +657,7 @@ scan_out_logical_line (pfile, macro)
    the context stack.  NODE is either object-like, or a function-like
    macro with no arguments.  */
 static void
-push_replacement_text (pfile, node)
-     cpp_reader *pfile;
-     cpp_hashnode *node;
+push_replacement_text (cpp_reader *pfile, cpp_hashnode *node)
 {
   size_t len;
   const uchar *text;
@@ -713,9 +685,7 @@ push_replacement_text (pfile, node)
 
 /* Returns TRUE if traditional macro recursion is detected.  */
 static bool
-recursive_macro (pfile, node)
-     cpp_reader *pfile;
-     cpp_hashnode *node;
+recursive_macro (cpp_reader *pfile, cpp_hashnode *node)
 {
   bool recursing = !!(node->flags & NODE_DISABLED);
 
@@ -756,8 +726,7 @@ recursive_macro (pfile, node)
 /* Return the length of the replacement text of a function-like or
    object-like non-builtin macro.  */
 size_t
-_cpp_replacement_text_len (macro)
-     const cpp_macro *macro;
+_cpp_replacement_text_len (const cpp_macro *macro)
 {
   size_t len;
 
@@ -787,9 +756,7 @@ _cpp_replacement_text_len (macro)
    sufficient size.  It is not NUL-terminated.  The next character is
    returned.  */
 uchar *
-_cpp_copy_replacement_text (macro, dest)
-     const cpp_macro *macro;
-     uchar *dest;
+_cpp_copy_replacement_text (const cpp_macro *macro, uchar *dest)
 {
   if (macro->fun_like && (macro->paramc != 0))
     {
@@ -823,9 +790,7 @@ _cpp_copy_replacement_text (macro, dest)
    the context stack.  NODE is either object-like, or a function-like
    macro with no arguments.  */
 static void
-replace_args_and_push (pfile, fmacro)
-     cpp_reader *pfile;
-     struct fun_macro *fmacro;
+replace_args_and_push (cpp_reader *pfile, struct fun_macro *fmacro)
 {
   cpp_macro *macro = fmacro->node->value.macro;
 
@@ -889,9 +854,7 @@ replace_args_and_push (pfile, fmacro)
    duplicate parameter).  On success, CUR (pfile->context) is just
    past the closing parenthesis.  */
 static bool
-scan_parameters (pfile, macro)
-     cpp_reader *pfile;
-     cpp_macro *macro;
+scan_parameters (cpp_reader *pfile, cpp_macro *macro)
 {
   const uchar *cur = CUR (pfile->context) + 1;
   bool ok;
@@ -930,10 +893,8 @@ scan_parameters (pfile, macro)
    ARG_INDEX, with zero indicating the end of the replacement
    text.  */
 static void
-save_replacement_text (pfile, macro, arg_index)
-     cpp_reader *pfile;
-     cpp_macro *macro;
-     unsigned int arg_index;
+save_replacement_text (cpp_reader *pfile, cpp_macro *macro,
+		       unsigned int arg_index)
 {
   size_t len = pfile->out.cur - pfile->out.base;
   uchar *exp;
@@ -981,9 +942,7 @@ save_replacement_text (pfile, macro, arg_index)
 /* Analyze and save the replacement text of a macro.  Returns true on
    success.  */
 bool
-_cpp_create_trad_definition (pfile, macro)
-     cpp_reader *pfile;
-     cpp_macro *macro;
+_cpp_create_trad_definition (cpp_reader *pfile, cpp_macro *macro)
 {
   const uchar *cur;
   uchar *limit;
@@ -1040,11 +999,7 @@ _cpp_create_trad_definition (pfile, macro)
    quote currently in effect is pointed to by PQUOTE, and is updated
    by the function.  Returns the number of bytes copied.  */
 static size_t
-canonicalize_text (dest, src, len, pquote)
-     uchar *dest;
-     const uchar *src;
-     size_t len;
-     uchar *pquote;
+canonicalize_text (uchar *dest, const uchar *src, size_t len, uchar *pquote)
 {
   uchar *orig_dest = dest;
   uchar quote = *pquote;
@@ -1078,8 +1033,8 @@ canonicalize_text (dest, src, len, pquote)
 /* Returns true if MACRO1 and MACRO2 have expansions different other
    than in the form of their whitespace.  */
 bool
-_cpp_expansions_different_trad (macro1, macro2)
-     const cpp_macro *macro1, *macro2;
+_cpp_expansions_different_trad (const cpp_macro *macro1,
+				const cpp_macro *macro2)
 {
   uchar *p1 = xmalloc (macro1->count + macro2->count);
   uchar *p2 = p1 + macro1->count;

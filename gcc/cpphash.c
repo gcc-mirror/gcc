@@ -30,13 +30,12 @@ Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 #include "cpplib.h"
 #include "cpphash.h"
 
-static cpp_hashnode *alloc_node PARAMS ((hash_table *));
+static cpp_hashnode *alloc_node (hash_table *);
 
 /* Return an identifier node for hashtable.c.  Used by cpplib except
    when integrated with the C front ends.  */
 static cpp_hashnode *
-alloc_node (table)
-     hash_table *table;
+alloc_node (hash_table *table)
 {
   cpp_hashnode *node;
 
@@ -49,9 +48,7 @@ alloc_node (table)
 /* Set up the identifier hash table.  Use TABLE if non-null, otherwise
    create our own.  */
 void
-_cpp_init_hashtable (pfile, table)
-     cpp_reader *pfile;
-     hash_table *table;
+_cpp_init_hashtable (cpp_reader *pfile, hash_table *table)
 {
   struct spec_nodes *s;
 
@@ -59,7 +56,7 @@ _cpp_init_hashtable (pfile, table)
     {
       pfile->our_hashtable = 1;
       table = ht_create (13);	/* 8K (=2^13) entries.  */
-      table->alloc_node = (hashnode (*) PARAMS ((hash_table *))) alloc_node;
+      table->alloc_node = (hashnode (*) (hash_table *)) alloc_node;
       gcc_obstack_init (&pfile->hash_ob);
     }
 
@@ -80,8 +77,7 @@ _cpp_init_hashtable (pfile, table)
 
 /* Tear down the identifier hash table.  */
 void
-_cpp_destroy_hashtable (pfile)
-     cpp_reader *pfile;
+_cpp_destroy_hashtable (cpp_reader *pfile)
 {
   if (pfile->our_hashtable)
     {
@@ -93,10 +89,7 @@ _cpp_destroy_hashtable (pfile)
 /* Returns the hash entry for the STR of length LEN, creating one
    if necessary.  */
 cpp_hashnode *
-cpp_lookup (pfile, str, len)
-     cpp_reader *pfile;
-     const unsigned char *str;
-     unsigned int len;
+cpp_lookup (cpp_reader *pfile, const unsigned char *str, unsigned int len)
 {
   /* ht_lookup cannot return NULL.  */
   return CPP_HASHNODE (ht_lookup (pfile->hash_table, str, len, HT_ALLOC));
@@ -104,10 +97,7 @@ cpp_lookup (pfile, str, len)
 
 /* Determine whether the str STR, of length LEN, is a defined macro.  */
 int
-cpp_defined (pfile, str, len)
-     cpp_reader *pfile;
-     const unsigned char *str;
-     int len;
+cpp_defined (cpp_reader *pfile, const unsigned char *str, int len)
 {
   cpp_hashnode *node;
 
@@ -120,10 +110,7 @@ cpp_defined (pfile, str, len)
 /* For all nodes in the hashtable, callback CB with parameters PFILE,
    the node, and V.  */
 void
-cpp_forall_identifiers (pfile, cb, v)
-     cpp_reader *pfile;
-     cpp_cb cb;
-     void *v;
+cpp_forall_identifiers (cpp_reader *pfile, cpp_cb cb, void *v)
 {
   /* We don't need a proxy since the hash table's identifier comes
      first in cpp_hashnode.  */
