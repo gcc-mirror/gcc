@@ -1,3 +1,8 @@
+2001-02-03  Neil Booth  <neil@daikokuya.demon.co.uk>
+
+        * cpphash.h: Rename ALIGN _ALIGN.
+        * cpplex.c (new_chunk, _cpp_pool_reserve): Update.  
+
 Fri Feb  2 23:15:29 2001  Christopher Faylor <cgf@cygnus.com>
 
 	* config/i386/cygwin.h (CPP_SPEC): Reorganize YA to better handle cross
