@@ -145,6 +145,9 @@
 /* define GC_local_malloc() & GC_local_malloc_atomic() */
 #undef THREAD_LOCAL_ALLOC
 
+/* use MMAP instead of sbrk to get new memory */
+#undef USE_MMAP
+
 /* POSIX version of C Source */
 #undef _POSIX_C_SOURCE
 

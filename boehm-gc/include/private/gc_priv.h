@@ -19,6 +19,10 @@
 # ifndef GC_PRIVATE_H
 # define GC_PRIVATE_H
 
+/* Autoconf definitions. */
+/* FIXME: This should really be included directly from each .c file. */
+#include <gc_config.h>
+
 #if defined(mips) && defined(SYSTYPE_BSD) && defined(sony_news)
     /* sony RISC NEWS, NEWSOS 4 */
 #   define BSD_TIME
