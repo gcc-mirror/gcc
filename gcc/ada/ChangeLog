@@ -1,3 +1,7 @@
+2003-11-10  GNAT Script  <nobody@gnat.com>
+
+	* Make-lang.in: Makefile automatically updated
+
 2003-11-10  Arnaud Charlet  <charlet@act-europe.fr>
 
 	PR 12950
