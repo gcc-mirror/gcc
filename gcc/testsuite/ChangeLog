@@ -1,3 +1,7 @@
+1999-11-29  Bernd Schmidt  <bernds@cygnus.co.uk>
+
+	* gcc.dg/991129-1.c: New test.
+
 1999-11-22  Nathan Sidwell  <nathan@acm.org>
 
 	* g++.old-deja/g++.other/warn4.C: New test.
