@@ -1,3 +1,9 @@
+2001-07-19  Andreas Schwab  <schwab@suse.de>
+
+	* configure.in (assembler dwarf2 debug_line support): Define nop
+	insn for m68k.
+	* configure: Regenerated.
+
 2001-07-19  Neil Booth  <neil@daikokuya.demon.co.uk>
 
 	* Makefile.in (toplev.o, dwarfout.o, final.o): Don't depend on
