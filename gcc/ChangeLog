@@ -1,5 +1,9 @@
 2003-08-23  Richard Sandiford  <rsandifo@redhat.com>
 
+	* config/mips/linux64.h (STARTFILE_PREFIX_SPEC): Remove.
+
+2003-08-23  Richard Sandiford  <rsandifo@redhat.com>
+
 	* config/mips/mips.c (mips_setup_incoming_varargs): Handle o32 and o64
 	as well.  Put memory references in the varargs alias set.
 	(mips_expand_prologue): Remove varargs handling from here.
