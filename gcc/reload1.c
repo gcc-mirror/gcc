@@ -39,6 +39,10 @@ Boston, MA 02111-1307, USA.  */
 #include "real.h"
 #include "toplev.h"
 
+#if !defined PREFERRED_STACK_BOUNDARY && defined STACK_BOUNDARY
+#define PREFERRED_STACK_BOUNDARY STACK_BOUNDARY
+#endif
+
 /* This file contains the reload pass of the compiler, which is
    run after register allocation has been done.  It checks that
    each insn is valid (operands required to be in registers really

@@ -410,6 +410,10 @@ extern int ix86_arch;
 /* Boundary (in *bits*) on which stack pointer should be aligned.  */
 #define STACK_BOUNDARY 32
 
+/* We want to keep the stack aligned to 64bits when possible.  But the
+   compiler can not rely on the stack having this alignment.*/
+#define PREFERRED_STACK_BOUNDARY 64
+
 /* Allocation boundary (in *bits*) for the code of a function.
    For i486, we get better performance by aligning to a cache
    line (i.e. 16 byte) boundary.  */
@@ -1627,20 +1631,23 @@ do {						\
     (OFFSET) = 8;	/* Skip saved PC and previous frame pointer */	\
   else									\
     {									\
-      int regno;							\
-      int offset = 0;							\
+      int nregs;							\
+      int offset;							\
+      int preferred_alignment = PREFERRED_STACK_BOUNDARY / BITS_PER_UNIT; \
+      HOST_WIDE_INT tsize = ix86_compute_frame_size (get_frame_size (),	\
+						     &nregs);		\
 									\
-      for (regno = 0; regno < FIRST_PSEUDO_REGISTER; regno++)		\
-	if ((regs_ever_live[regno] && ! call_used_regs[regno])		\
-	    || ((current_function_uses_pic_offset_table			\
-		 || current_function_uses_const_pool)			\
-		&& flag_pic && regno == PIC_OFFSET_TABLE_REGNUM))	\
-	  offset += 4;							\
+      (OFFSET) = (tsize + nregs * UNITS_PER_WORD);			\
 									\
-      (OFFSET) = offset + get_frame_size ();				\
+      offset = 4;							\
+      if (frame_pointer_needed)						\
+	offset += UNITS_PER_WORD;					\
 									\
-      if ((FROM) == ARG_POINTER_REGNUM && (TO) == STACK_POINTER_REGNUM)	\
-	(OFFSET) += 4;	/* Skip saved PC */				\
+      if ((FROM) == ARG_POINTER_REGNUM)					\
+	(OFFSET) += offset;						\
+      else								\
+	(OFFSET) -= ((offset + preferred_alignment - 1)			\
+		     & -preferred_alignment) - offset;			\
     }									\
 }
 
