@@ -62,13 +62,14 @@ static bool paste_tokens PARAMS ((cpp_reader *, const cpp_token **,
 static void replace_args PARAMS ((cpp_reader *, cpp_hashnode *, cpp_macro *,
 				  macro_arg *));
 static _cpp_buff *funlike_invocation_p PARAMS ((cpp_reader *, cpp_hashnode *));
+static bool create_iso_definition PARAMS ((cpp_reader *, cpp_macro *));
 
 /* #define directive parsing and handling.  */
 
 static cpp_token *alloc_expansion_token PARAMS ((cpp_reader *, cpp_macro *));
 static cpp_token *lex_expansion_token PARAMS ((cpp_reader *, cpp_macro *));
-static int warn_of_redefinition PARAMS ((const cpp_hashnode *,
-					 const cpp_macro *));
+static bool warn_of_redefinition PARAMS ((cpp_reader *, const cpp_hashnode *,
+					  const cpp_macro *));
 static int save_parameter PARAMS ((cpp_reader *, cpp_macro *, cpp_hashnode *));
 static int parse_params PARAMS ((cpp_reader *, cpp_macro *));
 static void check_trad_stringification PARAMS ((cpp_reader *,
@@ -917,6 +918,22 @@ push_token_context (pfile, macro, first, count)
   LAST (context).token = first + count;
 }
 
+/* Push a traditional macro's replacement text.  */
+void
+_cpp_push_text_context (pfile, macro, start, end)
+     cpp_reader *pfile;
+     cpp_hashnode *macro;
+     const uchar *start, *end;
+{
+  cpp_context *context = next_context (pfile);
+
+  context->direct_p = true;
+  context->macro = macro;
+  context->buff = NULL;
+  CUR (context) = start;
+  RLIMIT (context) = end;
+}
+
 /* Expand an argument ARG before replacing parameters in a
    function-like macro.  This works by pushing a context with the
    argument's tokens, and then expanding that into a temporary buffer
@@ -1127,8 +1144,9 @@ _cpp_backup_tokens (pfile, count)
 /* #define directive parsing and handling.  */
 
 /* Returns non-zero if a macro redefinition warning is required.  */
-static int
-warn_of_redefinition (node, macro2)
+static bool
+warn_of_redefinition (pfile, node, macro2)
+     cpp_reader *pfile;
      const cpp_hashnode *node;
      const cpp_macro *macro2;
 {
@@ -1137,7 +1155,7 @@ warn_of_redefinition (node, macro2)
 
   /* Some redefinitions need to be warned about regardless.  */
   if (node->flags & NODE_WARN)
-    return 1;
+    return true;
 
   /* Redefinition of a macro is allowed if and only if the old and new
      definitions are the same.  (6.10.3 paragraph 2).  */
@@ -1148,19 +1166,22 @@ warn_of_redefinition (node, macro2)
       || macro1->paramc != macro2->paramc
       || macro1->fun_like != macro2->fun_like
       || macro1->variadic != macro2->variadic)
-    return 1;
-
-  /* Check each token.  */
-  for (i = 0; i < macro1->count; i++)
-    if (! _cpp_equiv_tokens (&macro1->exp.tokens[i], &macro2->exp.tokens[i]))
-      return 1;
+    return true;
 
   /* Check parameter spellings.  */
   for (i = 0; i < macro1->paramc; i++)
     if (macro1->params[i] != macro2->params[i])
-      return 1;
+      return true;
 
-  return 0;
+  /* Check the replacement text or tokens.  */
+  if (CPP_OPTION (pfile, traditional))
+    return memcmp (macro1->exp.text, macro2->exp.text, macro1->count);
+
+  for (i = 0; i < macro1->count; i++)
+    if (!_cpp_equiv_tokens (&macro1->exp.tokens[i], &macro2->exp.tokens[i]))
+      return true;
+
+  return false;
 }
 
 /* Free the definition of hashnode H.  */
@@ -1316,24 +1337,13 @@ lex_expansion_token (pfile, macro)
   return token;
 }
 
-/* Parse a macro and save its expansion.  Returns non-zero on success.  */
-int
-_cpp_create_definition (pfile, node)
+static bool
+create_iso_definition (pfile, macro)
      cpp_reader *pfile;
-     cpp_hashnode *node;
+     cpp_macro *macro;
 {
-  cpp_macro *macro;
-  cpp_token *token, *saved_cur_token;
+  cpp_token *token;
   const cpp_token *ctoken;
-  unsigned int i, ok = 1;
-
-  macro = (cpp_macro *) _cpp_aligned_alloc (pfile, sizeof (cpp_macro));
-  macro->line = pfile->directive_line;
-  macro->params = 0;
-  macro->paramc = 0;
-  macro->variadic = 0;
-  macro->count = 0;
-  macro->fun_like = 0;
 
   /* Get the first token of the expansion (or the '(' of a
      function-like macro).  */
@@ -1341,10 +1351,10 @@ _cpp_create_definition (pfile, node)
 
   if (ctoken->type == CPP_OPEN_PAREN && !(ctoken->flags & PREV_WHITE))
     {
-      ok = parse_params (pfile, macro);
+      bool ok = parse_params (pfile, macro);
       macro->params = (cpp_hashnode **) BUFF_FRONT (pfile->a_buff);
       if (!ok)
-	goto cleanup2;
+	return false;
 
       /* Success.  Commit the parameter array.  */
       BUFF_FRONT (pfile->a_buff) = (uchar *) &macro->params[macro->paramc];
@@ -1353,8 +1363,6 @@ _cpp_create_definition (pfile, node)
   else if (ctoken->type != CPP_EOF && !(ctoken->flags & PREV_WHITE))
     cpp_error (pfile, DL_PEDWARN,
 	       "ISO C requires whitespace after the macro name");
-
-  saved_cur_token = pfile->cur_token;
 
   if (macro->fun_like)
     token = lex_expansion_token (pfile, macro);
@@ -1381,10 +1389,9 @@ _cpp_create_definition (pfile, node)
 	  /* Let assembler get away with murder.  */
 	  else if (CPP_OPTION (pfile, lang) != CLK_ASM)
 	    {
-	      ok = 0;
 	      cpp_error (pfile, DL_ERROR,
 			 "'#' is not followed by a macro parameter");
-	      goto cleanup1;
+	      return false;
 	    }
 	}
 
@@ -1401,10 +1408,9 @@ _cpp_create_definition (pfile, node)
 
 	  if (macro->count == 0 || token->type == CPP_EOF)
 	    {
-	      ok = 0;
 	      cpp_error (pfile, DL_ERROR,
 			 "'##' cannot appear at either end of a macro expansion");
-	      goto cleanup1;
+	      return false;
 	    }
 
 	  token[-1].flags |= PASTE_LEFT;
@@ -1425,25 +1431,68 @@ _cpp_create_definition (pfile, node)
   /* Commit the memory.  */
   BUFF_FRONT (pfile->a_buff) = (uchar *) &macro->exp.tokens[macro->count];
 
-  /* Implement the macro-defined-to-itself optimisation.  */
-  if (macro->count == 1 && !macro->fun_like
-      && macro->exp.tokens[0].type == CPP_NAME
-      && macro->exp.tokens[0].val.node == node)
-    node->flags |= NODE_DISABLED;
+  return true;
+}
 
+/* Parse a macro and save its expansion.  Returns non-zero on success.  */
+bool
+_cpp_create_definition (pfile, node)
+     cpp_reader *pfile;
+     cpp_hashnode *node;
+{
+  cpp_macro *macro;
+  unsigned int i;
+  bool ok;
+
+  macro = (cpp_macro *) _cpp_aligned_alloc (pfile, sizeof (cpp_macro));
+  macro->line = pfile->directive_line;
+  macro->params = 0;
+  macro->paramc = 0;
+  macro->variadic = 0;
+  macro->count = 0;
+  macro->fun_like = 0;
   /* To suppress some diagnostics.  */
   macro->syshdr = pfile->map->sysp != 0;
 
+  if (CPP_OPTION (pfile, traditional))
+    ok = _cpp_create_trad_definition (pfile, macro);
+  else
+    {
+      cpp_token *saved_cur_token = pfile->cur_token;
+
+      ok = create_iso_definition (pfile, macro);
+
+      /* Restore lexer position because of games lex_expansion_token()
+	 plays lexing the macro.  We set the type for SEEN_EOL() in
+	 cpplib.c.
+
+	 Longer term we should lex the whole line before coming here,
+	 and just copy the expansion.  */
+      saved_cur_token[-1].type = pfile->cur_token[-1].type;
+      pfile->cur_token = saved_cur_token;
+
+      /* Stop the lexer accepting __VA_ARGS__.  */
+      pfile->state.va_args_ok = 0;
+    }
+
+  /* Clear the fast argument lookup indices.  */
+  for (i = macro->paramc; i-- > 0; )
+    macro->params[i]->arg_index = 0;
+
+  if (!ok)
+    return ok;
+
   if (node->type != NT_VOID)
     {
-      if (warn_of_redefinition (node, macro))
+      if (warn_of_redefinition (pfile, node, macro))
 	{
 	  cpp_error_with_line (pfile, DL_PEDWARN, pfile->directive_line, 0,
 			       "\"%s\" redefined", NODE_NAME (node));
 
 	  if (node->type == NT_MACRO && !(node->flags & NODE_BUILTIN))
-	    cpp_error_with_line (pfile, DL_PEDWARN, node->value.macro->line, 0,
-			    "this is the location of the previous definition");
+	    cpp_error_with_line (pfile, DL_PEDWARN,
+				 node->value.macro->line, 0,
+			 "this is the location of the previous definition");
 	}
       _cpp_free_definition (node);
     }
@@ -1453,21 +1502,6 @@ _cpp_create_definition (pfile, node)
   node->value.macro = macro;
   if (! ustrncmp (NODE_NAME (node), DSC ("__STDC_")))
     node->flags |= NODE_WARN;
-
- cleanup1:
-
-  /* Set type for SEEN_EOL() in cpplib.c, restore the lexer position.  */
-  saved_cur_token[-1].type = pfile->cur_token[-1].type;
-  pfile->cur_token = saved_cur_token;
-
- cleanup2:
-
-  /* Stop the lexer accepting __VA_ARGS__.  */
-  pfile->state.va_args_ok = 0;
-
-  /* Clear the fast argument lookup indices.  */
-  for (i = macro->paramc; i-- > 0; )
-    macro->params[i]->arg_index = 0;
 
   return ok;
 }

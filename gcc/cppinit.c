@@ -995,12 +995,10 @@ cpp_finish_options (pfile)
       struct pending_option *p;
 
       _cpp_do_file_change (pfile, LC_RENAME, _("<built-in>"), 1, 0);
-      if (!CPP_OPTION (pfile, traditional) /* REMOVEME */)
-	init_builtins (pfile);
+      init_builtins (pfile);
       _cpp_do_file_change (pfile, LC_RENAME, _("<command line>"), 1, 0);
-      if (!CPP_OPTION (pfile, traditional) /* REMOVEME */)
-	for (p = CPP_OPTION (pfile, pending)->directive_head; p; p = p->next)
-	  (*p->handler) (pfile, p->arg);
+      for (p = CPP_OPTION (pfile, pending)->directive_head; p; p = p->next)
+	(*p->handler) (pfile, p->arg);
 
       /* Scan -imacros files after -D, -U, but before -include.
 	 pfile->next_include_file is NULL, so _cpp_pop_buffer does not

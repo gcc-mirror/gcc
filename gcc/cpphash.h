@@ -424,8 +424,11 @@ extern int _cpp_begin_message PARAMS ((cpp_reader *, int,
 
 /* In cppmacro.c */
 extern void _cpp_free_definition	PARAMS ((cpp_hashnode *));
-extern int _cpp_create_definition	PARAMS ((cpp_reader *, cpp_hashnode *));
+extern bool _cpp_create_definition	PARAMS ((cpp_reader *, cpp_hashnode *));
 extern void _cpp_pop_context		PARAMS ((cpp_reader *));
+extern void _cpp_push_text_context	PARAMS ((cpp_reader *, cpp_hashnode *,
+						 const uchar *, const uchar*));
+extern bool _cpp_create_trad_definition PARAMS ((cpp_reader *, cpp_macro *));
 
 /* In cpphash.c */
 extern void _cpp_init_hashtable		PARAMS ((cpp_reader *, hash_table *));
@@ -478,6 +481,8 @@ extern void _cpp_pop_buffer PARAMS ((cpp_reader *));
 extern bool _cpp_read_logical_line_trad PARAMS ((cpp_reader *));
 extern void _cpp_overlay_buffer PARAMS ((cpp_reader *pfile, const uchar *,
 					 size_t));
+extern cpp_hashnode *_cpp_lex_identifier_trad PARAMS ((cpp_reader *));
+extern void _cpp_set_trad_context PARAMS ((cpp_reader *));
 
 /* Utility routines and macros.  */
 #define DSC(str) (const uchar *)str, sizeof str - 1
