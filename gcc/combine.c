@@ -9793,8 +9793,7 @@ gen_binary (code, mode, op0, op1)
   rtx tem;
 
   if (GET_RTX_CLASS (code) == 'c'
-      && (GET_CODE (op0) == CONST_INT
-	  || (CONSTANT_P (op0) && GET_CODE (op1) != CONST_INT)))
+      && swap_commutative_operands_p (op0, op1))
     tem = op0, op0 = op1, op1 = tem;
 
   if (GET_RTX_CLASS (code) == '<')
@@ -9999,7 +9998,7 @@ simplify_comparison (code, pop0, pop1)
   /* If the first operand is a constant, swap the operands and adjust the
      comparison code appropriately, but don't do this if the second operand
      is already a constant integer.  */
-  if (CONSTANT_P (op0) && GET_CODE (op1) != CONST_INT)
+  if (swap_commutative_operands_p (op0, op1))
     {
       tem = op0, op0 = op1, op1 = tem;
       code = swap_condition (code);

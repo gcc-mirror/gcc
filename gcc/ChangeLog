@@ -1,3 +1,13 @@
+2001-05-22  Jan Hubicka  <jh@suse.cz>
+
+	* combine.c (gen_binary): Use swap_commutative_operands_p
+	(simplify_comparison): Likewise.
+	* expmed.c (emit_store_flag): Likewise.
+	* expr.c (compare_from_rtx): Likewise.
+	(do_compare_rtx_and_jump): Likewise.
+	* optabs.c (emit_cmp_and_jump_insn): Revert last patch; abort
+	if not emitting a branch and operands want swapping.
+
 2001-05-22  Neil Booth  <neil@daikokuya.demon.co.uk>
 
 	* c-lex.c (c_lex): Just cast cpp's hashnode to gcc's one.

@@ -3287,23 +3287,18 @@ emit_cmp_and_jump_insns (x, y, comparison, size, mode, unsignedp, align, label)
      unsigned int align;
      rtx label;
 {
-  rtx op0;
-  rtx op1;
+  rtx op0 = x, op1 = y;
 
-  /* We may not swap in the general case, since this is called from 
-     compare_from_rtx, and we have no way of reporting the changed
-     comparison code.  */
-  if (comparison == swap_condition (comparison)
-      && swap_commutative_operands_p (x, y))
+  /* Swap operands and condition to ensure canonical RTL.  */
+  if (swap_commutative_operands_p (x, y))
     {
-      /* Swap operands and condition to ensure canonical RTL.  */
-      op0 = y;
-      op1 = x;
-    }
-  else
-    {
-      op0 = x;
-      op1 = y;
+      /* If we're not emitting a branch, this means some caller
+         is out of sync.  */
+      if (! label)
+	abort ();
+
+      op0 = y, op1 = x;
+      comparison = swap_condition (comparison);
     }
 
 #ifdef HAVE_cc0
