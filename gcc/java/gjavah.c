@@ -61,10 +61,10 @@ int flag_jni = 0;
 int flag_newer = 1;
 
 /* Directory to place resulting files in. Set by -d option. */
-const char *output_directory = "";
+static const char *output_directory = "";
 
 /* Directory to place temporary file.  Set by -td option.  Currently unused. */
-const char *temp_directory = "/tmp";
+static const char *temp_directory = "/tmp";
 
 /* Number of friend functions we have to declare.  */
 static int friend_count;
