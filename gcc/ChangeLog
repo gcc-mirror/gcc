@@ -1,5 +1,12 @@
 2001-01-31  Alan Modra <alan@linuxcare.com.au>
 
+	* (hppa_init_pic_save): Emit the pic offset table
+	reg save after last_parm_insn.
+	* pa.c (hppa_init_pic_save): New function.
+	* pa.h (hppa_init_pic_save): Declare.
+	* pa.md (call, call_value, sibcall, sibcall_value): Use
+	the above instead of duplicated code.
+
 	* pa.c (hppa_encode_label): Correct size of alloca buffer
 	so we don't overrun it.  Correct leading `*' case.
 	* pa.h (STRIP_NAME_ENCODING): Simplify now that we don't

@@ -3371,6 +3371,21 @@ hppa_expand_epilogue ()
 		    - actual_fsize);
 }
 
+/* Set up a callee saved register for the pic offset table register.  */
+void hppa_init_pic_save ()
+{
+  rtx insn, picreg;
+
+  picreg = gen_rtx_REG (word_mode, PIC_OFFSET_TABLE_REGNUM);
+  PIC_OFFSET_TABLE_SAVE_RTX = gen_reg_rtx (Pmode);
+  insn = gen_rtx_SET (VOIDmode, PIC_OFFSET_TABLE_SAVE_RTX, picreg);
+
+  /* Emit the insn at the beginning of the function after the prologue.  */
+  push_topmost_sequence ();
+  emit_insn_after (insn, last_parm_insn ? last_parm_insn : get_insns ());
+  pop_topmost_sequence ();
+}
+
 /* Fetch the return address for the frame COUNT steps up from
    the current frame, after the prologue.  FRAMEADDR is the
    frame pointer of the COUNT frame.
