@@ -1,3 +1,9 @@
+2002-01-26 Andreas Tobler <a.tobler@schweiz.ch>
+
+	* nogc.cc: Remove warnings.
+	(_Jv_GCRegisterDisappearingLink, _Jv_GCCanReclaimSoftReference):
+	New functions.
+
 2002-01-25  Bryce McKinlay  <bryce@waitaki.otago.ac.nz>
 
 	* java/awt/image/MemoryImageSource.java (newPixels(byte[], ColorModel,
