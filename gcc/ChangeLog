@@ -1,5 +1,8 @@
 2003-05-16  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
+	* m68k.c (m68k_output_function_epilogue): Fix format specifier
+	warnings.
+
 	* stormy16-protos.h (xs_hi_general_operand,
 	xs_hi_nonmemory_operand): Prototype.
 	* stormy16.c (xstormy16_output_shift): Fix format specifier

@@ -1042,12 +1042,14 @@ m68k_output_function_epilogue (stream, size)
 	  else
 	    {
 #ifdef MOTOROLA
-	      fprintf (stream, "\tfpmovd -%d(%s), %s\n",
+	      fprintf (stream, "\tfpmovd -"HOST_WIDE_INT_PRINT_DEC
+		       "(%s), %s\n",
 		       fpoffset + fsize,
 		       reg_names[FRAME_POINTER_REGNUM],
 		       reg_names[regno]);
 #else
-	      fprintf (stream, "\tfpmoved %s@(-%d), %s\n",
+	      fprintf (stream, "\tfpmoved %s@(-"HOST_WIDE_INT_PRINT_DEC
+		       "), %s\n",
 		       reg_names[FRAME_POINTER_REGNUM],
 		       fpoffset + fsize, reg_names[regno]);
 #endif
