@@ -860,6 +860,12 @@ add_dependence (insn, elem, dep_type)
   if (insn == elem)
     return;
 
+  /* We can get a dependency on deleted insns due to optimizations in
+     the register allocation and reloading or due to splitting.  Any
+     such dependency is useless and can be ignored.  */
+  if (GET_CODE (elem) == NOTE)
+    return;
+	
   /* If elem is part of a sequence that must be scheduled together, then
      make the dependence point to the last insn of the sequence.
      When HAVE_cc0, it is possible for NOTEs to exist between users and
