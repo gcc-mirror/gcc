@@ -929,7 +929,7 @@ Effective-target keywords are defined in @file{target-supports.exp} in
 the GCC testsuite.
 
 A selector expression appears within curly braces and uses a single
-logical operator: one of @option{!}, @option{&&}, or @option{||}.  An
+logical operator: one of @samp{!}, @samp{&&}, or @samp{||}.  An
 operand is another selector expression, an effective-target keyword,
 a single target triplet, or a list of target triplets within quotes or
 curly braces.  For example:
@@ -1028,8 +1028,8 @@ targets.
 
 @item @{ dg-excess-errors @var{comment} [@{ target/xfail @var{selector} @}] @}
 This DejaGnu directive indicates that the test is expected to fail due
-to compiler messages that are not handled by @option{dg-error},
-@option{dg-warning} or @option{dg-bogus}.
+to compiler messages that are not handled by @samp{dg-error},
+@samp{dg-warning} or @samp{dg-bogus}.
 
 @item @{ dg-output @var{regexp} [@{ target/xfail @var{selector} @}] @}
 This DejaGnu directive compares @var{regexp} to the combined output
@@ -1049,7 +1049,7 @@ following the main test file.
 @item @{ dg-final @{ @var{local-directive} @} @}
 This DejaGnu directive is placed within a comment anywhere in the
 source file and is processed after the test has been compiled and run.
-Multiple @option{dg-final} commands are processed in the order in which
+Multiple @samp{dg-final} commands are processed in the order in which
 they appear in the source file.
 
 The GCC testsuite defines the following directives to be used within
