@@ -1,3 +1,11 @@
+1999-10-19  Bruce Korb  <autogen@linuxbox.com>
+
+        * fixinc/Makefile.in: Change the generation rules to run `genfixes'
+        in the source tree when the generated targets are out of date
+        * fixinc/genfixes: Alter it to run individual fixes for make.
+	* fixinc/README: rewrite
+	* fixinc/inclhack.def: moved initial comments to README
+
 Tue Oct 19 14:01:34 1999  Nick Clifton  <nickc@cygnus.com>
 
 	* toplev.c (main): Do not generate an error message if an
