@@ -3071,10 +3071,7 @@ purge_addressof_1 (loc, insn, force, store, ht)
       rtx sub, insns;
 
       if (GET_CODE (XEXP (x, 0)) != MEM)
-	{
-	  put_addressof_into_stack (x, ht);
-	  return true;
-	}
+	put_addressof_into_stack (x, ht);
 	  
       /* We must create a copy of the rtx because it was created by
 	 overwriting a REG rtx which is always shared.  */

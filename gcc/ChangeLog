@@ -1,3 +1,8 @@
+2003-01-27  Richard Earnshaw <rearnsha@arm.com>
+	
+        * function.c (purge_addressof_1): After pushing anaddressed register
+         onto the stack, simplify the result.
+	
 2003-01-25  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
 	* combine.c (nonzero_bits): Revert 2003-01-25 change.
