@@ -101,6 +101,9 @@ static label_node_t * mvs_get_label PARAMS ((int));
 static void i370_label_scan PARAMS ((void));
 static void i370_output_function_prologue PARAMS ((FILE *, HOST_WIDE_INT));
 static void i370_output_function_epilogue PARAMS ((FILE *, HOST_WIDE_INT));
+#ifdef LONGEXTERNAL
+static int mvs_hash_alias PARAMS ((const char *));
+#endif
 
 /* ===================================================== */
 /* defines and functions specific to the HLASM assembler */
@@ -134,9 +137,6 @@ alias_node_t;
 
 /* Alias node list anchor.  */
 static alias_node_t *alias_anchor = 0;
-
-/* Alias number */
-static int alias_number = 0;
 
 /* Define the length of the internal MVS function table.  */
 #define MVS_FUNCTION_TABLE_LENGTH 32
@@ -851,9 +851,10 @@ mvs_function_check (name)
 
 /* Generate a hash for a given key. */
 
+#ifdef LONGEXTERNAL
 static int
 mvs_hash_alias (key)
-     char *key;
+     const char *key;
 {
   int h;
   int i;
@@ -864,7 +865,7 @@ mvs_hash_alias (key)
     h = ((h * MVS_SET_SIZE) + key[i]) % MVS_HASH_PRIME;
   return (h);
 }
-
+#endif
 
 /* Add the alias to the current alias list.  */
 

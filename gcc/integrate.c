@@ -2693,7 +2693,10 @@ subst_constants (loc, insn, map, memonly)
 		new = CONST0_RTX (mode);
 	      else
 		{
-		  REAL_VALUE_TYPE val = FLOAT_STORE_FLAG_VALUE (mode);
+		  REAL_VALUE_TYPE val;
+
+		  /* Avoid automatic aggregate initialization.  */
+		  val = FLOAT_STORE_FLAG_VALUE (mode);
 		  new = CONST_DOUBLE_FROM_REAL_VALUE (val, mode);
 		}
 	    }

@@ -25,6 +25,7 @@ Boston, MA 02111-1307, USA.  */
 #define ARM_PE_FLAG_CHAR '@'
 
 /* Ensure that @x. will be stripped from the function name.  */
+#undef SUBTARGET_NAME_ENCODING_LENGTHS
 #define SUBTARGET_NAME_ENCODING_LENGTHS  \
   case ARM_PE_FLAG_CHAR: return 3;
 

@@ -140,7 +140,9 @@ Boston, MA 02111-1307, USA.  */
 /* Implicit calls to library routines.  */
 
 /* Use memcpy and memset instead of bcopy and bzero.  */
+#ifndef TARGET_MEM_FUNCTIONS
 #define TARGET_MEM_FUNCTIONS
+#endif
 
 /* Miscellaneous parameters.  */
 

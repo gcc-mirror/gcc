@@ -69,7 +69,7 @@ static void  m32r_output_function_epilogue PARAMS ((FILE *, HOST_WIDE_INT));
 
 static int    m32r_adjust_cost 	   PARAMS ((rtx, rtx, rtx, int));
 static int    m32r_adjust_priority PARAMS ((rtx, int));
-static void   m32r_sched_init	   PARAMS ((FILE *, int));
+static void   m32r_sched_init	   PARAMS ((FILE *, int, int));
 static int    m32r_sched_reorder   PARAMS ((FILE *, int, rtx *, int *, int));
 static int    m32r_variable_issue  PARAMS ((FILE *, int, rtx, int));
 static int    m32r_issue_rate	   PARAMS ((void));
@@ -1555,9 +1555,10 @@ m32r_adjust_priority (insn, priority)
 /* Initialize for scheduling a group of instructions.  */
 
 static void
-m32r_sched_init (stream, verbose)
+m32r_sched_init (stream, verbose, max_ready)
      FILE * stream ATTRIBUTE_UNUSED;
      int verbose ATTRIBUTE_UNUSED;
+     int max_ready ATTRIBUTE_UNUSED;
 {
   m32r_sched_odd_word_p = FALSE;
 }
@@ -2774,8 +2775,8 @@ m32r_expand_block_move (operands)
   /* If necessary, generate a loop to handle the bulk of the copy.  */
   if (bytes)
     {
-      rtx label;
-      rtx final_src;
+      rtx label = NULL_RTX;
+      rtx final_src = NULL_RTX;
       rtx at_a_time = GEN_INT (MAX_MOVE_BYTES);
       rtx rounded_total = GEN_INT (bytes);
 
