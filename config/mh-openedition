@@ -1,0 +1,2 @@
+RANLIB = true
+CC = c89
