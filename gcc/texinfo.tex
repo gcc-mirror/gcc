@@ -1,5 +1,5 @@
 %% TeX macros to handle Texinfo files.
-%% $Id: texinfo.tex,v 2.220 1997/12/23 16:33:04 karl Exp karl $
+%% $Id: texinfo.tex,v 2.221 1997/12/24 18:59:06 karl Exp karl $
 
 %  Copyright (C) 1985, 86, 88, 90, 91, 92, 93,
 %                94, 95, 96, 97 Free Software Foundation, Inc.
@@ -36,7 +36,7 @@
 
 % This automatically updates the version number based on RCS.
 \def\deftexinfoversion$#1: #2 ${\def\texinfoversion{#2}}
-\deftexinfoversion$Revision: 2.220 $
+\deftexinfoversion$Revision: 2.221 $
 \message{Loading texinfo package [Version \texinfoversion]:}
 
 % If in a .fmt file, print the version number
@@ -3442,11 +3442,12 @@ width0pt\relax} \fi
 % the index entries, but we want to suppress hyphenation here.  (We
 % can't do that in the \entry macro, since index entries might consist
 % of hyphenated-identifiers-that-do-not-fit-on-a-line-and-nothing-else.)
-%
-% \turnoffactive is for the sake of @" used for umlauts.
 \def\tocentry#1#2{\begingroup
   \vskip 0pt plus1pt % allow a little stretch for the sake of nice page breaks
-  \entry{\turnoffactive #1}{\turnoffactive #2}%
+  % Do not use \turnoffactive in these arguments.  Since the toc is
+  % typeset in cmr, so characters such as _ would come out wrong; we
+  % have to do the usual translation tricks.
+  \entry{#1}{#2}%
 \endgroup}
 
 % Space between chapter (or whatever) number and the title.
