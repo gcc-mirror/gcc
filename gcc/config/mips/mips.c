@@ -539,7 +539,7 @@ char mips_print_operand_punct[256];
 int mips_dbx_regno[FIRST_PSEUDO_REGISTER];
 
 /* An alias set for the GOT.  */
-static int mips_got_alias_set;
+static GTY(()) int mips_got_alias_set;
 
 /* A copy of the original flag_delayed_branch: see override_options.  */
 static int mips_flag_delayed_branch;

@@ -1,3 +1,7 @@
+2004-01-18  Richard Sandiford  <rsandifo@redhat.com>
+
+	* config/mips/mips.c (mips_got_alias_set): Mark for PCH.
+
 2004-01-18  Joseph S. Myers  <jsm@polyomino.org.uk>
 
 	* doc/c-tree.texi, doc/cpp.texi, doc/extend.texi,
