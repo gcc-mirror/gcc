@@ -66,6 +66,7 @@ public final class NIOSocket extends Socket
 
   final void setChannel (SocketChannelImpl channel)
   {
+    this.impl = channel.getImpl();
     this.channel = channel;
   }
   

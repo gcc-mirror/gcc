@@ -1,5 +1,36 @@
 2003-10-11  Michael Koch  <konqueror@gmx.de>
 
+	* gnu/java/nio/NIOSocket.java (setChannel): Initialize impl.
+	* gnu/java/nio/ServerSocketChannelImpl.java
+	(serverSocket): Made it a NIOServerSocket.
+	(impl): Removed.
+	(ServerSocketChannelImpl): Initialize only serverSocket.
+	(initServerSocket): Removed.
+	(getNativeFD): Rewritten.
+	(implConfigureBlocking): Set socket timeout and removed comment.
+	(accept): Rewritten.
+	* gnu/java/nio/SocketChannelImpl.java
+	(impl): New variable.
+	(connected): Removed.
+	(SocketChannelImpl): Initialize impl too.
+	(getImpl): New method.
+	(isConnected): Rewritten.
+	(read): Rewritten, set position in buffer correctly.
+	(write): Set position in buffer correctly.
+	* java/net/ServerSocket.java (getImpl): New method.
+	* gnu/java/nio/NIOServerSocket.java,
+	gnu/java/nio/natNIOServerSocket.cc: New files.
+	* gnu/java/nio/natServerSocketChannelImpl.cc: Removed.
+	* Makefile.am
+	(ordinary_java_source_files):
+	Added gnu/java/nio/NIOServerSocket.java.
+	(nat_source_files):
+	Removed gnu/java/nio/natServerSocketChannelImpl.cc
+	and added gnu/java/nio/natNIOServerSocket.cc.
+	* Makefile.in: Regenerated.
+
+2003-10-11  Michael Koch  <konqueror@gmx.de>
+
 	* java/awt/ActiveEvent.java,
 	java/awt/datatransfer/ClipboardOwner.java,
 	java/awt/datatransfer/FlavorMap.java,
