@@ -3233,7 +3233,7 @@ pushcase (value, label, duplicate)
     return 0;
 
   /* There may be NOP_EXPR around the value if we got it from an enum.  */
-  STRIP_NOPS (arg);
+  STRIP_NOPS (value);
 
   /* Convert VALUE to the type in which the comparisons are nominally done.  */
   if (value != 0)
