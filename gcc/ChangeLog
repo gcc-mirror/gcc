@@ -1,3 +1,18 @@
+2004-12-17  Jan Beulich  <jbeulich@novell.com>
+
+	PR target/17603
+	* config/i386/i386.c (enum x86_64_reg_class): Define
+	X86_64_COMPLEX_X87_CLASS.
+	(x86_64_reg_class_names): Add name for X86_64_COMPLEX_X87_CLASS.
+	(merge_classes): Handle X86_64_COMPLEX_X87_CLASS.
+	(classify_argument): XCmode is X86_64_COMPLEX_X87_CLASS.
+	(examine_argument): X86_64_COMPLEX_X87_CLASS requires two
+	registers when dealing with a return value.
+	(construct_container): Handle X86_64_COMPLEX_X87_CLASS.
+	Eliminate impossible case of two X87/X87UP pairs (this now is
+	being expressed by a single COMPLEX_X87).
+	(x86_libcall_value): XCmode gets returned in st0/st1.
+
 2004-12-17  Steven Bosscher  <stevenb@suse.de>
 
 	* tree.c (type_contains_placeholder_1): Always return false
