@@ -1,3 +1,9 @@
+2004-02-20  Falk Hueffner  <falk@debian.org>
+
+	PR target/14201
+	* config/alpha/alpha.md (*fix_truncsfsi_ieee): Fix typoed operand
+	numbers.
+
 2004-02-20  Mohan Embar  <gnustuff@thisiscool.com>
 	    Tom Tromey  <tromey@redhat.com>
 
