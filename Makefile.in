@@ -28083,19 +28083,19 @@ profiledbootstrap: all-bootstrap configure-gcc
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	$(SET_LIB_PATH) \
 	$(HOST_EXPORTS) \
-	echo "Bootstrapping the compiler"; \
+	echo "Bootstrapping training compiler"; \
 	cd gcc && $(MAKE) $(GCC_FLAGS_TO_PASS) stageprofile_build
-	@r=`${PWD_COMMAND}`; export r; \
-	s=`cd $(srcdir); ${PWD_COMMAND}` ; export s; \
-	$(SET_LIB_PATH) \
-	echo "Building runtime libraries and training compiler"; \
-	$(MAKE) $(RECURSE_FLAGS_TO_PASS) all
 	@r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	$(SET_LIB_PATH) \
 	$(HOST_EXPORTS) \
 	echo "Building feedback based compiler"; \
 	cd gcc && $(MAKE) $(GCC_FLAGS_TO_PASS) stagefeedback_build
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}` ; export s; \
+	$(SET_LIB_PATH) \
+	echo "Building runtime libraries"; \
+	$(MAKE) $(RECURSE_FLAGS_TO_PASS) all
 
 .PHONY: cross
 cross: all-texinfo all-bison all-byacc all-binutils all-gas all-ld
