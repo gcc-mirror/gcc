@@ -1,4 +1,9 @@
-Mon Jul 31 10:36:38 MET DST 2000 Jan Hubicka  <jh@suse.cz>
+Mon Jul 31 10:41:01 MET DST 2000  Jan Hubicka  <jh@suse.cz>
+
+	* recog.c (extract_insn): Set operand_mode according to
+	operand if match_operand is VOIDmode.
+
+Mon Jul 31 10:36:38 MET DST 2000  Jan Hubicka  <jh@suse.cz>
 
 	* recog.c (validate_replace_rtx_1): Do not abort for (nil) expression.
 

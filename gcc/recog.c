@@ -2076,6 +2076,9 @@ extract_insn (insn)
 	{
 	  recog_data.constraints[i] = insn_data[icode].operand[i].constraint;
 	  recog_data.operand_mode[i] = insn_data[icode].operand[i].mode;
+	  /* VOIDmode match_operands gets mode from their real operand.  */
+	  if (recog_data.operand_mode[i] == VOIDmode)
+	    recog_data.operand_mode[i] = GET_MODE (recog_data.operand[i]);
 	}
     }
   for (i = 0; i < noperands; i++)
