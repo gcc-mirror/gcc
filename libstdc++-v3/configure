@@ -30991,10 +30991,6 @@ _ACEOF
 #define HAVE_STRTOF 1
 _ACEOF
 
-    cat >>confdefs.h <<\_ACEOF
-#define HAVE_STRTOLD 1
-_ACEOF
-
     # AC_FUNC_MMAP
     cat >>confdefs.h <<\_ACEOF
 #define HAVE_MMAP 1
