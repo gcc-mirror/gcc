@@ -1,3 +1,76 @@
+2003-01-14  Kriang Lerdsuwanakij  <lerdsuwa@users.sourceforge.net>
+
+	* config-lang.in: Add semantics.c to gtfiles.
+	* cp-tree.h (flagged_type_tree_s): Remove lookups field.
+	(saved_scope): Likewise.
+	(type_lookups): Remove.
+	(deferred_access): New structure.
+	(type_access_control): Remove.
+	(save_type_access_control): Likewise.
+	(reset_type_access_control): Likewise.
+	(decl_type_access_control): Likewise.
+	(push_deferring_access_checks): Declare.
+	(resume_deferring_access_checks): Likewise.
+	(stop_deferring_access_checks): Likewise.
+	(pop_deferring_access_checks): Likewise.
+	(get_deferred_access_checks): Likewise.
+	(pop_to_parent_deferring_access_checks): Likewise.
+	(perform_deferred_access_checks): Likewise.
+	(perform_or_defer_access_check): Likewise.
+	* decl.c (make_typename_type): Use perform_or_defer_access_check.
+	(make_unbound_class_template): Likewise.
+	(grokdeclarator): Don't call decl_type_access_control.
+	* parser.c (cp_parser_context): Remove deferred_access_checks
+	and deferring_access_checks_p fields.
+	(cp_parser_context_new): Adjust.
+	(cp_parser): Remove access_checks_lists.
+	(cp_parser_defer_access_check): Remove.
+	(cp_parser_start_deferring_access_checks): Remove.
+	(cp_parser_stop_deferring_access_checks): Remove.
+	(cp_parser_perform_deferred_access_checks): Remove.
+	(cp_parser_nested_name_specifier_opt): Use new deferred access
+	functions.
+	(cp_parser_simple_declaration): Likewise.
+	(cp_parser_template_id): Likewise.
+	(cp_parser_function_definition): Likewise.
+	(cp_parser_class_specifier): Likewise.
+	(cp_parser_lookup_name): Likewise.
+	(cp_parser_single_declaration): Likewise.
+	(cp_parser_pre_parsed_nested_name_specifier): Likewise.
+	(cp_parser_parse_tentatively): Likewise.
+	(cp_parser_parse_definitely): Likewise.
+	(yyparse): Likewise.
+	(cp_parser_init_declarator): Remove access_checks parameter.
+	Use new deferred access functions.
+	(cp_parser_function_definition_from_specifiers_and_declarator):
+	Likewise.
+	(cp_parser_class_head): Remove deferring_access_checks_p and
+	saved_access_checks parameters.  Use new deferred access functions.
+	(cp_parser_member_specification_opt): Don't call
+	reset_type_access_control.
+	* search.c (type_access_control): Remove.
+	* semantics.c: Include "gt-cp-semantics.h".
+	(deferred_type_access_control): Remove.
+	(deferred_access_stack): New variable.
+	(deferred_access_free_list): Likewise.
+	(push_deferring_access_checks): New function.
+	(resume_deferring_access_checks): Likewise.
+	(stop_deferring_access_checks): Likewise.
+	(pop_deferring_access_checks): Likewise.
+	(get_deferred_access_checks): Likewise.
+	(pop_to_parent_deferring_access_checks): Likewise.
+	(perform_deferred_access_checks): New function, adapted from
+	cp_parser_perform_deferred_access_checks.
+	(perform_or_defer_access_check): New function, adapted from
+	cp_parser_defer_access_check.
+	(current_type_lookups): Remove.
+	(deferred_type_access_control): Likewise.
+	(decl_type_access_control): Likewise.
+	(save_type_access_control): Likewise.
+	(reset_type_access_control): Likewise.
+	(begin_function_definition): Adjust.
+	(begin_class_definiton): Likewise.
+
 2003-01-13  Jason Merrill  <jason@redhat.com>
 
 	PR c++/8748

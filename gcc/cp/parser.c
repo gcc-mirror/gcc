@@ -1194,26 +1194,6 @@ typedef struct cp_parser_context GTY (())
      scope given by OBJECT_TYPE (the type of `x' or `*x') and also in
      the context of the containing expression.  */
   tree object_type;
-  /* A TREE_LIST representing name-lookups for which we have deferred
-     checking access controls.  We cannot check the accessibility of
-     names used in a decl-specifier-seq until we know what is being
-     declared because code like:
-
-       class A { 
-         class B {};
-         B* f();
-       }
-
-       A::B* A::f() { return 0; }
-
-     is valid, even though `A::B' is not generally accessible.  
-
-     The TREE_PURPOSE of each node is the scope used to qualify the
-     name being looked up; the TREE_VALUE is the DECL to which the
-     name was resolved.  */
-  tree deferred_access_checks;
-  /* TRUE iff we are deferring access checks.  */
-  bool deferring_access_checks_p;
   /* The next parsing context in the stack.  */
   struct cp_parser_context *next;
 } cp_parser_context;
@@ -1260,10 +1240,6 @@ cp_parser_context_new (next)
       /* If, in the NEXT context, we are parsing an `x->' or `x.'
 	 expression, then we are parsing one in this context, too.  */
       context->object_type = next->object_type;
-      /* We are deferring access checks here if we were in the NEXT
-	 context.  */
-      context->deferring_access_checks_p 
-	= next->deferring_access_checks_p;
       /* Thread the stack.  */
       context->next = next;
     }
@@ -1367,10 +1343,6 @@ typedef struct cp_parser GTY(())
   /* The number of template parameter lists that apply directly to the
      current declaration.  */
   unsigned num_template_parameter_lists;
-
-  /* List of access checks lists, used to prevent GC collection while
-     they are in use.  */
-  tree access_checks_lists;
 } cp_parser;
 
 /* The type of a function that parses some kind of expression  */
@@ -1562,7 +1534,7 @@ static void cp_parser_linkage_specification
 /* Declarators [gram.dcl.decl] */
 
 static tree cp_parser_init_declarator
-  PARAMS ((cp_parser *, tree, tree, tree, bool, bool, bool *));
+  PARAMS ((cp_parser *, tree, tree, bool, bool, bool *));
 static tree cp_parser_declarator
   PARAMS ((cp_parser *, cp_parser_declarator_kind, bool *));
 static tree cp_parser_direct_declarator
@@ -1606,7 +1578,7 @@ static tree cp_parser_class_name
 static tree cp_parser_class_specifier
   PARAMS ((cp_parser *));
 static tree cp_parser_class_head
-  PARAMS ((cp_parser *, bool *, bool *, tree *));
+  PARAMS ((cp_parser *, bool *));
 static enum tag_types cp_parser_class_key
   PARAMS ((cp_parser *));
 static void cp_parser_member_specification_opt
@@ -1731,7 +1703,7 @@ static tree cp_parser_global_scope_opt
 static bool cp_parser_constructor_declarator_p
   (cp_parser *, bool);
 static tree cp_parser_function_definition_from_specifiers_and_declarator
-  PARAMS ((cp_parser *, tree, tree, tree, tree));
+  PARAMS ((cp_parser *, tree, tree, tree));
 static tree cp_parser_function_definition_after_declarator
   PARAMS ((cp_parser *, bool));
 static void cp_parser_template_declaration_after_export
@@ -1818,14 +1790,6 @@ static bool cp_parser_dependent_template_id_p
   (tree, tree);
 static bool cp_parser_dependent_template_p
   (tree);
-static void cp_parser_defer_access_check
-  (cp_parser *, tree, tree);
-static void cp_parser_start_deferring_access_checks
-  (cp_parser *);
-static tree cp_parser_stop_deferring_access_checks
-  PARAMS ((cp_parser *));
-static void cp_parser_perform_deferred_access_checks
-  PARAMS ((tree));
 static tree cp_parser_scope_through_which_access_occurs
   (tree, tree, tree);
 
@@ -2132,79 +2096,6 @@ cp_parser_dependent_template_p (tree tmpl)
   if (TYPE_P (CP_DECL_CONTEXT (tmpl)))
     return cp_parser_dependent_type_p (DECL_CONTEXT (tmpl));
   return false;
-}
-
-/* Defer checking the accessibility of DECL, when looked up in
-   CLASS_TYPE.  */
-
-static void
-cp_parser_defer_access_check (cp_parser *parser, 
-			      tree class_type,
-			      tree decl)
-{
-  tree check;
-
-  /* If we are not supposed to defer access checks, just check now.  */
-  if (!parser->context->deferring_access_checks_p)
-    {
-      enforce_access (class_type, decl);
-      return;
-    }
-
-  /* See if we are already going to perform this check.  */
-  for (check = parser->context->deferred_access_checks;
-       check;
-       check = TREE_CHAIN (check))
-    if (TREE_VALUE (check) == decl
-	&& same_type_p (TREE_PURPOSE (check), class_type))
-      return;
-  /* If not, record the check.  */
-  parser->context->deferred_access_checks
-    = tree_cons (class_type, decl, parser->context->deferred_access_checks);
-}
-
-/* Start deferring access control checks.  */
-
-static void
-cp_parser_start_deferring_access_checks (cp_parser *parser)
-{
-  parser->context->deferring_access_checks_p = true;
-}
-
-/* Stop deferring access control checks.  Returns a TREE_LIST
-   representing the deferred checks.  The TREE_PURPOSE of each node is
-   the type through which the access occurred; the TREE_VALUE is the
-   declaration named.  */
-
-static tree
-cp_parser_stop_deferring_access_checks (parser)
-     cp_parser *parser;
-{
-  tree access_checks;
-
-  parser->context->deferring_access_checks_p = false;
-  access_checks = parser->context->deferred_access_checks;
-  parser->context->deferred_access_checks = NULL_TREE;
-
-  return access_checks;
-}
-
-/* Perform the deferred ACCESS_CHECKS, whose representation is as
-   documented with cp_parser_stop_deferrring_access_checks.  */
-
-static void
-cp_parser_perform_deferred_access_checks (access_checks)
-     tree access_checks;
-{
-  tree deferred_check;
-
-  /* Look through all the deferred checks.  */
-  for (deferred_check = access_checks;
-       deferred_check;
-       deferred_check = TREE_CHAIN (deferred_check))
-    /* Check access.  */
-    enforce_access (TREE_PURPOSE (deferred_check), 
-		    TREE_VALUE (deferred_check));
 }
 
 /* Returns the scope through which DECL is being accessed, or
@@ -3487,10 +3378,11 @@ cp_parser_nested_name_specifier_opt (cp_parser *parser,
       start = cp_lexer_token_difference (parser->lexer,
 					 parser->lexer->first_token,
 					 token);
-      access_check = parser->context->deferred_access_checks;
     }
   else
     start = -1;
+
+  push_deferring_access_checks (true);
 
   while (true)
     {
@@ -3633,6 +3525,10 @@ cp_parser_nested_name_specifier_opt (cp_parser *parser,
 	complete_type (parser->scope);
     }
 
+  /* Retrieve any deferred checks.  Do not pop this access checks yet
+     so the memory will not be reclaimed during token replacing below.  */
+  access_check = get_deferred_access_checks ();
+
   /* If parsing tentatively, replace the sequence of tokens that makes
      up the nested-name-specifier with a CPP_NESTED_NAME_SPECIFIER
      token.  That way, should we re-parse the token stream, we will
@@ -3640,27 +3536,11 @@ cp_parser_nested_name_specifier_opt (cp_parser *parser,
      we issue duplicate error messages.  */
   if (success && start >= 0)
     {
-      tree c;
-
       /* Find the token that corresponds to the start of the
 	 template-id.  */
       token = cp_lexer_advance_token (parser->lexer, 
 				      parser->lexer->first_token,
 				      start);
-
-      /* Remember the access checks associated with this
-	 nested-name-specifier.  */
-      c = parser->context->deferred_access_checks;
-      if (c == access_check)
-	access_check = NULL_TREE;
-      else
-	{
-	  while (TREE_CHAIN (c) != access_check)
-	    c = TREE_CHAIN (c);
-	  access_check = parser->context->deferred_access_checks;
-	  parser->context->deferred_access_checks = TREE_CHAIN (c);
-	  TREE_CHAIN (c) = NULL_TREE;
-	}
 
       /* Reset the contents of the START token.  */
       token->type = CPP_NESTED_NAME_SPECIFIER;
@@ -3671,6 +3551,7 @@ cp_parser_nested_name_specifier_opt (cp_parser *parser,
       cp_lexer_purge_tokens_after (parser->lexer, token);
     }
 
+  pop_deferring_access_checks ();
   return success ? parser->scope : NULL_TREE;
 }
 
@@ -6748,14 +6629,14 @@ cp_parser_simple_declaration (parser, function_definition_allowed_p)
 {
   tree decl_specifiers;
   tree attributes;
-  tree access_checks;
   bool declares_class_or_enum;
   bool saw_declarator;
 
   /* Defer access checks until we know what is being declared; the
      checks for names appearing in the decl-specifier-seq should be
      done as if we were in the scope of the thing being declared.  */
-  cp_parser_start_deferring_access_checks (parser);
+  push_deferring_access_checks (true);
+
   /* Parse the decl-specifier-seq.  We have to keep track of whether
      or not the decl-specifier-seq declares a named class or
      enumeration type, since that is the only case in which the
@@ -6773,11 +6654,7 @@ cp_parser_simple_declaration (parser, function_definition_allowed_p)
 				    &attributes,
 				    &declares_class_or_enum);
   /* We no longer need to defer access checks.  */
-  access_checks = cp_parser_stop_deferring_access_checks (parser);
-
-  /* Prevent access checks from being reclaimed by GC.  */
-  parser->access_checks_lists = tree_cons (NULL_TREE, access_checks,
-					   parser->access_checks_lists);
+  stop_deferring_access_checks ();
 
   /* Keep going until we hit the `;' at the end of the simple
      declaration.  */
@@ -6791,7 +6668,6 @@ cp_parser_simple_declaration (parser, function_definition_allowed_p)
       saw_declarator = true;
       /* Parse the init-declarator.  */
       cp_parser_init_declarator (parser, decl_specifiers, attributes,
-				 access_checks,
 				 function_definition_allowed_p,
 				 /*member_p=*/false,
 				 &function_definition_p);
@@ -6809,9 +6685,7 @@ cp_parser_simple_declaration (parser, function_definition_allowed_p)
 	  /* Otherwise, we're done with the list of declarators.  */
 	  else
 	    {
-	      /* Discard access checks no longer in use. */
-	      parser->access_checks_lists
-		= TREE_CHAIN (parser->access_checks_lists);
+	      pop_deferring_access_checks ();
 	      return;
 	    }
 	}
@@ -6829,9 +6703,7 @@ cp_parser_simple_declaration (parser, function_definition_allowed_p)
 	  cp_parser_error (parser, "expected `,' or `;'");
 	  /* Skip tokens until we reach the end of the statement.  */
 	  cp_parser_skip_to_end_of_statement (parser);
-	  /* Discard access checks no longer in use.  */
-          parser->access_checks_lists
-	    = TREE_CHAIN (parser->access_checks_lists);
+	  pop_deferring_access_checks ();
 	  return;
 	}
       /* After the first time around, a function-definition is not
@@ -6851,8 +6723,10 @@ cp_parser_simple_declaration (parser, function_definition_allowed_p)
       if (cp_parser_declares_only_class_p (parser))
 	shadow_tag (decl_specifiers);
       /* Perform any deferred access checks.  */
-      cp_parser_perform_deferred_access_checks (access_checks);
+      perform_deferred_access_checks ();
     }
+
+  pop_deferring_access_checks ();
 
   /* Consume the `;'.  */
   cp_parser_require (parser, CPP_SEMICOLON, "`;'");
@@ -6860,9 +6734,6 @@ cp_parser_simple_declaration (parser, function_definition_allowed_p)
   /* Mark all the classes that appeared in the decl-specifier-seq as
      having received a `;'.  */
   note_list_got_semicolon (decl_specifiers);
-
-  /* Discard access checks no longer in use.  */
-  parser->access_checks_lists = TREE_CHAIN (parser->access_checks_lists);
 }
 
 /* Parse a decl-specifier-seq.
@@ -8127,9 +7998,8 @@ cp_parser_template_id (cp_parser *parser,
       value = cp_lexer_consume_token (parser->lexer)->value;
       /* Perform any access checks that were deferred.  */
       for (check = TREE_PURPOSE (value); check; check = TREE_CHAIN (check))
-	cp_parser_defer_access_check (parser, 
-				      TREE_PURPOSE (check),
-				      TREE_VALUE (check));
+	perform_or_defer_access_check (TREE_PURPOSE (check),
+				       TREE_VALUE (check));
       /* Return the stored value.  */
       return TREE_VALUE (value);
     }
@@ -8152,20 +8022,27 @@ cp_parser_template_id (cp_parser *parser,
       start_of_id = cp_lexer_token_difference (parser->lexer,
 					       parser->lexer->first_token,
 					       next_token);
-      access_check = parser->context->deferred_access_checks;
     }
   else
     start_of_id = -1;
+
+  push_deferring_access_checks (true);
 
   /* Parse the template-name.  */
   template = cp_parser_template_name (parser, template_keyword_p,
 				      check_dependency_p);
   if (template == error_mark_node)
-    return error_mark_node;
+    {
+      pop_deferring_access_checks ();
+      return error_mark_node;
+    }
 
   /* Look for the `<' that starts the template-argument-list.  */
   if (!cp_parser_require (parser, CPP_LESS, "`<'"))
-    return error_mark_node;
+    {
+      pop_deferring_access_checks ();
+      return error_mark_node;
+    }
 
   /* [temp.names]
 
@@ -8216,6 +8093,10 @@ cp_parser_template_id (cp_parser *parser,
       template_id = lookup_template_function (template, arguments);
     }
   
+  /* Retrieve any deferred checks.  Do not pop this access checks yet
+     so the memory will not be reclaimed during token replacing below.  */
+  access_check = get_deferred_access_checks ();
+
   /* If parsing tentatively, replace the sequence of tokens that makes
      up the template-id with a CPP_TEMPLATE_ID token.  That way,
      should we re-parse the token stream, we will not have to repeat
@@ -8225,27 +8106,12 @@ cp_parser_template_id (cp_parser *parser,
   if (start_of_id >= 0)
     {
       cp_token *token;
-      tree c;
 
       /* Find the token that corresponds to the start of the
 	 template-id.  */
       token = cp_lexer_advance_token (parser->lexer, 
 				      parser->lexer->first_token,
 				      start_of_id);
-
-      /* Remember the access checks associated with this
-	 nested-name-specifier.  */
-      c = parser->context->deferred_access_checks;
-      if (c == access_check)
-	access_check = NULL_TREE;
-      else
-	{
-	  while (TREE_CHAIN (c) != access_check)
-	    c = TREE_CHAIN (c);
-	  access_check = parser->context->deferred_access_checks;
-	  parser->context->deferred_access_checks = TREE_CHAIN (c);
-	  TREE_CHAIN (c) = NULL_TREE;
-	}
 
       /* Reset the contents of the START_OF_ID token.  */
       token->type = CPP_TEMPLATE_ID;
@@ -8255,6 +8121,7 @@ cp_parser_template_id (cp_parser *parser,
       cp_lexer_purge_tokens_after (parser->lexer, token);
     }
 
+  pop_deferring_access_checks ();
   return template_id;
 }
 
@@ -9724,10 +9591,9 @@ cp_parser_asm_definition (parser)
      declarator asm-specification [opt] attributes [opt] initializer [opt]
 
    The DECL_SPECIFIERS and PREFIX_ATTRIBUTES apply to this declarator.
-   Returns a reprsentation of the entity declared.  The ACCESS_CHECKS
-   represent deferred access checks from the decl-specifier-seq.  If
-   MEMBER_P is TRUE, then this declarator appears in a class scope.
-   The new DECL created by this declarator is returned.
+   Returns a reprsentation of the entity declared.  If MEMBER_P is TRUE,
+   then this declarator appears in a class scope.  The new DECL created
+   by this declarator is returned.
 
    If FUNCTION_DEFINITION_ALLOWED_P then we handle the declarator and
    for a function-definition here as well.  If the declarator is a
@@ -9742,14 +9608,12 @@ static tree
 cp_parser_init_declarator (parser, 
 			   decl_specifiers, 
 			   prefix_attributes,
-			   access_checks,
 			   function_definition_allowed_p,
 			   member_p,
 			   function_definition_p)
      cp_parser *parser;
      tree decl_specifiers;
      tree prefix_attributes;
-     tree access_checks;
      bool function_definition_allowed_p;
      bool member_p;
      bool *function_definition_p;
@@ -9761,7 +9625,6 @@ cp_parser_init_declarator (parser,
   tree initializer;
   tree decl = NULL_TREE;
   tree scope;
-  tree declarator_access_checks;
   bool is_initialized;
   bool is_parenthesized_init;
   bool ctor_dtor_or_conv_p;
@@ -9775,29 +9638,19 @@ cp_parser_init_declarator (parser,
   /* Defer access checks while parsing the declarator; we cannot know
      what names are accessible until we know what is being 
      declared.  */
-  cp_parser_start_deferring_access_checks (parser);
+  resume_deferring_access_checks ();
+
   /* Parse the declarator.  */
   declarator 
     = cp_parser_declarator (parser, CP_PARSER_DECLARATOR_NAMED,
 			    &ctor_dtor_or_conv_p);
   /* Gather up the deferred checks.  */
-  declarator_access_checks 
-    = cp_parser_stop_deferring_access_checks (parser);
-
-  /* Prevent the access checks from being reclaimed by GC.  */
-  parser->access_checks_lists
-    = tree_cons (NULL_TREE, declarator_access_checks,
-		 parser->access_checks_lists);
+  stop_deferring_access_checks ();
 
   /* If the DECLARATOR was erroneous, there's no need to go
      further.  */
   if (declarator == error_mark_node)
-    {
-      /* Discard access checks no longer in use.  */
-      parser->access_checks_lists
-	= TREE_CHAIN (parser->access_checks_lists);
-      return error_mark_node;
-    }
+    return error_mark_node;
 
   /* Figure out what scope the entity declared by the DECLARATOR is
      located in.  `grokdeclarator' sometimes changes the scope, so
@@ -9831,15 +9684,10 @@ cp_parser_init_declarator (parser,
 	     error message.  */
 	  cp_parser_error (parser,
 			   "a function-definition is not allowed here");
-	  /* Discard access checks no longer in use.  */
-	  parser->access_checks_lists
-	    = TREE_CHAIN (parser->access_checks_lists);
 	  return error_mark_node;
 	}
       else
 	{
-	  tree *ac;
-
 	  /* Neither attributes nor an asm-specification are allowed
 	     on a function-definition.  */
 	  if (asm_specification)
@@ -9849,23 +9697,9 @@ cp_parser_init_declarator (parser,
 	  /* This is a function-definition.  */
 	  *function_definition_p = true;
 
-	  /* Thread the access checks together.  */
-	  ac = &access_checks;
-	  while (*ac)
-	    ac = &TREE_CHAIN (*ac);
-	  *ac = declarator_access_checks;
-
 	  /* Parse the function definition.  */
 	  decl = (cp_parser_function_definition_from_specifiers_and_declarator
-		  (parser, decl_specifiers, prefix_attributes, declarator,
-		   access_checks));
-
-	  /* Pull the access-checks apart again.  */
-	  *ac = NULL_TREE;
-
-	  /* Discard access checks no longer in use.  */
-          parser->access_checks_lists
-	     = TREE_CHAIN (parser->access_checks_lists);
+		  (parser, decl_specifiers, prefix_attributes, declarator));
 
 	  return decl;
 	}
@@ -9883,9 +9717,6 @@ cp_parser_init_declarator (parser,
     {
       cp_parser_error (parser, 
 		       "expected constructor, destructor, or type conversion");
-      /* Discard access checks no longer in use.  */
-      parser->access_checks_lists
-	= TREE_CHAIN (parser->access_checks_lists);
       return error_mark_node;
     }
 
@@ -9899,9 +9730,6 @@ cp_parser_init_declarator (parser,
       && token->type != CPP_SEMICOLON)
     {
       cp_parser_error (parser, "expected init-declarator");
-      /* Discard access checks no longer in use.  */
-      parser->access_checks_lists
-	 = TREE_CHAIN (parser->access_checks_lists);
       return error_mark_node;
     }
 
@@ -9916,12 +9744,7 @@ cp_parser_init_declarator (parser,
   /* Check that the number of template-parameter-lists is OK.  */
   if (!cp_parser_check_declarator_template_parameters (parser, 
 						       declarator))
-    {
-      /* Discard access checks no longer in use.  */
-      parser->access_checks_lists
-	 = TREE_CHAIN (parser->access_checks_lists);
-      return error_mark_node;
-    }
+    return error_mark_node;
 
   /* Enter the newly declared entry in the symbol table.  If we're
      processing a declaration in a class-specifier, we wait until
@@ -9962,10 +9785,9 @@ cp_parser_init_declarator (parser,
 	  current_function_decl = decl;
 	}
 	
-      /* Perform the access control checks for the decl-specifiers.  */
-      cp_parser_perform_deferred_access_checks (access_checks);
-      /* And for the declarator.  */
-      cp_parser_perform_deferred_access_checks (declarator_access_checks);
+      /* Perform the access control checks for the declarator and the
+	 the decl-specifiers.  */
+      perform_deferred_access_checks ();
 
       /* Restore the saved value.  */
       if (TREE_CODE (decl) == FUNCTION_DECL)
@@ -10016,10 +9838,6 @@ cp_parser_init_declarator (parser,
 		       `explicit' constructor cannot be used.  */
 		    ((is_parenthesized_init || !is_initialized)
 		     ? 0 : LOOKUP_ONLYCONVERTING));
-
-  /* Discard access checks no longer in use.  */
-  parser->access_checks_lists
-    = TREE_CHAIN (parser->access_checks_lists);
 
   return decl;
 }
@@ -11167,7 +10985,6 @@ cp_parser_function_definition (parser, friend_p)
   tree attributes;
   tree declarator;
   tree fn;
-  tree access_checks;
   cp_token *token;
   bool declares_class_or_enum;
   bool member_p;
@@ -11198,8 +11015,8 @@ cp_parser_function_definition (parser, friend_p)
      function is being defined.  There is no need to do this for the
      definition of member functions; we cannot be defining a member
      from another class.  */
-  if (!member_p)
-    cp_parser_start_deferring_access_checks (parser);
+  push_deferring_access_checks (!member_p);
+
   /* Parse the decl-specifier-seq.  */
   decl_specifiers 
     = cp_parser_decl_specifier_seq (parser,
@@ -11215,10 +11032,7 @@ cp_parser_function_definition (parser, friend_p)
 				     /*ctor_dtor_or_conv_p=*/NULL);
 
   /* Gather up any access checks that occurred.  */
-  if (!member_p)
-    access_checks = cp_parser_stop_deferring_access_checks (parser);
-  else
-    access_checks = NULL_TREE;
+  stop_deferring_access_checks ();
 
   /* If something has already gone wrong, we may as well stop now.  */
   if (declarator == error_mark_node)
@@ -11227,6 +11041,7 @@ cp_parser_function_definition (parser, friend_p)
 	 like a function-definition, to a `;' in the hopes of finding
 	 a sensible place from which to continue parsing.  */
       cp_parser_skip_to_end_of_block_or_statement (parser);
+      pop_deferring_access_checks ();
       return error_mark_node;
     }
 
@@ -11241,6 +11056,7 @@ cp_parser_function_definition (parser, friend_p)
       /* Skip to the next `;'.  */
       cp_parser_skip_to_end_of_block_or_statement (parser);
 
+      pop_deferring_access_checks ();
       return error_mark_node;
     }
 
@@ -11269,6 +11085,7 @@ cp_parser_function_definition (parser, friend_p)
 	  if (cp_parser_token_starts_function_definition_p 
 	      (cp_lexer_peek_token (parser->lexer)))
 	    cp_parser_skip_to_end_of_block_or_statement (parser);
+	  pop_deferring_access_checks ();
 	  return error_mark_node;
 	}
 
@@ -11294,6 +11111,7 @@ cp_parser_function_definition (parser, friend_p)
 	= tree_cons (NULL_TREE, fn, 
 		     TREE_VALUE (parser->unparsed_functions_queues));
 
+      pop_deferring_access_checks ();
       return fn;
     }
 
@@ -11302,11 +11120,14 @@ cp_parser_function_definition (parser, friend_p)
 						       declarator))
     {
       cp_parser_skip_to_end_of_block_or_statement (parser);
+      pop_deferring_access_checks ();
       return error_mark_node;
     }
 
-  return (cp_parser_function_definition_from_specifiers_and_declarator
-	  (parser, decl_specifiers, attributes, declarator, access_checks));
+  fn = cp_parser_function_definition_from_specifiers_and_declarator
+	  (parser, decl_specifiers, attributes, declarator);
+  pop_deferring_access_checks ();
+  return fn;
 }
 
 /* Parse a function-body.
@@ -11670,25 +11491,29 @@ cp_parser_class_specifier (parser)
   tree attributes = NULL_TREE;
   int has_trailing_semicolon;
   bool nested_name_specifier_p;
-  bool deferring_access_checks_p;
-  tree saved_access_checks;
   unsigned saved_num_template_parameter_lists;
+
+  push_deferring_access_checks (false);  
 
   /* Parse the class-head.  */
   type = cp_parser_class_head (parser,
-			       &nested_name_specifier_p,
-			       &deferring_access_checks_p,
-			       &saved_access_checks);
+			       &nested_name_specifier_p);
   /* If the class-head was a semantic disaster, skip the entire body
      of the class.  */
   if (!type)
     {
       cp_parser_skip_to_end_of_block_or_statement (parser);
+      pop_deferring_access_checks ();
       return error_mark_node;
     }
+
   /* Look for the `{'.  */
   if (!cp_parser_require (parser, CPP_OPEN_BRACE, "`{'"))
-    return error_mark_node;
+    {
+      pop_deferring_access_checks ();
+      return error_mark_node;
+    }
+
   /* Issue an error message if type-definitions are forbidden here.  */
   cp_parser_check_type_definition (parser);
   /* Remember that we are defining one more class.  */
@@ -11797,11 +11622,7 @@ cp_parser_class_specifier (parser)
     }
 
   /* Put back any saved access checks.  */
-  if (deferring_access_checks_p)
-    {
-      cp_parser_start_deferring_access_checks (parser);
-      parser->context->deferred_access_checks = saved_access_checks;
-    }
+  pop_deferring_access_checks ();
 
   /* Restore the count of active template-parameter-lists.  */
   parser->num_template_parameter_lists
@@ -11827,10 +11648,6 @@ cp_parser_class_specifier (parser)
    Returns the TYPE of the indicated class.  Sets
    *NESTED_NAME_SPECIFIER_P to TRUE iff one of the productions
    involving a nested-name-specifier was used, and FALSE otherwise.
-   Sets *DEFERRING_ACCESS_CHECKS_P to TRUE iff we were deferring
-   access checks before this class-head.  In that case,
-   *SAVED_ACCESS_CHECKS is set to the current list of deferred access
-   checks.  
 
    Returns NULL_TREE if the class-head is syntactically valid, but
    semantically invalid in a way that means we should skip the entire
@@ -11838,13 +11655,9 @@ cp_parser_class_specifier (parser)
 
 static tree
 cp_parser_class_head (parser, 
-		      nested_name_specifier_p,
-		      deferring_access_checks_p,
-		      saved_access_checks)
+		      nested_name_specifier_p)
      cp_parser *parser;
      bool *nested_name_specifier_p;
-     bool *deferring_access_checks_p;
-     tree *saved_access_checks;
 {
   cp_token *token;
   tree nested_name_specifier;
@@ -12004,14 +11817,6 @@ cp_parser_class_head (parser,
        process the class-definition.  */
     return NULL_TREE;
 
-  /* We do not need to defer access checks for entities declared
-     within the class.  But, we do need to save any access checks that
-     are currently deferred and restore them later, in case we are in
-     the middle of something else.  */
-  *deferring_access_checks_p = parser->context->deferring_access_checks_p;
-  if (*deferring_access_checks_p)
-    *saved_access_checks = cp_parser_stop_deferring_access_checks (parser);
-
   /* Look up the type.  */
   if (template_id_p)
     {
@@ -12165,7 +11970,6 @@ cp_parser_member_specification_opt (parser)
 	  /* Otherwise, the next construction must be a
 	     member-declaration.  */
 	  cp_parser_member_declaration (parser);
-	  reset_type_access_control ();
 	}
     }
 }
@@ -13659,15 +13463,7 @@ cp_parser_lookup_name (cp_parser *parser, tree name, bool check_access,
 						       object_type,
 						       parser->scope);
       if (qualifying_type)
-	{
-	  /* If we are supposed to defer access checks, just record
-	     the information for later.  */
-	  if (parser->context->deferring_access_checks_p)
-	    cp_parser_defer_access_check (parser, qualifying_type, decl);
-	  /* Otherwise, check accessibility now.  */
-	  else
-	    enforce_access (qualifying_type, decl);
-	}
+	perform_or_defer_access_check (qualifying_type, decl);
     }
 
   return decl;
@@ -14129,19 +13925,18 @@ cp_parser_constructor_declarator_p (cp_parser *parser, bool friend_p)
 }
 
 /* Parse the definition of the function given by the DECL_SPECIFIERS,
-   ATTRIBUTES, and DECLARATOR.  The ACCESS_CHECKS have been deferred;
+   ATTRIBUTES, and DECLARATOR.  The access checks have been deferred;
    they must be performed once we are in the scope of the function.
 
    Returns the function defined.  */
 
 static tree
 cp_parser_function_definition_from_specifiers_and_declarator
-  (parser, decl_specifiers, attributes, declarator, access_checks)
+  (parser, decl_specifiers, attributes, declarator)
      cp_parser *parser;
      tree decl_specifiers;
      tree attributes;
      tree declarator;
-     tree access_checks;
 {
   tree fn;
   bool success_p;
@@ -14155,7 +13950,7 @@ cp_parser_function_definition_from_specifiers_and_declarator
      did not check, check them now.  We must wait until we are in the
      scope of the function to perform the checks, since the function
      might be a friend.  */
-  cp_parser_perform_deferred_access_checks (access_checks);
+  perform_deferred_access_checks ();
 
   if (!success_p)
     {
@@ -14335,13 +14130,13 @@ cp_parser_single_declaration (parser,
   tree decl = NULL_TREE;
   tree decl_specifiers;
   tree attributes;
-  tree access_checks;
 
   /* Parse the dependent declaration.  We don't know yet
      whether it will be a function-definition.  */
   cp_parser_parse_tentatively (parser);
   /* Defer access checks until we know what is being declared.  */
-  cp_parser_start_deferring_access_checks (parser);
+  push_deferring_access_checks (true);
+
   /* Try the `decl-specifier-seq [opt] init-declarator [opt]'
      alternative.  */
   decl_specifiers 
@@ -14351,7 +14146,8 @@ cp_parser_single_declaration (parser,
 				    &declares_class_or_enum);
   /* Gather up the access checks that occurred the
      decl-specifier-seq.  */
-  access_checks = cp_parser_stop_deferring_access_checks (parser);
+  stop_deferring_access_checks ();
+
   /* Check for the declaration of a template class.  */
   if (declares_class_or_enum)
     {
@@ -14377,10 +14173,12 @@ cp_parser_single_declaration (parser,
     decl = cp_parser_init_declarator (parser, 
 				      decl_specifiers,
 				      attributes,
-				      access_checks,
 				      /*function_definition_allowed_p=*/false,
 				      member_p,
 				      /*function_definition_p=*/NULL);
+
+  pop_deferring_access_checks ();
+
   /* Clear any current qualification; whatever comes next is the start
      of something new.  */
   parser->scope = NULL_TREE;
@@ -14881,9 +14679,7 @@ cp_parser_pre_parsed_nested_name_specifier (cp_parser *parser)
   value = cp_lexer_consume_token (parser->lexer)->value;
   /* Perform any access checks that were deferred.  */
   for (check = TREE_PURPOSE (value); check; check = TREE_CHAIN (check))
-    cp_parser_defer_access_check (parser, 
-				  TREE_PURPOSE (check),
-				  TREE_VALUE (check));
+    perform_or_defer_access_check (TREE_PURPOSE (check), TREE_VALUE (check));
   /* Set the scope from the stored value.  */
   parser->scope = TREE_VALUE (value);
   parser->qualifying_scope = TREE_TYPE (value);
@@ -14942,7 +14738,7 @@ cp_parser_parse_tentatively (parser)
   /* In order to avoid repetitive access control error messages,
      access checks are queued up until we are no longer parsing
      tentatively.  */
-  cp_parser_start_deferring_access_checks (parser);
+  push_deferring_access_checks (true);
 }
 
 /* Commit to the currently active tentative parse.  */
@@ -15004,22 +14800,16 @@ cp_parser_parse_definitely (parser)
 	 already done.  */
       if (context->status != CP_PARSER_STATUS_KIND_COMMITTED)
 	cp_lexer_commit_tokens (parser->lexer);
-      if (!parser->context->deferring_access_checks_p)
-	/* If in the parent context we are not deferring checks, then
-	   these perform these checks now.  */
-	(cp_parser_perform_deferred_access_checks 
-	 (context->deferred_access_checks));
-      else
-	/* Any lookups that were deferred during the tentative parse are
-	   still deferred.  */
-	parser->context->deferred_access_checks 
-	  = chainon (parser->context->deferred_access_checks,
-		     context->deferred_access_checks);
+
+      pop_to_parent_deferring_access_checks ();
     }
   /* Otherwise, if errors occurred, roll back our state so that things
      are just as they were before we began the tentative parse.  */
   else
-    cp_lexer_rollback_tokens (parser->lexer);
+    {
+      cp_lexer_rollback_tokens (parser->lexer);
+      pop_deferring_access_checks ();
+    }
   /* Add the context to the front of the free list.  */
   context->next = cp_parser_context_free_list;
   cp_parser_context_free_list = context;
@@ -15074,6 +14864,7 @@ yyparse ()
   bool error_occurred;
 
   the_parser = cp_parser_new ();
+  push_deferring_access_checks (false);
   error_occurred = cp_parser_translation_unit (the_parser);
   the_parser = NULL;
   

@@ -979,41 +979,6 @@ friend_accessible_p (scope, decl, binfo)
   return 0;
 }
 
-/* Perform access control on TYPE_DECL or TEMPLATE_DECL VAL, which was
-   looked up in TYPE.  This is fairly complex, so here's the design:
-
-   The lang_extdef nonterminal sets type_lookups to NULL_TREE before we
-     start to process a top-level declaration.
-   As we process the decl-specifier-seq for the declaration, any types we
-     see that might need access control are passed to type_access_control,
-     which defers checking by adding them to type_lookups.
-   When we are done with the decl-specifier-seq, we record the lookups we've
-     seen in the lookups field of the typed_declspecs nonterminal.
-   When we process the first declarator, either in parse_decl or
-     begin_function_definition, we call save_type_access_control,
-     which stores the lookups from the decl-specifier-seq in
-     current_type_lookups.
-   As we finish with each declarator, we process everything in type_lookups
-     via decl_type_access_control, which resets type_lookups to the value of
-     current_type_lookups for subsequent declarators.
-   When we enter a function, we set type_lookups to error_mark_node, so all
-     lookups are processed immediately.  */
-
-void
-type_access_control (type, val)
-     tree type, val;
-{
-  if (val == NULL_TREE
-      || (TREE_CODE (val) != TEMPLATE_DECL && TREE_CODE (val) != TYPE_DECL)
-      || ! DECL_CLASS_SCOPE_P (val))
-    return;
-
-  if (type_lookups == error_mark_node)
-    enforce_access (type, val);
-  else if (! accessible_p (type, val))
-    type_lookups = tree_cons (type, val, type_lookups);
-}
-
 /* DECL is a declaration from a base class of TYPE, which was the
    class used to name DECL.  Return nonzero if, in the current
    context, DECL is accessible.  If TYPE is actually a BINFO node,

@@ -257,7 +257,6 @@ typedef struct flagged_type_tree_s GTY(())
 {
   tree t;
   int new_type_flag;
-  tree lookups;
 } flagged_type_tree;
 
 typedef struct template_parm_index_s GTY(())
@@ -784,7 +783,6 @@ struct saved_scope GTY(())
   tree x_previous_class_type;
   tree x_previous_class_values;
   tree x_saved_tree;
-  tree lookups;
   tree last_parms;
 
   HOST_WIDE_INT x_processing_template_decl;
@@ -850,8 +848,6 @@ struct saved_scope GTY(())
 #define previous_class_values scope_chain->x_previous_class_values
 
 /* A list of private types mentioned, for deferred access checking.  */
-
-#define type_lookups scope_chain->lookups
 
 extern GTY(()) struct saved_scope *scope_chain;
 
@@ -3197,6 +3193,32 @@ extern GTY(()) tree anonymous_namespace_name;
    function, two inside the body of a function in a local class, etc.)  */
 extern int function_depth;
 
+typedef struct deferred_access GTY(())
+{
+  /* A TREE_LIST representing name-lookups for which we have deferred
+     checking access controls.  We cannot check the accessibility of
+     names used in a decl-specifier-seq until we know what is being
+     declared because code like:
+
+       class A { 
+         class B {};
+         B* f();
+       }
+
+       A::B* A::f() { return 0; }
+
+     is valid, even though `A::B' is not generally accessible.  
+
+     The TREE_PURPOSE of each node is the scope used to qualify the
+     name being looked up; the TREE_VALUE is the DECL to which the
+     name was resolved.  */
+  tree deferred_access_checks;
+  /* TRUE iff we are deferring access checks.  */
+  bool deferring_access_checks_p;
+  /* The next deferred access data in stack or linked-list.  */
+  struct deferred_access *next;
+} deferred_access;
+
 /* in pt.c  */
 
 /* These values are used for the `STRICT' parameter to type_unification and
@@ -4097,7 +4119,6 @@ extern tree lookup_base (tree, tree, base_access, base_kind *);
 extern int types_overlap_p			(tree, tree);
 extern tree get_vbase				(tree, tree);
 extern tree get_dynamic_cast_base_type          (tree, tree);
-extern void type_access_control			(tree, tree);
 extern int accessible_p                         (tree, tree);
 extern tree lookup_field			(tree, tree, int, int);
 extern int lookup_fnfields_1                    (tree, tree);
@@ -4147,6 +4168,14 @@ extern tree build_baselink                      (tree, tree, tree, tree);
 extern tree adjust_result_of_qualified_name_lookup
                                                 (tree, tree, tree);
 /* in semantics.c */
+extern void push_deferring_access_checks	(bool defer_p);
+extern void resume_deferring_access_checks	(void);
+extern void stop_deferring_access_checks	(void);
+extern void pop_deferring_access_checks		(void);
+extern tree get_deferred_access_checks		(void);
+extern void pop_to_parent_deferring_access_checks	(void);
+extern void perform_deferred_access_checks	(void);
+extern void perform_or_defer_access_check	(tree, tree);
 extern void init_cp_semantics                   (void);
 extern tree finish_expr_stmt                    (tree);
 extern tree begin_if_stmt                       (void);
@@ -4207,9 +4236,6 @@ extern tree finish_pseudo_destructor_expr       (tree, tree, tree);
 extern tree finish_unary_op_expr                (enum tree_code, tree);
 extern tree finish_compound_literal             (tree, tree);
 extern tree finish_fname                        (tree);
-extern void save_type_access_control		(tree);
-extern void reset_type_access_control           (void);
-extern void decl_type_access_control		(tree);
 extern int begin_function_definition            (tree, tree, tree);
 extern tree begin_constructor_declarator        (tree, tree);
 extern tree finish_declarator                   (tree, tree, tree, tree, int);
