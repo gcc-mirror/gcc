@@ -581,12 +581,13 @@ static struct compiler default_compilers[] =
   {"@c",
    {
 #if USE_CPPLIB
-     "%{E|M|MM:cpp -lang-c%{ansi:89} %{nostdinc*} %{C} %{v} %{A*} %{I*} %{P} %I\
+     "%{E|M|MM:cpp -lang-c %(ansi:-std=c89} %{std*} %{nostdinc*}\
+	%{C} %{v} %{A*} %{I*} %{P} %I\
 	%{C:%{!E:%eGNU C does not support -C without using -E}}\
 	%{M} %{MM} %{MD:-MD %b.d} %{MMD:-MMD %b.d} %{MG}\
         -undef -D__GNUC__=%v1 -D__GNUC_MINOR__=%v2\
-	%{ansi:-trigraphs -D__STRICT_ANSI__}\
-	%{!undef:%{!ansi:%p} %P} %{trigraphs} \
+	%{ansi|std=*:%{!std=gnu:-trigraphs -D__STRICT_ANSI__}}\
+	%{!undef:%{!ansi:%{!std=*:%p}%{std=gnu:%p}} %P} %{trigraphs}\
         %c %{Os:-D__OPTIMIZE_SIZE__} %{O*:%{!O0:-D__OPTIMIZE__}}\
         %{traditional} %{ftraditional:-traditional}\
         %{traditional-cpp:-traditional}\
@@ -594,20 +595,20 @@ static struct compiler default_compilers[] =
 	%{g*} %{W*} %{w} %{pedantic*} %{H} %{d*} %C %{D*} %{U*} %{i*} %Z\
         %i %{E:%W{o*}}%{M:%W{o*}}%{MM:%W{o*}}\n}\
       %{!E:%{!M:%{!MM:cc1 %i %1 \
-                  -lang-c%{ansi:89} %{nostdinc*} %{A*} %{I*} %I\
+                  %{std*} %{nostdinc*} %{A*} %{I*} %I\
                   %{!Q:-quiet} -dumpbase %b.c %{d*} %{m*} %{a*}\
                   %{MD:-MD %b.d} %{MMD:-MMD %b.d} %{MG}\
                   -undef -D__GNUC__=%v1 -D__GNUC_MINOR__=%v2\
-                  %{ansi:-trigraphs -D__STRICT_ANSI__}\
-                  %{!undef:%{!ansi:%p} %P} %{trigraphs} \
+		  %{ansi|std=*:%{!std=gnu:-trigraphs -D__STRICT_ANSI__}}\
+		  %{!undef:%{!ansi:%{!std=*:%p}%{std=gnu:%p}} %P} %{trigraphs}\
                   %c %{Os:-D__OPTIMIZE_SIZE__} %{O*:%{!O0:-D__OPTIMIZE__}}\
                   %{H} %C %{D*} %{U*} %{i*} %Z\
                   %{ftraditional:-traditional}\
                   %{traditional-cpp:-traditional}\
 		  %{traditional} %{v:-version} %{pg:-p} %{p} %{f*}\
 		  %{aux-info*}\
-		  %{--help:--help} \
-		  %{g*} %{O*} %{W*} %{w} %{pedantic*} %{ansi} \
+		  %{--help:--help}\
+		  %{g*} %{O*} %{W*} %{w} %{pedantic*}\
 		  %{pg:%{fomit-frame-pointer:%e-pg and -fomit-frame-pointer are incompatible}}\
 		  %{S:%W{o*}%{!o*:-o %b.s}}%{!S:-o %{|!pipe:%g.s}} |\n\
                   %{!S:as %a %Y\
@@ -615,12 +616,13 @@ static struct compiler default_compilers[] =
                      %{!pipe:%g.s} %A\n }}}}"
   }},
 #else /* ! USE_CPPLIB */
-    "cpp -lang-c%{ansi:89} %{nostdinc*} %{C} %{v} %{A*} %{I*} %{P} %I\
+    "cpp -lang-c %{ansi:-std=c89} %{std*} %{nostdinc*}\
+	%{C} %{v} %{A*} %{I*} %{P} %I\
 	%{C:%{!E:%eGNU C does not support -C without using -E}}\
 	%{M} %{MM} %{MD:-MD %b.d} %{MMD:-MMD %b.d} %{MG}\
         -undef -D__GNUC__=%v1 -D__GNUC_MINOR__=%v2\
-	%{ansi:-trigraphs -D__STRICT_ANSI__}\
-	%{!undef:%{!ansi:%p} %P} %{trigraphs} \
+	%{ansi|std=*:%{!std=gnu:-trigraphs -D__STRICT_ANSI__}}\
+	%{!undef:%{!ansi:%{!std=*:%p}%{std=gnu:%p}} %P} %{trigraphs}\
         %c %{Os:-D__OPTIMIZE_SIZE__} %{O*:%{!O0:-D__OPTIMIZE__}}\
         %{traditional} %{ftraditional:-traditional}\
         %{traditional-cpp:-traditional}\
@@ -629,7 +631,7 @@ static struct compiler default_compilers[] =
         %i %{!M:%{!MM:%{!E:%{!pipe:%g.i}}}}%{E:%W{o*}}%{M:%W{o*}}%{MM:%W{o*}} |\n",
    "%{!M:%{!MM:%{!E:cc1 %{!pipe:%g.i} %1 \
 		   %{!Q:-quiet} -dumpbase %b.c %{d*} %{m*} %{a*}\
-		   %{g*} %{O*} %{W*} %{w} %{pedantic*} %{ansi} \
+		   %{g*} %{O*} %{W*} %{w} %{pedantic*} %{std*}\
 		   %{traditional} %{v:-version} %{pg:-p} %{p} %{f*}\
 		   %{aux-info*}\
 		   %{--help:--help} \
@@ -641,12 +643,13 @@ static struct compiler default_compilers[] =
   }},
 #endif /* ! USE_CPPLIB */
   {"-",
-   {"%{E:cpp -lang-c%{ansi:89} %{nostdinc*} %{C} %{v} %{A*} %{I*} %{P} %I\
+   {"%{E:cpp -lang-c %{ansi:-std=c89} %{std*} %{nostdinc*}\
+	%{C} %{v} %{A*} %{I*} %{P} %I\
 	%{C:%{!E:%eGNU C does not support -C without using -E}}\
 	%{M} %{MM} %{MD:-MD %b.d} %{MMD:-MMD %b.d} %{MG}\
         -undef -D__GNUC__=%v1 -D__GNUC_MINOR__=%v2\
-	%{ansi:-trigraphs -D__STRICT_ANSI__}\
-	%{!undef:%{!ansi:%p} %P} %{trigraphs}\
+	%{ansi|std=*:%{!std=gnu:-trigraphs -D__STRICT_ANSI__}}\
+	%{!undef:%{!ansi:%{!std=*:%p}%{std=gnu:%p}} %P} %{trigraphs}\
         %c %{Os:-D__OPTIMIZE_SIZE__} %{O*:%{!O0:-D__OPTIMIZE__}}\
         %{traditional} %{ftraditional:-traditional}\
         %{traditional-cpp:-traditional}\
@@ -661,8 +664,8 @@ static struct compiler default_compilers[] =
 	%{C:%{!E:%eGNU C does not support -C without using -E}}\
 	 %{M} %{MM} %{MD:-MD %b.d} %{MMD:-MMD %b.d} %{MG}\
         -undef -D__GNUC__=%v1 -D__GNUC_MINOR__=%v2\
-	 %{ansi:-trigraphs -D__STRICT_ANSI__}\
-	%{!undef:%{!ansi:%p} %P} %{trigraphs}\
+	%{std=*:%{!std=gnu:-trigraphs -D__STRICT_ANSI__}}\
+	%{!undef:%{!std=*:%p}%{std=gnu:%p} %P} %{trigraphs}\
         %c %{Os:-D__OPTIMIZE_SIZE__} %{O*:%{!O0:-D__OPTIMIZE__}}\
         %{traditional} %{ftraditional:-traditional}\
         %{traditional-cpp:-traditional}\
@@ -672,7 +675,7 @@ static struct compiler default_compilers[] =
   {".i", {"@cpp-output"}},
   {"@cpp-output",
    {"%{!M:%{!MM:%{!E:cc1 %i %1 %{!Q:-quiet} %{d*} %{m*} %{a*}\
-			%{g*} %{O*} %{W*} %{w} %{pedantic*} %{ansi}\
+			%{g*} %{O*} %{W*} %{w} %{pedantic*} %{std*}\
 			%{traditional} %{v:-version} %{pg:-p} %{p} %{f*}\
 			%{aux-info*}\
 			%{pg:%{fomit-frame-pointer:%e-pg and -fomit-frame-pointer are incompatible}}\
@@ -850,6 +853,7 @@ struct option_map option_map[] =
    {"--silent", "-q", 0},
    {"--specs", "-specs=", "aj"},
    {"--static", "-static", 0},
+   {"--std", "-std=", "aj"},
    {"--symbolic", "-symbolic", 0},
    {"--target", "-b", "a"},
    {"--trace-includes", "-H", 0},
@@ -2454,6 +2458,7 @@ display_help ()
   printf ("  -save-temps              Do not delete intermediate files\n");
   printf ("  -pipe                    Use pipes rather than intermediate files\n");
   printf ("  -specs=<file>            Override builtin specs with the contents of <file>\n");
+  printf ("  -std=<standard>          Assume that the input sources are for <standard>\n");
   printf ("  -B <directory>           Add <directory> to the compiler's search paths\n");
   printf ("  -b <machine>             Run gcc for target <machine>, if installed\n");
   printf ("  -V <version>             Run gcc version number <version>, if installed\n");

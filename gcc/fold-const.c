@@ -964,6 +964,235 @@ fail:
   *r = y.d;
   return 1;
 }
+
+
+/* Convert C9X hexadecimal floating point string constant S.  Return
+   real value type in mode MODE.  This function uses the host computer's
+   fp arithmetic when there is no REAL_ARITHMETIC.  */
+
+REAL_VALUE_TYPE
+real_hex_to_f (s, mode)
+   char *s;
+   enum machine_mode mode;
+{
+   REAL_VALUE_TYPE ip;
+   char *p = s;
+   unsigned HOST_WIDE_INT low, high;
+   int frexpon, expon, shcount, nrmcount, k;
+   int sign, expsign, decpt, isfloat, isldouble, gotp, lost;
+   char c;
+
+   isldouble = 0;
+   isfloat = 0;
+   frexpon = 0;
+   expon = 0;
+   expsign = 1;
+   ip = 0.0;
+
+   while (*p == ' ' || *p == '\t')
+     ++p;
+
+   /* Sign, if any, comes first.  */
+   sign = 1;
+   if (*p == '-')
+     {
+       sign = -1;
+       ++p;
+     }
+
+   /* The string is supposed to start with 0x or 0X .  */
+   if (*p == '0')
+     {
+       ++p;
+       if (*p == 'x' || *p == 'X')
+	 ++p;
+       else
+	 abort ();
+     }
+   else
+     abort ();
+
+   while (*p == '0')
+     ++p;
+
+   high = 0;
+   low = 0;
+   lost = 0; /* Nonzero low order bits shifted out and discarded.  */
+   frexpon = 0;  /* Bits after the decimal point.  */
+   expon = 0;  /* Value of exponent.  */
+   decpt = 0;  /* How many decimal points.  */
+   gotp = 0;  /* How many P's.  */
+   shcount = 0;
+   while ((c = *p) != '\0')
+     {
+       if ((c >= '0' && c <= '9') || (c >= 'A' && c <= 'F')
+	   || (c >= 'a' && c <= 'f'))
+	 {
+	   k = c & 0x7f;
+	   if (k >= 'a')
+	     k = k - 'a' + 10;
+	   else if (k >= 'A')
+	     k = k - 'A' + 10;
+	   else
+	     k = k - '0';
+
+	   if ((high & 0xf0000000) == 0)
+	     {
+	       high = (high << 4) + ((low >> 28) & 15);
+	       low = (low << 4) + k;
+	       shcount += 4;
+	       if (decpt)
+		 frexpon += 4;
+	     }
+	   else
+	     {
+	       /* Record nonzero lost bits.  */
+	       lost |= k;
+	       if (!decpt)
+		 frexpon -= 4;
+	     }
+	   ++p;
+	 }
+       else if ( c == '.')
+	 {
+	   ++decpt;
+	   ++p;
+	 }
+       else if (c == 'p' || c == 'P')
+	 {
+	   ++gotp;
+	   ++p;
+	   /* Sign of exponent.  */
+	   if (*p == '-')
+	     {
+	       expsign = -1;
+	       ++p;
+	     }
+	   /* Value of exponent.
+	      The exponent field is a decimal integer.  */
+	   while (isdigit(*p))
+	     {
+	       k = (*p++ & 0x7f) - '0';
+	       expon = 10 * expon + k;
+	     }
+	   expon *= expsign;
+	   /* F suffix is ambiguous in the significand part
+	      so it must appear after the decimal exponent field.  */
+	   if (*p == 'f' || *p == 'F')
+	     {
+	       isfloat = 1;
+	       ++p;
+	       break;
+	     }
+	 }
+       else if (c == 'l' || c == 'L')
+	 {
+	   isldouble = 1;
+	   ++p;
+	   break;
+	 }
+       else
+	 break;
+     }
+   /* Abort if last character read was not legitimate.  */
+   c = *p;
+   if ((c != '\0' && c != ' ' && c != '\n' && c != '\r') || (decpt > 1))
+     abort ();
+   /* There must be either one decimal point or one p.  */
+   if (decpt == 0 && gotp == 0)
+     abort ();
+   shcount -= 4;
+   if ((high == 0) && (low == 0))
+     {
+       return dconst0;
+     }
+
+   /* Normalize.  */
+   nrmcount = 0;
+   if (high == 0)
+     {
+       high = low;
+       low = 0;
+       nrmcount += 32;
+     }
+   /* Leave a high guard bit for carry-out.  */
+   if ((high & 0x80000000) != 0)
+     {
+       lost |= low & 1;
+       low = (low >> 1) | (high << 31);
+       high = high >> 1;
+       nrmcount -= 1;
+     }
+   if ((high & 0xffff8000) == 0)
+     {
+       high = (high << 16) + ((low >> 16) & 0xffff);
+       low = low << 16;
+       nrmcount += 16;
+     }
+   while ((high & 0xc0000000) == 0)
+     {
+       high = (high << 1) + ((low >> 31) & 1);
+       low = low << 1;
+       nrmcount += 1;
+     }
+   if (isfloat || GET_MODE_SIZE(mode) == UNITS_PER_WORD)
+     {
+       /* Keep 24 bits precision, bits 0x7fffff80.
+	  Rounding bit is 0x40.  */
+       lost = lost | low | (high & 0x3f);
+       low = 0;
+       if (high & 0x40)
+	 {
+	   if ((high & 0x80) || lost)
+	     high += 0x40;
+	 }
+       high &= 0xffffff80;
+     }
+   else
+     {
+       /* We need real.c to do long double formats, so here default
+	  to double precision.  */
+#if HOST_FLOAT_FORMAT == IEEE_FLOAT_FORMAT
+       /* IEEE double.
+	  Keep 53 bits precision, bits 0x7fffffff fffffc00.
+	  Rounding bit is low word 0x200.  */
+       lost = lost | (low & 0x1ff);
+       if (low & 0x200)
+	 {
+	   if ((low & 0x400) || lost)
+	     {
+	       low = (low + 0x200) & 0xfffffc00;
+	       if (low == 0)
+		 high += 1;
+	     }
+	 }
+       low &= 0xfffffc00;
+#else
+       /* Assume it's a VAX with 56-bit significand,
+          bits 0x7fffffff ffffff80.  */
+       lost = lost | (low & 0x7f);
+       if (low & 0x40)
+	 {
+	   if ((low & 0x80) || lost)
+	     {
+	       low = (low + 0x40) & 0xffffff80;
+	       if (low == 0)
+		 high += 1;
+	     }
+	 }
+       low &= 0xffffff80;
+#endif
+     }
+   ip = (double) high;
+   ip =  REAL_VALUE_LDEXP (ip, 32) + (double) low;
+   /* Apply shifts and exponent value as power of 2.  */
+   ip = REAL_VALUE_LDEXP (ip, expon - (nrmcount + frexpon));
+
+   if (sign < 0)
+     ip = -ip;
+   return ip;
+}
+
 #endif /* no REAL_ARITHMETIC */
 
 /* Split a tree IN into a constant and a variable part

@@ -1333,8 +1333,8 @@ yylex ()
 	int parts[TOTAL_PARTS];
 	int overflow = 0;
 
-	enum anon1 { NOT_FLOAT, AFTER_POINT, TOO_MANY_POINTS} floatflag
-	  = NOT_FLOAT;
+	enum anon1 { NOT_FLOAT, AFTER_POINT, TOO_MANY_POINTS, AFTER_EXPON}
+	  floatflag = NOT_FLOAT;
 
 	for (count = 0; count < TOTAL_PARTS; count++)
 	  parts[count] = 0;
@@ -1370,12 +1370,12 @@ yylex ()
 	  {
 	    if (c == '.')
 	      {
-		if (base == 16)
+		if (base == 16 && pedantic)
 		  error ("floating constant may not be in radix 16");
 		if (floatflag == TOO_MANY_POINTS)
 		  /* We have already emitted an error.  Don't need another.  */
 		  ;
-		else if (floatflag == AFTER_POINT)
+		else if (floatflag == AFTER_POINT || floatflag == AFTER_EXPON)
 		  {
 		    error ("malformed floating constant");
 		    floatflag = TOO_MANY_POINTS;
@@ -1386,6 +1386,7 @@ yylex ()
 		else
 		  floatflag = AFTER_POINT;
 
+		if (base == 8)
 		base = 10;
 		*p++ = c = GETC();
 		/* Accept '.' as the start of a floating-point number
@@ -1425,11 +1426,16 @@ yylex ()
 		    if (c == 'e' || c == 'E')
 		      {
 			base = 10;
-			floatflag = AFTER_POINT;
+			floatflag = AFTER_EXPON;
 			break;   /* start of exponent */
 		      }
 		    error ("nondigits in number and not hexadecimal");
 		    c = 0;
+		  }
+		else if (base == 16 && (c == 'p' || c == 'P'))
+		  {
+		    floatflag = AFTER_EXPON;
+		    break;   /* start of exponent */
 		  }
 		else if (c >= 'a')
 		  {
@@ -1487,7 +1493,8 @@ yylex ()
 
 	    /* Read explicit exponent if any, and put it in tokenbuf.  */
 
-	    if ((c == 'e') || (c == 'E'))
+	    if ((base == 10 && ((c == 'e') || (c == 'E')))
+		|| (base == 16 && (c == 'p' || c == 'P')))
 	      {
 		if (p >= token_buffer + maxtoken - 3)
 		  p = extend_token_buffer (p);
@@ -1498,6 +1505,7 @@ yylex ()
 		    *p++ = c;
 		    c = GETC();
 		  }
+		/* Exponent is decimal, even if string is a hex float.  */
 		if (! ISDIGIT (c))
 		  error ("floating constant exponent has no digits");
 	        while (ISDIGIT (c))
@@ -1508,6 +1516,8 @@ yylex ()
 		    c = GETC();
 		  }
 	      }
+	    if (base == 16 && floatflag != AFTER_EXPON)
+	      error ("hexadecimal floating constant has no exponent");
 
 	    *p = 0;
 
@@ -1580,10 +1590,13 @@ yylex ()
 
 		    type = float_type_node;
 		    errno = 0;
+		    if (base == 16)
+		      value = REAL_VALUE_HTOF (copy, TYPE_MODE (type));
+		    else
 		    value = REAL_VALUE_ATOF (copy, TYPE_MODE (type));
 		    conversion_errno = errno;
 		    /* A diagnostic is required here by some ANSI C testsuites.
-		       This is not pedwarn, become some people don't want
+		       This is not pedwarn, because some people don't want
 		       an error for this.  */
 		    if (REAL_VALUE_ISINF (value) && pedantic)
 		      warning ("floating point number exceeds range of `float'");
@@ -1592,6 +1605,9 @@ yylex ()
 		  {
 		    type = long_double_type_node;
 		    errno = 0;
+		    if (base == 16)
+		      value = REAL_VALUE_HTOF (copy, TYPE_MODE (type));
+		    else
 		    value = REAL_VALUE_ATOF (copy, TYPE_MODE (type));
 		    conversion_errno = errno;
 		    if (REAL_VALUE_ISINF (value) && pedantic)
@@ -1600,6 +1616,9 @@ yylex ()
 		else
 		  {
 		    errno = 0;
+		    if (base == 16)
+		      value = REAL_VALUE_HTOF (copy, TYPE_MODE (type));
+		    else
 		    value = REAL_VALUE_ATOF (copy, TYPE_MODE (type));
 		    conversion_errno = errno;
 		    if (REAL_VALUE_ISINF (value) && pedantic)
