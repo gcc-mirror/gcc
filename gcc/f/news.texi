@@ -9,7 +9,7 @@
 @c in the standalone derivations of this file (e.g. NEWS).
 @set copyrights-news 1995-1999
 
-@set last-update-news 1999-06-04
+@set last-update-news 1999-06-16
 
 @include root.texi
 
@@ -182,6 +182,13 @@ of the same assignment
 (a very rare construction).
 It now assigns through a temporary,
 in cases where such partial overlap is deemed possible.
+@end ifclear
+
+@ifclear USERVISONLY
+@item
+@code{libg2c} (@code{libf2c}) no longer loses track
+of the file being worked on
+during a @code{BACKSPACE} operation.
 @end ifclear
 
 @ifclear USERVISONLY
