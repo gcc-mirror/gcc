@@ -55,6 +55,9 @@
 
 Thu Mar  1 09:44:15 2001  Jeffrey A Law  (law@cygnus.com)
 
+	* config/pa/som.h  (ASM_IDENTIFY_GCC): Define.
+	(ASM_IDENTIFY_GCC_AFTER_SOURCE): Likewise.
+
 	* pa.c (emit_move_sequence): Verify operand0 is a hard register
 	before determining its register class.
 
