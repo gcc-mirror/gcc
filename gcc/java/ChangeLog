@@ -1,3 +1,8 @@
+2000-11-22  Bryce McKinlay  <bryce@albatross.co.nz>
+
+	* jcf-parse.c (get_constant): Call UT8_CHAR_LENGTH on `utf8', not the
+	scratch buffer.
+
 2000-11-20  Tom Tromey  <tromey@cygnus.com>
 
 	* jv-scan.c (help): Document --complexity.

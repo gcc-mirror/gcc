@@ -358,7 +358,7 @@ get_constant (jcf, index)
 	for (i = 0; i < str_len; i++)
 	  {
 	    int char_value;
-	    int char_len = UT8_CHAR_LENGTH (*str);
+	    int char_len = UT8_CHAR_LENGTH (*utf8);
 	    switch (char_len)
 	      {
 	      case 1:
