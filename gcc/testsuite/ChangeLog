@@ -1,5 +1,8 @@
 Mon Jun  8 02:13:42 1998  Jeffrey A Law  (law@cygnus.com)
 
+	* gcc.dg/980523-1.c: Only test on ppc-linux.
+	* gcc.dg/980526-1.c, gcc.dg/switch-1.c: Likewise.
+
 	* gcc.c-torture/execute/980608-1.c: New test.
 
 Thu Jun  4 01:39:24 1998  Jeffrey A Law  (law@cygnus.com)
