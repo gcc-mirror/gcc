@@ -517,7 +517,8 @@ extern int x86_prefetch_sse;
       if (TARGET_64BIT)						\
 	{							\
 	  builtin_assert ("cpu=x86_64");			\
-	  builtin_assert ("machine=x86_64");			\
+	  builtin_define ("__amd64");				\
+	  builtin_define ("__amd64__");				\
 	  builtin_define ("__x86_64");				\
 	  builtin_define ("__x86_64__");			\
 	  builtin_define ("__amd64");				\
