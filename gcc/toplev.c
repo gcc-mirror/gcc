@@ -2204,6 +2204,12 @@ compile_file (name)
 
   input_filename = name;
 
+  /* Put an entry on the input file stack for the main input file.  */
+  input_file_stack
+    = (struct file_stack *) xmalloc (sizeof (struct file_stack));
+  input_file_stack->next = 0;
+  input_file_stack->name = input_filename;
+
   /* Perform language-specific initialization.
      This may set main_input_filename.  */
   lang_init ();
@@ -2212,12 +2218,6 @@ compile_file (name)
      as the official input file name.  */
   if (main_input_filename == 0)
     main_input_filename = name;
-
-  /* Put an entry on the input file stack for the main input file.  */
-  input_file_stack
-    = (struct file_stack *) xmalloc (sizeof (struct file_stack));
-  input_file_stack->next = 0;
-  input_file_stack->name = input_filename;
 
   if (!output_bytecode)
     {
