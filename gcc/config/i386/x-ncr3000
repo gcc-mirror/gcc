@@ -1,0 +1,24 @@
+# The svr4 reference port for the i386 contains an alloca.o routine
+# in /usr/ucblib/libucb.a, but we can't just try to get that by
+# setting CLIB to /usr/ucblib/libucb.a because (unfortunately)
+# there are a lot of other routines in libucb.a which are supposed
+# to be the Berkeley versions of library routines normally found in
+# libc.a and many of these Berkeley versions are badly broken.  Thus,
+# if we try to link programs with libucb.a before libc.a, those
+# programs tend to crash.  To avoid this, we link with libc.a *before*
+# linking with libucb.a.
+
+CLIB=-lc /usr/ucblib/libucb.a
+
+# We used to build all stages *without* shared libraries because that may make
+# debugging the compiler easier (until there is a GDB which supports
+# both Dwarf *and* svr4 shared libraries).
+
+# But james@bigtex.cactus.org says that redefining GCC_CFLAGS causes trouble,
+# and that it is easy enough to debug using shared libraries.
+# CCLIBFLAGS=-Bstatic -dn -g
+# GCC_CFLAGS=-static -g -O2 -B./
+
+INSTALL=cp
+
+FIXINCLUDES=fixinc.svr4
