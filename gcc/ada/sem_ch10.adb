@@ -2556,15 +2556,26 @@ package body Sem_Ch10 is
       -------------------------
 
       function Build_Ancestor_Name (P : Node_Id) return Node_Id is
-         P_Ref : constant Node_Id :=
+         P_Ref  : constant Node_Id :=
                    New_Reference_To (Defining_Entity (P), Loc);
+         P_Spec : Node_Id := P;
+
       begin
-         if No (Parent_Spec (P)) then
+         --  Ancestor may have been rewritten as a package body. Retrieve
+         --  the original spec to trace earlier ancestors.
+
+         if Nkind (P) = N_Package_Body
+           and then Nkind (Original_Node (P)) = N_Package_Instantiation
+         then
+            P_Spec := Original_Node (P);
+         end if;
+
+         if No (Parent_Spec (P_Spec)) then
             return P_Ref;
          else
             return
               Make_Selected_Component (Loc,
-                Prefix => Build_Ancestor_Name (Unit (Parent_Spec (P))),
+                Prefix => Build_Ancestor_Name (Unit (Parent_Spec (P_Spec))),
                 Selector_Name => P_Ref);
          end if;
       end Build_Ancestor_Name;
@@ -3139,16 +3150,24 @@ package body Sem_Ch10 is
       --  Verify that a child of an instance is itself an instance, or
       --  the renaming of one. Given that an instance that is a unit is
       --  replaced with a package declaration, check against the original
-      --  node.
+      --  node. The parent may be currently being instantiated, in which
+      --  case it appears as a declaration, but the generic_parent is
+      --  already established indicating that we deal with an instance.
 
-      elsif Nkind (Original_Node (P)) = N_Package_Instantiation
-        and then Nkind (Lib_Unit)
-                   not in N_Renaming_Declaration
-        and then Nkind (Original_Node (Lib_Unit))
-                   not in N_Generic_Instantiation
-      then
-         Error_Msg_N
-           ("child of an instance must be an instance or renaming", Lib_Unit);
+      elsif Nkind (Original_Node (P)) = N_Package_Instantiation then
+
+         if Nkind (Lib_Unit) in N_Renaming_Declaration
+           or else Nkind (Original_Node (Lib_Unit)) in N_Generic_Instantiation
+           or else
+             (Nkind (Lib_Unit) = N_Package_Declaration
+               and then Present (Generic_Parent (Specification (Lib_Unit))))
+         then
+            null;
+         else
+            Error_Msg_N
+              ("child of an instance must be an instance or renaming",
+                Lib_Unit);
+         end if;
       end if;
 
       --  This is the recursive call that ensures all parents are loaded
