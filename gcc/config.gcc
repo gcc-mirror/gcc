@@ -652,6 +652,10 @@ arm*-*-ecos-elf)
 	tm_file="dbxelf.h elfos.h arm/unknown-elf.h arm/elf.h arm/aout.h arm/arm.h arm/ecos-elf.h"
 	tmake_file="arm/t-arm arm/t-arm-elf"
 	;;
+arm*-*-symbianelf*)
+	tm_file="dbxelf.h elfos.h arm/unknown-elf.h arm/elf.h arm/symbian.h arm/aout.h arm/arm.h"
+	tmake_file="t-slibgcc-elf-ver arm/t-arm arm/t-arm-elf"
+	;;
 arm*-*-rtems*)
 	tm_file="dbxelf.h elfos.h arm/unknown-elf.h arm/elf.h arm/aout.h arm/arm.h arm/rtems-elf.h rtems.h"
 	tmake_file="arm/t-arm arm/t-arm-elf t-rtems"
