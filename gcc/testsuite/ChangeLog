@@ -1,3 +1,7 @@
+2000-08-21  Joseph S. Myers  <jsm28@cam.ac.uk>
+
+	* gcc.dg/c90-scanf-1.c, gcc.dg/c94-scanf-1.c: New tests.
+
 2000-08-21  Jakub Jelinek  <jakub@redhat.com>
 
 	* g++.old-deja/g++.other/loop2.C: New test.

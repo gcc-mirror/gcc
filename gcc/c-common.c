@@ -1253,15 +1253,15 @@ static format_char_info print_char_table[] = {
 };
 
 static format_char_info scan_char_table[] = {
-  { "di",	1,	T_I,	T_SC,	T_S,	T_L,	T_LL,	T_LL,	T_SST,	T_PD,	T_IM,	"*"	},
-  { "ouxX",	1,	T_UI,	T_UC,	T_US,	T_UL,	T_ULL,	T_ULL,	T_ST,	T_UPD,	T_UIM,	"*"	},
-  { "efFgEGaA",	1,	T_F,	NULL,	NULL,	T_D,	NULL,	T_LD,	NULL,	NULL,	NULL,	"*"	},
-  { "c",	1,	T_C,	NULL,	NULL,	T_W,	NULL,	NULL,	NULL,	NULL,	NULL,	"*c"	},
-  { "s",	1,	T_C,	NULL,	NULL,	T_W,	NULL,	NULL,	NULL,	NULL,	NULL,	"*ac"	},
-  { "[",	1,	T_C,	NULL,	NULL,	T_W,	NULL,	NULL,	NULL,	NULL,	NULL,	"*ac"	},
-  { "C",	1,	T_W,	NULL,	NULL,	NULL,	NULL,	NULL,	NULL,	NULL,	NULL,	"*"	},
-  { "S",	1,	T_W,	NULL,	NULL,	NULL,	NULL,	NULL,	NULL,	NULL,	NULL,	"*a"	},
-  { "p",	2,	T_V,	NULL,	NULL,	NULL,	NULL,	NULL,	NULL,	NULL,	NULL,	"*"	},
+  { "di",	1,	T_I,	T_SC,	T_S,	T_L,	T_LL,	T_LL,	T_SST,	T_PD,	T_IM,	"*w"	},
+  { "ouxX",	1,	T_UI,	T_UC,	T_US,	T_UL,	T_ULL,	T_ULL,	T_ST,	T_UPD,	T_UIM,	"*w"	},
+  { "efFgEGaA",	1,	T_F,	NULL,	NULL,	T_D,	NULL,	T_LD,	NULL,	NULL,	NULL,	"*w"	},
+  { "c",	1,	T_C,	NULL,	NULL,	T_W,	NULL,	NULL,	NULL,	NULL,	NULL,	"*cw"	},
+  { "s",	1,	T_C,	NULL,	NULL,	T_W,	NULL,	NULL,	NULL,	NULL,	NULL,	"*acw"	},
+  { "[",	1,	T_C,	NULL,	NULL,	T_W,	NULL,	NULL,	NULL,	NULL,	NULL,	"*acw"	},
+  { "C",	1,	T_W,	NULL,	NULL,	NULL,	NULL,	NULL,	NULL,	NULL,	NULL,	"*w"	},
+  { "S",	1,	T_W,	NULL,	NULL,	NULL,	NULL,	NULL,	NULL,	NULL,	NULL,	"*aw"	},
+  { "p",	2,	T_V,	NULL,	NULL,	NULL,	NULL,	NULL,	NULL,	NULL,	NULL,	"*w"	},
   { "n",	1,	T_I,	T_SC,	T_S,	T_L,	T_LL,	NULL,	T_SST,	T_PD,	T_IM,	""	},
   { NULL,	0,	NULL,	NULL,	NULL,	NULL,	NULL,	NULL,	NULL,	NULL,	NULL,	NULL	}
 };
@@ -1618,6 +1618,7 @@ check_format_info (info, params)
     {
       int aflag;
       int char_type_flag = 0;
+      int writing_in_flag = 0;
       if (*format_chars == 0)
 	{
 	  if (format_chars - TREE_STRING_POINTER (format_tree) != format_length)
@@ -1642,11 +1643,19 @@ check_format_info (info, params)
       suppressed = wide = precise = FALSE;
       if (info->format_type == scanf_format_type)
 	{
+	  int non_zero_width_char = FALSE;
 	  suppressed = *format_chars == '*';
 	  if (suppressed)
 	    ++format_chars;
 	  while (ISDIGIT (*format_chars))
-	    ++format_chars;
+	    {
+	      wide = TRUE;
+	      if (*format_chars != '0')
+		non_zero_width_char = TRUE;
+	      ++format_chars;
+	    }
+	  if (wide && !non_zero_width_char)
+	    warning ("zero width in scanf format");
 	}
       else if (info->format_type == strftime_format_type)
         {
@@ -2047,6 +2056,12 @@ check_format_info (info, params)
 
       STRIP_NOPS (cur_param);
 
+      if ((info->format_type == scanf_format_type
+	   || (info->format_type == printf_format_type
+	       && format_char == 'n'))
+	  && wanted_type != 0)
+	writing_in_flag = 1;
+
       /* Check the types of any additional pointer arguments
 	 that precede the "real" argument.  */
       for (i = 0; i < fci->pointer_count + aflag; ++i)
@@ -2060,6 +2075,33 @@ check_format_info (info, params)
 	      else
 		cur_param = 0;
 
+	      /* See if this is an attempt to write into a const type with
+		 scanf or with printf "%n".  Note: the writing in happens
+		 at the first indirection only, if for example
+		 void * const * is passed to scanf %p; passing
+		 const void ** is simply passing an incompatible type.  */
+	      if (writing_in_flag
+		  && i == 0
+		  && TREE_CODE (cur_type) != ERROR_MARK
+		  && (TYPE_READONLY (cur_type)
+		      || (cur_param != 0
+			  && (TREE_CODE_CLASS (TREE_CODE (cur_param)) == 'c'
+			      || (DECL_P (cur_param)
+				  && TREE_READONLY (cur_param))))))
+		warning ("writing into constant object (arg %d)", arg_num);
+
+	      /* If there are extra type qualifiers beyond the first
+		 indirection, then this makes the types technically
+		 incompatible.  */
+	      if (i > 0
+		  && pedantic
+		  && TREE_CODE (cur_type) != ERROR_MARK
+		  && (TYPE_READONLY (cur_type)
+		      || TYPE_VOLATILE (cur_type)
+		      || TYPE_RESTRICT (cur_type)))
+		warning ("extra type qualifiers in format argument (arg %d)",
+			 arg_num);
+
 	      continue;
 	    }
 	  if (TREE_CODE (cur_type) != ERROR_MARK)
@@ -2071,20 +2113,6 @@ check_format_info (info, params)
 	    }
 	  break;
 	}
-
-      /* See if this is an attempt to write into a const type with
-	 scanf or with printf "%n".  */
-      if ((info->format_type == scanf_format_type
-	   || (info->format_type == printf_format_type
-	       && format_char == 'n'))
-	  && i == fci->pointer_count + aflag
-	  && wanted_type != 0
-	  && TREE_CODE (cur_type) != ERROR_MARK
-	  && (TYPE_READONLY (cur_type)
-	      || (cur_param != 0
-		  && (TREE_CODE_CLASS (TREE_CODE (cur_param)) == 'c'
-		      || (DECL_P (cur_param) && TREE_READONLY (cur_param))))))
-	warning ("writing into constant object (arg %d)", arg_num);
 
       /* Check whether the argument type is a character type.  This leniency
 	 only applies to certain formats, flagged with 'c'.
