@@ -1,3 +1,13 @@
+2003-11-20 David Mosberger  <davidm@hpl.hp.com>
+
+	* config/t-libunwind: Mention unwind-c.c.
+	(SHLIB_LC): Overwrite the default-value from t-slibgcc-elf-ver
+	and mention -lunwind so that the resulting libgcc_s.so has
+	the necessary DT_NEEDED entry for libunwind.
+
+	* unwind-libunwind.c (_Unwind_GetCFA): Implement.
+	(_Unwind_GetBSP) [UNW_TARGET_IA64]: New function.
+
 2003-11-20  Fariborz Jahanian  <fjahanian@apple.com>
 	    David Edelsohn  <edelsohn@gnu.org>
 
