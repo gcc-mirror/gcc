@@ -132,6 +132,80 @@ void test02()
   VERIFY( test );
 }
 
+// libstdc++/3983
+void test03()
+{
+  using namespace std;
+  bool test = true;
+
+  // input streams
+  basic_istringstream<unsigned char> iss_uc;
+  unsigned char arr[6] = { 'a', 'b', 'c', 'd', 'e' };
+
+  // Sentry uses locale info, so have to try one formatted input.
+  try 
+    { 
+      int i;
+      iss_uc >> i;
+    }
+  catch (bad_cast& obj)
+    { }
+  catch (exception& obj)
+    { test = false; }
+  
+  try 
+    { 
+      iss_uc >> arr;
+    }
+  catch (bad_cast& obj)
+    { }
+  catch (exception& obj)
+    { test = false; }
+  
+  try 
+    { 
+      iss_uc >> ws;
+    }
+  catch (bad_cast& obj)
+    { }
+  catch (exception& obj)
+    { test = false; }
+ 
+  try 
+    { 
+      basic_string<unsigned char> s_uc(arr);
+      iss_uc >> s_uc;
+    }
+  catch (bad_cast& obj)
+    { }
+  catch (exception& obj)
+    { test = false; }
+
+  // output streams
+  basic_ostringstream<unsigned char> oss_uc;
+
+  try 
+    { 
+      bool b = true;
+      oss_uc << b;
+    }
+  catch (bad_cast& obj)
+    { }
+  catch (exception& obj)
+    { test = false; }
+   
+  VERIFY( test );
+}
+
+// libstdc++/5268
+int test04()
+{
+  std::stringbuf b1;
+  std::cout.rdbuf( &b1 );
+  std::cout << "hello\n";
+  return 0;
+}
+
 #if !__GXX_WEAK__
 // Explicitly instantiate for systems with no COMDAT or weak support.
 template 
@@ -147,5 +221,7 @@ int main()
 {
   test01();
   test02();
+  test03();
+  test04();
   return 0;
 }
