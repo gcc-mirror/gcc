@@ -1,3 +1,23 @@
+2002-09-11  Michael Koch  <konqueror@gmx.de>
+
+	* java/net/Socket.java
+	(Socket): protected to public (since JDK 1.4). Added @specnote.
+	(bind): New method.
+	(connect): Two new methods.
+	(getKeepalive): Get correct socket option.
+	(setKeepalive): Set correct socket option.
+	(getOOBInline): New method.
+	(setOOBInline): New method.
+	* java/net/ServerSocket.java
+	(bind): Two new methods.
+	(getInetAddress): Reimplemented, catch exception.
+	(getLocalSocketAddress): New method.
+	(setReuseAddress): New method.
+	(getReuseAdress): New method.
+	(setReceiveBufferSize): New method.
+	(getReceiveBufferSize): New method.
+	(toString): Made string JDK 1.4 compliant.
+
 2002-09-10  Michael Koch  <konqueror@gmx.de>
 
 	* java/net/SocketImpl.java
