@@ -3700,7 +3700,10 @@ asm volatile ("movc3 %0,%1,%2"
 You may not write a clobber description in a way that overlaps with an
 input or output operand.  For example, you may not have an operand
 describing a register class with one member if you mention that register
-in the clobber list.  There is no way for you to specify that an input
+in the clobber list.  Variables declared to live in specific registers
+(@pxref{Explicit Reg Vars}), and used as asm input or output operands must
+have no part mentioned in the clobber description.
+There is no way for you to specify that an input
 operand is modified without also specifying it as an output
 operand.  Note that if all the output operands you specify are for this
 purpose (and hence unused), you will then also need to specify

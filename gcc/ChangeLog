@@ -1,3 +1,14 @@
+2002-09-23  Hans-Peter Nilsson  <hp@axis.com>
+
+	* doc/extend.texi (Extended Asm): Clarify that overlap between
+	asm-declared register variables used in an asm and the asm clobber
+	list is not allowed.
+	* stmt.c (decl_conflicts_with_clobbers_p): New function.
+	(expand_asm_operands): Keep track of clobbered registers.  Call
+	decl_conflicts_with_clobbers_p for each input and output operand.
+	If no conflicts found before, also do conflict sanity check when
+	emitting clobbers.
+
 2002-09-23  Richard Henderson  <rth@redhat.com>
 
 	* c-common.c (cpp_define_data_format): Remove.

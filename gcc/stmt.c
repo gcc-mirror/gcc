@@ -398,6 +398,7 @@ static int n_occurrences		PARAMS ((int, const char *));
 static bool parse_input_constraint	PARAMS ((const char **, int, int, int,
 						 int, const char * const *,
 						 bool *, bool *));
+static bool decl_conflicts_with_clobbers_p PARAMS ((tree, const HARD_REG_SET));
 static void expand_goto_internal	PARAMS ((tree, rtx, rtx));
 static int expand_fixup			PARAMS ((tree, rtx, rtx));
 static rtx expand_nl_handler_label	PARAMS ((rtx, rtx));
@@ -1400,6 +1401,42 @@ parse_input_constraint (constraint_p, input_num, ninputs, noutputs, ninout,
   return true;
 }
 
+/* Check for overlap between registers marked in CLOBBERED_REGS and
+   anything inappropriate in DECL.  Emit error and return TRUE for error,
+   FALSE for ok.  */
+
+static bool
+decl_conflicts_with_clobbers_p (decl, clobbered_regs)
+     tree decl;
+     const HARD_REG_SET clobbered_regs;
+{
+  /* Conflicts between asm-declared register variables and the clobber
+     list are not allowed.  */
+  if ((TREE_CODE (decl) == VAR_DECL || TREE_CODE (decl) == PARM_DECL)
+      && DECL_REGISTER (decl)
+      && REGNO (DECL_RTL (decl)) < FIRST_PSEUDO_REGISTER)
+    {
+      rtx reg = DECL_RTL (decl);
+      unsigned int regno;
+
+      for (regno = REGNO (reg);
+	   regno < (REGNO (reg)
+		    + HARD_REGNO_NREGS (REGNO (reg), GET_MODE (reg)));
+	   regno++)
+	if (TEST_HARD_REG_BIT (clobbered_regs, regno))
+	  {
+	    error ("asm-specifier for variable `%s' conflicts with asm clobber list",
+		   IDENTIFIER_POINTER (DECL_NAME (decl)));
+
+	    /* Reset registerness to stop multiple errors emitted for a
+	       single variable.  */
+	    DECL_REGISTER (decl) = 0;
+	    return true;
+	  }
+    }
+  return false;
+}
+
 /* Generate RTL for an asm statement with arguments.
    STRING is the instruction template.
    OUTPUTS is a list of output arguments (lvalues); INPUTS a list of inputs.
@@ -1430,6 +1467,8 @@ expand_asm_operands (string, outputs, inputs, clobbers, vol, filename, line)
   int noutputs = list_length (outputs);
   int ninout;
   int nclobbers;
+  HARD_REG_SET clobbered_regs;
+  int clobber_conflict_found = 0;
   tree tail;
   int i;
   /* Vector of RTX's of evaluated output operands.  */
@@ -1467,6 +1506,7 @@ expand_asm_operands (string, outputs, inputs, clobbers, vol, filename, line)
   /* Count the number of meaningful clobbered registers, ignoring what
      we would ignore later.  */
   nclobbers = 0;
+  CLEAR_HARD_REG_SET (clobbered_regs);
   for (tail = clobbers; tail; tail = TREE_CHAIN (tail))
     {
       const char *regname = TREE_STRING_POINTER (TREE_VALUE (tail));
@@ -1476,6 +1516,10 @@ expand_asm_operands (string, outputs, inputs, clobbers, vol, filename, line)
 	++nclobbers;
       else if (i == -2)
 	error ("unknown register name `%s' in `asm'", regname);
+
+      /* Mark clobbered registers.  */
+      if (i >= 0)
+	SET_HARD_REG_BIT (clobbered_regs, i);
     }
 
   clear_last_expr ();
@@ -1601,6 +1645,9 @@ expand_asm_operands (string, outputs, inputs, clobbers, vol, filename, line)
 	  inout_mode[ninout] = TYPE_MODE (type);
 	  inout_opnum[ninout++] = i;
 	}
+
+      if (decl_conflicts_with_clobbers_p (val, clobbered_regs))
+	clobber_conflict_found = 1;
     }
 
   /* Make vectors for the expression-rtx, constraint strings,
@@ -1685,6 +1732,9 @@ expand_asm_operands (string, outputs, inputs, clobbers, vol, filename, line)
 
       ASM_OPERANDS_INPUT_CONSTRAINT_EXP (body, i)
 	= gen_rtx_ASM_INPUT (TYPE_MODE (type), constraints[i + noutputs]);
+
+      if (decl_conflicts_with_clobbers_p (val, clobbered_regs))
+	clobber_conflict_found = 1;
     }
 
   /* Protect all the operands from the queue now that they have all been
@@ -1769,6 +1819,7 @@ expand_asm_operands (string, outputs, inputs, clobbers, vol, filename, line)
 	{
 	  const char *regname = TREE_STRING_POINTER (TREE_VALUE (tail));
 	  int j = decode_reg_name (regname);
+	  rtx clobbered_reg;
 
 	  if (j < 0)
 	    {
@@ -1790,8 +1841,29 @@ expand_asm_operands (string, outputs, inputs, clobbers, vol, filename, line)
 	    }
 
 	  /* Use QImode since that's guaranteed to clobber just one reg.  */
+	  clobbered_reg = gen_rtx_REG (QImode, j);
+
+	  /* Do sanity check for overlap between clobbers and respectively
+	     input and outputs that hasn't been handled.  Such overlap
+	     should have been detected and reported above.  */
+	  if (!clobber_conflict_found)
+	    {
+	      int opno;
+
+	      /* We test the old body (obody) contents to avoid tripping
+		 over the under-construction body.  */
+	      for (opno = 0; opno < noutputs; opno++)
+		if (reg_overlap_mentioned_p (clobbered_reg, output_rtx[opno]))
+		  internal_error ("asm clobber conflict with output operand");
+
+	      for (opno = 0; opno < ninputs - ninout; opno++)
+		if (reg_overlap_mentioned_p (clobbered_reg,
+					     ASM_OPERANDS_INPUT (obody, opno)))
+		  internal_error ("asm clobber conflict with input operand");
+	    }
+
 	  XVECEXP (body, 0, i++)
-	    = gen_rtx_CLOBBER (VOIDmode, gen_rtx_REG (QImode, j));
+	    = gen_rtx_CLOBBER (VOIDmode, clobbered_reg);
 	}
 
       insn = emit_insn (body);
