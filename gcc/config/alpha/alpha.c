@@ -3664,7 +3664,6 @@ alpha_mark_machine_status (p)
 
   if (machine)
     {
-      ggc_mark_rtx (machine->eh_epilogue_sp_ofs);
       ggc_mark_rtx (machine->ra_rtx);
     }
 }
@@ -4416,6 +4415,18 @@ alpha_sa_mask (imaskP, fmaskP)
 	      fmask |= (1L << (i - 32));
 	  }
 
+      /* We need to restore these for the handler.  */
+      if (current_function_calls_eh_return)
+	{
+	  for (i = 0; ; ++i)
+	    {
+	      unsigned regno = EH_RETURN_DATA_REGNO (i);
+	      if (regno == INVALID_REGNUM)
+		break;
+	      imask |= 1L << regno;
+	    }
+	}
+
       if (imask || fmask || alpha_ra_ever_killed ())
 	imask |= (1L << REG_RA);
     }
@@ -5112,7 +5123,11 @@ alpha_expand_epilogue ()
   fp_offset = 0;
   sa_reg = stack_pointer_rtx;
 
-  eh_ofs = cfun->machine->eh_epilogue_sp_ofs;
+  if (current_function_calls_eh_return)
+    eh_ofs = EH_RETURN_STACKADJ_RTX;
+  else
+    eh_ofs = NULL_RTX;
+
   if (sa_size)
     {
       /* If we have a frame pointer, restore SP from it.  */
@@ -5140,12 +5155,11 @@ alpha_expand_epilogue ()
 	  
       /* Restore registers in order, excepting a true frame pointer. */
 
+      mem = gen_rtx_MEM (DImode, plus_constant (sa_reg, reg_offset));
       if (! eh_ofs)
-	{
-	  mem = gen_rtx_MEM (DImode, plus_constant(sa_reg, reg_offset));
-	  MEM_ALIAS_SET (mem) = alpha_sr_alias_set;
-          FRP (emit_move_insn (gen_rtx_REG (DImode, REG_RA), mem));
-	}
+        MEM_ALIAS_SET (mem) = alpha_sr_alias_set;
+      FRP (emit_move_insn (gen_rtx_REG (DImode, REG_RA), mem));
+
       reg_offset += 8;
       imask &= ~(1L << REG_RA);
 

@@ -44,3 +44,54 @@ SUB_CPP_PREDEFINES
 
 /* Define this so that all GNU/Linux targets handle the same pragmas.  */
 #define HANDLE_PRAGMA_PACK_PUSH_POP
+
+/* Do code reading to identify a signal frame, and set the frame
+   state data appropriately.  See unwind-dw2.c for the structs.  */
+
+#ifdef IN_LIBGCC2
+#include <signal.h>
+#include <sys/ucontext.h>
+#endif
+
+#define MD_FALLBACK_FRAME_STATE_FOR(CONTEXT, FS, SUCCESS)		\
+  do {									\
+    unsigned int *pc_ = (CONTEXT)->ra;					\
+    struct sigcontext *sc_;						\
+    long new_cfa_, i_;							\
+									\
+    if (pc_[0] != 0x47fe0410		/* mov $30,$16 */		\
+        || pc_[2] != 0x00000083		/* callsys */)			\
+      break;								\
+    if (pc_[1] == 0x201f0067)		/* lda $0,NR_sigreturn */	\
+      sc_ = (CONTEXT)->cfa;						\
+    else if (pc_[1] == 0x201f015f)	/* lda $0,NR_rt_sigreturn */	\
+      {									\
+	struct rt_sigframe {						\
+	  struct siginfo info;						\
+	  struct ucontext uc;						\
+	} *rt_ = (CONTEXT)->cfa;					\
+	sc_ = &rt_->uc.uc_mcontext;					\
+      }									\
+    else								\
+      break;								\
+    new_cfa_ = sc_->sc_regs[30];					\
+    (FS)->cfa_how = CFA_REG_OFFSET;					\
+    (FS)->cfa_reg = 30;							\
+    (FS)->cfa_offset = new_cfa_ - (long) (CONTEXT)->cfa;		\
+    for (i_ = 0; i_ < 30; ++i_)						\
+      {									\
+	(FS)->regs.reg[i_].how = REG_SAVED_OFFSET;			\
+	(FS)->regs.reg[i_].loc.offset					\
+	  = (long)&sc_->sc_regs[i_] - new_cfa_;				\
+      }									\
+    for (i_ = 0; i_ < 31; ++i_)						\
+      {									\
+	(FS)->regs.reg[i_+32].how = REG_SAVED_OFFSET;			\
+	(FS)->regs.reg[i_+32].loc.offset				\
+	  = (long)&sc_->sc_fpregs[i_] - new_cfa_;			\
+      }									\
+    (FS)->regs.reg[31].how = REG_SAVED_OFFSET;				\
+    (FS)->regs.reg[31].loc.offset = (long)&sc_->sc_pc - new_cfa_;	\
+    (FS)->retaddr_column = 31;						\
+    goto SUCCESS;							\
+  } while (0)

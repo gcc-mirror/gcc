@@ -5900,22 +5900,6 @@
   DONE;
 }")
 
-(define_expand "eh_epilogue"
-  [(use (match_operand:DI 0 "register_operand" "r"))
-   (use (match_operand:DI 1 "register_operand" "r"))
-   (use (match_operand:DI 2 "register_operand" "r"))]
-  "! TARGET_OPEN_VMS"
-  "
-{
-  cfun->machine->eh_epilogue_sp_ofs = operands[1];
-  if (GET_CODE (operands[2]) != REG || REGNO (operands[2]) != 26)
-    {
-      rtx ra = gen_rtx_REG (Pmode, 26);
-      emit_move_insn (ra, operands[2]);
-      operands[2] = ra;
-    }
-}")
-
 ;; In creating a large stack frame, NT _must_ use ldah+lda to load
 ;; the frame size into a register.  We use this pattern to ensure
 ;; we get lda instead of addq.
@@ -5978,8 +5962,8 @@
 (define_insn "exception_receiver"
   [(unspec_volatile [(const_int 0)] 7)]
   "! TARGET_OPEN_VMS && ! TARGET_WINDOWS_NT"
-  "br $29,$LSJ%=\\n$LSJ%=:\;ldgp $29,0($29)"
-  [(set_attr "length" "12")
+  "ldgp $29,0($26)"
+  [(set_attr "length" "8")
    (set_attr "type" "multi")])
 
 (define_expand "nonlocal_goto_receiver"

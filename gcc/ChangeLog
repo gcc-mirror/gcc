@@ -1,5 +1,17 @@
 2001-03-28  Richard Henderson  <rth@redhat.com>
 
+        * config/alpha/alpha.c (alpha_sa_mask): Add EH_RETURN_DATA_REGNOs.
+        (alpha_mark_machine_status): No eh_epilogue_sp_ofs ...
+        (alpha_expand_epilogue): ... use EH_RETURN_STACKADJ_RTX instead.
+        * config/alpha/alpha.h (machine_function): Remove eh_epilogue_sp_ofs.
+        (EH_RETURN_DATA_REGNO): New.
+        (EH_RETURN_STACKADJ_RTX, EH_RETURN_HANDLER_RTX): New.
+        * config/alpha/alpha.md (eh_epilogue): Remove.
+        (exception_receiver): Use $26 for ldgp input.
+	* config/alpha/linux.h (MD_FALLBACK_FRAME_STATE_FOR): New.
+
+2001-03-28  Richard Henderson  <rth@redhat.com>
+
 	* except.c: Rewrite entirely for IA-64 ABI exception handling.
 	* except.h: Likewise.
 
