@@ -1,5 +1,12 @@
 2003-06-27  Michael Koch  <konqueror@gmx.de>
 
+	* java/rmi/server/SkeletonNotFoundException.java
+	(SkeletonNotFoundException): Removed wrong @deprecated tag.
+	* java/rmi/server/UnicastRemoteObject.java
+	(exportObject): Made package-private.
+
+2003-06-27  Michael Koch  <konqueror@gmx.de>
+
 	* java/text/Format.java
 	(serialVersionUID): Fixed value.
 
