@@ -1821,6 +1821,15 @@ noce_process_if_block (ce_info)
 	  || modified_between_p (x, PREV_INSN (if_info.cond_earliest), jump))
 	insn_b = set_b = NULL_RTX;
     }
+
+  /* If x has side effects then only the if-then-else form is safe to
+     convert.  But even in that case we would need to restore any notes
+     (such as REG_INC) at then end.  That can be tricky if 
+     noce_emit_move_insn expands to more than one insn, so disable the
+     optimization entirely for now if there are side effects.  */
+  if (side_effects_p (x))
+    return FALSE;
+
   b = (set_b ? SET_SRC (set_b) : x);
 
   /* Only operate on register destinations, and even then avoid extending
