@@ -1,5 +1,11 @@
 2000-11-28  Nathan Sidwell  <nathan@codesourcery.com>
 
+	* parse.y (base_class.1): Produce a _TYPE not a _DECL.
+	* semantics.c (finish_base_specifier): Accept a _TYPE not a
+	_DECL.
+
+2000-11-28  Nathan Sidwell  <nathan@codesourcery.com>
+
 	* spew.c (yyerror): Cope if yylval.ttype is NULL.
 
 2000-11-28  Nathan Sidwell  <nathan@codesourcery.com>

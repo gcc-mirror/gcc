@@ -2068,21 +2068,19 @@ finish_base_specifier (access_specifier, base_class)
      tree access_specifier;
      tree base_class;
 {
-  tree type;
   tree result;
 
-  if (base_class == NULL_TREE)
-    {
-      error ("invalid base class");
-      type = error_mark_node;
-    }
-  else
-    type = TREE_TYPE (base_class);
-
-  if (! is_aggr_type (type, 1))
+  if (! is_aggr_type (base_class, 1))
     result = NULL_TREE;
   else
-    result = build_tree_list (access_specifier, type);
+    {
+      if (CP_TYPE_QUALS (base_class) != 0)
+        {
+          cp_error ("base class `%T' has cv qualifiers", base_class);
+          base_class = TYPE_MAIN_VARIANT (base_class);
+        }
+      result = build_tree_list (access_specifier, base_class);
+    }
 
   return result;
 }
