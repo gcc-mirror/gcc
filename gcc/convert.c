@@ -339,7 +339,8 @@ convert_to_integer (tree type, tree expr)
      so only proceed in "unsafe" math mode.  */
   if (optimize
       && (flag_unsafe_math_optimizations
-	  || outprec >= TYPE_PRECISION (long_integer_type_node)))
+	  || (long_integer_type_node
+	      && outprec >= TYPE_PRECISION (long_integer_type_node))))
     {
       tree s_expr = strip_float_extensions (expr);
       tree s_intype = TREE_TYPE (s_expr);
