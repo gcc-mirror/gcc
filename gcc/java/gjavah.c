@@ -1503,12 +1503,13 @@ DEFUN(print_stub_or_jni, (stream, jcf, name_index, signature_index, is_init,
 	  if (flag_jni)
 	    fputs ("\n{\n  (*env)->FatalError (\"", stream);
 	  else
-	    fputs ("\n{\n  JvFail (\"", stream);
+	    fputs ("\n{\n  throw new ::java::lang::UnsupportedOperationException (JvNewStringLatin1 (\"", stream);
 	  print_name_for_stub_or_jni (stream, jcf, name_index,
 				      signature_index, is_init,
 				      name_override,
 				      flags);
-	  fputs (" not implemented\");\n}\n\n", stream);
+	  fprintf (stream, " not implemented\")%s;\n}\n\n",
+		   flag_jni ? "" : ")");
 	}
     }
 }
@@ -1982,7 +1983,11 @@ DEFUN(process_file, (jcf, out),
 	  free (name);
 
 	  if (! flag_jni)
-	    print_include (out, "gcj/cni", -1);
+	    {
+	      print_include (out, "gcj/cni", -1);
+	      print_include (out, "java/lang/UnsupportedOperationException",
+			     -1);
+	    }
 	}
     }
 
