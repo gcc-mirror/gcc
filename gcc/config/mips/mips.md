@@ -26,6 +26,26 @@
 ;; ??? Currently does not have define_function_unit support for the R8000.
 ;; Must include new entries for fmadd in addition to existing entries.
 
+;; UNSPEC values used in mips.md
+;; Number	USE
+;; 0		movsi_ul
+;; 1		movsi_us, get_fnaddr
+;; 2		loadgp
+;; 3		eh_set_return
+;; 20		builtin_setjmp_setup
+;;
+;; UNSPEC_VOLATILE values
+;; 0		blockage
+;; 3		builtin_longjmp
+;; 10		consttable_qi
+;; 11		consttable_hi
+;; 12		consttable_si
+;; 13		consttable_di
+;; 14		consttable_sf
+;; 15		consttable_df
+;; 16		align_2
+;; 17		align_4
+;; 18		align_8
 
 
 ;; ....................
@@ -9468,6 +9488,73 @@ ld\\t%2,%1-%S1(%2)\;daddu\\t%2,%2,$31\;j\\t%2"
    (set_attr "mode"	"none")
    (set_attr "length"	"16")])
 
+;; This is used in compiling the unwind routines.
+(define_expand "eh_return"
+  [(use (match_operand 0 "general_operand" ""))
+   (use (match_operand 1 "general_operand" ""))]
+  ""
+  "
+{
+  enum machine_mode gpr_mode = TARGET_64BIT ? DImode : SImode;
+
+  if (GET_MODE (operands[1]) != gpr_mode)
+    operands[1] = convert_to_mode (gpr_mode, operands[1], 0);
+  if (TARGET_64BIT)
+    emit_insn (gen_eh_set_lr_di (operands[1]));
+  else
+    emit_insn (gen_eh_set_lr_si (operands[1]));
+
+  emit_move_insn (EH_RETURN_STACKADJ_RTX, operands[0]);
+  DONE;
+}")
+
+;; Clobber the return address on the stack.  We can't expand this
+;; until we know where it will be put in the stack frame.
+
+(define_insn "eh_set_lr_si"
+  [(unspec [(match_operand:SI 0 "register_operand" "r")] 3)
+   (clobber (match_scratch:SI 1 "=&r"))]
+  "! TARGET_64BIT"
+  "#")
+
+(define_insn "eh_set_lr_di"
+  [(unspec [(match_operand:DI 0 "register_operand" "r")] 3)
+   (clobber (match_scratch:DI 1 "=&r"))]
+  "TARGET_64BIT"
+  "#")
+
+(define_split
+  [(unspec [(match_operand 0 "register_operand" "r")] 3)
+   (clobber (match_scratch 1 "=&r"))]
+  "reload_completed"
+  [(const_int 0)]
+  "
+{
+  HOST_WIDE_INT gp_offset;
+  rtx base;
+
+  compute_frame_size (get_frame_size ());
+  if (((current_frame_info.mask >> 31) & 1) == 0)
+    abort ();
+  gp_offset = current_frame_info.gp_sp_offset;
+
+  if (gp_offset < 32768)
+    base = stack_pointer_rtx;
+  else
+    {
+      base = operands[1];
+      emit_move_insn (base, GEN_INT (gp_offset));
+      if (Pmode == DImode)
+	emit_insn (gen_adddi3 (base, base, stack_pointer_rtx));
+      else
+	emit_insn (gen_addsi3 (base, base, stack_pointer_rtx));
+      gp_offset = 0;
+    }
+  emit_move_insn (gen_rtx_MEM (GET_MODE (operands[0]),
+			       plus_constant (base, gp_offset)),
+		  operands[0]);
+  DONE;
+}")
 
 ;;
 ;;  ....................

@@ -1098,6 +1098,10 @@ while (0)
 /* Before the prologue, RA lives in r31.  */
 #define INCOMING_RETURN_ADDR_RTX  gen_rtx_REG (VOIDmode, GP_REG_FIRST + 31)
 
+/* Describe how we implement __builtin_eh_return.  */
+#define EH_RETURN_DATA_REGNO(N) ((N) < 4 ? (N) + GP_ARG_FIRST : INVALID_REGNUM)
+#define EH_RETURN_STACKADJ_RTX  gen_rtx_REG (Pmode, GP_REG_FIRST + 3)
+
 /* Overrides for the COFF debug format.  */
 #define PUT_SDB_SCL(a)					\
 do {							\
