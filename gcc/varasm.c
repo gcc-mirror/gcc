@@ -4409,7 +4409,7 @@ output_constructor (exp, size)
 		    }
 
 		  /* Now get the bits from the appropriate constant word.  */
-		  if (shift < HOST_BITS_PER_INT)
+		  if (shift < HOST_BITS_PER_WIDE_INT)
 		    value = TREE_INT_CST_LOW (val);
 		  else if (shift < 2 * HOST_BITS_PER_WIDE_INT)
 		    {
