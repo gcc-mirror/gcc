@@ -615,7 +615,7 @@ namespace std
     complex<float>::operator-=(const complex<_Tp>& __z)
     {
      __real__ _M_value -= __z.real();
-     __imag__ _M_value -= __z.real();
+     __imag__ _M_value -= __z.imag();
      return *this;
     } 
 
