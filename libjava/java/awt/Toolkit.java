@@ -342,15 +342,13 @@ public abstract class Toolkit
    * with its own native window.  Instead, this method allows the component
    * to draw on its parent window as a "lightweight" widget.
    *
-   * XXX: FIXME
-   *
    * @param target The <code>Component</code> to create the peer for.
    *
    * @return The peer for the specified <code>Component</code> object.
    */
   protected LightweightPeer createComponent(Component target)
   {
-    return null;
+    return new gnu.java.awt.peer.GLightweightPeer (target);
   }
 
   /**
