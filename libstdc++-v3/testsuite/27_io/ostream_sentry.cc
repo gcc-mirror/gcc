@@ -1,4 +1,4 @@
-// 2003-02-06  Paolo Carlini  <pcarlini@unitus.it>
+// 2003-02-12  Paolo Carlini  <pcarlini@unitus.it>
 
 // Copyright (C) 2003 Free Software Foundation, Inc.
 //
@@ -30,21 +30,7 @@
 // 27.6.2.3 class basic_ostream::sentry
 
 #include <ostream>
-#include <sstream>
 #include <testsuite_hooks.h>
-
-// libstdc++/9562
-void
-test01()
-{
-  bool test = true;
-
-  std::stringbuf strbuf01;
-  std::ostream strm1(&strbuf01);
-  const std::ostream::sentry sentry1(strm1);
-
-  VERIFY( bool(sentry1) == true );
-}
 
 // libstdc++/9563
 struct buf: std::streambuf
@@ -61,7 +47,7 @@ struct buf: std::streambuf
 };
 
 void
-test02()
+test01()
 {
   bool test = true;
 
@@ -80,6 +66,5 @@ test02()
 int main() 
 {
   test01();
-  test02();
   return 0;
 }

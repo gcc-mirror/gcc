@@ -1,3 +1,10 @@
+2003-02-12  Paolo Carlini  <pcarlini@unitus.it>
+
+	PR libstdc++/9563
+	* include/bits/ostream.tcc (sentry::sentry): Check
+	the state of the stream after the preparation.
+	* testsuite/27_io/ostream_sentry.cc: Add.
+
 2003-02-11  Scott Snyder  <snyder@fnal.gov>
 
 	PR libstdc++/9659
