@@ -1,3 +1,7 @@
+2003-11-18  Ian Lance Taylor  <ian@wasabisystems.com>
+
+	* testsuite/Makefile.in (test-demangle): Depend upon libiberty.a.
+
 2003-10-31  Andreas Jaeger  <aj@suse.de>
 
 	* floatformat.c (floatformat_always_valid): Add unused attribute.
