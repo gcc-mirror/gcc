@@ -8,7 +8,11 @@ details.  */
 
 package gnu.gcj.convert; 
  
-/** Convert Unicode to Ascii with \ u XXXX-escapes. */
+/**
+ * Convert Unicode to Ascii with \ u XXXX-escapes.
+ * @author Per Bothner <bothner@cygnus.com>
+ * @date April 1999.
+ */
 
 public class Output_JavaSrc extends UnicodeToBytes
 {
