@@ -1,3 +1,7 @@
+Thu Sep 14 16:48:49 2000  Jeffrey A Law  (law@cygnus.com)
+
+	* gcc.c-torture/execute/20000914-1.c: New test.
+
 2000-09-12  Alexandre Oliva  <aoliva@redhat.com>
 
 	* g++.other/inline13.C: New test.
