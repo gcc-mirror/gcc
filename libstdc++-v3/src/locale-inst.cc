@@ -285,32 +285,23 @@ namespace std {
 #endif
 #endif // _GLIBCPP_USE_WCHAR_T
 
-  template 
-    locale::facet** 
-    fill_n<locale::facet**, unsigned int, locale::facet*>
-    (locale::facet**, unsigned int, locale::facet* const&);
-
-  template 
-    locale::facet** 
-    fill_n<locale::facet**, unsigned long, locale::facet*>
-    (locale::facet**, unsigned long, locale::facet* const&);
-
   template
     void __sink_unused_warning<locale::facet*>(locale::facet*);
 
+  template 
+    locale::facet** 
+    fill_n<locale::facet**, size_t, locale::facet*>
+    (locale::facet**, size_t, locale::facet* const&);
+
   template
-    __normal_iterator<locale::facet**, 
-                      vector<locale::facet*> >
-    fill_n(__normal_iterator<locale::facet**, 
-	                     vector<locale::facet*> >,
-	   unsigned, locale::facet* const&);
+    __normal_iterator<locale::facet**, vector<locale::facet*> >
+    fill_n(__normal_iterator<locale::facet**, vector<locale::facet*> >,
+	   size_t, locale::facet* const&);
 
   template
     void
-    fill (__normal_iterator<locale::facet**, 
-	                    vector<locale::facet*> >,
-	  __normal_iterator<locale::facet**, 
-	                    vector<locale::facet*> >,
-	  locale::facet* const&);
-} //std
+    fill(__normal_iterator<locale::facet**, vector<locale::facet*> >,
+         __normal_iterator<locale::facet**, vector<locale::facet*> >,
+         locale::facet* const&);
+} 
 
