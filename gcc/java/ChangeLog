@@ -1,3 +1,9 @@
+2002-04-05  Nic Ferrier  <nferrier@tapsellferrier.co.uk>
+
+	* gcj.texi: @code{gcj} becomes @command{gcj}.
+	@code{gcc} becomes @command{gcc}.
+	GcjRaw changed to gnu.gcc.RawData.
+
 2002-03-29  Martin Kahlert  <martin.kahlert@infineon.com>
 
 	* parse.y (do_resolve_class): Fix infinite recursion.
