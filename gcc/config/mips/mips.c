@@ -386,21 +386,6 @@ uns_arith_operand (op, mode)
 }
 
 /* Return truth value of whether OP can be used as an operands
-   where a register or complemented 16 bit unsigned integer is needed.  */
-
-int
-complemented_arith_operand (op, mode)
-     rtx op;
-     enum machine_mode mode;
-{
-  if (GET_CODE (op) == CONST_INT
-      && (~ (unsigned HOST_WIDE_INT) INTVAL (op) < 0x10000))
-    return TRUE;
-
-  return register_operand (op, mode);
-}
-
-/* Return truth value of whether OP can be used as an operands
    where a 16 bit integer is needed  */
 
 int
@@ -4144,9 +4129,6 @@ print_operand (file, op, letter)
 
   else if ((letter == 'd') && (GET_CODE(op) == CONST_INT))
     fprintf (file, "%d", (INTVAL(op)));
-
-  else if ((letter == 'e') && (GET_CODE(op) == CONST_INT))
-    fprintf (file, "%d", ~(INTVAL(op)));
 
   else if (letter == 'z'
 	   && (GET_CODE (op) == CONST_INT)
