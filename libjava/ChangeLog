@@ -1,3 +1,16 @@
+2003-10-09  Tom Tromey  <tromey@redhat.com>
+
+	* java/lang/ClassLoader.java (setSigners): Implemented.
+	* boehm.cc (_Jv_MarkObj): Mark `signers' field.
+	* java/lang/natClassLoader.cc (_Jv_InitNewClassFields):
+	Initialize new fields.
+	* java/lang/Class.java (getSigners): Now native.
+	(setSigners): Declare.
+	* java/lang/natClass.cc (getSigners): New method.
+	(getSigners): Likewise.
+	* java/lang/Class.h (Class::signers): New field.
+	(Class::setSigners): New method.
+
 2003-10-09  Michael Koch  <konqueror@gmx.de>
 
 	* java/rmi/server/RMIClassLoader.java:

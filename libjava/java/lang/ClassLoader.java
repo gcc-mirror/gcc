@@ -502,7 +502,7 @@ public abstract class ClassLoader
    */
   protected final void setSigners(Class c, Object[] signers)
   {
-    //    c.setSigners(signers);
+    c.setSigners(signers);
   }
 
   /**

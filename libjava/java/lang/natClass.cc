@@ -1534,6 +1534,18 @@ java::lang::Class::getProtectionDomain0 ()
   return protectionDomain;
 }
 
+JArray<jobject> *
+java::lang::Class::getSigners()
+{
+  return signers;
+}
+
+void
+java::lang::Class::setSigners(JArray<jobject> *s)
+{
+  signers = s;
+}
+
 // Functions for indirect dispatch (symbolic virtual binding) support.
 
 // There are two tables, atable and otable.  atable is an array of

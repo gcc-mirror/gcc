@@ -539,6 +539,9 @@ _Jv_InitNewClassFields (jclass ret)
   ret->field_count = 0;
   ret->static_field_count = 0;
   ret->vtable = NULL;
+  ret->otable_syms = NULL;
+  ret->atable = NULL;
+  ret->atable_syms = NULL;
   ret->interfaces = NULL;
   ret->loader = NULL;
   ret->interface_count = 0;
@@ -549,6 +552,7 @@ _Jv_InitNewClassFields (jclass ret)
   ret->idt = NULL;
   ret->arrayclass = NULL;
   ret->protectionDomain = NULL;
+  ret->signers = NULL;
   ret->chain = NULL;
 }
 

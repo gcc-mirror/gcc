@@ -197,6 +197,7 @@ public:
   java::net::URL        *getResource (jstring resourceName);
   java::io::InputStream *getResourceAsStream (jstring resourceName);
   JArray<jobject> *getSigners (void);
+  void setSigners(JArray<jobject> *);
 
   inline jclass getSuperclass (void)
     {
@@ -433,6 +434,8 @@ private:
   jclass arrayclass;
   // Security Domain to which this class belongs (or null).
   java::security::ProtectionDomain *protectionDomain;
+  // Signers of this class (or null).
+  JArray<jobject> *signers;
   // Used by Jv_PopClass and _Jv_PushClass to communicate with StackTrace.
   jclass chain;
 };
