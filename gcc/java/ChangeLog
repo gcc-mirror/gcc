@@ -34,6 +34,11 @@
 	`wfl_operator', to maybe_build_primttype_type_ref.
 	Fixes PR gcj/235.
 
+2000-05-23  Bryce McKinlay  <bryce@albatross.co.nz>
+
+       * parse.y (patch_method_invocation): Don't try to lookup methods
+       in primitive types.
+
 2000-05-02  Alexandre Petit-Bianco  <apbianco@cygnus.com>
 
 	* parse.y (resolve_field_access): Call the appropriate <clinit>

@@ -12090,6 +12090,16 @@ patch_method_invocation (patch, primary, where, is_static, ret_decl)
 
       type = GET_SKIP_TYPE (resolved);
       resolve_and_layout (type, NULL_TREE);
+      
+      if (JPRIMITIVE_TYPE_P (type))
+        {
+        parse_error_context
+          (identifier_wfl,
+          "Can't invoke a method on primitive type `%s'",
+          IDENTIFIER_POINTER (DECL_NAME (TYPE_NAME (type))));
+        PATCH_METHOD_RETURN_ERROR ();         
+      }      
+      
       list = lookup_method_invoke (0, identifier_wfl, type, identifier, args);
       args = nreverse (args);
 
