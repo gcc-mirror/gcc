@@ -609,8 +609,8 @@ read_specs (filename)
     pfatal_with_name (filename);
 
   /* Read contents of file into BUFFER.  */
-  buffer = xmalloc (statbuf.st_size + 1);
-  read (desc, buffer, statbuf.st_size);
+  buffer = xmalloc ((unsigned) statbuf.st_size + 1);
+  read (desc, buffer, (unsigned) statbuf.st_size);
   buffer[statbuf.st_size] = 0;
   close (desc);
 
