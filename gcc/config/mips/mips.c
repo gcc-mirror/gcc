@@ -3644,15 +3644,22 @@ mips_arg_info (const CUMULATIVE_ARGS *cum, enum machine_mode mode,
 	even_reg_p = true;
     }
 
-  /* Set REG_OFFSET to the register count we're interested in.
-     The EABI allocates the floating-point registers separately,
-     but the other ABIs allocate them like integer registers.  */
-  info->reg_offset = (mips_abi == ABI_EABI && info->fpr_p
-		      ? cum->num_fprs
-		      : cum->num_gprs);
+  if (mips_abi != ABI_EABI && MUST_PASS_IN_STACK (mode, type))
+    /* This argument must be passed on the stack.  Eat up all the
+       remaining registers.  */
+    info->reg_offset = MAX_ARGS_IN_REGISTERS;
+  else
+    {
+      /* Set REG_OFFSET to the register count we're interested in.
+	 The EABI allocates the floating-point registers separately,
+	 but the other ABIs allocate them like integer registers.  */
+      info->reg_offset = (mips_abi == ABI_EABI && info->fpr_p
+			  ? cum->num_fprs
+			  : cum->num_gprs);
 
-  if (even_reg_p)
-    info->reg_offset += info->reg_offset & 1;
+      if (even_reg_p)
+	info->reg_offset += info->reg_offset & 1;
+    }
 
   /* The alignment applied to registers is also applied to stack arguments.  */
   info->stack_offset = cum->stack_words;
