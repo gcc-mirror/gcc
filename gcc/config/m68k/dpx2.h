@@ -1,7 +1,7 @@
 /*
  * dpx2.h - Bull DPX/2 200 and 300 systems (m68k, SysVr3)
  *
- * $Id: dpx2.h,v 1.1 1992/03/11 04:21:30 sjg Exp sjg $
+ * $Id: dpx2.h,v 1.3 1992/05/21 08:04:22 rms Exp $
  */
 
 #include "m68k.h"
@@ -9,7 +9,8 @@
 #include "svr3.h"
 
 /* See m68k.h.  7 means 68020 with 68881. 
- * We really have 68030, but this will get us going.  
+ * We really have 68030 and 68882,
+ * but this will get us going.  
  */
 #ifndef TARGET_DEFAULT
 #define TARGET_DEFAULT 7
@@ -39,8 +40,19 @@
  * use -ansi to imply POSIX and XOPEN and BULL source
  * no -ansi implies _SYSV
  */
+/*
+ * you can't get a DPX/2 without a 68882 but allow it
+ * to be ignored...
+ */
+#if 0
 # define CPP_SPEC "%{ansi:-D_POSIX_SOURCE -D_XOPEN_SOURCE -D_BULL_SOURCE}\
  %{!ansi:-D_SYSV}"
+#else
+# define __HAVE_68881__ 1
+# define CPP_SPEC "%{!msoft-float:-D__HAVE_68881__ }\
+ %{ansi:-D_POSIX_SOURCE -D_XOPEN_SOURCE -D_BULL_SOURCE}\
+ %{!ansi:-D_SYSV}"
+#endif
 
 #undef ASM_LONG
 #define ASM_LONG "\t.long"
@@ -48,15 +60,7 @@
 #define HAVE_ATEXIT
 #undef DO_GLOBAL_CTORS_BODY		/* don't use svr3.h version */
 #undef DO_GLOBAL_DTORS_BODY
-  
-#if 0 /* def DEBUG */
-/*
- * find out where cc1 aborts
- */
-#define abort() do { fprintf(stderr, "%s: aborting at line %d\n", \
-			     __FILE__, __LINE__); \
- kill(getpid(), 6); } while (0)
-#endif
+
 
 /* 
  * svr3.h says to use BSS_SECTION_FUNCTION
