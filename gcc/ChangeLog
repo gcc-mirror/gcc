@@ -1,3 +1,7 @@
+2004-04-20  Paul Brook  <paul@codesourcery.com>
+
+	* config/arm/arm.c (arm_expand_prologue): Fix size calculation.
+
 2004-04-20  Paolo Bonzini  <bonzini@gnu.org>
 
 	Revert part of 2004-04-17 change that moved -frename-registers
