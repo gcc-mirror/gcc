@@ -1467,8 +1467,8 @@ extern char leaf_reg_remap[];
    Here VALUE is the CONST_DOUBLE rtx itself.  */
 
 #define CONST_DOUBLE_OK_FOR_LETTER_P(VALUE, C)	\
-  ((C) == 'G' ? fp_zero_operand (VALUE)			\
-   : (C) == 'H' ? arith_double_operand (VALUE, DImode)	\
+  ((C) == 'G' ? fp_zero_operand (VALUE, GET_MODE (VALUE))	\
+   : (C) == 'H' ? arith_double_operand (VALUE, DImode)		\
    : 0)
 
 /* Given an rtx X being reloaded into a reg required to be
@@ -2266,7 +2266,7 @@ LFLGRET"ID":\n\
    (TARGET_VIS &&							\
     (GET_MODE (X) == SFmode || GET_MODE (X) == DFmode ||		\
      GET_MODE (X) == TFmode) &&						\
-    fp_zero_operand (X)))
+    fp_zero_operand (X, GET_MODE (X))))
 
 /* The macros REG_OK_FOR..._P assume that the arg is a REG rtx
    and check its validity for a certain class.

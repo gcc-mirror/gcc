@@ -124,7 +124,7 @@ extern int eligible_for_return_delay PARAMS ((rtx));
 extern int emit_move_sequence PARAMS ((rtx, enum machine_mode));
 extern int extend_op PARAMS ((rtx, enum machine_mode));
 extern int fcc_reg_operand PARAMS ((rtx, enum machine_mode));
-extern int fp_zero_operand PARAMS ((rtx));
+extern int fp_zero_operand PARAMS ((rtx, enum machine_mode));
 extern int fp_sethi_p PARAMS ((rtx));
 extern int fp_mov_p PARAMS ((rtx));
 extern int fp_high_losum_p PARAMS ((rtx));

@@ -387,9 +387,7 @@ reg_or_0_operand (op, mode)
       && CONST_DOUBLE_HIGH (op) == 0
       && CONST_DOUBLE_LOW (op) == 0)
     return 1;
-  if (GET_MODE_CLASS (GET_MODE (op)) == MODE_FLOAT
-      && GET_CODE (op) == CONST_DOUBLE
-      && fp_zero_operand (op))
+  if (fp_zero_operand (op, mode))
     return 1;
   return 0;
 }
@@ -397,13 +395,13 @@ reg_or_0_operand (op, mode)
 /* Nonzero if OP is a floating point value with value 0.0.  */
 
 int
-fp_zero_operand (op)
+fp_zero_operand (op, mode)
      rtx op;
+     enum machine_mode mode;
 {
-  REAL_VALUE_TYPE r;
-
-  REAL_VALUE_FROM_CONST_DOUBLE (r, op);
-  return (REAL_VALUES_EQUAL (r, dconst0) && ! REAL_VALUE_MINUS_ZERO (r));
+  if (GET_MODE_CLASS (GET_MODE (op)) != MODE_FLOAT)
+    return 0;
+  return op == CONST0_RTX (mode);
 }
 
 /* Nonzero if OP is a floating point constant which can
