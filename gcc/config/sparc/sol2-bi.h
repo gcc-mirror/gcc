@@ -10,7 +10,7 @@
 #undef ASM_CPU32_DEFAULT_SPEC
 #define ASM_CPU32_DEFAULT_SPEC	""
 #undef ASM_CPU64_DEFAULT_SPEC
-#define ASM_CPU64_DEFAULT_SPEC	AS_SPARC64_FLAG
+#define ASM_CPU64_DEFAULT_SPEC	AS_SPARC64_FLAG " -TSO"
 
 #if TARGET_CPU_DEFAULT == TARGET_CPU_v9
 #undef CPP_CPU64_DEFAULT_SPEC
@@ -24,15 +24,15 @@
 #undef ASM_CPU32_DEFAULT_SPEC
 #define ASM_CPU32_DEFAULT_SPEC "-xarch=v8plusa"
 #undef ASM_CPU64_DEFAULT_SPEC
-#define ASM_CPU64_DEFAULT_SPEC AS_SPARC64_FLAG "a"
+#define ASM_CPU64_DEFAULT_SPEC AS_SPARC64_FLAG "a -TSO"
 #endif
 
 #if DEFAULT_ARCH32_P
 #define DEF_ARCH32_SPEC(__str) "%{!m64:" __str "}"
-#define DEF_ARCH64_SPEC(__str) "%{m64:" __str "}"
+#define DEF_ARCH64_SPEC(__str) "%{m64:" __str " -TSO}"
 #else
 #define DEF_ARCH32_SPEC(__str) "%{m32:" __str "}"
-#define DEF_ARCH64_SPEC(__str) "%{!m32:" __str "}"
+#define DEF_ARCH64_SPEC(__str) "%{!m32:" __str " -TSO}"
 #endif
 
 #undef CPP_CPU_SPEC
