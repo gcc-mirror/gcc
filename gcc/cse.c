@@ -1999,6 +1999,10 @@ canon_hash (x, mode)
 	  do_not_record = 1;
 	  return 0;
 	}
+      break;
+      
+    default:
+      break;
     }
 
   i = GET_RTX_LENGTH (code) - 1;
@@ -2175,6 +2179,9 @@ exp_equiv_p (x, y, validate, equal_values)
 			       validate, equal_values)
 		  && exp_equiv_p (XEXP (x, 1), XEXP (y, 0),
 				  validate, equal_values)));
+      
+    default:
+      break;
     }
 
   /* Compare the elements.  If any pair of corresponding elements
@@ -2403,6 +2410,9 @@ set_nonvarying_address_components (addr, size, pbase, pstart, pend)
 	      base = *pbase;
 	    }
 	  break;
+
+	default:
+	  break;
 	}
 
       break;
@@ -2600,6 +2610,9 @@ canon_reg (x, insn)
 		: REGNO_REG_CLASS (first) == NO_REGS ? x
 		: gen_rtx (REG, qty_mode[reg_qty[REGNO (x)]], first));
       }
+      
+    default:
+      break;
     }
 
   fmt = GET_RTX_FORMAT (code);
@@ -3444,6 +3457,9 @@ simplify_unary_operation (code, mode, op, op_mode)
 	    return convert_memory_address (Pmode, op);
 	  break;
 #endif
+	  
+	default:
+	  break;
 	}
 
       return 0;
@@ -4371,6 +4387,9 @@ simplify_plus_minus (code, mode, op0, op1)
 	    if (negs[i])
 	      ops[i] = GEN_INT (- INTVAL (ops[i])), negs[i] = 0, changed = 1;
 	    break;
+
+	  default:
+	    break;
 	  }
     }
 
@@ -4696,6 +4715,9 @@ simplify_relational_operation (code, mode, op0, op1)
 	      && INTEGRAL_MODE_P (mode))
 	    return const0_rtx;
 	  break;
+	  
+	default:
+	  break;
 	}
 
       return 0;
@@ -4725,9 +4747,9 @@ simplify_relational_operation (code, mode, op0, op1)
       return equal || op0ltu ? const_true_rtx : const0_rtx;
     case GEU:
       return equal || op1ltu ? const_true_rtx : const0_rtx;
+    default:
+      abort ();
     }
-
-  abort ();
 }
 
 /* Simplify CODE, an operation with result mode MODE and three operands,
@@ -5199,6 +5221,9 @@ fold_rtx (x, insn)
 	validate_change (insn, &XVECEXP (x, 3, i),
 			 fold_rtx (XVECEXP (x, 3, i), insn), 0);
       break;
+      
+    default:
+      break;
     }
 
   const_arg0 = 0;
@@ -5534,6 +5559,8 @@ fold_rtx (x, insn)
 		  if (has_sign)
 		    return false;
 		  break;
+		default:
+		  break;
 		}
 	    }
 	}
@@ -5729,6 +5756,10 @@ fold_rtx (x, insn)
 
 	      return cse_gen_binary (code, mode, y, new_const);
 	    }
+	  break;
+
+	default:
+	  break;
 	}
 
       new = simplify_binary_operation (code, mode,
@@ -7828,6 +7859,9 @@ cse_process_notes (x, object)
 
       /* Otherwise, canonicalize this register.  */
       return canon_reg (x, NULL_RTX);
+      
+    default:
+      break;
     }
 
   for (i = 0; i < GET_RTX_LENGTH (code); i++)
@@ -8775,6 +8809,9 @@ count_reg_usage (x, counts, dest, incr)
 	count_reg_usage (XEXP (x, 0), counts, NULL_RTX, incr);
       count_reg_usage (XEXP (x, 1), counts, NULL_RTX, incr);
       return;
+      
+    default:
+      break;
     }
 
   fmt = GET_RTX_FORMAT (code);
