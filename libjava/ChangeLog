@@ -1,3 +1,13 @@
+2003-10-13  Michael Koch  <konqueror@gmx.de>
+
+	* java/nio/Buffer.java
+	(hasRemaining): Made implementation more clear.
+	* java/nio/MappedByteBuffer.java
+	(loaded): New member variable.
+	(force): Added comment.
+	(isLoaded): Return value of loaded.
+	(load): Set loaded to true, added comment.
+
 2003-10-12  Michael Koch  <konqueror@gmx.de>
 
 	* gnu/java/nio/PipeImpl.java
