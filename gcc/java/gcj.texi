@@ -2151,6 +2151,12 @@ Returned by @code{java.awt.Window.getWarningString()} when the window is
 The class name used for initializing the default @code{java.awt.Toolkit}. 
 Defaults to @code{gnu.awt.gtk.GtkToolkit}.
 
+@item http.proxyHost
+Name of proxy host for http connections.
+
+@item http.proxyPort
+Port number to use when a proxy host is in use.
+
 @end table
 
 @node GNU Classpath Properties
