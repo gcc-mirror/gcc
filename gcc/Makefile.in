@@ -279,6 +279,11 @@ libdir = @libdir@
 libsubdir = $(libdir)/gcc-lib/$(target_alias)/$(version)
 # Used to produce a relative $(gcc_tooldir) in gcc.o
 unlibsubdir = ../../..
+# Directory in which to find other cross-compilation tools and headers.
+# Used in install-cross.
+gcc_tooldir = @gcc_tooldir@
+# Since tooldir does not exist at build-time, use -B$(build_tooldir)/bin/
+build_tooldir = $(exec_prefix)/$(target_alias)
 # Directory in which the compiler finds g++ includes.
 gxx_include_dir= @gxx_include_dir@
 # Directory to search for site-specific includes.
@@ -297,11 +302,6 @@ build_exeext = @build_exeext@
 # Directory in which to put man pages.
 mandir = @mandir@
 man1dir = $(mandir)/man1
-# Directory in which to find other cross-compilation tools and headers.
-# Used in install-cross.
-gcc_tooldir = $(libsubdir)/$(unlibsubdir)/../$(target_alias)
-# Since tooldir does not exist at build-time, use -B$(build_tooldir)/bin/
-build_tooldir = $(exec_prefix)/$(target_alias)
 # Dir for temp files.
 tmpdir = /tmp
 
