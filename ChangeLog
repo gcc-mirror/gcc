@@ -1,3 +1,9 @@
+2001-01-27  Michael Sokolov  <msokolov@ivan.Harhan.ORG>
+
+	* ltcf-cxx.sh (ac_cv_prog_cc_pic_works, ac_cv_prog_cc_static_works):
+	Don't unset, it's non-portable and no longer necessary, set to empty
+	instead.
+
 2001-01-27  Michael Sokolov  <msokolov@ivan.Harhan.ORG>,  Alexandre Oliva  <oliva@lsd.ic.unicamp.br>
 
 	* ltconfig: Shell portability fix for the tagname validity check.
