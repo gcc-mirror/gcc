@@ -1313,7 +1313,7 @@ float_to_usi (FLO_type arg_a)
   if (a.normal_exp > 31)
     return MAX_USI_INT;
   else if (a.normal_exp > (FRACBITS + NGARDS))
-    return a.fraction.ll << ((FRACBITS + NGARDS) - a.normal_exp);
+    return a.fraction.ll << (a.normal_exp - (FRACBITS + NGARDS));
   else
     return a.fraction.ll >> ((FRACBITS + NGARDS) - a.normal_exp);
 }
@@ -1388,10 +1388,18 @@ SFtype
 df_to_sf (DFtype arg_a)
 {
   fp_number_type in;
+  USItype sffrac;
 
   unpack_d ((FLO_union_type *) & arg_a, &in);
-  return __make_fp (in.class, in.sign, in.normal_exp,
-		    in.fraction.ll >> F_D_BITOFF);
+
+  sffrac = in.fraction.ll >> F_D_BITOFF;
+
+  /* We set the lowest guard bit in SFFRAC if we discarded any non
+     zero bits.  */
+  if ((in.fraction.ll & (((USItype) 1 << F_D_BITOFF) - 1)) != 0)
+    sffrac |= 1;
+
+  return __make_fp (in.class, in.sign, in.normal_exp, sffrac);
 }
 
 #endif
