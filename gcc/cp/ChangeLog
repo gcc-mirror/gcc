@@ -1,3 +1,8 @@
+2003-07-17  Zack Weinberg  <zack@codesourcery.com>
+
+	* pt.c (get_bindings): Make definition consistent with
+	forward declaration.
+
 2003-07-17  Kriang Lerdsuwanakij  <lerdsuwa@users.sourceforge.net>
 
 	PR c++/7809
@@ -6,7 +11,7 @@
 2003-07-17  Gabriel Dos Reis  <gdr@integrable-solutions.net>
 
 	PR c++/10668
-	* typeck.c (build_class_member_access_expr): Improve diagnostic. 
+	* typeck.c (build_class_member_access_expr): Improve diagnostic.
 
 2003-07-16  Mark Mitchell  <mark@codesourcery.com>
 
@@ -43,7 +48,7 @@
 	(tsubst_expr): Tweak use of DECL_PRETTY_FUNCTION_P.
 	* semantics.c (finish_id_expression): Use
 	DECL_INITIALIZED_BY_CONSTANT_EXPRESSION_P.
-	
+
 2003-07-16  Neil Booth  <neil@daikokuya.co.uk>
 
 	* lang-options.h: Remove.
@@ -95,7 +100,7 @@
 	* friend.c (do_friend): Likewise.
 	* init.c (build_offset_ref): Likewise.
 	* lex.c (unqualified_fn_lookup_error): Use pedwarn.  Do not create
-	LOOKUP_EXPRs 
+	LOOKUP_EXPRs
 	* mangle.c (write_expression): Remove support for LOOKUP_EXPR.
 	* parser.c (cp_parser_postfix_expression): Modify Koenig lookup
 	test.
@@ -116,7 +121,7 @@
 	(finish_fname): Likewise.
 	(finish_id_expression): Likewise.
 	* tree.c (is_aggr_type_2): Remove.
-	
+
 2003-07-16  Gabriel Dos Reis  <gdr@integrable-solutions.net>
 
 	PR c++/11531
@@ -133,8 +138,8 @@
 	PR c++/11509
 	* pt.c (dependent_scope_ref_p): New function.
 	(value_dependent_expression_p): Use it.
-	(type_dependent_expression_p): Likewise.	
-	
+	(type_dependent_expression_p): Likewise.
+
 	* pt.c (tsubst_friend_function): Use reregister_specialization.
 
 	PR c++/7019
@@ -152,7 +157,7 @@
 
 	PR c++/11510
 	* call.c (op_error): Properly format  REALPART_EXPR and
-	IMAGPART_EXPR. 
+	IMAGPART_EXPR.
 	* error.c (dump_expr): Likewise.
 
 2003-07-14  Gabriel Dos Reis <gdr@integrable-solutions.net>
@@ -185,7 +190,7 @@
 	* search.c (lookup_base): Use DECL_SELF_REFERENCE_P.
 
 	* pt.c (reregister_specialization): Fix thinko in previous change.
-	
+
 	* cp-tree.h (cp_id_kind): New type.
 	(unqualified_name_lookup_error): Change prototype.
 	(unqualified_fn_lookup_error): New function.
@@ -225,7 +230,7 @@
 	(regenerate_decl_from_template): Use reregister_specialization.
 	* semantics.c (perform_koenig_lookup): New function.
 	(finish_id_expression): Likewise.
-	
+
 2003-07-13  Kriang Lerdsuwanakij  <lerdsuwa@users.sourceforge.net>
 
 	* pt.c (push_access_scope_real): Remove.
@@ -306,7 +311,7 @@
 	* cp-tree.h (break_out_calls): Remove declaration.
 	* tree.c (break_out_calls): Remove.
 	* typeck.c (build_modify_expr): Avoid invalid sharing of trees.
-	
+
 2003-07-09  Nathan Sidwell  <nathan@codesourcery.com>
 
 	PR c++ 9483
