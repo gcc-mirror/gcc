@@ -1706,11 +1706,23 @@ done
 # so we should be able to put the 'maybe's in unconditionally and
 # leave out the maybe dependencies when enable_gdbtk is false.  I'm not
 # 100% sure that that's safe though.
+
+gdb_tk="maybe-all-tcl maybe-all-tk maybe-all-itcl maybe-all-tix maybe-all-libgui"
 case "$enable_gdbtk" in
   no)
     GDB_TK="" ;;
+  yes)
+    GDB_TK="${gdb_tk}" ;;
   *)
-    GDB_TK="maybe-all-tcl maybe-all-tk maybe-all-itcl maybe-all-tix maybe-all-libgui" ;;
+    # Only add the dependency on gdbtk when GDBtk is part of the gdb
+    # distro.  Eventually someone will fix this and move Insight, nee
+    # gdbtk to a separate directory.
+    if test -d ${srcdir}/gdb/gdbtk ; then
+      GDB_TK="${gdb_tk}"
+    else
+      GDB_TK=""
+    fi
+    ;;
 esac
 
 # Create the 'maybe dependencies'.  This uses a temporary file.

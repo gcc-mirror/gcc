@@ -1,3 +1,9 @@
+2003-01-06  Andrew Cagney  <ac131313@redhat.com>
+
+	* configure.in (GDB_TK): Add tcl directories conditional on
+	gdb/gdbtk directory being present.
+	* configure: Regenerate.
+	
 2003-01-04 John David Anglin  <dave.anglin@nrc.ca>
 
 	* configure.in (LD): Improve test for gcc.  Try to set LD to the ld used
