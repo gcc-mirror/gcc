@@ -1,3 +1,7 @@
+Fri Aug 14 01:40:21 1998  Geoffrey Keating  <geoffk@ozemail.com.au>
+
+	* rs6000/linux.h (LINK_SPEC): Pass -G args to the linker.
+
 Fri Aug 14 01:23:23 1998  Richard Earnshaw (rearnsha@arm.com)
 
 	* arm/netbsd.h (TARGET_DEFAULT): Default includes software floating 
