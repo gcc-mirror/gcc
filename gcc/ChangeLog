@@ -1,3 +1,9 @@
+Wed Nov 21 16:44:01 2001  Douglas B. Rupp  <rupp@gnat.com>
+
+	* cppinit.c (INO_T_COPY): Define.
+	(INO_T_EQ): Uppercase parameters.
+	(append_include_chain): Use INO_T_COPY.
+
 2001-11-21  Richard Sandiford  <rsandifo@redhat.com>
 
 	* cfg.c: Fix typos and formatting in the introductory comment.
