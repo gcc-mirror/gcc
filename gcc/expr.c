@@ -5035,11 +5035,17 @@ expand_expr (exp, target, tmode, modifier)
 
 	    p->forced_labels = gen_rtx (EXPR_LIST, VOIDmode,
 					label_rtx (exp), p->forced_labels);
+	    p->addresses_labels = 1;
 	    pop_obstacks ();
 	  }
-	else if (modifier == EXPAND_INITIALIZER)
-	  forced_labels = gen_rtx (EXPR_LIST, VOIDmode,
-				   label_rtx (exp), forced_labels);
+	else
+	  {
+	    current_function_addresses_labels = 1;
+	    if (modifier == EXPAND_INITIALIZER)
+	      forced_labels = gen_rtx (EXPR_LIST, VOIDmode,
+				       label_rtx (exp), forced_labels);
+	  }
+
 	temp = gen_rtx (MEM, FUNCTION_MODE,
 			gen_rtx (LABEL_REF, Pmode, label_rtx (exp)));
 	if (function != current_function_decl
