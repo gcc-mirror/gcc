@@ -1,3 +1,8 @@
+2001-05-19  Hans Boehm  <hans_boehm@hp.com>
+
+	* configure.host: Build with -fexceptions.
+	* linux_threads.c: Remember which thread stopped world for
+
 2001-05-04  Loren J. Rittle  <ljrittle@acm.org>
 	    with final tuning by Bryce McKinlay
 
