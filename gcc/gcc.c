@@ -356,9 +356,11 @@ proper position among the other output files.  */
 
 /* This spec is used for telling cpp whether char is signed or not.  */
 #ifndef SIGNED_CHAR_SPEC
-#define SIGNED_CHAR_SPEC  \
-  (DEFAULT_SIGNED_CHAR ? "%{funsigned-char:-D__CHAR_UNSIGNED__}"	\
-   : "%{!fsigned-char:-D__CHAR_UNSIGNED__}")
+#if DEFAULT_SIGNED_CHAR
+#define SIGNED_CHAR_SPEC "%{funsigned-char:-D__CHAR_UNSIGNED__}"
+#else
+#define SIGNED_CHAR_SPEC "%{!fsigned-char:-D__CHAR_UNSIGNED__}"
+#endif
 #endif
 
 static char *cpp_spec = CPP_SPEC;
