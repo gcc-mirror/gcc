@@ -51,7 +51,6 @@ definitions and other extensions.  */
 #include <stdlib.h>
 #include <string.h>
 #include <dirent.h>
-#include <setjmp.h>		/* set_float_handler argument uses it */
 #ifdef __STDC__
 #include <stdarg.h>
 #else
@@ -619,9 +618,7 @@ variable_declarator:
 variable_declarator_id:
 	identifier
 |	variable_declarator_id OSB_TK CSB_TK
-		{
-		  $$ = NULL;	/* FIXME */
-		}
+		{ $$ = build_unresolved_array_type ($1); }
 |	identifier error
 		{yyerror ("Invalid declaration"); DRECOVER(vdi);}
 |	variable_declarator_id OSB_TK error
@@ -2341,6 +2338,54 @@ variable_redefinition_error (context, name, type, line)
 		       type_name, IDENTIFIER_POINTER (name), line);
 }
 
+static tree
+build_array_from_name (type, type_wfl, name, ret_name)
+     tree type, type_wfl, name, *ret_name;
+{
+  int more_dims = 0;
+  char *string;
+
+  /* Eventually get more dims */
+  string = IDENTIFIER_POINTER (name);
+  while (string [more_dims] == '[')
+    more_dims++;
+  
+  /* If we have, then craft a new type for this variable */
+  if (more_dims)
+    {
+      name = get_identifier (&more_dims [string]);
+
+      /* If type already is a reference on an array, get the base type */
+      if ((TREE_CODE (type) == POINTER_TYPE) && 
+	  TYPE_ARRAY_P (TREE_TYPE (type)))
+	type = TREE_TYPE (type);
+
+      /* Building the first dimension of a primitive type uses this
+         function */
+      if (JPRIMITIVE_TYPE_P (type))
+	{
+	  type = build_java_array_type (type, -1);
+	  more_dims--;
+	}
+      /* Otherwise, if we have a WFL for this type, use it (the type
+         is already an array on an unresolved type, and we just keep
+         on adding dimensions) */
+      else if (type_wfl)
+	type = type_wfl;
+
+      /* Add all the dimensions */
+      while (more_dims--)
+	type = build_unresolved_array_type (type);
+
+      /* The type may have been incomplete in the first place */
+      if (type_wfl)
+	type = obtain_incomplete_type (type);
+    }
+
+  *ret_name = name;
+  return type;
+}
+
 /* Build something that the type identifier resolver will identify as
    being an array to an unresolved type. TYPE_WFL is a WFL on a
    identifier. */
@@ -2661,10 +2706,11 @@ lookup_field_wrapper (class, name)
 }
 
 /* Find duplicate field within the same class declarations and report
-   the error */
+   the error. Returns 1 if a duplicated field was found, 0
+   otherwise.  */
 
 static int
-duplicate_declaration_error (new_field_name, new_type, cl)
+duplicate_declaration_error_p (new_field_name, new_type, cl)
      tree new_field_name, new_type, cl;
 {
   /* This might be modified to work with method decl as well */
@@ -2685,9 +2731,9 @@ duplicate_declaration_error (new_field_name, new_type, cl)
 	 DECL_SOURCE_FILE (decl), DECL_SOURCE_LINE (decl));
       free (t1);
       free (t2);
-      return 0;
+      return 1;
     }
-  return 1;
+  return 0;
 }
 
 /* Field registration routine. If TYPE doesn't exist, field
@@ -2699,7 +2745,7 @@ register_fields (flags, type, variable_list)
      int flags;
      tree type, variable_list;
 {
-  tree current, returned_type;
+  tree current, saved_type;
   tree class_type = TREE_TYPE (ctxp->current_parsed_class);
   int saved_lineno = lineno;
   int must_chain = 0;
@@ -2722,69 +2768,76 @@ register_fields (flags, type, variable_list)
       flags |= (ACC_PUBLIC | ACC_STATIC | ACC_FINAL);
     }
 
-  if (unresolved_type_p (type, &returned_type))
-    {
-      if (returned_type)
-	type = returned_type;
-      else
-	{
-	  wfl = type;
-	  type = obtain_incomplete_type (type);
-	  must_chain = 1;
-	}
-    }
+  /* Obtain a suitable type for resolution, if necessary */
+  SET_TYPE_FOR_RESOLUTION (type, wfl, must_chain);
+
+  /* If TYPE is fully resolved and we don't have a reference, make one */
   if (!must_chain && TREE_CODE (type) == RECORD_TYPE)
     type = promote_type (type);
 
-  for (current = variable_list; current; current = TREE_CHAIN (current))
+  for (current = variable_list, saved_type = type; current; 
+       current = TREE_CHAIN (current), type = saved_type)
     {
+      tree field_decl;
       tree cl = TREE_PURPOSE (current);
       tree init = TREE_VALUE (current);
       tree current_name = EXPR_WFL_NODE (cl);
 
-      if (duplicate_declaration_error (current_name, type, cl))
-        {
-	  tree field_decl;
-	  lineno = EXPR_WFL_LINENO (cl);
-	  field_decl = add_field (class_type, current_name, type, flags);
+      /* Process NAME, as it may specify extra dimension(s) for it */
+      type = build_array_from_name (type, wfl, current_name, &current_name);
 
-	  /* Check if we must chain. */
-	  if (must_chain)
-	    register_incomplete_type (JDEP_FIELD, wfl, field_decl, type);
+      /* Check for redeclarations */
+      if (duplicate_declaration_error_p (current_name, type, cl))
+	continue;
+
+      /* Type adjustment. We may have just readjusted TYPE because
+	 the variable specified more dimensions. Make sure we have
+	 a reference if we can and don't have one already. */
+      if (type != saved_type && !must_chain 
+	  && (TREE_CODE (type) == RECORD_TYPE))
+	type = promote_type (type);
+
+      /* Set lineno to the line the field was found and create a
+         declaration for it */
+      lineno = EXPR_WFL_LINENO (cl);
+      field_decl = add_field (class_type, current_name, type, flags);
+      
+      /* Check if we must chain. */
+      if (must_chain)
+	register_incomplete_type (JDEP_FIELD, wfl, field_decl, type);
 	  
-	  /* Default value of a static field is 0 and it is considered
-             initialized. */
+      /* Default value of a static field is 0 and it is considered
+	 initialized. */
+      if (flags & ACC_STATIC)
+	INITIALIZED_P (field_decl) = 1;
+      
+      /* If we have an initialization value tied to the field */
+      if (init)
+	{
+	  /* The field is declared static */
 	  if (flags & ACC_STATIC)
-	    INITIALIZED_P (field_decl) = 1;
-
-	  /* If we have an initialization value tied to the field */
-	  if (init)
 	    {
-	      /* The field is declared static */
-	      if (flags & ACC_STATIC)
-		{
-		  /* FIXME */
-		  if (flags & ACC_FINAL)
-		    ;		
-		  /* Otherwise, the field should be initialized in
-		     <clinit>. This field is remembered so we can
-		     generate <clinit> later. */
-		  else
-		    {
-		      INITIALIZED_P (field_decl) = 1;
-		      TREE_CHAIN (init) = ctxp->static_initialized;
-		      ctxp->static_initialized = init;
-		    }
-		}
-	      /* A non-static field declared with an immediate
-		 initialization is to be initialized in <init>, if
-		 any.  This field is remembered to be processed at the
-		 time of the generation of <init>. */
+	      /* FIXME */
+	      if (flags & ACC_FINAL)
+		;		
+	      /* Otherwise, the field should be initialized in
+		 <clinit>. This field is remembered so we can
+		 generate <clinit> later. */
 	      else
 		{
-		  TREE_CHAIN (init) = ctxp->non_static_initialized;
-		  ctxp->non_static_initialized = init;
+		  INITIALIZED_P (field_decl) = 1;
+		  TREE_CHAIN (init) = ctxp->static_initialized;
+		  ctxp->static_initialized = init;
 		}
+	    }
+	  /* A non-static field declared with an immediate
+	     initialization is to be initialized in <init>, if
+	     any.  This field is remembered to be processed at the
+	     time of the generation of <init>. */
+	  else
+	    {
+	      TREE_CHAIN (init) = ctxp->non_static_initialized;
+	      ctxp->non_static_initialized = init;
 	    }
 	}
     }
@@ -3053,10 +3106,19 @@ method_declarator (id, list)
   
   for (current = list; current; current = TREE_CHAIN (current))
     {
+      int must_chain = 0;
       tree wfl_name = TREE_PURPOSE (current);
       tree type = TREE_VALUE (current);
       tree name = EXPR_WFL_NODE (wfl_name);
-      tree already, arg_node, returned_type;
+      tree already, arg_node;
+      tree type_wfl = NULL_TREE;
+
+      /* Obtain a suitable type for resolution, if necessary */
+      SET_TYPE_FOR_RESOLUTION (type, type_wfl, must_chain);
+
+      /* Process NAME, as it may specify extra dimension(s) for it */
+      type = build_array_from_name (type, type_wfl, name, &name);
+      EXPR_WFL_NODE (wfl_name) = name;
 
       /* Check redefinition */
       for (already = arg_types; already; already = TREE_CHAIN (already))
@@ -3072,19 +3134,15 @@ method_declarator (id, list)
       /* If we've an incomplete argument type, we know there is a location
 	 to patch when the type get resolved, later.  */
       jdep = NULL;
-      if (unresolved_type_p (type, &returned_type))
+      if (must_chain)
 	{
-	  if (returned_type)
-	    type = returned_type;
-	  else
-	    {
-	      patch_stage = JDEP_METHOD;
-	      type = register_incomplete_type (patch_stage, type, 
-					       wfl_name, NULL_TREE);
-	      jdep = CLASSD_LAST (ctxp->classd_list);
-	      JDEP_MISC (jdep) = id;
-	    }
+	  patch_stage = JDEP_METHOD;
+	  type = register_incomplete_type (patch_stage, 
+					   type_wfl, wfl_name, type);
+	  jdep = CLASSD_LAST (ctxp->classd_list);
+	  JDEP_MISC (jdep) = id;
 	}
+
       /* The argument node: a name and a (possibly) incomplete type */
       arg_node = build_tree_list (name, type);
       if (jdep)
@@ -3539,6 +3597,7 @@ resolve_class (class_type, decl, cl)
 	  if (TREE_CODE (resolved_type) == RECORD_TYPE)
 	    resolved_type  = promote_type (resolved_type);
 	  resolved_type = build_java_array_type (resolved_type, -1);
+	  CLASS_LOADED_P (resolved_type) = 1;
 	  name--;
 	}
       /* Build a fake decl for this, since this is what is expected to
@@ -4260,10 +4319,8 @@ read_import_dir (wfl)
   if (jcf->seen_in_zip)
     jcf->zipd = ZIPDIR_NEXT ((ZipDirectory *)jcf->zipd);
 
-  else if (founddirname && (dirp = opendir (founddirname)))
-    {
-      readdir (dirp); readdir (dirp);
-    }
+  else if (founddirname)
+    dirp = opendir (founddirname);
 
   if (!founddirname && !dirp)
     {
@@ -4429,7 +4486,8 @@ declare_local_variables (modifier, type, vlist)
      tree type;
      tree vlist;
 {
-  tree decl, current, returned_type, type_wfl;
+  tree decl, current, saved_type;
+  tree type_wfl = NULL_TREE;
   int must_chain = 0;
 
   /* Push a new block if statement were seen between the last time we
@@ -4453,57 +4511,69 @@ declare_local_variables (modifier, type, vlist)
       return;
     }
 
-  if (unresolved_type_p (type, &returned_type))
-    {
-      if (returned_type)
-        type = returned_type;
-      else 
-	{
-	  type_wfl = type;
-	  type = obtain_incomplete_type (type);
-	  must_chain = 1;
-	}
-    }
+  /* Obtain an incomplete type if TYPE is not complete. TYPE_WFL will
+     hold the TYPE value if a new incomplete has to be created (as
+     opposed to being found already existing and reused). */
+  SET_TYPE_FOR_RESOLUTION (type, type_wfl, must_chain);
+
+  /* If TYPE is fully resolved and we don't have a reference, make one */
   if (!must_chain && TREE_CODE (type) == RECORD_TYPE)
     type = promote_type (type);
-  
-  for (current = vlist; current; current = TREE_CHAIN (current))
+
+  /* Go through all the declared variables */
+  for (current = vlist, saved_type = type; current;
+       current = TREE_CHAIN (current), type = saved_type)
     {
+      tree other;
       tree wfl  = TREE_PURPOSE (current);
       tree name = EXPR_WFL_NODE (wfl);
       tree init = TREE_VALUE (current);
-      tree other = lookup_name_in_blocks (name);
 
+      /* Process NAME, as it may specify extra dimension(s) for it */
+      type = build_array_from_name (type, type_wfl, name, &name);
+
+      /* Variable redefinition check */
+      if ((other = lookup_name_in_blocks (name)))
+	{
+	  variable_redefinition_error (wfl, name, TREE_TYPE (other),
+				       DECL_SOURCE_LINE (other));
+	  continue;
+	}
+
+      /* Type adjustment. We may have just readjusted TYPE because
+	 the variable specified more dimensions. Make sure we have
+	 a reference if we can and don't have one already. */
+      if (type != saved_type && !must_chain 
+	  && (TREE_CODE (type) == RECORD_TYPE))
+	type = promote_type (type);
+      
+      /* Never layout this decl. This will be done when its scope
+	 will be entered */
+      decl = build_decl_no_layout (VAR_DECL, name, type);
+      BLOCK_CHAIN_DECL (decl);
+      
       /* Don't try to use an INIT statement when an error was found */
       if (init && java_error_count)
 	init = NULL_TREE;
-
-      if (other)
-	variable_redefinition_error (wfl, name, TREE_TYPE (other),
-				     DECL_SOURCE_LINE (other));
-      else
+      
+      /* Add the initialization function to the current function's code */
+      if (init)
 	{
-	  /* Never layout this decl. This will be done when its scope
-             will be entered */
-	  decl = build_decl_no_layout (VAR_DECL, name, type);
-	  BLOCK_CHAIN_DECL (decl);
-
-	  /* Add the initialization function to the current function's code */
-	  if (init)
-	    {
-	      MODIFY_EXPR_FROM_INITIALIZATION_P (init) = 1;
-	      java_method_add_stmt 
-		(current_function_decl,
-		 build_debugable_stmt (EXPR_WFL_LINECOL (init), init));
-	    }
-
-	  if (must_chain)
-	    {
-	      jdep *dep;
-	      register_incomplete_type (JDEP_VARIABLE, type_wfl, decl, type);
-	      dep = CLASSD_LAST (ctxp->classd_list);
-	      JDEP_GET_PATCH (dep) = &TREE_TYPE (decl);
-	    }
+	  /* Name might have been readjusted */
+	  EXPR_WFL_NODE (TREE_OPERAND (init, 0)) = name;
+	  MODIFY_EXPR_FROM_INITIALIZATION_P (init) = 1;
+	  java_method_add_stmt (current_function_decl,
+				build_debugable_stmt (EXPR_WFL_LINECOL (init),
+						      init));
+	}
+    
+      /* Setup dependency the type of the decl */
+      if (must_chain)
+	{
+	  jdep *dep;
+	  register_incomplete_type (JDEP_VARIABLE, type_wfl, decl, type);
+	  dep = CLASSD_LAST (ctxp->classd_list);
+	  JDEP_GET_PATCH (dep) = &TREE_TYPE (decl);
 	}
     }
   SOURCE_FRONTEND_DEBUG (("Defined locals"));
@@ -5319,7 +5389,7 @@ resolve_qualified_expression_name (wfl, found_decl, where_found, type_found)
 		 on what this field is accessed from, do it now. */
 	      if (!is_static)
 		{
-		  decl = maybe_access_field (decl, *where_found, type);
+		  decl = maybe_access_field (decl, *where_found, *type_found);
 		  if (decl == error_mark_node)
 		    return 1;
 		}
@@ -5451,7 +5521,8 @@ maybe_access_field (decl, where, type)
 	    && FIELD_STATIC (decl)))
       && !IDENTIFIER_LOCAL_VALUE (DECL_NAME (decl)))
     decl = build_field_ref (where ? where : current_this, 
-			    type, DECL_NAME (decl));
+			    (type ? type : DECL_CONTEXT (decl)),
+			    DECL_NAME (decl));
   return decl;
 }
 
@@ -6027,10 +6098,12 @@ qualify_ambiguous_name (id)
 	break;
       case NEW_CLASS_EXPR:
       case CONVERT_EXPR:
-      case ARRAY_REF:
 	qual_wfl = TREE_OPERAND (qual_wfl, 0);
 	break;
-
+      case ARRAY_REF:
+	while (TREE_CODE (qual_wfl) == ARRAY_REF)
+	  qual_wfl = TREE_OPERAND (qual_wfl, 0);
+	break;
       default:
 	/* Fix for -Wall. Just break doing nothing */
 	break;
