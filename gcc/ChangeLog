@@ -1,3 +1,8 @@
+Mon Aug  2 23:45:45 1999  Hans-Peter Nilsson  <hp@bitrange.com>
+
+	* dwarf2out.c (add_location_or_const_value_attribute): Correct
+	test for sizes of passed and declared parameter types.
+
 Tue Aug  3 00:03:41 1999  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* fixincludes: Fix the return type of bsearch, char* -> void*.
@@ -20,6 +25,7 @@ Mon Aug  2 17:02:08 1999  Jason Merrill  <jason@yorick.cygnus.com>
 
 	* config/libgloss.h: Add a note discouraging use with ELF.
 	* configure.in: Don't use libgloss.h for ELF targets.
+	Always use_collect2 on a.out targets.
 
 Mon Aug  2 16:27:42 1999  Jim Wilson  <wilson@cygnus.com>
 
