@@ -3340,6 +3340,14 @@ for machine in $build $host $target; do
 			thread_file='irix'
 		fi
 		;;
+	mips-wrs-vxworks)
+		tm_file="mips/elf.h libgloss.h"
+ 		tmake_file=mips/t-ecoff
+ 		gas=yes
+		gnu_ld=yes
+ 		extra_parts="crtbegin.o crtend.o"
+#		thread_file='vxworks'
+ 		;;
 	mips-sgi-irix5cross64)		# Irix5 host, Irix 6 target, cross64
 		tm_file="mips/iris6.h mips/cross64.h"
 		xm_defines="USG HAVE_INTTYPES_H"
