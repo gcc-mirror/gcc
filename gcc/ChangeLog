@@ -1,5 +1,7 @@
 Tue Dec 15 13:49:55 1998  Jeffrey A Law  (law@cygnus.com)
 
+	* mn10300.md (bset, bclr): Operand 0 is a read/write operand.
+
 	* mn10200.md (abssf2, negsf2): New expanders.
 
 	* mn10300.md (absdf2, abssf2, negdf2, negsf2): New expanders.
