@@ -5346,6 +5346,18 @@ find_replacement (loc)
 	}
     }
 
+  /* If *LOC is a PLUS, MINUS, or MULT, see if a replacement is scheduled for
+     what's inside and make a new rtl if so.  */
+  if (GET_CODE (*loc) == PLUS || GET_CODE (*loc) == MINUS
+      || GET_CODE (*loc) == MULT)
+    {
+      rtx x = find_replacement (&XEXP (*loc, 0));
+      rtx y = find_replacement (&XEXP (*loc, 1));
+
+      if (x != XEXP (*loc, 0) || y != XEXP (*loc, 1))
+	return gen_rtx (GET_CODE (*loc), GET_MODE (*loc), x, y);
+    }
+
   return *loc;
 }
 
