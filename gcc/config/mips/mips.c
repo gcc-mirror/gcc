@@ -4068,7 +4068,9 @@ function_prologue (file, size)
   int tsize = current_frame_info.total_size;
 
   ASM_OUTPUT_SOURCE_FILENAME (file, DECL_SOURCE_FILE (current_function_decl));
-  ASM_OUTPUT_SOURCE_LINE (file, DECL_SOURCE_LINE (current_function_decl));
+
+  if (debug_info_level != DINFO_LEVEL_TERSE)
+    ASM_OUTPUT_SOURCE_LINE (file, DECL_SOURCE_LINE (current_function_decl));
 
   inside_function = 1;
   fputs ("\t.ent\t", file);
