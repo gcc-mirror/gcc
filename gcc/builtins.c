@@ -6783,13 +6783,11 @@ real_dconstp (tree expr, const REAL_VALUE_TYPE *value)
    function.  VALUE is the base of the logN function.  */
 
 static tree
-fold_builtin_logarithm (tree exp, const REAL_VALUE_TYPE *value)
+fold_builtin_logarithm (tree fndecl, tree arglist,
+			const REAL_VALUE_TYPE *value)
 {
-  tree arglist = TREE_OPERAND (exp, 1);
-
   if (validate_arglist (arglist, REAL_TYPE, VOID_TYPE))
     {
-      tree fndecl = get_callee_fndecl (exp);
       tree type = TREE_TYPE (TREE_TYPE (fndecl));
       tree arg = TREE_VALUE (arglist);
       const enum built_in_function fcode = builtin_mathfn_code (arg);
@@ -8122,17 +8120,17 @@ fold_builtin_1 (tree exp, bool ignore)
     case BUILT_IN_LOG:
     case BUILT_IN_LOGF:
     case BUILT_IN_LOGL:
-      return fold_builtin_logarithm (exp, &dconste);
+      return fold_builtin_logarithm (fndecl, arglist, &dconste);
 
     case BUILT_IN_LOG2:
     case BUILT_IN_LOG2F:
     case BUILT_IN_LOG2L:
-      return fold_builtin_logarithm (exp, &dconst2);
+      return fold_builtin_logarithm (fndecl, arglist, &dconst2);
 
     case BUILT_IN_LOG10:
     case BUILT_IN_LOG10F:
     case BUILT_IN_LOG10L:
-      return fold_builtin_logarithm (exp, &dconst10);
+      return fold_builtin_logarithm (fndecl, arglist, &dconst10);
 
     case BUILT_IN_TAN:
     case BUILT_IN_TANF:
