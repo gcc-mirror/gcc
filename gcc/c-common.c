@@ -557,6 +557,7 @@ static tree handle_nothrow_attribute (tree *, tree, tree, int, bool *);
 static tree handle_cleanup_attribute (tree *, tree, tree, int, bool *);
 static tree handle_warn_unused_result_attribute (tree *, tree, tree, int,
 						 bool *);
+static tree handle_sentinel_attribute (tree *, tree, tree, int, bool *);
 
 static void check_function_nonnull (tree, tree);
 static void check_nonnull_arg (void *, tree, unsigned HOST_WIDE_INT);
@@ -635,6 +636,8 @@ const struct attribute_spec c_common_attribute_table[] =
 			      handle_cleanup_attribute },
   { "warn_unused_result",     0, 0, false, true, true,
 			      handle_warn_unused_result_attribute },
+  { "sentinel",               0, 0, false, true, true,
+			      handle_sentinel_attribute },
   { NULL,                     0, 0, false, false, false, NULL }
 };
 
@@ -5044,6 +5047,29 @@ check_function_nonnull (tree attrs, tree params)
     }
 }
 
+/* Check the last argument of a function call is (pointer)0.  */
+
+static void
+check_function_sentinel (tree attrs, tree params)
+{
+  tree attr = lookup_attribute ("sentinel", attrs);
+
+  if (attr)
+    {
+      if (!params)
+	warning ("missing sentinel in function call");
+      else
+        {
+	  /* Find the last parameter.  */
+	  while (TREE_CHAIN (params))
+	    params = TREE_CHAIN (params);
+	  if (!POINTER_TYPE_P (TREE_TYPE (TREE_VALUE (params)))
+	      || !integer_zerop (TREE_VALUE (params)))
+	    warning ("missing sentinel in function call");
+	}
+    }
+}
+
 /* Helper for check_function_nonnull; given a list of operands which
    must be non-null in ARGS, determine if operand PARAM_NUM should be
    checked.  */
@@ -5185,6 +5211,36 @@ handle_warn_unused_result_attribute (tree *node, tree name,
 
   return NULL_TREE;
 }
+
+/* Handle a "sentinel" attribute.  */
+
+static tree
+handle_sentinel_attribute (tree *node, tree name,
+			   tree ARG_UNUSED (args),
+			   int ARG_UNUSED (flags), bool *no_add_attrs)
+{
+  tree params = TYPE_ARG_TYPES (*node);
+
+  if (!params)
+    {
+      warning ("`%s' attribute requires prototypes with named arguments",
+               IDENTIFIER_POINTER (name));
+      *no_add_attrs = true;
+      return NULL_TREE;
+    }
+
+  while (TREE_CHAIN (params))
+    params = TREE_CHAIN (params);
+
+  if (VOID_TYPE_P (TREE_VALUE (params)))
+    {
+      warning ("`%s' attribute only applies to variadic functions",
+	       IDENTIFIER_POINTER (name));
+      *no_add_attrs = true;
+    }
+  
+  return NULL_TREE;
+}
 
 /* Check for valid arguments being passed to a function.  */
 void
@@ -5199,7 +5255,10 @@ check_function_arguments (tree attrs, tree params)
   /* Check for errors in format strings.  */
 
   if (warn_format)
-    check_function_format (attrs, params);
+    {
+      check_function_format (attrs, params);
+      check_function_sentinel (attrs, params);
+    }
 }
 
 /* Generic argument checking recursion routine.  PARAM is the argument to

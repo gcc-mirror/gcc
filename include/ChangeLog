@@ -1,3 +1,9 @@
+2004-09-04  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* ansidecl.h (ATTRIBUTE_SENTINEL): Define.
+	* libiberty.h (concat, reconcat, concat_length, concat_copy,
+	concat_copy2): Use ATTRIBUTE_SENTINEL.
+
 2004-08-02  Gabriel Dos Reis  <gdr@integrable-solutions.net>
 
 	* libiberty.h (XDELETE, XDELETEVEC, XRESIZEVEC): Remove any

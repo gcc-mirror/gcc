@@ -1496,7 +1496,7 @@ attributes when making a declaration.  This keyword is followed by an
 attribute specification inside double parentheses.  The following
 attributes are currently defined for functions on all targets:
 @code{noreturn}, @code{noinline}, @code{always_inline},
-@code{pure}, @code{const}, @code{nothrow},
+@code{pure}, @code{const}, @code{nothrow}, @code{sentinel},
 @code{format}, @code{format_arg}, @code{no_instrument_function},
 @code{section}, @code{constructor}, @code{destructor}, @code{used},
 @code{unused}, @code{deprecated}, @code{weak}, @code{malloc},
@@ -2110,6 +2110,18 @@ Some file formats do not support arbitrary sections so the @code{section}
 attribute is not available on all platforms.
 If you need to map the entire contents of a module to a particular
 section, consider using the facilities of the linker instead.
+
+@item sentinel
+@cindex @code{sentinel} function attribute
+This function attribute ensures that the last parameter in a function
+call is an explicit @code{NULL}.  The attribute is only valid on
+variadic functions.  For example the attribute is automatically set for
+the built-in functions @code{execl} and @code{execlp} where @code{NULL}
+is the marker for argument list termination.  A valid @code{NULL} in
+this context is defined as zero with any pointer type.  If your system
+defines the @code{NULL} macro with an integer type then you need to add
+an explicit cast.  The warnings for missing or incorrect sentinels are
+enabled with @option{-Wformat}.
 
 @item short_call
 See long_call/short_call.

@@ -322,6 +322,15 @@ So instead we use the macro below and test it against specific values.  */
 # define ATTRIBUTE_NULL_PRINTF_5 ATTRIBUTE_NULL_PRINTF(5, 6)
 #endif /* ATTRIBUTE_NULL_PRINTF */
 
+/* Attribute `sentinel' was valid as of gcc 3.5.  */
+#ifndef ATTRIBUTE_SENTINEL
+# if (GCC_VERSION >= 3005)
+#  define ATTRIBUTE_SENTINEL __attribute__ ((__sentinel__))
+# else
+#  define ATTRIBUTE_SENTINEL
+# endif /* GNUC >= 3.5 */
+#endif /* ATTRIBUTE_SENTINEL */
+
 /* We use __extension__ in some places to suppress -pedantic warnings
    about GCC extensions.  This feature didn't work properly before
    gcc 2.8.  */
