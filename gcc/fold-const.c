@@ -738,6 +738,46 @@ target_isinf (x)
     }
 }
 
+/* Check whether an IEEE double precision number is a NaN.  */
+
+int
+target_isnan (x)
+     REAL_VALUE_TYPE x;
+{
+  /* The IEEE 64-bit double format.  */
+  union {
+    REAL_VALUE_TYPE d;
+    struct {
+      unsigned sign      :  1;
+      unsigned exponent  : 11;
+      unsigned mantissa1 : 20;
+      unsigned mantissa2;
+    } little_endian;
+    struct {
+      unsigned mantissa2;
+      unsigned mantissa1 : 20;
+      unsigned exponent  : 11;
+      unsigned sign      :  1;
+    } big_endian;    
+  } u;
+
+  u.d = dconstm1;
+  if (u.big_endian.sign == 1)
+    {
+      u.d = x;
+      return (u.big_endian.exponent == 2047
+	      && (u.big_endian.mantissa1 != 0
+		  || u.big_endian.mantissa2 != 0));
+    }
+  else
+    {
+      u.d = x;
+      return (u.little_endian.exponent == 2047
+	      && (u.little_endian.mantissa1 != 0
+		  || u.little_endian.mantissa2 != 0));
+    }
+}
+
 /* Check for minus zero in an IEEE double precision number.  */
 
 int
@@ -757,6 +797,15 @@ target_minus_zero (x)
    (This can be overridden by redefining REAL_VALUE_ISINF.)  */
 
 target_isinf (x)
+     REAL_VALUE_TYPE x;
+{
+  return 0;
+}
+
+/* Let's assume other float formats don't have NaNs.
+   (This can be overridden by redefining REAL_VALUE_ISNAN.)  */
+
+target_isnan (x)
      REAL_VALUE_TYPE x;
 {
   return 0;
@@ -1408,9 +1457,13 @@ operand_equal_p (arg0, arg1, only_const)
       && TREE_INT_CST_HIGH (arg0) == TREE_INT_CST_HIGH (arg1))
     return 1;
 
+  /* Detect when real constants are equal.
+     But reject weird values because we can't be sure what to do with them.  */
   if (TREE_CODE (arg0) == TREE_CODE (arg1)
       && TREE_CODE (arg0) == REAL_CST
-      && REAL_VALUES_EQUAL (TREE_REAL_CST (arg0), TREE_REAL_CST (arg1)))
+      && REAL_VALUES_EQUAL (TREE_REAL_CST (arg0), TREE_REAL_CST (arg1))
+      && !REAL_VALUE_ISINF (TREE_REAL_CST (arg0))
+      && !REAL_VALUE_ISNAN (TREE_REAL_CST (arg0)))
     return 1;
 
   if (only_const)
@@ -1562,8 +1615,8 @@ invert_truthvalue (arg)
 
   /* For floating-point comparisons, it isn't safe to invert the condition.
      So just enclose a TRUTH_NOT_EXPR around what we have.  */
-  if (TREE_CODE (type) == REAL_TYPE
-      && TREE_CODE_CLASS (TREE_CODE (arg)) == '<')
+  if (TREE_CODE_CLASS (TREE_CODE (arg)) == '<'
+      && TREE_CODE (TREE_TYPE (TREE_OPERAND (arg, 0))) == REAL_TYPE)
     return build1 (TRUTH_NOT_EXPR, type, arg);
 
   switch (TREE_CODE (arg))
