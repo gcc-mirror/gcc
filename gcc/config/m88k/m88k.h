@@ -206,9 +206,9 @@ extern char * reg_names[];
 /* Print subsidiary information on the compiler version in use.
    Redefined in m88kv4.h, and m88kluna.h.  */
 #define VERSION_INFO1	"88open OCS/BCS, "
-#define VERSION_INFO2	"21 Jul 1992"
+#define VERSION_INFO2	"30 Jul 1992"
 #define VERSION_STRING	version_string
-#define	TM_SCCS_ID	"@(#)m88k.h	2.2.6.9 21 Jul 1992 09:24:47"
+#define	TM_SCCS_ID	"@(#)m88k.h	2.2.6.11 30 Jul 1992 09:06:33"
 
 /* Run-time compilation parameters selecting different hardware subsets.  */
 
@@ -391,9 +391,12 @@ extern char * reg_names[];
 /* Boundary (in *bits*) on which stack pointer should be aligned.  */
 #define STACK_BOUNDARY 128
 
-/* Allocation boundary (in *bits*) for the code of a function.
-   Pack code tightly when compiling crtstuff.c.  */
-#define FUNCTION_BOUNDARY (flag_inhibit_size_directive ? 32 : 128)
+/* Allocation boundary (in *bits*) for the code of a function.  On the
+   m88100, it is desirable to align to a cache line.  However, SVR3 targets
+   only provided 8 byte alignment.  The m88110 cache is small, so align
+   to an 8 byte boundary.  Pack code tightly when compiling crtstuff.c.  */
+#define FUNCTION_BOUNDARY (flag_inhibit_size_directive ? 32 : \
+			   (TARGET_88100 && TARGET_SVR4 ? 128 : 64))
 
 /* No data type wants to be aligned rounder than this.  */
 #define BIGGEST_ALIGNMENT 64
@@ -2000,10 +2003,12 @@ enum reg_class { NO_REGS, AP_REG, XRF_REGS, GENERAL_REGS, AGRF_REGS,
   if ((LOG) != 0)			\
     fprintf (FILE, "\t%s\t %d\n", ALIGN_ASM_OP, 1<<(LOG))
 
-/* Align the text address to half a cache boundary when it can only be
-   reached by jumping.  Pack code tightly when compiling crtstuff.c.  */
+/* On the m88100, align the text address to half a cache boundary when it
+   can only be reached by jumping.  Pack code tightly when compiling
+   crtstuff.c.  */
 #define ASM_OUTPUT_ALIGN_CODE(FILE) \
-  ASM_OUTPUT_ALIGN (FILE, (flag_inhibit_size_directive ? 2 : 3))
+  ASM_OUTPUT_ALIGN (FILE, \
+		    (TARGET_88100 && !flag_inhibit_size_directive ? 3 : 2))
 
 /* Override svr[34].h.  */
 #undef	ASM_OUTPUT_SKIP
