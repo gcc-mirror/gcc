@@ -32,4 +32,7 @@ Boston, MA 02111-1307, USA.  */
 #define TARGET_MEM_FUNCTIONS
 #endif
 
+#undef STARTFILE_DEFAULT_SPEC
+#define STARTFILE_DEFAULT_SPEC "crt0.o%s"
+
 /* end of rs6000/rtems.h */
