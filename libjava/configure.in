@@ -826,6 +826,11 @@ for peer in $peerlibs ; do
     gtk)
       # Nothing, yet...
       ;;
+    no)
+      use_xlib_awt=
+      use_gtk_awt=
+      break
+      ;;
     *)
       echo "*** unrecognised argument \"${peer}\" for --enable-java-awt" 1>&2
       exit 1
