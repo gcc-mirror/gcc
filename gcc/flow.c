@@ -2382,6 +2382,13 @@ mark_used_regs (needed, live, x, final, insn)
 	      != GET_MODE_SIZE (GET_MODE (SUBREG_REG (x)))))
 	reg_changes_size[REGNO (SUBREG_REG (x))] = 1;
 
+      /* In case the SUBREG is not of a register, don't optimize */
+      if (GET_CODE (SUBREG_REG (x)) != REG)
+	{
+	  mark_used_regs (needed, live, SUBREG_REG (x), final, insn);
+	  return;
+	}
+
       /* While we're here, optimize this case.  */
       x = SUBREG_REG (x);
 
