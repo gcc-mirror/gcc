@@ -1,3 +1,7 @@
+2004-02-14  Josef Zlomek  <zlomekj@suse.cz>
+
+	* tree-inline.c (copy_body_r): Do not replace ret_label.
+
 2004-02-14  Jan Hubicka  <jh@suse.cz>
 
 	* i386.c (x86_four_jump_limit): New variable.
