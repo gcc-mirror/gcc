@@ -1,3 +1,12 @@
+2002-03-14  Richard Henderson  <rth@redhat.com>
+
+	PR target/5312
+	* config/ia64/ia64.c: Include tm_p.h last.
+	(gen_nop_type): Remove duplicate definition.
+	(cycle_end_fill_slots): Set sched_data for second L slot.
+	(maybe_rotate): Call cycle_end_fill_slots to fill in nop slots.
+	(nop_cycles_until): Fix typos.
+
 2002-03-15  Jakub Jelinek  <jakub@redhat.com>
 
 	PR optimization/5891
