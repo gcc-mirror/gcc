@@ -1,3 +1,9 @@
+Sat May 15 14:09:08 1999  Michael Hayes  <m.hayes@elec.canterbury.ac.nz>
+
+	* config/c4x/c4x.md (decrement_and_branch_on_count): Disabled.
+	(doloop_begin, doloop_end): New patterns.
+	(*rptb_init): Added extra operands.
+
 Fri May 14 21:31:36 1999  Michael Hayes  <m.hayes@elec.canterbury.ac.nz>
 
 	* config/c4x/c4x.md (*umulqi3_highpart_clobber): Fix operand 2
