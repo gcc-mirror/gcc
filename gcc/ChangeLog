@@ -1,3 +1,8 @@
+2000-05-08  Richard Henderson  <rth@cygnus.com>
+
+	* rtlanal.c (may_trap_p): Consider old-style and volatile
+	asms to trap.
+
 Mon May  8 17:16:48 2000  Jim Wilson  <wilson@cygnus.com>
 
 	* config/ia64/ia64.h (RETURN_ADDR_RTX): Use COUNT not count.

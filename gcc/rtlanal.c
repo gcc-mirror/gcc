@@ -1743,10 +1743,13 @@ may_trap_p (x)
     case SCRATCH:
       return 0;
 
-      /* Conditional trap can trap!  */
+    case ASM_INPUT:
     case UNSPEC_VOLATILE:
     case TRAP_IF:
       return 1;
+
+    case ASM_OPERANDS:
+      return MEM_VOLATILE_P (x);
 
       /* Memory ref can trap unless it's a static var or a stack slot.  */
     case MEM:
