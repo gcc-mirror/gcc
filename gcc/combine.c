@@ -422,6 +422,7 @@ combine_instructions (f, nregs)
   bzero (reg_last_set, nregs * sizeof (rtx));
   bzero (reg_last_set_value, nregs * sizeof (rtx));
   bzero (reg_last_set_table_tick, nregs * sizeof (short));
+  bzero (reg_last_set_label, nregs * sizeof (short));
   bzero (reg_last_set_invalid, nregs * sizeof (char));
   bzero (reg_nonzero_bits, nregs * sizeof (HOST_WIDE_INT));
   bzero (reg_sign_bit_copies, nregs * sizeof (char));
