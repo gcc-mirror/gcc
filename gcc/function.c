@@ -6363,21 +6363,25 @@ expand_function_start (subr, parms_have_cleanups)
 	   || current_function_instrument_entry_exit
 	   || (flag_exceptions && USING_SJLJ_EXCEPTIONS))
     {
-      /* If function will end with cleanup code for parms,
-	 compute the return values into a pseudo reg,
-	 which we will copy into the true return register
-	 after the cleanups are done.  */
+      /* If function will end with cleanup code for parms, compute the
+	 return values into a pseudo reg, which we will copy into the
+	 true return register after the cleanups are done.  */
 
-      enum machine_mode mode = DECL_MODE (DECL_RESULT (subr));
+      /* In order to figure out what mode to use for the pseudo, we
+	 figure out what the mode of the eventual return register will
+	 actually be, and use that.  */
+      rtx hard_reg
+	= hard_function_value (TREE_TYPE (DECL_RESULT (subr)),
+			       subr, 1);
 
-#ifdef PROMOTE_FUNCTION_RETURN
-      tree type = TREE_TYPE (DECL_RESULT (subr));
-      int unsignedp = TREE_UNSIGNED (type);
+      /* Since we know the return value is not an aggregate, we should
+	 have a REG here.  */
+      if (!REG_P (hard_reg))
+	abort ();
 
-      mode = promote_mode (type, mode, &unsignedp, 1);
-#endif
-
-      SET_DECL_RTL (DECL_RESULT (subr), gen_reg_rtx (mode));
+      /* Create the pseudo.  */
+      SET_DECL_RTL (DECL_RESULT (subr), 
+		    gen_reg_rtx (GET_MODE (hard_reg)));
       /* Needed because we may need to move this to memory
 	 in case it's a named return value whose address is taken.  */
       DECL_REGISTER (DECL_RESULT (subr)) = 1;
