@@ -1,3 +1,7 @@
+2001-05-15  Per Bothner  <per@bothner.com>
+
+        * Makefile.am (bin_PROGRAMS):  Renamed from "fastjar" to "jar".
+
 2001-01-21  Tom Tromey  <tromey@redhat.com>
 
 	* Makefile.in: Rebuilt.
