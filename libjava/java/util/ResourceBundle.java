@@ -111,7 +111,13 @@ public abstract class ResourceBundle
    * second hash map is the localized name, the value is a soft
    * references to the resource bundle.
    */
-  private static final Map resourceBundleCache = new HashMap();
+  private static Map resourceBundleCache;
+
+  /**
+   * The last default Locale we saw. If this ever changes then we have to
+   * reset our caches.
+   */
+  private static Locale lastDefaultLocale;
 
   /**
    * The `empty' locale is created once in order to optimize
@@ -312,6 +318,12 @@ public abstract class ResourceBundle
   {
     // This implementation searches the bundle in the reverse direction
     // and builds the parent chain on the fly.
+    Locale defaultLocale = Locale.getDefault();
+    if (defaultLocale != lastDefaultLocale)
+      {
+	resourceBundleCache = new HashMap();
+	lastDefaultLocale = defaultLocale;
+      }
     HashMap cache = (HashMap) resourceBundleCache.get(classLoader);
     StringBuffer sb = new StringBuffer(60);
     sb.append(baseName).append('_').append(locale);
@@ -359,9 +371,9 @@ public abstract class ResourceBundle
     // bundle.
     ResourceBundle bundle = tryLocalBundle(baseName, locale,
                                            classLoader, baseBundle, cache);
-    if (bundle == baseBundle && !locale.equals(Locale.getDefault()))
+    if (bundle == baseBundle && !locale.equals(defaultLocale))
       {
-	bundle = tryLocalBundle(baseName, Locale.getDefault(),
+	bundle = tryLocalBundle(baseName, defaultLocale,
 				classLoader, baseBundle, cache);
 	// We need to record that the argument locale maps to the
 	// bundle we just found.  If we didn't find a bundle, record

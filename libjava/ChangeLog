@@ -1,3 +1,10 @@
+2002-12-08  Mark Wielaard  <mark@klomp.org>
+
+	* java/util/ResourceBundle.java (resourceBundleCache): Not final.
+	(lastDefaultLocale): New field.
+	(getBundle): When Locale.getDefault != lastDefaultLocale reset
+	resourceBundleCache.
+
 2002-12-06  Mark Wielaard  <mark@klomp.org>
 
 	* java/net/InetAddress.java (toString): Use hostname when not null,
