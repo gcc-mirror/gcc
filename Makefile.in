@@ -11707,7 +11707,7 @@ mostlyclean-target-libobjc:
 maybe-mostlyclean-target-libtermcap:
 
 # libtermcap doesn't support mostlyclean.
-mostlyclean-libtermcap:
+mostlyclean-target-libtermcap:
 
 
 .PHONY: maybe-mostlyclean-target-winsup mostlyclean-target-winsup
@@ -13474,7 +13474,7 @@ clean-target-libobjc:
 maybe-clean-target-libtermcap:
 
 # libtermcap doesn't support clean.
-clean-libtermcap:
+clean-target-libtermcap:
 
 
 .PHONY: maybe-clean-target-winsup clean-target-winsup
@@ -15241,7 +15241,7 @@ distclean-target-libobjc:
 maybe-distclean-target-libtermcap:
 
 # libtermcap doesn't support distclean.
-distclean-libtermcap:
+distclean-target-libtermcap:
 
 
 .PHONY: maybe-distclean-target-winsup distclean-target-winsup
@@ -17008,7 +17008,7 @@ maintainer-clean-target-libobjc:
 maybe-maintainer-clean-target-libtermcap:
 
 # libtermcap doesn't support maintainer-clean.
-maintainer-clean-libtermcap:
+maintainer-clean-target-libtermcap:
 
 
 .PHONY: maybe-maintainer-clean-target-winsup maintainer-clean-target-winsup

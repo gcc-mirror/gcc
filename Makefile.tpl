@@ -657,7 +657,7 @@ maybe-[+make_target+]-[+module+]:
 maybe-[+make_target+]-target-[+module+]:
 [+ IF (match-value? = "missing" (get "make_target") ) +]
 # [+module+] doesn't support [+make_target+].
-[+make_target+]-[+module+]:
+[+make_target+]-target-[+module+]:
 [+ ELSE +]
 [+make_target+]-target-[+module+]: [+
   FOR depend +]\
