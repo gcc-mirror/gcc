@@ -239,8 +239,6 @@ struct tree_common
            INTEGER_TYPE, ENUMERAL_TYPE, FIELD_DECL
        DECL_BUILT_IN_NONANSI in
            FUNCTION_DECL
-       TREE_PARMLIST in
-           TREE_PARMLIST (C++)
        SAVE_EXPR_NOPLACEHOLDER in
 	   SAVE_EXPR
 
@@ -1461,6 +1459,9 @@ struct tree_type
    where it is called.  */
 #define DECL_INLINE(NODE) (FUNCTION_DECL_CHECK (NODE)->decl.inline_flag)
 
+/* In a FUNCTION_DECL, nonzero if the function cannot be inlined.  */
+#define DECL_UNINLINABLE(NODE) (FUNCTION_DECL_CHECK (NODE)->decl.uninlinable)
+
 /* Nonzero in a FUNCTION_DECL means this is a built-in function
    that is not specified by ansi C and that users are supposed to be allowed
    to redefine for any purpose whatever.  */
@@ -1632,7 +1633,8 @@ struct tree_decl
   unsigned pointer_depth : 2;
   unsigned non_addressable : 1;
   unsigned user_align : 1;
-  /* Three unused bits.  */
+  unsigned uninlinable : 1;
+  /* Two unused bits.  */
 
   unsigned lang_flag_0 : 1;
   unsigned lang_flag_1 : 1;

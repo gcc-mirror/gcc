@@ -3626,6 +3626,9 @@ duplicate_decls (newdecl, olddecl)
 	DECL_INLINE (olddecl) = 1;
       DECL_INLINE (newdecl) = DECL_INLINE (olddecl);
 
+      /* Preserve abstractness on cloned [cd]tors.  */
+      DECL_ABSTRACT (newdecl) = DECL_ABSTRACT (olddecl);
+
       if (! types_match)
 	{
 	  DECL_LANGUAGE (olddecl) = DECL_LANGUAGE (newdecl);

@@ -841,7 +841,9 @@ dbxout_type_methods (type)
 
 	  last = fndecl;
 
-	  if (DECL_IGNORED_P (fndecl))
+	  /* Also ignore abstract methods; those are only interesting to
+	     the DWARF backends.  */
+	  if (DECL_IGNORED_P (fndecl) || DECL_ABSTRACT (fndecl))
 	    continue;
 
 	  if (flag_minimal_debug)
