@@ -764,7 +764,6 @@ chill
 f77  f77-cpp-input  ratfor
 java
 @end example
-@c Also f77-version, for internal use only.
 
 @item -x none
 Turn off any specification of a language, so that subsequent files are
