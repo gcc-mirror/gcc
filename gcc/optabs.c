@@ -1260,8 +1260,10 @@ expand_binop (mode, binoptab, op0, op1, target, unsignedp, methods)
 				    NULL_RTX, unsignedp, methods);
 
 	      if (temp1 == 0 || temp2 == 0)
-		res = expand_binop (submode, add_optab, temp1, temp2,
-				    imagr, unsignedp, methods);
+		  break;
+
+	      res = expand_binop (submode, add_optab, temp1, temp2,
+				  imagr, unsignedp, methods);
 
 	      if (res == 0)
 		break;
