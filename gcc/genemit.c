@@ -699,10 +699,7 @@ output_peephole2_scratches (split)
   int i;
   int insn_nr = 0;
 
-  printf ("  rtx first_insn ATTRIBUTE_UNUSED;\n");
-  printf ("  rtx last_insn ATTRIBUTE_UNUSED;\n");
   printf ("  HARD_REG_SET _regs_allocated;\n");
-
   printf ("  CLEAR_HARD_REG_SET (_regs_allocated);\n");
 
   for (i = 0; i < XVECLEN (split, 0); i++)
@@ -721,15 +718,11 @@ output_peephole2_scratches (split)
 	      }
 	    else if (GET_CODE (XVECEXP (split, 0, j)) != MATCH_SCRATCH)
 	      cur_insn_nr++;
-	  printf ("  first_insn = recog_next_insn (curr_insn, %d);\n", insn_nr);
-	  if (last_insn_nr > insn_nr)
-	    printf ("  last_insn = recog_next_insn (curr_insn, %d);\n",
-		    last_insn_nr - 1);
-	  else
-	    printf ("  last_insn = 0;\n");
-	  printf ("  if ((operands[%d] = find_free_register (first_insn, last_insn, \"%s\", %smode, &_regs_allocated)) == NULL_RTX)\n\
+
+	  printf ("  if ((operands[%d] = peep2_find_free_register (%d, %d, \"%s\", %smode, &_regs_allocated)) == NULL_RTX)\n\
     return NULL;\n", 
 		  XINT (elt, 0),
+		  insn_nr, last_insn_nr,
 		  XSTR (elt, 1),
 		  GET_MODE_NAME (GET_MODE (elt)));
 
@@ -777,8 +770,8 @@ from the machine description file `md'.  */\n\n");
   printf ("#include \"insn-config.h\"\n");
   printf ("#include \"insn-flags.h\"\n");
   printf ("#include \"insn-codes.h\"\n");
-  printf ("#include \"recog.h\"\n");
   printf ("#include \"hard-reg-set.h\"\n");
+  printf ("#include \"recog.h\"\n");
   printf ("#include \"resource.h\"\n");
   printf ("#include \"reload.h\"\n\n");
   printf ("#define FAIL return (end_sequence (), _val)\n");

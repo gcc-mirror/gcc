@@ -116,9 +116,16 @@ extern void add_clobbers		PARAMS ((rtx, int));
 extern void insn_extract		PARAMS ((rtx));
 extern void extract_insn		PARAMS ((rtx));
 extern void preprocess_constraints	PARAMS ((void));
-extern rtx recog_next_insn		PARAMS ((rtx, int));
+extern rtx peep2_next_insn		PARAMS ((int));
+extern int peep2_regno_dead_p		PARAMS ((int, int));
+extern int peep2_reg_dead_p		PARAMS ((int, rtx));
+#ifdef CLEAR_HARD_REG_SET
+extern rtx peep2_find_free_register	PARAMS ((int, int, const char *,
+						 enum machine_mode,
+						 HARD_REG_SET *));
+#endif
 extern void peephole2_optimize		PARAMS ((FILE *));
-extern rtx peephole2_insns		PARAMS ((rtx, rtx, rtx *));
+extern rtx peephole2_insns		PARAMS ((rtx, rtx, int *));
 
 /* Nonzero means volatile operands are recognized.  */
 extern int volatile_ok;

@@ -272,8 +272,8 @@ static struct decision *write_switch
 static void write_cond
   PARAMS ((struct decision_test *, int, enum routine_type));
 static void write_action
-  PARAMS ((struct decision_test *, int, int, struct decision *,
-	 enum routine_type));
+  PARAMS ((struct decision *, struct decision_test *, int, int,
+	   struct decision *, enum routine_type));
 static int is_unconditional
   PARAMS ((struct decision_test *, enum routine_type));
 static int write_node
@@ -1578,10 +1578,6 @@ change_state (oldpos, newpos, afterward, indent)
     if (newpos[new_has_insn] >= 'A' && newpos[new_has_insn] <= 'Z')
       break;
 
-  /* Make sure to reset the last_insn pointer when popping back up.  */
-  if (old_has_insn >= 0 && new_has_insn < 0)
-    printf ("%slast_insn = insn;\n", indent);
-
   /* Go down to desired level.  */
   while (depth < ndepth)
     {
@@ -1591,21 +1587,20 @@ change_state (oldpos, newpos, afterward, indent)
 	  /* We can only fail if we're moving down the tree.  */
 	  if (old_has_insn >= 0 && oldpos[old_has_insn] >= newpos[depth])
 	    {
-	      printf ("%slast_insn = recog_next_insn (insn, %d);\n", 
+	      printf ("%stem = peep2_next_insn (%d);\n", 
 		      indent, newpos[depth] - 'A');
 	    }
 	  else
 	    {
-	      printf ("%stem = recog_next_insn (insn, %d);\n", 
+	      printf ("%stem = peep2_next_insn (%d);\n", 
 		      indent, newpos[depth] - 'A');
 	      printf ("%sif (tem == NULL_RTX)\n", indent);
 	      if (afterward)
 		printf ("%s  goto L%d;\n", indent, afterward->number);
 	      else
 		printf ("%s  goto ret0;\n", indent);
-	      printf ("%slast_insn = tem;\n", indent);
 	    }
-	  printf ("%sx%d = PATTERN (last_insn);\n", indent, depth + 1);
+	  printf ("%sx%d = PATTERN (tem);\n", indent, depth + 1);
 	}
       else if (newpos[depth] >= 'a' && newpos[depth] <= 'z')
 	printf ("%sx%d = XVECEXP (x%d, 0, %d);\n",
@@ -1888,7 +1883,8 @@ write_cond (p, depth, subroutine_type)
    perform a state change.  For the `accept' tests we must do more work.  */
 
 static void
-write_action (test, depth, uncond, success, subroutine_type)
+write_action (p, test, depth, uncond, success, subroutine_type)
+     struct decision *p;
      struct decision_test *test;
      int depth, uncond;
      struct decision *success;
@@ -1942,9 +1938,20 @@ write_action (test, depth, uncond, success, subroutine_type)
 	  break;
 
 	case PEEPHOLE2:
-	  printf ("%stem = gen_peephole2_%d (insn, operands);\n",
-		  indent, test->u.insn.code_number);
-	  printf ("%sif (tem != 0)\n%s  goto ret1;\n", indent, indent);
+	  {
+	    int match_len = 0, i;
+
+	    for (i = strlen (p->position) - 1; i >= 0; --i)
+	      if (p->position[i] >= 'A' && p->position[i] <= 'Z')
+		{
+		  match_len = p->position[i] - 'A';
+		  break;
+		}
+	    printf ("%s*_pmatch_len = %d;\n", indent, match_len);
+	    printf ("%stem = gen_peephole2_%d (insn, operands);\n",
+		    indent, test->u.insn.code_number);
+	    printf ("%sif (tem != 0)\n%s  return tem;\n", indent, indent);
+	  }
 	  break;
 
 	default:
@@ -2027,7 +2034,7 @@ write_node (p, depth, subroutine_type)
       printf (")\n");
     }
 
-  write_action (last_test, depth, uncond, p->success.first, subroutine_type);
+  write_action (p, last_test, depth, uncond, p->success.first, subroutine_type);
 
   return uncond > 0;
 }
@@ -2090,7 +2097,7 @@ write_tree (head, prevpos, type, initial)
       };
 
       static const char * const call_suffix[] = {
-	  ", pnum_clobbers", "", ", _plast_insn"
+	  ", pnum_clobbers", "", ", _pmatch_len"
       };
 
       /* This node has been broken out into a separate subroutine.
@@ -2167,12 +2174,13 @@ split%s (x0, insn)\n\
      rtx insn ATTRIBUTE_UNUSED;\n", s_or_e, extension);
       break;
     case PEEPHOLE2:
-      printf ("%srtx peephole2%s PARAMS ((rtx, rtx, rtx *));\n", s_or_e, extension);
+      printf ("%srtx peephole2%s PARAMS ((rtx, rtx, int *));\n",
+	      s_or_e, extension);
       printf ("%srtx\n\
-peephole2%s (x0, insn, _plast_insn)\n\
+peephole2%s (x0, insn, _pmatch_len)\n\
      register rtx x0;\n\
      rtx insn ATTRIBUTE_UNUSED;\n\
-     rtx *_plast_insn ATTRIBUTE_UNUSED;\n", s_or_e, extension);
+     int *_pmatch_len ATTRIBUTE_UNUSED;\n", s_or_e, extension);
       break;
     }
 
@@ -2180,8 +2188,6 @@ peephole2%s (x0, insn, _plast_insn)\n\
   for (i = 1; i <= max_depth; i++)
     printf ("  register rtx x%d ATTRIBUTE_UNUSED;\n", i);
 
-  if (type == PEEPHOLE2)
-    printf ("  register rtx last_insn = insn;\n");
   printf ("  %s tem ATTRIBUTE_UNUSED;\n", IS_SPLIT (type) ? "rtx" : "int");
 
   if (head->first)
@@ -2189,8 +2195,6 @@ peephole2%s (x0, insn, _plast_insn)\n\
   else
     printf ("  goto ret0;\n");
 
-  if (type == PEEPHOLE2)
-    printf (" ret1:\n  *_plast_insn = last_insn;\n  return tem;\n");
   printf (" ret0:\n  return %d;\n}\n\n", IS_SPLIT (type) ? 0 : -1);
 }
 
