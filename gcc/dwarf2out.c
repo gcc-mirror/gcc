@@ -105,6 +105,7 @@ typedef struct die_struct *dw_die_ref;
 typedef struct dw_attr_struct *dw_attr_ref;
 typedef struct dw_val_struct *dw_val_ref;
 typedef struct dw_line_info_struct *dw_line_info_ref;
+typedef struct dw_separate_line_info_struct *dw_separate_line_info_ref;
 typedef struct dw_loc_descr_struct *dw_loc_descr_ref;
 typedef struct dw_cfi_struct *dw_cfi_ref;
 typedef struct dw_fde_struct *dw_fde_ref;
@@ -128,6 +129,16 @@ typedef struct dw_line_info_struct
     unsigned long dw_line_num;
   }
 dw_line_info_entry;
+
+/* Line information for functions in separate sections; each one gets its
+   own sequence.  */
+typedef struct dw_separate_line_info_struct
+  {
+    unsigned long dw_file_num;
+    unsigned long dw_line_num;
+    unsigned long function;
+  }
+dw_separate_line_info_entry;
 
 /* The dw_val_node describes an attibute's value, as it is
    represnted internally.  */
@@ -448,11 +459,21 @@ static unsigned abbrev_die_table_in_use;
 #define ABBREV_DIE_TABLE_INCREMENT 256
 
 /* A pointer to the base of a table that contains line information
-   for each source code line in the compilation unit.  */
+   for each source code line in .text in the compilation unit.  */
 static dw_line_info_ref line_info_table;
 
 /* Number of elements currently allocated for line_info_table.  */
 static unsigned line_info_table_allocated;
+
+/* Number of elements in separate_line_info_table currently in use.  */
+static unsigned separate_line_info_table_in_use;
+
+/* A pointer to the base of a table that contains line information
+   for each source code line outside of .text in the compilation unit.  */
+static dw_separate_line_info_ref separate_line_info_table;
+
+/* Number of elements currently allocated for separate_line_info_table.  */
+static unsigned separate_line_info_table_allocated;
 
 /* Number of elements in line_info_table currently in use.  */
 static unsigned line_info_table_in_use;
@@ -702,6 +723,9 @@ static unsigned lookup_filename ();
 #endif
 #ifndef LINE_CODE_LABEL_FMT
 #define LINE_CODE_LABEL_FMT	".L_LC%u"
+#endif
+#ifndef SEPARATE_LINE_CODE_LABEL_FMT
+#define SEPARATE_LINE_CODE_LABEL_FMT	".L_SLC%u"
 #endif
 #ifndef SFNAMES_ENTRY_LABEL_FMT
 #define SFNAMES_ENTRY_LABEL_FMT	".L_F%u"
@@ -2212,7 +2236,7 @@ remove_AT (die, attr_kind)
 	    if (die->die_attr_last == a->dw_attr_next)
 	      die->die_attr_last = a;
 	    a->dw_attr_next = a->dw_attr_next->dw_attr_next;
-	    return;
+	    break;
 	  }
       if (removed)
 	free (removed);
@@ -2952,12 +2976,12 @@ static unsigned long
 size_of_line_info ()
 {
   register unsigned long size;
-  register dw_line_info_ref line_info;
   register unsigned long lt_index;
   register unsigned long current_line;
   register long line_offset;
   register long line_delta;
   register unsigned long current_file;
+  register unsigned long function;
   /* Version number.  */
   size = 2;
   /* Prolog length specifier.  */
@@ -2971,6 +2995,7 @@ size_of_line_info ()
   current_line = 1;
   for (lt_index = 1; lt_index < line_info_table_in_use; ++lt_index)
     {
+      register dw_line_info_ref line_info;
       /* Advance pc instruction.  */
       size += 1 + 2;
       line_info = &line_info_table[lt_index];
@@ -3005,6 +3030,65 @@ size_of_line_info ()
   size += 1 + 2;
   /* End of line number info. marker.  */
   size += 1 + size_of_uleb128 (1) + 1;
+  function = 0;
+  current_file = 1;
+  current_line = 1;
+  for (lt_index = 0; lt_index < separate_line_info_table_in_use; )
+    {
+      register dw_separate_line_info_ref line_info
+	= &separate_line_info_table[lt_index];
+      if (function != line_info->function)
+	{
+	  function = line_info->function;
+	  /* Set address register instruction.  */
+	  size += 1 + size_of_uleb128 (1 + PTR_SIZE)
+	    + 1 + PTR_SIZE;
+	}
+      else
+	{
+	  /* Advance pc instruction.  */
+	  size += 1 + 2;
+	}
+      if (line_info->dw_file_num != current_file)
+	{
+	  /* Set file number instruction.  */
+	  size += 1;
+	  current_file = line_info->dw_file_num;
+	  size += size_of_uleb128 (current_file);
+	}
+      if (line_info->dw_line_num != current_line)
+	{
+	  line_offset = line_info->dw_line_num - current_line;
+	  line_delta = line_offset - DWARF_LINE_BASE;
+	  current_line = line_info->dw_line_num;
+	  if (line_delta >= 0 && line_delta < (DWARF_LINE_RANGE - 1))
+	    {
+	      /* 1-byte special line number instruction.  */
+	      size += 1;
+	    }
+	  else
+	    {
+	      /* Advance line instruction.  */
+	      size += 1;
+	      size += size_of_sleb128 (line_offset);
+	      /* Generate line entry instruction.  */
+	      size += 1;
+	    }
+	}
+      ++lt_index;
+
+      /* If we're done with a function, end its sequence.  */
+      if (lt_index == separate_line_info_table_in_use
+	  || separate_line_info_table[lt_index].function != function)
+	{
+	  current_file = 1;
+	  current_line = 1;
+	  /* Advance pc instruction.  */
+	  size += 1 + 2;
+	  /* End of line number info. marker.  */
+	  size += 1 + size_of_uleb128 (1) + 1;
+	}
+    }
   return size;
 }
 
@@ -3999,21 +4083,18 @@ output_aranges ()
 static void
 output_line_info ()
 {
-  register unsigned long line_info_len;
-  register unsigned long line_info_prolog_len;
   char line_label[MAX_ARTIFICIAL_LABEL_BYTES];
   char prev_line_label[MAX_ARTIFICIAL_LABEL_BYTES];
   register unsigned opc;
   register unsigned n_op_args;
-  register dw_line_info_ref line_info;
   register unsigned long ft_index;
   register unsigned long lt_index;
   register unsigned long current_line;
   register long line_offset;
   register long line_delta;
   register unsigned long current_file;
-  line_info_len = size_of_line_info ();
-  ASM_OUTPUT_DWARF_DATA4 (asm_out_file, line_info_len);
+  register unsigned long function;
+  ASM_OUTPUT_DWARF_DATA4 (asm_out_file, size_of_line_info ());
   if (flag_verbose_asm)
     {
       fprintf (asm_out_file, "\t%s Length of Source Line Info.",
@@ -4027,8 +4108,7 @@ output_line_info ()
 	       ASM_COMMENT_START);
     }
   fputc ('\n', asm_out_file);
-  line_info_prolog_len = size_of_line_prolog ();
-  ASM_OUTPUT_DWARF_DATA4 (asm_out_file, line_info_prolog_len);
+  ASM_OUTPUT_DWARF_DATA4 (asm_out_file, size_of_line_prolog ());
   if (flag_verbose_asm)
     {
       fprintf (asm_out_file, "\t%s Prolog Length",
@@ -4149,6 +4229,7 @@ output_line_info ()
   strcpy (prev_line_label, TEXT_SECTION);
   for (lt_index = 1; lt_index < line_info_table_in_use; ++lt_index)
     {
+      register dw_line_info_ref line_info;
       ASM_OUTPUT_DWARF_DATA1 (asm_out_file, DW_LNS_fixed_advance_pc);
       if (flag_verbose_asm)
 	{
@@ -4234,6 +4315,121 @@ output_line_info ()
   fputc ('\n', asm_out_file);
   ASM_OUTPUT_DWARF_DATA1 (asm_out_file, DW_LNE_end_sequence);
   fputc ('\n', asm_out_file);
+
+  function = 0;
+  current_file = 1;
+  current_line = 1;
+  for (lt_index = 0; lt_index < separate_line_info_table_in_use; )
+    {
+      register dw_separate_line_info_ref line_info
+	= &separate_line_info_table[lt_index];
+      sprintf (line_label, SEPARATE_LINE_CODE_LABEL_FMT, lt_index);
+      if (function != line_info->function)
+	{
+	  function = line_info->function;
+	  /* Set the address register to the first line in the function */
+	  ASM_OUTPUT_DWARF_DATA1 (asm_out_file, 0);
+	  if (flag_verbose_asm)
+	    fprintf (asm_out_file, "\t%s DW_LNE_set_address",
+		     ASM_COMMENT_START);
+	  fputc ('\n', asm_out_file);
+	  output_uleb128 (1 + PTR_SIZE);
+	  fputc ('\n', asm_out_file);
+	  ASM_OUTPUT_DWARF_DATA1 (asm_out_file, DW_LNE_set_address);
+	  fputc ('\n', asm_out_file);
+	  ASM_OUTPUT_DWARF_ADDR (asm_out_file, line_label);
+	  fputc ('\n', asm_out_file);
+	}
+      else
+	{
+	  ASM_OUTPUT_DWARF_DATA1 (asm_out_file, DW_LNS_fixed_advance_pc);
+	  if (flag_verbose_asm)
+	    fprintf (asm_out_file, "\t%s DW_LNS_fixed_advance_pc",
+		     ASM_COMMENT_START);
+	  fputc ('\n', asm_out_file);
+	  ASM_OUTPUT_DWARF_DELTA2 (asm_out_file, line_label, prev_line_label);
+	  fputc ('\n', asm_out_file);
+	}
+      if (line_info->dw_file_num != current_file)
+	{
+	  current_file = line_info->dw_file_num;
+	  ASM_OUTPUT_DWARF_DATA1 (asm_out_file, DW_LNS_set_file);
+	  if (flag_verbose_asm)
+	    {
+	      fprintf (asm_out_file,
+		       "\t%s DW_LNS_set_file", ASM_COMMENT_START);
+	    }
+	  fputc ('\n', asm_out_file);
+	  output_uleb128 (current_file);
+	  if (flag_verbose_asm)
+	    {
+	      fprintf (asm_out_file, "\t%s \"%s\"",
+		       ASM_COMMENT_START, file_table[current_file]);
+	    }
+	  fputc ('\n', asm_out_file);
+	}
+      if (line_info->dw_line_num != current_line)
+	{
+	  line_offset = line_info->dw_line_num - current_line;
+	  line_delta = line_offset - DWARF_LINE_BASE;
+	  current_line = line_info->dw_line_num;
+	  if (line_delta >= 0 && line_delta < (DWARF_LINE_RANGE - 1))
+	    {
+	      ASM_OUTPUT_DWARF_DATA1 (asm_out_file,
+				      DWARF_LINE_OPCODE_BASE + line_delta);
+	      if (flag_verbose_asm)
+		{
+		  fprintf (asm_out_file,
+			   "\t%s line %d", ASM_COMMENT_START, current_line);
+		}
+	      fputc ('\n', asm_out_file);
+	    }
+	  else
+	    {
+	      ASM_OUTPUT_DWARF_DATA1 (asm_out_file, DW_LNS_advance_line);
+	      if (flag_verbose_asm)
+		{
+		  fprintf (asm_out_file,
+			   "\t%s advance to line %d",
+			   ASM_COMMENT_START, current_line);
+		}
+	      fputc ('\n', asm_out_file);
+	      output_sleb128 (line_offset);
+	      fputc ('\n', asm_out_file);
+	      ASM_OUTPUT_DWARF_DATA1 (asm_out_file, DW_LNS_copy);
+	      fputc ('\n', asm_out_file);
+	    }
+	}
+      ++lt_index;
+      strcpy (prev_line_label, line_label);
+
+      /* If we're done with a function, end its sequence.  */
+      if (lt_index == separate_line_info_table_in_use
+	  || separate_line_info_table[lt_index].function != function)
+	{
+	  current_file = 1;
+	  current_line = 1;
+	  ASM_OUTPUT_DWARF_DATA1 (asm_out_file, DW_LNS_fixed_advance_pc);
+	  if (flag_verbose_asm)
+	    fprintf (asm_out_file, "\t%s DW_LNS_fixed_advance_pc",
+		     ASM_COMMENT_START);
+	  fputc ('\n', asm_out_file);
+	  sprintf (line_label, FUNC_END_LABEL_FMT, function);
+	  ASM_OUTPUT_DWARF_DELTA2 (asm_out_file, line_label, prev_line_label);
+	  fputc ('\n', asm_out_file);
+
+	  /* Output the marker for the end of this sequence.  */
+	  ASM_OUTPUT_DWARF_DATA1 (asm_out_file, 0);
+	  if (flag_verbose_asm)
+	    fprintf (asm_out_file, "\t%s DW_LNE_end_sequence",
+		     ASM_COMMENT_START);
+	  fputc ('\n', asm_out_file);
+	  output_uleb128 (1);
+	  fputc ('\n', asm_out_file);
+	  ASM_OUTPUT_DWARF_DATA1 (asm_out_file, DW_LNE_end_sequence);
+	  fputc ('\n', asm_out_file);
+	}
+    }
 }
 
 /**************** attribute support utilities ********************************/
@@ -6562,15 +6758,9 @@ gen_compile_unit_die (main_input_filename)
     {
       add_AT_unsigned (comp_unit_die, DW_AT_language, DW_LANG_C89);
     }
-  add_AT_lbl_id (comp_unit_die, DW_AT_low_pc, TEXT_SECTION);
-  add_AT_lbl_id (comp_unit_die, DW_AT_high_pc, TEXT_END_LABEL);
-  if (debug_info_level >= DINFO_LEVEL_NORMAL)
+  if (debug_info_level >= DINFO_LEVEL_VERBOSE)
     {
-      add_AT_section_offset (comp_unit_die, DW_AT_stmt_list, LINE_SECTION);
-      if (debug_info_level >= DINFO_LEVEL_VERBOSE)
-	{
-	  add_AT_unsigned (comp_unit_die, DW_AT_macro_info, 0);
-	}
+      add_AT_unsigned (comp_unit_die, DW_AT_macro_info, 0);
     }
 }
 
@@ -6800,7 +6990,7 @@ gen_type_die (type, context_die)
     case RECORD_TYPE:
     case UNION_TYPE:
     case QUAL_UNION_TYPE:
-      /* For a non-file-scope tagged type, we can always go ahead and output
+      /* For a function-scope tagged type, we can always go ahead and output
          a Dwarf description of this type right now, even if the type in
          question is still incomplete, because if this local type *was* ever
          completed anywhere within its scope, that complete definition would
@@ -6827,7 +7017,8 @@ gen_type_die (type, context_die)
          ever going to know, so at that point in time, we can safely generate 
          correct Dwarf descriptions for these file-scope tagged types.  */
       is_complete = TYPE_SIZE (type) != 0
-	|| TYPE_CONTEXT (type) != NULL
+	|| (TYPE_CONTEXT (type) != NULL
+	    && TREE_CODE_CLASS (TREE_CODE (TYPE_CONTEXT (type))) != 't')
 	|| finalizing;
       if (TREE_CODE (type) == ENUMERAL_TYPE)
 	{
@@ -7569,27 +7760,57 @@ dwarfout_line (filename, line)
 {
   char label[MAX_ARTIFICIAL_LABEL_BYTES];
   register unsigned this_file_entry_num = lookup_filename (filename);
-  register dw_line_info_ref line_info;
   if (debug_info_level >= DINFO_LEVEL_NORMAL)
     {
       function_section (current_function_decl);
-      sprintf (label, LINE_CODE_LABEL_FMT, line_info_table_in_use);
-      ASM_OUTPUT_LABEL (asm_out_file, label);
-      fputc ('\n', asm_out_file);
 
-      /* expand the line info table if necessary */
-      if (line_info_table_in_use == line_info_table_allocated)
+      if (DECL_SECTION_NAME (current_function_decl))
 	{
-	  line_info_table_allocated += LINE_INFO_TABLE_INCREMENT;
-	  line_info_table
-	    = (dw_line_info_ref)
-	    xrealloc (line_info_table,
-		   line_info_table_allocated * sizeof (dw_line_info_entry));
+	  register dw_separate_line_info_ref line_info;
+	  sprintf (label, SEPARATE_LINE_CODE_LABEL_FMT,
+		   separate_line_info_table_in_use);
+	  ASM_OUTPUT_LABEL (asm_out_file, label);
+	  fputc ('\n', asm_out_file);
+
+	  /* expand the line info table if necessary */
+	  if (separate_line_info_table_in_use
+	      == separate_line_info_table_allocated)
+	    {
+	      separate_line_info_table_allocated += LINE_INFO_TABLE_INCREMENT;
+	      separate_line_info_table
+		= (dw_separate_line_info_ref) xrealloc
+		(separate_line_info_table,
+		 separate_line_info_table_allocated
+		 * sizeof (dw_separate_line_info_entry));
+	    }
+	  /* add the new entry at the end of the line_info_table.  */
+	  line_info
+	    = &separate_line_info_table[separate_line_info_table_in_use++];
+	  line_info->dw_file_num = lookup_filename (filename);
+	  line_info->dw_line_num = line;
+	  line_info->function = current_funcdef_number;
 	}
-      /* add the new entry at the end of the line_info_table.  */
-      line_info = &line_info_table[line_info_table_in_use++];
-      line_info->dw_file_num = lookup_filename (filename);
-      line_info->dw_line_num = line;
+      else
+	{
+	  register dw_line_info_ref line_info;
+	  sprintf (label, LINE_CODE_LABEL_FMT, line_info_table_in_use);
+	  ASM_OUTPUT_LABEL (asm_out_file, label);
+	  fputc ('\n', asm_out_file);
+
+	  /* expand the line info table if necessary */
+	  if (line_info_table_in_use == line_info_table_allocated)
+	    {
+	      line_info_table_allocated += LINE_INFO_TABLE_INCREMENT;
+	      line_info_table
+		= (dw_line_info_ref) xrealloc
+		(line_info_table,
+		 line_info_table_allocated * sizeof (dw_line_info_entry));
+	    }
+	  /* add the new entry at the end of the line_info_table.  */
+	  line_info = &line_info_table[line_info_table_in_use++];
+	  line_info->dw_file_num = lookup_filename (filename);
+	  line_info->dw_line_num = line;
+	}
     }
 }
 
@@ -7762,16 +7983,28 @@ dwarfout_finish ()
   ASM_OUTPUT_LABEL (asm_out_file, BSS_END_LABEL);
 #endif
 
+  /* Output the source line correspondence table.  */
+  if (line_info_table_in_use > 1 || separate_line_info_table_in_use)
+    {
+      fputc ('\n', asm_out_file);
+      ASM_OUTPUT_SECTION (asm_out_file, LINE_SECTION);
+      output_line_info ();
+
+      /* We can only use the low/high_pc attributes if all of the code
+	 was in .text.  */
+      if (separate_line_info_table_in_use == 0)
+	{
+	  add_AT_lbl_id (comp_unit_die, DW_AT_low_pc, TEXT_SECTION);
+	  add_AT_lbl_id (comp_unit_die, DW_AT_high_pc, TEXT_END_LABEL);
+	}
+      add_AT_section_offset (comp_unit_die, DW_AT_stmt_list, LINE_SECTION);
+    }
+
   /* Output the abbreviation table.  */
   fputc ('\n', asm_out_file);
   ASM_OUTPUT_SECTION (asm_out_file, ABBREV_SECTION);
   build_abbrev_table (comp_unit_die);
   output_abbrev_section ();
-
-  /* Output the source line correspondence table.  */
-  fputc ('\n', asm_out_file);
-  ASM_OUTPUT_SECTION (asm_out_file, LINE_SECTION);
-  output_line_info ();
 
   /* Initialize the beginning DIE offset - and calculate sizes/offsets.   */
   next_die_offset = DWARF_COMPILE_UNIT_HEADER_SIZE;
