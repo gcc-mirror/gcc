@@ -276,4 +276,5 @@ cp/mangle.o: cp/mangle.c $(CXX_TREE_H) $(TM_H) toplev.h real.h
 
 cp/parser.o: cp/parser.c $(CXX_TREE_H) $(TM_H) diagnostic.h gt-cp-parser.h output.h
 
-cp/name-lookup.o: cp/name-lookup.c $(CXX_TREE_H)
+cp/name-lookup.o: cp/name-lookup.c $(CONFIG_H) $(SYSTEM_H) coretypes.h \
+	$(TM_H) $(CXX_TREE_H) timevar.h
