@@ -77,7 +77,10 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 %{.cxx:	-D__LANGUAGE_C_PLUS_PLUS__ -D__LANGUAGE_C_PLUS_PLUS} \
 %{.C:	-D__LANGUAGE_C_PLUS_PLUS__ -D__LANGUAGE_C_PLUS_PLUS} \
 %{.m:	-D__LANGUAGE_OBJECTIVE_C__ -D__LANGUAGE_OBJECTIVE_C} \
-%{!.S:%{!.s:	-D__LANGUAGE_C__  -D__LANGUAGE_C %{!ansi:-DLANGUAGE_C}}}"
+%{!.S:%{!.s:	-D__LANGUAGE_C__  -D__LANGUAGE_C %{!ansi:-DLANGUAGE_C}}} \
+%{mlong64:-D__PTRDIFF_TYPE__=long\\ int} \
+%{!mlong64:-D__PTRDIFF_TYPE__=int} \
+%{mips3:-U__mips -D__mips=3}"
 
 /* ??? This assumes that GNU as is always used with GNU ld, and MIPS as is
    always used with MIPS ld.  */
@@ -121,7 +124,8 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 %{pic-names*: -mhalf-pic} \
 %{!pic-*:     -mhalf-pic}"
 
-/* Specify wchar_t types.  */
+/* Specify size_t and wchar_t types.  */
+#define SIZE_TYPE	"long unsigned int"
 #define WCHAR_TYPE	"unsigned int"
 #define WCHAR_TYPE_SIZE BITS_PER_WORD
 #define MAX_WCHAR_TYPE_SIZE MAX_LONG_TYPE_SIZE
@@ -134,6 +138,8 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 
 /* enable dwarf debugging for testing */
 #define DWARF_DEBUGGING_INFO
+/* This is needed by dwarfout.c.  */
+#define SET_ASM_OP	".set"
 
 /* Tell collect that the object format is OSF/rose.  */
 #define OBJECT_FORMAT_ROSE
