@@ -1,5 +1,5 @@
-/* { dg-do compile  */
-/* { dg-options -fpic } */
+/* { dg-do compile  }*/
+/* { dg-options "-fpic -O2" } */
 
 void f (char *s)
 {
