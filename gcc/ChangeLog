@@ -1,3 +1,7 @@
+2002-03-10  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* combine.c (make_extraction): Fix error in last change.
+
 2002-03-09  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* c4x.c (c4x_fp_reglist): Const-ify.

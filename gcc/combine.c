@@ -6033,7 +6033,7 @@ make_extraction (mode, inner, pos, pos_rtx, len,
 	return new;
 
       if (GET_CODE (new) == CONST_INT)
-	return trunc_int_for_mode (INTVAL (new), mode);
+	return GEN_INT (trunc_int_for_mode (INTVAL (new), mode));
 
       /* If we know that no extraneous bits are set, and that the high
 	 bit is not set, convert the extraction to the cheaper of
