@@ -1,3 +1,7 @@
+2003-02-18  Jakub Jelinek  <jakub@redhat.com>
+
+	* gcc.dg/20030217-1.c: New test.
+
 2003-02-10  Eric Botcazou  <ebotcazou@libertysurf.fr>
             Christian Ehrhardt  <ehrhardt@mathematik.uni-ulm.de>
 

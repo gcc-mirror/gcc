@@ -1,3 +1,7 @@
+2003-02-18  Jakub Jelinek  <jakub@redhat.com>
+
+	* real.c (asctoeg): Handle denormals in hexadecimal notation.
+
 2003-02-16 Arend Bayer <arend.bayer@web.de>
            Richard Henderson  <rth@redhat.com>
 

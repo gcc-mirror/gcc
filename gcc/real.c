@@ -5417,7 +5417,12 @@ read_expnt:
       if (lexp > 0x7fff)
 	goto infinite;
       if (lexp < 0)
-	goto zero;
+	{
+	  if (lexp < -NBITS)
+	    goto zero;
+	  lost |= eshift (yy, lexp);
+	  lexp = 0;
+	}
       yy[E] = lexp;
       goto expdon;
     }
