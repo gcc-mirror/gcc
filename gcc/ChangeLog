@@ -1,3 +1,8 @@
+2004-01-30  Andrew Pinski <pinskia@physics.uc.edu>
+
+	* toplev.c: Include alloc-pool.h.
+	* Makefile.in (toplev.c): Update dependencies. 
+
 2004-01-30  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* combine.c (simplify_shift_const, case XOR): Be careful when
@@ -714,24 +719,24 @@
 	* config/pdp11/pdp11.h (STRUCT_VALUE): Remove.
 	(RETURN_IN_MEMORY): Likewise.
 
-2004-01-26  Fariborz Jahanian <fjahanian@apple.com>
+2004-01-26  Fariborz Jahanian  <fjahanian@apple.com>
 
 	 * config/rs6000/rs6000.c (rs6000_emit_move): split slow
 	 unaligned load/store into smaller loads and stores.
 
-2004-01-26  Fariborz Jahanian <fjahanian@apple.com>
+2004-01-26  Fariborz Jahanian  <fjahanian@apple.com>
 
 	* function.c (assign_parms): Do not assign
 	long long argument to memory in prologue if
 	is it loaded into register.
 
-2004-01-26  Fariborz Jahanian <fjahanian@apple.com>
+2004-01-26  Fariborz Jahanian  <fjahanian@apple.com>
 
 	 PR middle-end/13779
 	 * expr.c (emit_group_load): split constant
 	 correctly into register components of PARALLEL insn.
 
-2004-01-26  Fariborz Jahanian <fjahanian@apple.com>
+2004-01-26  Fariborz Jahanian  <fjahanian@apple.com>
 
 	* gcc/config/rs6000/rs6000.md (save_stack_nonlocal):
 	Use adjust_address_nv directly with appropriate mode.
@@ -1460,7 +1465,7 @@
 	* pa.h: Likewise.
 	* pa.md: Likewise.
 
-2004-01-21  Caroline Tice <ctice@apple.com>
+2004-01-21  Caroline Tice  <ctice@apple.com>
 
 	PR target/12308
 	* config/i386/i386.md (fix_truncxfdi2): Add clause to clobber
