@@ -226,7 +226,7 @@ static int n_memlocs;
    reload each.  */
 
 static rtx secondary_memlocs[NUM_MACHINE_MODES];
-static rtx secondary_memlocs_elim[MAX_RECOG_OPERANDS];
+static rtx secondary_memlocs_elim[NUM_MACHINE_MODES][MAX_RECOG_OPERANDS];
 #endif
 
 /* The instruction we are doing reloads for;
@@ -434,9 +434,9 @@ get_secondary_mem (x, mode, opnum, type)
   if (GET_MODE_BITSIZE (mode) < BITS_PER_WORD)
     mode = mode_for_size (BITS_PER_WORD, GET_MODE_CLASS (mode), 0);
 
-  /* If we already have made a MEM for this operand, return it.  */
-  if (secondary_memlocs_elim[opnum] != 0)
-    return secondary_memlocs_elim[opnum];
+  /* If we already have made a MEM for this operand in MODE, return it.  */
+  if (secondary_memlocs_elim[(int) mode][opnum] != 0)
+    return secondary_memlocs_elim[(int) mode][opnum];
 
   /* If this is the first time we've tried to get a MEM for this mode, 
      allocate a new one.  `something_changed' in reload will get set
@@ -478,7 +478,7 @@ get_secondary_mem (x, mode, opnum, type)
 			    opnum, type, 0);
     }
 
-  secondary_memlocs_elim[opnum] = loc;
+  secondary_memlocs_elim[(int) mode][opnum] = loc;
   return loc;
 }
 
@@ -487,10 +487,7 @@ get_secondary_mem (x, mode, opnum, type)
 void
 clear_secondary_mem ()
 {
-  int i;
-
-  for (i = 0; i < NUM_MACHINE_MODES; i++)
-    secondary_memlocs[i] = 0;
+  bzero (secondary_memlocs, sizeof secondary_memlocs);
 }
 #endif /* SECONDARY_MEMORY_NEEDED */
 
@@ -1385,10 +1382,10 @@ combine_reloads ()
 	    || reload_secondary_reload[output_reload] == -1)
 #ifdef SECONDARY_MEMORY_NEEDED
 	/* Likewise for different secondary memory locations.  */
-	&& (secondary_memlocs_elim[reload_opnum[i]] == 0
-	    || secondary_memlocs_elim[reload_opnum[output_reload]] == 0
-	    || rtx_equal_p (secondary_memlocs_elim[reload_opnum[i]],
-			    secondary_memlocs_elim[reload_opnum[output_reload]]))
+	&& (secondary_memlocs_elim[(int) reload_outmode[output_reload]][reload_opnum[i]] == 0
+	    || secondary_memlocs_elim[(int) reload_outmode[output_reload]][reload_opnum[output_reload]] == 0
+	    || rtx_equal_p (secondary_memlocs_elim[(int) reload_outmode[output_reload]][reload_opnum[i]],
+			    secondary_memlocs_elim[(int) reload_outmode[output_reload]][reload_opnum[output_reload]]))
 #endif
 #ifdef SMALL_REGISTER_CLASSES
 	&& reload_reg_class[i] == reload_reg_class[output_reload]
@@ -1437,9 +1434,9 @@ combine_reloads ()
 	  reload_secondary_reload[i] = reload_secondary_reload[output_reload];
 #ifdef SECONDARY_MEMORY_NEEDED
 	/* Copy any secondary MEM.  */
-	if (secondary_memlocs_elim[reload_opnum[output_reload]] != 0)
-	  secondary_memlocs_elim[reload_opnum[i]]
-	    = secondary_memlocs_elim[reload_opnum[output_reload]];
+	if (secondary_memlocs_elim[(int) reload_outmode[output_reload]][reload_opnum[output_reload]] != 0)
+	  secondary_memlocs_elim[(int) reload_outmode[output_reload]][reload_opnum[i]]
+	    = secondary_memlocs_elim[(int) reload_outmode[output_reload]][reload_opnum[output_reload]];
 #endif
 	/* If required, minimize the register class. */
 	if (reg_class_subset_p (reload_reg_class[output_reload],
