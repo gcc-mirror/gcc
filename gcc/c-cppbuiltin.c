@@ -36,7 +36,8 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #define REGISTER_PREFIX ""
 #endif
 
-static void builtin_define_std PARAMS ((const char *)) ATTRIBUTE_UNUSED;
+/* Non-static as some targets don't use it.  */
+void builtin_define_std PARAMS ((const char *)) ATTRIBUTE_UNUSED;
 static void builtin_define_with_value_n PARAMS ((const char *, const char *,
 						 size_t));
 static void builtin_define_with_int_value PARAMS ((const char *,
@@ -393,7 +394,7 @@ cb_register_builtins (pfile)
    e.g. passing "unix" defines "__unix", "__unix__" and possibly
    "unix".  Passing "_mips" defines "__mips", "__mips__" and possibly
    "_mips".  */
-static void
+void
 builtin_define_std (macro)
      const char *macro;
 {
