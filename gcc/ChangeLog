@@ -1,3 +1,20 @@
+2004-05-02  Eric Botcazou  <ebotcazou@act-europe.fr>
+
+	PR middle-end/14988
+	* function.c (assign_stack_local_1): Use BITS_PER_UNIT alignment
+	when passed -2 as 'align'.
+	(put_var_into_stack): Use 'bool' as the type for the three local
+	predicates.  Adjust calls to put_reg_into_stack.
+	When passed a CONCAT, instruct put_reg_into_stack to use
+	a consecutive stack slot for the second part.
+	(put_reg_into_stack): Remove 'promoted_mode' parameter, add
+	'consecutive_p' parameter.  Turn the three predicates into 'bool'
+	parameters.  Retrieve the register mode from 'reg'.
+	When consecutive_p is true, instruct assign_stack_local_1 to use
+	BITS_PER_UNIT alignment.
+	(put_addressof_into_stack): Use 'bool' as the type for the two
+	local predicates. Adjust call to put_reg_into_stack.
+
 2004-05-02  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* fold-const.c (fold_convert_const, fold): Add missing
