@@ -5633,6 +5633,14 @@ build_const_cast (type, expr)
   if (type == error_mark_node || expr == error_mark_node)
     return error_mark_node;
 
+  if (!POINTER_TYPE_P (type) && !TYPE_PTRMEMFUNC_P (type))
+    {
+      cp_error ("`%T' is not a pointer, reference, or pointer-to-member type",
+		type);
+      cp_error ("as required by const_cast");
+      return error_mark_node;
+    }
+
   if (TREE_CODE (expr) == OFFSET_REF)
     expr = resolve_offset_ref (expr);
 

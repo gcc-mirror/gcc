@@ -1,3 +1,8 @@
+1999-04-30  Mark Mitchell  <mark@codesourcery.com>
+
+	* typeck.c (build_const_cast): Disallow use of const_cast to
+	anything but a pointer or reference type.
+
 1999-04-30  Nathan Sidwell  <nathan@acm.org>
 
 	* decl.c (cp_finish_decl): Don't permit arrays of abstract or
