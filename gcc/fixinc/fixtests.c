@@ -51,7 +51,7 @@ Boston, MA 02111-1307, USA.  */
 ENV_TABLE
 #undef _ENV_
 
-typedef apply_fix_p_t t_test_proc PARAMS(( tCC* file, tCC* text ));
+typedef apply_fix_p_t t_test_proc ( tCC* file, tCC* text );
 
 typedef struct {
     tCC*         test_name;
@@ -62,12 +62,9 @@ typedef struct {
   _FT_( "machine_name",     machine_name_test )				\
   _FT_( "stdc_0_in_system_headers",    stdc_0_in_system_headers_test )
 
-#define TEST_FOR_FIX_PROC_HEAD( test )				\
-static apply_fix_p_t test PARAMS(( tCC* file, tCC* text ));	\
-static apply_fix_p_t test ( fname, text )			\
-    tCC* fname ATTRIBUTE_UNUSED;				\
-    tCC* text ATTRIBUTE_UNUSED;
-
+#define TEST_FOR_FIX_PROC_HEAD( test ) \
+static apply_fix_p_t test ( tCC* fname ATTRIBUTE_UNUSED, \
+                            tCC* text  ATTRIBUTE_UNUSED )
 
 TEST_FOR_FIX_PROC_HEAD( machine_name_test )
 {
@@ -139,10 +136,7 @@ TEST_FOR_FIX_PROC_HEAD( stdc_0_in_system_headers_test )
 
 */
 apply_fix_p_t
-run_test( tname, fname, text )
-  tCC* tname;
-  tCC* fname;
-  tCC* text;
+run_test( tCC* tname, tCC* fname, tCC* text )
 {
 #define _FT_(n,p) { n, p },
   static test_entry_t test_table[] = { FIX_TEST_TABLE { NULL, NULL }};

@@ -199,31 +199,27 @@ extern int gnu_type_map_ct;
 /*
  *  Exported procedures
  */
-char * load_file_data PARAMS(( FILE* fp ));
+char * load_file_data ( FILE* fp );
 
 #ifdef IS_CXX_HEADER_NEEDED
-t_bool is_cxx_header  PARAMS(( tCC* filename, tCC* filetext ));
+t_bool is_cxx_header ( tCC* filename, tCC* filetext );
 #endif /* IS_CXX_HEADER_NEEDED */
 
 #ifdef SKIP_QUOTE_NEEDED
-tCC*   skip_quote  PARAMS(( char  q, char* text ));
+tCC*   skip_quote ( char  q, char* text );
 #endif
 
-void   compile_re  PARAMS(( tCC* pat, regex_t* re, int match,
-                            tCC *e1, tCC *e2 ));
+void   compile_re ( tCC* pat, regex_t* re, int match, tCC *e1, tCC *e2 );
 
-void   apply_fix   PARAMS(( tFixDesc* p_fixd, tCC* filname ));
+void   apply_fix ( tFixDesc* p_fixd, tCC* filname );
 apply_fix_p_t
-       run_test    PARAMS(( tCC* t_name, tCC* f_name, tCC* text ));
+       run_test ( tCC* t_name, tCC* f_name, tCC* text );
 
 #ifdef SEPARATE_FIX_PROC
-char*  make_raw_shell_str
-                   PARAMS(( char* pz_d, tCC* pz_s, size_t smax ));
+char*  make_raw_shell_str ( char* pz_d, tCC* pz_s, size_t smax );
 #endif
 
 #ifdef MN_NAME_PAT
-void   mn_get_regexps
-                   PARAMS(( regex_t** label_re, regex_t** name_re,
-                            tCC *who ));
+void   mn_get_regexps ( regex_t** label_re, regex_t** name_re, tCC *who );
 #endif
 #endif /* ! GCC_FIXLIB_H */

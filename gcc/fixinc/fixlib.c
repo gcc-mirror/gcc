@@ -32,8 +32,7 @@ Boston, MA 02111-1307, USA.  */
    is presumed to be an ASCII text file containing no NULs.  */
 
 char *
-load_file_data (fp)
-     FILE* fp;
+load_file_data (FILE* fp)
 {
   char *pz_data = (char*)NULL;
   int    space_left = -1;  /* allow for terminating NUL */
@@ -81,9 +80,7 @@ load_file_data (fp)
 
 #ifdef IS_CXX_HEADER_NEEDED
 t_bool
-is_cxx_header (fname, text)
-     tCC *fname;
-     tCC *text;
+is_cxx_header (tCC* fname, tCC* text)
 {
   /*  First, check to see if the file is in a C++ directory */
   for (;;)
@@ -147,9 +144,7 @@ template[ \t]*<|\
  *  We are not doing a correctness syntax check here.
  */
 tCC*
-skip_quote( q, text )
-  char  q;
-  char* text;
+skip_quote(char q, char* text )
 {
   for (;;)
     {
@@ -188,12 +183,7 @@ skip_quote( q, text )
    REG_EXTENDED|REG_NEWLINE produces identical regex syntax/semantics
    to egrep (verified from 4.4BSD Programmer's Reference Manual).  */
 void
-compile_re( pat, re, match, e1, e2 )
-     tCC *pat;
-     regex_t *re;
-     int match;
-     tCC *e1;
-     tCC *e2;
+compile_re( tCC* pat, regex_t* re, int match, tCC* e1, tCC* e2 )
 {
   tSCC z_bad_comp[] = "fixincl ERROR:  cannot compile %s regex for %s\n\
 \texpr = `%s'\n\terror %s\n";
@@ -228,10 +218,7 @@ static regex_t mn_name_re;
 static int mn_compiled = 0;
 
 void
-mn_get_regexps( label_re, name_re, who )
-     regex_t **label_re;
-     regex_t **name_re;
-     tCC *who;
+mn_get_regexps(regex_t** label_re, regex_t** name_re, tCC* who )
 {
   if (! mn_compiled)
     {
@@ -248,10 +235,7 @@ mn_get_regexps( label_re, name_re, who )
 #ifdef SEPARATE_FIX_PROC
 
 char*
-make_raw_shell_str( pz_d, pz_s, smax )
-  char*       pz_d;
-  tCC*        pz_s;
-  size_t      smax;
+make_raw_shell_str( char* pz_d, tCC* pz_s, size_t smax )
 {
   tSCC zQ[] = "'\\''";
   size_t     dtaSize;
