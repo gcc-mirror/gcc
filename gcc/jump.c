@@ -1,6 +1,6 @@
 /* Optimize jump instructions, for GNU compiler.
    Copyright (C) 1987, 1988, 1989, 1991, 1992, 1993, 1994, 1995, 1996, 1997
-   1998, 1999, 2000, 2001, 2002 Free Software Foundation, Inc.
+   1998, 1999, 2000, 2001, 2002, 2003 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -59,6 +59,7 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
    or even change what is live at any point.
    So perhaps let combiner do it.  */
 
+static rtx next_nonnote_insn_in_loop	PARAMS ((rtx));
 static int init_label_info		PARAMS ((rtx));
 static void mark_all_labels		PARAMS ((rtx));
 static int duplicate_loop_exit_test	PARAMS ((rtx));
@@ -119,6 +120,27 @@ cleanup_barriers ()
     }
 }
 
+/* Return the next insn after INSN that is not a NOTE and is in the loop,
+   i.e. when there is no such INSN before NOTE_INSN_LOOP_END return NULL_RTX.
+   This routine does not look inside SEQUENCEs.  */
+
+static rtx
+next_nonnote_insn_in_loop (insn)
+     rtx insn;
+{
+  while (insn)
+    {
+      insn = NEXT_INSN (insn);
+      if (insn == 0 || GET_CODE (insn) != NOTE)
+	break;
+      if (GET_CODE (insn) == NOTE
+	  && NOTE_LINE_NUMBER (insn) == NOTE_INSN_LOOP_END)
+	return NULL_RTX;
+    }
+
+  return insn;
+}
+
 void
 copy_loop_headers (f)
      rtx f;
@@ -137,7 +159,7 @@ copy_loop_headers (f)
 	 the values of regno_first_uid and regno_last_uid.  */
       if (GET_CODE (insn) == NOTE
 	  && NOTE_LINE_NUMBER (insn) == NOTE_INSN_LOOP_BEG
-	  && (temp1 = next_nonnote_insn (insn)) != 0
+	  && (temp1 = next_nonnote_insn_in_loop (insn)) != 0
 	  && any_uncondjump_p (temp1) && onlyjump_p (temp1))
 	{
 	  temp = PREV_INSN (insn);
@@ -293,7 +315,8 @@ duplicate_loop_exit_test (loop_start)
   rtx insn, set, reg, p, link;
   rtx copy = 0, first_copy = 0;
   int num_insns = 0;
-  rtx exitcode = NEXT_INSN (JUMP_LABEL (next_nonnote_insn (loop_start)));
+  rtx exitcode
+    = NEXT_INSN (JUMP_LABEL (next_nonnote_insn_in_loop (loop_start)));
   rtx lastexit;
   int max_reg = max_reg_num ();
   rtx *reg_map = 0;

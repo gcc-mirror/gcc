@@ -1,3 +1,10 @@
+2003-01-10  Josef Zlomek  <zlomekj@suse.cz>
+
+	* jump.c (next_nonnote_insn_in_loop): New function.
+	(copy_loop_headers): Use next_nonnote_insn_in_loop instead of
+	next_nonnote_insn.
+	(duplicate_loop_exit_test). Likewise.
+
 2003-01-10  Josef Zlomek <zlomj9am@artax.karlin.mff.cuni.cz>
 
 	* Makefile.in (optabs.o): Add dependencies on basic-block.h and
