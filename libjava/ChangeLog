@@ -1,5 +1,11 @@
 2001-10-23  Tom Tromey  <tromey@redhat.com>
 
+	* java/lang/reflect/Field.java (Field): New constructor.
+	* java/lang/ClassLoader.java (defineClass(String,byte[],int,int)):
+	Throw ClassFormatError.
+	
+2001-10-23  Tom Tromey  <tromey@redhat.com>
+
 	* java/util/PropertyResourceBundle.java (handleGetObject): Now
 	public.
 	* java/util/ListResourceBundle.java (handleGetObject): Now public
