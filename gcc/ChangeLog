@@ -1,3 +1,11 @@
+2003-03-07  Geoffrey Keating  <geoffk@apple.com>
+
+	* objc/lang-specs.h (objective-c-header): Use .gch not .pch;
+	support -no-integrated-cpp.
+
+	* c-pch.c (get_ident): Use c_language_kind and flag_objc rather
+	than langhooks.name.
+
 2003-03-07  Michael Matz  <matz@suse.de>
 
 	* df.h (enum df_ref_flags.DF_REF_STRIPPED): New.

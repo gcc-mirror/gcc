@@ -44,11 +44,11 @@ Boston, MA 02111-1307, USA.  */
       %{!E:%{!M:%{!MM:\
 	%{traditional|ftraditional|traditional-cpp:\
 %eGNU Objective C no longer supports traditional compilation}\
-	%{save-temps:cc1obj -E %(cpp_options) %b.mi \n\
+	%{save-temps|no-integrated-cpp:cc1obj -E %(cpp_options) %b.mi \n\
 	    cc1obj -fpreprocessed %b.mi %(cc1_options) %{gen-decls}\
-                        -o %g.s %{!o*:--output-pch=%i.pch}\
+                        -o %g.s %{!o*:--output-pch=%i.gch}\
                         %W{o*:--output-pch=%*}%V}\
-	%{!save-temps:\
+	%{!save-temps:%{!no-integrated-cpp:\
 	    cc1obj %(cpp_unique_options) %(cc1_options) %{gen-decls}\
-                        -o %g.s %{!o*:--output-pch=%i.pch}\
-                        %W{o*:--output-pch=%*}%V}}}}", 0},
+                        -o %g.s %{!o*:--output-pch=%i.gch}\
+                        %W{o*:--output-pch=%*}%V}}}}}", 0},
