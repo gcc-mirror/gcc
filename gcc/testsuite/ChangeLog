@@ -1,3 +1,8 @@
+2003-07-15  Mark Mitchell  <mark@codesourcery.com>
+
+	PR debug/11473
+	* g++.dg/debug/debug8.C: New test.
+
 2003-07-15  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
 	* gcc.c-torture/execute/20030715-1.c: New test.

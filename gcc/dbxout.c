@@ -1621,9 +1621,7 @@ dbxout_type (type, full)
 				* BITS_PER_UNIT);
 		putc (',', asmfile);
 		CHARS (1);
-		print_wide_int (tree_low_cst (DECL_SIZE
-					      (TYPE_NAME
-					       (BINFO_TYPE (child))),
+		print_wide_int (tree_low_cst (TYPE_SIZE (BINFO_TYPE (child)),
 					      0)
 				* BITS_PER_UNIT);
 		putc (';', asmfile);
