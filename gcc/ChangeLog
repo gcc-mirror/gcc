@@ -1,5 +1,9 @@
 2002-02-11  Alexandre Oliva  <aoliva@redhat.com>
 
+	* regrename.c (regrename_optimize): Don't accept a
+	part-clobbered register if the replaced register is not part
+	clobbered.
+
 	* calls.c (store_one_arg): In the non-BLKmode non-partial case,
 	take padding into account when computing the argument value.
 
