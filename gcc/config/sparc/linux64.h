@@ -124,6 +124,10 @@ Boston, MA 02111-1307, USA.  */
 
 #endif
 
+/* The GNU C++ standard library requires that these macros be defined.  */
+#undef CPLUSPLUS_CPP_SPEC
+#define CPLUSPLUS_CPP_SPEC "-D_GNU_SOURCE %(cpp)"
+
 #undef TARGET_VERSION
 #define TARGET_VERSION fprintf (stderr, " (sparc64 GNU/Linux with ELF)");
 
