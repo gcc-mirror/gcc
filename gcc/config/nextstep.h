@@ -225,9 +225,10 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
        fprintf (FILE, ".reference .destructors_used\n");        \
       } while (0)
 
+/* Don't output a .file directive.  That is only used by the assembler for
+   error reporting.  */
 #undef	ASM_FILE_START
-#define ASM_FILE_START(FILE) \
-  fprintf (FILE, "\t.file\t\"%s\"\n", dump_base_name);
+#define ASM_FILE_START(FILE)
 
 #undef	ASM_FILE_END
 #define ASM_FILE_END(FILE)					\
