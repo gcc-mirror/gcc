@@ -584,7 +584,7 @@ SUBDIR_FLAGS_TO_PASS = $(ORDINARY_FLAGS_TO_PASS) \
 
 # Language-specific object files for C and Objective C.
 C_AND_OBJC_OBJS = c-lex.o c-pragma.o c-decl.o c-typeck.o c-convert.o \
-  c-aux-info.o c-common.o c-iterate.o @extra_c_objs@
+  c-aux-info.o c-common.o c-iterate.o mbchar.o @extra_c_objs@
 
 # Language-specific object files for C.
 C_OBJS = c-parse.o c-lang.o $(C_AND_OBJC_OBJS)
@@ -1234,13 +1234,15 @@ c-typeck.o : c-typeck.c $(CONFIG_H) system.h $(TREE_H) c-tree.h flags.h \
    intl.h output.h
 c-lang.o : c-lang.c $(CONFIG_H) system.h $(TREE_H)
 c-lex.o : c-lex.c $(CONFIG_H) system.h $(RTL_H) $(TREE_H) c-lex.h c-tree.h \
-   $(srcdir)/c-parse.h input.h intl.h flags.h $(srcdir)/c-gperf.h c-pragma.h
+   mbchar.h $(srcdir)/c-parse.h input.h intl.h flags.h $(srcdir)/c-gperf.h \
+   c-pragma.h
 c-aux-info.o : c-aux-info.c $(CONFIG_H) system.h $(TREE_H) c-tree.h flags.h
 c-convert.o : c-convert.c $(CONFIG_H) system.h $(TREE_H) flags.h
 c-pragma.o: c-pragma.c $(CONFIG_H) system.h $(TREE_H) except.h function.h \
    defaults.h c-pragma.h
 c-iterate.o: c-iterate.c $(CONFIG_H) system.h $(TREE_H) $(RTL_H) c-tree.h \
    flags.h
+mbchar.o: $(CONFIG_H) mbchar.c system.h gansidecl.h mbchar.h
 
 # To make a configuration always use collect2, set USE_COLLECT2 to ld.
 ld: collect2
@@ -1862,15 +1864,16 @@ cpp: $(CCCP)
 	-rm -f cpp$(exeext)
 	ln $(CCCP)$(exeext) cpp$(exeext) > /dev/null 2>&1 \
 	 || cp $(CCCP)$(exeext) cpp$(exeext)
-CCCP_OBJS = cccp.o cexp.o intl.o prefix.o version.o
+CCCP_OBJS = cccp.o cexp.o intl.o prefix.o version.o mbchar.o
 cccp: $(CCCP_OBJS) $(LIBDEPS)
 	$(CC) $(ALL_CFLAGS) $(LDFLAGS) -o $@ $(CCCP_OBJS) $(LIBS)
-cexp.o: $(srcdir)/cexp.c $(CONFIG_H)
+cexp.o: $(srcdir)/cexp.c $(CONFIG_H) system.h mbchar.h gansidecl.h
 	$(CC) $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) -c $(srcdir)/cexp.c
 $(srcdir)/cexp.c: $(srcdir)/cexp.y
 	cd $(srcdir); $(BISON) -o cexp.c cexp.y
 
-cccp.o: cccp.c $(CONFIG_H) intl.h pcp.h version.c config.status
+cccp.o: cccp.c $(CONFIG_H) system.h mbchar.h intl.h pcp.h version.c \
+   config.status
 	$(CC) $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) \
 	  -DGCC_INCLUDE_DIR=\"$(libsubdir)/include\" \
 	  -DGPLUSPLUS_INCLUDE_DIR=\"$(gxx_include_dir)\" \
@@ -1881,7 +1884,7 @@ cccp.o: cccp.c $(CONFIG_H) intl.h pcp.h version.c config.status
 	  -c `echo $(srcdir)/cccp.c | sed 's,^\./,,'`
 
 CPPMAIN_OBJS = cppmain.o cppalloc.o cpperror.o cppexp.o cpphash.o cpplib.o \
- intl.o prefix.o version.o
+ intl.o prefix.o version.o mbchar.o
 cppmain: $(CPPMAIN_OBJS) $(LIBDEPS)
 	$(CC) $(ALL_CFLAGS) $(LDFLAGS) -o $@ $(CPPMAIN_OBJS) $(LIBS)
 
