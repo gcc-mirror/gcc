@@ -461,6 +461,7 @@ enum reg_class {
    Return 1 if VALUE is in the range specified by C.  */
 
 #define CONST_OK_FOR_I(VALUE) ((VALUE) == 0)
+#define CONST_OK_FOR_J(VALUE) (((VALUE) & 0xff) == 0)
 #define CONST_OK_FOR_L(VALUE)				\
   (TARGET_H8300H || TARGET_H8300S			\
    ? (VALUE) == 1 || (VALUE) == 2 || (VALUE) == 4	\
@@ -472,6 +473,7 @@ enum reg_class {
 
 #define CONST_OK_FOR_LETTER_P(VALUE, C)		\
   ((C) == 'I' ? CONST_OK_FOR_I (VALUE) :	\
+   (C) == 'J' ? CONST_OK_FOR_J (VALUE) :	\
    (C) == 'L' ? CONST_OK_FOR_L (VALUE) :	\
    (C) == 'N' ? CONST_OK_FOR_N (VALUE) :	\
    0)

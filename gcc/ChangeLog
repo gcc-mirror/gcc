@@ -1,3 +1,10 @@
+2002-12-12  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* config/h8300/h8300.h (CONST_OK_FOR_J): New.
+	(CONST_OK_FOR_LETTER_P): Use CONST_OK_FOR_J.
+	* config/h8300/h8300.md (*addhi_h8300): Add a new alternative.
+	(*addhi_h8300hs): Likewise.
+
 Thu Dec 12 16:24:59 2002  J"orn Rennecke <joern.rennecke@superh.com>
 
 	* sh.c (reg_class_from_letter): No longer const.  Add 'e' entry.
