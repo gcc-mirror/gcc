@@ -1,6 +1,6 @@
-/* winnt.h  --  operating system specific defines to be used when
-   targeting GCC for Windows NT 3.x.
-   Copyright (C) 1994 Free Software Foundation, Inc.
+/* Operating system specific defines to be used when targeting GCC for
+   Windows NT 3.x.
+   Copyright (C) 1994, 1995 Free Software Foundation, Inc.
    Contributed by Douglas B. Rupp (drupp@cs.washington.edu).
 
 This file is part of GNU CC.
@@ -19,27 +19,54 @@ You should have received a copy of the GNU General Public License
 along with GNU CC; see the file COPYING.  If not, write to
 the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.
 
-   To use this file, put in your tm.h file something like:
+/* The global __fltused is necessary to cause the printf/scanf routines
+   for outputting/inputting floating point numbers to be loaded.  Since this
+   is kind of hard to detect, we just do it all the time. */
 
-	#include "?????.h"
-	#include "svr4.h"
+#ifdef ASM_FILE_START
+#undef ASM_FILE_START
+#endif
+#define ASM_FILE_START(FILE) \
+  do {	fprintf (FILE, "\t.file\t");				\
+	output_quoted_string (FILE, dump_base_name);		\
+	fprintf (FILE, "\n");					\
+        fprintf (FILE, ".global\t__fltused\n");			\
+  } while (0)
 
-   followed by any really system-specific defines (or overrides of
-   defines) which you find that you need.  For example, CPP_PREDEFINES
-   is defined here with only the defined -Dunix and -DSVR4.  You should
-   probably override that in your target-specific ?????svr4.h file
-   with a set of defines that includes these, but also contains an
-   appropriate define for the type of hardware that you are targeting. */
 
-#undef LIB_SPEC
-#define LIB_SPEC "libc.lib kernel32.lib"
+/* Value is the previously stored DECL_ASSEMBLER_NAME with a suffix 
+   consisting of an atsign (@) followed by string of digits that represents
+   the number of bytes of arguments passed to the function, if it has the 
+   attribute STDCALL. */
+
+#define MODIFY_ASSEMBLER_NAME(fndecl) \
+      TREE_CODE (fndecl) == FUNCTION_DECL \
+	? \
+	  chain_member_value (get_identifier ("stdcall"), \
+                              DECL_MACHINE_ATTRIBUTES (fndecl)) \
+	    ? \
+	      (tree) gen_stdcall_suffix (fndecl) \
+	    : (tree) DECL_ASSEMBLER_NAME (fndecl) \
+	: (tree) DECL_ASSEMBLER_NAME (fndecl)
+
+/* Value is 1 if the declaration has either of the attributes: CDECL or
+   STDCALL and 0 otherwise */
+
+#define VALID_MACHINE_DECL_ATTRIBUTE(decl,attr,name) \
+  ((TREE_CODE(decl) == FUNCTION_DECL) \
+   || (TREE_CODE(decl) == FIELD_DECL) \
+   || (TREE_CODE(decl) == TYPE_DECL)) \
+  && ((get_identifier("stdcall") == name) \
+   || (get_identifier("cdecl") == name))
 
 #undef STARTFILE_SPEC
 #define STARTFILE_SPEC ""
 
 #undef LINK_SPEC
-#define LINK_SPEC "-align:0x1000 -subsystem:console -entry:mainCRTStartup \
-  -stack:1000000,1000000"
+#define LINK_SPEC "-align:0x1000 -stack:1000000,1000000"
+
+#undef CPP_SPEC
+#define CPP_SPEC "-lang-c-c++-comments"
 
 #undef STANDARD_EXEC_PREFIX
 #define STANDARD_EXEC_PREFIX ""
@@ -64,3 +91,15 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.
     { 0, 0, 0 }						\
   }
 
+/* if the switch "-mwindows" is passed to ld, then specify to the Microsoft
+   linker the proper switches and libraries to build a graphical program */
+
+#define LIB_SPEC "%{mwindows:-subsystem:windows -entry:WinMainCRTStartup \
+  USER32.LIB GDI32.LIB COMDLG32.LIB WINSPOOL.LIB} \
+ %{!mwindows:-subsystem:console -entry:mainCRTStartup} \
+ %{mcrtmt:LIBCMT.LIB KERNEL32.LIB ADVAPI32.LIB} \
+ %{!mcrtmt:LIBC.LIB KERNEL32.LIB ADVAPI32.LIB} \
+ %{g:-debugtype:coff -debug:full} \
+ %{v}"
+
+#define STDC_VALUE 0
