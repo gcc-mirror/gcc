@@ -1,5 +1,10 @@
 2003-06-14  Richard Earnshaw  <rearnsha@arm.com>
 
+	PR target/3724
+	* arm/linux-elf.h (PROFILE_HOOK): Define.
+
+2003-06-14  Richard Earnshaw  <rearnsha@arm.com>
+
 	PR target/11183
 	* arm.h (CANNOT_CHANGE_MODE_CLASS): Define.
 

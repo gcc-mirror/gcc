@@ -120,5 +120,10 @@
   fprintf (STREAM, "\tbl\tmcount%s\n", NEED_PLT_RELOC ? "(PLT)" : "");	\
 }
 
+/* The linux profiler clobbers the link register.  Make sure the
+   prologue knows to save it.  */
+#define PROFILE_HOOK(X)						\
+  emit_insn (gen_rtx_CLOBBER (VOIDmode, gen_rtx_REG (SImode, LR_REGNUM)))
+
 #undef  CC1_SPEC
 #define CC1_SPEC "%{profile:-p}"
