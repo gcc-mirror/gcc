@@ -1,3 +1,8 @@
+2001-07-16  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
+
+	* gcc.c-torture/execute/20001229-1.c: Include <sys/proc.h> for
+	UAC_SIGBUS, UAC_NOPRINT definitions.
+
 Mon Jul 16 12:21:56 2001  Nicola Pero  <n.pero@mi.flashnet.it>
 
 	* objc/execute/object_is_class.m: New test.
