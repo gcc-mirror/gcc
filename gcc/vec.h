@@ -317,8 +317,8 @@ static inline TDEF VEC_OP (TDEF,iterate)		  	     	  \
   return vec_ && ix_ < vec_->num ? vec_->vec[ix_] : NULL;		  \
 }									  \
 									  \
-static inline VEC (TDEF) *VEC_OP (TDEF,alloc MEM_STAT_DECL)		  \
-     (int alloc_)							  \
+static inline VEC (TDEF) *VEC_OP (TDEF,alloc)				  \
+     (int alloc_ MEM_STAT_DECL)						  \
 {									  \
   return vec_p_reserve (NULL, alloc_ - !alloc_ PASS_MEM_STAT);		  \
 }									  \
