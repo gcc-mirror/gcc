@@ -2,6 +2,8 @@
 
         * gcc.dg/20020312-2.c: Add rs6000 target.
 
+	* gcc.c-torture/compile/20020319-1.c: New test.
+
 2002-03-21  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
 
 	* g++.old-deja/g++.eh/ia64-1.C: Use [ijkl]_[0-9] as variable names. 
@@ -23,8 +25,6 @@
 	* gcc.c-torture/compile/20020318-1.c: New test.
 
 	* gcc.dg/struct-by-value-1.c: New test.
-
-	* gcc.c-torture/compile/20020319-1.c: New test.
 
 2002-03-18  Jakub Jelinek  <jakub@redhat.com>
 
