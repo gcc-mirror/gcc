@@ -1,5 +1,5 @@
 /* Language-level data type conversion for GNU C++.
-   Copyright (C) 1987, 88, 92-97, 1998 Free Software Foundation, Inc.
+   Copyright (C) 1987-1988, 1992-1999 Free Software Foundation, Inc.
    Hacked by Michael Tiemann (tiemann@cygnus.com)
 
 This file is part of GNU CC.
@@ -199,6 +199,13 @@ cp_convert_to_pointer (type, expr)
 	  if (binfo == error_mark_node)
 	    return error_mark_node;
 
+	  if (binfo_from_vbase (binfo))
+	    {
+	      cp_error ("conversion to `%T' from pointer to member of virtual base `%T'",
+			type, intype);
+	      return error_mark_node;
+	    }
+	      
 	  if (TREE_CODE (expr) == PTRMEM_CST)
 	    expr = cplus_expand_constant (expr);
 
@@ -217,7 +224,7 @@ cp_convert_to_pointer (type, expr)
       return rval;
     }
   else if (TYPE_PTRMEMFUNC_P (type) && TYPE_PTRMEMFUNC_P (intype))
-    return build_ptrmemfunc (TYPE_PTRMEMFUNC_FN_TYPE (type), expr, 1);
+    return build_ptrmemfunc (TYPE_PTRMEMFUNC_FN_TYPE (type), expr, 0);
   else if (TYPE_PTRMEMFUNC_P (intype))
     {
       cp_error ("cannot convert `%E' from type `%T' to type `%T'",

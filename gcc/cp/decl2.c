@@ -4421,8 +4421,8 @@ lookup_using_namespace (name, val, usings, scope, flags)
 }
 
 /* [namespace.qual]
-   Excepts the name to lookup and its qualifying scope.
-   Returns the name/type pair found into the CPLUS_BINDING result,
+   Accepts the NAME to lookup and its qualifying SCOPE.
+   Returns the name/type pair found into the CPLUS_BINDING RESULT,
    or 0 on error. */
 
 int

@@ -6213,7 +6213,7 @@ get_delta_difference (from, to, force)
       binfo = get_binfo (to, from, 1);
       if (binfo == 0 || binfo == error_mark_node)
 	return delta;
-      if (TREE_VIA_VIRTUAL (binfo))
+      if (binfo_from_vbase (binfo))
 	{
 	  binfo = binfo_member (BINFO_TYPE (binfo),
 				CLASSTYPE_VBASECLASSES (from));
@@ -6229,7 +6229,7 @@ get_delta_difference (from, to, force)
 			      delta);
     }
 
-  if (TREE_VIA_VIRTUAL (binfo))
+  if (binfo_from_vbase (binfo))
     {
       if (force)
 	{
