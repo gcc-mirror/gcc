@@ -1,3 +1,9 @@
+2001-09-04  Nathan Sidwell  <nathan@codesourcery.com>
+
+	PR c++/4203
+	* call.c (build_over_call): Do not optimize any empty base
+	construction.
+
 2001-08-31  Kriang Lerdsuwanakij  <lerdsuwa@users.sourceforge.net>
 
 	* error.c (dump_template_decl): Output template parameters

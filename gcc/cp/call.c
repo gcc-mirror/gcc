@@ -4258,14 +4258,14 @@ build_over_call (cand, args, flags)
 	  else if (TYPE_HAS_TRIVIAL_INIT_REF (DECL_CONTEXT (fn)))
 	    return build_target_expr_with_type (arg, DECL_CONTEXT (fn));
 	}
-      else if (! real_lvalue_p (arg)
+      else if ((!real_lvalue_p (arg)
+		|| TYPE_HAS_TRIVIAL_INIT_REF (DECL_CONTEXT (fn)))
 	       /* Empty classes have padding which can be hidden
 	          inside an (empty) base of the class. This must not
 	          be touched as it might overlay things. When the
 	          gcc core learns about empty classes, we can treat it
 	          like other classes. */
-	       || (!is_empty_class (DECL_CONTEXT (fn))
-		   && TYPE_HAS_TRIVIAL_INIT_REF (DECL_CONTEXT (fn))))
+	       && !is_empty_class (DECL_CONTEXT (fn)))
 	{
 	  tree address;
 	  tree to = stabilize_reference
