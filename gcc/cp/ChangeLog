@@ -1,4 +1,4 @@
-Thu Aug 20 16:39:09 1998  Per Bothner  <bothner@cygnus.com>
+1998-08-20  Per Bothner  <bothner@cygnus.com>
 
 	Handle new'ing of Java classes.
 	* init.c (build_class_classref):  New function.
