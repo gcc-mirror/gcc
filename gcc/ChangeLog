@@ -1,3 +1,11 @@
+2004-09-21  Daniel Berlin  <dberlin@dberlin.org>
+
+	* tree-ssa.c (verify_def): Use print_generic_stmt,
+	not debug_generic_stmt.
+	(verify_use): Ditto.
+	(verify_phi_args): Ditto.
+	(verify_ssa): Ditto.
+
 2004-09-21  Paul Brook  <paul@codesourcery.com>
 
 	* varasm.c (default_assemble_integer): Return false for values wider

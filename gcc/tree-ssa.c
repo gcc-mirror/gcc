@@ -177,9 +177,9 @@ verify_def (basic_block bb, basic_block *definition_block, tree ssa_name,
     {
       error ("SSA_NAME_DEF_STMT is wrong");
       fprintf (stderr, "Expected definition statement:\n");
-      debug_generic_stmt (SSA_NAME_DEF_STMT (ssa_name));
+      print_generic_stmt (stderr, SSA_NAME_DEF_STMT (ssa_name), TDF_VOPS);
       fprintf (stderr, "\nActual definition statement:\n");
-      debug_generic_stmt (stmt);
+      print_generic_stmt (stderr, stmt, TDF_VOPS);
       goto err;
     }
 
@@ -189,7 +189,7 @@ err:
   fprintf (stderr, "while verifying SSA_NAME ");
   print_generic_expr (stderr, ssa_name, 0);
   fprintf (stderr, " in statement\n");
-  debug_generic_stmt (stmt);
+  print_generic_stmt (stderr, stmt, TDF_VOPS);
 
   return true;
 }
@@ -254,9 +254,9 @@ verify_use (basic_block bb, basic_block def_bb, tree ssa_name,
   if (err)
     {
       fprintf (stderr, "for SSA_NAME: ");
-      debug_generic_expr (ssa_name);
+      print_generic_expr (stderr, ssa_name, TDF_VOPS);
       fprintf (stderr, "in statement:\n");
-      debug_generic_stmt (stmt);
+      print_generic_stmt (stderr, stmt, TDF_VOPS);
     }
 
   return err;
@@ -319,7 +319,7 @@ verify_phi_args (tree phi, basic_block bb, basic_block *definition_block)
       if (err)
 	{
 	  fprintf (stderr, "PHI argument\n");
-	  debug_generic_stmt (op);
+	  print_generic_stmt (stderr, op, TDF_VOPS);
 	  goto error;
 	}
 
@@ -342,7 +342,7 @@ error:
   if (err)
     {
       fprintf (stderr, "for PHI node\n");
-      debug_generic_stmt (phi);
+      print_generic_stmt (stderr, phi, TDF_VOPS);
     }
 
 
@@ -555,7 +555,7 @@ verify_ssa (void)
 	      && NUM_V_MAY_DEFS (STMT_V_MAY_DEF_OPS (stmt)) == 0)
 	    {
 	      error ("Statement makes aliased stores, but has no V_MAY_DEFS");
-	      debug_generic_stmt (stmt);
+	      print_generic_stmt (stderr, stmt, TDF_VOPS);
 	      goto err;
 	    }
 	    
