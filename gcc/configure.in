@@ -1455,6 +1455,7 @@ changequote([,])dnl
 			tmake_file=i386/t-crtstuff
 			extra_parts="crtbegin.o crtend.o"
 		fi
+		tmake_file="$tmake_file i386/t-i386bare"
 		install_headers_dir=install-headers-cpio
 		;;
 changequote(,)dnl
@@ -1612,6 +1613,7 @@ changequote([,])dnl
 		else
 			tmake_file=i386/t-sco5
 		fi
+		tmake_file="$tmake_file i386/t-i386bare"
 		extra_parts="crti.o crtbegin.o crtend.o crtbeginS.o crtendS.o"
 		;;
 changequote(,)dnl
@@ -1631,6 +1633,7 @@ changequote([,])dnl
 			tmake_file=i386/t-crtstuff
 			extra_parts="crtbegin.o crtend.o"
 		fi
+		tmake_file="$tmake_file i386/t-i386bare"
 		# The default EAFS filesystem supports long file names.
 		# Truncating the target makes $host != $target which
 		# makes gcc think it is doing a cross-compile.
@@ -1652,6 +1655,7 @@ changequote([,])dnl
 			extra_parts="crtbegin.o crtend.o"
 			tmake_file=i386/t-crtstuff
 		fi
+		tmake_file="$tmake_file i386/t-i386bare"
 		truncate_target=yes
 		;;
 changequote(,)dnl
@@ -1664,7 +1668,7 @@ changequote([,])dnl
 			# Only needed if gas does not support -s
 			tm_file="i386/sol2gas.h ${tm_file}"
 		fi
-		tmake_file=i386/t-sol2
+		tmake_file="i386/t-i386bare i386/t-sol2"
 		extra_parts="crt1.o crti.o crtn.o gcrt1.o gmon.o crtbegin.o crtend.o"
 		xmake_file=x-svr4
 		if test x${enable_threads} = x; then
@@ -1691,7 +1695,7 @@ changequote([,])dnl
                then
                        tm_file="${tm_file} dbx.h"
                fi
-               tmake_file=i386/t-crtpic
+               tmake_file="i386/t-i386bare i386/t-crtpic"
                xmake_file=x-svr4
                extra_parts="crtbegin.o crtend.o"
 	       if test x$enable_threads = xyes; then
@@ -1708,7 +1712,7 @@ changequote([,])dnl
 		then
 			tm_file="${tm_file} dbx.h"
 		fi
-		tmake_file=i386/t-crtpic
+		tmake_file="i386/t-i386bare i386/t-crtpic"
 		xmake_file=x-svr4
 		extra_parts="crtbegin.o crtend.o"
 		;;
@@ -1718,7 +1722,7 @@ changequote([,])dnl
 		xm_file="xm-alloca.h ${xm_file}"
 		xm_defines="USG POSIX"
 		tm_file=i386/udk.h
-		tmake_file="i386/t-crtpic i386/t-udk"
+		tmake_file="i386/t-i386bare i386/t-crtpic i386/t-udk"
 		xmake_file=x-svr4
 		extra_parts="crtbegin.o crtend.o"
 		install_headers_dir=install-headers-cpio
@@ -1761,6 +1765,7 @@ changequote([,])dnl
 			extra_parts="crtbegin.o crtend.o"
 			tmake_file=i386/t-crtstuff
 		fi
+		tmake_file="$tmake_file i386/t-crtpic"
 		;;
 	i386-*-vsta)			# Intel 80386's running VSTa kernel
 		xm_file="${xm_file} i386/xm-vsta.h"
