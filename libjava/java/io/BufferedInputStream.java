@@ -321,7 +321,7 @@ public class BufferedInputStream extends FilterInputStream
 	  if (n < origN)
 	    break;
 	  else
-	    return -1;	// No bytes were read before EOF.
+	    return 0;	// No bytes were read before EOF.
 
 	int numread = (int) Math.min((long) (count - pos), n);
 	pos += numread;
