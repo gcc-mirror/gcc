@@ -1,3 +1,8 @@
+Sat Sep  5 02:21:08 1998  Jeffrey A Law  (law@cygnus.com)
+
+	* Makefile.in: Tweak to avoid building runtime.  It's built
+	elsewhere now.
+
 Thu Sep  3 15:32:03 1998  Dave Brolley  <brolley@cygnus.com>
 
 	* typeck.c (layout_chill_range_type): set TYPE_SIZE_UNIT.
