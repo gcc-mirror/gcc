@@ -9814,7 +9814,7 @@ Tue Oct 15 16:52:33 1996  Ian Lance Taylor  <ian@cygnus.com>
 
 Tue Oct 15 11:19:17 1996  Lee Iverson  <leei@Canada.AI.SRI.COM>
 
-	* mips.h (CPP_SPEC): Restore -D_LANGUAGE_C for Objective C.
+	* mips.h (CPP_SPEC): Restore -D_LANGUAGE_C for Objective-C.
 
 Mon Oct 14 18:03:35 1996  Jason Merrill  <jason@yorick.cygnus.com>
 
@@ -9864,7 +9864,7 @@ Fri Oct 11 12:19:21 1996  Ian Lance Taylor  <ian@cygnus.com>
 	(ASM_SPEC): Rewrite to use above specs.
 	(SUBTARGET_CPP{,_SIZE}_SPEC): Define.
 	(CPP_SPEC): Use above specs.  Don't define _LANGUAGE_C if C++ or
-	Objective C.
+	Objective-C.
 	({,SUBTARGET_}EXTRA_SPECS): Define.
 	* mips/dec-bsd.h ({CPP,ASM}_SPEC): Don't define.
 	* mips/dec-osf1.h (CPP_SPEC): Don't define.

@@ -1,3 +1,13 @@
+2002-09-26  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* ChangeLog.1: Follow spelling conventions.
+	* ChangeLog.4: Likewise.
+	* ChangeLog.6: Likewise.
+	* FSFChangeLog.11: Likewise.
+	* doc/cpp.texi: Likewise.
+	* doc/invoke.texi: Likewise.
+	* doc/tm.texi: Likewise.
+
 2002-09-26  Nick Clifton  <nickc@redhat.com>
 
 	* config.gcc: Add x prefix to v850e case for handling

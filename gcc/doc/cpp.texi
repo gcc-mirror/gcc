@@ -3604,11 +3604,11 @@ including extensions, with the exception that the effects of
 __STDC__ is not defined.
 
 @item
-If you use digraphs the behaviour is undefined.
+If you use digraphs the behavior is undefined.
 
 @item
 If a line that looks like a directive appears within macro arguments,
-the behaviour is undefined.
+the behavior is undefined.
 
 @end itemize
 
