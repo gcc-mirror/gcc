@@ -1,7 +1,7 @@
 #! /bin/sh
 # Install modified versions of certain ANSI-incompatible
 # native Sequent DYNIX/ptx System V Release 3.2 system include files.
-# Copyright (C) 1994 Free Software Foundation, Inc.
+# Copyright (C) 1994, 1996 Free Software Foundation, Inc.
 # Contributed by Bill Burton <billb@progress.com>
 # Portions adapted from fixinc.svr4 and fixincludes.
 #
@@ -187,6 +187,64 @@ if [ \! -z "$file_to_fix" ]; then
 ' \
     -e '/#endif[ 	]*\/\* NETSWAP \*\//i\
 #endif /* not __GNUC__ */' \
+    $file_to_fix > ${LIB}/${file}.sed
+    rm -f ${LIB}/$file; mv ${LIB}/${file}.sed ${LIB}/$file
+    echo Fixed $file_to_fix
+  fi
+fi
+
+# /usr/include/sys/mc_param.h has an embedded asm for the cpuid intruction
+# on the P5. This is not used by anything else so we ifdef it out.
+file=sys/mc_param.h
+if [ -r ${LIB}/$file ]; then
+  file_to_fix=${LIB}/$file
+else
+  if [ -r ${INPUT}/$file ]; then
+    file_to_fix=${INPUT}/$file
+  else
+    file_to_fix=""
+  fi
+fi
+if [ \! -z "$file_to_fix" ]; then
+  echo Checking $file_to_fix
+  if grep __GNUC__ $file_to_fix > /dev/null; then
+    true
+  else
+    sed -e '/__asm/,/}/{
+/__asm/i\
+#if !defined (__GNUC__) && !defined (__GNUG__)
+/}/a\
+#endif
+}' \
+    $file_to_fix > ${LIB}/${file}.sed
+    rm -f ${LIB}/$file; mv ${LIB}/${file}.sed ${LIB}/$file
+    echo Fixed $file_to_fix
+  fi
+fi
+
+# /usr/include/sys/mc_param.h has an embedded asm for the cpuid intruction
+# on the P5. This is not used by anything else so we ifdef it out.
+file=sys/mc_param.h
+if [ -r ${LIB}/$file ]; then
+  file_to_fix=${LIB}/$file
+else
+  if [ -r ${INPUT}/$file ]; then
+    file_to_fix=${INPUT}/$file
+  else
+    file_to_fix=""
+  fi
+fi
+if [ \! -z "$file_to_fix" ]; then
+  echo Checking $file_to_fix
+  if grep __GNUC__ $file_to_fix > /dev/null; then
+    true
+  else
+    sed -e '/__asm/,/}/{
+/__asm/i\
+#if !defined (__GNUC__) && !defined (__GNUG__)
+/}/a\
+#endif
+}' \
     $file_to_fix > ${LIB}/${file}.sed
     rm -f ${LIB}/$file; mv ${LIB}/${file}.sed ${LIB}/$file
     echo Fixed $file_to_fix
