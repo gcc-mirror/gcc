@@ -768,6 +768,13 @@ dequeue_and_dump (di)
       dump_next_stmt (di, t);
       break;
 
+    case SUBOBJECT:
+      dump_stmt (di, t);
+      if (dump_children_p)
+	dump_child ("clnp", TREE_OPERAND (t, 0));
+      dump_next_stmt (di, t);
+      break;
+
     case INTEGER_CST:
       if (TREE_INT_CST_HIGH (t))
 	dump_int (di, "high", TREE_INT_CST_HIGH (t));
@@ -798,6 +805,7 @@ dequeue_and_dump (di)
 
     case TRUTH_ANDIF_EXPR:
     case TRUTH_ORIF_EXPR:
+    case INIT_EXPR:
     case MODIFY_EXPR:
     case COMPONENT_REF:
     case COMPOUND_EXPR:

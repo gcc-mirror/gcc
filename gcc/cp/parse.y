@@ -780,10 +780,6 @@ base_init:
 		  if ($3 == 0)
 		    error ("no base initializers given following ':'");
 		  setup_vtbl_ptr ();
-		  /* Always keep the BLOCK node associated with the outermost
-		     pair of curley braces of a function.  These are needed
-		     for correct operation of dwarfout.c.  */
-		  keep_next_level ();
 		}
 	;
 
@@ -1623,10 +1619,6 @@ nodecls:
 		  if (! current_function_parms_stored)
 		    store_parm_decls ();
 		  setup_vtbl_ptr ();
-		  /* Always keep the BLOCK node associated with the outermost
-		     pair of curley braces of a function.  These are needed
-		     for correct operation of dwarfout.c.  */
-		  keep_next_level ();
 		}
 	;
 

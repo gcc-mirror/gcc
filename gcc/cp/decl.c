@@ -882,10 +882,15 @@ namespace_bindings_p ()
   return b->namespace_p;
 }
 
+/* If KEEP is non-zero, make a BLOCK node for the next binding level,
+   unconditionally.  Otherwise, use the normal logic to decide whether
+   or not to create a BLOCK.  */
+
 void
-keep_next_level ()
+keep_next_level (keep)
+     int keep;
 {
-  keep_next_level_flag = 1;
+  keep_next_level_flag = keep;
 }
 
 /* Nonzero if the current level needs to have a BLOCK made.  */
@@ -7908,7 +7913,16 @@ cp_finish_decl (decl, init, asmspec_tree, need_pop, flags)
 		{
 		  emit_line_note (DECL_SOURCE_FILE (decl),
 				  DECL_SOURCE_LINE (decl));
-		  expand_aggr_init (decl, init, flags);
+		  /* We call push_momentary here so that when
+		     finish_expr_stmt clears the momentary obstack it
+		     doesn't destory any momentary expressions we may
+		     have lying around.  Although cp_finish_decl is
+		     usually called at the end of a declaration
+		     statement, it may also be called for a temporary
+		     object in the middle of an expression.  */
+		  push_momentary ();
+		  finish_expr_stmt (build_aggr_init (decl, init, flags));
+		  pop_momentary ();
 		}
 
 	      /* Set this to 0 so we can tell whether an aggregate which
@@ -8024,6 +8038,8 @@ expand_static_init (decl, init)
     {
       /* Emit code to perform this initialization but once.  */
       tree temp;
+      tree assignment;
+      tree temp_init;
 
       /* Remember this information until end of file.  */
       push_obstacks (&permanent_obstack, &permanent_obstack);
@@ -8058,26 +8074,35 @@ expand_static_init (decl, init)
       /* Begin the conditional initialization.  */
       expand_start_cond (build_binary_op (EQ_EXPR, temp,
 					  integer_zero_node), 0);
-      expand_start_target_temps ();
 
       /* Do the initialization itself.  */
       if (TYPE_NEEDS_CONSTRUCTING (TREE_TYPE (decl))
 	  || (init && TREE_CODE (init) == TREE_LIST))
-	{
-	  expand_aggr_init (decl, init, 0);
-	  do_pending_stack_adjust ();
-	}
+	assignment = build_aggr_init (decl, init, 0);
       else if (init)
-	expand_assignment (decl, init, 0, 0);
+	assignment = build_modify_expr (decl, NOP_EXPR, init);
+      else
+	assignment = NULL_TREE;
 
-      /* Set TEMP to 1.  */
-      expand_assignment (temp, integer_one_node, 0, 0);
-
-      /* Cleanup any temporaries needed for the initial value.  If
-	 destroying one of the temporaries causes an exception to be
-	 thrown, then the object itself has still been fully
-	 constructed.  */
-      expand_end_target_temps ();
+      /* Once the assignment is complete, set TEMP to 1.  Since the
+	 construction of the static object is complete at this point,
+	 we want to make sure TEMP is set to 1 even if a temporary
+	 constructed during the initialization throws an exception
+	 when it is destroyed.  So, we combine the initialization and
+	 the assignment to TEMP into a single expression, ensuring
+	 that when we call finish_expr_stmt the cleanups will not be
+	 run until after TEMP is set to 1.  */
+      temp_init = build_modify_expr (temp, NOP_EXPR, integer_one_node);
+      if (assignment)
+	{
+	  assignment = tree_cons (NULL_TREE, assignment,
+				  build_tree_list (NULL_TREE, 
+						   temp_init));
+	  assignment = build_compound_expr (assignment);
+	}
+      else
+	assignment = temp_init;
+      finish_expr_stmt (assignment);
 
       /* Use atexit to register a function for destroying this static
 	 variable.  */
@@ -12813,25 +12838,6 @@ start_function (declspecs, declarator, attrs, pre_parsed_p)
     {
       decl1 = declarator;
 
-#if 0
-      /* What was this testing for, exactly?  */
-      if (! DECL_ARGUMENTS (decl1)
-	  && !DECL_STATIC_FUNCTION_P (decl1)
-	  && !DECL_ARTIFICIAL (decl1)
-	  && DECL_CLASS_SCOPE_P (decl1)
-	  && TYPE_IDENTIFIER (DECL_CONTEXT (decl1))
-	  && IDENTIFIER_TEMPLATE (TYPE_IDENTIFIER (DECL_CONTEXT (decl1))))
-	{
-	  tree binding = binding_for_name (DECL_NAME (decl1), 
-					   current_namespace);
-	  cp_error ("redeclaration of `%#D'", decl1);
-	  if (IDENTIFIER_CLASS_VALUE (DECL_NAME (decl1)))
-	    cp_error_at ("previous declaration here", IDENTIFIER_CLASS_VALUE (DECL_NAME (decl1)));
-	  else if (BINDING_VALUE (binding))
-	    cp_error_at ("previous declaration here", BINDING_VALUE (binding));
-	}
-#endif
-
       fntype = TREE_TYPE (decl1);
       if (TREE_CODE (fntype) == METHOD_TYPE)
 	ctype = TYPE_METHOD_BASETYPE (fntype);
@@ -13161,6 +13167,10 @@ start_function (declspecs, declarator, attrs, pre_parsed_p)
      on the permanent obstack in case we need to inline it later.  */
   if (! hack_decl_function_context (decl1))
     temporary_allocation ();
+  
+  /* Make sure that we always have a momntary obstack while we're in a
+     function body.  */
+  push_momentary ();
 
   if (building_stmt_tree ())
     begin_stmt_tree (decl1);
@@ -13856,6 +13866,9 @@ finish_function (lineno, flags, nested)
      to the FUNCTION_DECL node itself.  */
   BLOCK_SUPERCONTEXT (DECL_INITIAL (fndecl)) = fndecl;
 
+  /* Undo the call to push_momentary in start_function.  */
+  pop_momentary ();
+
   if (expand_p)
     {
       int saved_flag_keep_inline_functions =
@@ -14261,9 +14274,6 @@ void
 cplus_expand_expr_stmt (exp)
      tree exp;
 {
-  /* Arrange for all temps to disappear.  */
-  expand_start_target_temps ();
-
   exp = require_complete_type_in_void (exp);
   
   if (TREE_CODE (exp) == FUNCTION_DECL)
@@ -14288,10 +14298,6 @@ cplus_expand_expr_stmt (exp)
      go outside the bounds of the type.  */
   if (exp != error_mark_node)
     expand_expr_stmt (break_out_cleanups (exp));
-
-  /* Clean up any pending cleanups.  This happens when a function call
-     returns a cleanup-needing value that nobody uses.  */
-  expand_end_target_temps ();
 }
 
 /* When a stmt has been parsed, this function is called.  */
@@ -14381,6 +14387,7 @@ struct cp_function
   int static_labelno;
   int in_function_try_handler;
   int expanding_p;
+  int stmts_are_full_exprs_p; 
   tree last_tree;
   tree last_expr_type;
 };
@@ -14429,10 +14436,15 @@ push_cp_function_context (context)
   p->last_tree = last_tree;
   p->last_expr_type = last_expr_type;
   p->expanding_p = expanding_p;
-  
+  p->stmts_are_full_exprs_p = stmts_are_full_exprs_p;
+
   /* For now, we always assume we're expanding all the way to RTL
      unless we're explicitly doing otherwise.  */
   expanding_p = 1;
+
+  /* Whenever we start a new function, we destroy temporaries in the
+     usual way.  */
+  stmts_are_full_exprs_p = 1;
 }
 
 /* Restore the variables used during compilation of a C++ function.  */
@@ -14479,6 +14491,7 @@ pop_cp_function_context (context)
   last_tree = p->last_tree;
   last_expr_type = p->last_expr_type;
   expanding_p = p->expanding_p;
+  stmts_are_full_exprs_p = p->stmts_are_full_exprs_p;
 
   free (p);
 }

@@ -1656,6 +1656,7 @@ search_tree (t, func)
     case CALL_EXPR:
     case COMPOUND_EXPR:
     case MODIFY_EXPR:
+    case INIT_EXPR:
       TRY (TREE_OPERAND (t, 0));
       TRY (TREE_OPERAND (t, 1));
       break;
@@ -1920,6 +1921,7 @@ mapcar (t, func)
     case WITH_CLEANUP_EXPR:
     case COMPOUND_EXPR:
     case MODIFY_EXPR:
+    case INIT_EXPR:
       t = copy_node (t);
       TREE_OPERAND (t, 0) = mapcar (TREE_OPERAND (t, 0), func);
       TREE_OPERAND (t, 1) = mapcar (TREE_OPERAND (t, 1), func);

@@ -7424,12 +7424,17 @@ tsubst_expr (t, args, complain, in_decl)
       stmt = begin_try_block ();
       tsubst_expr (TRY_STMTS (t), args, complain, in_decl);
       finish_try_block (stmt);
-      {
-	tree handler = TRY_HANDLERS (t);
-	for (; handler; handler = TREE_CHAIN (handler))
-	  tsubst_expr (handler, args, complain, in_decl);
-      }
-      finish_handler_sequence (stmt);
+      if (CLEANUP_P (t))
+	finish_cleanup (tsubst_expr (TRY_HANDLERS (t), args,
+				     complain, in_decl),
+			stmt);
+      else
+	{
+	  tree handler = TRY_HANDLERS (t);
+	  for (; handler; handler = TREE_CHAIN (handler))
+	    tsubst_expr (handler, args, complain, in_decl);
+	  finish_handler_sequence (stmt);
+	}
       break;
 
     case HANDLER:

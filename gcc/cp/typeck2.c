@@ -465,7 +465,7 @@ store_init_value (decl, init)
     ;
   /* Other code expects that initializers for objects of types that need
      constructing never make it into DECL_INITIAL, and passes 'init' to
-     expand_aggr_init without checking DECL_INITIAL.  So just return.  */
+     build_aggr_init without checking DECL_INITIAL.  So just return.  */
   else if (TYPE_NEEDS_CONSTRUCTING (type))
     return value;
   else if (TREE_STATIC (decl)

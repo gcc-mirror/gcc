@@ -204,7 +204,9 @@ cplus_expand_expr (exp, target, tmode, modifier)
 	    init = convert_from_reference (init);
 
 	    flag_access_control = 0;
-	    expand_aggr_init (slot, init, LOOKUP_ONLYCONVERTING);
+	    expand_expr (build_aggr_init (slot, init,
+					  LOOKUP_ONLYCONVERTING), 
+			 target, tmode, EXPAND_NORMAL);
 	    flag_access_control = old_ac;
 
 	    if (TYPE_NEEDS_DESTRUCTOR (type))
@@ -237,7 +239,7 @@ cplus_expand_expr (exp, target, tmode, modifier)
 
     case VEC_INIT_EXPR:
       return expand_expr
-	(expand_vec_init
+	(build_vec_init
 	 (NULL_TREE, TREE_OPERAND (exp, 0),
 	  build_binary_op (MINUS_EXPR, TREE_OPERAND (exp, 2),
 			   integer_one_node),

@@ -57,10 +57,11 @@ static int member_init_ok_or_else PROTO((tree, tree, const char *));
 static void expand_virtual_init PROTO((tree, tree));
 static tree sort_member_init PROTO((tree));
 static tree initializing_context PROTO((tree));
-static void expand_vec_init_try_block PROTO((tree));
-static void expand_vec_init_catch_clause PROTO((tree, tree, tree, tree));
 static tree build_java_class_ref PROTO((tree));
 static void expand_cleanup_for_base PROTO((tree, tree));
+static tree get_temp_regvar PROTO((tree, tree));
+static void begin_init_stmts PROTO((tree *, tree *));
+static tree finish_init_stmts PROTO((tree, tree));
 
 /* Cache the identifier nodes for the magic field of a new cookie.  */
 static tree nc_nelts_field_id;
@@ -119,6 +120,7 @@ expand_direct_vtbls_init (real_binfo, binfo, init_self, can_elide, addr)
   tree binfos = BINFO_BASETYPES (binfo);
   int i, n_baselinks = real_binfos ? TREE_VEC_LENGTH (real_binfos) : 0;
 
+  push_momentary ();
   for (i = 0; i < n_baselinks; i++)
     {
       tree real_base_binfo = TREE_VEC_ELT (real_binfos, i);
@@ -140,6 +142,7 @@ expand_direct_vtbls_init (real_binfo, binfo, init_self, can_elide, addr)
       tree base_ptr = convert_pointer_to_real (binfo, addr);
       expand_virtual_init (real_binfo, base_ptr);
     }
+  pop_momentary ();
 }
 
 /* 348 - 351 */
@@ -153,8 +156,6 @@ perform_member_init (member, name, init, explicit)
   tree decl;
   tree type = TREE_TYPE (member);
 
-  expand_start_target_temps ();
-
   decl = build_component_ref (current_class_ref, name, NULL_TREE, explicit);
 
   /* Deal with this here, as we will get confused if we try to call the
@@ -164,7 +165,7 @@ perform_member_init (member, name, init, explicit)
     {
       init = build (INIT_EXPR, type, decl, TREE_VALUE (init));
       TREE_SIDE_EFFECTS (init) = 1;
-      expand_expr_stmt (init);
+      finish_expr_stmt (init);
     }
   else if (TYPE_NEEDS_CONSTRUCTING (type)
 	   || (init && TYPE_HAS_CONSTRUCTOR (type)))
@@ -181,11 +182,12 @@ perform_member_init (member, name, init, explicit)
 	  && TREE_CODE (TREE_TYPE (TREE_VALUE (init))) == ARRAY_TYPE)
 	{
 	  /* Initialization of one array from another.  */
-	  expand_vec_init (TREE_OPERAND (decl, 1), decl,
-			   array_type_nelts (type), TREE_VALUE (init), 1);
+	  finish_expr_stmt 
+	    (build_vec_init (TREE_OPERAND (decl, 1), decl,
+			     array_type_nelts (type), TREE_VALUE (init), 1));
 	}
       else
-	expand_aggr_init (decl, init, 0);
+	finish_expr_stmt (build_aggr_init (decl, init, 0));
     }
   else
     {
@@ -205,7 +207,7 @@ perform_member_init (member, name, init, explicit)
 		     for constructors and such.  */
 		  tree e = build (CONSTRUCTOR, type, NULL_TREE, NULL_TREE);
 		  TREE_SIDE_EFFECTS (e) = 1;
-		  expand_expr_stmt (build (INIT_EXPR, type, decl, e));
+		  finish_expr_stmt (build (INIT_EXPR, type, decl, e));
 		}
  	      else if (TREE_CODE (type) == REFERENCE_TYPE)
 		cp_error ("default-initialization of `%#D', which has reference type",
@@ -231,11 +233,8 @@ perform_member_init (member, name, init, explicit)
 	}
 
       if (init)
-	expand_expr_stmt (build_modify_expr (decl, INIT_EXPR, init));
+	finish_expr_stmt (build_modify_expr (decl, INIT_EXPR, init));
     }
-
-  expand_end_target_temps ();
-  free_temp_slots ();
 
   if (TYPE_NEEDS_DESTRUCTOR (type))
     {
@@ -251,7 +250,7 @@ perform_member_init (member, name, init, explicit)
 			   LOOKUP_NONVIRTUAL|LOOKUP_DESTRUCTOR, 0);
 
       if (expr != error_mark_node)
-	add_partial_entry (expr);
+	finish_subobject (expr);
 
       pop_obstacks ();
     }
@@ -508,9 +507,8 @@ sort_base_init (t, rbase_ptr, vbase_ptr)
 extern tree base_init_expr;
 
 void
-emit_base_init (t, immediately)
+emit_base_init (t)
      tree t;
-     int immediately;
 {
   tree member;
   tree mem_init_list;
@@ -518,27 +516,8 @@ emit_base_init (t, immediately)
   tree t_binfo = TYPE_BINFO (t);
   tree binfos = BINFO_BASETYPES (t_binfo);
   int i, n_baseclasses = binfos ? TREE_VEC_LENGTH (binfos) : 0;
-  tree expr = NULL_TREE;
-
-  if (! immediately)
-    {
-      int momentary;
-      do_pending_stack_adjust ();
-      /* Make the RTL_EXPR node temporary, not momentary,
-	 so that rtl_expr_chain doesn't become garbage.  */
-      momentary = suspend_momentary ();
-      expr = make_node (RTL_EXPR);
-      resume_momentary (momentary);
-      start_sequence_for_rtl_expr (expr); 
-    }
-
-  if (write_symbols == NO_DEBUG)
-    /* As a matter of principle, `start_sequence' should do this.  */
-    emit_note (0, -1);
-  else
-    /* Always emit a line number note so we can step into constructors.  */
-    emit_line_note_force (DECL_SOURCE_FILE (current_function_decl),
-			  DECL_SOURCE_LINE (current_function_decl));
+  tree stmt_expr;
+  tree compound_stmt;
 
   mem_init_list = sort_member_init (t);
   current_member_init_list = NULL_TREE;
@@ -546,6 +525,8 @@ emit_base_init (t, immediately)
   sort_base_init (t, &rbase_init_list, &vbase_init_list);
   current_base_init_list = NULL_TREE;
 
+  begin_init_stmts (&stmt_expr, &compound_stmt);
+  
   /* First, initialize the virtual base classes, if we are
      constructing the most-derived object.  */
   if (TYPE_USES_VIRTUAL_BASECLASSES (t))
@@ -579,15 +560,10 @@ emit_base_init (t, immediately)
 
       if (init != void_list_node)
 	{
-	  expand_start_target_temps ();
-
 	  member = convert_pointer_to_real (base_binfo, current_class_ptr);
 	  expand_aggr_init_1 (base_binfo, NULL_TREE,
 			      build_indirect_ref (member, NULL_PTR), init,
 			      LOOKUP_NORMAL);
-
-	  expand_end_target_temps ();
-	  free_temp_slots ();
 	}
 
       expand_cleanup_for_base (base_binfo, NULL_TREE);
@@ -665,36 +641,12 @@ emit_base_init (t, immediately)
 		cp_error ("field `%D' not in immediate context", field);
 	    }
 
-#if 0
-	  /* It turns out if you have an anonymous union in the
-	     class, a member from it can end up not being on the
-	     list of fields (rather, the type is), and therefore
-	     won't be seen by the for loop above.  */
-
-	  /* The code in this for loop is derived from a general loop
-	     which had this check in it.  Theoretically, we've hit
-	     every initialization for the list of members in T, so
-	     we shouldn't have anything but these left in this list.  */
-	  my_friendly_assert (DECL_FIELD_CONTEXT (field) != t, 351);
-#endif
-
 	  perform_member_init (field, name, init, 1);
 	}
       mem_init_list = TREE_CHAIN (mem_init_list);
     }
 
-  if (! immediately)
-    {
-      do_pending_stack_adjust ();
-      my_friendly_assert (base_init_expr == 0, 207);
-      base_init_expr = expr;
-      TREE_TYPE (expr) = void_type_node;
-      RTL_EXPR_RTL (expr) = const0_rtx;
-      RTL_EXPR_SEQUENCE (expr) = get_insns ();
-      rtl_expr_chain = tree_cons (NULL_TREE, expr, rtl_expr_chain);
-      end_sequence ();
-      TREE_SIDE_EFFECTS (expr) = 1;
-    }
+  base_init_expr = finish_init_stmts (stmt_expr, compound_stmt);
 
   /* All the implicit try blocks we built up will be zapped
      when we come to a real binding contour boundary.  */
@@ -745,7 +697,7 @@ expand_virtual_init (binfo, decl)
 
   /* Have to convert VTBL since array sizes may be different.  */
   vtbl = convert_force (TREE_TYPE (vtbl_ptr), vtbl, 0);
-  expand_expr_stmt (build_modify_expr (vtbl_ptr, NOP_EXPR, vtbl));
+  finish_expr_stmt (build_modify_expr (vtbl_ptr, NOP_EXPR, vtbl));
 }
 
 /* If an exception is thrown in a constructor, those base classes already
@@ -778,7 +730,7 @@ expand_cleanup_for_base (binfo, flag)
 			expr, integer_zero_node));
 
   pop_obstacks ();
-  add_partial_entry (expr);
+  finish_subobject (expr);
 }
 
 /* Subroutine of `expand_aggr_vbase_init'.
@@ -792,15 +744,10 @@ expand_aggr_vbase_init_1 (binfo, exp, addr, init_list)
   tree init = purpose_member (binfo, init_list);
   tree ref = build_indirect_ref (addr, NULL_PTR);
 
-  expand_start_target_temps ();
-
   if (init)
     init = TREE_VALUE (init);
   /* Call constructors, but don't set up vtables.  */
   expand_aggr_init_1 (binfo, exp, ref, init, LOOKUP_COMPLAIN);
-
-  expand_end_target_temps ();
-  free_temp_slots ();
 }
 
 /* Construct the virtual base-classes of THIS_REF (whose address is
@@ -818,24 +765,33 @@ construct_virtual_bases (type, this_ref, this_ptr, init_list, flag)
 {
   tree vbases;
   tree result;
+  tree if_stmt;
 
   /* If there are no virtual baseclasses, we shouldn't even be here.  */
   my_friendly_assert (TYPE_USES_VIRTUAL_BASECLASSES (type), 19990621);
 
   /* First set the pointers in our object that tell us where to find
      our virtual baseclasses.  */
-  expand_start_cond (flag, 0);
+  if_stmt = begin_if_stmt ();
+  finish_if_stmt_cond (flag, if_stmt);
   result = init_vbase_pointers (type, this_ptr);
+  /* The RESULT will contain entries on the momentary obstack.  They
+     must live until the end of this function; we use them in the loop
+     below.  */
+  push_momentary ();
   if (result)
-    expand_expr_stmt (build_compound_expr (result));
-  expand_end_cond ();
+    finish_expr_stmt (build_compound_expr (result));
+  finish_then_clause (if_stmt);
+  finish_if_stmt ();
 
   /* Now, run through the baseclasses, initializing each.  */ 
   for (vbases = CLASSTYPE_VBASECLASSES (type); vbases;
        vbases = TREE_CHAIN (vbases))
     {
       tree tmp = purpose_member (vbases, result);
-      
+      tree inner_if_stmt;
+      tree compound_stmt;
+
       /* If there are virtual base classes with destructors, we need to
 	 emit cleanups to destroy them if an exception is thrown during
 	 the construction process.  These exception regions (i.e., the
@@ -850,14 +806,21 @@ construct_virtual_bases (type, this_ref, this_ptr, init_list, flag)
 	 in the outer block.)  We trust the back-end to figure out
 	 that the FLAG will not change across initializations, and
 	 avoid doing multiple tests.  */
-      expand_start_cond (flag, 0);
+      inner_if_stmt = begin_if_stmt ();
+      finish_if_stmt_cond (flag, inner_if_stmt);
+      compound_stmt = begin_compound_stmt (/*has_no_scope=*/1);
       expand_aggr_vbase_init_1 (vbases, this_ref,
 				TREE_OPERAND (TREE_VALUE (tmp), 0),
 				init_list);
-      expand_end_cond ();
+      finish_compound_stmt (/*has_no_scope=*/1, compound_stmt);
+      finish_then_clause (if_stmt);
+      finish_if_stmt ();
       
       expand_cleanup_for_base (vbases, flag);
     }
+
+  /* Undo the call to push_momentary above.  */
+  pop_momentary ();
 }
 
 /* Find the context in which this FIELD can be initialized.  */
@@ -1035,6 +998,39 @@ expand_member_init (exp, name, init)
     }
 }
 
+/* We are about to generate some complex initialization code.
+   Conceptually, it is all a single expression.  However, we may want
+   to include conditionals, loops, and other such statement-level
+   constructs.  Therefore, we build the initialization code inside a
+   statement-expression.  This function starts such an expression.
+   STMT_EXPR_P and COMPOUND_STMT_P are filled in by this function;
+   pass them back to finish_init_stmts when the expression is
+   complete.  */
+
+static void
+begin_init_stmts (stmt_expr_p, compound_stmt_p)
+     tree *stmt_expr_p;
+     tree *compound_stmt_p;
+{
+  push_momentary ();
+  *stmt_expr_p = begin_stmt_expr ();
+  *compound_stmt_p = begin_compound_stmt (/*has_no_scope=*/1);
+}
+
+/* Finish out the statement-expression begun by the previous call to
+   begin_init_stmts.  Returns the statement-expression itself.  */
+
+static tree
+finish_init_stmts (stmt_expr, compound_stmt)
+     tree stmt_expr;
+     tree compound_stmt;
+{
+  pop_momentary ();
+  return finish_stmt_expr (stmt_expr,
+			   finish_compound_stmt (/*has_no_scope=*/1, 
+						 compound_stmt));
+}
+
 /* This is like `expand_member_init', only it stores one aggregate
    value into another.
 
@@ -1073,17 +1069,20 @@ expand_member_init (exp, name, init)
    A constructor or a conversion operator may have to be used to
    perform the initialization, but not both, as it would be ambiguous.  */
 
-void
-expand_aggr_init (exp, init, flags)
+tree
+build_aggr_init (exp, init, flags)
      tree exp, init;
      int flags;
 {
+  tree stmt_expr;
+  tree compound_stmt;
+  int destroy_temps;
   tree type = TREE_TYPE (exp);
   int was_const = TREE_READONLY (exp);
   int was_volatile = TREE_THIS_VOLATILE (exp);
 
   if (init == error_mark_node)
-    return;
+    return error_mark_node;
 
   TREE_READONLY (exp) = 0;
   TREE_THIS_VOLATILE (exp) = 0;
@@ -1117,38 +1116,36 @@ expand_aggr_init (exp, init, flags)
 	     }
 	  */
 	  error ("bad array initializer");
-	  return;
+	  return error_mark_node;
 	}
-      expand_vec_init (exp, exp, array_type_nelts (type), init,
-		       init && same_type_p (TREE_TYPE (init),
-					    TREE_TYPE (exp)));
+      stmt_expr = build_vec_init (exp, exp, array_type_nelts (type), init,
+				  init && same_type_p (TREE_TYPE (init),
+						       TREE_TYPE (exp)));
       TREE_READONLY (exp) = was_const;
       TREE_THIS_VOLATILE (exp) = was_volatile;
       TREE_TYPE (exp) = type;
       if (init)
 	TREE_TYPE (init) = itype;
-      return;
+      return stmt_expr;
     }
 
   if (TREE_CODE (exp) == VAR_DECL || TREE_CODE (exp) == PARM_DECL)
     /* just know that we've seen something for this node */
     TREE_USED (exp) = 1;
 
-#if 0
-  /* If initializing from a GNU C CONSTRUCTOR, consider the elts in the
-     constructor as parameters to an implicit GNU C++ constructor.  */
-  if (init && TREE_CODE (init) == CONSTRUCTOR
-      && TYPE_HAS_CONSTRUCTOR (type)
-      && TREE_TYPE (init) == type)
-    init = CONSTRUCTOR_ELTS (init);
-#endif
-
   TREE_TYPE (exp) = TYPE_MAIN_VARIANT (type);
+  begin_init_stmts (&stmt_expr, &compound_stmt);
+  destroy_temps = stmts_are_full_exprs_p;
+  stmts_are_full_exprs_p = 0;
   expand_aggr_init_1 (TYPE_BINFO (type), exp, exp,
 		      init, LOOKUP_NORMAL|flags);
+  stmt_expr = finish_init_stmts (stmt_expr, compound_stmt);
+  stmts_are_full_exprs_p = destroy_temps;
   TREE_TYPE (exp) = type;
   TREE_READONLY (exp) = was_const;
   TREE_THIS_VOLATILE (exp) = was_volatile;
+
+  return stmt_expr;
 }
 
 static void
@@ -1199,7 +1196,7 @@ expand_default_init (binfo, true_exp, exp, init, flags)
       else
 	init = build (INIT_EXPR, TREE_TYPE (exp), exp, init);
       TREE_SIDE_EFFECTS (init) = 1;
-      expand_expr_stmt (init);
+      finish_expr_stmt (init);
       return;
     }
 
@@ -1225,7 +1222,7 @@ expand_default_init (binfo, true_exp, exp, init, flags)
   rval = build_method_call (exp, ctor_identifier,
 			    parms, binfo, flags);
   if (TREE_SIDE_EFFECTS (rval))
-    expand_expr_stmt (rval);
+    finish_expr_stmt (rval);
 }
 
 /* This function is responsible for initializing EXP with INIT
@@ -1271,15 +1268,20 @@ expand_aggr_init_1 (binfo, true_exp, exp, init, flags)
       && TREE_CODE (init) == CONSTRUCTOR
       && TREE_HAS_CONSTRUCTOR (init))
     {
-      tree t = store_init_value (exp, init);
-      if (!t)
+      /* If store_init_value returns NULL_TREE, the INIT has been
+	 record in the DECL_INITIAL for EXP.  That means there's
+	 nothing more we have to do.  */
+      if (!store_init_value (exp, init))
 	{
-	  expand_decl_init (exp);
-	  return;
+	  if (!building_stmt_tree ())
+	    expand_decl_init (exp);
 	}
-      t = build (INIT_EXPR, type, exp, init);
-      TREE_SIDE_EFFECTS (t) = 1;
-      expand_expr_stmt (t);
+      else
+	{
+	  tree t = build (INIT_EXPR, type, exp, init);
+	  TREE_SIDE_EFFECTS (t) = 1;
+	  finish_expr_stmt (t);
+	}
       return;
     }
 
@@ -2689,88 +2691,54 @@ build_vec_delete_1 (base, maxindex, type, auto_delete_vec, auto_delete,
     return cp_convert (void_type_node, body);
 }
 
-/* Protect the vector initialization with a try-block so that we can
-   destroy the first few elements if constructing a later element
-   causes an exception to be thrown.  TYPE is the type of the array
-   elements.  */
-
-static void
-expand_vec_init_try_block (type)
+tree
+create_temporary_var (type)
      tree type;
 {
-  if (!TYPE_NEEDS_DESTRUCTOR (type) || !flag_exceptions)
-    return;
+  tree decl;
+ 
+  decl = build_decl (VAR_DECL, NULL_TREE, type);
+  TREE_USED (decl) = 1;
+  DECL_ARTIFICIAL (decl) = 1;
+  DECL_SOURCE_FILE (decl) = input_filename;
+  DECL_SOURCE_LINE (decl) = lineno;
+  DECL_IGNORED_P (decl) = 1;
 
-  /* The code we generate looks like:
+  if (building_stmt_tree ())
+    add_decl_stmt (decl);
+  else
+    DECL_RTL (decl) = assign_temp (type, 2, 0, 1);
 
-       try {
-         // Initialize the vector.
-       } catch (...) {
-         // Destory the elements that need destroying.
-	 throw;
-       } 
-
-     Here we're just beginning the `try'.  */
-
-  expand_eh_region_start ();
+  return decl;
 }
 
-/* Add code to destroy the array elements constructed so far if the
-   construction of some element in the array causes an exception to be
-   thrown.  RVAL is the address of the last element in the array.
-   TYPE is the type of the array elements.  MAXINDEX is the maximum
-   allowable index into the array.  ITERATOR is an integer variable
-   indicating how many elements remain to be constructed.  */
+/* Create a new temporary variable of the indicated TYPE, initialized
+   to INIT.
 
-static void
-expand_vec_init_catch_clause (rval, type, maxindex, iterator)
-     tree rval;
-     tree type;
-     tree maxindex;
-     tree iterator;
+   It is not entered into current_binding_level, because that breaks
+   things when it comes time to do final cleanups (which take place
+   "outside" the binding contour of the function).  */
+
+static tree
+get_temp_regvar (type, init)
+     tree type, init;
 {
-  tree e;
-  tree cleanup;
+  tree decl;
 
-  if (!TYPE_NEEDS_DESTRUCTOR (type) || !flag_exceptions)
-    return;
-    
-  /* We have to ensure that this can live to the cleanup expansion
-     time, since we know it is only ever needed once, generate code
-     now.  */
-  push_obstacks_nochange ();
-  resume_temporary_allocation ();
+  decl = create_temporary_var (type);
+  DECL_REGISTER (decl) = 1;
+  finish_expr_stmt (build_modify_expr (decl, INIT_EXPR, init));
 
-  cleanup = make_node (RTL_EXPR);
-  TREE_TYPE (cleanup) = void_type_node;
-  RTL_EXPR_RTL (cleanup) = const0_rtx;
-  TREE_SIDE_EFFECTS (cleanup) = 1;
-  do_pending_stack_adjust ();
-  start_sequence_for_rtl_expr (cleanup);
-    
-  e = build_vec_delete_1 (rval,
-			  build_binary_op (MINUS_EXPR, maxindex, 
-					   iterator),
-			  type,
-			  /*auto_delete_vec=*/integer_zero_node,
-			  /*auto_delete=*/integer_zero_node,
-			  /*use_global_delete=*/0);
-  expand_expr (e, const0_rtx, VOIDmode, EXPAND_NORMAL);
-
-  do_pending_stack_adjust ();
-  RTL_EXPR_SEQUENCE (cleanup) = get_insns ();
-  end_sequence ();
-  cleanup = protect_with_terminate (cleanup);
-  expand_eh_region_end (cleanup);
-  pop_obstacks ();
+  return decl;
 }
 
-/* `expand_vec_init' performs initialization of a vector of aggregate
-   types.
+/* `build_vec_init' returns tree structure that performs
+   initialization of a vector of aggregate types.
 
    DECL is passed only for error reporting, and provides line number
    and source file name information.
-   BASE is the space where the vector will be.
+   BASE is the space where the vector will be.  For a vector of Ts,
+     the type of BASE is `T*'.
    MAXINDEX is the maximum index of the array (one less than the
 	    number of elements).
    INIT is the (possibly NULL) initializer.
@@ -2783,16 +2751,23 @@ expand_vec_init_catch_clause (rval, type, maxindex, iterator)
    but use assignment instead of initialization.  */
 
 tree
-expand_vec_init (decl, base, maxindex, init, from_array)
+build_vec_init (decl, base, maxindex, init, from_array)
      tree decl, base, maxindex, init;
      int from_array;
 {
   tree rval;
   tree base2 = NULL_TREE;
-  tree type = TREE_TYPE (TREE_TYPE (base));
   tree size;
   tree itype = NULL_TREE;
   tree iterator;
+  /* The type of an element in the array.  */
+  tree type;
+  /* The type of a pointer to an element in the array.  */
+  tree ptype;
+  tree stmt_expr;
+  tree compound_stmt;
+  int destroy_temps;
+  tree try_block;
   int num_initialized_elts = 0;
 
   maxindex = cp_convert (ptrdiff_type_node, maxindex);
@@ -2808,17 +2783,56 @@ expand_vec_init (decl, base, maxindex, init, from_array)
       return rval;
     }
 
+  type = TREE_TYPE (TREE_TYPE (base));
+  ptype = build_pointer_type (type);
   size = size_in_bytes (type);
 
-  base = default_conversion (base);
-  base = cp_convert (build_pointer_type (type), base);
-  rval = get_temp_regvar (build_pointer_type (type), base);
-  base = get_temp_regvar (build_pointer_type (type), base);
+  /* The code we are generating looks like:
+
+       T* t1 = (T*) base;
+       T* rval = base;
+       ptrdiff_t iterator = maxindex;
+       try {
+         ... initializations from CONSTRUCTOR ...
+         if (iterator != -1) {
+	   do {
+	     ... initialize *base ...
+	     ++base;
+	   } while (--iterator != -1);
+	 }
+       } catch (...) {
+         ... destroy elements that were constructed ...
+       }
+       
+     We can omit the try and catch blocks if we know that the
+     initialization will never throw an exception, or if the array
+     elements do not have destructors.  If we have a CONSTRUCTOR to
+     give us initialization information, we emit code to initialize
+     each of the elements before the loop in the try block, and then
+     iterate over fewer elements.  We can omit the loop completely if
+     the elements of the array do not have constructors.  
+
+     We actually wrap the entire body of the above in a STMT_EXPR, for
+     tidiness.  
+
+     When copying from array to another, when the array elements have
+     only trivial copy constructors, we should use __builtin_memcpy
+     rather than generating a loop.  That way, we could take advantage
+     of whatever cleverness the back-end has for dealing with copies
+     of blocks of memory.  */
+
+  begin_init_stmts (&stmt_expr, &compound_stmt);
+  destroy_temps = stmts_are_full_exprs_p;
+  stmts_are_full_exprs_p = 0;
+  rval = get_temp_regvar (ptype, 
+			  cp_convert (ptype, default_conversion (base)));
+  base = get_temp_regvar (ptype, rval);
   iterator = get_temp_regvar (ptrdiff_type_node, maxindex);
 
   /* Protect the entire array initialization so that we can destroy
      the partially constructed array if an exception is thrown.  */
-  expand_vec_init_try_block (type);
+  if (flag_exceptions && TYPE_NEEDS_DESTRUCTOR (type))
+    try_block = begin_try_block ();
 
   if (init != NULL_TREE && TREE_CODE (init) == CONSTRUCTOR
       && (!decl || same_type_p (TREE_TYPE (init), TREE_TYPE (decl))))
@@ -2827,35 +2841,37 @@ expand_vec_init (decl, base, maxindex, init, from_array)
 	 initializers.  */
 
       tree elts;
-      tree baseref = build1 (INDIRECT_REF, type, base);
-
       from_array = 0;
 
       for (elts = CONSTRUCTOR_ELTS (init); elts; elts = TREE_CHAIN (elts))
 	{
 	  tree elt = TREE_VALUE (elts);
+	  tree baseref = build1 (INDIRECT_REF, type, base);
 
 	  num_initialized_elts++;
 
 	  if (IS_AGGR_TYPE (type) || TREE_CODE (type) == ARRAY_TYPE)
-	    expand_aggr_init (baseref, elt, 0);
+	    finish_expr_stmt (build_aggr_init (baseref, elt, 0));
 	  else
-	    expand_assignment (baseref, elt, 0, 0);
+	    finish_expr_stmt (build_modify_expr (baseref, NOP_EXPR,
+						 elt));
 
-	  expand_assignment (base, 
+	  finish_expr_stmt (build_modify_expr 
+			    (base, 
+			     NOP_EXPR,
 			     build (PLUS_EXPR, build_pointer_type (type),
-				    base, size),
-			     0, 0);
-	  expand_assignment (iterator,
+				    base, size)));
+	  finish_expr_stmt (build_modify_expr
+			    (iterator,
+			     NOP_EXPR,
 			     build (MINUS_EXPR, ptrdiff_type_node,
-				    iterator, integer_one_node),
-			     0, 0);
+				    iterator, integer_one_node)));
 	}
 
       /* Clear out INIT so that we don't get confused below.  */
       init = NULL_TREE;
 
-      if (obey_regdecls)
+      if (obey_regdecls && !building_stmt_tree ())
 	use_variable (DECL_RTL (base));
     }
   else if (from_array)
@@ -2897,15 +2913,33 @@ expand_vec_init (decl, base, maxindex, init, from_array)
     {
       /* If the ITERATOR is equal to -1, then we don't have to loop;
 	 we've already initialized all the elements.  */
-      expand_start_cond (build (NE_EXPR, boolean_type_node,
-				iterator, minus_one),
-			 0);
+      tree if_stmt;
+      tree do_stmt;
+      tree do_body;
+      tree elt_init;
+
+      if_stmt = begin_if_stmt ();
+      finish_if_stmt_cond (build (NE_EXPR, boolean_type_node,
+				  iterator, minus_one),
+			   if_stmt);
 
       /* Otherwise, loop through the elements.  */
-      expand_start_loop_continue_elsewhere (1);
-  
-      /* The initialization of each array element is a full-expression.  */
-      expand_start_target_temps ();
+      do_stmt = begin_do_stmt ();
+      do_body = begin_compound_stmt (/*has_no_scope=*/1);
+
+      /* When we're not building a statement-tree, things are a little
+	 complicated.  If, when we recursively call build_aggr_init,
+	 an expression containing a TARGET_EXPR is expanded, then it
+	 may get a cleanup.  Then, the result of that expression is
+	 passed to finish_expr_stmt, which will call
+	 expand_start_target_temps/expand_end_target_temps.  However,
+	 the latter call will not cause the cleanup to run because
+	 that block will still be on the block stack.  So, we call
+	 expand_start_target_temps here manually; the corresponding
+	 call to expand_end_target_temps below will cause the cleanup
+	 to be performed.  */
+      if (!building_stmt_tree ())
+	expand_start_target_temps ();
 
       if (from_array)
 	{
@@ -2918,11 +2952,11 @@ expand_vec_init (decl, base, maxindex, init, from_array)
 	    from = NULL_TREE;
 
 	  if (from_array == 2)
-	    expand_expr_stmt (build_modify_expr (to, NOP_EXPR, from));
+	    elt_init = build_modify_expr (to, NOP_EXPR, from);
 	  else if (TYPE_NEEDS_CONSTRUCTING (type))
-	    expand_aggr_init (to, from, 0);
+	    elt_init = build_aggr_init (to, from, 0);
 	  else if (from)
-	    expand_assignment (to, from, 0, 0);
+	    elt_init = build_modify_expr (to, NOP_EXPR, from);
 	  else
 	    my_friendly_abort (57);
 	}
@@ -2930,56 +2964,100 @@ expand_vec_init (decl, base, maxindex, init, from_array)
 	{
 	  if (init != 0)
 	    sorry ("cannot initialize multi-dimensional array with initializer");
-	  expand_vec_init (decl, 
-			   build1 (NOP_EXPR, 
-				   build_pointer_type (TREE_TYPE
-						       (type)),
-				   base),
-			   array_type_nelts (type), 0, 0);
+	  elt_init = (build_vec_init 
+		      (decl, 
+		       build1 (NOP_EXPR, 
+			       build_pointer_type (TREE_TYPE (type)),
+			       base),
+		       array_type_nelts (type), 0, 0));
 	}
       else
-	expand_aggr_init (build1 (INDIRECT_REF, type, base), init, 0);
+	elt_init = build_aggr_init (build1 (INDIRECT_REF, type, base), 
+				    init, 0);
+      
+      /* The initialization of each array element is a
+	 full-expression.  */
+      if (!building_stmt_tree ())
+	{
+	  finish_expr_stmt (elt_init);
+	  expand_end_target_temps ();
+	}
+      else
+	{
+	  stmts_are_full_exprs_p = 1;
+	  finish_expr_stmt (elt_init);
+	  stmts_are_full_exprs_p = 0;
+	}
 
-      expand_assignment (base,
+      finish_expr_stmt (build_modify_expr
+			(base,
+			 NOP_EXPR,
 			 build (PLUS_EXPR, build_pointer_type (type), 
-				base, size), 0, 0);
+				base, size)));
       if (base2)
-	expand_assignment (base2,
+	finish_expr_stmt (build_modify_expr
+			  (base2,
+			   NOP_EXPR,
 			   build (PLUS_EXPR, build_pointer_type (type), 
-				  base2, size), 0, 0);
+				  base2, size)));
 
-      /* Cleanup any temporaries needed for the initial value.  */
-      expand_end_target_temps ();
-  
-      expand_loop_continue_here ();
-      expand_exit_loop_if_false (0, build (NE_EXPR, boolean_type_node,
-					   build (PREDECREMENT_EXPR, 
-						  ptrdiff_type_node, 
-						  iterator,
-						  integer_one_node), 
-					   minus_one));
-  
-      if (obey_regdecls)
+      if (obey_regdecls && !building_stmt_tree ())
 	{
 	  use_variable (DECL_RTL (base));
 	  if (base2)
 	    use_variable (DECL_RTL (base2));
 	}
 
-      expand_end_loop ();
-      expand_end_cond ();
+      finish_compound_stmt (/*has_no_scope=*/1, do_body);
+      finish_do_body (do_stmt);
+      finish_do_stmt (build (NE_EXPR, boolean_type_node,
+			     build (PREDECREMENT_EXPR, 
+				    ptrdiff_type_node, 
+				    iterator,
+				    integer_one_node), 
+			     minus_one),
+		      do_stmt);
+
+      finish_then_clause (if_stmt);
+      finish_if_stmt ();
     }
 
   /* Make sure to cleanup any partially constructed elements.  */
-  expand_vec_init_catch_clause (rval, type, maxindex, iterator);
+  if (flag_exceptions && TYPE_NEEDS_DESTRUCTOR (type))
+    {
+      tree e;
 
-  if (obey_regdecls)
+      /* Because CLEANUP will not be processed until later, it must go
+	 on the temporary obstack.  */
+      push_obstacks_nochange ();
+      resume_temporary_allocation ();
+      /* And MAXINDEX needs to be copied to the current obstack.  It's
+	 probably on the momentary obstack now.  */
+      maxindex = mapcar (maxindex, permanent_p);
+      e = build_vec_delete_1 (rval,
+			      build_binary_op (MINUS_EXPR, maxindex, 
+					       iterator),
+			      type,
+			      /*auto_delete_vec=*/integer_zero_node,
+			      /*auto_delete=*/integer_zero_node,
+			      /*use_global_delete=*/0);
+      pop_obstacks ();
+      finish_cleanup (e, try_block);
+    }
+
+  if (obey_regdecls && !building_stmt_tree ())
     {
       use_variable (DECL_RTL (iterator));
       use_variable (DECL_RTL (rval));
     }
 
-  return rval;
+  /* The value of the array initialization is the address of the
+     first element in the array.  */
+  finish_expr_stmt (rval);
+
+  stmt_expr = finish_init_stmts (stmt_expr, compound_stmt);
+  stmts_are_full_exprs_p = destroy_temps;
+  return stmt_expr;
 }
 
 /* Free up storage of type TYPE, at address ADDR.

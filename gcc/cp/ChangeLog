@@ -1,5 +1,82 @@
 1999-08-25  Mark Mitchell  <mark@codesourcery.com>
 
+	* cp-tree.def (SUBOBJECT): New tree node.
+	* cp-tree.h (CLEANUP_P): New macro.
+	(SUBOBJECT_CLEANUP): Likewise.
+	(keep_next_level): Add parameter.
+	(get_temp_regvar): Don't declare.
+	(emit_base_init): Remove parameter.
+	(expand_aggr_init): Rename to build_aggr_init.
+	(expand_vec_init): Rename to build_vec_init.
+	(do_pushlevel): Remove.
+	(do_poplevel): Likewise.
+	(finish_cleanup): New function.
+	(finish_subobject): Likewise.
+	(stmts_are_full_exprs_p): New variable.
+	* decl.c (keep_next_level): Add parameter.
+	(cp_finish_decl): Use build_aggr_init, not
+	expand_aggr_init.  Use finish_expr_stmt to expand the code.
+	(expand_static_init): Use tree-generating, not RTL-generating,
+	functions to handle the initialization.
+	(start_function): Remove dead code.  Always have a momentary
+	obstack inside the function, even before hitting the first curly
+	brace.
+	(cplus_expand_expr_stmt): Move calls to
+	expand_{start,end}_target_temps into semantics.c.
+	(cp_function): Add stmts_are_full_exprs_p.
+	(push_cp_function_context): Save it.
+	(pop_cp_function_context): Restore it.
+	* decl2.c (get_temp_regvar): Move to init.c.
+	(do_static_initialization): Use build_{aggr,vec}_init.
+	(do_static_destruction): Fix typo in comment.
+	* dump.c (dequeue_and_dump): Handle INIT_EXPR.
+	* except.c (expand_throw): Use create_temporary_var.
+	* expr.c (cplus_expand_expr): Use build_{aggr,vec}_init.
+	* init.c (expand_vec_init_try_block): Remove.
+	(expand_vec_init_catch_clause): Likewise.
+	(get_temp_regvar): New function.
+	(begin_init_stmts): Likewise.
+	(finish_init_stmts): Likewise.
+	(perform_member_init): Use build_{aggr,vec}_init.  Build up tree
+	structure here.
+	(emit_base_init): Likewise.  Remove unused parameter.
+	(expand_virtual_init): Likewise.
+	(expand_cleanup_for_base): Use finish_subobject.
+	(expand_aggr_vbase_init_1): Simplify.
+	(construct_virtual_bases): Use tree-generating functions to build
+	up initialization.
+	(expand_aggr_init): Likewise.  Rename to build_aggr_init.
+	(expand_default_init): Likewise.
+	(expand_aggr_init_1): Likewise.
+	(expand_vec_init): Rename to build_vec_init.
+	* method.c (do_build_copy_constructor): Use tree-generating
+	functions.  Don't call clear_last_expr.
+	(do_build_assign_ref): Likewise.
+	(synthesize_method): Call clear_last_expr here.
+	* parse.y (base_init): Don't call clear_last_expr here.
+	(nodecls): Likewise.
+	* pt.c (tsubst_expr): Handle a TRY_BLOCK with CLEANUP_P set.
+	* semantics.c (do_pushlevel): Move to here.
+	(do_poplevel): Likewise.
+	(stmts_are_full_exprs_p): New variable.
+	(finish_expr_stmt): Handle logic for temoprary cleanup here.
+	(finish_for_stmt): Use finish_expr_stmt.
+	(finish_cleanup): New function.
+	(finish_function_try_block): Fix indentation.
+	(finish_subobject): New function.
+	(setup_vtbl_ptr): Call keep_next_level here.
+	(finish_stmt_expr): Handle a block with no scope inside the
+	statement-expression.
+	(expand_stmt): Handle a TRY_BLOCK with CLEANUP_P set.  Handle
+	SUBOBJECT.
+	* tree.c (search_tree): Handle INIT_EXPR.
+	(mapcar): Likewise.
+	* typeck.c (build_modify_expr): Don't build an RTL_EXPR.
+	* typeck2.c (store_init_value): Change expand_aggr_init to
+	build_aggr_init in comment.
+	
+1999-08-25  Mark Mitchell  <mark@codesourcery.com>
+
 	* dump.c (dequeue_and_dump): Dump TARGET_EXPRs.
 
 1999-08-25  Nathan Sidwell  <nathan@acm.org>

@@ -2077,31 +2077,6 @@ get_temp_name (type, staticp)
   return decl;
 }
 
-/* Get a variable which we can use for multiple assignments.
-   It is not entered into current_binding_level, because
-   that breaks things when it comes time to do final cleanups
-   (which take place "outside" the binding contour of the function).  */
-
-tree
-get_temp_regvar (type, init)
-     tree type, init;
-{
-  tree decl;
-
-  decl = build_decl (VAR_DECL, NULL_TREE, type);
-  TREE_USED (decl) = 1;
-  DECL_REGISTER (decl) = 1;
-  DECL_ARTIFICIAL (decl) = 1;
-
-  DECL_RTL (decl) = assign_temp (type, 2, 0, 1);
-  /* We can expand these without fear, since they cannot need
-     constructors or destructors.  */
-  expand_expr (build_modify_expr (decl, INIT_EXPR, init),
-	       NULL_RTX, VOIDmode, 0);
-
-  return decl;
-}
-
 /* Hunts through the global anonymous union ANON_DECL, building
    appropriate VAR_DECLs.  Stores cleanups on the list of ELEMS, and
    returns a VAR_DECL whose size is the same as the size of the
@@ -3219,11 +3194,12 @@ do_static_initialization (decl, init, sentry, priority)
 
   if (IS_AGGR_TYPE (TREE_TYPE (decl))
       || TREE_CODE (TREE_TYPE (decl)) == ARRAY_TYPE)
-    expand_aggr_init (decl, init, 0);
+    expand_expr (build_aggr_init (decl, init, 0),
+		 const0_rtx, VOIDmode, EXPAND_NORMAL);
   else if (TREE_CODE (init) == TREE_VEC)
-    expand_expr (expand_vec_init (decl, TREE_VEC_ELT (init, 0),
-				  TREE_VEC_ELT (init, 1),
-				  TREE_VEC_ELT (init, 2), 0),
+    expand_expr (build_vec_init (decl, TREE_VEC_ELT (init, 0),
+				 TREE_VEC_ELT (init, 1),
+				 TREE_VEC_ELT (init, 2), 0),
 		 const0_rtx, VOIDmode, EXPAND_NORMAL);
   else
     expand_assignment (decl, init, 0, 0);
@@ -3290,7 +3266,7 @@ do_static_destruction (decl, sentry, priority)
 					integer_zero_node),
 		       /*exit_flag=*/0);
   
-  /* Actually to the destruction.  */
+  /* Actually do the destruction.  */
   expand_expr_stmt (build_cleanup (decl));
 
   /* Cleanup any deferred pops from function calls.  This would be done
