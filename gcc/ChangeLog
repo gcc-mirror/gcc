@@ -1,5 +1,8 @@
 2002-12-17  Jason Merrill  <jason@redhat.com>
 
+	* tree.c (make_node): Don't set TREE_TYPE on 's' class nodes.
+	(build1): Always set TREE_SIDE_EFFECTS on 's' class nodes.
+
         * gcc.c (do_spec_1) ['W']: End any pending argument from the braces.
 
 	* calls.c (expand_call): Don't try to be clever about expanding
