@@ -1378,7 +1378,7 @@ get_call_expr_operands (tree stmt, tree expr)
       if (TREE_SIDE_EFFECTS (expr)
 	  && !(call_flags & (ECF_PURE | ECF_CONST | ECF_NORETURN)))
 	add_call_clobber_ops (stmt);
-      else if (!(call_flags & (ECF_CONST | ECF_NORETURN)))
+      else if (!(call_flags & ECF_CONST))
 	add_call_read_ops (stmt);
     }
 }
