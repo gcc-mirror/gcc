@@ -1,4 +1,5 @@
-2001-02-06  Phil Edwards  <pme@sources.redhat.com>
+2001-02-06  Hyman Rosen  <Hyman.Rosen@kbcfp.com>
+            Phil Edwards  <pme@sources.redhat.com>
 
 	* include/bits/std_istream.h (op>> signed,unsigned char):  Must
 	  use reinterpret_cast, not static_cast.
