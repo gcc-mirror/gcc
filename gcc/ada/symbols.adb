@@ -36,14 +36,18 @@ package body Symbols is
    ----------------
 
    procedure Initialize
-     (Symbol_File : String;
-      Force       : Boolean;
-      Quiet       : Boolean;
-      Success     : out Boolean)
+     (Symbol_File   : String;
+      Reference     : String;
+      Symbol_Policy : Policy;
+      Quiet         : Boolean;
+      Version       : String;
+      Success       : out Boolean)
    is
       pragma Unreferenced (Symbol_File);
-      pragma Unreferenced (Force);
+      pragma Unreferenced (Reference);
+      pragma Unreferenced (Symbol_Policy);
       pragma Unreferenced (Quiet);
+      pragma Unreferenced (Version);
    begin
       Put_Line
         ("creation of symbol files are not supported on this platform");

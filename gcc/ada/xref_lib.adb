@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1998-2002 Free Software Foundation, Inc.          --
+--          Copyright (C) 1998-2003 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -359,10 +359,7 @@ package body Xref_Lib is
    -- Default_Project_File --
    --------------------------
 
-   function Default_Project_File
-     (Dir_Name : String)
-      return     String
-   is
+   function Default_Project_File (Dir_Name : String) return String is
       My_Dir  : Dir_Type;
       Dir_Ent : File_Name_String;
       Last    : Natural;
@@ -396,8 +393,7 @@ package body Xref_Lib is
 
    function File_Name
      (File : ALI_File;
-      Num  : Positive)
-      return File_Reference
+      Num  : Positive) return File_Reference
    is
    begin
       return File.Dep.Table (Num);
@@ -876,6 +872,9 @@ package body Xref_Lib is
          --  unit number is optional. It is specified only if the parent type
          --  is not defined in the current unit.
 
+         --  We also have the format for generic instantiations, as in
+         --  7a5*Uid(3|5I8[4|2]) 2|4r74
+
          --  We could also have something like
          --  16I9*I<integer>
          --  that indicates that I derives from the predefined type integer.
@@ -918,6 +917,25 @@ package body Xref_Lib is
                Ptr := Ptr + 1;
                Parse_Number (Ali, Ptr, P_Column);
 
+               --  Skip the information for generics instantiations
+
+               if Ali (Ptr) = '[' then
+                  declare
+                     Num_Brackets : Natural := 1;
+                  begin
+                     while Num_Brackets /= 0 loop
+                        Ptr := Ptr + 1;
+                        if Ali (Ptr) = '[' then
+                           Num_Brackets := Num_Brackets + 1;
+                        elsif Ali (Ptr) = ']' then
+                           Num_Brackets := Num_Brackets - 1;
+                        end if;
+                     end loop;
+
+                     Ptr := Ptr + 1;
+                  end;
+               end if;
+
                --  Skip '>', or ')' or '>'
 
                Ptr := Ptr + 1;
@@ -928,8 +946,7 @@ package body Xref_Lib is
                if Der_Info or else Type_Tree then
                   declare
                      Symbol : constant String :=
-                       Get_Symbol_Name (P_Eun, P_Line, P_Column);
-
+                                Get_Symbol_Name (P_Eun, P_Line, P_Column);
                   begin
                      if Symbol /= "???" then
                         Add_Parent

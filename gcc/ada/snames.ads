@@ -902,33 +902,35 @@ package Snames is
    Name_Library_Kind                   : constant Name_Id := N + 558;
    Name_Library_Name                   : constant Name_Id := N + 559;
    Name_Library_Options                : constant Name_Id := N + 560;
-   Name_Library_Src_Dir                : constant Name_Id := N + 561;
-   Name_Library_Symbol_File            : constant Name_Id := N + 562;
-   Name_Library_Version                : constant Name_Id := N + 563;
-   Name_Linker                         : constant Name_Id := N + 564;
-   Name_Local_Configuration_Pragmas    : constant Name_Id := N + 565;
-   Name_Locally_Removed_Files          : constant Name_Id := N + 566;
-   Name_Naming                         : constant Name_Id := N + 567;
-   Name_Object_Dir                     : constant Name_Id := N + 568;
-   Name_Pretty_Printer                 : constant Name_Id := N + 569;
-   Name_Project                        : constant Name_Id := N + 570;
-   Name_Separate_Suffix                : constant Name_Id := N + 571;
-   Name_Source_Dirs                    : constant Name_Id := N + 572;
-   Name_Source_Files                   : constant Name_Id := N + 573;
-   Name_Source_List_File               : constant Name_Id := N + 574;
-   Name_Spec                           : constant Name_Id := N + 575;
-   Name_Spec_Suffix                    : constant Name_Id := N + 576;
-   Name_Specification                  : constant Name_Id := N + 577;
-   Name_Specification_Exceptions       : constant Name_Id := N + 578;
-   Name_Specification_Suffix           : constant Name_Id := N + 579;
-   Name_Switches                       : constant Name_Id := N + 580;
+   Name_Library_Reference_Symbol_File  : constant Name_Id := N + 561;
+   Name_Library_Src_Dir                : constant Name_Id := N + 562;
+   Name_Library_Symbol_File            : constant Name_Id := N + 563;
+   Name_Library_Symbol_Policy          : constant Name_Id := N + 564;
+   Name_Library_Version                : constant Name_Id := N + 565;
+   Name_Linker                         : constant Name_Id := N + 566;
+   Name_Local_Configuration_Pragmas    : constant Name_Id := N + 567;
+   Name_Locally_Removed_Files          : constant Name_Id := N + 568;
+   Name_Naming                         : constant Name_Id := N + 569;
+   Name_Object_Dir                     : constant Name_Id := N + 570;
+   Name_Pretty_Printer                 : constant Name_Id := N + 571;
+   Name_Project                        : constant Name_Id := N + 572;
+   Name_Separate_Suffix                : constant Name_Id := N + 573;
+   Name_Source_Dirs                    : constant Name_Id := N + 574;
+   Name_Source_Files                   : constant Name_Id := N + 575;
+   Name_Source_List_File               : constant Name_Id := N + 576;
+   Name_Spec                           : constant Name_Id := N + 577;
+   Name_Spec_Suffix                    : constant Name_Id := N + 578;
+   Name_Specification                  : constant Name_Id := N + 579;
+   Name_Specification_Exceptions       : constant Name_Id := N + 580;
+   Name_Specification_Suffix           : constant Name_Id := N + 581;
+   Name_Switches                       : constant Name_Id := N + 582;
    --  Other miscellaneous names used in front end
 
-   Name_Unaligned_Valid                : constant Name_Id := N + 581;
+   Name_Unaligned_Valid                : constant Name_Id := N + 583;
 
    --  Mark last defined name for consistency check in Snames body
 
-   Last_Predefined_Name                : constant Name_Id := N + 581;
+   Last_Predefined_Name                : constant Name_Id := N + 583;
 
    subtype Any_Operator_Name is Name_Id range
      First_Operator_Name .. Last_Operator_Name;

@@ -235,7 +235,7 @@ begin
    --  Line for -gnatN switch
 
    Write_Switch_Char ("N");
-   Write_Line ("Full (frontend) inlining of subprograqms");
+   Write_Line ("Full (frontend) inlining of subprograms");
 
    --  Line for -gnato switch
 

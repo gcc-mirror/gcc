@@ -782,7 +782,7 @@ package body Ch10 is
 
          --  Processing for WITH clause
 
-         --  First check for LIMITED WITH
+         --  Ada0Y (AI-50217): First check for LIMITED WITH
 
          if Token = Tok_Limited then
             Has_Limited := True;

@@ -1313,6 +1313,7 @@ package body MLib.Prj is
                   Interfaces    => Arguments (1 .. Argument_Number),
                   Lib_Filename  => Lib_Filename.all,
                   Lib_Dir       => Lib_Dirpath.all,
+                  Symbol_Data   => Data.Symbol_Data,
                   Driver_Name   => Driver_Name,
                   Lib_Address   => DLL_Address.all,
                   Lib_Version   => Lib_Version.all,

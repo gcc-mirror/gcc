@@ -824,6 +824,9 @@ package body Sem_Type is
       then
          return True;
 
+      --  Ada0Y (AI-50217): Additional branches to make the shadow entity
+      --  compatible with its real entity.
+
       elsif From_With_Type (T1) then
 
          --  If the expected type is the non-limited view of a type, the

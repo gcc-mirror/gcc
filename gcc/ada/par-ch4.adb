@@ -1127,6 +1127,9 @@ package body Ch4 is
 
    --  Error recovery: can raise Error_Resync
 
+   --  Note: POSITIONAL_ARRAY_AGGREGATE rule has been extended to give support
+   --        to Ada0Y limited aggregates (AI-287)
+
    function P_Aggregate_Or_Paren_Expr return Node_Id is
       Aggregate_Node : Node_Id;
       Expr_List      : List_Id;
@@ -1372,6 +1375,10 @@ package body Ch4 is
    --  been handled directly.
 
    --  Error recovery: can raise Error_Resync
+
+   --  Note: RECORD_COMPONENT_ASSOCIATION and ARRAY_COMPONENT_ASSOCIATION
+   --        rules have been extended to give support to Ada0Y limited
+   --        aggregates (AI-287)
 
    function P_Record_Or_Array_Component_Association return Node_Id is
       Assoc_Node : Node_Id;

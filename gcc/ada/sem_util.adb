@@ -818,8 +818,8 @@ package body Sem_Util is
    begin
       if Ekind (T) = E_Incomplete_Type then
 
-         --  If the type is available through a limited_with_clause,
-         --  verify that its full view has been analyzed.
+         --  Ada0Y (AI-50217): If the type is available through a limited
+         --  with_clause, verify that its full view has been analyzed.
 
          if From_With_Type (T)
            and then Present (Non_Limited_View (T))

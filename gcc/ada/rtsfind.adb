@@ -258,6 +258,8 @@ package body Rtsfind is
       for J in RE_Id loop
          RE_Table (J) := Empty;
       end loop;
+
+      RTE_Is_Available := False;
    end Initialize;
 
    ------------

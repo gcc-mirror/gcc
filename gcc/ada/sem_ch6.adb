@@ -4840,9 +4840,9 @@ package body Sem_Ch6 is
                         and then Ekind (Root_Type (Formal_Type)) =
                                                          E_Incomplete_Type)
             then
-
-               --  Incomplete tagged types that are made visible through
-               --  a limited with_clause are valid formal types.
+               --  Ada0Y (AI-50217): Incomplete tagged types that are made
+               --  visible through a limited with_clause are valid formal
+               --  types.
 
                if From_With_Type (Formal_Type)
                  and then Is_Tagged_Type (Formal_Type)

@@ -37,7 +37,9 @@
 --  only on OpenVMS.
 
 --  gnatsym takes as parameters:
---    - the name of the symbol file to create or update
+--    - the name of the symbol file to create
+--    - (optional) the policy to create the symbol file
+--    - (optional) the name of the reference symbol file
 --    - the names of one or more object files where the symbols are found
 
 with GNAT.Command_Line; use GNAT.Command_Line;
@@ -52,13 +54,16 @@ with Table;
 
 procedure Gnatsym is
 
+   Empty_String : aliased String := "";
+   Empty : constant String_Access := Empty_String'Unchecked_Access;
+   --  To initialize variables Reference and Version_String
+
    Copyright_Displayed : Boolean := False;
    --  A flag to prevent multiple display of the Copyright notice
 
    Success : Boolean := True;
 
-   Force : Boolean := False;
-   --  True when -f switcxh is used
+   Symbol_Policy : Policy := Autonomous;
 
    Verbose : Boolean := False;
    --  True when -v switch is used
@@ -66,8 +71,14 @@ procedure Gnatsym is
    Quiet : Boolean := False;
    --  True when -q switch is used
 
-   Symbol_File_Name : String_Access;
+   Symbol_File_Name : String_Access := null;
    --  The name of the symbol file
+
+   Reference_Symbol_File_Name : String_Access := Empty;
+   --  The name of the reference symbol file
+
+   Version_String : String_Access := Empty;
+   --  The version of the library. Used on VMS.
 
    package Object_Files is new Table.Table
      (Table_Component_Type => String_Access,
@@ -113,18 +124,31 @@ procedure Gnatsym is
    procedure Parse_Cmd_Line is
    begin
       loop
-         case GNAT.Command_Line.Getopt ("f q v") is
+         case GNAT.Command_Line.Getopt ("c C q r: s: v V:") is
             when ASCII.NUL =>
                exit;
 
-            when 'f' =>
-               Force := True;
+            when 'c' =>
+               Symbol_Policy := Compliant;
+
+            when 'C' =>
+               Symbol_Policy := Controlled;
 
             when 'q' =>
                Quiet := True;
 
+            when 'r' =>
+               Reference_Symbol_File_Name :=
+                 new String'(GNAT.Command_Line.Parameter);
+
+            when 's' =>
+               Symbol_File_Name := new String'(GNAT.Command_Line.Parameter);
+
             when 'v' =>
                Verbose := True;
+
+            when 'V' =>
+               Version_String := new String'(GNAT.Command_Line.Parameter);
 
             when others =>
                Fail ("invalid switch: ", Full_Switch);
@@ -141,13 +165,8 @@ procedure Gnatsym is
          begin
             exit when S'Length = 0;
 
-            if Symbol_File_Name = null then
-               Symbol_File_Name := S;
-
-            else
-               Object_Files.Increment_Last;
-               Object_Files.Table (Object_Files.Last) := S;
-            end if;
+            Object_Files.Increment_Last;
+            Object_Files.Table (Object_Files.Last) := S;
          end;
       end loop;
    exception
@@ -162,11 +181,17 @@ procedure Gnatsym is
 
    procedure Usage is
    begin
-      Write_Line ("gnatsym [options] sym_file object_file {object_file}");
+      Write_Line ("gnatsym [options] object_file {object_file}");
       Write_Eol;
-      Write_Line ("   -f  Force generation of symbol file");
-      Write_Line ("   -q  Quiet mode");
-      Write_Line ("   -v  Verbose mode");
+      Write_Line ("   -c       Compliant policy");
+      Write_Line ("   -C       Controlled policy");
+      Write_Line ("   -q       Quiet mode");
+      Write_Line ("   -r<ref>  Reference symbol file name");
+      Write_Line ("   -s<sym>  Symbol file name");
+      Write_Line ("   -v       Verbose mode");
+      Write_Line ("   -V<ver>  Version");
+      Write_Eol;
+      Write_Line ("Specifying a symbol file with -s<sym> is compulsory");
       Write_Eol;
    end Usage;
 
@@ -188,7 +213,7 @@ begin
    --  If there is no symbol file or no object files on the command line,
    --  display the usage and exit with an error status.
 
-   if Object_Files.Last = 0 then
+   if Symbol_File_Name = null or else Object_Files.Last = 0 then
       Usage;
       OS_Exit (1);
 
@@ -199,9 +224,16 @@ begin
          Write_Line ("""");
       end if;
 
-      --  Initialize the symbol file
+      --  Initialize the symbol file and, if specified, read the reference
+      --  file.
 
-      Symbols.Initialize (Symbol_File_Name.all, Force, Quiet, Success);
+      Symbols.Initialize
+        (Symbol_File   => Symbol_File_Name.all,
+         Reference     => Reference_Symbol_File_Name.all,
+         Symbol_Policy => Symbol_Policy,
+         Quiet         => Quiet,
+         Version       => Version_String.all,
+         Success       => Success);
 
       --  Process the object files in order. Stop as soon as there is
       --  something wrong.
@@ -231,6 +263,8 @@ begin
 
          Finalize (Quiet, Success);
       end if;
+
+      --  Fail if there was anything wrong
 
       if not Success then
          Fail ("unable to build symbol file");

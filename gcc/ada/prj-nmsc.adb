@@ -1350,16 +1350,32 @@ package body Prj.Nmsc is
                               (Snames.Name_Library_Src_Dir,
                                Data.Decl.Attributes);
 
-            Auto_Init_Supported
-                           : constant Boolean :=
-                               MLib.Tgt.
-                                 Standalone_Library_Auto_Init_Is_Supported;
+            Lib_Symbol_File : constant Prj.Variable_Value :=
+                                Prj.Util.Value_Of
+                                  (Snames.Name_Library_Symbol_File,
+                                   Data.Decl.Attributes);
+
+            Lib_Symbol_Policy : constant Prj.Variable_Value :=
+                                  Prj.Util.Value_Of
+                                    (Snames.Name_Library_Symbol_Policy,
+                                     Data.Decl.Attributes);
+
+            Lib_Ref_Symbol_File : constant Prj.Variable_Value :=
+                                  Prj.Util.Value_Of
+                                    (Snames.Name_Library_Reference_Symbol_File,
+                                     Data.Decl.Attributes);
+
+            Auto_Init_Supported : constant Boolean :=
+                                    MLib.Tgt.
+                                     Standalone_Library_Auto_Init_Is_Supported;
+
+            OK : Boolean := True;
 
          begin
             pragma Assert (Lib_Interfaces.Kind = List);
 
-            --  It is a library project file if attribute Library_Interface
-            --  is defined.
+            --  It is a stand-alone library project file if attribute
+            --  Library_Interface is defined.
 
             if not Lib_Interfaces.Default then
                declare
@@ -1566,102 +1582,257 @@ package body Prj.Nmsc is
                            Lib_Auto_Init.Location);
                      end if;
                   end if;
+               end;
 
-                  if Lib_Src_Dir.Value /= Empty_String then
-                     declare
-                        Dir_Id : constant Name_Id := Lib_Src_Dir.Value;
+               --  If attribute Library_Src_Dir is defined and not the
+               --  empty string, check if the directory exist and is not
+               --  the object directory or one of the source directories.
+               --  This is the directory where copies of the interface
+               --  sources will be copied. Note that this directory may be
+               --  the library directory.
 
-                     begin
-                        Locate_Directory
-                          (Dir_Id, Data.Display_Directory,
-                           Data.Library_Src_Dir,
-                           Data.Display_Library_Src_Dir);
+               if Lib_Src_Dir.Value /= Empty_String then
+                  declare
+                     Dir_Id : constant Name_Id := Lib_Src_Dir.Value;
 
-                        --  Comment needed here ???
+                  begin
+                     Locate_Directory
+                       (Dir_Id, Data.Display_Directory,
+                        Data.Library_Src_Dir,
+                        Data.Display_Library_Src_Dir);
 
-                        if Data.Library_Src_Dir = No_Name then
+                     --  If directory does not exist, report an error
 
-                           --  Get the absolute name of the library directory
-                           --  that does not exist, to report an error.
+                     if Data.Library_Src_Dir = No_Name then
 
-                           declare
-                              Dir_Name : constant String :=
-                                           Get_Name_String (Dir_Id);
-                           begin
-                              if Is_Absolute_Path (Dir_Name) then
-                                 Err_Vars.Error_Msg_Name_1 := Dir_Id;
+                        --  Get the absolute name of the library directory
+                        --  that does not exist, to report an error.
 
-                              else
-                                 Get_Name_String (Data.Directory);
+                        declare
+                           Dir_Name : constant String :=
+                                        Get_Name_String (Dir_Id);
 
-                                 if Name_Buffer (Name_Len) /=
-                                    Directory_Separator
-                                 then
-                                    Name_Len := Name_Len + 1;
-                                    Name_Buffer (Name_Len) :=
-                                      Directory_Separator;
-                                 end if;
+                        begin
+                           if Is_Absolute_Path (Dir_Name) then
+                              Err_Vars.Error_Msg_Name_1 := Dir_Id;
 
-                                 Name_Buffer
-                                   (Name_Len + 1 ..
-                                      Name_Len + Dir_Name'Length) :=
-                                   Dir_Name;
-                                 Name_Len := Name_Len + Dir_Name'Length;
-                                 Err_Vars.Error_Msg_Name_1 := Name_Find;
+                           else
+                              Get_Name_String (Data.Directory);
+
+                              if Name_Buffer (Name_Len) /=
+                                Directory_Separator
+                              then
+                                 Name_Len := Name_Len + 1;
+                                 Name_Buffer (Name_Len) :=
+                                   Directory_Separator;
                               end if;
 
-                              --  Report the error
+                              Name_Buffer
+                                (Name_Len + 1 ..
+                                   Name_Len + Dir_Name'Length) :=
+                                  Dir_Name;
+                              Name_Len := Name_Len + Dir_Name'Length;
+                              Err_Vars.Error_Msg_Name_1 := Name_Find;
+                           end if;
 
-                              Error_Msg
-                                (Project,
-                                 "Directory { does not exist",
-                                 Lib_Src_Dir.Location);
-                           end;
+                           --  Report the error
 
-                        --  And comment needed here ???
-
-                        elsif Data.Library_Src_Dir = Data.Object_Directory then
                            Error_Msg
                              (Project,
-                              "directory to copy interfaces cannot be " &
-                              "the object directory",
+                              "Directory { does not exist",
                               Lib_Src_Dir.Location);
-                           Data.Library_Src_Dir := No_Name;
+                        end;
 
-                        --  And comment needed here ???
+                     --  Report an error if it is the same as the object
+                     --  directory.
 
-                        else
-                           declare
-                              Src_Dirs : String_List_Id := Data.Source_Dirs;
-                              Src_Dir : String_Element;
-                           begin
-                              while Src_Dirs /= Nil_String loop
-                                 Src_Dir := String_Elements.Table (Src_Dirs);
-                                 Src_Dirs := Src_Dir.Next;
+                     elsif Data.Library_Src_Dir = Data.Object_Directory then
+                        Error_Msg
+                          (Project,
+                           "directory to copy interfaces cannot be " &
+                           "the object directory",
+                           Lib_Src_Dir.Location);
+                        Data.Library_Src_Dir := No_Name;
 
-                                 if Data.Library_Src_Dir = Src_Dir.Value then
-                                    Error_Msg
-                                      (Project,
-                                       "directory to copy interfaces cannot " &
-                                       "be one of the source directories",
-                                       Lib_Src_Dir.Location);
-                                    Data.Library_Src_Dir := No_Name;
-                                    exit;
-                                 end if;
-                              end loop;
-                           end;
+                     --  Check if it is the same as one of the source
+                     --  directories.
 
-                           if Data.Library_Src_Dir /= No_Name
-                             and then Current_Verbosity = High
-                           then
-                              Write_Str ("Directory to copy interfaces =""");
-                              Write_Str (Get_Name_String (Data.Library_Dir));
-                              Write_Line ("""");
-                           end if;
+                     else
+                        declare
+                           Src_Dirs : String_List_Id := Data.Source_Dirs;
+                           Src_Dir  : String_Element;
+
+                        begin
+                           while Src_Dirs /= Nil_String loop
+                              Src_Dir := String_Elements.Table (Src_Dirs);
+                              Src_Dirs := Src_Dir.Next;
+
+                              --  Report an error if it is one of the
+                              --  source directories.
+
+                              if Data.Library_Src_Dir = Src_Dir.Value then
+                                 Error_Msg
+                                   (Project,
+                                    "directory to copy interfaces cannot " &
+                                    "be one of the source directories",
+                                    Lib_Src_Dir.Location);
+                                 Data.Library_Src_Dir := No_Name;
+                                 exit;
+                              end if;
+                           end loop;
+                        end;
+
+                        if Data.Library_Src_Dir /= No_Name
+                          and then Current_Verbosity = High
+                        then
+                           Write_Str ("Directory to copy interfaces =""");
+                           Write_Str (Get_Name_String (Data.Library_Dir));
+                           Write_Line ("""");
                         end if;
-                     end;
+                     end if;
+                  end;
+               end if;
+
+               if not Lib_Symbol_File.Default then
+                  Data.Symbol_Data.Symbol_File := Lib_Symbol_File.Value;
+
+                  Get_Name_String (Lib_Symbol_File.Value);
+
+                  if Name_Len = 0 then
+                     Error_Msg
+                       (Project,
+                        "symbol file name cannot be an empty string",
+                        Lib_Symbol_File.Location);
+
+                  else
+                     OK := not Is_Absolute_Path (Name_Buffer (1 .. Name_Len));
+
+                     if OK then
+                        for J in 1 .. Name_Len loop
+                           if Name_Buffer (J) = '/'
+                             or else Name_Buffer (J) = Directory_Separator
+                           then
+                              OK := False;
+                              exit;
+                           end if;
+                        end loop;
+                     end if;
+
+                     if not OK then
+                        Error_Msg_Name_1 := Lib_Symbol_File.Value;
+                        Error_Msg
+                          (Project,
+                           "symbol file name { is illegal. " &
+                           "Name canot include directory info.",
+                           Lib_Symbol_File.Location);
+                     end if;
                   end if;
-               end;
+               end if;
+
+               if not Lib_Symbol_Policy.Default then
+                  declare
+                     Value : constant String :=
+                               To_Lower
+                                 (Get_Name_String (Lib_Symbol_Policy.Value));
+
+                  begin
+                     if Value = "autonomous" or else Value = "default" then
+                        Data.Symbol_Data.Symbol_Policy := Autonomous;
+
+                     elsif Value = "compliant" then
+                        Data.Symbol_Data.Symbol_Policy := Compliant;
+
+                     elsif Value = "controlled" then
+                        Data.Symbol_Data.Symbol_Policy := Controlled;
+
+                     else
+                        Error_Msg
+                          (Project,
+                           "illegal value for Library_Symbol_Policy",
+                           Lib_Symbol_Policy.Location);
+                     end if;
+                  end;
+               end if;
+
+               if Lib_Ref_Symbol_File.Default then
+                  if Data.Symbol_Data.Symbol_Policy /= Autonomous then
+                     Error_Msg
+                       (Project,
+                        "a reference symbol file need to be defined",
+                        Lib_Symbol_Policy.Location);
+                  end if;
+
+               else
+                  Data.Symbol_Data.Reference := Lib_Ref_Symbol_File.Value;
+
+                  Get_Name_String (Lib_Symbol_File.Value);
+
+                  if Name_Len = 0 then
+                     Error_Msg
+                       (Project,
+                        "reference symbol file name cannot be an empty string",
+                        Lib_Symbol_File.Location);
+
+                  else
+                     OK := not Is_Absolute_Path (Name_Buffer (1 .. Name_Len));
+
+                     if OK then
+                        for J in 1 .. Name_Len loop
+                           if Name_Buffer (J) = '/'
+                             or else Name_Buffer (J) = Directory_Separator
+                           then
+                              OK := False;
+                              exit;
+                           end if;
+                        end loop;
+                     end if;
+
+                     if not OK then
+                        Error_Msg_Name_1 := Lib_Ref_Symbol_File.Value;
+                        Error_Msg
+                          (Project,
+                           "reference symbol file { name is illegal. " &
+                           "Name canot include directory info.",
+                           Lib_Ref_Symbol_File.Location);
+                     end if;
+
+                     if not Is_Regular_File
+                       (Get_Name_String (Data.Object_Directory) &
+                        Directory_Separator &
+                        Get_Name_String (Lib_Ref_Symbol_File.Value))
+                     then
+                        Error_Msg_Name_1 := Lib_Ref_Symbol_File.Value;
+                        Error_Msg
+                          (Project,
+                           "library reference symbol file { does not exist",
+                           Lib_Ref_Symbol_File.Location);
+                     end if;
+
+                     if Data.Symbol_Data.Symbol_File /= No_Name then
+                        declare
+                           Symbol : String :=
+                                      Get_Name_String
+                                        (Data.Symbol_Data.Symbol_File);
+
+                           Reference : String :=
+                                         Get_Name_String
+                                           (Data.Symbol_Data.Reference);
+
+                        begin
+                           Canonical_Case_File_Name (Symbol);
+                           Canonical_Case_File_Name (Reference);
+
+                           if Symbol = Reference then
+                              Error_Msg
+                                (Project,
+                                 "reference symbol file and symbol file " &
+                                 "cannot be the same file",
+                                 Lib_Ref_Symbol_File.Location);
+                           end if;
+                        end;
+                     end if;
+                  end if;
+               end if;
             end if;
          end Standalone_Library;
       end if;

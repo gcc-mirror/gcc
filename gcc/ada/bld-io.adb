@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---        Copyright (C) 2002 Free Software Foundation, Inc.                 --
+--        Copyright (C) 2002-2003 Free Software Foundation, Inc.            --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -132,6 +132,7 @@ package body Bld.IO is
    -----------
 
    procedure Flush is
+      Last : Natural;
    begin
       if Lines (Current).Length /= 0 then
          Osint.Fail ("INTERNAL ERROR: flushing before end of line: """ &
@@ -141,7 +142,18 @@ package body Bld.IO is
 
       for J in 1 .. Current - 1 loop
          if not Lines (J).Suppressed then
-            Text_IO.Put_Line (File, Lines (J).Value (1 .. Lines (J).Length));
+            Last := Lines (J).Length;
+
+            --  The last character of a line cannot be a back slash ('\'),
+            --  otherwise make has a problem. The only real place were it
+            --  should happen is for directory names on Windows, and then
+            --  this terminal back slash is not needed.
+
+            if Last > 0 and then Lines (J).Value (Last) = '\' then
+               Last := Last - 1;
+            end if;
+
+            Text_IO.Put_Line (File, Lines (J).Value (1 .. Last));
          end if;
       end loop;
 

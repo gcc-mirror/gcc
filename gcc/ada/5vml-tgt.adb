@@ -59,13 +59,9 @@ package body MLib.Tgt is
    --  Options to use when invoking gcc to build the dynamic library
 
    No_Start_Files : aliased String := "-nostartfiles";
-   For_Linker_Opt : aliased String := "--for-linker=symvec.opt";
-   Gsmatch        : aliased String := "--for-linker=gsmatch=equal,1,0";
 
-   VMS_Options : constant Argument_List :=
-     (No_Start_Files'Access, For_Linker_Opt'Access, Gsmatch'Access);
-
---   Command : String_Access;
+   VMS_Options : Argument_List :=
+     (No_Start_Files'Access, null);
 
    Gnatsym_Name : constant String := "gnatsym";
 
@@ -134,6 +130,7 @@ package body MLib.Tgt is
       Interfaces   : Argument_List;
       Lib_Filename : String;
       Lib_Dir      : String;
+      Symbol_Data  : Symbol_Record;
       Driver_Name  : Name_Id := No_Name;
       Lib_Address  : String  := "";
       Lib_Version  : String  := "";
@@ -143,10 +140,9 @@ package body MLib.Tgt is
       pragma Unreferenced (Foreign);
       pragma Unreferenced (Afiles);
       pragma Unreferenced (Lib_Address);
-      pragma Unreferenced (Lib_Version);
       pragma Unreferenced (Relocatable);
 
-      Opt_File_Name : constant String := "symvec.opt";
+
 
       Lib_File : constant String :=
                    Lib_Dir & Directory_Separator & "lib" &
@@ -162,6 +158,13 @@ package body MLib.Tgt is
       --  For a Stand-Alone Library, returns True if Obj_File is the object
       --  file name of an interface of the SAL.
       --  For other libraries, always return True.
+
+      function Option_File_Name return String;
+      --  Returns Symbol_File, if not empty. Otherwise, returns "symvec.opt"
+
+      function Version_String return String;
+      --  Returns Lib_Version if not empty, otherwise returns "1".
+      --  Fails gnatmake if Lib_Version is not the image of a positive number.
 
       ------------------
       -- Is_Interface --
@@ -192,7 +195,57 @@ package body MLib.Tgt is
          end if;
       end Is_Interface;
 
+      ----------------------
+      -- Option_File_Name --
+      ----------------------
+
+      function Option_File_Name return String is
+      begin
+         if Symbol_Data.Symbol_File = No_Name then
+            return "symvec.opt";
+
+         else
+            return Get_Name_String (Symbol_Data.Symbol_File);
+         end if;
+      end Option_File_Name;
+
+      --------------------
+      -- Version_String --
+      --------------------
+
+      function Version_String return String is
+         Version : Integer := 0;
+      begin
+         if Lib_Version = "" then
+            return "1";
+
+         else
+            begin
+               Version := Integer'Value (Lib_Version);
+
+               if Version <= 0 then
+                  raise Constraint_Error;
+               end if;
+
+               return Lib_Version;
+
+            exception
+               when Constraint_Error =>
+                  Fail ("illegal version """, Lib_Version,
+                        """ (on VMS version must be a positive number)");
+                  return "";
+            end;
+         end if;
+      end Version_String;
+
+      Opt_File_Name  : constant String := Option_File_Name;
+      For_Linker_Opt : constant String_Access :=
+                         new String'("--for-linker=" & Opt_File_Name);
+      Version : constant String := Version_String;
+
    begin
+      VMS_Options (VMS_Options'First + 1) := For_Linker_Opt;
+
       for J in Inter'Range loop
          To_Lower (Inter (J).all);
       end loop;
@@ -288,18 +341,60 @@ package body MLib.Tgt is
          end;
       end if;
 
-      --  Allocate the argument list and put the symbol file name
+      --  Allocate the argument list and put the symbol file name, the
+      --  reference (if any) and the policy (if not autonomous).
 
-      Arguments := new Argument_List (1 .. Ofiles'Length + 2);
+      Arguments := new Argument_List (1 .. Ofiles'Length + 8);
 
-      Last_Argument := 1;
+      Last_Argument := 0;
+
+      --  Verbosity
 
       if Verbose_Mode then
-         Arguments (Last_Argument) := new String'("-v");
          Last_Argument := Last_Argument + 1;
+         Arguments (Last_Argument) := new String'("-v");
       end if;
 
+      --  Version number (major ID)
+
+      if Lib_Version /= "" then
+         Last_Argument := Last_Argument + 1;
+         Arguments (Last_Argument) := new String'("-V");
+         Last_Argument := Last_Argument + 1;
+         Arguments (Last_Argument) := new String'(Version);
+      end if;
+
+      --  Symbol file
+
+      Last_Argument := Last_Argument + 1;
+      Arguments (Last_Argument) := new String'("-s");
+      Last_Argument := Last_Argument + 1;
       Arguments (Last_Argument) := new String'(Opt_File_Name);
+
+      --  Reference Symbol File
+
+      if Symbol_Data.Reference /= No_Name then
+         Last_Argument := Last_Argument + 1;
+         Arguments (Last_Argument) := new String'("-r");
+         Last_Argument := Last_Argument + 1;
+         Arguments (Last_Argument) :=
+           new String'(Get_Name_String (Symbol_Data.Reference));
+      end if;
+
+      --  Policy
+
+      case Symbol_Data.Symbol_Policy is
+         when Autonomous =>
+            null;
+
+         when Compliant =>
+            Last_Argument := Last_Argument + 1;
+            Arguments (Last_Argument) := new String'("-c");
+
+         when Controlled =>
+            Last_Argument := Last_Argument + 1;
+            Arguments (Last_Argument) := new String'("-C");
+      end case;
 
       --  Add each relevant object file
 

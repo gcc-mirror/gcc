@@ -1,3 +1,148 @@
+2003-11-19  Arnaud Charlet  <charlet@act-europe.fr>
+
+	* gnatmem.adb: Clean up verbose output.
+
+	* gprcmd.adb: Change copyright to FSF.
+
+2003-11-19  Vincent Celier  <celier@gnat.com>
+
+	* symbols.adb: (Initialize): New parameters Reference, Symbol_Policy
+	and Version (ignored).
+
+	* symbols.ads: (Policy): New type
+	(Initialize): New parameter Reference, Symbol_Policy and
+	Library_Version.
+	Remove parameter Force.
+	Minor reformatting.
+
+	* snames.ads, snames.adbadb: New standard names
+	Library_Reference_Symbol_File and Library_Symbol_Policy
+
+	* mlib-prj.adb: 
+	(Build_Library): Call Build_Dinamic_Library with the Symbol_Data of the
+	project.
+
+	* mlib-tgt.adb: 
+	(Build_Dynamic_Library): New parameter Symbol_Data (ignored)
+
+	* mlib-tgt.ads: (Build_Dynamic_Library): New parameter Symbol_Data
+
+	* prj.adb: (Project_Empty): New component Symbol_Data
+
+	* prj.ads: (Policy, Symbol_Record): New types
+	(Project_Data): New component Symbol_Data
+
+	* prj-attr.adb: 
+	New attributes Library_Symbol_File, Library_Symbol_Policy and
+	Library_Reference_Symbol_File.
+
+	* prj-nmsc.adb: 
+	(Ada_Check): When project is a Stand-Alone library project, process
+	attribute Library_Symbol_File, Library_Symbol_Policy and
+	Library_Reference_Symbol_File.
+
+	* 5aml-tgt.adb, 5bml-tgt.adb, 5gml-tgt.adb, 5hml-tgt.adb,
+	5wml-tgt.adb, 5zml-tgt.adb, 5lml-tgt.adb,
+	5sml-tgt.adb (Build_Dynamic_Library): New parameter
+	Symbol_Data (ignored).
+
+	* 5vml-tgt.adb (VMS_Options): Remove --for-linker=gsmatch=equal,1,0
+	(Build_Dynamic_Library): New parameter Symbol_Data. New internal
+	functions Option_File_Name and Version_String. Set new options of
+	gnatsym related to symbol file, symbol policy and reference symbol
+	file.
+
+	* 5vsymbol.adb: 
+	Extensive modifications to take into account the reference symbol file,
+	the symbol policy, the library version and to put in the symbol file the
+	minor and major IDs.
+
+	* bld.adb (Process_Declarative_Items): Put second argument of
+	gprcmd to_absolute between single quotes, to avoid problems with
+	Windows.
+
+	* bld-io.adb: Update Copyright notice.
+	(Flush): Remove last character of a line, if it is a back slash, to
+	avoid make problems.
+
+	* gnatsym.adb: 
+	Implement new scheme with reference symbol file and symbol policy.
+
+	* g-os_lib.ads: (Is_Directory): Clarify comment
+
+2003-11-19  Robert Dewar  <dewar@gnat.com>
+
+	* atree.adb: Move New_Copy_Tree global variables to head of package
+
+	* errout.adb: Minor reformatting
+
+2003-11-19  Javier Miranda  <miranda@gnat.com>
+
+	* sem_ch4.adb: (Diagnose_Call): Improve error message.
+	Add reference to Ada0Y (AI-50217)
+
+	* sem_ch6.adb, sem_ch8.adb, sem_type.adb,
+	sem_util.adb: Add reference to AI-50217
+
+	* sinfo.ads: (N_With_Clause): Document fields referred to AI-50217
+
+	* sprint.adb: Add reference to Ada0Y (AI-50217, AI-287)
+
+	* sem_aggr.adb: Complete documentation of AI-287 changes
+
+	* par-ch4.adb: Document previous changes.
+
+	* lib-load.adb, lib-writ.adb, einfo.ads, par-ch10.adb,
+	sem_cat.adb, sem_ch3.adb, sem_ch10.adb, sem_ch12.adb: Add references to
+	Ada0Y (AI-50217)
+
+	* exp_aggr.adb: Add references to AI-287 in previous changes
+
+2003-11-19  Ed Schonberg  <schonberg@gnat.com>
+
+	* exp_ch6.adb: 
+	(Add_Call_By_Copy_Node): Do not original node of rewritten expression
+	in the rewriting is the result of an inlined call.
+
+	* exp_ch6.adb (Add_Call_By_Copy_Node): If actual for (in-)out
+	parameter is a type conversion, use original node to construct the
+	post-call assignment, because expression may have been rewritten, e.g.
+	if it is a packed array.
+
+	* sem_attr.adb: 
+	(Resolve_Attribute, case 'Constrained): Attribute is legal in an inlined
+	body, just as it is in an instance.
+	Categorization routines
+
+	* sem_ch12.adb (Analyze_Association, Instantiate_Formal_Subprogram,
+	Instantiate_Object): Set proper sloc reference for message on missing
+	actual.
+
+2003-11-19  Thomas Quinot  <quinot@act-europe.fr>
+
+	* Makefile.in: Add FreeBSD libgnat pairs.
+
+	* usage.adb: Fix typo in usage message.
+
+2003-11-19  Jerome Guitton  <guitton@act-europe.fr>
+
+	* Makefile.in: On powerpc-wrs-vxworksae: Add s-thread.ad?,
+	s-thrini.ad? and s-tiitho.adb to the full runtime, to support the
+	pragma Thread_Body.
+	Remove i-vthrea.ad? and s-tpae65.ad?, not needed anymore.
+
+	* s-thread.adb: This file is now a dummy implementation of
+	System.Thread.
+
+2003-11-19  Sergey Rybin  <rybin@act-europe.fr>
+
+	* rtsfind.adb (Initialize): Add initialization for RTE_Is_Available
+
+2003-11-19  Emmanuel Briot  <briot@act-europe.fr>
+
+	* xref_lib.adb (Parse_Identifier_Info): Add handling of generic
+	instanciation references in the parent type description.
+
 2003-11-18  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* ada-tree.def: (ALLOCATE_EXPR): Class is "2", not "s".

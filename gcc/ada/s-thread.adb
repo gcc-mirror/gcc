@@ -31,14 +31,7 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
---  This is the VxWorks version of this package
-
-pragma Restrictions (No_Tasking);
---  The VxWorks version of this package is intended only for programs
---  which do not use Ada tasking. This restriction ensures that this
---  will be checked by the binder.
-
-with System.Secondary_Stack;
+--  This is a dummy version of this package.
 
 with Unchecked_Conversion;
 
@@ -46,29 +39,13 @@ with System.Threads.Initialization;
 
 package body System.Threads is
 
-   package SSS renames System.Secondary_Stack;
-
-   Current_ATSD  : aliased System.Address := System.Null_Address;
-   pragma Export (C, Current_ATSD, "__gnat_current_atsd");
-
-   function From_Address is
-      new Unchecked_Conversion (Address, ATSD_Access);
-
-   procedure Init_Float;
-   pragma Import (C, Init_Float, "__gnat_init_float");
-
-   procedure Install_Handler;
-   pragma Import (C, Install_Handler, "__gnat_install_handler");
-
    -----------------------
    -- Get_Current_Excep --
    -----------------------
 
    function Get_Current_Excep return EOA is
-      CTSD : ATSD_Access := From_Address (Current_ATSD);
    begin
-      pragma Assert (Current_ATSD /= System.Null_Address);
-      return CTSD.Current_Excep'Access;
+      return null;
    end Get_Current_Excep;
 
    ------------------------
@@ -76,10 +53,8 @@ package body System.Threads is
    ------------------------
 
    function  Get_Jmpbuf_Address return  Address is
-      CTSD : ATSD_Access := From_Address (Current_ATSD);
    begin
-      pragma Assert (Current_ATSD /= System.Null_Address);
-      return CTSD.Jmpbuf_Address;
+      return Null_Address;
    end Get_Jmpbuf_Address;
 
    ------------------------
@@ -87,10 +62,8 @@ package body System.Threads is
    ------------------------
 
    function  Get_Sec_Stack_Addr return  Address is
-      CTSD : ATSD_Access := From_Address (Current_ATSD);
    begin
-      pragma Assert (Current_ATSD /= System.Null_Address);
-      return CTSD.Sec_Stack_Addr;
+      return Null_Address;
    end Get_Sec_Stack_Addr;
 
    ------------------------
@@ -98,10 +71,9 @@ package body System.Threads is
    ------------------------
 
    procedure Set_Jmpbuf_Address (Addr : Address) is
-      CTSD : ATSD_Access := From_Address (Current_ATSD);
+      pragma Unreferenced (Addr);
    begin
-      pragma Assert (Current_ATSD /= System.Null_Address);
-      CTSD.Jmpbuf_Address := Addr;
+      null;
    end Set_Jmpbuf_Address;
 
    ------------------------
@@ -109,10 +81,9 @@ package body System.Threads is
    ------------------------
 
    procedure Set_Sec_Stack_Addr (Addr : Address) is
-      CTSD : ATSD_Access := From_Address (Current_ATSD);
+      pragma Unreferenced (Addr);
    begin
-      pragma Assert (Current_ATSD /= System.Null_Address);
-      CTSD.Sec_Stack_Addr := Addr;
+      null;
    end Set_Sec_Stack_Addr;
 
    -----------------------
@@ -124,18 +95,11 @@ package body System.Threads is
       Sec_Stack_Size       : Natural;
       Process_ATSD_Address : System.Address)
    is
-      --  Current_ATSD must already be a taskVar of taskIdSelf.
-      --  No assertion because taskVarGet is not available on VxWorks/CERT
-
-      TSD : ATSD_Access := From_Address (Process_ATSD_Address);
-
+      pragma Unreferenced (Sec_Stack_Address);
+      pragma Unreferenced (Sec_Stack_Size);
+      pragma Unreferenced (Process_ATSD_Address);
    begin
-      TSD.Sec_Stack_Addr := Sec_Stack_Address;
-      SSS.SS_Init (TSD.Sec_Stack_Addr, Sec_Stack_Size);
-      Current_ATSD := Process_ATSD_Address;
-
-      Install_Handler;
-      Init_Float;
+      null;
    end Thread_Body_Enter;
 
    ----------------------------------
@@ -147,8 +111,6 @@ package body System.Threads is
    is
       pragma Unreferenced (EO);
    begin
-      --  No action for this target
-
       null;
    end Thread_Body_Exceptional_Exit;
 
@@ -158,11 +120,7 @@ package body System.Threads is
 
    procedure Thread_Body_Leave is
    begin
-      --  No action for this target
-
       null;
    end Thread_Body_Leave;
 
-begin
-   System.Threads.Initialization.Init_RTS;
 end System.Threads;

@@ -55,7 +55,7 @@ procedure Gprcmd is
 
    Version : constant String :=
                "GPRCMD " & Gnatvsn.Gnat_Version_String &
-               " Copyright 2002-2003, Ada Core Technologies Inc.";
+               " Copyright 2002-2003, Free Software Fundation, Inc.";
 
    procedure Cat (File : String);
    --  Print the contents of file on standard output.

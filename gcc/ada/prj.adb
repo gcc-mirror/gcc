@@ -96,6 +96,7 @@ package body Prj is
       Standalone_Library             => False,
       Lib_Interface_ALIs             => Nil_String,
       Lib_Auto_Init                  => False,
+      Symbol_Data                    => No_Symbols,
       Sources_Present                => True,
       Sources                        => Nil_String,
       Source_Dirs                    => Nil_String,

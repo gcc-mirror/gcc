@@ -347,6 +347,35 @@ package body Atree is
       Table_Increment      => Alloc.Orig_Nodes_Increment,
       Table_Name           => "Orig_Nodes");
 
+   ----------------------------------------
+   -- Global_Variables for New_Copy_Tree --
+   ----------------------------------------
+
+   --  These global variables are used by New_Copy_Tree. See description
+   --  of the body of this subprogram for details. Global variables can be
+   --  safely used by New_Copy_Tree, since there is no case of a recursive
+   --  call from the processing inside New_Copy_Tree.
+
+   NCT_Hash_Threshhold : constant := 20;
+   --  If there are more than this number of pairs of entries in the
+   --  map, then Hash_Tables_Used will be set, and the hash tables will
+   --  be initialized and used for the searches.
+
+   NCT_Hash_Tables_Used : Boolean := False;
+   --  Set to True if hash tables are in use
+
+   NCT_Table_Entries : Nat;
+   --  Count entries in table to see if threshhold is reached
+
+   NCT_Hash_Table_Setup : Boolean := False;
+   --  Set to True if hash table contains data. We set this True if we
+   --  setup the hash table with data, and leave it set permanently
+   --  from then on, this is a signal that second and subsequent users
+   --  of the hash table must clear the old entries before reuse.
+
+   subtype NCT_Header_Num is Int range 0 .. 511;
+   --  Defines range of headers in hash tables (512 headers)
+
    -----------------------
    -- Local Subprograms --
    -----------------------
@@ -958,29 +987,6 @@ package body Atree is
    --  there are fewer entries, then the map is searched sequentially
    --  (because setting up a hash table for only a few entries takes
    --  more time than it saves.
-
-   --  Global variables are safe for this purpose, since there is no case
-   --  of a recursive call from the processing inside New_Copy_Tree.
-
-   NCT_Hash_Threshhold : constant := 20;
-   --  If there are more than this number of pairs of entries in the
-   --  map, then Hash_Tables_Used will be set, and the hash tables will
-   --  be initialized and used for the searches.
-
-   NCT_Hash_Tables_Used : Boolean := False;
-   --  Set to True if hash tables are in use
-
-   NCT_Table_Entries : Nat;
-   --  Count entries in table to see if threshhold is reached
-
-   NCT_Hash_Table_Setup : Boolean := False;
-   --  Set to True if hash table contains data. We set this True if we
-   --  setup the hash table with data, and leave it set permanently
-   --  from then on, this is a signal that second and subsequent users
-   --  of the hash table must clear the old entries before reuse.
-
-   subtype NCT_Header_Num is Int range 0 .. 511;
-   --  Defines range of headers in hash tables (512 headers)
 
    function New_Copy_Hash (E : Entity_Id) return NCT_Header_Num;
    --  Hash function used for hash operations

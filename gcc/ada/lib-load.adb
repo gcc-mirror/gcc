@@ -519,8 +519,8 @@ package body Lib.Load is
          --  legitimately occurs (e.g. two package bodies that contain
          --  inlined subprogram referenced by the other).
 
-         --  We also ignore limited_with clauses, because their purpose is
-         --  precisely to create legal circular structures.
+         --  Ada0Y (AI-50217): We also ignore limited_with clauses, because
+         --  their purpose is precisely to create legal circular structures.
 
          if Loading (Unum)
            and then (Is_Spec_Name (Units.Table (Unum).Unit_Name)

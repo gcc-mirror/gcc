@@ -1409,11 +1409,11 @@ package body Errout is
          Warnings.Table (Warnings.Last).Stop  := Source_Ptr'Last;
       end if;
 
-      --  Set all (???) the error nodes to Empty:
+      --  Set the error nodes to Empty to avoid uninitialized variable
+      --  references for saves/restores/moves.
 
       Error_Msg_Node_1 := Empty;
       Error_Msg_Node_2 := Empty;
-
    end Initialize;
 
    -----------------

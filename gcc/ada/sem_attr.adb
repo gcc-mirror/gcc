@@ -2184,9 +2184,12 @@ package body Sem_Attr is
          if Is_Entity_Name (P) and then Is_Type (Entity (P)) then
 
             --  If we are within an instance, the attribute must be legal
-            --  because it was valid in the generic unit.
+            --  because it was valid in the generic unit. Ditto if this is
+            --  an inlining of a function declared in an instance.
 
-            if In_Instance then
+            if In_Instance
+              or else In_Inlined_Body
+            then
                return;
 
             --  For sure OK if we have a real private type itself, but must
