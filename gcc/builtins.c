@@ -1563,6 +1563,7 @@ mathfn_built_in (tree type, enum built_in_function fn)
       CASE_MATHFN (BUILT_IN_NEXTAFTER)
       CASE_MATHFN (BUILT_IN_NEXTTOWARD)
       CASE_MATHFN (BUILT_IN_POW)
+      CASE_MATHFN (BUILT_IN_POWI)
       CASE_MATHFN (BUILT_IN_POW10)
       CASE_MATHFN (BUILT_IN_REMAINDER)
       CASE_MATHFN (BUILT_IN_REMQUO)
@@ -2347,6 +2348,66 @@ expand_builtin_pow (tree exp, rtx target, rtx subtarget)
   if (! flag_unsafe_math_optimizations)
     return NULL_RTX;
   return expand_builtin_mathfn_2 (exp, target, subtarget);
+}
+
+/* Expand a call to the powi built-in mathematical function.  Return 0 if
+   a normal call should be emitted rather than expanding the function
+   in-line.  EXP is the expression that is a call to the builtin
+   function; if convenient, the result should be placed in TARGET.  */
+
+static rtx
+expand_builtin_powi (tree exp, rtx target, rtx subtarget)
+{
+  tree arglist = TREE_OPERAND (exp, 1);
+  tree arg0, arg1;
+  rtx op0, op1;
+  enum machine_mode mode;
+
+  if (! validate_arglist (arglist, REAL_TYPE, INTEGER_TYPE, VOID_TYPE))
+    return 0;
+
+  arg0 = TREE_VALUE (arglist);
+  arg1 = TREE_VALUE (TREE_CHAIN (arglist));
+  mode = TYPE_MODE (TREE_TYPE (exp));
+
+  /* Handle constant power.  */
+
+  if (TREE_CODE (arg1) == INTEGER_CST
+      && ! TREE_CONSTANT_OVERFLOW (arg1))
+    {
+      HOST_WIDE_INT n = TREE_INT_CST_LOW (arg1);
+
+      /* If the exponent is -1, 0, 1 or 2, then expand_powi is exact.
+	 Otherwise, check the number of multiplications required.  */
+      if ((TREE_INT_CST_HIGH (arg1) == 0
+	   || TREE_INT_CST_HIGH (arg1) == -1)
+	  && ((n >= -1 && n <= 2)
+	      || (! optimize_size
+		  && powi_cost (n) <= POWI_MAX_MULTS)))
+	{
+	  op0 = expand_expr (arg0, subtarget, VOIDmode, 0);
+	  op0 = force_reg (mode, op0);
+	  return expand_powi (op0, mode, n);
+	}
+    }
+
+  /* Emit a libcall to libgcc.  */
+
+  if (target == NULL_RTX)
+    target = gen_reg_rtx (mode);
+
+  op0 = expand_expr (arg0, subtarget, mode, 0);
+  if (GET_MODE (op0) != mode)
+    op0 = convert_to_mode (mode, op0, 0);
+  op1 = expand_expr (arg1, 0, word_mode, 0);
+  if (GET_MODE (op1) != word_mode)
+    op1 = convert_to_mode (word_mode, op1, 0);
+
+  target = emit_library_call_value (powi_optab->handlers[(int) mode].libfunc,
+				    target, LCT_CONST_MAKE_BLOCK, mode, 2,
+				    op0, mode, op1, word_mode);
+
+  return target;
 }
 
 /* Expand expression EXP which is a call to the strlen builtin.  Return 0
@@ -5182,6 +5243,14 @@ expand_builtin (tree exp, rtx target, rtx subtarget, enum machine_mode mode,
     case BUILT_IN_POWF:
     case BUILT_IN_POWL:
       target = expand_builtin_pow (exp, target, subtarget);
+      if (target)
+	return target;
+      break;
+
+    case BUILT_IN_POWI:
+    case BUILT_IN_POWIF:
+    case BUILT_IN_POWIL:
+      target = expand_builtin_powi (exp, target, subtarget);
       if (target)
 	return target;
       break;

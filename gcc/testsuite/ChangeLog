@@ -1,5 +1,11 @@
 2005-02-09  Richard Guenther  <rguenth@gcc.gnu.org>
 
+	PR middle-end/19402
+	* gcc.dg/pr19402-1.c: New testcase.
+	* gcc.dg/pr19402-2.c: likewise.
+
+2005-02-09  Richard Guenther  <rguenth@gcc.gnu.org>
+
 	PR middle-end/19854
 	* g++.dg/tree-ssa/tmmti.C: New testcase.
 

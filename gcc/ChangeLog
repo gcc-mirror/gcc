@@ -1,3 +1,17 @@
+2005-02-09  Richard Guenther  <rguenth@gcc.gnu.org>
+
+	PR middle-end/19402
+	* builtins.def: New __builtin_powi[lf].
+	* builtins.c (mathfn_built_in): Handle BUILT_IN_POWI.
+	(expand_builtin_powi): New function.
+	(expand_builtin): Dispatch to expand_builtin_powi.
+	* libgcc2.h: Add prototypes for __builtin_powi[lf].
+	* libgcc2.c: Add __builtin_powi[lf] implementation.
+	* mklibgcc.in: Add __builtin_powi[lf] to lib2funcs.
+	* optabs.h: Add powi_optab.
+	* optabs.c (init_optabs): Initialize powi_optab.
+	* doc/extend.texi: Document __builtin_powi[lf].
+
 2005-02-09  Dorit Naishlos  <dorit@il.ibm.com>
 
 	* tree-vectorizer.c (vect_set_dump_settings): Check that dump_file 
