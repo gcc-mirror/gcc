@@ -1,3 +1,11 @@
+2000-12-15  Jason Merrill  <jason@redhat.com>
+
+	* jump.c (jump_optimize_1): Don't delete the line note after the
+	prologue even if it seems redundant.
+
+	* config/arm/arm.c (arm_expand_prologue): Set RTX_FRAME_RELATED_P
+	on all insns used to adjust the stack.
+
 Fri Dec 15 15:32:16 MET 2000  Jan Hubicka  <jh@suse.cz>
 
 	* combine.c (cant_combine_insn_p): Get around SUBREGs when determining
@@ -207,24 +215,24 @@ Mon Dec 11 13:51:09 2000  Jeffrey A Law  (law@cygnus.com)
 
 2000-12-11  Neil Booth  <neilb@earthling.net>
 
-        * cpperror.c (print_location): New function.
-        (print_containing_files): Simplify.
-        (_cpp_begin_message): Simplify and use print_location.
-        * cppfiles.c (stack_include_file): Update.
-        (_cpp_pop_file_buffer): Update.
-        * cpphash.h (struct cpp_buffer): New members
-        include_stack_listed and type.   
-        * cpplib.c (_cpp_handle_directive): Buffer->inc is not null.
-        (run_directive): Take buffer type.  cpp_push_buffer cannot fail.
-        (_cpp_do__Pragma, cpp_define, _cpp_define_builtin, cpp_undef,
-        handle_assertion): Update.
-        (cpp_push_buffer): Take a buffer type and file name.
-        (cpp_pop_buffer): Update.  Clear include_stack_listed.
-        * cpplib.h (input_stack_listing_current): Remove.
-        (enum cpp_buffer_type): New.
-        (cpp_push_buffer): New prototype.
-        * cppmacro.c (builtin_macro): Simplify; buffer cannot be null.
-        * fix-header.c (read_scan_file): Update.
+	* cpperror.c (print_location): New function.
+	(print_containing_files): Simplify.
+	(_cpp_begin_message): Simplify and use print_location.
+	* cppfiles.c (stack_include_file): Update.
+	(_cpp_pop_file_buffer): Update.
+	* cpphash.h (struct cpp_buffer): New members
+	include_stack_listed and type.	 
+	* cpplib.c (_cpp_handle_directive): Buffer->inc is not null.
+	(run_directive): Take buffer type.  cpp_push_buffer cannot fail.
+	(_cpp_do__Pragma, cpp_define, _cpp_define_builtin, cpp_undef,
+	handle_assertion): Update.
+	(cpp_push_buffer): Take a buffer type and file name.
+	(cpp_pop_buffer): Update.  Clear include_stack_listed.
+	* cpplib.h (input_stack_listing_current): Remove.
+	(enum cpp_buffer_type): New.
+	(cpp_push_buffer): New prototype.
+	* cppmacro.c (builtin_macro): Simplify; buffer cannot be null.
+	* fix-header.c (read_scan_file): Update.
 
 2000-12-10  Robert Lipe <robertlipe@usa.net>
 
