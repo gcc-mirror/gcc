@@ -1,3 +1,7 @@
+2003-11-18  Jan Hubicka  <jh@suse.cz>
+
+	* cgraph.c (change_decl_assembler_name): Avoid bogus warnings.
+
 2003-11-18  Marc Espie  <espie@openbsd.org>
 
 	* config/rs6000/sysv4.h: OpenBSD hooks.
