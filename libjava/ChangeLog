@@ -1,3 +1,11 @@
+2003-11-19  Michael Koch  <konqueror@gmx.de>
+
+	* java/net/Socket.java
+	(implCreated): New variable that indicates created impl.
+	(getImpl): New method.
+	(toString): Return more SUN compliant string representation.
+	(various): Use getImpl() instead of impl.
+
 2003-11-19  Andreas Tobler  <a.tobler@schweiz.ch>
 
 	* lib/libjava.exp: Add DYLD_LIBRARY_PATH for darwin. Look for
