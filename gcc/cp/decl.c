@@ -11994,6 +11994,7 @@ build_enumerator (name, value)
      tree name, value;
 {
   tree decl, result;
+  tree context;
 
   /* Remove no-op casts from the value.  */
   if (value)
@@ -12042,30 +12043,31 @@ build_enumerator (name, value)
    value = copy_node (value);
 
   /* C++ associates enums with global, function, or class declarations.  */
+ 
+ context = current_scope ();
+ if (context && context == current_class_type)
+   /* This enum declaration is local to the class.  */
+   decl = build_lang_field_decl (CONST_DECL, name, integer_type_node);
+ else
+   /* It's a global enum, or it's local to a function.  (Note local to
+      a function could mean local to a class method.  */
+   decl = build_decl (CONST_DECL, name, integer_type_node);
 
-  decl = current_scope ();
-  if (decl && decl == current_class_type)
-    {
-      /* This enum declaration is local to the class, so we must put
-	 it in that class's list of decls.  */
-      decl = build_lang_field_decl (CONST_DECL, name, integer_type_node);
-      DECL_INITIAL (decl) = value;
-      TREE_READONLY (decl) = 1;
-      pushdecl_class_level (decl);
-      TREE_CHAIN (decl) = current_local_enum;
-      current_local_enum = decl;
-    }
-  else
-    {
-      /* It's a global enum, or it's local to a function.  (Note local to
-	 a function could mean local to a class method.  */
-      decl = build_decl (CONST_DECL, name, integer_type_node);
-      DECL_INITIAL (decl) = value;
-      TREE_READONLY (decl) = 1;
+ DECL_CONTEXT (decl) = FROB_CONTEXT (context);
+ DECL_INITIAL (decl) = value;
+ TREE_READONLY (decl) = 1;
 
-      pushdecl (decl);
-      GNU_xref_decl (current_function_decl, decl);
-    }
+ if (context && context == current_class_type)
+   {
+     pushdecl_class_level (decl);
+     TREE_CHAIN (decl) = current_local_enum;
+     current_local_enum = decl;
+   }
+ else
+   {
+     pushdecl (decl);
+     GNU_xref_decl (current_function_decl, decl);
+   }
 
  if (! processing_template_decl)
    {
