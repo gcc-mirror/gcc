@@ -1881,7 +1881,7 @@ cpp_push_buffer (pfile, buffer, len, from_stage3, return_at_eof)
 
   new->line_base = new->buf = new->cur = buffer;
   new->rlimit = buffer + len;
-  new->from_stage3 = from_stage3;
+  new->from_stage3 = from_stage3 || CPP_OPTION (pfile, traditional);
   new->prev = pfile->buffer;
   new->return_at_eof = return_at_eof;
   new->saved_flags = BOL;

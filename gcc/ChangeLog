@@ -1,3 +1,11 @@
+2002-05-18  Neil Booth  <neil@daikokuya.demon.co.uk>
+
+	* cppinit.c (cpp_post_options): If preprocessed, turn off
+	traditional.  If traditional, turn off column numbers.
+	* cpplib.c (cpp_push_buffer): Lex from stage 3 if traditional.
+	* cpptrad.c (handle_newline): Update line_base.
+	(skip_comment): Handle -Wcomment.
+
 2002-05-17  Zack Weinberg  <zack@codesourcery.com>
 
 	* cppinit.c (struct builtin): Remove unused fields.
