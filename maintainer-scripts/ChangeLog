@@ -1,3 +1,14 @@
+2001-03-17  Joseph S. Myers  <jsm28@cam.ac.uk>
+
+	* update_web_docs: Handle -r and -d options to generate docs for a
+	release or branch in a subdirectory.  Determine names of G77 news
+	and bugs files and contributors file after updated docs have been
+	installed, not before.  Don't remove files from a subdirectory.
+	Don't generate manuals for gcov (included in the GCC manual) or
+	iostream (obsolete).  Do generate manuals for cppinternals, gcj
+	and porting.  Update regular expressions for detecting whether
+	files have really changed when regenerated.
+
 2001-03-15  Joseph S. Myers  <jsm28@cam.ac.uk>
 
 	* update_web_docs: Use /usr/local/bin/texi2html rather than
