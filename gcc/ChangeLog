@@ -1,3 +1,49 @@
+2004-06-12  Steven Bosscher <stevenb@suse.de>,
+	    Andreas Jaeger  <aj@suse.de>
+
+	* gcse.c (record_set_info): Use predicates like REG_P.
+	(mems_conflict_for_gcse_p): Likewise.
+	(load_killed_in_block_p): Likewise.
+	(hash_expr_1): Likewise.
+	(insert_set_in_table): Likewise.
+	(gcse_constant_p): Likewise.
+	(hash_scan_set): Likewise.
+	(hash_scan_insn): Likewise.
+	(canon_list_insert): Likewise.
+	(record_last_mem_set_info): Likewise.
+	(record_last_set_info): Likewise.
+	(compute_hash_table_work): Likewise.
+	(mark_set): Likewise.
+	(mark_clobber): Likewise.
+	(mark_oprs_set): Likewise.
+	(compute_transp): Likewise.
+	(find_avail_set): Likewise.
+	(cprop_insn): Likewise.
+	(do_local_cprop): Likewise.
+	(cprop): Likewise.
+	(find_implicit_sets): Likewise.
+	(find_bypass_set): Likewise.
+	(bypass_conditional_jumps): Likewise.
+	(insert_insn_end_bb): Likewise.
+	(pre_insert_copy_insn): Likewise.
+	(compute_transpout): Likewise.
+	(next_ls_expr): Likewise.
+	(invalidate_any_buried_refs): Likewise.
+	(compute_ld_motion_mems): Likewise.
+	(reg_set_info): Likewise.
+	(reg_clear_last_set): Likewise.
+	(find_moveable_store): Likewise.
+	(compute_store_table): Likewise.
+	(find_loads): Likewise.
+	(store_killed_in_insn): Likewise.
+	(insert_insn_start_bb): Likewise.
+	(reg_set_between_after_reload_p): Likewise.
+	(reg_used_between_after_reload_p): Likewise.
+	(is_jump_table_basic_block): Likewise.
+	(gcse_after_reload): Likewise.
+	(hash_scan_set_after_reload): Likewise.
+	(compute_hash_table_after_reload): Likewise.
+
 2004-06-12  Steven Bosscher  <stevenb@suse.de>
 
 	* rtl.h (MEM_P, NONJUMP_INSN_P, CALL_INSN_P): New predicates.
