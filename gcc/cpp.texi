@@ -401,7 +401,7 @@ include.  The text @var{anything else} is checked for macro calls, which
 are expanded (@pxref{Macros}).  When this is done, the result must match
 one of the above two variants --- in particular, the expansion must form
 a string literal token, or a sequence of tokens surrounded by angle
-braces.  @xref{Unreliable Features}
+braces. @xref{Unreliable Features}.
 
 This feature allows you to define a macro which controls the file name
 to be used at a later point in the program.  One application of this is
@@ -2774,7 +2774,7 @@ The text between the @samp{<} and @samp{>} is taken literally if given
 directly within a @samp{#include} or similar directive.  If a directive
 of this form is obtained through macro expansion, however, behavior like
 preservation of whitespace, and interpretation of backslashes and quotes
-is undefined.  @xref{Include Syntax}
+is undefined. @xref{Include Syntax}.
 
 @item Precedence of ## operators with respect to each other
 
@@ -2844,7 +2844,7 @@ used at all.
 @item #pragma poison
 
 This pragma has been superceded by @samp{#pragma GCC poison}.
-@xref{Poisoning}
+@xref{Poisoning}.
 
 @item Multi-line string literals in directives
 

@@ -1,3 +1,7 @@
+Thu Jul 27 11:54:17 2000  Andrew Cagney  <cagney@b1.cygnus.com>
+
+	* cpp.texi: Append a trailing full-stop to xrefs where needed.
+
 2000-07-26  Dave Pitts  <dpitts@cozx.com>	
 
 	* i370.c: Remove LONGEXTERNAL ifdef from alias_number. Added hash 
