@@ -1,3 +1,8 @@
+2001-01-04  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* gencodes.c (output_predicate_decls): Fill empty initializer
+	braces.
+
 2001-01-04  Jakub Jelinek  <jakub@redhat.com>
 
 	* tradcpp.c (deps_file, print_deps_missing_files): New variables.

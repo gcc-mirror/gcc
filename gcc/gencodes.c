@@ -59,7 +59,7 @@ output_predicate_decls ()
     RTX_CODE codes[NUM_RTX_CODE];
   } *p, predicate[] = {
     PREDICATE_CODES
-    {NULL, {}}
+    {NULL, {0}}
   };
   
   putc ('\n', stdout);
