@@ -507,7 +507,7 @@ xcoffout_begin_function (file, last_linenum)
      in sdbout_begin_block, but there is no guarantee that there will be any
      inner block 1, so we must do it here.  This gives a result similar to
      dbxout, so it does make some sense.  */
-  do_block = BLOCK_NUMBER (DECL_INITIAL (decl));
+  do_block = BLOCK_NUMBER (DECL_INITIAL (current_function_decl));
   xcoffout_block (DECL_INITIAL (current_function_decl), 0,
 		  DECL_ARGUMENTS (current_function_decl));
 
