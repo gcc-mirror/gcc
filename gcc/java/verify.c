@@ -1287,7 +1287,7 @@ verify_jvm_instructions (jcf, byte_ops, length)
   message = "program counter out of range";
   goto verify_error;
  verify_error:
-  error ("verification error at PC=%d: %s", oldpc);
+  error ("verification error at PC=%d", oldpc);
   error (message);
   return 0;
 }
