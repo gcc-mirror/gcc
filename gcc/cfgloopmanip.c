@@ -1372,3 +1372,102 @@ create_loop_notes (void)
     }
   flow_loops_free (&loops);
 }
+
+/* The structure of LOOPS might have changed.  Some loops might get removed
+   (and their headers and latches were set to NULL), loop exists might get
+   removed (thus the loop nesting may be wrong), and some blocks and edges
+   were changed (so the information about bb --> loop mapping does not have
+   to be correct).  But still for the remaining loops the header dominates
+   the latch, and loops did not get new subloobs (new loops might possibly
+   get created, but we are not interested in them).  Fix up the mess.
+ 
+   If CHANGED_BBS is not NULL, basic blocks whose loop has changed are
+   marked in it.  */
+
+void
+fix_loop_structure (struct loops *loops, bitmap changed_bbs)
+{
+  basic_block bb;
+  struct loop *loop, *ploop;
+  unsigned i;
+
+  /* Remove the old bb -> loop mapping.  */
+  FOR_EACH_BB (bb)
+    {
+      bb->aux = (void *) (size_t) bb->loop_father->depth;
+      bb->loop_father = loops->tree_root;
+    }
+
+  /* Remove the dead loops from structures.  */
+  loops->tree_root->num_nodes = n_basic_blocks + 2;
+  for (i = 1; i < loops->num; i++)
+    {
+      loop = loops->parray[i];
+      if (!loop)
+	continue;
+
+      loop->num_nodes = 0;
+      if (loop->header)
+	continue;
+
+      while (loop->inner)
+	{
+	  ploop = loop->inner;
+	  flow_loop_tree_node_remove (ploop);
+	  flow_loop_tree_node_add (loop->outer, ploop);
+	}
+
+      /* Remove the loop and free its data.  */
+      flow_loop_tree_node_remove (loop);
+      loops->parray[loop->num] = NULL;
+      flow_loop_free (loop);
+    }
+
+  /* Rescan the bodies of loops, starting from the outermost.  */
+  loop = loops->tree_root;
+  while (1)
+    {
+      if (loop->inner)
+	loop = loop->inner;
+      else
+	{
+	  while (!loop->next
+		 && loop != loops->tree_root)
+	    loop = loop->outer;
+	  if (loop == loops->tree_root)
+	    break;
+
+	  loop = loop->next;
+	}
+
+      loop->num_nodes = flow_loop_nodes_find (loop->header, loop);
+    }
+
+  /* Now fix the loop nesting.  */
+  for (i = 1; i < loops->num; i++)
+    {
+      loop = loops->parray[i];
+      if (!loop)
+	continue;
+
+      bb = loop_preheader_edge (loop)->src;
+      if (bb->loop_father != loop->outer)
+	{
+	  flow_loop_tree_node_remove (loop);
+	  flow_loop_tree_node_add (bb->loop_father, loop);
+	}
+    }
+
+  /* Mark the blocks whose loop has changed.  */
+  FOR_EACH_BB (bb)
+    {
+      if (changed_bbs
+	  && (void *) (size_t) bb->loop_father->depth != bb->aux)
+	bitmap_set_bit (changed_bbs, bb->index);
+
+      bb->aux = NULL;
+    }
+
+  mark_single_exit_loops (loops);
+  mark_irreducible_loops (loops);
+}

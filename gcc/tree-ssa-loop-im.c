@@ -725,7 +725,7 @@ move_computations (void)
       /* The rewrite of ssa names may cause violation of loop closed ssa
 	 form invariants.  TODO -- avoid these rewrites completely.
 	 Information in virtual phi nodes is sufficient for it.  */
-      rewrite_into_loop_closed_ssa ();
+      rewrite_into_loop_closed_ssa (NULL);
     }
   bitmap_clear (vars_to_rename);
 }

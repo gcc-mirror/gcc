@@ -236,6 +236,8 @@ extern void flow_loops_dump (const struct loops *, FILE *,
 extern void flow_loop_dump (const struct loop *, FILE *,
 			    void (*)(const struct loop *, FILE *, int), int);
 extern void flow_loop_free (struct loop *);
+int flow_loop_nodes_find (basic_block, struct loop *);
+void fix_loop_structure (struct loops *, bitmap changed_bbs);
 void mark_irreducible_loops (struct loops *);
 void mark_single_exit_loops (struct loops *);
 extern void create_loop_notes (void);

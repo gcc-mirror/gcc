@@ -107,11 +107,8 @@ tree_ssa_unswitch_loops (struct loops *loops)
 #endif
     }
 
-#if 0
-  /* The necessary infrastructure is not in yet.  */
   if (changed)
     cleanup_tree_cfg_loop ();
-#endif
 }
 
 /* Checks whether we can unswitch LOOP on condition at end of BB -- one of its

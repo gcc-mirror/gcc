@@ -259,27 +259,52 @@ find_uses_to_rename_stmt (tree stmt, bitmap *use_blocks)
     find_uses_to_rename_use (bb, var, use_blocks);
 }
 
-/* Marks names that are used outside of the loop they are defined in
-   for rewrite.  Records the set of blocks in that the ssa
+/* Marks names that are used in BB and outside of the loop they are
+   defined in for rewrite.  Records the set of blocks in that the ssa
    names are defined to USE_BLOCKS.  */
 
 static void
-find_uses_to_rename (bitmap *use_blocks)
+find_uses_to_rename_bb (basic_block bb, bitmap *use_blocks)
+{
+  block_stmt_iterator bsi;
+  edge e;
+  edge_iterator ei;
+  tree phi;
+
+  FOR_EACH_EDGE (e, ei, bb->succs)
+    for (phi = phi_nodes (e->dest); phi; phi = PHI_CHAIN (phi))
+      find_uses_to_rename_use (bb, PHI_ARG_DEF_FROM_EDGE (phi, e),
+			       use_blocks);
+ 
+  for (bsi = bsi_start (bb); !bsi_end_p (bsi); bsi_next (&bsi))
+    find_uses_to_rename_stmt (bsi_stmt (bsi), use_blocks);
+}
+     
+/* Marks names that are used outside of the loop they are defined in
+   for rewrite.  Records the set of blocks in that the ssa
+   names are defined to USE_BLOCKS.  If CHANGED_BBS is not NULL,
+   scan only blocks in this set.  */
+
+static void
+find_uses_to_rename (bitmap changed_bbs, bitmap *use_blocks)
 {
   basic_block bb;
-  block_stmt_iterator bsi;
-  tree phi;
-  unsigned i;
+  unsigned index;
+  bitmap_iterator bi;
 
-  FOR_EACH_BB (bb)
+  if (changed_bbs)
     {
-      for (phi = phi_nodes (bb); phi; phi = PHI_CHAIN (phi))
-	for (i = 0; i < (unsigned) PHI_NUM_ARGS (phi); i++)
-	  find_uses_to_rename_use (EDGE_PRED (bb, i)->src,
-				   PHI_ARG_DEF (phi, i), use_blocks);
-
-      for (bsi = bsi_start (bb); !bsi_end_p (bsi); bsi_next (&bsi))
-	find_uses_to_rename_stmt (bsi_stmt (bsi), use_blocks);
+      EXECUTE_IF_SET_IN_BITMAP (changed_bbs, 0, index, bi)
+	{
+	  find_uses_to_rename_bb (BASIC_BLOCK (index), use_blocks);
+	}
+    }
+  else
+    {
+      FOR_EACH_BB (bb)
+	{
+	  find_uses_to_rename_bb (bb, use_blocks);
+	}
     }
 }
 
@@ -307,10 +332,13 @@ find_uses_to_rename (bitmap *use_blocks)
 
       Looking from the outer loop with the normal SSA form, the first use of k
       is not well-behaved, while the second one is an induction variable with
-      base 99 and step 1.  */
+      base 99 and step 1.
+      
+      If CHANGED_BBS is not NULL, we look for uses outside loops only in
+      the basic blocks in this set.  */
 
 void
-rewrite_into_loop_closed_ssa (void)
+rewrite_into_loop_closed_ssa (bitmap changed_bbs)
 {
   bitmap loop_exits = get_loops_exits ();
   bitmap *use_blocks;
@@ -322,7 +350,14 @@ rewrite_into_loop_closed_ssa (void)
   use_blocks = xcalloc (num_ssa_names, sizeof (bitmap));
 
   /* Find the uses outside loops.  */
-  find_uses_to_rename (use_blocks);
+  find_uses_to_rename (changed_bbs, use_blocks);
+
+  if (!any_marked_for_rewrite_p ())
+    {
+      free (use_blocks);
+      BITMAP_FREE (loop_exits);
+      return;
+    }
 
   /* Add the phi nodes on exits of the loops for the names we need to
      rewrite.  */

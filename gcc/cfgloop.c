@@ -41,7 +41,6 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #define LATCH_EDGE(E) (*(int *) (E)->aux)
 
 static void flow_loops_cfg_dump (const struct loops *, FILE *);
-static int flow_loop_nodes_find (basic_block, struct loop *);
 static int flow_loop_level_compute (struct loop *);
 static void flow_loops_level_compute (struct loops *);
 static void establish_preds (struct loop *);
@@ -222,7 +221,7 @@ flow_loops_free (struct loops *loops)
 /* Find the nodes contained within the LOOP with header HEADER.
    Return the number of nodes within the loop.  */
 
-static int
+int
 flow_loop_nodes_find (basic_block header, struct loop *loop)
 {
   basic_block *stack;
