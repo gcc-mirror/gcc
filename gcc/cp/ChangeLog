@@ -1,3 +1,8 @@
+1997-09-09  Brendan Kehoe  <brendan@lisa.cygnus.com>
+
+	* typeck.c (build_indirect_ref): Heed FLAG_VOLATILE similar to
+	c-typeck.c.
+
 Mon Sep  8 02:33:20 1997  Jody Goldberg  <jodyg@idt.net>
 
 	* decl.c (current_local_enum): Remove static.
