@@ -1,3 +1,11 @@
+2002-01-23  Richard Henderson  <rth@redhat.com>
+
+	PR libstdc++/5198
+	* config/cpu/m68k/bits/atomicity.h (__exchange_and_add): Only use
+	CAS on the cpu variants that support it.  Add versions that use
+	TAS and that disable interrupts.
+	(__atomic_add): Use __exchange_and_add to guarantee atomicity.
+
 2002-01-18  David Edelsohn  <edelsohn@gnu.org>
 
 	(copy from trunk 2002-01-17  2002-01-16)
@@ -10,11 +18,11 @@
 2002-01-16  Benjamin Kosnik <bkoz@redhat.com>
 	                    <vakatov@ncbi.nlm.nih.gov>
 		
-        libstdc++/3272 (copy from trunk 2001-06-11)
+	libstdc++/3272 (copy from trunk 2001-06-11)
 	libstdc++/5181
-        * include/bits/streambuf.tcc (__copy_streambufs): Don't set eofbit.
-        * testsuite/27_io/ostream_inserter_other.cc (test04): Add test.
-        * testsuite/27_io/istream_extractor_other.cc: Fix.
+	* include/bits/streambuf.tcc (__copy_streambufs): Don't set eofbit.
+	* testsuite/27_io/ostream_inserter_other.cc (test04): Add test.
+	* testsuite/27_io/istream_extractor_other.cc: Fix.
 
 2002-01-15  Loren Rittle <ljrittle@acm.org>
 
@@ -32,16 +40,16 @@
 	* src/Makefile.in: Regenerate.
 
 2002-01-02  Nathan Myers  <ncm@cantrip.org>
-            Loren Rittle <ljrittle@acm.org>
+	    Loren Rittle <ljrittle@acm.org>
 
-        libstdc++/5037 (copy from trunk 2001-12-07 and 2001-12-11)
-        * config/cpu/sparc/sparc32/bits/atomicity.h
-        (struct __Atomicity_lock<__inst>): Add.
-        (__Atomicity_lock<__inst>::_S_atomicity_lock): Add.
-        (__Atomicity_lock<0>::_S_atomicity_lock): Add.
-        (__exchange_and_add): Use __Atomicity_lock<0>::_S_atomicity_lock
-        instead of lock local to static function.
-        (__atomic_add): Likewise.
+	libstdc++/5037 (copy from trunk 2001-12-07 and 2001-12-11)
+	* config/cpu/sparc/sparc32/bits/atomicity.h
+	(struct __Atomicity_lock<__inst>): Add.
+	(__Atomicity_lock<__inst>::_S_atomicity_lock): Add.
+	(__Atomicity_lock<0>::_S_atomicity_lock): Add.
+	(__exchange_and_add): Use __Atomicity_lock<0>::_S_atomicity_lock
+	instead of lock local to static function.
+	(__atomic_add): Likewise.
 
 2001-12-20  Release Manager
 
@@ -362,7 +370,7 @@
 	insertion with hints.
 
 2001-08-24  Sylvain Pion <Sylvain.Pion@sophia.inria.fr>
-            Phil Edwards  <pme@sources.redhat.com>
+	    Phil Edwards  <pme@sources.redhat.com>
 
 	PR libstdc++/3349
 	* include/bits/stl_tree.h (insert_unique):  Revert last change.
@@ -447,7 +455,7 @@
 	* include/bits/c++config: Include bits/limits.h.
 
 2001-08-10  Gabriel Dos Reis  <gdr@merlin.codesourcery.com>
-            Mark Mitchell <mark@codesourcery.com>
+	    Mark Mitchell <mark@codesourcery.com>
 	
 	* include/bits/std_limits.h: New file.
 	* include/Makefile.am (bits_headers): Add std_limits.h
@@ -507,8 +515,8 @@
 	* configure:  Regenerate.
 
 2001-07-26  Stephen M. Webb  <stephen@bregmasoft.com>
-            Loren J. Rittle  <ljrittle@acm.org>
-            Phil Edwards  <pme@sources.redhat.com>
+	    Loren J. Rittle  <ljrittle@acm.org>
+	    Phil Edwards  <pme@sources.redhat.com>
 
 	* include/Makefile.am:  New file encapsulating header generation rules.
 	* Makefile.am (SUBDIRS):  Prepend 'include' directory.
@@ -558,7 +566,7 @@
 	(unsigned int,long,unsigned long): Likewise.
 
 2001-07-19  Phil Edwards  <pme@sources.redhat.com>
-            Mark Mitchell <mark@codesourcery.com>
+	    Mark Mitchell <mark@codesourcery.com>
 
 	Merge from cp-parser-branch.
 	* include/bits/basic_string.h:  Qualify symbols with 'template'.
@@ -762,7 +770,7 @@
 	* docs/html/17_intro/porting-howto.html:  Fixed some errors.
 
 2001-06-25  Phil Edwards  <pme@sources.redhat.com>
-            Kurt Garloff <garloff@suse.de>
+	    Kurt Garloff <garloff@suse.de>
 
 	PR libstdc++/3377
 	* src/cmath.cc:  New [version of an old] file; instantiate
@@ -776,7 +784,7 @@
 	* testsuite/Makefile.in:  Regenerate.
 
 2001-06-24  Gabriel Dos Reis  <gdr@codesourcery.com>
-            David Edelsohn <dje@watson.ibm.com>
+	    David Edelsohn <dje@watson.ibm.com>
 
 	* libmath/stubs.c: New file.
 	* libmath/Makefile.am (libmath_la_SOURCES): Add stubs.c.
@@ -923,7 +931,7 @@
 	* testsuite/20_util/binders.cc: New test.
 	
 2001-06-11  Matthias Klose  <doko@debian.org>
-            Phil Edwards  <pme@sources.redhat.com>
+	    Phil Edwards  <pme@sources.redhat.com>
 
 	* docs/doxygen/run_doxygen (find_doxygen):  Tweak version check.
 	(main script):  Echo more information.
@@ -1102,7 +1110,7 @@
 	* testsuite/22_locale/ctype.cc: Add test.
 	    
 2001-06-04  Kenny Simpson <theonetruekenny@yahoo.com>
-            Phil Edwards  <pme@sources.redhat.com>
+	    Phil Edwards  <pme@sources.redhat.com>
 
 	PR libstdc++/3035 and PR libstdc++/3036
 	* include/bits/stl_pair.h:  Fix pair ctor and make_pair according
@@ -1116,7 +1124,7 @@
 	* include/bits/stl_set.h:  Likewise.
 
 2001-06-04  Brendan Kehoe  <brendan@zen.org>
-            Phil Edwards  <pme@sources.redhat.com>
+	    Phil Edwards  <pme@sources.redhat.com>
 
 	PR libstdc++/3018
 	* include/bits/std_bitset.h (bitset::test):  Fix __pos >= _Nb
@@ -1273,8 +1281,8 @@
 	* configure: Same.
 
 2001-05-25  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
-            Phil Edwards  <pme@sources.redhat.com>
-            Alexandre Oliva  <aoliva@redhat.com>
+	    Phil Edwards  <pme@sources.redhat.com>
+	    Alexandre Oliva  <aoliva@redhat.com>
 
 	* acinclude.m4 (GLIBCPP_EXPORT_INSTALL_INFO): Set glibcpp_srcdir
 	in an amd-safe manner. Revert glibcpp_prefixdir.
@@ -1838,7 +1846,7 @@
 	* include/backward/backward_warning.h: Re-enable.
 
 2001-04-06  Benjamin Kosnik  <bkoz@redhat.com>
-            Alexandre Oliva  <aoliva@redhat.com>
+	    Alexandre Oliva  <aoliva@redhat.com>
 	
 	* tests_flags.in (CROSS_LIB_PATH): Add as -B flag.
 
