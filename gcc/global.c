@@ -173,6 +173,16 @@ static int *allocno_n_refs;
 
 static int *allocno_live_length;
 
+/* Number of refs (weighted) to each hard reg, as used by local alloc.
+   It is zero for a reg that contains global pseudos or is explicitly used.  */
+
+static int local_reg_n_refs[FIRST_PSEUDO_REGISTER];
+
+/* Guess at live length of each hard reg, as used by local alloc.
+   This is actually the sum of the live lengths of the specific regs.  */
+
+static int local_reg_live_length[FIRST_PSEUDO_REGISTER];
+
 /* Test a bit in TABLE, a vector of HARD_REG_SETs,
    for vector element I, and hard register number J.  */
 
@@ -284,8 +294,7 @@ global_alloc (file)
 
       if (! CAN_ELIMINATE (eliminables[i].from, eliminables[i].to)
 	  || (eliminables[i].from == FRAME_POINTER_REGNUM
-	      && (! flag_omit_frame_pointer || FRAME_POINTER_REQUIRED
-		  || caller_save_needed)))
+	      && (! flag_omit_frame_pointer || FRAME_POINTER_REQUIRED)))
 	SET_HARD_REG_BIT (no_global_alloc_regs, eliminables[i].from);
     }
 #else
@@ -293,8 +302,7 @@ global_alloc (file)
 
   /* If we know we will definitely not be eliminating the frame pointer,
      don't allocate it.  */
-  if (! flag_omit_frame_pointer || FRAME_POINTER_REQUIRED
-      || caller_save_needed)
+  if (! flag_omit_frame_pointer || FRAME_POINTER_REQUIRED)
     SET_HARD_REG_BIT (no_global_alloc_regs, FRAME_POINTER_REGNUM);
 #endif
 
@@ -378,6 +386,22 @@ global_alloc (file)
 	  allocno_live_length[allocno] = reg_live_length[i];
       }
 
+  /* Calculate amount of usage of each hard reg by pseudos
+     allocated by local-alloc.  This is to see if we want to
+     override it.  */
+  bzero (local_reg_live_length, sizeof local_reg_live_length);
+  bzero (local_reg_n_refs, sizeof local_reg_n_refs);
+  for (i = FIRST_PSEUDO_REGISTER; i < max_regno; i++)
+    if (reg_allocno[i] < 0 && reg_renumber[i] >= 0)
+      {
+	local_reg_n_refs[reg_renumber[i]] += reg_n_refs[i];
+	local_reg_live_length[reg_renumber[i]] += reg_live_length[i];
+      }
+  /* We can't override local-alloc for a reg used not just by local-alloc.  */
+  for (i = 0; i < FIRST_PSEUDO_REGISTER; i++)
+    if (regs_ever_live[i])
+      local_reg_n_refs[i] = 0;
+
   /* Allocate the space for the conflict and preference tables and
      initialize them.  */
 
@@ -422,10 +446,16 @@ global_alloc (file)
 	 the register is not eliminated, the pseudo won't really be able to
 	 live in the eliminable register, so the conflict doesn't matter.
 	 If we do eliminate the register, the conflict will no longer exist.
-	 So in either case, we can ignore the conflict.  */
+	 So in either case, we can ignore the conflict.  Likewise for
+	 preferences.  */
 
       for (i = 0; i < max_allocno; i++)
-	AND_COMPL_HARD_REG_SET (hard_reg_conflicts[i], eliminable_regset);
+	{
+	  AND_COMPL_HARD_REG_SET (hard_reg_conflicts[i], eliminable_regset);
+	  AND_COMPL_HARD_REG_SET (hard_reg_copy_preferences[i],
+				  eliminable_regset);
+	  AND_COMPL_HARD_REG_SET (hard_reg_preferences[i], eliminable_regset);
+	}
 
       /* Try to expand the preferences by merging them between allocnos.  */
 
@@ -470,12 +500,12 @@ global_alloc (file)
 	       for this pseudo-reg.  If that fails, try any reg.  */
 	    if (N_REG_CLASSES > 1)
 	      {
-		find_reg (allocno_order[i], HARD_CONST (0), 0, 0);
+		find_reg (allocno_order[i], HARD_CONST (0), 0, 0, 0);
 		if (reg_renumber[allocno_reg[allocno_order[i]]] >= 0)
 		  continue;
 	      }
 	    if (!reg_preferred_or_nothing (allocno_reg[allocno_order[i]]))
-	      find_reg (allocno_order[i], HARD_CONST (0), 1, 0);
+	      find_reg (allocno_order[i], HARD_CONST (0), 1, 0, 0);
 	  }
     }
 
@@ -775,21 +805,24 @@ prune_preferences ()
    If ACCEPT_CALL_CLOBBERED is nonzero, accept a call-clobbered hard reg that
    will have to be saved and restored at calls.
 
+   RETRYING is nonzero if this is called from retry_global_alloc.
+
    If we find one, record it in reg_renumber.
    If not, do nothing.  */
 
 static void
-find_reg (allocno, losers, all_regs_p, accept_call_clobbered)
+find_reg (allocno, losers, all_regs_p, accept_call_clobbered, retrying)
      int allocno;
      HARD_REG_SET losers;
      int all_regs_p;
      int accept_call_clobbered;
+     int retrying;
 {
   register int i, best_reg, pass;
 #ifdef HARD_REG_SET
   register		/* Declare it register if it's a scalar.  */
 #endif
-    HARD_REG_SET used, used1;
+    HARD_REG_SET used, used1, used2;
 
   enum reg_class class 
     = all_regs_p ? ALL_REGS : reg_preferred_class (allocno_reg[allocno]);
@@ -808,6 +841,8 @@ find_reg (allocno, losers, all_regs_p, accept_call_clobbered)
     IOR_HARD_REG_SET (used1, losers);
 
   IOR_COMPL_HARD_REG_SET (used1, reg_class_contents[(int) class]);
+  COPY_HARD_REG_SET (used2, used1);
+
   IOR_HARD_REG_SET (used1, hard_reg_conflicts[allocno]);
 
   /* Try each hard reg to see if it fits.  Do this in two passes.
@@ -938,6 +973,56 @@ find_reg (allocno, losers, all_regs_p, accept_call_clobbered)
     }
  no_prefs:
 
+  /* If we haven't succeeded yet, try with caller-saves.  */
+  if (flag_caller_saves && best_reg < 0)
+    {
+      /* Did not find a register.  If it would be profitable to
+	 allocate a call-clobbered register and save and restore it
+	 around calls, do that.  */
+      if (! accept_call_clobbered
+	  && allocno_calls_crossed[allocno] != 0
+	  && CALLER_SAVE_PROFITABLE (allocno_n_refs[allocno],
+				     allocno_calls_crossed[allocno]))
+	{
+	  find_reg (allocno, losers, all_regs_p, 1, retrying);
+	  if (reg_renumber[allocno_reg[allocno]] >= 0)
+	    {
+	      caller_save_needed = 1;
+	      return;
+	    }
+	}
+    }
+
+  /* If we haven't succeeded yet,
+     see if some hard reg that conflicts with us
+     was utilized poorly by local-alloc.
+     If so, kick out the regs that were put there by local-alloc
+     so we can use it instead.  */
+  if (best_reg < 0 && !retrying
+      /* Let's not bother with multi-reg allocnos.  */
+      && allocno_size[allocno] == 1)
+    {
+      /* Count from the end, to find the least-used ones first.  */
+      for (i = FIRST_PSEUDO_REGISTER - 1; i >= 0; i--)
+	if (local_reg_n_refs[i] != 0
+	    /* Don't use a reg no good for this pseudo.  */
+	    && ! TEST_HARD_REG_BIT (used2, i)
+	    && HARD_REGNO_MODE_OK (i, mode)
+	    && ((double) local_reg_n_refs[i] / local_reg_live_length[i]
+		< ((double) allocno_n_refs[allocno]
+		   / allocno_live_length[allocno])))
+	  {
+	    /* Hard reg I was used less in total by local regs
+	       than it would be used by this one allocno!  */
+	    int k;
+	    for (k = 0; k < max_regno; k++)
+	      if (reg_renumber[k] == i)
+		reg_renumber[k] = -1;
+	    best_reg = i;
+	    break;
+	  }
+    }
+
   /* Did we find a register?  */
 
   if (best_reg >= 0)
@@ -960,6 +1045,8 @@ find_reg (allocno, losers, all_regs_p, accept_call_clobbered)
 	{
 	  SET_HARD_REG_BIT (this_reg, j);
 	  SET_HARD_REG_BIT (regs_used_so_far, j);
+	  /* This is no longer a reg used just by local regs.  */
+	  local_reg_n_refs[j] = 0;
 	}
       /* For each other pseudo-reg conflicting with this one,
 	 mark it as conflicting with the hard regs this one occupies.  */
@@ -969,21 +1056,6 @@ find_reg (allocno, losers, all_regs_p, accept_call_clobbered)
 	  {
 	    IOR_HARD_REG_SET (hard_reg_conflicts[j], this_reg);
 	  }
-    }
-  else if (flag_caller_saves)
-    {
-      /* Did not find a register.  If it would be profitable to
-	 allocate a call-clobbered register and save and restore it
-	 around calls, do that.  */
-      if (! accept_call_clobbered
-	  && allocno_calls_crossed[allocno] != 0
-	  && CALLER_SAVE_PROFITABLE (allocno_n_refs[allocno],
-				     allocno_calls_crossed[allocno]))
-	{
-	  find_reg (allocno, losers, all_regs_p, 1);
-	  if (reg_renumber[allocno_reg[allocno]] >= 0)
-	    caller_save_needed = 1;
-	}
     }
 }
 
@@ -1006,10 +1078,10 @@ retry_global_alloc (regno, forbidden_regs)
 	 first try allocating in the class that is cheapest
 	 for this pseudo-reg.  If that fails, try any reg.  */
       if (N_REG_CLASSES > 1)
-	find_reg (allocno, forbidden_regs, 0, 0);
+	find_reg (allocno, forbidden_regs, 0, 0, 1);
       if (reg_renumber[regno] < 0
 	  && !reg_preferred_or_nothing (regno))
-	find_reg (allocno, forbidden_regs, 1, 0);
+	find_reg (allocno, forbidden_regs, 1, 0, 1);
 
       /* If we found a register, modify the RTL for the register to
 	 show the hard register, and mark that register live.  */
