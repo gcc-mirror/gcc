@@ -142,7 +142,7 @@ libdir = $(exec_prefix)/lib
 # Directory in which the compiler finds executables, libraries, etc.
 libsubdir = $(libdir)/gcc-lib/$(target)/$(version)
 # Directory for header file assert.h.
-includedir = $(libdir)/include
+includedir = $(prefix)/include
 # Extension (if any) to put in installed man-page filename.
 manext = .1
 # Directory in which to put man pages.
