@@ -60,7 +60,7 @@ C++ c++: cc1plus$(exeext)
 # Tell GNU make to ignore these if they exist.
 .PHONY: C++ c++
 
-g++spec.o: $(srcdir)/cp/g++spec.c system.h $(GCC_H)
+g++spec.o: $(srcdir)/cp/g++spec.c system.h $(GCC_H) $(CONFIG_H)
 	$(CC) -c $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) $(srcdir)/cp/g++spec.c
 
 $(INTL_TARGETS): $(srcdir)/cp/parse.c
@@ -77,7 +77,7 @@ g++-cross$(exeext): g++$(exeext)
 	cp g++$(exeext) g++-cross$(exeext)
 
 # The demangler.
-cxxmain.o: $(srcdir)/../libiberty/cplus-dem.c $(DEMANGLE_H)
+cxxmain.o: $(srcdir)/../libiberty/cplus-dem.c $(DEMANGLE_H) $(CONFIG_H)
 	rm -f cxxmain.c
 	$(LN_S) $(srcdir)/../libiberty/cplus-dem.c cxxmain.c
 	$(CC) -c -DMAIN $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) \

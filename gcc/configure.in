@@ -791,6 +791,12 @@ do
 	then
 		echo "#define TARGET_CPU_DEFAULT ($target_cpu_default)" >>$link
 	fi
+	if test $link = tm.h
+	then
+		echo "#ifndef GENERATOR_FILE" >>$link
+		echo "#include \"insn-codes.h\"" >>$link
+		echo "#endif" >>$link
+	fi
 
 	for file in `eval echo '$'$var`; do
 		case $file in

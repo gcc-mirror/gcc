@@ -1,3 +1,7 @@
+Thu Nov 23 02:16:47 2000  J"orn Rennecke <amylaar@redhat.com>
+
+	* Make-lang.in (g++spec.o, cxxmain.o): Depend on $(CONFIG_H).
+
 2000-11-22  Mark Mitchell  <mark@codesourcery.com>
 
 	* mangle.c (mangle_conv_op_name_for_type): Don't use `__op'

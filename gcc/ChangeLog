@@ -1,3 +1,16 @@
+Thu Nov 23 01:01:32 2000  J"orn Rennecke <amylaar@redhat.com>
+
+	* Makefile.in (HOST_CFLAGS): Add -DGENERATOR_FILE.
+	(rtl.o, print-rtl.o, bitmap.o, obstack.o): Build with -DGENERATOR_FILE.
+	(alloca.o, vfprintf.o, ggc-none.o, errors.o): Likewise.
+	(splay-tree.o, hash.o): Likewise.
+	GCONFIG_H: New.
+	(rtl.o, print-rtl.o): Depend on $(GCONFIG_H) instead of $(CONFIG_H).
+	(bitmap.o, obstack.o, vfprintf.o, ggc-none.o, errors.o): Likewise.
+	(hashtab.o): Likewise.
+	(gcov.o): Depend on $(CONFIG_H).
+	* configure.in: #include insn-codes.h in tm.h.
+
 2000-11-22  Nick Clifton  <nickc@redhat.com>
 
 	* config/arm/arm.c (arm_encode_call_attribute): Make 'newstr' a

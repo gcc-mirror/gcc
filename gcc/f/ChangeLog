@@ -1,3 +1,7 @@
+Thu Nov 23 02:18:57 2000  J"orn Rennecke <amylaar@redhat.com>
+
+	* Make-lang.in (g77spec.o): Depend on $(CONFIG_H).
+
 2000-11-21  David Billinghurst  <David.Billinghurst@riotinto.com)
 
 	* Make-lang.in:  Add $(build_exeext) to f/fini target
