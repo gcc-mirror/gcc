@@ -67,6 +67,8 @@ typedef pthread_mutex_t __gthread_mutex_t;
 #pragma weak pthread_mutex_init
 #pragma weak pthread_mutex_destroy
 #pragma weak pthread_self
+#pragma weak sched_get_priority_max
+#pragma weak sched_get_priority_min
 #pragma weak sched_yield
 #pragma weak pthread_attr_destroy
 #pragma weak pthread_attr_init

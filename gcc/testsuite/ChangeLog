@@ -1,3 +1,8 @@
+2001-06-28  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
+
+	* lib/objc.exp (objc_target_compile): Don't need -lposix4 on any
+	Solaris 2.[678] system.
+
 2001-06-22  Joseph S. Myers  <jsm28@cam.ac.uk>
 
 	* gcc.dg/20010622-1.c: New test.

@@ -1,3 +1,8 @@
+2001-06-28  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
+
+	* gthr-posix.h [LIBOBJC]: Add weak definitions of
+	sched_get_priority_max, sched_get_priority_min.
+
 Thu Jun 28 11:32:24 CEST 2001  Jan Hubicka  <jh@suse.cz>
 
 	* i386.c (x86_use_loop): Disable for K6 temporarily.
