@@ -59,12 +59,14 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
      } while (0)
 
 /* Wrap new method names in quotes so the assembler doesn't gag.
-   Make Objective-C internal symbols local. */
+   Make Objective-C internal symbols local.  */
 
 #undef ASM_OUTPUT_LABELREF
 #define ASM_OUTPUT_LABELREF(FILE,NAME)	\
   do { if (NAME[0] == '+' || NAME[0] == '-') fprintf (FILE, "\"%s\"", NAME); \
        else if (!strncmp (NAME, "_OBJC_", 6)) fprintf (FILE, "L%s", NAME);   \
+       else if (!strncmp (NAME, ".objc_class_name_", 17))		\
+	 fprintf (FILE, "%s", NAME);					\
        else fprintf (FILE, "_%s", NAME); } while (0)
 
 #undef STACK_BOUNDARY
@@ -184,6 +186,7 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
    ? fprintf (FILE, "#0r%s99e999", ((VALUE) > 0 ? "" : "-")) \
    : fprintf (FILE, "#0r%.20g", (VALUE)))
 
+#if 0 /* This is for system verson 3.0, which isn't out yet.  */
 #define ASM_OUTPUT_CONSTRUCTOR(FILE,NAME)	\
   do { constructor_section ();			\
        ASM_OUTPUT_ALIGN (FILE, 1);		\
@@ -197,6 +200,7 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
        fprintf (FILE, "\t.long ");		\
        assemble_name (FILE, NAME);		\
        fprintf (FILE, "\n"); } while (0)
+#endif
 
 /* How to parse #pragma's */
 
@@ -412,19 +416,19 @@ SECTION_FUNCTION (objc_module_info_section,	\
 #undef CASE_VECTOR_PC_RELATIVE
 
 /* Don't treat addresses involving labels differently from symbol names.
-   Previsouly, references to labels generated pc-relative addressing modes
+   Previously, references to labels generated pc-relative addressing modes
    while references to symbol names generated absolute addressing modes.  */
 
 #undef GO_IF_INDEXABLE_BASE(X, ADDR)
 #define GO_IF_INDEXABLE_BASE(X, ADDR)	\
 { if (GET_CODE (X) == REG && REG_OK_FOR_BASE_P (X)) goto ADDR; }
 
-#define ALIGN_ASM_OP		"\t.align"
+#define ALIGN_ASM_OP		".align"
 
 #undef ASM_OUTPUT_ALIGN
 #define ASM_OUTPUT_ALIGN(FILE,LOG)	\
   if ((LOG) != 0)			\
-    fprintf (FILE, "%s %d\n", ALIGN_ASM_OP, (LOG))
+    fprintf (FILE, "\t%s %d\n", ALIGN_ASM_OP, (LOG))
 
 /* The maximum alignment which the object file format can support.
    For NeXT's Mach-O format, this is 2^15.  */
