@@ -1,5 +1,5 @@
 /* Output xcoff-format symbol table information from GNU compiler.
-   Copyright (C) 1992, 1994 Free Software Foundation, Inc.
+   Copyright (C) 1992, 1994, 1995 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -316,19 +316,6 @@ stab_to_sclass (stab)
   }
 }
 
-/* In XCOFF, we have to have this .bf before the function prologue.
-   Rely on the value of `dbx_begin_function_line' not to duplicate .bf.  */
-
-void
-xcoffout_output_first_source_line (file, last_linenum)
-     FILE *file;
-     int last_linenum;
-{
-  ASM_OUTPUT_LFB (file, last_linenum);
-  dbxout_parms (DECL_ARGUMENTS (current_function_decl));
-  ASM_OUTPUT_SOURCE_LINE (file, last_linenum);
-}
-
 /* Output debugging info to FILE to switch to sourcefile FILENAME.
    INLINE_P is true if this is from an inlined function.  */
 
@@ -503,6 +490,8 @@ xcoffout_begin_function (file, last_linenum)
      int last_linenum;
 {
   ASM_OUTPUT_LFB (file, last_linenum);
+  dbxout_parms (DECL_ARGUMENTS (current_function_decl));
+  ASM_OUTPUT_SOURCE_LINE (file, last_linenum);
 }
 
 /* Called at end of function (before epilogue).
