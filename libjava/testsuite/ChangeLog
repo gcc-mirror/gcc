@@ -1,3 +1,7 @@
+2001-08-17  Alexandre Petit-Bianco  <apbianco@redhat.com>
+
+	* libjava.compile/XercesBug.java: New file.
+
 2001-08-12  Alexandre Petit-Bianco  <apbianco@redhat.com>
 	
 	* libjava.lang/Matrix4f.java: New file.
