@@ -215,7 +215,7 @@ static void
 check_eol (cpp_reader *pfile)
 {
   if (! SEEN_EOL () && _cpp_lex_token (pfile)->type != CPP_EOF)
-    cpp_error (pfile, DL_PEDWARN, "extra tokens at end of #%s directive",
+    cpp_error (pfile, CPP_DL_PEDWARN, "extra tokens at end of #%s directive",
 	       pfile->directive->name);
 }
 
@@ -298,7 +298,7 @@ directive_diagnostics (cpp_reader *pfile, const directive *dir, int indented)
   if (CPP_PEDANTIC (pfile)
       && ! pfile->state.skipping
       && dir->origin == EXTENSION)
-    cpp_error (pfile, DL_PEDWARN, "#%s is a GCC extension", dir->name);
+    cpp_error (pfile, CPP_DL_PEDWARN, "#%s is a GCC extension", dir->name);
 
   /* Traditionally, a directive is ignored unless its # is in
      column 1.  Therefore in code intended to work with K+R
@@ -309,14 +309,14 @@ directive_diagnostics (cpp_reader *pfile, const directive *dir, int indented)
   if (CPP_WTRADITIONAL (pfile))
     {
       if (dir == &dtable[T_ELIF])
-	cpp_error (pfile, DL_WARNING,
+	cpp_error (pfile, CPP_DL_WARNING,
 		   "suggest not using #elif in traditional C");
       else if (indented && dir->origin == KANDR)
-	cpp_error (pfile, DL_WARNING,
+	cpp_error (pfile, CPP_DL_WARNING,
 		   "traditional C ignores #%s with the # indented",
 		   dir->name);
       else if (!indented && dir->origin != KANDR)
-	cpp_error (pfile, DL_WARNING,
+	cpp_error (pfile, CPP_DL_WARNING,
 		   "suggest hiding #%s from traditional C with an indented #",
 		   dir->name);
     }
@@ -338,7 +338,7 @@ _cpp_handle_directive (cpp_reader *pfile, int indented)
   if (was_parsing_args)
     {
       if (CPP_OPTION (pfile, pedantic))
-	cpp_error (pfile, DL_PEDWARN,
+	cpp_error (pfile, CPP_DL_PEDWARN,
 	     "embedding a directive within macro arguments is not portable");
       pfile->state.parsing_args = 0;
       pfile->state.prevent_expansion = 0;
@@ -358,7 +358,7 @@ _cpp_handle_directive (cpp_reader *pfile, int indented)
       dir = &linemarker_dir;
       if (CPP_PEDANTIC (pfile) && ! CPP_OPTION (pfile, preprocessed)
 	  && ! pfile->state.skipping)
-	cpp_error (pfile, DL_PEDWARN,
+	cpp_error (pfile, CPP_DL_PEDWARN,
 		   "style of line directive is a GCC extension");
     }
 
@@ -409,7 +409,7 @@ _cpp_handle_directive (cpp_reader *pfile, int indented)
       if (CPP_OPTION (pfile, lang) == CLK_ASM)
 	skip = 0;
       else if (!pfile->state.skipping)
-	cpp_error (pfile, DL_ERROR, "invalid preprocessing directive #%s",
+	cpp_error (pfile, CPP_DL_ERROR, "invalid preprocessing directive #%s",
 		   cpp_token_as_text (pfile, dname));
     }
 
@@ -477,20 +477,20 @@ lex_macro_node (cpp_reader *pfile)
       cpp_hashnode *node = token->val.node;
 
       if (node == pfile->spec_nodes.n_defined)
-	cpp_error (pfile, DL_ERROR,
+	cpp_error (pfile, CPP_DL_ERROR,
 		   "\"defined\" cannot be used as a macro name");
       else if (! (node->flags & NODE_POISONED))
 	return node;
     }
   else if (token->flags & NAMED_OP)
-    cpp_error (pfile, DL_ERROR,
+    cpp_error (pfile, CPP_DL_ERROR,
        "\"%s\" cannot be used as a macro name as it is an operator in C++",
 	       NODE_NAME (token->val.node));
   else if (token->type == CPP_EOF)
-    cpp_error (pfile, DL_ERROR, "no macro name given in #%s directive",
+    cpp_error (pfile, CPP_DL_ERROR, "no macro name given in #%s directive",
 	       pfile->directive->name);
   else
-    cpp_error (pfile, DL_ERROR, "macro names must be identifiers");
+    cpp_error (pfile, CPP_DL_ERROR, "macro names must be identifiers");
 
   return NULL;
 }
@@ -528,7 +528,8 @@ do_undef (cpp_reader *pfile)
 	pfile->cb.undef (pfile, pfile->directive_line, node);
 
       if (node->flags & NODE_WARN)
-	cpp_error (pfile, DL_WARNING, "undefining \"%s\"", NODE_NAME (node));
+	cpp_error (pfile, CPP_DL_WARNING,
+		   "undefining \"%s\"", NODE_NAME (node));
 
       if (CPP_OPTION (pfile, warn_unused_macros))
 	_cpp_warn_if_unused_macro (pfile, node, NULL);
@@ -598,7 +599,7 @@ glue_header_name (cpp_reader *pfile)
 	break;
       if (token->type == CPP_EOF)
 	{
-	  cpp_error (pfile, DL_ERROR, "missing terminating > character");
+	  cpp_error (pfile, CPP_DL_ERROR, "missing terminating > character");
 	  break;
 	}
 
@@ -651,7 +652,7 @@ parse_include (cpp_reader *pfile, int *pangle_brackets)
 	dir = U"pragma dependency";
       else
 	dir = pfile->directive->name;
-      cpp_error (pfile, DL_ERROR, "#%s expects \"FILENAME\" or <FILENAME>",
+      cpp_error (pfile, CPP_DL_ERROR, "#%s expects \"FILENAME\" or <FILENAME>",
 		 dir);
 
       return NULL;
@@ -674,7 +675,7 @@ do_include_common (cpp_reader *pfile, enum include_type type)
 
   /* Prevent #include recursion.  */
   if (pfile->line_maps.depth >= CPP_STACK_MAX)
-    cpp_error (pfile, DL_ERROR, "#include nested too deeply");
+    cpp_error (pfile, CPP_DL_ERROR, "#include nested too deeply");
   else
     {
       /* Get out of macro context, if we are.  */
@@ -711,7 +712,7 @@ do_include_next (cpp_reader *pfile)
      search logic.  */
   if (! pfile->buffer->prev)
     {
-      cpp_error (pfile, DL_WARNING,
+      cpp_error (pfile, CPP_DL_WARNING,
 		 "#include_next in primary source file");
       type = IT_INCLUDE;
     }
@@ -738,7 +739,7 @@ read_flag (cpp_reader *pfile, unsigned int last)
     }
 
   if (token->type != CPP_EOF)
-    cpp_error (pfile, DL_ERROR, "invalid flag \"%s\" in line directive",
+    cpp_error (pfile, CPP_DL_ERROR, "invalid flag \"%s\" in line directive",
 	       cpp_token_as_text (pfile, token));
   return 0;
 }
@@ -782,14 +783,14 @@ do_line (cpp_reader *pfile)
       || strtoul_for_line (token->val.str.text, token->val.str.len,
 			   &new_lineno))
     {
-      cpp_error (pfile, DL_ERROR,
+      cpp_error (pfile, CPP_DL_ERROR,
 		 "\"%s\" after #line is not a positive integer",
 		 cpp_token_as_text (pfile, token));
       return;
     }
 
   if (CPP_PEDANTIC (pfile) && (new_lineno == 0 || new_lineno > cap))
-    cpp_error (pfile, DL_PEDWARN, "line number out of range");
+    cpp_error (pfile, CPP_DL_PEDWARN, "line number out of range");
 
   token = cpp_get_token (pfile);
   if (token->type == CPP_STRING)
@@ -801,7 +802,7 @@ do_line (cpp_reader *pfile)
     }
   else if (token->type != CPP_EOF)
     {
-      cpp_error (pfile, DL_ERROR, "\"%s\" is not a valid filename",
+      cpp_error (pfile, CPP_DL_ERROR, "\"%s\" is not a valid filename",
 		 cpp_token_as_text (pfile, token));
       return;
     }
@@ -835,7 +836,8 @@ do_linemarker (cpp_reader *pfile)
       || strtoul_for_line (token->val.str.text, token->val.str.len,
 			   &new_lineno))
     {
-      cpp_error (pfile, DL_ERROR, "\"%s\" after # is not a positive integer",
+      cpp_error (pfile, CPP_DL_ERROR,
+		 "\"%s\" after # is not a positive integer",
 		 cpp_token_as_text (pfile, token));
       return;
     }
@@ -873,7 +875,7 @@ do_linemarker (cpp_reader *pfile)
     }
   else if (token->type != CPP_EOF)
     {
-      cpp_error (pfile, DL_ERROR, "\"%s\" is not a valid filename",
+      cpp_error (pfile, CPP_DL_ERROR, "\"%s\" is not a valid filename",
 		 cpp_token_as_text (pfile, token));
       return;
     }
@@ -918,14 +920,14 @@ do_diagnostic (cpp_reader *pfile, int code, int print_dir)
 static void
 do_error (cpp_reader *pfile)
 {
-  do_diagnostic (pfile, DL_ERROR, 1);
+  do_diagnostic (pfile, CPP_DL_ERROR, 1);
 }
 
 static void
 do_warning (cpp_reader *pfile)
 {
   /* We want #warning diagnostics to be emitted in system headers too.  */
-  do_diagnostic (pfile, DL_WARNING_SYSHDR, 1);
+  do_diagnostic (pfile, CPP_DL_WARNING_SYSHDR, 1);
 }
 
 /* Report program identification.  */
@@ -935,7 +937,7 @@ do_ident (cpp_reader *pfile)
   const cpp_token *str = cpp_get_token (pfile);
 
   if (str->type != CPP_STRING)
-    cpp_error (pfile, DL_ERROR, "invalid #ident directive");
+    cpp_error (pfile, CPP_DL_ERROR, "invalid #ident directive");
   else if (pfile->cb.ident)
     pfile->cb.ident (pfile, pfile->directive_line, &str->val.str);
 
@@ -1014,14 +1016,14 @@ cpp_register_pragma (cpp_reader *pfile, const char *space, const char *name,
     {
       if (entry->is_nspace)
 	clash:
-	cpp_error (pfile, DL_ICE,
+	cpp_error (pfile, CPP_DL_ICE,
 		 "registering \"%s\" as both a pragma and a pragma namespace",
 		 NODE_NAME (node));
       else if (space)
-	cpp_error (pfile, DL_ICE, "#pragma %s %s is already registered",
+	cpp_error (pfile, CPP_DL_ICE, "#pragma %s %s is already registered",
 		   space, name);
       else
-	cpp_error (pfile, DL_ICE, "#pragma %s is already registered", name);
+	cpp_error (pfile, CPP_DL_ICE, "#pragma %s is already registered", name);
     }
   else
     insert_pragma_entry (pfile, chain, node, handler);
@@ -1166,7 +1168,7 @@ static void
 do_pragma_once (cpp_reader *pfile)
 {
   if (pfile->buffer->prev == NULL)
-    cpp_error (pfile, DL_WARNING, "#pragma once in main file");
+    cpp_error (pfile, CPP_DL_WARNING, "#pragma once in main file");
 
   check_eol (pfile);
   _cpp_mark_file_once_only (pfile, pfile->buffer->file);
@@ -1188,7 +1190,8 @@ do_pragma_poison (cpp_reader *pfile)
 	break;
       if (tok->type != CPP_NAME)
 	{
-	  cpp_error (pfile, DL_ERROR, "invalid #pragma GCC poison directive");
+	  cpp_error (pfile, CPP_DL_ERROR,
+		     "invalid #pragma GCC poison directive");
 	  break;
 	}
 
@@ -1197,7 +1200,7 @@ do_pragma_poison (cpp_reader *pfile)
 	continue;
 
       if (hp->type == NT_MACRO)
-	cpp_error (pfile, DL_WARNING, "poisoning existing macro \"%s\"",
+	cpp_error (pfile, CPP_DL_WARNING, "poisoning existing macro \"%s\"",
 		   NODE_NAME (hp));
       _cpp_free_definition (hp);
       hp->flags |= NODE_POISONED | NODE_DIAGNOSTIC;
@@ -1217,7 +1220,7 @@ do_pragma_system_header (cpp_reader *pfile)
   cpp_buffer *buffer = pfile->buffer;
 
   if (buffer->prev == 0)
-    cpp_error (pfile, DL_WARNING,
+    cpp_error (pfile, CPP_DL_WARNING,
 	       "#pragma system_header ignored outside include file");
   else
     {
@@ -1242,14 +1245,15 @@ do_pragma_dependency (cpp_reader *pfile)
 
   ordering = _cpp_compare_file_date (pfile, fname, angle_brackets);
   if (ordering < 0)
-    cpp_error (pfile, DL_WARNING, "cannot find source file %s", fname);
+    cpp_error (pfile, CPP_DL_WARNING, "cannot find source file %s", fname);
   else if (ordering > 0)
     {
-      cpp_error (pfile, DL_WARNING, "current file is older than %s", fname);
+      cpp_error (pfile, CPP_DL_WARNING,
+		 "current file is older than %s", fname);
       if (cpp_get_token (pfile)->type != CPP_EOF)
 	{
 	  _cpp_backup_tokens (pfile, 1);
-	  do_diagnostic (pfile, DL_WARNING, 0);
+	  do_diagnostic (pfile, CPP_DL_WARNING, 0);
 	}
     }
 
@@ -1358,7 +1362,7 @@ _cpp_do__Pragma (cpp_reader *pfile)
   if (string)
     destringize_and_run (pfile, &string->val.str);
   else
-    cpp_error (pfile, DL_ERROR,
+    cpp_error (pfile, CPP_DL_ERROR,
 	       "_Pragma takes a parenthesized string literal");
 }
 
@@ -1437,13 +1441,13 @@ do_else (cpp_reader *pfile)
   struct if_stack *ifs = buffer->if_stack;
 
   if (ifs == NULL)
-    cpp_error (pfile, DL_ERROR, "#else without #if");
+    cpp_error (pfile, CPP_DL_ERROR, "#else without #if");
   else
     {
       if (ifs->type == T_ELSE)
 	{
-	  cpp_error (pfile, DL_ERROR, "#else after #else");
-	  cpp_error_with_line (pfile, DL_ERROR, ifs->line, 0,
+	  cpp_error (pfile, CPP_DL_ERROR, "#else after #else");
+	  cpp_error_with_line (pfile, CPP_DL_ERROR, ifs->line, 0,
 			       "the conditional began here");
 	}
       ifs->type = T_ELSE;
@@ -1470,13 +1474,13 @@ do_elif (cpp_reader *pfile)
   struct if_stack *ifs = buffer->if_stack;
 
   if (ifs == NULL)
-    cpp_error (pfile, DL_ERROR, "#elif without #if");
+    cpp_error (pfile, CPP_DL_ERROR, "#elif without #if");
   else
     {
       if (ifs->type == T_ELSE)
 	{
-	  cpp_error (pfile, DL_ERROR, "#elif after #else");
-	  cpp_error_with_line (pfile, DL_ERROR, ifs->line, 0,
+	  cpp_error (pfile, CPP_DL_ERROR, "#elif after #else");
+	  cpp_error_with_line (pfile, CPP_DL_ERROR, ifs->line, 0,
 			       "the conditional began here");
 	}
       ifs->type = T_ELIF;
@@ -1505,7 +1509,7 @@ do_endif (cpp_reader *pfile)
   struct if_stack *ifs = buffer->if_stack;
 
   if (ifs == NULL)
-    cpp_error (pfile, DL_ERROR, "#endif without #if");
+    cpp_error (pfile, CPP_DL_ERROR, "#endif without #if");
   else
     {
       /* Only check EOL if was not originally skipping.  */
@@ -1582,7 +1586,7 @@ parse_answer (cpp_reader *pfile, struct answer **answerp, int type)
       if (type == T_UNASSERT && paren->type == CPP_EOF)
 	return 0;
 
-      cpp_error (pfile, DL_ERROR, "missing '(' after predicate");
+      cpp_error (pfile, CPP_DL_ERROR, "missing '(' after predicate");
       return 1;
     }
 
@@ -1597,7 +1601,7 @@ parse_answer (cpp_reader *pfile, struct answer **answerp, int type)
 
       if (token->type == CPP_EOF)
 	{
-	  cpp_error (pfile, DL_ERROR, "missing ')' to complete answer");
+	  cpp_error (pfile, CPP_DL_ERROR, "missing ')' to complete answer");
 	  return 1;
 	}
 
@@ -1617,7 +1621,7 @@ parse_answer (cpp_reader *pfile, struct answer **answerp, int type)
 
   if (acount == 0)
     {
-      cpp_error (pfile, DL_ERROR, "predicate's answer is empty");
+      cpp_error (pfile, CPP_DL_ERROR, "predicate's answer is empty");
       return 1;
     }
 
@@ -1644,9 +1648,9 @@ parse_assertion (cpp_reader *pfile, struct answer **answerp, int type)
   *answerp = 0;
   predicate = cpp_get_token (pfile);
   if (predicate->type == CPP_EOF)
-    cpp_error (pfile, DL_ERROR, "assertion without predicate");
+    cpp_error (pfile, CPP_DL_ERROR, "assertion without predicate");
   else if (predicate->type != CPP_NAME)
-    cpp_error (pfile, DL_ERROR, "predicate must be an identifier");
+    cpp_error (pfile, CPP_DL_ERROR, "predicate must be an identifier");
   else if (parse_answer (pfile, answerp, type) == 0)
     {
       unsigned int len = NODE_LEN (predicate->val.node);
@@ -1730,7 +1734,7 @@ do_assert (cpp_reader *pfile)
 	{
 	  if (*find_answer (node, new_answer))
 	    {
-	      cpp_error (pfile, DL_WARNING, "\"%s\" re-asserted",
+	      cpp_error (pfile, CPP_DL_WARNING, "\"%s\" re-asserted",
 			 NODE_NAME (node) + 1);
 	      return;
 	    }
@@ -1940,7 +1944,7 @@ _cpp_pop_buffer (cpp_reader *pfile)
   /* Walk back up the conditional stack till we reach its level at
      entry to this file, issuing error messages.  */
   for (ifs = buffer->if_stack; ifs; ifs = ifs->next)
-    cpp_error_with_line (pfile, DL_ERROR, ifs->line, 0,
+    cpp_error_with_line (pfile, CPP_DL_ERROR, ifs->line, 0,
 			 "unterminated #%s", dtable[ifs->type].name);
 
   /* In case of a missing #endif.  */

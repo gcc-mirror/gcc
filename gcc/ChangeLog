@@ -1,3 +1,12 @@
+2003-11-01  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
+
+	PR preprocessor/12847
+	* cppfiles.c, cppexp.c, cpperror.c, cpplib.h, cpplib.c, cpplex.c,
+	cppinit.c, cpptrad.c, cppmacro.c, fix-header.c, cpppch.c, c-pch.c,
+	c-incpath.c, cppcharset.c (DL_WARNING, DL_WARNING_SYSHDR, DL_PEDWARN,
+	DL_ERROR, DL_ICE, DL_EXTRACT, DL_WARNING_P): Prefix macro names with
+	"CPP_".
+
 2003-11-01  Fariborz Jahanian  <fjahanian@apple.com>
 
 	* config/rs6000/rs6000.c (rs6000_mixed_function_arg): Correct

@@ -71,9 +71,10 @@ static void check_promotion (cpp_reader *, const struct op *);
 /* With -O2, gcc appears to produce nice code, moving the error
    message load and subsequent jump completely out of the main path.  */
 #define SYNTAX_ERROR(msgid) \
-  do { cpp_error (pfile, DL_ERROR, msgid); goto syntax_error; } while(0)
+  do { cpp_error (pfile, CPP_DL_ERROR, msgid); goto syntax_error; } while(0)
 #define SYNTAX_ERROR2(msgid, arg) \
-  do { cpp_error (pfile, DL_ERROR, msgid, arg); goto syntax_error; } while(0)
+  do { cpp_error (pfile, CPP_DL_ERROR, msgid, arg); goto syntax_error; } \
+  while(0)
 
 /* Subroutine of cpp_classify_number.  S points to a float suffix of
    length LEN, possibly zero.  Returns 0 for an invalid suffix, or a
@@ -213,7 +214,7 @@ cpp_classify_number (cpp_reader *pfile, const cpp_token *token)
   if (float_flag != NOT_FLOAT)
     {
       if (radix == 16 && CPP_PEDANTIC (pfile) && !CPP_OPTION (pfile, c99))
-	cpp_error (pfile, DL_PEDWARN,
+	cpp_error (pfile, CPP_DL_PEDWARN,
 		   "use of C99 hexadecimal floating constant");
 
       if (float_flag == AFTER_EXPON)
@@ -235,7 +236,7 @@ cpp_classify_number (cpp_reader *pfile, const cpp_token *token)
       result = interpret_float_suffix (str, limit - str);
       if (result == 0)
 	{
-	  cpp_error (pfile, DL_ERROR,
+	  cpp_error (pfile, CPP_DL_ERROR,
 		     "invalid suffix \"%.*s\" on floating constant",
 		     (int) (limit - str), str);
 	  return CPP_N_INVALID;
@@ -245,7 +246,7 @@ cpp_classify_number (cpp_reader *pfile, const cpp_token *token)
       if (limit != str
 	  && CPP_WTRADITIONAL (pfile)
 	  && ! cpp_sys_macro_p (pfile))
-	cpp_error (pfile, DL_WARNING,
+	cpp_error (pfile, CPP_DL_WARNING,
 		   "traditional C rejects the \"%.*s\" suffix",
 		   (int) (limit - str), str);
 
@@ -256,7 +257,7 @@ cpp_classify_number (cpp_reader *pfile, const cpp_token *token)
       result = interpret_int_suffix (str, limit - str);
       if (result == 0)
 	{
-	  cpp_error (pfile, DL_ERROR,
+	  cpp_error (pfile, CPP_DL_ERROR,
 		     "invalid suffix \"%.*s\" on integer constant",
 		     (int) (limit - str), str);
 	  return CPP_N_INVALID;
@@ -270,7 +271,7 @@ cpp_classify_number (cpp_reader *pfile, const cpp_token *token)
 	  int large = (result & CPP_N_WIDTH) == CPP_N_LARGE;
 
 	  if (u_or_i || (large && CPP_OPTION (pfile, warn_long_long)))
-	    cpp_error (pfile, DL_WARNING,
+	    cpp_error (pfile, CPP_DL_WARNING,
 		       "traditional C rejects the \"%.*s\" suffix",
 		       (int) (limit - str), str);
 	}
@@ -278,13 +279,15 @@ cpp_classify_number (cpp_reader *pfile, const cpp_token *token)
       if ((result & CPP_N_WIDTH) == CPP_N_LARGE
 	  && ! CPP_OPTION (pfile, c99)
 	  && CPP_OPTION (pfile, warn_long_long))
-	cpp_error (pfile, DL_PEDWARN, "use of C99 long long integer constant");
+	cpp_error (pfile, CPP_DL_PEDWARN,
+		   "use of C99 long long integer constant");
 
       result |= CPP_N_INTEGER;
     }
 
   if ((result & CPP_N_IMAGINARY) && CPP_PEDANTIC (pfile))
-    cpp_error (pfile, DL_PEDWARN, "imaginary constants are a GCC extension");
+    cpp_error (pfile, CPP_DL_PEDWARN,
+	       "imaginary constants are a GCC extension");
 
   if (radix == 10)
     result |= CPP_N_DECIMAL;
@@ -369,7 +372,7 @@ cpp_interpret_integer (cpp_reader *pfile, const cpp_token *token,
 	}
 
       if (overflow)
-	cpp_error (pfile, DL_PEDWARN,
+	cpp_error (pfile, CPP_DL_PEDWARN,
 		   "integer constant is too large for its type");
       /* If too big to be signed, consider it unsigned.  Only warn for
 	 decimal numbers.  Traditional numbers were always signed (but
@@ -381,7 +384,7 @@ cpp_interpret_integer (cpp_reader *pfile, const cpp_token *token,
 	       && !num_positive (result, precision))
 	{
 	  if (base == 10)
-	    cpp_error (pfile, DL_WARNING,
+	    cpp_error (pfile, CPP_DL_WARNING,
 		       "integer constant is so large that it is unsigned");
 	  result.unsignedp = true;
 	}
@@ -464,13 +467,13 @@ parse_defined (cpp_reader *pfile)
       node = token->val.node;
       if (paren && cpp_get_token (pfile)->type != CPP_CLOSE_PAREN)
 	{
-	  cpp_error (pfile, DL_ERROR, "missing ')' after \"defined\"");
+	  cpp_error (pfile, CPP_DL_ERROR, "missing ')' after \"defined\"");
 	  node = 0;
 	}
     }
   else
     {
-      cpp_error (pfile, DL_ERROR,
+      cpp_error (pfile, CPP_DL_ERROR,
 		 "operator \"defined\" requires an identifier");
       if (token->flags & NAMED_OP)
 	{
@@ -478,7 +481,7 @@ parse_defined (cpp_reader *pfile)
 
 	  op.flags = 0;
 	  op.type = token->type;
-	  cpp_error (pfile, DL_ERROR,
+	  cpp_error (pfile, CPP_DL_ERROR,
 		     "(\"%s\" is an alternative token for \"%s\" in C++)",
 		     cpp_token_as_text (pfile, token),
 		     cpp_token_as_text (pfile, &op));
@@ -488,7 +491,7 @@ parse_defined (cpp_reader *pfile)
   if (node)
     {
       if (pfile->context != initial_context && CPP_PEDANTIC (pfile))
-	cpp_error (pfile, DL_WARNING,
+	cpp_error (pfile, CPP_DL_WARNING,
 		   "this use of \"defined\" may not be portable");
 
       _cpp_mark_macro_used (node);
@@ -524,13 +527,13 @@ eval_token (cpp_reader *pfile, const cpp_token *token)
       switch (temp & CPP_N_CATEGORY)
 	{
 	case CPP_N_FLOATING:
-	  cpp_error (pfile, DL_ERROR,
+	  cpp_error (pfile, CPP_DL_ERROR,
 		     "floating constant in preprocessor expression");
 	  break;
 	case CPP_N_INTEGER:
 	  if (!(temp & CPP_N_IMAGINARY))
 	    return cpp_interpret_integer (pfile, token, temp);
-	  cpp_error (pfile, DL_ERROR,
+	  cpp_error (pfile, CPP_DL_ERROR,
 		     "imaginary number in preprocessor expression");
 	  break;
 
@@ -576,7 +579,7 @@ eval_token (cpp_reader *pfile, const cpp_token *token)
 	  result.high = 0;
 	  result.low = 0;
 	  if (CPP_OPTION (pfile, warn_undef) && !pfile->state.skip_eval)
-	    cpp_error (pfile, DL_WARNING, "\"%s\" is not defined",
+	    cpp_error (pfile, CPP_DL_WARNING, "\"%s\" is not defined",
 		       NODE_NAME (token->val.node));
 	}
       break;
@@ -805,7 +808,7 @@ _cpp_parse_expr (cpp_reader *pfile)
 
   if (top != pfile->op_stack)
     {
-      cpp_error (pfile, DL_ICE, "unbalanced stack in #if");
+      cpp_error (pfile, CPP_DL_ICE, "unbalanced stack in #if");
     syntax_error:
       return false;  /* Return false on syntax error.  */
     }
@@ -824,7 +827,7 @@ reduce (cpp_reader *pfile, struct op *top, enum cpp_ttype op)
   if (top->op <= CPP_EQ || top->op > CPP_LAST_CPP_OP + 2)
     {
     bad_op:
-      cpp_error (pfile, DL_ICE, "impossible operator '%u'", top->op);
+      cpp_error (pfile, CPP_DL_ICE, "impossible operator '%u'", top->op);
       return 0;
     }
 
@@ -916,7 +919,7 @@ reduce (cpp_reader *pfile, struct op *top, enum cpp_ttype op)
 	case CPP_OPEN_PAREN:
 	  if (op != CPP_CLOSE_PAREN)
 	    {
-	      cpp_error (pfile, DL_ERROR, "missing ')' in expression");
+	      cpp_error (pfile, CPP_DL_ERROR, "missing ')' in expression");
 	      return 0;
 	    }
 	  top--;
@@ -937,7 +940,7 @@ reduce (cpp_reader *pfile, struct op *top, enum cpp_ttype op)
 	  continue;
 
 	case CPP_QUERY:
-	  cpp_error (pfile, DL_ERROR, "'?' without following ':'");
+	  cpp_error (pfile, CPP_DL_ERROR, "'?' without following ':'");
 	  return 0;
 
 	default:
@@ -946,13 +949,13 @@ reduce (cpp_reader *pfile, struct op *top, enum cpp_ttype op)
 
       top--;
       if (top->value.overflow && !pfile->state.skip_eval)
-	cpp_error (pfile, DL_PEDWARN,
+	cpp_error (pfile, CPP_DL_PEDWARN,
 		   "integer overflow in preprocessor expression");
     }
 
   if (op == CPP_CLOSE_PAREN)
     {
-      cpp_error (pfile, DL_ERROR, "missing '(' in expression");
+      cpp_error (pfile, CPP_DL_ERROR, "missing '(' in expression");
       return 0;
     }
 
@@ -983,12 +986,12 @@ check_promotion (cpp_reader *pfile, const struct op *op)
   if (op->value.unsignedp)
     {
       if (!num_positive (op[-1].value, CPP_OPTION (pfile, precision)))
-	cpp_error (pfile, DL_WARNING,
+	cpp_error (pfile, CPP_DL_WARNING,
 		   "the left operand of \"%s\" changes sign when promoted",
 		   cpp_token_as_text (pfile, op->token));
     }
   else if (!num_positive (op->value, CPP_OPTION (pfile, precision)))
-    cpp_error (pfile, DL_WARNING,
+    cpp_error (pfile, CPP_DL_WARNING,
 	       "the right operand of \"%s\" changes sign when promoted",
 	       cpp_token_as_text (pfile, op->token));
 }
@@ -1246,7 +1249,7 @@ num_unary_op (cpp_reader *pfile, cpp_num num, enum cpp_ttype op)
     {
     case CPP_UPLUS:
       if (CPP_WTRADITIONAL (pfile) && !pfile->state.skip_eval)
-	cpp_error (pfile, DL_WARNING,
+	cpp_error (pfile, CPP_DL_WARNING,
 		   "traditional C rejects the unary plus operator");
       num.overflow = false;
       break;
@@ -1345,7 +1348,7 @@ num_binary_op (cpp_reader *pfile, cpp_num lhs, cpp_num rhs, enum cpp_ttype op)
       /* Comma.  */
     default: /* case CPP_COMMA: */
       if (CPP_PEDANTIC (pfile) && !pfile->state.skip_eval)
-	cpp_error (pfile, DL_PEDWARN,
+	cpp_error (pfile, CPP_DL_PEDWARN,
 		   "comma operator in operand of #if");
       lhs = rhs;
       break;
@@ -1477,7 +1480,7 @@ num_div_op (cpp_reader *pfile, cpp_num lhs, cpp_num rhs, enum cpp_ttype op)
   else
     {
       if (!pfile->state.skip_eval)
-	cpp_error (pfile, DL_ERROR, "division by zero in #if");
+	cpp_error (pfile, CPP_DL_ERROR, "division by zero in #if");
       return lhs;
     }
 

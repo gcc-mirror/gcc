@@ -655,21 +655,21 @@ cpp_num cpp_num_sign_extend (cpp_num, size_t);
    with a line number of zero.  */
 
 /* Warning, an error with -Werror.  */
-#define DL_WARNING		0x00
-/* Same as DL_WARNING, except it is not suppressed in system headers.  */
-#define DL_WARNING_SYSHDR	0x01
+#define CPP_DL_WARNING		0x00
+/* Same as CPP_DL_WARNING, except it is not suppressed in system headers.  */
+#define CPP_DL_WARNING_SYSHDR	0x01
 /* Warning, an error with -pedantic-errors or -Werror.  */
-#define DL_PEDWARN		0x02
+#define CPP_DL_PEDWARN		0x02
 /* An error.  */
-#define DL_ERROR		0x03
+#define CPP_DL_ERROR		0x03
 /* An internal consistency check failed.  Prints "internal error: ",
-   otherwise the same as DL_ERROR.  */
-#define DL_ICE			0x04
+   otherwise the same as CPP_DL_ERROR.  */
+#define CPP_DL_ICE		0x04
 /* Extracts a diagnostic level from an int.  */
-#define DL_EXTRACT(l)		(l & 0xf)
+#define CPP_DL_EXTRACT(l)	(l & 0xf)
 /* Nonzero if a diagnostic level is one of the warnings.  */
-#define DL_WARNING_P(l)		(DL_EXTRACT (l) >= DL_WARNING \
-				 && DL_EXTRACT (l) <= DL_PEDWARN)
+#define CPP_DL_WARNING_P(l)	(CPP_DL_EXTRACT (l) >= CPP_DL_WARNING \
+				 && CPP_DL_EXTRACT (l) <= CPP_DL_PEDWARN)
 
 /* N.B. The error-message-printer prototypes have not been nicely
    formatted because exgettext needs to see 'msgid' on the same line

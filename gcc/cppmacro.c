@@ -81,7 +81,7 @@ _cpp_warn_if_unused_macro (cpp_reader *pfile, cpp_hashnode *node,
 
       if (!macro->used
 	  && MAIN_FILE_P (linemap_lookup (&pfile->line_maps, macro->line)))
-	cpp_error_with_line (pfile, DL_WARNING, macro->line, 0,
+	cpp_error_with_line (pfile, CPP_DL_WARNING, macro->line, 0,
 			     "macro \"%s\" is not used", NODE_NAME (node));
     }
 
@@ -122,7 +122,7 @@ _cpp_builtin_macro_text (cpp_reader *pfile, cpp_hashnode *node)
   switch (node->value.builtin)
     {
     default:
-      cpp_error (pfile, DL_ICE, "invalid built-in macro \"%s\"",
+      cpp_error (pfile, CPP_DL_ICE, "invalid built-in macro \"%s\"",
 		 NODE_NAME (node));
       break;
 
@@ -217,7 +217,7 @@ _cpp_builtin_macro_text (cpp_reader *pfile, cpp_hashnode *node)
 	    }
 	  else
 	    {
-	      cpp_errno (pfile, DL_WARNING,
+	      cpp_errno (pfile, CPP_DL_WARNING,
 			 "could not determine date and time");
 		
 	      pfile->date = U"\"??? ?? ????\"";
@@ -277,7 +277,7 @@ builtin_macro (cpp_reader *pfile, cpp_hashnode *node)
   pfile->cur_token = _cpp_temp_token (pfile);
   push_token_context (pfile, NULL, _cpp_lex_direct (pfile), 1);
   if (pfile->buffer->cur != pfile->buffer->rlimit)
-    cpp_error (pfile, DL_ICE, "invalid built-in macro \"%s\"",
+    cpp_error (pfile, CPP_DL_ICE, "invalid built-in macro \"%s\"",
 	       NODE_NAME (node));
   _cpp_pop_buffer (pfile);
 
@@ -389,7 +389,7 @@ stringify_arg (cpp_reader *pfile, macro_arg *arg)
   /* Ignore the final \ of invalid string literals.  */
   if (backslash_count & 1)
     {
-      cpp_error (pfile, DL_WARNING,
+      cpp_error (pfile, CPP_DL_WARNING,
 		 "invalid string literal, ignoring final '\\'");
       dest--;
     }
@@ -472,7 +472,7 @@ paste_all_tokens (cpp_reader *pfile, const cpp_token *lhs)
 
 	  /* Mandatory error for all apart from assembler.  */
 	  if (CPP_OPTION (pfile, lang) != CLK_ASM)
-	    cpp_error (pfile, DL_ERROR,
+	    cpp_error (pfile, CPP_DL_ERROR,
 	 "pasting \"%s\" and \"%s\" does not give a valid preprocessing token",
 		       cpp_token_as_text (pfile, lhs),
 		       cpp_token_as_text (pfile, rhs));
@@ -510,17 +510,17 @@ _cpp_arguments_ok (cpp_reader *pfile, cpp_macro *macro, const cpp_hashnode *node
       if (argc + 1 == macro->paramc && macro->variadic)
 	{
 	  if (CPP_PEDANTIC (pfile) && ! macro->syshdr)
-	    cpp_error (pfile, DL_PEDWARN,
+	    cpp_error (pfile, CPP_DL_PEDWARN,
 		       "ISO C99 requires rest arguments to be used");
 	  return true;
 	}
 
-      cpp_error (pfile, DL_ERROR,
+      cpp_error (pfile, CPP_DL_ERROR,
 		 "macro \"%s\" requires %u arguments, but only %u given",
 		 NODE_NAME (node), macro->paramc, argc);
     }
   else
-    cpp_error (pfile, DL_ERROR,
+    cpp_error (pfile, CPP_DL_ERROR,
 	       "macro \"%s\" passed %u arguments, but takes just %u",
 	       NODE_NAME (node), argc, macro->paramc);
 
@@ -631,7 +631,7 @@ collect_args (cpp_reader *pfile, const cpp_hashnode *node)
 	 callers at the end of an -include-d file.  */
       if (pfile->context->prev || pfile->state.in_directive)
 	_cpp_backup_tokens (pfile, 1);
-      cpp_error (pfile, DL_ERROR,
+      cpp_error (pfile, CPP_DL_ERROR,
 		 "unterminated argument list invoking macro \"%s\"",
 		 NODE_NAME (node));
     }
@@ -734,7 +734,7 @@ enter_macro_context (cpp_reader *pfile, cpp_hashnode *node)
 	  if (buff == NULL)
 	    {
 	      if (CPP_WTRADITIONAL (pfile) && ! node->value.macro->syshdr)
-		cpp_error (pfile, DL_WARNING,
+		cpp_error (pfile, CPP_DL_WARNING,
  "function-like macro \"%s\" must be used with arguments in traditional C",
 			   NODE_NAME (node));
 
@@ -1238,7 +1238,7 @@ _cpp_save_parameter (cpp_reader *pfile, cpp_macro *macro, cpp_hashnode *node)
   /* Constraint 6.10.3.6 - duplicate parameter names.  */
   if (node->flags & NODE_MACRO_ARG)
     {
-      cpp_error (pfile, DL_ERROR, "duplicate macro parameter \"%s\"",
+      cpp_error (pfile, CPP_DL_ERROR, "duplicate macro parameter \"%s\"",
 		 NODE_NAME (node));
       return true;
     }
@@ -1282,7 +1282,7 @@ parse_params (cpp_reader *pfile, cpp_macro *macro)
 	      && ! CPP_OPTION (pfile, discard_comments_in_macro_exp))
 	    continue;
 
-	  cpp_error (pfile, DL_ERROR,
+	  cpp_error (pfile, CPP_DL_ERROR,
 		     "\"%s\" may not appear in macro parameter list",
 		     cpp_token_as_text (pfile, token));
 	  return false;
@@ -1290,7 +1290,7 @@ parse_params (cpp_reader *pfile, cpp_macro *macro)
 	case CPP_NAME:
 	  if (prev_ident)
 	    {
-	      cpp_error (pfile, DL_ERROR,
+	      cpp_error (pfile, CPP_DL_ERROR,
 			 "macro parameters must be comma-separated");
 	      return false;
 	    }
@@ -1308,7 +1308,7 @@ parse_params (cpp_reader *pfile, cpp_macro *macro)
 	case CPP_COMMA:
 	  if (!prev_ident)
 	    {
-	      cpp_error (pfile, DL_ERROR, "parameter name missing");
+	      cpp_error (pfile, CPP_DL_ERROR, "parameter name missing");
 	      return false;
 	    }
 	  prev_ident = 0;
@@ -1322,11 +1322,11 @@ parse_params (cpp_reader *pfile, cpp_macro *macro)
 				   pfile->spec_nodes.n__VA_ARGS__);
 	      pfile->state.va_args_ok = 1;
 	      if (! CPP_OPTION (pfile, c99) && CPP_OPTION (pfile, pedantic))
-		cpp_error (pfile, DL_PEDWARN,
+		cpp_error (pfile, CPP_DL_PEDWARN,
 			   "anonymous variadic macros were introduced in C99");
 	    }
 	  else if (CPP_OPTION (pfile, pedantic))
-	    cpp_error (pfile, DL_PEDWARN,
+	    cpp_error (pfile, CPP_DL_PEDWARN,
 		       "ISO C does not permit named variadic macros");
 
 	  /* We're at the end, and just expect a closing parenthesis.  */
@@ -1336,7 +1336,7 @@ parse_params (cpp_reader *pfile, cpp_macro *macro)
 	  /* Fall through.  */
 
 	case CPP_EOF:
-	  cpp_error (pfile, DL_ERROR, "missing ')' in macro parameter list");
+	  cpp_error (pfile, CPP_DL_ERROR, "missing ')' in macro parameter list");
 	  return false;
 	}
     }
@@ -1398,7 +1398,7 @@ create_iso_definition (cpp_reader *pfile, cpp_macro *macro)
       macro->fun_like = 1;
     }
   else if (ctoken->type != CPP_EOF && !(ctoken->flags & PREV_WHITE))
-    cpp_error (pfile, DL_PEDWARN,
+    cpp_error (pfile, CPP_DL_PEDWARN,
 	       "ISO C requires whitespace after the macro name");
 
   if (macro->fun_like)
@@ -1426,7 +1426,7 @@ create_iso_definition (cpp_reader *pfile, cpp_macro *macro)
 	  /* Let assembler get away with murder.  */
 	  else if (CPP_OPTION (pfile, lang) != CLK_ASM)
 	    {
-	      cpp_error (pfile, DL_ERROR,
+	      cpp_error (pfile, CPP_DL_ERROR,
 			 "'#' is not followed by a macro parameter");
 	      return false;
 	    }
@@ -1445,7 +1445,7 @@ create_iso_definition (cpp_reader *pfile, cpp_macro *macro)
 
 	  if (macro->count == 0 || token->type == CPP_EOF)
 	    {
-	      cpp_error (pfile, DL_ERROR,
+	      cpp_error (pfile, CPP_DL_ERROR,
 		 "'##' cannot appear at either end of a macro expansion");
 	      return false;
 	    }
@@ -1529,11 +1529,11 @@ _cpp_create_definition (cpp_reader *pfile, cpp_hashnode *node)
 
       if (warn_of_redefinition (pfile, node, macro))
 	{
-	  cpp_error_with_line (pfile, DL_PEDWARN, pfile->directive_line, 0,
+	  cpp_error_with_line (pfile, CPP_DL_PEDWARN, pfile->directive_line, 0,
 			       "\"%s\" redefined", NODE_NAME (node));
 
 	  if (node->type == NT_MACRO && !(node->flags & NODE_BUILTIN))
-	    cpp_error_with_line (pfile, DL_PEDWARN,
+	    cpp_error_with_line (pfile, CPP_DL_PEDWARN,
 				 node->value.macro->line, 0,
 			 "this is the location of the previous definition");
 	}
@@ -1584,7 +1584,7 @@ check_trad_stringification (cpp_reader *pfile, const cpp_macro *macro,
 	  if (NODE_LEN (node) == len
 	      && !memcmp (p, NODE_NAME (node), len))
 	    {
-	      cpp_error (pfile, DL_WARNING,
+	      cpp_error (pfile, CPP_DL_WARNING,
 	   "macro argument \"%s\" would be stringified in traditional C",
 			 NODE_NAME (node));
 	      break;
@@ -1607,7 +1607,7 @@ cpp_macro_definition (cpp_reader *pfile, const cpp_hashnode *node)
 
   if (node->type != NT_MACRO || (node->flags & NODE_BUILTIN))
     {
-      cpp_error (pfile, DL_ICE,
+      cpp_error (pfile, CPP_DL_ICE,
 		 "invalid hash type %d in cpp_macro_definition", node->type);
       return 0;
     }

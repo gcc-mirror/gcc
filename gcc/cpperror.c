@@ -72,43 +72,43 @@ int
 _cpp_begin_message (cpp_reader *pfile, int code, fileline line,
 		    unsigned int column)
 {
-  int level = DL_EXTRACT (code);
+  int level = CPP_DL_EXTRACT (code);
 
   switch (level)
     {
-    case DL_WARNING:
-    case DL_PEDWARN:
+    case CPP_DL_WARNING:
+    case CPP_DL_PEDWARN:
       if (CPP_IN_SYSTEM_HEADER (pfile)
 	  && ! CPP_OPTION (pfile, warn_system_headers))
 	return 0;
       /* Fall through.  */
 
-    case DL_WARNING_SYSHDR:
+    case CPP_DL_WARNING_SYSHDR:
       if (CPP_OPTION (pfile, warnings_are_errors)
-	  || (level == DL_PEDWARN && CPP_OPTION (pfile, pedantic_errors)))
+	  || (level == CPP_DL_PEDWARN && CPP_OPTION (pfile, pedantic_errors)))
 	{
 	  if (CPP_OPTION (pfile, inhibit_errors))
 	    return 0;
-	  level = DL_ERROR;
+	  level = CPP_DL_ERROR;
 	  pfile->errors++;
 	}
       else if (CPP_OPTION (pfile, inhibit_warnings))
 	return 0;
       break;
 
-    case DL_ERROR:
+    case CPP_DL_ERROR:
       if (CPP_OPTION (pfile, inhibit_errors))
 	return 0;
       /* ICEs cannot be inhibited.  */
-    case DL_ICE:
+    case CPP_DL_ICE:
       pfile->errors++;
       break;
     }
 
   print_location (pfile, line, column);
-  if (DL_WARNING_P (level))
+  if (CPP_DL_WARNING_P (level))
     fputs (_("warning: "), stderr);
-  else if (level == DL_ICE)
+  else if (level == CPP_DL_ICE)
     fputs (_("internal error: "), stderr);
 
   return 1;
