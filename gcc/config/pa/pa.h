@@ -1554,7 +1554,10 @@ bss_section ()								\
 
 #define ASM_GLOBALIZE_LABEL(FILE, NAME)					\
   do { fputs ("\t.EXPORT ", FILE); assemble_name (FILE, NAME);		\
-       fputs ("\n", FILE);} while (0)
+       if (FUNCTION_NAME_P (NAME))					\
+	 fputs (",CODE\n", FILE);					\
+       else								\
+	 fputs (",DATA\n", FILE);} while (0)
 
 /* This is how to output a reference to a user-level label named NAME.
    `assemble_name' uses this.  */
