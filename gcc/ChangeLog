@@ -1,3 +1,9 @@
+2004-06-12  Steven Bosscher  <stevenb@suse.de>
+
+	* rtl.h (MEM_P, NONJUMP_INSN_P, CALL_INSN_P): New predicates.
+	(INSN_P): Don't look at the rtx code class, just explicitly
+	check for one of the tree RTX_INSN codes.
+
 2004-06-11  Zack Weinberg  <zack@codesourcery.com>
 
 	* c-typeck.c (default_function_array_conversion): Use
