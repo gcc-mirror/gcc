@@ -208,7 +208,7 @@ in the following sections.
 -fsyntax-only  -pedantic  -pedantic-errors @gol
 -w  -W  -Wall  -Waggregate-return @gol
 -Wcast-align  -Wcast-qual  -Wchar-subscripts  -Wcomment @gol
--Wconversion  -Wdisabled-optimization  -Werror @gol
+-Wconversion  -Wdisabled-optimization  -Wdiv-by-zero  -Werror @gol
 -Wfloat-equal  -Wformat  -Wformat=2 @gol
 -Wformat-nonliteral  -Wformat-security @gol
 -Wimplicit  -Wimplicit-int  @gol
@@ -1868,12 +1868,6 @@ int a[2][2] = @{ 0, 1, 2, 3 @};
 int b[2][2] = @{ @{ 0, 1 @}, @{ 2, 3 @} @};
 @end smallexample
 
-@item -Wmultichar
-@opindex Wmultichar
-Warn if a multicharacter constant (@samp{'FOOF'}) is used.  Usually they
-indicate a typo in the user's code, as they have implementation-defined
-values, and should not be used in portable code.
-
 @item -Wparentheses
 @opindex Wparentheses
 Warn if parentheses are omitted in certain contexts, such
@@ -2128,6 +2122,22 @@ All of the above @samp{-W} options combined.  This enables all the
 warnings about constructions that some users consider questionable, and
 that are easy to avoid (or modify to prevent the warning), even in
 conjunction with macros.
+
+@item -Wdiv-by-zero
+@opindex Wno-div-by-zero
+@opindex Wdiv-by-zero
+Warn about compile-time integer division by zero.  This is default.  To
+inhibit the warning messages, use @option{-Wno-div-by-zero}.  Floating
+point division by zero is not warned about, as it can be a legitimate
+way of obtaining infinities and NaNs.
+
+@item -Wmultichar
+@opindex Wno-multichar
+@opindex Wmultichar
+Warn if a multicharacter constant (@samp{'FOOF'}) is used.  This is
+default.  To inhibit the warning messages, use @option{-Wno-multichar}.
+Usually they indicate a typo in the user's code, as they have
+implementation-defined values, and should not be used in portable code.
 
 @item -Wsystem-headers
 @opindex Wsystem-headers
