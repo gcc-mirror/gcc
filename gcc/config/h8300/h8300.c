@@ -4335,6 +4335,26 @@ byte_accesses_mergeable_p (rtx addr1, rtx addr2)
 
   return 0;
 }
+
+/* Return nonzero if we have the same comparison insn as I3 two insns
+   before I3.  I3 is assumed to be a comparision insn.  */
+
+int
+same_cmp_preceding_p (rtx i3)
+{
+  rtx i1, i2;
+
+  /* Make sure we have a sequence of three insns.  */
+  i2 = prev_nonnote_insn (i3);
+  if (i2 == NULL_RTX)
+    return 0;
+  i1 = prev_nonnote_insn (i2);
+  if (i1 == NULL_RTX)
+    return 0;
+
+  return (INSN_P (i1) && rtx_equal_p (PATTERN (i1), PATTERN (i3))
+	  && any_condjump_p (i2) && onlyjump_p (i2));
+}
 
 /* Initialize the GCC target structure.  */
 #undef TARGET_ATTRIBUTE_TABLE
