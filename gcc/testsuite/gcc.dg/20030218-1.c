@@ -13,4 +13,5 @@ main (void)
   vint = vfloat;
   vshort = vint;
   vfloat = vshort; /* { dg-error "incompatible types in assignment" } */
+  return 0;
 }
