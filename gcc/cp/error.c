@@ -39,18 +39,18 @@ typedef char* cp_printer ();
 #define T type_as_string
 #define V cv_as_string
 
-#define _ (cp_printer *) 0
+#define o (cp_printer *) 0
 cp_printer * cp_printers[256] =
-{ 
+{
 /*0  1  2  3  4  5  6  7  8  9  A  B  C  D  E  F */
-  _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, /* 0x00 */
-  _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, /* 0x10 */
-  _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, /* 0x20 */
-  _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, /* 0x30 */
-  _, A, _, C, D, E, _, _, _, _, _, _, L, _, _, O, /* 0x40 */
-  P, Q, _, _, T, _, V, _, _, _, _, _, _, _, _, _, /* 0x50 */
-  _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, /* 0x60 */
-  _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, /* 0x70 */
+  o, o, o, o, o, o, o, o, o, o, o, o, o, o, o, o, /* 0x00 */
+  o, o, o, o, o, o, o, o, o, o, o, o, o, o, o, o, /* 0x10 */
+  o, o, o, o, o, o, o, o, o, o, o, o, o, o, o, o, /* 0x20 */
+  o, o, o, o, o, o, o, o, o, o, o, o, o, o, o, o, /* 0x30 */
+  o, A, o, C, D, E, o, o, o, o, o, o, L, o, o, O, /* 0x40 */
+  P, Q, o, o, T, o, V, o, o, o, o, o, o, o, o, o, /* 0x50 */
+  o, o, o, o, o, o, o, o, o, o, o, o, o, o, o, o, /* 0x60 */
+  o, o, o, o, o, o, o, o, o, o, o, o, o, o, o, o, /* 0x70 */
 };
 #undef C
 #undef D
@@ -61,7 +61,7 @@ cp_printer * cp_printers[256] =
 #undef Q
 #undef T
 #undef V
-#undef _
+#undef o
 
 #define obstack_chunk_alloc xmalloc
 #define obstack_chunk_free free
@@ -725,6 +725,12 @@ dump_decl (t, v)
 	}
       OB_PUTID (DECL_NAME (t));
       break;
+
+    case SCOPE_REF:
+      dump_decl (TREE_OPERAND (t, 0), 0);
+      OB_PUTS ("::");
+      dump_decl (TREE_OPERAND (t, 1), 0);
+      break;      
 
     case ARRAY_REF:
       dump_decl (TREE_OPERAND (t, 0), v);

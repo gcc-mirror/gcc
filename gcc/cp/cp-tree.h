@@ -1205,6 +1205,12 @@ struct lang_decl
    of a namespace, to record the transitive closure of using namespace. */
 #define DECL_NAMESPACE_USERS(NODE) DECL_INITIAL (NODE)
 
+/* In a NAMESPACE_DECL, points to the original namespace if this is
+   a namespace alias.  */
+#define DECL_NAMESPACE_ALIAS(NODE) DECL_ABSTRACT_ORIGIN (NODE)
+#define ORIGINAL_NAMESPACE(NODE)  \
+  (DECL_NAMESPACE_ALIAS (NODE) ? DECL_NAMESPACE_ALIAS (NODE) : (NODE))
+
 /* In a TREE_LIST concatenating using directives, indicate indirekt
    directives  */
 #define TREE_INDIRECT_USING(NODE) ((NODE)->common.lang_flag_0)
@@ -2354,6 +2360,9 @@ extern tree lookup_name_nonclass		PROTO((tree));
 extern tree lookup_function_nonclass            PROTO((tree, tree));
 extern tree lookup_name				PROTO((tree, int));
 extern tree lookup_name_current_level		PROTO((tree));
+extern tree lookup_name_namespace_only          PROTO((tree));
+extern void begin_only_namespace_names          PROTO((void));
+extern void end_only_namespace_names            PROTO((void));
 extern int  lookup_using_namespace              PROTO((tree,tree,tree,tree));
 extern int  qualified_lookup_using_namespace    PROTO((tree,tree,tree));
 extern tree auto_function			PROTO((tree, tree, enum built_in_function));

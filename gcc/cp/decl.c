@@ -157,7 +157,7 @@ static tree store_bindings PROTO((tree, tree));
 static tree lookup_tag_reverse PROTO((tree, tree));
 static tree obscure_complex_init PROTO((tree, tree));
 static tree maybe_build_cleanup_1 PROTO((tree, tree));
-static tree lookup_name_real PROTO((tree, int, int));
+static tree lookup_name_real PROTO((tree, int, int, int));
 static void warn_extern_redeclared_static PROTO((tree, tree));
 static void grok_reference_init PROTO((tree, tree, tree));
 static tree grokfndecl PROTO((tree, tree, tree, tree, int,
@@ -330,6 +330,9 @@ tree vtbl_type_node;
 /* namespace std */
 tree std_node;
 int in_std = 0;
+
+/* Expect only namespace names now. */
+static int only_namespace_names;
 
 /* In a destructor, the point at which all derived class destroying
    has been done, just before any base class destroying will be done.  */
@@ -1646,6 +1649,9 @@ find_binding (name, scope)
      tree scope;
 {
   tree iter, prev = NULL_TREE;
+
+  scope = ORIGINAL_NAMESPACE (scope);
+  
   for (iter = IDENTIFIER_NAMESPACE_BINDINGS (name); iter;
        iter = TREE_CHAIN (iter))
     {
@@ -1678,6 +1684,9 @@ binding_for_name (name, scope)
 {
   tree b = IDENTIFIER_NAMESPACE_BINDINGS (name);
   tree result;
+
+  scope = ORIGINAL_NAMESPACE (scope);
+  
   if (b && TREE_CODE (b) != CPLUS_BINDING)
     {
       /* Get rid of optimization for global scope. */
@@ -1783,7 +1792,15 @@ push_namespace (name)
       /* Check whether this is an extended namespace definition. */
       d = IDENTIFIER_NAMESPACE_VALUE (name);
       if (d != NULL_TREE && TREE_CODE (d) == NAMESPACE_DECL)
-	need_new = 0;
+        {
+          need_new = 0;
+          if (DECL_NAMESPACE_ALIAS (d))
+            {
+              cp_error ("namespace alias `%D' not allowed here, assuming `%D'",
+                        d, DECL_NAMESPACE_ALIAS (d));
+              d = DECL_NAMESPACE_ALIAS (d);
+            }
+        }
     }
   
   if (need_new)
@@ -2145,7 +2162,7 @@ identifier_type_value (id)
     return REAL_IDENTIFIER_TYPE_VALUE (id);
   /* Have to search for it. It must be on the global level, now.
      Ask lookup_name not to return non-types. */
-  id = lookup_name_real (id, 2, 1);
+  id = lookup_name_real (id, 2, 1, 0);
   if (id)
     return TREE_TYPE (id);
   return NULL_TREE;
@@ -4680,12 +4697,20 @@ make_typename_type (context, name)
 /* Select the right _DECL from multiple choices. */
 
 static tree
-select_decl (binding, prefer_type)
+select_decl (binding, prefer_type, namespaces_only)
      tree binding;
-     int prefer_type;
+     int prefer_type, namespaces_only;
 {
   tree val;
   val = BINDING_VALUE (binding);
+  if (namespaces_only)
+    {
+      /* We are not interested in types. */
+      if (val && TREE_CODE (val) == NAMESPACE_DECL)
+        return val;
+      return NULL_TREE;
+    }
+  
   /* If we could have a type and
      we have nothing or we need a type and have none.  */
   if (BINDING_TYPE (binding)
@@ -4713,15 +4738,19 @@ select_decl (binding, prefer_type)
    using IDENTIFIER_CLASS_VALUE.  */
 
 static tree
-lookup_name_real (name, prefer_type, nonclass)
+lookup_name_real (name, prefer_type, nonclass, namespaces_only)
      tree name;
-     int prefer_type, nonclass;
+     int prefer_type, nonclass, namespaces_only;
 {
   register tree val;
   int yylex = 0;
   tree from_obj = NULL_TREE;
   tree locval, classval;
 
+  /* Hack: copy flag set by parser, if set. */
+  if (only_namespace_names)
+    namespaces_only = 1;
+  
   if (prefer_type == -2)
     {
       extern int looking_for_typename;
@@ -4756,7 +4785,7 @@ lookup_name_real (name, prefer_type, nonclass)
 	      val = binding_init (&b);
 	      if (!qualified_lookup_using_namespace (name, type, val))
 		return NULL_TREE;
-	      val = select_decl (val, prefer_type);
+	      val = select_decl (val, prefer_type, namespaces_only);
 	    }
 	  else if (! IS_AGGR_TYPE (type)
 		   || TREE_CODE (type) == TEMPLATE_TYPE_PARM
@@ -4800,7 +4829,7 @@ lookup_name_real (name, prefer_type, nonclass)
 
   locval = classval = NULL_TREE;
 
-  if (!current_binding_level->namespace_p
+  if (!namespaces_only && !current_binding_level->namespace_p
       && IDENTIFIER_LOCAL_VALUE (name)
       /* Kludge to avoid infinite recursion with identifier_type_value.  */
       && (prefer_type <= 0
@@ -4885,7 +4914,7 @@ lookup_name_real (name, prefer_type, nonclass)
 	      val = NULL_TREE;
 	      break;
 	    }
-	  val = select_decl (b, prefer_type);
+	  val = select_decl (b, prefer_type, namespaces_only);
 	  if (scope == global_namespace)
 	    break;
 	  scope = DECL_CONTEXT (scope);
@@ -4932,7 +4961,7 @@ tree
 lookup_name_nonclass (name)
      tree name;
 {
-  return lookup_name_real (name, 0, 1);
+  return lookup_name_real (name, 0, 1, 0);
 }
 
 tree
@@ -4944,11 +4973,19 @@ lookup_function_nonclass (name, args)
 }
 
 tree
+lookup_name_namespace_only (name)
+     tree name;
+{
+  /* type-or-namespace, nonclass, namespace_only */
+  return lookup_name_real (name, 1, 1, 1);
+}
+
+tree
 lookup_name (name, prefer_type)
      tree name;
      int prefer_type;
 {
-  return lookup_name_real (name, prefer_type, 0);
+  return lookup_name_real (name, prefer_type, 0, 0);
 }
 
 /* Similar to `lookup_name' but look only at current binding level.  */
@@ -4985,6 +5022,18 @@ lookup_name_current_level (name)
     }
 
   return t;
+}
+
+void
+begin_only_namespace_names ()
+{
+  only_namespace_names = 1;
+}
+
+void
+end_only_namespace_names ()
+{
+  only_namespace_names = 0;
 }
 
 /* Arrange for the user to get a source line number, even when the
