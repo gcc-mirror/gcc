@@ -1,3 +1,8 @@
+2001-10-22  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* arm.h (HOST_INT, HOST_UINT): Delete.  Remove all uses.
+	* arm.c (HOST_INT, HOST_UINT): Likewise.
+
 2001-10-22  Stan Shebs  <shebs@apple.com>
 
 	* config/darwin-protos.h (darwin_exception_section): Declare.

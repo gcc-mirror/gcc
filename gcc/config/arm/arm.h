@@ -1253,9 +1253,9 @@ enum reg_class
 	  else								   \
 	    break;							   \
 									   \
-	  high = ((((val - low) & HOST_UINT (0xffffffff))		   \
-		   ^ HOST_UINT (0x80000000))				   \
-		  - HOST_UINT (0x80000000));				   \
+	  high = ((((val - low) & (unsigned HOST_WIDE_INT) 0xffffffff)	   \
+		   ^ (unsigned HOST_WIDE_INT) 0x80000000)		   \
+		  - (unsigned HOST_WIDE_INT) 0x80000000);		   \
 	  /* Check for overflow or zero */				   \
 	  if (low == 0 || high == 0 || (high + low != val))		   \
 	    break;							   \
@@ -2661,22 +2661,12 @@ extern int making_const_table;
 #define PRINT_OPERAND(STREAM, X, CODE)  \
   arm_print_operand (STREAM, X, CODE)
 
-/* Create an [unsigned] host sized integer declaration that
-   avoids compiler warnings.  */
-#ifdef __STDC__
-#define HOST_INT(x)  ((signed HOST_WIDE_INT) x##UL)
-#define HOST_UINT(x) ((unsigned HOST_WIDE_INT) x##UL)
-#else
-#define HOST_INT(x)  ((HOST_WIDE_INT) x)
-#define HOST_UINT(x) ((unsigned HOST_WIDE_INT) x)
-#endif
-
 #define ARM_SIGN_EXTEND(x)  ((HOST_WIDE_INT)			\
   (HOST_BITS_PER_WIDE_INT <= 32 ? (unsigned HOST_WIDE_INT) (x)	\
-   : ((((unsigned HOST_WIDE_INT)(x)) & HOST_UINT (0xffffffff)) |\
-      ((((unsigned HOST_WIDE_INT)(x)) & HOST_UINT (0x80000000))	\
-       ? ((~ HOST_UINT (0))					\
-	  & ~ HOST_UINT(0xffffffff))				\
+   : ((((unsigned HOST_WIDE_INT)(x)) & (unsigned HOST_WIDE_INT) 0xffffffff) |\
+      ((((unsigned HOST_WIDE_INT)(x)) & (unsigned HOST_WIDE_INT) 0x80000000) \
+       ? ((~ (unsigned HOST_WIDE_INT) 0)			\
+	  & ~ (unsigned HOST_WIDE_INT) 0xffffffff)		\
        : 0))))
 
 /* Output the address of an operand.  */
