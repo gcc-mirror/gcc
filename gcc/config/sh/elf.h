@@ -95,7 +95,7 @@ while (0)
 #define DBX_OUTPUT_MAIN_SOURCE_FILE_END(FILE, FILENAME)			\
 do {									\
   text_section ();							\
-  fprintf ((FILE), "\t.stabs \"\",%d,0,0,Letext\nLetext:\n", N_SO);	\
+  asm_fprintf ((FILE), "\t.stabs \"\",%d,0,0,%LLetext\n%LLetext:\n", N_SO); \
 } while (0)
 
 #undef STARTFILE_SPEC
