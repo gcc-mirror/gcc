@@ -1129,7 +1129,7 @@ output_fp_move_double (operands)
 	  xoperands[1] = operands[1];
 	  xoperands[2] = gen_rtx (REG, SImode, REGNO (operands[1]) + 1);
 	  output_asm_insn
-	    ("stw %1,-16(0,30)\n\tstw %2,-12(0,30)\n\tfldds -16(0,30),%0",
+	    ("stw %1,-16(0,%%r30)\n\tstw %2,-12(0,%%r30)\n\tfldds -16(0,%%r30),%0",
 			   xoperands);
 	}
       else 
@@ -1144,7 +1144,7 @@ output_fp_move_double (operands)
 	  xoperands[1] = gen_rtx (REG, SImode, REGNO (operands[0]) + 1);
 	  xoperands[0] = operands[0];
 	  output_asm_insn
-	    ("fstds %2,-16(0,30)\n\tldw -12(0,30),%1\n\tldw -16(0,30),%0",
+	    ("fstds %2,-16(0,%%r30)\n\tldw -12(0,%%r30),%1\n\tldw -16(0,%%r30),%0",
 	     xoperands);
 	}
       else
@@ -2071,9 +2071,8 @@ pa_adjust_cost (insn, link, dep_insn, cost)
      rtx dep_insn;
      int cost;
 {
-  /* If the dependence is an anti-dependence, there is no cost.  For an
-     output dependence, there is sometimes a cost, but it doesn't seem
-     worth handling those few cases.  */
+  if (! recog_memoized (insn))
+    return 0;
 
   if (REG_NOTE_KIND (link) == 0)
     {
@@ -2082,16 +2081,24 @@ pa_adjust_cost (insn, link, dep_insn, cost)
 
       if (get_attr_type (insn) == TYPE_FPSTORE)
 	{
-	  if (GET_CODE (PATTERN (insn)) != SET
-	      || GET_CODE (PATTERN (dep_insn)) != SET)
-	    /* If this happens, we have to extend this to schedule
-	       optimally.  */
-	    abort();
-
-	  if (rtx_equal_p (SET_DEST (PATTERN (dep_insn)), SET_SRC (PATTERN (insn))))
+	  rtx pat = PATTERN (insn);
+	  rtx dep_pat = PATTERN (dep_insn);
+	  if (GET_CODE (pat) == PARALLEL)
 	    {
-	      /* INSN is a fp store and DEP_INSN is writing to the register
-		 being stored.  */
+	      /* This happens for the fstXs,mb patterns.  */
+	      pat = XVECEXP (pat, 0, 0);
+	    }
+	  if (GET_CODE (pat) != SET || GET_CODE (dep_pat) != SET)
+	    /* If this happens, we have to extend this to schedule
+	       optimally.  Return 0 for now.  */
+	  return 0;
+
+	  if (rtx_equal_p (SET_DEST (dep_pat), SET_SRC (pat)))
+	    {
+	      if (! recog_memoized (dep_insn))
+		return 0;
+	      /* DEP_INSN is writing its result to the register
+		 being stored in the fpstore INSN.  */
 	      switch (get_attr_type (dep_insn))
 		{
 		case TYPE_FPLOAD:
@@ -2125,14 +2132,22 @@ pa_adjust_cost (insn, link, dep_insn, cost)
 
       if (get_attr_type (insn) == TYPE_FPLOAD)
 	{
-	  if (GET_CODE (PATTERN (insn)) != SET
-	      || GET_CODE (PATTERN (dep_insn)) != SET)
-	    /* If this happens, we have to extend this to schedule
-	       optimally.  */
-	    abort();
-
-	  if (rtx_equal_p (SET_SRC (PATTERN (dep_insn)), SET_DEST (PATTERN (insn))))
+	  rtx pat = PATTERN (insn);
+	  rtx dep_pat = PATTERN (dep_insn);
+	  if (GET_CODE (pat) == PARALLEL)
 	    {
+	      /* This happens for the fldXs,mb patterns.  */
+	      pat = XVECEXP (pat, 0, 0);
+	    }
+	  if (GET_CODE (pat) != SET || GET_CODE (dep_pat) != SET)
+	    /* If this happens, we have to extend this to schedule
+	       optimally.  Return 0 for now.  */
+	  return 0;
+
+	  if (reg_mentioned_p (SET_DEST (pat), SET_SRC (dep_pat)))
+	    {
+	      if (! recog_memoized (dep_insn))
+		return 0;
 	      switch (get_attr_type (dep_insn))
 		{
 		case TYPE_FPALU:
@@ -2141,6 +2156,10 @@ pa_adjust_cost (insn, link, dep_insn, cost)
 		case TYPE_FPDIVDBL:
 		case TYPE_FPSQRTSGL:
 		case TYPE_FPSQRTDBL:
+		  /* A fpload can't be issued until one cycle before a
+		     preceeding arithmetic operation has finished, if
+		     the target of the fpload is any of the sources
+		     (or destination) of the arithmetic operation.  */
 		  return cost - 1;
 
 		default:
@@ -2153,9 +2172,8 @@ pa_adjust_cost (insn, link, dep_insn, cost)
       return 0;
     }
 
-  /* For all other cases of anti dependency and all cases of output
-     dependence the md is correct enough for the PA7000.  */
-  return cost;
+  /* For output dependencies, the cost is often one too high.  */
+  return cost - 1;
 }
 
 /* Print operand X (an rtx) in assembler syntax to file FILE.
