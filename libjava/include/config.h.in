@@ -132,6 +132,7 @@
 #undef HAVE_READDIR_R
 #undef HAVE_GETHOSTBYNAME_R
 #undef HAVE_GETHOSTBYADDR_R
+#undef HAVE_FTRUNCATE
 
 /* Define if you want a bytecode interpreter.  */
 #undef INTERPRETER
@@ -200,6 +201,9 @@
 
 /* Define if you have the ftime function.  */
 #undef HAVE_FTIME
+
+/* Define if you have the ftruncate function.  */
+#undef HAVE_FTRUNCATE
 
 /* Define if you have the getcwd function.  */
 #undef HAVE_GETCWD

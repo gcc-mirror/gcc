@@ -195,6 +195,7 @@ java::io::FileDescriptor::setLength (jlong pos)
   struct stat sb;
   off_t orig;
 
+#ifdef HAVE_FTRUNCATE
   if (::fstat (fd, &sb))
     throw new IOException (JvNewStringLatin1 (strerror (errno)));
 
@@ -219,6 +220,9 @@ java::io::FileDescriptor::setLength (jlong pos)
     }
   else if (::ftruncate (fd, (off_t) pos))
     throw new IOException (JvNewStringLatin1 (strerror (errno)));
+#else /* HAVE_FTRUNCATE */
+  throw new IOException (JvNewStringLatin1 ("FileDescriptor.setLength not implemented"));
+#endif /* HAVE_FTRUNCATE */
 }
 
 jint
