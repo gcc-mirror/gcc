@@ -2700,8 +2700,7 @@ find_reloads (insn, replace, ind_levels, live_known, reload_reg_p)
 		    value
 		      = find_dummy_reload (recog_operand[i], recog_operand[c],
 					   recog_operand_loc[i], recog_operand_loc[c],
-					   insn_operand_mode[insn_code_number][i],
-					   insn_operand_mode[insn_code_number][c],
+					   operand_mode[i], operand_mode[c],
 					   this_alternative[c], -1);
 
 		    if (value != 0)
