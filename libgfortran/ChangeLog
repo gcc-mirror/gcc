@@ -1,3 +1,11 @@
+2005-03-11  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
+
+	PR libfortran/20124
+	* write.c (output_float): Adds a nzero_real variable to store 
+	the number of leading zeros whatever the format width is. Corrects 
+	the rounding of numbers less than 10^(-width). Fixes typo in an 
+	error message. Updates copyright years
+
 2005-02-25  Peter O'Gorman  <peter@pogma.com>
             Toon Moene  <toon@moene.indiv.nluug.nl>
 
