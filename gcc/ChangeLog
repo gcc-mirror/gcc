@@ -1,3 +1,9 @@
+2000-02-23  Alexandre Oliva  <oliva@lsd.ic.unicamp.br>
+
+	* cpplib.h (enum cpp_token): Added CPP_WCHAR and CPP_WSTRING.
+	* cpplib.c (cpp_get_token): Produce them.
+	* cppexp.c (cpp_lex): Handle them.
+
 2000-02-23  Nick Clifton  <nickc@cygnus.com>
 
 	* config/arm/arm.c (arm_comp_type_attributes): Simply and

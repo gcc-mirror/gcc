@@ -43,7 +43,9 @@ enum cpp_token {
   CPP_NAME,
   CPP_NUMBER,
   CPP_CHAR,
+  CPP_WCHAR,
   CPP_STRING,
+  CPP_WSTRING,
   CPP_DIRECTIVE,
   CPP_LPAREN,   /* "(" */
   CPP_RPAREN,   /* ")" */

@@ -2447,7 +2447,6 @@ cpp_get_token (pfile)
 
 	case '\"':
 	case '\'':
-	string:
 	  parse_string (pfile, c);
 	  pfile->only_seen_white = 0;
 	  return c == '\'' ? CPP_CHAR : CPP_STRING;
@@ -2600,7 +2599,9 @@ cpp_get_token (pfile)
 	    {
 	      CPP_PUTC (pfile, c);
 	      c = GETC ();
-	      goto string;
+	      parse_string (pfile, c);
+	      pfile->only_seen_white = 0;
+	      return c == '\'' ? CPP_WCHAR : CPP_WSTRING;
 	    }
 	  goto letter;
 
