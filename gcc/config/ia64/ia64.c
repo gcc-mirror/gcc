@@ -5982,10 +5982,10 @@ ia64_sched_reorder (dump, sched_verbose, ready, pn_ready,
      int *pn_ready;
      int reorder_type, clock_var;
 {
+  int n_asms;
   int n_ready = *pn_ready;
   rtx *e_ready = ready + n_ready;
   rtx *insnp;
-  rtx highest;
 
   if (sched_verbose)
     {
@@ -6029,7 +6029,7 @@ ia64_sched_reorder (dump, sched_verbose, ready, pn_ready,
     maybe_rotate (sched_verbose ? dump : NULL);
 
   /* First, move all USEs, CLOBBERs and other crud out of the way.  */
-  highest = ready[n_ready - 1];
+  n_asms = 0;
   for (insnp = ready; insnp < e_ready; insnp++)
     if (insnp < e_ready)
       {
@@ -6037,24 +6037,42 @@ ia64_sched_reorder (dump, sched_verbose, ready, pn_ready,
 	enum attr_type t = ia64_safe_type (insn);
 	if (t == TYPE_UNKNOWN)
 	  {
-	    highest = ready[n_ready - 1];
-	    ready[n_ready - 1] = insn;
-	    *insnp = highest;
-	    if (ia64_final_schedule && group_barrier_needed_p (insn))
+	    if (GET_CODE (PATTERN (insn)) == ASM_INPUT
+		|| asm_noperands (PATTERN (insn)) >= 0)
 	      {
-		schedule_stop (sched_verbose ? dump : NULL);
-		sched_data.last_was_stop = 1;
-		maybe_rotate (sched_verbose ? dump : NULL);
+		rtx lowest = ready[0];
+		ready[0] = insn;
+		*insnp = lowest;
+		n_asms++;
 	      }
-	    else if (GET_CODE (PATTERN (insn)) == ASM_INPUT
-		     || asm_noperands (PATTERN (insn)) >= 0)
+	    else
 	      {
-		/* It must be an asm of some kind.  */
-		cycle_end_fill_slots (sched_verbose ? dump : NULL);
+		rtx highest = ready[n_ready - 1];
+		ready[n_ready - 1] = insn;
+		*insnp = highest;
+		if (ia64_final_schedule && group_barrier_needed_p (insn))
+		  {
+		    schedule_stop (sched_verbose ? dump : NULL);
+		    sched_data.last_was_stop = 1;
+		    maybe_rotate (sched_verbose ? dump : NULL);
+		  }
+
+		return 1;
 	      }
-	    return 1;
 	  }
       }
+  if (n_asms < n_ready)
+    {
+      /* Some normal insns to process.  Skip the asms.  */
+      ready += n_asms;
+      n_ready -= n_asms;
+    }
+  else if (n_ready > 0)
+    {
+      /* Only asm insns left.  */
+      cycle_end_fill_slots (sched_verbose ? dump : NULL);
+      return 1;
+    }
 
   if (ia64_final_schedule)
     {
