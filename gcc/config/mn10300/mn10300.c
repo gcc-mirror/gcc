@@ -1084,6 +1084,8 @@ mn10300_address_cost (x, unsig)
 
     case PLUS:
     case MINUS:
+    case ASHIFT:
+    case AND:
     case IOR:
       return (mn10300_address_cost (XEXP (x, 0), unsig)
 	      + mn10300_address_cost (XEXP (x, 1), unsig));
@@ -1110,6 +1112,7 @@ mn10300_address_cost (x, unsig)
 
     case CONST:
     case SYMBOL_REF:
+    case LABEL_REF:
       return 8;
 
     case ADDRESSOF:

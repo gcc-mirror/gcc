@@ -1,3 +1,8 @@
+Thu Apr 27 10:36:51 2000  Alexandre Oliva  <aoliva@cygnus.com>
+
+	* config/mn10300/mn10300.c (mn10300_address_cost): Test
+	ASHIFT, AND and LABEL_REF.
+
 Thu Apr 27 15:08:46 MET DST 2000  Jan Hubicka  <jh@suse.cz>
 
 	* invoke.texi (-foptimize-sibling-calls): Fix.
