@@ -603,8 +603,10 @@ static rtx use_related_value	PROTO((rtx, struct table_elt *));
 static int canon_hash		PROTO((rtx, enum machine_mode));
 static int safe_hash		PROTO((rtx, enum machine_mode));
 static int exp_equiv_p		PROTO((rtx, rtx, int, int));
+static void set_nonvarying_address_components PROTO((rtx, int, rtx *,
+						     int *, int *));
 static int refers_to_p		PROTO((rtx, rtx));
-int refers_to_mem_p		PROTO((rtx, rtx, HOST_WIDE_INT,
+static int refers_to_mem_p	PROTO((rtx, rtx, HOST_WIDE_INT,
 				       HOST_WIDE_INT));
 static int cse_rtx_addr_varies_p PROTO((rtx));
 static rtx canon_reg		PROTO((rtx, rtx));
@@ -1451,8 +1453,8 @@ invalidate (x)
 {
   register int i;
   register struct table_elt *p;
-  register rtx base;
-  register HOST_WIDE_INT start, end;
+  rtx base;
+  HOST_WIDE_INT start, end;
 
   /* If X is a register, dependencies on its contents
      are recorded through the qty number mechanism.
@@ -1531,38 +1533,10 @@ invalidate (x)
 
   if (GET_CODE (x) != MEM)
     abort ();
-  base = XEXP (x, 0);
-  start = 0;
 
-  /* Registers with nonvarying addresses usually have constant equivalents;
-     but the frame pointer register is also possible.  */
-  if (GET_CODE (base) == REG
-      && REGNO_QTY_VALID_P (REGNO (base))
-      && qty_mode[reg_qty[REGNO (base)]] == GET_MODE (base)
-      && qty_const[reg_qty[REGNO (base)]] != 0)
-    base = qty_const[reg_qty[REGNO (base)]];
-  else if (GET_CODE (base) == PLUS
-	   && GET_CODE (XEXP (base, 1)) == CONST_INT
-	   && GET_CODE (XEXP (base, 0)) == REG
-	   && REGNO_QTY_VALID_P (REGNO (XEXP (base, 0)))
-	   && (qty_mode[reg_qty[REGNO (XEXP (base, 0))]]
-	       == GET_MODE (XEXP (base, 0)))
-	   && qty_const[reg_qty[REGNO (XEXP (base, 0))]])
-    {
-      start = INTVAL (XEXP (base, 1));
-      base = qty_const[reg_qty[REGNO (XEXP (base, 0))]];
-    }
+  set_nonvarying_address_components (XEXP (x, 0), GET_MODE_SIZE (GET_MODE (x)),
+				     &base, &start, &end);
 
-  if (GET_CODE (base) == CONST)
-    base = XEXP (base, 0);
-  if (GET_CODE (base) == PLUS
-      && GET_CODE (XEXP (base, 1)) == CONST_INT)
-    {
-      start += INTVAL (XEXP (base, 1));
-      base = XEXP (base, 0);
-    }
-
-  end = start + GET_MODE_SIZE (GET_MODE (x));
   for (i = 0; i < NBUCKETS; i++)
     {
       register struct table_elt *next;
@@ -2212,20 +2186,87 @@ refers_to_p (x, y)
   return 0;
 }
 
+/* Given ADDR and SIZE (a memory address, and the size of the memory reference),
+   set PBASE, PSTART, and PEND which correspond to the base of the address,
+   the starting offset, and ending offset respectively.
+
+   ADDR is known to be a nonvarying address. 
+
+   cse_address_varies_p returns zero for nonvarying addresses.  */
+
+static void
+set_nonvarying_address_components (addr, size, pbase, pstart, pend)
+     rtx addr;
+     int size;
+     rtx *pbase;
+     int *pstart, *pend;
+{
+  rtx base;
+  int start, end;
+
+  base = addr;
+  start = 0;
+  end = 0;
+
+  /* Registers with nonvarying addresses usually have constant equivalents;
+     but the frame pointer register is also possible.  */
+  if (GET_CODE (base) == REG
+      && qty_const != 0
+      && REGNO_QTY_VALID_P (REGNO (base))
+      && qty_mode[reg_qty[REGNO (base)]] == GET_MODE (base)
+      && qty_const[reg_qty[REGNO (base)]] != 0)
+    base = qty_const[reg_qty[REGNO (base)]];
+  else if (GET_CODE (base) == PLUS
+	   && GET_CODE (XEXP (base, 1)) == CONST_INT
+	   && GET_CODE (XEXP (base, 0)) == REG
+	   && qty_const != 0
+	   && REGNO_QTY_VALID_P (REGNO (XEXP (base, 0)))
+	   && (qty_mode[reg_qty[REGNO (XEXP (base, 0))]]
+	       == GET_MODE (XEXP (base, 0)))
+	   && qty_const[reg_qty[REGNO (XEXP (base, 0))]])
+    {
+      start = INTVAL (XEXP (base, 1));
+      base = qty_const[reg_qty[REGNO (XEXP (base, 0))]];
+    }
+
+  /* By definition, operand1 of a LO_SUM is the associated constant
+     address.  Use the associated constant address as the base instead.  */
+  if (GET_CODE (base) == LO_SUM)
+    base = XEXP (base, 1);
+
+  /* Strip off CONST.  */
+  if (GET_CODE (base) == CONST)
+    base = XEXP (base, 0);
+
+  if (GET_CODE (base) == PLUS
+      && GET_CODE (XEXP (base, 1)) == CONST_INT)
+    {
+      start += INTVAL (XEXP (base, 1));
+      base = XEXP (base, 0);
+    }
+
+  end = start + size;
+
+  /* Set the return values.  */
+  *pbase = base;
+  *pstart = start;
+  *pend = end;
+}
+
 /* Return 1 iff any subexpression of X refers to memory
    at an address of BASE plus some offset
    such that any of the bytes' offsets fall between START (inclusive)
    and END (exclusive).
 
-   The value is undefined if X is a varying address.
-   This function is not used in such cases.
+   The value is undefined if X is a varying address (as determined by
+   cse_rtx_addr_varies_p).  This function is not used in such cases.
 
    When used in the cse pass, `qty_const' is nonzero, and it is used
    to treat an address that is a register with a known constant value
    as if it were that constant value.
    In the loop pass, `qty_const' is zero, so this is not done.  */
 
-int
+static int
 refers_to_mem_p (x, base, start, end)
      rtx x, base;
      HOST_WIDE_INT start, end;
@@ -2249,83 +2290,20 @@ refers_to_mem_p (x, base, start, end)
   if (code == MEM)
     {
       register rtx addr = XEXP (x, 0);	/* Get the address.  */
-      int myend;
+      rtx mybase;
+      int mystart, myend;
 
-      i = 0;
-      if (GET_CODE (addr) == REG
-	  /* qty_const is 0 when outside the cse pass;
-	     at such times, this info is not available.  */
-	  && qty_const != 0
-	  && REGNO_QTY_VALID_P (REGNO (addr))
-	  && GET_MODE (addr) == qty_mode[reg_qty[REGNO (addr)]]
-	  && qty_const[reg_qty[REGNO (addr)]] != 0)
-	addr = qty_const[reg_qty[REGNO (addr)]];
-      else if (GET_CODE (addr) == PLUS
-	       && GET_CODE (XEXP (addr, 1)) == CONST_INT
-	       && GET_CODE (XEXP (addr, 0)) == REG
-	       && qty_const != 0
-	       && REGNO_QTY_VALID_P (REGNO (XEXP (addr, 0)))
-	       && (GET_MODE (XEXP (addr, 0))
-		   == qty_mode[reg_qty[REGNO (XEXP (addr, 0))]])
-	       && qty_const[reg_qty[REGNO (XEXP (addr, 0))]])
-	{
-	  i = INTVAL (XEXP (addr, 1));
-	  addr = qty_const[reg_qty[REGNO (XEXP (addr, 0))]];
-	}
+      set_nonvarying_address_components (addr, GET_MODE_SIZE (GET_MODE (x)),
+					 &mybase, &mystart, &myend);
 
-    check_addr:
-      if (GET_CODE (addr) == CONST)
-	addr = XEXP (addr, 0);
 
-      /* If ADDR is BASE, or BASE plus an integer, put
-	 the integer in I.  */
-      if (GET_CODE (addr) == PLUS
-	  && XEXP (addr, 0) == base
-	  && GET_CODE (XEXP (addr, 1)) == CONST_INT)
-	i += INTVAL (XEXP (addr, 1));
-      else if (GET_CODE (addr) == LO_SUM)
-	{
-	  if (GET_CODE (base) != LO_SUM)
-	    return 1;
-	  /* The REG component of the LO_SUM is known by the
-	     const value in the XEXP part.  */
-	  addr = XEXP (addr, 1);
-	  base = XEXP (base, 1);
-	  i = 0;
-	  if (GET_CODE (base) == CONST)
-	    base = XEXP (base, 0);
-	  if (GET_CODE (base) == PLUS
-	      && GET_CODE (XEXP (base, 1)) == CONST_INT)
-	    {
-	      HOST_WIDE_INT tem = INTVAL (XEXP (base, 1));
-	      start += tem;
-	      end += tem;
-	      base = XEXP (base, 0);
-	    }
-	  goto check_addr;
-	}
-      else if (GET_CODE (base) == LO_SUM)
-	{
-	  base = XEXP (base, 1);
-	  if (GET_CODE (base) == CONST)
-	    base = XEXP (base, 0);
-	  if (GET_CODE (base) == PLUS
-	      && GET_CODE (XEXP (base, 1)) == CONST_INT)
-	    {
-	      HOST_WIDE_INT tem = INTVAL (XEXP (base, 1));
-	      start += tem;
-	      end += tem;
-	      base = XEXP (base, 0);
-	    }
-	  goto check_addr;	  
-	}
-      else if (GET_CODE (addr) == CONST_INT && base == const0_rtx)
-	i = INTVAL (addr);
-      else if (addr != base)
+      /* refers_to_mem_p is never called with varying addresses. 
+	 If the base addresses are not equal, there is no chance
+	 of the memory addresses conflicting.  */
+      if (mybase != base)
 	return 0;
 
-      myend = i + GET_MODE_SIZE (GET_MODE (x));
-      return myend > start && i < end;
+      return myend > start && mystart < end;
     }
 
   /* X does not match, so try its subexpressions.  */
