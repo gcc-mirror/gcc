@@ -1,10 +1,16 @@
-Wed May 22 14:16:07 CEST 2002JanHUbicka  <jh@suse.cz>
+2002-05-23  Jakub Jelinek  <jakub@redhat.com>
+
+	* configure.in: Fix as version test for binutils 2.12.1 releases
+	(without dates).
+	* configure: Rebuilt.
+
+Wed May 22 14:16:07 CEST 2002  Jan Hubicka  <jh@suse.cz>
 
 	* i386.c  (expand_movstr, expand_clrstr): Fix inline-all-stringops
 	sequence.
 	(ix86_expand_clrstr): Fix typo.
 
-2002-05-22  Duraid Madina   <duraid@fl.net.au>
+2002-05-22  Duraid Madina  <duraid@fl.net.au>
 
 	* tradcpp.c (fixup_newlines): Use old-style function header.
 
