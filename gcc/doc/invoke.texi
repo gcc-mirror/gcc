@@ -1546,6 +1546,25 @@ union U @{ int i : 4096; @};
 Assuming that an @code{int} does not have 4096 bits, G++ will make the
 union too small by the number of bits in an @code{int}.
 
+@item
+Empty classes can be placed at incorrect offsets.  For example:
+ 
+@smallexample
+struct A @{@};
+
+struct B @{
+  A a;
+  virtual void f ();
+@};
+
+struct C : public B, public A @{@};
+@end smallexample
+
+@noindent
+G++ will place the @code{A} base class of @code{C} at a non-zero offset;
+it should be placed at offset zero.  G++ mistakenly believes that the
+@code{A} data member of @code{B} is already at offset zero.
+
 @end itemize
 
 @item -Wctor-dtor-privacy @r{(C++ only)}
