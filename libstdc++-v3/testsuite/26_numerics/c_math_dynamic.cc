@@ -1,6 +1,6 @@
-// Specific definitions for BSD  -*- C++ -*-
+// Inspired by libstdc++/7680 & 26_numerics/c_math.cc, 2003-04-12 ljr
 
-// Copyright (C) 2000, 2002 Free Software Foundation, Inc.
+// Copyright (C) 2003 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -27,14 +27,32 @@
 // invalidate any other reasons why the executable file might be covered by
 // the GNU General Public License.
 
+// { dg-do link }
+// { dg-options "-D_XOPEN_SOURCE" { target *-*-freebsd* } }
 
-#ifndef _GLIBCPP_OS_DEFINES
-#define _GLIBCPP_OS_DEFINES 1
+#include <cmath>
 
-// System-specific #define, typedefs, corrections, etc, go here.  This
-// file will come before all others.
+int
+test01()
+{
+  float a = 1.f;
+  float b;
+  std::modf(a, &b);
+  return 0;
+}
 
-#define _GLIBCPP_USE_C99_FLOAT_TRANSCENDENTALS_CHECK 1
-#define _GLIBCPP_USE_C99_FLOAT_TRANSCENDENTALS_DYNAMIC defined _XOPEN_SOURCE
+int
+test02 ()
+{
+  float a = 0.0f;
+  float b = std::acos(b);
+  return 0;
+}
 
-#endif
+int
+main()
+{
+  test01();
+  test02();
+  return 0;
+}
