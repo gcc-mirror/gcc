@@ -1,3 +1,7 @@
+Thu May 18 10:58:13 2000  Jeffrey A Law  (law@cygnus.com)
+
+	* configure.in (hppa*64*-*-*): Do build ld for this configuration.
+
 2000-05-18  Alexandre Oliva  <aoliva@cygnus.com>
 
 	* Makefile.in (configure-target-libiberty): Depend on

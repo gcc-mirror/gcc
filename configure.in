@@ -653,7 +653,9 @@ case "${target}" in
     noconfigdirs="$noconfigdirs target-libg++ ${libstdcxx_version} target-librx target-libgloss target-libffi"
     ;;
   hppa*-*-*elf* | \
-  hppa*-*-lites*)
+  hppa*-*-linux-gnu* | \
+  hppa*-*-lites* | \
+  hppa*64*-*-*)
     # Do configure ld/binutils/gas for this case.
     ;;
   hppa*-*-*)
