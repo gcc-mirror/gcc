@@ -194,12 +194,17 @@ for code in ALL STD ; do
 		  # Already seen $file; nothing to do
 		  ;;
 		*)
-	          new_files_to_check="$new_files_to_check `sed -n \
+		  if test -f $src_dir_std/$file ; then
+		    rel_dir=`echo $file | sed -n -e 's|^\(.*/\)[^/]*$|\1|p'`
+		    # For #include "foo.h", that might be either "foo.h"
+		    # or "${rel_dir}foo.h (or something bogus).
+	            new_files_to_check="$new_files_to_check "`sed -n \
 			-e 's@	@ @g' \
-			-e 's@^ *# *include *<\([^>]*\)>.*$@\1@p' \
-			-e 's@^ *# *include *\"\([^\"]*\)\".*$@\1@p' \
-			<$src_dir_std/$file`"
-	          rel_source_files="$rel_source_files $file"
+		        -e 's@^ *# *include *<\([^>]*\)>.*$@\1@p' -e \
+		        's@^ *# *include *\"\([^\"]*\)\".*$@\1 '$rel_dir'\1@p'\
+			<$src_dir_std/$file`
+	            rel_source_files="$rel_source_files $file"
+		  fi
 		  ;;
 	      esac
 	    done
@@ -260,7 +265,7 @@ for code in ALL STD ; do
 	      required_list="kill raise" ;;
 	    stdio.h)
 	      required_list="clearerr fclose feof ferror fflush fgetc fgetpos fgets fopen fprintf fputc fputs fread freopen fscanf fseek fsetpos ftell fwrite getc getchar gets perror printf putc putchar puts remove rename rewind scanf setbuf setvbuf sprintf sscanf tmpfile tmpnam ungetc vfprintf vprintf vsprintf"
-	      if grep _flsbuf <$abs_source_file >/dev/null ; then
+	      if grep '[^_a-zA-Z0-9]_flsbuf' <$abs_source_file >/dev/null; then
 		required_list="$required_list _flsbuf _filbuf"
 	      fi
 	      # Should perhaps also handle NULL, EOF, ... ?
