@@ -2858,7 +2858,8 @@ rest_of_compilation (decl)
 
   /* First, make sure that NOTE_BLOCK is set correctly for each
      NOTE_INSN_BLOCK_BEG/NOTE_INSN_BLOCK_END note.  */
-  find_loop_tree_blocks ();
+  if (!cfun->x_whole_function_mode_p)
+    identify_blocks ();
 
   /* Then remove any notes we don't need.  That will make iterating
      over the instruction sequence faster, and allow the garbage
@@ -2868,7 +2869,7 @@ rest_of_compilation (decl)
   /* In function-at-a-time mode, we do not attempt to keep the BLOCK
      tree in sensible shape.  So, we just recalculate it here.  */
   if (cfun->x_whole_function_mode_p)
-    unroll_block_trees ();
+    reorder_blocks ();
 
   /* If we are reconsidering an inline function
      at the end of compilation, skip the stuff for making it inline.  */

@@ -2524,8 +2524,6 @@ extern void push_temp_slots		PARAMS ((void));
 extern void preserve_temp_slots		PARAMS ((struct rtx_def *));
 extern void preserve_rtl_expr_temps	PARAMS ((tree));
 extern int aggregate_value_p		PARAMS ((tree));
-extern tree reorder_blocks		PARAMS ((tree,
-						struct rtx_def *));
 extern void free_temps_for_rtl_expr	PARAMS ((tree));
 extern void instantiate_virtual_regs	PARAMS ((tree, struct rtx_def *));
 extern void unshare_all_rtl		PARAMS ((tree, struct rtx_def *));

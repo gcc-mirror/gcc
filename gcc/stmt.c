@@ -6372,19 +6372,3 @@ emit_case_nodes (index, node, default_label, index_type)
     }
 }
 
-/* These routines are used by the loop unrolling code.  They copy BLOCK trees
-   so that the debugging info will be correct for the unrolled loop.  */
-
-void
-find_loop_tree_blocks ()
-{
-  identify_blocks (DECL_INITIAL (current_function_decl), get_insns ());
-}
-
-void
-unroll_block_trees ()
-{
-  tree block = DECL_INITIAL (current_function_decl);
-
-  reorder_blocks (block, get_insns ());
-}

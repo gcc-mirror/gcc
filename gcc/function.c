@@ -5508,11 +5508,6 @@ round_trampoline_addr (tramp)
   return tramp;
 }
 
-/* The functions identify_blocks and reorder_blocks provide a way to
-   reorder the tree of BLOCK nodes, for optimizers that reshuffle or
-   duplicate portions of the RTL code.  Call identify_blocks before
-   changing the RTL, and call reorder_blocks after.  */
-
 /* Put all this function's BLOCK nodes including those that are chained
    onto the first block into a vector, and return it.
    Also store in each NOTE for the beginning or end of a block
@@ -5521,13 +5516,12 @@ round_trampoline_addr (tramp)
    and INSNS, the insn chain of the function.  */
 
 void
-identify_blocks (block, insns)
-     tree block;
-     rtx insns;
+identify_blocks ()
 {
   int n_blocks;
   tree *block_vector, *last_block_vector;
   tree *block_stack;
+  tree block = DECL_INITIAL (current_function_decl);
 
   if (block == 0)
     return;
@@ -5537,8 +5531,10 @@ identify_blocks (block, insns)
   block_vector = get_block_vector (block, &n_blocks);
   block_stack = (tree *) xmalloc (n_blocks * sizeof (tree));
 
-  last_block_vector = identify_blocks_1 (insns, block_vector + 1,
-					 block_vector + n_blocks, block_stack);
+  last_block_vector = identify_blocks_1 (get_insns (), 
+					 block_vector + 1,
+					 block_vector + n_blocks, 
+					 block_stack);
 
   /* If we didn't use all of the subblocks, we've misplaced block notes.  */
   /* ??? This appears to happen all the time.  Latent bugs elsewhere?  */
@@ -5616,36 +5612,30 @@ identify_blocks_1 (insns, block_vector, end_block_vector, orig_block_stack)
   return block_vector;
 }
 
-/* Given a revised instruction chain, rebuild the tree structure of
-   BLOCK nodes to correspond to the new order of RTL.  The new block
-   tree is inserted below TOP_BLOCK.  Returns the current top-level
-   block.  */
+/* Identify BLOCKs referenced by more than one
+   NOTE_INSN_BLOCK_{BEG,END}, and create duplicate blocks. */
 
-tree
-reorder_blocks (block, insns)
-     tree block;
-     rtx insns;
+void
+reorder_blocks ()
 {
-  tree current_block = block;
+  tree block = DECL_INITIAL (current_function_decl);
   varray_type block_stack;
 
   if (block == NULL_TREE)
-    return NULL_TREE;
+    return;
 
   VARRAY_TREE_INIT (block_stack, 10, "block_stack");
 
-  /* Prune the old trees away, so that it doesn't get in the way.  */
-  BLOCK_SUBBLOCKS (current_block) = 0;
-  BLOCK_CHAIN (current_block) = 0;
+  /* Prune the old trees away, so that they don't get in the way.  */
+  BLOCK_SUBBLOCKS (block) = NULL_TREE;
+  BLOCK_CHAIN (block) = NULL_TREE;
 
-  reorder_blocks_1 (insns, current_block, &block_stack);
+  reorder_blocks_1 (get_insns (), block, &block_stack);
 
-  BLOCK_SUBBLOCKS (current_block)
-    = blocks_nreverse (BLOCK_SUBBLOCKS (current_block));
+  BLOCK_SUBBLOCKS (block)
+    = blocks_nreverse (BLOCK_SUBBLOCKS (block));
 
   VARRAY_FREE (block_stack);
-
-  return current_block;
 }
 
 /* Helper function for reorder_blocks.  Process the insn chain beginning
