@@ -1826,7 +1826,7 @@ embedded @code{NUL} characters.  Therefore, the
 present.
 
 For wide string constants, the @code{TREE_STRING_LENGTH} is the number
-of wide characters in the string, and the @code{TREE_STRING_POINTER}
+of bytes in the string, and the @code{TREE_STRING_POINTER}
 points to an array of the bytes of the string, as represented on the
 target system (that is, as integers in the target endianness).  Wide and
 non-wide string constants are distinguished only by the @code{TREE_TYPE}
