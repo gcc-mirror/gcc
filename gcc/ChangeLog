@@ -1,3 +1,7 @@
+2004-10-02  Ian Lance Taylor  <ian@wasabisystems.com>
+
+	* arm.c (output_call_mem): Add missing \t.
+
 2004-10-02  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* builtins.c (expand_builtin_memcmp, expand_builtin_strcmp,

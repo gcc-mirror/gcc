@@ -7697,7 +7697,7 @@ output_call_mem (rtx *operands)
 	 load since the call will kill it anyway.  */
       output_asm_insn ("ldr%?\t%|ip, %0", operands);
       if (arm_arch5)
-	output_asm_insn ("blx%?%|ip", operands);
+	output_asm_insn ("blx%?\t%|ip", operands);
       else
 	{
 	  output_asm_insn ("mov%?\t%|lr, %|pc", operands);
