@@ -1,3 +1,7 @@
+2004-01-15  Steven Bosscher  <stevenb@suse.de>
+
+	* MAINTAINERS: Update my email address.
+
 2004-01-14  Loren J. Rittle <ljrittle@acm.org>
 
 	* Makefile.def (target_modules) [libtermcap, libiberty, zlib]: Stage.
