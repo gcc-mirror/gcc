@@ -214,6 +214,7 @@ struct_fields: { $$ = NULL; }
 
 bitfieldopt: /* empty */
 	     | ':' NUM
+	     | ':' ID
 	     ;
 
 type: SCALAR

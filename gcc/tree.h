@@ -726,10 +726,10 @@ struct tree_int_cst GTY(())
 
 #define TREE_CST_RTL(NODE) (CST_OR_CONSTRUCTOR_CHECK (NODE)->real_cst.rtl)
 
-/* In a REAL_CST node.  struct realvaluetype is an opaque entity, with
+/* In a REAL_CST node.  struct real_value is an opaque entity, with
    manipulators defined in real.h.  We don't want tree.h depending on
    real.h and transitively on tm.h.  */
-struct realvaluetype;
+struct real_value;
 
 #define TREE_REAL_CST_PTR(NODE) (REAL_CST_CHECK (NODE)->real_cst.real_cst_ptr)
 #define TREE_REAL_CST(NODE) (*TREE_REAL_CST_PTR (NODE))
@@ -738,7 +738,7 @@ struct tree_real_cst GTY(())
 {
   struct tree_common common;
   rtx rtl;	/* acts as link to register transfer language (rtl) info */
-  struct realvaluetype * real_cst_ptr;
+  struct real_value * real_cst_ptr;
 };
 
 /* In a STRING_CST */

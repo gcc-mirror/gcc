@@ -1,5 +1,24 @@
 2002-09-20  Richard Henderson  <rth@redhat.com>
 
+	* real.h (enum real_value_class, SIGNIFICAND_BITS, EXP_BITS,
+	MAX_EXP, SIGSZ, SIG_MSB, struct real_value): Move from real.c.
+	(struct realvaluetype): Remove.
+	(REAL_VALUE_TYPE): Use struct real_value.
+	(REAL_VALUE_TYPE_SIZE): Use SIGNIFICAND_BITS.
+	(test_real_width): New.
+	* real.c: Global replace struct real_value with REAL_VALUE_TYPE.
+	(real_arithmetic): Avoid hoops for REAL_VALUE_TYPE parameters.
+	(real_compare, real_exponent, real_ldexp, real_isinf, real_isnan,
+	real_isneg, real_isnegzero, real_identical, exact_real_inverse,
+	real_to_integer, real_to_integer2, real_to_decimal,
+	real_to_hexadecimal, real_from_string, real_from_integer,
+	real_inf, real_nan, real_2expN, real_convert, real_to_target,
+	real_from_target): Likewise.
+	* tree.h (struct tree_real_cst): Use real_value not realvaluetype.
+	* gengtype-yacc.y (bitfieldopt): Accept an ID as well.
+
+2002-09-20  Richard Henderson  <rth@redhat.com>
+
 	* real.h (UNKNOWN_FLOAT_FORMAT, IEEE_FLOAT_FORMAT, VAX_FLOAT_FORMAT,
 	IBM_FLOAT_FORMAT, C4X_FLOAT_FORMAT, TARGET_FLOAT_FORMAT): Move ...
 	* defaults.h: ... here.
