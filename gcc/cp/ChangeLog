@@ -1,3 +1,9 @@
+2004-12-28  Richard Henderson  <rth@redhat.com>
+
+	PR inline-asm/15740
+	* semantics.c (finish_asm_stmt): Resolve asm names.  Validate input
+	constraints.  Mark memory inputs addressable.
+
 2004-12-27  Jason Merrill  <jason@redhat.com>
 
 	* decl.c (expand_static_init): Don't use shortcut if

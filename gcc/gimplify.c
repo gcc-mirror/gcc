@@ -3262,10 +3262,6 @@ gimplify_asm_expr (tree *expr_p, tree *pre_p, tree *post_p)
   bool allows_mem, allows_reg, is_inout;
   enum gimplify_status ret, tret;
 
-  ASM_STRING (expr)
-    = resolve_asm_operand_names (ASM_STRING (expr), ASM_OUTPUTS (expr),
-				 ASM_INPUTS (expr));
-
   ret = GS_ALL_DONE;
   for (i = 0, link = ASM_OUTPUTS (expr); link; ++i, link = TREE_CHAIN (link))
     {
