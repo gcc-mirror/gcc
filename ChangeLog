@@ -1,3 +1,7 @@
+2002-03-05  Danny Smith  <dannysmith@users.sourceforge.net>
+
+	* MAINTAINERS (Write After Approval): Add myself.
+
 2002-02-28  Alexandre Oliva  <aoliva@redhat.com>
 
 	* configure.in (libstdcxx_flags): Don't add libstdc++-v3 flags for
