@@ -1,3 +1,10 @@
+Mon Jan 18 04:28:36 1999  Nathan Sidwell  <nathan@acm.org>
+
+	* Makefile.in (GCOV_INSTALL_NAME): New macro.
+	(install-common): Use it.
+	(uninstall): Use it.
+	(uninstall): Use correct names for protoize and unprotoize.
+
 Mon Jan 18 03:52:56 1999  Christian Bruel <Christian.Bruel@st.com>
 			  Jeffrey A Law  (law@cygnus.com)
 
