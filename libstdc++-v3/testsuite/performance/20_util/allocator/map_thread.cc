@@ -1,4 +1,4 @@
-// Copyright (C) 2004 Free Software Foundation, Inc.
+// Copyright (C) 2004, 2005 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -64,7 +64,6 @@ template<typename Container>
 	for (int c = 0; c < 10; c++)
 	  {
 	    Container m;
-
 	    for (unsigned i = 0; i < iterations; ++i) 
 	      m[i] = i;
 	  }
@@ -73,6 +72,7 @@ template<typename Container>
       {
 	// No point allocating all available memory, repeatedly.	
       }
+    return p;
   }
 
 template<typename Container>
@@ -85,7 +85,6 @@ template<typename Container>
     time_counter time;
     resource_counter resource;
 
-    clear_counters(time, resource);
     start_counters(time, resource);
     
     pthread_t  t1, t2, t3, t4;

@@ -1,4 +1,4 @@
-// Copyright (C) 2003, 2004 Free Software Foundation, Inc.
+// Copyright (C) 2003, 2004, 2005 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -92,6 +92,7 @@ template<typename Container>
   do_test(void* p = NULL)
   {
     do_loop<Container>();
+    return p;
   }
 
 template<typename Container>
@@ -103,42 +104,39 @@ template<typename Container>
 
     time_counter time;
     resource_counter resource;
-    clear_counters(time, resource);
-    start_counters(time, resource);
-
-    if (! run_threaded)
-      {
-	do_loop<Container>();
-      }
-    else
-      {
+    {
+      start_counters(time, resource);
+      if (!run_threaded)
+	{
+	  do_loop<Container>();
+	}
+      else
+	{
 #if defined (_GLIBCXX_GCC_GTHR_POSIX_H) && !defined (NOTHREAD)
-	pthread_t  t1, t2, t3, t4;
-	pthread_create(&t1, 0, &do_test<Container>, 0);
-	pthread_create(&t2, 0, &do_test<Container>, 0);
-	pthread_create(&t3, 0, &do_test<Container>, 0);
-	pthread_create(&t4, 0, &do_test<Container>, 0);
-
-	pthread_join(t1, NULL);
-	pthread_join(t2, NULL);
-	pthread_join(t3, NULL);
-	pthread_join(t4, NULL);
-#else
-	return;
+	  pthread_t  t1, t2, t3, t4;
+	  pthread_create(&t1, 0, &do_test<Container>, 0);
+	  pthread_create(&t2, 0, &do_test<Container>, 0);
+	  pthread_create(&t3, 0, &do_test<Container>, 0);
+	  pthread_create(&t4, 0, &do_test<Container>, 0);
+	  
+	  pthread_join(t1, NULL);
+	  pthread_join(t2, NULL);
+	  pthread_join(t3, NULL);
+	  pthread_join(t4, NULL);
 #endif
-      }
+	}
+      stop_counters(time, resource);
 
-    stop_counters(time, resource);
- 
-    std::ostringstream comment;
-    if (run_threaded)
-      comment << "4-way threaded iterations: " << iterations*4 << '\t';
-    else
-      comment << "iterations: " << iterations << '\t';
-    comment << "type: " << abi::__cxa_demangle(typeid(obj).name(),
-					       0, 0, &status);
-    report_header(__FILE__, comment.str());
-    report_performance(__FILE__, string(), time, resource);
+      std::ostringstream comment;
+      if (run_threaded)
+	comment << "4-way threaded iterations: " << iterations*4 << '\t';
+      else
+	comment << "iterations: " << iterations << '\t';
+      comment << "type: " << abi::__cxa_demangle(typeid(obj).name(),
+						 0, 0, &status);
+      report_header(__FILE__, comment.str());
+      report_performance(__FILE__, string(), time, resource);
+    }
   }
 
 // http://gcc.gnu.org/ml/libstdc++/2001-05/msg00105.html
