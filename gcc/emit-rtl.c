@@ -944,7 +944,7 @@ operand_subword (op, i, validate_address, mode)
       if (HOST_BITS_PER_WIDE_INT == 32)
 	return GEN_INT (k[i]);
       else if (HOST_BITS_PER_WIDE_INT == 64 && i == 0)
-	return GEN_INT ((k[! WORDS_BIG_ENDIAN] << 32)
+	return GEN_INT ((k[! WORDS_BIG_ENDIAN] << (HOST_BITS_PER_WIDE_INT / 2))
 			| k[WORDS_BIG_ENDIAN]);
       else
 	abort ();
