@@ -663,7 +663,6 @@ jcf_parse (jcf)
      JCF* jcf;
 {
   int i, code;
-  tree current;
 
   if (jcf_parse_preamble (jcf) != 0)
     fatal_error ("not a valid Java .class file");
