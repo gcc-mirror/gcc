@@ -1,3 +1,8 @@
+2001-10-19  Janis Johnson  <janis187@us.ibm.com>
+
+	* doc/install.texi (Specific, sparc-sun-solaris2*) Copy documentation
+	about 64-bit support from the 3.0_branch version.
+
 2001-10-19  Zack Weinberg  <zack@codesourcery.com>
 
 	* aclocal.m4 (AM_WITH_NLS): AC_DEFINE HAVE_LIBINTL_H and
