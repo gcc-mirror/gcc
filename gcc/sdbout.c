@@ -1,5 +1,5 @@
 /* Output sdb-format symbol table information from GNU compiler.
-   Copyright (C) 1988, 1992, 1993 Free Software Foundation, Inc.
+   Copyright (C) 1988, 1992, 1993, 1994 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -647,7 +647,6 @@ sdbout_symbol (decl, local)
      tree decl;
      int local;
 {
-  int letter = 0;
   tree type = TREE_TYPE (decl);
   tree context = NULL_TREE;
   rtx value;
@@ -972,7 +971,6 @@ static void
 sdbout_type (type)
      tree type;
 {
-  register tree tem;
   if (type == error_mark_node)
     type = integer_type_node;
   PUT_SDB_TYPE (plain_type (type));
