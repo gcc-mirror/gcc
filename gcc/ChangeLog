@@ -1,3 +1,13 @@
+2001-01-20  Michael Sokolov  <msokolov@ivan.Harhan.ORG>
+
+	* aclocal.m4 (gcc_AC_FUNC_STRSTR): New macro.
+	* configure.in (gcc_AC_FUNC_STRSTR): Add invokation.
+	* configure, config.in: Regenerate.
+	* Makefile.in (STRSTR, HOST_STRSTR, USE_HOST_STRSTR): New variables.
+	(LIBDEPS, HOST_LIBDEPS, LIBS, HOST_LIBS): Add strstr handling.
+	(strstr.o, $(HOST_PREFIX_1)strstr.o): New rules.
+	(doprint.o): New rule.
+
 2001-01-20  Joseph S. Myers  <jsm28@cam.ac.uk>
 
 	* c-typeck.c (digest_init): Handle boolean types as scalars.

@@ -373,6 +373,7 @@ GGC_LIB=
 # Configure will set these if you need vfprintf and possibly _doprnt support.
 VFPRINTF=@vfprintf@
 DOPRINT=@doprint@
+STRSTR=@strstr@
 
 # Specify the rule for actually making libgcc.a,
 LIBGCC = libgcc.a
@@ -518,6 +519,7 @@ HOST_MALLOC=$(MALLOC)
 HOST_OBSTACK=$(OBSTACK)
 HOST_VFPRINTF=$(VFPRINTF)
 HOST_DOPRINT=$(DOPRINT)
+HOST_STRSTR=$(STRSTR)
 
 # Actual name to use when installing a native compiler.
 GCC_INSTALL_NAME = `t='$(program_transform_name)'; echo gcc | sed -e $$t`
@@ -614,25 +616,27 @@ USE_HOST_MALLOC= ` case "${HOST_MALLOC}" in ?*) echo ${HOST_PREFIX}${HOST_MALLOC
 USE_HOST_OBSTACK= ` case "${HOST_OBSTACK}" in ?*) echo ${HOST_PREFIX}${HOST_OBSTACK} ;; esac `
 USE_HOST_VFPRINTF= ` case "${HOST_VFPRINTF}" in ?*) echo ${HOST_PREFIX}${HOST_VFPRINTF} ;; esac `
 USE_HOST_DOPRINT= ` case "${HOST_DOPRINT}" in ?*) echo ${HOST_PREFIX}${HOST_DOPRINT} ;; esac `
+USE_HOST_STRSTR= ` case "${HOST_STRSTR}" in ?*) echo ${HOST_PREFIX}${HOST_STRSTR} ;; esac `
 
 # Dependency on obstack, alloca, malloc or whatever library facilities
 # are not installed in the system libraries.
 # We don't use USE_ALLOCA because backquote expansion doesn't work in deps.
-LIBDEPS= $(INTLLIBS) $(OBSTACK) $(ALLOCA) $(MALLOC) $(VFPRINTF) $(DOPRINT)
+LIBDEPS= $(INTLLIBS) $(OBSTACK) $(ALLOCA) $(MALLOC) $(VFPRINTF) $(DOPRINT) $(STRSTR)
 
 # Likewise, for use in the tools that must run on this machine
 # even if we are cross-building GCC.
 # We don't use USE_ALLOCA because backquote expansion doesn't work in deps.
-HOST_LIBDEPS= $(HOST_PREFIX)$(HOST_OBSTACK) $(HOST_PREFIX)$(HOST_ALLOCA) $(HOST_PREFIX)$(HOST_MALLOC) $(HOST_PREFIX)$(HOST_VFPRINTF) $(HOST_PREFIX)$(HOST_DOPRINT)
+HOST_LIBDEPS= $(HOST_PREFIX)$(HOST_OBSTACK) $(HOST_PREFIX)$(HOST_ALLOCA) $(HOST_PREFIX)$(HOST_MALLOC) $(HOST_PREFIX)$(HOST_VFPRINTF) $(HOST_PREFIX)$(HOST_DOPRINT) $(HOST_PREFIX)$(HOST_STRSTR)
 
 # How to link with both our special library facilities
 # and the system's installed libraries.
-LIBS = $(OBSTACK) $(USE_ALLOCA) $(MALLOC) $(INTLLIBS) @LIBS@ $(VFPRINTF) $(DOPRINT) $(CLIB) ../libiberty/libiberty.a
+LIBS = $(OBSTACK) $(USE_ALLOCA) $(MALLOC) $(INTLLIBS) @LIBS@ $(VFPRINTF) $(DOPRINT) $(STRSTR) $(CLIB) ../libiberty/libiberty.a
 
 # Likewise, for use in the tools that must run on this machine
 # even if we are cross-building GCC.
 HOST_LIBS = $(USE_HOST_OBSTACK) $(USE_HOST_ALLOCA) $(USE_HOST_MALLOC)  \
-	    $(USE_HOST_VFPRINTF) $(USE_HOST_DOPRINT) $(HOST_CLIB)
+	    $(USE_HOST_VFPRINTF) $(USE_HOST_DOPRINT) $(USE_HOST_STRSTR)  \
+	    $(HOST_CLIB)
 
 HOST_RTL = $(HOST_PREFIX)rtl.o $(HOST_PREFIX)bitmap.o \
 		$(HOST_PREFIX)ggc-none.o gensupport.o hashtab.o safe-ctype.o
@@ -1206,6 +1210,16 @@ vfprintf.o: $(srcdir)/../libiberty/vfprintf.c $(GCONFIG_H) system.h
 	$(LN_S) $(srcdir)/../libiberty/vfprintf.c vfprintf.c
 	$(CC) -c $(ALL_CFLAGS) -DGENERATOR_FILE $(ALL_CPPFLAGS) $(INCLUDES) \
 		vfprintf.c $(OUTPUT_OPTION)
+
+doprint.o: $(srcdir)/doprint.c $(GCONFIG_H) system.h
+	$(CC) -c $(ALL_CFLAGS) -DGENERATOR_FILE $(ALL_CPPFLAGS) $(INCLUDES) \
+		$(srcdir)/doprint.c $(OUTPUT_OPTION)
+
+strstr.o: $(srcdir)/../libiberty/strstr.c $(GCONFIG_H) system.h
+	rm -f strstr.c
+	$(LN_S) $(srcdir)/../libiberty/strstr.c strstr.c
+	$(CC) -c $(ALL_CFLAGS) -DGENERATOR_FILE $(ALL_CPPFLAGS) $(INCLUDES) \
+		strstr.c $(OUTPUT_OPTION)
 
 splay-tree.o: $(srcdir)/../libiberty/splay-tree.c \
   $(srcdir)/../include/splay-tree.h $(srcdir)/../include/libiberty.h
@@ -1839,6 +1853,11 @@ $(HOST_PREFIX_1)doprint.o: doprint.c
 	rm -f $(HOST_PREFIX)doprint.c
 	sed -e 's/config[.]h/hconfig.h/' $(srcdir)/doprint.c > $(HOST_PREFIX)doprint.c
 	$(HOST_CC) -c $(HOST_CFLAGS) $(HOST_CPPFLAGS) $(INCLUDES) $(HOST_PREFIX)doprint.c
+
+$(HOST_PREFIX_1)strstr.o: $(srcdir)/../libiberty/strstr.c
+	rm -f $(HOST_PREFIX)strstr.c
+	sed -e 's/config[.]h/hconfig.h/' $(srcdir)/../libiberty/strstr.c > $(HOST_PREFIX)strstr.c
+	$(HOST_CC) -c $(HOST_CFLAGS) $(HOST_CPPFLAGS) $(INCLUDES) $(HOST_PREFIX)strstr.c
 
 $(HOST_PREFIX_1)malloc.o: malloc.c
 	rm -f $(HOST_PREFIX)malloc.c
