@@ -1,3 +1,12 @@
+2004-12-09  Paolo Carlini  <pcarlini@suse.de>
+
+	* include/tr1/type_traits: Implement remove_extent and
+	remove_all_extents.
+	* testsuite/tr1/4_metaprogramming/array_modifications/
+	remove_all_extents.cc: New.
+	* testsuite/tr1/4_metaprogramming/array_modifications/
+	remove_extent.cc: Likewise.
+
 2004-12-08  Paolo Carlini  <pcarlini@suse.de>
 
 	* include/tr1/type_traits: Implement is_same, add_reference and
