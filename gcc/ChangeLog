@@ -29,6 +29,9 @@ Mon Jun  4 16:50:33 CEST 2001  Jan Hubicka  <jh@suse.cz>
 
 Mon Jun  4 09:21:19 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
+	* doc/c-tree.texi (ARRAY_REF): Say what type of expression must be.
+	(ARRAY_RANGE_REF): Added description.
+
 	* tree.def (ARRAY_RANGE_REF): New code.
 	* alias.c (handled_component_p, can_address_p): Handle it.
 	* dwarf2out.c (loc_descriptor_from_tree): Likewise.
