@@ -3396,10 +3396,11 @@ main (argc, argv)
   obstack_init (&obstack);
 
   /* Set up to remember the pathname of gcc and any options
-     needed for collect.  */
+     needed for collect.  We use argv[0] instead of programname because
+     we need the complete pathname.  */
   obstack_init (&collect_obstack);
   obstack_grow (&collect_obstack, "COLLECT_GCC=", sizeof ("COLLECT_GCC=")-1);
-  obstack_grow (&collect_obstack, programname, strlen (programname)+1);
+  obstack_grow (&collect_obstack, argv[0], strlen (argv[0])+1);
   putenv (obstack_finish (&collect_obstack));
 
   /* Choose directory for temp files.  */
