@@ -1,3 +1,7 @@
+2002-04-03  Hans-Peter Nilsson  <hp@bitrange.com>
+
+	* gcc.dg/wchar_t-1.c, gcc.dg/wchar_t-1.c: Fix typo last change.
+
 2002-04-02  David S. Miller  <davem@redhat.com>
 
 	* gcc.c-torture/execute/20020402-3.c: New test.
