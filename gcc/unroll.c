@@ -3039,14 +3039,19 @@ loop_iterations (loop_start, loop_end)
 	    break;
 
 	  else if (GET_RTX_CLASS (GET_CODE (insn)) == 'i'
-		   && (set = single_set (insn))
-		   && (SET_DEST (set) == comparison_value))
+		   && reg_set_p (comparison_value, insn))
 	    {
-	      rtx note = find_reg_note (insn, REG_EQUAL, NULL_RTX);
+	      /* We found the last insn before the loop that sets the register.
+		 If it sets the entire register, and has a REG_EQUAL note,
+		 then use the value of the REG_EQUAL note.  */
+	      if ((set = single_set (insn))
+		  && (SET_DEST (set) == comparison_value))
+		{
+		  rtx note = find_reg_note (insn, REG_EQUAL, NULL_RTX);
 
-	      if (note && GET_CODE (XEXP (note, 0)) != EXPR_LIST)
-		comparison_value = XEXP (note, 0);
-
+		  if (note && GET_CODE (XEXP (note, 0)) != EXPR_LIST)
+		    comparison_value = XEXP (note, 0);
+		}
 	      break;
 	    }
 	}
