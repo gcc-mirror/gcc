@@ -1,5 +1,10 @@
 2001-06-08  Nathan Sidwell  <nathan@codesourcery.com>
 
+	* decl.c (duplicate_decls): Fix DECL_TEMPLATE_RESULT thinko
+	in previous change.
+
+2001-06-08  Nathan Sidwell  <nathan@codesourcery.com>
+
 	PR c++/2929
 	* friend.c (do_friend): Use push_decl_namespace for classes at
 	namespace scope.

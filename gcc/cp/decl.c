@@ -3506,14 +3506,14 @@ duplicate_decls (newdecl, olddecl)
 
       /* If the new declaration is a definition, update the file and
 	 line information on the declaration.  */
-      if (DECL_INITIAL (DECL_RESULT (olddecl)) == NULL_TREE
-	  && DECL_INITIAL (DECL_RESULT (newdecl)) != NULL_TREE)
+      if (DECL_INITIAL (DECL_TEMPLATE_RESULT (olddecl)) == NULL_TREE
+	  && DECL_INITIAL (DECL_TEMPLATE_RESULT (newdecl)) != NULL_TREE)
 	{
 	  DECL_SOURCE_LINE (olddecl) 
-	    = DECL_SOURCE_LINE (DECL_RESULT (olddecl))
+	    = DECL_SOURCE_LINE (DECL_TEMPLATE_RESULT (olddecl))
 	    = DECL_SOURCE_LINE (newdecl);
 	  DECL_SOURCE_FILE (olddecl) 
-	    = DECL_SOURCE_FILE (DECL_RESULT (olddecl))
+	    = DECL_SOURCE_FILE (DECL_TEMPLATE_RESULT (olddecl))
 	    = DECL_SOURCE_FILE (newdecl);
 	}
 
