@@ -1,3 +1,7 @@
+Fri Sep 24 12:23:05 1999  Alexandre Petit-Bianco  <apbianco@cygnus.com>
+
+	* decl.c (insert_block): Removed unconditional `abort'.
+
 Fri Sep 24 10:48:10 1999  Bernd Schmidt  <bernds@cygnus.co.uk>
 
 	* decl.c (builtin_function): No longer static.  New arg CLASS.  Arg
