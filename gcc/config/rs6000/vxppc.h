@@ -20,8 +20,6 @@ Boston, MA 02111-1307, USA.  */
 
 /* This file just exists to give specs for the PowerPC running on VxWorks.  */
 
-#include "rs6000/sysv4.h"
-
 /* Reset defaults */
 #undef	CPP_OS_DEFAULT_SPEC
 #define CPP_OS_DEFAULT_SPEC "%(cpp_os_vxworks)"

@@ -1,6 +1,6 @@
 /* Definitions of target machine for GNU compiler,
    for IBM RS/6000 running AIX version 3.1.
-   Copyright (C) 1996, 1997, 1998, 1999 Free Software Foundation, Inc.
+   Copyright (C) 1996, 1997, 1998, 1999, 2000 Free Software Foundation, Inc.
    Contributed by Michael Meissner (meissner@cygnus.com).
 
 This file is part of GNU CC.
@@ -19,8 +19,6 @@ You should have received a copy of the GNU General Public License
 along with GNU CC; see the file COPYING.  If not, write to
 the Free Software Foundation, 59 Temple Place - Suite 330,
 Boston, MA 02111-1307, USA.  */
-
-#include "rs6000/sysv4.h"
 
 /* Don't assume anything about the header files. */
 #define NO_IMPLICIT_EXTERN_C
@@ -55,22 +53,7 @@ Boston, MA 02111-1307, USA.  */
 #undef TARGET_VERSION
 #define TARGET_VERSION fprintf (stderr, " (PowerPC GNU/Linux)");
 
-/* Define this macro as a C expression for the initializer of an
-   array of string to tell the driver program which options are
-   defaults for this target and thus do not need to be handled
-   specially when using `MULTILIB_OPTIONS'.
-
-   Do not define this macro if `MULTILIB_OPTIONS' is not defined in
-   the target makefile fragment or if none of the options listed in
-   `MULTILIB_OPTIONS' are set by default.  *Note Target Fragment::.  */
-
-#undef	MULTILIB_DEFAULTS
-#define	MULTILIB_DEFAULTS { "mbig", "mcall-linux" }
-
 #undef DEFAULT_VTABLE_THUNKS
 #ifndef USE_GNULIBC_1
 #define DEFAULT_VTABLE_THUNKS 1
 #endif
-
-#undef JUMP_TABLES_IN_TEXT_SECTION
-#define JUMP_TABLES_IN_TEXT_SECTION 0

@@ -1,12 +1,8 @@
-# Target config file for a System V based system (Solaris, GNU/Linux, Netbsd)
-# with gas.
+# Multilibs for a powerpc hosted ELF target (linux, SVR4, solaris)
 
-# Build libgcc.a with different options.  With gas, build pic libraries
-# as well no floating point
-MULTILIB_OPTIONS	= msoft-float fPIC
-MULTILIB_DIRNAMES	= nof pic
-MULTILIB_EXCEPTIONS	=
-MULTILIB_MATCHES	= ${MULTILIB_MATCHES_FLOAT} \
-			  fPIC=mrelocatable-lib \
-			  fPIC=mrelocatable \
-			  fPIC=fpic
+MULTILIB_OPTIONS	= msoft-float
+MULTILIB_DIRNAMES	= nof
+MULTILIB_EXTRA_OPTS	= fPIC mstrict-align
+MULTILIB_EXCEPTIONS	= 
+
+MULTILIB_MATCHES	= ${MULTILIB_MATCHES_FLOAT}

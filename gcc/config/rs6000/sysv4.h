@@ -1293,12 +1293,12 @@ do {									\
 
 #define	STARTFILE_LINUX_SPEC "\
 %{!shared: %{pg:gcrt1.o%s} %{!pg:%{p:gcrt1.o%s} %{!p:crt1.o%s}}} \
-%{mnewlib: ecrti.o%s} \
-%{!mnewlib: crti.o%s %{!shared:crtbegin.o%s} %{shared:crtbeginS.o%s}}"
+%{mnewlib: ecrti.o%s} %{!mnewlib: crti.o%s} \
+crtbegin.o%s"
 
-#define	ENDFILE_LINUX_SPEC "\
+#define	ENDFILE_LINUX_SPEC "crtend.o%s \
 %{mnewlib: ecrtn.o%s} \
-%{!mnewlib: %{!shared:crtend.o%s} %{shared:crtendS.o%s} crtn.o%s}"
+%{!mnewlib: crtn.o%s}"
 
 #define LINK_START_LINUX_SPEC "-Ttext 0x400074"
 

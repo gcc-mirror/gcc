@@ -1,5 +1,4 @@
-# PowerPC embedded support with gas.
-# Build libgcc.a with different options.
+# Multilibs for powerpc embedded ELF targets.
 
 MULTILIB_OPTIONS	= msoft-float \
 			  mlittle/mbig \

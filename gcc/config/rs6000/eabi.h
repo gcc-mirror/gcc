@@ -20,8 +20,6 @@ along with GNU CC; see the file COPYING.  If not, write to
 the Free Software Foundation, 59 Temple Place - Suite 330,
 Boston, MA 02111-1307, USA.  */
 
-#include "rs6000/sysv4.h"
-
 /* Add -meabi to target flags */
 #undef TARGET_DEFAULT
 #define TARGET_DEFAULT (MASK_POWERPC | MASK_NEW_MNEMONICS | MASK_EABI)
@@ -36,6 +34,3 @@ Boston, MA 02111-1307, USA.  */
 #undef CPP_PREDEFINES
 #define CPP_PREDEFINES \
   "-DPPC -D__embedded__ -Asystem(embedded) -Acpu(powerpc) -Amachine(powerpc)"
-
-#undef	MULTILIB_DEFAULTS
-#define	MULTILIB_DEFAULTS { "mbig", "mcall-sysv" }
