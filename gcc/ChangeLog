@@ -1,3 +1,17 @@
+2004-04-23  Nick Clifton  <nickc@redhat.com>
+
+	* Import this patch from mainline:
+	2004-04-16  Kazuhiro Inaoka <inaoka.kazuhiro@renesas.com>
+
+	* config/m32r/m32r.h (BIG_ENDIAN_BIT): Deleted to fix endian
+	bug.
+	(TARGET_LITTLE_ENDIAN, TARGET_BIG_ENDIAN,
+	TARGET_DEFAULT): Changed. Ditto.
+	(LITTLE_ENDIAN_BIT, TARGET_CPU_DEFAULT,
+	TARGET_ENDIAN_DEFAULT): Added. Ditto.
+	* config/m32r/little.h (TARGET_LITTLE_ENDIAN): Deleted.
+	(TARGET_ENDIAN_DEFAULT): Added.
+
 2004-04-22  Per Bothner  <per@bothner.com>
 
 	* cppinit.c (cpp_read_main_file):  Return NULL rather than false.
