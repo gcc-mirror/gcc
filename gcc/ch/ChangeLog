@@ -1,3 +1,8 @@
+Sun Mar 28 00:30:36 1999  Jeffrey A Law  (law@cygnus.com)
+
+	* Make-lang.in (CHILL.dvi): New target.
+	(CHILL.mostlyclean): Remove remnants of old runtime library structure.
+
 1999-02-20  Craig Burley  <craig@jcb-sc.com>
 
 	* Make-lang.in (CHILL.info): Depend on intermediate ch/chill.info
