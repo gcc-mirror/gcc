@@ -1476,7 +1476,9 @@ package body Sem_Attr is
          E1 := First (Exprs);
          Analyze (E1);
 
-         if Etype (E1) = Any_Type then
+         --  Check for missing or bad expression (result of previous error)
+
+         if No (E1) or else Etype (E1) = Any_Type then
             raise Bad_Attribute;
          end if;
 

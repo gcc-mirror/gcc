@@ -1,3 +1,8 @@
+2001-12-05  Robert Dewar <dewar@gnat.com>
+
+	* sem_attr.adb (Analyze_Attribute): Defend against bad Val attribute. 
+	Fixes compilation abandoned bomb in B24009B.
+
 2001-12-05  Ed Schonberg <schonber@gnat.com>
 
 	* sem_ch12.adb:
