@@ -22,11 +22,7 @@
    your main control loop, etc. to force garbage collection.  */
 
 #ifdef HAVE_CONFIG_H
-#if defined (emacs) || defined (CONFIG_BROKETS)
 #include <config.h>
-#else
-#include "config.h"
-#endif
 #endif
 
 #ifdef emacs
