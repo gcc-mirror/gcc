@@ -1,3 +1,14 @@
+Sun Apr  4 13:55:20 1999  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	* tree.h (STRIP_SIGN_NOPS): New macro.
+	* fold-const.c (optimize_minmax_comparison): New function.
+	(invert_truthvalue, case WITH_RECORD_EXPR): New case.
+	(fold): Use STRIP_SIGN_NOPS instead of STRIP_TYPE_NOPS.
+	(fold, case EQ_EXPR): Call optimize_minmax_comparison and add
+	cases with ABS_EXPR, NEGATE_EXPR, PLUS_EXPR, MINUS_EXPR, and
+	widening conversions.
+	Properly swap operands when one is constant.
+
 Sat Apr  3 06:13:43 1999  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* combine.c (simplify_comparison, case ASHIFTRT): Recognize
