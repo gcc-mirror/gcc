@@ -1,5 +1,11 @@
 2004-03-11  Ulrich Weigand  <uweigand@de.ibm.com>
 
+	PR target/14262
+	* calls.c (load_register_parameters): If BLOCK_REG_PADDING is not
+	defined, pass small BLKmode values in registers in the low-order part.
+
+2004-03-11  Ulrich Weigand  <uweigand@de.ibm.com>
+
 	* combine.c (if_then_else_cond): Check for NULL return value of
 	simplify_gen_subreg.
 
