@@ -252,6 +252,8 @@ init_parse (filename)
   cpp_token = CPP_DIRECTIVE;
 #endif
 
+  add_c_tree_codes ();
+  
   init_lex ();
   init_pragma ();
 

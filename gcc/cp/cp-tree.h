@@ -1250,8 +1250,7 @@ extern void (*back_end_hook) PARAMS ((tree));
 /* C++ language-specific tree codes.  */
 #define DEFTREECODE(SYM, NAME, TYPE, LENGTH) SYM,
 enum cplus_tree_code {
-  __DUMMY = LAST_AND_UNUSED_TREE_CODE,
-#include "c-common.def"
+  CP_DUMMY_TREE_CODE = LAST_C_TREE_CODE,
 #include "cp-tree.def"
   LAST_CPLUS_TREE_CODE
 };
