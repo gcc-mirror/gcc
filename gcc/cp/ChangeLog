@@ -1,3 +1,11 @@
+2000-12-07  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* cp-tree.h (sufficient_parms_p): Declare new function.
+	* call.c (sufficient_parms_p): New function, broken out of ...
+	(add_function_candidate): ... here. Use it.
+	(add_conv_candidate): Use it.
+	* decl.c (grok_ctor_properties): Use it.
+
 2000-12-07  Jakub Jelinek  <jakub@redhat.com>
 
 	* optimize.c (copy_body_r): Set STMT_IS_FULL_EXPR_P on EXPR_STMT.
