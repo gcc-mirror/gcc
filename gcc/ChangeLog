@@ -1,3 +1,8 @@
+2005-03-11  Richard Sandiford  <rsandifo@redhat.com>
+
+	* config/mips/mips.c (override_options): Only warn about -mint64
+	deprecation if TARGET_INT64.
+
 2005-03-11  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* builtin-attrs.def (ATTR_NONNULL_LIST, ATTR_NOTHROW_NONNULL,
