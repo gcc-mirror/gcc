@@ -1714,20 +1714,17 @@ merge_pointed_to_info (struct alias_info *ai, tree dest, tree orig)
 	 ...
 	 P_j = P_i + X;
 
-	 P_j would be marked as PT_MALLOC, which is wrong because
-	 PT_MALLOC implies that the pointer may not point to another
-	 variable.
+	 P_j would be marked as PT_MALLOC, however we currently do not
+	 handle cases of more than one pointer pointing to the same
+	 malloc'd area.
 
-	 FIXME 1: Subsequent analysis may determine that P_j
-	 cannot alias anything else, but we are being conservative
-	 here.
-
-	 FIXME 2: If the merging comes from a copy assignment, we
-	 ought to merge PT_MALLOC, but then both pointers would end up
-	 getting different name tags because create_name_tags is not
-	 smart enough to determine that the two come from the same
-	 malloc call.  Copy propagation before aliasing should cure
-	 this.  */
+	 FIXME: If the merging comes from an expression that preserves
+	 the PT_MALLOC attribute (copy assignment, address
+	 arithmetic), we ought to merge PT_MALLOC, but then both
+	 pointers would end up getting different name tags because
+	 create_name_tags is not smart enough to determine that the
+	 two come from the same malloc call.  Copy propagation before
+	 aliasing should cure this.  */
       gcc_assert (orig_pi != dest_pi);
       
       dest_pi->pt_malloc = 0;
