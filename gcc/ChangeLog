@@ -1,3 +1,9 @@
+2002-11-22  Eric Botcazou  <ebotcazou@libertysurf.fr>
+
+	PR c/8439
+	* recog.c (validate_replace_rtx_1) [PLUS]: Simplify only
+	if there is something new to be simplified.
+
 2002-11-22  Toon Moene  <toon@moene.indiv.nluug.nl>
 
 	* c-decl.c (c_init_decl_processing): Move generation of

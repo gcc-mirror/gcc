@@ -507,10 +507,10 @@ validate_replace_rtx_1 (loc, from, to, object)
     {
     case PLUS:
       /* If we have a PLUS whose second operand is now a CONST_INT, use
-         plus_constant to try to simplify it.
+         simplify_gen_binary to try to simplify it.
          ??? We may want later to remove this, once simplification is
          separated from this function.  */
-      if (GET_CODE (XEXP (x, 1)) == CONST_INT)
+      if (GET_CODE (XEXP (x, 1)) == CONST_INT && XEXP (x, 1) == to)
 	validate_change (object, loc,
 			 simplify_gen_binary
 			 (PLUS, GET_MODE (x), XEXP (x, 0), XEXP (x, 1)), 1);
