@@ -542,6 +542,10 @@ init_lex ()
   IDENTIFIER_OPNAME_P (ansi_opname[(int) NEW_EXPR]) = 1;
   ansi_opname[(int) DELETE_EXPR] = get_identifier ("__dl");
   IDENTIFIER_OPNAME_P (ansi_opname[(int) DELETE_EXPR]) = 1;
+  ansi_opname[(int) VEC_NEW_EXPR] = get_identifier ("__vn");
+  IDENTIFIER_OPNAME_P (ansi_opname[(int) VEC_NEW_EXPR]) = 1;
+  ansi_opname[(int) VEC_DELETE_EXPR] = get_identifier ("__vd");
+  IDENTIFIER_OPNAME_P (ansi_opname[(int) VEC_DELETE_EXPR]) = 1;
   ansi_opname[(int) TYPE_EXPR] = get_identifier ("__op");
   IDENTIFIER_OPNAME_P (ansi_opname[(int) TYPE_EXPR]) = 1;
 
@@ -681,6 +685,8 @@ init_lex ()
   opname_tab[(int) MODIFY_EXPR] = "=";
   opname_tab[(int) NEW_EXPR] = "new";
   opname_tab[(int) DELETE_EXPR] = "delete";
+  opname_tab[(int) VEC_NEW_EXPR] = "new []";
+  opname_tab[(int) VEC_DELETE_EXPR] = "delete []";
   opname_tab[(int) COND_EXPR] = "... ? ... : ...";
   opname_tab[(int) CALL_EXPR] = "()";
   opname_tab[(int) PLUS_EXPR] = "+";
@@ -841,10 +847,7 @@ yyprint (file, yychar, yylval)
     case IDENTIFIER_DEFN:
     case TYPENAME_DEFN:
     case PTYPENAME_DEFN:
-    case TYPENAME_COLON:
     case TYPENAME_ELLIPSIS:
-    case SCOPED_TYPENAME:
-    case SCOPED_NAME:
     case SCSPEC:
     case PRE_PARSED_CLASS_DECL:
       t = yylval.ttype;
@@ -2324,13 +2327,14 @@ check_newline ()
   register int c;
   register int token;
 
-  lineno++;
-
-  /* Read first nonwhite char on the line.  */
+  /* Read first nonwhite char on the line.  Do this before incrementing the
+     line number, in case we're at the end of saved text.  */
 
   do
     c = getch ();
   while (c == ' ' || c == '\t');
+
+  lineno++;
 
   if (c != '#')
     {
@@ -3080,12 +3084,13 @@ readescape (ignore_ptr)
   return c;
 }
 
-/* Value is 1 if we should try to make the next identifier look like a
-   typename (when it may be a local variable or a class variable).
-   Value is 0 if we treat this name in a default fashion.
-   Value is -1 if we must not see a type name.  */
+/* Value is 1 (or 2) if we should try to make the next identifier look like
+   a typename (when it may be a local variable or a class variable).
+   Value is 0 if we treat this name in a default fashion.  */
 int looking_for_typename = 0;
 
+#if 0
+/* NO LONGER USED: Value is -1 if we must not see a type name.  */
 void
 dont_see_typename ()
 {
@@ -3096,6 +3101,7 @@ dont_see_typename ()
       lastiddecl = 0;
     }
 }
+#endif
 
 #ifdef __GNUC__
 extern __inline int identifier_type ();
@@ -3119,7 +3125,7 @@ see_typename ()
   looking_for_typename = 0;
   if (yychar == IDENTIFIER)
     {
-      lastiddecl = lookup_name (yylval.ttype, -1);
+      lastiddecl = lookup_name (yylval.ttype, -2);
       if (lastiddecl == 0)
 	{
 	  if (flag_labels_ok)
@@ -3540,7 +3546,6 @@ real_yylex ()
 	  }
 	if (value == NEW && ! global_bindings_p ())
 	  {
-	    looking_for_typename = 1;
 	    value = NEW;
 	    goto done;
 	  }

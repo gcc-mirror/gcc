@@ -68,10 +68,6 @@ struct lang_id2
 #define IDENTIFIER_TYPE_VALUE(NODE) (TREE_TYPE (NODE))
 #define SET_IDENTIFIER_TYPE_VALUE(NODE,TYPE) (TREE_TYPE (NODE) = TYPE)
 #define IDENTIFIER_HAS_TYPE_VALUE(NODE) (TREE_TYPE (NODE) ? 1 : 0)
-#define IDENTIFIER_HAS_CLASS_TYPE_VALUE(NODE) \
-  (IDENTIFIER_CLASS_VALUE (NODE) && TREE_TYPE (IDENTIFIER_CLASS_VALUE (NODE)))
-#define IDENTIFIER_CLASS_TYPE_VALUE(NODE) \
-  TREE_TYPE (IDENTIFIER_CLASS_VALUE (NODE))
 
 #define LANG_ID_FIELD(NAME,NODE) \
   (((struct lang_identifier *)(NODE))->x \
@@ -325,7 +321,7 @@ enum languages { lang_c, lang_cplusplus };
 #define TYPE_ASSEMBLER_NAME_LENGTH(NODE) (IDENTIFIER_LENGTH (DECL_ASSEMBLER_NAME (TYPE_NAME (NODE))))
 
 #define IS_AGGR_TYPE(t)		(TYPE_LANG_FLAG_5 (t))
-#define IS_AGGR_TYPE_CODE(t)	(t == RECORD_TYPE || t == UNION_TYPE)
+#define IS_AGGR_TYPE_CODE(t)	(t == RECORD_TYPE || t == UNION_TYPE || t == UNINSTANTIATED_P_TYPE)
 #define IS_AGGR_TYPE_2(TYPE1,TYPE2) \
   (TREE_CODE (TYPE1) == TREE_CODE (TYPE2)	\
    && IS_AGGR_TYPE (TYPE1)&IS_AGGR_TYPE (TYPE2))
@@ -395,14 +391,13 @@ struct lang_type
       unsigned vtable_needs_writing : 1;
 
       unsigned has_assign_ref : 1;
-      unsigned gets_new : 1;
-      unsigned gets_placed_new : 1;
-      unsigned gets_delete : 1;
+      unsigned gets_new : 2;
+      unsigned gets_delete : 2;
       unsigned has_call_overloaded : 1;
       unsigned has_array_ref_overloaded : 1;
       unsigned has_arrow_overloaded : 1;
-      unsigned local_typedecls : 1;
 
+      unsigned local_typedecls : 1;
       unsigned interface_only : 1;
       unsigned interface_unknown : 1;
       unsigned needs_virtual_reinit : 1;
@@ -410,16 +405,16 @@ struct lang_type
       unsigned declared_class : 1;
       unsigned being_defined : 1;
       unsigned redefined : 1;
-      unsigned no_globalize : 1;
 
+      unsigned no_globalize : 1;
       unsigned marked : 1;
       unsigned marked2 : 1;
       unsigned marked3 : 1;
       unsigned marked4 : 1;
       unsigned marked5 : 1;
       unsigned marked6 : 1;
-      unsigned use_template : 2;
 
+      unsigned use_template : 2;
       unsigned debug_requested : 1;
       unsigned has_method_call_overloaded : 1;
       unsigned private_attr : 1;
@@ -427,8 +422,8 @@ struct lang_type
       unsigned ptrmemfunc_flag : 1;
       unsigned is_signature : 1;
       unsigned is_signature_pointer : 1;
-      unsigned is_signature_reference : 1;
 
+      unsigned is_signature_reference : 1;
       unsigned has_default_implementation : 1;
       unsigned grokking_typedef : 1;
       unsigned has_opaque_typedecls : 1;
@@ -436,15 +431,16 @@ struct lang_type
       unsigned was_anonymous : 1;
       unsigned has_real_assignment : 1;
       unsigned has_real_assign_ref : 1;
+
       unsigned has_const_init_ref : 1;
-      
       unsigned has_complex_init_ref : 1;
       unsigned has_complex_assign_ref : 1;
+      unsigned vec_delete_takes_size : 1;
 
       /* The MIPS compiler gets it wrong if this struct also
 	 does not fill out to a multiple of 4 bytes.  Add a
 	 member `dummy' with new bits if you go over the edge.  */
-      unsigned dummy : 22;
+      unsigned dummy : 20;
 
       unsigned n_vancestors : 16;
     } type_flags;
@@ -519,9 +515,17 @@ struct lang_type
 
 /* Nonzero for _CLASSTYPE means that operator new and delete are defined,
    respectively.  */
-#define TREE_GETS_NEW(NODE) (TYPE_LANG_SPECIFIC(NODE)->type_flags.gets_new)
-#define TREE_GETS_PLACED_NEW(NODE) (TYPE_LANG_SPECIFIC(NODE)->type_flags.gets_placed_new)
-#define TREE_GETS_DELETE(NODE) (TYPE_LANG_SPECIFIC(NODE)->type_flags.gets_delete)
+#define TYPE_GETS_NEW(NODE) (TYPE_LANG_SPECIFIC(NODE)->type_flags.gets_new)
+#define TYPE_GETS_DELETE(NODE) (TYPE_LANG_SPECIFIC(NODE)->type_flags.gets_delete)
+#define TYPE_GETS_REG_DELETE(NODE) (TYPE_GETS_DELETE (NODE) & 1)
+
+/* Nonzero for _CLASSTYPE means that operator vec delete is defined and
+   takes the optional size_t argument.  */
+#define TYPE_VEC_DELETE_TAKES_SIZE(NODE) \
+  (TYPE_LANG_SPECIFIC(NODE)->type_flags.vec_delete_takes_size)
+#define TYPE_VEC_NEW_USES_COOKIE(NODE) \
+  (TYPE_NEEDS_DESTRUCTOR (NODE) \
+   || (TYPE_LANG_SPECIFIC (NODE) && TYPE_VEC_DELETE_TAKES_SIZE (NODE)))
 
 /* Nonzero for TREE_LIST or _TYPE node means that this node is class-local.  */
 #define TREE_NONLOCAL_FLAG(NODE) (TREE_LANG_FLAG_0 (NODE))
@@ -1972,7 +1976,7 @@ extern tree expand_vec_init			PROTO((tree, tree, tree, tree, int));
 extern tree build_x_delete			PROTO((tree, tree, int, tree));
 extern tree build_delete			PROTO((tree, tree, tree, int, int));
 extern tree build_vbase_delete			PROTO((tree, tree));
-extern tree build_vec_delete			PROTO((tree, tree, tree, tree, tree, tree));
+extern tree build_vec_delete			PROTO((tree, tree, tree, tree, tree, int));
 
 /* in input.c */
 
@@ -2081,6 +2085,7 @@ extern int do_pending_expansions		PROTO((void));
 extern void do_pending_templates		PROTO((void));
 struct tinst_level *tinst_for_decl		PROTO((void));
 extern void do_function_instantiation		PROTO((tree, tree));
+extern tree create_nested_upt			PROTO((tree, tree));
 
 /* in search.c */
 extern tree make_memoized_table_entry		PROTO((tree, tree, int));
@@ -2092,6 +2097,7 @@ extern enum access_type compute_access		PROTO((tree, tree));
 extern tree lookup_field			PROTO((tree, tree, int, int));
 extern tree lookup_nested_field			PROTO((tree, int));
 extern tree lookup_fnfields			PROTO((tree, tree, int));
+extern tree lookup_nested_tag			PROTO((tree, tree));
 extern HOST_WIDE_INT breadth_first_search	PROTO((tree, int (*)(), int (*)()));
 extern int tree_needs_constructor_p		PROTO((tree, int));
 extern int tree_has_any_destructor_p		PROTO((tree, int));
@@ -2193,6 +2199,7 @@ extern int comp_target_types			PROTO((tree, tree, int));
 extern tree common_base_types			PROTO((tree, tree));
 extern int compparms				PROTO((tree, tree, int));
 extern int comp_target_types			PROTO((tree, tree, int));
+extern int self_promoting_args_p		PROTO((tree));
 extern tree unsigned_type			PROTO((tree));
 extern tree signed_type				PROTO((tree));
 extern tree signed_or_unsigned_type		PROTO((int, tree));

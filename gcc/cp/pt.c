@@ -1690,6 +1690,7 @@ instantiate_template (tmpl, targ_ptr)
   return fndecl;
 }
 
+/* classlevel should now never be true.  jason 4/12/94 */
 void
 undo_template_name_overload (id, classlevel)
      tree id;
@@ -1711,6 +1712,7 @@ undo_template_name_overload (id, classlevel)
 #endif
 }
 
+/* classlevel should now never be true.  jason 4/12/94 */
 void
 overload_template_name (id, classlevel)
      tree id;
@@ -1731,12 +1733,9 @@ overload_template_name (id, classlevel)
 
 #if 1 /* XXX */
   /* This was a botch... names of templates do not get their own private
-     scopes.  Rather, the names of generated template instances should
-     just get pushed into whatever scope we happen to be in at the moment.
-     This will typically (but not always) be the global scope.  (Maybe
-     what we really want to do here is a `push_to_toplevel' and then stay
-     there while we are generating the instance; popping back out to the
-     current scope when we are done generating the instance.)  */
+     scopes.  Rather, they should go into the binding level already created
+     by push_template_decls.  Except that there isn't one of those for
+     specializations.  */
   if (!classlevel)
     {
       pushlevel (1);
@@ -1765,20 +1764,13 @@ overload_template_name (id, classlevel)
   if (classlevel)
     pushdecl_class_level (decl);
   else
-#if 0 /* not yet, should get fixed properly later */
     pushdecl (decl);
-  pushlevel (1);
-#else
-    {
-      pushdecl (decl);
-      /* @@ Is this necessary now?  */
-      IDENTIFIER_LOCAL_VALUE (template) = decl;
-    }
-#endif
 
+#if 0 /* This seems bogus to me; if it isn't, explain why.  (jason) */
   /* Fake this for now, just to make dwarfout.c happy.  It will have to
      be done in a proper way later on.  */
   DECL_CONTEXT (decl) = t;
+#endif
 }
 
 /* NAME is the IDENTIFIER value of a PRE_PARSED_CLASS_DECL. */
@@ -2028,6 +2020,22 @@ unify (tparms, targs, ntparms, parm, arg, nsubsts)
 	return 0;
       else if (targs[idx])
 	{
+	  tree t = targs[idx];
+	  if (TREE_CODE (t) == TREE_CODE (arg))
+	    switch (TREE_CODE (arg))
+	      {
+	      case INTEGER_CST:
+		if (tree_int_cst_equal (t, arg))
+		  return 0;
+		break;
+	      case REAL_CST:
+		if (REAL_VALUES_EQUAL (TREE_REAL_CST (t), TREE_REAL_CST (arg)))
+		  return 0;
+		break;
+	      /* STRING_CST values are not valid template const parms.  */
+	      default:
+		;
+	      }
 	  my_friendly_abort (87);
 	  return 1;
 	}
@@ -2305,4 +2313,19 @@ do_function_instantiation (declspecs, declarator)
     }
   if (!result)
     cp_error ("no matching template for `%D' found", decl);
+}
+
+tree
+create_nested_upt (scope, name)
+     tree scope, name;
+{
+  tree t = make_lang_type (UNINSTANTIATED_P_TYPE);
+  tree d = build_lang_decl (TYPE_DECL, name, t);
+
+  TYPE_NAME (t) = d;
+  TYPE_VALUES (t) = TYPE_VALUES (scope);
+  TYPE_CONTEXT (t) = scope;
+
+  pushdecl (d);
+  return d;
 }

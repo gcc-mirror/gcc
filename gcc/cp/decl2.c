@@ -1071,6 +1071,7 @@ delete_sanity (exp, size, doing_vec, use_global_delete)
       return error_mark_node;
     }
 
+#if 0
   /* If the type has no destructor, then we should build a regular
      delete, instead of a vector delete.  Otherwise, we would end
      up passing a bogus offset into __builtin_delete, which is
@@ -1082,15 +1083,15 @@ delete_sanity (exp, size, doing_vec, use_global_delete)
       doing_vec = 0;
       use_global_delete = 1;
     }
+#endif
 
   if (doing_vec)
-    return build_vec_delete (t, maxindex, elt_size, NULL_TREE,
-			     integer_one_node, integer_two_node);
+    return build_vec_delete (t, maxindex, elt_size, integer_one_node,
+			     integer_two_node, use_global_delete);
   else
     return build_delete (type, t, integer_three_node,
 			 LOOKUP_NORMAL|LOOKUP_HAS_IN_CHARGE,
-			 use_global_delete
-			 || TYPE_HAS_DESTRUCTOR (TREE_TYPE (type)));
+			 use_global_delete);
 }
 
 /* Sanity check: report error if this function FUNCTION is not
@@ -1456,6 +1457,7 @@ grokbitfield (declarator, declspecs, width)
   return value;
 }
 
+#if 0
 /* Like GROKFIELD, except that the declarator has been
    buried in DECLSPECS.  Find the declarator, and
    return something that looks like it came from
@@ -1634,6 +1636,7 @@ groktypefield (declspecs, parmlist)
   DECL_IN_AGGR_P (decl) = 1;
   return decl;
 }
+#endif
 
 tree
 grokoptypename (declspecs, declarator)
@@ -2278,7 +2281,7 @@ coerce_delete_type (type)
   else if (e3 |= e2)
     {
       if (arg_types == NULL_TREE)
-	arg_types = void_list_node;
+	arg_types = tree_cons (NULL_TREE, ptr_type_node, void_list_node);
       else
 	arg_types = tree_cons (NULL_TREE, ptr_type_node, TREE_CHAIN (arg_types));
     }
@@ -2853,7 +2856,11 @@ reparse_decl_as_expr1 (decl)
     case BIT_NOT_EXPR:
       return build_x_unary_op (BIT_NOT_EXPR,
 			       reparse_decl_as_expr1 (TREE_OPERAND (decl, 0)));
-
+    case SCOPE_REF:
+      return build_offset_ref (TREE_OPERAND (decl, 0), TREE_OPERAND (decl, 1));
+    case ARRAY_REF:
+      return grok_array_decl (reparse_decl_as_expr1 (TREE_OPERAND (decl, 0)),
+			      TREE_OPERAND (decl, 1));
     default:
       my_friendly_abort (5);
       return NULL_TREE;
@@ -2900,6 +2907,9 @@ finish_decl_parsing (decl)
     case SCOPE_REF:
       push_nested_class (TREE_OPERAND (decl, 0), 3);
       TREE_COMPLEXITY (decl) = current_class_depth;
+      return decl;
+    case ARRAY_REF:
+      TREE_OPERAND (decl, 0) = finish_decl_parsing (TREE_OPERAND (decl, 0));
       return decl;
     default:
       my_friendly_abort (5);

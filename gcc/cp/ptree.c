@@ -108,10 +108,14 @@ print_lang_type (file, node, indent)
       else
 	fputs (" X(X&)", file);
     }
-  if (TREE_GETS_NEW (node))
-    fputs (" gets-new", file);
-  if (TREE_GETS_DELETE (node))
-    fputs (" gets-delete", file);
+  if (TYPE_GETS_NEW (node) & 1)
+    fputs (" new", file);
+  if (TYPE_GETS_NEW (node) & 2)
+    fputs (" new[]", file);
+  if (TYPE_GETS_DELETE (node) & 1)
+    fputs (" delete", file);
+  if (TYPE_GETS_DELETE (node) & 2)
+    fputs (" delete[]", file);
   if (TYPE_HAS_ASSIGNMENT (node))
     fputs (" has=", file);
   if (TYPE_HAS_ASSIGN_REF (node))

@@ -52,12 +52,11 @@ static void expand_recursive_init_1 ();
 static void expand_recursive_init ();
 static void expand_virtual_init PROTO((tree, tree, tree));
 tree expand_vec_init ();
-tree build_vec_delete ();
 
 static void add_friend (), add_friends ();
 
 /* Cache _builtin_new and _builtin_delete exprs.  */
-static tree BIN, BID;
+static tree BIN, BID, BIVN, BIVD;
 
 /* Cache the identifier nodes for the two magic field of a new cookie.  */
 static tree nc_nelts_field_id;
@@ -81,6 +80,10 @@ void init_init_processing ()
   TREE_USED (TREE_OPERAND (BIN, 0)) = 0;
   BID = default_conversion (get_first_fn (IDENTIFIER_GLOBAL_VALUE (ansi_opname[(int) DELETE_EXPR])));
   TREE_USED (TREE_OPERAND (BID, 0)) = 0;
+  BIVN = default_conversion (get_first_fn (IDENTIFIER_GLOBAL_VALUE (ansi_opname[(int) VEC_NEW_EXPR])));
+  TREE_USED (TREE_OPERAND (BIVN, 0)) = 0;
+  BIVD = default_conversion (get_first_fn (IDENTIFIER_GLOBAL_VALUE (ansi_opname[(int) VEC_DELETE_EXPR])));
+  TREE_USED (TREE_OPERAND (BIVD, 0)) = 0;
   minus_one = build_int_2 (-1, -1);
 
   /* Define the structure that holds header information for
@@ -1801,12 +1804,10 @@ is_aggr_typedef (name, or_else)
 
   if (IDENTIFIER_HAS_TYPE_VALUE (name))
     type = IDENTIFIER_TYPE_VALUE (name);
-  else if (IDENTIFIER_HAS_CLASS_TYPE_VALUE (name))
-    type = IDENTIFIER_CLASS_TYPE_VALUE (name);
   else
     {
       if (or_else)
-	cp_error ("`%T' fails to be an aggregate typedef", name);
+	cp_error ("`%T' is not an aggregate typedef", name);
       return 0;
     }
 
@@ -1814,7 +1815,7 @@ is_aggr_typedef (name, or_else)
       && TREE_CODE (type) != TEMPLATE_TYPE_PARM)
     {
       if (or_else)
-	cp_error ("type `%T' is of non-aggregate type", type);
+	cp_error ("`%T' is not an aggregate type", type);
       return 0;
     }
   return 1;
@@ -1833,8 +1834,6 @@ get_aggr_from_typedef (name, or_else)
 
   if (IDENTIFIER_HAS_TYPE_VALUE (name))
     type = IDENTIFIER_TYPE_VALUE (name);
-  else if (IDENTIFIER_HAS_CLASS_TYPE_VALUE (name))
-    type = IDENTIFIER_CLASS_TYPE_VALUE (name);
   else
     {
       if (or_else)
@@ -1861,8 +1860,6 @@ get_type_value (name)
 
   if (IDENTIFIER_HAS_TYPE_VALUE (name))
     return IDENTIFIER_TYPE_VALUE (name);
-  else if (IDENTIFIER_CLASS_VALUE (name))
-    return IDENTIFIER_CLASS_TYPE_VALUE (name);
   else
     return NULL_TREE;
 }
@@ -2808,13 +2805,6 @@ do_friend (ctype, declarator, decl, parmdecls, flags, quals)
       TREE_PUBLIC (decl) = 1;
       add_friend (current_class_type, decl);
       DECL_FRIEND_P (decl) = 1;
-      if (IDENTIFIER_POINTER (declarator)[0] == '_')
-	{
-	  if (! strcmp (IDENTIFIER_POINTER (declarator)+10, "new"))
-	    TREE_GETS_NEW (current_class_type) = 0;
-	  else if (! strcmp (IDENTIFIER_POINTER (declarator)+10, "delete"))
-	    TREE_GETS_DELETE (current_class_type) = 0;
-	}
       decl = void_type_node;
     }
   /* A global friend.
@@ -2980,6 +2970,7 @@ build_new (placement, decl, init, use_global_new)
   tree type, true_type, size, rval;
   tree nelts;
   int has_array = 0;
+  enum tree_code code = NEW_EXPR;
 
   tree pending_sizes = NULL_TREE;
 
@@ -3155,27 +3146,28 @@ build_new (placement, decl, init, use_global_new)
 
   /* Get a little extra space to store a couple of things before the new'ed
      array. */
-  if (has_array && TYPE_NEEDS_DESTRUCTOR (true_type))
+  if (has_array && TYPE_VEC_NEW_USES_COOKIE (true_type))
     {
       tree extra = BI_header_size;
 
       size = size_binop (PLUS_EXPR, size, extra);
     }
 
+  if (has_array)
+    code = VEC_NEW_EXPR;
+
   /* Allocate the object. */
-  if (TYPE_LANG_SPECIFIC (true_type)
-      && (TREE_GETS_NEW (true_type) || TREE_GETS_PLACED_NEW (true_type))
-      && !use_global_new
-      && !has_array)
-    rval = build_opfncall (NEW_EXPR, LOOKUP_NORMAL,
+  if (! use_global_new && TYPE_LANG_SPECIFIC (true_type)
+      && (TYPE_GETS_NEW (true_type) & (1 << has_array)))
+    rval = build_opfncall (code, LOOKUP_NORMAL,
 			   TYPE_POINTER_TO (true_type), size, placement);
   else if (placement)
     {
-      rval = build_opfncall (NEW_EXPR, LOOKUP_GLOBAL|LOOKUP_COMPLAIN,
+      rval = build_opfncall (code, LOOKUP_GLOBAL|LOOKUP_COMPLAIN,
 			     ptr_type_node, size, placement);
       rval = convert (TYPE_POINTER_TO (true_type), rval);
     }
-  else if (flag_this_is_variable > 0
+  else if (! has_array && flag_this_is_variable > 0
 	   && TYPE_HAS_CONSTRUCTOR (true_type) && init != void_type_node)
     {
       if (init == NULL_TREE || TREE_CODE (init) == TREE_LIST)
@@ -3189,7 +3181,8 @@ build_new (placement, decl, init, use_global_new)
   else
     {
       rval = build_builtin_call (build_pointer_type (true_type),
-				 BIN, build_tree_list (NULL_TREE, size));
+				 has_array ? BIVN : BIN,
+				 build_tree_list (NULL_TREE, size));
 #if 0
       /* See comment above as to why this is disabled.  */
       if (alignment)
@@ -3202,14 +3195,13 @@ build_new (placement, decl, init, use_global_new)
 	}
 #endif
       TREE_CALLS_NEW (rval) = 1;
-      TREE_SIDE_EFFECTS (rval) = 1;
     }
 
   /* if rval is NULL_TREE I don't have to allocate it, but are we totally
      sure we have some extra bytes in that case for the BI_header_size
      cookies? And how does that interact with the code below? (mrs) */
   /* Finish up some magic for new'ed arrays */
-  if (has_array && TYPE_NEEDS_DESTRUCTOR (true_type) && rval != NULL_TREE)
+  if (has_array && TYPE_VEC_NEW_USES_COOKIE (true_type) && rval != NULL_TREE)
     {
       tree extra = BI_header_size;
       tree cookie, exp1;
@@ -3594,20 +3586,21 @@ expand_vec_init (decl, base, maxindex, init, from_array)
 
    This does not call any destructors.  */
 tree
-build_x_delete (type, addr, use_global_delete, virtual_size)
+build_x_delete (type, addr, which_delete, virtual_size)
      tree type, addr;
-     int use_global_delete;
+     int which_delete;
      tree virtual_size;
 {
+  int use_global_delete = which_delete & 1;
+  int use_vec_delete = !!(which_delete & 2);
   tree rval;
+  enum tree_code code = use_vec_delete ? VEC_DELETE_EXPR : DELETE_EXPR;
 
-  if (!use_global_delete
-      && TYPE_LANG_SPECIFIC (TREE_TYPE (type))
-      && TREE_GETS_DELETE (TREE_TYPE (type)))
-    rval = build_opfncall (DELETE_EXPR, LOOKUP_NORMAL, addr,
-			   virtual_size, NULL_TREE);
+  if (! use_global_delete && TYPE_LANG_SPECIFIC (TREE_TYPE (type))
+      && (TYPE_GETS_DELETE (TREE_TYPE (type)) & (1 << use_vec_delete)))
+    rval = build_opfncall (code, LOOKUP_NORMAL, addr, virtual_size, NULL_TREE);
   else
-    rval = build_builtin_call (void_type_node, BID,
+    rval = build_builtin_call (void_type_node, use_vec_delete ? BIVD : BID,
 			       build_tree_list (NULL_TREE, addr));
   return rval;
 }
@@ -3674,7 +3667,8 @@ build_delete (type, addr, auto_delete, flags, use_global_delete)
 	addr = save_expr (addr);
       return build_vec_delete (addr, array_type_nelts (type),
 			       c_sizeof_nowarn (TREE_TYPE (type)),
-			       NULL_TREE, auto_delete, integer_two_node);
+			       auto_delete, integer_two_node,
+			       use_global_delete);
     }
   else
     {
@@ -3707,10 +3701,8 @@ build_delete (type, addr, auto_delete, flags, use_global_delete)
 
       /* Pass the size of the object down to the operator delete() in
 	 addition to the ADDR.  */
-      if (TREE_GETS_DELETE (type) && !use_global_delete)
+      if (TYPE_GETS_REG_DELETE (type) && !use_global_delete)
 	{
-	  /* This is probably wrong. It should be the size of the virtual
-	     object being deleted.  */
 	  tree virtual_size = c_sizeof_nowarn (type);
 	  return build_opfncall (DELETE_EXPR, LOOKUP_NORMAL, addr,
 				 virtual_size, NULL_TREE);
@@ -3837,7 +3829,7 @@ build_delete (type, addr, auto_delete, flags, use_global_delete)
 	 operator delete, call the parent parent destructor (if any),
 	 but let this node do the deleting.  Otherwise, it is ok
 	 to let the parent destructor do the deleting.  */
-      if (TREE_GETS_DELETE (type) && !use_global_delete)
+      if (TYPE_GETS_REG_DELETE (type) && !use_global_delete)
 	{
 	  parent_auto_delete = integer_zero_node;
 	  if (auto_delete == integer_zero_node)
@@ -3970,8 +3962,6 @@ build_vbase_delete (type, decl)
    MAXINDEX is the number of elements to be deleted.
    ELT_SIZE is the nominal size of each element in the vector.
    BASE is the expression that should yield the store to be deleted.
-   DTOR_DUMMY is a placeholder for a destructor.  The library function
-   __builtin_vec_delete has a pointer to function in this position.
    This function expands (or synthesizes) these calls itself.
    AUTO_DELETE_VEC says whether the container (vector) should be deallocated.
    AUTO_DELETE say whether each item in the container should be deallocated.
@@ -3985,10 +3975,11 @@ build_vbase_delete (type, decl)
    confirm the size, and trap if the numbers differ; not clear that it'd
    be worth bothering.)  */
 tree
-build_vec_delete (base, maxindex, elt_size, dtor_dummy, auto_delete_vec, auto_delete)
+build_vec_delete (base, maxindex, elt_size, auto_delete_vec, auto_delete,
+		  use_global_delete)
      tree base, maxindex, elt_size;
-     tree dtor_dummy;
      tree auto_delete_vec, auto_delete;
+     int use_global_delete;
 {
   tree ptype = TREE_TYPE (base);
   tree type;
@@ -4081,7 +4072,8 @@ build_vec_delete (base, maxindex, elt_size, dtor_dummy, auto_delete_vec, auto_de
       /* This is the real size */
       virtual_size = size_binop (PLUS_EXPR, virtual_size, BI_header_size);
       body = build_tree_list (NULL_TREE,
-			      build_x_delete (ptr_type_node, base_tbd, 1,
+			      build_x_delete (ptype, base_tbd,
+					      2 | use_global_delete,
 					      virtual_size));
       body = build (COND_EXPR, void_type_node,
 		    build (BIT_AND_EXPR, integer_type_node,
@@ -4124,7 +4116,7 @@ build_vec_delete (base, maxindex, elt_size, dtor_dummy, auto_delete_vec, auto_de
       /* The below is short by BI_header_size */
       virtual_size = fold (size_binop (MULT_EXPR, size_exp, maxindex));
 
-      if (loop == integer_zero_node)
+      if (! TYPE_VEC_NEW_USES_COOKIE (type))
 	/* no header */
 	base_tbd = base;
       else
@@ -4137,7 +4129,8 @@ build_vec_delete (base, maxindex, elt_size, dtor_dummy, auto_delete_vec, auto_de
 	  /* True size with header. */
 	  virtual_size = size_binop (PLUS_EXPR, virtual_size, BI_header_size);
 	}
-      deallocate_expr = build_x_delete (ptr_type_node, base_tbd, 1,
+      deallocate_expr = build_x_delete (ptype, base_tbd,
+					2 | use_global_delete,
 					virtual_size);
       if (auto_delete_vec != integer_one_node)
 	deallocate_expr = build (COND_EXPR, void_type_node,

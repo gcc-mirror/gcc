@@ -1079,16 +1079,16 @@ lookup_field (xbasetype, name, protect, want_type)
 	  if (TREE_CODE (rval) == CONST_DECL)
 	    {
 	      if (this_v == access_private)
-		errstr = "enum `%s' is a private value of class `%s'";
+		errstr = "enum `%D' is a private value of class `%T'";
 	      else if (this_v == access_protected)
-		errstr = "enum `%s' is a protected value of class `%s'";
+		errstr = "enum `%D' is a protected value of class `%T'";
 	    }
 	  else
 	    {
 	      if (this_v == access_private)
-		errstr = "member `%s' is a private member of class `%s'";
+		errstr = "member `%D' is a private member of class `%T'";
 	      else if (this_v == access_protected)
-		errstr = "member `%s' is a protected member of class `%s'";
+		errstr = "member `%D' is a protected member of class `%T'";
 	    }
 	}
 
@@ -1214,7 +1214,7 @@ lookup_field (xbasetype, name, protect, want_type)
 	  else
 	    {
 	      /* This is ambiguous. */
-	      errstr = "request for member `%s' is ambiguous";
+	      errstr = "request for member `%D' is ambiguous";
 	      protect = 2;
 	      break;
 	    }
@@ -1250,7 +1250,7 @@ lookup_field (xbasetype, name, protect, want_type)
 	      new_v = compute_access (TREE_VALUE (TREE_CHAIN (*tp)), rval);
 	    if (this_v != access_default && new_v != this_v)
 	      {
-		errstr = "conflicting access to member `%s'";
+		errstr = "conflicting access to member `%D'";
 		this_v = access_default;
 	      }
 	    own_access = new_v;
@@ -1272,17 +1272,17 @@ lookup_field (xbasetype, name, protect, want_type)
   if (errstr == 0)
     {
       if (own_access == access_private)
-	errstr = "member `%s' declared private";
+	errstr = "member `%D' declared private";
       else if (own_access == access_protected)
-	errstr = "member `%s' declared protected";
+	errstr = "member `%D' declared protected";
       else if (this_v == access_private)
 	errstr = TREE_PRIVATE (rval)
-	  ? "member `%s' is private"
-	    : "member `%s' is from private base class";
+	  ? "member `%D' is private"
+	    : "member `%D' is from private base class";
       else if (this_v == access_protected)
 	errstr = TREE_PROTECTED (rval)
-	  ? "member `%s' is protected"
-	    : "member `%s' is from protected base class";
+	  ? "member `%D' is protected"
+	    : "member `%D' is from protected base class";
     }
 
   if (entry)
@@ -1302,17 +1302,7 @@ lookup_field (xbasetype, name, protect, want_type)
 
   if (errstr && protect)
     {
-      char *p = IDENTIFIER_POINTER (name), *q = NULL;
-      if (IDENTIFIER_OPNAME_P (name))
-	{
-	  q = operator_name_string (name);
-	  p = (char *) xmalloc (9 + strlen (q) + 1);
-	  sprintf (p, "operator %s", q);
-	}
-
-      error (errstr, p, TYPE_NAME_STRING (type));
-      if (q)
-	free (p);
+      cp_error (errstr, name, type);
       rval = error_mark_node;
     }
   return rval;
@@ -3031,15 +3021,15 @@ push_class_decls (type)
   search_stack = push_search_level (search_stack, &search_obstack);
 
   id = TYPE_IDENTIFIER (type);
+#if 0
   if (IDENTIFIER_TEMPLATE (id) != 0)
     {
-#if 0
       tree tmpl = IDENTIFIER_TEMPLATE (id);
       push_template_decls (DECL_ARGUMENTS (TREE_PURPOSE (tmpl)),
 			   TREE_VALUE (tmpl), 1);
-#endif
       overload_template_name (id, 1);
     }
+#endif
 
   /* Push class fields into CLASS_VALUE scope, and mark.  */
   dfs_walk (TYPE_BINFO (type), dfs_pushdecls, unmarkedp);
@@ -3226,4 +3216,28 @@ reinit_search_statistics ()
   n_calls_get_base_type = 0;
   n_outer_fields_searched = 0;
   n_contexts_saved = 0;
+}
+
+tree
+lookup_nested_tag (type, name)
+     tree type, name;
+{
+  tree tags = CLASSTYPE_TAGS (type);
+
+  for (; tags; tags = TREE_CHAIN (tags))
+    {
+      /* The TREE_PURPOSE of an enum tag (which becomes a member of the
+	 enclosing class) is set to the name for the enum type.  So, if
+	 name is `bar', and we strike `baz' for `enum bar { baz }', then
+	 this test will be true.  */
+      if (TREE_PURPOSE (tags) == name)
+	break;
+    }
+  if (tags)
+    return TYPE_NAME (TREE_VALUE (tags));
+
+  if (TYPE_CONTEXT (type))
+    return lookup_nested_tag (TYPE_CONTEXT (type), name);
+
+  return NULL_TREE;
 }

@@ -32,6 +32,7 @@ DEFTREECODE (CP_OFFSET_REF, "cp_offset_ref", "r", 2)
    Operand 1 is the value to pass to the destroying function
    saying whether the store should be deallocated as well.  */
 DEFTREECODE (DELETE_EXPR, "dl_expr", "e", 2)
+DEFTREECODE (VEC_DELETE_EXPR, "vec_dl_expr", "e", 2)
 
 /* Value is reference to particular overloaded class method.
    Operand 0 is the class name (an IDENTIFIER_NODE);
@@ -52,6 +53,7 @@ DEFTREECODE (TYPE_EXPR, "type_expr", "e", 1)
    operand 1 is argument list to initialization function,
    and operand 2 is the slot which was allocated for this expression.  */
 DEFTREECODE (NEW_EXPR, "nw_expr", "e", 3)
+DEFTREECODE (VEC_NEW_EXPR, "vec_nw_expr", "e", 3)
 
 /* Distinguish variables that are only used to identify exceptions
    that were caught.  Only the DECL_NAME (and TREE_CHAIN)
