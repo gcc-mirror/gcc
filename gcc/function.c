@@ -4706,8 +4706,11 @@ assign_parms (fndecl)
 	      set_mem_attributes (DECL_RTL (parm), parm, 1);
 	    }
 	  else
-	    DECL_RTL (parm) = parmreg;
-
+	    {
+	      DECL_RTL (parm) = parmreg;
+	      maybe_set_unchanging (DECL_RTL (parm), parm);
+	    }
+	      
 	  /* Copy the value into the register.  */
 	  if (nominal_mode != passed_mode
 	      || promoted_nominal_mode != promoted_mode)
