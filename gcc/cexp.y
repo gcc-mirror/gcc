@@ -164,6 +164,9 @@ extern int traditional;
 /* Flag for -lang-c89.  */
 extern int c89;
 
+/* Flag for -Wundef.  */
+extern int warn_undef;
+
 #ifndef CHAR_TYPE_SIZE
 #define CHAR_TYPE_SIZE BITS_PER_UNIT
 #endif
@@ -445,7 +448,10 @@ exp	:	exp '*' exp
 	|	CHAR
 			{ $$ = yylval.integer; }
 	|	NAME
-			{ $$.value = 0;
+			{ if (warn_undef && !skip_evaluation)
+			    warning ("`%.*s' is not defined",
+				     $1.length, $1.address);
+			  $$.value = 0;
 			  $$.signedp = SIGNED; }
 	;
 
