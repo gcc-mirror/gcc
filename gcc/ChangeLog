@@ -1,3 +1,11 @@
+2003-05-30  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
+
+	* config/mips/mips.h (SUBTARGET_ASM_DEBUGGING_SPEC): Move
+	-mdebug/-no-mdebug switches ...
+	(MDEBUG_ASM_SPEC): ... here.
+	Use only with gas.
+	(EXTRA_SPECS): Initialize mdebug_asm_spec.
+
 2003-05-29  Matt Kraai  <kraai@alumni.cmu.edu>
 
 	* gthr-gnat.c: Remove #undef UNUSED.
