@@ -902,7 +902,7 @@ readescape (ignore_ptr)
   switch (c)
     {
     case 'x':
-      if (warn_traditional)
+      if (warn_traditional && !in_system_header)
 	warning ("the meaning of `\\x' varies with -traditional");
 
       if (flag_traditional)
@@ -987,7 +987,7 @@ readescape (ignore_ptr)
       return TARGET_BS;
 
     case 'a':
-      if (warn_traditional)
+      if (warn_traditional && !in_system_header)
 	warning ("the meaning of `\\a' varies with -traditional");
 
       if (flag_traditional)
@@ -1912,7 +1912,7 @@ yylex ()
 	    /* We assume that constants specified in a non-decimal
 	       base are bit patterns, and that the programmer really
 	       meant what they wrote.  */
-	    if (warn_traditional && base == 10
+	    if (warn_traditional && !in_system_header && base == 10
 		&& traditional_type != ansi_type)
 	      {
 		if (TYPE_PRECISION (traditional_type)

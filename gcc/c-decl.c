@@ -1760,7 +1760,7 @@ duplicate_decls (newdecl, olddecl, different_binding_level)
 
 	  /* If warn_traditional, warn when a non-static function
 	     declaration follows a static one.  */
-	  if (warn_traditional
+	  if (warn_traditional && !in_system_header
 	      && TREE_CODE (olddecl) == FUNCTION_DECL
 	      && !TREE_PUBLIC (olddecl)
 	      && TREE_PUBLIC (newdecl))
@@ -2751,7 +2751,7 @@ define_label (filename, line, name)
       decl = lookup_label (name);
     }
 
-  if (warn_traditional && lookup_name (name))
+  if (warn_traditional && !in_system_header && lookup_name (name))
     warning ("traditional C lacks a separate namespace for labels, identifier `%s' conflicts",
 	     IDENTIFIER_POINTER (name));
 
