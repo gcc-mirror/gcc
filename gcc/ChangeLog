@@ -1,3 +1,9 @@
+Wed Aug  4 01:40:43 1999  Philippe De Muyter  <phdm@macqel.be>
+
+	* tlink.c (symbol_hash_lookup): Do not prefix functions used as
+	function parameters with `&'.
+	(file_hash_lookup, demangled_hash_lookup, tlink_init): Ditto.
+
 Wed Aug  4 01:08:44 1999  Jeffrey A Law  (law@cygnus.com)
 
 	* flow.c (delete_unreachable_blocks): Do not call merge_blocks
