@@ -1,3 +1,60 @@
+1999-09-09  Mark Mitchell  <mark@codesourcery.com>
+
+	Reorganize per-function data.
+	* cp-tree.h (saved_scope): Add function_decl, bindings.
+	(language_function): Rename binding_level to bindings.
+	(cp_function_chain): Use the current_function, not the
+	outer_function_chain.
+	(current_class_ptr): Make it work, even when there's no 
+	current function.
+	(current_class_ref): Likewise.
+	(SF_DEFAULT, SF_PRE_PARSED, SF_INCLASS_INLINE, SF_EXPAND): New 
+	macros.
+	(clear_temp_name): Remove.
+	* decl.c (check_function_type): New function, broken out from
+	start_function.
+	(current_binding_level): Adjust definition.
+	(pushlevel): Simplify.
+	(poplevel): Don't use named_label_uses when we're outside
+	a function scope.
+	(mark_saved_scope): Mark function_decl and bindings.
+	(maybe_push_to_top_level): Don't unconditionally push a new
+	function context.  Save bindings and the current_function_decl.
+	Don't clear named_labels.
+	(pop_from_top_level): Pop function context if appropriate.
+	(init_decl_processing): Set init_lang_status and free_lang_status,
+	rather than save_lang_status and restore_lang_status.
+	(start_function): Take SF_* flags.  Don't clear per-function data.
+	Reorder and simplify to use new per-function data code.  Add
+	asserts.
+	(store_parm_decls): Don't call init_function_start here.
+	(finish_function): Adjust for new handling of per-function data.
+	(push_cp_function_context): Simplify.
+	(mark_cp_function_context): Change binding_level to bindings.
+	* decl2.c (clear_temp_name): Remove.
+	(start_objects): Use SF flags to start_function.
+	(start_static_storage_duration_function): Likewise.
+	* except.c (start_anon_func): Remove redundant calls to 
+	push_function_context_to.  Use SF flags to start function.
+	(end_anon_func): Remove redundant call to pop_function_context
+	from.
+	* lex.c (reinit_parse_for_function): Don't initialize per-function 
+	data.
+	* method.c (emit_thunk): Clear current_function after calling
+	assemble_end_function.  Use SF flags for start_function.
+	(synthesize_method): Use SF flags for start_function.
+	* parse.c: Regenerated.
+	* parse.y (fn.defpen): Likewise.
+	(pending_inline): Clear current_function, even if something goes
+	wrong.
+	* pt.c (instantiate_decl): Use SF flags to start_function.
+	Don't save and restore expanding_p.
+	(add_tree): Handle the case where we are outside any function.
+	(end_tree): Likewise.
+	* rtti.c (sythesize_tinfo_fn): Use SF flags to start_function.
+	* semantics.c (begin_function_definition): Likewise.
+	(expand_body): Likewise.
+	
 1999-09-09  Nathan Sidwell  <nathan@acm.org>
 
 	* cp-tree.h (convert_to_void): Prototype new function.

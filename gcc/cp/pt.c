@@ -9683,13 +9683,9 @@ instantiate_decl (d)
     {
       extern struct obstack *saveable_obstack;
       extern struct obstack *rtl_obstack;
-      int saved_expanding_p = expanding_p;
-
-      /* We're not expanding all the way to RTL here.  */
-      expanding_p = 0;
 
       /* Set up context.  */
-      start_function (NULL_TREE, d, NULL_TREE, 1);
+      start_function (NULL_TREE, d, NULL_TREE, SF_PRE_PARSED);
       store_parm_decls ();
 
       /* Anything we might
@@ -9710,7 +9706,6 @@ instantiate_decl (d)
       /* Clean up.  */
       pop_obstacks ();
       finish_function (lineno, 0);
-      expanding_p = saved_expanding_p;
 
       /* Now, generate RTL for the function.  */
       expand_body (d);
@@ -9869,8 +9864,13 @@ add_tree (t)
 void
 begin_tree ()
 {
-  saved_trees = tree_cons (NULL_TREE, last_tree, saved_trees);
-  last_tree = NULL_TREE;
+  if (current_function)
+    {
+      saved_trees = tree_cons (NULL_TREE, last_tree, saved_trees);
+      last_tree = NULL_TREE;
+    }
+  else
+    saved_trees = tree_cons (NULL_TREE, NULL_TREE, saved_trees);
 }
 
 
@@ -9879,7 +9879,8 @@ end_tree ()
 {
   my_friendly_assert (saved_trees != NULL_TREE, 0);
 
-  last_tree = TREE_VALUE (saved_trees);
+  if (current_function)
+    last_tree = TREE_VALUE (saved_trees);
   saved_trees = TREE_CHAIN (saved_trees);
 }
 

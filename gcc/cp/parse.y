@@ -2064,7 +2064,9 @@ initlist:
 
 fn.defpen:
 	PRE_PARSED_FUNCTION_DECL
-		{ start_function (NULL_TREE, $1->fndecl, NULL_TREE, 2);
+		{ start_function (NULL_TREE, $1->fndecl, NULL_TREE, 
+				  (SF_DEFAULT | SF_PRE_PARSED 
+				   | SF_INCLASS_INLINE));
 		  reinit_parse_for_function (); }
 
 pending_inline:
@@ -2079,7 +2081,9 @@ pending_inline:
                   process_next_inline ($1);
 		}
 	| fn.defpen maybe_return_init error
-		{ process_next_inline ($1); }
+		{ free_after_compilation (current_function);
+		  current_function = NULL;
+		  process_next_inline ($1); }
 	;
 
 pending_inlines:

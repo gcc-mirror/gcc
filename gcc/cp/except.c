@@ -801,7 +801,6 @@ start_anon_func ()
   tree params;
   tree t;
 
-  push_function_context_to (NULL_TREE);
   push_to_top_level ();
 
   /* No need to mangle this.  */
@@ -816,7 +815,7 @@ start_anon_func ()
 			    NULL_TREE);
   start_function (decl_tree_cons (NULL_TREE, get_identifier ("static"),
 				  void_list_node),
-		  t, NULL_TREE, 0);
+		  t, NULL_TREE, SF_DEFAULT);
   store_parm_decls ();
   pushlevel (0);
   clear_last_expr ();
@@ -841,7 +840,6 @@ end_anon_func ()
   finish_function (lineno, 0);
 
   pop_from_top_level ();
-  pop_function_context_from (NULL_TREE);
 }
 
 /* Return a pointer to a buffer for an exception object of type TYPE.  */

@@ -205,6 +205,7 @@ static void pop_cp_function_context PROTO((struct function *));
 static void mark_binding_level PROTO((void *));
 static void mark_cp_function_context PROTO((struct function *));
 static void mark_saved_scope PROTO((void *));
+static void check_function_type PROTO((tree));
 
 #if defined (DEBUG_CP_BINDING_LEVELS)
 static void indent PROTO((void));
@@ -604,7 +605,10 @@ struct binding_level
   
 /* The binding level currently in effect.  */
 
-#define current_binding_level cp_function_chain->binding_level
+#define current_binding_level			\
+  (current_function				\
+   ? cp_function_chain->bindings   		\
+   : scope_chain->bindings)
 
 /* The binding level of the current class, if any.  */
 
@@ -894,13 +898,6 @@ pushlevel (tag_transparent)
      int tag_transparent;
 {
   register struct binding_level *newlevel = NULL_BINDING_LEVEL;
-
-  /* If this is the top level of a function,
-     just make sure that NAMED_LABELS is 0.
-     They should have been set to 0 at the end of the previous function.  */
-
-  if (current_binding_level == global_binding_level)
-    my_friendly_assert (named_labels == NULL_TREE, 134);
 
   /* Reuse or create a struct for this binding level.  */
 
@@ -1517,20 +1514,21 @@ poplevel (keep, reverse, functionbody)
 
   /* Any uses of undefined labels now operate under constraints
      of next binding contour.  */
-  {
-    struct binding_level *level_chain;
-    level_chain = current_binding_level->level_chain;
-    if (level_chain)
-      {
-	struct named_label_list *labels;
-	for (labels = named_label_uses; labels; labels = labels->next)
-	  if (labels->binding_level == current_binding_level)
-	    {
-	      labels->binding_level = level_chain;
-	      labels->names_in_scope = level_chain->names;
-	    }
-      }
-  }
+  if (current_function)
+    {
+      struct binding_level *level_chain;
+      level_chain = current_binding_level->level_chain;
+      if (level_chain)
+	{
+	  struct named_label_list *labels;
+	  for (labels = named_label_uses; labels; labels = labels->next)
+	    if (labels->binding_level == current_binding_level)
+	      {
+		labels->binding_level = level_chain;
+		labels->names_in_scope = level_chain->names;
+	      }
+	}
+    }
 
   tmp = current_binding_level->keep;
 
@@ -2388,6 +2386,7 @@ mark_saved_scope (arg)
       ggc_mark_tree (t->class_name);
       ggc_mark_tree (t->class_type);
       ggc_mark_tree (t->access_specifier);
+      ggc_mark_tree (t->function_decl);
       if (t->lang_base)
 	ggc_mark_tree_varray (t->lang_base);
       ggc_mark_tree (t->lang_name);
@@ -2395,6 +2394,7 @@ mark_saved_scope (arg)
       ggc_mark_tree (t->template_parms);
       ggc_mark_tree (t->x_previous_class_type);
       ggc_mark_tree (t->x_previous_class_values);
+      mark_binding_level (&t->bindings);
       t = t->prev;
     }
 }
@@ -2448,15 +2448,25 @@ void
 maybe_push_to_top_level (pseudo)
      int pseudo;
 {
-  struct saved_scope *s
-    = (struct saved_scope *) xcalloc (1, sizeof (struct saved_scope));
+  struct saved_scope *s;
   struct binding_level *b;
-  tree old_bindings = NULL_TREE;
+  tree old_bindings;
+  int need_pop;
+
+  s = (struct saved_scope *) xcalloc (1, sizeof (struct saved_scope));
 
   b = scope_chain ? current_binding_level : 0;
 
-  push_function_context_to (NULL_TREE);
+  /* If we're in the middle of some function, save our state.  */
+  if (current_function)
+    {
+      need_pop = 1;
+      push_function_context_to (NULL_TREE);
+    }
+  else
+    need_pop = 0;
 
+  old_bindings = NULL_TREE;
   if (scope_chain && previous_class_type)
     old_bindings = store_bindings (previous_class_values, old_bindings);
 
@@ -2483,10 +2493,11 @@ maybe_push_to_top_level (pseudo)
       for (t = b->type_shadowed; t; t = TREE_CHAIN (t))
 	SET_IDENTIFIER_TYPE_VALUE (TREE_PURPOSE (t), TREE_VALUE (t));
     }
-  current_binding_level = b;
-
   s->prev = scope_chain;
   s->old_bindings = old_bindings;
+  s->bindings = b;
+  s->need_pop_function_context = need_pop;
+  s->function_decl = current_function_decl;
 
   scope_chain = s;
   current_function_decl = NULL_TREE;
@@ -2494,7 +2505,6 @@ maybe_push_to_top_level (pseudo)
   current_lang_stack = &VARRAY_TREE (current_lang_base, 0);
   current_lang_name = lang_name_cplusplus;
   strict_prototype = strict_prototypes_lang_cplusplus;
-  named_labels = NULL_TREE;
   current_namespace = global_namespace;
 
   push_obstacks (&permanent_obstack, &permanent_obstack);
@@ -2537,9 +2547,13 @@ pop_from_top_level ()
   else if (current_lang_name == lang_name_c)
     strict_prototype = strict_prototypes_lang_c;
 
-  free (s);
+  /* If we were in the middle of compiling a function, restore our
+     state.  */
+  if (s->need_pop_function_context)
+    pop_function_context_from (NULL_TREE);
+  current_function_decl = s->function_decl;
 
-  pop_function_context_from (NULL_TREE);
+  free (s);
 }
 
 /* Push a definition of struct, union or enum tag "name".
@@ -6034,8 +6048,8 @@ init_decl_processing ()
 
   /* Let the back-end now how to save and restore language-specific
      per-function globals.  */
-  save_lang_status = &push_cp_function_context;
-  restore_lang_status = &pop_cp_function_context;
+  init_lang_status = &push_cp_function_context;
+  free_lang_status = &pop_cp_function_context;
   mark_lang_status = &mark_cp_function_context;
 
   cp_parse_init ();
@@ -6062,8 +6076,6 @@ init_decl_processing ()
   current_lang_name = lang_name_c;
 
   current_function_decl = NULL_TREE;
-  named_labels = NULL_TREE;
-  named_label_uses = NULL;
   current_binding_level = NULL_BINDING_LEVEL;
   free_binding_level = NULL_BINDING_LEVEL;
 
@@ -12800,19 +12812,54 @@ build_enumerator (name, value, type)
 
 static int function_depth;
 
+/* We're defining DECL.  Make sure that it's type is OK.  */
+
+static void
+check_function_type (decl)
+     tree decl;
+{
+  tree fntype = TREE_TYPE (decl);
+
+  /* In a function definition, arg types must be complete.  */
+  require_complete_types_for_parms (current_function_parms);
+
+  if (TYPE_SIZE (complete_type (TREE_TYPE (fntype))) == NULL_TREE)
+    {
+      cp_error ("return type `%#T' is incomplete", TREE_TYPE (fntype));
+
+      /* Make it return void instead, but don't change the
+	 type of the DECL_RESULT, in case we have a named return value.  */
+      if (TREE_CODE (fntype) == METHOD_TYPE)
+	{
+	  tree ctype = TREE_TYPE (TREE_VALUE (TYPE_ARG_TYPES (fntype)));
+	  TREE_TYPE (decl)
+	    = build_cplus_method_type (ctype,
+				       void_type_node,
+				       FUNCTION_ARG_CHAIN (decl));
+	}
+      else
+	TREE_TYPE (decl)
+	  = build_function_type (void_type_node,
+				 TYPE_ARG_TYPES (TREE_TYPE (decl)));
+      TREE_TYPE (decl) 
+	= build_exception_variant (fntype,
+				   TYPE_RAISES_EXCEPTIONS (fntype));
+    }
+  else
+    abstract_virtuals_error (decl, TREE_TYPE (fntype));
+}
+
 /* Create the FUNCTION_DECL for a function definition.
    DECLSPECS and DECLARATOR are the parts of the declaration;
    they describe the function's name and the type it returns,
    but twisted together in a fashion that parallels the syntax of C.
 
-   If PRE_PARSED_P is non-zero then DECLARATOR is really the DECL for
-   the function we are about to process; DECLSPECS are ignored.  For
-   example, we set PRE_PARSED_P when processing the definition of
-   inline function that was defined in-class; the definition is
-   actually processed when the class is complete.  In this case,
-   PRE_PARSED_P is 2.  We also set PRE_PARSED_P when instanting the
-   body of a template function, and when constructing thunk functions
-   and such; in these cases PRE_PARSED_P is 1.
+   FLAGS is a bitwise or of SF_PRE_PARSED (indicating that the
+   DECLARATOR is really the DECL for the function we are about to
+   process and that DECLSPECS should be ignored), SF_INCLASS_INLINE
+   indicating that the function is an inline defined in-class, and
+   SF_EXPAND indicating that we should generate RTL for this
+   function.  
    
    This function creates a binding context for the function body
    as well as setting up the FUNCTION_DECL in current_function_decl.
@@ -12827,9 +12874,9 @@ static int function_depth;
    applied to it with the argument list [1, 2].  */
 
 int
-start_function (declspecs, declarator, attrs, pre_parsed_p)
+start_function (declspecs, declarator, attrs, flags)
      tree declspecs, declarator, attrs;
-     int pre_parsed_p;
+     int flags;
 {
   tree decl1;
   tree ctype = NULL_TREE;
@@ -12838,29 +12885,11 @@ start_function (declspecs, declarator, attrs, pre_parsed_p)
   extern int have_extern_spec;
   extern int used_extern_spec;
   int doing_friend = 0;
+  struct binding_level *bl;
 
   /* Sanity check.  */
   my_friendly_assert (TREE_CODE (TREE_VALUE (void_list_node)) == VOID_TYPE, 160);
   my_friendly_assert (TREE_CHAIN (void_list_node) == NULL_TREE, 161);
-
-  /* Assume, until we see it does.  */
-  current_function_returns_value = 0;
-  current_function_returns_null = 0;
-  named_labels = 0;
-  current_function_assigns_this = 0;
-  current_function_just_assigned_this = 0;
-  current_function_parms_stored = 0;
-  last_dtor_insn = NULL_RTX;
-  last_parm_cleanup_insn = NULL_RTX;
-  original_result_rtx = NULL_RTX;
-  base_init_expr = NULL_TREE;
-  current_base_init_list = NULL_TREE;
-  current_member_init_list = NULL_TREE;
-  ctor_label = dtor_label = NULL_TREE;
-  static_labelno = 0;
-  in_function_try_handler = 0;
-
-  clear_temp_name ();
 
   /* This should only be done once on the top most decl.  */
   if (have_extern_spec && !used_extern_spec)
@@ -12869,7 +12898,7 @@ start_function (declspecs, declarator, attrs, pre_parsed_p)
       used_extern_spec = 1;
     }
 
-  if (pre_parsed_p)
+  if (flags & SF_PRE_PARSED)
     {
       decl1 = declarator;
 
@@ -12941,9 +12970,6 @@ start_function (declspecs, declarator, attrs, pre_parsed_p)
       && IDENTIFIER_IMPLICIT_DECL (DECL_NAME (decl1)) != NULL_TREE)
     cp_warning_at ("`%D' implicitly declared before its definition", IDENTIFIER_IMPLICIT_DECL (DECL_NAME (decl1)));
 
-  if (!building_stmt_tree ())
-    announce_function (decl1);
-
   /* Set up current_class_type, and enter the scope of the class, if
      appropriate.  */
   if (ctype)
@@ -12957,7 +12983,7 @@ start_function (declspecs, declarator, attrs, pre_parsed_p)
      case where a template parameter has the same name as a field of
      the class.)  It is not until after this point that
      PROCESSING_TEMPLATE_DECL is guaranteed to be set up correctly.  */
-  if (pre_parsed_p == 2)
+  if (flags & SF_INCLASS_INLINE)
     maybe_begin_member_template_processing (decl1);
 
   /* Effective C++ rule 15.  See also c_expand_return.  */
@@ -12993,44 +13019,53 @@ start_function (declspecs, declarator, attrs, pre_parsed_p)
   current_function_parms = last_function_parms;
   current_function_parm_tags = last_function_parm_tags;
 
+  /* Make sure the parameter and return types are reasonable.  When
+     you declare a function, these types can be incomplete, but they
+     must be complete when you define the function.  */
   if (! processing_template_decl)
+    check_function_type (decl1);
+
+  /* Build the return declaration for the function.  */
+  restype = TREE_TYPE (fntype);
+  if (!processing_template_decl)
     {
-      /* In a function definition, arg types must be complete.  */
-      require_complete_types_for_parms (current_function_parms);
-
-      if (TYPE_SIZE (complete_type (TREE_TYPE (fntype))) == NULL_TREE)
+      if (!DECL_RESULT (decl1))
 	{
-	  cp_error ("return-type `%#T' is an incomplete type",
-		    TREE_TYPE (fntype));
-
-	  /* Make it return void instead, but don't change the
-	     type of the DECL_RESULT, in case we have a named return value.  */
-	  if (ctype)
-	    TREE_TYPE (decl1)
-	      = build_cplus_method_type (build_type_variant (ctype,
-							     TREE_READONLY (decl1),
-							     TREE_SIDE_EFFECTS (decl1)),
-					 void_type_node,
-					 FUNCTION_ARG_CHAIN (decl1));
-	  else
-	    TREE_TYPE (decl1)
-	      = build_function_type (void_type_node,
-				     TYPE_ARG_TYPES (TREE_TYPE (decl1)));
 	  DECL_RESULT (decl1)
-	    = build_decl (RESULT_DECL, 0, TYPE_MAIN_VARIANT (TREE_TYPE (fntype)));
-	  TREE_READONLY (DECL_RESULT (decl1))
-	    = CP_TYPE_CONST_P (TREE_TYPE (fntype));
-	  TREE_THIS_VOLATILE (DECL_RESULT (decl1))
-	    = CP_TYPE_VOLATILE_P (TREE_TYPE (fntype));
+	    = build_decl (RESULT_DECL, 0, TYPE_MAIN_VARIANT (restype));
+	  c_apply_type_quals_to_decl (CP_TYPE_QUALS (restype), 
+				      DECL_RESULT (decl1)); 
 	}
-
-      abstract_virtuals_error (decl1, TREE_TYPE (fntype));
     }
+  else
+    /* Just use `void'.  Nobody will ever look at this anyhow.  */
+    DECL_RESULT (decl1) = build_decl (RESULT_DECL, 0, void_type_node);
+
+  /* Initialize RTL machinery.  We cannot do this until
+     CURRENT_FUNCTION_DECL and DECL_RESULT are set up.  We do this
+     even when processing a template; this is how we get
+     CURRENT_FUNCTION set up, and our per-function variables
+     initialized.  */
+  bl = current_binding_level;
+  init_function_start (decl1, input_filename, lineno);
+  current_binding_level = bl;
+  expanding_p = (flags & SF_EXPAND) != 0;
+
+  /* Even though we're inside a function body, we still don't want to
+     call expand_expr to calculate the size of a variable-sized array.
+     We haven't necessarily assigned RTL to all variables yet, so it's
+     not safe to try to expand expressions involving them.  */
+  immediate_size_expand = 0;
+  get_pending_sizes ();
+
+  /* Let the user know we're compiling this function.  */
+  if (!building_stmt_tree ())
+    announce_function (decl1);
 
   /* Record the decl so that the function name is defined.
      If we already have a decl for this name, and it is a FUNCTION_DECL,
      use the old decl.  */
-  if (!processing_template_decl && pre_parsed_p == 0)
+  if (!processing_template_decl && !(flags & SF_PRE_PARSED))
     {
       /* A specialization is not used to guide overload resolution.  */
       if ((flag_guiding_decls 
@@ -13049,7 +13084,9 @@ start_function (declspecs, declarator, attrs, pre_parsed_p)
       fntype = TREE_TYPE (decl1);
     }
 
+  /* Reset these in case the call to pushdecl changed them.  */
   current_function_decl = decl1;
+  current_function->decl = decl1;
 
   if (DECL_INTERFACE_KNOWN (decl1))
     {
@@ -13126,8 +13163,9 @@ start_function (declspecs, declarator, attrs, pre_parsed_p)
       DECL_ARGUMENTS (decl1) = current_function_parms;
       ctype = NULL_TREE;
     }
-  restype = TREE_TYPE (fntype);
 
+  my_friendly_assert (current_class_ptr == NULL_TREE, 19990908);
+  my_friendly_assert (current_class_ref == NULL_TREE, 19990908);
   if (ctype)
     {
       /* If we're compiling a friend function, neither of the variables
@@ -13155,17 +13193,15 @@ start_function (declspecs, declarator, attrs, pre_parsed_p)
 	     whenever current_class_ptr is dereferenced.  This time,
 	     however, we want it to *create* current_class_ref, so we
 	     temporarily clear current_class_ptr to fool it.  */
-	  current_class_ptr = NULL_TREE;
-	  current_class_ref = build_indirect_ref (t, NULL_PTR);
-	  current_class_ptr = t;
+	  cp_function_chain->x_current_class_ref 
+	    = build_indirect_ref (t, NULL_PTR);
+	  cp_function_chain->x_current_class_ptr = t;
 	  
 	  resume_momentary (i);
 	  if (! hack_decl_function_context (decl1))
 	    end_temporary_allocation ();
 	}
     }
-  else
-    current_class_ptr = current_class_ref = NULL_TREE;
 
   pushlevel (0);
   current_binding_level->parm_flag = 1;
@@ -13266,15 +13302,6 @@ store_parm_decls ()
 
   if (toplevel_bindings_p ())
     fatal ("parse errors have confused me too much");
-
-  /* Initialize RTL machinery.  */
-  init_function_start (fndecl, input_filename, lineno);
-  /* Even though we're inside a function body, we still don't want to
-     call expand_expr to calculate the size of a variable-sized array.
-     We haven't necessarily assigned RTL to all variables yet, so it's
-     not safe to try to expand expressions involving them.  */
-  immediate_size_expand = 0;
-  get_pending_sizes ();
 
   /* Create a binding level for the parms.  */
   expand_start_bindings (0);
@@ -13850,7 +13877,8 @@ finish_function (lineno, flags)
 	  emit_label (cleanup_label);
 	}
 
-      /* Get return value into register if that's where it's supposed to be.  */
+      /* Get return value into register if that's where it's supposed
+	 to be.  */
       if (original_result_rtx)
 	fixup_result_decl (DECL_RESULT (fndecl), original_result_rtx);
 
@@ -13892,23 +13920,9 @@ finish_function (lineno, flags)
     my_friendly_abort (122);
   poplevel (1, 0, 1);
 
-  /* If this is a in-class inline definition, we may have to pop the
-     bindings for the template parameters that we added in
-     maybe_begin_member_template_processing when start_function was
-     called.  */
-  if (inclass_inline)
-    maybe_end_member_template_processing ();
-
-  /* Reset scope for C++: if we were in the scope of a class,
-     then when we finish this function, we are not longer so.
-     This cannot be done until we know for sure that no more
-     class members will ever be referenced in this function
-     (i.e., calls to destructors).  */
+  /* Remember that we were in class scope.  */
   if (current_class_name)
-    {
-      ctype = current_class_type;
-      pop_nested_class ();
-    }
+    ctype = current_class_type;
 
   /* Must mark the RESULT_DECL as being in this function.  */
   DECL_CONTEXT (DECL_RESULT (fndecl)) = fndecl;
@@ -13922,6 +13936,8 @@ finish_function (lineno, flags)
 
   if (expand_p)
     {
+      int returns_null;
+      int returns_value;
       int saved_flag_keep_inline_functions =
 	flag_keep_inline_functions;
 
@@ -13936,6 +13952,11 @@ finish_function (lineno, flags)
 	   function and will be deallocated when the enclosing
 	   function is gone.  See save_tree_status.  */
 	flag_keep_inline_functions = 1;
+
+      /* Before we call rest_of_compilation (which will pop the
+	 CURRENT_FUNCTION), we must save these values.  */
+      returns_null = current_function_returns_null;
+      returns_value = current_function_returns_value;
 
       /* If this is a nested function (like a template instantiation
 	 that we're compiling in the midst of compiling something
@@ -13983,7 +14004,7 @@ finish_function (lineno, flags)
       if (ctype && TREE_ASM_WRITTEN (fndecl))
 	note_debug_info_needed (ctype);
 
-      current_function_returns_null |= can_reach_end;
+      returns_null |= can_reach_end;
 
       /* Since we don't normally go through c_expand_return for constructors,
 	 this normally gets the wrong value.
@@ -13991,12 +14012,12 @@ finish_function (lineno, flags)
 	 NOTE_INSN_FUNCTION_END, confusing jump.c.  */
       if (DECL_CONSTRUCTOR_P (fndecl)
 	  || DECL_NAME (DECL_RESULT (fndecl)) != NULL_TREE)
-	current_function_returns_null = 0;
+	returns_null = 0;
 
-      if (TREE_THIS_VOLATILE (fndecl) && current_function_returns_null)
+      if (TREE_THIS_VOLATILE (fndecl) && returns_null)
 	cp_warning ("`noreturn' function `%D' does return", fndecl);
       else if ((warn_return_type || pedantic)
-	       && current_function_returns_null
+	       && returns_null
 	       && TREE_CODE (TREE_TYPE (fntype)) != VOID_TYPE)
 	{
 	  /* If this function returns non-void and control can drop through,
@@ -14005,10 +14026,27 @@ finish_function (lineno, flags)
 	}
       /* With just -W, complain only if function returns both with
 	 and without a value.  */
-      else if (extra_warnings
-	       && current_function_returns_value && current_function_returns_null)
+      else if (extra_warnings && returns_value && returns_null)
 	warning ("this function may return with or without a value");
     }
+  else
+    {
+      /* Since we never call rest_of_compilation, we never clear
+	 CURRENT_FUNCTION.  Do so explicitly.  */
+      free_after_compilation (current_function);
+      current_function = NULL;
+    }
+
+  /* If this is a in-class inline definition, we may have to pop the
+     bindings for the template parameters that we added in
+     maybe_begin_member_template_processing when start_function was
+     called.  */
+  if (inclass_inline)
+    maybe_end_member_template_processing ();
+
+  /* Leave the scope of the class.  */
+  if (ctype)
+    pop_nested_class ();
 
   --function_depth;
 
@@ -14042,10 +14080,6 @@ finish_function (lineno, flags)
          pop_cp_function_context and then reset via pop_function_context.  */
       current_function_decl = NULL_TREE;
     }
-
-  named_label_uses = NULL;
-  current_class_ptr = NULL_TREE;
-  current_class_ref = NULL_TREE;
 }
 
 /* Create the FUNCTION_DECL for a function definition.
@@ -14413,8 +14447,8 @@ revert_static_member_fn (decl, fn, argtypes)
     *argtypes = args;
 }
 
-/* Save and reinitialize the variables
-   used during compilation of a C++ function.  */
+/* Initialize the variables used during compilation of a C++ 
+   function.  */ 
 
 static void
 push_cp_function_context (f)
@@ -14424,8 +14458,6 @@ push_cp_function_context (f)
     = ((struct language_function *) 
        xcalloc (1, sizeof (struct language_function)));
   f->language = p;
-  if (f->next)
-    p->binding_level = f->next->language->binding_level;
 
   /* For now, we always assume we're expanding all the way to RTL
      unless we're explicitly doing otherwise.  */
@@ -14436,7 +14468,8 @@ push_cp_function_context (f)
   stmts_are_full_exprs_p = 1;
 }
 
-/* Restore the variables used during compilation of a C++ function.  */
+/* Free the language-specific parts of F, now that we've finished
+   compiling the function.  */
 
 static void
 pop_cp_function_context (f)
@@ -14470,7 +14503,7 @@ mark_cp_function_context (f)
   ggc_mark_rtx (p->x_last_parm_cleanup_insn);
   ggc_mark_rtx (p->x_result_rtx);
 
-  mark_binding_level (&p->binding_level);
+  mark_binding_level (&p->bindings);
 }
 
 
@@ -14499,6 +14532,7 @@ lang_mark_tree (t)
       struct lang_identifier *li = (struct lang_identifier *) t;
       struct lang_id2 *li2 = li->x;
       ggc_mark_tree (li->namespace_bindings);
+      ggc_mark_tree (li->bindings);
       ggc_mark_tree (li->class_value);
       ggc_mark_tree (li->class_template_info);
 
