@@ -65,7 +65,6 @@ public class ObjectStreamField implements Comparable
   {
     this (field.getName(), field.getType());
     this.field = field;
-    toset = !Modifier.isFinal(field.getModifiers());
   }
 
   /**

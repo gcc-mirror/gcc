@@ -1,4 +1,11 @@
-2004-07-23  Mark Wielaard  <mark@klomp.org>
+2004-07-23  Bryce McKinlay  <mckinlay@redhat.com>
+
+	* java/io/ObjectStreamField (ObjectStreamField): Don't unset 'toset' for final
+	fields.
+	* testsuite/libjava.lang/Serialization.java: New test.
+	* testsuite/libjava.lang/Serialization.out: New.
+
+2004-07-23  Bryce McKinlay  <mckinlay@redhat.com>
 
 	* gnu/java/net/DefaultContentHandlerFactory.java: Check in real file
 	missed in last commit.
