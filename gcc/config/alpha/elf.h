@@ -1,5 +1,5 @@
 /* Definitions of target machine for GNU compiler, for DEC Alpha w/ELF.
-   Copyright (C) 1996 Free Software Foundation, Inc.
+   Copyright (C) 1996, 1997 Free Software Foundation, Inc.
    Contributed by Richard Henderson (rth@tamu.edu).
 
 This file is part of GNU CC.
@@ -44,7 +44,7 @@ Currently only Linux uses this. */
   %{!shared:							\
     %{!static:							\
       %{rdynamic:-export-dynamic}				\
-      %{!dynamic-linker:-dynamic-linker /lib/ld-gnu.so.1}}	\
+      %{!dynamic-linker:-dynamic-linker /lib/ld-linux.so.2}	\
     %{static:-static}}"
 
 /* Output at beginning of assembler file.  */
