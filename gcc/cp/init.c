@@ -65,8 +65,6 @@ void init_init_processing ()
 {
   tree fields[1];
 
-  minus_one_node = build_int_2 (-1, -1);
-
   /* Define the structure that holds header information for
      arrays allocated via operator new.  */
   BI_header_type = make_aggr_type (RECORD_TYPE);
@@ -2989,7 +2987,7 @@ build_vec_init (base, init, from_array)
 
       if_stmt = begin_if_stmt ();
       finish_if_stmt_cond (build (NE_EXPR, boolean_type_node,
-				  iterator, minus_one_node),
+				  iterator, integer_minus_one_node),
 			   if_stmt);
 
       /* Otherwise, loop through the elements.  */
@@ -3063,7 +3061,7 @@ build_vec_init (base, init, from_array)
       finish_do_body (do_stmt);
       finish_do_stmt (build (NE_EXPR, boolean_type_node,
 			     build_unary_op (PREDECREMENT_EXPR, iterator, 0),
-			     minus_one_node),
+			     integer_minus_one_node),
 		      do_stmt);
 
       finish_then_clause (if_stmt);

@@ -906,7 +906,6 @@ extern void write_spec_module                   PARAMS ((tree, tree));
 
 /* in ch/lang.c */
 extern tree string_index_type_dummy;
-extern tree integer_minus_one_node;
 extern int  flag_old_strings;
 extern void GNU_xref_begin                      PARAMS ((void));
 extern void GNU_xref_end                        PARAMS ((void));

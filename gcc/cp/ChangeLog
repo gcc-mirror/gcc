@@ -1,3 +1,14 @@
+2001-01-28  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* cp-tree.h (cp_tree_index): Delete CPTI_MINUS_ONE.
+	(minus_one_node): Moved to top level gcc directory.  Renamed
+	to integer_minus_one_node.
+
+	* init.c (init_init_processing): Don't set minus_one_node.
+	(build_vec_init): Use integer_minus_one_node.
+
+	* rtti.c (get_tinfo_decl_dynamic): Likewise.
+
 2001-01-28  Jakub Jelinek  <jakub@redhat.com>
 
 	* optimize.c (copy_body_r): If MODIFY_EXPR has both arguments

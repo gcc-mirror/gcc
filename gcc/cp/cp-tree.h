@@ -635,7 +635,6 @@ enum cp_tree_index
     CPTI_EMPTY_EXCEPT_SPEC,
     CPTI_NULL,
     CPTI_JCLASS,
-    CPTI_MINUS_ONE,
     CPTI_TERMINATE,
     CPTI_ATEXIT,
     CPTI_DSO_HANDLE,
@@ -767,9 +766,6 @@ extern tree cp_global_trees[CPTI_MAX];
 
 /* If non-NULL, a POINTER_TYPE equivalent to (java::lang::Class*). */
 #define jclass_node                     cp_global_trees[CPTI_JCLASS]
-
-/* A node for `(int) -1'.  */
-#define minus_one_node                  cp_global_trees[CPTI_MINUS_ONE]
 
 /* The declaration for `std::terminate'.  */
 #define terminate_node                  cp_global_trees[CPTI_TERMINATE]

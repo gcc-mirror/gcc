@@ -1,3 +1,12 @@
+2001-01-28  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* stmt.c (estimate_case_costs): Use integer_minus_one_node.
+
+	* tree.c (build_common_tree_nodes_2): Set integer_minus_one_node.
+
+	* tree.h (tree_index): Add new element TI_INTEGER_MINUS_ONE.
+	(integer_minus_one_node): Define.
+
 2001-01-28  Alexandre Oliva  <aoliva@redhat.com>
 
 	* Makefile.in (bootstrap2-lean): Fix typo.

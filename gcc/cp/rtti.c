@@ -265,7 +265,7 @@ get_tinfo_decl_dynamic (exp)
       /* The RTTI information is always in the vtable, but it's at
 	 different indices depending on the ABI.  */
       if (new_abi_rtti_p ())
-	index = minus_one_node;
+	index = integer_minus_one_node;
       else if (flag_vtable_thunks)
 	index = integer_one_node;
       else

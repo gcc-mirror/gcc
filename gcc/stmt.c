@@ -5764,7 +5764,7 @@ static int
 estimate_case_costs (node)
      case_node_ptr node;
 {
-  tree min_ascii = build_int_2 (-1, -1);
+  tree min_ascii = integer_minus_one_node;
   tree max_ascii = convert (TREE_TYPE (node->high), build_int_2 (127, 0));
   case_node_ptr n;
   int i;
