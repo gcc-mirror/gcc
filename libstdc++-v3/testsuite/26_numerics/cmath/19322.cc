@@ -28,7 +28,7 @@
 #include <cmath>
 #include <testsuite_hooks.h>
 
-#if _GLIBCXX_USE_C99
+#if _GLIBCXX_USE_C99_MATH
 // libstdc++/19322
 void test01()
 {
@@ -40,7 +40,7 @@ void test01()
 
 int main()
 {
-#if _GLIBCXX_USE_C99
+#if _GLIBCXX_USE_C99_MATH
   test01();
 #endif
   return 0;
