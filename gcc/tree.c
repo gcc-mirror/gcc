@@ -892,6 +892,8 @@ init_tree_codes ()
 
 /* Return a newly allocated node of code CODE.
    Initialize the node's unique id and its TREE_PERMANENT flag.
+   Note that if garbage collection is in use, TREE_PERMANENT will
+   always be zero - we want to eliminate use of TREE_PERMANENT.
    For decl and type nodes, some other fields are initialized.
    The rest of the node is initialized to zero.
 
@@ -1048,8 +1050,7 @@ make_node (code)
 #endif
 
   TREE_SET_CODE (t, code);
-  if (obstack == &permanent_obstack)
-    TREE_PERMANENT (t) = 1;
+  TREE_SET_PERMANENT (t);
 
   switch (type)
     {
@@ -1061,8 +1062,7 @@ make_node (code)
     case 'd':
       if (code != FUNCTION_DECL)
 	DECL_ALIGN (t) = 1;
-      DECL_IN_SYSTEM_HEADER (t)
-	= in_system_header && (obstack == &permanent_obstack);
+      DECL_IN_SYSTEM_HEADER (t) = in_system_header;
       DECL_SOURCE_LINE (t) = lineno;
       DECL_SOURCE_FILE (t) = 
 	(input_filename) ? input_filename : built_in_filename;
@@ -1215,7 +1215,7 @@ copy_node (node)
       TYPE_SYMTAB_ADDRESS (t) = 0;
     }
 
-  TREE_PERMANENT (t) = (current_obstack == &permanent_obstack);
+  TREE_SET_PERMANENT (t);
 
   return t;
 }
@@ -1608,8 +1608,7 @@ make_tree_vec (len)
 
   TREE_SET_CODE (t, TREE_VEC);
   TREE_VEC_LENGTH (t) = len;
-  if (obstack == &permanent_obstack)
-    TREE_PERMANENT (t) = 1;
+  TREE_SET_PERMANENT (t);
 
   return t;
 }
@@ -2114,10 +2113,8 @@ tree_cons (purpose, value, chain)
   tree_node_sizes[(int)x_kind] += sizeof (struct tree_list);
 #endif
 
-
   TREE_SET_CODE (node, TREE_LIST);
-  if (current_obstack == &permanent_obstack)
-    TREE_PERMANENT (node) = 1;
+  TREE_SET_PERMANENT (node);
 
   TREE_CHAIN (node) = chain;
   TREE_PURPOSE (node) = purpose;
@@ -3209,9 +3206,7 @@ build1 (code, type, node)
 
   TREE_TYPE (t) = type;
   TREE_SET_CODE (t, code);
-
-  if (obstack == &permanent_obstack)
-    TREE_PERMANENT (t) = 1;
+  TREE_SET_PERMANENT (t);
 
   TREE_OPERAND (t, 0) = node;
   if (node && first_rtl_op (code) != 0)

@@ -1,3 +1,19 @@
+2000-02-23  Zack Weinberg  <zack@wolery.cumb.org>
+
+	* tree.h (TREE_SET_PERMANENT): New macro.  Document conditions
+	under which TREE_PERMANENT will be set.
+	* tree.c (make_node, copy_node, make_tree_vec, tree_cons,
+	build1): Use TREE_SET_PERMANENT.
+	* print-tree.c (print_node): Don't report value of
+	TREE_PERMANENT if ggc_p is true.
+
+	* c-common.c (c_get_alias_set): Don't use TREE_PERMANENT to
+	decide whether to give a type a new alias set.
+	* objc/objc-act.c (build_objc_string_object): Never copy the string.
+	* tree.c (make_node): Set DECL_IN_SYSTEM_HEADER irrespective
+	of value of 'obstack'.
+
+
 2000-02-24  Michael Hayes  <m.hayes@elec.canterbury.ac.nz>
 
 	* config/c4x/c4x.c (c4x_process_after_reload): Split all insns.

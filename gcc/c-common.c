@@ -3490,18 +3490,9 @@ c_get_alias_set (t)
     }
 
   if (!TYPE_ALIAS_SET_KNOWN_P (type))
-    {
-      /* Types that are not global ('permanent') are not
-	 placed in the type hash table.  Thus, there can be multiple
-	 copies of identical types in local scopes.  In the long run,
-	 all types should be permanent.  */
-      if (! TREE_PERMANENT (type))
-	TYPE_ALIAS_SET (type) = 0;
-      else
-	/* TYPE is something we haven't seen before.  Put it in a new
-	   alias set.  */
-	TYPE_ALIAS_SET (type) = new_alias_set ();
-    }
+    /* TYPE is something we haven't seen before.  Put it in a new
+       alias set.  */
+    TYPE_ALIAS_SET (type) = new_alias_set ();
 
   return TYPE_ALIAS_SET (type);
 }

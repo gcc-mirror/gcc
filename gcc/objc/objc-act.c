@@ -1354,13 +1354,6 @@ build_objc_string_object (strings)
   TREE_SET_CODE (string, STRING_CST);
   length = TREE_STRING_LENGTH (string) - 1;
 
-  if (! flag_next_runtime)
-    {
-      if (! TREE_PERMANENT (strings))
-	string = my_build_string (length + 1,
-				  TREE_STRING_POINTER (string));
-    }
-
   /* & ((NXConstantString) {0, string, length})  */
 
   initlist = build_tree_list (NULL_TREE, build_int_2 (0, 0));
