@@ -70,6 +70,16 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 
 #define TARGET_FP_IN_TOC  (target_flags & 1)
 
+/* Flag to output only one TOC entry per module.  Normally linking fails if
+   there are more than 16K unique variables/constants in an executable.  With
+   this option, linking fails only if there are more than 16K modules, or
+   if there are more than 16K unique variables/constant in a single module.
+
+   This is at the cost of having 2 extra loads and one extra store per
+   function, and one less allocatable register.  */
+
+#define TARGET_MINIMAL_TOC (target_flags & 2)
+
 extern int target_flags;
 
 /* Macro to define tables used to set the flags.
@@ -81,6 +91,8 @@ extern int target_flags;
 #define TARGET_SWITCHES		\
   {{"fp-in-toc", 1},		\
    {"no-fp-in-toc", -1},	\
+   {"minimal-toc", 2},		\
+   {"no-minimal-toc", -2},	\
    { "", TARGET_DEFAULT}}
 
 #define TARGET_DEFAULT 1
@@ -884,7 +896,12 @@ struct rs6000_args {int words, fregno, nargs_prototype; };
    We have two registers that can be eliminated on the RS/6000.  First, the
    frame pointer register can often be eliminated in favor of the stack
    pointer register.  Secondly, the argument pointer register can always be
-   eliminated; it is replaced with either the stack or frame pointer.  */
+   eliminated; it is replaced with either the stack or frame pointer.
+
+   In addition, we use the elimination mechanism to see if r30 is needed
+   Initially we assume that it isn't.  If it is, we spill it.  This is done
+   by making it an eliminable register.  We replace it with itself so that
+   if it isn't needed, then existing uses won't be modified.  */
 
 /* This is an array of structures.  Each structure initializes one pair
    of eliminable registers.  The "from" register number is given first,
@@ -893,17 +910,22 @@ struct rs6000_args {int words, fregno, nargs_prototype; };
 #define ELIMINABLE_REGS				\
 {{ FRAME_POINTER_REGNUM, STACK_POINTER_REGNUM},	\
  { ARG_POINTER_REGNUM, STACK_POINTER_REGNUM},	\
- { ARG_POINTER_REGNUM, FRAME_POINTER_REGNUM} }
+ { ARG_POINTER_REGNUM, FRAME_POINTER_REGNUM},	\
+ { 30, 30} }
 
 /* Given FROM and TO register numbers, say whether this elimination is allowed.
    Frame pointer elimination is automatically handled.
 
    For the RS/6000, if frame pointer elimination is being done, we would like
-   to convert ap into fp, not sp.  */
+   to convert ap into fp, not sp.
+
+   We need r30 if -mmininal-toc was specified, and there are constant pool
+   references.  */
 
 #define CAN_ELIMINATE(FROM, TO)					\
  ((FROM) == ARG_POINTER_REGNUM && (TO) == STACK_POINTER_REGNUM	\
   ? ! frame_pointer_needed					\
+  : (FROM) == 30 ? ! TARGET_MINIMAL_TOC || get_pool_size () == 0 \
   : 1)
 
 /* Define the offset between two registers, one to be eliminated, and the other
@@ -931,6 +953,8 @@ struct rs6000_args {int words, fregno, nargs_prototype; };
       else								\
 	(OFFSET) = 0;							\
     }									\
+  else if ((FROM) == 30)						\
+    (OFFSET) = 0;							\
   else									\
     abort ();								\
 }
@@ -1465,9 +1489,28 @@ read_only_private_data_section ()			\
 void							\
 toc_section ()						\
 {							\
-  if (in_section != toc)				\
-    fprintf (asm_out_file, ".toc\n");			\
+  if (TARGET_MINIMAL_TOC)				\
+    {							\
+      static int toc_initialized = 0;			\
 							\
+      /* toc_section is always called at least once from ASM_FILE_START, \
+	 so this is guaranteed to always be defined once and only once   \
+	 in each file.  */						 \
+      if (! toc_initialized)				\
+	{						\
+	  fprintf (asm_out_file, ".toc\nLCTOC..0:\n");	\
+	  fprintf (asm_out_file, "\t.tc toc_table[TC],toc_table[RW]\n"); \
+	  toc_initialized = 1;				\
+	}						\
+							\
+      if (in_section != toc)				\
+	fprintf (asm_out_file, ".csect toc_table[RW]\n"); \
+    }							\
+  else							\
+    {							\
+      if (in_section != toc)				\
+        fprintf (asm_out_file, ".toc\n");		\
+    }							\
   in_section = toc;					\
 }
 
