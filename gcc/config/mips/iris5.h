@@ -110,3 +110,26 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
    in the small data section if the user explicitly asks for it.  */
 #undef MIPS_DEFAULT_GVALUE
 #define MIPS_DEFAULT_GVALUE 0
+
+/* In Irix 5, we must output a `.global name .text' directive for every used
+   but undefined function.  If we don't, the linker may perform an optimization
+   (skipping over the insns that set $gp) when it is unsafe.  This is used
+   indirectly by ASM_OUTPUT_EXTERNAL.  */
+#define ASM_OUTPUT_UNDEF_FUNCTION(FILE, NAME)	\
+do {						\
+  fputs ("\t.globl ", FILE);			\
+  assemble_name (FILE, NAME);			\
+  fputs (" .text\n", FILE);			\
+} while (0)
+
+/* Also do this for libcalls.  */
+#define ASM_OUTPUT_EXTERNAL_LIBCALL(FILE, FUN)	\
+  mips_output_external_libcall (FILE, XSTR (FUN, 0))
+
+/* This does for functions what ASM_DECLARE_OBJECT_NAME does for variables.
+   This is used indirectly by ASM_OUTPUT_EXTERNAL.  */
+#define ASM_DECLARE_FUNCTION_SIZE(STREAM, NAME, DECL)	\
+do {							\
+  tree name_tree = get_identifier (NAME);		\
+  TREE_ASM_WRITTEN (name_tree) = 1;			\
+} while (0)
