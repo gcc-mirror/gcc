@@ -1,3 +1,9 @@
+2004-01-11  Ian Lance Taylor  <ian@wasabisystems.com>
+
+	PR c++/3478
+	* g++.dg/parse/error10.C: New test.
+	* g++.dg/template/arg2.C: Accept "invalid type" error.
+
 2004-01-11  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/13392
