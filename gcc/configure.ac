@@ -211,6 +211,12 @@ else
   AC_MSG_RESULT(no)
 fi
 
+# With demangler in GNU ld
+AC_ARG_WITH(demangler-in-ld,
+[  --with-demangler-in-ld  try to use demangler in GNU ld.],
+demangler_in_ld="$with_demangler_in_ld",
+demangler_in_ld=no)
+
 # ----------------------
 # Find default assembler
 # ----------------------
@@ -2453,6 +2459,26 @@ else
 fi
 
 # Target-specific assembler checks.
+
+if test x"$demangler_in_ld" = xyes; then
+  AC_MSG_CHECKING(linker --demangle support)
+  gcc_cv_ld_demangle=no
+  if test $in_tree_ld = yes; then
+    if test "$gcc_cv_gld_major_version" -eq 2 -a "$gcc_cv_gld_minor_version" -ge 14 -o "$gcc_cv_gld_major_version" -gt 2; then \
+      gcc_cv_ld_demangle=yes
+    fi
+  elif test x$gcc_cv_ld != x -a x"$gnu_ld" = xyes; then
+    # Check if the GNU linker supports --demangle option
+    if $gcc_cv_ld --help 2>/dev/null | grep no-demangle > /dev/null; then
+      gcc_cv_ld_demangle=yes
+    fi
+  fi
+  if test x"$gcc_cv_ld_demangle" = xyes; then
+    AC_DEFINE(HAVE_LD_DEMANGLE, 1,
+[Define if your linker supports --demangle option.])
+  fi
+  AC_MSG_RESULT($gcc_cv_ld_demangle)
+fi
 
 case "$target" in
   # All TARGET_ABI_OSF targets.
