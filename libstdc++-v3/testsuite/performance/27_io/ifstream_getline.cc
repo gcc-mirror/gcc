@@ -46,14 +46,13 @@ int main ()
       in.clear();
       in.open(name2);
     }
+  if (!in.is_open())
+    exit(1);
 
   char buffer[BUFSIZ];
   start_counters(time, resource);
-  if (in.is_open())
-    {
-      while (in.good()) 
-	in.getline(buffer, BUFSIZ);
-    }
+  while (in.good()) 
+    in.getline(buffer, BUFSIZ);
   stop_counters(time, resource);
   report_performance(__FILE__, "", time, resource);
 

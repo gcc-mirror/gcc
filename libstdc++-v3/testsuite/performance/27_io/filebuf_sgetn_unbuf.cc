@@ -42,10 +42,18 @@ int main()
   const int chunksize = 100;
 
   char* chunk = new char[chunksize];
-  const char* name = "/usr/share/dict/linux.words";
+  const char* name1 = "/usr/share/dict/words";
+  const char* name2 = "/usr/share/dict/linux.words";
+  const char* name = name1;
 
   // C
-  FILE* file = fopen(name, "r");
+  FILE* file;
+  if (!(file = fopen(name, "r")))
+    {
+      name = name2;
+      if (!(file = fopen(name, "r")))
+	exit(1);
+    }
   setvbuf(file, 0, _IONBF, 0);
   start_counters(time, resource);
   for (int i = 0; i < iterations; ++i)
