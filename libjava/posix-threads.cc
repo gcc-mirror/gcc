@@ -448,7 +448,8 @@ _Jv_ThreadSelf_out_of_line(volatile self_cache_entry *sce, size_t high_sp_bits)
 {
   pthread_t self = pthread_self();
   sce -> high_sp_bits = high_sp_bits;
-  release_set ((obj_addr_t *) &(sce -> self), self);
+  write_barrier();
+  sce -> self = self;
   return self;
 }
 
