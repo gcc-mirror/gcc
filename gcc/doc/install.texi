@@ -33,7 +33,7 @@
 @settitle Installing GCC: Binaries
 @end ifset
 
-@comment $Id: install.texi,v 1.1.2.5 2001/05/23 06:39:24 rth Exp $
+@comment $Id: install.texi,v 1.1.2.6 2001/05/23 21:31:49 rth Exp $
 @c Copyright (C) 2001 Free Software Foundation, Inc.
 @c *** Converted to texinfo by Dean Wakerley, dean@wakerley.com
 
@@ -897,6 +897,8 @@ GNU Compiler Collection on your machine.
 @item
 @uref{#alpha*-dec-osf*,,alpha*-dec-osf*}
 @item
+@uref{#arm*-*-linux-gnu,,arm*-*-linux-gnu}
+@item
 @uref{#avr,,avr}
 @item
 @uref{#dos,,DOS}
@@ -1017,6 +1019,14 @@ it with the command
 If the @code{ieee}
 sub-directory exists, repeat this command in it, with the additional
 flag @code{-mieee}.
+
+@html
+</p>
+<hr>
+<h3><a name="arm*-*-linux-gnu">arm*-*-linux-gnu</a></h3>
+@end html
+
+We require GNU binutils 2.10 or newer.
 
 @html
 </p>
