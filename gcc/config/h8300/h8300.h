@@ -1146,7 +1146,9 @@ readonly_data() 						\
 #define REGISTER_NAMES \
 { "r0", "r1", "r2", "r3", "r4", "r5", "r6", "sp", "mac", "ap"}
 
-#define ADDITIONAL_REGISTER_NAMES { { "r7", 7 } }
+#define ADDITIONAL_REGISTER_NAMES \
+{ {"er0", 0}, {"er1", 1}, {"er2", 2}, {"er3", 3}, {"er4", 4}, \
+  {"er5", 5}, {"er6", 6}, {"er7", 7}, {"r7", 7} }
 
 /* How to renumber registers for dbx and gdb.
    H8/300 needs no change in the numeration.  */

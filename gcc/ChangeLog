@@ -23,6 +23,8 @@ Tue May  5 01:43:16 1998  Jim Wilson  <wilson@cygnus.com>
 
 Tue May  5 01:15:06 1998  Jeffrey A Law  (law@cygnus.com)
 
+	* h8300.h (ADDITIONAL_REGISTER_NAMES): Add "er" registers.
+
 	* reorg.c (fill_slots_from_thread): Update REG_DEAD/REG_UNUSED notes
 	for any insns skipped at the start of a block because they were
 	redundant.
