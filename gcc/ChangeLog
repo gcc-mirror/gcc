@@ -1,3 +1,8 @@
+Fri Oct  2 16:13:12 1998  J"orn Rennecke <amylaar@cygnus.co.uk>
+
+	* t-sh (LIB1ASMFUNCS): Add _set_fpscr .
+	* config/sh/lib1funcs.asm (___set_fpscr): Add.
+
 Fri Oct  2 02:01:59 1998  Jeffrey A Law  (law@cygnus.com)
 
 	* regclass.c (reg_scan_mark_refs): Return immediately if passed a
