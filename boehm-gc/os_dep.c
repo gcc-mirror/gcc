@@ -75,7 +75,7 @@
 # endif
 
 # if defined(LINUX) && \
-     (defined(POWERPC) || defined(SPARC) || defined(ALPHA) || defined(IA64))
+     (defined(SPARC) || defined(ALPHA) || defined(IA64))
 #   define NEED_FIND_LIMIT
 # endif
 
@@ -142,8 +142,7 @@
 # define OPT_PROT_EXEC 0
 #endif
 
-#if defined(LINUX) && (defined(POWERPC) || defined(SPARC) || defined(ALPHA) \
-    		       || defined(IA64))
+#if defined(LINUX) && (defined(SPARC) || defined(ALPHA) || defined(IA64))
   /* The I386 case can be handled without a search.  The Alpha case	*/
   /* used to be handled differently as well, but the rules changed	*/
   /* for recent Linux versions.  This seems to be the easiest way to	*/

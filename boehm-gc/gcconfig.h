@@ -532,14 +532,10 @@
 #     undef STACK_GRAN
 #     define STACK_GRAN 0x10000000
 	/* Stack usually starts at 0x80000000 */
-#     define DATASTART GC_data_start
-	/* Others have reported better success with */
-        /*  	extern int __data_start;	    */
-	/*#     define DATASTART (&__data_start)    */
-	/* and disabling the GC_data_start	    */
-	/* initialization code.			    */
+#     define DATASTART (&data_start)
       extern int _end;
 #     define DATAEND (&_end)
+#     define DYNAMIC_LOADING
 #   endif
 #   ifdef MACOSX
 #     define ALIGNMENT 4

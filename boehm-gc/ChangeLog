@@ -1,3 +1,12 @@
+1999-12-15  Anthony Green  <green@cygnus.com>
+
+	* gcconfig.h (DATASTART): Define as (&data_start) for PowerPC
+	Linux.
+	(DYNAMIC_LOADING): Define for PowerPC Linux.
+	* os_dep.c: Remove some special cases for PowerPC Linux.
+	* misc.c (GC_init_inner): Don't call GC_init_linux_data_start
+	for PowerPC Linux.
+
 1999-11-04  Tom Tromey  <tromey@cygnus.com>
 
 	* Makefile.in: Rebuilt.
