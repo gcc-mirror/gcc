@@ -2262,6 +2262,11 @@ expand_divmod (rem_flag, code, mode, op0, op1, target, unsignedp)
   if (rem_flag && GET_CODE (op1) == MEM && MEM_VOLATILE_P (op1))
     op1 = force_reg (compute_mode, op1);
 
+  /* If we are computing the remainder, op0 will be needed later to calculate
+     X - Y * (X / Y), therefore cannot be clobbered. */
+  if (rem_flag)
+    can_clobber_op0 = 0;
+
   if (target == 0 || GET_MODE (target) != compute_mode)
     target = gen_reg_rtx (compute_mode);
 
