@@ -4087,7 +4087,12 @@ grokdeclarator (declarator, declspecs, decl_context, initialized)
 	      else
 		{
 		  if (pedantic)
-		    pedwarn ("ANSI C forbids variable-size array `%s'", name);
+		    {
+		      if (TREE_CONSTANT (size))
+			pedwarn ("ANSI C forbids array `%s' whose size can't be evaluated", name);
+		      else
+			pedwarn ("ANSI C forbids variable-size array `%s'", name);
+		    }
 		  itype = build_binary_op (MINUS_EXPR, size, integer_one_node,
 					   1);
 		  /* Make sure the array size remains visibly nonconstant
