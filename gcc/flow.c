@@ -1108,9 +1108,8 @@ calculate_global_regs_live (blocks_in, blocks_out, flags)
     }
   else
     {
-      for (i = 0; i < n_basic_blocks; ++i)
+      FOR_EACH_BB (bb)
 	{
-	  basic_block bb = BASIC_BLOCK (i);
 	  *--qhead = bb;
 	  bb->aux = bb;
 	}

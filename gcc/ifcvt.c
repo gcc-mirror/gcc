@@ -111,14 +111,6 @@ static int dead_or_predicable		PARAMS ((basic_block, basic_block,
 						 basic_block, basic_block, int));
 static void noce_emit_move_insn		PARAMS ((rtx, rtx));
 
-/* Abuse the basic_block AUX field to store the original block index,
-   as well as a flag indicating that the block should be rescaned for
-   life analysis.  */
-
-#define SET_ORIG_INDEX(BB,I)	((BB)->aux = (void *)((size_t)(I)))
-#define ORIG_INDEX(BB)		((size_t)(BB)->aux)
-
-
 /* Count the number of non-jump active insns in BB.  */
 
 static int
@@ -2279,6 +2271,7 @@ find_if_case_1 (test_bb, then_edge, else_edge)
   basic_block then_bb = then_edge->dest;
   basic_block else_bb = else_edge->dest, new_bb;
   edge then_succ = then_bb->succ;
+  int then_bb_index;
 
   /* THEN has one successor.  */
   if (!then_succ || then_succ->succ_next != NULL)
@@ -2319,11 +2312,15 @@ find_if_case_1 (test_bb, then_edge, else_edge)
 		    then_bb->global_live_at_end, BITMAP_IOR);
   
   new_bb = redirect_edge_and_branch_force (FALLTHRU_EDGE (test_bb), else_bb);
-  /* Make rest of code believe that the newly created block is the THEN_BB
-     block we are going to remove.  */
-  if (new_bb)
-    new_bb->aux = then_bb->aux;
+  then_bb_index = then_bb->index;
   flow_delete_block (then_bb);
+  /* Make rest of code believe that the newly created block is the THEN_BB
+     block we removed.  */
+  if (new_bb)
+    {
+      new_bb->index = then_bb_index;
+      BASIC_BLOCK (then_bb_index) = new_bb;
+    }
   /* We've possibly created jump to next insn, cleanup_cfg will solve that
      later.  */
 
@@ -2366,8 +2363,8 @@ find_if_case_2 (test_bb, then_edge, else_edge)
   if (note && INTVAL (XEXP (note, 0)) >= REG_BR_PROB_BASE / 2)
     ;
   else if (else_succ->dest->index < 0
-	   || TEST_BIT (post_dominators[ORIG_INDEX (then_bb)], 
-			ORIG_INDEX (else_succ->dest)))
+	   || TEST_BIT (post_dominators[then_bb->index], 
+			else_succ->dest->index))
     ;
   else
     return FALSE;
@@ -2705,10 +2702,6 @@ if_convert (x_life_data_ok)
     }
   if (life_data_ok)
     clear_bb_flags ();
-
-  /* Record initial block numbers.  */
-  FOR_EACH_BB (bb)
-    SET_ORIG_INDEX (bb, bb->index);
 
   /* Go through each of the basic blocks looking for things to convert.  */
   FOR_EACH_BB (bb)

@@ -831,6 +831,9 @@ branch_prob ()
   num_edges = NUM_EDGES (el);
   alloc_aux_for_edges (sizeof (struct edge_info));
 
+  /* The basic blocks are expected to be numbered sequentially.  */
+  compact_blocks ();
+
   ignored_edges = 0;
   for (i = 0 ; i < num_edges ; i++)
     {

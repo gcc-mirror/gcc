@@ -235,7 +235,7 @@ extern int n_basic_blocks;
 
 /* First free basic block number.  */
 
-#define last_basic_block n_basic_blocks
+extern int last_basic_block;
 
 /* Number of edges in the current function.  */
 
@@ -670,7 +670,7 @@ extern void allocate_bb_life_data	PARAMS ((void));
 extern void expunge_block		PARAMS ((basic_block));
 extern void link_block			PARAMS ((basic_block, basic_block));
 extern void unlink_block		PARAMS ((basic_block));
-extern void expunge_block_nocompact	PARAMS ((basic_block));
+extern void compact_blocks		PARAMS ((void));
 extern basic_block alloc_block		PARAMS ((void));
 extern void find_unreachable_blocks	PARAMS ((void));
 extern int delete_noop_moves		PARAMS ((rtx));

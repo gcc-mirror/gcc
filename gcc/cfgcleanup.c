@@ -688,7 +688,6 @@ merge_blocks_move_predecessor_nojumps (a, b)
      basic_block a, b;
 {
   rtx barrier;
-  int index;
 
   barrier = next_nonnote_insn (a->end);
   if (GET_CODE (barrier) != BARRIER)
@@ -714,14 +713,7 @@ merge_blocks_move_predecessor_nojumps (a, b)
     fprintf (rtl_dump_file, "Moved block %d before %d and merged.\n",
 	     a->index, b->index);
 
-  /* Swap the records for the two blocks around.  Although we are deleting B,
-     A is now where B was and we want to compact the BB array from where
-     A used to be.  */
-  BASIC_BLOCK (a->index) = b;
-  BASIC_BLOCK (b->index) = a;
-  index = a->index;
-  a->index = b->index;
-  b->index = index;
+  /* Swap the records for the two blocks around.  */
 
   unlink_block (a);
   link_block (a, b->prev_bb);
@@ -1755,13 +1747,10 @@ delete_unreachable_blocks ()
 {
   bool changed = false;
   basic_block b, next_bb;
-  int j = 0;
 
   find_unreachable_blocks ();
 
-  /* Delete all unreachable basic blocks.  Do compaction concurrently,
-     as otherwise we can wind up with O(N^2) behaviour here when we
-     have oodles of dead code.  */
+  /* Delete all unreachable basic blocks.  */
 
   for (b = ENTRY_BLOCK_PTR->next_bb; b != EXIT_BLOCK_PTR; b = next_bb)
     {
@@ -1769,18 +1758,10 @@ delete_unreachable_blocks ()
 
       if (!(b->flags & BB_REACHABLE))
 	{
-	  flow_delete_block_noexpunge (b);
-	  expunge_block_nocompact (b);
+	  flow_delete_block (b);
 	  changed = true;
 	}
-      else
-	{
-	  BASIC_BLOCK (j) = b;
-	  b->index = j++;
-	}
     }
-  n_basic_blocks = j;
-  basic_block_info->num_elements = j;
 
   if (changed)
     tidy_fallthru_edges ();
@@ -1806,6 +1787,9 @@ cleanup_cfg (mode)
 	  && !reload_completed)
 	delete_trivially_dead_insns (get_insns(), max_reg_num ());
     }
+
+  compact_blocks ();
+
   while (try_optimize_cfg (mode))
     {
       delete_unreachable_blocks (), changed = true;

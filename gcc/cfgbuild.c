@@ -471,7 +471,6 @@ find_basic_blocks_1 (f)
      rtx f;
 {
   rtx insn, next;
-  int i = 0;
   rtx bb_note = NULL_RTX;
   rtx lvl = NULL_RTX;
   rtx trll = NULL_RTX;
@@ -494,7 +493,7 @@ find_basic_blocks_1 (f)
       if ((GET_CODE (insn) == CODE_LABEL || GET_CODE (insn) == BARRIER)
 	  && head)
 	{
-	  prev = create_basic_block_structure (i++, head, end, bb_note, prev);
+	  prev = create_basic_block_structure (last_basic_block++, head, end, bb_note, prev);
 	  head = end = NULL_RTX;
 	  bb_note = NULL_RTX;
 	}
@@ -508,7 +507,7 @@ find_basic_blocks_1 (f)
 
       if (head && control_flow_insn_p (insn))
 	{
-	  prev = create_basic_block_structure (i++, head, end, bb_note, prev);
+	  prev = create_basic_block_structure (last_basic_block++, head, end, bb_note, prev);
 	  head = end = NULL_RTX;
 	  bb_note = NULL_RTX;
 	}
@@ -590,11 +589,11 @@ find_basic_blocks_1 (f)
     }
 
   if (head != NULL_RTX)
-    create_basic_block_structure (i++, head, end, bb_note, prev);
+    create_basic_block_structure (last_basic_block++, head, end, bb_note, prev);
   else if (bb_note)
     delete_insn (bb_note);
 
-  if (i != n_basic_blocks)
+  if (last_basic_block != n_basic_blocks)
     abort ();
 
   label_value_list = lvl;
@@ -635,6 +634,7 @@ find_basic_blocks (f, nregs, file)
     }
 
   n_basic_blocks = count_basic_blocks (f);
+  last_basic_block = 0;
   ENTRY_BLOCK_PTR->next_bb = EXIT_BLOCK_PTR;
   EXIT_BLOCK_PTR->prev_bb = ENTRY_BLOCK_PTR;
 

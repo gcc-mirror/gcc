@@ -1206,8 +1206,6 @@ estimate_bb_frequencies (loops)
       FOR_BB_BETWEEN (bb, ENTRY_BLOCK_PTR, NULL, next_bb)
 	BLOCK_INFO (bb)->tovisit = 1;
 
-      BLOCK_INFO (ENTRY_BLOCK_PTR)->tovisit = 1;
-      BLOCK_INFO (EXIT_BLOCK_PTR)->tovisit = 1;
       propagate_freq (ENTRY_BLOCK_PTR);
 
       memcpy (&freq_max, &real_zero, sizeof (real_zero));

@@ -1290,7 +1290,7 @@ optimize_mode_switching (file)
 
 #ifdef NORMAL_MODE
   /* Restore the special status of EXIT_BLOCK.  */
-  n_basic_blocks--;
+  last_basic_block--;
   VARRAY_POP (basic_block_info);
   EXIT_BLOCK_PTR->index = EXIT_BLOCK;
 #endif
