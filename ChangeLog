@@ -1,3 +1,8 @@
+2001-11-08  Phil Edwards  <pedwards@disaster.jaj.com>
+
+	* configure.in (--enable-languages): Be more permissive about
+	syntax.  Check for empty lists better.  Warn about $LANGUAGES.
+
 2001-11-08  Geoffrey Keating  <geoffk@redhat.com>
 
 	* config.sub: Import from master sources, rev. 1.230.
