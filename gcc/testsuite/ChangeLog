@@ -1,3 +1,7 @@
+Wed Dec 29 20:54:46 1999  Greg McGary <gkm@eng.ascend.com>
+
+	* gcc.c-torture/compile/labels-2.c: New test.
+
 1999-12-22  Alexandre Oliva  <oliva@lsd.ic.unicamp.br>
 
 	* g++.old-deja/g++.pt/instantiate6.C: Remove excess errors XFAIL.
