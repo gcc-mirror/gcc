@@ -145,7 +145,7 @@ void *hash_value_for_key (cache_ptr cache, const void *key);
 
         Useful hashing functions.  
         
-        Declared inline for your pleaseure. 
+        Declared inline for your pleasure.
         
 ************************************************/
 
