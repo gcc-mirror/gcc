@@ -607,12 +607,6 @@ Replacement:      [    ]    @{    @}    #    \    ^    |    ~
 Enable special code to work around file systems which only permit very
 short file names, such as MS-DOS@.
 
-@item -$
-@opindex $
-Forbid the use of @samp{$} in identifiers.  The C standard allows
-implementations to define extra characters that can appear in
-identifiers.  By default GNU CPP permits @samp{$}, a common extension.
-
 @item -h
 @itemx --help
 @itemx --target-help
