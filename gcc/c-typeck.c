@@ -6400,6 +6400,15 @@ process_init_element (value)
 	    fieldtype = TYPE_MAIN_VARIANT (fieldtype);
 	  fieldcode = TREE_CODE (fieldtype);
 
+	  /* Warn that traditional C rejects initialization of unions.
+	     We skip the warning if the value is zero.  This is done
+	     under the assumption that the zero initializer in user
+	     code appears conditioned on e.g. __STDC__ to avoid
+	     "missing initializer" warnings and relies on default
+	     initialization to zero in the traditional C case.  */
+	  if (warn_traditional && !integer_zerop (value))
+	    warning ("traditional C rejects initialization of unions");
+
 	  /* Accept a string constant to initialize a subarray.  */
 	  if (value != 0
 	      && fieldcode == ARRAY_TYPE

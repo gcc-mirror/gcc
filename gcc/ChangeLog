@@ -1,3 +1,10 @@
+2000-08-09  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* c-typeck.c (process_init_element): For -Wtraditional, warn about
+	initialization of unions.
+
+	* invoke.texi (-Wtraditional): Document new behavior.
+
 2000-08-09  Zack Weinberg  <zack@wolery.cumb.org>
 
 	* configure.in (--enable-c-cpplib): Uncomment.  Use AC_DEFINE
