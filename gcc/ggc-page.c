@@ -1157,7 +1157,7 @@ ggc_page_print_statistics ()
   unsigned int i;
 
   /* Clear the statistics.  */
-  bzero (&stats, sizeof (stats));
+  memset (&stats, 0, sizeof (stats));
   
   /* Make sure collection will really occur.  */
   G.allocated_last_gc = 0;

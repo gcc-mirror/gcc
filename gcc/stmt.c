@@ -3561,7 +3561,6 @@ expand_end_bindings (vars, mark_ends, dont_jump_in)
      int dont_jump_in;
 {
   register struct nesting *thisblock;
-  register tree decl;
 
   while (block_stack->data.block.exception_region)
     {

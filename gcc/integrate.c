@@ -1625,11 +1625,11 @@ copy_rtx_and_substitute (orig, map, for_lhs)
 	    {
 	      rtx loc, seq;
 	      int size = get_func_frame_size (DECL_SAVED_INSNS (map->fndecl));
+#ifdef FRAME_GROWS_DOWNWARD
 	      int alignment
 		= (DECL_SAVED_INSNS (map->fndecl)->stack_alignment_needed
 		   / BITS_PER_UNIT);
 
-#ifdef FRAME_GROWS_DOWNWARD
 	      /* In this case, virtual_stack_vars_rtx points to one byte
 		 higher than the top of the frame area.  So make sure we
 		 allocate a big enough chunk to keep the frame pointer

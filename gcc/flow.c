@@ -2821,7 +2821,6 @@ static void
 mark_regs_live_at_end (set)
      regset set;
 {
-  tree result, type;
   int i;
 
   /* If exiting needs the right stack value, consider the stack pointer
