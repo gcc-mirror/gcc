@@ -276,7 +276,7 @@ static int java_decl_equiv PARAMS ((tree, tree));
 static int binop_compound_p PARAMS ((enum tree_code));
 static tree search_loop PARAMS ((tree));
 static int labeled_block_contains_loop_p PARAMS ((tree, tree));
-static void check_abstract_method_definitions PARAMS ((int, tree, tree));
+static int check_abstract_method_definitions PARAMS ((int, tree, tree));
 static void java_check_abstract_method_definitions PARAMS ((tree));
 static void java_debug_context_do PARAMS ((int));
 static void java_parser_context_push_initialized_field PARAMS ((void));
@@ -5825,13 +5825,15 @@ check_method_redefinition (class, method)
   return 0;
 }
 
-static void
+/* Return 1 if check went ok, 0 otherwise.  */
+static int
 check_abstract_method_definitions (do_interface, class_decl, type)
      int do_interface;
      tree class_decl, type;
 {
   tree class = TREE_TYPE (class_decl);
   tree method, end_type;
+  int ok = 1;
 
   end_type = (do_interface ? object_type_node : type);
   for (method = TYPE_METHODS (type); method; method = TREE_CHAIN (method))
@@ -5904,13 +5906,27 @@ check_abstract_method_definitions (do_interface, class_decl, type)
 	     IDENTIFIER_POINTER (ccn),
 	     (CLASS_INTERFACE (class_decl) ? "interface" : "class"),
 	     IDENTIFIER_POINTER (DECL_NAME (class_decl)));
-	  
+	  ok = 0;
 	  free (t);
-	  
+
 	  if (saved_wfl)
 	    DECL_NAME (method) = saved_wfl;
 	}
     }
+
+  if (ok && do_interface)
+    {
+      /* Check for implemented interfaces. */
+      int i;
+      tree vector = TYPE_BINFO_BASETYPES (type);
+      for (i = 1; ok && vector && i < TREE_VEC_LENGTH (vector); i++)
+	{
+	  tree super = BINFO_TYPE (TREE_VEC_ELT (vector, i));
+	  ok = check_abstract_method_definitions (1, class_decl, super);
+	}
+    }
+
+  return ok;
 }
 
 /* Check that CLASS_DECL somehow implements all inherited abstract
