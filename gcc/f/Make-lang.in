@@ -244,7 +244,7 @@ f77.dvi: f/g77.dvi
 # g77 documentation.
 f/g77.info: $(srcdir)/f/g77.texi $(srcdir)/f/bugs.texi \
 	    $(srcdir)/f/g77install.texi $(srcdir)/f/news.texi \
-	    $(srcdir)/f/intdoc.texi
+	    $(srcdir)/f/intdoc.texi $(srcdir)/f/root.texi
 	case "$(LANGUAGES)" in \
 	  *[fF]77*) touch lang-f77;; \
 	  *) rm -f lang-f77;; \
@@ -256,7 +256,7 @@ f/g77.info: $(srcdir)/f/g77.texi $(srcdir)/f/bugs.texi \
 
 f/g77.dvi: $(srcdir)/f/g77.texi $(srcdir)/f/bugs.texi \
 	    $(srcdir)/f/g77install.texi $(srcdir)/f/news.texi \
-	    $(srcdir)/f/intdoc.texi
+	    $(srcdir)/f/intdoc.texi $(srcdir)/f/root.texi
 	case "$(LANGUAGES)" in \
 	  *[fF]77*) touch lang-f77;; \
 	  *) rm -f lang-f77;; \
@@ -306,15 +306,15 @@ $(srcdir)/f/intdoc.texi: f/intdoc.c f/intdoc.in f/ansify.c f/intrin.def f/intrin
 	  rm f/intdoc f/ansify f/intdoc.h0; \
 	else true; fi
 
-$(srcdir)/f/BUGS: f/bugs0.texi f/bugs.texi
+$(srcdir)/f/BUGS: f/bugs0.texi f/bugs.texi f/root.texi
 	cd $(srcdir)/f; $(MAKEINFO) -D BUGSONLY --no-header --no-split \
 	  --no-validate -o BUGS bugs0.texi
 
-$(srcdir)/f/INSTALL: f/install0.texi f/g77install.texi
+$(srcdir)/f/INSTALL: f/install0.texi f/g77install.texi f/root.texi
 	cd $(srcdir)/f; $(MAKEINFO) -D INSTALLONLY --no-header --no-split \
 	  --no-validate -o INSTALL install0.texi
 
-$(srcdir)/f/NEWS: f/news0.texi f/news.texi
+$(srcdir)/f/NEWS: f/news0.texi f/news.texi f/root.texi
 	cd $(srcdir)/f; $(MAKEINFO) -D NEWSONLY --no-header --no-split \
 	  --no-validate -o NEWS news0.texi
 
