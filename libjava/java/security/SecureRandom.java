@@ -49,6 +49,8 @@ import java.util.Enumeration;
  */
 public class SecureRandom extends Random
 {
+  static final long serialVersionUID = 4940670005562187L;
+
   //Serialized Field
   long counter = 0;		//Serialized
   MessageDigest digest = null;

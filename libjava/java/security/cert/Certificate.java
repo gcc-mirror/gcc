@@ -69,7 +69,8 @@ import java.io.ObjectStreamException;
 */
 public abstract class Certificate
 {
-
+  static final long serialVersionUID = -6751606818319535583L;
+	
   private String type;
   /**
      Constructs a new certificate of the specified type. An example

@@ -48,6 +48,8 @@ import java.io.Serializable;
  */
 public final class KeyPair implements Serializable
 {
+  static final long serialVersionUID = -7565189502268009837L;
+
   private PublicKey publicKey;
   private PrivateKey privateKey;
 

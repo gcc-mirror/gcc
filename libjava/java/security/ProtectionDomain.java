@@ -53,8 +53,6 @@ package java.security;
  */
 public class ProtectionDomain
 {
-  private static final String linesep = System.getProperty("line.separator");
-
   /**
    * This is the <code>CodeSource</code> for this protection domain
    */
@@ -131,6 +129,7 @@ public class ProtectionDomain
    */
   public String toString()
   {
+    String linesep = System.getProperty("line.separator");
     StringBuffer sb = new StringBuffer("");
     sb.append("ProtectionDomain (" + linesep);
     if (code_source == null)
