@@ -1,3 +1,8 @@
+2002-05-10  David S. Miller  <davem@redhat.com>
+
+	* cse.c (rtx_cost): Remove multiplication by power of 2 special
+	casing.
+
 2002-05-10  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
 
 	* config/mips/t-iris6 (SHLIB_SLIBDIR_SUFFIXES): Use mabi=64 and
