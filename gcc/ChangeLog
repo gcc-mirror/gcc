@@ -1,3 +1,8 @@
+Thu Mar  5 02:41:27 1998  Richard Henderson  <rth@cygnus.com>
+
+	* reload.c (find_reloads): Always force (subreg (mem)) to be
+	reloaded if WORD_REGISTER_OPERATIONS.
+
 Thu Mar  5 02:14:44 1998  Richard Henderson  <rth@cygnus.com>
 
 	* haifa-sched.c (free_list): Rename from free_pnd_lst.
