@@ -61,13 +61,6 @@ Boston, MA 02111-1307, USA.  */
   builtin_assert ("cpu=xstormy16");     \
 } while (0)
 
-/* This declaration should be present.  */
-extern int target_flags;
-
-#define TARGET_SWITCHES					\
-  {{ "sim", 0, "Provide libraries for the simulator" },	\
-   { "", 0, "" }}
-
 #define TARGET_VERSION fprintf (stderr, " (xstormy16 cpu core)");
 
 #define CAN_DEBUG_WITHOUT_FP

@@ -2192,6 +2192,7 @@ xstormy16-*-elf)
 	tm_p_file=stormy16/stormy16-protos.h
 	md_file=stormy16/stormy16.md
 	out_file=stormy16/stormy16.c
+	extra_options=stormy16/stormy16.opt
 	tmake_file="stormy16/t-stormy16"
 	extra_parts="crtbegin.o crtend.o"
 	use_fixproto=yes
