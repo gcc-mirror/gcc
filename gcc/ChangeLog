@@ -1,3 +1,8 @@
+Tue Sep  2 18:41:55 1997  Jeffrey A Law  (law@cygnus.com)
+
+	* mn10200.h (INITIALIZE_TRAMPOLINE): PC relative instructions
+	are relative to the next instruction, not the current instruction.
+
 Tue Sep  2 14:22:43 1997  Jim Wilson  <wilson@cygnus.com>
 
 	* local-alloc.c (contains_replace_regs): New function.
