@@ -10259,7 +10259,7 @@ VMS_open (fname, flags, prot)
 #include <fab.h>
 #include <nam.h>
 
-extern unsigned long sys$parse(), sys$search();
+extern unsigned long SYS$PARSE(), SYS$SEARCH();
 
 /* Work around another library bug.  If a file is located via a searchlist,
    and if the device it's on is not the same device as the one specified
@@ -10306,8 +10306,8 @@ VMS_stat (name, statbuf)
     {
       struct FAB fab;
       struct NAM nam;
-      char exp_nam[NAM$C_MAXRSS+1],  /* expanded name buffer for sys$parse */
-	   res_nam[NAM$C_MAXRSS+1];  /* resultant name buffer for sys$search */
+      char exp_nam[NAM$C_MAXRSS+1],  /* expanded name buffer for SYS$PARSE */
+	   res_nam[NAM$C_MAXRSS+1];  /* resultant name buffer for SYS$SEARCH */
 
       fab = cc$rms_fab;
       fab.fab$l_fna = (char *) name;
@@ -10317,9 +10317,9 @@ VMS_stat (name, statbuf)
       nam.nam$l_esa = exp_nam,  nam.nam$b_ess = sizeof exp_nam - 1;
       nam.nam$l_rsa = res_nam,  nam.nam$b_rss = sizeof res_nam - 1;
       nam.nam$b_nop = NAM$M_PWD | NAM$M_NOCONCEAL;
-      if (sys$parse (&fab) & 1)
+      if (SYS$PARSE (&fab) & 1)
 	{
-	  if (sys$search (&fab) & 1)
+	  if (SYS$SEARCH (&fab) & 1)
 	    {
 	      res_nam[nam.nam$b_rsl] = '\0';
 	      result = stat (res_nam, statbuf);
@@ -10327,7 +10327,7 @@ VMS_stat (name, statbuf)
 	  /* Clean up searchlist context cached by the system.  */
 	  nam.nam$b_nop = NAM$M_SYNCHK;
 	  fab.fab$l_fna = 0,  fab.fab$b_fns = 0;
-	  (void) sys$parse (&fab);
+	  (void) SYS$PARSE (&fab);
 	}
     }
 

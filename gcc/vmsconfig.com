@@ -177,8 +177,6 @@ PROCEDURE process_makefile( )
   generate_option_file ("OBJS",		 "=", "independent.opt");
   generate_option_file ("LIB2FUNCS",	 "=", "libgcc2.list");
   generate_option_file ("CXX_LIB2FUNCS", "=", "libgcc2-cxx.list");
-  generate_option_file ("BC_ALL",	 "=", "bc_all.list");
-  generate_option_file ("BI_OBJ",	 "=", "bi_all.opt");
   !
   ! Now change OBJS in the Makefile, so each language specific options file
   ! does not pick up all of the language independent files.
