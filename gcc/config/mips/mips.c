@@ -1081,7 +1081,7 @@ mips_symbol_insns (enum mips_symbol_type type)
 	      daddu   $at,$at,$gp
 
 	 and the final address is $at + %got_lo(symbol).  */
-      return (flag_pic == 1 ? 1 : 3);
+      return (TARGET_XGOT ? 3 : 1);
 
     case SYMBOL_GOT_LOCAL:
       /* For o32 and o64, the sequence is:
@@ -1881,10 +1881,10 @@ mips_legitimize_const_move (enum machine_mode mode, rtx dest, rtx src)
       && GET_CODE (src) == SYMBOL_REF
       && mips_classify_symbol (src) == SYMBOL_GOT_GLOBAL)
     {
-      if (flag_pic == 1)
-	src = mips_load_got16 (src, RELOC_GOT_DISP);
-      else
+      if (TARGET_XGOT)
 	src = mips_load_got32 (temp, src, RELOC_GOT_HI, RELOC_GOT_LO);
+      else
+	src = mips_load_got16 (src, RELOC_GOT_DISP);
       emit_insn (gen_rtx_SET (VOIDmode, dest, src));
       return;
     }
@@ -3213,10 +3213,10 @@ mips_expand_call (rtx result, rtx addr, rtx args_size, rtx aux, int sibcall_p)
 	  && GET_CODE (addr) == SYMBOL_REF
 	  && mips_classify_symbol (addr) == SYMBOL_GOT_GLOBAL)
 	{
-	  if (flag_pic == 1)
-	    addr = mips_load_got16 (addr, RELOC_CALL16);
-	  else
+	  if (TARGET_XGOT)
 	    addr = mips_load_got32 (0, addr, RELOC_CALL_HI, RELOC_CALL_LO);
+	  else
+	    addr = mips_load_got16 (addr, RELOC_CALL16);
 	}
       addr = force_reg (Pmode, addr);
     }
@@ -4632,8 +4632,7 @@ override_options (void)
      implemented.  */
   if (TARGET_ABICALLS)
     {
-      if (flag_pic == 0)
-	flag_pic = 1;
+      flag_pic = 1;
       if (mips_section_threshold > 0)
 	warning ("-G is incompatible with PIC code which is the default");
     }

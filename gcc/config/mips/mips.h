@@ -153,7 +153,7 @@ extern const struct mips_cpu_info *mips_tune_info;
 #define MASK_SOFT_FLOAT	   0x00000100	/* software floating point */
 #define MASK_FLOAT64	   0x00000200	/* fp registers are 64 bits */
 #define MASK_ABICALLS	   0x00000400	/* emit .abicalls/.cprestore/.cpload */
-#define MASK_UNUSED1	   0x00000800	/* Unused Mask.  */
+#define MASK_XGOT	   0x00000800	/* emit big-got PIC */
 #define MASK_LONG_CALLS	   0x00001000	/* Always call through a register */
 #define MASK_64BIT	   0x00002000	/* Use 64 bit GP registers and insns */
 #define MASK_EMBEDDED_PIC  0x00004000	/* Generate embedded PIC code */
@@ -218,6 +218,7 @@ extern const struct mips_cpu_info *mips_tune_info;
 
 					/* .abicalls, etc from Pyramid V.4 */
 #define TARGET_ABICALLS		(target_flags & MASK_ABICALLS)
+#define TARGET_XGOT		(target_flags & MASK_XGOT)
 
 					/* software floating point */
 #define TARGET_SOFT_FLOAT	(target_flags & MASK_SOFT_FLOAT)
@@ -602,6 +603,10 @@ extern const struct mips_cpu_info *mips_tune_info;
      N_("Generate mips16 code") },					\
   {"no-mips16",		 -MASK_MIPS16,					\
      N_("Generate normal-mode code") },					\
+  {"xgot",		  MASK_XGOT,					\
+     N_("Lift restrictions on GOT size") },				\
+  {"no-xgot",		 -MASK_XGOT,					\
+     N_("Do not lift restrictions on GOT size") },			\
   {"debug",		  MASK_DEBUG,					\
      NULL},								\
   {"debuga",		  MASK_DEBUG_A,					\
@@ -1082,7 +1087,7 @@ extern const struct mips_cpu_info *mips_tune_info;
 %{membedded-pic} \
 %{mabi=32:-32}%{mabi=n32:-n32}%{mabi=64:-64}%{mabi=n64:-64} \
 %{mabi=eabi} %{mabi=o64} %{!mabi*: %(asm_abi_default_spec)} \
-%{mgp32} %{mgp64} %{march=*} \
+%{mgp32} %{mgp64} %{march=*} %{mxgot:-xgot} \
 %(target_asm_spec) \
 %(subtarget_asm_spec)"
 

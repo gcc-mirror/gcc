@@ -471,7 +471,7 @@ in the following sections.
 -mgas  -mgp32  -mgp64  -mhard-float  -mint64  -mips1 @gol
 -mips2  -mips3  -mips4  -mips32  -mips32r2  -mips64 @gol
 -mlong64  -mlong32  -mlong-calls  -mmemcpy @gol
--mmips-as  -mmips-tfile  -mno-abicalls @gol
+-mmips-as  -mmips-tfile  -mno-abicalls  -mxgot @gol
 -mno-embedded-data  -mno-uninit-const-in-rodata @gol
 -mno-embedded-pic  -mno-long-calls @gol
 -mno-memcpy  -mno-mips-tfile  -mno-rnames @gol
@@ -8066,6 +8066,35 @@ default if you use the unmodified sources.
 Emit (or do not emit) the pseudo operations @samp{.abicalls},
 @samp{.cpload}, and @samp{.cprestore} that some System V.4 ports use for
 position independent code.
+
+@item -mxgot
+@itemx -mno-xgot
+@opindex mxgot
+@opindex mno-xgot
+Lift (or do not lift) the usual restrictions on the size of the global
+offset table.
+
+GCC normally uses a single instruction to load values from the GOT.
+While this is relatively efficient, it will only work if the GOT
+is smaller than about 64k.  Anything larger will cause the linker
+to report an error such as:
+
+@cindex relocation truncated to fit (MIPS)
+@smallexample
+relocation truncated to fit: R_MIPS_GOT16 foobar
+@end smallexample
+
+If this happens, you should recompile your code with @option{-mxgot}.
+It should then work with very large GOTs, although it will also be
+less efficient, since it will take three instructions to fetch the
+value of a global symbol.
+
+Note that some linkers can create multiple GOTs.  If you have such a
+linker, you should only need to use @option{-mxgot} when a single object
+file accesses more than 64k's worth of GOT entries.  Very few do.
+
+These options have no effect unless GCC is generating position
+independent code.
 
 @item -mlong-calls
 @itemx -mno-long-calls

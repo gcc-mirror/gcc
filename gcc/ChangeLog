@@ -1,3 +1,15 @@
+2003-09-03  Richard Sandiford  <rsandifo@redhat.com>
+
+	* config/mips/mips.h (MASK_UNUSED1): Remove.
+	(MASK_XGOT, TARGET_XGOT): Define.
+	(TARGET_SWITCHES): Add an entry for -mxgot.
+	(ASM_SPEC): Map -mxgot to -xgot.
+	* config/mips/mips.c (mips_symbol_insns): Use TARGET_XGOT to decide
+	whether we're using a big-GOT sequences.
+	(mips_legitimize_const_move, mips_expand_call): Likewise.
+	(override_options): Revert 2003-01-09 change.
+	* doc/invoke.texi: Document -mxgot.
+
 2003-09-02  Jason Merrill  <jason@redhat.com>
 
 	* config/sol2.h (NO_IMPLICIT_EXTERN_C): Define here.
