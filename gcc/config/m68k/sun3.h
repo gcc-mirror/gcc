@@ -1,5 +1,5 @@
 /* Definitions of target machine for GNU compiler.  Sun 68000/68020 version.
-   Copyright (C) 1987, 1988 Free Software Foundation, Inc.
+   Copyright (C) 1987, 1988, 1993 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -165,55 +165,102 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 /* Generate calls to memcpy, memcmp and memset.  */
 #define TARGET_MEM_FUNCTIONS
 
+#define FUNCTION_VALUEX(MODE)						    \
+  gen_rtx (REG, (MODE),							    \
+	   ((TARGET_68881						    \
+	     && ((MODE) == SFmode || (MODE) == DFmode || (MODE) == XFmode)) \
+	    ? 16 : 0))
+
+#undef FUNCTION_VALUE
+#define FUNCTION_VALUE(VALTYPE,FUNC) FUNCTION_VALUEX (TYPE_MODE (VALTYPE))
+
 /* This is how to output an assembler line defining a `double' constant.  */
 
 #undef ASM_OUTPUT_DOUBLE
-#define ASM_OUTPUT_DOUBLE(FILE,VALUE)					\
-  {									\
-    if (REAL_VALUE_ISINF (VALUE))					\
-      fprintf (FILE, "\t.double 0r%s99e999\n", (VALUE) > 0 ? "" : "-");	\
-    else if (REAL_VALUE_ISNAN (VALUE))					\
-      {									\
-	union { double d; long l[2];} t;				\
-	t.d = (VALUE);							\
-	fprintf (FILE, "\t.long 0x%lx\n\t.long 0x%lx\n", t.l[0], t.l[1]); \
-      }									\
-    else								\
-      fprintf (FILE, "\t.double 0r%.17g\n", VALUE);			\
-  }
+#define ASM_OUTPUT_DOUBLE(FILE,VALUE)				\
+  {								\
+    if (REAL_VALUE_ISINF (VALUE))				\
+      {								\
+        if (REAL_VALUE_NEGATIVE (VALUE))			\
+          fprintf (FILE, "\t.double 0r-99e999\n");		\
+        else							\
+          fprintf (FILE, "\t.double 0r99e999\n");		\
+      }								\
+    else if (REAL_VALUE_ISNAN (VALUE))				\
+      { long l[2];						\
+        REAL_VALUE_TO_TARGET_DOUBLE ((VALUE), l);		\
+	fprintf (FILE, "\t.long 0x%lx\n\t.long 0x%lx\n", l[0], l[1]); \
+      }								\
+    else							\
+      { char dstr[30];						\
+        REAL_VALUE_TO_DECIMAL ((VALUE), "%.17g", dstr);		\
+        fprintf (FILE, "\t.double 0r%s\n", dstr);		\
+      }								\
+    }
 
 /* This is how to output an assembler line defining a `float' constant.  */
 
 #undef ASM_OUTPUT_FLOAT
-#define ASM_OUTPUT_FLOAT(FILE,VALUE)					\
-  {									\
-    if (REAL_VALUE_ISINF (VALUE))					\
-      fprintf (FILE, "\t.single 0r%s99e999\n", (VALUE) > 0 ? "" : "-");	\
-    else if (REAL_VALUE_ISNAN (VALUE))					\
-      {									\
-	union { float f; long l;} t;					\
-	t.f = (VALUE);							\
-	fprintf (FILE, "\t.long 0x%lx\n", t.l);				\
-      }									\
-    else								\
-      fprintf (FILE, "\t.single 0r%.9g\n", VALUE);			\
-  }
+#define ASM_OUTPUT_FLOAT(FILE,VALUE)				\
+  {								\
+    if (REAL_VALUE_ISINF (VALUE))				\
+      {								\
+        if (REAL_VALUE_NEGATIVE (VALUE))			\
+          fprintf (FILE, "\t.single 0r-99e999\n");		\
+        else							\
+          fprintf (FILE, "\t.single 0r99e999\n");			\
+      }								\
+    else if (REAL_VALUE_ISNAN (VALUE))				\
+      { long l;							\
+        REAL_VALUE_TO_TARGET_SINGLE ((VALUE), l);		\
+        fprintf (FILE, "\t.long 0x%lx\n", l);			\
+      }								\
+    else							\
+      { char dstr[30];						\
+        REAL_VALUE_TO_DECIMAL ((VALUE), "%.9g", dstr);		\
+        fprintf (FILE, "\t.single 0r%s\n", dstr);		\
+      }								\
+    }
 
 /* This is how to output an assembler lines defining floating operands.
    There's no way to output a NaN's fraction, so we lose it.  */
   
 #undef ASM_OUTPUT_FLOAT_OPERAND
-#define ASM_OUTPUT_FLOAT_OPERAND(FILE,VALUE)				\
-  (REAL_VALUE_ISINF ((VALUE))						\
-   ? (asm_fprintf (FILE, "%I0r%s99e999", ((VALUE) > 0 ? "" : "-")), 0)	\
-   : REAL_VALUE_MINUS_ZERO (VALUE)					\
-   ? (asm_fprintf (FILE, "%I0r-0.0"), 0)				\
-   : (asm_fprintf (FILE, "%I0r%.9g", (VALUE)), 0))
+#define ASM_OUTPUT_FLOAT_OPERAND(CODE,FILE,VALUE)			\
+ do { if (REAL_VALUE_ISINF (VALUE))					\
+        {								\
+          if (REAL_VALUE_NEGATIVE (VALUE))				\
+            asm_fprintf (FILE, "%I0r-99e999");				\
+          else								\
+            asm_fprintf (FILE, "%I0r99e999");				\
+        }								\
+      else if (REAL_VALUE_MINUS_ZERO (VALUE))				\
+        {								\
+          asm_fprintf (FILE, "%I0r-0.0");				\
+        }								\
+      else								\
+        { char dstr[30];						\
+          REAL_VALUE_TO_DECIMAL ((VALUE), "%.9g", dstr);		\
+          asm_fprintf (FILE, "%I0r%s", dstr);				\
+        }								\
+    } while (0)
 
 #undef ASM_OUTPUT_DOUBLE_OPERAND
 #define ASM_OUTPUT_DOUBLE_OPERAND(FILE,VALUE)				\
-  (REAL_VALUE_ISINF ((VALUE))						\
-   ? (asm_fprintf (FILE, "%I0r%s99e999", ((VALUE) > 0 ? "" : "-")), 0)	\
-   : REAL_VALUE_MINUS_ZERO (VALUE)					\
-   ? (asm_fprintf (FILE, "%I0r-0.0"), 0)				\
-   : (asm_fprintf (FILE, "%I0r%.17g", (VALUE)), 0))
+ do { if (REAL_VALUE_ISINF (VALUE))					\
+        {								\
+          if (REAL_VALUE_NEGATIVE (VALUE))				\
+            asm_fprintf (FILE, "%I0r-99e999");				\
+          else								\
+            asm_fprintf (FILE, "%I0r99e999");				\
+        }								\
+      else if (REAL_VALUE_MINUS_ZERO (VALUE))				\
+        {								\
+          asm_fprintf (FILE, "%I0r-0.0");				\
+        }								\
+      else								\
+        { char dstr[30];						\
+          REAL_VALUE_TO_DECIMAL ((VALUE), "%.17g", dstr);		\
+          asm_fprintf (FILE, "%I0r%s", dstr);				\
+        }								\
+    } while (0)
