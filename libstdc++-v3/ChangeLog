@@ -1,5 +1,26 @@
 2002-04-30  Benjamin Kosnik  <bkoz@redhat.com>
 
+	* include/ext/stdio_filebuf.h: New file.
+	* include/ext/enc_filebuf.h: New file.	
+	* config/io/basic_file_stdio.h (__basic_file::sys_open): Add fd ctor.
+	* config/io/basic_file_stdio.cc: Same.	
+	* include/bits/fstream.tcc (filebuf::_M_allocate_internal_buffer):
+	Remove _M_unbuf hacks.
+	(filebuf::_M_destroy_internal_buffer): Same.
+	(filebuf::filebuf(cfile, openmode, int_type): Remove definition.
+	(filebuf::fd): Remove.
+	* include/std/std_fstream.h (filebuf::_M_unbuf): Remove.
+	(filebuf::filebuf(__c_file*, openmode, int_type)): Remove.
+	(filebuf::fd): Remove.	
+	* src/ios.cc (ios_base::_S_ios_create): Change to use specialized
+	filebufs.
+	(ios_base::_S_ios_destroy): Same.
+	* src/misc-inst.cc (file_filebuf<char>): Add instantiation.
+	* include/Makefile.am (ext_headers): Add ext_filebuf.h,
+	stdio_filebuf.h.  * include/Makefile.in: Regenerate.
+
+2002-04-30  Benjamin Kosnik  <bkoz@redhat.com>
+
 	PR libstdc++/6511
 	* config/os/solaris/solaris2.7/bits/ctype_noninline.h: Fix typo.
 

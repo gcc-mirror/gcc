@@ -143,6 +143,8 @@ ext_srcdir = ${glibcpp_srcdir}/include/ext
 ext_builddir = ./ext
 ext_headers = \
 	${ext_srcdir}/algorithm \
+	${ext_srcdir}/enc_filebuf.h \
+	${ext_srcdir}/stdio_filebuf.h \
 	${ext_srcdir}/functional \
 	${ext_srcdir}/hash_map \
 	${ext_srcdir}/hash_set \
