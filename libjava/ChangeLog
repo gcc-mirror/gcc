@@ -1,3 +1,15 @@
+2004-07-09  Michael Koch  <konqueror@gmx.de>
+
+	* javax/imageio/IIOException.java,
+	javax/imageio/event/IIOReadProgressListener.java,
+	javax/imageio/event/IIOReadUpdateListener.java,
+	javax/imageio/event/IIOReadWarningListener.java,
+	javax/imageio/event/IIOWriteProgressListener.java,
+	javax/imageio/event/IIOWriteWarningListener.java:
+	New files.
+	* Makefile.am: Added new files.
+	* Makefile.in: Regenerated.
+
 2004-07-09  Guilhem Lavaux <guilhem@kaffe.org>
 
 	* java/text/RuleBasedCollator.java
