@@ -22,14 +22,8 @@
    need GC at all.  This prevents problems with pulling in all the
    tree stuff.  */
 
-/* We are used by gengenrtl, before genrtl.h exists.  But we don't 
-   need it either.  */
-#define NO_GENRTL_H
-
 #include "config.h"
 #include "system.h"
-#include "rtl.h"
-#include "tm_p.h"
 #include "ggc.h"
 
 void *

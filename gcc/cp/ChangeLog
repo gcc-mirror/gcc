@@ -1,3 +1,7 @@
+2001-03-09  Zack Weinberg  <zackw@stanford.edu>
+
+	* Make-lang.in: Add dependencies on $(TM_P_H) as appropriate.
+
 2001-03-08  Stan Shebs  <shebs@apple.com>
 
 	* cp-tree.h (set_identifier_local_value): Remove unused decl.

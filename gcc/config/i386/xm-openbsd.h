@@ -1,5 +1,5 @@
-/* Configuration for GNU C-compiler for Elxsi.
-   Copyright (C) 1987, 1993, 2001 Free Software Foundation, Inc.
+/* Configuration file for i386 hosts running OpenBSD.
+   Copyright (C) 1999 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -18,3 +18,4 @@ along with GNU CC; see the file COPYING.  If not, write to
 the Free Software Foundation, 59 Temple Place - Suite 330,
 Boston, MA 02111-1307, USA.  */
 
+#include <xm-openbsd.h>
