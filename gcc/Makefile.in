@@ -2135,6 +2135,7 @@ maintainer-clean: distclean bytecode.maintainer-clean lang.maintainer-clean
 	-rm -f cexp.c cexp.output TAGS 
 	-rm -f cpp.info* cpp.??s cpp.*aux
 	-rm -f gcc.info* gcc.??s gcc.*aux
+	-rm -f configure
 
 # Entry points `install' and `uninstall'.
 # Also use `install-collect2' to install collect2 when the config files don't.
