@@ -1,3 +1,8 @@
+Tue May  9 22:28:03 2000  Denis Chertykov  <denisc@overta.ru>
+
+	* flow.c (flow_delete_insn): Use INSN_DELETED_P for marking insn
+	as deleted.
+
 Tue May  9 20:52:43 2000  Denis Chertykov  <denisc@overta.ru>
 
  	* config/avr/avr-protos.h (extra_constraint): change a type of

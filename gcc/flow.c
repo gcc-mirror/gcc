@@ -2004,7 +2004,8 @@ flow_delete_insn (insn)
 
   PREV_INSN (insn) = NULL_RTX;
   NEXT_INSN (insn) = NULL_RTX;
-
+  INSN_DELETED_P (insn) = 1;
+  
   if (prev)
     NEXT_INSN (prev) = next;
   if (next)
