@@ -1,3 +1,9 @@
+2004-02-12  Chris Demetriou  <cgd@broadcom.com>
+
+	* config/mips/mips.md (casesi_internal, casesi_internal_di):
+	Use ".set macro" to avoid warnings about multi-instruction
+	macros, since they're intentional.
+
 2004-02-13  Jan Hubicka  <jh@suse.cz>
 
 	* alias.c (find_base_term, get_addr):  Do not dereference NULL
