@@ -1,3 +1,7 @@
+Tue Dec  8 00:59:09 1998  Marc Espie <Marc.Espie@liafa.jussieu.fr>
+
+	* Makefile.in: Be more selective about what files to install.
+
 1998-11-30  Ulrich Drepper  <drepper@cygnus.com>
 
 	* std/bastring.cc (operator>>): Correct cast in last patch.
