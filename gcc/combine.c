@@ -1802,9 +1802,12 @@ try_combine (i3, i2, i1)
 					      &i2_scratches);
 
 	  /* If I2 or I3 has multiple SETs, we won't know how to track
-	     register status, so don't use these insns.  */
+	     register status, so don't use these insns.  If I2's destination
+	     is used between I2 and I3, we also can't use these insns.  */
 
-	  if (i2_code_number >= 0 && i2set && i3set)
+	  if (i2_code_number >= 0 && i2set && i3set
+	      && (next_real_insn (i2) == i3
+		  || ! reg_used_between_p (SET_DEST (i2set), i2, i3)))
 	    insn_code_number = recog_for_combine (&newi3pat, i3, &new_i3_notes,
 						  &i3_scratches); 
 	  if (insn_code_number >= 0)
