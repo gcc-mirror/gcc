@@ -24,6 +24,8 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
     builtin_define ("__ELF__");					\
   } while (0)
 
+#define TARGET_SECTION_TYPE_FLAGS xtensa_multibss_section_type_flags
+
 /* Don't assume anything about the header files. */
 #define NO_IMPLICIT_EXTERN_C
 
