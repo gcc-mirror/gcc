@@ -419,7 +419,14 @@ get_call_expr_in (tree t)
   return NULL_TREE;
 }
 
-/* Given a memory reference expression T, return its base address.  */
+/* Given a memory reference expression T, return its base address.
+   The base address of a memory reference expression is the main
+   object being referenced.  For instance, the base address for
+   'array[i].fld[j]' is 'array'.  You can think of this as stripping
+   away the offset part from a memory address.
+
+   This function calls handled_component_p to strip away all the inner
+   parts of the memory reference until it reaches the base object.  */
 
 tree
 get_base_address (tree t)

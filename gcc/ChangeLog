@@ -1,3 +1,7 @@
+2004-12-14  Diego Novillo  <dnovillo@redhat.com>
+
+	* tree-gimple.c (get_base_address): Update documentation.
+
 2004-12-13  Richard Henderson  <rth@redhat.com>
 
 	PR middle-end/17930
