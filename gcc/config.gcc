@@ -406,6 +406,17 @@ case ${target} in
   esac
   fbsd_tm_file="${fbsd_tm_file} freebsd-spec.h freebsd.h"
   ;;
+*-*-kfreebsd*-gnu)
+  # Must come before *-*-gnu*
+  xm_defines=POSIX # needed for cross-compiling from FreeBSD?
+  extra_parts="crtbegin.o crtbeginS.o crtbeginT.o crtend.o crtendS.o"
+  # GNU tools are the only tools.
+  gas=yes
+  gnu_ld=yes
+  case ${enable_threads} in
+    "" | yes | posix) thread_file='posix' ;;
+  esac
+  ;;
 *-*-linux*libc1* | *-*-linux*aout*)
   # Avoid the generic linux case.
   ;;
@@ -952,6 +963,12 @@ x86_64-*-linux*)
 	tm_file="${tm_file} i386/unix.h i386/att.h dbxelf.h elfos.h svr4.h linux.h \
 		 i386/x86-64.h i386/linux64.h"
 	tmake_file="t-slibgcc-elf-ver t-linux i386/t-linux64"
+	;;
+i[34567]86-*-kfreebsd*-gnu) # must be before i[34567]86-*-gnu*
+	tm_file="${tm_file} i386/unix.h i386/att.h dbxelf.h elfos.h svr4.h linux.h i386/linux.h kfreebsdgnu.h i386/kfreebsdgnu.h"
+	tmake_file="t-slibgcc-elf-ver t-kfreebsd-gnu i386/t-crtstuff"
+	float_format=i386
+	use_fixproto=no
 	;;
 i[34567]86-*-gnu*)
 	;;
