@@ -1,3 +1,26 @@
+2004-04-02  Vladimir Makarov  <vmakarov@redhat.com>
+
+	* config/i386/i386.h (TARGET_NOCONA): New macro.
+	(TARGET_CPU_CPP_BUILTINS): Add code for Nocona.
+	(processor_type): Add PROCESSOR_NOCONA.
+	
+	* config/i386/i386.md (cpu): Add nocona to the attribute values.
+
+	* config/i386/i386.c (nocona_cost): New variable.
+	(m_NOCONA): New macro.
+	(x86_push_memory, x86_movx, x86_cmove, x86_deep_branch,
+	x86_branch_hints, x86_use_sahf, x86_single_stringop,
+	x86_sub_esp_4, x86_sub_esp_8, x86_add_esp_4, x86_add_esp_8,
+	x86_integer_DFmode_moves, x86_partial_reg_dependency,
+	x86_memory_mismatch_stall, x86_accumulate_outgoing_args,
+	x86_decompose_lea, x86_arch_always_fancy_math_387,
+	x86_sse_partial_reg_dependency, x86_sse_load0_by_pxor,
+	x86_ext_80387_constants, x86_four_jump_limit):
+	(override_options): Add nocona_cost to processor_target_table.
+	Set up PROCESSOR_NOCONA for Nocona entry in processor_alias_table.
+	(incdec_operand): Prevent inc/dec generation for Nocona too.
+	(ix86_issue_rate): Add PROCESSOR_NOCONA.
+	
 2004-04-01  Andrew Pinski  <pinskia@physics.uc.edu>
 
 	* rtlanal.c (find_reg_note): Manually
