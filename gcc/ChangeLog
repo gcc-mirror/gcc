@@ -1,5 +1,8 @@
 2001-05-06  Alexandre Oliva  <aoliva@redhat.com>
 
+	* optabs.c (expand_binop): Sign-extend xop0 and xop1 from the
+	widest mode in narrowing and widening operations.
+
 	* config/mips/mips.md: Sign extend CONST_INTs.
 
 2001-05-06  Andreas Jaeger  <aj@suse.de>
