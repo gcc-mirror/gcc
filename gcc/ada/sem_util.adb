@@ -1177,6 +1177,16 @@ package body Sem_Util is
             begin
                if Nkind (Nam) in N_Entity then
                   return Nam;
+
+               --  For Error, make up a name so we can continue
+
+               elsif Nam = Error then
+                  return
+                    Make_Defining_Identifier (Sloc (N),
+                      Chars => New_Internal_Name ('T'));
+
+               --  If not an entity, get defining identifier
+
                else
                   return Defining_Identifier (Nam);
                end if;
@@ -4270,10 +4280,12 @@ package body Sem_Util is
 
       --  Nothing to do if no End_Label, happens for internally generated
       --  constructs where we don't want an end label reference anyway.
+      --  Also nothing to do if Endl is a string literal, which means
+      --  there was some prior error (bad operator symbol)
 
       Endl := End_Label (N);
 
-      if No (Endl) then
+      if No (Endl) or else Nkind (Endl) = N_String_Literal then
          return;
       end if;
 
