@@ -606,7 +606,7 @@ build_java_jsr (int target_pc, int return_pc)
   flush_quick_stack ();
   java_add_stmt (build1 (GOTO_EXPR, void_type_node, where));
 
-  /* Do not need to emit the label here.  We noted the existance of the
+  /* Do not need to emit the label here.  We noted the existence of the
      label as a jump target in note_instructions; we'll emit the label
      for real at the beginning of the expand_byte_code loop.  */
 }

@@ -185,7 +185,7 @@ Java bytecode files.
 An archive containing one or more @code{.class} files, all of
 which are compiled.  The archive may be compressed.  Files in
 an archive which don't end with @samp{.class} are treated as
-resource files; they are copmiled into the resulting object file
+resource files; they are compiled into the resulting object file
 as @samp{core:} URLs.
 @item @@@var{file}
 A file containing a whitespace-separated list of input file names.
@@ -386,7 +386,7 @@ of the previous mechanism) has some advantages: it is compatible with
 static linking, and does not require configuring or installing libraries.
 @end itemize
 
-These @code{gij} options relate to linking an execitable:
+These @code{gij} options relate to linking an executable:
 
 @table @gcctabopt
 @item --main=@var{CLASSNAME}
