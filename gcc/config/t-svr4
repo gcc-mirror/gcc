@@ -1,8 +1,3 @@
-# For svr4 we build crtbegin.o and crtend.o which serve to add begin and
-# end labels to the .ctors and .dtors section when we link using gcc.
-
-EXTRA_PARTS=crtbegin.o crtend.o
-
 # We need to use -fpic when we are using gcc to compile the routines in
 # crtstuff.c.  This is only really needed when we are going to use gcc/g++
 # to produce a shared library, but since we don't know ahead of time when
