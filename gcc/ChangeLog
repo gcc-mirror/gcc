@@ -1,3 +1,7 @@
+2000-02-27  Alexandre Oliva  <oliva@lsd.ic.unicamp.br>
+
+	* cpplib.c (do_pragma): Accept #pragma without consecutive token.
+
 2000-02-26  Mark Mitchell  <mark@codesourcery.com>
 
 	* integrate.c (copy_decl_for_inlining): Preserve TREE_ADDRESSABLE
