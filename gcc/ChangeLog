@@ -1,3 +1,19 @@
+2002-03-21  Aldy Hernandez  <aldyh@redhat.com>
+
+        * langhooks.c (lhd_tree_inlining_cannot_inline_tree_fn): Check
+        flag_really_no_inline instead of optimize == 0.
+
+        * c-objc-common.c (c_cannot_inline_tree_fn): Same.
+
+        * cp/tree.c (cp_cannot_inline_tree_fn): Same.
+
+        * flags.h (flag_really_no_inline): New.
+
+        * c-common.c (c_common_post_options): Initialzie
+        flag_really_no_inline.
+
+        * toplev.c (flag_really_no_inline): New.
+
 2002-03-21  Jakub Jelinek  <jakub@redhat.com>
 
 	* config/avr/avr.md (length): Fix length computation for
@@ -360,6 +376,7 @@ Tue Mar 19 14:12:32 2002  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 	(movqi): Use gen_lowpart in place of gen_rtx_SUBREG.
 	Replace gen_rtx (SUBREG) with gen_rtx_SUBREG.
 
+>>>>>>> 1.13452
 2002-03-18  Aldy Hernandez  <aldyh@redhat.com>
 
 	* config/rs6000/rs6000.h (PREDICATE_CODES): Add PARALLEL to

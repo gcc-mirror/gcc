@@ -4100,6 +4100,9 @@ c_common_post_options ()
 {
   cpp_post_options (parse_in);
 
+  /* Save no-inline information we may clobber below.  */
+  flag_really_no_inline = flag_no_inline;
+
   flag_inline_trees = 1;
 
   /* Use tree inlining if possible.  Function instrumentation is only
