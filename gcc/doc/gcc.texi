@@ -76,7 +76,7 @@
 @end ifclear
 
 @c Create a separate index for command line options.
-@defindex op
+@defcodeindex op
 @c Merge the standard indexes into a single one.
 @syncodeindex fn cp
 @syncodeindex vr cp
@@ -276,6 +276,8 @@ bugs.  It corresponds to GCC version 3.0.
 @chapter Compile C, C++, Objective C, Fortran, Java
 
 @cindex Objective C
+@cindex Fortran
+@cindex Java
 Several versions of the compiler (C, C++, Objective C, Fortran, Java) are integrated; this is why we use the name
 ``GNU Compiler Collection''. GCC can compile programs written in any of these
 languages. The Fortran and Java compilers are described in
@@ -385,9 +387,9 @@ This standard, in both its forms, is commonly known as @dfn{C89}, or
 occasionally as @dfn{C90}, from the dates of ratification.  The ANSI
 standard, but not the ISO standard, also came with a Rationale
 document.  To select this standard in GCC, use one of the options
-@samp{-ansi}, @samp{-std=c89} or @samp{-std=iso9899:1990}; to obtain
+@option{-ansi}, @option{-std=c89} or @option{-std=iso9899:1990}; to obtain
 all the diagnostics required by the standard, you should also specify
-@samp{-pedantic} (or @samp{-pedantic-errors} if you want them to be
+@option{-pedantic} (or @option{-pedantic-errors} if you want them to be
 errors rather than warnings).  @xref{C Dialect Options,,Options
 Controlling C Dialect}.
 
@@ -400,20 +402,20 @@ amendment added digraphs and @code{__STDC_VERSION__} to the language,
 but otherwise concerned the library.  This amendment is commonly known
 as @dfn{AMD1}; the amended standard is sometimes known as @dfn{C94} or
 @dfn{C95}.  To select this standard in GCC, use the option
-@samp{-std=iso9899:199409} (with, as for other standard versions,
-@samp{-pedantic} to receive all required diagnostics).
+@option{-std=iso9899:199409} (with, as for other standard versions,
+@option{-pedantic} to receive all required diagnostics).
 
 A new edition of the ISO C standard was published in 1999 as ISO/IEC
 9899:1999, and is commonly known as @dfn{C99}.  GCC has incomplete
 support for this standard version; see
 @uref{http://gcc.gnu.org/gcc-3.0/c99status.html} for details.  To select this
-standard, use @samp{-std=c99} or @samp{-std=iso9899:1999}.  (While in
+standard, use @option{-std=c99} or @option{-std=iso9899:1999}.  (While in
 development, drafts of this standard version were referred to as
 @dfn{C9X}.)
 
 @opindex traditional
 GCC also has some limited support for traditional (pre-ISO) C with the
-@samp{-traditional} option.  This support may be of use for compiling
+@option{-traditional} option.  This support may be of use for compiling
 some very old programs that have not been updated to ISO C, but should
 not be used for new programs.  It will not work with some modern C
 libraries such as the GNU C library.
@@ -421,13 +423,13 @@ libraries such as the GNU C library.
 By default, GCC provides some extensions to the C language that on
 rare occasions conflict with the C standard.  @xref{C
 Extensions,,Extensions to the C Language Family}.  Use of the
-@samp{-std} options listed above will disable these extensions where
+@option{-std} options listed above will disable these extensions where
 they conflict with the C standard version selected.  You may also
 select an extended version of the C language explicitly with
-@samp{-std=gnu89} (for C89 with GNU extensions) or @samp{-std=gnu99}
+@option{-std=gnu89} (for C89 with GNU extensions) or @option{-std=gnu99}
 (for C99 with GNU extensions).  The default, if no C language dialect
-options are given, is @samp{-std=gnu89}; this will change to
-@samp{-std=gnu99} in some future release when the C99 support is
+options are given, is @option{-std=gnu89}; this will change to
+@option{-std=gnu99} in some future release when the C99 support is
 complete.  Some features that are part of the C99 standard are
 accepted as extensions in C89 mode.
 
@@ -459,7 +461,7 @@ implementation, defining @code{__STDC_HOSTED__} as @code{1} and
 presuming that when the names of ISO C functions are used, they have
 the semantics defined in the standard.  To make it act as a conforming
 freestanding implementation for a freestanding environment, use the
-option @samp{-ffreestanding}; it will then define
+option @option{-ffreestanding}; it will then define
 @code{__STDC_HOSTED__} to @code{0} and not make assumptions about the
 meanings of function names from the standard library.  To build an OS
 kernel, you may well still need to make your own arrangements for
@@ -554,7 +556,7 @@ prototypes.
 
 @item
 @opindex pedantic-errors
-When @samp{-pedantic-errors} is specified, GCC will incorrectly give
+When @option{-pedantic-errors} is specified, GCC will incorrectly give
 an error message when a function name is specified in an expression
 involving the comma operator.
 @end itemize
@@ -646,12 +648,12 @@ causes static variable destructors (currently used only in C++) not to
 be run.
 
 @item
-Use of @samp{-I/usr/include} may cause trouble.
+Use of @option{-I/usr/include} may cause trouble.
 
 Many systems come with header files that won't work with GCC unless
 corrected by @code{fixincludes}.  The corrected header files go in a new
 directory; GCC searches this directory before @file{/usr/include}.
-If you use @samp{-I/usr/include}, this tells GCC to search
+If you use @option{-I/usr/include}, this tells GCC to search
 @file{/usr/include} earlier on, before the corrected headers.  The
 result is that you get the uncorrected header files.
 
@@ -685,11 +687,11 @@ parent across the call to @code{vfork}.
 If you encounter this, you can work around the problem by declaring
 variables @code{volatile} in the function that calls @code{vfork}, until
 the problem goes away, or by not declaring them @code{register} and not
-using @samp{-O} for those source files.
+using @option{-O} for those source files.
 @end ignore
 
 @item
-On some SGI systems, when you use @samp{-lgl_s} as an option,
+On some SGI systems, when you use @option{-lgl_s} as an option,
 it gets translated magically to @samp{-lgl_s -lX11_s -lc_s}.
 Naturally, this does not happen when you use GCC.
 You must specify all three options explicitly.
@@ -745,7 +747,7 @@ this problem.
 @item
 Sun forgot to include a static version of @file{libdl.a} with some
 versions of SunOS (mainly 4.1).  This results in undefined symbols when
-linking static binaries (that is, if you use @samp{-static}).  If you
+linking static binaries (that is, if you use @option{-static}).  If you
 see undefined symbols @code{_dlclose}, @code{_dlsym} or @code{_dlopen}
 when linking, compile and link against the file
 @file{mit/util/misc/dlsym.c} from the MIT version of X windows.
@@ -776,7 +778,7 @@ generate HP-UX unwind descriptors for such functions.  It may even be
 impossible to generate them.
 
 @item
-Debugging (@samp{-g}) is not supported on the HP PA machine, unless you use
+Debugging (@option{-g}) is not supported on the HP PA machine, unless you use
 the preliminary GNU tools (@pxref{Installation}).
 
 @item
@@ -809,8 +811,8 @@ These warnings are harmless and can be safely ignored.
 
 @item
 The current version of the assembler (@file{/bin/as}) for the RS/6000
-has certain problems that prevent the @samp{-g} option in GCC from
-working.  Note that @file{Makefile.in} uses @samp{-g} by default when
+has certain problems that prevent the @option{-g} option in GCC from
+working.  Note that @file{Makefile.in} uses @option{-g} by default when
 compiling @file{libgcc2.c}.
 
 IBM has produced a fixed version of the assembler.  The upgraded
@@ -828,7 +830,7 @@ as -u < /dev/null
 
 @noindent
 If the command exits normally, the assembler fix already is installed.
-If the assembler complains that "-u" is an unknown flag, you need to
+If the assembler complains that @option{-u} is an unknown flag, you need to
 order the fix.
 
 @item
@@ -852,15 +854,15 @@ is undefined in ISO C.
 AIX on the RS/6000 provides support (NLS) for environments outside of
 the United States.  Compilers and assemblers use NLS to support
 locale-specific representations of various objects including
-floating-point numbers ("." vs "," for separating decimal fractions).
+floating-point numbers (@samp{.} vs @samp{,} for separating decimal fractions).
 There have been problems reported where the library linked with GCC does
 not produce the same floating-point formats that the assembler accepts.
-If you have this problem, set the LANG environment variable to "C" or
-"En_US".
+If you have this problem, set the @env{LANG} environment variable to
+@samp{C} or @samp{En_US}.
 
 @item
 @opindex fdollars-in-identifiers
-Even if you specify @samp{-fdollars-in-identifiers},
+Even if you specify @option{-fdollars-in-identifiers},
 you cannot successfully use @samp{$} in identifiers on the RS/6000 due
 to a restriction in the IBM assembler.  GAS supports these
 identifiers.
@@ -875,7 +877,7 @@ by requesting PTF 421749 from IBM.
 There is an assembler bug in versions of DG/UX prior to 5.4.2.01 that
 occurs when the @samp{fldcr} instruction is used.  GCC uses
 @samp{fldcr} on the 88100 to serialize volatile memory references.  Use
-the option @samp{-mno-serialize-volatile} if your version of the
+the option @option{-mno-serialize-volatile} if your version of the
 assembler has this bug.
 
 @item
@@ -908,7 +910,7 @@ what options are used.
 @opindex mhc-struct-return
 On the IBM RT PC, the MetaWare HighC compiler (hc) uses a different
 convention for structure and union returning.  Use the option
-@samp{-mhc-struct-return} to tell GCC to use a convention compatible
+@option{-mhc-struct-return} to tell GCC to use a convention compatible
 with it.
 
 @cindex Vax calling convention
@@ -937,11 +939,11 @@ options:
 @end smallexample
 
 The first specifies where to find the library @file{libgcc.a}
-specified with the @samp{-lgcc} option.
+specified with the @option{-lgcc} option.
 
-GCC does linking by invoking @code{ld}, just as @code{cc} does, and
+GCC does linking by invoking @command{ld}, just as @command{cc} does, and
 there is no reason why it @emph{should} matter which compilation program
-you use to invoke @code{ld}.  If someone tracks this problem down,
+you use to invoke @command{ld}.  If someone tracks this problem down,
 it can probably be fixed easily.
 
 @item
@@ -957,12 +959,12 @@ on.  If you think this may be happening to you, try using the GNU
 assembler; GAS version 2.1 supports ECOFF on Irix.
 
 @opindex noasmopt
-Or use the @samp{-noasmopt} option when you compile GCC with itself,
+Or use the @option{-noasmopt} option when you compile GCC with itself,
 and then again when you compile your program.  (This is a temporary
 kludge to turn off assembler optimization on Irix.)  If this proves to
 be what you need, edit the assembler spec in the file @file{specs} so
-that it unconditionally passes @samp{-O0} to the assembler, and never
-passes @samp{-O2} or @samp{-O3}.
+that it unconditionally passes @option{-O0} to the assembler, and never
+passes @option{-O2} or @option{-O3}.
 @end itemize
 
 @node External Bugs
@@ -976,8 +978,8 @@ Certain programs have problems compiling.
 Parse errors may occur compiling X11 on a Decstation running Ultrix 4.2
 because of problems in DEC's versions of the X11 header files
 @file{X11/Xlib.h} and @file{X11/Xutil.h}.  People recommend adding
-@samp{-I/usr/include/mit} to use the MIT versions of the header files,
-using the @samp{-traditional} switch to turn off ISO C, or fixing the
+@option{-I/usr/include/mit} to use the MIT versions of the header files,
+using the @option{-traditional} switch to turn off ISO C, or fixing the
 header files by adding this:
 
 @example
@@ -1018,7 +1020,7 @@ MALLOC=gmalloc.o
 @opindex traditional
 
 There are several noteworthy incompatibilities between GNU C and K&R
-(non-ISO) versions of C.  The @samp{-traditional} option
+(non-ISO) versions of C.  The @option{-traditional} option
 eliminates many of these incompatibilities, @emph{but not all}, by
 telling GNU C to behave like a K&R C compiler.
 
@@ -1048,9 +1050,9 @@ constant.  Likewise @code{fscanf} and @code{scanf}.
 The best solution to these problems is to change the program to use
 @code{char}-array variables with initialization strings for these
 purposes instead of string constants.  But if this is not possible,
-you can use the @samp{-fwritable-strings} flag, which directs GCC
+you can use the @option{-fwritable-strings} flag, which directs GCC
 to handle string constants the same way most C compilers do.
-@samp{-traditional} also has this effect, among others.
+@option{-traditional} also has this effect, among others.
 
 @item
 @code{-2147483648} is positive.
@@ -1070,7 +1072,7 @@ string constants.  For example, the following macro in GCC
 @noindent
 will produce output @code{"a"} regardless of what the argument @var{a} is.
 
-The @samp{-traditional} option directs GCC to handle such cases
+The @option{-traditional} option directs GCC to handle such cases
 (among others) in the old-fashioned (non-ISO) fashion.
 
 @cindex @code{setjmp} incompatibilities
@@ -1104,10 +1106,10 @@ its first value is restored; otherwise, it keeps the last value stored
 in it.
 
 @opindex W
-If you use the @samp{-W} option with the @samp{-O} option, you will
+If you use the @option{-W} option with the @option{-O} option, you will
 get a warning when GCC thinks such a problem might be possible.
 
-The @samp{-traditional} option directs GNU C to put variables in
+The @option{-traditional} option directs GNU C to put variables in
 the stack by default, rather than in registers, in functions that
 call @code{setjmp}.  This results in the behavior found in
 traditional C compilers.
@@ -1124,7 +1126,7 @@ foobar (
 @end example
 
 ISO C does not permit such a construct.  It would make sense to support
-it when @samp{-traditional} is used, but it is too much work to
+it when @option{-traditional} is used, but it is too much work to
 implement.
 
 @item
@@ -1143,7 +1145,7 @@ have the same scope as any other declaration in the same place.
 In some other C compilers, a @code{extern} declaration affects all the
 rest of the file even if it happens within a block.
 
-The @samp{-traditional} option directs GNU C to treat all @code{extern}
+The @option{-traditional} option directs GNU C to treat all @code{extern}
 declarations as global, like traditional compilers.
 
 @item
@@ -1157,7 +1159,7 @@ typedef long foo bar;
 
 In ISO C, this is not allowed: @code{long} and other type modifiers
 require an explicit @code{int}.  Because this criterion is expressed
-by Bison grammar rules rather than C code, the @samp{-traditional}
+by Bison grammar rules rather than C code, the @option{-traditional}
 flag cannot alter it.
 
 @cindex typedef names as function parameters
@@ -1166,7 +1168,7 @@ PCC allows typedef names to be used as function parameters.  The
 difficulty described immediately above applies here too.
 
 @item
-When in @samp{-traditional} mode, GCC allows the following erroneous
+When in @option{-traditional} mode, GCC allows the following erroneous
 pair of declarations to appear together in a given scope:
 
 @example
@@ -1176,7 +1178,7 @@ typedef foo foo;
 
 @item
 GCC treats all characters of identifiers as significant, even when in
-@samp{-traditional} mode.  According to K&R-1 (2.2), ``No more than the
+@option{-traditional} mode.  According to K&R-1 (2.2), ``No more than the
 first eight characters are significant, although more may be used.''.
 Also according to K&R-1 (2.2), ``An identifier is a sequence of letters
 and digits; the first character must be a letter.  The underscore _
@@ -1206,7 +1208,7 @@ You can't expect this to work.
 
 The best solution to such a problem is to put the text into an actual
 C comment delimited by @samp{/*@dots{}*/}.  However,
-@samp{-traditional} suppresses these error messages.
+@option{-traditional} suppresses these error messages.
 
 @item
 Many user programs contain the declaration @samp{long time ();}.  In the
@@ -1257,7 +1259,7 @@ but still returns small structures and unions in registers.
 
 @opindex fpcc-struct-return
 You can tell GCC to use a compatible convention for all structure and
-union returning with the option @samp{-fpcc-struct-return}.
+union returning with the option @option{-fpcc-struct-return}.
 
 @cindex preprocessing tokens
 @cindex preprocessing numbers
@@ -1341,7 +1343,7 @@ what this means.  Beyond the library facilities required of such an
 implementation, the rest of the C library is supplied by the vendor of
 the operating system.  If that C library doesn't conform to the C
 standards, then your programs might get warnings (especially when using
-@samp{-Wall}) that you don't expect.
+@option{-Wall}) that you don't expect.
 
 For example, the @code{sprintf} function on SunOS 4.1.3 returns
 @code{char *} while the C standard says that @code{sprintf} returns an
@@ -1442,7 +1444,7 @@ Compiled code moves values between memory and floating point registers
 at its convenience, and moving them into memory truncates them.
 
 @opindex ffloat-store
-You can partially avoid this problem by using the @samp{-ffloat-store}
+You can partially avoid this problem by using the @option{-ffloat-store}
 option (@pxref{Optimize Options}).
 
 @item
@@ -1528,7 +1530,7 @@ temporary object.  The compiler may very well delete the object before
 you expect it to, leaving a pointer to garbage.  The most common place
 where this problem crops up is in classes like string classes,
 especially ones that define a conversion function to type @code{char *}
-or @code{const char *} -- which is one reason why the standard
+or @code{const char *}---which is one reason why the standard
 @code{string} class requires you to call the @code{c_str} member
 function.  However, any class that returns a pointer to some internal
 structure is potentially subject to this problem.
@@ -1618,7 +1620,7 @@ unspecified whether @samp{Base::operator=} is called more than once when
 the implicit copy-assignment for Derived objects is invoked (as it is
 inside @samp{func} in the example).
 
-g++ implements the "intuitive" algorithm for copy-assignment: assign all
+g++ implements the ``intuitive'' algorithm for copy-assignment: assign all
 direct bases, then assign all members. In that algorithm, the virtual
 base subobject can be encountered many times. In the example, copying
 proceeds in the following order: @samp{val}, @samp{name} (via
@@ -1630,41 +1632,41 @@ operator, the application can define whether and how the virtual base
 subobject is assigned.
 
 @node Protoize Caveats
-@section Caveats of using @code{protoize}
+@section Caveats of using @command{protoize}
 
-The conversion programs @code{protoize} and @code{unprotoize} can
+The conversion programs @command{protoize} and @command{unprotoize} can
 sometimes change a source file in a way that won't work unless you
 rearrange it.
 
 @itemize @bullet
 @item
-@code{protoize} can insert references to a type name or type tag before
+@command{protoize} can insert references to a type name or type tag before
 the definition, or in a file where they are not defined.
 
 If this happens, compiler error messages should show you where the new
 references are, so fixing the file by hand is straightforward.
 
 @item
-There are some C constructs which @code{protoize} cannot figure out.
+There are some C constructs which @command{protoize} cannot figure out.
 For example, it can't determine argument types for declaring a
-pointer-to-function variable; this you must do by hand.  @code{protoize}
+pointer-to-function variable; this you must do by hand.  @command{protoize}
 inserts a comment containing @samp{???} each time it finds such a
 variable; so you can find all such variables by searching for this
 string.  ISO C does not require declaring the argument types of
 pointer-to-function types.
 
 @item
-Using @code{unprotoize} can easily introduce bugs.  If the program
+Using @command{unprotoize} can easily introduce bugs.  If the program
 relied on prototypes to bring about conversion of arguments, these
 conversions will not take place in the program without prototypes.
-One case in which you can be sure @code{unprotoize} is safe is when
-you are removing prototypes that were made with @code{protoize}; if
+One case in which you can be sure @command{unprotoize} is safe is when
+you are removing prototypes that were made with @command{protoize}; if
 the program worked before without any prototypes, it will work again
 without them.
 
 @opindex Wconversion
 You can find all the places where this problem might occur by compiling
-the program with the @samp{-Wconversion} option.  It prints a warning
+the program with the @option{-Wconversion} option.  It prints a warning
 whenever an argument is converted.
 
 @item
@@ -1676,14 +1678,14 @@ only a few functions have confusing macro calls, you can easily convert
 them manually.
 
 @item
-@code{protoize} cannot get the argument types for a function whose
+@command{protoize} cannot get the argument types for a function whose
 definition was not actually compiled due to preprocessing conditionals.
-When this happens, @code{protoize} changes nothing in regard to such
-a function.  @code{protoize} tries to detect such instances and warn
+When this happens, @command{protoize} changes nothing in regard to such
+a function.  @command{protoize} tries to detect such instances and warn
 about them.
 
-You can generally work around this problem by using @code{protoize} step
-by step, each time specifying a different set of @samp{-D} options for
+You can generally work around this problem by using @command{protoize} step
+by step, each time specifying a different set of @option{-D} options for
 compilation, until all of the functions have been converted.  There is
 no automatic way to verify that you have got them all, however.
 
@@ -1703,7 +1705,7 @@ parenthesis of the function header).  This should circumvent the
 problem.
 
 @item
-@code{unprotoize} can become confused when trying to convert a function
+@command{unprotoize} can become confused when trying to convert a function
 definition or declaration which contains a declaration for a
 pointer-to-function formal argument which has the same name as the
 function being defined or declared.  We recommend you avoid such choices
@@ -1755,7 +1757,7 @@ useful.
 
 @item
 @opindex fshort-enums
-Making @samp{-fshort-enums} the default.
+Making @option{-fshort-enums} the default.
 
 This would cause storage layout to be incompatible with most other C
 compilers.  And it doesn't seem very important, given that you can get
@@ -1774,8 +1776,8 @@ alternative dialects of C.
 @opindex fsigned-bitfields
 @opindex funsigned-bitfields
 The GNU C compiler supports both dialects; you can specify the signed
-dialect with @samp{-fsigned-bitfields} and the unsigned dialect with
-@samp{-funsigned-bitfields}.  However, this leaves open the question of
+dialect with @option{-fsigned-bitfields} and the unsigned dialect with
+@option{-funsigned-bitfields}.  However, this leaves open the question of
 which dialect to use by default.
 
 Currently, the preferred dialect makes plain bitfields signed, because
@@ -1825,14 +1827,14 @@ they write programs which have the same meaning in both C dialects.)
 @opindex ansi
 @opindex traditional
 @opindex std
-Undefining @code{__STDC__} when @samp{-ansi} is not used.
+Undefining @code{__STDC__} when @option{-ansi} is not used.
 
 Currently, GCC defines @code{__STDC__} as long as you don't use
-@samp{-traditional}.  This provides good results in practice.
+@option{-traditional}.  This provides good results in practice.
 
 Programmers normally use conditionals on @code{__STDC__} to ask whether
 it is safe to use certain features of ISO C, such as function
-prototypes or ISO token concatenation.  Since plain @samp{gcc} supports
+prototypes or ISO token concatenation.  Since plain @command{gcc} supports
 all the features of ISO C, the correct answer to these questions is
 ``yes''.
 
@@ -1849,8 +1851,8 @@ Sometimes people say that defining @code{__STDC__} in a compiler that
 does not completely conform to the ISO C standard somehow violates the
 standard.  This is illogical.  The standard is a standard for compilers
 that claim to support ISO C, such as @samp{gcc -ansi}---not for other
-compilers such as plain @samp{gcc}.  Whatever the ISO C standard says
-is relevant to the design of plain @samp{gcc} without @samp{-ansi} only
+compilers such as plain @command{gcc}.  Whatever the ISO C standard says
+is relevant to the design of plain @command{gcc} without @option{-ansi} only
 for pragmatic reasons, not as a requirement.
 
 GCC normally defines @code{__STDC__} to be 1, and in addition
@@ -1894,7 +1896,7 @@ cannot produce an empty one, which holds for C but is not always the
 case for C++.
 
 @opindex funroll-loops
-Moreover, with @samp{-funroll-loops} small ``empty'' loops are already
+Moreover, with @option{-funroll-loops} small ``empty'' loops are already
 removed, so the current behavior is both sub-optimal and inconsistent
 and will change in the future.
 
@@ -1938,7 +1940,7 @@ ISO C requires a ``diagnostic'' message for certain kinds of invalid
 programs, but a warning is defined by GCC to count as a diagnostic.  If
 GCC produces a warning but not an error, that is correct ISO C support.
 If test suites call this ``failure'', they should be run with the GCC
-option @samp{-pedantic-errors}, which will turn these warnings into
+option @option{-pedantic-errors}, which will turn these warnings into
 errors.
 
 @end itemize
@@ -1954,12 +1956,12 @@ warnings.  Each kind has a different purpose:
 
 @itemize @w{}
 @item
-@emph{Errors} report problems that make it impossible to compile your
+@dfn{Errors} report problems that make it impossible to compile your
 program.  GCC reports errors with the source file name and line
 number where the problem is apparent.
 
 @item
-@emph{Warnings} report other unusual conditions in your code that
+@dfn{Warnings} report other unusual conditions in your code that
 @emph{may} indicate a problem, although compilation can (and does)
 proceed.  Warning messages also report the source file name and line
 number, but include the text @samp{warning:} to distinguish them
@@ -1969,8 +1971,8 @@ from error messages.
 Warnings may indicate danger points where you should check to make sure
 that your program really does what you intend; or the use of obsolete
 features; or the use of nonstandard features of GNU C or C++.  Many
-warnings are issued only if you ask for them, with one of the @samp{-W}
-options (for instance, @samp{-Wall} requests a variety of useful
+warnings are issued only if you ask for them, with one of the @option{-W}
+options (for instance, @option{-Wall} requests a variety of useful
 warnings).
 
 @opindex pedantic
@@ -1980,8 +1982,8 @@ gratuitously rejects a program whose meaning is clear merely because
 (for instance) it fails to conform to a standard.  In some cases,
 however, the C and C++ standards specify that certain extensions are
 forbidden, and a diagnostic @emph{must} be issued by a conforming
-compiler.  The @samp{-pedantic} option tells GCC to issue warnings in
-such cases; @samp{-pedantic-errors} says to make them errors instead.
+compiler.  The @option{-pedantic} option tells GCC to issue warnings in
+such cases; @option{-pedantic-errors} says to make them errors instead.
 This does not mean that @emph{all} non-ISO constructs get warnings
 or errors.
 
@@ -2144,7 +2146,7 @@ things:
 @itemize @bullet
 @item
 The version of GCC.  You can get this by running it with the
-@samp{-v} option.
+@option{-v} option.
 
 Without this, we won't know whether there is any point in looking for
 the bug in the current version of GCC.
@@ -2153,9 +2155,9 @@ the bug in the current version of GCC.
 A complete input file that will reproduce the bug.  If the bug is in the
 C preprocessor, send a source file and any header files that it
 requires.  If the bug is in the compiler proper (@file{cc1}), send the
-preprocessor output generated by adding @samp{-save-temps} to the
+preprocessor output generated by adding @option{-save-temps} to the
 compilation command (@pxref{Debugging Options}).  When you do this, use
-the same @samp{-I}, @samp{-D} or @samp{-U} options that you used in
+the same @option{-I}, @option{-D} or @option{-U} options that you used in
 actual compilation. Then send the @var{input}.i or @var{input}.ii files
 generated.
 
@@ -2179,7 +2181,7 @@ a certain percentage of wild goose chases.
 
 @item
 The command arguments you gave GCC to compile that example
-and observe the bug.  For example, did you use @samp{-O}?  To guarantee
+and observe the bug.  For example, did you use @option{-O}?  To guarantee
 you won't omit something important, list all the options.
 
 If we were to try to guess the arguments, we would probably guess wrong
@@ -2244,7 +2246,7 @@ bug in the program itself.
 
 @item
 If you send examples of assembler code output from GCC,
-please use @samp{-g} when you make them.  The debugging information
+please use @option{-g} when you make them.  The debugging information
 includes source line numbers which are essential for correlating the
 output with the input.
 
@@ -2445,7 +2447,7 @@ Use @samp{diff -c} to make your diffs.  Diffs without context are hard
 for us to install reliably.  More than that, they make it hard for us to
 study the diffs to decide whether we want to install them.  Unidiff
 format is better than contextless diffs, but not as easy to read as
-@samp{-c} format.
+@option{-c} format.
 
 If you have GNU diff, use @samp{diff -cp}, which shows the name of the
 function that each change occurs in.
@@ -2915,12 +2917,12 @@ Note that running the testsuite may require additional tools be
 installed, such as TCL or dejagnu.
 
 @item bootstrap
-Builds gcc three times - once with the native compiler, once with the
+Builds gcc three times---once with the native compiler, once with the
 native-built compiler it just built, and once with the compiler it built
 the second time.  In theory, the last two should produce the same
 results, which @code{make compare} can check.  Each step of this process
-is called a "stage", and the results of each stage N (N=1..3) are copied
-to a subdirectory @file{stageN/}.
+is called a ``stage'', and the results of each stage @var{N}
+(@var{N} = 1@dots{}3) are copied to a subdirectory @file{stage@var{N}/}.
 
 @item bootstrap-lean
 Like @code{bootstrap}, except that the various stages are removed once
@@ -2928,7 +2930,7 @@ they're no longer needed.  This saves disk space.
 
 @item bubblestrap
 Once bootstrapped, this incrementally rebuilds each of the three stages,
-one at a time.  It does this by "bubbling" the stages up from their
+one at a time.  It does this by ``bubbling'' the stages up from their
 stubdirectories, rebuilding them, and copying them back to their
 subdirectories.  This will allow you to, for example, quickly rebuild a
 bootstrapped compiler after changing the sources, without having to do a
@@ -2942,14 +2944,15 @@ of which stage you're on or what invocation that stage needs.
 @item cleanstrap
 Removed everything (@code{make clean}) and rebuilds (@code{make bootstrap}).
 
-@item stageN (N=1..4)
-For each stage, moves the appropriate files to the stageN subdirectory.
+@item stage@var{N} (@var{N} = 1@dots{}4)
+For each stage, moves the appropriate files to the @file{stage@var{N}}
+subdirectory.
 
-@item unstageN (N=1..4)
-Undoes the corresponding @code{stageN}.
+@item unstage@var{N} (@var{N} = 1@dots{}4)
+Undoes the corresponding @code{stage@var{N}}.
 
-@item restageN (N=1..4)
-Undoes the corresponding @code{stageN} and rebuilds it with the
+@item restage@var{N} (@var{N} = 1@dots{}4)
+Undoes the corresponding @code{stage@var{N}} and rebuilds it with the
 appropriate flags.
 
 @item compare
@@ -3086,7 +3089,7 @@ Code compiled with GCC may call certain library routines.  Most of
 them handle arithmetic for which there are no instructions.  This
 includes multiply and divide on some machines, and floating point
 operations on any machine for which floating point support is disabled
-with @samp{-msoft-float}.  Some standard parts of the C library, such as
+with @option{-msoft-float}.  Some standard parts of the C library, such as
 @code{bcopy} or @code{memcpy}, are also called automatically.  The usual
 function call interface is used for calling the library routines.
 
@@ -3147,7 +3150,7 @@ function
 
 Here is a list of all the passes of the compiler and their source files.
 Also included is a description of where debugging dumps can be requested
-with @samp{-d} options.
+with @option{-d} options.
 
 @itemize @bullet
 @item
@@ -3263,7 +3266,7 @@ rtl when the function is called.  The header file @file{integrate.h}
 is also used for this purpose.
 
 @opindex dr
-The option @samp{-dr} causes a debugging dump of the RTL code after
+The option @option{-dr} causes a debugging dump of the RTL code after
 this pass.  This dump file's name is made by appending @samp{.rtl} to
 the input file name.
 
@@ -3290,7 +3293,7 @@ optimizations described above.
 The source file of this pass is @file{jump.c}.
 
 @opindex dj
-The option @samp{-dj} causes a debugging dump of the RTL code after
+The option @option{-dj} causes a debugging dump of the RTL code after
 this pass is run for the first time.  This dump file's name is made by
 appending @samp{.jump} to the input file name.
 
@@ -3307,7 +3310,7 @@ Jump threading.  This pass detects a condition jump that branches to an
 identical or inverse test.  Such jumps can be @samp{threaded} through
 the second conditional test.  The source code for this pass is in
 @file{jump.c}.  This optimization is only performed if
-@samp{-fthread-jumps} is enabled.
+@option{-fthread-jumps} is enabled.
 
 @cindex common subexpression elimination
 @cindex constant propagation
@@ -3318,7 +3321,7 @@ propagation causes conditional jumps to become unconditional or to
 become no-ops, jump optimization is run again when CSE is finished.
 
 @opindex ds
-The option @samp{-ds} causes a debugging dump of the RTL code after
+The option @option{-ds} causes a debugging dump of the RTL code after
 this pass.  This dump file's name is made by appending @samp{.cse} to
 the input file name.
 
@@ -3328,14 +3331,14 @@ the input file name.
 @item
 Global common subexpression elimination.  This pass performs GCSE
 using Morel-Renvoise Partial Redundancy Elimination, with the exception
-that it does not try to move invariants out of loops - that is left to
+that it does not try to move invariants out of loops---that is left to
 the loop optimization pass.  This pass also performs global constant
 and copy propagation.
 
 The source file for this pass is gcse.c.
 
 @opindex dG
-The option @samp{-dG} causes a debugging dump of the RTL code after
+The option @option{-dG} causes a debugging dump of the RTL code after
 this pass.  This dump file's name is made by appending @samp{.gcse} to
 the input file name.
 
@@ -3350,18 +3353,18 @@ Its source files are @file{loop.c} and @file{unroll.c}, plus the header
 some functions in @file{integrate.c} and the header @file{integrate.h}.
 
 @opindex dL
-The option @samp{-dL} causes a debugging dump of the RTL code after
+The option @option{-dL} causes a debugging dump of the RTL code after
 this pass.  This dump file's name is made by appending @samp{.loop} to
 the input file name.
 
 @item
 @opindex frerun-cse-after-loop
-If @samp{-frerun-cse-after-loop} was enabled, a second common
+If @option{-frerun-cse-after-loop} was enabled, a second common
 subexpression elimination pass is performed after the loop optimization
 pass.  Jump threading is also done again at this time if it was specified.
 
 @opindex dt
-The option @samp{-dt} causes a debugging dump of the RTL code after
+The option @option{-dt} causes a debugging dump of the RTL code after
 this pass.  This dump file's name is made by appending @samp{.cse2} to
 the input file name.
 
@@ -3381,7 +3384,7 @@ combines memory references with add or subtract instructions to make
 autoincrement or autodecrement addressing.
 
 @opindex df
-The option @samp{-df} causes a debugging dump of the RTL code after
+The option @option{-df} causes a debugging dump of the RTL code after
 this pass.  This dump file's name is made by appending @samp{.flow} to
 the input file name.  If stupid register allocation is in use, this
 dump file reflects the full results of such allocation.
@@ -3395,7 +3398,7 @@ the instructions by substitution, simplifies the result using algebra,
 and then attempts to match the result against the machine description.
 
 @opindex dc
-The option @samp{-dc} causes a debugging dump of the RTL code after
+The option @option{-dc} causes a debugging dump of the RTL code after
 this pass.  This dump file's name is made by appending @samp{.combine}
 to the input file name.
 
@@ -3408,7 +3411,7 @@ to change the registers used by the instruction to avoid the move
 instruction.
 
 @opindex dN
-The option @samp{-dN} causes a debugging dump of the RTL code after
+The option @option{-dN} causes a debugging dump of the RTL code after
 this pass.  This dump file's name is made by appending @samp{.regmove}
 to the input file name.
 
@@ -3426,7 +3429,7 @@ Instruction scheduling is performed twice.  The first time is immediately
 after instruction combination and the second is immediately after reload.
 
 @opindex dS
-The option @samp{-dS} causes a debugging dump of the RTL code after this
+The option @option{-dS} causes a debugging dump of the RTL code after this
 pass is run for the first time.  The dump file's name is made by
 appending @samp{.sched} to the input file name.
 
@@ -3445,7 +3448,7 @@ block.  Because the basic block is linear, it can use fast and
 powerful techniques to do a very good job.
 
 @opindex dl
-The option @samp{-dl} causes a debugging dump of the RTL code after
+The option @option{-dl} causes a debugging dump of the RTL code after
 this pass.  This dump file's name is made by appending @samp{.lreg} to
 the input file name.
 
@@ -3473,7 +3476,7 @@ Source files are @file{reload.c} and @file{reload1.c}, plus the header
 @file{reload.h} used for communication between them.
 
 @opindex dg
-The option @samp{-dg} causes a debugging dump of the RTL code after
+The option @option{-dg} causes a debugging dump of the RTL code after
 this pass.  This dump file's name is made by appending @samp{.greg} to
 the input file name.
 
@@ -3484,7 +3487,7 @@ Instruction scheduling is repeated here to try to avoid pipeline stalls
 due to memory loads generated for spilled pseudo registers.
 
 @opindex dR
-The option @samp{-dR} causes a debugging dump of the RTL code after
+The option @option{-dR} causes a debugging dump of the RTL code after
 this pass.  This dump file's name is made by appending @samp{.sched2}
 to the input file name.
 
@@ -3495,7 +3498,7 @@ Jump optimization is repeated, this time including cross-jumping
 and deletion of no-op move instructions.
 
 @opindex dJ
-The option @samp{-dJ} causes a debugging dump of the RTL code after
+The option @option{-dJ} causes a debugging dump of the RTL code after
 this pass.  This dump file's name is made by appending @samp{.jump2}
 to the input file name.
 
@@ -3507,7 +3510,7 @@ instructions that can go into the delay slots of other instructions,
 usually jumps and calls.  The source file name is @file{reorg.c}.
 
 @opindex dd
-The option @samp{-dd} causes a debugging dump of the RTL code after
+The option @option{-dd} causes a debugging dump of the RTL code after
 this pass.  This dump file's name is made by appending @samp{.dbr}
 to the input file name.
 
@@ -3528,7 +3531,7 @@ for the floating-point registers of the Intel 80387 coprocessor.   The
 source file name is @file{reg-stack.c}.
 
 @opindex dk
-The options @samp{-dk} causes a debugging dump of the RTL code after
+The options @option{-dk} causes a debugging dump of the RTL code after
 this pass.  This dump file's name is made by appending @samp{.stack}
 to the input file name.
 
@@ -3936,8 +3939,8 @@ procedure will build all combinations of compatible options.
 
 For example, if you set @code{MULTILIB_OPTIONS} to @samp{m68000/m68020
 msoft-float}, @file{Makefile} will build special versions of
-@file{libgcc.a} using the following sets of options:  @samp{-m68000},
-@samp{-m68020}, @samp{-msoft-float}, @samp{-m68000 -msoft-float}, and
+@file{libgcc.a} using the following sets of options:  @option{-m68000},
+@option{-m68020}, @option{-msoft-float}, @samp{-m68000 -msoft-float}, and
 @samp{-m68020 -msoft-float}.
 
 @findex MULTILIB_DIRNAMES
@@ -3970,8 +3973,8 @@ case, set @code{MULTILIB_EXCEPTIONS} to be all of the switch exceptions
 in shell case syntax that should not be built.
 
 For example, in the PowerPC embedded ABI support, it is not desirable
-to build libraries compiled with the @samp{-mcall-aix} option
-and either of the @samp{-fleading-underscore} or @samp{-mlittle} options
+to build libraries compiled with the @option{-mcall-aix} option
+and either of the @option{-fleading-underscore} or @option{-mlittle} options
 at the same time.  Therefore @code{MULTILIB_EXCEPTIONS} is set to
 @code{*mcall-aix/*fleading-underscore* *mlittle/*mcall-aix*}.
 
