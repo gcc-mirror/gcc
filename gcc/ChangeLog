@@ -1,3 +1,7 @@
+2001-12-17  Gerald Pfeifer  <pfeifer@dbai.tuwien.ac.at>
+
+	* doc/c-tree.texi (Trees): Only refer to GCC.
+
 2001-12-17  Andreas Jaeger  <aj@suse.de>
 
 	* c-common.def: Fix typo in comment.
