@@ -19,6 +19,18 @@ along with GCC; see the file COPYING.  If not, write to the Free
 Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 02111-1307, USA.  */
 
+#define TARGET_OS_CPP_BUILTINS()				\
+  do {								\
+    builtin_define_std ("linux");				\
+    builtin_define_std ("unix");				\
+    builtin_define ("__ELF__");					\
+    builtin_define ("__gnu_linux__");				\
+    builtin_assert ("system=posix");				\
+    /* The GNU C++ standard library requires this.  */		\
+    if (c_language == clk_cplusplus)				\
+      builtin_define ("_GNU_SOURCE");				\
+  } while (0)
+
 #undef TARGET_VERSION
 #define TARGET_VERSION fputs (" (Xtensa GNU/Linux with ELF)", stderr);
 
@@ -48,11 +60,6 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
         %{rdynamic:-export-dynamic} \
         %{!dynamic-linker:-dynamic-linker /lib/ld.so.1}} \
       %{static:-static}}}"
-
-#undef CPP_PREDEFINES
-#define CPP_PREDEFINES \
- "-D__XTENSA__ -D__ELF__ -Acpu=xtensa -Amachine=xtensa \
-  -Dunix -D__gnu_linux__ -Dlinux -Asystem=posix"
 
 #undef LOCAL_LABEL_PREFIX
 #define LOCAL_LABEL_PREFIX	"."
