@@ -296,7 +296,7 @@ static void mark_regs_live_at_end	PARAMS ((regset));
 static int set_phi_alternative_reg      PARAMS ((rtx, int, int, void *));
 static void calculate_global_regs_live	PARAMS ((sbitmap, sbitmap, int));
 static void propagate_block_delete_insn PARAMS ((basic_block, rtx));
-static rtx propagate_block_delete_libcall PARAMS ((basic_block, rtx, rtx));
+static rtx propagate_block_delete_libcall PARAMS ((rtx, rtx));
 static int insn_dead_p			PARAMS ((struct propagate_block_info *,
 						 rtx, int, rtx));
 static int libcall_dead_p		PARAMS ((struct propagate_block_info *,
@@ -1376,8 +1376,7 @@ propagate_block_delete_insn (bb, insn)
    before the libcall.  */
 
 static rtx
-propagate_block_delete_libcall (bb, insn, note)
-     basic_block bb;
+propagate_block_delete_libcall ( insn, note)
      rtx insn, note;
 {
   rtx first = XEXP (note, 0);
@@ -1442,7 +1441,7 @@ propagate_one_insn (pbi, insn)
       pbi->cc0_live = 0;
 
       if (libcall_is_dead)
-	prev = propagate_block_delete_libcall (pbi->bb, insn, note);
+	prev = propagate_block_delete_libcall ( insn, note);
       else
 	propagate_block_delete_insn (pbi->bb, insn);
 
