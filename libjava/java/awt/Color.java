@@ -19,7 +19,7 @@ package java.awt;
  * Status:  Stubbed; A very incomplete implementation.
  */
 
-public class Color extends Object implements Paint, Serializable
+public class Color extends Object implements Paint, java.io.Serializable
 {
   public static final Color white =	new Color(0xFFFFFFFF, true);
   public static final Color lightGray =	new Color(0xFFC0C0C0, true);
