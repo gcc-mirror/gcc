@@ -1,3 +1,11 @@
+2003-03-03  David Edelsohn  <edelsohn@gnu.org>
+
+	* config/rs6000/rs6000.c (rs6000_multipass_dfa_lookahead): Delete.
+	(TARGET_SCHED_FIRST_CYCLE_MULTIPASS_DFA_LOOKAHEAD): Delete.
+	(rs6000_variable_issue): Do not return negative value.
+	(rs6000_issue_rate): Uniformly set issue rate to 1 for first
+	scheduling pass.
+
 2003-03-03  Zdenek Dvorak  <rakdver@atrey.karlin.mff.cuni.cz>
 
 	* dwarf2out.c (dwarf2out_finish): Swap order of break_out_includes and
