@@ -294,6 +294,7 @@ extern void rm_other_notes PARAMS ((rtx, rtx));
 extern int insn_issue_delay PARAMS ((rtx));
 extern int set_priorities PARAMS ((rtx, rtx));
 
+extern rtx sched_emit_insn PARAMS ((rtx));
 extern void schedule_block PARAMS ((int, int));
 extern void sched_init PARAMS ((FILE *));
 extern void sched_finish PARAMS ((void));
