@@ -1,3 +1,8 @@
+2001-11-09  Jakub Jelinek  <jakub@redhat.com>
+
+	* cfgrtl.c (purge_dead_edges): Remove REG_EH_REGION note for insns
+	which cannot throw.
+
 Thu Nov  8 18:00:55 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* explow.c (convert_memory_address, case SUBREG): Only return
