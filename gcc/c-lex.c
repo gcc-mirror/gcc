@@ -52,9 +52,6 @@ static unsigned int src_lineno;
 static int header_time, body_time;
 static splay_tree file_info_tree;
 
-/* File used for outputting assembler code.  */
-extern FILE *asm_out_file;
-
 #undef WCHAR_TYPE_SIZE
 #define WCHAR_TYPE_SIZE TYPE_PRECISION (wchar_type_node)
 

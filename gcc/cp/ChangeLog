@@ -1,3 +1,7 @@
+2003-06-19  Andreas Jaeger  <aj@suse.de>
+
+	* cp-tree.h: Remove duplicated declarations.
+
 2003-06-18  Nathanael Nerode  <neroden@gcc.gnu.org>
 
 	* pt.c: Convert to ISO C.
@@ -13,7 +17,7 @@
 	(at_least_as_qualified_p, more_qualified_p,
 	comp_cv_qualification): Cache cv quals.
 	(compparms): Rearrange loop.
-	
+
 2003-06-18  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* cp-tree.h (COMPARE_RELAXED): Rename to ...
@@ -35,7 +39,7 @@
 	(comp_target_types): Remove unreachable code. Adjust
 	same_or_base_type_p calls.
 	(ptr_reasonably_similar): Adjust base and derived check.
-	
+
 	* typeck.c (maybe_warn_about_returning_address_of_local): Remove
 	unused calculation.
 	(check_return_expr): Adjust error messages.
@@ -145,7 +149,7 @@
 
 2003-06-11  Roger Sayle  <roger@eyesopen.com>
 
-	* decl2.c (generate_ctor_or_dtor_function): Avoid expanding a 
+	* decl2.c (generate_ctor_or_dtor_function): Avoid expanding a
 	global static constructor/destructor if it will be empty, i.e.
 	either doesn't call any ctors/dtors or only calls pure or const
 	ctors/dtors.
