@@ -4762,8 +4762,18 @@ expand_expr (exp, target, tmode, modifier)
 
 	/* In some cases, we will be offsetting OP0's address by a constant.
 	   So get it as a sum, if possible.  If we will be using it
-	   directly in an insn, we validate it.  */
-	op0 = expand_expr (tem, NULL_RTX, VOIDmode, EXPAND_SUM);
+	   directly in an insn, we validate it. 
+
+	   If TEM's type is a union of variable size, pass TARGET to the inner
+	   computation, since it will need a temporary and TARGET is known
+	   to have to do.  This occurs in unchecked conversion in Ada.  */
+  
+	op0 = expand_expr (tem,
+			   (TREE_CODE (TREE_TYPE (tem)) == UNION_TYPE
+			    && (TREE_CODE (TYPE_SIZE (TREE_TYPE (tem)))
+				!= INTEGER_CST)
+			    ? target : NULL_RTX),
+			   VOIDmode, EXPAND_SUM);
 
 	/* If this is a constant, put it into a register if it is a
 	   legitimate constant and memory if it isn't.  */
