@@ -16,11 +16,7 @@ details.  */
 // If we're using the Boehm GC, then we need to override some of the
 // thread primitives.  This is fairly gross.
 #ifdef HAVE_BOEHM_GC
-extern "C"
-{
-#include <gcconfig.h>
 #include <gc.h>
-};
 #endif /* HAVE_BOEHM_GC */
 
 #include <stdlib.h>
@@ -378,7 +374,6 @@ _Jv_ThreadStart (java::lang::Thread *thread, _Jv_Thread_t *data,
   pthread_attr_setschedparam (&attr, &param);
   pthread_attr_setdetachstate (&attr, PTHREAD_CREATE_DETACHED);
 
-  // FIXME: handle marking the info object for GC.
   info = (struct starter *) _Jv_AllocBytes (sizeof (struct starter));
   info->method = meth;
   info->data = data;
