@@ -1,3 +1,13 @@
+2001-04-06  Neil Booth  <neil@daikokuya.demon.co.uk>
+
+	* cppfiles.c (open_file): Fail directories silently, but
+	with an errno of NOENT set.
+	(read_include_file): Move the common exit code to the sole
+	caller.  Return an int indicating success or failure.  Let
+	open_file handle directories.
+	(stack_include_file): If read_include_file fails,
+	push a "null" buffer.
+
 2001-04-05  DJ Delorie  <dj@redhat.com>
 
 	* function.h (virtuals_instantiated): Declare.

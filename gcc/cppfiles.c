@@ -93,7 +93,7 @@ static struct include_file *
 	find_include_file PARAMS ((cpp_reader *, const cpp_token *,
 				   enum include_type));
 static struct include_file *open_file PARAMS ((cpp_reader *, const char *));
-static void read_include_file	PARAMS ((cpp_reader *, struct include_file *));
+static int read_include_file	PARAMS ((cpp_reader *, struct include_file *));
 static void stack_include_file	PARAMS ((cpp_reader *, struct include_file *));
 static void purge_cache 	PARAMS ((struct include_file *));
 static void destroy_node	PARAMS ((splay_tree_value));
@@ -241,15 +241,23 @@ open_file (pfile, filename)
 
   if (file->fd != -1 && fstat (file->fd, &file->st) == 0)
     {
-      /* Mark a regular, zero-length file never-reread now.  */
-      if (S_ISREG (file->st.st_mode) && file->st.st_size == 0)
-        {
-	  _cpp_never_reread (file);
-	  close (file->fd);
-	  file->fd = -1;
-	}
+      /* If it's a directory, we return null and continue the search
+	 as the file we're looking for may appear elsewhere in the
+	 search path.  */
+      if (S_ISDIR (file->st.st_mode))
+	errno = ENOENT;
+      else
+	{
+	  /* Mark a regular, zero-length file never-reread now.  */
+	  if (S_ISREG (file->st.st_mode) && file->st.st_size == 0)
+	    {
+	      _cpp_never_reread (file);
+	      close (file->fd);
+	      file->fd = -1;
+	    }
 
-      return file;
+	  return file;
+	}
     }
 
   /* Don't issue an error message if the file doesn't exist.  */
@@ -284,13 +292,19 @@ stack_include_file (pfile, inc)
   if (CPP_OPTION (pfile, print_deps) > deps_sysp && !inc->include_count)
     deps_add_dep (pfile->deps, inc->name);
 
+  /* Not in cache?  */
+  if (! DO_NOT_REREAD (inc) && ! inc->buffer)
+    {
+      /* If an error occurs, do not try to read this file again.  */
+      if (read_include_file (pfile, inc))
+	_cpp_never_reread (inc);
+      close (inc->fd);
+      inc->fd = -1;
+    }
+
   if (! DO_NOT_REREAD (inc))
     {
-      /* Not in cache?  */
-      if (! inc->buffer)
-	read_include_file (pfile, inc);
       len = inc->st.st_size;
-
       if (pfile->buffer)
 	{
 	  /* We don't want MI guard advice for the main file.  */
@@ -328,17 +342,17 @@ stack_include_file (pfile, inc)
    If fd points to a plain file, we might be able to mmap it; we can
    definitely allocate the buffer all at once.  If fd is a pipe or
    terminal, we can't do either.  If fd is something weird, like a
-   block device or a directory, we don't want to read it at all.
+   block device, we don't want to read it at all.
 
    Unfortunately, different systems use different st.st_mode values
    for pipes: some have S_ISFIFO, some S_ISSOCK, some are buggy and
    zero the entire struct stat except a couple fields.  Hence we don't
-   even try to figure out what something is, except for plain files,
-   directories, and block devices.
+   even try to figure out what something is, except for plain files
+   and block devices.
 
    FIXME: Flush file cache and try again if we run out of memory.  */
 
-static void
+static int
 read_include_file (pfile, inc)
      cpp_reader *pfile;
      struct include_file *inc;
@@ -402,11 +416,6 @@ read_include_file (pfile, inc)
       cpp_error (pfile, "%s is a block device", inc->name);
       goto fail;
     }
-  else if (S_ISDIR (inc->st.st_mode))
-    {
-      cpp_error (pfile, "%s is a directory", inc->name);
-      goto fail;
-    }
   else
     {
       /* 8 kilobytes is a sensible starting size.  It ought to be
@@ -430,19 +439,13 @@ read_include_file (pfile, inc)
       inc->st.st_size = offset;
     }
 
-  close (inc->fd);
   inc->buffer = buf;
-  inc->fd = -1;
-  return;
+  return 0;
 
  perror_fail:
   cpp_error_from_errno (pfile, inc->name);
  fail:
-  /* Do not try to read this file again.  */
-  close (inc->fd);
-  inc->fd = -1;
-  _cpp_never_reread (inc);
-  return;
+  return 1;
 }
 
 static void
@@ -617,6 +620,7 @@ handle_missing_header (pfile, fname, angle_brackets)
   /* We will try making the RHS pfile->buffer->sysp after 3.0.  */
   int print_dep = CPP_PRINT_DEPS(pfile) > (angle_brackets
 					   || pfile->system_include_depth);
+
   if (CPP_OPTION (pfile, print_deps_missing_files) && print_dep)
     {
       if (!angle_brackets || IS_ABSOLUTE_PATHNAME (fname))
