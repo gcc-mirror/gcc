@@ -369,7 +369,7 @@ public class ZipEntry implements ZipConstants, Cloneable
    */
   public void setComment(String comment)
   {
-    if (comment.length() > 0xffff)
+    if (comment != null && comment.length() > 0xffff)
       throw new IllegalArgumentException();
     this.comment = comment;
   }
