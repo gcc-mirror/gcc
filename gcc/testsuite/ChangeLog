@@ -1,3 +1,7 @@
+Sat Feb 22 20:14:12 CET 2003  Jan Hubicka  <jh@suse.cz>
+
+	* gcc.dg/i386-mul.c: New test.
+
 2003-02-21  Roger Sayle  <roger@eyesopen.com>
 
 	* gcc.dg/builtins-5.c: New test case.
