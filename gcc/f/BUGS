@@ -19,6 +19,17 @@ intertwined with) `g77', so it isn't worth separating them out.
 the up-to-date mainline version of `g77' within `egcs') is available at
 `http://egcs.cygnus.com/onlinedocs/g77_bugs.html'.
 
+   For information on bugs that might afflict people who configure,
+port, build, and install `g77', see "Problems Installing" in
+`egcs/gcc/f/INSTALL'.
+
+   * `g77' generates bad code for assignments, or other conversions, of
+     `REAL' or `COMPLEX' constant expressions to type `INTEGER(KIND=2)'
+     (often referred to as `INTEGER*8').
+
+     For example, `INTEGER*8 J; J = 4E10' is miscompiled on some
+     systems--the wrong value is stored in J.
+
    * The `IDate' Intrinsic (VXT) fails to return the year in the
      documented, non-Y2K-compliant range of 0-99, instead returning 100
      for the year 2000.
