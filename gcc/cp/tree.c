@@ -211,12 +211,6 @@ lvalue_p (ref)
       return (lvalue_p (TREE_OPERAND (ref, 0))
 	      && lvalue_p (TREE_OPERAND (ref, 1)));
 
-    case NOP_EXPR:
-      /* GNU extension:
-	 A cast is a valid lvalue if its operand is an lvalue. */
-      if (! pedantic)
-	return lvalue_p (TREE_OPERAND (ref, 0));
-
     default:
       break;
     }
