@@ -257,18 +257,19 @@ perform_or_defer_access_check (tree binfo, tree decl)
 {
   tree check;
 
-  my_friendly_assert (TREE_CODE (binfo) == TREE_VEC, 20030623);
+  /* Exit if we are in a context that no access checking is performed.  */
+  if (deferred_access_stack->deferring_access_checks_kind == dk_no_check)
+    return;
   
+  my_friendly_assert (TREE_CODE (binfo) == TREE_VEC, 20030623);
+
   /* If we are not supposed to defer access checks, just check now.  */
   if (deferred_access_stack->deferring_access_checks_kind == dk_no_deferred)
     {
       enforce_access (binfo, decl);
       return;
     }
-  /* Exit if we are in a context that no access checking is performed.  */
-  else if (deferred_access_stack->deferring_access_checks_kind == dk_no_check)
-    return;
-
+  
   /* See if we are already going to perform this check.  */
   for (check = deferred_access_stack->deferred_access_checks;
        check;

@@ -129,6 +129,7 @@ add_friend (tree type, tree decl, bool complain)
   tree typedecl;
   tree list;
   tree name;
+  tree ctx;
 
   if (decl == error_mark_node)
     return;
@@ -163,12 +164,9 @@ add_friend (tree type, tree decl, bool complain)
       list = TREE_CHAIN (list);
     }
 
-  if (DECL_CLASS_SCOPE_P (decl))
-    {
-      tree class_binfo = TYPE_BINFO (DECL_CONTEXT (decl));
-      if (!uses_template_parms (BINFO_TYPE (class_binfo)))
-	perform_or_defer_access_check (class_binfo, decl);
-    }
+  ctx = DECL_CONTEXT (decl);
+  if (ctx && CLASS_TYPE_P (ctx) && !uses_template_parms (ctx))
+    perform_or_defer_access_check (TYPE_BINFO (ctx), decl);
 
   maybe_add_class_template_decl_list (type, decl, /*friend_p=*/1);
 
