@@ -1382,7 +1382,8 @@ process_template_parm (list, next)
       /* A template parameter is not modifiable.  */
       TREE_READONLY (parm) = 1;
       if (IS_AGGR_TYPE (TREE_TYPE (parm))
-	  && TREE_CODE (TREE_TYPE (parm)) != TEMPLATE_TYPE_PARM)
+	  && TREE_CODE (TREE_TYPE (parm)) != TEMPLATE_TYPE_PARM
+	  && TREE_CODE (TREE_TYPE (parm)) != TYPENAME_TYPE)
 	{
 	  cp_error ("`%#T' is not a valid type for a template constant parameter",
 		    TREE_TYPE (parm));
@@ -2232,7 +2233,13 @@ convert_nontype_argument (type, expr)
 	tree fns;
 	tree fn;
 
-	my_friendly_assert (TYPE_PTRMEMFUNC_P (type), 0);
+	if (!TYPE_PTRMEMFUNC_P (type))
+	  /* This handles templates like
+	       template<class T, T t> void f();
+	     when T is substituted with any class.  The second template
+	     parameter becomes invalid and the template candidate is
+	     rejected.  */
+	  return error_mark_node;
 
 	/* For a non-type template-parameter of type pointer to member
 	   function, no conversions apply.  If the template-argument
