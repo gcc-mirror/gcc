@@ -349,9 +349,7 @@ upload_files() {
       # Make sure the file will be readable on the server.
       chmod a+r ${x}
       # Copy it.
-      if [ $LOCAL -eq 0 ]; then
-        ${SCP} ${x} ${UPLOAD_PATH} || error "Could not upload ${x}"
-      fi
+      ${SCP} ${x} ${UPLOAD_PATH} || error "Could not upload ${x}"
     fi
   done
 }
