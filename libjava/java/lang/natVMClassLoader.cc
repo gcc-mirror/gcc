@@ -68,7 +68,7 @@ java::lang::VMClassLoader::defineClass (java::lang::ClassLoader *loader,
 
       // Record the defining loader.  For the system class loader, we
       // record NULL.
-      if (loader != java::lang::ClassLoader::getSystemClassLoader())
+      if (loader != java::lang::ClassLoader::systemClassLoader)
 	klass->loader = loader;
 
       if (name != 0)

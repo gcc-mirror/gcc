@@ -163,7 +163,7 @@ java::lang::Runtime::_load (jstring path, jboolean do_search)
 
   if (do_search)
     {
-      ClassLoader *sys = ClassLoader::getSystemClassLoader();
+      ClassLoader *sys = ClassLoader::systemClassLoader;
       ClassLoader *look = NULL;
       gnu::gcj::runtime::StackTrace *t = new gnu::gcj::runtime::StackTrace(10);
       try
