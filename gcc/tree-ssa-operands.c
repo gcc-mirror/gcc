@@ -1487,16 +1487,7 @@ add_stmt_operand (tree *var_p, tree stmt, int flags)
 	  /* The variable is not aliased or it is an alias tag.  */
 	  if (flags & opf_is_def)
 	    {
-	      if (v_ann->is_alias_tag)
-	        {
-		  /* Alias tagged vars get V_MAY_DEF to avoid breaking
-		     def-def chains with the other variables in their
-		     alias sets.  */
-		  if (s_ann)
-		    s_ann->makes_aliased_stores = 1;
-		  append_v_may_def (var);
-		}
-	      else if (flags & opf_kill_def)
+	      if (flags & opf_kill_def)
 		{
 #if defined ENABLE_CHECKING
 		  /* Only regular variables may get a V_MUST_DEF

@@ -1,3 +1,8 @@
+2004-09-08  Jan Hubicka  <jh@suse.cz>
+
+	* tree-ssa-operands.c (add_stmt_operand): Use V_MUST_DEF even for
+	variables being alias set.
+
 2004-09-08  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* final.c (shorten_branches, final, get_insn_template,
