@@ -1,3 +1,8 @@
+2001-11-15  Aldy Hernandez  <aldyh@redhat.com>
+
+	* config/rs6000/rs6000.md: Use spaces instead of tabs in output
+	templates.
+
 Thu Nov 15 08:36:39 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* final.c (alter_subreg): If simplify_subreg can't do anything,
