@@ -248,7 +248,7 @@ extern basic_block split_edge		PROTO ((edge));
 extern void insert_insn_on_edge		PROTO ((rtx, edge));
 extern void commit_edge_insertions	PROTO ((void));
 extern void remove_fake_edges		PROTO ((void));
-extern void add_fake_exit_edges		PROTO ((void));
+extern void add_noreturn_fake_exit_edges	PROTO ((void));
 
 /* This structure maintains an edge list vector.  */
 struct edge_list 

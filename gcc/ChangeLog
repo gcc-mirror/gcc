@@ -1,3 +1,10 @@
+Wed Sep 22 11:34:08 EDT 1999  Andrew MacLeod  <amacleod@cygnus.com>
+
+	* basic-block.h (add_noreturn_fake_exit_edges): Use correct name.
+	* flow.c (remove_edge): Remove extra whitespace.
+	(remove_fake_edges): Fix comment.
+	(add_noreturn_fake_exit_edges): Use the correct name.
+
 Wed Sep 22 16:12:40 BST 1999  Nathan Sidwell  <nathan@acm.org>
 
 	* Makefile.in (INTL_MOSTLYCLEAN, INTL_CLEAN): New variables.
