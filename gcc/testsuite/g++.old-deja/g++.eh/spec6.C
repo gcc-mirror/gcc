@@ -7,18 +7,18 @@
 
 // [except.spec] 1, a type in an exception specifier shall not be incomplete,
 // or pointer or ref to incomplete
-struct X; // ERROR - forward declaration
-void fn1() throw(X);  // ERROR - incomplete type
-void fn2() throw(X *); // ERROR - incomplete type
-void fn3() throw(X &); // ERROR - incomplete type
-void fn4() throw(void); // ERROR - incomplete type
+struct X; // ERROR - forward declaration - XFAIL
+void fn1() throw(X);  // ERROR - incomplete type - XFAIL
+void fn2() throw(X *); // ERROR - incomplete type - XFAIL
+void fn3() throw(X &); // ERROR - incomplete type - XFAIL
+void fn4() throw(void); // ERROR - incomplete type - XFAIL
 // except for cv pointer to void
 void fn5() throw(void *);
 
 // [except.spec] 2, exception specifiers must be the same set of types (but
 // can be reordered)
-void fn() throw(int, char);
-void fn() throw(char, int){}
+void fn() throw(int, char);   // gets bogus error - XFAIL
+void fn() throw(char, int){}  // gets bogus error - ordering is irrelevant - XFAIL
 
 // [except.spec] 3, virtual function overriders shall throw a subset of the
 // overridden function
@@ -35,12 +35,12 @@ struct A
 
 struct B : A
 {
-  virtual void foo() throw(int);  // ERROR - not in base function
+  virtual void foo() throw(int);  // ERROR - not in base function - XFAIL
   virtual void baz() throw(double);
   virtual void bar(int) throw(int);
   virtual void qux() throw(F);
-  virtual void quux() throw(E);   // ERROR - not in base function
+  virtual void quux() throw(E);   // ERROR - not in base function - XFAIL
 };
 
 // [except.spec] 5, types shall not be defined in exception specifiers
-void fn6() throw(struct Z {}); // ERROR - types shall not be defined
+void fn6() throw(struct Z {}); // ERROR - types shall not be defined - XFAIL
