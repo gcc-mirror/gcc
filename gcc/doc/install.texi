@@ -2018,6 +2018,8 @@ GNU Compiler Collection on your machine.
 @item
 @uref{#s390x-*-linux*,,s390x-*-linux*}
 @item
+@uref{#s390x-ibm-tpf*,,s390x-ibm-tpf*}
+@item
 @uref{#*-*-solaris2*,,*-*-solaris2*}
 @item
 @uref{#sparc-sun-solaris2*,,sparc-sun-solaris2*}
@@ -3171,6 +3173,13 @@ S/390 system running Linux for S/390@.
 @end html
 @heading @anchor{s390x-*-linux*}s390x-*-linux*
 zSeries system (64-bit) running Linux for zSeries@.
+
+@html
+<hr />
+@end html
+@heading @anchor{s390x-ibm-tpf*}s390x-ibm-tpf*
+zSeries system (64-bit) running TPF.  This platform is 
+supported as cross-compilation target only.
 
 @html
 <hr />
