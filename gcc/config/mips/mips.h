@@ -3341,7 +3341,7 @@ rdata_section ()							\
 /* Given a decl node or constant node, choose the section to output it in
    and select that section.  */
 
-#define SELECT_SECTION_MODE(MODE,RTX)					\
+#define SELECT_RTX_SECTION(MODE,RTX)					\
 {									\
   if ((GET_MODE_SIZE(MODE) / BITS_PER_UNIT) <= mips_section_threshold	\
       && mips_section_threshold > 0)					\
