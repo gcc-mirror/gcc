@@ -492,6 +492,9 @@ struct cpp_reader
   /* Current depth of buffer stack. */
   unsigned int buffer_stack_depth;
 
+  /* Current depth in #include directives.  */
+  unsigned int include_depth;
+
   /* Hash table of macros and assertions.  See cpphash.c */
   struct htab *hashtab;
 
@@ -564,7 +567,7 @@ struct cpp_printer
 {
   FILE *outf;			/* stream to write to */
   const char *last_fname;	/* previous file name */
-  unsigned int last_bsd;	/* did we just push? */
+  unsigned int last_id;		/* did we just push? */
   unsigned int lineno;		/* line currently being written */
   unsigned int written;		/* low water mark in token buffer */
 };

@@ -618,6 +618,7 @@ read_include_file (pfile, inc)
   /* These must be set before prescan.  */
   fp->inc = inc;
   fp->nominal_fname = inc->name;
+  pfile->include_depth++;
   
   if (length == 0)
     inc->cmacro = NEVER_REREAD;

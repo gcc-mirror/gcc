@@ -951,7 +951,7 @@ cpp_start_read (pfile, print, fname)
     {
       print->lineno = 0;
       print->last_fname = CPP_BUFFER (pfile)->nominal_fname;
-      print->last_bsd = pfile->buffer_stack_depth;
+      print->last_id = pfile->include_depth;
       print->written = CPP_WRITTEN (pfile);
     }
 

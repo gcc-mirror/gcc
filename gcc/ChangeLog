@@ -1,3 +1,16 @@
+2000-07-02  Jakub Jelinek  <jakub@redhat.com>
+
+	* cpplib.h (struct cpp_reader): New field include_depth.
+	(struct cpp_printer): Rename last_bsd to last_id.
+	* cppfiles.c (read_include_file): Bump include_depth.
+	* cpplex.c (cpp_pop_buffer): Decrement include_depth.
+	(output_line_command): Output correct #line if a header
+	is including itself and is not protected against multiple inclusion.
+	Use include_depth instead of buffer_stack_depth, last_id instead of
+	last_bsd.
+	* cppinit.c (cpp_start_read): Initialize last_id instead of
+	last_bsd.
+
 2000-07-01  Benjamin Chelf  <chelf@codesourcery.com>
 
 	* Makefile.in (C_AND_OBJC_OBJS): Added c-semantics.o.
