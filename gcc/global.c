@@ -133,6 +133,34 @@ static int allocno_row_words;
  (conflicts[(I) * allocno_row_words + (unsigned)(J) / INT_BITS]	\
   |= ((INT_TYPE) 1 << ((unsigned)(J) % INT_BITS)))
 
+/* For any allocno set in ALLOCNO_SET, set ALLOCNO to that allocno,
+   and execute CODE.  */
+#define EXECUTE_IF_SET_IN_ALLOCNO_SET(ALLOCNO_SET, ALLOCNO, CODE)	\
+do {									\
+  int i_;								\
+  int allocno_;								\
+  INT_TYPE *p_ = (ALLOCNO_SET);		\
+									\
+  for (i_ = allocno_row_words - 1, allocno_ = 0; i_ >= 0;		\
+       i_--, allocno_ += INT_BITS)					\
+    {									\
+      unsigned INT_TYPE word_ = (unsigned INT_TYPE) *p_++;		\
+									\
+      for ((ALLOCNO) = allocno_; word_; word_ >>= 1, (ALLOCNO)++)	\
+	{								\
+	  if (word_ & 1)						\
+	    CODE;							\
+	}								\
+    }									\
+} while (0)
+
+/* For any allocno that conflicts with IN_ALLOCNO, set OUT_ALLOCNO to
+   the conflicting allocno, and execute CODE.  This macro assumes that
+   mirror_conflicts has been run.  */
+#define EXECUTE_IF_CONFLICT(IN_ALLOCNO, OUT_ALLOCNO, CODE)\
+  EXECUTE_IF_SET_IN_ALLOCNO_SET (conflicts + (IN_ALLOCNO) * allocno_row_words,\
+				 OUT_ALLOCNO, CODE)
+
 /* Set of hard regs currently live (during scan of all insns).  */
 
 static HARD_REG_SET hard_regs_live;
@@ -212,14 +240,17 @@ static INT_TYPE *allocnos_live;
 /* Test, set or clear bit number I in allocnos_live,
    a bit vector indexed by allocno.  */
 
-#define ALLOCNO_LIVE_P(I) \
-  (allocnos_live[(I) / INT_BITS] & ((INT_TYPE) 1 << ((I) % INT_BITS)))
+#define ALLOCNO_LIVE_P(I)				\
+  (allocnos_live[(unsigned)(I) / INT_BITS]		\
+   & ((INT_TYPE) 1 << ((unsigned)(I) % INT_BITS)))
 
-#define SET_ALLOCNO_LIVE(I) \
-  (allocnos_live[(I) / INT_BITS] |= ((INT_TYPE) 1 << ((I) % INT_BITS)))
+#define SET_ALLOCNO_LIVE(I)				\
+  (allocnos_live[(unsigned)(I) / INT_BITS]		\
+     |= ((INT_TYPE) 1 << ((unsigned)(I) % INT_BITS)))
 
-#define CLEAR_ALLOCNO_LIVE(I) \
-  (allocnos_live[(I) / INT_BITS] &= ~((INT_TYPE) 1 << ((I) % INT_BITS)))
+#define CLEAR_ALLOCNO_LIVE(I)				\
+  (allocnos_live[(unsigned)(I) / INT_BITS]		\
+     &= ~((INT_TYPE) 1 << ((unsigned)(I) % INT_BITS)))
 
 /* This is turned off because it doesn't work right for DImode.
    (And it is only used for DImode, so the other cases are worthless.)
@@ -854,7 +885,7 @@ expand_preferences ()
 static void
 prune_preferences ()
 {
-  int i, j;
+  int i;
   int allocno;
   int *allocno_to_order = (int *) xmalloc (max_allocno * sizeof (int));
   
@@ -893,33 +924,23 @@ prune_preferences ()
 	 we want to give the lower-priority allocno the first chance for
 	 these registers).  */
       HARD_REG_SET temp, temp2;
-      INT_TYPE *p;
-      int allocno2, allocno3;
+      int allocno2;
 
       allocno = allocno_order[i];
-      p = conflicts + allocno * allocno_row_words;
 
       CLEAR_HARD_REG_SET (temp);
       CLEAR_HARD_REG_SET (temp2);
 
-      for (j = allocno_row_words - 1, allocno2 = 0; j >= 0;
-	   j--, allocno2 += INT_BITS)
+      EXECUTE_IF_CONFLICT (allocno, allocno2,
 	{
-	  unsigned INT_TYPE word = (unsigned INT_TYPE) *p++;
-
-	  for (allocno3 = allocno2; word; word >>= 1, allocno3++)
+	  if (allocno_to_order[allocno2] > i)
 	    {
-	      if ((word & 1) && allocno_to_order[allocno3] > i)
-		{
-		  if (allocno_size[allocno3] <= allocno_size[allocno])
-		    IOR_HARD_REG_SET (temp,
-				      hard_reg_full_preferences[allocno3]);
-		  else
-		    IOR_HARD_REG_SET (temp2,
-				      hard_reg_full_preferences[allocno3]);
-		}
+	      if (allocno_size[allocno2] <= allocno_size[allocno])
+		IOR_HARD_REG_SET (temp, hard_reg_full_preferences[allocno2]);
+	      else
+		IOR_HARD_REG_SET (temp2, hard_reg_full_preferences[allocno2]);
 	    }
-	}
+	});
 
       AND_COMPL_HARD_REG_SET (temp, hard_reg_full_preferences[allocno]);
       IOR_HARD_REG_SET (temp, temp2);
@@ -1240,11 +1261,10 @@ find_reg (allocno, losers, alt_regs_p, accept_call_clobbered, retrying)
       /* For each other pseudo-reg conflicting with this one,
 	 mark it as conflicting with the hard regs this one occupies.  */
       lim = allocno;
-      for (j = 0; j < max_allocno; j++)
-	if (CONFLICTP (j, lim))
-	  {
-	    IOR_HARD_REG_SET (hard_reg_conflicts[j], this_reg);
-	  }
+      EXECUTE_IF_CONFLICT (lim, j,
+	{
+	  IOR_HARD_REG_SET (hard_reg_conflicts[j], this_reg);
+	});
     }
 }
 
@@ -1297,11 +1317,10 @@ record_one_conflict (regno)
   if (regno < FIRST_PSEUDO_REGISTER)
     /* When a hard register becomes live,
        record conflicts with live pseudo regs.  */
-    for (j = 0; j < max_allocno; j++)
+    EXECUTE_IF_SET_IN_ALLOCNO_SET (allocnos_live, j,
       {
-	if (ALLOCNO_LIVE_P (j))
-	  SET_HARD_REG_BIT (hard_reg_conflicts[j], regno);
-      }
+	SET_HARD_REG_BIT (hard_reg_conflicts[j], regno);
+      });
   else
     /* When a pseudo-register becomes live,
        record conflicts first with hard regs,

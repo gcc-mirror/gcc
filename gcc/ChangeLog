@@ -1,3 +1,12 @@
+Fri Nov  5 18:33:39 1999  J"orn Rennecke <amylaar@cygnus.co.uk>
+
+	* global.c (EXECUTE_IF_SET_IN_ALLOCNO_SET): New macro.
+	(EXECUTE_IF_CONFLICT): Likewise.
+	(ALLOCNO_LIVE_P): Avoid signed division.
+	(SET_ALLOCNO_LIVE, CLEAR_ALLOCNO_LIVE): Likewise.
+	(prune_preferences, find_reg): Use EXECUTE_IF_CONFLICT.
+	(record_one_conflict): Use EXECUTE_IF_SET_IN_ALLOCNO_SET.
+
 Fri Nov  5 12:04:02 1999  Richard Henderson  <rth@cygnus.com>
 
 	* haifa-sched.c (schedule_block): Don't crash if there's no
