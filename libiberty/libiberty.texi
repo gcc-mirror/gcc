@@ -93,7 +93,7 @@ This edition accompanies GCC 3, September 2001.
 * Licenses::           The various licenses under which libiberty sources are
                        distributed.
 
-* Manual Index::     Index of functions and categories.
+* Index::              Index of functions and categories.
 @end menu
 
 @node Using
@@ -315,8 +315,8 @@ LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
 OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
 SUCH DAMAGE.
 
-@node    Manual Index
-@unnumbered Manual Index
+@node Index
+@unnumbered Index
 
 @printindex cp
 

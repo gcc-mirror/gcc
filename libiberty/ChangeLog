@@ -2,9 +2,6 @@
 
 	* Makefile.in (libiberty.html): Fix html generation.
 
-	* libiberty.texi (Index): Fix html generation with makeinfo by
-	renaming this node to Manual Index.
-
 2004-09-08  Adam Nemet  <anemet@lnxw.com>
 
 	* vasprintf.c: Accept __va_copy in addition to va_copy.
