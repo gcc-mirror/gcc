@@ -73,6 +73,7 @@ Boston, MA 02111-1307, USA.  */
 #define USER_LABEL_PREFIX  ""
 
 /* AIX word-aligns FP doubles but doubleword-aligns 64-bit ints.  */
+#undef  ADJUST_FIELD_ALIGN
 #define ADJUST_FIELD_ALIGN(FIELD, COMPUTED) \
   (TYPE_MODE (TREE_CODE (TREE_TYPE (FIELD)) == ARRAY_TYPE \
 	      ? get_inner_array_type (FIELD) \

@@ -522,7 +522,11 @@ extern int rs6000_default_long_calls;
 
 /* Width of a word, in units (bytes).  */
 #define UNITS_PER_WORD (! TARGET_POWERPC64 ? 4 : 8)
+#ifdef IN_LIBGCC2
+#define MIN_UNITS_PER_WORD UNITS_PER_WORD
+#else
 #define MIN_UNITS_PER_WORD 4
+#endif
 #define UNITS_PER_FP_WORD 8
 #define UNITS_PER_ALTIVEC_WORD 16
 #define UNITS_PER_SPE_WORD 8
