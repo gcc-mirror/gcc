@@ -3527,12 +3527,11 @@ loop_iterations (loop)
 
       do
 	{
-	  /* Previous unrolling may have generated new insns not covered
-	     by the uid_luid array.  */
-	  if (INSN_UID (temp) >= max_uid_for_loop)
-	    continue;
-
 	  if (GET_CODE (temp) == JUMP_INSN
+	      /* Previous unrolling may have generated new insns not covered
+		 by the uid_luid array.  */
+	      && INSN_UID (JUMP_LABEL (temp)) < max_uid_for_loop
+	      /* Check if we jump back into the loop body.  */
 	      && INSN_LUID (JUMP_LABEL (temp)) > INSN_LUID (loop->top)
 	      && INSN_LUID (JUMP_LABEL (temp)) < INSN_LUID (loop->cont))
 	    {

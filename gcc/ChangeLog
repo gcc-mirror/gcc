@@ -1,3 +1,7 @@
+2001-10-11  Franz Sirl  <Franz.Sirl-kernel@lauterbach.com>
+
+	* unroll.c (loop_iterations): Fixup last patch.
+
 2001-10-11  Richard Henderson  <rth@redhat.com>
 
 	* rtl.h (REG_VTABLE_REF): New.
