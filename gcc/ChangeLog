@@ -1,3 +1,8 @@
+Sun Feb 25 14:26:17 2001  Christopher Faylor <cgf@cygnus.com>
+
+	* config/i386/cygwin.h (CPP_SPEC): Add missing space before w32api
+	include.
+
 2001-02-25  Zack Weinberg  <zackw@stanford.edu>
 
 	* config.gcc: Put back pa/t-openbsd and rs6000/t-openbsd.

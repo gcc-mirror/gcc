@@ -110,7 +110,7 @@ Boston, MA 02111-1307, USA. */
     " CYGWIN_INCLUDES "} \
   %{mno-win32: %{mno-cygwin: %emno-cygwin and mno-win32 are not compatible}} \
   %{mno-cygwin:-DWIN32 -D_WIN32 -D__WIN32 -D__WIN32__ -DWINNT -D__MSVCRT__ \
-    -D__MINGW32__=0.3 %{mthreads:-D_MT} " MINGW_INCLUDES CYGWIN_W32API "\
+    -D__MINGW32__=0.3 %{mthreads:-D_MT} " MINGW_INCLUDES " " CYGWIN_W32API "\
     -iwithprefixbefore ../../../../mingw/include/g++-3 \
     -iwithprefixbefore ../../../../mingw/include \
     -iwithprefixbefore ../../../../mingw32/include/g++-3 \
