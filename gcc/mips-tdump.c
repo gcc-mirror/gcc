@@ -1,5 +1,5 @@
 /* Read and manage MIPS symbol tables from object modules.
-   Copyright (C) 1991, 1994 Free Software Foundation, Inc.
+   Copyright (C) 1991, 1994, 1995 Free Software Foundation, Inc.
    Contributed by hartzell@boulder.colorado.edu,
    Rewritten by meissner@osf.org.
 
@@ -144,6 +144,11 @@ typedef enum st {
   st_StaticProc	= stStaticProc,	/* load time only static procs */
   st_StaParam	= stStaParam,	/* Fortran static parameters */
   st_Constant	= stConstant,	/* const */
+#ifdef stStruct
+  st_Struct	= stStruct,	/* struct */
+  st_Union	= stUnion,	/* union */
+  st_Enum	= stEnum,	/* enum */
+#endif
   st_Str	= stStr,	/* string */
   st_Number	= stNumber,	/* pure number (ie. 4 NOR 2+2) */
   st_Expr	= stExpr,	/* 2+2 vs. 4 */
@@ -260,14 +265,14 @@ void  read_tfile	__proto((void));
 void  print_global_hdr	__proto((struct filehdr *));
 void  print_sym_hdr	__proto((HDRR *));
 void  print_file_desc	__proto((FDR *, int));
-void  print_symbol	__proto((SYMR *, int, char *, AUXU *, int));
+void  print_symbol	__proto((SYMR *, int, char *, AUXU *, int, FDR *));
 void  print_aux		__proto((AUXU, int, int));
-void  emit_aggregate	__proto((char *, AUXU, AUXU, const char *));
+void  emit_aggregate	__proto((char *, AUXU, AUXU, const char *, FDR *));
 char *st_to_string	__proto((st_t));
 char *sc_to_string	__proto((sc_t));
 char *glevel_to_string	__proto((glevel_t));
 char *lang_to_string	__proto((lang_t));
-char *type_to_string	__proto((AUXU *, int));
+char *type_to_string	__proto((AUXU *, int, FDR *));
 
 #ifndef __alpha
 extern PTR_T	malloc	__proto((size_t));
@@ -409,6 +414,11 @@ st_to_string(symbol_type)
     case st_StaticProc:	return "StaticProc";
     case st_Constant:	return "Constant";
     case st_StaParam:	return "StaticParam";
+#ifdef stStruct
+    case st_Struct:	return "Struct";
+    case st_Union:	return "Union";
+    case st_Enum:	return "Enum";
+#endif
     case st_Str:	return "String";
     case st_Number:	return "Number";
     case st_Expr:	return "Expr";
@@ -441,9 +451,10 @@ glevel_to_string (g_level)
 /* Convert the type information to string format.  */
 
 char *
-type_to_string (aux_ptr, index)
+type_to_string (aux_ptr, index, fdp)
      AUXU *aux_ptr;
      int index;
+     FDR *fdp;
 {
   AUXU u;
   struct qual {
@@ -540,7 +551,7 @@ type_to_string (aux_ptr, index)
 	 2nd word is file index if 1st word rfd is ST_RFDESCAPE.  */
 
     case bt_Struct:		/* Structure (Record) */
-      emit_aggregate (p1, aux_ptr[index], aux_ptr[index+1], "struct");
+      emit_aggregate (p1, aux_ptr[index], aux_ptr[index+1], "struct", fdp);
       used_ptr[index] = 1;
       if (aux_ptr[index].rndx.rfd == ST_RFDESCAPE)
 	used_ptr[++index] = 1;
@@ -553,7 +564,7 @@ type_to_string (aux_ptr, index)
 	 2nd word is file index if 1st word rfd is ST_RFDESCAPE.  */
 
     case bt_Union:		/* Union */
-      emit_aggregate (p1, aux_ptr[index], aux_ptr[index+1], "union");
+      emit_aggregate (p1, aux_ptr[index], aux_ptr[index+1], "union", fdp);
       used_ptr[index] = 1;
       if (aux_ptr[index].rndx.rfd == ST_RFDESCAPE)
 	used_ptr[++index] = 1;
@@ -566,7 +577,7 @@ type_to_string (aux_ptr, index)
 	 2nd word is file index if 1st word rfd is ST_RFDESCAPE.  */
 
     case bt_Enum:		/* Enumeration */
-      emit_aggregate (p1, aux_ptr[index], aux_ptr[index+1], "enum");
+      emit_aggregate (p1, aux_ptr[index], aux_ptr[index+1], "enum", fdp);
       used_ptr[index] = 1;
       if (aux_ptr[index].rndx.rfd == ST_RFDESCAPE)
 	used_ptr[++index] = 1;
@@ -882,12 +893,13 @@ print_sym_hdr (sym_ptr)
 /* Print out a symbol.  */
 
 void
-print_symbol (sym_ptr, number, strbase, aux_base, ifd)
+print_symbol (sym_ptr, number, strbase, aux_base, ifd, fdp)
      SYMR *sym_ptr;
      int number;
      char *strbase;
      AUXU *aux_base;
      int ifd;
+     FDR *fdp;
 {
   sc_t storage_class = (sc_t) sym_ptr->sc;
   st_t symbol_type   = (st_t) sym_ptr->st;
@@ -955,7 +967,8 @@ print_symbol (sym_ptr, number, strbase, aux_base, ifd)
 	  {
 	    used_ptr[index] = used_ptr[index+1] = 1;
 	    printf ("      End+1 symbol: %-7ld   Type:  %s\n",
-		    aux_base[index].isym, type_to_string (aux_base, index+1));
+		    aux_base[index].isym,
+		    type_to_string (aux_base, index+1, fdp));
 	  }
 	else			/* global symbol */
 	  printf ("      Local symbol: %ld\n", index);
@@ -977,12 +990,20 @@ print_symbol (sym_ptr, number, strbase, aux_base, ifd)
 	  }
 	break;
 
+#ifdef stStruct
+      case st_Struct:
+      case st_Union:
+      case st_Enum:
+	printf ("      End+1 symbol: %lu\n", index);
+	break;
+#endif
+
       default:
 	if (!MIPS_IS_STAB (sym_ptr))
 	  {
 	    used_ptr[index] = 1;
 	    printf ("      Type: %s\n",
-		    type_to_string (aux_base, index));
+		    type_to_string (aux_base, index, fdp));
 	  }
 	break;
       }
@@ -1077,30 +1098,39 @@ print_aux (u, auxi, used)
 /* Write aggregate information to a string.  */
 
 void
-emit_aggregate (string, u, u2, which)
+emit_aggregate (string, u, u2, which, fdp)
      char *string;
      AUXU u;
      AUXU u2;
      const char *which;
+     FDR *fdp;
 {
-  int ifd = u.rndx.rfd;
-  int index = u.rndx.index;
-  int sym_base, ss_base;
-  int name;
+  unsigned int ifd = u.rndx.rfd;
+  unsigned int index = u.rndx.index;
+  const char *name;
   
   if (ifd == ST_RFDESCAPE)
     ifd = u2.isym;
-
-  sym_base = file_desc[ifd].isymBase;
-  ss_base  = file_desc[ifd].issBase;
   
-  name = (index == indexNil) ? 0 : l_symbols[index + sym_base].iss;
+  /* An ifd of -1 is an opaque type.  An escaped index of 0 is a
+     struct return type of a procedure compiled without -g.  */
+  if (ifd == 0xffffffff
+      || (u.rndx.rfd == ST_RFDESCAPE && index == 0))
+    name = "<undefined>";
+  else if (index == indexNil)
+    name = "<no name>";
+  else
+    {
+      if (fdp == 0 || sym_hdr.crfd == 0)
+	fdp = &file_desc[ifd];
+      else
+	fdp = &file_desc[rfile_desc[fdp->rfdBase + ifd]];
+      name = &l_strings[fdp->issBase + l_symbols[index + fdp->isymBase].iss];
+    }
+  
   sprintf (string,
-	   "%s %s { ifd = %d, index = %d }",
-	   which,
-	   (name == 0) ? "/* no name */" : &l_strings[ ss_base + name ],
-	   ifd,
-	   index);
+	   "%s %s { ifd = %u, index = %u }",
+	   which, name, ifd, index);
 }
 
 
@@ -1205,7 +1235,8 @@ print_file_desc (fdp, number)
 		  symi - fdp->isymBase,
 		  str_base,
 		  aux_base,
-		  -1);
+		  -1,
+		  fdp);
 
   if (want_scope && cur_scope != (scope_t *)0)
     printf ("\n    Warning scope does not end at 0!\n");
@@ -1524,7 +1555,8 @@ main (argc, argv)
   for(i = 0; i < sym_hdr.iextMax; i++)
     print_symbol (&e_symbols[i].asym, i, e_strings,
 		  aux_symbols + file_desc[e_symbols[i].ifd].iauxBase,
-		  e_symbols[i].ifd);
+		  e_symbols[i].ifd,
+		  &file_desc[e_symbols[i].ifd]);
 
   /*
    * Print unused aux symbols now.
@@ -1548,7 +1580,7 @@ main (argc, argv)
 		      i,
 		      (long) aux_symbols[i].isym,
 		      (long) aux_symbols[i].isym,
-		      type_to_string (aux_symbols, i));
+		      type_to_string (aux_symbols, i, (FDR *) 0));
 	    }
 	}
     }
