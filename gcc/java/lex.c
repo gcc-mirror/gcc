@@ -1495,7 +1495,7 @@ java_lex (java_lval)
 	    case PUBLIC_TK:       case PROTECTED_TK: case STATIC_TK:
 	    case ABSTRACT_TK:     case FINAL_TK:     case NATIVE_TK:
 	    case SYNCHRONIZED_TK: case TRANSIENT_TK: case VOLATILE_TK:
-	    case PRIVATE_TK:
+	    case PRIVATE_TK:      case STRICT_TK:
 	      SET_MODIFIER_CTX (kw->token);
 	      return MODIFIER_TK;
 	    case FLOAT_TK:

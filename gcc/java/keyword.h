@@ -1,5 +1,5 @@
-/* C code produced by gperf version 2.7.1 (19981006 egcs) */
-/* Command-line: gperf -L C -F , 0 -p -t -j1 -i 1 -g -o -N java_keyword -k1,3,$ keyword.gperf  */
+/* C code produced by gperf version 2.7 */
+/* Command-line: gperf -L C -F , 0 -p -t -j1 -i 1 -g -o -N java_keyword -k1,4,$ keyword.gperf  */
 /* Keyword definition for the GNU compiler for the Java(TM) language.
    Copyright (C) 1997, 1998 Free Software Foundation, Inc.
    Contributed by Alexandre Petit-Bianco (apbianco@cygnus.com)
@@ -35,12 +35,12 @@ __inline
 #endif
 struct java_keyword *java_keyword	PARAMS ((const char *, unsigned int));
 
-#define TOTAL_KEYWORDS 50
+#define TOTAL_KEYWORDS 51
 #define MIN_WORD_LENGTH 2
 #define MAX_WORD_LENGTH 12
-#define MIN_HASH_VALUE 6
-#define MAX_HASH_VALUE 86
-/* maximum key range = 81, duplicates = 0 */
+#define MIN_HASH_VALUE 7
+#define MAX_HASH_VALUE 95
+/* maximum key range = 89, duplicates = 0 */
 
 #ifdef __GNUC__
 __inline
@@ -52,40 +52,41 @@ hash (str, len)
 {
   static unsigned char asso_values[] =
     {
-      87, 87, 87, 87, 87, 87, 87, 87, 87, 87,
-      87, 87, 87, 87, 87, 87, 87, 87, 87, 87,
-      87, 87, 87, 87, 87, 87, 87, 87, 87, 87,
-      87, 87, 87, 87, 87, 87, 87, 87, 87, 87,
-      87, 87, 87, 87, 87, 87, 87, 87, 87, 87,
-      87, 87, 87, 87, 87, 87, 87, 87, 87, 87,
-      87, 87, 87, 87, 87, 87, 87, 87, 87, 87,
-      87, 87, 87, 87, 87, 87, 87, 87, 87, 87,
-      87, 87, 87, 87, 87, 87, 87, 87, 87, 87,
-      87, 87, 87, 87, 87, 87, 87, 18, 37, 38,
-      27,  1, 30,  3, 12,  8, 87,  2, 11, 87,
-       8,  1,  5, 87, 24,  1,  1, 30,  2, 36,
-      87,  1, 87, 87, 87, 87, 87, 87, 87, 87,
-      87, 87, 87, 87, 87, 87, 87, 87, 87, 87,
-      87, 87, 87, 87, 87, 87, 87, 87, 87, 87,
-      87, 87, 87, 87, 87, 87, 87, 87, 87, 87,
-      87, 87, 87, 87, 87, 87, 87, 87, 87, 87,
-      87, 87, 87, 87, 87, 87, 87, 87, 87, 87,
-      87, 87, 87, 87, 87, 87, 87, 87, 87, 87,
-      87, 87, 87, 87, 87, 87, 87, 87, 87, 87,
-      87, 87, 87, 87, 87, 87, 87, 87, 87, 87,
-      87, 87, 87, 87, 87, 87, 87, 87, 87, 87,
-      87, 87, 87, 87, 87, 87, 87, 87, 87, 87,
-      87, 87, 87, 87, 87, 87, 87, 87, 87, 87,
-      87, 87, 87, 87, 87, 87, 87, 87, 87, 87,
-      87, 87, 87, 87, 87, 87
+      96, 96, 96, 96, 96, 96, 96, 96, 96, 96,
+      96, 96, 96, 96, 96, 96, 96, 96, 96, 96,
+      96, 96, 96, 96, 96, 96, 96, 96, 96, 96,
+      96, 96, 96, 96, 96, 96, 96, 96, 96, 96,
+      96, 96, 96, 96, 96, 96, 96, 96, 96, 96,
+      96, 96, 96, 96, 96, 96, 96, 96, 96, 96,
+      96, 96, 96, 96, 96, 96, 96, 96, 96, 96,
+      96, 96, 96, 96, 96, 96, 96, 96, 96, 96,
+      96, 96, 96, 96, 96, 96, 96, 96, 96, 96,
+      96, 96, 96, 96, 96, 96, 96,  9, 17,  3,
+       1,  1, 20, 13, 15, 29, 96, 21,  1, 96,
+      35, 39,  1, 96, 15,  6,  2,  1, 41, 17,
+      96,  7, 96, 96, 96, 96, 96, 96, 96, 96,
+      96, 96, 96, 96, 96, 96, 96, 96, 96, 96,
+      96, 96, 96, 96, 96, 96, 96, 96, 96, 96,
+      96, 96, 96, 96, 96, 96, 96, 96, 96, 96,
+      96, 96, 96, 96, 96, 96, 96, 96, 96, 96,
+      96, 96, 96, 96, 96, 96, 96, 96, 96, 96,
+      96, 96, 96, 96, 96, 96, 96, 96, 96, 96,
+      96, 96, 96, 96, 96, 96, 96, 96, 96, 96,
+      96, 96, 96, 96, 96, 96, 96, 96, 96, 96,
+      96, 96, 96, 96, 96, 96, 96, 96, 96, 96,
+      96, 96, 96, 96, 96, 96, 96, 96, 96, 96,
+      96, 96, 96, 96, 96, 96, 96, 96, 96, 96,
+      96, 96, 96, 96, 96, 96, 96, 96, 96, 96,
+      96, 96, 96, 96, 96, 96
     };
   register int hval = len;
 
   switch (hval)
     {
       default:
+      case 4:
+        hval += asso_values[(unsigned char)str[3]];
       case 3:
-        hval += asso_values[(unsigned char)str[2]];
       case 2:
       case 1:
         hval += asso_values[(unsigned char)str[0]];
@@ -104,70 +105,71 @@ java_keyword (str, len)
 {
   static struct java_keyword wordlist[] =
     {
-      {"", 0}, {"", 0}, {"", 0}, {"", 0}, {"", 0}, {"", 0},
-      {"try", TRY_TK},
+      {"", 0}, {"", 0}, {"", 0}, {"", 0}, {"", 0}, {"", 0}, {"", 0},
       {"else", ELSE_TK},
-      {"short", SHORT_TK},
-      {"goto", GOTO_TK},
-      {"extends", EXTENDS_TK},
-      {"", 0}, {"", 0},
-      {"int", INT_TK},
-      {"this", THIS_TK},
-      {"", 0},
-      {"native", NATIVE_TK},
-      {"", 0}, {"", 0},
-      {"interface", INTERFACE_TK},
-      {"import", IMPORT_TK},
-      {"private", PRIVATE_TK},
-      {"volatile", VOLATILE_TK},
-      {"", 0},
-      {"implements", IMPLEMENTS_TK},
-      {"", 0},
-      {"long", LONG_TK},
-      {"switch", SWITCH_TK},
-      {"abstract", ABSTRACT_TK},
-      {"transient", TRANSIENT_TK},
-      {"do", DO_TK},
-      {"", 0},
-      {"throws", THROWS_TK},
-      {"", 0},
-      {"null", NULL_TK},
-      {"super", SUPER_TK},
       {"true", TRUE_TK},
-      {"float", FLOAT_TK},
-      {"", 0},
-      {"return", RETURN_TK},
-      {"if", IF_TK},
-      {"void", VOID_TK},
-      {"protected", PROTECTED_TK},
-      {"byte", BYTE_TK},
       {"case", CASE_TK},
-      {"break", BREAK_TK},
-      {"finally", FINALLY_TK},
-      {"false", FALSE_TK},
-      {"synchronized", SYNCHRONIZED_TK},
-      {"instanceof", INSTANCEOF_TK},
-      {"while", WHILE_TK},
-      {"package", PACKAGE_TK},
-      {"const", CONST_TK},
-      {"boolean", BOOLEAN_TK},
-      {"final", FINAL_TK},
+      {"", 0},
+      {"public", PUBLIC_TK},
+      {"try", TRY_TK},
+      {"protected", PROTECTED_TK},
       {"continue", CONTINUE_TK},
-      {"catch", CATCH_TK},
-      {"", 0}, {"", 0}, {"", 0}, {"", 0}, {"", 0},
-      {"class", CLASS_TK},
+      {"extends", EXTENDS_TK},
+      {"const", CONST_TK},
       {"static", STATIC_TK},
-      {"double", DOUBLE_TK},
+      {"this", THIS_TK},
       {"default", DEFAULT_TK},
-      {"throw", THROW_TK},
-      {"", 0}, {"", 0}, {"", 0}, {"", 0}, {"", 0}, {"", 0}, {"", 0}, {"", 0}, {"", 0},
-      {"", 0}, {"", 0}, {"", 0}, {"", 0}, {"", 0},
+      {"class", CLASS_TK},
+      {"abstract", ABSTRACT_TK},
+      {"synchronized", SYNCHRONIZED_TK},
+      {"byte", BYTE_TK},
+      {"while", WHILE_TK},
+      {"double", DOUBLE_TK},
+      {"catch", CATCH_TK},
+      {"super", SUPER_TK},
+      {"short", SHORT_TK},
+      {"switch", SWITCH_TK},
+      {"package", PACKAGE_TK},
+      {"long", LONG_TK},
+      {"false", FALSE_TK},
+      {"", 0},
+      {"int", INT_TK},
+      {"final", FINAL_TK},
+      {"float", FLOAT_TK},
+      {"char", CHAR_TK},
       {"for", FOR_TK},
       {"", 0},
-      {"new", NEW_TK},
-      {"char", CHAR_TK},
+      {"interface", INTERFACE_TK},
+      {"null", NULL_TK},
+      {"do", DO_TK},
+      {"finally", FINALLY_TK},
+      {"strictfp", STRICT_TK},
       {"", 0},
-      {"public", PUBLIC_TK}
+      {"implements", IMPLEMENTS_TK},
+      {"void", VOID_TK},
+      {"transient", TRANSIENT_TK},
+      {"", 0},
+      {"private", PRIVATE_TK},
+      {"if", IF_TK},
+      {"break", BREAK_TK},
+      {"throws", THROWS_TK},
+      {"", 0},
+      {"new", NEW_TK},
+      {"", 0},
+      {"return", RETURN_TK},
+      {"", 0},
+      {"volatile", VOLATILE_TK},
+      {"boolean", BOOLEAN_TK},
+      {"instanceof", INSTANCEOF_TK},
+      {"", 0},
+      {"throw", THROW_TK},
+      {"", 0}, {"", 0}, {"", 0}, {"", 0}, {"", 0}, {"", 0}, {"", 0},
+      {"native", NATIVE_TK},
+      {"", 0}, {"", 0}, {"", 0}, {"", 0},
+      {"import", IMPORT_TK},
+      {"", 0}, {"", 0}, {"", 0}, {"", 0}, {"", 0}, {"", 0}, {"", 0}, {"", 0}, {"", 0},
+      {"", 0}, {"", 0}, {"", 0}, {"", 0}, {"", 0}, {"", 0}, {"", 0}, {"", 0}, {"", 0},
+      {"goto", GOTO_TK}
     };
 
   if (len <= MAX_WORD_LENGTH && len >= MIN_WORD_LENGTH)
