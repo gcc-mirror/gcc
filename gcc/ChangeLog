@@ -1,3 +1,11 @@
+2002-12-17  Jason Merrill  <jason@redhat.com>
+
+	* calls.c (expand_call): Don't try to be clever about expanding
+	the return slot address.
+
+	* calls.c (expand_call): Handle CALL_EXPR_HAS_RETURN_SLOT_ADDR
+	with special struct-return ABIs.
+
 2002-12-18  Kaz kojima  <kkojima@gcc.gnu.org>
 
 	* config/sh/linux.h (NO_IMPLICIT_EXTERN_C, CPLUSPLUS_CPP_SPEC):
