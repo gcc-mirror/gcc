@@ -10,17 +10,16 @@
 
 typedef float afloat __attribute__ ((__aligned__(16)));
 
-float fa[N];
-float fb[N+4] = {0.2, 1.3, 2.3, 3.4, 4.5, 5.6, 7.8, 9.0, 10.11, 11.12, 12.13, 13.14, 14.15, 15.16, 
-16.17, 17.18, 18.19, 19.20}; 
-float fc[N] = {0.2, 1.3, 2.3, 3.4, 4.5, 5.6, 7.8, 9.0, 10.11, 11.12, 12.13, 13.14, 14.15, 15.16};
+afloat fa[N];
+afloat fb[N+4] = {0.0, 1.0, 2.0, 3.0, 4.0, 5.0, 7.0, 9.0, 10.0, 11.0, 12.0, 13.0, 14.0, 15.0, 16.0, 17.0, 18.0, 19.0};
+afloat fc[N] = {0.5, 1.5, 2.5, 3.5, 4.5, 5.5, 7.5, 9.5, 10.5, 11.5, 12.5, 13.5, 14.5, 15.5};
 
 /* Not vectorizable: not aligned pointers. */
 int
-main3 (float * __restrict__ pa, float * __restrict__ pb, float *__restrict__ pc)
+main1 (float * __restrict__ pa, float * __restrict__ pb, float *__restrict__ pc)
 {
   int i;
-  afloat *q = pb + 4;
+  float *q = pb + 4;
 
   for (i = 0; i < N; i++)
     {
@@ -41,7 +40,7 @@ int main (void)
 { 
   check_vect ();
 
-  main3 (fa, fb, fc);
+  main1 (fa, fb, fc);
 
   return 0;	
 }
