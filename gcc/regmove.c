@@ -93,7 +93,8 @@ next_insn_for_regmove (insn)
     {
       insn = NEXT_INSN (insn);
 
-      if (GET_CODE (insn) == CODE_LABEL || GET_CODE (insn) == JUMP_INSN
+      if (insn == 0
+	  || GET_CODE (insn) == CODE_LABEL || GET_CODE (insn) == JUMP_INSN
 	  || (GET_CODE (insn) == NOTE
 	      && (NOTE_LINE_NUMBER (insn) == NOTE_INSN_LOOP_BEG
 		  || NOTE_LINE_NUMBER (insn) == NOTE_INSN_LOOP_END)))
@@ -114,7 +115,8 @@ prev_insn_for_regmove (insn)
     {
       insn = PREV_INSN (insn);
 
-      if (GET_CODE (insn) == CODE_LABEL || GET_CODE (insn) == JUMP_INSN
+      if (insn == 0
+	  || GET_CODE (insn) == CODE_LABEL || GET_CODE (insn) == JUMP_INSN
 	  || (GET_CODE (insn) == NOTE
 	      && (NOTE_LINE_NUMBER (insn) == NOTE_INSN_LOOP_BEG
 		  || NOTE_LINE_NUMBER (insn) == NOTE_INSN_LOOP_END)))
