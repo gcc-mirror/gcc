@@ -1,3 +1,9 @@
+2003-04-03  Jason Merrill  <jason@redhat.com>
+
+	PR c/10175
+	* jump.c (never_reached_warning): Revert patch of 2002-11-02.
+	Look backwards for a line note.
+
 2003-04-02  Mike Stump  <mrs@apple.com>
 
 	* doc/extend.texi (PowerPC AltiVec Built-in Functions): Split up
