@@ -999,8 +999,6 @@ h8300_valid_machine_decl_attribute (DECL, ATTRIBUTES, IDENTIFIER, ARGS)
 
 #define NOTICE_UPDATE_CC(EXP, INSN) notice_update_cc(EXP, INSN)
 
-/* The mov,and,or,xor insns always set V to 0.  */
-#define CC_OVERFLOW_0 0400
 /* The add insns don't set overflow in a usable way.  */
 #define CC_OVERFLOW_UNUSABLE 01000
 /* The mov,and,or,xor insns don't set carry.  That's ok though as the
@@ -1009,7 +1007,6 @@ h8300_valid_machine_decl_attribute (DECL, ATTRIBUTES, IDENTIFIER, ARGS)
    CC_NO_OVERFLOW defined for this purpose.  Rename it to something more
    understandable.  */
 #define CC_NO_CARRY CC_NO_OVERFLOW
-/* ??? Use CC_Z_IN_NOT_C for bld insns?  */
 
 /* Control the assembler format that we output.  */
 
