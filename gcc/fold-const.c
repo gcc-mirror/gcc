@@ -5036,7 +5036,7 @@ fold_single_bit_test (enum tree_code code, tree arg0, tree arg1,
       int bitnum = tree_log2 (TREE_OPERAND (arg0, 1));
       enum machine_mode operand_mode = TYPE_MODE (type);
       int ops_unsigned;
-      tree signed_type, unsigned_type;
+      tree signed_type, unsigned_type, intermediate_type;
       tree arg00;
   
       /* If we have (A & C) != 0 where C is the sign bit of A, convert
@@ -5082,22 +5082,23 @@ fold_single_bit_test (enum tree_code code, tree arg0, tree arg1,
 
       signed_type = (*lang_hooks.types.type_for_mode) (operand_mode, 0);
       unsigned_type = (*lang_hooks.types.type_for_mode) (operand_mode, 1);
+      intermediate_type = ops_unsigned ? unsigned_type : signed_type;
+      inner = convert (intermediate_type, inner);
 
       if (bitnum != 0)
-	inner = build (RSHIFT_EXPR, ops_unsigned ? unsigned_type : signed_type,
+	inner = build (RSHIFT_EXPR, intermediate_type,
 		       inner, size_int (bitnum));
 
       if (code == EQ_EXPR)
-	inner = build (BIT_XOR_EXPR, ops_unsigned ? unsigned_type : signed_type,
+	inner = build (BIT_XOR_EXPR, intermediate_type,
 		       inner, integer_one_node);
 
       /* Put the AND last so it can combine with more things.  */
-      inner = build (BIT_AND_EXPR, ops_unsigned ? unsigned_type : signed_type,
+      inner = build (BIT_AND_EXPR, intermediate_type,
 		     inner, integer_one_node);
 
       /* Make sure to return the proper type.  */
-      if (TREE_TYPE (inner) != result_type)
-	inner = convert (result_type, inner);
+      inner = convert (result_type, inner);
 
       return inner;
     }
