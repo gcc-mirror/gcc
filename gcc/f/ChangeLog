@@ -1,3 +1,7 @@
+Mon Jun 28 21:44:19 1999  Craig Burley  <craig@jcb-sc.com>
+
+	* version.c: Denote experimental version.
+
 Mon Jun 28 10:43:11 1999  Craig Burley  <craig@jcb-sc.com>
 
 	* com.c (ffecom_prepare_expr_): A COMPLEX intrinsic needs
