@@ -1069,22 +1069,8 @@ expand_member_init (exp, name, init)
       if (fndecl)
 	my_friendly_assert (TREE_CODE (fndecl) == FUNCTION_DECL, 209);
 
-      /* If the field is unique, we can use the parameter
-	 types to guide possible type instantiation.  */
-      if (DECL_CHAIN (fndecl) == NULL_TREE)
-	{
-	  /* There was a confusion here between
-	     FIELD and FNDECL.  The following code
-	     should be correct, but abort is here
-	     to make sure.  */
-	  my_friendly_abort (48);
-	  parmtypes = FUNCTION_ARG_CHAIN (fndecl);
-	}
-      else
-	{
-	  parmtypes = NULL_TREE;
-	  fndecl = NULL_TREE;
-	}
+      parmtypes = NULL_TREE;
+      fndecl = NULL_TREE;
 
       init = convert_arguments (parm, parmtypes, NULL_TREE, fndecl, LOOKUP_NORMAL);
       if (init == NULL_TREE || TREE_TYPE (init) != error_mark_node)
@@ -1711,9 +1697,12 @@ build_offset_ref (type, name)
       /* Go from the TREE_BASELINK to the member function info.  */
       t = TREE_VALUE (fnfields);
 
-      if (DECL_CHAIN (t) == NULL_TREE)
+      if (!really_overloaded_fn (t))
 	{
 	  tree access;
+
+	  /* Get rid of a potential OVERLOAD around it */
+	  t = OVL_CURRENT (t);
 
 	  /* unique functions are handled easily.  */
 	  access = compute_access (basebinfo, t);
@@ -1742,7 +1731,7 @@ build_offset_ref (type, name)
 	 ??? The smart thing to do for the case of saving initializers
 	 is to resolve them before we're done with this scope.  */
       if (!TREE_PERMANENT (fnfields)
-	  && ((flag_save_memoized_contexts && global_bindings_p ())
+	  && ((flag_save_memoized_contexts && toplevel_bindings_p ())
 	      || ! allocation_temporary_p ()))
 	fnfields = copy_list (fnfields);
 

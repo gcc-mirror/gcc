@@ -58,19 +58,48 @@ typedef struct
   tree decl;
 } template_parm_index;
 
-#define BINDING_SCOPE(NODE)	(((struct tree_binding*)NODE)->scope)
-#define BINDING_VALUE(NODE)	(((struct tree_binding*)NODE)->value)
-#define NAMESPACE_BINDING(ID,NS) BINDING_VALUE (binding_for_name (ID, NS))
+/* For a binding between a name and an entity, defines the scope
+   where the binding is declared. Currently always points to a
+   namespace declaration.  */
+#define BINDING_SCOPE(NODE)    (((struct tree_binding*)NODE)->scope)
+/* This is the declaration bound to the name. Possible values:
+   variable, overloaded function, namespace, template, enumerator.  */
+#define BINDING_VALUE(NODE)    (((struct tree_binding*)NODE)->value)
+/* If name is bound to a type, this is the type (struct, union, enum).  */
+#define BINDING_TYPE(NODE)     TREE_TYPE(NODE)
 #define IDENTIFIER_GLOBAL_VALUE(NODE) \
-  NAMESPACE_BINDING (NODE, global_namespace)
+  namespace_binding (NODE, global_namespace)
+#define SET_IDENTIFIER_GLOBAL_VALUE(NODE, VAL) \
+  set_namespace_binding (NODE, global_namespace, VAL)
 #define IDENTIFIER_NAMESPACE_VALUE(NODE) \
-  NAMESPACE_BINDING (NODE, current_namespace)
+  namespace_binding (NODE, current_namespace)
+#define SET_IDENTIFIER_NAMESPACE_VALUE(NODE, VAL) \
+  set_namespace_binding (NODE, current_namespace, VAL)
 
 struct tree_binding
 {
   char common[sizeof (struct tree_common)];
   tree scope;
   tree value;
+};
+
+/* The overloaded FUNCTION_DECL. */
+#define OVL_FUNCTION(NODE)   (((struct tree_overload*)NODE)->function)
+#define OVL_CHAIN(NODE)      TREE_CHAIN(NODE)
+/* Polymorphic access to FUNCTION and CHAIN. */
+#define OVL_CURRENT(NODE)     \
+  ((TREE_CODE(NODE)==OVERLOAD) ? OVL_FUNCTION(NODE) : NODE)
+#define OVL_NEXT(NODE)        \
+  ((TREE_CODE(NODE)==OVERLOAD) ? TREE_CHAIN(NODE) : NULL_TREE)
+/* If set, this was imported in a using declaration.
+   This is not to confuse with being used somewhere, which
+   is not important for this node. */
+#define OVL_USED(NODE)        TREE_USED(NODE)
+
+struct tree_overload
+{
+  char common[sizeof (struct tree_common)];
+  tree function;
 };
 
 #define WRAPPER_PTR(NODE) (((struct tree_wrapper*)NODE)->u.ptr)
@@ -100,9 +129,14 @@ struct tree_wrapper
 #define IDENTIFIER_TEMPLATE(NODE)	\
   (((struct lang_identifier *)(NODE))->class_template_info)
 
-#define IDENTIFIER_TYPE_VALUE(NODE) (TREE_TYPE (NODE))
+/* TREE_TYPE only indicates on local and class scope the current
+   type. For namespace scope, the presence of a type in any namespace
+   is indicated with global_type_node, and the real type behind must
+   be found through lookup. */
+#define IDENTIFIER_TYPE_VALUE(NODE) (identifier_type_value(NODE))
+#define REAL_IDENTIFIER_TYPE_VALUE(NODE) (TREE_TYPE (NODE))
 #define SET_IDENTIFIER_TYPE_VALUE(NODE,TYPE) (TREE_TYPE (NODE) = TYPE)
-#define IDENTIFIER_HAS_TYPE_VALUE(NODE) (TREE_TYPE (NODE) ? 1 : 0)
+#define IDENTIFIER_HAS_TYPE_VALUE(NODE) (IDENTIFIER_TYPE_VALUE (NODE) ? 1 : 0)
 
 #define LANG_ID_FIELD(NAME,NODE) \
   (((struct lang_identifier *)(NODE))->x \
@@ -950,7 +984,6 @@ struct lang_decl_flags
   tree memfunc_pointer_to;
   tree template_info;
   struct binding_level *level;
-  tree in_namespace;
 };
 
 struct lang_decl
@@ -959,7 +992,6 @@ struct lang_decl
 
   tree main_decl_variant;
   struct pending_inline *pending_inline_info;
-  tree chain;
 };
 
 /* Non-zero if NODE is a _DECL with TREE_READONLY set.  */
@@ -1065,21 +1097,13 @@ struct lang_decl
   ((TREE_CODE (NODE) == FUNCTION_DECL && DECL_FUNCTION_MEMBER_P (NODE)) \
    ? DECL_CLASS_CONTEXT (NODE) : DECL_CONTEXT (NODE))
 
-/* For a FUNCTION_DECL: the chain through which the next method
-   with the same name is found.  We now use TREE_CHAIN to
-   walk through the methods in order of declaration.  
-   For a NAMESPACE_DECL: the list of using namespace directives
+/* For a NAMESPACE_DECL: the list of using namespace directives
    The PURPOSE is the used namespace, the value is the namespace
-   that is the common ancestor */
-#if 1
-#define DECL_CHAIN(NODE) (DECL_LANG_SPECIFIC(NODE)->chain)
-#else
-#define DECL_CHAIN(NODE) (TREE_CHAIN (NODE))
-#endif
-#define DECL_NAMESPACE_USING(NODE) (DECL_LANG_SPECIFIC(NODE)->chain)
+   that is the common ancestor. */
+#define DECL_NAMESPACE_USING(NODE) DECL_VINDEX(NODE)
 
 /* In a NAMESPACE_DECL, the DECL_INITIAL is used to record all users
-   of a namespace, to record the transitive closure of using namespace */
+   of a namespace, to record the transitive closure of using namespace. */
 #define DECL_NAMESPACE_USERS(NODE) DECL_INITIAL (NODE)
 
 /* In a TREE_LIST concatenating using directives, indicate indirekt
@@ -1493,12 +1517,6 @@ extern int flag_new_for_scope;
 
 #define DECL_REALLY_EXTERN(NODE) \
   (DECL_EXTERNAL (NODE) && ! DECL_NOT_REALLY_EXTERN (NODE))
-
-/* Records the namespace we are in */
-#define DECL_NAMESPACE(NODE) \
-     (DECL_LANG_SPECIFIC (NODE) ? DECL_LANG_SPECIFIC (NODE)->decl_flags.in_namespace : 0)
-#define SET_DECL_NAMESPACE(NODE, val) \
-     DECL_LANG_SPECIFIC (NODE)->decl_flags.in_namespace = val
 
 /* Used to tell cp_finish_decl that it should approximate comdat linkage
    as best it can for this decl.  */
@@ -1952,6 +1970,10 @@ extern int flag_weak;
 
 extern int flag_new_abi;
 
+/* Nonzero to not ignore namespace std. */
+
+extern int flag_honor_std;
+
 /* Nonzero if we're done parsing and into end-of-file activities.  */
 
 extern int at_eof;
@@ -2153,6 +2175,7 @@ extern void pop_namespace			PROTO((void));
 extern void maybe_push_to_top_level		PROTO((int));
 extern void push_to_top_level			PROTO((void));
 extern void pop_from_top_level			PROTO((void));
+extern tree identifier_type_value		PROTO((tree));
 extern void set_identifier_type_value		PROTO((tree, tree));
 extern void pop_everything			PROTO((void));
 extern void pushtag				PROTO((tree, tree, int));
@@ -2166,8 +2189,9 @@ extern tree pushdecl_class_level		PROTO((tree));
 #if 0
 extern void pushdecl_nonclass_level		PROTO((tree));
 #endif
+extern tree pushdecl_namespace_level            PROTO((tree));
+extern tree push_using_decl                     PROTO((tree, tree));
 extern void push_class_level_binding		PROTO((tree, tree));
-extern int overloaded_globals_p			PROTO((tree));
 extern tree implicitly_declare			PROTO((tree));
 extern tree lookup_label			PROTO((tree));
 extern tree shadow_label			PROTO((tree));
@@ -2181,13 +2205,16 @@ extern tree gettags				PROTO((void));
 extern void set_current_level_tags_transparency	PROTO((int));
 #endif
 extern tree binding_for_name                    PROTO((tree, tree));
+extern tree namespace_binding                   PROTO((tree, tree));
+extern void set_namespace_binding               PROTO((tree, tree, tree));
 extern tree lookup_namespace_name		PROTO((tree, tree));
 extern tree make_typename_type			PROTO((tree, tree));
 extern tree lookup_name_nonclass		PROTO((tree));
+extern tree lookup_function_nonclass            PROTO((tree, tree));
 extern tree lookup_name				PROTO((tree, int));
 extern tree lookup_name_current_level		PROTO((tree));
-extern tree lookup_using_namespace              PROTO((tree,tree,tree,tree));
-extern tree qualified_lookup_using_namespace    PROTO((tree,tree));
+extern int  lookup_using_namespace              PROTO((tree,tree,tree,tree));
+extern int  qualified_lookup_using_namespace    PROTO((tree,tree,tree));
 extern tree auto_function			PROTO((tree, tree, enum built_in_function));
 extern void init_decl_processing		PROTO((void));
 extern int init_type_desc			PROTO((void));
@@ -2234,6 +2261,7 @@ extern int in_function_p			PROTO((void));
 extern void replace_defarg			PROTO((tree, tree));
 extern void print_other_binding_stack		PROTO((struct binding_level *));
 extern void revert_static_member_fn             PROTO((tree*, tree*, tree*));
+extern void cat_namespace_levels                PROTO((void));
 
 /* in decl2.c */
 extern int flag_assume_nonnull_objects;
@@ -2281,8 +2309,10 @@ extern tree build_expr_from_tree		PROTO((tree));
 extern tree reparse_decl_as_expr		PROTO((tree, tree));
 extern tree finish_decl_parsing			PROTO((tree));
 extern tree check_cp_case_value			PROTO((tree));
-extern tree get_namespace_id			PROTO((void));
-extern tree current_namespace_id		PROTO((tree));
+extern void set_decl_namespace                  PROTO((tree, tree));
+extern tree current_decl_namespace              PROTO((void));
+extern void push_decl_namespace                 PROTO((tree));
+extern void pop_decl_namespace                  PROTO((void));
 extern void do_namespace_alias			PROTO((tree, tree));
 extern void do_toplevel_using_decl		PROTO((tree));
 extern tree do_class_using_decl			PROTO((tree));
@@ -2290,6 +2320,7 @@ extern void do_using_directive			PROTO((tree));
 extern void check_default_args			PROTO((tree));
 extern void mark_used				PROTO((tree));
 extern tree handle_class_head			PROTO((tree, tree, tree));
+extern tree lookup_arg_dependent                PROTO((tree, tree, tree));
 
 /* in errfn.c */
 extern void cp_error				();
@@ -2636,10 +2667,14 @@ extern tree get_decl_list			PROTO((tree));
 extern tree make_binfo				PROTO((tree, tree, tree, tree, tree));
 extern tree binfo_value				PROTO((tree, tree));
 extern tree reverse_path			PROTO((tree));
-extern int decl_list_length			PROTO((tree));
 extern int count_functions			PROTO((tree));
 extern int is_overloaded_fn			PROTO((tree));
 extern tree get_first_fn			PROTO((tree));
+extern tree binding_init                        PROTO((struct tree_binding*));
+extern tree ovl_cons                            PROTO((tree, tree));
+extern tree scratch_ovl_cons                    PROTO((tree, tree));
+extern int ovl_member                           PROTO((tree, tree));
+extern tree build_overload                      PROTO((tree, tree));
 extern tree fnaddr_from_vtable_entry		PROTO((tree));
 extern tree function_arg_chain			PROTO((tree));
 extern int promotes_to_aggr_type		PROTO((tree, enum tree_code));
@@ -2674,6 +2709,7 @@ extern void push_expression_obstack		PROTO((void));
 #define scratch_tree_cons expr_tree_cons
 #define build_scratch_list build_expr_list
 #define make_scratch_vec make_temp_vec
+#define push_scratch_obstack push_expression_obstack
 
 /* in typeck.c */
 extern tree condition_conversion		PROTO((tree));

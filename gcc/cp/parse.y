@@ -331,8 +331,10 @@ program:
 		{
 		  /* In case there were missing closebraces,
 		     get us back to the global binding level.  */
-		  while (! global_bindings_p ())
+		  while (! toplevel_bindings_p ())
 		    poplevel (0, 0, 0);
+		  while (current_namespace != global_namespace)
+		    pop_namespace ();
 		  finish_file ();
 		}
 	;
@@ -413,7 +415,10 @@ extdef:
 		{ do_toplevel_using_decl ($1); }
 	| USING NAMESPACE any_id ';'
 		{
-		  if (TREE_CODE ($3) == IDENTIFIER_NODE)
+		  /* If no declaration was found, the using-directive is
+		     invalid. Since that was not reported, we need the
+		     identifier for the error message. */
+		  if (TREE_CODE ($3) == IDENTIFIER_NODE && lastiddecl)
 		    $3 = lastiddecl;
 		  do_using_directive ($3);
 		}
@@ -2348,6 +2353,7 @@ left_curly:
                       $<ttype>0 = t;
                     }
 		  if (processing_template_decl && TYPE_CONTEXT (t)
+		      && TREE_CODE (TYPE_CONTEXT (t)) != NAMESPACE_DECL
 		      && ! current_class_type)
 		    push_template_decl (TYPE_STUB_DECL (t));
 		  pushclass (t, 0);
@@ -3014,7 +3020,9 @@ typename_sub2:
 		  if (TREE_CODE ($1) != IDENTIFIER_NODE)
 		    $1 = lastiddecl;
 
-		  got_scope = $$ = complete_type (TREE_TYPE ($1));
+		  /* Retrieve the type for the identifier, which might involve
+		     some computation. */
+		  got_scope = $$ = complete_type (IDENTIFIER_TYPE_VALUE ($1));
 
 		  if ($$ == error_mark_node)
 		    cp_error ("`%T' is not a class or namespace", $1);

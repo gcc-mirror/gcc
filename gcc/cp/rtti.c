@@ -57,8 +57,12 @@ tree tinfo_fn_type;
 void
 init_rtti_processing ()
 {
+  if (flag_honor_std)
+    push_namespace (get_identifier ("std"));
   type_info_type_node = xref_tag
     (class_type_node, get_identifier ("type_info"), NULL_TREE, 1);
+  if (flag_honor_std)
+    pop_namespace ();
   tinfo_fn_id = get_identifier ("__tf");
   tinfo_fn_type = build_function_type
     (build_reference_type (build_type_variant (type_info_type_node, 1, 0)),

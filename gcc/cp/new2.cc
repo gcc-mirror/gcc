@@ -41,7 +41,7 @@ WEAK(void * operator new[] (size_t sz) throw (std::bad_alloc))
 #endif
 
 #ifdef L_op_vnewnt
-WEAK(void *operator new[] (size_t sz, const nothrow_t& nothrow) throw())
+WEAK(void *operator new[] (size_t sz, const std::nothrow_t& nothrow) throw())
 {
   return ::operator new(sz, nothrow);
 }

@@ -29,6 +29,7 @@
 #include "tinfo.h"
 #include "new"			// for placement new
 
+using std::type_info;
 // service function for comparing types by name.
 
 static inline int

@@ -7,7 +7,7 @@
 
 // type_info for a class with no base classes (or an enum).
 
-struct __user_type_info : public type_info {
+struct __user_type_info : public std::type_info {
   __user_type_info (const char *n) : type_info (n) {}
 
   // If our type can be converted to the desired type, 

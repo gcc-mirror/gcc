@@ -171,7 +171,9 @@ template_class_depth (type)
 {
   int depth;
 
-  for (depth = 0; type && TREE_CODE (type) != FUNCTION_DECL;
+  for (depth = 0; 
+       type && TREE_CODE (type) != FUNCTION_DECL 
+	 && TREE_CODE (type) != NAMESPACE_DECL;
        type = TYPE_CONTEXT (type))
     if (CLASSTYPE_TEMPLATE_INFO (type)
 	&& PRIMARY_TEMPLATE_P (CLASSTYPE_TI_TEMPLATE (type))
@@ -730,22 +732,19 @@ determine_specialization (template_id, decl, targs_out,
   tree targs_in = TREE_OPERAND (template_id, 1);
   tree templates = NULL_TREE;
   tree fn;
-  int overloaded;
   int i;
 
   *targs_out = NULL_TREE;
 
-  if (is_overloaded_fn (fns))
-    fn = get_first_fn (fns);
-  else
-    fn = NULL_TREE;
+  /* Check for baselinks. */
+  if (TREE_CODE (fns) == TREE_LIST)
+    fns = TREE_VALUE (fns);
 
-  overloaded = really_overloaded_fn (fns);
-  for (; fn != NULL_TREE; 
-       fn = overloaded ? DECL_CHAIN (fn) : NULL_TREE)
+  for (; fns; fns = OVL_NEXT (fns))
     {
       tree tmpl;
 
+      fn = OVL_CURRENT (fns);
       if (!need_member_template 
 	  && TREE_CODE (fn) == FUNCTION_DECL 
 	  && DECL_FUNCTION_MEMBER_P (fn)
@@ -1576,7 +1575,8 @@ push_template_decl_real (decl, is_friend)
     /* For a friend, we want the context of the friend function, not
        the type of which it is a friend.  */
     ctx = DECL_CONTEXT (decl);
-  else if (DECL_REAL_CONTEXT (decl))
+  else if (DECL_REAL_CONTEXT (decl)
+	   && TREE_CODE (DECL_REAL_CONTEXT (decl)) != NAMESPACE_DECL)
     /* In the case of a virtual function, we want the class in which
        it is defined.  */
     ctx = DECL_REAL_CONTEXT (decl);
@@ -1584,6 +1584,12 @@ push_template_decl_real (decl, is_friend)
     /* Otherwise, if we're currently definining some class, the DECL
        is assumed to be a member of the class.  */
     ctx = current_class_type;
+
+  if (ctx && TREE_CODE (ctx) == NAMESPACE_DECL)
+    ctx = NULL_TREE;
+
+  if (!DECL_CONTEXT (decl))
+    DECL_CONTEXT (decl) = current_namespace;
 
   /* For determining whether this is a primary template or not, we're really
      interested in the lexical context, not the true context.  */
@@ -1818,7 +1824,7 @@ push_template_decl_real (decl, is_friend)
     /* Note that we do not try to push a global template friend
        declared in a template class; such a thing may well depend on
        the template parameters of the class.  */
-    tmpl = pushdecl_top_level (tmpl);
+    tmpl = pushdecl_namespace_level (tmpl);
 
   if (primary)
     DECL_PRIMARY_TEMPLATE (tmpl) = tmpl;
@@ -2602,7 +2608,7 @@ mangle_class_name_for_template (name, parms, arglist, ctx)
 #define cat(s)	obstack_grow (&scratch_obstack, (s), strlen (s))
 #endif
 
-  if (ctx)
+  if (ctx && ctx != global_namespace)
     {
       char* s;
 
@@ -2610,6 +2616,8 @@ mangle_class_name_for_template (name, parms, arglist, ctx)
 	s = fndecl_as_string (ctx, 0);
       else if (TREE_CODE_CLASS (TREE_CODE (ctx)) == 't')
 	s = type_as_string_real (ctx, 0, 1);
+      else if (TREE_CODE (ctx) == NAMESPACE_DECL)
+	s = decl_as_string (ctx, 0);
       else
 	my_friendly_abort (0);
       cat (s);
@@ -2635,9 +2643,18 @@ mangle_class_name_for_template (name, parms, arglist, ctx)
       else if (TREE_CODE (parm) == TEMPLATE_DECL)
 	{
 	  if (TREE_CODE (arg) == TEMPLATE_DECL)
-	    /* Already substituted with real template.  Just output 
-	       the template name here */
-	    cat (IDENTIFIER_POINTER (DECL_NAME (arg)));
+	    {
+	      /* Already substituted with real template.  Just output 
+		 the template name here */
+	      my_friendly_assert (TREE_CODE (DECL_CONTEXT (arg)) 
+				  == NAMESPACE_DECL, 980422);
+	      if (DECL_CONTEXT (arg) != global_namespace)
+		{
+		  cat(decl_as_string (DECL_CONTEXT (arg), 0));
+		  cat("::");
+		}
+	      cat (IDENTIFIER_POINTER (DECL_NAME (arg)));
+	    }
 	  else
 	    /* Output the parameter declaration */
 	    cat (type_as_string_real (arg, 0, 1));
@@ -2729,7 +2746,7 @@ tree
 lookup_template_function (fns, arglist)
      tree fns, arglist;
 {
-  tree t;
+  tree type;
 
   if (fns == NULL_TREE)
     {
@@ -2740,10 +2757,11 @@ lookup_template_function (fns, arglist)
   if (arglist != NULL_TREE && !TREE_PERMANENT (arglist))
     copy_to_permanent (arglist);
 
-  return build_min (TEMPLATE_ID_EXPR,
-		    TREE_TYPE (fns) 
-		    ? TREE_TYPE (fns) : unknown_type_node, 
-		    fns, arglist);  
+  type = TREE_TYPE (fns);
+  if (TREE_CODE (fns) == OVERLOAD || !type)
+    type = unknown_type_node;
+
+  return build_min (TEMPLATE_ID_EXPR, type, fns, arglist);  
 }
 
 /* Within the scope of a template class S<T>, the name S gets bound
@@ -2786,7 +2804,7 @@ lookup_template_class (d1, arglist, in_decl, context)
 {
   tree template = NULL_TREE, parmlist;
   char *mangled_name;
-  tree id, t;
+  tree id, t, id_context;
 
   if (TREE_CODE (d1) == IDENTIFIER_NODE)
     {
@@ -2795,11 +2813,15 @@ lookup_template_class (d1, arglist, in_decl, context)
 	template = IDENTIFIER_LOCAL_VALUE (d1);
       else
 	{
+	  if (context)
+	    push_decl_namespace (context);
 	  template = 
 	    maybe_get_template_decl_from_type_decl
 	    (IDENTIFIER_CLASS_VALUE (d1));
 	  if (template == NULL_TREE)
-	    template = IDENTIFIER_NAMESPACE_VALUE (d1);
+	    template = lookup_name_nonclass (d1);
+	  if (context)
+	    pop_decl_namespace ();
 	}
       if (template)
 	context = DECL_CONTEXT (template);
@@ -2826,12 +2848,28 @@ lookup_template_class (d1, arglist, in_decl, context)
   else
     my_friendly_abort (272);
 
+  /* A namespace is used as context only for mangling.
+     Template IDs with namespace context are found 
+     in the global binding level.  */
+  if (context != NULL_TREE && TREE_CODE (context) == NAMESPACE_DECL)
+    context = global_namespace;
+
   /* With something like `template <class T> class X class X { ... };'
      we could end up with D1 having nothing but an IDENTIFIER_LOCAL_VALUE.
      We don't want to do that, but we have to deal with the situation, so
      let's give them some syntax errors to chew on instead of a crash.  */
   if (! template)
     return error_mark_node;
+
+  /* We need an id_context to get the mangling right. If this is a
+     nested template, use the context. If it is global, retrieve the
+     context from the template.  */
+  if (context && TREE_CODE (context) != NAMESPACE_DECL)
+    id_context = context;
+  else
+    id_context = DECL_CONTEXT (template);
+  my_friendly_assert (id_context != NULL_TREE, 980410);
+
   if (TREE_CODE (template) != TEMPLATE_DECL)
     {
       cp_error ("non-template type `%T' used as a template", d1);
@@ -2903,7 +2941,7 @@ lookup_template_class (d1, arglist, in_decl, context)
       mangled_name = mangle_class_name_for_template (IDENTIFIER_POINTER (d1),
 						     parmlist,
 						     arglist,
-						     context);
+						     id_context);
       id = get_identifier (mangled_name);
       IDENTIFIER_TEMPLATE (id) = d1;
 
@@ -3027,6 +3065,11 @@ for_each_template_parm (t, fn, data)
 	return 1;
       return for_each_template_parm (TREE_CHAIN (t), fn, data);
 
+    case OVERLOAD:
+      if (for_each_template_parm (OVL_FUNCTION (t), fn, data))
+	return 1;
+      return for_each_template_parm (OVL_CHAIN (t), fn, data);
+
       /* constructed type nodes */
     case POINTER_TYPE:
     case REFERENCE_TYPE:
@@ -3118,6 +3161,7 @@ for_each_template_parm (t, fn, data)
     case COMPLEX_TYPE:
     case VOID_TYPE:
     case BOOLEAN_TYPE:
+    case NAMESPACE_DECL:
       return 0;
 
     case ENUMERAL_TYPE:
@@ -3366,14 +3410,15 @@ tsubst_friend_function (decl, args)
   if (TREE_CODE (decl) == TEMPLATE_DECL)
     DECL_USE_TEMPLATE (DECL_TEMPLATE_RESULT (new_friend)) = 0;
   
-  if (DECL_CONTEXT (new_friend) == NULL_TREE)
+  if (!DECL_CONTEXT (new_friend) 
+      || TREE_CODE (DECL_CONTEXT (new_friend)) == NAMESPACE_DECL)
     {
       if (TREE_CODE (new_friend) == TEMPLATE_DECL)
 	/* This declaration is a `primary' template.  */
 	TREE_TYPE (DECL_INNERMOST_TEMPLATE_PARMS (new_friend))
 	    = new_friend;
 
-	new_friend = pushdecl_top_level (new_friend);
+	new_friend = pushdecl_namespace_level (new_friend);
     }
   else if (TYPE_SIZE (DECL_CONTEXT (new_friend)))
     {
@@ -3852,10 +3897,14 @@ tsubst (t, args, in_decl)
   if (t == NULL_TREE || t == error_mark_node
       || t == integer_type_node
       || t == void_type_node
-      || t == char_type_node)
+      || t == char_type_node
+      || TREE_CODE (t) == NAMESPACE_DECL)
     return t;
 
-  type = TREE_TYPE (t);
+  if (TREE_CODE (t) == IDENTIFIER_NODE)
+    type = IDENTIFIER_TYPE_VALUE (t);
+  else
+    type = TREE_TYPE (t);
   if (type == unknown_type_node)
     my_friendly_abort (42);
   if (type && TREE_CODE (t) != FUNCTION_DECL
@@ -3904,12 +3953,13 @@ tsubst (t, args, in_decl)
     case INTEGER_CST:
     case REAL_CST:
     case STRING_CST:
+    case NAMESPACE_DECL:
       return t;
 
     case ENUMERAL_TYPE:
       {
 	tree ctx = tsubst (TYPE_CONTEXT (t), args, in_decl);
-	if (ctx == NULL_TREE)
+	if (ctx == NULL_TREE || TREE_CODE (ctx) == NAMESPACE_DECL)
 	  return t;
 	else if (ctx == current_function_decl)
 	  return lookup_name (TYPE_IDENTIFIER (t), 1);
@@ -4089,7 +4139,6 @@ tsubst (t, args, in_decl)
 	tmpl = copy_node (t);
 	copy_lang_decl (tmpl);
 	my_friendly_assert (DECL_LANG_SPECIFIC (tmpl) != 0, 0);
-	DECL_CHAIN (tmpl) = NULL_TREE;
 	TREE_CHAIN (tmpl) = NULL_TREE;
 
 	if (is_template_template_parm)
@@ -4407,7 +4456,6 @@ tsubst (t, args, in_decl)
 	DECL_INTERFACE_KNOWN (r) = 0;
 	DECL_DEFER_OUTPUT (r) = 0;
 	TREE_CHAIN (r) = NULL_TREE;
-	DECL_CHAIN (r) = NULL_TREE;
 	DECL_PENDING_INLINE_INFO (r) = 0;
 	TREE_USED (r) = 0;
 
@@ -4436,7 +4484,7 @@ tsubst (t, args, in_decl)
 	   TREE_CHAIN because it doesn't find a previous decl.  Sigh.  */
 	if (member
 	    && IDENTIFIER_GLOBAL_VALUE (DECL_ASSEMBLER_NAME (r)) == NULL_TREE)
-	  IDENTIFIER_GLOBAL_VALUE (DECL_ASSEMBLER_NAME (r)) = r;
+	  SET_IDENTIFIER_GLOBAL_VALUE (DECL_ASSEMBLER_NAME (r), r);
 
 	return r;
       }
@@ -5632,15 +5680,14 @@ type_unification_real (tparms, targs, parms, args, subr,
       if (TREE_CODE_CLASS (TREE_CODE (arg)) != 't')
 	{
 	  my_friendly_assert (TREE_TYPE (arg) != NULL_TREE, 293);
-	  if (TREE_CODE (arg) == TREE_LIST
-	      && TREE_TYPE (arg) == unknown_type_node
-	      && TREE_CODE (TREE_VALUE (arg)) == TEMPLATE_DECL)
+	  if (TREE_CODE (arg) == OVERLOAD
+	      && TREE_CODE (OVL_FUNCTION (arg)) == TEMPLATE_DECL)
 	    {
 	      int ntparms;
 	      tree targs;
 
 	      /* Have to back unify here */
-	      arg = TREE_VALUE (arg);
+	      arg = OVL_FUNCTION (arg);
 	      ntparms = DECL_NTPARMS (arg);
 	      targs = make_scratch_vec (ntparms);
 	      parm = expr_tree_cons (NULL_TREE, parm, NULL_TREE);

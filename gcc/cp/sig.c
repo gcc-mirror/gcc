@@ -96,6 +96,8 @@ build_signature_pointer_or_reference_decl (type, name)
   decl = build_decl (TYPE_DECL, name, type);
   TYPE_NAME (type) = decl;
   TREE_CHAIN (type) = decl;
+  /* But we mangle it, so it needs a scope. */
+  DECL_CONTEXT (decl) = global_namespace;
 }
 
 /* Construct, lay out and return the type of pointers or references
@@ -532,19 +534,20 @@ build_signature_table_constructor (sig_ty, rhs)
       else
 	{
 	  /* Find the class method of the correct type.  */
-
+	  tree rhs_methods;
 	  basetypes = TREE_PURPOSE (baselink);
 	  if (TREE_CODE (basetypes) == TREE_LIST)
 	    basetypes = TREE_VALUE (basetypes);
 
-	  rhs_method = TREE_VALUE (baselink);
-	  for (; rhs_method; rhs_method = TREE_CHAIN (rhs_method))
-	    if (sig_mname == DECL_NAME (rhs_method)
+	  rhs_methods = TREE_VALUE (baselink);
+	  for (; rhs_methods; rhs_methods = OVL_NEXT (rhs_methods))
+	    if ((rhs_method = OVL_CURRENT (rhs_methods))
+		&& sig_mname == DECL_NAME (rhs_method)
 		&& ! DECL_STATIC_FUNCTION_P (rhs_method)
 		&& match_method_types (sig_mtype, TREE_TYPE (rhs_method)))
 	      break;
 
-	  if (rhs_method == NULL_TREE
+	  if (rhs_methods == NULL_TREE
 	      || (compute_access (basetypes, rhs_method)
 		  != access_public_node))
 	    {
@@ -754,7 +757,7 @@ build_sigtable (sig_type, rhs_type, init_from)
 	decl = pushdecl_top_level (build_decl (VAR_DECL, name, sig_type));
 	current_function_decl = context;
       }
-      IDENTIFIER_GLOBAL_VALUE (name) = decl;
+      SET_IDENTIFIER_GLOBAL_VALUE (name, decl);
       store_init_value (decl, init_expr);
       if (IS_SIGNATURE (rhs_type))
 	{

@@ -1271,33 +1271,38 @@ debug_binfo (elem)
     }
 }
 
-/* Return the length of a chain of nodes chained through DECL_CHAIN.
-   We expect a null pointer to mark the end of the chain.
-   This is the Lisp primitive `length'.  */
+/* Initialize an CPLUS_BINDING node that does not live on an obstack. */
 
-int
-decl_list_length (t)
-     tree t;
+tree
+binding_init (node)
+     struct tree_binding* node;
 {
-  register tree tail;
-  register int len = 0;
-
-  my_friendly_assert (TREE_CODE (t) == FUNCTION_DECL
-		      || TREE_CODE (t) == TEMPLATE_DECL, 300);
-  for (tail = t; tail; tail = DECL_CHAIN (tail))
-    len++;
-
-  return len;
+  static struct tree_binding* source;
+  if (!source)
+    {
+      extern struct obstack permanent_obstack;
+      push_obstacks (&permanent_obstack, &permanent_obstack);
+      source = (struct tree_binding*)make_node (CPLUS_BINDING);
+      pop_obstacks ();
+    }
+  *node = *source;
+  TREE_PERMANENT ((tree)node) = 0;
+  return (tree)node;
 }
 
 int
 count_functions (t)
      tree t;
 {
+  int i;
   if (TREE_CODE (t) == FUNCTION_DECL)
     return 1;
-  else if (TREE_CODE (t) == TREE_LIST)
-    return decl_list_length (TREE_VALUE (t));
+  else if (TREE_CODE (t) == OVERLOAD)
+    {
+      for (i=0; t; t = OVL_CHAIN (t))
+	i++;
+      return i;
+    }
 
   my_friendly_abort (359);
   return 0;
@@ -1307,19 +1312,29 @@ int
 is_overloaded_fn (x)
      tree x;
 {
+  /* XXX A baselink is also considered an overloaded function. */
+  if (TREE_CODE (x) == TREE_LIST)
+    {
+      my_friendly_assert (TREE_CODE (TREE_PURPOSE (x)) == TREE_VEC, 388);
+      x = TREE_VALUE (x);
+    }
   return (TREE_CODE (x) == FUNCTION_DECL
 	  || TREE_CODE (x) == TEMPLATE_ID_EXPR
 	  || DECL_FUNCTION_TEMPLATE_P (x)
-	  || really_overloaded_fn (x));
+	  || TREE_CODE (x) == OVERLOAD);
 }
 
 int
 really_overloaded_fn (x)
      tree x;
 {     
-  return (TREE_CODE (x) == TREE_LIST
-	  && (TREE_CODE (TREE_VALUE (x)) == FUNCTION_DECL
-	      || DECL_FUNCTION_TEMPLATE_P (TREE_VALUE (x))));
+  /* A baselink is also considered an overloaded function.
+     This might also be an ambiguous class member. */
+  while (TREE_CODE (x) == TREE_LIST)
+    x = TREE_VALUE (x);
+  return (TREE_CODE (x) == OVERLOAD 
+	  && (TREE_CHAIN (x) != NULL_TREE
+	      || DECL_FUNCTION_TEMPLATE_P (OVL_FUNCTION (x))));
 }
 
 tree
@@ -1327,11 +1342,72 @@ get_first_fn (from)
      tree from;
 {
   my_friendly_assert (is_overloaded_fn (from), 9);
+  /* A baselink is also considered an overloaded function. */
+  if (TREE_CODE (from) == TREE_LIST)
+    from = TREE_VALUE (from);
+  return OVL_CURRENT (from);
+}
 
-  if (really_overloaded_fn (from))
-    return TREE_VALUE (from);
-  else
-    return from;
+/* Return a new OVL node, concatenating it with the old one. */
+
+tree
+ovl_cons (decl, chain)
+     tree decl;
+     tree chain;
+{
+  tree result = make_node (OVERLOAD);
+  TREE_TYPE (result) = unknown_type_node;
+  OVL_FUNCTION (result) = decl;
+  TREE_CHAIN (result) = chain;
+  
+  return result;
+}
+
+/* Same as ovl_cons, but on the scratch_obstack. */
+
+tree
+scratch_ovl_cons (value, chain)
+     tree value, chain;
+{
+  register tree node;
+  register struct obstack *ambient_obstack = current_obstack;
+  extern struct obstack *expression_obstack;
+  current_obstack = expression_obstack;
+  node = ovl_cons (value, chain);
+  current_obstack = ambient_obstack;
+  return node;
+}
+
+/* Build a new overloaded function. If this is the first one,
+   just return it; otherwise, ovl_cons the _DECLs */
+
+tree
+build_overload (decl, chain)
+     tree decl;
+     tree chain;
+{
+  if (!chain)
+    return decl;
+  if (TREE_CODE (chain) != OVERLOAD)
+    chain = ovl_cons (chain, NULL_TREE);
+  return ovl_cons (decl, chain);
+}
+
+/* True if fn is in ovl. */
+
+int
+ovl_member (fn, ovl)
+     tree fn;
+     tree ovl;
+{
+  if (fn == ovl)
+    return 1;
+  if (!ovl || TREE_CODE (ovl) != OVERLOAD)
+    return 0;
+  for (; ovl; ovl = OVL_CHAIN (ovl))
+    if (OVL_FUNCTION (ovl) == fn)
+      return 1;
+  return 0;
 }
 
 int
@@ -2193,8 +2269,11 @@ tree
 lvalue_type (arg)
      tree arg;
 {
+  tree type = TREE_TYPE (arg);
+  if (TREE_CODE (arg) == OVERLOAD)
+    type = unknown_type_node;
   return cp_build_type_variant
-    (TREE_TYPE (arg), TREE_READONLY (arg), TREE_THIS_VOLATILE (arg));
+    (type, TREE_READONLY (arg), TREE_THIS_VOLATILE (arg));
 }
 
 /* The type of ARG for printing error messages; denote lvalues with

@@ -26,6 +26,8 @@
 // the executable file might be covered by the GNU General Public License.
 
 #include "new"
+using std::new_handler;
+using std::bad_alloc;
 
 extern "C" void *malloc (size_t);
 extern new_handler __new_handler;
@@ -35,7 +37,7 @@ extern new_handler __new_handler;
   x
 
 #ifdef L_op_newnt
-WEAK (void * operator new (size_t sz, const nothrow_t&) throw())
+WEAK (void * operator new (size_t sz, const std::nothrow_t&) throw())
 {
   void *p;
 

@@ -245,6 +245,7 @@ yylex ()
 {
   struct token tmp_token;
   tree trrr;
+  int old_looking_for_typename = 0;
 
  retry:
 #ifdef SPEW_DEBUG
@@ -306,8 +307,11 @@ yylex ()
     case IDENTIFIER:
       scan_tokens (1);
       if (nth_token (1)->yychar == SCOPE)
-	/* Don't interfere with the setting from an 'aggr' prefix.  */
-	looking_for_typename++;
+	{
+	  /* Don't interfere with the setting from an 'aggr' prefix.  */
+	  old_looking_for_typename = looking_for_typename;
+	  looking_for_typename = 1;
+	}
       else if (nth_token (1)->yychar == '<')
 	looking_for_template = 1;
 
@@ -346,8 +350,9 @@ yylex ()
     case PTYPENAME:
     case PTYPENAME_DEFN:
       consume_token ();
-      if (looking_for_typename > 0)
-	looking_for_typename--;
+      /* If we see a SCOPE next, restore the old value.
+	 Otherwise, we got what we want. */
+      looking_for_typename = old_looking_for_typename;
       looking_for_template = 0;
       break;
 
@@ -368,7 +373,7 @@ yylex ()
       /* fall through to output...  */
     case ENUM:
       /* Set this again, in case we are rescanning.  */
-      looking_for_typename = 1;
+      looking_for_typename = 2;
       /* fall through...  */
     default:
       consume_token ();

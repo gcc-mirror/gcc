@@ -91,7 +91,10 @@ require_complete_type (value)
   if (processing_template_decl)
     return value;
 
-  type = TREE_TYPE (value);
+  if (TREE_CODE (value) == OVERLOAD)
+    type = unknown_type_node;
+  else
+    type = TREE_TYPE (value);
 
   /* First, detect a valid value with a complete type.  */
   if (TYPE_SIZE (type) != 0
@@ -161,7 +164,7 @@ int
 type_unknown_p (exp)
      tree exp;
 {
-  return (TREE_CODE (exp) == TREE_LIST
+  return (TREE_CODE (exp) == OVERLOAD
 	  || TREE_TYPE (exp) == unknown_type_node
 	  || (TREE_CODE (TREE_TYPE (exp)) == OFFSET_TYPE
 	      && TREE_TYPE (TREE_TYPE (exp)) == unknown_type_node));
@@ -193,7 +196,8 @@ require_instantiated_type (type, exp, errval)
       return errval;
     }
 
-  if (TREE_TYPE (exp) == unknown_type_node
+  if (TREE_CODE (exp) == OVERLOAD
+      || TREE_TYPE (exp) == unknown_type_node
       || (TREE_CODE (TREE_TYPE (exp)) == OFFSET_TYPE
 	  && TREE_TYPE (TREE_TYPE (exp)) == unknown_type_node))
     {
@@ -1837,8 +1841,12 @@ build_component_ref (datum, component, basetype_path, protect)
   /* First, see if there is a field or component with name COMPONENT.  */
   if (TREE_CODE (component) == TREE_LIST)
     {
+      /* I could not trigger this code. MvL */
+      my_friendly_abort (980326);
+#ifdef DEAD
       my_friendly_assert (!(TREE_CHAIN (component) == NULL_TREE
 		&& DECL_CHAIN (TREE_VALUE (component)) == NULL_TREE), 309);
+#endif
       return build (COMPONENT_REF, TREE_TYPE (component), datum, component);
     }
 
@@ -1907,7 +1915,7 @@ build_component_ref (datum, component, basetype_path, protect)
 	  if (fndecls)
 	    {
 	      if (TREE_CHAIN (fndecls) == NULL_TREE
-		  && DECL_CHAIN (TREE_VALUE (fndecls)) == NULL_TREE)
+		  && TREE_CODE (TREE_VALUE (fndecls)) != OVERLOAD)
 		{
 		  tree access, fndecl;
 
@@ -2365,7 +2373,7 @@ build_x_function_call (function, params, decl)
 
   /* A friend template.  Make it look like a toplevel declaration.  */
   if (! is_method && TREE_CODE (function) == TEMPLATE_DECL)
-    function = build_scratch_list (NULL_TREE, function);
+    function = scratch_ovl_cons (function, NULL_TREE);
 
   /* Handle methods, friends, and overloaded functions, respectively.  */
   if (is_method)
@@ -2453,7 +2461,7 @@ build_x_function_call (function, params, decl)
     }
   else if (really_overloaded_fn (function))
     {
-      if (TREE_VALUE (function) == NULL_TREE)
+      if (OVL_FUNCTION (function) == NULL_TREE)
 	{
 	  cp_error ("function `%D' declared overloaded, but no definitions appear with which to resolve it?!?",
 		    TREE_PURPOSE (function));
@@ -2467,6 +2475,9 @@ build_x_function_call (function, params, decl)
 	  return build_new_function_call (function, params);
 	}
     }
+  else
+    /* Remove a potential OVERLOAD around it */
+    function = OVL_CURRENT (function);
 
  do_x_function:
   if (TREE_CODE (function) == OFFSET_REF)
@@ -2673,7 +2684,7 @@ build_function_call_real (function, params, require_complete, flags)
 	  && name
 	  && IDENTIFIER_LENGTH (name) == 4
 	  && ! strcmp (IDENTIFIER_POINTER (name), "main")
-	  && DECL_CONTEXT (function) == NULL_TREE)
+	  && DECL_CONTEXT (function) == global_namespace)
 	{
 	  pedwarn ("ANSI C++ forbids calling `main' from within program");
 	}
@@ -4437,7 +4448,7 @@ build_unary_op (code, xarg, noconvert)
       else if (pedantic
 	       && TREE_CODE (arg) == FUNCTION_DECL
 	       && DECL_NAME (arg)
-	       && DECL_CONTEXT (arg) == NULL_TREE
+	       && DECL_CONTEXT (arg) == global_namespace
 	       && IDENTIFIER_LENGTH (DECL_NAME (arg)) == 4
 	       && IDENTIFIER_POINTER (DECL_NAME (arg))[0] == 'm'
 	       && ! strcmp (IDENTIFIER_POINTER (DECL_NAME (arg)), "main"))
@@ -4488,15 +4499,16 @@ build_unary_op (code, xarg, noconvert)
 	  return build1 (ADDR_EXPR, unknown_type_node, arg);
 	}
 
-      if (TREE_CODE (arg) == TREE_LIST)
+      if (TREE_CODE (arg) == OVERLOAD)
+	return build1 (ADDR_EXPR, unknown_type_node, arg);
+      else if (TREE_CODE (arg) == TREE_LIST)
 	{
-	  if (TREE_CODE (TREE_VALUE (arg)) == FUNCTION_DECL
-	      && DECL_CHAIN (TREE_VALUE (arg)) == NULL_TREE)
+	  if (TREE_CODE (TREE_VALUE (arg)) == FUNCTION_DECL)
 	    /* Unique overloaded non-member function.  */
 	    return build_unary_op (ADDR_EXPR, TREE_VALUE (arg), 0);
 	  if (TREE_CHAIN (arg) == NULL_TREE
 	      && TREE_CODE (TREE_VALUE (arg)) == TREE_LIST
-	      && DECL_CHAIN (TREE_VALUE (TREE_VALUE (arg))) == NULL_TREE)
+	      && TREE_CODE (TREE_VALUE (TREE_VALUE (arg))) != OVERLOAD)
 	    /* Unique overloaded member function.  */
 	    return build_unary_op (ADDR_EXPR, TREE_VALUE (TREE_VALUE (arg)),
 				   0);
@@ -6500,7 +6512,7 @@ convert_for_assignment (type, rhs, errtype, fndecl, parmnum)
   if (rhs == error_mark_node)
     return error_mark_node;
 
-  if (TREE_VALUE (rhs) == error_mark_node)
+  if (TREE_CODE (rhs) == TREE_LIST && TREE_VALUE (rhs) == error_mark_node)
     return error_mark_node;
 
   if (TREE_CODE (TREE_TYPE (rhs)) == OFFSET_TYPE)

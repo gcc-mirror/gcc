@@ -8,7 +8,7 @@
 
 extern "C++" {
 
-#if 0
+#ifdef __HONOR_STD
 namespace std {
 #endif
 
@@ -34,7 +34,7 @@ unexpected_handler set_unexpected (unexpected_handler);
 void unexpected (void) __attribute__ ((__noreturn__));
 bool uncaught_exception ();
 
-#if 0
+#ifdef __HONOR_STD
 } // namespace std
 #endif
 

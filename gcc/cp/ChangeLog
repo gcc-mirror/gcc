@@ -1,3 +1,243 @@
+Mon Apr 27 07:17:38 1998  Martin von Loewis  <loewis@informatik.hu-berlin.de>
+
+	* cp-tree.def (OVERLOAD): New node.  
+	* cp-tree.h (BINDING_TYPE, SET_IDENTIFIER_GLOBAL_VALUE,
+	SET_IDENTIFIER_NAMESPACE_VALUE): Define.
+	(NAMESPACE_BINDING): Remove.
+	(IDENTIFIER_GLOBAL_VALUE, IDENTIFIER_NAMESPACE_VALUE): Use
+	namespace_binding.
+	(OVL_FUNCTION, OVL_CHAIN, OVL_CURRENT, OVL_NEXT, OVL_USED):
+	Define.
+	(tree_overload): New struct.
+	(IDENTIFIER_TYPE_VALUE): Use identifier_type_value.
+	(REAL_IDENTIFIER_TYPE_VALUE): Define.
+	(IDENTIFIER_HAS_TYPE_VALUE): Use IDENTIFIER_TYPE_VALUE.
+	(lang_decl_flags): Remove in_namespace.
+	(lang_decl): Remove chain.
+	(DECL_CHAIN, DECL_NAMESPACE): Remove.
+	(flag_honor_std): Declare extern.
+	(identifier_type_value, pushdecl_namespace_level, push_using_decl,
+	namespace_binding, set_namespace_binding,
+	lookup_function_nonclass, cat_namespace_levels,
+	set_decl_namespace, lookup_arg_dependent, binding_init, ovl_cons,
+	scratch_ovl_cons, ovl_member, build_overload): Declare.
+	(decl_list_length, get_namespace_id, current_namespace_id,
+	overloaded_globals_p): Remove.
+	(lookup_using_namespace, qualified_lookup_using_namespace): Change
+	return type.
+	(push_scratch_obstack): New macro.
+	* call.c (add_function_candidate): Special-case type of OVERLOAD node.
+	(build_user_conversions_1): Iterate using OVL_NEXT for ctors,
+	convs, fns.
+	(build_new_function_call): Iterate using OVL_CHAIN.  
+	Print DECL_NAME in when reporting ambiguities.
+	(build_object_call): Iterate using OVL_NEXT for fns, convs.
+	(build_new_op): Call lookup_function_nonclass.  
+	Iterate using OVL_NEXT.
+	(build_op_delete_call): Change detection of members.
+	Do not wrap TREE_LIST around fields and single global functions.
+	(build_over_call): Don't push a class level if the context is a
+	namespace.
+	(build_new_method_call): Iterate using OVL_NEXT.
+	* class.c (add_method): Chain overloaded members using
+	build_overload.  Remove copying of method.
+	(grow_method): When iterating through the obstack, expect OVERLOAD
+	nodes.  Chain overload members.
+	(finish_struct_methods): Chain overload members.  Unpack OVERLOAD
+	nodes in call to get_baselinks.
+	(duplicate_tag_error): Expect OVERLOAD nodes when unchaining.
+	(finish_struct_1): Iterate over ctor using OVL_NEXT.  Handle
+	fdecls that are OVERLOAD nodes.
+	(validate_lhs): New function.
+	(instantiate_type): Do not copy OVERLOAD nodes.  Remove dead
+	code. Use DECL_NAME in error messages. Split code between global
+	and member function processing.
+	* decl.c (global_type_node): New static variable.
+	(in_std): New global.
+	(struct binding_level): New field usings.
+	(resume_binding_level): Assert that we are not in a class.
+	(toplevel_bindings_p): Just check for namespace_p or
+	pseudo_global.
+	(resume_level): Remove.
+	(find_binding): New function.
+	(binding_for_name): Call it.
+	(namespace_binding, set_namespace_binding): New functions.
+	(push_namespace): Associate binding level with new namespace,
+	resume_binding_level for existing namespace.  Remove old code.
+	Fake std by counting.
+	(store_bindings): Use REAL_IDENTIFIER_TYPE_VALUE.
+	(maybe_push_to_top_level): Save current namespace.
+	(pop_from_top_level): Restore saved namespace.
+	(pop_namespace): Call suspend_binding_level.  Remove old code.
+	(cat_namespace_levels): New function.
+	(set_identifier_type_value_with_scope): For namespace bindings,
+	set BINDING_TYPE, and use global_type_node.
+	Use REAL_IDENTIFIER_TYPE_VALUE otherwise.
+	(identifier_type_value): New function.
+	(pushtag): If no context, use current_namespace.
+	(duplicate_decls): Don't process DECL_CHAIN.
+	(pushdecl): Set DECL_CONTEXT to current_namespace, if it is not
+	already set. Never reset it to NULL_TREE.  Lookup global variables
+	in their namespace.  Push overloaded templates if they are on
+	namespace level.
+	(pushdecl_namespace_level): New function.
+	(pushdecl_top_level): Implement using pushdecl_namespace_level.
+	(pushdecl_using_decl): New function.
+	(overloaded_globals_p): Remove.
+	(push_overloaded_decl): Create OVERLOAD nodes, and iterate through
+	them. Use namespace_binding and set_namespace_value.
+	(redeclaration_error_message): Complain if the declarations come
+	from different namespaces.
+	(lookup_tag): On namespace level, look in the BINDING_TYPE.
+	(lookup_namespace_name): Pass tree_bindings from stack.  Remove
+	old code.
+	(select_decl): New function.
+	(lookup_name_real): Call it for qualified and unqualified lookup.
+	Pass tree_bindings from the stack.
+	If prefer_type is 1, also accept namespaces.
+	(lookup_function_nonclass): New function.
+	(init_decl_processing): Set the binding level of the global
+	namespace to global_binding_level.
+	Build a proper type list for __builtin_apply.
+	Initialize std_node to "fake std" if flag_honor_std is set.
+	Initialize global_type_node.
+	Allocated bad_alloc in namespace std if flag_honor_std.
+	(define_function): Set the DECL_CONTEXT to the current_namespace.
+	(start_decl): A namespace is not considered as a context here.  If
+	the DECL_CONTEXT is a namespace, push the decl.
+	(cp_finish_decl): Check for namespaces used as initializers.
+	(grokfndecl): Add namespace parameter.  Remove processing of
+	DECL_CHAIN.
+	(grokvardecl): Add namespace parameter.
+	(grokdeclarator): Process SCOPEs that are namespaces.  For
+	mangling, temporarily set the DECL_CONTEXT on anonymous structs.
+	(start_function): Check for contexts that are namespaces.  
+	Set context for declarations that have not been pushed.
+	(store_parm_decls): Check for ::main only.
+	(finish_function): Likewise.
+	(start_method): Check for contexts that are namespaces.
+	(start_method): Remove DECL_CHAIN processing.
+	* decl2.c (flag_honor_std): Declare.
+	(lang_decode_option): Set it if -fhonor-std or -fnew-abi is given.
+	(decl_namespace_list): New static global.
+	(grok_x_components): Ignore namespaces as type contexts.
+	(check_classfn): Expect OVERLOAD nodes.
+	(grokfield): Remove DECL_CHAIN processing.
+	(finish_file): Call cat_namespace_levels.
+	(merge_functions): New function.
+	(ambiguous_decl): Rewrite.
+	(lookup_using_namespace): Produce tree_bindings.
+	(qualified_lookup_using_namespace): Likewise.
+	(set_decl_namespace, decl_namespace, current_decl_namespace,
+	push_decl_namespace, pop_decl_namespace): New functions.
+	(arg_lookup): New struct.
+	(add_function, arg_assoc_namespace, arg_assoc_class,
+	arg_assoc_type, arg_assoc_args, arg_assoc, lookup_arg_dependent):
+	New functions.
+	(get_namespace_id, current_namespace_id): Remove.
+	(do_toplevel_using_decl): Rewrite.
+	(do_class_using_decl): Complain about namespace qualifiers.
+	(do_using_directive): Sorry if not on namespace level.  Complain
+	about unknown namespaces.
+	* error.c (dump_aggr_type): Check for namespace contexts.
+	* except.c (init_exception_processing): Push terminate into std.
+	* friend.c (is_friend): A namespace is not a context, here.
+	* init.c (expand_member_init): Remove DECL_CHAIN processing.
+	(build_offset_ref): Process OVERLOAD nodes.
+	* lang-specs.h (__HONOR_STD): Define if -fnew-abi or -fhonor-std.
+	* lex.c (identifier_type): Loop using OVL_CHAIN.
+	(see_typename): Set looking_for_typename to 2.
+	(real_yylex): Likewise.	
+	(do_identifier): Expect OVERLOAD nodes instead of TREE_LISTs.
+	(do_scoped_id): Expect OVERLOAD nodes.
+	Change calling convention for qualified_lookup_using_namespace.
+	(build_lang_decl): Don't set in_namespace anymore.
+	* method.c (typevec_size): New global.
+	(build_overload_nested_name): Return if global_namespace.
+	Otherwise, always expect a declaration context.
+	(build_qualified_name): Likewise.
+	Make sure we don't write beyond typevec_size.
+	(build_decl_overload_real): Likewise.
+	Allocate one extra slot for the namespace.
+	(hack_identifier): Mark code dead.
+	Process OVERLOAD and NAMESPACE_DECL nodes.
+	* parse.y (program): Pop namespaces until in global namespace.
+	(extdef): In a using-declaration, don't discard the identifier if
+	there is no declaration.
+	(left_curly): Ignore type contexts which are namespaces.
+	(typename_sub2): Use IDENTIFIER_TYPE_VALUE to retrieve the type
+	used as scope.
+	* pt.c (template_class_depth): Expect types to be namespaces.
+	(determine_specialization): Simplify by expecting OVERLOAD nodes.
+	(push_template_decl): Push into namespace level.
+	Reset ctx if it is a namespace.
+	Set DECL_CONTEXT to current_namespace if not set already.
+	Ignore real contexts that are namespaces.
+	(mangle_class_name_for_template): Skip global_namespace.
+	Mangle other namepaces as declarations.
+	(lookup_template_function): Set type of OVERLOAD nodes to unknown.
+	(lookup_template_class): Push into namespace of context.
+	If the context is a namespace, set it to global_namespace.
+	Use id_context for mangling.
+	(for_each_template_parm): Handle OVERLOAD and NAMESPACE_DECL nodes.
+	(tsubst_friend_function): Ignore namespace contexts.
+	Push into namespace level.
+	(tsubst): Handle NAMESPACE_DECL nodes.
+	Remove DECL_CHAIN processing.
+	(type_unification_real): Recognize OVERLOAD instead of TREE_LIST nodes.
+	* ptree.c (print_lang_identifier): Print bindings.
+	(lang_print_xnode): Print OVERLOAD nodes.
+	* rtti.c (init_rtti_processing): Push type_info into std.
+	* search.c (lookup_fnfields_here): Expect OVERLOAD nodes.
+	(lookup_fnfields_1, get_virtuals_named_this, get_matching_virtual,
+	dfs_debug_mark, dfs_pushdecls, dfs_compress_decls, add_conversions,
+	lookup_fnfields_here): Likewise.
+	Process all nodes, instead of going through TREE_CHAIN.
+	* sig.c (build_signature_pointer_or_reference_type): Set context
+	to global_namespace.
+	(build_signature_table_constructor): Expect OVERLOAD nodes.
+	* spew.c (yylex): Save old setting of looking_for_typename.
+	* tree.c (decl_list_length): Remove.
+	(binding_init): New function.
+	(count_functions): Rewrite.
+	(is_overloaded_fn): Expect OVERLOAD nodes.
+	(really_overloaded_fn, get_first_fn, lvalue_type): Likewise.
+	(ovl_cons, scratch_ovl_cons, build_overload, build_overload_after,
+	ovl_member): New functions.
+	* typeck.c (require_complete_type): Expect OVERLOAD nodes.
+	(type_unknown_p): Likewise.
+	(require_instantiated_type): Likewise.
+	(build_component_ref): Declare code dead.
+	(build_x_function_call): Create and expect OVERLOAD nodes.
+	(build_function_call_real): Check for ::main only.
+	(build_unary_op): Likewise.  Expect OVERLOAD nodes.
+	(convert_for_assignment): Check for TREE_LIST before accessing
+	TREE_VALUE.
+	* decl.c (duplicate_decls): Check for namespace bindings instead
+	of global bindings.
+	(pushdecl, push_overloaded_decl, lookup_tag, lookup_name_real,
+	lookup_name_current_level, start_decl, xref_tag, 
+	finish_enum): Likewise.
+	* init.c (build_offset_ref): Likewise.
+	* search.c (lookup_field): Likewise.
+	(lookup_fnfields): Likewise.
+	(dfs_debug_mark): Likewise.
+	* decl.c (poplevel): Use SET_IDENTIFIER_TYPE_VALUE.
+	(poplevel_class, pop_from_top_level): Likewise.
+	* decl2.c (finish_method): Likewise.
+	* class.c (build_vtable): Use SET_IDENTIFIER_GLOBAL_VALUE.
+	* decl.c (record_builtin_type): Likewise.
+	(init_decl_processing, grokfndecl): Likewise.
+	* lex.c (get_time_identifier, do_identifier, do_scoped_id): Likewise.
+	(make_lang_type): Likewise.
+	* parse.y (make_thunk): Likewise.
+	* pt.c (tsubst): Likewise.
+	* tree.c (debug_binfo): Likewise.
+	* exception.cc, new.cc, new1.cc, new2.cc, tinfo.cc, tinfo.h, 
+	tinfo2.cc, inc/new.h: Add std qualifications.
+	* inc/new: Wrap with namespace std if __HONOR_STD.
+	* inc/typeinfo: Likewise.
+
 Fri May  8 00:43:50 1998  Jason Merrill  <jason@yorick.cygnus.com>
 
 	* call.c (build_user_type_conversion_1): Handle second_conv 

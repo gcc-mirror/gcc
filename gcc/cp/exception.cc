@@ -34,10 +34,11 @@
 /* Define terminate, unexpected, set_terminate, set_unexpected as
    well as the default terminate func and default unexpected func.  */
 
-extern terminate_handler __terminate_func __attribute__((__noreturn__));
+extern std::terminate_handler __terminate_func __attribute__((__noreturn__));
+using std::terminate;
 
 void
-terminate ()
+std::terminate ()
 {
   __terminate_func ();
 }
@@ -48,29 +49,29 @@ __default_unexpected ()
   terminate ();
 }
 
-static unexpected_handler __unexpected_func __attribute__((__noreturn__))
+static std::unexpected_handler __unexpected_func __attribute__((__noreturn__))
   = __default_unexpected;
 
-terminate_handler
-set_terminate (terminate_handler func)
+std::terminate_handler
+std::set_terminate (std::terminate_handler func)
 {
-  terminate_handler old = __terminate_func;
+  std::terminate_handler old = __terminate_func;
 
   __terminate_func = func;
   return old;
 }
 
-unexpected_handler
-set_unexpected (unexpected_handler func)
+std::unexpected_handler
+std::set_unexpected (std::unexpected_handler func)
 {
-  unexpected_handler old = __unexpected_func;
+  std::unexpected_handler old = __unexpected_func;
 
   __unexpected_func = func;
   return old;
 }
 
 void
-unexpected ()
+std::unexpected ()
 {
   __unexpected_func ();
 }
@@ -223,7 +224,7 @@ __check_eh_spec (int n, const void **spec)
 
   try
     {
-      unexpected ();
+      std::unexpected ();
     }
   catch (...)
     {
@@ -238,11 +239,11 @@ __check_eh_spec (int n, const void **spec)
 	    }
 	}
 
-      const type_info &bad_exc = typeid (bad_exception);
+      const std::type_info &bad_exc = typeid (std::bad_exception);
       for (int i = 0; i < n; ++i)
 	{
 	  if (__throw_type_match_rtti (spec[i], &bad_exc, p->value))
-	    throw bad_exception ();
+	    throw std::bad_exception ();
 	}
 
       terminate ();
@@ -252,25 +253,25 @@ __check_eh_spec (int n, const void **spec)
 extern "C" void
 __throw_bad_cast (void)
 {
-  throw bad_cast ();
+  throw std::bad_cast ();
 }
 
 extern "C" void
 __throw_bad_typeid (void)
 {
-  throw bad_typeid ();
+  throw std::bad_typeid ();
 }
 
 /* Has the current exception been caught?  */
 
 bool
-uncaught_exception ()
+std::uncaught_exception ()
 {
   cp_eh_info *p = __cp_exception_info ();
   return p && ! p->caught;
 }
 
-const char * exception::
+const char * std::exception::
 what () const
 {
   return typeid (*this).name ();
