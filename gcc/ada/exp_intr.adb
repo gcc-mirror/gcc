@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2004 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2005 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -479,6 +479,7 @@ package body Exp_Intr is
       Func : constant Entity_Id  := Entity (Name (N));
       Conv : Node_Id;
       Ftyp : Entity_Id;
+      Ttyp : Entity_Id;
 
    begin
       --  Rewrite as unchecked conversion node. Note that we must convert
@@ -500,12 +501,33 @@ package body Exp_Intr is
          Analyze_And_Resolve (Conv);
       end if;
 
+      --  The instantiation of Unchecked_Conversion creates a wrapper package,
+      --  and the target type is declared as a subtype of the actual. Recover
+      --  the actual, which is the subtype indic. in the subtype declaration
+      --  for the target type. This is semantically correct, and avoids
+      --  anomalies with access subtypes. For entities, leave type as is.
+
       --  We do the analysis here, because we do not want the compiler
       --  to try to optimize or otherwise reorganize the unchecked
       --  conversion node.
 
-      Rewrite (N, Unchecked_Convert_To (Etype (E), Conv));
-      Set_Etype (N, Etype (E));
+      Ttyp := Etype (E);
+
+      if Is_Entity_Name (Conv) then
+         null;
+
+      elsif Nkind (Parent (Ttyp)) = N_Subtype_Declaration then
+         Ttyp := Entity (Subtype_Indication (Parent (Etype (E))));
+
+      elsif Is_Itype (Ttyp) then
+         Ttyp :=
+           Entity (Subtype_Indication (Associated_Node_For_Itype (Ttyp)));
+      else
+         raise Program_Error;
+      end if;
+
+      Rewrite (N, Unchecked_Convert_To (Ttyp, Conv));
+      Set_Etype (N, Ttyp);
       Set_Analyzed (N);
 
       if Nkind (N) = N_Unchecked_Type_Conversion then
