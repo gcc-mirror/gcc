@@ -212,7 +212,7 @@ static struct tree_opt_pass pass_init_datastructures =
 static void
 register_one_dump_file (struct tree_opt_pass *pass, int n)
 {
-  char *dot_name, *flag_name;
+  char *dot_name, *flag_name, *glob_name;
   char num[10];
 
   /* See below in next_pass_1.  */
@@ -225,13 +225,15 @@ register_one_dump_file (struct tree_opt_pass *pass, int n)
   if (pass->properties_provided & PROP_trees)
     {
       flag_name = concat ("tree-", pass->name, num, NULL);
-      pass->static_pass_number = dump_register (dot_name, flag_name,
+      glob_name = concat ("tree-", pass->name, NULL);
+      pass->static_pass_number = dump_register (dot_name, flag_name, glob_name,
                                                 TDF_TREE, n + TDI_tree_all, 0);
     }
   else
     {
       flag_name = concat ("rtl-", pass->name, num, NULL);
-      pass->static_pass_number = dump_register (dot_name, flag_name,
+      glob_name = concat ("rtl-", pass->name, NULL);
+      pass->static_pass_number = dump_register (dot_name, flag_name, glob_name,
                                                 TDF_RTL, n, pass->letter);
     }
 }

@@ -78,6 +78,7 @@ struct dump_file_info
 {
   const char *suffix;           /* suffix to give output file.  */
   const char *swtch;            /* command line switch */
+  const char *glob;             /* command line glob  */
   int flags;                    /* user flags */
   int state;                    /* state of play */
   int num;                      /* dump file number */
