@@ -1,5 +1,5 @@
 /* Definitions for CHILL parsing and type checking.
-   Copyright (C) 1992, 93, 1994, 1998 Free Software Foundation, Inc.
+   Copyright (C) 1992, 93, 94, 98, 1999 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -391,10 +391,6 @@ extern int flag_cond_mismatch;
 /* Nonzero means don't recognize the keyword `asm'.  */
 
 extern int flag_no_asm;
-
-/* Nonzero means ignore `#ident' directives.  */
-
-extern int flag_no_ident;
 
 /* Nonzero means warn about implicit declarations.  */
 
