@@ -1,3 +1,8 @@
+Wed Apr 25 17:09:50 2001  J"orn Rennecke <amylaar@redhat.com>
+
+	* emit-rtl.c (constant_subword): Also do sign extension in
+	BITS_PER_WORD == 16 case.
+
 2001-04-25  Jason Merrill  <jason_merrill@redhat.com>
 
 	* loop.c (try_swap_copy_prop): Go back to checking insn.
