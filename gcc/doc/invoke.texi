@@ -7371,11 +7371,6 @@ depends on the target gcc was configured for, but commonly is either
 @samp{_flush_func} or @samp{__cpu_flush}.
 @end table
 
-These options are defined by the macro
-@code{TARGET_SWITCHES} in the machine description.  The default for the
-options is also defined by that macro, which enables you to change the
-defaults.
-
 @node i386 and x86-64 Options
 @subsection Intel 386 and AMD x86-64 Options
 @cindex i386 Options
