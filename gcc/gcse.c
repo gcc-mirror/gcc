@@ -4303,7 +4303,8 @@ do_local_cprop (rtx x, rtx insn, int alter_jumps, rtx *libcall_sp)
 	  rtx this_rtx = l->loc;
 	  rtx note;
 
-	  if (l->in_libcall)
+	  /* Don't CSE non-constant values out of libcall blocks.  */
+	  if (l->in_libcall && ! CONSTANT_P (this_rtx))
 	    continue;
 
 	  if (gcse_constant_p (this_rtx))
@@ -4388,7 +4389,7 @@ adjust_libcall_notes (rtx oldreg, rtx newval, rtx insn, rtx *libcall_sp)
 	      return true;
 	    }
 	}
-      XEXP (note, 0) = replace_rtx (XEXP (note, 0), oldreg, newval);
+      XEXP (note, 0) = simplify_replace_rtx (XEXP (note, 0), oldreg, newval);
       insn = end;
     }
   return true;

@@ -1,3 +1,8 @@
+2004-10-30  Roger Sayle  <roger@eyesopen.com>
+
+	PR rtl-optimization/17581
+	* gcc.dg/pr17581-1.c: New test case.
+
 2004-10-28  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/17132

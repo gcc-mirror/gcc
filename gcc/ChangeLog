@@ -1,3 +1,13 @@
+2004-10-30  Roger Sayle  <roger@eyesopen.com>
+
+	PR rtl-optimization/17581
+	* cselib.c (cselib_process_insn): The last instruction of a libcall
+	block, with the REG_RETVAL note, should be considered in the libcall.
+	* gcse.c (do_local_cprop): Allow constants to be propagated outside
+	of libcall blocks.
+	(adjust_libcall_notes): Use simplify_replace_rtx instead of
+	replace_rtx to avoid creating invalid RTL in REG_RETVAL notes.
+
 2004-10-27  Andrew Pinski  <pinskia@physics.uc.edu>
 
 	PR other/18186

@@ -1339,8 +1339,6 @@ cselib_process_insn (rtx insn)
 
   if (find_reg_note (insn, REG_LIBCALL, NULL))
     cselib_current_insn_in_libcall = true;
-  if (find_reg_note (insn, REG_RETVAL, NULL))
-    cselib_current_insn_in_libcall = false;
   cselib_current_insn = insn;
 
   /* Forget everything at a CODE_LABEL, a volatile asm, or a setjmp.  */
@@ -1351,12 +1349,16 @@ cselib_process_insn (rtx insn)
 	  && GET_CODE (PATTERN (insn)) == ASM_OPERANDS
 	  && MEM_VOLATILE_P (PATTERN (insn))))
     {
+      if (find_reg_note (insn, REG_RETVAL, NULL))
+        cselib_current_insn_in_libcall = false;
       clear_table ();
       return;
     }
 
   if (! INSN_P (insn))
     {
+      if (find_reg_note (insn, REG_RETVAL, NULL))
+        cselib_current_insn_in_libcall = false;
       cselib_current_insn = 0;
       return;
     }
@@ -1392,6 +1394,8 @@ cselib_process_insn (rtx insn)
       if (GET_CODE (XEXP (x, 0)) == CLOBBER)
 	cselib_invalidate_rtx (XEXP (XEXP (x, 0), 0));
 
+  if (find_reg_note (insn, REG_RETVAL, NULL))
+    cselib_current_insn_in_libcall = false;
   cselib_current_insn = 0;
 
   if (n_useless_values > MAX_USELESS_VALUES)
