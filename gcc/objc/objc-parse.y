@@ -500,7 +500,7 @@ cast_expr:
 		  tree type = $2;
 		  finish_init ();
 
-		  if (pedantic && ! flag_isoc9x)
+		  if (pedantic && ! flag_isoc99)
 		    pedwarn ("ANSI C forbids constructor expressions");
 		  if (TYPE_NAME (type) != 0)
 		    {
@@ -1460,7 +1460,7 @@ maybecomma:
 maybecomma_warn:
 	  /* empty */
 	| ','
-		{ if (pedantic && ! flag_isoc9x)
+		{ if (pedantic && ! flag_isoc99)
 		    pedwarn ("comma at end of enumerator list"); }
 	;
 
