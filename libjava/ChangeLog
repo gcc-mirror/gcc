@@ -1,3 +1,9 @@
+2002-02-01  Tom Tromey  <tromey@redhat.com>
+
+	* java/lang/natPosixProcess.cc (myclose): New function.
+	(fail): Use it.
+	(startProcess): Likewise.
+
 2002-02-01  Adam Megacz <adam@xwt.org>
 
 	* prims.cc: Added #undef STRICT after #include<windows.h>.
