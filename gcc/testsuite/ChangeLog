@@ -1,3 +1,15 @@
+2000-05-29  Zack Weinberg  <zack@wolery.cumb.org>
+
+	* gcc.dg/cpp-mi.c: Add another case, cpp-mix.h, where the
+	guard macro is already defined when the header is first
+	included.
+	* gcc.dg/cpp-mix.h: New file.
+	* gcc.dg/endif-label.c: Update patterns to match compiler.
+
+	* g++.brendan/complex1.C: Declare abort.
+	* g++.law/refs4.C: Remove XFAIL.
+	* g++.oliva/expr2.C: Declare abort and exit.
+
 2000-05-28  Alexandre Oliva  <aoliva@cygnus.com>
 
 	* gcc.c-torture/execute/20000528-1.c: New test.

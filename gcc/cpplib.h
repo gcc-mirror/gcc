@@ -509,8 +509,7 @@ struct cpp_reader
      for include files.  (Altered as we get more of them.)  */
   unsigned int max_include_len;
 
-  struct if_stack *if_stack;
-  const unsigned char *potential_control_macro;
+  const cpp_hashnode *potential_control_macro;
 
   /* Token column position adjustment owing to tabs in whitespace.  */
   unsigned int col_adjust;
@@ -555,6 +554,9 @@ struct cpp_reader
   /* True after cpp_start_read completes.  Used to inhibit some
      warnings while parsing the command line.  */
   unsigned char done_initializing;
+
+  /* True if we are skipping a failed conditional group.  */
+  unsigned char skipping;
 };
 
 /* struct cpp_printer encapsulates state used to convert the stream of

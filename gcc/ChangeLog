@@ -1,3 +1,37 @@
+2000-05-29  Zack Weinberg  <zack@wolery.cumb.org>
+
+	* cpplib.h (cpp_reader): Remove if_stack.  Change
+	potential_control_macro to a cpp_hashnode *.  Add skipping flag.
+	* cpphash.h (struct ihash): Change control_macro to a
+	cpp_hashnode * and shorten name to cmacro.
+	Add NEVER_REINCLUDE constant.
+
+	* cppfiles.c (redundant_include_p): Drop cpp_reader argument.
+	Examine the cmacro node directly, no need to call cpp_defined.
+	(_cpp_execute_include, read_include_file): Set cmacro to
+	NEVER_REINCLUDE, not U"".
+	* cpplex.c (cpp_push_buffer): Don't set new->if_stack.
+	(cpp_get_token): If pfile->skipping is true, discard text and
+	keep scanning until we hit a directive; don't expand macros.
+
+	* cpplib.c (struct if_stack): Remove if_succeeded, add
+	was_skipping. Change control_macro to a cpp_hashnode * and
+	shorten name to cmacro.  Remove typedef IF_STACK.
+	(parse_ifdef), detect_if_not_defined): Return a cpp_hashnode *.
+	(conditional_skip, skip_if_group,
+	consider_directive_while_skipping): Delete.
+	(push_conditional): New.
+	(_cpp_handle_directive): Don't process directives other than
+	conditionals if we are skipping.
+
+	(do_ifdef, do_ifndef, do_if, do_else, do_elif, do_endif):
+	Update to new scheme.
+	(validate_else): Skip rest of line here, unconditionally.
+	(_cpp_unwind_if_stack): The stack is per-buffer.  Force
+	pfile->skipping off.
+
+	(all): Remove `scare quotes' from error messages.
+
 2000-05-29  Richard Henderson  <rth@cygnus.com>
 
 	* function.c (emit_return_into_block): New line_note arg; emit it.
