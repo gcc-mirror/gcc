@@ -1,3 +1,16 @@
+Thu Jul  9 01:30:37 1998  Joel Sherrill  <joel@OARcorp.com>
+			  Ralf Corsepius <corsepiu@faw.uni-ulm.de>
+
+	* config/i386/rtemself.h: Updated to keep in sync with
+	config/i386/linux.h.
+
+	* configure.in: Added sh-rtemself.
+	* configure: Rebuilt.
+	* config/sh/rtems.h: Removed -D__ELF__ since it is now COFF.
+	* config/sh/rtemself.h: New file.
+
+	* config/rs6000/rtems.h: Defined STARTFILE_DEFAULT_SPEC.
+
 Wed Jul  8 21:43:14 1998  Jeffrey A Law  (law@cygnus.com)
 
 	* configure.in: Check if the assembler supports ".balign" and
