@@ -29,8 +29,8 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 	%{EB} %{!EB:-EB} \
 	%{EL: %e-EL not supported} \
 	%{O:-O2} %{O1:-O2} %{O2:-O2} %{O3:-O3} \
-	%{g} %{g1} %{g2} %{g3} %{g0} %{v} %{K} \
-	%{G*}}"
+	%{g} %{g1} %{g2} %{g3} %{g0} %{v} %{K}} \
+%{G*}"
 
 #define CPP_SPEC "\
 %{!nostdinc: -I/usr/include2.0} \
