@@ -266,7 +266,7 @@ bmp_iter_and_init (bitmap_iterator *bi, bitmap map1, bitmap map2,
       bi->elt2 = bi->elt2->next;
     }
 
-  /* If we're at the same index, then we have some intersecting bits.   */
+  /* If we're at the same index, then we have some intersecting bits.  */
   if (bi->elt1->indx == bi->elt2->indx)
     {
       /* We might have advanced beyond the start_bit, so reinitialize

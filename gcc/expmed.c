@@ -1870,7 +1870,7 @@ extract_force_align_mem_bit_field (rtx op0, unsigned HOST_WIDE_INT bitsize,
   unsigned int sign_shift_up, sign_shift_dn;
   rtx base, a1, a2, v1, v2, comb, shift, result, start;
 
-  /* Choose a mode that will fit BITSIZE.    */
+  /* Choose a mode that will fit BITSIZE.  */
   mode = smallest_mode_for_size (bitsize, MODE_INT);
   m_size = GET_MODE_SIZE (mode);
   m_bitsize = GET_MODE_BITSIZE (mode);

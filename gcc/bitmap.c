@@ -496,7 +496,7 @@ bitmap_first_set_bit (bitmap a)
 }
 
 
-/* DST = A & B. */
+/* DST = A & B.  */
 
 void
 bitmap_and (bitmap dst, bitmap a, bitmap b)
@@ -606,7 +606,7 @@ bitmap_and_compl (bitmap dst, bitmap a, bitmap b)
     {
       if (!b_elt || a_elt->indx < b_elt->indx)
 	{
-	  /* Copy a_elt. */
+	  /* Copy a_elt.  */
 	  if (!dst_elt)
 	    dst_elt = bitmap_elt_insert_after (dst, dst_prev);
 	  
