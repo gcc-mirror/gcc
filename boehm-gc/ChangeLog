@@ -2,6 +2,8 @@
 
 	Imported GC 6.1 Alpha 3.
 
+	* sparc_mach_dep.S: Delete incorrectly named file.
+
 2001-02-11  Adam Megacz <adam@xwt.org
 
 	* gcc/boehm-gc/configure.in: support for win32, saner
