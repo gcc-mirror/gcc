@@ -8160,6 +8160,11 @@ gen_subprogram_die (decl, context_die)
       if (declaration && ! local_scope_p (context_die))
 	abort ();
 
+      /* Fixup die_parent for the abstract instance of a nested
+	 inline function.  */
+      if (old_die && old_die->die_parent == NULL)
+	add_child_die (context_die, old_die);
+
       subr_die = new_die (DW_TAG_subprogram, context_die);
       add_abstract_origin_attribute (subr_die, origin);
     }

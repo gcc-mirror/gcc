@@ -1,3 +1,11 @@
+2000-05-10  Jason Merrill  <jason@casey.cygnus.com>
+
+	* dwarf2out.c (gen_subprogram_die): Fixup die_parent for the
+	abstract instance of a nested inline function.
+
+	* stor-layout.c (finish_record_layout): finalize_type_size
+	before laying out the pending_statics.
+
 Wed 10 May 09:36:47 2000  Neil Booth  <NeilB@earthling.net>
 
 	* cpplex.c (spell_token): New function.
