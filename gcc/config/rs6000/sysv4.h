@@ -1171,11 +1171,14 @@ do {									\
 #ifndef	STARTFILE_LINUX_SPEC
 #define	STARTFILE_LINUX_SPEC "\
 %{!shared: %{pg:gcrt1.o%s} %{!pg:%{p:gcrt1.o%s} %{!p:crt1.o%s}}} \
-scrti.o%s"
+%{mnewlib: ecrti.o%s} \
+%{!mnewlib: crti.o%s %{!shared:crtbegin.o%s} %{shared:crtbeginS.o%s}}"
 #endif
 
 #ifndef	ENDFILE_LINUX_SPEC
-#define	ENDFILE_LINUX_SPEC "scrtn.o%s"
+#define	ENDFILE_LINUX_SPEC "\
+%{mnewlib: ecrtn.o%s} \
+%{!mnewlib: %{!shared:crtend.o%s} %{shared:crtendS.o%s} crtn.o%s}"
 #endif
 
 #ifndef LINK_START_LINUX_SPEC
