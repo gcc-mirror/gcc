@@ -1,5 +1,5 @@
 /* Calculate branch probabilities, and basic block execution counts. 
-   Copyright (C) 1990, 91, 92, 93, 94, 96, 1997 Free Software Foundation, Inc.
+   Copyright (C) 1990, 91-94, 97, 1998 Free Software Foundation, Inc.
    Contributed by James E. Wilson, UC Berkeley/Cygnus Support;
    based on some ideas from Dain Samples of UC Berkeley.
    Further mangling by Bob Manson, Cygnus Support.

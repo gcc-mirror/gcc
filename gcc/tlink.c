@@ -1,7 +1,7 @@
 /* Scan linker error messages for missing template instantiations and provide
    them.
 
-   Copyright (C) 1995 Free Software Foundation, Inc.
+   Copyright (C) 1995, 1998 Free Software Foundation, Inc.
    Contributed by Jason Merrill (jason@cygnus.com).
 
 This file is part of GNU CC.
