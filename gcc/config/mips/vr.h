@@ -22,3 +22,10 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #define MIPS_CPU_STRING_DEFAULT "vr4100"
 #define MULTILIB_DEFAULTS \
 	{ MULTILIB_ENDIAN_DEFAULT, MULTILIB_ABI_DEFAULT, "march=vr4100" }
+
+/* Make sure that -mlong64 always appears on the command line when
+   64-bit longs are needed.  Also make sure that -mgp32 doesn't appear
+   if it is redundant.  */
+#define DRIVER_SELF_SPECS \
+	"%{mabi=eabi:%{!mlong*:%{!mgp32:-mlong64}}}", \
+	"%{mabi=32:%<mgp32}"

@@ -1,5 +1,13 @@
 2002-10-14  Richard Sandiford  <rsandifo@redhat.com>
 
+	* config/mips/vr.h (DRIVER_SELF_SPECS): Define.
+	* config/mips/t-vr (MULTILIB_OPTIONS): Remove mlong32.
+	(MULTILIB_DIRNAMES): Remove long32.
+	(MULTILIB_EXCEPTIONS): Don't build -mabi=32 -mgp32 multilibs.
+	(MULTILIB_REDUNDANT_DIRS): Remove.
+
+2002-10-14  Richard Sandiford  <rsandifo@redhat.com>
+
 	* doc/tm.texi (DRIVER_SELF_SPECS): Document.
 	* gcc.c (driver_self_specs): New variable.
 	(do_self_spec): New function.

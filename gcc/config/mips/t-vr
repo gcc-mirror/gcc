@@ -39,7 +39,7 @@ MULTILIB_OPTIONS =			\
 	EL/EB				\
 	mabi=32/mabi=o64/mabi=eabi	\
 	mgp32				\
-	mlong32/mlong64			\
+	mlong64				\
 	mips16				\
 	march=vr5400/march=vr4100
 
@@ -47,7 +47,7 @@ MULTILIB_DIRNAMES =	\
 	el eb		\
 	o32 o64 eabi	\
 	gp32		\
-	long32 long64	\
+	long64		\
 	mips16		\
 	vr5400 vr4100
 
@@ -59,38 +59,9 @@ MULTILIB_MATCHES = EL=mel EB=meb
 # without a -mabi flag.
 MULTILIB_EXCEPTIONS =				\
 	*mabi=32/mlong64*			\
-	*mabi=32/mgp32/mlong64*			\
+	*mabi=32/mgp32*				\
 	*mabi=o64/mgp32*			\
 	*mabi=o64/mlong64*			\
 	mgp32* E[LB]/mgp32*			\
 	mlong64* E[LB]/mlong64*			\
 	*mips16/march=vr5*
-
-# The real value of this macro is very long, so generate it using a
-# shell fragment.  The idea is to tell the GCC driver how -mabi,
-# -mgp32, -mlong32 and -mlong64 interact, so that it choses the right
-# library when some options are specified redundantly (for example,
-# -mabi=32 -mgp32).
-
-# The core equalities are listed after "for changes in ".  The first
-# entry assumes o64 is the default ABI.
-MULTILIB_REDUNDANT_DIRS=` \
-	for endian in '' 'el' 'eb'; do					\
-	  for arch in '' 'vr5400' 'vr4100'				\
-		      'mips16' 'mips16/vr100'; do			\
-	    for changes in long32=					\
-			   o32/gp32=o32					\
-			   o32/gp32/long32=o32				\
-			   o32/long32=o32				\
-			   o64/long32=o64				\
-			   eabi/gp32/long32=eabi/gp32			\
-			   eabi/long64=eabi; do				\
-	      from=\`echo \$${changes} | sed 's/=.*//'\`;		\
-	      to=\`echo \$${changes} | sed 's/.*=//'\`;			\
-	      echo \$$endian \$$from \$$arch=\$$endian \$$to \$$arch	\
-		| sed -e 's: *= *:=:'					\
-		      -e 's:  *:/:g'					\
-		      -e 's:=$$:=.:';					\
-	    done;							\
-	  done;								\
-	done`
