@@ -1,3 +1,18 @@
+2001-09-15  Neil Booth  <neil@daikokuya.demon.co.uk>
+
+	* cpphash.h (struct cpp_reader): Remove lexer_pos, directive_pos.
+	Split mlstring_pos into mls_line and mls_col.
+	* cppinit.c (cpp_create_reader): Initialize line to 1.
+	(cpp_destroy): Free tokenruns.
+	(push_include): Don't update lexer_pos.
+	* cpplex.c (unterminated, parse_string): Update.
+	(lex_token): Don't update lexer_pos, update.
+	* cpplib.c (if_stack): Save line instead of line + col.
+	(start_directive, _cpp_do__Pragma, do_else, do_elif,
+	push_conditional, _cpp_pop_buffer): Update.
+	* cppmacro.c (funlike_invocation_p): Don't save lexer_pos.
+	(_cpp_create_definition): Update.
+
 2001-09-15  Eric Christopher  <echristo@redhat.com>
 
 	* config/mips/abi64.h: Add support for MEABI.

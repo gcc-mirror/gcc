@@ -502,8 +502,10 @@ cpp_create_reader (table, lang)
      be needed.  */
   pfile->deps = deps_init ();
 
-  /* Initialise the line map.  */
+  /* Initialise the line map.  Start at logical line 1, so we can use
+     a line number of zero for special states.  */
   init_line_maps (&pfile->line_maps);
+  pfile->line = 1;
 
   /* Initialize lexer state.  */
   pfile->state.save_comments = ! CPP_OPTION (pfile, discard_comments);
@@ -564,6 +566,7 @@ cpp_destroy (pfile)
   int result;
   struct search_path *dir, *dirn;
   cpp_context *context, *contextn;
+  tokenrun *run, *runn;
 
   while (CPP_BUFFER (pfile) != NULL)
     _cpp_pop_buffer (pfile);
@@ -584,6 +587,14 @@ cpp_destroy (pfile)
   _cpp_free_pool (&pfile->ident_pool);
   _cpp_free_pool (&pfile->macro_pool);
   _cpp_free_pool (&pfile->argument_pool);
+
+  for (run = &pfile->base_run; run; run = runn)
+    {
+      runn = run->next;
+      free (run->base);
+      if (run != &pfile->base_run)
+	free (run);
+    }
 
   for (dir = CPP_OPTION (pfile, quote_include); dir; dir = dirn)
     {
@@ -886,7 +897,7 @@ push_include (pfile, p)
   header.val.str.text = (const unsigned char *) p->arg;
   header.val.str.len = strlen (p->arg);
   /* Make the command line directive take up a line.  */
-  pfile->lexer_pos.line = ++pfile->line;
+  pfile->line++;
 
   return _cpp_execute_include (pfile, &header, IT_CMDLINE);
 }
