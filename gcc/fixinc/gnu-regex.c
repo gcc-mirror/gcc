@@ -22,9 +22,6 @@
    along with this program; if not, write to the Free Software Foundation, 
    Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.  */
 
-#undef	_GNU_SOURCE
-#define _GNU_SOURCE
-
 #ifdef HAVE_CONFIG_H
 # include <config.h>
 #endif
@@ -155,6 +152,8 @@ extern char *re_syntax_table;
 # else /* not SYNTAX_TABLE */
 
 static char re_syntax_table[CHAR_SET_SIZE];
+
+static void init_syntax_once PARAMS ((void));
 
 static void
 init_syntax_once ()

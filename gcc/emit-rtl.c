@@ -196,7 +196,7 @@ static mem_attrs *get_mem_attrs		PARAMS ((HOST_WIDE_INT, tree, rtx,
 						 rtx, unsigned int,
 						 enum machine_mode));
 static tree component_ref_for_mem_expr	PARAMS ((tree));
-static rtx gen_const_vector_0 PARAMS ((enum mode_class, enum machine_mode));
+static rtx gen_const_vector_0		PARAMS ((enum machine_mode));
 
 /* Probability of the conditional branch currently proceeded by try_split.
    Set to -1 otherwise.  */
@@ -4800,12 +4800,10 @@ mark_emit_status (es)
   ggc_mark_rtx (es->x_first_insn);
 }
 
-/* Generate the constant 0.  The first argument is MODE_VECTOR_INT for
-   integers or MODE_VECTOR_FLOAT for floats.  */
+/* Generate the constant 0.  */
 
 static rtx
-gen_const_vector_0 (type, mode)
-     enum mode_class type;
+gen_const_vector_0 (mode)
      enum machine_mode mode;
 {
   rtx tem;
@@ -4973,14 +4971,12 @@ init_emit_once (line_numbers)
   for (mode = GET_CLASS_NARROWEST_MODE (MODE_VECTOR_INT);
        mode != VOIDmode;
        mode = GET_MODE_WIDER_MODE (mode))
-    const_tiny_rtx[0][(int) mode]
-      = gen_const_vector_0 (MODE_VECTOR_INT, mode);
+    const_tiny_rtx[0][(int) mode] = gen_const_vector_0 (mode);
 
   for (mode = GET_CLASS_NARROWEST_MODE (MODE_VECTOR_FLOAT);
        mode != VOIDmode;
        mode = GET_MODE_WIDER_MODE (mode))
-    const_tiny_rtx[0][(int) mode]
-      = gen_const_vector_0 (MODE_VECTOR_FLOAT, mode);
+    const_tiny_rtx[0][(int) mode] = gen_const_vector_0 (mode);
 
   for (i = (int) CCmode; i < (int) MAX_MACHINE_MODE; ++i)
     if (GET_MODE_CLASS ((enum machine_mode) i) == MODE_CC)
