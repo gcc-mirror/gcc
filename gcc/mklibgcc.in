@@ -303,7 +303,7 @@ for ml in $MULTILIBS; do
 done
 
 echo ""
-all=""
+all="libgcc"
 
 echo "libgcc:; -mkdir libgcc"
 for ml in $MULTILIBS; do
