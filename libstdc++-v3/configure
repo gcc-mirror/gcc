@@ -22080,6 +22080,10 @@ done
   fi
 
 
+  # Export file names for ABI checking.
+  baseline_file="${glibcpp_srcdir}/config/abi/${target_alias}/baseline_symbols.txt"
+  
+
 fi
 
 # This depends on the possibly-skipped linker test above.
@@ -22109,18 +22113,18 @@ fi
 # Check to see if libgcc_s exists, indicating that shared libgcc is possible.
 if test $enable_symvers != no; then
   echo $ac_n "checking for shared libgcc""... $ac_c" 1>&6
-echo "configure:22113: checking for shared libgcc" >&5
+echo "configure:22117: checking for shared libgcc" >&5
   ac_save_CFLAGS="$CFLAGS"
   CFLAGS=' -lgcc_s'
   cat > conftest.$ac_ext <<EOF
-#line 22117 "configure"
+#line 22121 "configure"
 #include "confdefs.h"
 
 int main() {
 return 0
 ; return 0; }
 EOF
-if { (eval echo configure:22124: \"$ac_link\") 1>&5; (eval $ac_link) 2>&5; } && test -s conftest${ac_exeext}; then
+if { (eval echo configure:22128: \"$ac_link\") 1>&5; (eval $ac_link) 2>&5; } && test -s conftest${ac_exeext}; then
   rm -rf conftest*
   glibcpp_shared_libgcc=yes
 else
@@ -22155,14 +22159,14 @@ if test $enable_symvers = yes ; then
       echo 'FOO { global: f[a-z]o; local: *; };' > conftest.map
       
       cat > conftest.$ac_ext <<EOF
-#line 22159 "configure"
+#line 22163 "configure"
 #include "confdefs.h"
 int foo;
 int main() {
 
 ; return 0; }
 EOF
-if { (eval echo configure:22166: \"$ac_link\") 1>&5; (eval $ac_link) 2>&5; } && test -s conftest${ac_exeext}; then
+if { (eval echo configure:22170: \"$ac_link\") 1>&5; (eval $ac_link) 2>&5; } && test -s conftest${ac_exeext}; then
   rm -rf conftest*
   enable_symvers=gnu
 else
@@ -22204,7 +22208,7 @@ else
   GLIBCPP_BUILD_VERSIONED_SHLIB_FALSE=
 fi
 echo $ac_n "checking versioning on shared library symbols""... $ac_c" 1>&6
-echo "configure:22208: checking versioning on shared library symbols" >&5
+echo "configure:22212: checking versioning on shared library symbols" >&5
 echo "$ac_t""$enable_symvers" 1>&6
 
 
@@ -22293,7 +22297,7 @@ glibcpp_prefixdir=${prefix}
 
 # Process the option --with-gxx-include-dir=<path to include-files directory>
 echo $ac_n "checking for --with-gxx-include-dir""... $ac_c" 1>&6
-echo "configure:22297: checking for --with-gxx-include-dir" >&5
+echo "configure:22301: checking for --with-gxx-include-dir" >&5
 # Check whether --with-gxx-include-dir or --without-gxx-include-dir was given.
 if test "${with_gxx_include_dir+set}" = set; then
   withval="$with_gxx_include_dir"
@@ -22317,7 +22321,7 @@ echo "$ac_t""$gxx_include_dir" 1>&6
 
 # Process the option "--enable-version-specific-runtime-libs"
 echo $ac_n "checking for --enable-version-specific-runtime-libs""... $ac_c" 1>&6
-echo "configure:22321: checking for --enable-version-specific-runtime-libs" >&5
+echo "configure:22325: checking for --enable-version-specific-runtime-libs" >&5
 # Check whether --enable-version-specific-runtime-libs or --disable-version-specific-runtime-libs was given.
 if test "${enable_version_specific_runtime_libs+set}" = set; then
   enableval="$enable_version_specific_runtime_libs"
@@ -22363,7 +22367,7 @@ if test x"$glibcpp_toolexecdir" = x"no"; then
 fi
 
 echo $ac_n "checking for install location""... $ac_c" 1>&6
-echo "configure:22367: checking for install location" >&5
+echo "configure:22371: checking for install location" >&5
 echo "$ac_t""$gxx_include_dir" 1>&6
 
 
@@ -22642,6 +22646,7 @@ s%@SECTION_LDFLAGS@%$SECTION_LDFLAGS%g
 s%@OPT_LDFLAGS@%$OPT_LDFLAGS%g
 s%@LIBMATHOBJS@%$LIBMATHOBJS%g
 s%@WERROR@%$WERROR%g
+s%@baseline_file@%$baseline_file%g
 s%@GLIBCPP_BUILD_VERSIONED_SHLIB_TRUE@%$GLIBCPP_BUILD_VERSIONED_SHLIB_TRUE%g
 s%@GLIBCPP_BUILD_VERSIONED_SHLIB_FALSE@%$GLIBCPP_BUILD_VERSIONED_SHLIB_FALSE%g
 s%@OS_INC_SRCDIR@%$OS_INC_SRCDIR%g

@@ -141,6 +141,8 @@ mkinstalldirs = $(SHELL) $(toplevel_srcdir)/mkinstalldirs
 
 PWD = $${PWDCMD-pwd}
 
+baseline_file = @baseline_file@
+
 # Multilib support.
 MAKEOVERRIDES = 
 
@@ -482,6 +484,9 @@ check-script-install: $(top_builddir)/mkcheck
 	-(chmod + $(top_builddir)/mkcheck; \
 	  cd testsuite; \
 	  @glibcpp_builddir@/mkcheck 1)
+check-abi: $(top_builddir)/testsuite/abi_check
+	-(cd testsuite; \
+	  abi_check @baseline_file@)
 
 # These rules are messy, but are hella worth it.
 doxygen:

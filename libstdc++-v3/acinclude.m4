@@ -2026,6 +2026,10 @@ AC_DEFUN(GLIBCPP_CONFIGURE_TESTSUITE, [
 
   # Look for setenv, so that extended locale tests can be performed.
   GLIBCPP_CHECK_STDLIB_DECL_AND_LINKAGE_3(setenv)
+
+  # Export file names for ABI checking.
+  baseline_file="${glibcpp_srcdir}/config/abi/${target_alias}/baseline_symbols.txt"
+  AC_SUBST(baseline_file)
 ])
 
 

@@ -1,3 +1,20 @@
+2002-08-22  Benjamin Kosnik  <bkoz@redhat.com>
+	    Phil Edwards  <pme@gcc.gnu.org>
+	    Ulrich Drepper  <drepper@redhat.com>
+	
+	* Makefile.am (check-abi): New rule.
+	* Makefile.in: Regenerate.
+	* acinclude.m4 (GLIBCPP_CONFIGURE_TESTSUITE): Export baseline_file.
+	* aclocal.m4: Regenerate.
+	* configure: Regenerate.
+	* testsuite/Makefile.am (noinst_PROGRAMS): Add abi_check.
+	(abi_check_SOURCES): Add.
+	* testsuite/Makefile.in: Regenerate.	
+	* testsuite/abi_check.cc: New file.
+	* config/abi: Add.
+	* config/abi/i686-pc-linux-gnu: Add.
+	* config/abi/i686-pc-linux-gnu/baseline_symbols.txt: New file.
+	
 2002-08-19  Benjamin Kosnik  <bkoz@redhat.com>
 
 	* configure.in (libtool_VERSION): Update to 5:1:0.
