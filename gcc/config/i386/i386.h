@@ -972,9 +972,15 @@ do									\
 									\
     ASM_GENERATE_INTERNAL_LABEL (counts, "LPBX", 2);			\
     cnt_rtx = gen_rtx (SYMBOL_REF, VOIDmode, counts);			\
-    CONSTANT_POOL_ADDRESS_P (cnt_rtx) = TRUE;				\
+    SYMBOL_REF_FLAG (cnt_rtx) = TRUE;					\
 									\
-    xops[0] = gen_rtx (MEM, SImode, plus_constant (cnt_rtx, (BLOCKNO)*4)); \
+    if (BLOCKNO)							\
+      cnt_rtx = plus_constant (cnt_rtx, (BLOCKNO)*4);			\
+									\
+    if (flag_pic)							\
+      cnt_rtx = gen_rtx (PLUS, Pmode, pic_offset_table_rtx, cnt_rtx);	\
+									\
+    xops[0] = gen_rtx (MEM, SImode, cnt_rtx);				\
     output_asm_insn (AS1(inc%L0,%0), xops);				\
   }									\
 while (0)
