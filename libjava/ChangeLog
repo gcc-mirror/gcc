@@ -1,5 +1,10 @@
 2002-11-21  Michael Koch <konqueror@gmx.de>
 
+	* include/posic.h: Moved new functions into a #ifndef DISABLE_JAVA_NET
+	* include/win32.h: Moved new functions into a #ifndef DISABLE_JAVA_NET
+	
+2002-11-21  Michael Koch <konqueror@gmx.de>
+
 	* java/nio/channels/AsynchronousCloseException.java,
 	java/nio/channels/CancelledKeyException.java,
 	java/nio/channels/ClosedByInterruptException.java,
