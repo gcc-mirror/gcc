@@ -45,10 +45,25 @@ import java.net.URLStreamHandler;
 
 /**
  * @author Kresten Krab Thorup <krab@gnu.org>
- * @date August 13, 1999.
  */
 public class Handler extends URLStreamHandler
 {
+  /**
+   * A do nothing constructor
+   */
+  public Handler()
+  {
+  }
+
+  /**
+   * This method returs a new JarURLConnection for the specified URL
+   *
+   * @param url The URL to return a connection for
+   *
+   * @return The URLConnection
+   *
+   * @exception IOException If an error occurs
+   */
   protected URLConnection openConnection(URL url) throws IOException
   {
     return new Connection(url);

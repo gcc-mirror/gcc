@@ -53,6 +53,22 @@ import java.net.URLStreamHandler;
  */
 public class Handler extends URLStreamHandler
 {
+  /**
+   * A do nothing constructor
+   */
+  public Handler()
+  {
+  }
+
+  /**
+   * This method returs a new FileURLConnection for the specified URL
+   *
+   * @param url The URL to return a connection for
+   *
+   * @return The URLConnection
+   *
+   * @exception IOException If an error occurs
+   */
   protected URLConnection openConnection(URL url) throws IOException
   {
     // If a hostname is set, then we need to switch protocols to ftp
