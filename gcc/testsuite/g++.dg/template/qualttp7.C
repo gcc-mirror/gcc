@@ -1,4 +1,4 @@
-// Copyright (C) 2001, 2002 Free Software Foundation
+// Copyright (C) 2001 Free Software Foundation
 // Contributed by Kriang Lerdsuwanakij <lerdsuwa@users.sourceforge.net>
 // { dg-do compile }
 
@@ -9,4 +9,4 @@ template <class T> struct D {
 	C<T::template B> c; // { dg-error "no class template" }
 };
 
-D<int> d;
+D<int> d; // { dg-error "instantiated" }
