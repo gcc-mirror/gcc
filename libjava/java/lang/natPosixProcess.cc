@@ -20,6 +20,7 @@ details.  */
 #include <signal.h>
 #include <string.h>
 #include <stdlib.h>
+#include <stdio.h>
 
 #include <cni.h>
 #include <jvm.h>
@@ -115,15 +116,7 @@ java::lang::ConcreteProcess::startProcess (jstringArray progarray,
   // thrown we will leak memory.
   char **args = (char **) _Jv_Malloc ((progarray->length + 1)
 				      * sizeof (char *));
-
   char **env = NULL;
-  if (envp)
-    env = (char **) _Jv_Malloc ((envp->length + 1) * sizeof (char *));
-
-//   for (int i = 0; i < progarray->length; ++i)
-//     args[i] = NULL;
-//   for (int i = 0; i < envp->length; ++i)
-//     env[i] = NULL;
 
   // FIXME: GC will fail here if _Jv_Malloc throws an exception.
   // That's because we have to manually free the contents, but we 
@@ -134,10 +127,11 @@ java::lang::ConcreteProcess::startProcess (jstringArray progarray,
 
   if (envp)
     {
+      env = (char **) _Jv_Malloc ((envp->length + 1) * sizeof (char *));
       elts = elements (envp);
       for (int i = 0; i < envp->length; ++i)
-	args[i] = new_string (elts[i]);
-      args[envp->length] = NULL;
+	env[i] = new_string (elts[i]);
+      env[envp->length] = NULL;
     }
 
   // Create pipes for I/O.
@@ -172,8 +166,18 @@ java::lang::ConcreteProcess::startProcess (jstringArray progarray,
       // Child process, so remap descriptors and exec.
 
       if (envp)
-	environ = env;
-
+        {
+	  // preserve PATH unless specified explicitly
+	  char *path_val = getenv("PATH");
+	  environ = env;
+	  if (getenv("PATH") == NULL)
+	    {
+	      char *path_env = (char *) _Jv_Malloc (strlen(path_val) + 5 + 1);
+	      sprintf (path_env, "PATH=%s", path_val); 
+	      putenv (path_env);
+	    }
+	}
+	
       // We ignore errors from dup2 because they should never occur.
       dup2 (outp[0], 0);
       dup2 (inp[1], 1);
@@ -186,8 +190,9 @@ java::lang::ConcreteProcess::startProcess (jstringArray progarray,
       close (outp[0]);
       close (outp[1]);
 
-      environ = env;
       execvp (args[0], args);
+      // FIXME: should throw an IOException if execvp() fails. Not trivial,
+      // because _Jv_Throw won't work from child process
       _exit (127);
     }
 

@@ -21,6 +21,11 @@ package java.io;
  
 public class DataInputStream extends FilterInputStream implements DataInput
 {
+  // readLine() hack to ensure that an '\r' not followed by an '\n' is
+  // handled correctly. If set, readLine() will ignore the first char it sees
+  // if that char is a '\n'
+  boolean ignoreInitialNewline = false;
+  
   public DataInputStream(InputStream in)
   {
     super(in);
@@ -103,14 +108,29 @@ public class DataInputStream extends FilterInputStream implements DataInput
   {
     StringBuffer strb = new StringBuffer();
 
-    while (true)
+    readloop: while (true)
       {
-	int c = read();
-	if (c < 0)	// got an EOF
-	  return strb.length() > 0 ? strb.toString() : null;
-	char ch = (char) c;
-	if ((ch &= 0xFF) == '\n')
-	  break;
+        int c = 0;
+        char ch = ' ';
+        boolean getnext = true;
+        while (getnext)
+          {
+	    getnext = false;
+	    c = read();
+	    if (c < 0)	// got an EOF
+	      return strb.length() > 0 ? strb.toString() : null;
+	    ch = (char) c;
+	    if ((ch &= 0xFF) == '\n')
+	      // hack to correctly handle '\r\n' sequences
+	      if (ignoreInitialNewline)
+		{
+		  ignoreInitialNewline = false;
+		  getnext = true;
+		}
+	      else
+		break readloop;
+	  }
+
 	if (ch == '\r')
 	  {
 	    // FIXME: The following code tries to adjust the stream back one
@@ -134,18 +154,35 @@ public class DataInputStream extends FilterInputStream implements DataInput
 	    // and since it is undesirable to make non-deprecated methods
 	    // less efficient, the following seems like the most reasonable
 	    // approach.
-	    if (in instanceof BufferedInputStream && (read() & 0xFF) != '\n')
+	    int next_c = 0;
+            char next_ch = ' ';
+	    if (in instanceof BufferedInputStream)
 	      {
-	        BufferedInputStream bin = (BufferedInputStream) in;
-		if (bin.pos > 0)
-                  bin.pos--;
+	        next_c = read();
+	        next_ch = (char) (next_c & 0xFF);
+		if ((next_ch != '\n') && (next_c >= 0)) 
+		  {
+	            BufferedInputStream bin = (BufferedInputStream) in;
+		    if (bin.pos > 0)
+                      bin.pos--;
+		  }
 	      }
 	    else if (markSupported())
 	      {
-		mark(1);
-		if ((read() & 0xFF) != '\n')
-		  reset();
-	      }
+	        next_c = read();
+	        next_ch = (char) (next_c & 0xFF);
+		if ((next_ch != '\n') && (next_c >= 0)) 
+		  {
+		    mark(1);
+		    if ((read() & 0xFF) != '\n')
+		      reset();
+		  }
+	      } 
+	    // In order to catch cases where 'in' isn't a BufferedInputStream
+	    // and doesn't support mark() (such as reading from a Socket), set 
+	    // a flag that instructs readLine() to ignore the first character 
+	    // it sees _if_ that character is a '\n'.
+	    else ignoreInitialNewline = true;
 	    break;
 	  }
 	strb.append(ch);
