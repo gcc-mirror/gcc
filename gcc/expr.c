@@ -7864,29 +7864,56 @@ do_store_flag (exp, target, mode, only_cheap)
       && integer_pow2p (TREE_OPERAND (arg0, 1))
       && TYPE_PRECISION (type) <= HOST_BITS_PER_WIDE_INT)
     {
+      tree inner = TREE_OPERAND (arg0, 0);
       int bitnum = exact_log2 (INTVAL (expand_expr (TREE_OPERAND (arg0, 1),
 						    NULL_RTX, VOIDmode, 0)));
+      int ops_unsignedp;
+
+      /* If INNER is a right shift of a constant and it plus BITNUM does
+	 not overflow, adjust BITNUM and INNER.  */
+
+      if (TREE_CODE (inner) == RSHIFT_EXPR
+	  && TREE_CODE (TREE_OPERAND (inner, 1)) == INTEGER_CST
+	  && TREE_INT_CST_HIGH (TREE_OPERAND (inner, 1)) == 0
+	  && (bitnum + TREE_INT_CST_LOW (TREE_OPERAND (inner, 1))
+	      < TYPE_PRECISION (type)))
+	{
+	  bitnum +=TREE_INT_CST_LOW (TREE_OPERAND (inner, 1));
+	  inner = TREE_OPERAND (inner, 0);
+	}
+
+      /* If we are going to be able to omit the AND below, we must do our
+	 operations as unsigned.  If we must use the AND, we have a choice.
+	 Normally unsigned is faster, but for some machines signed is.  */
+      ops_unsignedp = (bitnum == TYPE_PRECISION (type) - 1 ? 1
+#ifdef BYTE_LOADS_SIGN_EXTEND
+		       : 0
+#else
+		       : 1
+#endif
+		       );
 
       if (subtarget == 0 || GET_CODE (subtarget) != REG
 	  || GET_MODE (subtarget) != operand_mode
-	  || ! safe_from_p (subtarget, TREE_OPERAND (arg0, 0)))
+	  || ! safe_from_p (subtarget, inner))
 	subtarget = 0;
 
-      op0 = expand_expr (TREE_OPERAND (arg0, 0), subtarget, VOIDmode, 0);
+      op0 = expand_expr (inner, subtarget, VOIDmode, 0);
 
       if (bitnum != 0)
 	op0 = expand_shift (RSHIFT_EXPR, GET_MODE (op0), op0,
-			    size_int (bitnum), target, 1);
+			    size_int (bitnum), target, ops_unsignedp);
 
       if (GET_MODE (op0) != mode)
-	op0 = convert_to_mode (mode, op0, 1);
-
-      if (bitnum != TYPE_PRECISION (type) - 1)
-	op0 = expand_and (op0, const1_rtx, target);
+	op0 = convert_to_mode (mode, op0, ops_unsignedp);
 
       if ((code == EQ && ! invert) || (code == NE && invert))
-	op0 = expand_binop (mode, xor_optab, op0, const1_rtx, target, 0,
-			    OPTAB_LIB_WIDEN);
+	op0 = expand_binop (mode, xor_optab, op0, const1_rtx, target,
+			    ops_unsignedp, OPTAB_LIB_WIDEN);
+
+      /* Put the AND last so it can combine with more things.  */
+      if (bitnum != TYPE_PRECISION (type) - 1)
+	op0 = expand_and (op0, const1_rtx, target);
 
       return op0;
     }
