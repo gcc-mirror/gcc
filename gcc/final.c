@@ -932,8 +932,9 @@ insn_current_reference_address (branch)
     return insn_current_address;
   dest = JUMP_LABEL (branch);
 
-  /* BRANCH has no proper alignment chain set, so use SEQ.  */
-  if (INSN_SHUID (branch) < INSN_SHUID (dest))
+  /* BRANCH has no proper alignment chain set, so use SEQ.  
+     BRANCH also has no INSN_SHUID.  */
+  if (INSN_SHUID (seq) < INSN_SHUID (dest))
     {
       /* Forward branch.  */
       return (insn_last_address + insn_lengths[seq_uid]
@@ -1241,7 +1242,6 @@ shorten_branches (first)
 	      int align = 1 << log;
 	      int new_address = (insn_current_address + align - 1) & -align;
 	      insn_lengths[uid] = new_address - insn_current_address;
-	      insn_current_address = new_address;
 	    }
 	}
 
