@@ -1689,7 +1689,7 @@ mostlyclean: bytecode.mostlyclean
 	-rm -f collect collect2 ld mips-tfile mips-tdump alloca.s
 # Delete files generated for fixproto
 	-rm -rf fix-header xsys-protos.h deduced.h tmp-deduced.h \
-	  gen-protos fixproto.list fixtmp.*
+	  gen-protos fixproto.list fixtmp.* fixhdr.ready
 # Delete unwanted output files from TeX.
 	-rm -f *.toc *.log *.vr *.fn *.cp *.tp *.ky *.pg
 # Delete sorted indices we don't actually use.
@@ -1711,7 +1711,6 @@ clean: mostlyclean bytecode.clean
 	fi
 # Delete the include directory.
 	-rm -rf stmp-* fixinc.ready include objc-headers
-	-rm -rf fixhdr.ready
 
 # Delete all files that users would normally create
 # while building and installing GCC.
