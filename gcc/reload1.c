@@ -455,8 +455,6 @@ static void move2add_note_store		PARAMS ((rtx, rtx, void *));
 static void add_auto_inc_notes		PARAMS ((rtx, rtx));
 #endif
 static void copy_eh_notes		PARAMS ((rtx, rtx));
-static HOST_WIDE_INT sext_for_mode	PARAMS ((enum machine_mode,
-						 HOST_WIDE_INT));
 static void failed_reload		PARAMS ((rtx, int));
 static int set_reload_reg		PARAMS ((int, int));
 static void reload_cse_simplify		PARAMS ((rtx, rtx));
@@ -9084,25 +9082,6 @@ static int move2add_luid;
    invalidate all previously collected reg_offset data.  */
 static int move2add_last_label_luid;
 
-/* Generate a CONST_INT and force it in the range of MODE.  */
-
-static HOST_WIDE_INT
-sext_for_mode (mode, value)
-     enum machine_mode mode;
-     HOST_WIDE_INT value;
-{
-  HOST_WIDE_INT cval = value & GET_MODE_MASK (mode);
-  int width = GET_MODE_BITSIZE (mode);
-
-  /* If MODE is narrower than HOST_WIDE_INT and CVAL is a negative number,
-     sign extend it.  */
-  if (width > 0 && width < HOST_BITS_PER_WIDE_INT
-      && (cval & ((HOST_WIDE_INT) 1 << (width - 1))) != 0)
-    cval |= (HOST_WIDE_INT) -1 << width;
-
-  return cval;
-}
-
 /* ??? We don't know how zero / sign extension is handled, hence we
    can't go from a narrower to a wider mode.  */
 #define MODES_OK_FOR_MOVE2ADD(OUTMODE, INMODE) \
@@ -9169,9 +9148,10 @@ reload_cse_move2add (first)
 	      if (GET_CODE (src) == CONST_INT && reg_base_reg[regno] < 0)
 		{
 		  int success = 0;
-		  rtx new_src = GEN_INT (sext_for_mode (GET_MODE (reg),
-							INTVAL (src)
-							- reg_offset[regno]));
+		  rtx new_src =
+		    GEN_INT (trunc_int_for_mode (INTVAL (src)
+						 - reg_offset[regno],
+						 GET_MODE (reg)));
 		  /* (set (reg) (plus (reg) (const_int 0))) is not canonical;
 		     use (set (reg) (reg)) instead.
 		     We don't delete this insn, nor do we convert it into a
@@ -9250,10 +9230,11 @@ reload_cse_move2add (first)
 		      HOST_WIDE_INT added_offset = INTVAL (src3);
 		      HOST_WIDE_INT base_offset = reg_offset[REGNO (src)];
 		      HOST_WIDE_INT regno_offset = reg_offset[regno];
-		      rtx new_src = GEN_INT (sext_for_mode (GET_MODE (reg),
-							    added_offset
-							    + base_offset
-							    - regno_offset));
+		      rtx new_src =
+			GEN_INT (trunc_int_for_mode (added_offset
+						     + base_offset
+						     - regno_offset,
+						     GET_MODE (reg)));
 		      int success = 0;
 
 		      if (new_src == const0_rtx)
@@ -9270,9 +9251,9 @@ reload_cse_move2add (first)
 			delete_insn (insn);
 		      insn = next;
 		      reg_mode[regno] = GET_MODE (reg);
-		      reg_offset[regno] = sext_for_mode (GET_MODE (reg),
-							 added_offset
-							 + base_offset);
+		      reg_offset[regno] =
+			trunc_int_for_mode (added_offset + base_offset,
+					    GET_MODE (reg));
 		      continue;
 		    }
 		}
@@ -9342,7 +9323,8 @@ move2add_note_store (dst, set, data)
 
   regno += REGNO (dst);
 
-  if (HARD_REGNO_NREGS (regno, mode) == 1 && GET_CODE (set) == SET
+  if (SCALAR_INT_MODE_P (mode)
+      && HARD_REGNO_NREGS (regno, mode) == 1 && GET_CODE (set) == SET
       && GET_CODE (SET_DEST (set)) != ZERO_EXTRACT
       && GET_CODE (SET_DEST (set)) != SIGN_EXTRACT
       && GET_CODE (SET_DEST (set)) != STRICT_LOW_PART)
@@ -9437,9 +9419,9 @@ move2add_note_store (dst, set, data)
       reg_base_reg[regno] = reg_base_reg[base_regno];
 
       /* Compute the sum of the offsets or constants.  */
-      reg_offset[regno] = sext_for_mode (dst_mode,
-					 offset
-					 + reg_offset[base_regno]);
+      reg_offset[regno] = trunc_int_for_mode (offset
+					      + reg_offset[base_regno],
+					      dst_mode);
     }
   else
     {

@@ -1,3 +1,12 @@
+2003-02-27  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* reload1.c (sext_for_mode): Remove.
+	(reload_cse_move2add): Use trunc_int_for_mode instead of
+	sext_for_mode.
+	(move2add_note_store): Likewise.
+	Reset register information if we see a set in non-integer
+	mode.
+
 2003-02-27  David Edelsohn  <edelsohn@gnu.org>
 
 	* config/rs6000/aix43.h (ASM_SPEC): Only emit -mppc64 if no -mcpu
