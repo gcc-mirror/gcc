@@ -1,3 +1,7 @@
+2003-06-03  Anthony Green  <green@redhat.com>
+
+	* config/frv/t-frv (EXTRA_HEADERS): Remove media.h
+
 2003-06-03  Roger Sayle  <roger@eyesopen.com>
 
 	* builtins.def (BUILT_IN_CABS, BUILT_IN_CABSF, BUILT_IN_CABSL):
