@@ -276,7 +276,9 @@ store_args_and_env (int argc, char *const *argv)
   original_argc = argc;
   original_argv = argv;
 }
+# ifdef text_set_element
 text_set_element (__libc_subinit, store_args_and_env);
+# endif /* text_set_element */
 
 # define SWAP_FLAGS(ch1, ch2) \
   if (nonoption_flags_len > 0)						      \
