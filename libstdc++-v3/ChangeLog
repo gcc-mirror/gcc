@@ -1,3 +1,8 @@
+2000-11-12  Alexandre Petit-Bianco  <apbianco@cygnus.com>
+
+        * Makefile.am (tmp-libstdsc++.INC:): Do not use -I$(top_builddir).
+        * Makefile.in: Regenerate.
+
 2000-11-12  David Edelsohn  <edelsohn@gnu.org>
 
         * acinclude.m4 (GLIBCPP_CHECK_WCHAR_T_SUPPORT): Add test for
