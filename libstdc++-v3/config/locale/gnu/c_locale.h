@@ -1,6 +1,6 @@
 // Wrapper for underlying C-language localization -*- C++ -*-
 
-// Copyright (C) 2001 Free Software Foundation, Inc.
+// Copyright (C) 2001, 2002 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -40,7 +40,53 @@
 
 #define _GLIBCPP_C_LOCALE_GNU 1
 
+#if __GLIBC__ > 2 || (__GLIBC__ == 2 && __GLIBC_MINOR__ > 2)
+namespace __gnu_cxx
+{
+  extern "C" __typeof(uselocale) __uselocale;
+}
+#endif
+
 namespace std
 {
   typedef __locale_t		__c_locale;
+
+  template<typename _Tv>
+    int
+    __convert_from_v(char* __out, const int __size, const char* __fmt,
+#if __GLIBC__ > 2 || (__GLIBC__ == 2 && __GLIBC_MINOR__ > 2)
+		     _Tv __v, const __c_locale& __cloc, int __prec = -1)
+    {
+      __c_locale __old = __gnu_cxx::__uselocale(__cloc);
+#else
+		     _Tv __v, const __c_locale&, int __prec = -1)
+    {
+      char* __old = setlocale(LC_ALL, NULL);
+      char* __sav = static_cast<char*>(malloc(strlen(__old) + 1));
+      if (__sav)
+        strcpy(__sav, __old);
+      setlocale(LC_ALL, "C");
+#endif
+
+      int __ret;
+#ifdef _GLIBCPP_USE_C99
+      if (__prec >= 0)
+        __ret = snprintf(__out, __size, __fmt, __prec, __v);
+      else
+        __ret = snprintf(__out, __size, __fmt, __v);
+#else
+      if (__prec >= 0)
+        __ret = sprintf(__out, __fmt, __prec, __v);
+      else
+        __ret = sprintf(__out, __fmt, __v);
+#endif
+
+#if __GLIBC__ > 2 || (__GLIBC__ == 2 && __GLIBC_MINOR__ > 2)
+      __gnu_cxx::__uselocale(__old);
+#else
+      setlocale(LC_ALL, __sav);
+      free(__sav);
+#endif
+      return __ret;
+    }
 }

@@ -1969,47 +1969,10 @@ namespace std
   // Convert numeric value of type _Tv to string and return length of string.
   // If snprintf is available use it, otherwise fall back to the unsafe sprintf
   // which, in general, can be dangerous and should be avoided.
-#ifdef _GLIBCPP_USE_C99
   template<typename _Tv>
     int
     __convert_from_v(char* __out, const int __size, const char* __fmt,
-		     _Tv __v, const __c_locale&, int __prec = -1)
-    {
-      int __ret;
-      char* __old = setlocale(LC_ALL, NULL);
-      char* __sav = static_cast<char*>(malloc(strlen(__old) + 1));
-      if (__sav)
-        strcpy(__sav, __old);
-      setlocale(LC_ALL, "C");
-      if (__prec >= 0)
-        __ret = snprintf(__out, __size, __fmt, __prec, __v);
-      else
-        __ret = snprintf(__out, __size, __fmt, __v);
-      setlocale(LC_ALL, __sav);
-      free(__sav);
-      return __ret;
-    }
-#else
-  template<typename _Tv>
-    int
-    __convert_from_v(char* __out, const int, const char* __fmt, _Tv __v,
-		     const __c_locale&, int __prec = -1)
-    {
-      int __ret;
-      char* __old = setlocale(LC_ALL, NULL);
-      char* __sav = static_cast<char*>(malloc(strlen(__old) + 1));
-      if (__sav)
-        strcpy(__sav, __old);
-      setlocale(LC_ALL, "C");
-      if (__prec >= 0)
-        __ret = sprintf(__out, __fmt, __prec, __v);
-      else
-        __ret = sprintf(__out, __fmt, __v);
-      setlocale(LC_ALL, __sav);
-      free(__sav);
-      return __ret;
-    }
-#endif
+		     _Tv __v, const __c_locale&, int __prec = -1);
 
   // Construct correctly padded string, as per 22.2.2.2.2
   // Assumes 
