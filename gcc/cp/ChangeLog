@@ -6,6 +6,52 @@
 
 2003-07-03  Mark Mitchell  <mark@codesourcery.com>
 
+	* call.c (build_addr_func): Handle bound pointers-to-members.
+	(build_method_call): Do not call resolve_offset_ref.
+	(implicit_conversion): Likewise.
+	(resolve_scoped_fn_name): Use finish_non_static_data_member, not
+	resolve_offset_ref.
+	(resolve_args): Do not call resolve_offset_ref.
+	(build_conditional_expr): Likewise.
+	(build_new_method_call): Likewise.
+	* cp-tree.def (OFFSET_REF): Update documentation.
+	(cp_convert_to_pointer): Update handling of conversions from
+	pointers to members to pointers.
+	(ocp_convert): Do not call resolve_offset_ref.
+	(convert_to_void): Likewise.
+	(build_expr_type_conversion): Likewise.
+	(delete_sanity): Likewise.
+	(resolve_offset_ref): Simplify greatly.
+	(build_vec_delete): Do not call resolve_offset_ref.
+	* parser.c (cp_parser_postfix_expression): Call resolve_offset_ref
+	if appropriate.
+	(cp_parser_unary_expression): Use
+	cp_parser_simple_cast_expression.
+	(cp_parser_delete_expression): Likewise.
+	(cp_parser_cast_expression): Likewise.
+	(cp_parser_pm_expression): Use cp_parser_binary_op.
+	(cp_parser_simple_cast_expression): New function.
+	* rtti.c (build_dynamic_cast_1): Do not call resolve_offset_ref.
+	* semantics.c (finish_increment_expr): Likewise.
+	(finish_typeof): Likewise.
+	* tree.c (lvalue_p_1): Do not handle OFFSET_REF.
+	* typeck.c (require_complete_type): Do not handle OFFSET_REFs.
+	(decay_conversion): Do not call resolve_offset_ref.
+	(finish_class_member_access_expr): Likewise.
+	(convert_arguments): Likewise.
+	(build_x_binary_op): Handle DOTSTAR_EXPR.
+	(condition_conversion): Do not call resolve_offset_ref.
+	(unary_complex_lvalue): Likewise.
+	(build_static_cast): Likewise.
+	(build_reinterpret_cast): Likewise.
+	(build_const_cast): Likewise.
+	(build_c_cast): Likewise.
+	(build_modify_expr): Likewise.
+	(convert_for_assignment): Likewise.
+	(convert_for_initialization): Likewise.
+	* typeck2.c (build_x_arrow): Likewise.
+	(build_m_component_ref): Simplify.
+	
 	* call.c (build_scoped_method_call): Use convert_to_void.
 	(build_method_call): Likewise.
 	* class.c (check_field_decls): Remove dead code.

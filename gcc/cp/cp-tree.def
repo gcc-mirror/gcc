@@ -26,22 +26,22 @@ Boston, MA 02111-1307, USA.  */
 /* An OFFSET_REF is used in two situations:
 
    1. An expression of the form `A::m' where `A' is a class and `m' is
-      a non-static data member.  In this case, operand 0 will be a
-      TYPE (corresponding to `A') and operand 1 will be a FIELD_DECL
-      (corresponding to `m'.
+      a non-static member.  In this case, operand 0 will be a TYPE
+      (corresponding to `A') and operand 1 will be a FIELD_DECL,
+      BASELINK, or TEMPLATE_ID_EXPR (corresponding to `m').
 
       The expression is a pointer-to-member if its address is taken,
       but simply denotes a member of the object if its address isnot
       taken.  In the latter case, resolve_offset_ref is used to
       convert it to a representation of the member referred to by the
       OFFSET_REF.
+      
+      This form is only used during the parsing phase; once semantic
+      analysis has taken place they are eliminated.
 
    2. An expression of the form `x.*p'.  In this case, operand 0 will
       be an expression corresponding to `x' and operand 1 will be an
-      expression with pointer-to-member type.
-
-   OFFSET_REFs are only used during the parsing phase; once semantic
-   analysis has taken place they are eliminated.  */
+      expression with pointer-to-member type.  */
 DEFTREECODE (OFFSET_REF, "offset_ref", 'r', 2)
 
 /* A pointer-to-member constant.  For a pointer-to-member constant

@@ -1689,121 +1689,45 @@ build_offset_ref (tree type, tree name)
 tree
 resolve_offset_ref (tree exp)
 {
-  tree type = TREE_TYPE (exp);
-  tree base = NULL_TREE;
   tree member;
-  tree basetype, addr;
 
-  if (TREE_CODE (exp) == OFFSET_REF)
-    {
-      member = TREE_OPERAND (exp, 1);
-      base = TREE_OPERAND (exp, 0);
-    }
-  else
-    {
-      my_friendly_assert (TREE_CODE (type) == OFFSET_TYPE, 214);
-      if (TYPE_OFFSET_BASETYPE (type) != current_class_type)
-	{
-	  error ("object missing in use of pointer-to-member construct");
-	  return error_mark_node;
-	}
-      member = exp;
-      type = TREE_TYPE (type);
-      base = current_class_ref;
-    }
+  my_friendly_assert (TREE_CODE (exp) == OFFSET_REF, 20030703);
 
-  if (BASELINK_P (member) || TREE_CODE (member) == TEMPLATE_ID_EXPR)
-    return build_unary_op (ADDR_EXPR, exp, 0);
-  
-  if (TREE_CODE (TREE_TYPE (member)) == METHOD_TYPE)
-    {
-      if (!flag_ms_extensions)
-        /* A single non-static member, make sure we don't allow a
-           pointer-to-member.  */
-        exp = ovl_cons (member, NULL_TREE);
-      
-      return build_unary_op (ADDR_EXPR, exp, 0);
-    }
-  
-  if ((TREE_CODE (member) == VAR_DECL
-       && ! TYPE_PTRMEMFUNC_P (TREE_TYPE (member))
-       && ! TYPE_PTRMEM_P (TREE_TYPE (member)))
-      || TREE_CODE (TREE_TYPE (member)) == FUNCTION_TYPE)
-    {
-      /* These were static members.  */
-      if (!cxx_mark_addressable (member))
-	return error_mark_node;
-      return member;
-    }
+  member = TREE_OPERAND (exp, 1);
 
-  if (TREE_CODE (TREE_TYPE (member)) == POINTER_TYPE
-      && TREE_CODE (TREE_TYPE (TREE_TYPE (member))) == METHOD_TYPE)
-    return member;
+  /* If MEMBER is non-static, then the program has fallen afoul of
+     [expr.prim]:
 
-  /* Syntax error can cause a member which should
-     have been seen as static to be grok'd as non-static.  */
-  if (TREE_CODE (member) == FIELD_DECL && current_class_ref == NULL_TREE)
+       An id-expression that denotes a nonstatic data member or
+       nonstatic member function of a class can only be used:
+
+       -- as part of a class member access (_expr.ref_) in which the
+       object-expression refers to the member's class or a class
+       derived from that class, or
+
+       -- to form a pointer to member (_expr.unary.op_), or
+
+       -- in the body of a nonstatic member function of that class or
+       of a class derived from that class (_class.mfct.nonstatic_), or
+
+       -- in a mem-initializer for a constructor for that class or for
+       a class derived from that class (_class.base.init_).  */
+  if (DECL_NONSTATIC_MEMBER_FUNCTION_P (member))
     {
-      cp_error_at ("member `%D' is non-static but referenced as a static member",
-		   member);
-      error ("at this point in file");
+      /* In Microsoft mode, treat a non-static member function as if
+	 it were a pointer-to-member.  */
+      if (flag_ms_extensions)
+	return build_unary_op (ADDR_EXPR, exp, 0);
+      error ("invalid use of non-static member function `%D'", member);
+      return error_mark_node;
+    }
+  else if (TREE_CODE (member) == FIELD_DECL)
+    {
+      error ("invalid use of non-static data member `%D'", member);
       return error_mark_node;
     }
 
-  /* The first case is really just a reference to a member of `this'.  */
-  if (TREE_CODE (member) == FIELD_DECL
-      && (base == current_class_ref || is_dummy_object (base)))
-    {
-      tree binfo = NULL_TREE;
-
-      /* Try to get to basetype from 'this'; if that doesn't work,
-         nothing will.  */
-      base = current_class_ref;
-
-      /* First convert to the intermediate base specified, if appropriate.  */
-      if (TREE_CODE (exp) == OFFSET_REF && TREE_CODE (type) == OFFSET_TYPE)
-	base = build_scoped_ref (base, TYPE_OFFSET_BASETYPE (type), &binfo);
-
-      return build_class_member_access_expr (base, member,
-					     /*access_path=*/NULL_TREE,
-					     /*preserve_reference=*/false);
-    }
-
-  /* Ensure that we have an object.  */
-  if (is_dummy_object (base))
-    addr = error_mark_node;
-  else
-    /* If this is a reference to a member function, then return the
-       address of the member function (which may involve going
-       through the object's vtable), otherwise, return an expression
-       for the dereferenced pointer-to-member construct.  */
-    addr = build_unary_op (ADDR_EXPR, base, 0);
-
-  if (TYPE_PTRMEM_P (TREE_TYPE (member)))
-    {
-      if (addr == error_mark_node)
-	{
-	  error ("object missing in `%E'", exp);
-	  return error_mark_node;
-	}
-
-      basetype = TYPE_OFFSET_BASETYPE (TREE_TYPE (TREE_TYPE (member)));
-      basetype = lookup_base (TREE_TYPE (TREE_TYPE (addr)),
-			      basetype, ba_check, NULL);
-      addr = build_base_path (PLUS_EXPR, addr, basetype, 1);
-      
-      member = cp_convert (ptrdiff_type_node, member);
-
-      addr = build (PLUS_EXPR, build_pointer_type (type), addr, member);
-      return build_indirect_ref (addr, 0);
-    }
-  else if (TYPE_PTRMEMFUNC_P (TREE_TYPE (member)))
-    {
-      return get_member_function_from_ptrfunc (&addr, member);
-    }
-  abort ();
-  /* NOTREACHED */
-  return NULL_TREE;
+  return member;
 }
 
 /* If DECL is a `const' declaration, and its value is a known
@@ -3299,9 +3223,6 @@ build_vec_delete (tree base, tree maxindex,
   tree type;
   tree rval;
   tree base_init = NULL_TREE;
-
-  if (TREE_CODE (base) == OFFSET_REF)
-    base = resolve_offset_ref (base);
 
   type = TREE_TYPE (base);
 

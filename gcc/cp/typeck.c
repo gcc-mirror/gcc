@@ -105,17 +105,6 @@ require_complete_type (tree value)
   if (COMPLETE_TYPE_P (type))
     return value;
 
-  /* If we see X::Y, we build an OFFSET_TYPE which has
-     not been laid out.  Try to avoid an error by interpreting
-     it as this->X::Y, if reasonable.  */
-  if (TREE_CODE (value) == OFFSET_REF
-      && current_class_ref != 0
-      && TREE_OPERAND (value, 0) == current_class_ref)
-    {
-      value = resolve_offset_ref (value);
-      return require_complete_type (value);
-    }
-
   if (complete_type_or_else (type, value))
     return value;
   else
@@ -1486,11 +1475,6 @@ expr_sizeof (tree e)
       cxx_incomplete_type_error (e, TREE_TYPE (e));
       return c_sizeof (char_type_node);
     }
-  /* It's invalid to say `sizeof (X::i)' for `i' a non-static data
-     member unless you're in a non-static member of X.  So hand off to
-     resolve_offset_ref.  [expr.prim]  */
-  else if (TREE_CODE (e) == OFFSET_REF)
-    e = resolve_offset_ref (e);
 
   if (e == error_mark_node)
     return e;
@@ -1510,9 +1494,6 @@ decay_conversion (tree exp)
 {
   register tree type;
   register enum tree_code code;
-
-  if (TREE_CODE (exp) == OFFSET_REF)
-    exp = resolve_offset_ref (exp);
 
   type = TREE_TYPE (exp);
   code = TREE_CODE (type);
@@ -1555,7 +1536,10 @@ decay_conversion (tree exp)
       return error_mark_node;
     }
   if (code == METHOD_TYPE)
-    abort ();
+    {
+      error ("invalid use of non-static member function");
+      return error_mark_node;
+    }
   if (code == FUNCTION_TYPE || is_overloaded_fn (exp))
     return build_unary_op (ADDR_EXPR, exp, 0);
   if (code == ARRAY_TYPE)
@@ -2047,9 +2031,6 @@ finish_class_member_access_expr (tree object, tree name)
   if (processing_template_decl)
     return build_min_nt (COMPONENT_REF, object, name);
   
-  if (TREE_CODE (object) == OFFSET_REF)
-    object = resolve_offset_ref (object);
-
   object_type = TREE_TYPE (object);
   if (TREE_CODE (object_type) == REFERENCE_TYPE)
     {
@@ -2749,9 +2730,6 @@ convert_arguments (typelist, values, fndecl, flags)
 	  break;
 	}
 
-      if (TREE_CODE (val) == OFFSET_REF)
-	val = resolve_offset_ref (val);
-
       /* build_c_cast puts on a NOP_EXPR to make the result not an lvalue.
 	 Strip such NOP_EXPRs, since VAL is used in non-lvalue context.  */
       if (TREE_CODE (val) == NOP_EXPR
@@ -2864,6 +2842,9 @@ build_x_binary_op (code, arg1, arg2)
 {
   if (processing_template_decl)
     return build_min_nt (code, arg1, arg2);
+
+  if (code == DOTSTAR_EXPR)
+    return build_m_component_ref (arg1, arg2);
 
   return build_new_op (code, LOOKUP_NORMAL, arg1, arg2, NULL_TREE);
 }
@@ -3973,8 +3954,6 @@ condition_conversion (expr)
   tree t;
   if (processing_template_decl)
     return expr;
-  if (TREE_CODE (expr) == OFFSET_REF)
-    expr = resolve_offset_ref (expr);
   t = perform_implicit_conversion (boolean_type_node, expr);
   t = fold (build1 (CLEANUP_POINT_EXPR, boolean_type_node, t));
   return t;
@@ -4560,15 +4539,7 @@ unary_complex_lvalue (enum tree_code code, tree arg)
 	      return error_mark_node;
 	    }
 	  if (!PTRMEM_OK_P (arg))
-	    {
-	      /* This cannot form a pointer to method, so we must
-	         resolve the offset ref, and take the address of the
-		 result.  For instance,
-		 	&(C::m)	      */
-	      arg = resolve_offset_ref (arg);
-
-	      return build_unary_op (code, arg, 0);
-	    }
+	    return build_unary_op (code, arg, 0);
 	  
 	  if (TREE_CODE (TREE_TYPE (t)) == REFERENCE_TYPE)
 	    {
@@ -4792,9 +4763,6 @@ build_static_cast (tree type, tree expr)
   if (type == error_mark_node || expr == error_mark_node)
     return error_mark_node;
 
-  if (TREE_CODE (expr) == OFFSET_REF)
-    expr = resolve_offset_ref (expr);
-
   if (processing_template_decl)
     {
       tree t = build_min (STATIC_CAST_EXPR, type, expr); 
@@ -4965,9 +4933,6 @@ build_reinterpret_cast (tree type, tree expr)
   if (type == error_mark_node || expr == error_mark_node)
     return error_mark_node;
 
-  if (TREE_CODE (expr) == OFFSET_REF)
-    expr = resolve_offset_ref (expr);
-
   if (processing_template_decl)
     {
       tree t = build_min (REINTERPRET_CAST_EXPR, type, expr);
@@ -5055,9 +5020,6 @@ build_const_cast (tree type, tree expr)
   if (type == error_mark_node || expr == error_mark_node)
     return error_mark_node;
 
-  if (TREE_CODE (expr) == OFFSET_REF)
-    expr = resolve_offset_ref (expr);
-
   if (processing_template_decl)
     {
       tree t = build_min (CONST_CAST_EXPR, type, expr);
@@ -5138,9 +5100,6 @@ build_c_cast (tree type, tree expr)
       && TREE_CODE (value) == NOP_EXPR
       && TREE_TYPE (value) == TREE_TYPE (TREE_OPERAND (value, 0)))
     value = TREE_OPERAND (value, 0);
-
-  if (TREE_CODE (value) == OFFSET_REF)
-    value = resolve_offset_ref (value);
 
   if (TREE_CODE (type) == ARRAY_TYPE)
     {
@@ -5361,12 +5320,6 @@ build_modify_expr (tree lhs, enum tree_code modifycode, tree rhs)
 	return build (COMPOUND_EXPR, TREE_TYPE (lhs), preeval, cond);
       }
       
-    case OFFSET_REF:
-      lhs = resolve_offset_ref (lhs);
-      if (lhs == error_mark_node)
-	return error_mark_node;
-      olhstype = lhstype = TREE_TYPE (lhs);
-    
     default:
       break;
     }
@@ -6008,9 +5961,6 @@ convert_for_assignment (tree type, tree rhs,
   if (codel == OFFSET_TYPE)
     abort ();
 
-  if (TREE_CODE (rhs) == OFFSET_REF)
-    rhs = resolve_offset_ref (rhs);
-
   /* Strip NON_LVALUE_EXPRs since we aren't using as an lvalue.  */
   if (TREE_CODE (rhs) == NON_LVALUE_EXPR)
     rhs = TREE_OPERAND (rhs, 0);
@@ -6116,13 +6066,6 @@ convert_for_initialization (tree exp, tree type, tree rhs, int flags,
   if (rhs == error_mark_node
       || (TREE_CODE (rhs) == TREE_LIST && TREE_VALUE (rhs) == error_mark_node))
     return error_mark_node;
-
-  if (TREE_CODE (rhs) == OFFSET_REF)
-    {
-      rhs = resolve_offset_ref (rhs);
-      if (rhs == error_mark_node)
-	return error_mark_node;
-    }
 
   if (TREE_CODE (TREE_TYPE (rhs)) == REFERENCE_TYPE)
     rhs = convert_from_reference (rhs);

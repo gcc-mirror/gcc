@@ -317,21 +317,13 @@ build_addr_func (tree function)
      functions.  */
   if (TREE_CODE (type) == METHOD_TYPE)
     {
-      tree addr;
-
-      type = build_pointer_type (type);
-
-      if (!cxx_mark_addressable (function))
-	return error_mark_node;
-
-      addr = build1 (ADDR_EXPR, type, function);
-
-      /* Address of a static or external variable or function counts
-	 as a constant */
-      if (staticp (function))
-	TREE_CONSTANT (addr) = 1;
-
-      function = addr;
+      if (TREE_CODE (function) == OFFSET_REF)
+	{
+	  tree object = build_address (TREE_OPERAND (function, 0));
+	  return get_member_function_from_ptrfunc (&object,
+						   TREE_OPERAND (function, 1));
+	}
+      function = build_address (function);
     }
   else
     function = default_conversion (function);
@@ -477,8 +469,6 @@ build_method_call (tree instance, tree name, tree parms,
   if (processing_template_decl)
     return build_min_nt (METHOD_CALL_EXPR, name, instance, parms, NULL_TREE);
 
-  if (TREE_CODE (instance) == OFFSET_REF)
-    instance = resolve_offset_ref (instance);
   if (TREE_CODE (TREE_TYPE (instance)) == REFERENCE_TYPE)
     instance = convert_from_reference (instance);
   object_type = TREE_TYPE (instance);
@@ -1294,14 +1284,6 @@ static tree
 implicit_conversion (tree to, tree from, tree expr, int flags)
 {
   tree conv;
-
-  /* Resolve expressions like `A::p' that we thought might become
-     pointers-to-members.  */
-  if (expr && TREE_CODE (expr) == OFFSET_REF)
-    {
-      expr = resolve_offset_ref (expr);
-      from = TREE_TYPE (expr);
-    }
 
   if (from == error_mark_node || to == error_mark_node
       || expr == error_mark_node)
@@ -2790,7 +2772,7 @@ resolve_scoped_fn_name (tree scope, tree name)
 
       /* It might be the name of a function pointer member.  */
       if (fn && TREE_CODE (fn) == FIELD_DECL)
-	fn = resolve_offset_ref (build_offset_ref (scope, fn));
+	fn = finish_non_static_data_member (fn, scope);
     }
   
   if (!fn)
@@ -2831,8 +2813,6 @@ resolve_args (tree args)
 	  error ("invalid use of void expression");
 	  return error_mark_node;
 	}
-      else if (TREE_CODE (arg) == OFFSET_REF)
-	arg = resolve_offset_ref (arg);
       arg = convert_from_reference (arg);
       TREE_VALUE (t) = arg;
     }
@@ -3565,8 +3545,6 @@ prep_operand (tree operand)
 {
   if (operand)
     {
-      if (TREE_CODE (operand) == OFFSET_REF)
-	operand = resolve_offset_ref (operand);
       operand = convert_from_reference (operand);
       if (CLASS_TYPE_P (TREE_TYPE (operand))
 	  && CLASSTYPE_TEMPLATE_INSTANTIATION (TREE_TYPE (operand)))
@@ -5025,8 +5003,6 @@ build_new_method_call (tree instance, tree fns, tree args,
   if (args == error_mark_node)
     return error_mark_node;
 
-  if (TREE_CODE (instance) == OFFSET_REF)
-    instance = resolve_offset_ref (instance);
   if (TREE_CODE (TREE_TYPE (instance)) == REFERENCE_TYPE)
     instance = convert_from_reference (instance);
   basetype = TYPE_MAIN_VARIANT (TREE_TYPE (instance));

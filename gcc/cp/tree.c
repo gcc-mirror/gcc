@@ -133,10 +133,6 @@ lvalue_p_1 (tree ref,
       /* A currently unresolved scope ref.  */
     case SCOPE_REF:
       abort ();
-    case OFFSET_REF:
-      if (TREE_CODE (TREE_OPERAND (ref, 1)) == FUNCTION_DECL)
-	return clk_ordinary;
-      /* Fall through.  */
     case MAX_EXPR:
     case MIN_EXPR:
       op1_lvalue_kind = lvalue_p_1 (TREE_OPERAND (ref, 0),
