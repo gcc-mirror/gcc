@@ -1606,7 +1606,7 @@ mangled_name (jclass klass, _Jv_Utf8Const *func_name,
 
   const unsigned char *sig = (const unsigned char *) signature->data;
   limit = sig + signature->length;
-  JvAssert (signature[0] == '(');
+  JvAssert (sig[0] == '(');
   ++sig;
   while (1)
     {
@@ -1958,9 +1958,11 @@ JNI_CreateJavaVM (JavaVM **vm, void **penv, void *args)
 }
 
 jint
-JNI_GetCreatedJavaVMs (JavaVM **vm_buffer, jsize /* buf_len */, jsize *n_vms)
+JNI_GetCreatedJavaVMs (JavaVM **vm_buffer, jsize buf_len, jsize *n_vms)
 {
-  JvAssert (buf_len > 0);
+  if (buf_len <= 0)
+    return JNI_ERR;
+
   // We only support a single VM.
   if (the_vm != NULL)
     {

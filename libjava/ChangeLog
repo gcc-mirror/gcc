@@ -1,3 +1,9 @@
+2000-03-14  Tom Tromey  <tromey@cygnus.com>
+
+	* jni.cc (mangled_name): Fixed assertion.
+	(JNI_GetCreatedJavaVMs): Don't comment out `buf_len' argument;
+	turned assert into actual failure.
+
 2000-03-09  Warren Levy  <warrenl@cygnus.com>
 
 	* java/security/Key.java(serialVersionUID): Set to 0 for now.
