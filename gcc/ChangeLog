@@ -1,3 +1,10 @@
+2004-01-11  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/13392
+	* builtins.c (expand_builtin_expect_jump): Handle conditional jumps
+	to drop through label.  Don't fall back to SCC even when conditional
+	jump has not been found.
+
 2004-01-11  Jan Hubicka  <jh@suse.cz>
 
 	* invoke.texi: Fix syntax error in previous patch.
