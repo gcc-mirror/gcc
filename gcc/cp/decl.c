@@ -2287,6 +2287,14 @@ pushtag (name, type, globalize)
 	      if (current_lang_name == lang_name_java)
 		TYPE_FOR_JAVA (type) = 1;
 	      SET_DECL_ARTIFICIAL (d);
+	      /* There's no reason to put out debugging information
+		 for these declarations since they are
+		 compiler-generated.  Furthermore, if the type makes
+		 use of template parameters, the code that generates
+		 debugging information will get confused.  It is safe
+		 to put these out in the non-template case, just
+		 useless.  */
+	      DECL_IGNORED_P (d) = 1;
 	      if (! in_class)
 		set_identifier_type_value_with_scope (name, type, b);
 	    }

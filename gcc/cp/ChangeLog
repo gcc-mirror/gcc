@@ -1,5 +1,8 @@
 1998-07-19  Mark Mitchell  <mark@markmitchell.com>
 
+	* decl.c (pushtag): Don't put out debugging information for
+	compiler-generated typedefs.
+	
 	* error.c (dump_type_real): Don't crash when presented with
 	intQI_type_node or the like.
 
