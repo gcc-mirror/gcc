@@ -67,7 +67,6 @@ static char *names_upper_extended[] =
 char **h8_reg_names;
 
 /* Various operations needed by the following, indexed by CPU_TYPE.  */
-/* ??? The h8/300 assembler doesn't understand pop.w (yet).  */
 
 static char *h8_push_ops[2] =
 {"push", "push.l"};
@@ -687,6 +686,12 @@ const_costs (r, c)
 	case -1:
 	case -2:
 	  return 0;
+	case 4:
+	case -4:
+	  if (TARGET_H8300H)
+	    return 0;
+	  else
+	    return 1;
 	default:
 	  return 1;
 	}
@@ -1277,10 +1282,6 @@ notice_update_cc (body, insn)
       if (cc_status.value1 != 0
 	  && reg_overlap_mentioned_p (recog_operand[0], cc_status.value1))
 	cc_status.value1 = 0;
-      /* ??? Is value2 ever set?.  */
-      if (cc_status.value2 != 0
-	  && reg_overlap_mentioned_p (recog_operand[0], cc_status.value2))
-	cc_status.value2 = 0;
       break;
 
     case CC_SET:
