@@ -1,3 +1,7 @@
+2002-05-08  Mark Mitchell  <mark@codesourcery.com>
+
+	* gcc_release: Correct upload handling.
+
 2002-04-22  Mark Mitchell  <mark@codesourcery.com>
 
 	* gcc_release (build_diffs): Remove reference to Chill.
