@@ -1,5 +1,12 @@
 2003-03-23  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
+	PR target/10072
+	* combine.c (simplify_if_then_else): Check that the mode
+	has MODE_INT class before applying the (OP Z (mult COND C2))
+	transformation.
+
+2003-03-23  Eric Botcazou  <ebotcazou@libertysurf.fr>
+
 	PR optimization/9414
 	* config/sparc/sparc.md (widening peepholes): Use
 	widen_memory_access instead of change_address.
