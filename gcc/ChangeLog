@@ -2,6 +2,9 @@
 
 	* invoke.texi (-fno-gnu-keywords): Remove classof, headof,
 	__classof__, and __headof__ from the list of gnu keywords.
+	(-ansi): Remove -foperator-names from list of implied options. 
+	Do not call it ANSI C++.
+	(-foperator-names): Document as -fno-operator-names.
 
 2000-04-09  Zack Weinberg  <zack@wolery.cumb.org>
 

@@ -419,7 +419,7 @@ int flag_access_control = 1;
 
 /* Nonzero if we want to understand the operator names, i.e. 'bitand'.  */
 
-int flag_operator_names;
+int flag_operator_names = 1;
 
 /* Nonzero if we want to check the return value of new and avoid calling
    constructors if it is a null pointer.  */
@@ -789,7 +789,7 @@ lang_decode_option (argc, argv)
     }
   else if (!strcmp (p, "-ansi"))
     flag_no_nonansi_builtin = 1, flag_ansi = 1,
-    flag_no_gnu_keywords = 1, flag_operator_names = 1;
+    flag_no_gnu_keywords = 1;
 #ifdef SPEW_DEBUG
   /* Undocumented, only ever used when you're invoking cc1plus by hand, since
      it's probably safe to assume no sane person would ever want to use this
