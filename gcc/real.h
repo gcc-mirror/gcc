@@ -1,5 +1,5 @@
 /* Front-end tree definitions for GNU compiler.
-   Copyright (C) 1989, 1991 Free Software Foundation, Inc.
+   Copyright (C) 1989, 1991, 1994 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -123,17 +123,33 @@ typedef struct {
 #define REAL_ARITHMETIC(value, code, d1, d2) \
   earith (&(value), (code), &(d1), &(d2))
 
-/* Declare functions in real.c that are referenced here. */
-void earith (), ereal_from_uint (), ereal_from_int (), ereal_to_int ();
-void etarldouble (), etartdouble (), etardouble ();
-long etarsingle ();
-HOST_WIDE_INT efixi ();
-unsigned HOST_WIDE_INT efixui ();
-int ereal_cmp (), ereal_isneg ();
-unsigned int eroundui ();
-REAL_VALUE_TYPE etrunci (), etruncui (), ereal_ldexp (), ereal_atof ();
-REAL_VALUE_TYPE ereal_negate (), ereal_truncate ();
-REAL_VALUE_TYPE ereal_from_float (), ereal_from_double ();
+/* Declare functions in real.c. */
+extern void earith		PROTO((REAL_VALUE_TYPE *, int,
+				       REAL_VALUE_TYPE *, REAL_VALUE_TYPE *));
+extern REAL_VALUE_TYPE etrunci	PROTO((REAL_VALUE_TYPE));
+extern REAL_VALUE_TYPE etruncui	PROTO((REAL_VALUE_TYPE));
+extern REAL_VALUE_TYPE ereal_atof PROTO((char *, enum machine_mode));
+extern REAL_VALUE_TYPE ereal_negate PROTO((REAL_VALUE_TYPE));
+extern HOST_WIDE_INT efixi	PROTO((REAL_VALUE_TYPE));
+extern unsigned HOST_WIDE_INT efixui PROTO((REAL_VALUE_TYPE));
+extern void ereal_from_int	PROTO((REAL_VALUE_TYPE *,
+				       HOST_WIDE_INT, HOST_WIDE_INT));
+extern void ereal_from_uint	PROTO((REAL_VALUE_TYPE *,
+				       unsigned HOST_WIDE_INT,
+				       unsigned HOST_WIDE_INT));
+extern void ereal_to_int	PROTO((HOST_WIDE_INT *, HOST_WIDE_INT *,
+				       REAL_VALUE_TYPE));
+extern REAL_VALUE_TYPE ereal_ldexp PROTO((REAL_VALUE_TYPE, int));
+
+extern void etartdouble		PROTO((REAL_VALUE_TYPE, long *));
+extern void etarldouble		PROTO((REAL_VALUE_TYPE, long *));
+extern void etardouble		PROTO((REAL_VALUE_TYPE, long *));
+extern long etarsingle		PROTO((REAL_VALUE_TYPE));
+extern void ereal_to_decimal	PROTO((REAL_VALUE_TYPE, char *));
+extern int ereal_cmp		PROTO((REAL_VALUE_TYPE, REAL_VALUE_TYPE));
+extern int ereal_isneg		PROTO((REAL_VALUE_TYPE));
+extern REAL_VALUE_TYPE ereal_from_float PROTO((unsigned long));
+extern REAL_VALUE_TYPE ereal_from_double PROTO((unsigned long *));
 
 #define REAL_VALUES_EQUAL(x, y) (ereal_cmp ((x), (y)) == 0)
 /* true if x < y : */
@@ -404,6 +420,9 @@ do { union real_extract u;				\
 /* Return a CONST_DOUBLE with value R and mode M.  */
 
 #define CONST_DOUBLE_FROM_REAL_VALUE(r, m) immed_real_const_1 (r,  m)
+extern struct rtx_def *immed_real_const_1	PROTO((REAL_VALUE_TYPE,
+						       enum machine_mode));
+
 
 /* Convert a floating point value `r', that can be interpreted
    as a host machine float or double, to a decimal ASCII string `s'
