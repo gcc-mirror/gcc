@@ -1,3 +1,14 @@
+2004-12-27  Steven Bosscher  <stevenb@suse.de>
+	    John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
+
+	rtl-optimization/12863
+        * config/vax/vax.h (CASE_DROPS_THROUGH): Don't define.
+        * config/vax/vax.md (casesi): Emit a test-and-branch to make sure
+        that the case is in range, to make sure the casesi insn is always
+        in range and never falls through.
+        (casesi1): Add comment to explain why casesi never falls through.
+        Remove the unnamed special case casesi pattern.
+
 2004-12-27  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
 	PR c++/14607.
