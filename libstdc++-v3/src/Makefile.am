@@ -21,7 +21,7 @@
 ## Software Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307,
 ## USA.
 
-## $Id: Makefile.am,v 1.53 2000/11/29 01:09:09 gdr Exp $
+## $Id: Makefile.am,v 1.54 2000/11/29 21:30:30 bkoz Exp $
 
 AUTOMAKE_OPTIONS = 1.3 gnits
 MAINT_CHARSET = latin1
@@ -135,7 +135,7 @@ c_base_headers = \
 	bits/std_cmath.h bits/std_csetjmp.h bits/std_csignal.h \
 	bits/std_cstdarg.h bits/std_cstddef.h bits/std_cstdio.h \
 	bits/std_cstdlib.h bits/std_cstring.h bits/std_ctime.h \
-	bits/std_cwchar.h bits/std_cwctype.h 
+	bits/std_cwchar.h bits/std_cwctype.h bits/cmath.tcc
 
 if GLIBCPP_USE_CSHADOW
 c_shadow_headers = \
@@ -174,7 +174,6 @@ build_headers = \
 
 sources = \
 	limitsMEMBERS.cc \
-	cmath.cc \
 	complex.cc complexf.cc complexl.cc complex_io.cc \
 	stdexcept.cc bitset.cc \
 	c++io.cc ios.cc stdstreams.cc strstream.cc \

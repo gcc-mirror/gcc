@@ -1,6 +1,6 @@
 // -*- C++ -*- C math library.
 
-// Copyright (C) 1997, 1998, 1999, 2000 Free Software Foundation, Inc.
+// Copyright (C) 2000 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -27,59 +27,27 @@
 // invalidate any other reasons why the executable file might be covered by
 // the GNU General Public License.
 
-//
-// ISO C++ 14882: 26.5  C library
-// Code for signatures not found in the C library
-//
+// This file was written by Gabriel Dos Reis <gdr@codesourcery.com>
 
-#include <bits/std_cmath.h>
+#ifndef _CPP_BITS_CMATH_TCC
+#define _CPP_BITS_CMATH_TCC 1
 
 namespace std {
-
-  namespace {
-    template <typename T>
-    inline T pow_helper(T x, unsigned int y)
+  export template<typename _Tp>
+    _Tp
+    __cmath_power(_Tp __x, unsigned int __n)
     {
-      T z = y&1? x : 1;
-      while(y >>= 1)
+      _Tp __y = __n % 2 ? __x : 1;
+
+      while (__n >>= 1)
         {
-          x *= x;
-          if(y & 1) z *= x;
+          __x = __x * __x;
+          if (__n % 2)
+            __y = __y * __x;
         }
-      return z;
+
+      return __y;
     }
-  }
+}
 
-  float
-  pow(float x, int y)
-  {
-    if(y < 0)
-      return 1.0f/pow_helper(x, -y);
-    else
-      return pow_helper(x, y);
-  }
-
-  double
-  pow(double x, int y)
-  {
-    if(y < 0)
-      return 1.0/pow_helper(x, -y);
-    else
-      return pow_helper(x, y);
-  }
-
-  long double
-  pow(long double x, int y)
-  {
-    if(y < 0)
-      return 1.0l/pow_helper(x, -y);
-    else
-      return pow_helper(x, y);
-  }
-
-} // std
-
-
-
-
-
+#endif

@@ -44,6 +44,17 @@
 
 namespace std 
 {
+  // Forward declaration of a helper function.  This really should be
+  // an `exported' forward declaration.
+  template<typename _Tp> _Tp __cmath_power(_Tp, unsigned int);
+
+  template<typename _Tp>
+  inline _Tp
+    __cmath_abs(_Tp __x)
+    {
+      return __x < _Tp() ? -__x : __x;
+    }
+
   inline long 
   abs(long __i) { return ::labs(__i); }
 
@@ -58,7 +69,7 @@ namespace std
   abs(float __x) { return ::fabsf(__x); }
 #else
   inline float 
-  abs(float __x) { return ::fabs(static_cast<double>(__x)); }
+  abs(float __x) { return __cmath_abs(__x); }
 #endif
 
 #if _GLIBCPP_HAVE_ACOSF
@@ -137,7 +148,7 @@ namespace std
   fabs(float __x) { return ::fabsf(__x); }
 #else
   inline float 
-  fabs(float __x) { return ::fabs(static_cast<double>(__x)); }
+  fabs(float __x) { return __cmath_abs(__x); }
 #endif
 
 #if _GLIBCPP_HAVE_FLOORF
@@ -204,6 +215,15 @@ namespace std
   }
 #endif
 
+  template<typename _Tp>
+    inline _Tp
+    __pow_helper(_Tp __x, int __n)
+    {
+      return __n < 0
+        ? _Tp(1)/__cmath_power(__x, -__n)
+        : __cmath_power(__x, __n);
+    }
+  
 #if _GLIBCPP_HAVE_POWF
   inline float 
   pow(float __x, float __y) { return ::powf(__x, __y); }
@@ -213,8 +233,11 @@ namespace std
   { return ::pow(static_cast<double>(__x), static_cast<double>(__y)); }
 #endif
 
-  float 
-  pow(float, int);
+  inline float 
+  pow(float __x, int __n)
+  {
+    return __pow_helper(__x, __n);
+  }
 
 #if _GLIBCPP_HAVE___BUILTIN_SINF
   inline float 
@@ -315,8 +338,11 @@ namespace std
 
   extern "C" double pow(double __x, double __y);
 
-  double 
-  pow(double __x, int __i);
+  inline double 
+  pow(double __x, int __i)
+  {
+    return __pow_helper(__x, __i);
+  }
 
 #if _GLIBCPP_HAVE___BUILTIN_SIN
   inline double 
@@ -347,7 +373,7 @@ namespace std
   abs(long double __x) { return ::fabsl(__x); }
 #else
   inline long double 
-  abs(long double __x) { return fabs(static_cast<double>(__x)); }
+  abs(long double __x) { return __cmath_abs(__x); }
 #endif
 
 #if _GLIBCPP_HAVE_ACOSL
@@ -426,7 +452,7 @@ namespace std
   fabs(long double __x) { return ::fabsl(__x); }
 #else
   inline long double 
-  fabs(long double __x) { return ::fabs(static_cast<double>(__x)); }
+  fabs(long double __x) { return __cmath_abs(__x); }
 #endif
 
 #if _GLIBCPP_HAVE_FLOORL
@@ -503,8 +529,11 @@ namespace std
   { return ::pow(static_cast<double>(__x), static_cast<double>(__y)); }
 #endif
 
-  long double 
-  pow(long double, int);
+  inline long double 
+  pow(long double __x, int __n)
+  {
+    return __pow_helper(__x, __n);
+  }
 
 #if _GLIBCPP_HAVE___BUILTIN_SINL
   inline long double 
@@ -551,18 +580,13 @@ namespace std
   inline long double 
   tanh(long double __x) { return ::tanh(static_cast<double>(__x)); }
 #endif
+
+
 } // std
 
+#ifdef _GLIBCPP_NO_TEMPLATE_EXPORT
+#  define export
+#  include <bits/cmath.tcc>
 #endif
 
-
-
-
-
-
-
-
-
-
-
-
+#endif
