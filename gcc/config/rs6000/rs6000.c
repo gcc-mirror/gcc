@@ -483,12 +483,13 @@ rs6000_override_options (default_cpu)
 	}
     }
 
-  if (flag_pic && DEFAULT_ABI == ABI_AIX)
+  if (flag_pic != 0 && DEFAULT_ABI == ABI_AIX)
     {
+      flag_pic = 0;
+
       if (extra_warnings)
 	warning ("-f%s ignored (all code is position independent)",
 		 (flag_pic > 1) ? "PIC" : "pic");
-      flag_pic = 0;
     }
 
 #ifdef XCOFF_DEBUGGING_INFO
