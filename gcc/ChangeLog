@@ -1,3 +1,9 @@
+2001-02-23  Per Bothner  <per@bothner.com>
+
+	* gcc.c (record_temp_file, pfatal_with_name, error):  Make non-static,
+	so they can be called from java/jvspec.c.
+	* gcc.h (record_temp_file, pfatal_with_name, error):  Declare.
+
 Sat Feb 24 03:32:50 CET 2001  Jan Hubicka  <jh@suse.cz>
 
 	* i386.c (ix86_frame): New structure.
