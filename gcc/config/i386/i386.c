@@ -11794,6 +11794,8 @@ ix86_init_machine_status ()
 
   f = ggc_alloc_cleared (sizeof (struct machine_function));
   f->use_fast_prologue_epilogue_nregs = -1;
+
+  return f;
 }
 
 /* Return a MEM corresponding to a stack slot with mode MODE.

@@ -1,3 +1,7 @@
+2003-03-22  Andreas Jaeger  <aj@suse.de>
+
+	* config/i386/i386.c (ix86_init_machine_status): Return value.
+
 2003-03-22  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
 	* pa.c (output_cbranch, output_bb, output_bvb): Output nop for
