@@ -4473,12 +4473,15 @@ mark_used_reg (pbi, reg, cond, insn)
 	     be eliminated, reload will set it live at that point.
 
 	     Otherwise, record that this function uses this register.  */
+	  /* ??? The PPC backend tries to "eliminate" on the pic
+	     register to itself.  This should be fixed.  In the mean
+	     time, hack around it.  */
 
-	  if (! TEST_HARD_REG_BIT (elim_reg_set, regno))
+	  if (! (TEST_HARD_REG_BIT (elim_reg_set, regno)
+	         && (regno == FRAME_POINTER_REGNUM
+		     || regno == ARG_POINTER_REGNUM)))
 	    {
 	      int n = HARD_REGNO_NREGS (regno, GET_MODE (reg));
-	      if (n == 0)
-		n = 1;
 	      do
 		regs_ever_live[regno + --n] = 1;
 	      while (n > 0);
