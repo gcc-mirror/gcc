@@ -112,7 +112,7 @@ case $basic_machine in
 	tahoe | i[345]86 | i860 | m68k | m68000 | m88k | ns32k | arm | pyramid \
 		| tron | a29k | 580 | i960 | h8300 | hppa1.0 | hppa1.1 \
 		| alpha | we32k | ns16k | clipper | sparclite | i370 | sh \
-		| powerpc | sparc64 | 1750a)
+		| powerpc | sparc64 | 1750a | dsp16xx)
 		basic_machine=$basic_machine-unknown
 		;;
 	# Object if more than one company name word.
