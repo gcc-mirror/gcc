@@ -2853,7 +2853,7 @@ extern int const svr4_dbx_register_map[FIRST_PSEUDO_REGISTER];
 #define ASM_OUTPUT_DOUBLE(FILE,VALUE)					\
 do { long l[2];								\
      REAL_VALUE_TO_TARGET_DOUBLE (VALUE, l);				\
-     fprintf (FILE, "%s\t0x%lx,0x%lx\n", ASM_LONG, l[0], l[1]);		\
+     fprintf (FILE, "%s0x%lx,0x%lx\n", ASM_LONG, l[0], l[1]);		\
    } while (0)
 
 /* This is how to output a `long double' extended real constant. */
@@ -2863,9 +2863,9 @@ do { long l[2];								\
 do { long l[4];						\
      REAL_VALUE_TO_TARGET_LONG_DOUBLE (VALUE, l);	\
      if (TARGET_128BIT_LONG_DOUBLE)			\
-       fprintf (FILE, "%s\t0x%lx,0x%lx,0x%lx,0x0\n", ASM_LONG, l[0], l[1], l[2]); \
+       fprintf (FILE, "%s0x%lx,0x%lx,0x%lx,0x0\n", ASM_LONG, l[0], l[1], l[2]); \
      else \
-       fprintf (FILE, "%s\t0x%lx,0x%lx,0x%lx\n", ASM_LONG, l[0], l[1], l[2]); \
+       fprintf (FILE, "%s0x%lx,0x%lx,0x%lx\n", ASM_LONG, l[0], l[1], l[2]); \
    } while (0)
 
 /* This is how to output an assembler line defining a `float' constant.  */
@@ -2873,7 +2873,7 @@ do { long l[4];						\
 #define ASM_OUTPUT_FLOAT(FILE,VALUE)			\
 do { long l;						\
      REAL_VALUE_TO_TARGET_SINGLE (VALUE, l);		\
-     fprintf ((FILE), "%s\t0x%lx\n", ASM_LONG, l);	\
+     fprintf ((FILE), "%s0x%lx\n", ASM_LONG, l);	\
    } while (0)
 
 /* Store in OUTPUT a string (made with alloca) containing
@@ -2887,22 +2887,29 @@ do { long l;						\
 /* This is how to output an assembler line defining an `int' constant.  */
 
 #define ASM_OUTPUT_INT(FILE,VALUE)  \
-( fprintf (FILE, "%s\t", ASM_LONG),		\
+( fputs (ASM_LONG, FILE),			\
   output_addr_const (FILE,(VALUE)),		\
   putc('\n',FILE))
 
 /* Likewise for `char' and `short' constants.  */
-/* is this supposed to do align too?? */
 
 #define ASM_OUTPUT_SHORT(FILE,VALUE)  \
-( fprintf (FILE, "%s\t", ASM_SHORT),		\
+( fputs (ASM_SHORT, FILE),			\
   output_addr_const (FILE,(VALUE)),		\
   putc('\n',FILE))
 
 #define ASM_OUTPUT_CHAR(FILE,VALUE)  \
-( fprintf (FILE, "%s", ASM_BYTE_OP),		\
+( fputs (ASM_BYTE_OP, FILE),			\
   output_addr_const (FILE, (VALUE)),		\
   putc ('\n', FILE))
+
+/* Given that x86 natively supports unaligned data, it's reasonable to
+   assume that all x86 assemblers don't auto-align data.  Thus the 
+   unaligned output macros required by dwarf2 frame unwind information
+   degenerate to the macros used above.  */
+#define UNALIGNED_SHORT_ASM_OP		ASM_SHORT
+#define UNALIGNED_INT_ASM_OP		ASM_LONG
+#define INT_ASM_OP			ASM_LONG
 
 /* This is how to output an assembler line for a numeric constant byte.  */
 
@@ -2925,7 +2932,7 @@ do { long l;						\
      */
 
 #define ASM_OUTPUT_ADDR_VEC_ELT(FILE, VALUE)  \
-  fprintf (FILE, "%s %s%d\n", ASM_LONG, LPREFIX, VALUE)
+  fprintf (FILE, "%s%s%d\n", ASM_LONG, LPREFIX, VALUE)
 
 /* This is how to output an element of a case-vector that is relative.
    We don't use these on the 386 yet, because the ATT assembler can't do
@@ -2933,7 +2940,7 @@ do { long l;						\
  */
 
 #define ASM_OUTPUT_ADDR_DIFF_ELT(FILE, BODY, VALUE, REL) \
-  fprintf (FILE, "\t%s\t%s%d-%s%d\n",ASM_LONG, LPREFIX, VALUE, LPREFIX, REL)
+  fprintf (FILE, "%s%s%d-%s%d\n",ASM_LONG, LPREFIX, VALUE, LPREFIX, REL)
 
 /* A C statement that outputs an address constant appropriate to 
    for DWARF debugging.  */

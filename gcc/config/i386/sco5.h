@@ -54,13 +54,10 @@ Boston, MA 02111-1307, USA.  */
 #define INT_ASM_OP			"\t.long\t"
 
 #undef ASM_SHORT
-#define ASM_SHORT			"\t.value"
+#define ASM_SHORT			"\t.value\t"
 
 #undef ASM_LONG
-#define ASM_LONG			"\t.long"
-
-#undef ASM_DOUBLE
-#define ASM_DOUBLE			"\t.double"
+#define ASM_LONG			"\t.long\t"
 
 #undef TYPE_ASM_OP
 #define TYPE_ASM_OP			"\t.type\t"
@@ -241,9 +238,9 @@ do {									\
 #define ASM_OUTPUT_ADDR_DIFF_ELT(FILE, BODY, VALUE, REL) \
 do {									\
   if (TARGET_ELF)							\
-    fprintf (FILE, "%s _GLOBAL_OFFSET_TABLE_+[.-%s%d]\n", ASM_LONG, LPREFIX, VALUE); \
+    fprintf (FILE, "%s_GLOBAL_OFFSET_TABLE_+[.-%s%d]\n", ASM_LONG, LPREFIX, VALUE); \
   else									\
-    fprintf (FILE, "\t.word %s%d-%s%d\n", LPREFIX,VALUE,LPREFIX,REL);	\
+    fprintf (FILE, "%s%s%d-%s%d\n", ASM_LONG, LPREFIX,VALUE,LPREFIX,REL); \
 } while (0)
 
 #undef ASM_OUTPUT_ALIGNED_COMMON
@@ -419,7 +416,7 @@ do {									\
     fprintf (FILE, "\n");						\
   } else {								\
     fini_section ();                   					\
-    fprintf (FILE, "%s\t ", ASM_LONG);					\
+    fprintf (FILE, "%s", INT_ASM_OP);					\
     assemble_name (FILE, NAME);              				\
     fprintf (FILE, "\n"); }						\
   } while (0)

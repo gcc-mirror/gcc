@@ -41,9 +41,8 @@ Boston, MA 02111-1307, USA.  */
 /* Assembler pseudos to introduce constants of various size.  */
 
 #define ASM_BYTE_OP "\t.byte\t"
-#define ASM_SHORT "\t.word"
-#define ASM_LONG "\t.long"
-#define ASM_DOUBLE "\t.double"
+#define ASM_SHORT "\t.word\t"
+#define ASM_LONG "\t.long\t"
 
 /* Output at beginning of assembler file.
    ??? I am skeptical of this -- RMS.  */
