@@ -2078,8 +2078,8 @@ macro in @pxref{Register Classes}.
 
 There are special restrictions on the form of the @code{match_operand}s
 used in these patterns.  First, only the predicate for the reload 
-operand is examined, i.e. @code{reload_in} examines operand 1, but not
-the predicates for operand 0 or 2.  Second, there may only be one
+operand is examined, i.e., @code{reload_in} examines operand 1, but not
+the predicates for operand 0 or 2.  Second, there may be only one
 alternative in the constraints.  Third, only a single register class
 letter may be used for the constraint; subsequent constraint letters
 are ignored.  As a special exception, an empty constraint string
