@@ -1,3 +1,14 @@
+2003-06-04  Zack Weinberg  <zack@codesourcery.com>
+
+	PR bootstrap/3163
+	* aclocal.m4 (AC_FUNC_MMAP_ANYWHERE, AC_FUNC_MMAP_FILE): Delete.
+	(gcc_AC_FUNC_MMAP_BLACKLIST): New.
+	* configure.in: Check for sys/mman.h and mmap in AC_CHECK_HEADERS
+	and AC_CHECK_FUNCS lists, respectively.  Use
+	gcc_AC_FUNC_MMAP_BLACKLIST, not AC_FUNC_MMAP_ANYWHERE nor
+	AC_FUNC_MMAP_FILE.
+	* configure, config.in: Regenerate.
+
 2003-06-04  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* arm/aout.h (ASM_OUTPUT_SKIP): Fix cast for format specifier warning.
@@ -9,8 +20,8 @@
 
 2003-06-04  Richard Henderson  <rth@redhat.com>
 
-        * cse.c (find_best_addr): Consider binary operators even if second
-        argument is not CONST_INT.
+	* cse.c (find_best_addr): Consider binary operators even if second
+	argument is not CONST_INT.
 
 2003-06-04  Zdenek Dvorak  <rakdver@atrey.karlin.mff.cuni.cz>
 
@@ -27,7 +38,7 @@
 
 2003-06-04  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
-	* i370.c (mvs_function_name_length): Fix signed/unsigned warnings. 
+	* i370.c (mvs_function_name_length): Fix signed/unsigned warnings.
 	* i370.h (mvs_function_name_length): Likewise.
 	* i960.h (CONSTANT_ALIGNMENT): Likewise.
 	* mips/linux.h (ASM_OUTPUT_ALIGNED_BSS): Likewise.
@@ -72,8 +83,8 @@
 
 2003-06-04  Aldy Hernandez  <aldyh@redhat.com>
 
-        * config/rs6000/rs6000.c (rs6000_complex_function_value): Unpack
-        complex numbers <= 32 bits into two registers.
+	* config/rs6000/rs6000.c (rs6000_complex_function_value): Unpack
+	complex numbers <= 32 bits into two registers.
 
 2003-06-04  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
@@ -83,7 +94,7 @@
 	* arm/aof.h (ASM_OUTPUT_COMMON, ASM_OUTPUT_LOCAL): Likewise.
 	* arm/pe.h (ASM_OUTPUT_COMMON): Likewise.
 	* avr.h (ASM_OUTPUT_COMMON, ASM_GENERATE_INTERNAL_LABEL,
-	ASM_OUTPUT_SKIP): Likewise. 
+	ASM_OUTPUT_SKIP): Likewise.
 	* c4x.h (ASM_GENERATE_INTERNAL_LABEL): Likewise.
 	* dsp16xx.h (ASM_GENERATE_INTERNAL_LABEL): Likewise.
 	* h8300.h (ASM_GENERATE_INTERNAL_LABEL, ASM_OUTPUT_COMMON):
@@ -113,15 +124,15 @@
 
 2003-06-04  Richard Henderson  <rth@redhat.com>
 
-        * c-common.c (handle_cleanup_attribute): New.
-        (c_common_attributes): Add it.
-        * c-decl.c (finish_decl): Honor the cleanup attribute.
-        * doc/extend.texi (Variable Attributes): Document it.
+	* c-common.c (handle_cleanup_attribute): New.
+	(c_common_attributes): Add it.
+	* c-decl.c (finish_decl): Honor the cleanup attribute.
+	* doc/extend.texi (Variable Attributes): Document it.
 
-        * unwind-c.c: New file.
-        * Makefile.in (LIB2ADDEH): Add it.
-        * config/t-darwin, config/t-linux, config/t-linux-gnulibc1,
-        config/ia64/t-ia64: Likewise.
+	* unwind-c.c: New file.
+	* Makefile.in (LIB2ADDEH): Add it.
+	* config/t-darwin, config/t-linux, config/t-linux-gnulibc1,
+	config/ia64/t-ia64: Likewise.
 
 2003-06-04  Jakub Jelinek  <jakub@redhat.com>
 
@@ -362,7 +373,7 @@ Wed Jun  4 09:49:21 CEST 2003  Jan Hubicka  <jh@suse.cz>
 
 	* doc/tm.texi (Trampolines): Remove INSN_CACHE_DEPTH,
 	INSN_CACHE_SIZE and INSN_CACHE_LINE_WIDTH.
-	
+
 	* dbxout.c (dbxout_type): Remove usage of DBX_OUTPUT_ENUM.
 	(dbxout_symbol): Remove usage of DBX_OUTPUT_CONSTANT_SYMBOL.
 	(dbxout_block): Remove usage of DBX_OUTPUT_CATCH.
@@ -390,7 +401,7 @@ Wed Jun  4 09:49:21 CEST 2003  Jan Hubicka  <jh@suse.cz>
 	(frame_dummy): Likewise.
 	* unwind-dw2-fde-glibc.c (_Unwind_IteratePhdrCallback): Likewise.
 	* system.h: Poison CRT_GET_RFIB_TEXT.
-	
+
 	* collect2.c (is_ctor_dtor): Remove CFRONT_LOSSAGE dependend code.
 
 	* fix-header.c: Remove ADD_MISSING_EXTERN_C dependend variables.
@@ -493,27 +504,27 @@ Wed Jun  4 09:49:21 CEST 2003  Jan Hubicka  <jh@suse.cz>
 
 2003-06-03  Aldy Hernandez  <aldyh@redhat.com>
 
-        * function.c (assign_parms): Split complex arguments.
+	* function.c (assign_parms): Split complex arguments.
 
-        * doc/tm.texi (SPLIT_COMPLEX_ARGS): Document.
+	* doc/tm.texi (SPLIT_COMPLEX_ARGS): Document.
 
-        * expr.h (SPLIT_COMPLEX_ARGS): Define.
-        (split_complex_types): Protoize.
-        (split_complex_values): Protoize.
+	* expr.h (SPLIT_COMPLEX_ARGS): Define.
+	(split_complex_types): Protoize.
+	(split_complex_values): Protoize.
 
-        * calls.c (expand_call): Split complex arguments on architectures
-        that require it.
-        (split_complex_values): New.
-        (split_complex_types): New.
+	* calls.c (expand_call): Split complex arguments on architectures
+	that require it.
+	(split_complex_values): New.
+	(split_complex_types): New.
 
-        * config/rs6000/rs6000.c (rs6000_libcall_value): New.
-        (rs6000_function_value): Handle complex values on AIX.
-        (rs6000_complex_function_value): New.
+	* config/rs6000/rs6000.c (rs6000_libcall_value): New.
+	(rs6000_function_value): Handle complex values on AIX.
+	(rs6000_complex_function_value): New.
 
-        * config/rs6000/rs6000-protos.h (rs6000_libcall_value): Protoize.
+	* config/rs6000/rs6000-protos.h (rs6000_libcall_value): Protoize.
 
-        * config/rs6000/rs6000.h (LIBCALL_VALUE): Call function.
-        (SPLIT_COMPLEX_ARGS): New.
+	* config/rs6000/rs6000.h (LIBCALL_VALUE): Call function.
+	(SPLIT_COMPLEX_ARGS): New.
 
 2003-06-03  Jakub Jelinek  <jakub@redhat.com>
 
@@ -626,7 +637,7 @@ Wed Jun  4 09:49:21 CEST 2003  Jan Hubicka  <jh@suse.cz>
 
 2003-06-02  Kazuhiro Inaoka  <inaoka.kazuhiro@renesas.com>
 
-        * gcc/config.gcc Add support multilib parts for m32rx processor.
+	* gcc/config.gcc Add support multilib parts for m32rx processor.
 
 2003-06-02  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
