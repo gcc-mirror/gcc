@@ -43,7 +43,6 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #ifndef VMS
 #include <sys/time.h>
 #include <sys/resource.h>
-#undef ABS  /* For OSF 1.2 on alpha.  */
 #endif
 #endif
 
