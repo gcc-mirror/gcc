@@ -7123,7 +7123,7 @@ gcc_version_full=`grep version_string ${gcc_version_trigger} | sed -e 's/.*\"\([
 gcc_version=`echo ${gcc_version_full} | sed -e 's/\([^ ]*\) .*/\1/'`
 
 # Compile in configure arguments.
-if [ -e configargs.h ]; then
+if test -f configargs.h ; then
 	# Being re-configured.
 	gcc_config_arguments=`grep configuration_arguments configargs.h | sed -e 's/.*\"\([^\"]*\)\".*/\1/'`
 	gcc_config_arguments="$gcc_config_arguments : (reconfigured) $TOPLEVEL_CONFIGURE_ARGUMENTS"
