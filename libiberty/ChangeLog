@@ -1,3 +1,8 @@
+2005-04-04  Ian Lance Taylor  <ian@airs.com>
+
+	* testsuite/test-pexecute.c (TEST_PEX_RUN): Move variable
+	declaration before statement.
+
 2005-04-02  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* bcmp.c: Fix warnings and implement using memcmp.
