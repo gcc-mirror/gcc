@@ -2166,11 +2166,13 @@ Inhibit warning messages about the use of @samp{#import}.
 Warn if an array subscript has type @code{char}.  This is a common cause
 of error, as programmers often forget that this type is signed on some
 machines.
+This warning is enabled by @option{-Wall}.
 
 @item -Wcomment
 @opindex Wcomment
 Warn whenever a comment-start sequence @samp{/*} appears in a @samp{/*}
 comment, or whenever a Backslash-Newline appears in a @samp{//} comment.
+This warning is enabled by @option{-Wall}.
 
 @item -Wfatal-errors
 @opindex Wfatal-errors
@@ -2291,6 +2293,7 @@ int f()
 @item -Wimplicit-int
 @opindex Wimplicit-int
 Warn when a declaration does not specify a type.
+This warning is enabled by @option{-Wall}.
 
 @item -Wimplicit-function-declaration
 @itemx -Werror-implicit-function-declaration
@@ -2299,16 +2302,19 @@ Warn when a declaration does not specify a type.
 Give a warning (or error) whenever a function is used before being
 declared.  The form @option{-Wno-error-implicit-function-declaration}
 is not supported.
+This warning is enabled by @option{-Wall} (as a warning, not an error).
 
 @item -Wimplicit
 @opindex Wimplicit
 Same as @option{-Wimplicit-int} and @option{-Wimplicit-function-declaration}.
+This warning is enabled by @option{-Wall}.
 
 @item -Wmain
 @opindex Wmain
 Warn if the type of @samp{main} is suspicious.  @samp{main} should be a
 function with external linkage, returning int, taking either zero
 arguments, two, or three arguments of appropriate types.
+This warning is enabled by @option{-Wall}.
 
 @item -Wmissing-braces
 @opindex Wmissing-braces
@@ -2320,6 +2326,8 @@ bracketed, but that for @samp{b} is fully bracketed.
 int a[2][2] = @{ 0, 1, 2, 3 @};
 int b[2][2] = @{ @{ 0, 1 @}, @{ 2, 3 @} @};
 @end smallexample
+
+This warning is enabled by @option{-Wall}.
 
 @item -Wmissing-include-dirs @r{(C, C++, Objective-C and Objective-C++ only)}
 @opindex Wmissing-include-dirs
@@ -2377,6 +2385,8 @@ the enclosing @code{if}.  The resulting code would look like this:
 @end group
 @end smallexample
 
+This warning is enabled by @option{-Wall}.
+
 @item -Wsequence-point
 @opindex Wsequence-point
 Warn about code that may have undefined semantics because of violations
@@ -2423,6 +2433,8 @@ Links to discussions of the problem, including proposed formal
 definitions, may be found on the GCC readings page, at
 @w{@uref{http://gcc.gnu.org/readings.html}}.
 
+This warning is enabled by @option{-Wall}.
+
 @item -Wreturn-type
 @opindex Wreturn-type
 Warn whenever a function is defined with a return-type that defaults to
@@ -2439,6 +2451,8 @@ For C++, a function without return type always produces a diagnostic
 message, even when @option{-Wno-return-type} is specified.  The only
 exceptions are @samp{main} and functions defined in system headers.
 
+This warning is enabled by @option{-Wall}.
+
 @item -Wswitch
 @opindex Wswitch
 Warn whenever a @code{switch} statement has an index of enumerated type
@@ -2446,6 +2460,7 @@ and lacks a @code{case} for one or more of the named codes of that
 enumeration.  (The presence of a @code{default} label prevents this
 warning.)  @code{case} labels outside the enumeration range also
 provoke warnings when this option is used.
+This warning is enabled by @option{-Wall}.
 
 @item -Wswitch-default
 @opindex Wswitch-switch
@@ -2463,15 +2478,18 @@ provoke warnings when this option is used.
 @opindex Wtrigraphs
 Warn if any trigraphs are encountered that might change the meaning of
 the program (trigraphs within comments are not warned about).
+This warning is enabled by @option{-Wall}.
 
 @item -Wunused-function
 @opindex Wunused-function
 Warn whenever a static function is declared but not defined or a
 non\-inline static function is unused.
+This warning is enabled by @option{-Wall}.
 
 @item -Wunused-label
 @opindex Wunused-label
 Warn whenever a label is declared but not used.
+This warning is enabled by @option{-Wall}.
 
 To suppress this warning use the @samp{unused} attribute
 (@pxref{Variable Attributes}).
@@ -2487,6 +2505,7 @@ To suppress this warning use the @samp{unused} attribute
 @opindex Wunused-variable
 Warn whenever a local variable or non-constant static variable is unused
 aside from its declaration
+This warning is enabled by @option{-Wall}.
 
 To suppress this warning use the @samp{unused} attribute
 (@pxref{Variable Attributes}).
@@ -2494,6 +2513,7 @@ To suppress this warning use the @samp{unused} attribute
 @item -Wunused-value
 @opindex Wunused-value
 Warn whenever a statement computes a result that is explicitly not used.
+This warning is enabled by @option{-Wall}.
 
 To suppress this warning cast the expression to @samp{void}.
 
@@ -2582,6 +2602,8 @@ in fact be called at the place which would cause a problem.
 Some spurious warnings can be avoided if you declare all the functions
 you use that never return as @code{noreturn}.  @xref{Function
 Attributes}.
+
+This warning is enabled by @option{-Wall}.
 
 @item -Wunknown-pragmas
 @opindex Wunknown-pragmas
