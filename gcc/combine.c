@@ -11691,7 +11691,7 @@ void
 dump_combine_stats (file)
      FILE *file;
 {
-  fprintf
+  fnotice
     (file,
      ";; Combiner statistics: %d attempts, %d substitutions (%d requiring new space),\n;; %d successes.\n\n",
      combine_attempts, combine_merges, combine_extras, combine_successes);
@@ -11701,7 +11701,7 @@ void
 dump_combine_total_stats (file)
      FILE *file;
 {
-  fprintf
+  fnotice
     (file,
      "\n;; Combiner totals: %d attempts, %d substitutions (%d requiring new space),\n;; %d successes.\n",
      total_attempts, total_merges, total_extras, total_successes);
