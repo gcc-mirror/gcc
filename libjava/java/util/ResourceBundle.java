@@ -42,8 +42,6 @@ import java.lang.ref.Reference;
 import java.lang.ref.SoftReference;
 import java.io.InputStream;
 import java.io.IOException;
-import java.security.AccessController;
-import java.security.PrivilegedAction;
 import gnu.classpath.Configuration;
 
 /**
@@ -105,44 +103,7 @@ public abstract class ResourceBundle
    */
   private Locale locale;
 
-  /**
-   * We override SecurityManager in order to access getClassContext().
-   */
-  private static final class Security extends SecurityManager
-  {
-    /**
-     * Avoid accessor method of private constructor.
-     */
-    Security()
-    {
-    }
-
-    /**
-     * Return the ClassLoader of the class which called into this
-     * ResourceBundle, or null if it cannot be determined.
-     */
-    ClassLoader getCallingClassLoader()
-    {
-      Class[] stack = getClassContext();
-      for (int i = 0; i < stack.length; i++)
-        if (stack[i] != Security.class && stack[i] != ResourceBundle.class)
-          return stack[i].getClassLoader();
-      return null;
-    }
-  }
-
-  /** A security context for grabbing the correct class loader. */
-  private static final Security security
-    = (Security) AccessController.doPrivileged(new PrivilegedAction()
-      {
-        // This will always work since java.util classes have (all) system
-        // permissions.
-        public Object run()
-        {
-          return new Security();
-        }
-      }
-    );
+  private static native ClassLoader getCallingClassLoader();
 
   /**
    * The resource bundle cache. This is a two-level hash map: The key
@@ -256,7 +217,7 @@ public abstract class ResourceBundle
   public static final ResourceBundle getBundle(String baseName)
   {
     return getBundle(baseName, Locale.getDefault(),
-                     security.getCallingClassLoader());
+                     getCallingClassLoader());
   }
 
   /**
@@ -274,7 +235,7 @@ public abstract class ResourceBundle
   public static final ResourceBundle getBundle(String baseName,
                                                Locale locale)
   {
-    return getBundle(baseName, locale, security.getCallingClassLoader());
+    return getBundle(baseName, locale, getCallingClassLoader());
   }
 
   /**

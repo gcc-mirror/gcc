@@ -2086,6 +2086,7 @@ java/lang/natString.cc \
 java/lang/natStringBuffer.cc \
 java/lang/natSystem.cc \
 java/lang/natThread.cc \
+java/lang/natVMSecurityManager.cc \
 java/lang/ref/natReference.cc \
 java/lang/reflect/natArray.cc \
 java/lang/reflect/natConstructor.cc \
@@ -2097,6 +2098,7 @@ java/net/natInetAddress.cc \
 java/net/natPlainDatagramSocketImpl.cc \
 java/net/natPlainSocketImpl.cc \
 java/text/natCollator.cc \
+java/util/natResourceBundle.cc \
 java/util/natTimeZone.cc \
 java/util/zip/natDeflater.cc \
 java/util/zip/natInflater.cc
@@ -2244,12 +2246,13 @@ java/lang/natClassLoader.lo java/lang/natConcreteProcess.lo \
 java/lang/natDouble.lo java/lang/natFloat.lo java/lang/natMath.lo \
 java/lang/natObject.lo java/lang/natRuntime.lo java/lang/natString.lo \
 java/lang/natStringBuffer.lo java/lang/natSystem.lo \
-java/lang/natThread.lo java/lang/ref/natReference.lo \
-java/lang/reflect/natArray.lo java/lang/reflect/natConstructor.lo \
-java/lang/reflect/natField.lo java/lang/reflect/natMethod.lo \
-java/lang/reflect/natProxy.lo java/net/natNetworkInterface.lo \
-java/net/natInetAddress.lo java/net/natPlainDatagramSocketImpl.lo \
-java/net/natPlainSocketImpl.lo java/text/natCollator.lo \
+java/lang/natThread.lo java/lang/natVMSecurityManager.lo \
+java/lang/ref/natReference.lo java/lang/reflect/natArray.lo \
+java/lang/reflect/natConstructor.lo java/lang/reflect/natField.lo \
+java/lang/reflect/natMethod.lo java/lang/reflect/natProxy.lo \
+java/net/natNetworkInterface.lo java/net/natInetAddress.lo \
+java/net/natPlainDatagramSocketImpl.lo java/net/natPlainSocketImpl.lo \
+java/text/natCollator.lo java/util/natResourceBundle.lo \
 java/util/natTimeZone.lo java/util/zip/natDeflater.lo \
 java/util/zip/natInflater.lo
 libgcjx_la_OBJECTS =  gnu/gcj/xlib/natClip.lo \
@@ -2959,8 +2962,9 @@ DEP_FILES =  .deps/$(srcdir)/$(CONVERT_DIR)/gen-from-JIS.P \
 .deps/java/lang/natMath.P .deps/java/lang/natObject.P \
 .deps/java/lang/natRuntime.P .deps/java/lang/natString.P \
 .deps/java/lang/natStringBuffer.P .deps/java/lang/natSystem.P \
-.deps/java/lang/natThread.P .deps/java/lang/ref/PhantomReference.P \
-.deps/java/lang/ref/Reference.P .deps/java/lang/ref/ReferenceQueue.P \
+.deps/java/lang/natThread.P .deps/java/lang/natVMSecurityManager.P \
+.deps/java/lang/ref/PhantomReference.P .deps/java/lang/ref/Reference.P \
+.deps/java/lang/ref/ReferenceQueue.P \
 .deps/java/lang/ref/SoftReference.P .deps/java/lang/ref/WeakReference.P \
 .deps/java/lang/ref/natReference.P \
 .deps/java/lang/reflect/AccessibleObject.P \
@@ -3286,8 +3290,8 @@ DEP_FILES =  .deps/$(srcdir)/$(CONVERT_DIR)/gen-from-JIS.P \
 .deps/java/util/jar/JarException.P .deps/java/util/jar/JarFile.P \
 .deps/java/util/jar/JarInputStream.P \
 .deps/java/util/jar/JarOutputStream.P .deps/java/util/jar/Manifest.P \
-.deps/java/util/natTimeZone.P .deps/java/util/regex/Matcher.P \
-.deps/java/util/regex/Pattern.P \
+.deps/java/util/natResourceBundle.P .deps/java/util/natTimeZone.P \
+.deps/java/util/regex/Matcher.P .deps/java/util/regex/Pattern.P \
 .deps/java/util/regex/PatternSyntaxException.P \
 .deps/java/util/zip/Adler32.P .deps/java/util/zip/CRC32.P \
 .deps/java/util/zip/CheckedInputStream.P \

@@ -397,7 +397,7 @@ _Jv_AllocObject (jclass klass, jint size)
   // if there really is an interesting finalizer.
   // Unfortunately, we still have to the dynamic test, since there may
   // be cni calls to this routine.
-  // Nore that on IA64 get_finalizer() returns the starting address of the
+  // Note that on IA64 get_finalizer() returns the starting address of the
   // function, not a function pointer.  Thus this still works.
   if (klass->vtable->get_finalizer ()
       != java::lang::Object::class$.vtable->get_finalizer ())

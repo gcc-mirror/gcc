@@ -1,3 +1,14 @@
+2002-12-04  Tom Tromey  <tromey@redhat.com>
+
+	* Makefile.in: Rebuilt.
+	* Makefile.am (nat_source_files): Added natVMSecurityManager,
+	natResourceBundle.
+	* java/util/ResourceBundle.java (Security): Removed.
+	(getCallingClassLoader): Now native.
+	* java/util/natResourceBundle.cc: New file.
+	* java/lang/natVMSecurityManager.cc: New file.
+	* java/lang/VMSecurityManager.java (getClassContext): Now native.
+
 2002-12-03  Mark Wielaard  <mark@klomp.org>
 
 	* java/util/jar/JarFile.java (manifest): Not final.
