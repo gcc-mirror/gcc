@@ -1,5 +1,15 @@
 2003-08-28  Mohan Embar  <gnustuff@thisiscool.com>
 
+	* java/net/natInetAddressWin32.cc,
+	java/net/natNetworkInterfaceWin32.cc,
+	java/net/natPlainDatagramSocketImplWin32.cc,
+	java/net/natPlainSocketImplWin32.cc:
+	Readded code enclosed in DISABLE_JAVA_NET defines
+	in preparation for MinGW cleanup / networking
+	patch
+
+2003-08-28  Mohan Embar  <gnustuff@thisiscool.com>
+
 	* Makefile.am: Fixed problems with parallel makes.
 	(all_java_class_files): Readded definition.
 	(all_java_class_files): New target which depends on
