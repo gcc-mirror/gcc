@@ -1850,17 +1850,20 @@ while (0)
    are expected to clobber their arguments, %r1, %r29, and %r31 and
    nothing else.
 
-   These macros tell reorg that the references to arguments and
-   register clobbers for millicode calls do not appear to happen
-   until after the millicode call.  This allows reorg to put insns
-   which set the argument registers into the delay slot of the millicode
-   call -- thus they act more like traditional CALL_INSNs.
+   This macro tells reorg that the references to arguments and
+   millicode calls do not appear to happen until after the millicode call.
+   This allows reorg to put insns which set the argument registers into the
+   delay slot of the millicode call -- thus they act more like traditional
+   CALL_INSNs.
+
+   Note we can not consider side effects of the insn to be delayed because
+   the branch and link insn will clobber the return pointer.  If we happened
+   to use the return pointer in the delay slot of the call, then we lose.
 
    get_attr_type will try to recognize the given insn, so make sure to
    filter out things it will not accept -- SEQUENCE, USE and CLOBBER insns
    in particular.  */
-#define INSN_SETS_ARE_DELAYED(X) (insn_sets_and_refs_are_delayed (X))
-#define INSN_REFERENCES_ARE_DELAYED(X) (insn_sets_and_refs_are_delayed (X))
+#define INSN_REFERENCES_ARE_DELAYED(X) (insn_refs_are_delayed (X))
 
 
 /* Control the assembler format that we output.  */

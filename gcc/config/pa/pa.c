@@ -6510,7 +6510,7 @@ pa_can_combine_p (new, anchor, floater, reversed, dest, src1, src2)
   return 1;
 }
 
-/* Return nonzero if sets and references for INSN are delayed.
+/* Return nonzero if references for INSN are delayed.
 
    Millicode insns are actually function calls with some special
    constraints on arguments and register usage.
@@ -6528,7 +6528,7 @@ pa_can_combine_p (new, anchor, floater, reversed, dest, src1, src2)
    filter out things it will not accept -- SEQUENCE, USE and CLOBBER insns
    in particular.  */
 int
-insn_sets_and_refs_are_delayed (insn)
+insn_refs_are_delayed (insn)
      rtx insn;
 {
   return ((GET_CODE (insn) == INSN 
