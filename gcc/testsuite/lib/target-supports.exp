@@ -63,6 +63,30 @@ proc check_weak_available { } {
 }
 
 ###############################
+# proc check_visibility_available { }
+###############################
+
+# The visibility attribute is only support in some object formats
+# This proc returns 1 if it is supported, 0 if not, -1 if unsure.
+
+proc check_visibility_available { } {
+    global target_triplet
+    global target_cpu
+
+    # ELF supports it if the system has recent GNU ld and gas.
+    # As a start we return 1 for all ELF systems; we'll let people
+    # add exceptions as necessary.
+
+    set objformat [gcc_target_object_format]
+
+    switch $objformat {
+        elf      { return 1 }
+        unknown  { return -1 }
+        default  { return 0 }
+    }
+}
+
+###############################
 # proc check_alias_available { }
 ###############################
 

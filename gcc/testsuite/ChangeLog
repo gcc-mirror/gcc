@@ -1,3 +1,21 @@
+2003-12-08  Matt Austern  <austern@apple.com>
+
+	PR c/13134
+	* lib/gcc-dg.exp (dg-require-visibility): Define.
+	* lib/target-supports (check_visibility_available): Define.
+	* gcc.dg/visibility-1.c: New test.
+	* gcc.dg/visibility-2.c: Likewise.
+	* gcc.dg/visibility-3.c: Likewise.
+	* gcc.dg/visibility-4.c: Likewise.
+	* gcc.dg/visibility-5.c: Likewise.
+	* gcc.dg/visibility-6.c: Likewise.
+	* g++.dg/ext/visibility-1.C: Likewise.
+	* g++.dg/ext/visibility-2.C: Likewise.
+	* g++.dg/ext/visibility-3.C: Likewise.
+	* g++.dg/ext/visibility-4.C: Likewise.
+	* g++.dg/ext/visibility-5.C: Likewise.
+	* g++.dg/ext/visibility-6.C: Likewise.
+	
 2003-12-07  Giovanni Bajo  <giovannibajo@gcc.gnu.org>
 
 	* g++.dg/lookup/java1.C: New test.

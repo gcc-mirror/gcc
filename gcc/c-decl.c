@@ -1335,6 +1335,19 @@ duplicate_decls (tree newdecl, tree olddecl, int different_binding_level,
 	 Currently, it can only be defined in the prototype.  */
       COPY_DECL_ASSEMBLER_NAME (olddecl, newdecl);
 
+      /* If either declaration has a nondefault visibility, use it. */
+      if (DECL_VISIBILITY (olddecl) != VISIBILITY_DEFAULT)
+	{
+	  if (DECL_VISIBILITY (newdecl) != VISIBILITY_DEFAULT
+	      && DECL_VISIBILITY (newdecl) != DECL_VISIBILITY (olddecl))
+	    {
+	      warning ("%J'%D': visibility attribute ignored because it",
+		       newdecl, newdecl);
+	      warning ("%Jconflicts with previous declaration here", olddecl);
+	    }
+	  DECL_VISIBILITY (newdecl) = DECL_VISIBILITY (olddecl);
+	}
+
       if (TREE_CODE (newdecl) == FUNCTION_DECL)
 	{
 	  DECL_STATIC_CONSTRUCTOR(newdecl) |= DECL_STATIC_CONSTRUCTOR(olddecl);

@@ -1,3 +1,8 @@
+2003-12-09  Matt Austern  <austern@apple.com>
+
+	PR c/13134
+	* c-decl.c (duplicate_decls): Copy visibility flag when appropriate.
+	
 2003-12-09  Kazuhiro Inaoka <inaoka.kazuhiro@renesas.com>
 
 	* config/m32r/m32r.h: Add support for m32r2 processor.  Including

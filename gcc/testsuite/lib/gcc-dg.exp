@@ -267,6 +267,23 @@ proc dg-require-weak { args } {
     }
 }
 
+# If this target does not support the "visibility" attribute, skip this
+# test.
+
+proc dg-require-visibility { args } {
+    upvar dg-do-what dg-do-what
+    upvar name name
+
+    set visibility_available [ check_visibility_available ]
+    if { $visibility_available == -1 } {
+	unresolved "$name"
+    }
+    if { $visibility_available != 1 } {
+	set dg-do-what [list [lindex ${dg-do-what} 0] "N" "P"]
+	return
+    }
+}
+
 # If this target does not support the "alias" attribute, skip this
 # test.
 
