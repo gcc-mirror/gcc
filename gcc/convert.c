@@ -1,5 +1,6 @@
 /* Utility routines for data type conversion for GNU C.
-   Copyright (C) 1987, 88, 91-95, 97, 1998 Free Software Foundation, Inc.
+   Copyright (C) 1987, 1988, 1991, 1992, 1993, 1994, 1995, 1997,
+   1998 Free Software Foundation, Inc.
 
 This file is part of GNU C.
 

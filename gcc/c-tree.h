@@ -1,5 +1,6 @@
 /* Definitions for C parsing and type checking.
-   Copyright (C) 1987, 93-95, 97-99, 2000 Free Software Foundation, Inc.
+   Copyright (C) 1987, 1993, 1994, 1995, 1997, 1998,
+   1999, 2000 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
