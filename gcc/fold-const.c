@@ -6023,17 +6023,13 @@ fold (tree expr)
 	  if (TREE_CODE (arg0) == BIT_AND_EXPR
 	      && TREE_CODE (arg1) == BIT_AND_EXPR
 	      && operand_equal_p (TREE_OPERAND (arg0, 0),
-				  TREE_OPERAND (arg1, 0), 0)
-	      && TREE_CODE (TREE_OPERAND (arg0, 1)) == INTEGER_CST
-	      && TREE_CODE (TREE_OPERAND (arg1, 1)) == INTEGER_CST)
+				  TREE_OPERAND (arg1, 0), 0))
 	    {
 	      tree mask0 = TREE_OPERAND (arg0, 1);
 	      tree mask1 = TREE_OPERAND (arg1, 1);
 	      tree tem = fold (build1 (BIT_NOT_EXPR, type, mask0));
 	      
-	      if (operand_equal_p (tem, mask1, 0)
-		  && integer_pow2p (fold (build (PLUS_EXPR, type,
-						 mask1, integer_one_node))))
+	      if (operand_equal_p (tem, mask1, 0))
 		{
 		  tem = fold (build (BIT_XOR_EXPR, type,
 				     TREE_OPERAND (arg0, 0), mask1));
