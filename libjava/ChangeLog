@@ -1,5 +1,10 @@
 2003-02-13  Mark Wielaard  <mark@klomp.org>
 
+	* java/util/zip/InflaterInputStream.java (read): Return zero when len
+	is zero.
+
+2003-02-13  Mark Wielaard  <mark@klomp.org>
+
 	* java/io/BufferedOutputStream.java (write(int)): Only flush when
 	next byte cannot be buffered.
 
