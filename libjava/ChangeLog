@@ -1,3 +1,8 @@
+2001-11-03  Tom Tromey  <tromey@redhat.com>
+
+	* defineclass.cc (handleClassBegin): Use Object::class$, not
+	Class::class$, when initializing interface superclass.
+
 2001-11-02  Hans Boehm <Hans_Boehm@hp.com>
 
 	* java/util/natResourceBundle.cc:getClassContext: return
