@@ -2713,11 +2713,14 @@ purge_addressof_1 (loc, insn, force)
       rtx sub = XEXP (XEXP (x, 0), 0);
       if (GET_CODE (sub) == REG && GET_MODE (x) != GET_MODE (sub))
 	{
-	  rtx sub2 = gen_rtx (SUBREG, GET_MODE (x), sub, 0);
-	  if (validate_change (insn, loc, sub2, 0))
-	    goto restart;
+	  if (! BYTES_BIG_ENDIAN && ! WORDS_BIG_ENDIAN)
+	    {
+	      rtx sub2 = gen_rtx (SUBREG, GET_MODE (x), sub, 0);
+	      if (validate_change (insn, loc, sub2, 0))
+		goto restart;
+	    }
 	}
-      if (validate_change (insn, loc, sub, 0))
+      else if (validate_change (insn, loc, sub, 0))
 	goto restart;
       /* else give up and put it into the stack */
     }
