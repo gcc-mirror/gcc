@@ -1,3 +1,9 @@
+1998-09-03  Mark Mitchell  <mark@markmitchell.com>
+
+	* decl.c (finish_enum): Don't resolve CONST_DECLs to their
+	corresponding INTEGER_CSTs when processing_template_decl.
+	* pt.c (tsubst_enum): Tweak accordingly.
+
 1998-09-03  Benjamin Kosnik  <bkoz@rhino.cygnus.com>
 
         * decl.c (pushdecl_class_level): Add warning here.

@@ -8205,7 +8205,11 @@ tsubst_enum (tag, newtag, args)
     {
       tree elt
 	= build_enumerator (TREE_PURPOSE (e), 
-			    tsubst_expr (TREE_VALUE (e), args,
+			    /* Note that in a template enum, the
+			       TREE_VALUE is the CONST_DECL, not the
+			       corresponding INTEGER_CST.  */
+			    tsubst_expr (DECL_INITIAL (TREE_VALUE (e)), 
+					 args,
 					 NULL_TREE),
 			    newtag); 
 
