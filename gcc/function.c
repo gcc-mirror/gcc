@@ -53,6 +53,7 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #include "insn-config.h"
 #include "recog.h"
 #include "output.h"
+#include "basic-block.h"
 
 /* Round a value to the lowest integer less than it that is a multiple of
    the required alignment.  Avoid using division in case the value is
@@ -4075,4 +4076,210 @@ expand_function_end (filename, line)
      and they need to create temporary variables,
      then you will lose.  */
   fixup_gotos (0, 0, 0, get_insns (), 0);
+}
+
+/* These arrays record the INSN_UIDs of the prologue and epilogue insns.  */
+
+static int *prologue;
+static int *epilogue;
+
+/* Create an array that records the INSN_UIDs of INSNS (either a sequence
+   or a single insn).  */
+
+static int *
+record_insns (insns)
+     rtx insns;
+{
+  int *vec;
+
+  if (GET_CODE (insns) == SEQUENCE)
+    {
+      int len = XVECLEN (insns, 0);
+      vec = (int *) oballoc ((len + 1) * sizeof (int));
+      vec[len] = 0;
+      while (--len >= 0)
+	vec[len] = INSN_UID (XVECEXP (insns, 0, len));
+    }
+  else
+    {
+      vec = (int *) oballoc (2 * sizeof (int));
+      vec[0] = INSN_UID (insns);
+      vec[1] = 0;
+    }
+  return vec;
+}
+
+/* Determine whether INSN is in the array of INSN_UIDs VEC.  */
+
+static rtx
+contains (insn, vec)
+     rtx insn;
+     int *vec;
+{
+  register int i, j;
+
+  if (GET_CODE (insn) == INSN
+      && GET_CODE (PATTERN (insn)) == SEQUENCE)
+    {
+      for (i = XVECLEN (PATTERN (insn), 0) - 1; i >= 0; i--)
+	for (j = 0; vec[j]; j++)
+	  if (INSN_UID (XVECEXP (PATTERN (insn), 0, i)) == vec[j])
+	    return XVECEXP (PATTERN (insn), 0, i);
+    }
+  else
+    {
+      for (j = 0; vec[j]; j++)
+	if (INSN_UID (insn) == vec[j])
+	  return insn;
+    }
+  return 0;
+}
+
+/* Generate the prologe and epilogue RTL if the machine supports it.  Thread
+   this into place with notes indicating where the prologue ends and where
+   the epilogue begins.  Update the basic block information when possible.  */
+
+void
+thread_prologue_and_epilogue_insns (f)
+     rtx f;
+{
+#ifdef HAVE_prologue
+  if (HAVE_prologue)
+    {
+      rtx head, seq, insn;
+
+      /* The first insn (a NOTE_INSN_DELETED) is followed by zero or more
+	 prologue insns and a NOTE_INSN_PROLOGUE_END.  */
+      emit_note_after (NOTE_INSN_PROLOGUE_END, f);
+      seq = gen_prologue ();
+      head = emit_insn_after (seq, f);
+
+      /* Include the new prologue insns in the first block.  Ignore them
+	 if they form a basic block unto themselves.  */
+      if (basic_block_head && n_basic_blocks
+	  && GET_CODE (basic_block_head[0]) != CODE_LABEL)
+	basic_block_head[0] = NEXT_INSN (f);
+
+      /* Retain a map of the prologue insns.  */
+      prologue = record_insns (GET_CODE (seq) == SEQUENCE ? seq : head);
+    }
+  else
+#endif
+    prologue = 0;
+
+#ifdef HAVE_epilogue
+  if (HAVE_epilogue)
+    {
+      rtx insn = get_last_insn ();
+      rtx prev = prev_nonnote_insn (insn);
+
+      /* If we end with a BARRIER, we don't need an epilogue.  */
+      if (! (prev && GET_CODE (prev) == BARRIER))
+	{
+	  rtx tail, seq;
+
+	  /* The last basic block ends with a NOTE_INSN_EPILOGUE_BEG,
+	     the epilogue insns (this must include the jump insn that
+	     returns), USE insns ad the end of a function, and a BARRIER.  */
+
+	  emit_barrier_after (insn);
+
+	  /* Place the epilogue before the USE insns at the end of a
+	     function.  */
+	  while (prev
+		 && GET_CODE (prev) == INSN
+		 && GET_CODE (PATTERN (prev)) == USE)
+	    {
+	      insn = PREV_INSN (prev);
+	      prev = prev_nonnote_insn (prev);
+	    }
+
+	  seq = gen_epilogue ();
+	  tail = emit_jump_insn_after (seq, insn);
+	  emit_note_after (NOTE_INSN_EPILOGUE_BEG, insn);
+
+	  /* Include the new epilogue insns in the last block.  Ignore
+	     them if they form a basic block unto themselves.  */
+	  if (basic_block_end && n_basic_blocks
+	      && GET_CODE (basic_block_end[n_basic_blocks - 1]) != JUMP_INSN)
+	    basic_block_end[n_basic_blocks - 1] = tail;
+
+	  /* Retain a map of the epilogue insns.  */
+	  epilogue = record_insns (GET_CODE (seq) == SEQUENCE ? seq : tail);
+	  return;
+	}
+    }
+#endif
+  epilogue = 0;
+}
+
+/* Reposition the prologue-end and epilogue-begin notes after instruction
+   scheduling and delayed branch scheduling.  */
+
+void
+reposition_prologue_and_epilogue_notes (f)
+     rtx f;
+{
+#if defined (HAVE_prologue) || defined (HAVE_epilogue)
+  /* Reposition the prologue and epilogue notes.  */
+  if (n_basic_blocks)
+    {
+      rtx next, prev;
+
+      if (prologue)
+	{
+	  register rtx insn, end_prologue;
+
+	  /* From the end of the first basic block, search backward for a
+	     prologue insn.  */
+	  for (insn = NEXT_INSN (PREV_INSN (basic_block_end[0]));
+	       insn; insn = prev_nonnote_insn (insn))
+	    if (contains (insn, prologue))
+	      {
+		end_prologue = insn;
+		/* Find the prologue-end note and move it to just after the
+		   last prologue insn.  */
+		for (insn = f; insn; insn = NEXT_INSN (insn))
+		  if (GET_CODE (insn) == NOTE
+		      && NOTE_LINE_NUMBER (insn) == NOTE_INSN_PROLOGUE_END)
+		    break;
+		next = NEXT_INSN (insn);
+		prev = PREV_INSN (insn);
+		if (prev)
+		  NEXT_INSN (prev) = next;
+		if (next)
+		  PREV_INSN (next) = prev;
+		add_insn_after (insn, end_prologue);
+		break;
+	      }
+	}
+
+      if (epilogue)
+	{
+	  register rtx insn, beg_epilogue;
+
+	  /* From the start of the last basic block, search forward for an
+	     epilogue insn.  */
+	  for (insn = PREV_INSN (NEXT_INSN (basic_block_head[n_basic_blocks - 1]));
+	       insn; insn = next_nonnote_insn (insn))
+	    if (beg_epilogue = contains (insn, epilogue))
+	      {
+		/* Find the epilogue-begin note and move it to just before
+		   the first epilogue insn.  */
+		for (insn = get_last_insn (); insn; insn = PREV_INSN (insn))
+		  if (GET_CODE (insn) == NOTE
+		      && NOTE_LINE_NUMBER (insn) == NOTE_INSN_EPILOGUE_BEG)
+		    break;
+		next = NEXT_INSN (insn);
+		prev = PREV_INSN (insn);
+		if (prev)
+		  NEXT_INSN (prev) = next;
+		if (next)
+		  PREV_INSN (next) = prev;
+		add_insn_after (insn, PREV_INSN (beg_epilogue));
+		break;
+	      }
+	}
+    }
+#endif /* HAVE_prologue or HAVE_epilogue */
 }

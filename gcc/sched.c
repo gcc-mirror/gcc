@@ -3949,6 +3949,11 @@ schedule_insns (dump_file)
 #endif
     }
 
+  /* Reposition the prologue and epilogue notes in case we moved the
+     prologue/epilogue insns.  */
+  if (reload_completed)
+    reposition_prologue_and_epilogue_notes (get_insns ());
+
   if (write_symbols != NO_DEBUG)
     {
       rtx line = 0;

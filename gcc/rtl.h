@@ -336,6 +336,10 @@ extern char *reg_note_name[];
 #define NOTE_INSN_LOOP_CONT -8
 /* Generated at the start of a duplicated exit test.  */
 #define NOTE_INSN_LOOP_VTOP -9
+/* This marks the point immediately after the last prologue insn.  */
+#define NOTE_INSN_PROLOGUE_END -10
+/* This marks the point immediately prior to the first epilogue insn.  */
+#define NOTE_INSN_EPILOGUE_BEG -11
 /* Don't forget to change note_insn_name in rtl.c.  */
 
 #define NOTE_DECL_NAME(INSN) ((INSN)->fld[3].rtstr)

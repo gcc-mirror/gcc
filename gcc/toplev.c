@@ -2368,6 +2368,13 @@ rest_of_compilation (decl)
 
   reload_completed = 1;
 
+  /* On some machines, the prologue and epilogue code, or parts thereof,
+     can be represented as RTL.  Doing so lets us schedule insns between
+     it and the rest of the code and also allows delayed branch
+     scheduling to operate in the epilogue.  */
+
+  thread_prologue_and_epilogue_insns (insns);
+
   if (optimize > 0 && flag_schedule_insns_after_reload)
     {
       if (sched2_dump)

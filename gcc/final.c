@@ -49,6 +49,7 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #include "rtl.h"
 #include "regs.h"
 #include "insn-config.h"
+#include "insn-flags.h"
 #include "insn-attr.h"
 #include "insn-codes.h"
 #include "recog.h"
@@ -111,6 +112,7 @@ void output_addr_const ();
 static void output_source_line ();
 rtx final_scan_insn ();
 void profile_function ();
+static void profile_after_prologue ();
 
 #ifdef HAVE_ATTR_length
 static int asm_insn_count ();
@@ -689,6 +691,20 @@ final_start_function (first, file, optimize)
     next_block_index = 1;
 #endif
 
+  /* If the machine represents the prologue as RTL, the profiling code must
+     be emitted when NOTE_INSN_PROLOGUE_END is scanned.  */
+#ifdef HAVE_prologue
+  if (! HAVE_prologue)
+#endif
+    profile_after_prologue (file);
+
+  profile_label_no++;
+}
+
+static void
+profile_after_prologue (file)
+     FILE *file;
+{
 #ifdef FUNCTION_BLOCK_PROFILER
   if (profile_block_flag)
     {
@@ -700,8 +716,6 @@ final_start_function (first, file, optimize)
   if (profile_flag)
     profile_function (file);
 #endif /* not PROFILE_BEFORE_PROLOGUE */
-
-  profile_label_no++;
 }
 
 void
@@ -926,6 +940,23 @@ final_scan_insn (insn, file, optimize, prescan, nopeepholes)
       if (NOTE_LINE_NUMBER (insn) == NOTE_INSN_LOOP_END)
 	break;
 
+      if (NOTE_LINE_NUMBER (insn) == NOTE_INSN_PROLOGUE_END)
+	{
+#ifdef FUNCTION_END_PROLOGUE
+	  FUNCTION_END_PROLOGUE (file);
+#endif
+	  profile_after_prologue (file);
+	  break;
+	}
+
+#ifdef FUNCTION_BEGIN_EPILOGUE
+      if (NOTE_LINE_NUMBER (insn) == NOTE_INSN_EPILOGUE_BEG)
+	{
+	  FUNCTION_BEGIN_EPILOGUE (file);
+	  break;
+	}
+#endif
+
       if (write_symbols == NO_DEBUG)
 	break;
       if (NOTE_LINE_NUMBER (insn) == NOTE_INSN_FUNCTION_BEG)
@@ -1061,7 +1092,11 @@ final_scan_insn (insn, file, optimize, prescan, nopeepholes)
 
     case BARRIER:
 #ifdef ASM_OUTPUT_ALIGN_CODE
-      ASM_OUTPUT_ALIGN_CODE (file);
+      /* Don't litter the assembler output with needless alignments.  A
+	 BARRIER will be placed at the end of every function if HAVE_epilogue
+	 is true.  */	 
+      if (NEXT_INSN (insn))
+	ASM_OUTPUT_ALIGN_CODE (file);
 #endif
       break;
 
