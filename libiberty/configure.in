@@ -55,6 +55,7 @@ AC_PROG_CC_GNU
 
 if test $ac_cv_prog_gcc = yes; then
   GCC=yes
+  ac_libiberty_warn_cflags='-W -Wall -Wtraditional'
 dnl Check whether -g works, even if CFLAGS is set, in case the package
 dnl plays around with CFLAGS (such as to build both debugging and
 dnl normal versions of a library), tasteless as that idea is.
@@ -71,9 +72,11 @@ dnl normal versions of a library), tasteless as that idea is.
   fi
 else
   GCC=
+  ac_libiberty_warn_cflags=
   test "${CFLAGS+set}" = set || CFLAGS="-g"
 fi
 ])
+AC_SUBST(ac_libiberty_warn_cflags)
 
 LIB_AC_PROG_CC
 
