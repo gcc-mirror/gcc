@@ -153,10 +153,6 @@ namespace std
 
   template<typename _InternT, typename _ExternT, typename _StateT>
     class codecvt_byname;
-  template<> class codecvt_byname<char, char, mbstate_t>;
-#ifdef _GLIBCPP_USE_WCHAR_T
-  template<> class codecvt_byname<wchar_t, char, mbstate_t>;
-#endif
 
   // 22.2.2 and 22.2.3 numeric
   template<typename _CharT, typename _InIter = istreambuf_iterator<_CharT> >

@@ -118,20 +118,20 @@ namespace std {
 #endif
   
   // ctype
-  //  template class ctype<unsigned char>; // No definitions avail.
-  //  template class ctype<signed char>; // No definitions avail.
-  template class _Ctype<char>;
-  template class _Ctype_nois<char>;
+  template class __ctype_abstract_base<char>;
   template class ctype_byname<char>;
 #ifdef _GLIBCPP_USE_WCHAR_T
-  template class _Ctype<wchar_t>;
-  template class _Ctype_nois<wchar_t>;
+  template class __ctype_abstract_base<wchar_t>;
   template class ctype_byname<wchar_t>;
 #endif
   
   // codecvt
   template class __codecvt_abstract_base<char, char, mbstate_t>;
   template class __codecvt_abstract_base<wchar_t, char, mbstate_t>;
+  template class codecvt_byname<char, char, mbstate_t>;
+#ifdef _GLIBCPP_USE_WCHAR_T
+  template class codecvt_byname<wchar_t, char, mbstate_t>;
+#endif
 
   // collate
   template class _Collate<char>;

@@ -385,11 +385,11 @@ namespace std
   // in the future.  Using this adaptor, g++ will do the work for us.
   template<typename _T>
     inline size_t
-    __iconv_adaptor(size_t(*iconv_func)(iconv_t, _T, size_t *, char**, size_t*),
-                    iconv_t cd, char **inbuf, size_t *inbytesleft,
-                    char **outbuf, size_t *outbytesleft)
+    __iconv_adaptor(size_t(*iconv_func)(iconv_t, _T, size_t*, char**, size_t*),
+                    iconv_t cd, char** inbuf, size_t* inbytesleft,
+                    char** outbuf, size_t* outbytesleft)
     {
-      return iconv_func (cd, (_T)inbuf, inbytesleft, outbuf, outbytesleft);
+      return iconv_func(cd, (_T)inbuf, inbytesleft, outbuf, outbytesleft);
     }
 
   template<typename _InternT, typename _ExternT>
@@ -709,40 +709,11 @@ namespace std
     public:
       explicit 
       codecvt_byname(const char*, size_t __refs = 0) 
-      : codecvt<_InternT,_ExternT,_StateT> (__refs) { }
+      : codecvt<_InternT, _ExternT, _StateT>(__refs) { }
     protected:
       virtual 
       ~codecvt_byname() { }
     };
-
-  template<>
-    class codecvt_byname<char, char, mbstate_t>
-    : public codecvt<char, char, mbstate_t>
-    {
-    public:
-      explicit 
-      codecvt_byname(const char*, size_t __refs = 0);
-
-    protected:
-      virtual 
-      ~codecvt_byname();
-    };
-  
-#ifdef _GLIBCPP_USE_WCHAR_T
-  template<>
-    class codecvt_byname<wchar_t, char, mbstate_t>
-      : public codecvt<wchar_t, char, mbstate_t>
-    {
-    public:
-      explicit 
-      codecvt_byname(const char*, size_t __refs = 0);
-
-    protected:
-      virtual 
-      ~codecvt_byname();
-    };
-#endif
-
 } // namespace std
 
 #endif // _CPP_BITS_CODECVT_H
