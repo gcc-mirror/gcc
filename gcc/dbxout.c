@@ -1052,7 +1052,9 @@ dbxout_type (type, full)
   static int anonymous_type_number = 0;
 
   if (TREE_CODE (type) == VECTOR_TYPE)
-    type = TYPE_DEBUG_REPRESENTATION_TYPE (type);
+    /* The frontend feeds us a representation for the vector as a struct
+       containing an array.  Pull out the array type.  */
+    type = TREE_TYPE (TYPE_FIELDS (TYPE_DEBUG_REPRESENTATION_TYPE (type)));
 
   /* If there was an input error and we don't really have a type,
      avoid crashing and write something that is at least valid

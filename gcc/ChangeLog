@@ -1,3 +1,7 @@
+2002-11-08  Dale Johannesen  <dalej@apple.com>
+
+        * dbxout.c (dbxout_type):  Fix stabs info for vector types.
+
 2002-11-08  Neil Booth  <neil@daikokuya.co.uk>
 
 	PR preprocessor/8497
