@@ -4662,7 +4662,7 @@ finish_struct (t, fieldlist)
   for (x = fieldlist; x; x = TREE_CHAIN (x))
     if (DECL_BIT_FIELD (x)
 	&& TREE_CODE (TREE_TYPE (x)) == INTEGER_TYPE
-	&& (TREE_INT_CST_LOW (DECL_SIZE (x))
+	&& (TYPE_PRECISION (TREE_TYPE (x))
 	    < TYPE_PRECISION (integer_type_node)))
       TREE_TYPE (x) = integer_type_node;
 
