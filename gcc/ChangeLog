@@ -1,3 +1,7 @@
+2001-05-30  Gordon Sadler <gbsadler1@lcisp.com>
+
+	* invoke.texi (Option Summary): Remove -isystem-c++ from options.
+
 2001-05-29  Stan Shebs  <shebs@apple.com>
 
 	* gcc.texi: Add links for information about Objective-C.

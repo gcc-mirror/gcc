@@ -279,7 +279,7 @@ in the following sections.
 -idirafter @var{dir} @gol
 -include @var{file}  -imacros @var{file} @gol
 -iprefix @var{file}  -iwithprefix @var{dir} @gol
--iwithprefixbefore @var{dir}  -isystem @var{dir} -isystem-c++ @var{dir} @gol
+-iwithprefixbefore @var{dir}  -isystem @var{dir} @gol
 -M  -MM  -MF  -MG  -MP  -MQ  -MT  -nostdinc  -P  -remap @gol
 -trigraphs  -undef  -U@var{macro}  -Wp\,@var{option}}
 
