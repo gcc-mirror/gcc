@@ -6278,8 +6278,9 @@ expand_main_function ()
   if (FORCE_PREFERRED_STACK_BOUNDARY_IN_MAIN)
     {
       int align = PREFERRED_STACK_BOUNDARY / BITS_PER_UNIT;
-      rtx tmp;
+      rtx tmp, seq;
 
+      start_sequence ();
       /* Forcibly align the stack.  */
 #ifdef STACK_GROWS_DOWNWARD
       tmp = expand_simple_binop (Pmode, AND, stack_pointer_rtx, GEN_INT(-align),
@@ -6296,6 +6297,16 @@ expand_main_function ()
       /* Enlist allocate_dynamic_stack_space to pick up the pieces.  */
       tmp = force_reg (Pmode, const0_rtx);
       allocate_dynamic_stack_space (tmp, NULL_RTX, BIGGEST_ALIGNMENT);
+      seq = gen_sequence ();
+      end_sequence ();
+
+      for (tmp = get_last_insn (); tmp; tmp = PREV_INSN (tmp))
+	if (NOTE_P (tmp) && NOTE_LINE_NUMBER (tmp) == NOTE_INSN_FUNCTION_BEG)
+	  break;
+      if (tmp)
+	emit_insn_before (seq, tmp);
+      else
+	emit_insn (seq);
     }
 #endif
 

@@ -1,3 +1,8 @@
+2001-12-26  DJ Delorie  <dj@redhat.com>
+
+	* function.c (expand_main_function): Make sure stack adjustments
+	happen before sjlj exception setup.
+
 2001-12-26  David Edelsohn  <edelsohn@gnu.org>
 
 	* rs6000.md (indirect_jump): Prefer CTR over LR.
