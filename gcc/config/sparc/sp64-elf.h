@@ -105,15 +105,6 @@ crtbegin.o%s \
 #undef JUMP_TABLES_IN_TEXT_SECTION
 #define JUMP_TABLES_IN_TEXT_SECTION 0
 
-/* System V Release 4 uses DWARF debugging info.
-   GDB doesn't support 64 bit stabs yet and the desired debug format is DWARF
-   anyway so it is the default.  */
-
-#define DBX_DEBUGGING_INFO 1
-
-#undef PREFERRED_DEBUGGING_TYPE
-#define PREFERRED_DEBUGGING_TYPE DWARF2_DEBUG
-
 /* Don't include Solaris-specific format checks.  */
 #undef TARGET_N_FORMAT_TYPES
 #undef TARGET_FORMAT_TYPES

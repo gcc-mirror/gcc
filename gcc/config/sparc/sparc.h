@@ -481,10 +481,6 @@ extern enum cmodel sparc_cmodel;
 #define CAN_DEBUG_WITHOUT_FP
 
 #define OVERRIDE_OPTIONS  sparc_override_options ()
-
-/* Generate DBX debugging information.  */
-
-#define DBX_DEBUGGING_INFO 1
 
 /* Run-time compilation parameters selecting different hardware subsets.  */
 

@@ -27,13 +27,6 @@ Boston, MA 02111-1307, USA.  */
     }						\
   while (0)
 
-/* Default to dwarf2 in ELF.  */
-
-#define DWARF2_DEBUGGING_INFO 1
-
-#undef PREFERRED_DEBUGGING_TYPE
-#define PREFERRED_DEBUGGING_TYPE DWARF2_DEBUG
-
 #undef TARGET_VERSION
 #define TARGET_VERSION fprintf (stderr, " (sparclite 86x)");
 

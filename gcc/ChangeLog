@@ -1,3 +1,21 @@
+2005-01-21  Eric Botcazou  <ebotcazou@libertysurf.fr>
+
+	* config.gcc (sparc-*-netbsdelf*): Include dbxelf.h
+	(sparc64-*-openbsd*): Likewise.
+	(sparclite-*-elf*): Include tm-dwarf2.h.
+	(sparc86x-*-elf*): Likewise.
+	(sparc64-*-elf*): Likewise.
+	* config/sparc/linux64.h (DWARF2_DEBUGGING_INFO): Delete.
+	(DBX_DEBUGGING_INFO): Likewise.
+	* config/sparc/liteelf.h (DWARF2_DEBUGGING_INFO): Likewise.
+	(PREFERRED_DEBUGGING_TYPE): Likewise.
+	* config/sparc/netbsd-elf.h (PREFERRED_DEBUGGING_TYPE): Likewise.
+	* config/sparc/sp64-elf.h (DBX_DEBUGGING_INFO): Likewise.
+	(PREFERRED_DEBUGGING_TYPE): Likewise.
+	* config/sparc/sp86x-elf.h (DWARF2_DEBUGGING_INFO 1): Likewise.
+	(PREFERRED_DEBUGGING_TYPE): Likewise.
+	* config/sparc/sparc.h (DBX_DEBUGGING_INFO): Likewise.
+
 2005-01-21  Hans-Peter Nilsson  <hp@bitrange.com>
 
 	PR target/18701
