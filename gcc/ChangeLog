@@ -1,3 +1,7 @@
+Fri Jun 19 22:55:14 1998  Jeffrey A Law  (law@cygnus.com)
+
+	* c-lang.c (GNU_xref_begin, GNU_xref_end): Deleted.
+
 Fri Jun 19 20:38:34 1998  H.J. Lu  (hjl@gnu.org)
 
 	* dwarf2out.c (getpwd): Add prototype.
