@@ -527,6 +527,7 @@ ALL_MODULES = \
 	all-uudecode \
 	all-wdiff \
 	all-zip \
+	all-zlib \
 	$(EXTRA_TARGET_HOST_ALL_MODULES)
 
 # This is a list of the check targets for all of the modules which are
@@ -874,7 +875,8 @@ CLEAN_MODULES = \
 	clean-time \
 	clean-uudecode \
 	clean-wdiff \
-	clean-zip
+	clean-zip \
+	clean-zlib
 
 # All of the target modules that can be cleaned
 CLEAN_TARGET_MODULES = \
@@ -1563,7 +1565,7 @@ all-gas: all-libiberty all-opcodes all-bfd all-intl
 all-gash: all-tcl
 all-gawk:
 ALL_GCC = all-gcc
-all-gcc: all-bison all-byacc all-binutils all-gas all-ld
+all-gcc: all-bison all-byacc all-binutils all-gas all-ld all-zlib
 all-bootstrap: all-libiberty all-bison all-byacc all-binutils all-gas all-ld
 GDB_TK = all-tk all-tcl all-itcl all-tix all-libgui
 all-gdb: all-libiberty all-opcodes all-bfd all-mmalloc all-readline all-bison all-byacc all-sim $(gdbnlmrequirements) $(GDB_TK)

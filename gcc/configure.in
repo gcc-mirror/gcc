@@ -4785,6 +4785,17 @@ fi])
 AC_SUBST(GGC)
 echo "Using $GGC for garbage collection."
 
+# Use the system's zlib library.
+zlibdir=-L../../zlib
+zlibinc="-I\$(srcdir)/../../zlib"
+AC_ARG_WITH(system-zlib,
+[  --with-system-zlib      use installed libz],
+zlibdir=
+zlibinc=
+)
+AC_SUBST(zlibdir)
+AC_SUBST(zlibinc)
+
 # Build a new-abi (c++) system
 AC_ARG_ENABLE(new-gxx-abi,
 [  --enable-new-gxx-abi

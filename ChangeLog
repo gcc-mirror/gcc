@@ -1,3 +1,10 @@
+2000-09-02  Anthony Green  <green@cygnus.com>
+
+	* Makefile.in (all-gcc): Depend on all-zlib.
+	(CLEAN_MODULES): Add clean-zlib.
+	(ALL_MODULES): Add all-zlib.
+	* configure.in (host_libs): Add zlib.
+
 2000-09-02  Alexandre Oliva  <aoliva@redhat.com>, DJ Delorie  <dj@redhat.com>
 
 	* configure.in (FLAGS_FOR_TARGET): Use -nostdinc even for Canadian
