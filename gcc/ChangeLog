@@ -1,3 +1,11 @@
+2001-02-14  Richard Henderson  <rth@redhat.com>
+	    DJ Delorie  <dj@redhat.com>
+
+	* jump.c (jump_optimize_1): When we delete a conditional jump
+	preceeding a non-conditional jump to effectively the same place,
+	make sure that the combined jump skips any clobber insns between
+	the two labels.
+
 2001-02-14  Jeffrey Oldham  <oldham@codesourcery.com>
 
 	* gcc.c (do_spec_1): Fix off-by-one error for '%M' case.
