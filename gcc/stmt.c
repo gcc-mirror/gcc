@@ -1219,6 +1219,12 @@ expand_asm_operands (string, outputs, inputs, clobbers, vol, filename, line)
       int nalternatives = n_occurrences (',', TREE_STRING_POINTER (tmp));
       tree next = inputs;
 
+      if (nalternatives + 1 > MAX_RECOG_ALTERNATIVES)
+	{
+	  error ("too many alternatives in `asm'");
+	  return;
+	}
+      
       tmp = outputs;
       while (tmp)
 	{

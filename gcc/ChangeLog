@@ -1,3 +1,37 @@
+Fri Dec  4 20:15:57 1998  Bernd Schmidt  <crux@pool.informatik.rwth-aachen.de>
+
+	* final.c (cleanup_subreg_operands): Delete some unused code.
+
+	* recog.h (MAX_RECOG_ALTERNATIVES): New macro.
+	(struct insn_alternative): New structure definition.
+	(recog_op_alt): Declare variable.
+	(preprocess_constraints): Declare function.
+	* recog.c (recog_op_alt): New variable.
+	(extract_insn): Verify number of alternatives is in range.
+	(preprocess_constraints): New function.
+	* reg-stack.c: Include recog.h.
+	(constrain_asm_operands): Delete.
+	(get_asm_operand_lengths): Delete.
+	(get_asm_operand_n_inputs): New function.
+	(record_asm_reg_life): Delete OPERANDS, CONSTRAINTS, N_INPUTS and
+	N_OUTPUTS args.  All callers changed.
+	Compute number of inputs and outputs here by calling
+	get_asm_operand_n_inputs.
+	Instead of constrain_asm_operands, call extract_insn,
+	constrain_operands and preprocess_constaints.  Use information
+	computed by these functions throughout.
+	(record_reg_life): Delete code that is unused due to changes in
+	record_asm_reg_life.
+	(subst_asm_stack_regs): Delete OPERANDS, OPERAND_LOC, CONSTRAINTS,
+	N_INPUTS and N_OUTPUTS args.  All callers changed.
+	Similar changes as in record_asm_reg_life.
+	(subst_stack_regs): Move n_operands declaration into the if statement
+	where it's used.
+	Delete code that is unused due to changes in subst_asm_stack_regs.
+	* stmt.c (expand_asm_operands): Verify number of alternatives is in
+	range.
+	* Makefile.in (reg-stack.o): Depend on recog.h.
+
 Fri Dec  4 02:23:24 1998  Jeffrey A Law  (law@cygnus.com)
 
 	* except.c (set_exception_version_code): Argument is an "int".

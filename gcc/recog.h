@@ -18,12 +18,53 @@ along with GNU CC; see the file COPYING.  If not, write to
 the Free Software Foundation, 59 Temple Place - Suite 330,
 Boston, MA 02111-1307, USA.  */
 
+/* Random number that should be large enough for all purposes.  */
+#define MAX_RECOG_ALTERNATIVES 30
+
 /* Types of operands.  */
 enum op_type {
   OP_IN,
   OP_OUT,
   OP_INOUT
 };
+
+struct operand_alternative
+{
+  /* Pointer to the beginning of the constraint string for this alternative,
+     for easier access by alternative number.  */
+  char *constraint;
+
+  /* The register class valid for this alternative (possibly NO_REGS).  */
+  enum reg_class class;
+
+  /* "Badness" of this alternative, computed from number of '?' and '!'
+     characters in the constraint string.  */
+  unsigned int reject;
+
+  /* -1 if no matching constraint was found, or an operand number.  */
+  int matches;
+  /* The same information, but reversed: -1 if this operand is not
+     matched by any other, or the operand number of the operand that
+     matches this one.  */
+  int matched;
+
+  /* Nonzero if '&' was found in the constraint string.  */
+  unsigned int earlyclobber:1;
+  /* Nonzero if 'm' was found in the constraint string.  */
+  unsigned int memory_ok:1;  
+  /* Nonzero if 'o' was found in the constraint string.  */
+  unsigned int offmem_ok:1;  
+  /* Nonzero if 'V' was found in the constraint string.  */
+  unsigned int nonoffmem_ok:1;
+  /* Nonzero if '<' was found in the constraint string.  */
+  unsigned int decmem_ok:1;
+  /* Nonzero if '>' was found in the constraint string.  */
+  unsigned int incmem_ok:1;
+  /* Nonzero if 'X' was found in the constraint string, or if the constraint
+     string for this alternative was empty.  */
+  unsigned int anything_ok:1;
+};
+
 
 extern void init_recog			PROTO((void));
 extern void init_recog_no_volatile	PROTO((void));
@@ -67,6 +108,7 @@ extern int recog			PROTO((rtx, rtx, int *));
 extern void add_clobbers		PROTO((rtx, int));
 extern void insn_extract		PROTO((rtx));
 extern void extract_insn		PROTO((rtx));
+extern void preprocess_constraints	PROTO((void));
 
 /* Nonzero means volatile operands are recognized.  */
 extern int volatile_ok;
@@ -115,6 +157,10 @@ extern enum op_type recog_op_type[];
 /* Indexed by N, nonzero if operand N should be an address.  */
 extern char recog_operand_address_p[];
 #endif
+
+/* Contains a vector of operand_alternative structures for every operand.
+   Set up by preprocess_constraints.  */
+struct operand_alternative recog_op_alt[MAX_RECOG_OPERANDS][MAX_RECOG_ALTERNATIVES];
 
 /* Access the output function for CODE.  */
 

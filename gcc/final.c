@@ -3031,23 +3031,8 @@ void
 cleanup_subreg_operands (insn)
      rtx insn;
 {
-  int insn_code_number, i;
+  int i;
 
-  /* Ignore things we can not handle.  */
-  if (GET_RTX_CLASS (GET_CODE (insn)) != 'i'
-      || GET_CODE (PATTERN (insn)) == USE
-      || GET_CODE (PATTERN (insn)) == ADDR_VEC
-      || GET_CODE (PATTERN (insn)) == ADDR_DIFF_VEC
-      || GET_CODE (PATTERN (insn)) == ASM_INPUT
-      || asm_noperands (PATTERN (insn)) >= 0)
-    return;
-
-  /* Try to recognize the instruction.
-     If successful, verify that the operands satisfy the
-     constraints for the instruction.  Crash if they don't,
-     since `reload' should have changed them so that they do.  */
-
-  insn_code_number = recog_memoized (insn);
   extract_insn (insn);
   for (i = 0; i < recog_n_operands; i++)
     {
