@@ -8538,6 +8538,14 @@ some variants of the ABI, an inline function can never be the key
 method.  The default is to return @code{true}.
 @end deftypefn
 
+@deftypefn {Target Hook} bool TARGET_CXX_EXPORT_CLASS_DATA (void)
+If this hook returns false (the default), then virtual tables and RTTI
+data structures will have the ELF visibility of their containing
+class.  If this hook returns true, then these data structures will
+have ELF ``default'' visibility, independently of the visibility of
+the containing class.
+@end deftypefn
+
 @node Misc
 @section Miscellaneous Parameters
 @cindex parameters, miscellaneous

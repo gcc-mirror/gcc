@@ -1,3 +1,7 @@
+2004-08-31  Mark Mitchell  <mark@codesourcery.com>
+
+	* g++.dg/ext/visibility/arm1.C: New test.
+
 2004-08-31  Geoffrey Keating  <geoffk@apple.com>
 
 	* gcc.dg/funcdef-storage-1.c: Add dg-options to suppress

@@ -521,6 +521,10 @@ struct gcc_target
        itself.  Returning true is the behavior required by the Itanium
        C++ ABI.  */
     bool (*key_method_may_be_inline) (void);
+    /* Returns true if all class data (virtual tables, type info,
+       etc.) should be exported from the current DLL, even when the
+       associated class is not exported.  */
+    bool (*export_class_data) (void);
   } cxx;
 
   /* Leave the boolean fields at the end.  */

@@ -1655,17 +1655,24 @@ determine_visibility (tree decl)
      the visibility of their containing class.  */
   if (class_type)
     {
-      if (TARGET_DLLIMPORT_DECL_ATTRIBUTES
-	  && lookup_attribute ("dllexport", TYPE_ATTRIBUTES (class_type)))
+      if (targetm.cxx.export_class_data ()
+	  && (DECL_TINFO_P (decl)
+	      || (DECL_VTABLE_OR_VTT_P (decl)
+		  /* Construction virtual tables are not emitted
+		     because they cannot be referred to from other
+		     object files; their name is not standardized by
+		     the ABI.  */
+		  && !DECL_CONSTRUCTION_VTABLE_P (decl))))
+	DECL_VISIBILITY (decl) = VISIBILITY_DEFAULT;
+      else if (TARGET_DLLIMPORT_DECL_ATTRIBUTES
+	       && lookup_attribute ("dllexport", TYPE_ATTRIBUTES (class_type)))
 	{
 	  DECL_VISIBILITY (decl) = VISIBILITY_DEFAULT;
 	  DECL_VISIBILITY_SPECIFIED (decl) = 1;
-	  return;
 	}
-
-      if (TREE_CODE (decl) == FUNCTION_DECL
-	  && DECL_DECLARED_INLINE_P (decl)
-	  && visibility_options.inlines_hidden)
+      else if (TREE_CODE (decl) == FUNCTION_DECL
+	       && DECL_DECLARED_INLINE_P (decl)
+	       && visibility_options.inlines_hidden)
 	{
 	  DECL_VISIBILITY (decl) = VISIBILITY_HIDDEN;
 	  DECL_VISIBILITY_SPECIFIED (decl) = 1;
