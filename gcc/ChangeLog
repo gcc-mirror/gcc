@@ -3,7 +3,7 @@
 	* config/rs6000/rs6000.c (rs6000_override_options): Increase
 	maximum skip to 15.  Set function alignment, jump alignment, and
 	loop alignment to 16 for processors that form dispatch groups.
-	(rs6000_rtx_costs): Outer code is used.
+	(rs6000_rtx_costs): outer_code is used.
 
 2004-08-27  Nathan Sidwell  <nathan@codesourcery.com>
 
