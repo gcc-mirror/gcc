@@ -1,3 +1,8 @@
+2000-06-05  J. David Anglin  <dave@hiauly1.hia.nrc.ca>
+
+	* function.c (assign_parms): Add missing argument to set_mem_attributes
+	call.
+
 2000-06-05  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* tree.h (VOID_TYPE_P): New macro.
@@ -19,6 +24,7 @@
 	* c-parse.y, c-parse.c, c-parse.h: Regenerate.
 	* objc/objc-parse.y, objc/objc-parse.c: Regenerate.
 
+>>>>>>> 1.6841
 Mon Jun  5 06:46:28 2000  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* alias.c (get_alias_set): If compnent is addressable, use alias
