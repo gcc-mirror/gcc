@@ -1415,8 +1415,9 @@ alias.o : alias.c $(CONFIG_H) $(RTL_H) flags.h hard-reg-set.h regs.h \
    insn-codes.h
 regmove.o : regmove.c $(CONFIG_H) $(RTL_H) insn-config.h insn-codes.h \
    recog.h output.h reload.h regs.h hard-reg-set.h flags.h expr.h insn-flags.h
-$(SCHED_PREFIX)sched.o : $(SCHED_PREFIX)sched.c $(CONFIG_H) $(RTL_H) $(BASIC_BLOCK_H) regs.h hard-reg-set.h \
-   flags.h insn-config.h insn-attr.h
+$(SCHED_PREFIX)sched.o : $(SCHED_PREFIX)sched.c $(CONFIG_H) $(RTL_H) \
+	$(BASIC_BLOCK_H) regs.h hard-reg-set.h flags.h insn-config.h \
+	insn-attr.h system.h
 final.o : final.c $(CONFIG_H) $(RTL_H) $(TREE_H) flags.h regs.h \
    $(RECOG_H) conditions.h insn-config.h insn-attr.h except.h real.h output.h \
    hard-reg-set.h insn-flags.h insn-codes.h gstab.h xcoffout.h defaults.h
