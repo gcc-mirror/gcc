@@ -221,7 +221,7 @@ init_c_lex (filename)
   CPP_OPTION (&parse_in, digraphs) = flag_digraphs;
 
   if (! cpp_start_read (&parse_in, filename))
-    abort ();
+    exit (FATAL_EXIT_CODE);	/* cpplib has emitted an error.  */
 
   if (filename == 0 || !strcmp (filename, "-"))
     filename = "stdin";
