@@ -109,6 +109,7 @@ Boston, MA 02111-1307, USA.  */
    reg_n_calls_crosses and reg_basic_block.  */
 
 #include "config.h"
+#include <sys/types.h>
 #include <stdio.h>
 #include "rtl.h"
 #include "basic-block.h"
