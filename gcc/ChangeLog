@@ -1,3 +1,11 @@
+2004-07-11  Joseph S. Myers  <jsm@polyomino.org.uk>
+
+	PR tree-optimization/16437
+	* c-common.c (shorten_compare): Don't mark result of conversion to
+	narrower signed type as overflowing.
+	* fold-const.c (decode_field_reference): Determine whether
+	signedness comes from outer type using precision rather than size.
+
 2004-07-11  Phil Edwards  <phil@codesourcery.com>
 
 	* configure.ac:  Alphabetize --enable-checking list, add

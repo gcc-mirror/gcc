@@ -1924,7 +1924,12 @@ shorten_compare (tree *op0_ptr, tree *op1_ptr, tree *restype_ptr,
 	*restype_ptr = c_common_signed_type (*restype_ptr);
 
       if (TREE_TYPE (primop1) != *restype_ptr)
-	primop1 = convert (*restype_ptr, primop1);
+	{
+	  tree tmp = convert (*restype_ptr, primop1);
+	  TREE_OVERFLOW (tmp) = TREE_OVERFLOW (primop1);
+	  TREE_CONSTANT_OVERFLOW (tmp) = TREE_CONSTANT_OVERFLOW (primop1);
+	  primop1 = tmp;
+	}
       if (type != *restype_ptr)
 	{
 	  minval = convert (*restype_ptr, minval);
