@@ -113,6 +113,8 @@ typedef struct {
 #endif /* no TFmode support */
 #endif /* no XFmode support */
 
+extern int significand_size	PROTO((enum machine_mode));
+
 /* If emulation has been enabled by defining REAL_ARITHMETIC or by
    setting LONG_DOUBLE_TYPE_SIZE to 96 or 128, then define macros so that
    they invoke emulator functions. This will succeed only if the machine
