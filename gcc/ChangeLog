@@ -1,3 +1,9 @@
+Tue Dec 16 23:25:45 1997  H.J. Lu  (hjl@gnu.org)
+
+	* config/sparc/linux64.h (LIBGCC_SPEC): Removed.
+	(CPP_SUBTARGET_SPEC): Add %{pthread:-D_REENTRANT}.
+	(LIB_SPEC): Updated for glibc 2.
+
 Tue Dec 16 20:11:36 1997  Jeffrey A Law  (law@cygnus.com)
 
 	* ginclude/stdarg.h: Undo BeOS changes, they break hpux.
