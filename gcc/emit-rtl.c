@@ -1,5 +1,5 @@
 /* Emit RTL for the GNU C-Compiler expander.
-   Copyright (C) 1987, 1988, 1992, 1993 Free Software Foundation, Inc.
+   Copyright (C) 1987, 1988, 1992, 1993, 1994 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -620,12 +620,6 @@ gen_lowpart_common (mode, x)
       else
 	return gen_rtx (SUBREG, mode, x, word);
     }
-  else if (GET_CODE (x) == CONCAT)
-    {
-      if (GET_MODE (XEXP (x, 0)) != mode)
-	abort ();
-      return XEXP (x, 0);
-    }
   /* If X is a CONST_INT or a CONST_DOUBLE, extract the appropriate bits
      from the low-order part of the constant.  */
   else if ((GET_MODE_CLASS (mode) == MODE_INT
@@ -791,7 +785,9 @@ gen_realpart (mode, x)
      enum machine_mode mode;
      register rtx x;
 {
-  if (WORDS_BIG_ENDIAN)
+  if (GET_CODE (x) == CONCAT && GET_MODE (XEXP (x, 0)) == mode)
+    return XEXP (x, 0);
+  else if (WORDS_BIG_ENDIAN)
     return gen_highpart (mode, x);
   else
     return gen_lowpart (mode, x);
@@ -805,7 +801,9 @@ gen_imagpart (mode, x)
      enum machine_mode mode;
      register rtx x;
 {
-  if (WORDS_BIG_ENDIAN)
+  if (GET_CODE (x) == CONCAT && GET_MODE (XEXP (x, 0)) == mode)
+    return XEXP (x, 1);
+  else if (WORDS_BIG_ENDIAN)
     return gen_lowpart (mode, x);
   else
     return gen_highpart (mode, x);
@@ -916,12 +914,6 @@ gen_highpart (mode, x)
 	return gen_rtx (REG, mode, REGNO (x) + word);
       else
 	return gen_rtx (SUBREG, mode, x, word);
-    }
-  else if (GET_CODE (x) == CONCAT)
-    {
-      if (GET_MODE (XEXP (x, 1)) != mode)
-	abort ();
-      return XEXP (x, 1);
     }
   else
     abort ();
