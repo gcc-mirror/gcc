@@ -21,7 +21,7 @@
 ## Software Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307,
 ## USA.
 
-## $Id: Makefile.am,v 1.27 2000/08/16 04:11:29 bkoz Exp $
+## $Id: Makefile.am,v 1.28 2000/08/16 18:36:57 aoliva Exp $
 
 AUTOMAKE_OPTIONS = 1.3 gnits
 MAINT_CHARSET = latin1
@@ -82,9 +82,8 @@ CONFIG_INCLUDES = \
 	-I$(top_srcdir)/@ctype_include_dir@
 
 INCLUDES = \
-	-D_GNU_SOURCE -nostdinc++ -I$(top_srcdir) \
-	$(CSHADOW_INCLUDES) $(LIBIO_INCLUDES) \
-	$(CONFIG_INCLUDES) $(TOPLEVEL_INCLUDES)	
+	-D_GNU_SOURCE -nostdinc++ $(CSHADOW_INCLUDES) -I$(top_srcdir) \
+	 $(LIBIO_INCLUDES) $(CONFIG_INCLUDES) $(TOPLEVEL_INCLUDES)	
 
 
 # Need to explicitly set this so that AM_CXXFLAGS is last. (That way,
