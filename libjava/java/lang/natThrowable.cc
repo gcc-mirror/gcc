@@ -24,6 +24,7 @@ details.  */
 #include <java/lang/Throwable.h>
 #include <java/io/PrintStream.h>
 #include <java/io/PrintWriter.h>
+#include <java/io/IOException.h>
 
 #include <sys/types.h>
 
@@ -61,7 +62,7 @@ java::lang::Throwable::fillInStackTrace (void)
 }
 
 void 
-java::lang::Throwable::printStackTrace (java::io::PrintWriter *wr)
+java::lang::Throwable::printRawStackTrace (java::io::PrintWriter *wr)
 {
   wr->println (toString ());
 #ifdef HAVE_BACKTRACE
@@ -90,4 +91,3 @@ java::lang::Throwable::printStackTrace (java::io::PrintWriter *wr)
     }
 #endif /* HAVE_BACKTRACE */
 }
-

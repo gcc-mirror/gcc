@@ -13,6 +13,9 @@ import java.io.PrintStream;
 import java.io.PrintWriter;
 import java.io.Serializable;
 import java.io.OutputStreamWriter;
+import java.io.OutputStream;
+import java.io.FilterOutputStream;
+import java.io.IOException;
 
 /**
  * @author Tom Tromey <tromey@cygnus.com>
@@ -24,6 +27,69 @@ import java.io.OutputStreamWriter;
  * Status: Sufficient for compiled code, but methods applicable to
  * bytecode not implemented.  JDK 1.1.
  */
+
+/* A CPlusPlusDemangler sits on top of a PrintWriter.  All input is
+ * passed through the "c++filt" program (part of GNU binutils) which
+ * demangles internal symbols to their C++ source form.
+ *
+ * Closing a CPlusPlusDemangler doesn't close the underlying
+ * PrintWriter; it does, however close underlying process and flush
+ * all its buffers, so it's possible to guarantee that after a
+ * CPlusPlusDemangler has been closed no more will ever be written to
+ * the underlying PrintWriter.
+ *
+ * FIXME: This implictly converts data from the input stream, which is
+ * a stream of characters, to a stream of bytes.  We need a way of
+ * handling Unicode characters in demangled identifiers.  */
+
+class CPlusPlusDemangler extends OutputStream
+{
+  java.io.OutputStream procOut;
+  java.io.InputStream procIn;
+  java.lang.Process proc;
+  PrintWriter p;
+
+  /* The number of bytes written to the underlying PrintWriter.  This
+     provides a crude but fairly portable way to determine whether or
+     not the attempt to exec c++filt worked. */  
+  public int written = 0;
+
+  CPlusPlusDemangler (PrintWriter writer) throws IOException
+  {
+    p = writer;
+    proc = Runtime.getRuntime ().exec ("c++filt");
+    procOut = proc.getOutputStream ();
+    procIn = proc.getInputStream ();
+  }
+
+  public void write (int b) throws IOException
+  {
+    procOut.write (b);
+    while (procIn.available () != 0)
+      {
+	int c = procIn.read ();
+	if (c == -1)
+	  break;
+	else
+	  {
+	    p.write (c);
+	    written++;
+	  }
+      }
+  }
+  
+  public void close () throws IOException
+  {
+    procOut.close ();
+    int c;
+    while ((c = procIn.read ()) != -1)
+      {
+	p.write (c);
+	written++;
+      }
+    p.flush ();
+  }    
+}
 
 public class Throwable implements Serializable
 {
@@ -46,11 +112,27 @@ public class Throwable implements Serializable
 
   public void printStackTrace (PrintStream ps)
   {
-    printStackTrace (new PrintWriter(new OutputStreamWriter(ps)));
+    PrintWriter writer = new PrintWriter (ps);
+    printStackTrace (writer);
   }
-  
-  public native void printStackTrace (PrintWriter wr);
-  
+
+  public void printStackTrace (PrintWriter wr)
+  {
+    try
+      {
+	CPlusPlusDemangler cPlusPlusFilter = new CPlusPlusDemangler (wr);
+	PrintWriter writer = new PrintWriter (cPlusPlusFilter);
+	printRawStackTrace (writer);	
+	writer.close ();
+	if (cPlusPlusFilter.written == 0) // The demangler has failed...
+	  printRawStackTrace (wr);
+      }
+    catch (Exception e1)
+      {
+	printRawStackTrace (wr);
+      }
+  }
+
   public Throwable ()
   {
     detailMessage = null;
@@ -70,6 +152,8 @@ public class Throwable implements Serializable
 	    : getClass().getName() + ": " + getMessage ());
   }
 
+  private native final void printRawStackTrace (PrintWriter wr);
+  
   // Name of this field comes from serialization spec.
   private String detailMessage;
 

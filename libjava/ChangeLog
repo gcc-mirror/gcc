@@ -1,3 +1,10 @@
+2000-02-04  Andrew Haley  <aph@cygnus.com>
+
+	* java/lang/Throwable.java (CPlusPlusDemangler): New class.
+	(printStackTrace): Use a CPlusPlusDemangler to demangle names.
+	* java/lang/natThrowable.cc (printRawStackTrace): Rename
+	printStackTrace to printRawStackTrace.
+
 2000-02-03  Tom Tromey  <tromey@cygnus.com>
 
 	* java/util/Calendar.java (toString): New method.
