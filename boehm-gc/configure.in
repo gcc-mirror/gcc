@@ -301,5 +301,6 @@ ac_configure_args="${multilib_arg} ${ac_configure_args}"
 CONFIG_SHELL=${CONFIG_SHELL-/bin/sh}
 gc_basedir=${gc_basedir}
 CC="${CC}"
+ORIGINAL_LD_FOR_MULTILIBS="${ORIGINAL_LD_FOR_MULTILIBS}"
 DEFS="$DEFS"
 )

@@ -1,5 +1,6 @@
 # Process this file with autoconf to produce a configure script.
-#   Copyright (C) 1995, 1997, 1998, 1999, 2002 Free Software Foundation, Inc.
+#   Copyright (C) 1995, 1997, 1998, 1999, 2002, 2003
+#    Free Software Foundation, Inc.
 #   Contributed by Dave Love (d.love@dl.ac.uk).
 #
 #This file is part of GNU Fortran.
@@ -137,6 +138,7 @@ with_multisubdir=${with_multisubdir}
 ac_configure_args="--enable-multilib ${ac_configure_args}"
 toplevel_srcdir=${toplevel_srcdir}
 CONFIG_SHELL=${CONFIG_SHELL-/bin/sh}
+ORIGINAL_LD_FOR_MULTILIBS="${ORIGINAL_LD_FOR_MULTILIBS}"
 )
 
 

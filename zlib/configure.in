@@ -152,4 +152,5 @@ CONFIG_SHELL=${CONFIG_SHELL-/bin/sh}
 zlib_basedir=${zlib_basedir}
 CC="${CC}"
 CXX="${CXX}"
+ORIGINAL_LD_FOR_MULTILIBS="${ORIGINAL_LD_FOR_MULTILIBS}"
 )
