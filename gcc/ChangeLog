@@ -1,3 +1,9 @@
+2002-01-05  Daniel Berlin  <dan@dberlin.org>
+
+	* lcm.c: Revert change, due to performance regression it causes on
+	SPEC because it's slightly more conservative (sigh, I hate
+	edge-based LCM).
+	
 Sat Jan  5 11:52:05 CET 2002  Jan Hubicka  <jh@suse.cz>
 
 	* cfgcleanup.c (try_forward_edges): Allow multiple jump threading.
