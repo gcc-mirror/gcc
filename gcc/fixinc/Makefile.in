@@ -29,7 +29,7 @@ SHELL=@SHELL@
 # in the kernel.  So, we use `echo' instead. 
 STAMP = echo timestamp >
 
-FL_LIST = $(CFLAGS) $(CPPFLAGS) $(WARN_CFLAGS) $($@-warn)
+FL_LIST = $(CFLAGS) $(CPPFLAGS) $(WARN_CFLAGS)
 FIXINC_DEFS = -DIN_GCC -DHAVE_CONFIG_H $(FL_LIST) $(INCLUDES)
 
 # Directory where sources are, from where we are.
