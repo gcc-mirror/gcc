@@ -1,5 +1,5 @@
 // Build don't run:
-// Special g++ Options:
+// Special g++ Options: -Wno-deprecated
 
 struct B {
   typedef int I;
@@ -11,7 +11,7 @@ struct D1 : public B {
 
 template <class T>
 struct D2 : public D1<T> {
-  I i;
+  I i;  // WARNING - implicit typename
 };
 
 template <>

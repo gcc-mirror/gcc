@@ -5450,11 +5450,19 @@ parameters, as C++ demands.  This feature has been removed, except where
 it is required for backwards compatibility @xref{Backwards Compatibility}.
 @end table
 
-The named return value extension has been deprecated, and will be
-removed from g++ at some point.
+The named return value extension has been deprecated, and is now
+removed from g++.
 
 The use of initializer lists with new expressions has been deprecated,
-and will be removed from g++ at some point.
+and is now removed from g++.
+
+Floating and complex non-type template parameters have been deprecated,
+and are now removed from g++.
+
+The implicit typename extension has been deprecated and will be removed
+from g++ at some point.  In some cases g++ determines that a dependant
+type such as @code{TPL<T>::X} is a type without needing a
+@code{typename} keyword, contrary to the standard.
 
 @node Backwards Compatibility
 @section Backwards Compatibility
@@ -5477,7 +5485,7 @@ the end of the scope which contained the for statement (rather than just
 within the for scope).  G++ retains this, but issues a warning, if such a
 variable is accessed outside the for scope.
 
-@item implicit C language
+@item Implicit C language
 Old C system header files did not contain an @code{extern "C" @{@dots{}@}}
 scope to set the language.  On such systems, all header files are
 implicitly scoped inside a C language scope.  Also, an empty prototype

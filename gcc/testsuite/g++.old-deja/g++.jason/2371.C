@@ -1,4 +1,3 @@
-# 1 "SetLS.cc"
 // GROUPS passed templates nested-classes
 // Special g++ Options: 
 //
@@ -14,7 +13,6 @@
 #include <iostream>
 using namespace std;
 
-# 1 "../../templates/SetLS.h" 1
 // -*- C++ -*-
 
 
@@ -38,10 +36,8 @@ using namespace std;
 #define XTRUE true
 #define XFALSE false
 
-# 37 "../../templates/SetLS.h"
 
 
-# 1 "../../templates/ListS.h" 1
 // -*- C++ -*-
 
 
@@ -63,7 +59,6 @@ using namespace std;
 
 
 
-# 1 "/projects/gnu-cygnus/gnu-cygnus-14/mips/lib/gcc-lib/decstation/cygnus-reno-1/g++-include/bool.h" 1 3
 // Defining XTRUE and XFALSE is usually a Bad Idea,
 // because you will probably be inconsistent with anyone
 // else who had the same clever idea.
@@ -77,9 +72,7 @@ using namespace std;
 
 
 
-# 23 "../../templates/ListS.h" 2
 
-# 37 "../../templates/ListS.h"
 
 
 
@@ -189,7 +182,6 @@ public:
 	{ check(x);
 	  return x.index->item; }
 protected:
-# 154 "../../templates/ListS.h"
 
 
     unsigned count;
@@ -320,10 +312,8 @@ ListS<T>::remove_head_filling(T* fill)
 }
 
 
-# 40 "../../templates/SetLS.h" 2
 
 
-# 62 "../../templates/SetLS.h"
 
 template<class T>
 class SetLS {
@@ -361,11 +351,11 @@ public:
     private:
 	friend class SetLS<T>;
 
-	Vix(const SetLS<T> *o, const ListS<T>::Vix& x): owner(o), vix(x)
+	Vix(const SetLS<T> *o, const typename ListS<T>::Vix& x): owner(o), vix(x)
 	    { }
 
 	const SetLS<T> *owner;
-	ListS<T>::Vix vix;
+	typename ListS<T>::Vix vix;
     };
     friend class Vix;
     
@@ -422,7 +412,6 @@ SetLS<T>::contains(const T& item) const
 }
 
 
-# 17 "SetLS.cc" 2
 
 
 

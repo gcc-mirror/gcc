@@ -12,6 +12,6 @@ public:
 };
 
 template <class T>
-A<T>::muni A<T>::f() { return X; }
+typename A<T>::muni A<T>::f() { return X; }
 
 template class A<int>;

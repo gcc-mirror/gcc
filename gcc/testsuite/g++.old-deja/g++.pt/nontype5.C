@@ -11,13 +11,13 @@ struct A {
 typedef int F();
 };
 
-template<class T, A<T>::F f>
+template<class T, typename A<T>::F f>
 struct B {
 static int g() { return f(); };
 };
 
-int f() { return 0; };
+int f() { return 0; }
 
 int main() {
 return B<int,&f>::g();  // ERROR - could not convert arg
-};
+}

@@ -1,5 +1,5 @@
 // Build don't link:
-// Special g++ Options:
+// Special g++ Options: -Wno-deprecated
 
 template <class T>
 struct A
@@ -17,11 +17,10 @@ struct B : public A<U>
 template <class U>
 struct C : public B<U>
 {
-  void Func(A_Type);
+  void Func(A_Type);  // WARNING - implicit typename
 };
 
 
 template <class U>
-void C<U>::Func(A_Type)
-{
+void C<U>::Func(A_Type) { // WARNING - implicit typename
 }

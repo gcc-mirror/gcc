@@ -140,10 +140,13 @@ public:
     ListD<T>::length;
     ListD<T>::empty;
     ListD<T>::clear;
-    typedef ListD<T>::Vix Vix;
+    typedef typename ListD<T>::Vix Vix;
     ListD<T>::first;
     ListD<T>::next;
     ListD<T>::operator();
+
+  using ListD<T>::NORMAL;
+  using ListD<T>::REMOVE_CURRENT;
 };
 extern "C" {
 extern void __eprintf (const char *, const char *, unsigned, const char *);
@@ -255,7 +258,7 @@ template<class T>
 void
 SetLD<T>::add(const ListD<T>& other)
 {
-    ListD<T>::Vix x;
+    typename ListD<T>::Vix x;
     for (first(x); 0 != x; next(x))
 	add(other(x));
 }
@@ -270,7 +273,7 @@ template<class T>
 void
 SetLD<T>::remove(const T& item)
 {
-    Action a = NORMAL;
+    typename ListD<T>::Action a = NORMAL;
     Vix x;
     for (first(x); 0 != x && REMOVE_CURRENT != a; next(x, a))
 	a = operator()(x) == item ? REMOVE_CURRENT: NORMAL;// ERROR - .*
@@ -292,7 +295,7 @@ operator==(const SetLD<T>& a, const SetLD<T>& b)
 {
     if (a.length() != b.length())
 	return FALSE;
-    SetLD<T>::Vix x;
+    typename SetLD<T>::Vix x;
     for (a.first(x); 0 != x; a.next(x)) {
 	if ( ! b.contains(a(x)) )
 	    return FALSE;
@@ -313,7 +316,7 @@ operator<=(const SetLD<T>& a, const SetLD<T>& b)
 {
     if (a.length() > b.length())
 	return FALSE;
-    SetLD<T>::Vix x;
+    typename SetLD<T>::Vix x;
     for (x=a.first(); 0 != x; a.next(x)) {
 	if ( ! b.contains(a(x)) )
 	    return FALSE;

@@ -10137,6 +10137,21 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, attrlist)
 
       type = integer_type_node;
     }
+  
+  if (type && TREE_CODE (type) == TYPENAME_TYPE && TREE_TYPE (type))
+    {
+      /* The implicit typename extension is deprecated and will be
+	 removed.  Warn about its use now.  */
+      cp_warning ("`%T' is implicitly a typename", type);
+      cp_deprecated ("implicit typename");
+
+      /* Now remove its implicitness, so that we don't warn again.
+         For instance this might be a typedef, and we do not want to
+         warn on uses of the typedef itself.  Simply clearing the
+         TREE_TYPE is insufficient.  */
+      type = copy_node (type);
+      TREE_TYPE (type) = NULL_TREE;
+    }
 
   ctype = NULL_TREE;
 

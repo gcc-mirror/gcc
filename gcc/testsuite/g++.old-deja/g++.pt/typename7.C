@@ -15,6 +15,6 @@ template <class T>
 struct D : public A <C <T> > {
   void f ()
     {
-      B* new_entries = (B *) 0;
+      B* new_entries = (B *) 0;  // WARNING - implicit typename
     }
 };
