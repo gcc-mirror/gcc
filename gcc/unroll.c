@@ -2075,6 +2075,7 @@ copy_loop_body (loop, copy_start, copy_end, map, exit_label, last_iteration,
 		     that.  */
 		  jmp = emit_jump_insn_after (gen_jump (exit_label), copy);
 		  JUMP_LABEL (jmp) = exit_label;
+		  LABEL_NUSES (exit_label)++;
 		  jmp = emit_barrier_after (jmp);
 		  emit_label_after (lab, jmp);
 		  LABEL_NUSES (lab) = 0;
