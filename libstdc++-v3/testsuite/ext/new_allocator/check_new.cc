@@ -1,5 +1,3 @@
-// { dg-do compile }
-
 // 2001-11-25  Phil Edwards  <pme@gcc.gnu.org>
 //
 // Copyright (C) 2001, 2003, 2004 Free Software Foundation, Inc.
@@ -23,11 +21,35 @@
 // 20.4.1.1 allocator members
 
 #include <cstdlib>
-#include <ext/mt_allocator.h>
+#include <ext/new_allocator.h>
+#include <testsuite_allocator.h>
 
-using namespace __gnu_cxx;
-template class __mt_alloc<int>;
-template class __mt_alloc<short, __common_pool_policy<true> >;
-template class __mt_alloc<short, __common_pool_policy<false> >;
-template class __mt_alloc<short, __per_type_pool_policy<short, true> >;
-template class __mt_alloc<short, __per_type_pool_policy<short, false> >;
+using __gnu_cxx::new_allocator;
+
+void* 
+operator new(std::size_t n) throw(std::bad_alloc)
+{
+  new_called = true;
+  requested = n;
+  return std::malloc(n);
+}
+
+void
+operator delete(void *v) throw()
+{
+  delete_called = true;
+  return std::free(v);
+}
+
+// These just help tracking down error messages.
+bool test01() 
+{ 
+  typedef new_allocator<unsigned int> allocator_type;
+  return (__gnu_test::check_new<allocator_type, true>() == true); 
+}
+
+int main()
+{
+  return test01();
+}
+

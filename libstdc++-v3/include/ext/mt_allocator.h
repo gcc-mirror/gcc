@@ -56,17 +56,28 @@ namespace __gnu_cxx
   typedef void (*__destroy_handler)(void*);
   typedef void (*__create_handler)(void);
 
-  class __pool_base
+  struct __pool_base
   {
-  public:
+    // Using short int as type for the binmap implies we are never
+    // caching blocks larger than 65535 with this allocator.
+    typedef unsigned short int _Binmap_type;
+
     // Variables used to configure the behavior of the allocator,
     // assigned and explained in detail below.
     struct _Tune
     {
+      // Compile time constants for the default _Tune values.
+      enum { _S_align = 8 };
+      enum { _S_max_bytes = 128 };
+      enum { _S_min_bin = 8 };
+      enum { _S_chunk_size = 4096 - 4 * sizeof(void*) };
+      enum { _S_max_threads = 4096 };
+      enum { _S_freelist_headroom = 10 };
+
       // Alignment needed.
       // NB: In any case must be >= sizeof(_Block_record), that
       // is 4 on 32 bit machines and 8 on 64 bit machines.
-      size_t  _M_align;
+      size_t	_M_align;
       
       // Allocation requests (after round-up to power of 2) below
       // this value will be handled by the allocator. A raw new/
@@ -75,14 +86,14 @@ namespace __gnu_cxx
       
       // Size in bytes of the smallest bin.
       // NB: Must be a power of 2 and >= _M_align.
-      size_t  _M_min_bin;
+      size_t	_M_min_bin;
       
       // In order to avoid fragmenting and minimize the number of
       // new() calls we always request new memory using this
       // value. Based on previous discussions on the libstdc++
       // mailing list we have choosen the value below.
       // See http://gcc.gnu.org/ml/libstdc++/2001-07/msg00077.html
-      size_t 	_M_chunk_size;
+      size_t	_M_chunk_size;
       
       // The maximum number of supported threads. For
       // single-threaded operation, use one. Maximum values will
@@ -105,9 +116,9 @@ namespace __gnu_cxx
       
       explicit
       _Tune()
-      : _M_align(8), _M_max_bytes(128), _M_min_bin(8),
-      _M_chunk_size(4096 - 4 * sizeof(void*)), 
-      _M_max_threads(4096), _M_freelist_headroom(10), 
+      : _M_align(_S_align), _M_max_bytes(_S_max_bytes), _M_min_bin(_S_min_bin),
+      _M_chunk_size(_S_chunk_size), _M_max_threads(_S_max_threads), 
+      _M_freelist_headroom(_S_freelist_headroom), 
       _M_force_new(getenv("GLIBCXX_FORCE_NEW") ? true : false)
       { }
 
@@ -118,6 +129,25 @@ namespace __gnu_cxx
       _M_chunk_size(__chunk), _M_max_threads(__maxthreads),
       _M_freelist_headroom(__headroom), _M_force_new(__force)
       { }
+      
+      bool
+      is_default() const
+      {
+	bool __ret = true;
+	__ret &= _M_align == _S_align;
+	__ret &= _M_max_bytes == _S_max_bytes;
+	__ret &= _M_min_bin == _S_min_bin;
+	__ret &= _M_chunk_size == _S_chunk_size;
+	__ret &= _M_max_threads == _S_max_threads;
+	__ret &= _M_freelist_headroom == _S_freelist_headroom;
+	return __ret;
+      }
+    };
+    
+    struct _Block_address
+    {
+      void* 			_M_initial;
+      _Block_address* 		_M_next;
     };
     
     const _Tune&
@@ -140,20 +170,17 @@ namespace __gnu_cxx
     { return _M_binmap[__bytes]; }
 
     explicit __pool_base() 
-    : _M_init(false), _M_options(_Tune()), _M_binmap(NULL) { }
+    : _M_options(_Tune()), _M_binmap(NULL), _M_init(false) { }
 
   protected:
-    // We need to create the initial lists and set up some variables
-    // before we can answer to the first request for memory.
-    bool 			_M_init;
-    
     // Configuration options.
     _Tune 	       		_M_options;
     
-    // Using short int as type for the binmap implies we are never
-    // caching blocks larger than 65535 with this allocator.
-    typedef unsigned short int  _Binmap_type;
     _Binmap_type* 		_M_binmap;
+
+    // We need to create the initial lists and set up some variables
+    // before we can answer to the first request for memory.
+    bool 			_M_init;
   };
 
   // Data describing the underlying memory pool, parameterized on
@@ -204,10 +231,13 @@ namespace __gnu_cxx
       struct _Bin_record
       {
 	// An "array" of pointers to the first free block for each
-	// thread id. Memory to this "array" is allocated in _S_initialize()
-	// for _S_max_threads + global pool 0.
+	// thread id. Memory to this "array" is allocated in
+	// _S_initialize() for _S_max_threads + global pool 0.
 	_Block_record** volatile        _M_first;
 	
+	// A list of the initial addresses of all allocated blocks.
+	_Block_address*		     	_M_address;
+
 	// An "array" of counters used to keep track of the amount of
 	// blocks that are on the freelist/used for each thread id.
 	// Memory to these "arrays" is allocated in _S_initialize() for
@@ -242,10 +272,10 @@ namespace __gnu_cxx
       }
 
       char* 
-      _M_reserve_memory(size_t __bytes, const size_t __thread_id);
+      _M_reserve_block(size_t __bytes, const size_t __thread_id);
     
       void
-      _M_reclaim_memory(char* __p, size_t __bytes);
+      _M_reclaim_block(char* __p, size_t __bytes);
     
       const _Bin_record&
       _M_get_bin(size_t __which)
@@ -277,6 +307,8 @@ namespace __gnu_cxx
 	_M_once = __tmp;
       }
 
+      ~__pool();
+
     private:
       // An "array" of bin_records each of which represents a specific
       // power of 2 size. Memory to this "array" is allocated in
@@ -289,6 +321,7 @@ namespace __gnu_cxx
       __gthread_once_t 		_M_once;
       
       _Thread_record* 		_M_thread_freelist;
+      void*			_M_thread_freelist_initial;
     };
 #endif
 
@@ -302,13 +335,14 @@ namespace __gnu_cxx
 	// Points to the block_record of the next free block.
 	_Block_record* volatile         _M_next;
       };
-      
+
       struct _Bin_record
       {
-	// An "array" of pointers to the first free block for each
-	// thread id. Memory to this "array" is allocated in _S_initialize()
-	// for _S_max_threads + global pool 0.
+	// An "array" of pointers to the first free block.
 	_Block_record** volatile        _M_first;
+
+	// A list of the initial addresses of all allocated blocks.
+	_Block_address*		     	_M_address;
       };
       
       void
@@ -319,10 +353,10 @@ namespace __gnu_cxx
       }
 
       char* 
-      _M_reserve_memory(size_t __bytes, const size_t __thread_id);
+      _M_reserve_block(size_t __bytes, const size_t __thread_id);
     
       void
-      _M_reclaim_memory(char* __p, size_t __bytes);
+      _M_reclaim_block(char* __p, size_t __bytes);
     
       size_t 
       _M_get_thread_id() { return 0; }
@@ -337,7 +371,9 @@ namespace __gnu_cxx
 
       explicit __pool() 
       : _M_bin(NULL), _M_bin_size(1) { }
-      
+
+      ~__pool();
+
     private:
       // An "array" of bin_records each of which represents a specific
       // power of 2 size. Memory to this "array" is allocated in
@@ -351,10 +387,11 @@ namespace __gnu_cxx
       _M_initialize();
   };
 
-
   template<bool _Thread>
     struct __common_pool_policy 
     {
+      typedef __pool<_Thread> __pool_type;
+
       template<typename _Tp1, bool _Thread1 = _Thread>
         struct _M_rebind;
 
@@ -366,11 +403,12 @@ namespace __gnu_cxx
         struct _M_rebind<_Tp1, false>
         { typedef __common_pool_policy<false> other; };
 
-      typedef __pool<_Thread> __pool_type;
-      static __pool_type	_S_data;
-
       static __pool_type&
-      _S_get_pool();
+      _S_get_pool()
+      { 
+	static __pool_type _S_pool;
+	return _S_pool;
+      }
 
       static void
       _S_initialize_once() 
@@ -391,6 +429,8 @@ namespace __gnu_cxx
   template<>
     struct __common_pool_policy<true>
     {
+      typedef __pool<true> __pool_type;
+
       template<typename _Tp1, bool _Thread1 = true>
         struct _M_rebind;
 
@@ -402,11 +442,12 @@ namespace __gnu_cxx
         struct _M_rebind<_Tp1, false>
         { typedef __common_pool_policy<false> other; };
 
-      typedef __pool<true> __pool_type;
-      static __pool_type	_S_data;
-
       static __pool_type&
-      _S_get_pool();
+      _S_get_pool()
+      { 
+	static __pool_type _S_pool;
+	return _S_pool;
+      }
 
       static void
       _S_destroy_thread_key(void* __freelist_pos)
@@ -429,9 +470,12 @@ namespace __gnu_cxx
    };
 #endif
 
+
   template<typename _Tp, bool _Thread>
     struct __per_type_pool_policy
     {
+      typedef __pool<_Thread> __pool_type;
+
       template<typename _Tp1, bool _Thread1 = _Thread>
         struct _M_rebind;
 
@@ -443,11 +487,13 @@ namespace __gnu_cxx
         struct _M_rebind<_Tp1, true>
         { typedef __per_type_pool_policy<_Tp1, true> other; };
 
-      typedef __pool<_Thread> __pool_type;
-      static __pool_type	_S_data;
-
+      // Avoid static initialization ordering issues.
       static __pool_type&
-      _S_get_pool( ) { return _S_data; }
+      _S_get_pool() 
+      { 
+	static __pool_type _S_pool;
+	return _S_pool;
+      }
 
       static void
       _S_initialize_once() 
@@ -461,10 +507,6 @@ namespace __gnu_cxx
       }
     };
 
-  template<typename _Tp, bool _Thread>
-    __pool<_Thread>
-    __per_type_pool_policy<_Tp, _Thread>::_S_data;
-
   template<typename _Tp>
     struct __per_type_pool_policy<_Tp, true>;
 
@@ -472,6 +514,8 @@ namespace __gnu_cxx
   template<typename _Tp>
     struct __per_type_pool_policy<_Tp, true>
     {
+      typedef __pool<true> __pool_type;
+
       template<typename _Tp1, bool _Thread1 = true>
         struct _M_rebind;
 
@@ -483,11 +527,13 @@ namespace __gnu_cxx
         struct _M_rebind<_Tp1, true>
         { typedef __per_type_pool_policy<_Tp1, true> other; };
 
-      typedef __pool<true> __pool_type;
-      static __pool_type	_S_data;
-
+      // Avoid static initialization ordering issues.
       static __pool_type&
-      _S_get_pool( ) { return _S_data; }
+      _S_get_pool( ) 
+      { 
+	static __pool_type _S_pool;
+	return _S_pool;
+      }
 
       static void
       _S_destroy_thread_key(void* __freelist_pos)
@@ -508,16 +554,6 @@ namespace __gnu_cxx
 	  }
       }
     };
-
-  template<typename _Tp>
-    __pool<true>
-    __per_type_pool_policy<_Tp, true>::_S_data;
-#endif
-
-#ifdef __GTHREADS
-  typedef __common_pool_policy<true> __default_policy;
-#else
-  typedef __common_pool_policy<false> __default_policy;
 #endif
 
   template<typename _Tp>
@@ -554,8 +590,14 @@ namespace __gnu_cxx
       destroy(pointer __p) { __p->~_Tp(); }
     };
 
+#ifdef __GTHREADS
+#define __default_policy __common_pool_policy<true>
+#else
+#define __default_policy __common_pool_policy<false>
+#endif
+
   template<typename _Tp, typename _Poolp = __default_policy>
-    class __mt_alloc : public __mt_alloc_base<_Tp>,  _Poolp
+    class __mt_alloc : public __mt_alloc_base<_Tp>, _Poolp
     {
     public:
       typedef size_t                    size_type;
@@ -575,21 +617,18 @@ namespace __gnu_cxx
 	  typedef __mt_alloc<_Tp1, pol_type> other;
 	};
 
+      // Create pool instance so that order of construction will be
+      // pool_type first, then allocator. This is necessary for
+      // correct global and static object construction/destruction.
       __mt_alloc() throw() 
-      {
-	// XXX
-      }
+      { __policy_type::_S_get_pool(); }
 
       __mt_alloc(const __mt_alloc&) throw() 
-      {
-	// XXX
-      }
+      { __policy_type::_S_get_pool(); }
 
       template<typename _Tp1, typename _Poolp1>
         __mt_alloc(const __mt_alloc<_Tp1, _Poolp1>& obj) throw()  
-        {
-	  // XXX
-	}
+        { __policy_type::_S_get_pool(); }
 
       ~__mt_alloc() throw() { }
 
@@ -620,23 +659,23 @@ namespace __gnu_cxx
 
       // Requests larger than _M_max_bytes are handled by new/delete
       // directly.
-      __pool_type& __pl = this->_S_get_pool();
+      __pool_type& __pool = this->_S_get_pool();
       const size_t __bytes = __n * sizeof(_Tp);
-      if (__pl._M_check_threshold(__bytes))
+      if (__pool._M_check_threshold(__bytes))
 	{
 	  void* __ret = ::operator new(__bytes);
 	  return static_cast<_Tp*>(__ret);
 	}
 
       // Round up to power of 2 and figure out which bin to use.
-      const size_t __which = __pl._M_get_binmap(__bytes);
-      const size_t __thread_id = __pl._M_get_thread_id();
+      const size_t __which = __pool._M_get_binmap(__bytes);
+      const size_t __thread_id = __pool._M_get_thread_id();
       
       // Find out if we have blocks on our freelist.  If so, go ahead
       // and use them directly without having to lock anything.
       char* __c;
       typedef typename __pool_type::_Bin_record _Bin_record;
-      const _Bin_record& __bin = __pl._M_get_bin(__which);
+      const _Bin_record& __bin = __pool._M_get_bin(__which);
       if (__bin._M_first[__thread_id])
 	{
 	  // Already reserved.
@@ -644,14 +683,14 @@ namespace __gnu_cxx
 	  _Block_record* __block = __bin._M_first[__thread_id];
 	  __bin._M_first[__thread_id] = __bin._M_first[__thread_id]->_M_next;
 	  
-	  __pl._M_adjust_freelist(__bin, __block, __thread_id);
-	  const __pool_base::_Tune& __options = __pl._M_get_options();
+	  __pool._M_adjust_freelist(__bin, __block, __thread_id);
+	  const __pool_base::_Tune& __options = __pool._M_get_options();
 	  __c = reinterpret_cast<char*>(__block) + __options._M_align;
 	}
       else
 	{
 	  // Null, reserve.
-	  __c = __pl._M_reserve_memory(__bytes, __thread_id);
+	  __c = __pool._M_reserve_block(__bytes, __thread_id);
 	}
       return static_cast<_Tp*>(static_cast<void*>(__c));
     }
@@ -663,12 +702,12 @@ namespace __gnu_cxx
     {
       // Requests larger than _M_max_bytes are handled by operators
       // new/delete directly.
-      __pool_type& __pl = this->_S_get_pool();
+      __pool_type& __pool = this->_S_get_pool();
       const size_t __bytes = __n * sizeof(_Tp);
-      if (__pl._M_check_threshold(__bytes))
+      if (__pool._M_check_threshold(__bytes))
 	::operator delete(__p);
       else
-	__pl._M_reclaim_memory(reinterpret_cast<char*>(__p), __bytes);
+	__pool._M_reclaim_block(reinterpret_cast<char*>(__p), __bytes);
     }
   
   template<typename _Tp, typename _Poolp>
@@ -680,6 +719,8 @@ namespace __gnu_cxx
     inline bool
     operator!=(const __mt_alloc<_Tp, _Poolp>&, const __mt_alloc<_Tp, _Poolp>&)
     { return false; }
+
+#undef __default_policy
 } // namespace __gnu_cxx
 
 #endif
