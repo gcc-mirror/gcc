@@ -1,5 +1,5 @@
 /* Definitions of target machine for GNU compiler.  Apollo 680X0 version.
-   Copyright (C) 1989 Free Software Foundation, Inc.
+   Copyright (C) 1989,1992 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -90,13 +90,10 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 
 #define DOLLARS_IN_IDENTIFIERS 2
 
-/* -m68000 requires special flags to the assembler.
-   The -C flag is passed to a modified GNU assembler to cause COFF
-   modules to be produced.  Remove it if you're not using this.
-   (See vasta@apollo.com.)  */
+/* -m68000 requires special flags to the assembler.  */
 
 #define ASM_SPEC \
- "-C %{m68000:-mc68010}%{mc68000:-mc68010}%{!mc68000:%{!m68000:-mc68020}}"
+ "%{m68000:-mc68010}%{mc68000:-mc68010}%{!mc68000:%{!m68000:-mc68020}}"
 
 /* STARTFILE_SPEC
    Note that includes knowledge of the default specs for gcc, ie. no
@@ -122,27 +119,25 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #undef DBX_DEBUGGING_INFO
 #undef SDB_DEBUGGING_INFO
 
+/* We have atexit(2).  So C++ can use it for global destructors.  */
+
+#define HAVE_ATEXIT
+
 /* Every structure or union's size must be a multiple of 2 bytes.  */
 
 #define STRUCTURE_SIZE_BOUNDARY 16
 
-/* Functions which return large structures get the address
-   to place the wanted value at offset 8 from the frame.  */
-
-#undef  PCC_STATIC_STRUCT_RETURN
-#undef  STRUCT_VALUE_REGNUM
-
-/* Caller treats address of return area like a parm.  */
-#define STRUCT_VALUE 0
-
-#define STRUCT_VALUE_INCOMING \
-  gen_rtx (MEM, Pmode,					\
-	   gen_rtx (PLUS, SImode, frame_pointer_rtx,	\
-		    gen_rtx (CONST_INT, VOIDmode, 8)))
-
 /* Boundary (in *bits*) on which stack pointer should be aligned.  */
 #undef STACK_BOUNDARY
 #define STACK_BOUNDARY 32
+
+/* Functions which return large structures get the address
+   to place the wanted value from a hidden parameter.  */
+
+#undef  PCC_STATIC_STRUCT_RETURN
+#undef  STRUCT_VALUE_REGNUM
+#define STRUCT_VALUE 0
+#define STRUCT_VALUE_INCOMING 0
 
 /* Specify how to pad function arguments.
    Arguments are not padded at all; the stack is kept aligned on long
@@ -150,13 +145,9 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 
 #define FUNCTION_ARG_PADDING(mode, size) none
 
-/* Short integral argument prototype promotion is not done */
-
-#undef  PROMOTE_PROTOTYPES
-
 /* The definition of this macro imposes a limit on the size of
    an aggregate object which can be treated as if it were a scalar
-   object. */
+   object.  */
 
 #define MAX_FIXED_MODE_SIZE    BITS_PER_WORD
 
@@ -169,12 +160,49 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #define RETURN_IN_MEMORY(type) \
   (GET_MODE_SIZE (TYPE_MODE (type)) > UNITS_PER_WORD)
 
-/* This is how to output a reference to a user-level label named NAME.
-   In order to link to Apollo libraries, no underscore is prepended to names.
-   `assemble_name' uses this.  */
+/* In order to link with Apollo libraries, we can't prefix external
+   symbols with an underscore.  */
 
-#undef  ASM_OUTPUT_LABELREF
-#define ASM_OUTPUT_LABELREF(FILE,NAME)	\
-  fprintf (FILE, "%s", NAME)
+#undef  USER_LABEL_PREFIX
+
+/* Use a prefix for local labels, just to be on the save side.  */
+
+#undef LOCAL_LABEL_PREFIX
+#define LOCAL_LABEL_PREFIX "."
+
+/* Use a register prefix to avoid clashes with external symbols (classic
+   example: `extern char PC;' in termcap).  */
+
+#undef REGISTER_PREFIX
+#define REGISTER_PREFIX "%"
+
+/* In the machine description we can't use %R, because it will not be seen
+   by ASM_FPRINTF.  (Isn't that a design bug?).  */
+
+#undef REGISTER_PREFIX_MD
+#define REGISTER_PREFIX_MD "%%"
+
+/* config/m68k.md has an explicit reference to the program counter,
+   prefix this by the register prefix.  */
+
+#define ASM_RETURN_CASE_JUMP    return "jmp %%pc@(2,%0:w)"
 
 
+/* Here are the new register names.  */
+
+#undef REGISTER_NAMES
+#ifndef SUPPORT_SUN_FPA
+#define REGISTER_NAMES \
+{"%d0", "%d1", "%d2", "%d3", "%d4", "%d5", "%d6", "%d7",	\
+ "%a0", "%a1", "%a2", "%a3", "%a4", "%a5", "%a6", "%sp",	\
+ "%fp0", "%fp1", "%fp2", "%fp3", "%fp4", "%fp5", "%fp6", "%fp7" }
+#else /* SUPPORTED_SUN_FPA */
+#define REGISTER_NAMES \
+{"%d0", "%d1", "%d2", "%d3", "%d4", "%d5", "%d6", "%d7",	\
+ "%a0", "%a1", "%a2", "%a3", "%a4", "%a5", "%a6", "%sp",	\
+ "%fp0", "%fp1", "%fp2", "%fp3", "%fp4", "%fp5", "%fp6", "%fp7", \
+ "%fpa0", "%fpa1", "%fpa2", "%fpa3", "%fpa4", "%fpa5", "%fpa6", "%fpa7", \
+ "%fpa8", "%fpa9", "%fpa10", "%fpa11", "%fpa12", "%fpa13", "%fpa14", "%fpa15", \
+ "%fpa16", "%fpa17", "%fpa18", "%fpa19", "%fpa20", "%fpa21", "%fpa22", "%fpa23", \
+ "%fpa24", "%fpa25", "%fpa26", "%fpa27", "%fpa28", "%fpa29", "%fpa30", "%fpa31" }
+#endif /* defined SUPPORT_SUN_FPA */
