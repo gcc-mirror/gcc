@@ -1,3 +1,24 @@
+1998-09-05  Mark Mitchell  <mark@markmitchell.com>
+
+	* cp-tree.h (TI_PENDING_SPECIALIZATION_FLAG): Remove.
+	* class.c (finish_struct): Remove hackery to deal with explicit
+	specializations in class scope.
+	* decl.c (grokfndecl): Improve error-recovery.
+	* decl2.c (grokfield): Likewise.
+	* pt.c (check_specialization_scope): New function.
+	(begin_specialization): Call it.
+	(process_partial_specialization): New function, split out from
+	push_template_decl.  Check partial specializations more
+	stringently.
+	(push_template_decl): Call it.
+	(check_explicit_specialization): Don't attempt to handle explicit
+	specializations in class scope.
+	(template_parm_data): Document.  Add current_arg and
+	arg_uses_template_parms. 
+	(mark_template_parm): Set it.
+	(tsubst_arg_types): Remove unused variable.
+	* semantics.c (begin_class_definition): Tweak.
+	
 1998-09-04  Mark Mitchell  <mark@markmitchell.com>
 
 	* inc/typeinfo (type_info::type_info(const char*)): Make

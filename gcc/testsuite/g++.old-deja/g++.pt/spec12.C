@@ -8,9 +8,9 @@ struct S
 };
 
 
-template <class T>
 template <>
-int S<T>::f<int>(int i) { return 1; }
+template <>
+int S<char>::f<int>(int i) { return 1; }
 
 int main()
 {

@@ -7,9 +7,9 @@ struct S3
   static char* h(U);
 };
 
-template <class T>
 template <>
-char* S3<T>::h(int) { return __PRETTY_FUNCTION__; }
+template <>
+char* S3<double>::h(int) { return __PRETTY_FUNCTION__; }
 
 template <>
 template <>

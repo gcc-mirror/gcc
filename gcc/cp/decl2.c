@@ -1606,8 +1606,8 @@ grokfield (declarator, declspecs, init, asmspec_tree, attrlist)
     init = NULL_TREE;
 
   value = grokdeclarator (declarator, declspecs, FIELD, init != 0, NULL_TREE);
-  if (! value)
-    return value; /* friend or constructor went bad.  */
+  if (! value || value == error_mark_node)
+    return NULL_TREE; /* friend or constructor went bad.  */
 
   /* Pass friendly classes back.  */
   if (TREE_CODE (value) == VOID_TYPE)

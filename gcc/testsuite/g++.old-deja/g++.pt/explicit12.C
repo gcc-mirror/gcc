@@ -5,10 +5,12 @@ struct S
 {
   template <class T>
   void foo(T t);
-
-  template <>
-  void foo<int>(int) {}
 };
+
+
+template <>
+template <>
+void S<char*>::foo<int>(int) {}
 
 int main()
 {

@@ -4,9 +4,6 @@ struct S
 {
   template <class T>
   void foo(T t);
-  
-  template <>
-  void foo(int i);
 };
 
 

@@ -4148,8 +4148,6 @@ finish_struct (t, list_of_fieldlists, attributes, warn_anon)
 {
   tree fields = NULL_TREE;
   tree *tail = &TYPE_METHODS (t);
-  tree specializations = NULL_TREE;
-  tree *specialization_tail = &specializations;
   tree name = TYPE_NAME (t);
   tree x, last_x = NULL_TREE;
   tree access;
@@ -4259,19 +4257,6 @@ finish_struct (t, list_of_fieldlists, attributes, warn_anon)
 	      if (last_x)
 		TREE_CHAIN (last_x) = next_x;
 
-	      if (DECL_TEMPLATE_SPECIALIZATION (x))
-		/* We don't enter the specialization into the class
-		   method vector since specializations don't affect
-		   overloading.  Instead we keep track of the
-		   specializations, and process them after the method
-		   vector is complete.  */
-		{
-		  *specialization_tail = x;
-		  specialization_tail = &TREE_CHAIN (x);
-		  TREE_CHAIN (x) = NULL_TREE;
-		  continue;
-		}
-
 	      /* Link x onto end of TYPE_METHODS.  */
 	      *tail = x;
 	      tail = &TREE_CHAIN (x);
@@ -4359,27 +4344,6 @@ finish_struct (t, list_of_fieldlists, attributes, warn_anon)
     t = finish_struct_1 (t, warn_anon);
 
   TYPE_BEING_DEFINED (t) = 0;
-
-  /* Now, figure out which member templates we're specializing.  */
-  for (x = specializations; x != NULL_TREE; x = TREE_CHAIN (x))
-    {
-      int pending_specialization;
-
-      pending_specialization 
-	= TI_PENDING_SPECIALIZATION_FLAG (DECL_TEMPLATE_INFO (x));
-      check_explicit_specialization 
-	(lookup_template_function (DECL_NAME (x), DECL_TI_ARGS (x)),
-	 x, 0, 1 | (8 * pending_specialization));
-      TI_PENDING_SPECIALIZATION_FLAG (DECL_TEMPLATE_INFO (x)) = 0;
-
-      /* Now, the assembler name will be correct for fn, so we
-	 make its RTL.  */
-      DECL_RTL (x) = 0;
-      make_decl_rtl (x, NULL_PTR, 1);
-      DECL_RTL (DECL_TI_TEMPLATE (x)) = 0;
-      make_decl_rtl (DECL_TI_TEMPLATE (x), NULL_PTR, 1);
-    }
-
   if (current_class_type)
     popclass (0);
   else

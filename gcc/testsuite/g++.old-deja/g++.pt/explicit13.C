@@ -7,12 +7,13 @@ struct S
   template <class T>
   void foo(T t);
 
-  template <>
-  void foo(int) { }
-
   template <class T>
   void bar(T t) { this->template foo<U>(3.74); }
 };
+
+template <>
+template <>
+void S<int>::foo(int) { }
 
 int main()
 {

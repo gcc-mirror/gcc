@@ -1234,9 +1234,9 @@ begin_class_definition (t)
       && TREE_CODE (TYPE_CONTEXT (t)) != NAMESPACE_DECL
       && ! current_class_type)
     push_template_decl (TYPE_STUB_DECL (t));
+  maybe_process_partial_specialization (t);
   pushclass (t, 0);
   TYPE_BEING_DEFINED (t) = 1;
-  maybe_process_partial_specialization (t);
   /* Reset the interface data, at the earliest possible
      moment, as it might have been set via a class foo;
      before.  */

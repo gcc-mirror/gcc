@@ -5,14 +5,15 @@ struct S
 {
   template <int i>
   int f(int j) { abort(); return 0; }
-
-  template <>
-  int f<7>(int j) { return j + 7; }
-
-  template <>
-  int f<8>(int j) { return j + 8; }
 };
 
+template <>
+template <>
+int S<double>::f<7>(int j) { return j + 7; }
+
+template <>
+template <>
+int S<double>::f<8>(int j) { return j + 8; }
 
 int main()
 {
