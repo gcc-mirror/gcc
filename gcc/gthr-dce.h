@@ -330,7 +330,7 @@ __gthread_objc_mutex_unlock(objc_mutex_t mutex)
 static inline int
 __gthread_objc_condition_allocate(objc_condition_t condition)
 {
-  if (__gthread_active_p ()
+  if (__gthread_active_p ())
     /* Unimplemented. */
     return -1;
   else
