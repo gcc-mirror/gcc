@@ -1,5 +1,5 @@
 /* Base configuration file for all FreeBSD targets.
-   Copyright (C) 1999, 2000 Free Software Foundation, Inc.
+   Copyright (C) 1999, 2000, 2001 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -22,7 +22,9 @@ Boston, MA 02111-1307, USA.  */
    All FreeBSD architectures should include this file, which will specify
    their commonalities.
    Adapted from gcc/config/i386/freebsd-elf.h by 
-   David O'Brien <obrien@FreeBSD.org>.  */
+   David O'Brien <obrien@FreeBSD.org>.  
+   Further work by David O'Brien <obrien@FreeBSD.org> and
+   Loren J. Rittle <ljrittle@acm.org>.  */
 
 
 /* This defines which switch letters take arguments.  On FreeBSD, most of
@@ -48,6 +50,26 @@ Boston, MA 02111-1307, USA.  */
 #undef WORD_SWITCH_TAKES_ARG
 #define WORD_SWITCH_TAKES_ARG(STR) (FBSD_WORD_SWITCH_TAKES_ARG(STR))
 
+#if FBSD_MAJOR == 6
+#define FBSD_CPP_PREDEFINES \
+  "-D__FreeBSD__=6 -Dunix -D__ELF__ -Asystem=unix -Asystem=bsd -Asystem=FreeBSD"
+#elif FBSD_MAJOR == 5
+#define FBSD_CPP_PREDEFINES \
+  "-D__FreeBSD__=5 -Dunix -D__ELF__ -Asystem=unix -Asystem=bsd -Asystem=FreeBSD"
+#elif FBSD_MAJOR == 4
+#define FBSD_CPP_PREDEFINES \
+  "-D__FreeBSD__=4 -Dunix -D__ELF__ -Asystem=unix -Asystem=bsd -Asystem=FreeBSD"
+#elif FBSD_MAJOR == 3
+#define FBSD_CPP_PREDEFINES \
+  "-D__FreeBSD__=3 -Dunix -D__ELF__ -Asystem=unix -Asystem=bsd -Asystem=FreeBSD"
+#else
+#define FBSD_CPP_PREDEFINES \
+  "-D__FreeBSD__   -Dunix -D__ELF__ -Asystem=unix -Asystem=bsd -Asystem=FreeBSD"
+#endif
+
+#undef  CPP_PREDEFINES
+#define CPP_PREDEFINES FBSD_CPP_PREDEFINES
+
 /* Provide a CPP_SPEC appropriate for FreeBSD.  We just deal with the GCC 
    option `-posix', and PIC issues.  */
 
@@ -56,11 +78,37 @@ Boston, MA 02111-1307, USA.  */
   %{fPIC:-D__PIC__ -D__pic__} %{fpic:-D__PIC__ -D__pic__}		\
   %{posix:-D_POSIX_SOURCE}"
 
-/* Provide a LIB_SPEC appropriate for FreeBSD.  Just select the appropriate
-   libc, depending on whether we're doing profiling or need threads support.
-   (simular to the default, except no -lg, and no -p).  */
+/* Provide a LIB_SPEC appropriate for FreeBSD as configured and as
+   required by the user-land thread model.  Before __FreeBSD_version
+   500016, select the appropriate libc, depending on whether we're
+   doing profiling or need threads support.  At __FreeBSD_version
+   500016 and later, when threads support is requested include both
+   -lc and -lc_r instead of only -lc_r.  To make matters interesting,
+   we can't actually use __FreeBSD_version provided by <osreldate.h>
+   directly since it breaks cross-compiling.  As a final twist, make
+   it a hard error if -pthread is provided on the command line and gcc
+   was configured with --disable-threads (this will help avoid bug
+   reports from users complaining about threading when they
+   misconfigured the gcc bootstrap but are later consulting FreeBSD
+   manual pages that refer to the mythical -pthread option).  */
 
 #undef  LIB_SPEC
+#ifdef FBSD_NO_THREADS
+#define LIB_SPEC "							\
+  %{pthread: %eThe -pthread option is only supported on FreeBSD when gcc \
+is built with the --enable-threads configure-time option.}		\
+  %{!shared:								\
+    %{!pg: -lc}								\
+    %{pg:  -lc_p}							\
+  }"
+#else
+#if FBSD_MAJOR >= 5
+#define LIB_SPEC "							\
+  %{!shared:								\
+    %{!pg: %{pthread:-lc_r} -lc}					\
+    %{pg:  %{pthread:-lc_r_p} -lc_p}					\
+  }"
+#else
 #define LIB_SPEC "							\
   %{!shared:								\
     %{!pg:								\
@@ -70,7 +118,8 @@ Boston, MA 02111-1307, USA.  */
       %{!pthread:-lc_p}							\
       %{pthread:-lc_r_p}}						\
   }"
-
+#endif
+#endif
 
 /* Code generation parameters.  */
 
@@ -97,9 +146,11 @@ Boston, MA 02111-1307, USA.  */
 #undef DEFAULT_VTABLE_THUNKS
 #define DEFAULT_VTABLE_THUNKS 1
 
-/* This is BSD, so use stabs instead of DWARF debug format.  */
+/* The GNU tools operate better with dwarf2 than stabs.  Since we
+   don't have any native tools to be compatible with, default to
+   dwarf2.  */
 #undef PREFERRED_DEBUGGING_TYPE
-#define PREFERRED_DEBUGGING_TYPE DBX_DEBUG
+#define PREFERRED_DEBUGGING_TYPE DWARF2_DEBUG
 
 #undef IDENT_ASM_OP
 #define IDENT_ASM_OP "\t.ident\t"

@@ -1,6 +1,23 @@
 2001-05-22  Loren J. Rittle  <ljrittle@acm.org>
 	    David O'Brien  <obrien@freebsd.org>
 
+	* config/freebsd.h (LIB_SPEC): Key the exact setting to
+	configure-time options and target version of FreeBSD.  Set-up
+	to match architectural change in threading support.  Correctly
+	report when -pthread option is not supported by configure-time
+	options.
+	(FBSD_CPP_PREDEFINES): Move from architecture-specific files
+	and extend to encode target version number in run-time setting
+	of __FreeBSD__ macro to match the system compiler.
+	(CPP_PREDEFINES): Likewise.
+	(PREFERRED_DEBUGGING_TYPE): Change to DWARF2_DEBUG.
+
+	* config/alpha/freebsd.h (CPP_PREDEFINES): Moved to common freebsd.h.
+	* config/i386/freebsd.h (CPP_PREDEFINES): Likewise.
+
+2001-05-22  Loren J. Rittle  <ljrittle@acm.org>
+	    David O'Brien  <obrien@freebsd.org>
+
 	* config.gcc (the unlabeled system switch statement): Add
 	generic configuration section to handle *-*-freebsd*.  Also,
 	to match the system compiler, default to threading support (it
