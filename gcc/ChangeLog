@@ -1,3 +1,8 @@
+2002-02-13  Jeroen Dobbelaere  <jeroen.dobbelaere@acunia.com>
+
+	* config/arm/linux-elf.h (CPLUSPLUS_CPP_SPEC): Define.
+	Required for libstdc++ to work with glibc.
+
 2002-02-08  Philip Blundell  <pb@nexus.co.uk>
 
 	Fix PR 5209:
