@@ -61,3 +61,8 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 
 /* HP's compiler has problems with enum bitfields.  */
 #define ONLY_INT_FIELDS
+
+/* If not compiled with GNU C, use C alloca.  */
+#ifndef __GNUC__
+#define USE_C_ALLOCA
+#endif
