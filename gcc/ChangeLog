@@ -1,3 +1,7 @@
+Fri Sep 25 17:35:23 1998  J"orn Rennecke <amylaar@cygnus.co.uk>
+
+	* reload1.c (reload_combine): Re-add line that got accidentally lost.
+
 Fri Sep 25 10:43:47 1998  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* cccp.c (pedwarn_with_file_and_line): For !__STDC__ case, avoid
