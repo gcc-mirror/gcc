@@ -1,3 +1,9 @@
+2004-12-30  Alexander Malmberg  <alexander@malmberg.org>
+	    Ziemowit Laski  <zlaski@apple.com>
+
+        PR objc/18971
+	* objc.dg/encode-5.m: New test.
+
 2004-12-29  Richard Henderson  <rth@redhat.com>
 
 	* gcc.dg/20040813-1.c: Disable for alpha and ia64.
