@@ -9,8 +9,8 @@ int main()
 {
         try {
                 f(0, 0);
-                return 0;
-        } catch (foo x) {
                 return 1;
+        } catch (foo x) {
+                return 0;
         }
 }
