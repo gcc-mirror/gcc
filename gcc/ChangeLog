@@ -1,3 +1,9 @@
+2000-08-26  Michael Hayes  <mhayes@cygnus.com>
+
+	* loop.c (prescan_loop): Move checks for NOTE_INSN_LOOP_CONT
+	and NOTE_INSN_LOOP_VTOP to...
+	(find_and_verify_loops) ...here.
+
 Fri Aug 25 04:21:13 2000  Alexandre Oliva  <aoliva@redhat.com>
 
 	* crtstuff.c (CRT_CALL_STATIC_FUNCTION): Define default.
