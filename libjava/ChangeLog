@@ -1,3 +1,7 @@
+2004-06-06  Jerry Quinn  <jlquinn@optonline.net>
+
+	* java/util/zip/ZipEntry.java (setTime): Remove scaling.
+
 2004-06-05  Michael Koch  <konqueror@gmx.de>
 
 	* javax/swing/SwingConstants.java
