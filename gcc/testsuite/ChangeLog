@@ -1,3 +1,11 @@
+2003-08-01  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/11697
+	* g++.dg/template/using6.C: New test.
+
+	PR c++/11744
+	* g++.dg/template/koenig2.C: New test.
+
 2003-08-01  Kriang Lerdsuwanakij  <lerdsuwa@users.sourceforge.net>
 
 	PR c++/7983

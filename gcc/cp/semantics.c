@@ -2354,7 +2354,7 @@ finish_id_expression (tree id_expression,
      required.  If the template-id was for a template-class, we
      will sometimes have a TYPE_DECL at this point.  */
   else if (TREE_CODE (decl) == TEMPLATE_ID_EXPR
-      || TREE_CODE (decl) == TYPE_DECL)
+	   || TREE_CODE (decl) == TYPE_DECL)
     ;
   /* Look up the name.  */
   else 
