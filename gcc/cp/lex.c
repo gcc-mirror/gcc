@@ -3091,34 +3091,6 @@ do_identifier (token, parsing, args)
   else
     id = lastiddecl;
 
-  /* Scope class declarations before global
-     declarations.  */
-  if ((!id || is_global (id))
-      && current_class_type != 0
-      && TYPE_SIZE (current_class_type) == 0)
-    {
-      /* Could be from one of the base classes.  */
-      tree field = lookup_field (current_class_type, token, 1, 0);
-      if (field == 0)
-	;
-      else if (field == error_mark_node)
-	/* We have already generated the error message.
-	   But we still want to return this value.  */
-	id = lookup_field (current_class_type, token, 0, 0);
-      else if (TREE_CODE (field) == VAR_DECL
-	       || TREE_CODE (field) == CONST_DECL
-	       || TREE_CODE (field) == TEMPLATE_DECL)
-	id = field;
-      else if (TREE_CODE (field) != FIELD_DECL)
-	my_friendly_abort (61);
-      else
-	{
-	  cp_error ("invalid use of member `%D'", field);
-	  id = error_mark_node;
-	  return id;
-	}
-    }
-
   /* Do Koenig lookup if appropriate (inside templates we build lookup
      expressions instead).  */
   if (args && !current_template_parms && (!id || is_global (id)))
