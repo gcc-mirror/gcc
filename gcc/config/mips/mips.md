@@ -1664,7 +1664,7 @@ move\\t%0,%z4\\n\\
   ""
   "
 {
-  /* Handle loads.  */
+  /* Handle stores.  */
   if (GET_CODE (operands[0]) == MEM)
     {
       rtx reg = gen_reg_rtx (SImode);
