@@ -4,7 +4,7 @@
 /* { dg-do compile } */
 /* { dg-options "-O2 -fprefetch-loop-arrays -w" } */
 /* { dg-options "-O2 -fprefetch-loop-arrays -march=athlon" { target i?86-*-* } } */
-/* { dg-forbid-option "-m64" { target i?86-*-* } } */
+/* { dg-skip-if "" { i?86-*-* } { "-m64" } { "" } } */
 
 extern int access( char* );
 extern int a();

@@ -5,7 +5,7 @@
 /* { dg-do compile { xfail xstormy16-*-* } } */
 /* { dg-options "" } */
 /* { dg-options "-march=pentium3" { target i?86-*-* } } */
-/* { dg-forbid-option "-m64" { target i?86-*-* } } */
+/* { dg-skip-if "" { i?86-*-* } { "-m64" } { "" } } */
 
 int main() 
 { 

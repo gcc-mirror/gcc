@@ -3,7 +3,7 @@
    locality hints.  */
 
 /* { dg-do compile { target i?86-*-* } } */
-/* { dg-forbid-option "-m64" } */
+/* { dg-skip-if "" { i?86-*-* } { "-m64" } { "" } } */
 
 extern void exit (int);
 

@@ -2,7 +2,7 @@
 /* { dg-do run } */
 /* { dg-options "-O2 -funroll-loops" } */
 /* { dg-options "-mtune=k6 -O2 -funroll-loops" { target i?86-*-* } } */
-/* { dg-forbid-option "-m64" { target i?86-*-* } } */
+/* { dg-skip-if "" { i?86-*-* } { "-m64" } { "" } } */
 
 extern void abort (void);
 
