@@ -288,3 +288,12 @@ hook_int_CUMULATIVE_ARGS_mode_tree_bool_0 (
 {
   return 0;
 }
+
+const char *
+hook_invalid_arg_for_unprototyped_fn (
+	tree typelist ATTRIBUTE_UNUSED,
+	tree funcdecl ATTRIBUTE_UNUSED,
+	tree val ATTRIBUTE_UNUSED)
+{
+  return NULL;
+}

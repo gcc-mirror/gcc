@@ -1,3 +1,18 @@
+2005-03-08  Fariborz Jahanian <fjahanian@apple.com>
+
+	* config/rs6000/rs6000.c (invalid_arg_for_unprototyped_fn): 
+	Define the real function for ppc-darwin.
+	* c-typeck.c (convert_arguments): Check for target-specific
+	invalid argument call to unprototyped function.
+	* target-def.h (TARGET_INVALID_ARG_FOR_UNPROTOTYPED_FN): 
+	New Macro.
+	* target.h (invalid_arg_for_unprototyped_fn): New field 
+	in struct calls.
+	* targhooks.c (hook_invalid_arg_for_unprototyped_fn): New 
+	default target hook.
+	* targhooks.h (hook_invalid_arg_for_unprototyped_fn): 
+	Declare.
+
 2005-03-08  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* c-typeck.c (constructor_stack, constructor_range_stack,
