@@ -35,7 +35,8 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
    Don't do this until the fixed IBM assembler is more generally available.
    When this becomes permanently defined, the ASM_OUTPUT_EXTERNAL,
    ASM_OUTPUT_EXTERNAL_LIBCALL, and RS6000_OUTPUT_BASENAME macros will no
-   longer be needed.  */
+   longer be needed.  Also, the extern declaration of mcount in ASM_FILE_START
+   will no longer be needed.  */
 
 /* #define ASM_SPEC "-u" */
 
@@ -1319,13 +1320,16 @@ extern int rs6000_trunc_used;
 
 /* Output at beginning of assembler file.
 
-   On the RS/6000, we want to go into the TOC section so at least one
-   .toc will be emitted.
+   Initialize the section names for the RS/6000 at this point.
 
-   Also initialize the section names for the RS/6000 at this point.
-
+   We want to go into the TOC section so at least one .toc will be emitted.
    Also, in order to output proper .bs/.es pairs, we need at least one static
-   [RW] section emitted.  */
+   [RW] section emitted.
+
+   We then switch back to text to force the gcc2_compiled. label and the space
+   allocated after it (when profiling) into the text section.  
+
+   Finally, declare mcount when profiling to make the assembler happy.  */
 
 #define ASM_FILE_START(FILE)					\
 {								\
@@ -1339,6 +1343,9 @@ extern int rs6000_trunc_used;
   toc_section ();						\
   if (write_symbols != NO_DEBUG)				\
     private_data_section ();					\
+  text_section ();						\
+  if (profile_flag)						\
+    fprintf (FILE, "\t.extern .mcount\n");			\
 }
 
 /* Output at end of assembler file.
