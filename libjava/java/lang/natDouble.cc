@@ -8,6 +8,8 @@ This software is copyrighted work licensed under the terms of the
 Libgcj License.  Please consult the file "LIBGCJ_LICENSE" for
 details.  */
 
+#include <config.h>
+
 /* AIX requires this to be the first thing in the file.  */
 #ifndef __GNUC__
 # if HAVE_ALLOCA_H

@@ -23,6 +23,7 @@ libgcj_flags=
 libgcj_cflags=
 libgcj_cxxflags=
 libgcj_javaflags=
+libgcj_sjlj=
 
 case "${target_optspace}:${host}" in
   yes:*)
@@ -59,7 +60,10 @@ case "${host}" in
 	libgcj_flags="${libgcj_flags} -ffloat-store"
 	DIVIDESPEC=-fno-use-divide-subroutine
 	;;
+  sparc-*)
+        ;;
   *)
+        libgcj_sjlj=yes
 	;;
 esac
 

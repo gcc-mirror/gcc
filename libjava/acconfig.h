@@ -116,3 +116,6 @@
 /* Define if system properties shouldn't be read from
    getenv("GCJ_PROPERTIES").  */
 #undef DISABLE_GETENV_PROPERTIES
+
+/* Define if using setjmp/longjmp exceptions.  */
+#undef SJLJ_EXCEPTIONS

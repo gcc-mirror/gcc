@@ -33,9 +33,9 @@ typedef struct {
 
 extern "C" java_eh_info **__get_eh_info (); 
 extern "C" void __throw () __attribute__ ((__noreturn__));
+extern "C" void __sjthrow () __attribute__ ((__noreturn__));
 extern "C" short __get_eh_table_version (void *table);
 extern "C" short __get_eh_table_language (void *table);
-
 
 extern "C" void * malloc (size_t);
 extern "C" void free (void *);
@@ -45,8 +45,12 @@ extern "C" void *
 _Jv_type_matcher (java_eh_info *info, void* match_info, 
 		  void *exception_table)
 {
-  if (__get_eh_table_language (exception_table) != EH_LANG_Java)
+#ifndef SJLJ_EXCEPTIONS
+  /* No exception table implies the old style mechanism, so don't check. */
+  if (exception_table != NULL
+      && __get_eh_table_language (exception_table) != EH_LANG_Java)
     return NULL;
+#endif
 
   /* we don't worry about version info yet, there is only one version! */
   
@@ -125,16 +129,15 @@ _Jv_eh_free ()
   *info_ptr = NULL;
 }
 
-/* Perform a throw, Java style. Throw will unwind through this call, so
-   there better not be any handlers or exception thrown here. */
-
-
 /* Initialize an __eh_info structure with this libraries matching info. */
 
 extern "C" void
 _Jv_setup_eh_info (__eh_info *)
 {
 }
+
+/* Perform a throw, Java style. Throw will unwind through this call,
+   so there better not be any handlers or exception thrown here. */
 
 extern "C" void
 _Jv_Throw (void *value)
@@ -151,5 +154,12 @@ _Jv_Throw (void *value)
   ehinfo->eh_info.language = EH_LANG_Java;
   ehinfo->eh_info.version = 1;
   ehinfo->value = value;
-  __throw();
+
+/* We're happy with setjmp/longjmp exceptions or region-based
+   exception handlers: entry points are provided here for both.  */
+#ifdef SJLJ_EXCEPTIONS
+  __sjthrow ();
+#else
+  __throw ();
+#endif
 }

@@ -109,6 +109,10 @@ public:
     { _Jv_MonitorExit (obj); }
 };
 
+#ifdef SJLJ_EXCEPTIONS
+#define _Jv_Throw _Jv_Sjlj_Throw
+#endif
+
 // Throw some exception.
 extern void JvThrow (jobject obj) __attribute__ ((__noreturn__));
 extern inline void

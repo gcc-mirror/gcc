@@ -1,3 +1,70 @@
+1999-11-19  Tom Tromey  <tromey@cygnus.com>
+
+	* Makefile.am (DIVIDESPEC): Removed.
+	(EXCEPTIONSPEC): Removed.
+
+1999-11-19  Andrew Haley  <aph@cygnus.com>
+
+	* Makefile.am (JCFLAGS): Add -L$(here)
+	(JC1FLAGS): Ditto.
+	* Makefile.in: Rebuild.
+
+1999-11-18  Tom Tromey  <tromey@cygnus.com>
+
+	* java/lang/natDouble.cc: Include <config.h>.
+
+	* include/config.h.in: Rebuilt.
+	* acconfig.h (SJLJ_EXCEPTIONS): Undefine.
+	* configure.host: Force -fsjlj-exceptions on non-sparc, non-x86
+	targets.
+	* configure: Rebuilt.
+	* configure.in (EXCEPTIONSPEC): Allow -fsjlj-exceptions to be
+	requested by configure.host.  Don't put `-D' option into
+	libgcj.spec; instead, define SJLJ_EXCEPTIONS with AC_DEFINE.
+
+	* configure: Rebuilt.
+	* configure.in (EXCEPTIONSPEC): Changed `_' to `-' in
+	sjlj-exceptions.
+
+1999-11-18  Andrew Haley  <aph@cygnus.com>
+
+	* Makefile.am: rename SJLJ_EXCEPTIONS to EXCEPTIONSPEC.
+	(AM_CFLAGS): remove SJLJ_EXCEPTIONS.
+	(JC1FLAGS): Ditto.
+	* Makefile.in: Rebuild
+	* acconfig.h: remove SJLJ_EXCEPTIONS
+	* configure.in: rename SJLJ_EXCEPTIONS to EXCEPTIONSPEC.
+	Do not AC_DEFINE SJLJ_EXCEPTIONS.
+	* libgcj.spec.in: Add EXCEPTIONSPEC to jc1.
+	* gcj/Makefile.in, include/Makefile.in: rebuild.
+	* include/config.h.in: remove SJLJ_EXCEPTIONS.
+		
+1999-11-18  Andrew Haley  <aph@cygnus.com>
+
+	* gij.cc (main): Rename label to prevent conflict.
+
+	* exception.cc (_Jv_type_matcher): Don't check the table if we're
+	using setjmp/longjmp exceptions: there isn't one.
+
+1999-11-17  Andrew Haley  <aph@cygnus.com>
+
+	* exception.cc (_Jv_type_matcher): Ignore null exception tables.
+	(_Jv_Throw ): Add SJLJ_EXCEPTIONS.
+	(__sjthrow): Add declaration.
+	* Makefile.am (JCFLAGS): Add SJLJ_EXCEPTIONS
+	(JC1FLAGS): Ditto
+	(AM_CFLAGS): Ditto
+	(AM_CXXFLAGS): Ditto
+	* Makefile.in: Rebuild
+	* acconfig.h: Add SJLJ_EXCEPTIONS
+	* configure.in: Add SJLJ_EXCEPTIONS
+	* configure: Rebuild.
+	* gcj/Makefile.in: Rebuild.
+	* gcj/cni.h: Add support for sjlj-exceptions.
+	* gcj/javaprims.h: Add _Jv_Sjlj_Throw.
+	* include/Makefile.in: Rebuild.
+	* include/default-signal.h: Add support for sjlj-exceptions.
+
 1999-11-18  Tom Tromey  <tromey@cygnus.com>
 
 	* no-threads.cc (_Jv_ThreadStart): Use JvFail and not JvAssert.

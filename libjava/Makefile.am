@@ -69,23 +69,22 @@ JAVAC = $(GCJ) -C
 EH_COMMON_INCLUDE = @EH_COMMON_INCLUDE@
 
 WARNINGS = -W -Wall
-AM_CXXFLAGS = -fno-rtti -fvtable-thunks @LIBGCJ_CXXFLAGS@ $(WARNINGS)
+AM_CXXFLAGS = -fno-rtti -fvtable-thunks @LIBGCJ_CXXFLAGS@ @EXCEPTIONSPEC@ \
+	$(WARNINGS)
 if USING_GCC
 AM_CFLAGS = @LIBGCJ_CFLAGS@ $(WARNINGS)
 else
 AM_CFLAGS = @LIBGCJ_CFLAGS@
 endif
 
-JCFLAGS = -g
-JC1FLAGS = -g @LIBGCJ_JAVAFLAGS@
+JCFLAGS = -g -L$(here)
+JC1FLAGS = -g -L$(here) @LIBGCJ_JAVAFLAGS@
 
 LIBFFIINCS = -I$(top_srcdir)/../libffi/include -I../libffi/include
 
 INCLUDES = -I$(top_srcdir) -Iinclude -I$(top_srcdir)/include \
 	$(GCINCS) $(THREADINCS) \
 	$(EH_COMMON_INCLUDE) $(ZINCS) $(LIBFFIINCS)
-
-DIVIDESPEC = @DIVIDESPEC@
 
 
 ## ################################################################
