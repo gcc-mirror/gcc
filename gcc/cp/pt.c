@@ -2827,7 +2827,7 @@ lookup_template_class (d1, arglist, in_decl, context)
 
       /* We need to set this again after CLASSTYPE_TEMPLATE_INFO is set up.  */
       DECL_ASSEMBLER_NAME (TYPE_MAIN_DECL (t)) = id;
-      /* if (! uses_template_parms (arglist)) */
+      if (! uses_template_parms (arglist))
 	DECL_ASSEMBLER_NAME (TYPE_MAIN_DECL (t)) 
 	  = get_identifier (build_overload_name (t, 1, 1));
 
@@ -5077,8 +5077,13 @@ tsubst_expr (t, args, in_decl)
 
     case GOTO_STMT:
       lineno = TREE_COMPLEXITY (t);
-      finish_goto_stmt (tsubst_expr (GOTO_DESTINATION (t),
-				     args, in_decl));
+      t = GOTO_DESTINATION (t);
+      if (TREE_CODE (t) != IDENTIFIER_NODE)
+	/* Computed goto's must be tsubst'd into.  On the other hand,
+	   non-computed gotos must not be; the identifier in question
+	   will have no binding.  */
+	t = tsubst_expr (t, args, in_decl);
+      finish_goto_stmt (t);
       break;
 
     case ASM_STMT:
