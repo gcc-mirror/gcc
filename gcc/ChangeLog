@@ -1,3 +1,7 @@
+Mon May 17 23:56:39 1999  Alexandre Oliva  <oliva@dcc.unicamp.br>
+
+	* fixinc/fixincl.c: Remove #error, it is not portable.
+
 Mon May 17 23:50:41 1999  Marc Espie <espie@cvs.openbsd.org>
 
 	* collect2.c (main):  Fix typo in COLLECT2_HOST_INITIALIZATION.
