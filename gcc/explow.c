@@ -732,12 +732,23 @@ force_reg (mode, x)
   if (GET_CODE (x) == REG)
     return x;
 
-  temp = gen_reg_rtx (mode);
-
-  if (! general_operand (x, mode))
-    x = force_operand (x, NULL_RTX);
-
-  insn = emit_move_insn (temp, x);
+  if (general_operand (x, mode))
+    {
+      temp = gen_reg_rtx (mode);
+      insn = emit_move_insn (temp, x);
+    }
+  else
+    {
+      temp = force_operand (x, NULL_RTX);
+      if (GET_CODE (temp) == REG)
+	insn = get_last_insn ();
+      else
+	{
+	  rtx temp2 = gen_reg_rtx (mode);
+	  insn = emit_move_insn (temp2, temp);
+	  temp = temp2;
+	}
+    }
 
   /* Let optimizers know that TEMP's value never changes
      and that X can be substituted for it.  Don't get confused
@@ -746,6 +757,7 @@ force_reg (mode, x)
       && (set = single_set (insn)) != 0
       && SET_DEST (set) == temp)
     set_unique_reg_note (insn, REG_EQUAL, x);
+
   return temp;
 }
 

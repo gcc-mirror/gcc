@@ -3659,7 +3659,7 @@ expand_assignment (to, from, want_value, suggest_reg)
 
       if (offset != 0)
 	{
-	  rtx offset_rtx = expand_expr (offset, NULL_RTX, VOIDmode, 0);
+	  rtx offset_rtx = expand_expr (offset, NULL_RTX, VOIDmode, EXPAND_SUM);
 
 	  if (GET_CODE (to_rtx) != MEM)
 	    abort ();
@@ -3682,15 +3682,7 @@ expand_assignment (to, from, want_value, suggest_reg)
 	      && (bitsize % GET_MODE_ALIGNMENT (mode1)) == 0
 	      && MEM_ALIGN (to_rtx) == GET_MODE_ALIGNMENT (mode1))
 	    {
-	      rtx temp
-		= adjust_address (to_rtx, mode1, bitpos / BITS_PER_UNIT);
-
-	      if (GET_CODE (XEXP (temp, 0)) == REG)
-	        to_rtx = temp;
-	      else
-		to_rtx = (replace_equiv_address
-			  (to_rtx, force_reg (GET_MODE (XEXP (temp, 0)),
-					      XEXP (temp, 0))));
+	      to_rtx = adjust_address (to_rtx, mode1, bitpos / BITS_PER_UNIT);
 	      bitpos = 0;
 	    }
 
@@ -6852,7 +6844,7 @@ expand_expr (exp, target, tmode, modifier)
 
 	if (offset != 0)
 	  {
-	    rtx offset_rtx = expand_expr (offset, NULL_RTX, VOIDmode, 0);
+	    rtx offset_rtx = expand_expr (offset, NULL_RTX, VOIDmode, EXPAND_SUM);
 
 	    /* If this object is in a register, put it into memory.
 	       This case can't occur in C, but can in Ada if we have
@@ -6902,15 +6894,7 @@ expand_expr (exp, target, tmode, modifier)
 		&& (bitsize % GET_MODE_ALIGNMENT (mode1)) == 0
 		&& MEM_ALIGN (op0) == GET_MODE_ALIGNMENT (mode1))
 	      {
-		rtx temp = adjust_address (op0, mode1, bitpos / BITS_PER_UNIT);
-
-		if (GET_CODE (XEXP (temp, 0)) == REG)
-		  op0 = temp;
-		else
-		  op0 = (replace_equiv_address
-			 (op0,
-			  force_reg (GET_MODE (XEXP (temp, 0)),
-				     XEXP (temp, 0))));
+		op0 = adjust_address (op0, mode1, bitpos / BITS_PER_UNIT);
 		bitpos = 0;
 	      }
 

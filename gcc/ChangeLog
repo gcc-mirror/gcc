@@ -1,3 +1,21 @@
+2002-02-21  Richard Henderson  <rth@redhat.com>
+
+	* emit-rtl.c (offset_address): Use simplify_gen_binary rather
+	than gen_rtx_PLUS to form the sum.
+	* explow.c (force_reg): Rearrange to not allocate new pseudo
+	when force_operand returns a register.
+	* expr.c (expand_assignment): Allow offset_rtx expansion to
+	return a sum.  Do not force addresses into registers.
+	(expand_expr): Likewise.
+	* simplify-rtx.c (simplify_gen_binary): Use simplify_plus_minus
+	to canonicalize arithmetic that didn't simpify.
+	(simplify_plus_minus): New argument force; update
+	all callers.  Don't split CONST unless we can do something with it,
+	and wouldn't lose the constness of the operands.
+
+	* config/i386/i386.c (legitimize_pic_address): Recognize UNSPECs
+	that we generated earlier.
+
 2002-02-21  Tom Tromey  <tromey@redhat.com>
 
 	* dwarf2out.c (DWARF_LINE_MIN_INSTR_LENGTH): Removed.
