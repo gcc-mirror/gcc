@@ -1073,7 +1073,7 @@ const_binop (code, arg1, arg2)
 	  break;
 
 	case MULT_EXPR:
-  /* Optimize simple cases.  */
+	  /* Optimize simple cases.  */
 	  if (int1h == 0)
 	    {
 	      unsigned HOST_WIDE_INT temp;
@@ -1091,11 +1091,13 @@ const_binop (code, arg1, arg2)
 		  int2h = int2h * 2 + (temp < int2l);
 		  t = build_int_2 (temp, int2h);
 		  goto got_it;
+#if 0 /* This code can lose carries.  */
 		case 3:
 		  temp = int2l + int2l + int2l;
 		  int2h = int2h * 3 + (temp < int2l);
 		  t = build_int_2 (temp, int2h);
 		  goto got_it;
+#endif
 		case 4:
 		  temp = int2l + int2l;
 		  int2h = int2h * 4 + ((temp < int2l) << 1);
