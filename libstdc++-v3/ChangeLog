@@ -1,3 +1,8 @@
+2004-06-23  Andrew Pinski  <apinski@apple.com>
+
+	* linkage.m4: Remove check for libmx.	
+	* configure: Regenerate.
+
 2004-06-23  Paolo Carlini  <pcarlini@suse.de>
 
 	PR libstdc++/16154

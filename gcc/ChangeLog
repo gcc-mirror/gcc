@@ -1,3 +1,10 @@
+2004-06-24  Andrew Pinski  <apinski@apple.com>
+
+	* config/darwin7.h (MATH_LIBRARY): Remove.
+	(LIB_SPEC): Define.
+	* config/darwin.h (MATH_LIBRARY): Define always to empty.
+	(LIB_SPEC): Only define if not already defined.
+
 2004-06-24  Revital Eres  <eres@il.ibm.com>
 
 	* loop-iv.c (iv_analyze, simple_set_p): Support for identifying

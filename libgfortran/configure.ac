@@ -160,9 +160,6 @@ AC_CHECK_HEADER([complex.h],[AC_DEFINE([HAVE_COMPLEX_H], [1], [complex.h exists]
 # Check for complex math functions
 AC_CHECK_LIB([m],[csin],[need_math="no"],[need_math="yes"])
 
-# Check for complex math functions in -lmx also
-AC_CHECK_LIB([mx],[csin],[need_math="no"],[need_math="yes"])
-
 # Check for library functions.
 AC_CHECK_FUNCS(getrusage times)
 
