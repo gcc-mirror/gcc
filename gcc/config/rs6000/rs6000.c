@@ -49,7 +49,7 @@ enum processor_type rs6000_cpu;
 struct rs6000_cpu_select rs6000_select[3] =
 {
   /* switch	name,			tune	arch */
-  { (char *)0,	"--enbable-cpu=",	1,	1 },
+  { (char *)0,	"--with-cpu=",		1,	1 },
   { (char *)0,	"-mcpu=",		1,	1 },
   { (char *)0,	"-mtune=",		1,	0 },
 };
