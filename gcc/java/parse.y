@@ -8650,6 +8650,18 @@ resolve_field_access (qual_wfl, field_decl, field_type)
       tree length = build_java_array_length_access (where_found);
       field_ref =
 	build_java_arraynull_check (type_found, length, int_type_node);
+
+      /* In case we're dealing with a static array, we need to
+	 initialize its class before the array length can be fetched.
+	 It's also a good time to create a DECL_RTL for the field if
+	 none already exists, otherwise if the field was declared in a
+	 class found in an external file and hasn't been (and won't
+	 be) accessed for its value, none will be created. */
+      if (TREE_CODE (where_found) == VAR_DECL && FIELD_STATIC (where_found))
+	{
+	  build_static_field_ref (where_found);
+	  field_ref = build_class_init (DECL_CONTEXT (where_found), field_ref);
+	}
     }
   /* We might have been trying to resolve field.method(). In which
      case, the resolution is over and decl is the answer */

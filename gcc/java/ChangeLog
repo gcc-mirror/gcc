@@ -34,6 +34,12 @@
 	`wfl_operator', to maybe_build_primttype_type_ref.
 	Fixes PR gcj/235.
 
+2000-05-02  Alexandre Petit-Bianco  <apbianco@cygnus.com>
+
+	* parse.y (resolve_field_access): Call the appropriate <clinit>
+	before accessing the length of a static array. Craft a decl for
+	the field while its time. Fixes PR gcj/129.
+ 
 2000-05-01  Alexandre Petit-Bianco  <apbianco@cygnus.com>
 
 	* parse.y (resolve_package): Correctly set `*next' (was off by
