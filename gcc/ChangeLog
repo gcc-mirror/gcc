@@ -1,3 +1,21 @@
+2003-04-02  Vladimir Makarov  <vmakarov@redhat.com>
+
+	* config/rs6000/rs6000.c
+	(TARGET_SCHED_FIRST_CYCLE_MULTIPASS_DFA_LOOKAHEAD): Redefine the
+	macros.
+	(rs6000_issue_rate): Add case for 8540.
+	(rs6000_use_sched_lookahead): New function.
+
+	* config/rs6000/8540.md: Rename SIU units into SU ones and MIU
+	units into MU ones.
+	(ppc8540_branch, ppc8540_cr_logical): Add one cycle in the
+	reservation before retirement.
+	(ppc8540_multiply, ppc8540_load, ppc8540_store,
+	ppc8540_simple_float, ppc8540_vector_load, ppc8540_vector_store):
+	Remove additional cycle in the reservation before retirement.
+	(ppc8540_mfcr, ppc8540_mtcrf, ppc8540_mtjmpr): Add missed
+	reservation of ppc8540_issue.
+	
 2003-04-02  Andreas Schwab  <schwab@suse.de>
 
 	* real.c (decode_ieee_single): Fix decoding of SNaN bit.
