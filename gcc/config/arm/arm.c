@@ -3362,9 +3362,9 @@ soft_df_operand (op, mode)
       if (GET_CODE (op) == SUBREG)
 	op = SUBREG_REG (op);
 
-      if (REGNO (op) == IP_REGNUM)
-	return FALSE;
-      return TRUE;
+      /* The IP register must not be used, since its higher
+	 numbered counterpart is 13 - the stack pointer.  */
+      return REGNO (op) != IP_REGNUM;
     }
 
   if (mode != VOIDmode && GET_MODE (op) != mode)
@@ -3401,9 +3401,9 @@ nonimmediate_soft_df_operand (op, mode)
       if (GET_CODE (op) == SUBREG)
 	op = SUBREG_REG (op);
 
-      if (REGNO (op) == IP_REGNUM)
-	return FALSE;
-      return TRUE;
+      /* The IP register must not be used, since its higher
+	 numbered counterpart is 13 - the stack pointer.  */
+      return REGNO (op) != IP_REGNUM;
     }
 
   if (mode != VOIDmode && GET_MODE (op) != mode)
