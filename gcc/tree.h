@@ -2567,6 +2567,7 @@ extern void save_for_inline_nocopy	PARAMS ((tree));
 extern void save_for_inline_copying	PARAMS ((tree));
 extern void set_decl_abstract_flags	PARAMS ((tree, int));
 extern void output_inline_function	PARAMS ((tree));
+extern void set_decl_origin_self	PARAMS ((tree));
 
 /* In c-lex.c */
 extern void set_yydebug			PARAMS ((int));

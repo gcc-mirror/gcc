@@ -7119,7 +7119,8 @@ add_bound_info (subrange_die, bound_attr, bound)
 	 We assume that a MEM rtx is safe because gcc wouldn't put the
 	 value there unless it was going to be used repeatedly in the
 	 function, i.e. for cleanups.  */
-      if (! optimize || GET_CODE (SAVE_EXPR_RTL (bound)) == MEM)
+      if (! optimize || (SAVE_EXPR_RTL (bound)
+			 && GET_CODE (SAVE_EXPR_RTL (bound)) == MEM))
 	{
 	  register dw_die_ref ctx = lookup_decl_die (current_function_decl);
 	  register dw_die_ref decl_die = new_die (DW_TAG_variable, ctx);
@@ -8006,12 +8007,7 @@ gen_unspecified_parameters_die (decl_or_type, context_die)
 /* Generate a list of nameless DW_TAG_formal_parameter DIEs (and perhaps a
    DW_TAG_unspecified_parameters DIE) to represent the types of the formal
    parameters as specified in some function type specification (except for
-   those which appear as part of a function *definition*).
-
-   Note we must be careful here to output all of the parameter DIEs before*
-   we output any DIEs needed to represent the types of the formal parameters.
-   This keeps svr4 SDB happy because it (incorrectly) thinks that the first
-   non-parameter DIE it sees ends the formal parameter list.  */
+   those which appear as part of a function *definition*).  */
 
 static void
 gen_formal_types_die (function_or_method_type, context_die)
@@ -8150,6 +8146,14 @@ gen_subprogram_die (decl, context_die)
      declaration of the inline from the member list for the class.  In that
      case, `declaration' takes priority; we'll get back to the abstract
      instance when we're done with the class.  */
+
+  /* The class-scope declaration DIE must be the primary DIE.  */
+  if (origin && declaration && class_scope_p (context_die))
+    {
+      origin = NULL;
+      if (old_die)
+	abort ();
+    }
 
   if (origin != NULL)
     {
@@ -9322,10 +9326,14 @@ gen_decl_die (decl, context_die)
 	  && (current_function_decl == NULL_TREE || DECL_ARTIFICIAL (decl)))
 	break;
 
-      /* Emit info for the abstract instance first, if we haven't yet.  */
-      origin = decl_ultimate_origin (decl);
-      if (origin)
-	gen_abstract_function (origin);
+      /* If we're emitting an out-of-line copy of an inline function,
+	 emit info for the abstract instance and set up to refer to it.  */
+      if (DECL_INLINE (decl) && ! DECL_ABSTRACT (decl)
+	  && ! class_scope_p (context_die))
+	{
+	  gen_abstract_function (decl);
+	  set_decl_origin_self (decl);
+	}
 
       if (debug_info_level > DINFO_LEVEL_TERSE)
 	{

@@ -78,7 +78,6 @@ static tree integrate_decl_tree		PARAMS ((tree,
 static void subst_constants		PARAMS ((rtx *, rtx,
 						 struct inline_remap *, int));
 static void set_block_origin_self	PARAMS ((tree));
-static void set_decl_origin_self	PARAMS ((tree));
 static void set_block_abstract_flags	PARAMS ((tree, int));
 static void process_reg_param		PARAMS ((struct inline_remap *, rtx,
 						 rtx));
@@ -2647,7 +2646,7 @@ set_block_origin_self (stmt)
    set *their* DECL_ABSTRACT_ORIGIN or BLOCK_ABSTRACT_ORIGIN values to
    point to themselves.  */
 
-static void
+void
 set_decl_origin_self (decl)
      register tree decl;
 {
@@ -2738,16 +2737,8 @@ output_inline_function (fndecl)
 
   set_new_last_label_num (f->inl_max_label_num);
 
-  /* We must have already output DWARF debugging information for the
-     original (abstract) inline function declaration/definition, so
-     we want to make sure that the debugging information we generate
-     for this special instance of the inline function refers back to
-     the information we already generated.  To make sure that happens,
-     we simply have to set the DECL_ABSTRACT_ORIGIN for the function
-     node (and for all of the local ..._DECL nodes which are its children)
-     so that they all point to themselves.  */
-
-  set_decl_origin_self (fndecl);
+  /* Compile this function all the way down to assembly code.  */
+  rest_of_compilation (fndecl);
 
   /* We're not deferring this any longer.  */
   DECL_DEFER_OUTPUT (fndecl) = 0;
@@ -2755,9 +2746,6 @@ output_inline_function (fndecl)
   /* We can't inline this anymore.  */
   f->inlinable = 0;
   DECL_INLINE (fndecl) = 0;
-
-  /* Compile this function all the way down to assembly code.  */
-  rest_of_compilation (fndecl);
 
   cfun = old_cfun;
   current_function_decl = old_cfun ? old_cfun->decl : 0;

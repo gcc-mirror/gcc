@@ -1,3 +1,7 @@
+2000-04-26  Jason Merrill  <jason@casey.cygnus.com>
+
+	* decl.c (finish_function): Don't play games with DECL_INLINE.
+
 2000-04-25  Gabriel Dos Reis  <dosreis@cmla.ens-cachan.fr>
 
 	* ir.texi: Correct typo.

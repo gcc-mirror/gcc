@@ -1,3 +1,20 @@
+2000-04-26  Jason Merrill  <jason@casey.cygnus.com>
+
+	* dwarf2out.c (add_bound_info): Don't crash on an unexpanded SAVE_EXPR.
+
+	* dwarfout.c (output_decl): Ignore NAMESPACE_DECLs.
+
+	* dwarf2out.c (gen_subprogram_die): The class-scope declaration DIE
+	is the primary DIE for a member function.
+	(gen_decl_die): Call set_decl_origin_self here.
+	* dwarfout.c (output_decl): And here.
+	* integrate.c (output_inline_function): Not here.
+	Don't clear DECL_INLINE until after calling rest_of_compilation.
+	(set_decl_origin_self): No longer static.
+	* tree.h: Add prototype.
+	* toplev.c (note_deferral_of_defined_inline_function): Only write
+	out abstract instance for actual inlines.
+
 2000-04-25  Alexandre Oliva  <aoliva@cygnus.com>
 
 	* config/mn10300/mn10300.h (REG_CLASS_FROM_LETTER): Return

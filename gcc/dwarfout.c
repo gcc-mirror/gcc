@@ -4791,6 +4791,13 @@ output_decl (decl, containing_scope)
 	  output_type (origin, containing_scope);
       }
 
+      /* If we're emitting an out-of-line copy of an inline function,
+	 set up to refer to the abstract instance emitted from
+	 note_deferral_of_defined_inline_function.  */
+      if (DECL_INLINE (decl) && ! DECL_ABSTRACT (decl)
+	  && ! (containing_scope && TYPE_P (containing_scope)))
+	set_decl_origin_self (decl);
+
       /* If the following DIE will represent a function definition for a
 	 function with "extern" linkage, output a special "pubnames" DIE
 	 label just ahead of the actual DIE.  A reference to this label
@@ -5082,6 +5089,10 @@ output_decl (decl, containing_scope)
 
       output_type (TREE_TYPE (decl), containing_scope);
       output_die (output_formal_parameter_die, decl);
+      break;
+
+    case NAMESPACE_DECL:
+      /* Ignore for now.  */
       break;
 
     default:
