@@ -3927,14 +3927,13 @@ output_constructor (exp, size)
     assemble_zeros (size - total_bytes);
 }
 
-#if defined (HANDLE_SYSV_PRAGMA) && defined (HANDLE_PRAGMA_WEAK)
-
 /* Output asm to handle ``#pragma weak'' */
 void
 handle_pragma_weak (what, name, value)
      enum pragma_state what;
      char *name, *value;
 {
+#ifdef HANDLE_PRAGMA_WEAK
   if (what == ps_name || what == ps_value)
     {
       struct weak_syms *weak =
@@ -3956,9 +3955,8 @@ handle_pragma_weak (what, name, value)
     }
   else if (! (what == ps_done || what == ps_start))
     warning ("malformed `#pragma weak'");
+#endif /* HANDLE_PRAGMA_WEAK */
 }
-
-#endif /* HANDLE_SYSV_PRAGMA && HANDLE_PRAGMA_WEAK */
 
 /* Declare DECL to be a weak symbol.  */
 
