@@ -19,6 +19,10 @@
 	the insn lengths in the templates for sign extention and zero
 	extention.
 
+	2000-12-23  Philip Blundell  <philb@gnu.org>
+	* config/arm/linux-elf.h (CPP_PREDEFINES): Don't define `arm' or
+	`arm_elf'; do define `__arm__'.
+
 2000-12-22  Bernd Schmidt  <bernds@redhat.co.uk>
 
 	* calls.c (emit_call_1): Fall back to call_pop/call_value_pop if no

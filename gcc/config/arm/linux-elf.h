@@ -103,8 +103,8 @@ Boston, MA 02111-1307, USA.  */
 
 #undef  CPP_PREDEFINES
 #define CPP_PREDEFINES \
-"-Dunix -Darm -Dlinux -Asystem(unix) -Asystem(posix) -Acpu(arm) \
--Amachine(arm) -D__ELF__ -Darm_elf"
+"-Dunix -D__arm__ -Dlinux -Asystem(unix) -Asystem(posix) -Acpu(arm) \
+-Amachine(arm) -D__ELF__"
 
 #ifndef SUBTARGET_DEFAULT_APCS26
 #define CPP_APCS_PC_DEFAULT_SPEC "-D__APCS_32__"
