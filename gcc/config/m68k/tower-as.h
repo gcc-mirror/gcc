@@ -46,14 +46,6 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 
 #define CPP_SPEC "-D__TOWER_ASM__ %{m68881:-D__HAVE_68881__}"
 
-/* The startfiles and libraries depend on the -p and -m68881 options.
-   The Tower does not support the -pg option.  */
-
-#define STARTFILE_SPEC                                         \
-"%{p:%{m68881:/usr/lib/fp/mcrt1.o}%{!m68881:/lib/mcrt1.o}}     \
- %{!p:%{m68881:/usr/lib/fp/crt1.o}%{!m68881:/lib/crt1.o}}      \
- crtbegin.o%s"
-
 /* We don't want local labels to start with period.
    See ASM_OUTPUT_INTERNAL_LABEL.  */
 #undef LOCAL_LABEL_PREFIX
