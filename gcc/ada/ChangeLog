@@ -1,4 +1,8 @@
 2002-11-13  Nathanael Nerode  <neroden@gcc.gnu.org>
+	PR ada/6919
+	* adaint.c (__gnat_tmp_name): Remove buffer overflow bug on
+	GNU/Linux.
+
 	PR ada/6558
 	* config-lang.in: Remove diff_excludes.
 
