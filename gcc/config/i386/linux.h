@@ -20,7 +20,7 @@
 /* This is tested by i386gas.h.  */
 #define YES_UNDERSCORES
 
-#include "i386gas.h"
+#include "i386gstabs.h"
 
 /* Specify predefined symbols in preprocessor.  */
 
