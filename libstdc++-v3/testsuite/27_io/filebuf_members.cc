@@ -172,7 +172,6 @@ test_04()
     }
 
   unlink("xxx");
-  exit(0);
 }
 
 // Charles Leggett <CGLeggett@lbl.gov>
@@ -191,6 +190,33 @@ void test_05()
   scratch_file.close();
 }
 
+// libstdc++/9507
+void test_06()
+{
+  bool test = true;
+
+  signal(SIGPIPE, SIG_IGN);
+
+  unlink("yyy");
+  mkfifo("yyy", S_IRWXU);
+	
+  if (!fork())
+    {
+      std::filebuf fbuf;
+      fbuf.open("yyy", std::ios_base::in);
+      fbuf.sgetc();
+      fbuf.close();
+
+      exit(0);
+    }
+
+  std::filebuf fbuf;
+  std::filebuf* r =
+    fbuf.open("yyy", std::ios_base::out | std::ios_base::ate);
+  VERIFY( !fbuf.is_open() );
+  VERIFY( r == NULL );
+}
+
 int
 main()
 {
@@ -199,6 +225,7 @@ main()
   test_03();
   test_04();
   test_05();
+  test_06();
   return 0;
 }
 
