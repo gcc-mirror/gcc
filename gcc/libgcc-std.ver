@@ -1,47 +1,82 @@
 GCC_3.0 {
-  # libgcc1 symbols
+  # libgcc1 integer symbols
   __absvsi2
-  __adddf3
-  __addsf3
   __addvsi3
   __ashlsi3
   __ashrsi3
-  __divdf3
-  __divsf3
   __divsi3
-  __divtf3
-  __eqdf2
-  __eqsf2
-  __extendsfdf2
-  __fixdfsi
-  __fixsfsi
-  __floatsidf
-  __floatsisf
-  __gedf2
-  __gesf2
-  __gtdf2
-  __gtsf2
-  __ledf2
-  __lesf2
   __lshrsi3
-  __ltdf2
-  __ltsf2
   __modsi3
-  __muldf3
-  __mulsf3
   __mulsi3
   __mulvsi3
-  __nedf2
-  __negdf2
-  __negsf2
   __negvsi2
-  __nesf2
-  __subdf3
-  __subsf3
   __subvsi3
-  __truncdfsf2
   __udivsi3
   __umodsi3
+
+  # libgcc1 floating point symbols
+  __addsf3
+  __adddf3
+  __addxf3
+  __addtf3
+  __divsf3
+  __divdf3
+  __divxf3
+  __divtf3
+  __eqsf2
+  __eqdf2
+  __eqxf2
+  __eqtf2
+  __extenddfxf2
+  __extenddftf2
+  __extendsfdf2
+  __extendsfxf2
+  __extendsftf2
+  __fixsfsi
+  __fixdfsi
+  __fixxfsi
+  __fixtfsi
+  __floatsisf
+  __floatsidf
+  __floatsixf
+  __floatsitf
+  __gesf2
+  __gedf2
+  __gexf2
+  __getf2
+  __gtsf2
+  __gtdf2
+  __gtxf2
+  __gttf2
+  __lesf2
+  __ledf2
+  __lexf2
+  __letf2
+  __ltsf2
+  __ltdf2
+  __ltxf2
+  __lttf2
+  __mulsf3
+  __muldf3
+  __mulxf3
+  __multf3
+  __negsf2
+  __negdf2
+  __negxf2
+  __negtf2
+  __nesf2
+  __nedf2
+  __nexf2
+  __netf2
+  __subsf3
+  __subdf3
+  __subxf3
+  __subtf3
+  __truncdfsf2
+  __truncxfsf2
+  __trunctfsf2
+  __truncxfdf2
+  __trunctfdf2
 
   # libgcc2 DImode arithmetic (for 32-bit targets).
   __absvdi2
@@ -53,12 +88,20 @@ GCC_3.0 {
   __ffsdi2
   __fixdfdi
   __fixsfdi
-  __fixunssfsi
+  __fixtfdi
+  __fixxfdi
   __fixunsdfdi
-  __fixunssfdi
   __fixunsdfsi
+  __fixunssfsi
+  __fixunssfdi
+  __fixunstfdi
+  __fixunstfsi
+  __fixunsxfdi
+  __fixunsxfsi
   __floatdidf
   __floatdisf
+  __floatdixf
+  __floatditf
   __lshrdi3
   __moddi3
   __muldi3
@@ -79,6 +122,8 @@ GCC_3.0 {
   __ffsti2
   __fixdfti
   __fixsfti
+  __fixtfti
+  __fixxfti
   __lshrti3
   __modti3
   __multi3
@@ -89,10 +134,11 @@ GCC_3.0 {
   __umodti3
   __fixunsdfti
   __fixunssfti
+  __fixunstfti
+  __fixunsxfti
   __floattidf
   __floattisf
-  __fixtfti
-  __fixunstfti
+  __floattixf
   __floattitf
 
   # Basic block profile symbols.
