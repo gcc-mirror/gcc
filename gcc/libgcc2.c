@@ -477,7 +477,7 @@ __udivmoddi4 (n, d, rp)
 #endif
 
 #ifdef L_divdi3
-unsigned long long __udivmoddi4();
+unsigned long long __udivmoddi4 ();
 long long
 __divdi3 (u, v)
      long long u, v;
@@ -505,7 +505,7 @@ __divdi3 (u, v)
 #endif
 
 #ifdef L_moddi3
-unsigned long long __udivmoddi4();
+unsigned long long __udivmoddi4 ();
 long long
 __moddi3 (u, v)
      long long u, v;
@@ -532,7 +532,7 @@ __moddi3 (u, v)
 #endif
 
 #ifdef L_umoddi3
-unsigned long long __udivmoddi4();
+unsigned long long __udivmoddi4 ();
 unsigned long long
 __umoddi3 (u, v)
      unsigned long long u, v;
@@ -546,7 +546,7 @@ __umoddi3 (u, v)
 #endif
 
 #ifdef L_udivdi3
-unsigned long long __udivmoddi4();
+unsigned long long __udivmoddi4 ();
 unsigned long long
 __udivdi3 (n, d)
      unsigned long long n, d;
@@ -1230,6 +1230,9 @@ __enable_execute_stack ()
 void
 __do_global_dtors ()
 {
+#ifdef DO_GLOBAL_DTORS_BODY
+  DO_GLOBAL_DTORS_BODY;
+#else
   int nptrs = *(int *)__DTOR_LIST__;
   int i;
 
@@ -1245,6 +1248,7 @@ __do_global_dtors ()
   /* GNU LD format.  */
   for (i = nptrs; i >= 1; i--)
     __DTOR_LIST__[i] ();
+#endif
 }
 
 #ifndef INIT_SECTION_ASM_OP
