@@ -36,6 +36,7 @@ Boston, MA 02111-1307, USA.  */
 #include "except.h"
 #include "function.h"
 #include "bytecode.h"
+#include "intl.h"
 
 #include "obstack.h"
 #define	obstack_chunk_alloc	xmalloc
@@ -97,7 +98,7 @@ get_label_from_map (map, i)
 
 /* Zero if the current function (whose FUNCTION_DECL is FNDECL)
    is safe and reasonable to integrate into other functions.
-   Nonzero means value is a warning message with a single %s
+   Nonzero means value is a warning msgid with a single %s
    for the function's name.  */
 
 char *
@@ -114,17 +115,17 @@ function_cannot_inline_p (fndecl)
   /* No inlines with varargs.  */
   if ((last && TREE_VALUE (last) != void_type_node)
       || current_function_varargs)
-    return "varargs function cannot be inline";
+    return N_("varargs function cannot be inline");
 
   if (current_function_calls_alloca)
-    return "function using alloca cannot be inline";
+    return N_("function using alloca cannot be inline");
 
   if (current_function_contains_functions)
-    return "function with nested functions cannot be inline";
+    return N_("function with nested functions cannot be inline");
 
   /* If its not even close, don't even look.  */
   if (!DECL_INLINE (fndecl) && get_max_uid () > 3 * max_insns)
-    return "function too large to be inline";
+    return N_("function too large to be inline");
 
 #if 0
   /* Don't inline functions which do not specify a function prototype and
@@ -134,32 +135,32 @@ function_cannot_inline_p (fndecl)
       if (TYPE_MODE (TREE_TYPE (parms)) == BLKmode)
 	TREE_ADDRESSABLE (parms) = 1;
       if (last == NULL_TREE && TREE_ADDRESSABLE (parms))
-	return "no prototype, and parameter address used; cannot be inline";
+	return N_("no prototype, and parameter address used; cannot be inline");
     }
 #endif
 
   /* We can't inline functions that return structures
      the old-fashioned PCC way, copying into a static block.  */
   if (current_function_returns_pcc_struct)
-    return "inline functions not supported for this return value type";
+    return N_("inline functions not supported for this return value type");
 
   /* We can't inline functions that return BLKmode structures in registers.  */
   if (TYPE_MODE (TREE_TYPE (TREE_TYPE (fndecl))) == BLKmode
       && ! aggregate_value_p (TREE_TYPE (TREE_TYPE (fndecl))))
-    return "inline functions not supported for this return value type";
+    return N_("inline functions not supported for this return value type");
 
   /* We can't inline functions that return structures of varying size.  */
   if (int_size_in_bytes (TREE_TYPE (TREE_TYPE (fndecl))) < 0)
-    return "function with varying-size return value cannot be inline";
+    return N_("function with varying-size return value cannot be inline");
 
   /* Cannot inline a function with a varying size argument or one that
      receives a transparent union.  */
   for (parms = DECL_ARGUMENTS (fndecl); parms; parms = TREE_CHAIN (parms))
     {
       if (int_size_in_bytes (TREE_TYPE (parms)) < 0)
-	return "function with varying-size parameter cannot be inline";
+	return N_("function with varying-size parameter cannot be inline");
       else if (TYPE_TRANSPARENT_UNION (TREE_TYPE (parms)))
-	return "function with transparent unit parameter cannot be inline";
+	return N_("function with transparent unit parameter cannot be inline");
     }
 
   if (!DECL_INLINE (fndecl) && get_max_uid () > max_insns)
@@ -171,7 +172,7 @@ function_cannot_inline_p (fndecl)
 	  ninsns++;
 
       if (ninsns >= max_insns)
-	return "function too large to be inline";
+	return N_("function too large to be inline");
     }
 
   /* We cannot inline this function it has the addresses of its labels
@@ -183,11 +184,11 @@ function_cannot_inline_p (fndecl)
      function, hence inlining is impossible.  */
 
   if (current_function_addresses_labels)
-    return "function with label addresses taken cannot inline";
+    return N_("function with label addresses taken cannot inline");
 
   /* We cannot inline a nested function that jumps to a nonlocal label.  */
   if (current_function_has_nonlocal_goto)
-    return "function with nonlocal goto cannot be inline";
+    return N_("function with nonlocal goto cannot be inline");
 
   /* This is a hack, until the inliner is taught about eh regions at
      the start of the function.  */
@@ -199,13 +200,13 @@ function_cannot_inline_p (fndecl)
     {
       if (insn && GET_CODE (insn) == NOTE
 	  && NOTE_LINE_NUMBER (insn) == NOTE_INSN_EH_REGION_BEG)
-	return "function with complex parameters cannot be inline";
+	return N_("function with complex parameters cannot be inline");
     }
 
   /* We can't inline functions that return a PARALLEL rtx.  */
   result = DECL_RTL (DECL_RESULT (fndecl));
   if (result && GET_CODE (result) == PARALLEL)
-    return "inline functions not supported for this return value type";
+    return N_("inline functions not supported for this return value type");
 
   return 0;
 }
