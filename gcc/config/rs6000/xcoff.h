@@ -221,7 +221,9 @@ toc_section ()						\
   rs6000_gen_section_name (&xcoff_read_only_section_name,	\
 			   main_input_filename, ".ro_");	\
 								\
-  fprintf (FILE, "\t.file\t\"%s\"\n", main_input_filename);	\
+  fputs ("\t.file\t", FILE);                                    \
+  output_quoted_string (FILE, main_input_filename);             \
+  fputc ('\n', FILE);                                           \
   if (TARGET_64BIT)						\
     fputs ("\t.machine\t\"ppc64\"\n", FILE);			\
   toc_section ();						\

@@ -4801,9 +4801,10 @@ void
 asm_file_end (file)
      FILE *file;
 {
+  fputs ("/* File ", file);
+  output_quoted_string (file, main_input_filename);
   fprintf (file,
-	   "/* File %s: code %4d = 0x%04x (%4d), prologues %3d, epilogues %3d */\n",
-	   main_input_filename,
+	   ": code %4d = 0x%04x (%4d), prologues %3d, epilogues %3d */\n",
 	   commands_in_file,
 	   commands_in_file,
 	   commands_in_file - commands_in_prologues - commands_in_epilogues,

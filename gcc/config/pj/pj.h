@@ -1017,10 +1017,13 @@ struct pj_args
 /* The text to go at the start of the assembler file.  */
 
 #undef ASM_FILE_START
-#define ASM_FILE_START(FILE)                                                 \
-  fprintf (FILE,"\t.file\t\"%s\"\n", main_input_filename);                   \
-  fprintf (FILE,"\t! %s\n", TARGET_LITTLE_ENDIAN ? ".little" : ".big");      \
-  fprintf (FILE,"\t.align 4\n");
+#define ASM_FILE_START(FILE)                                              \
+  do {                                                                    \
+    fputs ("\t.file\t", FILE);                                            \
+    output_quoted_string (FILE, main_input_filename);                     \
+    fprintf (FILE,"\t! %s\n", TARGET_LITTLE_ENDIAN ? ".little" : ".big"); \
+    fprintf (FILE,"\t.align 4\n");                                        \
+  } while (0)
 
 #define ASM_APP_ON              ""
 #define ASM_APP_OFF             ""

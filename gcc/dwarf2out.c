@@ -11826,7 +11826,11 @@ lookup_filename (file_name)
   file_table.last_lookup_index = i;
 
   if (DWARF2_ASM_LINE_DEBUG_INFO)
-    fprintf (asm_out_file, "\t.file %u \"%s\"\n", i, file_name);
+    {
+      fprintf (asm_out_file, "\t.file %u ", i);
+      output_quoted_string (asm_out_file, file_name);
+      fputc ('\n', asm_out_file);
+    }
 
   return i;
 }

@@ -1740,7 +1740,11 @@ enum reg_class { NO_REGS, AP_REG, XRF_REGS, GENERAL_REGS, AGRF_REGS,
 #undef	ASM_FILE_END
 
 #define ASM_OUTPUT_SOURCE_FILENAME(FILE, NAME) \
-  fprintf (FILE, "%s\"%s\"\n", FILE_ASM_OP, NAME)
+  do {                                         \
+    fprintf (FILE_ASM_OP, FILE);               \
+    output_quoted_string (FILE, NAME);         \
+    putc ('\n', FILE);                         \
+  } while (0)
 
 #ifdef SDB_DEBUGGING_INFO
 #undef ASM_OUTPUT_SOURCE_LINE
