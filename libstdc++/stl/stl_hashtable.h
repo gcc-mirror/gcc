@@ -1014,14 +1014,14 @@ void hashtable<_Val,_Key,_HF,_Ex,_Eq,_All>
   __STL_TRY {
     for (size_type __i = 0; __i < __ht._M_buckets.size(); ++__i) {
       if (const _Node* __cur = __ht._M_buckets[__i]) {
-        _Node* __copy = _M_new_node(__cur->_M_val);
-        _M_buckets[__i] = __copy;
+        _Node* ___copy = _M_new_node(__cur->_M_val);
+        _M_buckets[__i] = ___copy;
 
         for (_Node* __next = __cur->_M_next; 
              __next; 
              __cur = __next, __next = __cur->_M_next) {
-          __copy->_M_next = _M_new_node(__next->_M_val);
-          __copy = __copy->_M_next;
+          ___copy->_M_next = _M_new_node(__next->_M_val);
+          ___copy = ___copy->_M_next;
         }
       }
     }
