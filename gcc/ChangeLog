@@ -1,3 +1,16 @@
+Thu Jul 30 12:51:09 1998  Mark Mitchell  <mark@markmitchell.com>
+
+	* dyn-string.h: New file.
+	* dyn-string.c: Likewise.
+	* Makefile.in (OBJS): Add dyn-string.o.
+	(dwarf2out.o): Add dyn-string.h dependency.
+	(dyn-string.o): List dependencies.
+	* dwarf2out.c: Include dyn-string.h.
+	(ASM_NAME_TO_STRING): Use dyn_string_append, rather than strcpy.
+	(addr_const_to_string): Take a dyn_string_t, not a char* as a
+	prototype.  Use dyn_string_append rather than strcat, throughout.
+	(addr_to_string): Use dyn_string_t.
+
 Thu Jul 30 00:58:34 1998  Jeffrey A Law  (law@cygnus.com)
 
 	* i386.md (movqi): When optimizing a load of (const_int 1) into a
