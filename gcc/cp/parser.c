@@ -1,5 +1,5 @@
 /* C++ Parser.
-   Copyright (C) 2000, 2001, 2002 Free Software Foundation, Inc.
+   Copyright (C) 2000, 2001, 2002, 2003 Free Software Foundation, Inc.
    Written by Mark Mitchell <mark@codesourcery.com>.
 
    This file is part of GCC.
@@ -14432,6 +14432,8 @@ cp_parser_sizeof_operand (parser, keyword)
   saved_constant_expression_p = parser->constant_expression_p;
   parser->constant_expression_p = false;
 
+  /* Do not actually evaluate the expression.  */
+  ++skip_evaluation;
   /* If it's a `(', then we might be looking at the type-id
      construction.  */
   if (cp_lexer_next_token_is (parser->lexer, CPP_OPEN_PAREN))
@@ -14468,6 +14470,8 @@ cp_parser_sizeof_operand (parser, keyword)
      looking at the unary-expression production.  */
   if (!expr)
     expr = cp_parser_unary_expression (parser, /*address_p=*/false);
+  /* Go back to evaluating expressions.  */
+  --skip_evaluation;
 
   /* Free the message we created.  */
   free ((char *) parser->type_definition_forbidden_message);
