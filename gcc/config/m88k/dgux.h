@@ -27,7 +27,7 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 /* DWARF_DEBUGGING_INFO defined in svr4.h.  */
 #define SDB_DEBUGGING_INFO
 #define PREFERRED_DEBUGGING_TYPE \
-  (VERSION_0300_SYNTAX ? DWARF_DEBUG : SDB_DEBUG)
+  (GET_VERSION_0300_SYNTAX ? DWARF_DEBUG : SDB_DEBUG)
 
 #ifndef NO_BUGS
 #define AS_BUG_IMMEDIATE_LABEL
@@ -58,6 +58,8 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #define TARGET_DEFAULT	(MASK_CHECK_ZERO_DIV	 | \
 			 MASK_OCS_DEBUG_INFO	 | \
 			 MASK_OCS_FRAME_POSITION)
+#undef	CPU_DEFAULT
+#define CPU_DEFAULT MASK_88000
 
 /* Macros to be automatically defined.  __svr4__ is our extension.
    __CLASSIFY_TYPE__ is used in the <varargs.h> and <stdarg.h> header
@@ -78,7 +80,7 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #define ASM_SPEC "\
 %{V} %{v:%{!V:-V}} %{pipe: - %{msvr4:%{mversion-03.00:-KV3}}}\
 %{!mlegend:%{mstandard:-Wc,off}}\
-%{mlegend:-Wc,-fix-bb,-h\"gcc-2.0.3\",-s\"%i\"\
+%{mlegend:-Wc,-fix-bb,-h\"gcc-2.2.12\",-s\"%i\"\
 %{traditional:,-lc}%{!traditional:,-lansi-c}\
 %{mstandard:,-keep-std}\
 %{mkeep-coff:,-keep-coff}\
@@ -120,7 +122,11 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 
 /* DGUX V.4 isn't quite ELF--yet.  */
 #undef  VERSION_0300_SYNTAX
-#define VERSION_0300_SYNTAX (TARGET_SVR4 && TARGET_VERSION_0300)
+#define VERSION_0300_SYNTAX (TARGET_SVR4 && m88k_version_0300)
+
+/* Same, but used before OVERRIDE_OPTIONS has been processed.  */
+#define GET_VERSION_0300_SYNTAX \
+  (TARGET_SVR4 && m88k_version != 0 && strcmp (m88k_version, "03.00") >= 0)
 
 /* Output the legend info for mxdb when debugging except if standard
    debugging information only is explicitly requested.  */
