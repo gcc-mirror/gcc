@@ -108,13 +108,12 @@ static tree add_outermost_template_args (tree, tree);
 static bool check_instantiated_args (tree, tree, tsubst_flags_t);
 static int maybe_adjust_types_for_deduction (unification_kind_t, tree*, tree*); 
 static int  type_unification_real (tree, tree, tree, tree,
-				   int, unification_kind_t, int, int);
+				   int, unification_kind_t, int);
 static void note_template_header (int);
 static tree convert_nontype_argument_function (tree, tree);
 static tree convert_nontype_argument (tree, tree);
 static tree convert_template_argument (tree, tree, tree,
 				       tsubst_flags_t, int, tree);
-static tree get_bindings_overload (tree, tree, tree);
 static int for_each_template_parm (tree, tree_fn_t, void*,
 				   struct pointer_set_t*);
 static tree build_template_parm_index (int, int, int, tree, tree);
@@ -128,8 +127,7 @@ static int template_parm_this_level_p (tree, void *);
 static tree tsubst_friend_function (tree, tree);
 static tree tsubst_friend_class (tree, tree);
 static int can_complete_type_without_circularity (tree);
-static tree get_bindings (tree, tree, tree);
-static tree get_bindings_real (tree, tree, tree, int, int, int);
+static tree get_bindings (tree, tree, tree, bool);
 static int template_decl_level (tree);
 static int check_cv_quals_for_unify (int, tree, tree);
 static tree tsubst_template_arg (tree, tree, tsubst_flags_t, tree);
@@ -1433,7 +1431,7 @@ determine_specialization (tree template_id,
  
 	  /* See whether this function might be a specialization of this
 	     template.  */
-	  targs = get_bindings (fn, decl, explicit_targs);
+	  targs = get_bindings (fn, decl, explicit_targs, /*check_ret=*/true);
 
 	  if (!targs)
 	    /* We cannot deduce template arguments that when used to
@@ -1532,7 +1530,7 @@ determine_specialization (tree template_id,
      tree tmpl = most_specialized (templates, decl, explicit_targs);
      if (tmpl && tmpl != error_mark_node)
        {
-	 targs = get_bindings (tmpl, decl, explicit_targs);
+	 targs = get_bindings (tmpl, decl, explicit_targs, /*check_ret=*/true);
 	 templates = tree_cons (targs, tmpl, NULL_TREE);
        }
     }
@@ -9062,13 +9060,7 @@ instantiate_template (tree tmpl, tree targ_ptr, tsubst_flags_t complain)
      We are deducing arguments when doing an explicit instantiation
      as in [temp.explicit], when determining an explicit specialization
      as in [temp.expl.spec], or when taking the address of a function
-     template, as in [temp.deduct.funcaddr]. 
-
-   LEN is the number of parms to consider before returning success, or -1
-   for all.  This is used in partial ordering to avoid comparing parms for
-   which no actual argument was passed, since they are not considered in
-   overload resolution (and are explicitly excluded from consideration in
-   partial ordering in [temp.func.order]/6).  */
+     template, as in [temp.deduct.funcaddr].  */
 
 int
 fn_type_unification (tree fn, 
@@ -9076,8 +9068,7 @@ fn_type_unification (tree fn,
                      tree targs, 
                      tree args, 
                      tree return_type,
-		     unification_kind_t strict, 
-                     int len)
+		     unification_kind_t strict)
 {
   tree parms;
   tree fntype;
@@ -9148,8 +9139,6 @@ fn_type_unification (tree fn,
       /* We've been given a return type to match, prepend it.  */
       parms = tree_cons (NULL_TREE, TREE_TYPE (fntype), parms);
       args = tree_cons (NULL_TREE, return_type, args);
-      if (len >= 0)
-	++len;
     }
 
   /* We allow incomplete unification without an error message here
@@ -9158,7 +9147,7 @@ fn_type_unification (tree fn,
      event.  */
   result = type_unification_real (DECL_INNERMOST_TEMPLATE_PARMS (fn), 
 				  targs, parms, args, /*subr=*/0,
-				  strict, /*allow_incomplete*/1, len);
+				  strict, /*allow_incomplete*/1);
 
   if (result == 0) 
     /* All is well so far.  Now, check:
@@ -9275,8 +9264,7 @@ type_unification_real (tree tparms,
                        tree xargs, 
                        int subr,
 		       unification_kind_t strict, 
-                       int allow_incomplete, 
-                       int xlen)
+                       int allow_incomplete)
 {
   tree parm, arg;
   int i;
@@ -9284,7 +9272,6 @@ type_unification_real (tree tparms,
   int sub_strict;
   int saw_undeduced = 0;
   tree parms, args;
-  int len;
 
   gcc_assert (TREE_CODE (tparms) == TREE_VEC);
   gcc_assert (xparms == NULL_TREE || TREE_CODE (xparms) == TREE_LIST);
@@ -9310,18 +9297,12 @@ type_unification_real (tree tparms,
       gcc_unreachable ();
     }
 
-  if (xlen == 0)
-    return 0;
-
  again:
   parms = xparms;
   args = xargs;
-  len = xlen;
 
-  while (parms
-	 && parms != void_list_node
-	 && args
-	 && args != void_list_node)
+  while (parms && parms != void_list_node
+	 && args && args != void_list_node)
     {
       parm = TREE_VALUE (parms);
       parms = TREE_CHAIN (parms);
@@ -9393,25 +9374,20 @@ type_unification_real (tree tparms,
         if (unify (tparms, targs, parm, arg, arg_strict))
           return 1;
       }
-
-      /* Are we done with the interesting parms?  */
-      if (--len == 0)
-	goto done;
     }
+  
   /* Fail if we've reached the end of the parm list, and more args
      are present, and the parm list isn't variadic.  */
   if (args && args != void_list_node && parms == void_list_node)
     return 1;
   /* Fail if parms are left and they don't have default values.  */
-  if (parms
-      && parms != void_list_node
+  if (parms && parms != void_list_node
       && TREE_PURPOSE (parms) == NULL_TREE)
     return 1;
 
- done:
   if (!subr)
     for (i = 0; i < ntparms; i++)
-      if (TREE_VEC_ELT (targs, i) == NULL_TREE)
+      if (!TREE_VEC_ELT (targs, i))
 	{
 	  tree tparm = TREE_VALUE (TREE_VEC_ELT (tparms, i));
 
@@ -9428,6 +9404,7 @@ type_unification_real (tree tparms,
 	    error ("incomplete type unification");
 	  return 2;
 	}
+  
   return 0;
 }
 
@@ -9485,8 +9462,8 @@ resolve_overloaded_unification (tree tparms,
 	  if (TREE_CODE (fn) != TEMPLATE_DECL)
 	    continue;
 
-	  subargs = get_bindings_overload (fn, DECL_TEMPLATE_RESULT (fn),
-					   expl_subargs);
+	  subargs = get_bindings (fn, DECL_TEMPLATE_RESULT (fn),
+				  expl_subargs, /*check_ret=*/false);
 	  if (subargs)
 	    {
 	      elem = tsubst (TREE_TYPE (fn), subargs, tf_none, NULL_TREE);
@@ -9583,17 +9560,14 @@ try_one_overload (tree tparms,
       tree elt = TREE_VEC_ELT (tempargs, i);
       tree oldelt = TREE_VEC_ELT (orig_targs, i);
 
-      if (elt == NULL_TREE)
-	continue;
+      if (!elt)
+	/*NOP*/;
       else if (uses_template_parms (elt))
-	{
-	  /* Since we're unifying against ourselves, we will fill in template
-	     args used in the function parm list with our own template parms.
-	     Discard them.  */
-	  TREE_VEC_ELT (tempargs, i) = NULL_TREE;
-	  continue;
-	}
-      else if (oldelt && ! template_args_equal (oldelt, elt))
+	/* Since we're unifying against ourselves, we will fill in
+	   template args used in the function parm list with our own
+	   template parms.  Discard them.  */
+	TREE_VEC_ELT (tempargs, i) = NULL_TREE;
+      else if (oldelt && !template_args_equal (oldelt, elt))
 	return 0;
     }
 
@@ -10254,7 +10228,7 @@ unify (tree tparms, tree targs, tree parm, tree arg, int strict)
 	return 1;
       return type_unification_real (tparms, targs, TYPE_ARG_TYPES (parm),
 				    TYPE_ARG_TYPES (arg), 1, 
-				    DEDUCE_EXACT, 0, -1);
+				    DEDUCE_EXACT, 0);
 
     case OFFSET_TYPE:
       /* Unify a pointer to member with a pointer to member function, which
@@ -10585,23 +10559,17 @@ more_specialized_class (tree pat1, tree pat2, tree full_args)
 
 /* Return the template arguments that will produce the function signature
    DECL from the function template FN, with the explicit template
-   arguments EXPLICIT_ARGS.  If CHECK_RETTYPE is 1, the return type must
+   arguments EXPLICIT_ARGS.  If CHECK_RETTYPE is true, the return type must
    also match.  Return NULL_TREE if no satisfactory arguments could be
-   found.  DEDUCE and LEN are passed through to fn_type_unification.  */
+   found.  */
    
 static tree
-get_bindings_real (tree fn, 
-                   tree decl, 
-                   tree explicit_args, 
-                   int check_rettype, 
-                   int deduce, 
-                   int len)
+get_bindings (tree fn, tree decl, tree explicit_args, bool check_rettype)
 {
   int ntparms = DECL_NTPARMS (fn);
   tree targs = make_tree_vec (ntparms);
   tree decl_type;
   tree decl_arg_types;
-  int i;
 
   /* Substitute the explicit template arguments into the type of DECL.
      The call to fn_type_unification will handle substitution into the
@@ -10635,33 +10603,14 @@ get_bindings_real (tree fn,
   if (DECL_NONSTATIC_MEMBER_FUNCTION_P (decl))
     decl_arg_types = TREE_CHAIN (decl_arg_types);
 
-  i = fn_type_unification (fn, explicit_args, targs, 
+  if (fn_type_unification (fn, explicit_args, targs, 
 			   decl_arg_types,
 			   (check_rettype || DECL_CONV_FN_P (fn)
 	                    ? TREE_TYPE (decl_type) : NULL_TREE),
-			   deduce, len);
-
-  if (i != 0)
+			   DEDUCE_EXACT))
     return NULL_TREE;
 
   return targs;
-}
-
-/* For most uses, we want to check the return type.  */
-
-static tree 
-get_bindings (tree fn, tree decl, tree explicit_args)
-{
-  return get_bindings_real (fn, decl, explicit_args, 1, DEDUCE_EXACT, -1);
-}
-
-/* But for resolve_overloaded_unification, we only care about the parameter
-   types.  */
-
-static tree
-get_bindings_overload (tree fn, tree decl, tree explicit_args)
-{
-  return get_bindings_real (fn, decl, explicit_args, 0, DEDUCE_EXACT, -1);
 }
 
 /* Return the innermost template arguments that, when applied to a
@@ -10721,14 +10670,14 @@ most_specialized_instantiation (tree instantiations)
     {
       int fate = 0;
       
-      if (get_bindings_real (TREE_VALUE (champ),
-			     DECL_TEMPLATE_RESULT (TREE_VALUE (fn)),
-			     NULL_TREE, 0, DEDUCE_EXACT, -1))
+      if (get_bindings (TREE_VALUE (champ),
+			DECL_TEMPLATE_RESULT (TREE_VALUE (fn)),
+			NULL_TREE, /*check_ret=*/false))
 	fate--;
 
-      if (get_bindings_real (TREE_VALUE (fn),
-			     DECL_TEMPLATE_RESULT (TREE_VALUE (champ)),
-			     NULL_TREE, 0, DEDUCE_EXACT, -1))
+      if (get_bindings (TREE_VALUE (fn),
+			DECL_TEMPLATE_RESULT (TREE_VALUE (champ)),
+			NULL_TREE, /*check_ret=*/false))
 	fate++;
       
       if (fate != 1)
@@ -10745,12 +10694,12 @@ most_specialized_instantiation (tree instantiations)
     /* Now verify that champ is better than everything earlier in the
        instantiation list.  */
     for (fn = instantiations; fn != champ; fn = TREE_CHAIN (fn))
-      if (get_bindings_real (TREE_VALUE (champ),
-			     DECL_TEMPLATE_RESULT (TREE_VALUE (fn)),
-			     NULL_TREE, 0, DEDUCE_EXACT, -1)
-	  || !get_bindings_real (TREE_VALUE (fn),
-				 DECL_TEMPLATE_RESULT (TREE_VALUE (champ)),
-				 NULL_TREE, 0, DEDUCE_EXACT, -1))
+      if (get_bindings (TREE_VALUE (champ),
+			DECL_TEMPLATE_RESULT (TREE_VALUE (fn)),
+			NULL_TREE, /*check_ret=*/false)
+	  || !get_bindings (TREE_VALUE (fn),
+			    DECL_TEMPLATE_RESULT (TREE_VALUE (champ)),
+			    NULL_TREE, /*check_ret=*/false))
 	{
 	  champ = NULL_TREE;
 	  break;
@@ -10778,7 +10727,7 @@ most_specialized (tree fns, tree decl, tree explicit_args)
     {
       tree candidate = TREE_VALUE (fn);
 
-      args = get_bindings (candidate, decl, explicit_args);
+      args = get_bindings (candidate, decl, explicit_args, /*check_ret=*/true);
       if (args)
 	candidates = tree_cons (NULL_TREE, candidate, candidates);
     }

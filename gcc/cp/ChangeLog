@@ -1,3 +1,23 @@
+2005-04-01  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* call.c (add_template_candidates_real): Remove length parameter
+	from fn_type_unification call.
+	* class.c (resolve_address_of_overloaded_function): Likewise
+	* cp-tree.h (fn_type_unification): Remove length parameter.
+	* pt.c (get_bindings_overload): Remove.
+	(get_bindings_real): Rename to ...
+	(get_bindings): ... here.  Remove length and strict
+	parameters. Change return type flag to boolean.  Remove original
+	forwarding function.
+	(determine_specialization): Adjust get_bindings call.
+	(fn_type_unification): Remove length parameter.  Adjust.
+	(type_unification_real): Remove length parameter.  Adjust.
+	(resolve_overloaded_unification): Adjust get_bindings call.
+	(try_one_overload): Simplify confusing cascaded if control flow.
+	(unify): Remove length paramter from type_unification_real call.
+	(most_specialized_instantiation): Adjust get_bindings calls.
+	(most_specialized): Likewise.
+
 2005-03-31  Nathan Sidwell  <nathan@codesourcery.com>
 
 	PR c++/19203, implement DR 214

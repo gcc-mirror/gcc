@@ -5733,7 +5733,7 @@ resolve_address_of_overloaded_function (tree target_type,
 	  targs = make_tree_vec (DECL_NTPARMS (fn));
 	  if (fn_type_unification (fn, explicit_targs, targs,
 				   target_arg_types, target_ret_type,
-				   DEDUCE_EXACT, -1) != 0)
+				   DEDUCE_EXACT))
 	    /* Argument deduction failed.  */
 	    continue;
 
