@@ -296,6 +296,7 @@ extern void i386_pe_encode_section_info PARAMS ((TREE));
 do {									\
   const char *_p;							\
   const char *_name = I386_PE_STRIP_ENCODING (SYMBOL_NAME);		\
+  if (*_name == '*') _name++;						\
   for (_p = _name; *_p && *_p != '@'; ++_p)				\
     ;									\
   if (*_p == '@')							\
