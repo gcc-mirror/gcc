@@ -152,8 +152,7 @@ java::lang::Object::sync_init (void)
       // been finalized.  So if we just reinitialize the old one,
       // we'll never be able to (re-)destroy the mutex and/or
       // condition variable.
-      si = (_Jv_SyncInfo *) _Jv_AllocBytes (sizeof (_Jv_SyncInfo));
-      // FIXME: what if si == NULL?
+      si = (_Jv_SyncInfo *) _Jv_AllocBytesChecked (sizeof (_Jv_SyncInfo));
       _Jv_MutexInit (&si->mutex);
       _Jv_CondInit (&si->condition);
 #if defined (_Jv_HaveCondDestroy) || defined (_Jv_HaveMutexDestroy)

@@ -1,5 +1,7 @@
 1999-05-10  Tom Tromey  <tromey@cygnus.com>
 
+	* java/lang/natObject.cc (sync_init): Use _Jv_AllocBytesChecked.
+
 	* java/awt/natToolkit.cc: Added copyright header.
 	* java/util/zip/InflaterInputStream.java: Added copyright header.
 
