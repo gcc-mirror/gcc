@@ -1,7 +1,7 @@
 $ !
 $ !	Set up to compile GCC on VMS.
 $ !
-$! Set the def dir to proper place for use in batch. Works for interactive too.
+$ ! Set the def dir to proper place for use in batch. Works for interactive too.
 $flnm = f$enviroment("PROCEDURE")     ! get current procedure name
 $set default 'f$parse(flnm,,,"DEVICE")''f$parse(flnm,,,"DIRECTORY")'
 $ !
@@ -14,8 +14,17 @@ $ arch_indx = 1 + ((f$getsyi("CPU").ge.128).and.1)	! vax==1, alpha==2
 $ arch = f$element(arch_indx,"|","|vax|alpha|")
 $ !
 $ if f$search("config.h") .nes. "" then delete config.h.*
-$ copy [.config.'arch']xm-vms.h []config.h
-$ echo "Linked `config.h' to `[.config.''arch']xm-vms.h'."
+$ if arch .eqs. "vax"
+$ then
+$   copy [.config.'arch']xm-vms.h []config.h
+$   echo "Linked `config.h' to `[.config.''arch']xm-vms.h'."
+$else
+$   open/write cfile []config.h
+$   write cfile "#include "+"""config/"+arch+"/xm-"+arch+".h"+"""
+$   write cfile "#include "+"""config/"+arch+"/xm-vms.h"+"""
+$   close cfile
+$   echo "Created `config.h'."
+$ endif
 $ !
 $ if f$search("tconfig.h") .nes. "" then delete tconfig.h.*
 $ create []tconfig.h
@@ -34,7 +43,7 @@ $EOD
 $ echo "Created `hconfig.h'.
 $ !
 $ if f$search("tm.h") .nes. "" then delete tm.h.*
-$!! copy [.config.'arch']vms.h []tm.h
+$ !
 $ edit/tpu/nojournal/nosection/nodisplay/command=sys$input -
         [.config.'arch']vms.h /output=[]tm.h
 $DECK
@@ -60,7 +69,7 @@ $DECK
    ENDLOOP;
    WRITE_FILE(file, GET_INFO(COMMAND_LINE, "output_file"));
    QUIT
-$EOD
+$  EOD
 $ echo "Generated `tm.h' from `[.config.''arch']vms.h'."
 $ !
 $	!crude hack to allow compiling from [.cp] subdirectory
@@ -72,18 +81,21 @@ $ call make_lang_incl "options.h"
 $ !
 $ call make_lang_incl "specs.h"
 $ !
-$ if f$search("''arch'.md") .nes. "" then delete 'arch'.md;*
-$ copy [.config.'arch']'arch'.md []'arch'.md
-$ echo "Copied `''arch'.md' from `[.config.''arch']''arch'.md'."
+$ if arch .eqs. "vax"
+$ then
+$   if f$search("''arch'.md") .nes. "" then delete 'arch'.md;*
+$   copy [.config.'arch']'arch'.md []'arch'.md
+$   echo "Copied `''arch'.md' from `[.config.''arch']''arch'.md'."
+$ endif
 $ !
 $ if f$search("aux-output.c") .nes. "" then delete aux-output.c.*
 $ copy [.config.'arch']'arch'.c []aux-output.c
 $ echo "Linked `aux-output.c' to `[.config.''arch']''arch'.c'.
 $ !
-$!
-$!
-$! Create the file version.opt, which helps identify the executable.
-$!
+$ !
+$ !
+$ ! Create the file version.opt, which helps identify the executable.
+$ !
 $search version.c version_string,"="/match=and/output=t.tmp
 $open ifile$ t.tmp
 $read ifile$ line
@@ -95,19 +107,9 @@ $ijk=f$locate("""",line)
 $line=f$extract(0,ijk,line)
 $ijk=f$locate("\n",line)
 $line=f$extract(0,ijk,line)
-$!
-$i=0
-$loop:
-$elm=f$element(i," ",line)
-$if elm.eqs."" then goto no_ident
-$if (elm.les."9").and.(elm.ges."0") then goto write_ident
-$i=i+1
-$goto loop
-$!
-$no_ident:
-$elm="?.??"
-$!
-$!
+$ !
+$elm=f$element(1," ",line)
+$ !
 $write_ident:
 $open/write ifile$ version.opt
 $write ifile$ "ident="+""""+elm+""""
@@ -175,6 +177,7 @@ PROCEDURE process_makefile( )
   !
   generate_option_file ("OBJS",      "=", "independent.opt");
   generate_option_file ("LIB2FUNCS", "=", "libgcc2.list");
+  generate_option_file ("CXX_LIB2FUNCS", "=", "libgcc2-cxx.list");
   generate_option_file ("BC_ALL",    "=", "bc_all.list");
   generate_option_file ("BI_OBJ",    "=", "bi_all.opt");
   !
@@ -239,6 +242,9 @@ PROCEDURE configure_makefile( )
   COPY_TEXT ("out_object_file=aux-output.o");	SPLIT_LINE;	! aux-output.obj
   COPY_TEXT ("md_file=" + arch + ".md");	SPLIT_LINE;	! 'arch'/'arch'.md
   COPY_TEXT ("tm_file=tm.h");			SPLIT_LINE;	! 'arch'/tm-vms.h
+  pat_replace ("@" &
+    SPAN("abcdefghijklmnopqrstuvwxyz_ABCDEFGHIJKLMNOPQRSTUVWXYZ#~0123456789")
+		& "@", );			! strip `configure' dummy values
 ENDPROCEDURE; !configure_makefile
 !!
 
@@ -252,6 +258,8 @@ PROCEDURE identify_compilers( )
   ! Strip most comments from the makefile, to speed up subsequent processing.
   POSITION (BEGINNING_OF (makefile_buf));
   pat_replace (LINE_BEGIN & "#" & REMAIN & LINE_END, );
+  pat_replace ("$(exeext)", );
+  pat_replace ("@all_compilers@", );
 !#  ! Convert directory references to VMS syntax (actually, just strip it).
 !#  pat_replace (" $(srcdir)/", " ");
   ! Look up the ``COMPILERS=cc1 xyzzy'' Makefile macro and put
