@@ -5493,37 +5493,18 @@ s390_emit_prologue (void)
   /* Save fprs for variable args.  */
 
   if (current_function_stdarg)
-    {
-      /* Save fpr 0 and 2.  */
-
-      save_fpr (stack_pointer_rtx, STACK_POINTER_OFFSET - 32, 16);
-      save_fpr (stack_pointer_rtx, STACK_POINTER_OFFSET - 24, 17);
-
-      if (TARGET_64BIT)
-	{
-	  /* Save fpr 4 and 6.  */
-
-	  save_fpr (stack_pointer_rtx, STACK_POINTER_OFFSET - 16, 18);
-	  save_fpr (stack_pointer_rtx, STACK_POINTER_OFFSET - 8, 19);
-	}
-    }
+    for (i = 16; i < (TARGET_64BIT ? 20 : 18); i++)
+      save_fpr (stack_pointer_rtx, 16*UNITS_PER_WORD + 8*(i-16), i);
 
   /* Save fprs 4 and 6 if used (31 bit ABI).  */
 
   if (!TARGET_64BIT)
-    {
-      /* Save fpr 4 and 6.  */
-      if (regs_ever_live[18] && !global_regs[18])
+    for (i = 18; i < 20; i++)
+      if (regs_ever_live[i] && !global_regs[i])
 	{
-	  insn = save_fpr (stack_pointer_rtx, STACK_POINTER_OFFSET - 16, 18);
+	  insn = save_fpr (stack_pointer_rtx, 16*UNITS_PER_WORD + 8*(i-16), i);
 	  RTX_FRAME_RELATED_P (insn) = 1;
 	}
-      if (regs_ever_live[19] && !global_regs[19])
-	{
-	  insn = save_fpr (stack_pointer_rtx, STACK_POINTER_OFFSET - 8, 19);
-	  RTX_FRAME_RELATED_P (insn) = 1;
-	}
-    }
 
   /* Decrement stack pointer.  */
 
@@ -5650,6 +5631,7 @@ s390_emit_epilogue (void)
   rtx frame_pointer, return_reg;
   int area_bottom, area_top, offset = 0;
   rtvec p;
+  int i;
 
   if (TARGET_TPF)
     {
@@ -5705,20 +5687,14 @@ s390_emit_epilogue (void)
     }
   else
     {
-      if (regs_ever_live[18] && !global_regs[18])
-	{
-	  if (area_bottom > STACK_POINTER_OFFSET - 16)
-	    area_bottom = STACK_POINTER_OFFSET - 16;
-	  if (area_top < STACK_POINTER_OFFSET - 8)
-	    area_top = STACK_POINTER_OFFSET - 8;
-	}
-      if (regs_ever_live[19] && !global_regs[19])
-	{
-	  if (area_bottom > STACK_POINTER_OFFSET - 8)
-	    area_bottom = STACK_POINTER_OFFSET - 8;
-	  if (area_top < STACK_POINTER_OFFSET)
-	    area_top = STACK_POINTER_OFFSET;
-	}
+      for (i = 18; i < 20; i++)
+	if (regs_ever_live[i] && !global_regs[i])
+	  {
+	    if (area_bottom > 16*UNITS_PER_WORD + 8*(i-16))
+	      area_bottom = 16*UNITS_PER_WORD + 8*(i-16);
+	    if (area_top < 16*UNITS_PER_WORD + 8*(i-16) + 8)
+	      area_top = 16*UNITS_PER_WORD + 8*(i-16) + 8;
+	  } 
     }
 
   /* Check whether we can access the register save area.
@@ -5760,8 +5736,6 @@ s390_emit_epilogue (void)
 
   if (TARGET_64BIT)
     {
-      int i;
-
       if (cfun->machine->save_fprs_p)
 	for (i = 24; i < 32; i++)
 	  if (regs_ever_live[i] && !global_regs[i])
@@ -5770,10 +5744,10 @@ s390_emit_epilogue (void)
     }
   else
     {
-      if (regs_ever_live[18] && !global_regs[18])
-	restore_fpr (frame_pointer, offset + STACK_POINTER_OFFSET - 16, 18);
-      if (regs_ever_live[19] && !global_regs[19])
-	restore_fpr (frame_pointer, offset + STACK_POINTER_OFFSET - 8, 19);
+      for (i = 18; i < 20; i++)
+	if (regs_ever_live[i] && !global_regs[i])
+	  restore_fpr (frame_pointer, 
+		       offset + 16*UNITS_PER_WORD + 8*(i-16), i);
     }
 
   /* Return register.  */

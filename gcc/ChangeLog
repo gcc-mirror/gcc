@@ -1,3 +1,9 @@
+2003-09-25  Ulrich Weigand  <uweigand@de.ibm.com>
+
+	* config/s390/s390.c (s390_emit_prologue): Simplify accesses to
+	FPR slots in the save area.
+	(s390_emit_epilogue): Likewise.
+
 2003-09-25  Richard Sandiford  <rsandifo@redhat.com>
 
 	* cgraph.h (cgraph_remove_edge): Declare.
