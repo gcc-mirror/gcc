@@ -67,6 +67,21 @@ call_operand_address (op, mode)
 	  || (CONSTANT_P (op) && ! TARGET_LONG_CALLS));
 }
 
+/* Return 1 if X contains a symbolic expression.  We know these 
+   expressions will have one of a few well defined forms, so 
+   we need only check those forms.  */
+int
+symbolic_expression_p (x)
+     register rtx x;
+{
+
+  /* Strip off any HIGH. */ 
+  if (GET_CODE (x) == HIGH)
+    x = XEXP (x, 0);
+
+  return (symbolic_operand (x, VOIDmode));
+}
+
 int
 symbolic_operand (op, mode)
      register rtx op;
@@ -468,6 +483,142 @@ finalize_pic ()
     }
   emit_insn (gen_rtx (USE, VOIDmode, pic_offset_table_rtx));
 
+}
+
+/* Try machine-dependent ways of modifying an illegitimate address
+   to be legitimate.  If we find one, return the new, valid address.
+   This macro is used in only one place: `memory_address' in explow.c.
+
+   OLDX is the address as it was before break_out_memory_refs was called.
+   In some cases it is useful to look at this to decide what needs to be done.
+
+   MODE and WIN are passed so that this macro can use
+   GO_IF_LEGITIMATE_ADDRESS.
+
+   It is always safe for this macro to do nothing.  It exists to recognize
+   opportunities to optimize the output. 
+
+   For the PA, transform:
+
+	memory(X + <large int>)
+
+   into:
+
+	if (<large int> & mask) >= 16
+	  Y = (<large int> & ~mask) + mask + 1	Round up.
+	else
+	  Y = (<large int> & ~mask)		Round down.
+	Z = X + Y
+	memory (Z + (<large int> - Y));
+
+   This is for CSE to find several similar references, and only use one Z. 
+
+   X can either be a SYMBOL_REF or REG, but because combine can not
+   perform a 4->2 combination we do nothing for SYMBOL_REF + D where
+   D will not fit in 14 bits.
+
+   MODE_FLOAT references allow displacements which fit in 5 bits, so use
+   0x1f as the mask.  
+
+   MODE_INT references allow displacements which fit in 14 bits, so use
+   0x3fff as the mask. 
+
+   This relies on the fact that most mode MODE_FLOAT references will use FP
+   registers and most mode MODE_INT references will use integer registers.
+   (In the rare case of an FP register used in an integer MODE, we depend
+   on secondary reloads to clean things up.)
+
+
+   It is also beneficial to handle (plus (mult (X) (Y)) (Z)) in a special
+   manner if Y is 2, 4, or 8.  (allows more shadd insns and shifted indexed
+   adressing modes to be used).
+
+   Put X and Z into registers.  Then put the entire expression into
+   a register.  */
+
+rtx
+hppa_legitimize_address (x, oldx, mode)
+     rtx x, oldx;
+     enum machine_mode mode;
+{
+  
+  rtx orig = x;
+
+  /* Strip off CONST. */
+  if (GET_CODE (x) == CONST)
+    x = XEXP (x, 0);
+
+  if (GET_CODE (x) == PLUS
+      && GET_CODE (XEXP (x, 1)) == CONST_INT
+      && (GET_CODE (XEXP (x, 0)) == SYMBOL_REF
+	  || GET_CODE (XEXP (x, 0)) == REG))
+    {
+      rtx int_part, ptr_reg;
+      int newoffset;
+      int offset = INTVAL (XEXP (x, 1));
+      int mask = GET_MODE_CLASS (mode) == MODE_FLOAT ? 0x1f : 0x3fff;
+
+      /* Choose which way to round the offset.  Round up if we 
+	 are >= halfway to the next boundary.  */
+      if ((offset & mask) >= ((mask + 1) / 2))
+	newoffset = (offset & ~ mask) + mask + 1;
+      else
+	newoffset = (offset & ~ mask);
+
+      /* If the newoffset will not fit in 14 bits (ldo), then
+	 handling this would take 4 or 5 instructions (2 to load
+	 the SYMBOL_REF + 1 or 2 to load the newoffset + 1 to
+	 add the new offset and the SYMBOL_REF.)  Combine can
+	 not handle 4->2 or 5->2 combinations, so do not create
+	 them.  */
+      if (! VAL_14_BITS_P (newoffset)
+	  && GET_CODE (XEXP (x, 0)) == SYMBOL_REF)
+	{
+	  rtx const_part = gen_rtx (CONST, VOIDmode,
+				    gen_rtx (PLUS, SImode,
+					     XEXP (x, 0),
+					     GEN_INT (newoffset)));
+	  rtx tmp_reg
+	    = force_reg (SImode,
+			 gen_rtx (HIGH, SImode, const_part));
+	  ptr_reg
+	    = force_reg (SImode,
+			 gen_rtx (LO_SUM, SImode,
+				  tmp_reg, const_part));
+	}
+      else
+	{
+	  if (! VAL_14_BITS_P (newoffset))
+	    int_part = force_reg (SImode, GEN_INT (newoffset));
+	  else
+	    int_part = GEN_INT (newoffset);
+
+	  ptr_reg = force_reg (SImode,
+			       gen_rtx (PLUS, SImode,
+					force_reg (SImode, XEXP (x, 0)),
+					int_part));
+	}
+      return plus_constant (ptr_reg, offset - newoffset);
+    }
+  if (GET_CODE (x) == PLUS && GET_CODE (XEXP (x, 0)) == MULT
+      && GET_CODE (XEXP (XEXP (x, 0), 1)) == CONST_INT
+      && shadd_constant_p (INTVAL (XEXP (XEXP (x, 0), 1))))
+    {
+      int val = INTVAL (XEXP (XEXP (x, 0), 1));
+      rtx reg1, reg2;
+      reg1 = force_reg (SImode, force_operand (XEXP (x, 1), 0));
+      reg2 = force_reg (SImode,
+			force_operand (XEXP (XEXP (x, 0), 0), 0));
+      return force_reg (SImode,
+		        gen_rtx (PLUS, SImode,
+				 gen_rtx (MULT, SImode, reg2,
+					  GEN_INT (val)),
+				 reg1));
+    }
+  if (flag_pic) 
+    return legitimize_pic_address (x, mode, gen_reg_rtx (Pmode));
+
+  return orig;
 }
 
 /* For the HPPA, REG and REG+CONST is cost 0
