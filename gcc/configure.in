@@ -2462,6 +2462,41 @@ changequote([,])dnl
 	  [Define if your assembler supports ltoffx and ldxmov relocations.])
     fi
     ;;
+  powerpc*-*-*)
+    AC_CACHE_CHECK([assembler supports mfcr field],
+	gcc_cv_as_mfcrf, [
+	gcc_cv_as_mfcrf=unknown
+	if test $in_tree_gas = yes ; then
+          gcc_GAS_VERSION_GTE_IFELSE(2,14,0,[
+	    gcc_cv_as_mfcrf=yes
+          ])
+	elif test x$gcc_cv_as != x; then
+	    cat > conftest.s << 'EOF'
+	      case "$target" in
+changequote(,)dnl
+		*-*-aix*)
+	.csect .text[PR]
+		;;
+		*)
+	.text
+		;;
+	      esac
+	mfcr 3,128
+EOF
+changequote([,])dnl
+	    if $gcc_cv_as -o conftest.o conftest.s > /dev/null 2>&1; then
+		gcc_cv_as_mfcrf=yes
+	    else
+		gcc_cv_as_mfcrf=no
+	    fi
+	    rm -f conftest.s conftest.o
+	fi
+    ])
+    if test "x$gcc_cv_as_mfcrf" = xyes; then
+	AC_DEFINE(HAVE_AS_MFCRF, 1,
+	  [Define if your assembler supports mfcr field.])
+    fi
+    ;;
 esac
 
 AC_MSG_CHECKING(assembler dwarf2 debug_line support)

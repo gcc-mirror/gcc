@@ -572,6 +572,9 @@
 /* Define if your assembler supports ltoffx and ldxmov relocations. */
 #undef HAVE_AS_LTOFFX_LDXMOV_RELOCS
 
+/* Define if your assembler supports mfcr field. */
+#undef HAVE_AS_MFCRF
+
 /* Define if your assembler supports dwarf2 .file/.loc directives,
    and preserves file table indices exactly as given. */
 #undef HAVE_AS_DWARF2_DEBUG_LINE

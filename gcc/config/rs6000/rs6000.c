@@ -7294,6 +7294,56 @@ vrsave_operation (op, mode)
   return 1;
 }
 
+/* Return 1 for an PARALLEL suitable for mfcr.  */
+
+int
+mfcr_operation (op, mode)
+     rtx op;
+     enum machine_mode mode ATTRIBUTE_UNUSED;
+{
+  int count = XVECLEN (op, 0);
+  int i;
+
+  /* Perform a quick check so we don't blow up below.  */
+  if (count < 1
+      || GET_CODE (XVECEXP (op, 0, 0)) != SET
+      || GET_CODE (SET_SRC (XVECEXP (op, 0, 0))) != UNSPEC
+      || XVECLEN (SET_SRC (XVECEXP (op, 0, 0)), 0) != 2)
+    return 0;
+
+  for (i = 0; i < count; i++)
+    {
+      rtx exp = XVECEXP (op, 0, i);
+      rtx unspec;
+      int maskval;
+      rtx src_reg;
+
+      src_reg = XVECEXP (SET_SRC (exp), 0, 0);
+
+      if (GET_CODE (src_reg) != REG
+	  || GET_MODE (src_reg) != CCmode
+	  || ! CR_REGNO_P (REGNO (src_reg)))
+	return 0;
+
+      if (GET_CODE (exp) != SET
+	  || GET_CODE (SET_DEST (exp)) != REG
+	  || GET_MODE (SET_DEST (exp)) != SImode
+	  || ! INT_REGNO_P (REGNO (SET_DEST (exp))))
+	return 0;
+      unspec = SET_SRC (exp);
+      maskval = 1 << (MAX_CR_REGNO - REGNO (src_reg));
+
+      if (GET_CODE (unspec) != UNSPEC
+	  || XINT (unspec, 1) != UNSPEC_MOVESI_FROM_CR
+	  || XVECLEN (unspec, 0) != 2
+	  || XVECEXP (unspec, 0, 0) != src_reg
+	  || GET_CODE (XVECEXP (unspec, 0, 1)) != CONST_INT
+	  || INTVAL (XVECEXP (unspec, 0, 1)) != maskval)
+	return 0;
+    }
+  return 1;
+}
+
 /* Return 1 for an PARALLEL suitable for mtcrf.  */
 
 int
@@ -8498,6 +8548,13 @@ print_operand (file, x, code)
 	fputs (s, file);
       }
       return;
+
+    case 'Q':
+      if (TARGET_MFCRF)
+	fputc (',',file);
+        /* FALLTHRU */
+      else
+	return;
 
     case 'R':
       /* X is a CR register.  Print the mask for `mtcrf'.  */
@@ -13198,7 +13255,8 @@ rs6000_variable_issue (stream, verbose, insn, more)
     {
       enum attr_type type = get_attr_type (insn);
       if (type == TYPE_LOAD_EXT_U || type == TYPE_LOAD_EXT_UX
-	  || type == TYPE_LOAD_UX || type == TYPE_STORE_UX)
+	  || type == TYPE_LOAD_UX || type == TYPE_STORE_UX
+	  || type == TYPE_MFCR)
 	return 0;
       else if (type == TYPE_LOAD_U || type == TYPE_STORE_U
 	       || type == TYPE_FPLOAD_U || type == TYPE_FPSTORE_U

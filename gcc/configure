@@ -8323,6 +8323,55 @@ EOF
 
     fi
     ;;
+  powerpc*-*-*)
+    echo $ac_n "checking assembler supports mfcr field""... $ac_c" 1>&6
+echo "configure:8174: checking assembler supports mfcr field" >&5
+if eval "test \"`echo '$''{'gcc_cv_as_mfcrf'+set}'`\" = set"; then
+  echo $ac_n "(cached) $ac_c" 1>&6
+else
+  
+	gcc_cv_as_mfcrf=unknown
+	if test $in_tree_gas = yes ; then
+           if test $gcc_cv_gas_major_version -eq 2 \
+&& test $gcc_cv_gas_minor_version -ge 14 \
+|| test $gcc_cv_gas_major_version -gt 2 ; then
+
+
+	    gcc_cv_as_mfcrf=yes
+          
+
+fi
+
+	elif test x$gcc_cv_as != x; then
+	    cat > conftest.s << 'EOF'
+	      case "$target" in
+		*-*-aix*)
+	.csect .text[PR]
+		;;
+		*)
+	.text
+		;;
+	      esac
+	mfcr 3,128
+EOF
+	    if $gcc_cv_as -o conftest.o conftest.s > /dev/null 2>&1; then
+		gcc_cv_as_mfcrf=yes
+	    else
+		gcc_cv_as_mfcrf=no
+	    fi
+	    rm -f conftest.s conftest.o
+	fi
+    
+fi
+
+echo "$ac_t""$gcc_cv_as_mfcrf" 1>&6
+    if test "x$gcc_cv_as_mfcrf" = xyes; then
+	cat >> confdefs.h <<\EOF
+#define HAVE_AS_MFCRF 1
+EOF
+
+    fi
+    ;;
 esac
 
 echo $ac_n "checking assembler dwarf2 debug_line support""... $ac_c" 1>&6

@@ -475,6 +475,16 @@ extern int rs6000_alignment_flags;
 #define TARGET_ALIGN_NATURAL 0
 #endif
 
+/* Define TARGET_MFCRF if the target assembler supports the optional
+   field operand for mfcr and the target processor supports the
+   instruction.  */
+
+#ifdef HAVE_AS_MFCRF
+#define TARGET_MFCRF (rs6000_cpu == PROCESSOR_POWER4)
+#else
+#define TARGET_MFCRF 0
+#endif
+
 #define TARGET_LONG_DOUBLE_128 (rs6000_long_double_type_size == 128)
 #define TARGET_ALTIVEC_ABI rs6000_altivec_abi
 #define TARGET_ALTIVEC_VRSAVE rs6000_altivec_vrsave
