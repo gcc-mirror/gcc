@@ -1,3 +1,13 @@
+2001-12-12  Matthias Klose  <doko@debian.org>
+
+	* texi2pod.pl: Merge changes from binutils' texi2pod.pl. Allows
+	generation of more than one man page from one source.
+	Add '-' to set of valid chars for an identifier.
+	Let -D option accept flags of the form <flag>=<value>.
+	Use \s+ for whitespace detection in '@c man' lines.
+	Handle @set and @clear independent of $output.
+	Substitute all @value{}'s in a line.
+
 2001-11-14  Joseph S. Myers  <jsm28@cam.ac.uk>
 
 	* texi2pod.pl: Handle @ifnottex, @iftex and @display.  Handle @var
@@ -16,13 +26,13 @@
 2001-09-07  Richard Sandiford  <rsandifo@redhat.com>
 
 	Revert:
-	* gcc_update: (files_and_dependencies) Add gcc/java/parse.c 
+	* gcc_update: (files_and_dependencies) Add gcc/java/parse.c
 	gcc/java/parse-scan.c and gcc/java/keyword.h to list of files to
 	touch.
 
 2001-09-04  David.Billinghurst <David.Billinghurst@riotinto.com>
 
-	* gcc_update: (files_and_dependencies) Add gcc/java/parse.c 
+	* gcc_update: (files_and_dependencies) Add gcc/java/parse.c
 	gcc/java/parse-scan.c and gcc/java/keyword.h to list of files to
 	touch.
 
@@ -46,7 +56,7 @@ Fri Jul 27 18:01:21 CEST 2001  Jan Hubicka  <jh@suse.cz>
 
 	* gcc_update: Dump timestamp in LAST_UPDATED.
 
-2001-07-26  Andreas Jaeger  <aj@suse.de>, 
+2001-07-26  Andreas Jaeger  <aj@suse.de>,
 	    Hans-Peter Nilsson <hp@bitrange.com>
 
 	* analyze_brprob: Fix documentation.

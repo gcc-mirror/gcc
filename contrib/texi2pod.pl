@@ -41,11 +41,13 @@ while ($_ = shift) {
 	} else {
 	    $flag = shift;
 	}
+	$value = "";
+	($flag, $value) = ($flag =~ /^([^=]+)(?:=(.+))?/);
 	die "no flag specified for -D\n"
 	    unless $flag ne "";
-	die "flags may only contain letters, digits, hyphens, and underscores\n"
+	die "flags may only contain letters, digits, hyphens, dashes and underscores\n"
 	    unless $flag =~ /^[a-zA-Z0-9_-]+$/;
-	$defs{$flag} = "";
+	$defs{$flag} = $value;
     } elsif (/^-/) {
 	usage();
     } else {
@@ -73,24 +75,43 @@ while(<STDIN>)
 	 |node			# @node: useful only in .info file
 	 |(?:end\s+)?ifnottex   # @ifnottex .. @end ifnottex: use contents
 	)\b/x and next;
-    
+
     chomp;
 
     # Look for filename and title markers.
     /^\@setfilename\s+([^.]+)/ and $fn = $1, next;
-    /^\@settitle\s+([^.]+)/ and $tl = $1, next;
+    /^\@settitle\s+([^.]+)/ and $tl = postprocess($1), next;
+
+    # Identify a man title but keep only the one we are interested in.
+    /^\@c\s+man\s+title\s+([A-Za-z0-9-]+)\s+(.+)/ and do {
+	if (exists $defs{$1}) {
+	    $fn = $1;
+	    $tl = postprocess($2);
+	}
+	next;
+    };
 
     # Look for blocks surrounded by @c man begin SECTION ... @c man end.
     # This really oughta be @ifman ... @end ifman and the like, but such
     # would require rev'ing all other Texinfo translators.
-    /^\@c man begin ([A-Z]+)/ and $sect = $1, $output = 1, next;
-    /^\@c man end/ and do {
+    /^\@c\s+man\s+begin\s+([A-Z]+)\s+([A-Za-z0-9-]+)/ and do {
+	$output = 1 if exists $defs{$2};
+        $sect = $1;
+	next;
+    };
+    /^\@c\s+man\s+begin\s+([A-Z]+)/ and $sect = $1, $output = 1, next;
+    /^\@c\s+man\s+end/ and do {
 	$sects{$sect} = "" unless exists $sects{$sect};
 	$sects{$sect} .= postprocess($section);
 	$section = "";
 	$output = 0;
 	next;
     };
+
+    # handle variables
+    /^\@set\s+([a-zA-Z0-9_-]+)\s*(.*)$/ and $defs{$1} = $2, next;
+    /^\@clear\s+([a-zA-Z0-9_-]+)/ and delete $defs{$1}, next;
+
     next unless $output;
 
     # Discard comments.  (Can't do it above, because then we'd never see
@@ -188,8 +209,6 @@ while(<STDIN>)
     }
 
     # Single line command handlers.
-    /^\@set\s+([a-zA-Z0-9_-]+)\s*(.*)$/ and $defs{$1} = $2, next;
-    /^\@clear\s+([a-zA-Z0-9_-]+)/ and delete $defs{$1}, next;
 
     /^\@(?:section|unnumbered|unnumberedsec|center)\s+(.+)$/ and $_ = "\n=head2 $1\n";
     /^\@subsection\s+(.+)$/ and $_ = "\n=head3 $1\n";
@@ -274,7 +293,15 @@ sub postprocess
     local $_ = $_[0];
 
     # @value{foo} is replaced by whatever 'foo' is defined as.
-    s/\@value\{([a-zA-Z0-9_-]+)\}/$defs{$1}/g;
+    while (m/(\@value\{([a-zA-Z0-9_-]+)\})/g) {
+	if (! exists $defs{$2}) {
+	    print STDERR "Option $2 not defined\n";
+	    s/\Q$1\E//;
+	} else {
+	    $value = $defs{$2};
+	    s/\Q$1\E/$value/;
+	}
+    }
 
     # Formatting commands.
     # Temporary escape for @r.
@@ -355,4 +382,3 @@ sub add_footnote
     $sects{FOOTNOTES} .= $_[0];
     $sects{FOOTNOTES} .= "\n\n";
 }
-    
