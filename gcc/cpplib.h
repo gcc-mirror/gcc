@@ -187,13 +187,13 @@ struct cpp_reader {
 #endif
 
   int errors;			/* Error counter for exit code */
-  /* While scanning a comment or a string constant,
-     this records the line it started on, for error messages.  */
-  int start_line;
   void *data;
 
   U_CHAR *token_buffer;
   int token_buffer_size;
+
+  /* Line where a newline was first seen in a string constant.  */
+  int multiline_string_line;
 
   /* Current depth in #include directives that use <...>.  */
   int system_include_depth;
@@ -638,7 +638,6 @@ extern void cpp_error ();
 extern void cpp_warning ();
 extern void cpp_pedwarn ();
 extern void cpp_error_with_line ();
-extern void cpp_warning_with_line ();
 extern void cpp_pedwarn_with_line ();
 extern void cpp_pedwarn_with_file_and_line ();
 extern void fatal ();

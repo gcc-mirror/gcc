@@ -284,7 +284,6 @@ static int compare_defs ();
 static int compare_token_lists ();
 static HOST_WIDE_INT eval_if_expression ();
 static int change_newlines ();
-static int line_for_error ();
 extern int hashf ();
 static int file_size_and_mode ();
 static struct arglist *read_token_list ();
@@ -491,66 +490,6 @@ initialize_char_syntax (opts)
   is_space['\r'] = 1;
 }
 
-/*
- * Skip over a quoted string.  BP points to the opening quote.
- * Returns a pointer after the closing quote.  Don't go past LIMIT.
- * START_LINE is the line number of the starting point (but it need
- * not be valid if the starting point is inside a macro expansion).
- *
- * The input stack state is not changed.
- */
-static U_CHAR *
-skip_quoted_string (pfile, first, start_line)
-     cpp_reader *pfile;
-     int first;
-     int start_line;
-{
-  int c;
-
-  while (1)
-    {
-      c = GETC ();
-      if (c == EOF)
-	{
-	  cpp_error_with_line (pfile, line_for_error (pfile, start_line),
-			       "unterminated string or character constant");
-#if 0
-	  cpp_error_with_line (pfile, multiline_string_line,
-			       "possible real start of unterminated constant");
-	  multiline_string_line = 0;
-#endif
-	  break;
-	}
-      if (c == '\\')
-	{
-	  c = GETC ();
-	  NEWLINE_FIX1(c);
-	}
-      else if (c == '\n')
-	{
-	  if (CPP_TRADITIONAL (pfile))
-	    {
-	      /* Unterminated strings and character constants are 'legal'.  */
-	      FORWARD(-1);	/* Don't consume the newline. */
-	      break;
-	    }
-	  if (CPP_PEDANTIC (pfile) || first == '\'')
-	    {
-	      cpp_error_with_line (pfile, line_for_error (pfile, start_line),
-				   "unterminated string or character constant");
-	      FORWARD(-1);
-	      break;
-	    }
-	  /* If not traditional, then allow newlines inside strings.  */
-#if 0
-	  if (multiline_string_line == 0)
-	    multiline_string_line = start_line;
-#endif
-      }
-      else if (c == first)
-	break;
-    }
-}
 
 /* Place into PFILE a quoted string representing the string SRC.
    Caller must reserve enough space in pfile->token_buffer. */
@@ -2707,7 +2646,7 @@ macroexpand (pfile, hp)
   int nargs;
   DEFINITION *defn = hp->value.defn;
   register U_CHAR *xbuf;
-  long start_line, start_col;
+  long start_line, start_column;
   int xbuf_len;
   struct argdata *args;
   long old_written = CPP_WRITTEN (pfile);
@@ -2729,7 +2668,7 @@ macroexpand (pfile, hp)
 #endif
 
   pfile->output_escapes++;
-  cpp_buf_line_and_col (CPP_BUFFER (pfile), &start_line, &start_col);
+  cpp_buf_line_and_col (cpp_file_buffer (pfile), &start_line, &start_column);
 
   nargs = defn->nargs;
 
@@ -2773,7 +2712,7 @@ macroexpand (pfile, hp)
 	    token = macarg (pfile, 0);
 	  if (token == CPP_EOF || token == CPP_POP)
 	    {
-	      cpp_error_with_line (pfile, line_for_error (pfile, start_line),
+	      cpp_error_with_line (pfile, start_line, start_column,
 				   "unterminated macro call");
 	      return;
 	    }
@@ -4476,6 +4415,7 @@ skip_if_group (pfile, any)
   for (;;) {
     switch (c)
       {
+	long old;
       case EOF:
 	goto done;
       case '/':			/* possible comment */
@@ -4485,7 +4425,10 @@ skip_if_group (pfile, any)
 	break;
       case '\"':
       case '\'':
-	skip_quoted_string (pfile, c, 0 /* FIXME */);
+	FORWARD(-1);
+	old = CPP_WRITTEN (pfile);
+	cpp_get_token (pfile);
+	CPP_SET_WRITTEN (pfile, old);
 	break;
       case '\\':
 	/* Char after backslash loses its special meaning.  */
@@ -4656,6 +4599,7 @@ cpp_get_token (pfile)
 {
   register int c, c2, c3;
   long old_written;
+  long start_line, start_column;
   enum cpp_token token;
   struct cpp_options *opts = CPP_OPTIONS (pfile);
   CPP_BUFFER (pfile)->prev = CPP_BUFFER (pfile)->cur;
@@ -4702,6 +4646,8 @@ cpp_get_token (pfile)
 	  if (opts->put_out_comments)
 	    parse_set_mark (&start_mark, pfile);
 	  newlines = 0;
+	  cpp_buf_line_and_col (cpp_file_buffer (pfile),
+				&start_line, &start_column);
 	  c = skip_comment (pfile, &newlines);
 	  if (opts->put_out_comments && (c == '/' || c == EOF))
 	    parse_clear_mark (&start_mark);
@@ -4709,8 +4655,7 @@ cpp_get_token (pfile)
 	    goto randomchar;
 	  if (c == EOF)
 	    {
-	      cpp_error_with_line (pfile,
-				   line_for_error (pfile, pfile->start_line),
+	      cpp_error_with_line (pfile, start_line, start_column,
 				   "unterminated comment");
 	      goto handle_eof;
 	    }
@@ -4814,9 +4759,8 @@ cpp_get_token (pfile)
 	case '\'':
 	  /* A single quoted string is treated like a double -- some
 	     programs (e.g., troff) are perverse this way */
-#if 0
-	  start_line = pfile->lineno;
-#endif
+	  cpp_buf_line_and_col (cpp_file_buffer (pfile),
+				&start_line, &start_column);
 	  old_written = CPP_WRITTEN (pfile);
 	string:
 	  CPP_PUTC (pfile, c);
@@ -4838,17 +4782,17 @@ cpp_get_token (pfile)
 			CPP_BUFFER (pfile) = next_buf;
 			continue;
 		    }
-#if 0
 		  if (!CPP_TRADITIONAL (pfile))
 		    {
-		      cpp_error_with_line (pfile,
-					   line_for_error (pfile, start_line),
+		      cpp_error_with_line (pfile, start_line, start_column,
 			      "unterminated string or character constant");
-		      cpp_error_with_line (pfile, multiline_string_line,
-				 "possible real start of unterminated constant");
-		      multiline_string_line = 0;
+		      if (pfile->multiline_string_line != start_line
+			  && pfile->multiline_string_line != 0)
+			cpp_error_with_line (pfile,
+					     pfile->multiline_string_line, -1,
+			       "possible real start of unterminated constant");
+		      pfile->multiline_string_line = 0;
 		    }
-#endif
 		  break;
 		}
 	      CPP_PUTC (pfile, cc);
@@ -4859,23 +4803,20 @@ cpp_get_token (pfile)
 		 no error.  So exit the loop and record the new line.  */
 		  if (CPP_TRADITIONAL (pfile))
 		    goto while2end;
-#if 0
 		  if (c == '\'')
 		    {
-		      cpp_error_with_line (pfile,
-					   line_for_error (pfile, start_line),
+		      cpp_error_with_line (pfile, start_line, start_column,
 					   "unterminated character constant");
 		      goto while2end;
 		    }
-		  if (CPP_PEDANTIC (pfile) && multiline_string_line == 0)
+		  if (CPP_PEDANTIC (pfile)
+		      && pfile->multiline_string_line == 0)
 		    {
-		      cpp_pedwarn_with_line (pfile,
-					     line_for_error (pfile, start_line),
+		      cpp_pedwarn_with_line (pfile, start_line, start_column,
 			       "string constant runs past end of line");
 		    }
-		  if (multiline_string_line == 0)
-		    multiline_string_line = ip->lineno - 1;
-#endif
+		  if (pfile->multiline_string_line == 0)
+		    pfile->multiline_string_line = start_line;
 		  break;
 		
 		case '\\':
@@ -7268,31 +7209,6 @@ savestring (input)
   return output;
 }
 
-/* Return the line at which an error occurred.
-   The error is not necessarily associated with the current spot
-   in the input stack, so LINE says where.  LINE will have been
-   copied from ip->lineno for the current input level.
-   If the current level is for a file, we return LINE.
-   But if the current level is not for a file, LINE is meaningless.
-   In that case, we return the lineno of the innermost file.  */
-
-static int
-line_for_error (pfile, line)
-     cpp_reader *pfile;
-     int line;
-{
-  long line1 = line, col;
-  cpp_buffer *ip = CPP_BUFFER (pfile);
-
-  while (ip != CPP_NULL_BUFFER (pfile))
-    {
-      if (ip->fname != NULL)
-	return line1;
-      ip = CPP_PREV_BUFFER (ip);
-      cpp_buf_line_and_col (ip, &line1, &col);
-    }
-}
-
 /* Initialize PMARK to remember the current position of PFILE. */
 void
 parse_set_mark (pmark, pfile)
@@ -7435,9 +7351,9 @@ cpp_pedwarn (pfile, msg, arg1, arg2, arg3)
 }
 
 void
-cpp_error_with_line (pfile, line, msg, arg1, arg2, arg3)
+cpp_error_with_line (pfile, line, column, msg, arg1, arg2, arg3)
      cpp_reader *pfile;
-     int line;
+     int line, column;
      char *msg;
      char *arg1, *arg2, *arg3;
 {
@@ -7447,15 +7363,15 @@ cpp_error_with_line (pfile, line, msg, arg1, arg2, arg3)
   cpp_print_containing_files (pfile);
 
   if (ip != NULL)
-    cpp_file_line_for_message (pfile, ip->nominal_fname, line, -1);
+    cpp_file_line_for_message (pfile, ip->nominal_fname, line, column);
 
   cpp_message (pfile, 1, msg, arg1, arg2, arg3);
 }
 
-void
-cpp_warning_with_line (pfile, line, msg, arg1, arg2, arg3)
+static void
+cpp_warning_with_line (pfile, line, column, msg, arg1, arg2, arg3)
      cpp_reader *pfile;
-     int line;
+     int line, column;
      char *msg;
      char *arg1, *arg2, *arg3;
 {
@@ -7473,22 +7389,22 @@ cpp_warning_with_line (pfile, line, msg, arg1, arg2, arg3)
   ip = cpp_file_buffer (pfile);
 
   if (ip != NULL)
-    cpp_file_line_for_message (pfile, ip->nominal_fname, line, -1);
+    cpp_file_line_for_message (pfile, ip->nominal_fname, line, column);
 
   cpp_message (pfile, 0, msg, arg1, arg2, arg3);
 }
 
 void
-cpp_pedwarn_with_line (pfile, line, msg, arg1, arg2, arg3)
+cpp_pedwarn_with_line (pfile, line, column, msg, arg1, arg2, arg3)
      cpp_reader *pfile;
      int line;
      char *msg;
      char *arg1, *arg2, *arg3;
 {
   if (CPP_OPTIONS (pfile)->pedantic_errors)
-    cpp_error_with_line (pfile, line, msg, arg1, arg2, arg3);
+    cpp_error_with_line (pfile, column, line, msg, arg1, arg2, arg3);
   else
-    cpp_warning_with_line (pfile, line, msg, arg1, arg2, arg3);
+    cpp_warning_with_line (pfile, line, column, msg, arg1, arg2, arg3);
 }
 
 /* Report a warning (or an error if pedantic_errors)
@@ -7595,8 +7511,6 @@ cpp_perror_with_name (pfile, name)
  * No pre-compiled header file support.
  *
  * Possibly different enum token codes for each C/C++ token.
- *
- * Better error messages for non-terminated strings and comments.
  *
  * Should clean up remaining directives to that do_XXX functions
  *   only take two arguments and all have command_reads_line.
