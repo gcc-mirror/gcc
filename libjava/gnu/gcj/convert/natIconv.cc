@@ -69,9 +69,12 @@ gnu::gcj::convert::Input_iconv::read (jcharArray outbuffer,
   size_t outavail = count;
   size_t old_out = outavail;
 
+  const char *inbuf = (const char *) &bytes[inpos];
+  char *outbuf = (char *) &out[outpos];
+
   size_t r = iconv ((iconv_t) handle,
-		    &bytes[inpos], &inavail,
-		    &out[outpos], &outavail);
+		    &inbuf, &inavail,
+		    &outbuf, &outavail);
   // FIXME: what if R==-1?
 
   inpos += old_in - inavail;
@@ -118,7 +121,7 @@ gnu::gcj::convert::Output_iconv::write (jcharArray inbuffer,
 					jint inpos, jint count)
 {
 #ifdef HAVE_ICONV
-  jint origpos = outpos;
+  jint origpos = inpos;
 
   jchar *chars = elements (inbuffer);
   jbyte *out = elements (buf);
@@ -129,9 +132,12 @@ gnu::gcj::convert::Output_iconv::write (jcharArray inbuffer,
   size_t outavail = buf->length - count;
   size_t old_out = outavail;
 
+  const char *inbuf = (const char *) &chars[inpos];
+  char *outbuf = (char *) &out[count];
+
   size_t r = iconv ((iconv_t) handle,
-		    &chars[inpos], &inavail,
-		    &out[count], &outavail);
+		    &inbuf, &inavail,
+		    &outbuf, &outavail);
   // FIXME: what if R==-1?
 
   count += old_out - outavail;
