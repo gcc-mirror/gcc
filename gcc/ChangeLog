@@ -1,3 +1,9 @@
+Wed Nov 28 14:51:23 2001  Douglas B. Rupp  <rupp@gnat.com>
+
+	* config.gcc (i[34567]86-*-interix3*): New case.
+	* config/x-interix3, config/interix3.h, config/i386/i386-interix3.h:
+	New files.
+	
 2001-11-28  Richard Henderson  <rth@redhat.com>
 
 	* config/alpha/alpha.md (sibcall_osf_1, sibcall_value_osf_1): Use
