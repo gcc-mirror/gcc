@@ -1,3 +1,12 @@
+2002-04-08  Gerald Pfeifer  <pfeifer@dbai.tuwien.ac.at>
+
+	* doc/contrib.texi (Contributors): Add John David Anglin and Loren
+	J. Rittle (the latter also to Testers).  Update David O'Brien's entry.
+
+2002-04-08  Gerald Pfeifer  <pfeifer@dbai.tuwien.ac.at>
+
+	* doc/contrib.texi (Contributors): Add David O'Brien.
+
 2002-04-08  Alan Modra  <amodra@bigpond.net.au>
 
 	* configure.in (auto-build.h): Use target_alias and build_alias
