@@ -1,5 +1,5 @@
 %% TeX macros to handle Texinfo files.
-%% $Id: texinfo.tex,v 2.207 1997/06/18 19:58:18 karl Exp $
+%% $Id: texinfo.tex,v 2.208 1997/06/27 19:09:14 karl Exp $
 
 %  Copyright (C) 1985, 86, 88, 90, 91, 92, 93,
 %                94, 95, 96, 97 Free Software Foundation, Inc.
@@ -36,7 +36,7 @@
 
 % This automatically updates the version number based on RCS.
 \def\deftexinfoversion$#1: #2 ${\def\texinfoversion{#2}}
-\deftexinfoversion$Revision: 2.207 $
+\deftexinfoversion$Revision: 2.208 $
 \message{Loading texinfo package [Version \texinfoversion]:}
 
 % If in a .fmt file, print the version number
@@ -189,7 +189,7 @@
         % Only leave this space if the footline is nonempty.
         % (We lessened \vsize for it in \oddfootingxxx.)
         % The \baselineskip=24pt in plain's \makefootline has no effect.
-        \vskip 2\baselineskip
+        \vskip\baselineskip
         \unvbox\footlinebox
       \fi
       %
@@ -735,10 +735,11 @@ where each line of input produces a line of output.}
 %
 \def\ignore{\doignore{ignore}}
 
-% Also ignore @ifinfo, @ifhtml, @html, @menu, and @direntry text.
+% Ignore @ifinfo, @ifhtml, @ifnottex, @html, @menu, and @direntry text.
 %
 \def\ifinfo{\doignore{ifinfo}}
 \def\ifhtml{\doignore{ifhtml}}
+\def\ifnottex{\doignore{ifnottex}}
 \def\html{\doignore{html}}
 \def\menu{\doignore{menu}}
 \def\direntry{\doignore{direntry}}
@@ -764,6 +765,10 @@ where each line of input produces a line of output.}
   %
   % Make sure that spaces turn into tokens that match what \doignoretext wants.
   \catcode32 = 10
+  %
+  % Ignore braces, too, so mismatched braces don't cause trouble.
+  \catcode`\{ = 9
+  \catcode`\} = 9
   %
   % And now expand that command.
   \doignoretext
@@ -856,7 +861,7 @@ where each line of input produces a line of output.}
     \pretolerance = 10000
     %
     % Do not execute instructions in @tex
-    \def\tex{\doignore{tex}}
+    \def\tex{\doignore{tex}}%
 }
 
 % @set VAR sets the variable VAR to an empty value.
@@ -932,11 +937,16 @@ where each line of input produces a line of output.}
 \def\ifclearfail{\nestedignore{ifclear}}
 \defineunmatchedend{ifclear}
 
-% @iftex always succeeds; we read the text following, through @end
-% iftex).  But `@end iftex' should be valid only after an @iftex.
+% @iftex, @ifnothtml, @ifnotinfo always succeed; we read the text
+% following, through the first @end iftex (etc.).  Make `@end iftex'
+% (etc.) valid only after an @iftex.
 %
 \def\iftex{\conditionalsucceed{iftex}}
+\def\ifnothtml{\conditionalsucceed{ifnothtml}}
+\def\ifnotinfo{\conditionalsucceed{ifnotinfo}}
 \defineunmatchedend{iftex}
+\defineunmatchedend{ifnothtml}
+\defineunmatchedend{ifnotinfo}
 
 % We can't just want to start a group at @iftex (for example) and end it
 % at @end iftex, since then @set commands inside the conditional have no
@@ -1531,8 +1541,8 @@ where each line of input produces a line of output.}
   %
   % Leave some space for the footline.  Hopefully ok to assume
   % @evenfooting will not be used by itself.
-  \global\advance\pageheight by -3\baselineskip
-  \global\advance\vsize by -3\baselineskip
+  \global\advance\pageheight by -\baselineskip
+  \global\advance\vsize by -\baselineskip
 }
 
 \gdef\everyfootingxxx#1{\oddfootingxxx{#1}\evenfootingxxx{#1}}
