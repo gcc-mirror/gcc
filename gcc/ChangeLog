@@ -1,3 +1,40 @@
+2001-08-30  Vladimir Makarov  <vmakarov@redhat.com>
+
+	* rtl.def: Undo my patch commited 2001-08-27.
+
+	* genattrtab.c: Ditto.
+
+	* rtl.h: Ditto.
+
+	* sched-int.h: Ditto.
+
+	* target-def.h: Ditto.
+
+	* target.h: Ditto.
+
+	* haifa-sched.c: Ditto.
+
+	* sched-rgn.c: Ditto.
+
+	* sched-vis.c: Ditto.
+
+	* Makefile.in: Ditto.
+
+	* doc/md.texi: Ditto.
+
+	* doc/tm.texi: Ditto.
+
+	* doc/contrib.texi: Ditto.
+
+	* doc/gcc.texi: Ditto.
+
+	* genattrtab.h: Remove it.
+
+	* genautomata.c: Remove it.
+
+	* genattr.c: Undo my patch and Richard Henderson's patch commited
+	2001-08-27.
+
 Thu Aug 30 19:22:15 2001  J"orn Rennecke <amylaar@redhat.com>
 
 	* config.gcc (h8300-*-elf*): New case.
