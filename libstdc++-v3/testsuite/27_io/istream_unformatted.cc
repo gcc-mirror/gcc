@@ -514,6 +514,43 @@ test09()
   VERIFY( test );
 }
 
+// libstdc++/70220
+void
+test10()
+{
+  using namespace std;
+  bool test = true;
+  typedef string string_type;
+  typedef stringbuf stringbuf_type;
+  typedef istream istream_type;
+
+  int res = 0;
+  streamsize n;
+  string_type  input("abcdefg\n");
+  stringbuf_type sbuf(input);
+  istream_type  istr(&sbuf);
+  
+  istr.ignore(0);
+  if (istr.gcount() != 0) 
+    test = false;
+  VERIFY( test );
+  
+  istr.ignore(0, 'b');
+  if (istr.gcount() != 0) 
+    test = false;
+  VERIFY( test );
+  
+  istr.ignore();	// Advance to next position.
+  istr.ignore(0, 'b');
+  if ((n=istr.gcount()) != 0) 
+    test = false;
+  VERIFY( test );
+  
+  if (istr.peek() != 'b')
+    test = false;
+  VERIFY( test );
+}
+
 int 
 main()
 {
@@ -526,6 +563,7 @@ main()
   test07();
   test08();
   test09();
+  test10();
 
   return 0;
 }
