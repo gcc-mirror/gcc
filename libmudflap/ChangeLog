@@ -1,3 +1,14 @@
+2004-06-29  Frank Ch. Eigler  <fche@redhat.com>
+
+	Splay tree implementation fork.
+	* splay-tree.c, splay-tree.h: Copied & modified from libiberty.
+	Use hard-coded comparison function for uintptr_t.  Remove key/value
+	deallocation logic.  Cache last splayed key for consecutive lookups.
+	* Makefile.am, Makefile.in: Use them, don't link to them.
+	* mf-runtime.c (__mf_object_tree): Adapt to simpler splay_tree_new.
+	(__mf_find_objects2): Flip successor/predecessor search sequence.
+	* ansidecl.h, libiberty.h: Removed dummy files.
+
 2004-06-29  Nick Clifton  <nickc@redhat.com>
 
 	* configure.ac (AC_CHECK_HEADERS): Add dirent.h

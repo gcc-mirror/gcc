@@ -610,7 +610,7 @@ __mf_object_tree (int type)
   static splay_tree trees [__MF_TYPE_MAX+1];
   assert (type >= 0 && type <= __MF_TYPE_MAX);
   if (UNLIKELY (trees[type] == NULL))
-    trees[type] = splay_tree_new (splay_tree_compare_pointers, NULL, NULL);
+    trees[type] = splay_tree_new ();
   return trees[type];
 }
 
@@ -1390,7 +1390,7 @@ __mf_find_objects2 (uintptr_t ptr_low, uintptr_t ptr_high,
         {
           __mf_object_t *obj;
               
-          n = (direction == 0 ? splay_tree_predecessor (t, k) : splay_tree_successor (t, k));
+          n = (direction == 0 ? splay_tree_successor (t, k) : splay_tree_predecessor (t, k));
           if (n == NULL) break;
           obj = (__mf_object_t *) n->value;
               
