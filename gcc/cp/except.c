@@ -217,9 +217,13 @@ init_exception_processing ()
   /* void vtype () */
   tree vtype = build_function_type (void_type_node, void_list_node);
   
+  if (flag_honor_std)
+    push_namespace (get_identifier ("std"));
   Terminate = auto_function (get_identifier ("terminate"),
 			     vtype, NOT_BUILT_IN);
   TREE_THIS_VOLATILE (Terminate) = 1;
+  if (flag_honor_std)
+    pop_namespace ();
 
   push_lang_context (lang_name_c);
 

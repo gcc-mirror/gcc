@@ -166,9 +166,14 @@ DEFTREECODE (DEFAULT_ARG, "default_arg", 'c', 2)
    the template will be an IDENTIFIER_NODE.  */
 DEFTREECODE (TEMPLATE_ID_EXPR, "template_id_expr", 'e', 2)
 
-/* has two fields: scope and value */
-/* XXX: could recycle some of the common fields */
+/* An association between namespace and entity. Parameters are the
+   scope and the (non-type) value.
+   TREE_TYPE indicates the type bound to the name. */
 DEFTREECODE (CPLUS_BINDING, "binding", 'x', 2)
+
+/* A list-like node for chaining overloading candidates. TREE_TYPE is 
+   the original name, and the parameter is the FUNCTION_DECL.  */
+DEFTREECODE (OVERLOAD, "overload", 'x', 1)
 
 /* A generic wrapper for something not tree that we want to include in
    tree structure.  */

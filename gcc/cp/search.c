@@ -1152,10 +1152,10 @@ lookup_fnfields_here (type, name)
   fndecls = TREE_VEC_ELT (CLASSTYPE_METHOD_VEC (type), idx);
   while (fndecls)
     {
-      if (TYPE_MAIN_VARIANT (DECL_CLASS_CONTEXT (fndecls))
+      if (TYPE_MAIN_VARIANT (DECL_CLASS_CONTEXT (OVL_CURRENT (fndecls)))
 	  == TYPE_MAIN_VARIANT (type))
 	return idx;
-      fndecls = TREE_CHAIN (fndecls);
+      fndecls = OVL_CHAIN (fndecls);
     }
   return -1;
 }
@@ -1266,7 +1266,7 @@ lookup_field (xbasetype, name, protect, want_type)
 #ifdef GATHER_STATISTICS
   n_calls_lookup_field++;
 #endif /* GATHER_STATISTICS */
-  if (protect && flag_memoize_lookups && ! global_bindings_p ())
+  if (protect && flag_memoize_lookups && ! toplevel_bindings_p ())
     entry = make_memoized_table_entry (type, name, 0);
   else
     entry = 0;
@@ -1662,7 +1662,7 @@ lookup_fnfields_1 (type, name)
 #ifdef GATHER_STATISTICS
 	  n_outer_fields_searched++;
 #endif /* GATHER_STATISTICS */
-	  if (DECL_NAME (*methods) == name)
+	  if (DECL_NAME (OVL_CURRENT (*methods)) == name)
 	    break;
 	}
 
@@ -1676,8 +1676,8 @@ lookup_fnfields_1 (type, name)
 	  
 	  while (++methods != end)
 	    {
-	      if (TREE_CODE (*methods) == TEMPLATE_DECL 
-		  && IDENTIFIER_TYPENAME_P (DECL_NAME (*methods)))
+	      if (TREE_CODE (OVL_CURRENT (*methods)) == TEMPLATE_DECL 
+		  && IDENTIFIER_TYPENAME_P (DECL_NAME (OVL_CURRENT (*methods))))
 		break;
 	    }
 	}
@@ -1815,7 +1815,7 @@ lookup_fnfields (basetype_path, name, complain)
 #ifdef GATHER_STATISTICS
   n_calls_lookup_fnfields++;
 #endif /* GATHER_STATISTICS */
-  if (protect && flag_memoize_lookups && ! global_bindings_p ())
+  if (protect && flag_memoize_lookups && ! toplevel_bindings_p ())
     entry = make_memoized_table_entry (type, name, 1);
   else
     entry = 0;
@@ -2101,8 +2101,8 @@ get_virtuals_named_this (binfo)
     {
       tree fndecl;
 
-      for (fndecl = TREE_VALUE (fields); fndecl; fndecl = DECL_CHAIN (fndecl))
-	if (DECL_VINDEX (fndecl))
+      for (fndecl = TREE_VALUE (fields); fndecl; fndecl = OVL_NEXT (fndecl))
+	if (DECL_VINDEX (OVL_CURRENT (fndecl)))
 	  return fields;
       fields = next_baselink (fields);
     }
@@ -2187,8 +2187,10 @@ get_matching_virtual (binfo, fndecl, dtorp)
 
       for (; baselink; baselink = next_baselink (baselink))
 	{
-	  for (tmp = TREE_VALUE (baselink); tmp; tmp = DECL_CHAIN (tmp))
+	  tree tmps;
+	  for (tmps = TREE_VALUE (baselink); tmps; tmps = OVL_NEXT (tmps))
 	    {
+	      tmp = OVL_CURRENT (tmps);
 	      if (! DECL_VINDEX (tmp))
 		continue;
 
@@ -2256,7 +2258,8 @@ get_matching_virtual (binfo, fndecl, dtorp)
 		  break;
 		}
 	    }
-	  if (tmp)
+	  /* If not at the end */
+	  if (tmps)
 	    {
 	      best = tmp;
 	      break;
@@ -2680,6 +2683,7 @@ dfs_debug_mark (binfo)
 	methods = TREE_VEC_ELT (methods, 0);
       else
 	methods = TREE_VEC_ELT (methods, 2);
+      methods = OVL_CURRENT (methods);
       while (methods)
 	{
 	  if (DECL_VINDEX (methods)
@@ -2697,7 +2701,7 @@ dfs_debug_mark (binfo)
   /* We cannot rely on some alien method to solve our problems,
      so we must write out the debug info ourselves.  */
   TYPE_DECL_SUPPRESS_DEBUG (TYPE_NAME (t)) = 0;
-  rest_of_type_compilation (t, global_bindings_p ());
+  rest_of_type_compilation (t, toplevel_bindings_p ());
 }
 
 /*  Attach to the type of the virtual base class, the pointer to the
@@ -3471,7 +3475,7 @@ dfs_pushdecls (binfo)
 	{
 	  /* This will cause lookup_name to return a pointer
 	     to the tree_list of possible methods of this name.  */
-	  tree name = DECL_NAME (*methods);
+	  tree name = DECL_NAME (OVL_CURRENT (*methods));
 	  tree class_value = IDENTIFIER_CLASS_VALUE (name);
 
 	  /* If the class value is not an envelope of the kind described in
@@ -3491,7 +3495,7 @@ dfs_pushdecls (binfo)
 	     If we can't do that, keep a TREE_LIST with possibly ambiguous
 	     decls in there.  */
 	  maybe_push_cache_obstack ();
-	  envelope_add_decl (type, *methods, &TREE_PURPOSE (class_value));
+	  envelope_add_decl (type, OVL_CURRENT (*methods), &TREE_PURPOSE (class_value));
 	  pop_obstacks ();
 
 	  methods++;
@@ -3519,7 +3523,8 @@ dfs_compress_decls (binfo)
 	{
 	  /* This is known to be an envelope of the kind described before
 	     dfs_pushdecls.  */
-	  tree class_value = IDENTIFIER_CLASS_VALUE (DECL_NAME (*methods));
+	  tree class_value = 
+	    IDENTIFIER_CLASS_VALUE (DECL_NAME (OVL_CURRENT (*methods)));
 	  tree tmp = TREE_PURPOSE (class_value);
 
 	  /* This was replaced in scope by somebody else.  Just leave it
@@ -3529,7 +3534,7 @@ dfs_compress_decls (binfo)
 
 	  if (TREE_CHAIN (tmp) == NULL_TREE
 	      && TREE_VALUE (tmp)
-	      && DECL_CHAIN (TREE_VALUE (tmp)) == NULL_TREE)
+	      && OVL_NEXT (TREE_VALUE (tmp)) == NULL_TREE)
 	    {
 	      TREE_PURPOSE (class_value) = TREE_VALUE (tmp);
 	    }
@@ -3738,7 +3743,7 @@ add_conversions (binfo)
   for (i = 2; i < TREE_VEC_LENGTH (method_vec); ++i)
     {
       tree tmp = TREE_VEC_ELT (method_vec, i);
-      if (! IDENTIFIER_TYPENAME_P (DECL_NAME (tmp)))
+      if (! IDENTIFIER_TYPENAME_P (DECL_NAME (OVL_CURRENT (tmp))))
 	break;
       conversions = scratch_tree_cons (binfo, tmp, conversions);
     }

@@ -8,7 +8,7 @@
 
 extern "C++" {
 
-#if 0
+#ifdef __HONOR_STD
 namespace std {
 #endif
 
@@ -63,7 +63,7 @@ class bad_typeid : public exception {
   virtual ~bad_typeid () { }
 };
 
-#if 0
+#ifdef __HONOR_STD
 } // namespace std
 #endif
 

@@ -1117,6 +1117,9 @@ add_function_candidate (candidates, fn, arglist, flags)
       tree argtype = TREE_TYPE (arg);
       tree t;
 
+      /* An overloaded function does not have an argument type */
+      if (TREE_CODE (arg) == OVERLOAD)
+	argtype = unknown_type_node;
       argtype = cp_build_type_variant
 	(argtype, TREE_READONLY (arg), TREE_THIS_VOLATILE (arg));
 
@@ -2044,20 +2047,21 @@ build_user_type_conversion_1 (totype, expr, flags)
 
       ctors = TREE_VALUE (ctors);
     }
-  for (; ctors; ctors = DECL_CHAIN (ctors))
+  for (; ctors; ctors = OVL_NEXT (ctors))
     {
-      if (DECL_NONCONVERTING_P (ctors))
+      tree ctor = OVL_CURRENT (ctors);
+      if (DECL_NONCONVERTING_P (ctor))
 	continue;
 
-      if (TREE_CODE (ctors) == TEMPLATE_DECL) 
+      if (TREE_CODE (ctor) == TEMPLATE_DECL) 
 	{
-	  templates = scratch_tree_cons (NULL_TREE, ctors, templates);
+	  templates = scratch_tree_cons (NULL_TREE, ctor, templates);
 	  candidates = 
-	    add_template_candidate (candidates, ctors,
+	    add_template_candidate (candidates, ctor,
 				    NULL_TREE, args, NULL_TREE, flags);
 	} 
       else 
-	candidates = add_function_candidate (candidates, ctors,
+	candidates = add_function_candidate (candidates, ctor,
 					     args, flags); 
 
       if (candidates) 
@@ -2072,7 +2076,7 @@ build_user_type_conversion_1 (totype, expr, flags)
 
   for (; convs; convs = TREE_CHAIN (convs))
     {
-      tree fn = TREE_VALUE (convs);
+      tree fns = TREE_VALUE (convs);
       int convflags = LOOKUP_NO_CONVERSION;
       tree ics;
 
@@ -2083,9 +2087,9 @@ build_user_type_conversion_1 (totype, expr, flags)
       if (TREE_CODE (totype) == REFERENCE_TYPE)
 	convflags |= LOOKUP_NO_TEMP_BIND;
 
-      if (TREE_CODE (fn) != TEMPLATE_DECL)
+      if (TREE_CODE (fns) != TEMPLATE_DECL)
 	ics = implicit_conversion
-	  (totype, TREE_TYPE (TREE_TYPE (fn)), 0, convflags);
+	  (totype, TREE_TYPE (TREE_TYPE (OVL_CURRENT (fns))), 0, convflags);
       else
 	/* We can't compute this yet.  */
 	ics = error_mark_node;
@@ -2093,8 +2097,9 @@ build_user_type_conversion_1 (totype, expr, flags)
       if (TREE_CODE (totype) == REFERENCE_TYPE && ics && ICS_BAD_FLAG (ics))
 	/* ignore the near match.  */;
       else if (ics)
-	for (; fn; fn = DECL_CHAIN (fn))
+	for (; fns; fns = OVL_NEXT (fns))
 	  {
+	    tree fn = OVL_CURRENT (fns);
 	    struct z_candidate *old_candidates = candidates;
 
 	    if (TREE_CODE (fn) == TEMPLATE_DECL)
@@ -2240,7 +2245,7 @@ build_new_function_call (fn, args)
 
   if (really_overloaded_fn (fn))
     {
-      tree t;
+      tree t1;
       tree templates = NULL_TREE;
 
       args = resolve_args (args);
@@ -2248,8 +2253,9 @@ build_new_function_call (fn, args)
       if (args == error_mark_node)
 	return error_mark_node;
 
-      for (t = TREE_VALUE (fn); t; t = DECL_CHAIN (t))
+      for (t1 = fn; t1; t1 = OVL_CHAIN (t1))
 	{
+	  tree t = OVL_FUNCTION (t1);
 	  if (TREE_CODE (t) == TEMPLATE_DECL)
 	    {
 	      templates = scratch_tree_cons (NULL_TREE, t, templates);
@@ -2267,7 +2273,7 @@ build_new_function_call (fn, args)
 	  if (candidates && ! candidates->next)
 	    return build_function_call (candidates->fn, args);
 	  cp_error ("no matching function for call to `%D (%A)'",
-		    TREE_PURPOSE (fn), args);
+		    DECL_NAME (OVL_FUNCTION (fn)), args);
 	  if (candidates)
 	    print_z_candidates (candidates);
 	  return error_mark_node;
@@ -2278,7 +2284,7 @@ build_new_function_call (fn, args)
       if (cand == 0)
 	{
 	  cp_error ("call of overloaded `%D (%A)' is ambiguous",
-		    TREE_PURPOSE (fn), args);
+		    DECL_NAME (OVL_FUNCTION (fn)), args);
 	  print_z_candidates (candidates);
 	  return error_mark_node;
 	}
@@ -2292,6 +2298,9 @@ build_new_function_call (fn, args)
 
       return build_over_call (cand, args, LOOKUP_NORMAL);
     }
+
+  /* This is not really overloaded. */
+  fn = OVL_CURRENT (fn);
 
   return build_function_call (fn, args);
 }
@@ -2325,11 +2334,12 @@ build_object_call (obj, args)
 
   if (fns)
     {
-      tree fn = TREE_VALUE (fns);
+      tree base = TREE_PURPOSE (fns);
       mem_args = scratch_tree_cons (NULL_TREE, build_this (obj), args);
 
-      for (; fn; fn = DECL_CHAIN (fn))
+      for (fns = TREE_VALUE (fns); fns; fns = OVL_NEXT (fns))
 	{
+	  tree fn = OVL_CURRENT (fns);
 	  if (TREE_CODE (fn) == TEMPLATE_DECL)
 	    {
 	      templates = scratch_tree_cons (NULL_TREE, fn, templates);
@@ -2343,7 +2353,7 @@ build_object_call (obj, args)
 	      (candidates, fn, mem_args, LOOKUP_NORMAL);
 
 	  if (candidates)
-	    candidates->basetype_path = TREE_PURPOSE (fns);
+	    candidates->basetype_path = base;
 	}
     }
 
@@ -2351,13 +2361,15 @@ build_object_call (obj, args)
 
   for (; convs; convs = TREE_CHAIN (convs))
     {
-      tree fn = TREE_VALUE (convs);
-      tree totype = TREE_TYPE (TREE_TYPE (fn));
+      tree fns = TREE_VALUE (convs);
+      tree totype = TREE_TYPE (TREE_TYPE (OVL_CURRENT (fns)));
+      tree fn;
 
       if (TREE_CODE (totype) == POINTER_TYPE
 	  && TREE_CODE (TREE_TYPE (totype)) == FUNCTION_TYPE)
-	for (; fn; fn = DECL_CHAIN (fn))
+	for (; fns; fns = OVL_NEXT (fn))
 	  {
+	    fn = OVL_CURRENT (fn);
 	    if (TREE_CODE (fn) == TEMPLATE_DECL) 
 	      {
 		templates = scratch_tree_cons (NULL_TREE, fn, templates);
@@ -2477,7 +2489,7 @@ build_new_op (code, flags, arg1, arg2, arg3)
 	arglist = scratch_tree_cons (NULL_TREE, arg2, arg3);
 	if (flags & LOOKUP_GLOBAL)
 	  return build_new_function_call
-	    (lookup_name_nonclass (fnname), arglist);
+	    (lookup_function_nonclass (fnname, arglist), arglist);
 
 	/* FIXME */
 	rval = build_method_call
@@ -2499,9 +2511,11 @@ build_new_op (code, flags, arg1, arg2, arg3)
 	tree rval;
 
 	if (flags & LOOKUP_GLOBAL)
-	  return build_new_function_call
-	    (lookup_name_nonclass (fnname),
-	     build_scratch_list (NULL_TREE, arg1));
+	  {
+	    arglist = build_scratch_list (NULL_TREE, arg1);
+	    return build_new_function_call
+	      (lookup_function_nonclass (fnname, arglist), arglist);
+	  }    
 
 	arglist = scratch_tree_cons (NULL_TREE, arg1, build_scratch_list (NULL_TREE, arg2));
 
@@ -2576,23 +2590,23 @@ build_new_op (code, flags, arg1, arg2, arg3)
   else
     arglist = build_scratch_list (NULL_TREE, arg1);
 
-  fns = lookup_name_nonclass (fnname);
-  /* + Koenig lookup */
+  fns = lookup_function_nonclass (fnname, arglist);
 
   if (fns && TREE_CODE (fns) == TREE_LIST)
     fns = TREE_VALUE (fns);
-  for (; fns; fns = DECL_CHAIN (fns))
+  for (; fns; fns = OVL_NEXT (fns))
     {
-      if (TREE_CODE (fns) == TEMPLATE_DECL)
+      tree fn = OVL_CURRENT (fns);
+      if (TREE_CODE (fn) == TEMPLATE_DECL)
 	{
-	  templates = scratch_tree_cons (NULL_TREE, fns, templates);
+	  templates = scratch_tree_cons (NULL_TREE, fn, templates);
 	  candidates 
-	    = add_template_candidate (candidates, fns, NULL_TREE,
+	    = add_template_candidate (candidates, fn, NULL_TREE,
 				      arglist, TREE_TYPE (fnname),
 				      flags); 
 	}
       else
-	candidates = add_function_candidate (candidates, fns, arglist, flags);
+	candidates = add_function_candidate (candidates, fn, arglist, flags);
     }
 
   if (IS_AGGR_TYPE (TREE_TYPE (arg1)))
@@ -2606,10 +2620,11 @@ build_new_op (code, flags, arg1, arg2, arg3)
 
   if (fns)
     {
-      tree fn = TREE_VALUE (fns);
+      tree basetype = TREE_PURPOSE (fns);
       mem_arglist = scratch_tree_cons (NULL_TREE, build_this (arg1), TREE_CHAIN (arglist));
-      for (; fn; fn = DECL_CHAIN (fn))
+      for (fns = TREE_VALUE (fns); fns; fns = OVL_NEXT (fns))
 	{
+	  tree fn = OVL_CURRENT (fns);
 	  tree this_arglist;
 
 	  if (TREE_CODE (TREE_TYPE (fn)) == METHOD_TYPE)
@@ -2631,7 +2646,7 @@ build_new_op (code, flags, arg1, arg2, arg3)
 	      (candidates, fn, this_arglist, flags);
 
 	  if (candidates) 
-	    candidates->basetype_path = TREE_PURPOSE (fns);
+	    candidates->basetype_path = basetype;
 	}
     }
 
@@ -2860,7 +2875,8 @@ build_op_new_call (code, type, args, flags)
       return build_method_call (dummy, fnname, args, NULL_TREE, flags);
     }
   else
-    return build_new_function_call (lookup_name_nonclass (fnname), args);
+    return build_new_function_call 
+      (lookup_function_nonclass (fnname, args), args);
 }
 
 /* Build a call to operator delete.  This has to be handled very specially,
@@ -2908,9 +2924,12 @@ build_op_delete_call (code, addr, size, flags)
 
   if (fns)
     {
+#if 0
+      /* It is unnecessary to wrap another TREE_LIST around it. (MvL) */
       /* Build this up like build_offset_ref does.  */
       fns = build_tree_list (error_mark_node, fns);
       TREE_TYPE (fns) = build_offset_type (type, unknown_type_node);
+#endif
     }
   else
     fns = lookup_name_nonclass (fnname);
@@ -2957,15 +2976,15 @@ build_op_delete_call (code, addr, size, flags)
   /* instantiate_type will always return a plain function; pretend it's
      overloaded.  */
   if (TREE_CODE (fns) == FUNCTION_DECL)
-    fns = scratch_tree_cons (NULL_TREE, fns, NULL_TREE);
+    fns = scratch_ovl_cons (fns, NULL_TREE);
 
   fn = instantiate_type (fntype, fns, 0);
 
   if (fn != error_mark_node)
     {
-      if (TREE_CODE (TREE_VALUE (fns)) == TREE_LIST)
+      if (TREE_CODE (fns) == TREE_LIST)
 	/* Member functions.  */
-	enforce_access (TREE_PURPOSE (TREE_VALUE (fns)), fn);
+	enforce_access (TREE_PURPOSE (fns), fn);
       return build_function_call (fn, expr_tree_cons (NULL_TREE, addr, args));
     }
 
@@ -3268,12 +3287,14 @@ build_over_call (cand, args, flags)
 
 	     we must be careful to do name lookup in the scope of
 	     S<T>, rather than in the current class.  */
-	  if (DECL_REAL_CONTEXT (fn))
+	  if (DECL_REAL_CONTEXT (fn) 
+	      && TREE_CODE (DECL_REAL_CONTEXT (fn)) != NAMESPACE_DECL)
 	    pushclass (DECL_REAL_CONTEXT (fn), 2);
 
 	  arg = tsubst_expr (arg, DECL_TI_ARGS (fn), NULL_TREE);
 
-	  if (DECL_REAL_CONTEXT (fn))
+	  if (DECL_REAL_CONTEXT (fn)
+	      && TREE_CODE (DECL_CONTEXT (fn)) != NAMESPACE_DECL)
 	    popclass (0);
 	}
       converted_args = expr_tree_cons
@@ -3540,7 +3561,7 @@ build_new_method_call (instance, name, args, basetype_path, flags)
     return error_mark_node;
   if (fns)
     {
-      tree t = TREE_VALUE (fns);
+      tree fn = TREE_VALUE (fns);
       if (name == ctor_identifier && TYPE_USES_VIRTUAL_BASECLASSES (basetype)
 	  && ! (flags & LOOKUP_HAS_IN_CHARGE))
 	{
@@ -3548,8 +3569,9 @@ build_new_method_call (instance, name, args, basetype_path, flags)
 	  args = scratch_tree_cons (NULL_TREE, integer_one_node, args);
 	}
       mem_args = scratch_tree_cons (NULL_TREE, instance_ptr, args);
-      for (; t; t = DECL_CHAIN (t))
+      for (; fn; fn = OVL_NEXT (fn))
 	{
+	  tree t = OVL_CURRENT (fn);
 	  tree this_arglist;
 
 	  /* We can end up here for copy-init of same or base class.  */

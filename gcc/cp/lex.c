@@ -332,7 +332,7 @@ get_time_identifier (name)
       end_temporary_allocation ();
       IDENTIFIER_LOCAL_VALUE (time_identifier) = build_int_2 (0, 0);
       IDENTIFIER_CLASS_VALUE (time_identifier) = build_int_2 (0, 1);
-      IDENTIFIER_GLOBAL_VALUE (time_identifier) = filename_times;
+      SET_IDENTIFIER_GLOBAL_VALUE (time_identifier, filename_times);
       filename_times = time_identifier;
       pop_obstacks ();
     }
@@ -2740,8 +2740,8 @@ identifier_type (decl)
   if (looking_for_template && really_overloaded_fn (decl))
     {
       tree t;
-      for (t = TREE_VALUE (decl); t != NULL_TREE; t = DECL_CHAIN (t))
-	if (DECL_FUNCTION_TEMPLATE_P (t)) 
+      for (t = decl; t != NULL_TREE; t = OVL_CHAIN (t))
+	if (DECL_FUNCTION_TEMPLATE_P (OVL_FUNCTION (t))) 
 	  return PFUNCNAME;
     }
   if (TREE_CODE (decl) == NAMESPACE_DECL)
@@ -2758,7 +2758,8 @@ identifier_type (decl)
 void
 see_typename ()
 {
-  looking_for_typename = 1;
+  /* Only types expected, not even namespaces. */
+  looking_for_typename = 2;
   if (yychar < 0)
     if ((yychar = yylex ()) < 0) yychar = 0;
   looking_for_typename = 0;
@@ -2827,7 +2828,7 @@ do_identifier (token, parsing)
 	 refers to an overloaded method.  Eventually this will not be
 	 necessary, since default arguments shouldn't be parsed until
 	 after the class is complete.  (jason 3/12/97) */
-      && TREE_CODE (id) != TREE_LIST)
+      && TREE_CODE (id) != OVERLOAD)
     pushdecl_class_level (id);
     
   if (!id || id == error_mark_node)
@@ -2876,7 +2877,7 @@ do_identifier (token, parsing)
 	    }
 	  id = error_mark_node;
 	  /* Prevent repeated error messages.  */
-	  IDENTIFIER_NAMESPACE_VALUE (token) = error_mark_node;
+	  SET_IDENTIFIER_NAMESPACE_VALUE (token, error_mark_node);
 	  SET_IDENTIFIER_ERROR_LOCUS (token, current_function_decl);
 	}
     }
@@ -2966,7 +2967,14 @@ do_scoped_id (token, parsing)
   tree id;
   /* during parsing, this is ::name. Otherwise, it is black magic. */
   if (parsing)
-    id = qualified_lookup_using_namespace (token, global_namespace);
+    {
+      struct tree_binding _b;
+      id = binding_init (&_b);
+      if (!qualified_lookup_using_namespace (token, global_namespace, id))
+	id = NULL_TREE;
+      else
+	id = BINDING_VALUE (id);
+    } 
   else
     id = IDENTIFIER_GLOBAL_VALUE (token);
   if (parsing && yychar == YYEMPTY)
@@ -2988,14 +2996,14 @@ do_scoped_id (token, parsing)
 		   IDENTIFIER_POINTER (token));
 	  id = error_mark_node;
 	  /* Prevent repeated error messages.  */
-	  IDENTIFIER_NAMESPACE_VALUE (token) = error_mark_node;
+	  SET_IDENTIFIER_NAMESPACE_VALUE (token, error_mark_node);
 	}
     }
   else
     {
       if (TREE_CODE (id) == ADDR_EXPR)
 	mark_used (TREE_OPERAND (id, 0));
-      else if (TREE_CODE (id) != TREE_LIST)
+      else if (TREE_CODE (id) != OVERLOAD)
 	mark_used (id);
     }
   if (TREE_CODE (id) == CONST_DECL && ! processing_template_decl)
@@ -3232,7 +3240,7 @@ real_yylex ()
 		      && TREE_CODE (IDENTIFIER_GLOBAL_VALUE (old_ttype)) == TYPE_DECL)
 		    looking_for_typename = 0;
 		  else if (ptr->token == AGGR || ptr->token == ENUM)
-		    looking_for_typename = 1;
+		    looking_for_typename = 2;
 
 		  /* Check if this is a language-type declaration.
 		     Just glimpse the next non-white character.  */
@@ -4375,8 +4383,6 @@ build_lang_decl (code, name, type)
     DECL_LANGUAGE (t) = lang_java;
   else my_friendly_abort (64);
 
-  SET_DECL_NAMESPACE (t, current_namespace);
-
 #if 0 /* not yet, should get fixed properly later */
   if (code == TYPE_DECL)
     {
@@ -4508,7 +4514,7 @@ dump_time_statistics ()
   for (decl = filename_times; decl; decl = next)
     {
       next = IDENTIFIER_GLOBAL_VALUE (decl);
-      IDENTIFIER_GLOBAL_VALUE (decl) = prev;
+      SET_IDENTIFIER_GLOBAL_VALUE (decl, prev);
       prev = decl;
     }
 

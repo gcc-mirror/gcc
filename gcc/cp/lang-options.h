@@ -56,6 +56,8 @@ Boston, MA 02111-1307, USA.  */
   "-fno-handle-exceptions",
   "-fhandle-signatures",
   "-fno-handle-signatures",
+  "-fhonor-std",
+  "-fno-honor-std",
   "-fhuge-objects",
   "-fno-huge-objects",
   "-fimplement-inlines",

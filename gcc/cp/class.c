@@ -710,7 +710,8 @@ build_vtable (binfo, type)
   /* Set TREE_PUBLIC and TREE_EXTERN as appropriate.  */
   import_export_vtable (decl, type, 0);
 
-  IDENTIFIER_GLOBAL_VALUE (name) = decl = pushdecl_top_level (decl);
+  decl = pushdecl_top_level (decl);
+  SET_IDENTIFIER_GLOBAL_VALUE (name, decl);
   /* Initialize the association list for this type, based
      on our first approximation.  */
   TYPE_BINFO_VTABLE (type) = decl;
@@ -1072,42 +1073,24 @@ void
 add_method (type, fields, method)
      tree type, *fields, method;
 {
-  /* We must make a copy of METHOD here, since we must be sure that
-     we have exclusive title to this method's DECL_CHAIN.  */
-  tree decl;
-
   push_obstacks (&permanent_obstack, &permanent_obstack);
-  {
-    decl = copy_node (method);
-    if (DECL_RTL (decl) == 0
-        && (!processing_template_decl
-	    || !uses_template_parms (decl)))
-      {
-	make_function_rtl (decl);
-	DECL_RTL (method) = DECL_RTL (decl);
-      }
-  }
 
   if (fields && *fields)
-    {
-      /* Take care not to hide destructor.  */
-      DECL_CHAIN (decl) = DECL_CHAIN (*fields);
-      DECL_CHAIN (*fields) = decl;
-    }
+      *fields = build_overload (method, *fields);
   else if (CLASSTYPE_METHOD_VEC (type) == 0)
     {
       tree method_vec = make_node (TREE_VEC);
-      if (TYPE_IDENTIFIER (type) == DECL_NAME (decl))
+      if (TYPE_IDENTIFIER (type) == DECL_NAME (method))
 	{
 	  /* ??? Is it possible for there to have been enough room in the
 	     current chunk for the tree_vec structure but not a tree_vec
 	     plus a tree*?  Will this work in that case?  */
 	  obstack_free (current_obstack, method_vec);
 	  obstack_blank (current_obstack, sizeof (struct tree_vec) + sizeof (tree *));
-	  if (DESTRUCTOR_NAME_P (DECL_ASSEMBLER_NAME (decl)))
-	    TREE_VEC_ELT (method_vec, 1) = decl;
+	  if (DESTRUCTOR_NAME_P (DECL_ASSEMBLER_NAME (method)))
+	    TREE_VEC_ELT (method_vec, 1) = method;
 	  else
-	    TREE_VEC_ELT (method_vec, 0) = decl;
+	    TREE_VEC_ELT (method_vec, 0) = method;
 	  TREE_VEC_LENGTH (method_vec) = 2;
 	}
       else
@@ -1117,7 +1100,7 @@ add_method (type, fields, method)
 	     plus a tree*?  Will this work in that case?  */
 	  obstack_free (current_obstack, method_vec);
 	  obstack_blank (current_obstack, sizeof (struct tree_vec) + 2*sizeof (tree *));
-	  TREE_VEC_ELT (method_vec, 2) = decl;
+	  TREE_VEC_ELT (method_vec, 2) = method;
 	  TREE_VEC_LENGTH (method_vec) = 3;
 	  obstack_finish (current_obstack);
 	}
@@ -1130,15 +1113,13 @@ add_method (type, fields, method)
 
       /* Adding a new ctor or dtor.  This is easy because our
          METHOD_VEC always has a slot for such entries.  */
-      if (TYPE_IDENTIFIER (type) == DECL_NAME (decl))
+      if (TYPE_IDENTIFIER (type) == DECL_NAME (method))
 	{
-	  int idx = !!DESTRUCTOR_NAME_P (DECL_ASSEMBLER_NAME (decl));
-	  /* TREE_VEC_ELT (method_vec, idx) = decl; */
-	  if (decl != TREE_VEC_ELT (method_vec, idx))
-	    {
-	      DECL_CHAIN (decl) = TREE_VEC_ELT (method_vec, idx);
-	      TREE_VEC_ELT (method_vec, idx) = decl;
-	    }
+	  int idx = !!DESTRUCTOR_NAME_P (DECL_ASSEMBLER_NAME (method));
+	  /* TREE_VEC_ELT (method_vec, idx) = method; */
+	  if (method != TREE_VEC_ELT (method_vec, idx))
+	    TREE_VEC_ELT (method_vec, idx) =
+	      build_overload (method, TREE_VEC_ELT (method_vec, idx));
 	}
       else
 	{
@@ -1177,7 +1158,7 @@ add_method (type, fields, method)
 	    }
 
 	  obstack_finish (ob);
-	  TREE_VEC_ELT (method_vec, len) = decl;
+	  TREE_VEC_ELT (method_vec, len) = method;
 	  TREE_VEC_LENGTH (method_vec) = len + 1;
 	  CLASSTYPE_METHOD_VEC (type) = method_vec;
 
@@ -1194,8 +1175,8 @@ add_method (type, fields, method)
 	    }
 	}
     }
-  DECL_CONTEXT (decl) = type;
-  DECL_CLASS_CONTEXT (decl) = type;
+  DECL_CONTEXT (method) = type;
+  DECL_CLASS_CONTEXT (method) = type;
 
   pop_obstacks ();
 }
@@ -1866,16 +1847,11 @@ grow_method (fndecl, method_vec_ptr)
   tree *testp = &TREE_VEC_ELT (method_vec, 2);
 
   while (testp < (tree *) obstack_next_free (&class_obstack)
-	 && (*testp == NULL_TREE || DECL_NAME (*testp) != DECL_NAME (fndecl)))
+	 && (*testp == NULL_TREE || DECL_NAME (OVL_CURRENT (*testp)) != DECL_NAME (fndecl)))
     testp++;
 
   if (testp < (tree *) obstack_next_free (&class_obstack))
-    {
-      tree *p;
-      for (p = testp; *p; )
-	p = &DECL_CHAIN (*p);
-      *p = fndecl;
-    }
+    *testp = build_overload (fndecl, *testp);
   else
     {
       obstack_ptr_grow (&class_obstack, fndecl);
@@ -1966,14 +1942,14 @@ finish_struct_methods (t, fn_fields, nonprivate_method)
 	  if (DESTRUCTOR_NAME_P (DECL_ASSEMBLER_NAME (fn_fields)))
 	    {	    
 	      /* Destructors go in slot 1.  */
-	      DECL_CHAIN (fn_fields) = TREE_VEC_ELT (method_vec, 1);
-	      TREE_VEC_ELT (method_vec, 1) = fn_fields;
+	      TREE_VEC_ELT (method_vec, 1) = 
+		build_overload (fn_fields, TREE_VEC_ELT (method_vec, 1));
 	    }
 	  else
 	    {
 	      /* Constructors go in slot 0.  */
-	      DECL_CHAIN (fn_fields) = TREE_VEC_ELT (method_vec, 0);
-	      TREE_VEC_ELT (method_vec, 0) = fn_fields;
+	      TREE_VEC_ELT (method_vec, 0) = 
+		build_overload (fn_fields, TREE_VEC_ELT (method_vec, 0));
 	    }
  	}
       else if (IDENTIFIER_TYPENAME_P (fn_name))
@@ -2057,7 +2033,8 @@ finish_struct_methods (t, fn_fields, nonprivate_method)
       for (i = 2; i < len; i++)
 	{
 	  TREE_VEC_ELT (baselink_vec, i)
-	    = get_baselinks (baselink_binfo, t, DECL_NAME (TREE_VEC_ELT (method_vec, i)));
+	    = get_baselinks (baselink_binfo, t, 
+			     DECL_NAME (OVL_CURRENT (TREE_VEC_ELT (method_vec, i))));
 	  if (TREE_VEC_ELT (baselink_vec, i) != 0)
 	    any_links = 1;
 	}
@@ -2098,8 +2075,8 @@ duplicate_tag_error (t)
 	  tree unchain = TREE_VEC_ELT (method_vec, i);
 	  while (unchain != NULL_TREE) 
 	    {
-	      TREE_CHAIN (unchain) = NULL_TREE;
-	      unchain = DECL_CHAIN (unchain);
+	      TREE_CHAIN (OVL_CURRENT (unchain)) = NULL_TREE;
+	      unchain = OVL_NEXT (unchain);
 	    }
 	}
     }
@@ -3675,8 +3652,8 @@ finish_struct_1 (t, warn_anon)
 
 	  for (ctor = TREE_VEC_ELT (method_vec, 0);
 	       ctor;
-	       ctor = DECL_CHAIN (ctor))
-	    if (! TREE_PRIVATE (ctor))
+	       ctor = OVL_NEXT (ctor))
+	    if (! TREE_PRIVATE (OVL_CURRENT (ctor)))
 	      {
 		nonprivate_ctor = 1;
 		break;
@@ -3710,10 +3687,19 @@ finish_struct_1 (t, warn_anon)
 	int i = 2;
 	tree tmp;
 
+	/* Functions are represented as TREE_LIST, with the purpose
+	   being the type and the value the functions. Other members
+	   come as themselves. */
 	if (TREE_CODE (fdecl) == TREE_LIST)
 	  {
+	    /* Ignore base type this came from. */
+	    fdecl = TREE_VALUE (fdecl);
+	  }
+	if (TREE_CODE (fdecl) == OVERLOAD)
+	  {
+	    /* We later iterate over all functions. */
 	    flist = fdecl;
-	    fdecl = TREE_VALUE (flist);
+	    fdecl = OVL_FUNCTION (flist);
 	  }
 
 	name = DECL_NAME (fdecl);
@@ -3746,12 +3732,11 @@ finish_struct_1 (t, warn_anon)
 	/* Make type T see field decl FDECL with access ACCESS.*/
 	if (flist)
 	  {
-	    fdecl = TREE_VALUE (flist);
-	    while (fdecl)
+	    while (flist)
 	      {
-		if (alter_access (t, fdecl, access) == 0)
+		if (alter_access (t, OVL_FUNCTION (flist), access) == 0)
 		  break;
-		fdecl = DECL_CHAIN (fdecl);
+		flist = OVL_CHAIN (flist);
 	      }
 	  }
 	else
@@ -4921,6 +4906,29 @@ pop_lang_context ()
 
 /* Type instantiation routines.  */
 
+static tree
+validate_lhs (lhstype, complain)
+     tree lhstype;
+     int complain;
+{
+  if (TYPE_PTRMEMFUNC_P (lhstype))
+    lhstype = TYPE_PTRMEMFUNC_FN_TYPE (lhstype);
+
+  if (TREE_CODE (lhstype) == POINTER_TYPE)
+    {
+      if (TREE_CODE (TREE_TYPE (lhstype)) == FUNCTION_TYPE
+	  || TREE_CODE (TREE_TYPE (lhstype)) == METHOD_TYPE)
+	lhstype = TREE_TYPE (lhstype);
+      else
+	{
+	  if (complain)
+	    error ("invalid type combination for overload");
+	  return error_mark_node;
+	}
+    }
+  return lhstype;
+}
+
 /* This function will instantiate the type of the expression given in
    RHS to match the type of LHSTYPE.  If errors exist, then return
    error_mark_node.  If only complain is COMPLAIN is set.  If we are
@@ -4955,7 +4963,10 @@ instantiate_type (lhstype, rhs, complain)
       return error_mark_node;
     }
 
-  rhs = copy_node (rhs);
+  /* We don't overwrite rhs if it is an overloaded function.
+     Copying it would destroy the tree link.  */
+  if (TREE_CODE (rhs) != OVERLOAD)
+    rhs = copy_node (rhs);
 
   /* This should really only be used when attempting to distinguish
      what sort of a pointer to function we have.  For now, any
@@ -5016,6 +5027,9 @@ instantiate_type (lhstype, rhs, complain)
 	    return function;
 	  }
 
+	/* I could not trigger this code. MvL */
+	my_friendly_abort (980326);
+#if 0
 	my_friendly_assert (TREE_CODE (field) == FIELD_DECL, 178);
 	my_friendly_assert (!(TREE_CODE (TREE_TYPE (field)) == FUNCTION_TYPE
 			      || TREE_CODE (TREE_TYPE (field)) == METHOD_TYPE),
@@ -5056,6 +5070,7 @@ instantiate_type (lhstype, rhs, complain)
 	      error ("no appropriate overload exists for COMPONENT_REF");
 	    return error_mark_node;
 	  }
+#endif
 	return rhs;
       }
 
@@ -5064,149 +5079,167 @@ instantiate_type (lhstype, rhs, complain)
 	explicit_targs = TREE_OPERAND (rhs, 1);
 	rhs = TREE_OPERAND (rhs, 0);
       }
-    /* fall through */
+      /* fall through */
+      my_friendly_assert (TREE_CODE (rhs) == OVERLOAD, 980401);
+
+    case OVERLOAD:
+      {
+	tree elem, elems;
+
+	/* First look for an exact match.  Search overloaded
+	   functions.  May have to undo what `default_conversion'
+	   might do to lhstype.  */
+
+	lhstype = validate_lhs (lhstype, complain);
+	if (lhstype == error_mark_node)
+	  return lhstype;
+
+	if (TREE_CODE (lhstype) != FUNCTION_TYPE)
+	  {
+	    rhs = DECL_NAME (OVL_FUNCTION (rhs));
+	    if (complain)
+	      cp_error("cannot resolve overloaded function `%D' " 
+		       "based on non-function type", rhs);
+	    return error_mark_node;
+	  }
+	
+	elems = rhs;
+	/* If there are explicit_targs, only a template function
+	   can match.  */
+	if (explicit_targs == NULL_TREE)
+	  while (elems)
+	    {
+	      elem = OVL_FUNCTION (elems);
+	      if (! comptypes (lhstype, TREE_TYPE (elem), 1))
+		elems = OVL_CHAIN (elems);
+	      else
+		{
+		  mark_used (elem);
+		  return elem;
+		}
+	    }
+
+	/* No exact match found, look for a compatible template.  */
+	{
+	  tree save_elem = 0;
+	  elems = rhs;
+	  if (TREE_CODE (elems) == TREE_LIST)
+	    elems = TREE_VALUE (rhs);
+	  for (; elems; elems = OVL_NEXT (elems))
+	    if (TREE_CODE (elem = OVL_CURRENT (elems)) == TEMPLATE_DECL)
+	      {
+		int n = DECL_NTPARMS (elem);
+		tree t = make_scratch_vec (n);
+		int i;
+		i = type_unification
+		  (DECL_INNERMOST_TEMPLATE_PARMS (elem), t,
+		   TYPE_ARG_TYPES (TREE_TYPE (elem)),
+		   TYPE_ARG_TYPES (lhstype), explicit_targs, 1, 1);
+		if (i == 0)
+		  {
+		    if (save_elem)
+		      {
+			cp_error ("ambiguous template instantiation converting to `%#T'", lhstype);
+			return error_mark_node;
+		      }
+		    save_elem = instantiate_template (elem, t);
+		    /* Check the return type.  */
+		    if (! comptypes (TREE_TYPE (lhstype),
+				     TREE_TYPE (TREE_TYPE (save_elem)), 1))
+		      save_elem = 0;
+		  }
+	      }
+	  if (save_elem)
+	    {
+	      mark_used (save_elem);
+	      return save_elem;
+	    }
+	}
+
+	/* If there are explicit_targs, only a template function
+	   can match.  */
+	if (explicit_targs == NULL_TREE) 
+	  {
+	    /* No match found, look for a compatible function.  */
+	    tree elems = rhs;
+	    elems = rhs;
+	    for (; elems; elems = OVL_NEXT (elems))
+	      {
+		elem = OVL_CURRENT (elems);
+		if (comp_target_types (lhstype, TREE_TYPE (elem), 1) > 0)
+		  break;
+	      }
+	    if (elems)
+	      {
+		tree save_elem = elem;
+		for (elems = OVL_CHAIN (elems); elems; 
+		     elems = OVL_CHAIN (elems))
+		  {
+		    elem = OVL_FUNCTION (elems);
+		    if (comp_target_types (lhstype, TREE_TYPE (elem), 0) > 0)
+		      break;
+		  }
+		if (elems)
+		  {
+		    if (complain)
+		      {
+			cp_error 
+			  ("cannot resolve overload to target type `%#T'",
+			   lhstype);
+			cp_error_at ("  ambiguity between `%#D'", save_elem); 
+			cp_error_at ("  and `%#D', at least", elem);
+		      }
+		    return error_mark_node;
+		  }
+		mark_used (save_elem);
+		return save_elem;
+	      }
+	  }
+	if (complain)
+	  {
+	    cp_error ("cannot resolve overload to target type `%#T'", lhstype);
+	    cp_error 
+	      ("  because no suitable overload of function `%D' exists",
+	       DECL_NAME (OVL_FUNCTION (rhs)));
+	  }
+	return error_mark_node;
+      }
 
     case TREE_LIST:
       {
 	tree elem, baselink, name = NULL_TREE;
-	int globals = overloaded_globals_p (rhs);
 
-	/* First look for an exact match.  Search either overloaded
-	   functions or member functions.  May have to undo what
-	   `default_conversion' might do to lhstype.  */
+	if (TREE_PURPOSE (rhs) == error_mark_node)
+	{
+	  /* Make sure we don't drop the non-local flag, as the old code
+	     would rely on it. */
+	  int nl = TREE_NONLOCAL_FLAG (rhs);
+	  /* We don't need the type of this node. */
+	  rhs = TREE_VALUE (rhs);
+	  my_friendly_assert (TREE_NONLOCAL_FLAG (rhs) == nl, 980331);
+	}
+	/* Now we should have a baselink. */
+	my_friendly_assert (TREE_CODE (TREE_PURPOSE (rhs)) == TREE_VEC, 980331);
+	/* First look for an exact match.  Search member functions.
+	   May have to undo what `default_conversion' might do to
+	   lhstype.  */
 
-	if (TYPE_PTRMEMFUNC_P (lhstype))
-	  lhstype = TYPE_PTRMEMFUNC_FN_TYPE (lhstype);
-
-	if (TREE_CODE (lhstype) == POINTER_TYPE)
-	  {
-	    if (TREE_CODE (TREE_TYPE (lhstype)) == FUNCTION_TYPE
-		|| TREE_CODE (TREE_TYPE (lhstype)) == METHOD_TYPE)
-	      lhstype = TREE_TYPE (lhstype);
-	    else
-	      {
-		if (complain)
-		  error ("invalid type combination for overload");
-		return error_mark_node;
-	      }
-	  }
-
-	if (TREE_CODE (lhstype) != FUNCTION_TYPE && globals > 0)
-	  {
-	    if (complain)
-	      cp_error ("cannot resolve overloaded function `%D' based on non-function type",
-		     TREE_PURPOSE (rhs));
-	    return error_mark_node;
-	  }
-
-	if (globals > 0)
-	  {
-	    elem = get_first_fn (rhs);
-	    /* If there are explicit_targs, only a template function
-	       can match.  */
-	    if (explicit_targs == NULL_TREE)
-	      while (elem)
-		{
-		  if (! comptypes (lhstype, TREE_TYPE (elem), 1))
-		    elem = DECL_CHAIN (elem);
-		  else
-		    {
-		      mark_used (elem);
-		      return elem;
-		    }
-		}
-
-	    /* No exact match found, look for a compatible template.  */
-	    {
-	      tree save_elem = 0;
-	      for (elem = get_first_fn (rhs); elem; elem = DECL_CHAIN (elem))
-		if (TREE_CODE (elem) == TEMPLATE_DECL)
-		  {
-		    int n = DECL_NTPARMS (elem);
-		    tree t = make_scratch_vec (n);
-		    int i;
-		    i = type_unification
-		      (DECL_INNERMOST_TEMPLATE_PARMS (elem), t,
-		       TYPE_ARG_TYPES (TREE_TYPE (elem)),
-		       TYPE_ARG_TYPES (lhstype), explicit_targs, 1, 1);
-		    if (i == 0)
-		      {
-			if (save_elem)
-			  {
-			    cp_error ("ambiguous template instantiation converting to `%#T'", lhstype);
-			    return error_mark_node;
-			  }
-			save_elem = instantiate_template (elem, t);
-			/* Check the return type.  */
-			if (! comptypes (TREE_TYPE (lhstype),
-					 TREE_TYPE (TREE_TYPE (save_elem)), 1))
-			  save_elem = 0;
-		      }
-		  }
-	      if (save_elem)
-		{
-		  mark_used (save_elem);
-		  return save_elem;
-		}
-	    }
-
-	    /* If there are explicit_targs, only a template function
-	       can match.  */
-	    if (explicit_targs == NULL_TREE) 
-	      {
-		/* No match found, look for a compatible function.  */
-		elem = get_first_fn (rhs);
-		while (elem && comp_target_types (lhstype,
-						  TREE_TYPE (elem), 1) <= 0)
-		  elem = DECL_CHAIN (elem);
-		if (elem)
-		  {
-		    tree save_elem = elem;
-		    elem = DECL_CHAIN (elem);
-		    while (elem 
-			   && comp_target_types (lhstype,
-						 TREE_TYPE (elem), 0) <= 0)
-		      elem = DECL_CHAIN (elem);
-		    if (elem)
-		      {
-			if (complain)
-			  {
-			    cp_error 
-			      ("cannot resolve overload to target type `%#T'",
-			       lhstype);
-			    cp_error_at ("  ambiguity between `%#D'",
-					 save_elem); 
-			    cp_error_at ("  and `%#D', at least", elem);
-			  }
-			return error_mark_node;
-		      }
-		    mark_used (save_elem);
-		    return save_elem;
-		  }
-	      }
-	    if (complain)
-	      {
-		cp_error ("cannot resolve overload to target type `%#T'",
-			  lhstype);
-		cp_error 
-		  ("  because no suitable overload of function `%D' exists",
-		   TREE_PURPOSE (rhs));
-	      }
-	    return error_mark_node;
-	  }
+	lhstype = validate_lhs (lhstype, complain);
+	if (lhstype == error_mark_node)
+	  return lhstype;
 
 	if (TREE_NONLOCAL_FLAG (rhs))
 	  {
+	    my_friendly_abort (980401);
 	    /* Got to get it as a baselink.  */
 	    rhs = lookup_fnfields (TYPE_BINFO (current_class_type),
-				   TREE_PURPOSE (rhs), 0);
+				   DECL_NAME (OVL_FUNCTION (rhs)), 0);
 	  }
 	else
 	  {
 	    my_friendly_assert (TREE_CHAIN (rhs) == NULL_TREE, 181);
-	    if (TREE_CODE (TREE_VALUE (rhs)) == TREE_LIST)
-	      rhs = TREE_VALUE (rhs);
-	    my_friendly_assert (TREE_CODE (TREE_VALUE (rhs)) == FUNCTION_DECL,
+	    my_friendly_assert (TREE_CODE (TREE_VALUE (rhs)) == FUNCTION_DECL
+				|| TREE_CODE (TREE_VALUE (rhs)) == OVERLOAD,
 				182);
 	  }
 
@@ -5215,13 +5248,13 @@ instantiate_type (lhstype, rhs, complain)
 	  {
 	    elem = TREE_VALUE (baselink);
 	    while (elem)
-	      if (comptypes (lhstype, TREE_TYPE (elem), 1))
+	      if (comptypes (lhstype, TREE_TYPE (OVL_CURRENT (elem)), 1))
 		{
-		  mark_used (elem);
-		  return elem;
+		  mark_used (OVL_CURRENT (elem));
+		  return OVL_CURRENT (elem);
 		}
 	      else
-		elem = DECL_CHAIN (elem);
+		elem = OVL_NEXT (elem);
 	  }
 
 	/* No exact match found, look for a compatible method.  */
@@ -5229,16 +5262,17 @@ instantiate_type (lhstype, rhs, complain)
 	     baselink = next_baselink (baselink))
 	  {
 	    elem = TREE_VALUE (baselink);
-	    while (elem && comp_target_types (lhstype,
-					      TREE_TYPE (elem), 1) <= 0)
-	      elem = DECL_CHAIN (elem);
+	    for (; elem; elem = OVL_NEXT (elem))
+	      if (comp_target_types (lhstype, 
+				     TREE_TYPE (OVL_CURRENT (elem)), 1) > 0)
+		break;
 	    if (elem)
 	      {
-		tree save_elem = elem;
-		elem = DECL_CHAIN (elem);
-		while (elem && comp_target_types (lhstype,
-						  TREE_TYPE (elem), 0) <= 0)
-		  elem = DECL_CHAIN (elem);
+		tree save_elem = OVL_CURRENT (elem);
+		for (elem = OVL_NEXT (elem); elem; elem = OVL_NEXT (elem))
+		  if (comp_target_types (lhstype, 
+					 TREE_TYPE (OVL_CURRENT (elem)), 0) > 0)
+		    break;
 		if (elem)
 		  {
 		    if (complain)
@@ -5248,7 +5282,10 @@ instantiate_type (lhstype, rhs, complain)
 		mark_used (save_elem);
 		return save_elem;
 	      }
-	    name = DECL_NAME (TREE_VALUE (rhs));
+	    name = rhs;
+	    while (TREE_CODE (name) == TREE_LIST)
+	      name = TREE_VALUE (name);
+	    name = DECL_NAME (OVL_CURRENT (name));
 #if 0
 	    if (TREE_CODE (lhstype) == FUNCTION_TYPE && globals < 0)
 	      {

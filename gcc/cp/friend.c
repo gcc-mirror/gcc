@@ -118,6 +118,10 @@ is_friend (type, supplicant)
   else
     context = NULL_TREE;
 
+  /* A namespace is not friend to anybody. */
+  if (context && TREE_CODE (context) == NAMESPACE_DECL)
+    context = NULL_TREE;
+
   if (context)
     return is_friend (type, context);
 

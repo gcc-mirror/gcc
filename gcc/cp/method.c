@@ -187,6 +187,7 @@ static int nrepeats = 0;
 /* Array of types seen so far in top-level call to `build_mangled_name'.
    Allocated and deallocated by caller.  */
 static tree *typevec = NULL;
+static int  typevec_size;
 
 /* Number of types interned by `build_mangled_name' so far.  */
 static int maxtype = 0;
@@ -418,6 +419,9 @@ build_overload_nested_name (decl)
   if (ktypelist && issue_ktype (decl))
       return;
 
+  if (decl == global_namespace)
+    return;
+
    if (DECL_CONTEXT (decl))
     {
       tree context = DECL_CONTEXT (decl);
@@ -438,14 +442,8 @@ build_overload_nested_name (decl)
             }
         }
     }
-  else if (decl == global_namespace)
-    return;
-  else if (DECL_NAMESPACE (decl))
-    build_overload_nested_name (DECL_NAMESPACE (decl));
-  else
-    /* XXX the above does not work for non-namespaces */
-    if (current_namespace && TREE_CODE (decl) != NAMESPACE_DECL)
-      build_overload_nested_name (current_namespace);
+  else 
+    my_friendly_abort (392);
 
   if (TREE_CODE (decl) == FUNCTION_DECL)
     {
@@ -946,8 +944,8 @@ build_qualified_name (decl)
   /* if we can't find a Ktype, do it the hard way */
   if (check_ktype (context, FALSE) == -1)
     {
-      /* count type scopes */
-      while (DECL_CONTEXT (context))
+      /* count type and namespace scopes */
+      while (DECL_CONTEXT (context) && DECL_CONTEXT (context) != global_namespace)
 	{
 	  i += 1;
 	  context = DECL_CONTEXT (context);
@@ -956,25 +954,6 @@ build_qualified_name (decl)
 	  if (TREE_CODE_CLASS (TREE_CODE (context)) == 't')
 	    context = TYPE_NAME (context);
 	}
-      /* now count namespace scopes */
-      if (TREE_CODE (decl) == NAMESPACE_DECL)
-	{
-	  i = 0; /* we have nothing done, yet: reset */
-	  context = decl;
-	}
-      else
-	/* decl must be a type, which we have to scope with the
-	   namespace */
-	{
-	  /* XXX MvL somehow, types have no lang_decl, so no namespace */
-	  context = current_namespace;
-	}    
-    }
-
-  while (context != global_namespace)
-    {
-      i += 1;
-      context = DECL_NAMESPACE (context);
     }
 
   if (i > 1)
@@ -1052,6 +1031,7 @@ build_mangled_name (parmtypes, begin, end)
           if (!nofold && typevec)
             {
               /* Every argument gets counted.  */
+	      my_friendly_assert (maxtype < typevec_size, 387);
               typevec[maxtype++] = parmtype;
 
               if (TREE_USED (parmtype) && parmtype == typevec[maxtype-2]
@@ -1588,7 +1568,11 @@ build_decl_overload_real (dname, parms, ret_type, tparms, targs,
         {
           maxtype = 0;
           Nrepeats = 0;
-          typevec = (tree *)alloca (list_length (parms) * sizeof (tree));
+	  typevec_size = list_length (parms);
+	  if (!for_method && current_namespace != global_namespace)
+	    /* the namespace of a global function needs one slot */
+	    typevec_size++;
+          typevec = (tree *)alloca (typevec_size * sizeof (tree));
         }
       nofold = 0;
       if (for_method)
@@ -1596,6 +1580,7 @@ build_decl_overload_real (dname, parms, ret_type, tparms, targs,
 	  build_mangled_name (TREE_VALUE (parms), 0, 0);
 
           if (!flag_do_squangling) {
+	    my_friendly_assert (maxtype < typevec_size, 387);
             typevec[maxtype++] = TREE_VALUE (parms);
             TREE_USED (TREE_VALUE (parms)) = 1;
           }
@@ -1611,7 +1596,10 @@ build_decl_overload_real (dname, parms, ret_type, tparms, targs,
 	     will count as type */
 	  if (current_namespace != global_namespace
 	      && !flag_do_squangling)
-	    typevec[maxtype++] = current_namespace;
+	    {
+	      my_friendly_assert (maxtype < typevec_size, 387);
+	      typevec[maxtype++] = current_namespace;
+	    }
 	  build_mangled_name (parms, 0, 0);
 	}
 
@@ -1805,6 +1793,9 @@ hack_identifier (value, name)
 
 	      fndecl = TREE_VALUE (fields);
 	      my_friendly_assert (TREE_CODE (fndecl) == FUNCTION_DECL, 251);
+	      /* I could not trigger this code. MvL */
+	      my_friendly_abort (980325);
+#ifdef DEAD
 	      if (DECL_CHAIN (fndecl) == NULL_TREE)
 		{
 		  warning ("methods cannot be converted to function pointers");
@@ -1816,6 +1807,7 @@ hack_identifier (value, name)
 			 IDENTIFIER_POINTER (name));
 		  return error_mark_node;
 		}
+#endif
 	    }
 	}
       if (flag_labels_ok && IDENTIFIER_LABEL_VALUE (name))
@@ -1856,6 +1848,9 @@ hack_identifier (value, name)
 	}
 #endif
     }
+  else if (TREE_CODE (value) == OVERLOAD)
+    /* not really overloaded function */
+    mark_used (OVL_FUNCTION (value));
   else if (TREE_CODE (value) == TREE_LIST)
     {
       /* Ambiguous reference to base members, possibly other cases?.  */
@@ -1866,6 +1861,9 @@ hack_identifier (value, name)
 	  t = TREE_CHAIN (t);
 	}
     }
+  else if (TREE_CODE (value) == NAMESPACE_DECL)
+    /* A namespace is not really expected here; this is likely illegal code. */
+    return value;
   else
     mark_used (value);
 
@@ -1957,7 +1955,8 @@ make_thunk (function, delta)
   if (thunk && TREE_CODE (thunk) != THUNK_DECL)
     {
       cp_error ("implementation-reserved name `%D' used", thunk_id);
-      IDENTIFIER_GLOBAL_VALUE (thunk_id) = thunk = NULL_TREE;
+      thunk = NULL_TREE;
+      SET_IDENTIFIER_GLOBAL_VALUE (thunk_id, thunk);
     }
   if (thunk == NULL_TREE)
     {
