@@ -786,6 +786,10 @@ assign_stack_local (mode, size, align)
   else
     alignment = align / BITS_PER_UNIT;
 
+#ifdef FRAME_GROWS_DOWNWARD
+  frame_offset -= size;
+#endif
+
   /* Round frame offset to that alignment.
      We must be careful here, since FRAME_OFFSET might be negative and
      division with a negative dividend isn't as well defined as we might
@@ -801,10 +805,6 @@ assign_stack_local (mode, size, align)
      use the least significant bytes of those that are allocated.  */
   if (BYTES_BIG_ENDIAN && mode != BLKmode)
     bigend_correction = size - GET_MODE_SIZE (mode);
-
-#ifdef FRAME_GROWS_DOWNWARD
-  frame_offset -= size;
-#endif
 
   /* If we have already instantiated virtual registers, return the actual
      address relative to the frame pointer.  */
@@ -871,6 +871,10 @@ assign_outer_stack_local (mode, size, align, function)
   else
     alignment = align / BITS_PER_UNIT;
 
+#ifdef FRAME_GROWS_DOWNWARD
+  function->frame_offset -= size;
+#endif
+
   /* Round frame offset to that alignment.  */
 #ifdef FRAME_GROWS_DOWNWARD
   function->frame_offset = FLOOR_ROUND (function->frame_offset, alignment);
@@ -883,9 +887,6 @@ assign_outer_stack_local (mode, size, align, function)
   if (BYTES_BIG_ENDIAN && mode != BLKmode)
     bigend_correction = size - GET_MODE_SIZE (mode);
 
-#ifdef FRAME_GROWS_DOWNWARD
-  function->frame_offset -= size;
-#endif
   addr = plus_constant (virtual_stack_vars_rtx,
 			function->frame_offset + bigend_correction);
 #ifndef FRAME_GROWS_DOWNWARD
