@@ -1,3 +1,7 @@
+2002-06-16  Alan Modra  <amodra@bigpond.net.au>
+
+	* gcc.c (main): Correct startfile_prefix_spec check.
+
 2002-06-12  Geoffrey Keating  <geoffk@redhat.com>
 
 	* config.gcc: Revert rth's patch of 2002-05-18.  Instead,
