@@ -1,3 +1,7 @@
+Wed Sep 17 14:11:38 1997  Jeffrey A Law  (law@cygnus.com)
+
+	* v850.c (construct_save_jarl): Fix thinko in last change.
+
 Wed Sep 17 09:53:07 1997  Jeffrey A Law  (law@cygnus.com)
 
 	* version.c: Bump for snapshot.
