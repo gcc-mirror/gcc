@@ -91,6 +91,7 @@ int
 dwarf2out_do_frame ()
 {
   return (write_symbols == DWARF2_DEBUG
+	  || write_symbols == VMS_AND_DWARF2_DEBUG
 #ifdef DWARF2_FRAME_INFO
 	  || DWARF2_FRAME_INFO
 #endif
@@ -2115,7 +2116,7 @@ void
 dwarf2out_frame_finish ()
 {
   /* Output call frame information.  */
-  if (write_symbols == DWARF2_DEBUG)
+  if (write_symbols == DWARF2_DEBUG || write_symbols == VMS_AND_DWARF2_DEBUG)
     output_call_frame_info (0);
   if (! USING_SJLJ_EXCEPTIONS && (flag_unwind_tables || flag_exceptions))
     output_call_frame_info (1);
@@ -4099,6 +4100,9 @@ dwarf_attr_name (attr)
       return "DW_AT_body_begin";
     case DW_AT_body_end:
       return "DW_AT_body_end";
+    case DW_AT_VMS_rtnbeg_pd_address:
+      return "DW_AT_VMS_rtnbeg_pd_address";
+
     default:
       return "DW_AT_<unknown>";
     }
@@ -9311,6 +9315,15 @@ add_name_and_src_coords_attributes (die, decl)
 	add_AT_string (die, DW_AT_MIPS_linkage_name,
 		       IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (decl)));
     }
+
+#ifdef VMS_DEBUGGING_INFO
+
+  /* Get the function's name, as described by its RTL.  This may be different
+     from the DECL_NAME name used in the source file.  */
+  if (TREE_CODE (decl) == FUNCTION_DECL && TREE_ASM_WRITTEN (decl))
+    add_AT_string (die, DW_AT_VMS_rtnbeg_pd_address,
+		   xstrdup (XSTR (XEXP (DECL_RTL (decl), 0), 0)));
+#endif
 }
 
 /* Push a new declaration scope.  */
