@@ -1,5 +1,5 @@
 /* dbxout.h - Various declarations for functions found in dbxout.c
-   Copyright (C) 1998, 1999, 2000, 2003
+   Copyright (C) 1998, 1999, 2000, 2003, 2004
    Free Software Foundation, Inc.
 
 This file is part of GCC.
@@ -19,7 +19,12 @@ along with GCC; see the file COPYING.  If not, write to the Free
 Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 02111-1307, USA.  */
 
+#ifndef GCC_DBXOUT_H
+#define GCC_DBXOUT_H
+
 extern int dbxout_symbol (tree, int);
 extern void dbxout_parms (tree);
 extern void dbxout_reg_parms (tree);
 extern int dbxout_syms (tree);
+
+#endif /* GCC_DBXOUT_H */
