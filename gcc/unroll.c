@@ -682,10 +682,11 @@ unroll_loop (loop_end, insn_count, loop_start, end_insert_before,
   max_labelno = max_label_num ();
   max_insnno = get_max_uid ();
 
-  map = (struct inline_remap *) xmalloc (sizeof (struct inline_remap));
+  /* Various paths through the unroll code may reach the "egress" label
+     without initializing fields within the map structure.
 
-  map->integrating = 0;
-  map->const_equiv_varray = 0;
+     To be safe, we use xcalloc to zero the memory.  */
+  map = (struct inline_remap *) xcalloc (1, sizeof (struct inline_remap));
 
   /* Allocate the label map.  */
 
@@ -695,8 +696,6 @@ unroll_loop (loop_end, insn_count, loop_start, end_insert_before,
 
       local_label = (char *) xcalloc (max_labelno, sizeof (char));
     }
-  else
-    map->label_map = 0;
 
   /* Search the loop and mark all local labels, i.e. the ones which have to
      be distinct labels when copied.  For all labels which might be
