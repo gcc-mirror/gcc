@@ -237,18 +237,12 @@ build_chill_slice (array, min_value, length)
   if (TREE_CODE (array_type) == ARRAY_TYPE)
     {
       tree domain_type = TYPE_DOMAIN (array_type);
-      tree index_domain
-	= TREE_CODE (length) != INTEGER_CST || integer_zerop (length)
-	? sizetype
-	: domain_type;
-      tree domain_min = convert (index_domain, TYPE_MIN_VALUE (domain_type));
-      tree domain_max = fold (build (PLUS_EXPR, index_domain,
+      tree domain_min = TYPE_MIN_VALUE (domain_type);
+      tree domain_max = fold (build (PLUS_EXPR, domain_type,
 				     domain_min,
-				     convert (index_domain,
-					      size_binop (MINUS_EXPR,
-							  length,
-							  integer_one_node))));
-      tree index_type = build_chill_range_type (domain_type,
+				     size_binop (MINUS_EXPR,
+						 length, integer_one_node)));
+      tree index_type = build_chill_range_type (TYPE_DOMAIN (array_type),
 						domain_min,
 						domain_max);
 
