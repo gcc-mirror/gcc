@@ -749,7 +749,7 @@
    (set_attr "length" "1")])
 
 (define_insn ""
-  [(set (match_operand:SI 0 "register_operand" "=a,?*r")
+  [(set (match_operand:SI 0 "register_operand" "=a,&?*r")
 	(plus:SI (match_operand:SI 1 "register_operand" "r,r")
 		 (high:SI (match_operand 2 "" ""))))]
   ""
@@ -944,8 +944,8 @@
 ;; therefore it is forced to operand 2.  If the count is compile-time
 ;; determined, we need two scratch registers for the unrolled code.
 (define_insn ""
-  [(set (mem:BLK (match_operand:SI 0 "register_operand" "r,r"))
-	(mem:BLK (match_operand:SI 1 "register_operand" "r,r")))
+  [(set (mem:BLK (match_operand:SI 0 "register_operand" "+r,r"))
+	(mem:BLK (match_operand:SI 1 "register_operand" "+r,r")))
    (clobber (match_dup 0))
    (clobber (match_dup 1))
    (clobber (match_scratch:SI 2 "=r,r"))		 ;loop cnt/item tmp
@@ -1667,7 +1667,7 @@
 	(xor:SI (match_operand:SI 1 "register_operand" "%r")
 		(match_operand:SI 2 "register_operand" "r")))]
   ""
-  "xor %r1,%2,%0")
+  "xor %1,%2,%0")
 
 (define_insn "negdi2"
   [(set (match_operand:DI 0 "register_operand" "=r")
@@ -2057,8 +2057,8 @@
   if (!INT_11_BITS (operands[2]))
     operands[2] = force_reg (SImode, operands[2]);
 
-  emit_insn (gen_casesi0 (operands[0], operands[2],
-			  operands[3], operands[4]));
+  emit_jump_insn (gen_casesi0 (operands[0], operands[2],
+			       operands[3], operands[4]));
   DONE;
 }")
 
