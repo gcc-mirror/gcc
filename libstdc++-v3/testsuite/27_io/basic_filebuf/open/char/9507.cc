@@ -48,11 +48,13 @@ void test_06()
       std::filebuf fbuf;
       fbuf.open(name, std::ios_base::in);
       fbuf.sgetc();
+      sleep(2);
       fbuf.close();
       exit(0);
     }
 
   std::filebuf fbuf;
+  sleep(1);
   std::filebuf* r = fbuf.open(name,
 			      std::ios_base::in 
 			      | std::ios_base::out
