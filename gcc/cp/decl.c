@@ -10040,7 +10040,7 @@ grokparms (first_parm, funcdef_flag)
 		  TREE_CHAIN (last_decl) = decl;
 		  last_decl = decl;
 		}
-	      if (TREE_PERMANENT (list_node))
+	      if (! current_function_decl && TREE_PERMANENT (list_node))
 		{
 		  TREE_PURPOSE (list_node) = init;
 		  TREE_VALUE (list_node) = type;
