@@ -1,3 +1,9 @@
+2002-12-30  Nathan Sidwell  <nathan@codesourcery.com>
+
+	PR c++/9054
+	* class.c (layout_class_type): Set DECL_CONTEXT of type for base.
+	* dump.c (cp_dump_tree, RECORD_TYPE): Deal with type for base types.
+
 2002-12-26  Nathan Sidwell  <nathan@codesourcery.com>
 
 	PR c++/4803
