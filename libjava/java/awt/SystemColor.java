@@ -427,7 +427,7 @@ public final class SystemColor extends Color implements Serializable
    * as the system color is solid, the context does not need any of the
    * passed parameters to do its job.
    *
-   * @param cm the requested color model, ignored
+   * @param cm the requested color model
    * @param deviceBounds the bounding box in device coordinates, ignored
    * @param userBounds the bounding box in user coordinates, ignored
    * @param xform the bounds transformation, ignored
@@ -441,8 +441,8 @@ public final class SystemColor extends Color implements Serializable
   {
     Toolkit.getDefaultToolkit().loadSystemColors(colors);
     int color = colors[value] | ALPHA_MASK;
-    if (context == null || color != context.color)
-      context = new ColorPaintContext(color);
+    if (context == null || color != context.color || !context.getColorModel().equals(cm))
+      context = new ColorPaintContext(cm,color);
     return context;
   }    
 

@@ -1,3 +1,25 @@
+2004-05-04  Ingo Proetel  <proetel@aicas.com>
+
+	* java/awt/image/ColorModel.java (getRGBdefault): Default ColorModel has
+        32 bit pixels not 8 bit pixels.
+	(isCompatibleRaster): Added javadoc comment.
+
+2004-05-04  Ingo Proetel  <proetel@aicas.com>
+
+	* java/awt/image/ComponentSampleModel.java (setDataSamples):Do not reset
+	scanline stride.
+
+2004-05-04  Ingo Proetel  <proetel@aicas.com>
+
+	* java/awt/ColorPaintContext.java (<init>): Added ColorModel to signature.
+	(getColorModel): Return the actual color model.
+	(getRaster): Implemented.
+	(ColorRaster): New inner class.
+	* java/awt/SystemColor.java (createContext): Use ColorModel when creating
+	a PaintContext.
+	* java/awt/Color.java (<init>): Make exception more verbose.
+	(createContext): Use ColorModel when creating a PaintContext.
+
 2004-05-04  Michael Koch  <konqueror@gmx.de>
 
 	* gnu/java/text/CharacterBreakIterator.java

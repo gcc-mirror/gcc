@@ -1,5 +1,5 @@
 /* ColorPaintContext.java -- context for painting solid colors
-   Copyright (C) 2002 Free Software Foundation, Inc.
+   Copyright (C) 2002, 2004 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -55,15 +55,31 @@ class ColorPaintContext implements PaintContext
    * SystemColor.
    */
   final int color;
+  final ColorModel colorModel;
 
+  private ColorRaster cachedRaster;
+
+  
   /**
    * Create the context for a given color.
    *
-   * @param c the solid color to use
+   * @param c The solid color to use.
    */
-  ColorPaintContext(int c)
+  ColorPaintContext(int colorRGB)
   {
-    color = c;
+    this(ColorModel.getRGBdefault(), colorRGB);
+  }
+  
+  /**
+   * Create the context for a given color.
+   *
+   * @param cm The color model of this context. 
+   * @param c The solid color to use.
+   */
+  ColorPaintContext(ColorModel cm,int colorRGB)
+  {
+    color = colorRGB;
+    colorModel = cm;
   }
 
   /**
@@ -75,14 +91,13 @@ class ColorPaintContext implements PaintContext
   }
 
   /**
-   * Return the color model of this context. This ignores the model passed
-   * in the request, since colors are always in sRGB.
+   * Return the color model of this context. 
    *
    * @return the context color model
    */
   public ColorModel getColorModel()
   {
-    return ColorModel.getRGBdefault();
+    return colorModel;
   }
 
   /**
@@ -94,10 +109,87 @@ class ColorPaintContext implements PaintContext
    * @param h the height, in device space
    * @return a raster for the given area and color
    */
-  public Raster getRaster(int x, int y, int w, int h)
+  public Raster getRaster(int x, int y, int width, int height)
   {
-    // XXX Implement. Sun uses undocumented implementation class
-    // sun.awt.image.IntegerInterleavedRaster.
-    throw new Error("not implemented");
+   if(  cachedRaster == null 
+       || cachedRaster.getWidth() < width
+       || cachedRaster.getHeight() < height)
+   {
+     cachedRaster = new ColorRaster(colorModel, 0, 0, width, height, color);
+   }
+   return cachedRaster.createChild(0 ,0 ,width ,height ,x ,y , null);
   }
+  
+  /**
+   * A ColorRaster is a raster that is completely filled with one color. The 
+   * data layout is taken from the color model given to the constructor.
+   */
+  private class ColorRaster extends Raster
+  {
+    
+    /**
+     * Create a raster that is compaltible with the given color model and 
+     * filled with the given color.
+     * @param cm The color model for this raster.
+     * @param x The smallest horizontal corrdinate in the raster.
+     * @param y The smallest vertical coordinate in the raster.
+     * @param width The width of the raster.
+     * @param height The height of the raster.
+     * @param rgbPixel The RGB value of the color for this raster.
+     */
+    ColorRaster(ColorModel cm,int x, int y, int width, int height, int rgbPixel)
+    {         
+      super(cm.createCompatibleSampleModel(width,height),new Point(x,y));
+      Object pixel = cm.getDataElements(rgbPixel,null);
+      getSampleModel().setDataElements(0, 0,
+                                       width, height,
+                                       multiplyData(pixel,null,width*height),
+                                       dataBuffer);
+    }
+    
+    
+    
+    private Object multiplyData(Object src, Object dest, int factor)
+    {
+      Object from;
+      int srcLength = 0;
+      if (src instanceof byte[])
+      {
+        srcLength = ((byte[])src).length;
+        
+        if (dest == null) dest = new byte[factor * srcLength];
+      }
+      else if (src instanceof short[])
+      {
+        srcLength = ((short[])src).length;
+        if (dest == null) dest = new short[factor * srcLength];
+      }
+      else if (src instanceof int[])
+      {
+        srcLength = ((int[]) src).length;
+        if (dest == null) dest = new int[factor * srcLength];
+      }
+      else
+      {
+        throw new ClassCastException("Unknown data buffer type");
+      }
+      
+      System.arraycopy(src,0,dest,0,srcLength);
+      
+      int count = 1;
+      while(count*2 < factor)
+      {
+        System.arraycopy(dest, 0, dest, count * srcLength, count*srcLength);
+        count *= 2; 
+      }
+      
+      if(factor > count)
+        System.arraycopy(dest,0, dest, count * srcLength, 
+                         (factor - count) * srcLength );
+      
+      return dest;
+    }
+    
+  }
+  
 } // class ColorPaintContext
