@@ -4579,168 +4579,27 @@ emit_case_nodes (index, node, default_label, index_type)
 /* These routines are used by the loop unrolling code.  They copy BLOCK trees
    so that the debugging info will be correct for the unrolled loop.  */
 
-/* Indexed by loop number, contains pointer to the first block in the loop,
-   or zero if none.  Only valid if doing loop unrolling and outputting debugger
-   info.  */
+/* Indexed by block number, contains a pointer to the N'th block node.  */
 
-tree *loop_number_first_block;
-
-/* Indexed by loop number, contains pointer to the last block in the loop,
-   only valid if loop_number_first_block is nonzero.  */
-
-tree *loop_number_last_block;
-
-/* Indexed by loop number, contains nesting level of first block in the
-   loop, if any.  Only valid if doing loop unrolling and outputting debugger
-   info.  */
-
-int *loop_number_block_level;
-
-/* Scan the function looking for loops, and walk the BLOCK tree at the
-   same time.  Record the first and last BLOCK tree corresponding to each
-   loop.  This function is similar to find_and_verify_loops in loop.c.  */
+static tree *block_vector;
 
 void
-find_loop_tree_blocks (f)
-     rtx f;
+find_loop_tree_blocks ()
 {
-  rtx insn;
-  int current_loop = -1;
-  int next_loop = -1;
-  int loop;
-  int block_level, tree_level;
-  tree tree_block, parent_tree_block;
+  tree block = DECL_INITIAL (current_function_decl);
 
-  tree_block = DECL_INITIAL (current_function_decl);
-  parent_tree_block = 0;
-  block_level = 0;
-  tree_level = -1;
+  /* There first block is for the function body, and does not have
+     corresponding block notes.  Don't include it in the block vector.  */
+  block = BLOCK_SUBBLOCKS (block);
 
-  /* Find boundaries of loops, and save the first and last BLOCK tree
-     corresponding to each loop.  */
-
-  for (insn = f; insn; insn = NEXT_INSN (insn))
-    {
-      if (GET_CODE (insn) == NOTE)
-	switch (NOTE_LINE_NUMBER (insn))
-	  {
-	  case NOTE_INSN_LOOP_BEG:
-	    loop_number_block_level[++next_loop] = block_level;
-	    loop_number_first_block[next_loop] = 0;
-	    current_loop = next_loop;
-	    break;
-
-	  case NOTE_INSN_LOOP_END:
-	    if (current_loop == -1)
-	      abort ();
-
-	    current_loop = loop_outer_loop[current_loop];
-	    break;
-
-	  case NOTE_INSN_BLOCK_BEG:
-	    if (tree_level < block_level)
-	      {
-		/* We have seen two NOTE_INSN_BLOCK_BEG notes in a row, so
-		   we must now visit the subtree of the current block.  */
-		parent_tree_block = tree_block;
-		tree_block = BLOCK_SUBBLOCKS (tree_block);
-		tree_level++;
-	      }
-	    else if (tree_level > block_level)
-	      abort ();
-
-	    /* Save this block tree here for all nested loops for which
-	       this is the topmost block.  */
-	    for (loop = current_loop;
-		 loop != -1 && block_level == loop_number_block_level[loop];
-		 loop = loop_outer_loop[loop])
-	      {
-		if (loop_number_first_block[loop] == 0)
-		  loop_number_first_block[loop] = tree_block;
-		loop_number_last_block[loop] = tree_block;
-	      }
-
-	    block_level++;
-	    break;
-
-	  case NOTE_INSN_BLOCK_END:
-	    block_level--;
-	    if (tree_level > block_level)
-	      {
-		/* We have seen two NOTE_INSN_BLOCK_END notes in a row, so
-		   we must now visit the parent of the current tree.  */
-		if (tree_block != 0 || parent_tree_block == 0)
-		  abort ();
-		tree_block = parent_tree_block;
-		parent_tree_block = BLOCK_SUPERCONTEXT (parent_tree_block);
-		tree_level--;
-	      }
-	    tree_block = BLOCK_CHAIN (tree_block);
-	    break;
-	  }
-    }
+  block_vector = identify_blocks (block, get_insns ());
 }
-
-/* This routine will make COPIES-1 copies of all BLOCK trees that correspond
-   to BLOCK_BEG notes inside the loop LOOP_NUMBER.
-
-   Note that we only copy the topmost level of tree nodes; they will share
-   pointers to the same subblocks.  */
 
 void
-unroll_block_trees (loop_number, copies)
-     int loop_number;
-     int copies;
+unroll_block_trees ()
 {
-  int i;
+  tree block = DECL_INITIAL (current_function_decl);
 
-  /* First check whether there are any blocks that need to be copied.  */
-  if (loop_number_first_block[loop_number])
-    {
-      tree first_block = loop_number_first_block[loop_number];
-      tree last_block = loop_number_last_block[loop_number];
-      tree last_block_created = 0;
-
-      for (i = 0; i < copies - 1; i++)
-	{
-	  tree block = first_block;
-	  tree insert_after = last_block;
-	  tree copied_block;
-
-	  /* Copy every block between first_block and last_block inclusive,
-	     inserting the new blocks after last_block.  */
-	  do
-	    {
-	      tree new_block = make_node (BLOCK);
-	      BLOCK_VARS (new_block) = BLOCK_VARS (block);
-	      BLOCK_TYPE_TAGS (new_block) = BLOCK_TYPE_TAGS (block);
-	      BLOCK_SUBBLOCKS (new_block) = BLOCK_SUBBLOCKS (block);
-	      BLOCK_SUPERCONTEXT (new_block) = BLOCK_SUPERCONTEXT (block);
-	      TREE_USED (new_block) = TREE_USED (block);
-
-	      /* Insert the new block after the insertion point, and move
-		 the insertion point to the new block.  This ensures that
-		 the copies are inserted in the right order.  */
-	      BLOCK_CHAIN (new_block) = BLOCK_CHAIN (insert_after);
-	      BLOCK_CHAIN (insert_after) = new_block;
-	      insert_after = new_block;
-
-	      copied_block = block;
-	      block = BLOCK_CHAIN (block);
-	    }
-	  while (copied_block != last_block);
-
-	  /* Remember the last block created, so that we can update the
-	     info in the tables.  */
-	  if (last_block_created == 0)
-	    last_block_created = insert_after;
-	}
-
-      /* For all nested loops for which LAST_BLOCK was originally the last
-	 block, update the tables to indicate that LAST_BLOCK_CREATED is
-	 now the last block in the loop.  */
-      for (i = loop_number; last_block == loop_number_last_block[i];
-	   i = loop_outer_loop[i])
-	loop_number_last_block[i] = last_block_created;
-    }
+  reorder_blocks (block_vector, block, get_insns ());
 }
+
