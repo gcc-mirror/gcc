@@ -3583,7 +3583,7 @@ coerce_template_parms (tree parms,
   tree new_inner_args;
 
   inner_args = INNERMOST_TEMPLATE_ARGS (args);
-  nargs = NUM_TMPL_ARGS (inner_args);
+  nargs = inner_args ? NUM_TMPL_ARGS (inner_args) : 0;
   nparms = TREE_VEC_LENGTH (parms);
 
   if (nargs > nparms
@@ -3614,12 +3614,7 @@ coerce_template_parms (tree parms,
       parm = TREE_VEC_ELT (parms, i);
 
       /* Calculate the Ith argument.  */
-      if (inner_args && TREE_CODE (inner_args) == TREE_LIST)
-	{
-	  arg = TREE_VALUE (inner_args);
-	  inner_args = TREE_CHAIN (inner_args);
-	}
-      else if (i < nargs)
+      if (i < nargs)
 	arg = TREE_VEC_ELT (inner_args, i);
       else if (require_all_arguments)
 	/* There must be a default arg in this case. */
@@ -3752,13 +3747,6 @@ mangle_class_name_for_template (const char* name, tree parms, tree arglist)
       else
 	my_friendly_assert (TREE_CODE (parm) == PARM_DECL, 269);
 
-      if (TREE_CODE (arg) == TREE_LIST)
-	{
-	  /* New list cell was built because old chain link was in
-	     use.  */
-	  my_friendly_assert (TREE_PURPOSE (arg) == NULL_TREE, 270);
-	  arg = TREE_VALUE (arg);
-	}
       /* No need to check arglist against parmlist here; we did that
 	 in coerce_template_parms, called from lookup_template_class.  */
       cat (expr_as_string (arg, TFF_PLAIN_IDENTIFIER));
@@ -3854,6 +3842,7 @@ lookup_template_function (tree fns, tree arglist)
   if (fns == error_mark_node || arglist == error_mark_node)
     return error_mark_node;
 
+  my_friendly_assert (!arglist || TREE_CODE (arglist) == TREE_VEC, 20030726);
   if (fns == NULL_TREE)
     {
       error ("non-template used as template");
@@ -3904,9 +3893,6 @@ maybe_get_template_decl_from_type_decl (tree decl)
    parameters, find the desired type.
 
    D1 is the PTYPENAME terminal, and ARGLIST is the list of arguments.
-   (Actually ARGLIST may be either a TREE_LIST or a TREE_VEC.  It will
-   be a TREE_LIST if called directly from the parser, and a TREE_VEC
-   otherwise.)
 
    IN_DECL, if non-NULL, is the template declaration we are trying to
    instantiate.  
@@ -3932,8 +3918,6 @@ lookup_template_class (tree d1,
   tree t;
   
   timevar_push (TV_NAME_LOOKUP);
-  my_friendly_assert ((!arglist || TREE_CODE (arglist) == TREE_LIST)
-		      == ((complain & tf_user) != 0), 20030724);
   
   if (TREE_CODE (d1) == IDENTIFIER_NODE)
     {
@@ -5492,30 +5476,18 @@ tsubst_template_arg (tree t, tree args, tsubst_flags_t complain, tree in_decl)
 static tree
 tsubst_template_args (tree t, tree args, tsubst_flags_t complain, tree in_decl)
 {
-  int is_list = !(t && TREE_CODE (t) == TREE_VEC);
-  int len = is_list ? list_length (t) : TREE_VEC_LENGTH (t);
+  int len = TREE_VEC_LENGTH (t);
   int need_new = 0, i;
-  tree position = t;
   tree *elts = alloca (len * sizeof (tree));
   
   for (i = 0; i < len; i++)
     {
-      tree orig_arg;
-      tree new_arg = NULL_TREE;
+      tree orig_arg = TREE_VEC_ELT (t, i);
+      tree new_arg;
 
-      if (is_list)
-	{
-	  orig_arg = TREE_VALUE (position);
-	  position = TREE_CHAIN (position);
-	}
+      if (TREE_CODE (orig_arg) == TREE_VEC)
+	new_arg = tsubst_template_args (orig_arg, args, complain, in_decl);
       else
-	{
-	  orig_arg = TREE_VEC_ELT (t, i);
-	  if (TREE_CODE (orig_arg) == TREE_VEC)
-	    new_arg = tsubst_template_args (orig_arg, args, complain, in_decl);
-	}
-
-      if (!new_arg)
 	new_arg = tsubst_template_arg (orig_arg, args, complain, in_decl);
       
       if (new_arg == error_mark_node)
@@ -5529,19 +5501,9 @@ tsubst_template_args (tree t, tree args, tsubst_flags_t complain, tree in_decl)
   if (!need_new)
     return t;
 
-  if (is_list)
-    {
-      t = NULL_TREE;
-
-      for (i = len; i--;)
-	t = tree_cons (NULL_TREE, elts[i], t);
-    }
-  else
-    {
-      t = make_tree_vec (len);
-      for (i = 0; i < len; i++)
-	TREE_VEC_ELT (t, i) = elts[i];
-    }
+  t = make_tree_vec (len);
+  for (i = 0; i < len; i++)
+    TREE_VEC_ELT (t, i) = elts[i];
   
   return t;
 }
@@ -7052,9 +7014,9 @@ tsubst_baselink (tree baselink, tree object_type,
 	template_id_p = true;
 	template_args = TREE_OPERAND (fns, 1);
 	fns = TREE_OPERAND (fns, 0);
-	template_args = tsubst_copy_and_build (template_args, args,
-					       complain, in_decl,
-					       /*function_p=*/false);
+	if (template_args)
+	  template_args = tsubst_template_args (template_args, args,
+						complain, in_decl);
       }
     name = DECL_NAME (get_first_fn (fns));
     baselink = lookup_fnfields (qualifying_scope, name, /*protect=*/1);
@@ -7094,9 +7056,10 @@ tsubst_qualified_id (tree qualified_id, tree args,
   if (TREE_CODE (name) == TEMPLATE_ID_EXPR)
     {
       is_template = true;
-      template_args = tsubst_copy_and_build (TREE_OPERAND (name, 1), 
-					     args, complain, in_decl,
-					     /*function_p=*/false);
+      template_args = TREE_OPERAND (name, 1);
+      if (template_args)
+	template_args = tsubst_template_args (template_args, args,
+					      complain, in_decl);
       name = TREE_OPERAND (name, 0);
     }
   else
@@ -7431,7 +7394,8 @@ tsubst_copy (tree t, tree args, tsubst_flags_t complain, tree in_decl)
 	tree targs = TREE_OPERAND (t, 1);
 
 	fn = tsubst_copy (fn, args, complain, in_decl);
-	targs = tsubst_template_args (targs, args, complain, in_decl);
+	if (targs)
+	  targs = tsubst_template_args (targs, args, complain, in_decl);
 	
 	return lookup_template_function (fn, targs);
       }
@@ -7930,7 +7894,10 @@ tsubst_copy_and_build (tree t,
       {
 	tree object;
 	tree template = RECUR (TREE_OPERAND (t, 0));
-	tree targs = RECUR (TREE_OPERAND (t, 1));
+	tree targs = TREE_OPERAND (t, 1);
+
+	if (targs)
+	  targs = tsubst_template_args (targs, args, complain, in_decl);
 	
 	if (TREE_CODE (template) == COMPONENT_REF)
 	  {
@@ -11697,29 +11664,14 @@ dependent_template_arg_p (tree arg)
 bool
 any_dependent_template_arguments_p (tree args)
 {
+  int i;
+  
   if (!args)
     return false;
 
-  my_friendly_assert (TREE_CODE (args) == TREE_LIST
-		      || TREE_CODE (args) == TREE_VEC,
-		      20030707);
-
-  if (TREE_CODE (args) == TREE_LIST)
-    {
-      while (args)
-	{
-	  if (dependent_template_arg_p (TREE_VALUE (args)))
-	    return true;
-	  args = TREE_CHAIN (args);
-	}
-    }
-  else
-    {
-      int i; 
-      for (i = 0; i < TREE_VEC_LENGTH (args); ++i)
-	if (dependent_template_arg_p (TREE_VEC_ELT (args, i)))
-	  return true;
-    }
+  for (i = 0; i < TREE_VEC_LENGTH (args); ++i)
+    if (dependent_template_arg_p (TREE_VEC_ELT (args, i)))
+      return true;
 
   return false;
 }

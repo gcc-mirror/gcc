@@ -920,18 +920,14 @@ dump_decl (tree t, int flags)
 
     case TEMPLATE_ID_EXPR:
       {
-	tree args;
 	tree name = TREE_OPERAND (t, 0);
+	
 	if (is_overloaded_fn (name))
 	  name = DECL_NAME (get_first_fn (name));
 	dump_decl (name, flags);
 	pp_template_argument_list_start (cxx_pp);
-	for (args = TREE_OPERAND (t, 1); args; args = TREE_CHAIN (args))
-	  {
-	    dump_template_argument (TREE_VALUE (args), flags);
-	    if (TREE_CHAIN (args))
-	      pp_separate_with_comma (cxx_pp);
-	  }
+	if (TREE_OPERAND (t, 1))
+	  dump_template_argument_list (TREE_OPERAND (t, 1), flags);
 	pp_template_argument_list_end (cxx_pp);
       }
       break;
@@ -1256,41 +1252,24 @@ dump_template_parms (tree info, int primary, int flags)
 	 to crash producing error messages.  */
   if (args && !primary)
     {
-      int len = 0;
-      int ix = 0;
-      int need_comma = 0;
+      int len, ix;
 
-      if (TREE_CODE (args) == TREE_VEC)
-        {
-          if (TREE_VEC_LENGTH (args) > 0
-	      && TREE_CODE (TREE_VEC_ELT (args, 0)) == TREE_VEC)
-	    args = TREE_VEC_ELT (args, TREE_VEC_LENGTH (args) - 1);
+      if (TMPL_ARGS_HAVE_MULTIPLE_LEVELS (args))
+	args = TREE_VEC_ELT (args, TREE_VEC_LENGTH (args) - 1);
+      
+      len = TREE_VEC_LENGTH (args);
 
-          len = TREE_VEC_LENGTH (args);
-        }
-      else if (TREE_CODE (args) == TREE_LIST)
-        len = -1;
-      while (ix != len && args)
+      for (ix = 0; ix != len; ix++)
         {
-          tree arg;
-          if (len >= 0)
-            {
-              arg = TREE_VEC_ELT (args, ix);
-              ix++;
-            }
-          else
-            {
-              arg = TREE_VALUE (args);
-              args = TREE_CHAIN (args);
-            }
-          if (need_comma)
+          tree arg = TREE_VEC_ELT (args, ix);
+
+          if (ix)
             pp_separate_with_comma (cxx_pp);
           
           if (!arg)
             pp_identifier (cxx_pp, "<template parameter error>");
           else
             dump_template_argument (arg, flags);
-          need_comma = 1;
         }
     }
   else if (primary)

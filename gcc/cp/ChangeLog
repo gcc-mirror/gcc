@@ -1,5 +1,26 @@
 2003-08-10  Nathan Sidwell  <nathan@codesourcery.com>
 
+	* cp-tree.h (TMPL_ARGS_HAVE_MULTIPLE_LEVELS): non-NULL
+	NODE is always a TREE_VEC of non-zero size.
+	(NUM_TMPL_ARGS): NODE is always a TREE_VEC.
+	* decl2.c (arg_assoc): Template args will be a vec.
+	* error.c (dump_decl) <TEMPLATE_ID_EXPR case>: Call
+	dump_template_argument_list.
+	(dump_template_parms): Args will be a vec.
+	* parser.c (cp_parser_template_argument_list): Produce a
+	vector, not a list.
+	* pt.c (coerce_template_parms): Args are always vectors.
+	(mangle_class_name_for_template): Likewise.
+	(lookup_template_function): Likewise.
+	(lookup_template_class): Likewise.
+	(tsubst_template_args): Likewise.
+	(tsubst_baselink): Use tsubst_template_args.
+	(tsubst_qualified_id): Likewise.
+	(tsubst_copy) <TEMPLATE_ID_EXPR case>: Likewise.
+	(tsubst_copy_and_build) <TEMPLATE_ID_EXPR case>: Likewise.
+	(any_dependent_template_args_p):  Args are always vectors.
+	* tree.c (cp_tree_equal): Add TEMPLATE_ID_EXPR case.
+
 	PR c++/11670
 	* call.c (convert_like_real): Add rvalue binding error message.
 	* error.c (dump_expr) <NOP_EXPR case>: Detect when the no expr is

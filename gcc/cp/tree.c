@@ -1587,6 +1587,30 @@ cp_tree_equal (tree t1, tree t2)
 	      && same_type_p (TREE_TYPE (TEMPLATE_PARM_DECL (t1)),
 			      TREE_TYPE (TEMPLATE_PARM_DECL (t2))));
 
+    case TEMPLATE_ID_EXPR:
+      {
+	unsigned ix;
+	tree vec1, vec2;
+	
+	if (!cp_tree_equal (TREE_OPERAND (t1, 0), TREE_OPERAND (t2, 0)))
+	  return false;
+	vec1 = TREE_OPERAND (t1, 1);
+	vec2 = TREE_OPERAND (t2, 1);
+
+	if (!vec1 || !vec2)
+	  return !vec1 && !vec2;
+	
+	if (TREE_VEC_LENGTH (vec1) != TREE_VEC_LENGTH (vec2))
+	  return false;
+
+	for (ix = TREE_VEC_LENGTH (vec1); ix--;)
+	  if (!cp_tree_equal (TREE_VEC_ELT (vec1, ix),
+			      TREE_VEC_ELT (vec2, ix)))
+	    return false;
+	
+	return true;
+      }
+      
     case SIZEOF_EXPR:
     case ALIGNOF_EXPR:
       {

@@ -207,10 +207,10 @@ DEFTREECODE (USING_STMT, "using_directive", 'e', 1)
 DEFTREECODE (DEFAULT_ARG, "default_arg", 'x', 0)
 
 /* A template-id, like foo<int>.  The first operand is the template.
-   The second is the TREE_LIST or TREE_VEC of explicitly specified
-   arguments.  The template will be a FUNCTION_DECL, TEMPLATE_DECL, or
-   an OVERLOAD.  If the template-id refers to a member template, the
-   template may be an IDENTIFIER_NODE.  */
+   The second is NULL if there are no explicit arguments, or a
+   TREE_VEC of arguments.  The template will be a FUNCTION_DECL,
+   TEMPLATE_DECL, or an OVERLOAD.  If the template-id refers to a
+   member template, the template may be an IDENTIFIER_NODE.  */
 DEFTREECODE (TEMPLATE_ID_EXPR, "template_id_expr", 'e', 2)
 
 /* A list-like node for chaining overloading candidates. TREE_TYPE is 
