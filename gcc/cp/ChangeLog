@@ -1,3 +1,7 @@
+2002-09-08  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* cp-tree.h (require_complete_eh_spec_types): Add prototype.
+
 2002-09-05  Jason Merrill  <jason@redhat.com>
 
 	* typeck2.c (add_exception_specifier): Only pedwarn for an

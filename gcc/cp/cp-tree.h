@@ -4322,6 +4322,7 @@ extern tree check_return_expr                   PARAMS ((tree));
 extern tree build_ptrmemfunc_access_expr       (tree, tree);
 
 /* in typeck2.c */
+extern void require_complete_eh_spec_types	PARAMS ((tree, tree));
 extern void cxx_incomplete_type_diagnostic	PARAMS ((tree, tree, int));
 #undef cxx_incomplete_type_error
 extern void cxx_incomplete_type_error		PARAMS ((tree, tree));
