@@ -1,3 +1,19 @@
+Mon Mar 16 11:14:20 1998  Andreas Schwab  <schwab@issan.informatik.uni-dortmund.de>
+
+	* config/m68k/m68k.c: Include <stdlib.h> for atoi.  Include
+	"recog.h" for offsettable_memref_p.
+	(legitimize_pic_address): Remove unused variable `offset'.
+	(notice_update_cc): Change return type to void.  Add default label
+	to switch.
+	(standard_68881_constant_p): Remove unused variable mode.
+	(print_operand): Define local variable i only if SUPPORT_SUN_FPA.
+	(const_int_cost): Explicitly declare as returning int.
+	(output_dbcc_and_branch): Change return type to void.
+
+	* config/m68k/linux.h, config/m68k/m68k.md, config/m68k/m68k.c,
+	config/m68k/m68k.h: Replace gen_rtx (XXX, ...) with gen_rtx_XXX
+	(...).  Use GEN_INT instead of gen_rtx_CONST_INT.
+
 Sun Mar 15 22:30:44 PST 1998 Jeff Law  (law@cygnus.com)
 
 	* version.c: Bump for snapshot.
