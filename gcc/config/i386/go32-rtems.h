@@ -1,4 +1,5 @@
-/* Configuration for an i386 running RTEMS on top of MS-DOS with djgpp/go32.  */
+/* Configuration for an i386 running RTEMS on top of MS-DOS with
+   djgpp/go32 v1.x.
 
    Copyright (C) 1996 Free Software Foundation, Inc.
    Contributed by Joel Sherrill (joel@OARcorp.com).
