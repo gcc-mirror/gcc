@@ -765,7 +765,11 @@ extern struct sparc_cpu_select sparc_select[];
 
 /* Width of a word, in units (bytes).  */
 #define UNITS_PER_WORD		(TARGET_ARCH64 ? 8 : 4)
+#ifdef IN_LIBGCC2
+#define MIN_UNITS_PER_WORD	UNITS_PER_WORD
+#else
 #define MIN_UNITS_PER_WORD	4
+#endif
 
 /* Now define the sizes of the C data types.  */
 

@@ -1,3 +1,7 @@
+2000-09-26  Jakub Jelinek  <jakub@redhat.com>
+
+        * gcc.c-torture/compile/20000923-1.c: New test.
+
 2000-09-25 Theodore Papadopoulo <Theodore.Papadopoulo@sophia.inria.fr>
 
 	* g++.old-deja/g++.other/crash20.C: Make ready for libstdc++-v3.

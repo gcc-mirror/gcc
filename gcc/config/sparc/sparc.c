@@ -1832,11 +1832,16 @@ sparc_emit_set_const64 (op0, op1)
   rtx temp;
 
   /* Sanity check that we know what we are working with.  */
-  if (! TARGET_ARCH64
-      || GET_CODE (op0) != REG
-      || (REGNO (op0) >= SPARC_FIRST_FP_REG
-	  && REGNO (op0) <= SPARC_LAST_V9_FP_REG))
+  if (! TARGET_ARCH64)
     abort ();
+
+  if (GET_CODE (op0) != SUBREG)
+    {
+      if (GET_CODE (op0) != REG
+	  || (REGNO (op0) >= SPARC_FIRST_FP_REG
+	      && REGNO (op0) <= SPARC_LAST_V9_FP_REG))
+	abort ();
+    }
 
   if (reload_in_progress || reload_completed)
     temp = op0;
@@ -3971,6 +3976,7 @@ function_arg_slotno (cum, mode, type, named, incoming_p, pregno, ppadding)
     case HImode : case CHImode :
     case SImode : case CSImode :
     case DImode : case CDImode :
+    case TImode : case CTImode :
       if (slotno >= SPARC_INT_ARG_MAX)
 	return -1;
       regno = regbase + slotno;
