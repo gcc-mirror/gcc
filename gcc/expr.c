@@ -461,6 +461,71 @@ convert_move (to, from, unsignedp)
 
   if (to_real)
     {
+#ifdef HAVE_extendqfhf2
+      if (HAVE_extendqfsf2 && from_mode == QFmode && to_mode == HFmode)
+	{
+	  emit_unop_insn (CODE_FOR_extendqfsf2, to, from, UNKNOWN);
+	  return;
+	}
+#endif
+#ifdef HAVE_extendqfsf2
+      if (HAVE_extendqfsf2 && from_mode == QFmode && to_mode == SFmode)
+	{
+	  emit_unop_insn (CODE_FOR_extendqfsf2, to, from, UNKNOWN);
+	  return;
+	}
+#endif
+#ifdef HAVE_extendqfdf2
+      if (HAVE_extendqfdf2 && from_mode == QFmode && to_mode == DFmode)
+	{
+	  emit_unop_insn (CODE_FOR_extendqfdf2, to, from, UNKNOWN);
+	  return;
+	}
+#endif
+#ifdef HAVE_extendqfxf2
+      if (HAVE_extendqfxf2 && from_mode == QFmode && to_mode == XFmode)
+	{
+	  emit_unop_insn (CODE_FOR_extendqfxf2, to, from, UNKNOWN);
+	  return;
+	}
+#endif
+#ifdef HAVE_extendqftf2
+      if (HAVE_extendqftf2 && from_mode == QFmode && to_mode == TFmode)
+	{
+	  emit_unop_insn (CODE_FOR_extendqftf2, to, from, UNKNOWN);
+	  return;
+	}
+#endif
+
+#ifdef HAVE_extendhfsf2
+      if (HAVE_extendhfsf2 && from_mode == HFmode && to_mode == SFmode)
+	{
+	  emit_unop_insn (CODE_FOR_extendhfsf2, to, from, UNKNOWN);
+	  return;
+	}
+#endif
+#ifdef HAVE_extendhfdf2
+      if (HAVE_extendhfdf2 && from_mode == HFmode && to_mode == DFmode)
+	{
+	  emit_unop_insn (CODE_FOR_extendhfdf2, to, from, UNKNOWN);
+	  return;
+	}
+#endif
+#ifdef HAVE_extendhfxf2
+      if (HAVE_extendhfxf2 && from_mode == HFmode && to_mode == XFmode)
+	{
+	  emit_unop_insn (CODE_FOR_extendhfxf2, to, from, UNKNOWN);
+	  return;
+	}
+#endif
+#ifdef HAVE_extendhftf2
+      if (HAVE_extendhftf2 && from_mode == HFmode && to_mode == TFmode)
+	{
+	  emit_unop_insn (CODE_FOR_extendhftf2, to, from, UNKNOWN);
+	  return;
+	}
+#endif
+
 #ifdef HAVE_extendsfdf2
       if (HAVE_extendsfdf2 && from_mode == SFmode && to_mode == DFmode)
 	{
@@ -493,6 +558,70 @@ convert_move (to, from, unsignedp)
       if (HAVE_extenddftf2 && from_mode == DFmode && to_mode == TFmode)
 	{
 	  emit_unop_insn (CODE_FOR_extenddftf2, to, from, UNKNOWN);
+	  return;
+	}
+#endif
+
+#ifdef HAVE_trunchfqf2
+      if (HAVE_trunchfqf2 && from_mode == HFmode && to_mode == QFmode)
+	{
+	  emit_unop_insn (CODE_FOR_trunchfqf2, to, from, UNKNOWN);
+	  return;
+	}
+#endif
+#ifdef HAVE_truncsfqf2
+      if (HAVE_truncsfqf2 && from_mode == SFmode && to_mode == QFmode)
+	{
+	  emit_unop_insn (CODE_FOR_truncsfqf2, to, from, UNKNOWN);
+	  return;
+	}
+#endif
+#ifdef HAVE_truncdfqf2
+      if (HAVE_truncdfqf2 && from_mode == DFmode && to_mode == QFmode)
+	{
+	  emit_unop_insn (CODE_FOR_truncdfqf2, to, from, UNKNOWN);
+	  return;
+	}
+#endif
+#ifdef HAVE_truncxfqf2
+      if (HAVE_truncxfqf2 && from_mode == XFmode && to_mode == QFmode)
+	{
+	  emit_unop_insn (CODE_FOR_truncxfqf2, to, from, UNKNOWN);
+	  return;
+	}
+#endif
+#ifdef HAVE_trunctfqf2
+      if (HAVE_trunctfqf2 && from_mode == TFmode && to_mode == QFmode)
+	{
+	  emit_unop_insn (CODE_FOR_trunctfqf2, to, from, UNKNOWN);
+	  return;
+	}
+#endif
+#ifdef HAVE_truncsfhf2
+      if (HAVE_truncsfhf2 && from_mode == SFmode && to_mode == HFmode)
+	{
+	  emit_unop_insn (CODE_FOR_truncsfhf2, to, from, UNKNOWN);
+	  return;
+	}
+#endif
+#ifdef HAVE_truncdfhf2
+      if (HAVE_truncdfhf2 && from_mode == DFmode && to_mode == HFmode)
+	{
+	  emit_unop_insn (CODE_FOR_truncdfhf2, to, from, UNKNOWN);
+	  return;
+	}
+#endif
+#ifdef HAVE_truncxfhf2
+      if (HAVE_truncxfhf2 && from_mode == XFmode && to_mode == HFmode)
+	{
+	  emit_unop_insn (CODE_FOR_truncxfhf2, to, from, UNKNOWN);
+	  return;
+	}
+#endif
+#ifdef HAVE_trunctfhf2
+      if (HAVE_trunctfhf2 && from_mode == TFmode && to_mode == HFmode)
+	{
+	  emit_unop_insn (CODE_FOR_trunctfhf2, to, from, UNKNOWN);
 	  return;
 	}
 #endif
