@@ -878,7 +878,7 @@ namespace std
       char_type 
       widen(char __c) const
       { 
-	if (_M_widen_ok) return _M_widen[__c];
+	if (_M_widen_ok) return _M_widen[static_cast<unsigned char>(__c)];
 	this->_M_widen_init();
 	return this->do_widen(__c);
       }
@@ -934,9 +934,10 @@ namespace std
       char 
       narrow(char_type __c, char __dfault) const
       {
-	if (_M_narrow[__c]) return _M_narrow[__c];
+	if (_M_narrow[static_cast<unsigned char>(__c)])
+	  return _M_narrow[static_cast<unsigned char>(__c)];
 	const char __t = do_narrow(__c, __dfault);
-	if (__t != __dfault) _M_narrow[__c] = __t;
+	if (__t != __dfault) _M_narrow[static_cast<unsigned char>(__c)] = __t;
 	return __t;
       }
 
