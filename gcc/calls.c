@@ -2064,6 +2064,35 @@ check_sibcall_argument_overlap (insn, arg)
   return insn != NULL_RTX;
 }
 
+static tree
+fix_unsafe_tree (t)
+     tree t;
+{
+  switch (unsafe_for_reeval (t))
+    {
+    case 0: /* Safe.  */
+      break;
+
+    case 1: /* Mildly unsafe.  */
+      t = unsave_expr (t);
+      break;
+
+    case 2: /* Wildly unsafe.  */
+      {
+	tree var = build_decl (VAR_DECL, NULL_TREE,
+			       TREE_TYPE (t));
+	SET_DECL_RTL (var,
+		      expand_expr (t, NULL_RTX, VOIDmode, EXPAND_NORMAL));
+	t = var;
+      }
+      break;
+
+    default:
+      abort ();
+    }
+  return t;
+}
+
 /* Generate all the code for a function call
    and return an rtx for its value.
    Store the value in TARGET (specified as an rtx) if convenient.
@@ -2506,35 +2535,16 @@ expand_call (exp, target, ignore)
 
       for (; i != end; i += inc)
 	{
-	  switch (unsafe_for_reeval (args[i].tree_value))
-	    {
-	    case 0: /* Safe.  */
-	      break;
-
-	    case 1: /* Mildly unsafe.  */
-	      args[i].tree_value = unsave_expr (args[i].tree_value);
-	      break;
-
-	    case 2: /* Wildly unsafe.  */
-	      {
-		tree var = build_decl (VAR_DECL, NULL_TREE,
-				       TREE_TYPE (args[i].tree_value));
-		SET_DECL_RTL (var,
-			      expand_expr (args[i].tree_value, NULL_RTX,
-					   VOIDmode, EXPAND_NORMAL));
-		args[i].tree_value = var;
-	      }
-	      break;
-
-	    default:
-	      abort ();
-	    }
+          args[i].tree_value = fix_unsafe_tree (args[i].tree_value);
 	  /* We need to build actparms for optimize_tail_recursion.  We can
 	     safely trash away TREE_PURPOSE, since it is unused by this
 	     function.  */
 	  if (try_tail_recursion)
 	    actparms = tree_cons (NULL_TREE, args[i].tree_value, actparms);
 	}
+      /* Do the same for the function address if it is an expression. */
+      if (!fndecl)
+        TREE_OPERAND (exp, 0) = fix_unsafe_tree (TREE_OPERAND (exp, 0));
       /* Expanding one of those dangerous arguments could have added
 	 cleanups, but otherwise give it a whirl.  */
       if (any_pending_cleanups (1))
