@@ -1,5 +1,5 @@
 /* Structure for saving state for a nested function.
-   Copyright (C) 1989, 1992 Free Software Foundation, Inc.
+   Copyright (C) 1989, 1992, 1993 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -42,6 +42,7 @@ struct sequence_stack
 {
   /* First and last insns in the chain of the saved sequence.  */
   rtx first, last;
+  tree sequence_rtl_expr;
   struct sequence_stack *next;
 };
 
@@ -126,6 +127,7 @@ struct function
   int first_label_num;
   rtx first_insn;
   rtx last_insn;
+  tree sequence_rtl_expr;
   struct sequence_stack *sequence_stack;
   int cur_insn_uid;
   int last_linenum;
