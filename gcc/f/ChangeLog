@@ -1,4 +1,4 @@
-2003-03-13  Andreas Jaeger  <aj@suse.de>
+2003-03-15  Andreas Jaeger  <aj@suse.de>
 
 	* g77spec.c (DEFAULT_SWITCH_TAKES_ARG): Remove.
 	(DEFAULT_WORD_SWITCH_TAKES_ARG): Remove.
