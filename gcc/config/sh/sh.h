@@ -605,23 +605,23 @@ extern enum reg_class reg_class_from_letter[];
    C is the letter, and VALUE is a constant value.
    Return 1 if VALUE is in the range specified by C.
 	I: arithmetic operand -127..128, as used in add, sub, etc
+	K: shift operand 1,2,8 or 16
 	L: logical operand 0..255, as used in and, or, etc.
-	J: something ok as a move source - so it must be easy to make
 	M: constant 1
-	N: constant 0
-	K: shift operand 1,2,8 or 16 */
+	N: constant 0  */
 
 
 #define CONST_OK_FOR_I(VALUE) (((int)(VALUE))>= -128 && ((int)(VALUE)) <= 127)
+#define CONST_OK_FOR_K(VALUE) ((VALUE)==1||(VALUE)==2||(VALUE)==8||(VALUE)==16)
 #define CONST_OK_FOR_L(VALUE) (((int)(VALUE))>=    0 && ((int)(VALUE)) <= 255)
 #define CONST_OK_FOR_M(VALUE) ((VALUE)==1)
 #define CONST_OK_FOR_N(VALUE) ((VALUE)==0)
-#define CONST_OK_FOR_K(VALUE) ((VALUE)==1||(VALUE)==2||(VALUE)==8||(VALUE)==16)
 #define CONST_OK_FOR_LETTER_P(VALUE, C)     \
      ((C) == 'I' ? CONST_OK_FOR_I (VALUE)   \
     : (C) == 'K' ? CONST_OK_FOR_K (VALUE)   \
     : (C) == 'L' ? CONST_OK_FOR_L (VALUE)   \
     : (C) == 'M' ? CONST_OK_FOR_M (VALUE)   \
+    : (C) == 'N' ? CONST_OK_FOR_N (VALUE)   \
     : 0)
 
 /* Similar, but for floating constants, and defining letters G and H.
@@ -1494,6 +1494,8 @@ extern struct rtx_def *prepare_scc_operands();
 extern struct rtx_def *table_lab;
 
 
+/* ??? Wrong, this is an incomplete enum type.  Fix this to do it the same
+   way that the mips compiler does this.  */
 extern enum attr_cpu sh_cpu;	/* target cpu */
 
 /* Declare functions defined in sh.c and used in templates. */
@@ -1523,3 +1525,21 @@ extern char *max_si;
 extern char *max_hi;
 extern int max_count_si;
 extern int max_count_hi;
+
+/* Instructions with unfilled delay slots take up an extra two bytes for
+   the nop in the delay slot.  */
+
+#define ADJUST_INSN_LENGTH(X, LENGTH)				\
+  if (((GET_CODE (X) == INSN					\
+	&& GET_CODE (PATTERN (X)) != SEQUENCE			\
+	&& GET_CODE (PATTERN (X)) != USE			\
+	&& GET_CODE (PATTERN (X)) != CLOBBER)			\
+       || GET_CODE (X) == CALL_INSN				\
+       || (GET_CODE (X) == JUMP_INSN				\
+	   && GET_CODE (PATTERN (X)) != ADDR_DIFF_VEC		\
+	   && GET_CODE (PATTERN (X)) != ADDR_VEC))		\
+      && get_attr_needs_delay_slot (X) == NEEDS_DELAY_SLOT_YES)	\
+   LENGTH += 2;
+
+/* Enable a bug fix for the shorten_branches pass.  */
+#define SHORTEN_WITH_ADJUST_INSN_LENGTH
