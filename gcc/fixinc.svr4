@@ -923,9 +923,9 @@ if [ \! -z "$file_to_fix" ]; then
   else
     sed -e '/#ifdef INKERNEL/i\
 #ifdef _KERNEL' \
-    -e '/* INKERNEL */a\
+    -e '/#endif[ 	]*\/\* INKERNEL \*\//a\
 #endif /* _KERNEL */' \
-    ${LIB}/$file > ${LIB}/${file}.sed
+    $file_to_fix > ${LIB}/${file}.sed
     rm -f ${LIB}/$file; mv ${LIB}/${file}.sed ${LIB}/$file
     echo Fixed $file_to_fix
   fi
@@ -955,7 +955,7 @@ if [ \! -z "$file_to_fix" ]; then
 #	endif/a\
 #   endif /* !defined (__GNUC__) && !defined (__GNUG__) */\
 #   include	<sys/byteorder.h>' \
-    ${LIB}/$file > ${LIB}/${file}.sed
+    $file_to_fix > ${LIB}/${file}.sed
     rm -f ${LIB}/$file; mv ${LIB}/${file}.sed ${LIB}/$file
     echo Fixed $file_to_fix
   fi
