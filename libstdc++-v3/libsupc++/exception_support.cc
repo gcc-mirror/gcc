@@ -29,8 +29,6 @@
 // invalidate any other reasons why the executable file might be covered by
 // the GNU General Public License.
 
-#pragma implementation "exception"
-
 #include "typeinfo"
 #include "exception"
 #include <cstddef>
@@ -377,6 +375,14 @@ std::uncaught_exception() throw()
   return p && ! p->caught;
 }
 
+std::exception::~exception() throw() { }
+
+std::bad_exception::~bad_exception() throw() { }
+
 const char* 
 std::exception::what() const throw()
 { return typeid (*this).name (); }
+
+
+
+

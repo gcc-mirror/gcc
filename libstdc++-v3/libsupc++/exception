@@ -31,8 +31,6 @@
 #ifndef __EXCEPTION__
 #define __EXCEPTION__
 
-#pragma interface "exception"
-
 extern "C++" {
 
 namespace std 
@@ -41,7 +39,7 @@ namespace std
   {
   public:
     exception() throw() { }
-    virtual ~exception() throw() { }
+    virtual ~exception() throw();
     virtual const char* what() const throw();
   };
 
@@ -49,7 +47,7 @@ namespace std
   {
   public:
     bad_exception() throw() { }
-    virtual ~bad_exception() throw() { }
+    virtual ~bad_exception() throw();
   };
 
   typedef void (*terminate_handler) ();
