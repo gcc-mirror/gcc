@@ -1,3 +1,8 @@
+2004-06-26  Kaz Kojima  <kkojima@gcc.gnu.org>
+
+	* genattrtab.c (write_test_expr): Put a unsigned cast before
+	the first operand for GEU, GTU, LEU and LTU.
+
 2004-06-26  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* c-typeck.c, cfgexpand.c, ddg.c, ddg.h, df.c, fold-const.c,

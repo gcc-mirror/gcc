@@ -4571,9 +4571,14 @@ write_test_expr (rtx exp, int flags)
   switch (code)
     {
     /* Binary operators.  */
+    case GEU: case GTU:
+    case LEU: case LTU:
+      printf ("(unsigned) ");
+      /* Fall through.  */
+
     case EQ: case NE:
-    case GE: case GT: case GEU: case GTU:
-    case LE: case LT: case LEU: case LTU:
+    case GE: case GT:
+    case LE: case LT:
       comparison_operator = 1;
 
     case PLUS:   case MINUS:  case MULT:     case DIV:      case MOD:
