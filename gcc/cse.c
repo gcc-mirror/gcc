@@ -319,7 +319,7 @@ struct cse_reg_info
 
   /* The SUBREG that was set when REG_TICK was last incremented.  Set
      to -1 if the last store was to the whole register, not a subreg.  */
-  int subreg_ticked;
+  unsigned int subreg_ticked;
 };
 
 /* A free list of cse_reg_info entries.  */
@@ -1223,14 +1223,14 @@ mention_regs (x)
 	     Otherwise, remove any memory of the entire register and
 	     all its subregs from the table.  */
 	  if (REG_TICK (i) - REG_IN_TABLE (i) > 1
-	      || SUBREG_TICKED (i) != SUBREG_REG (x))
+	      || SUBREG_TICKED (i) != REGNO (SUBREG_REG (x)))
 	    remove_invalid_refs (i);
 	  else
 	    remove_invalid_subreg_refs (i, SUBREG_BYTE (x), GET_MODE (x));
 	}
 
       REG_IN_TABLE (i) = REG_TICK (i);
-      SUBREG_TICKED (i) = SUBREG_REG (x);
+      SUBREG_TICKED (i) = REGNO (SUBREG_REG (x));
       return 0;
     }
 
