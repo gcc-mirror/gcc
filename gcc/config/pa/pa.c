@@ -1254,6 +1254,9 @@ output_ior (operands)
     {
       unsigned mask = INTVAL (operands[2]);
       int bs0, bs1, bs2, p, len;
+ 
+      if (INTVAL (operands[2]) == 0)
+	return "copy %1,%0";
 
       for (bs0 = 0; bs0 < 32; bs0++)
 	if ((mask & (1 << bs0)) != 0)
