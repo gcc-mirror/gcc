@@ -1,3 +1,8 @@
+2004-06-09  Andrew Pinski  <pinskia@physics.uc.edu>
+
+	* g++spec.c (lang_specific_driver): Remove check for -lm
+	and -lmath when check it see if it was the math library.
+
 2004-06-08  Giovanni Bajo  <giovannibajo@gcc.gnu.org>
 
 	PR c++/7841
