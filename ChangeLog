@@ -1,3 +1,7 @@
+2005-03-31  Zdenek Dvorak  <rakdver@atrey.karlin.mff.cuni.cz>
+
+	* MAINTAINERS: Remove 'loop unrolling' maintainer.
+
 2005-03-30  Gerald Pfeifer  <gerald@pfeifer.com>
 
 	* MAINTAINERS: Move John Carr to Write After Approval.
