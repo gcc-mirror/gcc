@@ -3567,8 +3567,10 @@ int
 c_unsafe_for_reeval (exp)
      tree exp;
 {
-  /* Statement expressions may not be reevaluated.  */
-  if (TREE_CODE (exp) == STMT_EXPR)
+  /* Statement expressions may not be reevaluated, likewise compound
+     literals.  */
+  if (TREE_CODE (exp) == STMT_EXPR
+      || TREE_CODE (exp) == COMPOUND_LITERAL_EXPR)
     return 2;
 
   /* Walk all other expressions.  */
