@@ -1213,6 +1213,16 @@ build_mangled_name (parmtypes, begin, end)
 	      nrepeats = 0;
 	    }
 	  
+	  /* Insead of protecting flush_repeats() against
+	     error_mark_node, we can do it here.  Since we wouldn't
+	     add anything for an ERROR_MARK anyway, it's ok to skip
+	     the mangling for this type.  */
+	  if (old_style_repeats && parmtype == error_mark_node)
+	    {
+	      last_type = NULL_TREE;
+	      continue;
+	    }
+
 	  last_type = parmtype;
 
 	  /* Note that for bug-compatibility with 2.7.2, we can't build up
