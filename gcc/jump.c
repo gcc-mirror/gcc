@@ -4021,6 +4021,7 @@ thread_jumps (f, max_reg, verbose)
 		    if (call_used_regs[i] && ! fixed_regs[i]
 			&& i != STACK_POINTER_REGNUM
 			&& i != FRAME_POINTER_REGNUM
+			&& i != HARD_FRAME_POINTER_REGNUM
 			&& i != ARG_POINTER_REGNUM)
 		      modified_regs[i] = 1;
 		}
