@@ -1957,7 +1957,7 @@ print_operand (file, x, code)
 	case EQ:
 	  fprintf (file, "=");  break;
 	case NE:
-	  fprintf (file, "<>"); break;
+	  fprintf (file, "<>");  break;
 	case GT:
 	  fprintf (file, ">");  break;
 	case GE:
@@ -1985,7 +1985,7 @@ print_operand (file, x, code)
       switch (GET_CODE (x))
 	{
 	case EQ:
-	  fprintf (file, "<>"); break;
+	  fprintf (file, "<>");  break;
 	case NE:
 	  fprintf (file, "=");  break;
 	case GT:
@@ -2150,30 +2150,6 @@ output_global_address (file, x)
     }
   else
     output_addr_const (file, x);
-}
-
-/* MEM rtls here are never SYMBOL_REFs (I think), so fldws is safe. */
-
-char *
-output_floatsisf2 (operands)
-     rtx *operands;
-{
-  if (GET_CODE (operands[1]) == MEM)
-    return "fldws %1,%0\n\tfcnvxf,sgl,sgl %0,%0";
-  else if (FP_REG_P (operands[1]))
-    return "fcnvxf,sgl,sgl %1,%0";
-  abort();
-}
-
-char *
-output_floatsidf2 (operands)
-     rtx *operands;
-{
-  if (GET_CODE (operands[1]) == MEM)
-    return "fldws %1,%0\n\tfcnvxf,sgl,dbl %0,%0";
-  else if (FP_REG_P (operands[1]))
-    return "fcnvxf,sgl,dbl %1,%0";
-  abort();
 }
 
 enum rtx_code
