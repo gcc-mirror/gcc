@@ -43,155 +43,117 @@ import java.util.EventObject;
 import javax.swing.text.Element;
 
 /**
- * HyperlinkEvent
  * @author Andrew Selkirk
  * @author Ronald Veldema
  */
 public class HyperlinkEvent extends EventObject
 {
+  public static final class EventType
+  {
+    public static final EventType ENTERED = new EventType("ENTERED"); // TODO
+    public static final EventType EXITED = new EventType("EXITED"); // TODO
+    public static final EventType ACTIVATED = new EventType("ACTIVATED"); // TODO
+    
+    private String type;
 
-	//-------------------------------------------------------------
-	// Classes ----------------------------------------------------
-	//-------------------------------------------------------------
+    /**
+     * Creates a new Event type.
+     * 
+     * @param type String representing the event type.
+     */
+    private EventType(String type)
+    {
+      this.type = type;
+    }
 
-	/**
-	 * EventType
-	 */
-	public static final class EventType {
+    /**
+     * Returns a <code>String</code> of this object.
+     */
+    public String toString()
+    {
+      return type;
+    }
+  }
 
-		//-------------------------------------------------------------
-		// Variables --------------------------------------------------
-		//-------------------------------------------------------------
+  private static final long serialVersionUID = -8168964465779154277L;
+  
+  private EventType type;
+  private URL url;
+  private String description;
+  private Element element;
 
-		/**
-		 * ENTERED
-		 */
-		public static final EventType ENTERED = new EventType("ENTERED"); // TODO
+  /**
+   * Creates a new <code>HyperlinkEvent</code> with the given arguments.
+   * 
+   * @param source The object this link is associated to.
+   * @param type The type of event.
+   * @param url The URL this link pointing too.
+   */
+  public HyperlinkEvent(Object source, EventType type, URL url)
+  {
+    this (source, type, url, null, null);
+  }
 
-		/**
-		 * EXITED
-		 */
-		public static final EventType EXITED = new EventType("EXITED"); // TODO
+  /**
+   * Creates a new <code>HyperlinkEvent</code> with the given arguments.
+   * 
+   * @param source The object this link is associated to.
+   * @param type The type of event.
+   * @param url The URL this link pointing too.
+   * @param description The description for this link.
+   */
+  public HyperlinkEvent(Object source, EventType type, URL url, String description)
+  {
+    this (source, type, url, description, null);
+  }
+  
+  /**
+   * Creates a new <code>HyperlinkEvent</code> with the given arguments.
+   * 
+   * @param source The object this link is associated to.
+   * @param type The type of event.
+   * @param url The URL this link pointing too.
+   * @param description The description for this link.
+   * @param element The element in the document representing the anchor.
+   */
+  public HyperlinkEvent(Object source, EventType type, URL url, String description)
+  {
+    super(source);
+    this.type = type;
+    this.url = url;
+    this.description = description;
+    this.element = element;
+  }
 
-		/**
-		 * ACTIVATED
-		 */
-		public static final EventType ACTIVATED = new EventType("ACTIVATED"); // TODO
+  /**
+   * Returns the element of the document repesenting this anchor.
+   */
+  public Element getSourceElement()
+  {
+    return element;
+  }
+  
+  /**
+   * Returns the URL of this event.
+   */
+  public URL getURL()
+  {
+    return url;
+  }
 
-		/**
-		 * type
-		 */
-		private String type;
+  /**
+   * Returns the type of this event.
+   */
+  public EventType getEventType()
+  {
+    return type;
+  }
 
-
-		//-------------------------------------------------------------
-		// Initialization ---------------------------------------------
-		//-------------------------------------------------------------
-
-		/**
-		 * Constructor EventType
-		 * @param type TODO
-		 */
-		private EventType(String type) {
-			this.type = type;
-		} // EventType()
-
-
-		//-------------------------------------------------------------
-		// Methods ----------------------------------------------------
-		//-------------------------------------------------------------
-
-		/**
-		 * toString
-		 * @returns String
-		 */
-		public String toString() {
-			return type; // TODO
-		} // toString()
-
-
-	} // EventType
-
-
-	//-------------------------------------------------------------
-	// Variables --------------------------------------------------
-	//-------------------------------------------------------------
-
-	/**
-	 * type
-	 */
-	private EventType type;
-
-	/**
-	 * url
-	 */
-	private URL url;
-
-	/**
-	 * description
-	 */
-	private String description;
-
-
-	//-------------------------------------------------------------
-	// Initialization ---------------------------------------------
-	//-------------------------------------------------------------
-
-	/**
-	 * Constructor HyperlinkEvent
-	 * @param source TODO
-	 * @param type TODO
-	 * @param url TODO
-	 */
-	public HyperlinkEvent(Object source, EventType type, URL url) {
-		super(source);
-		this.type = type;
-		this.url = url;
-		this.description = null;
-	} // HyperlinkEvent()
-
-	/**
-	 * Constructor HyperlinkEvent
-	 * @param source TODO
-	 * @param type TODO
-	 * @param url TODO
-	 * @param description TODO
-	 */
-	public HyperlinkEvent(Object source, EventType type, URL url, String description) {
-		super(source);
-		this.type = type;
-		this.url = url;
-		this.description = null;
-	} // HyperlinkEvent()
-
-
-	//-------------------------------------------------------------
-	// Methods ----------------------------------------------------
-	//-------------------------------------------------------------
-
-	/**
-	 * getURL
-	 * @returns URL
-	 */
-	public URL getURL() {
-		return url;
-	} // getURL()
-
-	/**
-	 * getEventType
-	 * @returns EventType
-	 */
-	public EventType getEventType() {
-		return type;
-	} // getEventType()
-
-	/**
-	 * getDescription
-	 * @returns String
-	 */
-	public String getDescription() {
-		return description;
-	} // getDescription()
-
-
-} // HyperlinkEvent
+  /**
+   * Returns the description of this event.
+   */
+  public String getDescription()
+  {
+    return description;
+  }
+}

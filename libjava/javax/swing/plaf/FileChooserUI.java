@@ -1,5 +1,5 @@
 /* FileChooserUI.java --
-   Copyright (C) 2002 Free Software Foundation, Inc.
+   Copyright (C) 2003 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -37,75 +37,100 @@ exception statement from your version. */
 
 package javax.swing.plaf;
 
-// Imports
-import java.io.*;
-import javax.swing.*;
-import javax.swing.filechooser.*;
+import java.io.File;
+import javax.swing.JFileChooser;
 import javax.swing.filechooser.FileFilter;
+import javax.swing.filechooser.FileView;
 
 /**
- * FileChooserUI
- * @author	Andrew Selkirk
- * @version	1.0
+ * An abstract base class for delegates that implement the pluggable
+ * look and feel for a <code>JFileChooser</code>.
+ *
+ * @see javax.swing.JFileChooser
+ *
+ * @author Andrew Selkirk (aselkirk@sympatico.ca)
+ * @author Sascha Brawer (brawer@dandelis.ch)
  */
-public abstract class FileChooserUI extends ComponentUI {
+public abstract class FileChooserUI
+  extends ComponentUI
+{
+  /**
+   * Constructs a new <code>FileChooserUI</code>.
+   */
+  public FileChooserUI()
+  {
+  }
 
-	//-------------------------------------------------------------
-	// Initialization ---------------------------------------------
-	//-------------------------------------------------------------
-
-	/**
-	 * Constructor FileChooserUI
-	 */
-	public FileChooserUI() {
-		// TODO
-	} // FileChooserUI()
-
-
-	//-------------------------------------------------------------
-	// Methods ----------------------------------------------------
-	//-------------------------------------------------------------
-
-	/**
-	 * getAcceptAllFileFilter
-	 * @param chooser TODO
-	 * @returns FileFilter
-	 */
-	public abstract FileFilter getAcceptAllFileFilter(JFileChooser chooser);
-
-	/**
-	 * getFileView
-	 * @param chooser TODO
-	 * @returns FileView
-	 */
-	public abstract FileView getFileView(JFileChooser chooser);
-
-	/**
-	 * getApproveButtonText
-	 * @param chooser TODO
-	 * @returns String
-	 */
-	public abstract String getApproveButtonText(JFileChooser chooser);
-
-	/**
-	 * getDialogTitle
-	 * @param chooser TODO
-	 * @returns String
-	 */
-	public abstract String getDialogTitle(JFileChooser chooser);
-
-	/**
-	 * rescanCurrentDirectory
-	 * @param value0 TODO
-	 */
-	public abstract void rescanCurrentDirectory(JFileChooser chooser);
-
-	/**
-	 * ensureFileIsVisible
-	 * @param chooser TODO
-	 * @param file TODO
-	 */
-	public abstract void ensureFileIsVisible(JFileChooser chooser, File file);
+  
+  /**
+   * Returns a <code>FileFilter</code> that accepts every file.  While
+   * the filtering itself is not specific to any look and feel, the
+   * text returned by <code>FileFilter.getDescription()</code> need
+   * not be the same across all look and feels.
+   *
+   * @param chooser the <code>JFileChooser</code> for which
+   *        a <code>FileFilter</code> is requested.
+   *
+   * @see javax.swing.JFileChooser#getAcceptAllFileFilter
+   * @see javax.swing.filechooser.FileFilter#getDescription
+   */
+  public abstract FileFilter getAcceptAllFileFilter(JFileChooser chooser);
 
 
-} // FileChooserUI
+  /**
+   * Returns a view to a file, which is able to retrieve its name,
+   * icon, and other properties that are relevant for presenting
+   * the file to the user.
+   *
+   * @param chooser the <code>JFileChooser</code> for which
+   *        a <code>FileFilter</code> is requested.
+   */
+  public abstract FileView getFileView(JFileChooser chooser);
+
+
+  /**
+   * Determines which text is appropriate for the approve button
+   * according to the design guidelines of the implemented
+   * look and feel.
+   *
+   * @param chooser the <code>JFileChooser</code> whose
+   *        button text is requested.
+   *
+   * @see javax.swing.JFileChoose#getApproveButtonText
+   */
+  public abstract String getApproveButtonText(JFileChooser chooser);
+
+
+  /**
+   * Determines which text is appropriate for the title bar of a
+   * <code>JFileChooser</code> according to the design guidelines of
+   * the implemented look and feel.
+   *
+   * @param chooser the <code>JFileChooser</code> whose
+   *        dialog title is requested.
+   *
+   * @see javax.swing.JFileChoose#getDialogtitle
+   */
+  public abstract String getDialogTitle(JFileChooser chooser);
+
+
+  /**
+   * Refreshes the currently displayed directory.
+   *
+   * @param chooser the <code>JFileChooser</code> whose
+   *        dialog title needs re-scanning.
+   */
+  public abstract void rescanCurrentDirectory(JFileChooser chooser);
+
+
+  /**
+   * Ensures that a specified file is visible in the
+   * <code>JFileChooser</code>
+   *
+   * @param chooser the <code>JFileChooser</code> that
+   *        should display the file <code>file</code>.
+   *
+   * @param file the file that needs to be made visible.
+   */
+  public abstract void ensureFileIsVisible(JFileChooser chooser, File file);
+}

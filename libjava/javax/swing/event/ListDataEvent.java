@@ -41,99 +41,58 @@ package javax.swing.event;
 import java.util.EventObject;
 
 /**
- * ListDataEvent
  * @author Andrew Selkirk
  * @author Ronald Veldema
  */
-public class ListDataEvent extends EventObject {
+public class ListDataEvent extends EventObject
+{
+  private static final serialVersionUID = -7131487416250401903L;
+  
+  public static int CONTENTS_CHANGED = 0;
+  public static int INTERVAL_ADDED = 1;
+  public static int INTERVAL_REMOVED = 2;
 
-	//-------------------------------------------------------------
-	// Constants --------------------------------------------------
-	//-------------------------------------------------------------
+  private int type = 0;
+  private int index0 = 0;
+  private int index1 = 0;
 	
-	/**
-	 * Contents changed
-	 */
-	public static	int	CONTENTS_CHANGED	= 0;
-
-	/**
-	 * Internal added
-	 */
-	public static	int	INTERVAL_ADDED		= 1;
-
-	/**
-	 * Interval removed
-	 */
-	public static	int	INTERVAL_REMOVED	= 2;
-
-
-	//-------------------------------------------------------------
-	// Variables --------------------------------------------------
-	//-------------------------------------------------------------
-
-	/**
-	 * type
-	 */
-	private 		int	type	= 0;
+  /**
+   * Creates a <code>ListDataEvent</code> object.
+   * 
+   * @param source The source of the event.
+   * @param type The type of the event
+   * @param index0 Bottom of range
+   * @param index1 Top of range
+   */
+  public ListDataEvent(Object source, int type, int index0, int index1)
+  {
+    super(source);
+    this.type = type;
+    this.index0 = index0;
+    this.index1 = index1;
+  }
 	
-	/**
-	 * index0
-	 */
-	private 		int	index0	= 0;
-	
-	/**
-	 * index1
-	 */
-	private 		int	index1	= 0;
+  /**
+   * Returns the bottom index.
+   */
+  public int getIndex0()
+  {
+    return index0;
+  }
 
+  /**
+   * Returns the top index.
+   */
+  public int getIndex1()
+  {
+    return index1;
+  }
 
-	//-------------------------------------------------------------
-	// Initialization ---------------------------------------------
-	//-------------------------------------------------------------
-	
-	/**
-	 * Constructor ListDataEvent
-	 * @param source Source
-	 * @param type Event type
-	 * @param index0 Bottom of range
-	 * @param index1 Top of range
-	 */
-	public ListDataEvent(Object source, int type,
-							int index0, int index1) {
-		super(source);
-		this.type	= type;
-		this.index0	= index0;
-		this.index1	= index1;
-	} // ListDataEvent()
-
-
-	//-------------------------------------------------------------
-	// Methods ----------------------------------------------------
-	//-------------------------------------------------------------
-	
-	/**
-	 * getIndex0
-	 * @returns index0
-	 */
-	public int getIndex0() {
-		return index0;
-	} // getIndex0()
-
-	/**
-	 * getIndex1
-	 * @returns index1
-	 */
-	public int getIndex1() {
-		return index1;
-	} // getIndex1()
-
-	/**
-	 * Event type
-	 * @returns Event type
-	 */
-	public int getType() {
-		return type;
-	} // getType()
-
-
-} // ListDataEvent
+  /**
+   * Returns the type of this event.
+   */
+  public int getType()
+  {
+    return type;
+  }
+}

@@ -1,5 +1,5 @@
 /* PanelUI.java
-   Copyright (C) 2002 Free Software Foundation, Inc.
+   Copyright (C) 2003 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -38,7 +38,21 @@ exception statement from your version. */
 
 package javax.swing.plaf;
 
-
-public class PanelUI extends ComponentUI
+/**
+ * An abstract base class for delegates that implement the pluggable
+ * look and feel for a <code>JPanel</code>.
+ *
+ * @see javax.swing.JPanel
+ *
+ * @author Sascha Brawer (brawer@dandelis.ch)
+ */
+public abstract class PanelUI
+  extends ComponentUI
 {
+  /**
+   * Constructs a new <code>PanelUI</code>.
+   */
+  public PanelUI()
+  {
+  }
 }

@@ -1,5 +1,5 @@
 /* InsetsUIResource.java
-   Copyright (C) 2002 Free Software Foundation, Inc.
+   Copyright (C) 2003 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -37,14 +37,41 @@ exception statement from your version. */
 
 
 package javax.swing.plaf;
+
 import java.awt.Insets;
+import java.io.Serializable;
+
+
 /**
- * STUBBED
+ * An <code>Insets</code> that is marked as <code>UIResource</code>,
+ * which indicates that it has been installed by a pluggable
+ * LookAndFeel. Such insets are replaced when the LookAndFeel changes.
+ *
+ * @author Andrew Selkirk (aselkirk@sympatico.ca)
+ * @author Sascha Brawer (brawer@dandelis.ch)
  */
-public class InsetsUIResource extends Insets implements UIResource
+public class InsetsUIResource
+  extends Insets
+  implements Cloneable, UIResource, Serializable
 {
+  /**
+   * Determined using the <code>serialver</code> tool
+   * of Apple/Sun JDK 1.3.1 on MacOS X 10.1.5.
+   */
+  static final long serialVersionUID = 5622110143266315421L;
+
+
+  /**
+   * Constructs a new <code>InsetsUIResource</code> given the
+   * inset at each edge.
+   *
+   * @param top the inset at the top, in pixels.
+   * @param left the inset at the left, in pixels.
+   * @param bottom the inset at the bottom, in pixels.
+   * @param right the inset at the right, in pixels.
+   */
   public InsetsUIResource(int top, int left, int bottom, int right)
   {
     super(top, left, bottom, right);
   }
-} // class InsetsUIResource
+}

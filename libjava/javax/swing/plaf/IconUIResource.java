@@ -1,5 +1,5 @@
 /* IconUIResource.java
-   Copyright (C) 2002 Free Software Foundation, Inc.
+   Copyright (C) 2003 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -37,29 +37,86 @@ exception statement from your version. */
 
 
 package javax.swing.plaf;
+
 import java.awt.Component;
 import java.awt.Graphics;
 import java.io.Serializable;
 import javax.swing.Icon;
+
+
 /**
- * STUBBED
+ * An icon that is marked as <code>UIResource</code>, which
+ * indicates that it has been installed by a pluggable
+ * LookAndFeel. Such icons are replaced when the LookAndFeel
+ * changes.
+ *
+ * @author Andrew Selkirk (aselkirk@sympatico.ca)
+ * @author Sascha Brawer (brawer@dandelis.ch)
  */
-public class IconUIResource implements Icon, UIResource, Serializable
+public class IconUIResource
+  implements Icon, UIResource, Serializable
 {
+  /**
+   * Verified using the <code>serialver</code> tool of Sun JDK 1.4.1_01
+   * on GNU/Linux 2.4.18.
+   */
   static final long serialVersionUID = 3327049506004830542L;
 
+
+  /**
+   * The icon that is wrapped by this <code>IconUIResource</code>.
+   */
+  private Icon delegate;
+
+
+  /**
+   * Constructs a <code>IconUIResource</code> that wraps another
+   * icon. All messages are forwarded to the delegate icon.
+   *
+   * @param delegate the icon that is wrapped by this
+   *        <code>IconUIResource</code>.
+   */
   public IconUIResource(Icon delegate)
   {
+    this.delegate = delegate;
   }
+
+
+  /**
+   * Paints the icon by asking the delegate icon to paint itself.
+   *
+   * @param c the Component whose icon is being painted. Some icons
+   *        use this argument to retrieve properties like the
+   *        background color.
+   *
+   * @param g the graphics into which the icon will be painted.
+   *
+   * @param x the horizontal position of the icon.
+   *
+   * @param y the vertical position of the icon.
+   */
   public void paintIcon(Component c, Graphics g, int x, int y)
   {
+    delegate.paintIcon(c, g, x, y);
   }
+
+
+  /**
+   * Returns the width of the icon in pixels. The implementation
+   * determines and returns the width of the delegate icon.
+   */
   public int getIconWidth()
   {
-    return 0;
+    return delegate.getIconWidth();
   }
+
+
+  /**
+   * Returns the height of the icon in pixels. The implementation
+   * determines and returns the height of the delegate icon.
+   */
   public int getIconHeight()
   {
-    return 0;
+    return delegate.getIconHeight();
   }
-} // class IconUIResource
+}
