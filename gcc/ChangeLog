@@ -1,3 +1,11 @@
+2004-05-25  Svein E. Seldal  <Svein.Seldal@solidas.com>
+
+	* config/avr/avr.h (LONG_LONG_TYPE_SIZE): Changed long long type
+	to support 32-bit -mint8 mode.
+
+	* doc/invoke.texi (-mint8): Added documentation for the -mint8
+	option in the AVR architecture. 
+
 2004-05-24  Mike Stump  <mrs@apple.com>
 
 	* doc/install.texi: Document that dejagnu 1.4.4 is required.
