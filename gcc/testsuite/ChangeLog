@@ -1,3 +1,8 @@
+2000-06-30  Nick Clifton  <nickc@cygnus.com>
+
+	* gcc.c-torture/compile/20000629-1.c: Add second, reversed, loop
+	to test case.
+
 2000-06-30  Catherine Moore  <clm@cygnus.com>
 
 	* gcc.c-torture/execute/align-1.c: New test.
