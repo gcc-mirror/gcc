@@ -2090,8 +2090,8 @@ AC_MSG_RESULT($glibcpp_shared_libgcc)
 # as the tested-for version.  See GLIBCPP_CHECK_LINKER_FEATURES for more.
 glibcpp_min_gnu_ld_version=21200
 
-# Check to see if unspecified default "yes" value can win, given
-# results above.  
+# Check to see if unspecified "yes" value can win, given results
+# above.  
 if test $enable_symvers = yes ; then
   if test $with_gnu_ld = yes &&
     test $glibcpp_gnu_ld_version -ge $glibcpp_min_gnu_ld_version &&
@@ -2116,7 +2116,7 @@ esac
 
 AC_LINK_FILES($LINKER_MAP, src/linker.map)
 AM_CONDITIONAL(GLIBCPP_BUILD_VERSIONED_SHLIB, test $enable_symvers != no)
-AC_MSG_CHECKING([versioning on shared lib symbols])
+AC_MSG_CHECKING([versioning on shared library symbols])
 AC_MSG_RESULT($enable_symvers)
 ])
 
