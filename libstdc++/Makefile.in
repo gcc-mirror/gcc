@@ -15,6 +15,7 @@
 # Software Foundation, 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 VERSION = 2.9.0
+INTERFACE = 2
 
 OBJS  = cstringi.o stdexcepti.o cstdlibi.o cmathi.o stlinst.o
 SUBLIBS = $(STAMP)-string $(STAMP)-complx
@@ -27,7 +28,9 @@ HEADERS= cassert cctype cerrno cfloat ciso646 climits clocale cmath complex \
 	 memory numeric pthread_alloc queue rope set slist stack utility \
 	 vector fstream iomanip iostream strstream iosfwd
 
-ARLIB   = libstdc++.a
+ARLIB   = libstdc++.a.$(VERSION)
+ARLINK  = libstdc++.a
+MARLINK = libstdc++.a.`echo $(VERSION) | sed 's/\([0-9][.][0-9]\).*/\1/'`
 SHLIB   = libstdc++.so.$(VERSION)
 SHARLIB = libstdc++-sh.a
 SHLINK  = libstdc++.so
@@ -37,7 +40,7 @@ SHDEPS  =
 
 STAMP   = bigstmp
 
-LIBS    = $(ARLIB)
+LIBS    = $(ARLIB) $(ARLINK)
 
 #### package, host, target, and site dependent Makefile fragments come in here.
 ##
@@ -84,6 +87,12 @@ $(ARLIB): stdlist
 	$(AR) $(AR_FLAGS) t$(ARLIB) `cat stdlist`
 	mv t$(ARLIB) $(ARLIB)
 	$(RANLIB) $(ARLIB)
+
+$(ARLINK):
+	ln -f -s $(ARLIB) $(ARLINK)
+
+marlink:
+	@$(MAKE) $(MARLINK) "ARLINK=$(MARLINK)"
 
 $(SHLIB): piclist
 	$(CC) $(LIBCXXFLAGS) $(SHFLAGS) -shared -o $(SHLIB) `cat piclist` $(SHDEPS)
@@ -270,20 +279,37 @@ install:
 	else true ; \
 	fi
 	rootme=`pwd`/ ; export rootme ; \
-	if [ x$(libsubdir) = x ] || [ x$(enable_version_specific_runtime_libs) != xyes ]; then \
+	if [ x$(enable_version_specific_runtime_libs) != xyes ]; then \
 	  INSTALLDIR=$(libdir); \
 	else \
 	  INSTALLDIR=$(libsubdir); \
 	fi; \
-	rm -f $${INSTALLDIR}$(MULTISUBDIR)/$(SHLINK) ; \
+	INSTALLLINKDIR=$(libsubdir); \
+	rm -f $${INSTALLLINKDIR}$(MULTISUBDIR)/$(SHLINK) ; \
+	rm -f $${INSTALLLINKDIR}$(MULTISUBDIR)/$(ARLINK) ; \
 	for FILE in $(LIBS) ; do \
 	  rm -f $${INSTALLDIR}$(MULTISUBDIR)/$$FILE ; \
 	  if [ $$FILE = $(SHLINK) ] ; then \
-	    ln -f -s $(SHLIB) $${INSTALLDIR}$(MULTISUBDIR)/$$FILE ; \
+	    if [ -f $${INSTALLDIR}/$(MSHLINK) ]; then \
+	      ln -f -s $${INSTALLDIR}/$(MSHLINK) $${INSTALLLINKDIR}$(MULTISUBDIR)/$$FILE ; \
+	    else \
+	      ln -f -s $${INSTALLDIR}/$(SHLIB) $${INSTALLLINKDIR}$(MULTISUBDIR)/$$FILE ; \
+	    fi; \
+	  elif [ $$FILE = $(ARLINK) ] ; then \
+	    if [ -f $${INSTALLDIR}/$(MARLINK) ]; then \
+	      ln -f -s $${INSTALLDIR}/$(MARLINK) $${INSTALLLINKDIR}$(MULTISUBDIR)/$$FILE ; \
+	    else \
+	      ln -f -s $${INSTALLDIR}/$(ARLIB) $${INSTALLLINKDIR}$(MULTISUBDIR)/$$FILE ; \
+	    fi; \
 	  elif [ $$FILE = mshlink ]; then \
 	    for FILE in $(MSHLINK) ; do \
 	      rm -f $${INSTALLDIR}$(MULTISUBDIR)/$$FILE ; \
 	      ln -f -s $(SHLIB) $${INSTALLDIR}$(MULTISUBDIR)/$$FILE ; \
+	    done; \
+	  elif [ $$FILE = marlink ]; then \
+	    for FILE in $(MARLINK) ; do \
+	      rm -f $${INSTALLDIR}$(MULTISUBDIR)/$$FILE ; \
+	      ln -f -s $(ARLIB) $${INSTALLDIR}$(MULTISUBDIR)/$$FILE ; \
 	    done; \
 	  elif [ $$FILE = $(SHLIB) ]; then \
 	    $(INSTALL_PROGRAM) $$FILE $${INSTALLDIR}$(MULTISUBDIR)/$$FILE ; \
