@@ -46,8 +46,8 @@ Boston, MA 02111-1307, USA.  */
 
 #define LINK_SPEC "%{ml:-m shl}"
 
-/* Show we can debug even without a frame pointer.  */
-#define CAN_DEBUG_WITHOUT_FP
+/* We can not debug without a frame pointer.  */
+/* #define CAN_DEBUG_WITHOUT_FP */
 
 #define CONDITIONAL_REGISTER_USAGE				\
   /* Hitachi saves and restores mac registers on call.  */	\
