@@ -180,6 +180,12 @@ Boston, MA 02111-1307, USA.  */
 #undef SET_ASM_OP
 
 
+/* NetBSD hasn't historically provided _flush_cache(), but rather
+   _cacheflush(), which takes the same arguments as the former.  */
+#undef CACHE_FLUSH_FUNC
+#define CACHE_FLUSH_FUNC "_cacheflush"
+
+
 /* Make gcc agree with <machine/ansi.h> */
 
 #undef WCHAR_TYPE
