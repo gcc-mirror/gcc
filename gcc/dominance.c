@@ -38,7 +38,7 @@
 #include "rtl.h"
 #include "hard-reg-set.h"
 #include "basic-block.h"
-#include "error.h"
+#include "errors.h"
 #include "et-forest.h"
 
 struct dominance_info
