@@ -20,6 +20,7 @@
 # 	to subscript	= indicer
 # 	top-level	= hors de toute fonction
 # 	member function	= fonction membre
+#       template        = patron  (apparaît dans plusieurs dictionnaires)
 #
 # Pas traduit:
 # 	thread
@@ -119,7 +120,7 @@ msgstr ""
 "Project-Id-Version: GNU gcc 3.4.0\n"
 "Report-Msgid-Bugs-To: http://gcc.gnu.org/bugs.html\n"
 "POT-Creation-Date: 2004-04-18 18:00-0700\n"
-"PO-Revision-Date: 2004-05-24 20:00-0500\n"
+"PO-Revision-Date: 2004-07-21 08:00-0500\n"
 "Last-Translator: Michel Robitaille <robitail@IRO.UMontreal.CA>\n"
 "Language-Team: French <traduc@traduc.org>\n"
 "MIME-Version: 1.0\n"
@@ -3411,7 +3412,7 @@ msgstr "éléments en excès dans l'initialisation d'un scalaire"
 
 #: c-typeck.c:6240
 msgid "asm template is not a string constant"
-msgstr "le canevas asm n'est pas une chaîne de constante"
+msgstr "le patron asm n'est pas une chaîne de constante"
 
 #: c-typeck.c:6272
 msgid "invalid lvalue in asm statement"
@@ -5488,7 +5489,7 @@ msgstr "%s\n"
 #: gcc.c:5099
 #, c-format
 msgid "spec failure: '%%*' has not been initialized by pattern match"
-msgstr "échec du spec: « %%* » n'a pas été initialisé par concordance du canevas"
+msgstr "échec du spec: « %%* » n'a pas été initialisé par concordance du patron"
 
 #: gcc.c:5108
 #, c-format
@@ -10852,22 +10853,22 @@ msgstr "mips_debugger_offset appellé avec un pointeur non stack/frame/arg"
 #: config/mips/mips.c:5401
 #, c-format
 msgid "internal error: %%) found without a %%( in assembler pattern"
-msgstr "erreur interne: %%) trouvé sans %%( dans le canevas d'assemblage"
+msgstr "erreur interne: %%) trouvé sans %%( dans le patron d'assemblage"
 
 #: config/mips/mips.c:5415
 #, c-format
 msgid "internal error: %%] found without a %%[ in assembler pattern"
-msgstr "erreur interne: %%] trouvé sans %%[ dans le canevas d'assemblage"
+msgstr "erreur interne: %%] trouvé sans %%[ dans le patron d'assemblage"
 
 #: config/mips/mips.c:5428
 #, c-format
 msgid "internal error: %%> found without a %%< in assembler pattern"
-msgstr "erreur interne: %%> trouvé sans %%< dans le canevas d'assemblage"
+msgstr "erreur interne: %%> trouvé sans %%< dans le patron d'assemblage"
 
 #: config/mips/mips.c:5441
 #, c-format
 msgid "internal error: %%} found without a %%{ in assembler pattern"
-msgstr "erreur interne: %%} trouvé sans %%{ dans le canevas d'assemblage"
+msgstr "erreur interne: %%} trouvé sans %%{ dans le patron d'assemblage"
 
 #: config/mips/mips.c:5455
 #, c-format
@@ -13706,7 +13707,7 @@ msgstr "déclaration précédente de « %#D »"
 
 #: cp/decl.c:1339
 msgid "declaration of template `%#D'"
-msgstr "déclaration du canevas « %#D »"
+msgstr "déclaration du patron « %#D »"
 
 #: cp/decl.c:1340 cp/name-lookup.c:503
 msgid "conflicts with previous declaration `%#D'"
@@ -13867,11 +13868,11 @@ msgstr "étiquette « %D » apparaît en double"
 
 #: cp/decl.c:2625 cp/parser.c:3182
 msgid "`%D' used without template parameters"
-msgstr "« %D » utilisé sans canevas de paramétres"
+msgstr "« %D » utilisé sans patron de paramétres"
 
 #: cp/decl.c:2635 cp/decl.c:2651 cp/decl.c:2739
 msgid "no class template named `%#T' in `%#T'"
-msgstr "pas de canevas de classe nommé « %#T » in « %#T »"
+msgstr "pas de patron de classe nommé « %#T » in « %#T »"
 
 #: cp/decl.c:2672 cp/decl.c:2682 cp/decl.c:2702
 msgid "no type named `%#T' in `%#T'"
@@ -14110,7 +14111,7 @@ msgstr "« %D » déclaré avec une exception de spécification"
 
 #: cp/decl.c:5571
 msgid "cannot declare `::main' to be a template"
-msgstr "ne peut déclarer « ::main » comme étant un canevas"
+msgstr "ne peut déclarer « ::main » comme étant un patron"
 
 #: cp/decl.c:5573
 msgid "cannot declare `::main' to be inline"
@@ -14147,15 +14148,15 @@ msgstr "définition explicite de spécialisation « %D » dans lka déclaration ami"
 #. Something like `template <class T> friend void f<T>()'.
 #: cp/decl.c:5673
 msgid "invalid use of template-id `%D' in declaration of primary template"
-msgstr "utilisation invalide du template-id « %D » dans la déclaration du canevas primaire"
+msgstr "utilisation invalide du template-id « %D » dans la déclaration du patron primaire"
 
 #: cp/decl.c:5700
 msgid "default arguments are not allowed in declaration of friend template specialization `%D'"
-msgstr "arguments par défaut ne sont pas permis dans la déclaration amie de la spécialisation du canevas « %D »"
+msgstr "arguments par défaut ne sont pas permis dans la déclaration amie de la spécialisation du patron « %D »"
 
 #: cp/decl.c:5707
 msgid "`inline' is not allowed in declaration of friend template specialization `%D'"
-msgstr "« inline» n'estpas permis dans la déclaration amie de la spécialisation du canevas « %D »"
+msgstr "« inline» n'estpas permis dans la déclaration amie de la spécialisation du patron « %D »"
 
 #: cp/decl.c:5765
 msgid "definition of implicitly-declared `%D'"
@@ -14485,7 +14486,7 @@ msgstr "const « %s » ne peut être déclaré « mutable »"
 
 #: cp/decl.c:7817
 msgid "template-id `%D' used as a declarator"
-msgstr "identificateur de canevas « %D » utilisé comme déclarateur"
+msgstr "identificateur de patron « %D » utilisé comme déclarateur"
 
 #: cp/decl.c:7838
 msgid "ISO C++ forbids nested type `%D' with same name as enclosing class"
@@ -14509,7 +14510,7 @@ msgstr "« inline » spécifié pour la déclaration d'une classe amie"
 
 #: cp/decl.c:7968
 msgid "template parameters cannot be friends"
-msgstr "paramètres du canevas ne peuvent pas être amis"
+msgstr "paramètres du patron ne peuvent pas être amis"
 
 #: cp/decl.c:7970
 msgid "friend declaration requires class-key, i.e. `friend class %T::%D'"
@@ -14574,7 +14575,7 @@ msgstr "nom « %T » a un type incomplet"
 
 #: cp/decl.c:8225
 msgid "  in instantiation of template `%T'"
-msgstr " dans l'instanciation du canevas « %T »"
+msgstr " dans l'instanciation du patron « %T »"
 
 #: cp/decl.c:8235
 #, c-format
@@ -14780,7 +14781,7 @@ msgstr "utilisation d'un nom de typedef « %D » après « %s »"
 
 #: cp/decl.c:9278
 msgid "using template type parameter `%T' after `%s'"
-msgstr "utilisation de type de canevas de paramètre « %T » après « %s »"
+msgstr "utilisation de type de patron de paramètre « %T » après « %s »"
 
 #: cp/decl.c:9286
 msgid "`%T' referred to as `%s'"
@@ -14799,7 +14800,7 @@ msgstr "« %T » référé comme enum"
 #. then the required template argument is missing.
 #: cp/decl.c:9307
 msgid "template argument required for `%s %T'"
-msgstr "argument du canevas est requis pour « %s %T »"
+msgstr "argument du patron est requis pour « %s %T »"
 
 #: cp/decl.c:9452
 msgid "use of enum `%#D' without previous declaration"
@@ -14923,15 +14924,15 @@ msgstr "destruction de « %T » est indéfinie"
 #. A local class shall not have member templates.
 #: cp/decl2.c:521
 msgid "invalid declaration of member template `%#D' in local class"
-msgstr "déclaration invalide du canevas de membre « %#D » dans la classe locale"
+msgstr "déclaration invalide du patron de membre « %#D » dans la classe locale"
 
 #: cp/decl2.c:530
 msgid "invalid use of `virtual' in template declaration of `%#D'"
-msgstr "utilisation invalide de « virtual» dans la déclaration d'un canevas de « %#D »"
+msgstr "utilisation invalide de « virtual» dans la déclaration d'un patron de « %#D »"
 
 #: cp/decl2.c:540 cp/pt.c:2834
 msgid "template declaration of `%#D'"
-msgstr "déclaration du canevas de « %#D »"
+msgstr "déclaration du patron de « %#D »"
 
 #: cp/decl2.c:589
 msgid "Java method '%D' has non-Java return type `%T'"
@@ -15112,12 +15113,12 @@ msgstr "type typename « %#T» déclaré «friend »"
 #. template <class T> friend class T;
 #: cp/friend.c:252
 msgid "template parameter type `%T' declared `friend'"
-msgstr "type paramètre du canevas « %T» déclaré «friend »"
+msgstr "type paramètre du patron « %T» déclaré «friend »"
 
 #. template <class T> friend class A; where A is not a template
 #: cp/friend.c:258
 msgid "`%#T' is not a template"
-msgstr "« %#T » n'est pas un canevas"
+msgstr "« %#T » n'est pas un patron"
 
 #: cp/friend.c:277
 msgid "`%D' is already a friend of `%T'"
@@ -15133,11 +15134,11 @@ msgstr "membre « %D » déclaré comme ami avant la définition du type « %T »"
 
 #: cp/friend.c:465
 msgid "friend declaration `%#D' declares a non-template function"
-msgstr "déclaration amie « %#D » déclare une fonction non canevas"
+msgstr "déclaration amie « %#D » déclare une fonction non patron"
 
 #: cp/friend.c:468
 msgid "(if this is not what you intended, make sure the function template has already been declared and add <> after the function name here) -Wno-non-template-friend disables this warning"
-msgstr "(si ce n'est pas ce que vous vouliez faire, soyez sûr que le canevas de la fonction a déjà été déclaré et ajouter <> après le nom de la fonction ici) -Wno-non-template-friend désactive le présent avertissement"
+msgstr "(si ce n'est pas ce que vous vouliez faire, soyez sûr que le patron de la fonction a déjà été déclaré et ajouter <> après le nom de la fonction ici) -Wno-non-template-friend désactive le présent avertissement"
 
 #: cp/g++spec.c:229 java/jvspec.c:415
 #, c-format
@@ -15416,7 +15417,7 @@ msgstr "(Chaque identificateur non déclaré est rapporté seulement une seule fois
 #. be kept in synch.
 #: cp/lex.c:674
 msgid "there are no arguments to `%D' that depend on a template parameter, so a declaration of `%D' must be available"
-msgstr "il n'y a pas d'argument à « %D » qui dépend d'un paramètre du canevas, aussi une déclaration de « %D » doit être disponible"
+msgstr "il n'y a pas d'argument à « %D » qui dépend d'un paramètre du patron, aussi une déclaration de « %D » doit être disponible"
 
 #: cp/lex.c:683
 msgid "(if you use `-fpermissive', G++ will accept your code, but allowing the use of an undeclared name is deprecated)"
@@ -15667,7 +15668,7 @@ msgstr "utilisation invalide de « %D »"
 
 #: cp/name-lookup.c:3663
 msgid "`%D::%D' is not a template"
-msgstr "« %D::%D » n'est pas un canevas"
+msgstr "« %D::%D » n'est pas un patron"
 
 #: cp/name-lookup.c:3680
 msgid "`%D' undeclared in namespace `%D'"
@@ -15723,16 +15724,16 @@ msgstr "nouveaux types ne peuvent être définis dans un type à retourner"
 
 #: cp/parser.c:1888 cp/pt.c:4196
 msgid "`%T' is not a template"
-msgstr "« %T » n'est pas un canevas"
+msgstr "« %T » n'est pas un patron"
 
 #: cp/parser.c:1890
 #, c-format
 msgid "`%s' is not a template"
-msgstr "« %s » n'est pas un canevas"
+msgstr "« %s » n'est pas un patron"
 
 #: cp/parser.c:1892
 msgid "invalid template-id"
-msgstr "id de canevas invalide"
+msgstr "id de patron invalide"
 
 #: cp/parser.c:1933
 #, c-format
@@ -15831,7 +15832,7 @@ msgstr "mot clé « export » n'est pas implanté et sera ignoré"
 #. parsing because we got our argument list.
 #: cp/parser.c:7908
 msgid "`<::' cannot begin a template-argument list"
-msgstr "« <:: » ne peut pas être au début d'une liste d'un canevas d'arguments"
+msgstr "« <:: » ne peut pas être au début d'une liste d'un patron d'arguments"
 
 #: cp/parser.c:7909
 msgid "`<:' is an alternate spelling for `['. Insert whitespace between `<' and `::'"
@@ -15844,15 +15845,15 @@ msgstr "(si vous utiliser « -fpermissive » G++ acceptera votre code)"
 #. Explain what went wrong.
 #: cp/parser.c:8088
 msgid "non-template `%D' used as template"
-msgstr "« %D » qui n'est pas un canevas est utilisé comme canevas"
+msgstr "« %D » qui n'est pas un patron est utilisé comme patron"
 
 #: cp/parser.c:8089
 msgid "(use `%T::template %D' to indicate that it is a template)"
-msgstr "(utiliser « %T::template %D » pour indiquer que c'est un canevas)"
+msgstr "(utiliser « %T::template %D » pour indiquer que c'est un patron)"
 
 #: cp/parser.c:9026
 msgid "using `typename' outside of template"
-msgstr "utilisation de « typename » en dehors du canevas"
+msgstr "utilisation de « typename » en dehors du patron"
 
 #: cp/parser.c:9148
 msgid "expected type-name"
@@ -15867,7 +15868,7 @@ msgstr "type d'attributs sont honorés seulement lors de la définitions de type"
 #. A using declaration shall not name a template-id.
 #: cp/parser.c:9590
 msgid "a template-id may not appear in a using-declaration"
-msgstr "un id de canevas ne peut pas apparaître dans l'utilisation de la déclaration"
+msgstr "un id de patron ne peut pas apparaître dans l'utilisation de la déclaration"
 
 #: cp/parser.c:9917
 msgid "an asm-specification is not allowed on a function-definition"
@@ -15923,7 +15924,7 @@ msgstr "spécificateur pur lors de la définition d'une fonction"
 
 #: cp/parser.c:12843
 msgid "keyword `typename' not allowed outside of templates"
-msgstr "mot clé « typename » n'est pas permis en dehors du canevas"
+msgstr "mot clé « typename » n'est pas permis en dehors du patron"
 
 #: cp/parser.c:12845
 msgid "keyword `typename' not allowed in this context (the base class is implicitly a type)"
@@ -15935,7 +15936,7 @@ msgstr "référence à « %D » est ambiguë"
 
 #: cp/parser.c:13839
 msgid "too few template-parameter-lists"
-msgstr "trop peu de canevas de listes de paramètres"
+msgstr "trop peu de patron de listes de paramètres"
 
 #. Otherwise, there are too many template parameter lists.  We have
 #. something like:
@@ -15943,7 +15944,7 @@ msgstr "trop peu de canevas de listes de paramètres"
 #. template <class T> template <class U> void S::f();
 #: cp/parser.c:13854
 msgid "too many template-parameter-lists"
-msgstr "trop de canevas de listes de paramètres"
+msgstr "trop de patron de listes de paramètres"
 
 #. If begin_function_definition didn't like the definition, skip
 #. the entire function.
@@ -15958,17 +15959,17 @@ msgstr "valeurs nommées à retourner ne sont plus supportées"
 
 #: cp/parser.c:14522
 msgid "`>>' should be `> >' within a nested template argument list"
-msgstr "« >> » devrait être « > > » à l'intérieur du canevas de la liste d'arguments"
+msgstr "« >> » devrait être « > > » à l'intérieur du patron de la liste d'arguments"
 
 #. If this is not a nested template argument list, the '>>' is
 #. a typo for '>'. Emit an error message and continue.
 #: cp/parser.c:14530
 msgid "spurious `>>', use `>' to terminate a template argument list"
-msgstr "faux « >> », utiliser « > » pour terminer la liste d'argument du canevas"
+msgstr "faux « >> », utiliser « > » pour terminer la liste d'argument du patron"
 
 #: cp/parser.c:14535
 msgid "missing `>' to terminate the template argument list"
-msgstr "« > » manquant pour terminer la liste d'argument du canevas"
+msgstr "« > » manquant pour terminer la liste d'argument du patron"
 
 #: cp/parser.c:15023
 msgid "`%s' tag used in naming `%#T'"
@@ -15980,15 +15981,15 @@ msgstr "« %#D » redéclaré avec un accès différent"
 
 #: cp/parser.c:15060
 msgid "`template' (as a disambiguator) is only allowed within templates"
-msgstr "« template » (afin de rendre moins ambiguë) est seulement permis à l'intérieur des canevas"
+msgstr "« template » (afin de rendre moins ambiguë) est seulement permis à l'intérieur des patron"
 
 #: cp/pt.c:243
 msgid "data member `%D' cannot be a member template"
-msgstr "membre de données « %D » ne peut être membre du canevas"
+msgstr "membre de données « %D » ne peut être membre du patron"
 
 #: cp/pt.c:255
 msgid "invalid member template declaration `%D'"
-msgstr "déclaration de membre de canevas invalide « %D »"
+msgstr "déclaration de membre de patron invalide « %D »"
 
 #: cp/pt.c:637
 msgid "explicit specialization in non-namespace scope `%D'"
@@ -15996,7 +15997,7 @@ msgstr "spécialisation explicite dans la portée d'un non espace de noms « %D »"
 
 #: cp/pt.c:649
 msgid "enclosing class templates are not explicitly specialized"
-msgstr "fermetures de canevass de classe ne sont pas explicitement spécialisées"
+msgstr "fermetures de patrons de classe ne sont pas explicitement spécialisées"
 
 #: cp/pt.c:739 cp/pt.c:780
 msgid "specializing `%#T' in different namespace"
@@ -16016,7 +16017,7 @@ msgstr "spécialisation de « %T » après instanciation « %T »"
 
 #: cp/pt.c:807
 msgid "explicit specialization of non-template `%T'"
-msgstr "spécialisation explicite du non canevas « %T »"
+msgstr "spécialisation explicite du non patron « %T »"
 
 #: cp/pt.c:1067
 msgid "specialization of %D after instantiation"
@@ -16028,25 +16029,25 @@ msgstr "%s %+#D"
 
 #: cp/pt.c:1241
 msgid "`%D' is not a function template"
-msgstr "« %D » n'est pas un canevas de fonction"
+msgstr "« %D » n'est pas un patron de fonction"
 
 #: cp/pt.c:1389
 msgid "template-id `%D' for `%+D' does not match any template declaration"
-msgstr "template-id « %D » pour « %+D » ne concorde pas avec aucune déclaration de canevas"
+msgstr "template-id « %D » pour « %+D » ne concorde pas avec aucune déclaration de patron"
 
 #: cp/pt.c:1397
 msgid "ambiguous template specialization `%D' for `%+D'"
-msgstr "spécialisation de canevas amibiguë « %D » pour « %+D »"
+msgstr "spécialisation de patron amibiguë « %D » pour « %+D »"
 
 #. This case handles bogus declarations like template <>
 #. template <class T> void f<int>();
 #: cp/pt.c:1620 cp/pt.c:1694
 msgid "template-id `%D' in declaration of primary template"
-msgstr "template-id « %D » dans la déclaration de canevas primaire"
+msgstr "template-id « %D » dans la déclaration de patron primaire"
 
 #: cp/pt.c:1633
 msgid "template parameter list used in explicit instantiation"
-msgstr "canevas de liste de paramètres utilisé dans une instanciation explicite"
+msgstr "patron de liste de paramètres utilisé dans une instanciation explicite"
 
 #: cp/pt.c:1639
 msgid "definition provided for explicit instantiation"
@@ -16054,11 +16055,11 @@ msgstr "définition fournie pour une instanciation explicite"
 
 #: cp/pt.c:1645
 msgid "too many template parameter lists in declaration of `%D'"
-msgstr "trop de canevass de listes de paramètres dans la déclaration de « %D »"
+msgstr "trop de patrons de listes de paramètres dans la déclaration de « %D »"
 
 #: cp/pt.c:1661
 msgid "too few template parameter lists in declaration of `%D'"
-msgstr "trop peu de canevass de listes de paramètres dans la déclaration de « %D »"
+msgstr "trop peu de patrons de listes de paramètres dans la déclaration de « %D »"
 
 #: cp/pt.c:1678
 msgid "explicit specialization not preceded by `template <>'"
@@ -16066,7 +16067,7 @@ msgstr "spécialisation explicite n'est pas précédée de « template <> »"
 
 #: cp/pt.c:1691
 msgid "partial specialization `%D' of function template"
-msgstr "spécialisation partielle « %D » du canevas de fonction"
+msgstr "spécialisation partielle « %D » du patron de fonction"
 
 #: cp/pt.c:1723
 msgid "default argument specified in explicit specialization"
@@ -16074,7 +16075,7 @@ msgstr "argument par défaut spécifié dans la spécialisation explicite"
 
 #: cp/pt.c:1727
 msgid "template specialization with C linkage"
-msgstr "spécialisation de canevas avec édition de liens C"
+msgstr "spécialisation de patron avec édition de liens C"
 
 #. From [temp.expl.spec]:
 #.
@@ -16095,15 +16096,15 @@ msgstr "pas de membre de fonction « %D » déclaré dans « %T »"
 #. There are two many template parameter lists.
 #: cp/pt.c:2005
 msgid "too many template parameter lists in declaration of `%T'"
-msgstr "trop de canevass de listes de paramètres dans la déclaration de « %T »"
+msgstr "trop de patrons de listes de paramètres dans la déclaration de « %T »"
 
 #: cp/pt.c:2098
 msgid " shadows template parm `%#D'"
-msgstr " masque le paramètre du canevas « %#D »"
+msgstr " masque le paramètre du patron « %#D »"
 
 #: cp/pt.c:2495
 msgid "template parameters not used in partial specialization:"
-msgstr "paramètres du canevas ne sont pas utilisés dans la spécialisation partielle:"
+msgstr "paramètres du patron ne sont pas utilisés dans la spécialisation partielle:"
 
 #: cp/pt.c:2499
 msgid "        `%D'"
@@ -16111,16 +16112,16 @@ msgstr "        « %D »"
 
 #: cp/pt.c:2511
 msgid "partial specialization `%T' does not specialize any template arguments"
-msgstr "spécialisation partielle « %T » ne spécialise pas aucun canevas d'arguments"
+msgstr "spécialisation partielle « %T » ne spécialise pas aucun patron d'arguments"
 
 #: cp/pt.c:2536
 #, c-format
 msgid "template argument `%E' involves template parameter(s)"
-msgstr "canevas d'argument « %E » implique des paramètres du canevas"
+msgstr "patron d'argument « %E » implique des paramètres du patron"
 
 #: cp/pt.c:2580
 msgid "type `%T' of template argument `%E' depends on template parameter(s)"
-msgstr "type « %T » du canevas d'argument « %E » dépend des paramètres du canevas"
+msgstr "type « %T » du patron d'argument « %E » dépend des paramètres du patron"
 
 #: cp/pt.c:2665
 msgid "no default argument for `%D'"
@@ -16128,38 +16129,38 @@ msgstr "pas d'argument par défaut pour « %D »"
 
 #: cp/pt.c:2814
 msgid "template with C linkage"
-msgstr "canevas avec liaison C"
+msgstr "patron avec liaison C"
 
 #: cp/pt.c:2817
 msgid "template class without a name"
-msgstr "canevas de classe sans nom"
+msgstr "patron de classe sans nom"
 
 #. [temp.mem]
 #.
 #. A destructor shall not be a member template.
 #: cp/pt.c:2824
 msgid "destructor `%D' declared as member template"
-msgstr "destructeur « %D » déclaré en tant que membre du canevas"
+msgstr "destructeur « %D » déclaré en tant que membre du patron"
 
 #: cp/pt.c:2904
 msgid "`%D' does not declare a template type"
-msgstr "« %D » ne déclare pas un type de canevas"
+msgstr "« %D » ne déclare pas un type de patron"
 
 #: cp/pt.c:2910
 msgid "template definition of non-template `%#D'"
-msgstr "définition de canevas d'un non canevas « %#D »"
+msgstr "définition de patron d'un non patron « %#D »"
 
 #: cp/pt.c:2951
 msgid "expected %d levels of template parms for `%#D', got %d"
-msgstr "attendait %d niveaux de canevas de paramètres pour « %#D », obtenu %d"
+msgstr "attendait %d niveaux de patron de paramètres pour « %#D », obtenu %d"
 
 #: cp/pt.c:2963
 msgid "got %d template parameters for `%#D'"
-msgstr "a obtenu %d paramètres de canevas pour « %#D »"
+msgstr "a obtenu %d paramètres de patron pour « %#D »"
 
 #: cp/pt.c:2966
 msgid "got %d template parameters for `%#T'"
-msgstr "a obtenu %d paramètres de canevas pour « %#T »"
+msgstr "a obtenu %d paramètres de patron pour « %#T »"
 
 #: cp/pt.c:2968
 #, c-format
@@ -16168,7 +16169,7 @@ msgstr "  mais %d son requis"
 
 #: cp/pt.c:3053
 msgid "`%T' is not a template type"
-msgstr "« %T » n'est pas un type canevas"
+msgstr "« %T » n'est pas un type patron"
 
 #: cp/pt.c:3069
 msgid "previous declaration `%D'"
@@ -16177,11 +16178,11 @@ msgstr "déclaration précédente de « %D »"
 #: cp/pt.c:3070
 #, c-format
 msgid "used %d template parameter%s instead of %d"
-msgstr "utilisé %d canevass paramètre%s au lieu de %d"
+msgstr "utilisé %d patrons paramètre%s au lieu de %d"
 
 #: cp/pt.c:3086
 msgid "template parameter `%#D'"
-msgstr "canevas de paramètre « %#D »"
+msgstr "patron de paramètre « %#D »"
 
 #: cp/pt.c:3087
 msgid "redeclared here as `%#D'"
@@ -16202,7 +16203,7 @@ msgstr "%J  définition originale apparaît ici"
 #: cp/pt.c:3246
 #, c-format
 msgid "`%E' is not a valid template argument"
-msgstr "« %E » n'est pas un argument valide pour le canevas"
+msgstr "« %E » n'est pas un argument valide pour le patron"
 
 #: cp/pt.c:3250
 msgid "it must be the address of a function with external linkage"
@@ -16219,39 +16220,39 @@ msgstr "il doit être un pointeur-vers-un-membre de la forme «&X::Y»"
 #: cp/pt.c:3266
 #, c-format
 msgid "string literal %E is not a valid template argument because it is the address of an object with static linkage"
-msgstr "chaîne %E n'est pas un canevas d'argument valide parce que c'est l'adresse d'un objet avec lien statique"
+msgstr "chaîne %E n'est pas un patron d'argument valide parce que c'est l'adresse d'un objet avec lien statique"
 
 #: cp/pt.c:3281
 #, c-format
 msgid "address of non-extern `%E' cannot be used as template argument"
-msgstr "adresse du non externe « %E » ne peut être utilisé comme canevas d'argument"
+msgstr "adresse du non externe « %E » ne peut être utilisé comme patron d'argument"
 
 #: cp/pt.c:3290
 #, c-format
 msgid "non-constant `%E' cannot be used as template argument"
-msgstr "la non const « %E » ne peut être utilisé comme un canevas d'argument"
+msgstr "la non const « %E » ne peut être utilisé comme un patron d'argument"
 
 #: cp/pt.c:3298
 msgid "type '%T' cannot be used as a value for a non-type template-parameter"
-msgstr "type « %T » ne peut être utilisé comme une valeur pour un non type de paramètre de canevas"
+msgstr "type « %T » ne peut être utilisé comme une valeur pour un non type de paramètre de patron"
 
 #: cp/pt.c:3301
 msgid "invalid use of '%D' as a non-type template-argument"
-msgstr "utilisation invalide de « %D » pour un non type de paramètre de canevas"
+msgstr "utilisation invalide de « %D » pour un non type de paramètre de patron"
 
 #: cp/pt.c:3303
 #, c-format
 msgid "invalid use of '%E' as a non-type template-argument"
-msgstr "utilisation invalide de « %E » pour un non type de paramètre de canevas"
+msgstr "utilisation invalide de « %E » pour un non type de paramètre de patron"
 
 #: cp/pt.c:3668
 #, c-format
 msgid "to refer to a type member of a template parameter, use `typename %E'"
-msgstr "pour référencer un type de membre de canevas de paramètres, utiliser « typename %E »"
+msgstr "pour référencer un type de membre de patron de paramètres, utiliser « typename %E »"
 
 #: cp/pt.c:3681 cp/pt.c:3699 cp/pt.c:3738
 msgid "type/value mismatch at argument %d in template parameter list for `%D'"
-msgstr "non concordance de type/valeur pour l'argument %d dans la liste des paramètres du canevas de « %D »"
+msgstr "non concordance de type/valeur pour l'argument %d dans la liste des paramètres du patron de « %D »"
 
 #: cp/pt.c:3684
 msgid "  expected a constant of type `%T', got `%T'"
@@ -16260,7 +16261,7 @@ msgstr "  attendait une constante de type « %T », a obtenu « %T »"
 #: cp/pt.c:3688
 #, c-format
 msgid "  expected a class template, got `%E'"
-msgstr "  attendait un canevas de classe, a obtenu « %E »"
+msgstr "  attendait un patron de classe, a obtenu « %E »"
 
 #: cp/pt.c:3690
 #, c-format
@@ -16273,20 +16274,20 @@ msgstr "  attendait un type, a obtenu « %T »"
 
 #: cp/pt.c:3704
 msgid "  expected a class template, got `%T'"
-msgstr "  attendait un canevas de classe, a obtenu « %T »"
+msgstr "  attendait un patron de classe, a obtenu « %T »"
 
 #: cp/pt.c:3740
 msgid "  expected a template of type `%D', got `%D'"
-msgstr "  attendait un canevas de type « %D », a obtenu « %D »"
+msgstr "  attendait un patron de type « %D », a obtenu « %D »"
 
 #: cp/pt.c:3775
 msgid "could not convert template argument `%E' to `%T'"
-msgstr "ne peut convertir l'argument du canevas « %E » vers « %T »"
+msgstr "ne peut convertir l'argument du patron « %E » vers « %T »"
 
 #: cp/pt.c:3815
 #, c-format
 msgid "wrong number of template arguments (%d, should be %d)"
-msgstr "nombre erroné d'arguments du canevas (%d devrait être %d)"
+msgstr "nombre erroné d'arguments du patron (%d devrait être %d)"
 
 #: cp/pt.c:3819
 msgid "provided for `%D'"
@@ -16295,27 +16296,27 @@ msgstr "fournie pour « %D »"
 #: cp/pt.c:3847
 #, c-format
 msgid "template argument %d is invalid"
-msgstr "canevas de l'argument %d est invalide"
+msgstr "patron de l'argument %d est invalide"
 
 #: cp/pt.c:4068
 msgid "non-template used as template"
-msgstr "non canevas utilisé comme canevas"
+msgstr "non patron utilisé comme patron"
 
 #: cp/pt.c:4208
 msgid "non-template type `%T' used as a template"
-msgstr "type non canevas « %T » utilisé comme un canevas"
+msgstr "type non patron « %T » utilisé comme un patron"
 
 #: cp/pt.c:4210
 msgid "for template declaration `%D'"
-msgstr "pour la déclaration du canevas « %D »"
+msgstr "pour la déclaration du patron « %D »"
 
 #: cp/pt.c:4857
 msgid "template instantiation depth exceeds maximum of %d (use -ftemplate-depth-NN to increase the maximum) instantiating `%D'"
-msgstr "instantiation de la profondeur du canevas excède le maximum de %d (utiliser -ftemplate-depth-NN pour augmenter le maximum) lors de l'instanciation de « %D »"
+msgstr "instantiation de la profondeur du patron excède le maximum de %d (utiliser -ftemplate-depth-NN pour augmenter le maximum) lors de l'instanciation de « %D »"
 
 #: cp/pt.c:5296
 msgid "ambiguous class template instantiation for `%#T'"
-msgstr "instanciation ambiguë de canevas de classe pour « %#T »"
+msgstr "instanciation ambiguë de patron de classe pour « %#T »"
 
 #: cp/pt.c:5302
 msgid "%s %+#T"
@@ -16377,7 +16378,7 @@ msgstr "« %T » n'est pas une classe, struct ou un type d'union"
 #: cp/pt.c:7231
 #, c-format
 msgid "use of `%s' in template"
-msgstr "utilisation de « %s » dans le canevas"
+msgstr "utilisation de « %s » dans le patron"
 
 #: cp/pt.c:7344
 #, c-format
@@ -16417,15 +16418,15 @@ msgstr "type d'unification incomplète"
 #: cp/pt.c:10095
 #, c-format
 msgid "use of `%s' in template type unification"
-msgstr "utilisation de « %s » dans le canevas du type d'unification"
+msgstr "utilisation de « %s » dans le patron du type d'unification"
 
 #: cp/pt.c:10529 cp/pt.c:10601
 msgid "explicit instantiation of non-template `%#D'"
-msgstr "instanciation explicite d'un non canevas « %#D »"
+msgstr "instanciation explicite d'un non patron « %#D »"
 
 #: cp/pt.c:10545 cp/pt.c:10596
 msgid "no matching template for `%D' found"
-msgstr "non concordance de canevas pour « %D » repéré"
+msgstr "non concordance de patron pour « %D » repéré"
 
 #: cp/pt.c:10551
 msgid "explicit instantiation of `%#D'"
@@ -16441,15 +16442,15 @@ msgstr "ISO C++ interdit l'utilisation de « extern » sur instanciations explicit
 
 #: cp/pt.c:10614 cp/pt.c:10695
 msgid "storage class `%D' applied to template instantiation"
-msgstr "classe de stockage « %D » appliqué à l'instanciation du canevas"
+msgstr "classe de stockage « %D » appliqué à l'instanciation du patron"
 
 #: cp/pt.c:10667
 msgid "explicit instantiation of non-template type `%T'"
-msgstr "instanciation explicite de type non canevas « %T »"
+msgstr "instanciation explicite de type non patron « %T »"
 
 #: cp/pt.c:10676
 msgid "explicit instantiation of `%#T' before definition of template"
-msgstr "instanciation explicite de « %#T » avant la définition de canevas"
+msgstr "instanciation explicite de « %#T » avant la définition de patron"
 
 #: cp/pt.c:10684
 #, c-format
@@ -16466,7 +16467,7 @@ msgstr "instanciation explicite de « %D » mais pas de définition disponible"
 
 #: cp/pt.c:11543
 msgid "`%#T' is not a valid type for a template constant parameter"
-msgstr "« %#T » n'a pas un type valide pour un canevas de parametre de constante"
+msgstr "« %#T » n'a pas un type valide pour un patron de parametre de constante"
 
 #: cp/repo.c:259
 msgid "-frepo must be used with -c"
@@ -16589,23 +16590,23 @@ msgstr "« %E » n'est pas un type « %T »"
 
 #: cp/semantics.c:1933
 msgid "template type parameters must use the keyword `class' or `typename'"
-msgstr "canevas de type de paramètres doit utiliser le mot clé « class» ou «typename »"
+msgstr "patron de type de paramètres doit utiliser le mot clé « class» ou «typename »"
 
 #: cp/semantics.c:1977
 msgid "invalid use of type `%T' as a default value for a template template-parameter"
-msgstr "utilisation invalide du type « %T » comme valeur par défaut pour un canevas de paramètres de canevas"
+msgstr "utilisation invalide du type « %T » comme valeur par défaut pour un patron de paramètres de patron"
 
 #: cp/semantics.c:1980
 msgid "invalid use of `%D' as a default value for a template template-parameter"
-msgstr "utilisation invalide de « %D » comme valeur par défaut pour un canevas de paramètres de canevas"
+msgstr "utilisation invalide de « %D » comme valeur par défaut pour un patron de paramètres de patron"
 
 #: cp/semantics.c:1984
 msgid "invalid default argument for a template template parameter"
-msgstr "utilisation invalide d'argumenet pour un canevas de paramètres de canevas"
+msgstr "utilisation invalide d'argumenet pour un patron de paramètres de patron"
 
 #: cp/semantics.c:2019
 msgid "definition of `%#T' inside template parameter list"
-msgstr "définition de « %#T » à l'intérieur d'un canevas de liste de paramètres"
+msgstr "définition de « %#T » à l'intérieur d'un patron de liste de paramètres"
 
 #: cp/semantics.c:2030
 msgid "invalid definition of qualified type `%T'"
@@ -16625,7 +16626,7 @@ msgstr "classe de base « %T » a des qualificateurs cv"
 
 #: cp/semantics.c:2290
 msgid "multiple declarators in template declaration"
-msgstr "déclarateurs  multiples dans la déclaration de canevas"
+msgstr "déclarateurs  multiples dans la déclaration de patron"
 
 #: cp/semantics.c:2301
 msgid "incomplete type `%T' used in nested name specifier"
@@ -16641,7 +16642,7 @@ msgstr "« %D » n'est pas un membre de « %D »"
 
 #: cp/semantics.c:2431
 msgid "template parameter `%D' of type `%T' is not allowed in an integral constant expression because it is not of integral or enumeration type"
-msgstr "paramètre « %D » du canevas du type « %T » ne sont pas permises dans une expression intégrale de constante parce qu'elle n'est pas intégral ou un type énumération"
+msgstr "paramètre « %D » du patron du type « %T » ne sont pas permises dans une expression intégrale de constante parce qu'elle n'est pas intégral ou un type énumération"
 
 #: cp/semantics.c:2584
 msgid "`%D' cannot appear in a constant-expression"
@@ -16653,7 +16654,7 @@ msgstr "utilisation d'un espace de dnomes « %D » comme expression"
 
 #: cp/semantics.c:2598
 msgid "use of class template `%T' as expression"
-msgstr "utilisation du canevas de classe « %T » comme expression"
+msgstr "utilisation du patron de classe « %T » comme expression"
 
 #. Ambiguous reference to base members.
 #: cp/semantics.c:2604
@@ -16796,7 +16797,7 @@ msgstr "« %D » n'a pas de membre nommé « %E »"
 
 #: cp/typeck.c:1969
 msgid "`%D' is not a member template function"
-msgstr "« %D » n'est pas une membre du canevas de fonction"
+msgstr "« %D » n'est pas une membre du patron de fonction"
 
 #. A pointer to incomplete type (other than cv void) can be
 #. dereferenced [expr.unary.op]/1
@@ -19786,7 +19787,7 @@ msgstr "Avertir à propos des déclarations \"extern\" qui n'est pas dans l'étendu
 
 #: /home/mitchell/dev/gcc-3.4/objdir/gcc/options.c:243
 msgid "Warn when non-templatized friend functions are declared within a template"
-msgstr "Avertir lorsque des fonctions amis sans canevas sont déclarés à l'intérieur d'un canevas"
+msgstr "Avertir lorsque des fonctions amis sans patron sont déclarés à l'intérieur d'un patron"
 
 #: /home/mitchell/dev/gcc-3.4/objdir/gcc/options.c:246
 msgid "Warn about non-virtual destructors"
@@ -19982,7 +19983,7 @@ msgstr "Aligner le début des boucles"
 
 #: /home/mitchell/dev/gcc-3.4/objdir/gcc/options.c:429
 msgid "Change when template instances are emitted"
-msgstr "Changer lorsque les instances du canevas sont produites"
+msgstr "Changer lorsque les instances du patron sont produites"
 
 #: /home/mitchell/dev/gcc-3.4/objdir/gcc/options.c:432
 msgid "Specify that arguments may alias each other and globals"
@@ -20231,11 +20232,11 @@ msgstr "Exporter les fonctions même si elles peuvent être enligne"
 
 #: /home/mitchell/dev/gcc-3.4/objdir/gcc/options.c:648
 msgid "Emit implicit instantiations of inline templates"
-msgstr "Produire les instanciations explicites de canevas enligne"
+msgstr "Produire les instanciations explicites de patron enligne"
 
 #: /home/mitchell/dev/gcc-3.4/objdir/gcc/options.c:651
 msgid "Emit implicit instantiations of templates"
-msgstr "Produire les instanciations explicites de canevas"
+msgstr "Produire les instanciations explicites de patron"
 
 #: /home/mitchell/dev/gcc-3.4/objdir/gcc/options.c:654
 msgid "Do not generate .size directives"
@@ -20449,7 +20450,7 @@ msgstr "Utiliser le mode Fix-and-=Continue pour indique que des fichiers objets 
 
 #: /home/mitchell/dev/gcc-3.4/objdir/gcc/options.c:834
 msgid "Enable automatic template instantiation"
-msgstr "Autoriser l'instanciation automatique de canevas"
+msgstr "Autoriser l'instanciation automatique de patron"
 
 #: /home/mitchell/dev/gcc-3.4/objdir/gcc/options.c:837
 msgid "Add a common subexpression elimination pass after loop optimizations"
@@ -20585,7 +20586,7 @@ msgstr "-ftabstop=<nombre>\tfixer la distance de la tabulation des colonnes dans
 
 #: /home/mitchell/dev/gcc-3.4/objdir/gcc/options.c:948
 msgid "-ftemplate-depth-<number>\tSpecify maximum template instantiation depth"
-msgstr "-ftemplate-depth-<nombre>\tspécifier la profondeur maximale d'instanciation de canevas"
+msgstr "-ftemplate-depth-<nombre>\tspécifier la profondeur maximale d'instanciation de patron"
 
 #: /home/mitchell/dev/gcc-3.4/objdir/gcc/options.c:951
 msgid "Create data files needed by \"gcov\""
@@ -22475,10 +22476,10 @@ msgstr "mno-cygwin et mno-win32 ne sont pas compatibles"
 #~ msgstr "point-virgule manquant après la déclaration %#T"
 
 #~ msgid "template `%#D' instantiated in file without #pragma interface"
-#~ msgstr "canevas « %#D » instancié dans le fichier sans interface #pragma"
+#~ msgstr "patron « %#D » instancié dans le fichier sans interface #pragma"
 
 #~ msgid "template `%#D' defined in file without #pragma interface"
-#~ msgstr "canevas « %#D » défini dans le fichier sans interface #pragma"
+#~ msgstr "patron « %#D » défini dans le fichier sans interface #pragma"
 
 #~ msgid "parser may be lost: is there a '{' missing somewhere?"
 #~ msgstr "analyseur syntaxique est perdu: y-a-t-il un «{» manquant quelque part?"
@@ -22562,7 +22563,7 @@ msgstr "mno-cygwin et mno-win32 ne sont pas compatibles"
 #~ msgstr "«::%D» non déclaré (première utilisation ici)"
 
 #~ msgid "real-valued template parameters when cross-compiling"
-#~ msgstr "canevas de paramètre en valeur réelle lors de la compilation croisée"
+#~ msgstr "patron de paramètre en valeur réelle lors de la compilation croisée"
 
 #~ msgid "use of linkage spec `%D' is different from previous spec `%D'"
 #~ msgstr "utilisation de spéc de liaisons « %D » est différente de la spec précédente « %D »"
@@ -22571,7 +22572,7 @@ msgstr "mno-cygwin et mno-win32 ne sont pas compatibles"
 #~ msgstr "pas d'initialiseur de base ou membre donné après «:»"
 
 #~ msgid "use of template qualifier outside template"
-#~ msgstr "utilisation d'un qualificateur de canevas en dehors d'un canevas"
+#~ msgstr "utilisation d'un qualificateur de patron en dehors d'un patron"
 
 #~ msgid "ISO C++ forbids an empty condition for `%s'"
 #~ msgstr "ISO C++ interdit une condition vide pour « %s »"
@@ -22661,7 +22662,7 @@ msgstr "mno-cygwin et mno-win32 ne sont pas compatibles"
 #~ msgstr "spécificateur de type omis pour le paramètre « %E »"
 
 #~ msgid "type `%T' composed from a local class is not a valid template-argument"
-#~ msgstr "type « %T » composé à partir d'une classe locale n'est pas un canevas d'argument valide"
+#~ msgstr "type « %T » composé à partir d'une classe locale n'est pas un patron d'argument valide"
 
 #~ msgid "adjusting pointers for covariant returns"
 #~ msgstr "ajuster les pointeurs pour des retours co-variants"
@@ -22754,7 +22755,7 @@ msgstr "mno-cygwin et mno-win32 ne sont pas compatibles"
 #~ msgstr "ISO C++ interdit la définition de types à l'intérieur de %s"
 
 #~ msgid "Only emit explicit template instatiations"
-#~ msgstr "Produire seulement des instanciations explicites du canevas"
+#~ msgstr "Produire seulement des instanciations explicites du patron"
 
 #~ msgid "Recognize and/bitand/bitor/compl/not/or/xor"
 #~ msgstr "Reconnaître and/bitand/bitor/compl/not/or/xor"
@@ -23599,7 +23600,7 @@ msgstr "mno-cygwin et mno-win32 ne sont pas compatibles"
 #~ msgstr "utilisation invalide du type decl « %#D » comme expression"
 
 #~ msgid "invalid use of template `%#D' as expression"
-#~ msgstr "utilisation invalide du canevas « %#D » comme expression"
+#~ msgstr "utilisation invalide du patron « %#D » comme expression"
 
 #~ msgid "invalid offsetof from non-POD type `%#T'; use pointer to member instead"
 #~ msgstr "offsetof invalide du type non POD « %#T »; utiliser un pointeur vers un membre à la place"
@@ -26200,7 +26201,7 @@ msgstr "mno-cygwin et mno-win32 ne sont pas compatibles"
 #~ msgstr "\\x%x"
 
 #~ msgid "invalid use of template `%D'"
-#~ msgstr "utilisation invalide du canevas « %D »"
+#~ msgstr "utilisation invalide du patron « %D »"
 
 #~ msgid "qualified name does not name a class"
 #~ msgstr "nom qualifié ne nomme pas une classe"
