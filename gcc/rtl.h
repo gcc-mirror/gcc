@@ -2199,6 +2199,8 @@ extern void regclass (rtx, int, FILE *);
 extern void reg_scan (rtx, unsigned int, int);
 extern void reg_scan_update (rtx, rtx, unsigned int);
 extern void fix_register (const char *, int, int);
+extern void init_subregs_of_mode (void);
+extern void record_subregs_of_mode (rtx);
 #ifdef HARD_CONST
 extern void cannot_change_mode_set_regs (HARD_REG_SET *,
 					 enum machine_mode, unsigned int);

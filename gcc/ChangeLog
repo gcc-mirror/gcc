@@ -1,3 +1,17 @@
+2004-10-12  Richard Henderson  <rth@redhat.com>
+
+	PR rtl-opt/17503
+	* regclass.c (subregs_of_mode): Turn into an htab.  Make static.
+	(som_hash, som_eq): New.
+	(init_subregs_of_mode, record_subregs_of_mode): New.
+	(cannot_change_mode_set_regs): Rewrite for htab implementation.
+	(invalid_mode_change_p): Likewise.
+	* combine.c (gen_lowpart_for_combine): Use record_subregs_of_mode.
+	* flow.c (mark_used_regs): Likewise.
+	(life_analysis): Use init_subregs_of_mode.
+	* regs.h (subregs_of_mode): Remove.
+	* rtl.h (init_subregs_of_mode, record_subregs_of_mode): Declare.
+
 2004-10-10  Roger Sayle  <roger@eyesopen.com>
 
 	PR rtl-optimization/17853
@@ -89,12 +103,12 @@
 
 2004-09-30  Richard Henderson  <rth@redhat.com>
  
-        * unwind-dw2.c (_Unwind_GetGR): Honor DWARF_ZERO_REG.
-        * doc/tm.texi (DWARF_ZERO_REG): New.
+	* unwind-dw2.c (_Unwind_GetGR): Honor DWARF_ZERO_REG.
+	* doc/tm.texi (DWARF_ZERO_REG): New.
  
-        * config/alpha/alpha.c (alpha_sa_mask, alpha_expand_prologue,
-        alpha_expand_epilogue): Revert 2003-09-30 change to store zero.
-        * config/alpha/alpha.h (DWARF_ZERO_REG): New.
+	* config/alpha/alpha.c (alpha_sa_mask, alpha_expand_prologue,
+	alpha_expand_epilogue): Revert 2003-09-30 change to store zero.
+	* config/alpha/alpha.h (DWARF_ZERO_REG): New.
 
 2004-09-29  David Edelsohn  <edelsohn@gnu.org>
 

@@ -66,8 +66,6 @@ typedef struct reg_info_def
 
 extern varray_type reg_n_info;
 
-extern bitmap_head subregs_of_mode;
-
 /* Indexed by n, gives number of times (REG n) is used or set.  */
 
 #define REG_N_REFS(N) (VARRAY_REG (reg_n_info, N)->refs)
