@@ -1,5 +1,5 @@
 /* { dg-do compile { target i?86-*-* x86_64-*-* } } */
-/* { dg-options "-O2 -msse2 -march=k8" } */
+/* { dg-options "-O2 -msse2 -march=athlon" } */
 /* { dg-final { scan-assembler "andpd.*magic" } } */
 /* { dg-final { scan-assembler "andnpd.*magic" } } */
 /* { dg-final { scan-assembler "xorpd.*magic" } } */
