@@ -1,3 +1,7 @@
+2003-10-31  Richard Earnshaw  <rearnsha@arm.com>
+
+	* include/private/gcconfig.h: Re-install change of 2003-04-16.
+
 2003-10-20  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
 
 	* mips_sgi_mach_dep.s: Use _ABIO32 instead of external
