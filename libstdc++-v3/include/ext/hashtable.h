@@ -53,14 +53,14 @@
  *
  */
 
-/** @file ext/stl_hashtable.h
+/** @file ext/hashtable.h
  *  This file is a GNU extension to the Standard C++ Library (possibly
  *  containing extensions from the HP/SGI STL subset).  You should only
  *  include this header if you are using GCC 3 or later.
  */
 
-#ifndef __SGI_STL_INTERNAL_HASHTABLE_H
-#define __SGI_STL_INTERNAL_HASHTABLE_H
+#ifndef _HASHTABLE_H
+#define _HASHTABLE_H 1
 
 // Hashtable class, used to implement the hashed associative containers
 // hash_set, hash_map, hash_multiset, and hash_multimap.
@@ -69,7 +69,7 @@
 #include <iterator>
 #include <bits/stl_algo.h>
 #include <bits/stl_function.h>
-#include <ext/stl_hash_fun.h>
+#include <ext/hash_fun.h>
 
 namespace __gnu_cxx
 {
@@ -210,13 +210,14 @@ bool operator==(const hashtable<_Val,_Key,_HF,_Ex,_Eq,_All>& __ht1,
                 const hashtable<_Val,_Key,_HF,_Ex,_Eq,_All>& __ht2);
 
 
-// Hashtables handle allocators a bit differently than other containers
-//  do.  If we're using standard-conforming allocators, then a hashtable
-//  unconditionally has a member variable to hold its allocator, even if
-//  it so happens that all instances of the allocator type are identical.
-// This is because, for hashtables, this extra storage is negligible.  
-//  Additionally, a base class wouldn't serve any other purposes; it 
-//  wouldn't, for example, simplify the exception-handling code.
+// Hashtables handle allocators a bit differently than other
+// containers do.  If we're using standard-conforming allocators, then
+// a hashtable unconditionally has a member variable to hold its
+// allocator, even if it so happens that all instances of the
+// allocator type are identical.  This is because, for hashtables,
+// this extra storage is negligible.  Additionally, a base class
+// wouldn't serve any other purposes; it wouldn't, for example,
+// simplify the exception-handling code.
 
 template <class _Val, class _Key, class _HashFcn,
           class _ExtractKey, class _EqualKey, class _Alloc>
@@ -986,11 +987,6 @@ void hashtable<_Val,_Key,_HF,_Ex,_Eq,_All>
       __throw_exception_again;
     }
 }
-
 } // namespace __gnu_cxx
 
-#endif /* __SGI_STL_INTERNAL_HASHTABLE_H */
-
-// Local Variables:
-// mode:C++
-// End:
+#endif

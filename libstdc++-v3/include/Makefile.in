@@ -126,6 +126,7 @@ enable_shared = @enable_shared@
 enable_static = @enable_static@
 glibcpp_CXX = @glibcpp_CXX@
 glibcpp_MOFILES = @glibcpp_MOFILES@
+glibcpp_PCHFLAGS = @glibcpp_PCHFLAGS@
 glibcpp_POFILES = @glibcpp_POFILES@
 glibcpp_basedir = @glibcpp_basedir@
 glibcpp_localedir = @glibcpp_localedir@
@@ -348,9 +349,8 @@ ext_headers = \
 	${ext_srcdir}/rope \
 	${ext_srcdir}/ropeimpl.h \
 	${ext_srcdir}/slist \
-	${ext_srcdir}/stl_hash_fun.h \
-	${ext_srcdir}/stl_hashtable.h \
-	${ext_srcdir}/stl_rope.h
+	${ext_srcdir}/hash_fun.h \
+	${ext_srcdir}/hashtable.h 
 
 
 # This is the common subset of files that all three "C" header models use.

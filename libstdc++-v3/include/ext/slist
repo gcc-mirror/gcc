@@ -47,8 +47,8 @@
  *  include this header if you are using GCC 3 or later.
  */
 
-#ifndef __SGI_STL_INTERNAL_SLIST_H
-#define __SGI_STL_INTERNAL_SLIST_H
+#ifndef _SLIST
+#define _SLIST 1
 
 #include <bits/stl_algobase.h>
 #include <bits/stl_alloc.h>
@@ -950,8 +950,4 @@ public:
 
 } // namespace std
 
-#endif /* __SGI_STL_INTERNAL_SLIST_H */
-
-// Local Variables:
-// mode:C++
-// End:
+#endif 

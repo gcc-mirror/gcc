@@ -60,19 +60,20 @@
  */
 
 #ifndef _EXT_ITERATOR
-#define _EXT_ITERATOR
+#define _EXT_ITERATOR 1
 
 #pragma GCC system_header
+
 #include <bits/concept_check.h>
 #include <iterator>
 
 namespace __gnu_cxx
 {
-
-  // There are two signatures for distance.  In addition to the one taking
-  // two iterators and returning a result, there is another taking two
-  // iterators and a reference-to-result variable, and returning nothing.
-  // The latter seems to be an SGI extension.   -- pedwards
+  // There are two signatures for distance.  In addition to the one
+  // taking two iterators and returning a result, there is another
+  // taking two iterators and a reference-to-result variable, and
+  // returning nothing.  The latter seems to be an SGI extension.  
+  // -- pedwards
   template<typename _InputIterator, typename _Distance>
     inline void
     __distance(_InputIterator __first, _InputIterator __last,
@@ -106,8 +107,7 @@ namespace __gnu_cxx
       // concept requirements -- taken care of in __distance
       __distance(__first, __last, __n, std::__iterator_category(__first));
     }
-
 } // namespace __gnu_cxx
 
-#endif /* _EXT_ITERATOR */
+#endif 
 

@@ -61,7 +61,7 @@
 #define _CPP_BACKWARD_HASHTABLE_H 1
 
 #include "backward_warning.h"
-#include <ext/stl_hashtable.h>
+#include <ext/hashtable.h>
 #include "algo.h"
 #include "alloc.h"
 #include "vector.h"

@@ -59,39 +59,39 @@
  *  include this header if you are using GCC 3 or later.
  */
 
-#ifndef _EXT_RB_TREE
-#define _EXT_RB_TREE
+#ifndef _RB_TREE
+#define _RB_TREE 1
 
 #pragma GCC system_header
+
 #include <bits/stl_tree.h>
 
 namespace __gnu_cxx
 {
-using std::_Rb_tree;
-using std::allocator;
-
-// Class rb_tree is not part of the C++ standard.  It is provided for
-// compatibility with the HP STL.
-
-/**
- *  This is an SGI extension.
- *  @ingroup SGIextensions
- *  @doctodo
-*/
-template <class _Key, class _Value, class _KeyOfValue, class _Compare,
-          class _Alloc = allocator<_Value> >
-struct rb_tree : public _Rb_tree<_Key, _Value, _KeyOfValue, _Compare, _Alloc>
-{
-  typedef _Rb_tree<_Key, _Value, _KeyOfValue, _Compare, _Alloc> _Base;
-  typedef typename _Base::allocator_type allocator_type;
-
-  rb_tree(const _Compare& __comp = _Compare(),
-          const allocator_type& __a = allocator_type())
-    : _Base(__comp, __a) {}
+  using std::_Rb_tree;
+  using std::allocator;
   
-  ~rb_tree() {}
-};
+  // Class rb_tree is not part of the C++ standard.  It is provided for
+  // compatibility with the HP STL.
 
+  /**
+   *  This is an SGI extension.
+   *  @ingroup SGIextensions
+   *  @doctodo
+   */
+  template <class _Key, class _Value, class _KeyOfValue, class _Compare,
+	    class _Alloc = allocator<_Value> >
+  struct rb_tree : public _Rb_tree<_Key, _Value, _KeyOfValue, _Compare, _Alloc>
+  {
+    typedef _Rb_tree<_Key, _Value, _KeyOfValue, _Compare, _Alloc> _Base;
+    typedef typename _Base::allocator_type allocator_type;
+    
+    rb_tree(const _Compare& __comp = _Compare(),
+	    const allocator_type& __a = allocator_type())
+      : _Base(__comp, __a) { }
+    
+    ~rb_tree() { }
+  };
 } // namespace __gnu_cxx
 
-#endif /* _EXT_RB_TREE */
+#endif 

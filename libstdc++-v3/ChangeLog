@@ -1,3 +1,27 @@
+2003-06-06  Benjamin Kosnik  <bkoz@redhat.com>
+
+	* include/bits/stl_alloc.h: Cleanups.
+	* include/ext/functional: Same.
+	* include/ext/hash_map: Same.
+	* include/ext/hash_set: Same.
+	* include/ext/iterator: Same.
+	* include/ext/memory: Same.
+	* include/ext/numeric: Same.
+	* include/ext/rb_tree: Same.
+	* include/ext/ropeimpl.h: Same.
+	* include/ext/slist: Same.
+	* include/ext/stdio_filebuf.h: Same.
+	* include/ext/stdio_sync_filebuf.h: Same.
+	* include/ext/stl_rope.h: Move to...
+	* include/ext/rope: ...here.
+	* include/ext/stl_hash_fun.h: Move to...
+	* include/ext/hash_fun.h: ...here.
+	* include/ext/stl_hashtable.h: Move to...
+	* include/ext/hashtable.h: ...here.
+	* include/backward/hashtable.h: Reflect new names.
+	* include/Makefile.am: Same.
+	* include/Makefile.in: Regenerated.
+
 2003-06-05  Benjamin Kosnik  <bkoz@redhat.com>
 
 	PR libstdc++/9024	
