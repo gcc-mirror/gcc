@@ -1892,6 +1892,9 @@ layout_class_method (tree this_class, tree super_class,
   tree method_name = DECL_NAME (method_decl);
 
   TREE_PUBLIC (method_decl) = 1;
+  /* Considered external until we know what classes are being
+     compiled into this object file.  */
+  DECL_EXTERNAL (method_decl) = 1;
 
   /* This is a good occasion to mangle the method's name */
   SET_DECL_ASSEMBLER_NAME (method_decl,
