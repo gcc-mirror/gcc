@@ -1,3 +1,7 @@
+Sun May 24 11:58:37 1998  Andreas Schwab  <schwab@issan.informatik.uni-dortmund.de>
+
+	* m68k.md (adddi3, subdi3): Properly negate the DImode constant.
+
 Sun May 24 11:30:08 1998  Torbjorn Granlund  <tege@matematik.su.se>
 
 	* m68k/lb1sf68.asm (__addsf3): Fix typo in exg on coldfire.
