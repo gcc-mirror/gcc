@@ -22,7 +22,7 @@
 #
 #
 # This script is used to calculate two basic properties of the branch prediction
-# heuristics - coverage and hitrate.  Coverage is number of execution of a given
+# heuristics - coverage and hitrate.  Coverage is number of executions of a given
 # branch matched by the heuristics and hitrate is probability that once branch is
 # predicted as taken it is really taken.
 #
@@ -30,7 +30,7 @@
 # may be directly used in predict.c.
 #
 # Usage:
-#  Step 1: compile and profile your program.  You need to use -fprofile-arcs
+#  Step 1: Compile and profile your program.  You need to use -fprofile-arcs
 #    flag to get the profiles
 #  Step 2: Generate log files.  The information about given heuristics are
 #    saved into *.life dumps.  You need to pass the -df switch to the compiler as well
