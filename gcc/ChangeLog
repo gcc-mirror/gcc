@@ -1,5 +1,12 @@
 2005-01-07  Jakub Jelinek  <jakub@redhat.com>
 
+	PR rtl-optimization/18861
+	* cfgbuild.c (BLOCK_USED_BY_TABLEJUMP): Define.
+	(FULL_STATE): Define.
+	(mark_tablejump_edge): New function.
+	(purge_dead_tablejump_edges): New function.
+	(find_bb_boundaries): Use it.
+
 	PR tree-optimization/18828
 	* builtins.c (expand_builtin_next_arg): Remove argument and all
 	the argument checking.

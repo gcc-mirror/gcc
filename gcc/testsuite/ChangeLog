@@ -1,5 +1,8 @@
 2005-01-07  Jakub Jelinek  <jakub@redhat.com>
 
+	PR rtl-optimization/18861
+	* gcc.dg/20050105-1.c: New test.
+
 	PR tree-optimization/18828
 	* gcc.dg/20050105-2.c: New test.
 
