@@ -2791,8 +2791,8 @@ expand_assignment (to, from, want_value, suggest_reg)
       int alignment;
 
       push_temp_slots ();
-      tem = get_inner_reference (to, &bitsize, &bitpos, &offset,
-				      &mode1, &unsignedp, &volatilep);
+      tem = get_inner_reference (to, &bitsize, &bitpos, &offset, &mode1,
+				 &unsignedp, &volatilep, &alignment);
 
       /* If we are going to use store_bit_field and extract_bit_field,
 	 make sure to_rtx will be safe for multiple use.  */
@@ -2800,7 +2800,6 @@ expand_assignment (to, from, want_value, suggest_reg)
       if (mode1 == VOIDmode && want_value)
 	tem = stabilize_reference (tem);
 
-      alignment = TYPE_ALIGN (TREE_TYPE (tem)) / BITS_PER_UNIT;
       to_rtx = expand_expr (tem, NULL_RTX, VOIDmode, 0);
       if (offset != 0)
 	{
@@ -4188,6 +4187,9 @@ get_inner_unaligned_p (exp)
    giving the variable offset (in units) in *POFFSET.
    This offset is in addition to the bit position.
    If the position is not variable, we store 0 in *POFFSET.
+   We set *PALIGNMENT to the alignment in bytes of the address that will be
+   computed.  This is the alignment of the thing we return if *POFFSET
+   is zero, but can be more less strictly aligned if *POFFSET is nonzero.
 
    If any of the extraction expressions is volatile,
    we store 1 in *PVOLATILEP.  Otherwise we don't change that.
@@ -4198,11 +4200,11 @@ get_inner_unaligned_p (exp)
 
    If the field describes a variable-sized object, *PMODE is set to
    VOIDmode and *PBITSIZE is set to -1.  An access cannot be made in
-   this case, but the address of the object can be found.  */
+   this case, but the address of the object can be found.   */
 
 tree
 get_inner_reference (exp, pbitsize, pbitpos, poffset, pmode,
-		     punsignedp, pvolatilep)
+		     punsignedp, pvolatilep, palignment)
      tree exp;
      int *pbitsize;
      int *pbitpos;
@@ -4210,11 +4212,13 @@ get_inner_reference (exp, pbitsize, pbitpos, poffset, pmode,
      enum machine_mode *pmode;
      int *punsignedp;
      int *pvolatilep;
+     int *palignment;
 {
   tree orig_exp = exp;
   tree size_tree = 0;
   enum machine_mode mode = VOIDmode;
   tree offset = integer_zero_node;
+  int alignment = BIGGEST_ALIGNMENT;
 
   if (TREE_CODE (exp) == COMPONENT_REF)
     {
@@ -4323,8 +4327,19 @@ get_inner_reference (exp, pbitsize, pbitpos, poffset, pmode,
       /* If any reference in the chain is volatile, the effect is volatile.  */
       if (TREE_THIS_VOLATILE (exp))
 	*pvolatilep = 1;
+
+      /* If the offset is non-constant already, then we can't assume any
+	 alignment more than the alignment here.  */
+      if (! integer_zerop (offset))
+	alignment = MIN (alignment, TYPE_ALIGN (TREE_TYPE (exp)));
+
       exp = TREE_OPERAND (exp, 0);
     }
+
+  if (TREE_CODE_CLASS (TREE_CODE (exp)) == 'd')
+    alignment = MIN (alignment, DECL_ALIGN (exp));
+  else
+    alignment = MIN (alignment, TYPE_ALIGN (TREE_TYPE (exp)));
 
   if (integer_zerop (offset))
     offset = 0;
@@ -4334,6 +4349,7 @@ get_inner_reference (exp, pbitsize, pbitpos, poffset, pmode,
 
   *pmode = mode;
   *poffset = offset;
+  *palignment = alignment / BITS_PER_UNIT;
   return exp;
 }
 
@@ -5461,9 +5477,10 @@ expand_expr (exp, target, tmode, modifier)
 	int bitpos;
 	tree offset;
 	int volatilep = 0;
-	tree tem = get_inner_reference (exp, &bitsize, &bitpos, &offset,
-					&mode1, &unsignedp, &volatilep);
 	int alignment;
+	tree tem = get_inner_reference (exp, &bitsize, &bitpos, &offset,
+					&mode1, &unsignedp, &volatilep,
+					&alignment);
 
 	/* If we got back the original object, something is wrong.  Perhaps
 	   we are evaluating an expression too early.  In any event, don't
@@ -5494,7 +5511,6 @@ expand_expr (exp, target, tmode, modifier)
 	      op0 = validize_mem (force_const_mem (mode, op0));
 	  }
 
-	alignment = TYPE_ALIGN (TREE_TYPE (tem)) / BITS_PER_UNIT;
 	if (offset != 0)
 	  {
 	    rtx offset_rtx = expand_expr (offset, NULL_RTX, VOIDmode, 0);
@@ -10154,11 +10170,13 @@ do_jump (exp, if_false_label, if_true_label)
 	tree type;
 	tree offset;
 	int volatilep = 0;
+	int alignment;
 
 	/* Get description of this reference.  We don't actually care
 	   about the underlying object here.  */
 	get_inner_reference (exp, &bitsize, &bitpos, &offset,
-			     &mode, &unsignedp, &volatilep);
+			     &mode, &unsignedp, &volatilep,
+			     &alignment);
 
 	type = type_for_size (bitsize, unsignedp);
 	if (! SLOW_BYTE_ACCESS
