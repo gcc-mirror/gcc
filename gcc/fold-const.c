@@ -4816,7 +4816,7 @@ fold (expr)
      The also optimizes non-constant cases that used to be done in
      expand_expr.
 
-     Before we do that, see if this is a BIT_AND_EXPR or a BIT_OR_EXPR,
+     Before we do that, see if this is a BIT_AND_EXPR or a BIT_IOR_EXPR,
      one of the operands is a comparison and the other is a comparison, a
      BIT_AND_EXPR with the constant 1, or a truth value.  In that case, the
      code below would make the expression more complex.  Change it to a

@@ -1,3 +1,7 @@
+2000-07-07  Kazu Hirata  <kazu@hxi.com>
+
+	* fold-const.c (fold): Fix a comment typo.
+
 2000-07-07  Neil Booth  <NeilB@earthling.net>
 
 	* cpp.texi: Update to new lexer.
