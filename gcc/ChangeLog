@@ -1,3 +1,11 @@
+2004-12-15  Daniel Berlin  <dberlin@dberlin.org>
+	
+	* cfgloop.c (flow_loops_dump): Don't print out levels.
+	(flow_loops_find): Don't set loop->levels.
+	(flow_loops_level_compute): Make void.
+	* cfgloop.h (struct loops): Remove levels member.
+	Add comment about loops in parray possibly being NULL.
+
 2004-12-15  Alexandre Oliva  <aoliva@redhat.com>
 
 	* reload.c (SMALL_REGISTER_CLASS_P): New.

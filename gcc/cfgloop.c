@@ -46,7 +46,7 @@ static int flow_loop_nodes_find (basic_block, struct loop *);
 static void flow_loop_pre_header_scan (struct loop *);
 static basic_block flow_loop_pre_header_find (basic_block);
 static int flow_loop_level_compute (struct loop *);
-static int flow_loops_level_compute (struct loops *);
+static void flow_loops_level_compute (struct loops *);
 static void establish_preds (struct loop *);
 static void canonicalize_loop_headers (void);
 static bool glb_enum_p (basic_block, void *);
@@ -173,8 +173,7 @@ flow_loops_dump (const struct loops *loops, FILE *file, void (*loop_dump_aux) (c
   if (! num_loops || ! file)
     return;
 
-  fprintf (file, ";; %d loops found, %d levels\n",
-	   num_loops, loops->levels);
+  fprintf (file, ";; %d loops found\n", num_loops);
 
   for (i = 0; i < num_loops; i++)
     {
@@ -592,10 +591,10 @@ flow_loop_level_compute (struct loop *loop)
    hierarchy tree specified by LOOPS.  Return the maximum enclosed loop
    level.  */
 
-static int
+static void
 flow_loops_level_compute (struct loops *loops)
 {
-  return flow_loop_level_compute (loops->tree_root);
+  flow_loop_level_compute (loops->tree_root);
 }
 
 /* Scan a single natural loop specified by LOOP collecting information
@@ -953,7 +952,7 @@ flow_loops_find (struct loops *loops, int flags)
 
       /* Assign the loop nesting depth and enclosed loop level for each
 	 loop.  */
-      loops->levels = flow_loops_level_compute (loops);
+      flow_loops_level_compute (loops);
 
       /* Scan the loops.  */
       for (i = 1; i < num_loops; i++)
