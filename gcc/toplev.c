@@ -1827,7 +1827,7 @@ xmalloc (size)
      unsigned size;
 {
   register char *value = (char *) malloc (size);
-  if (value == 0)
+  if (value == 0 && size != 0)
     fatal ("virtual memory exhausted");
   return value;
 }
