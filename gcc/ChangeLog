@@ -1,3 +1,10 @@
+2002-09-16  Geoffrey Keating  <geoffk@redhat.com>
+
+	* config/rs6000/rs6000.c (build_mask64_2_operands): Suppress
+	warnings about unused operands when HOST_BITS_PER_WIDE_INT is
+	< 64.
+	(rs6000_emit_cmove): Use real_isinf not target_isinf.
+
 2002-09-16  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* calls.c (emit_library_call_value_1): Don't refer to
