@@ -1,3 +1,8 @@
+2003-06-14  Richard Earnshaw  <rearnsha@arm.com>
+
+	PR target/11183
+	* arm.c (output_move_double): Pass SImode to adjust_address.
+
 2003-06-14  Neil Booth  <neil@daikokuya.co.uk>
 
 	* Makefile.in: Update to use common.opt and lang_opt_files.
