@@ -6863,8 +6863,9 @@
 
 (define_insn "tls_global_dynamic"
   [(set (match_operand:SI 0 "register_operand" "=&z")
-	(unspec:SI [(match_operand:SI 1 "" "")]
-		    UNSPEC_TLSGD))
+	(call (unspec:SI [(match_operand:SI 1 "" "")]
+			  UNSPEC_TLSGD)
+	      (const_int 0)))
    (use (reg:PSI FPSCR_REG))
    (use (reg:SI PIC_REG))
    (clobber (reg:SI PR_REG))
@@ -6891,8 +6892,9 @@ mov.l\\t1f,r4\\n\\
 
 (define_insn "tls_local_dynamic"
   [(set (match_operand:SI 0 "register_operand" "=&z")
-	(unspec:SI [(match_operand:SI 1 "" "")]
-		    UNSPEC_TLSLDM))
+	(call (unspec:SI [(match_operand:SI 1 "" "")]
+			  UNSPEC_TLSLDM)
+	      (const_int 0)))
    (use (reg:PSI FPSCR_REG))
    (use (reg:SI PIC_REG))
    (clobber (reg:SI PR_REG))
