@@ -237,6 +237,7 @@ static int iv_add_mult_cost PARAMS ((rtx, rtx, rtx, rtx));
 
 static void loop_dump_aux PARAMS ((const struct loop *, FILE *, int));
 void debug_loop PARAMS ((const struct loop *));
+void debug_loops PARAMS ((const struct loops *));
 
 typedef struct rtx_pair
 {
@@ -9432,4 +9433,13 @@ debug_loop (loop)
      const struct loop *loop;
 {
   flow_loop_dump (loop, stderr, loop_dump_aux, 1);
+}
+
+/* Call this function from the debugger to dump LOOPS.  */
+
+void
+debug_loops (loops)
+     const struct loops *loops;
+{
+  flow_loops_dump (loops, stderr, loop_dump_aux, 1);
 }
