@@ -1,3 +1,14 @@
+2001-10-18  Alexandre Oliva  <aoliva@redhat.com>
+
+	* attribs.c (handle_noinline_attribute): New function.
+	(handle_used_attribute): Likewise.
+	(c_common_attribute_table): Added noinline and used.
+	* doc/extend.texi (Function Attributes): Document them.
+	* c-decl.c (duplicate_decls): Propagate DECL_UNINLINABLE.
+	Warn when merging inline with attribute noinline.
+	(start_decl, start_function): Warn if inline and attribute
+	noinline appear in the same declaration.
+
 2001-10-17  Neil Booth  <neil@daikokuya.demon.co.uk>
 
 	* config.gcc: Update c4x and i370 for C front end-specific
