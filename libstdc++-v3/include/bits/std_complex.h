@@ -37,6 +37,8 @@
 #ifndef _CPP_COMPLEX
 #define _CPP_COMPLEX	1
 
+#pragma GCC system_header
+
 #include <bits/c++config.h>
 #include <bits/std_cmath.h>
 #include <bits/std_iosfwd.h>

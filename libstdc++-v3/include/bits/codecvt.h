@@ -38,6 +38,8 @@
 #ifndef _CPP_BITS_CODECVT_H
 #define _CPP_BITS_CODECVT_H	1
 
+#pragma GCC system_header
+
   // XXX 
   // __enc_traits may need to move up the locale header hierarchy,
   // depending on if ctype ends up using it.

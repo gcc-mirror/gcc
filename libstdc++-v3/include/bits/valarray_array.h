@@ -32,6 +32,8 @@
 #ifndef _CPP_BITS_ARRAY_H
 #define _CPP_BITS_ARRAY_H 1
 
+#pragma GCC system_header
+
 #include <bits/c++config.h>
 #include <bits/cpp_type_traits.h>
 #include <bits/std_cstdlib.h>

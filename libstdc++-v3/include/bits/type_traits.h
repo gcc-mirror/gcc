@@ -15,6 +15,8 @@
 #ifndef _CPP_BITS_TYPE_TRAITS_H
 #define _CPP_BITS_TYPE_TRAITS_H 1
 
+#pragma GCC system_header
+
 #ifndef _CPP_BITS_STL_CONFIG_H
 #include <bits/stl_config.h>
 #endif

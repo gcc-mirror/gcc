@@ -34,6 +34,8 @@
 #ifndef _CPP_STREAMBUF
 #define _CPP_STREAMBUF	1
 
+#pragma GCC system_header
+
 #include <bits/c++config.h>
 #include <bits/std_iosfwd.h>
 #include <bits/std_cstdio.h> 	// For SEEK_SET, SEEK_CUR, SEEK_END

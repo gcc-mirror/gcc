@@ -34,6 +34,8 @@
 #ifndef _CPP_IOMANIP
 #define _CPP_IOMANIP 1
 
+#pragma GCC system_header
+
 #include <bits/c++config.h>
 #include <bits/std_istream.h>
 #include <bits/std_functional.h>

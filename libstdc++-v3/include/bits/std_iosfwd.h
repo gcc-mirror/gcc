@@ -34,6 +34,8 @@
 #ifndef _CPP_IOSFWD
 #define _CPP_IOSFWD 1
 
+#pragma GCC system_header
+
 #include <bits/c++config.h>
 #include <bits/std_cwchar.h> // For mbstate_t
 #include <bits/stringfwd.h> // For string forward declarations.

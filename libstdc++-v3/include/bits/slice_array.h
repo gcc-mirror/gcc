@@ -32,6 +32,8 @@
 #ifndef _CPP_BITS_SLICE_ARRAY_H
 #define _CPP_BITS_SLICE_ARRAY_H 1
 
+#pragma GCC system_header
+
 namespace std {
     
     template<typename _Tp>

@@ -1,6 +1,6 @@
 // The template and inlines for the -*- C++ -*- gslice_array class.
 
-// Copyright (C) 1997-1999, 2000 Free Software Foundation, Inc.
+// Copyright (C) 1997-2001 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -31,6 +31,8 @@
 
 #ifndef _CPP_BITS_GSLICE_ARRAY
 #define _CPP_BITS_GSLICE_ARRAY 1
+
+#pragma GCC system_header
 
 namespace std {
 

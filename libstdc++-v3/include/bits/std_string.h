@@ -34,6 +34,8 @@
 #ifndef _CPP_STRING
 #define _CPP_STRING	1
 
+#pragma GCC system_header
+
 #include <bits/c++config.h>
 #include <bits/stringfwd.h>
 #include <bits/char_traits.h>

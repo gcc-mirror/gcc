@@ -30,7 +30,9 @@
 // Written by Gabriel Dos Reis <Gabriel.Dos-Reis@DPTMaths.ENS-Cachan.Fr>
 
 #ifndef _CPP_BITS_SLICE_H
-#define _CPP_BITS_SLICE_H
+#define _CPP_BITS_SLICE_H 1
+
+#pragma GCC system_header
 
 namespace std {
 

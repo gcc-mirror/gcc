@@ -27,6 +27,8 @@
 #ifndef _CPP_SET
 #define _CPP_SET 1
 
+#pragma GCC system_header
+
 #ifndef _CPP_BITS_STL_TREE_H  /* XXX is this guard needed? */
 #include <bits/stl_tree.h>
 #endif

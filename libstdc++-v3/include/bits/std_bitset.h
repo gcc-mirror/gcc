@@ -14,6 +14,8 @@
 #ifndef __SGI_STL_BITSET
 #define __SGI_STL_BITSET
 
+#pragma GCC system_header
+
 // A bitset of size N has N % (sizeof(unsigned long) * CHAR_BIT) unused 
 // bits.  (They are the high- order bits in the highest word.)  It is
 // a class invariant of class bitset<> that those unused bits are
