@@ -73,8 +73,6 @@ enum c_language_kind c_language = clk_objc;
 #define LANG_HOOKS_UNSAFE_FOR_REEVAL c_common_unsafe_for_reeval
 #undef LANG_HOOKS_STATICP
 #define LANG_HOOKS_STATICP c_staticp
-#undef LANG_HOOKS_SET_DECL_ASSEMBLER_NAME
-#define LANG_HOOKS_SET_DECL_ASSEMBLER_NAME c_static_assembler_name
 #undef LANG_HOOKS_NO_BODY_BLOCKS
 #define LANG_HOOKS_NO_BODY_BLOCKS true
 #undef LANG_HOOKS_DUP_LANG_SPECIFIC_DECL

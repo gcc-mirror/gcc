@@ -157,11 +157,6 @@ lhd_warn_unused_global_decl (tree decl)
   return true;
 }
 
-/* Number for making the label on the next
-   static variable internal to a function.  */
-
-static GTY(()) int var_labelno;
-
 /* Set the DECL_ASSEMBLER_NAME for DECL.  */
 void
 lhd_set_decl_assembler_name (tree decl)
@@ -184,18 +179,33 @@ lhd_set_decl_assembler_name (tree decl)
 
          Can't use just the variable's own name for a variable whose
 	 scope is less than the whole compilation.  Concatenate a
-	 distinguishing number.  */
-      if (!TREE_PUBLIC (decl) && DECL_CONTEXT (decl))
+	 distinguishing number.  If the decl is at block scope, the
+	 number assigned is the DECL_UID; if the decl is at file
+	 scope, the number is the DECL_UID of the surrounding
+	 TRANSLATION_UNIT_DECL, except for the T_U_D with UID 0.
+	 Those (the file-scope internal-linkage declarations from the
+	 first input file) get no suffix, which is consistent with
+	 what has historically been done for file-scope declarations
+	 with internal linkage.  */
+      if (TREE_PUBLIC (decl)
+	  || DECL_CONTEXT (decl) == NULL_TREE
+	  || (TREE_CODE (DECL_CONTEXT (decl)) == TRANSLATION_UNIT_DECL
+	      && DECL_UID (DECL_CONTEXT (decl)) == 0))
+	SET_DECL_ASSEMBLER_NAME (decl, DECL_NAME (decl));
+      else
 	{
 	  const char *name = IDENTIFIER_POINTER (DECL_NAME (decl));
 	  char *label;
-	  
-	  ASM_FORMAT_PRIVATE_NAME (label, name, var_labelno);
-	  var_labelno++;
+	  unsigned int uid;
+
+	  if (TREE_CODE (DECL_CONTEXT (decl)) == TRANSLATION_UNIT_DECL)
+	    uid = DECL_UID (DECL_CONTEXT (decl));
+	  else
+	    uid = DECL_UID (decl);
+
+	  ASM_FORMAT_PRIVATE_NAME (label, name, uid);
 	  SET_DECL_ASSEMBLER_NAME (decl, get_identifier (label));
 	}
-      else
-	SET_DECL_ASSEMBLER_NAME (decl, DECL_NAME (decl));
     }
   else
     /* Nobody should ever be asking for the DECL_ASSEMBLER_NAME of
@@ -581,5 +591,3 @@ lhd_make_node (enum tree_code code)
 {
   return make_node (code);
 }
-
-#include "gt-langhooks.h"

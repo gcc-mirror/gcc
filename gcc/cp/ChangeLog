@@ -1,3 +1,8 @@
+2004-07-05  Zack Weinberg  <zack@codesourcery.com>
+
+	* decl.c (cxx_init_decl_processing): Call
+	build_common_tree_nodes before creating the global NAMESPACE_DECL.
+
 2004-07-05  Giovanni Bajo  <giovannibajo@gcc.gnu.org>
 
 	PR c++/2518
@@ -197,12 +202,12 @@
 
 2004-06-27  Gabriel Dos Reis  <gdr@integrable-solutions.net>
 
-	PR c++/14123	
+	PR c++/14123
 	* cxx-pretty-print.c (pp_cxx_ptr_operator): Properly put
 	paranthesis in case of pointers to array members.
 	* error.c (dump_type_prefix): Likewise.
 	(dump_type_suffix): Maybe issue a whitespace when printing
-	ARRAY_TYPE. 
+	ARRAY_TYPE.
 
 2004-06-27  Mark Mitchell  <mark@codesourcery.com>
 
@@ -219,12 +224,12 @@
 	(pp_non_consecutive_character): Likewise.
 	(dump_scope): Use pp_cxx_colon_colon.
 	(dump_template_parameter): Use pp_cxx_identifier,
-	pp_cxx_tree_identifier and pp_cxx_whitespace. 
+	pp_cxx_tree_identifier and pp_cxx_whitespace.
 	(dump_templat_bindings): Replace use of pp_string with sequence
 	of pp_cxx_whitespace and pp_equal.
 	(dump_type): Use pp_cxx_identifier, pp_cxx_tree_identifier,
 	pp_cxx_colon_colon, pp_cxx_whitespace throughout.  Don't set
-	padding here. 
+	padding here.
 	(dump_aggr_type): Use pp_cxx_identifier amd pp_cxx_tree_identifier.
 	(dump_type_prefix): Don't set padding.  Use pp_cxx_whitespace,
 	pp_cxx_left_parent, pp_cxx_colon_colon and pp_cxx_star troughout.
@@ -234,17 +239,17 @@
 	(dump_template_decl): Likewise.
 	(dump_function_decl): Likewise.  Set padding as appropriate.
 	(dump_parameters): Use pp_cxx_left_paren, pp_cxx_identifier and
-	pp_cxx_right_paren. 
+	pp_cxx_right_paren.
 	(dump_exception_spec): Likewise.
 	(dump_function_name): Use pp_cxx_tree_identifier and
-	pp_cxx_identifier. 
+	pp_cxx_identifier.
 	(dump_template_parms): Use pp_cxx_begin_template_argument_list and
 	pp_cxx_end_template_argument_list.
 	(dump_expr): Use pp_cxx_left_paren, pp_cxx_right_paren,
 	pp_cxx_colon_colon, pp_cxx_identifier, pp_cxx_tree_identifier and
-	pp_cxx_whitespace throughout. 
+	pp_cxx_whitespace throughout.
 	(dump_binary_op): Use pp_cxx_whitespace, pp_cxx_left_paren and
-	pp_cxx_right_paren. 
+	pp_cxx_right_paren.
 	(dump_unary_op): Likewise.
 	(reinit_cxx_pp): New function.
 	(type_as_string); Use it.
@@ -399,8 +404,8 @@
 	(cp_parser_set_decl_spec_type): Likewise.
 	* pt.c: Do not include lex.h.
 	* semantics.c: Likewise.
-	(finish_member_class_template): Remove.	
-	
+	(finish_member_class_template): Remove.
+
 2004-06-23  Roger Sayle  <roger@eyesopen.com>
 
 	* call.c (build_cxx_call): Don't call expand_tree_builtin.  No

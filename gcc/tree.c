@@ -48,6 +48,7 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include "tree-iterator.h"
 #include "basic-block.h"
 #include "tree-flow.h"
+#include "opts.h"
 
 /* obstack.[ch] explicitly declined to prototype this.  */
 extern int _obstack_allocated_p (struct obstack *h, void *obj);
@@ -309,7 +310,10 @@ make_node_stat (enum tree_code code MEM_STAT_DECL)
       DECL_USER_ALIGN (t) = 0;
       DECL_IN_SYSTEM_HEADER (t) = in_system_header;
       DECL_SOURCE_LOCATION (t) = input_location;
-      DECL_UID (t) = next_decl_uid++;
+      if (code == TRANSLATION_UNIT_DECL)
+	DECL_UID (t) = cur_in_fname;
+      else
+	DECL_UID (t) = next_decl_uid++;
 
       /* We have not yet computed the alias set for this declaration.  */
       DECL_POINTER_ALIAS_SET (t) = -1;
@@ -382,7 +386,7 @@ copy_node_stat (tree node MEM_STAT_DECL)
   TREE_VISITED (t) = 0;
   t->common.ann = 0;
 
-  if (TREE_CODE_CLASS (code) == 'd')
+  if (TREE_CODE_CLASS (code) == 'd' && code != TRANSLATION_UNIT_DECL)
     DECL_UID (t) = next_decl_uid++;
   else if (TREE_CODE_CLASS (code) == 't')
     {
@@ -5310,6 +5314,14 @@ make_or_reuse_type (unsigned size, int unsignedp)
 void
 build_common_tree_nodes (int signed_char)
 {
+  /* This function is called after command line parsing is complete,
+     but before any DECL nodes should have been created.  Therefore,
+     now is the appropriate time to adjust next_decl_uid so that the
+     range 0 .. num_in_fnames-1 is reserved for TRANSLATION_UNIT_DECLs.  */
+  if (next_decl_uid)
+    abort ();
+  next_decl_uid = num_in_fnames;
+
   error_mark_node = make_node (ERROR_MARK);
   TREE_TYPE (error_mark_node) = error_mark_node;
 
