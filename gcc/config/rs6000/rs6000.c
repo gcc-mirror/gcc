@@ -1132,7 +1132,7 @@ input_operand (op, mode)
     return 1;
 
   /* Only a tiny bit of handling for CONSTANT_P_RTX is necessary.  */
-  if (GET_CODE (op) == CONST && GET_CODE (XEXP (op, 0)) == CONSTANT_P_RTX)
+  if (GET_CODE (op) == CONSTANT_P_RTX)
     return 1;
 
   /* For floating-point, easy constants are valid.  */
