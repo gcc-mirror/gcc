@@ -1948,6 +1948,9 @@ dnl
 dnl GLIBCPP_CONFIGURE_TESTSUITE  [no args]
 AC_DEFUN(GLIBCPP_CONFIGURE_TESTSUITE, [
   GLIBCPP_CHECK_SETRLIMIT
+
+  # Look for setenv, so that extended locale tests can be performed.
+  AC_CHECK_FUNCS(setenv)
 ])
 
 

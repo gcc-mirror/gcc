@@ -1,3 +1,30 @@
+2002-01-24   Benjamin Kosnik  <bkoz@redhat.com>
+
+	* testsuite/22_locale/num_put_members_wchar_t.cc (test03): Use
+	_GLIBCPP_HAVE_SETENV.
+	* testsuite/22_locale/codecvt_members_wchar_t_char.cc (test02): Same.
+	* testsuite/22_locale/collate_members_char.cc (test02): Same.
+	* testsuite/22_locale/ctype_members_char.cc (test03): Same.
+	* testsuite/22_locale/ctype_members_wchar_t.cc (test03): Same.
+	* testsuite/22_locale/messages_members_char.cc (test02): Same.
+	* testsuite/22_locale/moneypunct_members_char.cc (test02): Same.
+	* testsuite/22_locale/moneypunct_members_wchar_t.cc (test02): Same.
+	* testsuite/22_locale/money_put_members_char.cc (test04): Same.
+	* testsuite/22_locale/money_put_members_wchar_t.cc (test04): Same.
+	* testsuite/22_locale/num_get_members_char.cc (test03): Same.
+	* testsuite/22_locale/num_get_members_wchar_t.cc (test03): Same.
+	* testsuite/22_locale/numpunct_members_char.cc (test02): Same.
+	* testsuite/22_locale/numpunct_members_wchar_t.cc (test02): Same.
+	* testsuite/22_locale/time_get_members_char.cc (test07): Same.
+	* testsuite/22_locale/time_get_members_wchar_t.cc (test07): Same.
+	* testsuite/22_locale/time_put_members_char.cc (test03): Same.
+	* testsuite/22_locale/time_put_members_wchar_t.cc (test03): Same.
+	* testsuite/22_locale/num_put_members_char.cc (test03): Same.
+	* acinclude.m4 (GLIBCPP_CONFIGURE_TESTSUITE): Check for setenv.
+	* aclocal.m4: Regenerate.
+	* configure: Regenerate.
+	* config.h.in: Regenerate.
+	
 2002-01-23  Loren Rittle <ljrittle@acm.org>
 
 	* testsuite/thread/pthread1.cc: New test.

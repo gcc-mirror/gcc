@@ -464,7 +464,7 @@ namespace std
       return *this;
     }
 
-  // 27.6.2.5.4 Character inserters
+  // 27.6.2.5.4 Character inserters.
   template<typename _CharT, typename _Traits>
     basic_ostream<_CharT, _Traits>&
     operator<<(basic_ostream<_CharT, _Traits>& __out, _CharT __c)
@@ -499,7 +499,7 @@ namespace std
       return __out;
     }
   
-  // Specialization
+  // Specializations.
   template <class _Traits> 
     basic_ostream<char, _Traits>&
     operator<<(basic_ostream<char, _Traits>& __out, char __c)
@@ -614,7 +614,7 @@ namespace std
       return __out;
     }
 
-  // Partial specializationss
+  // Partial specializations.
   template<class _Traits>
     basic_ostream<char, _Traits>&
     operator<<(basic_ostream<char, _Traits>& __out, const char* __s)
