@@ -9848,7 +9848,7 @@ Intrinsic groups: @code{unix}.
 @noindent
 Description:
 
-Reinitialises the generator with the seed in @var{Seed}.
+Reinitializes the generator with the seed in @var{Seed}.
 @xref{IRand Intrinsic}.
 @xref{Rand Intrinsic}.
 
