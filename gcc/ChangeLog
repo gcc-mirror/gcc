@@ -1,5 +1,7 @@
 Sun Apr 19 07:48:37 1998  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
+	* c-decl.c (pushdecl): Avoid duplicate warning about implicit redecl.
+
 	* configure.in (stab.h): Check for it.
 	(i386-*-vsta): Include xm-i386.h too.
 	* dbxout.c (stab.h): Include based on autoconf results.
