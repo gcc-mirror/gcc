@@ -97,7 +97,7 @@ case $basic_machine in
 	# Some are omitted here because they have special meanings below.
 	tahoe | i[34]86 | i860 | m68k | m68000 | m88k | ns32k | arm | pyramid \
 		| tron | a29k | 580 | i960 | h8300 | hppa1.0 | hppa1.1 \
-		| alpha | we32k | ns16k | clipper | sparclite )
+		| alpha | we32k | ns16k | clipper | sparclite | i370 )
 		basic_machine=$basic_machine-unknown
 		;;
 	# Object if more than one company name word.
@@ -122,6 +122,10 @@ case $basic_machine in
 	vms)
 		basic_machine=vax-dec
 		os=-vms
+		;;
+	i370-ibm* | ibm*)
+		basic_machine=i370-ibm
+		os=-mvs
 		;;
 # I'm not sure what "Sysv32" means.  Should this be sysv3.2?
 	i[34]86v32)
@@ -488,7 +492,7 @@ case $os in
 	      | -vms* | -sco* | -esix* | -isc* | -aix* | -sunos | -sunos[34]* | -hpux* \
 	      | -unos* | -osf* | -luna* | -dgux* | -solaris* | -sym* \
 	      | -amigados* | -msdos* | -newsos* | -unicos* | -aos* \
-	      | -nindy* | -vxworks* | -ebmon* | -hms*  \
+	      | -nindy* | -vxworks* | -ebmon* | -hms* | -mvs* \
 	      | -riscos* | -linux* | -uniplus* | -iris* | -rtu* | -xenix* )
 		;;
 	-sunos5*)
@@ -600,6 +604,9 @@ case $basic_machine in
 	*-ns)
 		os=-genix
 		;;
+	i370-*)
+		os=-mvs
+		;;
 	i[34]86-*)
 		os=-sco3.2v2
 		;;
@@ -650,6 +657,9 @@ case $basic_machine in
 				;;
 			-genix*)
 				vendor=ns
+				;;
+			-mvs*)
+				vendor=ibm
 				;;
 		esac
 		basic_machine=`echo $basic_machine | sed "s/unknown/$vendor/"`
