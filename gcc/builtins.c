@@ -1227,7 +1227,7 @@ expand_builtin_apply (rtx function, rtx arguments, rtx argsize)
   do_pending_stack_adjust ();
   NO_DEFER_POP;
 
-  /* Save the stack with nonlocal if available */
+  /* Save the stack with nonlocal if available.  */
 #ifdef HAVE_save_stack_nonlocal
   if (HAVE_save_stack_nonlocal)
     emit_stack_save (SAVE_NONLOCAL, &old_stack_level, NULL_RTX);

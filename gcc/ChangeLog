@@ -1,5 +1,41 @@
 2003-06-29  Kazu Hirata  <kazu@cs.umass.edu>
 
+	* alloc-pool.c: Fix comment formatting.
+	* bitmap.c: Likewise.
+	* bitmap.h: Likewise.
+	* bt-load.c: Likewise.
+	* builtins.c: Likewise.
+	* caller-save.c: Likewise.
+	* cfganal.c: Likewise.
+	* cfgrtl.c: Likewise.
+	* collect2.c: Likewise.
+	* cse.c: Likewise.
+	* df.c: Likewise.
+	* diagnostic.c: Likewise.
+	* dwarf2out.c: Likewise.
+	* dwarfout.c: Likewise.
+	* expmed.c: Likewise.
+	* final.c: Likewise.
+	* flags.h: Likewise.
+	* fold-const.c: Likewise.
+	* gcc.c: Likewise.
+	* gcov-io.h: Likewise.
+	* gcov.c: Likewise.
+	* genattrtab.c: Likewise.
+	* genautomata.c: Likewise.
+	* libgcov.c: Likewise.
+	* mips-tfile.c: Likewise.
+	* optabs.c: Likewise.
+	* prefix.c: Likewise.
+	* rtlanal.c: Likewise.
+	* stmt.c: Likewise.
+	* stor-layout.c: Likewise.
+	* toplev.c: Likewise.
+	* varasm.c: Likewise.
+	* vmsdbgout.c: Likewise.
+
+2003-06-29  Kazu Hirata  <kazu@cs.umass.edu>
+
 	* expr.c (emit_single_push_insn): If padding is needed
 	downward, adjust the stack pointer first, and then store the
 	data into the stack location using an offset.

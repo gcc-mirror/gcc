@@ -837,7 +837,7 @@ write_rtnbeg (rtnnum, dosizeonly)
       totsize += write_debug_string ((char *) go, "main name", dosizeonly);
     }
 
-  /* The header length never includes the length byte */
+  /* The header length never includes the length byte.  */
   rtnbeg.dst_a_rtnbeg_header.dst__header_length.dst_w_length
    = DST_K_RTNBEG_SIZE + rtnnamelen - 1;
   rtnbeg.dst_a_rtnbeg_header.dst__header_type.dst_w_type = DST_K_RTNBEG;
@@ -959,7 +959,7 @@ write_pclines (dosizeonly)
       linestart = linestart + ((max_line / 10000) + 1) * 10000;
     }
 
-  /* Set starting address to beginning of text section */
+  /* Set starting address to beginning of text section.  */
   line_num.dst_a_line_num_header.dst__header_length.dst_w_length = 8;
   line_num.dst_a_line_num_header.dst__header_type.dst_w_type = DST_K_LINE_NUM;
   pcline.dst_b_pcline_command = DST_K_SET_ABS_PC;
@@ -1311,7 +1311,7 @@ vmsdbgout_end_prologue (line, file)
 				   current_function_funcdef_no);
       ASM_OUTPUT_LABEL (asm_out_file, label);
 
-      /* VMS PCA expects every PC range to correlate to some line and file */
+      /* VMS PCA expects every PC range to correlate to some line and file.  */
       vmsdbgout_source_line (line, file);
     }
 }
@@ -1348,7 +1348,7 @@ vmsdbgout_end_epilogue (line, file)
 				   current_function_funcdef_no);
       ASM_OUTPUT_LABEL (asm_out_file, label);
 
-      /* VMS PCA expects every PC range to correlate to some line and file */
+      /* VMS PCA expects every PC range to correlate to some line and file.  */
       vmsdbgout_source_line (line, file);
     }
 }
@@ -1477,17 +1477,17 @@ lookup_filename (file_name)
 #ifdef VMS
       struct tm *ts;
 
-      /* Adjust for GMT */
+      /* Adjust for GMT.  */
       ts = (struct tm *) localtime (&statbuf.st_ctime);
       gmtoff = ts->tm_gmtoff;
 
-      /* VMS has multiple file format types */
+      /* VMS has multiple file format types.  */
       rfo = statbuf.st_fab_rfm;
 #else
       /* Is GMT adjustment an issue with a cross-compiler? */
       gmtoff = 0;
 
-      /* Assume stream LF type file */
+      /* Assume stream LF type file.  */
       rfo = 2;
 #endif
       cdt = 10000000 * (statbuf.st_ctime + gmtoff + vms_epoch_offset);

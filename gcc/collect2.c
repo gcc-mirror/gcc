@@ -702,7 +702,7 @@ add_prefix (struct path_prefix *pprefix, const char *prefix)
   else
     prev = &pprefix->plist;
 
-  /* Keep track of the longest prefix */
+  /* Keep track of the longest prefix.  */
 
   len = strlen (prefix);
   if (len > pprefix->max_len)
@@ -1350,7 +1350,7 @@ main (int argc, char **argv)
       )
     {
 #ifdef COLLECT_EXPORT_LIST
-      /* Do tlink without additional code generation */
+      /* Do tlink without additional code generation.  */
       do_tlink (ld1_argv, object_lst);
 #endif
       /* Strip now if it was requested on the command line.  */
@@ -1816,7 +1816,7 @@ write_c_file_stat (FILE *stream, const char *name ATTRIBUTE_UNUSED)
 
   free (prefix);
 
-  /* Write the tables as C code  */
+  /* Write the tables as C code.  */
 
   fprintf (stream, "static int count;\n");
   fprintf (stream, "typedef void entry_pt();\n");
@@ -1899,7 +1899,7 @@ write_c_file_stat (FILE *stream, const char *name ATTRIBUTE_UNUSED)
 static void
 write_c_file_glob (FILE *stream, const char *name ATTRIBUTE_UNUSED)
 {
-  /* Write the tables as C code  */
+  /* Write the tables as C code.  */
 
   int frames = (frame_tables.number > 0);
 
@@ -2043,7 +2043,7 @@ scan_prog_file (const char *prog_name, enum pass which_pass)
   fflush (stdout);
   fflush (stderr);
 
-  /* Spawn child nm on pipe */
+  /* Spawn child nm on pipe.  */
   pid = vfork ();
   if (pid == -1)
     fatal_perror (VFORK_STRING);
@@ -2472,7 +2472,7 @@ scan_libraries (const char *prog_name)
   fflush (stdout);
   fflush (stderr);
 
-  /* Spawn child ldd on pipe */
+  /* Spawn child ldd on pipe.  */
   pid = vfork ();
   if (pid == -1)
     fatal_perror (VFORK_STRING);
@@ -3158,7 +3158,7 @@ scan_prog_file (const char *prog_name, enum pass which_pass)
       if (debug)
 	print_header (&hdr);
 
-      /* Write header */
+      /* Write header.  */
       status = encode_mach_o_hdr (&hdr, obj, MO_SIZEOF_RAW_HDR);
       if (status != MO_HDR_CONV_SUCCESS)
 	bad_header (status);
@@ -3166,7 +3166,7 @@ scan_prog_file (const char *prog_name, enum pass which_pass)
       if (debug)
 	notice ("writing load commands.\n\n");
 
-      /* Write load commands */
+      /* Write load commands.  */
       offset = hdr.moh_first_cmd_off;
       for (i = 0; i < hdr.moh_n_load_cmds; i++)
 	{

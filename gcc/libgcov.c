@@ -150,7 +150,7 @@ gcov_exit (void)
 	  }
     }
 
-  /* Now merge each file  */
+  /* Now merge each file.  */
   for (gi_ptr = gcov_list; gi_ptr; gi_ptr = gi_ptr->next)
     {
       struct gcov_summary this_object;
@@ -233,7 +233,7 @@ gcov_exit (void)
 	      tag = gcov_read_unsigned ();
 	      length = gcov_read_unsigned ();
 
-	      /* Check function */
+	      /* Check function.  */
 	      if (tag != GCOV_TAG_FUNCTION
 		  || length != GCOV_TAG_FUNCTION_LENGTH
 		  || gcov_read_unsigned () != fi_ptr->ident

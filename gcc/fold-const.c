@@ -797,7 +797,7 @@ div_and_round_double (code, uns,
 	unsigned HOST_WIDE_INT labs_den = lden, ltwice;
 	HOST_WIDE_INT habs_den = hden, htwice;
 
-	/* Get absolute values */
+	/* Get absolute values.  */
 	if (*hrem < 0)
 	  neg_double (*lrem, *hrem, &labs_rem, &habs_rem);
 	if (hden < 0)

@@ -5283,7 +5283,7 @@ output_decl (decl, containing_scope)
 	output_formal_types (TREE_TYPE (decl));
       else
 	{
-	  /* Generate DIEs to represent all known formal parameters */
+	  /* Generate DIEs to represent all known formal parameters.  */
 
 	  tree arg_decls = DECL_ARGUMENTS (decl);
 	  tree parm;

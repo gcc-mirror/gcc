@@ -478,11 +478,11 @@ extern int flag_shlib;
 
 extern int flag_exceptions;
 
-/* Nonzero means generate frame unwind info table when supported */
+/* Nonzero means generate frame unwind info table when supported.  */
 
 extern int flag_unwind_tables;
 
-/* Nonzero means generate frame unwind info table exact at each insn boundary */
+/* Nonzero means generate frame unwind info table exact at each insn boundary.  */
 
 extern int flag_asynchronous_unwind_tables;
 

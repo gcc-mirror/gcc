@@ -107,7 +107,7 @@ extern int bitmap_bit_p (bitmap, int);
 extern void debug_bitmap (bitmap);
 extern void debug_bitmap_file (FILE *, bitmap);
 
-/* Print a bitmap */
+/* Print a bitmap.  */
 extern void bitmap_print (FILE *, bitmap, const char *, const char *);
 
 /* Initialize a bitmap header.  If HEAD is NULL, a new header will be

@@ -7911,7 +7911,7 @@ output_min_issue_delay_table (automaton_t automaton)
   fprintf (output_file, " ");
   output_min_issue_delay_vect_name (output_file, automaton);
   fprintf (output_file, "[] ATTRIBUTE_UNUSED = {\n");
-  /* Compress the vector */
+  /* Compress the vector.  */
   if (automaton->max_min_delay < 2)
     automaton->min_issue_delay_table_compression_factor = 8;
   else if (automaton->max_min_delay < 4)

@@ -5989,7 +5989,7 @@ from the machine description file `md'.  */\n\n");
       write_automata ();
     }
 
-  /* Write out constant delay slot info */
+  /* Write out constant delay slot info.  */
   write_const_num_delay_slots ();
 
   write_length_unit_log ();

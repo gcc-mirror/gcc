@@ -321,7 +321,7 @@ typedef HOST_WIDEST_INT gcov_type;
 
 /* Structured records.  */
 
-/* Cumulative counter data.   */
+/* Cumulative counter data.  */
 struct gcov_ctr_summary
 {
   gcov_unsigned_t num;		/* number of counters.  */

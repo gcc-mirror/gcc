@@ -2661,7 +2661,7 @@ choose_multiplier (d, n, precision, multiplier_ptr, post_shift_ptr, lgup_ptr)
   /* If precision == N, then mlow, mhigh exceed 2^N
      (but they do not exceed 2^(N+1)).  */
 
-  /* Reduce to lowest terms */
+  /* Reduce to lowest terms.  */
   for (post_shift = lgup; post_shift > 0; post_shift--)
     {
       unsigned HOST_WIDE_INT ml_lo = (mlow_hi << (HOST_BITS_PER_WIDE_INT - 1)) | (mlow_lo >> 1);

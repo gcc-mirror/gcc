@@ -1608,7 +1608,7 @@ insert (x, classp, hash, mode)
     {
       classp = classp->first_same_value;
       if (CHEAPER (elt, classp))
-	/* Insert at the head of the class */
+	/* Insert at the head of the class.  */
 	{
 	  struct table_elt *p;
 	  elt->next_same_value = classp;

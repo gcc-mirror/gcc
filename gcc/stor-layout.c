@@ -1278,7 +1278,7 @@ finalize_record_size (rli)
     unpadded_size_unit
       = size_binop (PLUS_EXPR, unpadded_size_unit, size_one_node);
 
-  /* Round the size up to be a multiple of the required alignment */
+  /* Round the size up to be a multiple of the required alignment.  */
   TYPE_SIZE (rli->t) = round_up (unpadded_size, TYPE_ALIGN (rli->t));
   TYPE_SIZE_UNIT (rli->t) = round_up (unpadded_size_unit,
 				      TYPE_ALIGN (rli->t) / BITS_PER_UNIT);
