@@ -165,7 +165,7 @@ public class MessageFormat extends Format
       super("");
     }
     
-    private Field(String s)
+    protected Field(String s)
     {
       super(s);
     }

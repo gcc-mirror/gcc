@@ -1,5 +1,10 @@
 2004-09-30  Tom Tromey  <tromey@redhat.com>
 
+i	* java/text/MessageFormat.java (Field): Constructor now
+	protected.
+
+2004-09-30  Tom Tromey  <tromey@redhat.com>
+
 	* javax/crypto/MacSpi.java: Fixed typo.
 
 2004-09-30  Michael Koch  <konqueror@gmx.de>
