@@ -1,3 +1,7 @@
+Thu Oct 22 14:37:35 1998  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* configure.in: Use AC_CONFIG_AUX_DIR($topsrcdir).
+
 1998-09-22  Ben Elliston  <bje@cygnus.com>
 
 	* configure.in: This is GNU CHILL, not GNU Fortran.
