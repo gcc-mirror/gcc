@@ -1864,7 +1864,6 @@ changequote([,])dnl
 		;;
 	m68k-hp-bsd4.4*)		# HP 9000/3xx running 4.4bsd
 		tm_file=m68k/hp3bsd44.h
-		xmake_file=m68k/x-hp3bsd44
 		use_collect2=yes
 		extra_headers=math-68881.h
 		float_format=m68k

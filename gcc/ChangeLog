@@ -1,3 +1,9 @@
+Mon Jun  7 22:30:37 1999  Jeffrey A Law  (law@cygnus.com)
+
+	* m68k/x-hp3bsd44: Delete obsolete and incorrect file.
+	* configure.in (m68k-hp-bsd4.4): No longer use x-hp3bsd44.
+	* configure: Rebuilt.
+
 Mon Jun  7 22:05:03 1999  Mark Kettenis  <kettenis@gnu.org>
 
 	* config/i386/gnu.h: Include <gnu.h> right after <i386/linux.h>,
