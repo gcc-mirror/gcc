@@ -1,5 +1,7 @@
 2000-05-18  Richard Henderson  <rth@cygnus.com>
 
+	* config/h8300/h8300.md (subs patterns): Use %G to negate.
+
 	* config/h8300/h8300.c (ok_for_bclr): Take a HOST_WIDE_INT.
 	(small_power_of_two): Likewise; use exact_log2.
 	(adds_subs_operand, one_insn_adds_subs_operand): Remove.
