@@ -44,5 +44,5 @@ doit (const char *s, ...)
 int main()
 {
   doit ("%s", "hello world\n");
-  return 0;
+  exit (0);
 }

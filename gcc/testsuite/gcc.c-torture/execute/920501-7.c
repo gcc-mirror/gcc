@@ -4,7 +4,7 @@
 #define DEPTH 1000
 #endif
 
-#ifndef NO_LABEL_VALUES
+#if ! defined (NO_LABEL_VALUES) && !defined (NO_TRAMPOLINES)
 x(a)
 {
   __label__ xlab;
@@ -22,7 +22,7 @@ x(a)
 
 main ()
 {
-#ifndef NO_LABEL_VALUES
+#if ! defined (NO_LABEL_VALUES) && !defined (NO_TRAMPOLINES)
   if (x (DEPTH) != DEPTH)
     abort ();
 #endif

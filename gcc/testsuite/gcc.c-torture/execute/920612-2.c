@@ -7,6 +7,9 @@ main ()
 	i++, x--;
       return x;
     }
-  a (2);
+#ifndef NO_TRAMPOLINES
+  if (a (2) != 0)
+    abort ();
+#endif
   exit (0);
 }

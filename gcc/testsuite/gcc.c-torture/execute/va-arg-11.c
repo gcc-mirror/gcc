@@ -25,5 +25,5 @@ main (void)
 {
   if (foo (5, 4, 3, 2, 1, 0))
     abort ();
-  return 0;
+  exit (0);
 }
