@@ -793,7 +793,7 @@ am__libgcj_la_SOURCES_DIST = prims.cc jni.cc exception.cc resolve.cc \
 	gnu/java/nio/charset/UTF_16Encoder.java \
 	gnu/java/nio/charset/UTF_16LE.java \
 	gnu/java/nio/charset/UTF_8.java gnu/java/security/Engine.java \
-	gnu/java/security/OID.java \
+	gnu/java/security/OID.java gnu/java/security/PolicyFile.java \
 	gnu/java/security/action/GetPropertyAction.java \
 	gnu/java/security/action/GetSecurityPropertyAction.java \
 	gnu/java/security/action/SetAccessibleAction.java \
@@ -3776,6 +3776,7 @@ am__objects_14 = $(am__objects_9) gnu/classpath/ServiceFactory.lo \
 	gnu/java/nio/charset/UTF_16Encoder.lo \
 	gnu/java/nio/charset/UTF_16LE.lo gnu/java/nio/charset/UTF_8.lo \
 	gnu/java/security/Engine.lo gnu/java/security/OID.lo \
+	gnu/java/security/PolicyFile.lo \
 	gnu/java/security/action/GetPropertyAction.lo \
 	gnu/java/security/action/GetSecurityPropertyAction.lo \
 	gnu/java/security/action/SetAccessibleAction.lo \
@@ -6639,6 +6640,7 @@ gnu/java/nio/charset/UTF_16LE.java \
 gnu/java/nio/charset/UTF_8.java \
 gnu/java/security/Engine.java \
 gnu/java/security/OID.java \
+gnu/java/security/PolicyFile.java \
 gnu/java/security/action/GetPropertyAction.java \
 gnu/java/security/action/GetSecurityPropertyAction.java \
 gnu/java/security/action/SetAccessibleAction.java \
@@ -9474,6 +9476,8 @@ gnu/java/security/$(DEPDIR)/$(am__dirstamp):
 gnu/java/security/Engine.lo: gnu/java/security/$(am__dirstamp) \
 	gnu/java/security/$(DEPDIR)/$(am__dirstamp)
 gnu/java/security/OID.lo: gnu/java/security/$(am__dirstamp) \
+	gnu/java/security/$(DEPDIR)/$(am__dirstamp)
+gnu/java/security/PolicyFile.lo: gnu/java/security/$(am__dirstamp) \
 	gnu/java/security/$(DEPDIR)/$(am__dirstamp)
 gnu/java/security/action/$(am__dirstamp):
 	@$(mkdir_p) gnu/java/security/action
@@ -15271,6 +15275,8 @@ mostlyclean-compile:
 	-rm -f gnu/java/security/Engine.lo
 	-rm -f gnu/java/security/OID.$(OBJEXT)
 	-rm -f gnu/java/security/OID.lo
+	-rm -f gnu/java/security/PolicyFile.$(OBJEXT)
+	-rm -f gnu/java/security/PolicyFile.lo
 	-rm -f gnu/java/security/action/GetPropertyAction.$(OBJEXT)
 	-rm -f gnu/java/security/action/GetPropertyAction.lo
 	-rm -f gnu/java/security/action/GetSecurityPropertyAction.$(OBJEXT)
@@ -19921,6 +19927,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@gnu/java/rmi/server/$(DEPDIR)/UnicastServerRef.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@gnu/java/security/$(DEPDIR)/Engine.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@gnu/java/security/$(DEPDIR)/OID.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@gnu/java/security/$(DEPDIR)/PolicyFile.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@gnu/java/security/action/$(DEPDIR)/GetPropertyAction.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@gnu/java/security/action/$(DEPDIR)/GetSecurityPropertyAction.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@gnu/java/security/action/$(DEPDIR)/SetAccessibleAction.Plo@am__quote@
