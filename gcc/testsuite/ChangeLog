@@ -1,5 +1,9 @@
 2003-04-08  Roger Sayle  <roger@eyesopen.com>
 
+	* gcc.dg/builtins-11.c: New test case.
+
+2003-04-08  Roger Sayle  <roger@eyesopen.com>
+
 	* gcc.dg/builtins-9.c: New test case.
 	* gcc.dg/builtins-10.c: New test case.
 
