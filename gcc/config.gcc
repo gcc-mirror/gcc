@@ -3409,7 +3409,7 @@ mips*-*-*)
 powerpc*-*-* | rs6000-*-*)
         if test x$enable_altivec = xyes
         then
-                tm_file="$tm_file rs6000/altivec.h"
+                tm_file="$tm_file rs6000/altivec-defs.h"
         fi
 	case "x$with_cpu" in
 		x)
