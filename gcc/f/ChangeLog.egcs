@@ -1,3 +1,10 @@
+Thu Apr  9 00:18:44 1998  Dave Brolley  (brolley@cygnus.com)
+
+	* com.c (finput): New variable.
+	(init_parse): Handle !USE_CPPLIB.
+	(finish_parse): New function.
+	(lang_init): No longer declare finput.
+
 Sat Apr  4 17:45:01 1998  Richard Henderson  <rth@cygnus.com>
 
 	* com.c (ffecom_expr_): Revert Oct 22 change.  Instead take a WIDENP
