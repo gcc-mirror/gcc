@@ -2999,6 +2999,16 @@ the bug.  The current (as of 2001-09-24) revision is -14, and is included in
 the Solaris 7 Recommended Patch Cluster.
 @end itemize
 
+GCC 3.3 triggers a bug in version 5.0 Alpha 03/27/98 of the Sun assembler,
+which causes a bootstrap failure when linking the 64-bit shared version of
+libgcc. A typical error message is:
+
+@smallexample
+ld: fatal: relocation error: R_SPARC_32: file libgcc/sparcv9/_muldi3.o:
+  symbol <unknown>:  offset 0xffffffff7ec133e7 is non-aligned.
+@end smallexample
+
+This bug has been fixed in the final 5.0 version of the assembler.
 
 @html
 <hr />
