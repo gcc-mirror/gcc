@@ -7570,9 +7570,6 @@ note_mem_written (written, writes_ptr)
 	}
       else if (GET_MODE (written) == BLKmode)
 	*writes_ptr = everything;
-      /* (mem (scratch)) means clobber everything.  */
-      else if (GET_CODE (addr) == SCRATCH)
-	*writes_ptr = everything;
       else if (cse_rtx_addr_varies_p (written))
 	{
 	  /* A varying address that is a sum indicates an array element,
