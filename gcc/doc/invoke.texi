@@ -53,8 +53,9 @@ For instructions on reporting bugs, see
 script to report bugs is recommended.
 @c man end
 @c man begin AUTHOR
-See the Info entry for @file{gcc}, or
-@w{@uref{http://gcc.gnu.org/thanks.html}}, for contributors to GCC@.
+See the Info entry for @command{gcc}, or
+@w{@uref{http://gcc.gnu.org/onlinedocs/gcc/Contributors.html}},
+for contributors to GCC@.
 @c man end
 @end ignore
 
