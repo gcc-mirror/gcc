@@ -3537,7 +3537,7 @@ assign_parms (fndecl, second_time)
 		/* This is a variable sized object.  */
 		copy = gen_rtx (MEM, BLKmode,
 				allocate_dynamic_stack_space
-				(expand_size (parm), NULL_RTX,
+				(expr_size (parm), NULL_RTX,
 				 TYPE_ALIGN (type)));
 	      else
 		copy = assign_stack_temp (TYPE_MODE (type),
