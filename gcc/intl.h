@@ -49,6 +49,7 @@ extern size_t gcc_gettext_width PARAMS ((const char *));
 # undef gettext
 # define gettext(msgid) (msgid)
 # define gcc_init_libintl()	/* nothing */
+# define gcc_gettext_width(s) strlen(s)
 #endif
 
 #ifndef _

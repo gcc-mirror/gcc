@@ -1,3 +1,7 @@
+2003-04-12  Zack Weinberg  <zack@codesourcery.com>
+
+	* intl.h: #define gcc_gettext_width to strlen when !ENABLE_NLS.
+
 2003-04-12  Stephane Carrez  <stcarrez@nerim.fr>
 
 	* config/m68hc11/m68hc11-protos.h 
