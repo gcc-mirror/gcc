@@ -37,10 +37,10 @@
 #include <sstream>
 #include <ext/mt_allocator.h>
 #include <ext/malloc_allocator.h>
-#include <cxxabi.h>
-#include <testsuite_performance.h>
 #include <ext/bitmap_allocator.h>
 #include <ext/pool_allocator.h>
+#include <cxxabi.h>
+#include <testsuite_performance.h>
 
 using namespace std;
 using __gnu_cxx::malloc_allocator;
@@ -48,13 +48,10 @@ using __gnu_cxx::__mt_alloc;
 using __gnu_cxx::bitmap_allocator;
 using __gnu_cxx::__pool_alloc;
 
-typedef int test_type;
-
 using namespace __gnu_cxx;
 using namespace std;
 
-bool less_int (int x1, int x2) { return x1<x2; }
-
+bool less_int (int x1, int x2) { return x1 < x2; }
 
 #if defined USE_FUNCTION_COMPARE
 #define COMPARE_T typeof(&less_int)
@@ -135,19 +132,21 @@ void exec_tests ()
 
 int main()
 {
+  typedef pair<const int, string> pair_type;
+
 #ifdef TEST_T0
-  exec_tests<new_allocator<int> >();
+  exec_tests<new_allocator<pair_type> >();
 #endif
 #ifdef TEST_T1
-  exec_tests<malloc_allocator<int> >();
+  exec_tests<malloc_allocator<pair_type> >();
 #endif
 #ifdef TEST_T2
-  exec_tests<bitmap_allocator<int> >();
+  exec_tests<bitmap_allocator<pair_type> >();
 #endif
 #ifdef TEST_T3
-  exec_tests<__mt_alloc<int> >();
+  exec_tests<__mt_alloc<pair_type> >();
 #endif
 #ifdef TEST_T4
-  exec_tests<__pool_alloc<int> >();
+  exec_tests<__pool_alloc<pair_type> >();
 #endif
 }

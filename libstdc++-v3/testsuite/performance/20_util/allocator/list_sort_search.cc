@@ -31,10 +31,10 @@
 #include <sstream>
 #include <ext/mt_allocator.h>
 #include <ext/malloc_allocator.h>
-#include <cxxabi.h>
-#include <testsuite_performance.h>
 #include <ext/bitmap_allocator.h>
 #include <ext/pool_allocator.h>
+#include <cxxabi.h>
+#include <testsuite_performance.h>
 
 using namespace std;
 using __gnu_cxx::malloc_allocator;
@@ -42,12 +42,9 @@ using __gnu_cxx::__mt_alloc;
 using __gnu_cxx::bitmap_allocator;
 using __gnu_cxx::__pool_alloc;
 
-typedef int test_type;
-
 using namespace __gnu_cxx;
 
 #include <list>
-#include <map>
 #include <algorithm>
 #include <cstdlib>
 using namespace std;
