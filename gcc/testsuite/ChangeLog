@@ -1,3 +1,8 @@
+2005-01-26  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/19579
+	* gcc.c-torture/execute/20050124-1.c: New test.
+
 2005-01-18  Jan Hubicka  <jh@suse.cz>
 
 	PR tree-optimize/19337
