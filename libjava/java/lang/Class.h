@@ -210,7 +210,7 @@ private:
   inline friend void 
   _Jv_InitClass (jclass klass)
   {
-    if (klass->state == JV_STATE_DONE)
+    if (__builtin_expect (klass->state == JV_STATE_DONE, true))
       return;
     klass->initializeClass ();  
   }
@@ -254,9 +254,9 @@ private:
 			       java::lang::ClassLoader *loader);
   friend jclass _Jv_FindClassInCache (_Jv_Utf8Const *name,
 				      java::lang::ClassLoader *loader);
-  friend jclass _Jv_FindArrayClass (jclass element,
-				    java::lang::ClassLoader *loader,
-				    _Jv_VTable *array_vtable = 0);
+  friend void _Jv_NewArrayClass (jclass element,
+				 java::lang::ClassLoader *loader,
+				 _Jv_VTable *array_vtable = 0);
   friend jclass _Jv_NewClass (_Jv_Utf8Const *name, jclass superclass,
 			      java::lang::ClassLoader *loader);
 
@@ -267,6 +267,16 @@ private:
   friend jstring _Jv_GetMethodString(jclass, _Jv_Utf8Const *);
   friend jshort _Jv_AppendPartialITable (jclass, jclass, void **, jshort);
   friend jshort _Jv_FindIIndex (jclass *, jshort *, jshort);
+
+  // Return array class corresponding to element type KLASS, creating it if
+  // neccessary.
+  inline friend jclass
+  _Jv_GetArrayClass (jclass klass, java::lang::ClassLoader *loader)
+  {
+    if (__builtin_expect (!klass->arrayclass, false))
+      _Jv_NewArrayClass (klass, loader);
+    return klass->arrayclass;
+  }
 
 #ifdef INTERPRETER
   friend jboolean _Jv_IsInterpretedClass (jclass);
@@ -302,8 +312,7 @@ private:
   // Class constants.
   _Jv_Constants constants;
   // Methods.  If this is an array class, then this field holds a
-  // pointer to the element type.  If this is a primitive class, this
-  // is used to cache a pointer to the appropriate array type.
+  // pointer to the element type.
   _Jv_Method *methods;
   // Number of methods.  If this class is primitive, this holds the
   // character used to represent this type in a signature.
@@ -337,6 +346,8 @@ private:
   jclass *ancestors;
   // Interface Dispatch Table.
   _Jv_IDispatchTable *idt;
+  // Pointer to the class that represents an array of this class.
+  jclass arrayclass;
 };
 
 #endif /* __JAVA_LANG_CLASS_H__ */

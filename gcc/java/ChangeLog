@@ -1,5 +1,10 @@
 2001-01-05  Bryce McKinlay  <bryce@albatross.co.nz>
 
+	* class.c (make_class_data): Push initial value for "arrayclass".
+	* decl.c (init_decl_processing): Add new class field "arrayclass".
+
+2001-01-05  Bryce McKinlay  <bryce@albatross.co.nz>
+
 	From patha@softlab.ericsson.se:
 	* parse.y (switch_label): Use build, not build1, to construct 
 	DEFAULT_EXPR.

@@ -530,26 +530,35 @@ _Jv_NewClass (_Jv_Utf8Const *name, jclass superclass,
   ret->depth = 0;
   ret->ancestors = NULL;
   ret->idt = NULL;
+  ret->arrayclass = NULL;
 
   _Jv_RegisterClass (ret);
 
   return ret;
 }
 
-jclass
-_Jv_FindArrayClass (jclass element, java::lang::ClassLoader *loader,
-		    _Jv_VTable *array_vtable)
+static _Jv_IDispatchTable *array_idt = NULL;
+static jshort array_depth = 0;
+static jclass *array_ancestors = NULL;
+
+// Create a class representing an array of ELEMENT and store a pointer to it
+// in element->arrayclass. LOADER is the ClassLoader which _initiated_ the 
+// instantiation of this array. ARRAY_VTABLE is the vtable to use for the new 
+// array class. This parameter is optional.
+void
+_Jv_NewArrayClass (jclass element, java::lang::ClassLoader *loader,
+		   _Jv_VTable *array_vtable)
 {
+  JvSynchronize sync (element);
+
   _Jv_Utf8Const *array_name;
   int len;
+
+  if (element->arrayclass)
+    return;
+
   if (element->isPrimitive())
-    {
-      // For primitive types the array is cached in the class.
-      jclass ret = (jclass) element->methods;
-      if (ret)
-	return ret;
-      len = 3;
-    }
+    len = 3;
   else
     len = element->name->length + 5;
 
@@ -557,7 +566,7 @@ _Jv_FindArrayClass (jclass element, java::lang::ClassLoader *loader,
     char signature[len];
     int index = 0;
     signature[index++] = '[';
-    // Compute name of array class to see if we've already cached it.
+    // Compute name of array class.
     if (element->isPrimitive())
       {
 	signature[index++] = (char) element->method_count;
@@ -576,65 +585,76 @@ _Jv_FindArrayClass (jclass element, java::lang::ClassLoader *loader,
     array_name = _Jv_makeUtf8Const (signature, index);
   }
 
-  jclass array_class = _Jv_FindClassInCache (array_name, element->loader);
+  // Create new array class.
+  jclass array_class = _Jv_NewClass (array_name, &ObjectClass,
+  				     element->loader);
 
-  if (! array_class)
+  // Note that `vtable_method_count' doesn't include the initial
+  // gc_descr slot.
+  JvAssert (ObjectClass.vtable_method_count == NUM_OBJECT_METHODS);
+  int dm_count = ObjectClass.vtable_method_count;
+
+  // Create a new vtable by copying Object's vtable (except the
+  // class pointer, of course).  Note that we allocate this as
+  // unscanned memory -- the vtables are handled specially by the
+  // GC.
+  int size = (sizeof (_Jv_VTable) + ((dm_count - 1) * sizeof (void *)));
+  _Jv_VTable *vtable;
+  if (array_vtable)
+    vtable = array_vtable;
+  else
+    vtable = (_Jv_VTable *) _Jv_AllocBytes (size);
+  vtable->clas = array_class;
+  memcpy (vtable->method, ObjectClass.vtable->method,
+	  dm_count * sizeof (void *));
+  vtable->gc_descr = ObjectClass.vtable->gc_descr;
+  array_class->vtable = vtable;
+  array_class->vtable_method_count = ObjectClass.vtable_method_count;
+
+  // Stash the pointer to the element type.
+  array_class->methods = (_Jv_Method *) element;
+
+  // Register our interfaces.
+  static jclass interfaces[] = { &CloneableClass, &SerializableClass };
+  array_class->interfaces = interfaces;
+  array_class->interface_count = sizeof interfaces / sizeof interfaces[0];
+
+  // Since all array classes have the same interface dispatch table, we can 
+  // cache one and reuse it. It is not neccessary to synchronize this.
+  if (!array_idt)
     {
-      // Create new array class.
-      array_class = _Jv_NewClass (array_name, &ObjectClass, element->loader);
-
-      // Note that `vtable_method_count' doesn't include the initial
-      // gc_descr slot.
-      JvAssert (ObjectClass.vtable_method_count == NUM_OBJECT_METHODS);
-      int dm_count = ObjectClass.vtable_method_count;
-
-      // Create a new vtable by copying Object's vtable (except the
-      // class pointer, of course).  Note that we allocate this as
-      // unscanned memory -- the vtables are handled specially by the
-      // GC.
-      int size = (sizeof (_Jv_VTable) + ((dm_count - 1) * sizeof (void *)));
-      _Jv_VTable *vtable;
-      if (array_vtable)
-	vtable = array_vtable;
-      else
-	vtable = (_Jv_VTable *) _Jv_AllocBytes (size);
-      vtable->clas = array_class;
-      memcpy (vtable->method, ObjectClass.vtable->method,
-	      dm_count * sizeof (void *));
-      vtable->gc_descr = ObjectClass.vtable->gc_descr;
-      array_class->vtable = vtable;
-      array_class->vtable_method_count = ObjectClass.vtable_method_count;
-
-      // Stash the pointer to the element type.
-      array_class->methods = (_Jv_Method *) element;
-
-      // Register our interfaces.
-      static jclass interfaces[] = { &CloneableClass, &SerializableClass };
-      array_class->interfaces = interfaces;
-      array_class->interface_count = sizeof interfaces / sizeof interfaces[0];
-
-      // FIXME: Shouldn't this be synchronized? _Jv_PrepareConstantTimeTables
-      // needs to be called with the mutex for array_class held.
-      // Generate the interface dispatch table.
       _Jv_PrepareConstantTimeTables (array_class);
-
-      // as per vmspec 5.3.3.2
-      array_class->accflags = element->accflags;
-
-      // FIXME: initialize other Class instance variables,
-      // e.g. `fields'.
-
-      // say this class is initialized and ready to go!
-      array_class->state = JV_STATE_DONE;
-
-      // vmspec, section 5.3.3 describes this
-      if (element->loader != loader)
-	_Jv_RegisterInitiatingLoader (array_class, loader);
+      array_idt = array_class->idt;
+      array_depth = array_class->depth;
+      array_ancestors = array_class->ancestors;
+    }
+  else
+    {
+      array_class->idt = array_idt;
+      array_class->depth = array_depth;
+      array_class->ancestors = array_ancestors;
     }
 
-  // For primitive types, point back at this array.
-  if (element->isPrimitive())
-    element->methods = (_Jv_Method *) array_class;
+  using namespace java::lang::reflect;
+  {
+    // Array classes are "abstract final"...
+    _Jv_ushort accflags = Modifier::FINAL | Modifier::ABSTRACT;
+    // ... and inherit accessibility from element type, per vmspec 5.3.3.2
+    accflags |= (element->accflags & Modifier::PUBLIC);
+    accflags |= (element->accflags & Modifier::PROTECTED);
+    accflags |= (element->accflags & Modifier::PRIVATE);      
+    array_class->accflags = accflags;
+  }
 
-  return array_class;
+  // An array class has no visible instance fields. "length" is invisible to 
+  // reflection.
+
+  // say this class is initialized and ready to go!
+  array_class->state = JV_STATE_DONE;
+
+  // vmspec, section 5.3.3 describes this
+  if (element->loader != loader)
+    _Jv_RegisterInitiatingLoader (array_class, loader);
+
+  element->arrayclass = array_class;
 }

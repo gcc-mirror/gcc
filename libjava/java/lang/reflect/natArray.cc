@@ -54,7 +54,7 @@ java::lang::reflect::Array::newInstance (jclass componentType, jintArray dimensi
   jclass arrayType = componentType;
   for (int i = 0;  i < ndims;  i++)  // FIXME 2nd arg should 
                                      // be "current" loader
-    arrayType = _Jv_FindArrayClass (arrayType, 0);
+    arrayType = _Jv_GetArrayClass (arrayType, 0);
 
   return _Jv_NewMultiArray (arrayType, ndims, dims);
 }
