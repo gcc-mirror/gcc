@@ -3863,7 +3863,7 @@ thread_jumps (void)
 	  count = e->count;
 	  freq = EDGE_FREQUENCY (e);
 
-	  /* Now walk through as many forwarder block as possible to
+	  /* Now walk through as many forwarder blocks as possible to
 	     find the ultimate destination we want to thread our jump
 	     to.  */
 	  last = EDGE_SUCC (e->dest, 0);
