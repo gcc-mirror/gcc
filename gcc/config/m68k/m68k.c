@@ -58,6 +58,7 @@ rtx legitimize_pic_address ();
    all PIC references were deleted from the current function.  That would 
    save an address register */
    
+void
 finalize_pic ()
 {
   if (flag_pic && current_function_uses_pic_offset_table)
