@@ -1905,6 +1905,10 @@ main (argc, argv)
     }
   }
 
+  if (pcp_outfile && pcp_outfile != stdout
+      && (ferror (pcp_outfile) || fclose (pcp_outfile) != 0))
+    fatal ("I/O error on `-pcp' output");
+
   if (ferror (stdout) || fclose (stdout) != 0)
     fatal ("I/O error on output");
 
@@ -4687,9 +4691,9 @@ write_output ()
 	sprintf (line_command, "\n# %d \"%s\"\n",
 		 next_string->lineno, next_string->filename);
 	if (write (fileno (stdout), line_command, strlen (line_command)) < 0)
-	  perror_with_name (out_fname);
+	  pfatal_with_name (out_fname);
 	if (write (fileno (stdout), next_string->contents, next_string->len) < 0)
-	  perror_with_name (out_fname);
+	  pfatal_with_name (out_fname);
       }	      
       next_string = next_string->chain;
     }
@@ -4700,7 +4704,7 @@ write_output ()
 	     : outbuf.bufp - cur_buf_loc);
       
       if (write (fileno (stdout), cur_buf_loc, len) < len)
-	perror_with_name (out_fname);
+	pfatal_with_name (out_fname);
       cur_buf_loc += len;
     }
   }
