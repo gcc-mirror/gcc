@@ -1,5 +1,13 @@
 2000-02-01  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
+	* fixinc.irix: Use unique filenames for writing into /tmp,
+	* fixinc.ptx: Likewise.
+	* fixinc.sco: Likewise.
+	* fixinc.svr4: Likewise.
+	* fixinc.winnt: Likewise.
+
+2000-02-01  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
 	* tsystem.h: New file.
 
 	* Makefile.in (libgcc2.a, stmp-multilib, crtbegin.o, crtend.o,

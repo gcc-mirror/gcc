@@ -267,7 +267,7 @@ done
 # Fix first broken decl of getcwd present on some svr4 systems.
 
 file=stdlib.h
-base=`basename $file`
+base=`basename $file`.$$
 if [ -r ${LIB}/$file ]; then
   file_to_fix=${LIB}/$file
 else
@@ -295,7 +295,7 @@ fi
 # fix the incorrect decl of profil present on some svr4 systems.
 
 file=unistd.h
-base=`basename $file`
+base=`basename $file`.$$
 if [ -r ${LIB}/$file ]; then
   file_to_fix=${LIB}/$file
 else
@@ -324,7 +324,7 @@ fi
 # and so that it is correct for both C and C++.
 
 file=sys/param.h
-base=`basename $file`
+base=`basename $file`.$$
 if [ -r ${LIB}/$file ]; then
   file_to_fix=${LIB}/$file
 else
@@ -363,7 +363,7 @@ fi
 # and so that it is correct for both C and C++.
 
 file=stdio.h
-base=`basename $file`
+base=`basename $file`.$$
 if [ -r ${LIB}/$file ]; then
   file_to_fix=${LIB}/$file
 else
@@ -399,7 +399,7 @@ fi
 # and so that it is correct for both C and C++.
 
 file=dbm.h
-base=`basename $file`
+base=`basename $file`.$$
 if [ -r ${LIB}/$file ]; then
   file_to_fix=${LIB}/$file
 else
@@ -436,7 +436,7 @@ fi
 # Add a prototyped declaration of mmap to <sys/mman.h>.
 
 file=sys/mman.h
-base=`basename $file`
+base=`basename $file`.$$
 if [ -r ${LIB}/$file ]; then
   file_to_fix=${LIB}/$file
 else
@@ -476,7 +476,7 @@ fi
 # any of this stuff when on Solaris.
 
 file=ftw.h
-base=`basename $file`
+base=`basename $file`.$$
 if [ -r ${LIB}/$file ]; then
   file_to_fix=${LIB}/$file
 else
@@ -537,7 +537,7 @@ fi
 # Avoid the definition of the bool type in the Solaris 2.x curses.h when using
 # g++, since it's now an official type in the C++ language.
 file=curses.h
-base=`basename $file`
+base=`basename $file`.$$
 if [ -r ${LIB}/$file ]; then
   file_to_fix=${LIB}/$file
 else
@@ -573,7 +573,7 @@ fi
 # such a declaration.
 
 file=regexp.h
-base=`basename $file`
+base=`basename $file`.$$
 if [ -r ${LIB}/$file ]; then
   file_to_fix=${LIB}/$file
 else
@@ -611,7 +611,7 @@ fi
 # delete the lines that #define some string functions to internal forms.
 
 file=string.h
-base=`basename $file`
+base=`basename $file`.$$
 if [ -r ${LIB}/$file ]; then
   file_to_fix=${LIB}/$file
 else
@@ -644,7 +644,7 @@ fi
 # (guessing it is necessary for all of them).
 
 file=ieeefp.h
-base=`basename $file`
+base=`basename $file`.$$
 if [ -r ${LIB}/$file ]; then
   file_to_fix=${LIB}/$file
 else
@@ -677,7 +677,7 @@ fi
 # Also fix types of SIG_DFL, SIG_ERR, SIG_IGN, and SIG_HOLD.
 
 file=sys/signal.h
-base=`basename $file`
+base=`basename $file`.$$
 if [ -r ${LIB}/$file ]; then
   file_to_fix=${LIB}/$file
 else
@@ -709,7 +709,7 @@ fi
 # Fix declarations of `makedev', `major', and `minor' in <sys/mkdev.h>.
 
 file=sys/mkdev.h
-base=`basename $file`
+base=`basename $file`.$$
 if [ -r ${LIB}/$file ]; then
   file_to_fix=${LIB}/$file
 else
@@ -749,7 +749,7 @@ fi
 # Fix reference to NMSZ in <sys/adv.h>.
 
 file=sys/adv.h
-base=`basename $file`
+base=`basename $file`.$$
 if [ -r ${LIB}/$file ]; then
   file_to_fix=${LIB}/$file
 else
@@ -777,7 +777,7 @@ fi
 # array initializers.
 
 file=sys/netcspace.h
-base=`basename $file`
+base=`basename $file`.$$
 if [ -r ${LIB}/$file ]; then
   file_to_fix=${LIB}/$file
 else
@@ -805,7 +805,7 @@ fi
 # Conditionalize all of <fs/rfs/rf_cache.h> on _KERNEL being defined.
 
 file=fs/rfs/rf_cache.h
-base=`basename $file`
+base=`basename $file`.$$
 if [ -r ${LIB}/$file ]; then
   file_to_fix=${LIB}/$file
 else
@@ -834,7 +834,7 @@ fi
 # Conditionalize all of <sys/erec.h> on _KERNEL being defined.
 
 file=sys/erec.h
-base=`basename $file`
+base=`basename $file`.$$
 if [ -r ${LIB}/$file ]; then
   file_to_fix=${LIB}/$file
 else
@@ -863,7 +863,7 @@ fi
 # Conditionalize all of <sys/err.h> on _KERNEL being defined.
 
 file=sys/err.h
-base=`basename $file`
+base=`basename $file`.$$
 if [ -r ${LIB}/$file ]; then
   file_to_fix=${LIB}/$file
 else
@@ -892,7 +892,7 @@ fi
 # Conditionalize all of <sys/char.h> on _KERNEL being defined.
 
 file=sys/char.h
-base=`basename $file`
+base=`basename $file`.$$
 if [ -r ${LIB}/$file ]; then
   file_to_fix=${LIB}/$file
 else
@@ -921,7 +921,7 @@ fi
 # Conditionalize all of <sys/getpages.h> on _KERNEL being defined.
 
 file=sys/getpages.h
-base=`basename $file`
+base=`basename $file`.$$
 if [ -r ${LIB}/$file ]; then
   file_to_fix=${LIB}/$file
 else
@@ -950,7 +950,7 @@ fi
 # Conditionalize all of <sys/map.h> on _KERNEL being defined.
 
 file=sys/map.h
-base=`basename $file`
+base=`basename $file`.$$
 if [ -r ${LIB}/$file ]; then
   file_to_fix=${LIB}/$file
 else
@@ -979,7 +979,7 @@ fi
 # Conditionalize all of <sys/cmn_err.h> on _KERNEL being defined.
 
 file=sys/cmn_err.h
-base=`basename $file`
+base=`basename $file`.$$
 if [ -r ${LIB}/$file ]; then
   file_to_fix=${LIB}/$file
 else
@@ -1008,7 +1008,7 @@ fi
 # Conditionalize all of <sys/kdebugger.h> on _KERNEL being defined.
 
 file=sys/kdebugger.h
-base=`basename $file`
+base=`basename $file`.$$
 if [ -r ${LIB}/$file ]; then
   file_to_fix=${LIB}/$file
 else
@@ -1038,7 +1038,7 @@ fi
 # This has been taken out because it breaks on some versions of
 # DYNIX/ptx, and it does not seem to do much good on any system.
 # file=netinet/in.h
-# base=`basename $file`
+# base=`basename $file`.$$
 # if [ -r ${LIB}/$file ]; then
 #   file_to_fix=${LIB}/$file
 # else
@@ -1068,7 +1068,7 @@ fi
 # Conditionalize some of <sys/endian.h> on __GNUC__ and __GNUG__.
 
 file=sys/endian.h
-base=`basename $file`
+base=`basename $file`.$$
 if [ -r ${LIB}/$file ]; then
   file_to_fix=${LIB}/$file
 else
@@ -1101,7 +1101,7 @@ fi
 ## In sys/types.h, don't name the enum for booleans.
 #
 #file=sys/types.h
-#base=`basename $file`
+#base=`basename $file`.$$
 #if [ -r ${LIB}/$file ]; then
 #  file_to_fix=${LIB}/$file
 #else
@@ -1126,7 +1126,7 @@ fi
 # <sys/stream.h> and <sys/strsubr.h>
 
 file=sys/stream.h
-base=`basename $file`
+base=`basename $file`.$$
 if [ -r ${LIB}/$file ]; then
   file_to_fix=${LIB}/$file
 else
@@ -1154,7 +1154,7 @@ if [ \! -z "$file_to_fix" ]; then
 fi
 
 file=sys/strsubr.h
-base=`basename $file`
+base=`basename $file`.$$
 if [ -r ${LIB}/$file ]; then
   file_to_fix=${LIB}/$file
 else
@@ -1185,7 +1185,7 @@ fi
 
 # Put storage class at start of decl, to avoid warning.
 file=rpc/types.h
-base=`basename $file`
+base=`basename $file`.$$
 if [ -r ${LIB}/$file ]; then
   file_to_fix=${LIB}/$file
 else
@@ -1214,7 +1214,7 @@ fi
 # Convert functions to prototype form, and fix arg names in <sys/stat.h>.
 
 file=sys/stat.h
-base=`basename $file`
+base=`basename $file`.$$
 if [ -r ${LIB}/$file ]; then
   file_to_fix=${LIB}/$file
 else
@@ -1282,7 +1282,7 @@ if [ -x /bin/sony ]; then
     # Change <stdio.h> to not define __filbuf, __flsbuf, and __iob
 
     file=stdio.h
-    base=`basename $file`
+    base=`basename $file`.$$
     if [ -r ${LIB}/$file ]; then
       file_to_fix=${LIB}/$file
     else
@@ -1316,7 +1316,7 @@ if [ -x /bin/sony ]; then
     # Change <ctype.h> to not define __ctype
 
     file=ctype.h
-    base=`basename $file`
+    base=`basename $file`.$$
     if [ -r ${LIB}/$file ]; then
       file_to_fix=${LIB}/$file
     else
@@ -1352,7 +1352,7 @@ fi
 # Solaris 2.1 has this problem.
 
 file=limits.h
-base=`basename $file`
+base=`basename $file`.$$
 if [ -r ${LIB}/$file ]; then
   file_to_fix=${LIB}/$file
 else
@@ -1437,7 +1437,7 @@ fi
 # specific math-*.h file.
 
 file=math.h
-base=`basename $file`
+base=`basename $file`.$$
 if [ -r ${LIB}/$file ]; then
   file_to_fix=${LIB}/$file
 else
@@ -1470,7 +1470,7 @@ fi
 # which conflicts with the fixproto definition.  The fixproto
 # definition and the Solaris definition are used the same way.
 for file in math.h floatingpoint.h; do
-  base=`basename $file`
+  base=`basename $file`.$$
   if [ -r ${LIB}/$file ]; then
     file_to_fix=${LIB}/$file
   else
@@ -1505,7 +1505,7 @@ done
 # redefine it to __math_exception.  This is not a great fix, but I
 # haven't been able to think of anything better.
 file=math.h
-base=`basename $file`
+base=`basename $file`.$$
 if [ -r ${LIB}/$file ]; then
   file_to_fix=${LIB}/$file
 else
@@ -1538,7 +1538,7 @@ fi
 
 # Similarly for struct queue in sys/stream.h.
 file=sys/stream.h
-base=`basename $file`
+base=`basename $file`.$$
 if [ -r ${LIB}/$file ]; then
   file_to_fix=${LIB}/$file
 else
@@ -1574,7 +1574,7 @@ fi
 # installed in <sys/byteorder.h>, just remove the protos.
 set -x
 file=arpa/inet.h
-base=`basename $file`
+base=`basename $file`.$$
 if [ -r ${LIB}/$file ]; then
   file_to_fix=${LIB}/$file
 else

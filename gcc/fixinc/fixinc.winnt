@@ -145,7 +145,7 @@ done
 # Fix first broken decl of getcwd present on some svr4 systems.
 
 file=direct.h
-base=`basename $file`
+base=`basename $file`.$$
 if [ -r ${LIB}/$file ]; then
   file_to_fix=${LIB}/$file
 else
@@ -170,7 +170,7 @@ if [ \! -z "$file_to_fix" ]; then
 fi
 
 file=rpcndr.h
-base=`basename $file`
+base=`basename $file`.$$
 if [ -r ${LIB}/$file ]; then
   file_to_fix=${LIB}/$file
 else
@@ -195,7 +195,7 @@ if [ \! -z "$file_to_fix" ]; then
 fi
 
 file=winnt.h
-base=`basename $file`
+base=`basename $file`.$$
 if [ -r ${LIB}/$file ]; then
   file_to_fix=${LIB}/$file
 else
