@@ -1556,7 +1556,7 @@ final_prescan_insn (rtx insn, rtx *operand ATTRIBUTE_UNUSED,
 /* Prepare for an SI sized move.  */
 
 int
-do_movsi (rtx operands[])
+h8300_expand_movsi (rtx operands[])
 {
   rtx src = operands[1];
   rtx dst = operands[0];

@@ -39,7 +39,7 @@ extern const char *output_simode_bld (int, rtx[]);
 extern void print_operand_address (FILE *, rtx);
 extern void print_operand (FILE *, rtx, int);
 extern void final_prescan_insn (rtx, rtx *, int);
-extern int do_movsi (rtx[]);
+extern int h8300_expand_movsi (rtx[]);
 extern void notice_update_cc (rtx, rtx);
 extern const char *output_logical_op (enum machine_mode, rtx *);
 extern unsigned int compute_logical_op_length (enum machine_mode,
