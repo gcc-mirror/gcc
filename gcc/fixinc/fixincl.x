@@ -5,7 +5,7 @@
  * files which are fixed to work correctly with ANSI C and placed in a
  * directory that GNU C will search.
  *
- * This file contains 142 fixup descriptions.
+ * This file contains 145 fixup descriptions.
  *
  * See README for more information.
  *
@@ -5413,6 +5413,89 @@ typedef void (*__gcc_VOIDFUNCPTR) ();\n\
 
 /* * * * * * * * * * * * * * * * * * * * * * * * * *
  *
+ *  Description of Windiss_Math1 fix
+ */
+tSCC zWindiss_Math1Name[] =
+     "windiss_math1";
+
+/*
+ *  File name selection pattern
+ */
+tSCC zWindiss_Math1List[] =
+  "|math.h|";
+/*
+ *  Machine/OS name selection pattern
+ */
+tSCC* apzWindiss_Math1Machs[] = {
+        "*-*-windiss",
+        (const char*)NULL };
+#define WINDISS_MATH1_TEST_CT  0
+#define aWindiss_Math1Tests   (tTestDesc*)NULL
+
+/*
+ *  Fix Command Arguments for Windiss_Math1
+ */
+static const char* apzWindiss_Math1Patch[] = { "sed",
+    "-e", "s|inline long double cosl.*|#ifndef __GNUC__|",
+    (char*)NULL };
+
+/* * * * * * * * * * * * * * * * * * * * * * * * * *
+ *
+ *  Description of Windiss_Math2 fix
+ */
+tSCC zWindiss_Math2Name[] =
+     "windiss_math2";
+
+/*
+ *  File name selection pattern
+ */
+tSCC zWindiss_Math2List[] =
+  "|math.h|";
+/*
+ *  Machine/OS name selection pattern
+ */
+tSCC* apzWindiss_Math2Machs[] = {
+        "*-*-windiss",
+        (const char*)NULL };
+#define WINDISS_MATH2_TEST_CT  0
+#define aWindiss_Math2Tests   (tTestDesc*)NULL
+
+/*
+ *  Fix Command Arguments for Windiss_Math2
+ */
+static const char* apzWindiss_Math2Patch[] = { "sed",
+    "-e", "s|/\\* long double declarations \\*/|#endif /* __GNUC__ */|",
+    (char*)NULL };
+
+/* * * * * * * * * * * * * * * * * * * * * * * * * *
+ *
+ *  Description of Windiss_Valist fix
+ */
+tSCC zWindiss_ValistName[] =
+     "windiss_valist";
+
+/*
+ *  File name selection pattern
+ */
+#define zWindiss_ValistList (char*)NULL
+/*
+ *  Machine/OS name selection pattern
+ */
+tSCC* apzWindiss_ValistMachs[] = {
+        "*-*-windiss",
+        (const char*)NULL };
+#define WINDISS_VALIST_TEST_CT  0
+#define aWindiss_ValistTests   (tTestDesc*)NULL
+
+/*
+ *  Fix Command Arguments for Windiss_Valist
+ */
+static const char* apzWindiss_ValistPatch[] = { "sed",
+    "-e", "s|diab/va_list.h|stdarg.h|",
+    (char*)NULL };
+
+/* * * * * * * * * * * * * * * * * * * * * * * * * *
+ *
  *  Description of X11_Class fix
  */
 tSCC zX11_ClassName[] =
@@ -5583,7 +5666,7 @@ static const char* apzX11_SprintfPatch[] = {
  */
 #define REGEX_COUNT          151
 #define MACH_LIST_SIZE_LIMIT 279
-#define FIX_COUNT            142
+#define FIX_COUNT            145
 
 /*
  *  Enumerate the fixes
@@ -5727,6 +5810,9 @@ typedef enum {
     VXWORKS_NEEDS_VXTYPES_FIXIDX,
     VXWORKS_NEEDS_VXWORKS_FIXIDX,
     VXWORKS_TIME_FIXIDX,
+    WINDISS_MATH1_FIXIDX,
+    WINDISS_MATH2_FIXIDX,
+    WINDISS_VALIST_FIXIDX,
     X11_CLASS_FIXIDX,
     X11_CLASS_USAGE_FIXIDX,
     X11_NEW_FIXIDX,
@@ -6423,6 +6509,21 @@ tFixDesc fixDescList[ FIX_COUNT ] = {
      apzVxworks_TimeMachs,
      VXWORKS_TIME_TEST_CT, FD_MACH_ONLY | FD_SUBROUTINE,
      aVxworks_TimeTests,   apzVxworks_TimePatch, 0 },
+
+  {  zWindiss_Math1Name,    zWindiss_Math1List,
+     apzWindiss_Math1Machs,
+     WINDISS_MATH1_TEST_CT, FD_MACH_ONLY,
+     aWindiss_Math1Tests,   apzWindiss_Math1Patch, 0 },
+
+  {  zWindiss_Math2Name,    zWindiss_Math2List,
+     apzWindiss_Math2Machs,
+     WINDISS_MATH2_TEST_CT, FD_MACH_ONLY,
+     aWindiss_Math2Tests,   apzWindiss_Math2Patch, 0 },
+
+  {  zWindiss_ValistName,    zWindiss_ValistList,
+     apzWindiss_ValistMachs,
+     WINDISS_VALIST_TEST_CT, FD_MACH_ONLY,
+     aWindiss_ValistTests,   apzWindiss_ValistPatch, 0 },
 
   {  zX11_ClassName,    zX11_ClassList,
      apzX11_ClassMachs,

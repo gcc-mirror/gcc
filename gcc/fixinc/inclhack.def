@@ -3310,6 +3310,40 @@ fix = {
 };
 
 
+/* 
+ * WindISS math.h headers include bogus extern declarations of 
+ * numerous math functions that conflict with libstdc++-v3.
+ */
+fix = {
+    hackname  = windiss_math1;
+    files     = math.h;
+    mach      = "*-*-windiss";
+    sed       = "s|inline long double cosl.*|#ifndef __GNUC__|";
+
+    test_text = "inline long double cosl(long double);";
+};
+
+fix = {
+    hackname  = windiss_math2;
+    files     = math.h;
+    mach      = "*-*-windiss";
+    sed       = "s|/\\* long double declarations \\*/|"
+                  "#endif /* __GNUC__ */|";
+
+    test_text = "/* long double declarations */";
+};
+
+/*
+ * WindISS headers include "diab/va_list.h" instead of "stdarg.h"
+ */
+fix = {
+    hackname  = windiss_valist;
+    sed       = "s|diab/va_list.h|stdarg.h|";
+    mach      = "*-*-windiss";
+
+    test_text = "#include <diab/va_list.h>";
+};
+
 /*
  *  There are several name conflicts with C++ reserved words in X11 header
  *  files.  These are fixed in some versions, so don't do the fixes if
