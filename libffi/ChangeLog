@@ -1,3 +1,8 @@
+2001-04-25 Hans Boehm <Hans_Boehm@hp.com>
+
+	* src/ia64/unix.S: Restore stack pointer when returning from
+	ffi_closure_UNIX.
+
 2001-04-18  Jim Wilson  <wilson@redhat.com>
 
 	* src/ia64/unix.S: Delete unnecessary increment and decrement of loc2
