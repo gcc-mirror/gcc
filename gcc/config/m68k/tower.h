@@ -100,7 +100,7 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #define REGISTER_PREFIX "%"
 
 #undef IMMEDIATE_PREFIX
-#define IMMEDIATE_PREFIX
+#define IMMEDIATE_PREFIX "&"
 
 /* We do not want leading underscores.  */
 
