@@ -12,6 +12,7 @@ details.  */
 
 #include "exception"
 #include <stddef.h>
+#include <stdlib.h>
 
 #include <java/lang/Class.h>
 #include <java/lang/NullPointerException.h>
@@ -36,9 +37,6 @@ extern "C" void __throw () __attribute__ ((__noreturn__));
 extern "C" void __sjthrow () __attribute__ ((__noreturn__));
 extern "C" short __get_eh_table_version (void *table);
 extern "C" short __get_eh_table_language (void *table);
-
-extern "C" void * malloc (size_t);
-extern "C" void free (void *);
 
 
 extern "C" void *
