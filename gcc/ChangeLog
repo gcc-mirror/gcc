@@ -1,3 +1,8 @@
+2002-12-09  Steve Ellcey  <sje@cup.hp.com>
+
+	* config/ia64/ia64.c (ia64_hpux_asm_file_end): Don't send stripped
+	name to globalize_label or assemble_name.
+
 Wed Dec 11 20:15:19 2002  J"orn Rennecke <joern.rennecke@superh.com>
 
 	* sh.h (REG_CLASS_HAS_GENERAL_REG): Only true for SIBCALL_REGS
