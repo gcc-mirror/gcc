@@ -1,3 +1,8 @@
+2000-05-26  Zack Weinberg  <zack@wolery.cumb.org>
+
+	* java/parse.y (find_applicable_accessible_methods_list):
+	Don't add an uninitialized value to the list.
+
 2000-05-25  Tom Tromey  <tromey@cygnus.com>
 
 	* parse.y (resolve_field_access): Don't check DECL_LANG_SPECIFIC

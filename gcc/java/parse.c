@@ -12633,11 +12633,13 @@ find_applicable_accessible_methods_list (lc, class, name, arglist)
 	for (i = 1; i < n; i++)
 	  {
 	    tree t = BINFO_TYPE (TREE_VEC_ELT (basetype_vec, i));
-	    tree rlist;
 	    if (t != object_type_node)
-	      rlist = find_applicable_accessible_methods_list (lc, t,
-							       name, arglist);
-	    list = chainon (rlist, list);
+	      {
+		tree rlist
+		  = find_applicable_accessible_methods_list (lc, t,
+							     name, arglist);
+		list = chainon (rlist, list);
+	      }
 	  }
 	object_done = 0;
       }
