@@ -45,7 +45,9 @@ Boston, MA 02111-1307, USA.  */
    count is in %cl.  Some assemblers require %cl as an argument;
    some don't.  This macro controls what to do: by default, don't
    print %cl.  */
-#define AS3_SHIFT_DOUBLE(a,b,c,d) AS2 (a,c,d)
+#define SHIFT_DOUBLE_OMITS_COUNT 1
+#define AS3_SHIFT_DOUBLE(a,b,c,d) \
+	(SHIFT_DOUBLE_OMITS_COUNT ? AS2 (a,c,d) : AS3 (a,b,c,d))
 
 /* Output the size-letter for an opcode.
    CODE is the letter used in an operand spec (L, B, W, S or Q).
