@@ -1,3 +1,7 @@
+Wed Apr  8 13:09:15 1998  Jim Wilson  <wilson@cygnus.com>
+
+	* execute/980407-1.c: Delete test.  Is duplicate of loop-4.c.
+
 Tue Apr  7 12:01:24 1998  Jim Wilson  <wilson@cygnus.com>
 
 	* execute/980407-1.c: New test from Joern Rennecke.
