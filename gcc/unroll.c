@@ -1662,23 +1662,18 @@ copy_loop_body (copy_start, copy_end, map, exit_label, last_iteration,
 	      int fall_through;
 
 	      /* Never map the label in this case.  */
-	      pattern = copy_rtx (PATTERN (insn));
+	      rtx tmp_pattern = copy_rtx (PATTERN (insn));
 	      
-	      /* Assume a conditional branch, since the code above
-		 does not let unconditional branches be copied.  */
-	      if (! condjump_p (insn))
-		abort ();
-	      fall_through
-		= (XEXP (SET_SRC (PATTERN (insn)), 2) == pc_rtx) + 1;
+	      /* Set the fall through case to the exit label.  If we 
+		 can't do this in place, abort for now.  Maybe
+		 we can do something more sophisticated eventually.  */
 
-	      /* Set the fall through case to the exit label.  Must
-		 create a new label_ref since they can't be shared.  */
-	      XEXP (SET_SRC (pattern), fall_through)
-		= gen_rtx (LABEL_REF, VOIDmode, exit_label);
-		      
-	      /* Set the original branch case to fall through.  */
-	      XEXP (SET_SRC (pattern), 3 - fall_through)
-		= pc_rtx;
+	      if (! invert_exp (tmp_pattern, insn)
+		  || ! redirect_exp (&tmp_pattern, JUMP_LABEL (insn),
+				     exit_label, insn))
+		abort ();
+
+	      pattern = tmp_pattern;
 	    }
 	  else
 	    pattern = copy_rtx_and_substitute (PATTERN (insn), map);
