@@ -1,3 +1,10 @@
+2002-01-03  Graham Stott  <grahams@redhat.com>
+
+	* cppinit.c: Update copyright date.
+	Don't include output.h
+	* Makefile.in: Update copyright date.
+	Update dependency.
+
 2002-01-02  Kazu Hirata  <kazu@hxi.com>
 
 	* except.c: Fix comment typos.
@@ -243,7 +250,7 @@ Tue Jan  1 17:12:56 2002  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 	* final.c (struct bb_list): Delete.
 	(struct bb_str): Likewise.
 
-       * cfgloop.c (flow_loop_entry_edges_find): Fix typo.
+	* cfgloop.c (flow_loop_entry_edges_find): Fix typo.
         (flow_loop_exit_edges_find): Likewise.
 
 	* gcse.c (gcse_main): Fix typos.
