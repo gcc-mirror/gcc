@@ -1,3 +1,7 @@
+2000-07-13  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* objc/hash.h: Include string.h.
+
 2000-04-15  David Edelsohn  <edelsohn@gnu.org>
 
 	* Object.m (strlen): 64-bit PowerPC is a 64bit platform as well.
