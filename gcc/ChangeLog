@@ -4,6 +4,10 @@ Thu May 27 02:40:48 1999  J"orn Rennecke <amylaar@cygnus.co.uk>
 
 Thu May 27 02:09:27 1999  Jeffrey A Law  (law@cygnus.com)
 
+	* varasm.c (STRIP_NAME_ENCODING): Remove default definition.
+	* output.h (STRIP_NAME_ENCODING): Strip '*' like the old varasm
+	version did.
+
 	* reload.c (push_reload): Do not call remove_address_replacements
 	when presented with identical optional reloads.
 

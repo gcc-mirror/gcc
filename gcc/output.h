@@ -506,8 +506,10 @@ extern FILE *rtl_dump_file;
 /* User label prefix in effect for this compilation.  */
 extern const char *user_label_prefix;
 
-/* Define a default version of STRIP_NAME_ENCODING so that we can use
-   it without a mess of #ifdefs.  */
+/* This macro gets just the user-specified name
+   out of the string in a SYMBOL_REF.  On most machines,
+   we discard the * if any and that's all.  */
 #ifndef STRIP_NAME_ENCODING
-#define STRIP_NAME_ENCODING(TARGET,SOURCE)  (TARGET = SOURCE)
+#define STRIP_NAME_ENCODING(VAR,SYMBOL_NAME) \
+  (VAR) = ((SYMBOL_NAME) + ((SYMBOL_NAME)[0] == '*'))
 #endif
