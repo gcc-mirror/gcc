@@ -148,6 +148,12 @@ Boston, MA 02111-1307, USA.  */
 
 #define ASM_OUTPUT_SPECIAL_POOL_ENTRY_P(X, MODE)  0
 
+/* Unlike most other PowerPC targets, chars are signed, for
+   consistency with other Darwin architectures.  */
+
+#undef DEFAULT_SIGNED_CHAR
+#define DEFAULT_SIGNED_CHAR (1)
+
 /* Given an rtx X being reloaded into a reg required to be      
    in class CLASS, return the class of reg to actually use.     
    In general this is just CLASS; but on some machines
