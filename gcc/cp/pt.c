@@ -1838,7 +1838,7 @@ check_explicit_specialization (tree declarator,
 	      methods = CLASSTYPE_METHOD_VEC (ctype);
 	      if (methods)
 		for (idx = CLASSTYPE_FIRST_CONVERSION_SLOT;
-		     (ovl = VEC_iterate (tree, methods, idx));
+		     VEC_iterate (tree, methods, idx, ovl);
 		     ++idx)
 		  {
 		    if (!DECL_CONV_FN_P (OVL_CURRENT (ovl)))

@@ -1319,8 +1319,7 @@ lookup_conversion_operator (tree class_type, tree type)
 
   for (pass = 0; pass < 2; ++pass)
     for (i = CLASSTYPE_FIRST_CONVERSION_SLOT; 
-	 (fn = VEC_iterate (tree, methods, i));
-	 ++i)
+	 VEC_iterate (tree, methods, i, fn); ++i)
       {
 	/* All the conversion operators come near the beginning of the
 	   class.  Therefore, if FN is not a conversion operator, there
@@ -1410,7 +1409,7 @@ lookup_fnfields_1 (tree type, tree name)
 
   /* Skip the conversion operators.  */
   for (i = CLASSTYPE_FIRST_CONVERSION_SLOT;
-       (fn = VEC_iterate (tree, method_vec, i));
+       VEC_iterate (tree, method_vec, i, fn);
        ++i)
     if (!DECL_CONV_FN_P (OVL_CURRENT (fn)))
       break;
@@ -1442,9 +1441,7 @@ lookup_fnfields_1 (tree type, tree name)
 	}
     }
   else
-    for (; 
-	 (fn = VEC_iterate (tree, method_vec, i));
-	 ++i)
+    for (; VEC_iterate (tree, method_vec, i, fn); ++i)
       {
 #ifdef GATHER_STATISTICS
 	n_outer_fields_searched++;
@@ -1887,6 +1884,7 @@ get_pure_virtuals (tree type)
 {
   unsigned ix;
   tree binfo;
+  VEC (tree) *vbases;
 
   /* Clear the CLASSTYPE_PURE_VIRTUALS list; whatever is already there
      is going to be overridden.  */
@@ -1903,8 +1901,8 @@ get_pure_virtuals (tree type)
   /* Put the pure virtuals in dfs order.  */
   CLASSTYPE_PURE_VIRTUALS (type) = nreverse (CLASSTYPE_PURE_VIRTUALS (type));
 
-  for (ix = 0; (binfo = VEC_iterate
-		(tree, CLASSTYPE_VBASECLASSES (type), ix)); ix++)
+  for (vbases = CLASSTYPE_VBASECLASSES (type), ix = 0;
+       VEC_iterate (tree, vbases, ix, binfo); ix++)
     {
       tree virtuals;
       
@@ -2078,12 +2076,12 @@ add_conversions (tree binfo, void *data)
     return NULL_TREE;
 
   for (i = CLASSTYPE_FIRST_CONVERSION_SLOT; 
-       (tmp = VEC_iterate (tree, method_vec, i));
+       VEC_iterate (tree, method_vec, i, tmp);
        ++i)
     {
       tree name;
 
-      if (!tmp || ! DECL_CONV_FN_P (OVL_CURRENT (tmp)))
+      if (!DECL_CONV_FN_P (OVL_CURRENT (tmp)))
 	break;
 
       name = DECL_NAME (OVL_CURRENT (tmp));
@@ -2153,6 +2151,7 @@ dfs_check_overlap (tree empty_binfo, void *data)
 {
   struct overlap_info *oi = (struct overlap_info *) data;
   tree binfo;
+  
   for (binfo = TYPE_BINFO (oi->compare_type); 
        ; 
        binfo = BINFO_BASE_BINFO (binfo, 0))
@@ -2308,9 +2307,10 @@ binfo_for_vbase (tree base, tree t)
 {
   unsigned ix;
   tree binfo;
+  VEC (tree) *vbases;
   
-  for (ix = 0; (binfo = VEC_iterate
-		(tree, CLASSTYPE_VBASECLASSES (t), ix)); ix++)
+  for (vbases = CLASSTYPE_VBASECLASSES (t), ix = 0;
+       VEC_iterate (tree, vbases, ix, binfo); ix++)
     if (BINFO_TYPE (binfo) == base)
       return binfo;
   return NULL;

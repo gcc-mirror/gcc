@@ -801,12 +801,13 @@ void
 add_method (tree type, tree method)
 {
   int using;
-  size_t len;
-  size_t slot;
+  unsigned slot;
   tree overload;
   int template_conv_p;
   VEC(tree) *method_vec;
   bool complete_p;
+  bool insert_p = false;
+  tree current_fns;
 
   if (method == error_mark_node)
     return;
@@ -830,8 +831,6 @@ add_method (tree type, tree method)
       CLASSTYPE_METHOD_VEC (type) = method_vec;
     }
 
-  len = VEC_length (tree, method_vec);
-
   /* Constructors and destructors go in special slots.  */
   if (DECL_MAYBE_IN_CHARGE_CONSTRUCTOR_P (method))
     slot = CLASSTYPE_CONSTRUCTOR_SLOT;
@@ -848,13 +847,13 @@ add_method (tree type, tree method)
     }
   else
     {
-      bool insert_p = true;
       bool conv_p = DECL_CONV_FN_P (method);
       tree m;
 
+      insert_p = true;
       /* See if we already have an entry with this name.  */
       for (slot = CLASSTYPE_FIRST_CONVERSION_SLOT; 
-	   (m = VEC_iterate (tree, method_vec, slot));
+	   VEC_iterate (tree, method_vec, slot, m);
 	   ++slot)
 	{
 	  m = OVL_CURRENT (m);
@@ -877,25 +876,9 @@ add_method (tree type, tree method)
 	      && DECL_NAME (m) > DECL_NAME (method))
 	    break;
 	}
-
-	/* If we need a new slot, make room.  */
-	if (insert_p)
-	  {
-	    /* We expect to add few methods in the COMPLETE_P case, so
-	       just make room for one more method.  */
-	    if (complete_p)
-	      VEC_reserve (tree, method_vec, 1);
-	    if (slot == len)
-	      VEC_safe_push (tree, method_vec, NULL_TREE);
-	    else
-	      VEC_safe_insert (tree, method_vec, slot, NULL_TREE);
-	    len++;
-	    /* Inserting a new slot may have caused the vector to be
-	       reallocated.  */
-	    CLASSTYPE_METHOD_VEC (type) = method_vec;
-	  }
     }
-      
+  current_fns = insert_p ? NULL_TREE : VEC_index (tree, method_vec, slot);
+  
   if (processing_template_decl)
     /* TYPE is a template class.  Don't issue any errors now; wait
        until instantiation time to complain.  */
@@ -905,9 +888,7 @@ add_method (tree type, tree method)
       tree fns;
 
       /* Check to see if we've already got this method.  */
-      for (fns = VEC_index (tree, method_vec, slot);
-	   fns;
-	   fns = OVL_NEXT (fns))
+      for (fns = current_fns; fns; fns = OVL_NEXT (fns))
 	{
 	  tree fn = OVL_CURRENT (fns);
 	  tree parms1;
@@ -975,14 +956,25 @@ add_method (tree type, tree method)
     }
 
   /* Add the new binding.  */ 
-  overload = build_overload (method, VEC_index (tree, method_vec, slot));
-  if (!DECL_CONSTRUCTOR_P (method)
-      && !DECL_DESTRUCTOR_P (method)
-      && !complete_p)
+  overload = build_overload (method, current_fns);
+  
+  if (slot >= CLASSTYPE_FIRST_CONVERSION_SLOT && !complete_p)
     push_class_level_binding (DECL_NAME (method), overload);
 
-  /* Actually insert the new method.  */
-  VEC_replace (tree, method_vec, slot, overload);
+  if (insert_p)
+    {
+      /* We only expect to add few methods in the COMPLETE_P case, so
+	 just make room for one more method in that case.  */
+      if (VEC_reserve (tree, method_vec, complete_p ? 1 : -1))
+	CLASSTYPE_METHOD_VEC (type) = method_vec;
+      if (slot == VEC_length (tree, method_vec))
+	VEC_quick_push (tree, method_vec, overload);
+      else
+	VEC_quick_insert (tree, method_vec, slot, overload);
+    }
+  else
+    /* Replace the current slot. */
+    VEC_replace (tree, method_vec, slot, overload);
 }
 
 /* Subroutines of finish_struct.  */
@@ -1275,8 +1267,9 @@ static void
 determine_primary_base (tree t)
 {
   unsigned i, n_baseclasses = BINFO_N_BASE_BINFOS (TYPE_BINFO (t));
-  tree type_binfo;
+  tree type_binfo = TYPE_BINFO (t);
   tree vbase_binfo;
+  VEC(tree) *vbases;
 
   /* If there are no baseclasses, there is certainly no primary base.  */
   if (n_baseclasses == 0)
@@ -1324,8 +1317,8 @@ determine_primary_base (tree t)
 
   /* Find the indirect primary bases - those virtual bases which are primary
      bases of something else in this hierarchy.  */
-  for (i = 0; (vbase_binfo = VEC_iterate
-	       (tree, CLASSTYPE_VBASECLASSES (t), i)); i++)
+  for (vbases = CLASSTYPE_VBASECLASSES (t), i = 0;
+       VEC_iterate (tree, vbases, i, vbase_binfo); i++)
     {
       unsigned j;
 
@@ -1335,11 +1328,12 @@ determine_primary_base (tree t)
       for (j = 0; j != n_baseclasses; ++j) 
 	{
 	  unsigned k;
+	  VEC (tree) *base_vbases;
 	  tree base_vbase_binfo;
 	  tree basetype = BINFO_TYPE (BINFO_BASE_BINFO (TYPE_BINFO (t), j));
 	  
-	  for (k = 0; (base_vbase_binfo = VEC_iterate
-		       (tree, CLASSTYPE_VBASECLASSES (basetype), k)); k++)
+	  for (base_vbases = CLASSTYPE_VBASECLASSES (basetype), k = 0;
+	       VEC_iterate (tree, base_vbases, k, base_vbase_binfo); k++)
 	    {
 	      if (BINFO_PRIMARY_P (base_vbase_binfo)
 		  && same_type_p (BINFO_TYPE (base_vbase_binfo),
@@ -1677,7 +1671,7 @@ resort_type_method_vec (void* obj,
   /* The type conversion ops have to live at the front of the vec, so we
      can't sort them.  */
   for (slot = CLASSTYPE_FIRST_CONVERSION_SLOT;
-       (fn = VEC_iterate (tree, method_vec, slot));
+       VEC_iterate (tree, method_vec, slot, fn);
        ++slot)
     if (!DECL_CONV_FN_P (OVL_CURRENT (fn)))
       break;
@@ -1738,8 +1732,8 @@ finish_struct_methods (tree t)
 
   /* The type conversion ops have to live at the front of the vec, so we
      can't sort them.  */
-  for (slot = 2;
-       (fn_fields = VEC_iterate (tree, method_vec, slot));
+  for (slot = CLASSTYPE_FIRST_CONVERSION_SLOT;
+       VEC_iterate (tree, method_vec, slot, fn_fields);
        ++slot)
     if (!DECL_CONV_FN_P (OVL_CURRENT (fn_fields)))
       break;
@@ -2369,7 +2363,7 @@ warn_hidden (tree t)
 
   /* We go through each separately named virtual function.  */
   for (i = CLASSTYPE_FIRST_CONVERSION_SLOT; 
-       (fns = VEC_iterate (tree, method_vec, i));
+       VEC_iterate (tree, method_vec, i, fns);
        ++i)
     {
       tree fn;
@@ -3229,6 +3223,7 @@ walk_subobject_offsets (tree type,
       if (abi_version_at_least (2) && CLASSTYPE_VBASECLASSES (type))
 	{
 	  unsigned ix;
+	  VEC (tree) *vbases;
 
 	  /* Iterate through the virtual base classes of TYPE.  In G++
 	     3.2, we included virtual bases in the direct base class
@@ -3236,8 +3231,8 @@ walk_subobject_offsets (tree type,
 	     correct offsets for virtual bases are only known when
 	     working with the most derived type.  */
 	  if (vbases_p)
-	    for (ix = 0; (binfo = VEC_iterate
-			  (tree, CLASSTYPE_VBASECLASSES (type), ix)); ix++)
+	    for (vbases = CLASSTYPE_VBASECLASSES (type), ix = 0;
+		 VEC_iterate (tree, vbases, ix, binfo); ix++)
 	      {
 		r = walk_subobject_offsets (binfo,
 					    f,
@@ -4402,7 +4397,9 @@ static tree
 end_of_class (tree t, int include_virtuals_p)
 {
   tree result = size_zero_node;
+  VEC (tree) *vbases;
   tree binfo;
+  tree base_binfo;
   tree offset;
   int i;
 
@@ -4422,10 +4419,10 @@ end_of_class (tree t, int include_virtuals_p)
 
   /* G++ 3.2 did not check indirect virtual bases.  */
   if (abi_version_at_least (2) && include_virtuals_p)
-    for (i = 0; (binfo = VEC_iterate
-		 (tree, CLASSTYPE_VBASECLASSES (t), i)); i++)
+    for (vbases = CLASSTYPE_VBASECLASSES (t), i = 0;
+	 VEC_iterate (tree, vbases, i, base_binfo); i++)
       {
-	offset = end_of_base (binfo);
+	offset = end_of_base (base_binfo);
 	if (INT_CST_LT_UNSIGNED (result, offset))
 	  result = offset;
       }
@@ -4447,11 +4444,13 @@ static void
 warn_about_ambiguous_bases (tree t)
 {
   int i;
+  VEC (tree) *vbases;
   tree basetype;
   tree binfo;
 
   /* Check direct bases.  */
-  for (i = 0; i < BINFO_N_BASE_BINFOS (TYPE_BINFO (t)); ++i)
+  for (i = 0;
+       i < BINFO_N_BASE_BINFOS (TYPE_BINFO (t)); ++i)
     {
       basetype = BINFO_TYPE (BINFO_BASE_BINFO (TYPE_BINFO (t), i));
 
@@ -4462,8 +4461,8 @@ warn_about_ambiguous_bases (tree t)
 
   /* Check for ambiguous virtual bases.  */
   if (extra_warnings)
-    for (i = 0; (binfo = VEC_iterate
-		 (tree, CLASSTYPE_VBASECLASSES (t), i)); i++)
+    for (vbases = CLASSTYPE_VBASECLASSES (t), i = 0;
+	 VEC_iterate (tree, vbases, i, binfo); i++)
       {
 	basetype = BINFO_TYPE (binfo);
 	
@@ -7237,7 +7236,8 @@ build_vtbl_initializer (tree binfo,
   vtbl_init_data vid;
   unsigned ix;
   tree vbinfo;
-
+  VEC (tree) *vbases;
+  
   /* Initialize VID.  */
   memset (&vid, 0, sizeof (vid));
   vid.binfo = binfo;
@@ -7262,8 +7262,8 @@ build_vtbl_initializer (tree binfo,
   
   /* Clear BINFO_VTABLE_PATH_MARKED; it's set by
      build_vbase_offset_vtbl_entries.  */
-  for (ix = 0; (vbinfo = VEC_iterate
-		(tree, CLASSTYPE_VBASECLASSES (t), ix)); ix++)
+  for (vbases = CLASSTYPE_VBASECLASSES (t), ix = 0;
+       VEC_iterate (tree, vbases, ix, vbinfo); ix++)
     BINFO_VTABLE_PATH_MARKED (vbinfo) = 0;
 
   /* If the target requires padding between data entries, add that now.  */
