@@ -1,7 +1,3 @@
-#ifndef __GNUC__
-/* Use the system's macros with the system's compiler.  */
-#include <varargs.h>
-#else
 /* Record that this is varargs.h; this turns off stdarg.h.  */
 
 #ifndef _VARARGS_H
@@ -177,5 +173,3 @@ typedef __gnuc_va_list va_list;
 #ifdef _BSD_VA_LIST
 #undef _BSD_VA_LIST
 #endif
-
-#endif /* __GNUC__ */
