@@ -2558,7 +2558,7 @@ unsafe_chars (c1, c2)
     case '.':
     case '0': case '1': case '2': case '3': case '4':
     case '5': case '6': case '7': case '8': case '9':
-    case 'e': case 'E':
+    case 'e': case 'E': case 'p': case 'P':
       if (c2 == '-' || c2 == '+')
 	return 1; /* could extend a pre-processing number */
       goto letter;
@@ -2570,12 +2570,12 @@ unsafe_chars (c1, c2)
     case '_':
     case 'a': case 'b': case 'c': case 'd':           case 'f':
     case 'g': case 'h': case 'i': case 'j': case 'k': case 'l':
-    case 'm': case 'n': case 'o': case 'p': case 'q': case 'r':
+    case 'm': case 'n': case 'o':           case 'q': case 'r':
     case 's': case 't': case 'u': case 'v': case 'w': case 'x':
     case 'y': case 'z':
     case 'A': case 'B': case 'C': case 'D':           case 'F':
     case 'G': case 'H': case 'I': case 'J': case 'K':
-    case 'M': case 'N': case 'O': case 'P': case 'Q': case 'R':
+    case 'M': case 'N': case 'O':           case 'Q': case 'R':
     case 'S': case 'T': case 'U': case 'V': case 'W': case 'X':
     case 'Y': case 'Z':
       /* We're in the middle of either a name or a pre-processing number.  */
@@ -4999,7 +4999,9 @@ cpp_get_token (pfile)
 	      if (c == EOF)
 		break;
 	      if (!is_idchar[c] && c != '.'
-		  && ((c2 != 'e' && c2 != 'E') || (c != '+' && c != '-')))
+		  && ((c2 != 'e' && c2 != 'E'
+		       && ((c2 != 'p' && c2 != 'P') || CPP_C89 (pfile)))
+		      || (c != '+' && c != '-')))
 		break;
 	      FORWARD(1);
 	      c2= c;
@@ -6440,15 +6442,20 @@ cpp_handle_options (pfile, argc, argv)
 
       case 'l':
 	if (! strcmp (argv[i], "-lang-c"))
-	  opts->cplusplus = 0, opts->cplusplus_comments = 0, opts->objc = 0;
+	  opts->cplusplus = 0, opts->cplusplus_comments = 1, opts->c89 = 0,
+	  opts->objc = 0;
+	if (! strcmp (argv[i], "-lang-c89"))
+	  opts->cplusplus = 0, opts->cplusplus_comments = 0, opts->c89 = 1,
+	  opts->objc = 0;
 	if (! strcmp (argv[i], "-lang-c++"))
-	  opts->cplusplus = 1, opts->cplusplus_comments = 1, opts->objc = 0;
-	if (! strcmp (argv[i], "-lang-c-c++-comments"))
-	  opts->cplusplus = 0, opts->cplusplus_comments = 1, opts->objc = 0;
+	  opts->cplusplus = 1, opts->cplusplus_comments = 1, opts->c89 = 0,
+	  opts->objc = 0;
 	if (! strcmp (argv[i], "-lang-objc"))
-	  opts->objc = 1, opts->cplusplus = 0, opts->cplusplus_comments = 1;
+	  opts->cplusplus = 0, opts->cplusplus_comments = 1, opts->c89 = 0,
+	  opts->objc = 1;
 	if (! strcmp (argv[i], "-lang-objc++"))
-	  opts->objc = 1, opts->cplusplus = 1, opts->cplusplus_comments = 1;
+	  opts->cplusplus = 1, opts->cplusplus_comments = 1, opts->c89 = 0,
+	  opts->objc = 1;
  	if (! strcmp (argv[i], "-lang-asm"))
  	  opts->lang_asm = 1;
  	if (! strcmp (argv[i], "-lint"))
