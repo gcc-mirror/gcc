@@ -1,5 +1,5 @@
 /* Default target hook functions.
-   Copyright (C) 2003 Free Software Foundation, Inc.
+   Copyright (C) 2003, 2004 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -19,6 +19,9 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 02111-1307, USA.  */
 
 extern void default_external_libcall (rtx);
+
+extern enum machine_mode default_cc_modes_compatible (enum machine_mode,
+						      enum machine_mode);
 
 extern bool default_promote_function_args (tree);
 extern bool default_promote_function_return (tree);
