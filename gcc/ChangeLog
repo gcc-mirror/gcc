@@ -1,3 +1,7 @@
+2000-12-04  Gerald Pfeifer  <pfeifer@dbai.tuwien.ac.at>
+
+	* README.APOLLO: Remove obsolete file.
+
 2000-12-04  Neil Booth  <neilb@earthling.net>
 
         * cppinternals.texi: New file.
