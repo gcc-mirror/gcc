@@ -33,6 +33,11 @@ Wed Nov 26 16:08:50 1997  Richard Henderson  (rth@cygnus.com)
 	* gen-params (va_list): Check for and use __gnuc_va_list.
 	(NULL): Work around some linux kernel headers and redefine NULL.
 
+Mon Nov 24 17:04:18 1997  Michael Meissner  <meissner@cygnus.com>
+
+	* stdiostream.cc (sys_read): Declare ch with int type, rather than
+	without a type.
+
 Tue Nov 18 09:53:58 1997  H.J. Lu  (hjl@gnu.ai.mit.edu)
 
 	* stdstrbufs.cc (DEF_STDFILE): Use STD_VTABLE.
