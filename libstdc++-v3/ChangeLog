@@ -51,30 +51,30 @@
 	* include/bits/type_traits.h: Likewise.
 	* include/bits/valarray_array.h: Likewise.
 	* include/bits/valarray_meta.h: Likewise.
-	
+
 2001-02-19  Andreas Jaeger  <aj@suse.de>
 
-	* config/cpu/sparc/sparc64/bits/atomicity.h (__compare_and_swap):
+     	* config/cpu/sparc/sparc64/bits/atomicity.h (__compare_and_swap):
 	Fix typo.
 
 2001-02-16  Greg Bumgardner <bumgard@roguewave.com>
 
 	libstdc++/1734
         * include/bits/std_ostream.h: Replaced usage of
-        _Traits::_S_eos() with _CharT() as per section 17.2.2.1.3.
+        _Traits::_S_eos() with _CharT() as per section 17.2.2.1.3.  
         * include/bits/char_traits.h: Removed non-standard
-        methods that cannot be used elsewhere.
-
+        methods that cannot be used elsewhere.  
+	
 	libstdc++/1885
         * include/bits/basic_ios.h: Uncommented #include of
-        bits/basic_ios.tcc
-
+        bits/basic_ios.tcc 
+	
 	libstdc++/1897
         * include/bits/codecvt.h: See next...
         * include/bits/fstream.tcc: See next...
-        * include/bits/ostream.tcc: Add __extension__
-        to variable-length arrays.
-
+        * include/bits/ostream.tcc: Add __extension__ 
+        to variable-length arrays.  
+	
 	libstdc++/1967
         * include/bits/localefwd.h: Changed int counter type to size_t.
 
@@ -91,7 +91,7 @@
 2001-02-16  Gabriel Dos Reis  <gdr@codesourcery.com>
 
 	* libmath/mathconf.h (FINITE_P, INFINITE_P): Remove macro
-	definitions.
+	definitions. 
 
 2001-02-15  Benjamin Kosnik  <bkoz@redhat.com>
 
@@ -103,7 +103,7 @@
 	iostate throughout.  Insert `typename' keyword where necessary.
 	* include/bits/ostream.tcc: Insert `typename' keyword where
 	necessary.
-
+	
 2001-02-15  Jeffrey Oldham  <oldham@codesourcery.com>
 
         * include/bits/c++config (_GLIBCPP_FULLY_COMPLIANT_HEADERS):
@@ -274,7 +274,7 @@
 
 2001-02-11  Gabriel Dos Reis  <gdr@codesourcery.com>
 
-	* src/valarray-inst.cc (gslice::_Indexer::_Indexer): Don't flip
+	* src/valarray-inst.cc (gslice::_Indexer::_Indexer): Don't flip 
 	lengths and strides.
 	(__gslice_to_index): Document.
 
@@ -317,7 +317,7 @@
 	* src/Makefile.in: Regenerate.
 	* include/bits/std_stdexcept.h: Rewrite.
 	* src/stdexcept.cc: Same.
-
+	
 2001-02-06  Benjamin Kosnik  <bkoz@redhat.com>
 
 	* acinclude.m4 (GLIBCPP_EXPORT_INSTALL_INFO): Deal with library
@@ -355,7 +355,7 @@
 	__group_digits.
 	* src/locale-inst.cc: Fixup names. Add use_facet instantiations
 	for collate, numpunct.
-
+	
 2001-02-06  Phil Edwards  <pme@sources.redhat.com>
 
 	* docs/html/configopts.html:  Fix HTML markup.
@@ -385,7 +385,7 @@
 	* acinclude.m4 (gxx_include_dir): Quote, fix regression.
 	* aclocal.m4: Regenerate.
 	* configure: Regenerate.
-
+	
 2001-02-05  Benjamin Kosnik  <bkoz@redhat.com>
 
 	* include/bits/locale_facets.h (class moneypunct): Fix typos.
@@ -402,7 +402,7 @@
 	(GLIBCPP_CHECK_MATH_SUPPORT): Remove explicit checks for _* versions.
 	* aclocal.m4: Regenerate.
 	* configure: Regenerate.
-
+	
 2001-02-05  Mark Mitchell  <mark@codesourcery.com>
 
 	* include/bits/locale_facets.tcc: Remove `static' keyword on
@@ -421,14 +421,14 @@
 	installed.
 	* aclocal.m4: Regenerate.
 	* configure.in: Use it.
-	* configure: Regenerate.
+	* configure: Regenerate.	
 	* src/Makefile.am (targetincludep): Use simplified rules.
 	(targetincludep): Rename gxx_target_include_dir.
 	(myincludep): Rename gxx_include_dir.
 	* src/Makefile.in: Regenerate.
 	* libsupc++/Makefile.am: Use simplified rules.
 	* libsupc++/Makefile.in: Regenerate.
-
+	
 2001-02-05  Benjamin Kosnik  <bkoz@redhat.com>
 
 	* include/c_std/bits/std_cerrno.h: Correct date format for copyright.
@@ -436,7 +436,7 @@
 	* include/c_std/bits/std_cassert.h: Same.
 	* include/c_std/bits/std_cstdarg.h: Same.
 	* include/c_std/bits/std_cstddef.h: Same.
-
+	
 	* include/c_std/bits/std_cstdio.h: Undefine all names brought into
 	namespace std.
 	* include/c_std/bits/std_ctime.h: Same.
@@ -447,7 +447,7 @@
 	* include/c_std/bits/std_cstring.h: Same.
 	* include/c_std/bits/std_cstdlib.h: Same.
 	* include/c_std/bits/std_cwchar.h: Same.
-
+	
 2001-02-05  Phil Edwards  <pme@sources.redhat.com>
 
 	* testsuite/27_io/ios_base_members_static.cc:  Swap order of tests.
@@ -476,7 +476,7 @@
         * src/Makefile.am (mkinstalldirs): Set.
         * libmath/Makefile.am (mkinstalldirs): Set.
         * libsup++/Makefile.am (mkinstalldirs): Set.
-        * libio/Makefile.am (mkinstalldirs): Set.
+        * libio/Makefile.am (mkinstalldirs): Set.	
 	* */Makefile.in: Regenerate.
 
 2001-02-03  Benjamin Kosnik  <bkoz@redhat.com>
@@ -491,7 +491,7 @@
 	(_S_ios_openmode_end): Similarly.
 	(_S_ios_iostate_end): Similarly.
 	(_S_ios_Seekdir_end): Similarly.
-
+	
 2001-02-02  Phil Edwards  <pme@sources.redhat.com>
 
 	* mkcheck.in:  Also limit virtual memory size, for mmap-based mallocs.
@@ -521,10 +521,10 @@
 	* src/Makefile.am (sources): Add c++locale.cc.
 	(build_headers): Add c++locale.h.
 	* src/Makefile.in: Regenerate.
-	* config/c_locale_gnu.h: New file.
+	* config/c_locale_gnu.h: New file. 	
 	* config/c_locale_gnu.cc: New file. Non-inline member functions
 	for named locales, gnu-specific.
-	* config/c_locale_generic.h: New file.
+	* config/c_locale_generic.h: New file. 		
 	* config/c_locale_generic.cc: New file. Non-inline member
 	functions for named locales, generic version.
 	* docs/html/configopts.html: Add documentation on new options.
@@ -532,11 +532,11 @@
 	* include/bits/locale_facets.h (class _Messages): Remove.
 	(class _Moneypunct): Remove.
 	* src/locale-inst.cc: Remove.
-
+	
 	* include/bits/locale_facets.h (class _Collate): Remove.
 	* src/locale-inst.cc (std): Remove.
 	* src/locale.cc: And here.
-
+	
 	* include/bits/localefwd.h (locale::_M_coalesce): New
 	function. Correctly put together multi-name locales.
 	(_Impl(const _Impl&, category, size_t)): Remove.
@@ -548,16 +548,16 @@
 
 	* src/localename.cc (locale::_Impl::_M_construct_collate): Remove.
 	(locale::_Impl::_M_construct_ctype): Remove.
-	(locale::_Impl::_M_construct_monetary): Remove.
-	(locale::_Impl::_M_construct_numeric): Remove.
-	(locale::_Impl::_M_construct_time): Remove.
-	(locale::_Impl::_M_construct_messages): Remove.
+	(locale::_Impl::_M_construct_monetary): Remove.	
+	(locale::_Impl::_M_construct_numeric): Remove.	
+	(locale::_Impl::_M_construct_time): Remove.		
+	(locale::_Impl::_M_construct_messages): Remove.		
 
 	* include/bits/locale_facets.h (_Bad_use_facet): Remove.
 	(_Use_facet_failure_handle): Remove.
 	* src/locale.cc: Remove definitions.
 	* src/locale-inst.cc: And here.
-
+	
 	* testsuite/22_locale/ctor_copy_dtor.cc (test01): Fixup. Add tests.
 
 	* src/localename.cc (locale::facet::_S_create_c_locale): Properly
@@ -567,14 +567,14 @@
 	* include/bits/localefwd.h (locale::facet): Declare.
 	* testsuite/22_locale/members.cc: Don't test "fr_FR" locale for
 	correctness, as glibc apparently has incorrect info in it. Test
-	with it when it works again.....
+	with it when it works again.....	
 
 	* include/bits/localefwd.h (locale::_Impl::__vec_string):
 	Remove. Number of categories is fixed at six, so just simplify and
 	make this an array of strings.
 	(locale::_Impl::_M_has_name): Remove.
-	(locale::_Impl::_M_name): Remove.
-	(locale::_Impl::_M_category_names): Turns into...
+	(locale::_Impl::_M_name): Remove.	
+	(locale::_Impl::_M_category_names): Turns into...	
 	(locale::_Impl::_M_names): ...this.
 	(locale::_Impl::_M_has_same_name()): New function.
 	* src/localename.cc (locale::_Impl::~_Impl()): Remove here.
@@ -597,8 +597,8 @@
 
 	* src/locale.cc: Remove numpunct_byname ctors.
 	* testsuite/22_locale/numpunct_byname.cc: New file.
-	* testsuite/22_locale/numpunct.cc: New file.
-
+	* testsuite/22_locale/numpunct.cc: New file.	
+	
 	* include/bits/localefwd.h (class locale): Change data members to
 	protected, from private.
 	(_Impl::_M_get_c_locale): Add member function.
@@ -608,7 +608,7 @@
 	(numpunct::numpunct( __c_locale*, size_t)): Add additonal ctor for
 	named locales.
 	* testsuite/22_locale/members.cc: New file, test name and combine.
-
+	
 	* include/bits/locale_facets.h (class numpunct): Remove class
 	_Punct and _Numpunct. Rewrite class numpunct to be correct for
 	named locales.
@@ -617,7 +617,7 @@
 	(_Imp::_Impl(size_t, size_t, bool, string)) Initialize _M_c_locale.
 	* src/locale-inst.cc: Remove _Numpunct, _Punct instantiations.
 	* testsuite/22_locale/numpunct_char_members.cc: New file.
-
+	
 2001-01-28  Gabriel Dos Reis  <gdr@codesourcery.com>
 
 	* testsuite/README: Add more comment.
@@ -636,7 +636,7 @@
 
 	* config/cpu/alpha/bits/atomicity.h: Remove tricky .subsetion
 	bits. Fixes Tru64 build issues.
-
+	
 2001-01-25  Michael Sokolov  <msokolov@ivan.Harhan.ORG>
 
 	* acinclude.m4 (GLIBCPP_CHECK_GNU_MAKE): Bourne shell portability bug
@@ -676,7 +676,7 @@
 	* tests_flags.in: Remove reference to $(top_srcdir).  Use
 	${SRC_DIR} instead.
 	* Makefile.am (check, check-install): Change mkcheck invocation
-	logic.
+	logic. 
 	* Makefile.in: Regenerate.
 
 2001-01-24  Mark Mitchell  <mark@codesourcery.com>
@@ -703,7 +703,7 @@
 	* acinclude.m4 (GLIBCPP_CHECK_CTYPE_SUPPORT): Remove.
 	(GLIBCPP_ENABLE_ATOMICITY): Remove.
 	* aclocal.m4: Regenerate.
-
+	
 2001-01-23  Chris Demetriou  <cgd@broadcom.com>
 
 	* configure.in: Place definition of MULTISUBDIR in
@@ -764,7 +764,7 @@
 2001-01-19  Gabriel Dos Reis  <gdr@codesourcery.com>
 
 	* testsuite/17_intro: Prepare testcases for new style DejaGnu
-	framework.
+	framework. 
 
 2001-01-18  Gabriel Dos Reis  <gdr@codesourcery.com>
 
@@ -798,7 +798,7 @@
         (what): Same.
 
 	* docs/html/17_intro/C++STYLE (classname): Fix.
-
+	
 2001-01-16  Mark Mitchell  <mark@codesourcery.com>
 
 	* src/gen-num-limits.cc (INSTANTIATIONS): New macro.
@@ -828,7 +828,7 @@
 
 	libstdc++/1019
 	reported by Paolo Carlini <pcarlini@unitus.it>
-	* include/bits/istream.tcc (operator>>(istream&, string&)): Fix.
+	* include/bits/istream.tcc (operator>>(istream&, string&)): Fix. 
 	* testsuite/21_strings/inserters_extractors.cc (test08): Add test.
 
 	libstdc++/1057
@@ -837,7 +837,7 @@
 	(xsgetn): Same. Simplify.
 	* testsuite/27_io/streambuf.cc (test04): Add testcases.
 
-	reported by Larry Evans <jcampbell3@prodigy.net>
+	reported by Larry Evans <jcampbell3@prodigy.net> 
 	* include/bits/streambuf.tcc (streambuf::xsputn): Just check for
 	equality with eof on returned value from overflow.
 
