@@ -703,7 +703,7 @@ gfc_conv_intrinsic_abs (gfc_se * se, gfc_expr * expr)
 {
   tree args;
   tree val;
-  tree fndecl;
+  int n;
 
   args = gfc_conv_intrinsic_function_args (se, expr);
   assert (args && TREE_CHAIN (args) == NULL_TREE);
@@ -720,15 +720,15 @@ gfc_conv_intrinsic_abs (gfc_se * se, gfc_expr * expr)
       switch (expr->ts.kind)
 	{
 	case 4:
-	  fndecl = gfor_fndecl_math_cabsf;
+	  n = BUILT_IN_CABSF;
 	  break;
 	case 8:
-	  fndecl = gfor_fndecl_math_cabs;
+	  n = BUILT_IN_CABS;
 	  break;
 	default:
 	  abort ();
 	}
-      se->expr = gfc_build_function_call (fndecl, args);
+      se->expr = fold (gfc_build_function_call (built_in_decls[n], args));
       break;
 
     default:
@@ -893,15 +893,15 @@ gfc_conv_intrinsic_sign (gfc_se * se, gfc_expr * expr)
       switch (expr->ts.kind)
 	{
 	case 4:
-	  tmp = gfor_fndecl_math_sign4;
+	  tmp = built_in_decls[BUILT_IN_COPYSIGNF];
 	  break;
 	case 8:
-	  tmp = gfor_fndecl_math_sign8;
+	  tmp = built_in_decls[BUILT_IN_COPYSIGN];
 	  break;
 	default:
 	  abort ();
 	}
-      se->expr = gfc_build_function_call (tmp, arg);
+      se->expr = fold (gfc_build_function_call (tmp, arg));
       return;
     }
 
