@@ -1,5 +1,5 @@
 /* Help friends in C++.
-   Copyright (C) 1997, 1998, 1999 Free Software Foundation, Inc.
+   Copyright (C) 1997, 1998, 1999, 2000 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -402,7 +402,7 @@ do_friend (ctype, declarator, decl, parmdecls, attrlist,
       /* We can't do lookup in a type that involves template
 	 parameters.  Instead, we rely on tsubst_friend_function
 	 to check the validity of the declaration later.  */
-      if (uses_template_parms (ctype))
+      if (processing_template_decl)
 	add_friend (current_class_type, decl);
       /* A nested class may declare a member of an enclosing class
 	 to be a friend, so we do lookup here even if CTYPE is in
