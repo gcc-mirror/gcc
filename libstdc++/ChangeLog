@@ -1,3 +1,7 @@
+Sun Jan 03 03:16:02 1999  Robert Lipe  <robertlipe@usa.net>
+
+	* configure.in:  (*-*-sysv5, *-*-*udk*):  Treat like sysv4.
+
 Tue Dec  8 00:59:09 1998  Marc Espie <Marc.Espie@liafa.jussieu.fr>
 
 	* Makefile.in: Be more selective about what files to install.
