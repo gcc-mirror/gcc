@@ -1,3 +1,7 @@
+2004-05-23  Andrew Pinski  <pinskia@physics.uc.edu>
+
+	* config/rs6000/t-rs6000: Remove the disabling -Werror.
+
 2004-05-22  Roger Sayle  <roger@eyesopen.com>
 
 	* builtins.c (expand_builtin_strstr, expand_builtin_strchr,
