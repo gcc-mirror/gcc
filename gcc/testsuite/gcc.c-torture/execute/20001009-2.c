@@ -8,7 +8,7 @@ int foo()
   {
     c=1;
     asm(""::"r"(c));
-    c=(char)a;
+    c=(signed char)a;
   }
   if (c!=-1)
     abort();

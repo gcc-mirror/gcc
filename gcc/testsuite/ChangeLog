@@ -1,5 +1,10 @@
 2000-12-30  Jeffrey Oldham  <oldham@codesourcery.com>
 
+	* gcc.c-torture/execute/20001009-2.c (foo): Test only works for
+	signed char, not default char.
+
+2000-12-30  Jeffrey Oldham  <oldham@codesourcery.com>
+
 	* g++.old-deja/g++.other/crash18.C: Fails on mips*-sgi-irix*.
 
 2000-12-30  David Billinghurst <David.Billinghurst@riotinto.com>
