@@ -1,3 +1,10 @@
+1998-06-24  Manfred Hollstein  <manfred@s-direktnet.de>
+
+	* configure.in (gxx_include_dir): Initialize default value depending on
+	new flag --enable-version-specific-runtime-libs; remove superfluous default
+	initialization afterwards.
+	* configure: Regenerate.
+
 Wed Jun 24 01:32:12 1998  David S. Miller  <davem@pierdol.cobaltmicro.com>
 
 	* toplev.c (rest_of_compilation): Revert May 15 change.
