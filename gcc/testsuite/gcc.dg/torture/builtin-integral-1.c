@@ -9,33 +9,57 @@
 
 #define PROTOTYPE1(FN) extern double FN(double); extern float FN##f(float); \
   extern long double FN##l(long double);
+#define PROTOTYPE1_RET(FN, RET) extern RET FN(double); extern RET FN##f(float); \
+  extern RET FN##l(long double);
+#define PROTOTYPE_LINK_FAILURE(FN) extern void link_failure_##FN(void); \
+ extern void link_failure_##FN##f(void); \
+ extern void link_failure_##FN##l(void); \
 
 PROTOTYPE1(fabs)
+PROTOTYPE1(ceil)
+PROTOTYPE1(floor)
+PROTOTYPE1(nearbyint)
+PROTOTYPE1(rint)
+PROTOTYPE1(round)
+PROTOTYPE1(trunc)
+PROTOTYPE1_RET(lround, long)
+PROTOTYPE1_RET(llround, long long)
+PROTOTYPE1_RET(lrint, long)
+PROTOTYPE1_RET(llrint, long long)
 
-void test(int i1, int i2)
-{
-  /* Test that the various FP truncation builtins detect integral
-     arguments.  */
+/* Test that the various FP truncation builtins detect integral
+   arguments.  */
 #define CHECK_FN(MATHFN) \
- PROTOTYPE1 (MATHFN) \
- extern void link_failure_##MATHFN(void); \
- extern void link_failure_##MATHFN##f(void); \
- extern void link_failure_##MATHFN##l(void); \
+ PROTOTYPE_LINK_FAILURE(MATHFN); \
  if (MATHFN(i1) != i1) link_failure_##MATHFN(); \
  if (MATHFN##f(i1) != i1) link_failure_##MATHFN##f(); \
- if (MATHFN##l(i1) != i1) link_failure_##MATHFN##l(); \
+ if (MATHFN##l(i1) != i1) link_failure_##MATHFN##l();
 
+#define CHECK_FN_RET(MATHFN, RET) \
+ PROTOTYPE_LINK_FAILURE(MATHFN); \
+ if (MATHFN(i1) != (RET)(double)i1) link_failure_##MATHFN(); \
+ if (MATHFN##f(i1) != (RET)(float)i1) link_failure_##MATHFN##f(); \
+ if (MATHFN##l(i1) != (RET)(long double)i1) link_failure_##MATHFN##l();
+
+  /* Check that various other integral expressions are detected.  */
+#define CHECK_EXPR(EXPR,NAME) \
+ extern void link_failure_FP_##NAME(void); \
+ extern void link_failure_fixed_##NAME(void); \
+ if (ceill(EXPR) != (EXPR)) link_failure_FP_##NAME(); \
+ if (lroundl(EXPR) != (long)(long double)(EXPR)) link_failure_fixed_##NAME();
+
+void __attribute__ ((__noinline__)) test (int i1, int i2)
+{
   CHECK_FN(ceil);
   CHECK_FN(floor);
   CHECK_FN(nearbyint);
   CHECK_FN(rint);
   CHECK_FN(round);
   CHECK_FN(trunc);
-
-  /* Check that various other integral expressions are detected.  */
-#define CHECK_EXPR(EXPR,NAME) \
- extern void link_failure_##NAME(void); \
- if (ceill(EXPR) != (EXPR)) link_failure_##NAME(); \
+  CHECK_FN_RET(lround, long);
+  CHECK_FN_RET(llround, long long);
+  CHECK_FN_RET(lrint, long);
+  CHECK_FN_RET(llrint, long long);
 
   CHECK_EXPR (5.0, REAL_CST);
   CHECK_EXPR (5.0F, REAL_CSTf);
@@ -54,5 +78,6 @@ void test(int i1, int i2)
 
 int main (void)
 {
+  test (1, 2);
   return 0;
 }
