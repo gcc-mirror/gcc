@@ -1,5 +1,17 @@
 2002-01-25  Roger Sayle  <roger@eyesopen.com>
 
+	* function.h (struct function): New field calls_constant_p.
+	(current_function_calls_constant_p): New macro for above.
+	* function.c (prepare_function_start): Initialize calls_eh_return
+	and calls_constant_p.
+	* builtins.c (expand_builtin_constant_p): Set calls_constant_p.
+	* toplev.c (rest_of_compilation): Only call purge_builtin_constant_p
+	when the current_function_calls_constant_p.
+	* integrate.c (expand_inline_function): Set calls_constant_p if
+	the function being inlined has calls_constant_p set.
+
+2002-01-25  Roger Sayle  <roger@eyesopen.com>
+
 	* cse.c (fold_rtx): Instantiate CONSTANT_P_RTX to 0 when not
 	optimizing, even if flag_gcse is true.
 	* toplev.c (rest_of_compilation): purge_builtin_constant_p

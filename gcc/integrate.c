@@ -899,6 +899,11 @@ expand_inline_function (fndecl, parms, target, ignore, type,
   if (inl_f->needs_context)
     static_chain_value = lookup_static_chain (fndecl);
 
+  /* If the inlined function calls __builtin_constant_p, then we'll
+     need to call purge_builtin_constant_p on this function.  */
+  if (inl_f->calls_constant_p)
+    current_function_calls_constant_p = 1;
+
   if (GET_CODE (parm_insns) == NOTE
       && NOTE_LINE_NUMBER (parm_insns) > 0)
     {
