@@ -1,3 +1,8 @@
+Sun Feb  1 02:52:32 1998  Mike Stump  <mrs@wrs.com>
+
+	* config.table (vxworks configs): Default to VxWorks 5.x, as that is
+	the currently shipping OS.
+
 Sat Jan 17 22:32:38 1998  Mumit Khan  <khan@xraylith.wisc.edu>
                           J.J. VanderHeijden <J.J.vanderHeijden@student.utwente.nl>
 
