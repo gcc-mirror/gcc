@@ -46,7 +46,7 @@
 #include "toplev.h"
 #include "recog.h"
 #include "expr.h"
-
+#include "predict.h"
 
 /* Random guesstimation given names.  */
 #define PROB_NEVER		(0)
@@ -57,34 +57,63 @@
 #define PROB_VERY_LIKELY	(REG_BR_PROB_BASE - PROB_VERY_UNLIKELY)
 #define PROB_ALWAYS		(REG_BR_PROB_BASE)
 
-static void predict_insn	PARAMS ((rtx, int));
-static void predict_edge	PARAMS ((edge, int));
+static void combine_predictions_for_insn PARAMS ((rtx, basic_block));
+static void dump_prediction		 PARAMS ((enum br_predictor, int,
+						  basic_block));
 
-static void
-predict_insn (insn, probability)
+/* Information we hold about each branch predictor.
+   Filled using information from predict.def.  */
+struct predictor_info
+{
+  const char *name;	/* Name used in the debugging dumps.  */
+  int hitrate;		/* Expected hitrate used by
+			   predict_insn_def call.  */
+};
+
+#define DEF_PREDICTOR(ENUM, NAME, HITRATE) {NAME, HITRATE},
+struct predictor_info predictor_info[] = {
+#include "predict.def"
+
+  /* Upper bound on non-language-specific builtins. */
+  {NULL, 0}
+};
+#undef DEF_PREDICTOR
+
+void
+predict_insn (insn, predictor, probability)
      rtx insn;
      int probability;
+     enum br_predictor predictor;
 {
-  rtx note = find_reg_note (insn, REG_BR_PROB, 0);
-
-  /* Implement "first match" heruistics.  In case we already predicted
-     insn somehow, keep it predicted that way.  In future we would like
-     to rather store all predictions and then combine them.  */
-  if (note)
-    return;
-
   if (!any_condjump_p (insn))
     abort ();
   REG_NOTES (insn)
-    = gen_rtx_EXPR_LIST (REG_BR_PROB,
-			 GEN_INT (probability), REG_NOTES (insn));
+    = gen_rtx_EXPR_LIST (REG_BR_PRED,
+			 gen_rtx_CONCAT (VOIDmode,
+					 GEN_INT ((int) predictor),
+					 GEN_INT ((int) probability)),
+			 REG_NOTES (insn));
+}
+
+/* Predict insn by given predictor.  */
+void
+predict_insn_def (insn, predictor, taken)
+     rtx insn;
+     enum br_predictor predictor;
+     enum prediction taken;
+{
+   int probability = predictor_info[(int) predictor].hitrate;
+   if (taken != TAKEN)
+     probability = REG_BR_PROB_BASE - probability;
+   predict_insn (insn, predictor, probability);
 }
 
 /* Predict edge E with given probability if possible.  */
-static void
-predict_edge (e, probability)
+void
+predict_edge (e, predictor, probability)
      edge e;
      int probability;
+     enum br_predictor predictor;
 {
   rtx last_insn;
   last_insn = e->src->end;
@@ -98,7 +127,107 @@ predict_edge (e, probability)
   if (e->flags & EDGE_FALLTHRU)
     probability = REG_BR_PROB_BASE - probability;
 
-  predict_insn (last_insn, probability);
+  predict_insn (last_insn, predictor, probability);
+}
+
+/* Predict edge E by given predictor if possible.  */
+void
+predict_edge_def (e, predictor, taken)
+     edge e;
+     enum br_predictor predictor;
+     enum prediction taken;
+{
+   int probability = predictor_info[(int) predictor].hitrate;
+
+   if (taken != TAKEN)
+     probability = REG_BR_PROB_BASE - probability;
+   predict_edge (e, predictor, probability);
+}
+
+/* Invert all branch predictions or probability notes in the INSN.  This needs
+   to be done each time we invert the condition used by the jump.  */
+void
+invert_br_probabilities (insn)
+     rtx insn;
+{
+  rtx note = REG_NOTES (insn);
+
+  while (note)
+    {
+      if (REG_NOTE_KIND (note) == REG_BR_PROB)
+	XEXP (note, 0) = GEN_INT (REG_BR_PROB_BASE - INTVAL (XEXP (note, 0)));
+      else if (REG_NOTE_KIND (note) == REG_BR_PRED)
+	XEXP (XEXP (note, 0), 1)
+	  = GEN_INT (REG_BR_PROB_BASE - INTVAL (XEXP (XEXP (note, 0), 1)));
+      note = XEXP (note, 1);
+    }
+}
+
+/* Dump information about the branch prediction to the output file.  */
+static void
+dump_prediction (predictor, probability, bb)
+     enum br_predictor predictor;
+     int probability;
+     basic_block bb;
+{
+  edge e = bb->succ;
+
+  if (!rtl_dump_file)
+    return;
+
+  while (e->flags & EDGE_FALLTHRU)
+    e = e->succ_next;
+
+  fprintf (rtl_dump_file, "  %s heuristics: %.1f%%",
+	   predictor_info[predictor].name,
+	   probability * 100.0 / REG_BR_PROB_BASE);
+
+  if (bb->count)
+    fprintf (rtl_dump_file, "  exec %i hit %i (%.1f%%)",
+	     bb->count, e->count, e->count * 100.0 / bb->count);
+  fprintf (rtl_dump_file, "\n");
+}
+
+/* Combine all REG_BR_PRED notes into single probability and attach REG_BR_PROB
+   note if not already present.  Remove now useless REG_BR_PRED notes.  */
+static void
+combine_predictions_for_insn (insn, bb)
+     rtx insn;
+     basic_block bb;
+{
+  rtx prob_note = find_reg_note (insn, REG_BR_PROB, 0);
+  rtx *pnote = &REG_NOTES (insn);
+  int best_probability = PROB_EVEN;
+  int best_predictor = END_PREDICTORS;
+
+  if (rtl_dump_file)
+    fprintf (rtl_dump_file, "Predictions for insn %i\n", INSN_UID (insn));
+
+  /* We implement "first match" heuristics and use probability guessed
+     by predictor with smallest index.  In future we will use better
+     probability combination techniques.  */
+  while (*pnote)
+    {
+      rtx *next_pnote = &XEXP (*pnote, 1);
+      if (REG_NOTE_KIND (*pnote) == REG_BR_PRED)
+	{
+	  int predictor = INTVAL (XEXP (XEXP (*pnote, 0), 0));
+	  int probability = INTVAL (XEXP (XEXP (*pnote, 0), 1));
+
+	  dump_prediction (predictor, probability, bb);
+	  if (best_predictor > predictor)
+	    best_probability = probability, best_predictor = predictor;
+	  *pnote = XEXP (*pnote, 1);
+	}
+      pnote = next_pnote;
+    }
+  dump_prediction (PRED_FIRST_MATCH, best_probability, bb);
+  if (!prob_note)
+    {
+      REG_NOTES (insn)
+	= gen_rtx_EXPR_LIST (REG_BR_PROB,
+			     GEN_INT (best_probability), REG_NOTES (insn));
+    }
 }
 
 /* Statically estimate the probability that a branch will be taken.
@@ -134,7 +263,7 @@ estimate_probability (loops_info)
 		if (e->dest == loops_info->array[i].header)
 		  {
 		    header_found = 1;
-		    predict_edge (e, PROB_VERY_LIKELY);
+		    predict_edge_def (e, PRED_LOOP_BRANCH, TAKEN);
 		  }
 	      /* Loop exit heruistics - predict as not taken an edge exiting
 	         the loop if the conditinal has no loop header successors  */
@@ -142,7 +271,7 @@ estimate_probability (loops_info)
 		for (e = BASIC_BLOCK(j)->succ; e; e = e->succ_next)
 		  if (e->dest->index <= 0
 		      || !TEST_BIT (loops_info->array[i].nodes, e->dest->index))
-		    predict_edge (e, PROB_UNLIKELY);
+		    predict_edge_def (e, PRED_LOOP_EXIT, NOT_TAKEN);
 	    }
 	}
     }
@@ -169,7 +298,7 @@ estimate_probability (loops_info)
       /* ??? Ought to do the same for any subgraph with no exit.  */
       for (e = BASIC_BLOCK (i)->succ; e; e = e->succ_next)
 	if (e->dest->succ == NULL)
-	  predict_edge (e, PROB_NEVER);
+	  predict_edge_def (e, PRED_NORETURN, NOT_TAKEN);
 
       cond = get_condition (last_insn, &earliest);
       if (! cond)
@@ -187,7 +316,7 @@ estimate_probability (loops_info)
 		  || (GET_CODE (XEXP (cond, 1)) == REG
 		      && REG_POINTER (XEXP (cond, 1)))))
 	    
-	    predict_insn (last_insn, PROB_UNLIKELY);
+	    predict_insn_def (last_insn, PRED_POINTER, NOT_TAKEN);
 	  break;
 	case NE:
 	  if (GET_CODE (XEXP (cond, 0)) == REG
@@ -195,7 +324,7 @@ estimate_probability (loops_info)
 	      && (XEXP (cond, 1) == const0_rtx
 		  || (GET_CODE (XEXP (cond, 1)) == REG
 		      && REG_POINTER (XEXP (cond, 1)))))
-	    predict_insn (last_insn, PROB_LIKELY);
+	    predict_insn_def (last_insn, PRED_POINTER, TAKEN);
 	  break;
 
 	default:
@@ -210,40 +339,51 @@ estimate_probability (loops_info)
 	{
 	case CONST_INT:
 	  /* Unconditional branch.  */
-	  predict_insn (last_insn,
-			cond == const0_rtx ? PROB_NEVER : PROB_ALWAYS);
+	  predict_insn_def (last_insn, PRED_UNCONDITIONAL,
+			    cond == const0_rtx ? NOT_TAKEN : TAKEN);
 	  break;
 
 	case EQ:
 	case UNEQ:
-	  predict_insn (last_insn, PROB_UNLIKELY);
+	  predict_insn_def (last_insn, PRED_OPCODE, NOT_TAKEN);
 	  break;
 	case NE:
 	case LTGT:
-	  predict_insn (last_insn, PROB_LIKELY);
+	  predict_insn_def (last_insn, PRED_OPCODE, TAKEN);
 	  break;
 	case ORDERED:
-	  predict_insn (last_insn, PROB_LIKELY);
+	  predict_insn_def (last_insn, PRED_OPCODE, TAKEN);
 	  break;
 	case UNORDERED:
-	  predict_insn (last_insn, PROB_UNLIKELY);
+	  predict_insn_def (last_insn, PRED_OPCODE, NOT_TAKEN);
 	  break;
 	case LE:
 	case LT:
 	  if (XEXP (cond, 1) == const0_rtx)
-	    predict_insn (last_insn, PROB_UNLIKELY);
+	    predict_insn_def (last_insn, PRED_OPCODE, NOT_TAKEN);
 	  break;
 	case GE:
 	case GT:
 	  if (XEXP (cond, 1) == const0_rtx
 	      || (GET_CODE (XEXP (cond, 1)) == CONST_INT
 		  && INTVAL (XEXP (cond, 1)) == -1))
-	    predict_insn (last_insn, PROB_LIKELY);
+	    predict_insn_def (last_insn, PRED_OPCODE, TAKEN);
 	  break;
 
 	default:
 	  break;
 	}
+    }
+
+  /* Attach the combined probability to each conditional jump.  */
+  for (i = 0; i < n_basic_blocks - 1; i++)
+    {
+      rtx last_insn = BLOCK_END (i);
+
+      if (GET_CODE (last_insn) != JUMP_INSN
+	  || ! any_condjump_p (last_insn))
+	continue;
+      combine_predictions_for_insn (last_insn, BASIC_BLOCK (i));
     }
 }
 
@@ -285,7 +425,7 @@ expected_value_to_br_prob ()
 	     expected value yet, no point going further.  */
 	  if (GET_CODE (insn) != JUMP_INSN || ev == NULL_RTX)
 	    continue;
-	  if (! condjump_p (insn) || simplejump_p (insn))
+	  if (! any_condjump_p (insn))
 	    continue;
 	  break;
 	}
@@ -316,7 +456,7 @@ expected_value_to_br_prob ()
       /* Turn the condition into a scaled branch probability.  */
       if (cond != const1_rtx && cond != const0_rtx)
 	abort ();
-      predict_insn (insn,
-		    cond == const1_rtx ? PROB_VERY_LIKELY : PROB_VERY_UNLIKELY);
+      predict_insn_def (insn, PRED_BUILTIN_EXPECT,
+		        cond == const1_rtx ? TAKEN : NOT_TAKEN);
     }
 }

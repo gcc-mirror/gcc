@@ -497,10 +497,10 @@ enum reg_note
      flow, are represented by a 0 reg note kind.  */
   REG_DEP_ANTI, REG_DEP_OUTPUT,
 
-  /* REG_BR_PROB is attached to JUMP_INSNs and CALL_INSNs when the flag
-     -fbranch-probabilities is given.  It has an integer value.  For jumps,
-     it is the probability that this is a taken branch.  For calls, it is
-     the probability that this call won't return.  */
+  /* REG_BR_PROB is attached to JUMP_INSNs and CALL_INSNs.
+     It has an integer value.  For jumps, it is the probability that this is a
+     taken branch.  For calls, it is the probability that this call won't
+     return.  */
   REG_BR_PROB,
 
   /* REG_EXEC_COUNT is attached to the first insn of each basic block, and
@@ -516,8 +516,10 @@ enum reg_note
      where SETJMP_VIA_SAVE_AREA is true.  */
   REG_SAVE_AREA,
 
-  /* Attached to JUMP_INSNs only, it holds the branch prediction flags
-     computed by get_jump_flags() after dbr scheduling is complete.  */
+  /* REG_BR_PRED is attached to JUMP_INSNs and CALL_INSNSs.  It contains
+     CONCAT of two integer value.  First specifies the branch predictor
+     that added the note, second specifies the predicted hitrate of branch
+     in the same format as REG_BR_PROB note uses.  */
   REG_BR_PRED,
 
   /* Attached to insns that are RTX_FRAME_RELATED_P, but are too complex
@@ -2020,7 +2022,9 @@ extern rtx stack_limit_rtx;
 /* In regrename.c */
 extern void regrename_optimize		PARAMS ((void));
 
-/* In condexec.c */
+/* In ifcvt.c */
 extern void if_convert			PARAMS ((int));
 
+/* In predict.c */
+extern void invert_br_probabilities	PARAMS ((rtx));
 #endif /* ! GCC_RTL_H */

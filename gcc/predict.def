@@ -1,0 +1,47 @@
+/* This file contains the definitions and documentation for the
+   builtins used in the GNU compiler.
+   Copyright (C) 2001 Free Software Foundation, Inc.
+
+This file is part of GNU CC.
+
+GNU CC is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 2, or (at your option)
+any later version.
+
+GNU CC is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with GNU CC; see the file COPYING.  If not, write to
+the Free Software Foundation, 59 Temple Place - Suite 330,
+Boston, MA 02111-1307, USA.  */
+
+/* Before including this file, you should define a macro:
+
+     DEF_PREDICTOR (ENUM, NAME, HITRATE)
+
+   This macro will be called once for each predictor.  The ENUM will
+   be of type `enum predictor', and will enumerate all supported
+   predictors.  The order of DEF_PREDICTOR calls is important, as
+   in the first match combining heuristics, the predictor appearing
+   first in this file will win.
+
+   NAME is used in the debugging output to determine predictor type.
+
+   HITRATE is the probability that edge predicted by predictor as taken
+   will be really taken (so it should be always above
+   REG_BR_PROB_BASE / 2).  */
+   
+
+DEF_PREDICTOR (PRED_FIRST_MATCH, "first match", PROB_ALWAYS)
+DEF_PREDICTOR (PRED_UNCONDITIONAL, "unconditional jump", PROB_ALWAYS)
+DEF_PREDICTOR (PRED_BUILTIN_EXPECT, "__builtin_expect", PROB_VERY_LIKELY)
+DEF_PREDICTOR (PRED_NORETURN, "noreturn call", PROB_ALWAYS)
+DEF_PREDICTOR (PRED_LOOP_BRANCH, "loop branch", PROB_VERY_LIKELY)
+DEF_PREDICTOR (PRED_LOOP_EXIT, "loop exit", PROB_LIKELY)
+DEF_PREDICTOR (PRED_LOOP_HEADER, "loop header", PROB_LIKELY)
+DEF_PREDICTOR (PRED_POINTER, "pointer", PROB_LIKELY)
+DEF_PREDICTOR (PRED_OPCODE, "opcode", PROB_LIKELY)

@@ -1,3 +1,26 @@
+Sun Jun 10 00:35:37 CEST 2001  Jan Hubicka  <jh@suse.cz>
+
+	* predict.def: New file.
+	* predict.h: New file.
+	* predict.c: Include predict.h.
+	(predictor_info): New structure and array.
+	(predict_edge, predict_insn): Rewrite; make global.
+	(predict_edge_def, predict_insn_def): New global functions.
+	(dump_prediction, combine_predictions_for_insns): New
+	static functions.
+	(estimate_probability): Change calls to predict_edge
+	to predict_edge_def and calls to predict_insn to predict_insn_def;
+	combine probabilities.
+	(expected_value_to_br_prob): Behave as predictor.
+	* rtl.h (REG_BR_PRED): Update coment.
+	(invert_br_probabilities): New.
+	* jump.c: Include predict.h
+	(duplicate_loop_exit_test): Drop branch prediction notes.
+	(invert_jump): Use invert_br_probabilities.
+	* Makefile.in: Add dependancy on predict.h for jump and predict pass.
+	* ifcvt.c (dead_or_predicable): Use invert_br_probabilities.
+	* combine.c (distribute_notes): Handle BR_PRED.
+
 Sat Jun  9 23:29:41 CEST 2001  Jan Hubicka  <jh@suse.cz>
 
 	* predict.c (predict_insn, predict_edge): New static functions.
