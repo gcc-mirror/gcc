@@ -451,7 +451,69 @@ a29k_get_reloaded_address (op)
 
   return find_replacement (&XEXP (op, 0));
 }
+
+/* Subfunction of the following function.  Update the flags of any MEM
+   found in part of X.  */
 
+static void
+a29k_set_memflags_1 (x, in_struct_p, volatile_p, unchanging_p)
+     rtx x;
+     int in_struct_p, volatile_p, unchanging_p;
+{
+  int i;
+
+  switch (GET_CODE (x))
+    {
+    case SEQUENCE:
+    case PARALLEL:
+      for (i = XVECLEN (x, 0) - 1; i >= 0; i--)
+	a29k_set_memflags_1 (XVECEXP (x, 0, i), in_struct_p, volatile_p,
+			     unchanging_p);
+      break;
+
+    case INSN:
+      a29k_set_memflags_1 (PATTERN (x), in_struct_p, volatile_p,
+			   unchanging_p);
+      break;
+
+    case SET:
+      a29k_set_memflags_1 (SET_DEST (x), in_struct_p, volatile_p,
+			   unchanging_p);
+      a29k_set_memflags_1 (SET_SRC (x), in_struct_p, volatile_p, unchanging_p);
+      break;
+
+    case MEM:
+      MEM_IN_STRUCT_P (x) = in_struct_p;
+      MEM_VOLATILE_P (x) = volatile_p;
+      RTX_UNCHANGING_P (x) = unchanging_p;
+      break;
+    }
+}
+
+/* Given INSN, which is either an INSN or a SEQUENCE generated to
+   perform a memory operation, look for any MEMs in either a SET_DEST or
+   a SET_SRC and copy the in-struct, unchanging, and volatile flags from
+   REF into each of the MEMs found.  If REF is not a MEM, don't do
+   anything.  */
+
+void
+a29k_set_memflags (insn, ref)
+     rtx insn;
+     rtx ref;
+{
+  /* Note that it is always safe to get these flags, though they won't
+     be what we think if REF is not a MEM.  */
+  int in_struct_p = MEM_IN_STRUCT_P (ref);
+  int volatile_p = MEM_VOLATILE_P (ref);
+  int unchanging_p = RTX_UNCHANGING_P (ref);
+
+  if (GET_CODE (ref) != MEM
+      || (! in_struct_p && ! volatile_p && ! unchanging_p))
+    return;
+
+  a29k_set_memflags_1 (insn, in_struct_p, volatile_p, unchanging_p);
+}
+
 /* Return 1 if OP is a comparison operator that we have in floating-point.  */
 
 int
