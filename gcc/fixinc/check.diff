@@ -236,6 +236,21 @@
   #if defined( LYNXOS_FCNTL_PROTO_CHECK )
 ! extern int fcntl(int, int, ...);
   #endif  /* LYNXOS_FCNTL_PROTO_CHECK */
+*** inc/hsfs/hsfs_spec.h
+--- res/hsfs/hsfs_spec.h
+***************
+*** 1,5 ****
+  
+  
+  #if defined( SUN_BOGUS_IFDEF_CHECK )
+! #ifdef  __i386__ || __vax__ || __sun4c__
+  #endif  /* SUN_BOGUS_IFDEF_CHECK */
+--- 1,5 ----
+  
+  
+  #if defined( SUN_BOGUS_IFDEF_CHECK )
+! #if  __i386__ || __vax__ || __sun4c__
+  #endif  /* SUN_BOGUS_IFDEF_CHECK */
 *** inc/inttypes.h
 --- res/inttypes.h
 ***************
@@ -295,6 +310,27 @@
   #if defined( MACHINE_ANSI_H_VA_LIST_CHECK )
 !  # define _BSD_VA_LIST_	__builtin_va_list
   #endif  /* MACHINE_ANSI_H_VA_LIST_CHECK */
+*** inc/malloc.h
+--- res/malloc.h
+***************
+*** 1,8 ****
+  
+  
+  #if defined( SUN_MALLOC_CHECK )
+! typedef char *	malloc_t;
+! int 	free();
+! char*	malloc();
+! char*	realloc();
+  #endif  /* SUN_MALLOC_CHECK */
+--- 1,8 ----
+  
+  
+  #if defined( SUN_MALLOC_CHECK )
+! typedef void *	malloc_t;
+! void	free();
+! void*	malloc();
+! void*	realloc();
+  #endif  /* SUN_MALLOC_CHECK */
 *** inc/math.h
 --- res/math.h
 ***************
@@ -340,7 +376,11 @@
   #endif  /* M88K_BAD_HYPOT_OPT_CHECK */
   
   
---- 1,61 ----
+--- 1,65 ----
++ #ifndef FIXINC_SUNOS_MATHERR_DECL_CHECK
++ #define FIXINC_SUNOS_MATHERR_DECL_CHECK 1
++ 
++ struct exception;
 + #ifndef FIXINC_MATH_EXCEPTION_CHECK
 + #define FIXINC_MATH_EXCEPTION_CHECK 1
 + 
@@ -403,8 +443,8 @@
   
   
 ***************
-*** 45,49 ****
---- 65,76 ----
+*** 45,56 ****
+--- 69,84 ----
   
   
   #if defined( MATH_HUGE_VAL_IFNDEF_CHECK )
@@ -412,11 +452,47 @@
   # define	HUGE_VAL 3.4e+40
 + #endif
   #endif  /* MATH_HUGE_VAL_IFNDEF_CHECK */
+  
+  
+  #if defined( RS6000_DOUBLE_CHECK )
++ #ifndef __cplusplus
+  extern int class();
++ #endif
+  #endif  /* RS6000_DOUBLE_CHECK */
+  
+  
+***************
+*** 60,64 ****
+--- 88,101 ----
+  
+  
+  #if defined( SVR4__P_CHECK )
++ #ifndef __P
+  #define __P(a) a
++ #endif
+  #endif  /* SVR4__P_CHECK */
 + #ifdef __cplusplus
 + #undef exception
 + #endif
 + 
 + #endif  /* FIXINC_MATH_EXCEPTION_CHECK */
++ 
++ #endif  /* FIXINC_SUNOS_MATHERR_DECL_CHECK */
+*** inc/netdnet/dnetdb.h
+--- res/netdnet/dnetdb.h
+***************
+*** 1,5 ****
+  
+  
+  #if defined( NODEENT_SYNTAX_CHECK )
+! char *na_addr	
+  #endif  /* NODEENT_SYNTAX_CHECK */
+--- 1,5 ----
+  
+  
+  #if defined( NODEENT_SYNTAX_CHECK )
+! char *na_addr	;
+  #endif  /* NODEENT_SYNTAX_CHECK */
 *** inc/netinet/ip.h
 --- res/netinet/ip.h
 ***************
@@ -436,17 +512,90 @@
   }; /* mumbled struct */
   
   #endif  /* IP_MISSING_SEMI_CHECK */
+*** inc/pixrect/memvar.h
+--- res/pixrect/memvar.h
+***************
+*** 1,5 ****
+--- 1,9 ----
+  
+  
+  #if defined( SUN_CATMACRO_CHECK )
++ #ifdef __STDC__
++ #  define CAT(a,b) a##b
++ #else
+  #define CAT(a,b)	a/**/b
++ #endif
+  #endif  /* SUN_CATMACRO_CHECK */
+*** inc/pthread.h
+--- res/pthread.h
+***************
+*** 1,5 ****
+  
+  
+  #if defined( PTHREAD_PAGE_SIZE_CHECK )
+! int __page_size;
+  #endif  /* PTHREAD_PAGE_SIZE_CHECK */
+--- 1,5 ----
+  
+  
+  #if defined( PTHREAD_PAGE_SIZE_CHECK )
+! extern int __page_size;
+  #endif  /* PTHREAD_PAGE_SIZE_CHECK */
+*** inc/reg_types.h
+--- res/reg_types.h
+***************
+*** 4,11 ****
+  typedef struct {
+    int stuff, mo_suff;
+  } regex_t;
+! extern regex_t    re;
+! extern regoff_t   ro;
+! extern regmatch_t rm;
+  
+  #endif  /* OSF_NAMESPACE_A_CHECK */
+--- 4,11 ----
+  typedef struct {
+    int stuff, mo_suff;
+  } regex_t;
+! extern __regex_t    re;
+! extern __regoff_t   ro;
+! extern __regmatch_t rm;
+  
+  #endif  /* OSF_NAMESPACE_A_CHECK */
+*** inc/regex.h
+--- res/regex.h
+***************
+*** 2,5 ****
+--- 2,8 ----
+  
+  #if defined( OSF_NAMESPACE_C_CHECK )
+  #include <reg_types.h>
++ typedef __regex_t	regex_t;
++ typedef __regoff_t	regoff_t;
++ typedef __regmatch_t	regmatch_t;
+  #endif  /* OSF_NAMESPACE_C_CHECK */
 *** inc/rpc/auth.h
 --- res/rpc/auth.h
 ***************
-*** 1,5 ****
---- 1,6 ----
+*** 1,12 ****
+--- 1,17 ----
   
   
   #if defined( STRUCT_SOCKADDR_CHECK )
 + struct sockaddr;
   extern AUTH* authdes_create( struct sockaddr* );
   #endif  /* STRUCT_SOCKADDR_CHECK */
+  
+  
+  #if defined( SUN_AUTH_PROTO_CHECK )
+  struct auth_t {
++ #ifdef __cplusplus
++     int (*name)(...); /* C++ bad */
++ #else
+      int (*name)(); /* C++ bad */
++ #endif
+  };
+  #endif  /* SUN_AUTH_PROTO_CHECK */
 *** inc/rpc/rpc.h
 --- res/rpc/rpc.h
 ***************
@@ -473,6 +622,40 @@
 + struct __file_s;
   extern void xdrstdio_create( struct __file_s* );
   #endif  /* STRUCT_FILE_CHECK */
+*** inc/rpcsvc/rstat.h
+--- res/rpcsvc/rstat.h
+***************
+*** 2,7 ****
+  
+  #if defined( STATSSWTCH_CHECK )
+  struct statswtch {
+!   int boottime
+  };
+  #endif  /* STATSSWTCH_CHECK */
+--- 2,7 ----
+  
+  #if defined( STATSSWTCH_CHECK )
+  struct statswtch {
+!   int boottime;
+  };
+  #endif  /* STATSSWTCH_CHECK */
+*** inc/rpcsvc/rusers.h
+--- res/rpcsvc/rusers.h
+***************
+*** 2,7 ****
+  
+  #if defined( SUN_RUSERS_SEMI_CHECK )
+  struct mumble
+!   int _cnt
+  };
+  #endif  /* SUN_RUSERS_SEMI_CHECK */
+--- 2,7 ----
+  
+  #if defined( SUN_RUSERS_SEMI_CHECK )
+  struct mumble
+!   int _cnt;
+  };
+  #endif  /* SUN_RUSERS_SEMI_CHECK */
 *** inc/sparc/asm_linkage.h
 --- res/sparc/asm_linkage.h
 ***************
@@ -491,7 +674,7 @@
 *** inc/stdio.h
 --- res/stdio.h
 ***************
-*** 1,12 ****
+*** 1,27 ****
   
   
   #if defined( ALPHA_GETOPT_CHECK )
@@ -504,7 +687,22 @@
   int foo;
   #endif
   #endif  /* ISC_OMITS_WITH_STDC_CHECK */
---- 1,17 ----
+  
+  
+  #if defined( READ_RET_TYPE_CHECK )
+! extern int	fclose(), fflush(), fread(), fwrite(), foo();
+  #endif  /* READ_RET_TYPE_CHECK */
+  
+  
+  #if defined( RS6000_PARAM_CHECK )
+! extern int rename(const char *old, const char *new);
+  #endif  /* RS6000_PARAM_CHECK */
+  
+  
+  #if defined( STDIO_STDARG_H_CHECK )
+  
+  #endif  /* STDIO_STDARG_H_CHECK */
+--- 1,35 ----
 + #ifndef FIXINC_STDIO_STDARG_H_CHECK
 + #define FIXINC_STDIO_STDARG_H_CHECK 1
 + 
@@ -522,9 +720,19 @@
   int foo;
   #endif
   #endif  /* ISC_OMITS_WITH_STDC_CHECK */
-***************
-*** 15,17 ****
---- 20,24 ----
+  
+  
+  #if defined( READ_RET_TYPE_CHECK )
+! extern unsigned int fread(), fwrite();
+! extern int	fclose(), fflush(), foo();
+  #endif  /* READ_RET_TYPE_CHECK */
+  
+  
+  #if defined( RS6000_PARAM_CHECK )
+! extern int rename(const char *_old, const char *_new);
+  #endif  /* RS6000_PARAM_CHECK */
+  
+  
   #if defined( STDIO_STDARG_H_CHECK )
   
   #endif  /* STDIO_STDARG_H_CHECK */
@@ -533,7 +741,7 @@
 *** inc/stdlib.h
 --- res/stdlib.h
 ***************
-*** 1,12 ****
+*** 1,38 ****
   
   
   #if defined( ARM_WCHAR_CHECK )
@@ -543,10 +751,36 @@
   #endif  /* ARM_WCHAR_CHECK */
   
   
+  #if defined( INT_ABORT_FREE_AND_EXIT_CHECK )
+! extern int abort(int);
+! extern int free(void*);
+! extern int exit(void*);
+  #endif  /* INT_ABORT_FREE_AND_EXIT_CHECK */
+  
+  
   #if defined( NEWS_OS_RECURSION_CHECK )
   #include <stdlib.h>
   #endif  /* NEWS_OS_RECURSION_CHECK */
---- 1,14 ----
+  
+  
+  #if defined( SVR4_GETCWD_CHECK )
+! extern char* getcwd(char *, int);
+  #endif  /* SVR4_GETCWD_CHECK */
+  
+  
+  #if defined( SVR4_PROFIL_CHECK )
+! profil(unsigned short *, unsigned int, unsigned int, unsigned int);
+  #endif  /* SVR4_PROFIL_CHECK */
+  
+  
+  #if defined( SYSZ_STDLIB_FOR_SUN_CHECK )
+! extern char*	calloc(size_t);
+! extern char*	malloc(size_t);
+! extern char*	realloc(void*,size_t);
+! extern char*	bsearch(void*,size_t,size_t);
+  
+  #endif  /* SYSZ_STDLIB_FOR_SUN_CHECK */
+--- 1,40 ----
   
   
   #if defined( ARM_WCHAR_CHECK )
@@ -556,11 +790,52 @@
   #endif  /* ARM_WCHAR_CHECK */
   
   
+  #if defined( INT_ABORT_FREE_AND_EXIT_CHECK )
+! extern void	abort(int);
+! extern void	free(void*);
+! extern void	exit(void*);
+  #endif  /* INT_ABORT_FREE_AND_EXIT_CHECK */
+  
+  
   #if defined( NEWS_OS_RECURSION_CHECK )
 + #ifdef BOGUS_RECURSION
   #include <stdlib.h>
 + #endif
   #endif  /* NEWS_OS_RECURSION_CHECK */
+  
+  
+  #if defined( SVR4_GETCWD_CHECK )
+! extern char* getcwd(char *, size_t);
+  #endif  /* SVR4_GETCWD_CHECK */
+  
+  
+  #if defined( SVR4_PROFIL_CHECK )
+! profil(unsigned short *, size_t, int, unsigned int);
+  #endif  /* SVR4_PROFIL_CHECK */
+  
+  
+  #if defined( SYSZ_STDLIB_FOR_SUN_CHECK )
+! extern void *	calloc(size_t);
+! extern void *	malloc(size_t);
+! extern void *	realloc(void*,size_t);
+! extern void *	bsearch(void*,size_t,size_t);
+  
+  #endif  /* SYSZ_STDLIB_FOR_SUN_CHECK */
+*** inc/strings.h
+--- res/strings.h
+***************
+*** 1,5 ****
+  
+  
+  #if defined( SUNOS_STRLEN_CHECK )
+!  int	strlen(); /* string length */
+  #endif  /* SUNOS_STRLEN_CHECK */
+--- 1,5 ----
+  
+  
+  #if defined( SUNOS_STRLEN_CHECK )
+!  __SIZE_TYPE__ strlen(); /* string length */
+  #endif  /* SUNOS_STRLEN_CHECK */
 *** inc/sundev/vuid_event.h
 --- res/sundev/vuid_event.h
 ***************
@@ -644,6 +919,7 @@
   #if defined( HP_SYSFILE_CHECK )
 ! extern void foo(struct file *, ...); /* HPUX_SOURCE - bad varargs */
   #endif  /* HP_SYSFILE_CHECK */
+Only in inc:  inc/sys/lc_core.h
 *** inc/sys/limits.h
 --- res/sys/limits.h
 ***************
@@ -716,18 +992,32 @@
 *** inc/sys/signal.h
 --- res/sys/signal.h
 ***************
-*** 1,5 ****
+*** 1,10 ****
   
   
   #if defined( AIX_VOLATILE_CHECK )
 ! typedef volatile int sig_atomic_t;
   #endif  /* AIX_VOLATILE_CHECK */
---- 1,5 ----
+  
+  
+  #if defined( SUN_SIGNAL_CHECK )
+  void	(*signal())();
+  #endif  /* SUN_SIGNAL_CHECK */
+--- 1,14 ----
   
   
   #if defined( AIX_VOLATILE_CHECK )
 ! typedef int sig_atomic_t;
   #endif  /* AIX_VOLATILE_CHECK */
+  
+  
+  #if defined( SUN_SIGNAL_CHECK )
++ #ifdef __cplusplus
++ void	(*signal(...))(...);
++ #else
+  void	(*signal())();
++ #endif
+  #endif  /* SUN_SIGNAL_CHECK */
 *** inc/sys/spinlock.h
 --- res/sys/spinlock.h
 ***************
@@ -746,18 +1036,74 @@
 *** inc/sys/stat.h
 --- res/sys/stat.h
 ***************
-*** 1,5 ****
+*** 1,27 ****
   
   
   #if defined( M88K_BAD_S_IF_CHECK )
 ! #define S_ISREG(m) (m & S_IFREG) /* is regular? */
   #endif  /* M88K_BAD_S_IF_CHECK */
---- 1,5 ----
+  
+  
+  #if defined( RS6000_FCHMOD_CHECK )
+! extern int fchmod(char *, mode_t);
+  #endif  /* RS6000_FCHMOD_CHECK */
+  
+  
+  #if defined( SCO_STATIC_FUNC_CHECK )
+  #ifdef __STDC__
+  static int	stat(const char *__f, struct stat *__p) {
+  return __stat32(__f, __p);
+  }
+  
+  #  else /* !__STDC__ */
+  static int	stat(__f, __p)
+  char *__f;
+  struct stat *__p;
+  {
+  return __stat32(__f, __p);
+  }
+  #endif
+  #endif  /* SCO_STATIC_FUNC_CHECK */
+--- 1,39 ----
   
   
   #if defined( M88K_BAD_S_IF_CHECK )
 ! #define S_ISREG(m) (((m) & S_IFMT) == S_IFREG) /* is regular? */
   #endif  /* M88K_BAD_S_IF_CHECK */
+  
+  
+  #if defined( RS6000_FCHMOD_CHECK )
+! extern int fchmod(int, mode_t);
+  #endif  /* RS6000_FCHMOD_CHECK */
+  
+  
+  #if defined( SCO_STATIC_FUNC_CHECK )
+  #ifdef __STDC__
++ #if __cplusplus
++ extern "C" {
++ #endif /* __cplusplus */
+  static int	stat(const char *__f, struct stat *__p) {
+  return __stat32(__f, __p);
+  }
++ #if __cplusplus
++  }
++ #endif /* __cplusplus */
+  
+  #  else /* !__STDC__ */
++ #if __cplusplus
++ extern "C" {
++ #endif /* __cplusplus */
+  static int	stat(__f, __p)
+  char *__f;
+  struct stat *__p;
+  {
+  return __stat32(__f, __p);
+  }
++ #if __cplusplus
++  }
++ #endif /* __cplusplus */
+  #endif
+  #endif  /* SCO_STATIC_FUNC_CHECK */
 *** inc/sys/time.h
 --- res/sys/time.h
 ***************
@@ -773,28 +1119,70 @@
   #if defined( HPUX_SYSTIME_CHECK )
 ! struct sigevent;
   #endif  /* HPUX_SYSTIME_CHECK */
+*** inc/sys/times.h
+--- res/sys/times.h
+***************
+*** 1,5 ****
+  
+  
+  #if defined( SCO_UTIME_CHECK )
+! extern int utime(const char *, struct utimbuf *);
+  #endif  /* SCO_UTIME_CHECK */
+--- 1,5 ----
+  
+  
+  #if defined( SCO_UTIME_CHECK )
+! extern int utime(const char *, const struct utimbuf *);
+  #endif  /* SCO_UTIME_CHECK */
 *** inc/sys/types.h
 --- res/sys/types.h
 ***************
-*** 1,6 ****
+*** 1,11 ****
   
   
   #if defined( IRIX_MULTILINE_CMNT_CHECK )
 ! /* we check the type of the result
 ! // of the sizeof something.  This is a bad test :-( */
   #endif  /* IRIX_MULTILINE_CMNT_CHECK */
---- 1,6 ----
+  
+  
+  #if defined( SYSTYPES_STDLIB_SIZE_T_CHECK )
+! typedef unsigned int size_t; /* size of something */
+  #endif  /* SYSTYPES_STDLIB_SIZE_T_CHECK */
+--- 1,17 ----
   
   
   #if defined( IRIX_MULTILINE_CMNT_CHECK )
 ! /* we check the type of the result */
 ! // /* of the sizeof something.  This is a bad test :-( */
   #endif  /* IRIX_MULTILINE_CMNT_CHECK */
+  
+  
+  #if defined( SYSTYPES_STDLIB_SIZE_T_CHECK )
+! #ifndef __SIZE_TYPE__
+! #define __SIZE_TYPE__ long unsigned int
+! #endif
+! #ifndef _GCC_SIZE_T
+! #define _GCC_SIZE_T
+! typedef __SIZE_TYPE__ size_t; /* size of something */
+! #endif
+  #endif  /* SYSTYPES_STDLIB_SIZE_T_CHECK */
 *** inc/sys/wait.h
 --- res/sys/wait.h
 ***************
-*** 2,7 ****
---- 2,8 ----
+*** 2,12 ****
+  
+  #if defined( AIX_SYSWAIT_CHECK )
+  /* bos325, */
+  extern pid_t wait3();
+  /* pid_t wait3(int *, int, struct rusage *); */
+  #endif  /* AIX_SYSWAIT_CHECK */
+  
+  
+  #if defined( NEXT_WAIT_UNION_CHECK )
+! extern pid_d wait(union wait*);
+  #endif  /* NEXT_WAIT_UNION_CHECK */
+--- 2,13 ----
   
   #if defined( AIX_SYSWAIT_CHECK )
   /* bos325, */
@@ -802,10 +1190,15 @@
   extern pid_t wait3();
   /* pid_t wait3(int *, int, struct rusage *); */
   #endif  /* AIX_SYSWAIT_CHECK */
+  
+  
+  #if defined( NEXT_WAIT_UNION_CHECK )
+! extern pid_d wait(void*);
+  #endif  /* NEXT_WAIT_UNION_CHECK */
 *** inc/testing.h
 --- res/testing.h
 ***************
-*** 1,36 ****
+*** 1,43 ****
   
   
   #if defined( CTRL_QUOTES_DEF_CHECK )
@@ -834,12 +1227,19 @@
   #endif  /* MACHINE_NAME_CHECK */
   
   
+  #if defined( SCO_STRICT_ANSI_CHECK )
+! #if !__STDC__ /* not standard C */
+  int foo;
+  #endif
+  #endif  /* SCO_STRICT_ANSI_CHECK */
+  
+  
   #if defined( UNDEFINE_NULL_CHECK )
   #define NULL 0UL
   #define NULL	((void*)0)
   
   #endif  /* UNDEFINE_NULL_CHECK */
---- 1,40 ----
+--- 1,47 ----
   
   
   #if defined( CTRL_QUOTES_DEF_CHECK )
@@ -866,6 +1266,13 @@
   
   #if defined( MACHINE_NAME_CHECK )
   #endif  /* MACHINE_NAME_CHECK */
+  
+  
+  #if defined( SCO_STRICT_ANSI_CHECK )
+! #if !defined(__STRICT_ANSI__) /* not standard C */
+  int foo;
+  #endif
+  #endif  /* SCO_STRICT_ANSI_CHECK */
   
   
   #if defined( UNDEFINE_NULL_CHECK )

@@ -1023,6 +1023,23 @@ fix = {
 
 
 /*
+ *  Fix return type of abort and free
+ */
+fix = {
+    hackname  = int_abort_free_and_exit;
+    files     = stdlib.h;
+    select    = "int[ \t]+(abort|free|exit)[ \t]*\\(";
+
+    c_fix     = format;
+    c_fix_arg = "void\t%1(";
+
+    test_text = "extern int abort(int);\n"
+                "extern int free(void*);\n"
+                "extern int exit(void*);";
+};
+
+
+/*
  *  On Interactive Unix 2.2, certain traditional Unix definitions
  *  (notably getc and putc in stdio.h) are omitted if __STDC__ is
  *  defined, not just if _POSIX_SOURCE is defined.  This makes it
@@ -1343,9 +1360,9 @@ fix = {
     hackname  = machine_name;
     c_test    = machine_name;
     c_fix     = machine_name;
+
     test_text = "/* MACH_DIFF: */\n"
-    "#if defined( i386 )"
-    " || defined( sparc )"
+    "#if defined( i386 ) || defined( sparc ) || defined( vax )"
     "\n/* no uniform test, so be careful  :-) */";
 };
 
@@ -1485,7 +1502,7 @@ fix = {
 fix = {
     hackname = news_os_recursion;
     files    = stdlib.h;
-    select   = '#include <stdlib\.h>';
+    select   = "[ \t]*#include <stdlib\\.h>.*";
 
     c_fix     = format;
     c_fix_arg = "#ifdef BOGUS_RECURSION\n%0\n#endif";
@@ -1551,12 +1568,13 @@ fix = {
  *  conditional, so it doesn't need this fix.  So everything is okay.
  */
 fix = {
-    hackname = next_wait_union;
-    files    = sys/wait.h;
+    hackname  = next_wait_union;
+    files     = sys/wait.h;
 
-    select = 'wait\(union wait';
-
-    sed = "s@wait(union wait@wait(void@";
+    select    = 'wait\(union wait';
+    c_fix     = format;
+    c_fix_arg = "wait(void";
+    test_text = "extern pid_d wait(union wait*);";
 };
 
 
@@ -1564,9 +1582,12 @@ fix = {
  *  a missing semi-colon at the end of the nodeent structure definition.
  */
 fix = {
-    hackname = nodeent_syntax;
-    files    = netdnet/dnetdb.h;
-    sed      = "s/char.*na_addr *$/char *na_addr;/";
+    hackname  = nodeent_syntax;
+    files     = netdnet/dnetdb.h;
+    select    = "char[ \t]*\\*na_addr[ \t]*$";
+    c_fix     = format;
+    c_fix_arg = "%0;";
+    test_text = "char *na_addr\t";
 };
 
 
@@ -1584,23 +1605,33 @@ fix = {
     test     = " -n \"`grep '} regex_t;' reg_types.h`\"";
     test     = " -z \"`grep __regex_t regex.h`\"";
 
-    sed      = "s/regex_t/__regex_t/g";
-    sed      = "s/regoff_t/__regoff_t/g";
-    sed      = "s/regmatch_t/__regmatch_t/g";
+    c_fix     = format;
+    c_fix_arg = "__%0";
+    c_fix_arg = "reg(ex|off|match)_t[^;]";
+
+    test_text = "`touch inc/sys/lc_core.h`"
+    "typedef struct {\n  int stuff, mo_suff;\n} regex_t;\n"
+    "extern regex_t    re;\n"
+    "extern regoff_t   ro;\n"
+    "extern regmatch_t rm;\n";
 };
 
 fix = {
-    hackname = osf_namespace_b;
+    hackname = osf_namespace_c;
     files    = regex.h;
     test     = " -r reg_types.h";
     test     = " -r sys/lc_core.h";
     test     = " -n \"`grep '} regex_t;' reg_types.h`\"";
     test     = " -z \"`grep __regex_t regex.h`\"";
 
-    sed      = "/#include <reg_types.h>/a\\\n"
-               "typedef __regex_t\tregex_t;\\\n"
-               "typedef __regoff_t\tregoff_t;\\\n"
-               "typedef __regmatch_t\tregmatch_t;\n";
+    select    = "#include <reg_types\.h>.*";
+    c_fix     = format;
+    c_fix_arg = "%0\n"
+                "typedef __regex_t\tregex_t;\n"
+                "typedef __regoff_t\tregoff_t;\n"
+                "typedef __regmatch_t\tregmatch_t;";
+
+    test_text = "#include <reg_types.h>";
 };
 
 
@@ -1610,10 +1641,12 @@ fix = {
  *  This is the default for all ANSI standard C++ compilers.
  */
 fix = {
-    hackname = pthread_page_size;
-    files    = pthread.h;
-    select   = "^int __page_size";
-    sed      = "s/^int __page_size/extern int __page_size/";
+    hackname  = pthread_page_size;
+    files     = pthread.h;
+    select    = "^int __page_size";
+    c_fix     = format;
+    c_fix_arg = "extern %0";
+    test_text = "int __page_size;";
 };
 
 
@@ -1624,9 +1657,11 @@ fix = {
     hackname = read_ret_type;
     files    = stdio.h;
     select   = "extern int\t.*, fread\\(\\), fwrite\\(\\)";
-    sed      = "s/^\\(extern int\tfclose(), fflush()\\), "
-                 "\\(fread(), fwrite()\\)\\(.*\\)$"
-               "/extern unsigned int\t\\2;\\\n\\1\\3/";
+    c_fix     = format;
+    c_fix_arg = "extern unsigned int fread(), fwrite();\n%1%2";
+    c_fix_arg = "(extern int\t.*), fread\\(\\), fwrite\\(\\)(.*)";
+
+    test_text = "extern int\tfclose(), fflush(), fread(), fwrite(), foo();";
 };
 
 
@@ -1634,12 +1669,15 @@ fix = {
  *  function class(double x) conflicts with C++ keyword on rs/6000 
  */
 fix = {
-    hackname = rs6000_double;
-    files    = math.h;
-    select   = '[^a-zA-Z_]class\(';
-    
-    sed   = "/class[(]/i\\\n#ifndef __cplusplus\n";
-    sed   = "/class[(]/a\\\n#endif\n";
+    hackname  = rs6000_double;
+    files     = math.h;
+    select    = '[^a-zA-Z_]class\(';
+
+    c_fix     = format;
+    c_fix_arg = "#ifndef __cplusplus\n%0\n#endif";
+    c_fix_arg = '^.*[^a-zA-Z_]class\(.*';
+
+    test_text = "extern int class();";
 };
 
 
@@ -1647,10 +1685,12 @@ fix = {
  *  Wrong fchmod prototype on RS/6000.
  */
 fix = {
-    hackname = rs6000_fchmod;
-    files    = sys/stat.h;
-    select   = 'fchmod\(char';
-    sed      = 's/fchmod(char \*/fchmod(int/';
+    hackname  = rs6000_fchmod;
+    files     = sys/stat.h;
+    select    = 'fchmod\(char \*';
+    c_fix     = format;
+    c_fix_arg = "fchmod(int";
+    test_text = "extern int fchmod(char *, mode_t);";
 };
 
 
@@ -1658,13 +1698,15 @@ fix = {
  *  parameters conflict with C++ new on rs/6000 
  */
 fix = {
-    hackname = rs6000_param;
-    files  = "stdio.h";
-    files  = "unistd.h";
-    select = 'const char new';
+    hackname  = rs6000_param;
+    files     = "stdio.h";
+    files     = "unistd.h";
 
-    sed = 's@rename(const char \*old, const char \*new)@'
-            'rename(const char *_old, const char *_new)@';
+    select    = 'rename\(const char \*old, const char \*new\)';
+    c_fix     = format;
+    c_fix_arg = 'rename(const char *_old, const char *_new)';
+
+    test_text = 'extern int rename(const char *old, const char *new);';
 };
 
 
@@ -1690,6 +1732,20 @@ fix = {
                "#if __cplusplus\\\n"
                " }\\\n"
                "#endif /* __cplusplus */";
+
+    test_text =
+    "#ifdef __STDC__\n"
+    "static int\tstat(const char *__f, struct stat *__p) {\n"
+    "\treturn __stat32(__f, __p);\n"
+    "}\n\n#  else /* !__STDC__ */\n"
+
+    "static int\tstat(__f, __p)\n"
+    "\tchar *__f;\n"
+    "\tstruct stat *__p;\n"
+    "{\n"
+    "\treturn __stat32(__f, __p);\n"
+    "}\n"
+    "#endif";
 };
 
 
@@ -1700,7 +1756,12 @@ fix = {
     hackname = sco_strict_ansi;
     mach     = "i?86-*-sco3.2*";
     select   = "^[ \t]*#[ \t]*if.*!__STDC__";
-    sed      = 's/!__STDC__/!defined(__STRICT_ANSI__)/g';
+
+    c_fix     = format;
+    c_fix_arg = "%1defined(__STRICT_ANSI__)%2";
+    c_fix_arg = "^([ \t]*#[ \t]*if[ \t].*!)__STDC__(.*)";
+
+    test_text = "#if !__STDC__ /* not standard C */\nint foo;\n#endif";
 };
 
 
@@ -1709,12 +1770,15 @@ fix = {
  *  In 3.2v4.0 the const is missing.
  */
 fix = {
-    hackname = sco_utime;
-    files    = sys/times.h;
-    mach     = "i?86-*-sco3.2v4*";
-    select   = "\(const char \*, struct utimbuf \*\);";
-    sed      = 's/(const char \*, struct utimbuf \*);/'
-                 '(const char *, const struct utimbuf *);/';
+    hackname  = sco_utime;
+    files     = sys/times.h;
+    mach      = "i?86-*-sco3.2v4*";
+
+    select    = '\(const char \*, struct utimbuf \*\);';
+    c_fix     = format;
+    c_fix_arg = '(const char *, const struct utimbuf *);';
+
+    test_text = "extern int utime(const char *, struct utimbuf *);";
 };
 
 
@@ -1730,6 +1794,23 @@ fix = {
     sed      = "s/__ctype/_ctype/g";
 };
 #endif
+
+
+/*
+ *  Sony NEWSOS 5.0 does not support the complete ANSI C standard.
+ */
+#ifdef SONY
+fix = {
+    hackname = sony_stdio;
+    files    = stdio.h;
+    test     = " -x /bin/sony";
+    test     = " ! -z \"`if /bin/sony ; then echo true ; fi`\"";
+    sed      = "s/__filbuf/_filbuf/g\n"
+               "s/__flsbuf/_flsbuf/g\n"
+               "s/__iob/_iob/g";
+};
+#endif
+
 
 /*
  *  Incorrect #include in Sony News-OS 3.2.
@@ -1757,6 +1838,7 @@ fix = {
 };
 #endif
 
+
 /*
  *  Add a `static' declaration of `getrnge' into <regexp.h>.
  *
@@ -1780,10 +1862,12 @@ fix = {
  *  a missing semi-colon at the end of the statsswtch structure definition.
  */
 fix = {
-    hackname = statsswtch;
-    files    = rpcsvc/rstat.h;
-    select   = "boottime$";
-    sed      = "s/boottime$/boottime;/";
+    hackname  = statsswtch;
+    files     = rpcsvc/rstat.h;
+    select    = "boottime$";
+    c_fix     = format;
+    c_fix_arg = "boottime;";
+    test_text = "struct statswtch {\n  int boottime\n};";
 };
 
 
@@ -1895,16 +1979,17 @@ fix = {
     /*
      *  Select those files containing '(*name)()'.
      */
-    select   = '\(\*[a-z][a-z_]*\)\(\)';
-    sed      = 's'
-                '/^\(.*(\*[a-z][a-z_]*)(\)'      '\();.*\)'
-                "/\\\n"
-                    "#ifdef __cplusplus\\\n"
-                    '\1...\2' "\\\n"
-                    "#else\\\n"
-                    '\1\2' "\\\n"
-                    "#endif"
-                "/";
+    select    = '\(\*[a-z][a-z_]*\)\(\)';
+
+    c_fix     = format;
+    c_fix_arg = "#ifdef __cplusplus\n%1(...);%2\n"
+                "#else\n%1();%2\n#endif";
+    c_fix_arg = '(.*\(\*[a-z][a-z_]*\))\(\);(.*)';
+
+    test_text =
+    "struct auth_t {\n"
+    "    int (*name)(); /* C++ bad */\n"
+    "};";
 };
 
 
@@ -1912,22 +1997,14 @@ fix = {
  *  Fix bogus #ifdef on SunOS 4.1.
  */
 fix = {
-    hackname = sun_bogus_ifdef;
-    files  = "hsfs/hsfs_spec.h";
-    files  = "hsfs/iso_spec.h";
-    select = '#ifdef __i386__ || __vax__';
-    sed    = "s/\\#ifdef __i386__ || __vax__/\\#if __i386__ || __vax__/g";
-};
+    hackname  = sun_bogus_ifdef;
+    files     = "hsfs/hsfs_spec.h";
+    files     = "hsfs/iso_spec.h";
+    select    = '#ifdef(.*\|\|.*)';
+    c_fix     = format;
+    c_fix_arg = "#if%1";
 
-
-/*
- *  Fix bogus #ifdef on SunOS 4.1.
- */
-fix = {
-    hackname = sun_bogus_ifdef_sun4c;
-    files  = "hsfs/hsnode.h";
-    select = '#ifdef __i386__ || __sun4c__';
-    sed    = "s/\\#ifdef __i386__ || __sun4c__/\\#if __i386__ || __sun4c__/g";
+    test_text = "#ifdef  __i386__ || __vax__ || __sun4c__";
 };
 
 
@@ -1935,16 +2012,18 @@ fix = {
  *  Fix the CAT macro in SunOS memvar.h.
  */
 fix = {
-    hackname = sun_catmacro;
-    files  = pixrect/memvar.h;
-    select = "^#define[ \t]+CAT\\(a,b\\)";
-    sed    = "/^#define[ \t]CAT(a,b)/ i\\\n"
-                 "#ifdef __STDC__ \\\n"
-                 "#define CAT(a,b) a##b\\\n"
-                 "#else\n";
+    hackname  = sun_catmacro;
+    files     = pixrect/memvar.h;
+    select    = "^#define[ \t]+CAT\\(a,b\\).*";
+    c_fix     = format;
 
-    sed    = "/^#define[ \t]CAT(a,b)/ a\\\n"
-                 "#endif\n";
+    c_fix_arg =
+    "#ifdef __STDC__\n"
+    "#  define CAT(a,b) a##b\n"
+    "#else\n%0\n#endif";
+
+    test_text =
+    "#define CAT(a,b)\ta/**/b";
 };
 
 
@@ -1960,6 +2039,12 @@ fix = {
     sed   = "s/int[ \t][ \t]*free/void\tfree/g";
     sed   = "s/char\\([ \t]*\\*[ \t]*malloc\\)/void\\1/g";
     sed   = "s/char\\([ \t]*\\*[ \t]*realloc\\)/void\\1/g";
+
+    test_text =
+    "typedef char *\tmalloc_t;\n"
+    "int \tfree();\n"
+    "char*\tmalloc();\n"
+    "char*\trealloc();";
 };
 
 
@@ -1971,6 +2056,7 @@ fix = {
     files    = rpcsvc/rusers.h;
     select   = "_cnt$";
     sed      = "/^struct/,/^};/s/_cnt$/_cnt;/";
+    test_text = "struct mumble\n  int _cnt\n};";
 };
 
 
@@ -1982,15 +2068,15 @@ fix = {
     hackname = sun_signal;
     files    = sys/signal.h;
     files    = signal.h;
-    select   = "^void\t" '\(\*signal\(\)\)\(\);';
+    select   = "^void\t" '\(\*signal\(\)\)\(\);.*';
 
-    sed = "/^void\t" '(\*signal())();$/i'  "\\\n"
-          "#ifdef __cplusplus"             "\\\n"
-          "void\t(*signal(...))(...);"     "\\\n"
-          "#else"                          "\n";
+    c_fix     = format;
+    c_fix_arg =
+          "#ifdef __cplusplus\n"
+          "void\t(*signal(...))(...);\n"
+          "#else\n%0\n#endif";
 
-    sed = "/^void\t" '(\*signal())();$/a'  "\\\n"
-          '#endif'                         "\n";
+    test_text = "void\t(*signal())();";
 };
 
 
@@ -1999,16 +2085,17 @@ fix = {
  *  of struct exception, so the prototype (added by fixproto) causes havoc.
  */
 fix = {
-    hackname = sunos_matherr_decl;
-    files    = math.h;
+    hackname  = sunos_matherr_decl;
+    files     = math.h;
+
     /*  If matherr has a prototype already, the header needs no fix.  */
-    bypass   = 'matherr.*struct exception';
-    /*
-     *  Once a declaration for 'struct exception' is found,
-     *  stop trying to insert a forward reference for it.
-     */
-    sed = "/^struct exception/,$b";
-    sed = "/matherr/i\\\nstruct exception;\n";
+    bypass    = 'matherr.*struct exception';
+    select    = matherr;
+
+    c_fix     = wrap;
+    c_fix_arg = "struct exception;\n";
+
+    test_text = "extern int matherr();";
 };
 
 
@@ -2018,8 +2105,10 @@ fix = {
 fix = {
     hackname = sunos_strlen;
     files    = strings.h;
-    select   = "int[ \t]*strlen";
-    sed = "s/int[ \t]*strlen();/__SIZE_TYPE__ strlen();/";
+    select   = "int[ \t]*strlen\\(\\);(.*)";
+    c_fix     = format;
+    c_fix_arg = "__SIZE_TYPE__ strlen();%1";
+    test_text = " int\tstrlen(); /* string length */";
 };
 
 
@@ -2028,16 +2117,17 @@ fix = {
  *  which conflicts with the fixproto definition.  The fixproto
  *  definition and the Solaris definition are used the same way.
  */
-#ifdef SVR4
 fix = {
     hackname = svr4__p;
     files    = math.h;
     files    = floatingpoint.h;
-    select   = "^#define[ \t]*__P";
-    sed      = "/^#define[ \t]*__P/i\\\n#ifndef __P\n";
-    sed      = "/^#define[ \t]*__P/a\\\n#endif\n";
+    select   = "^#define[ \t]+__P.*";
+    c_fix     = format;
+    c_fix_arg = "#ifndef __P\n%0\n#endif";
+
+    test_text = "#define __P(a) a";
 };
-#endif
+
 
 /*
  *  Disable apparent native compiler optimization cruft in SVR4.2 <string.h>
@@ -2158,7 +2248,10 @@ fix = {
     files    = prototypes.h;
     select   = 'getcwd\(char \*, int\)';
 
-    sed = 's/getcwd(char \*, int)/getcwd(char *, size_t)/';
+    c_fix     = format;
+    c_fix_arg = "getcwd(char *, size_t)";
+
+    test_text = "extern char* getcwd(char *, int);";
 };
 
 
@@ -2212,9 +2305,9 @@ fix = {
     files    = sys/mkdev.h;
     select   = '^static';
 
-    sed	     = "/^dev_t makedev(/s/^/static /";
-    sed	     = "/^major_t major(/s/^/static /";
-    sed	     = "/^minor_t minor(/s/^/static /";
+    sed      = "/^dev_t makedev(/s/^/static /";
+    sed      = "/^major_t major(/s/^/static /";
+    sed      = "/^minor_t minor(/s/^/static /";
 };
 #endif /* SVR5 */
 
@@ -2254,9 +2347,13 @@ fix = {
     files    = stdlib.h;
     files    = unistd.h;
 
-    sed = 's/profil(unsigned short \*, unsigned int, '
-                         'unsigned int, unsigned int)'
-           '/profil(unsigned short *, size_t, int, unsigned)/';
+    select    =
+    'profil\(unsigned short \*, unsigned int, unsigned int, unsigned int\)';
+    c_fix     = format;
+    c_fix_arg = 'profil(unsigned short *, size_t, int, unsigned int)';
+
+    test_text =
+    'profil(unsigned short *, unsigned int, unsigned int, unsigned int);';
 };
 
 
@@ -2417,15 +2514,15 @@ fix = {
     hackname = systypes_stdlib_size_t;
     files    = sys/types.h;
     files    = stdlib.h;
-    select   = "typedef[ \t][ \t]*[A-Za-z_][ \tA-Za-z_]*[ \t]size_t";
+    select   = "typedef[ \t]+[A-Za-z_][ \tA-Za-z_]*[ \t]size_t.*";
     bypass   = "_(GCC|BSD)_SIZE_T";
 
-    sed    = "/typedef[ \t][ \t]*[A-Za-z_][ \tA-Za-z_]*[ \t]size_t/i\\\n"
-                 "#ifndef _GCC_SIZE_T\\\n"
-                 "#define _GCC_SIZE_T\n";
+    c_fix     = format;
+    c_fix_arg =
+    "#ifndef _GCC_SIZE_T\n"
+    "#define _GCC_SIZE_T\n%0\n#endif";
 
-    sed    = "/typedef[ \t][ \t]*[A-Za-z_][ \tA-Za-z_]*[ \t]size_t/a\\\n"
-                 "#endif\n";
+    test_text = "typedef unsigned int size_t; /* size of something */";
 };
 
 
@@ -2455,19 +2552,21 @@ fix = {
 
 
 /*
- *  Fix return type of exit and abort in <stdlib.h>
+ *  Fix return type of calloc, malloc, realloc, bsearch and exit
  */
 fix = {
     hackname = sysz_stdlib_for_sun;
     files    = stdlib.h;
 
-    sed   = "s/int\tabort/void\tabort/g";
-    sed   = "s/int\tfree/void\tfree/g";
-    sed   = "s/char[ \t]*\\*[ \t]*calloc/void \\*\tcalloc/g";
-    sed   = "s/char[ \t]*\\*[ \t]*malloc/void \\*\tmalloc/g";
-    sed   = "s/char[ \t]*\\*[ \t]*realloc/void \\*\trealloc/g";
-    sed   = "s/char[ \t]*\\*[ \t]*bsearch/void \\*\tbsearch/g";
-    sed   = "s/int[ \t][ \t]*exit/void\texit/g";
+    select    = "char[ \t]*\\*[ \t]*(calloc|malloc|realloc|bsearch)[ \t]*\\(";
+    c_fix     = format;
+    c_fix_arg = "void *\t%1(";
+
+    test_text =
+    "extern char*\tcalloc(size_t);\n"
+    "extern char*\tmalloc(size_t);\n"
+    "extern char*\trealloc(void*,size_t);\n"
+    "extern char*\tbsearch(void*,size_t,size_t);\n";
 };
 
 
