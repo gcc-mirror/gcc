@@ -58,6 +58,7 @@ static int inside_function = FALSE;
 int alpha_function_needs_gp;
 
 extern char *version_string;
+extern int rtx_equal_function_value_matters;
 
 /* Declarations of static functions.  */
 static void alpha_set_memflags_1  PROTO((rtx, int, int, int));
@@ -657,25 +658,32 @@ alpha_set_memflags (insn, ref)
 }
 
 /* Try to output insns to set TARGET equal to the constant C if it can be
-   done in less than N insns.  Returns 1 if it can be done and the
-   insns have been emitted.  If it would take more than N insns, zero is
-   returned and no insns and emitted.  */
+   done in less than N insns.  Do all computations in MODE.  Returns the place
+   where the output has been placed if it can be done and the insns have been
+   emitted.  If it would take more than N insns, zero is returned and no
+   insns and emitted.  */
 
-int
-alpha_emit_set_const (target, c, n)
+rtx
+alpha_emit_set_const (target, mode, c, n)
      rtx target;
+     enum machine_mode mode;
      HOST_WIDE_INT c;
      int n;
 {
   HOST_WIDE_INT new = c;
   int i, bits;
+  /* Use a pseudo if highly optimizing and still generating RTL.  */
+  rtx subtarget
+    = (flag_expensive_optimizations && rtx_equal_function_value_matters
+       ? 0 : target);
+  rtx temp;
 
 #if HOST_BITS_PER_WIDE_INT == 64
   /* We are only called for SImode and DImode.  If this is SImode, ensure that
      we are sign extended to a full word.  This does not make any sense when
      cross-compiling on a narrow machine.  */
 
-  if (GET_MODE (target) == SImode)
+  if (mode == SImode)
     c = (c & 0xffffffff) - 2 * (c & 0x80000000);
 #endif
 
@@ -703,18 +711,17 @@ alpha_emit_set_const (target, c, n)
 	}
 
       if (c == low || (low == 0 && extra == 0))
-	{
-	  emit_move_insn (target, GEN_INT (c));
-	  return 1;
-	}
+	return copy_to_suggested_reg (GEN_INT (c), target, mode);
       else if (n >= 2 + (extra != 0))
 	{
-	  emit_move_insn (target, GEN_INT (low));
-	  if (extra != 0)
-	    emit_insn (gen_add2_insn (target, GEN_INT (extra << 16)));
+	  temp = copy_to_suggested_reg (GEN_INT (low), subtarget, mode);
 
-	  emit_insn (gen_add2_insn (target, GEN_INT (high << 16)));
-	  return 1;
+	  if (extra != 0)
+	    temp = expand_binop (mode, add_optab, temp, GEN_INT (extra << 16),
+				 subtarget, 0, OPTAB_WIDEN);
+
+	  return expand_binop (mode, add_optab, temp, GEN_INT (high << 16),
+			       target, 0, OPTAB_WIDEN);
 	}
     }
 
@@ -724,7 +731,7 @@ alpha_emit_set_const (target, c, n)
      SImode (in which case we should have already done something, but
      do a sanity check here).  */
 
-  if (n == 1 || HOST_BITS_PER_WIDE_INT < 64 || GET_MODE (target) != DImode)
+  if (n == 1 || HOST_BITS_PER_WIDE_INT < 64 || mode != DImode)
     return 0;
 
   /* First, see if can load a value into the target that is the same as the
@@ -735,11 +742,9 @@ alpha_emit_set_const (target, c, n)
     if ((new & ((HOST_WIDE_INT) 0xff << i)) == 0)
       new |= (HOST_WIDE_INT) 0xff << i;
 
-  if (alpha_emit_set_const (target, new, n - 1))
-    {
-      emit_insn (gen_anddi3 (target, target, GEN_INT (c | ~ new)));
-      return 1;
-    }
+  if ((temp = alpha_emit_set_const (subtarget, mode, new, n - 1)) != 0)
+    return expand_binop (mode, and_optab, temp, GEN_INT (c | ~ new),
+			 target, 0, OPTAB_WIDEN);
 
   /* Find, see if we can load a related constant and then shift and possibly
      negate it to get the constant we want.  Try this once each increasing
@@ -748,13 +753,10 @@ alpha_emit_set_const (target, c, n)
   for (i = 1; i < n; i++)
     {
       /* First try complementing.  */
-      if (alpha_emit_set_const (target, ~ c, i))
-	{
-	  emit_insn (gen_one_cmpldi2 (target, target));
-	  return 1;
-	}
+      if ((temp = alpha_emit_set_const (subtarget, mode, ~ c, i)) != 0)
+	return expand_unop (mode, one_cmpl_optab, temp, target, 0);
 
-      /* First try to form a constant and do a left shift.  We can do this
+      /* Next try to form a constant and do a left shift.  We can do this
 	 if some low-order bits are zero; the exact_log2 call below tells
 	 us that information.  The bits we are shifting out could be any
 	 value, but here we'll just try the 0- and sign-extended forms of
@@ -765,44 +767,44 @@ alpha_emit_set_const (target, c, n)
 
       if ((bits = exact_log2 (c & - c)) > 0)
 	for (; bits > 0; bits--)
-	  if (alpha_emit_set_const (target, c >> bits, i)
-	      || alpha_emit_set_const (target,
-				       ((unsigned HOST_WIDE_INT) c) >> bits,
-				       i))
-	    {
-	      emit_insn (gen_ashldi3 (target, target, GEN_INT (bits)));
-	      return 1;
-	    }
+	  if ((temp = alpha_emit_set_const (subtarget, mode,
+					    c >> bits, i)) != 0
+	      || ((temp = (alpha_emit_set_const
+			  (subtarget, mode,
+			   ((unsigned HOST_WIDE_INT) c) >> bits, i)))
+		  != 0))
+	    return expand_binop (mode, ashl_optab, temp, GEN_INT (bits),
+				 target, 0, OPTAB_WIDEN);
 
       /* Now try high-order zero bits.  Here we try the shifted-in bits as
 	 all zero and all ones.  */
 
       if ((bits = HOST_BITS_PER_WIDE_INT - floor_log2 (c) - 1) > 0)
 	for (; bits > 0; bits--)
-	  if (alpha_emit_set_const (target, c << bits, i)
-	      || alpha_emit_set_const (target,
-				       ((c << bits)
-					| (((HOST_WIDE_INT) 1 << bits) - 1)),
-				       i))
-	    {
-	      emit_insn (gen_lshrdi3 (target, target, GEN_INT (bits)));
-	      return 1;
-	    }
+	  if ((temp = alpha_emit_set_const (subtarget, mode,
+					    c << bits, i)) != 0
+	      || ((temp = (alpha_emit_set_const
+			   (subtarget, mode,
+			    ((c << bits) | (((HOST_WIDE_INT) 1 << bits) - 1)),
+			    i)))
+		  != 0))
+	    return expand_binop (mode, lshr_optab, temp, GEN_INT (bits),
+				 target, 0, OPTAB_WIDEN);
 
       /* Now try high-order 1 bits.  We get that with a sign-extension.
 	 But one bit isn't enough here.  */
       
       if ((bits = HOST_BITS_PER_WIDE_INT - floor_log2 (~ c) - 2) > 0)
 	for (; bits > 0; bits--)
-	  if (alpha_emit_set_const (target, c << bits, i)
-	      || alpha_emit_set_const (target,
-				       ((c << bits)
-					| (((HOST_WIDE_INT) 1 << bits) - 1)),
-				       i))
-	    {
-	      emit_insn (gen_ashrdi3 (target, target, GEN_INT (bits)));
-	      return 1;
-	    }
+	  if ((temp = alpha_emit_set_const (subtarget, mode,
+					    c << bits, i)) != 0
+	      || ((temp = (alpha_emit_set_const
+			   (subtarget, mode,
+			    ((c << bits) | (((HOST_WIDE_INT) 1 << bits) - 1)),
+			    i)))
+		  != 0))
+	    return expand_binop (mode, ashr_optab, temp, GEN_INT (bits),
+				 target, 0, OPTAB_WIDEN);
     }
 
   return 0;
