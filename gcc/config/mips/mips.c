@@ -4313,6 +4313,18 @@ mips_expand_prologue ()
   tree cur_arg;
   CUMULATIVE_ARGS args_so_far;
 
+  /* If struct value address is treated as the first argument, make it so.  */
+  if (aggregate_value_p (DECL_RESULT (fndecl))
+      && ! current_function_returns_pcc_struct
+      && struct_value_incoming_rtx == 0)
+    {
+      tree type = build_pointer_type (fntype);
+      tree function_result_decl = build_decl (PARM_DECL, NULL_TREE, type);
+      DECL_ARG_TYPE (function_result_decl) = type;
+      TREE_CHAIN (function_result_decl) = fnargs;
+      fnargs = function_result_decl;
+    }
+
   /* Determine the last argument, and get its name.  */
 
   INIT_CUMULATIVE_ARGS (args_so_far, fntype, (rtx)0);
