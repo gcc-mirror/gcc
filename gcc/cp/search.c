@@ -2034,7 +2034,7 @@ get_abstract_virtuals_1 (binfo, do_self, abstract_virtuals)
     {
       tree virtuals = BINFO_VIRTUALS (binfo);
 
-      skip_rtti_stuff (&virtuals);
+      skip_rtti_stuff (&virtuals, BINFO_TYPE (binfo));
 
       while (virtuals)
 	{
@@ -2067,7 +2067,7 @@ get_abstract_virtuals (type)
     {
       tree virtuals = BINFO_VIRTUALS (vbases);
 
-      skip_rtti_stuff (&virtuals);
+      skip_rtti_stuff (&virtuals, type);
 
       while (virtuals)
 	{
@@ -2528,7 +2528,7 @@ expand_upcast_fixups (binfo, addr, orig_addr, vbase, vbase_addr, t,
       *vbase_offsets = delta;
     }
 
-  n = skip_rtti_stuff (&virtuals);
+  n = skip_rtti_stuff (&virtuals, t);
 
   while (virtuals)
     {
