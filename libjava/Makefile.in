@@ -115,48 +115,31 @@ here = @here@
 libgcj_basedir = @libgcj_basedir@
 
 AUTOMAKE_OPTIONS = foreign no-installinfo
-@TESTSUBDIR_TRUE@SUBDIRS = \
-@TESTSUBDIR_TRUE@$(DIRLTDL) testsuite gcj include
-@TESTSUBDIR_FALSE@SUBDIRS = \
-@TESTSUBDIR_FALSE@$(DIRLTDL) gcj include
-@USE_LIBDIR_TRUE@toolexeclibdir = \
-@USE_LIBDIR_TRUE@$(libdir)$(MULTISUBDIR)
-@USE_LIBDIR_FALSE@toolexeclibdir = \
-@USE_LIBDIR_FALSE@$(toolexecdir)/lib$(MULTISUBDIR)
-@USE_LIBDIR_FALSE@toolexecdir = \
-@USE_LIBDIR_FALSE@$(exec_prefix)/$(target_alias)
+@TESTSUBDIR_TRUE@SUBDIRS = @TESTSUBDIR_TRUE@$(DIRLTDL) testsuite gcj include
+@TESTSUBDIR_FALSE@SUBDIRS = @TESTSUBDIR_FALSE@$(DIRLTDL) gcj include
+@USE_LIBDIR_TRUE@toolexeclibdir = @USE_LIBDIR_TRUE@$(libdir)$(MULTISUBDIR)
+@USE_LIBDIR_FALSE@toolexeclibdir = @USE_LIBDIR_FALSE@$(toolexecdir)/lib$(MULTISUBDIR)
+@USE_LIBDIR_FALSE@toolexecdir = @USE_LIBDIR_FALSE@$(exec_prefix)/$(target_alias)
 
 toolexeclib_LTLIBRARIES = libgcj.la
 toolexeclib_DATA = libgcj.spec
 data_DATA = libgcj.zip
 
-@NEEDS_DATA_START_TRUE@toolexeclib_LIBRARIES = \
-@NEEDS_DATA_START_TRUE@libgcjdata.a
-@NEEDS_DATA_START_TRUE@libgcjdata_a_SOURCES = \
-@NEEDS_DATA_START_TRUE@libgcjdata.c
+@NEEDS_DATA_START_TRUE@toolexeclib_LIBRARIES = @NEEDS_DATA_START_TRUE@libgcjdata.a
+@NEEDS_DATA_START_TRUE@libgcjdata_a_SOURCES = @NEEDS_DATA_START_TRUE@libgcjdata.c
 
-@NATIVE_TRUE@bin_PROGRAMS = \
-@NATIVE_TRUE@jv-convert gij
+@NATIVE_TRUE@bin_PROGRAMS = @NATIVE_TRUE@jv-convert gij
 
 bin_SCRIPTS = addr2name.awk
-@CANADIAN_TRUE@@NULL_TARGET_TRUE@GCJ = \
-@CANADIAN_TRUE@@NULL_TARGET_TRUE@gcj
-@CANADIAN_TRUE@@NULL_TARGET_FALSE@GCJ = \
-@CANADIAN_TRUE@@NULL_TARGET_FALSE@$(target_alias)-gcj
-@CANADIAN_FALSE@GCJ = \
-@CANADIAN_FALSE@$(expanded)/gcj$(EXEEXT) -B$(expanded)/
-@CANADIAN_TRUE@@NULL_TARGET_TRUE@ZIP = \
-@CANADIAN_TRUE@@NULL_TARGET_TRUE@$(MULTIBUILDTOP)../$(COMPPATH)/zip/zip$(EXEEXT)
-@CANADIAN_TRUE@@NULL_TARGET_FALSE@ZIP = \
-@CANADIAN_TRUE@@NULL_TARGET_FALSE@zip
-@CANADIAN_FALSE@ZIP = \
-@CANADIAN_FALSE@$(MULTIBUILDTOP)../$(COMPPATH)/zip/zip$(EXEEXT)
-@CANADIAN_TRUE@GCJH = \
-@CANADIAN_TRUE@gcjh
-@CANADIAN_FALSE@GCJH = \
-@CANADIAN_FALSE@$(MULTIBUILDTOP)../$(COMPPATH)/gcc/gcjh$(EXEEXT)
-@CANADIAN_FALSE@expanded = \
-@CANADIAN_FALSE@`cd $(MULTIBUILDTOP)../$(COMPPATH)/gcc && pwd`
+@CANADIAN_TRUE@@NULL_TARGET_TRUE@GCJ = @CANADIAN_TRUE@@NULL_TARGET_TRUE@gcj
+@CANADIAN_TRUE@@NULL_TARGET_FALSE@GCJ = @CANADIAN_TRUE@@NULL_TARGET_FALSE@$(target_alias)-gcj
+@CANADIAN_FALSE@GCJ = @CANADIAN_FALSE@$(expanded)/gcj$(EXEEXT) -B$(expanded)/
+@CANADIAN_TRUE@@NULL_TARGET_TRUE@ZIP = @CANADIAN_TRUE@@NULL_TARGET_TRUE@$(MULTIBUILDTOP)../$(COMPPATH)/zip/zip$(EXEEXT)
+@CANADIAN_TRUE@@NULL_TARGET_FALSE@ZIP = @CANADIAN_TRUE@@NULL_TARGET_FALSE@zip
+@CANADIAN_FALSE@ZIP = @CANADIAN_FALSE@$(MULTIBUILDTOP)../$(COMPPATH)/zip/zip$(EXEEXT)
+@CANADIAN_TRUE@GCJH = @CANADIAN_TRUE@gcjh
+@CANADIAN_FALSE@GCJH = @CANADIAN_FALSE@$(MULTIBUILDTOP)../$(COMPPATH)/gcc/gcjh$(EXEEXT)
+@CANADIAN_FALSE@expanded = @CANADIAN_FALSE@`cd $(MULTIBUILDTOP)../$(COMPPATH)/gcc && pwd`
 
 GCJCOMPILE = CLASSPATH=$(here) $(LIBTOOL) --mode=compile $(GCJ) -fassume-compiled -L$(here) $(JC1FLAGS) -c
 GCJLINK = $(LIBTOOL) --mode=link $(GCJ) -L$(here) $(JC1FLAGS) $(LDFLAGS) -o $@
@@ -170,10 +153,8 @@ WARNINGS = -W -Wall
 AM_CXXFLAGS = -fno-rtti -fvtable-thunks -fasynchronous-exceptions \
 	@LIBGCJ_CXXFLAGS@ @EXCEPTIONSPEC@ $(WARNINGS) -D_GNU_SOURCE
 
-@USING_GCC_TRUE@AM_CFLAGS = \
-@USING_GCC_TRUE@@LIBGCJ_CFLAGS@ $(WARNINGS)
-@USING_GCC_FALSE@AM_CFLAGS = \
-@USING_GCC_FALSE@@LIBGCJ_CFLAGS@
+@USING_GCC_TRUE@AM_CFLAGS = @USING_GCC_TRUE@@LIBGCJ_CFLAGS@ $(WARNINGS)
+@USING_GCC_FALSE@AM_CFLAGS = @USING_GCC_FALSE@@LIBGCJ_CFLAGS@
 
 JCFLAGS = -g
 JC1FLAGS = -g @LIBGCJ_JAVAFLAGS@
@@ -225,8 +206,7 @@ extra_headers = java/lang/Object.h java/lang/Class.h
 
 NM = nm
 
-@NATIVE_TRUE@@MAINTAINER_MODE_TRUE@noinst_PROGRAMS = \
-@NATIVE_TRUE@@MAINTAINER_MODE_TRUE@gen-from-JIS
+@NATIVE_TRUE@@MAINTAINER_MODE_TRUE@noinst_PROGRAMS = @NATIVE_TRUE@@MAINTAINER_MODE_TRUE@gen-from-JIS
 
 CONVERT_DIR = gnu/gcj/convert
 
@@ -282,6 +262,8 @@ gnu/gcj/convert/UnicodeToBytes.java
 special_java_source_files = java/lang/Class.java java/lang/Object.java
 
 awt_java_source_files = \
+gnu/gcj/awt/BitMaskExtent.java \
+gnu/gcj/awt/Buffers.java \
 java/awt/AWTError.java \
 java/awt/AWTEvent.java \
 java/awt/AWTEventMulticaster.java \
@@ -291,7 +273,6 @@ java/awt/Adjustable.java \
 java/awt/BorderLayout.java \
 java/awt/CheckboxGroup.java \
 java/awt/Color.java \
-java/awt/ColorModel.java \
 java/awt/Component.java	\
 java/awt/ComponentOrientation.java \
 java/awt/Container.java	\
@@ -331,6 +312,9 @@ java/awt/TextComponent.java \
 java/awt/Toolkit.java \
 java/awt/Transparency.java \
 java/awt/Window.java \
+java/awt/color/ColorSpace.java \
+java/awt/color/ICC_ColorSpace.java \
+java/awt/color/ICC_Profile.java \
 java/awt/event/AWTEventListener.java \
 java/awt/event/ActionEvent.java	\
 java/awt/event/ActionListener.java \
@@ -378,9 +362,23 @@ java/awt/geom/PathIterator.java	\
 java/awt/geom/Point2D.java \
 java/awt/geom/Rectangle2D.java \
 java/awt/geom/RectangularShape.java \
+java/awt/image/ColorModel.java \
+java/awt/image/ComponentColorModel.java \
+java/awt/image/ComponentSampleModel.java \
+java/awt/image/DataBuffer.java \
+java/awt/image/DataBufferByte.java \
+java/awt/image/DataBufferInt.java \
+java/awt/image/DataBufferUShort.java \
+java/awt/image/DirectColorModel.java \
 java/awt/image/ImageConsumer.java \
 java/awt/image/ImageObserver.java \
 java/awt/image/ImageProducer.java \
+java/awt/image/IndexColorModel.java \
+java/awt/image/PackedColorModel.java \
+java/awt/image/Raster.java \
+java/awt/image/SampleModel.java \
+java/awt/image/SinglePixelPackedSampleModel.java \
+java/awt/image/WritableRaster.java \
 java/awt/peer/ButtonPeer.java \
 java/awt/peer/CanvasPeer.java \
 java/awt/peer/CheckboxMenuItemPeer.java	\
@@ -991,7 +989,8 @@ DIST_SUBDIRS =  @DIRLTDL@ testsuite gcj include @DIRLTDL@ gcj include
 DEP_FILES =  .deps/$(srcdir)/$(CONVERT_DIR)/gen-from-JIS.P \
 .deps/$(srcdir)/$(CONVERT_DIR)/make-trie.P .deps/boehm.P \
 .deps/defineclass.P .deps/exception.P .deps/gij.P \
-.deps/gnu/gcj/RawData.P .deps/gnu/gcj/convert/BytesToUnicode.P \
+.deps/gnu/gcj/RawData.P .deps/gnu/gcj/awt/BitMaskExtent.P \
+.deps/gnu/gcj/awt/Buffers.P .deps/gnu/gcj/convert/BytesToUnicode.P \
 .deps/gnu/gcj/convert/Convert.P .deps/gnu/gcj/convert/Input_8859_1.P \
 .deps/gnu/gcj/convert/Input_EUCJIS.P \
 .deps/gnu/gcj/convert/Input_JavaSrc.P \
@@ -1050,14 +1049,13 @@ DEP_FILES =  .deps/$(srcdir)/$(CONVERT_DIR)/gen-from-JIS.P \
 .deps/java/awt/AWTEventMulticaster.P .deps/java/awt/AWTException.P \
 .deps/java/awt/ActiveEvent.P .deps/java/awt/Adjustable.P \
 .deps/java/awt/BorderLayout.P .deps/java/awt/CheckboxGroup.P \
-.deps/java/awt/Color.P .deps/java/awt/ColorModel.P \
-.deps/java/awt/Component.P .deps/java/awt/ComponentOrientation.P \
-.deps/java/awt/Container.P .deps/java/awt/Cursor.P \
-.deps/java/awt/Dimension.P .deps/java/awt/Event.P \
-.deps/java/awt/EventDispatchThread.P .deps/java/awt/EventQueue.P \
-.deps/java/awt/Font.P .deps/java/awt/FontMetrics.P \
-.deps/java/awt/Frame.P .deps/java/awt/Graphics.P \
-.deps/java/awt/GraphicsConfiguration.P \
+.deps/java/awt/Color.P .deps/java/awt/Component.P \
+.deps/java/awt/ComponentOrientation.P .deps/java/awt/Container.P \
+.deps/java/awt/Cursor.P .deps/java/awt/Dimension.P \
+.deps/java/awt/Event.P .deps/java/awt/EventDispatchThread.P \
+.deps/java/awt/EventQueue.P .deps/java/awt/Font.P \
+.deps/java/awt/FontMetrics.P .deps/java/awt/Frame.P \
+.deps/java/awt/Graphics.P .deps/java/awt/GraphicsConfiguration.P \
 .deps/java/awt/IllegalComponentStateException.P .deps/java/awt/Image.P \
 .deps/java/awt/Insets.P .deps/java/awt/ItemSelectable.P \
 .deps/java/awt/Label.P .deps/java/awt/LayoutManager.P \
@@ -1071,6 +1069,8 @@ DEP_FILES =  .deps/$(srcdir)/$(CONVERT_DIR)/gen-from-JIS.P \
 .deps/java/awt/Shape.P .deps/java/awt/TextArea.P \
 .deps/java/awt/TextComponent.P .deps/java/awt/Toolkit.P \
 .deps/java/awt/Transparency.P .deps/java/awt/Window.P \
+.deps/java/awt/color/ColorSpace.P .deps/java/awt/color/ICC_ColorSpace.P \
+.deps/java/awt/color/ICC_Profile.P \
 .deps/java/awt/event/AWTEventListener.P \
 .deps/java/awt/event/ActionEvent.P \
 .deps/java/awt/event/ActionListener.P \
@@ -1109,9 +1109,21 @@ DEP_FILES =  .deps/$(srcdir)/$(CONVERT_DIR)/gen-from-JIS.P \
 .deps/java/awt/geom/PathIterator.P .deps/java/awt/geom/Point2D.P \
 .deps/java/awt/geom/Rectangle2D.P \
 .deps/java/awt/geom/RectangularShape.P \
+.deps/java/awt/image/ColorModel.P \
+.deps/java/awt/image/ComponentColorModel.P \
+.deps/java/awt/image/ComponentSampleModel.P \
+.deps/java/awt/image/DataBuffer.P .deps/java/awt/image/DataBufferByte.P \
+.deps/java/awt/image/DataBufferInt.P \
+.deps/java/awt/image/DataBufferUShort.P \
+.deps/java/awt/image/DirectColorModel.P \
 .deps/java/awt/image/ImageConsumer.P \
 .deps/java/awt/image/ImageObserver.P \
-.deps/java/awt/image/ImageProducer.P .deps/java/awt/peer/ButtonPeer.P \
+.deps/java/awt/image/ImageProducer.P \
+.deps/java/awt/image/IndexColorModel.P \
+.deps/java/awt/image/PackedColorModel.P .deps/java/awt/image/Raster.P \
+.deps/java/awt/image/SampleModel.P \
+.deps/java/awt/image/SinglePixelPackedSampleModel.P \
+.deps/java/awt/image/WritableRaster.P .deps/java/awt/peer/ButtonPeer.P \
 .deps/java/awt/peer/CanvasPeer.P \
 .deps/java/awt/peer/CheckboxMenuItemPeer.P \
 .deps/java/awt/peer/CheckboxPeer.P .deps/java/awt/peer/ChoicePeer.P \
@@ -1751,7 +1763,7 @@ distdir: $(DISTFILES)
 	@for file in $(DISTFILES); do \
 	  d=$(srcdir); \
 	  if test -d $$d/$$file; then \
-	    cp -pr $$/$$file $(distdir)/$$file; \
+	    cp -pr $$d/$$file $(distdir)/$$file; \
 	  else \
 	    test -f $(distdir)/$$file \
 	    || ln $$d/$$file $(distdir)/$$file 2> /dev/null \
