@@ -1,3 +1,7 @@
+2003-02-01  Loren J. Rittle <ljrittle@acm.org>
+
+        * gcc.dg/struct-ret-libc.c: New test.
+
 Sat Feb  1 00:49:00 CET 2003  Jan Hubicka  <jh@suse.cz>
 
 	* loop.c (emit_prefetch_instructions):  Do conversion at right place in
