@@ -1,3 +1,7 @@
+2000-09-16  Andreas Jaeger  <aj@suse.de>
+
+	* gcc_update: Remove gcc/c-parse.gperf.
+
 2000-08-30  Gerald Pfeifer  <pfeifer@dbai.tuwien.ac.at>,
 	    Alexandre Oliva  <aoliva@redhat.com>
 
@@ -55,7 +59,7 @@ Sun Jul 16 12:04:33 2000  Mark P Mitchell  <mark@codesourcery.com>
 2000-04-27  Gerald Pfeifer  <pfeifer@dbai.tuwien.ac.at>
 
 	* gcc_update: Refer to GCC and gcc_update instead of egcs and
- 	egcs_update.
+	egcs_update.
 
 2000-04-26  Jonathan Larmour  <jlarmour@redhat.co.uk>
 
@@ -107,7 +111,7 @@ Sun Nov 28 00:41:44 1999  William Bader (william@nscs.fast.net)
 	pre-update step.
 
 1999-07-17  Alexandre Oliva  <oliva@dcc.unicamp.br>
-        
+
 	* test_summary: Replace egcs with gcc.  Update e-mail address.
 
 1999-07-05  Gerald Pfeifer  <pfeifer@dbai.tuwien.ac.at>
@@ -119,7 +123,7 @@ Sun Nov 28 00:41:44 1999  William Bader (william@nscs.fast.net)
 
 1999-07-03  Alexandre Oliva  <oliva@dcc.unicamp.br>
 
-	* test_summary: If Target is `unix{*}', append the Target variants 
+	* test_summary: If Target is `unix{*}', append the Target variants
 	to Host.
 
 1999-06-12  Alexandre Oliva  <oliva@dcc.unicamp.br>
@@ -134,13 +138,13 @@ Fri Apr  2 16:09:02 1999  Jeffrey A Law  (law@cygnus.com)
 
 1999-02-04  Robert Lipe  <robertlipe@usa.net>
 
-	* egcs_update: Test return values of 'cvs update'.  Propogate 
-	to caller as exit values.     
+	* egcs_update: Test return values of 'cvs update'.  Propogate
+	to caller as exit values.
 
 1999-01-25  Gerald Pfeifer  <pfeifer@dbai.tuwien.ac.at>
 
 	* egcs_update: Use "if" instead of "&&".  Touch generated files
- 	only after the corresponding *.y files.
+	only after the corresponding *.y files.
 
 1999-01-19  Gerald Pfeifer  <pfeifer@dbai.tuwien.ac.at>
 
@@ -177,26 +181,26 @@ Fri Apr  2 16:09:02 1999  Jeffrey A Law  (law@cygnus.com)
 Sat Oct 31 10:53:40 1998  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* warn_summary (longLineFilter): New shell function to encapsulate
- 	this functionality.  It is off by default, only active if -llf
- 	flag is specified.
-  	(subdirectoryFilter): Fix bug in filtering which made some
- 	subdirectory warnings erroneously appear in the toplevel set.
-  	(stageNfilter): Renamed from `stageNwarns'.  Updated to collect
- 	warnings from stage1 as well as stage0, which means warnings from
- 	outside the bootstrap directory.  Eg, the libraries, etc.
-  	(warningFilter): New shell function to encapsulate this
- 	functionality.
+	this functionality.  It is off by default, only active if -llf
+	flag is specified.
+	(subdirectoryFilter): Fix bug in filtering which made some
+	subdirectory warnings erroneously appear in the toplevel set.
+	(stageNfilter): Renamed from `stageNwarns'.  Updated to collect
+	warnings from stage1 as well as stage0, which means warnings from
+	outside the bootstrap directory.  Eg, the libraries, etc.
+	(warningFilter): New shell function to encapsulate this
+	functionality.
 	(keywordFilter): New shell function to encapsulate this
- 	functionality.
+	functionality.
 
 	Store data in a temp file rather than calculating it 3x.  Arrange
 	to remove it on exit and signals.
 
 	Add -pass/-wpass flags to do "pass through" (i.e. manual
- 	inspection) of bootstrap output from a particular stageN as well
- 	as language subdirs.
+	inspection) of bootstrap output from a particular stageN as well
+	as language subdirs.
 
-	Add better comments/documentation.	
+	Add better comments/documentation.
 
 Sat Oct 31 16:39:31 1998  Gerald Pfeifer  <pfeifer@dbai.tuwien.ac.at>
 
@@ -223,12 +227,12 @@ Wed Oct  7 13:00:40 1998  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 Mon Oct  5 14:19:48 1998  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* warn_summary (subdirectoryFilter): New shell function to
- 	optionally filter in/out gcc subdirectories when summarizing
- 	warnings.  Add new flags to support subdirectory filtering.
-	
+	optionally filter in/out gcc subdirectories when summarizing
+	warnings.  Add new flags to support subdirectory filtering.
+
 	Also, ensure the bootstrap stage is a number.  Add some more C
- 	keywords that are preserved in the "warning type" summary and
- 	tighten up the "arg ???" regexp.
+	keywords that are preserved in the "warning type" summary and
+	tighten up the "arg ???" regexp.
 
 Tue Sep 22 07:30 Bruce Korb <korb@datadesign.com>
 
@@ -245,7 +249,7 @@ Wed Sep 16 16:06:51 1998  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 	* egcs_update: Additionally touch gcc/java/parse.[ch].
 
 Thu Sep  9 16:48 Bruce Korb <korb@datadesign.com>
-	
+
 	* fixinc/inclhack.def:  Added two files required by
 	SCO's Open Server 5's avoid_bool fix.
 	Regenerated fixinc.x and inclhack.sh to incorporate
@@ -254,12 +258,12 @@ Thu Sep  9 16:48 Bruce Korb <korb@datadesign.com>
 Thu Sep  3 10:11:32 1998  Robert Lipe   <robertl@dgii.com>
 
 	* egcs_update: Do the pass 1 CVS update only for files that
-	may reasonably be under CVS control. 
+	may reasonably be under CVS control.
 
 1998-08-14  Alexandre Oliva  <oliva@dcc.unicamp.br>
 
 	* test_installed: New script for testing already-installed
- 	gcc/g++/g77.
+	gcc/g++/g77.
 
 Wed Aug 12 19:59:36 1998  Gerald Pfeifer  <pfeifer@dbai.tuwien.ac.at>
 
