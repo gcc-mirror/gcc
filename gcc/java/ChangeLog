@@ -1,6 +1,6 @@
-Fri Sep 24 12:23:05 1999  Alexandre Petit-Bianco  <apbianco@cygnus.com>
+Fri Sep 24 12:23:05 1999  Glenn Chambers  <GChambers@provsol.com>
 
-	* decl.c (insert_block): Removed unconditional `abort'.
+	* decl.c (insert_block): Remove unconditional `abort'.
 
 Fri Sep 24 10:48:10 1999  Bernd Schmidt  <bernds@cygnus.co.uk>
 
