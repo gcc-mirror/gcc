@@ -5273,6 +5273,7 @@ push_init_level (implicit)
 	  && constructor_fields == 0)
 	process_init_element (pop_init_level (1));
       else if (TREE_CODE (constructor_type) == ARRAY_TYPE
+	       && constructor_max_index 
 	       && tree_int_cst_lt (constructor_max_index, constructor_index))
 	process_init_element (pop_init_level (1));
       else
