@@ -3095,7 +3095,7 @@ fill_slots_from_thread (insn, condition, thread, opposite_thread, likely,
        ! stop_search_p (trial, ! thread_if_true) && (! lose || own_thread);
        trial = next_nonnote_insn (trial))
     {
-      rtx pat;
+      rtx pat, old_trial;
 
       /* If we have passed a label, we no longer own this thread.  */
       if (GET_CODE (trial) == CODE_LABEL)
@@ -3142,7 +3142,10 @@ fill_slots_from_thread (insn, condition, thread, opposite_thread, likely,
 	      || (! insn_sets_resource_p (trial, &opposite_needed, 1)
 		  && ! may_trap_p (pat)))
 	    {
+	      old_trial = trial;
 	      trial = try_split (pat, trial, 0);
+	      if (new_thread == old_trial)
+		new_thread = trial;
 	      pat = PATTERN (trial);
 	      if (eligible_for_delay (insn, *pslots_filled, trial, flags))
 		goto winner;
@@ -3156,7 +3159,10 @@ fill_slots_from_thread (insn, condition, thread, opposite_thread, likely,
 #endif
 		   )
 	    {
+	      old_trial = trial;
 	      trial = try_split (pat, trial, 0);
+	      if (new_thread == old_trial)
+		new_thread = trial;
 	      pat = PATTERN (trial);
 	      if ((thread_if_true
 		   ? eligible_for_annul_false (insn, *pslots_filled, trial, flags)
