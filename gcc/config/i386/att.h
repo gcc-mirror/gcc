@@ -37,13 +37,15 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 /* How to output an ASCII string constant.  */
 
 #define ASM_OUTPUT_ASCII(FILE, p, size) \
+do								\
 { int i = 0; 							\
   while (i < (size))						\
     { if (i%10 == 0) { if (i!=0) fprintf ((FILE), "\n");	\
 		       fprintf ((FILE), "%s ", ASM_BYTE_OP); }	\
-      else fprintf ((FILE), ",");					\
+      else fprintf ((FILE), ",");				\
 	fprintf ((FILE), "0x%x", ((p)[i++] & 0377)) ;}		\
-      fprintf ((FILE), "\n"); }
+      fprintf ((FILE), "\n");					\
+} while (0)
 
 /* Do use .optim by default on this machine.  */
 #undef ASM_FILE_START_1
