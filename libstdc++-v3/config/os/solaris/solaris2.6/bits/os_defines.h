@@ -28,5 +28,14 @@
 // the GNU General Public License.
 
 
+#ifndef _GLIBCPP_OS_DEFINES
+#  define _GLIBCPP_OS_DEFINES
+
+
+/* System-specific #define, typedefs, corrections, etc, go here.  This
+   file will come before all others. */
+
+
+#endif
 
 

@@ -1,5 +1,8 @@
 // acconfig.h symbols and macros for libstdc++ v3 -*- C++ -*-
 
+// Include support for multiple threads, e.g., in the I/O package.
+#undef _GLIBCPP_USE_THREADS
+
 // Include support for 'long long' and 'unsigned long long'.
 #undef _GLIBCPP_USE_LONG_LONG
 

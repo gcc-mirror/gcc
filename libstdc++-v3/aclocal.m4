@@ -149,8 +149,8 @@ LIB_AC_PROG_CXX
   fi
 
   # configure.host sets the following important variables
-  #	glibcpp_cflags    - host specific C compiler flags
-  #	glibcpp_cxxflags  - host specific C++ compiler flags
+  #        glibcpp_cflags    - host specific C compiler flags
+  #        glibcpp_cxxflags  - host specific C++ compiler flags
   glibcpp_cflags=
   glibcpp_cxxflags=
 
@@ -180,7 +180,7 @@ AC_DEFUN(GLIBCPP_CHECK_COMPILER_VERSION, [
   #if __GNUC__ > 2 || (__GNUC__ == 2 && __GNUC_MINOR__ >= 95) 
     ok
   #endif
-  ], gpp_satisfactory=yes, AC_MSG_ERROR("please upgrade to gcc-2.95 or above"))
+  ], gpp_satisfactory=yes, AC_MSG_ERROR([please upgrade to gcc-2.95 or above]))
   AC_MSG_RESULT($gpp_satisfactory)
 ])
 
@@ -680,7 +680,7 @@ dnl Check to see if there is native support for complex
 dnl
 dnl Don't compile bits in math/* if native support exits.
 dnl
-dnl Define USE_COMPLEX_LONG_DOUBLE etc if "cargf" is found.
+dnl Define USE_COMPLEX_LONG_DOUBLE etc if "atan2l/copysignl" is found.
 dnl
 dnl GLIBCPP_CHECK_COMPLEX_MATH_SUPPORT
 AC_DEFUN(GLIBCPP_CHECK_COMPLEX_MATH_SUPPORT, [
@@ -713,34 +713,34 @@ dnl GLIBCPP_CHECK_CPU
 AC_DEFUN(GLIBCPP_CHECK_CPU, [
     AC_MSG_CHECKING([for cpu config directory])
 # Currently unused, but could be useful.
-#    CPU_FLAGS=			
+#    CPU_FLAGS=                        
     case "${target_cpu}" in
       alpha*)
-	cpu_include_dir="config/cpu/alpha"
+        cpu_include_dir="config/cpu/alpha"
         ;;
       arm*)
-	cpu_include_dir="config/cpu/arm"
+        cpu_include_dir="config/cpu/arm"
         ;;
       ia64)
-	cpu_include_dir="config/cpu/ia64"
-	;;
+        cpu_include_dir="config/cpu/ia64"
+        ;;
       i386)
-	cpu_include_dir="config/cpu/i386"
-	;;
+        cpu_include_dir="config/cpu/i386"
+        ;;
       i486 | i586 | i686 | i786)
-	cpu_include_dir="config/cpu/i486"
+        cpu_include_dir="config/cpu/i486"
         ;;
       powerpc | rs6000)
-	cpu_include_dir="config/cpu/powerpc"
+        cpu_include_dir="config/cpu/powerpc"
         ;;
       sparc64 | ultrasparc)
-	cpu_include_dir="config/cpu/sparc/sparc64"
+        cpu_include_dir="config/cpu/sparc/sparc64"
         ;;
       sparc*)
-	cpu_include_dir="config/cpu/sparc/sparc32"
+        cpu_include_dir="config/cpu/sparc/sparc32"
         ;;
       *)
-	cpu_include_dir="config/cpu/generic"
+        cpu_include_dir="config/cpu/generic"
         ;;
     esac
     AC_MSG_RESULT($cpu_include_dir)
@@ -757,28 +757,28 @@ AC_DEFUN(GLIBCPP_CHECK_OS, [
 #    OS_FLAGS=
     case "${target_os}" in
       aix*)
-	os_include_dir="config/os/aix"
+        os_include_dir="config/os/aix"
         ;;
       bsd* | freebsd*)
-	os_include_dir="config/os/bsd"
+        os_include_dir="config/os/bsd"
         ;;
       linux*)
-	os_include_dir="config/os/gnu-linux"
-	;;
+        os_include_dir="config/os/gnu-linux"
+        ;;
       irix*)
-	os_include_dir="config/os/irix"
-	;;
+        os_include_dir="config/os/irix"
+        ;;
       solaris2.5*)
-	os_include_dir="config/os/solaris/solaris2.5"
+        os_include_dir="config/os/solaris/solaris2.5"
         ;;
       solaris2.6*)
-	os_include_dir="config/os/solaris/solaris2.6"
+        os_include_dir="config/os/solaris/solaris2.6"
         ;;
       solaris2.7* | solaris2.8*)
-	os_include_dir="config/os/solaris/solaris2.7"
+        os_include_dir="config/os/solaris/solaris2.7"
         ;;
       *)
-	os_include_dir="config/os/generic"
+        os_include_dir="config/os/generic"
         ;;
     esac
     AC_MSG_RESULT($os_include_dir)
@@ -807,8 +807,8 @@ AC_DEFUN(GLIBCPP_CHECK_CTYPE, [
     [int
     foo (int a)
     { return _ISspace + _ISprint + _IScntrl + _ISupper + _ISlower + _ISalpha \
-	+ _ISdigit + _ISpunct + _ISxdigit + _ISalnum + _ISgraph \
-	+ __ctype_tolower[a] + __ctype_toupper[a] + __ctype_b[a];}], \
+        + _ISdigit + _ISpunct + _ISxdigit + _ISalnum + _ISgraph \
+        + __ctype_tolower[a] + __ctype_toupper[a] + __ctype_b[a];}], \
     ctype_linux=yes, ctype_linux=no)
     AC_MSG_RESULT($ctype_linux)
     if test $ctype_linux = "yes"; then
@@ -823,7 +823,7 @@ AC_DEFUN(GLIBCPP_CHECK_CTYPE, [
     [int
     foo (int a)
     { return _CTYPE_S + _CTYPE_R + _CTYPE_C + _CTYPE_U + _CTYPE_L + _CTYPE_A \
-	+ _CTYPE_D + _CTYPE_P + _CTYPE_X + _CTYPE_G ;}], \
+        + _CTYPE_D + _CTYPE_P + _CTYPE_X + _CTYPE_G ;}], \
     ctype_bsd=yes, ctype_bsd=no)
     AC_MSG_RESULT($ctype_bsd)
     if test $ctype_bsd = "yes"; then
@@ -855,8 +855,8 @@ AC_DEFUN(GLIBCPP_CHECK_CTYPE, [
     [int
     foo (int a)
     { return _ISSPACE + _ISPRINT + _ISCNTRL + _ISUPPER + _ISLOWER + _ISALPHA \
-	+ _ISDIGIT + _ISPUNCT + _ISXDIGIT + _ISALNUM + _ISGRAPH \
-	+ __trans_lower[a] + __trans_upper[a] + __ctype_mask[a];}], \
+        + _ISDIGIT + _ISPUNCT + _ISXDIGIT + _ISALNUM + _ISGRAPH \
+        + __trans_lower[a] + __trans_upper[a] + __ctype_mask[a];}], \
     ctype_solaris=yes, ctype_solaris=no)
     AC_MSG_RESULT($ctype_solaris)
 
@@ -886,7 +886,7 @@ AC_DEFUN(GLIBCPP_CHECK_CTYPE, [
     [int
     foo (int a)
     { return _U + _L + _N + _S + _P + _C + _X + _B \
-	+ __ctype[a];}], \
+        + __ctype[a];}], \
     ctype_solaris25=yes, ctype_solaris25=no)
     AC_MSG_RESULT($ctype_solaris25)
     if test $ctype_solaris25 = "yes"; then
@@ -902,8 +902,8 @@ AC_DEFUN(GLIBCPP_CHECK_CTYPE, [
     [int
     foo (int a)
     { return _ISSPACE + _ISPRINT + _ISCNTRL + _ISUPPER + _ISLOWER + _ISALPHA \
-	+ _ISDIGIT + _ISPUNCT + _ISXDIGIT + _ISALNUM + _ISGRAPH \
-	+ _VALC('a') + _IS('c', 0);}], \
+        + _ISDIGIT + _ISPUNCT + _ISXDIGIT + _ISALNUM + _ISGRAPH \
+        + _VALC('a') + _IS('c', 0);}], \
     ctype_aix=yes, ctype_aix=no)
     AC_MSG_RESULT($ctype_aix)
     if test $ctype_aix = "yes"; then
@@ -919,7 +919,7 @@ AC_DEFUN(GLIBCPP_CHECK_CTYPE, [
     [int
     foo (int a)
     { return _U + _L + _N + _S + _P + _C + _X + _B \
-	+ _ctype_[a];}], \
+        + _ctype_[a];}], \
     ctype_newlib=yes, ctype_newlib=no)
     AC_MSG_RESULT($ctype_newlib)
     if test $ctype_newlib = "yes"; then
@@ -943,94 +943,103 @@ AC_DEFUN(GLIBCPP_CHECK_CTYPE, [
 
 dnl
 dnl Check to see if this target can enable the wchar_t parts of libstdc++.
+dnl If --disable-c-mbchar was given, no wchar_t stuff is enabled.  (This
+dnl must have been previously checked.)
 dnl
 dnl Define _GLIBCPP_USE_WCHAR_T if all the bits are found 
 dnl Define _GLIBCPP_NEED_MBSTATE_T if mbstate_t is not in wchar.h
 dnl
 dnl GLIBCPP_CHECK_WCHAR_T_SUPPORT
 AC_DEFUN(GLIBCPP_CHECK_WCHAR_T_SUPPORT, [
+  if test x$enable_c_mbchar != xno; then
 
-  dnl Sanity check for existence of ISO C9X headers for extended encoding.
-  AC_CHECK_HEADER(wchar.h, ac_has_wchar_h=yes, ac_has_wchar_h=no)
-  AC_CHECK_HEADER(wctype.h, ac_has_wctype_h=yes, ac_has_wctype_h=no)
-	
-  dnl Only continue checking if the ISO C9X headers exist.
-  if test x"$ac_has_wchar_h" = xyes && test x"$ac_has_wctype_h" = xyes; then
-
-    dnl Test wchar.h for mbstate_t, which is needed for char_traits and others.
-    AC_MSG_CHECKING([for mbstate_t])
-    AC_TRY_COMPILE([#include <wchar.h>],
-    [mbstate_t teststate;], 
-    use_native_mbstatet=yes, use_native_mbstatet=no)
-    AC_MSG_RESULT($use_native_mbstatet)
-    if test x"$use_native_mbstatet" = xno; then
+    dnl Sanity check for existence of ISO C9X headers for extended encoding.
+    AC_CHECK_HEADER(wchar.h, ac_has_wchar_h=yes, ac_has_wchar_h=no)
+    AC_CHECK_HEADER(wctype.h, ac_has_wctype_h=yes, ac_has_wctype_h=no)
+          
+    dnl Only continue checking if the ISO C9X headers exist.
+    if test x"$ac_has_wchar_h" = xyes && test x"$ac_has_wctype_h" = xyes; then
+  
+      dnl Test wchar.h for mbstate_t, which is needed for char_traits
+      dnl and others.
+      AC_MSG_CHECKING([for mbstate_t])
+      AC_TRY_COMPILE([#include <wchar.h>],
+      [mbstate_t teststate;], 
+      use_native_mbstatet=yes, use_native_mbstatet=no)
+      AC_MSG_RESULT($use_native_mbstatet)
+      if test x"$use_native_mbstatet" = xno; then
+        AC_DEFINE(_GLIBCPP_NEED_MBSTATE_T)
+      fi
+    
+      dnl Test wchar.h for WCHAR_MIN, WCHAR_MAX, which is needed before
+      dnl numeric_limits can instantiate type_traits<wchar_t>
+      AC_MSG_CHECKING([for WCHAR_MIN and WCHAR_MAX])
+      AC_TRY_COMPILE([#include <wchar.h>],
+      [int i = WCHAR_MIN; int j = WCHAR_MAX;], 
+      has_wchar_minmax=yes, has_wchar_minmax=no)
+      AC_MSG_RESULT($has_wchar_minmax)
+    
+      dnl Test wchar.h for WEOF, which is what we use to determine whether
+      dnl to specialize for char_traits<wchar_t> or not.
+      AC_MSG_CHECKING([for WEOF])
+      AC_TRY_COMPILE([
+        #include <wchar.h>
+        #include <stddef.h>],
+      [wint_t i = WEOF;],
+      has_weof=yes, has_weof=no)
+      AC_MSG_RESULT($has_weof)
+  
+      dnl Tests for wide character functions used in char_traits<wchar_t>.
+      AC_CHECK_FUNCS(wcslen wmemchr wmemcmp wmemcpy wmemmove wmemset \
+      wcsrtombs mbsrtowcs, ac_wfuncs=yes, ac_wfuncs=no)
+  
+      AC_MSG_CHECKING([for ISO C9X wchar_t support])
+      if test x"$has_weof" = xyes && test x"$has_wchar_minmax" = xyes \
+         && test x"$ac_wfuncs" = xyes; then
+        ac_isoC9X_wchar_t=yes
+      else
+        ac_isoC9X_wchar_t=no
+      fi
+      AC_MSG_RESULT($ac_isoC9X_wchar_t)
+  
+      dnl Use iconv for wchar_t to char conversions. As such, check for 
+      dnl X/Open Portability Guide, version 2 features (XPG2).
+      AC_CHECK_HEADER(iconv.h, ac_has_iconv_h=yes, ac_has_iconv_h=no)
+      AC_CHECK_HEADER(langinfo.h, ac_has_langinfo_h=yes, ac_has_langinfo_h=no)
+      AC_CHECK_FUNCS(iconv_open iconv_close iconv nl_langinfo, \
+      ac_XPG2funcs=yes, ac_XPG2funcs=no)
+  
+      AC_MSG_CHECKING([for XPG2 wchar_t support])
+      if test x"$ac_has_iconv_h" = xyes && test x"$ac_has_langinfo_h" = xyes \
+         && test x"$ac_XPG2funcs" = xyes; then
+        ac_XPG2_wchar_t=yes
+      else
+        ac_XPG2_wchar_t=no
+      fi
+      AC_MSG_RESULT($ac_XPG2_wchar_t)
+  
+      dnl At the moment, only enable wchar_t specializations if all the
+      dnl above support is present.
+      AC_MSG_CHECKING([for enabled wchar_t specializations])
+      if test x"$ac_isoC9X_wchar_t" = xyes \
+         && test x"$ac_XPG2_wchar_t" = xyes; then
+        libinst_wstring_la="libinst-wstring.la"
+        AC_DEFINE(_GLIBCPP_USE_WCHAR_T)
+        AC_MSG_RESULT("yes")
+      else
+        libinst_wstring_la=""
+        AC_MSG_RESULT("no")
+      fi
+      AC_SUBST(libinst_wstring_la)
+  
+    else
+      AC_MSG_WARN([<wchar.h> not found])
       AC_DEFINE(_GLIBCPP_NEED_MBSTATE_T)
     fi
-  
-    dnl Test wchar.h for WCHAR_MIN, WCHAR_MAX, which is needed before
-    dnl numeric_limits can instantiate type_traits<wchar_t>
-    AC_MSG_CHECKING([for WCHAR_MIN and WCHAR_MAX])
-    AC_TRY_COMPILE([#include <wchar.h>],
-    [int i = WCHAR_MIN; int j = WCHAR_MAX;], 
-    has_wchar_minmax=yes, has_wchar_minmax=no)
-    AC_MSG_RESULT($has_wchar_minmax)
-  
-    dnl Test wchar.h for WEOF, which is what we use to determine whether
-    dnl to specialize for char_traits<wchar_t> or not.
-    AC_MSG_CHECKING([for WEOF])
-    AC_TRY_COMPILE([
-      #include <wchar.h>
-      #include <stddef.h>],
-    [wint_t i = WEOF;],
-    has_weof=yes, has_weof=no)
-    AC_MSG_RESULT($has_weof)
-
-    dnl Tests for wide character functions used in char_traits<wchar_t>.
-    AC_CHECK_FUNCS(wcslen wmemchr wmemcmp wmemcpy wmemmove wmemset \
-    wcsrtombs mbsrtowcs, ac_wfuncs=yes, ac_wfuncs=no)
-
-    AC_MSG_CHECKING([for ISO C9X wchar_t support])
-    if test x"$has_weof" = xyes && test x"$has_wchar_minmax" = xyes \
-       && test x"$ac_wfuncs" = xyes; then
-      ac_isoC9X_wchar_t=yes
-    else
-      ac_isoC9X_wchar_t=no
-    fi
-    AC_MSG_RESULT($ac_isoC9X_wchar_t)
-
-    dnl Use iconv for wchar_t to char conversions. As such, check for 
-    dnl X/Open Portability Guide, version 2 features (XPG2).
-    AC_CHECK_HEADER(iconv.h, ac_has_iconv_h=yes, ac_has_iconv_h=no)
-    AC_CHECK_HEADER(langinfo.h, ac_has_langinfo_h=yes, ac_has_langinfo_h=no)
-    AC_CHECK_FUNCS(iconv_open iconv_close iconv nl_langinfo, \
-    ac_XPG2funcs=yes, ac_XPG2funcs=no)
-
-    AC_MSG_CHECKING([for XPG2 wchar_t support])
-    if test x"$ac_has_iconv_h" = xyes && test x"$ac_has_langinfo_h" = xyes \
-       && test x"$ac_XPG2funcs" = xyes; then
-      ac_XPG2_wchar_t=yes
-    else
-      ac_XPG2_wchar_t=no
-    fi
-    AC_MSG_RESULT($ac_XPG2_wchar_t)
-
-    dnl At the moment, only enable wchar_t specializations if all the
-    dnl above support is present.
-    AC_MSG_CHECKING([for enabled wchar_t specializations])
-    if test x"$ac_isoC9X_wchar_t" = xyes \
-       && test x"$ac_XPG2_wchar_t" = xyes; then
-      libinst_wstring_la="libinst-wstring.la"
-      AC_DEFINE(_GLIBCPP_USE_WCHAR_T)
-      AC_MSG_RESULT("yes")
-    else
-      libinst_wstring_la=""
-      AC_MSG_RESULT("no")
-    fi
-    AC_SUBST(libinst_wstring_la)
 
   else
-    AC_MSG_WARN([<wchar.h> not found])
-    AC_DEFINE(_GLIBCPP_NEED_MBSTATE_T)
+    dnl Wide characters disabled by the user.  Maybe print a warning?
+    :
   fi
 ])
 
@@ -1056,8 +1065,8 @@ AC_DEFUN(GLIBCPP_CHECK_COMPLEX_MATH_COMPILER_SUPPORT, [
     AC_LANG_SAVE
     AC_LANG_CPLUSPLUS
     AC_TRY_COMPILE([struct dcomplex { __complex__ double x; }; \
-		    dcomplex f(const dcomplex& x) { return dcomplex(x); }], \
-		    [ dcomplex x; f(x); ],
+                    dcomplex f(const dcomplex& x) { return dcomplex(x); }], \
+                    [ dcomplex x; f(x); ],
       glibcpp_cv_complex=ok,
       glibcpp_cv_complex=buggy
     )
@@ -1132,10 +1141,10 @@ enable_debug=GLIBCPP_ENABLE_DEBUG_DEFAULT)dnl
 dnl Option parsed, now set things appropriately
 case "${enable_debug}" in
     yes) 
-	DEBUG_FLAGS='-O0 -ggdb'			
-	;;
+        DEBUG_FLAGS='-O0 -ggdb'                        
+        ;;
     no)   
-	DEBUG_FLAGS='-g'
+        DEBUG_FLAGS='-g'
         ;;
 esac
 AC_SUBST(DEBUG_FLAGS)
@@ -1166,11 +1175,11 @@ changequote(<<, >>)dnl
 changequote([, ])dnl
 [case "x$enableval" in
  xyes)   
-	AC_MSG_ERROR([--enable-cxx-flags needs compiler flags as arguments]) ;;
+        AC_MSG_ERROR([--enable-cxx-flags needs compiler flags as arguments]) ;;
  xno|x)  
-	enable_cxx_flags='' ;;
+        enable_cxx_flags='' ;;
  *)      
-	enable_cxx_flags="$enableval" ;;
+        enable_cxx_flags="$enableval" ;;
  esac],
 enable_cxx_flags='GLIBCPP_ENABLE_CXX_FLAGS_DEFAULT')
 
@@ -1210,13 +1219,13 @@ AC_DEFUN(GLIBCPP_ENABLE_CSTDIO, [
   [  --enable-cstdio        enable GNU libio for target io package. (default)
      --enable-cstdio=LIB    use LIB target-speific io package.], 
   if test x$enable_cstdio = xno; then
-    enable_cstdio=libio
+     enable_cstdio=libio
   fi,
      enable_cstdio=libio)
 
   enable_cstdio_flag=$enable_cstdio
 
-  dnl Check if a valid thread package
+  dnl Check if a valid I/O package
   case x${enable_cstdio_flag} in
     xlibio | x | xno | xnone | xyes)
       # default
@@ -1233,38 +1242,48 @@ AC_DEFUN(GLIBCPP_ENABLE_CSTDIO, [
       if test x$has_libio = x"yes"; then
         case "$target" in
           *-*-linux*)
-  	    AC_MSG_CHECKING([for glibc version >= 2.2])
-  	    AC_EGREP_CPP([ok], [
-	    #include <features.h>
-  	    #if __GLIBC__ > 2 || (__GLIBC__ == 2 && __GLIBC_MINOR__ >= 2) 
-    		ok
-  	    #endif
-  	    ], glibc_satisfactory=yes, glibc_satisfactory=no)
-  	    AC_MSG_RESULT($glibc_satisfactory)
-	    ;;
+              AC_MSG_CHECKING([for glibc version >= 2.2])
+              AC_EGREP_CPP([ok], [
+            #include <features.h>
+              #if __GLIBC__ > 2 || (__GLIBC__ == 2 && __GLIBC_MINOR__ >= 2) 
+                    ok
+              #endif
+              ], glibc_satisfactory=yes, glibc_satisfactory=no)
+              AC_MSG_RESULT($glibc_satisfactory)
+            ;;
         esac
 
-	# XXX at the moment, admit defeat and force the recompilation
+        # XXX at the moment, admit defeat and force the recompilation
         # XXX of glibc even on glibc-2.2 systems, because libio is not synched.
-        glibc_satisfactory=no	
+        glibc_satisfactory=no        
 
-  	if test x$glibc_satisfactory = x"yes"; then
-	  need_libio=no
-	  need_xtra_libio=no
-      	  need_wlibio=no	
-      	else
-	  need_libio=yes
-	  need_xtra_libio=yes
-          # bkoz XXX need to add checks to enable this
-          need_wlibio=yes
-	fi
+        if test x$glibc_satisfactory = x"yes"; then
+           need_libio=no
+           need_xtra_libio=no
+           need_wlibio=no        
+        else
+           need_libio=yes
+           need_xtra_libio=yes
+           # bkoz XXX need to add checks to enable this
+           # pme XXX here's a first pass at such a check
+           if test x$enable_c_mbchar != xno; then
+              need_wlibio=yes
+           else
+              need_wlibio=no
+           fi
+        fi
 
       # Using libio, but <libio.h> doesn't exist on the target system. . .
       else
-	need_libio=yes
-        need_xtra_libio=no
-        # bkoz XXX need to add checks to enable this
-        need_wlibio=no
+         need_libio=yes
+         need_xtra_libio=no
+         # bkoz XXX need to add checks to enable this
+         # pme XXX here's a first pass at such a check
+         if test x$enable_c_mbchar != xno; then
+             need_wlibio=yes
+         else
+             need_wlibio=no
+         fi
       fi
       ;;
 
@@ -1287,7 +1306,7 @@ AC_DEFUN(GLIBCPP_ENABLE_CSTDIO, [
   CCODECVT_C=config/c_io_libio_codecvt.c
   AC_LINK_FILES($CCODECVT_C, libio/c_codecvt.c)
   # 2000-08-04 bkoz hack
-	
+
   AM_CONDITIONAL(GLIBCPP_NEED_LIBIO, test "$need_libio" = yes)
   AM_CONDITIONAL(GLIBCPP_NEED_XTRA_LIBIO, test "$need_xtra_libio" = yes)
   AM_CONDITIONAL(GLIBCPP_NEED_WLIBIO, test "$need_wlibio" = yes)
@@ -1300,7 +1319,8 @@ dnl
 dnl GLIBCPP_ENABLE_THREADS
 dnl --enable-threads=posix sets config/threads-posix.h et. al.
 dnl 
-dnl default is no threads
+dnl Default is no threads, which also disables _IO_MTSAFE_IO in
+dnl libio.  Any actual thread package will enable it.
 dnl
 AC_DEFUN(GLIBCPP_ENABLE_THREADS, [
   dnl Note this comes from the gcc/config.in and libjava/config.in
@@ -1318,22 +1338,22 @@ AC_DEFUN(GLIBCPP_ENABLE_THREADS, [
 
   dnl Check if a valid thread package
   case x${enable_threads_flag} in
-	x | xno | xnone)
-		# No threads
-		target_thread_file='single'
-		;;
-	xyes)
-		# default
-		target_thread_file=''
-		;;
-	xdecosf1 | xirix | xmach | xos2 | xposix | xpthreads | xsingle | \
-	xsolaris | xwin32 | xdce | xvxworks)
-		target_thread_file=$enable_threads_flag
-		;;
-	*)
-		echo "$enable_threads is an unknown thread package" 1>&2
-		exit 1
-		;;
+        x | xno | xnone)
+                # No threads
+                target_thread_file='single'
+                ;;
+        xyes)
+                # default
+                target_thread_file=''
+                ;;
+        xdecosf1 | xirix | xmach | xos2 | xposix | xpthreads | xsingle | \
+        xsolaris | xwin32 | xdce | xvxworks)
+                target_thread_file=$enable_threads_flag
+                ;;
+        *)
+                echo "$enable_threads is an unknown thread package" 1>&2
+                exit 1
+                ;;
   esac
 
   dnl Check for thread package actually supported in libstdc++ 
@@ -1355,6 +1375,9 @@ AC_DEFUN(GLIBCPP_ENABLE_THREADS, [
   AC_MSG_RESULT($THREADH)
 
   AC_LINK_FILES(config/$THREADH, bits/c++threads.h)
+  if test $THREADH != threads-no.h; then
+    AC_DEFINE(_GLIBCPP_USE_THREADS)
+  fi
 ])
 
 
@@ -1363,16 +1386,16 @@ dnl GLIBCPP_ENABLE_ATOMICITY
 AC_DEFUN(GLIBCPP_ENABLE_ATOMICITY, [
     AC_MSG_CHECKING([for atomicity.h])
     case "$target" in
-      *-*-linux*)
-	ATOMICITYH=$cpu_include_dir
-	;;	
+      *-*-linux* | sparc*-*-*)
+        ATOMICITYH=$cpu_include_dir
+        ;;    
       *-*-aix*)
         ATOMICITYH=$os_include_dir
-	;;
+        ;;
       *)
-	echo "$enable_threads is an unknown thread package" 1>&2
-	exit 1
-	;;
+        # bit of overkill on this text...
+        AC_MSG_ERROR([Atomic locking requested, but $enable_threads is an unknown thread package and atomic operations are not present in the CPU])
+        ;;
     esac
     AC_MSG_RESULT($ATOMICITYH/bits/atomicity.h)
     AC_LINK_FILES($ATOMICITYH/bits/atomicity.h, bits/atomicity.h)
@@ -1485,11 +1508,11 @@ changequote(<<, >>)dnl
 changequote([, ])
   [case "$enableval" in
    yes) enable_cshadow_headers=yes 
-	;;
+        ;;
    no)  enable_cshadow_headers=no 
-	;;
+        ;;
    *)   AC_MSG_ERROR([Unknown argument to enable/disable shadowed C headers]) 
-	;;
+        ;;
   esac],
   enable_cshadow_headers=GLIBCPP_ENABLE_SHADOW_DEFAULT)
   AC_MSG_RESULT($enable_cshadow_headers)
@@ -1498,13 +1521,13 @@ changequote([, ])
   dnl NB: these things may be duplicated in c++config.h as well.
   case "$enable_cshadow_headers" in
     yes) 
-	CSHADOW_FLAGS="-fno-builtin"
-	C_INCLUDE_DIR='$(top_srcdir)/include/c_std'
+        CSHADOW_FLAGS="-fno-builtin"
+        C_INCLUDE_DIR='${top_srcdir}/include/c_std'
         AC_DEFINE(_GLIBCPP_USE_SHADOW_HEADERS)
-	;;
+        ;;
     no)   
-	CSHADOW_FLAGS=""
-	C_INCLUDE_DIR='$(top_srcdir)/include/c'
+        CSHADOW_FLAGS=""
+        C_INCLUDE_DIR='${top_srcdir}/include/c'
         ;;
   esac
 
@@ -1512,6 +1535,33 @@ changequote([, ])
   AC_SUBST(C_INCLUDE_DIR)
   AM_CONDITIONAL(GLIBCPP_USE_CSHADOW, test "$enable_cshadow_headers" = yes)
 ])
+
+
+dnl
+dnl Check for wide character support.  Has the same effect as the option
+dnl in gcc's configure, but in a form that autoconf can mess with.
+dnl
+dnl GLIBCPP_ENABLE_C_MBCHAR
+dnl --enable-c-mbchar requests all the wchar_t stuff.
+dnl --disable-c-mbchar doesn't.
+dnl  +  Usage:  GLIBCPP_ENABLE_C_MBCHAR[(DEFAULT)]
+dnl       Where DEFAULT is either `yes' or `no'.  If ommitted, it
+dnl       defaults to `no'.
+AC_DEFUN(GLIBCPP_ENABLE_C_MBCHAR, [dnl
+define([GLIBCPP_ENABLE_C_MBCHAR_DEFAULT], ifelse($1, yes, yes, no))dnl
+AC_ARG_ENABLE(c-mbchar,
+changequote(<<, >>)dnl
+<<  --enable-c-mbchar       enable multibyte (wide) characters [default=>>GLIBCPP_ENABLE_C_MBCHAR_DEFAULT],
+changequote([, ])dnl
+[case "$enableval" in
+ yes) enable_c_mbchar=yes ;;
+ no)  enable_c_mbchar=no ;;
+ *)   AC_MSG_ERROR([Unknown argument to enable/disable c-mbchar]) ;;
+ esac],
+enable_c_mbchar=GLIBCPP_ENABLE_C_MBCHAR_DEFAULT)dnl
+dnl Option parsed, now other scripts can test enable_c_mbchar for yes/no.
+])
+
 
 dnl
 dnl Set up *_INCLUDES and *_INCLUDE_DIR variables for all sundry Makefile.am's.

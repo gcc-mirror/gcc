@@ -31,8 +31,9 @@ GLIBCPP_CHECK_OS
 
 AC_CACHE_SAVE
 
-# Enable all the crazy c++ stuff.
+# Enable all the crazy c++ stuff.  C_MBCHAR must come early.
 GLIBCPP_ENABLE_DEBUG($USE_MAINTAINER_MODE)
+GLIBCPP_ENABLE_C_MBCHAR([yes])
 GLIBCPP_ENABLE_CSTDIO
 GLIBCPP_ENABLE_LONG_LONG(yes)
 GLIBCPP_ENABLE_LONG_DOUBLE(yes)
@@ -249,6 +250,8 @@ fi
 # Sanity checking & User-visible messages.
 # Checks down here, otherwise they get scrolled off before
 # the user will notice.
+### warnings removed; none were applicable anymore
+
 
 # Trying to get more people to read documentation.  Possibly remove
 # check and warn all the time. There is no "informational" AC_MSG_
