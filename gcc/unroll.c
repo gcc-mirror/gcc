@@ -1098,7 +1098,7 @@ unroll_loop (loop_end, insn_count, loop_start, end_insert_before,
 #ifdef HAIFA
 	  /* Fix the initial value for the loop as needed.  */
 	  if (loop_n_iterations <= 0)
-	    loop_start_value [loop_number (loop_start, loop_end)]
+	    loop_start_value [uid_loop_num [INSN_UID (loop_start)]]
 	      = initial_value;
 #endif
 	}
@@ -1117,9 +1117,9 @@ unroll_loop (loop_end, insn_count, loop_start, end_insert_before,
 
   /* Keep track of the unroll factor for each loop.  */
   if (unroll_type == UNROLL_COMPLETELY)
-    loop_unroll_factor [loop_number (loop_start, loop_end)] = -1;
+    loop_unroll_factor [uid_loop_num [INSN_UID (loop_start)]] = -1;
   else
-    loop_unroll_factor [loop_number (loop_start, loop_end)] = unroll_number;
+    loop_unroll_factor [uid_loop_num [INSN_UID (loop_start)]] = unroll_number;
 
 
   /* For each biv and giv, determine whether it can be safely split into

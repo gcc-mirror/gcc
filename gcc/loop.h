@@ -187,6 +187,5 @@ extern int *loop_unroll_factor;
 /* variables for interaction between unroll.c and loop.c, for
    the insertion of branch-on-count instruction. */
 extern rtx *loop_start_value;
-extern int loop_number();
 #endif  /* HAIFA */
 
