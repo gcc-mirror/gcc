@@ -5805,6 +5805,13 @@ record_jump_cond (code, mode, op0, op1, reversed_nonequality)
   op0_elt = lookup (op0, op0_hash, mode);
   op1_elt = lookup (op1, op1_hash, mode);
 
+  /* If both operands are already equivalent or if they are not in the
+     table but are identical, do nothing.  */
+  if ((op0_elt != 0 && op1_elt != 0
+       && op0_elt->first_same_value == op1_elt->first_same_value)
+      || op0 == op1 || rtx_equal_p (op0, op1))
+    return;
+
   /* If we aren't setting two things equal all we can do is save this
      comparison.   Similarly if this is floating-point.  In the latter
      case, OP1 might be zero and both -0.0 and 0.0 are equal to it.
