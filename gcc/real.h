@@ -148,8 +148,8 @@ extern long etarsingle		PROTO((REAL_VALUE_TYPE));
 extern void ereal_to_decimal	PROTO((REAL_VALUE_TYPE, char *));
 extern int ereal_cmp		PROTO((REAL_VALUE_TYPE, REAL_VALUE_TYPE));
 extern int ereal_isneg		PROTO((REAL_VALUE_TYPE));
-extern REAL_VALUE_TYPE ereal_from_float PROTO((unsigned long));
-extern REAL_VALUE_TYPE ereal_from_double PROTO((unsigned long *));
+extern REAL_VALUE_TYPE ereal_from_float PROTO((HOST_WIDE_INT));
+extern REAL_VALUE_TYPE ereal_from_double PROTO((HOST_WIDE_INT *));
 
 #define REAL_VALUES_EQUAL(x, y) (ereal_cmp ((x), (y)) == 0)
 /* true if x < y : */
@@ -194,10 +194,11 @@ extern REAL_VALUE_TYPE real_value_truncate ();
 /* IN is a REAL_VALUE_TYPE.  OUT is a long. */
 #define REAL_VALUE_TO_TARGET_SINGLE(IN, OUT) ((OUT) = etarsingle ((IN)))
 
-/* d is an array of longs. */
+/* d is an array of HOST_WIDE_INT that holds a double precision
+   value in the target computer's floating point format. */
 #define REAL_VALUE_FROM_TARGET_DOUBLE(d)  (ereal_from_double (d))
 
-/* f is a long. */
+/* f is a HOST_WIDE_INT containing a single precision target float value. */
 #define REAL_VALUE_FROM_TARGET_SINGLE(f)  (ereal_from_float (f))
 
 /* Conversions to decimal ASCII string.  */
