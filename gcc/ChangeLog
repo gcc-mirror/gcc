@@ -1,5 +1,10 @@
 2004-06-24  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
+	* c-gimplify.c (gimplify_for_stmt): Use gimplify_and_add.
+	* gimplify.c (internal_get_tmp_var, gimplify_return_expr): Likewise.
+	(gimplify_loop_expr, gimplify_init_constructor): Likewise.
+	(gimplify_self_mod_expr, gimplify_cond_expr): Likewise.
+	
 	PR/16131
 	* gimplify.c (voidify_wrapper_expr): Allow TARGET_EXPR.
 
