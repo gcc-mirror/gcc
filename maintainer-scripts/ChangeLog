@@ -1,5 +1,10 @@
 2003-05-02  Gerald Pfeifer  <gerald@pfeifer@dbai.tuwien.ac.at>
 
+	* update_version (IGNORE_BRANCHES): Add.
+	(BRANCHES): Do not consider branches matching $IGNORE_BRANCHES.
+
+2003-05-02  Gerald Pfeifer  <gerald@pfeifer@dbai.tuwien.ac.at>
+
 	* update_version: Add a trace of which branch we are currently
 	working on.
 

@@ -1,7 +1,9 @@
 #!/bin/sh 
 
-# Run this from /tmp.
 CVSROOT=${CVSROOT:-/cvs/gcc}
+IGNORE_BRANCHES='gcc-(2_95|3_0|3_1|3_2)-branch'
+
+# Run this from /tmp.
 export CVSROOT
 /bin/rm -rf /tmp/$$
 /bin/mkdir /tmp/$$
@@ -14,7 +16,8 @@ CVS=${CVS:-/usr/local/bin/cvs}
 $CVS co gcc/ChangeLog
 BRANCHES=`$CVS status -v gcc/ChangeLog \
           | awk '{print $1;}' \
-          | egrep 'gcc-[0-9]+_[0-9]+-branch$'`
+          | egrep 'gcc-[0-9]+_[0-9]+-branch$' \
+          | egrep -v $IGNORE_BRANCHES`
 # Always update the mainline.
 BRANCHES="${BRANCHES} HEAD"
 
