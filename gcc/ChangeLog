@@ -1,3 +1,15 @@
+2004-09-10  James E Wilson  <wilson@specifixinc.com>
+
+	* emit-rtl.c (gen_const_vector): Renamed from gen_const_vector_0.
+	Add integer argument named constant.  Use const_tiny_rtx instead of
+	CONST0_RTX.
+	(gen_rtx_CONST_VECTOR): Rewrite to handle checks for both CONST0_RTX
+	and CONST1_RTX.
+	(init_emit_once): Fix users of gen_const_vector.  Set CONST1_RTX for
+	vector types.
+	* expr.c (const_vector_from_tree): Call gen_rtx_CONST_VECTOR instead
+	of gen_rtx_raw_CONST_VECTOR.
+
 2004-09-10  Eric Christopher  <echristo@redhat.com>
 
 	PR c/16046

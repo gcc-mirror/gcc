@@ -194,7 +194,7 @@ static hashval_t reg_attrs_htab_hash (const void *);
 static int reg_attrs_htab_eq (const void *, const void *);
 static reg_attrs *get_reg_attrs (tree, int);
 static tree component_ref_for_mem_expr (tree);
-static rtx gen_const_vector_0 (enum machine_mode);
+static rtx gen_const_vector (enum machine_mode, int);
 static rtx gen_complex_constant_part (enum machine_mode, rtx, int);
 static void copy_rtx_if_shared_1 (rtx *orig);
 
@@ -5162,10 +5162,10 @@ init_emit (void)
 #endif
 }
 
-/* Generate the constant 0.  */
+/* Generate a vector constant for mode MODE and constant value CONSTANT.  */
 
 static rtx
-gen_const_vector_0 (enum machine_mode mode)
+gen_const_vector (enum machine_mode mode, int constant)
 {
   rtx tem;
   rtvec v;
@@ -5177,28 +5177,44 @@ gen_const_vector_0 (enum machine_mode mode)
 
   v = rtvec_alloc (units);
 
-  /* We need to call this function after we to set CONST0_RTX first.  */
-  gcc_assert (CONST0_RTX (inner));
+  /* We need to call this function after we set the scalar const_tiny_rtx
+     entries.  */
+  gcc_assert (const_tiny_rtx[constant][(int) inner]);
 
   for (i = 0; i < units; ++i)
-    RTVEC_ELT (v, i) = CONST0_RTX (inner);
+    RTVEC_ELT (v, i) = const_tiny_rtx[constant][(int) inner];
 
   tem = gen_rtx_raw_CONST_VECTOR (mode, v);
   return tem;
 }
 
 /* Generate a vector like gen_rtx_raw_CONST_VEC, but use the zero vector when
-   all elements are zero.  */
+   all elements are zero, and the one vector when all elements are one.  */
 rtx
 gen_rtx_CONST_VECTOR (enum machine_mode mode, rtvec v)
 {
-  rtx inner_zero = CONST0_RTX (GET_MODE_INNER (mode));
+  enum machine_mode inner = GET_MODE_INNER (mode);
+  int nunits = GET_MODE_NUNITS (mode);
+  rtx x;
   int i;
 
-  for (i = GET_MODE_NUNITS (mode) - 1; i >= 0; i--)
-    if (RTVEC_ELT (v, i) != inner_zero)
-      return gen_rtx_raw_CONST_VECTOR (mode, v);
-  return CONST0_RTX (mode);
+  /* Check to see if all of the elements have the same value.  */
+  x = RTVEC_ELT (v, nunits - 1);
+  for (i = nunits - 2; i >= 0; i--)
+    if (RTVEC_ELT (v, i) != x)
+      break;
+
+  /* If the values are all the same, check to see if we can use one of the
+     standard constant vectors.  */
+  if (i == -1)
+    {
+      if (x == CONST0_RTX (inner))
+	return CONST0_RTX (mode);
+      else if (x == CONST1_RTX (inner))
+	return CONST1_RTX (mode);
+    }
+
+  return gen_rtx_raw_CONST_VECTOR (mode, v);
 }
 
 /* Create some permanent unique rtl objects shared between all functions.
@@ -5352,12 +5368,18 @@ init_emit_once (int line_numbers)
   for (mode = GET_CLASS_NARROWEST_MODE (MODE_VECTOR_INT);
        mode != VOIDmode;
        mode = GET_MODE_WIDER_MODE (mode))
-    const_tiny_rtx[0][(int) mode] = gen_const_vector_0 (mode);
+    {
+      const_tiny_rtx[0][(int) mode] = gen_const_vector (mode, 0);
+      const_tiny_rtx[1][(int) mode] = gen_const_vector (mode, 1);
+    }
 
   for (mode = GET_CLASS_NARROWEST_MODE (MODE_VECTOR_FLOAT);
        mode != VOIDmode;
        mode = GET_MODE_WIDER_MODE (mode))
-    const_tiny_rtx[0][(int) mode] = gen_const_vector_0 (mode);
+    {
+      const_tiny_rtx[0][(int) mode] = gen_const_vector (mode, 0);
+      const_tiny_rtx[1][(int) mode] = gen_const_vector (mode, 1);
+    }
 
   for (i = (int) CCmode; i < (int) MAX_MACHINE_MODE; ++i)
     if (GET_MODE_CLASS ((enum machine_mode) i) == MODE_CC)

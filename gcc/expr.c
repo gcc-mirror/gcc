@@ -8822,6 +8822,6 @@ const_vector_from_tree (tree exp)
   for (; i < units; ++i)
     RTVEC_ELT (v, i) = CONST0_RTX (inner);
 
-  return gen_rtx_raw_CONST_VECTOR (mode, v);
+  return gen_rtx_CONST_VECTOR (mode, v);
 }
 #include "gt-expr.h"
