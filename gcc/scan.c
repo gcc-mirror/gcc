@@ -49,7 +49,7 @@ sstring_append (dst, src)
      sstring *src;
 {
   register char *d, *s;
-  register count = SSTRING_LENGTH(src);
+  register int count = SSTRING_LENGTH(src);
   MAKE_SSTRING_SPACE(dst, count + 1);
   d = dst->ptr;
   s = src->base;
@@ -84,6 +84,7 @@ int
 scan_string (fp, s, init)
      register FILE *fp;
      register sstring *s;
+     int init;
 {
   int c;
   for (;;)

@@ -231,6 +231,7 @@ void
 print_inline_rtx (outf, x, ind)
      FILE *outf;
      rtx x;
+     int ind;
 {
   int oldsaw = sawclose;
   int oldindent = indent;

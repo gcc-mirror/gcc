@@ -42,6 +42,13 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 
 #include "config.h"
 #include <stdio.h>
+#ifdef HAVE_STRING_H
+#include <string.h>
+#else
+#ifdef HAVE_STRINGS_H
+#include <strings.h>
+#endif
+#endif
 #include "rtl.h"
 #include "flags.h"
 #include "insn-flags.h"
@@ -183,11 +190,6 @@ instrument_arcs (f, num_blocks, dump_file)
   int num_arcs = 0;
   int num_instr_arcs = 0;
   rtx insn;
-
-  int neg_one = -1;
-  int zero = 0;
-  int inverted;
-  rtx note;
 
   /* Instrument the program start.  */
   /* Handle block 0 specially, since it will always be instrumented,
@@ -679,7 +681,7 @@ branch_prob (f, dump_file)
 	    bb_graph[i].first_insn = insn;
 	  }
 	else if (code == NOTE)
-	  ;
+	  {;}
 
 	if (code == CALL_INSN)
 	  {

@@ -1081,8 +1081,10 @@ main (argc, argv)
   int inf_fd;
   struct stat sbuf;
   int c;
-  int i, done;
-  const char *cptr, **pptr;
+#ifdef FIXPROTO_IGNORE_LIST
+  int i;
+#endif
+  const char *cptr;
   int ifndef_line;
   int endif_line;
   long to_read;

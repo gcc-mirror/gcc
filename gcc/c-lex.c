@@ -23,6 +23,16 @@ Boston, MA 02111-1307, USA.  */
 #include <stdio.h>
 #include <errno.h>
 #include <setjmp.h>
+#if HAVE_STDLIB_H
+#include <stdlib.h>
+#endif
+#ifdef HAVE_STRING_H
+#include <string.h>
+#else
+#ifdef HAVE_STRINGS_H
+#include <strings.h>
+#endif
+#endif
 
 #include "rtl.h"
 #include "tree.h"
@@ -135,6 +145,9 @@ static int end_of_file;
 static int nextchar = -1;
 #endif
 
+#ifdef HANDLE_SYSV_PRAGMA
+static int handle_sysv_pragma		PROTO((int));
+#endif /* HANDLE_SYSV_PRAGMA */
 static int skip_white_space		PROTO((int));
 static char *extend_token_buffer	PROTO((char *));
 static int readescape			PROTO((int *));
@@ -894,7 +907,7 @@ linenum:
 /* This function has to be in this file, in order to get at
    the token types.  */
 
-int
+static int
 handle_sysv_pragma (token)
      register int token;
 {
@@ -1264,7 +1277,7 @@ yylex ()
       {
 	register struct resword *ptr;
 
-	if (ptr = is_reserved_word (token_buffer, p - token_buffer))
+	if ((ptr = is_reserved_word (token_buffer, p - token_buffer)))
 	  {
 	    if (ptr->rid)
 	      yylval.ttype = ridpointers[(int) ptr->rid];

@@ -29,6 +29,9 @@ Boston, MA 02111-1307, USA.  */
 
 #include <stdio.h>
 #include <errno.h>
+#ifdef HAVE_UNISTD_H
+#include <unistd.h>
+#endif
 
 #ifdef IN_GCC
 #include "gansidecl.h"
@@ -637,6 +640,9 @@ pfinish ()
 
 extern int execv ();
 extern int execvp ();
+#ifdef IN_GCC
+extern char * my_strerror();
+#endif
 
 int
 pexecute (program, argv, this_pname, temp_base, errmsg_fmt, errmsg_arg, flags)
