@@ -351,6 +351,8 @@ static tree handle_vector_size_attribute PARAMS ((tree *, tree, tree, int,
 						  bool *));
 static tree handle_nonnull_attribute	PARAMS ((tree *, tree, tree, int,
 						 bool *));
+static tree handle_nothrow_attribute	PARAMS ((tree *, tree, tree, int,
+						 bool *));
 static tree vector_size_helper PARAMS ((tree, tree));
 
 static void check_function_nonnull	PARAMS ((tree, tree));
@@ -425,6 +427,8 @@ const struct attribute_spec c_common_attribute_table[] =
 			      handle_visibility_attribute },
   { "nonnull",                0, -1, false, true, true,
 			      handle_nonnull_attribute },
+  { "nothrow",                0, 0, true,  false, false,
+			      handle_nothrow_attribute },
   { NULL,                     0, 0, false, false, false, NULL }
 };
 
@@ -5794,6 +5798,29 @@ get_nonnull_operand (arg_num_expr, valp)
 
   *valp = TREE_INT_CST_LOW (arg_num_expr);
   return true;
+}
+
+/* Handle a "nothrow" attribute; arguments as in
+   struct attribute_spec.handler.  */
+
+static tree
+handle_nothrow_attribute (node, name, args, flags, no_add_attrs)
+     tree *node;
+     tree name;
+     tree args ATTRIBUTE_UNUSED;
+     int flags ATTRIBUTE_UNUSED;
+     bool *no_add_attrs;
+{
+  if (TREE_CODE (*node) == FUNCTION_DECL)
+    TREE_NOTHROW (*node) = 1;
+  /* ??? TODO: Support types.  */
+  else
+    {
+      warning ("`%s' attribute ignored", IDENTIFIER_POINTER (name));
+      *no_add_attrs = true;
+    }
+
+  return NULL_TREE;
 }
 
 /* Check for valid arguments being passed to a function.  */

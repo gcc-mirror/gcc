@@ -1883,7 +1883,7 @@ attributes when making a declaration.  This keyword is followed by an
 attribute specification inside double parentheses.  The following
 attributes are currently defined for functions on all targets:
 @code{noreturn}, @code{noinline}, @code{always_inline},
-@code{pure}, @code{const},
+@code{pure}, @code{const}, @code{nothrow},
 @code{format}, @code{format_arg}, @code{no_instrument_function},
 @code{section}, @code{constructor}, @code{destructor}, @code{used},
 @code{unused}, @code{deprecated}, @code{weak}, @code{malloc},
@@ -2007,6 +2007,14 @@ extern const intfn square;
 This approach does not work in GNU C++ from 2.6.0 on, since the language
 specifies that the @samp{const} must be attached to the return value.
 
+@cindex @code{nothrow} function attribute
+@item nothrow
+The @code{nothrow} attribute is used to inform the compiler that a
+function cannot throw an exception.  For example, most functions in
+the standard C library can be guaranteed not to throw an exception
+with the notable exceptions of @code{qsort} and @code{bsearch} that
+take function pointer arguments.  The @code{nothrow} attribute is not
+implemented in GCC versions earlier than 3.2.
 
 @item format (@var{archetype}, @var{string-index}, @var{first-to-check})
 @cindex @code{format} function attribute

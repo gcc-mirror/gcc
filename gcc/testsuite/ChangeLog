@@ -1,3 +1,7 @@
+2002-05-27  Richard Henderson  <rth@redhat.com>
+
+	* g++.dg/ext/attrib6.C: New test case.
+
 2002-05-27  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* gcc.c-torture/execute/pure-1.c: New test.
