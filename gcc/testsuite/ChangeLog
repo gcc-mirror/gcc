@@ -1,5 +1,9 @@
 2003-06-04  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
+	* gcc.dg/ultrasp9.c: New test.
+
+2003-06-04  Eric Botcazou  <ebotcazou@libertysurf.fr>
+
 	* gcc.c-torture/compile/20030604-1.c: New test.
 	* gcc.dg/sparc-constant-1.c: New test.
 

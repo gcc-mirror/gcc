@@ -1,5 +1,12 @@
 2003-06-04  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
+	PR optimization/11018
+	* config/sparc/sparc.c (sparc_v8plus_shift): Use which_alternative
+	consistently to decide whether the scratch register is really
+	required.
+
+2003-06-04  Eric Botcazou  <ebotcazou@libertysurf.fr>
+
 	PR optimization/10876
 	* config/sparc/sparc.h (CONST_OK_FOR_LETTER): Add
 	new 'O' constraint for constant 4096.
