@@ -1,3 +1,9 @@
+2004-02-16  Matt Kraai  <kraai@alumni.cmu.edu>
+
+	* regex.c: Include <ansidecl.h>.
+	(regcomp): Cast i to int.
+	(regerror): Add ATTRIBUTE_UNUSED to parameter preg.
+
 2004-01-25  Ian Lance Taylor  <ian@wasabisystems.com>
 
 	* configure.ac: Add m4_pattern_allow(LIBOBJS).
