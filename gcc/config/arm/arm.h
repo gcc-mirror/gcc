@@ -30,6 +30,9 @@ Boston, MA 02111-1307, USA.  */
    should default to that used by the OS.
 */
 
+#ifndef __ARM_H__
+#define __ARM_H__
+
 #define TARGET_CPU_arm2		0x0000
 #define TARGET_CPU_arm250	0x0000
 #define TARGET_CPU_arm3		0x0000
@@ -180,7 +183,9 @@ Unrecognized value in TARGET_CPU_DEFAULT.
  %{m3:-D__APCS_26__} %{!m6:%{!m3:%{!m2:%(cpp_apcs_pc_default)}}}}} \
 "
 
+#ifndef CPP_APCS_PC_DEFAULT_SPEC
 #define CPP_APCS_PC_DEFAULT_SPEC "-D__APCS_26__"
+#endif
 
 #define CPP_FLOAT_SPEC "\
 %{msoft-float:\
@@ -381,7 +386,9 @@ extern char *target_fp_name;
   {"cpu=",  & arm_select[1].string, "Specify the name of the target CPU" },	\
   {"arch=", & arm_select[2].string, "Specify the name of the target architecture" }, \
   {"tune=", & arm_select[3].string, "" },	\
-  {"fp=",   & target_fp_name, "Specify the version of the floating point emulator"} \
+  {"fp=",   & target_fp_name, "Specify the version of the floating point emulator"}, \
+  { "structure-size-boundary=", & structure_size_string, 	\
+      "Specify the minumum bit alignment of structures" } 	\
 }
 
 /* arm_select[0] is reserved for the default cpu.  */
@@ -579,7 +586,12 @@ extern int arm_arch4;
 /* This is for compatibility with ARMCC.  ARM SDT Reference Manual
    (ARM DUI 0020D) page 2-20 says "Structures are aligned on word
    boundaries".  */
+#ifndef STRUCTURE_SIZE_BOUNDARY
 #define STRUCTURE_SIZE_BOUNDARY 32
+#endif
+     
+/* Used when parsing command line option -mstructure_size_boundary.  */
+extern char * structure_size_string;
 
 /* Non-zero if move instructions will actually fail to work
    when given unaligned data.  */
@@ -1832,6 +1844,7 @@ extern int arm_compare_fp;
   goto JUMPTO
 
 /* Output an internal label definition.  */
+#ifndef ASM_OUTPUT_INTERNAL_LABEL
 #define ASM_OUTPUT_INTERNAL_LABEL(STREAM, PREFIX, NUM)  	\
   do                                    	      	   	\
     {						      	   	\
@@ -1848,7 +1861,8 @@ extern int arm_compare_fp;
 	ASM_GENERATE_INTERNAL_LABEL (s, (PREFIX), (NUM));   	\
 	ASM_OUTPUT_LABEL (STREAM, s);		                \
     } while (0)
-
+#endif
+     
 /* Output a push or a pop instruction (only used when profiling).  */
 #define ASM_OUTPUT_REG_PUSH(STREAM,REGNO) \
   fprintf(STREAM,"\tstmfd\t%ssp!,{%s%s}\n", \
@@ -2132,3 +2146,5 @@ void aof_add_import (/* char * */);
 void aof_delete_import (/* char * */);
 void aof_dump_imports (/* FILE * */);
 #endif
+
+#endif /* __ARM_H__ */

@@ -1,3 +1,57 @@
+Tue Oct 27 10:15:02 EST 1998  Nick Clifton  <nickc@cygnus.com>
+
+	Added support for arm-elf-linux configuration, submitted by Philip
+	Blundell <pb@nexus.co.uk>, and integrated this with the arm-elf
+	code developed by Catherine Moore <clm@cygnus.com>.  The following
+	files are affected: 
+
+	* configure.in: Add arm-*-linux-gnu, armv2-*-linux and arm-*-elf
+	targets. 
+
+	* configure: Regenerated.
+	
+	* config/arm/aout.h: Add default definitions of REGISTER_PREFIX,
+	USER_LABEL_PREFIX and LOCAL_LABEL_PREFIX.  Make other macro
+	definitions conditional on their not having been already defined.
+
+	* config/arm/lin1funcs.asm: Add ELF only macros to generate .size
+	and .type directives, and add "(PLT)" qualification to function
+	calls.
+
+	* config/arm/linux.h: Deleted.  This file is now superceeded by
+	either linux-elf.h or linux-aout.h.
+
+	* config/arm/linux-gas.h: Define `inhibit_libc' if cross-compiling.
+	(CLEAR_INSN_CACHE): New macro, currently disabled (awaiting kernel
+	support).
+	Move definitions from old linux.h file here.
+	
+	* config/arm/elf.h: New file.  Generic ARM/ELF support.
+	
+	* config/arm/linux-aout.h: New file.  Support for Linux with a.out.
+	
+	* config/arm/linux-elf.h: New file.  Support for Linux with ELF.
+	
+	* config/arm/linux-elf26.h: New file.  Support for Linux with ELF
+	using the 26bit APCS.
+	
+	* config/arm/unknown-elf.h: New file.  Support for OS'es other
+	than Linux with ELF.
+
+	* config/arm/t-arm-elf: New file.  makefile fragment for arm-elf
+	builds.
+	
+	* config/arm/coff.h: Include aout.h for basic assembler macros.
+	Add support for -mstructure_size_boundary=<n> command line option.
+	
+	* config/arm/arm.h: Add support for -mstructure_size_boundary=<n>
+	command line option.  Make macro definitions conditional on their
+	not having been already defined. 
+
+	* config/arm/arm.c: Add support for -mstructure_size_boundary=<n>
+	command line option.
+
+	
 Tue Oct 27 08:56:46 EST 1998  Andrew MacLeod  <amacleod@cygnus.com>
 
 	* dwarfout.c (ASM_OUTPUT_DWARF_STRING_NEWLINE): ASM_OUTPUT_DWARF_STRING

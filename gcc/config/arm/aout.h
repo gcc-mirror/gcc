@@ -1,5 +1,5 @@
 /* Definitions of target machine for GNU compiler, for ARM with a.out
-   Copyright (C) 1995, 1996, 1997 Free Software Foundation, Inc.
+   Copyright (C) 1995, 1996, 1997, 1998 Free Software Foundation, Inc.
    Contributed by Richard Earnshaw (rearnsha@armltd.co.uk).
    
 This file is part of GNU CC.
@@ -24,6 +24,7 @@ Boston, MA 02111-1307, USA.  */
 #endif
 
 /* The text to go at the start of the assembler file */
+#ifndef ASM_FILE_START
 #define ASM_FILE_START(STREAM)						    \
 {									    \
   fprintf (STREAM,"%srfp\t.req\t%sr9\n", REGISTER_PREFIX, REGISTER_PREFIX); \
@@ -34,22 +35,35 @@ Boston, MA 02111-1307, USA.  */
   fprintf (STREAM,"%slr\t.req\t%sr14\n", REGISTER_PREFIX, REGISTER_PREFIX); \
   fprintf (STREAM,"%spc\t.req\t%sr15\n", REGISTER_PREFIX, REGISTER_PREFIX); \
 }
+#endif
 
-#define ASM_APP_ON  ""
-#define ASM_APP_OFF  ""
+#define ASM_APP_ON  		""
+#define ASM_APP_OFF  		""
 
 /* Switch to the text or data segment.  */
-#define TEXT_SECTION_ASM_OP  ".text"
-#define DATA_SECTION_ASM_OP  ".data"
-#define BSS_SECTION_ASM_OP   ".bss"
+#define TEXT_SECTION_ASM_OP  	".text"
+#define DATA_SECTION_ASM_OP  	".data"
+#define BSS_SECTION_ASM_OP   	".bss"
 
-#define REGISTER_PREFIX ""
-#define USER_LABEL_PREFIX "_"
-#define LOCAL_LABEL_PREFIX ""
+/* Note: If USER_LABEL_PREFIX or LOCAL_LABEL_PREFIX are changed,
+   make sure that this change is reflected in the function
+   coff_arm_is_local_label_name() in bfd/coff-arm.c  */
+#ifndef REGISTER_PREFIX
+#define REGISTER_PREFIX 	""
+#endif
+
+#ifndef USER_LABEL_PREFIX
+#define USER_LABEL_PREFIX 	"_"
+#endif
+
+#ifndef LOCAL_LABEL_PREFIX
+#define LOCAL_LABEL_PREFIX 	""
+#endif
+
 
 /* The assembler's names for the registers.  */
 #ifndef REGISTER_NAMES
-#define REGISTER_NAMES  \
+#define REGISTER_NAMES  			   \
 {				                   \
   "r0", "r1", "r2", "r3", "r4", "r5", "r6", "r7",  \
   "r8", "r9", "sl", "fp", "ip", "sp", "lr", "pc",  \
@@ -111,25 +125,32 @@ do {									\
 } while (0)
   
 /* Output a function label definition.  */
-#define ASM_DECLARE_FUNCTION_NAME(STREAM,NAME,DECL) \
-    ASM_OUTPUT_LABEL(STREAM, NAME)
+#ifndef ASM_DECLARE_FUNCTION_NAME
+#define ASM_DECLARE_FUNCTION_NAME(STREAM,NAME,DECL) ASM_OUTPUT_LABEL (STREAM, NAME)
+#endif
 
+#ifndef ASM_OUTPUT_LABEL
 #define ASM_OUTPUT_LABEL(STREAM,NAME)	\
 do {					\
   assemble_name (STREAM,NAME);		\
   fputs (":\n", STREAM);		\
 } while (0)
-
+#endif
+     
 /* Output a globalising directive for a label.  */
+#ifndef ASM_GLOBALIZE_LABEL
 #define ASM_GLOBALIZE_LABEL(STREAM,NAME)  \
   (fprintf (STREAM, "\t.global\t"),	  \
    assemble_name (STREAM, NAME),	  \
-   fputc ('\n',STREAM))                   \
+   fputc ('\n',STREAM))                   
+#endif
 
 /* Make an internal label into a string.  */
+#ifndef ASM_GENERATE_INTERNAL_LABEL
 #define ASM_GENERATE_INTERNAL_LABEL(STRING, PREFIX, NUM)  \
   sprintf (STRING, "*%s%s%d", LOCAL_LABEL_PREFIX, PREFIX, NUM)
-
+#endif
+     
 /* Nothing special is done about jump tables */
 /* #define ASM_OUTPUT_CASE_LABEL(STREAM,PREFIX,NUM,TABLE)   */
 /* #define ASM_OUTPUT_CASE_END(STREAM,NUM,TABLE)	    */
@@ -196,14 +217,14 @@ do { char dstr[30];							\
    output_addr_const (STREAM, (EXP)),  \
    fputc ('\n', STREAM))
 
-#define ASM_OUTPUT_BYTE(STREAM, VALUE)  \
+#define ASM_OUTPUT_BYTE(STREAM, VALUE)  	\
   fprintf (STREAM, "\t.byte\t%d\n", VALUE)
 
 #define ASM_OUTPUT_ASCII(STREAM, PTR, LEN)  \
   output_ascii_pseudo_op ((STREAM), (unsigned char *)(PTR), (LEN))
 
 /* Output a gap.  In fact we fill it with nulls.  */
-#define ASM_OUTPUT_SKIP(STREAM, NBYTES)  \
+#define ASM_OUTPUT_SKIP(STREAM, NBYTES) 	\
    fprintf (STREAM, "\t.space\t%d\n", NBYTES)
 
 /* Align output to a power of two.  Horrible /bin/as.  */
@@ -219,13 +240,18 @@ do { char dstr[30];							\
     } while (0)
 
 /* Output a common block */
+#ifndef ASM_OUTPUT_COMMON
 #define ASM_OUTPUT_COMMON(STREAM, NAME, SIZE, ROUNDED)  		\
   (fprintf (STREAM, "\t.comm\t"), 		     			\
    assemble_name ((STREAM), (NAME)),		     			\
-   fprintf(STREAM, ", %d\t%s %d\n", ROUNDED, ASM_COMMENT_START, SIZE))
-
+   fprintf (STREAM, ", %d\t%s %d\n", ROUNDED, ASM_COMMENT_START, SIZE))
+#endif
+     
 /* Output a local common block.  /bin/as can't do this, so hack a
-   `.space' into the bss segment.  Note that this is *bad* practice.  */
+   `.space' into the bss segment.  Note that this is *bad* practice,
+   which is guaranteed NOT to work since it doesn't define STATIC
+   COMMON space but merely STATIC BSS space.  */
+#ifndef ASM_OUTPUT_ALIGNED_LOCAL
 #define ASM_OUTPUT_ALIGNED_LOCAL(STREAM,NAME,SIZE,ALIGN)		\
   do {									\
     bss_section ();							\
@@ -233,27 +259,32 @@ do { char dstr[30];							\
     ASM_OUTPUT_LABEL (STREAM, NAME);					\
     fprintf (STREAM, "\t.space\t%d\n", SIZE);				\
   } while (0)
-
+#endif
+     
 /* Output a zero-initialized block.  */
+#ifndef ASM_OUTPUT_ALIGNED_BSS
 #define ASM_OUTPUT_ALIGNED_BSS(STREAM,DECL,NAME,SIZE,ALIGN) \
-  asm_output_aligned_bss(STREAM, DECL, NAME, SIZE, ALIGN)
-
+  asm_output_aligned_bss (STREAM, DECL, NAME, SIZE, ALIGN)
+#endif
+     
 /* Output a source line for the debugger.  */
 /* #define ASM_OUTPUT_SOURCE_LINE(STREAM,LINE) */
 
 /* Output a #ident directive.  */
+#ifndef ASM_OUTPUT_IDENT
 #define ASM_OUTPUT_IDENT(STREAM,STRING)  \
-  fprintf (STREAM,"- - - ident %s\n",STRING)
-
+  fprintf (STREAM, "%s - - - ident %s\n", ASM_COMMENT_START, STRING)
+#endif
+     
 /* The assembler's parentheses characters.  */
-#define ASM_OPEN_PAREN "("
-#define ASM_CLOSE_PAREN ")"
+#define ASM_OPEN_PAREN 		"("
+#define ASM_CLOSE_PAREN 	")"
 
 #ifndef ASM_COMMENT_START
-#define ASM_COMMENT_START "@"
+#define ASM_COMMENT_START 	"@"
 #endif
 
 /* This works for GAS and some other assemblers.  */
-#define SET_ASM_OP	".set"
+#define SET_ASM_OP		".set"
 
 #include "arm/arm.h"

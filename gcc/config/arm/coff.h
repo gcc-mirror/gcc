@@ -1,6 +1,6 @@
 /* Definitions of target machine for GNU compiler,
    for ARM with COFF obj format.
-   Copyright (C) 1995, 1996, 1997 Free Software Foundation, Inc.
+   Copyright (C) 1995, 1996, 1997, 1998 Free Software Foundation, Inc.
    Contributed by Doug Evans (dje@cygnus.com).
    
 This file is part of GNU CC.
@@ -21,27 +21,25 @@ the Free Software Foundation, 59 Temple Place - Suite 330,
 Boston, MA 02111-1307, USA.  */
 
 #include "arm/semi.h"
+#include "arm/aout.h"
 
 /* Run-time Target Specification.  */
-#undef TARGET_VERSION
+#undef  TARGET_VERSION
 #define TARGET_VERSION fputs (" (ARM/coff)", stderr)
 
-/* ??? Maybe use --with{enable?}-fpu or some such to make hardware floating
-   point the default.  NOT --nfp!  --with{enable?} is supposed to replace it
-   (right?), so let's stop using it.  */
-#undef TARGET_DEFAULT
+#undef  TARGET_DEFAULT
 #define TARGET_DEFAULT (ARM_FLAG_SOFT_FLOAT | ARM_FLAG_APCS_32)
 
-/* ??? Is a big-endian default intended to be supported?  */
-#if 0 /*TARGET_CPU_DEFAULT & ARM_FLAG_BIG_END*/
-#define MULTILIB_DEFAULTS { "mbig-endian" }
-#else
-#define MULTILIB_DEFAULTS { "mlittle-endian" }
-#endif
+#define MULTILIB_DEFAULTS { "mlittle-endian", "msoft-float", "mapcs-32" }
 
-/* ??? Does arm.h really need to set this to 32?  */
-#undef STRUCTURE_SIZE_BOUNDARY
-#define STRUCTURE_SIZE_BOUNDARY 8
+/* Setting this to 32 produces more efficient code, but the value set in previous
+   versions of this toolchain was 8, which produces more compact structures. The
+   command line option -mstructure_size_boundary=<n> can be used to change this
+   value.  */
+#undef  STRUCTURE_SIZE_BOUNDARY
+#define STRUCTURE_SIZE_BOUNDARY arm_structure_size_boundary
+
+extern int arm_structure_size_boundary;
 
 /* A C expression whose value is nonzero if IDENTIFIER with arguments ARGS
    is a valid machine specific attribute for DECL.
@@ -57,12 +55,6 @@ arm_valid_machine_decl_attribute (DECL, ATTRIBUTES, IDENTIFIER, ARGS)
 
 #include "dbxcoff.h"
 
-#undef LOCAL_LABEL_PREFIX
-#define LOCAL_LABEL_PREFIX "."
-
-#undef USER_LABEL_PREFIX
-#define USER_LABEL_PREFIX ""
-
 /* A C statement to output assembler commands which will identify the
    object file as having been compiled with GNU CC (or another GNU
    compiler).  */
@@ -71,7 +63,8 @@ arm_valid_machine_decl_attribute (DECL, ATTRIBUTES, IDENTIFIER, ARGS)
    Also, when using stabs, gcc2_compiled must be a stabs entry, not an
    ordinary symbol, or gdb won't see it.  The stabs entry must be
    before the N_SO in order for gdb to find it.  */
-#define ASM_IDENTIFY_GCC(STREAM)
+#define ASM_IDENTIFY_GCC(STREAM) 				\
+     fprintf (STREAM, "%sgcc2_compiled.:\n", LOCAL_LABEL_PREFIX )
 
 /* This outputs a lot of .req's to define alias for various registers.
    Let's try to avoid this.  */
@@ -106,14 +99,13 @@ do {								\
    Otherwise, the readonly data section is used.  */
 #define JUMP_TABLES_IN_TEXT_SECTION 1
 
-#undef READONLY_DATA_SECTION
+#undef  READONLY_DATA_SECTION
 #define READONLY_DATA_SECTION	rdata_section
-#undef RDATA_SECTION_ASM_OP
+#undef  RDATA_SECTION_ASM_OP
 #define RDATA_SECTION_ASM_OP	"\t.section .rdata"
-
-#undef CTORS_SECTION_ASM_OP
+#undef  CTORS_SECTION_ASM_OP
 #define CTORS_SECTION_ASM_OP	"\t.section .ctors,\"x\""
-#undef DTORS_SECTION_ASM_OP
+#undef  DTORS_SECTION_ASM_OP
 #define DTORS_SECTION_ASM_OP	"\t.section .dtors,\"x\""
 
 /* A list of other sections which the compiler might be "in" at any
@@ -200,8 +192,12 @@ do {						\
 #undef DO_GLOBAL_CTORS_BODY
 #undef DO_GLOBAL_DTORS_BODY
 
-/* The ARM development system has atexit and doesn't have _exit,
-   so define this for now.  */
+/* If you don't define HAVE_ATEXIT, and the object file format/OS/whatever 
+   does not support constructors/destructors, then gcc implements destructors
+   by defining its own exit function, which calls the destructors.  This gcc
+   exit function overrides the C library's exit function, and this can cause
+   all kinds of havoc if the C library has a non-trivial exit function.  You
+   really don't want to use the exit function in libgcc2.c.  */
 #define HAVE_ATEXIT
 
 /* The ARM development system defines __main.  */

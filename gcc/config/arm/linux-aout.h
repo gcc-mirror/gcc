@@ -1,6 +1,6 @@
-/* Definitions for ARM running Linux
-   Copyright (C) 1993, 1994, 1997 Free Software Foundation, Inc.
-   Adapted from ARM Linux by Russell King  <rmk92@ecs.soton.ac.uk>.
+/* Definitions for ARM running Linux-based GNU systems using a.out.
+   Copyright (C) 1993, 1994, 1997, 1998 Free Software Foundation, Inc.
+   Contributed by Russell King  <rmk92@ecs.soton.ac.uk>.
 
 This file is part of GNU CC.
 
@@ -31,7 +31,7 @@ Boston, MA 02111-1307, USA.  */
 #undef COMMENT_BEGIN
  
 /* We default to ARM3.  */
-#define TARGET_CPU_DEFAULT TARGET_CPU_arm3
+#define SUBTARGET_CPU_DEFAULT TARGET_CPU_arm3
 
 #undef CPP_PREDEFINES
 #define CPP_PREDEFINES \
@@ -41,33 +41,18 @@ Boston, MA 02111-1307, USA.  */
 #define LIB_SPEC \
 	"%{mieee-fp:-lieee} %{p:-lgmon} %{pg:-lgmon} %{!ggdb:-lc} %{ggdb:-lg}"
 
-#undef SIZE_TYPE
-#define SIZE_TYPE "unsigned int"
-
-#undef PTRDIFF_TYPE
-#define PTRDIFF_TYPE "int"
-
-#undef WCHAR_TYPE
-#define WCHAR_TYPE "long int"
-
-#undef WCHAR_TYPE_SIZE
-#define WCHAR_TYPE_SIZE BITS_PER_WORD
-
 #define HANDLE_SYSV_PRAGMA
   
 /* Run-time Target Specification.  */
-#define TARGET_VERSION  \
-  fputs (" (ARM Linux/a.out)", stderr);
+#define TARGET_VERSION  fputs (" (ARM GNU/Linux with a.out)", stderr);
 
-/* This is used in ASM_FILE_START */
-#define ARM_OS_NAME "Linux"
-
-/* Unsigned chars produces much better code than signed.  */
-#define DEFAULT_SIGNED_CHAR 0
-
-/* Maths operation domain error number, EDOM */
+/* 
+ * Maths operation domain error number, EDOM
+ * We don't really want this for libc6.  However, taking it out would be
+ * too much of a pain for now and it doesn't hurt much.
+ */
 #define TARGET_EDOM 33
+
 #include "arm/aout.h"
 
-#undef SUBTARGET_CPP_SPEC
-#define SUBTARGET_CPP_SPEC  "%{posix:-D_POSIX_SOURCE}"
+#include "arm/linux-gas.h"

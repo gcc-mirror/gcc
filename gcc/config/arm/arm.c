@@ -90,6 +90,10 @@ enum prog_mode_type arm_prgmode;
 /* Set by the -mfp=... option */
 char *target_fp_name = NULL;
 
+/* Used to parse -mstructure_size_boundary command line option.  */
+char * structure_size_string = NULL;
+int    arm_structure_size_boundary = 32; /* Used to be 8 */
+
 /* Nonzero if this is an "M" variant of the processor.  */
 int arm_fast_multiply = 0;
 
@@ -367,6 +371,16 @@ arm_override_options ()
     flag_schedule_insns = flag_schedule_insns_after_reload = 0;
 
   arm_prog_mode = TARGET_APCS_32 ? PROG_MODE_PROG32 : PROG_MODE_PROG26;
+  
+  if (structure_size_string != NULL)
+    {
+      int size = strtol (structure_size_string, NULL, 0);
+      
+      if (size == 8 || size == 32)
+	arm_structure_size_boundary = size;
+      else
+	warning ("Structure size boundary can only be set to 8 or 32");
+    }
 }
 
 
