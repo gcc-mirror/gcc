@@ -487,7 +487,7 @@ maintainer-clean-generic clean mostlyclean distclean maintainer-clean
 $(all_objs) : config.h gc_priv.h gc_hdrs.h gc.h gc_mark.h
 
 .s.lo:
-	$(LTCOMPILE) -x assembler-with-cpp -c $<
+	$(LTCOMPILE) -Wp,-P -x assembler-with-cpp -c $<
 
 # Multilib support.
 .PHONY: all-multi mostlyclean-multi clean-multi distclean-multi \
