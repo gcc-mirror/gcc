@@ -5988,7 +5988,7 @@ mips_asm_file_start (stream)
 
   /* Generate the pseudo ops that System V.4 wants.  */
 #ifndef ABICALLS_ASM_OP
-#define ABICALLS_ASM_OP ".abicalls"
+#define ABICALLS_ASM_OP "\t.abicalls"
 #endif
   if (TARGET_ABICALLS)
     /* ??? but do not want this (or want pic0) if -non-shared? */

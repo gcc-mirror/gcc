@@ -1,6 +1,6 @@
 /* Definitions of target machine for GNU compiler.  MIPS R3000 version with
    GOFAST floating point library.
-   Copyright (C) 1994, 1997, 1999 Free Software Foundation, Inc.
+   Copyright (C) 1994, 1997, 1999, 2000 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -87,8 +87,8 @@ do {								\
 
 #undef TYPE_ASM_OP
 #undef SIZE_ASM_OP
-#define TYPE_ASM_OP	".type"
-#define SIZE_ASM_OP	".size"
+#define TYPE_ASM_OP	"\t.type\t"
+#define SIZE_ASM_OP	"\t.size\t"
 
 /* If defined, a C expression whose value is a string containing the
    assembler operation to identify the following data as
@@ -98,7 +98,7 @@ do {								\
    `-fno-common' is passed, otherwise `ASM_OUTPUT_COMMON' will be
    used.  */
 #ifndef BSS_SECTION_ASM_OP
-#define BSS_SECTION_ASM_OP	".section\t.bss"
+#define BSS_SECTION_ASM_OP	"\t.section\t.bss"
 #endif
 
 #define SBSS_SECTION_ASM_OP	"\t.section .sbss"

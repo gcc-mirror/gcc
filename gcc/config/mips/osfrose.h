@@ -1,6 +1,6 @@
 /* Definitions of target machine for GNU compiler.
    DECstation (OSF/1 reference port with OSF/rose) version.
-   Copyright (C) 1991, 1992, 1995, 1996, 1998, 1999 Free Software Foundation, Inc.
+   Copyright (C) 1991, 1992, 1995, 1996, 1998, 1999, 2000 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -100,7 +100,7 @@ Boston, MA 02111-1307, USA.  */
 /* enable dwarf debugging for testing */
 #define DWARF_DEBUGGING_INFO
 /* This is needed by dwarfout.c.  */
-#define SET_ASM_OP	".set"
+#define SET_ASM_OP	"\t.set\t"
 
 /* Tell collect that the object format is OSF/rose.  */
 #define OBJECT_FORMAT_ROSE

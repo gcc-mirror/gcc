@@ -190,6 +190,26 @@
 	* config/m88k/openbsd.h (SET_ASM_OP): Here.
 	* config/m88k/sysv4.h (INIT_SECTION_ASM_OP, FINI_SECTION_ASM_OP,
 	CTORS_SECTION_ASM_OP, DTORS_SECTION_ASM_OP): Here.
+	* config/mcore/mcore-elf.h (UNALIGNED_INT_ASM_OP,
+	UNALIGNED_SHORT_ASM_OP, CTORS_SECTION_ASM_OP,
+	DTORS_SECTION_ASM_OP): Here.
+	* config/mcore/mcore-pe.h (CTORS_SECTION_ASM_OP,
+	DTORS_SECTION_ASM_OP, INT_ASM_OP): Here.
+	* config/mips/elf.h (TYPE_ASM_OP, SIZE_ASM_OP,
+	BSS_SECTION_ASM_OP): Here.
+	* config/mips/elf64.h (TYPE_ASM_OP, SIZE_ASM_OP): Here.
+	* config/mips/iris5.h (ABICALLS_ASM_OP): Here.
+	* config/mips/iris6.h (TYPE_ASM_OP, SIZE_ASM_OP,
+	POPSECTION_ASM_OP, BSS_SECTION_ASM_OP, CONST_SECTION_ASM_OP_32,
+	CONST_SECTION_ASM_OP_64, CTORS_SECTION_ASM_OP,
+	DTORS_SECTION_ASM_OP, EH_FRAME_SECTION_ASM_OP): Here.
+	* config/mips/mips.c (ABICALLS_ASM_OP): Here.
+	* config/mips/mips.h (ASM_STABS_OP, ASM_STABN_OP, ASM_STABD_OP):
+	Here.
+	* config/mips/netbsd.h (TYPE_ASM_OP, SIZE_ASM_OP, WEAK_ASM_OP):
+	Here.
+	* config/mips/osfrose.h (SET_ASM_OP): Here.
+	* config/mips/sni-svr4.h (ABICALLS_ASM_OP): Here.
 
 2000-09-25  Richard Henderson  <rth@cygnus.com>
 

@@ -71,8 +71,8 @@ while (0)
 
 /* MCore defines .long and .short to NOT force any alignment.
    This lets you misalign as much as you wish.  */
-#define	UNALIGNED_INT_ASM_OP	".long"
-#define	UNALIGNED_SHORT_ASM_OP	".short"
+#define	UNALIGNED_INT_ASM_OP	"\t.long\t"
+#define	UNALIGNED_SHORT_ASM_OP	"\t.short\t"
 
 #define EXPORTS_SECTION_ASM_OP	"\t.section .exports"
 
@@ -199,8 +199,8 @@ exports_section ()						\
 #define FORCE_FINI_SECTION_ALIGN	asm ("br 1f ; .literals ; 1:")
 
 #undef  CTORS_SECTION_ASM_OP
-#define CTORS_SECTION_ASM_OP	".section\t.ctors,\"aw\""
+#define CTORS_SECTION_ASM_OP	"\t.section\t.ctors,\"aw\""
 #undef  DTORS_SECTION_ASM_OP
-#define DTORS_SECTION_ASM_OP	".section\t.dtors,\"aw\""
+#define DTORS_SECTION_ASM_OP	"\t.section\t.dtors,\"aw\""
      
 #endif /* __MCORE_ELF_H__ */
