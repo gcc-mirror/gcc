@@ -2185,7 +2185,26 @@ expand_value_return (val)
      unless it's already there.  */
 
   if (return_reg != val)
-    emit_move_insn (return_reg, val);
+    {
+#ifdef PROMOTE_FUNCTION_RETURN
+      enum machine_mode mode = DECL_MODE (DECL_RESULT (current_function_decl));
+      tree type = TREE_TYPE (DECL_RESULT (current_function_decl));
+      int unsignedp = TREE_UNSIGNED (type);
+
+      if (TREE_CODE (type) == INTEGER_TYPE || TREE_CODE (type) == ENUMERAL_TYPE
+	  || TREE_CODE (type) == BOOLEAN_TYPE || TREE_CODE (type) == CHAR_TYPE
+	  || TREE_CODE (type) == REAL_TYPE || TREE_CODE (type) == POINTER_TYPE
+	  || TREE_CODE (type) == OFFSET_TYPE)
+	{
+	  PROMOTE_MODE (mode, unsignedp, type);
+	}
+
+      if (GET_MODE (val) != VOIDmode && GET_MODE (val) != mode)
+	convert_to_mode (return_reg, val, unsignedp);
+      else
+#endif
+	emit_move_insn (return_reg, val);
+    }
   if (GET_CODE (return_reg) == REG
       && REGNO (return_reg) < FIRST_PSEUDO_REGISTER)
     emit_insn (gen_rtx (USE, VOIDmode, return_reg));
