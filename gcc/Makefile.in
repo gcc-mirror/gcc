@@ -2794,13 +2794,12 @@ stage_f: stage_e
 	touch stage_f
 
 # Additional steps for *-lean targets:
-clean_s1:
+clean_s1: stage_b
 	-cd stage1; rm -f $(VOL_FILES)
 	touch clean_s1
 
-clean_s2:
+clean_s2: stage_d
 	-rm -rf stage1
-	-cd stage2; rm -f $(VOL_FILES)
 	touch clean_s2
 
 # This next little bit is the way it is for parallel builds.  It's simply

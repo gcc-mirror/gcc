@@ -1,3 +1,9 @@
+2000-09-06  H.J. Lu  (hjl@gnu.org)
+
+	* Makefile.in (clean_s1): Depend on stage_b.
+	(clean_s2): Depend on stage_d. Don't remove $(VOL_FILES) in
+	stage2. They are used for "make compare".
+
 2000-09-06  Mark Mitchell  <mark@codesourcery.com>
 
 	Move statement-tree facilities from C++ to C front-end.
