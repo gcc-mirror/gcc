@@ -377,9 +377,6 @@ enum cp_tree_index
     CPTI_UNION_TYPE,
     CPTI_ENUM_TYPE,
     CPTI_UNKNOWN_TYPE,
-    CPTI_OPAQUE_TYPE,
-    CPTI_SIGNATURE_TYPE,
-    CPTI_SIGTABLE_ENTRY_TYPE,
     CPTI_VTBL_TYPE,
     CPTI_VTBL_PTR_TYPE,
     CPTI_STD,
@@ -423,9 +420,6 @@ extern tree cp_global_trees[CPTI_MAX];
 #define union_type_node			cp_global_trees[CPTI_UNION_TYPE]
 #define enum_type_node			cp_global_trees[CPTI_ENUM_TYPE]
 #define unknown_type_node		cp_global_trees[CPTI_UNKNOWN_TYPE]
-#define opaque_type_node		cp_global_trees[CPTI_OPAQUE_TYPE]
-#define signature_type_node		cp_global_trees[CPTI_SIGNATURE_TYPE]
-#define sigtable_entry_type		cp_global_trees[CPTI_SIGTABLE_ENTRY_TYPE]
 #define vtbl_type_node			cp_global_trees[CPTI_VTBL_TYPE]
 #define vtbl_ptr_type_node		cp_global_trees[CPTI_VTBL_PTR_TYPE]
 #define std_node			cp_global_trees[CPTI_STD]
@@ -581,10 +575,6 @@ extern int flag_elide_constructors;
    that might cause ANSI-compliant code to be miscompiled.  */
 
 extern int flag_ansi;
-
-/* Nonzero means recognize and handle signature language constructs.  */
-
-extern int flag_handle_signatures;
 
 /* Nonzero means that member functions defined in class scope are
    inline by default.  */
@@ -785,24 +775,20 @@ struct lang_type
       unsigned use_template : 2;
       unsigned got_semicolon : 1;
       unsigned ptrmemfunc_flag : 1;
-      unsigned is_signature : 1;
-
-      unsigned is_signature_pointer : 1;
-      unsigned is_signature_reference : 1;
-      unsigned has_opaque_typedecls : 1;
-      unsigned sigtable_has_been_generated : 1;
       unsigned was_anonymous : 1;
+
       unsigned has_real_assign_ref : 1;
       unsigned has_const_init_ref : 1;
       unsigned has_complex_init_ref : 1;
-
       unsigned has_complex_assign_ref : 1;
       unsigned has_abstract_assign_ref : 1;
       unsigned non_aggregate : 1;
       unsigned is_partial_instantiation : 1;
       unsigned has_mutable : 1;
+
       unsigned com_interface : 1;
       unsigned non_pod_class : 1;
+
       /* When adding a flag here, consider whether or not it ought to
 	 apply to a template instance if it applies to the template.
 	 If so, make sure to copy it in instantiate_class_template!  */
@@ -810,7 +796,7 @@ struct lang_type
       /* The MIPS compiler gets it wrong if this struct also
 	 does not fill out to a multiple of 4 bytes.  Add a
 	 member `dummy' with new bits if you go over the edge.  */
-      unsigned dummy : 9;
+      unsigned dummy : 14;
     } type_flags;
 
   int vsize;
@@ -835,9 +821,6 @@ struct lang_type
 
   union tree_node *methods;
 
-  union tree_node *signature;
-  union tree_node *signature_pointer_to;
-  union tree_node *signature_reference_to;
   union tree_node *template_info;
   tree befriending_classes;
 };
@@ -887,45 +870,6 @@ struct lang_type
 /* Nonzero means that this type has been redefined.  In this case, if
    convenient, don't reprocess any methods that appear in its redefinition.  */
 #define TYPE_REDEFINED(NODE) (TYPE_LANG_SPECIFIC(NODE)->type_flags.redefined)
-
-/* Nonzero means that this type is a signature.  */
-# define IS_SIGNATURE(NODE) (TYPE_LANG_SPECIFIC(NODE)?TYPE_LANG_SPECIFIC(NODE)->type_flags.is_signature:0)
-# define SET_SIGNATURE(NODE) (TYPE_LANG_SPECIFIC(NODE)->type_flags.is_signature=1)
-# define CLEAR_SIGNATURE(NODE) (TYPE_LANG_SPECIFIC(NODE)->type_flags.is_signature=0)
-
-/* Nonzero means that this type is a signature pointer type.  */
-# define IS_SIGNATURE_POINTER(NODE) (TYPE_LANG_SPECIFIC(NODE)->type_flags.is_signature_pointer)
-
-/* Nonzero means that this type is a signature reference type.  */
-# define IS_SIGNATURE_REFERENCE(NODE) (TYPE_LANG_SPECIFIC(NODE)->type_flags.is_signature_reference)
-
-/* Nonzero means that this signature contains opaque type declarations.  */
-#define SIGNATURE_HAS_OPAQUE_TYPEDECLS(NODE) (TYPE_LANG_SPECIFIC(NODE)->type_flags.has_opaque_typedecls)
-
-/* Nonzero means that a signature table has been generated
-   for this signature.  */
-#define SIGTABLE_HAS_BEEN_GENERATED(NODE) (TYPE_LANG_SPECIFIC(NODE)->type_flags.sigtable_has_been_generated)
-
-/* If NODE is a class, this is the signature type that contains NODE's
-   signature after it has been computed using sigof().  */
-#define CLASSTYPE_SIGNATURE(NODE) (TYPE_LANG_SPECIFIC(NODE)->signature)
-
-/* If NODE is a signature pointer or signature reference, this is the
-   signature type the pointer/reference points to.  */
-#define SIGNATURE_TYPE(NODE) (TYPE_LANG_SPECIFIC(NODE)->signature)
-
-/* If NODE is a signature, this is a vector of all methods defined
-   in the signature or in its base types together with their default
-   implementations.  */
-#define SIGNATURE_METHOD_VEC(NODE) (TYPE_LANG_SPECIFIC(NODE)->signature)
-
-/* If NODE is a signature, this is the _TYPE node that contains NODE's
-   signature pointer type.  */
-#define SIGNATURE_POINTER_TO(NODE) (TYPE_LANG_SPECIFIC(NODE)->signature_pointer_to)
-
-/* If NODE is a signature, this is the _TYPE node that contains NODE's
-   signature reference type.  */
-#define SIGNATURE_REFERENCE_TO(NODE) (TYPE_LANG_SPECIFIC(NODE)->signature_reference_to)
 
 /* The is the basetype that contains NODE's rtti.  */
 #define CLASSTYPE_RTTI(NODE) (TYPE_LANG_SPECIFIC(NODE)->rtti)
@@ -1229,30 +1173,27 @@ struct lang_decl_flags
   unsigned static_function : 1;
   unsigned const_memfunc : 1;
   unsigned volatile_memfunc : 1;
-
   unsigned abstract_virtual : 1;
   unsigned permanent_attr : 1 ;
+
   unsigned constructor_for_vbase_attr : 1;
   unsigned mutable_flag : 1;
-  unsigned is_default_implementation : 1;
   unsigned saved_inline : 1;
   unsigned use_template : 2;
-
   unsigned nonconverting : 1;
   unsigned declared_inline : 1;
   unsigned not_really_extern : 1;
+
   unsigned needs_final_overrider : 1;
   unsigned bitfield : 1;
   unsigned defined_in_class : 1;
-  unsigned dummy : 4;
+  unsigned dummy : 5;
 
   tree access;
   tree context;
 
-  /* In a template FUNCTION_DECL, this is DECL_SAVED_TREE.
-     In a non-template FUNCTION_DECL, this is DECL_MEMFUNC_POINTER_TO.
-     In a FIELD_DECL, this is DECL_MEMFUNC_POINTING_TO.  */
-  tree memfunc_pointer_to;
+  /* In a template FUNCTION_DECL, this is DECL_SAVED_TREE.  */
+  tree saved_tree;
 
   union {
     /* In a FUNCTION_DECL, this is DECL_TEMPLATE_INFO.  */
@@ -1322,10 +1263,6 @@ struct lang_decl
 /* Mark NODE as a type-info function.  */
 #define SET_DECL_TINFO_FN_P(NODE) \
   (DECL_LANG_SPECIFIC((NODE))->decl_flags.mutable_flag = 1)
-
-/* For FUNCTION_DECLs: nonzero means that this function is a default
-   implementation of a signature method.  */
-#define IS_DEFAULT_IMPLEMENTATION(NODE) (DECL_LANG_SPECIFIC(NODE)->decl_flags.is_default_implementation)
 
 /* Nonzero for _DECL means that this decl appears in (or will appear
    in) as a member in a RECORD_TYPE or UNION_TYPE node.  It is also for
@@ -1477,15 +1414,6 @@ struct lang_decl
 #define DECL_SAVED_INLINE(DECL) \
   (DECL_LANG_SPECIFIC(DECL)->decl_flags.saved_inline)
 
-/* For a FUNCTION_DECL: if this function was declared inside a signature
-   declaration, this is the corresponding member function pointer that was
-   created for it.  */
-#define DECL_MEMFUNC_POINTER_TO(NODE) (DECL_LANG_SPECIFIC(NODE)->decl_flags.memfunc_pointer_to)
-
-/* For a FIELD_DECL: this points to the signature member function from
-   which this signature member function pointer was created.  */
-#define DECL_MEMFUNC_POINTING_TO(NODE) (DECL_LANG_SPECIFIC(NODE)->decl_flags.memfunc_pointer_to)
-
 /* For a VAR_DECL or FUNCTION_DECL: template-specific information.  */
 #define DECL_TEMPLATE_INFO(NODE) \
   (DECL_LANG_SPECIFIC(NODE)->decl_flags.u.template_info)
@@ -1573,7 +1501,8 @@ struct lang_decl
 
 /* In a template FUNCTION_DECL, the tree structure that will be
    substituted into to obtain instantiations.  */
-#define DECL_SAVED_TREE(NODE)		DECL_MEMFUNC_POINTER_TO (NODE)
+#define DECL_SAVED_TREE(NODE) \
+  (DECL_LANG_SPECIFIC ((NODE))->decl_flags.saved_tree)
 
 #define COMPOUND_STMT_NO_SCOPE(NODE)	TREE_LANG_FLAG_0 (NODE)
 #define NEW_EXPR_USE_GLOBAL(NODE)	TREE_LANG_FLAG_0 (NODE)
@@ -2201,8 +2130,7 @@ extern int flag_new_for_scope;
   (TREE_COMPLEXITY ((NODE)))
 
 /* An enumeration of the kind of tags that C++ accepts.  */
-enum tag_types { record_type, class_type, union_type, enum_type,
-		   signature_type };
+enum tag_types { record_type, class_type, union_type, enum_type };
 
 /* The various kinds of lvalues we distinguish.  */
 typedef enum cp_lvalue_kind {
@@ -2492,21 +2420,6 @@ extern int current_function_parms_stored;
 #define VTABLE_PFN_NAME		"__pfn"
 #define VTABLE_DELTA2_NAME	"__delta2"
 
-#define SIGNATURE_FIELD_NAME	"__s_"
-#define SIGNATURE_FIELD_NAME_FORMAT "__s_%s"
-#define SIGNATURE_OPTR_NAME	"__optr"
-#define SIGNATURE_SPTR_NAME	"__sptr"
-#define SIGNATURE_POINTER_NAME	"__sp_"
-#define SIGNATURE_POINTER_NAME_FORMAT "__%s%s%ssp_%s"
-#define SIGNATURE_REFERENCE_NAME "__sr_"
-#define SIGNATURE_REFERENCE_NAME_FORMAT "__%s%s%ssr_%s"
-
-#define SIGTABLE_PTR_TYPE	"__sigtbl_ptr_type"
-#define SIGTABLE_NAME_FORMAT	"__st_%s_%s"
-#define SIGTABLE_NAME_FORMAT_LONG "__st_%s_%s_%d"
-#define SIGTABLE_TAG_NAME	"__tag"
-#define SIGTABLE_VB_OFF_NAME	"__vb_off"
-#define SIGTABLE_VT_OFF_NAME	"__vt_off"
 #define EXCEPTION_CLEANUP_NAME 	"exception cleanup"
 
 #define THIS_NAME_P(ID_NODE) (strcmp(IDENTIFIER_POINTER (ID_NODE), "this") == 0)
@@ -3423,18 +3336,10 @@ extern tree finish_member_class_template        PROTO((tree));
 extern void finish_template_decl                PROTO((tree));
 extern tree finish_template_type                PROTO((tree, tree, int));
 extern void enter_scope_of                      PROTO((tree));
-extern tree finish_base_specifier               PROTO((tree, tree, int));
+extern tree finish_base_specifier               PROTO((tree, tree));
 extern void finish_member_declaration           PROTO((tree));
 extern void check_multiple_declarators          PROTO((void));
 extern tree finish_typeof			PROTO((tree));
-
-/* in sig.c */
-extern tree build_signature_pointer_type	PROTO((tree));
-extern tree build_signature_reference_type	PROTO((tree));
-extern tree build_signature_pointer_constructor	PROTO((tree, tree));
-extern tree build_signature_method_call		PROTO((tree, tree));
-extern tree build_optr_ref			PROTO((tree));
-extern void append_signature_fields		PROTO((tree));
 
 /* in spew.c */
 extern void init_spew				PROTO((void));
@@ -3612,7 +3517,6 @@ extern tree error_not_base_type			PROTO((tree, tree));
 extern tree binfo_or_else			PROTO((tree, tree));
 extern void readonly_error			PROTO((tree, const char *, int));
 extern int abstract_virtuals_error		PROTO((tree, tree));
-extern void signature_error			PROTO((tree, tree));
 extern void incomplete_type_error		PROTO((tree, tree));
 extern void my_friendly_abort			PROTO((int))
   ATTRIBUTE_NORETURN;

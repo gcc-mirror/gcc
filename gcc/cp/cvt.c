@@ -234,10 +234,6 @@ cp_convert_to_pointer (type, expr)
 
   my_friendly_assert (form != OFFSET_TYPE, 186);
 
-  if (TYPE_LANG_SPECIFIC (intype)
-      && (IS_SIGNATURE_POINTER (intype) || IS_SIGNATURE_REFERENCE (intype)))
-    return convert_to_pointer (type, build_optr_ref (expr));
-
   if (integer_zerop (expr))
     {
       if (TYPE_PTRMEMFUNC_P (type))
@@ -285,15 +281,6 @@ convert_to_pointer_force (type, expr)
       expr = build_int_2 (0, 0);
       TREE_TYPE (expr) = type;
       return expr;
-    }
-
-  /* Convert signature pointer/reference to `void *' first.  */
-  if (form == RECORD_TYPE
-      && (IS_SIGNATURE_POINTER (intype) || IS_SIGNATURE_REFERENCE (intype)))
-    {
-      expr = build_optr_ref (expr);
-      intype = TREE_TYPE (expr);
-      form = TREE_CODE (intype);
     }
 
   if (form == POINTER_TYPE)
@@ -800,29 +787,6 @@ ocp_convert (type, expr, convtype, flags)
       tree ctor = NULL_TREE;
 
       dtype = TYPE_MAIN_VARIANT (dtype);
-
-      /* Conversion of object pointers or signature pointers/references
-	 to signature pointers/references.  */
-
-      if (TYPE_LANG_SPECIFIC (type)
-	  && (IS_SIGNATURE_POINTER (type) || IS_SIGNATURE_REFERENCE (type)))
-	{
-	  tree constructor = build_signature_pointer_constructor (type, expr);
-	  tree sig_ty = SIGNATURE_TYPE (type);
-	  tree sig_ptr;
-
-	  if (constructor == error_mark_node)
-	    return error_mark_node;
-
-	  sig_ptr = get_temp_name (type, 1);
-	  DECL_INITIAL (sig_ptr) = constructor;
-	  CLEAR_SIGNATURE (sig_ty);
-	  cp_finish_decl (sig_ptr, constructor, NULL_TREE, 0, 0);
-	  SET_SIGNATURE (sig_ty);
-	  TREE_READONLY (sig_ptr) = 1;
-
-	  return sig_ptr;
-	}
 
       /* Conversion between aggregate types.  New C++ semantics allow
 	 objects of derived type to be cast to objects of base type.

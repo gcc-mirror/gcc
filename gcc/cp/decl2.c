@@ -73,7 +73,6 @@ static void mark_vtable_entries PROTO((tree));
 static void grok_function_init PROTO((tree, tree));
 static int finish_vtable_vardecl PROTO((tree *, void *));
 static int prune_vtable_vardecl PROTO((tree *, void *));
-static int finish_sigtable_vardecl PROTO((tree *, void *));
 static int is_namespace_ancestor PROTO((tree, tree));
 static void add_using_namespace PROTO((tree, tree, int));
 static tree ambiguous_decl PROTO((tree, tree, tree,int));
@@ -385,10 +384,6 @@ int flag_this_is_variable;
 
 int flag_elide_constructors = 1;
 
-/* Nonzero means recognize and handle signature language constructs.  */
-
-int flag_handle_signatures;
-
 /* Nonzero means that member functions defined in class scope are
    inline by default.  */
 
@@ -509,7 +504,6 @@ lang_f_options[] =
   {"for-scope", &flag_new_for_scope, 2},
   {"gnu-keywords", &flag_no_gnu_keywords, 0},
   {"handle-exceptions", &flag_exceptions, 1},
-  {"handle-signatures", &flag_handle_signatures, 1},
   {"honor-std", &flag_honor_std, 1},
   {"huge-objects", &flag_huge_objects, 1},
   {"implement-inlines", &flag_implement_inlines, 1},
@@ -1648,13 +1642,6 @@ grokfield (declarator, declspecs, init, asmspec_tree, attrlist)
       return value;
     }
 
-  if (IS_SIGNATURE (current_class_type)
-      && TREE_CODE (value) != FUNCTION_DECL)
-    {
-      error ("field declaration not allowed in signature");
-      return void_type_node;
-    }
-
   if (DECL_IN_AGGR_P (value))
     {
       cp_error ("`%D' is already defined in `%T'", value,
@@ -1667,13 +1654,7 @@ grokfield (declarator, declspecs, init, asmspec_tree, attrlist)
 
   if (init)
     {
-      if (IS_SIGNATURE (current_class_type)
-	  && TREE_CODE (value) == FUNCTION_DECL)
-	{
-	  error ("function declarations cannot have initializers in signature");
-	  init = NULL_TREE;
-	}
-      else if (TREE_CODE (value) == FUNCTION_DECL)
+      if (TREE_CODE (value) == FUNCTION_DECL)
 	{
 	  grok_function_init (value, init);
 	  init = NULL_TREE;
@@ -1771,12 +1752,6 @@ grokfield (declarator, declspecs, init, asmspec_tree, attrlist)
       if (DECL_FRIEND_P (value))
 	return void_type_node;
 
-#if 0 /* Just because a fn is declared doesn't mean we'll try to define it.  */
-      if (current_function_decl && ! IS_SIGNATURE (current_class_type))
-	cp_error ("method `%#D' of local class must be defined in class body",
-		  value);
-#endif
-
       DECL_IN_AGGR_P (value) = 1;
       return value;
     }
@@ -1816,12 +1791,6 @@ grokbitfield (declarator, declspecs, width)
       cp_error ("cannot declare bitfield `%D' with funcion type",
 		DECL_NAME (value));
       return NULL_TREE;
-    }
-
-  if (IS_SIGNATURE (current_class_type))
-    {
-      error ("field declaration not allowed in signature");
-      return void_type_node;
     }
 
   if (DECL_IN_AGGR_P (value))
@@ -2729,20 +2698,6 @@ prune_vtable_vardecl (t, data)
   return 1;
 }
 
-static int
-finish_sigtable_vardecl (t, data)
-     tree *t;
-     void *data ATTRIBUTE_UNUSED;
-{
-  /* We don't need to mark sigtable entries as addressable here as is done
-     for vtables.  Since sigtables, unlike vtables, are always written out,
-     that was already done in build_signature_table_constructor.  */
-
-  rest_of_decl_compilation (*t, NULL_PTR, 1, 1);
-  *t = TREE_CHAIN (*t);
-  return 1;
-}
-
 /* Determines the proper settings of TREE_PUBLIC and DECL_EXTERNAL for an
    inline function or template instantiation at end-of-file.  */
 
@@ -3587,14 +3542,9 @@ finish_file ()
 	 them now.  */
       instantiate_pending_templates ();
 
-      /* Write out signature-tables and virtual tables as required.
-	 Note that writing out the virtual table for a template class
-	 may cause the instantiation of members of that class.  */
-      if (flag_handle_signatures
-	  && walk_globals (sigtable_decl_p,
-			   finish_sigtable_vardecl,
-			   /*data=*/0))
-	reconsider = 1;
+      /* Write out virtual tables as required.  Note that writing out
+	 the virtual table for a template class may cause the
+	 instantiation of members of that class.  */
       if (walk_globals (vtable_decl_p,
 			finish_vtable_vardecl,
 			/*data=*/0))
@@ -3799,12 +3749,6 @@ reparse_absdcl_as_casts (decl, expr)
     {
       type = groktypename (TREE_VALUE (TREE_OPERAND (decl, 1)));
       decl = TREE_OPERAND (decl, 0);
-
-      if (IS_SIGNATURE (type))
-	{
-	  error ("cast specifies signature type");
-	  return error_mark_node;
-	}
 
       expr = digest_init (type, expr, (tree *) 0);
       if (TREE_CODE (type) == ARRAY_TYPE && TYPE_SIZE (type) == 0)

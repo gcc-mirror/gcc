@@ -3153,8 +3153,7 @@ add_implicitly_declared_members (t, cant_have_default_ctor,
   tree *f;
 
   /* Destructor.  */
-  if (TYPE_NEEDS_DESTRUCTOR (t) && !TYPE_HAS_DESTRUCTOR (t)
-      && !IS_SIGNATURE (t))
+  if (TYPE_NEEDS_DESTRUCTOR (t) && !TYPE_HAS_DESTRUCTOR (t))
     {
       default_fn = cons_up_default_function (t, name, 0);
       check_for_override (default_fn, t);
@@ -3174,8 +3173,7 @@ add_implicitly_declared_members (t, cant_have_default_ctor,
   TYPE_NEEDS_DESTRUCTOR (t) |= TYPE_HAS_DESTRUCTOR (t);
 
   /* Default constructor.  */
-  if (! TYPE_HAS_CONSTRUCTOR (t) && ! cant_have_default_ctor
-      && ! IS_SIGNATURE (t))
+  if (! TYPE_HAS_CONSTRUCTOR (t) && ! cant_have_default_ctor)
     {
       default_fn = cons_up_default_function (t, name, 2);
       TREE_CHAIN (default_fn) = implicit_fns;
@@ -3183,7 +3181,7 @@ add_implicitly_declared_members (t, cant_have_default_ctor,
     }
 
   /* Copy constructor.  */
-  if (! TYPE_HAS_INIT_REF (t) && ! IS_SIGNATURE (t) && ! TYPE_FOR_JAVA (t))
+  if (! TYPE_HAS_INIT_REF (t) && ! TYPE_FOR_JAVA (t))
     {
       /* ARM 12.18: You get either X(X&) or X(const X&), but
 	 not both.  --Chip  */
@@ -3194,7 +3192,7 @@ add_implicitly_declared_members (t, cant_have_default_ctor,
     }
 
   /* Assignment operator.  */
-  if (! TYPE_HAS_ASSIGN_REF (t) && ! IS_SIGNATURE (t) && ! TYPE_FOR_JAVA (t))
+  if (! TYPE_HAS_ASSIGN_REF (t) && ! TYPE_FOR_JAVA (t))
     {
       default_fn = cons_up_default_function (t, name,
 					     5 + cant_have_assignment);
@@ -3331,16 +3329,6 @@ finish_struct_1 (t)
 
   TYPE_SIZE (t) = NULL_TREE;
   CLASSTYPE_GOT_SEMICOLON (t) = 0;
-
-#if 0
-  /* This is in general too late to do this.  I moved the main case up to
-     left_curly, what else needs to move?  */
-  if (! IS_SIGNATURE (t))
-    {
-      my_friendly_assert (CLASSTYPE_INTERFACE_ONLY (t) == interface_only, 999);
-      my_friendly_assert (CLASSTYPE_INTERFACE_KNOWN (t) == ! interface_unknown, 999);
-    }
-#endif
 
   old = suspend_momentary ();
 
@@ -3578,8 +3566,7 @@ finish_struct_1 (t)
 	  cant_have_default_ctor = 1;
 	  TYPE_HAS_COMPLEX_ASSIGN_REF (t) = 1;
 
-	  if (! TYPE_HAS_CONSTRUCTOR (t) && !IS_SIGNATURE (t)
-	      && extra_warnings)
+	  if (! TYPE_HAS_CONSTRUCTOR (t) && extra_warnings)
 	    {
 	      if (DECL_NAME (x))
 		cp_warning_at ("non-static const member `%#D' in class without a constructor", x);
@@ -3706,10 +3693,6 @@ finish_struct_1 (t)
 		 make it through without complaint.  */
 	      abstract_virtuals_error (x, type);
 		      
-	      /* Don't let signatures make it through either.  */
-	      if (IS_SIGNATURE (type))
-		signature_error (x, type);
-		      
 	      if (code == UNION_TYPE)
 		{
 		  const char *fie = NULL;
@@ -3799,8 +3782,7 @@ finish_struct_1 (t)
   TYPE_NEEDS_CONSTRUCTING (t)
     |= (TYPE_HAS_CONSTRUCTOR (t) || TYPE_USES_VIRTUAL_BASECLASSES (t)
 	|| has_virtual || any_default_members);
-  if (! IS_SIGNATURE (t))
-    CLASSTYPE_NON_AGGREGATE (t)
+  CLASSTYPE_NON_AGGREGATE (t)
       = ! aggregate || has_virtual || TYPE_HAS_CONSTRUCTOR (t);
   CLASSTYPE_NON_POD_P (t)
       = non_pod_class || CLASSTYPE_NON_AGGREGATE (t)
@@ -4347,10 +4329,6 @@ tree
 finish_struct (t, attributes)
      tree t, attributes;
 {
-  /* Append the fields we need for constructing signature tables.  */
-  if (IS_SIGNATURE (t))
-    append_signature_fields (t);
-
   /* Now that we've got all the field declarations, reverse everything
      as necessary.  */
   unreverse_member_declarations (t);

@@ -2340,61 +2340,15 @@ base_class_list:
 
 base_class:
 	  base_class.1
-		{ $$ = finish_base_specifier (access_default_node, $1,
-					      current_aggr 
-					      == signature_type_node); }
+		{ $$ = finish_base_specifier (access_default_node, $1); }
 	| base_class_access_list see_typename base_class.1
-                { $$ = finish_base_specifier ($1, $3, 
-					      current_aggr 
-					      == signature_type_node); } 
+                { $$ = finish_base_specifier ($1, $3); }
 	;
 
 base_class.1:
 	  typename_sub
 		{ if ($$ != error_mark_node) $$ = TYPE_MAIN_DECL ($1); }
 	| nonnested_type
-	| SIGOF '(' expr ')'
-		{
-		  if (current_aggr == signature_type_node)
-		    {
-		      if (IS_AGGR_TYPE (TREE_TYPE ($3)))
-			{
-			  sorry ("`sigof' as base signature specifier");
-			  $$ = TREE_TYPE ($3);
-			}
-		      else
-			{
-			  error ("`sigof' applied to non-aggregate expression");
-			  $$ = error_mark_node;
-			}
-		    }
-		  else
-		    {
-		      error ("`sigof' in struct or class declaration");
-		      $$ = error_mark_node;
-		    }
-		}
-	| SIGOF '(' type_id ')'
-		{
-		  if (current_aggr == signature_type_node)
-		    {
-		      if (IS_AGGR_TYPE (groktypename ($3.t)))
-			{
-			  sorry ("`sigof' as base signature specifier");
-			  $$ = groktypename ($3.t);
-			}
-		      else
-			{
-			  error ("`sigof' applied to non-aggregate expression");
-			  $$ = error_mark_node;
-			}
-		    }
-		  else
-		    {
-		      error ("`sigof' in struct or class declaration");
-		      $$ = error_mark_node;
-		    }
-		}
 	;
 
 base_class_access_list:
@@ -2437,12 +2391,6 @@ opt.component_decl_list:
 access_specifier:
 	  VISSPEC ':'
                 {
-		  if (current_aggr == signature_type_node)
-		    {
-		      error ("access specifier not allowed in signature");
-		      $1 = access_public_node;
-		    }
-
 		  current_access_specifier = $1;
                 }
 	;

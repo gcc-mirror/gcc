@@ -76,7 +76,6 @@ enum rid
   RID_PROTECTED,
   RID_EXCEPTION,
   RID_TEMPLATE,
-  RID_SIGNATURE,
   RID_NULL,
   /* Before adding enough to get up to 64, the RIDBIT_* macros
      will have to be changed a little.  */

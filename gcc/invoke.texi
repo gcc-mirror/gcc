@@ -105,7 +105,7 @@ in the following sections.
 @smallexample
 -fno-access-control  -fcheck-new  -fconserve-space  -fdollars-in-identifiers
 -fno-elide-constructors  -fexternal-templates  -ffor-scope  
--fno-for-scope  -fno-gnu-keywords  -fguiding-decls  -fhandle-signatures
+-fno-for-scope  -fno-gnu-keywords  -fguiding-decls
 -fhonor-std -fhuge-objects  -fno-implicit-templates  -finit-priority
 -fno-implement-inlines -fname-mangling-version-@var{n}  -fno-default-inline  
 -foperator-names  -fno-optional-diags  -fpermissive -frepo  -fstrict-prototype
@@ -1025,10 +1025,9 @@ but to allow and give a warning for old-style code that would
 otherwise be invalid, or have different behavior.
 
 @item -fno-gnu-keywords
-Do not recognize @code{classof}, @code{headof}, @code{signature},
-@code{sigof} or @code{typeof} as a keyword, so that code can use these
-words as identifiers.  You can use the keywords @code{__classof__},
-@code{__headof__}, @code{__signature__}, @code{__sigof__}, and
+Do not recognize @code{classof}, @code{headof}, or @code{typeof} as a
+keyword, so that code can use these words as identifiers.  You can use
+the keywords @code{__classof__}, @code{__headof__}, and
 @code{__typeof__} instead.  @samp{-ansi} implies
 @samp{-fno-gnu-keywords}.
 
@@ -1045,12 +1044,6 @@ This option implies @samp{-fname-mangling-version-0}, and will not work
 with other name mangling versions.  Like all options that change the
 ABI, all C++ code, @emph{including libgcc.a} must be built with the same
 setting of this option.
-
-@item -fhandle-signatures
-Recognize the @code{signature} and @code{sigof} keywords for specifying
-abstract types.  The default (@samp{-fno-handle-signatures}) is not to
-recognize them.  @xref{C++ Signatures, Type Abstraction using
-Signatures}.
 
 @item -fhonor-std
 Treat the @code{namespace std} as a namespace, instead of ignoring

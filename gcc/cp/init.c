@@ -2214,12 +2214,6 @@ build_new_1 (exp)
   if (abstract_virtuals_error (NULL_TREE, true_type))
     return error_mark_node;
 
-  if (TYPE_LANG_SPECIFIC (true_type) && IS_SIGNATURE (true_type))
-    {
-      signature_error (NULL_TREE, true_type);
-      return error_mark_node;
-    }
-  
   /* When we allocate an array, and the corresponding deallocation
      function takes a second argument of type size_t, and that's the
      "usual deallocation function", we allocate some extra space at

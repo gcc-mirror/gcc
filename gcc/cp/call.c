@@ -2191,11 +2191,7 @@ build_this (obj)
      tree obj;
 {
   /* Fix this to work on non-lvalues.  */
-  if (IS_SIGNATURE_POINTER (TREE_TYPE (obj))
-      || IS_SIGNATURE_REFERENCE (TREE_TYPE (obj)))
-    return obj;
-  else
-    return build_unary_op (ADDR_EXPR, obj, 0);
+  return build_unary_op (ADDR_EXPR, obj, 0);
 }
 
 static void
@@ -3899,11 +3895,8 @@ build_over_call (cand, args, flags)
 
          So we can assume that anything passed as 'this' is non-null, and
 	 optimize accordingly.  */
-      if (TREE_CODE (parmtype) == POINTER_TYPE)
-	t = convert_pointer_to_real (TREE_TYPE (parmtype), TREE_VALUE (arg));
-      else
-	/* This happens with signatures.  */
-	t = convert_force (parmtype, TREE_VALUE (arg), CONV_C_CAST);
+      my_friendly_assert (TREE_CODE (parmtype) == POINTER_TYPE, 19990811);
+      t = convert_pointer_to_real (TREE_TYPE (parmtype), TREE_VALUE (arg));
       converted_args = expr_tree_cons (NULL_TREE, t, converted_args);
       parm = TREE_CHAIN (parm);
       arg = TREE_CHAIN (arg);
@@ -4084,9 +4077,7 @@ build_over_call (cand, args, flags)
 
   mark_used (fn);
 
-  if (DECL_CLASS_SCOPE_P (fn) && IS_SIGNATURE (DECL_CONTEXT (fn)))
-    return build_signature_method_call (fn, converted_args);
-  else if (DECL_VINDEX (fn) && (flags & LOOKUP_NONVIRTUAL) == 0)
+  if (DECL_VINDEX (fn) && (flags & LOOKUP_NONVIRTUAL) == 0)
     {
       tree t, *p = &TREE_VALUE (converted_args);
       tree binfo = get_binfo
@@ -4182,10 +4173,7 @@ build_new_method_call (instance, name, args, basetype_path, flags)
       basetype = TYPE_MAIN_VARIANT (TREE_TYPE (instance));
 
       /* XXX this should be handled before we get here.  */
-      if (! IS_AGGR_TYPE (basetype)
-	  && ! (TYPE_LANG_SPECIFIC (basetype)
-		&& (IS_SIGNATURE_POINTER (basetype)
-		    || IS_SIGNATURE_REFERENCE (basetype))))
+      if (! IS_AGGR_TYPE (basetype))
 	{
 	  if ((flags & LOOKUP_COMPLAIN) && basetype != error_mark_node)
 	    cp_error ("request for member `%D' in `%E', which is of non-aggregate type `%T'",
@@ -4193,14 +4181,6 @@ build_new_method_call (instance, name, args, basetype_path, flags)
 
 	  return error_mark_node;
 	}
-
-      /* If `instance' is a signature pointer/reference and `name' is
-	 not a constructor, we are calling a signature member function.
-	 In that case set the `basetype' to the signature type.  */
-      if ((IS_SIGNATURE_POINTER (basetype)
-	   || IS_SIGNATURE_REFERENCE (basetype))
-	  && TYPE_IDENTIFIER (basetype) != name)
-	basetype = SIGNATURE_TYPE (basetype);
     }
 
   if (basetype_path == NULL_TREE)

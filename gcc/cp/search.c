@@ -1458,8 +1458,6 @@ lookup_member (xbasetype, name, protect, want_type)
      In the case of overloaded function names, access control is
      applied to the function selected by overloaded resolution.  */
   if (rval && protect && !is_overloaded_fn (rval)
-      && !IS_SIGNATURE_POINTER (DECL_REAL_CONTEXT (rval))
-      && !IS_SIGNATURE_REFERENCE (DECL_REAL_CONTEXT (rval))
       && !enforce_access (xbasetype, rval))
     return error_mark_node;
 

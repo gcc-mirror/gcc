@@ -177,39 +177,6 @@ abstract_virtuals_error (decl, type)
   return 1;
 }
 
-/* Print an error message for invalid use of a signature type.
-   Signatures are treated similar to abstract classes here, they
-   cannot be instantiated.  */
-
-void
-signature_error (decl, type)
-     tree decl;
-     tree type;
-{
-  if (decl)
-    {
-      if (TREE_CODE (decl) == RESULT_DECL)
-	return;
-
-      if (TREE_CODE (decl) == VAR_DECL)
-	cp_error ("cannot declare variable `%D' to be of signature type `%T'",
-		  decl, type);
-      else if (TREE_CODE (decl) == PARM_DECL)
-	cp_error ("cannot declare parameter `%D' to be of signature type `%T'",
-		  decl, type);
-      else if (TREE_CODE (decl) == FIELD_DECL)
-	cp_error ("cannot declare field `%D' to be of signature type `%T'",
-		  decl, type);
-      else if (TREE_CODE (decl) == FUNCTION_DECL
-	       && TREE_CODE (TREE_TYPE (decl)) == METHOD_TYPE)
-	cp_error ("invalid return type for method `%#D'", decl);
-      else if (TREE_CODE (decl) == FUNCTION_DECL)
-	cp_error ("invalid return type for function `%#D'", decl);
-    }
-  else
-    cp_error ("cannot allocate an object of signature type `%T'", type);
-}
-
 /* Print an error message for invalid use of an incomplete type.
    VALUE is the expression that was used (or 0 if that isn't known)
    and TYPE is the type that was invalid.  */
@@ -418,17 +385,7 @@ store_init_value (decl, init)
 	  && TREE_CODE (init) != CONSTRUCTOR)
 	my_friendly_abort (109);
 
-      /* Although we are not allowed to declare variables of signature
-	 type, we complain about a possible constructor call in such a
-	 declaration as well.  */
-      if (TREE_CODE (init) == TREE_LIST
-	  && IS_SIGNATURE (type))
-	{
-	  cp_error ("constructor syntax cannot be used with signature type `%T'",
-		    type);
-	  init = error_mark_node;
-	}
-      else if (TREE_CODE (init) == TREE_LIST)
+      if (TREE_CODE (init) == TREE_LIST)
 	{
 	  cp_error ("constructor syntax used, but no constructor declared for type `%T'", type);
 	  init = build_nt (CONSTRUCTOR, NULL_TREE, nreverse (init));
@@ -532,13 +489,7 @@ store_init_value (decl, init)
 #if 0 /* No, that's C.  jason 9/19/94 */
   else
     {
-      if (pedantic && TREE_CODE (value) == CONSTRUCTOR
-	  /* Don't complain about non-constant initializers of
-	     signature tables and signature pointers/references.  */
-	  && ! (TYPE_LANG_SPECIFIC (type)
-		&& (IS_SIGNATURE (type)
-		    || IS_SIGNATURE_POINTER (type)
-		    || IS_SIGNATURE_REFERENCE (type))))
+      if (pedantic && TREE_CODE (value) == CONSTRUCTOR)
 	{
 	  if (! TREE_CONSTANT (value) || ! TREE_STATIC (value))
 	    pedwarn ("ANSI C++ forbids non-constant aggregate initializer expressions");
@@ -666,9 +617,7 @@ digest_init (type, init, tail)
   if (code == INTEGER_TYPE || code == REAL_TYPE || code == POINTER_TYPE
       || code == ENUMERAL_TYPE || code == REFERENCE_TYPE
       || code == BOOLEAN_TYPE || code == COMPLEX_TYPE
-      || TYPE_PTRMEMFUNC_P (type)
-      || (code == RECORD_TYPE && ! raw_constructor
-	  && (IS_SIGNATURE_POINTER (type) || IS_SIGNATURE_REFERENCE (type))))
+      || TYPE_PTRMEMFUNC_P (type))
     {
       if (raw_constructor)
 	{
@@ -1194,11 +1143,6 @@ build_x_arrow (datum)
   else
     last_rval = default_conversion (rval);
 
-  /* Signature pointers are not dereferenced.  */
-  if (TYPE_LANG_SPECIFIC (TREE_TYPE (last_rval))
-      && IS_SIGNATURE_POINTER (TREE_TYPE (last_rval)))
-    return last_rval;
-
   if (TREE_CODE (TREE_TYPE (last_rval)) == POINTER_TYPE)
     return build_indirect_ref (last_rval, NULL_PTR);
 
@@ -1317,12 +1261,6 @@ build_functional_cast (exp, parms)
 
   if (processing_template_decl)
     return build_min (CAST_EXPR, type, parms);
-
-  if (IS_SIGNATURE (type))
-    {
-      error ("signature type not allowed in cast or constructor expression");
-      return error_mark_node;
-    }
 
   if (! IS_AGGR_TYPE (type))
     {

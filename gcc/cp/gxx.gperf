@@ -25,10 +25,8 @@ __real, REALPART, RID_UNUSED
 __real__, REALPART, RID_UNUSED
 __restrict, CV_QUALIFIER, RID_RESTRICT
 __restrict__, CV_QUALIFIER, RID_RESTRICT
-__signature__, AGGR, RID_SIGNATURE	/* Extension */,
 __signed, TYPESPEC, RID_SIGNED
 __signed__, TYPESPEC, RID_SIGNED
-__sigof__, SIGOF, RID_UNUSED		/* Extension */,
 __typeof, TYPEOF, RID_UNUSED
 __typeof__, TYPEOF, RID_UNUSED
 __volatile, CV_QUALIFIER, RID_VOLATILE
@@ -84,9 +82,7 @@ register, SCSPEC, RID_REGISTER,
 reinterpret_cast, REINTERPRET_CAST, RID_UNUSED,
 return, RETURN_KEYWORD, RID_UNUSED,
 short, TYPESPEC, RID_SHORT,
-signature, AGGR, RID_SIGNATURE	/* Extension */,
 signed, TYPESPEC, RID_SIGNED,
-sigof, SIGOF, RID_UNUSED		/* Extension */,
 sizeof, SIZEOF, RID_UNUSED,
 static, SCSPEC, RID_STATIC,
 static_cast, STATIC_CAST, RID_UNUSED,
