@@ -1,3 +1,13 @@
+2000-04-15  Zack Weinberg  <zack@wolery.cumb.org>
+
+	* cpplex.c (output_line_command): Remove debugging prints.
+	(cpp_output_tokens): Don't write out a zero-length buffer or
+	try to see if it has a newline in it.
+	(_cpp_expand_to_buffer): Copy the source buffer before pushing.
+	(_cpp_read_and_prescan): Move shift-down of pushback bytes to
+	the end of the loop.  Use memmove.  Don't read past the end of
+	the buffer.  Remove trailing newlines from error messages.
+
 2004-04-16  Neil Booth  <NeilB@earthling.net>
 
         * cpphash.h (SYNTAX_INCLUDE, SYNTAX_ASSERT, directive_handler): new.

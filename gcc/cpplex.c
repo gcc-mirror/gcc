@@ -165,8 +165,6 @@ output_line_command (pfile, print)
     return;
   line = CPP_BUF_LINE (ip);
 
-  //  fprintf (print->outf, "[%u %u", print->lineno, line);
-
   /* Determine whether the current filename has changed, and if so,
      how.  'nominal_fname' values are unique, so they can be compared
      by comparing pointers.  */
@@ -199,7 +197,6 @@ output_line_command (pfile, print)
 	  putc ('\n', print->outf);
 	  print->lineno++;
 	}
-      //      putc(']', print->outf);
       return;
     }
 
@@ -226,10 +223,13 @@ cpp_output_tokens (pfile, print)
      cpp_reader *pfile;
      cpp_printer *print;
 {
-  if (CPP_PWRITTEN (pfile)[-1] == '\n' && print->lineno)
-    print->lineno++;
-  safe_fwrite (pfile, pfile->token_buffer,
-	       CPP_WRITTEN (pfile) - print->written, print->outf);
+  if (CPP_WRITTEN (pfile) - print->written)
+    {
+      if (CPP_PWRITTEN (pfile)[-1] == '\n' && print->lineno)
+	print->lineno++;
+      safe_fwrite (pfile, pfile->token_buffer,
+		   CPP_WRITTEN (pfile) - print->written, print->outf);
+    }
   output_line_command (pfile, print);
   CPP_SET_WRITTEN (pfile, print->written);
 }
@@ -245,6 +245,7 @@ _cpp_expand_to_buffer (pfile, buf, length)
 {
   cpp_buffer *ip;
   enum cpp_ttype token;
+  U_CHAR *buf1;
 
   if (length < 0)
     {
@@ -252,8 +253,14 @@ _cpp_expand_to_buffer (pfile, buf, length)
       return;
     }
 
+  /* Copy the buffer, because it might be in an unsafe place - for
+     example, a sequence on the token_buffer, where the pointers will
+     be invalidated if we enlarge the token_buffer.  */
+  buf1 = alloca (length);
+  memcpy (buf1, buf, length);
+
   /* Set up the input on the input stack.  */
-  ip = cpp_push_buffer (pfile, buf, length);
+  ip = cpp_push_buffer (pfile, buf1, length);
   if (ip == NULL)
     return;
   ip->has_escapes = 1;
@@ -1631,12 +1638,6 @@ _cpp_read_and_prescan (pfile, fp, desc, len)
     {
       U_CHAR *near_buff_end;
 
-      /* Copy previous char plus unprocessed (at most 2) chars
-	 to beginning of buffer, refill it with another
-	 read(), and continue processing */
-      memcpy(ip - count - 1, ip - 1, 3);
-      ip -= count;
-
       count = read (desc, ibase, pfile->input_buffer_len);
       if (count < 0)
 	goto error;
@@ -1785,6 +1786,11 @@ _cpp_read_and_prescan (pfile, fp, desc, len)
 	      break;
 	    }
 	}
+      /* Copy previous char plus unprocessed (at most 2) chars
+	 to beginning of buffer, refill it with another
+	 read(), and continue processing */
+      memmove (ip - count - 1, ip - 1, 4 - (ip - near_buff_end));
+      ip -= count;
     }
 
   if (offset == 0)
@@ -1795,7 +1801,7 @@ _cpp_read_and_prescan (pfile, fp, desc, len)
       unsigned long col;
       line_base = find_position (line_base, op, &line);
       col = op - line_base + 1;
-      cpp_warning_with_line (pfile, line, col, "no newline at end of file\n");
+      cpp_warning_with_line (pfile, line, col, "no newline at end of file");
       if (offset + 1 > len)
 	{
 	  len += 1;
@@ -1811,7 +1817,8 @@ _cpp_read_and_prescan (pfile, fp, desc, len)
   return op - buf;
 
  too_big:
-  cpp_error (pfile, "file is too large (>%lu bytes)\n", (unsigned long)offset);
+  cpp_notice (pfile, "%s is too large (>%lu bytes)", fp->ihash->name,
+	      (unsigned long)offset);
   free (buf);
   return -1;
 
