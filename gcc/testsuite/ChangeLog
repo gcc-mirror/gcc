@@ -1,3 +1,8 @@
+2001-01-13  Neil Booth  <neil@daikokuya.demon.co.uk>
+
+        * gcc.dg/cpp/widestr1.c: Update.
+        * gcc.dg/cpp/prag-imp.c: Remove.
+
 2001-01-12  Jakub Jelinek  <jakub@redhat.com>
 
 	* gcc.c-torture/execute/20000801-3.x: Remove.
