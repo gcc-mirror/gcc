@@ -848,7 +848,10 @@ put_var_into_stack (decl)
       && GET_CODE (reg) == MEM
       && GET_CODE (XEXP (reg, 0)) == REG
       && REGNO (XEXP (reg, 0)) > LAST_VIRTUAL_REGISTER)
-    reg = XEXP (reg, 0);
+    {
+      reg = XEXP (reg, 0);
+      decl_mode = promoted_mode = GET_MODE (reg);
+    }
   if (GET_CODE (reg) != REG)
     return;
 
