@@ -1,3 +1,8 @@
+2002-09-04  Richard Henderson  <rth@redhat.com>
+
+	* cse.c (cse_insn): Avoid subreg games if the equivalence
+	is already in the proper mode.
+
 2002-09-04  Eric Botcazou  <ebotcazou@multimania.com>
 
 	PR c/7102

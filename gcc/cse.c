@@ -6203,14 +6203,23 @@ cse_insn (insn, libcall_insn)
 		    && ! exp_equiv_p (elt->exp, elt->exp, 1, 0))
 		  continue;
 
-		/* Calculate big endian correction for the SUBREG_BYTE
-		   (or equivalent).  We have already checked that M1
-		   ( GET_MODE (dest) ) is not narrower than M2 (new_mode).  */
-		if (BYTES_BIG_ENDIAN)
-		  byte = (GET_MODE_SIZE (GET_MODE (dest))
-			  - GET_MODE_SIZE (new_mode));
-		new_src = simplify_gen_subreg (new_mode, elt->exp,
-					       GET_MODE (dest), byte);
+		/* We may have already been playing subreg games.  If the
+		   mode is already correct for the destination, use it.  */
+		if (GET_MODE (elt->exp) == new_mode)
+		  new_src = elt->exp;
+		else
+		  {
+		    /* Calculate big endian correction for the SUBREG_BYTE.
+		       We have already checked that M1 (GET_MODE (dest))
+		       is not narrower than M2 (new_mode).  */
+		    if (BYTES_BIG_ENDIAN)
+		      byte = (GET_MODE_SIZE (GET_MODE (dest))
+			      - GET_MODE_SIZE (new_mode));
+
+		    new_src = simplify_gen_subreg (new_mode, elt->exp,
+					           GET_MODE (dest), byte);
+		  }
+
 		/* The call to simplify_gen_subreg fails if the value
 		   is VOIDmode, yet we can't do any simplification, e.g.
 		   for EXPR_LISTs denoting function call results.
