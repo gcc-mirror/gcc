@@ -1844,9 +1844,18 @@ copy_rtx_and_substitute (orig, map, for_lhs)
 		 the function doesn't have a return value, error.  If the
 		 mode doesn't agree, and it ain't BLKmode, make a SUBREG.  */
 	      if (map->inline_target == 0)
-		/* Must be unrolling loops or replicating code if we
-		   reach here, so return the register unchanged.  */
-		return orig;
+		{
+		  if (rtx_equal_function_value_matters)
+		    /* This is an ignored return value.  We must not
+		       leave it in with REG_FUNCTION_VALUE_P set, since
+		       that would confuse subsequent inlining of the
+		       current function into a later function.  */
+		    return gen_rtx_REG (GET_MODE (orig), regno);
+		  else
+		    /* Must be unrolling loops or replicating code if we
+		       reach here, so return the register unchanged.  */
+		    return orig;
+		}
 	      else if (GET_MODE (map->inline_target) != BLKmode
 		       && mode != GET_MODE (map->inline_target))
 		return gen_lowpart (mode, map->inline_target);
