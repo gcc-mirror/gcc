@@ -3133,6 +3133,8 @@ v850-*-rtems*)
 		tm_file="${tm_file} dbx.h"
 	fi
 	use_collect2=no
+	c_target_objs="v850-c.o"
+	cxx_target_objs="v850-c.o"
 	;;
 v850-*-*)
 	target_cpu_default="TARGET_CPU_generic"
@@ -3145,6 +3147,8 @@ v850-*-*)
 		tm_file="${tm_file} dbx.h"
 	fi
 	use_collect2=no
+	c_target_objs="v850-c.o"
+	cxx_target_objs="v850-c.o"
 	;;
 vax-*-bsd*)			# vaxen running BSD
 	use_collect2=yes
