@@ -1,3 +1,8 @@
+2002-01-02  Jason Merrill  <jason@redhat.com>
+
+	* semantics.c (expand_body): Call outlining_inline_function when
+	emitting an inline function out of line.
+
 2002-01-02  Nathan Sidwell  <nathan@codesourcery.com>
 
 	PR c++/5116, c++/764 reversion

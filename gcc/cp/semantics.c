@@ -3,7 +3,7 @@
    building RTL.  These routines are used both during actual parsing
    and during the instantiation of template functions. 
 
-   Copyright (C) 1998, 1999, 2000, 2001 Free Software Foundation, Inc.
+   Copyright (C) 1998, 1999, 2000, 2001, 2002 Free Software Foundation, Inc.
    Written by Mark Mitchell (mmitchell@usa.net) based on code found
    formerly in parse.y and pt.c.  
 
@@ -2502,6 +2502,11 @@ expand_body (fn)
   /* The outermost statement for a function contains the line number
      recorded when we finished processing the function.  */
   lineno = STMT_LINENO (DECL_SAVED_TREE (fn));
+
+  if (DECL_INLINE (fn))
+    /* Do any preparation such as emitting abstract debug info for the
+       inline before it gets mangled by optimization.  */
+    (*debug_hooks->outlining_inline_function) (fn);
 
   /* Generate code for the function.  */
   genrtl_finish_function (fn);
