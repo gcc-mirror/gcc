@@ -1784,7 +1784,7 @@ ix86_compute_frame_size (size, nregs_on_stack, rpadding1, rpadding2)
 
   if (size && !stack_alignment_needed)
     abort ();
-  if (!size && stack_alignment_needed)
+  if (!size && stack_alignment_needed != STACK_BOUNDARY / BITS_PER_UNIT)
     abort ();
   if (preferred_alignment < STACK_BOUNDARY / BITS_PER_UNIT)
     abort ();
