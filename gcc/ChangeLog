@@ -1,3 +1,10 @@
+2003-02-10  Eric Botcazou  <ebotcazou@libertysurf.fr>
+            Christian Ehrhardt  <ehrhardt@mathematik.uni-ulm.de>
+
+	PR c/7741
+	* c-decl.c (duplicate_decls): Discard the initializer of the
+	new decl when the types are conflicting.
+
 2003-02-01  Daniel Jacobowitz  <drow@mvista.com>
 
 	* dwarf2out.c (gen_type_die): Check for typedefs before calling
