@@ -97,23 +97,12 @@ case "${host_cpu}" in
     ;;
 esac
 
-
-# Now look for the file(s) usually tied to a CPU model, and make default
-# choices for those if they haven't been explicitly set already.
-cpu_include_dir="cpu/${try_cpu}"  
+# Now look for the file(s) usually tied to a CPU model, and make
+# default choices for those if they haven't been explicitly set
+# already.  
+cpu_include_dir="cpu/${try_cpu}"
 ATOMICITYH=$cpu_include_dir
-
-
-# Check whether ABI baseline file exists, if not try to guess name.
 abi_baseline_pair=${try_cpu}-${host_os}
-try_baseline_file=config/abi/${abi_baseline_pair}/baseline_symbols.txt
-if test ! -e ${glibcpp_srcdir}/${try_baseline_file} ; then
-  case "${host}" in
-    i*86-*-freebsd4*)
-      abi_baseline_pair="i386-freebsd4"
-      ;;
-  esac  
-fi
 
 
 # Set any OS-dependent bits.
@@ -198,5 +187,11 @@ esac
 case "${host}" in
   mips*-*-linux*)
     ATOMICITYH="cpu/mips"
+    ;;
+  x86_64-*-linux*)
+    abi_baseline_pair="x86_64-linux-gnu"
+    ;;
+  i*86-*-freebsd4*)
+    abi_baseline_pair="i386-freebsd4"
     ;;
 esac

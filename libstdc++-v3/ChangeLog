@@ -1,3 +1,15 @@
+2003-06-16  Andreas Jaeger  <aj@suse.de>
+
+	* acinclude.m4 (GLIBCPP_CONFIGURE_TESTSUITE): Make
+	check-abi multilib aware.
+	* aclocal.m4: Regenerate.
+	* configure: Regenerate.
+	
+2003-06-16  Benjamin Kosnik  <bkoz@redhat.com>
+            Andreas Jaeger  <aj@suse.de>
+
+	* configure.host: Set x86_64 abi_baseline pair correctly.
+
 2003-06-16  Paolo Carlini  <pcarlini@unitus.it>
 
 	* testsuite/27_io/basic_filebuf/sungetc/char/1.cc: Split and
@@ -26,6 +38,8 @@
 	* config/abi/x86_64-linux-gnu: ...this.
 	* config/abi/i386-unknown-freebsd4: To...
 	* config/abi/i386-freebsd4: ...this.
+	* config/linker-map.gnu: Cleanups, move libsupc++ bits into
+	CXXABI.
 	* configure.host: abi_baseline_triplet to abi_baseline_pair.
 	Simplify cpu bits so that abi_baseline_pair can use the same
 	cpu configuration.

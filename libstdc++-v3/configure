@@ -23472,7 +23472,7 @@ done
 
 
   # Export file names for ABI checking.
-  baseline_file="${glibcpp_srcdir}/config/abi/${abi_baseline_pair}/baseline_symbols.txt"
+  baseline_file="${glibcpp_srcdir}/config/abi/${abi_baseline_pair}\$(MULTISUBDIR)/baseline_symbols.txt"
   
 
     case "$target" in
