@@ -1,3 +1,7 @@
+Mon Apr 26 00:26:18 1999  Richard Henderson  <rth@cygnus.com>
+
+	* alpha.c (print_operand_address): Account for the subreg word.
+
 Mon Apr 26 01:08:36 1999  Toshiyasu Morita  (tm@netcom.com)
 
 	* fold-const.c (make_range): Always initialize arg0 and arg1.
