@@ -625,6 +625,18 @@ mark_call_clobbered (tree var)
   ssa_ro_call_cache_valid = false;
 }
 
+/* Clear the call-clobbered attribute from variable VAR.  */
+static inline void
+clear_call_clobbered (tree var)
+{
+  var_ann_t ann = var_ann (var);
+  if (ann->mem_tag_kind != NOT_A_TAG)
+    DECL_EXTERNAL (var) = 0;
+  bitmap_clear_bit (call_clobbered_vars, ann->uid);
+  ssa_call_clobbered_cache_valid = false;
+  ssa_ro_call_cache_valid = false;
+}
+
 /* Mark variable VAR as being non-addressable.  */
 static inline void
 mark_non_addressable (tree var)
