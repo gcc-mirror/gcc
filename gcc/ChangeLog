@@ -1,3 +1,9 @@
+Mon Dec  7 23:56:28 1998   Robert Lipe  <robertl@dgii.com>
+
+	* configure.in (mips*-*-linux*): Handle big and little endian
+	systems.
+	* configure: Rebuilt.
+
 Mon Dec  7 23:14:51 1998  Mike Stump <mrs@wrs.com>
 
 	* emit-rtl.c: Fix typo.
