@@ -1,5 +1,7 @@
 Sat Jun 27 22:46:32 1998  Jeffrey A Law  (law@cygnus.com)
 
+	* Makefile.in (BASE_FLAGS_TO_PASS): Add TARGET_SUBDIR.
+
 	* configure.in (target_subdir): Set to ${target_alias} instead
 	of "libraries".
 
