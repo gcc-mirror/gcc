@@ -1,3 +1,9 @@
+Tue Feb  9 11:55:04 1999  Michael Hayes  <m.hayes@elec.canterbury.ac.nz>
+
+	* config/c4x/c4x.md (*movhi_stik): New pattern.
+	(movhi): Allow some immediate constants to be directly
+	stored in memory.
+
 Tue Feb  9 11:34:15 1999  Michael Hayes  <m.hayes@elec.canterbury.ac.nz>
 
 	* config/c4x/c4x.md (all call patterns): Add constraints "Ur".

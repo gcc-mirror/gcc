@@ -5370,6 +5370,13 @@
 ; TWO OPERAND LONG LONG INSTRUCTIONS
 ;
 
+(define_insn "*movhi_stik"
+  [(set (match_operand:HI 0 "memory_operand" "=m")
+        (match_operand:HI 1 "stik_const_operand" "K"))]
+  "! TARGET_C3X"
+  "#"
+  [(set_attr "type" "multi")])
+
 ; We could load some constants using define_splits for the C30
 ; in the large memory model---these would emit shift and or insns.
 (define_expand "movhi"
@@ -5395,7 +5402,9 @@
   [(set (match_operand:HI 0 "src_operand" "")
 	(match_operand:HI 1 "src_operand" ""))]
   "reload_completed
-   && (reg_operand (operands[0], HImode) || reg_operand (operands[1], HImode))"
+   && (reg_operand (operands[0], HImode)
+       || reg_operand (operands[1], HImode)
+       || stik_const_operand (operands[1], HImode))"
   [(set (match_dup 2) (match_dup 3))
    (set (match_dup 4) (match_dup 5))]
   "operands[2] = c4x_operand_subword (operands[0], 0, 1, HImode);
