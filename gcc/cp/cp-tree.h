@@ -1382,12 +1382,25 @@ struct lang_type
    nested member class templates.  */
 #define CLASSTYPE_TAGS(NODE)		(TYPE_LANG_SPECIFIC(NODE)->tags)
 
-/* If this class has any bases, this is the number of the base class from
-   which our VFIELD is based, -1 otherwise.  If this class has no base
-   classes, this is not used.
-   In D : B1, B2, PARENT would be 0, if D's vtable came from B1,
-   1, if D's vtable came from B2.  */
+/* If this value is non-negative, it is the index (in the
+   TYPE_BINFO_BASETYPES) for the base-class whose vtable pointer we
+   are reusing.  For example, in D : B1, B2, PARENT would be 0, if D's
+   vtable came from B1, 1, if D's vtable came from B2.  */
 #define CLASSTYPE_VFIELD_PARENT(NODE)	(TYPE_LANG_SPECIFIC(NODE)->vfield_parent)
+
+/* Nonzero if NODE has a primary base class, i.e., a base class with
+   which it shares the virtual fucntion table pointer.  */
+#define CLASSTYPE_HAS_PRIMARY_BASE_P(NODE) \
+  (CLASSTYPE_VFIELD_PARENT (NODE) != -1)
+
+/* If non-NULL, this is the binfo for the primary base class, i.e.,
+   the base class which contains the virtual function table pointer
+   for this class.  */
+#define CLASSTYPE_PRIMARY_BINFO(NODE) 			\
+  (CLASSTYPE_HAS_PRIMARY_BASE_P (NODE)			\
+   ? TREE_VEC_ELT (TYPE_BINFO_BASETYPES (NODE),		\
+		   CLASSTYPE_VFIELD_PARENT (NODE))	\
+   : NULL_TREE)
 
 /* The number of virtual functions defined for this
    _CLASSTYPE node.  */

@@ -693,15 +693,7 @@ propagate_binfo_offsets (binfo, offset)
 		break;
 	      }
 
-#if 0
-	  if (BINFO_OFFSET_ZEROP (base_binfo))
-	    BINFO_OFFSET (base_binfo) = offset;
-	  else
-	    BINFO_OFFSET (base_binfo)
-	      = size_binop (PLUS_EXPR, BINFO_OFFSET (base_binfo), offset);
-#else
 	  BINFO_OFFSET (base_binfo) = offset;
-#endif
 
 	  propagate_binfo_offsets (base_binfo, offset);
 
@@ -759,9 +751,9 @@ layout_basetypes (rec, max)
      int max;
 {
   tree binfos = TYPE_BINFO_BASETYPES (rec);
-  int i, n_baseclasses = binfos ? TREE_VEC_LENGTH (binfos) : 0;
-
+  int i, n_baseclasses = CLASSTYPE_N_BASECLASSES (rec);
   tree vbase_types;
+  tree *field;
 
   unsigned int record_align = MAX (BITS_PER_UNIT, TYPE_ALIGN (rec));
   unsigned int desired_align;
@@ -835,27 +827,43 @@ layout_basetypes (rec, max)
                                          size_int (BITS_PER_UNIT));
     }
 
-  /* Now propagate offset information throughout the lattice.  */
+  /* Now propagate offset information throughout the lattice.
+     Simultaneously, remove the temporary FIELD_DECLS we created in
+     build_base_fields to refer to base types.  */
+  field = &TYPE_FIELDS (rec);
+  if (TYPE_VFIELD (rec) == *field)
+    {
+      /* If this class did not have a primary base, we create a
+	 virtual function table pointer.  It will be the first thing
+	 in the class, under the new ABI.  Skip it; the base fields
+	 will follow it.  */
+      my_friendly_assert (flag_new_abi 
+			  && !CLASSTYPE_HAS_PRIMARY_BASE_P (rec),
+			  19991218);
+      field = &TREE_CHAIN (*field);
+    }
+    
   for (i = 0; i < n_baseclasses; i++)
     {
       register tree base_binfo = TREE_VEC_ELT (binfos, i);
       register tree basetype = BINFO_TYPE (base_binfo);
-      tree field = TYPE_FIELDS (rec);
 
       if (TREE_VIA_VIRTUAL (base_binfo))
 	continue;
 
-      my_friendly_assert (TREE_TYPE (field) == basetype, 23897);
+      my_friendly_assert (TREE_TYPE (*field) == basetype, 23897);
 
       if (get_base_distance (basetype, rec, 0, (tree*)0) == -2)
 	cp_warning ("direct base `%T' inaccessible in `%T' due to ambiguity",
 		    basetype, rec);
 
       BINFO_OFFSET (base_binfo)
-	= size_int (CEIL (TREE_INT_CST_LOW (DECL_FIELD_BITPOS (field)),
+	= size_int (CEIL (TREE_INT_CST_LOW (DECL_FIELD_BITPOS (*field)),
 			  BITS_PER_UNIT));
       propagate_binfo_offsets (base_binfo, BINFO_OFFSET (base_binfo));
-      TYPE_FIELDS (rec) = TREE_CHAIN (field);
+
+      /* Remove this field.  */
+      *field = TREE_CHAIN (*field);
     }
 
   for (vbase_types = CLASSTYPE_VBASECLASSES (rec); vbase_types;
