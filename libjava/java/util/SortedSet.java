@@ -88,6 +88,7 @@ public interface SortedSet extends Set
    * Returns the first (lowest sorted) element in the map.
    *
    * @return the first element
+   * @throws NoSuchElementException if the set is empty.
    */
   Object first();
 
@@ -118,6 +119,7 @@ public interface SortedSet extends Set
    * Returns the last (highest sorted) element in the map.
    *
    * @return the last element
+   * @throws NoSuchElementException if the set is empty.
    */
   Object last();
 
