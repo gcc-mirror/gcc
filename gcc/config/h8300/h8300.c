@@ -239,6 +239,8 @@ function_prologue (file, size)
 {
   int fsize = (size + STACK_BOUNDARY / 8 - 1) & -STACK_BOUNDARY / 8;
   int idx;
+  int push_regs[FIRST_PSEUDO_REGISTER];
+  int n_regs;
 
   /* Note a function with the interrupt attribute and set interrupt_handler
      accordingly.  */
@@ -292,7 +294,7 @@ function_prologue (file, size)
   /* Leave room for locals.  */
   dosize (file, "sub", fsize);
 
-  /* Push the rest of the registers.  */
+  /* Compute which registers to push.  */
   for (idx = 0; idx < FIRST_PSEUDO_REGISTER; idx++)
     {
       int regno = push_order[idx];
@@ -300,75 +302,44 @@ function_prologue (file, size)
       if (regno >= 0
 	  && WORD_REG_USED (regno)
 	  && (!frame_pointer_needed || regno != FRAME_POINTER_REGNUM))
+	push_regs[idx] = regno;
+      else
+	push_regs[idx] = -1;
+    }
+
+  /* Push the rest of the registers.  */
+  for (idx = 0; idx < FIRST_PSEUDO_REGISTER; idx += n_regs)
+    {
+      int regno = push_regs[idx];
+
+      n_regs = 1;
+      if (regno >= 0)
 	{
 	  if (TARGET_H8300S)
 	    {
-	      /* Try to push multiple registers.  */
-	      if (regno == 0 || regno == 4)
-		{
-		  int second_regno = push_order[idx + 1];
-		  int third_regno = push_order[idx + 2];
-		  int fourth_regno = push_order[idx + 3];
+	      /* See how many registers we can push at the same time.  */
+	      if ((regno == 0 || regno == 4)
+		  && push_regs[idx + 1] >= 0
+		  && push_regs[idx + 2] >= 0
+		  && push_regs[idx + 3] >= 0)
+		n_regs = 4;
 
-		  if (fourth_regno >= 0
-		      && WORD_REG_USED (fourth_regno)
-		      && (!frame_pointer_needed
-			  || fourth_regno != FRAME_POINTER_REGNUM)
-		      && third_regno >= 0
-		      && WORD_REG_USED (third_regno)
-		      && (!frame_pointer_needed
-			  || third_regno != FRAME_POINTER_REGNUM)
-		      && second_regno >= 0
-		      && WORD_REG_USED (second_regno)
-		      && (!frame_pointer_needed
-			  || second_regno != FRAME_POINTER_REGNUM))
-		    {
-		      fprintf (file, "\tstm.l %s-%s,@-sp\n",
-			       h8_reg_names[regno],
-			       h8_reg_names[fourth_regno]);
-		      idx += 3;
-		      continue;
-		    }
-		}
-	      if (regno == 0 || regno == 4)
-		{
-		  int second_regno = push_order[idx + 1];
-		  int third_regno = push_order[idx + 2];
+	      else if ((regno == 0 || regno == 4)
+		       && push_regs[idx + 1] >= 0
+		       && push_regs[idx + 2] >= 0)
+		n_regs = 3;
 
-		  if (third_regno >= 0
-		      && WORD_REG_USED (third_regno)
-		      && (!frame_pointer_needed
-			  || third_regno != FRAME_POINTER_REGNUM)
-		      && second_regno >= 0
-		      && WORD_REG_USED (second_regno)
-		      && (!frame_pointer_needed
-			  || second_regno != FRAME_POINTER_REGNUM))
-		    {
-		      fprintf (file, "\tstm.l %s-%s,@-sp\n",
-			       h8_reg_names[regno],
-			       h8_reg_names[third_regno]);
-		      idx += 2;
-		      continue;
-		    }
-		}
-	      if (regno == 0 || regno == 2 || regno == 4 || regno == 6)
-		{
-		  int second_regno = push_order[idx + 1];
-
-		  if (second_regno >= 0
-		      && WORD_REG_USED (second_regno)
-		      && (!frame_pointer_needed
-			  || second_regno != FRAME_POINTER_REGNUM))
-		    {
-		      fprintf (file, "\tstm.l %s-%s,@-sp\n",
-			       h8_reg_names[regno],
-			       h8_reg_names[second_regno]);
-		      idx += 1;
-		      continue;
-		    }
-		}
+	      else if ((regno == 0 || regno == 2 || regno == 4 || regno == 6)
+		       && push_regs[idx + 1] >= 0)
+		n_regs = 2;
 	    }
-	  fprintf (file, "\t%s\t%s\n", h8_push_op, h8_reg_names[regno]);
+
+	  if (n_regs == 1)
+	    fprintf (file, "\t%s\t%s\n", h8_push_op, h8_reg_names[regno]);
+	  else
+	    fprintf (file, "\tstm.l\t%s-%s,@-sp\n",
+		     h8_reg_names[regno],
+		     h8_reg_names[regno + (n_regs - 1)]);
 	}
     }
 }
@@ -383,6 +354,8 @@ function_epilogue (file, size)
   int fsize = (size + STACK_BOUNDARY / 8 - 1) & -STACK_BOUNDARY / 8;
   int idx;
   rtx insn = get_last_insn ();
+  int pop_regs[FIRST_PSEUDO_REGISTER];
+  int n_regs;
 
   if (os_task)
     {
@@ -404,7 +377,7 @@ function_epilogue (file, size)
   if (insn && GET_CODE (insn) == BARRIER)
     goto out;
 
-  /* Pop the saved registers.  */
+  /* Compute which registers to pop.  */
   for (idx = 0; idx < FIRST_PSEUDO_REGISTER; idx++)
     {
       int regno = pop_order[idx];
@@ -412,75 +385,44 @@ function_epilogue (file, size)
       if (regno >= 0
 	  && WORD_REG_USED (regno)
 	  && (!frame_pointer_needed || regno != FRAME_POINTER_REGNUM))
+	pop_regs[idx] = regno;
+      else
+	pop_regs[idx] = -1;
+    }
+
+  /* Pop the saved registers.  */
+  for (idx = 0; idx < FIRST_PSEUDO_REGISTER; idx += n_regs)
+    {
+      int regno = pop_regs[idx];
+
+      n_regs = 1;
+      if (regno >= 0)
 	{
 	  if (TARGET_H8300S)
 	    {
-	      /* Try to pop multiple registers.  */
-	      if (regno == 7 || regno == 3)
-		{
-		  int second_regno = pop_order[idx + 1];
-		  int third_regno = pop_order[idx + 2];
-		  int fourth_regno = pop_order[idx + 3];
+	      /* See how many registers we can pop at the same time.  */
+	      if ((regno == 7 || regno == 3)
+		  && pop_regs[idx + 1] >= 0
+		  && pop_regs[idx + 2] >= 0
+		  && pop_regs[idx + 3] >= 0)
+		n_regs = 4;
 
-		  if (fourth_regno >= 0
-		      && WORD_REG_USED (fourth_regno)
-		      && (!frame_pointer_needed
-			  || fourth_regno != FRAME_POINTER_REGNUM)
-		      && third_regno >= 0
-		      && WORD_REG_USED (third_regno)
-		      && (!frame_pointer_needed
-			  || third_regno != FRAME_POINTER_REGNUM)
-		      && second_regno >= 0
-		      && WORD_REG_USED (second_regno)
-		      && (!frame_pointer_needed
-			  || second_regno != FRAME_POINTER_REGNUM))
-		    {
-		      fprintf (file, "\tldm.l @sp+,%s-%s\n",
-			       h8_reg_names[fourth_regno],
-			       h8_reg_names[regno]);
-		      idx += 3;
-		      continue;
-		    }
-		}
-	      if (regno == 6 || regno == 2)
-		{
-		  int second_regno = pop_order[idx + 1];
-		  int third_regno = pop_order[idx + 2];
+	      else if ((regno == 6 || regno == 2)
+		       && pop_regs[idx + 1] >= 0
+		       && pop_regs[idx + 2] >= 0)
+		n_regs = 3;
 
-		  if (third_regno >= 0
-		      && WORD_REG_USED (third_regno)
-		      && (!frame_pointer_needed
-			  || third_regno != FRAME_POINTER_REGNUM)
-		      && second_regno >= 0
-		      && WORD_REG_USED (second_regno)
-		      && (!frame_pointer_needed
-			  || second_regno != FRAME_POINTER_REGNUM))
-		    {
-		      fprintf (file, "\tldm.l @sp+,%s-%s\n",
-			       h8_reg_names[third_regno],
-			       h8_reg_names[regno]);
-		      idx += 2;
-		      continue;
-		    }
-		}
-	      if (regno == 7 || regno == 5 || regno == 3 || regno == 1)
-		{
-		  int second_regno = pop_order[idx + 1];
-
-		  if (second_regno >= 0
-		      && WORD_REG_USED (second_regno)
-		      && (!frame_pointer_needed
-			  || second_regno != FRAME_POINTER_REGNUM))
-		    {
-		      fprintf (file, "\tldm.l @sp+,%s-%s\n",
-			       h8_reg_names[second_regno],
-			       h8_reg_names[regno]);
-		      idx += 1;
-		      continue;
-		    }
-		}
+	      else if ((regno == 7 || regno == 5 || regno == 3 || regno == 1)
+		       && pop_regs[idx + 1] >= 0)
+		n_regs = 2;
 	    }
-	  fprintf (file, "\t%s\t%s\n", h8_pop_op, h8_reg_names[regno]);
+
+	  if (n_regs == 1)
+	    fprintf (file, "\t%s\t%s\n", h8_pop_op, h8_reg_names[regno]);
+	  else
+	    fprintf (file, "\tldm.l\t@sp+,%s-%s\n",
+		     h8_reg_names[regno - (n_regs - 1)],
+		     h8_reg_names[regno]);
 	}
     }
 
