@@ -5402,8 +5402,13 @@ cse_insn (rtx insn, rtx libcall_insn)
 		  && (GET_CODE (sets[i].orig_src) == REG
 		      || GET_CODE (sets[i].orig_src) == SUBREG
 		      || GET_CODE (sets[i].orig_src) == MEM))
-		simplify_replace_rtx (REG_NOTES (libcall_insn),
-				      sets[i].orig_src, copy_rtx (new));
+		{
+	          rtx note = find_reg_equal_equiv_note (libcall_insn);
+		  if (note != 0)
+		    XEXP (note, 0) = simplify_replace_rtx (XEXP (note, 0),
+							   sets[i].orig_src,
+							   copy_rtx (new));
+		}
 
 	      /* The result of apply_change_group can be ignored; see
 		 canon_reg.  */
