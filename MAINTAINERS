@@ -30,6 +30,7 @@ mn10200 port		Jeff Law		law@redhat.com
 mn10300 port		Jeff Law		law@redhat.com
 			Alexandre Oliva		aoliva@redhat.com
 hppa port		Jeff Law		law@redhat.com
+			Dave Anglin		dave.anglin@nrc.ca
 m68hc11 port		Stephane Carrez		Stephane.Carrez@worldnet.fr
 m68k port (?)		Jeff Law		law@redhat.com
 m68k-motorola-sysv port	Philippe De Muyter	phdm@macqel.be
