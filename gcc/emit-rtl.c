@@ -707,7 +707,8 @@ gen_lowpart_common (mode, x)
 	return gen_rtx_fmt_e (GET_CODE (x), mode, XEXP (x, 0));
     }
   else if (GET_CODE (x) == SUBREG
-	   && (GET_MODE_SIZE (mode) <= UNITS_PER_WORD
+	   && (GET_MODE_SIZE (mode) <= GET_MODE_SIZE (GET_MODE (SUBREG_REG (x)))
+	       || GET_MODE_SIZE (mode) <= UNITS_PER_WORD
 	       || GET_MODE_SIZE (mode) == GET_MODE_UNIT_SIZE (GET_MODE (x))))
     return (GET_MODE (SUBREG_REG (x)) == mode && SUBREG_WORD (x) == 0
 	    ? SUBREG_REG (x)
