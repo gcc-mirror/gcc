@@ -51,7 +51,13 @@ namespace std
 
     public:      
       istream_iterator() : _M_stream(0), _M_ok(false) {}
+
       istream_iterator(istream_type& __s) : _M_stream(&__s) { _M_read(); }
+
+      istream_iterator(const istream_iterator& __obj) 
+      : _M_stream(__obj._M_stream), _M_value(__obj._M_value), 
+        _M_ok(__obj._M_ok) 
+      { }
 
       const _Tp&
       operator*() const { return _M_value; }
@@ -96,9 +102,9 @@ namespace std
 
   template <class _Tp, class _CharT, class _Traits, class _Dist>
     inline bool 
-  operator!=(const istream_iterator<_Tp, _CharT, _Traits, _Dist>& __x,
-	     const istream_iterator<_Tp, _CharT, _Traits, _Dist>& __y) 
-  { return !__x._M_equal(__y); }
+    operator!=(const istream_iterator<_Tp, _CharT, _Traits, _Dist>& __x,
+	       const istream_iterator<_Tp, _CharT, _Traits, _Dist>& __y) 
+    { return !__x._M_equal(__y); }
 
 
   template<typename _Tp, typename _CharT = char, 
@@ -117,8 +123,12 @@ namespace std
 
     public:
       ostream_iterator(ostream_type& __s) : _M_stream(&__s), _M_string(0) {}
+
       ostream_iterator(ostream_type& __s, const _CharT* __c) 
-	: _M_stream(&__s), _M_string(__c)  { }
+      : _M_stream(&__s), _M_string(__c)  { }
+
+      ostream_iterator(const ostream_iterator& __obj)
+      : _M_stream(__obj._M_stream), _M_string(__obj._M_string)  { }
 
       ostream_iterator& 
       operator=(const _Tp& __value) 
