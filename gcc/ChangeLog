@@ -1,3 +1,14 @@
+2005-02-28 Paolo Bonzini <bonzini@gnu.org>
+
+	* simplify-rtx.c (simplify_unary_operation_1,
+	simplify_const_unary_operation): New, extracted from...
+	(simplify_unary_operation): ... this one.
+	(simplify_binary_operation_1,
+	simplify_const_binary_operation): New, extracted from...
+	(simplify_binary_operation): ... this one.
+	* rtl.h (simplify_const_unary_operation,
+	simplify_const_binary_operation): Add prototypes.
+
 2005-02-28  Julian Brown  <julian@codesourcery.com>
 
 	* config/elfos.h: Revert my patch from 2005-02-25 since it broke
