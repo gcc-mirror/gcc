@@ -4647,6 +4647,7 @@ find_reloads_address (enum machine_mode mode, rtx *memrefloc, rtx ad,
 {
   int regno;
   int removed_and = 0;
+  int op_index;
   rtx tem;
 
   /* If the address is a register, see if it is a legitimate address and
@@ -4892,7 +4893,9 @@ find_reloads_address (enum machine_mode mode, rtx *memrefloc, rtx ad,
 
      Handle all base registers here, not just fp/ap/sp, because on some
      targets (namely SPARC) we can also get invalid addresses from preventive
-     subreg big-endian corrections made by find_reloads_toplev.
+     subreg big-endian corrections made by find_reloads_toplev.  We
+     can also get expressions involving LO_SUM (rather than PLUS) from
+     find_reloads_subreg_address.
 
      If we decide to do something, it must be that `double_reg_address_ok'
      is true.  We generate a reload of the base register + constant and
@@ -4900,62 +4903,63 @@ find_reloads_address (enum machine_mode mode, rtx *memrefloc, rtx ad,
      This is safe because we know the address isn't shared.
 
      We check for the base register as both the first and second operand of
-     the innermost PLUS.  */
+     the innermost PLUS and/or LO_SUM.  */
 
-  else if (GET_CODE (ad) == PLUS && GET_CODE (XEXP (ad, 1)) == CONST_INT
-	   && GET_CODE (XEXP (ad, 0)) == PLUS
-	   && REG_P (XEXP (XEXP (ad, 0), 0))
-	   && REGNO (XEXP (XEXP (ad, 0), 0)) < FIRST_PSEUDO_REGISTER
-	   && (REG_MODE_OK_FOR_BASE_P (XEXP (XEXP (ad, 0), 0), mode)
-	       || XEXP (XEXP (ad, 0), 0) == frame_pointer_rtx
+  for (op_index = 0; op_index < 2; ++op_index)
+    {
+      rtx operand;
+
+      if (!(GET_CODE (ad) == PLUS 
+	    && GET_CODE (XEXP (ad, 1)) == CONST_INT
+	    && (GET_CODE (XEXP (ad, 0)) == PLUS
+		|| GET_CODE (XEXP (ad, 0)) == LO_SUM)))
+	continue;
+
+      operand = XEXP (XEXP (ad, 0), op_index);
+      if (!(REG_P (operand) 
+	    || REGNO (operand) < FIRST_PSEUDO_REGISTER))
+	continue;
+
+      if ((REG_MODE_OK_FOR_BASE_P (operand, mode)
+	   || operand == frame_pointer_rtx
 #if FRAME_POINTER_REGNUM != HARD_FRAME_POINTER_REGNUM
-	       || XEXP (XEXP (ad, 0), 0) == hard_frame_pointer_rtx
+	   || operand == hard_frame_pointer_rtx
 #endif
 #if FRAME_POINTER_REGNUM != ARG_POINTER_REGNUM
-	       || XEXP (XEXP (ad, 0), 0) == arg_pointer_rtx
+	   || operand == arg_pointer_rtx
 #endif
-	       || XEXP (XEXP (ad, 0), 0) == stack_pointer_rtx)
-	   && ! maybe_memory_address_p (mode, ad, &XEXP (XEXP (ad, 0), 1)))
-    {
-      *loc = ad = gen_rtx_PLUS (GET_MODE (ad),
-				plus_constant (XEXP (XEXP (ad, 0), 0),
-					       INTVAL (XEXP (ad, 1))),
-				XEXP (XEXP (ad, 0), 1));
-      find_reloads_address_part (XEXP (ad, 0), &XEXP (ad, 0),
-				 MODE_BASE_REG_CLASS (mode),
-				 GET_MODE (ad), opnum, type, ind_levels);
-      find_reloads_address_1 (mode, XEXP (ad, 1), 1, &XEXP (ad, 1), opnum,
-			      type, 0, insn);
+	   || operand == stack_pointer_rtx)
+	  && ! maybe_memory_address_p (mode, ad, 
+				       &XEXP (XEXP (ad, 0), op_index)))
+	{
+	  rtx offset_reg;
+	  rtx addend;
 
-      return 0;
-    }
+	  offset_reg = plus_constant (operand, INTVAL (XEXP (ad, 1)));
+	  addend = XEXP (XEXP (ad, 0), 1 - op_index);
+	  
+	  /* Form the adjusted address.  */
+	  if (GET_CODE (XEXP (ad, 0)) == PLUS)
+	    ad = gen_rtx_PLUS (GET_MODE (ad), 
+			       op_index == 0 ? offset_reg : addend, 
+			       op_index == 0 ? addend : offset_reg);
+	  else
+	    ad = gen_rtx_LO_SUM (GET_MODE (ad), 
+				 op_index == 0 ? offset_reg : addend, 
+				 op_index == 0 ? addend : offset_reg);
+	  *loc = ad;
 
-  else if (GET_CODE (ad) == PLUS && GET_CODE (XEXP (ad, 1)) == CONST_INT
-	   && GET_CODE (XEXP (ad, 0)) == PLUS
-	   && REG_P (XEXP (XEXP (ad, 0), 1))
-	   && REGNO (XEXP (XEXP (ad, 0), 1)) < FIRST_PSEUDO_REGISTER
-	   && (REG_MODE_OK_FOR_BASE_P (XEXP (XEXP (ad, 0), 1), mode)
-	       || XEXP (XEXP (ad, 0), 1) == frame_pointer_rtx
-#if FRAME_POINTER_REGNUM != HARD_FRAME_POINTER_REGNUM
-	       || XEXP (XEXP (ad, 0), 1) == hard_frame_pointer_rtx
-#endif
-#if FRAME_POINTER_REGNUM != ARG_POINTER_REGNUM
-	       || XEXP (XEXP (ad, 0), 1) == arg_pointer_rtx
-#endif
-	       || XEXP (XEXP (ad, 0), 1) == stack_pointer_rtx)
-	   && ! maybe_memory_address_p (mode, ad, &XEXP (XEXP (ad, 0), 0)))
-    {
-      *loc = ad = gen_rtx_PLUS (GET_MODE (ad),
-				XEXP (XEXP (ad, 0), 0),
-				plus_constant (XEXP (XEXP (ad, 0), 1),
-					       INTVAL (XEXP (ad, 1))));
-      find_reloads_address_part (XEXP (ad, 1), &XEXP (ad, 1),
-				 MODE_BASE_REG_CLASS (mode),
-				 GET_MODE (ad), opnum, type, ind_levels);
-      find_reloads_address_1 (mode, XEXP (ad, 0), 1, &XEXP (ad, 0), opnum,
-			      type, 0, insn);
+	  find_reloads_address_part (XEXP (ad, op_index), 
+				     &XEXP (ad, op_index),
+				     MODE_BASE_REG_CLASS (mode),
+				     GET_MODE (ad), opnum, type, ind_levels);
+	  find_reloads_address_1 (mode, 
+				  XEXP (ad, 1 - op_index), 1, 
+				  &XEXP (ad, 1 - op_index), opnum,
+				  type, 0, insn);
 
-      return 0;
+	  return 0;
+	}
     }
 
   /* See if address becomes valid when an eliminable register

@@ -1,3 +1,8 @@
+2004-08-20  Mark Mitchell  <mark@codesourcery.com>
+
+	* reload.c (find_reloads_address): Reload the sum of a LO_SUM and
+	a CONST_INT.
+
 2004-08-20  Jakub Jelinek  <jakub@redhat.com>
 
 	PR rtl-optimization/17099
