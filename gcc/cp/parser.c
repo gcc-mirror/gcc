@@ -12232,6 +12232,7 @@ cp_parser_class_name (cp_parser *parser,
     decl = TYPE_NAME (make_typename_type (scope, decl, tag_type, tf_error));
   else if (decl == error_mark_node
 	   || TREE_CODE (decl) != TYPE_DECL
+	   || TREE_TYPE (decl) == error_mark_node
 	   || !IS_AGGR_TYPE (TREE_TYPE (decl)))
     {
       cp_parser_error (parser, "expected class-name");
