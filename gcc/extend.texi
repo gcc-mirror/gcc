@@ -1669,7 +1669,7 @@ old-style non-prototype definition.  Consider the following example:
 
 @example
 /* @r{Use prototypes unless the compiler is old-fashioned.}  */
-#if __STDC__
+#ifdef __STDC__
 #define P(x) x
 #else
 #define P(x) ()
@@ -2026,7 +2026,7 @@ typedef int more_aligned_int __attribute__ ((aligned (8));
 @end smallexample
 
 @noindent
-force the compiler to insure (as fas as it can) that each variable whose
+force the compiler to insure (as far as it can) that each variable whose
 type is @code{struct S} or @code{more_aligned_int} will be allocated and
 aligned @emph{at least} on a 8-byte boundary.  On a Sparc, having all
 variables of type @code{struct S} aligned to 8-byte boundaries allows
