@@ -1,5 +1,16 @@
 2003-04-14  Janis Johnson  <janis287@us.ibm.com>
 
+	* config/rs6000/rs6000.md (define_constants): Define constants for
+	all UNSPEC usage, including new values for TLS support.
+	(aux_truncdfsf2, fctiwz, movsi_got, movsi_got_internal,
+	load_toc_aix_si, load_toc_aix_di, load_toc_v4_pic_si,
+	load_toc_v4_PIC_1, load_toc_v4_PIC_1b, load_macho_picbase,
+	macho_correct_pic, blockage, move_from_CR_ov_bit, movesi_from_cr,
+	stack_tie, movsi_to_cr_one, movsi_to_cr, mtcrfsi, eh_set_lr_si,
+	eh_set_lr_di): Use them.
+	* rs6000.c: (mtcrf_operation, uses_TOC, rs6000_emit_prologue,
+	rs6000_emit_epilogue) Use them.
+
 	* rtl.h (SYMBOL_REF_TLS_MODEL): Fix mask value.
 
 2003-04-14  Neil Booth  <neil@daikokuya.co.uk>
