@@ -1393,7 +1393,6 @@ expand_call_inline (tree *tp, int *walk_subtrees, void *data)
   tree expr;
   tree stmt;
   tree use_retvar;
-  tree decl;
   tree fn;
   tree arg_inits;
   tree *inlined_body;
@@ -1604,8 +1603,8 @@ expand_call_inline (tree *tp, int *walk_subtrees, void *data)
     modify_dest = NULL;
 
   /* Declare the return variable for the function.  */
-  decl = declare_return_variable (id, return_slot_addr,
-				  modify_dest, &use_retvar);
+  declare_return_variable (id, return_slot_addr,
+			   modify_dest, &use_retvar);
 
   /* After we've initialized the parameters, we insert the body of the
      function itself.  */
