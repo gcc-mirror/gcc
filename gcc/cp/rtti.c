@@ -1462,11 +1462,9 @@ emit_tinfo_decl (decl_ptr, data)
   my_friendly_assert (TREE_TYPE (tinfo_decl) == tinfo_decl_type, 20000121);
   tinfo_type = TREE_TYPE (DECL_NAME (tinfo_decl));
   my_friendly_assert (tinfo_type != NULL_TREE, 20000120);
-
-  import_export_decl (tinfo_decl);
-  if (DECL_REALLY_EXTERN (tinfo_decl) || !DECL_NEEDED_P (tinfo_decl))
+  
+  if (!DECL_NEEDED_P (tinfo_decl))
     return 0;
-
   /* Say we've dealt with it.  */
   TREE_TYPE (DECL_NAME (tinfo_decl)) = NULL_TREE;
   

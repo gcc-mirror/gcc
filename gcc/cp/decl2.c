@@ -2514,7 +2514,6 @@ import_export_decl (decl)
       if (IS_AGGR_TYPE (ctype))
 	import_export_class (ctype);
 
-      DECL_NOT_REALLY_EXTERN (decl) = 1;
       if (IS_AGGR_TYPE (ctype) && CLASSTYPE_INTERFACE_KNOWN (ctype)
 	  && TYPE_POLYMORPHIC_P (ctype)
 	  /* If -fno-rtti, we're not necessarily emitting this stuff with
@@ -2538,9 +2537,9 @@ import_export_decl (decl)
 	  if (flag_weak)
 	    comdat_linkage (decl);
 	}
-      /* We used to exclude the builtin types here, but that broke
-	 emit_support_tinfos.  Let rtti.c choose whether or not to emit
-	 them.  */
+      else if (TYPE_BUILT_IN (ctype) 
+	       && same_type_p (ctype, TYPE_MAIN_VARIANT (ctype)))
+	DECL_NOT_REALLY_EXTERN (decl) = 0;
       else
 	comdat_linkage (decl);
     } 
