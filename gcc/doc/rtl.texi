@@ -746,7 +746,7 @@ a non-unchanging read can conflict with a non-unchanging write; an
 unchanging read can conflict with an unchanging write (since there may
 be a single store to this address to initialize it); and an unchanging
 store can conflict with a non-unchanging read.  This means we must make
-conservative assumptions when chosing the value of this flag for a
+conservative assumptions when choosing the value of this flag for a
 memory reference to an object containing both unchanging and
 non-unchanging fields: we must set the flag when writing to the object
 and clear it when reading from the object.
