@@ -1,3 +1,8 @@
+2004-12-12  Richard Henderson  <rth@redhat.com>
+
+	* config/i386/i386.c (ix86_gimplify_va_arg): Fix type mismatch
+	errors across operations.
+
 2004-12-12  Di-an Jan  <dianj@freeshell.org>  
 
 	* doc/passes.texi (Pass Manager): Correct list of source files.
