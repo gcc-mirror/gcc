@@ -4769,11 +4769,11 @@ output_sibcall (rtx insn, rtx call_operand)
 
 /* Functions for handling argument passing.
 
-   For v8 the first six args are normally in registers and the rest are
+   For 32-bit, the first 6 args are normally in registers and the rest are
    pushed.  Any arg that starts within the first 6 words is at least
    partially passed in a register unless its data type forbids.
 
-   For v9, the argument registers are laid out as an array of 16 elements
+   For 64-bit, the argument registers are laid out as an array of 16 elements
    and arguments are added sequentially.  The first 6 int args and up to the
    first 16 fp args (depending on size) are passed in regs.
 
@@ -4798,7 +4798,7 @@ output_sibcall (rtx insn, rtx call_operand)
 
    Here SP = %sp if -mno-stack-bias or %sp+stack_bias otherwise.
 
-   Integral arguments are always passed as 64 bit quantities appropriately
+   Integral arguments are always passed as 64-bit quantities appropriately
    extended.
 
    Passing of floating point values is handled as follows.
@@ -4815,7 +4815,81 @@ output_sibcall (rtx insn, rtx call_operand)
      appropriate integer reg and the appropriate fp reg.
      If the value is not one of the first 6 arguments the value is passed in
      the appropriate fp reg and in memory.
-   */
+
+
+   Summary of the calling conventions implemented by GCC on SPARC:
+
+   32-bit ABI:
+                                size      argument     return value
+
+      small integer              <4       int. reg.      int. reg.
+      word                        4       int. reg.      int. reg.
+      double word                 8       int. reg.      int. reg.
+
+      _Complex small integer     <8       int. reg.      int. reg.
+      _Complex word               8       int. reg.      int. reg.
+      _Complex double word       16        memory        int. reg.
+
+      vector integer            <=8       int. reg.       FP reg.
+      vector integer             >8        memory         memory
+
+      float                       4       int. reg.       FP reg.
+      double                      8       int. reg.       FP reg.
+      long double                16        memory         memory
+
+      _Complex float              8        memory         FP reg.
+      _Complex double            16        memory         FP reg.
+      _Complex long double       32        memory         FP reg.
+
+      vector float             <=32        memory         FP reg.
+      vector float              >32        memory         memory
+
+      aggregate                 any        memory         memory
+
+
+
+    64-bit ABI:
+                                size      argument     return value
+
+      small integer              <8       int. reg.      int. reg.
+      word                        8       int. reg.      int. reg.
+      double word                16       int. reg.      int. reg.
+
+      _Complex small integer    <16       int. reg.      int. reg.
+      _Complex word              16       int. reg.      int. reg.
+      _Complex double word       32        memory        int. reg.
+
+      vector integer           <=16        FP reg.        FP reg.
+      vector integer       16<s<=32        memory         FP reg.
+      vector integer            >32        memory         memory
+
+      float                       4        FP reg.        FP reg.
+      double                      8        FP reg.        FP reg.
+      long double                16        FP reg.        FP reg.
+
+      _Complex float              8        FP reg.        FP reg.
+      _Complex double            16        FP reg.        FP reg.
+      _Complex long double       32        memory         FP reg.
+
+      vector float             <=16        FP reg.        FP reg.
+      vector float         16<s<=32        memory         FP reg.
+      vector float              >32        memory         memory
+
+      aggregate                <=16         reg.           reg.
+      aggregate            16<s<=32        memory          reg.
+      aggregate                 >32        memory         memory
+
+
+
+Note #1: complex floating-point types follow the extended SPARC ABIs as
+implemented by the Sun compiler.
+
+Note #2: integral vector types follow the scalar floating-point types
+conventions to match what is implemented by the Sun VIS SDK.
+
+Note #3: floating-point vector types follow the complex floating-point
+types conventions.  */
+
 
 /* Maximum number of int regs for args.  */
 #define SPARC_INT_ARG_MAX 6
@@ -4853,44 +4927,7 @@ sparc_promote_prototypes (tree fntype ATTRIBUTE_UNUSED)
 static bool
 sparc_strict_argument_naming (CUMULATIVE_ARGS *ca ATTRIBUTE_UNUSED)
 {
-  /* For the V9 we want NAMED to mean what it says it means.  */
-  return TARGET_V9 ? true : false;
-}
-
-/* Handle the TARGET_RETURN_IN_MEMORY target hook.
-   Specify whether to return the return value in memory.  */
-
-static bool
-sparc_return_in_memory (tree type, tree fntype ATTRIBUTE_UNUSED)
-{
-  /* SPARC ABI says that quad-precision floats and all structures are
-     returned in memory.
-     For V9: unions <= 32 bytes in size are returned in int regs,
-     structures up to 32 bytes are returned in int and fp regs.  */
-  return (TARGET_ARCH32
-	  ? (TYPE_MODE (type) == BLKmode
-	     || TYPE_MODE (type) == TFmode)
-	  : (TYPE_MODE (type) == BLKmode
-	     && (unsigned HOST_WIDE_INT) int_size_in_bytes (type) > 32));
-}
-
-/* Handle the TARGET_STRUCT_VALUE target hook.
-   Return where to find the structure return value address.  */
-
-static rtx
-sparc_struct_value_rtx (tree fndecl ATTRIBUTE_UNUSED, int incoming)
-{
-  if (TARGET_ARCH64)
-    return 0;
-  else
-    {
-      if (incoming)
-	return gen_rtx_MEM (Pmode, plus_constant (frame_pointer_rtx,
-						  STRUCT_VALUE_OFFSET));
-      else
-	return gen_rtx_MEM (Pmode, plus_constant (stack_pointer_rtx,
-						  STRUCT_VALUE_OFFSET));
-    }
+  return TARGET_ARCH64 ? true : false;
 }
 
 /* Scan the record type TYPE and return the following predicates:
@@ -4952,82 +4989,69 @@ function_arg_slotno (const struct sparc_args *cum, enum machine_mode mode,
 
   *ppadding = 0;
 
-  if (type != 0 && TREE_ADDRESSABLE (type))
+  if (type && TREE_ADDRESSABLE (type))
     return -1;
+
   if (TARGET_ARCH32
-      && type != 0 && mode == BLKmode
+      && mode == BLKmode
+      && type
       && TYPE_ALIGN (type) % PARM_BOUNDARY != 0)
     return -1;
 
-  switch (mode)
-    {
-    case VOIDmode :
-      /* MODE is VOIDmode when generating the actual call.
-	 See emit_call_1.  */
-      return -1;
+  /* For SPARC64, objects requiring 16-byte alignment get it.  */
+  if (TARGET_ARCH64
+      && GET_MODE_ALIGNMENT (mode) >= 2 * BITS_PER_WORD
+      && (slotno & 1) != 0)
+    slotno++, *ppadding = 1;
 
-    case TImode : case CTImode :
-      if (TARGET_ARCH64 && (slotno & 1) != 0)
-	slotno++, *ppadding = 1;
+  switch (GET_MODE_CLASS (mode))
+    {
+    case MODE_FLOAT:
+    case MODE_COMPLEX_FLOAT:
+    case MODE_VECTOR_INT:
+    case MODE_VECTOR_FLOAT:
+      if (TARGET_ARCH64 && TARGET_FPU && named)
+	{
+	  if (slotno >= SPARC_FP_ARG_MAX)
+	    return -1;
+	  regno = SPARC_FP_ARG_FIRST + slotno * 2;
+	  /* Arguments filling only one single FP register are
+	     right-justified in the outer double FP register.  */
+	  if (GET_MODE_SIZE (mode) <= 4)
+	    regno++;
+	  break;
+	}
       /* fallthrough */
 
-    case QImode : case CQImode :
-    case HImode : case CHImode :
-    case SImode : case CSImode :
-    case DImode : case CDImode :
+    case MODE_INT:
+    case MODE_COMPLEX_INT:
       if (slotno >= SPARC_INT_ARG_MAX)
 	return -1;
       regno = regbase + slotno;
       break;
 
-    case TFmode : case TCmode :
-      if (TARGET_ARCH64 && (slotno & 1) != 0)
+    case MODE_RANDOM:
+      if (mode == VOIDmode)
+	/* MODE is VOIDmode when generating the actual call.  */
+	return -1;
+
+      if (mode != BLKmode)
+	abort ();
+
+      /* For SPARC64, objects requiring 16-byte alignment get it.  */
+      if (TARGET_ARCH64
+	  && type
+	  && TYPE_ALIGN (type) >= 2 * BITS_PER_WORD
+	  && (slotno & 1) != 0)
 	slotno++, *ppadding = 1;
-      /* fallthrough */
 
-    case SFmode : case SCmode :
-    case DFmode : case DCmode :
-      if (TARGET_ARCH32)
+      if (TARGET_ARCH32 || (type && TREE_CODE (type) == UNION_TYPE))
 	{
 	  if (slotno >= SPARC_INT_ARG_MAX)
 	    return -1;
 	  regno = regbase + slotno;
 	}
-      else
-	{
-	  if (TARGET_FPU && named)
-	    {
-	      if (slotno >= SPARC_FP_ARG_MAX)
-		return -1;
-	      regno = SPARC_FP_ARG_FIRST + slotno * 2;
-	      if (mode == SFmode)
-		regno++;
-	    }
-	  else
-	    {
-	      if (slotno >= SPARC_INT_ARG_MAX)
-		return -1;
-	      regno = regbase + slotno;
-	    }
-	}
-      break;
-
-    case BLKmode :
-      /* For sparc64, objects requiring 16 byte alignment get it.  */
-      if (TARGET_ARCH64)
-	{
-	  if (type && TYPE_ALIGN (type) == 128 && (slotno & 1) != 0)
-	    slotno++, *ppadding = 1;
-	}
-
-      if (TARGET_ARCH32
-	  || (type && TREE_CODE (type) == UNION_TYPE))
-	{
-	  if (slotno >= SPARC_INT_ARG_MAX)
-	    return -1;
-	  regno = regbase + slotno;
-	}
-      else
+      else  /* TARGET_ARCH64 && type && TREE_CODE (type) == RECORD_TYPE */
 	{
 	  int intregs_p = 0, fpregs_p = 0, packed_p = 0;
 
@@ -5043,10 +5067,12 @@ function_arg_slotno (const struct sparc_args *cum, enum machine_mode mode,
 	  /* If all arg slots are filled, then must pass on stack.  */
 	  if (fpregs_p && slotno >= SPARC_FP_ARG_MAX)
 	    return -1;
+
 	  /* If there are only int args and all int arg slots are filled,
 	     then must pass on stack.  */
 	  if (!fpregs_p && intregs_p && slotno >= SPARC_INT_ARG_MAX)
 	    return -1;
+
 	  /* Note that even if all int arg slots are filled, fp members may
 	     still be passed in regs if such regs are available.
 	     *PREGNO isn't set because there may be more than one, it's up
@@ -5130,7 +5156,8 @@ function_arg_record_value_1 (tree type, HOST_WIDE_INT startbitpos,
 	    				 bitpos,
 					 parms,
 					 packed_p);
-	  else if (FLOAT_TYPE_P (TREE_TYPE (field))
+	  else if ((FLOAT_TYPE_P (TREE_TYPE (field))
+		    || TREE_CODE (TREE_TYPE (field)) == VECTOR_TYPE)
 		   && TARGET_FPU
 		   && parms->named
 		   && ! packed_p)
@@ -5268,7 +5295,8 @@ function_arg_record_value_2 (tree type, HOST_WIDE_INT startbitpos,
 	    				 bitpos,
 					 parms,
 					 packed_p);
-	  else if (FLOAT_TYPE_P (TREE_TYPE (field))
+	  else if ((FLOAT_TYPE_P (TREE_TYPE (field))
+		    || TREE_CODE (TREE_TYPE (field)) == VECTOR_TYPE)
 		   && TARGET_FPU
 		   && parms->named
 		   && ! packed_p)
@@ -5279,9 +5307,6 @@ function_arg_record_value_2 (tree type, HOST_WIDE_INT startbitpos,
 	      rtx reg;
 
 	      function_arg_record_value_3 (bitpos, parms);
-	      regno = SPARC_FP_ARG_FIRST + this_slotno * 2
-		      + ((mode == SFmode || mode == SCmode)
-			 && (bitpos & 32) != 0);
 	      switch (mode)
 		{
 		case SCmode: mode = SFmode; break;
@@ -5289,6 +5314,9 @@ function_arg_record_value_2 (tree type, HOST_WIDE_INT startbitpos,
 		case TCmode: mode = TFmode; break;
 		default: break;
 		}
+	      regno = SPARC_FP_ARG_FIRST + this_slotno * 2;
+	      if (GET_MODE_SIZE (mode) <= 4 && (bitpos & 32) != 0)
+		regno++;
 	      reg = gen_rtx_REG (mode, regno);
 	      XVECEXP (parms->ret, 0, parms->stack + parms->nregs)
 		= gen_rtx_EXPR_LIST (VOIDmode, reg,
@@ -5506,7 +5534,9 @@ function_arg (const struct sparc_args *cum, enum machine_mode mode,
      If no prototype is in scope fp values in register slots get passed
      in two places, either fp regs and int regs or fp regs and memory.  */
   else if ((GET_MODE_CLASS (mode) == MODE_FLOAT
-	    || GET_MODE_CLASS (mode) == MODE_COMPLEX_FLOAT)
+	    || GET_MODE_CLASS (mode) == MODE_COMPLEX_FLOAT
+	    || GET_MODE_CLASS (mode) == MODE_VECTOR_INT
+	    || GET_MODE_CLASS (mode) == MODE_VECTOR_FLOAT)
       && SPARC_FP_REG_P (regno))
     {
       reg = gen_rtx_REG (mode, regno);
@@ -5607,20 +5637,20 @@ function_arg_partial_nregs (const struct sparc_args *cum,
       if ((slotno + (mode == BLKmode
 		     ? ROUND_ADVANCE (int_size_in_bytes (type))
 		     : ROUND_ADVANCE (GET_MODE_SIZE (mode))))
-	  > NPARM_REGS (SImode))
-	return NPARM_REGS (SImode) - slotno;
-      return 0;
+	  > SPARC_INT_ARG_MAX)
+	return SPARC_INT_ARG_MAX - slotno;
     }
   else
     {
+      /* We are guaranteed by function_arg_pass_by_reference that the size
+	 of the argument is not greater than 16 bytes, so we only need to
+	 return 1 if the argument is partially passed in registers.  */
+
       if (type && AGGREGATE_TYPE_P (type))
 	{
 	  int size = int_size_in_bytes (type);
-	  int align = TYPE_ALIGN (type);
 
-	  if (align == 16)
-	    slotno += slotno & 1;
-	  if (size > 8 && size <= 16
+	  if (size > UNITS_PER_WORD
 	      && slotno == SPARC_INT_ARG_MAX - 1)
 	    return 1;
 	}
@@ -5629,33 +5659,19 @@ function_arg_partial_nregs (const struct sparc_args *cum,
 		   && ! (TARGET_FPU && named)))
 	{
 	  /* The complex types are passed as packed types.  */
-	  if (GET_MODE_SIZE (mode) <= UNITS_PER_WORD)
-	    return 0;
-
-	  if (GET_MODE_ALIGNMENT (mode) == 128)
-	    {
-	      slotno += slotno & 1;
-
-	      /* ??? The mode needs 3 slots?  */
-	      if (slotno == SPARC_INT_ARG_MAX - 2)
-		return 1;
-	    }
-	  else
-	    {
-	      if (slotno == SPARC_INT_ARG_MAX - 1)
-		return 1;
-	    }
+	  if (GET_MODE_SIZE (mode) > UNITS_PER_WORD
+	      && slotno == SPARC_INT_ARG_MAX - 1)
+	    return 1;
 	}
       else if (GET_MODE_CLASS (mode) == MODE_COMPLEX_FLOAT)
 	{
-	  if (GET_MODE_ALIGNMENT (mode) == 128)
-	    slotno += slotno & 1;
 	  if ((slotno + GET_MODE_SIZE (mode) / UNITS_PER_WORD)
 	      > SPARC_FP_ARG_MAX)
 	    return 1;
 	}
-      return 0;
     }
+
+  return 0;
 }
 
 /* Handle the FUNCTION_ARG_PASS_BY_REFERENCE macro.
@@ -5672,18 +5688,23 @@ function_arg_pass_by_reference (const struct sparc_args *cum ATTRIBUTE_UNUSED,
   if (TARGET_ARCH32)
     {
       return ((type && AGGREGATE_TYPE_P (type))
+	      /* Extended ABI (as implemented by the Sun compiler) says
+		 that all complex floats are passed in memory.  */
 	      || mode == SCmode
+	      /* Enforce the 2-word cap for passing arguments in registers.
+		 This affects CDImode, TFmode, DCmode, TCmode and large
+		 vector modes.  */
 	      || GET_MODE_SIZE (mode) > 8);
     }
   else
     {
       return ((type && TREE_CODE (type) == ARRAY_TYPE)
-	      /* Consider complex values as aggregates, so care
-		 for CTImode and TCmode.  */
-	      || GET_MODE_SIZE (mode) > 16
 	      || (type
 		  && AGGREGATE_TYPE_P (type)
-		  && (unsigned HOST_WIDE_INT) int_size_in_bytes (type) > 16));
+		  && (unsigned HOST_WIDE_INT) int_size_in_bytes (type) > 16)
+	      /* Enforce the 2-word cap for passing arguments in registers.
+		 This affects CTImode, TCmode and large vector modes.  */
+	      || GET_MODE_SIZE (mode) > 16);
     }
 }
 
@@ -5747,21 +5768,73 @@ function_arg_padding (enum machine_mode mode, tree type)
   return DEFAULT_FUNCTION_ARG_PADDING (mode, type);
 }
 
+/* Handle the TARGET_RETURN_IN_MEMORY target hook.
+   Specify whether to return the return value in memory.  */
+
+static bool
+sparc_return_in_memory (tree type, tree fntype ATTRIBUTE_UNUSED)
+{
+  if (TARGET_ARCH32)
+    /* Original SPARC 32-bit ABI says that quad-precision floats
+       and all structures are returned in memory.  Extended ABI
+       (as implemented by the Sun compiler) says that all complex
+       floats are returned in registers (8 FP registers at most
+       for '_Complex long double').  Return all complex integers
+       in registers (4 at most for '_Complex long long').  */
+    return (TYPE_MODE (type) == BLKmode
+	    || TYPE_MODE (type) == TFmode
+	    /* Integral vector types follow the scalar FP types conventions.  */
+	    || (GET_MODE_CLASS (TYPE_MODE (type)) == MODE_VECTOR_INT
+		&& GET_MODE_SIZE (TYPE_MODE (type)) > 8)
+	    /* FP vector types follow the complex FP types conventions.  */
+	    || (GET_MODE_CLASS (TYPE_MODE (type)) == MODE_VECTOR_FLOAT
+		&& GET_MODE_SIZE (TYPE_MODE (type)) > 32));
+  else
+    /* Original SPARC 64-bit ABI says that structures and unions
+       smaller than 32 bytes are returned in registers.  Extended
+       ABI (as implemented by the Sun compiler) says that all complex
+       floats are returned in registers (8 FP registers at most
+       for '_Complex long double').  Return all complex integers
+       in registers (4 at most for '_Complex TItype').  */
+    return ((TYPE_MODE (type) == BLKmode
+	     && (unsigned HOST_WIDE_INT) int_size_in_bytes (type) > 32)
+	    || GET_MODE_SIZE (TYPE_MODE (type)) > 32);
+}
+
+/* Handle the TARGET_STRUCT_VALUE target hook.
+   Return where to find the structure return value address.  */
+
+static rtx
+sparc_struct_value_rtx (tree fndecl ATTRIBUTE_UNUSED, int incoming)
+{
+  if (TARGET_ARCH64)
+    return 0;
+  else
+    {
+      if (incoming)
+	return gen_rtx_MEM (Pmode, plus_constant (frame_pointer_rtx,
+						  STRUCT_VALUE_OFFSET));
+      else
+	return gen_rtx_MEM (Pmode, plus_constant (stack_pointer_rtx,
+						  STRUCT_VALUE_OFFSET));
+    }
+}
+
 /* Handle FUNCTION_VALUE, FUNCTION_OUTGOING_VALUE, and LIBCALL_VALUE macros.
    For v9, function return values are subject to the same rules as arguments,
-   except that up to 32-bytes may be returned in registers.  */
+   except that up to 32 bytes may be returned in registers.  */
 
 rtx
 function_value (tree type, enum machine_mode mode, int incoming_p)
 {
+  /* Beware that the two values are swapped here wrt function_arg.  */
+  int regbase = (incoming_p
+		 ? SPARC_OUTGOING_INT_ARG_FIRST
+		 : SPARC_INCOMING_INT_ARG_FIRST);
   int regno;
 
   if (TARGET_ARCH64 && type)
     {
-      int regbase = (incoming_p
-		     ? SPARC_OUTGOING_INT_ARG_FIRST
-		     : SPARC_INCOMING_INT_ARG_FIRST);
-
       if (TREE_CODE (type) == RECORD_TYPE)
 	{
 	  /* Structures up to 32 bytes in size are passed in registers,
@@ -5788,7 +5861,7 @@ function_value (tree type, enum machine_mode mode, int incoming_p)
 	  HOST_WIDE_INT bytes = int_size_in_bytes (type);
 
 	  if (bytes > 32)
-	    abort ();
+	    abort (); /* shouldn't get here */
 
 	  mode = mode_for_size (bytes * BITS_PER_UNIT, MODE_INT, 0);
 	}
@@ -5797,10 +5870,10 @@ function_value (tree type, enum machine_mode mode, int incoming_p)
 	mode = word_mode;
     }
 
-  if (incoming_p)
-    regno = BASE_RETURN_VALUE_REG (mode);
+  if (TARGET_FPU && (FLOAT_MODE_P (mode) || VECTOR_MODE_P (mode)))
+    regno = SPARC_FP_ARG_FIRST;
   else
-    regno = BASE_OUTGOING_VALUE_REG (mode);
+    regno = regbase;
 
   return gen_rtx_REG (mode, regno);
 }
@@ -5816,7 +5889,7 @@ sparc_builtin_saveregs (void)
   rtx address;
   int regno;
 
-  for (regno = first_reg; regno < NPARM_REGS (word_mode); regno++)
+  for (regno = first_reg; regno < SPARC_INT_ARG_MAX; regno++)
     emit_move_insn (gen_rtx_MEM (word_mode,
 				 gen_rtx_PLUS (Pmode,
 					       frame_pointer_rtx,
@@ -5824,7 +5897,7 @@ sparc_builtin_saveregs (void)
 							+ (UNITS_PER_WORD
 							   * regno)))),
 		    gen_rtx_REG (word_mode,
-				 BASE_INCOMING_ARG_REG (word_mode) + regno));
+				 SPARC_INCOMING_INT_ARG_FIRST + regno));
 
   address = gen_rtx_PLUS (Pmode,
 			  frame_pointer_rtx,
@@ -5834,7 +5907,7 @@ sparc_builtin_saveregs (void)
   return address;
 }
 
-/* Implement `va_start' for varargs and stdarg.  */
+/* Implement `va_start' for stdarg.  */
 
 void
 sparc_va_start (tree valist, rtx nextarg)
@@ -5843,7 +5916,7 @@ sparc_va_start (tree valist, rtx nextarg)
   std_expand_builtin_va_start (valist, nextarg);
 }
 
-/* Implement `va_arg'.  */
+/* Implement `va_arg' for stdarg.  */
 
 rtx
 sparc_va_arg (tree valist, tree type)
@@ -5851,44 +5924,36 @@ sparc_va_arg (tree valist, tree type)
   HOST_WIDE_INT size, rsize, align;
   tree addr, incr;
   rtx addr_rtx;
-  int indirect = 0;
+  bool indirect;
 
-  /* Round up sizeof(type) to a word.  */
-  size = int_size_in_bytes (type);
-  rsize = (size + UNITS_PER_WORD - 1) & -UNITS_PER_WORD;
-  align = 0;
-
-  if (TARGET_ARCH64)
+  if (function_arg_pass_by_reference (0, TYPE_MODE (type), type, 0))
     {
-      if (TYPE_ALIGN (type) >= 2 * (unsigned) BITS_PER_WORD)
-	align = 2 * UNITS_PER_WORD;
-
-      /* Consider complex values as aggregates, so care
-	 for CTImode and TCmode.  */
-      if ((unsigned HOST_WIDE_INT) size > 16)
-	{
-	  indirect = 1;
-	  size = rsize = UNITS_PER_WORD;
-	  align = 0;
-	}
-      else if (AGGREGATE_TYPE_P (type))
-	{
-	  /* SPARC-V9 ABI states that structures up to 16 bytes in size
-	     are given whole slots as needed.  */
-	  if (size == 0)
-	    size = rsize = UNITS_PER_WORD;
-	  else
-	    size = rsize;
-	}
+      indirect = true;
+      size = rsize = UNITS_PER_WORD;
+      align = 0;
     }
   else
     {
-      if (AGGREGATE_TYPE_P (type)
-	  || TYPE_MODE (type) == SCmode
-	  || GET_MODE_SIZE (TYPE_MODE (type)) > 8)
+      indirect = false;
+      size = int_size_in_bytes (type);
+      rsize = (size + UNITS_PER_WORD - 1) & -UNITS_PER_WORD;
+      align = 0;
+    
+      if (TARGET_ARCH64)
 	{
-	  indirect = 1;
-	  size = rsize = UNITS_PER_WORD;
+	  /* For SPARC64, objects requiring 16-byte alignment get it.  */
+	  if (TYPE_ALIGN (type) >= 2 * (unsigned) BITS_PER_WORD)
+	    align = 2 * UNITS_PER_WORD;
+
+	  /* SPARC-V9 ABI states that structures up to 16 bytes in size
+	     are given whole slots as needed.  */
+	  if (AGGREGATE_TYPE_P (type))
+	    {
+	      if (size == 0)
+		size = rsize = UNITS_PER_WORD;
+	      else
+		size = rsize;
+	    }
 	}
     }
 
@@ -7259,6 +7324,7 @@ sparc_type_code (register tree type)
 	     existing front-ends.  */
 	  return (qualifiers | 7);	/* Who knows? */
 
+	case VECTOR_TYPE:
 	case CHAR_TYPE:		/* GNU Pascal CHAR type.  Not used in C.  */
 	case BOOLEAN_TYPE:	/* GNU Fortran BOOLEAN type.  */
 	case FILE_TYPE:		/* GNU Pascal FILE type.  */
