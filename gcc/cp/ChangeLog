@@ -1,3 +1,8 @@
+1998-06-17  Mark Mitchell  <mark@markmitchell.com>
+
+	* cp-tree.h (c_get_alias_set): Remove declaration added in
+	1998-06-13 change that should never have been checked in.
+
 1998-06-17  Jason Merrill  <jason@yorick.cygnus.com>
 
 	* typeck.c (build_binary_op_nodefault): Change % in format strings
