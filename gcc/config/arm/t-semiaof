@@ -4,7 +4,9 @@ ENQUIRE=
 CROSS_LIBGCC1 = libgcc1-aof.a
 LIBGCC2 = libgcc2-aof.a
 LIBGCC = libgcc-aof.a
-LIBGCC2_CFLAGS = -O2 -fomit-frame-pointer
+TARGET_LIBGCC2_CFLAGS = -fomit-frame-pointer
+LIBGCC2_DEBUG_CFLAGS = -g0
+
 LIBGCC1_TEST = #libgcc1-atest
 EXTRA_PARTS = crtbegin.o crtend.o
 STMP_FIXPROTO =

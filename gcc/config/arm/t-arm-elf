@@ -29,5 +29,3 @@ MULTILIB_MATCHES  =
 
 LIBGCC = stmp-multilib
 INSTALL_LIBGCC = install-multilib
-
-LIBGCC2_CFLAGS = -Dinhibit_libc
