@@ -2028,8 +2028,9 @@ out_shift_with_cnt (template,insn,operands,len)
      int *len;
 {
   rtx op[10];
-  int l_hi=0;
   char str[300];
+  int second_label = 1;
+  
   op[0] = operands[0];
   op[1] = operands[1];
   op[2] = operands[2];
@@ -2042,57 +2043,54 @@ out_shift_with_cnt (template,insn,operands,len)
 	++*len;
       else
 	strcat (str, "ldi %3,lo8(%2)");
+      second_label = 0;
     }
   else if (GET_CODE (operands[2]) == MEM)
     {
       int mov_len;
       rtx op_mov[10];
-      l_hi = 1;
-      if (len)
-	*len = 2;
+      
       op[3] = op_mov[0] = tmp_reg_rtx;
       op_mov[1] = op[2];
       
       if (!len)
 	{
 	  output_asm_insn (out_movqi_r_mr (insn, op_mov, NULL), op_mov);
-	  strcat (str,(AS2 (or,%3,%3)    CR_TAB
-		       AS1 (breq,L_hi%=)));
+	  strcat (str, AS1 (rjmp,2f));
 	}
       else
 	{
 	  out_movqi_r_mr (insn, op_mov, &mov_len);
-	  *len += mov_len;
+	  *len = mov_len + 1;
 	}
     }
   else if (register_operand (operands[2],QImode))
     {
-      l_hi = 1;
-      if (len)
-	*len += 2;
-      else
-	strcat (str, (AS2 (or,%2,%2) CR_TAB
-		      AS1 (breq,L_hi%=)));
-      
       if (reg_unused_after (insn, operands[2]))
-	{
-	  op[3] = op[2];
-	}
+	op[3] = op[2];
       else
 	{
 	  op[3] = tmp_reg_rtx;
 	  if (len)
 	    ++*len;
 	  else
-	    strcat (str, CR_TAB "mov %3,%2");
+	    strcat (str, "mov %3,%2" CR_TAB);
 	}
+      
+      if (len)
+	++*len;
+      else
+	strcat (str, AS1 (rjmp,2f));
+      
     }
   if (!len)
     {
-      strcat (str,"\n\t");
+      strcat (str,"\n1:\t");
       strcat (str, template);
-      if (l_hi)
-	strcat (str, "\nL_hi%=:");
+      strcat (str, second_label ? "\n2:\t" : "\n\t");
+      strcat (str,
+	      AS1 (dec,%3) CR_TAB
+	      AS1 (brpl,1b));
       output_asm_insn (str, op);
     }
 }
@@ -2178,9 +2176,7 @@ ashlqi3_out (insn,operands,len)
     }
   if (len)
     *len = 3;
-  out_shift_with_cnt (AS1 (lsl,%0)      CR_TAB
-		      AS1 (dec,%3)      CR_TAB
-		      AS1 (brne,_PC_-6),
+  out_shift_with_cnt (AS1 (lsl,%0),
 		      insn, operands, len);
   return "";
 }
@@ -2224,9 +2220,7 @@ ashlhi3_out (insn,operands,len)
   if (len)
     *len = 4;
   out_shift_with_cnt (AS1 (lsl,%0)  CR_TAB
-		      AS1 (rol,%B0) CR_TAB
-		      AS1 (dec,%3)  CR_TAB
-		      AS1 (brne,_PC_-8),
+		      AS1 (rol,%B0),
 		      insn, operands, len);
   return "";
 }
@@ -2310,9 +2304,7 @@ ashlsi3_out (insn,operands,len)
   out_shift_with_cnt (AS1 (lsl,%0)  CR_TAB
 		      AS1 (rol,%B0) CR_TAB
 		      AS1 (rol,%C0) CR_TAB
-		      AS1 (rol,%D0) CR_TAB
-		      AS1 (dec,%3)  CR_TAB
-		      AS1 (brne,_PC_-12),
+		      AS1 (rol,%D0),
 		      insn, operands, len);
   return "";
 }
@@ -2356,9 +2348,7 @@ ashrqi3_out (insn,operands,len)
     }
   if (len)
     *len = 3;
-  out_shift_with_cnt (AS1 (asr,%0) CR_TAB
-		      AS1 (dec,%3) CR_TAB
-		      AS1 (brne,_PC_-6),
+  out_shift_with_cnt (AS1 (asr,%0),
 		      insn, operands, len);
   return "";
 }
@@ -2410,9 +2400,7 @@ ashrhi3_out (insn,operands,len)
   if (len)
     *len = 4;
   out_shift_with_cnt (AS1 (asr,%B0) CR_TAB
-		      AS1 (ror,%A0) CR_TAB
-		      AS1 (dec,%3) CR_TAB
-		      AS1 (brne,_PC_-8),
+		      AS1 (ror,%A0),
 		      insn, operands, len);
   return "";
 }
@@ -2511,9 +2499,7 @@ ashrsi3_out (insn,operands,len)
   out_shift_with_cnt (AS1 (asr,%D0) CR_TAB
 		      AS1 (ror,%C0) CR_TAB
 		      AS1 (ror,%B0) CR_TAB
-		      AS1 (ror,%A0) CR_TAB
-		      AS1 (dec,%3) CR_TAB
-		      AS1 (brne,_PC_-12),
+		      AS1 (ror,%A0),
 		      insn, operands, len);
   return "";
 }
@@ -2598,9 +2584,7 @@ lshrqi3_out (insn,operands,len)
     }
   if (len)
     *len = 3;
-  out_shift_with_cnt (AS1 (lsr,%0) CR_TAB
-		      AS1 (dec,%3) CR_TAB
-		      AS1 (brne,_PC_-6),
+  out_shift_with_cnt (AS1 (lsr,%0),
 		      insn, operands, len);
   return "";
 }
@@ -2649,9 +2633,7 @@ lshrhi3_out (insn,operands,len)
   if (len)
     *len = 4;
   out_shift_with_cnt (AS1 (lsr,%B0) CR_TAB
-		      AS1 (ror,%A0) CR_TAB
-		      AS1 (dec,%3) CR_TAB
-		      AS1 (brne,_PC_-8),
+		      AS1 (ror,%A0),
 		      insn, operands, len);
   return "";
 }
@@ -2733,9 +2715,7 @@ lshrsi3_out (insn,operands,len)
   out_shift_with_cnt (AS1 (lsr,%D0) CR_TAB
 		      AS1 (ror,%C0) CR_TAB
 		      AS1 (ror,%B0) CR_TAB
-		      AS1 (ror,%A0) CR_TAB
-		      AS1 (dec,%3) CR_TAB
-		      AS1 (brne,_PC_-12),
+		      AS1 (ror,%A0),
 		      insn, operands, len);
   return "";
 }
