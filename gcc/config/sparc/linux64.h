@@ -146,8 +146,6 @@ Boston, MA 02111-1307, USA.  */
 #undef WCHAR_TYPE_SIZE
 #define WCHAR_TYPE_SIZE 32
 
-#undef MAX_WCHAR_TYPE_SIZE
-
 /* Define for support of TFmode long double.
    Sparc ABI says that long double is 4 words.  */
 #undef LONG_DOUBLE_TYPE_SIZE
