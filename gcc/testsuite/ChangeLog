@@ -1,3 +1,11 @@
+2000-07-07  Jakub Jelinek  <jakub@redhat.com>
+
+	* gcc.c-torture/execute/20000706-1.c: New test.
+	* gcc.c-torture/execute/20000706-2.c: New test.
+	* gcc.c-torture/execute/20000706-3.c: New test.
+	* gcc.c-torture/execute/20000706-4.c: New test.
+	* gcc.c-torture/execute/20000706-5.c: New test.
+
 2000-07-06  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* g++.old-deja/g++.pt/instantiate7.C: New test.
