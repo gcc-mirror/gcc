@@ -1,3 +1,9 @@
+2002-04-23  Aldy Hernandez  <aldyh@redhat.com>
+
+        * config/rs6000/altivec.h (vec_step): Remove extraneous
+        parentheses.
+        (vec_ctu): Cast return.
+
 2002-04-23  Alan Modra  <amodra@bigpond.net.au>
 
 	PR target/6413

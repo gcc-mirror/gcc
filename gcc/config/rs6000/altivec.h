@@ -4233,13 +4233,13 @@ struct __vec_step_help<vector float>
   __altivec_link_error_invalid_argument ())))
 
 #define vec_step(t) \
-  __ch (__builtin_types_compatible_p ((t), vector signed int), 4,		\
-  __ch (__builtin_types_compatible_p ((t), vector unsigned int), 4,	\
-  __ch (__builtin_types_compatible_p ((t), vector signed short), 8,	\
-  __ch (__builtin_types_compatible_p ((t), vector unsigned short), 8,	\
-  __ch (__builtin_types_compatible_p ((t), vector signed char), 16,	\
-  __ch (__builtin_types_compatible_p ((t), vector unsigned char), 16,	\
-  __ch (__builtin_types_compatible_p ((t), vector float), 4,		\
+  __ch (__builtin_types_compatible_p (t, vector signed int), 4,		\
+  __ch (__builtin_types_compatible_p (t, vector unsigned int), 4,	\
+  __ch (__builtin_types_compatible_p (t, vector signed short), 8,	\
+  __ch (__builtin_types_compatible_p (t, vector unsigned short), 8,	\
+  __ch (__builtin_types_compatible_p (t, vector signed char), 16,	\
+  __ch (__builtin_types_compatible_p (t, vector unsigned char), 16,	\
+  __ch (__builtin_types_compatible_p (t, vector float), 4,		\
   __altivec_link_error_invalid_argument ())))))))
 
 #define vec_add(a1, a2) \
@@ -4477,7 +4477,7 @@ __ch (__bin_args_eq (vector signed int, (a1), int, (a2)), \
 
 #define vec_cts(a1, a2) __builtin_altivec_vctsxs ((a1), (a2))
 
-#define vec_ctu(a1, a2) __builtin_altivec_vctuxs ((a1), (a2))
+#define vec_ctu(a1, a2) (vector unsigned int) __builtin_altivec_vctuxs ((a1), (a2))
 
 #define vec_dss(a1) __builtin_altivec_dss ((a1))
 
