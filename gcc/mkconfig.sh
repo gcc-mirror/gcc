@@ -33,6 +33,14 @@ fi
 output=$1
 rm -f ${output}T
 
+# This converts a file name into header guard macro format.
+hg_sed_expr='y,abcdefghijklmnopqrstuvwxyz./,ABCDEFGHIJKLMNOPQRSTUVWXYZ__,'
+header_guard=GCC_`echo ${output} | sed -e ${hg_sed_expr}`
+
+# Add multiple inclusion protection guard, part one.
+echo "#ifndef ${header_guard}" >> ${output}T
+echo "#define ${header_guard}" >> ${output}T
+
 # Define TARGET_CPU_DEFAULT if the system wants one.
 # This substitutes for lots of *.h files.
 if [ "$TARGET_CPU_DEFAULT" != "" ]; then
@@ -84,6 +92,9 @@ EOF
 EOF
     ;;
 esac
+
+# Add multiple inclusion protection guard, part two.
+echo "#endif /* ${header_guard} */" >> ${output}T
 
 # Avoid changing the actual file if possible.
 if [ -f $output ] && cmp ${output}T $output >/dev/null 2>&1; then
