@@ -1,3 +1,9 @@
+2001-11-23  Richard Sandiford  <rsandifo@redhat.com>
+
+	* final.c (output_addr_const): Output PC as '.' even if !flag_pic.
+	* varasm.c (output_constructor): Use assemble_integer rather
+	than ASM_OUTPUT_BYTE.
+
 2001-11-23  Andreas Jaeger  <aj@suse.de>
 
 	* cpplex.c (cpp_interpret_charconst): Use HOST_WIDE_INT for sign
