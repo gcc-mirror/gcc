@@ -1,3 +1,7 @@
+Thu Mar 28 19:13:36 CET 2002  Jan Hubicka  <jh@suse.cz>
+
+	* ifcvt.c (if_convert): Clear aux_for_blocks early enought.
+
 Thu Mar 28 13:21:53 CET 2002  Jan Hubicka  <jh@suse.cz>
 
 	* rtlanal.c: Include flags.h
