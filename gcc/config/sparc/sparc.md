@@ -367,11 +367,35 @@
   [(set_attr "type" "compare")])
 
 (define_insn ""
+  [(set (reg:CCFPE 0)
+	(compare:CCFPE (match_operand:DF 0 "register_operand" "f")
+		       (match_operand:DF 1 "register_operand" "f")))]
+  ""
+  "fcmped %0,%1"
+  [(set_attr "type" "fpcmp")])
+
+(define_insn ""
+  [(set (reg:CCFPE 0)
+	(compare:CCFPE (match_operand:SF 0 "register_operand" "f")
+		       (match_operand:SF 1 "register_operand" "f")))]
+  ""
+  "fcmpes %0,%1"
+  [(set_attr "type" "fpcmp")])
+
+(define_insn ""
+  [(set (reg:CCFPE 0)
+	(compare:CCFPE (match_operand:TF 0 "register_operand" "f")
+		       (match_operand:TF 1 "register_operand" "f")))]
+  ""
+  "fcmpeq %0,%1"
+  [(set_attr "type" "fpcmp")])
+
+(define_insn ""
   [(set (reg:CCFP 0)
 	(compare:CCFP (match_operand:DF 0 "register_operand" "f")
 		      (match_operand:DF 1 "register_operand" "f")))]
   ""
-  "fcmped %0,%1"
+  "fcmpd %0,%1"
   [(set_attr "type" "fpcmp")])
 
 (define_insn ""
@@ -379,7 +403,7 @@
 	(compare:CCFP (match_operand:SF 0 "register_operand" "f")
 		      (match_operand:SF 1 "register_operand" "f")))]
   ""
-  "fcmpes %0,%1"
+  "fcmps %0,%1"
   [(set_attr "type" "fpcmp")])
 
 (define_insn ""
@@ -387,7 +411,7 @@
 	(compare:CCFP (match_operand:TF 0 "register_operand" "f")
 		      (match_operand:TF 1 "register_operand" "f")))]
   ""
-  "fcmpeq %0,%1"
+  "fcmpq %0,%1"
   [(set_attr "type" "fpcmp")])
 
 ;; The SEQ and SNE patterns are special because they can be done

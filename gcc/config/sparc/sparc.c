@@ -329,7 +329,8 @@ normal_comp_operator (op, mode)
   if (GET_RTX_CLASS (code) != '<')
     return 0;
 
-  if (GET_MODE (XEXP (op, 0)) == CCFPmode)
+  if (GET_MODE (XEXP (op, 0)) == CCFPmode
+      || GET_MODE (XEXP (op, 0)) == CCFPEmode)
     return 1;
 
   return (code != NE && code != EQ && code != GEU && code != LTU);
@@ -1915,8 +1916,9 @@ output_scc_insn (operands, insn)
    it can easily be got.  */
 
 /* Modes for condition codes.  */
-#define C_MODES		\
-  ((1 << (int) CCmode) | (1 << (int) CC_NOOVmode) | (1 << (int) CCFPmode))
+#define C_MODES						\
+  ((1 << (int) CCmode) | (1 << (int) CC_NOOVmode)	\
+   | (1 << (int) CCFPmode) | (1 << (int) CCFPEmode))
 
 /* Modes for single-word (and smaller) quantities.  */
 #define S_MODES						\
@@ -2282,32 +2284,33 @@ output_cbranch (op, label, reversed, annul, noop)
      Because there is currently no concept of pre-delay slots, we can fix
      this only by always emitting a nop before a floating point branch.  */
 
-  if (mode == CCFPmode)
+  if (mode == CCFPmode || mode == CCFPEmode)
     strcpy (string, "nop\n\t");
 
   /* If not floating-point or if EQ or NE, we can just reverse the code.  */
-  if (reversed && (mode != CCFPmode || code == EQ || code == NE))
+  if (reversed
+      && ((mode != CCFPmode && mode != CCFPEmode) || code == EQ || code == NE))
     code = reverse_condition (code), reversed = 0;
 
   /* Start by writing the branch condition.  */
   switch (code)
     {
     case NE:
-      if (mode == CCFPmode)
+      if (mode == CCFPmode || mode == CCFPEmode)
 	strcat (string, "fbne");
       else
 	strcpy (string, "bne");
       break;
 
     case EQ:
-      if (mode == CCFPmode)
+      if (mode == CCFPmode || mode == CCFPEmode)
 	strcat (string, "fbe");
       else
 	strcpy (string, "be");
       break;
 
     case GE:
-      if (mode == CCFPmode)
+      if (mode == CCFPmode || mode == CCFPEmode)
 	{
 	  if (reversed)
 	    strcat (string, "fbul");
@@ -2321,7 +2324,7 @@ output_cbranch (op, label, reversed, annul, noop)
       break;
 
     case GT:
-      if (mode == CCFPmode)
+      if (mode == CCFPmode || mode == CCFPEmode)
 	{
 	  if (reversed)
 	    strcat (string, "fbule");
@@ -2333,7 +2336,7 @@ output_cbranch (op, label, reversed, annul, noop)
       break;
 
     case LE:
-      if (mode == CCFPmode)
+      if (mode == CCFPmode || mode == CCFPEmode)
 	{
 	  if (reversed)
 	    strcat (string, "fbug");
@@ -2345,7 +2348,7 @@ output_cbranch (op, label, reversed, annul, noop)
       break;
 
     case LT:
-      if (mode == CCFPmode)
+      if (mode == CCFPmode || mode == CCFPEmode)
 	{
 	  if (reversed)
 	    strcat (string, "fbuge");
