@@ -1928,7 +1928,24 @@ write_pointer_to_member_type (type)
      tree type;
 {
   write_char ('M');
-  write_type (TYPE_PTRMEM_CLASS_TYPE (type));
+  /* For a pointer-to-function member, the class type may be
+     cv-qualified, bug that won't be reflected in
+     TYPE_PTRMEM_CLASS_TYPE.  So, we go fishing around in
+     TYPE_PTRMEM_POINTED_TO_TYPE instead.  */
+  if (TYPE_PTRMEMFUNC_P (type))
+    {
+      tree fn_type;
+      tree this_type;
+
+      fn_type = TYPE_PTRMEM_POINTED_TO_TYPE (type);
+      /* The first parameter must be a POINTER_TYPE pointing to the
+	 `this' parameter.  */
+      this_type = TREE_TYPE (TREE_VALUE (TYPE_ARG_TYPES (fn_type)));
+      write_type (this_type);
+    }
+  /* For a pointer-to-data member, things are simpler.  */
+  else
+    write_type (TYPE_PTRMEM_CLASS_TYPE (type));
   write_type (TYPE_PTRMEM_POINTED_TO_TYPE (type));
 }
 
