@@ -5142,8 +5142,8 @@ tsubst_friend_function (tree decl, tree args)
     {
       /* Check to see that the declaration is really present, and,
 	 possibly obtain an improved declaration.  */
-      tree fn = check_classfn (DECL_CONTEXT (new_friend),
-			       new_friend, false);
+      tree fn = check_classfn (DECL_CONTEXT (new_friend), 
+			       new_friend, NULL_TREE);
       
       if (fn)
 	new_friend = fn;
