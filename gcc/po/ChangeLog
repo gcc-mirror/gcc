@@ -1,3 +1,7 @@
+2001-05-16  Zack Weinberg  <zackw@stanford.edu>
+
+	* POTFILES.in: Remove assert.h.
+
 2001-05-13  Mark Mitchell  <mark@codesourcery.com>
 
 	* Makefile.in.in (STAMP): New macro.

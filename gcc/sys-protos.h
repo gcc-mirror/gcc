@@ -16,7 +16,6 @@ extern int                    __aread(int, int, char *, uint, ecb_t *);
 extern void                   __assert(const char *, const char *, int);
 extern int                    __asyncio(int, aioop_t *, int);
 extern int                    __awrite(int, int, char *, uint, ecb_t *);
-extern void                   __eprintf(const char *);
 extern int                    __evcntl(evver_t, evcntlcmds_t, long int, long int);
 extern int                    __evexit(evver_t, idtype_t, id_t, const ecb_t *);
 extern int                    __evexitset(evver_t, const procset_t *, hostid_t, const ecb_t *);

@@ -4,11 +4,6 @@
 # Even LANG_EXTRA_HEADERS may be temporary.
 USER_H=$(LANG_EXTRA_HEADERS)
 
-# We don't want this one either.
-INSTALL_ASSERT_H=
-
-
-
 CROSS_LIBGCC1 = libgcc1-asm.a
 LIBGCC1 = libgcc1-asm.a
 
