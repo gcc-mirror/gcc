@@ -1,5 +1,5 @@
 /* CPP Library.
-   Copyright (C) 1986, 87, 89, 92, 93, 94, 1995 Free Software Foundation, Inc.
+   Copyright (C) 1986, 87, 89, 92-5, 1996 Free Software Foundation, Inc.
    Written by Per Bothner, 1994-95.
    Based on CCCP program by by Paul Rubin, June 1986
    Adapted to ANSI C, Richard Stallman, Jan 1987
@@ -365,6 +365,7 @@ static struct default_include {
   = {
     /* Pick up GNU C++ specific include files.  */
     { GPLUSPLUS_INCLUDE_DIR, 1, 1 },
+    { OLD_GPLUSPLUS_INCLUDE_DIR, 1, 1 },
 #ifdef CROSS_COMPILE
     /* This is the dir for fixincludes.  Put it just before
        the files that we fix.  */
