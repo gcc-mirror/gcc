@@ -1,4 +1,4 @@
-// { dg-do run { target i?86-*-* x86_64-*-* s390*-*-* alpha*-*-* ia64-*-* } }
+// { dg-do run { target i?86-*-* x86_64-*-* s390*-*-* alpha*-*-* ia64-*-* sparc*-*-* } }
 
 #include <stdarg.h>
 
