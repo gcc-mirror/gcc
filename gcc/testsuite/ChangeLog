@@ -1,3 +1,7 @@
+Fri Jun 12 01:08:49 1998  Jeffrey A Law  (law@cygnus.com)
+
+	* gcc.c-torture/execute/980612-1.c: New test.
+
 Mon Jun  8 02:13:42 1998  Jeffrey A Law  (law@cygnus.com)
 
 	* gcc.dg/980523-1.c: Only test on ppc-linux.
