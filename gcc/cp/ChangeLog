@@ -1,5 +1,7 @@
 1999-05-22  Mark Mitchell  <mark@codesourcery.com>
 
+	* tree.c (mapcar): Handle LVALUE_EXPR.
+
 	* cp-tree.h (cplus_expand_constant): Declare.
 	* cvt.c (convert_to_pointer): Expand PTRMEM_CSTs when they're
 	converted from one pointer-to-object type to another.
