@@ -1,14 +1,11 @@
+2003-05-15  Phil Edwards  <pme@gcc.gnu.org>
+
+	* testsuite/Makefile.am:  Properly quote LD_RUN_PATH.
+	* testsuite/Makefile.in:  Regenerate.
+
 2003-05-14  Loren J. Rittle  <ljrittle@acm.org>
         
 	* testsuite/thread/pthread4.cc: Tweak test.
-
-2003-05-13  Release Manager
-
-	* GCC 3.3 Released.
-
-2003-05-13  Release Manager
-
-	* GCC 3.3 Released.
 
 2003-05-13  Release Manager
 
