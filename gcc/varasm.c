@@ -706,23 +706,13 @@ make_decl_rtl (decl, asmspec, top_level)
 		globalize_reg (reg_number + --nregs);
 	    }
 	}
-      /* Specifying a section attribute on an uninitialized variable does not
-	 (and cannot) cause it to be put in the given section.  The linker
-	 can only put initialized objects in specific sections, everything
-	 else goes in bss for the linker to sort out later (otherwise the
-	 linker would give a duplicate definition error for each compilation
-	 unit that behaved thusly).  So warn the user.  */
+      /* Specifying a section attribute on a variable forces it into a
+         non-.bss section, and thus it cannot be common. */
       else if (TREE_CODE (decl) == VAR_DECL
 	       && DECL_SECTION_NAME (decl) != NULL_TREE
 	       && DECL_INITIAL (decl) == NULL_TREE
 	       && DECL_COMMON (decl))
-	{
-	  warning_with_decl (decl,
-			     "section attribute ignored for uninitialized variable `%s'");
-	  /* Remove the section name so subsequent declarations won't see it.
-	     We are ignoring it, remember.  */
-	  DECL_SECTION_NAME (decl) = NULL_TREE;
-	}
+          DECL_COMMON (decl) = 0;
 
       /* Now handle ordinary static variables and functions (in memory).
 	 Also handle vars declared register invalidly.  */
