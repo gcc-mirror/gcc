@@ -1,3 +1,8 @@
+Mon Oct 29 21:19:53 2001  Nicola Pero  <n.pero@mi.flashnet.it>
+
+	* objc/execute/class_self-1.m: New test.
+	* objc/execute/class_self-2.m: New test.
+
 2001-10-25  Zack Weinberg  <zack@codesourcery.com>
 
 	* gcc.misc-tests/msgs.exp: Delete.
