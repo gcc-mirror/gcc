@@ -111,6 +111,8 @@ proc libjava_arguments {{mode compile}} {
     global base_dir
     global LIBJAVA
     global LIBGC
+    global LIBQTHREADS
+    global LIBZ
     global srcdir subdir objdir
     global TOOL_OPTIONS
     global GCJ_UNDER_TEST
@@ -135,6 +137,12 @@ proc libjava_arguments {{mode compile}} {
 	set libqthreads [libjava_find_lib qthreads gcjcoop]
     }
 
+    if [info exists LIBZ] {
+	set libz $LIBZ
+    } else {
+	set libz [libjava_find_lib zlib zgcj]
+    }
+
     # FIXME: there's no way to determine whether -lpthread is
     # required.  We should get this info from configure, or it should
     # just be in the compiler driver.
@@ -142,6 +150,7 @@ proc libjava_arguments {{mode compile}} {
     verbose "using LIBJAVA = $libjava" 2
     verbose "using LIBGC = $libgc" 2
     verbose "using LIBQTHREADS = $libqthreads" 2
+    verbose "using LIBZ = $libz" 2
     set args ""
 
     # Basically we want to build up a colon separated path list from
@@ -178,6 +187,7 @@ proc libjava_arguments {{mode compile}} {
     lappend args "libs=$libjava";
     lappend args "libs=$libgc";
     lappend args "libs=$libqthreads"
+    lappend args "libs=$libz"
     lappend args debug
 
     if { [target_info needs_status_wrapper]!="" && [info exists gluefile] } {
