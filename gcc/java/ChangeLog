@@ -1,3 +1,14 @@
+Sat Dec 12 19:46:04 1998  Alexandre Petit-Bianco  <apbianco@sendai.cygnus.com>
+
+	* parse.y (<type_declaration>):  Do maybe_generate_clinit last.
+	(register_fields):  If a static fields has an initializer, just
+	chain it on ctxp->static_initialized, and handle later.
+	(java_complete_expand_methods):  Force <clinit> first.
+	(resolve_expression_name, resolve_field_access):  Just get DECL_INITIAL
+	- it's already been completed.
+	(patch_initialized_static_field):  New function.
+	(java_complete_field):  Call it.
+
 Sat Dec 12 19:21:11 1998  Per Bothner  <bothner@cygnus.com>
 
 	* expr.c (encode_newarray_type, build_new_array):  New functions.
