@@ -350,6 +350,9 @@ fi
 AC_SUBST(NO_MINUS_C_MINUS_O)
 AC_SUBST(OUTPUT_OPTION)
 
+# See if GNAT has been installed
+gcc_AC_PROG_GNAT
+
 AC_CACHE_CHECK(whether ${CC-cc} accepts -Wno-long-long,
 ac_cv_prog_cc_no_long_long,
 [save_CFLAGS="$CFLAGS"
@@ -357,8 +360,26 @@ CFLAGS="-Wno-long-long"
 AC_TRY_COMPILE(,,ac_cv_prog_cc_no_long_long=yes,
 	       ac_cv_prog_cc_no_long_long=no)
 CFLAGS="$save_CFLAGS"])
+
+if test x$have_gnat != xno ; then 
+AC_CACHE_CHECK(whether ${ADAC} accepts -Wno-long-long,
+ac_cv_prog_adac_no_long_long,
+[cat >conftest.adb <<EOF
+procedure conftest is begin null; end conftest;
+EOF
+if $ADAC -Wno-long-long -c conftest.adb 1>&5 2>&5 ; then
+  ac_cv_prog_adac_no_long_long=yes
+else
+  ac_cv_prog_adac_no_long_long=no
+fi
+rm -f conftest*])
+else
+  ac_cv_prog_adac_no_long_long=yes
+fi
+
 strict1_warn=
-if test $ac_cv_prog_cc_no_long_long = yes; then
+if test $ac_cv_prog_cc_no_long_long = yes && \
+    test $ac_cv_prog_adac_no_long_long = yes ; then
   strict1_warn="-pedantic -Wno-long-long"
 fi
 AC_SUBST(strict1_warn)
@@ -477,9 +498,6 @@ AC_CHECK_HEADER(pthread.h, [have_pthread_h=yes], [have_pthread_h=])
 gcc_AC_C_CHAR_BIT
 gcc_AC_C_COMPILE_ENDIAN
 gcc_AC_C_FLOAT_FORMAT
-
-# See if GNAT has been installed
-gcc_AC_PROG_GNAT
 
 # See if we have the mktemp command.
 AC_CHECK_PROG(have_mktemp_command, mktemp, yes, no)
