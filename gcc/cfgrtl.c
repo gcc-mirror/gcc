@@ -682,7 +682,7 @@ try_redirect_by_replacing_jump (e, target)
 
   if (tmp || !onlyjump_p (insn))
     return false;
-  if (reload_completed && JUMP_LABEL (insn)
+  if (flow2_completed && JUMP_LABEL (insn)
       && (table = NEXT_INSN (JUMP_LABEL (insn))) != NULL_RTX
       && GET_CODE (table) == JUMP_INSN
       && (GET_CODE (PATTERN (table)) == ADDR_VEC
