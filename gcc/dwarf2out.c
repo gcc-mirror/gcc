@@ -1404,24 +1404,24 @@ dwarf2out_frame_debug_expr (expr, label)
 	  cfa_temp.offset |= INTVAL (XEXP (src, 1));
 	  break;
 
+	  /* Skip over HIGH, assuming it will be followed by a LO_SUM,
+	     which will fill in all of the bits.  */
+	  /* Rule 8 */
+	case HIGH:
+	  break;
+
+	  /* Rule 9 */
+	case LO_SUM:
+	  if (GET_CODE (XEXP (src, 1)) != CONST_INT)
+	    abort ();
+	  cfa_temp.reg = REGNO (dest);
+	  cfa_temp.offset = INTVAL (XEXP (src, 1));
+	  break;
+
 	default:
 	  abort ();
 	}
       def_cfa_1 (label, &cfa);
-      break;
-
-      /* Skip over HIGH, assuming it will be followed by a LO_SUM, which
-	 will fill in all of the bits.  */
-      /* Rule 8 */
-    case HIGH:
-      break;
-
-      /* Rule 9 */
-    case LO_SUM:
-      if (GET_CODE (XEXP (src, 1)) != CONST_INT)
-	abort ();
-      cfa_temp.reg = REGNO (dest);
-      cfa_temp.offset = INTVAL (XEXP (src, 1));
       break;
 
     case MEM:
