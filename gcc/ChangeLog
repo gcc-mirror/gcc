@@ -1,3 +1,9 @@
+2005-02-16  Diego Novillo  <dnovillo@redhat.com>
+
+	PR tree-optimization/19865
+	* tree-optimize.c (init_tree_optimization_passes): Run
+	pass_may_alias after pass_sra.
+
 2005-02-16  Richard Henderson  <rth@redhat.com>
 	    Stuart Hastings  <stuart@apple.com>
 
