@@ -279,8 +279,8 @@ mcore_print_operand_address (stream, x)
 	switch (GET_CODE (index))
 	  {
 	  case CONST_INT:
-	    fprintf (stream, "(%s,%d)", reg_names[REGNO(base)],
-		     INTVAL (index));
+	    fprintf (stream, "(%s," HOST_WIDE_INT_PRINT_DEC ")",
+		     reg_names[REGNO(base)], INTVAL (index));
 	    break;
 
 	  default:
@@ -331,10 +331,10 @@ mcore_print_operand (stream, x, code)
       fprintf (asm_out_file, "%d", exact_log2 (~INTVAL (x)));
       break;
     case 'O':
-      fprintf (asm_out_file, "%d", INTVAL (x));
+      fprintf (asm_out_file, HOST_WIDE_INT_PRINT_DEC, INTVAL (x));
       break;
     case 'M':
-      fprintf (asm_out_file, "%d", - INTVAL (x));
+      fprintf (asm_out_file, HOST_WIDE_INT_PRINT_DEC, - INTVAL (x));
       break;
     case 'R':
       /* Next location along in memory or register.  */
@@ -356,10 +356,10 @@ mcore_print_operand (stream, x, code)
 	       reg_names[REGNO (x) + 3]);
       break;
     case 'x':
-      fprintf (asm_out_file, "0x%x", INTVAL (x));
+      fprintf (asm_out_file, HOST_WIDE_INT_PRINT_HEX, INTVAL (x));
       break;
     case 'X':
-      fprintf (asm_out_file, "%d", 3 - INTVAL (x) / 8);
+      fprintf (asm_out_file, HOST_WIDE_INT_PRINT_DEC, 3 - INTVAL (x) / 8);
       break;
 
     default:
