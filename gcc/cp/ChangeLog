@@ -1,3 +1,8 @@
+Sun Apr 26 12:10:18 1998  Mark Mitchell  <mmitchell@usa.net>
+
+	* pt.c (check_explicit_specialization): Handle overloaded
+	constructors correctly.
+
 Thu Apr 23 21:19:06 1998  Jason Merrill  <jason@yorick.cygnus.com>
 
 	* cp-tree.def: Add WRAPPER.  USER_CONV now only has two ops.
