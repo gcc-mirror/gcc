@@ -1112,7 +1112,7 @@ a name having multiple meanings within a class.
 Downgrade messages about nonconformant code from errors to warnings.  By
 default, g++ effectively sets @samp{-pedantic-errors} without
 @samp{-pedantic}; this option reverses that.  This behavior and this
-option are superceded by @samp{-pedantic}, which works as it does for GNU C.
+option are superseded by @samp{-pedantic}, which works as it does for GNU C.
 
 @item -frepo
 Enable automatic template instantiation.  This option also implies
