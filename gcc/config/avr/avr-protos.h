@@ -1,6 +1,6 @@
 /* Prototypes for exported functions defined in avr.c
    
-   Copyright (C) 2000 Free Software Foundation, Inc.
+   Copyright (C) 2000, 2001 Free Software Foundation, Inc.
    Contributed by Denis Chertykov (denisc@overta.ru)
 
    This file is part of GNU CC.
@@ -156,6 +156,7 @@ extern void   out_shift_with_cnt     PARAMS ((const char *template, rtx insn,
 					      rtx operands[], int *len,
 					      int t_len));
 extern int    const_int_pow2_p       PARAMS ((rtx x));
+extern int    avr_peep2_scratch_safe PARAMS ((rtx reg_rtx));
 #endif /* RTX_CODE */
 
 #ifdef HAVE_MACHINE_MODES

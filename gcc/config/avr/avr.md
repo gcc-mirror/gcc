@@ -1,7 +1,7 @@
 ;; -*- Mode: Scheme -*-
 ;;   Machine description for GNU compiler,
 ;;   for ATMEL AVR micro controllers.
-;;   Copyright (C) 1998, 1999, 2000 Free Software Foundation, Inc.
+;;   Copyright (C) 1998, 1999, 2000, 2001 Free Software Foundation, Inc.
 ;;   Contributed by Denis Chertykov (denisc@overta.ru)
 
 ;; This file is part of GNU CC.
@@ -200,7 +200,8 @@
     && test_hard_reg_class (NO_LD_REGS, operands[0]))"
   [(parallel [(set (match_dup 0) (match_dup 1))
 	      (clobber (match_dup 2))])]
-  "")
+  "if (!avr_peep2_scratch_safe (operands[2]))
+     FAIL;")
 
 ;;============================================================================
 ;; move word (16 bit)
@@ -228,7 +229,8 @@
     && test_hard_reg_class (NO_LD_REGS, operands[0]))"
   [(parallel [(set (match_dup 0) (match_dup 1))
 	      (clobber (match_dup 2))])]
-  "")
+  "if (!avr_peep2_scratch_safe (operands[2]))
+     FAIL;")
 
 ;; '*' because it is not used in rtl generation, only in above peephole
 (define_insn "*reload_inhi"
@@ -276,7 +278,8 @@
     && test_hard_reg_class (NO_LD_REGS, operands[0]))"
   [(parallel [(set (match_dup 0) (match_dup 1))
 	      (clobber (match_dup 2))])]
-  "")
+  "if (!avr_peep2_scratch_safe (operands[2]))
+     FAIL;")
 
 ;; '*' because it is not used in rtl generation.
 (define_insn "*reload_insi"
@@ -929,7 +932,8 @@
   ""
   [(parallel [(set (match_dup 0) (ashift:HI (match_dup 1) (match_dup 2)))
 	      (clobber (match_dup 3))])]
-  "")
+  "if (!avr_peep2_scratch_safe (operands[3]))
+     FAIL;")
 
 (define_insn "*ashlhi3_const"
   [(set (match_operand:HI 0 "register_operand"            "=r,r,r,r")
@@ -949,7 +953,8 @@
   ""
   [(parallel [(set (match_dup 0) (ashift:SI (match_dup 1) (match_dup 2)))
 	      (clobber (match_dup 3))])]
-  "")
+  "if (!avr_peep2_scratch_safe (operands[3]))
+     FAIL;")
 
 (define_insn "*ashlsi3_const"
   [(set (match_operand:SI 0 "register_operand"            "=r,r,r")
@@ -1001,7 +1006,8 @@
   ""
   [(parallel [(set (match_dup 0) (ashiftrt:HI (match_dup 1) (match_dup 2)))
 	      (clobber (match_dup 3))])]
-  "")
+  "if (!avr_peep2_scratch_safe (operands[3]))
+     FAIL;")
 
 (define_insn "*ashrhi3_const"
   [(set (match_operand:HI 0 "register_operand"              "=r,r,r,r")
@@ -1021,7 +1027,8 @@
   ""
   [(parallel [(set (match_dup 0) (ashiftrt:SI (match_dup 1) (match_dup 2)))
 	      (clobber (match_dup 3))])]
-  "")
+  "if (!avr_peep2_scratch_safe (operands[3]))
+     FAIL;")
 
 (define_insn "*ashrsi3_const"
   [(set (match_operand:SI 0 "register_operand"              "=r,r,r")
@@ -1073,7 +1080,8 @@
   ""
   [(parallel [(set (match_dup 0) (lshiftrt:HI (match_dup 1) (match_dup 2)))
 	      (clobber (match_dup 3))])]
-  "")
+  "if (!avr_peep2_scratch_safe (operands[3]))
+     FAIL;")
 
 (define_insn "*lshrhi3_const"
   [(set (match_operand:HI 0 "register_operand"              "=r,r,r,r")
@@ -1093,7 +1101,8 @@
   ""
   [(parallel [(set (match_dup 0) (lshiftrt:SI (match_dup 1) (match_dup 2)))
 	      (clobber (match_dup 3))])]
-  "")
+  "if (!avr_peep2_scratch_safe (operands[3]))
+     FAIL;")
 
 (define_insn "*lshrsi3_const"
   [(set (match_operand:SI 0 "register_operand"              "=r,r,r")

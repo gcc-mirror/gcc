@@ -1,5 +1,5 @@
 /* Subroutines for insn-output.c for ATMEL AVR micro controllers
-   Copyright (C) 1998, 1999, 2000 Free Software Foundation, Inc.
+   Copyright (C) 1998, 1999, 2000, 2001 Free Software Foundation, Inc.
    Contributed by Denis Chertykov (denisc@overta.ru)
 
    This file is part of GNU CC.
@@ -5374,3 +5374,26 @@ avr_output_addr_vec_elt (stream, value)
   jump_tables_size++;
 }
 
+/* Returns 1 if SCRATCH are safe to be allocated as a scratch
+   registers (for a define_peephole2) in the current function.  */
+
+int
+avr_peep2_scratch_safe (scratch)
+     rtx scratch;
+{
+  if ((interrupt_function_p (current_function_decl)
+       || signal_function_p (current_function_decl))
+      && leaf_function_p ())
+    {
+      int first_reg = true_regnum (scratch);
+      int last_reg = first_reg + GET_MODE_SIZE (GET_MODE (scratch)) - 1;
+      int reg;
+
+      for (reg = first_reg; reg <= last_reg; reg++)
+	{
+	  if (!regs_ever_live[reg])
+	    return 0;
+	}
+    }
+  return 1;
+}

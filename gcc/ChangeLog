@@ -1,3 +1,11 @@
+2001-01-05  Marek Michalkiewicz  <marekm@linux.org.pl>
+	    Denis Chertykov  <denisc@overta.ru>
+
+	* config/avr/avr-protos.h (avr_peep2_scratch_safe): Prototype.
+	* config/avr/avr.c (avr_peep2_scratch_safe): New function.
+	* config/avr/avr.md (all peepholes that request a scratch register):
+	Call it, FAIL the peephole if not safe (in interrupt functions).
+
 2001-01-05  Mark Mitchell  <mark@codesourcery.com>
 
 	* ggc-page.c (NUM_EXTRA_ORDERS): Hardwire to zero for now.
