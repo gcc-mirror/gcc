@@ -1,3 +1,16 @@
+2003-12-05  Eric Botcazou  <ebotcazou@libertysurf.fr>
+
+	PR middle-end/11151
+	* function.h (struct function): New field 'x_naked_return_label'.
+	* function.c (free_after_compilation): Set it to NULL.
+	(expand_function_end): Emit 'naked_return_label' if it exists.
+	* rtl.h (expand_naked_return): Declare.
+	* stmt.c (expand_naked_return): New function to generate a
+	jump to 'naked_return_label'.
+	* builtins.c (expand_builtin_return): Call expand_naked_return
+	instead of expand_null_return.
+	* config/sparc/sparc.md (untyped_return): Likewise.
+
 2003-12-04  Andrew Pinski  <pinskia@physics.uc.edu>
 
 	PR target/11322
