@@ -1,5 +1,16 @@
 2002-01-02  Nathan Sidwell  <nathan@codesourcery.com>
 
+	PR c++/35
+	* cp-tree.h (DECL_LANG_FLAG_0): Used for PARM_DECL too.
+	(DECL_TEMPLATE_PARM_P): A PARM_DECL might be one too.
+	* pt.c (process_template_parm): SET_DECL_TEMPLATE_PARM_P on the
+	PARM_DECL.
+	(tsubst_template_parms): Break up loop statements.
+	(tsubst_decl, case PARM_DECL): Copy DECL_TEMPLATE_PARM_P. Template
+	parm PARM_DECLs don't get promoted.
+
+2002-01-02  Nathan Sidwell  <nathan@codesourcery.com>
+
 	PR c++/5123
 	* typeck.c (build_component_ref): Cope with a TEMPLATE_ID_EXPR.
 	(build_x_function_call): Cope with a COMPONENT_REF containing a

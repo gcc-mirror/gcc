@@ -1935,6 +1935,7 @@ process_template_parm (list, next)
       /* is a const-param */
       parm = grokdeclarator (TREE_VALUE (parm), TREE_PURPOSE (parm),
 			     PARM, 0, NULL);
+      SET_DECL_TEMPLATE_PARM_P (parm);
 
       /* [temp.param]
 
@@ -5409,17 +5410,16 @@ tsubst_template_parms (parms, args, complain)
       
       for (i = 0; i < TREE_VEC_LENGTH (new_vec); ++i)
 	{
-	  tree default_value =
-	    TREE_PURPOSE (TREE_VEC_ELT (TREE_VALUE (parms), i));
-	  tree parm_decl = 
-	    TREE_VALUE (TREE_VEC_ELT (TREE_VALUE (parms), i));
-	  
-	  TREE_VEC_ELT (new_vec, i)
-	    = build_tree_list (maybe_fold_nontype_arg (
-				  tsubst_expr (default_value, args, complain,
-					       NULL_TREE)), 
-			       tsubst (parm_decl, args, complain,
-				       NULL_TREE));
+	  tree tuple = TREE_VEC_ELT (TREE_VALUE (parms), i);
+	  tree default_value = TREE_PURPOSE (tuple);
+	  tree parm_decl = TREE_VALUE (tuple);
+
+	  parm_decl = tsubst (parm_decl, args, complain, NULL_TREE);
+	  default_value = tsubst_expr (default_value, args,
+				       complain, NULL_TREE);
+	  tuple = build_tree_list (maybe_fold_nontype_arg (default_value), 
+				   parm_decl);
+	  TREE_VEC_ELT (new_vec, i) = tuple;
 	}
       
       *new_parms = 
@@ -5909,6 +5909,9 @@ tsubst_decl (t, args, type)
     case PARM_DECL:
       {
 	r = copy_node (t);
+	if (DECL_TEMPLATE_PARM_P (t))
+	  SET_DECL_TEMPLATE_PARM_P (r);
+	
 	TREE_TYPE (r) = type;
 	c_apply_type_quals_to_decl (cp_type_quals (type), r);
 
@@ -5919,7 +5922,7 @@ tsubst_decl (t, args, type)
 				     /*complain=*/1, in_decl);
 
 	DECL_CONTEXT (r) = NULL_TREE;
-	if (PROMOTE_PROTOTYPES
+	if (!DECL_TEMPLATE_PARM_P (r) && PROMOTE_PROTOTYPES
 	    && INTEGRAL_TYPE_P (type)
 	    && TYPE_PRECISION (type) < TYPE_PRECISION (integer_type_node))
 	  DECL_ARG_TYPE (r) = integer_type_node;
