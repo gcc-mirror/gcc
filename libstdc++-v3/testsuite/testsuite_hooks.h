@@ -40,6 +40,12 @@
 //   calling application.  The argument to __set_testsuite_memlimit() is the
 //   limit in megabytes (a floating-point number).  If _GLIBCPP_MEM_LIMITS is
 //   #defined before including this header, then no limiting is attempted.
+//
+// 3)  gnu_counting_struct
+//   This is a POD with a static data member, gnu_counting_struct::count,
+//   which starts at zero, increments on instance construction, and decrements
+//   on instance destruction.  "assert_count(n)" can be called to VERIFY()
+//   that the count equals N.
 
 #ifndef _GLIBCPP_TESTSUITE_HOOKS_H
 #define _GLIBCPP_TESTSUITE_HOOKS_H
@@ -98,6 +104,24 @@ __set_testsuite_memlimit(float __size = MEMLIMIT_MB)
 #endif
 }
 #endif
+
+
+struct gnu_counting_struct
+{
+    // Specifically and glaringly-obviously marked 'signed' so that when
+    // count mistakenly goes negative, we can track the patterns of
+    // deletions easier.
+    typedef  signed int     size_type;
+    static size_type   count;
+    gnu_counting_struct() { ++count; }
+    gnu_counting_struct (const gnu_counting_struct&) { ++count; }
+    ~gnu_counting_struct() { --count; }
+};
+
+#define assert_count(n)   VERIFY(gnu_counting_struct::count == n)
+
+gnu_counting_struct::size_type  gnu_counting_struct::count = 0;
+
 
 #endif // _GLIBCPP_TESTSUITE_HOOKS_H
 
