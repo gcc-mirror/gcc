@@ -1,3 +1,7 @@
+2002-06-07  Gabriel Dos Reis  <gdr@merlin.nerim.net>
+
+	* diagnostic.c (diagnostic_build_prefix): Fix initialization.
+
 2002-06-07  Jason Thorpe  <thorpej@wasabisystems.com>
 
 	* config/mips/netbsd.h (CACHE_FLUSH_FUNC): Define.
