@@ -537,7 +537,7 @@ fr30_print_operand (file, x, code)
 
 	  val &= 0xff;
 
-	  fprintf (file, "%d", val);
+	  fprintf (file, HOST_WIDE_INT_PRINT_DEC, val);
 	}
       return;
       
@@ -547,7 +547,7 @@ fr30_print_operand (file, x, code)
 	  || INTVAL (x) > 32)
 	output_operand_lossage ("fr30_print_operand: invalid %%x code");
       else
-	fprintf (file, "%d", INTVAL (x) - 16);
+	fprintf (file, HOST_WIDE_INT_PRINT_DEC, INTVAL (x) - 16);
       return;
 
     case 'F':
@@ -609,7 +609,7 @@ fr30_print_operand (file, x, code)
 		  debug_rtx (x);
 		  output_operand_lossage ("fr30_print_operand: unhandled MEM");
 		}
-	      fprintf (file, "@(r14, #%d)", val);
+	      fprintf (file, "@(r14, #" HOST_WIDE_INT_PRINT_DEC ")", val);
 	    }
 	  else
 	    {
@@ -620,7 +620,7 @@ fr30_print_operand (file, x, code)
 		  debug_rtx (x);
 		  output_operand_lossage ("fr30_print_operand: unhandled MEM");
 		}
-	      fprintf (file, "@(r15, #%d)", val);
+	      fprintf (file, "@(r15, #" HOST_WIDE_INT_PRINT_DEC ")", val);
 	    }
 	  break;
 	  
