@@ -5125,6 +5125,12 @@ avr_hard_regno_mode_ok (int regno, enum machine_mode mode)
   if (regno == REG_Y + 1)
     return 0;
 
+  /* Reload can use r28:r29 for reload register and for frame pointer
+   in one insn. It's wrong. We must disable it.  */
+  if (mode != Pmode && reload_in_progress && frame_pointer_required_p ()
+      && regno <= REG_Y && (regno + GET_MODE_SIZE (mode)) >= (REG_Y + 1))
+    return 0;
+
   if (mode == QImode)
     return 1;
   /*  if (regno < 24 && !AVR_ENHANCED)

@@ -1,3 +1,9 @@
+2004-08-31  Denis Chertykov  <denisc@overta.ru>
+
+	PR target/15417
+	* config/avr/avr.c (avr_hard_regno_mode_ok): Enable usage of
+	frame pointer register only in Pmode while reload in progress.
+
 2004-08-31  Stephane Carrez  <stcarrez@nerim.fr>
 
 	PR target/15334
