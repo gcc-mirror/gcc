@@ -1,6 +1,11 @@
+2000-04-23  Richard Henderson  <rth@cygnus.com>
+
+	* typeck.c (c_expand_asm_operands): Restore the original
+	contents of the output list.
+
 2000-04-22  Gabriel Dos Reis <gdr@codesourcery.com>
 
-	        * ir.texi:  Document complex number representation.
+	* ir.texi:  Document complex number representation.
 	
 2000-04-20  Nathan Sidwell  <nathan@codesourcery.com>
 
@@ -544,7 +549,7 @@ Sat Apr 15 16:00:01 2000  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 2000-04-05  Benjamin Kosnik  <bkoz@cygnus.com>
 
-        * decl2.c: Make flag_honor_std dependant on ENABLE_STD_NAMESPACE.
+	* decl2.c: Make flag_honor_std dependant on ENABLE_STD_NAMESPACE.
 
 2000-04-05  Mark Mitchell  <mark@codesourcery.com>
 
