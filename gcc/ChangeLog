@@ -1,3 +1,13 @@
+2000-03-22  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* builtins.def: New file.
+
+	* Makefile.in (TREE_H): Depend on builtins.def.
+
+	* builtins.c (built_in_names): Use builtins.def.
+
+	* tree.h (built_in_function): Likewise.
+
 2000-03-22  Mark Mitchell  <mark@codesourcery.com>
 
 	* tree.c (size_in_bytes): Return size_zero_node, not
