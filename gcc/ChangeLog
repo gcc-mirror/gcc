@@ -1,3 +1,8 @@
+2001-05-03  Mark Mitchell  <mark@codesourcery.com>
+
+	* c-dump.c (dequeue_and_dump): Don't look at DECL_ASSEMBLER_NAME
+	if it is not set.
+
 2001-05-03  Alexandre Oliva  <aoliva@redhat.com>
 
 	* config/mn10300/mn10300.h (LINK_SPEC): Pass --relax to the
