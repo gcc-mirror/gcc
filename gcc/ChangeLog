@@ -1,3 +1,8 @@
+2005-03-03  Jan Hubicka  <jh@suse.cz>
+
+	* tree-dfa.c (add_referenced_var): Don't walk initializer of external
+	and non-constant public variables.
+
 2005-03-03  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* tree-cfg.c (stmt_starts_bb_p): Clean up by replacing code
