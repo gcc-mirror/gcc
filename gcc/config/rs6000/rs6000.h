@@ -2004,9 +2004,11 @@ toc_section ()						\
   {"non_logical_cint_operand", {CONST_INT}},			\
   {"mask_operand", {CONST_INT}},				\
   {"call_operand", {SYMBOL_REF, REG}},				\
-  {"current_file_function_operand", {SYMBOL_REF}},			\
+  {"current_file_function_operand", {SYMBOL_REF}},		\
   {"input_operand", {SUBREG, MEM, REG, CONST_INT}},		\
-  {"branch_comparison_operation", {EQ, NE, LE, LT, GE,		\
-				   LT, LEU, LTU, GEU, GTU}},	\
-  {"scc_comparison_operation", {EQ, NE, LE, LT, GE,		\
-				LT, LEU, LTU, GEU, GTU}},
+  {"load_multiple_operation", {PARALLEL}},			\
+  {"store_multiple_operation", {PARALLEL}},			\
+  {"branch_comparison_operator", {EQ, NE, LE, LT, GE,		\
+				  LT, LEU, LTU, GEU, GTU}},	\
+  {"scc_comparison_operator", {EQ, NE, LE, LT, GE,		\
+			       LT, LEU, LTU, GEU, GTU}},

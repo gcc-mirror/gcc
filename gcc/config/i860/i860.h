@@ -1397,12 +1397,7 @@ extern unsigned long sfmode_constant_to_ulong ();
    Instead, it allows the table built by `genrecog' to be more
    compact and efficient, thus speeding up the compiler.  The most
    important predicates to include in the list specified by this
-   macro are thoses used in the most insn patterns.
-
-   Note that for the i860 we have one more predicate, i.e.
-   `single_insn_src_operand', however this is used only
-   infrequently, so we don't put in the PREDICATE_CODES list.
-*/
+   macro are thoses used in the most insn patterns.  */
 
 #define PREDICATE_CODES							\
    {"reg_or_0_operand",		{REG, SUBREG, CONST_INT}},		\
@@ -1414,7 +1409,10 @@ extern unsigned long sfmode_constant_to_ulong ();
    {"logic_const_operand",	{CONST_INT}},				\
    {"bte_operand",		{REG, SUBREG, CONST_INT}},		\
    {"indexed_operand",		{MEM}},					\
-   {"load_operand",		{MEM}},
+   {"load_operand",		{MEM}},					\
+   {"small_int",		{CONST_INT}},				\
+   {"logic_int",		{CONST_INT}},				\
+   {"call_insn_operand",	{MEM}},
 
 /* Define the information needed to generate branch insns.  This is stored
    from the compare operation.  Note that we can't use "rtx" here since it
