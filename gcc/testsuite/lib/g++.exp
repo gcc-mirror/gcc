@@ -66,10 +66,11 @@ proc g++_version { } {
 proc g++_include_flags { args } {
     global srcdir
     global HAVE_LIBSTDCXX_V3
+    global TESTING_IN_BUILD_TREE
 
     set flags ""
 
-    if [is_remote host] {
+    if { [is_remote host] || ! [info exists TESTING_IN_BUILD_TREE] } {
       return "${flags}"
     }
 
@@ -166,12 +167,13 @@ proc g++_init { args } {
     global ALWAYS_CXXFLAGS
     global TOOL_EXECUTABLE TOOL_OPTIONS
     global GXX_UNDER_TEST
+    global TESTING_IN_BUILD_TREE
 
     if ![info exists GXX_UNDER_TEST] then {
 	if [info exists TOOL_EXECUTABLE] {
 	    set GXX_UNDER_TEST $TOOL_EXECUTABLE;
 	} else {
-	    if [is_remote host] {
+	    if { [is_remote host] || ! [info exists TESTING_IN_BUILD_TREE] } {
 		set GXX_UNDER_TEST [transform c++]
 	    } else {
 		set GXX_UNDER_TEST [findfile $base_dir/../g++ "$base_dir/../g++ -B$base_dir/../" [findfile $base_dir/g++ "$base_dir/g++ -B$base_dir/" [transform c++]]]
