@@ -2543,7 +2543,7 @@ do {                                                                    \
 #define STORE_FLAG_VALUE 1
 
 /* When a prototype says `char' or `short', really pass an `int'.  */
-#define PROMOTE_PROTOTYPES
+#define PROMOTE_PROTOTYPES (TARGET_ARCH32)
 
 /* Define this to be nonzero if shift instructions ignore all but the low-order
    few bits. */

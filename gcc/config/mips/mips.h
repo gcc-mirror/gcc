@@ -1497,7 +1497,7 @@ do {							\
    avoiding errors in certain cases of mismatch, it also makes for
    better code on certain machines. */
 
-#define PROMOTE_PROTOTYPES
+#define PROMOTE_PROTOTYPES 1
 
 /* Define if operations between registers always perform the operation
    on the full register even if a narrower mode is specified.  */

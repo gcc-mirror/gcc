@@ -174,12 +174,6 @@ Boston, MA 02111-1307, USA.  */
  */
 #define	ASM_STABS_OP	"//.stabs"
 
-/* Define this macro if an argument declared as `char' or `short' in a
-   prototype should actually be passed as an `int'.  In addition to
-   avoiding errors in certain cases of mismatch, it also makes for
-   better code on certain machines. */
-/*#define PROMOTE_PROTOTYPES*/
-
 /* Define this macro if an instruction to load a value narrower
    than a word from memory into a register also zero-extends the
    value to the whole  register.  */

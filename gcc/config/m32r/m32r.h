@@ -813,7 +813,7 @@ M32R_STACK_ALIGN (current_function_outgoing_args_size)
 /* Function argument passing.  */
 
 /* When a prototype says `char' or `short', really pass an `int'.  */
-#define PROMOTE_PROTOTYPES
+#define PROMOTE_PROTOTYPES 1
 
 /* If defined, the maximum amount of space required for outgoing
    arguments will be computed and placed into the variable

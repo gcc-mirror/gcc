@@ -868,7 +868,7 @@ enum reg_class
 
 /* When a prototype says `char' or `short', really pass an `int'.  */
 
-#define PROMOTE_PROTOTYPES
+#define PROMOTE_PROTOTYPES 1
 
 /* Don't perform CSE on function addresses.  */
 

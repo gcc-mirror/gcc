@@ -1940,7 +1940,7 @@ const_section ()                                                   \
 #define TRULY_NOOP_TRUNCATION(OUTPREC, INPREC) 1
 
 /* When a prototype says `char' or `short', really pass an `int'.  */
-#define PROMOTE_PROTOTYPES
+#define PROMOTE_PROTOTYPES 1
 
 /* An alias for the machine mode used for pointers */
 #define Pmode  QImode

@@ -879,8 +879,8 @@ enum reg_class { NO_REGS, R2, R0_1, INDEX_REGS, BASE_REGS, ALL_REGS, LIM_REG_CLA
 #define STORE_FLAG_VALUE 1
 
 /* When a prototype says `char' or `short', really pass an `int'. 
-   1750: for now, `char' is 16 bits wide anyway.
-   #define PROMOTE_PROTOTYPES */
+   1750: for now, `char' is 16 bits wide anyway.  */
+#define PROMOTE_PROTOTYPES 0
 
 /* Specify the machine mode that pointers have.
    After generation of rtl, the compiler makes no further distinction
