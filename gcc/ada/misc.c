@@ -634,7 +634,6 @@ gnat_expand_expr (exp, target, tmode, modifier)
       else
 	result = assign_temp (type, 0, TREE_ADDRESSABLE (exp), 1);
 
-      set_mem_attributes (result, exp, 1);
       return result;
 
     case ALLOCATE_EXPR:
