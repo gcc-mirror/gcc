@@ -23,6 +23,10 @@
 
 #include "ansidecl.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif /* __cplusplus */
+
 /* Options passed to cplus_demangle (in 2nd parameter). */
 
 #define DMGL_NO_OPTS	 0		/* For readability... */
@@ -159,5 +163,9 @@ enum gnu_v3_dtor_kinds {
    it is.  */
 extern enum gnu_v3_dtor_kinds
 	is_gnu_v3_mangled_dtor PARAMS ((const char *name));
+
+#ifdef __cplusplus
+}
+#endif /* __cplusplus */
 
 #endif	/* DEMANGLE_H */
