@@ -134,8 +134,7 @@ version ()
 
 /* jc1-lite main entry point */
 int
-DEFUN (main, (argc, argv),
-       int argc AND char **argv)
+main (int argc, char **argv)
 {
   int i = 1;
   const char *output_file = NULL;

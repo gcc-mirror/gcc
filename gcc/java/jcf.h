@@ -28,25 +28,6 @@ The Free Software Foundation is independent of Sun Microsystems, Inc.  */
 #ifndef GCC_JCF_H
 #define GCC_JCF_H
 #include "javaop.h"
-#ifndef DEFUN
-#if defined (__STDC__)
-#define AND             ,
-#define PTR             void *
-#define DEFUN(name, arglist, args)      name(args)
-#else
-#define PTR             char *
-#define AND             ;
-#define DEFUN(name, arglist, args)      name arglist args;
-#endif
-#endif /* !DEFUN */
-
-#ifndef PARAMS
-#if defined (__STDC__)
-#define PARAMS (paramlist)    paramlist
-#else
-#define PARAMS (paramlist)    ()
-#endif
-#endif
 
 #ifndef JCF_u4
 #define JCF_u4 unsigned long

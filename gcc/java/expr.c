@@ -2678,7 +2678,6 @@ note_instructions (jcf, method)
   jint INT_temp;
 
 #undef RET /* Defined by config/i386/i386.h */
-#undef AND /* Causes problems with opcodes for iand and land. */
 #undef PTR
 #define BCODE byte_ops
 #define BYTE_type_node byte_type_node

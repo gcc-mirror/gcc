@@ -48,8 +48,7 @@ The Free Software Foundation is independent of Sun Microsystems, Inc.  */
 #endif
 
 int
-DEFUN(jcf_unexpected_eof, (jcf, count),
-      JCF *jcf AND int count ATTRIBUTE_UNUSED)
+jcf_unexpected_eof (JCF *jcf, int count ATTRIBUTE_UNUSED)
 {
   if (jcf->filename)
     fprintf (stderr, "Premature end of .class file %s.\n", jcf->filename);
@@ -59,8 +58,7 @@ DEFUN(jcf_unexpected_eof, (jcf, count),
 }
 
 void
-DEFUN(jcf_trim_old_input, (jcf),
-      JCF *jcf)
+jcf_trim_old_input (JCF *jcf)
 {
   int count = jcf->read_ptr - jcf->buffer;
   if (count > 0)
@@ -72,8 +70,7 @@ DEFUN(jcf_trim_old_input, (jcf),
 }
 
 int
-DEFUN(jcf_filbuf_from_stdio, (jcf, count),
-      JCF *jcf AND int count)
+jcf_filbuf_from_stdio (JCF *jcf, int count)
 {
   FILE *file = (FILE*) (jcf->read_state);
   if (count > jcf->buffer_end - jcf->read_ptr)
@@ -108,8 +105,7 @@ struct ZipFile *SeenZipFiles = NULL;
 */
 
 ZipFile *
-DEFUN(opendir_in_zip, (zipfile, is_system),
-      const char *zipfile AND int is_system)
+opendir_in_zip (const char *zipfile, int is_system)
 {
   struct ZipFile* zipf;
   char magic [4];
@@ -154,9 +150,8 @@ DEFUN(opendir_in_zip, (zipfile, is_system),
 */
 
 int
-DEFUN(open_in_zip, (jcf, zipfile, zipmember, is_system),
-      JCF *jcf AND const char *zipfile AND const char *zipmember
-      AND int is_system)
+open_in_zip (JCF *jcf, const char *zipfile, const char *zipmember,
+	     int is_system)
 {
   ZipDirectory *zipd;
   int i, len;
@@ -189,8 +184,7 @@ DEFUN(open_in_zip, (jcf, zipfile, zipmember, is_system),
 /* Read data from zip archive member. */
 
 int
-DEFUN(read_zip_member, (jcf, zipd, zipf),
-      JCF *jcf AND  ZipDirectory *zipd AND ZipFile *zipf)
+read_zip_member (JCF *jcf,  ZipDirectory *zipd, ZipFile *zipf)
 {
 	  jcf->filbuf = jcf_unexpected_eof;
 	  jcf->zipd = (void *)zipd;
@@ -237,8 +231,7 @@ DEFUN(read_zip_member, (jcf, zipd, zipf),
 }
 
 const char *
-DEFUN(open_class, (filename, jcf, fd, dep_name),
-      const char *filename AND JCF *jcf AND int fd AND const char *dep_name)
+open_class (const char *filename, JCF *jcf, int fd, const char *dep_name)
 {
   if (jcf)
     {
@@ -273,8 +266,7 @@ DEFUN(open_class, (filename, jcf, fd, dep_name),
 
 
 const char *
-DEFUN(find_classfile, (filename, jcf, dep_name),
-      char *filename AND JCF *jcf AND const char *dep_name)
+find_classfile (char *filename, JCF *jcf, const char *dep_name)
 {
   int fd = open (filename, O_RDONLY | O_BINARY);
   if (fd < 0)
@@ -289,8 +281,7 @@ DEFUN(find_classfile, (filename, jcf, dep_name),
    dirent **).  */
 
 static int
-DEFUN(compare_path, (key, entry),
-      const void *key AND const void *entry)
+compare_path (const void *key, const void *entry)
 {
   return strcmp ((const char *) key, 
 		 (*((const struct dirent **) entry))->d_name);
@@ -299,8 +290,7 @@ DEFUN(compare_path, (key, entry),
 /* Returns nonzero if ENTRY names a .java or .class file.  */
 
 static int
-DEFUN(java_or_class_file, (entry),
-      const struct dirent *entry)
+java_or_class_file (const struct dirent *entry)
 {
   const char *base = basename (entry->d_name);
   return (fnmatch ("*.java", base, 0) == 0 || 
@@ -325,8 +315,7 @@ typedef struct memoized_dirlist_entry
    name.  */
 
 static int
-DEFUN(memoized_dirlist_lookup_eq, (entry, key),
-      const void *entry AND const void *key)
+memoized_dirlist_lookup_eq (const void *entry, const void *key)
 {
   return strcmp ((const char *) key,
 		 ((const memoized_dirlist_entry *) entry)->dir) == 0;
@@ -343,8 +332,7 @@ static htab_t memoized_dirlists;
    know that it cannot succeed.  FILENAME and BUF are as for stat.  */
 
 static int
-DEFUN(caching_stat, (filename, buf),
-      char *filename AND struct stat *buf)
+caching_stat (char *filename, struct stat *buf)
 {
 #if JCF_USE_SCANDIR
   char *sep;
@@ -410,8 +398,7 @@ DEFUN(caching_stat, (filename, buf),
    stored in TABLE_ENTRY (also a char *).  */
 
 static int
-DEFUN(memoized_class_lookup_eq, (table_entry, classname),
-      const void *table_entry AND const void *classname)
+memoized_class_lookup_eq (const void *table_entry, const void *classname)
 {
   return strcmp ((const char *)classname, (const char *)table_entry) == 0;
 }
@@ -430,9 +417,8 @@ static htab_t memoized_class_lookups;
    file. */
 
 const char *
-DEFUN(find_class, (classname, classname_length, jcf, source_ok),
-      const char *classname AND int classname_length AND JCF *jcf AND int source_ok)
-
+find_class (const char *classname, int classname_length, JCF *jcf,
+	    int source_ok)
 {
   int fd;
   int i, k, java = -1, class = -1;
@@ -596,8 +582,7 @@ DEFUN(find_class, (classname, classname_length, jcf, source_ok),
 }
 
 void
-DEFUN(jcf_print_char, (stream, ch),
-      FILE *stream AND int ch)
+jcf_print_char (FILE *stream, int ch)
 {
   switch (ch)
     {
@@ -628,8 +613,7 @@ DEFUN(jcf_print_char, (stream, ch),
 /* Print UTF8 string at STR of length LENGTH bytes to STREAM. */
 
 void
-DEFUN(jcf_print_utf8, (stream, str, length),
-      FILE *stream AND register const unsigned char *str AND int length)
+jcf_print_utf8 (FILE *stream, register const unsigned char *str, int length)
 {
   const unsigned char * limit = str + length;
   while (str < limit)
@@ -647,9 +631,8 @@ DEFUN(jcf_print_utf8, (stream, str, length),
 /* Same as jcf_print_utf8, but print IN_CHAR as OUT_CHAR. */
 
 void
-DEFUN(jcf_print_utf8_replace, (stream, str, length, in_char, out_char),
-      FILE *stream AND const unsigned char *str AND int length
-      AND int in_char AND int out_char)
+jcf_print_utf8_replace (FILE *stream, const unsigned char *str, int length,
+			int in_char, int out_char)
 {
   const unsigned char *limit = str + length;
   while (str < limit)
@@ -671,8 +654,7 @@ DEFUN(jcf_print_utf8_replace, (stream, str, length, in_char, out_char),
    any classes, fields, or methods are valid.*/
 
 int
-DEFUN(verify_constant_pool, (jcf),
-      JCF *jcf)
+verify_constant_pool (JCF *jcf)
 {
   int i, n;
   for (i = 1; i < JPOOL_SIZE (jcf); i++)
@@ -721,8 +703,7 @@ DEFUN(verify_constant_pool, (jcf),
 }
 
 void
-DEFUN(format_uint, (buffer, value, base),
-      char *buffer AND uint64 value AND int base)
+format_uint (char *buffer, uint64 value, int base)
 {
 #define WRITE_BUF_SIZE (4 + sizeof(uint64) * 8)
   char buf[WRITE_BUF_SIZE];
@@ -746,8 +727,7 @@ DEFUN(format_uint, (buffer, value, base),
 }
 
 void
-DEFUN(format_int, (buffer, value, base),
-      char *buffer AND jlong value AND int base)
+format_int (char *buffer, jlong value, int base)
 {
   uint64 abs_value;
   if (value < 0)

@@ -31,7 +31,6 @@ The Free Software Foundation is independent of Sun Microsystems, Inc.  */
 #include "real.h"
 #include "java-tree.h"
 #include "obstack.h"
-#undef AND
 #include "rtl.h"
 #include "flags.h"
 #include "java-opcodes.h"
