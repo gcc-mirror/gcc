@@ -1,3 +1,21 @@
+Mon Dec 22 11:36:27 1997  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+ 
+	* call.c (add_builtin_candidate): Add default case in enumeration
+	switch.
+	(build_new_op): Likewise.
+	(convert_like): Likewise.
+	* cvt.c (build_expr_type_conversion): Likewise.
+	* tree.c (real_lvalue_p): Likewise.
+	(lvalue_p): Likewise.
+	(cp_tree_equal): Likewise.
+	* typeck.c (comptypes): Likewise.
+	(build_component_ref): Likewise.
+	(build_function_call_real): Likewise.
+	(build_binary_op_nodefault): Likewise.
+	(build_unary_op): Likewise.
+	(build_modify_expr): Likewise.
+	* typeck2.c (initializer_constant_valid_p): Likewise.
+
 Sun Dec 21 15:59:00 1997  Nick Clifton  <nickc@cygnus.com>
 
 	* decl2.c (lang_decode_option): Add support for -Wunknown-pragmas.

@@ -1468,6 +1468,9 @@ build_expr_type_conversion (desires, expr, complain)
 	  win = (desires & WANT_FLOAT); break;
 	case POINTER_TYPE:
 	  win = (desires & WANT_POINTER); break;
+
+	default:
+	  break;
 	}
 
       if (win)

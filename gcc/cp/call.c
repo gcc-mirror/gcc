@@ -3605,6 +3605,9 @@ add_builtin_candidate (candidates, code, code2, fnname, type1, type2,
     case POSTDECREMENT_EXPR:
       args[1] = integer_zero_node;
       type2 = integer_type_node;
+      break;
+    default:
+      break;
     }
 
   switch (code)
@@ -4785,6 +4788,9 @@ build_new_op (code, flags, arg1, arg2, arg3)
 
     case CALL_EXPR:
       return build_object_call (arg1, arg2);
+
+    default:
+      break;
     }
 
   /* The comma operator can have void args.  */
@@ -4920,6 +4926,9 @@ build_new_op (code, flags, arg1, arg2, arg3)
 	case COMPOUND_EXPR:
 	case COMPONENT_REF:
 	  return NULL_TREE;
+
+	default:
+	  break;
 	}
       if (flags & LOOKUP_COMPLAIN)
 	{
@@ -4994,6 +5003,9 @@ build_new_op (code, flags, arg1, arg2, arg3)
 	  cp_warning ("comparison between `%#T' and `%#T'", 
 		      TREE_TYPE (arg1), TREE_TYPE (arg2));
 	}
+      break;
+    default:
+      break;
     }
 
   /* We need to strip any leading REF_BIND so that bitfields don't cause
@@ -5306,6 +5318,9 @@ convert_like (convs, expr)
       /* Call build_user_type_conversion again for the error.  */
       return build_user_type_conversion
 	(TREE_TYPE (convs), TREE_OPERAND (convs, 0), LOOKUP_NORMAL);
+
+    default:
+      break;
     };
 
   expr = convert_like (TREE_OPERAND (convs, 0), expr);
@@ -5328,6 +5343,9 @@ convert_like (convs, expr)
 	 error_mark_node);
     case LVALUE_CONV:
       return decay_conversion (expr);
+
+    default:
+      break;
     }
   return ocp_convert (TREE_TYPE (convs), expr, CONV_IMPLICIT,
 		      LOOKUP_NORMAL|LOOKUP_NO_CONVERSION);
