@@ -1249,6 +1249,36 @@ resolve_call (gfc_code * c)
   return t;
 }
 
+/* Compare the shapes of two arrays that have non-NULL shapes.  If both
+   op1->shape and op2->shape are non-NULL return SUCCESS if their shapes
+   match.  If both op1->shape and op2->shape are non-NULL return FAILURE
+   if their shapes do not match.  If either op1->shape or op2->shape is
+   NULL, return SUCCESS.  */
+
+static try
+compare_shapes (gfc_expr * op1, gfc_expr * op2)
+{
+  try t;
+  int i;
+
+  t = SUCCESS;
+		  
+  if (op1->shape != NULL && op2->shape != NULL)
+    {
+      for (i = 0; i < op1->rank; i++)
+	{
+	  if (mpz_cmp (op1->shape[i], op2->shape[i]) != 0)
+	   {
+	     gfc_error ("Shapes for operands at %L and %L are not conformable",
+			 &op1->where, &op2->where);
+	     t = FAILURE;
+	     break;
+	   }
+	}
+    }
+
+  return t;
+}
 
 /* Resolve an operator expression node.  This can involve replacing the
    operation with a user defined function call.  */
@@ -1460,10 +1490,14 @@ resolve_operator (gfc_expr * e)
 	  if (op1->rank == op2->rank)
 	    {
 	      e->rank = op1->rank;
-
 	      if (e->shape == NULL)
+		{
+		  t = compare_shapes(op1, op2);
+		  if (t == FAILURE)
+		    e->shape = NULL;
+		  else
 		e->shape = gfc_copy_shape (op1->shape, op1->rank);
-
+		}
 	    }
 	  else
 	    {
@@ -1499,10 +1533,12 @@ resolve_operator (gfc_expr * e)
   return t;
 
 bad_op:
+
   if (gfc_extend_expr (e) == SUCCESS)
     return SUCCESS;
 
   gfc_error (msg, &e->where);
+
   return FAILURE;
 }
 
