@@ -26,12 +26,13 @@ Boston, MA 02111-1307, USA.  */
 
 #define YES_UNDERSCORES
 
+/* YES_UNDERSCORES must preceed gas.h */
+#include <i386/gas.h>
+/* The rest must follow. */
+
 #define DBX_DEBUGGING_INFO
 #define SDB_DEBUGGING_INFO
 #define PREFERRED_DEBUGGING_TYPE DBX_DEBUG
-
-#include <interix.h> 
-#include <i386/gas.h>  /* we're close enough ... */
 
 #define HANDLE_SYSV_PRAGMA
 #undef HANDLE_PRAGMA_WEAK  /* until the link format can handle it */
