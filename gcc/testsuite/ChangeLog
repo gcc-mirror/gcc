@@ -1,3 +1,7 @@
+Mon Jul 23 10:14:17 2001  Jeffrey A Law  (law@cygnus.com)
+
+	* gcc.c-torture/execute/20010723-1.c: New test.
+
 2001-07-23  Ben Elliston  <bje@redhat.com>
 
 	* g++.old-deja/g++.other/enum5.C: Mark as XFAIL.
