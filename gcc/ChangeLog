@@ -1,3 +1,8 @@
+2003-03-26  Alan Modra  <amodra@bigpond.net.au>
+
+	* c-incpath.c (add_standard_paths): Add both "translated" and
+	non-translated header paths.
+
 2003-03-25  Loren James Rittle  <ljrittle@acm.org>
 
 	* doc/install.texi (*-*-freebsd*): Update with known status.

@@ -127,10 +127,30 @@ add_standard_paths (sysroot, iprefix, cxx_stdinc)
      int cxx_stdinc;
 {
   const struct default_include *p;
-  size_t len = 0;
+  size_t len;
 
-  if (iprefix)
-    len = cpp_GCC_INCLUDE_DIR_len;
+  if (iprefix && (len = cpp_GCC_INCLUDE_DIR_len) != 0)
+    {
+      /* Look for directories that start with the standard prefix.
+	 "Translate" them, ie. replace /usr/local/lib/gcc... with
+	 IPREFIX and search them first.  */
+      for (p = cpp_include_defaults; p->fname; p++)
+	{
+	  if (!p->cplusplus || cxx_stdinc)
+	    {
+	      /* Should we be translating sysrooted dirs too?  Assume
+		 that iprefix and sysroot are mutually exclusive, for
+		 now.  */
+	      if (sysroot && p->add_sysroot)
+		continue;
+	      if (!strncmp (p->fname, cpp_GCC_INCLUDE_DIR, len))
+		{
+		  char *str = concat (iprefix, p->fname + len, NULL);
+		  add_path (str, SYSTEM, p->cxx_aware);
+		}
+	    }
+	}
+    }
 
   for (p = cpp_include_defaults; p->fname; p++)
     {
@@ -141,11 +161,6 @@ add_standard_paths (sysroot, iprefix, cxx_stdinc)
 	  /* Should this directory start with the sysroot?  */
 	  if (sysroot && p->add_sysroot)
 	    str = concat (sysroot, p->fname, NULL);
-	  /* Does this directory start with the prefix?  If so, search
-	     "translated" versions of GNU directories.  These have
-	     /usr/local/lib/gcc... replaced by iprefix.  */
-	  else if (len && !strncmp (p->fname, cpp_GCC_INCLUDE_DIR, len))
-	    str = concat (iprefix, p->fname + len, NULL);
 	  else
 	    str = update_path (p->fname, p->component);
 
