@@ -2,6 +2,9 @@
 
 	* cfgbuild.c (find_sub_basic_blocks): Handle insns that can throw.
 
+	* emit-rtl.c (try_split): Copy NORETURN, SETJMP, ALWAYS_RETURN
+	and NON_LOCAL_GOTO notes.
+
 2001-09-18  Catherine Moore  <clm@redhat.com>
 
 	* config/stormy16/stormy16.h (DEFAULT_PCC_STRUCT_RETURN): 

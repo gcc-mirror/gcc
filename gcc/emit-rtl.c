@@ -2513,7 +2513,6 @@ try_split (pat, trial, last)
       if (GET_CODE (seq) == SEQUENCE)
 	{
 	  int i, njumps = 0;
-	  rtx eh_note;
 
 	  /* Avoid infinite loop if any insn of the result matches
 	     the original pattern.  */
@@ -2546,6 +2545,7 @@ try_split (pat, trial, last)
 					   REG_NOTES (insn));
 		  }
 	      }
+
 	  /* If we are splitting a CALL_INSN, look for the CALL_INSN
 	     in SEQ and copy our CALL_INSN_FUNCTION_USAGE to it.  */
 	  if (GET_CODE (trial) == CALL_INSN)
@@ -2554,18 +2554,55 @@ try_split (pat, trial, last)
 		CALL_INSN_FUNCTION_USAGE (XVECEXP (seq, 0, i))
 		  = CALL_INSN_FUNCTION_USAGE (trial);
 
-	  /* Copy EH notes.  */
-	  if ((eh_note = find_reg_note (trial, REG_EH_REGION, NULL_RTX)))
-	    for (i = 0; i < XVECLEN (seq, 0); i++)
-	      {
-		rtx insn = XVECEXP (seq, 0, i);
-		if (GET_CODE (insn) == CALL_INSN
-		    || (flag_non_call_exceptions
-			&& may_trap_p (PATTERN (insn))))
-		  REG_NOTES (insn)
-		    = gen_rtx_EXPR_LIST (REG_EH_REGION, XEXP (eh_note, 0),
-					 REG_NOTES (insn));
-	      }
+	  /* Copy notes, particularly those related to the CFG.  */
+	  for (note = REG_NOTES (trial); note ; note = XEXP (note, 1))
+	    {
+	      switch (REG_NOTE_KIND (note))
+		{
+		case REG_EH_REGION:
+		  for (i = XVECLEN (seq, 0) - 1; i >= 0; i--)
+		    {
+		      rtx insn = XVECEXP (seq, 0, i);
+		      if (GET_CODE (insn) == CALL_INSN
+			  || (flag_non_call_exceptions
+			      && may_trap_p (PATTERN (insn))))
+			REG_NOTES (insn)
+			  = gen_rtx_EXPR_LIST (REG_EH_REGION,
+					       XEXP (note, 0),
+					       REG_NOTES (insn));
+		    }
+		  break;
+
+		case REG_NORETURN:
+		case REG_SETJMP:
+		case REG_ALWAYS_RETURN:
+		  for (i = XVECLEN (seq, 0) - 1; i >= 0; i--)
+		    {
+		      rtx insn = XVECEXP (seq, 0, i);
+		      if (GET_CODE (insn) == CALL_INSN)
+			REG_NOTES (insn)
+			  = gen_rtx_EXPR_LIST (REG_NOTE_KIND (note),
+					       XEXP (note, 0),
+					       REG_NOTES (insn));
+		    }
+		  break;
+
+		case REG_NON_LOCAL_GOTO:
+		  for (i = XVECLEN (seq, 0) - 1; i >= 0; i--)
+		    {
+		      rtx insn = XVECEXP (seq, 0, i);
+		      if (GET_CODE (insn) == JUMP_INSN)
+			REG_NOTES (insn)
+			  = gen_rtx_EXPR_LIST (REG_NOTE_KIND (note),
+					       XEXP (note, 0),
+					       REG_NOTES (insn));
+		    }
+		  break;
+
+		default:
+		  break;
+		}
+	    }
 
 	  /* If there are LABELS inside the split insns increment the
 	     usage count so we don't delete the label.  */
