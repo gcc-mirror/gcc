@@ -76,6 +76,9 @@ static tree current_field = NULL_TREE;
 /* The METHOD_DECL for the current method.  */
 static tree current_method = NULL_TREE;
 
+/* A list of file names.  */
+static tree current_file_list = NULL_TREE;
+
 /* The Java .class file that provides main_class;  the main input file. */
 static struct JCF main_jcf[1];
 
@@ -807,7 +810,7 @@ yyparse ()
 {
   int several_files = 0;
   char *list = xstrdup (input_filename), *next;
-  tree node, current_file_list = NULL_TREE;
+  tree node;
   FILE *finput;
 
   do 
@@ -1093,4 +1096,5 @@ init_jcf_parse ()
   /* Register roots with the garbage collector.  */
   ggc_add_tree_root (&current_field, 1);
   ggc_add_tree_root (&current_method, 1);
+  ggc_add_tree_root (&current_file_list, 1);
 }

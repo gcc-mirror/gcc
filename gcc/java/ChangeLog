@@ -1,3 +1,12 @@
+2000-11-23  Anthony Green  <green@redhat.com>
+
+	* jcf-parse.c (init_jcf_parse): Register current_file_list root.
+	Move current_file_list out of yyparse and make it static.
+
+	* expr.c: Declare quick_stack and tree_list_free_list as static
+	(init_expr_processing): Register quick_stack and
+	tree_list_free_list roots.
+
 2000-11-22  Alexandre Petit-Bianco  <apbianco@cygnus.com>
 
 	* parse.y (build_outer_field_access): New local `decl_ctx', use
