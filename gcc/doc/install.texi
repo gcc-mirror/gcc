@@ -2167,6 +2167,9 @@ this platform.  Thread support is not currently implemented for this
 platform, so @option{--enable-threads} does not work.
 See @uref{http://gcc.gnu.org/ml/gcc-prs/2002-01/msg00551.html}
 and @uref{http://gcc.gnu.org/ml/gcc-bugs/2002-01/msg00663.html}.
+GCC 2.95.x is not supported under HP-UX 11 and cannot be used to
+compile GCC 3.0.  Refer to @uref{binaries.html,,binaries} for information
+about obtaining precompiled GCC binaries for HP-UX.
 
 @html
 </p>
