@@ -1198,7 +1198,7 @@ vec_dss (const char a1)
 /* vec_dssall */
 
 inline void
-vec_dssall ()
+vec_dssall (void)
 {
   __builtin_altivec_dssall ();
 }
@@ -2419,7 +2419,7 @@ vec_vmrglb (vector unsigned char a1, vector unsigned char a2)
 /* vec_mfvscr */
 
 inline vector unsigned short
-vec_mfvscr ()
+vec_mfvscr (void)
 {
   return (vector unsigned short) __builtin_altivec_mfvscr ();
 }
