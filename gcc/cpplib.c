@@ -156,7 +156,7 @@ _cpp_check_directive (list, token)
      cpp_toklist *list;
      cpp_token *token;
 {
-  const U_CHAR *name = list->namebuf + token->val.name.offset;
+  const U_CHAR *name = token->val.name.text;
   size_t len = token->val.name.len;
   unsigned int i;
 
@@ -339,7 +339,7 @@ do_define (pfile)
 {
   HASHNODE *node;
   int len;
-  U_CHAR *sym;
+  const U_CHAR *sym;
   cpp_toklist *list = &pfile->directbuf;
 
   pfile->no_macro_expand++;

@@ -1,3 +1,26 @@
+2000-05-15  Neil Booth  <NeilB@earthling.net>
+
+	* cpphash.c (trad_stringify, warn_trad_stringify,
+	collect_params): Make some pointers pointers to const.
+	* cpplex.c (auto_expand_name_space) Guaranteed to always
+	expand by at least one character.
+	(SPELL_CHAR, SPELL_NONE): Temporarily reverse order.
+	(struct token_spelling): Use const U_CHAR * rather than PTR.
+	(expand_name_space): Fix up token pointers if name space
+	is moved when expanding.
+	(INIT_NAME, cpp_scan_line, parse_name, parse_number,
+	parse_string2, save_comment, spell_token, cpp_output_list):
+	Update so the routines handle tokens with a direct pointer to
+	their text, rather than an offset into the token's list's namebuf.
+	(_cpp_lex_line): Rearrange for clarity.
+
+	* cpplib.c (_cpp_check_directive): Similarly.
+	(do_define): Make SYM a pointer to const.
+	* cpplib.h (struct cpp_name): Replace offset with direct pointer.
+	(CPP_INT, CPP_FLOAT): Spelling type should be SPELL_IDENT.
+	(TOK_OFFSET): Delete.
+	(TOK_NAME): Update.
+
 2000-05-14  Geoffrey Keating  <geoffk@cygnus.com>
 
 	* config/rs6000/rs6000.h (RETURN_ADDRESS_OFFSET): Correct for

@@ -162,9 +162,10 @@ collect_funlike_expansion PARAMS ((cpp_reader *, cpp_toklist *,
 static unsigned int collect_params PARAMS ((cpp_reader *, cpp_toklist *,
 					    struct arglist *));
 
-static void warn_trad_stringify	PARAMS ((cpp_reader *, U_CHAR *, size_t,
+static void warn_trad_stringify	PARAMS ((cpp_reader *, const U_CHAR *, size_t,
 					 unsigned int, const struct arg *));
-static unsigned int trad_stringify PARAMS ((cpp_reader *, U_CHAR *, size_t,
+static unsigned int trad_stringify PARAMS ((cpp_reader *, const U_CHAR *,
+					    size_t,
 					    unsigned int, const struct arg *,
 					    struct reflist **,
 					    struct reflist **, unsigned int));
@@ -371,12 +372,12 @@ add_pat (pat, endpat, nchars, argno, raw_before, raw_after, strize, rest)
 static void
 warn_trad_stringify (pfile, p, len, argc, argv)
      cpp_reader *pfile;
-     U_CHAR *p;
+     const U_CHAR *p;
      size_t len;
      unsigned int argc;
      const struct arg *argv;
 {
-  U_CHAR *limit;
+  const U_CHAR *limit;
   unsigned int i;
 
   limit = p + len;
@@ -406,14 +407,14 @@ warn_trad_stringify (pfile, p, len, argc, argv)
 static unsigned int
 trad_stringify (pfile, base, len, argc, argv, pat, endpat, last)
      cpp_reader *pfile;
-     U_CHAR *base;
+     const U_CHAR *base;
      size_t len;
      unsigned int argc;
      const struct arg *argv;
      struct reflist **pat, **endpat;
      unsigned int last;
 {
-  U_CHAR *p, *limit;
+  const U_CHAR *p, *limit;
   unsigned int i;
 
   p = base;
@@ -548,7 +549,8 @@ collect_funlike_expansion (pfile, list, arglist, replacement)
   int j, argc;
   size_t len;
   const struct arg *argv;
-  U_CHAR *tok, *exp;
+  const U_CHAR *tok;
+  U_CHAR *exp;
   enum { START = 0, NORM, ARG, STRIZE, PASTE } last_token = START;
 
   argv = arglist->argv;
@@ -728,7 +730,8 @@ collect_params (pfile, list, arglist)
      struct arglist *arglist;
 {
   struct arg *argv = 0;
-  U_CHAR *namebuf, *p, *tok;
+  const U_CHAR *tok;
+  U_CHAR *namebuf, *p;
   unsigned int len, argslen;
   unsigned int argc, a, i, j;
 
