@@ -4435,12 +4435,21 @@ build_unary_op (code, xarg, noconvert)
 
 	  if (! flag_ms_extensions)
 	    {
+	      /* Inside constant member functions, the `this' pointer
+		 contains an extra const qualifier.  TYPE_MAIN_VARIANT
+		 is used here to remove this const from the diagnostics.  */
 	      if (current_class_type
 		  && TREE_OPERAND (arg, 0) == current_class_ref)
 		/* An expression like &memfn.  */
-		pedwarn ("ISO C++ forbids taking the address of an unqualified or parenthesized non-static member function to form a pointer to member function.  Say `&%T::%D'", base, name);
+		pedwarn ("ISO C++ forbids taking the address of an unqualified"
+			 " or parenthesized non-static member function to form"
+			 " a pointer to member function.  Say `&%T::%D'",
+			 TYPE_MAIN_VARIANT (base), name);
 	      else
-		pedwarn ("ISO C++ forbids taking the address of a bound member function to form a pointer to member function.  Say `&%T::%D'", base, name);
+		pedwarn ("ISO C++ forbids taking the address of a bound member"
+			 " function to form a pointer to member function."
+			 "  Say `&%T::%D'",
+			 TYPE_MAIN_VARIANT (base), name);
 	    }
 	  arg = build_offset_ref (base, name);
         }

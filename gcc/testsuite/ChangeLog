@@ -1,5 +1,10 @@
 2003-05-05  Kriang Lerdsuwanakij  <lerdsuwa@users.sourceforge.net>
 
+	PR c++/10496
+	* g++.dg/warn/pmf1.C: New test.
+
+2003-05-05  Kriang Lerdsuwanakij  <lerdsuwa@users.sourceforge.net>
+
 	PR c++/4494
 	* g++.dg/warn/main.C: New test.
 
