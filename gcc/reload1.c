@@ -5541,7 +5541,7 @@ emit_reload_insns (insn)
 			      if (new_icode == CODE_FOR_nothing)
 				new_mode = mode;
 			      else
-				new_mode = insn_operand_mode[new_icode][2];
+				new_mode = insn_operand_mode[(int) new_icode][2];
 
 			      if (GET_MODE (second_reload_reg) != new_mode)
 				{
