@@ -5968,9 +5968,10 @@ force_to_mode (x, mode, mask, reg, just_select)
   unsigned HOST_WIDE_INT fuller_mask, nonzero;
   rtx op0, op1, temp;
 
-  /* If this is a CALL, don't do anything.  Some of the code below
-     will do the wrong thing since the mode of a CALL is VOIDmode.  */
-  if (code == CALL)
+  /* If this is a CALL or ASM_OPERANDS, don't do anything.  Some of the
+     code below will do the wrong thing since the mode of such an
+     expression is VOIDmode.  */
+  if (code == CALL || code == ASM_OPERANDS)
     return x;
 
   /* We want to perform the operation is its present mode unless we know
