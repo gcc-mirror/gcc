@@ -1404,6 +1404,15 @@ enum reg_class { NO_REGS, AP_REG, XRF_REGS, GENERAL_REGS, AGRF_REGS,
    actually ignored by the `case' insn proper.  */
 /* #define CASE_DROPS_THROUGH */
 
+/* Define this to be the smallest number of different values for which it
+   is best to use a jump-table instead of a tree of conditional branches.
+   The default is 4 for machines with a casesi instruction and 5 otherwise.
+   The best 88110 number is around 7, though the exact number isn't yet
+   known.  A third alternative for the 88110 is to use a binary tree of
+   bb1 instructions on bits 2/1/0 if the range is dense.  This may not
+   win very much though.  */
+#define CASE_VALUES_THRESHOLD (TARGET_88100 ? 4 : 7)
+
 /* Specify the tree operation to be used to convert reals to integers.  */
 #define IMPLICIT_FIX_EXPR FIX_ROUND_EXPR
 
