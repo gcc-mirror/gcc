@@ -1,3 +1,8 @@
+2002-02-19  Ryan T. Sammartino <ryants@shaw.ca>
+
+	* doc/invoke.texi: explicitly list the style guidelines that
+	-Weffc++ checks for.
+
 Tue Feb 19 12:37:23 CET 2002  Jan Hubicka  <jh@suse.cz>
 
 	* regmove.c (regmove_optimize): Avoid increasing of register pressure.
@@ -660,17 +665,17 @@ Tue Feb 12 10:12:56 2002  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 2002-02-11  Aldy Hernandez  <aldyh@redhat.com>
 
-        * config/rs6000/rs6000.c (altivec_init_builtins): Handle
-        __builtin_altivec_abs*.
-        (bdesc_abs): New.
+	* config/rs6000/rs6000.c (altivec_init_builtins): Handle
+	__builtin_altivec_abs*.
+	(bdesc_abs): New.
 
-        * config/rs6000/rs6000.h (rs6000_builtins): Add
-        ALTIVEC_BUILTIN_ABS*.
+	* config/rs6000/rs6000.h (rs6000_builtins): Add
+	ALTIVEC_BUILTIN_ABS*.
 
-        * config/rs6000/altivec.h: Use const char for builtins expecting
-        literals.
-        (vec_abs): New versions for C and C++.
-        (vec_abss): Same.
+	* config/rs6000/altivec.h: Use const char for builtins expecting
+	literals.
+	(vec_abs): New versions for C and C++.
+	(vec_abss): Same.
 
 2002-02-10  Kazu Hirata  <kazu@hxi.com>
 
@@ -1936,20 +1941,6 @@ Thu Feb  7 12:14:17 CET 2002  Jan Hubicka  <jh@suse.cz>
 	* Makefile.in (stor-layout.o): Adjust dependencies.
 
 2002-02-05  Jason Merrill  <jason@redhat.com>
-
-	* c-typeck.c (convert_for_assignment): Don't allow conversions
-	between pointers and references.  Only allow lvalues to convert to
-	reference.
-
-	* c-decl.c (finish_function): Warn about a non-void function with
-	no return statement and no abnormal exit.
-	(current_function_returns_abnormally): New variable.
-	(start_function): Clear it.
-	(struct c_language_function): Add returns_abnormally.
-	(push_c_function_context): Save it.
-	(pop_c_function_context): Restore it.
-	* c-tree.h: Declare current_function_returns_abnormally.
-	* c-typeck.c (build_function_call): Set it.
 
 	* collect2.c (dump_file): Pass DMGL_VERBOSE to cplus_demangle.
 

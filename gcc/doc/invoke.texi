@@ -1575,10 +1575,44 @@ The following @option{-W@dots{}} options are not affected by @option{-Wall}.
 @table @gcctabopt
 @item -Weffc++ @r{(C++ only)}
 @opindex Weffc++
-Warn about violations of various style guidelines from Scott Meyers'
-@cite{Effective C++} books.  If you use this option, you should be aware
-that the standard library headers do not obey all of these guidelines;
-you can use @samp{grep -v} to filter out those warnings.
+Warn about violations of the following style guidelines from Scott Meyers'
+@cite{Effective C++} book:
+
+@itemize @bullet
+@item
+Item 11:  Define a copy constructor and an assignment operator for classes
+with dynamically allocated memory.
+
+@item
+Item 12:  Prefer initialization to assignment in constructors.
+
+@item
+Item 14:  Make destructors virtual in base classes.
+
+@item
+Item 15:  Have @code{operator=} return a reference to @code{*this}.
+
+@item
+Item 23:  Don't try to return a reference when you must return an object.
+
+@end itemize
+
+and about violations of the following style guidelines from Scott Meyers'
+@cite{More Effective C++} book:
+
+@itemize @bullet
+@item
+Item 6:  Distinguish between prefix and postfix forms of increment and
+decrement operators.
+
+@item
+Item 7:  Never overload @code{&&}, @code{||}, or @code{,}.
+
+@end itemize
+
+If you use this option, you should be aware that the standard library
+headers do not obey all of these guidelines; you can use @samp{grep -v}
+to filter out those warnings.
 
 @item -Wno-deprecated @r{(C++ only)}
 @opindex Wno-deprecated
