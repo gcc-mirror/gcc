@@ -1,3 +1,8 @@
+2004-01-13  Jan Hubicka  <jh@suse.cz>
+
+	* gcc.dg/always_inline.c: New test.
+	* gcc.dg/debug/20031231-1.c: Fix.
+
 2004-01-13  Giovanni Bajo  <giovannibajo@gcc.gnu.org>
 
 	PR c++/13474
