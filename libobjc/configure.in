@@ -64,7 +64,7 @@ AC_HEADER_STDC
 AC_CACHE_CHECK([for thread file],objc_cv_thread_file,
 [if test -f ../../gcc/Makefile
 then
-  objc_cv_thread_file=`grep ^GCC_THREAD_FILE ../../gcc/Makefile | awk -F= '{ print $2 }'`
+  objc_cv_thread_file=`grep \^GCC_THREAD_FILE ../../gcc/Makefile | awk -F= '{ print $2 }'`
 else
   AC_MSG_ERROR([not found])
 fi])
