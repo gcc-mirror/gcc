@@ -1,3 +1,7 @@
+2004-10-04  Chao-ying Fu  <fu@mips.com>
+
+	* config/mips/mips.h (UNITS_PER_SIMD_WORD): Define.
+
 2004-10-04  Diego Novillo  <dnovillo@redhat.com>
 
 	* tree-ssa-dom.c (tree_ssa_dominator_optimize):
