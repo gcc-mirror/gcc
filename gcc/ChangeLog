@@ -1,3 +1,7 @@
+2001-10-12  Joseph S. Myers  <jsm28@cam.ac.uk>
+
+	* doc/cpp.1, doc/gcc.1, doc/gcov.1: Regenerate.
+
 2001-10-11  Franz Sirl  <Franz.Sirl-kernel@lauterbach.com>
 
 	* unroll.c (loop_iterations): Extend check for multiple back edges.
