@@ -448,6 +448,7 @@ gcc_version=`echo ${gcc_version_full} | sed -e 's/\([^ ]*\) .*/\1/'`
 tool_include_dir='$(libdir)/gcc-lib/$(target_alias)/'${gcc_version}/include
 changequote([,])dnl
 AC_SUBST(tool_include_dir)
+AC_SUBST(gcc_version)
 
 if test -n "${with_cross_host}"; then
    # We are being configured with a cross compiler.  AC_REPLACE_FUNCS

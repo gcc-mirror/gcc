@@ -1,3 +1,11 @@
+2002-04-09  Anthony Green  <green@redhat.com>
+
+	* Makefile.am (jardir, jar_DATA): Define (for libgcj.jar).
+	Create libgcj-@gcc_version@.jar instead of libgcj.jar.
+	* Makefile.in: Rebuilt.
+	* configure.in: Substitute gcc_version.
+	* configure: Rebuilt.
+
 2002-04-09  Tom Tromey  <tromey@redhat.com>
 
 	* win32.cc (_Jv_platform_initProperties): Use GetTempPath.
