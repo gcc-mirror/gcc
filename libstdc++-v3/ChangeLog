@@ -1,3 +1,9 @@
+2004-01-30  Paolo Carlini  <pcarlini@suse.de>
+
+	* testsuite/21_strings/basic_string/cons/char/6.cc: New.
+	* testsuite/21_strings/basic_string/cons/wchar_t/6.cc: New.
+	* testsuite/performance/21_strings/string_cons_input_iterator.cc: New.
+	
 2004-01-30  Felix Yen  <fwy@alumni.brown.edu>
 
 	* testsuite/performance/20_util/allocator_thread.cc (do_loop):
