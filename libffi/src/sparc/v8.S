@@ -115,7 +115,15 @@ ffi_closure_v8:
 		.register	%g2, #scratch
 #endif
 .LLFB2:
-	save	%sp, -STACKFRAME, %sp
+	! Reserve frame space for all arguments in case
+	! we need to align them on a 8-byte boundary.
+	ld	[%g2+FFI_TRAMPOLINE_SIZE], %g1
+	ld	[%g1+4], %g1
+	sll	%g1, 3, %g1
+	add	%g1, STACKFRAME, %g1
+	! %g1 == STACKFRAME + 8*nargs
+	neg	%g1
+	save	%sp, %g1, %sp
 .LLCFI1:
 
 	! Store all of the potential argument registers in va_list format.
@@ -129,8 +137,9 @@ ffi_closure_v8:
 	! Call ffi_closure_sparc_inner to do the bulk of the work.
 	mov	%g2, %o0
 	add	%fp, -8, %o1
+	add	%fp,  64, %o2
 	call	ffi_closure_sparc_inner_v8
-	 add	%fp,  64, %o2
+	 add	%fp, -16, %o3
 
 	! Load up the return value in the proper type.
 	! See ffi_prep_cif_machdep for the list of cases.
@@ -157,6 +166,7 @@ ffi_closure_v8:
 	be	done2
 
 	! FFI_TYPE_SINT64
+	! FFI_TYPE_UINT64
 	ld	[%fp-4], %i1
 
 integer:
