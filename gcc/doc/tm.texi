@@ -6551,6 +6551,9 @@ that is, available for reference from other files.  Use the expression
 itself; before and after that, output the additional assembler syntax
 for making that name global, and a newline.
 
+If you define @code{GLOBAL_ASM_OP}, a default definition is provided
+which is correct for most systems.
+
 @findex ASM_WEAKEN_LABEL
 @item ASM_WEAKEN_LABEL (@var{stream}, @var{name})
 A C statement (sans semicolon) to output to the stdio stream

@@ -1735,14 +1735,7 @@ __transfer_from_trampoline ()					\
 /* Before the prologue, the top of the frame is at 4(%sp).  */
 #define INCOMING_FRAME_SP_OFFSET 4
 
-/* This is how to output a command to make the user-level label named NAME
-   defined for reference from other files.  */
-
 #define GLOBAL_ASM_OP "\t.globl\t"
-#define ASM_GLOBALIZE_LABEL(FILE,NAME)	\
-  do { fprintf (FILE, "%s", GLOBAL_ASM_OP);		\
-       assemble_name (FILE, NAME);			\
-       fputs ("\n", FILE);} while (0)
 
 /* This is how to output a reference to a user-level label named NAME.
    `assemble_name' uses this.  */

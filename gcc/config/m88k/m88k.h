@@ -1870,15 +1870,6 @@ do {									 \
       ASM_OUTPUT_MEASURED_SIZE (FILE, FNAME);				\
   } while (0)
 
-/* This is how to output a command to make the user-level label named NAME
-   defined for reference from other files.  */
-#define ASM_GLOBALIZE_LABEL(FILE,NAME)			\
-  do {							\
-    fprintf (FILE, "%s", GLOBAL_ASM_OP);		\
-    assemble_name (FILE, NAME);				\
-    putc ('\n', FILE);					\
-  } while (0)
-
 /* The prefix to add to user-visible assembler symbols.
    Override svr[34].h.  */
 #undef USER_LABEL_PREFIX
