@@ -1,4 +1,4 @@
-/* Copyright (C) 2001, 2002, 2003, 2004  Free Software Foundation
+/* Copyright (C) 2001, 2002, 2003, 2004, 2005  Free Software Foundation
 
    This file is part of libgcj.
 
@@ -1439,7 +1439,7 @@ get_ushort (void)
 static jint
 get_short (void)
 {
-  jint b1 = get_byte ();
+  signed char b1 = (signed char) get_byte ();
   jint b2 = get_byte ();
   jshort s = (b1 << 8) | b2;
   return (jint) s;
@@ -1452,7 +1452,10 @@ get_int (void)
   jint b2 = get_byte ();
   jint b3 = get_byte ();
   jint b4 = get_byte ();
-  return (b1 << 24) | (b2 << 16) | (b3 << 8) | b4;
+  jword result = (b1 << 24) | (b2 << 16) | (b3 << 8) | b4;
+  /* In the compiler, 'jint' might have more than 32 bits, so we must
+     sign extend.  */
+  return WORD_TO_INT (result);
 }
 
 static int
