@@ -68,3 +68,6 @@
 
 /* Define if you have the memcpy function.  */
 #undef HAVE_MEMCPY
+
+/* Define if your assembler and linker support unaligned PC relative relocs.  */
+#undef HAVE_AS_SPARC_UA_PCREL

@@ -1,3 +1,12 @@
+2002-04-28  Jakub Jelinek  <jakub@redhat.com>
+
+	* configure.in (HAVE_AS_SPARC_UA_PCREL): Check for working
+	%r_disp32().
+	* src/sparc/v8.S: Use it.
+	* src/sparc/v9.S: Likewise.
+	* fficonfig.h.in: Rebuilt.
+	* configure: Rebuilt.
+
 2002-04-08  Hans Boehm  <Hans_Boehm@hp.com>
 
 	* src/java_raw_api.c (ffi_java_raw_size): Handle FFI_TYPE_DOUBLE

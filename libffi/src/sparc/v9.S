@@ -136,7 +136,11 @@ dostruct:
 	.byte	0x78	! sleb128 -8; CIE Data Alignment Factor
 	.byte	0xf	! CIE RA Column
 	.byte	0x1	! uleb128 0x1; Augmentation size
+#ifdef HAVE_AS_SPARC_UA_PCREL
+	.byte	0x1b	! FDE Encoding (pcrel sdata4)
+#else
 	.byte	0x50	! FDE Encoding (aligned absolute)
+#endif
 	.byte	0xc	! DW_CFA_def_cfa
 	.byte	0xe	! uleb128 0xe
 	.byte	0xff,0xf	! uleb128 0x7ff
@@ -146,9 +150,14 @@ dostruct:
 	.uaword	.LLEFDE1-.LLASFDE1	! FDE Length
 .LLASFDE1:
 	.uaword	.LLASFDE1-.LLframe1	! FDE CIE offset
+#ifdef HAVE_AS_SPARC_UA_PCREL
+	.uaword	%r_disp32(.LLFB1)
+	.uaword	.LLFE1-.LLFB1		! FDE address range
+#else
 	.align 8
 	.xword	.LLFB1
 	.uaxword	.LLFE1-.LLFB1	! FDE address range
+#endif
 	.byte	0x0	! uleb128 0x0; Augmentation size
 	.byte	0x4	! DW_CFA_advance_loc4
 	.uaword	.LLCFI0-.LLFB1
