@@ -1641,8 +1641,10 @@ _cpp_get_directive_token (pfile)
 {
   long old_written;
   enum cpp_ttype token;
+  int at_bol;
 
  get_next:
+  at_bol = (CPP_BUFFER (pfile)->cur == CPP_BUFFER (pfile)->line_base);
   old_written = CPP_WRITTEN (pfile);
   token = _cpp_lex_token (pfile);
   switch (token)
@@ -1657,7 +1659,9 @@ _cpp_get_directive_token (pfile)
       return CPP_VSPACE;
 
     case CPP_HSPACE:
-      if (CPP_PEDANTIC (pfile))
+      /* The purpose of this rather strange check is to prevent pedantic
+	 warnings for ^L in an #ifdefed out block.  */
+      if (CPP_PEDANTIC (pfile) && ! at_bol)
 	pedantic_whitespace (pfile, pfile->token_buffer + old_written,
 			     CPP_WRITTEN (pfile) - old_written);
       CPP_SET_WRITTEN (pfile, old_written);
