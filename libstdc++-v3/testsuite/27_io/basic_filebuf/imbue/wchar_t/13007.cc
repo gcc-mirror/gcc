@@ -1,5 +1,3 @@
-// 2003-05-13 Benjamin Kosnik  <bkoz@redhat.com>
-
 // Copyright (C) 2003 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
@@ -24,33 +22,40 @@
 #include <locale>
 #include <testsuite_hooks.h>
 
-void test02()
+class Buf : public std::wfilebuf
 {
-  using namespace std;
+public:
+  std::locale before;
+  std::locale after;
+
+protected:
+  void imbue(const std::locale& loc)
+  {
+    before = getloc();
+
+    std::wfilebuf::imbue(loc);
+
+    after = getloc();
+  }
+};
+
+// libstdc++/13007
+void test01()
+{
   bool test __attribute__((unused)) = true;
-  const char name_01[] = "filebuf_virtuals-1.txt"; // file with data in it
 
-  locale loc;
-  wfilebuf ob;
-  VERIFY( ob.getloc() == loc );
-  ob.open(name_01, ios_base::in);
-  VERIFY( ob.is_open() );
- 
-  typedef streambuf::pos_type pos_type;
-  pos_type bad = pos_type(streambuf::off_type(-1));
-  pos_type p = ob.pubseekoff(2, ios_base::beg, ios_base::in);
-  VERIFY( p != bad);
+  Buf buf;
+  std::locale loc(__gnu_test::try_named_locale("fr_FR"));
 
-  // "if file is not positioned at its beginning" imbue fails
-  // but, according to 27.5.2.2.1, p1, still loc == getloc()
-  // after pubimbue(loc).
-  locale loc_de = __gnu_test::try_named_locale("de_DE");
-  locale ret = ob.pubimbue(loc_de);
-  VERIFY( ob.getloc() == loc_de );
+  buf.pubimbue(loc);
+
+  VERIFY( buf.getloc() == loc );
+  VERIFY( buf.before == std::locale::classic() );
+  VERIFY( buf.after == std::locale::classic() );
 }
 
-int main() 
+int main()
 {
-  test02();
+  test01();
   return 0;
 }
