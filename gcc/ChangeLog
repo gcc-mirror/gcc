@@ -1,7 +1,17 @@
+2003-05-22  Zack Weinberg  <zack@codesourcery.com>
+
+	PR other/2873
+	* fixinc/inclhack.def (avoid_wchar_t_type): Add bypass
+	expressions to prevent triggering on recent curses.h,
+	linux/nls.h, or X11/Xlib.h.
+	(stdio_va_list): Add _G_va_list to bypass pattern.
+	(strict_ansi_not): Add bypass pattern for __SCO_VERSION__.
+	* fixinc/fixincl.x: Regenerate.
+
 2003-05-22 Rekha Bhintade <rekhad@kpitcummins.com>
 
 	* gcc/config/sh/sh.h (TARGET_SWITCHES): Display all the target
-	switches when --target-help option is specified. 
+	switches when --target-help option is specified.
 
 2003-05-22  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
@@ -177,12 +187,12 @@
 2003-05-19  Seth Arnold  <sarnold@wirex.com>
 	    Aldy Hernandez  <aldyh@redhat.com>
 
-        * config/rs6000/rs6000.c (rs6000_stack_info): Do not add
-        vrsave_size twice.
+	* config/rs6000/rs6000.c (rs6000_stack_info): Do not add
+	vrsave_size twice.
 
 2003-05-19  Aldy Hernandez  <aldyh@redhat.com>
 
-        * doc/tm.texi (function_arg): Fix typo.
+	* doc/tm.texi (function_arg): Fix typo.
 
 2003-05-19  Matt Austern  <austern@apple.com>
 
@@ -192,9 +202,9 @@
 	* doc/invoke.texi: Document -Winvalid-offsetof.
 	* testsuite/g++.dg/other/offsetof3.C: New.
 	* testsuite/g++.dg/other/offsetof4.C: New.
-	
+
 2003-05-19  Kevin B. Hendricks  <kevin.hendricks@sympatico.ca>
-            David Edelsohn  <edelsohn@gnu.org>
+	    David Edelsohn  <edelsohn@gnu.org>
 
 	* config/rs6000/rs6000.c (rs6000_alignment_string,
 	rs6000_alignment_flags): New variables.

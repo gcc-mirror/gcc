@@ -633,12 +633,19 @@ fix = {
 /*
  *  For C++, avoid any typedef definition of wchar_t,
  *  and use the built in type instead.
+ *  Don't do this for headers that are smart enough to do the right
+ *  thing (recent [n]curses.h and Xlib.h).
+ *  Don't do it for <linux/nls.h> which is never used from C++ anyway,
+ *  and will be broken by the edit.
  */
 
 fix = {
     hackname = avoid_wchar_t_type;
 
     select    = "^[ \t]*typedef[ \t].*[ \t]wchar_t[ \t]*;";
+    bypass    = "we must use the C\\+\\+ compiler's type";
+    bypass    = "_LINUX_NLS_H";
+    bypass    = "XFree86: xc/lib/X11/Xlib\\.h";
 
     c_fix     = format;
     c_fix_arg = "#ifndef __cplusplus\n%0\n#endif";
@@ -2277,13 +2284,16 @@ fix = {
 
 /*
  *  Don't use or define the name va_list in stdio.h.
- *  This is for ANSI and also to interoperate properly with gcc's varargs.h.
- *  Note _BSD_VA_LIST_ is dealt with elsewhere.
+ *  This is for ANSI and also to interoperate properly with gcc's
+ *  varargs.h.  Note _BSD_VA_LIST_ is dealt with elsewhere.  The
+ *  presence of __gnuc_va_list, __DJ_va_list, or _G_va_list is taken
+ *  to indicate that the header knows what it's doing -- under SUSv2,
+ *  stdio.h is required to define va_list, and we shouldn't break that.
  */
 fix = {
     hackname = stdio_va_list;
     files    = stdio.h;
-    bypass   = '__gnuc_va_list|_BSD_VA_LIST_|__DJ_va_list';
+    bypass   = '__gnuc_va_list|_BSD_VA_LIST_|__DJ_va_list|_G_va_list';
 
     /*
      * Use __gnuc_va_list in arg types in place of va_list.
@@ -2325,6 +2335,9 @@ fix = {
                "|__STDC__[ \t]*-[ \t]*0[ \t]*==[ \t]*0)";
     /* Tru64 UNIX V4.0F/V5.1 <standards.h> supports GCC usage of __STDC__. */
     bypass = 'GNU and MIPS C compilers define __STDC__ differently';
+    /* GNU gmp.h uses "__STDC__ != 1" only if __SCO_VERSION__, which
+       is not defined by GCC, so it is safe.  */
+    bypass = '__SCO_VERSION__.*__STDC__ != 1';
     c_test   = stdc_0_in_system_headers;
 
     c_fix     = format;
