@@ -22,7 +22,15 @@ Sun Jan 11 02:14:47 1998  Craig Burley  <burley@gnu.org>
 	* stb.c (ffestb_R10014_, ffestb_R10016_, ffestb_R10018_,
 	ffestb_R100110_): Restructure `for' loop for style.
 
+Fri Jan  9 19:09:07 1998  Craig Burley  <burley@gnu.org>
+
+	* intrin.c (ffeintrin_check_): No longer ignore explicit
+	omitted trailing args.
+
 Tue Dec 23 14:58:04 1997  Craig Burley  <burley@gnu.org>
+
+	* intrin.c (ffeintrin_fulfill_generic): Don't generate
+	FFEBAD_INTRINSIC_TYPE for CHARACTER*(*) intrinsic.
 
 	* com.c (ffecom_gfrt_basictype):
 	(ffecom_gfrt_kindtype):
