@@ -4877,6 +4877,7 @@ m68hc11_z_replacement (insn)
 
       body = PATTERN (insn);
       if (GET_CODE (body) == SET || GET_CODE (body) == PARALLEL
+          || GET_CODE (body) == ASM_OPERANDS
 	  || GET_CODE (insn) == CALL_INSN || GET_CODE (insn) == JUMP_INSN)
 	{
           rtx note;
