@@ -6,6 +6,10 @@
 	(remove_ssa_form): Don't check for SSANORM_REMOVE_ALL_PHIS.
 	(rewrite_out_of_ssa): Don't use SSANORM_REMOVE_ALL_PHIS.
 
+	* c-objc-common.h, c-pretty-print.c, cgraphunit.c, except.c,
+	genautomata.c, langhooks.c, langhooks.h, system.h,
+	config/arm/lib1funcs.asm: Update copyright.
+
 2005-02-21  Ulrich Weigand  <uweigand@de.ibm.com>
 
 	* dbxout.c (dbxout_function_end): Emit Lscope label always.
