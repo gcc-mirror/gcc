@@ -1,3 +1,9 @@
+2002-06-16  Richard Henderson  <rth@redhat.com>
+
+	PR opt/6793
+	* tree.c (cp_cannot_inline_tree_fn): Don't short-circuit test
+	after template instantiation.
+
 2002-06-07  H.J. Lu  (hjl@gnu.org)
 
 	* decl2.c (flag_use_cxa_atexit): Set to DEFAULT_USE_CXA_ATEXIT.
@@ -212,12 +218,12 @@
 
 2002-04-11  Andrew Haley  <aph@redhat.com>
 
-        * typeck.c (type_after_usual_arithmetic_conversions):
-        If two types have the same variant, return immediately.
-        When two floating-point operands are the same precision: 
-          convert to float if one of the operands is float;
-          if neither operand is one of the standard types, return the type
-          of the first operand.
+	* typeck.c (type_after_usual_arithmetic_conversions):
+	If two types have the same variant, return immediately.
+	When two floating-point operands are the same precision: 
+	  convert to float if one of the operands is float;
+	  if neither operand is one of the standard types, return the type
+	  of the first operand.
  
 2002-04-12  Richard Sandiford  <rsandifo@redhat.com>
 
