@@ -13690,6 +13690,15 @@ foo:	.long	25
 	tls_first_minor=13
 	tls_as_opt=--fatal-warnings
 	;;
+  frv*-*-*)
+    conftest_s='
+	.section ".tdata","awT",@progbits
+x:      .long   25
+        .text
+        call    #gettlsoff(x)'
+	tls_first_major=2
+	tls_first_minor=14
+	;;
   i[34567]86-*-*)
     conftest_s='
 	.section ".tdata","awT",@progbits
