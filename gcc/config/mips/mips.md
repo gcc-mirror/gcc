@@ -5484,33 +5484,20 @@ beq\t%2,%.,1b\;\
   [(set (pc) (match_operand 0 "register_operand"))]
   ""
 {
-  rtx dest;
-
-  dest = operands[0];
-  if (GET_CODE (dest) != REG || GET_MODE (dest) != Pmode)
-    operands[0] = copy_to_mode_reg (Pmode, dest);
-
-  if (!(Pmode == DImode))
-    emit_jump_insn (gen_indirect_jump_internal1 (operands[0]));
+  operands[0] = force_reg (Pmode, operands[0]);
+  if (Pmode == SImode)
+    emit_jump_insn (gen_indirect_jumpsi (operands[0]));
   else
-    emit_jump_insn (gen_indirect_jump_internal2 (operands[0]));
-
+    emit_jump_insn (gen_indirect_jumpdi (operands[0]));
   DONE;
 })
 
-(define_insn "indirect_jump_internal1"
-  [(set (pc) (match_operand:SI 0 "register_operand" "d"))]
-  "!(Pmode == DImode)"
+(define_insn "indirect_jump<mode>"
+  [(set (pc) (match_operand:P 0 "register_operand" "d"))]
+  ""
   "%*j\t%0%/"
-  [(set_attr "type"	"jump")
-   (set_attr "mode"	"none")])
-
-(define_insn "indirect_jump_internal2"
-  [(set (pc) (match_operand:DI 0 "register_operand" "d"))]
-  "Pmode == DImode"
-  "%*j\t%0%/"
-  [(set_attr "type"	"jump")
-   (set_attr "mode"	"none")])
+  [(set_attr "type" "jump")
+   (set_attr "mode" "none")])
 
 (define_expand "tablejump"
   [(set (pc)
@@ -5519,81 +5506,29 @@ beq\t%2,%.,1b\;\
   ""
 {
   if (TARGET_MIPS16)
-    {
-      if (GET_MODE (operands[0]) != HImode)
-	abort ();
-      if (!(Pmode == DImode))
-	emit_insn (gen_tablejump_mips161 (operands[0], operands[1]));
-      else
-	emit_insn (gen_tablejump_mips162 (operands[0], operands[1]));
-      DONE;
-    }
-
-  if (GET_MODE (operands[0]) != ptr_mode)
-    abort ();
-
-  if (TARGET_GPWORD)
-    operands[0] = expand_binop (ptr_mode, add_optab, operands[0],
+    operands[0] = expand_binop (Pmode, add_optab,
+				convert_to_mode (Pmode, operands[0], false),
+				gen_rtx_LABEL_REF (Pmode, operands[1]),
+				0, 0, OPTAB_WIDEN);
+  else if (TARGET_GPWORD)
+    operands[0] = expand_binop (Pmode, add_optab, operands[0],
 				pic_offset_table_rtx, 0, 0, OPTAB_WIDEN);
 
   if (Pmode == SImode)
-    emit_jump_insn (gen_tablejump_internal1 (operands[0], operands[1]));
+    emit_jump_insn (gen_tablejumpsi (operands[0], operands[1]));
   else
-    emit_jump_insn (gen_tablejump_internal2 (operands[0], operands[1]));
+    emit_jump_insn (gen_tablejumpdi (operands[0], operands[1]));
   DONE;
 })
 
-(define_insn "tablejump_internal1"
+(define_insn "tablejump<mode>"
   [(set (pc)
-	(match_operand:SI 0 "register_operand" "d"))
+	(match_operand:P 0 "register_operand" "d"))
    (use (label_ref (match_operand 1 "" "")))]
   ""
   "%*j\t%0%/"
-  [(set_attr "type"	"jump")
-   (set_attr "mode"	"none")])
-
-(define_insn "tablejump_internal2"
-  [(set (pc)
-	(match_operand:DI 0 "register_operand" "d"))
-   (use (label_ref (match_operand 1 "" "")))]
-  "TARGET_64BIT"
-  "%*j\t%0%/"
-  [(set_attr "type"	"jump")
-   (set_attr "mode"	"none")])
-
-(define_expand "tablejump_mips161"
-  [(set (pc) (plus:SI (sign_extend:SI (match_operand:HI 0 "register_operand"))
-		      (label_ref:SI (match_operand 1 ""))))]
-  "TARGET_MIPS16 && !(Pmode == DImode)"
-{
-  rtx t1, t2, t3;
-
-  t1 = gen_reg_rtx (SImode);
-  t2 = gen_reg_rtx (SImode);
-  t3 = gen_reg_rtx (SImode);
-  emit_insn (gen_extendhisi2 (t1, operands[0]));
-  emit_move_insn (t2, gen_rtx_LABEL_REF (SImode, operands[1]));
-  emit_insn (gen_addsi3 (t3, t1, t2));
-  emit_jump_insn (gen_tablejump_internal1 (t3, operands[1]));
-  DONE;
-})
-
-(define_expand "tablejump_mips162"
-  [(set (pc) (plus:DI (sign_extend:DI (match_operand:HI 0 "register_operand"))
-		      (label_ref:DI (match_operand 1 ""))))]
-  "TARGET_MIPS16 && Pmode == DImode"
-{
-  rtx t1, t2, t3;
-
-  t1 = gen_reg_rtx (DImode);
-  t2 = gen_reg_rtx (DImode);
-  t3 = gen_reg_rtx (DImode);
-  emit_insn (gen_extendhidi2 (t1, operands[0]));
-  emit_move_insn (t2, gen_rtx_LABEL_REF (DImode, operands[1]));
-  emit_insn (gen_adddi3 (t3, t1, t2));
-  emit_jump_insn (gen_tablejump_internal2 (t3, operands[1]));
-  DONE;
-})
+  [(set_attr "type" "jump")
+   (set_attr "mode" "none")])
 
 ;; For TARGET_ABICALLS, we save the gp in the jmp_buf as well.
 ;; While it is possible to either pull it off the stack (in the
