@@ -1,3 +1,8 @@
+2001-09-25  Janis Johnson  <janis187@us.ibm.com>
+	    Jim Wilson  <wilson@redhat.com>
+
+	* doc/install.texi (Specific, ia64-*-linux): Document.
+
 Tue Sep 25 17:13:56 CEST 2001  Jan Hubicka  <jh@suse.cz>
 
 	* Makefile.in (cfgrtl.o): Add.
