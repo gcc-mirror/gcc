@@ -1,3 +1,7 @@
+2001-06-08  Joseph S. Myers  <jsm28@cam.ac.uk>
+
+	* doc/md.texi: Use four digit years in copyright notice.
+
 2001-06-07  DJ Delorie  <dj@redhat.com>
 
 	* c-tree.texi, contrib.texi, cpp.texi, cppinternals.texi,
