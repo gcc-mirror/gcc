@@ -1,3 +1,8 @@
+2004-11-16  Steven Bosscher  <stevenb@suse.de>
+
+	* Make-lang.in (cp/decl.o, cp/search.o): Don't depend on stack.h.
+	* search.c: Don't include it.
+
 2004-11-15  Andrew Pinski  <pinskia@physics.uc.edu>
 
 	* cp-gimplify.c: Include pointer-set.h
