@@ -1,3 +1,7 @@
+Thu Sep  4 14:51:57 1997  Jeffrey A Law  (law@cygnus.com)
+
+	* i386.h (CPP_CPU_DEFAULT): Avoid using #elif.
+
 Thu Sep  4 15:01:49 1997  Michael Meissner  <meissner@cygnus.com>
 
 	* toplev.c (rest_of_compilation): For passes starting with
