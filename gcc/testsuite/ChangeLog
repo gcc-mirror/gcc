@@ -1,3 +1,8 @@
+2004-02-03  Roger Sayle  <roger@eyesopen.com>
+
+	PR target/9348
+	* gcc.c-torture/execute/multdi-1.c: New test case.
+
 2004-02-03  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/13925
