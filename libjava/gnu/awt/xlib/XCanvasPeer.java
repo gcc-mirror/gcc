@@ -210,11 +210,11 @@ public class XCanvasPeer implements CanvasPeer
   }
   public Image createImage(ImageProducer prod)
   {
-    throw new UnsupportedOperationException("FIXME, not implemented");
+    return new XOffScreenImage (config, window, prod, config.getColorModel());
   }
   public Image createImage(int width, int height)
   {
-    return new XOffScreenImage (config, window, width, height);
+    return new XOffScreenImage (config, window, width, height, config.getColorModel());
   }
   public void dispose()
   {

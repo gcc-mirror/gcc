@@ -132,6 +132,11 @@ public class GC implements Cloneable
   public native void clearArea(int x, int y, int w, int h,
 			       boolean exposures);
 
+  /** Draw a point using the current foreground color
+   * @param x The x coordinate at which to draw
+   * @param t The y coordinate at which to draw
+   */
+  public native void drawPoint (int x, int y);
 
   public native void putImage(XImage image,
 			      int srcX, int srcY,

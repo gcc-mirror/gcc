@@ -1,3 +1,19 @@
+2004-07-12  Scott Gilbertson  <scottg@mantatest.com>
+
+	* gnu/awt/xlib/XCanvasPeer.java (createImage): Implement.
+	* gnu/awt/xlib/XOffScreenImage.java
+	  (XOffScreenImage): Add ImageConsumer interface. Add ColorModel
+	  constructor argument. Add constructor using ImageProducer.
+	  (getSource): Implement.
+	  (imageComplete): New method.
+	  (setColorModel): New method.
+	  (setDimensions): New method.
+	  (setHints): New method.
+	  (setPixels): New method.
+	  (setProperties): New method.
+	* gnu/gcj/xlib/GC.java (drawPoint): New native method. 
+	* gnu/gcj/xlib/natGC.cc (drawPoint): New native method.
+
 2004-07-11  Bryce McKinlay  <mckinlay@redhat.com>
 
 	PR libgcj/16478	

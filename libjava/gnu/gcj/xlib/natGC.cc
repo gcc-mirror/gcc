@@ -117,6 +117,15 @@ void gnu::gcj::xlib::GC::drawString(jstring text, jint x, jint y)
   XDrawString16(dpy, drawableXID, gc, x, y, xwchars, length);
 }
 
+void gnu::gcj::xlib::GC::drawPoint(jint x, jint y)
+{
+  Display* display = target->getDisplay();
+  ::Display* dpy = (::Display*) (display->display);
+  ::Drawable drawableXID = target->getXID();
+  ::GC gc = (::GC) structure;
+  XDrawPoint (dpy, drawableXID, gc, x, y);
+}
+
 void gnu::gcj::xlib::GC::drawLine(jint x1, jint y1, jint x2, jint y2)
 {
   Display* display = target->getDisplay();
