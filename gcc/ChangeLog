@@ -1,3 +1,10 @@
+2004-06-11  Roger Sayle  <roger@eyesopen.com>
+
+	* expmed.c (synth_mult): Add an additional MODE argument for the
+	machine mode of the multiplication.  Update recursive calls.  Use
+	mode instead of word_mode for determining operation costs.
+	(choose_mult_variant): Update calls to synth_mult with "mode".
+
 2004-06-11  Richard Henderson  <rth@redhat.com>
 
 	* tree-ssa-operands.c (get_stmt_operands): Clear makes_aliased_loads
