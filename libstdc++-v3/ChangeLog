@@ -1,5 +1,15 @@
 2004-02-16  Paolo Carlini  <pcarlini@suse.de>
 
+	* testsuite/27_io/basic_filebuf/overflow/char/13858.cc:
+	Qualify exception with std::.
+	* testsuite/27_io/basic_filebuf/overflow/char/9182-2.cc: Ditto.
+	* testsuite/27_io/basic_filebuf/overflow/wchar_t/13858.cc: Ditto.
+	* testsuite/27_io/basic_filebuf/seekoff/wchar_t/3.cc: Ditto.
+	* testsuite/27_io/basic_filebuf/seekpos/wchar_t/1.cc: Ditto.
+	* testsuite/27_io/basic_filebuf/sync/char/9182-1.cc: Ditto.
+
+2004-02-16  Paolo Carlini  <pcarlini@suse.de>
+
 	* testsuite/ext/enc_filebuf/char/13189.cc: Don't check
 	for now that the catch block is not reached.
 	* testsuite/ext/enc_filebuf/wchar_t/13189.cc: Likewise.
