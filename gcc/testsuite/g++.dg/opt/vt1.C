@@ -1,5 +1,6 @@
 // Test whether vtable for S is not put into read-only section.
 // { dg-do compile }
+// { dg-skip-if "No -fpic" { mmix-*-* } { "*" } { "" } }
 // { dg-options "-O2 -fpic -fno-rtti" }
 // Origin: Jakub Jelinek <jakub@redhat.com>
 
