@@ -1,5 +1,14 @@
 2003-11-18  Ian Lance Taylor  <ian@wasabisystems.com>
 
+	* cp-demangle.c (demangle_operator_name): Remove space before
+	"sizeof".
+	(demangle_type_ptr): Put qualifiers in the right place.  Handle
+	qualifiers in pointer to member specially.
+	(demangle_type): Handle qualifiers for pointer or reference
+	specially.  Handle function type.
+	(demangle_local_name): Save and restore caret around demangling of
+	initial encoding.
+
 	* testsuite/test-demangle.c (main): Don't pass DMGL_VERBOSE to
 	cplus_demangle.
 
