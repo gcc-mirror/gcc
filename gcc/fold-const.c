@@ -5884,7 +5884,9 @@ fold (tree expr)
 		 example: ((X*2 + 4) - 8U)/2.  */
 	      if (minus_lit0 && lit0)
 		{
-		  if (tree_int_cst_lt (lit0, minus_lit0))
+		  if (TREE_CODE (lit0) == INTEGER_CST
+		      && TREE_CODE (minus_lit0) == INTEGER_CST
+		      && tree_int_cst_lt (lit0, minus_lit0))
 		    {
 		      minus_lit0 = associate_trees (minus_lit0, lit0,
 						    MINUS_EXPR, type);

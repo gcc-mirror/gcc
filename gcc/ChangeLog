@@ -1,3 +1,10 @@
+2003-08-20  Roger Sayle  <roger@eyesopen.com>
+
+	PR middle-end/11984
+	* fold-const.c (fold <PLUS_EXPR>): Check for integer constant
+	operands before calling tree_int_cst_lt when performing associative
+	transformations.
+
 2003-08-20  Jason Merrill  <jason@redhat.com>
 
 	* tree.h (IS_EXPR_CODE_CLASS): Also include 'r' and 's'.
