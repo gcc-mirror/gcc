@@ -1,3 +1,28 @@
+2004-12-14  Richard Henderson  <rth@redhat.com>
+
+	PR target/17990
+	* config/i386/i386.c (x86_use_bt): New.
+	(ix86_expand_unary_operator): Use MEM_P.
+	(ix86_expand_fp_absneg_operator): New.
+	* config/i386/i386.h (x86_use_bt): Declare.
+	(TARGET_USE_BT): New.
+	* config/i386/i386-protos.h: Update.
+	* config/i386/i386.md (negsf2): Use ix86_expand_fp_absneg_operator.
+	(negdf2, negxf2, abssf2, absdf2, absxf2): Likewise.
+	(negsf2_memory, negsf2_ifs, negsf2_if, negdf2_memory, negdf2_ifs,
+	negdf2_ifs_rex64, negdf2_if, negdf2_if_rex64, negxf2_if,
+	abssf2_memory, abssf2_ifs, abssf2_if, absdf2_memory, absdf2_ifs,
+	absdf2_ifs_rex64, absdf2_if, absxf2_if): Remove.
+	(absnegsf2_mixed, absnegsf2_sse, absnegsf2_i387, absnegdf2_mixed,
+	absnegdf2_sse, absnegdf2_i387, absnegxf2_i387): New.  Merge all
+	neg and abs splitters.  Handle DFmode in general regs in 64-bit mode.
+	(negextendsfdf2, absextendsfdf2): Disable for non-mixed sse math.
+	(btsq, btrq, btcq): New.  Add peepholes as well.
+	(movv4sf_internal splitter): Postpone til after reload.
+	(movv2di_internal splitter): Likewise.
+	* config/i386/predicates.md (const_0_to_63_operand): New.
+	(absneg_operator): New.
+
 2004-12-14  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
 	* pa.h (REGNO_OK_FOR_INDEX_P, REGNO_OK_FOR_BASE_P, REGNO_OK_FOR_FP_P):
@@ -53,8 +78,8 @@
 2004-12-13  Richard Henderson  <rth@redhat.com>
 
 	PR middle-end/17930
-        * passes.c (rest_of_clean_state): Fix computation of
-        preferred_incoming_stack_boundary.
+	* passes.c (rest_of_clean_state): Fix computation of
+	preferred_incoming_stack_boundary.
 
 2004-12-13  Wolfgang Bangerth <bangerth@dealii.org>
 
