@@ -1,3 +1,15 @@
+2004-01-23  Paolo Carlini  <pcarlini@suse.de>
+
+	* include/bits/basic_string.h (push_back(_CharT)):
+	Call _M_replace_aux.
+	(insert(size_type, const basic_string&)): Trivial tweak.
+	(insert(size_type, size_type, _CharT)): Call _M_replace_aux.
+	(insert(iterator, _CharT)): Ditto.
+	(erase(size_type, size_type)): Ditto.
+	(erase(iterator)): Ditto.
+	(erase(iterator, iterator)): Ditto.
+	(replace(size_type, size_type, size_type, _CharT)): Ditto.
+
 2004-01-23  Loren J. Rittle  <ljrittle@acm.org>
 
 	libstdc++/13823

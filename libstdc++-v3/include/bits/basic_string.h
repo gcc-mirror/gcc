@@ -771,7 +771,7 @@ namespace std
        */
       void
       push_back(_CharT __c)
-      { this->replace(_M_iend(), _M_iend(), 1, __c); }
+      { _M_replace_aux(this->size(), size_type(0), size_type(1), __c); }
 
       /**
        *  @brief  Set value to contents of another string.
@@ -895,7 +895,7 @@ namespace std
       */
       basic_string&
       insert(size_type __pos1, const basic_string& __str)
-      { return this->insert(__pos1, __str, 0, __str.size()); }
+      { return this->insert(__pos1, __str, size_type(0), __str.size()); }
 
       /**
        *  @brief  Insert a substring.
@@ -978,11 +978,8 @@ namespace std
       */
       basic_string&
       insert(size_type __pos, size_type __n, _CharT __c)
-      { 
-	const iterator __iterator = this->_M_ibegin()
-	                            + _M_check(__pos, "basic_string::insert");
-	return this->replace(__iterator, __iterator, __n, __c);
-      }
+      { return _M_replace_aux(_M_check(__pos, "basic_string::insert"),
+			      size_type(0), __n, __c); }
 
       /**
        *  @brief  Insert one character.
@@ -1002,7 +999,7 @@ namespace std
       {
 	_GLIBCXX_DEBUG_PEDASSERT(__p >= _M_ibegin() && __p <= _M_iend());
 	const size_type __pos = __p - _M_ibegin();
-	this->replace(__p, __p, size_type(1), __c);
+	_M_replace_aux(__pos, size_type(0), size_type(1), __c);
 	_M_rep()->_M_set_leaked();
  	return this->_M_ibegin() + __pos;
       }
@@ -1042,11 +1039,8 @@ namespace std
       */
       basic_string&
       erase(size_type __pos = 0, size_type __n = npos)
-      {
-	return this->replace(_M_ibegin() + _M_check(__pos, "basic_string::erase"),
-			     _M_ibegin() + __pos + _M_limit(__pos, __n),
-			     _M_data(), _M_data());
-      }
+      { return _M_replace_aux(_M_check(__pos, "basic_string::erase"),
+			      _M_limit(__pos, __n), size_type(0), _CharT()); }
 
       /**
        *  @brief  Remove one character.
@@ -1064,10 +1058,10 @@ namespace std
       {
 	_GLIBCXX_DEBUG_PEDASSERT(__position >= _M_ibegin() 
 				 && __position < _M_iend());
-	const size_type __i = __position - _M_ibegin();
-        this->replace(__position, __position + 1, _M_data(), _M_data());
+	const size_type __pos = __position - _M_ibegin();
+	_M_replace_aux(__pos, size_type(1), size_type(0), _CharT());
 	_M_rep()->_M_set_leaked();
-	return _M_ibegin() + __i;
+	return _M_ibegin() + __pos;
       }
 
       /**
@@ -1087,10 +1081,10 @@ namespace std
       {
 	_GLIBCXX_DEBUG_PEDASSERT(__first >= _M_ibegin() && __first <= __last
 				 && __last <= _M_iend());
-        const size_type __i = __first - _M_ibegin();
-	this->replace(__first, __last, _M_data(), _M_data());
+        const size_type __pos = __first - _M_ibegin();
+	_M_replace_aux(__pos, __last - __first, size_type(0), _CharT());
 	_M_rep()->_M_set_leaked();
-	return _M_ibegin() + __i;
+	return _M_ibegin() + __pos;
       }
 
       /**
@@ -1196,9 +1190,8 @@ namespace std
       */
       basic_string&
       replace(size_type __pos, size_type __n1, size_type __n2, _CharT __c)
-      { return this->replace(_M_ibegin() + _M_check(__pos, "basic_string::replace"),
-			     _M_ibegin() + __pos + _M_limit(__pos, __n1),
-			     __n2, __c); }
+      { return _M_replace_aux(_M_check(__pos, "basic_string::replace"),
+			      _M_limit(__pos, __n1), __n2, __c); }
 
       /**
        *  @brief  Replace range of characters with string.
