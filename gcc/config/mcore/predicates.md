@@ -1,4 +1,4 @@
-;; Predicate definitions for FIXME FIXME.
+;; Predicate definitions for Motorola MCore.
 ;; Copyright (C) 2005 Free Software Foundation, Inc.
 ;;
 ;; This file is part of GCC.
