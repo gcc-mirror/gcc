@@ -98,10 +98,16 @@
       (CONTEXT)->pfs_loc = &(sc_->sc_ar_pfs);				\
       (CONTEXT)->lc_loc = &(sc_->sc_ar_lc);				\
       (CONTEXT)->unat_loc = &(sc_->sc_ar_unat);				\
+      (CONTEXT)->br_loc[0] = &(sc_->sc_br[0]);				\
+      (CONTEXT)->bsp = sc_->sc_ar_bsp;					\
       (CONTEXT)->pr = sc_->sc_pr;					\
       (CONTEXT)->psp = sc_->sc_gr[12];					\
+      (CONTEXT)->gp = sc_->sc_gr[1];					\
+      /* Signal frame doesn't have an associated reg. stack frame 	\
+         other than what we adjust for below.	  */			\
+      (FS) -> no_reg_stack_frame = 1;					\
 									\
-      /* Don't touch the branch registers.  The kernel doesn't		\
+      /* Don't touch the branch registers o.t. b0.  The kernel doesn't	\
 	 pass the preserved branch registers in the sigcontext but	\
 	 leaves them intact, so there's no need to do anything		\
 	 with them here.  */						\
