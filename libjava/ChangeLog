@@ -1,3 +1,30 @@
+2003-10-29  Sascha Brawer  <brawer@dandelis.ch>
+
+        * java/awt/geom/CubicCurve2D.java (contains): Docfix for URL of embedded drawing.
+        * java/awt/geom/QuadCurve2D.java: Likewise.
+
+2003-10-29  Sascha Brawer  <brawer@dandelis.ch>
+
+	* java/awt/geom/CubicCurve2D.java: Added documentation.
+	* java/awt/geom/QuadCurve2D.java: Likewise.
+
+	* java/awt/geom/doc-files/QuadCurve2D-4.png,
+	java/awt/geom/doc-files/QuadCurve2D-5.png,
+	java/awt/geom/doc-files/CubicCurve2D-4.png,
+	java/awt/geom/doc-files/Cubicurve2D-5.png: New illustrations.
+
+2003-10-29  Sascha Brawer  <brawer@dandelis.ch>
+
+	* java/awt/geom/CubicCurve2D.java (getFlatnessSq): Implement.
+	(subdivide(CubicCurve2D, CubicCurve2D)): Avoid useless object allocation.
+	(subdivide(double[],int,double[],int,double[],int)): Implement.
+
+2003-10-29  Sascha Brawer  <brawer@dandelis.ch>
+
+	* java/awt/geom/doc-files/CubicCurve2D-1.png,
+	java/awt/geom/doc-files/CubicCurve2D-2.png,
+	java/awt/geom/doc-files/CubicCurve2D-3.png: New illustrations.
+
 2003-10-29  Ito Kazumitsu <kaz@maczuka.gcd.org>
 
 	* java/text/DecimalFormat.java
