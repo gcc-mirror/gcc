@@ -1,3 +1,13 @@
+2003-06-19  Graeme Peterson <gp@qnx.com>
+
+	* gcc.c (target_sysroot_suffix, target_sysroot_hdrs_suffix,
+	SYSROOT_SUFFIX_SPEC, SYSROOT_HEADERS_SUFFIX_SPEC, sysroot_suffix_spec,
+	sysroot_hdrs_suffix_spec): New.
+	(static_specs): Initialize new variables.
+	(add_sysroot_suffix_prefix, do_spec_1, main): Use new variables.
+	* doc/tm.texi (SYSROOT_SUFFIX_SPEC, SYSROOT_HEADERS_SUFFIX_SPEC):
+	New macros.
+
 2003-06-19  Andreas Jaeger  <aj@suse.de>
 
 	* c-aux-info.c: Convert to ISO C90.
