@@ -25,7 +25,7 @@
 
 void test01()
 {
-  std::crope foo;
+  __gnu_cxx::crope foo;
   foo += "bar";
   const char* data = foo.c_str();
   std::cout << data << std::endl;

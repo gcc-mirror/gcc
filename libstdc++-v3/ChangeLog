@@ -1,5 +1,17 @@
 2001-12-31  Paolo Carlini  <pcarlini@unitus.it>
 
+	* include/ext/hash_map:  Move into __gnu_cxx,
+	tweak, add using declarations.
+	* include/ext/hash_set:  Ditto.
+	* include/ext/ropeimpl.h:  Ditto.
+	* include/ext/stl_hash_fun.h:  Ditto.
+	* include/ext/stl_hashtable.h:  Ditto.
+	* include/ext/stl_rope.h:  Ditto.
+	* src/ext-inst.cc: Tweak.
+	* testsuite/ext/rope.cc: Tweak.
+
+2001-12-31  Paolo Carlini  <pcarlini@unitus.it>
+
 	* include/backward/algo.h:  Include <ext/algorithm>,
 	tweak using declarations.
 	

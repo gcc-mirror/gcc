@@ -74,8 +74,18 @@
 #include <bits/stl_vector.h>
 #include <ext/stl_hash_fun.h>
 
-namespace std
+namespace __gnu_cxx
 {
+using std::size_t;
+using std::ptrdiff_t;
+using std::forward_iterator_tag;
+using std::input_iterator_tag;
+using std::_Alloc_traits;
+using std::_Construct;
+using std::_Destroy;
+using std::distance;
+using std::vector;
+using std::pair;
 
 template <class _Val>
 struct _Hashtable_node
@@ -85,7 +95,7 @@ struct _Hashtable_node
 };  
 
 template <class _Val, class _Key, class _HashFcn,
-          class _ExtractKey, class _EqualKey, class _Alloc = __alloc>
+          class _ExtractKey, class _EqualKey, class _Alloc = std::__alloc>
 class hashtable;
 
 template <class _Val, class _Key, class _HashFcn,
@@ -188,7 +198,7 @@ inline unsigned long __stl_next_prime(unsigned long __n)
 {
   const unsigned long* __first = __stl_prime_list;
   const unsigned long* __last = __stl_prime_list + (int)__stl_num_primes;
-  const unsigned long* pos = lower_bound(__first, __last, __n);
+  const unsigned long* pos = std::lower_bound(__first, __last, __n);
   return pos == __last ? *(__last - 1) : *pos;
 }
 
@@ -964,7 +974,7 @@ void hashtable<_Val,_Key,_HF,_Ex,_Eq,_All>
     }
 }
 
-} // namespace std
+} // namespace __gnu_cxx
 
 #endif /* __SGI_STL_INTERNAL_HASHTABLE_H */
 
