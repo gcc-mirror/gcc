@@ -1,3 +1,12 @@
+Mon May 22 17:38:48 1995  Richard Kenner  (kenner@vlsi1.ultra.nyu.edu)
+
+	* Make-lang.in (g++, g++-cross, cc1plus, DEMANGLER_PROG):
+	Use $@ instead of output name so works even if have .exe.
+	(cxxmain.o): Use cp if ln -s fails.
+	(c++.install-man): Use $(exeext) in executable names.
+	(c++.mostlyclean, stage[1-4]): Use $(objext) in object file names.
+	* Makefile.in (../cc1plus): Use $(exeext) in name of executable.
+
 Wed May 17 01:43:58 1995  Jason Merrill  <jason@phydeaux.cygnus.com>
 
 	* class.c (finish_struct): Don't complain about a class with no
