@@ -43,6 +43,7 @@ enum rid
   RID_INLINE,
   RID_NOALIAS,
   RID_ITERATOR,
+  RID_COMPLEX,
 
   RID_MAX
 };
