@@ -908,6 +908,11 @@ features of newer standards in so far as they do not conflict with
 previous C standards.  For example, you may use @code{__restrict__} even
 when @option{-std=c99} is not specified.
 
+The @option{-std} options specifying some version of ISO C have the same
+effects as @option{-ansi}, except that features that were not in ISO C89
+but are in the specified version (for example, @samp{//} comments and
+the @code{inline} keyword in ISO C99) are not disabled.
+
 @xref{Standards,,Language Standards Supported by GCC}, for details of
 these standard versions.
 
@@ -919,15 +924,19 @@ instead.  @samp{-ansi} implies @samp{-fno-asm}.
 
 In C++, this switch only affects the @code{typeof} keyword, since
 @code{asm} and @code{inline} are standard keywords.  You may want to
-use the @samp{-fno-gnu-keywords} flag instead, which has the same effect.
+use the @samp{-fno-gnu-keywords} flag instead, which has the same
+effect.  In C99 mode (@option{-std=c99} or @option{-std=gnu99}), this
+switch only affects the @code{asm} and @code{typeof} keywords, since
+@code{inline} is a standard keyword in ISO C99.
 
 @item -fno-builtin
 @cindex builtin functions
 Don't recognize builtin functions that do not begin with
 @samp{__builtin_} as prefix.  @xref{Other Builtins,,Other built-in
 functions provided by GNU CC}, for details of the functions affected,
-including those which are not builtin functions when @samp{-ansi} is
-used because they do not have an ISO standard meaning.
+including those which are not builtin functions when @option{-ansi} or
+@option{-std} options for strict ISO C conformance are used because they
+do not have an ISO standard meaning.
 
 GCC normally generates special code to handle certain builtin functions
 more efficiently; for instance, calls to @code{alloca} may become single
@@ -960,7 +969,8 @@ freestanding and hosted environments.
 
 @item -trigraphs
 Support ISO C trigraphs.  You don't want to know about this
-brain-damage.  The @samp{-ansi} option implies @samp{-trigraphs}.
+brain-damage.  The @option{-ansi} option (and @option{-std} options for
+strict ISO C conformance) implies @option{-trigraphs}.
 
 @cindex traditional C language
 @cindex C language, traditional
@@ -1559,7 +1569,8 @@ programs that do not follow ISO C and ISO C++.  For ISO C, follows the
 version of the ISO C standard specified by any @samp{-std} option used.
 
 Valid ISO C and ISO C++ programs should compile properly with or without
-this option (though a rare few will require @samp{-ansi}).  However,
+this option (though a rare few will require @option{-ansi} or a
+@option{-std} option specifying the required version of ISO C).  However,
 without this option, certain GNU extensions and traditional C and C++
 features are supported as well.  With this option, they are rejected.
 

@@ -7,7 +7,7 @@
 @cindex extensions, C language
 @cindex C language extensions
 
-GNU C provides several language features not found in ANSI standard C.
+GNU C provides several language features not found in ISO standard C.
 (The @samp{-pedantic} option directs GNU CC to print a warning message if
 any of these features is used.)  To test for the availability of these
 features in conditional compilation, check for a predefined macro
@@ -16,6 +16,13 @@ features in conditional compilation, check for a predefined macro
 These extensions are available in C and Objective C.  Most of them are
 also available in C++.  @xref{C++ Extensions,,Extensions to the
 C++ Language}, for extensions that apply @emph{only} to C++.
+
+@c FIXME: document clearly which features are in ISO C99, but also
+@c accepted as extensions for -std=gnu89 and possibly for C++.
+@c See PR other/930.
+
+@c FIXME: the documentation for preprocessor extensions here is out of
+@c date.  See PR other/928.
 
 @c The only difference between the two versions of this menu is that the
 @c version for clear INTERNALS has an extra node, "Constraints" (which
@@ -590,7 +597,7 @@ typeof (int *)
 @noindent
 Here the type described is that of pointers to @code{int}.
 
-If you are writing a header file that must work when included in ANSI C
+If you are writing a header file that must work when included in ISO C
 programs, write @code{__typeof__} instead of @code{typeof}.
 @xref{Alternate Keywords}.
 
@@ -1932,7 +1939,7 @@ Preprocessing Directives, cpp, The C Preprocessor}.
 @cindex old-style function definitions
 @cindex promotion of formal parameters
 
-GNU C extends ANSI C to allow a function prototype to override a later
+GNU C extends ISO C to allow a function prototype to override a later
 old-style non-prototype definition.  Consider the following example:
 
 @example
@@ -1955,13 +1962,13 @@ isroot (x)   /* ??? lossage here ??? */
 @}
 @end example
 
-Suppose the type @code{uid_t} happens to be @code{short}.  ANSI C does
+Suppose the type @code{uid_t} happens to be @code{short}.  ISO C does
 not allow this example, because subword arguments in old-style
 non-prototype definitions are promoted.  Therefore in this example the
 function definition's argument is really an @code{int}, which does not
 match the prototype argument type of @code{short}.
 
-This restriction of ANSI C makes it hard to write code that is portable
+This restriction of ISO C makes it hard to write code that is portable
 to traditional C compilers, because the programmer does not know
 whether the @code{uid_t} type is @code{short}, @code{int}, or
 @code{long}.  Therefore, in cases like these GNU C allows a prototype
@@ -1994,7 +2001,8 @@ In GNU C, you may use C++ style comments, which start with @samp{//} and
 continue until the end of the line.  Many other C implementations allow
 such comments, and they are likely to be in a future C standard.
 However, C++ style comments are not recognized if you specify
-@w{@samp{-ansi}} or @w{@samp{-traditional}}, since they are incompatible
+@w{@samp{-ansi}}, a @option{-std} option specifying a version of ISO C
+before C99, or @w{@samp{-traditional}}, since they are incompatible
 with traditional constructs like @code{dividend//*comment*/divisor}.
 
 @node Dollar Signs
@@ -2336,7 +2344,7 @@ store) instructions when copying one variable of type @code{struct S} to
 another, thus improving run-time efficiency.
 
 Note that the alignment of any given @code{struct} or @code{union} type
-is required by the ANSI C standard to be at least a perfect multiple of
+is required by the ISO C standard to be at least a perfect multiple of
 the lowest common multiple of the alignments of all of the members of
 the @code{struct} or @code{union} in question.  This means that you @emph{can}
 effectively adjust the alignment of a @code{struct} or @code{union}
@@ -2512,7 +2520,7 @@ inc (int *a)
 @}
 @end example
 
-(If you are writing a header file to be included in ANSI C programs, write
+(If you are writing a header file to be included in ISO C programs, write
 @code{__inline__} instead of @code{inline}.  @xref{Alternate Keywords}.)
 You can also make all ``simple enough'' functions inline with the option
 @samp{-finline-functions}. 
@@ -2840,7 +2848,7 @@ For reasons similar to those described above, it is not possible to give
 an assembler instruction access to the condition code left by previous
 instructions.
 
-If you are writing a header file that should be includable in ANSI C
+If you are writing a header file that should be includable in ISO C
 programs, write @code{__asm__} instead of @code{asm}.  @xref{Alternate
 Keywords}.
 
@@ -3165,15 +3173,20 @@ be deleted or moved or simplified.
 @cindex alternate keywords
 @cindex keywords, alternate
 
-The option @samp{-traditional} disables certain keywords; @samp{-ansi}
-disables certain others.  This causes trouble when you want to use GNU C
-extensions, or ANSI C features, in a general-purpose header file that
-should be usable by all programs, including ANSI C programs and traditional
-ones.  The keywords @code{asm}, @code{typeof} and @code{inline} cannot be
-used since they won't work in a program compiled with @samp{-ansi}, while
-the keywords @code{const}, @code{volatile}, @code{signed}, @code{typeof}
-and @code{inline} won't work in a program compiled with
-@samp{-traditional}.@refill
+The option @option{-traditional} disables certain keywords;
+@option{-ansi} and the various @option{-std} options disable certain
+others.  This causes trouble when you want to use GNU C extensions, or
+ISO C features, in a general-purpose header file that should be usable
+by all programs, including ISO C programs and traditional ones.  The
+keywords @code{asm}, @code{typeof} and @code{inline} cannot be used
+since they won't work in a program compiled with @option{-ansi}
+(although @code{inline} can be used in a program compiled with
+@option{-std=c99}), while the keywords @code{const}, @code{volatile},
+@code{signed}, @code{typeof} and @code{inline} won't work in a program
+compiled with @option{-traditional}.  The ISO C99 keyword
+@code{restrict} is only available when @option{-std=gnu99} (which will
+eventually be the default) or @option{-std=c99} (or the equivalent
+@option{-std=iso9899:1999}) is used.@refill
 
 The way to solve these problems is to put @samp{__} at the beginning and
 end of each problematical keyword.  For example, use @code{__asm__}
