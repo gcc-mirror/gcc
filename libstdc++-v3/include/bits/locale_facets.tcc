@@ -310,7 +310,7 @@ namespace std
       __ctype.widen(_S_atoms, _S_atoms + __len, __watoms);
       string __found_grouping;
       const string __grouping = __np.grouping();
-      bool __check_grouping = __grouping.size() && __base == 10;
+      bool __check_grouping = __grouping.size();
       int __sep_pos = 0;
       const char_type __sep = __np.thousands_sep();
       while (__beg != __end)
