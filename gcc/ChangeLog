@@ -1,3 +1,11 @@
+2004-09-04  Jan Hubicka  <jh@suse.cz>
+
+	* cfg.c (free_edge): Use ggc_free.
+	(expunge_block): Use ggc_free.
+	* passes.c (rest_of_clean_state): Free after compilation.
+	* tree-ssa.c (delete_tree_ssa): Free annotations; call release_defs
+	* tree-ssanames.c (release_defs): Ignore non-SSA_NAME arguments.
+
 2004-09-03  James E Wilson  <wilson@specifixinc.com>
 
 	* tree-ssa-alias.c (may_be_aliased): Move TREE_STATIC check after

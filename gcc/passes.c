@@ -1685,6 +1685,7 @@ rest_of_clean_state (void)
 
   /* We're done with this function.  Free up memory if we can.  */
   free_after_parsing (cfun);
+  free_after_compilation (cfun);
 }
 
 

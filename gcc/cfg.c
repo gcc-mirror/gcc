@@ -134,7 +134,7 @@ static void
 free_edge (edge e ATTRIBUTE_UNUSED)
 {
   n_edges--;
-  /* ggc_free (e);  */
+  ggc_free (e);
 }
 
 /* Free the memory associated with the edge structures.  */
@@ -269,7 +269,7 @@ expunge_block (basic_block b)
   unlink_block (b);
   BASIC_BLOCK (b->index) = NULL;
   n_basic_blocks--;
-  /* ggc_free (b); */
+  ggc_free (b);
 }
 
 /* Create an edge connecting SRC and DEST with flags FLAGS.  Return newly
