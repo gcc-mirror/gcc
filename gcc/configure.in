@@ -870,11 +870,10 @@ if test x$thread_file = x; then
 fi
 
 # Look for a file containing extra machine modes.
-if test -f $srcdir/config/${cpu_type}/${cpu_type}-modes.def; then
-  extra_modes_file='$(srcdir)/config/'${cpu_type}/${cpu_type}-modes.def
+if test -n "$extra_modes" && test -f $srcdir/config/$extra_modes; then
+  extra_modes_file='$(srcdir)'/config/${extra_modes}
   AC_SUBST(extra_modes_file)
-  AC_DEFINE_UNQUOTED(EXTRA_MODES_FILE,
-			   "${cpu_type}/${cpu_type}-modes.def",
+  AC_DEFINE_UNQUOTED(EXTRA_MODES_FILE, "$extra_modes",
   [Define to the name of a file containing a list of extra machine modes
    for this architecture.])
   AC_DEFINE(EXTRA_CC_MODES, 1,
