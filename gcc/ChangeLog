@@ -1,3 +1,7 @@
+2005-03-14  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* ggc-zone.c: Fix comment typos.
+
 2005-03-14  Alan Modra  <amodra@bigpond.net.au>
 
 	* config/rs6000/rs6000-protos.h: Replace "struct rtx_def *"

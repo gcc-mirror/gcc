@@ -604,7 +604,7 @@ zone_get_object_mark_bit (const void *object)
 }
 
 /* Set the allocation bit corresponding to OBJECT in its page's
-   bitmap.  Used to split this object from the preceeding one.  */
+   bitmap.  Used to split this object from the preceding one.  */
 static inline void
 zone_set_object_alloc_bit (const void *object)
 {
@@ -617,7 +617,7 @@ zone_set_object_alloc_bit (const void *object)
 }
 
 /* Clear the allocation bit corresponding to OBJECT in PAGE's
-   bitmap.  Used to coalesce this object with the preceeding
+   bitmap.  Used to coalesce this object with the preceding
    one.  */
 static inline void
 zone_clear_object_alloc_bit (struct small_page_entry *page,
