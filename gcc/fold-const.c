@@ -1303,7 +1303,6 @@ int_const_binop (enum tree_code code, tree arg1, tree arg2, int notrunc)
   int is_sizetype
     = (TREE_CODE (type) == INTEGER_TYPE && TYPE_IS_SIZETYPE (type));
   int overflow = 0;
-  int no_overflow = 0;
 
   int1l = TREE_INT_CST_LOW (arg1);
   int1h = TREE_INT_CST_HIGH (arg1);
@@ -1332,7 +1331,6 @@ int_const_binop (enum tree_code code, tree arg1, tree arg2, int notrunc)
 	 interpretation ruling is needed.  */
       lshift_double (int1l, int1h, int2l, TYPE_PRECISION (type),
 		     &low, &hi, !uns);
-      no_overflow = 1;
       break;
 
     case RROTATE_EXPR:

@@ -6,6 +6,8 @@
 
 	* expr.c (expand_assignment): Remove orig_to_rtx.
 
+	* fold-const.c (int_const_binop): Remove no_overflow.
+
 2005-03-08  Jeff Law  <law@redhat.com>
 
 	* tree-cfg.c (cleanup_control_flow): If removal of a computed
