@@ -1,3 +1,10 @@
+2003-10-24  Robert Millan  <robertmh@gnu.org>
+
+	* acinclude.m4 (GLIBCXX_ENABLE_CLOCALE): Add kfreebsd*-gnu
+	and knetbsd*-gnu.
+	* aclocal.m4:  Regenerated.
+	* configure:  Regenerated.
+
 2003-10-24  Paolo Carlini  <pcarlini@suse.de>
 
 	* include/bits/locale_facets.tcc (money_get::do_get(...,
