@@ -566,7 +566,11 @@ FIX_PROC_HEAD( machine_name_fix )
   char scratch[SCRATCHSZ];
   size_t len;
 
-  mn_get_regexps (&label_re, &name_re, "machine_name_fix");
+  if (mn_get_regexps (&label_re, &name_re, "machine_name_fix"))
+    /* This platform doesn't need this fix.  We can only get here if
+       someone is running fixfixes by hand, but let's be polite.  */
+    goto done;
+
   scratch[0] = '_';
   scratch[1] = '_';
 

@@ -275,7 +275,8 @@ TEST_FOR_FIX_PROC_HEAD( machine_name_test )
   regmatch_t match[2];
   tCC *base, *limit;
 
-  mn_get_regexps(&label_re, &name_re, "machine_name_test");
+  if (mn_get_regexps(&label_re, &name_re, "machine_name_test"))
+    return SKIP_FIX;
 
   for (base = text;
        regexec (label_re, base, 2, match, 0) == 0;

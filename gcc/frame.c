@@ -610,12 +610,14 @@ find_fde (void *pc)
 	{
 	  fde **p = ob->fde_array;
 	  
-	  for (; *p; ++p)
+	  do
 	    {
 	      f = search_fdes (*p, pc);
 	      if (f)
 		break;
+	      p++;
 	    }
+	  while (*p);
 	}
       else
 	f = search_fdes (ob->fde_begin, pc);

@@ -765,6 +765,7 @@ fix = {
 };
 
 
+#ifdef OLD_CPP
 /*
  *  Remove the double-slash comments.  The "double_slash" test will
  *  try to ignore C++ headers by checking for "CC/", "xx/" and "++/"
@@ -776,6 +777,7 @@ fix = {
     c_test = "double_slash";
     c_fix  = "no_double_slash";
 };
+#endif
 
 
 /*
@@ -811,6 +813,7 @@ fix = {
 };
 
 
+#ifdef OLD_CPP
 /*
  *  Fix else and endif directives that contain non-commentary text
  */
@@ -824,6 +827,7 @@ fix = {
     c_test = "else_endif_label";
     c_fix  = "else_endif_label";
 };
+#endif
 
 
 /*
@@ -846,7 +850,7 @@ fix = {
     hackname = hp_sysfile;
     files    = sys/file.h;
     select   = "HPUX_SOURCE";
-    sed      = 's/(\.\.\.)/(struct file * ...)/';
+    sed      = 's/(\.\.\.)/(struct file *, ...)/';
 };
 
 
@@ -1282,88 +1286,23 @@ fix = {
  *  the class exception defined in the C++ file std/stdexcept.h.  We
  *  redefine it to __math_exception.  This is not a great fix, but I
  *  haven't been able to think of anything better.
+ *  Note that we have to put the #ifdef/#endif blocks at beginning
+ *  and end of file, because fixproto runs after us and may insert
+ *  additional references to struct exception.
  */
 fix = {
     hackname = math_exception;
     files    = math.h;
     select   = "struct exception";
     bypass   = "We have a problem when using C\\+\\+";
-    sed      = "/struct exception/i\\\n"
+    sed      = "1i\\\n"
                "#ifdef __cplusplus\\\n"
                "#define exception __math_exception\\\n"
                "#endif\n";
-    sed      = "/struct exception/a\\\n"
+    sed      = "$a\\\n"
                "#ifdef __cplusplus\\\n"
                "#undef exception\\\n"
                "#endif\n";
-
-#ifdef MATH_EXCEPTION_FIXED
-    sed      = "/matherr/i\\\n"
-               "#ifdef __cplusplus\\\n"
-               "#define exception __math_exception\\\n"
-               "#endif\n";
-
-    sed      = "/matherr/a\\\n"
-               "#ifdef __cplusplus\\\n"
-               "#undef exception\\\n"
-               "#endif\n";
-
-I think this patch needs some more thinking.
-This is from SVR4.2 (With '#' replaced with '@').
-Perhaps we could do without the "/matherr/a" entries?
-Can we bypass the entire fix if someone was astute
-enough to have '#ifdef __cplusplus' anywhere in the file?
-
-We can definitely do without the "/matherr/a" entries.  They are
-there to cover the case where matherr is declared with no prototype
--- extern int matherr(); -- but we don't need a fix then since there
-is no reference to struct exception.
-
-Bypassing on "#ifdef __cplusplus" is too optimistic, but I've stuck
-in a bypass for the comment in the glibc 2.1 header that indicates
-awareness of the problem.  Hmm.  Could we use a shell test that did
-cpp -D__cplusplus | grep "struct exception" ?
-
-*** /usr/include/math.h Fri Apr  3 18:54:59 1998
---- math.h      Sun May  9 07:28:58 1999
-***************
-*** 25,31 ****
---- 25,37 ----
-  
-  @ifndef __cplusplus
-  
-+ @ifdef __cplusplus
-+ @define exception __math_exception
-+ @endif
-  struct exception
-+ @ifdef __cplusplus
-+ @undef exception
-+ @endif
-  {
-        int     type;
-        char    *name;
-***************
-*** 34,40 ****
---- 40,58 ----
-        double  retval;
-  };
-  
-+ @ifdef __cplusplus
-+ @define exception __math_exception
-+ @endif
-+ @ifdef __cplusplus
-+ @define exception __math_exception
-+ @endif
-  extern int    matherr(struct exception *);
-+ @ifdef __cplusplus
-+ @undef exception
-+ @endif
-+ @ifdef __cplusplus
-+ @undef exception
-+ @endif
-  
-  @endif /*__cplusplus*/
-#endif
 };
 
 fix = {

@@ -33,6 +33,8 @@ Boston, MA 02111-1307, USA.  */
 
 #include "server.h"
 
+#define NO_BOGOSITY
+
 /*  Quality Assurance Marker  :-)
 
     Any file that contains this string is presumed to have
