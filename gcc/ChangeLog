@@ -1,3 +1,7 @@
+2004-04-21 Daniel Jacobowitz  <drow@mvista.com>
+
+	* config.gcc: Support --with-arch=iwmmxt for ARM.
+
 2004-04-21  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* expmed.c (expand_mult_highpart_optab): Use narrower version of OP1
