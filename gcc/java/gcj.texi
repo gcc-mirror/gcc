@@ -1888,6 +1888,19 @@ allocated with @code{JvAllocBytes} will be automatically freed when the Java
 object itself becomes unreachable.
 @end deftypefun
 
+@subsection Posix signals
+
+On Posix based systems the @code{libgcj} library uses several signals
+internally.  @acronym{CNI} code should not attempt to use the same
+signals as doing so may cause @code{libgcj} and/or the @acronym{CNI}
+code to fail.
+
+SIGSEGV is used on many systems to generate
+@code{NullPointerExceptions}.  SIGCHLD is used internally by
+@code{Runtime.exec()}.  Several other signals (that vary from platform to
+platform) can be used by the memory manager and by
+@code{Thread.interrupt()}.
+
 @node Exception Handling
 @section Exception Handling
 
