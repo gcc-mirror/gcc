@@ -858,6 +858,7 @@ target_negative (x)
 /* Let's assume other float formats don't have infinity.
    (This can be overridden by redefining REAL_VALUE_ISINF.)  */
 
+int
 target_isinf (x)
      REAL_VALUE_TYPE x;
 {
@@ -867,6 +868,7 @@ target_isinf (x)
 /* Let's assume other float formats don't have NaNs.
    (This can be overridden by redefining REAL_VALUE_ISNAN.)  */
 
+int
 target_isnan (x)
      REAL_VALUE_TYPE x;
 {
@@ -876,6 +878,7 @@ target_isnan (x)
 /* Let's assume other float formats don't have minus zero.
    (This can be overridden by redefining REAL_VALUE_NEGATIVE.)  */
 
+int
 target_negative (x)
      REAL_VALUE_TYPE x;
 {
