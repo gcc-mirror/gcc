@@ -2110,7 +2110,9 @@ changequote([,])dnl
 		use_collect2=yes
 		float_format=m68k
                 ;;
-	m68k-next-nextstep3*)
+changequote(,)dnl
+	m68k-next-nextstep[34]*)
+changequote([,])dnl
 		tm_file=m68k/next.h
 		xm_file="m68k/xm-next.h ${xm_file}"
 		tmake_file=m68k/t-next
