@@ -149,11 +149,10 @@ AC_HEADER_TIME
 libiberty_AC_DECLARE_ERRNO
 
 AC_CHECK_TYPE(uintptr_t, unsigned long)
-
-if test $ac_cv_type_uintptr_t = yes
-then
-  AC_DEFINE(HAVE_UINTPTR_T, 1, [Define if you have the \`uintptr_t' type.])
-fi
+# Given the above check, we always have uintptr_t or a fallback
+# definition.  So define HAVE_UINTPTR_T in case any imported code
+# relies on it.
+AC_DEFINE(HAVE_UINTPTR_T, 1, [Define if you have the \`uintptr_t' type.])
 
 AC_TYPE_PID_T
 
