@@ -304,12 +304,14 @@ init_lex ()
       UNSET_RESERVED_WORD ("typeof");
       UNSET_RESERVED_WORD ("signed");
       UNSET_RESERVED_WORD ("inline");
+      UNSET_RESERVED_WORD ("iterator");
     }
   if (flag_no_asm)
     {
       UNSET_RESERVED_WORD ("asm");
       UNSET_RESERVED_WORD ("typeof");
       UNSET_RESERVED_WORD ("inline");
+      UNSET_RESERVED_WORD ("iterator");
     }
 }
 
