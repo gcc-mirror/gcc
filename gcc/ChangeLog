@@ -1,4 +1,9 @@
-Fri May  3 22:53:37 CEST 2002  Jan Hubicka <jh@suse.cz>
+Fri May  3 22:59:15 CEST 2002  Jan Hubicka  <jh@suse.cz>
+
+	* cfgcleanup.c (try_optimize_cfg):  Call merge_block only when
+	jump is simplejump.
+
+Fri May  3 22:53:37 CEST 2002  Jan Hubicka  <jh@suse.cz>
 
 	* i386.c  (expand_movstr, expand_clrstr): Fix inline-all-stringops
 	sequence.
