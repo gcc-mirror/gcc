@@ -951,6 +951,39 @@
     DONE;
 }")
 
+;; Reloading an SImode or DImode value requires a scratch register if
+;; going in to or out of float point registers.
+
+(define_expand "reload_insi"
+  [(set (match_operand:SI 0 "register_operand" "=Z")
+	(match_operand:SI 1 "non_hard_reg_operand" ""))
+   (clobber (match_operand:SI 2 "register_operand" "=&r"))]
+  ""
+  "
+{
+  if (emit_move_sequence (operands, SImode, operands[2]))
+    DONE;
+
+  /* We don't want the clobber emitted, so handle this ourselves.  */
+  emit_insn (gen_rtx (SET, VOIDmode, operands[0], operands[1]));
+  DONE;
+}")
+
+(define_expand "reload_outsi"
+  [(set (match_operand:SI 0 "non_hard_reg_operand" "")
+	(match_operand:SI 1  "register_operand" "Z"))
+   (clobber (match_operand:SI 2 "register_operand" "=&r"))]
+  ""
+  "
+{
+  if (emit_move_sequence (operands, SImode, operands[2]))
+    DONE;
+
+  /* We don't want the clobber emitted, so handle this ourselves.  */
+  emit_insn (gen_rtx (SET, VOIDmode, operands[0], operands[1]));
+  DONE;
+}")
+
 ;;; pic symbol references
 
 (define_insn ""
@@ -1447,6 +1480,39 @@
     DONE;
 }")
 
+;; Reloading an SImode or DImode value requires a scratch register if
+;; going in to or out of float point registers.
+
+(define_expand "reload_indf"
+  [(set (match_operand:DF 0 "register_operand" "=Z")
+	(match_operand:DF 1 "non_hard_reg_operand" ""))
+   (clobber (match_operand:DF 2 "register_operand" "=&r"))]
+  ""
+  "
+{
+  if (emit_move_sequence (operands, DFmode, operands[2]))
+    DONE;
+
+  /* We don't want the clobber emitted, so handle this ourselves.  */
+  emit_insn (gen_rtx (SET, VOIDmode, operands[0], operands[1]));
+  DONE;
+}")
+
+(define_expand "reload_outdf" 
+ [(set (match_operand:DF 0 "non_hard_reg_operand" "")
+	(match_operand:DF 1  "register_operand" "Z"))
+   (clobber (match_operand:DF 2 "register_operand" "=&r"))]
+  ""
+  "
+{
+  if (emit_move_sequence (operands, DFmode, operands[2]))
+    DONE;
+
+  /* We don't want the clobber emitted, so handle this ourselves.  */
+  emit_insn (gen_rtx (SET, VOIDmode, operands[0], operands[1]));
+  DONE;
+}")
+
 (define_insn ""
   [(set (match_operand:DF 0 "reg_or_nonsymb_mem_operand"
 			  "=f,*r,Q,?o,?Q,f,*&r,*&r")
@@ -1552,6 +1618,36 @@
     DONE;
 }")
 
+(define_expand "reload_indi"
+  [(set (match_operand:DI 0 "register_operand" "=f")
+	(match_operand:DI 1 "non_hard_reg_operand" ""))
+   (clobber (match_operand:SI 2 "register_operand" "=&r"))]
+  ""
+  "
+{
+  if (emit_move_sequence (operands, DImode, operands[2]))
+    DONE;
+
+  /* We don't want the clobber emitted, so handle this ourselves.  */
+  emit_insn (gen_rtx (SET, VOIDmode, operands[0], operands[1]));
+  DONE;
+}")
+
+(define_expand "reload_outdi"
+  [(set (match_operand:DI 0 "general_operand" "")
+	(match_operand:DI 1 "register_operand" "f"))
+   (clobber (match_operand:SI 2 "register_operand" "=&r"))]
+  ""
+  "
+{
+  if (emit_move_sequence (operands, DImode, operands[2]))
+    DONE;
+
+  /* We don't want the clobber emitted, so handle this ourselves.  */
+  emit_insn (gen_rtx (SET, VOIDmode, operands[0], operands[1]));
+  DONE;
+}")
+
 (define_insn ""
   [(set (match_operand:DI 0 "register_operand" "=r")
 	(high:DI (match_operand 1 "" "")))]
@@ -1655,6 +1751,39 @@
 {
   if (emit_move_sequence (operands, SFmode, 0))
     DONE;
+}")
+
+;; Reloading an SImode or DImode value requires a scratch register if
+;; going in to or out of float point registers.
+
+(define_expand "reload_insf"
+  [(set (match_operand:SF 0 "register_operand" "=Z")
+	(match_operand:SF 1 "non_hard_reg_operand" ""))
+   (clobber (match_operand:SF 2 "register_operand" "=&r"))]
+  ""
+  "
+{
+  if (emit_move_sequence (operands, SFmode, operands[2]))
+    DONE;
+
+  /* We don't want the clobber emitted, so handle this ourselves.  */
+  emit_insn (gen_rtx (SET, VOIDmode, operands[0], operands[1]));
+  DONE;
+}")
+
+(define_expand "reload_outsf"
+  [(set (match_operand:SF 0 "non_hard_reg_operand" "")
+	(match_operand:SF 1  "register_operand" "Z"))
+   (clobber (match_operand:SF 2 "register_operand" "=&r"))]
+  ""
+  "
+{
+  if (emit_move_sequence (operands, SFmode, operands[2]))
+    DONE;
+
+  /* We don't want the clobber emitted, so handle this ourselves.  */
+  emit_insn (gen_rtx (SET, VOIDmode, operands[0], operands[1]));
+  DONE;
 }")
 
 (define_insn ""
