@@ -1,3 +1,8 @@
+2004-06-25  Paul Brook  <paul@codesourcery.com>
+
+	* include/bits/concurrence.h: Still create mutex object when
+	single-threaded.
+
 2004-06-25  Paolo Carlini  <pcarlini@suse.de>
 
 	* include/bits/stl_algobase.h (fill, fill_n): Revert last

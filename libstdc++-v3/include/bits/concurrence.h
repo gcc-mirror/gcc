@@ -56,7 +56,7 @@ __gthread_mutex_lock(&NAME)
 
 #else
 
-# define __glibcxx_mutex_define_initialized(NAME)
+# define __glibcxx_mutex_define_initialized(NAME) __gthread_mutex_t NAME
 # define __glibcxx_mutex_lock(NAME)
 # define __glibcxx_mutex_unlock(NAME)
 
