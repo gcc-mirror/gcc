@@ -686,11 +686,16 @@ optimize_reg_copy_1 (insn, dest, src)
 	      && reg_overlap_mentioned_p (src, XEXP (PATTERN (p), 0))))
 	break;
 
-      if ((note = find_regno_note (p, REG_DEAD, sregno)) != 0)
+      /* See if all of SRC dies in P.  This test is slightly more
+	 conservative than it needs to be. */
+      if ((note = find_regno_note (p, REG_DEAD, sregno)) != 0
+	  && GET_MODE (XEXP (note, 0)) == GET_MODE (src))
 	{
 	  int failed = 0;
 	  int length = 0;
+	  int d_length = 0;
 	  int n_calls = 0;
+	  int d_n_calls = 0;
 
 	  /* We can do the optimization.  Scan forward from INSN again,
 	     replacing regs as we go.  Set FAILED if a replacement can't
@@ -702,9 +707,23 @@ optimize_reg_copy_1 (insn, dest, src)
 	       q != next_real_insn (p);
 	       q = next_real_insn (q))
 	    {
-	      if (reg_mentioned_p (src, PATTERN (q)))
+	      if (reg_overlap_mentioned_p (src, PATTERN (q)))
 		{
-		  if (validate_replace_rtx (src, dest, q))
+		  /* If SRC is a hard register, we might miss some
+		     overlapping registers with validate_replace_rtx,
+		     so we would have to undo it.  We can't if DEST is
+		     present in the insn, so fail in that combination
+		     of cases.  */
+		  if (sregno < FIRST_PSEUDO_REGISTER
+		      && reg_mentioned_p (dest, PATTERN (q)))
+		    failed = 1;
+
+		  /* Replace all uses and make sure that the register
+		     isn't still present.  */
+		  else if (validate_replace_rtx (src, dest, q)
+			   && (sregno >= FIRST_PSEUDO_REGISTER
+			       || ! reg_overlap_mentioned_p (src,
+							     PATTERN (q))))
 		    {
 		      /* We assume that a register is used exactly once per
 			 insn in the updates below.  If this is not correct,
@@ -715,26 +734,31 @@ optimize_reg_copy_1 (insn, dest, src)
 			reg_n_refs[dregno] += loop_depth;
 		    }
 		  else
-		    failed = 1;
+		    {
+		      validate_replace_rtx (dest, src, q);
+		      failed = 1;
+		    }
 		}
 
 	      /* Count the insns and CALL_INSNs passed.  If we passed the
 		 death note of DEST, show increased live length.  */
 	      length++;
 	      if (dest_death)
-		reg_live_length[dregno]++;
+		d_length++;
 
 	      if (GET_CODE (q) == CALL_INSN)
 		{
 		  n_calls++;
 		  if (dest_death)
-		    reg_n_calls_crossed[dregno]++;
+		    d_n_calls++;
 		}
 
 	      /* If DEST dies here, remove the death note and save it for
-		 later.  */
+		 later.  Make sure ALL of DEST dies here; again, this is
+		 overly conservative.  */
 	      if (dest_death == 0
-		  && (dest_death = find_regno_note (q, REG_DEAD, dregno)) != 0)
+		  && (dest_death = find_regno_note (q, REG_DEAD, dregno)) != 0
+		  && GET_MODE (XEXP (dest_death, 0)) == GET_MODE (dest))
 		remove_note (q, dest_death);
 	    }
 
@@ -744,6 +768,12 @@ optimize_reg_copy_1 (insn, dest, src)
 		{
 		  reg_live_length[sregno] -= length;
 		  reg_n_calls_crossed[sregno] -= n_calls;
+		}
+
+	      if (dregno >= FIRST_PSEUDO_REGISTER)
+		{
+		  reg_live_length[dregno] += d_length;
+		  reg_n_calls_crossed[dregno] += d_n_calls;
 		}
 
 	      /* Move death note of SRC from P to INSN.  */
@@ -761,6 +791,12 @@ optimize_reg_copy_1 (insn, dest, src)
 
 	  return;
 	}
+
+      /* If SRC is a hard register which is set or killed in some other
+	 way, we can't do this optimization.  */
+      else if (sregno < FIRST_PSEUDO_REGISTER
+	       && dead_or_set_p (p, src))
+	break;
     }
 }
 
