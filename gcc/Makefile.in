@@ -1351,8 +1351,8 @@ c-dump.o : c-dump.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(TREE_H) \
 	$(C_TREE_H) tree-dump.h
 
 c-pch.o : c-pch.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(CPPLIB_H) $(TREE_H) \
-	$(C_COMMON_H) output.h toplev.h c-pragma.h $(GGC_H) debug.h langhooks.h \
-	flags.h
+	$(C_COMMON_H) output.h toplev.h c-pragma.h $(GGC_H) debug.h \
+	langhooks.h flags.h hosthooks.h
 
 # Language-independent files.
 
@@ -1433,7 +1433,7 @@ gtype-desc.o: gtype-desc.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) varray.h 
 	ssa.h cselib.h insn-addr.h
 
 ggc-common.o: ggc-common.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(GGC_H) \
-	$(HASHTAB_H) toplev.h $(PARAMS_H)
+	$(HASHTAB_H) toplev.h $(PARAMS_H) hosthooks.h
 
 ggc-simple.o: ggc-simple.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(RTL_H) $(TREE_H) \
 	flags.h $(GGC_H) varray.h $(TIMEVAR_H) $(TM_P_H) $(PARAMS_H)

@@ -1,3 +1,8 @@
+2003-07-29  Geoffrey Keating  <geoffk@apple.com>
+
+	* parser.c (cp_lexer_new_main): Use c_common_no_more_pch instead
+	of setting valid_pch by hand.
+
 2003-07-29  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
 
 	* decl.c (finish_enum): Initialize underlying_type.

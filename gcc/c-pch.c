@@ -31,6 +31,7 @@ Boston, MA 02111-1307, USA.  */
 #include "c-pragma.h"
 #include "ggc.h"
 #include "langhooks.h"
+#include "hosthooks.h"
 
 struct c_pch_validity
 {
@@ -164,9 +165,6 @@ c_common_valid_pch (cpp_reader *pfile, const char *name, int fd)
   const char *pch_ident;
   struct c_pch_validity v;
 
-  if (! allow_pch)
-    return 2;
-
   /* Perform a quick test of whether this is a valid
      precompiled header for the current language.  */
 
@@ -244,7 +242,7 @@ c_common_read_pch (cpp_reader *pfile, const char *name,
       return;
     }
 
-  allow_pch = 0;
+  cpp_get_callbacks (parse_in)->valid_pch = NULL;
 
   if (fread (&h, sizeof (h), 1, f) != 1)
     {
@@ -273,4 +271,16 @@ c_common_read_pch (cpp_reader *pfile, const char *name,
     return;
 
   fclose (f);
+}
+
+/* Indicate that no more PCH files should be read.  */
+
+void
+c_common_no_more_pch (void)
+{
+  if (cpp_get_callbacks (parse_in)->valid_pch)
+    {
+      cpp_get_callbacks (parse_in)->valid_pch = NULL;
+      host_hooks.gt_pch_use_address (NULL, 0);
+    }
 }

@@ -363,10 +363,6 @@ struct c_lang_decl GTY(()) {
      heuristics regarding optimization.  */
 #define DECL_ESTIMATED_INSNS(NODE) \
   (FUNCTION_DECL_CHECK (NODE)->decl.u1.i)
-
-/* Nonzero if we can read a PCH file now.  */
-
-extern int allow_pch;
 
 /* Switches common to the C front ends.  */
 
@@ -1314,6 +1310,7 @@ extern int c_common_valid_pch (cpp_reader *pfile, const char *name, int fd);
 extern void c_common_read_pch (cpp_reader *pfile, const char *name, int fd,
 			       const char *orig);
 extern void c_common_write_pch (void);
+extern void c_common_no_more_pch (void);
 extern void builtin_define_with_value (const char *, const char *, int);
 extern void c_stddef_cpp_builtins (void);
 extern void fe_file_change (const struct line_map *);

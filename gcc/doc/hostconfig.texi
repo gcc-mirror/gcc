@@ -42,6 +42,39 @@ This host hook is used to set up handling for extra signals.  The most
 common thing to do in this hook is to detect stack overflow.
 @end deftypefn
 
+@deftypefn {Host Hook} void * HOST_HOOKS_GT_PCH_GET_ADDRESS (size_t @var{size})
+This host hook returns the address of some space in which a PCH may be
+loaded with @samp{HOST_HOOKS_PCH_LOAD_PCH}.  The space will need to
+have @var{size} bytes.  If insufficient space is available,
+@samp{NULL} may be returned; the PCH machinery will try to find a
+suitable address using a heuristic.
+
+The memory does not have to be available now.  In fact, usually
+@samp{HOST_HOOKS_PCH_LOAD_PCH} will already have been called.  The memory
+need only be available in future invocations of GCC.
+@end deftypefn
+
+@deftypefn {Host Hook} bool HOST_HOOKS_GT_PCH_USE_ADDRESS (size_t @var{size}, void * @var{address})
+This host hook is called when a PCH file is about to be loaded.  If
+@var{address} is the address that would have been returned by
+@samp{HOST_HOOKS_PCH_MEMORY_ADDRESS}, and @var{size} is smaller than
+the maximum than @samp{HOST_HOOKS_PCH_MEMORY_ADDRESS} would have
+accepted, return true, otherwise return false.
+
+In addition, free any address space reserved that isn't needed to hold
+@var{size} bytes (whether or not true is returned).  The PCH machinery will
+use @samp{mmap} with @samp{MAP_FIXED} to load the PCH if @samp{HAVE_MMAP_FILE},
+or will use @samp{fread} otherwise.
+
+If no PCH will be loaded, this hook may be called with @var{size}
+zero, in which case all reserved address space should be freed.
+
+Do not try to handle values of @var{address} that could not have been
+returned by this executable; just return false.  Such values usually
+indicate an out-of-date PCH file (built by some other GCC executable),
+and such a PCH file won't work.
+@end deftypefn
+
 @node Filesystem
 @section Host Filesystem
 @cindex configuration file

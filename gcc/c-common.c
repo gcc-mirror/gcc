@@ -187,10 +187,6 @@ tree c_global_trees[CTI_MAX];
    langhook should take care of initialization of this array.  */
 
 bool statement_code_p[MAX_TREE_CODES];
-
-/* Nonzero if we can read a PCH file now.  */
-
-int allow_pch = 1;
 
 /* Switches common to the C front ends.  */
 
