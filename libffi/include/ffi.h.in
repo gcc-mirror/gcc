@@ -262,6 +262,12 @@ typedef enum ffi_abi {
   FFI_DEFAULT_ABI = FFI_SYSV,
 #endif
 
+  /* ---- SuperH ------------------- */
+#ifdef SH
+  FFI_SYSV,
+  FFI_DEFAULT_ABI = FFI_SYSV,
+#endif
+
   /* Leave this for debugging purposes */
   FFI_LAST_ABI
 
@@ -433,6 +439,12 @@ struct ffi_ia64_trampoline_struct {
 
 #define FFI_CLOSURES 1
 #define FFI_TRAMPOLINE_SIZE 24 /* see struct below */ 
+#define FFI_NATIVE_RAW_API 0
+
+#elif defined(SH)
+
+#define FFI_CLOSURES 1
+#define FFI_TRAMPOLINE_SIZE 16
 #define FFI_NATIVE_RAW_API 0
 
 #else 

@@ -17,7 +17,8 @@ EXTRA_DIST = LICENSE ChangeLog.v1 src/mips/ffi.c src/mips/n32.S \
 		src/powerpc/darwin.S src/powerpc/aix.S \
 		src/powerpc/darwin_closure.S src/powerpc/aix_closures.S \
 		src/arm/ffi.c src/arm/sysv.S \
-		src/s390/ffi.c src/s390/sysv.S
+		src/s390/ffi.c src/s390/sysv.S \
+		src/sh/ffi.c src/sh/sysv.S
 
 VPATH = @srcdir@:@srcdir@/src:@srcdir@/src/@TARGETDIR@
 
@@ -108,6 +109,7 @@ TARGET_SRC_POWERPC_DARWIN = src/powerpc/ffi_darwin.c src/powerpc/darwin.S src/po
 TARGET_SRC_ARM =  src/arm/sysv.S src/arm/ffi.c
 TARGET_SRC_S390 =  src/s390/sysv.S src/s390/ffi.c
 TARGET_SRC_X86_64 = src/x86/ffi64.c src/x86/unix64.S src/x86/ffi.c src/x86/sysv.S
+TARGET_SRC_SH =  src/sh/sysv.S src/sh/ffi.c
 
 ##libffi_la_SOURCES = src/debug.c src/prep_cif.c src/types.c $(TARGET_SRC_@TARGET@)
 ## Work around automake deficiency
@@ -172,6 +174,10 @@ endif
 if X86_64
 libffi_la_SOURCES = $(libffi_la_common_SOURCES) $(TARGET_SRC_X86_64)
 libffi_convenience_la_SOURCES = $(libffi_la_common_SOURCES) $(TARGET_SRC_X86_64)
+endif
+if SH
+libffi_la_SOURCES = $(libffi_la_common_SOURCES) $(TARGET_SRC_SH)
+libfficonvenience_la_SOURCES = $(libffi_la_common_SOURCES) $(TARGET_SRC_SH)
 endif
 
 AM_CFLAGS = -fexceptions
