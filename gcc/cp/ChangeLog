@@ -1,3 +1,17 @@
+2001-04-13  Mark Mitchell  <mark@codesourcery.com>
+
+	* cp-tree.h (DELTA2_FROM_PTRMEMFUNC): Remove.
+	(expand_ptremfunc_cst): Change prototype.
+	(delta2_from_ptrmemfunc): Remove.
+	* expr.c (cplus_expand_constant): Adjust call to
+	expand_ptrmemfunc_cst.
+	* typeck.c (build_ptrmemfunc1): Simplify.
+	(build_ptrmemfunc): Make sure that casting a PTRMEM_CST still
+	results in a constant.
+	(expand_ptrmemfunc_cst): Remove idx and delta2 parameters.
+	(delta2_from_ptrmemfunc): Remove.
+	(pfn_from_ptrmemfunc): Adjust call to expand_ptrmemfunc_cst.
+	
 2001-04-12  Jason Merrill  <jason_merrill@redhat.com>
 
 	* cp-tree.h (decl_namespace_list): New macro.
