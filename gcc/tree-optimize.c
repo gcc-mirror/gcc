@@ -353,8 +353,14 @@ execute_todo (unsigned int flags)
     }
 
   if ((flags & TODO_dump_func) && dump_file)
-    dump_function_to_file (current_function_decl,
-			   dump_file, dump_flags);
+    {
+      dump_function_to_file (current_function_decl,
+			     dump_file, dump_flags);
+
+      /* Flush the file.  If verification fails, we won't be able to
+	 close the file before aborting.  */
+      fflush (dump_file);
+    }
 
   if (flags & TODO_ggc_collect)
     ggc_collect ();

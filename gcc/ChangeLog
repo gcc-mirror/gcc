@@ -1,3 +1,8 @@
+2004-07-13  Diego Novillo  <dnovillo@redhat.com>
+
+	* tree-optimize.c (execute_todo): Flush DUMP_FILE before
+	verification.
+
 2004-07-13  Ulrich Weigand  <uweigand@de.ibm.com>
 
 	* config/s390/s390.c (s390_gimplify_va_arg): Use size_int instead
