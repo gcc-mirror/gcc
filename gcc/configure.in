@@ -4131,7 +4131,7 @@ AC_SUBST(sched_prefix)
 AC_SUBST(sched_cflags)
 if test x$enable_haifa != x; then
     # Explicitly remove files that need to be recompiled for the Haifa scheduler.
-    for x in genattrtab.o toplev.o loop.o unroll.o *sched.o; do
+    for x in genattrtab.o toplev.o *sched.o; do
 	if test -f $x; then
 	    echo "Removing $x"
 	    rm -f $x
