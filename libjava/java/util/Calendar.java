@@ -437,6 +437,16 @@ public abstract class Calendar implements Serializable, Cloneable
     return getInstance(TimeZone.getDefault(), locale);
   }
 
+  /** 
+   * Cache of locale->calendar-class mappings. This avoids having to do a ResourceBundle
+   * lookup for every getInstance call.  
+   */
+  private static HashMap cache = new HashMap();
+
+  /** Preset argument types for calendar-class constructor lookup.  */
+  private static Class[] ctorArgTypes
+    = new Class[] {TimeZone.class, Locale.class};
+
   /**
    * Creates a calendar representing the actual time, using the given
    * time zone and locale.
@@ -445,29 +455,58 @@ public abstract class Calendar implements Serializable, Cloneable
    */
   public static synchronized Calendar getInstance(TimeZone zone, Locale locale)
   {
-    String calendarClassName = null;
-    ResourceBundle rb = getBundle(locale);
-    calendarClassName = rb.getString("calendarClass");
-    if (calendarClassName != null)
+    Class calendarClass = (Class) cache.get(locale);
+    Throwable exception = null;
+
+    try
       {
-	try
+	if (calendarClass == null)
 	  {
-	    Class calendarClass = Class.forName(calendarClassName);
-	    if (Calendar.class.isAssignableFrom(calendarClass))
+	    ResourceBundle rb = getBundle(locale);
+	    String calendarClassName = rb.getString("calendarClass");
+
+	    if (calendarClassName != null)
 	      {
-		return (Calendar) calendarClass.getConstructor(
-		  new Class[] { TimeZone.class, Locale.class}
-		).newInstance(new Object[] {zone, locale} );
+		calendarClass = Class.forName(calendarClassName);
+		if (Calendar.class.isAssignableFrom(calendarClass))
+		  cache.put(locale, calendarClass);
 	      }
 	  }
-	catch (ClassNotFoundException ex) {}
-	catch (IllegalAccessException ex) {}
-	catch (NoSuchMethodException ex) {}
-	catch (InstantiationException ex) {}
-	catch (InvocationTargetException ex) {}
-	// XXX should we ignore these errors or throw an exception ?
+
+        // GregorianCalendar is by far the most common case. Optimize by 
+	// avoiding reflection.
+	if (calendarClass == GregorianCalendar.class)
+	  return new GregorianCalendar(zone, locale);
+
+	if (Calendar.class.isAssignableFrom(calendarClass))
+	  {
+	    Constructor ctor = calendarClass.getConstructor(ctorArgTypes);
+	    return (Calendar) ctor.newInstance(new Object[] {zone, locale});
+	  }
       }
-    return new GregorianCalendar(zone, locale);
+    catch (ClassNotFoundException ex)
+      {
+	exception = ex;
+      }
+    catch (IllegalAccessException ex)
+      {
+	exception = ex;
+      }
+    catch (NoSuchMethodException ex)
+      {
+	exception = ex;
+      }
+    catch (InstantiationException ex)
+      {
+	exception = ex;
+      }
+    catch (InvocationTargetException ex)
+      {
+	exception = ex;
+      }
+    
+    throw new RuntimeException("Error instantiating calendar for locale " +
+			       locale, exception);
   }
 
   /**
