@@ -2197,7 +2197,8 @@ expand_assignment (to, from, want_value, suggest_reg)
       preserve_temp_slots (result);
       free_temp_slots ();
 
-      return result;
+      return convert_to_mode (TYPE_MODE (TREE_TYPE (to)), result,
+			      TREE_UNSIGNED (TREE_TYPE (to)));
     }
 
   /* Ordinary treatment.  Expand TO to get a REG or MEM rtx.
