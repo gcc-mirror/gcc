@@ -1,3 +1,9 @@
+2003-08-08  Benjamin Kosnik  <bkoz@redhat.com>
+
+	* testsuite/Makefile.am (check-abi): Change libstdc++-v3 to libstdc++.
+	(check-abi-verbose): Same.
+	* testsuite/testsuite_performance.h (report_performance): Same.
+	
 2003-08-08  Loren J. Rittle  <ljrittle@acm.org>
 
 	* testsuite/testsuite_performance.h (__FreeBSD__): Add fake mallinfo.
