@@ -154,7 +154,7 @@ do {									\
 #define ASM_DECLARE_FUNCTION_NAME(FILE, NAME, DECL)			\
   do {									\
     if (TARGET_ELF) {							\
-      fprintf (FILE, "%s\t ", TYPE_ASM_OP);				\
+      fprintf (FILE, "%s", TYPE_ASM_OP);				\
       assemble_name (FILE, NAME);					\
       putc (',', FILE);							\
       fprintf (FILE, TYPE_OPERAND_FMT, "function");			\
@@ -170,7 +170,7 @@ do {									\
   do {									\
     if (TARGET_ELF) { if (!flag_inhibit_size_directive)			\
       {									\
-	fprintf (FILE, "%s\t ", SIZE_ASM_OP);				\
+	fprintf (FILE, "%s", SIZE_ASM_OP);				\
 	assemble_name (FILE, (FNAME));					\
         fprintf (FILE, ",.-");						\
 	assemble_name (FILE, (FNAME));					\
@@ -182,7 +182,7 @@ do {									\
 #define ASM_DECLARE_OBJECT_NAME(FILE, NAME, DECL)			\
   do {									\
     if (TARGET_ELF) {							\
-      fprintf (FILE, "%s\t ", TYPE_ASM_OP);				\
+      fprintf (FILE, "%s", TYPE_ASM_OP);				\
       assemble_name (FILE, NAME);					\
       putc (',', FILE);							\
       fprintf (FILE, TYPE_OPERAND_FMT, "object");			\
@@ -191,7 +191,7 @@ do {									\
       if (!flag_inhibit_size_directive && DECL_SIZE (DECL))		\
         {								\
   	size_directive_output = 1;					\
-	fprintf (FILE, "%s\t ", SIZE_ASM_OP);				\
+	fprintf (FILE, "%s", SIZE_ASM_OP);				\
 	assemble_name (FILE, NAME);					\
 	fprintf (FILE, ",%d\n",  int_size_in_bytes (TREE_TYPE (DECL)));	\
         }								\
@@ -214,7 +214,7 @@ do {									\
 #define ASM_FILE_END(FILE)						\
 do {									\
      if (!flag_no_ident)						\
-	fprintf ((FILE), "%s\t\"GCC: (GNU) %s\"\n",			\
+	fprintf ((FILE), "%s\"GCC: (GNU) %s\"\n",			\
 		 IDENT_ASM_OP, version_string);				\
 } while (0)
 
@@ -229,7 +229,7 @@ do {									 \
 	 && !size_directive_output)					 \
        {								 \
 	 size_directive_output = 1;					 \
-	 fprintf (FILE, "%s\t ", SIZE_ASM_OP);			 	 \
+	 fprintf (FILE, "%s", SIZE_ASM_OP);			 	 \
 	 assemble_name (FILE, name);					 \
 	 fprintf (FILE, ",%d\n",  int_size_in_bytes (TREE_TYPE (DECL))); \
        }								 \
@@ -257,7 +257,7 @@ do {									\
 #undef ASM_OUTPUT_ALIGNED_COMMON
 #define ASM_OUTPUT_ALIGNED_COMMON(FILE, NAME, SIZE, ALIGN)		\
 do {									\
-  fprintf ((FILE), "%s\t", COMMON_ASM_OP);				\
+  fprintf ((FILE), "%s", COMMON_ASM_OP);				\
   assemble_name ((FILE), (NAME));					\
   if (TARGET_ELF)							\
     fprintf ((FILE), ",%u,%u\n", (SIZE), (ALIGN) / BITS_PER_UNIT);	\
@@ -269,7 +269,7 @@ do {									\
 #define ASM_OUTPUT_ALIGNED_LOCAL(FILE, NAME, SIZE, ALIGN)		\
 do {									\
   if (TARGET_ELF) {							\
-    fprintf ((FILE), "%s\t", LOCAL_ASM_OP);				\
+    fprintf ((FILE), "%s", LOCAL_ASM_OP);				\
     assemble_name ((FILE), (NAME));					\
     fprintf ((FILE), "\n");						\
     ASM_OUTPUT_ALIGNED_COMMON (FILE, NAME, SIZE, ALIGN);		\
@@ -316,7 +316,7 @@ asm_output_aligned_bss (FILE, DECL, NAME, SIZE, ALIGN)
       register const unsigned char *_limited_str =			\
         (const unsigned char *) (STR);					\
       register unsigned ch;						\
-      fprintf ((FILE), "%s\t\"", STRING_ASM_OP);			\
+      fprintf ((FILE), "%s\"", STRING_ASM_OP);				\
       for (; (ch = *_limited_str); _limited_str++)			\
         {								\
 	  register int escape;						\
@@ -369,7 +369,7 @@ do {									\
 	  else								\
 	    {								\
 	      if (bytes_in_chunk == 0)					\
-		fprintf ((FILE), "%s\t", ASM_BYTE_OP);			\
+		fprintf ((FILE), "%s", ASM_BYTE_OP);			\
 	      else							\
 		fputc (',', (FILE));					\
 	      fprintf ((FILE), "0x%02x", *_ascii_bytes);		\
@@ -407,7 +407,7 @@ do {									\
 do {									\
   if (TARGET_ELF) {							\
      ctors_section ();							\
-     fprintf (FILE, "%s\t ", INT_ASM_OP);				\
+     fprintf (FILE, "%s", INT_ASM_OP);					\
      assemble_name (FILE, NAME);					\
      fprintf (FILE, "\n");						\
   } else {								\
@@ -422,7 +422,7 @@ do {									\
 do {									\
   if (TARGET_ELF) {							\
     dtors_section ();                   				\
-    fprintf (FILE, "%s\t ", INT_ASM_OP);				\
+    fprintf (FILE, "%s", INT_ASM_OP);					\
     assemble_name (FILE, NAME);              				\
     fprintf (FILE, "\n");						\
   } else {								\
@@ -435,11 +435,11 @@ do {									\
 
 #undef ASM_OUTPUT_IDENT
 #define ASM_OUTPUT_IDENT(FILE, NAME) \
-  fprintf (FILE, "%s\t\"%s\"\n", IDENT_ASM_OP, NAME);
+  fprintf (FILE, "%s\"%s\"\n", IDENT_ASM_OP, NAME);
 
 #undef ASM_GLOBALIZE_LABEL
 #define ASM_GLOBALIZE_LABEL(FILE,NAME)	\
-  (fprintf ((FILE), "%s ", GLOBAL_ASM_OP), assemble_name (FILE, NAME), fputs ("\n", FILE))
+  (fprintf ((FILE), "%s", GLOBAL_ASM_OP), assemble_name (FILE, NAME), fputs ("\n", FILE))
 
 #undef ASM_OUTPUT_EXTERNAL_LIBCALL
 #define ASM_OUTPUT_EXTERNAL_LIBCALL(FILE, FUN)				\
@@ -510,9 +510,9 @@ do {									\
 #define ASM_OUTPUT_SKIP(FILE,SIZE) \
 do {									\
   if (TARGET_ELF)							\
-    fprintf (FILE, "%s\t%u\n", SKIP_ASM_OP, (SIZE));			\
+    fprintf (FILE, "%s%u\n", SKIP_ASM_OP, (SIZE));			\
   else									\
-    fprintf ((FILE), "%s\t.,.+%u\n", SET_ASM_OP, (SIZE));		\
+    fprintf ((FILE), "%s.,.+%u\n", SET_ASM_OP, (SIZE));		\
 } while (0)
 
 

@@ -135,7 +135,7 @@ Boston, MA 02111-1307, USA.  */
 	          fprintf ((FILE), "\"\n");			\
 	          bytes_in_chunk = 0;				\
 	        }						\
-	      fprintf ((FILE), "\t%s\t%d\n", ASM_BYTE_OP, ch);	\
+	      fprintf ((FILE), "%s%d\n", ASM_BYTE_OP, ch);	\
 	    }							\
           else							\
 	    {							\
@@ -145,7 +145,7 @@ Boston, MA 02111-1307, USA.  */
 	          bytes_in_chunk = 0;				\
 	        }						\
 	      if (bytes_in_chunk == 0)				\
-	        fprintf ((FILE), "\t%s\t\"", ASCII_DATA_ASM_OP);\
+	        fprintf ((FILE), "%s\"", ASCII_DATA_ASM_OP);	\
 	      putc (ch, (FILE));				\
 	      bytes_in_chunk++;					\
 	    }							\

@@ -3511,7 +3511,7 @@ ia64_asm_output_external (file, decl, name)
   save_referenced = TREE_SYMBOL_REFERENCED (DECL_ASSEMBLER_NAME (decl));
   if (TREE_CODE (decl) == FUNCTION_DECL)
     {
-      fprintf (file, "\t%s\t ", TYPE_ASM_OP);
+      fprintf (file, "%s", TYPE_ASM_OP);
       assemble_name (file, name);
       putc (',', file);
       fprintf (file, TYPE_OPERAND_FMT, "function");

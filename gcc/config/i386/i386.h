@@ -2645,14 +2645,14 @@ do { long l;						\
   putc('\n',FILE))
 
 #define ASM_OUTPUT_CHAR(FILE,VALUE)  \
-( fprintf (FILE, "%s\t", ASM_BYTE_OP),		\
+( fprintf (FILE, "%s", ASM_BYTE_OP),		\
   output_addr_const (FILE, (VALUE)),		\
   putc ('\n', FILE))
 
 /* This is how to output an assembler line for a numeric constant byte.  */
 
 #define ASM_OUTPUT_BYTE(FILE,VALUE)  \
-  asm_fprintf ((FILE), "%s\t0x%x\n", ASM_BYTE_OP, (VALUE))
+  asm_fprintf ((FILE), "%s0x%x\n", ASM_BYTE_OP, (VALUE))
 
 /* This is how to output an insn to push a register on the stack.
    It need not be very fast code.  */

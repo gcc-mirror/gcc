@@ -73,13 +73,13 @@ Boston, MA 02111-1307, USA.  */
    fix trouble in dbx.  */
 #undef DBX_OUTPUT_LBRAC
 #define DBX_OUTPUT_LBRAC(file,name)	\
-	      fprintf (asmfile, "%s %d,0,%d,", ASM_STABN_OP, N_LBRAC, depth); \
+	      fprintf (asmfile, "%s%d,0,%d,", ASM_STABN_OP, N_LBRAC, depth); \
 	      assemble_name (asmfile, buf); \
 	      fprintf (asmfile, "\n");
 
 #undef DBX_OUTPUT_RBRAC
 #define DBX_OUTPUT_RBRAC(file,name)	\
-	      fprintf (asmfile, "%s %d,0,%d,", ASM_STABN_OP, N_RBRAC, depth); \
+	      fprintf (asmfile, "%s%d,0,%d,", ASM_STABN_OP, N_RBRAC, depth); \
 	      assemble_name (asmfile, buf); \
 	      fprintf (asmfile, "\n");
 

@@ -1,5 +1,5 @@
 /* Definitions for AT&T assembler syntax for the Intel 80386.
-   Copyright (C) 1988, 1996 Free Software Foundation, Inc.
+   Copyright (C) 1988, 1996, 2000 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -42,7 +42,7 @@ do								\
 { int i = 0; 							\
   while (i < (size))						\
     { if (i%10 == 0) { if (i!=0) fprintf ((FILE), "\n");	\
-		       fprintf ((FILE), "%s ", ASM_BYTE_OP); }	\
+		       fprintf ((FILE), "%s", ASM_BYTE_OP); }	\
       else fprintf ((FILE), ",");				\
 	fprintf ((FILE), "0x%x", ((p)[i++] & 0377)) ;}		\
       fprintf ((FILE), "\n");					\
