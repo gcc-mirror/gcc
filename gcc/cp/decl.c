@@ -10249,6 +10249,15 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, attrlist)
 	  case BASELINK:
 	    next = &BASELINK_FUNCTIONS (decl);
 	    break;
+
+	  case TEMPLATE_DECL:
+	    /* Sometimes, we see a template-name used as part of a 
+	       decl-specifier like in 
+	          std::allocator alloc;
+	       Handle that gracefully.  */
+	    error ("invalid use of template-name '%E' in a declarator", decl);
+	    return error_mark_node;
+	    break;
 	    
 	  default:
 	    my_friendly_assert (0, 20020917);
