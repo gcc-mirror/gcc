@@ -1,3 +1,7 @@
+2001-08-10  Ulrich Weigand  <uweigand@de.ibm.com>
+ 
+ 	* glimits.h (__LONG_MAX__): Add s390x as 64-bit architecture.
+
 2001-08-10  John David Anglin  <dave@hiauly1.hia.nrc.ca>
 
 	* doc/install.texi (vax-dec-ultrix): Change `Vax' to VAX.
