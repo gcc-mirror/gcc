@@ -1,5 +1,10 @@
 2004-11-25  Ulrich Weigand  <uweigand@de.ibm.com>
 
+	* config/s390/s390.c (s390_short_displacement): UNSPEC_GOTNTPOFF
+	displacements are not short.
+
+2004-11-25  Ulrich Weigand  <uweigand@de.ibm.com>
+
 	* config/s390/s390.c (legitimize_pic_address): Use s390_load_address
 	to load addresses.
 
