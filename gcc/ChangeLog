@@ -1,3 +1,11 @@
+2005-01-20  Eric Botcazou  <ebotcazou@libertysurf.fr>
+
+	* config/sparc/freebsd.h (ASM_OUTPUT_INTERNAL_LABELREF): Delete.
+	* config/sparc/linux.h (ASM_OUTPUT_INTERNAL_LABELREF): Likewise.
+	* config/sparc/linux64.h (ASM_OUTPUT_INTERNAL_LABELREF): Likewise.
+	* config/sparc/netbsd-elf.h (ASM_OUTPUT_INTERNAL_LABELREF): Likewise.
+	* config/sparc/sol2.h (ASM_OUTPUT_INTERNAL_LABELREF): Likewise.
+
 2005-01-20  Daniel Berlin  <dberlin@dberlin.org>
 
 	Fix PR debug/19124
