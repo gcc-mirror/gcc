@@ -1,3 +1,8 @@
+Fri Sep 25 10:43:47 1998  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* cccp.c (pedwarn_with_file_and_line): For !__STDC__ case, avoid
+ 	accessing variables until they are initialized via va_arg().
+
 Thu Sep 24 22:12:16 1998  David S. Miller  <davem@pierdol.cobaltmicro.com>
 
 	* reload1.c (reload_combine): Initialize set before using.
