@@ -592,7 +592,25 @@ do {									\
    where the address is passed.  If it returns 0, the address is
    passed as an "invisible" first argument.  */
 
-/*#define STRUCT_VALUE ((rtx)0)*/
+/* The Hitachi calling convention doesn't quite fit into this scheme since
+   the address is passed like an invisible argument, but one that is always
+   passed in memory.  We approximate this by saying where the pointer is;
+   however, this will put any actual arguments that are passed in memory
+   in the wrong place.
+   If we wanted to implement this exactly, we'd need a STRUCT_VALUE of 0,
+   an extra field in CUMULATIVE_ARGS, initialize it in INIT_CUMULATIVE_ARGS,
+   and hack FUNCTION_VALUE / FUNCTION_ARG_ADVANCE to look directly at
+   DECL_RESULT of the current function in conjunction with CUM to determine
+   if the argument in question it is a struct value pointer, and if it is,
+   pass it in memory.  */
+#define STRUCT_VALUE \
+  (TARGET_HITACHI \
+   ? gen_rtx_MEM (Pmode, arg_pointer_rtx) \
+   : gen_rtx_REG (Pmode, STRUCT_VALUE_REGNUM))
+
+#define RETURN_IN_MEMORY(TYPE) \
+  (TYPE_MODE (TYPE) == BLKmode \
+   || TARGET_HITACHI && TREE_CODE (TYPE) == RECORD_TYPE)
 
 /* Don't default to pcc-struct-return, because we have already specified
    exactly how to return structures in the RETURN_IN_MEMORY macro.  */

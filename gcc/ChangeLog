@@ -1,3 +1,7 @@
+Thu Apr  6 20:39:26 2000  J"orn Rennecke <amylaar@cygnus.co.uk>
+
+	* sh.h (STRUCT_VALUE, RETURN_IN_MEMORY): Define.
+
 Thu Apr  6 19:34:08 2000  J"orn Rennecke <amylaar@cygnus.co.uk>
 
 	* config/sh/lib1funcs.asm (___udivsi3_i4):
