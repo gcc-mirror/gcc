@@ -4150,7 +4150,6 @@ extern tree array_type_nelts_total		(tree);
 extern tree array_type_nelts_top		(tree);
 extern tree break_out_target_exprs		(tree);
 extern tree get_type_decl			(tree);
-extern tree vec_binfo_member			(tree, tree);
 extern tree decl_namespace_context		(tree);
 extern tree lvalue_type				(tree);
 extern tree error_type				(tree);

@@ -953,21 +953,6 @@ purpose_member (tree elem, tree list)
   return NULL_TREE;
 }
 
-/* Return first list element whose BINFO_TYPE is ELEM.
-   Return 0 if ELEM is not in LIST.  */
-
-tree
-binfo_member (tree elem, tree list)
-{
-  while (list)
-    {
-      if (elem == BINFO_TYPE (list))
-	return list;
-      list = TREE_CHAIN (list);
-    }
-  return NULL_TREE;
-}
-
 /* Return nonzero if ELEM is part of the chain CHAIN.  */
 
 int

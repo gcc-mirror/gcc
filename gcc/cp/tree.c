@@ -1396,22 +1396,6 @@ get_type_decl (tree t)
   return 0;
 }
 
-/* Return first vector element whose BINFO_TYPE is ELEM.
-   Return 0 if ELEM is not in VEC.  VEC may be NULL_TREE.  */
-
-tree
-vec_binfo_member (tree elem, tree vec)
-{
-  int i;
-
-  if (vec)
-    for (i = 0; i < TREE_VEC_LENGTH (vec); ++i)
-      if (same_type_p (elem, BINFO_TYPE (TREE_VEC_ELT (vec, i))))
-	return TREE_VEC_ELT (vec, i);
-
-  return NULL_TREE;
-}
-
 /* Returns the namespace that contains DECL, whether directly or
    indirectly.  */
 
