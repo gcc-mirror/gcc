@@ -83,7 +83,8 @@ Boston, MA 02111-1307, USA.  */
 %{mcpu=801: -D_ARCH_PPC} \
 %{mcpu=821: -D_ARCH_PPC} \
 %{mcpu=823: -D_ARCH_PPC} \
-%{mcpu=860: -D_ARCH_PPC}"
+%{mcpu=860: -D_ARCH_PPC} \
+%{maltivec: -D__ALTIVEC__}"
 
 /* Common ASM definitions used by ASM_SPEC among the various targets
    for handling -mcpu=xxx switches.  */
@@ -209,6 +210,12 @@ extern int target_flags;
 /* Nonzero if we need to schedule the prolog and epilog.  */
 #define MASK_SCHED_PROLOG	0x00040000
 
+/* Use AltiVec instructions.  */
+#define MASK_ALTIVEC		0x00080000
+
+/* Enhance the current ABI with AltiVec extensions.  */
+#define MASK_ALTIVEC_ABI	0x00100000
+
 #define TARGET_POWER		(target_flags & MASK_POWER)
 #define TARGET_POWER2		(target_flags & MASK_POWER2)
 #define TARGET_POWERPC		(target_flags & MASK_POWERPC)
@@ -227,6 +234,8 @@ extern int target_flags;
 #define TARGET_NO_UPDATE	(target_flags & MASK_NO_UPDATE)
 #define TARGET_NO_FUSED_MADD	(target_flags & MASK_NO_FUSED_MADD)
 #define TARGET_SCHED_PROLOG	(target_flags & MASK_SCHED_PROLOG)
+#define TARGET_ALTIVEC		(target_flags & MASK_ALTIVEC)
+#define TARGET_ALTIVEC_ABI	(target_flags & MASK_ALTIVEC_ABI)
 
 #define TARGET_32BIT		(! TARGET_64BIT)
 #define TARGET_HARD_FLOAT	(! TARGET_SOFT_FLOAT)
@@ -282,6 +291,10 @@ extern int target_flags;
 			N_("Use PowerPC-64 instruction set")},		\
   {"no-powerpc64",	- MASK_POWERPC64,				\
 			N_("Don't use PowerPC-64 instruction set")},	\
+  {"altivec",		MASK_ALTIVEC,					\
+			N_("Use AltiVec instructions.")},		\
+  {"no-altivec",	- MASK_ALTIVEC,					\
+			N_("Don't use AltiVec instructions.")},	\
   {"new-mnemonics",	MASK_NEW_MNEMONICS,				\
 			N_("Use new mnemonics for PowerPC architecture")},\
   {"old-mnemonics",	-MASK_NEW_MNEMONICS,				\
@@ -409,6 +422,7 @@ extern enum processor_type rs6000_cpu;
    {"tune=", &rs6000_select[2].string,					\
     N_("Schedule code for given CPU") },				\
    {"debug=", &rs6000_debug_name, N_("Enable debug output") },		\
+   {"abi=", &rs6000_abi_string, N_("Specify ABI to use") },		\
    SUBTARGET_OPTIONS							\
 }
 
@@ -424,7 +438,8 @@ struct rs6000_cpu_select
 extern struct rs6000_cpu_select rs6000_select[];
 
 /* Debug support */
-extern const char *rs6000_debug_name;		/* Name for -mdebug-xxxx option */
+extern const char *rs6000_debug_name;	/* Name for -mdebug-xxxx option */
+extern const char *rs6000_abi_string;	/* for -mabi={sysv,darwin,solaris,eabi,aix,altivec} */
 extern int rs6000_debug_stack;		/* debug stack applications */
 extern int rs6000_debug_arg;		/* debug argument handling */
 
@@ -505,6 +520,7 @@ extern int rs6000_debug_arg;		/* debug argument handling */
 #define UNITS_PER_WORD (! TARGET_POWERPC64 ? 4 : 8)
 #define MIN_UNITS_PER_WORD 4
 #define UNITS_PER_FP_WORD 8
+#define UNITS_PER_ALTIVEC_WORD 16
 
 /* Type used for ptrdiff_t, as a string used in a declaration.  */
 #define PTRDIFF_TYPE "int"
@@ -569,13 +585,20 @@ extern int rs6000_debug_arg;		/* debug argument handling */
 #define PARM_BOUNDARY (TARGET_32BIT ? 32 : 64)
 
 /* Boundary (in *bits*) on which stack pointer should be aligned.  */
-#define STACK_BOUNDARY (TARGET_32BIT ? 64 : 128)
+#define STACK_BOUNDARY ((TARGET_32BIT && !TARGET_ALTIVEC_ABI) ? 64 : 128)
 
 /* Allocation boundary (in *bits*) for the code of a function.  */
 #define FUNCTION_BOUNDARY 32
 
 /* No data type wants to be aligned rounder than this.  */
-#define BIGGEST_ALIGNMENT 64
+#define BIGGEST_ALIGNMENT 128
+
+/* A C expression to compute the alignment for a variables in the
+   local store.  TYPE is the data type, and ALIGN is the alignment
+   that the object would ordinarily have.  */
+#define LOCAL_ALIGNMENT(TYPE, ALIGN)				\
+	((TARGET_ALTIVEC		    			\
+	  && TREE_CODE (TYPE)) == VECTOR_TYPE ? 128 : ALIGN)
 
 /* Handle #pragma pack.  */
 #define HANDLE_PRAGMA_PACK 1
@@ -594,9 +617,11 @@ extern int rs6000_debug_arg;		/* debug argument handling */
   (TREE_CODE (EXP) == STRING_CST	\
    && (ALIGN) < BITS_PER_WORD ? BITS_PER_WORD : (ALIGN))
 
-/* Make arrays of chars word-aligned for the same reasons.  */
+/* Make arrays of chars word-aligned for the same reasons.
+   Align vectors to 128 bits.  */
 #define DATA_ALIGNMENT(TYPE, ALIGN)		\
-  (TREE_CODE (TYPE) == ARRAY_TYPE		\
+  (TREE_CODE (TYPE) == VECTOR_TYPE ? 128	\
+   : TREE_CODE (TYPE) == ARRAY_TYPE		\
    && TYPE_MODE (TREE_TYPE (TYPE)) == QImode	\
    && (ALIGN) < BITS_PER_WORD ? BITS_PER_WORD : (ALIGN))
 
@@ -634,10 +659,12 @@ extern int rs6000_debug_arg;		/* debug argument handling */
    a register, in order to work around problems in allocating stack storage
    in inline functions.  */
 
-#define FIRST_PSEUDO_REGISTER 77
+#define FIRST_PSEUDO_REGISTER 110
 
 /* This must not decrease, for backwards compatibility.  If
    FIRST_PSEUDO_REGISTER increases, this should as well.  */
+/* fixme: this needs to be defined to "TARGET_ALTIVEC_ABI ? 110 : 77"
+   and then fix usages of DWARF_FRAME_REGISTERS to work.  */
 #define DWARF_FRAME_REGISTERS 77
 
 /* 1 for registers that have pervasive standard uses
@@ -655,7 +682,12 @@ extern int rs6000_debug_arg;		/* debug argument handling */
    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, \
    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, \
    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, \
-   0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0, 0, 1}
+   0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0, 0, 1,	   \
+   /* AltiVec registers.  */			   \
+   0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, \
+   0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, \
+   0						   \
+}
 
 /* 1 for registers not available across function calls.
    These must include the FIXED_REGISTERS and also any
@@ -669,7 +701,13 @@ extern int rs6000_debug_arg;		/* debug argument handling */
    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, \
    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, \
    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, \
-   1, 1, 1, 1, 1, 1, 0, 0, 0, 1, 1, 1, 1}
+   1, 1, 1, 1, 1, 1, 0, 0, 0, 1, 1, 1, 1,	   \
+   /* AltiVec registers.  */			   \
+   0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, \
+   0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, \
+   0						   \
+}
+
 
 #define MQ_REGNO     64
 #define CR0_REGNO    68
@@ -679,6 +717,9 @@ extern int rs6000_debug_arg;		/* debug argument handling */
 #define CR4_REGNO    72
 #define MAX_CR_REGNO 75
 #define XER_REGNO    76
+#define FIRST_ALTIVEC_REGNO	77
+#define LAST_ALTIVEC_REGNO	108
+#define VRSAVE_REGNO		109
 
 /* List the order in which to allocate registers.  Each register must be
    listed once, even those in FIXED_REGISTERS.
@@ -701,7 +742,16 @@ extern int rs6000_debug_arg;		/* debug argument handling */
 	mq		(not saved; best to use it if we can)
 	ctr		(not saved; when we have the choice ctr is better)
 	lr		(saved)
-        cr5, r1, r2, ap, xer (fixed)  */
+        cr5, r1, r2, ap, xer, vrsave (fixed)
+
+	AltiVec registers:
+	v0 - v1         (not saved or used for anything)
+	v13 - v3        (not saved; incoming vector arg registers)
+	v2              (not saved; incoming vector arg reg; return value)
+	v19 - v14       (not saved or used for anything)
+	v31 - v20       (saved; order given to save least number)
+*/
+						
 
 #define REG_ALLOC_ORDER					\
   {32, 							\
@@ -716,7 +766,14 @@ extern int rs6000_debug_arg;		/* debug argument handling */
    31, 30, 29, 28, 27, 26, 25, 24, 23, 22, 21, 20, 19,	\
    18, 17, 16, 15, 14, 13, 12,				\
    64, 66, 65, 						\
-   73, 1, 2, 67, 76}
+   73, 1, 2, 67, 76,					\
+   /* AltiVec registers.  */				\
+   77, 78,						\
+   90, 89, 88, 87, 86, 85, 84, 83, 82, 81, 80,		\
+   79,							\
+   96, 95, 94, 93, 92, 91,				\
+   108, 107, 106, 105, 104, 103, 102, 101, 100, 99, 98, 97 \
+}
 
 /* True if register is floating-point.  */
 #define FP_REGNO_P(N) ((N) >= 32 && (N) <= 63)
@@ -733,6 +790,9 @@ extern int rs6000_debug_arg;		/* debug argument handling */
 /* True if register is the XER register.  */
 #define XER_REGNO_P(N) ((N) == XER_REGNO)
 
+/* True if register is an AltiVec register.  */
+#define ALTIVEC_REGNO_P(N) ((N) >= FIRST_ALTIVEC_REGNO && (N) <= LAST_ALTIVEC_REGNO)
+
 /* Return number of consecutive hard regs needed starting at reg REGNO
    to hold something of mode MODE.
    This is ordinarily the length in words of a value of mode MODE
@@ -744,7 +804,22 @@ extern int rs6000_debug_arg;		/* debug argument handling */
 #define HARD_REGNO_NREGS(REGNO, MODE)					\
   (FP_REGNO_P (REGNO)							\
    ? ((GET_MODE_SIZE (MODE) + UNITS_PER_FP_WORD - 1) / UNITS_PER_FP_WORD) \
+   : ALTIVEC_REGNO_P (REGNO)						\
+   ? ((GET_MODE_SIZE (MODE) + UNITS_PER_ALTIVEC_WORD - 1) / UNITS_PER_ALTIVEC_WORD) \
    : ((GET_MODE_SIZE (MODE) + UNITS_PER_WORD - 1) / UNITS_PER_WORD))
+
+#define ALTIVEC_VECTOR_MODE(MODE)	\
+	((MODE) == V16QImode		\
+	 || (MODE) == V8HImode		\
+	 || (MODE) == V4SFmode		\
+	 || (MODE) == V4SImode)
+
+/* Define this macro to be nonzero if the port is prepared to handle
+   insns involving vector mode MODE.  At the very least, it must have
+   move patterns for this mode.  */
+
+#define VECTOR_MODE_SUPPORTED_P(MODE)	\
+	(TARGET_ALTIVEC && ALTIVEC_VECTOR_MODE (MODE))
 
 /* Value is 1 if hard register REGNO can hold a value of machine-mode MODE.
    For POWER and PowerPC, the GPRs can hold any mode, but the float
@@ -757,6 +832,7 @@ extern int rs6000_debug_arg;		/* debug argument handling */
    (GET_MODE_CLASS (MODE) == MODE_FLOAT					\
     || (GET_MODE_CLASS (MODE) == MODE_INT				\
 	&& GET_MODE_SIZE (MODE) == UNITS_PER_FP_WORD))			\
+   : ALTIVEC_REGNO_P (REGNO) ? ALTIVEC_VECTOR_MODE (MODE)		\
    : CR_REGNO_P (REGNO) ? GET_MODE_CLASS (MODE) == MODE_CC		\
    : XER_REGNO_P (REGNO) ? (MODE) == PSImode				\
    : ! INT_REGNO_P (REGNO) ? (GET_MODE_CLASS (MODE) == MODE_INT		\
@@ -776,6 +852,10 @@ extern int rs6000_debug_arg;		/* debug argument handling */
    ? GET_MODE_CLASS (MODE2) == MODE_CC		\
    : GET_MODE_CLASS (MODE2) == MODE_CC		\
    ? GET_MODE_CLASS (MODE1) == MODE_CC		\
+   : ALTIVEC_VECTOR_MODE (MODE1)		\
+   ? ALTIVEC_VECTOR_MODE (MODE2)		\
+   : ALTIVEC_VECTOR_MODE (MODE2)		\
+   ? ALTIVEC_VECTOR_MODE (MODE1)		\
    : 1)
 
 /* A C expression returning the cost of moving data from a register of class
@@ -785,9 +865,11 @@ extern int rs6000_debug_arg;		/* debug argument handling */
    registers is expensive.  */
 
 #define REGISTER_MOVE_COST(MODE, CLASS1, CLASS2)		\
-   ((CLASS1) == FLOAT_REGS && (CLASS2) == FLOAT_REGS ? 2		\
+   ((CLASS1) == FLOAT_REGS && (CLASS2) == FLOAT_REGS ? 2	\
    : (CLASS1) == FLOAT_REGS && (CLASS2) != FLOAT_REGS ? 10	\
    : (CLASS1) != FLOAT_REGS && (CLASS2) == FLOAT_REGS ? 10	\
+   : (CLASS1) == ALTIVEC_REGS && (CLASS2) != ALTIVEC_REGS ? 20	\
+   : (CLASS1) != ALTIVEC_REGS && (CLASS2) == ALTIVEC_REGS ? 20	\
    : (((CLASS1) == SPECIAL_REGS || (CLASS1) == MQ_REGS		\
        || (CLASS1) == LINK_REGS || (CLASS1) == CTR_REGS		\
        || (CLASS1) == LINK_OR_CTR_REGS)				\
@@ -839,6 +921,12 @@ extern int rs6000_debug_arg;		/* debug argument handling */
     global_regs[PIC_OFFSET_TABLE_REGNUM]				\
       = fixed_regs[PIC_OFFSET_TABLE_REGNUM]				\
         = call_used_regs[PIC_OFFSET_TABLE_REGNUM] = 1;			\
+  if (TARGET_ALTIVEC_ABI)						\
+    {									\
+      fixed_regs[VRSAVE_REGNO] = call_used_regs[VRSAVE_REGNO] = 1;	\
+      for (i = FIRST_ALTIVEC_REGNO; i < FIRST_ALTIVEC_REGNO + 20; ++i)	\
+        call_used_regs[i] = 1;						\
+    }									\
 }
 
 /* Specify the registers used for certain standard purposes.
@@ -912,6 +1000,8 @@ enum reg_class
   BASE_REGS,
   GENERAL_REGS,
   FLOAT_REGS,
+  ALTIVEC_REGS,
+  VRSAVE_REGS,
   NON_SPECIAL_REGS,
   MQ_REGS,
   LINK_REGS,
@@ -937,6 +1027,8 @@ enum reg_class
   "BASE_REGS",								\
   "GENERAL_REGS",							\
   "FLOAT_REGS",								\
+  "ALTIVEC_REGS",							\
+  "VRSAVE_REGS",							\
   "NON_SPECIAL_REGS",							\
   "MQ_REGS",								\
   "LINK_REGS",								\
@@ -955,24 +1047,26 @@ enum reg_class
    This is an initializer for a vector of HARD_REG_SET
    of length N_REG_CLASSES.  */
 
-#define REG_CLASS_CONTENTS						\
-{									\
-  { 0x00000000, 0x00000000, 0x00000000 },	/* NO_REGS */		\
-  { 0xfffffffe, 0x00000000, 0x00000008 },	/* BASE_REGS */		\
-  { 0xffffffff, 0x00000000, 0x00000008 },	/* GENERAL_REGS */	\
-  { 0x00000000, 0xffffffff, 0x00000000 },	/* FLOAT_REGS */	\
-  { 0xffffffff, 0xffffffff, 0x00000008 },	/* NON_SPECIAL_REGS */	\
-  { 0x00000000, 0x00000000, 0x00000001 },	/* MQ_REGS */		\
-  { 0x00000000, 0x00000000, 0x00000002 },	/* LINK_REGS */		\
-  { 0x00000000, 0x00000000, 0x00000004 },	/* CTR_REGS */		\
-  { 0x00000000, 0x00000000, 0x00000006 },	/* LINK_OR_CTR_REGS */	\
-  { 0x00000000, 0x00000000, 0x00000007 },	/* SPECIAL_REGS */	\
-  { 0xffffffff, 0x00000000, 0x0000000f },	/* SPEC_OR_GEN_REGS */	\
-  { 0x00000000, 0x00000000, 0x00000010 },	/* CR0_REGS */		\
-  { 0x00000000, 0x00000000, 0x00000ff0 },	/* CR_REGS */		\
-  { 0xffffffff, 0x00000000, 0x0000ffff },	/* NON_FLOAT_REGS */	\
-  { 0x00000000, 0x00000000, 0x00010000 },	/* XER_REGS */		\
-  { 0xffffffff, 0xffffffff, 0x0001ffff }	/* ALL_REGS */		\
+#define REG_CLASS_CONTENTS						     \
+{									     \
+  { 0x00000000, 0x00000000, 0x00000000, 0x00000000 }, /* NO_REGS */	     \
+  { 0xfffffffe, 0x00000000, 0x00000008, 0x00000000 }, /* BASE_REGS */	     \
+  { 0xffffffff, 0x00000000, 0x00000008, 0x00000000 }, /* GENERAL_REGS */     \
+  { 0x00000000, 0xffffffff, 0x00000000, 0x00000000 }, /* FLOAT_REGS */       \
+  { 0x00000000, 0x00000000, 0xffffe000, 0x0001ffff }, /* ALTIVEC_REGS */     \
+  { 0x00000000, 0x00000000, 0x00000000, 0x00020000 }, /* VRSAVE_REGS */	     \
+  { 0xffffffff, 0xffffffff, 0x00000008, 0x00000000 }, /* NON_SPECIAL_REGS */ \
+  { 0x00000000, 0x00000000, 0x00000001, 0x00000000 }, /* MQ_REGS */	     \
+  { 0x00000000, 0x00000000, 0x00000002, 0x00000000 }, /* LINK_REGS */	     \
+  { 0x00000000, 0x00000000, 0x00000004, 0x00000000 }, /* CTR_REGS */	     \
+  { 0x00000000, 0x00000000, 0x00000006, 0x00000000 }, /* LINK_OR_CTR_REGS */ \
+  { 0x00000000, 0x00000000, 0x00000007, 0x00000000 }, /* SPECIAL_REGS */     \
+  { 0xffffffff, 0x00000000, 0x0000000f, 0x00000000 }, /* SPEC_OR_GEN_REGS */ \
+  { 0x00000000, 0x00000000, 0x00000010, 0x00000000 }, /* CR0_REGS */	     \
+  { 0x00000000, 0x00000000, 0x00000ff0, 0x00000000 }, /* CR_REGS */	     \
+  { 0xffffffff, 0x00000000, 0x0000ffff, 0x00000000 }, /* NON_FLOAT_REGS */   \
+  { 0x00000000, 0x00000000, 0x00010000, 0x00000000 }, /* XER_REGS */	     \
+  { 0xffffffff, 0xffffffff, 0xffffffff, 0x0001ffff }  /* ALL_REGS */	     \
 }
 
 /* The same information, inverted:
@@ -984,6 +1078,7 @@ enum reg_class
  ((REGNO) == 0 ? GENERAL_REGS			\
   : (REGNO) < 32 ? BASE_REGS			\
   : FP_REGNO_P (REGNO) ? FLOAT_REGS		\
+  : ALTIVEC_REGNO_P (REGNO) ? ALTIVEC_REGS	\
   : (REGNO) == CR0_REGNO ? CR0_REGS		\
   : CR_REGNO_P (REGNO) ? CR_REGS		\
   : (REGNO) == MQ_REGNO ? MQ_REGS		\
@@ -991,6 +1086,7 @@ enum reg_class
   : (REGNO) == COUNT_REGISTER_REGNUM ? CTR_REGS	\
   : (REGNO) == ARG_POINTER_REGNUM ? BASE_REGS	\
   : (REGNO) == XER_REGNO ? XER_REGS		\
+  : (REGNO) == VRSAVE_REGNO ? VRSAVE_REGS	\
   : NO_REGS)
 
 /* The class value for index registers, and the one for base regs.  */
@@ -1006,6 +1102,7 @@ enum reg_class
    : (C) == 'q' ? MQ_REGS	\
    : (C) == 'c' ? CTR_REGS	\
    : (C) == 'l' ? LINK_REGS	\
+   : (C) == 'v' ? ALTIVEC_REGS	\
    : (C) == 'x' ? CR0_REGS	\
    : (C) == 'y' ? CR_REGS	\
    : (C) == 'z' ? XER_REGS	\
@@ -1103,11 +1200,14 @@ enum reg_class
 #define SECONDARY_RELOAD_CLASS(CLASS,MODE,IN) \
   secondary_reload_class (CLASS, MODE, IN)
 
-/* If we are copying between FP registers and anything else, we need a memory
-   location.  */
+/* If we are copying between FP or AltiVec registers and anything
+   else, we need a memory location.  */
 
-#define SECONDARY_MEMORY_NEEDED(CLASS1,CLASS2,MODE) \
- ((CLASS1) != (CLASS2) && ((CLASS1) == FLOAT_REGS || (CLASS2) == FLOAT_REGS))
+#define SECONDARY_MEMORY_NEEDED(CLASS1,CLASS2,MODE) 		\
+ ((CLASS1) != (CLASS2) && ((CLASS1) == FLOAT_REGS		\
+			   || (CLASS2) == FLOAT_REGS		\
+			   || (CLASS1) == ALTIVEC_REGS		\
+			   || (CLASS2) == ALTIVEC_REGS))
 
 /* Return the maximum number of consecutive registers
    needed to represent mode MODE in a register of class CLASS.
@@ -1294,16 +1394,18 @@ typedef struct rs6000_stack {
 		&& TYPE_PRECISION (VALTYPE) < BITS_PER_WORD)	\
 	       || POINTER_TYPE_P (VALTYPE)			\
 	       ? word_mode : TYPE_MODE (VALTYPE),		\
-	       TREE_CODE (VALTYPE) == REAL_TYPE && TARGET_HARD_FLOAT \
+	       TREE_CODE (VALTYPE) == VECTOR_TYPE ? ALTIVEC_ARG_RETURN \
+	       : TREE_CODE (VALTYPE) == REAL_TYPE && TARGET_HARD_FLOAT \
                ? FP_ARG_RETURN : GP_ARG_RETURN)
 
 /* Define how to find the value returned by a library function
    assuming the value has mode MODE.  */
 
-#define LIBCALL_VALUE(MODE)					\
-  gen_rtx_REG (MODE, (GET_MODE_CLASS (MODE) == MODE_FLOAT	\
-		      && TARGET_HARD_FLOAT			\
-		      ? FP_ARG_RETURN : GP_ARG_RETURN))
+#define LIBCALL_VALUE(MODE)						\
+  gen_rtx_REG (MODE, ALTIVEC_VECTOR_MODE (MODE) ? ALTIVEC_ARG_RETURN	\
+		     : GET_MODE_CLASS (MODE) == MODE_FLOAT		\
+		     && TARGET_HARD_FLOAT				\
+		     ? FP_ARG_RETURN : GP_ARG_RETURN)
 
 /* The definition of this macro implies that there are cases where
    a scalar value cannot be returned in registers.
@@ -1338,9 +1440,15 @@ typedef struct rs6000_stack {
 			? FP_ARG_AIX_MAX_REG : FP_ARG_V4_MAX_REG)
 #define FP_ARG_NUM_REG (FP_ARG_MAX_REG - FP_ARG_MIN_REG + 1)
 
+/* Minimum and maximum AltiVec registers used to hold arguments.  */
+#define ALTIVEC_ARG_MIN_REG (FIRST_ALTIVEC_REGNO + 2)
+#define ALTIVEC_ARG_MAX_REG (ALTIVEC_ARG_MIN_REG + 11)
+#define ALTIVEC_ARG_NUM_REG (ALTIVEC_ARG_MAX_REG - ALTIVEC_ARG_MIN_REG + 1)
+
 /* Return registers */
 #define GP_ARG_RETURN GP_ARG_MIN_REG
 #define FP_ARG_RETURN FP_ARG_MIN_REG
+#define ALTIVEC_ARG_RETURN (FIRST_ALTIVEC_REGNO + 2)
 
 /* Flags for the call/call_value rtl operations set up by function_arg */
 #define CALL_NORMAL		0x00000000	/* no special processing */
@@ -1352,13 +1460,19 @@ typedef struct rs6000_stack {
 /* 1 if N is a possible register number for a function value
    as seen by the caller.
 
-   On RS/6000, this is r3 and fp1.  */
-#define FUNCTION_VALUE_REGNO_P(N)  ((N) == GP_ARG_RETURN || ((N) == FP_ARG_RETURN))
+   On RS/6000, this is r3, fp1, and v2 (for AltiVec).  */
+#define FUNCTION_VALUE_REGNO_P(N)  ((N) == GP_ARG_RETURN	\
+				    || ((N) == FP_ARG_RETURN)	\
+				    || (TARGET_ALTIVEC &&	\
+					(N) == ALTIVEC_ARG_RETURN))
 
 /* 1 if N is a possible register number for function argument passing.
-   On RS/6000, these are r3-r10 and fp1-fp13.  */
+   On RS/6000, these are r3-r10 and fp1-fp13.
+   On AltiVec, v2 - v13 are used for passing vectors.  */
 #define FUNCTION_ARG_REGNO_P(N)						\
   ((unsigned)(((N) - GP_ARG_MIN_REG) < (unsigned)(GP_ARG_NUM_REG))	\
+   || (TARGET_ALTIVEC &&						\
+       (unsigned)((N) - ALTIVEC_ARG_MIN_REG) < (unsigned)(ALTIVEC_ARG_MAX_REG)) \
    || ((unsigned)((N) - FP_ARG_MIN_REG) < (unsigned)(FP_ARG_NUM_REG)))
 
 
@@ -1394,6 +1508,7 @@ typedef struct rs6000_args
 {
   int words;			/* # words used for passing GP registers */
   int fregno;			/* next available FP register */
+  int vregno;			/* next available AltiVec register */
   int nargs_prototype;		/* # args left in the current prototype */
   int orig_nargs;		/* Original value of nargs_prototype */
   int prototype;		/* Whether a prototype was defined */
@@ -1435,6 +1550,12 @@ typedef struct rs6000_args
   (GET_MODE_CLASS (MODE) == MODE_FLOAT  \
    && (CUM).fregno <= FP_ARG_MAX_REG    \
    && TARGET_HARD_FLOAT)
+
+/* Non-zero if we can use an AltiVec register to pass this arg.  */
+#define USE_ALTIVEC_FOR_ARG_P(CUM,MODE,TYPE)	\
+  (ALTIVEC_VECTOR_MODE (MODE)			\
+   && (CUM).vregno <= ALTIVEC_ARG_MAX_REG	\
+   && TARGET_ALTIVEC_ABI)
 
 /* Determine where to put an argument to a function.
    Value is zero to push the argument on the stack,
@@ -1778,6 +1899,7 @@ typedef struct rs6000_args
   && GET_CODE (XEXP (X, 0)) == REG				\
   && INT_REG_OK_FOR_BASE_P (XEXP (X, 0), (STRICT))		\
   && LEGITIMATE_ADDRESS_INTEGER_P (XEXP (X, 1), 0)		\
+  && (! ALTIVEC_VECTOR_MODE (MODE) || INTVAL (X) == 0)		\
   && (((MODE) != DFmode && (MODE) != DImode)			\
       || (TARGET_32BIT						\
 	  ? LEGITIMATE_ADDRESS_INTEGER_P (XEXP (X, 1), 4) 	\
@@ -1805,6 +1927,7 @@ typedef struct rs6000_args
    && ! flag_pic && ! TARGET_TOC				\
    && (MODE) != DImode						\
    && (MODE) != TImode						\
+   && ! ALTIVEC_VECTOR_MODE (MODE)				\
    && (TARGET_HARD_FLOAT || (MODE) != DFmode)			\
    && GET_CODE (X) == LO_SUM					\
    && GET_CODE (XEXP (X, 0)) == REG				\
@@ -2389,6 +2512,40 @@ extern char rs6000_reg_names[][8];	/* register names (0 vs. %r0). */
   &rs6000_reg_names[75][0],	/* cr7  */				\
 									\
   &rs6000_reg_names[76][0],	/* xer  */				\
+									\
+  &rs6000_reg_names[77][0],	/* v0  */				\
+  &rs6000_reg_names[78][0],	/* v1  */				\
+  &rs6000_reg_names[79][0],	/* v2  */				\
+  &rs6000_reg_names[80][0],	/* v3  */				\
+  &rs6000_reg_names[81][0],	/* v4  */				\
+  &rs6000_reg_names[82][0],	/* v5  */				\
+  &rs6000_reg_names[83][0],	/* v6  */				\
+  &rs6000_reg_names[84][0],	/* v7  */				\
+  &rs6000_reg_names[85][0],	/* v8  */				\
+  &rs6000_reg_names[86][0],	/* v9  */				\
+  &rs6000_reg_names[87][0],	/* v10  */				\
+  &rs6000_reg_names[88][0],	/* v11  */				\
+  &rs6000_reg_names[89][0],	/* v12  */				\
+  &rs6000_reg_names[90][0],	/* v13  */				\
+  &rs6000_reg_names[91][0],	/* v14  */				\
+  &rs6000_reg_names[92][0],	/* v15  */				\
+  &rs6000_reg_names[93][0],	/* v16  */				\
+  &rs6000_reg_names[94][0],	/* v17  */				\
+  &rs6000_reg_names[95][0],	/* v18  */				\
+  &rs6000_reg_names[96][0],	/* v19  */				\
+  &rs6000_reg_names[97][0],	/* v20  */				\
+  &rs6000_reg_names[98][0],	/* v21  */				\
+  &rs6000_reg_names[99][0],	/* v22  */				\
+  &rs6000_reg_names[100][0],	/* v23  */				\
+  &rs6000_reg_names[101][0],	/* v24  */				\
+  &rs6000_reg_names[102][0],	/* v25  */				\
+  &rs6000_reg_names[103][0],	/* v26  */				\
+  &rs6000_reg_names[104][0],	/* v27  */				\
+  &rs6000_reg_names[105][0],	/* v28  */				\
+  &rs6000_reg_names[106][0],	/* v29  */				\
+  &rs6000_reg_names[107][0],	/* v30  */				\
+  &rs6000_reg_names[108][0],	/* v31  */				\
+  &rs6000_reg_names[109][0],	/* vrsave  */				\
 }
 
 /* print-rtl can't handle the above REGISTER_NAMES, so define the
@@ -2407,7 +2564,12 @@ extern char rs6000_reg_names[][8];	/* register names (0 vs. %r0). */
     "f24", "f25", "f26", "f27", "f28", "f29", "f30", "f31",		\
      "mq",  "lr", "ctr",  "ap",						\
     "cr0", "cr1", "cr2", "cr3", "cr4", "cr5", "cr6", "cr7",		\
-  "xer"									\
+  "xer",								\
+     "v0",  "v1",  "v2",  "v3",  "v4",  "v5",  "v6",  "v7",             \
+     "v8",  "v9", "v10", "v11", "v12", "v13", "v14", "v15",             \
+    "v16", "v17", "v18", "v19", "v20", "v21", "v22", "v23",             \
+    "v24", "v25", "v26", "v27", "v28", "v29", "v30", "v31",             \
+    "vrsave"								\
 }
 
 /* Table of additional register names to use in user input.  */
@@ -2429,6 +2591,15 @@ extern char rs6000_reg_names[][8];	/* register names (0 vs. %r0). */
   {"fr20", 52}, {"fr21", 53}, {"fr22", 54}, {"fr23", 55},	\
   {"fr24", 56}, {"fr25", 57}, {"fr26", 58}, {"fr27", 59},	\
   {"fr28", 60}, {"fr29", 61}, {"fr30", 62}, {"fr31", 63},	\
+  {"v0",   77}, {"v1",   78}, {"v2",   79}, {"v3",   80},       \
+  {"v4",   81}, {"v5",   82}, {"v6",   83}, {"v7",   84},       \
+  {"v8",   85}, {"v9",   86}, {"v10",  87}, {"v11",  88},       \
+  {"v12",  89}, {"v13",  90}, {"v14",  91}, {"v15",  92},       \
+  {"v16",  93}, {"v17",  94}, {"v18",  95}, {"v19",  96},       \
+  {"v20",  97}, {"v21",  98}, {"v22",  99}, {"v23",  100},	\
+  {"v24",  101},{"v25",  102},{"v26",  103},{"v27",  104},      \
+  {"v28",  105},{"v29",  106},{"v30",  107},{"v31",  108},      \
+  {"vrsave", 109},						\
   /* no additional names for: mq, lr, ctr, ap */		\
   {"cr0",  68}, {"cr1",  69}, {"cr2",  70}, {"cr3",  71},	\
   {"cr4",  72}, {"cr5",  73}, {"cr6",  74}, {"cr7",  75},	\
@@ -2629,3 +2800,116 @@ extern int flag_pic;
 extern int optimize;
 extern int flag_expensive_optimizations;
 extern int frame_pointer_needed;
+
+enum rs6000_builtins
+{
+  /* AltiVec builtins.  */
+  ALTIVEC_BUILTIN_ST_INTERNAL,
+  ALTIVEC_BUILTIN_LD_INTERNAL,
+  ALTIVEC_BUILTIN_VADDUBM,
+  ALTIVEC_BUILTIN_VADDUHM,
+  ALTIVEC_BUILTIN_VADDUWM,
+  ALTIVEC_BUILTIN_VADDFP,
+  ALTIVEC_BUILTIN_VADDCUW,
+  ALTIVEC_BUILTIN_VADDUBS,
+  ALTIVEC_BUILTIN_VADDSBS,
+  ALTIVEC_BUILTIN_VADDUHS,
+  ALTIVEC_BUILTIN_VADDSHS,
+  ALTIVEC_BUILTIN_VADDUWS,
+  ALTIVEC_BUILTIN_VADDSWS,
+  ALTIVEC_BUILTIN_VAND,
+  ALTIVEC_BUILTIN_VANDC,
+  ALTIVEC_BUILTIN_VAVGUB,
+  ALTIVEC_BUILTIN_VAVGSB,
+  ALTIVEC_BUILTIN_VAVGUH,
+  ALTIVEC_BUILTIN_VAVGSH,
+  ALTIVEC_BUILTIN_VAVGUW,
+  ALTIVEC_BUILTIN_VAVGSW,
+  ALTIVEC_BUILTIN_VCMPBFP,
+  ALTIVEC_BUILTIN_VCMPEQUB,
+  ALTIVEC_BUILTIN_VCMPEQUH,
+  ALTIVEC_BUILTIN_VCMPEQUW,
+  ALTIVEC_BUILTIN_VCMPEQFP,
+  ALTIVEC_BUILTIN_VCMPGEFP,
+  ALTIVEC_BUILTIN_VCMPGTUB,
+  ALTIVEC_BUILTIN_VCMPGTSB,
+  ALTIVEC_BUILTIN_VCMPGTUH,
+  ALTIVEC_BUILTIN_VCMPGTSH,
+  ALTIVEC_BUILTIN_VCMPGTUW,
+  ALTIVEC_BUILTIN_VCMPGTSW,
+  ALTIVEC_BUILTIN_VCMPGTFP,
+  ALTIVEC_BUILTIN_VMAXUB,
+  ALTIVEC_BUILTIN_VMAXSB,
+  ALTIVEC_BUILTIN_VMAXUH,
+  ALTIVEC_BUILTIN_VMAXSH,
+  ALTIVEC_BUILTIN_VMAXUW,
+  ALTIVEC_BUILTIN_VMAXSW,
+  ALTIVEC_BUILTIN_VMAXFP,
+  ALTIVEC_BUILTIN_VMRGHB,
+  ALTIVEC_BUILTIN_VMRGHH,
+  ALTIVEC_BUILTIN_VMRGHW,
+  ALTIVEC_BUILTIN_VMRGLB,
+  ALTIVEC_BUILTIN_VMRGLH,
+  ALTIVEC_BUILTIN_VMRGLW,
+  ALTIVEC_BUILTIN_VMINUB,
+  ALTIVEC_BUILTIN_VMINSB,
+  ALTIVEC_BUILTIN_VMINUH,
+  ALTIVEC_BUILTIN_VMINSH,
+  ALTIVEC_BUILTIN_VMINUW,
+  ALTIVEC_BUILTIN_VMINSW,
+  ALTIVEC_BUILTIN_VMINFP,
+  ALTIVEC_BUILTIN_VMULEUB,
+  ALTIVEC_BUILTIN_VMULESB,
+  ALTIVEC_BUILTIN_VMULEUH,
+  ALTIVEC_BUILTIN_VMULESH,
+  ALTIVEC_BUILTIN_VMULOUB,
+  ALTIVEC_BUILTIN_VMULOSB,
+  ALTIVEC_BUILTIN_VMULOUH,
+  ALTIVEC_BUILTIN_VMULOSH,
+  ALTIVEC_BUILTIN_VNOR,
+  ALTIVEC_BUILTIN_VOR,
+  ALTIVEC_BUILTIN_VPKUHUM,
+  ALTIVEC_BUILTIN_VPKUWUM,
+  ALTIVEC_BUILTIN_VPKPX,
+  ALTIVEC_BUILTIN_VPKUHSS,
+  ALTIVEC_BUILTIN_VPKSHSS,
+  ALTIVEC_BUILTIN_VPKUWSS,
+  ALTIVEC_BUILTIN_VPKSWSS,
+  ALTIVEC_BUILTIN_VPKUHUS,
+  ALTIVEC_BUILTIN_VPKSHUS,
+  ALTIVEC_BUILTIN_VPKUWUS,
+  ALTIVEC_BUILTIN_VPKSWUS,
+  ALTIVEC_BUILTIN_VRLB,
+  ALTIVEC_BUILTIN_VRLH,
+  ALTIVEC_BUILTIN_VRLW,
+  ALTIVEC_BUILTIN_VSLB,
+  ALTIVEC_BUILTIN_VSLH,
+  ALTIVEC_BUILTIN_VSLW,
+  ALTIVEC_BUILTIN_VSL,
+  ALTIVEC_BUILTIN_VSLO,
+  ALTIVEC_BUILTIN_VSRB,
+  ALTIVEC_BUILTIN_VRSH,
+  ALTIVEC_BUILTIN_VRSW,
+  ALTIVEC_BUILTIN_VSRAB,
+  ALTIVEC_BUILTIN_VSRAH,
+  ALTIVEC_BUILTIN_VSRAW,
+  ALTIVEC_BUILTIN_VSR,
+  ALTIVEC_BUILTIN_VSRO,
+  ALTIVEC_BUILTIN_VSUBUBM,
+  ALTIVEC_BUILTIN_VSUBUHM,
+  ALTIVEC_BUILTIN_VSUBUWM,
+  ALTIVEC_BUILTIN_VSUBFP,
+  ALTIVEC_BUILTIN_VSUBCUW,
+  ALTIVEC_BUILTIN_VSUBUBS,
+  ALTIVEC_BUILTIN_VSUBSBS,
+  ALTIVEC_BUILTIN_VSUBUHS,
+  ALTIVEC_BUILTIN_VSUBSHS,
+  ALTIVEC_BUILTIN_VSUBUWS,
+  ALTIVEC_BUILTIN_VSUBSWS,
+  ALTIVEC_BUILTIN_VSUM4UBS,
+  ALTIVEC_BUILTIN_VSUM4SBS,
+  ALTIVEC_BUILTIN_VSUM4SHS,
+  ALTIVEC_BUILTIN_VSUM2SWS,
+  ALTIVEC_BUILTIN_VSUMSWS,
+  ALTIVEC_BUILTIN_VXOR
+};

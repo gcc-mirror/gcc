@@ -400,18 +400,31 @@ do {									\
    one set of libraries with -mno-eabi instead of eabi libraries and non-eabi
    versions, just use 64 as the stack boundary.  */
 #undef	STACK_BOUNDARY
-#define	STACK_BOUNDARY	64
+#define	STACK_BOUNDARY	(TARGET_ALTIVEC_ABI ? 128 : 64)
 
 /* Real stack boundary as mandated by the appropriate ABI.  */
-#define ABI_STACK_BOUNDARY ((TARGET_EABI) ? 64 : 128)
+#define ABI_STACK_BOUNDARY ((TARGET_EABI && !TARGET_ALTIVEC_ABI) ? 64 : 128)
 
 /* No data type wants to be aligned rounder than this.  */
 #undef	BIGGEST_ALIGNMENT
-#define BIGGEST_ALIGNMENT ((TARGET_EABI) ? 64 : 128)
+#define BIGGEST_ALIGNMENT (TARGET_EABI ? 64 : 128)
+
+/* An expression for the alignment of a structure field FIELD if the
+   alignment computed in the usual way is COMPUTED.  */
+#define ADJUST_FIELD_ALIGN(FIELD, COMPUTED)				      \
+	((TARGET_ALTIVEC && TREE_CODE (TREE_TYPE (FIELD)) == VECTOR_TYPE)     \
+	 ? 128 : COMPUTED)
+
+/* Define this macro as an expression for the alignment of a type
+   (given by TYPE as a tree node) if the alignment computed in the
+   usual way is COMPUTED and the alignment explicitly specified was
+   SPECIFIED.  */
+#define ROUND_TYPE_ALIGN(TYPE, COMPUTED, SPECIFIED)			\
+	((TARGET_ALTIVEC  && TREE_CODE (TYPE) == VECTOR_TYPE)	        \
+	 ? 128 : MAX (COMPUTED, SPECIFIED))
 
 #undef  BIGGEST_FIELD_ALIGNMENT
 #undef  ADJUST_FIELD_ALIGN
-#undef  ROUND_TYPE_ALIGN
 
 /* Use ELF style section commands.  */
 
