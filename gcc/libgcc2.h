@@ -1,5 +1,5 @@
 /* Header file for libgcc2.c.  */
-/* Copyright (C) 2000
+/* Copyright (C) 2000, 2001
    Free Software Foundation, Inc.
 
 This file is part of GNU CC.
@@ -198,6 +198,9 @@ typedef int word_type __attribute__ ((mode (__word__)));
 #define __NW(a,b)	__ ## a ## qi ## b
 #define __NDW(a,b)	__ ## a ## hi ## b
 #endif
+
+#define Wtype_MAX ((Wtype)(((UWtype)1 << (W_TYPE_SIZE - 1)) - 1))
+#define Wtype_MIN (- Wtype_MAX - 1)
 
 #define __muldi3	__NDW(mul,3)
 #define __divdi3	__NDW(div,3)
