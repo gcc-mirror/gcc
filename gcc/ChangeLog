@@ -1,3 +1,12 @@
+2004-11-24  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* tree-outof-ssa.c (eliminate_build): Use g->e->dest_idx
+	instead to find the PHI argument.  Do not take I as an
+	argument.
+	(eliminate_phi): Adjust the call to eliminate_build.  Do not
+	take I as an argument.
+	(rewrite_trees): Adjust the call to eliminate_phi.
+
 2004-11-24  Richard Sandiford  <rsandifo@redhat.com>
 
 	* optabs.h (force_expand_binop): Declare.
