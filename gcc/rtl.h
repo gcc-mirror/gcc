@@ -669,8 +669,6 @@ extern char *note_insn_name[];
 extern rtx plus_constant_wide		 PROTO((rtx, HOST_WIDE_INT));
 extern rtx plus_constant_for_output_wide PROTO((rtx, HOST_WIDE_INT));
 
-#define GEN_INT(N) gen_rtx (CONST_INT, VOIDmode, (HOST_WIDE_INT) (N))
-
 extern rtx bc_gen_rtx ();
 
 extern rtx gen_rtx			PVPROTO((enum rtx_code,
@@ -696,6 +694,7 @@ extern char *permalloc			PROTO((int));
 extern void free			PROTO((void *));
 #endif
 extern rtx rtx_alloc			PROTO((RTX_CODE));
+extern rtx obstack_alloc_rtx		PROTO((int));
 extern rtvec rtvec_alloc		PROTO((int));
 extern rtx copy_rtx			PROTO((rtx));
 extern rtx copy_rtx_if_shared		PROTO((rtx));
@@ -894,6 +893,25 @@ extern rtx struct_value_rtx;
 extern rtx struct_value_incoming_rtx;
 extern rtx static_chain_rtx;
 extern rtx static_chain_incoming_rtx;
+
+/* Include the RTL generation functions.  */
+
+#ifndef NO_GENRTL_H
+#include "genrtl.h"
+#endif
+
+/* There are some RTL codes that require special attention; the
+   generation functions included above do the raw handling.  If you
+   add to this list, modify special_rtx in gengenrtl.c as well.  You
+   should also modify gen_rtx to use the special function.  */
+
+extern rtx gen_rtx_CONST_INT PROTO((enum machine_mode, HOST_WIDE_INT));
+extern rtx gen_rtx_REG PROTO((enum machine_mode, int));
+extern rtx gen_rtx_MEM PROTO((enum machine_mode, rtx));
+
+/* We need the cast here to ensure that we get the same result both with
+   and without prototypes.  */
+#define GEN_INT(N)  gen_rtx_CONST_INT (VOIDmode, (HOST_WIDE_INT) (N))
 
 /* If HARD_FRAME_POINTER_REGNUM is defined, then a special dummy reg
    is used to represent the frame pointer.  This is because the
