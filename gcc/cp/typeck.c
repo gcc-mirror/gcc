@@ -4346,6 +4346,8 @@ condition_conversion (expr)
   tree t;
   if (processing_template_decl)
     return expr;
+  if (TREE_CODE (expr) == OFFSET_REF)
+    expr = resolve_offset_ref (expr);
   t = perform_implicit_conversion (boolean_type_node, expr);
   t = fold (build1 (CLEANUP_POINT_EXPR, boolean_type_node, t));
   return t;
