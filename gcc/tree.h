@@ -1088,14 +1088,6 @@ extern int tree_int_cst_equal		PROTO((tree, tree));
 extern int tree_int_cst_lt		PROTO((tree, tree));
 extern int index_type_equal		PROTO((tree, tree));
 
-/* Construct expressions, performing type checking.
-   GCC and G++ use different calling sequences for build_binary_op,
-   and build_indirect_ref, so don't include a prototype here.  */
-
-extern tree build_binary_op ();
-extern tree build_indirect_ref ();
-extern tree build_unary_op		PROTO((enum tree_code, tree, int));
-
 /* From expmed.c.  Since rtl.h is included after tree.h, we can't
    put the prototype here.  Rtl.h does declare the prototype if
    tree.h had been included.  */
