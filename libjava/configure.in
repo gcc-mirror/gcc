@@ -40,7 +40,7 @@ if :; then :; else
 fi
 
 AC_CANONICAL_SYSTEM
-
+_GCC_TOPLEV_NONCANONICAL_BUILD
 _GCC_TOPLEV_NONCANONICAL_TARGET
 
 # This works around the fact that libtool configuration may change LD
@@ -1062,7 +1062,7 @@ if test -n "${with_cross_host}"; then
      ;;
   esac
   if test -x "${built_gcc_dir}/gcj${cross_host_exeext}"; then
-     if test x"$build_alias" = x"$with_cross_host"; then
+     if test x"$build_noncanonical" = x"$with_cross_host"; then
         # Ordinary cross (host!=target and host=build)
         which_gcj=built
      else
