@@ -1010,7 +1010,8 @@ struct value_data
   unsigned int max_value_regs;
 };
 
-static void kill_value_regno (unsigned, struct value_data *);
+static void kill_value_one_regno (unsigned, struct value_data *);
+static void kill_value_regno (unsigned, unsigned, struct value_data *);
 static void kill_value (rtx, struct value_data *);
 static void set_value_regno (unsigned, enum machine_mode, struct value_data *);
 static void init_value_data (struct value_data *);
@@ -1035,11 +1036,13 @@ extern void debug_value_data (struct value_data *);
 static void validate_value_data (struct value_data *);
 #endif
 
-/* Kill register REGNO.  This involves removing it from any value lists,
-   and resetting the value mode to VOIDmode.  */
+/* Kill register REGNO.  This involves removing it from any value
+   lists, and resetting the value mode to VOIDmode.  This is only a
+   helper function; it does not handle any hard registers overlapping
+   with REGNO.  */
 
 static void
-kill_value_regno (unsigned int regno, struct value_data *vd)
+kill_value_one_regno (unsigned int regno, struct value_data *vd)
 {
   unsigned int i, next;
 
@@ -1066,7 +1069,39 @@ kill_value_regno (unsigned int regno, struct value_data *vd)
 #endif
 }
 
-/* Kill X.  This is a convenience function for kill_value_regno
+/* Kill the value in register REGNO for NREGS, and any other registers
+   whose values overlap.  */
+
+static void
+kill_value_regno (regno, nregs, vd)
+     unsigned int regno;
+     unsigned int nregs;
+     struct value_data *vd;
+{
+  unsigned int j;
+
+  /* Kill the value we're told to kill.  */
+  for (j = 0; j < nregs; ++j)
+    kill_value_one_regno (regno + j, vd);
+
+  /* Kill everything that overlapped what we're told to kill.  */
+  if (regno < vd->max_value_regs)
+    j = 0;
+  else
+    j = regno - vd->max_value_regs;
+  for (; j < regno; ++j)
+    {
+      unsigned int i, n;
+      if (vd->e[j].mode == VOIDmode)
+	continue;
+      n = hard_regno_nregs[j][vd->e[j].mode];
+      if (j + n > regno)
+	for (i = 0; i < n; ++i)
+	  kill_value_one_regno (j + i, vd);
+    }
+}
+
+/* Kill X.  This is a convenience function wrapping kill_value_regno
    so that we mind the mode the register is in.  */
 
 static void
@@ -1084,26 +1119,8 @@ kill_value (rtx x, struct value_data *vd)
     {
       unsigned int regno = REGNO (x);
       unsigned int n = hard_regno_nregs[regno][GET_MODE (x)];
-      unsigned int i, j;
 
-      /* Kill the value we're told to kill.  */
-      for (i = 0; i < n; ++i)
-	kill_value_regno (regno + i, vd);
-
-      /* Kill everything that overlapped what we're told to kill.  */
-      if (regno < vd->max_value_regs)
-	j = 0;
-      else
-	j = regno - vd->max_value_regs;
-      for (; j < regno; ++j)
-	{
-	  if (vd->e[j].mode == VOIDmode)
-	    continue;
-	  n = hard_regno_nregs[j][vd->e[j].mode];
-	  if (j + n > regno)
-	    for (i = 0; i < n; ++i)
-	      kill_value_regno (j + i, vd);
-	}
+      kill_value_regno (regno, n, vd);
     }
 }
 
@@ -1703,7 +1720,7 @@ copyprop_hardreg_forward_1 (basic_block bb, struct value_data *vd)
       if (CALL_P (insn))
 	for (i = 0; i < FIRST_PSEUDO_REGISTER; i++)
 	  if (TEST_HARD_REG_BIT (regs_invalidated_by_call, i))
-	    kill_value_regno (i, vd);
+	    kill_value_regno (i, 1, vd);
 
       /* Notice stores.  */
       note_stores (PATTERN (insn), kill_set_value, vd);
