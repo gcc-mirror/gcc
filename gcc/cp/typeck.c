@@ -6314,7 +6314,7 @@ build_ptrmemfunc (type, pfn, force)
 	pfn = integer_zero_node;
       else
 	{
-	  sorry ("value casting of varible nonnull pointer to member functions not supported");
+	  sorry ("value casting of variable nonnull pointer to member functions not supported");
 	  return error_mark_node;
 	}
     }
