@@ -410,9 +410,9 @@ gfc_finish_var_decl (tree decl, gfc_symbol * sym)
       DECL_EXTERNAL (decl) = 1;
       TREE_PUBLIC (decl) = 1;
     }
-  else if (sym->module[0] && !sym->attr.result)
+  else if (sym->module[0] && !sym->attr.result && !sym->attr.dummy)
     {
-      /* TODO: Don't set sym->module for result variables.  */
+      /* TODO: Don't set sym->module for result or dummy variables.  */
       gcc_assert (current_function_decl == NULL_TREE);
       /* This is the declaration of a module variable.  */
       TREE_PUBLIC (decl) = 1;
