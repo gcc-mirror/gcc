@@ -5996,7 +5996,7 @@ output_bvb (rtx *operands ATTRIBUTE_UNUSED, int nullify, int length,
 	else
 	  strcpy (buf, "{bvb,|bb,}");
 	if (useskip && GET_MODE (operands[0]) == DImode)
-	  strcpy (buf, "extrd,s,*}");
+	  strcpy (buf, "extrd,s,*");
 	else if (GET_MODE (operands[0]) == DImode)
 	  strcpy (buf, "bb,*");
 	if ((which == 0 && negated)
