@@ -8475,10 +8475,10 @@ expand_expr (tree exp, rtx target, enum machine_mode tmode, enum expand_modifier
       if (modifier == EXPAND_STACK_PARM)
 	target = 0;
 
-      /* Handle complex values specially.  */
+      /* ABS_EXPR is not valid for complex arguments.  */
       if (GET_MODE_CLASS (mode) == MODE_COMPLEX_INT
 	  || GET_MODE_CLASS (mode) == MODE_COMPLEX_FLOAT)
-	return expand_complex_abs (mode, op0, target, unsignedp);
+	abort ();
 
       /* Unsigned abs is simply the operand.  Testing here means we don't
 	 risk generating incorrect code below.  */

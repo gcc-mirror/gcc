@@ -1720,6 +1720,7 @@ This macro returns the attributes on the type @var{type}.
 @findex PTRMEM_CST_MEMBER
 @tindex VAR_DECL
 @tindex NEGATE_EXPR
+@tindex ABS_EXPR
 @tindex BIT_NOT_EXPR
 @tindex TRUTH_NOT_EXPR
 @tindex ADDR_EXPR
@@ -1914,6 +1915,20 @@ determined by looking at the type of the expression.
 
 The behavior of this operation on signed arithmetic overflow is
 controlled by the @code{flag_wrapv} and @code{flag_trapv} variables.
+
+@item ABS_EXPR
+These nodes represent the absolute value of the single operand, for
+both integer and floating-point types.  This is typically used to
+implement the @code{abs}, @code{labs} and @code{llabs} builtins for
+integer types, and the @code{fabs}, @code{fabsf} and @code{fabsl}
+builtins for floating point types.  The type of abs operation can
+be determined by looking at the type of the expression.
+
+This node is not used for complex types.  To represent the modulus
+or complex abs of a complex value, use the @code{BUILT_IN_CABS},
+@code{BUILT_IN_CABSF} or @code{BUILT_IN_CABSL} builtins, as used
+to implement the C99 @code{cabs}, @code{cabsf} and @code{cabsl}
+built-in functions.
 
 @item BIT_NOT_EXPR
 These nodes represent bitwise complement, and will always have integral
