@@ -841,9 +841,8 @@ do \
 #define NO_RECURSIVE_FUNCTION_CSE 1
 
 /* Max number of bytes we can move from memory to memory
-   in one reasonably fast instruction.
-   On the ARM, there are no instructions which move memory to memory!  */
-#define MOVE_MAX  0
+   in one reasonably fast instruction.  */
+#define MOVE_MAX 4
 
 /* Define if normal loads of shorter-than-word items from memory clears
    the rest of the bigs in the register.
