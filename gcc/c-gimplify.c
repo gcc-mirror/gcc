@@ -476,20 +476,18 @@ gimplify_decl_stmt (tree *stmt_p)
   tree stmt = *stmt_p;
   tree decl = DECL_STMT_DECL (stmt);
 
+  *stmt_p = NULL_TREE;
+
   if (TREE_TYPE (decl) == error_mark_node)
-    {
-      *stmt_p = NULL;
-      return GS_ERROR;
-    }
-    
+    return GS_ERROR;
+
   if (TREE_CODE (decl) == TYPE_DECL)
-    *stmt_p = gimplify_type_sizes (TREE_TYPE (decl));
+    gimplify_type_sizes (TREE_TYPE (decl), stmt_p);
 
   else if (TREE_CODE (decl) == VAR_DECL && !DECL_EXTERNAL (decl))
     {
       tree init = DECL_INITIAL (decl);
 
-      *stmt_p = NULL_TREE;
       gimplify_one_sizepos (&DECL_SIZE (decl), stmt_p);
       gimplify_one_sizepos (&DECL_SIZE_UNIT (decl), stmt_p);
 
@@ -508,8 +506,7 @@ gimplify_decl_stmt (tree *stmt_p)
 			   tree_cons (NULL_TREE, DECL_SIZE_UNIT (decl),
 				      NULL_TREE))));
 
-	  gimplify_stmt (&alloc_stmt);
-	  append_to_statement_list(alloc_stmt, stmt_p);
+	  gimplify_and_add (alloc_stmt, stmt_p);
 	  DECL_DEFER_OUTPUT (decl) = 1;
 	}
 
@@ -525,8 +522,7 @@ gimplify_decl_stmt (tree *stmt_p)
               
 	      DECL_INITIAL (decl) = NULL_TREE;
 	      init = build (MODIFY_EXPR, void_type_node, decl, init);
-	      gimplify_stmt (&init);
-	      append_to_statement_list (init, stmt_p);
+	      gimplify_and_add (init, stmt_p);
 	    }
 	  else
 	    /* We must still examine initializers for static variables
@@ -540,8 +536,6 @@ gimplify_decl_stmt (tree *stmt_p)
       if (DECL_ARTIFICIAL (decl) && DECL_NAME (decl) == NULL_TREE)
 	gimple_add_tmp_var (decl);
     }
-  else
-    *stmt_p = alloc_stmt_list ();
 
   return GS_ALL_DONE;
 }

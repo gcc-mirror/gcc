@@ -4280,11 +4280,11 @@ gnat_gimplify_stmt (tree *stmt_p)
       {
 	tree var = DECL_STMT_VAR (stmt);
 
+	*stmt_p = NULL_TREE;
 	if (TREE_CODE (var) == TYPE_DECL)
-	  *stmt_p = gimplify_type_sizes (TREE_TYPE (var));
+	  gimplify_type_sizes (TREE_TYPE (var), stmt_p);
 	else if (TREE_CODE (var) == VAR_DECL)
 	  {
-	    *stmt_p = NULL_TREE;
 	    gimplify_one_sizepos (&DECL_SIZE (var), stmt_p);
 	    gimplify_one_sizepos (&DECL_SIZE_UNIT (var), stmt_p);
 
@@ -4302,12 +4302,7 @@ gnat_gimplify_stmt (tree *stmt_p)
 					  NULL_TREE))),
 		   stmt_p);
 	      }
-
-	    if (*stmt_p == NULL_TREE)
-	      *stmt_p = alloc_stmt_list ();
 	  }
-	else
-	  *stmt_p = alloc_stmt_list ();
 	return GS_ALL_DONE;
       }
 

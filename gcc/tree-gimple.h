@@ -102,7 +102,7 @@ enum gimplify_status {
 
 extern enum gimplify_status gimplify_expr (tree *, tree *, tree *,
 					   bool (*) (tree), fallback_t);
-extern tree gimplify_type_sizes (tree);
+extern void gimplify_type_sizes (tree, tree *);
 extern void gimplify_one_sizepos (tree *, tree *);
 extern void gimplify_stmt (tree *);
 extern void gimplify_to_stmt_list (tree *);

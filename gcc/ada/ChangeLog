@@ -1,3 +1,7 @@
+2004-06-23  Richard Henderson  <rth@redhat.com>
+
+	* trans.c (gnat_gimplify_stmt): Update gimplify_type_sizes call.
+
 2004-06-20  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* decl.c (elaborate_expression, elaborate_expression_1): Arguments
