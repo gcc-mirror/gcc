@@ -1,3 +1,40 @@
+2004-06-16  Paolo Bonzini  <bonzini@gnu.org>
+
+	* toplev.h (rest_of_compilation): Adjust prototype.
+
+2004-06-16  Paolo Bonzini  <bonzini@gnu.org>
+
+	* coverage.c: Remove argument to rest_of_compilation.
+	* expr.c (execute_expand, set_save_expr_context, pass_expand): New.
+	* passes.c (rest_of_compilation): Remove argument.
+	(pass_rest_of_compilation): New.
+	(rest_of_handle_final, rest_of_handle_delay_slots,
+	rest_of_handle_stack_regs, rest_of_handle_variable_tracking
+	rest_of_handle_machine_reorg, rest_of_handle_regrename
+	rest_of_handle_sched, rest_of_handle_sched2, rest_of_handle_gcse2
+	rest_of_handle_regmove, rest_of_handle_tracer
+	rest_of_handle_if_conversion, rest_of_handle_if_after_combine
+	rest_of_handle_web, rest_of_handle_branch_prob
+	rest_of_handle_value_profile_transformations, rest_of_handle_cfg
+	rest_of_handle_addressof, rest_of_handle_jump_bypass
+	rest_of_handle_life, rest_of_handle_cse, rest_of_handle_cse2):
+	Check that the two arguments are actually superfluous.
+	* tree-optimize.c (register_dump_files): Add properties argument.
+	Track validity of passes.  Only initialize dump files for
+	tree-based passes.  Store the full set of provided passes in
+	the pass.
+	(init_tree_optimization_passes): Register pass_expand and
+	pass_rest_of_compilation.
+	(execute_one_pass): Do not track the presence of required properties
+	here.  Set in_gimple_form.  Do not update current_properties.
+	(current_properties): Remove.
+	(set_save_expr_context): Remove.
+	(tree_rest_of_compilation): Do not set in_gimple_form.  Do not
+	expand to RTL here, and do not call rest_of_compilation.  Push
+	GGC context even before gimplification.
+	* tree-pass.h (PROP_rtl, PROP_trees): New flags.
+	(pass_expand, pass_rest_of_compilation): Declare.
+
 2004-06-15  Jeff Law  <law@redhat.com>
 
 	* fold-const.c (swap_tree_comparison): No longer static.
