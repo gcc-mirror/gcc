@@ -1,3 +1,7 @@
+Thu Dec 19 23:44:09 2002  J"orn Rennecke <joern.rennecke@superh.com>
+
+	* sched-rgn.c (init_regions): Update comment.
+
 2002-12-19  David Edelsohn  <edelsohn@gnu.org>
 
 	* config/rs6000/rs6000.md (define_attr type): Remove altivec.
