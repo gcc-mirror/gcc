@@ -1,3 +1,14 @@
+Thu Mar 11 20:01:27 1999  David S. Miller  <davem@tanya.rutgers.edu>
+
+	* rtl.c (atoll): New function.
+	(read_rtx): Use atol/atoq based upon HOST_BITS_PER_WIDE_INT.
+	* genattrtab.c (write_test_expr): Use HOST_WIDE_INT_PRINT_DEC.
+	* genemit.c (gen_exp): Likewise.
+	* genpeep.c (match_rtx): Likewise.
+	* genrecog.c (write_tree_1): Likewise.
+	* c-lex.c (yyprint): Use HOST_WIDE_INT_PRINT_DOUBLE_HEX.
+	(yylex): Put casts in right place for args to build_int_2.
+
 Thu Mar 11 12:19:46 1999  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* tree.c (build_type_attribute_variant): Push to obstack of
