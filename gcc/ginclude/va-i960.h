@@ -48,7 +48,10 @@ __extension__						\
 
 #define	va_alist __builtin_va_alist
 #define	va_dcl	 char *__builtin_va_alist; __va_ellipsis
-#define	va_start(AP) ((AP)[1] = 0, *(AP) = (unsigned) &va_alist)
+#define	va_start(AP) \
+__extension__						\
+({ __asm__ ("st	g14,%0" : "=m" (*(AP)));		\
+   (AP)[1] = (__builtin_args_info (0) + __builtin_args_info (1)) * 4; })
 #endif
 
 /* We cast to void * and then to TYPE * because this avoids
