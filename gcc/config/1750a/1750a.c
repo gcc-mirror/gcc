@@ -125,25 +125,6 @@ function_arg (cum, mode, type, named)
 }
 
 
-#ifndef STRDUP
-char *
-strdup (str)
-     char *str;
-{
-  char *p;
-  if (str == NULL)
-    return NULL;
-  if ((p = (char *) malloc (strlen (str) + 1)) == NULL)
-    {
-      fprintf (stderr, "dynamic memory exhausted");
-      abort ();
-    }
-  return strcpy (p, str);
-}
-
-#endif
-
-
 double
 get_double (x)
      rtx x;
@@ -178,7 +159,7 @@ float_label (code, value)
 	(*p == '-') ? 'm' : *p;
       p++;
     }
-  return strdup (label);
+  return xstrdup (label);
 }
 
 
