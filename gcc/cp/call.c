@@ -3036,16 +3036,21 @@ build_conditional_expr (arg1, arg2, arg3)
      We need to force the lvalue-to-rvalue conversion here for class types,
      so we get TARGET_EXPRs; trying to deal with a COND_EXPR of class rvalues
      that isn't wrapped with a TARGET_EXPR plays havoc with exception
-     regions.  */
+     regions.
+
+     We use ocp_convert rather than build_user_type_conversion because the
+     latter returns NULL_TREE on failure, while the former gives an error.  */
 
   if (IS_AGGR_TYPE (TREE_TYPE (arg2)) && real_lvalue_p (arg2))
-    arg2 = build_user_type_conversion (TREE_TYPE (arg2), arg2, LOOKUP_NORMAL);
+    arg2 = ocp_convert (TREE_TYPE (arg2), arg2,
+			CONV_IMPLICIT|CONV_FORCE_TEMP, LOOKUP_NORMAL);
   else
     arg2 = decay_conversion (arg2);
   arg2_type = TREE_TYPE (arg2);
 
   if (IS_AGGR_TYPE (TREE_TYPE (arg3)) && real_lvalue_p (arg3))
-    arg3 = build_user_type_conversion (TREE_TYPE (arg3), arg3, LOOKUP_NORMAL);
+    arg3 = ocp_convert (TREE_TYPE (arg3), arg3,
+			CONV_IMPLICIT|CONV_FORCE_TEMP, LOOKUP_NORMAL);
   else
     arg3 = decay_conversion (arg3);
   arg3_type = TREE_TYPE (arg3);
