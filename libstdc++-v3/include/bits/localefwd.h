@@ -329,8 +329,7 @@ namespace std
       friend bool  
       has_facet(const locale&) throw();
 
-    //  private:
-  protected:
+  private:
     // Data Members.
     size_t 				_M_references;
     __vec_facet* 			_M_facets;
