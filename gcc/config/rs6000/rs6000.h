@@ -1960,6 +1960,18 @@ typedef struct rs6000_args
    
 #define LEGITIMIZE_RELOAD_ADDRESS(X,MODE,OPNUM,TYPE,IND_LEVELS,WIN)     \
 do {                                                                    \
+  /* We must recognize output that we have already generated ourselves.  */ \
+  if (GET_CODE (X) == PLUS						\
+      && GET_CODE (XEXP (X, 0)) == PLUS					\
+      && GET_CODE (XEXP (XEXP (X, 0), 0)) == REG			\
+      && GET_CODE (XEXP (XEXP (X, 0), 1)) == CONST_INT			\
+      && GET_CODE (XEXP (X, 1)) == CONST_INT)				\
+    {									\
+      push_reload (XEXP (X, 0), NULL_RTX, &XEXP (X, 0), NULL_PTR,       \
+                   BASE_REG_CLASS, GET_MODE (X), VOIDmode, 0, 0,        \
+                   OPNUM, TYPE);                                        \
+      goto WIN;                                                         \
+    }									\
   if (GET_CODE (X) == PLUS                                              \
       && GET_CODE (XEXP (X, 0)) == REG                                  \
       && REGNO (XEXP (X, 0)) < FIRST_PSEUDO_REGISTER                    \
