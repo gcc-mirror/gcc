@@ -1,3 +1,11 @@
+2004-11-20  Roger Sayle  <roger@eyesopen.com>
+	    Bruce Korb  <bkorb@gnu.org>
+
+	Synchronize with mainline
+	* fixinc/inclhack.def (alpha_pthread_init): New fix.
+	* fixinc/fixincl.x: Regenerate.
+	* fixinc/tests/base/pthread.h: Update for new test.
+
 2004-11-17  Ramana Radhakrishnan  <ramana.radhakrishnan@codito.com>
 
 	PR target/18263

@@ -705,6 +705,50 @@ fix = {
 		"#endif";
 };
 
+/*
+ * Compaq Tru64 v5.1 defines all of its PTHREAD_*_INITIALIZER macros
+ * incorrectly, specifying less fields in the initializers than are
+ * defined in the corresponding structure types.  Use of these macros
+ * in user code results in spurious warnings.
+ */
+fix = {
+    hackname  = alpha_pthread_init;
+    files     = pthread.h;
+    select    = ' \* @\(#\)\$' 'RCSfile: pthread\.h,v \$'
+                ' \$'  'Revision: 1\.1\.33\.21 \$ \(DEC\)'
+                ' \$'  'Date: 2000/08/15 15:30:13 \$';
+    mach      = "alpha*-dec-osf*";
+    sed       = "s@MVALID\\(.*\\)A}@MVALID\\1A, 0, 0, 0, 0, 0, 0 }@\n"
+                "s@MVALID\\(.*\\)_}@MVALID\\1_, 0, 0, 0, 0 }@\n"
+                "s@CVALID\\(.*\\)A}@CVALID\\1A, 0, 0, 0, 0 }@\n"
+                "s@CVALID\\(.*\\)_}@CVALID\\1_, 0, 0 }@\n"
+                "s@WVALID\\(.*\\)A}@WVALID\\1A, 0, 0, 0, 0, 0, 0, 0, 0, 0 }@\n"
+                "s@WVALID\\(.*\\)_}@WVALID\\1_, 0, 0, 0, 0, 0, 0, 0 }@\n";
+    test_text = "/*\n"
+                " * @(#)\\$"  "RCSfile: pthread.h,v \\$ \\$"
+                "Revision: 1.1.33.21 \\$ (DEC) \\$"
+                "Date: 2000/08/15 15:30:13 \\$\n"
+                " */\n"
+"#ifndef _PTHREAD_NOMETER_STATIC\n"
+"# define PTHREAD_MUTEX_INITIALIZER \\\n"
+"    {_PTHREAD_MSTATE_CONFIG, _PTHREAD_MVALID | _PTHREAD_MVF_STA}\n"
+"# define PTHREAD_COND_INITIALIZER \\\n"
+"    {_PTHREAD_CSTATE_SLOW, _PTHREAD_CVALID | _PTHREAD_CVF_STA}\n"
+"# define PTHREAD_MUTEX_INITWITHNAME_NP(_n_,_a_) \\\n"
+"    {_PTHREAD_MSTATE_CONFIG, _PTHREAD_MVALID | _PTHREAD_MVF_STA, _n_, _a_}\n"
+"# define PTHREAD_COND_INITWITHNAME_NP(_n_,_a_) \\\n"
+"    {_PTHREAD_CSTATE_SLOW, _PTHREAD_CVALID | _PTHREAD_CVF_STA, _n_, _a_}\n"
+"#else\n"
+"# define PTHREAD_MUTEX_INITIALIZER {0, _PTHREAD_MVALID | _PTHREAD_MVF_STA}\n"
+"# define PTHREAD_MUTEX_INITWITHNAME_NP(_n_,_a_) \\\n"
+"    {0, _PTHREAD_MVALID | _PTHREAD_MVF_STA, _n_, _a_}\n"
+"# define PTHREAD_COND_INITWITHNAME_NP(_n_,_a_) \\\n"
+"    {0, _PTHREAD_CVALID | _PTHREAD_CVF_STA, _n_, _a_}\n"
+"#endif\n\n"
+"#define PTHREAD_RWLOCK_INITIALIZER {_PTHREAD_RWVALID | _PTHREAD_RWVF_STA}\n"
+"#define PTHREAD_RWLOCK_INITWITHNAME_NP(_n_,_a_) \\\n"
+"        {_PTHREAD_RWVALID | _PTHREAD_RWVF_STA, _n_, _a_}\n";
+};
 
 /*
  *  Fix return value of sbrk in unistd.h on Alpha OSF/1 V2.0
