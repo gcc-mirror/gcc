@@ -1,5 +1,10 @@
 2004-12-14  Jakub Jelinek  <jakub@redhat.com>
 
+	PR middle-end/18951
+	* builtins.c (expand_builtin_mathfn, expand_builtin_mathfn_2,
+	expand_builtin_mathfn_3): Avoid using arguments passed to
+	save_expr after that call.
+
 	* fold-const.c (fold_single_bit_test): If flag_syntax_only, pretend
 	LOAD_EXTEND_OP is not defined.
 	(fold): Likewise.  If flag_syntax_only, don't depend on BITS_PER_WORD.
