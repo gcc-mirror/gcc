@@ -804,10 +804,13 @@ global_conflicts ()
 
 	      /* Mark any registers set in INSN and then never used.  */
 
-	      while (n_regs_set > 0)
-		if (find_regno_note (insn, REG_UNUSED,
-				     REGNO (regs_set[--n_regs_set])))
-		  mark_reg_death (regs_set[n_regs_set]);
+	      while (n_regs_set-- > 0)
+		{
+		  rtx note = find_regno_note (insn, REG_UNUSED,
+					      REGNO (regs_set[n_regs_set]));
+		  if (note)
+		    mark_reg_death (XEXP (note, 0));
+		}
 	    }
 
 	  if (insn == BLOCK_END (b))
