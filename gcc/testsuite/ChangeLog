@@ -1,3 +1,7 @@
+Wed Jan 12 20:26:58 2000  Jeffrey A Law  (law@cygnus.com)
+
+	* gcc.c-torture/execute/20000112-1.c: New test.
+
 2000-01-11  Alexandre Oliva  <oliva@lsd.ic.unicamp.br>
 
 	* gcc.dg/20000111-1.c: New test.
