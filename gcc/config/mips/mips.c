@@ -8069,6 +8069,9 @@ function_arg_pass_by_reference (cum, mode, type, named)
 {
   int size;
 
+  if (mips_abi == ABI_32 || mips_abi == ABI_O64)
+    return 0;
+
   /* We must pass by reference if we would be both passing in registers
      and the stack.  This is because any subsequent partial arg would be
      handled incorrectly in this case.
