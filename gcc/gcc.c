@@ -502,8 +502,8 @@ proper position among the other output files.  */
   "%{!shared:%{pg:gcrt0%O%s}%{!pg:%{p:mcrt0%O%s}%{!p:crt0%O%s}}}"
 #endif
 
-/* config.h can define SWITCHES_NEED_SPACES to control passing -o and -L.
-   Make the string nonempty to require spaces there.  */
+/* config.h can define SWITCHES_NEED_SPACES to control which options
+   require spaces between the option and the argument.  */
 #ifndef SWITCHES_NEED_SPACES
 #define SWITCHES_NEED_SPACES ""
 #endif
@@ -2946,11 +2946,15 @@ process_command (argc, argv)
 	      /* Null-terminate the vector.  */
 	      switches[n_switches].args[j] = 0;
 	    }
-	  else if (*switches_need_spaces != 0 && (c == 'o' || c == 'L'))
+	  else if (index (switches_need_spaces, c))
 	    {
-	      /* On some systems, ld cannot handle -o or -L without space.
-		 So split the -o or -L from its argument.  */
-	      switches[n_switches].part1 = (c == 'o' ? "o" : "L");
+	      /* On some systems, ld cannot handle some options without
+		 a space.  So split the option from its argument.  */
+	      char *part1 = (char *) xmalloc (2);
+	      part1[0] = c;
+	      part1[1] = '\0';
+	      
+	      switches[n_switches].part1 = part1;
 	      switches[n_switches].args = (char **) xmalloc (2 * sizeof (char *));
 	      switches[n_switches].args[0] = xmalloc (strlen (p));
 	      strcpy (switches[n_switches].args[0], &p[1]);
