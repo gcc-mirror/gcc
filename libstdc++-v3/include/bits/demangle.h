@@ -31,10 +31,8 @@
 #ifndef _DEMANGLER_H
 #define _DEMANGLER_H 1
 
-#include <limits>
 #include <vector>
 #include <string>
-#include <cctype>
 
 #ifndef _GLIBCXX_DEMANGLER_DEBUG
 #define _GLIBCXX_DEMANGLER_CWDEBUG 0
@@ -453,6 +451,14 @@ namespace __gnu_cxx
 	}
       }
 
+    // We don't want to depend on locale (or include <cctype> for that matter).
+    // We also don't want to use "safe-ctype.h" because that headerfile is not
+    // available to the users.
+    inline bool isdigit(char c) { return c >= '0' && c <= '9'; }
+    inline bool islower(char c) { return c >= 'a' && c <= 'z'; }
+    inline bool isupper(char c) { return c >= 'A' && c <= 'Z'; }
+    inline char tolower(char c) { return isupper(c) ? c - 'A' + 'a' : c; }
+
     //
     // <decimal-integer> ::= 0
     //                   ::= 1|2|3|4|5|6|7|8|9 [<digit>+]
@@ -468,7 +474,7 @@ namespace __gnu_cxx
 	  output += '0';
 	  eat_current();
 	}
-	else if (!std::isdigit(c))
+	else if (!isdigit(c))
 	  M_result = false;
 	else
 	{
@@ -476,7 +482,7 @@ namespace __gnu_cxx
 	  {
 	    output += c;
 	  }
-	  while (std::isdigit((c = next())));
+	  while (isdigit((c = next())));
 	}
 	return M_result;
       }
@@ -699,7 +705,7 @@ namespace __gnu_cxx
 	    default:
 	      for(;; c = next())
 	      {
-		if (std::isdigit(c))
+		if (isdigit(c))
 		  value = value * 36 + c - '0';
 		else if (isupper(c))
 		  value = value * 36 + c - 'A' + 10;
@@ -782,7 +788,7 @@ namespace __gnu_cxx
 	char c;
 	if ((c = next()) != '_')
 	{
-	  while(std::isdigit(c))
+	  while(isdigit(c))
 	  {
 	    value = value * 10 + c - '0';
 	    c = next();
@@ -1903,7 +1909,7 @@ namespace __gnu_cxx
 	int length = current() - '0';
 	if (length < 1 || length > 9)
 	  _GLIBCXX_DEMANGLER_FAILURE;
-	while(std::isdigit(next()))
+	while(isdigit(next()))
 	  length = 10 * length + current() - '0';
 	char const* ptr = &M_str[M_pos];
 	if (length > 11 && !strncmp(ptr, "_GLOBAL_", 8) && ptr[9] == 'N'
@@ -1932,7 +1938,7 @@ namespace __gnu_cxx
       session<Allocator>::decode_unqualified_name(string_type& output)
       {
 	_GLIBCXX_DEMANGLER_DOUT_ENTERING("decode_unqualified_name");
-	if (std::isdigit(current()))
+	if (isdigit(current()))
 	{
 	  if (!M_inside_template_args)
 	  {
@@ -2187,7 +2193,7 @@ namespace __gnu_cxx
 	    eat_current();
 	    if (!decode_type(first))
 	      _GLIBCXX_DEMANGLER_FAILURE;
-	    while(std::isdigit(current()))
+	    while(isdigit(current()))
 	      eat_current();
 	    if (eat_current() != '_')
 	      _GLIBCXX_DEMANGLER_FAILURE;
