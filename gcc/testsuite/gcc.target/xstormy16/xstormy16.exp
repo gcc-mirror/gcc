@@ -6,18 +6,37 @@ if {![istarget xstormy16-*-*]} {
 
 load_lib gcc-dg.exp
 
-# If a testcase doesn't have special options, use these.
-global DEFAULT_CFLAGS
-if ![info exists DEFAULT_CFLAGS] then {
-    set DEFAULT_CFLAGS " -ansi -pedantic-errors"
-}
-
 # Initialize `dg'.
 dg-init
 
+# Assemble the below100.S file which contains
+# support code for the rest of the tests.
+set old-dg-do-what-default "${dg-do-what-default}"
+set dg-do-what-default assemble
+dg-test -keep-output "$srcdir/$subdir/below100.S" "" ""
+set dg-do-what-default run
+
+
 # Main loop.
-dg-runtest [lsort [glob -nocomplain $srcdir/$subdir/*.\[cS\]]] \
-	"" $DEFAULT_CFLAGS
+foreach testcase [lsort [find $srcdir/$subdir *.c]] {
+    global test_counts;
+
+    set base "[file rootname [file tail $testcase]]"
+
+    if ![runtest_file_p $runtests $testcase] {
+        continue
+    }
+
+    set fails_before $test_counts(FAIL,count)
+    dg-test $testcase "--save-temps -fno-inline-functions -L$srcdir/$subdir" ""
+    set fails_after $test_counts(FAIL,count)
+
+    if { $fails_before == $fails_after } {
+        catch "exec rm -f $base.i $base.s $base.o"
+    }
+}
+
+set dg-do-what-default "${old-dg-do-what-default}"
 
 # All done.
 dg-finish

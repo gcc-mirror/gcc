@@ -1,3 +1,104 @@
+2004-12-08  Nick Clifton  <nickc@redhat.com>
+
+	* gcc.target/xstormy16/bss_below100: New directory containing tests.
+	* gcc.target/xstormy16/data_below100: Likewise.
+	* gcc.target/xstormy16/sfr: Likewise.
+	* gcc.target/xstormy16/below100.S: New test source file.
+	* gcc.target/xstormy16/below100.ld: New test linker script.
+	* gcc.target/xstormy16/xstormy16.exp: Run the new tests.
+	* gcc.target/xstormy16/below_100.c: Fix scan to allow for bn or
+	bp instructions.
+	* gcc.target/xstormy16/bp.c: Likewise.
+
+	* gcc.target/xstormy16/bss_below100: New files:
+	01_const_to_b100b.c, 02_const_to_b100w.c, 03_var_to_b100b.c,
+	04_var_to_b100w.c, 05_b100b_to_var.c, 06_b100w_to_var.c,
+	10_set_b100b_bit_0.c, 10_set_b100b_bit_7.c, 11_clr_b100b_bit_0.c,
+	11_clr_b100b_bit_7.c, 12_if1_b100b_bit_0.c, 12_if1_b100b_bit_3.c,
+	12_if1_b100b_bit_7.c, 13_if0_b100b_bit_0.c, 13_if0_b100b_bit_3.c,
+	13_if0_b100b_bit_7.c, 14_set_b100w_bit_0.c, 14_set_b100w_bit_7.c,
+	14_set_b100w_bit_8.c, 14_set_b100w_bit_f.c, 15_clr_b100w_bit_0.c,
+	15_clr_b100w_bit_7.c, 15_clr_b100w_bit_8.c, 15_clr_b100w_bit_f.c,
+	16_if1_b100w_bit_0.c, 16_if1_b100w_bit_3.c, 16_if1_b100w_bit_7.c,
+	16_if1_b100w_bit_8.c, 16_if1_b100w_bit_b.c, 16_if1_b100w_bit_f.c,
+	17_if0_b100w_bit_0.c, 17_if0_b100w_bit_3.c, 17_if0_b100w_bit_7.c,
+	17_if0_b100w_bit_8.c, 17_if0_b100w_bit_b.c, 17_if0_b100w_bit_f.c,
+	20_set_b100b_bitfield_0.c, 20_set_b100b_bitfield_7.c,
+	21_clr_b100b_bitfield_0.c, 21_clr_b100b_bitfield_7.c,
+	22_if1_b100b_bitfield_0.c, 22_if1_b100b_bitfield_3.c,
+	22_if1_b100b_bitfield_7.c, 23_if0_b100b_bitfield_0.c,
+	23_if0_b100b_bitfield_3.c, 23_if0_b100b_bitfield_7.c,
+	24_set_b100w_bitfield_0.c, 24_set_b100w_bitfield_7.c,
+	24_set_b100w_bitfield_8.c, 24_set_b100w_bitfield_f.c,
+	25_clr_b100w_bitfield_0.c, 25_clr_b100w_bitfield_7.c,
+	25_clr_b100w_bitfield_8.c, 25_clr_b100w_bitfield_f.c,
+	26_if1_b100w_bitfield_0.c, 26_if1_b100w_bitfield_3.c,
+	26_if1_b100w_bitfield_7.c, 26_if1_b100w_bitfield_8.c,
+	26_if1_b100w_bitfield_b.c, 26_if1_b100w_bitfield_f.c,
+	27_if0_b100w_bitfield_0.c, 27_if0_b100w_bitfield_3.c,
+	27_if0_b100w_bitfield_7.c, 27_if0_b100w_bitfield_8.c,
+	27_if0_b100w_bitfield_b.c, 27_if0_b100w_bitfield_f.c
+
+	* gcc.target/xstormy16/data_below100: New files:
+	01_const_to_b100b.c, 02_const_to_b100w.c, 03_var_to_b100b.c,
+	04_var_to_b100w.c, 05_b100b_to_var.c, 06_b100w_to_var.c,
+	10_set_b100b_bit_0.c, 10_set_b100b_bit_7.c, 11_clr_b100b_bit_0.c,
+	11_clr_b100b_bit_7.c, 12_if1_b100b_bit_0.c, 12_if1_b100b_bit_3.c,
+	12_if1_b100b_bit_7.c, 13_if0_b100b_bit_0.c, 13_if0_b100b_bit_3.c,
+	13_if0_b100b_bit_7.c, 14_set_b100w_bit_0.c, 14_set_b100w_bit_7.c,
+	14_set_b100w_bit_8.c, 14_set_b100w_bit_f.c, 15_clr_b100w_bit_0.c,
+	15_clr_b100w_bit_7.c, 15_clr_b100w_bit_8.c, 15_clr_b100w_bit_f.c,
+	16_if1_b100w_bit_0.c, 16_if1_b100w_bit_3.c, 16_if1_b100w_bit_7.c,
+	16_if1_b100w_bit_8.c, 16_if1_b100w_bit_b.c, 16_if1_b100w_bit_f.c,
+	17_if0_b100w_bit_0.c, 17_if0_b100w_bit_3.c, 17_if0_b100w_bit_7.c,
+	17_if0_b100w_bit_8.c, 17_if0_b100w_bit_b.c, 17_if0_b100w_bit_f.c,
+	20_set_b100b_bitfield_0.c, 20_set_b100b_bitfield_7.c,
+	21_clr_b100b_bitfield_0.c, 21_clr_b100b_bitfield_7.c,
+	22_if1_b100b_bitfield_0.c, 22_if1_b100b_bitfield_3.c,
+	22_if1_b100b_bitfield_7.c, 23_if0_b100b_bitfield_0.c,
+	23_if0_b100b_bitfield_3.c, 23_if0_b100b_bitfield_7.c,
+	24_set_b100w_bitfield_0.c, 24_set_b100w_bitfield_7.c,
+	24_set_b100w_bitfield_8.c, 24_set_b100w_bitfield_f.c,
+	25_clr_b100w_bitfield_0.c, 25_clr_b100w_bitfield_7.c,
+	25_clr_b100w_bitfield_8.c, 25_clr_b100w_bitfield_f.c,
+	26_if1_b100w_bitfield_0.c, 26_if1_b100w_bitfield_3.c,
+	26_if1_b100w_bitfield_7.c, 26_if1_b100w_bitfield_8.c,
+	26_if1_b100w_bitfield_b.c, 26_if1_b100w_bitfield_f.c,
+	27_if0_b100w_bitfield_0.c, 27_if0_b100w_bitfield_3.c,
+	27_if0_b100w_bitfield_7.c, 27_if0_b100w_bitfield_8.c,
+	27_if0_b100w_bitfield_b.c, 27_if0_b100w_bitfield_f.c
+
+	* gcc.target/xstormy16/sfr: New files:
+	01_const_to_sfrb.c, 02_const_to_sfrw.c, 03_var_to_sfrb.c,
+	04_var_to_sfrw.c, 05_sfrb_to_var.c, 06_sfrw_to_var.c,
+	10_set_sfrb_bit_0.c, 10_set_sfrb_bit_7.c, 11_clr_sfrb_bit_0.c,
+	11_clr_sfrb_bit_7.c, 12_if1_sfrb_bit_0.c, 12_if1_sfrb_bit_3.c,
+	12_if1_sfrb_bit_7.c, 13_if0_sfrb_bit_0.c, 13_if0_sfrb_bit_3.c,
+	13_if0_sfrb_bit_7.c, 14_set_sfrw_bit_0.c, 14_set_sfrw_bit_3.c,
+	14_set_sfrw_bit_7.c, 14_set_sfrw_bit_8.c, 14_set_sfrw_bit_b.c,
+	14_set_sfrw_bit_f.c, 15_clr_sfrw_bit_0.c, 15_clr_sfrw_bit_3.c,
+	15_clr_sfrw_bit_7.c, 15_clr_sfrw_bit_8.c, 15_clr_sfrw_bit_b.c,
+	15_clr_sfrw_bit_f.c, 16_if1_sfrw_bit_0.c, 16_if1_sfrw_bit_3.c,
+	16_if1_sfrw_bit_7.c, 16_if1_sfrw_bit_8.c, 16_if1_sfrw_bit_b.c,
+	16_if1_sfrw_bit_f.c, 17_if0_sfrw_bit_0.c, 17_if0_sfrw_bit_3.c,
+	17_if0_sfrw_bit_7.c, 17_if0_sfrw_bit_8.c, 17_if0_sfrw_bit_b.c,
+	17_if0_sfrw_bit_f.c, 20_set_sfrb_bitfield_0.c,
+	20_set_sfrb_bitfield_7.c, 21_clr_sfrb_bitfield_0.c,
+	21_clr_sfrb_bitfield_7.c, 22_if1_sfrb_bitfield_0.c,
+	22_if1_sfrb_bitfield_3.c, 22_if1_sfrb_bitfield_7.c,
+	23_if0_sfrb_bitfield_0.c, 23_if0_sfrb_bitfield_3.c,
+	23_if0_sfrb_bitfield_7.c, 24_set_sfrw_bitfield_0.c,
+	24_set_sfrw_bitfield_7.c, 24_set_sfrw_bitfield_8.c,
+	24_set_sfrw_bitfield_f.c, 25_clr_sfrw_bitfield_0.c,
+	25_clr_sfrw_bitfield_7.c, 25_clr_sfrw_bitfield_8.c,
+	25_clr_sfrw_bitfield_f.c, 26_if1_sfrw_bitfield_0.c,
+	26_if1_sfrw_bitfield_3.c, 26_if1_sfrw_bitfield_7.c,
+	26_if1_sfrw_bitfield_8.c, 26_if1_sfrw_bitfield_b.c,
+	26_if1_sfrw_bitfield_f.c, 27_if0_sfrw_bitfield_0.c,
+	27_if0_sfrw_bitfield_3.c, 27_if0_sfrw_bitfield_7.c,
+	27_if0_sfrw_bitfield_8.c, 27_if0_sfrw_bitfield_b.c,
+	27_if0_sfrw_bitfield_f.c
+
 2004-12-08  Kriang Lerdsuwanakij  <lerdsuwa@users.sourceforge.net>
 
 	PR c++/18100

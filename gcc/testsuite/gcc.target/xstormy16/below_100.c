@@ -1,7 +1,7 @@
 /* { dg-do compile } */
 /* { dg-options "-O2" } */
 /* { dg-final { scan-assembler "bn " } } */
-/* { dg-final { scan-assembler "bp " } } */
+/* { dg-final { scan-assembler "b\[np\] " } } */
 
 unsigned short   a_below __attribute__((__BELOW100__));
 unsigned short   b_below __attribute__((__BELOW100__));
