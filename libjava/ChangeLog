@@ -1,5 +1,10 @@
 2001-03-23  Per Bothner  <per@bothner.com>
 
+	* java/lang/natDouble.cc (parseDouble):  Cannot use errno to
+	check for errors, since we don't want to throw exception on
+	overflow/underflow.  Instead, trim whitespace, and then check that
+	_strtod_r uses up all the rest of the string.
+
 	* java/lang/natClass.cc (_Jv_IsAssignableFrom):  Checking the
 	ancestors array is invalid for interfaces, so do that *after*
 	check that the target type is not an interface.
