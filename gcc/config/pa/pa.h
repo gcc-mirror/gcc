@@ -465,8 +465,7 @@ do {								\
       for (i = 33; i < 88; i += 2) 		\
 	fixed_regs[i] = call_used_regs[i] = 1; 	\
     }						\
-  else if (TARGET_DISABLE_FPREGS		\
-	   || TARGET_SOFT_FLOAT)		\
+  if (TARGET_DISABLE_FPREGS || TARGET_SOFT_FLOAT)\
     {						\
       for (i = 32; i < 88; i++) 		\
 	fixed_regs[i] = call_used_regs[i] = 1; 	\
