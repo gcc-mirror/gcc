@@ -2559,13 +2559,7 @@ mangle_class_name_for_template (name, parms, arglist, ctx)
       if (TREE_CODE (ctx) == FUNCTION_DECL)
 	s = fndecl_as_string (ctx, 0);
       else if (TREE_CODE_CLASS (TREE_CODE (ctx)) == 't')
-	{
-	  /* We can't use a typedef type name here.  */
-	  ctx = build_type_variant (TYPE_MAIN_VARIANT (ctx),
-				    TYPE_READONLY (ctx),
-				    TYPE_VOLATILE (ctx));
-	  s = type_as_string (ctx, 0);
-	}
+	s = type_as_string_real (ctx, 0, 1);
       else
 	my_friendly_abort (0);
       cat (s);
@@ -2583,15 +2577,9 @@ mangle_class_name_for_template (name, parms, arglist, ctx)
       if (i)
 	ccat (',');
 
-      /* We can't use a typedef type name here.  */
-      if (TREE_CODE_CLASS (TREE_CODE (arg)) == 't')
-	arg = build_type_variant (TYPE_MAIN_VARIANT (arg),
-				  TYPE_READONLY (arg),
-				  TYPE_VOLATILE (arg));
-
       if (TREE_CODE (parm) == TYPE_DECL)
 	{
-	  cat (type_as_string (arg, 0));
+	  cat (type_as_string_real (arg, 0, 1));
 	  continue;
 	}
       else if (TREE_CODE (parm) == TEMPLATE_DECL)
@@ -2602,7 +2590,7 @@ mangle_class_name_for_template (name, parms, arglist, ctx)
 	    cat (IDENTIFIER_POINTER (DECL_NAME (arg)));
 	  else
 	    /* Output the parameter declaration */
-	    cat (type_as_string (arg, 0));
+	    cat (type_as_string_real (arg, 0, 1));
 	  continue;
 	}
       else
