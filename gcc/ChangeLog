@@ -1,3 +1,8 @@
+Thu Nov  4 15:52:35 1999  Andrew Haley  <aph@cygnus.com>
+
+	* reload1.c (reload_reg_free_for_value_p): Don't use a register
+	that is in reload_reg_used.
+
 Tue Nov  9 16:43:00 1999  Nick Clifton  <nickc@cygnus.com>
 
 	* config/arm/arm-protos.h: New file: Prototypes for functions
