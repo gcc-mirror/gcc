@@ -129,16 +129,12 @@ copy_phis_to_block (basic_block new_bb, basic_block bb, edge e)
     }
 }
 
-/* Remove the last statement in block BB which must be a COND_EXPR or
-   SWITCH_EXPR.  Also remove all outgoing edges except the edge which
-   reaches DEST_BB.
-
-   This is only used by jump threading which knows the last statement in
-   BB should be a COND_EXPR or SWITCH_EXPR.  If the block ends with any other
-   statement, then we abort.  */
+/* Remove the last statement in block BB if it is a control statement
+   Also remove all outgoing edges except the edge which reaches DEST_BB.
+   If DEST_BB is NULL, then remove all outgoing edges.  */
 
 static void
-remove_last_stmt_and_useless_edges (basic_block bb, basic_block dest_bb)
+remove_ctrl_stmt_and_useless_edges (basic_block bb, basic_block dest_bb)
 {
   block_stmt_iterator bsi;
   edge e;
@@ -146,10 +142,16 @@ remove_last_stmt_and_useless_edges (basic_block bb, basic_block dest_bb)
 
   bsi = bsi_last (bb);
 
-  gcc_assert (TREE_CODE (bsi_stmt (bsi)) == COND_EXPR
-	      || TREE_CODE (bsi_stmt (bsi)) == SWITCH_EXPR);
+  /* If the duplicate ends with a control statement, then remove it.
 
-  bsi_remove (&bsi);
+     Note that if we are duplicating the template block rather than the
+     original basic block, then the duplicate might not have any real
+     statements in it.  */
+  if (!bsi_end_p (bsi)
+      && bsi_stmt (bsi)
+      && (TREE_CODE (bsi_stmt (bsi)) == COND_EXPR
+	  || TREE_CODE (bsi_stmt (bsi)) == SWITCH_EXPR))
+    bsi_remove (&bsi);
 
   for (ei = ei_start (bb->succs); (e = ei_safe_edge (ei)); )
     {
@@ -158,11 +160,6 @@ remove_last_stmt_and_useless_edges (basic_block bb, basic_block dest_bb)
       else
 	ei_next (&ei);
     }
-
-  /* BB now has a single outgoing edge. We need to update the flags for
-     that single outgoing edge.  */
-  EDGE_SUCC (bb, 0)->flags &= ~(EDGE_TRUE_VALUE | EDGE_FALSE_VALUE);
-  EDGE_SUCC (bb, 0)->flags |= EDGE_FALLTHRU;
 }
 
 /* Create a duplicate of BB which only reaches the destination of the edge
@@ -171,10 +168,6 @@ remove_last_stmt_and_useless_edges (basic_block bb, basic_block dest_bb)
 static void
 create_block_for_threading (basic_block bb, struct redirection_data *rd)
 {
-  tree phi;
-  edge e;
-  edge_iterator ei;
-
   /* We can use the generic block duplication code and simply remove
      the stuff we do not need.  */
   rd->dup_block = duplicate_block (bb, NULL);
@@ -184,25 +177,12 @@ create_block_for_threading (basic_block bb, struct redirection_data *rd)
   rd->dup_block->count = 0;
 
   /* The call to duplicate_block will copy everything, including the
-     useless COND_EXPR or SWITCH_EXPR at the end of the block.  We just remove
+     useless COND_EXPR or SWITCH_EXPR at the end of BB.  We just remove
      the useless COND_EXPR or SWITCH_EXPR here rather than having a
-     specialized block copier.  */
-  remove_last_stmt_and_useless_edges (rd->dup_block, rd->outgoing_edge->dest);
-
-  FOR_EACH_EDGE (e, ei, rd->dup_block->succs)
-    e->count = 0;
-
-  /* If there are any PHI nodes at the destination of the outgoing edge
-     from the duplicate block, then we will need to add a new argument
-     to them.  The argument should have the same value as the argument
-     associated with the outgoing edge stored in RD.  */
-  for (phi = phi_nodes (EDGE_SUCC (rd->dup_block, 0)->dest); phi;
-       phi = PHI_CHAIN (phi))
-    {
-      int indx = phi_arg_from_edge (phi, rd->outgoing_edge);
-      add_phi_arg (&phi, PHI_ARG_DEF_TREE (phi, indx),
-		   EDGE_SUCC (rd->dup_block, 0));
-    }
+     specialized block copier.  We also remove all outgoing edges
+     from the duplicate block.  The appropriate edge will be created
+     later.  */
+  remove_ctrl_stmt_and_useless_edges (rd->dup_block, NULL);
 }
 
 /* BB is a block which ends with a COND_EXPR or SWITCH_EXPR and when BB
@@ -241,6 +221,7 @@ thread_block (basic_block bb)
      redirect to a duplicate of BB.  */
   edge e;
   edge_iterator ei;
+  basic_block template_block;
 
   /* ALL indicates whether or not all incoming edges into BB should
      be threaded to a duplicate of BB.  */
@@ -293,11 +274,51 @@ thread_block (basic_block bb)
   /* Now create duplicates of BB.  Note that if all incoming edges are
      threaded, then BB is going to become unreachable.  In that case
      we use BB for one of the duplicates rather than wasting memory
-     duplicating BB.  Thus the odd starting condition for the loop.  */
+     duplicating BB.  Thus the odd starting condition for the loop.
+
+     Note that for a block with a high outgoing degree we can waste
+     a lot of time and memory creating and destroying useless edges.
+
+     So we first duplicate BB and remove the control structure at the
+     tail of the duplicate as well as all outgoing edges from the
+     duplicate.  We then use that duplicate block as a template for
+     the rest of the duplicates.  */
+  template_block = NULL;
   for (i = (all ? 1 : 0); i < VARRAY_ACTIVE_SIZE (redirection_data); i++)
     {
       struct redirection_data *rd = VARRAY_GENERIC_PTR (redirection_data, i);
-      create_block_for_threading (bb, rd);
+
+      if (template_block == NULL)
+	{
+	  create_block_for_threading (bb, rd);
+	  template_block = rd->dup_block;
+	}
+      else
+	{
+	  create_block_for_threading (template_block, rd);
+	}
+    }
+
+  /* Now created up edges from the duplicate blocks to their new
+     destinations.  Doing this as a separate loop after block creation
+     allows us to avoid creating lots of useless edges.  */
+  for (i = (all ? 1 : 0); i < VARRAY_ACTIVE_SIZE (redirection_data); i++)
+    {
+      struct redirection_data *rd = VARRAY_GENERIC_PTR (redirection_data, i);
+      tree phi;
+      edge e;
+
+      e = make_edge (rd->dup_block, rd->outgoing_edge->dest, EDGE_FALLTHRU);
+
+      /* If there are any PHI nodes at the destination of the outgoing edge
+	 from the duplicate block, then we will need to add a new argument
+	 to them.  The argument should have the same value as the argument
+	 associated with the outgoing edge stored in RD.  */
+      for (phi = phi_nodes (e->dest); phi; phi = PHI_CHAIN (phi))
+	{
+	  int indx = phi_arg_from_edge (phi, rd->outgoing_edge);
+	  add_phi_arg (&phi, PHI_ARG_DEF_TREE (phi, indx), e);
+	}
     }
 
   /* The loop above created the duplicate blocks (and the statements
@@ -375,7 +396,9 @@ thread_block (basic_block bb)
 		 EDGE_PRED (bb, 0)->src->index, bb->index,
 		 EDGE_SUCC (bb, 0)->dest->index);
 
-      remove_last_stmt_and_useless_edges (bb, rd->outgoing_edge->dest);
+      remove_ctrl_stmt_and_useless_edges (bb, rd->outgoing_edge->dest);
+      EDGE_SUCC (bb, 0)->flags &= ~(EDGE_TRUE_VALUE | EDGE_FALSE_VALUE);
+      EDGE_SUCC (bb, 0)->flags |= EDGE_FALLTHRU;
     }
 
   /* Done with this block.  Clear REDIRECTION_DATA.  */

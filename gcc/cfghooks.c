@@ -691,7 +691,7 @@ duplicate_block (basic_block bb, edge e)
 
   if (bb->count < new_count)
     new_count = bb->count;
-  gcc_assert (EDGE_COUNT (bb->preds) > 0);
+
 #ifdef ENABLE_CHECKING
   gcc_assert (can_duplicate_block_p (bb));
 #endif
