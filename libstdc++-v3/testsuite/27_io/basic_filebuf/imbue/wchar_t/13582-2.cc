@@ -33,14 +33,15 @@
 void test01()
 {
   bool test __attribute__((unused)) = true;
-  using namespace std; 
+  using namespace std;
+  using namespace __gnu_test;
 
   locale loc_en(__gnu_test::try_named_locale("en_US"));
   locale loc_fr(__gnu_test::try_named_locale("fr_FR"));
 
   const char* name = "tmp_fifo_13582-2";
   unlink(name);
-  mkfifo(name, S_IRWXU);
+  try_mkfifo(name, S_IRWXU);
   
   int child = fork();
   if (child == 0)
