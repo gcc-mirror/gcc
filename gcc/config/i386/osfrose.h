@@ -1,5 +1,5 @@
 /* Definitions of target machine for GNU compiler.
-   Encore Multimax (OSF/1 with OSF/rose) version.
+   Intel 386 (OSF/1 with OSF/rose) version.
    Copyright (C) 1991 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
