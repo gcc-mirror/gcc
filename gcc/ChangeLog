@@ -1,3 +1,25 @@
+2004-11-17  Jeff Law  <law@redhat.com>
+
+	* tree-cfg.c (edge_to_cases): Renamed from edge_to_case_leader.
+	(edge_to_cases_elt): Renamed from edge_to_case_leader.
+	(edge_to_cases_hash): Renamed from edge_to_case_leader_hash.
+	(edge_to_cases_eq): Renamed from edge_to_case_leader_eq.
+	(edge_to_cases_cleanup, recording_case_labels_p): New functions.
+	(get_cases_for_edge): New function.
+	(start_recording_case_labels, end_recording_case_labels): Similarly.
+	(record_switch_edge): Don't muck with the CASE_LABEL.  Instead
+	chain equivalent CASE_LABEL_EXPRs together.
+	(get_case_leader_for_edge, get_case_leader_for_edge_hash): Kill.
+	(make_switch_expr_edges): Do not record edge/cases here.
+	(cleanup_tree_cfg): Record cases around the call to thread_jumps.
+	(split_critical_edges): Record cases around the edge splitting code.
+	(cleanup_dead_labels): Use CASE_LABEL again.
+	(tree_redirect_edge_and_branch): If we have a mapping from edge
+	to cases, use it to handle redirections.  Else do it the slow way.
+	* tree.h (CASE_LEADER_OR_LABEL): Kill.
+	(CASE_LABEL): Revert to just looking at the tree's second operand.
+	* tree.c (get_case_label): Kill.
+
 2004-11-17  Diego Novillo  <dnovillo@redhat.com>
 
 	PR tree-optimization/18307

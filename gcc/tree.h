@@ -1231,15 +1231,7 @@ struct tree_vec GTY(())
    of a case label, respectively.  */
 #define CASE_LOW(NODE)          	TREE_OPERAND ((NODE), 0)
 #define CASE_HIGH(NODE)         	TREE_OPERAND ((NODE), 1)
-
-/* Operand 2 has two uses, it may either be a LABEL_DECL node or a
-   another CASE_LABEL_EXPR node.  This accessor gets direct access
-   to that operand.  Use it when you want to assign a value to
-   operand 2 or when you want to conditionalize actions based on
-   whether operand 2 is a LABEL_DECL or CASE_LABEL_EXPR.  */
-#define CASE_LEADER_OR_LABEL(NODE)	TREE_OPERAND ((NODE), 2)
-
-#define CASE_LABEL(NODE) get_case_label (NODE)
+#define CASE_LABEL(NODE)		TREE_OPERAND ((NODE), 2)
 
 /* The operands of a BIND_EXPR.  */
 #define BIND_EXPR_VARS(NODE) (TREE_OPERAND (BIND_EXPR_CHECK (NODE), 0))
