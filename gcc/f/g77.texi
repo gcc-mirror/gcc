@@ -10921,7 +10921,7 @@ How to cope with such problems is well beyond the scope
 of this manual.
 
 However, users of Linux-based systems (such as GNU/Linux)
-should review @uref{http://www.bitwizard.nl/sig11}, a source
+should review @uref{http://www.bitwizard.nl/sig11/}, a source
 of detailed information on diagnosing hardware problems,
 by recognizing their common symptoms.
 
@@ -11335,13 +11335,13 @@ Goldberg, `What Every Computer Scientist Should Know About
 Floating-Point Arithmetic', Computing Surveys, 23, March 1991, pp.@:
 5-48.
 An online version is available at
-@uref{http://docs.sun.com},
+@uref{http://docs.sun.com/},
 and there is a supplemented version, in PostScript form, at
 @uref{http://www.validgh.com/goldberg/paper.ps}.
 
 Information related to the IEEE 754
 floating-point standard by a leading light can be found at
-@uref{http://http.cs.berkeley.edu/%7Ewkahan/ieee754status};
+@uref{http://http.cs.berkeley.edu/%7Ewkahan/ieee754status/};
 see also slides from the short course referenced from
 @uref{http://http.cs.berkeley.edu/%7Efateman/}.
 @uref{http://www.linuxsupportline.com/%7Ebillm/} has a brief
