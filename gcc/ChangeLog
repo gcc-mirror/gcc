@@ -1,3 +1,8 @@
+2004-09-03  Daniel Jacobowitz  <dan@debian.org>
+
+	* reload.c (find_reloads): Swap operand_loc pointers for
+	find_dummy_reload if we have swapped two operands.
+
 2004-09-03  Hans-Peter Nilsson  <hp@axis.com>
 
 	* config/cris/cris.h (ASM_OUTPUT_CASE_END): Use prev_nonnote_insn
