@@ -1,3 +1,8 @@
+2003-10-24  Kriang Lerdsuwanakij  <lerdsuwa@users.sourceforge.net>
+
+	PR c++/11076
+	* g++.dg/template/crash13.C: New test.
+
 2003-10-24  Joseph S. Myers  <jsm@polyomino.org.uk>
 
 	* gcc.dg/c99-restrict-2.c: New test.

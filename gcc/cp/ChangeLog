@@ -1,3 +1,10 @@
+2003-10-24  Kriang Lerdsuwanakij  <lerdsuwa@users.sourceforge.net>
+
+	PR c++/11076
+	* class.c (handle_using_decl): Swap arguments of error_not_base_type.
+	* parser.c (cp_parser_direct_declarator): Only resolve typename for
+	namespace scope declarations.
+
 2003-10-24  Nathan Sidwell  <nathan@codesourcery.com>
 
 	PR c++/12698, c++/12699, c++/12700, c++/12566
