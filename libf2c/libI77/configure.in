@@ -1,5 +1,5 @@
 # Process this file with autoconf to produce a configure script.
-#   Copyright (C) 1995, 1997, 1998 Free Software Foundation, Inc.
+#   Copyright (C) 1995, 1997, 1998, 2001 Free Software Foundation, Inc.
 #   Contributed by Dave Love (d.love@dl.ac.uk).
 #
 #This file is part of GNU Fortran.
@@ -21,6 +21,7 @@
 
 AC_PREREQ(2.12.1)
 AC_INIT(ftell_.c)
+AC_CONFIG_HEADER(config.h)
 
 dnl Checks for programs.
 
@@ -192,6 +193,8 @@ fi
 
 # This EOF_CHAR is a misfeature on unix.
 AC_DEFINE(NO_EOF_CHAR_CHECK)
+
+AC_TYPE_OFF_T
 
 AC_DEFINE(Skip_f2c_Undefs)
 
