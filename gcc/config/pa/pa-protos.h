@@ -174,6 +174,7 @@ extern void pa_asm_output_aligned_common (FILE *, const char *,
 extern void pa_asm_output_aligned_local (FILE *, const char *,
 					 unsigned HOST_WIDE_INT,
 					 unsigned int);
+extern void pa_hpux_asm_output_external (FILE *, tree, const char *);
 
 /* Functions in varasm.c used by pa.c.  */
 extern void som_readonly_data_section (void);

@@ -1,3 +1,27 @@
+2005-03-05  John David Anglin  <dave.danglin@nrc-cnrc.gc.ca>
+	    Joseph S. Myers  <joseph@codesourcery.com>
+
+	PR c++/19797
+	* elf.h, pa64-hpux.h, som.h (ASM_OUTPUT_EXTERNAL_REAL): Define.
+	(ASM_OUTPUT_EXTERNAL): Call pa_hpux_asm_output_external.
+	* pa-protos.h (pa_hpux_asm_output_external): Add prototype.
+	* pa.c (get_plabel): Change argument to symbol_ref.  Call
+	maybe_get_identifier instead of get_identifier.
+	(pa_hpux_asm_output_external, pa_hpux_file_end): New functions.
+	(struct deferred_plabel): Replace name field with symbol field.
+	(TARGET_ASM_FILE_END): Define as pa_hpux_file_end if
+	ASM_OUTPUT_EXTERNAL_REAL is defined.
+	(output_global_address): Use output_addr_const for output of all
+	symbol_refs.
+	(output_deferred_plabels): Use symbol_ref instead of name for address
+	output.
+	* pa.h (SYMBOL_FLAG_REFERENCED, SYMBOL_REF_REFERENCED_P,
+	ASM_OUTPUT_SYMBOL_REF): New macros.
+	* som.h (ASM_OUTPUT_EXTERNAL_LIBCALL): Use assemble_name_raw.  Update
+	comment.
+	(ASM_WEAKEN_LABEL): Use targetm.asm_out.globalize_label to globalize
+	label.
+
 2005-03-04  Andrew Haley  <aph@redhat.com>
 
 	* unwind-dw2-fde-glibc.c (struct

@@ -1262,6 +1262,13 @@ extern int may_call_alloca;
 	     || cint_ok_for_move (INTVAL (X))))			\
    && !function_label_operand (X, VOIDmode))
 
+/* Target flags set on a symbol_ref.  */
+
+/* Set by ASM_OUTPUT_SYMBOL_REF when a symbol_ref is output.  */
+#define SYMBOL_FLAG_REFERENCED (1 << SYMBOL_FLAG_MACH_DEP_SHIFT)
+#define SYMBOL_REF_REFERENCED_P(RTX) \
+  ((SYMBOL_REF_FLAGS (RTX) & SYMBOL_FLAG_REFERENCED) != 0)
+
 /* Subroutines for EXTRA_CONSTRAINT.
 
    Return 1 iff OP is a pseudo which did not get a hard register and
@@ -1952,6 +1959,14 @@ forget_section (void)							\
     else				\
       fputs (user_label_prefix, FILE);	\
     fputs (xname, FILE);		\
+  } while (0)
+
+/* This how we output the symbol_ref X.  */
+
+#define ASM_OUTPUT_SYMBOL_REF(FILE,X) \
+  do {                                                 \
+    SYMBOL_REF_FLAGS (X) |= SYMBOL_FLAG_REFERENCED;    \
+    assemble_name (FILE, XSTR (X, 0));                 \
   } while (0)
 
 /* This is how to store into the string LABEL
