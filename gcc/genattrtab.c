@@ -102,9 +102,9 @@ Boston, MA 02111-1307, USA.  */
 #else
 #include <varargs.h>
 #endif
+#include <stdio.h>
 #include "rtl.h"
 #include "insn-config.h"	/* For REGISTER_CONSTRAINTS */
-#include <stdio.h>
 
 #ifndef VMS
 #ifndef USG
@@ -5674,6 +5674,7 @@ from the machine description file `md'.  */\n\n");
     expand_units ();
 
   printf ("#include \"config.h\"\n");
+  printf ("#include <stdio.h>\n");
   printf ("#include \"rtl.h\"\n");
   printf ("#include \"insn-config.h\"\n");
   printf ("#include \"recog.h\"\n");
