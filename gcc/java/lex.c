@@ -532,6 +532,16 @@ java_read_unicode (lex, unicode_escape_p)
         {
 	  unicode_t unicode = 0;
 	  int shift = 12;
+
+	  /* Recognize any number of `u's in \u.  */
+	  while ((c = java_read_char (lex)) == 'u')
+	    ;
+
+	  /* Unget the most recent character as it is not a `u'.  */
+	  if (c == UEOF)
+	    return UEOF;
+	  lex->unget_value = c;
+
 	  /* Next should be 4 hex digits, otherwise it's an error.
 	     The hex value is converted into the unicode, pushed into
 	     the Unicode stream.  */
@@ -543,11 +553,6 @@ java_read_unicode (lex, unicode_escape_p)
 		unicode |= (unicode_t)((c-'0') << shift);
 	      else if ((c >= 'a' && c <= 'f') || (c >= 'A' && c <= 'F'))
 	        unicode |= (unicode_t)((10+(c | 0x20)-'a') << shift);
-	      else if (c == 'u')
-		{
-		  /* Recognize any number of u in \u.  */
-		  shift += 4;
-		}
 	      else
 		java_lex_error ("Non hex digit in Unicode escape sequence", 0);
 	    }

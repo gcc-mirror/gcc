@@ -1,5 +1,9 @@
 2001-03-20  Tom Tromey  <tromey@redhat.com>
 
+	* lex.c (java_read_unicode): Only accept leading `u's.
+
+2001-03-20  Tom Tromey  <tromey@redhat.com>
+
 	* jcf-parse.c (read_class): Initialize `class'.
 
 2001-03-20  Matt Kraai  <kraai@alumni.carnegiemellon.edu>
