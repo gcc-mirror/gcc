@@ -251,6 +251,10 @@ rest_of_decl_compilation (tree decl,
       debug_hooks->type_decl (decl, !top_level);
       timevar_pop (TV_SYMOUT);
     }
+
+  /* Let cgraph know about the existance of variables.  */
+  if (TREE_CODE (decl) == VAR_DECL && !DECL_EXTERNAL (decl))
+    cgraph_varpool_node (decl);
 }
 
 /* Called after finishing a record, union or enumeral type.  */

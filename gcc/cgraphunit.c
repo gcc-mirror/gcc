@@ -680,6 +680,8 @@ cgraph_finalize_compilation_unit (void)
 {
   struct cgraph_node *node;
 
+  finish_aliases_1 ();
+
   if (!flag_unit_at_a_time)
     {
       cgraph_assemble_pending_functions ();
