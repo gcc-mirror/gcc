@@ -2,7 +2,7 @@
    contain debugging information specified by the GNU compiler
    in the form of comments (the mips assembler does not support
    assembly access to debug information).
-   Copyright (C) 1991, 1993, 1994 Free Software Foundation, Inc.
+   Copyright (C) 1991, 1993, 1994. 1995 Free Software Foundation, Inc.
    Contributed by Michael Meissner, meissner@osf.org
    
 This file is part of GNU CC.
@@ -671,8 +671,8 @@ extern PTR_T	xrealloc	__proto((PTR_T, Size_t));
 extern void	xfree		__proto((PTR_T));
 
 #ifdef HAVE_VPRINTF
-extern void	fatal		PVPROTO((char *format, ...));
-extern void	error		PVPROTO((char *format, ...));
+extern void	fatal		PVPROTO((const char *format, ...));
+extern void	error		PVPROTO((const char *format, ...));
 #else
 /* We must not provide any prototype here, even if ANSI C.  */
 extern void	fatal		__proto(());
@@ -5606,7 +5606,7 @@ free_thead (ptr)
 
 /*VARARGS*/
 void
-fatal VPROTO((char *format, ...))
+fatal VPROTO((const char *format, ...))
 {
 #ifndef __STDC__
   char *format;
@@ -5636,7 +5636,7 @@ fatal VPROTO((char *format, ...))
 
 /*VARARGS*/
 void
-error VPROTO((char *format, ...))
+error VPROTO((const char *format, ...))
 {
 #ifndef __STDC__
   char *format;
