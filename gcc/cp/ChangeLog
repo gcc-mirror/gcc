@@ -1,3 +1,12 @@
+2003-11-14  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/12762
+	* parser.c (cp_parser_enclosed_template_argument_list): New
+	function.
+	(cp_parser_template_id): Use it.
+	(cp_parser_simple_type_specifier): Recognize invalid template
+	syntax.
+
 2003-11-14  Giovanni Bajo  <giovannibajo@libero.it>
 
         PR c++/2094
