@@ -1,5 +1,10 @@
 2003-03-12  Nathanael Nerode  <neroden@gcc.gnu.org>
 
+	* config/v850/lib1funcs.asm, config/v850/rtems.h,
+	config/v850/v850-c.c, config/v850/v850-protos.h,
+	config/v850/v850.c, config/v850/v850.h, config/v850/v850.md:
+	GCC, not GNU CC.
+
 	* config/vax/bsd.h, config/vax/elf.h, config/vax/netbsd-elf.h,
 	config/vax/netbsd.h, config/vax/openbsd.h, config/vax/openbsd1.h,
 	config/vax/ultrix.h, config/vax/vax-protos.h, config/vax/vax.c,
