@@ -121,15 +121,23 @@ byte_reg (x, b)
 
 /* Output assembly language to FILE for the operation OP with operand size
    SIZE to adjust the stack pointer.  */
-/* ??? FPED is currently unused.  */
 
 static void
-dosize (file, op, size, fped)
+dosize (file, op, size)
      FILE *file;
      char *op;
      unsigned int size;
-     int fped;
 {
+  /* On the h8300h, for sizes <= 8 bytes it is as good or
+     better to use adds/subs insns rather than add.l/sub.l
+     with an immediate value.   */
+  if (size > 4 && size <= 8 && TARGET_H8300H)
+    {
+      /* Crank the size down to <= 4 */
+      fprintf (file, "\t%ss\t#%d,sp\n", op, 4);
+      size -= 4;
+    }
+
   switch (size)
     {
     case 4:
@@ -208,7 +216,7 @@ function_prologue (file, size)
 	       h8_reg_names[FRAME_POINTER_REGNUM]);
 
       /* leave room for locals */
-      dosize (file, "sub", fsize, 1);
+      dosize (file, "sub", fsize);
 
       /* Push the rest of the registers */
       for (idx = 0; idx < FIRST_PSEUDO_REGISTER; idx++)
@@ -221,7 +229,7 @@ function_prologue (file, size)
     }
   else
     {
-      dosize (file, "sub", fsize, 0);
+      dosize (file, "sub", fsize);
       for (idx = 0; idx < FIRST_PSEUDO_REGISTER; idx++)
 	{
 	  int regno = push_order[idx];
@@ -265,7 +273,7 @@ function_epilogue (file, size)
 	    fprintf (file, "\t%s\t%s\n", h8_pop_op, h8_reg_names[regno]);
 	}
       /* deallocate locals */
-      dosize (file, "add", fsize, 1);
+      dosize (file, "add", fsize);
       /* pop frame pointer */
       fprintf (file, "\t%s\t%s\n", h8_pop_op, h8_reg_names[FRAME_POINTER_REGNUM]);
     }
@@ -279,7 +287,7 @@ function_epilogue (file, size)
 	    fprintf (file, "\t%s\t%s\n", h8_pop_op, h8_reg_names[regno]);
 	}
       /* deallocate locals */
-      dosize (file, "add", fsize, 0);
+      dosize (file, "add", fsize;
     }
 
   if (interrupt_handler)
