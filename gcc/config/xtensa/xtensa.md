@@ -88,6 +88,11 @@
 			 (eq_attr "type" "fconv")
 			 "nothing")
 
+;; Include predicate definitions
+
+(include "predicates.md")
+
+
 ;; Addition.
 
 (define_expand "adddi3"

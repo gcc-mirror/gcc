@@ -545,29 +545,16 @@ extern enum reg_class xtensa_char_to_class[256];
 
    For Xtensa:
 
-   I = 12-bit signed immediate for movi
-   J = 8-bit signed immediate for addi
+   I = 12-bit signed immediate for MOVI
+   J = 8-bit signed immediate for ADDI
    K = 4-bit value in (b4const U {0})
    L = 4-bit value in b4constu
-   M = 7-bit value in simm7
-   N = 8-bit unsigned immediate shifted left by 8 bits for addmi
-   O = 4-bit value in ai4const
-   P = valid immediate mask value for extui */
+   M = 7-bit immediate value for MOVI.N
+   N = 8-bit unsigned immediate shifted left by 8 bits for ADDMI
+   O = 4-bit immediate for ADDI.N
+   P = valid immediate mask value for EXTUI */
 
-#define CONST_OK_FOR_LETTER_P(VALUE, C)					\
-  ((C) == 'I' ? (xtensa_simm12b (VALUE))				\
-   : (C) == 'J' ? (xtensa_simm8 (VALUE))				\
-   : (C) == 'K' ? (((VALUE) == 0) || xtensa_b4const (VALUE))		\
-   : (C) == 'L' ? (xtensa_b4constu (VALUE))				\
-   : (C) == 'M' ? (xtensa_simm7 (VALUE))				\
-   : (C) == 'N' ? (xtensa_simm8x256 (VALUE))				\
-   : (C) == 'O' ? (xtensa_ai4const (VALUE))				\
-   : (C) == 'P' ? (xtensa_mask_immediate (VALUE))			\
-   : FALSE)
-
-
-/* Similar, but for floating constants, and defining letters G and H.
-   Here VALUE is the CONST_DOUBLE rtx itself.  */
+#define CONST_OK_FOR_LETTER_P  xtensa_const_ok_for_letter_p
 #define CONST_DOUBLE_OK_FOR_LETTER_P(VALUE, C) (0)
 
 
@@ -591,15 +578,7 @@ extern enum reg_class xtensa_char_to_class[256];
    address will be checked anyway because of the code in
    GO_IF_LEGITIMATE_ADDRESS.  */
 
-#define EXTRA_CONSTRAINT(OP, CODE)					\
-  ((GET_CODE (OP) != MEM) ?						\
-       ((CODE) >= 'R' && (CODE) <= 'U'					\
-	&& reload_in_progress && GET_CODE (OP) == REG			\
-        && REGNO (OP) >= FIRST_PSEUDO_REGISTER)				\
-   : ((CODE) == 'R') ? smalloffset_mem_p (OP)				\
-   : ((CODE) == 'T') ? !TARGET_CONST16 && constantpool_mem_p (OP)	\
-   : ((CODE) == 'U') ? !constantpool_mem_p (OP)				\
-   : FALSE)
+#define EXTRA_CONSTRAINT  xtensa_extra_constraint
 
 #define PREFERRED_RELOAD_CLASS(X, CLASS)				\
   xtensa_preferred_reload_class (X, CLASS, 0)
@@ -1148,37 +1127,6 @@ typedef struct xtensa_args
 #define MEMORY_MOVE_COST(MODE, CLASS, IN) 4
 
 #define BRANCH_COST 3
-
-/* Optionally define this if you have added predicates to
-   'MACHINE.c'.  This macro is called within an initializer of an
-   array of structures.  The first field in the structure is the
-   name of a predicate and the second field is an array of rtl
-   codes.  For each predicate, list all rtl codes that can be in
-   expressions matched by the predicate.  The list should have a
-   trailing comma.  */
-
-#define PREDICATE_CODES							\
-  {"add_operand",		{ REG, CONST_INT, SUBREG }},		\
-  {"arith_operand",		{ REG, CONST_INT, SUBREG }},		\
-  {"nonimmed_operand",		{ REG, SUBREG, MEM }},			\
-  {"mem_operand",		{ MEM }},				\
-  {"mask_operand",		{ REG, CONST_INT, SUBREG }},		\
-  {"extui_fldsz_operand",	{ CONST_INT }},				\
-  {"sext_fldsz_operand",	{ CONST_INT }},				\
-  {"lsbitnum_operand",		{ CONST_INT }},				\
-  {"fpmem_offset_operand",	{ CONST_INT }},				\
-  {"sext_operand",		{ REG, SUBREG, MEM }},			\
-  {"branch_operand",		{ REG, CONST_INT, SUBREG }},		\
-  {"ubranch_operand",		{ REG, CONST_INT, SUBREG }},		\
-  {"call_insn_operand",		{ CONST_INT, CONST, SYMBOL_REF, REG }},	\
-  {"move_operand",		{ REG, SUBREG, MEM, CONST_INT, CONST_DOUBLE, \
-				  CONST, SYMBOL_REF, LABEL_REF }},	\
-  {"const_float_1_operand",	{ CONST_DOUBLE }},			\
-  {"branch_operator",		{ EQ, NE, LT, GE }},			\
-  {"ubranch_operator",		{ LTU, GEU }},				\
-  {"boolean_operator",		{ EQ, NE }},
-
-/* Control the assembler format that we output.  */
 
 /* How to refer to registers in assembler output.
    This sequence is indexed by compiler's hard-register-number (see above).  */

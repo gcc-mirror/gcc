@@ -1,5 +1,5 @@
 /* Subroutines for insn-output.c for Tensilica's Xtensa architecture.
-   Copyright 2001, 2002, 2003, 2004 Free Software Foundation, Inc.
+   Copyright 2001, 2002, 2003, 2004, 2005 Free Software Foundation, Inc.
    Contributed by Bob Wilson (bwilson@tensilica.com) at Tensilica.
 
 This file is part of GCC.
@@ -192,7 +192,6 @@ enum reg_class xtensa_char_to_class[256] =
   NO_REGS,	NO_REGS,	NO_REGS,	NO_REGS,
 };
 
-static int b4const_or_zero (int);
 static enum internal_test map_test_to_internal_test (enum rtx_code);
 static rtx gen_int_relational (enum rtx_code, rtx, rtx, int *);
 static rtx gen_float_relational (enum rtx_code, rtx, rtx);
@@ -270,52 +269,50 @@ struct gcc_target targetm = TARGET_INITIALIZER;
  * Functions to test Xtensa immediate operand validity.
  */
 
-int
-xtensa_b4constu (int v)
+bool
+xtensa_simm8 (HOST_WIDE_INT v)
 {
-  switch (v)
-    {
-    case 32768:
-    case 65536:
-    case 2:
-    case 3:
-    case 4:
-    case 5:
-    case 6:
-    case 7:
-    case 8:
-    case 10:
-    case 12:
-    case 16:
-    case 32:
-    case 64:
-    case 128:
-    case 256:
-      return 1;
-    }
-  return 0;
+  return v >= -128 && v <= 127;
 }
 
-int
-xtensa_simm8x256 (int v)
+
+bool
+xtensa_simm8x256 (HOST_WIDE_INT v)
 {
   return (v & 255) == 0 && (v >= -32768 && v <= 32512);
 }
 
-int
-xtensa_ai4const (int v)
+
+bool
+xtensa_simm12b (HOST_WIDE_INT v)
 {
-  return (v == -1 || (v >= 1 && v <= 15));
+  return v >= -2048 && v <= 2047;
 }
 
-int
-xtensa_simm7 (int v)
+
+static bool
+xtensa_uimm8 (HOST_WIDE_INT v)
 {
-  return v >= -32 && v <= 95;
+  return v >= 0 && v <= 255;
 }
 
-int
-xtensa_b4const (int v)
+
+static bool
+xtensa_uimm8x2 (HOST_WIDE_INT v)
+{
+  return (v & 1) == 0 && (v >= 0 && v <= 510);
+}
+
+
+static bool
+xtensa_uimm8x4 (HOST_WIDE_INT v)
+{
+  return (v & 3) == 0 && (v >= 0 && v <= 1020);
+}
+
+
+static bool
+xtensa_b4const (HOST_WIDE_INT v)
 {
   switch (v)
     {
@@ -335,51 +332,83 @@ xtensa_b4const (int v)
     case 64:
     case 128:
     case 256:
-      return 1;
+      return true;
     }
-  return 0;
+  return false;
 }
 
-int
-xtensa_simm8 (int v)
+
+bool
+xtensa_b4const_or_zero (HOST_WIDE_INT v)
 {
-  return v >= -128 && v <= 127;
+  if (v == 0)
+    return true;
+  return xtensa_b4const (v);
 }
 
-int
-xtensa_tp7 (int v)
+
+bool
+xtensa_b4constu (HOST_WIDE_INT v)
 {
-  return (v >= 7 && v <= 22);
+  switch (v)
+    {
+    case 32768:
+    case 65536:
+    case 2:
+    case 3:
+    case 4:
+    case 5:
+    case 6:
+    case 7:
+    case 8:
+    case 10:
+    case 12:
+    case 16:
+    case 32:
+    case 64:
+    case 128:
+    case 256:
+      return true;
+    }
+  return false;
 }
 
-int
-xtensa_lsi4x4 (int v)
+
+bool
+xtensa_mask_immediate (HOST_WIDE_INT v)
 {
-  return (v & 3) == 0 && (v >= 0 && v <= 60);
+#define MAX_MASK_SIZE 16
+  int mask_size;
+
+  for (mask_size = 1; mask_size <= MAX_MASK_SIZE; mask_size++)
+    {
+      if ((v & 1) == 0)
+	return false;
+      v = v >> 1;
+      if (v == 0)
+	return true;
+    }
+
+  return false;
 }
 
-int
-xtensa_simm12b (int v)
-{
-  return v >= -2048 && v <= 2047;
-}
 
-int
-xtensa_uimm8 (int v)
+bool
+xtensa_const_ok_for_letter_p (HOST_WIDE_INT v, int c)
 {
-  return v >= 0 && v <= 255;
-}
-
-int
-xtensa_uimm8x2 (int v)
-{
-  return (v & 1) == 0 && (v >= 0 && v <= 510);
-}
-
-int
-xtensa_uimm8x4 (int v)
-{
-  return (v & 3) == 0 && (v >= 0 && v <= 1020);
+  switch (c)
+    {
+    case 'I': return xtensa_simm12b (v);
+    case 'J': return xtensa_simm8 (v);
+    case 'K': return (v == 0 || xtensa_b4const (v));
+    case 'L': return xtensa_b4constu (v);
+    case 'M': return (v >= -32 && v <= 95);
+    case 'N': return xtensa_simm8x256 (v);
+    case 'O': return (v == -1 || (v >= 1 && v <= 15));
+    case 'P': return xtensa_mask_immediate (v);
+    default: break;
+    }
+  return false;
 }
 
 
@@ -406,52 +435,6 @@ xt_true_regnum (rtx x)
                                            SUBREG_BYTE (x), GET_MODE (x));
     }
   return -1;
-}
-
-
-int
-add_operand (rtx op, enum machine_mode mode)
-{
-  if (GET_CODE (op) == CONST_INT)
-    return (xtensa_simm8 (INTVAL (op)) || xtensa_simm8x256 (INTVAL (op)));
-
-  return register_operand (op, mode);
-}
-
-
-int
-arith_operand (rtx op, enum machine_mode mode)
-{
-  if (GET_CODE (op) == CONST_INT)
-    return xtensa_simm8 (INTVAL (op));
-
-  return register_operand (op, mode);
-}
-
-
-int
-nonimmed_operand (rtx op, enum machine_mode mode)
-{
-  /* We cannot use the standard nonimmediate_operand() predicate because
-     it includes constant pool memory operands.  */
-
-  if (memory_operand (op, mode))
-    return !constantpool_address_p (XEXP (op, 0));
-
-  return register_operand (op, mode);
-}
-
-
-int
-mem_operand (rtx op, enum machine_mode mode)
-{
-  /* We cannot use the standard memory_operand() predicate because
-     it includes constant pool memory operands.  */
-
-  if (memory_operand (op, mode))
-    return !constantpool_address_p (XEXP (op, 0));
-
-  return FALSE;
 }
 
 
@@ -485,165 +468,6 @@ xtensa_valid_move (enum machine_mode mode, rtx *operands)
 
 
 int
-mask_operand (rtx op, enum machine_mode mode)
-{
-  if (GET_CODE (op) == CONST_INT)
-    return xtensa_mask_immediate (INTVAL (op));
-
-  return register_operand (op, mode);
-}
-
-
-int
-extui_fldsz_operand (rtx op, enum machine_mode mode ATTRIBUTE_UNUSED)
-{
-  return ((GET_CODE (op) == CONST_INT)
-	  && xtensa_mask_immediate ((1 << INTVAL (op)) - 1));
-}
-
-
-int
-sext_operand (rtx op, enum machine_mode mode)
-{
-  if (TARGET_SEXT)
-    return nonimmed_operand (op, mode);
-  return mem_operand (op, mode);
-}
-
-
-int
-sext_fldsz_operand (rtx op, enum machine_mode mode ATTRIBUTE_UNUSED)
-{
-  return ((GET_CODE (op) == CONST_INT) && xtensa_tp7 (INTVAL (op) - 1));
-}
-
-
-int
-lsbitnum_operand (rtx op, enum machine_mode mode ATTRIBUTE_UNUSED)
-{
-  if (GET_CODE (op) == CONST_INT)
-    {
-      return (BITS_BIG_ENDIAN
-	      ? (INTVAL (op) == BITS_PER_WORD-1)
-	      : (INTVAL (op) == 0));
-    }
-  return FALSE;
-}
-
-
-static int
-b4const_or_zero (int v)
-{
-  if (v == 0)
-    return TRUE;
-  return xtensa_b4const (v);
-}
-
-
-int
-branch_operand (rtx op, enum machine_mode mode)
-{
-  if (GET_CODE (op) == CONST_INT)
-    return b4const_or_zero (INTVAL (op));
-
-  return register_operand (op, mode);
-}
-
-
-int
-ubranch_operand (rtx op, enum machine_mode mode)
-{
-  if (GET_CODE (op) == CONST_INT)
-    return xtensa_b4constu (INTVAL (op));
-
-  return register_operand (op, mode);
-}
-
-
-int
-call_insn_operand (rtx op, enum machine_mode mode ATTRIBUTE_UNUSED)
-{
-  if ((GET_CODE (op) == REG)
-      && (op != arg_pointer_rtx)
-      && ((REGNO (op) < FRAME_POINTER_REGNUM)
-	  || (REGNO (op) > LAST_VIRTUAL_REGISTER)))
-    return TRUE;
-
-  if (CONSTANT_ADDRESS_P (op))
-    {
-      /* Direct calls only allowed to static functions with PIC.  */
-      if (flag_pic)
-	{
-	  tree callee, callee_sec, caller_sec;
-
-	  if (GET_CODE (op) != SYMBOL_REF
-	      || !SYMBOL_REF_LOCAL_P (op) || SYMBOL_REF_EXTERNAL_P (op))
-	    return FALSE;
-
-	  /* Don't attempt a direct call if the callee is known to be in
-	     a different section, since there's a good chance it will be
-	     out of range.  */
-
-	  if (flag_function_sections
-	      || DECL_ONE_ONLY (current_function_decl))
-	    return FALSE;
-	  caller_sec = DECL_SECTION_NAME (current_function_decl);
-	  callee = SYMBOL_REF_DECL (op);
-	  if (callee)
-	    {
-	      if (DECL_ONE_ONLY (callee))
-		return FALSE;
-	      callee_sec = DECL_SECTION_NAME (callee);
-	      if (((caller_sec == NULL_TREE) ^ (callee_sec == NULL_TREE))
-		  || (caller_sec != NULL_TREE
-		      && strcmp (TREE_STRING_POINTER (caller_sec),
-				 TREE_STRING_POINTER (callee_sec)) != 0))
-		return FALSE;
-	    }
-	  else if (caller_sec != NULL_TREE)
-	    return FALSE;
-	}
-      return TRUE;
-    }
-
-  return FALSE;
-}
-
-
-int
-move_operand (rtx op, enum machine_mode mode)
-{
-  if (register_operand (op, mode)
-      || memory_operand (op, mode))
-    return TRUE;
-
-  switch (mode)
-    {
-    case DFmode:
-    case SFmode:
-      return TARGET_CONST16 && CONSTANT_P (op);
-
-    case DImode:
-    case SImode:
-      if (TARGET_CONST16)
-	return CONSTANT_P (op);
-      /* Fall through.  */
-
-    case HImode:
-    case QImode:
-      if (GET_CODE (op) == CONST_INT && xtensa_simm12b (INTVAL (op)))
-	return TRUE;
-      break;
-
-    default:
-      break;
-    }
-
-  return FALSE;
-}
-
-
-int
 smalloffset_mem_p (rtx op)
 {
   if (GET_CODE (op) == MEM)
@@ -654,11 +478,14 @@ smalloffset_mem_p (rtx op)
       if (GET_CODE (addr) == PLUS)
 	{
 	  rtx offset = XEXP (addr, 0);
+	  HOST_WIDE_INT val;
 	  if (GET_CODE (offset) != CONST_INT)
 	    offset = XEXP (addr, 1);
 	  if (GET_CODE (offset) != CONST_INT)
 	    return FALSE;
-	  return xtensa_lsi4x4 (INTVAL (offset));
+
+	  val = INTVAL (offset);
+	  return (val & 3) == 0 && (val >= 0 && val <= 60);
 	}
     }
   return FALSE;
@@ -704,46 +531,6 @@ constantpool_mem_p (rtx op)
 }
 
 
-/* Accept the floating point constant 1 in the appropriate mode.  */
-
-int
-const_float_1_operand (rtx op, enum machine_mode mode)
-{
-  REAL_VALUE_TYPE d;
-  static REAL_VALUE_TYPE onedf;
-  static REAL_VALUE_TYPE onesf;
-  static int one_initialized;
-
-  if ((GET_CODE (op) != CONST_DOUBLE)
-      || (mode != GET_MODE (op))
-      || (mode != DFmode && mode != SFmode))
-    return FALSE;
-
-  REAL_VALUE_FROM_CONST_DOUBLE (d, op);
-
-  if (! one_initialized)
-    {
-      onedf = REAL_VALUE_ATOF ("1.0", DFmode);
-      onesf = REAL_VALUE_ATOF ("1.0", SFmode);
-      one_initialized = TRUE;
-    }
-
-  if (mode == DFmode)
-    return REAL_VALUES_EQUAL (d, onedf);
-  else
-    return REAL_VALUES_EQUAL (d, onesf);
-}
-
-
-int
-fpmem_offset_operand (rtx op, enum machine_mode mode ATTRIBUTE_UNUSED)
-{
-  if (GET_CODE (op) == CONST_INT)
-    return xtensa_mem_offset (INTVAL (op), SFmode);
-  return 0;
-}
-
-
 void
 xtensa_extend_reg (rtx dst, rtx src)
 {
@@ -759,82 +546,7 @@ xtensa_extend_reg (rtx dst, rtx src)
 }
 
 
-int
-branch_operator (rtx x, enum machine_mode mode)
-{
-  if (GET_MODE (x) != mode)
-    return FALSE;
-
-  switch (GET_CODE (x))
-    {
-    case EQ:
-    case NE:
-    case LT:
-    case GE:
-      return TRUE;
-    default:
-      break;
-    }
-  return FALSE;
-}
-
-
-int
-ubranch_operator (rtx x, enum machine_mode mode)
-{
-  if (GET_MODE (x) != mode)
-    return FALSE;
-
-  switch (GET_CODE (x))
-    {
-    case LTU:
-    case GEU:
-      return TRUE;
-    default:
-      break;
-    }
-  return FALSE;
-}
-
-
-int
-boolean_operator (rtx x, enum machine_mode mode)
-{
-  if (GET_MODE (x) != mode)
-    return FALSE;
-
-  switch (GET_CODE (x))
-    {
-    case EQ:
-    case NE:
-      return TRUE;
-    default:
-      break;
-    }
-  return FALSE;
-}
-
-
-int
-xtensa_mask_immediate (int v)
-{
-#define MAX_MASK_SIZE 16
-  int mask_size;
-
-  for (mask_size = 1; mask_size <= MAX_MASK_SIZE; mask_size++)
-    {
-      if ((v & 1) == 0)
-	return FALSE;
-      v = v >> 1;
-      if (v == 0)
-	return TRUE;
-    }
-
-  return FALSE;
-}
-
-
-int
+bool
 xtensa_mem_offset (unsigned v, enum machine_mode mode)
 {
   switch (mode)
@@ -862,6 +574,26 @@ xtensa_mem_offset (unsigned v, enum machine_mode mode)
     }
 
   return xtensa_uimm8x4 (v);
+}
+
+
+bool
+xtensa_extra_constraint (rtx op, int c)
+{
+  /* Allow pseudo registers during reload.  */
+  if (GET_CODE (op) != MEM)
+    return (c >= 'R' && c <= 'U'
+	    && reload_in_progress && GET_CODE (op) == REG
+	    && REGNO (op) >= FIRST_PSEUDO_REGISTER);
+
+  switch (c)
+    {
+    case 'R': return smalloffset_mem_p (op);
+    case 'T': return !TARGET_CONST16 && constantpool_mem_p (op);
+    case 'U': return !constantpool_mem_p (op);
+    default: break;
+    }
+  return false;
 }
 
 
@@ -903,7 +635,7 @@ gen_int_relational (enum rtx_code test_code, /* relational test (EQ, etc) */
   struct cmp_info
   {
     enum rtx_code test_code;	/* test code to use in insn */
-    int (*const_range_p) (int);	/* predicate function to check range */
+    bool (*const_range_p) (HOST_WIDE_INT); /* range check function */
     int const_add;		/* constant to add (convert LE -> LT) */
     int reverse_regs;		/* reverse registers in test */
     int invert_const;		/* != 0 if invert value if cmp1 is constant */
@@ -913,13 +645,13 @@ gen_int_relational (enum rtx_code test_code, /* relational test (EQ, etc) */
 
   static struct cmp_info info[ (int)ITEST_MAX ] = {
 
-    { EQ,	b4const_or_zero,	0, 0, 0, 0, 0 },	/* EQ  */
-    { NE,	b4const_or_zero,	0, 0, 0, 0, 0 },	/* NE  */
+    { EQ,	xtensa_b4const_or_zero,	0, 0, 0, 0, 0 },	/* EQ  */
+    { NE,	xtensa_b4const_or_zero,	0, 0, 0, 0, 0 },	/* NE  */
 
-    { LT,	b4const_or_zero,	1, 1, 1, 0, 0 },	/* GT  */
-    { GE,	b4const_or_zero,	0, 0, 0, 0, 0 },	/* GE  */
-    { LT,	b4const_or_zero,	0, 0, 0, 0, 0 },	/* LT  */
-    { GE,	b4const_or_zero,	1, 1, 1, 0, 0 },	/* LE  */
+    { LT,	xtensa_b4const_or_zero,	1, 1, 1, 0, 0 },	/* GT  */
+    { GE,	xtensa_b4const_or_zero,	0, 0, 0, 0, 0 },	/* GE  */
+    { LT,	xtensa_b4const_or_zero,	0, 0, 0, 0, 0 },	/* LT  */
+    { GE,	xtensa_b4const_or_zero,	1, 1, 1, 0, 0 },	/* LE  */
 
     { LTU,	xtensa_b4constu,	1, 1, 1, 0, 1 },	/* GTU */
     { GEU,	xtensa_b4constu,	0, 0, 0, 0, 1 },	/* GEU */
