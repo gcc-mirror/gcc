@@ -1,3 +1,7 @@
+Mon Jan  1 07:38:33 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	* config/sparc/sparc.md: Test TARGET_ARCH64 instead of TARGET_PTR64.
+
 2001-01-01  Michael Hayes  <mhayes@redhat.com>
 
 	* loop.c (check_insn_for_bivs): Use ivs->n_regs to check array bounds.
