@@ -3691,11 +3691,23 @@ m68k_output_mi_thunk (file, thunk, delta, vcall_offset, function)
   const char *fmt;
 
   if (delta > 0 && delta <= 8)
+#ifdef MOTOROLA
     asm_fprintf (file, "\taddq.l %I%d,4(%Rsp)\n", (int) delta);
+#else
+    asm_fprintf (file, "\taddql %I%d,%Rsp@(4)\n", (int) delta);
+#endif
   else if (delta < 0 && delta >= -8)
+#ifdef MOTOROLA
     asm_fprintf (file, "\tsubq.l %I%d,4(%Rsp)\n", (int) -delta);
+#else
+    asm_fprintf (file, "\tsubql %I%d,%Rsp@(4)\n", (int) -delta);
+#endif
   else
+#ifdef MOTOROLA
     asm_fprintf (file, "\tadd.l %I%wd,4(%Rsp)\n", delta);
+#else
+    asm_fprintf (file, "\taddl %I%wd,%Rsp@(4)\n", delta);
+#endif
 
   xops[0] = DECL_RTL (function);
 
@@ -3720,7 +3732,7 @@ m68k_output_mi_thunk (file, thunk, delta, vcall_offset, function)
 #ifdef USE_GAS
 	  fmt = "bra.l %0";
 #else
-	  fmt = "jbra %0,a1";
+	  fmt = "jra %0,a1";
 #endif
 #endif
 	}
@@ -3734,7 +3746,7 @@ m68k_output_mi_thunk (file, thunk, delta, vcall_offset, function)
       fmt = "jmp %0";
 #endif
 #else
-      fmt = "jbra %0";
+      fmt = "jra %0";
 #endif
     }
 
