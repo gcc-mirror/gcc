@@ -30,11 +30,6 @@ Boston, MA 02111-1307, USA.  */
 #undef FUNCTION_OK_FOR_SIBCALL
 #define FUNCTION_OK_FOR_SIBCALL(DECL) 1
 
-/* We need a libcall to canonicalize function pointers because of
-   the way function pointers are handled when doing lazy linking.  */
-#define CANONICALIZE_FUNCPTR_FOR_COMPARE_LIBCALL \
-  "__canonicalize_funcptr_for_compare"
-
 /* The libcall __canonicalize_funcptr_for_compare is referenced in
    crtend.o and the reference isn't resolved in objects that don't
    compare function pointers.  Thus, we need to play games to provide

@@ -1960,3 +1960,7 @@ do { 									\
   {"cmpib_comparison_operator", {EQ, NE, LT, LE, LEU,			\
    GT, GTU, GE}},							\
   {"movb_comparison_operator", {EQ, NE, LT, GE}},
+
+/* We need a libcall to canonicalize function pointers on TARGET_ELF32.  */
+#define CANONICALIZE_FUNCPTR_FOR_COMPARE_LIBCALL \
+  "__canonicalize_funcptr_for_compare"
