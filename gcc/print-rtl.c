@@ -386,7 +386,7 @@ print_rtx (rtx in_rtx)
 	    if (GET_CODE (in_rtx) == REG && value < FIRST_PSEUDO_REGISTER)
 	      {
 		fputc (' ', outfile);
-		PRINT_REG (in_rtx, 0, outfile);
+		PRINT_REG (in_rtx, -1, outfile);
 	      }
 	    else if (GET_CODE (in_rtx) == REG
 		     && value <= LAST_VIRTUAL_REGISTER)
