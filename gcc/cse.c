@@ -3858,7 +3858,19 @@ fold_rtx (x, insn)
 	    }
 	}
 
-      new = simplify_relational_operation (code, mode_arg0,
+      new = simplify_relational_operation (code,
+					   (mode_arg0 != VOIDmode
+					    ? mode_arg0
+					    : (GET_MODE (const_arg0
+							 ? const_arg0
+							 : folded_arg0)
+					       != VOIDmode)
+					    ? GET_MODE (const_arg0
+							? const_arg0
+							: folded_arg0)
+					    : GET_MODE (const_arg1
+							? const_arg1
+							: folded_arg1)),
 					   const_arg0 ? const_arg0 : folded_arg0,
 					   const_arg1 ? const_arg1 : folded_arg1);
 #ifdef FLOAT_STORE_FLAG_VALUE

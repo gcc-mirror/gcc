@@ -1694,7 +1694,7 @@ simplify_relational_operation (code, mode, op0, op1)
   if (mode == VOIDmode
       && (GET_MODE (op0) != VOIDmode
 	  || GET_MODE (op1) != VOIDmode))
-    abort();
+    abort ();
 
   /* If op0 is a compare, extract the comparison arguments from it.  */
   if (GET_CODE (op0) == COMPARE && op1 == const0_rtx)
@@ -2091,7 +2091,10 @@ simplify_rtx (x)
 					 XEXP (x, 0), XEXP (x, 1), XEXP (x, 2));
 
     case '<':
-      return simplify_relational_operation (code, GET_MODE (XEXP (x, 0)),
+      return simplify_relational_operation (code,
+					    (GET_MODE (XEXP (x, 0)) != VOIDmode
+					     ? GET_MODE (XEXP (x, 0))
+					     : GET_MODE (XEXP (x, 1))),
 					    XEXP (x, 0), XEXP (x, 1));
     default:
       return NULL;
