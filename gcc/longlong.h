@@ -494,9 +494,9 @@
 #endif /* __m88000__ */
 
 #if defined (__mips__)
-#define umul_ppmm(w1, w0, u, v) \
-  __asm__ ("multu %2,%3
-	mflo %0
+#define umul_ppmm(w1, w0, u, v)						\
+  __asm__ ("multu %2,%3							\
+	mflo %0								\
 	mfhi %1"							\
 	   : "=d" ((unsigned long int)(w0)),				\
 	     "=d" ((unsigned long int)(w1))				\
