@@ -1,3 +1,8 @@
+2004-06-07  Richard Henderson  <rth@redhat.com>
+
+	PR rtl-opt/15193
+	* expmed.c (extract_bit_field): Fix vector_extract return.
+
 2004-06-07  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/15337
