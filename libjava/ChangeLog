@@ -1,3 +1,8 @@
+2002-04-13  Adam King <aking@dreammechanics.com>
+
+	* java/lang/natDouble.cc (parseDouble): Allow a number to end with
+	the f/F/d/D modifiers.
+
 2002-04-12  Anthony Green  <green@redhat.com>
 
 	* Makefile.am (jardir, jar_DATA): Define (for libgcj.jar).

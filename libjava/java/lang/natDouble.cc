@@ -161,9 +161,19 @@ jdouble
 java::lang::Double::parseDouble(jstring str)
 {
   int length = str->length();
+
   while (length > 0
 	 && Character::isWhitespace(str->charAt(length - 1)))
     length--;
+
+  // The String could end with a f/F/d/D which is valid but we don't need.
+  if (length > 0)
+    {
+      jchar last = str->charAt(length-1);
+      if (last == 'f' || last == 'F' || last == 'd' || last == 'D')
+	length--;
+    }
+
   jsize start = 0;
   while (length > 0
 	 && Character::isWhitespace(str->charAt(start)))
@@ -184,7 +194,7 @@ java::lang::Double::parseDouble(jstring str)
       if (endptr == data + blength)
 	return val;
     }
-  throw new NumberFormatException;
+  throw new NumberFormatException(str);
 }
 
 void
