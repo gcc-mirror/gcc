@@ -485,7 +485,7 @@ gfc_trans_arithmetic_if (gfc_code * code)
 }
 
 
-/* Translate the simple DO construct.  This is where the loop varable has
+/* Translate the simple DO construct.  This is where the loop variable has
    integer type and step +-1.  We can't use this in the general case
    because integer overflow and floating point errors could give incorrect
    results.
