@@ -1,3 +1,7 @@
+Sun Oct 17 11:02:52 1999  Mark Mitchell  <mark@codesourcery.com>
+
+	* Makefile.in: Back out previous change.
+	
 Sun Oct 17 15:22:50 1999  Jeffrey A Law  (law@cygnus.com)
 
 	* pa.c (move_operand): Reject (lo_sum (reg) (unspec ...)).

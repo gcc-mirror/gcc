@@ -1427,13 +1427,13 @@ dumpvers: dumpvers.c
 
 version.o: version.c
 
-ggc-common.o: ggc-common.c $(CONFIG_H) $(RTL_H) $(TREE_H) genrtl.h \
+ggc-common.o: ggc-common.c $(CONFIG_H) $(RTL_H) $(TREE_H) \
 	flags.h ggc.h varray.h hash.h
 
-ggc-simple.o: ggc-simple.c $(CONFIG_H) $(RTL_H) $(TREE_H) flags.h genrtl.h \
+ggc-simple.o: ggc-simple.c $(CONFIG_H) $(RTL_H) $(TREE_H) flags.h \
 	ggc.h varray.h hash.h
 
-ggc-page.o: ggc-page.c $(CONFIG_H) $(RTL_H) $(TREE_H) flags.h genrtl.h \
+ggc-page.o: ggc-page.c $(CONFIG_H) $(RTL_H) $(TREE_H) flags.h \
 	ggc.h varray.h hash.h
 
 ggc-none.o: ggc-none.c $(CONFIG_H) $(RTL_H) ggc.h
