@@ -9,7 +9,7 @@
 @c                                                                            o
 @c                              G N A T _ RM                                  o
 @c                                                                            o
-@c                            $Revision: 1.1 $
+@c                            $Revision$
 @c                                                                            o
 @c          Copyright (C) 1992-2001 Ada Core Technologies, Inc.               o
 @c                                                                            o
@@ -39,8 +39,8 @@
 @title GNAT Reference Manual
 @subtitle GNAT, The GNU Ada 95 Compiler
 @subtitle Version 3.15w
-@subtitle Document revision level $Revision: 1.1 $
-@subtitle Date: $Date: 2001/10/26 13:55:51 $
+@subtitle Document revision level $Revision$
+@subtitle Date: $Date$
 @author Ada Core Technologies, Inc.
 
 @page
@@ -84,7 +84,7 @@ GNAT, The GNU Ada 95 Compiler
 
 Version 3.14a
 
-Date: $Date: 2001/10/26 13:55:51 $
+Date: $Date$
 
 Ada Core Technologies, Inc.
 
@@ -7830,7 +7830,7 @@ will be flagged as illegal by GNAT@.
 Since the misconception that Bit_Order automatically deals with all
 endian-related incompatibilities is a common one, the specification of
 a component field that is an integral number of bytes will always
-generate a warning This warning may be suppressed using
+generate a warning. This warning may be suppressed using
 @code{pragma Suppress} if desired. The following section contains additional
 details regarding the issue of byte ordering.
 
@@ -7840,7 +7840,7 @@ details regarding the issue of byte ordering.
 @cindex ordering, of bytes
 
 @noindent
-In this section we will review the effec of the @code{Bit_Order} attribute
+In this section we will review the effect of the @code{Bit_Order} attribute
 definition clause on byte ordering. Briefly, it has no effect at all, but
 a detailed example will be helpful. Before giving this
 example, let us review the precise
