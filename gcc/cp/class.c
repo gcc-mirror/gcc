@@ -2669,18 +2669,21 @@ modify_all_vtables (t, vfuns_p, overridden_virtuals)
 }
 
 /* Here, we already know that they match in every respect.
-   All we have to check is where they had their declarations.  */
+   All we have to check is where they had their declarations.
+
+   Return non-zero iff FNDECL1 is declared in a class which has a
+   proper base class containing FNDECL2.  We don't care about
+   ambiguity or accessibility.  */
 
 static int 
 strictly_overrides (fndecl1, fndecl2)
      tree fndecl1, fndecl2;
 {
-  int distance = get_base_distance (DECL_CONTEXT (fndecl2),
-				    DECL_CONTEXT (fndecl1),
-				    0, (tree *)0);
-  if (distance == -2 || distance > 0)
-    return 1;
-  return 0;
+  base_kind kind;
+  
+  return (lookup_base (DECL_CONTEXT (fndecl1), DECL_CONTEXT (fndecl2),
+		       ba_ignore | ba_quiet, &kind)
+	  && kind != bk_same_type);
 }
 
 /* Get the base virtual function declarations in T that are either
@@ -4677,7 +4680,7 @@ layout_virtual_bases (t, offsets)
   /* Now, go through the TYPE_BINFO hierarchy, setting the
      BINFO_OFFSETs correctly for all non-primary copies of the virtual
      bases and their direct and indirect bases.  The ambiguity checks
-     in get_base_distance depend on the BINFO_OFFSETs being set
+     in lookup_base depend on the BINFO_OFFSETs being set
      correctly.  */
   dfs_walk (TYPE_BINFO (t), dfs_set_offset_for_unshared_vbases, NULL, t);
 
@@ -4703,7 +4706,8 @@ layout_virtual_bases (t, offsets)
 	 vbases = TREE_CHAIN (vbases))
       {
 	tree basetype = BINFO_TYPE (TREE_VALUE (vbases));
-	if (get_base_distance (basetype, t, 0, (tree*)0) == -2)
+	
+	if (!lookup_base (t, basetype, ba_ignore | ba_quiet, NULL))
 	  cp_warning ("virtual base `%T' inaccessible in `%T' due to ambiguity",
 		      basetype, t);
       }
@@ -4773,7 +4777,7 @@ warn_about_ambiguous_direct_bases (t)
     {
       tree basetype = TYPE_BINFO_BASETYPE (t, i);
 
-      if (get_base_distance (basetype, t, 0, NULL) == -2)
+      if (!lookup_base (t, basetype, ba_ignore | ba_quiet, NULL))
 	cp_warning ("direct base `%T' inaccessible in `%T' due to ambiguity",
 		    basetype, t);
     }
@@ -6385,7 +6389,7 @@ is_base_of_enclosing_class (base, type)
 {
   while (type)
     {
-      if (get_binfo (base, type, 0))
+      if (lookup_base (type, base, ba_any, NULL))
 	return 1;
 
       type = get_enclosing_class (type);
@@ -7889,7 +7893,7 @@ add_vcall_offset_vtbl_entries_1 (binfo, vid)
 	 were multiple copies, there would not be a unique final overrider
 	 and vid->derived would be ill-formed.  */
       base = DECL_CONTEXT (fn);
-      base_binfo = get_binfo (base, vid->derived, /*protect=*/0);
+      base_binfo = lookup_base (vid->derived, base, ba_any, NULL);
 
       /* Compute the vcall offset.  */
       /* As mentioned above, the vbase we're working on is a primary base of

@@ -1473,7 +1473,8 @@ build_member_call (type, name, parmlist)
       tree ns = lookup_name (type, 0);
       if (ns && TREE_CODE (ns) == NAMESPACE_DECL)
 	{
-	  return build_x_function_call (build_offset_ref (type, name), parmlist, current_class_ref);
+	  return build_x_function_call (build_offset_ref (type, name),
+					parmlist, current_class_ref);
 	}
     }
 

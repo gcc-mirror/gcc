@@ -5114,12 +5114,12 @@ build_static_cast (type, expr)
     {
       /* They're pointers to objects. They must be aggregates that
          are related non-virtually. */
-      
-      tree binfo;
+      base_kind kind;
       
       if (IS_AGGR_TYPE (TREE_TYPE (type)) && IS_AGGR_TYPE (TREE_TYPE (intype))
-	  && (binfo = get_binfo (TREE_TYPE (intype), TREE_TYPE (type), 0))
-	  && !binfo_from_vbase (binfo))
+	  && lookup_base (TREE_TYPE (type), TREE_TYPE (intype),
+			  ba_ignore | ba_quiet, &kind)
+	  && kind != bk_via_virtual)
 	ok = 1;
     }
   else if (TREE_CODE (intype) != BOOLEAN_TYPE
@@ -5933,21 +5933,15 @@ get_delta_difference (from, to, force)
   tree delta = integer_zero_node;
   tree binfo;
   tree virt_binfo;
+  base_kind kind;
   
-  if (to == from)
-    return delta;
-
-  /* Should get_base_distance here, so we can check if any thing along
-     the path is virtual, and we need to make sure we stay inside the
-     real binfos when going through virtual bases.  Maybe we should
-     replace virtual bases with BINFO_FOR_VBASE ... (mrs) */
-  binfo = get_binfo (from, to, 1);
-  if (binfo == error_mark_node)
+  binfo = lookup_base (to, from, ba_check, &kind);
+  if (kind == bk_inaccessible || kind == bk_ambig)
     {
       error ("   in pointer to member function conversion");
       return delta;
     }
-  if (binfo == 0)
+  if (!binfo)
     {
       if (!force)
 	{
@@ -5955,8 +5949,8 @@ get_delta_difference (from, to, force)
 	  error ("   in pointer to member conversion");
 	  return delta;
 	}
-      binfo = get_binfo (to, from, 1);
-      if (binfo == 0 || binfo == error_mark_node)
+      binfo = lookup_base (from, to, ba_check, &kind);
+      if (binfo == 0)
 	return delta;
       virt_binfo = binfo_from_vbase (binfo);
       

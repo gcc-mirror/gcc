@@ -827,23 +827,6 @@ make_binfo (offset, binfo, vtable, virtuals)
   return new_binfo;
 }
 
-/* Return the binfo value for ELEM in TYPE.  */
-
-tree
-binfo_value (elem, type)
-     tree elem;
-     tree type;
-{
-  if (get_base_distance (elem, type, 0, (tree *)0) == -2)
-    compiler_error ("base class `%s' ambiguous in binfo_value",
-		    TYPE_NAME_STRING (elem));
-  if (elem == type)
-    return TYPE_BINFO (type);
-  if (TREE_CODE (elem) == RECORD_TYPE && TYPE_BINFO (elem) == type)
-    return type;
-  return get_binfo (elem, type, 0);
-}
-
 /* Return a TREE_LIST whose TREE_VALUE nodes along the
    BINFO_INHERITANCE_CHAIN for BINFO, but in the opposite order.  In
    other words, while the BINFO_INHERITANCE_CHAIN goes from base
@@ -1833,18 +1816,22 @@ maybe_dummy_object (type, binfop)
      tree *binfop;
 {
   tree decl, context;
-
+  tree binfo;
+  
   if (current_class_type
-      && get_base_distance (type, current_class_type, 0, binfop) != -1)
+      && (binfo = lookup_base (current_class_type, type,
+			       ba_ignore | ba_quiet, NULL)))
     context = current_class_type;
   else
     {
       /* Reference from a nested class member function.  */
       context = type;
-      if (binfop)
-	*binfop = TYPE_BINFO (type);
+      binfo = TYPE_BINFO (type);
     }
 
+  if (binfop)
+    *binfop = binfo;
+  
   if (current_class_ref && context == current_class_type)
     decl = current_class_ref;
   else

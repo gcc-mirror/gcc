@@ -1,3 +1,36 @@
+2001-11-28  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* cp-tree.h (UNIQUELY_DERIVED_FROM_P): Use lookup base.
+	(ACCESSIBLY_UNIQUELY_DERIVED_FROM_P): Likewise.
+	(PUBLICLY_UNIQUELY_DERIVED_FROM_P: Likewise.
+	(DERIVED_FROM_P): Likewise.
+	(enum base_access): Renumber, add ba_quiet bit mask.
+	(get_binfo): Remove.
+	(get_base_distance): Remove.
+	(binfo_value): Remove.
+	(ACCESSIBLY_DERIVED_FROM_P): Remove.
+	* call.c (standard_conversion): Use lookup_base.
+	* class.c (strictly_overrides): Likewise.
+	(layout_virtual_bases): Likewise.
+	(warn_about_ambiguous_direct_bases): Likewise.
+	(is_base_of_enclosing_class): Likewise.
+	(add_vcall_offset_vtbl_entries_1): Likewise.
+	* cvt.c (build_up_reference): Adjust comment.
+	* init.c (build_member_call): Reformat.
+	* search.c (get_binfo): Remove.
+	(get_base_distance_recursive): Remove.
+	(get_base_distance): Remove.
+	(lookup_base_r): Tweak.
+	(lookup_base): Add ba_quiet control. Complete the types here.
+	(covariant_return_p): Use lookup_base.
+	* tree.c (binfo_value): Remove.
+	(maybe_dummy_object): Use lookup_base.
+	* typeck.c (build_static_cast): Use lookup_base.
+	(get_delta_difference): Likewise.
+	* typeck2.c (binfo_or_else): Use lookup_base.
+	(build_scoped_ref): Add back error_mark_check.
+	(build_m_component_ref): Use lookup_base.
+
 2001-11-29  Joseph S. Myers  <jsm28@cam.ac.uk>
 
 	* Make-lang.in (c++.generated-manpages): New dummy target.
