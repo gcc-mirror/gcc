@@ -1,5 +1,8 @@
 Sun Aug  1 22:46:42 1999  Jeffrey A Law  (law@cygnus.com)
 
+	* cse.c (cse_insn): Fix loop which deletes insns after a jump
+	that has become an unconditional jump.
+
 	* m68k.c (output_function_prologue): Fix typo in CPU32 case.
 	(output_function_epilogue): Similarly.
 
