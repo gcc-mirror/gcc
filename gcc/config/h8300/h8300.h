@@ -270,13 +270,13 @@ extern int target_flags;
    eliminated during reloading in favor of either the stack or frame
    pointer.  */
 
-#define FIRST_PSEUDO_REGISTER 10
+#define FIRST_PSEUDO_REGISTER 11
 
 /* 1 for registers that have pervasive standard uses
    and are not available for the register allocator.  */
 
 #define FIXED_REGISTERS \
-  { 0, 0, 0, 0, 0, 0, 0, 1, 0, 1}
+  { 0, 0, 0, 0, 0, 0, 0, 1, 0, 1, 1}
 
 /* 1 for registers not available across function calls.
    These must include the FIXED_REGISTERS and also any
@@ -289,10 +289,10 @@ extern int target_flags;
    H8 destroys r0,r1,r2,r3.  */
 
 #define CALL_USED_REGISTERS \
-  { 1, 1, 1, 1, 0, 0, 0, 1, 1, 1 }
+  { 1, 1, 1, 1, 0, 0, 0, 1, 1, 1, 1 }
 
 #define REG_ALLOC_ORDER \
-  { 2, 3, 0, 1, 4, 5, 6, 8, 7, 9}
+  { 2, 3, 0, 1, 4, 5, 6, 8, 7, 9, 10}
 
 #define CONDITIONAL_REGISTER_USAGE		\
 {						\
@@ -359,6 +359,16 @@ extern int target_flags;
 
 /* Register in which static-chain is passed to a function.  */
 #define STATIC_CHAIN_REGNUM 3
+
+/* Fake register that holds the address on the stack of the
+   current function's return address.  */
+#define RETURN_ADDRESS_POINTER_REGNUM 10
+
+/* A C expression whose value is RTL representing the value of the return
+   address for the frame COUNT steps up from the current frame.
+   FRAMEADDR is already the frame pointer of the COUNT frame, assuming
+   a stack layout with the frame pointer as the first saved register.  */
+#define RETURN_ADDR_RTX(COUNT, FRAME) h8300_return_addr_rtx ((COUNT), (FRAME))
 
 /* Define the classes of registers for register constraints in the
    machine description.  Also define ranges of constants.
@@ -397,9 +407,9 @@ enum reg_class {
 
 #define REG_CLASS_CONTENTS  			\
 {      {0},		/* No regs      */	\
-   {0x2ff},		/* GENERAL_REGS */    	\
+   {0x6ff},		/* GENERAL_REGS */    	\
    {0x100},		/* MAC_REGS */    	\
-   {0x3ff},		/* ALL_REGS 	*/	\
+   {0x7ff},		/* ALL_REGS 	*/	\
 }
 
 /* The same information, inverted:
@@ -555,21 +565,24 @@ enum reg_class {
    pointer register.  Secondly, the argument pointer register can always be
    eliminated; it is replaced with either the stack or frame pointer. */
 
-#define ELIMINABLE_REGS				\
-{{ ARG_POINTER_REGNUM, STACK_POINTER_REGNUM},	\
- { ARG_POINTER_REGNUM, FRAME_POINTER_REGNUM},   \
+#define ELIMINABLE_REGS					\
+{{ ARG_POINTER_REGNUM, STACK_POINTER_REGNUM},		\
+ { ARG_POINTER_REGNUM, FRAME_POINTER_REGNUM},		\
+ { RETURN_ADDRESS_POINTER_REGNUM, STACK_POINTER_REGNUM},\
+ { RETURN_ADDRESS_POINTER_REGNUM, FRAME_POINTER_REGNUM},\
  { FRAME_POINTER_REGNUM, STACK_POINTER_REGNUM}}
 
 /* Given FROM and TO register numbers, say whether this elimination is allowed.
    Frame pointer elimination is automatically handled.
 
    For the h8300, if frame pointer elimination is being done, we would like to
-   convert ap into sp, not fp.
+   convert ap and rp into sp, not fp.
 
    All other eliminations are valid.  */
 
 #define CAN_ELIMINATE(FROM, TO)					\
- ((FROM) == ARG_POINTER_REGNUM && (TO) == STACK_POINTER_REGNUM	\
+ ((((FROM) == ARG_POINTER_REGNUM || (FROM) == RETURN_ADDRESS_POINTER_REGNUM) \
+   && (TO) == STACK_POINTER_REGNUM)				\
   ? ! frame_pointer_needed					\
   : 1)
 
@@ -1176,7 +1189,7 @@ readonly_data ()							\
    This sequence is indexed by compiler's hard-register-number (see above).  */
 
 #define REGISTER_NAMES \
-{ "r0", "r1", "r2", "r3", "r4", "r5", "r6", "sp", "mac", "ap" }
+{ "r0", "r1", "r2", "r3", "r4", "r5", "r6", "sp", "mac", "ap", "rap" }
 
 #define ADDITIONAL_REGISTER_NAMES \
 { {"er0", 0}, {"er1", 1}, {"er2", 2}, {"er3", 3}, {"er4", 4}, \
