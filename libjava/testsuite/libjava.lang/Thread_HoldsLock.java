@@ -20,8 +20,8 @@ public class Thread_HoldsLock
   
   public void check()
   {
-    boolean held = Thread.currentThread().holdsLock(lock);
-    System.out.println(held);
+    Thread this_thread = Thread.currentThread();
+    System.out.println(this_thread.holdsLock(lock));
   }
 }
 

@@ -1,5 +1,4 @@
 // Many threads join a single thread.
-// Origin: Bryce McKinlay <bryce@albatross.co.nz>
 
 class Sleeper implements Runnable
 {
