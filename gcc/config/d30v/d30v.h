@@ -3760,6 +3760,7 @@ extern const char *d30v_branch_cost_string;
    the symbol's name string.  */
 /* #define STRIP_NAME_ENCODING(VAR, SYM_NAME) */
 
+/* A C statement to build up a unique section name, expressed as a
    STRING_CST node, and assign it to `DECL_SECTION_NAME (DECL)'.
    RELOC indicates whether the initial value of EXP requires
    link-time relocations.  If you do not define this macro, GNU CC
