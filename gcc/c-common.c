@@ -30,7 +30,7 @@ extern struct obstack permanent_obstack;
 
 enum attrs {A_PACKED, A_NOCOMMON, A_NORETURN, A_CONST, A_T_UNION,
 	    A_CONSTRUCTOR, A_DESTRUCTOR, A_MODE, A_SECTION, A_ALIGNED,
-	    A_FORMAT};
+	    A_FORMAT, A_WEAK, A_ALIAS};
 
 static void declare_hidden_char_array	PROTO((char *, char *));
 static void add_attribute		PROTO((enum attrs, char *,
@@ -258,6 +258,8 @@ init_attributes ()
   add_attribute (A_SECTION, "section", 1, 1, 1);
   add_attribute (A_ALIGNED, "aligned", 0, 1, 0);
   add_attribute (A_FORMAT, "format", 3, 3, 1);
+  add_attribute (A_WEAK, "weak", 0, 0, 1);
+  add_attribute (A_ALIAS, "alias", 1, 1, 1);
 }
 
 /* Process the attributes listed in ATTRIBUTES and PREFIX_ATTRIBUTES
@@ -606,6 +608,29 @@ decl_attributes (node, attributes, prefix_attributes)
 				    is_scan, format_num, first_arg_num);
 	    break;
 	  }
+
+	case A_WEAK:
+	  declare_weak (decl);
+	  break;
+
+	case A_ALIAS:
+	  if ((TREE_CODE (decl) == FUNCTION_DECL && DECL_INITIAL (decl))
+	      || TREE_CODE (decl) != FUNCTION_DECL && ! DECL_EXTERNAL (decl))
+	    error_with_decl (decl,
+			     "`%s' defined both normally and as an alias");
+	  else if (decl_function_context (decl) == 0)
+	    {
+	      tree id = get_identifier (TREE_STRING_POINTER
+					(TREE_VALUE (args)));
+	      if (TREE_CODE (decl) == FUNCTION_DECL)
+		DECL_INITIAL (decl) = error_mark_node;
+	      else
+		DECL_EXTERNAL (decl) = 0;
+	      assemble_alias (decl, id);
+	    }
+	  else
+	    warning ("`%s' attribute ignored", IDENTIFIER_POINTER (name));
+	  break;
 	}
     }
 }

@@ -2574,6 +2574,10 @@ compile_file (name)
       }
   }
 
+  /* Write out any pending weak symbol declarations.  */
+
+  weak_finish ();
+
   /* Do dbx symbols */
 #if defined (DBX_DEBUGGING_INFO) || defined (XCOFF_DEBUGGING_INFO)
   if (write_symbols == DBX_DEBUG || write_symbols == XCOFF_DEBUG)
