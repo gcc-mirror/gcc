@@ -8029,28 +8029,9 @@ simplify_comparison (code, pop0, pop1)
 	      continue;
 	    }
 
-	  /* If we have NEG of something that is the result of a
-	     SIGN_EXTEND, SIGN_EXTRACT, or ASHIFTRT, we know that the
-	     two high-order bits must be the same and hence that
-	     "(-a) < 0" is equivalent to "a > 0".  Otherwise, we can't
-	     do this.  */
-	  if (GET_CODE (XEXP (op0, 0)) == SIGN_EXTEND
-	      || (GET_CODE (XEXP (op0, 0)) == SIGN_EXTRACT
-		  && GET_CODE (XEXP (XEXP (op0, 0), 1)) == CONST_INT
-		  && (INTVAL (XEXP (XEXP (op0, 0), 1))
-		      < GET_MODE_BITSIZE (GET_MODE (XEXP (XEXP (op0, 0), 0)))))
-	      || (GET_CODE (XEXP (op0, 0)) == ASHIFTRT
-		  && GET_CODE (XEXP (XEXP (op0, 0), 1)) == CONST_INT
-		  && XEXP (XEXP (op0, 0), 1) != const0_rtx)
-	      || ((tem = get_last_value (XEXP (op0, 0))) != 0
-		  && (GET_CODE (tem) == SIGN_EXTEND
-		      || (GET_CODE (tem) == SIGN_EXTRACT
-			  && GET_CODE (XEXP (tem, 1)) == CONST_INT
-			  && (INTVAL (XEXP (tem, 1))
-			      < GET_MODE_BITSIZE (GET_MODE (XEXP (tem, 0)))))
-		      || (GET_CODE (tem) == ASHIFTRT
-			  && GET_CODE (XEXP (tem, 1)) == CONST_INT
-			  && XEXP (tem, 1) != const0_rtx))))
+	  /* If we have NEG of something whose two high-order bits are the
+	     same, we know that "(-a) < 0" is equivalent to "a > 0". */
+	  if (num_sign_bit_copies (op0, mode) >= 2)
 	    {
 	      op0 = XEXP (op0, 0);
 	      code = swap_condition (code);
