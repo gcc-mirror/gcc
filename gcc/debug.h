@@ -1,5 +1,5 @@
 /* Debug hooks for GCC.
-   Copyright (C) 2001, 2002 Free Software Foundation, Inc.
+   Copyright (C) 2001, 2002, 2003 Free Software Foundation, Inc.
 
 This program is free software; you can redistribute it and/or modify it
 under the terms of the GNU General Public License as published by the
@@ -25,107 +25,99 @@ struct gcc_debug_hooks
 {
   /* Initialize debug output.  MAIN_FILENAME is the name of the main
      input file.  */
-  void (* init) PARAMS ((const char *main_filename));
+  void (* init) (const char *main_filename);
 
   /* Output debug symbols.  */
-  void (* finish) PARAMS ((const char *main_filename));
+  void (* finish) (const char *main_filename);
 
   /* Macro defined on line LINE with name and expansion TEXT.  */
-  void (* define) PARAMS ((unsigned int line, const char *text));
+  void (* define) (unsigned int line, const char *text);
 
   /* MACRO undefined on line LINE.  */
-  void (* undef) PARAMS ((unsigned int line, const char *macro));
+  void (* undef) (unsigned int line, const char *macro);
 
   /* Record the beginning of a new source file FILE from LINE number
      in the previous one.  */
-  void (* start_source_file) PARAMS ((unsigned int line, const char *file));
+  void (* start_source_file) (unsigned int line, const char *file);
 
   /* Record the resumption of a source file.  LINE is the line number
      in the source file we are returning to.  */
-  void (* end_source_file) PARAMS ((unsigned int line));
+  void (* end_source_file) (unsigned int line);
 
   /* Record the beginning of block N, counting from 1 and not
      including the function-scope block, at LINE.  */
-  void (* begin_block) PARAMS ((unsigned int line, unsigned int n));
+  void (* begin_block) (unsigned int line, unsigned int n);
 
   /* Record the end of a block.  Arguments as for begin_block.  */
-  void (* end_block) PARAMS ((unsigned int line, unsigned int n));
+  void (* end_block) (unsigned int line, unsigned int n);
 
   /* Returns nonzero if it is appropriate not to emit any debugging
      information for BLOCK, because it doesn't contain any
      instructions.  This may not be the case for blocks containing
      nested functions, since we may actually call such a function even
      though the BLOCK information is messed up.  Defaults to true.  */
-  bool (* ignore_block) PARAMS ((tree));
+  bool (* ignore_block) (tree);
 
   /* Record a source file location at (FILE, LINE).  */
-  void (* source_line) PARAMS ((unsigned int line, const char *file));
+  void (* source_line) (unsigned int line, const char *file);
 
   /* Called at start of prologue code.  LINE is the first line in the
      function.  This has been given the same prototype as source_line,
      so that the source_line hook can be substituted if appropriate.  */
-  void (* begin_prologue) PARAMS ((unsigned int line, const char *file));
+  void (* begin_prologue) (unsigned int line, const char *file);
 
   /* Called at end of prologue code.  LINE is the first line in the
      function.  */
-  void (* end_prologue) PARAMS ((unsigned int line, const char *file));
+  void (* end_prologue) (unsigned int line, const char *file);
 
   /* Record end of epilogue code.  */
-  void (* end_epilogue) PARAMS ((unsigned int line, const char *file));
+  void (* end_epilogue) (unsigned int line, const char *file);
 
   /* Called at start of function DECL, before it is declared.  */
-  void (* begin_function) PARAMS ((tree decl));
+  void (* begin_function) (tree decl);
 
   /* Record end of function.  LINE is highest line number in function.  */
-  void (* end_function) PARAMS ((unsigned int line));
+  void (* end_function) (unsigned int line);
 
   /* Debug information for a function DECL.  This might include the
      function name (a symbol), its parameters, and the block that
      makes up the function's body, and the local variables of the
      function.  */
-  void (* function_decl) PARAMS ((tree decl));
+  void (* function_decl) (tree decl);
 
   /* Debug information for a global DECL.  Called from toplev.c after
      compilation proper has finished.  */
-  void (* global_decl) PARAMS ((tree decl));
+  void (* global_decl) (tree decl);
 
   /* DECL is an inline function, whose body is present, but which is
      not being output at this point.  */
-  void (* deferred_inline_function) PARAMS ((tree decl));
+  void (* deferred_inline_function) (tree decl);
 
   /* DECL is an inline function which is about to be emitted out of
      line.  The hook is useful to, e.g., emit abstract debug info for
      the inline before it gets mangled by optimization.  */
-  void (* outlining_inline_function) PARAMS ((tree decl));
+  void (* outlining_inline_function) (tree decl);
 
   /* Called from final_scan_insn for any CODE_LABEL insn whose
      LABEL_NAME is non-null.  */
-  void (* label) PARAMS ((rtx));
+  void (* label) (rtx);
 
-  /* Called after the start and before the end of writing a PCH file.  
+  /* Called after the start and before the end of writing a PCH file.
      The parameter is 0 if after the start, 1 if before the end.  */
-  void (* handle_pch) PARAMS ((unsigned int));
+  void (* handle_pch) (unsigned int);
 };
 
 extern const struct gcc_debug_hooks *debug_hooks;
 
 /* The do-nothing hooks.  */
-extern void debug_nothing_void
-  PARAMS ((void));
-extern void debug_nothing_charstar
-  PARAMS ((const char *));
-extern void debug_nothing_int_charstar
-  PARAMS ((unsigned int, const char *));
-extern void debug_nothing_int
-  PARAMS ((unsigned int));
-extern void debug_nothing_int_int
-  PARAMS ((unsigned int, unsigned int));
-extern void debug_nothing_tree
-  PARAMS ((tree));
-extern bool debug_true_tree
-  PARAMS ((tree));
-extern void debug_nothing_rtx
-  PARAMS ((rtx));
+extern void debug_nothing_void (void);
+extern void debug_nothing_charstar (const char *);
+extern void debug_nothing_int_charstar (unsigned int, const char *);
+extern void debug_nothing_int (unsigned int);
+extern void debug_nothing_int_int (unsigned int, unsigned int);
+extern void debug_nothing_tree (tree);
+extern bool debug_true_tree (tree);
+extern void debug_nothing_rtx (rtx);
 
 /* Hooks for various debug formats.  */
 extern const struct gcc_debug_hooks do_nothing_debug_hooks;
@@ -138,17 +130,17 @@ extern const struct gcc_debug_hooks vmsdbg_debug_hooks;
 
 /* Dwarf2 frame information.  */
 
-extern void dwarf2out_begin_prologue	PARAMS ((unsigned int, const char *));
-extern void dwarf2out_end_epilogue	PARAMS ((unsigned int, const char *));
-extern void dwarf2out_frame_init	PARAMS ((void));
-extern void dwarf2out_frame_finish	PARAMS ((void));
+extern void dwarf2out_begin_prologue (unsigned int, const char *);
+extern void dwarf2out_end_epilogue (unsigned int, const char *);
+extern void dwarf2out_frame_init (void);
+extern void dwarf2out_frame_finish (void);
 /* Decide whether we want to emit frame unwind information for the current
    translation unit.  */
-extern int dwarf2out_do_frame		PARAMS ((void));
+extern int dwarf2out_do_frame (void);
 
-extern void debug_flush_symbol_queue    PARAMS ((void));
-extern void debug_queue_symbol          PARAMS ((tree));
-extern void debug_free_queue            PARAMS ((void));
+extern void debug_flush_symbol_queue (void);
+extern void debug_queue_symbol (tree);
+extern void debug_free_queue (void);
 extern int debug_nesting;
 extern int symbol_queue_index;
 

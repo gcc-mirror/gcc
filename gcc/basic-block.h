@@ -72,7 +72,7 @@ typedef bitmap regset;
 #define REGNO_REG_SET_P(TO, REG) bitmap_bit_p (TO, REG)
 
 /* Copy the hard registers in a register set to the hard register set.  */
-extern void reg_set_to_hard_reg_set PARAMS ((HARD_REG_SET *, bitmap));
+extern void reg_set_to_hard_reg_set (HARD_REG_SET *, bitmap);
 #define REG_SET_TO_HARD_REG_SET(TO, FROM)				\
 do {									\
   CLEAR_HARD_REG_SET (TO);						\
@@ -336,49 +336,44 @@ extern struct basic_block_def entry_exit_blocks[2];
 #define BLOCK_NUM(INSN)	      (BLOCK_FOR_INSN (INSN)->index + 0)
 #define set_block_for_insn(INSN, BB)  (BLOCK_FOR_INSN (INSN) = BB)
 
-extern void compute_bb_for_insn		PARAMS ((void));
-extern void free_bb_for_insn		PARAMS ((void));
-extern void update_bb_for_insn		PARAMS ((basic_block));
+extern void compute_bb_for_insn (void);
+extern void free_bb_for_insn (void);
+extern void update_bb_for_insn (basic_block);
 
-extern void free_basic_block_vars	PARAMS ((int));
+extern void free_basic_block_vars (int);
 
-extern void insert_insn_on_edge		PARAMS ((rtx, edge));
+extern void insert_insn_on_edge (rtx, edge);
 bool safe_insert_insn_on_edge (rtx, edge);
 
-extern void commit_edge_insertions	PARAMS ((void));
-extern void commit_edge_insertions_watch_calls	PARAMS ((void));
+extern void commit_edge_insertions (void);
+extern void commit_edge_insertions_watch_calls (void);
 
-extern void remove_fake_edges		PARAMS ((void));
-extern void add_noreturn_fake_exit_edges	PARAMS ((void));
-extern void connect_infinite_loops_to_exit	PARAMS ((void));
-extern int flow_call_edges_add		PARAMS ((sbitmap));
-extern edge unchecked_make_edge		PARAMS ((basic_block,
-						 basic_block, int));
-extern edge cached_make_edge		PARAMS ((sbitmap *, basic_block,
-						 basic_block, int));
-extern edge make_edge			PARAMS ((basic_block,
-						 basic_block, int));
-extern edge make_single_succ_edge	PARAMS ((basic_block,
-						 basic_block, int));
-extern void remove_edge			PARAMS ((edge));
-extern void redirect_edge_succ		PARAMS ((edge, basic_block));
-extern edge redirect_edge_succ_nodup	PARAMS ((edge, basic_block));
-extern void redirect_edge_pred		PARAMS ((edge, basic_block));
-extern basic_block create_basic_block_structure PARAMS ((rtx, rtx, rtx, basic_block));
-extern void clear_bb_flags		PARAMS ((void));
-extern void tidy_fallthru_edge		PARAMS ((edge, basic_block,
-						 basic_block));
-extern void tidy_fallthru_edges		PARAMS ((void));
-extern void flow_reverse_top_sort_order_compute	PARAMS ((int *));
-extern int flow_depth_first_order_compute	PARAMS ((int *, int *));
-extern void flow_preorder_transversal_compute	PARAMS ((int *));
-extern int dfs_enumerate_from		PARAMS ((basic_block, int,
-						bool (*)(basic_block, void *),
-						basic_block *, int, void *));
-extern void dump_edge_info		PARAMS ((FILE *, edge, int));
-extern void clear_edges			PARAMS ((void));
-extern void mark_critical_edges		PARAMS ((void));
-extern rtx first_insn_after_basic_block_note	PARAMS ((basic_block));
+extern void remove_fake_edges (void);
+extern void add_noreturn_fake_exit_edges (void);
+extern void connect_infinite_loops_to_exit (void);
+extern int flow_call_edges_add (sbitmap);
+extern edge unchecked_make_edge (basic_block, basic_block, int);
+extern edge cached_make_edge (sbitmap *, basic_block, basic_block, int);
+extern edge make_edge (basic_block, basic_block, int);
+extern edge make_single_succ_edge (basic_block, basic_block, int);
+extern void remove_edge (edge);
+extern void redirect_edge_succ (edge, basic_block);
+extern edge redirect_edge_succ_nodup (edge, basic_block);
+extern void redirect_edge_pred (edge, basic_block);
+extern basic_block create_basic_block_structure (rtx, rtx, rtx, basic_block);
+extern void clear_bb_flags (void);
+extern void tidy_fallthru_edge (edge, basic_block, basic_block);
+extern void tidy_fallthru_edges (void);
+extern void flow_reverse_top_sort_order_compute (int *);
+extern int flow_depth_first_order_compute (int *, int *);
+extern void flow_preorder_transversal_compute (int *);
+extern int dfs_enumerate_from (basic_block, int,
+			       bool (*)(basic_block, void *),
+			       basic_block *, int, void *);
+extern void dump_edge_info (FILE *, edge, int);
+extern void clear_edges (void);
+extern void mark_critical_edges (void);
+extern rtx first_insn_after_basic_block_note (basic_block);
 
 /* Dominator information for basic blocks.  */
 
@@ -455,12 +450,11 @@ struct edge_list
 #define EDGE_CRITICAL_P(e)		((e)->src->succ->succ_next \
 					 && (e)->dest->pred->pred_next)
 
-struct edge_list * create_edge_list	PARAMS ((void));
-void free_edge_list			PARAMS ((struct edge_list *));
-void print_edge_list			PARAMS ((FILE *, struct edge_list *));
-void verify_edge_list			PARAMS ((FILE *, struct edge_list *));
-int find_edge_index			PARAMS ((struct edge_list *,
-						 basic_block, basic_block));
+struct edge_list * create_edge_list (void);
+void free_edge_list (struct edge_list *);
+void print_edge_list (FILE *, struct edge_list *);
+void verify_edge_list (FILE *, struct edge_list *);
+int find_edge_index (struct edge_list *, basic_block, basic_block);
 
 
 enum update_life_extent
@@ -502,123 +496,110 @@ enum update_life_extent
 #define CLEANUP_NO_INSN_DEL	128	/* Do not try to delete trivially dead
 					   insns.  */
 #define CLEANUP_CFGLAYOUT	256	/* Do cleanup in cfglayout mode.  */
-extern void life_analysis	PARAMS ((rtx, FILE *, int));
-extern int update_life_info	PARAMS ((sbitmap, enum update_life_extent,
-					 int));
-extern int update_life_info_in_dirty_blocks PARAMS ((enum update_life_extent,
-						      int));
-extern int count_or_remove_death_notes	PARAMS ((sbitmap, int));
-extern int propagate_block	PARAMS ((basic_block, regset, regset, regset,
-					 int));
+extern void life_analysis (rtx, FILE *, int);
+extern int update_life_info (sbitmap, enum update_life_extent, int);
+extern int update_life_info_in_dirty_blocks (enum update_life_extent, int);
+extern int count_or_remove_death_notes (sbitmap, int);
+extern int propagate_block (basic_block, regset, regset, regset, int);
 
 struct propagate_block_info;
-extern rtx propagate_one_insn	PARAMS ((struct propagate_block_info *, rtx));
+extern rtx propagate_one_insn (struct propagate_block_info *, rtx);
 extern struct propagate_block_info *init_propagate_block_info
-  PARAMS ((basic_block, regset, regset, regset, int));
-extern void free_propagate_block_info PARAMS ((struct propagate_block_info *));
+ (basic_block, regset, regset, regset, int);
+extern void free_propagate_block_info (struct propagate_block_info *);
 
 /* In lcm.c */
-extern struct edge_list *pre_edge_lcm	PARAMS ((FILE *, int, sbitmap *,
-						 sbitmap *, sbitmap *,
-						 sbitmap *, sbitmap **,
-						 sbitmap **));
-extern struct edge_list *pre_edge_rev_lcm PARAMS ((FILE *, int, sbitmap *,
-						   sbitmap *, sbitmap *,
-						   sbitmap *, sbitmap **,
-						   sbitmap **));
-extern void compute_available		PARAMS ((sbitmap *, sbitmap *,
-						 sbitmap *, sbitmap *));
-extern int optimize_mode_switching	PARAMS ((FILE *));
+extern struct edge_list *pre_edge_lcm (FILE *, int, sbitmap *, sbitmap *,
+				       sbitmap *, sbitmap *, sbitmap **,
+				       sbitmap **);
+extern struct edge_list *pre_edge_rev_lcm (FILE *, int, sbitmap *,
+					   sbitmap *, sbitmap *,
+					   sbitmap *, sbitmap **,
+					   sbitmap **);
+extern void compute_available (sbitmap *, sbitmap *, sbitmap *, sbitmap *);
+extern int optimize_mode_switching (FILE *);
 
 /* In emit-rtl.c.  */
-extern rtx emit_block_insn_after	PARAMS ((rtx, rtx, basic_block));
-extern rtx emit_block_insn_before	PARAMS ((rtx, rtx, basic_block));
+extern rtx emit_block_insn_after (rtx, rtx, basic_block);
+extern rtx emit_block_insn_before (rtx, rtx, basic_block);
 
 /* In predict.c */
-extern void estimate_probability        PARAMS ((struct loops *));
-extern void note_prediction_to_br_prob	PARAMS ((void));
-extern void expected_value_to_br_prob	PARAMS ((void));
-extern bool maybe_hot_bb_p		PARAMS ((basic_block));
-extern bool probably_cold_bb_p		PARAMS ((basic_block));
-extern bool probably_never_executed_bb_p PARAMS ((basic_block));
+extern void estimate_probability (struct loops *);
+extern void note_prediction_to_br_prob (void);
+extern void expected_value_to_br_prob (void);
+extern bool maybe_hot_bb_p (basic_block);
+extern bool probably_cold_bb_p (basic_block);
+extern bool probably_never_executed_bb_p (basic_block);
 
 /* In flow.c */
-extern void init_flow                   PARAMS ((void));
-extern void dump_bb			PARAMS ((basic_block, FILE *));
-extern void debug_bb			PARAMS ((basic_block));
-extern basic_block debug_bb_n		PARAMS ((int));
-extern void dump_regset			PARAMS ((regset, FILE *));
-extern void debug_regset		PARAMS ((regset));
-extern void allocate_reg_life_data      PARAMS ((void));
-extern void allocate_bb_life_data	PARAMS ((void));
-extern void expunge_block		PARAMS ((basic_block));
-extern void link_block			PARAMS ((basic_block, basic_block));
-extern void unlink_block		PARAMS ((basic_block));
-extern void compact_blocks		PARAMS ((void));
-extern basic_block alloc_block		PARAMS ((void));
-extern void find_unreachable_blocks	PARAMS ((void));
-extern int delete_noop_moves		PARAMS ((rtx));
-extern basic_block force_nonfallthru	PARAMS ((edge));
-extern rtx block_label			PARAMS ((basic_block));
-extern bool forwarder_block_p		PARAMS ((basic_block));
-extern bool purge_all_dead_edges	PARAMS ((int));
-extern bool purge_dead_edges		PARAMS ((basic_block));
-extern void find_sub_basic_blocks	PARAMS ((basic_block));
-extern void find_many_sub_basic_blocks	PARAMS ((sbitmap));
-extern bool can_fallthru		PARAMS ((basic_block, basic_block));
-extern void flow_nodes_print		PARAMS ((const char *, const sbitmap,
-						 FILE *));
-extern void flow_edge_list_print	PARAMS ((const char *, const edge *,
-						 int, FILE *));
-extern void alloc_aux_for_block		PARAMS ((basic_block, int));
-extern void alloc_aux_for_blocks	PARAMS ((int));
-extern void clear_aux_for_blocks	PARAMS ((void));
-extern void free_aux_for_blocks		PARAMS ((void));
-extern void alloc_aux_for_edge		PARAMS ((edge, int));
-extern void alloc_aux_for_edges		PARAMS ((int));
-extern void clear_aux_for_edges		PARAMS ((void));
-extern void free_aux_for_edges		PARAMS ((void));
+extern void init_flow (void);
+extern void dump_bb (basic_block, FILE *);
+extern void debug_bb (basic_block);
+extern basic_block debug_bb_n (int);
+extern void dump_regset (regset, FILE *);
+extern void debug_regset (regset);
+extern void allocate_reg_life_data (void);
+extern void allocate_bb_life_data (void);
+extern void expunge_block (basic_block);
+extern void link_block (basic_block, basic_block);
+extern void unlink_block (basic_block);
+extern void compact_blocks (void);
+extern basic_block alloc_block (void);
+extern void find_unreachable_blocks (void);
+extern int delete_noop_moves (rtx);
+extern basic_block force_nonfallthru (edge);
+extern rtx block_label (basic_block);
+extern bool forwarder_block_p (basic_block);
+extern bool purge_all_dead_edges (int);
+extern bool purge_dead_edges (basic_block);
+extern void find_sub_basic_blocks (basic_block);
+extern void find_many_sub_basic_blocks (sbitmap);
+extern bool can_fallthru (basic_block, basic_block);
+extern void flow_nodes_print (const char *, const sbitmap, FILE *);
+extern void flow_edge_list_print (const char *, const edge *, int, FILE *);
+extern void alloc_aux_for_block (basic_block, int);
+extern void alloc_aux_for_blocks (int);
+extern void clear_aux_for_blocks (void);
+extern void free_aux_for_blocks (void);
+extern void alloc_aux_for_edge (edge, int);
+extern void alloc_aux_for_edges (int);
+extern void clear_aux_for_edges (void);
+extern void free_aux_for_edges (void);
 
 /* This function is always defined so it can be called from the
    debugger, and it is declared extern so we don't get warnings about
    it being unused.  */
-extern void verify_flow_info		PARAMS ((void));
+extern void verify_flow_info (void);
 
 typedef struct conflict_graph_def *conflict_graph;
 
 /* Callback function when enumerating conflicts.  The arguments are
    the smaller and larger regno in the conflict.  Returns zero if
    enumeration is to continue, nonzero to halt enumeration.  */
-typedef int (*conflict_graph_enum_fn) PARAMS ((int, int, void *));
+typedef int (*conflict_graph_enum_fn) (int, int, void *);
 
 
 /* Prototypes of operations on conflict graphs.  */
 
 extern conflict_graph conflict_graph_new
-                                        PARAMS ((int));
-extern void conflict_graph_delete       PARAMS ((conflict_graph));
-extern int conflict_graph_add           PARAMS ((conflict_graph,
-						 int, int));
-extern int conflict_graph_conflict_p    PARAMS ((conflict_graph,
-						 int, int));
-extern void conflict_graph_enum         PARAMS ((conflict_graph, int,
-						 conflict_graph_enum_fn,
-						 void *));
-extern void conflict_graph_merge_regs   PARAMS ((conflict_graph, int,
-						 int));
-extern void conflict_graph_print        PARAMS ((conflict_graph, FILE*));
-extern conflict_graph conflict_graph_compute
-                                        PARAMS ((regset,
-						 partition));
-extern bool mark_dfs_back_edges		PARAMS ((void));
-extern void set_edge_can_fallthru_flag	PARAMS ((void));
-extern void update_br_prob_note		PARAMS ((basic_block));
-extern void fixup_abnormal_edges	PARAMS ((void));
-extern bool can_hoist_insn_p		PARAMS ((rtx, rtx, regset));
-extern rtx hoist_insn_after		PARAMS ((rtx, rtx, rtx, rtx));
-extern rtx hoist_insn_to_edge		PARAMS ((rtx, edge, rtx, rtx));
-extern bool inside_basic_block_p	PARAMS ((rtx));
-extern bool control_flow_insn_p		PARAMS ((rtx));
+ (int);
+extern void conflict_graph_delete (conflict_graph);
+extern int conflict_graph_add (conflict_graph, int, int);
+extern int conflict_graph_conflict_p (conflict_graph, int, int);
+extern void conflict_graph_enum (conflict_graph, int, conflict_graph_enum_fn,
+				 void *);
+extern void conflict_graph_merge_regs (conflict_graph, int, int);
+extern void conflict_graph_print (conflict_graph, FILE*);
+extern conflict_graph conflict_graph_compute (regset, partition);
+extern bool mark_dfs_back_edges (void);
+extern void set_edge_can_fallthru_flag (void);
+extern void update_br_prob_note (basic_block);
+extern void fixup_abnormal_edges (void);
+extern bool can_hoist_insn_p (rtx, rtx, regset);
+extern rtx hoist_insn_after (rtx, rtx, rtx, rtx);
+extern rtx hoist_insn_to_edge (rtx, edge, rtx, rtx);
+extern bool inside_basic_block_p (rtx);
+extern bool control_flow_insn_p (rtx);
 
 /* In bb-reorder.c */
 extern void reorder_basic_blocks (void);
@@ -631,23 +612,22 @@ enum cdi_direction
   CDI_POST_DOMINATORS
 };
 
-extern dominance_info calculate_dominance_info	PARAMS ((enum cdi_direction));
-extern void free_dominance_info			PARAMS ((dominance_info));
-extern basic_block nearest_common_dominator	PARAMS ((dominance_info,
-						 basic_block, basic_block));
-extern void set_immediate_dominator	PARAMS ((dominance_info,
-						 basic_block, basic_block));
-extern basic_block get_immediate_dominator	PARAMS ((dominance_info,
-						 basic_block));
-extern bool dominated_by_p	PARAMS ((dominance_info, basic_block, basic_block));
-extern int get_dominated_by PARAMS ((dominance_info, basic_block, basic_block **));
-extern void add_to_dominance_info PARAMS ((dominance_info, basic_block));
-extern void delete_from_dominance_info PARAMS ((dominance_info, basic_block));
-basic_block recount_dominator PARAMS ((dominance_info, basic_block));
-extern void redirect_immediate_dominators PARAMS ((dominance_info, basic_block,
-						 basic_block));
-void iterate_fix_dominators PARAMS ((dominance_info, basic_block *, int));
-extern void verify_dominators PARAMS ((dominance_info));
+extern dominance_info calculate_dominance_info (enum cdi_direction);
+extern void free_dominance_info (dominance_info);
+extern basic_block nearest_common_dominator (dominance_info,
+					     basic_block, basic_block);
+extern void set_immediate_dominator (dominance_info, basic_block,
+				     basic_block);
+extern basic_block get_immediate_dominator (dominance_info, basic_block);
+extern bool dominated_by_p (dominance_info, basic_block, basic_block);
+extern int get_dominated_by (dominance_info, basic_block, basic_block **);
+extern void add_to_dominance_info (dominance_info, basic_block);
+extern void delete_from_dominance_info (dominance_info, basic_block);
+basic_block recount_dominator (dominance_info, basic_block);
+extern void redirect_immediate_dominators (dominance_info, basic_block,
+					   basic_block);
+void iterate_fix_dominators (dominance_info, basic_block *, int);
+extern void verify_dominators (dominance_info);
 
 #include "cfghooks.h"
 

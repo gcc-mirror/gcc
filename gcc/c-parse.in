@@ -332,16 +332,16 @@ static bool parsing_iso_function_signature;
 
 #define YYPRINT(FILE,YYCHAR,YYLVAL) yyprint(FILE,YYCHAR,YYLVAL)
 
-static void yyprint	  PARAMS ((FILE *, int, YYSTYPE));
-static void yyerror	  PARAMS ((const char *));
-static int yylexname	  PARAMS ((void));
-static inline int _yylex  PARAMS ((void));
-static int  yylex	  PARAMS ((void));
-static void init_reswords PARAMS ((void));
+static void yyprint (FILE *, int, YYSTYPE);
+static void yyerror (const char *);
+static int yylexname (void);
+static inline int _yylex (void);
+static int  yylex (void);
+static void init_reswords (void);
 
   /* Initialisation routine for this file.  */
 void
-c_parse_init ()
+c_parse_init (void)
 {
   init_reswords ();
 }
@@ -3526,7 +3526,7 @@ static const short rid_to_yy[RID_MAX] =
 };
 
 static void
-init_reswords ()
+init_reswords (void)
 {
   unsigned int i;
   tree id;
@@ -3554,8 +3554,7 @@ init_reswords ()
 #define NAME(type) cpp_type2name (type)
 
 static void
-yyerror (msgid)
-     const char *msgid;
+yyerror (const char *msgid)
 {
   const char *string = _(msgid);
 
@@ -3582,7 +3581,7 @@ yyerror (msgid)
 }
 
 static int
-yylexname ()
+yylexname (void)
 {
   tree decl;
 
@@ -3641,7 +3640,7 @@ end ifobjc
 }
 
 static inline int
-_yylex ()
+_yylex (void)
 {
  get_next:
   last_token = c_lex (&yylval.ttype);
@@ -3745,7 +3744,7 @@ _yylex ()
 }
 
 static int
-yylex()
+yylex (void)
 {
   int r;
   timevar_push (TV_LEX);
@@ -3757,10 +3756,7 @@ yylex()
 /* Function used when yydebug is set, to print a token in more detail.  */
 
 static void
-yyprint (file, yychar, yyl)
-     FILE *file;
-     int yychar;
-     YYSTYPE yyl;
+yyprint (FILE *file, int yychar, YYSTYPE yyl)
 {
   tree t = yyl.ttype;
 
@@ -3797,7 +3793,7 @@ yyprint (file, yychar, yyl)
 /* Free malloced parser stacks if necessary.  */
 
 void
-free_parser_stacks ()
+free_parser_stacks (void)
 {
   if (malloced_yyss)
     {

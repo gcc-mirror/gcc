@@ -126,29 +126,29 @@ struct sched_info
   void (*init_ready_list) (struct ready_list *);
   /* Called after taking an insn from the ready list.  Returns nonzero if
      this insn can be scheduled, nonzero if we should silently discard it.  */
-  int (*can_schedule_ready_p) PARAMS ((rtx));
+  int (*can_schedule_ready_p) (rtx);
   /* Return nonzero if there are more insns that should be scheduled.  */
-  int (*schedule_more_p) PARAMS ((void));
+  int (*schedule_more_p) (void);
   /* Called after an insn has all its dependencies resolved.  Return nonzero
      if it should be moved to the ready list or the queue, or zero if we
      should silently discard it.  */
-  int (*new_ready) PARAMS ((rtx));
+  int (*new_ready) (rtx);
   /* Compare priority of two insns.  Return a positive number if the second
      insn is to be preferred for scheduling, and a negative one if the first
      is to be preferred.  Zero if they are equally good.  */
-  int (*rank) PARAMS ((rtx, rtx));
+  int (*rank) (rtx, rtx);
   /* Return a string that contains the insn uid and optionally anything else
      necessary to identify this insn in an output.  It's valid to use a
      static buffer for this.  The ALIGNED parameter should cause the string
      to be formatted so that multiple output lines will line up nicely.  */
-  const char *(*print_insn) PARAMS ((rtx, int));
+  const char *(*print_insn) (rtx, int);
   /* Return nonzero if an insn should be included in priority
      calculations.  */
-  int (*contributes_to_priority) PARAMS ((rtx, rtx));
+  int (*contributes_to_priority) (rtx, rtx);
   /* Called when computing dependencies for a JUMP_INSN.  This function
      should store the set of registers that must be considered as set by
      the jump in the regset.  */
-  void (*compute_jump_reg_dependencies) PARAMS ((rtx, regset));
+  void (*compute_jump_reg_dependencies) (rtx, regset);
 
   /* The boundaries of the set of insns to be scheduled.  */
   rtx prev_head, next_tail;

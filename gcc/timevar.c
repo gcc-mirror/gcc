@@ -80,7 +80,7 @@ struct tms
 #else
 #ifdef HAVE_GETRUSAGE
 # if defined HAVE_DECL_GETRUSAGE && !HAVE_DECL_GETRUSAGE
-  extern int getrusage PARAMS ((int, struct rusage *));
+  extern int getrusage (int, struct rusage *);
 # endif
 # define USE_GETRUSAGE
 # define HAVE_USER_TIME
@@ -88,7 +88,7 @@ struct tms
 #else
 #ifdef HAVE_CLOCK
 # if defined HAVE_DECL_CLOCK && !HAVE_DECL_CLOCK
-  extern clock_t clock PARAMS ((void));
+  extern clock_t clock (void);
 # endif
 # define USE_CLOCK
 # define HAVE_USER_TIME

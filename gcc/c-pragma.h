@@ -51,9 +51,8 @@ extern void init_pragma (void);
 
 /* Front-end wrapper for pragma registration to avoid dragging
    cpplib.h in almost everywhere.  */
-extern void c_register_pragma
-	PARAMS ((const char *, const char *,
-		 void (*) (struct cpp_reader *)));
+extern void c_register_pragma (const char *, const char *,
+			       void (*) (struct cpp_reader *));
 extern void maybe_apply_pragma_weak (tree);
 extern tree maybe_apply_renaming_pragma (tree, tree);
 extern void add_to_renaming_pragma_list (tree, tree);

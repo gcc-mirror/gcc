@@ -1,6 +1,6 @@
 /* -*- indented-text -*- */
 /* Process source files and output type information.
-   Copyright (C) 2002 Free Software Foundation, Inc.
+   Copyright (C) 2002, 2003 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -33,15 +33,13 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #undef YY_USE_PROTOS
 #define YY_DECL int yylex ()
 
-static void update_lineno PARAMS ((const char *l, size_t len));
+static void update_lineno (const char *l, size_t len);
 
 struct fileloc lexer_line;
 int lexer_toplevel_done;
 
 static void 
-update_lineno (l, len)
-     const char *l;
-     size_t len;
+update_lineno (const char *l, size_t len)
 {
   while (len-- > 0)
     if (*l++ == '\n')
@@ -305,15 +303,13 @@ ITYPE	{IWORD}({WS}{IWORD})*
 %%
 
 void
-yyerror (s)
-     const char *s;
+yyerror (const char *s)
 {
   error_at_line (&lexer_line, s);
 }
 
 void
-parse_file (fname)
-      const char *fname;
+parse_file (const char *fname)
 {
   yyin = fopen (fname, "r");
   lexer_line.file = fname;

@@ -96,7 +96,7 @@ blocks_invariant_registers (basic_block *bbs, int nbbs, regset regs)
 	 insn = NEXT_INSN (insn))
       if (INSN_P (insn))
 	note_stores (PATTERN (insn),
-		     (void (*) PARAMS ((rtx, rtx, void *))) unmark_altered,
+		     (void (*) (rtx, rtx, void *)) unmark_altered,
 		     regs);
 }
 
@@ -158,7 +158,7 @@ blocks_single_set_registers (basic_block *bbs, int nbbs, rtx *regs)
 	  continue;
 	data.insn = insn;
 	note_stores (PATTERN (insn),
-	    (void (*) PARAMS ((rtx, rtx, void *))) unmark_altered_insn,
+	    (void (*) (rtx, rtx, void *)) unmark_altered_insn,
 	    &data);
       }
 }
@@ -332,7 +332,7 @@ variable_initial_value (rtx insn, regset invariant_regs, rtx var, rtx *set_insn)
 	{
 	  if (INSN_P (insn))
 	    note_stores (PATTERN (insn),
-		(void (*) PARAMS ((rtx, rtx, void *))) unmark_altered,
+		(void (*) (rtx, rtx, void *)) unmark_altered,
 		invariant_regs);
 	  if (modified_between_p (var, PREV_INSN (insn), NEXT_INSN (insn)))
 	    break;

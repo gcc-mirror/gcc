@@ -32,7 +32,7 @@ struct cfg_hooks
   /* Basic CFG manipulation.  */
 
   /* Return new basic block */
-  basic_block (*create_basic_block)	PARAMS ((void *head, void *end, basic_block after));
+  basic_block (*create_basic_block) (void *head, void *end, basic_block after);
 
   /* Redirect edge E to the given basic block B and update underlying program
      representation.  Returns false when edge is not easily redirectable for
@@ -51,10 +51,10 @@ struct cfg_hooks
   edge (*split_block) (basic_block b, void * i);
 
   /* Return true when blocks A and B can be merged into single basic block.  */
-  bool (*can_merge_blocks_p)		PARAMS ((basic_block a, basic_block b));
+  bool (*can_merge_blocks_p) (basic_block a, basic_block b);
 
   /* Merge blocks A and B.  */
-  void (*merge_blocks)			PARAMS ((basic_block a, basic_block b));
+  void (*merge_blocks) (basic_block a, basic_block b);
 
   /* Higher level functions representable by primitive operations above if
      we didn't have some oddities in RTL and Tree representations.  */
