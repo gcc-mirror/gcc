@@ -60,9 +60,6 @@
 #   include <bits/stl_threads.h>
 #   define __GC_CONST   // constant except for deallocation
 # endif
-# ifdef __STL_SGI_THREADS
-#    include <mutex.h>
-# endif
 
 namespace std
 {
