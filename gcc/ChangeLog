@@ -1,3 +1,14 @@
+2001-04-30  Richard Henderson  <rth@redhat.com>
+
+	* c-common.c (c_promoting_integer_type_p): New function, from the
+	corpse of old macro.  Properly promote too-small enumerations and
+	booleans.  Adjust all callers.
+	* c-common.h (C_PROMOTING_INTEGER_TYPE_P): Remove.
+	(c_promoting_integer_type_p): Declare.
+	* c-decl.c: Adjust C_PROMOTING_INTEGER_TYPE_P invocations.
+	* c-typeck.c: Likewise.
+	(default_conversion): Remove now redundant boolean check.
+
 2001-04-30  Jan Hubicka  <jh@suse.cz>
             Richard Henderson  <rth@redhat.com>
 

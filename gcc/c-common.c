@@ -3690,6 +3690,36 @@ builtin_function_2 (builtin_name, name, builtin_type, type, function_code,
   return (bdecl != 0 ? bdecl : decl);
 }
 
+/* Nonzero if the type T promotes to int.  This is (nearly) the
+   integral promotions defined in ISO C99 6.3.1.1/2.  */
+
+bool
+c_promoting_integer_type_p (t)
+     tree t;
+{
+  switch (TREE_CODE (t))
+    {
+    case INTEGER_TYPE:
+      return (TYPE_MAIN_VARIANT (t) == char_type_node
+	      || TYPE_MAIN_VARIANT (t) == signed_char_type_node
+	      || TYPE_MAIN_VARIANT (t) == unsigned_char_type_node
+	      || TYPE_MAIN_VARIANT (t) == short_integer_type_node
+	      || TYPE_MAIN_VARIANT (t) == short_unsigned_type_node);
+
+    case ENUMERAL_TYPE:
+      /* ??? Technically all enumerations not larger than an int
+	 promote to an int.  But this is used along code paths
+	 that only want to notice a size change.  */
+      return TYPE_PRECISION (t) < TYPE_PRECISION (integer_type_node);
+
+    case BOOLEAN_TYPE:
+      return 1;
+
+    default:
+      return 0;
+    }
+}
+
 /* Given a type, apply default promotions wrt unnamed function arguments
    and return the new type.  Return NULL_TREE if no change.  */
 /* ??? There is a function of the same name in the C++ front end that
@@ -3704,7 +3734,7 @@ simple_type_promotes_to (type)
   if (TYPE_MAIN_VARIANT (type) == float_type_node)
     return double_type_node;
 
-  if (C_PROMOTING_INTEGER_TYPE_P (type))
+  if (c_promoting_integer_type_p (type))
     {
       /* Traditionally, unsignedness is preserved in default promotions.
          Also preserve unsignedness if not really getting any wider.  */
@@ -3739,7 +3769,7 @@ self_promoting_args_p (parms)
       if (TYPE_MAIN_VARIANT (type) == float_type_node)
 	return 0;
 
-      if (C_PROMOTING_INTEGER_TYPE_P (type))
+      if (c_promoting_integer_type_p (type))
 	return 0;
     }
   return 1;

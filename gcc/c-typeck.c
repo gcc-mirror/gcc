@@ -954,14 +954,14 @@ default_conversion (exp)
   if (TREE_CODE (exp) == COMPONENT_REF
       && DECL_C_BIT_FIELD (TREE_OPERAND (exp, 1))
       /* If it's thinner than an int, promote it like a
-	 C_PROMOTING_INTEGER_TYPE_P, otherwise leave it alone.  */
+	 c_promoting_integer_type_p, otherwise leave it alone.  */
       && 0 > compare_tree_int (DECL_SIZE (TREE_OPERAND (exp, 1)),
 			       TYPE_PRECISION (integer_type_node)))
     return convert (flag_traditional && TREE_UNSIGNED (type)
 		    ? unsigned_type_node : integer_type_node,
 		    exp);
 
-  if (C_PROMOTING_INTEGER_TYPE_P (type))
+  if (c_promoting_integer_type_p (type))
     {
       /* Traditionally, unsignedness is preserved in default promotions.
          Also preserve unsignedness if not really getting any wider.  */
@@ -972,9 +972,6 @@ default_conversion (exp)
 
       return convert (integer_type_node, exp);
     }
-
-  if (code == BOOLEAN_TYPE)
-    return convert (integer_type_node, exp);
 
   if (flag_traditional && !flag_allow_single_precision
       && TYPE_MAIN_VARIANT (type) == float_type_node)
