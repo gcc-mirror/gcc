@@ -1084,6 +1084,7 @@ extern int for_each_rtx                 PROTO((rtx *, rtx_function, void *));
 extern rtx regno_use_in			PROTO((int, rtx));
 extern int auto_inc_p			PROTO((rtx));
 extern void remove_node_from_expr_list	PROTO((rtx, rtx *));
+extern int insns_safe_to_move_p         PROTO((rtx, rtx, rtx *));
 
 /* flow.c */
 

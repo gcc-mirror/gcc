@@ -1,5 +1,10 @@
 2000-12-20  Bernd Schmidt  <bernds@redhat.co.uk>
 
+	Sun Sep 19 09:03:40 1999  Mark Mitchell  <mark@codesourcery.com>
+	* rtl.h (insns_safe_to_move_p): New function.
+	* loop.c (find_and_verify_loops): Use it.
+	* rtlanal.c (insns_safe_to_move_p): Define it.
+
 	Thu Nov  2 19:20:12 2000  J"orn Rennecke <amylaar@redhat.com>
 	* reload.c (find_equiv_reg): Test all hard registers for membership
 	in the requested class.

@@ -2773,6 +2773,7 @@ find_and_verify_loops (f)
 	  {
 	    rtx p;
 	    rtx our_next = next_real_insn (insn);
+	    rtx last_insn_to_move = NEXT_INSN (insn);
 	    int dest_loop;
 	    int outer_loop = -1;
 
@@ -2824,7 +2825,11 @@ find_and_verify_loops (f)
 		&& INSN_UID (JUMP_LABEL (p)) != 0
 		&& condjump_p (p)
 		&& ! simplejump_p (p)
-		&& next_real_insn (JUMP_LABEL (p)) == our_next)
+		&& next_real_insn (JUMP_LABEL (p)) == our_next
+		/* If it's not safe to move the sequence, then we
+		   mustn't try.  */
+		&& insns_safe_to_move_p (p, NEXT_INSN (insn), 
+					 &last_insn_to_move))
 	      {
 		rtx target
 		  = JUMP_LABEL (insn) ? JUMP_LABEL (insn) : get_last_insn ();
@@ -2893,11 +2898,13 @@ find_and_verify_loops (f)
 
 		       /* Include the BARRIER after INSN and copy the
 			  block after LOC.  */
-		       new_label = squeeze_notes (new_label, NEXT_INSN (insn));
-		       reorder_insns (new_label, NEXT_INSN (insn), loc);
+		       new_label = squeeze_notes (new_label, 
+						  last_insn_to_move);
+		       reorder_insns (new_label, last_insn_to_move, loc);
 
 		       /* All those insns are now in TARGET_LOOP_NUM.  */
-		       for (q = new_label; q != NEXT_INSN (NEXT_INSN (insn));
+		       for (q = new_label; 
+			    q != NEXT_INSN (last_insn_to_move);
 			    q = NEXT_INSN (q))
 			 uid_loop_num[INSN_UID (q)] = target_loop_num;
 

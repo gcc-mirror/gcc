@@ -2289,3 +2289,82 @@ auto_inc_p (x)
     }
   return 0;
 }
+
+/* Return 1 if the sequence of instructions beginning with FROM and up
+   to and including TO is safe to move.  If NEW_TO is non-NULL, and
+   the sequence is not already safe to move, but can be easily
+   extended to a sequence which is safe, then NEW_TO will point to the
+   end of the extended sequence.  
+ 
+   For now, this function only checks that the region contains whole
+   exception regiongs, but it could be extended to check additional
+   conditions as well.  */
+
+int
+insns_safe_to_move_p (from, to, new_to)
+     rtx from;
+     rtx to;
+     rtx *new_to;
+{
+  int eh_region_count = 0;
+  int past_to_p = 0;
+  rtx r = from;
+
+  /* By default, assume the end of the region will be what was
+     suggested.  */
+  if (new_to)
+    *new_to = to;
+
+  while (r)
+    {
+      if (GET_CODE (r) == NOTE)
+	{
+	  switch (NOTE_LINE_NUMBER (r))
+	    {
+	    case NOTE_INSN_EH_REGION_BEG:
+	      ++eh_region_count;
+	      break;
+
+	    case NOTE_INSN_EH_REGION_END:
+	      if (eh_region_count == 0)
+		/* This sequence of instructions contains the end of
+		   an exception region, but not he beginning.  Moving
+		   it will cause chaos.  */
+		return 0;
+
+	      --eh_region_count;
+	      break;
+
+	    default:
+	      break;
+	    }
+	}
+      else if (past_to_p)
+	/* If we've passed TO, and we see a non-note instruction, we
+	   can't extend the sequence to a movable sequence.  */
+	return 0;
+
+      if (r == to)
+	{
+	  if (!new_to)
+	    /* It's OK to move the sequence if there were matched sets of
+	       exception region notes.  */
+	    return eh_region_count == 0;
+	  
+	  past_to_p = 1;
+	}
+
+      /* It's OK to move the sequence if there were matched sets of
+	 exception region notes.  */
+      if (past_to_p && eh_region_count == 0)
+	{
+	  *new_to = r;
+	  return 1;
+	}
+
+      /* Go to the next instruction.  */
+      r = NEXT_INSN (r);
+    }
+  
+  return 0;
+}
