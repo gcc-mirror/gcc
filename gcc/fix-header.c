@@ -75,7 +75,6 @@ Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.  */
 #include "obstack.h"
 #include "scan.h"
 #include "cpplib.h"
-#include "cpphash.h"
 
 static void v_fatal PARAMS ((const char *, va_list)) ATTRIBUTE_NORETURN;
 static void fatal PARAMS ((const char *, ...)) ATTRIBUTE_PRINTF_1 ATTRIBUTE_NORETURN;
@@ -381,7 +380,7 @@ lookup_std_proto (name, name_length)
      const char *name;
      int name_length;
 {
-  int i = hashf (name, name_length, HASH_SIZE);
+  int i = hashstr (name, name_length) % HASH_SIZE;
   int i0 = i;
   for (;;)
     {

@@ -18,8 +18,6 @@ Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.  */
 #include "hconfig.h"
 #include "system.h"
 #include "scan.h"
-#include "cpplib.h"
-#include "cpphash.h"
 #undef abort
 
 int verbose = 0;
@@ -31,6 +29,7 @@ static int parse_fn_proto	PARAMS ((char *, char *, struct fn_decl *));
 #define HASH_SIZE 2503 /* a prime */
 int hash_tab[HASH_SIZE];
 int next_index;
+int collisions;
 
 static void
 add_hash (fname)
@@ -39,10 +38,11 @@ add_hash (fname)
   int i, i0;
 
   /* NOTE:  If you edit this, also edit lookup_std_proto in fix-header.c !! */
-  i = hashf (fname, strlen (fname), HASH_SIZE);
+  i = hashstr (fname, strlen (fname)) % HASH_SIZE;
   i0 = i;
   if (hash_tab[i] != 0)
     {
+      collisions++;
       for (;;)
 	{
 	  i = (i+1) % HASH_SIZE;
@@ -186,5 +186,26 @@ main (argc, argv)
     fprintf (outf, "  %d,\n", hash_tab[i]);
   fprintf (outf, "};\n");
 
+  fprintf (stderr, "gen-protos: %d entries %d collisions\n",
+	   next_index, collisions);
+  
   return 0;
+}
+
+/* Needed by scan.o.  We can't use libiberty here.  */
+PTR
+xrealloc (p, s)
+     PTR p;
+     size_t s;
+{
+  PTR r;
+  if (s == 0)
+    s = 1;
+  if (p)
+    r = realloc (p, s);
+  else
+    r = malloc (s);
+  if (!r)
+    abort ();
+  return r;
 }

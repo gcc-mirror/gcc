@@ -1,3 +1,16 @@
+2000-02-08  Zack Weinberg  <zack@wolery.cumb.org>
+
+	* Makefile.in (GEN_PROTOS_OBJS): Remove libcpp.a.
+	(gen_protos.o): Don't depend on cpplib.h or cpphash.h.
+	(fix-header.o): Don't depend on cpphash.h.
+
+	* scan.c (hashstr): New function. 
+	* scan.h: Prototype it.
+	* fix-header.c: Don't include cpphash.h.  Use hashstr.  
+	* gen-protos.c: Don't include cpphash.h or cpplib.h.  Use
+	hashstr.  Report hash table statistics.  Add private     
+	definition of xrealloc.
+
 2000-02-08  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* i386.h (TARGET_SWITCHES): Fix typo in option name.
