@@ -276,7 +276,7 @@ in the following sections.
 @smallexample
 @var{object-file-name}  -l@var{library}
 -nostartfiles  -nodefaultlibs  -nostdlib
--s  -static  -shared  -symbolic
+-s  -static  -static-libgcc  -shared  -shared-libgcc  -symbolic
 -Wl,@var{option}  -Xlinker @var{option}
 -u @var{symbol}
 @end smallexample
@@ -3501,6 +3501,25 @@ multi-libbed systems, @code{gcc -shared} must select the correct support
 libraries to link against.  Failing to supply the correct flags may lead
 to subtle defects. Supplying them in cases where they are not necessary
 is innocuous.}
+
+@item -shared-libgcc
+@itemx -static-libgcc
+On systems that provide @file{libgcc} as a shared library, these options
+force the use of either the shared or static version respectively.
+If no shared version of @file{libgcc} was built when the compiler was
+configured, these options have no effect.
+
+There are several situations in which an application should use the
+shared @file{libgcc} instead of the static version.  The most common
+of these is when the application wishes to throw and catch exceptions
+across different shared libraries.  In that case, each of the libraries
+as well as the application itself should use the shared @file{libgcc}.
+
+At present the GCC driver makes no attempt to recognize the situations
+in which the shared @file{libgcc} should be used, and defaults to using
+the static @file{libgcc} always.  This will likely change in the future,
+at which time @samp{-static-libgcc} becomes useful as a means for 
+overriding GCC's choice.
 
 @item -symbolic
 Bind references to global symbols when building a shared object.  Warn
