@@ -26,6 +26,21 @@
 	(lang_dependent_init):  Save, set input_location to <built-in>.
 	(warn_deprecated_use):  Use expand_location.
 
+	* basic-block.h (struct edge_def):  Use new source_locus typedef.
+	* c-common.c (fname_decl):  Update save/clear/store of input_location.
+	(c_do_switch_warnings):  Update for USE_MAPPED_LOCATION case.
+	* c-decl.c:  Likewise.
+	* c-dump.c (dump_stmt):  Likewise.
+	* c-gimplify.c (c-gimplify.c):  Generalize using SET_EXPR_LOCATION.
+	* c-lex.c (cb_line_change):  If USE_MAPPED_LOCATION use token's	src_loc
+	to set input_location direction, rather than using linemap_lookup.
+	(fe_file_change, cb_def_pragma):  Again use source_location directly.
+	* c-opts.c (saved_lineno):  Remove static variable.
+	(c_common_post_options, c_common_init):  Don't bothner to save,
+	clear and restore input_Location - now handled by lang_dependent_init.
+	* function.c (init_function_start):  Use new DECL_IS_BUILTIN macro.
+	* xcoffout.c (xcoff_assign_fundamental_type_number):  Likewise.
+
 2004-06-30  Richard Sandiford  <rsandifo@redhat.com>
 	    Eric Christopher  <echristo@redhat.com>
 

@@ -6315,7 +6315,7 @@ init_function_start (tree subr)
      function.  Also tell final how to output a linenum before the
      function prologue.  Note linenums could be missing, e.g. when
      compiling a Java .class file.  */
-  if (DECL_SOURCE_LINE (subr))
+  if (! DECL_IS_BUILTIN (subr))
     emit_line_note (DECL_SOURCE_LOCATION (subr));
 
   /* Make sure first insn is a note even if we don't want linenums.

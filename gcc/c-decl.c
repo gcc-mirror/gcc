@@ -1114,7 +1114,7 @@ diagnose_mismatched_decls (tree newdecl, tree olddecl,
 	    }
 	}
       else if (TREE_CODE (olddecl) == FUNCTION_DECL
-	       && DECL_SOURCE_LINE (olddecl) == 0)
+	       && DECL_IS_BUILTIN (olddecl))
 	{
 	  /* A conflicting function declaration for a predeclared
 	     function that isn't actually built in.  Objective C uses
@@ -1223,7 +1223,7 @@ diagnose_mismatched_decls (tree newdecl, tree olddecl,
 	     default.  Objective C uses these.  See also above.
 	     FIXME: Make Objective C use normal builtins.  */
 	  if (TREE_CODE (olddecl) == FUNCTION_DECL
-	      && DECL_SOURCE_LINE (olddecl) == 0)
+	      && DECL_IS_BUILTIN (olddecl))
 	    return false;
 	  else
 	    {
@@ -1671,7 +1671,7 @@ warn_if_shadowing (tree new)
   /* Shadow warnings wanted?  */
   if (!warn_shadow
       /* No shadow warnings for internally generated vars.  */
-      || DECL_SOURCE_LINE (new) == 0
+      || DECL_IS_BUILTIN (new)
       /* No shadow warnings for vars made for inlining.  */
       || DECL_FROM_INLINE (new)
       /* Don't warn about the parm names in function declarator
@@ -1755,7 +1755,7 @@ warn_if_shadowing (tree new)
 static void
 clone_underlying_type (tree x)
 {
-  if (DECL_SOURCE_LINE (x) == 0)
+  if (DECL_IS_BUILTIN (x))
     {
       if (TYPE_NAME (TREE_TYPE (x)) == 0)
 	TYPE_NAME (TREE_TYPE (x)) = x;
@@ -1963,7 +1963,7 @@ implicitly_declare (tree functionid)
 	 in the external scope because they're pushed before the file
 	 scope gets created.  Catch this here and rebind them into the
 	 file scope.  */
-      if (!DECL_BUILT_IN (decl) && DECL_SOURCE_LINE (decl) == 0)
+      if (!DECL_BUILT_IN (decl) && DECL_IS_BUILTIN (decl))
 	{
 	  bind (functionid, decl, file_scope);
 	  return decl;
@@ -2290,8 +2290,12 @@ c_init_decl_processing (void)
   /* Declarations from c_common_nodes_and_builtins must not be associated
      with this input file, lest we get differences between using and not
      using preprocessed headers.  */
-  input_location.file = "<internal>";
+#ifdef USE_MAPPED_LOCATION
+  input_location = BUILTINS_LOCATION;
+#else
+  input_location.file = "<built-in>";
   input_location.line = 0;
+#endif
 
   build_common_tree_nodes (flag_signed_char);
 

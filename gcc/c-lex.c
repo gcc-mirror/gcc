@@ -197,11 +197,15 @@ cb_line_change (cpp_reader *pfile ATTRIBUTE_UNUSED, const cpp_token *token,
 		int parsing_args)
 {
   if (token->type != CPP_EOF && !parsing_args)
+#ifdef USE_MAPPED_LOCATION
+    input_location = token->src_loc;
+#else
     {
       source_location loc = token->src_loc;
       const struct line_map *map = linemap_lookup (&line_table, loc);
       input_line = SOURCE_LINE (map, loc);
     }
+#endif
 }
 
 void
@@ -216,10 +220,17 @@ fe_file_change (const struct line_map *new_map)
 	 we already did in compile_file.  */
       if (! MAIN_FILE_P (new_map))
 	{
+#ifdef USE_MAPPED_LOCATION
+          int included_at = LAST_SOURCE_LINE_LOCATION (new_map - 1);
+
+	  input_location = included_at;
+	  push_srcloc (new_map->start_location);
+#else
           int included_at = LAST_SOURCE_LINE (new_map - 1);
 
 	  input_line = included_at;
 	  push_srcloc (new_map->to_file, 1);
+#endif
 	  (*debug_hooks->start_source_file) (included_at, new_map->to_file);
 #ifndef NO_IMPLICIT_EXTERN_C
 	  if (c_header_level)
@@ -249,8 +260,12 @@ fe_file_change (const struct line_map *new_map)
 
   update_header_times (new_map->to_file);
   in_system_header = new_map->sysp != 0;
+#ifdef USE_MAPPED_LOCATION
+  input_location = new_map->start_location;
+#else
   input_filename = new_map->to_file;
   input_line = new_map->to_line;
+#endif
 
   /* Hook for C++.  */
   extract_interface_info ();
@@ -264,7 +279,9 @@ cb_def_pragma (cpp_reader *pfile, source_location loc)
      -Wunknown-pragmas has been given.  */
   if (warn_unknown_pragmas > in_system_header)
     {
+#ifndef USE_MAPPED_LOCATION
       const struct line_map *map = linemap_lookup (&line_table, loc);
+#endif
       const unsigned char *space, *name;
       const cpp_token *s;
 
@@ -278,7 +295,11 @@ cb_def_pragma (cpp_reader *pfile, source_location loc)
 	    name = cpp_token_as_text (pfile, s);
 	}
 
+#ifdef USE_MAPPED_LOCATION
+      input_location = loc;
+#else
       input_line = SOURCE_LINE (map, loc);
+#endif
       warning ("ignoring #pragma %s %s", space, name);
     }
 }
