@@ -1,3 +1,10 @@
+2003-07-18  David Edelsohn  <edelsohn@gnu.org>
+
+	* config/rs6000/aix.h (AGGREGATE_PADDING_FIXED): Define.
+	(AGGREGATES_PAD_UPWARD_ALWAYS): Define.
+	(MUST_PASS_IN_STACK): Define.
+	(BLOCK_REG_PADDING): Define.
+
 2003-07-18  Richard Henderson  <rth@redhat.com>
 
 	* cfgrtl.c (force_nonfallthru_and_redirect): Use tablejump_p
