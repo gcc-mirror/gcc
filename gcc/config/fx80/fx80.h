@@ -1267,7 +1267,7 @@ do { int i; unsigned char *pp = (unsigned char *) (PTR);	\
         fprintf (FILE, "#0r%.9g", u1.f);				\
       else								\
         fprintf (FILE, "#0x%x", u1.i); }				\
-  else if (GET_CODE (X) == CONST_DOUBLE && GET_MODE (X) != DImode)	\
+  else if (GET_CODE (X) == CONST_DOUBLE && GET_MODE (X) != VOIDmode)	\
     { union { double d; int i[2]; } u;					\
       u.i[0] = CONST_DOUBLE_LOW (X); u.i[1] = CONST_DOUBLE_HIGH (X);	\
       fprintf (FILE, "#0r%.20g", u.d); }				\
