@@ -491,7 +491,7 @@ static jclass
 
       java::lang::ClassLoader *loader = NULL;
       if (env->klass != NULL)
-	loader = env->klass->getClassLoader ();
+	loader = env->klass->getClassLoaderInternal ();
 
       if (loader == NULL)
 	{
@@ -1189,7 +1189,7 @@ static jfieldID
 
       // FIXME: what if field_class == NULL?
 
-      java::lang::ClassLoader *loader = clazz->getClassLoader ();
+      java::lang::ClassLoader *loader = clazz->getClassLoaderInternal ();
       while (clazz != NULL)
 	{
 	  // We acquire the class lock so that fields aren't resolved

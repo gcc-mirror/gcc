@@ -1,6 +1,6 @@
 // natMethod.cc - Native code for Method class.
 
-/* Copyright (C) 1998, 1999, 2000, 2001 , 2002 Free Software Foundation
+/* Copyright (C) 1998, 1999, 2000, 2001 , 2002, 2003 Free Software Foundation
 
    This file is part of libgcj.
 
@@ -30,6 +30,7 @@ details.  */
 #include <java/lang/Double.h>
 #include <java/lang/IllegalArgumentException.h>
 #include <java/lang/NullPointerException.h>
+#include <java/lang/ArrayIndexOutOfBoundsException.h>
 #include <java/lang/Class.h>
 #include <gcj/method.h>
 #include <gnu/gcj/RawData.h>
@@ -142,19 +143,33 @@ java::lang::reflect::Method::invoke (jobject obj, jobjectArray args)
   if (parameter_types == NULL)
     getType ();
 
+  gnu::gcj::runtime::StackTrace *t 
+    = new gnu::gcj::runtime::StackTrace(4);
+  Class *caller = NULL;
+  try
+    {
+      for (int i = 1; !caller; i++)
+	{
+	  caller = t->classAt (i);
+	}
+    }
+  catch (::java::lang::ArrayIndexOutOfBoundsException *e)
+    {
+    }
+
   jmethodID meth = _Jv_FromReflectedMethod (this);
+  jclass klass;
   if (! java::lang::reflect::Modifier::isStatic(meth->accflags))
     {
-      jclass k = obj ? obj->getClass() : NULL;
       if (! obj)
 	throw new java::lang::NullPointerException;
-      if (! declaringClass->isAssignableFrom(k))
+      klass = obj->getClass();
+      if (! declaringClass->isAssignableFrom(klass))
 	throw new java::lang::IllegalArgumentException;
-      // FIXME: access checks.
 
       // Find the possibly overloaded method based on the runtime type
       // of the object.
-      meth = _Jv_LookupDeclaredMethod (k, meth->name, meth->signature);
+      meth = _Jv_LookupDeclaredMethod (klass, meth->name, meth->signature);
     }
   else
     {
@@ -162,7 +177,11 @@ java::lang::reflect::Method::invoke (jobject obj, jobjectArray args)
       // here and not in _Jv_CallAnyMethodA because JNI initializes a
       // class whenever a method lookup is done.
       _Jv_InitClass (declaringClass);
+      klass = declaringClass;
     }
+
+  if (! isAccessible() && ! _Jv_CheckAccess(caller, klass, meth->accflags))
+    throw new IllegalArgumentException;
 
   return _Jv_CallAnyMethodA (obj, return_type, meth, false,
 			     parameter_types, args);
@@ -207,7 +226,7 @@ java::lang::reflect::Method::getType ()
   jclass *elts = elements (exception_types);
   for (int i = 0; i < count; ++i)
     elts[i] = _Jv_FindClass (method->throws[i],
-			     declaringClass->getClassLoader ());
+			     declaringClass->getClassLoaderInternal ());
 }
 
 void
@@ -218,7 +237,7 @@ _Jv_GetTypesFromSignature (jmethodID method,
 {
 
   _Jv_Utf8Const* sig = method->signature;
-  java::lang::ClassLoader *loader = declaringClass->getClassLoader();
+  java::lang::ClassLoader *loader = declaringClass->getClassLoaderInternal();
   char *ptr = sig->data;
   int numArgs = 0;
   /* First just count the number of parameters. */
@@ -344,19 +363,11 @@ _Jv_CallAnyMethodA (jobject obj,
 
   jclass *paramelts = elements (parameter_types);
 
-  // FIXME: at some point the compiler is going to add extra arguments
-  // to some functions.  In particular we are going to do this for
-  // handling access checks in reflection.  We must add these hidden
-  // arguments here.
-
   // Special case for the `this' argument of a constructor.  Note that
   // the JDK 1.2 docs specify that the new object must be allocated
   // before argument conversions are done.
   if (is_constructor)
-    {
-      // FIXME: must special-case String, arrays, maybe others here.
-      obj = JvAllocObject (return_type);
-    }
+    obj = JvAllocObject (return_type);
 
   const int size_per_arg = sizeof(jvalue);
   ffi_cif cif;
@@ -488,8 +499,6 @@ _Jv_CallAnyMethodA (jobject obj,
 		    JArray<jclass> *parameter_types,
 		    jobjectArray args)
 {
-  // FIXME: access checks.
-
   if (parameter_types->length == 0 && args == NULL)
     {
       // The JDK accepts this, so we do too.

@@ -1,4 +1,4 @@
-/* Copyright (C) 1998, 1999, 2000, 2001  Free Software Foundation
+/* Copyright (C) 1998, 1999, 2000, 2001, 2003  Free Software Foundation
 
    This file is part of libgcj.
 
@@ -11,15 +11,6 @@ package java.lang.reflect;
 /**
  * @author Per Bothner <bothner@cygnus.com>
  * @date September 1998;  February 1999.
- */
-/* Status:  Mostly implemented.
- * However, access checks are not implemented.  See natField.cc for
- * _Jv_CheckFieldAccessibility as well as the missing getCaller.
- * Note that the idea is to have to compiler convert calls to
- * setXXX(...) and getXXX(...) to setXXX(CALLER, ...) and getXXX(CALLER, ...),
- * where CALLER is reference to the class that contains the calls to
- * setXXX or getXXX.  This is easy for the compiler, and replaces
- * expensive stack and table searching with a constant.
  */
 
 public final class Field extends AccessibleObject implements Member
@@ -39,12 +30,12 @@ public final class Field extends AccessibleObject implements Member
   }
 
   public boolean equals (Object fld)
-    {
-      if (! (fld instanceof Field))
-	return false;
-      Field f = (Field) fld;
-      return declaringClass == f.declaringClass && offset == f.offset;
-    }
+  {
+    if (! (fld instanceof Field))
+      return false;
+    Field f = (Field) fld;
+    return declaringClass == f.declaringClass && offset == f.offset;
+  }
 
   public Class getDeclaringClass ()
   {
@@ -61,11 +52,6 @@ public final class Field extends AccessibleObject implements Member
   {
     return (declaringClass.hashCode() ^ offset);
   }
-
-  // The idea is that the compiler will magically translate
-  // fld.getShort(obj) to fld.getShort(THISCLASS, obj).
-  // This makes checking assessiblity more efficient,
-  // since we don't have to do any stack-walking.
 
   public boolean getBoolean (Object obj)
     throws IllegalArgumentException, IllegalAccessException

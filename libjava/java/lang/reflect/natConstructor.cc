@@ -1,6 +1,6 @@
 // natConstructor.cc - Native code for Constructor class.
 
-/* Copyright (C) 1999, 2000, 2001, 2002  Free Software Foundation
+/* Copyright (C) 1999, 2000, 2001, 2002, 2003  Free Software Foundation
 
    This file is part of libgcj.
 
@@ -13,6 +13,8 @@ details.  */
 #include <gcj/cni.h>
 #include <jvm.h>
 
+#include <java/lang/ArrayIndexOutOfBoundsException.h>
+#include <java/lang/IllegalAccessException.h>
 #include <java/lang/reflect/Constructor.h>
 #include <java/lang/reflect/Method.h>
 #include <java/lang/reflect/InvocationTargetException.h>
@@ -45,6 +47,24 @@ java::lang::reflect::Constructor::newInstance (jobjectArray args)
 {
   if (parameter_types == NULL)
     getType ();
+
+  gnu::gcj::runtime::StackTrace *t 
+    = new gnu::gcj::runtime::StackTrace(4);
+  Class *caller = NULL;
+  try
+    {
+      for (int i = 1; !caller; i++)
+	{
+	  caller = t->classAt (i);
+	}
+    }
+  catch (::java::lang::ArrayIndexOutOfBoundsException *e)
+    {
+    }
+
+  if (! isAccessible() && ! _Jv_CheckAccess(caller, declaringClass,
+					    declaringClass->getModifiers()))
+    throw new java::lang::IllegalAccessException;
 
   using namespace java::lang::reflect;
   if (Modifier::isAbstract (declaringClass->getModifiers()))

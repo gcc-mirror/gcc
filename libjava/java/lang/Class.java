@@ -72,14 +72,7 @@ public final class Class implements Serializable
   public Method getDeclaredMethod (String methodName, Class[] parameterTypes)
     throws NoSuchMethodException, SecurityException
   {
-    SecurityManager sm = System.getSecurityManager();
-    if (sm != null)
-      {
-	sm.checkMemberAccess(this, Member.DECLARED);
-	Package p = getPackage();
-	if (p != null)
-	  sm.checkPackageAccess(p.getName());
-      }
+    memberAccessCheck(Member.DECLARED);
 
     if ("<init>".equals(methodName) || "<clinit>".equals(methodName))
       throw new NoSuchMethodException(methodName);
@@ -101,9 +94,7 @@ public final class Class implements Serializable
   public Field getField (String fieldName)
     throws NoSuchFieldException, SecurityException
   {
-    SecurityManager s = System.getSecurityManager();
-    if (s != null)
-      s.checkMemberAccess (this, java.lang.reflect.Member.DECLARED);
+    memberAccessCheck (Member.PUBLIC);
     Field fld = getField(fieldName, fieldName.hashCode());
     if (fld == null)
       throw new NoSuchFieldException(fieldName);
@@ -148,14 +139,7 @@ public final class Class implements Serializable
   public Method getMethod (String methodName, Class[] parameterTypes)
     throws NoSuchMethodException, SecurityException
   {
-    SecurityManager sm = System.getSecurityManager();
-    if (sm != null)
-      {
-	sm.checkMemberAccess(this, Member.PUBLIC);
-	Package p = getPackage();
-	if (p != null)
-	  sm.checkPackageAccess(p.getName());
-      }
+    memberAccessCheck(Member.PUBLIC);
 
     if ("<init>".equals(methodName) || "<clinit>".equals(methodName))
       throw new NoSuchMethodException(methodName);
@@ -334,14 +318,6 @@ public final class Class implements Serializable
   {
   }
 
-  // Do a security check.
-  private void checkMemberAccess (int flags)
-  {
-    SecurityManager sm = System.getSecurityManager();
-    if (sm != null)
-      sm.checkMemberAccess(this, flags);
-  }
-
   // Initialize the class.
   private native void initializeClass ();
 
@@ -360,5 +336,21 @@ public final class Class implements Serializable
     if (lastInd == -1)
       return "";
     return name.substring(0, lastInd);
+  }
+
+  /**
+   * Perform security checks common to all of the methods that
+   * get members of this Class.
+   */
+  private void memberAccessCheck(int which)
+  {
+    SecurityManager sm = System.getSecurityManager();
+    if (sm != null)
+      {
+	sm.checkMemberAccess(this, which);
+	Package pkg = getPackage();
+	if (pkg != null)
+	  sm.checkPackageAccess(pkg.getName());
+      }
   }
 }

@@ -1,5 +1,5 @@
 /* Runtime.java -- access to the VM process
-   Copyright (C) 1998, 2002 Free Software Foundation
+   Copyright (C) 1998, 2002, 2003 Free Software Foundation
 
 This file is part of GNU Classpath.
 
@@ -65,7 +65,7 @@ public class Runtime
 
   /**
    * The current security manager. This is located here instead of in
-   * Runtime, to avoid security problems, as well as bootstrap issues.
+   * System, to avoid security problems, as well as bootstrap issues.
    * Make sure to access it in a thread-safe manner; it is package visible
    * to avoid overhead in java.lang.
    */

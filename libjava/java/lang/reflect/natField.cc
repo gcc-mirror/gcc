@@ -1,6 +1,6 @@
 // natField.cc - Implementation of java.lang.reflect.Field native methods.
 
-/* Copyright (C) 1998, 1999, 2000, 2001  Free Software Foundation
+/* Copyright (C) 1998, 1999, 2000, 2001, 2003  Free Software Foundation
 
    This file is part of libgcj.
 
@@ -15,6 +15,7 @@ details.  */
 #include <jvm.h>
 #include <java/lang/reflect/Field.h>
 #include <java/lang/reflect/Modifier.h>
+#include <java/lang/ArrayIndexOutOfBoundsException.h>
 #include <java/lang/IllegalArgumentException.h>
 #include <java/lang/IllegalAccessException.h>
 #include <java/lang/NullPointerException.h>
@@ -46,31 +47,36 @@ java::lang::reflect::Field::getType ()
 {
   jfieldID fld = _Jv_FromReflectedField (this);
   JvSynchronize sync (declaringClass);
-  _Jv_ResolveField (fld, declaringClass->getClassLoader ());
+  _Jv_ResolveField (fld, declaringClass->getClassLoaderInternal ());
   return fld->type;
-}
-
-static void
-_Jv_CheckFieldAccessibility (jfieldID /*fld*/, jclass /*caller*/)
-{
-#if 0
-  if (caller == NULL)
-    caller = getCaller();
-#endif
-#if 0
-  _Jv_ushort flags = fld->getModifiers();
-  check accesss;
-#endif
 }
 
 static void*
 getAddr (java::lang::reflect::Field* field, jclass caller, jobject obj)
 {
+  // FIXME: we know CALLER is NULL here.  At one point we planned to
+  // have the compiler insert the caller as a hidden argument in some
+  // calls.  However, we never implemented that, so we have to find
+  // the caller by hand instead.
+  gnu::gcj::runtime::StackTrace *t 
+    = new gnu::gcj::runtime::StackTrace(4);
+  try
+    {
+      for (int i = 1; !caller; i++)
+	{
+	  caller = t->classAt (i);
+	}
+    }
+  catch (::java::lang::ArrayIndexOutOfBoundsException *e)
+    {
+    }
+
   jfieldID fld = _Jv_FromReflectedField (field);
   _Jv_ushort flags = fld->getModifiers();
-  if (! (flags & java::lang::reflect::Modifier::PUBLIC)
-      && ! field->isAccessible ())
-    _Jv_CheckFieldAccessibility (fld, caller);
+  if (! field->isAccessible ()
+      && ! _Jv_CheckAccess (caller, field->getDeclaringClass(), flags))
+    throw new java::lang::IllegalAccessException;
+
   if (flags & java::lang::reflect::Modifier::STATIC)
     {
       jclass fldClass = field->getDeclaringClass ();

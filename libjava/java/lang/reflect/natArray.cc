@@ -1,6 +1,6 @@
 // natField.cc - Implementation of java.lang.reflect.Field native methods.
 
-/* Copyright (C) 1999, 2000, 2001  Free Software Foundation
+/* Copyright (C) 1999, 2000, 2001, 2003  Free Software Foundation
 
    This file is part of libgcj.
 
@@ -15,6 +15,7 @@ details.  */
 #include <jvm.h>
 #include <gcj/cni.h>
 #include <java/lang/reflect/Array.h>
+#include <java/lang/ArrayIndexOutOfBoundsException.h>
 #include <java/lang/IllegalArgumentException.h>
 #include <java/lang/Byte.h>
 #include <java/lang/Short.h>
@@ -38,8 +39,8 @@ java::lang::reflect::Array::newInstance (jclass componentType, jint length)
       return _Jv_NewPrimArray (componentType, length);
     }
   else
+    // FIXME: class loader?
     return JvNewObjectArray (length, componentType, NULL);
-
 }
 
 jobject
@@ -52,10 +53,26 @@ java::lang::reflect::Array::newInstance (jclass componentType,
   jint* dims = elements (dimensions);
   if (ndims == 1)
     return newInstance (componentType, dims[0]);
+
+  gnu::gcj::runtime::StackTrace *t 
+    = new gnu::gcj::runtime::StackTrace(4);
+  Class *caller = NULL;
+  ClassLoader *caller_loader = NULL;
+  try
+    {
+      for (int i = 1; !caller; i++)
+	{
+	  caller = t->classAt (i);
+	}
+      caller_loader = caller->getClassLoaderInternal();
+    }
+  catch (::java::lang::ArrayIndexOutOfBoundsException *e)
+    {
+    }
+
   jclass arrayType = componentType;
-  for (int i = 0;  i < ndims;  i++)  // FIXME 2nd arg should 
-                                     // be "current" loader
-    arrayType = _Jv_GetArrayClass (arrayType, 0);
+  for (int i = 0;  i < ndims;  i++)
+    arrayType = _Jv_GetArrayClass (arrayType, caller_loader);
 
   return _Jv_NewMultiArray (arrayType, ndims, dims);
 }
@@ -343,8 +360,10 @@ java::lang::reflect::Array::setBoolean (jobject array,
 
 void
 java::lang::reflect::Array::set (jobject array, jint index,
-				       jobject value, jclass elType)
+				 jobject value, jclass elType)
 {
+  // We don't have to call getElementType here, or check INDEX,
+  // because it was already done in the Java wrapper.
   if (! _Jv_IsInstanceOf (value, elType))
     throw new java::lang::IllegalArgumentException;
   elements ((jobjectArray) array) [index] = value;
