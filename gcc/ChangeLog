@@ -1,5 +1,12 @@
 2000-05-15  Richard Henderson  <rth@cygnus.com>
 
+	* jump.c: Fix typos and clarify commentary from last change.
+	(any_condjump_p): Verify SET_SRC is an IF_THEN_ELSE.
+	(safe_to_remove_jump_p): Remove.
+	(condjump_label): Use pc_set.
+
+2000-05-15  Richard Henderson  <rth@cygnus.com>
+
 	* ifcvt.c (cond_exec_process_insns): Drop USE and CLOBBER insns
 	that get in the way after reload.
 	(cond_exec_process_if_block): Skip a label heading THEN block.

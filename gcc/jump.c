@@ -2099,10 +2099,8 @@ simplejump_p (insn)
 /* Return nonzero if INSN is a (possibly) conditional jump
    and nothing more.  
  
-   Use this function is depreached, since we need to support
-   branch and compare insns.  Use nontrivial_condjump_p instead
-   whenever possible.
- */
+   Use this function is deprecated, since we need to support combined
+   branch and compare insns.  Use any_condjump_p instead whenever possible.  */
 
 int
 condjump_p (insn)
@@ -2131,10 +2129,8 @@ condjump_p (insn)
 /* Return nonzero if INSN is a (possibly) conditional jump inside a
    PARALLEL.
  
-   Use this function is depreached, since we need to support
-   branch and compare insns.  Use any_condjump_p instead
-   whenever possible.
- */
+   Use this function is deprecated, since we need to support combined
+   branch and compare insns.  Use any_condjump_p instead whenever possible.  */
 
 int
 condjump_in_parallel_p (insn)
@@ -2166,30 +2162,30 @@ condjump_in_parallel_p (insn)
   return 0;
 }
 
-/* Return set of PC if available NULL otherwise.  */
+/* Return set of PC, otherwise NULL.  */
+
 rtx
 pc_set (insn)
      rtx insn;
 {
   rtx pat;
   if (GET_CODE (insn) != JUMP_INSN)
-    return NULL;
+    return NULL_RTX;
   pat = PATTERN (insn);
-  /* The set is allowed to appear eighter as insn pattern or the first in
-     PARALLEL expression.  */
+
+  /* The set is allowed to appear either as the insn pattern or
+     the first set in a PARALLEL.  */
+  if (GET_CODE (pat) == PARALLEL)
+    pat = XVECEXP (pat, 0, 0);
   if (GET_CODE (pat) == SET && GET_CODE (SET_DEST (pat)) == PC)
     return pat;
-  if (GET_CODE (pat) == PARALLEL)
-    {
-      rtx set = XVECEXP (pat, 0, 0);
-      if (GET_CODE (set) == SET && GET_CODE (SET_DEST (set)) == PC)
-	return set;
-    }
-  return NULL;
+
+  return NULL_RTX;
 }
 
-/* Return true when insn in unconditional jump possibly boundled inside
-   PARALLEL.  */
+/* Return true when insn is an unconditional direct jump,
+   possibly bundled inside a PARALLEL.  */
+
 int
 any_uncondjump_p (insn)
      rtx insn;
@@ -2202,41 +2198,30 @@ any_uncondjump_p (insn)
   return 1;
 }
 
-/* Return true when insn is conditional jump.  This function work for
+/* Return true when insn is a conditional jump.  This function works for
    instructions containing PC sets in PARALLELs.  The instruction may have
    various other effects so before removing the jump you must verify
    safe_to_remove_jump_p.
 
-   Note that unlike condjump_p it returns 0 for unconditionals jumps.
-  */
+   Note that unlike condjump_p it returns false for unconditional jumps.  */
+
 int
 any_condjump_p (insn)
      rtx insn;
 {
   rtx x = pc_set (insn);
+  enum rtx_code a, b;
+
   if (!x)
     return 0;
-  if (XEXP (SET_SRC (x), 2) == pc_rtx
-      && (GET_CODE (XEXP (SET_SRC (x), 1)) == LABEL_REF
-	  || GET_CODE (XEXP (SET_SRC (x), 1)) == RETURN))
-    return 1;
-  if (XEXP (SET_SRC (x), 1) == pc_rtx
-      && (GET_CODE (XEXP (SET_SRC (x), 2)) == LABEL_REF
-	  || GET_CODE (XEXP (SET_SRC (x), 2)) == RETURN))
-    return 1;
-  return 0;
-}
-
-
-/* Return true when the condjump is safe to remove.  */
-int
-safe_to_remove_jump_p (insn)
-     rtx insn;
-{
-  /* For non-single set insns we may remove set of the other registers.  */
-  if (!pc_set (insn) || !single_set (insn))
+  if (GET_CODE (SET_SRC (x)) != IF_THEN_ELSE)
     return 0;
-  return 1;
+
+  a = GET_CODE (XEXP (SET_SRC (x), 1));
+  b = GET_CODE (XEXP (SET_SRC (x), 2));
+
+  return ((b == PC && (a == LABEL_REF || a == RETURN))
+          || (a == PC && (b == LABEL_REF || b == RETURN)));
 }
 
 /* Return the label of a conditional jump.  */
@@ -2245,13 +2230,9 @@ rtx
 condjump_label (insn)
      rtx insn;
 {
-  register rtx x = PATTERN (insn);
+  rtx x = pc_set (insn);
 
-  if (GET_CODE (x) == PARALLEL)
-    x = XVECEXP (x, 0, 0);
-  if (GET_CODE (x) != SET)
-    return NULL_RTX;
-  if (GET_CODE (SET_DEST (x)) != PC)
+  if (!x)
     return NULL_RTX;
   x = SET_SRC (x);
   if (GET_CODE (x) == LABEL_REF)
