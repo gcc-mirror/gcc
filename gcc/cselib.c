@@ -157,7 +157,6 @@ new_elt_loc_list (struct elt_loc_list *next, rtx loc)
   el = pool_alloc (elt_loc_list_pool);
   el->next = next;
   el->loc = loc;
-  el->canon_loc = NULL;
   el->setting_insn = cselib_current_insn;
   el->in_libcall = cselib_current_insn_in_libcall;
   return el;
@@ -1081,7 +1080,6 @@ cselib_invalidate_mem (rtx mem_rtx)
       while (*p)
 	{
 	  rtx x = (*p)->loc;
-	  rtx canon_x = (*p)->canon_loc;
 	  cselib_val *addr;
 	  struct elt_list **mem_chain;
 
@@ -1092,8 +1090,6 @@ cselib_invalidate_mem (rtx mem_rtx)
 	      p = &(*p)->next;
 	      continue;
 	    }
-	  if (!canon_x)
-	    canon_x = (*p)->canon_loc = canon_rtx (x);
 	  if (num_mems < PARAM_VALUE (PARAM_MAX_CSELIB_MEMORY_LOCATIONS)
 	      && ! canon_true_dependence (mem_rtx, GET_MODE (mem_rtx), mem_addr,
 		      			  x, cselib_rtx_varies_p))
