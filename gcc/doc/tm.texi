@@ -8678,6 +8678,7 @@ which is defined by the language front end.  You can use any type nodes set
 up by @code{build_common_tree_nodes} and @code{build_common_tree_nodes_2};
 only language front ends that use these two functions will use
 @samp{TARGET_INIT_BUILTINS}.
+@end deftypefn
 
 @deftypefn {Target Hook} rtx TARGET_EXPAND_BUILTIN (tree @var{exp}, rtx @var{target}, rtx @var{subtarget}, enum machine_mode @var{mode}, int @var{ignore})
 
@@ -8689,5 +8690,6 @@ convenient, and have mode @var{mode} if that is convenient.
 @var{exp}'s operands.  @var{ignore} is nonzero if the value is to be
 ignored.  This function should return the result of the call to the
 built-in function.
+@end deftypefn
 
 @end table
