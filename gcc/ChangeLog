@@ -20,9 +20,6 @@ Tue Sep 16 00:13:20 1997  Nick Clifton  <nickc@cygnus.com>
 	* v850.md: Replace prologue and epilogue patterns with a
 	match_parallel pattern.
 
-	* v850.c (output_move_single_unsigned): Cope with zero
-	extending and moving between registers at the same time.
-
 Mon Sep 15 22:53:01 1997  Jeffrey A Law  (law@cygnus.com)
 
 	* aclocal.m4: Add replacement for AC_PROG_INSTALL.
