@@ -1,3 +1,7 @@
+2004-10-19  Sebastian Pop  <pop@cri.ensmp.fr>
+
+	* MAINTAINERS:  Update my email address.
+
 2004-10-12  Kelley Cook  <kcook@gcc.gnu.org>
 
 	* configure.in (*-*-cygwin*): Supress warning if newlib not present.

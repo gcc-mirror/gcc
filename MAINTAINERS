@@ -182,7 +182,7 @@ tree-ssa		Diego Novillo		dnovillo@redhat.com
 tree-ssa		Andrew MacLeod		amacleod@redhat.com
 PRE, points-to		Daniel Berlin		dberlin@dberlin.org
 mudflap			Frank Ch. Eigler	fche@redhat.com
-tree browser/unparser	Sebastian Pop		s.pop@laposte.net
+tree browser/unparser	Sebastian Pop		pop@cri.ensmp.fr
 profile feedback	Jan Hubicka		jh@suse.cz
 type-safe vectors	Nathan Sidwell		nathan@codesourcery.com
 
@@ -278,7 +278,7 @@ Devang Patel					dpatel@apple.com
 Graeme Peterson					gp@qnx.com
 Alexandre Petit-Bianco				apbianco@redhat.com
 Nicolas Pitre					nico@cam.org
-Sebastian Pop                                   s.pop@laposte.net
+Sebastian Pop                                   pop@cri.ensmp.fr
 Clinton Popetz					cpopetz@cpopetz.com
 Jerry Quinn					jlquinn@optonline.net
 Rolf Rasmussen					rolfwr@gcc.gnu.org
