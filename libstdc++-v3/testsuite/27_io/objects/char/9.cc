@@ -39,7 +39,6 @@ void test09()
 
   freopen(name, "r", stdin);
  
-  fprintf(stderr, "%d\n", std::cin.rdbuf()->in_avail());
   // The number of unread characters should be 4 (a, b, c, \\n)
   VERIFY( 4 == std::cin.rdbuf()->in_avail() );
 }
