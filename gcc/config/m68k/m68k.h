@@ -993,41 +993,33 @@ while(0)
    of a trampoline, leaving space for the variable parts.  */
 
 /* On the 68k, the trampoline looks like this:
-     mov  @#.,a0
-     jsr  @#___trampoline
-     jsr  @#___trampoline
+     movl pc@(8),a0
+     movl pc@(8),sp@-
+     rts
      .long STATIC
      .long FUNCTION
-The reason for having three jsr insns is so that an entire line
-of the instruction cache is filled in a predictable way
-that will always be the same.
-
-We always use the assembler label ___trampoline
-regardless of whether the system adds underscores.  */
+The use of pc relative addressing mode ensures that the constants are
+accessed through the data cache.  */
 
 #define TRAMPOLINE_TEMPLATE(FILE)					\
 {									\
-  ASM_OUTPUT_SHORT (FILE, gen_rtx (CONST_INT, VOIDmode, 0x207c));	\
-  ASM_OUTPUT_SHORT (FILE, const0_rtx);					\
-  ASM_OUTPUT_SHORT (FILE, const0_rtx);					\
-  ASM_OUTPUT_SHORT (FILE, gen_rtx (CONST_INT, VOIDmode, 0x4eb9));	\
-  ASM_OUTPUT_INT (FILE, gen_rtx (SYMBOL_REF, SImode, "*___trampoline"));\
-  ASM_OUTPUT_SHORT (FILE, gen_rtx (CONST_INT, VOIDmode, 0x4eb9));	\
-  ASM_OUTPUT_INT (FILE, gen_rtx (SYMBOL_REF, SImode, "*___trampoline"));\
-  ASM_OUTPUT_SHORT (FILE, const0_rtx);					\
-  ASM_OUTPUT_SHORT (FILE, const0_rtx);					\
-  ASM_OUTPUT_SHORT (FILE, const0_rtx);					\
-  ASM_OUTPUT_SHORT (FILE, const0_rtx);					\
+  ASM_OUTPUT_SHORT (FILE, gen_rtx (CONST_INT, VOIDmode, 0x207a));	\
+  ASM_OUTPUT_SHORT (FILE, gen_rtx (CONST_INT, VOIDmode, 8));		\
+  ASM_OUTPUT_SHORT (FILE, gen_rtx (CONST_INT, VOIDmode, 0x2f3a));	\
+  ASM_OUTPUT_SHORT (FILE, gen_rtx (CONST_INT, VOIDmode, 8));		\
+  ASM_OUTPUT_SHORT (FILE, gen_rtx (CONST_INT, VOIDmode, 0x4e75));	\
+  ASM_OUTPUT_INT (FILE, const0_rtx);					\
+  ASM_OUTPUT_INT (FILE, const0_rtx);					\
 }
 
 /* Length in units of the trampoline for entering a nested function.  */
 
-#define TRAMPOLINE_SIZE 26
+#define TRAMPOLINE_SIZE 18
 
 /* Alignment required for a trampoline.  16 is used to find the
    beginning of a line in the instruction cache.  */
 
-#define TRAMPOLINE_ALIGN 16
+#define TRAMPOLINE_ALIGNMENT 16
 
 /* Emit RTL insns to initialize the variable parts of a trampoline.
    FNADDR is an RTX for the address of the function's pure code.
@@ -1035,14 +1027,16 @@ regardless of whether the system adds underscores.  */
 
 #define INITIALIZE_TRAMPOLINE(TRAMP, FNADDR, CXT)			\
 {									\
-  emit_move_insn (gen_rtx (MEM, SImode, plus_constant (TRAMP, 2)), TRAMP); \
-  emit_move_insn (gen_rtx (MEM, SImode, plus_constant (TRAMP, 18)), CXT); \
-  emit_move_insn (gen_rtx (MEM, SImode, plus_constant (TRAMP, 22)), FNADDR); \
+  emit_move_insn (gen_rtx (MEM, SImode, plus_constant (TRAMP, 10)), CXT); \
+  emit_move_insn (gen_rtx (MEM, SImode, plus_constant (TRAMP, 14)), FNADDR); \
 }
 
 /* This is the library routine that is used
    to transfer control from the trampoline
-   to the actual nested function.  */
+   to the actual nested function.
+   It is defined for backward compatibility,
+   for linking with object code that used the old
+   trampoline definition.  */
 
 /* A colon is used with no explicit operands
    to cause the template string to be scanned for %-constructs.  */
