@@ -1,7 +1,7 @@
 // Testcase for tricky synthesized op= in complex inheritance situation.
 // See discussion in g++int.texi.
 
-// execution test fails - 
+// execution test - XFAIL *-*-*
 
 int count = 0;
 extern "C" int printf (const char *, ...);

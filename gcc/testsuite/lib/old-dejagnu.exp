@@ -361,9 +361,15 @@ proc old-dejagnu { compiler prog cflagsx default_cflags libs } {
 	set message [concat $message $tmp]
     }
 
-    set tmp [process-option $prog "execution test fails" "an execution failure" EXEC $text]
+    set tmp [process-option $prog "execution test fails" "an execution failure" EXECO $text]
     if ![string match "" $tmp] then {
 	set execbug_flag 1
+	set message [concat $message $tmp]
+	warning "please use execution test - XFAIL *-*-* in $prog instead"
+    }
+
+    set tmp [process-option $prog "execution test - " "an excess error failure" EXEC $text]
+    if ![string match "" $tmp] then {
 	set message [concat $message $tmp]
     }
 
@@ -472,7 +478,9 @@ proc old-dejagnu { compiler prog cflagsx default_cflags libs } {
 	    "XBADASM" {
 		x$uhoh "$name $pattern (test for bad assembler, line $line)"
 	    }
-	    "XEXEC" { }
+	    "XEXEC" {
+		set execbug_flag 1
+	    }
 	    "XEXCESS" {
 		set excessbug_flag 1
 	    }

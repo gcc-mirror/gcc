@@ -1,5 +1,5 @@
 // GROUPS passed code-generation
-// execution test fails - 
+// execution test - XFAIL *-*-*
 // code-gen file
 // From: mscha@anne.wifo.uni-mannheim.de (Martin Schader)
 // Date:     Wed, 4 Aug 93 19:14:52 +0200
