@@ -1,3 +1,14 @@
+2003-11-09  Jan Hubicka  <jh@suse.cz>
+
+	* cgraphunit.c (cgraph_expand_function): Use
+	cgraph_possibly_inlined_p.
+	* tree-optimize.c (tree_rest_of_compilation): Do not kill saved tree.
+
+	* opts.c (common_handle_option): Do not set max-inline-insns.
+	* params.def: Update comments.
+	(PARAM_MAX_INLINE_INSNS): Kill.
+	* invoke.texi (max-inline-insns): Kill.
+
 2003-11-08  Joseph S. Myers  <jsm@polyomino.org.uk>
 
 	PR c/3190
