@@ -200,13 +200,18 @@ store_bit_field (str_rtx, bitsize, bitnum, fieldmode, value, align, total_size)
 
   /* Note that the adjustment of BITPOS above has no effect on whether
      BITPOS is 0 in a REG bigger than a word.  */
-  if (GET_MODE_SIZE (fieldmode) >= UNITS_PER_WORD && GET_CODE (op0) != MEM
+  if (GET_MODE_SIZE (fieldmode) >= UNITS_PER_WORD
+      && (! STRICT_ALIGNMENT || GET_CODE (op0) != MEM)
       && bitpos == 0 && bitsize == GET_MODE_BITSIZE (fieldmode))
     {
       /* Storing in a full-word or multi-word field in a register
 	 can be done with just SUBREG.  */
       if (GET_MODE (op0) != fieldmode)
-	op0 = gen_rtx (SUBREG, fieldmode, op0, offset);
+	if (GET_CODE (op0) == REG)
+	  op0 = gen_rtx (SUBREG, fieldmode, op0, offset);
+	else
+	  op0 = change_address (op0, fieldmode,
+				plus_constant (XEXP (op0, 0), offset));
       emit_move_insn (op0, value);
       return value;
     }
