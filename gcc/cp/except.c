@@ -616,6 +616,7 @@ expand_start_catch_block (decl)
   /* Create a binding level for the eh_info and the exception object
      cleanup.  */
   compound_stmt_1 = begin_compound_stmt (/*has_no_scope=*/0);
+  note_level_for_catch ();
 
   if (! decl || ! decl_is_java_type (TREE_TYPE (decl), 1))
     {
