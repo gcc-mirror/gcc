@@ -2938,6 +2938,7 @@ struct obstack;
 /* In tree.c */
 extern int really_constant_p		PARAMS ((tree));
 extern int int_fits_type_p		PARAMS ((tree, tree));
+extern bool variably_modified_type_p    PARAMS ((tree));
 extern int tree_log2			PARAMS ((tree));
 extern int tree_floor_log2		PARAMS ((tree));
 extern void preserve_data		PARAMS ((void));

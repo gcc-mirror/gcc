@@ -1,3 +1,25 @@
+2002-10-25  Zack Weinberg  <zack@codesourcery.com>
+
+	PR middle-end/6994
+	* c-objc-common.c (inline_forbidden_p): Can not inline
+	functions containing structures or unions containing VLAs.
+	* tree-inline.c (walk_tree): For all class 't' nodes, walk
+	TYPE_SIZE and TYPE_SIZE_UNIT. #undef WALK_SUBTREE_TAIL at end.
+	(copy_tree_r): Copy types if they are variably modified.
+
+	* hooks.c (hook_tree_bool_false): New.
+	* hooks.h: Prototype it.
+	* langhooks.h (struct lang_hooks_for_tree_inlining): Add
+	var_mod_type_p.
+	* langhooks-def.h: Default for tree_inlining.var_mod_type_p is
+	hook_tree_bool_false.
+
+	* tree.c (variably_modified_type_p): Moved here from
+	cp/tree.c.  Use lang_hooks.tree_inlining.var_mod_type_p for
+	language-specific cases.  Due to this, must weaken some 'if
+	and only if' checks to merely 'if'.
+	* tree.h: Prototype variably_modified_type_p.
+
 2002-10-22  Jim Wilson  <wilson@redhat.com>
 
 	* config/i386/i386.md (subdi3_1): Add call to ix86_binary_operator_ok.

@@ -4213,7 +4213,6 @@ extern void end_input				PARAMS ((void));
 /* in tree.c */
 extern void init_tree			        PARAMS ((void));
 extern int pod_type_p				PARAMS ((tree));
-extern bool variably_modified_type_p            (tree);
 extern int zero_init_p				PARAMS ((tree));
 extern tree canonical_type_variant              PARAMS ((tree));
 extern void unshare_base_binfos			PARAMS ((tree));

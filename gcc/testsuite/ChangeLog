@@ -1,3 +1,8 @@
+2002-10-25  Zack Weinberg  <zack@codesourcery.com>
+
+	* g++.dg/ext/vla1.C, gcc.dg/vla-2.c,
+	g++.dg/template/typename3.C: New tests.
+
 2002-10-24  Jakub Jelinek  <jakub@redhat.com>
 
 	* gcc.c-torture/execute/20021024-1.c: New test.
@@ -11,7 +16,7 @@
 
 	PR c++/7679
 	* g++.dg/parse/inline1.C: New test.
-	
+
 2002-10-22  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/6579

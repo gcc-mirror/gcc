@@ -30,6 +30,7 @@ Boston, MA 02111-1307, USA.  */
 
 static HOST_WIDE_INT cxx_get_alias_set		PARAMS ((tree));
 static tree cp_expr_size			PARAMS ((tree));
+static bool cp_var_mod_type_p			PARAMS ((tree));
 
 #undef LANG_HOOKS_NAME
 #define LANG_HOOKS_NAME "GNU C++"
@@ -84,6 +85,8 @@ static tree cp_expr_size			PARAMS ((tree));
   cp_copy_res_decl_for_inlining
 #undef LANG_HOOKS_TREE_INLINING_ANON_AGGR_TYPE_P
 #define LANG_HOOKS_TREE_INLINING_ANON_AGGR_TYPE_P anon_aggr_type_p
+#undef LANG_HOOKS_TREE_INLINING_VAR_MOD_TYPE_P
+#define LANG_HOOKS_TREE_INLINING_VAR_MOD_TYPE_P cp_var_mod_type_p
 #undef LANG_HOOKS_TREE_INLINING_START_INLINING
 #define LANG_HOOKS_TREE_INLINING_START_INLINING cp_start_inlining
 #undef LANG_HOOKS_TREE_INLINING_END_INLINING
@@ -130,3 +133,21 @@ cp_expr_size (exp)
     /* Use the default code.  */
     return lhd_expr_size (exp);
 }
+
+/* Returns true if T is a variably modified type, in the sense of C99.
+   This routine needs only check cases that cannot be handled by the
+   language-independent logic in tree-inline.c.  */
+
+static bool
+cp_var_mod_type_p (tree type)
+{
+  /* If TYPE is a pointer-to-member, it is variably modified if either
+     the class or the member are variably modified.  */
+  if (TYPE_PTRMEM_P (type) || TYPE_PTRMEMFUNC_P (type))
+    return (variably_modified_type_p (TYPE_PTRMEM_CLASS_TYPE (type))
+	    || variably_modified_type_p (TYPE_PTRMEM_POINTED_TO_TYPE (type)));
+
+  /* All other types are not variably modified.  */
+  return false;
+}
+
