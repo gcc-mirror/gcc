@@ -20,6 +20,11 @@ Boston, MA 02111-1307, USA.  */
 
 
 #include "hconfig.h"
+#ifdef __STDC__
+#include <stdarg.h>
+#else
+#include <varargs.h>
+#endif
 #include "system.h"
 #include "rtl.h"
 #include "obstack.h"
@@ -100,7 +105,7 @@ static void walk_rtx PROTO ((rtx, char *));
 static void print_path PROTO ((char *));
 char *xmalloc PROTO ((unsigned));
 char *xrealloc PROTO ((char *, unsigned));
-static void fatal ();
+static void fatal PVPROTO ((char *, ...)) ATTRIBUTE_PRINTF_1;
 static char *copystr PROTO ((char *));
 static void mybzero ();
 void fancy_abort PROTO ((void));
@@ -362,11 +367,22 @@ xrealloc (ptr, size)
 }
 
 static void
-fatal (s, a1, a2)
-     char *s;
+fatal VPROTO ((char *format, ...))
 {
+#ifndef __STDC__
+  char *format;
+#endif
+  va_list ap;
+
+  VA_START (ap, format);
+
+#ifndef __STDC__
+  format = va_arg (ap, char *);
+#endif
+
   fprintf (stderr, "genextract: ");
-  fprintf (stderr, s, a1, a2);
+  vfprintf (stderr, format, ap);
+  va_end (ap);
   fprintf (stderr, "\n");
   exit (FATAL_EXIT_CODE);
 }
