@@ -1931,6 +1931,7 @@ build_builtin_delete_call (addr)
   tree BID = get_first_fn
     (IDENTIFIER_GLOBAL_VALUE (ansi_opname[(int) DELETE_EXPR]));
 
+  assemble_external (BID);
   return build_call (BID, void_type_node, build_expr_list (NULL_TREE, addr));
 }
 
