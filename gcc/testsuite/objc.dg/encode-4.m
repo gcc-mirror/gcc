@@ -31,7 +31,7 @@ struct Nested {
 };
 
 @interface Int1: Object {
-  char a, b;
+  signed char a, b;
   Int2 *int2;
   struct Nested nested;
 }
