@@ -10177,7 +10177,7 @@ fold_checksum_tree (tree expr, struct md5_ctx *ctx, htab_t ht)
 #endif
 
 /* Fold a unary tree expression with code CODE of type TYPE with an
-   operand OP0.  Return a folded expresion if successful.  Otherwise,
+   operand OP0.  Return a folded expression if successful.  Otherwise,
    return a tree expression with code CODE of type TYPE with an
    operand OP0.  */
 
@@ -10192,7 +10192,7 @@ fold_build1 (enum tree_code code, tree type, tree op0)
 }
 
 /* Fold a binary tree expression with code CODE of type TYPE with
-   operands OP0 and OP1.  Return a folded expresion if successful.
+   operands OP0 and OP1.  Return a folded expression if successful.
    Otherwise, return a tree expression with code CODE of type TYPE
    with operands OP0 and OP1.  */
 
@@ -10207,7 +10207,7 @@ fold_build2 (enum tree_code code, tree type, tree op0, tree op1)
 }
 
 /* Fold a ternary tree expression with code CODE of type TYPE with
-   operands OP0, OP1, and OP2.  Return a folded expresion if
+   operands OP0, OP1, and OP2.  Return a folded expression if
    successful.  Otherwise, return a tree expression with code CODE of
    type TYPE with operands OP0, OP1, and OP2.  */
 

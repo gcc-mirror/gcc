@@ -1,3 +1,7 @@
+2005-04-01  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* bb-reorder.c, fold-const.c, varasm.c: Fix comment typos.
+
 2005-04-01  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* local-alloc.c (update_equiv_regs): Use gcc_assert, gcc_unreachable.
