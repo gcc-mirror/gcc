@@ -324,7 +324,7 @@ initialize_for_inline (fndecl, min_labelno, max_labelno, max_reg, copy)
 				max_parm_reg, max_reg,
 				current_function_args_size,
 				current_function_pops_args,
-				stack_slot_list, function_flags,
+				stack_slot_list, forced_labels, function_flags,
 				current_function_outgoing_args_size,
 				arg_vector, (rtx) DECL_INITIAL (fndecl));
 }
@@ -3011,6 +3011,7 @@ output_inline_function (fndecl)
   restore_reg_data (FIRST_PARM_INSN (head));
 
   stack_slot_list = STACK_SLOT_LIST (head);
+  forced_labels = FORCED_LABELS (head);
 
   if (FUNCTION_FLAGS (head) & FUNCTION_FLAGS_CALLS_ALLOCA)
     current_function_calls_alloca = 1;
