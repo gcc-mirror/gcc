@@ -1443,7 +1443,7 @@ build_member_call (type, name, parmlist)
   if (method_name == constructor_name (type)
       || method_name == constructor_name_full (type))
     return build_functional_cast (type, parmlist);
-  if ((t = lookup_fnfields (basetype_path, method_name, 0)))
+  if (lookup_fnfields (basetype_path, method_name, 0))
     return build_method_call (decl, 
 			      TREE_CODE (name) == TEMPLATE_ID_EXPR
 			      ? name : method_name,

@@ -1223,21 +1223,9 @@ int
 is_overloaded_fn (x)
      tree x;
 {
-  /* XXX A baselink is also considered an overloaded function.
-     As is a placeholder from push_class_decls.
-     As is an expression like X::f.  */
-  if (TREE_CODE (x) == TREE_LIST)
-    {
-      if (TREE_PURPOSE (x) == error_mark_node)
-	{
-	  x = TREE_VALUE (x);
-	  my_friendly_assert (TREE_CODE (x) == TREE_LIST, 981121);
-	}
-      my_friendly_assert (TREE_CODE (TREE_PURPOSE (x)) == TREE_VEC
-			  || TREE_CODE (TREE_PURPOSE (x)) == IDENTIFIER_NODE,
-			  388);
-      x = TREE_VALUE (x);
-    }
+  /* A baselink is also considered an overloaded function.  */
+  if (BASELINK_P (x))
+    x = TREE_VALUE (x);
   return (TREE_CODE (x) == FUNCTION_DECL
 	  || TREE_CODE (x) == TEMPLATE_ID_EXPR
 	  || DECL_FUNCTION_TEMPLATE_P (x)
@@ -1248,9 +1236,8 @@ int
 really_overloaded_fn (x)
      tree x;
 {     
-  /* A baselink is also considered an overloaded function.
-     This might also be an ambiguous class member. */
-  if (TREE_CODE (x) == TREE_LIST)
+  /* A baselink is also considered an overloaded function.  */
+  if (BASELINK_P (x))
     x = TREE_VALUE (x);
   return (TREE_CODE (x) == OVERLOAD 
 	  && (TREE_CHAIN (x) != NULL_TREE
@@ -1263,7 +1250,7 @@ get_first_fn (from)
 {
   my_friendly_assert (is_overloaded_fn (from), 9);
   /* A baselink is also considered an overloaded function. */
-  if (TREE_CODE (from) == TREE_LIST)
+  if (BASELINK_P (from))
     from = TREE_VALUE (from);
   return OVL_CURRENT (from);
 }
