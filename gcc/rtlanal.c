@@ -2209,9 +2209,7 @@ volatile_refs_p (x)
     case ADDR_DIFF_VEC:
       return 0;
 
-    case CALL:
     case UNSPEC_VOLATILE:
- /* case TRAP_IF: This isn't clear yet.  */
       return 1;
 
     case MEM:

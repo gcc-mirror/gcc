@@ -1,3 +1,7 @@
+2002-06-02  Richard Henderson  <rth@redhat.com>
+
+	* rtlanal.c (volatile_refs_p): Not automatically true for CALL.
+
 2002-06-02  Marek Michalkiewicz  <marekm@amelek.gda.pl>
 
 	Support for C++ constructors/destructors.
