@@ -1,5 +1,9 @@
 2004-06-15  Richard Henderson  <rth@redhat.com>
 
+	* gcc.dg/20001116-1.c: Move expected warning line.
+
+2004-06-15  Richard Henderson  <rth@redhat.com>
+
 	* gcc.dg/i386-ssetype-1.c: Remove XFAIL.
 	* gcc.dg/i386-ssetype-3.c: Remove XFAIL.
 

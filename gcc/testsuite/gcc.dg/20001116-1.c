@@ -6,6 +6,6 @@
 
 void foo (int x)
 {
-  if (x)	/* { dg-warning "empty body in an if-statement" } */
-    ;
+  if (x)
+    ;	/* { dg-warning "empty body in an if-statement" } */
 }
