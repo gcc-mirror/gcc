@@ -6208,7 +6208,7 @@ validate_all_switches ()
     {
       p = comp->spec;
       while ((c = *p++))
-	if (c == '%' && *p == '{')
+	if (c == '%' && (*p == '{' || (*p == 'W' && *++p == '{')))
 	  /* We have a switch spec.  */
 	  validate_switches (p + 1);
     }
@@ -6218,14 +6218,14 @@ validate_all_switches ()
     {
       p = *(spec->ptr_spec);
       while ((c = *p++))
-	if (c == '%' && *p == '{')
+	if (c == '%' && (*p == '{' || (*p == 'W' && *++p == '{')))
 	  /* We have a switch spec.  */
 	  validate_switches (p + 1);
     }
 
   p = link_command_spec;
   while ((c = *p++))
-    if (c == '%' && *p == '{')
+    if (c == '%' && (*p == '{' || (*p == 'W' && *++p == '{')))
       /* We have a switch spec.  */
       validate_switches (p + 1);
 }
