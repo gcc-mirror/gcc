@@ -904,6 +904,10 @@ c_common_handle_option (size_t scode, const char *arg, int value)
       cpp_opts->wide_charset = arg;
       break;
 
+    case OPT_finput_charset_:
+      cpp_opts->input_charset = arg;
+      break;
+
     case OPT_ftemplate_depth_:
       max_tinst_depth = value;
       break;

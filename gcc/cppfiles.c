@@ -312,7 +312,7 @@ pch_open_file (cpp_reader *pfile, _cpp_file *file, bool *invalid_pch)
 
 /* Try to open the path FILE->name appended to FILE->dir.  This is
    where remap and PCH intercept the file lookup process.  Return true
-   if the file was found, whether or not the open was successful.  
+   if the file was found, whether or not the open was successful.
    Set *INVALID_PCH to true if a PCH file is found but wasn't valid.  */
 
 static bool
@@ -398,10 +398,10 @@ _cpp_find_file (cpp_reader *pfile, const char *fname, cpp_dir *start_dir, bool f
 	  open_file_failed (pfile, file);
 	  if (invalid_pch)
 	    {
-	      cpp_error (pfile, CPP_DL_ERROR, 
+	      cpp_error (pfile, CPP_DL_ERROR,
 	       "one or more PCH files were found, but they were invalid");
 	      if (!cpp_get_options (pfile)->warn_invalid_pch)
-		cpp_error (pfile, CPP_DL_ERROR, 
+		cpp_error (pfile, CPP_DL_ERROR,
 			   "use -Winvalid-pch for more information");
 	    }
 	  break;
@@ -457,7 +457,7 @@ read_file_guts (cpp_reader *pfile, _cpp_file *file)
   ssize_t size, total, count;
   uchar *buf;
   bool regular;
-  
+
   if (S_ISBLK (file->st.st_mode))
     {
       cpp_error (pfile, CPP_DL_ERROR, "%s is a block device", file->path);
@@ -514,15 +514,8 @@ read_file_guts (cpp_reader *pfile, _cpp_file *file)
     cpp_error (pfile, CPP_DL_WARNING,
 	       "%s is shorter than expected", file->path);
 
-  /* Shrink buffer if we allocated substantially too much.  */
-  if (total + 4096 < size)
-    buf = xrealloc (buf, total + 1);
-
-  /* The lexer requires that the buffer be \n-terminated.  */
-  buf[total] = '\n';
-
-  file->buffer = buf;
-  file->st.st_size = total;
+  file->buffer = _cpp_convert_input (pfile, CPP_OPTION (pfile, input_charset),
+				     buf, size, total, &file->st.st_size);
   file->buffer_valid = true;
 
   return true;
@@ -566,7 +559,7 @@ should_stack_file (cpp_reader *pfile, _cpp_file *file, bool import)
   if (file->once_only)
     return false;
 
-  /* We must mark the file once-only if #import now, before header 
+  /* We must mark the file once-only if #import now, before header
      guard checks.  Otherwise, undefining the header guard might
      cause the file to be re-stacked.  */
   if (import)
@@ -1283,7 +1276,7 @@ struct pchf_data {
      This is used as an optimisation, it means we don't have to search
      the structure if we're processing a regular #include.  */
   bool have_once_only;
-  
+
   struct pchf_entry {
     /* The size of this file.  This is used to save running a MD5 checksum
        if the sizes don't match.  */
@@ -1298,7 +1291,7 @@ struct pchf_data {
 static struct pchf_data *pchf;
 
 /* Data for pchf_addr.  */
-struct pchf_adder_info 
+struct pchf_adder_info
 {
   cpp_reader *pfile;
   struct pchf_data *d;
@@ -1322,11 +1315,11 @@ pchf_adder (void **slot, void *data)
 	 the PCH file shouldn't be written...  */
       if (f->dont_read || f->err_no)
 	return 1;
-      
+
       d->entries[count].once_only = f->once_only;
       d->have_once_only |= f->once_only;
       if (f->buffer_valid)
-	  md5_buffer ((const char *)f->buffer, 
+	  md5_buffer ((const char *)f->buffer,
 		      f->st.st_size, d->entries[count].sum);
       else
 	{
@@ -1365,22 +1358,22 @@ _cpp_save_file_entries (cpp_reader *pfile, FILE *f)
   struct pchf_data *result;
   size_t result_size;
   struct pchf_adder_info pai;
-  
+
   count = htab_elements (pfile->file_hash);
-  result_size = (sizeof (struct pchf_data) 
+  result_size = (sizeof (struct pchf_data)
 		 + sizeof (struct pchf_entry) * (count - 1));
   result = xcalloc (result_size, 1);
-  
+
   result->count = 0;
   result->have_once_only = false;
-  
+
   pai.pfile = pfile;
   pai.d = result;
   htab_traverse (pfile->file_hash, pchf_adder, &pai);
 
   result_size = (sizeof (struct pchf_data)
                  + sizeof (struct pchf_entry) * (result->count - 1));
-  
+
   qsort (result->entries, result->count, sizeof (struct pchf_entry),
 	 pchf_save_compare);
 
@@ -1393,11 +1386,11 @@ bool
 _cpp_read_file_entries (cpp_reader *pfile ATTRIBUTE_UNUSED, FILE *f)
 {
   struct pchf_data d;
-  
+
   if (fread (&d, sizeof (struct pchf_data) - sizeof (struct pchf_entry), 1, f)
        != 1)
     return false;
-  
+
   pchf = xmalloc (sizeof (struct pchf_data)
 		  + sizeof (struct pchf_entry) * (d.count - 1));
   memcpy (pchf, &d, sizeof (struct pchf_data) - sizeof (struct pchf_entry));
@@ -1422,7 +1415,7 @@ struct pchf_compare_data
 
   /* Do we need to worry about entries that don't have ONCE_ONLY set?  */
   bool check_included;
-  
+
   /* The file that we're searching for.  */
   _cpp_file *f;
 };
@@ -1435,15 +1428,15 @@ pchf_compare (const void *d_p, const void *e_p)
   const struct pchf_entry *e = (const struct pchf_entry *)e_p;
   struct pchf_compare_data *d = (struct pchf_compare_data *)d_p;
   int result;
-  
+
   result = memcmp (&d->size, &e->size, sizeof (off_t));
   if (result != 0)
     return result;
-  
+
   if (! d->sum_computed)
     {
       _cpp_file *const f = d->f;
-      
+
       md5_buffer ((const char *)f->buffer, f->st.st_size, d->sum);
       d->sum_computed = true;
     }
@@ -1458,7 +1451,7 @@ pchf_compare (const void *d_p, const void *e_p)
     return 1;
 }
 
-/* Check that F is not in a list read from a PCH file (if any).  
+/* Check that F is not in a list read from a PCH file (if any).
    Assumes that f->buffer_valid is true.  Return TRUE if the file
    should not be read.  */
 
@@ -1468,7 +1461,7 @@ check_file_against_entries (cpp_reader *pfile ATTRIBUTE_UNUSED,
 			    bool check_included)
 {
   struct pchf_compare_data d;
-  
+
   if (pchf == NULL
       || (! check_included && ! pchf->have_once_only))
     return false;

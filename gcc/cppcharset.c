@@ -446,31 +446,6 @@ one_utf16_to_utf8 (iconv_t bigend, const uchar **inbufp, size_t *inbytesleftp,
   return 0;
 }
 
-/* The first 256 code points of ISO 8859.1 have the same numeric
-   values as the first 256 code points of Unicode, therefore the
-   incoming ISO 8859.1 character can be passed directly to
-   one_cppchar_to_utf8 (which expects a Unicode value).  */
-
-static int
-one_iso88591_to_utf8 (iconv_t bigend ATTRIBUTE_UNUSED, const uchar **inbufp,
-		      size_t *inbytesleftp, uchar **outbufp, size_t *outbytesleftp)
-{
-  const uchar *inbuf = *inbufp;
-  int rval;
-
-  if (*inbytesleftp > 1)
-    return EINVAL;
-
-  rval = one_cppchar_to_utf8 ((cppchar_t)*inbuf, outbufp, outbytesleftp);
-  if (rval)
-    return rval;
-
-  *inbufp += 1;
-  *inbytesleftp -= 1;
-
-  return 0;
-}
-
 /* Helper routine for the next few functions.  The 'const' on
    one_conversion means that we promise not to modify what function is
    pointed to, which lets the inliner see through it.  */
@@ -554,14 +529,6 @@ convert_utf32_utf8 (iconv_t cd, const uchar *from, size_t flen,
   return conversion_loop (one_utf32_to_utf8, cd, from, flen, to);
 }
 
-static bool
-convert_iso88591_utf8 (iconv_t cd, const uchar *from, size_t flen,
-                       struct _cpp_strbuf *to)
-{
-  return conversion_loop (one_iso88591_to_utf8, cd, from, flen, to);
-}
-
-
 /* Identity conversion, used when we have no alternative.  */
 static bool
 convert_no_conversion (iconv_t cd ATTRIBUTE_UNUSED,
@@ -639,7 +606,6 @@ static const struct conversion conversion_tab[] = {
   { "UTF-32BE/UTF-8", convert_utf32_utf8, (iconv_t)1 },
   { "UTF-16LE/UTF-8", convert_utf16_utf8, (iconv_t)0 },
   { "UTF-16BE/UTF-8", convert_utf16_utf8, (iconv_t)1 },
-  { "ISO-8859-1/UTF-8", convert_iso88591_utf8, (iconv_t)0 },
 };
 
 /* Subroutine of cpp_init_iconv: initialize and return a
@@ -1388,44 +1354,58 @@ cpp_interpret_charconst (cpp_reader *pfile, const cpp_token *token,
 }
 
 uchar *
-_cpp_input_to_utf8 (cpp_reader *pfile, const uchar *input, cppchar_t length)
+_cpp_convert_input (cpp_reader *pfile, const char *input_charset,
+		    uchar *input, size_t size, size_t len, off_t *st_size)
 {
-  struct _cpp_strbuf tbuf;
-  struct cset_converter cvt = pfile->buffer->input_cset_desc;
+  struct cset_converter input_cset;
+  struct _cpp_strbuf to;
 
-  tbuf.asize = MAX (OUTBUF_BLOCK_SIZE, length);
-  tbuf.text = xmalloc (tbuf.asize);
-  tbuf.len = 0;
-
-  if (!APPLY_CONVERSION (cvt, input, length, &tbuf))
-   {
-      cpp_error (pfile, CPP_DL_ERROR, "converting input to source character set.");
-      return NULL;
-   }
-
-  if (length)
-    tbuf.text[tbuf.len] = '\n';
+  input_cset = init_iconv_desc (pfile, SOURCE_CHARSET, input_charset);
+  if (input_cset.func == convert_no_conversion)
+    {
+      to.text = input;
+      to.asize = size;
+      to.len = len;
+    }
   else
-    tbuf.text[0] = '\n';
+    {
+      to.asize = MAX (65536, len);
+      to.text = xmalloc (to.asize);
+      to.len = 0;
 
-  return tbuf.text;
+      if (!APPLY_CONVERSION (input_cset, input, len, &to))
+	cpp_error (pfile, CPP_DL_ERROR,
+		   "failure to convert %s to %s",
+		   CPP_OPTION (pfile, input_charset), SOURCE_CHARSET);
+
+      free (input);
+    }
+
+  /* Clean up the mess.  */
+  if (input_cset.func == convert_using_iconv)
+    iconv_close (input_cset.cd);
+
+  /* Resize buffer if we allocated substantially too much, or if we
+     haven't enough space for the \n-terminator.  */
+  if (to.len + 4096 < to.asize || to.len >= to.asize)
+    to.text = xrealloc (to.text, to.len + 1);
+
+  to.text[to.len] = '\n';
+  *st_size = to.len;
+  return to.text;
 }
 
-  /* Check the input file format. At present assuming the input file
-     is in iso-8859-1 format. Convert this input character set to
-     source character set format (UTF-8). */
-
-void
-_cpp_init_iconv_buffer (cpp_reader *pfile, const char *from)
+const char *
+_cpp_default_encoding (void)
 {
-  pfile->buffer->input_cset_desc = init_iconv_desc (pfile, SOURCE_CHARSET,
-						    from);
-}
+  const char *current_encoding = NULL;
 
-void
-_cpp_close_iconv_buffer (cpp_reader *pfile)
-{
-  if (HAVE_ICONV
-      && pfile->buffer->input_cset_desc.func == convert_using_iconv)
-    iconv_close (pfile->buffer->input_cset_desc.cd);
+#if defined (HAVE_LOCALE_H) && defined (HAVE_LANGINFO_CODESET)
+  setlocale (LC_CTYPE, "");
+  current_encoding = nl_langinfo (CODESET);
+#endif
+  if (current_encoding == NULL || *current_encoding == '\0')
+    current_encoding = SOURCE_CHARSET;
+
+  return current_encoding;
 }

@@ -1,3 +1,23 @@
+2004-02-02  Eric Christopher  <echristo@redhat.com>
+            Zack Weinberg  <zack@codesourcery.com>
+
+	* c-opts.c (c_common_handle_option): Add -finput-charset.
+        * c.opt: Ditto.
+        * cppcharset.c (one_iso88591_to_utf8): Remove.
+        (convert_iso88591_utf8): Ditto.
+        (conversion_tab): Remove 8859-1 converter.
+        (_cpp_input_to_utf8): Remove.
+        (_cpp_init_iconv_buffer): Ditto.
+        (_cpp_close_iconv_buffer): Ditto.
+        (_cpp_convert_input): New function.
+        (_cpp_default_encoding): Ditto.
+        * cpphash.h: Add/remove prototypes for above.
+        * cppfiles.c (read_file_guts): Use _cpp_convert_input.
+        * cppinit.c (cpp_create_reader): Use _cpp_default_encoding
+        for narrow execution and input character sets.
+        * cpplib.c (cpp_push_buffer): Delete uses of removed functions.
+        * doc/cppopts.texi: Document -finput-charset.
+
 2004-02-02  David Edelsohn  <edelsohn@gnu.org>
 
 	* rtlanal.c (refers_to_regno_p): Test regno, not inner_regno,
@@ -86,7 +106,7 @@
 	* postreload.c (reload_combine, reload_combine_note_store,
 	reload_combine_note_use, reload_cse_move2add, move2add_note_store): Likewise.
 	* ra-colorize.c (combine, color_usable_p, get_free_reg,
-	calculate_dont_begin, calculate_dont_begin, colorize_one_web, 
+	calculate_dont_begin, calculate_dont_begin, colorize_one_web,
 	try_recolor_web, insert_coalesced_conflicts, check_colors,
 	break_precolored_alias): Likewise.
 	* ra-debug.c: Include regs.h
@@ -210,7 +230,7 @@
 	constant.
 	(write_node): Simplify comparisons against small constants
 	before printing tests.
-	
+
 2004-01-31  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* config/m32r/m32r.c (m32r_load_pic_register): Use GEN_INT
@@ -435,8 +455,8 @@
 	(mark_constant_pool): Use new pool datastructures.
 
 2004-01-30  Fariborz Jahanian <fjahanian@apple.com>
-        
-        * config/rs6000/rs6000.c (rs6000_emit_move): Remove #if 0. 
+
+        * config/rs6000/rs6000.c (rs6000_emit_move): Remove #if 0.
 	Copy operands[1] to pseudo for simplify_gen_subreg.
 
 2004-01-30  Kazu Hirata  <kazu@cs.umass.edu>
@@ -447,7 +467,7 @@
 2004-01-30  Andrew Pinski <pinskia@physics.uc.edu>
 
 	* toplev.c: Include alloc-pool.h.
-	* Makefile.in (toplev.c): Update dependencies. 
+	* Makefile.in (toplev.c): Update dependencies.
 
 2004-01-30  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
@@ -533,7 +553,7 @@
 2004-01-29  Devang Patel  <dpatel@apple.com>
 
 	* dwarf2out.c (gen_field_die): Do not equate decl number to die.
-	
+
 2004-01-28  Ian Lance Taylor  <ian@wasabisystems.com>
 
 	PR inline-asm/6162
@@ -682,7 +702,7 @@
 	target macros.
 
 2004-01-28  Daniel Berlin  <dberlin@dberlin.org>
-	
+
 	* timevar.c (timevar_print): Mention when checking is enabled.
 
 2004-01-28  Giovanni Bajo  <giovannibajo@gcc.gnu.org>
@@ -3984,4 +4004,3 @@
 	* invoke.texi (-O1): Document change.
 
 See ChangeLog.10 for earlier changes.
-

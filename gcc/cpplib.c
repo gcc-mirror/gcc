@@ -1925,7 +1925,6 @@ cpp_push_buffer (cpp_reader *pfile, const uchar *buffer, size_t len,
 		 int from_stage3)
 {
   cpp_buffer *new = xobnew (&pfile->buffer_ob, cpp_buffer);
-  const char *input = CPP_OPTION (pfile, input_charset);
 
   /* Clears, amongst other things, if_stack and mi_cmacro.  */
   memset (new, 0, sizeof (cpp_buffer));
@@ -1937,7 +1936,6 @@ cpp_push_buffer (cpp_reader *pfile, const uchar *buffer, size_t len,
   new->need_line = true;
 
   pfile->buffer = new;
-  _cpp_init_iconv_buffer (pfile, input);
 
   return new;
 }
@@ -1959,8 +1957,6 @@ _cpp_pop_buffer (cpp_reader *pfile)
 
   /* In case of a missing #endif.  */
   pfile->state.skipping = 0;
-
-  _cpp_close_iconv_buffer (pfile);
 
   /* _cpp_do_file_change expects pfile->buffer to be the new one.  */
   pfile->buffer = buffer->prev;
