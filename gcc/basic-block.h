@@ -451,9 +451,6 @@ struct loop
      A continue statement will generate a branch to NEXT_INSN (cont).  */
   rtx cont;
 
-  /* The dominator of cont.  */
-  rtx cont_dominator;
-
   /* The NOTE_INSN_LOOP_BEG.  */
   rtx start;
 
