@@ -1,3 +1,8 @@
+Wed Oct  2 17:01:36 CEST 2002  Jan Hubicka  <jh@suse.cz>
+
+	* i386.c (print_operand_address): Use RIP addressing for offsetted
+	label refs too.
+
 2002-09-30  David S. Miller  <davem@redhat.com>
 
 	PR middle-end/7151
