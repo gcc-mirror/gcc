@@ -1,6 +1,6 @@
 // Algorithm implimentation -*- C++ -*-
 
-// Copyright (C) 2001 Free Software Foundation, Inc.
+// Copyright (C) 2001, 2002 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -1949,6 +1949,10 @@ __result, __binary_pred, _IterType());
       typedef typename iterator_traits<_ForwardIter>::difference_type _DistanceType;
     
       // concept requirements
+      // Note that these are slightly stricter than those of the 4-argument
+      // version, defined next.  The difference is in the strictness of the
+      // comparison operations... so for looser checking, define your own
+      // comparison function, as was intended.
       __glibcpp_function_requires(_ForwardIteratorConcept<_ForwardIter>)
       __glibcpp_function_requires(_SameTypeConcept<_Tp, _ValueType>)
       __glibcpp_function_requires(_LessThanComparableConcept<_Tp>)
@@ -2011,6 +2015,7 @@ __result, __binary_pred, _IterType());
       typedef typename iterator_traits<_ForwardIter>::difference_type _DistanceType;
       
       // concept requirements
+      // See comments on lower_bound.
       __glibcpp_function_requires(_ForwardIteratorConcept<_ForwardIter>)
       __glibcpp_function_requires(_SameTypeConcept<_Tp, _ValueType>)
       __glibcpp_function_requires(_LessThanComparableConcept<_Tp>)
@@ -2044,8 +2049,7 @@ __result, __binary_pred, _IterType());
       
       // concept requirements
       __glibcpp_function_requires(_ForwardIteratorConcept<_ForwardIter>)
-      __glibcpp_function_requires(_SameTypeConcept<_Tp, _ValueType>)
-      __glibcpp_function_requires(_BinaryPredicateConcept<_Compare, _Tp, _Tp>)
+      __glibcpp_function_requires(_BinaryPredicateConcept<_Compare, _Tp, _ValueType>)
     
       _DistanceType __len = distance(__first, __last);
       _DistanceType __half;
@@ -2074,6 +2078,7 @@ __result, __binary_pred, _IterType());
       typedef typename iterator_traits<_ForwardIter>::difference_type _DistanceType;
       
       // concept requirements
+      // See comments on lower_bound.
       __glibcpp_function_requires(_ForwardIteratorConcept<_ForwardIter>)
       __glibcpp_function_requires(_SameTypeConcept<_Tp, _ValueType>)
       __glibcpp_function_requires(_LessThanComparableConcept<_Tp>)
@@ -2113,8 +2118,8 @@ __result, __binary_pred, _IterType());
       
       // concept requirements
       __glibcpp_function_requires(_ForwardIteratorConcept<_ForwardIter>)
-      __glibcpp_function_requires(_SameTypeConcept<_Tp, _ValueType>)
-      __glibcpp_function_requires(_BinaryPredicateConcept<_Compare, _Tp, _Tp>)
+      __glibcpp_function_requires(_BinaryPredicateConcept<_Compare, _ValueType, _Tp>)
+      __glibcpp_function_requires(_BinaryPredicateConcept<_Compare, _Tp, _ValueType>)
     
       _DistanceType __len = distance(__first, __last);
       _DistanceType __half;
@@ -2147,6 +2152,7 @@ __result, __binary_pred, _IterType());
                   const _Tp& __val)
     {
       // concept requirements
+      // See comments on lower_bound.
       __glibcpp_function_requires(_ForwardIteratorConcept<_ForwardIter>)
       __glibcpp_function_requires(_SameTypeConcept<_Tp,
 		typename iterator_traits<_ForwardIter>::value_type>)
@@ -2163,9 +2169,10 @@ __result, __binary_pred, _IterType());
     {
       // concept requirements
       __glibcpp_function_requires(_ForwardIteratorConcept<_ForwardIter>)
-      __glibcpp_function_requires(_SameTypeConcept<_Tp,
+      __glibcpp_function_requires(_BinaryPredicateConcept<_Compare,
+		typename iterator_traits<_ForwardIter>::value_type, _Tp>)
+      __glibcpp_function_requires(_BinaryPredicateConcept<_Compare, _Tp,
 		typename iterator_traits<_ForwardIter>::value_type>)
-      __glibcpp_function_requires(_BinaryPredicateConcept<_Compare, _Tp, _Tp>)
 
       _ForwardIter __i = lower_bound(__first, __last, __val, __comp);
       return __i != __last && !__comp(__val, *__i);

@@ -1,5 +1,11 @@
 2002-01-02  Phil Edwards  <pme@gcc.gnu.org>
 
+	* include/bits/stl_algo.h (upper_bound, equal_range, binary_search):
+	Change concept checks, as with lower_bound and PR 2054.
+	* testsuite/ext/concept_checks.cc:  Expand test to include those.
+
+2002-01-02  Phil Edwards  <pme@gcc.gnu.org>
+
 	* include/bits/boost_concept_check.h:  Import some changes from
 	upsteam (Boost) version.
 
