@@ -190,6 +190,25 @@ init_reg_tables ()
     }
 }
 
+static tree interrupt_ident;
+static tree model_ident;
+static tree small_ident;
+static tree medium_ident;
+static tree large_ident;
+
+static void
+init_idents ()
+{
+  if (interrupt_ident == 0)
+    {
+      interrupt_ident = get_identifier ("interrupt");
+      model_ident = get_identifier ("model");
+      small_ident = get_identifier ("small");
+      medium_ident = get_identifier ("medium");
+      large_ident = get_identifier ("large");
+    }
+}
+
 /* M32R specific attribute support.
 
    interrupt - for interrupt functions
@@ -212,17 +231,7 @@ m32r_valid_machine_decl_attribute (type, attributes, identifier, args)
      tree identifier;
      tree args;
 {
-  static tree interrupt_ident, model_ident;
-  static tree small_ident, medium_ident, large_ident;
-
-  if (interrupt_ident == 0)
-    {
-      interrupt_ident = get_identifier ("__interrupt__");
-      model_ident = get_identifier ("__model__");
-      small_ident = get_identifier ("__small__");
-      medium_ident = get_identifier ("__medium__");
-      large_ident = get_identifier ("__large__");
-    }
+  init_idents ();
 
   if (identifier == interrupt_ident
       && list_length (args) == 0)
@@ -371,11 +380,13 @@ m32r_encode_section_info (decl)
     {
       if (model)
 	{
-	  if (TREE_VALUE (TREE_VALUE (model)) == get_identifier ("__small__"))
+	  init_idents ();
+	  
+	  if (TREE_VALUE (TREE_VALUE (model)) == small_ident)
 	    ; /* don't mark the symbol specially */
-	  else if (TREE_VALUE (TREE_VALUE (model)) == get_identifier ("__medium__"))
+	  else if (TREE_VALUE (TREE_VALUE (model)) == medium_ident)
 	    prefix = MEDIUM_FLAG_CHAR;
-	  else if (TREE_VALUE (TREE_VALUE (model)) == get_identifier ("__large__"))
+	  else if (TREE_VALUE (TREE_VALUE (model)) == large_ident)
 	    prefix = LARGE_FLAG_CHAR;
 	  else
 	    abort (); /* shouldn't happen */
