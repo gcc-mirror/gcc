@@ -51,7 +51,7 @@ Boston, MA 02111-1307, USA.  */
 #endif
 
 #ifndef ATTRIBUTE_UNUSED
-#define ATTRIBUTE_UNUSED __attribute__ ((unused))
+#define ATTRIBUTE_UNUSED __attribute__ ((__unused__))
 #endif /* ATTRIBUTE_UNUSED */
 
 #ifndef ATTRIBUTE_PRINTF
@@ -62,12 +62,6 @@ Boston, MA 02111-1307, USA.  */
 #define ATTRIBUTE_PRINTF_4 ATTRIBUTE_PRINTF(4, 5)
 #define ATTRIBUTE_PRINTF_5 ATTRIBUTE_PRINTF(5, 6)
 #endif /* ATTRIBUTE_PRINTF */
-
-/* Define a generic NULL if one hasn't already been defined.  */
-
-#ifndef NULL
-#define NULL 0
-#endif
 
 #ifndef GENERIC_PTR
 #if defined (USE_PROTOTYPES) ? USE_PROTOTYPES : defined (__STDC__)
@@ -93,52 +87,5 @@ Boston, MA 02111-1307, USA.  */
 #endif
 
 #endif /* ! __STDC__ */
-
-/* We don't have autoconf for libgcc2.c since it's a target, so don't
-   define these functions, which aren't used there anyway.  */
-#ifndef IN_LIBGCC2
-#ifndef bcopy
-# ifdef HAVE_BCOPY
-#  ifdef NEED_DECLARATION_BCOPY
-void bcopy ();
-#  endif
-# else
-#  define bcopy(src,dst,len) memcpy ((dst),(src),(len))
-# endif
-#endif
-
-#ifndef bzero
-# ifdef HAVE_BZERO
-#  ifdef NEED_DECLARATION_BZERO
-void bzero ();
-#  endif
-# else
-#  define bzero(dst,len) memset ((dst),0,(len))
-# endif
-#endif
-
-#ifndef bcmp
-# ifdef HAVE_BCMP
-#  ifdef NEED_DECLARATION_BCMP
-int bcmp ();
-#  endif
-# else
-#  define bcmp(left,right,len) memcmp ((left),(right),(len))
-# endif
-#endif
-
-#ifndef HAVE_RINDEX
-# ifndef rindex
-#  define rindex strrchr
-# endif
-#endif
-
-#ifndef HAVE_INDEX
-# ifndef index
-#  define index strchr
-# endif
-#endif
-
-#endif /* IN_LIBGCC2 */
 
 #endif /* ANSIDECL_H */

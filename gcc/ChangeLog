@@ -1,3 +1,12 @@
+Tue Jun 30 08:59:15 1998  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* gansidecl.h (ATTRIBUTE_UNUSED): Use __unused__ not `unused'.
+  	Don't define NULL here.  Also, remove all vestiges of autoconf
+ 	based checks for bcmp/bcopy/bzero/index/rindex.
+
+	* system.h: Immediately after including stdio.h, check for and if
+	necessary provide a default definition of NULL.
+
 Tue Jun 30 08:22:05 1998  Michael Meissner  <meissner@cygnus.com>
 
 	* reload1.c (reload_cse_simplify_operands): Call
