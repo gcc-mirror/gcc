@@ -1,5 +1,5 @@
 /* Generic sibling call optimization support
-   Copyright (C) 1999, 2000 Free Software Foundation, Inc.
+   Copyright (C) 1999, 2000, 2001 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -38,6 +38,7 @@ static rtx skip_use_of_return_value	PARAMS ((rtx, enum rtx_code));
 static rtx skip_stack_adjustment	PARAMS ((rtx));
 static rtx skip_pic_restore		PARAMS ((rtx));
 static rtx skip_jump_insn		PARAMS ((rtx));
+static int call_ends_block_p		PARAMS ((rtx, rtx));
 static int uses_addressof		PARAMS ((rtx));
 static int sequence_uses_addressof	PARAMS ((rtx));
 static void purge_reg_equiv_notes	PARAMS ((void));
@@ -254,6 +255,52 @@ skip_jump_insn (orig_insn)
     return insn;
 
   return orig_insn;
+}
+
+/* Using the above functions, see if INSN, skipping any of the above,
+   goes all the way to END, the end of a basic block.  Return 1 if so.  */
+
+static int
+call_ends_block_p (insn, end)
+     rtx insn;
+     rtx end;
+{
+  rtx hardret, softret;
+
+  /* END might be a note, so get the last nonnote insn of the block.  */
+  end = next_nonnote_insn (PREV_INSN (end));
+
+  /* If the call was the end of the block, then we're OK.  */
+  if (insn == end)
+    return 1;
+
+  /* Skip over copying from the call's return value pseudo into
+     this function's hard return register and if that's the end
+     of the block, we're OK.  */
+  identify_call_return_value (PATTERN (insn), &hardret, &softret);
+  insn = skip_copy_to_return_value (insn, hardret, softret);
+  if (insn == end)
+    return 1;
+
+  /* Skip any stack adjustment.  */
+  insn = skip_stack_adjustment (insn);
+  if (insn == end)
+    return 1;
+
+  /* Skip over a CLOBBER of the return value as a hard reg.  */
+  insn = skip_use_of_return_value (insn, CLOBBER);
+  if (insn == end)
+    return 1;
+
+  /* Skip over a USE of the return value (as a hard reg).  */
+  insn = skip_use_of_return_value (insn, USE);
+  if (insn == end)
+    return 1;
+
+  /* Skip over a JUMP_INSN at the end of the block.  If that doesn't end the
+     block, the original CALL_INSN didn't.  */
+  insn = skip_jump_insn (insn);
+  return insn == end;
 }
 
 /* Scan the rtx X for ADDRESSOF expressions or
@@ -533,18 +580,7 @@ optimize_sibling_and_tail_recursive_calls ()
 	{
 	  int sibcall = (XEXP (PATTERN (insn), 1) != NULL_RTX);
 	  int tailrecursion = (XEXP (PATTERN (insn), 2) != NULL_RTX);
-	  basic_block call_block;
-	  rtx end, temp, hardret, softret;
-
-	  /* We must be careful with stack slots which are live at
-	     potential optimization sites.
-
-	     ?!? This test is overly conservative and will be replaced.  */
-	  if (frame_offset
-	      /* Taking the address of a local variable is fatal to tail
-		 recursion if the address is used by the recursive call.  */
-	      || current_function_uses_addressof)
-	    sibcall = 0, tailrecursion = 0;
+	  basic_block call_block = BLOCK_FOR_INSN (insn);
 
 	  /* alloca (until we have stack slot life analysis) inhibits
 	     sibling call optimizations, but not tail recursion.
@@ -554,49 +590,23 @@ optimize_sibling_and_tail_recursive_calls ()
 	      || current_function_varargs || current_function_stdarg)
 	    sibcall = 0;
 
-	  /* Get the block for the call and the last non-note insn in it.  We
-	     take advantage of the fact that this cannot be the exit block.  */
-	  call_block = BLOCK_FOR_INSN (insn);
-	  end = prev_nonnote_insn (NEXT_INSN (call_block->end));
-
-	  /* If the block has more than one successor, then we can not
-	     perform sibcall or tail recursion optimizations.  If the single
-	     successor is not the exit block, then we can not perform sibcall
-	     or tail recursion optimizations.  Note that these two tests
-	     combined are sufficient to prevent tail call optimization in the
-	     presense of active exception handlers.  */
-	  if (call_block->succ == NULL
+	  /* See if there are any reasons we can't perform either sibling or
+	     tail call optimizations.  We must be careful with stack slots
+	     which are live at potential optimization sites.  ?!? This test
+	     is overly conservative and will be replaced.  */
+	  if (frame_offset
+	      /* Can't take address of local var if used by recursive call.  */
+	      || current_function_uses_addressof
+	      /* Can't if more than one successor or single successor is not
+		 exit block.  These two tests prevent tail call optimization
+		 in the presense of active exception handlers.  */
+	      || call_block->succ == NULL
 	      || call_block->succ->succ_next != NULL
 	      || (call_block->succ->dest != EXIT_BLOCK_PTR
-		  && call_block->succ->dest != alternate_exit))
-	    sibcall = 0, tailrecursion = 0;
-	  
-	  /* If we haven't failed yet, check if this (or safe things) ends our
-	     block.  */
-	  if ((sibcall || tailrecursion)
-	      /* If the call was the end of the block, then we're OK.  */
-	      && (end == (temp = insn)
-		  /* Skip over copying from the call's return value pseudo into
-		     this function's hard return register and if that's the end
-		     of the block, we're OK.  */
-		  || (identify_call_return_value (PATTERN (insn), &hardret,
-						  &softret)
-		      && end == (temp = skip_copy_to_return_value (insn,
-								   hardret,
-								   softret)))
-		  /* Skip any stack adjustment.  */
-		  || end == (temp = skip_stack_adjustment (temp))
-		  /* Skip over a CLOBBER of the return value as a hard reg.  */
-		  || end == (temp = skip_use_of_return_value (temp, CLOBBER))
-		  /* Skip over a USE of the return value (as a hard reg).  */
-		  || end == (temp = skip_use_of_return_value (temp, USE))
-		  /* Skip over the JUMP_INSN at the end of the block.  */
-		  || end == (temp = skip_jump_insn (temp))))
-	    ;
-	  else
-	    /* There are operations at the end of the block which we must
-	       execute after returning from the function call.  So this call
-	       can not be optimized.  */
+		  && call_block->succ->dest != alternate_exit)
+	      /* If this call doesn't end the block, there are operations at
+		 the end of the block which we must execute after returning. */
+	      || ! call_ends_block_p (insn, call_block->end))
 	    sibcall = 0, tailrecursion = 0;
 
 	  /* Select a set of insns to implement the call and emit them.
