@@ -3157,10 +3157,12 @@ ix86_va_arg (valist, type)
 	{
 	  int i;
 	  rtx mem;
+	  rtx x;
 
 	  /* Never use the memory itself, as it has the alias set.  */
-	  addr_rtx = XEXP (assign_temp (type, 0, 1, 0), 0);
-	  mem = gen_rtx_MEM (BLKmode, addr_rtx);
+	  x = XEXP (assign_temp (type, 0, 1, 0), 0);
+	  mem = gen_rtx_MEM (BLKmode, x);
+	  force_operand (x, addr_rtx);
 	  set_mem_alias_set (mem, get_varargs_alias_set ());
 	  set_mem_align (mem, BITS_PER_UNIT);
 
