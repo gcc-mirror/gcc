@@ -198,7 +198,6 @@ static rtx mips_force_temporary (rtx, rtx);
 static rtx mips_split_symbol (rtx, rtx);
 static rtx mips_unspec_address (rtx, enum mips_symbol_type);
 static rtx mips_unspec_offset_high (rtx, rtx, rtx, enum mips_symbol_type);
-static rtx mips_load_got (rtx, rtx, enum mips_symbol_type);
 static rtx mips_add_offset (rtx, HOST_WIDE_INT);
 static unsigned int mips_build_shift (struct mips_integer_op *, HOST_WIDE_INT);
 static unsigned int mips_build_lower (struct mips_integer_op *,
@@ -536,9 +535,6 @@ char mips_print_operand_punct[256];
 
 /* Map GCC register number to debugger register number.  */
 int mips_dbx_regno[FIRST_PSEUDO_REGISTER];
-
-/* An alias set for the GOT.  */
-static GTY(()) int mips_got_alias_set;
 
 /* A copy of the original flag_delayed_branch: see override_options.  */
 static int mips_flag_delayed_branch;
@@ -1744,24 +1740,12 @@ mips_unspec_offset_high (rtx temp, rtx base, rtx addr,
 }
 
 
-/* Return a memory reference for the GOT slot whose offset is given by
-   mips_unspec_address (ADDR, SYMBOL_TYPE).  Register BASE contains the
-   high part of the offset plus $gp.  */
+/* Return the offset of a GOT page entry for local address ADDR.  */
 
-static rtx
-mips_load_got (rtx base, rtx addr, enum mips_symbol_type symbol_type)
+rtx
+mips_gotoff_page (rtx addr)
 {
-  rtx mem, offset;
-
-  offset = mips_unspec_address (addr, symbol_type);
-  mem = gen_rtx_MEM (ptr_mode, gen_rtx_LO_SUM (Pmode, base, offset));
-  set_mem_alias_set (mem, mips_got_alias_set);
-
-  /* GOT entries are constant and references to them can't trap.  */
-  RTX_UNCHANGING_P (mem) = 1;
-  MEM_NOTRAP_P (mem) = 1;
-
-  return mem;
+  return mips_unspec_address (addr, SYMBOL_GOTOFF_PAGE);
 }
 
 
@@ -1772,25 +1756,6 @@ rtx
 mips_gotoff_global (rtx addr)
 {
   return mips_unspec_address (addr, SYMBOL_GOTOFF_GLOBAL);
-}
-
-
-/* Fetch the high part of local_got_operand ADDR from the GOT.  */
-
-rtx
-mips_load_got_page (rtx addr)
-{
-  return mips_load_got (pic_offset_table_rtx, addr, SYMBOL_GOTOFF_PAGE);
-}
-
-
-/* Fetch the address of global_got_operand ADDR from the GOT.  BASE is a
-   register that holds the address _gp + %got_hi(ADDR).  */
-
-rtx
-mips_load_got_global (rtx base, rtx addr)
-{
-  return mips_load_got (base, addr, SYMBOL_GOTOFF_GLOBAL);
 }
 
 
@@ -5079,9 +5044,6 @@ override_options (void)
 
   /* Function to allocate machine-dependent function status.  */
   init_machine_status = &mips_init_machine_status;
-
-  /* Create a unique alias set for GOT references.  */
-  mips_got_alias_set = new_alias_set ();
 
   if (TARGET_EXPLICIT_RELOCS || mips_split_addresses)
     {

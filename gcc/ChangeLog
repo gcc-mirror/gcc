@@ -1,5 +1,19 @@
 2004-02-14  Richard Sandiford  <rsandifo@redhat.com>
 
+	* config/mips/mips-protos.h (mips_load_got_page): Delete.
+	(mips_load_got_global): Delete.
+	(mips_gotoff_page): Declare.
+	* config/mips/mips.md (UNSPEC_LOAD_GOT): New constant.
+	(*xgot_lo[sd]i, *got_disp[sd]i, *got_page[sd]i): Build an
+	UNSPEC_LOAD_GOT pattern rather than a MEM.
+	(*load_got[sd]i): New patterns.
+	* config/mips/mips.c (mips_got_alias_set, mips_load_got): Delete.
+	(mips_load_got_page, mips_load_got_global): Delete.
+	(mips_gotoff_page): New function.
+	(override_options): Don't initialize mips_got_alias_set.
+
+2004-02-14  Richard Sandiford  <rsandifo@redhat.com>
+
 	* config/mips/mips.h (MASK_DEBUG_[ABEFI], TARGET_DEBUG_[ABEFI]_MODE)
 	(TARGET_MIPS4100, TARGET_MIPS4300, TARGET_MIPS4KC, TARGET_MIPS5KC)
 	(TARGET_SB1, TUNE_SB1, TUNE_SR71K, BIGGEST_MAX_ARGS_IN_REGISTERS)

@@ -32,9 +32,8 @@ extern int mips_const_insns (rtx);
 extern int mips_fetch_insns (rtx);
 extern bool mips_legitimate_address_p (enum machine_mode, rtx, int);
 extern bool mips_legitimize_address (rtx *, enum machine_mode);
+extern rtx mips_gotoff_page (rtx);
 extern rtx mips_gotoff_global (rtx);
-extern rtx mips_load_got_page (rtx);
-extern rtx mips_load_got_global (rtx, rtx);
 extern bool mips_legitimize_move (enum machine_mode, rtx, rtx);
 
 extern int m16_uimm3_b (rtx, enum machine_mode);
