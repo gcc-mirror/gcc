@@ -386,7 +386,7 @@ namespace std
 	{
 	  delete [] _M_impl->_M_names[__i];
 	  char* __new = new char[2];
-	  strcpy(__new, "*");
+	  std::strcpy(__new, "*");
 	  _M_impl->_M_names[__i] = __new;
 	}
     }

@@ -176,18 +176,18 @@ namespace std
     if (__s)
       {
 	_S_initialize(); 
-	if (strcmp(__s, "C") == 0 || strcmp(__s, "POSIX") == 0)
+	if (std::strcmp(__s, "C") == 0 || std::strcmp(__s, "POSIX") == 0)
 	  (_M_impl = _S_classic)->_M_add_reference();
-	else if (strcmp(__s, "") != 0)
+	else if (std::strcmp(__s, "") != 0)
 	  _M_impl = new _Impl(__s, 1);
 	else
 	  {
 	    // Get it from the environment.
 	    char* __env = getenv("LC_ALL");
 	    // If LC_ALL is set we are done.
-	    if (__env && strcmp(__env, "") != 0)
+	    if (__env && std::strcmp(__env, "") != 0)
 	      {
-		if (strcmp(__env, "C") == 0 || strcmp(__env, "POSIX") == 0)
+		if (std::strcmp(__env, "C") == 0 || std::strcmp(__env, "POSIX") == 0)
 		  (_M_impl = _S_classic)->_M_add_reference();
 		else
 		  _M_impl = new _Impl(__env, 1);
@@ -197,8 +197,8 @@ namespace std
 		char* __res;
 		// LANG may set a default different from "C".
 		char* __env = getenv("LANG");
-		if (!__env || strcmp(__env, "") == 0 || strcmp(__env, "C") == 0
-		    || strcmp(__env, "POSIX") == 0)
+		if (!__env || std::strcmp(__env, "") == 0 || std::strcmp(__env, "C") == 0
+		    || std::strcmp(__env, "POSIX") == 0)
 		  __res = strdup("C");
 		else 
 		  __res = strdup(__env);
@@ -206,21 +206,21 @@ namespace std
 		// Scan the categories looking for the first one
 		// different from LANG.
 		size_t __i = 0;
-		if (strcmp(__res, "C") == 0)
+		if (std::strcmp(__res, "C") == 0)
 		  for (; __i < _S_categories_size; ++__i)
 		    {
 		      __env = getenv(_S_categories[__i]);
-		      if (__env && strcmp(__env, "") != 0 
-			  && strcmp(__env, "C") != 0 
-			  && strcmp(__env, "POSIX") != 0) 
+		      if (__env && std::strcmp(__env, "") != 0 
+			  && std::strcmp(__env, "C") != 0 
+			  && std::strcmp(__env, "POSIX") != 0) 
 			break;
 		    }
 		else
 		  for (; __i < _S_categories_size; ++__i)
 		    {
 		      __env = getenv(_S_categories[__i]);
-		      if (__env && strcmp(__env, "") != 0 
-			  && strcmp(__env, __res) != 0) 
+		      if (__env && std::strcmp(__env, "") != 0 
+			  && std::strcmp(__env, __res) != 0) 
 			break;
 		    }
 	
@@ -244,15 +244,15 @@ namespace std
 		    for (; __i < _S_categories_size; ++__i)
 		      {
 			__env = getenv(_S_categories[__i]);
-			if (!__env || strcmp(__env, "") == 0)
+			if (!__env || std::strcmp(__env, "") == 0)
 			  {
 			    __str += _S_categories[__i];
 			    __str += '=';
 			    __str += __res;
 			    __str += ';';
 			  }
-			else if (strcmp(__env, "C") == 0
-				 || strcmp(__env, "POSIX") == 0)
+			else if (std::strcmp(__env, "C") == 0
+				 || std::strcmp(__env, "POSIX") == 0)
 			  {
 			    __str += _S_categories[__i];
 			    __str += "=C;";
@@ -270,7 +270,7 @@ namespace std
 		  }
 		// ... otherwise either an additional instance of
 		// the "C" locale or LANG.
-		else if (strcmp(__res, "C") == 0)
+		else if (std::strcmp(__res, "C") == 0)
 		  (_M_impl = _S_classic)->_M_add_reference();
 		else
 		  _M_impl = new _Impl(__res, 1);
@@ -323,7 +323,7 @@ namespace std
     __other._M_impl->_M_add_reference();
     _S_global = __other._M_impl; 
     if (_S_global->_M_check_same_name() 
-	&& (strcmp(_S_global->_M_names[0], "*") != 0))
+	&& (std::strcmp(_S_global->_M_names[0], "*") != 0))
       setlocale(LC_ALL, __other.name().c_str());
 
     // Reference count sanity check: one reference removed for the
