@@ -1358,7 +1358,7 @@ emit_move_insn (x, y)
   /* This will handle any multi-word mode that lacks a move_insn pattern.
      However, you will get better code if you define such patterns,
      even if they must turn into multiple assembler instructions.  */
-  else if (GET_MODE_SIZE (mode) >= UNITS_PER_WORD)
+  else if (GET_MODE_SIZE (mode) > UNITS_PER_WORD)
     {
       rtx last_insn = 0;
 
