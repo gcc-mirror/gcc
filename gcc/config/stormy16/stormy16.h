@@ -24,20 +24,8 @@ Boston, MA 02111-1307, USA.  */
 /* Driver configuration */
 
 /* Defined in svr4.h.  */
-/* #define SWITCH_TAKES_ARG(CHAR) */
-
-/* Defined in svr4.h.  */
-/* #define WORD_SWITCH_TAKES_ARG(NAME) */
-
-/* Defined in svr4.h.  */
 #undef ASM_SPEC
 #define ASM_SPEC ""
-
-/* Defined in svr4.h.  */
-/* #define ASM_FINAL_SPEC "" */
-
-/* Defined in svr4.h.  */
-/* #define LINK_SPEC "" */
 
 /* For xstormy16:
    - If -msim is specified, everything is built and linked as for the sim.

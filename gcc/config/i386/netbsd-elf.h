@@ -64,8 +64,6 @@ Boston, MA 02111-1307, USA.  */
 #undef ASM_APP_OFF
 #define ASM_APP_OFF "#NO_APP\n"
 
-#undef ASM_FINAL_SPEC
-
 #undef ASM_COMMENT_START
 #define ASM_COMMENT_START "#"
 

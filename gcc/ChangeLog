@@ -1,3 +1,16 @@
+2003-06-11  Roger Sayle  <roger@eyesopen.com>
+	    Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* config/d30v/d30v.h: Delete reference to ASM_FINAL_SPEC.
+	* config/i386/netbsd-elf.h: Likewise.
+	* config/m32r/m32r.h: Likewise.
+	* config/mn10300/mn10300.h: Likewise.
+	* config/stormy16/stormy16.h: Likewise.
+	* config/v850/v850.h: Likewise.
+	* config/vax/netbsd-elf.h: Likewise.
+	* config/xtensa/elf.h: Likewise.
+	* config/xtensa/linux.h: Likewise.
+
 2003-06-11  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
 
 	* config/mips/iris5gas.h (MDEBUG_ASM_SPEC): Override to match

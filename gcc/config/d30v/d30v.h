@@ -43,9 +43,6 @@
 %{v} %{n} %{T} %{Ym,*} %{Yd,*} %{Wa,*:%*}"
 
 /* Defined in svr4.h.  */
-/* #define ASM_FINAL_SPEC "" */
-
-/* Defined in svr4.h.  */
 #undef	LINK_SPEC
 #define LINK_SPEC "\
 %{h*} %{v:-V} \
