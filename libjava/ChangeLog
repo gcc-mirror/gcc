@@ -1,3 +1,8 @@
+2005-04-06  Bryce McKinlay  <mckinlay@redhat.com>
+
+	* java/util/logging/natLogger.cc (getCallerStackFrame): Don't crash on
+	NULL klass and meth values from _Jv_StackTrace::GetCallerInfo().
+
 2005-04-05  Andrew Haley  <aph@redhat.com>
 
 	* gnu/gcj/tools/gcj_dbtool/Main.java (Fileset): New class.
@@ -38,6 +43,7 @@
 	Handle error cases.  Added 'endp' argument.
 	* include/jvm.h (_Jv_FindClassFromSignature): Updated prototype.
 
+>>>>>>> 1.3459
 2005-04-05  Tom Tromey  <tromey@redhat.com>
 
 	* Makefile.in: Rebuilt.
