@@ -1,3 +1,8 @@
+2001-07-18  Andrew Haley  <aph@cambridge.redhat.com>
+
+        * config/sh/sh.c (barrier_align): Check that an operand really is
+        an insn before extracting its INSN_CODE.
+
 2001-07-24  Andrew Haley  <aph@cambridge.redhat.com>
 
 	* config/sh/sh.h (OVERRIDE_OPTIONS): Add braces to get rid of
