@@ -2879,6 +2879,7 @@ eliminate_regs_in_insn (rtx insn, int replace)
   rtx substed_operand[MAX_RECOG_OPERANDS];
   rtx orig_operand[MAX_RECOG_OPERANDS];
   struct elim_table *ep;
+  rtx plus_src;
 
   if (! insn_is_asm && icode < 0)
     {
@@ -2982,17 +2983,40 @@ eliminate_regs_in_insn (rtx insn, int replace)
     }
 
   /* We allow one special case which happens to work on all machines we
-     currently support: a single set with the source being a PLUS of an
-     eliminable register and a constant.  */
-  if (old_set
-      && GET_CODE (SET_DEST (old_set)) == REG
-      && GET_CODE (SET_SRC (old_set)) == PLUS
-      && GET_CODE (XEXP (SET_SRC (old_set), 0)) == REG
-      && GET_CODE (XEXP (SET_SRC (old_set), 1)) == CONST_INT
-      && REGNO (XEXP (SET_SRC (old_set), 0)) < FIRST_PSEUDO_REGISTER)
+     currently support: a single set with the source or a REG_EQUAL
+     note being a PLUS of an eliminable register and a constant.  */
+  plus_src = 0;
+  if (old_set && GET_CODE (SET_DEST (old_set)) == REG)
     {
-      rtx reg = XEXP (SET_SRC (old_set), 0);
-      HOST_WIDE_INT offset = INTVAL (XEXP (SET_SRC (old_set), 1));
+      /* First see if the source is of the form (plus (reg) CST).  */
+      if (GET_CODE (SET_SRC (old_set)) == PLUS
+	  && GET_CODE (XEXP (SET_SRC (old_set), 0)) == REG
+	  && GET_CODE (XEXP (SET_SRC (old_set), 1)) == CONST_INT
+	  && REGNO (XEXP (SET_SRC (old_set), 0)) < FIRST_PSEUDO_REGISTER)
+	plus_src = SET_SRC (old_set);
+      else if (GET_CODE (SET_SRC (old_set)) == REG)
+	{
+	  /* Otherwise, see if we have a REG_EQUAL note of the form
+	     (plus (reg) CST).  */
+	  rtx links;
+	  for (links = REG_NOTES (insn); links; links = XEXP (links, 1))
+	    {
+	      if (REG_NOTE_KIND (links) == REG_EQUAL
+		  && GET_CODE (XEXP (links, 0)) == PLUS
+		  && GET_CODE (XEXP (XEXP (links, 0), 0)) == REG
+		  && GET_CODE (XEXP (XEXP (links, 0), 1)) == CONST_INT
+		  && REGNO (XEXP (XEXP (links, 0), 0)) < FIRST_PSEUDO_REGISTER)
+		{
+		  plus_src = XEXP (links, 0);
+		  break;
+		}
+	    }
+	}
+    }
+  if (plus_src)
+    {
+      rtx reg = XEXP (plus_src, 0);
+      HOST_WIDE_INT offset = INTVAL (XEXP (plus_src, 1));
 
       for (ep = reg_eliminate; ep < &reg_eliminate[NUM_ELIMINABLE_REGS]; ep++)
 	if (ep->from_rtx == reg && ep->can_eliminate)
@@ -3022,7 +3046,12 @@ eliminate_regs_in_insn (rtx insn, int replace)
 		if (INSN_CODE (insn) < 0)
 		  abort ();
 	      }
-	    else
+	    /* If we have a nonzero offset, and the source is already
+	       a simple REG, the following transformation would
+	       increase the cost of the insn by replacing a simple REG
+	       with (plus (reg sp) CST).  So try only when plus_src
+	       comes from old_set proper, not REG_NOTES.  */
+	    else if (SET_SRC (old_set) == plus_src)
 	      {
 		new_body = old_body;
 		if (! replace)
@@ -3037,6 +3066,9 @@ eliminate_regs_in_insn (rtx insn, int replace)
 		XEXP (SET_SRC (old_set), 0) = ep->to_rtx;
 		XEXP (SET_SRC (old_set), 1) = GEN_INT (offset);
 	      }
+	    else
+	      break;
+
 	    val = 1;
 	    /* This can't have an effect on elimination offsets, so skip right
 	       to the end.  */
