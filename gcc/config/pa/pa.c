@@ -2521,10 +2521,8 @@ secondary_reload_class (class, mode, in)
 
   if ((TARGET_SHARED_LIBS && function_label_operand (in, mode))
       || ((regno >= FIRST_PSEUDO_REGISTER || regno == -1)
-	  && ((mode == QImode || mode == HImode || mode == SImode
-	       || mode == DImode) 
-	      && (class == FP_REGS || class == SNAKE_FP_REGS
-		  || class == HI_SNAKE_FP_REGS)))
+	  && GET_MODE_CLASS (mode) == MODE_INT
+	  && FP_REG_CLASS_P (class))
       || (class == SHIFT_REGS && (regno <= 0 || regno >= 32)))
     return GENERAL_REGS;
 
