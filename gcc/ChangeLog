@@ -1,3 +1,8 @@
+Mon Dec 15 09:44:39 1997  Richard Henderson  <rth@cygnus.com>
+
+	* alpha.md (zero_extendqihi2, zero_extendqisi2, zero_extendqidi2):
+	Use and 255 instead of zapnot 1, since it schedules better.
+
 Mon Dec 15 08:48:24 1997  Jeffrey A Law  (law@cygnus.com)
 
 	* stmt.c (expand_asm_operands): If an ASM has no outputs, then treat
