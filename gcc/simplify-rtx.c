@@ -2435,14 +2435,15 @@ hash_rtx (x, mode, create)
 {
   cselib_val *e;
   int i, j;
+  enum rtx_code code;
+  const char *fmt;
   unsigned int hash = 0;
-  enum rtx_code code = GET_CODE (x);
-  const char *fmt = GET_RTX_FORMAT (code);
 
   /* repeat is used to turn tail-recursion into iteration.  */
  repeat:
-
   code = GET_CODE (x);
+  hash += (unsigned) code + (unsigned) GET_MODE (x);
+
   switch (code)
     {
     case MEM:
@@ -2450,7 +2451,8 @@ hash_rtx (x, mode, create)
       e = cselib_lookup (x, GET_MODE (x), create);
       if (! e)
 	return 0;
-      return e->value;
+      hash += e->value;
+      return hash;
 
     case CONST_INT:
       {
@@ -2506,7 +2508,6 @@ hash_rtx (x, mode, create)
     }
 
   i = GET_RTX_LENGTH (code) - 1;
-  hash += (unsigned) code + (unsigned) GET_MODE (x);
   fmt = GET_RTX_FORMAT (code);
   for (; i >= 0; i--)
     {
@@ -2765,8 +2766,11 @@ cselib_lookup (x, mode, create)
     return e;
 
   e = new_cselib_val (hashval, mode);
-  e->locs = new_elt_loc_list (e->locs, cselib_subst_to_values (x));
+  /* We have to fill the slot before calling cselib_subst_to_values:
+     the hash table is inconsistent until we do so, and
+     cselib_subst_to_values will need to do lookups.  */
   *slot = (void *) e;
+  e->locs = new_elt_loc_list (e->locs, cselib_subst_to_values (x));
   return e;
 }
 
