@@ -1,3 +1,7 @@
+2001-01-22  Andres Felipe Vargas <avargas@teletulua.com.co>
+
+	* cpp.texi: Correct typos.
+
 Mon Jan 22 13:59:09 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* explow.c (probe_stack_range): Ensure value passed to

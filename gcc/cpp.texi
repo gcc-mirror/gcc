@@ -1127,7 +1127,7 @@ version 1, which is now obsolete, and @samp{2} for version 2).
 @findex __GNUC_MINOR__
 The macro contains the minor version number of the compiler.  This can
 be used to work around differences between different releases of the
-compiler (for example, if GCC 2.6.3 is known to support a feature, you
+compiler (for example, if GCC 2.6.x is known to support a feature, you
 can test for @code{__GNUC__ > 2 || (__GNUC__ == 2 && __GNUC_MINOR__ >= 6)}).
 
 @item __GNUC_PATCHLEVEL__
@@ -1138,7 +1138,7 @@ of the compiler (for example, if GCC 2.6.2 is known to contain a bug,
 whereas GCC 2.6.3 contains a fix, and you have code which can workaround
 the problem depending on whether the bug is fixed or not, you can test for
 @code{__GNUC__ > 2 || (__GNUC__ == 2 && __GNUC_MINOR__ > 6) || 
-(__GNUC__ == 2 && __GNUC_MINOR__ == 6 && __GNUC_PATCHLEVEL__ > 3)}).
+(__GNUC__ == 2 && __GNUC_MINOR__ == 6 && __GNUC_PATCHLEVEL__ >= 3)}).
 
 @item __GNUG__
 @findex __GNUG__
