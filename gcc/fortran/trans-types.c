@@ -849,7 +849,7 @@ gfc_get_desc_dim_type (void)
 }
 
 
-/* Return the DTYPE for an array.  This desribes the type and type parameters
+/* Return the DTYPE for an array.  This describes the type and type parameters
    of the array.  */
 /* TODO: Only call this when the value is actually used, and make all the
    unknown cases abort.  */

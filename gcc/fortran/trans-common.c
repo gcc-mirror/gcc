@@ -698,7 +698,7 @@ add_equivalences (void)
 }
 
 
-/* Returns the offset neccessary to properly align the current equivalence.
+/* Returns the offset necessary to properly align the current equivalence.
    Sets *palign to the required alignment.  */
 
 static HOST_WIDE_INT
