@@ -1,3 +1,8 @@
+2001-08-18  Zack Weinberg  <zackw@panix.com>
+
+	* unwind-dw2.c (execute_stack_op): Add default aborts to
+	the inner switches to prevent warnings.
+
 2001-08-18  Richard Henderson  <rth@redhat.com>
 
 	* timevar.h (struct timevar_time_def): Change element type to float.
