@@ -14512,7 +14512,7 @@ Mon Mar 24 20:03:03 CET 2003  Jan Hubicka  <jh@suse.cz>
 
 2003-03-05  Jan Hubicka  <jh@suse.cz>
 
-	* toplev.c (rest_of_compilation):  Deffer RTL compilation only when
+	* toplev.c (rest_of_compilation):  Defer RTL compilation only when
 	RTL inlining is done.
 
 	* cgraphunit.c (cgraph_mark_local_functions): New local function.
@@ -16512,8 +16512,8 @@ Mon Mar 24 20:03:03 CET 2003  Jan Hubicka  <jh@suse.cz>
 2003-02-12  Jan Hubicka  <jh@suse.cz>
 
 	* Makefile.in (CRTSTUFF_CFLAGS): Add -fno-unit-at-a-time
-	(OBJS): Add callgraph.o
-	(callgraph.o): New.
+	(OBJS): Add cgraph.o
+	(cgraph.o): New.
 	* c-decl.c (expand_body_1): Break out from ...
 	(expand_body): This one;  change calling convention
 	(finish_function): Move some of expand_body logic here.
@@ -16522,7 +16522,7 @@ Mon Mar 24 20:03:03 CET 2003  Jan Hubicka  <jh@suse.cz>
 	* c-lang.c (LANG_HOOKS_CALLGRAPH_EXPAND_FUNCTION): Define.
 	* c-objc-commin.c (c_objc_common_finish_file): Use callgraph code.
 	* c-tree.h (c_expand_body): Declare.
-	* callgraph.c: New file.
+	* cgraph.c: New file.
 	* flags.h (flag_unit_at_a_time): Declare.
 	* langhooks.h (LANG_HOOKS_CALLGRAPH_LOWER_FUNCTION,
 	LANG_HOOKS_CALLGRAPH_EXPAND_FUNCTION,
@@ -16539,7 +16539,7 @@ Mon Mar 24 20:03:03 CET 2003  Jan Hubicka  <jh@suse.cz>
 	* tree.h (cgraph_finalize_function, cgraph_finalize_compilation_unit,
 	cgraph_create_edges, dump_cgraph, cgraph_optimize, cgraph_remove_call
 	cgraph_calls_p): Declare.
-	* invoke.texi (-funit-at-a-time): Document
+	* invoke.texi (-funit-at-a-time): Document.
 
 2003-02-12  Aldy Hernandez  <aldyh@redhat.com>
 
