@@ -1,3 +1,7 @@
+2002-01-10  Kazu Hirata  <kazu@hxi.com>
+
+	* combine.c (expand_field_assignment): Use subreg_lsb().
+
 2002-01-10  David Edelsohn  <edelsohn@gnu.org>
 
 	* alias.c (find_base_value): Add cases for HIGH, PRE_INC, PRE_DEC,
