@@ -93,3 +93,8 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 
 #undef MACHINE_TYPE
 #define MACHINE_TYPE "SGI running IRIX 5.0"
+
+/* -G is incompatible with -KPIC which is the default, so only allow objects
+   in the small data section if the user explicitly asks for it.  */
+#undef MIPS_DEFAULT_GVALUE
+#define MIPS_DEFAULT_GVALUE 0
