@@ -795,7 +795,7 @@ explow.o : explow.c $(CONFIG_H) $(RTL_H) $(TREE_H) flags.h hard-reg-set.h \
 optabs.o : optabs.c $(CONFIG_H) $(RTL_H) $(TREE_H) flags.h  \
    insn-flags.h insn-config.h insn-codes.h expr.h recog.h
 dbxout.o : dbxout.c $(CONFIG_H) $(TREE_H) $(RTL_H) flags.h regs.h \
-   insn-config.h reload.h gstab.h xcoffout.h defaults.h
+   insn-config.h reload.h gstab.h xcoffout.h defaults.h output.h
 sdbout.o : sdbout.c $(CONFIG_H) $(TREE_H) $(RTL_H) gsyms.h flags.h \
    insn-config.h reload.h
 dwarfout.o : dwarfout.c $(CONFIG_H) $(TREE_H) $(RTL_H) dwarf.h flags.h \
