@@ -70,10 +70,10 @@ unsigned int total_code_bytes;
 /* Variables to handle plabels that we discover are necessary at assembly
    output time.  They are output after the current function.  */
 
-struct defer_plab
+struct deferred_plabel
 {
   rtx internal_label;
-  rtx symbol;
+  char *name;
 } *deferred_plabels = 0;
 int n_deferred_plabels = 0;
 
@@ -2898,23 +2898,6 @@ output_function_epilogue (file, size)
     fputs ("\tnop\n", file);
 
   fputs ("\t.EXIT\n\t.PROCEND\n", file);
-
-  /* If we have deferred plabels, then we need to switch into the data
-     section and align it to a 4 byte boundary before we output the
-     deferred plabels.  */
-  if (n_deferred_plabels)
-    {
-      data_section ();
-      ASM_OUTPUT_ALIGN (file, 2);
-    }
-
-  /* Now output the deferred plabels.  */
-  for (i = 0; i < n_deferred_plabels; i++)
-    {
-      ASM_OUTPUT_INTERNAL_LABEL (file, "L", CODE_LABEL_NUMBER (deferred_plabels[i].internal_label));
-      assemble_integer (deferred_plabels[i].symbol, 4, 1);
-    }
-  n_deferred_plabels = 0;
 }
 
 void
@@ -3898,6 +3881,29 @@ output_global_address (file, x, round_constant)
     }
   else
     output_addr_const (file, x);
+}
+
+void
+output_deferred_plabels (file)
+     FILE *file;
+{
+  int i;
+  /* If we have deferred plabels, then we need to switch into the data
+     section and align it to a 4 byte boundary before we output the
+     deferred plabels.  */
+  if (n_deferred_plabels)
+    {
+      data_section ();
+      ASM_OUTPUT_ALIGN (file, 2);
+    }
+
+  /* Now output the deferred plabels.  */
+  for (i = 0; i < n_deferred_plabels; i++)
+    {
+      ASM_OUTPUT_INTERNAL_LABEL (file, "L", CODE_LABEL_NUMBER (deferred_plabels[i].internal_label));
+      assemble_integer (gen_rtx (SYMBOL_REF, VOIDmode,
+				 deferred_plabels[i].name), 4, 1);
+    }
 }
 
 /* HP's millicode routines mean something special to the assembler.
@@ -5039,6 +5045,11 @@ output_millicode_call (insn, call_dest)
   return "";
 }
 
+extern struct obstack permanent_obstack;
+extern struct obstack *saveable_obstack;
+extern struct obstack *rtl_obstack;
+extern struct obstack *current_obstack;
+
 /* INSN is either a function call.  It may have an unconditional jump
    in its delay slot.
 
@@ -5128,70 +5139,109 @@ output_call (insn, call_dest)
 		  output_asm_insn ("ldw -12(%%sr0,%%r30),%R1", xoperands);
 		  output_asm_insn ("ldw -16(%%sr0,%%r30),%1", xoperands);
 		}
-		
 	    }
 	}
 
       /* Don't have to worry about TARGET_PORTABLE_RUNTIME here since
 	 we don't have any direct calls in that case.  */
-      if (flag_pic)
 	{
+	  int i;
+	  char *name = XSTR (call_dest, 0);
+
+	  /* See if we have already put this function on the list
+	     of deferred plabels.  This list is generally small,
+	     so a liner search is not too ugly.  If it proves too
+	     slow replace it with something faster.  */
+	  for (i = 0; i < n_deferred_plabels; i++)
+	    if (strcmp (name, deferred_plabels[i].name) == 0)
+	      break;
+
+	  /* If the deferred plabel list is empty, or this entry was
+	     not found on the list, create a new entry on the list.  */
+	  if (deferred_plabels == NULL || i == n_deferred_plabels)
+	    {
+	      struct obstack *ambient_obstack = current_obstack;
+	      struct obstack *ambient_rtl_obstack = rtl_obstack;
+	      char *real_name;
+
+	      /* Any RTL we create here needs to live until the end of
+		 the compilation unit and therefore must live on the
+		 permanent obstack.  */
+	      current_obstack = &permanent_obstack;
+	      rtl_obstack = &permanent_obstack;
+
+	      if (deferred_plabels == 0)
+		deferred_plabels = (struct deferred_plabel *)
+		  xmalloc (1 * sizeof (struct deferred_plabel));
+	      else
+		deferred_plabels = (struct deferred_plabel *)
+		  xrealloc (deferred_plabels,
+			    ((n_deferred_plabels + 1)
+			     * sizeof (struct deferred_plabel)));
+
+	      i = n_deferred_plabels++;
+	      deferred_plabels[i].internal_label = gen_label_rtx ();
+	      deferred_plabels[i].name = obstack_alloc (&permanent_obstack,
+							strlen (name) + 1);
+	      strcpy (deferred_plabels[i].name, name);
+
+	      /* Switch back to normal obstack allocation.  */
+	      current_obstack = ambient_obstack;
+	      rtl_obstack = ambient_rtl_obstack;
+
+	      /* Gross.  We have just implicitly taken the address of this
+		 function, mark it as such.  */
+	      STRIP_NAME_ENCODING (real_name, name);
+	      TREE_SYMBOL_REFERENCED (get_identifier (real_name)) = 1;
+	    }
+
 	  /* We have to load the address of the function using a procedure
-	     label (plabel).  The LP and RP relocs don't work reliably for PIC,
-	     so we make a plain 32 bit plabel in the data segment instead.  We
-	     have to defer outputting it of course...  Not pretty.  */
+	     label (plabel).  Inline plabels can lose for PIC and other
+	     cases, so avoid them by creating a 32bit plabel in the data
+	     segment.  */
+	  if (flag_pic)
+	    {
+	      xoperands[0] = deferred_plabels[i].internal_label;
+	      xoperands[1] = gen_label_rtx ();
 
-	  xoperands[0] = gen_label_rtx ();
-	  xoperands[1] = gen_label_rtx ();
-	  output_asm_insn ("addil LT%%%0,%%r19", xoperands);
-	  output_asm_insn ("ldw RT%%%0(%%r1),%%r22", xoperands);
-	  output_asm_insn ("ldw 0(0,%%r22),%%r22", xoperands);
+	      output_asm_insn ("addil LT%%%0,%%r19", xoperands);
+	      output_asm_insn ("ldw RT%%%0(%%r1),%%r22", xoperands);
+	      output_asm_insn ("ldw 0(0,%%r22),%%r22", xoperands);
 
-	  if (deferred_plabels == 0)
-	    deferred_plabels = (struct defer_plab *)
-	      xmalloc (1 * sizeof (struct defer_plab));
+	      /* Get our address + 8 into %r1.  */
+	      output_asm_insn ("bl .+8,%%r1", xoperands);
+
+	      /* Add %r1 to the offset of dyncall from the next insn.  */
+	      output_asm_insn ("addil L%%$$dyncall-%1,%%r1", xoperands);
+	      ASM_OUTPUT_INTERNAL_LABEL (asm_out_file, "L",
+					 CODE_LABEL_NUMBER (xoperands[1]));
+	      output_asm_insn ("ldo R%%$$dyncall-%1(%%r1),%%r1", xoperands);
+
+	      /* Get the return address into %r31.  */
+	      output_asm_insn ("blr 0,%%r31", xoperands);
+
+	      /* Branch to our target which is in %r1.  */
+	      output_asm_insn ("bv 0(%%r1)", xoperands);
+
+	      /* Copy the return address into %r2 also.  */
+	      output_asm_insn ("copy %%r31,%%r2", xoperands);
+	    }
 	  else
-	    deferred_plabels = (struct defer_plab *)
-	      xrealloc (deferred_plabels,
-			(n_deferred_plabels + 1) * sizeof (struct defer_plab));
-	  deferred_plabels[n_deferred_plabels].internal_label = xoperands[0];
-	  deferred_plabels[n_deferred_plabels].symbol = call_dest;
-	  n_deferred_plabels++;
+	    {
+	      xoperands[0] = deferred_plabels[i].internal_label;
 
-	  /* Get our address + 8 into %r1.  */
-	  output_asm_insn ("bl .+8,%%r1", xoperands);
+	      /* Get the address of our target into %r22.  */
+	      output_asm_insn ("addil LR%%%0-$global$,%%r27", xoperands);
+	      output_asm_insn ("ldw RR%%%0-$global$(%%r1),%%r22", xoperands);
 
-	  /* Add %r1 to the offset of dyncall from the next insn.  */
-	  output_asm_insn ("addil L%%$$dyncall-%1,%%r1", xoperands);
-	  ASM_OUTPUT_INTERNAL_LABEL (asm_out_file, "L",
-				     CODE_LABEL_NUMBER (xoperands[1]));
-	  output_asm_insn ("ldo R%%$$dyncall-%1(%%r1),%%r1", xoperands);
+	      /* Get the high part of the  address of $dyncall into %r2, then
+		 add in the low part in the branch instruction.  */
+	      output_asm_insn ("ldil L%%$$dyncall,%%r2", xoperands);
+	      output_asm_insn ("ble  R%%$$dyncall(%%sr4,%%r2)", xoperands);
 
-	  /* Get the return address into %r31.  */
-	  output_asm_insn ("blr 0,%%r31", xoperands);
-
-	  /* Branch to our target which is in %r1.  */
-	  output_asm_insn ("bv 0(%%r1)", xoperands);
-
-	  /* Copy the return address into %r2 also.  */
-	  output_asm_insn ("copy %%r31,%%r2", xoperands);
-	}
-      else
-	{
-	  /* No PIC stuff to worry about.  We can use ldil;ble.  */
-	  xoperands[0] = call_dest;
-
-	  /*  Get the address of our target into %r22.  */
-	  output_asm_insn ("ldil LP%%%0,%%r22", xoperands);
-	  output_asm_insn ("ldo RP%%%0(%%r22),%%r22", xoperands);
-
-	  /* Get the high part of the  address of $dyncall into %r2, then
-	     add in the low part in the branch instruction.  */
-	  output_asm_insn ("ldil L%%$$dyncall,%%r2", xoperands);
-	  output_asm_insn ("ble  R%%$$dyncall(%%sr4,%%r2)", xoperands);
-
-	  /* Copy the return pointer into both %r31 and %r2.  */
-	  output_asm_insn ("copy %%r31,%%r2", xoperands);
+	      /* Copy the return pointer into both %r31 and %r2.  */
+	      output_asm_insn ("copy %%r31,%%r2", xoperands);
+	    }
 	}
 
       /* If we had a jump in the call's delay slot, output it now.  */
@@ -5243,9 +5293,6 @@ output_call (insn, call_dest)
   NOTE_SOURCE_FILE (NEXT_INSN (insn)) = 0;
   return "";
 }
-
-extern struct obstack permanent_obstack;
-extern struct obstack *saveable_obstack;
 
 /* In HPUX 8.0's shared library scheme, special relocations are needed
    for function labels if they might be passed to a function
