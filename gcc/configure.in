@@ -642,9 +642,6 @@ then tm_file=$cpu_type/$cpu_type.h; fi
 if test x"$extra_headers" = x
 then extra_headers=; fi
 
-if test x"$xm_file" = x
-then xm_file=$cpu_type/xm-$cpu_type.h; fi
-
 if test x$md_file = x
 then md_file=$cpu_type/$cpu_type.md; fi
 
@@ -679,15 +676,13 @@ echo "Using \`$srcdir/config/$out_file' for machine-specific logic."
 echo "Using \`$srcdir/config/$md_file' as machine description file."
 
 # If any of the xm_file variables contain nonexistent files, warn
-# about them and drop them.  But $cpu/xm-$cpu.h is allowed not to
-# exist, if we have nothing for it to do.
+# about them and drop them.
+
 changequote(,)dnl
 bx=
 for x in $build_xm_file; do
   if    test -f $srcdir/config/$x
   then      bx="$bx $x"
-  elif  expr $x : '\([^/]*\)/xm-\1\.h' >/dev/null
-  then      :
   else      AC_MSG_WARN($srcdir/config/$x does not exist.)
   fi
 done
@@ -697,8 +692,6 @@ hx=
 for x in $host_xm_file; do
   if    test -f $srcdir/config/$x
   then      hx="$hx $x"
-  elif  expr $x : '\([^/]*\)/xm-\1\.h' >/dev/null
-  then      :
   else      AC_MSG_WARN($srcdir/config/$x does not exist.)
   fi
 done
@@ -708,8 +701,6 @@ tx=
 for x in $xm_file; do
   if    test -f $srcdir/config/$x
   then      tx="$tx $x"
-  elif  expr $x : '\([^/]*\)/xm-\1\.h' >/dev/null
-  then      :
   else      AC_MSG_WARN($srcdir/config/$x does not exist.)
   fi
 done

@@ -243,7 +243,6 @@ sparc*-*-*)
 esac
 
 tm_file=${cpu_type}/${cpu_type}.h
-xm_file=${cpu_type}/xm-${cpu_type}.h
 if test -f ${srcdir}/config/${cpu_type}/${cpu_type}-protos.h;
 then
 	tm_p_file=${cpu_type}/${cpu_type}-protos.h;
@@ -301,17 +300,16 @@ esac
 case $machine in
 # Support site-specific machine types.
 *local*)
-	cpu_type=`echo $machine | sed -e 's/-.*//'`
 	rest=`echo $machine | sed -e "s/$cpu_type-//"`
-	xm_file=${cpu_type}/xm-$rest.h
 	tm_file=${cpu_type}/$rest.h
-	if test -f $srcdir/config/${cpu_type}/x-$rest; \
-	then xmake_file=${cpu_type}/x-$rest; \
-	else true; \
+	if test -f $srcdir/config/${cpu_type}/xm-$rest.h
+	then xm_file=${cpu_type}/xm-$rest.h
 	fi
-	if test -f $srcdir/config/${cpu_type}/t-$rest; \
-	then tmake_file=${cpu_type}/t-$rest; \
-	else true; \
+	if test -f $srcdir/config/${cpu_type}/x-$rest
+	then xmake_file=${cpu_type}/x-$rest
+	fi
+	if test -f $srcdir/config/${cpu_type}/t-$rest
+	then tmake_file=${cpu_type}/t-$rest
 	fi
 	;;
 1750a-*-*)
@@ -485,7 +483,7 @@ alpha*-*-vxworks*)
 alpha*-dec-vms*)
 	xm_defines=POSIX
 	tm_file=alpha/vms.h
-	xm_file="${xm_file} alpha/xm-vms.h"
+	xm_file=alpha/xm-vms.h
 	tmake_file="alpha/t-alpha alpha/t-vms alpha/t-ieee"
 	;;
 arm*-*-rtems*)
@@ -913,7 +911,6 @@ hppa*-*-lites*)
 	;;
 hppa*-*-mpeix*)
 	tm_file="${tm_file} pa/pa32-regs.h pa/long_double.h pa/som.h pa/pa-mpeix.h"
-	xm_file=pa/xm-pampeix.h 
 	xmake_file=pa/x-pa-mpeix 
 	echo "You must use gas. Assuming it is already installed." 
 	install_headers_dir=install-headers-tar
@@ -1220,7 +1217,6 @@ i[34567]86-*-osfrose*)		# 386 using OSF/rose
 	;;
 i[34567]86-go32-rtems*)
 	cpu_type=i386
-	xm_file=i386/xm-go32.h
 	tm_file=i386/go32-rtems.h
 	tmake_file=t-rtems
 	if test x$enable_threads = xyes; then
@@ -1354,7 +1350,7 @@ i[34567]86-*-udk*)      # Intel x86 on SCO UW/OSR5 Dev Kit
 	;;
 i[34567]86-*-osf1*)		# Intel 80386's running OSF/1 1.3+
 	cpu_type=i386
-	xm_file="${xm_file} i386/xm-osf1elf.h"
+	xm_file=i386/xm-osf1elf.h
 	xm_defines='USG POSIX USE_C_ALLOCA SMALL_ARG_MAX'
 	if test x$stabs = xyes
 	then
@@ -1389,14 +1385,14 @@ i[34567]86-*-sysv*)		# Intel 80386's running system V
 	tmake_file="$tmake_file i386/t-crtpic"
 	;;
 i386-*-vsta)			# Intel 80386's running VSTa kernel
-	xm_file="${xm_file} i386/xm-vsta.h"
+	xm_file=i386/xm-vsta.h
 	tm_file=i386/vsta.h
 	tmake_file=i386/t-vsta
 	xmake_file=i386/x-vsta
 	;;
 i[34567]86-*-win32)
 	xm_defines=POSIX
-	xm_file="${xm_file} i386/xm-cygwin.h"
+	xm_file=i386/xm-cygwin.h
 	float_format=i386
 	tmake_file=i386/t-cygwin
 	tm_file=i386/win32.h
@@ -1409,7 +1405,7 @@ i[34567]86-*-win32)
 	;;
 i[34567]86-*-pe | i[34567]86-*-cygwin*)
 	xm_defines=POSIX
-	xm_file="${xm_file} i386/xm-cygwin.h"
+	xm_file=i386/xm-cygwin.h
 	float_format=i386
 	tmake_file=i386/t-cygwin
 	tm_file=i386/cygwin.h
@@ -1424,7 +1420,7 @@ i[34567]86-*-mingw32*)
 	tm_file=i386/mingw32.h
 	float_format=i386
 	xm_defines=USG
-	xm_file="${xm_file} i386/xm-mingw32.h"
+	xm_file=i386/xm-mingw32.h
 	tmake_file="i386/t-cygwin i386/t-mingw32"
 	extra_objs=winnt.o
 	xmake_file=i386/x-cygwin
@@ -1474,7 +1470,6 @@ i[34567]86-dg-dgux*)
       ;;
 i860-alliant-*)		# Alliant FX/2800
 	tm_file="${tm_file} svr4.h i860/sysv4.h i860/fx2800.h"
-	xm_file="${xm_file}"
 	tmake_file=i860/t-fx2800
 	extra_parts="crtbegin.o crtend.o"
 	;;
@@ -3469,9 +3464,8 @@ fi
 # Save data on host machine in vars host_xm_file and host_xmake_file.
 if test x$pass1done = x
 then
-	if test x"$xm_file" = x
-	then build_xm_file=$cpu_type/xm-$cpu_type.h
-	else build_xm_file=$xm_file
+	if test x$xm_file != x
+	then build_xm_file=$xm_file
 	fi
 	build_xm_defines=$xm_defines
 	build_install_headers_dir=$install_headers_dir
@@ -3480,9 +3474,8 @@ then
 else
 	if test x$pass2done = x
 	then
-		if test x"$xm_file" = x
-		then host_xm_file=$cpu_type/xm-$cpu_type.h
-		else host_xm_file=$xm_file
+		if test x$xm_file != x
+		then host_xm_file=$xm_file
 		fi
 		host_xm_defines=$xm_defines
 		if test x"$xmake_file" = x
