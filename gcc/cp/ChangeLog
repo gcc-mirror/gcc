@@ -1,3 +1,19 @@
+1999-02-24  Mike Stump  <mrs@wrs.com>
+
+	* typeck.c (convert_for_assignment): Allow boolean integral constant
+	expressions to convert to null pointer.
+
+1999-02-24  Martin von Loewis  <loewis@informatik.hu-berlin.de>
+
+	* decl.c (lookup_namespace_name): Resolve namespace aliases.
+
+	* class.c (push_nested_class): Allow namespaces.
+
+	* decl2.c (set_decl_namespace): Add friendp parameter.
+	* decl.c (grokfndecl): Pass it.
+	(grokvardecl): Likewise.
+	* cp-tree.h: Change declaration.
+
 1999-02-24  Jason Merrill  <jason@yorick.cygnus.com>
 
 	* pt.c (tsubst): Allow an array of explicit size zero.

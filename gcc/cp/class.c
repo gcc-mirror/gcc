@@ -4897,9 +4897,9 @@ push_nested_class (type, modify)
 {
   tree context;
 
-  my_friendly_assert (!type || TREE_CODE (type) != NAMESPACE_DECL, 980711);
-
+  /* A namespace might be passed in error cases, like A::B:C.  */
   if (type == NULL_TREE || type == error_mark_node || ! IS_AGGR_TYPE (type)
+      || TREE_CODE (type) == NAMESPACE_DECL
       || TREE_CODE (type) == TEMPLATE_TYPE_PARM
       || TREE_CODE (type) == TEMPLATE_TEMPLATE_PARM)
     return;

@@ -5029,6 +5029,8 @@ lookup_namespace_name (namespace, name)
       return error_mark_node;
     }
 
+  namespace = ORIGINAL_NAMESPACE (namespace);
+
   my_friendly_assert (TREE_CODE (name) == IDENTIFIER_NODE, 373);
   
   val = binding_init (&_b);
@@ -8381,7 +8383,7 @@ grokfndecl (ctype, type, declarator, orig_declarator, virtualp, flags, quals,
 
   /* If this decl has namespace scope, set that up.  */
   if (in_namespace)
-    set_decl_namespace (decl, in_namespace);
+    set_decl_namespace (decl, in_namespace, friendp);
   else if (publicp && ! ctype)
     DECL_CONTEXT (decl) = FROB_CONTEXT (current_namespace);
 
@@ -8666,7 +8668,7 @@ grokvardecl (type, declarator, specbits_in, initialized, constp, in_namespace)
       decl = build_decl (VAR_DECL, declarator, complete_type (type));
 
       if (context)
-	set_decl_namespace (decl, context);
+	set_decl_namespace (decl, context, 0);
 
       context = DECL_CONTEXT (decl);
       if (declarator && context && current_lang_name != lang_name_c)
@@ -8674,7 +8676,7 @@ grokvardecl (type, declarator, specbits_in, initialized, constp, in_namespace)
     }
 
   if (in_namespace)
-    set_decl_namespace (decl, in_namespace);
+    set_decl_namespace (decl, in_namespace, 0);
 
   if (RIDBIT_SETP (RID_EXTERN, specbits))
     {
