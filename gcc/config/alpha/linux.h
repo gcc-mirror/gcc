@@ -28,8 +28,15 @@ Boston, MA 02111-1307, USA.  */
 "-Dlinux -Dunix -Asystem=linux -D_LONGLONG -D__alpha__ " \
 SUB_CPP_PREDEFINES
 
+/* The GNU C++ standard library requires that these macros be defined.  */
+#undef CPLUSPLUS_CPP_SPEC
+#define CPLUSPLUS_CPP_SPEC "-D_GNU_SOURCE %(cpp_cpu)"
+
 #undef LIB_SPEC
-#define LIB_SPEC "%{pg:-lgmon} %{pg:-lc_p} %{!pg:-lc}"
+#define LIB_SPEC \
+  "%{shared: -lc} \
+   %{!shared: %{pthread:-lpthread} \
+              %{profile:-lc_p} %{!profile: -lc}}"
 
 /* Show that we need a GP when profiling.  */
 #undef TARGET_PROFILING_NEEDS_GP
