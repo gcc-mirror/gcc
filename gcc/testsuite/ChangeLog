@@ -1,3 +1,23 @@
+2003-07-17  Andrew Pinski <pinskia@physics.uc.edu>
+
+	PR c++/10476
+	* g++.dg/expr/crash-1.C: New test.
+
+	PR c++/11027
+	* g++.dg/template/init3.C: New test.
+
+	PR c++/8222
+	* g++.dg/template/non-dependent1.C: New test.
+
+	PR c++/11070
+	* g++.dg/template/non-dependent2.C: New test.
+
+	PR c++/11071
+	* g++.dg/template/non-dependent3.C: New test.
+
+	PR c++/9907
+	* g++.dg/template/sizeof5.C: New test.
+
 2003-07-17  Geoffrey Keating  <geoffk@apple.com>
 
 	PR 11498
