@@ -2537,6 +2537,25 @@
   [(set_attr "type" "binary,binary")
    (set_attr "length" "4,4")])
 
+;; Disgusting kludge to work around reload bugs with frame pointer
+;; elimination.  Similar to other magic reload patterns in the
+;; indexed memory operations.
+(define_insn ""
+  [(set (match_operand:SI 0 "register_operand" "=&r")
+	(plus:SI (plus:SI (match_operand:SI 1 "register_operand" "%r")
+			  (match_operand:SI 2 "register_operand" "r"))
+		 (match_operand:SI 3 "const_int_operand" "rL")))]
+  "reload_in_progress"
+  "*
+{
+  if (GET_CODE (operands[3]) == CONST_INT)
+    return \"ldo %3(%2),%0\;addl %1,%0,%0\";
+  else
+    return \"addl %3,%2,%0\;addl %1,%0,%0\";
+}"
+  [(set_attr "type" "binary")
+   (set_attr "length" "8")])
+
 (define_insn "subdi3"
   [(set (match_operand:DI 0 "register_operand" "=r")
 	(minus:DI (match_operand:DI 1 "register_operand" "r")
