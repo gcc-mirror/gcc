@@ -447,7 +447,7 @@ maybe_apply_renaming_pragma (decl, asmname)
     {
       const char *oldasmname = IDENTIFIER_POINTER (oldname) + 1;
       if (asmname && strcmp (TREE_STRING_POINTER (asmname), oldasmname) != 0)
-	warning ("asm declaration conficts with previous rename");
+	warning ("asm declaration conflicts with previous rename");
       asmname = build_string (strlen (oldasmname), oldasmname);
     }
 

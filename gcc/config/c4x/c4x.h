@@ -237,7 +237,7 @@
   { "no-force", -FORCE_FLAG,						\
     N_("Allow RTL generation to emit invalid 3 operand insns") },	\
   { "loop-unsigned", LOOP_UNSIGNED_FLAG,				\
-    N_("Allow unsigned interation counts for RPTB/DB") },		\
+    N_("Allow unsigned iteration counts for RPTB/DB") },		\
   { "no-loop-unsigned", -LOOP_UNSIGNED_FLAG,				\
     N_("Disallow unsigned iteration counts for RPTB/DB") },		\
   { "preserve-float", PRESERVE_FLOAT_FLAG,				\

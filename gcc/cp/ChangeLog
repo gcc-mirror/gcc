@@ -1,3 +1,7 @@
+2003-04-29  Kriang Lerdsuwanakij  <lerdsuwa@users.sourceforge.net>
+
+	* lang-options.h: Likewise.
+
 2003-04-29  Mark Mitchell  <mark@codesourcery.com>
 
 	* decl.c (maybe_commonize_var): Further tweak support for systems
