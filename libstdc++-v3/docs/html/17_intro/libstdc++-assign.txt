@@ -41,10 +41,10 @@ open Pandora's box and cause a long and unnecessary delay.
 Below is the assignment contract that we usually use.  You need
 to print it out, sign it, and snail it to:
 
-Richard Stallman 
-545 Tech Sq rm 425 
-Cambridge, MA 02139 
-USA 
+Copyright Clerk
+c/o Free Software Foundation 
+59 Temple Place - Suite 330 
+Boston, MA  02111-1307,  USA 
 
 Please try to print the whole first page below on a single piece of
 paper.  If it doesn't fit on one printed page, put it on two sides of

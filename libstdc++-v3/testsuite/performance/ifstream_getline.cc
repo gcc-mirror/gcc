@@ -37,13 +37,23 @@ int main ()
   time_counter time;
   resource_counter resource;
 
-  const char* name = "/usr/share/dict/linux.words";
+  const char* name1 = "/usr/share/dict/words";
+  const char* name2 = "/usr/share/dict/linux.words";
+  ifstream in;
+  in.open(name1);
+  if (!in.is_open())
+    {
+      in.clear();
+      in.open(name2);
+    }
 
-  ifstream in(name);
   char buffer[BUFSIZ];
   start_counters(time, resource);
-  while(!in.eof()) 
-    in.getline(buffer, BUFSIZ);
+  if (in.is_open())
+    {
+      while (in.good()) 
+	in.getline(buffer, BUFSIZ);
+    }
   stop_counters(time, resource);
   report_performance(__FILE__, "", time, resource);
 
