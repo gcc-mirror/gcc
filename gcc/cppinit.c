@@ -769,13 +769,8 @@ init_builtins (pfile)
     }
 
   if (CPP_OPTION (pfile, cplusplus))
-    {
-      _cpp_define_builtin (pfile, "__cplusplus 1");
-      if (SUPPORTS_ONE_ONLY)
-	_cpp_define_builtin (pfile, "__GXX_WEAK__ 1");
-      else
-	_cpp_define_builtin (pfile, "__GXX_WEAK__ 0");
-    }
+    _cpp_define_builtin (pfile, "__cplusplus 1");
+
   if (CPP_OPTION (pfile, objc))
     _cpp_define_builtin (pfile, "__OBJC__ 1");
 
@@ -793,6 +788,9 @@ init_builtins (pfile)
     _cpp_define_builtin (pfile, "__STRICT_ANSI__ 1");
   else if (CPP_OPTION (pfile, lang) == CLK_ASM)
     _cpp_define_builtin (pfile, "__ASSEMBLER__ 1");
+
+  if (pfile->cb.register_builtins)
+    (*pfile->cb.register_builtins) (pfile);
 }
 #undef BUILTIN
 #undef OPERATOR

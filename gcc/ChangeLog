@@ -1,5 +1,23 @@
 2002-05-04  Neil Booth  <neil@daikokuya.demon.co.uk>
 
+	* Makefile.in (c-lex.o): Update.
+	* c-lex.c: Include target.h.
+	(cb_register_builtins): New.
+	(init_c_lex): Set builtins callback.
+	* c-lex.h (cpp_define, cpp_assert): New prototypes.
+	* cppinit.c (init_builtins): Use callback, including for
+	GXX_WEAK.
+	* cpplib.h (struct cpp_callbacks): New member.
+	* target-def.h (TARGET_REGISTER_CPP_BUILTINS): New.
+	(TARGET_INITIALIZER): Update.
+	* target.h (struct gcc_target): New hook.
+	* tree.c (default_register_cpp_builtins): New.
+	* tree.h (default_register_cpp_builtins): New.
+doc:
+	* tm.texi (TARGET_REGISTER_CPP_BUILTINS): Document.
+
+2002-05-04  Neil Booth  <neil@daikokuya.demon.co.uk>
+
 	* cppinit.c (MAX_WCHAR_TYPE_SIZE): Move to cpplib.h
 	(cpp_post_options): Move sanity checks to...
 	(sanity_checks): New.

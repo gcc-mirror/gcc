@@ -622,6 +622,18 @@ The macro @code{STANDARD_STARTFILE_PREFIX}.
 @c prevent bad page break with this line
 Here are run-time target specifications.
 
+@deftypefn {Target Hook} void TARGET_REGISTER_CPP_BUILTINS (cpp_reader *@var{pfile})
+This macro expands to a target-specific function, called by the C
+family of front ends, that allows you to define preprocessor built-in
+macros and assertions at run-time.
+
+Pass the argument (a preprocessor handle) as the first argument to the
+functions @code{cpp_define} and @code{cpp_assert}, declared in
+@file{c-lex.h}.  The second argument is the same as the argument to
+the respective command-line option, for example @code{__mips__} for
+@code{cpp_define}, and @code{cpu=mips} for @code{cpp_assert}.
+@end deftypefn
+
 @table @code
 @findex CPP_PREDEFINES
 @item CPP_PREDEFINES
