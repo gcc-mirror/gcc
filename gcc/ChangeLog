@@ -1,3 +1,7 @@
+2003-09-08  Kelley Cook <kelleycook@wideopenwest.com>
+
+	* Makefile.in: Revert yesterday's change.
+
 2003-09-08  Bernardo Innocenti  <bernie@develer.com>
             Peter Barada <peter@baradas.org>
 
