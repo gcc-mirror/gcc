@@ -5041,56 +5041,42 @@ expand_expr (exp, target, tmode, modifier)
       if (temp != 0)
 	return temp;
 
-      /* If TARGET is volatile, do the work into a pseudo,
-	 then store it (just once!) into TARGET.  */
-      subtarget = target;
-      if (GET_CODE (subtarget) == MEM && MEM_VOLATILE_P (subtarget))
-	subtarget = gen_rtx (GET_MODE (subtarget));
-
-      /* First, copy operand 0.  */
-
-      if (subtarget != op0)
-	emit_move_insn (subtarget, op0);
+      if (target != op0)
+	emit_move_insn (target, op0);
       op0 = gen_label_rtx ();
-
-      /* Then, if operand 1 is better, copy that.  */
-
       /* If this mode is an integer too wide to compare properly,
 	 compare word by word.  Rely on cse to optimize constant cases.  */
       if (GET_MODE_CLASS (mode) == MODE_INT
 	  && !can_compare_p (mode))
 	{
 	  if (code == MAX_EXPR)
-	    do_jump_by_parts_greater_rtx (mode, TREE_UNSIGNED (type), subtarget, op1, NULL, op0);
+	    do_jump_by_parts_greater_rtx (mode, TREE_UNSIGNED (type), target, op1, NULL, op0);
 	  else
-	    do_jump_by_parts_greater_rtx (mode, TREE_UNSIGNED (type), op1, subtarget, NULL, op0);
-	  emit_move_insn (subtarget, op1);
+	    do_jump_by_parts_greater_rtx (mode, TREE_UNSIGNED (type), op1, target, NULL, op0);
+	  emit_move_insn (target, op1);
 	}
       else
 	{
 	  if (code == MAX_EXPR)
 	    temp = (TREE_UNSIGNED (TREE_TYPE (TREE_OPERAND (exp, 1)))
-		    ? compare_from_rtx (subtarget, op1, GEU, 1, mode, NULL_RTX, 0)
-		    : compare_from_rtx (subtarget, op1, GE, 0, mode, NULL_RTX, 0));
+		    ? compare_from_rtx (target, op1, GEU, 1, mode, NULL_RTX, 0)
+		    : compare_from_rtx (target, op1, GE, 0, mode, NULL_RTX, 0));
 	  else
 	    temp = (TREE_UNSIGNED (TREE_TYPE (TREE_OPERAND (exp, 1)))
-		    ? compare_from_rtx (subtarget, op1, LEU, 1, mode, NULL_RTX, 0)
-		    : compare_from_rtx (subtarget, op1, LE, 0, mode, NULL_RTX, 0));
+		    ? compare_from_rtx (target, op1, LEU, 1, mode, NULL_RTX, 0)
+		    : compare_from_rtx (target, op1, LE, 0, mode, NULL_RTX, 0));
 	  if (temp == const0_rtx)
-	    emit_move_insn (subtarget, op1);
+	    emit_move_insn (target, op1);
 	  else if (temp != const_true_rtx)
 	    {
 	      if (bcc_gen_fctn[(int) GET_CODE (temp)] != 0)
 		emit_jump_insn ((*bcc_gen_fctn[(int) GET_CODE (temp)]) (op0));
 	      else
 		abort ();
-	      emit_move_insn (subtarget, op1);
+	      emit_move_insn (target, op1);
 	    }
 	}
       emit_label (op0);
-      /* Store into the real target.  */
-      if (target != subtarget)
-	emit_move_insn (target, subtarget);
       return target;
 
 /* ??? Can optimize when the operand of this is a bitwise operation,
