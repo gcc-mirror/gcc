@@ -3,7 +3,7 @@ Copyright (c) 1991-1996 by Xerox Corporation.  All rights reserved.
 Copyright (c) 1996-1999 by Silicon Graphics.  All rights reserved.
 Copyright (c) 1999 by Hewlett-Packard Company. All rights reserved.
 
-  [ This version of the collector modified by Cygnus Solutions.
+  [ This version of the collector modified for use in libgcj.
     See the file ChangeLog for details ]
 
 THIS MATERIAL IS PROVIDED AS IS, WITH ABSOLUTELY NO WARRANTY EXPRESSED
@@ -15,7 +15,7 @@ Permission to modify the code and to distribute modified code is granted,
 provided the above notices are retained, and a notice that the code was
 modified is included with the above copyright notice.
 
-This is version 5.0alpha7 of a conservative garbage collector for C and C++.
+This is version 5.0 of a conservative garbage collector for C and C++.
 
 You might find a more recent version of this at
 
@@ -1602,7 +1602,17 @@ Since 5.0alpha6:
    be done on other platforms, too.  Since I can't test those, that'll
    wait until after 5.0.
 
+Since 5.0alpha7:
+ - Fixed threadlibs.c for linux threads.  -DUSE_LD_WRAP was broken and
+   -ldl was omitted.  Fixed Linux stack finding code to handle
+   -DUSE_LD_WRAP correctly.
+ - Added MSWIN32 exception handler around marker, so that the collector
+   can recover from root segments that are unmapped during the collection.
+   This caused occasional failures under Windows 98, and may also be
+   an issue under Windows NT/2000.
+
 To do:
+ - Integrate Linux/SPARC fixes.
  - Very large root set sizes (> 16 MB or so) could cause the collector
    to abort with an unexpected mark stack overflow.  (Thanks again to
    Peter Chubb.)  NOT YET FIXED.  Workaround is to increase the initial
