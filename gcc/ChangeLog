@@ -16,6 +16,7 @@ Fri May  7 14:19:31 1999  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
 	(sig_handler): Add debug code.
 	* fixinc/server.c (run_shell): Don't \-escape cd, it breaks the
 	Ultrix V4.3 /bin/sh.
+	* fixinc/fixincl.c (run_compiles): fix memory leak
 
 Thu May  6 20:34:00 1999  Mark Mitchell  <mark@codesourcery.com>
 

@@ -634,12 +634,17 @@ run_compiles ()
           /*  Run the script.
               The result will start either with 's' or 'r'.  */
 
-          pz = run_shell (file_name_buf);
-          if (*pz == 's')
-            {
-              p_fixd->fd_flags |= FD_SKIP_TEST;
-              continue;
-            }
+          {
+            int skip;
+            pz = run_shell (file_name_buf);
+            skip = (*pz == 's');
+            free ( (void*)pz );
+            if (skip)
+              {
+                p_fixd->fd_flags |= FD_SKIP_TEST;
+                continue;
+              }
+           }
         }
 
       /* FOR every test for the fixup, ...  */
