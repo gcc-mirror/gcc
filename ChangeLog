@@ -1,3 +1,7 @@
+2000-12-07  Mike Stump  <mrs@wrs.com>
+
+	* Makefile.in (local-distclean): Remove leftover built files.
+
 2000-11-24  Nick Clifton  <nickc@redhat.com>
 
 	* configure.in (xscale-elf): Add target.

@@ -1025,6 +1025,11 @@ local-distclean:
 	-if [ "$(TARGET_SUBDIR)" != "." ]; then \
 	  rm -rf $(TARGET_SUBDIR); \
 	else true; fi
+	rm -f texinfo/po/Makefile texinfo/po/Makefile.in texinfo/info/Makefile
+	rm -f texinfo/doc/Makefile texinfo/po/POTFILES
+	-rmdir texinfo/doc texinfo/info texinfo/intl texinfo/lib 2>/dev/null
+	-rmdir texinfo/makeinfo texinfo/po texinfo/util 2>/dev/null
+	-rmdir gcc libiberty texinfo zlib 2>/dev/null
 
 local-maintainer-clean:
 	@echo "This command is intended for maintainers to use;"
