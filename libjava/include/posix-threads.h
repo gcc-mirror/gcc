@@ -115,8 +115,38 @@ _Jv_MutexInit (_Jv_Mutex_t *mu)
   mu->owner = 0;
 }
 
-int _Jv_MutexLock (_Jv_Mutex_t *mu);
-int _Jv_MutexUnlock (_Jv_Mutex_t *mu);
+inline int
+_Jv_MutexLock (_Jv_Mutex_t *mu)
+{
+  pthread_t self = pthread_self ();
+  if (mu->owner == self)
+    {
+      mu->count++;
+    }
+  else
+    {
+      pthread_mutex_lock (&mu->mutex);
+      mu->count = 1;
+      mu->owner = self;
+    }
+  return 0;
+}
+
+inline int
+_Jv_MutexUnlock (_Jv_Mutex_t *mu)
+{
+  if (_Jv_PthreadCheckMonitor (mu))
+    return _JV_NOT_OWNER;
+    
+  mu->count--;
+
+  if (mu->count == 0)
+    {
+      mu->owner = 0;
+      pthread_mutex_unlock (&mu->mutex);
+    }
+  return 0;
+}
 
 #ifndef LINUX_THREADS
 
