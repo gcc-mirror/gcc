@@ -634,6 +634,8 @@ in the following sections.
 @gccoptlist{-mbig-endian  -mlittle-endian @gol
 -mdensity  -mno-density @gol
 -mconst16 -mno-const16 @gol
+-mabs -mno-abs @gol
+-maddx -mno-addx @gol
 -mmac16  -mno-mac16 @gol
 -mmul16  -mno-mul16 @gol
 -mmul32  -mno-mul32 @gol
@@ -10649,11 +10651,26 @@ Enable or disable use of the optional Xtensa code density instructions.
 @itemx -mno-const16
 @opindex mconst16
 @opindex mno-const16
-Enable or disable use of CONST16 instructions for loading constant values.
-The CONST16 instruction is currently not a standard option from Tensilica.
-When enabled, CONST16 instructions are always used in place of the standard
-L32R instructions.  The use of CONST16 is enabled by default only if the
-L32R instruction is not available.
+Enable or disable use of @code{CONST16} instructions for loading
+constant values.  The @code{CONST16} instruction is currently not a
+standard option from Tensilica.  When enabled, @code{CONST16}
+instructions are always used in place of the standard @code{L32R}
+instructions.  The use of @code{CONST16} is enabled by default only if
+the @code{L32R} instruction is not available.
+
+@item -mabs
+@itemx -mno-abs
+@opindex mabs
+@opindex mno-abs
+Enable or disable use of the Xtensa @code{ABS} instruction for absolute
+value operations.
+
+@item -maddx
+@itemx -mno-addx
+@opindex maddx
+@opindex mno-addx
+Enable or disable use of the Xtensa @code{ADDX} and @code{SUBX}
+instructions.
 
 @item -mmac16
 @itemx -mno-mac16

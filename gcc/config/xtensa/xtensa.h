@@ -62,6 +62,8 @@ extern unsigned xtensa_current_frame_size;
 #define MASK_NO_FUSED_MADD	0x00008000	/* avoid f-p mul/add */
 #define MASK_SERIALIZE_VOLATILE 0x00010000	/* serialize volatile refs */
 #define MASK_CONST16		0x00020000	/* use CONST16 instruction */
+#define MASK_ABS		0x00040000	/* use ABS instruction */
+#define MASK_ADDX		0x00080000	/* use ADDX* and SUBX* */
 
 /* Macros used in the machine description to test the flags.  */
 
@@ -83,6 +85,8 @@ extern unsigned xtensa_current_frame_size;
 #define TARGET_NO_FUSED_MADD	(target_flags & MASK_NO_FUSED_MADD)
 #define TARGET_SERIALIZE_VOLATILE (target_flags & MASK_SERIALIZE_VOLATILE)
 #define TARGET_CONST16		(target_flags & MASK_CONST16)
+#define TARGET_ABS		(target_flags & MASK_ABS)
+#define TARGET_ADDX		(target_flags & MASK_ADDX)
 
 /* Default target_flags if no switches are specified  */
 
@@ -90,6 +94,8 @@ extern unsigned xtensa_current_frame_size;
   (XCHAL_HAVE_BE	? MASK_BIG_ENDIAN : 0) |			\
   (XCHAL_HAVE_DENSITY	? MASK_DENSITY : 0) |				\
   (XCHAL_HAVE_L32R	? 0 : MASK_CONST16) |				\
+  (XCHAL_HAVE_ABS	? MASK_ABS : 0) |				\
+  (XCHAL_HAVE_ADDX	? MASK_ADDX : 0) |				\
   (XCHAL_HAVE_MAC16	? MASK_MAC16 : 0) |				\
   (XCHAL_HAVE_MUL16	? MASK_MUL16 : 0) |				\
   (XCHAL_HAVE_MUL32	? MASK_MUL32 : 0) |				\
@@ -121,6 +127,14 @@ extern unsigned xtensa_current_frame_size;
     N_("Use CONST16 instruction to load constants")},			\
   {"no-const16",		-MASK_CONST16,				\
     N_("Use PC-relative L32R instruction to load constants")},		\
+  {"abs",			MASK_ABS,				\
+    N_("Use the Xtensa ABS instruction")},				\
+  {"no-abs",			-MASK_ABS,				\
+    N_("Do not use the Xtensa ABS instruction")},			\
+  {"addx",			MASK_ADDX,				\
+    N_("Use the Xtensa ADDX and SUBX instructions")},			\
+  {"no-addx",			-MASK_ADDX,				\
+    N_("Do not use the Xtensa ADDX and SUBX instructions")},		\
   {"mac16",			MASK_MAC16,				\
     N_("Use the Xtensa MAC16 option")},					\
   {"no-mac16",			-MASK_MAC16,				\

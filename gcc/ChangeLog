@@ -1,3 +1,25 @@
+2003-05-20  Bob Wilson  <bob.wilson@acm.org>
+
+	* config/xtensa/lib1funcs.asm: Avoid use of .Lfe* in .size directives.
+	(do_abs, do_addx2, do_addx4, do_addx8): New assembler macros.
+	(__mulsi3): Use do_addx* instead of ADDX* instructions.  Formatting.
+	(nsau): Rename to do_nsau.  Provide alternate version for use when
+	the NSAU instruction is available.
+	(__udivsi3, __divsi3, __umodsi3, __modsi3): Use do_nsau macro.
+	(__divsi3, __modsi3): Use do_abs macro instead of ABS instruction.
+	* config/xtensa/xtensa-config.h: Update comments to match binutils.
+	(XCHAL_HAVE_ABS, XCHAL_HAVE_ADDX): Define.
+	* config/xtensa/xtensa.h (MASK_ABS, MASK_ADDX): Define.
+	(TARGET_ABS, TARGET_ADDX): Define.
+	(TARGET_DEFAULT): Conditionally add MASK_ABS and MASK_ADDX.
+	(TARGET_SWITCHES): Add "abs", "no-abs", "addx", and "no-addx".
+	* config/xtensa/xtensa.md (*addx2, *addx4, *addx8, *subx2, *subx4,
+	*subx8): Set predicate condition to TARGET_ADDX.
+	(abssi2): Set predicate condition to TARGET_ABS.
+	* doc/invoke.texi (Option Summary): Document new "-mabs", "-mno-abs",
+	"-maddx", and "-mno-addx" options.
+	(Xtensa Options): Likewise.  Also tag some opcode names with @code.
+
 2003-05-20  Kevin Ryde <user42@zip.com.au>
 	    Wolfgang Bangerth <bangerth@dealii.org>
 

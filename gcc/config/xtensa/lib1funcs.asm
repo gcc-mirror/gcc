@@ -1,5 +1,5 @@
 /* Assembly functions for the Xtensa version of libgcc1.
-   Copyright (C) 2001,2002 Free Software Foundation, Inc.
+   Copyright (C) 2001,2002,2003 Free Software Foundation, Inc.
    Contributed by Bob Wilson (bwilson@tensilica.com) at Tensilica.
 
 This file is part of GCC.
@@ -29,6 +29,46 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 02111-1307, USA.  */
 
 #include "xtensa/xtensa-config.h"
+
+	# Define macros for the ABS and ADDX* instructions to handle cases
+	# where they are not included in the Xtensa processor configuration.
+
+	.macro	do_abs dst, src, tmp
+#if XCHAL_HAVE_ABS
+	abs	\dst, \src
+#else
+	neg	\tmp, \src
+	movgez	\tmp, \src, \src
+	mov	\dst, \tmp
+#endif
+	.endm
+
+	.macro	do_addx2 dst, as, at, tmp
+#if XCHAL_HAVE_ADDX
+	addx2	\dst, \as, \at
+#else
+	slli	\tmp, \as, 1
+	add	\dst, \tmp, \at
+#endif
+	.endm
+
+	.macro	do_addx4 dst, as, at, tmp
+#if XCHAL_HAVE_ADDX
+	addx4	\dst, \as, \at
+#else
+	slli	\tmp, \as, 2
+	add	\dst, \tmp, \at
+#endif
+	.endm
+
+	.macro	do_addx8 dst, as, at, tmp
+#if XCHAL_HAVE_ADDX
+	addx8	\dst, \as, \at
+#else
+	slli	\tmp, \as, 3
+	add	\dst, \tmp, \at
+#endif
+	.endm
 
 #ifdef L_mulsi3
 	.align	4
@@ -64,88 +104,85 @@ __mulsi3:
 
 #else /* !XCHAL_HAVE_MUL16 && !XCHAL_HAVE_MAC16 */
 
-        # Multiply one bit at a time, but unroll the loop 4x to better
-        # exploit the addx instructions.
-        
-        # Peel the first iteration to save a cycle on init
+	# Multiply one bit at a time, but unroll the loop 4x to better
+	# exploit the addx instructions and avoid overhead.
+	# Peel the first iteration to save a cycle on init.
 
-        # avoid negative numbers 
-
+	# Avoid negative numbers.
 	xor	a5, a2, a3  # top bit is 1 iff one of the inputs is negative
-	abs     a3, a3
-	abs     a2, a2
+	do_abs	a3, a3, a6
+	do_abs	a2, a2, a6
 
-        # swap so that second argument is smaller
-        sub     a7, a2, a3
-        mov     a4, a3
-        movgez  a4, a2, a7  # a4 = max(a2, a3) 
-        movltz  a3, a2, a7  # a3 = min(a2, a3)
+	# Swap so the second argument is smaller.
+	sub	a7, a2, a3
+	mov	a4, a3
+	movgez	a4, a2, a7  # a4 = max(a2, a3) 
+	movltz	a3, a2, a7  # a3 = min(a2, a3)
 
-        movi    a2, 0
-        extui   a6, a3, 0, 1
-        movnez  a2, a4, a6
+	movi	a2, 0
+	extui	a6, a3, 0, 1
+	movnez	a2, a4, a6
 
-        addx2   a7, a4, a2
-        extui   a6, a3, 1, 1
-        movnez  a2, a7, a6
+	do_addx2 a7, a4, a2, a7
+	extui	a6, a3, 1, 1
+	movnez	a2, a7, a6
 
-        addx4   a7, a4, a2
-        extui   a6, a3, 2, 1
-        movnez  a2, a7, a6
+	do_addx4 a7, a4, a2, a7
+	extui	a6, a3, 2, 1
+	movnez	a2, a7, a6
 
-        addx8   a7, a4, a2
-        extui   a6, a3, 3, 1
-        movnez  a2, a7, a6
+	do_addx8 a7, a4, a2, a7
+	extui	a6, a3, 3, 1
+	movnez	a2, a7, a6
 
-        bgeui   a3, 16, .Lmult_main_loop
-        neg     a3, a2
-        movltz  a2, a3, a5
-        retw
+	bgeui	a3, 16, .Lmult_main_loop
+	neg	a3, a2
+	movltz	a2, a3, a5
+	retw
 
-
-        .align  4
+	.align	4
 .Lmult_main_loop:
-        srli    a3, a3, 4
-        slli    a4, a4, 4
+	srli	a3, a3, 4
+	slli	a4, a4, 4
 
-        add     a7, a4, a2
-        extui   a6, a3, 0, 1
-        movnez  a2, a7, a6
+	add	a7, a4, a2
+	extui	a6, a3, 0, 1
+	movnez	a2, a7, a6
 
-        addx2   a7, a4, a2
-        extui   a6, a3, 1, 1
-        movnez  a2, a7, a6
+	do_addx2 a7, a4, a2, a7
+	extui	a6, a3, 1, 1
+	movnez	a2, a7, a6
 
-        addx4   a7, a4, a2
-        extui   a6, a3, 2, 1
-        movnez  a2, a7, a6
+	do_addx4 a7, a4, a2, a7
+	extui	a6, a3, 2, 1
+	movnez	a2, a7, a6
 
-        addx8   a7, a4, a2
-        extui   a6, a3, 3, 1
-        movnez  a2, a7, a6
+	do_addx8 a7, a4, a2, a7
+	extui	a6, a3, 3, 1
+	movnez	a2, a7, a6
 
+	bgeui	a3, 16, .Lmult_main_loop
 
-        bgeui   a3, 16, .Lmult_main_loop
-
-        neg     a3, a2
-        movltz  a2, a3, a5
+	neg	a3, a2
+	movltz	a2, a3, a5
 
 #endif /* !XCHAL_HAVE_MUL16 && !XCHAL_HAVE_MAC16 */
 
 	retw
-.Lfe0:
-	.size	__mulsi3,.Lfe0-__mulsi3
+	.size	__mulsi3,.-__mulsi3
 
 #endif /* L_mulsi3 */
 
 
-	# Some Xtensa configurations include the NSAU (unsigned
-	# normalize shift amount) instruction which computes the number
-	# of leading zero bits.  For other configurations, the "nsau"
-	# operation is implemented as a macro.
+	# Define a macro for the NSAU (unsigned normalize shift amount)
+	# instruction, which computes the number of leading zero bits,
+	# to handle cases where it is not included in the Xtensa processor
+	# configuration.
 	
-#if !XCHAL_HAVE_NSA
-	.macro	nsau cnt, val, tmp, a
+	.macro	do_nsau cnt, val, tmp, a
+#if XCHAL_HAVE_NSA
+	nsau	\cnt, \val
+#else
 	mov	\a, \val
 	movi	\cnt, 0
 	extui	\tmp, \a, 16, 16
@@ -163,8 +200,8 @@ __mulsi3:
 	add	\tmp, \tmp, \a
 	l8ui	\tmp, \tmp, 0
 	add	\cnt, \cnt, \tmp
-	.endm
 #endif /* !XCHAL_HAVE_NSA */
+	.endm
 
 #ifdef L_nsau
 	.section .rodata
@@ -190,8 +227,7 @@ __nsau_data:
 	.byte	0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
 	.byte	0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
 #endif /* !XCHAL_HAVE_NSA */
-.Lfe1:
-	.size	__nsau_data,.Lfe1-__nsau_data
+	.size	__nsau_data,.-__nsau_data
 	.hidden	__nsau_data
 #endif /* L_nsau */
 
@@ -205,13 +241,8 @@ __udivsi3:
 	bltui	a3, 2, .Lle_one	# check if the divisor <= 1
 
 	mov	a6, a2		# keep dividend in a6
-#if XCHAL_HAVE_NSA
-	nsau	a5, a6		# dividend_shift = nsau(dividend)
-	nsau	a4, a3		# divisor_shift = nsau(divisor)
-#else /* !XCHAL_HAVE_NSA */
-	nsau	a5, a6, a2, a7	# dividend_shift = nsau(dividend)
-	nsau	a4, a3, a2, a7	# divisor_shift = nsau(divisor)
-#endif /* !XCHAL_HAVE_NSA */
+	do_nsau	a5, a6, a2, a7	# dividend_shift = nsau(dividend)
+	do_nsau	a4, a3, a2, a7	# divisor_shift = nsau(divisor)
 	bgeu	a5, a4, .Lspecial
 
 	sub	a4, a4, a5	# count = divisor_shift - dividend_shift
@@ -255,8 +286,7 @@ __udivsi3:
 .Lerror:
 	movi	a2, 0		# just return 0; could throw an exception
 	retw
-.Lfe2:
-	.size	__udivsi3,.Lfe2-__udivsi3
+	.size	__udivsi3,.-__udivsi3
 
 #endif /* L_udivsi3 */
 
@@ -268,16 +298,11 @@ __udivsi3:
 __divsi3:
 	entry	sp, 16
 	xor	a7, a2, a3	# sign = dividend ^ divisor
-	abs	a6, a2		# udividend = abs(dividend)
-	abs	a3, a3		# udivisor = abs(divisor)
+	do_abs	a6, a2, a4	# udividend = abs(dividend)
+	do_abs	a3, a3, a4	# udivisor = abs(divisor)
 	bltui	a3, 2, .Lle_one	# check if udivisor <= 1
-#if XCHAL_HAVE_NSA
-	nsau	a5, a6		# udividend_shift = nsau(udividend)
-	nsau	a4, a3		# udivisor_shift = nsau(udivisor)
-#else /* !XCHAL_HAVE_NSA */
-	nsau	a5, a6, a2, a8	# udividend_shift = nsau(udividend)
-	nsau	a4, a3, a2, a8	# udivisor_shift = nsau(udivisor)
-#endif /* !XCHAL_HAVE_NSA */
+	do_nsau	a5, a6, a2, a8	# udividend_shift = nsau(udividend)
+	do_nsau	a4, a3, a2, a8	# udivisor_shift = nsau(udivisor)
 	bgeu	a5, a4, .Lspecial
 
 	sub	a4, a4, a5	# count = udivisor_shift - udividend_shift
@@ -326,8 +351,7 @@ __divsi3:
 .Lerror:
 	movi	a2, 0		# just return 0; could throw an exception
 	retw
-.Lfe3:
-	.size	__divsi3,.Lfe3-__divsi3
+	.size	__divsi3,.-__divsi3
 
 #endif /* L_divsi3 */
 
@@ -340,13 +364,8 @@ __umodsi3:
 	entry	sp, 16
 	bltui	a3, 2, .Lle_one	# check if the divisor is <= 1
 
-#if XCHAL_HAVE_NSA
-	nsau	a5, a2		# dividend_shift = nsau(dividend)
-	nsau	a4, a3		# divisor_shift = nsau(divisor)
-#else /* !XCHAL_HAVE_NSA */
-	nsau	a5, a2, a6, a7	# dividend_shift = nsau(dividend)
-	nsau	a4, a3, a6, a7	# divisor_shift = nsau(divisor)
-#endif /* !XCHAL_HAVE_NSA */
+	do_nsau	a5, a2, a6, a7	# dividend_shift = nsau(dividend)
+	do_nsau	a4, a3, a6, a7	# divisor_shift = nsau(divisor)
 	bgeu	a5, a4, .Lspecial
 
 	sub	a4, a4, a5	# count = divisor_shift - dividend_shift
@@ -384,8 +403,7 @@ __umodsi3:
 	# someday we may want to throw an exception if the divisor is 0.
 	movi	a2, 0
 	retw
-.Lfe4:
-	.size	__umodsi3,.Lfe4-__umodsi3
+	.size	__umodsi3,.-__umodsi3
 
 #endif /* L_umodsi3 */
 
@@ -397,16 +415,11 @@ __umodsi3:
 __modsi3:
 	entry	sp, 16
 	mov	a7, a2		# save original (signed) dividend
-	abs	a2, a2		# udividend = abs(dividend)
-	abs	a3, a3		# udivisor = abs(divisor)
+	do_abs	a2, a2, a4	# udividend = abs(dividend)
+	do_abs	a3, a3, a4	# udivisor = abs(divisor)
 	bltui	a3, 2, .Lle_one	# check if udivisor <= 1
-#if XCHAL_HAVE_NSA
-	nsau	a5, a2		# udividend_shift = nsau(udividend)
-	nsau	a4, a3		# udivisor_shift = nsau(udivisor)
-#else /* !XCHAL_HAVE_NSA */
-	nsau	a5, a2, a6, a8	# udividend_shift = nsau(udividend)
-	nsau	a4, a3, a6, a8	# udivisor_shift = nsau(udivisor)
-#endif /* !XCHAL_HAVE_NSA */
+	do_nsau	a5, a2, a6, a8	# udividend_shift = nsau(udividend)
+	do_nsau	a4, a3, a6, a8	# udivisor_shift = nsau(udivisor)
 	bgeu	a5, a4, .Lspecial
 
 	sub	a4, a4, a5	# count = udivisor_shift - udividend_shift
@@ -450,7 +463,6 @@ __modsi3:
 	# someday we may want to throw an exception if udivisor is 0.
 	movi	a2, 0
 	retw
-.Lfe5:
-	.size	__modsi3,.Lfe5-__modsi3
+	.size	__modsi3,.-__modsi3
 
 #endif /* L_modsi3 */
