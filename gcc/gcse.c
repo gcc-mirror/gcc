@@ -1333,6 +1333,20 @@ hash_expr (x, mode, do_not_record_p, hash_table_size)
   hash = hash_expr_1 (x, mode, do_not_record_p);
   return hash % hash_table_size;
 }
+/* Hash a string.  Just add its bytes up.  */
+static inline unsigned
+hash_string_1 (ps)
+     const char *ps;
+{
+  unsigned hash = 0;
+  const unsigned char *p = (const unsigned char *)ps;
+  
+  if (p)
+    while (*p)
+      hash += *p++;
+
+  return hash;
+}
 
 /* Subroutine of hash_expr to do the actual work.  */
 
@@ -1433,6 +1447,32 @@ hash_expr_1 (x, mode, do_not_record_p)
 	  *do_not_record_p = 1;
 	  return 0;
 	}
+      else
+	{
+	  /* We don't want to take the filename and line into account.  */
+	  hash += (unsigned) code + (unsigned) GET_MODE (x)
+	    + hash_string_1 (ASM_OPERANDS_TEMPLATE (x))
+	    + hash_string_1 (ASM_OPERANDS_OUTPUT_CONSTRAINT (x))
+	    + (unsigned) ASM_OPERANDS_OUTPUT_IDX (x);
+
+	  if (ASM_OPERANDS_INPUT_LENGTH (x))
+	    {
+	      for (i = 1; i < ASM_OPERANDS_INPUT_LENGTH (x); i++)
+		{
+		  hash += (hash_expr_1 (ASM_OPERANDS_INPUT (x, i),
+					GET_MODE (ASM_OPERANDS_INPUT (x, i)),
+					do_not_record_p)
+			   + hash_string_1 (ASM_OPERANDS_INPUT_CONSTRAINT
+					    (x, i)));
+		}
+
+	      hash += hash_string_1 (ASM_OPERANDS_INPUT_CONSTRAINT (x, 0));
+	      x = ASM_OPERANDS_INPUT (x, 0);
+	      mode = GET_MODE (x);
+	      goto repeat;
+	    }
+	  return hash;
+	}
 
     default:
       break;
@@ -1466,14 +1506,7 @@ hash_expr_1 (x, mode, do_not_record_p)
 	  }
 
       else if (fmt[i] == 's')
-	{
-	  register const unsigned char *p =
-	    (const unsigned char *) XSTR (x, i);
-
-	  if (p)
-	    while (*p)
-	      hash += *p++;
-	}
+	hash += hash_string_1 (XSTR (x, i));
       else if (fmt[i] == 'i')
 	hash += (unsigned int) XINT (x, i);
       else
@@ -1564,6 +1597,34 @@ expr_equiv_p (x, y)
 	       && expr_equiv_p (XEXP (x, 1), XEXP (y, 1)))
 	      || (expr_equiv_p (XEXP (x, 0), XEXP (y, 1))
 		  && expr_equiv_p (XEXP (x, 1), XEXP (y, 0))));
+
+    case ASM_OPERANDS:
+      /* We don't use the generic code below because we want to
+	 disregard filename and line numbers.  */
+
+      /* A volatile asm isn't equivalent to any other.  */
+      if (MEM_VOLATILE_P (x) || MEM_VOLATILE_P (y))
+	return 0;
+
+      if (GET_MODE (x) != GET_MODE (y)
+	  || strcmp (ASM_OPERANDS_TEMPLATE (x), ASM_OPERANDS_TEMPLATE (y))
+	  || strcmp (ASM_OPERANDS_OUTPUT_CONSTRAINT (x),
+		     ASM_OPERANDS_OUTPUT_CONSTRAINT (y))
+	  || ASM_OPERANDS_OUTPUT_IDX (x) != ASM_OPERANDS_OUTPUT_IDX (y)
+	  || ASM_OPERANDS_INPUT_LENGTH (x) != ASM_OPERANDS_INPUT_LENGTH (y))
+	return 0;
+
+      if (ASM_OPERANDS_INPUT_LENGTH (x))
+	{
+	  for (i = ASM_OPERANDS_INPUT_LENGTH (x) - 1; i >= 0; i--)
+	    if (! expr_equiv_p (ASM_OPERANDS_INPUT (x, i),
+				ASM_OPERANDS_INPUT (y, i))
+		|| strcmp (ASM_OPERANDS_INPUT_CONSTRAINT (x, i),
+			   ASM_OPERANDS_INPUT_CONSTRAINT (y, i)))
+	      return 0;
+	}
+
+      return 1;
 
     default:
       break;

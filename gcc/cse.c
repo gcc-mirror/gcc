@@ -787,12 +787,6 @@ rtx_cost (x, outer_code)
       /* Used in loop.c and combine.c as a marker.  */
       total = 0;
       break;
-    case ASM_OPERANDS:
-      /* We don't want these to be used in substitutions because
-	 we have no way of validating the resulting insn.  So assign
-	 anything containing an ASM_OPERANDS a very high cost.  */
-      total = 1000;
-      break;
     default:
       total = 2;
     }
@@ -2141,6 +2135,21 @@ use_related_value (x, elt)
   return plus_constant (q->exp, offset);
 }
 
+/* Hash a string.  Just add its bytes up.  */
+static inline unsigned
+canon_hash_string (ps)
+     const char *ps;
+{
+  unsigned hash = 0;
+  const unsigned char *p = (const unsigned char *)ps;
+  
+  if (p)
+    while (*p)
+      hash += *p++;
+
+  return hash;
+}
+
 /* Hash an rtx.  We are careful to make sure the value is never negative.
    Equivalent registers hash identically.
    MODE is used in hashing for CONST_INTs only;
@@ -2286,6 +2295,32 @@ canon_hash (x, mode)
 	  do_not_record = 1;
 	  return 0;
 	}
+      else
+	{
+	  /* We don't want to take the filename and line into account.  */
+	  hash += (unsigned) code + (unsigned) GET_MODE (x)
+	    + canon_hash_string (ASM_OPERANDS_TEMPLATE (x))
+	    + canon_hash_string (ASM_OPERANDS_OUTPUT_CONSTRAINT (x))
+	    + (unsigned) ASM_OPERANDS_OUTPUT_IDX (x);
+
+	  if (ASM_OPERANDS_INPUT_LENGTH (x))
+	    {
+	      for (i = 1; i < ASM_OPERANDS_INPUT_LENGTH (x); i++)
+		{
+		  hash += (canon_hash (ASM_OPERANDS_INPUT (x, i),
+				       GET_MODE (ASM_OPERANDS_INPUT (x, i)))
+			   + canon_hash_string (ASM_OPERANDS_INPUT_CONSTRAINT
+						(x, i)));
+		}
+
+	      hash += canon_hash_string (ASM_OPERANDS_INPUT_CONSTRAINT (x, 0));
+	      x = ASM_OPERANDS_INPUT (x, 0);
+	      mode = GET_MODE (x);
+	      goto repeat;
+	    }
+
+	  return hash;
+	}
       break;
 
     default:
@@ -2315,14 +2350,7 @@ canon_hash (x, mode)
 	for (j = 0; j < XVECLEN (x, i); j++)
 	  hash += canon_hash (XVECEXP (x, i, j), 0);
       else if (fmt[i] == 's')
-	{
-	  register const unsigned char *p =
-	    (const unsigned char *) XSTR (x, i);
-
-	  if (p)
-	    while (*p)
-	      hash += *p++;
-	}
+	hash += canon_hash_string (XSTR (x, i));
       else if (fmt[i] == 'i')
 	{
 	  register unsigned tem = XINT (x, i);
@@ -2475,6 +2503,35 @@ exp_equiv_p (x, y, validate, equal_values)
 			       validate, equal_values)
 		  && exp_equiv_p (XEXP (x, 1), XEXP (y, 0),
 				  validate, equal_values)));
+
+    case ASM_OPERANDS:
+      /* We don't use the generic code below because we want to
+	 disregard filename and line numbers.  */
+
+      /* A volatile asm isn't equivalent to any other.  */
+      if (MEM_VOLATILE_P (x) || MEM_VOLATILE_P (y))
+	return 0;
+
+      if (GET_MODE (x) != GET_MODE (y)
+	  || strcmp (ASM_OPERANDS_TEMPLATE (x), ASM_OPERANDS_TEMPLATE (y))
+	  || strcmp (ASM_OPERANDS_OUTPUT_CONSTRAINT (x),
+		     ASM_OPERANDS_OUTPUT_CONSTRAINT (y))
+	  || ASM_OPERANDS_OUTPUT_IDX (x) != ASM_OPERANDS_OUTPUT_IDX (y)
+	  || ASM_OPERANDS_INPUT_LENGTH (x) != ASM_OPERANDS_INPUT_LENGTH (y))
+	return 0;
+
+      if (ASM_OPERANDS_INPUT_LENGTH (x))
+	{
+	  for (i = ASM_OPERANDS_INPUT_LENGTH (x) - 1; i >= 0; i--)
+	    if (! exp_equiv_p (ASM_OPERANDS_INPUT (x, i),
+			       ASM_OPERANDS_INPUT (y, i),
+			       validate, equal_values)
+		|| strcmp (ASM_OPERANDS_INPUT_CONSTRAINT (x, i),
+			   ASM_OPERANDS_INPUT_CONSTRAINT (y, i)))
+	      return 0;
+	}
+
+      return 1;
 
     default:
       break;
@@ -3500,9 +3557,9 @@ fold_rtx (x, insn)
       }
 
     case ASM_OPERANDS:
-      for (i = XVECLEN (x, 3) - 1; i >= 0; i--)
-	validate_change (insn, &XVECEXP (x, 3, i),
-			 fold_rtx (XVECEXP (x, 3, i), insn), 0);
+      for (i = ASM_OPERANDS_INPUT_LENGTH (x) - 1; i >= 0; i--)
+	validate_change (insn, &ASM_OPERANDS_INPUT (x, i),
+			 fold_rtx (ASM_OPERANDS_INPUT (x, i), insn), 0);
       break;
 
     default:

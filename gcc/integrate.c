@@ -2040,20 +2040,23 @@ copy_rtx_and_substitute (orig, map, for_lhs)
       break;
 
     case ASM_OPERANDS:
-      /* If a single asm insn contains multiple output operands
-	 then it contains multiple ASM_OPERANDS rtx's that share operand 3.
-	 We must make sure that the copied insn continues to share it.  */
-      if (map->orig_asm_operands_vector == XVEC (orig, 3))
+      /* If a single asm insn contains multiple output operands then
+	 it contains multiple ASM_OPERANDS rtx's that share the input
+	 and constraint vecs.  We must make sure that the copied insn
+	 continues to share it.  */
+      if (map->orig_asm_operands_vector == ASM_OPERANDS_INPUT_VEC (orig))
 	{
 	  copy = rtx_alloc (ASM_OPERANDS);
 	  copy->volatil = orig->volatil;
-	  XSTR (copy, 0) = XSTR (orig, 0);
-	  XSTR (copy, 1) = XSTR (orig, 1);
-	  XINT (copy, 2) = XINT (orig, 2);
-	  XVEC (copy, 3) = map->copy_asm_operands_vector;
-	  XVEC (copy, 4) = map->copy_asm_constraints_vector;
-	  XSTR (copy, 5) = XSTR (orig, 5);
-	  XINT (copy, 6) = XINT (orig, 6);
+	  ASM_OPERANDS_TEMPLATE (copy) = ASM_OPERANDS_TEMPLATE (orig);
+	  ASM_OPERANDS_OUTPUT_CONSTRAINT (copy)
+	    = ASM_OPERANDS_OUTPUT_CONSTRAINT (orig);
+	  ASM_OPERANDS_OUTPUT_IDX (copy) = ASM_OPERANDS_OUTPUT_IDX (orig);
+	  ASM_OPERANDS_INPUT_VEC (copy) = map->copy_asm_operands_vector;
+	  ASM_OPERANDS_INPUT_CONSTRAINT_VEC (copy)
+	    = map->copy_asm_constraints_vector;
+	  ASM_OPERANDS_SOURCE_FILE (copy) = ASM_OPERANDS_SOURCE_FILE (orig);
+	  ASM_OPERANDS_SOURCE_LINE (copy) = ASM_OPERANDS_SOURCE_LINE (orig);
 	  return copy;
 	}
       break;
@@ -2212,9 +2215,10 @@ copy_rtx_and_substitute (orig, map, for_lhs)
 
   if (code == ASM_OPERANDS && map->orig_asm_operands_vector == 0)
     {
-      map->orig_asm_operands_vector = XVEC (orig, 3);
-      map->copy_asm_operands_vector = XVEC (copy, 3);
-      map->copy_asm_constraints_vector = XVEC (copy, 4);
+      map->orig_asm_operands_vector = ASM_OPERANDS_INPUT_VEC (orig);
+      map->copy_asm_operands_vector = ASM_OPERANDS_INPUT_VEC (copy);
+      map->copy_asm_constraints_vector
+	= ASM_OPERANDS_INPUT_CONSTRAINT_VEC (copy);
     }
 
   return copy;
