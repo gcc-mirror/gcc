@@ -1,5 +1,9 @@
 2004-08-25  Paolo Bonzini  <bonzini@gnu.org>
 
+	* Makefile.in: Add back top_builddir.
+
+2004-08-25  Paolo Bonzini  <bonzini@gnu.org>
+
 	* configure.ac: Replace Automake macro invocations
 	with manual Autoconf checks and substitutions.
 	* configure: Regenerate.

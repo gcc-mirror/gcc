@@ -23,6 +23,7 @@
 @SET_MAKE@
 
 srcdir = @srcdir@
+top_builddir = .
 VPATH = @srcdir@
 INSTALL = @INSTALL@
 AR = ar
