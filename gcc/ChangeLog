@@ -1,3 +1,7 @@
+Fri Apr 17 16:35:35 1998  Greg McGary  <gkm@gnu.org>
+
+	* emit-rtl.c (gen_highpart): initialize `word' properly for pseudo.
+
 Fri Apr 17 14:30:37 1998  John Carr <jfc@mit.edu>
 
 	* emit-rtl.c (operand_subword_force): If a register can not be

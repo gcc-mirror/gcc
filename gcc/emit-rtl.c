@@ -1011,18 +1011,24 @@ gen_highpart (mode, x)
     }
   else if (GET_CODE (x) == REG)
     {
-      int word = 0;
+      int word;
 
       /* Let the backend decide how many registers to skip.  This is needed
          in particular for sparc64 where fp regs are smaller than a word.  */
       /* ??? Note that subregs are now ambiguous, in that those against
-	 pseudos are sized by the Word Size, while those against hard
+	 pseudos are sized by the word size, while those against hard
 	 regs are sized by the underlying register size.  Better would be
 	 to always interpret the subreg offset parameter as bytes or bits.  */
 
-      if (! WORDS_BIG_ENDIAN && REGNO (x) < FIRST_PSEUDO_REGISTER)
+      if (WORDS_BIG_ENDIAN)
+	word = 0;
+      else if (REGNO (x) < FIRST_PSEUDO_REGISTER)
 	word = (HARD_REGNO_NREGS (REGNO (x), GET_MODE (x))
 		- HARD_REGNO_NREGS (REGNO (x), mode));
+      else
+	word = ((GET_MODE_SIZE (GET_MODE (x))
+		 - MAX (GET_MODE_SIZE (mode), UNITS_PER_WORD))
+		/ UNITS_PER_WORD);
 
       if (REGNO (x) < FIRST_PSEUDO_REGISTER
 	  /* integrate.c can't handle parts of a return value register.  */
