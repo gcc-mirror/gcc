@@ -117,3 +117,5 @@ Boston, MA 02111-1307, USA.  */
 #ifndef USE_GNULIBC_1
 #define TARGET_C99_FUNCTIONS 1
 #endif
+
+#define TARGET_HAS_F_SETLKW
