@@ -1,3 +1,18 @@
+1997-11-14  Paul Eggert  <eggert@twinsun.com>
+
+        Fix some confusion with IEEE minus zero.
+
+        * real.h (REAL_VALUES_IDENTICAL): New macro.
+
+        * expr.c (is_zeros_p): Don't consider -0.0 to be all zeros.
+        * fold-const.c (operand_equal_p): Don't consider -0.0 to be
+        identical to 0.0.
+        * tree.c (simple_cst_equal): Don't consider -0.0 to have the
+        same tree structure as 0.0.
+
+        * varasm.c (immed_real_const_1): Use new REAL_VALUES_IDENTICAL
+        macro instead of doing it by hand.
+
 Fri Nov 14 07:24:20 1997  Richard Henderson  <rth@cygnus.com>
 
 	* alpha.c (call_operand): Any reg is valid for WinNT.
