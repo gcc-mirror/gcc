@@ -240,38 +240,38 @@ simplify_gen_relational (enum rtx_code code, enum machine_mode mode,
   return gen_rtx_fmt_ee (code, mode, op0, op1);
 }
 
-/* Replace all occurrences of OLD in X with NEW and try to simplify the
+/* Replace all occurrences of OLDX in X with NEWX and try to simplify the
    resulting RTX.  Return a new RTX which is as simplified as possible.  */
 
 rtx
-simplify_replace_rtx (rtx x, rtx old, rtx new)
+simplify_replace_rtx (rtx x, rtx oldx, rtx newx)
 {
   enum rtx_code code = GET_CODE (x);
   enum machine_mode mode = GET_MODE (x);
   enum machine_mode op_mode;
   rtx op0, op1, op2;
 
-  /* If X is OLD, return NEW.  Otherwise, if this is an expression, try
+  /* If X is OLDX, return NEWX.  Otherwise, if this is an expression, try
      to build a new expression substituting recursively.  If we can't do
      anything, return our input.  */
 
-  if (x == old)
-    return new;
+  if (x == oldx)
+    return newx;
 
   switch (GET_RTX_CLASS (code))
     {
     case RTX_UNARY:
       op0 = XEXP (x, 0);
       op_mode = GET_MODE (op0);
-      op0 = simplify_replace_rtx (op0, old, new);
+      op0 = simplify_replace_rtx (op0, oldx, newx);
       if (op0 == XEXP (x, 0))
 	return x;
       return simplify_gen_unary (code, mode, op0, op_mode);
 
     case RTX_BIN_ARITH:
     case RTX_COMM_ARITH:
-      op0 = simplify_replace_rtx (XEXP (x, 0), old, new);
-      op1 = simplify_replace_rtx (XEXP (x, 1), old, new);
+      op0 = simplify_replace_rtx (XEXP (x, 0), oldx, newx);
+      op1 = simplify_replace_rtx (XEXP (x, 1), oldx, newx);
       if (op0 == XEXP (x, 0) && op1 == XEXP (x, 1))
 	return x;
       return simplify_gen_binary (code, mode, op0, op1);
@@ -281,8 +281,8 @@ simplify_replace_rtx (rtx x, rtx old, rtx new)
       op0 = XEXP (x, 0);
       op1 = XEXP (x, 1);
       op_mode = GET_MODE (op0) != VOIDmode ? GET_MODE (op0) : GET_MODE (op1);
-      op0 = simplify_replace_rtx (op0, old, new);
-      op1 = simplify_replace_rtx (op1, old, new);
+      op0 = simplify_replace_rtx (op0, oldx, newx);
+      op1 = simplify_replace_rtx (op1, oldx, newx);
       if (op0 == XEXP (x, 0) && op1 == XEXP (x, 1))
 	return x;
       return simplify_gen_relational (code, mode, op_mode, op0, op1);
@@ -291,9 +291,9 @@ simplify_replace_rtx (rtx x, rtx old, rtx new)
     case RTX_BITFIELD_OPS:
       op0 = XEXP (x, 0);
       op_mode = GET_MODE (op0);
-      op0 = simplify_replace_rtx (op0, old, new);
-      op1 = simplify_replace_rtx (XEXP (x, 1), old, new);
-      op2 = simplify_replace_rtx (XEXP (x, 2), old, new);
+      op0 = simplify_replace_rtx (op0, oldx, newx);
+      op1 = simplify_replace_rtx (XEXP (x, 1), oldx, newx);
+      op2 = simplify_replace_rtx (XEXP (x, 2), oldx, newx);
       if (op0 == XEXP (x, 0) && op1 == XEXP (x, 1) && op2 == XEXP (x, 2))
 	return x;
       if (op_mode == VOIDmode)
@@ -304,7 +304,7 @@ simplify_replace_rtx (rtx x, rtx old, rtx new)
       /* The only case we try to handle is a SUBREG.  */
       if (code == SUBREG)
 	{
-	  op0 = simplify_replace_rtx (SUBREG_REG (x), old, new);
+	  op0 = simplify_replace_rtx (SUBREG_REG (x), oldx, newx);
 	  if (op0 == SUBREG_REG (x))
 	    return x;
 	  op0 = simplify_gen_subreg (GET_MODE (x), op0,
@@ -317,15 +317,15 @@ simplify_replace_rtx (rtx x, rtx old, rtx new)
     case RTX_OBJ:
       if (code == MEM)
 	{
-	  op0 = simplify_replace_rtx (XEXP (x, 0), old, new);
+	  op0 = simplify_replace_rtx (XEXP (x, 0), oldx, newx);
 	  if (op0 == XEXP (x, 0))
 	    return x;
 	  return replace_equiv_address_nv (x, op0);
 	}
       else if (code == LO_SUM)
 	{
-	  op0 = simplify_replace_rtx (XEXP (x, 0), old, new);
-	  op1 = simplify_replace_rtx (XEXP (x, 1), old, new);
+	  op0 = simplify_replace_rtx (XEXP (x, 0), oldx, newx);
+	  op1 = simplify_replace_rtx (XEXP (x, 1), oldx, newx);
 
 	  /* (lo_sum (high x) x) -> x  */
 	  if (GET_CODE (op0) == HIGH && rtx_equal_p (XEXP (op0, 0), op1))
@@ -337,8 +337,8 @@ simplify_replace_rtx (rtx x, rtx old, rtx new)
 	}
       else if (code == REG)
 	{
-	  if (REG_P (old) && REGNO (x) == REGNO (old))
-	    return new;
+	  if (REG_P (oldx) && REGNO (x) == REGNO (oldx))
+	    return newx;
 	}
       break;
 
@@ -2789,9 +2789,9 @@ simplify_relational_operation_1 (enum rtx_code code, enum machine_mode mode,
 	    }
 	  else if (code == EQ)
 	    {
-	      enum rtx_code new = reversed_comparison_code (op0, NULL_RTX);
-	      if (new != UNKNOWN)
-	        return simplify_gen_relational (new, mode, VOIDmode,
+	      enum rtx_code new_code = reversed_comparison_code (op0, NULL_RTX);
+	      if (new_code != UNKNOWN)
+	        return simplify_gen_relational (new_code, mode, VOIDmode,
 					        XEXP (op0, 0), XEXP (op0, 1));
 	    }
 	}
@@ -3598,7 +3598,7 @@ simplify_subreg (enum machine_mode outermode, rtx op,
     {
       enum machine_mode innermostmode = GET_MODE (SUBREG_REG (op));
       int final_offset = byte + SUBREG_BYTE (op);
-      rtx new;
+      rtx newx;
 
       if (outermode == innermostmode
 	  && byte == 0 && SUBREG_BYTE (op) == 0)
@@ -3655,11 +3655,11 @@ simplify_subreg (enum machine_mode outermode, rtx op,
 	}
 
       /* Recurse for further possible simplifications.  */
-      new = simplify_subreg (outermode, SUBREG_REG (op),
+      newx = simplify_subreg (outermode, SUBREG_REG (op),
 			     GET_MODE (SUBREG_REG (op)),
 			     final_offset);
-      if (new)
-	return new;
+      if (newx)
+	return newx;
       return gen_rtx_SUBREG (outermode, SUBREG_REG (op), final_offset);
     }
 
@@ -3788,7 +3788,7 @@ rtx
 simplify_gen_subreg (enum machine_mode outermode, rtx op,
 		     enum machine_mode innermode, unsigned int byte)
 {
-  rtx new;
+  rtx newx;
   /* Little bit of sanity checking.  */
   if (innermode == VOIDmode || outermode == VOIDmode
       || innermode == BLKmode || outermode == BLKmode)
@@ -3802,9 +3802,9 @@ simplify_gen_subreg (enum machine_mode outermode, rtx op,
       || byte >= GET_MODE_SIZE (innermode))
     abort ();
 
-  new = simplify_subreg (outermode, op, innermode, byte);
-  if (new)
-    return new;
+  newx = simplify_subreg (outermode, op, innermode, byte);
+  if (newx)
+    return newx;
 
   if (GET_CODE (op) == SUBREG || GET_MODE (op) == VOIDmode)
     return NULL_RTX;

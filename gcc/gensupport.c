@@ -675,12 +675,12 @@ alter_test_for_insn (struct queue_elem *ce_elem,
    adjusted string.  */
 
 static char *
-shift_output_template (char *new, const char *old, int disp)
+shift_output_template (char *dest, const char *old, int disp)
 {
   while (*old)
     {
       char c = *old++;
-      *new++ = c;
+      *dest++ = c;
       if (c == '%')
 	{
 	  c = *old++;
@@ -688,14 +688,14 @@ shift_output_template (char *new, const char *old, int disp)
 	    c += disp;
 	  else if (ISALPHA (c))
 	    {
-	      *new++ = c;
+	      *dest++ = c;
 	      c = *old++ + disp;
 	    }
-	  *new++ = c;
+	  *dest++ = c;
 	}
     }
 
-  return new;
+  return dest;
 }
 
 static const char *
@@ -704,7 +704,7 @@ alter_output_for_insn (struct queue_elem *ce_elem,
 		       int alt, int max_op)
 {
   const char *ce_out, *insn_out;
-  char *new, *p;
+  char *result, *p;
   size_t len, ce_len, insn_len;
 
   /* ??? Could coordinate with genoutput to not duplicate code here.  */
@@ -724,7 +724,7 @@ alter_output_for_insn (struct queue_elem *ce_elem,
   if (*insn_out == '@')
     {
       len = (ce_len + 1) * alt + insn_len + 1;
-      p = new = xmalloc (len);
+      p = result = XNEWVEC(char, len);
 
       do
 	{
@@ -748,14 +748,14 @@ alter_output_for_insn (struct queue_elem *ce_elem,
   else
     {
       len = ce_len + 1 + insn_len + 1;
-      new = xmalloc (len);
+      result = XNEWVEC (char, len);
 
-      p = shift_output_template (new, ce_out, max_op);
+      p = shift_output_template (result, ce_out, max_op);
       *p++ = ' ';
       memcpy (p, insn_out, insn_len + 1);
     }
 
-  return new;
+  return result;
 }
 
 /* Replicate insns as appropriate for the given DEFINE_COND_EXEC.  */

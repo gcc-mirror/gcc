@@ -1731,42 +1731,42 @@ duplicate_decls (tree newdecl, tree olddecl)
 }
 
 
-/* Check whether decl-node NEW shadows an existing declaration.  */
+/* Check whether decl-node DECL shadows an existing declaration.  */
 static void
-warn_if_shadowing (tree new)
+warn_if_shadowing (tree decl)
 {
   struct c_binding *b;
 
   /* Shadow warnings wanted?  */
   if (!warn_shadow
       /* No shadow warnings for internally generated vars.  */
-      || DECL_IS_BUILTIN (new)
+      || DECL_IS_BUILTIN (decl)
       /* No shadow warnings for vars made for inlining.  */
-      || DECL_FROM_INLINE (new)
+      || DECL_FROM_INLINE (decl)
       /* Don't warn about the parm names in function declarator
 	 within a function declarator.  It would be nice to avoid
 	 warning in any function declarator in a declaration, as
 	 opposed to a definition, but there is no way to tell
 	 it's not a definition at this point.  */
-      || (TREE_CODE (new) == PARM_DECL && current_scope->outer->parm_flag))
+      || (TREE_CODE (decl) == PARM_DECL && current_scope->outer->parm_flag))
     return;
 
   /* Is anything being shadowed?  Invisible decls do not count.  */
-  for (b = I_SYMBOL_BINDING (DECL_NAME (new)); b; b = b->shadowed)
-    if (b->decl && b->decl != new && !b->invisible)
+  for (b = I_SYMBOL_BINDING (DECL_NAME (decl)); b; b = b->shadowed)
+    if (b->decl && b->decl != decl && !b->invisible)
       {
 	tree old = b->decl;
 
 	if (TREE_CODE (old) == PARM_DECL)
-	  warning ("%Jdeclaration of '%D' shadows a parameter", new, new);
+	  warning ("%Jdeclaration of '%D' shadows a parameter", decl, decl);
 	else if (DECL_FILE_SCOPE_P (old))
 	  warning ("%Jdeclaration of '%D' shadows a global declaration",
-		   new, new);
+		   decl, decl);
 	else if (TREE_CODE (old) == FUNCTION_DECL && DECL_BUILT_IN (old))
 	  warning ("%Jdeclaration of '%D' shadows a built-in function",
-		   new, new);
+		   decl, decl);
 	else
-	  warning ("%Jdeclaration of '%D' shadows a previous local", new, new);
+	  warning ("%Jdeclaration of '%D' shadows a previous local", decl, decl);
 
 	if (TREE_CODE (old) != FUNCTION_DECL || !DECL_BUILT_IN (old))
 	  warning ("%Jshadowed declaration is here", old);

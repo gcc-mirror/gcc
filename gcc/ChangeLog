@@ -1,3 +1,10 @@
+2004-07-25  Bernardo Innocenti  <bernie@develer.com>
+
+	* c-common.c: Rename all identifiers named `new'.
+	* c-decl.c: Likewise.
+	* gensupport.c: Likewise.
+	* simplify-rtx.c: Likewise.
+
 2004-07-25  Joseph S. Myers  <jsm@polyomino.org.uk>
 
 	PR c/15360
