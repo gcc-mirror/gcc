@@ -1282,7 +1282,7 @@ yylex ()
 	if (floatflag != NOT_FLOAT)
 	  {
 	    tree type = double_type_node;
-	    int garbage_chars = 0, exceeds_double = 0;
+	    int exceeds_double = 0;
 	    int imag = 0;
 	    REAL_VALUE_TYPE value;
 	    jmp_buf handler;
@@ -1418,19 +1418,6 @@ yylex ()
 		  }
 	      }
 #endif
-	    garbage_chars = 0;
-	    while (isalnum (c) || c == '.' || c == '_'
-		   || (!flag_traditional && (c == '+' || c == '-')
-		       && (p[-1] == 'e' || p[-1] == 'E')))
-	      {
-		if (p >= token_buffer + maxtoken - 3)
-		  p = extend_token_buffer (p);
-		*p++ = c;
-		c = getc (finput);
-		garbage_chars++;
-	      }
-	    if (garbage_chars > 0)
-	      error ("garbage at end of number");
 
 	    /* If the result is not a number, assume it must have been
 	       due to some error message above, so silently convert
@@ -1444,9 +1431,6 @@ yylex ()
 					    build_real (type, value));
 	    else
 	      yylval.ttype = build_real (type, value);
-
-	    ungetc (c, finput);
-	    *p = 0;
 	  }
 	else
 	  {
@@ -1487,31 +1471,12 @@ yylex ()
 		    spec_imag = 1;
 		  }
 		else
-		  {
-		    if (isalnum (c) || c == '.' || c == '_'
-			|| (!flag_traditional && (c == '+' || c == '-')
-			    && (p[-1] == 'e' || p[-1] == 'E')))
-		      {
-			error ("garbage at end of number");
-			while (isalnum (c) || c == '.' || c == '_'
-			       || (!flag_traditional && (c == '+' || c == '-')
-				   && (p[-1] == 'e' || p[-1] == 'E')))
-			  {
-			    if (p >= token_buffer + maxtoken - 3)
-			      p = extend_token_buffer (p);
-			    *p++ = c;
-			    c = getc (finput);
-			  }
-		      }
-		    break;
-		  }
+		  break;
 		if (p >= token_buffer + maxtoken - 3)
 		  p = extend_token_buffer (p);
 		*p++ = c;
 		c = getc (finput);
 	      }
-
-	    ungetc (c, finput);
 
 	    /* If the constant is not long long and it won't fit in an
 	       unsigned long, or if the constant is long long and won't fit
@@ -1648,9 +1613,15 @@ yylex ()
 	      }
 	    else
 	      TREE_TYPE (yylval.ttype) = type;
-
-	    *p = 0;
 	  }
+
+	ungetc (c, finput);
+	*p = 0;
+
+	if (isalnum (c) || c == '.' || c == '_'
+	    || (!flag_traditional && (c == '-' || c == '+')
+		&& (p[-1] == 'e' || p[-1] == 'E')))
+	  error ("missing white space after number `%s'", token_buffer);
 
 	value = CONSTANT; break;
       }
