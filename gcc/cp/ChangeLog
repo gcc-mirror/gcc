@@ -1,3 +1,11 @@
+2005-03-11  Per Bothner  <per@bothner.com>
+
+	* cp-tree.h (struct cp_declarator): New id_loc field.
+	* cp/parser.c (cp_lexer_get_preprocessor_token): Set cp_token's
+	location using c_lex_with_flags, instead of input_location.
+	(cp_parser_direct_declarator): Set declarator's id_loc from
+	cp_token's id_loc.
+
 2005-03-10  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/18384, c++/18327
