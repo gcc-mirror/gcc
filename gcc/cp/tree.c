@@ -2221,8 +2221,8 @@ mark_local_for_remap_r (tree* tp,
   else if (TREE_CODE (t) == TARGET_EXPR
 	   && nonstatic_local_decl_p (TREE_OPERAND (t, 0)))
     decl = TREE_OPERAND (t, 0);
-  else if (TREE_CODE (t) == CASE_LABEL)
-    decl = CASE_LABEL_DECL (t);
+  else if (TREE_CODE (t) == CASE_LABEL_EXPR)
+    decl = CASE_LABEL (t);
   else
     decl = NULL_TREE;
 

@@ -1,5 +1,17 @@
 2004-06-16  Richard Henderson  <rth@redhat.com>
 
+	* c-common.def (CASE_LABEL): Remove.
+	* c-common.c (c_add_case_label): Use CASE_LABEL, not CASE_LABEL_DECL.
+	(match_case_to_enum_1): Likewise.
+	* c-common.h (c_common_stmt_codes): Remove CASE_LABEL.
+	* c-dump.c (c_dump_tree): Likewise.
+	* c-gimplify.c (c_gimplify_stmt): Likewise.
+	* c-pretty-print.c (pp_c_statement): Likewise.
+	* c-semantics.c (build_case_label): Use CASE_LABEL_EXPR.
+	* tree.h (CASE_LOW): Update commentary.
+
+2004-06-16  Richard Henderson  <rth@redhat.com>
+
 	* c-common.def (ASM_STMT): Remove.
 	* c-common.h (c_common_stmt_codes): Remove ASM_STMT.
 	* c-dump.c (c_dump_tree): Likewise.
