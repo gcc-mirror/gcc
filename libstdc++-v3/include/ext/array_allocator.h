@@ -55,7 +55,7 @@ namespace __gnu_cxx
       address(const_reference __x) const { return &__x; }
 
       void
-      deallocate(pointer __p, size_type)
+      deallocate(pointer, size_type)
       { 
 	// Does nothing.
       }

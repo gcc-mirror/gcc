@@ -48,7 +48,7 @@
 #ifndef _DEBUG_ALLOCATOR_H
 #define _DEBUG_ALLOCATOR_H 1
 
-#include <cstdlib>
+#include <stdexcept>
 
 namespace __gnu_cxx
 {
@@ -108,12 +108,18 @@ namespace __gnu_cxx
       void
       deallocate(pointer __p, size_type __n)
       {
-	if (!__p)
-	  abort();
-	pointer __real_p = __p - _M_extra;
-        if (*reinterpret_cast<size_type*>(__real_p) != __n)
-          abort();
-        _M_allocator.deallocate(__real_p, __n + _M_extra);
+	if (__p)
+	  {
+	    pointer __real_p = __p - _M_extra;
+	    if (*reinterpret_cast<size_type*>(__real_p) != __n)
+	      {
+		throw std::runtime_error("debug_allocator::deallocate"
+					 " wrong size");
+	      }
+	    _M_allocator.deallocate(__real_p, __n + _M_extra);
+	  }
+	else
+	  throw std::runtime_error("debug_allocator::deallocate null pointer");
       }
     };
 } // namespace __gnu_cxx

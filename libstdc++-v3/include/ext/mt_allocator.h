@@ -724,14 +724,17 @@ namespace __gnu_cxx
     __mt_alloc<_Tp, _Poolp>::
     deallocate(pointer __p, size_type __n)
     {
-      // Requests larger than _M_max_bytes are handled by operators
-      // new/delete directly.
-      __pool_type& __pool = this->_S_get_pool();
-      const size_t __bytes = __n * sizeof(_Tp);
-      if (__pool._M_check_threshold(__bytes))
-	::operator delete(__p);
-      else
-	__pool._M_reclaim_block(reinterpret_cast<char*>(__p), __bytes);
+      if (__builtin_expect(__p != 0, true))
+	{
+	  // Requests larger than _M_max_bytes are handled by
+	  // operators new/delete directly.
+	  __pool_type& __pool = this->_S_get_pool();
+	  const size_t __bytes = __n * sizeof(_Tp);
+	  if (__pool._M_check_threshold(__bytes))
+	    ::operator delete(__p);
+	  else
+	    __pool._M_reclaim_block(reinterpret_cast<char*>(__p), __bytes);
+	}
     }
   
   template<typename _Tp, typename _Poolp>

@@ -1,3 +1,25 @@
+2004-10-14  Benjamin Kosnik  <bkoz@redhat.com>
+
+	* include/ext/mt_allocator.h (__mt_alloc::deallocate): Check for
+	null pointer.
+	* include/ext/pool_allocator.h (debug_allocator::deallocate):
+	Check pointer value.
+	* include/ext/debug_allocator.h (debug_allocator::deallocate):
+	Throw exceptions, don't abort.
+	* include/ext/array_allocator.h
+	(array_allocator_base::deallocate): Remove unused parameters.
+	* testsuite/testsuite_allocator.h (check_deallocate_null): New.
+	* testsuite/ext/mt_allocator/check_deallocate_null.cc: New.
+	* testsuite/ext/mt_allocator/check_deallocate_null_thread.cc: New.
+	* testsuite/ext/array_allocator/check_deallocate_null.cc: New.
+	* testsuite/ext/debug_allocator/check_deallocate_null.cc: New.
+	* testsuite/ext/malloc_allocator/check_deallocate_null.cc: New.
+	* testsuite/ext/new_allocator/check_deallocate_null.cc: New.
+	* testsuite/ext/pool_allocator/check_deallocate_null.cc: New.
+
+	* testsuite/testsuite_allocator.h (check_new): Add instance argument.
+	* testsuite/ext/array_allocator/check_new.cc: New.
+	
 2004-10-14  Paolo Carlini  <pcarlini@suse.de>
 
 	* include/ext/bitmap_allocator.h (bitmap_allocator::_Alloc_block):
