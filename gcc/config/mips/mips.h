@@ -73,6 +73,16 @@ enum processor_type {
 /* Recast the cpu class to be the cpu attribute.  */
 #define mips_cpu_attr ((enum attr_cpu)mips_cpu)
 
+/* Whether to emit abicalls code sequences or not.  */
+
+enum mips_abicalls_type {
+  MIPS_ABICALLS_NO,
+  MIPS_ABICALLS_YES
+};
+
+/* Recast the abicalls class to be the abicalls attribute.  */
+#define mips_abicalls_attr ((enum attr_abicalls)mips_abicalls)
+
 /* Which type of block move to do (whether or not the last store is
    split out so it can fill a branch delay slot).  */
 
@@ -105,10 +115,10 @@ extern char mips_rtx_classify[];	/* classify an RTX code */
 extern struct rtx_def *branch_cmp[2];	/* operands for compare */
 extern enum cmp_type branch_type;	/* what type of branch to use */
 extern enum processor_type mips_cpu;	/* which cpu are we scheduling for */
+extern enum mips_abicalls_type mips_abicalls;/* for svr4 abi pic calls */
 extern int mips_isa;			/* architectural level */
 extern char *mips_cpu_string;		/* for -mcpu=<xxx> */
 extern char *mips_isa_string;		/* for -mips{1,2,3} */
-extern enum attr_abicalls mips_abicalls;/* for svr4 abi pic calls */
 extern int dslots_load_total;		/* total # load related delay slots */
 extern int dslots_load_filled;		/* # filled load delay slots */
 extern int dslots_jump_total;		/* total # jump related delay slots */
