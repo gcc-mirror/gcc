@@ -6269,7 +6269,7 @@ print_rtl_with_bb (outf, rtx_first)
 
 /* Dump the rtl into the current debugging dump file, then abort.  */
 static void
-print_rtl_and_abort (void)
+print_rtl_and_abort ()
 {
   if (rtl_dump_file)
     {

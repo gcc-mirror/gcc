@@ -1,3 +1,7 @@
+2000-11-24  Arno J. Klaassen  <arno@heho.snv.jussieu.fr>
+
+	* flow.c (print_rtl_and_abort): Remove ANSIism.
+
 Fri Nov 24 19:54:36 2000  Alexandre Oliva  <aoliva@redhat.com>
 
 	* config/sh/sh.h (GENERAL_REGISTER_P,
