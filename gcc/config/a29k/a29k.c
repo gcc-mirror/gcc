@@ -802,6 +802,33 @@ incoming_reg (start, count)
   return R_AR (start);
 }
 
+/* Add CLOBBERs to CALL_INSN_FUNCTION_USAGE chain of INSN indicating
+   that LR2 up to, but not including, OP are clobbered.  If OP is
+   zero, indicate all parameter registers are clobbered.  */
+
+void
+a29k_clobbers_to (insn, op)
+     rtx insn;
+     rtx op;
+{
+  int i;
+  int high_regno;
+
+  if (op == 0)
+    high_regno = R_LR (18);
+  else if (GET_CODE (op) != REG || REGNO (op) < R_LR (0)
+	   || REGNO (op) > R_LR (18))
+    abort ();
+  else
+    high_regno = REGNO (op);
+
+  for (i = R_LR (2); i < high_regno; i++)
+    CALL_INSN_FUNCTION_USAGE (insn)
+      = gen_rtx (EXPR_LIST, VOIDmode,
+		 gen_rtx (CLOBBER, VOIDmode, gen_rtx (REG, SImode, i)),
+		 CALL_INSN_FUNCTION_USAGE (insn));
+}
+
 /* These routines are used in finding insns to fill delay slots in the
    epilogue.  */
 
