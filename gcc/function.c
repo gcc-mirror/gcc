@@ -1082,6 +1082,7 @@ preserve_temp_slots (x)
 	  q->level--;
 
       p->level--;
+      p->addr_taken = 0;
       return;
     }
 
