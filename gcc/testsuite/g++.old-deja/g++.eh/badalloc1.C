@@ -16,8 +16,8 @@ const int arena_size = 256;
 #else
 #if defined(__FreeBSD__) || defined(__sun__)
 // FreeBSD with threads and Solaris with threads require even more
-// space at initialization time.
-const int arena_size = 131072;
+// space at initialization time.  FreeBSD 5 now requires over 131072 bytes.
+const int arena_size = 262144;
 #else
 const int arena_size = 32768;
 #endif
