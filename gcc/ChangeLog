@@ -1,3 +1,8 @@
+Fri Jul  3 07:17:19 1998  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	* alpha.c (normal_memory_operand): Handle case when REG will be
+	eliminated by reload.
+
 Thu Jul  2 18:43:53 1998  James Carlson  <carlson@ironbridgenetworks.com>
  
 	* floatlib.c (HIDDEND_LL, MANTD_LL, PACKD_LL): New macros.
