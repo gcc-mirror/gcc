@@ -498,7 +498,7 @@ dump_data_dependence_direction (FILE *file,
 
 static tree
 analyze_array_indexes (struct loop *loop,
-		       varray_type access_fns, 
+		       varray_type *access_fns, 
 		       tree ref)
 {
   tree opnd0, opnd1;
@@ -514,7 +514,7 @@ analyze_array_indexes (struct loop *loop,
   access_fn = instantiate_parameters 
     (loop, analyze_scalar_evolution (loop, opnd1));
   
-  VARRAY_PUSH_TREE (access_fns, access_fn);
+  VARRAY_PUSH_TREE (*access_fns, access_fn);
   
   /* Recursively record other array access functions.  */
   if (TREE_CODE (opnd0) == ARRAY_REF)
@@ -549,7 +549,7 @@ analyze_array (tree stmt, tree ref, bool is_read)
   DR_REF (res) = ref;
   VARRAY_TREE_INIT (DR_ACCESS_FNS (res), 3, "access_fns");
   DR_BASE_NAME (res) = analyze_array_indexes 
-    (loop_containing_stmt (stmt), DR_ACCESS_FNS (res), ref);
+    (loop_containing_stmt (stmt), &(DR_ACCESS_FNS (res)), ref);
   DR_IS_READ (res) = is_read;
   
   if (dump_file && (dump_flags & TDF_DETAILS))

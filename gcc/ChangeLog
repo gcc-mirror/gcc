@@ -1,3 +1,36 @@
+2004-09-19  Ira Rosen  <irar@il.ibm.com>
+
+	* tree-vectorizer.h (stmt_vec_info): Add vect_dr_base field.
+	(STMT_VINFO_VECT_DR_BASE): Declare.
+	(VECT_SMODULO): Declare.
+	* tree-vectorizer.c (vect_compute_array_ref_alignment): New function.
+	(vect_compute_array_base_alignment): New function.
+	(vect_analyze_data_ref_access): Check array indices. Remove one
+	dimensional arrays restriction.
+	(vect_get_ptr_offset): New function.
+	(vect_get_symbl_and_dr): New function.
+	(vect_get_base_and_bit_offset): Support additional data refs. Renamed
+	(former name vect_get_base_decl_and_bit_offset).
+	(vect_create_index_for_array_ref): Removed.
+	(vect_create_index_for_vector_ref): New function.
+	(vect_create_addr_base_for_vector_ref): New function.
+	(vect_create_data_ref): Handle additional data refs. Call
+	vect_create_index_for_vector_ref and vect_create_addr_base_for_vector_ref.
+	(vect_compute_data_ref_alignment): Support the changes. Call
+	vect_get_base_and_bit_offset.
+	(vect_analyze_data_refs): Call vect_get_symbl_and_dr. Support additional
+	data refs. Store vect_dr_base.
+	(vect_analyze_data_ref_accesses): Support nonconstant init.
+	(new_stmt_vec_info): Initialize vect_dr_base field.
+	(vect_is_simple_iv_evolution): Call initial_condition_in_loop_num.
+	(get_vectype_for_scalar_type): Check for BLKmode.
+	* tree-chrec.h (initial_condition_in_loop_num): Declare.
+	* tree-chrec.c (initial_condition_in_loop_num): New function.
+	(chrec_component_in_loop_num): New function.
+	(evolution_part_in_loop_num): Call chrec_component_in_loop_num.
+	* tree-data-ref.c (analyze_array_indexes): Change parameter (access_fns)
+	to be pointer to varray_type.
+
 2004-09-19  Jan Hubicka  <jh@suse.cz>
 
 	* basic-block.h (update_bb_profile_after_threading): Declare.

@@ -76,17 +76,27 @@ typedef struct _stmt_vec_info {
 
   /* Aliasing information.  */
   tree memtag;
+
+  /* Data reference base. This field holds the entire invariant part of the 
+     data-reference (with respect to the relevant loop), as opposed to the 
+     field DR_BASE of the STMT_VINFO_DATA_REF struct, which holds only the 
+     initial base; e.g:
+     REF	BR_BASE	    VECT_DR_BASE
+     a[i]	a		a
+     a[i][j]	a		a[i]  */
+  tree vect_dr_base;
 } *stmt_vec_info;
 
 /* Access Functions.  */
-#define STMT_VINFO_TYPE(S)       (S)->type
-#define STMT_VINFO_STMT(S)       (S)->stmt
-#define STMT_VINFO_LOOP(S)       (S)->loop
-#define STMT_VINFO_RELEVANT_P(S) (S)->relevant
-#define STMT_VINFO_VECTYPE(S)    (S)->vectype
-#define STMT_VINFO_VEC_STMT(S)   (S)->vectorized_stmt
-#define STMT_VINFO_DATA_REF(S)   (S)->data_ref_info
-#define STMT_VINFO_MEMTAG(S)     (S)->memtag
+#define STMT_VINFO_TYPE(S)          (S)->type
+#define STMT_VINFO_STMT(S)          (S)->stmt
+#define STMT_VINFO_LOOP(S)          (S)->loop
+#define STMT_VINFO_RELEVANT_P(S)    (S)->relevant
+#define STMT_VINFO_VECTYPE(S)       (S)->vectype
+#define STMT_VINFO_VEC_STMT(S)      (S)->vectorized_stmt
+#define STMT_VINFO_DATA_REF(S)      (S)->data_ref_info
+#define STMT_VINFO_MEMTAG(S)        (S)->memtag
+#define STMT_VINFO_VECT_DR_BASE(S)  (S)->vect_dr_base
 
 static inline void set_stmt_info (stmt_ann_t ann, stmt_vec_info stmt_info);
 static inline stmt_vec_info vinfo_for_stmt (tree stmt);
@@ -122,6 +132,9 @@ unknown_alignment_for_access_p (struct data_reference *data_ref_info)
 {
   return (DR_MISALIGNMENT (data_ref_info) == -1);
 }
+
+/* Perform signed modulo, always returning a non-negative value.  */
+#define VECT_SMODULO(x,y) ((x) % (y) < 0 ? ((x) % (y) + (y)) : (x) % (y))
 
 
 /*-----------------------------------------------------------------*/
