@@ -361,7 +361,7 @@ java::net::PlainDatagramSocketImpl::receive (java::net::DatagramPacket *p)
 // FIXME: implement timeout support for Win32
 #ifndef WIN32
   // Do timeouts via select since SO_RCVTIMEO is not always available.
-  if (timeout > 0)
+  if (timeout > 0 && fnum >= 0 && fnum < FD_SETSIZE)
     {
       fd_set rset;
       struct timeval tv;
@@ -500,6 +500,9 @@ java::net::PlainDatagramSocketImpl::setOption (jint optID,
 {
   int val;
   socklen_t val_len = sizeof (val);
+
+  if (fnum < 0)
+    throw new java::net::SocketException (JvNewStringUTF ("Socket closed"));
 
   if (_Jv_IsInstanceOf (value, &BooleanClass))
     {

@@ -369,7 +369,7 @@ java::net::PlainSocketImpl::accept (java::net::PlainSocketImpl *s)
 // FIXME: implement timeout support for Win32
 #ifndef WIN32
   // Do timeouts via select since SO_RCVTIMEO is not always available.
-  if (timeout > 0)
+  if (timeout > 0 && fnum >= 0 && fnum < FD_SETSIZE)
     {
       fd_set rset;
       struct timeval tv;
@@ -516,7 +516,7 @@ java::net::PlainSocketImpl::read(void)
 // FIXME: implement timeout support for Win32
 #ifndef WIN32
   // Do timeouts via select.
-  if (timeout > 0)
+  if (timeout > 0 && fnum >= 0 && fnum < FD_SETSIZE)
   {
     // Create the file descriptor set.
     fd_set read_fds;
@@ -575,7 +575,7 @@ java::net::PlainSocketImpl::read(jbyteArray buffer, jint offset, jint count)
 // FIXME: implement timeout support for Win32
 #ifndef WIN32
   // Do timeouts via select.
-  if (timeout > 0)
+  if (timeout > 0 && fnum >= 0 && fnum < FD_SETSIZE)
   {
     // Create the file descriptor set.
     fd_set read_fds;
@@ -662,6 +662,7 @@ java::net::PlainSocketImpl::available(void)
 
 #if defined(HAVE_SELECT)
   if (! num_set)
+  if (! num_set && fnum >= 0 && fnum < FD_SETSIZE)
     {
       fd_set rd;
       FD_ZERO (&rd);
@@ -688,6 +689,9 @@ java::net::PlainSocketImpl::setOption (jint optID, java::lang::Object *value)
 {
   int val;
   socklen_t val_len = sizeof (val);
+
+  if (fnum < 0)
+    throw new java::net::SocketException (JvNewStringUTF ("Socket closed"));
 
   if (_Jv_IsInstanceOf (value, &java::lang::Boolean::class$))
     {
