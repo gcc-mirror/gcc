@@ -1,34 +1,5 @@
-/* Definitions of target machine for GNU compiler, for 64-bit SPARC
+/* Definitions of target machine for GNU compiler, for bi-arch SPARC
    running Solaris 2 using the system linker.  */
-
-#ifdef AS_SPARC64_FLAG
-#include "sparc/biarch64.h"
-#endif
-
-#include "sparc/sparc.h"
-#include "dbxelf.h"
-#include "elfos.h"
-#include "svr4.h"
-#include "sparc/sysv4.h"
-#include "sparc/sol2.h"
-
-#ifdef AS_SPARC64_FLAG
-
-/* At least up through Solaris 2.6,
-   the system linker does not work with DWARF or DWARF2,
-   since it does not have working support for relocations
-   to unaligned data.  */
-
-#define LINKER_DOES_NOT_WORK_WITH_DWARF2
-
-/* A 64 bit v9 compiler with stack-bias */
-
-#if TARGET_CPU_DEFAULT == TARGET_CPU_v9 || TARGET_CPU_DEFAULT == TARGET_CPU_ultrasparc
-#undef TARGET_DEFAULT
-#define TARGET_DEFAULT \
-  (MASK_V9 + MASK_PTR64 + MASK_64BIT /* + MASK_HARD_QUAD */ + \
-   MASK_STACK_BIAS + MASK_FPU + MASK_LONG_DOUBLE_128)
-#endif
 
 /* The default code model.  */
 #undef SPARC_DEFAULT_CMODEL
@@ -107,8 +78,6 @@
 %{ansi:/usr/lib/sparcv9/values-Xc.o%s} \
 %{!ansi:/usr/lib/sparcv9/values-Xa.o%s}"
  
-#ifdef SPARC_BI_ARCH
-
 #if DEFAULT_ARCH32_P
 #define STARTFILE_ARCH_SPEC "\
 %{m32:" STARTFILE_SPEC32 "} \
@@ -121,13 +90,6 @@
 %{!m32:%{!m64:" STARTFILE_SPEC64 "}}"
 #endif
 
-#else /* !SPARC_BI_ARCH */
-
-/* In this case we define MD_STARTFILE_PREFIX to /usr/lib/sparcv9/ */
-#define STARTFILE_ARCH_SPEC STARTFILE_SPEC32
-
-#endif /* !SPARC_BI_ARCH */
-
 #undef STARTFILE_SPEC
 #define STARTFILE_SPEC "%{!shared: \
 			 %{!symbolic: \
@@ -137,8 +99,6 @@
                             %{!pg:crt1.o%s}}}} \
 			crti.o%s " STARTFILE_ARCH_SPEC " \
 			crtbegin.o%s"
-
-#ifdef SPARC_BI_ARCH
 
 #undef CPP_CPU_DEFAULT_SPEC
 #define CPP_CPU_DEFAULT_SPEC \
@@ -295,37 +255,8 @@
 #define MULTILIB_DEFAULTS { "m64" }
 #endif
 
-#else /* !SPARC_BI_ARCH */
-
-/*
- * This should be the same as in sol2-sld.h, except with "/sparcv9"
- * appended to the paths and /usr/ccs/lib is no longer necessary
- */
-#undef LINK_SPEC
-#define LINK_SPEC \
-  "%{h*} %{v:-V} \
-   %{b} %{Wl,*:%*} \
-   %{static:-dn -Bstatic} \
-   %{shared:-G -dy %{!mimpure-text:-z text}} \
-   %{symbolic:-Bsymbolic -G -dy -z text} \
-   %{mcmodel=medlow:-M /usr/lib/ld/sparcv9/map.below4G} \
-   %{G:-G} \
-   %{YP,*} \
-   %{R*} \
-   %{compat-bsd: \
-     %{!YP,*:%{p:-Y P,/usr/ucblib/sparcv9:/usr/lib/libp/sparcv9:/usr/lib/sparcv9} \
-       %{pg:-Y P,/usr/ucblib/sparcv9:/usr/lib/libp/sparcv9:/usr/lib/sparcv9} \
-       %{!p:%{!pg:-Y P,/usr/ucblib/sparcv9:/usr/lib/sparcv9}}} \
-     -R /usr/ucblib} \
-   %{!compat-bsd: \
-     %{!YP,*:%{p:-Y P,/usr/lib/libp/sparcv9:/usr/lib/sparcv9} \
-       %{pg:-Y P,/usr/lib/libp/sparcv9:/usr/lib/sparcv9} \
-       %{!p:%{!pg:-Y P,/usr/lib/sparcv9}}}} \
-   %{Qy:} %{!Qn:-Qy}"
-   
-#undef MD_STARTFILE_PREFIX
-#define MD_STARTFILE_PREFIX "/usr/lib/sparcv9/"
- 
-#endif /* ! SPARC_BI_ARCH */
-
-#endif
+/* We use stabs-in-elf in 32-bit mode, because that is what the native
+   toolchain uses.  But gdb can't handle truncated 32-bit stabs so we
+   use dwarf2 in 64-bit mode.  */
+#undef PREFERRED_DEBUGGING_TYPE
+#define PREFERRED_DEBUGGING_TYPE (TARGET_ARCH32 ? DBX_DEBUG : DWARF2_DEBUG)

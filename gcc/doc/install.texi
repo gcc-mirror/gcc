@@ -3464,6 +3464,18 @@ option instead, which should be safe from those bugs and produce code
 that, unlike full 64-bit code, can still run on non-UltraSPARC
 machines.
 
+The target tuple @code{sparc-sun-solaris} will be used for 
+configurations in which only 32-bit SPARC binaries may be executed;
+@code{sparcv9-sun-solaris} will be used when either 32-bit or 64-bit
+binaries may be executed, but the compiler will produce 32-bit 
+binaries unless the @option{-m64} switch is used; @code{sparc64-sun-solaris}
+should be used when the compiler should produce 64-bit binaries
+by default.
+
+Unless otherwise specified, @command{configure} will select either
+@code{sparc} or @code{sparcv9} based on the output of @command{isalist}.
+It will never select @code{sparc64} by default.
+
 @html
 </p>
 <hr>
