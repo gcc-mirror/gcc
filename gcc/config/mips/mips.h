@@ -473,7 +473,7 @@ while (0)
 
 /* Print subsidiary information on the compiler version in use.  */
 
-#define MIPS_VERSION "[AL 1.1, MM 26]"
+#define MIPS_VERSION "[AL 1.1, MM 27]"
 
 #ifndef MACHINE_TYPE
 #define MACHINE_TYPE "BSD Mips"
@@ -1205,9 +1205,15 @@ extern char mips_hard_regno_mode_ok[][FIRST_PSEUDO_REGISTER];
 /* Register in which static-chain is passed to a function.  */
 #define STATIC_CHAIN_REGNUM (GP_REG_FIRST + 2)
 
-/* Register in which address to store a structure value
-   is passed to a function.  */
-#define STRUCT_VALUE_REGNUM (GP_REG_FIRST + 4)
+/* If the structure value address is passed in a register, then
+   `STRUCT_VALUE_REGNUM' should be the number of that register.  */
+/* #define STRUCT_VALUE_REGNUM (GP_REG_FIRST + 4) */
+
+/* If the structure value address is not passed in a register, define
+   `STRUCT_VALUE' as an expression returning an RTX for the place
+   where the address is passed.  If it returns 0, the address is
+   passed as an "invisible" first argument.  */
+#define STRUCT_VALUE ((rtx)0)
 
 /* Mips registers used in prologue/epilogue code when the stack frame
    is larger than 32K bytes.  These registers must come from the

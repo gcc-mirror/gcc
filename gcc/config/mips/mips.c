@@ -2432,24 +2432,6 @@ init_cumulative_args (cum, fntype, libname)
       if (next_param == (tree)0 && TREE_VALUE (param) != void_type_node)
 	cum->gp_reg_found = 1;
     }
-
-  /* Determine if the function is returning a structure, if so,
-     advance by one argument.  */
-
-  if (fntype
-      && (TREE_CODE (fntype) == FUNCTION_TYPE || TREE_CODE (fntype) == METHOD_TYPE)
-      && TREE_TYPE (fntype) != 0)
-    {
-      tree ret_type = TREE_TYPE (fntype);
-      enum tree_code ret_code = TREE_CODE (ret_type);
-
-      if (ret_code == RECORD_TYPE || ret_code == UNION_TYPE)
-	{
-	  cum->gp_reg_found = 1;
-	  cum->arg_number = 1;
-	  cum->arg_words = 1;
-	}
-    }
 }
 
 /* Advance the argument to the next argument position.  */
