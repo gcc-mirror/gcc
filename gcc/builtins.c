@@ -79,11 +79,6 @@ tree built_in_decls[(int) END_BUILTINS];
    required to implement the function call in all cases.  */
 tree implicit_built_in_decls[(int) END_BUILTINS];
 
-/* Trigonometric and mathematical constants used in builtin folding.  */
-static bool builtin_dconsts_init = 0;
-static REAL_VALUE_TYPE dconstpi;
-static REAL_VALUE_TYPE dconste;
-
 static int get_pointer_alignment (tree, unsigned int);
 static tree c_strlen (tree, int);
 static const char *c_getstr (tree);
@@ -157,26 +152,11 @@ static tree fold_trunc_transparent_mathfn (tree);
 static bool readonly_data_expr (tree);
 static rtx expand_builtin_fabs (tree, rtx, rtx);
 static rtx expand_builtin_cabs (tree, rtx);
-static void init_builtin_dconsts (void);
 static tree fold_builtin_cabs (tree, tree, tree);
 static tree fold_builtin_trunc (tree);
 static tree fold_builtin_floor (tree);
 static tree fold_builtin_ceil (tree);
 static tree fold_builtin_bitop (tree);
-
-/* Initialize mathematical constants for constant folding builtins.
-   These constants need to be given to at least 160 bits precision.  */
-
-static void
-init_builtin_dconsts (void)
-{
-  real_from_string (&dconstpi,
-    "3.1415926535897932384626433832795028841971693993751058209749445923078");
-  real_from_string (&dconste,
-    "2.7182818284590452353602874713526624977572470936999595749669676277241");
-
-  builtin_dconsts_init = true;
-}
 
 /* Return the alignment in bits of EXP, a pointer valued expression.
    But don't return more than MAX_ALIGN no matter what.
@@ -6009,8 +5989,6 @@ fold_builtin_logarithm (tree exp, const REAL_VALUE_TYPE *value)
 	  case BUILT_IN_EXPF:
 	  case BUILT_IN_EXPL:
 	    /* Prepare to do logN(exp(exponent) -> exponent*logN(e).  */
-	    if (! builtin_dconsts_init)
-	      init_builtin_dconsts ();
 	    x = build_real (type,
 			    real_value_truncate (TYPE_MODE (type), dconste));
 	    exponent = TREE_VALUE (TREE_OPERAND (arg, 1));
@@ -6283,8 +6261,6 @@ fold_builtin (tree exp)
     case BUILT_IN_EXP:
     case BUILT_IN_EXPF:
     case BUILT_IN_EXPL:
-      if (! builtin_dconsts_init)
-	init_builtin_dconsts ();
       return fold_builtin_exponent (exp, &dconste);
     case BUILT_IN_EXP2:
     case BUILT_IN_EXP2F:
@@ -6300,8 +6276,6 @@ fold_builtin (tree exp)
     case BUILT_IN_LOG:
     case BUILT_IN_LOGF:
     case BUILT_IN_LOGL:
-      if (! builtin_dconsts_init)
-	init_builtin_dconsts ();
       return fold_builtin_logarithm (exp, &dconste);
       break;
     case BUILT_IN_LOG2:
@@ -6353,8 +6327,6 @@ fold_builtin (tree exp)
 	    {
 	      REAL_VALUE_TYPE cst;
 
-	      if (! builtin_dconsts_init)
-		init_builtin_dconsts ();
 	      real_convert (&cst, TYPE_MODE (type), &dconstpi);
 	      cst.exp -= 2;
 	      return build_real (type, cst);

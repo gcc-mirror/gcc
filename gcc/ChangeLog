@@ -1,3 +1,11 @@
+2003-09-11  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* builtins.c (builtin_dconsts_init, dconstpi, dconste,
+	init_builtin_dconsts): Delete.
+	* emit-rtl.c (dconstpi, dconste): Define.
+	(init_emit_once): Initialize dconstpi & dconste.
+	* real.h (dconstpi, dconste): Declare.
+
 2003-09-11  Alexandre Oliva  <aoliva@redhat.com>
 
 	PR fortran/11522
