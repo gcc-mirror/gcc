@@ -1,3 +1,7 @@
+2003-07-24  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
+
+	* Makefile.in: Replace pwd by ${PWD_COMMAND}.
+
 2003-07-24  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* doc/invoke.texi (-fprofile-arcs, -ftest-coverage): Update
