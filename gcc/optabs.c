@@ -2049,7 +2049,10 @@ expand_vector_unop (mode, unoptab, op0, target, unsignedp)
 	submode = tmode;
     }
   /* If there is no negate operation, try doing a subtract from zero.  */
-  if (unoptab == neg_optab && GET_MODE_CLASS (submode) == MODE_INT)
+  if (unoptab == neg_optab && GET_MODE_CLASS (submode) == MODE_INT
+      /* Avoid infinite recursion when an
+	 error has left us with the wrong mode.  */
+      && GET_MODE (op0) == mode)
     {    
       rtx temp;
       temp = expand_binop (mode, sub_optab, CONST0_RTX (mode), op0,

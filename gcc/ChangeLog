@@ -1,4 +1,7 @@
-Mon Jul 22 15:18:58 2002  J"orn Rennecke <joern.rennecke@superh.com>
+Mon Jul 22 15:21:41 2002  J"orn Rennecke <joern.rennecke@superh.com>
+
+	* optabs.c (expand_vector_unop): Don't expand using sub_optab
+	if we got the wrong mode.
 
 	* hwint.c (define HOST_WIDE_INT_PRINT_DEC_C): New define.
 	* genrecog.c (write_switch, write_cond): Use it.
