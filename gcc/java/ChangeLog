@@ -1,3 +1,13 @@
+2003-12-03  Ralph Loader  <rcl@ihug.co.nz>
+
+	PR java/12374:
+	* parse.y (qualify_ambiguous_name): Remove lots of broken
+	field access processing - there's no need to do that here,
+	because we have resolve_field_access.  Remove
+	RESOLVE_EXPRESSION_NAME_P as it isn't used anywhere else.
+	* java-tree.h: Remove RESOLVE_EXPRESSION_NAME_P as it isn't
+	used.
+	
 2003-12-01  Jeff Sturm  <jsturm@one-point.com>
 
 	Fix PR java/13237

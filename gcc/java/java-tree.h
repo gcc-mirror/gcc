@@ -44,7 +44,6 @@ struct JCF;
 
 /* Usage of TREE_LANG_FLAG_?:
    0: IS_A_SINGLE_IMPORT_CLASSFILE_NAME_P (in IDENTIFIER_NODE)
-      RESOLVE_EXPRESSION_NAME_P (in EXPR_WITH_FILE_LOCATION)
       FOR_LOOP_P (in LOOP_EXPR)
       SUPPRESS_UNREACHABLE_ERROR (for other _EXPR nodes)
       ANONYMOUS_CLASS_P (in RECORD_TYPE)
@@ -1549,9 +1548,6 @@ extern tree *type_map;
 /* True if TYPE (a TREE_TYPE denoting a class type) was found to
    feature a finalizer method. */
 #define HAS_FINALIZER_P(EXPR) TREE_LANG_FLAG_3 (EXPR)
-
-/* True if EXPR (a WFL in that case) resolves into an expression name */
-#define RESOLVE_EXPRESSION_NAME_P(WFL) TREE_LANG_FLAG_0 (WFL)
 
 /* True if EXPR (a LOOP_EXPR in that case) is part of a for statement */
 #define FOR_LOOP_P(EXPR) TREE_LANG_FLAG_0 (EXPR)
