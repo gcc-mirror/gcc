@@ -1,3 +1,7 @@
+Mon May  3 16:14:32 1999  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* mips.h (Pmode): Revert Oct 14th change which added a cast.
+
 Sun May  2 14:02:21 1999  Mark Mitchell  <mark@codesourcery.com>
 
 	* tree.h (struct tree_decl): Add comdat_flag.
