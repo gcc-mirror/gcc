@@ -1,3 +1,7 @@
+Thu Sep 10 10:33:31 1998  Jeffrey A Law  (law@cygnus.com)
+
+	* Make-lang.in (GCJ): Define before using.
+
 Wed Sep  9 21:23:10 1998  Jeffrey A Law  (law@cygnus.com)
 
 	* gjavah.c (java_no_argument): Renamed from no_argument to avoid

@@ -54,6 +54,8 @@ JAVA_INSTALL_NAME = `t='$(program_transform_name)'; echo gcj | sed $$t`
 JAVA_CROSS_NAME = `t='$(program_transform_cross_name)'; echo gcj | sed $$t`
 
 
+GCJ = gcj
+
 # Define the names for selecting java in LANGUAGES.
 java: jc1$(exeext) $(GCJ)$(exeext) jvgenmain$(exeext) gcjh$(exeext)
 
@@ -63,8 +65,6 @@ JAVA_TARGET_INDEPENDENT_BIN_TOOLS = gcjh jv-scan jcf-dump
 
 # Tell GNU make to ignore these if they exist.
 .PHONY: java
-
-GCJ = gcj
 
 # Remember to keep this list in sync with JAVA_OBJS in Makefile.in!!!
 #
