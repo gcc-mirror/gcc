@@ -1,3 +1,7 @@
+Wed Oct 14 16:10:22 1998  Per Bothner  <bothner@cygnus.com>
+
+	* toplev.c:  If flag_syntax_only, don't open or write assembler file.
+
 Wed Oct 14 13:26:05 1998  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* cppalloc.c (memory_full): Mark function prototype with
