@@ -101,6 +101,7 @@ package MLib.Tgt is
       Foreign      : Argument_List;
       Afiles       : Argument_List;
       Options      : Argument_List;
+      Options_2    : Argument_List;
       Interfaces   : Argument_List;
       Lib_Filename : String;
       Lib_Dir      : String;
@@ -116,8 +117,10 @@ package MLib.Tgt is
    --
    --  Afiles is the list of ALI files for the Ada object files
    --
-   --  Options is a list of options to be passed to the tool (gcc or other)
-   --  that effectively builds the dynamic library.
+   --  Options and Options_2 are lists of options to be passed to the tool
+   --  (gcc or other) that effectively builds the dynamic library. Options
+   --  are passed before the object files, Options_2 are passed after the
+   --  object files.
    --
    --  Interfaces is the list of ALI files for the interfaces of a SAL.
    --  It is empty if the library is not a SAL.
