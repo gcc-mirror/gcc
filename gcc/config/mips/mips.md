@@ -2365,41 +2365,104 @@
 ;;  ....................
 ;;
 
+;; This pattern works around the early SB-1 rev2 core "F1" erratum:
+;;
+;; If an mfc1 or dmfc1 happens to access the floating point register
+;; file at the same time a long latency operation (div, sqrt, recip,
+;; sqrt) iterates an intermediate result back through the floating
+;; point register file bypass, then instead returning the correct
+;; register value the mfc1 or dmfc1 operation returns the intermediate
+;; result of the long latency operation.
+;;
+;; The workaround is to insert an unconditional 'mov' from/to the
+;; long latency op destination register.
 (define_insn "divdf3"
   [(set (match_operand:DF 0 "register_operand" "=f")
 	(div:DF (match_operand:DF 1 "register_operand" "f")
 		(match_operand:DF 2 "register_operand" "f")))]
   "TARGET_HARD_FLOAT && TARGET_DOUBLE_FLOAT"
-  "div.d\t%0,%1,%2"
+{
+  if (TARGET_FIX_SB1)
+    return "div.d\t%0,%1,%2\;mov.d\t%0,%0";
+  else
+    return "div.d\t%0,%1,%2";
+}
   [(set_attr "type"	"fdiv")
-   (set_attr "mode"	"DF")])
+   (set_attr "mode"	"DF")
+   (set (attr "length")
+        (if_then_else (ne (symbol_ref "TARGET_FIX_SB1") (const_int 0))
+                      (const_int 8)
+                      (const_int 4)))])
 
+
+;; This pattern works around the early SB-1 rev2 core "F1" erratum (see
+;; "divdf3" comment for details).
+;;
+;; This pattern works around the early SB-1 rev2 core "F2" erratum:
+;;
+;; In certain cases, div.s and div.ps may have a rounding error
+;; and/or wrong inexact flag.
+;;
+;; Therefore, we only allow div.s if not working around SB-1 rev2
+;; errata, or if working around those errata and a slight loss of
+;; precision is OK (i.e., flag_unsafe_math_optimizations is set).
 (define_insn "divsf3"
   [(set (match_operand:SF 0 "register_operand" "=f")
 	(div:SF (match_operand:SF 1 "register_operand" "f")
 		(match_operand:SF 2 "register_operand" "f")))]
-  "TARGET_HARD_FLOAT"
-  "div.s\t%0,%1,%2"
+  "TARGET_HARD_FLOAT && (!TARGET_FIX_SB1 || flag_unsafe_math_optimizations)"
+{
+  if (TARGET_FIX_SB1)
+    return "div.s\t%0,%1,%2\;mov.s\t%0,%0";
+  else
+    return "div.s\t%0,%1,%2";
+}
   [(set_attr "type"	"fdiv")
-   (set_attr "mode"	"SF")])
+   (set_attr "mode"	"SF")
+   (set (attr "length")
+        (if_then_else (ne (symbol_ref "TARGET_FIX_SB1") (const_int 0))
+                      (const_int 8)
+                      (const_int 4)))])
 
+;; This pattern works around the early SB-1 rev2 core "F1" erratum (see
+;; "divdf3" comment for details).
 (define_insn ""
   [(set (match_operand:DF 0 "register_operand" "=f")
 	(div:DF (match_operand:DF 1 "const_float_1_operand" "")
 		(match_operand:DF 2 "register_operand" "f")))]
   "ISA_HAS_FP4 && TARGET_HARD_FLOAT && TARGET_DOUBLE_FLOAT && flag_unsafe_math_optimizations"
-  "recip.d\t%0,%2"
+{
+  if (TARGET_FIX_SB1)
+    return "recip.d\t%0,%2\;mov.d\t%0,%0";
+  else
+    return "recip.d\t%0,%2";
+}
   [(set_attr "type"	"fdiv")
-   (set_attr "mode"	"DF")])
+   (set_attr "mode"	"DF")
+   (set (attr "length")
+        (if_then_else (ne (symbol_ref "TARGET_FIX_SB1") (const_int 0))
+                      (const_int 8)
+                      (const_int 4)))])
 
+;; This pattern works around the early SB-1 rev2 core "F1" erratum (see
+;; "divdf3" comment for details).
 (define_insn ""
   [(set (match_operand:SF 0 "register_operand" "=f")
 	(div:SF (match_operand:SF 1 "const_float_1_operand" "")
 		(match_operand:SF 2 "register_operand" "f")))]
   "ISA_HAS_FP4 && TARGET_HARD_FLOAT && flag_unsafe_math_optimizations"
-  "recip.s\t%0,%2"
+{
+  if (TARGET_FIX_SB1)
+    return "recip.s\t%0,%2\;mov.s\t%0,%0";
+  else
+    return "recip.s\t%0,%2";
+}
   [(set_attr "type"	"fdiv")
-   (set_attr "mode"	"SF")])
+   (set_attr "mode"	"SF")
+   (set (attr "length")
+        (if_then_else (ne (symbol_ref "TARGET_FIX_SB1") (const_int 0))
+                      (const_int 8)
+                      (const_int 4)))])
 
 (define_insn "divmodsi4"
   [(set (match_operand:SI 0 "register_operand" "=l")
@@ -2456,39 +2519,83 @@
 ;;
 ;;  ....................
 
+;; This pattern works around the early SB-1 rev2 core "F1" erratum (see
+;; "divdf3" comment for details).
 (define_insn "sqrtdf2"
   [(set (match_operand:DF 0 "register_operand" "=f")
 	(sqrt:DF (match_operand:DF 1 "register_operand" "f")))]
   "TARGET_HARD_FLOAT && HAVE_SQRT_P() && TARGET_DOUBLE_FLOAT"
-  "sqrt.d\t%0,%1"
+{
+  if (TARGET_FIX_SB1)
+    return "sqrt.d\t%0,%1\;mov.d\t%0,%0";
+  else
+    return "sqrt.d\t%0,%1";
+}
   [(set_attr "type"	"fsqrt")
-   (set_attr "mode"	"DF")])
+   (set_attr "mode"	"DF")
+   (set (attr "length")
+        (if_then_else (ne (symbol_ref "TARGET_FIX_SB1") (const_int 0))
+                      (const_int 8)
+                      (const_int 4)))])
 
+;; This pattern works around the early SB-1 rev2 core "F1" erratum (see
+;; "divdf3" comment for details).
 (define_insn "sqrtsf2"
   [(set (match_operand:SF 0 "register_operand" "=f")
 	(sqrt:SF (match_operand:SF 1 "register_operand" "f")))]
   "TARGET_HARD_FLOAT && HAVE_SQRT_P()"
-  "sqrt.s\t%0,%1"
+{
+  if (TARGET_FIX_SB1)
+    return "sqrt.s\t%0,%1\;mov.s\t%0,%0";
+  else
+    return "sqrt.s\t%0,%1";
+}
   [(set_attr "type"	"fsqrt")
-   (set_attr "mode"	"SF")])
+   (set_attr "mode"	"SF")
+   (set (attr "length")
+        (if_then_else (ne (symbol_ref "TARGET_FIX_SB1") (const_int 0))
+                      (const_int 8)
+                      (const_int 4)))])
 
+;; This pattern works around the early SB-1 rev2 core "F1" erratum (see
+;; "divdf3" comment for details).
 (define_insn ""
   [(set (match_operand:DF 0 "register_operand" "=f")
 	(div:DF (match_operand:DF 1 "const_float_1_operand" "")
 		(sqrt:DF (match_operand:DF 2 "register_operand" "f"))))]
   "ISA_HAS_FP4 && TARGET_HARD_FLOAT && TARGET_DOUBLE_FLOAT && flag_unsafe_math_optimizations"
-  "rsqrt.d\t%0,%2"
+{
+  if (TARGET_FIX_SB1)
+    return "rsqrt.d\t%0,%2\;mov.d\t%0,%0";
+  else
+    return "rsqrt.d\t%0,%2";
+}
   [(set_attr "type"	"frsqrt")
-   (set_attr "mode"	"DF")])
+   (set_attr "mode"	"DF")
+   (set (attr "length")
+        (if_then_else (ne (symbol_ref "TARGET_FIX_SB1") (const_int 0))
+                      (const_int 8)
+                      (const_int 4)))])
 
+;; This pattern works around the early SB-1 rev2 core "F1" erratum (see
+;; "divdf3" comment for details).
 (define_insn ""
   [(set (match_operand:SF 0 "register_operand" "=f")
 	(div:SF (match_operand:SF 1 "const_float_1_operand" "")
 		(sqrt:SF (match_operand:SF 2 "register_operand" "f"))))]
   "ISA_HAS_FP4 && TARGET_HARD_FLOAT && flag_unsafe_math_optimizations"
-  "rsqrt.s\t%0,%2"
+{
+  if (TARGET_FIX_SB1)
+    return "rsqrt.s\t%0,%2\;mov.s\t%0,%0";
+  else
+    return "rsqrt.s\t%0,%2";
+}
   [(set_attr "type"	"frsqrt")
-   (set_attr "mode"	"SF")])
+   (set_attr "mode"	"SF")
+   (set (attr "length")
+        (if_then_else (ne (symbol_ref "TARGET_FIX_SB1") (const_int 0))
+                      (const_int 8)
+                      (const_int 4)))])
 
 ;;
 ;;  ....................

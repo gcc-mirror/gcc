@@ -1,3 +1,12 @@
+2003-08-22  Chris Demetriou  <cgd@broadcom.com>
+
+	* config/mips/mips.h (MASK_FIX_SB1, TARGET_FIX_SB1): New defines.
+	(TARGET_SWITCHES): Add -mfix-sb1 and -mno-fix-sb1.
+	* config/mips/mips.md (divdf3, divsf3, sqrtdf2, sqrtsf2): Work
+	around SB-1 errata if TARGET_FIX_SB1 is set.
+	(recip.d insn, recip.s insn, rsqrt.d insn, rsqrt.s insn): Likewise.
+	* doc/invoke.texi: Document MIPS -mfix-sb1 and -mno-fix-sb1.
+
 2003-08-22  Roger Sayle  <roger@eyesopen.com>
 
 	* hashtable.c (ht_expand): Avoid calculating rehash for the common
