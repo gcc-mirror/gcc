@@ -1,3 +1,8 @@
+2002-03-27  Neil Booth  <neil@daikokuya.demon.co.uk>
+
+	* gcc-common.c (lang_mark_false_label_stack): Remove.
+	* ggc.h (lang_mark_false_label_stack): Similarly.
+
 2002-03-26  Vladimir Makarov  <vmakarov@redhat.com> 
 
 	* pa/pa-pro-end.h (CPP_PREDEFINES): Add -D__pro__.
