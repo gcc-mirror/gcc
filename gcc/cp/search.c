@@ -2123,6 +2123,20 @@ setup_class_bindings (tree name, int type_binding_p)
 	  if (BASELINK_P (value_binding))
 	    /* NAME is some overloaded functions.  */
 	    value_binding = BASELINK_FUNCTIONS (value_binding);
+	  /* Two conversion operators that convert to the same type
+	     may have different names.  (See
+	     mangle_conv_op_name_for_type.)  To avoid recording the
+	     same conversion operator declaration more than once we
+	     must check to see that the same operator was not already
+	     found under another name.  */
+	  if (IDENTIFIER_TYPENAME_P (name)
+	      && is_overloaded_fn (value_binding))
+	    {
+	      tree fns;
+	      for (fns = value_binding; fns; fns = OVL_NEXT (fns))
+		if (IDENTIFIER_CLASS_VALUE (DECL_NAME (OVL_CURRENT (fns))))
+		  return;
+	    }
 	  pushdecl_class_level (value_binding);
 	}
     }
