@@ -1,5 +1,8 @@
 2005-02-22  Thomas Fitzsimmons  <fitzsim@redhat.com>
 
+	* java/awt/Robot.java (waitForIdle): Call invokeAndWait on an
+	empty Runnable.
+
 	PR libgcj/17952:
 	* gnu/java/awt/peer/gtk/GtkWindowPeer.java,
 	jni/gtk-peer/gnu_java_awt_peer_gtk_GtkWindowPeer.c
