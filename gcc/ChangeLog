@@ -1,3 +1,28 @@
+2004-01-15  Zack Weinberg  <zack@codesourcery.com>
+
+	* config/ia64/ia64.md (*movti_internal): C output template
+	extracted to ia64.c.
+	(*movti_internal_reg): Delete.
+	(reload_inti, reload_outti): Use the correct mode on operand 2
+	in the first place, don't fix it up in the output template.
+	(movtf, reload_ointf, reload_outtf): New expanders.
+	(*movtf_internal): New define_insn_and_split.
+	* config/ia64/ia64.c (ia64_split_timode): Rename to ia64_split_tmode;
+	make static; do not hand TFmode CONST_DOUBLEs to split_double.
+	(ia64_split_tmode_move): New function, body mostly pulled
+	from ia64.md:*movti_internal.
+	(ia64_function_arg_words): New function, extracted common
+	logic from ia64_function_arg et seq.
+	(ia64_function_arg_offset): Likewise.  Handle correctly the
+	case of a scalar quantity 16 bytes wide with only 8-byte alignment.
+	(ia64_function_arg, ia64_function_arg_partial_nregs)
+	(ia64_function_arg_advance): Use ia64_function_arg_words and
+	ia64_function_arg_offset.
+	(ia64_function_value): TCmode does not go in float regs.
+	(ia64_secondary_reload_class): Also handle TFmode.
+	* config/ia64/ia64-protos.h: Remove prototype for
+	ia64_split_timode; add prototype for ia64_split_tmode_move.
+
 2004-01-15  Kelley Cook  <kcook@gcc.gnu.org>
 
 	* Makefile.in (MAINT): Make it an immediate assignment.
@@ -224,7 +249,7 @@
 
 2004-01-14  Richard Earnshaw  <rearnsha@arm.com>
 
-	* regrename.c (find_oldest_value_reg): If the replacement uses 
+	* regrename.c (find_oldest_value_reg): If the replacement uses
 	multiple hard registers, check that all of them are in CLASS.
 
 2004-01-14  Jan Hubicka  <jh@suse.cz>
@@ -301,14 +326,14 @@
 2004-01-13  Bernardo Innocenti  <bernie@develer.com>
 
 	* config/m68k/netbsd-elf.h (REGISTER_NAMES): Add missing "argptr"
-	pseudo-register. 
+	pseudo-register.
 
 2004-01-13  Devang Patel <dpatel@apple.com
 
 	PR debug/7078
-	* dbxout.c (dbxout_symbol_name): Emit mangled names for 
+	* dbxout.c (dbxout_symbol_name): Emit mangled names for
 	NAMESPACE_DECL memebers.
-	
+
 2004-01-13  Andrew Pinski  <pinskia@physics.uc.edu>
 
 	PR c++/12709
@@ -318,7 +343,7 @@
 2004-01-13  Vladimir Makarov  <vmakarov@redhat.com>
 
 	* rtl.def: Add comment about new option in automata_option.
-	
+
 	* genautomata.c (PROGRESS_OPTION): New macro.
 	(progress_flag): New global variable.
 	(gen_automata_option): Process `progress'.
@@ -329,14 +354,14 @@
 	(initiate_automaton_gen): Process command line flag `-progress'.
 
 	* doc/md.texi: Describe the new option.
-	
+
 2004-01-13  Zdenek Dvorak  <rakdver@atrey.karlin.mff.cuni.cz>
 
 	* cfg.c (dump_bb): Dump entry edges.
 
 2004-01-13  Richard Earnshaw  <rearnsha@arm.com>
 
-	* arm.c (thumb_legitimate_address_p): Only allow constant pool 
+	* arm.c (thumb_legitimate_address_p): Only allow constant pool
 	references from SImode.
 	* arm.md (thumb_movhi_insn): Don't allow minipool references.
 
