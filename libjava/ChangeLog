@@ -1,5 +1,19 @@
 2003-09-29  Michael Koch  <konqueror@gmx.de>
 
+	* java/net/InetAddress.java:
+	(isMulticastAddress): Dont use local variable to store address length.
+	Let the compiler optimize this.
+	(getHostName): Merged dcoumentation from classpath.
+	(getAddress): Likewise.
+	(getHostAddress): Likewise.
+	(hashCode): Likewise.
+	(equals): Likewise.
+	(toString): Likewise.
+	(getByName): Likewise.
+	(getAllByName): Likewise.
+
+2003-09-29  Michael Koch  <konqueror@gmx.de>
+
 	* java/awt/image/IndexColorModel.java: Reformated.
 
 2003-09-29  Michael Koch  <konqueror@gmx.de>
