@@ -121,8 +121,8 @@ namespace std
 #endif
     {
 #if _GLIBCPP_BASIC_FILE_ENCAPSULATION
-      int 		_M_fileno;
       __c_file_type* 	_M_cfile;
+      bool 		_M_cfile_created;
 #else
 # ifdef _GLIBCPP_USE_WCHAR_T
       __c_wfile_type	_M_wfile;
@@ -145,16 +145,13 @@ namespace std
       // just sets __c_file_type->_fileno and the respective _flags bits, and
       // returns.
       __basic_file*
-      sys_open(int __fd, ios_base::openmode __mode);
+      sys_open(__c_file_type* __file, ios_base::openmode __mode);
 
       __basic_file* 
       close(); 
 
       bool 
       is_open();
-
-      // Needed by ios_base::sync_with_stdio.
-      int get_fileno(void);
 
       // NB: Must match FILE specific jump table starting here--this
       // means all virtual functions starting with the dtor must match,
@@ -247,4 +244,3 @@ namespace std
 #include <bits/basic_file_model.h>
 
 #endif	// _CPP_BASIC_FILE
-
