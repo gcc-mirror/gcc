@@ -1,3 +1,8 @@
+2003-05-05  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* builtins.c (expand_builtin_stpcpy): Only expand when the length
+	of the source string can be evaluated at compile-time.
+
 2003-05-05  Aldy Hernandez  <aldyh@redhat.com>
 
         * testsuite/gcc.c-torture/compile/simd-6.c: New.

@@ -2508,7 +2508,7 @@ expand_builtin_stpcpy (arglist, target, mode)
   else
     {
       tree newarglist;
-      tree len;
+      tree src, len;
 
       /* If return value is ignored, transform stpcpy into strcpy.  */
       if (target == const0_rtx)
@@ -2527,8 +2527,12 @@ expand_builtin_stpcpy (arglist, target, mode)
 			      target, mode, EXPAND_NORMAL);
 	}
 
-      len = c_strlen (TREE_VALUE (TREE_CHAIN (arglist)));
-      if (len == 0)
+      /* Ensure we get an actual string who length can be evaluated at
+         compile-time, not an expression containing a string.  This is
+         because the latter will potentially produce pessimized code
+         when used to produce the return value.  */
+      src = TREE_VALUE (TREE_CHAIN (arglist));
+      if (! c_getstr (src) || ! (len = c_strlen (src)))
 	return 0;
 
       len = fold (size_binop (PLUS_EXPR, len, ssize_int (1)));
