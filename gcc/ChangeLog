@@ -1,3 +1,8 @@
+2001-05-17  Bruce Korb <bkorb@gnu.org>
+
+	* fixinc/fixincl.tpl: rewritten as an AutoGen version 5 template
+	* fixinc/genfixes: emit a warning if AutoGen is out of date
+
 2001-05-17  Brendan Conoboy <blc@cygnus.com>
 	    Bruce Korb <bkorb@gnu.org>
 
