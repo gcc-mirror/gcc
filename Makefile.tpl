@@ -515,89 +515,6 @@ do-[+make_target+]: [+make_target+]-host [+make_target+]-target
   FOR target_modules +] \
     maybe-[+make_target+]-target-[+module+][+
   ENDFOR target_modules +]
-
-# GCC, the eternal special case
-.PHONY: maybe-[+make_target+]-gcc [+make_target+]-gcc
-maybe-[+make_target+]-gcc:
-[+make_target+]-gcc: [+
-  FOR depend +]\
-    [+depend+]-gcc [+
-  ENDFOR depend +]
-	@[ -f ./gcc/Makefile ] || exit 0; \
-	r=`${PWD_COMMAND}`; export r; \
-	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
-	$(SET_LIB_PATH) \
-	for flag in $(EXTRA_GCC_FLAGS); do \
-	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
-	done; \
-	echo "Doing [+make_target+] in gcc" ; \
-	(cd gcc && \
-	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
-	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
-	          "RANLIB=$${RANLIB}" \
-	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" \
-	          [+make_target+]) \
-	  || exit 1
-
-# Host modules.
-[+ FOR host_modules +]
-.PHONY: maybe-[+make_target+]-[+module+] [+make_target+]-[+module+]
-maybe-[+make_target+]-[+module+]:
-[+ IF (match-value? = "missing" (get "make_target") ) +]
-# [+module+] doesn't support [+make_target+].
-[+make_target+]-[+module+]:
-[+ ELSE +]
-[+make_target+]-[+module+]: [+
-  FOR depend +]\
-    [+depend+]-[+module+] [+
-  ENDFOR depend +]
-	@[ -f ./[+module+]/Makefile ] || exit 0; \
-	r=`${PWD_COMMAND}`; export r; \
-	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
-	$(SET_LIB_PATH) \
-	for flag in $(EXTRA_HOST_FLAGS); do \
-	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
-	done; \
-	echo "Doing [+make_target+] in [+module+]" ; \
-	(cd [+module+] && \
-	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
-	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
-	          "RANLIB=$${RANLIB}" \
-	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" \
-	          [+make_target+]) \
-	  || exit 1
-[+ ENDIF +]
-[+ ENDFOR host_modules +]
-
-# Target modules.
-[+ FOR target_modules +]
-.PHONY: maybe-[+make_target+]-target-[+module+] [+make_target+]-target-[+module+]
-maybe-[+make_target+]-target-[+module+]:
-[+ IF (match-value? = "missing" (get "make_target") ) +]
-# [+module+] doesn't support [+make_target+].
-[+make_target+]-target-[+module+]:
-[+ ELSE +]
-[+make_target+]-target-[+module+]: [+
-  FOR depend +]\
-    [+depend+]-target-[+module+] [+
-  ENDFOR depend +]
-	@[ -f $(TARGET_SUBDIR)/[+module+]/Makefile ] || exit 0 ; \
-	r=`${PWD_COMMAND}`; export r; \
-	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
-	$(SET_LIB_PATH) \
-	echo "Doing [+make_target+] in $(TARGET_SUBDIR)/[+module+]" ; \
-	for flag in $(EXTRA_TARGET_FLAGS); do \
-	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
-	done; \
-	(cd $(TARGET_SUBDIR)/[+module+] && \
-	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
-	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
-	          "RANLIB=$${RANLIB}" \
-	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" \
-	          [+make_target+]) \
-	  || exit 1
-[+ ENDIF +]
-[+ ENDFOR target_modules +]
 [+ ENDFOR recursive_targets +]
 
 # Here are the targets which correspond to the do-X targets.
@@ -931,6 +848,36 @@ install-[+module+]: installdirs
 	    +] $(X11_FLAGS_TO_PASS)[+ 
 	  ENDIF with_x +] install)
 [+ ENDIF no_install +]
+
+# Other targets (info, dvi, etc.)
+[+ FOR recursive_targets +]
+.PHONY: maybe-[+make_target+]-[+module+] [+make_target+]-[+module+]
+maybe-[+make_target+]-[+module+]:
+[+ IF (match-value? = "missing" (get "make_target") ) +]
+# [+module+] doesn't support [+make_target+].
+[+make_target+]-[+module+]:
+[+ ELSE +]
+[+make_target+]-[+module+]: [+
+  FOR depend +]\
+    [+depend+]-[+module+] [+
+  ENDFOR depend +]
+	@[ -f ./[+module+]/Makefile ] || exit 0; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(SET_LIB_PATH) \
+	for flag in $(EXTRA_HOST_FLAGS); do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	echo "Doing [+make_target+] in [+module+]" ; \
+	(cd [+module+] && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" \
+	          [+make_target+]) \
+	  || exit 1
+[+ ENDIF +]
+[+ ENDFOR recursive_targets +]
 [+ ENDFOR host_modules +]
 
 # ---------------------------------------
@@ -1057,6 +1004,36 @@ install-target-[+module+]: installdirs
 	(cd $(TARGET_SUBDIR)/[+module+] && \
 	  $(MAKE) $(TARGET_FLAGS_TO_PASS) install)
 [+ ENDIF no_install +]
+
+# Other targets (info, dvi, etc.)
+[+ FOR recursive_targets +]
+.PHONY: maybe-[+make_target+]-target-[+module+] [+make_target+]-target-[+module+]
+maybe-[+make_target+]-target-[+module+]:
+[+ IF (match-value? = "missing" (get "make_target") ) +]
+# [+module+] doesn't support [+make_target+].
+[+make_target+]-target-[+module+]:
+[+ ELSE +]
+[+make_target+]-target-[+module+]: [+
+  FOR depend +]\
+    [+depend+]-target-[+module+] [+
+  ENDFOR depend +]
+	@[ -f $(TARGET_SUBDIR)/[+module+]/Makefile ] || exit 0 ; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(SET_LIB_PATH) \
+	echo "Doing [+make_target+] in $(TARGET_SUBDIR)/[+module+]" ; \
+	for flag in $(EXTRA_TARGET_FLAGS); do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	(cd $(TARGET_SUBDIR)/[+module+] && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" \
+	          [+make_target+]) \
+	  || exit 1
+[+ ENDIF +]
+[+ ENDFOR recursive_targets +]
 [+ ENDFOR target_modules +]
 
 # ----------
@@ -1265,6 +1242,32 @@ gcc-no-fixedincludes:
 	  mv gcc/tmp-include gcc/include 2>/dev/null; \
 	else true; fi
 
+# Other targets (dvi, info, etc.)
+[+ FOR recursive_targets +]
+.PHONY: maybe-[+make_target+]-gcc [+make_target+]-gcc
+maybe-[+make_target+]-gcc:
+[+make_target+]-gcc: [+
+  FOR depend +]\
+    [+depend+]-gcc [+
+  ENDFOR depend +]
+	@[ -f ./gcc/Makefile ] || exit 0; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(SET_LIB_PATH) \
+	for flag in $(EXTRA_GCC_FLAGS); do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	echo "Doing [+make_target+] in gcc" ; \
+	(cd gcc && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" \
+	          [+make_target+]) \
+	  || exit 1
+
+[+ ENDFOR recursive_targets +]
+
 # ---------------------
 # GCC bootstrap support
 # ---------------------
@@ -1295,10 +1298,13 @@ STAGE1_CFLAGS=@stage1_cflags@
 STAGE1_LANGUAGES=@stage1_languages@
 
 # For stage 1:
-# * we force-disable intermodule optimizations, even if
-#   --enable-intermodule was passed.  Luckily, autoconf always accepts
-#   the last* argument when conflicting --enable arguments are passed.
-# * we build only C (and possibly Ada).
+# * We force-disable intermodule optimizations, even if
+#   --enable-intermodule was passed, since the installed compiler probably
+#   can't handle them.  Luckily, autoconf always respects
+#   the last argument when conflicting --enable arguments are passed.
+# * Likewise, we force-disable coverage flags, since the installed compiler
+#   probably has never heard of them.
+# * We build only C (and possibly Ada).
 configure-stage1-gcc:
 	echo configure-stage1-gcc > stage_last ; \
 	if [ -f stage1-gcc/Makefile ] ; then \
@@ -1342,7 +1348,7 @@ configure-stage1-gcc:
 	esac; \
 	$(SHELL) $${libsrcdir}/configure \
 	  $(HOST_CONFIGARGS) $${srcdiroption} \
-	  --disable-intermodule \
+	  --disable-intermodule --disable-coverage \
 	  --enable-languages="$(STAGE1_LANGUAGES)"; \
 	cd .. ; \
 	mv gcc stage1-gcc ; \
@@ -1362,7 +1368,7 @@ all-stage1-gcc: configure-stage1-gcc prebootstrap
 	cd gcc && \
 	$(MAKE) $(GCC_FLAGS_TO_PASS) \
 		CFLAGS="$(STAGE1_CFLAGS)" \
-		COVERAGE_FLAGS= || exit 1 ; \
+		|| exit 1 ; \
 	cd .. ; \
 	mv gcc stage1-gcc ; \
 	$(STAMP) all-stage1-gcc
