@@ -2575,6 +2575,7 @@ output_addressed_constants (exp)
 
     case NOP_EXPR:
     case CONVERT_EXPR:
+    case NON_LVALUE_EXPR:
       reloc = output_addressed_constants (TREE_OPERAND (exp, 0));
       break;
 
