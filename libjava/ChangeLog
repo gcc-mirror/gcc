@@ -1,3 +1,8 @@
+2003-11-26  David Belanger  <dbelan2@cs.mcgill.ca>
+
+	* java/util/zip/ZipFile (Zipfile(File)): Set file path as name.
+	(ZipFile(File,int)): Likewise.
+
 2003-11-26  Stuart Ballard <stuart.ballard@corp.fast.net>
 
 	* java/util/HashMap.java (putAll): Use Iterator hasNext() method.
