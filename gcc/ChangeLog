@@ -1,3 +1,8 @@
+2004-03-31  Zack Weinberg  <zack@codesourcery.com>
+
+	* gengtype-yacc.y (option, stringseq): Add missing
+	terminating semicolon.
+
 2004-03-30  David Edelsohn  <edelsohn@gnu.org>
 
 	* config/rs6000/rs6000.md (tls_gd_32, tls_gd_64,
@@ -22,9 +27,9 @@
 
 2004-03-29  Fariborz Jahanian <fjahanian@apple.com>
 
-        * fold-const.c (fold): Reassociate multiply expression
-        with an adjacent non-multiply expression to use
-        architecture's multiply-add instruction.
+	* fold-const.c (fold): Reassociate multiply expression
+	with an adjacent non-multiply expression to use
+	architecture's multiply-add instruction.
 
 2004-03-30  Zack Weinberg  <zack@codesourcery.com>
 
