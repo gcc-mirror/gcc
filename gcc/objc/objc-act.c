@@ -51,6 +51,13 @@ Boston, MA 02111-1307, USA.  */
 #include "output.h"
 #include "toplev.h"
 
+#if USE_CPPLIB
+#include "cpplib.h"
+extern cpp_reader  parse_in;
+extern cpp_options parse_options;
+static int cpp_initialized;
+#endif
+
 /* This is the default way of generating a method name.  */
 /* I am not sure it is really correct.
    Perhaps there's a danger that it will make name conflicts
@@ -666,9 +673,20 @@ lang_identify ()
 }
 
 int
-lang_decode_option (p)
-     char *p;
+lang_decode_option (argc, argv)
+     int argc;
+     char **argv;
 {
+  char *p = argv[0];
+#if USE_CPPLIB
+  if (! cpp_initialized)
+    {
+      cpp_reader_init (&parse_in);
+      parse_in.data = &parse_options;
+      cpp_options_init (&parse_options);
+      cpp_initialized = 1;
+    }
+#endif
   if (!strcmp (p, "-lang-objc"))
     doing_objc_thang = 1;
   else if (!strcmp (p, "-gen-decls"))
@@ -692,7 +710,7 @@ lang_decode_option (p)
   else if (!strcmp (p, "-print-objc-runtime-info"))
     print_struct_values = 1;
   else
-    return c_decode_option (p);
+    return c_decode_option (argc, argv);
 
   return 1;
 }
