@@ -1,5 +1,7 @@
 Tue Mar  7 21:41:17 2000  Jeffrey A Law  (law@cygnus.com)
 
+	* cccp.c (handle_directive): Initialize backslash_newlines_p.
+
 	Wed Jan 19 20:39:17 2000  Jim Wilson  <wilson@cygnus.com>
 	* fixinc/inclhack.tpl: Test for directory before trying to cd into it.
 	* fixinc/fixincl.sh, fixinc/inclhack.sh: Regenerate.
