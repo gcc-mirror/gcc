@@ -2763,10 +2763,7 @@ try_combine (i3, i2, i1, new_direct_jump_p)
        BARRIER following it since it may have initially been a
        conditional jump.  It may also be the last nonnote insn.  */
 
-    if (GET_CODE (newpat) == RETURN || any_uncondjump_p (i3)
-	|| (GET_CODE (newpat) == SET
-	    && SET_SRC (newpat) == pc_rtx
-	    && SET_DEST (newpat) == pc_rtx))
+    if (GET_CODE (newpat) == RETURN || any_uncondjump_p (i3))
       {
 	*new_direct_jump_p = 1;
 
@@ -2774,6 +2771,12 @@ try_combine (i3, i2, i1, new_direct_jump_p)
 	    || GET_CODE (temp) != BARRIER)
 	  emit_barrier_after (i3);
       }
+    /* An NOOP jump does not need barrier, but it does need cleaning up
+       of CFG.  */
+    if (GET_CODE (newpat) == SET
+	&& SET_SRC (newpat) == pc_rtx
+	&& SET_DEST (newpat) == pc_rtx)
+      *new_direct_jump_p = 1;
   }
 
   combine_successes++;
