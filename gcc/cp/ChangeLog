@@ -1,5 +1,10 @@
 2002-07-02  Kriang Lerdsuwanakij  <lerdsuwa@users.sourceforge.net>
 
+	* typeck2.c (incomplete_type_error): Fix typo caused by
+	CVS conflict in my last patch.
+
+2002-07-02  Kriang Lerdsuwanakij  <lerdsuwa@users.sourceforge.net>
+
 	PR c++/6716
 	* pt.c (can_complete_type_without_circularity): New function.
 	(instantiate_class_template): Use it.
