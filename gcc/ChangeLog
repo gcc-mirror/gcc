@@ -1,3 +1,8 @@
+2002-12-18  Jason Merrill  <jason@redhat.com>
+
+	* unwind-dw2-fde.c (frame_downheap): Split out from...
+	(frame_heapsort): Here.
+
 2002-12-17  Jason Merrill  <jason@redhat.com>
 
 	* tree.c (make_node): Don't set TREE_TYPE on 's' class nodes.
