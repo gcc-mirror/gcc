@@ -57,6 +57,7 @@ progname=$0
 progname=`basename $progname`
 original_dir=`pwd`
 CPP=${CPP-./cpp}
+DEFINES="-D__STDC__=0 -D__cplusplus ${FIXPROTO_DEFINES}"
 
 if [ `echo $1 | wc -w` = 0 ] ; then
   echo $progname\: usage\: $progname target-dir \[ source-dir \.\.\. \]
@@ -317,7 +318,7 @@ for code in ALL STD ; do
 	    echo "__DEFINED_MACRO_${macro};" >>fixtmp.c
 	    echo "#endif" >>fixtmp.c
 	  done
-	  if ${CPP} -D__STDC__ -D__cplusplus -D_POSIX_SOURCE $include_path fixtmp.c >fixtmp.i 2>/dev/null
+	  if ${CPP} ${DEFINES} $include_path fixtmp.c >fixtmp.i 2>/dev/null
 	  then
 	   $original_dir/fix-header $rel_source_file $abs_source_file $abs_target_file "$required_list" <fixtmp.i
 	  else
