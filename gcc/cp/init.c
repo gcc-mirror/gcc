@@ -514,6 +514,7 @@ sort_mem_initializers (tree t, tree mem_inits)
 	    cp_warning_at ("  `%#D'", subobject);
 	  else
 	    warning ("  base `%T'", subobject);
+	  warning ("  when initialized here");
 	}
 
       /* Look again, from the beginning of the list.  */

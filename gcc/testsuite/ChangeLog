@@ -1,3 +1,8 @@
+2003-12-21  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/11554
+	* testsuite/g++.dg/warn/ctor-init-1.C: New test.
+
 2003-12-21  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* gcc.c-torture/compile/20020910-1.c: Disable if __INT_MAX is
