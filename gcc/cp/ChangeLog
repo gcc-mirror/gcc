@@ -1,3 +1,9 @@
+2004-12-14  Andrew Pinski  <pinskia@physics.uc.edu>
+
+	PR c++/18965
+	* init.c (build_zero_init): If the max_index is 0, there is no
+	need to create a RANGE_EXPR.
+
 2004-12-14  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/18793

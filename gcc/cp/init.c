@@ -231,8 +231,13 @@ build_zero_init (tree type, tree nelts, bool static_storage_p)
 	  tree elt_init = build_zero_init (TREE_TYPE (type),
 					   /*nelts=*/NULL_TREE,
 					   static_storage_p);
-	  tree range = build2 (RANGE_EXPR,
-			       sizetype, size_zero_node, max_index);
+	  tree range;
+	  
+	  /* If this is a one element array, we just use a regular init.  */
+	  if (tree_int_cst_equal (size_zero_node, max_index))
+	    range = size_zero_node;
+	  else
+	   range = build2 (RANGE_EXPR, sizetype, size_zero_node, max_index);
 	  
 	  inits = tree_cons (range, elt_init, inits);
 	}

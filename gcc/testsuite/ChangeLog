@@ -1,3 +1,8 @@
+2004-12-14  Andrew Pinski  <pinskia@physics.uc.edu>
+
+	PR c++/18965
+	* g++.dg/init/array17.C: New test.
+
 2004-12-14  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/18793
