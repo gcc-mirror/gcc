@@ -1,3 +1,23 @@
+2001-06-30  Zack Weinberg  <zackw@stanford.edu>
+
+	* rtl.def (DEFINE_INSN, DEFINE_INSN_AND_SPLIT, DEFINE_PEEPHOLE):
+	Change output-template slot to format 'T'.
+	* rtl.h (XTMPL): New.
+	* read-rtl.c (read_escape): New function.
+	(read_quoted_string, read_braced_string): Use it.
+	(read_rtx): Set star_if_braced from the format string.
+	Use XTMPL where appropriate.
+	* genoutput.c (gen_insn, gen_peephole): Use XTMPL to get the
+	template string.
+
+	* rtl.c: Include errors.h for sake of rtl_check_failed* routines.
+	Document 'T' in rtx format strings.
+	* Makefile.in (rtl.o, $(HOST_PREFIX_1)rtl.o): Depend on errors.h.
+	* errors.c (internal_error): Add missing ": " at end of string.
+
+	* i860.md: Change triple backslashes to double backslashes at
+	ends of lines in output templates.
+
 2001-06-29  Nick Clifton  <nickc@cambridge.redhat.com>
 
 	* gcc.c (process_command): Append a DIR_SEPARATOR to a path
@@ -1015,7 +1035,7 @@ Mon Jun 18 12:50:49 2001  Jeffrey A Law  (law@cygnus.com)
 	(delete_unreachable_blocks): Use find_unreachable_blocks.
 	* basic-block.h (find_unreachable_blocks): Declare.
 
-        * dce.c (eliminate_dead_code): Fix formatting glitch.
+	* dce.c (eliminate_dead_code): Fix formatting glitch.
 
 2001-06-18  Jason Merrill  <jason_merrill@redhat.com>
 
