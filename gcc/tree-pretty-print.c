@@ -898,6 +898,8 @@ dump_generic_node (pretty_printer *buffer, tree node, int spc, int flags,
 	  pp_character (buffer, ']');
 	}
 
+      if (CALL_EXPR_HAS_RETURN_SLOT_ADDR (node))
+	pp_string (buffer, " [return slot addr]");
       if (CALL_EXPR_TAILCALL (node))
 	pp_string (buffer, " [tail call]");
       break;
