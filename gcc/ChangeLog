@@ -1,3 +1,8 @@
+2002-09-01  Fariborz Jahanian <fjahanian@apple.com>
+
+	* config/rs6000/darwin.h (ROUND_TYPE_ALIGN): Restrict alignment
+	to Altivec vetors.
+
 2004-09-01  Wu Yongwei  <adah@sh163.net>
 	    Danny Smith  <dannysmith@users.sourceforge.net>
 
