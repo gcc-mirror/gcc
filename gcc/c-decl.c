@@ -3385,7 +3385,7 @@ shadow_tag_warned (declspecs, warned)
 	}
       else
 	{
-	  if (!warned)
+	  if (!warned && ! in_system_header)
 	    {
 	      warning ("useless keyword or type name in empty declaration");
 	      warned = 2;
