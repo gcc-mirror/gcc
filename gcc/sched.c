@@ -127,10 +127,17 @@ Boston, MA 02111-1307, USA.  */
 #include "insn-config.h"
 #include "insn-attr.h"
 
+#ifndef INSN_SCHEDULING
+void
+schedule_insns (dump_file)
+     FILE *dump_file ATTRIBUTE_UNUSED;
+{
+}
+#else /* INSN_SCHEDULING -- rest of file */
+
 extern char *reg_known_equiv_p;
 extern rtx *reg_known_value;
 
-#ifdef INSN_SCHEDULING
 /* Arrays set up by scheduling for the same respective purposes as
    similar-named arrays set up by flow analysis.  We work with these
    arrays during the scheduling pass so we can compare values against
@@ -342,8 +349,6 @@ static void update_flow_info		PROTO((rtx, rtx, rtx, rtx));
 
 /* Main entry point of this file.  */
 void schedule_insns	PROTO((FILE *));
-
-#endif /* INSN_SCHEDULING */
 
 #define SIZE_FOR_MODE(X) (GET_MODE_SIZE (GET_MODE (X)))
 
@@ -451,13 +456,6 @@ remove_dependence (insn, elem)
   return;
 }
 
-#ifndef INSN_SCHEDULING
-void
-schedule_insns (dump_file)
-     FILE *dump_file;
-{
-}
-#else
 #ifndef __GNUC__
 #define __inline
 #endif
