@@ -1135,10 +1135,8 @@ initialize_random_junk ()
     ++is_idchar[i];
   ++is_idchar['_'];
   ++is_idstart['_'];
-#if DOLLARS_IN_IDENTIFIERS
   ++is_idchar['$'];
   ++is_idstart['$'];
-#endif
 
   /* horizontal space table */
   ++is_hor_space[' '];
