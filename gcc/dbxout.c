@@ -771,6 +771,8 @@ dbxout_type_methods (type)
 
   while (fndecl)
     {
+      int need_prefix = 1;
+
       /* Group together all the methods for the same operation.
 	 These differ in the types of the arguments.  */
       for (last = NULL_TREE;
@@ -802,9 +804,24 @@ dbxout_type_methods (type)
 	  if (DECL_IGNORED_P (fndecl) || DECL_ABSTRACT (fndecl))
 	    continue;
 
+	  /* Redundantly output the plain name, since that's what gdb
+	     expects.  */
+	  if (need_prefix)
+	    {
+	      tree name = DECL_NAME (fndecl);
+	      fprintf (asmfile, "%s::", IDENTIFIER_POINTER (name));
+	      CHARS (IDENTIFIER_LENGTH (name) + 2);
+	      need_prefix = 0;
+	    }
+
 	  dbxout_type (TREE_TYPE (fndecl), 0);
 
 	  dbxout_type_method_1 (fndecl, debug_name);
+	}
+      if (!need_prefix)
+	{
+          putc (';', asmfile);
+	  CHARS (1);
 	}
     }
 }
