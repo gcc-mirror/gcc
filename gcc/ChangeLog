@@ -1,3 +1,9 @@
+2003-10-26  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* toplev.c (default_get_pch_validity): Guard the use of
+	target_options with #ifdef TARGET_OPTIONS.
+	(default_pch_valid_p): Likewise.
+
 2003-10-26  Andreas Jaeger  <aj@suse.de>
 	    Zack Weinberg  <zack@codesourcery.com>
 	    Andreas Tobler <toa@pop.agri.ch>
