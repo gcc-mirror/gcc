@@ -7,7 +7,7 @@
    <META NAME="GENERATOR" CONTENT="vi and eight fingers">
    <TITLE>libstdc++-v3 Installation Instructions</TITLE>
 <LINK REL=StyleSheet HREF="lib3styles.css">
-<!-- $Id: install.html,v 1.12 2000/12/03 23:47:47 jsm28 Exp $ -->
+<!-- $Id: install.html,v 1.1 2000/12/10 04:03:08 pme Exp $ -->
 </HEAD>
 <BODY>
 
@@ -39,7 +39,7 @@
 
 <H2><A NAME="prereqs">Tools you will need beforehand</A></H2>
    <P>You will need a recent version of g++ to compile the snapshot of
-      libstdc++:  gcc-2.95.2 works well, or one of the post-2.95.2 GCC
+      libstdc++, one of the post-2.95.2 GCC
       snapshots (insert standard caveat about using snapshots rather
       than formal releases).  You will need the full source
       distribution to whatever compiler release you are using.  The
@@ -86,11 +86,6 @@
             and above) as earlier versions supposedly had problems creating
             shared libraries.
 
-        <DT>Solaris
-        <DD>We recommend installing the <TT>SUNWxcu4</TT> package from the
-            Solaris CD before configuring the library.  You can check for
-            this package as a non-privileged user with the command
-            &quot;pkginfo SUNWxcu4&quot;.
       </DL>
    </P>
 
@@ -133,7 +128,7 @@
       </UL>
       Note:
       <OL>
-         <LI>The .8 snapshot and following are intended to replace the
+         <LI>The .91 snapshot and following are intended to replace the
              library that comes with the compiler, so <EM>libsrcdir</EM>
              and <EM>libbuilddir</EM> must be contained under
              <EM>gccsrcdir</EM> and <EM>gccbuilddir</EM>, respectively.
@@ -147,21 +142,19 @@
    <P>Since the release of libstdc++-2.90.8, configuration patches have gone
       into CVS gcc that make the management of the various libstdc++ source
       trees a bit easier.  Because of this, both libstdc++-v2 and
-      libstdc++-v3 and live together more or less in peace, without the need
-      for soft linking.  If a CVS gcc source directory after April 5, 2000 is
-      being used, then the directions are slightly different:  please pick
-      which of the following two scenarios best represents your particular
-      situation.
+      libstdc++-v3 and live together in peace, without the need
+      for soft linking.  The setup instructions are slightly different,
+      depending on whether you want to use CVS gcc or a snapshot.  Please
+      choose the appropriate scenario:
    </P>
 
-   <P><B>...with gcc-2.95.2</B>
+   <P><B>...with a gcc-2.9[67] snapshot</B>
       <P>Unpack the <EM>gccsrcdir</EM> and go into that directory.  For
-         instance, <TT>gcc-2.95.2</TT> is a valid <EM>gccsrcdir</EM>.
-         Once in <EM>gccsrcdir</EM>, you'll need to rename the directories
-         called <TT> libstdc++ </TT> and <TT> libio </TT> like so:
+X        instance, <TT>gcc-2.95.2</TT> is a valid <EM>gccsrcdir</EM>.
+         Once in <EM>gccsrcdir</EM>, you'll need to rename the libstdc++-v3
+         directory which comes with that snapshot:
          <PRE>
-   mv libstdc++ libstdc++-v2
-   mv libio libio-v2</PRE>
+   mv libstdc++-v3 libstdc++-v3-previous</PRE>
       </P>
       <P>Next, unpack the libstdc++-v3 library tarball into the
          <EM>gccsrcdir</EM> directory; it will create a
@@ -170,21 +163,19 @@
    gzip -dc libstdc++-version.tar.gz | tar xf -</PRE>
       </P>
       <P>Finally, make a soft link between <EM>libsrcdir</EM> and
-         <TT>libstdc++</TT> so that libstdc++-v3 will be the default C++
+         <TT>libstdc++-v3</TT> so that libstdc++-v3 will be the default C++
          library used.
          <PRE>
-   ln -s <EM>libsrcdir</EM> libstdc++</PRE>
-         This complexity of having two completely separate libstdc++
-         libraries is necessary so that you can unlink <EM>libsrcdir</EM>
-         and update the compiler sources.  If you're not this adventurous, or
-         would not like to switch between different C++ standard libraries,
-         this extra effort is probably wasted; just remove the v2 sources.
+   ln -s <EM>libsrcdir</EM> libstdc++-v3</PRE>
       </P>
    </P>
 
    <P><B>...with CVS gcc</B> 
       <P>Check out or download the gcc sources: the resulting source
-         directory is <EM>gccsrcdir</EM>.
+         directory is <EM>gccsrcdir</EM>.  Once in <EM>gccsrcdir</EM>,
+         you'll need to rename the libstdc++-v3 directory which comes
+         with that snapshot:
+   mv libstdc++-v3 libstdc++-v3-previous</PRE>
       </P>
       <P>Next, unpack the libstdc++-v3 library tarball into this
          <EM>gccsrcdir</EM> directory; it will create a
@@ -192,11 +183,6 @@
          <PRE>
    gzip -dc libstdc++-version.tar.gz | tar xf -</PRE>
       </P>
-   
-      <P>If CVS libstdc++-v3 is being used instead of a snapshot's tarball,
-         then move the source directory from the CVS checkout into the
-         <EM>gccsrcdir</EM> directory.
-   
       <P>Finally, rename <EM>libsrcdir</EM> to <TT>libstdc++-v3</TT> so that
          gcc's configure flags will be able to deal with the new library.
          <PRE>
@@ -207,6 +193,10 @@
 
 <HR>
 <H2><A NAME="config">Configuring</A></H2>
+   <P>If you have never done this before, you should read the basic
+      <A HREF="http://gcc.gnu.org/install/">GCC Installation
+      Instructions</A> first.
+   </P>
    <P>Due to namespaces, when building libstdc++-v3 you'll have to configure
       the entire <EM>gccsrcdir</EM> directory.  The full list of libstdc++-v3
       specific configuration options, not dependent on the specific compiler
@@ -216,13 +206,8 @@
       building the C++ language parts.
    </P>
 
-   <P><B>...with gcc-2.95.2</B>
-      <PRE>
-   <EM>gccsrcdir</EM>/configure --prefix=<EM>destdir</EM></PRE>
-   </P>
-   
-   <P><B>...with CVS gcc</B> 
-      <PRE>
+   <P><PRE>
+   cd <EM>gccbuilddir</EM>
    <EM>gccsrcdir</EM>/configure --prefix=<EM>destdir</EM> --enable-libstdcxx-v3</PRE>
    </P>
    
@@ -242,37 +227,17 @@
       as its default C++ library.  The generated g++ will magically
       use the correct headers, link against the correct library
       binary, and in general using libstdc++-v3 will be a piece of
-      cake.  You're done; run <TT>'make install'</TT> (the GCC
-      Installation instructions) to put the new compiler and libraries
+      cake.  You're done; run <TT>'make install'</TT> (see the GCC
+      installation instructions) to put the new compiler and libraries
       into place.
    </P>
 
    <H3>[re]building only libstdc++</H3>
-   <P>Due to differences in the configure process, the resulting Makefiles
-      in the<EM>gccbuilddir</EM> will have different rules depending on
-      the source base being used.
-   </P>
-
-   <P><B>...with gcc-2.95.2</B>
-      <BLOCKQUOTE>
-      <EM>libstdc++-rule</EM> is <TT>libstdc++</TT>
-      </BLOCKQUOTE>
-   </P>
-   
-   <P><B>...with CVS gcc</B> 
-      <BLOCKQUOTE>
-      <EM>libstdc++-rule</EM> is <TT>libstdc++-v3</TT>
-      </BLOCKQUOTE>
-   </P>
-   
    <P>To rebuild just libstdc++, use:
       <PRE>
-   make all-target-<EM>libstdc++-rule</EM></PRE>
+   make all-target-<EM>libstdc++-v3</EM></PRE>
       This will configure and build the C++ library in the
       <EM>gccbuilddir/cpu-vendor-OS/</EM>libstdc++ directory.
-      As en example, for CVS gcc this would be
-      <TT>make all-target-libstdc++-v3</TT>, and for gcc-2.95.2 it would be
-      <TT>make all-target-libstdc++</TT>
    </P>
    <P>If the build fails with a &quot;warning: can't inline call&quot;
       message when compiling stringMAIN.cc, see <A HREF="#Werror">the
@@ -305,7 +270,9 @@
    lib/
    include/g++-v3/
       bits/
-      backward/
+      ext/
+   cpu-vendor-OS/include/g++-v3/
+      bits/
       ext/</PRE>
    </P>
    <P>You can check the status of the build without installing it using
@@ -313,7 +280,8 @@
    make check</PRE>
       or you can check the status of the installed library using
       <PRE>
-   make check-target-<EM>libstdc++-rule</EM></PRE>
+   make check-install</PRE>
+      in the <EM>libbuilddir</EM> directory.
       These commands will create a 'testsuite' directory underneath
       <EM>libbuilddir</EM> containing the results of the tests.  We are
       interested in any strange failures of the testsuite; please see
@@ -344,8 +312,8 @@
               which will in turn pass them on to the linker.  The exact
               format of the options is dependent on which linker you use:
               <UL>
-  <LI>GNU ld (default on Linux):<TT>  -Wl,--rpath -Wl,<EM>destdir</EM>/lib</TT>
-  <LI>IRIX ld:<TT>  -Wl,-rpath -Wl,<EM>destdir</EM>/lib</TT>
+  <LI>GNU ld (default on Linux):<TT>  -Wl,--rpath,<EM>destdir</EM>/lib</TT>
+  <LI>IRIX ld:<TT>  -Wl,-rpath,<EM>destdir</EM>/lib</TT>
   <LI>Solaris ld:<TT>  -Wl,-R<EM>destdir</EM>/lib</TT>
   <LI>More...?
               </UL>
@@ -402,7 +370,7 @@
 Comments and suggestions are welcome, and may be sent to
 <A HREF="mailto:pme@sources.redhat.com">Phil Edwards</A> or
 <A HREF="mailto:gdr@gcc.gnu.org">Gabriel Dos Reis</A>.
-<BR> $Id: install.html,v 1.12 2000/12/03 23:47:47 jsm28 Exp $
+<BR> $Id: install.html,v 1.1 2000/12/10 04:03:08 pme Exp $
 </EM></P>
 
 
