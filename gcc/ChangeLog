@@ -1,3 +1,8 @@
+2003-02-01  Daniel Jacobowitz  <drow@mvista.com>
+
+	* dwarf2out.c (gen_type_die): Check for typedefs before calling
+	for TYPE_MAIN_VARIANT.
+
 2003-02-07  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
 	* pa.c (output_millicode_call): Use $PIC_pcrel$0 for long PIC
