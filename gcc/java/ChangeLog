@@ -1,3 +1,7 @@
+2003-01-31  Mark Wielaard  <mark@klomp.org>
+
+	* gjavah.c (throwable_p): Allocate 1 more byte for string.
+
 2003-01-31  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* class.c (make_class): Use BINFO_ELTS.

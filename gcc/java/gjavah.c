@@ -1119,7 +1119,7 @@ throwable_p (const unsigned char *clname)
 
   for (length = 0; clname[length] != ';' && clname[length] != '\0'; ++length)
     ;
-  current = ALLOC (length);
+  current = ALLOC (length + 1);
   for (i = 0; i < length; ++i)
     current[i] = clname[i] == '/' ? '.' : clname[i];
   current[length] = '\0';
