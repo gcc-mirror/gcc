@@ -403,10 +403,7 @@ optimize_reg_copy_1 (insn, dest, src)
 
   for (p = NEXT_INSN (insn); p; p = NEXT_INSN (p))
     {
-      if (GET_CODE (p) == CODE_LABEL || GET_CODE (p) == JUMP_INSN
-	  || (GET_CODE (p) == NOTE
-	      && (NOTE_LINE_NUMBER (p) == NOTE_INSN_LOOP_BEG
-		  || NOTE_LINE_NUMBER (p) == NOTE_INSN_LOOP_END)))
+      if (GET_CODE (p) == CODE_LABEL || GET_CODE (p) == JUMP_INSN)
 	break;
 
       /* ??? We can't scan past the end of a basic block without updating
@@ -591,10 +588,7 @@ optimize_reg_copy_2 (insn, dest, src)
 
   for (p = NEXT_INSN (insn); p; p = NEXT_INSN (p))
     {
-      if (GET_CODE (p) == CODE_LABEL || GET_CODE (p) == JUMP_INSN
-	  || (GET_CODE (p) == NOTE
-	      && (NOTE_LINE_NUMBER (p) == NOTE_INSN_LOOP_BEG
-		  || NOTE_LINE_NUMBER (p) == NOTE_INSN_LOOP_END)))
+      if (GET_CODE (p) == CODE_LABEL || GET_CODE (p) == JUMP_INSN)
 	break;
 
       /* ??? We can't scan past the end of a basic block without updating
@@ -668,10 +662,7 @@ optimize_reg_copy_3 (insn, dest, src)
     return;
   for (p = PREV_INSN (insn); p && ! reg_set_p (src_reg, p); p = PREV_INSN (p))
     {
-      if (GET_CODE (p) == CODE_LABEL || GET_CODE (p) == JUMP_INSN
-	  || (GET_CODE (p) == NOTE
-	      && (NOTE_LINE_NUMBER (p) == NOTE_INSN_LOOP_BEG
-		  || NOTE_LINE_NUMBER (p) == NOTE_INSN_LOOP_END)))
+      if (GET_CODE (p) == CODE_LABEL || GET_CODE (p) == JUMP_INSN)
 	return;
 
       /* ??? We can't scan past the end of a basic block without updating
@@ -949,10 +940,7 @@ fixup_match_2 (insn, dst, src, offset, regmove_dump_file)
       rtx pset;
 
       if (GET_CODE (p) == CODE_LABEL
-          || GET_CODE (p) == JUMP_INSN
-          || (GET_CODE (p) == NOTE
-              && (NOTE_LINE_NUMBER (p) == NOTE_INSN_LOOP_BEG
-                  || NOTE_LINE_NUMBER (p) == NOTE_INSN_LOOP_END)))
+          || GET_CODE (p) == JUMP_INSN)
         break;
 
       /* ??? We can't scan past the end of a basic block without updating
@@ -1000,10 +988,7 @@ fixup_match_2 (insn, dst, src, offset, regmove_dump_file)
 	      for (p = PREV_INSN (insn); p; p = PREV_INSN (p))
 		{
 		  if (GET_CODE (p) == CODE_LABEL
-		      || GET_CODE (p) == JUMP_INSN
-		      || (GET_CODE (p) == NOTE
-			  && (NOTE_LINE_NUMBER (p) == NOTE_INSN_LOOP_BEG
-			      || NOTE_LINE_NUMBER (p) == NOTE_INSN_LOOP_END)))
+		      || GET_CODE (p) == JUMP_INSN)
 		    break;
 		  if (GET_RTX_CLASS (GET_CODE (p)) != 'i')
 		    continue;
@@ -1017,10 +1002,7 @@ fixup_match_2 (insn, dst, src, offset, regmove_dump_file)
 	      for (p = NEXT_INSN (insn); p; p = NEXT_INSN (p))
 		{
 		  if (GET_CODE (p) == CODE_LABEL
-		      || GET_CODE (p) == JUMP_INSN
-		      || (GET_CODE (p) == NOTE
-			  && (NOTE_LINE_NUMBER (p) == NOTE_INSN_LOOP_BEG
-			      || NOTE_LINE_NUMBER (p) == NOTE_INSN_LOOP_END)))
+		      || GET_CODE (p) == JUMP_INSN)
 		    break;
 		  if (GET_RTX_CLASS (GET_CODE (p)) != 'i')
 		    continue;
@@ -1388,10 +1370,7 @@ regmove_optimize (f, nregs, regmove_dump_file)
 		  rtx pset;
 
 		  if (GET_CODE (p) == CODE_LABEL
-		      || GET_CODE (p) == JUMP_INSN
-		      || (GET_CODE (p) == NOTE
-			  && (NOTE_LINE_NUMBER (p) == NOTE_INSN_LOOP_BEG
-			      || NOTE_LINE_NUMBER (p) == NOTE_INSN_LOOP_END)))
+		      || GET_CODE (p) == JUMP_INSN)
 		    break;
 
 		  /* ??? We can't scan past the end of a basic block without
@@ -1678,10 +1657,7 @@ fixup_match_1 (insn, set, src, src_subreg, dst, backward, operand_number,
 
   for (length = s_length = 0, p = NEXT_INSN (insn); p; p = NEXT_INSN (p))
     {
-      if (GET_CODE (p) == CODE_LABEL || GET_CODE (p) == JUMP_INSN
-	  || (GET_CODE (p) == NOTE
-	      && (NOTE_LINE_NUMBER (p) == NOTE_INSN_LOOP_BEG
-		  || NOTE_LINE_NUMBER (p) == NOTE_INSN_LOOP_END)))
+      if (GET_CODE (p) == CODE_LABEL || GET_CODE (p) == JUMP_INSN)
 	break;
 
       /* ??? We can't scan past the end of a basic block without updating
@@ -1727,10 +1703,7 @@ fixup_match_1 (insn, set, src, src_subreg, dst, backward, operand_number,
 		break;
 	      for (q = p; q; q = NEXT_INSN (q))
 		{
-		  if (GET_CODE (q) == CODE_LABEL || GET_CODE (q) == JUMP_INSN
-		      || (GET_CODE (q) == NOTE
-			  && (NOTE_LINE_NUMBER (q) == NOTE_INSN_LOOP_BEG
-			      || NOTE_LINE_NUMBER (q) == NOTE_INSN_LOOP_END)))
+		  if (GET_CODE (q) == CODE_LABEL || GET_CODE (q) == JUMP_INSN)
 		    {
 		      q = 0;
 		      break;
@@ -1906,10 +1879,7 @@ fixup_match_1 (insn, set, src, src_subreg, dst, backward, operand_number,
 	{
 	  for (q = PREV_INSN (insn); q; q = PREV_INSN(q))
 	    {
-	      if (GET_CODE (q) == CODE_LABEL || GET_CODE (q) == JUMP_INSN
-		  || (GET_CODE (q) == NOTE
-		      && (NOTE_LINE_NUMBER (q) == NOTE_INSN_LOOP_BEG
-			  || NOTE_LINE_NUMBER (q) == NOTE_INSN_LOOP_END)))
+	      if (GET_CODE (q) == CODE_LABEL || GET_CODE (q) == JUMP_INSN)
 		{
 		  q = 0;
 		  break;
@@ -1981,10 +1951,7 @@ fixup_match_1 (insn, set, src, src_subreg, dst, backward, operand_number,
       inc_dest = post_inc_set ? SET_DEST (post_inc_set) : src;
       for (q = post_inc; (q = NEXT_INSN (q)); )
 	{
-	  if (GET_CODE (q) == CODE_LABEL || GET_CODE (q) == JUMP_INSN
-	      || (GET_CODE (q) == NOTE
-		  && (NOTE_LINE_NUMBER (q) == NOTE_INSN_LOOP_BEG
-		      || NOTE_LINE_NUMBER (q) == NOTE_INSN_LOOP_END)))
+	  if (GET_CODE (q) == CODE_LABEL || GET_CODE (q) == JUMP_INSN)
 	    break;
 
 	  /* ??? We can't scan past the end of a basic block without updating
