@@ -88,13 +88,17 @@ coverageexts = .{da,bb,bbg}
 # apply to the back end and the C front end, which may be compiled
 # with other compilers.  This is partially controlled by configure in
 # stage1, as not all versions of gcc understand -Wno-long-long.
-LOOSE_WARN = -W -Wall -Wwrite-strings -Wstrict-prototypes -Wmissing-prototypes -fno-common
+LOOSE_WARN = -W -Wall -Wwrite-strings -Wstrict-prototypes -Wmissing-prototypes
 STRICT_WARN = -Wtraditional @strict1_warn@
 STRICT2_WARN = -Wtraditional -pedantic -Wno-long-long
 
+# This is set by --enable-checking.  The idea is to catch forgotten
+# "extern" tags in header files.
+NOCOMMON_FLAG = @nocommon_flag@
+
 # This is how we control whether or not the additional warnings are applied.
 .-warn = $(STRICT_WARN)
-GCC_WARN_CFLAGS = $(LOOSE_WARN) $($(@D)-warn)
+GCC_WARN_CFLAGS = $(LOOSE_WARN) $($(@D)-warn) $(NOCOMMON_FLAG)
 
 # All warnings have to be shut off in stage1 if the compiler used then
 # isn't gcc; configure determines that.  WARN_CFLAGS will be either
