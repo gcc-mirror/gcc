@@ -1752,8 +1752,7 @@ covariant_return_p (brettype, drettype)
   if (! (TREE_CODE (brettype) == TREE_CODE (drettype)
 	 && (TREE_CODE (brettype) == POINTER_TYPE
 	     || TREE_CODE (brettype) == REFERENCE_TYPE)
-	 && TYPE_READONLY (brettype) == TYPE_READONLY (drettype)
-	 && TYPE_VOLATILE (brettype) == TYPE_VOLATILE (drettype)))
+	 && TYPE_QUALS (brettype) == TYPE_QUALS (drettype)))
     return 0;
 
   if (! can_convert (brettype, drettype))
@@ -1849,15 +1848,19 @@ get_matching_virtual (binfo, fndecl, dtorp)
 	      btypes = TYPE_ARG_TYPES (TREE_TYPE (tmp));
 	      if (instptr_type == NULL_TREE)
 		{
-		  if (compparms (TREE_CHAIN (btypes), dtypes, 3))
+		  if (compparms (TREE_CHAIN (btypes), dtypes))
 		    /* Caller knows to give error in this case.  */
 		    return tmp;
 		  return NULL_TREE;
 		}
 
-	      if ((TYPE_READONLY (TREE_TYPE (TREE_VALUE (btypes)))
-		   == TYPE_READONLY (instptr_type))
-		  && compparms (TREE_CHAIN (btypes), TREE_CHAIN (dtypes), 3))
+	      if (/* The first parameter is the `this' parameter,
+		     which has POINTER_TYPE, and we can therefore
+		     safely use TYPE_QUALS, rather than
+		     CP_TYPE_QUALS.  */
+		  (TYPE_QUALS (TREE_TYPE (TREE_VALUE (btypes)))
+		   == TYPE_QUALS (instptr_type))
+		  && compparms (TREE_CHAIN (btypes), TREE_CHAIN (dtypes)))
 		{
 		  tree brettype = TREE_TYPE (TREE_TYPE (tmp));
 		  if (comptypes (brettype, drettype, 1))
@@ -2603,8 +2606,9 @@ expand_upcast_fixups (binfo, addr, orig_addr, vbase, vbase_addr, t,
 
 	  TREE_READONLY (new_delta) = 0;
 	  TREE_TYPE (new_delta) = 
-	    cp_build_type_variant (TREE_TYPE (new_delta), /*constp=*/0,
-				   TYPE_VOLATILE (TREE_TYPE (new_delta)));
+	    cp_build_qualified_type (TREE_TYPE (new_delta),
+				     CP_TYPE_QUALS (TREE_TYPE (new_delta))
+				     & ~TYPE_QUAL_CONST);
 	  expand_expr_stmt (build_modify_expr (new_delta, NOP_EXPR,
 					       old_delta));
 	}

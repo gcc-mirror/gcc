@@ -2387,9 +2387,9 @@ overrides (fndecl, base_fndecl)
 #endif
       types = TYPE_ARG_TYPES (TREE_TYPE (fndecl));
       base_types = TYPE_ARG_TYPES (TREE_TYPE (base_fndecl));
-      if ((TYPE_READONLY (TREE_TYPE (TREE_VALUE (base_types)))
-	   == TYPE_READONLY (TREE_TYPE (TREE_VALUE (types))))
-	  && compparms (TREE_CHAIN (base_types), TREE_CHAIN (types), 3))
+      if ((TYPE_QUALS (TREE_TYPE (TREE_VALUE (base_types)))
+	   == TYPE_QUALS (TREE_TYPE (TREE_VALUE (types))))
+	  && compparms (TREE_CHAIN (base_types), TREE_CHAIN (types)))
 	return 1;
     }
   return 0;

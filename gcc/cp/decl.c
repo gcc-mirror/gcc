@@ -177,6 +177,7 @@ static void bad_specifiers PROTO((tree, char *, int, int, int, int,
 				  int));
 static void lang_print_error_function PROTO((char *));
 static tree maybe_process_template_type_declaration PROTO((tree, int, struct binding_level*));
+static void check_for_uninitialized_const_var PROTO((tree));
 
 #if defined (DEBUG_CP_BINDING_LEVELS)
 static void indent PROTO((void));
@@ -2567,7 +2568,7 @@ decls_match (newdecl, olddecl)
 	      TREE_TYPE (newdecl) = TREE_TYPE (olddecl);
 	    }
 	  else
-	    types_match = compparms (p1, p2, 3);
+	    types_match = compparms (p1, p2);
 	}
       else
 	types_match = 0;
@@ -2769,7 +2770,7 @@ duplicate_decls (newdecl, olddecl)
 	  else if (TREE_CODE (DECL_TEMPLATE_RESULT (olddecl)) == FUNCTION_DECL
 		   && TREE_CODE (DECL_TEMPLATE_RESULT (newdecl)) == FUNCTION_DECL
 		   && compparms (TYPE_ARG_TYPES (TREE_TYPE (DECL_TEMPLATE_RESULT (olddecl))),
-				 TYPE_ARG_TYPES (TREE_TYPE (DECL_TEMPLATE_RESULT (newdecl))), 3)
+				 TYPE_ARG_TYPES (TREE_TYPE (DECL_TEMPLATE_RESULT (newdecl))))
 		   && comp_template_parms (DECL_TEMPLATE_PARMS (newdecl),
 					   DECL_TEMPLATE_PARMS (olddecl)))
 	    {
@@ -2788,7 +2789,7 @@ duplicate_decls (newdecl, olddecl)
 	      cp_error_at ("previous declaration `%#D' here", olddecl);
 	    }
 	  else if (compparms (TYPE_ARG_TYPES (TREE_TYPE (newdecl)),
-			      TYPE_ARG_TYPES (TREE_TYPE (olddecl)), 3))
+			      TYPE_ARG_TYPES (TREE_TYPE (olddecl))))
 	    {
 	      cp_error ("new declaration `%#D'", newdecl);
 	      cp_error_at ("ambiguates old declaration `%#D'", olddecl);
@@ -5840,7 +5841,8 @@ init_decl_processing ()
 
   string_type_node = build_pointer_type (char_type_node);
   const_string_type_node
-    = build_pointer_type (build_type_variant (char_type_node, 1, 0));
+    = build_pointer_type (build_qualified_type (char_type_node, 
+						TYPE_QUAL_CONST));
 #if 0
   record_builtin_type (RID_MAX, NULL_PTR, string_type_node);
 #endif
@@ -5870,7 +5872,8 @@ init_decl_processing ()
 
   ptr_type_node = build_pointer_type (void_type_node);
   const_ptr_type_node
-    = build_pointer_type (build_type_variant (void_type_node, 1, 0));
+    = build_pointer_type (build_qualified_type (void_type_node,
+						TYPE_QUAL_CONST)); 
 #if 0
   record_builtin_type (RID_MAX, NULL_PTR, ptr_type_node);
 #endif
@@ -6199,14 +6202,15 @@ init_decl_processing ()
       DECL_SIZE (fields[3]) = TYPE_SIZE (delta_type_node);
       TREE_UNSIGNED (fields[3]) = 0;
       TREE_CHAIN (fields[2]) = fields[3];
-      vtable_entry_type = build_type_variant (vtable_entry_type, 1, 0);
+      vtable_entry_type = build_qualified_type (vtable_entry_type,
+						TYPE_QUAL_CONST);
     }
   record_builtin_type (RID_MAX, VTBL_PTR_TYPE, vtable_entry_type);
 
   vtbl_type_node
     = build_array_type (vtable_entry_type, NULL_TREE);
   layout_type (vtbl_type_node);
-  vtbl_type_node = cp_build_type_variant (vtbl_type_node, 1, 0);
+  vtbl_type_node = build_qualified_type (vtbl_type_node, TYPE_QUAL_CONST);
   record_builtin_type (RID_MAX, NULL_PTR, vtbl_type_node);
   vtbl_ptr_type_node = build_pointer_type (vtable_entry_type);
   layout_type (vtbl_ptr_type_node);
@@ -6245,7 +6249,8 @@ init_decl_processing ()
       TREE_UNSIGNED (fields[5]) = 0;
       TREE_CHAIN (fields[4]) = fields[5];
 
-      sigtable_entry_type = build_type_variant (sigtable_entry_type, 1, 0);
+      sigtable_entry_type = build_qualified_type (sigtable_entry_type, 
+						  TYPE_QUAL_CONST);
       record_builtin_type (RID_MAX, SIGTABLE_PTR_TYPE, sigtable_entry_type);
     }
 
@@ -7000,6 +7005,25 @@ obscure_complex_init (decl, init)
   return init;
 }
 
+/* Issue an error message if DECL is an uninitialized const variable.  */
+
+static void
+check_for_uninitialized_const_var (decl)
+     tree decl;
+{
+  tree type = TREE_TYPE (decl);
+
+  /* ``Unless explicitly declared extern, a const object does not have
+     external linkage and must be initialized. ($8.4; $12.1)'' ARM
+     7.1.6 */
+  if (TREE_CODE (decl) == VAR_DECL
+      && TREE_CODE (type) != REFERENCE_TYPE
+      && CP_TYPE_CONST_P (type)
+      && !TYPE_NEEDS_CONSTRUCTING (type)
+      && !DECL_INITIAL (decl))
+    cp_error ("uninitialized const `%D'", decl);
+}
+
 /* Finish processing of a declaration;
    install its line number and initial value.
    If the length of an array type is not known before,
@@ -7241,32 +7265,16 @@ cp_finish_decl (decl, init, asmspec_tree, need_pop, flags)
 		      decl);
 	}
 
-      if (TREE_CODE (decl) == VAR_DECL
-	  && !DECL_INITIAL (decl)
-	  && !TYPE_NEEDS_CONSTRUCTING (type)
-	  && (TYPE_READONLY (type) || TREE_READONLY (decl)))
-	cp_error ("uninitialized const `%D'", decl);
+      check_for_uninitialized_const_var (decl);
 
       if (TYPE_SIZE (type) != NULL_TREE
 	  && TYPE_NEEDS_CONSTRUCTING (type))
 	init = obscure_complex_init (decl, NULL_TREE);
-    }
-  else if (TREE_CODE (decl) == VAR_DECL
-	   && TREE_CODE (type) != REFERENCE_TYPE
-	   && (TYPE_READONLY (type) || TREE_READONLY (decl)))
-    {
-      /* ``Unless explicitly declared extern, a const object does not have
-	 external linkage and must be initialized. ($8.4; $12.1)'' ARM 7.1.6
-	 However, if it's `const int foo = 1; const int foo;', don't complain
-	 about the second decl, since it does have an initializer before.
-	 We deliberately don't complain about arrays, because they're
-	 supposed to be initialized by a constructor.  */
-      if (! DECL_INITIAL (decl)
-	  && TREE_CODE (type) != ARRAY_TYPE
-	  && (!pedantic || !current_class_type))
-	cp_error ("uninitialized const `%#D'", decl);
-    }
 
+    }
+  else
+    check_for_uninitialized_const_var (decl);
+  
   /* For top-level declaration, the initial value was read in
      the temporary obstack.  MAXINDEX, rtl, etc. to be made below
      must go in the permanent obstack; but don't discard the
@@ -8503,7 +8511,9 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, attrlist)
   tree type = NULL_TREE;
   int longlong = 0;
   int constp;
+  int restrictp;
   int volatilep;
+  int type_quals;
   int virtualp, explicitp, friendp, inlinep, staticp;
   int explicit_int = 0;
   int explicit_char = 0;
@@ -9065,8 +9075,8 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, attrlist)
       && TYPE_MAIN_VARIANT (type) == double_type_node)
     {
       RIDBIT_RESET (RID_LONG, specbits);
-      type = build_type_variant (long_double_type_node, TYPE_READONLY (type),
-				 TYPE_VOLATILE (type));
+      type = build_qualified_type (long_double_type_node, 
+				   CP_TYPE_QUALS (type));
     }
 
   /* Check all other uses of type modifiers.  */
@@ -9188,17 +9198,24 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, attrlist)
 
   if (return_type == return_conversion 
       && (RIDBIT_SETP (RID_CONST, specbits)
-	  || RIDBIT_SETP (RID_VOLATILE, specbits)))
-    cp_error ("`operator %T' cannot be cv-qualified",
+	  || RIDBIT_SETP (RID_VOLATILE, specbits)
+	  || RIDBIT_SETP (RID_RESTRICT, specbits)))
+    cp_error ("qualifiers are not allowed on declaration of `operator %T'",
 	      ctor_return_type);
 
   /* Set CONSTP if this declaration is `const', whether by
      explicit specification or via a typedef.
      Likewise for VOLATILEP.  */
 
-  constp = !!RIDBIT_SETP (RID_CONST, specbits) + CP_TYPE_READONLY (type);
-  volatilep = !!RIDBIT_SETP (RID_VOLATILE, specbits) + CP_TYPE_VOLATILE (type);
-  type = cp_build_type_variant (type, constp, volatilep);
+  constp = !! RIDBIT_SETP (RID_CONST, specbits) + CP_TYPE_CONST_P (type);
+  restrictp = 
+    !! RIDBIT_SETP (RID_RESTRICT, specbits) + CP_TYPE_RESTRICT_P (type);
+  volatilep = 
+    !! RIDBIT_SETP (RID_VOLATILE, specbits) + CP_TYPE_VOLATILE_P (type);
+  type_quals = ((constp ? TYPE_QUAL_CONST : 0)
+		| (restrictp ? TYPE_QUAL_RESTRICT : 0)
+		| (volatilep ? TYPE_QUAL_VOLATILE : 0));
+  type = cp_build_qualified_type (type, type_quals);
   staticp = 0;
   inlinep = !! RIDBIT_SETP (RID_INLINE, specbits);
   virtualp = RIDBIT_SETP (RID_VIRTUAL, specbits);
@@ -9275,16 +9292,10 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, attrlist)
       && IS_SIGNATURE (current_class_type)
       && RIDBIT_NOTSETP (RID_TYPEDEF, specbits))
     {
-      if (constp)
+      if (type_quals != TYPE_UNQUALIFIED)
 	{
-	  error ("`const' specified for signature member function `%s'", name);
-	  constp = 0;
-	}
-      if (volatilep)
-	{
-	  error ("`volatile' specified for signature member function `%s'",
-		 name);
-	  volatilep = 0;
+	  error ("type qualifiers specified for signature member function `%s'", name);
+	  type_quals = TYPE_UNQUALIFIED;
 	}
       if (inlinep)
 	{
@@ -9634,9 +9645,9 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, attrlist)
 	    /* Declaring a function type.
 	       Make sure we have a valid type for the function to return.  */
 
-	    /* We now know that constp and volatilep don't apply to the
+	    /* We now know that the TYPE_QUALS don't apply to the
                decl, but to its return type.  */
-	    constp = volatilep = 0;
+	    type_quals = TYPE_UNQUALIFIED;
 
 	    /* Warn about some types functions can't return.  */
 
@@ -9844,9 +9855,9 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, attrlist)
 	  /* Merge any constancy or volatility into the target type
 	     for the pointer.  */
 
-	  /* We now know that constp and volatilep don't apply to the
-	     decl, but to the target of the pointer.  */
-	  constp = volatilep = 0;
+	  /* We now know that the TYPE_QUALS don't apply to the decl,
+	     but to the target of the pointer.  */
+	  type_quals = TYPE_UNQUALIFIED;
 
 	  if (IS_SIGNATURE (type))
 	    {
@@ -9871,8 +9882,6 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, attrlist)
 				type);
 		  type = build_signature_pointer_type (type);
 		}
-	      constp = 0;
-	      volatilep = 0;
 	    }
 	  else if (TREE_CODE (declarator) == ADDR_EXPR)
 	    {
@@ -9895,25 +9904,37 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, attrlist)
 	    {
 	      register tree typemodlist;
 	      int erred = 0;
+
+	      constp = 0;
+	      volatilep = 0;
+	      restrictp = 0;
 	      for (typemodlist = TREE_TYPE (declarator); typemodlist;
 		   typemodlist = TREE_CHAIN (typemodlist))
 		{
-		  if (TREE_VALUE (typemodlist) == ridpointers[(int) RID_CONST])
+		  tree qualifier = TREE_VALUE (typemodlist);
+
+		  if (qualifier == ridpointers[(int) RID_CONST])
 		    constp++;
-		  else if (TREE_VALUE (typemodlist) == ridpointers[(int) RID_VOLATILE])
+		  else if (qualifier == ridpointers[(int) RID_VOLATILE])
 		    volatilep++;
+		  else if (qualifier == ridpointers[(int) RID_RESTRICT])
+		    restrictp++;
 		  else if (!erred)
 		    {
 		      erred = 1;
-		      error ("invalid type modifier within %s declarator",
-			     TREE_CODE (declarator) == ADDR_EXPR
-			     ? "reference" : "pointer");
+		      error ("invalid type modifier within pointer declarator");
 		    }
 		}
 	      if (constp > 1)
 		pedwarn ("duplicate `const'");
 	      if (volatilep > 1)
 		pedwarn ("duplicate `volatile'");
+	      if (restrictp > 1)
+		pedwarn ("duplicate `restrict'");
+
+	      type_quals = ((constp ? TYPE_QUAL_CONST : 0)
+			    | (restrictp ? TYPE_QUAL_RESTRICT : 0)
+			    | (volatilep ? TYPE_QUAL_VOLATILE : 0));
 	      if (TREE_CODE (declarator) == ADDR_EXPR
 		  && (constp || volatilep))
 		{
@@ -9921,9 +9942,9 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, attrlist)
 		    pedwarn ("discarding `const' applied to a reference");
 		  if (volatilep)
 		    pedwarn ("discarding `volatile' applied to a reference");
-		  constp = volatilep = 0;
+		  type_quals &= ~(TYPE_QUAL_CONST | TYPE_QUAL_VOLATILE);
 		}
-	      type = cp_build_type_variant (type, constp, volatilep);
+	      type = cp_build_qualified_type (type, type_quals);
 	    }
 	  declarator = TREE_OPERAND (declarator, 0);
 	  ctype = NULL_TREE;
@@ -10131,7 +10152,7 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, attrlist)
 
   if (RIDBIT_SETP (RID_MUTABLE, specbits))
     {
-      if (constp)
+      if (type_quals & TYPE_QUAL_CONST)
 	{
 	  error ("const `%s' cannot be declared `mutable'", name);
 	  RIDBIT_RESET (RID_MUTABLE, specbits);
@@ -10268,19 +10289,20 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, attrlist)
     {
       /* Note that the grammar rejects storage classes
 	 in typenames, fields or parameters.  */
-      if (constp || volatilep)
+      if (type_quals != TYPE_UNQUALIFIED)
 	{
 	  if (IS_SIGNATURE (type))
-	    error ("`const' or `volatile' specified with signature type");
+	    error ("type qualifiers specified for signature type");
+	  type_quals = TYPE_UNQUALIFIED;
 	}
 
       /* Special case: "friend class foo" looks like a TYPENAME context.  */
       if (friendp)
 	{
-	  if (volatilep)
+	  if (type_quals != TYPE_UNQUALIFIED)
 	    {
-	      cp_error ("`volatile' specified for friend class declaration");
-	      volatilep = 0;
+	      cp_error ("type qualifiers specified for friend class declaration");
+	      type_quals = TYPE_UNQUALIFIED;
 	    }
 	  if (inlinep)
 	    {
@@ -10360,7 +10382,7 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, attrlist)
 	{
 	  /* Transfer const-ness of array into that of type pointed to.  */
 	  type = build_pointer_type (TREE_TYPE (type));
-	  volatilep = constp = 0;
+	  type_quals = TYPE_UNQUALIFIED;
 	}
       else if (TREE_CODE (type) == FUNCTION_TYPE)
 	type = build_pointer_type (type);
@@ -10788,14 +10810,8 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, attrlist)
       DECL_THIS_STATIC (decl) = 1;
 
     /* Record constancy and volatility.  */
-
-    if (constp)
-      TREE_READONLY (decl) = TREE_CODE (type) != REFERENCE_TYPE;
-    if (volatilep)
-      {
-	TREE_SIDE_EFFECTS (decl) = 1;
-	TREE_THIS_VOLATILE (decl) = 1;
-      }
+    /* FIXME: Disallow `restrict' pointer-to-member declarations.  */
+    c_apply_type_quals_to_decl (type_quals, decl);
 
     return decl;
   }
@@ -11214,7 +11230,7 @@ grok_ctor_properties (ctype, decl)
 	  || TREE_PURPOSE (TREE_CHAIN (parmtypes))))
     {
       TYPE_HAS_INIT_REF (ctype) = 1;
-      if (TYPE_READONLY (TREE_TYPE (parmtype)))
+      if (CP_TYPE_CONST_P (TREE_TYPE (parmtype)))
 	TYPE_HAS_CONST_INIT_REF (ctype) = 1;
     }
   else if (TYPE_MAIN_VARIANT (parmtype) == ctype
@@ -11419,7 +11435,7 @@ grok_op_properties (decl, virtualp, friendp)
 	    {
 	      TYPE_HAS_ASSIGN_REF (current_class_type) = 1;
 	      if (TREE_CODE (parmtype) != REFERENCE_TYPE
-		  || TYPE_READONLY (TREE_TYPE (parmtype)))
+		  || CP_TYPE_CONST_P (TREE_TYPE (parmtype)))
 		TYPE_HAS_CONST_ASSIGN_REF (current_class_type) = 1;
 	    }
 	}
@@ -12436,8 +12452,10 @@ start_function (declspecs, declarator, attrs, pre_parsed_p)
 				     TYPE_ARG_TYPES (TREE_TYPE (decl1)));
 	  DECL_RESULT (decl1)
 	    = build_decl (RESULT_DECL, 0, TYPE_MAIN_VARIANT (TREE_TYPE (fntype)));
-	  TREE_READONLY (DECL_RESULT (decl1)) = TYPE_READONLY (TREE_TYPE (fntype));
-	  TREE_THIS_VOLATILE (DECL_RESULT (decl1)) = TYPE_VOLATILE (TREE_TYPE (fntype));
+	  TREE_READONLY (DECL_RESULT (decl1))
+	    = CP_TYPE_CONST_P (TREE_TYPE (fntype));
+	  TREE_THIS_VOLATILE (DECL_RESULT (decl1))
+	    = CP_TYPE_VOLATILE_P (TREE_TYPE (fntype));
 	}
 
       if (TYPE_LANG_SPECIFIC (TREE_TYPE (fntype))
@@ -12621,8 +12639,8 @@ start_function (declspecs, declarator, attrs, pre_parsed_p)
     {
       DECL_RESULT (decl1)
 	= build_decl (RESULT_DECL, 0, TYPE_MAIN_VARIANT (restype));
-      TREE_READONLY (DECL_RESULT (decl1)) = TYPE_READONLY (restype);
-      TREE_THIS_VOLATILE (DECL_RESULT (decl1)) = TYPE_VOLATILE (restype);
+      TREE_READONLY (DECL_RESULT (decl1)) = CP_TYPE_CONST_P (restype);
+      TREE_THIS_VOLATILE (DECL_RESULT (decl1)) = CP_TYPE_VOLATILE_P (restype);
     }
 
   /* Allocate further tree nodes temporarily during compilation
@@ -13864,15 +13882,14 @@ revert_static_member_fn (decl, fn, argtypes)
   tree function = fn ? *fn : TREE_TYPE (*decl);
   tree args = argtypes ? *argtypes : TYPE_ARG_TYPES (function);
 
-  if (TYPE_READONLY (TREE_TYPE (TREE_VALUE (args))))
-    cp_error ("static member function `%#D' declared const", *decl);
-  if (TYPE_VOLATILE (TREE_TYPE (TREE_VALUE (args))))
-    cp_error ("static member function `%#D' declared volatile", *decl);
+  if (CP_TYPE_QUALS (TREE_TYPE (TREE_VALUE (args))) 
+      != TYPE_UNQUALIFIED)
+    cp_error ("static member function `%#D' declared with type qualifiers", 
+	      *decl);
 
   args = TREE_CHAIN (args);
   tmp = build_function_type (TREE_TYPE (function), args);
-  tmp = build_type_variant (tmp, TYPE_READONLY (function),
-			    TYPE_VOLATILE (function));
+  tmp = build_qualified_type (tmp, CP_TYPE_QUALS (function));
   tmp = build_exception_variant (tmp,
 				 TYPE_RAISES_EXCEPTIONS (function));
   TREE_TYPE (*decl) = tmp;

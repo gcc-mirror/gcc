@@ -1163,7 +1163,10 @@ void
 process_modifiers (parmtype) 
      tree parmtype;
 {
-  if (TREE_READONLY (parmtype))
+  /* Note that here we do not use CP_TYPE_CONST_P and friends because
+     we describe types recursively; we will get the `const' in 
+     `const int ()[10]' when processing the `const int' part.  */
+  if (TYPE_READONLY (parmtype))
     OB_PUTC ('C');
   if (TREE_CODE (parmtype) == INTEGER_TYPE
       && (TYPE_MAIN_VARIANT (parmtype)
@@ -1172,6 +1175,10 @@ process_modifiers (parmtype)
     OB_PUTC ('U');
   if (TYPE_VOLATILE (parmtype))
     OB_PUTC ('V');
+  /* It would be better to use `R' for `restrict', but that's already
+     used for reference types.  And `r' is used for `long double'.  */
+  if (TYPE_RESTRICT (parmtype))
+    OB_PUTC ('u');
 }
 
 /* Check to see if TYPE has been entered into the Bcode typelist.  If

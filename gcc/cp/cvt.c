@@ -444,13 +444,13 @@ convert_to_reference (reftype, expr, convtype, flags, decl)
 	     initialize a reference, then the reference must be to a
 	     non-volatile const type.  */
 	  if (! real_lvalue_p (expr)
-	      && (!TYPE_READONLY (ttl) || TYPE_VOLATILE (ttl)))
+	      && !CP_TYPE_CONST_NON_VOLATILE_P (ttl))
 	    {
 	      char* msg;
 
-	      if (TYPE_VOLATILE (ttl) && decl)
+	      if (CP_TYPE_VOLATILE_P (ttl) && decl)
 		msg = "initialization of volatile reference type `%#T'";
-	      else if (TYPE_VOLATILE (ttl))
+	      else if (CP_TYPE_VOLATILE_P (ttl))
 		msg = "conversion to volatile reference type `%#T'";
 	      else if (decl)
 		msg = "initialization of non-const reference type `%#T'";
@@ -460,15 +460,10 @@ convert_to_reference (reftype, expr, convtype, flags, decl)
 	      cp_error (msg, reftype);
 	      cp_error ("from rvalue of type `%T'", intype);
 	    }
-	  else if (! (convtype & CONV_CONST))
-	    {
-	      if (! TYPE_READONLY (ttl) && TYPE_READONLY (ttr))
-		cp_error ("conversion from `%T' to `%T' discards const",
-			  ttr, reftype);
-	      else if (! TYPE_VOLATILE (ttl) && TYPE_VOLATILE (ttr))
-		cp_error ("conversion from `%T' to `%T' discards volatile",
-			  ttr, reftype);
-	    }
+	  else if (! (convtype & CONV_CONST)
+		   && !at_least_as_qualified_p (ttl, ttr))
+	    cp_error ("conversion from `%T' to `%T' discards qualifiers",
+		      ttr, reftype);
 	}
 
       return build_up_reference (reftype, expr, flags);
@@ -502,7 +497,7 @@ convert_to_reference (reftype, expr, convtype, flags, decl)
 	return error_mark_node;
       rval = build_up_reference (reftype, rval, flags);
 
-      if (rval && ! TYPE_READONLY (TREE_TYPE (reftype)))
+      if (rval && ! CP_TYPE_CONST_P (TREE_TYPE (reftype)))
 	cp_pedwarn ("initializing non-const `%T' with `%T' will use a temporary",
 		    reftype, intype);
     }
@@ -570,8 +565,8 @@ convert_pointer_to_real (binfo, expr)
       binfo = NULL_TREE;
     }
 
-  ptr_type = cp_build_type_variant (type, TYPE_READONLY (TREE_TYPE (intype)),
-				    TYPE_VOLATILE (TREE_TYPE (intype)));
+  ptr_type = cp_build_qualified_type (type,
+				      CP_TYPE_QUALS (TREE_TYPE (intype)));
   ptr_type = build_pointer_type (ptr_type);
   if (ptr_type == TYPE_MAIN_VARIANT (intype))
     return expr;
@@ -1059,13 +1054,12 @@ tree
 type_promotes_to (type)
      tree type;
 {
-  int constp, volatilep;
+  int type_quals;
 
   if (type == error_mark_node)
     return error_mark_node;
 
-  constp = TYPE_READONLY (type);
-  volatilep = TYPE_VOLATILE (type);
+  type_quals = CP_TYPE_QUALS (type);
   type = TYPE_MAIN_VARIANT (type);
 
   /* bool always promotes to int (not unsigned), even if it's the same
@@ -1099,7 +1093,7 @@ type_promotes_to (type)
   else if (type == float_type_node)
     type = double_type_node;
 
-  return cp_build_type_variant (type, constp, volatilep);
+  return cp_build_qualified_type (type, type_quals);
 }
 
 /* The routines below this point are carefully written to conform to

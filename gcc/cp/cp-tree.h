@@ -514,15 +514,6 @@ enum languages { lang_c, lang_cplusplus, lang_java };
 /* The _DECL for this _TYPE.  */
 #define TYPE_MAIN_DECL(NODE) (TYPE_STUB_DECL (TYPE_MAIN_VARIANT (NODE)))
 
-#define CP_TYPE_READONLY(NODE)			\
-  (TREE_CODE (NODE) == ARRAY_TYPE		\
-   ? TYPE_READONLY (TREE_TYPE (NODE))		\
-   : TYPE_READONLY (NODE))
-#define CP_TYPE_VOLATILE(NODE)			\
-  (TREE_CODE (NODE) == ARRAY_TYPE		\
-   ? TYPE_VOLATILE (TREE_TYPE (NODE))		\
-   : TYPE_VOLATILE (NODE))
-
 /* Nonzero if T is a class (or struct or union) type.  Also nonzero
    for template type parameters and typename types.  Despite its name,
    this macro has nothing to do with the definition of aggregate given
@@ -546,6 +537,33 @@ enum languages { lang_c, lang_cplusplus, lang_java };
 
 /* True if this a "Java" type, defined in 'extern "Java"'. */
 #define TYPE_FOR_JAVA(NODE) TYPE_LANG_FLAG_3(NODE)
+
+/* The type qualifiers for this type, including the qualifiers on the
+   elements for an array type.  */
+#define CP_TYPE_QUALS(NODE)			\
+  ((TREE_CODE (NODE) != ARRAY_TYPE) 		\
+   ? TYPE_QUALS (NODE) : cp_type_quals (NODE))
+
+/* Nonzero if this type is const-qualified.  */
+#define CP_TYPE_CONST_P(NODE)				\
+  (CP_TYPE_QUALS (NODE) & TYPE_QUAL_CONST)
+
+/* Nonzero if this type is volatile-qualified.  */
+#define CP_TYPE_VOLATILE_P(NODE)			\
+  (CP_TYPE_QUALS (NODE) & TYPE_QUAL_VOLATILE)
+
+/* Nonzero if this type is restrict-qualified.  
+   FIXME: Does this make sense?  */
+#define CP_TYPE_RESTRICT_P(NODE)			\
+  (CP_TYPE_QUALS (NODE) & TYPE_QUAL_RESTRICT)
+
+/* Nonzero if this type is const-qualified, but not
+   volatile-qualified.  Other qualifiers are ignored.  This macro is
+   used to test whether or not it is OK to bind an rvalue to a
+   reference.  */
+#define CP_TYPE_CONST_NON_VOLATILE_P(NODE)				\
+  ((CP_TYPE_QUALS (NODE) & (TYPE_QUAL_CONST | TYPE_QUAL_VOLATILE))	\
+   == TYPE_QUAL_CONST)
 
 #define DELTA_FROM_VTABLE_ENTRY(ENTRY) \
   (!flag_vtable_thunks ? \
@@ -1882,7 +1900,7 @@ extern void check_function_format		PROTO((tree, tree, tree));
 /* Print an error message for invalid operands to arith operation CODE.
    NOP_EXPR is used as a special case (see truthvalue_conversion).  */
 extern void binary_op_error                     PROTO((enum tree_code));
-extern tree cp_build_type_variant                PROTO((tree, int, int));
+extern tree cp_build_qualified_type             PROTO((tree, int));
 extern tree canonical_type_variant              PROTO((tree));
 extern void c_expand_expr_stmt                  PROTO((tree));
 /* Validate the expression after `case' and apply default promotions.  */
@@ -1893,6 +1911,7 @@ extern void constant_expression_warning         PROTO((tree));
 extern tree convert_and_check			PROTO((tree, tree));
 extern void overflow_warning			PROTO((tree));
 extern void unsigned_conversion_warning		PROTO((tree, tree));
+extern void c_apply_type_quals_to_decl          PROTO((int, tree));
 
 /* Read the rest of the current #-directive line.  */
 #if USE_CPPLIB
@@ -2161,9 +2180,9 @@ extern int current_function_parms_stored;
 #define SIGNATURE_OPTR_NAME	"__optr"
 #define SIGNATURE_SPTR_NAME	"__sptr"
 #define SIGNATURE_POINTER_NAME	"__sp_"
-#define SIGNATURE_POINTER_NAME_FORMAT "__%s%ssp_%s"
+#define SIGNATURE_POINTER_NAME_FORMAT "__%s%s%ssp_%s"
 #define SIGNATURE_REFERENCE_NAME "__sr_"
-#define SIGNATURE_REFERENCE_NAME_FORMAT "__%s%ssr_%s"
+#define SIGNATURE_REFERENCE_NAME_FORMAT "__%s%s%ssr_%s"
 
 #define SIGTABLE_PTR_TYPE	"__sigtbl_ptr_type"
 #define SIGTABLE_NAME_FORMAT	"__st_%s_%s"
@@ -2815,6 +2834,7 @@ extern void add_defarg_fn			PROTO((tree));
 extern void do_pending_defargs			PROTO((void));
 extern int identifier_type			PROTO((tree));
 extern void yyhook				PROTO((int));
+extern int cp_type_qual_from_rid                PROTO((tree));
 
 /* in method.c */
 extern void init_method				PROTO((void));
@@ -3122,7 +3142,7 @@ extern tree common_type				PROTO((tree, tree));
 extern int compexcepttypes			PROTO((tree, tree));
 extern int comptypes				PROTO((tree, tree, int));
 extern int comp_target_types			PROTO((tree, tree, int));
-extern int compparms				PROTO((tree, tree, int));
+extern int compparms				PROTO((tree, tree));
 extern int comp_target_types			PROTO((tree, tree, int));
 extern int comp_cv_qualification                PROTO((tree, tree));
 extern int comp_cv_qual_signature               PROTO((tree, tree));
@@ -3176,6 +3196,9 @@ extern tree c_expand_start_case			PROTO((tree));
 extern int comp_ptr_ttypes			PROTO((tree, tree));
 extern int ptr_reasonably_similar		PROTO((tree, tree));
 extern tree build_ptrmemfunc			PROTO((tree, tree, int));
+extern int cp_type_quals                        PROTO((tree));
+extern int at_least_as_qualified_p              PROTO((tree, tree));
+extern int more_qualified_p                     PROTO((tree, tree));
 
 /* in typeck2.c */
 extern tree error_not_base_type			PROTO((tree, tree));

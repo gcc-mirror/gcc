@@ -235,11 +235,10 @@ $(PARSE_C) : $(srcdir)/parse.y
 #	cp $(PARSE_C) y.tab.c
 #	touch stamp-parse
 
-# hash.h really depends on $(srcdir)/gxx.gperf.
-# But this would screw things for people that don't have gperf,
-# if gxx.gpref got touched, say.
-# Thus you have to remove hash.h to force it to be re-made.
-$(srcdir)/hash.h:
+# We used to try to protect people from having to rerun gperf.  But,
+# the C front-end already requires this if c-parse.gperf is changed,
+# so we should be consistent.
+$(srcdir)/hash.h: $(srcdir)/gxx.gperf
 	gperf -L KR-C -F ', 0, 0' -p -j1 -g -o -t -N is_reserved_word \
 		'-k1,4,7,$$' $(srcdir)/gxx.gperf >$(srcdir)/hash.h
 

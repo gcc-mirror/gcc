@@ -1057,7 +1057,7 @@ expand_aggr_init (exp, init, flags)
       /* Must arrange to initialize each element of EXP
 	 from elements of INIT.  */
       tree itype = init ? TREE_TYPE (init) : NULL_TREE;
-      if (TYPE_READONLY (TREE_TYPE (type)) || TYPE_VOLATILE (TREE_TYPE (type)))
+      if (CP_TYPE_QUALS (type) != TYPE_UNQUALIFIED)
 	{
 	  TREE_TYPE (exp) = TYPE_MAIN_VARIANT (type);
 	  if (init)
@@ -1424,8 +1424,7 @@ build_member_call (type, name, parmlist)
       tree oldtype = TREE_TYPE (TREE_TYPE (olddecl));
       if (oldtype != type)
 	{
-	  tree newtype = build_type_variant (type, TYPE_READONLY (oldtype),
-					     TYPE_VOLATILE (oldtype));
+	  tree newtype = build_qualified_type (type, TYPE_QUALS (oldtype));
 	  decl = convert_force (build_pointer_type (newtype), olddecl, 0);
 	  decl = build_indirect_ref (decl, NULL_PTR);
 	}
@@ -2143,7 +2142,7 @@ build_new_1 (exp)
     }
   true_type = type;
 
-  if (TYPE_READONLY (type) || TYPE_VOLATILE (type))
+  if (CP_TYPE_QUALS (type))
     type = TYPE_MAIN_VARIANT (type);
 
   /* If our base type is an array, then make sure we know how many elements
@@ -2345,11 +2344,11 @@ build_new_1 (exp)
 	     allow the expression to be non-const while we do the
 	     initialization.  */
 	  deref_type = TREE_TYPE (deref);
-	  if (TYPE_READONLY (deref_type))
+	  if (CP_TYPE_CONST_P (deref_type))
 	    TREE_TYPE (deref) 
-	      = cp_build_type_variant (deref_type,
-				       /*constp=*/0,
-				       TYPE_VOLATILE (deref_type));
+	      = cp_build_qualified_type (deref_type,
+					 CP_TYPE_QUALS (deref_type) 
+					 & ~TYPE_QUAL_CONST);
 	  TREE_READONLY (deref) = 0;
 
 	  if (TREE_CHAIN (init) != NULL_TREE)
@@ -2469,7 +2468,7 @@ build_new_1 (exp)
 	    }
 	}
     }
-  else if (TYPE_READONLY (true_type))
+  else if (CP_TYPE_CONST_P (true_type))
     cp_error ("uninitialized const in `new' of `%#T'", true_type);
 
  done:

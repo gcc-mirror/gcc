@@ -1433,47 +1433,20 @@ primary:
 		{ $$ = finish_this_expr (); }
 	| CV_QUALIFIER '(' nonnull_exprlist ')'
 		{
-		  tree type = NULL_TREE;
-		  tree id = $$;
+		  /* This is a C cast in C++'s `functional' notation
+		     using the "implicit int" extension so that:
+		     `const (3)' is equivalent to `const int (3)'.  */
+		  tree type;
 
-		  /* This is a C cast in C++'s `functional' notation.  */
 		  if ($3 == error_mark_node)
 		    {
 		      $$ = error_mark_node;
 		      break;
 		    }
-#if 0
-		  if ($3 == NULL_TREE)
-		    {
-		      error ("cannot cast null list to type `%s'",
-		             IDENTIFIER_POINTER (TYPE_NAME (id)));
-		      $$ = error_mark_node;
-		      break;
-		    }
-#endif
-#if 0
-		  /* type is not set! (mrs) */
-		  if (type == error_mark_node)
-		    $$ = error_mark_node;
-		  else
-#endif
-		    {
-		      if (id == ridpointers[(int) RID_CONST])
-		        type = build_type_variant (integer_type_node, 1, 0);
-		      else if (id == ridpointers[(int) RID_VOLATILE])
-		        type = build_type_variant (integer_type_node, 0, 1);
-#if 0
-		      /* should not be able to get here (mrs) */
-		      else if (id == ridpointers[(int) RID_FRIEND])
-		        {
-		          error ("cannot cast expression to `friend' type");
-		          $$ = error_mark_node;
-		          break;
-		        }
-#endif
-		      else my_friendly_abort (79);
-		      $$ = build_c_cast (type, build_compound_expr ($3));
-		    }
+
+		  type = cp_build_qualified_type (integer_type_node,
+						  cp_type_qual_from_rid ($1));
+		  $$ = build_c_cast (type, build_compound_expr ($3));
 		}
 	| functional_cast
 	| DYNAMIC_CAST '<' type_id '>' '(' expr ')'

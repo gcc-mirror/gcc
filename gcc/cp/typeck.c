@@ -239,10 +239,9 @@ static tree
 qualify_type (type, like)
      tree type, like;
 {
-  int constflag = TYPE_READONLY (type) || TYPE_READONLY (like);
-  int volflag = TYPE_VOLATILE (type) || TYPE_VOLATILE (like);
   /* @@ Must do member pointers here.  */
-  return cp_build_type_variant (type, constflag, volflag);
+  return cp_build_qualified_type (type, (CP_TYPE_QUALS (type) 
+					 | CP_TYPE_QUALS (like)));
 }
 
 /* Return the common type of two parameter lists.
@@ -498,10 +497,8 @@ common_type (t1, t2)
       {
 	tree tt1 = TYPE_MAIN_VARIANT (TREE_TYPE (t1));
 	tree tt2 = TYPE_MAIN_VARIANT (TREE_TYPE (t2));
-	int constp
-	  = TYPE_READONLY (TREE_TYPE (t1)) || TYPE_READONLY (TREE_TYPE (t2));
-	int volatilep
-	  = TYPE_VOLATILE (TREE_TYPE (t1)) || TYPE_VOLATILE (TREE_TYPE (t2));
+	int type_quals = (CP_TYPE_QUALS (TREE_TYPE (t1)) 
+			  | CP_TYPE_QUALS (TREE_TYPE (t2)));
 	tree target;
 
 	if (tt1 == tt2)
@@ -515,7 +512,7 @@ common_type (t1, t2)
 	else
 	  target = common_type (tt1, tt2);
 
-	target = cp_build_type_variant (target, constp, volatilep);
+	target = cp_build_qualified_type (target, type_quals);
 	if (code1 == POINTER_TYPE)
 	  t1 = build_pointer_type (target);
 	else
@@ -776,9 +773,7 @@ comptypes (type1, type2, strict)
 
   /* Qualifiers must match.  */
 
-  if (TYPE_READONLY (t1) != TYPE_READONLY (t2))
-    return 0;
-  if (TYPE_VOLATILE (t1) != TYPE_VOLATILE (t2))
+  if (CP_TYPE_QUALS (t1) != CP_TYPE_QUALS (t2))
     return 0;
   if (strict > 0 && TYPE_FOR_JAVA (t1) != TYPE_FOR_JAVA (t2))
     return 0;
@@ -845,8 +840,7 @@ comptypes (type1, type2, strict)
 	 but not vice-versa!  */
 
       val = (comptypes (TREE_TYPE (t1), TREE_TYPE (t2), strict)
-	     && compparms (TYPE_ARG_TYPES (t1),
-			   TYPE_ARG_TYPES (t2), strict));
+	     && compparms (TYPE_ARG_TYPES (t1), TYPE_ARG_TYPES (t2)));
       break;
 
     case POINTER_TYPE:
@@ -888,7 +882,7 @@ comptypes (type1, type2, strict)
 
       val = ((TREE_TYPE (t1) == TREE_TYPE (t2)
 	      || comptypes (TREE_TYPE (t1), TREE_TYPE (t2), strict))
-	     && compparms (TYPE_ARG_TYPES (t1), TYPE_ARG_TYPES (t2), strict));
+	     && compparms (TYPE_ARG_TYPES (t1), TYPE_ARG_TYPES (t2)));
       break;
 
     case ARRAY_TYPE:
@@ -920,17 +914,18 @@ comp_cv_target_types (ttl, ttr, nptrs)
      int nptrs;
 {
   int t;
-  int c = TYPE_READONLY (ttl) - TYPE_READONLY (ttr);
-  int v = TYPE_VOLATILE (ttl) - TYPE_VOLATILE (ttr);
 
-  if ((c > 0 && v < 0) || (c < 0 && v > 0))
+  if (!at_least_as_qualified_p (ttl, ttr)
+      && !at_least_as_qualified_p (ttr, ttl))
+    /* The qualifications are incomparable.  */
     return 0;
 
   if (TYPE_MAIN_VARIANT (ttl) == TYPE_MAIN_VARIANT (ttr))
-    return (c + v < 0) ? -1 : 1;
+    return more_qualified_p (ttr, ttl) ? -1 : 1;
 
   t = comp_target_types (ttl, ttr, nptrs);
-  if ((t == 1 && c + v >= 0) || (t == -1 && c + v <= 0))
+  if ((t == 1 && at_least_as_qualified_p (ttl, ttr)) 
+      || (t == -1 && at_least_as_qualified_p (ttr, ttl)))
     return t;
 
   return 0;
@@ -1115,6 +1110,29 @@ comp_target_types (ttl, ttr, nptrs)
   return 0;
 }
 
+/* Returns 1 if TYPE1 is at least as qualified as TYPE2.  */
+
+int
+at_least_as_qualified_p (type1, type2)
+     tree type1;
+     tree type2;
+{
+  /* All qualifiers for TYPE2 must also appear in TYPE1.  */
+  return ((CP_TYPE_QUALS (type1) & CP_TYPE_QUALS (type2))
+	  == CP_TYPE_QUALS (type2));
+}
+
+/* Returns 1 if TYPE1 is more qualified than TYPE2.  */
+
+int
+more_qualified_p (type1, type2)
+     tree type1;
+     tree type2;
+{
+  return (CP_TYPE_QUALS (type1) != CP_TYPE_QUALS (type2)
+	  && at_least_as_qualified_p (type1, type2));
+}
+
 /* Returns 1 if TYPE1 is more cv-qualified than TYPE2, -1 if TYPE2 is
    more cv-qualified that TYPE1, and 0 otherwise.  */
 
@@ -1123,16 +1141,13 @@ comp_cv_qualification (type1, type2)
      tree type1;
      tree type2;
 {
-  if (TYPE_READONLY (type1) == TYPE_READONLY (type2)
-      && TYPE_VOLATILE (type1) == TYPE_VOLATILE (type2))
+  if (CP_TYPE_QUALS (type1) == CP_TYPE_QUALS (type2))
     return 0;
 
-  if (TYPE_READONLY (type1) >= TYPE_READONLY (type2)
-      && TYPE_VOLATILE (type1) >= TYPE_VOLATILE (type2))
+  if (at_least_as_qualified_p (type1, type2))
     return 1;
 
-  if (TYPE_READONLY (type2) >= TYPE_READONLY (type1)
-      && TYPE_VOLATILE (type2) >= TYPE_VOLATILE (type1))
+  else if (at_least_as_qualified_p (type2, type1))
     return -1;
 
   return 0;
@@ -1220,9 +1235,8 @@ common_base_type (tt1, tt2)
    STRICT is no longer used.  */
 
 int
-compparms (parms1, parms2, strict)
+compparms (parms1, parms2)
      tree parms1, parms2;
-     int strict ATTRIBUTE_UNUSED;
 {
   register tree t1 = parms1, t2 = parms2;
 
@@ -1774,11 +1788,8 @@ inline_conversion (exp)
      tree exp;
 {
   if (TREE_CODE (exp) == FUNCTION_DECL)
-    {
-      tree type = build_type_variant
-	(TREE_TYPE (exp), TREE_READONLY (exp), TREE_THIS_VOLATILE (exp));
-      exp = build1 (ADDR_EXPR, build_pointer_type (type), exp);
-    }
+    exp = build1 (ADDR_EXPR, build_pointer_type (TREE_TYPE (exp)), exp);
+
   return exp;
 }
 
@@ -1802,7 +1813,7 @@ string_conv_p (totype, exp, warn)
 
   if (TREE_CODE (exp) != STRING_CST)
     {
-      t = build_pointer_type (build_type_variant (t, 1, 0));
+      t = build_pointer_type (build_qualified_type (t, TYPE_QUAL_CONST));
       if (! comptypes (TREE_TYPE (exp), t, 1))
 	return 0;
       STRIP_NOPS (exp);
@@ -1947,8 +1958,7 @@ build_component_ref (datum, component, basetype_path, protect)
   register tree field = NULL;
   register tree ref;
   tree field_type;
-  int constp;
-  int volatilep;
+  int type_quals;
 
   if (processing_template_decl)
     return build_min_nt (COMPONENT_REF, datum, component);
@@ -2167,8 +2177,7 @@ build_component_ref (datum, component, basetype_path, protect)
     }
 
   /* Compute the type of the field, as described in [expr.ref].  */
-  constp = 0;
-  volatilep = 0;
+  type_quals = TYPE_UNQUALIFIED;
   field_type = TREE_TYPE (field);
   if (TREE_CODE (field_type) == REFERENCE_TYPE)
     /* The standard says that the type of the result should be the
@@ -2177,17 +2186,16 @@ build_component_ref (datum, component, basetype_path, protect)
     ;
   else
     {
+      type_quals = (CP_TYPE_QUALS (field_type)  
+		    | CP_TYPE_QUALS (TREE_TYPE (datum)));
+
       /* A field is const (volatile) if the enclosing object, or the
 	 field itself, is const (volatile).  But, a mutable field is
 	 not const, even within a const object.  */
-      constp = (!(DECL_LANG_SPECIFIC (field) 
-		  && DECL_MUTABLE_P (field))
-		&& (TYPE_READONLY (field_type)
-		    || TYPE_READONLY (TREE_TYPE (datum))));
-      volatilep = (TYPE_VOLATILE (field_type)
-		   || TYPE_VOLATILE (TREE_TYPE (datum)));
+      if (DECL_LANG_SPECIFIC (field) && DECL_MUTABLE_P (field))
+	type_quals &= ~TYPE_QUAL_CONST;
       if (!IS_SIGNATURE (field_type))
-	field_type = cp_build_type_variant (field_type, constp, volatilep);
+	field_type = cp_build_qualified_type (field_type, type_quals);
     }
 
   ref = fold (build (COMPONENT_REF, field_type,
@@ -2196,9 +2204,9 @@ build_component_ref (datum, component, basetype_path, protect)
   /* Mark the expression const or volatile, as appropriate.  Even
      though we've dealt with the type above, we still have to mark the
      expression itself.  */
-  if (constp)
+  if (type_quals & TYPE_QUAL_CONST)
     TREE_READONLY (ref) = 1;
-  else if (volatilep)
+  else if (type_quals & TYPE_QUAL_VOLATILE)
     TREE_THIS_VOLATILE (ref) = 1;
 
   return ref;
@@ -2286,8 +2294,8 @@ build_indirect_ref (ptr, errorstring)
 	  /* We *must* set TREE_READONLY when dereferencing a pointer to const,
 	     so that we get the proper error message if the result is used
 	     to assign to.  Also, &* is supposed to be a no-op.  */
-	  TREE_READONLY (ref) = TYPE_READONLY (t);
-	  TREE_THIS_VOLATILE (ref) = TYPE_VOLATILE (t);
+	  TREE_READONLY (ref) = CP_TYPE_CONST_P (t);
+	  TREE_THIS_VOLATILE (ref) = CP_TYPE_VOLATILE_P (t);
 	  TREE_SIDE_EFFECTS (ref)
 	    = (TREE_THIS_VOLATILE (ref) || TREE_SIDE_EFFECTS (pointer)
 	       || flag_volatile);
@@ -2406,11 +2414,11 @@ build_array_ref (array, idx)
       /* Array ref is const/volatile if the array elements are
 	 or if the array is..  */
       TREE_READONLY (rval)
-	|= (TYPE_READONLY (type) | TREE_READONLY (array));
+	|= (CP_TYPE_CONST_P (type) | TREE_READONLY (array));
       TREE_SIDE_EFFECTS (rval)
-	|= (TYPE_VOLATILE (type) | TREE_SIDE_EFFECTS (array));
+	|= (CP_TYPE_VOLATILE_P (type) | TREE_SIDE_EFFECTS (array));
       TREE_THIS_VOLATILE (rval)
-	|= (TYPE_VOLATILE (type) | TREE_THIS_VOLATILE (array));
+	|= (CP_TYPE_VOLATILE_P (type) | TREE_THIS_VOLATILE (array));
       return require_complete_type (fold (rval));
     }
 
@@ -4449,7 +4457,7 @@ build_unary_op (code, xarg, noconvert)
 
       /* Report something read-only.  */
 
-      if (TYPE_READONLY (TREE_TYPE (arg))
+      if (CP_TYPE_CONST_P (TREE_TYPE (arg))
 	  || TREE_READONLY (arg))
 	readonly_error (arg, ((code == PREINCREMENT_EXPR
 			       || code == POSTINCREMENT_EXPR)
@@ -5075,10 +5083,9 @@ build_conditional_expr (ifexp, op1, op2)
       else if (TREE_READONLY_DECL_P (op2))
 	op2 = decl_constant_value (op2);
       if (type1 != type2)
-	type1 = cp_build_type_variant
-			(type1,
-			 TYPE_READONLY (op1) || TYPE_READONLY (op2),
-			 TYPE_VOLATILE (op1) || TYPE_VOLATILE (op2));
+	type1 = cp_build_qualified_type
+	  (type1, (CP_TYPE_QUALS (TREE_TYPE (op1)) 
+		   | CP_TYPE_QUALS (TREE_TYPE (op2))));
       /* ??? This is a kludge to deal with the fact that
 	 we don't sort out integers and enums properly, yet.  */
       result = fold (build (COND_EXPR, type1, ifexp, op1, op2));
@@ -5151,10 +5158,10 @@ build_conditional_expr (ifexp, op1, op2)
       if (type1 == type2)
 	result_type = type1;
       else
-	result_type = cp_build_type_variant
-			(type1,
-			 TREE_READONLY (op1) || TREE_READONLY (op2),
-			 TREE_THIS_VOLATILE (op1) || TREE_THIS_VOLATILE (op2));
+	result_type = 
+	  cp_build_qualified_type (type1,
+				   CP_TYPE_QUALS (TREE_TYPE (op1))
+				   | CP_TYPE_QUALS (TREE_TYPE (op2)));
     }
   else if ((code1 == INTEGER_TYPE || code1 == REAL_TYPE)
            && (code2 == INTEGER_TYPE || code2 == REAL_TYPE))
@@ -5247,7 +5254,10 @@ build_conditional_expr (ifexp, op1, op2)
 	  tree tmp;
 	  if (code2 == POINTER_TYPE)
 	      tmp = build_pointer_type
-		(build_type_variant (TREE_TYPE (type2), 1, 1));
+		(cp_build_qualified_type (TREE_TYPE (type2), 
+					  TYPE_QUAL_CONST 
+					  | TYPE_QUAL_VOLATILE
+					  | TYPE_QUAL_RESTRICT));
 	  else
 	    tmp = type2;
 	  tmp = build_type_conversion (CONVERT_EXPR, tmp, op1, 0);
@@ -5269,7 +5279,10 @@ build_conditional_expr (ifexp, op1, op2)
 	  tree tmp;
 	  if (code1 == POINTER_TYPE)
 	    tmp = build_pointer_type
-	      (build_type_variant (TREE_TYPE (type1), 1, 1));
+	      (cp_build_qualified_type (TREE_TYPE (type1), 
+					TYPE_QUAL_CONST 
+					| TYPE_QUAL_VOLATILE
+					| TYPE_QUAL_RESTRICT));
 	  else
 	    tmp = type1;
 
@@ -5454,10 +5467,8 @@ build_static_cast (type, expr)
     {
       tree binfo;
       if (IS_AGGR_TYPE (TREE_TYPE (type)) && IS_AGGR_TYPE (TREE_TYPE (intype))
-	  && (TYPE_READONLY (TREE_TYPE (type))
-	      >= TYPE_READONLY (TREE_TYPE (intype)))
-	  && (TYPE_VOLATILE (TREE_TYPE (type))
-	      >= TYPE_VOLATILE (TREE_TYPE (intype)))
+	  && at_least_as_qualified_p (TREE_TYPE (type),
+				      TREE_TYPE (intype))
 	  && (binfo = get_binfo (TREE_TYPE (intype), TREE_TYPE (type), 0))
 	  && ! TREE_VIA_VIRTUAL (binfo))
 	ok = 1;
@@ -5466,10 +5477,8 @@ build_static_cast (type, expr)
     {
       if (comptypes (TYPE_MAIN_VARIANT (TREE_TYPE (TREE_TYPE (type))),
 		     TYPE_MAIN_VARIANT (TREE_TYPE (TREE_TYPE (intype))), 1)
-	  && (TYPE_READONLY (TREE_TYPE (TREE_TYPE (type)))
-	      >= TYPE_READONLY (TREE_TYPE (TREE_TYPE (intype))))
-	  && (TYPE_VOLATILE (TREE_TYPE (TREE_TYPE (type)))
-	      >= TYPE_VOLATILE (TREE_TYPE (TREE_TYPE (intype))))
+	  && at_least_as_qualified_p (TREE_TYPE (TREE_TYPE (type)),
+				      TREE_TYPE (TREE_TYPE (intype)))
 	  && (binfo = get_binfo (TYPE_OFFSET_BASETYPE (TREE_TYPE (type)),
 				 TYPE_OFFSET_BASETYPE (TREE_TYPE (intype)), 0))
 	  && ! TREE_VIA_VIRTUAL (binfo))
@@ -5770,17 +5779,10 @@ build_c_cast (type, expr)
 
       if (warn_cast_qual
 	  && TREE_CODE (type) == POINTER_TYPE
-	  && TREE_CODE (otype) == POINTER_TYPE)
-	{
-	  /* For C++ we make these regular warnings, rather than
-	     softening them into pedwarns.  */
-	  if (TYPE_VOLATILE (TREE_TYPE (otype))
-	      && ! TYPE_VOLATILE (TREE_TYPE (type)))
-	    warning ("cast discards `volatile' from pointer target type");
-	  if (TYPE_READONLY (TREE_TYPE (otype))
-	      && ! TYPE_READONLY (TREE_TYPE (type)))
-	    warning ("cast discards `const' from pointer target type");
-	}
+	  && TREE_CODE (otype) == POINTER_TYPE
+	  && !at_least_as_qualified_p (TREE_TYPE (type),
+				       TREE_TYPE (otype)))
+	cp_warning ("cast discards qualifiers from pointer target type");
 
       /* Warn about possible alignment problems.  */
       if (STRICT_ALIGNMENT && warn_cast_align
@@ -6067,7 +6069,7 @@ build_modify_expr (lhs, modifycode, rhs)
       && ! (TREE_CODE (lhs) == COMPONENT_REF
 	    && (IS_SIGNATURE_POINTER (TREE_TYPE (TREE_OPERAND (lhs, 0)))
 		|| IS_SIGNATURE_REFERENCE (TREE_TYPE (TREE_OPERAND (lhs, 0)))))
-      && (TREE_READONLY (lhs) || TYPE_READONLY (lhstype)
+      && (TREE_READONLY (lhs) || CP_TYPE_CONST_P (lhstype)
 	  /* Functions are not modifiable, even though they are
 	     lvalues.  */
 	  || TREE_CODE (TREE_TYPE (lhs)) == FUNCTION_TYPE
@@ -6075,7 +6077,7 @@ build_modify_expr (lhs, modifycode, rhs)
 	       || TREE_CODE (lhstype) == UNION_TYPE)
 	      && C_TYPE_FIELDS_READONLY (lhstype))
 	  || (TREE_CODE (lhstype) == REFERENCE_TYPE
-	      && TYPE_READONLY (TREE_TYPE (lhstype)))))
+	      && CP_TYPE_CONST_P (TREE_TYPE (lhstype)))))
     readonly_error (lhs, "assignment", 0);
 
   /* If storing into a structure or union member,
@@ -6751,22 +6753,13 @@ convert_for_assignment (type, rhs, errtype, fndecl, parmnum)
 	  if (binfo == 0)
 	    return error_not_base_type (ttl, ttr);
 
-	  if (! TYPE_READONLY (ttl) && TYPE_READONLY (ttr))
+	  if (!at_least_as_qualified_p (ttl, ttr))
 	    {
 	      if (fndecl)
-		cp_error ("passing `%T' as argument %P of `%D' discards const",
+		cp_error ("passing `%T' as argument %P of `%D' discards qualifiers",
 			  rhstype, parmnum, fndecl);
 	      else
-		cp_error ("%s to `%T' from `%T' discards const",
-			  errtype, type, rhstype);
-	    }
-	  if (! TYPE_VOLATILE (ttl) && TYPE_VOLATILE (ttr))
-	    {
-	      if (fndecl)
-		cp_error ("passing `%T' as argument %P of `%D' discards volatile",
-			  rhstype, parmnum, fndecl);
-	      else
-		cp_error ("%s to `%T' from `%T' discards volatile",
+		cp_error ("%s to `%T' from `%T' discards qualifiers",
 			  errtype, type, rhstype);
 	    }
 	}
@@ -6815,24 +6808,15 @@ convert_for_assignment (type, rhs, errtype, fndecl, parmnum)
 		  error ("%s between pointer to members converting across virtual baseclasses", errtype);
 		  return error_mark_node;
 		}
-	      else if (! TYPE_READONLY (ttl) && TYPE_READONLY (ttr))
+	      else if (!at_least_as_qualified_p (ttl, ttr))
 		{
 		  if (string_conv_p (type, rhs, 1))
 		    /* converting from string constant to char *, OK.  */;
 		  else if (fndecl)
-		    cp_error ("passing `%T' as argument %P of `%D' discards const",
+		    cp_error ("passing `%T' as argument %P of `%D' discards qualifiers",
 			      rhstype, parmnum, fndecl);
 		  else
-		    cp_error ("%s to `%T' from `%T' discards const",
-				errtype, type, rhstype);
-		}
-	      else if (! TYPE_VOLATILE (ttl) && TYPE_VOLATILE (ttr))
-		{
-		  if (fndecl)
-		    cp_error ("passing `%T' as argument %P of `%D' discards volatile",
-				rhstype, parmnum, fndecl);
-		  else
-		    cp_error ("%s to `%T' from `%T' discards volatile",
+		    cp_error ("%s to `%T' from `%T' discards qualifiers",
 				errtype, type, rhstype);
 		}
 	      else if (TREE_CODE (ttl) == TREE_CODE (ttr)
@@ -6849,7 +6833,8 @@ convert_for_assignment (type, rhs, errtype, fndecl, parmnum)
 	}
       else
 	{
-	  int add_quals = 0, const_parity = 0, volatile_parity = 0;
+	  int add_quals = 0;
+	  int drops_quals = 0;
 	  int left_const = 1;
 	  int unsigned_parity;
 	  int nptrs = 0;
@@ -6858,12 +6843,10 @@ convert_for_assignment (type, rhs, errtype, fndecl, parmnum)
 	  for (; ; ttl = TREE_TYPE (ttl), ttr = TREE_TYPE (ttr))
 	    {
 	      nptrs -= 1;
-	      const_parity |= (TYPE_READONLY (ttl) < TYPE_READONLY (ttr));
-	      volatile_parity |= (TYPE_VOLATILE (ttl) < TYPE_VOLATILE (ttr));
+	      drops_quals |= !at_least_as_qualified_p (ttl, ttr);
 
 	      if (! left_const
-		  && (TYPE_READONLY (ttl) > TYPE_READONLY (ttr)
-		      || TYPE_VOLATILE (ttl) > TYPE_VOLATILE (ttr)))
+		  && !at_least_as_qualified_p (ttr, ttl))
 		add_quals = 1;
 	      left_const &= TYPE_READONLY (ttl);
 
@@ -6891,23 +6874,14 @@ convert_for_assignment (type, rhs, errtype, fndecl, parmnum)
 		    cp_pedwarn ("%s to `%T' from `%T' adds cv-quals without intervening `const'",
 				errtype, type, rhstype);
 		}
-	      if (const_parity)
+	      if (drops_quals)
 		{
 		  if (fndecl)
-		    cp_error ("passing `%T' as argument %P of `%D' discards const",
+		    cp_error ("passing `%T' as argument %P of `%D' discards qualifiers",
 			      rhstype, parmnum, fndecl);
 		  else
-		    cp_error ("%s to `%T' from `%T' discards const",
+		    cp_error ("%s to `%T' from `%T' discards qualifiers",
 				errtype, type, rhstype);
-		}
-	      if (volatile_parity)
-		{
-		  if (fndecl)
-		    cp_error ("passing `%T' as argument %P of `%D' discards volatile",
-			      rhstype, parmnum, fndecl);
-		  else
-		    cp_error ("%s to `%T' from `%T' discards volatile",
-			      errtype, type, rhstype);
 		}
 	      if (unsigned_parity > 0)
 		{
@@ -7215,7 +7189,7 @@ c_expand_asm_operands (string, outputs, inputs, clobbers, vol, filename, line)
       else
 	{
 	  tree type = TREE_TYPE (o[i]);
-	  if (TYPE_READONLY (type)
+	  if (CP_TYPE_CONST_P (type)
 	      || ((TREE_CODE (type) == RECORD_TYPE
 		   || TREE_CODE (type) == UNION_TYPE)
 		  && C_TYPE_FIELDS_READONLY (type)))
@@ -7532,12 +7506,10 @@ comp_ptr_ttypes_real (to, from, constp)
 	 so the usual checks are not appropriate.  */
       if (TREE_CODE (to) != FUNCTION_TYPE && TREE_CODE (to) != METHOD_TYPE)
 	{
-	  if (TYPE_READONLY (from) > TYPE_READONLY (to)
-	      || TYPE_VOLATILE (from) > TYPE_VOLATILE (to))
+	  if (!at_least_as_qualified_p (to, from))
 	    return 0;
 
-	  if (TYPE_READONLY (to) > TYPE_READONLY (from)
-	      || TYPE_VOLATILE (to) > TYPE_VOLATILE (from))
+	  if (!at_least_as_qualified_p (from, to))
 	    {
 	      if (constp == 0)
 		return 0;
@@ -7633,13 +7605,11 @@ comp_ptr_ttypes_reinterpret (to, from)
 	 so the usual checks are not appropriate.  */
       if (TREE_CODE (to) != FUNCTION_TYPE && TREE_CODE (to) != METHOD_TYPE)
 	{
-	  if (TYPE_READONLY (from) > TYPE_READONLY (to)
-	      || TYPE_VOLATILE (from) > TYPE_VOLATILE (to))
+	  if (!at_least_as_qualified_p (to, from))
 	    return 0;
 
 	  if (! constp
-	      && (TYPE_READONLY (to) > TYPE_READONLY (from)
-		  || TYPE_VOLATILE (to) > TYPE_READONLY (from)))
+	      && !at_least_as_qualified_p (from, to))
 	    return 0;
 	  constp &= TYPE_READONLY (to);
 	}
@@ -7647,4 +7617,16 @@ comp_ptr_ttypes_reinterpret (to, from)
       if (TREE_CODE (to) != POINTER_TYPE)
 	return 1;
     }
+}
+
+/* Returns the type-qualifier set corresponding to TYPE.  */
+
+int
+cp_type_quals (type)
+     tree type;
+{
+  while (TREE_CODE (type) == ARRAY_TYPE)
+    type = TREE_TYPE (type);
+
+  return TYPE_QUALS (type);
 }

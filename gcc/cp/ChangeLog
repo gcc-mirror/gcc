@@ -1,3 +1,120 @@
+1998-10-23  Mark Mitchell  <mark@markmitchell.com>
+
+	* Makefile.in (hash.h): Run gperf when necessary.
+
+	* cp-tree.h (CP_TYPE_READONLY): Remove.
+	(CP_TYPE_VOLATILE): Likewise.
+	(CP_TYPE_QUALS): New macro.
+	(CP_TYPE_CONST_P): Likewise.
+	(CP_TYPE_VOLATILE_P): Likewise.
+	(CP_TYPE_RESTRICT_P): Likewise.
+	(CP_TYPE_CONST_NON_VOLATILE_P): Likewise.
+	(cp_build_type_variant): Rename to ...
+	(cp_build_qualified_type): New function.
+	(c_apply_type_quals_to_decl): Declare.
+	(SIGNATURE_POINTER_NAME_FORMAT): Modify to allow `restrict'.
+	(SIGNATURE_REFERENCE_NAME_FORMAT): Likewise.
+	(cp_type_qual_from_rid): New function.
+	(compparms): Remove unused parameter.  All callers changed.
+	(cp_type_quals): New function.
+	(at_least_as_qualified_p): Likewise.
+	(more_qualified_p): Likewise.
+	
+	* call.c (standard_conversion): Replace calls to
+	cp_build_type_variant with cp_build_qualified_type.  Use
+	CP_TYPE_QUALS to get qualifiers and at_least_as_qualified_p to
+	compare them.  Use CP_TYPE_* macros to check qualifiers.
+	(reference_binding): Likewise.
+	(implicit_conversion): Likewise.
+	(add_builtin_candidates): Likewise.
+	(build_over_call): Likewise.
+	* class.c (overrides): Compare all qualifiers, not just `const',
+	on method declarations.
+	* cvt.c (convert_to_reference): More CP_TYPE_QUALS conversion, etc.
+	(convert_pointer_to_real): Likewise.
+	(type_promotes_to): Likewise.
+	* decl.c (check_for_uninitialized_const_var): New function.
+	(init_decl_processing): More CP_TYPE_QUALS conversion, etc.
+	(cp_finish_decl): Use check_for_uninitialized_const_var.
+	(grokdeclarator): More CP_TYPE_QUALS conversion, etc.  Update to
+	handle `restrict'.
+	(grok_ctor_properties): Likewise.
+	(grok_op_properties): Likewise.
+	(start_function): Likewise.
+	(rever_static_member_fn): Likewise.
+	* decl2.c (grok_method_quals): Likewise.
+	(grokfield): Likewise.
+	* error.c (dump_readonly_or_volatile): Rename to ...
+	(dump_qualifiers): New function.  Handle `restrict'.
+	(dump_type_real): Use it.
+	(dump_aggr_type): Likewise.
+	(dump_type_prefix): Likewise.
+	(dump_type_suffix): Likewise.
+	(dump_function_decl): Likewise.
+	(cv_as_string): Likewise.
+	* gxx.gperf: Add __restrict and __restrict__.
+	* gxxint.texi: Document `u' as used for `__restrict', and a few
+	other previously undocumented codes.
+	* hash.h: Regenerated.
+	* init.c (expand_aggr_init): More CP_TYPE_QUALS conversion, etc.
+	(build_member_call): Likewise.
+	(build_new_1): Likewise.
+	* lex.c (init_parse): Add entry for RID_RESTRICT.
+	(cons_up_default_function): More CP_TYPE_QUALS conversion, etc.
+	(cp_type_qual_from_rid): Define.
+	* lex.h (enum rid): Add RID_RESTRICT.
+	* method.c (process_modifiers): Deal with `restrict'.
+	* parse.y (primary): More CP_TYPE_QUALS conversion, etc.
+	* parse.c: Regenerated.
+	* pt.c (convert_nontype_argument): More CP_TYPE_QUALS conversion, etc.
+	(tsubst_aggr_type): Likewise.
+	(tsubst): Likewise.
+	(check_cv_quals_for_unify): Likewise.
+	(unify): Likewise.
+	* rtti.c (init_rtti_processing): Likewise.
+	(build_headof): Likewise.
+	(get_tinfo_var): Likewise.
+	(buidl_dynamic_cast_1): Likewise.  Fix `volatile' handling.
+	(expand_class_desc): Likewise.
+	(expand_attr_desc): Likewise.
+	(synthesize_tinfo_fn): Likewise.
+	* search.c (covariant_return_p): Likewise.  Fix `volatile' handling. 
+	(get_matching_virtual): Likewise.
+	(expand_upcast_fixups): Likewise.
+	* sig.c (build_signature_pointer_or_reference_name): Take
+	type_quals, not constp and volatilep.
+	(build_signature_pointer_or_reference_type): Likewise.
+	(match_method_types): More CP_TYPE_QUALS conversion, etc.
+	(build_signature_pointer_constructor): Likewise.
+	(build_signature_method_call): Likewise.
+	* tree.c (build_cplus_array_type): Likewise.
+	(cp_build_type_variant): Rename to ...
+	(cp_build_qualified_type): New function.  Deal with `__restrict'.
+	(canonical_type_variant): More CP_TYPE_QUALS conversion, etc.
+	(build_exception_variant): Likewise.
+	(mapcar): Likewise.
+	* typeck.c (qualif_type): Likewise.
+	(common_type): Likewise.
+	(comptypes): Likewise.
+	(comp_cv_target_types): Likewise.
+	(at_least_as_qualified_p): Define.
+	(more_qualified_p): Likewise.
+	(comp_cv_qualification): More CP_TYPE_QUALS conversion, etc.
+	(compparms): Likewise.
+	(inline_conversion): Likewise.
+	(string_conv_p): Likewise.
+	(build_component_ref): Likewise.
+	(build_indirect_ref): Likewise.
+	(build_array_ref): Likewise.
+	(build_unary_op): Likewise.
+	(build_conditional_expr): Likewise.
+	(build_static_cast): Likewise.
+	(build_c_cast): Likewise.
+	(build_modify_expr): Likewise.
+	(convert_For_assignment): Likewise.
+	(comp_ptr_ttypes_real): Likewise.
+	(cp_type_quals): New function.
+	
 1998-10-23  Jason Merrill  <jason@yorick.cygnus.com>
 
 	* cp-tree.h (CP_TYPE_READONLY): New macro to handle arrays.

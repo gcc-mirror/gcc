@@ -2598,10 +2598,8 @@ convert_nontype_argument (type, expr)
 	       template-argument, which must be an lvalue.  */
 	    if (!comptypes (TYPE_MAIN_VARIANT (expr_type),
 			    TYPE_MAIN_VARIANT (type), 1)
-		|| (TYPE_READONLY (expr_type) >
-		    TYPE_READONLY (type_referred_to))
-		|| (TYPE_VOLATILE (expr_type) >
-		    TYPE_VOLATILE (type_referred_to))
+		|| !at_least_as_qualified_p (type_referred_to,
+					     expr_type)
 		|| !real_lvalue_p (expr))
 	      return error_mark_node;
 	    else
@@ -4872,8 +4870,7 @@ tsubst_aggr_type (t, args, in_decl, entering_scope)
 	{
 	  tree r = build_ptrmemfunc_type
 	    (tsubst (TYPE_PTRMEMFUNC_FN_TYPE (t), args, in_decl));
-	  return cp_build_type_variant (r, TYPE_READONLY (t),
-					TYPE_VOLATILE (t));
+	  return cp_build_qualified_type (r, TYPE_QUALS (t));
 	}
 
       /* else fall through */
@@ -4907,8 +4904,7 @@ tsubst_aggr_type (t, args, in_decl, entering_scope)
   	  r = lookup_template_class (t, argvec, in_decl, context,
 				     entering_scope);
 
-	  return cp_build_type_variant (r, TYPE_READONLY (t),
-					TYPE_VOLATILE (t));
+	  return cp_build_qualified_type (r, TYPE_QUALS (t));
 	}
       else 
 	/* This is not a template type, so there's nothing to do.  */
@@ -5559,9 +5555,8 @@ tsubst (t, args, in_decl)
 		  {
 		    my_friendly_assert (TREE_CODE_CLASS (TREE_CODE (arg))
 					== 't', 0);
-		    return cp_build_type_variant
-		      (arg, TYPE_READONLY (arg) || TYPE_READONLY (t),
-		       TYPE_VOLATILE (arg) || TYPE_VOLATILE (t));
+		    return cp_build_qualified_type
+		      (arg, CP_TYPE_QUALS (arg) | CP_TYPE_QUALS (t));
 		  }
 		else if (TREE_CODE (t) == TEMPLATE_TEMPLATE_PARM)
 		  {
@@ -5585,8 +5580,7 @@ tsubst (t, args, in_decl)
 						   argvec, in_decl, 
 						   DECL_CONTEXT (arg),
 						   /*entering_scope=*/0);
-			return cp_build_type_variant (r, TYPE_READONLY (t),
-						      TYPE_VOLATILE (t));
+			return cp_build_qualified_type (r, TYPE_QUALS (t));
 		      }
 		    else
 		      /* We are processing a template argument list.  */ 
@@ -5736,7 +5730,7 @@ tsubst (t, args, in_decl)
 	  r = build_pointer_type (type);
 	else
 	  r = build_reference_type (type);
-	r = cp_build_type_variant (r, TYPE_READONLY (t), TYPE_VOLATILE (t));
+	r = cp_build_qualified_type (r, TYPE_QUALS (t));
 
 	/* Will this ever be needed for TYPE_..._TO values?  */
 	layout_type (r);
@@ -5766,10 +5760,7 @@ tsubst (t, args, in_decl)
 	    = build_cplus_method_type (TREE_TYPE (TREE_VALUE (arg_types)),
 				       type,
 				       TREE_CHAIN (arg_types));
-
-	fntype = build_type_variant (fntype,
-				     TYPE_READONLY (t),
-				     TYPE_VOLATILE (t));
+	fntype = build_qualified_type (fntype, TYPE_QUALS (t));
 
 	/* Substitue the exception specification. */
 	raises = TYPE_RAISES_EXCEPTIONS (t);
@@ -5820,9 +5811,9 @@ tsubst (t, args, in_decl)
 	  return error_mark_node;
 
 	f = make_typename_type (ctx, f);
-	return cp_build_type_variant
-	  (f, TYPE_READONLY (f) || TYPE_READONLY (t),
-	   TYPE_VOLATILE (f) || TYPE_VOLATILE (t));
+	return cp_build_qualified_type (f, 
+					CP_TYPE_QUALS (f) 
+					| CP_TYPE_QUALS (t));
       }
 
     case INDIRECT_REF:
@@ -7085,11 +7076,9 @@ check_cv_quals_for_unify (strict, arg, parm)
      tree parm;
 {
   return !((!(strict & UNIFY_ALLOW_MORE_CV_QUAL)
-	    && (TYPE_READONLY (arg) < TYPE_READONLY (parm)
-		|| TYPE_VOLATILE (arg) < TYPE_VOLATILE (parm)))
+	    && !at_least_as_qualified_p (arg, parm))
 	   || (!(strict & UNIFY_ALLOW_LESS_CV_QUAL)
-	       && (TYPE_READONLY (arg) > TYPE_READONLY (parm)
-		   || TYPE_VOLATILE (arg) > TYPE_VOLATILE (parm))));
+	       && (!at_least_as_qualified_p (parm, arg))));
 }
 
 /* Takes parameters as for type_unification.  Returns 0 if the
@@ -7249,9 +7238,9 @@ unify (tparms, targs, parm, arg, strict, explicit_mask)
 	  /* Consider the case where ARG is `const volatile int' and
 	     PARM is `const T'.  Then, T should be `volatile int'.  */
 	  arg = 
-	    cp_build_type_variant (arg, 
-				   TYPE_READONLY (arg) > TYPE_READONLY (parm),
-				   TYPE_VOLATILE (arg) > TYPE_VOLATILE (parm));
+	    cp_build_qualified_type (arg,
+				     CP_TYPE_QUALS (arg) 
+				     & ~CP_TYPE_QUALS (parm));
 	}
 
       /* Simple cases: Value already set, does match or doesn't.  */

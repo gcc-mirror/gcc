@@ -22,6 +22,8 @@ __label__, LABEL, NORID
 __null, CONSTANT, RID_NULL
 __real, REALPART, NORID
 __real__, REALPART, NORID
+__restrict, CV_QUALIFIER, RID_RESTRICT
+__restrict__, CV_QUALIFIER, RID_RESTRICT
 __signature__, AGGR, RID_SIGNATURE	/* Extension */,
 __signed, TYPESPEC, RID_SIGNED
 __signed__, TYPESPEC, RID_SIGNED
