@@ -1,3 +1,9 @@
+2005-01-25  Roger Sayle  <roger@eyesopen.com>
+
+	* expmed.c (choose_multiplier): Change interface to return the
+	multiplier lowpart as an rtx instead of an unsigned HOST_WIDE_INT.
+	(expand_divmod): Update calls to choose_multiplier.
+
 2005-01-24  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
 	PR middle-end/19330
