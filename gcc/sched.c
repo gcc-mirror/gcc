@@ -313,7 +313,7 @@ static int insn_cost			PROTO((rtx, rtx, rtx));
 static int priority			PROTO((rtx));
 static void free_pending_lists		PROTO((void));
 static void add_insn_mem_dependence	PROTO((rtx *, rtx *, rtx, rtx));
-static void flush_pending_lists		PROTO((rtx));
+static void flush_pending_lists		PROTO((rtx, int));
 static void sched_analyze_1		PROTO((rtx, rtx));
 static void sched_analyze_2		PROTO((rtx, rtx));
 static void sched_analyze_insn		PROTO((rtx, rtx, rtx));
@@ -1628,15 +1628,17 @@ add_insn_mem_dependence (insn_list, mem_list, insn, mem)
 }
 
 /* Make a dependency between every memory reference on the pending lists
-   and INSN, thus flushing the pending lists.  */
+   and INSN, thus flushing the pending lists.  If ONLY_WRITE, don't flush
+   the read list.  */
 
 static void
-flush_pending_lists (insn)
+flush_pending_lists (insn, only_write)
      rtx insn;
+     int only_write;
 {
   rtx link;
 
-  while (pending_read_insns)
+  while (pending_read_insns && ! only_write)
     {
       add_dependence (insn, XEXP (pending_read_insns, 0), REG_DEP_ANTI);
 
@@ -1765,7 +1767,7 @@ sched_analyze_1 (x, insn)
 	     seems like a reasonable number.  When compiling GCC with itself,
 	     this flush occurs 8 times for sparc, and 10 times for m88k using
 	     the number 32.  */
-	  flush_pending_lists (insn);
+	  flush_pending_lists (insn, 0);
 	}
       else
 	{
@@ -1984,7 +1986,7 @@ sched_analyze_2 (x, insn)
 	      }
 	    reg_pending_sets_all = 1;
 
-	    flush_pending_lists (insn);
+	    flush_pending_lists (insn, 0);
 	  }
 
 	/* For all ASM_OPERANDS, we must traverse the vector of input operands.
@@ -2088,7 +2090,7 @@ sched_analyze_insn (x, insn, loop_notes)
 	}
       reg_pending_sets_all = 1;
 
-      flush_pending_lists (insn);
+      flush_pending_lists (insn, 0);
 
       link = loop_notes;
       while (XEXP (link, 1))
@@ -2263,15 +2265,11 @@ sched_analyze (head, tail)
 	  sched_analyze_insn (PATTERN (insn), insn, loop_notes);
 	  loop_notes = 0;
 
-	  /* We don't need to flush memory for a function call which does
-	     not involve memory.  */
-	  if (! CONST_CALL_P (insn))
-	    {
-	      /* In the absence of interprocedural alias analysis,
-		 we must flush all pending reads and writes, and
-		 start new dependencies starting from here.  */
-	      flush_pending_lists (insn);
-	    }
+	  /* In the absence of interprocedural alias analysis, we must flush
+	     all pending reads and writes, and start new dependencies starting
+	     from here.  But only flush writes for constant calls (which may
+	     be passed a pointer to something we haven't written yet).  */
+	  flush_pending_lists (insn, CONST_CALL_P (insn));
 
 	  /* Depend this function call (actually, the user of this
 	     function call) on all hard register clobberage.  */
