@@ -489,7 +489,7 @@ got_symbolic_operand (rtx op, enum machine_mode mode ATTRIBUTE_UNUSED)
       /* "Ok" while emitting rtl, since otherwise we won't be provided
 	 with the entire offset during emission, which makes it very
 	 hard to split the offset into high and low parts.  */
-      if (rtx_equal_function_value_matters)
+      if (currently_expanding_to_rtl)
 	return 1;
 
       /* Force the low 14 bits of the constant to zero so that we do not

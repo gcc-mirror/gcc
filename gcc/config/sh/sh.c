@@ -2286,9 +2286,6 @@ shl_and_scr_length (rtx insn)
   return len + shift_insns[INTVAL (XEXP (op, 1))];
 }
 
-/* Generating rtl? */
-extern int rtx_equal_function_value_matters;
-
 /* Generate rtl for instructions for which shl_and_kind advised a particular
    method of generating them, i.e. returned zero.  */
 
@@ -2359,7 +2356,7 @@ gen_shl_and (rtx dest, rtx left_rtx, rtx mask_rtx, rtx source)
     case 2:
       /* Don't expand fine-grained when combining, because that will
          make the pattern fail.  */
-      if (rtx_equal_function_value_matters
+      if (currently_expanding_to_rtl
 	  || reload_in_progress || reload_completed)
 	{
 	  rtx operands[3];
@@ -2556,7 +2553,7 @@ gen_shl_sext (rtx dest, rtx left_rtx, rtx size_rtx, rtx source)
 
 	/* Don't expand fine-grained when combining, because that will
 	   make the pattern fail.  */
-	if (! rtx_equal_function_value_matters
+	if (! currently_expanding_to_rtl
 	    && ! reload_in_progress && ! reload_completed)
 	  {
 	    emit_insn (gen_shl_sext_ext (dest, source, left_rtx, size_rtx));
@@ -2611,7 +2608,7 @@ gen_shl_sext (rtx dest, rtx left_rtx, rtx size_rtx, rtx source)
     case 5:
       {
 	int i = 16 - size;
-	if (! rtx_equal_function_value_matters
+	if (! currently_expanding_to_rtl
 	    && ! reload_in_progress && ! reload_completed)
 	  emit_insn (gen_shl_sext_ext (dest, source, left_rtx, size_rtx));
 	else
@@ -2630,7 +2627,7 @@ gen_shl_sext (rtx dest, rtx left_rtx, rtx size_rtx, rtx source)
     case 7:
       /* Don't expand fine-grained when combining, because that will
 	 make the pattern fail.  */
-      if (! rtx_equal_function_value_matters
+      if (! currently_expanding_to_rtl
 	  && ! reload_in_progress && ! reload_completed)
 	{
 	  emit_insn (gen_shl_sext_ext (dest, source, left_rtx, size_rtx));

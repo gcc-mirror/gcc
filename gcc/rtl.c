@@ -320,6 +320,10 @@ shallow_copy_rtx_stat (rtx orig MEM_STAT_DECL)
 
 /* Nonzero when we are generating CONCATs.  */
 int generating_concat_p;
+
+/* Nonzero when we are expanding trees to RTL.  */
+int currently_expanding_to_rtl;
+
 
 /* Return 1 if X and Y are identical-looking rtx's.
    This is the Lisp function EQUAL for rtx arguments.  */

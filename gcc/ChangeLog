@@ -1,3 +1,16 @@
+2004-07-29  Steven Bosscher  <stevenb@suse.de>
+
+	* rtl.c (currently_expanding_to_rtl): New.
+	* rtl.h (currently_expanding_to_rtl): Export it.
+	* cfgexpand.c (tree_cfg_expand): Set/clear it at entry/exit.
+
+	* config/alpha/alpha.c (alpha_expand_mov): Remove old RTL
+	inliner hack.
+	* config/sh/sh.c: Replace rtx_equal_function_value_matters
+	with currently_expanding_to_rtl.
+	* config/sh/sh.md: Likewise.
+	* config/ia64/ia64.c (got_symbolic_operand): Likewise.
+
 2004-07-29  Alexandre Oliva  <aoliva@redhat.com>
 
 	Introduce sh2a support.

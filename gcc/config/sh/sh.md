@@ -3459,7 +3459,7 @@
 	(unspec:SI [(match_operand 1 "register_operand" "")] UNSPEC_RA))]
   "TARGET_SH1"
   "#"
-  "&& ! rtx_equal_function_value_matters"
+  "&& ! currently_expanding_to_rtl"
   [(set (match_dup 0) (match_dup 1))]
   "
 {
@@ -7476,7 +7476,7 @@ mov.l\\t1f,r0\\n\\
     }
   if (sh_expand_t_scc (EQ, operands[0]))
     DONE;
-  if (! rtx_equal_function_value_matters)
+  if (! currently_expanding_to_rtl)
     FAIL;
   operands[1] = prepare_scc_operands (EQ);
 }")
@@ -7524,7 +7524,7 @@ mov.l\\t1f,r0\\n\\
 	}
       DONE;
     }
-  if (! rtx_equal_function_value_matters)
+  if (! currently_expanding_to_rtl)
     FAIL;
   operands[1] = prepare_scc_operands (LT);
 }")
@@ -7628,7 +7628,7 @@ mov.l\\t1f,r0\\n\\
 	}
       DONE;
     }
-  if (! rtx_equal_function_value_matters)
+  if (! currently_expanding_to_rtl)
     FAIL;
   operands[1] = prepare_scc_operands (GT);
 }")
@@ -7682,7 +7682,7 @@ mov.l\\t1f,r0\\n\\
       DONE;
     }
 
-  if (! rtx_equal_function_value_matters)
+  if (! currently_expanding_to_rtl)
     FAIL;
   if (GET_MODE_CLASS (GET_MODE (sh_compare_op0)) == MODE_FLOAT)
     {
@@ -7723,7 +7723,7 @@ mov.l\\t1f,r0\\n\\
 				     sh_compare_op0, sh_compare_op1));
       DONE;
     }
-  if (! rtx_equal_function_value_matters)
+  if (! currently_expanding_to_rtl)
     FAIL;
   operands[1] = prepare_scc_operands (GTU);
 }")
@@ -7749,7 +7749,7 @@ mov.l\\t1f,r0\\n\\
 				     sh_compare_op1, sh_compare_op0));
       DONE;
     }
-  if (! rtx_equal_function_value_matters)
+  if (! currently_expanding_to_rtl)
     FAIL;
   operands[1] = prepare_scc_operands (LTU);
 }")
@@ -7780,7 +7780,7 @@ mov.l\\t1f,r0\\n\\
 
       DONE;
     }
-  if (! rtx_equal_function_value_matters)
+  if (! currently_expanding_to_rtl)
     FAIL;
   operands[1] = prepare_scc_operands (LEU);
 }")
@@ -7812,7 +7812,7 @@ mov.l\\t1f,r0\\n\\
       DONE;
     }
 
-  if (! rtx_equal_function_value_matters)
+  if (! currently_expanding_to_rtl)
     FAIL;
   operands[1] = prepare_scc_operands (GEU);
 }")
@@ -7863,7 +7863,7 @@ mov.l\\t1f,r0\\n\\
 
   if (sh_expand_t_scc (NE, operands[0]))
     DONE;
-  if (! rtx_equal_function_value_matters)
+  if (! currently_expanding_to_rtl)
     FAIL;
   operands[1] = prepare_scc_operands (EQ);
   operands[2] = gen_reg_rtx (SImode);
