@@ -3707,8 +3707,19 @@ assign_parms (fndecl, second_time)
       /* If this "parameter" was the place where we are receiving the
 	 function's incoming structure pointer, set up the result.  */
       if (parm == function_result_decl)
-	DECL_RTL (DECL_RESULT (fndecl))
-	  = gen_rtx (MEM, DECL_MODE (DECL_RESULT (fndecl)), DECL_RTL (parm));
+	{
+	  tree result = DECL_RESULT (fndecl);
+	  tree restype = TREE_TYPE (result);
+
+	  DECL_RTL (result)
+	    = gen_rtx (MEM, DECL_MODE (result), DECL_RTL (parm));
+
+	  MEM_IN_STRUCT_P (DECL_RTL (result))
+	    = (TREE_CODE (restype) == RECORD_TYPE
+	       || TREE_CODE (restype) == UNION_TYPE
+	       || TREE_CODE (restype) == QUAL_UNION_TYPE
+	       || TREE_CODE (restype) == ARRAY_TYPE);
+	}
 
       if (TREE_THIS_VOLATILE (parm))
 	MEM_VOLATILE_P (DECL_RTL (parm)) = 1;
@@ -4889,9 +4900,15 @@ expand_function_start (subr, parms_have_cleanups)
 	    }
 	}
       if (value_address)
-	DECL_RTL (DECL_RESULT (subr))
-	  = gen_rtx (MEM, DECL_MODE (DECL_RESULT (subr)),
-		     value_address);
+	{
+	  DECL_RTL (DECL_RESULT (subr))
+	    = gen_rtx (MEM, DECL_MODE (DECL_RESULT (subr)), value_address);
+	  MEM_IN_STRUCT_P (DECL_RTL (DECL_RESULT (subr)))
+	    = (TREE_CODE (TREE_TYPE (DECL_RESULT (subr))) == RECORD_TYPE
+	       || TREE_CODE (TREE_TYPE (DECL_RESULT (subr))) == UNION_TYPE
+	       || TREE_CODE (TREE_TYPE (DECL_RESULT (subr))) == QUAL_UNION_TYPE
+	       || TREE_CODE (TREE_TYPE (DECL_RESULT (subr))) == ARRAY_TYPE);
+	}
     }
   else if (DECL_MODE (DECL_RESULT (subr)) == VOIDmode)
     /* If return mode is void, this decl rtl should not be used.  */
