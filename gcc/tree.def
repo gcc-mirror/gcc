@@ -866,19 +866,6 @@ DEFTREECODE (ASM_EXPR, "asm_expr", 's', 4)
    nodes to implement SSA versioning.  */
 DEFTREECODE (SSA_NAME, "ssa_name", 'x', 0)
 
-/* Expression SSA real and phi operand occurrence node.  */
-DEFTREECODE (EUSE_NODE, "euse_node", 'x', 0)
-
-/* Expression SSA kill occurrence node.  */
-DEFTREECODE (EKILL_NODE, "ekill_node", 'x', 0)
-
-/* Expression SSA expression PHI.  Like a regular SSA PHI operator,
-   but for expressions*/
-DEFTREECODE (EPHI_NODE, "ephi_node", 'x', 0)
-
-/* Expression SSA exit occurrence node.  */
-DEFTREECODE (EEXIT_NODE, "eexit_node", 'x', 0)
-
 /* SSA PHI operator.  PHI_RESULT is the new SSA_NAME node created by
    the PHI node.  PHI_ARG_LENGTH is the number of arguments.
    PHI_ARG_ELT returns the Ith tuple <ssa_name, edge> from the

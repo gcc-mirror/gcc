@@ -91,7 +91,7 @@ static inline stmt_ann_t
 stmt_ann (tree t)
 {
 #if defined ENABLE_CHECKING
-  if (!is_gimple_stmt (t) && !is_essa_node (t))
+  if (!is_gimple_stmt (t))
     abort ();
 #endif
 
