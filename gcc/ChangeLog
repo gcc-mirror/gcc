@@ -1,3 +1,27 @@
+Fri Dec 14 21:23:54 CET 2001  Jan Hubicka  <jh@suse.cz>
+
+	* config.gcc: Revamp target_cpu_default2 to strings;
+	support new x86 variants.
+	* i386.c (override_options): Default x86_cpu_string and x86_arch_string
+	properly; set prefetch_sse.
+	* i386.h (x86_prefetch_sse): Declare.
+	(TARGET_PREFETCH_SSE): New.
+	(CPP_CPU_DEFAULT_SPEC): Define according to the new macros.
+	(TARGET_CPU_DEFAULT_*): New.
+
+Thu Dec 13 21:57:13 CET 2001  Janis Johnson <janis187@us.ibm.com>
+			      Jan Hubicka  <jh@suse.cz>
+
+	* config/i386/i386.h (struct processor_costs): Add new members
+	  prefetch_block and simultaneous_prefetches.
+	  (PREFETCH_BLOCK, SIMULTANEOUS_PREFETCHES): New.
+	* config/i386/i386.c (processor_costs structs): Add values for
+	  prefetch_block and simultaneous_prefetches.
+	* config/i386/i386.md (unspec values): Remove values for prefetch
+	  operations, which now use the PREFETCH rtx code.
+	  (prefetch_sse, prefetch_3dnow, prefetchw): Combine to use new
+	  unified prefetch support.
+
 2001-12-14  Jason Merrill  <jason@redhat.com>
 
 	* diagnostic.c (sorry): Increment sorrycount before saving the
