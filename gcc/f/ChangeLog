@@ -1,3 +1,10 @@
+2002-04-08  Hans-Peter Nilsson  <hp@bitrange.com>
+
+	* Make-lang.in (f/target.o): Depend on diagnostic.h.
+	* target.c: Include diagnostic.h.
+ 	(ffetarget_memcpy_): Call sorry if host and target endians are
+	not matching.
+
 Thu Apr  4 23:29:48 2002  Neil Booth  <neil@daikokuya.demon.co.uk>
 
 	* com.c (LANG_HOOKS_TRUTHVALUE_CONVERSION): Redefine.
