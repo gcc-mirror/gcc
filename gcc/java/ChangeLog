@@ -1,3 +1,13 @@
+2001-03-28  Richard Henderson  <rth@redhat.com>
+
+	* decl.c (end_java_method): Do not save and restore
+	flag_non_call_exceptions.
+	* parse.y (source_end_java_method): Likewise.
+	* lang.c (flag_exceptions): Don't declare.
+	(java_init_options): Set flag_non_call_exceptions.  Set
+	flag_exceptions here ...
+	(java_init): ... not here.
+
 2001-03-27  Richard Henderson  <rth@redhat.com>
 
 	* expr.c, parse.h: Use USING_SJLJ_EXCEPTIONS instead of

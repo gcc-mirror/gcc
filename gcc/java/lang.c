@@ -150,10 +150,6 @@ int flag_extraneous_semicolon;
 /* When non zero, always check for a non gcj generated classes archive.  */
 int flag_force_classes_archive_check;
 
-/* From gcc/flags.h, and indicates if exceptions are turned on or not.  */
-
-extern int flag_exceptions;
-
 /* Table of language-dependent -f options.
    STRING is the option name.  VARIABLE is the address of the variable.
    ON_VALUE is the value to store in VARIABLE
@@ -655,8 +651,6 @@ java_init ()
   print_error_function = lang_print_error;
   lang_expand_expr = java_lang_expand_expr;
 
-  flag_exceptions = 1;
-
   /* Append to Gcc tree node definition arrays */
 
   memcpy (tree_code_type + (int) LAST_AND_UNUSED_TREE_CODE,
@@ -704,6 +698,8 @@ static void
 java_init_options ()
 {
   flag_bounds_check = 1;
+  flag_exceptions = 1;
+  flag_non_call_exceptions = 1;
 }
 
 const char *
