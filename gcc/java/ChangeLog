@@ -1,3 +1,8 @@
+Wed Sep  9 21:23:10 1998  Jeffrey A Law  (law@cygnus.com)
+
+	* gjavah.c (java_no_argument): Renamed from no_argument to avoid
+	losing due to namespace pollution in GNU getopt.h
+
 Wed Sep  9 13:33:39 1998  Tom Tromey  <tromey@cygnus.com>
 
 	* Make-lang.in (java.all.build): Don't mention jvgenmain or gcjh.
