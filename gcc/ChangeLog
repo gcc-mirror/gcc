@@ -1,3 +1,12 @@
+2004-01-03  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* config/mips/linux.h: Fix comment formatting.
+	* config/mips/mips.c: Likewise.
+	* config/mips/mips.h: Likewise.
+	* config/mips/mips.md: Likewise.
+	* config/mips/netbsd.h: Likewise.
+	* config/mips/windiss.h: Likewise.
+
 2004-01-02  Richard Henderson  <rth@redhat.com>
 
 	* config/i386/i386.md (fp constant pool splitter): Reorg suppression

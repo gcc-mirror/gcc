@@ -198,7 +198,7 @@ Boston, MA 02111-1307, USA.  */
 
 /* The third parameter to the signal handler points to something with
  * this structure defined in asm/ucontext.h, but the name clashes with
- * struct ucontext from sys/ucontext.h so this private copy is used. */
+ * struct ucontext from sys/ucontext.h so this private copy is used.  */
 typedef struct _sig_ucontext {
     unsigned long         uc_flags;
     struct _sig_ucontext  *uc_link;

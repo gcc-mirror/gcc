@@ -169,7 +169,7 @@ extern const struct mips_cpu_info *mips_tune_info;
 #define MASK_UNINIT_CONST_IN_RODATA \
 			   0x00800000	/* Store uninitialized
 					   consts in rodata */
-#define MASK_FIX_SB1       0x01000000   /* Work around SB-1 errata. */
+#define MASK_FIX_SB1       0x01000000   /* Work around SB-1 errata.  */
 
 					/* Debug switches, not documented */
 #define MASK_DEBUG	0		/* unused */
@@ -2661,7 +2661,7 @@ typedef struct mips_args {
 
 /* Specify the machine mode that this machine uses
    for the index in the tablejump instruction.
-   ??? Using HImode in mips16 mode can cause overflow. */
+   ??? Using HImode in mips16 mode can cause overflow.  */
 #define CASE_VECTOR_MODE \
   (TARGET_MIPS16 ? HImode : ptr_mode)
 
@@ -2735,7 +2735,7 @@ typedef struct mips_args {
    that the constraints of the insn are met.  Setting a cost of
    other than 2 will allow reload to verify that the constraints are
    met.  You should do this if the `movM' pattern's constraints do
-   not allow such copying. */
+   not allow such copying.  */
 
 #define REGISTER_MOVE_COST(MODE, FROM, TO)				\
   mips_register_move_cost (MODE, FROM, TO)

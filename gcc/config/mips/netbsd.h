@@ -20,7 +20,7 @@ the Free Software Foundation, 59 Temple Place - Suite 330,
 Boston, MA 02111-1307, USA.  */
 
 
-/* Define default target values. */
+/* Define default target values.  */
 
 #undef MACHINE_TYPE
 #if TARGET_ENDIAN_DEFAULT != 0
