@@ -1,5 +1,14 @@
 Tue Apr 14 09:02:32 1998  Jeffrey A Law  (law@cygnus.com)
 
+	* Idea and part of the patch from HJ.
+        * Makefile.in: auto-host.h renamed from auto-config.h.  All references
+        changed.
+        (distclean): Remove auto-build.h too.
+        * configure.in: Rename host autoconf generated file to auto-host.h.
+        If host != build, then run autoconf to generate auto-build.h for
+        the build machine and include it in build_xm_files.
+        Check for wait.h and sys/wait.h.
+
 	* combine.c (simplify_rtx, case TRUNCATE): Respect value of
 	TRULY_NOOP_TRUNCATION.
 
