@@ -4791,9 +4791,6 @@ operand) which has no effect.
 Use of the operator abs on an operand that is known at compile time
 to be non-negative
 @item
-Use of an unnecessary extra level of parentheses (C-style) around conditions
-in @code{if} statements, @code{while} statements and @code{exit} statements.
-@item
 Comparison of boolean expressions to an explicit True value.
 @end itemize
 
@@ -5525,6 +5522,14 @@ A unary plus or minus may not be followed by a space.
 A vertical bar must be surrounded by spaces.
 @end itemize
 
+@item ^x^XTRA_PARENS^
+@emph{Check extra parentheses.}
+Check for the use of an unnecessary extra level of parentheses (C-style)
+around conditions in @code{if} statements, @code{while} statements and
+@code{exit} statements.
+
+@end table
+
 @noindent
 In the above rules, appearing in column one is always permitted, that is,
 counts as meeting either a requirement for a required preceding space,
@@ -5533,8 +5538,6 @@ or as meeting a requirement for no preceding space.
 Appearing at the end of a line is also always permitted, that is, counts
 as meeting either a requirement for a following space, or as meeting
 a requirement for no following space.
-
-@end table
 
 @noindent
 If any of these style rules is violated, a message is generated giving
@@ -9466,15 +9469,6 @@ available on the path.
 @cindex @option{^--GNATMAKE^/GNATMAKE^} (@command{gnatelim})
 Instructs @code{gnatelim} to use specific @code{gnatmake} instead of one
 available on the path.
-
-@item -d@var{x}
-@cindex @option{-d@var{x}} (@command{gnatelim})
-Activate internal debugging switches. @var{x} is a letter or digit, or
-string of letters or digits, which specifies the type of debugging
-mode desired.  Normally these are used only for internal development
-or system debugging purposes. You can find full documentation for these
-switches in the spec of the @code{Gnatelim} unit in the compiler
-source file @file{gnatelim.ads}.
 @end table
 
 @noindent

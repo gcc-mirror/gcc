@@ -7085,8 +7085,12 @@ user-defined storage pool.
 
 @item No_Streams
 @findex No_Streams
-This restriction ensures at compile time that there are no implicit or
-explicit dependencies on the package @code{Ada.Streams}.
+This restriction ensures at compile/bind time that there are no
+stream objects created (and therefore no actual stream operations).
+This restriction does not forbid dependences on the package
+@code{Ada.Streams}. So it is permissible to with
+@code{Ada.Streams} (or another package that does so itself)
+as long as no actual stream objects are created.
 
 @item No_Task_Attributes_Package
 @findex No_Task_Attributes_Package
@@ -13382,7 +13386,7 @@ Word : Rec;
 @end group
 @end smallexample
 
-@noindent 
+@noindent
 Such an object is said to be @emph{unconstrained}.
 The discriminant of the object
 can be modified by a full assignment to the object, as long as it preserves the

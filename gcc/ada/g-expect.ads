@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---           Copyright (C) 2000-2003 Ada Core Technologies, Inc.            --
+--           Copyright (C) 2000-2004 Ada Core Technologies, Inc.            --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -49,7 +49,7 @@
 
 --      Non_Blocking_Spawn
 --         (Fd, "ftp",
---           (1 => new String' ("machine@domaine")));
+--           (1 => new String' ("machine@domain")));
 --      Timeout := 10000;  --  10 seconds
 --      Expect (Fd, Result, Regexp_Array'(+"\(user\)", +"\(passwd\)"),
 --              Timeout);
@@ -68,7 +68,7 @@
 --  name of the language by doing:
 
 --      declare
---         Matched : Regexp_Array (0 .. 2);
+--         Matched : Match_Array (0 .. 2);
 --      begin
 --         Expect (Fd, Result, "lang=(optional)? ([a-z]+)", Matched);
 --         Put_Line ("Seen: " &
@@ -309,8 +309,7 @@ package GNAT.Expect is
 
    function "+" (S : String) return GNAT.OS_Lib.String_Access;
    --  Allocate some memory for the string. This is merely a convenience
-   --  convenience function to help create the array of regexps in the
-   --  call to Expect.
+   --  function to help create the array of regexps in the call to Expect.
 
    procedure Expect
      (Descriptor  : in out Process_Descriptor;

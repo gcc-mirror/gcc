@@ -1767,6 +1767,11 @@ package Sinfo is
       --  Debug_Statement (Node3) (set to Empty if not Debug, Assert)
       --  Next_Rep_Item (Node4-Sem)
 
+      --  Note: we should have a section on what pragmas are passed on to
+      --  the back end to be processed. This section should note that pragma
+      --  Psect_Object is always converted to Common_Object, but there are
+      --  undoubtedly many other similar notes required ???
+
       --------------------------------------
       -- 2.8  Pragma Argument Association --
       --------------------------------------
