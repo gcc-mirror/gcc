@@ -140,11 +140,9 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 
 /* Some systems use __main in a way incompatible with its use in gcc, in these
    cases use the macros NAME__MAIN to give a quoted symbol and SYMBOL__MAIN to
-   give the same symbol without quotes for an alternative entry point.  You
-   must define both, or neither.  */
+   give the same symbol without quotes for an alternative entry point.  */
 #ifndef NAME__MAIN
 #define NAME__MAIN "__main"
-#define SYMBOL__MAIN __main
 #endif
 
 /* This must match tree.h.  */

@@ -166,10 +166,6 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 
 #include "obstack.h"
 
-/* We don't want to use xmalloc.  */
-#undef obstack_chunk_alloc
-#define obstack_chunk_alloc gmalloc
-
 /* Propagate flow information through back edges and thus enable PRE's
    moving loop invariant calculations out of loops.
 
@@ -972,14 +968,13 @@ grealloc (ptr, size)
   return xrealloc (ptr, size);
 }
 
-/* Cover function to obstack_alloc.
-   We don't need to record the bytes allocated here since
-   obstack_chunk_alloc is set to gmalloc.  */
+/* Cover function to obstack_alloc.  */
 
 static char *
 gcse_alloc (size)
      unsigned long size;
 {
+  bytes_used += size;
   return (char *) obstack_alloc (&gcse_obstack, size);
 }
 
