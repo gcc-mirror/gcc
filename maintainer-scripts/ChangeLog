@@ -1,3 +1,7 @@
+2003-10-16  Release Manager
+
+	* GCC 3.3.2 Released.
+
 2003-08-08  Mark Mitchell  <mark@codesourcery.com>
 
 	* gcc_release: Correct logic for updating version.c.  Put

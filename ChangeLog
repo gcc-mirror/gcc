@@ -1,3 +1,7 @@
+2003-10-16  Release Manager
+
+	* GCC 3.3.2 Released.
+
 2003-09-09  Alan Modra  <amodra@bigpond.net.au>
 
 	* libtool.m4 (LD): Correct powerpc64 host match.
