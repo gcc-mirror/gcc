@@ -64,6 +64,12 @@ public abstract class AbstractSequentialList extends AbstractList
     i.add(o);
   }
 
+  /**
+   * @specnote The spec in the JDK1.3 online docs is wrong. The implementation
+   *           should not call next() to skip over new elements as they are
+   *           added, because iterator.add() should add new elements BEFORE
+   *           the cursor.
+   */
   public boolean addAll(int index, Collection c)
   {
     boolean modified = false;
@@ -81,7 +87,8 @@ public abstract class AbstractSequentialList extends AbstractList
   {
     ListIterator i = listIterator(index);
     if (index < 0 || index > size())
-      throw new IndexOutOfBoundsException();
+      throw new IndexOutOfBoundsException("Index: " + index + ", Size:" + 
+                                          size());
     return i.next();
   }
 
@@ -100,7 +107,8 @@ public abstract class AbstractSequentialList extends AbstractList
   {
     ListIterator i = listIterator(index);
     if (index < 0 || index > size())
-      throw new IndexOutOfBoundsException();
+      throw new IndexOutOfBoundsException("Index: " + index + ", Size:" + 
+                                          size());
     Object removed = i.next();
     i.remove();
     return removed;
@@ -110,7 +118,8 @@ public abstract class AbstractSequentialList extends AbstractList
   {
     ListIterator i = listIterator(index);
     if (index < 0 || index > size())
-      throw new IndexOutOfBoundsException();
+      throw new IndexOutOfBoundsException("Index: " + index + ", Size:" + 
+                                          size());
     Object old = i.next();
     i.set(o);
     return old;
