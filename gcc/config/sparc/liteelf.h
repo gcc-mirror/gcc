@@ -47,3 +47,7 @@ Boston, MA 02111-1307, USA.  */
 
 #undef STARTFILE_SPEC
 #define STARTFILE_SPEC "crti.o%s crtbegin.o%s"
+
+/* Use __main method of constructor invocation.  */
+#undef INIT_SECTION_ASM_OP
+#undef FINI_SECTION_ASM_OP
