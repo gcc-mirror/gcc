@@ -1,3 +1,7 @@
+Sun Feb  1 14:15:33 1998 Franz Sirl <franz.sirl-kernel@lauterbach.com>
+
+	* rs6000/linux.h: define JUMP_TABLES_IN_TEXT_SECTION
+
 Sun Feb  1 13:01:15 1998  Klaus Kaempf  <kkaempf@progis.de>
 
 	* cccp.c (main): Predefine __VMS_VER on VMS.
