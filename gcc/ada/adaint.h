@@ -65,7 +65,7 @@ extern int    __gnat_open_create                   PARAMS ((char *, int));
 extern int    __gnat_open_append                   PARAMS ((char *, int));
 extern long   __gnat_file_length                   PARAMS ((int));
 extern void   __gnat_tmp_name			   PARAMS ((char *));
-extern char  *__gnat_readdir                       PARAMS ((DIR *, char*));
+extern char  *__gnat_readdir                       PARAMS ((DIR *, char *));
 extern int    __gnat_readdir_is_thread_safe        PARAMS ((void));
 extern time_t __gnat_file_time_name                PARAMS ((char *));
 extern time_t __gnat_file_time_fd                  PARAMS ((int));
