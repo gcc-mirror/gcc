@@ -928,7 +928,6 @@ get_static_reference (interface, protocols)
       tree t, m = TYPE_MAIN_VARIANT (type);
 
       t = copy_node (type);
-      TYPE_BINFO (t) = make_tree_vec (2);
 
       /* Add this type to the chain of variants of TYPE.  */
       TYPE_NEXT_VARIANT (t) = TYPE_NEXT_VARIANT (m);
@@ -979,7 +978,6 @@ get_object_reference (protocols)
       tree t, m = TYPE_MAIN_VARIANT (type);
 
       t = copy_node (type);
-      TYPE_BINFO (t) = make_tree_vec (2);
 
       /* Add this type to the chain of variants of TYPE.  */
       TYPE_NEXT_VARIANT (t) = TYPE_NEXT_VARIANT (m);
@@ -1416,7 +1414,7 @@ build_constructor (type, elts)
   else
     {
       f = TYPE_FIELDS (type);
-      for (e = elts; e ; e = TREE_CHAIN (e), f = TREE_CHAIN (f))
+      for (e = elts; e && f; e = TREE_CHAIN (e), f = TREE_CHAIN (f))
 	if (TREE_CODE (TREE_TYPE (f)) == POINTER_TYPE
 	    || TREE_CODE (TREE_TYPE (f)) == INTEGER_TYPE)
 	  TREE_VALUE (e) = convert (TREE_TYPE (f), TREE_VALUE (e));
@@ -4996,7 +4994,7 @@ finish_message_expr (receiver, sel_name, method_params)
       if (iface)
 	method_prototype = lookup_instance_method_static (iface, sel_name);
 
-      if (! method_prototype && TYPE_PROTOCOL_LIST (ctype))
+      if (! method_prototype && ctype && TYPE_PROTOCOL_LIST (ctype))
 	method_prototype
 	  = lookup_method_in_protocol_list (TYPE_PROTOCOL_LIST (ctype),
 					    sel_name, 0);
