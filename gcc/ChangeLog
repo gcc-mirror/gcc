@@ -1,3 +1,9 @@
+2004-11-25  Ricahrd Henderson  <rth@redhat.com>
+
+	PR c++/6764
+        * reload1.c (set_initial_eh_label_offset): New.
+        (set_initial_label_offsets): Use it.
+
 2004-11-25  Kaz Kojima  <kkojima@gcc.gnu.org>
 
 	* config/sh/sh.c (sh_output_mi_thunk): Initialize bitmap obstacks
