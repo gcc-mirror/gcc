@@ -1,3 +1,29 @@
+2001-03-28  Richard Henderson  <rth@redhat.com>
+
+	IA-64 ABI Exception Handling:
+	* Makefile.am (GCC_UNWIND_INCLUDE): Rename from EH_COMMON_INCLUDE.
+	(AM_CXXFLAGS): -fnon-call-exceptions not -fasynchronous-exceptions.
+	Remove EXCEPTIONSPEC.
+	* configure.host (libgcj_sjlj): Remove.
+	* configure.in (EXCEPTIONSPEC): Remove.
+	(enable-sjlj-exceptions): Detect if not specified.
+	(GCC_UNWIND_INCLUDE): Rename from EH_COMMON_INCLUDE; change
+	what header we're looking for.
+	* libgcj.spec.in (jc1): Remove EXCEPTIONSPEC.
+	* Makefile.in, configure: Regenerate.
+	* exception.cc: Don't declare libgcc2 stuff.
+	(java_eh_info, _Jv_type_matcher, _Jv_exception_info): Remove.
+	(_Jv_eh_alloc, _Jv_eh_free, _Jv_setup_eh_info): Remove.
+	(win32_get_restart_frame): Remove.
+	(struct java_exception_header): New.
+	(__gcj_exception_class): New.
+	(get_exception_header_from_ue): New.
+	(_Jv_Throw): Rewrite for IA-64 ABI unwind routines.
+	(size_of_encoded_value, read_encoded_value): New.
+	(read_uleb128, read_sleb128, parse_lsda_header): New.
+	(get_ttype_entry, __gcj_personality_sj0): New.
+	* gcj/javaprims.h (_Jv_Sjlj_Throw): Remove.
+
 2001-03-27  Joerg Brunsmann  <joerg_brunsmann@yahoo.de>
 
 	* javax/naming/InitialContext.java (init): Fix typo.

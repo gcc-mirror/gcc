@@ -2104,7 +2104,7 @@ dump_expr (t, flags)
       break;
 
     case BIND_EXPR:
-      output_add_character (scratch_buffer, '}');
+      output_add_character (scratch_buffer, '{');
       dump_expr (TREE_OPERAND (t, 1), flags & ~TFF_EXPR_IN_PARENS);
       output_add_character (scratch_buffer, '}');
       break;

@@ -41,3 +41,5 @@ extern void debug_dwarf_die		PARAMS ((struct die_struct *));
 extern void dwarf2out_set_demangle_name_func PARAMS ((const char *(*) (const char *)));
 extern void dwarf2out_abstract_function PARAMS ((tree));
 extern void dwarf2out_add_library_unit_info PARAMS ((const char *, const char *));
+
+extern unsigned current_funcdef_number;

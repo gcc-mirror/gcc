@@ -28,6 +28,7 @@
 // the GNU General Public License.
 
 #include <bits/c++config.h>
+#include "unwind-cxx.h"
 
 #ifdef _GLIBCPP_HAVE_UNISTD_H
 # include <unistd.h>
@@ -42,15 +43,9 @@
 # define writestr(str)	fputs(str, stderr)
 #endif
 
-extern "C" {
-
-extern void __terminate(void) __attribute__ ((__noreturn__));
-
-void
+extern "C" void
 __cxa_pure_virtual (void)
 {
   writestr ("pure virtual method called\n");
-  __terminate ();
-}
-
+  std::terminate ();
 }

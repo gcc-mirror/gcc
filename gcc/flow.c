@@ -204,7 +204,6 @@ struct basic_block_def entry_exit_blocks[2]
     NULL,			/* aux */
     ENTRY_BLOCK,		/* index */
     0,				/* loop_depth */
-    -1, -1,			/* eh_beg, eh_end */
     0				/* count */
   },
   {
@@ -219,7 +218,6 @@ struct basic_block_def entry_exit_blocks[2]
     NULL,			/* aux */
     EXIT_BLOCK,			/* index */
     0,				/* loop_depth */
-    -1, -1,			/* eh_beg, eh_end */
     0				/* count */
   }
 };
@@ -368,16 +366,12 @@ static void clear_edges			PARAMS ((void));
 static void make_edges			PARAMS ((rtx));
 static void make_label_edge		PARAMS ((sbitmap *, basic_block,
 						 rtx, int));
-static void make_eh_edge		PARAMS ((sbitmap *, eh_nesting_info *,
-						 basic_block, rtx, int));
+static void make_eh_edge		PARAMS ((sbitmap *, basic_block, rtx));
 static void mark_critical_edges		PARAMS ((void));
-static void move_stray_eh_region_notes	PARAMS ((void));
-static void record_active_eh_regions	PARAMS ((rtx));
 
 static void commit_one_edge_insertion	PARAMS ((edge));
 
 static void delete_unreachable_blocks	PARAMS ((void));
-static void delete_eh_regions		PARAMS ((void));
 static int can_delete_note_p		PARAMS ((rtx));
 static void expunge_block		PARAMS ((basic_block));
 static int can_delete_label_p		PARAMS ((rtx));
@@ -537,7 +531,6 @@ find_basic_blocks (f, nregs, file)
   compute_bb_for_insn (max_uid);
 
   /* Discover the edges of our cfg.  */
-  record_active_eh_regions (f);
   make_edges (label_value_list);
 
   /* Do very simple cleanup now, for the benefit of code that runs between
@@ -599,46 +592,45 @@ count_basic_blocks (f)
   register rtx insn;
   register RTX_CODE prev_code;
   register int count = 0;
-  int eh_region = 0;
-  int call_had_abnormal_edge = 0;
+  int saw_abnormal_edge = 0;
 
   prev_code = JUMP_INSN;
   for (insn = f; insn; insn = NEXT_INSN (insn))
     {
-      register RTX_CODE code = GET_CODE (insn);
+      enum rtx_code code = GET_CODE (insn);
 
       if (code == CODE_LABEL
 	  || (GET_RTX_CLASS (code) == 'i'
 	      && (prev_code == JUMP_INSN
 		  || prev_code == BARRIER
-		  || (prev_code == CALL_INSN && call_had_abnormal_edge))))
-	count++;
+		  || saw_abnormal_edge)))
+	{
+	  saw_abnormal_edge = 0;
+	  count++;
+	}
 
-      /* Record whether this call created an edge.  */
+      /* Record whether this insn created an edge.  */
       if (code == CALL_INSN)
 	{
-	  rtx note = find_reg_note (insn, REG_EH_REGION, NULL_RTX);
-	  int region = (note ? INTVAL (XEXP (note, 0)) : 1);
+	  rtx note;
 
-	  call_had_abnormal_edge = 0;
+	  /* If there is a nonlocal goto label and the specified
+	     region number isn't -1, we have an edge.  */
+	  if (nonlocal_goto_handler_labels
+	      && ((note = find_reg_note (insn, REG_EH_REGION, NULL_RTX)) == 0
+		  || INTVAL (XEXP (note, 0)) >= 0))
+	    saw_abnormal_edge = 1;
 
-	  /* If there is an EH region or rethrow, we have an edge.  */
-	  if ((eh_region && region > 0)
-	      || find_reg_note (insn, REG_EH_RETHROW, NULL_RTX))
-	    call_had_abnormal_edge = 1;
-	  else if (nonlocal_goto_handler_labels && region >= 0)
-	    /* If there is a nonlocal goto label and the specified
-	       region number isn't -1, we have an edge. (0 means
-	       no throw, but might have a nonlocal goto).  */
-	    call_had_abnormal_edge = 1;
+	  else if (can_throw_internal (insn))
+	    saw_abnormal_edge = 1;
 	}
+      else if (flag_non_call_exceptions
+	       && code == INSN
+	       && can_throw_internal (insn))
+	saw_abnormal_edge = 1;
 
       if (code != NOTE)
 	prev_code = code;
-      else if (NOTE_LINE_NUMBER (insn) == NOTE_INSN_EH_REGION_BEG)
-	++eh_region;
-      else if (NOTE_LINE_NUMBER (insn) == NOTE_INSN_EH_REGION_END)
-	--eh_region;
     }
 
   /* The rest of the compiler works a bit smoother when we don't have to
@@ -672,9 +664,6 @@ find_label_refs (f, lvl)
 	   Make a special exception for labels followed by an ADDR*VEC,
 	   as this would be a part of the tablejump setup code.
 
-	   Make a special exception for the eh_return_stub_label, which
-	   we know isn't part of any otherwise visible control flow.
-
 	   Make a special exception to registers loaded with label
 	   values just before jump insns that use them.  */
 
@@ -683,9 +672,7 @@ find_label_refs (f, lvl)
 	    {
 	      rtx lab = XEXP (note, 0), next;
 
-	      if (lab == eh_return_stub_label)
-		;
-	      else if ((next = next_nonnote_insn (lab)) != NULL
+	      if ((next = next_nonnote_insn (lab)) != NULL
 		       && GET_CODE (next) == JUMP_INSN
 		       && (GET_CODE (PATTERN (next)) == ADDR_VEC
 			   || GET_CODE (PATTERN (next)) == ADDR_DIFF_VEC))
@@ -815,7 +802,6 @@ find_basic_blocks_1 (f)
   register rtx insn, next;
   int i = 0;
   rtx bb_note = NULL_RTX;
-  rtx eh_list = NULL_RTX;
   rtx lvl = NULL_RTX;
   rtx trll = NULL_RTX;
   rtx head = NULL_RTX;
@@ -839,22 +825,11 @@ find_basic_blocks_1 (f)
 	  {
 	    int kind = NOTE_LINE_NUMBER (insn);
 
-	    /* Keep a LIFO list of the currently active exception notes.  */
-	    if (kind == NOTE_INSN_EH_REGION_BEG)
-	      eh_list = alloc_INSN_LIST (insn, eh_list);
-	    else if (kind == NOTE_INSN_EH_REGION_END)
-	      {
-		rtx t = eh_list;
-
-		eh_list = XEXP (eh_list, 1);
-		free_INSN_LIST_node (t);
-	      }
-
 	    /* Look for basic block notes with which to keep the
 	       basic_block_info pointers stable.  Unthread the note now;
 	       we'll put it back at the right place in create_basic_block.
 	       Or not at all if we've already found a note in this block.  */
-	    else if (kind == NOTE_INSN_BASIC_BLOCK)
+	    if (kind == NOTE_INSN_BASIC_BLOCK)
 	      {
 		if (bb_note == NULL_RTX)
 		  bb_note = insn;
@@ -938,8 +913,7 @@ find_basic_blocks_1 (f)
 	  {
 	    /* Record whether this call created an edge.  */
 	    rtx note = find_reg_note (insn, REG_EH_REGION, NULL_RTX);
-	    int region = (note ? INTVAL (XEXP (note, 0)) : 1);
-	    int call_has_abnormal_edge = 0;
+	    int region = (note ? INTVAL (XEXP (note, 0)) : 0);
 
 	    if (GET_CODE (PATTERN (insn)) == CALL_PLACEHOLDER)
 	      {
@@ -952,19 +926,10 @@ find_basic_blocks_1 (f)
 		  trll = alloc_EXPR_LIST (0, XEXP (PATTERN (insn), 3), trll);
 	      }
 
-	    /* If there is an EH region or rethrow, we have an edge.  */
-	    if ((eh_list && region > 0)
-		|| find_reg_note (insn, REG_EH_RETHROW, NULL_RTX))
-	      call_has_abnormal_edge = 1;
-	    else if (nonlocal_goto_handler_labels && region >= 0)
-	      /* If there is a nonlocal goto label and the specified
-		 region number isn't -1, we have an edge. (0 means
-		 no throw, but might have a nonlocal goto).  */
-	      call_has_abnormal_edge = 1;
-
 	    /* A basic block ends at a call that can either throw or
 	       do a non-local goto.  */
-	    if (call_has_abnormal_edge)
+	    if ((nonlocal_goto_handler_labels && region >= 0)
+		|| can_throw_internal (insn))
 	      {
 	      new_bb_inclusive:
 		if (head == NULL_RTX)
@@ -980,18 +945,21 @@ find_basic_blocks_1 (f)
 	  }
 	  /* Fall through.  */
 
-	default:
-	  if (GET_RTX_CLASS (code) == 'i')
-	    {
-	      if (head == NULL_RTX)
-		head = insn;
-	      end = insn;
-	    }
+	case INSN:
+	  /* Non-call exceptions generate new blocks just like calls.  */
+	  if (flag_non_call_exceptions && can_throw_internal (insn))
+	    goto new_bb_inclusive;
+
+	  if (head == NULL_RTX)
+	    head = insn;
+	  end = insn;
 	  break;
+
+	default:
+	  abort ();
 	}
 
-      if (GET_RTX_CLASS (code) == 'i'
-	  && GET_CODE (insn) != JUMP_INSN)
+      if (GET_CODE (insn) == INSN || GET_CODE (insn) == CALL_INSN)
 	{
 	  rtx note;
 
@@ -999,9 +967,6 @@ find_basic_blocks_1 (f)
 
 	     Make a special exception for labels followed by an ADDR*VEC,
 	     as this would be a part of the tablejump setup code.
-
-	     Make a special exception for the eh_return_stub_label, which
-	     we know isn't part of any otherwise visible control flow.
 
 	     Make a special exception to registers loaded with label
 	     values just before jump insns that use them.  */
@@ -1011,9 +976,7 @@ find_basic_blocks_1 (f)
 	      {
 		rtx lab = XEXP (note, 0), next;
 
-		if (lab == eh_return_stub_label)
-		  ;
-		else if ((next = next_nonnote_insn (lab)) != NULL
+		if ((next = next_nonnote_insn (lab)) != NULL
 			 && GET_CODE (next) == JUMP_INSN
 			 && (GET_CODE (PATTERN (next)) == ADDR_VEC
 			     || GET_CODE (PATTERN (next)) == ADDR_DIFF_VEC))
@@ -1047,8 +1010,6 @@ void
 cleanup_cfg ()
 {
   delete_unreachable_blocks ();
-  move_stray_eh_region_notes ();
-  record_active_eh_regions (get_insns ());
   try_merge_blocks ();
   mark_critical_edges ();
 
@@ -1201,7 +1162,6 @@ make_edges (label_value_list)
      rtx label_value_list;
 {
   int i;
-  eh_nesting_info *eh_nest_info = init_eh_nesting_info ();
   sbitmap *edge_cache = NULL;
 
   /* Assume no computed jump; revise as we create edges.  */
@@ -1241,9 +1201,13 @@ make_edges (label_value_list)
 	{
 	  rtx tmp;
 
+	  /* Recognize exception handling placeholders.  */
+	  if (GET_CODE (PATTERN (insn)) == RESX)
+	    make_eh_edge (edge_cache, bb, insn);
+
 	  /* Recognize a non-local goto as a branch outside the
 	     current function.  */
-	  if (find_reg_note (insn, REG_NON_LOCAL_GOTO, NULL_RTX))
+	  else if (find_reg_note (insn, REG_NON_LOCAL_GOTO, NULL_RTX))
 	    ;
 
 	  /* ??? Recognize a tablejump and do the right thing.  */
@@ -1318,37 +1282,15 @@ make_edges (label_value_list)
 		   EDGE_ABNORMAL | EDGE_ABNORMAL_CALL);
 
       /* If this is a CALL_INSN, then mark it as reaching the active EH
-	 handler for this CALL_INSN.  If we're handling asynchronous
+	 handler for this CALL_INSN.  If we're handling non-call
 	 exceptions then any insn can reach any of the active handlers.
 
 	 Also mark the CALL_INSN as reaching any nonlocal goto handler.  */
 
       else if (code == CALL_INSN || flag_non_call_exceptions)
 	{
-	  /* Add any appropriate EH edges.  We do this unconditionally
-	     since there may be a REG_EH_REGION or REG_EH_RETHROW note
-	     on the call, and this needn't be within an EH region.  */
-	  make_eh_edge (edge_cache, eh_nest_info, bb, insn, bb->eh_end);
-
-	  /* If we have asynchronous exceptions, do the same for *all*
-	     exception regions active in the block.  */
-	  if (flag_non_call_exceptions
-	      && bb->eh_beg != bb->eh_end)
-	    {
-	      if (bb->eh_beg >= 0)
-		make_eh_edge (edge_cache, eh_nest_info, bb,
-			      NULL_RTX, bb->eh_beg);
-
-	      for (x = bb->head; x != bb->end; x = NEXT_INSN (x))
-		if (GET_CODE (x) == NOTE
-		    && (NOTE_LINE_NUMBER (x) == NOTE_INSN_EH_REGION_BEG
-		        || NOTE_LINE_NUMBER (x) == NOTE_INSN_EH_REGION_END))
-		  {
-		    int region = NOTE_EH_HANDLER (x);
-		    make_eh_edge (edge_cache, eh_nest_info, bb,
-				  NULL_RTX, region);
-		  }
-	    }
+	  /* Add any appropriate EH edges.  */
+	  make_eh_edge (edge_cache, bb, insn);
 
 	  if (code == CALL_INSN && nonlocal_goto_handler_labels)
 	    {
@@ -1369,14 +1311,6 @@ make_edges (label_value_list)
 	    }
 	}
 
-      /* We know something about the structure of the function __throw in
-	 libgcc2.c.  It is the only function that ever contains eh_stub
-	 labels.  It modifies its return address so that the last block
-	 returns to one of the eh_stub labels within it.  So we have to
-	 make additional edges in the flow graph.  */
-      if (i + 1 == n_basic_blocks && eh_return_stub_label != 0)
-	make_label_edge (edge_cache, bb, eh_return_stub_label, EDGE_EH);
-
       /* Find out if we can drop through to the next block.  */
       insn = next_nonnote_insn (insn);
       if (!insn || (i + 1 == n_basic_blocks && force_fallthru))
@@ -1391,7 +1325,6 @@ make_edges (label_value_list)
 	}
     }
 
-  free_eh_nesting_info (eh_nest_info);
   if (edge_cache)
     sbitmap_vector_free (edge_cache);
 }
@@ -1479,115 +1412,21 @@ make_label_edge (edge_cache, src, label, flags)
 /* Create the edges generated by INSN in REGION.  */
 
 static void
-make_eh_edge (edge_cache, eh_nest_info, src, insn, region)
+make_eh_edge (edge_cache, src, insn)
      sbitmap *edge_cache;
-     eh_nesting_info *eh_nest_info;
      basic_block src;
      rtx insn;
-     int region;
 {
-  handler_info **handler_list;
-  int num, is_call;
+  int is_call = (GET_CODE (insn) == CALL_INSN ? EDGE_ABNORMAL_CALL : 0);
+  rtx handlers, i;
 
-  is_call = (insn && GET_CODE (insn) == CALL_INSN ? EDGE_ABNORMAL_CALL : 0);
-  num = reachable_handlers (region, eh_nest_info, insn, &handler_list);
-  while (--num >= 0)
-    {
-      make_label_edge (edge_cache, src, handler_list[num]->handler_label,
-		       EDGE_ABNORMAL | EDGE_EH | is_call);
-    }
-}
+  handlers = reachable_handlers (insn);
 
-/* EH_REGION notes appearing between basic blocks is ambiguous, and even
-   dangerous if we intend to move basic blocks around.  Move such notes
-   into the following block.  */
+  for (i = handlers; i; i = XEXP (i, 1))
+    make_label_edge (edge_cache, src, XEXP (i, 0),
+		     EDGE_ABNORMAL | EDGE_EH | is_call);
 
-static void
-move_stray_eh_region_notes ()
-{
-  int i;
-  basic_block b1, b2;
-
-  if (n_basic_blocks < 2)
-    return;
-
-  b2 = BASIC_BLOCK (n_basic_blocks - 1);
-  for (i = n_basic_blocks - 2; i >= 0; --i, b2 = b1)
-    {
-      rtx insn, next, list = NULL_RTX;
-
-      b1 = BASIC_BLOCK (i);
-      for (insn = NEXT_INSN (b1->end); insn != b2->head; insn = next)
-	{
-	  next = NEXT_INSN (insn);
-	  if (GET_CODE (insn) == NOTE
-	      && (NOTE_LINE_NUMBER (insn) == NOTE_INSN_EH_REGION_BEG
-	          || NOTE_LINE_NUMBER (insn) == NOTE_INSN_EH_REGION_END))
-	    {
-	      /* Unlink from the insn chain.  */
-	      NEXT_INSN (PREV_INSN (insn)) = next;
-	      PREV_INSN (next) = PREV_INSN (insn);
-
-	      /* Queue it.  */
-	      NEXT_INSN (insn) = list;
-	      list = insn;
-	    }
-	}
-
-      if (list == NULL_RTX)
-	continue;
-
-      /* Find where to insert these things.  */
-      insn = b2->head;
-      if (GET_CODE (insn) == CODE_LABEL)
-	insn = NEXT_INSN (insn);
-
-      while (list)
-	{
-	  next = NEXT_INSN (list);
-	  add_insn_after (list, insn);
-	  list = next;
-	}
-    }
-}
-
-/* Recompute eh_beg/eh_end for each basic block.  */
-
-static void
-record_active_eh_regions (f)
-     rtx f;
-{
-  rtx insn, eh_list = NULL_RTX;
-  int i = 0;
-  basic_block bb = BASIC_BLOCK (0);
-
-  for (insn = f; insn; insn = NEXT_INSN (insn))
-    {
-      if (bb->head == insn)
-	bb->eh_beg = (eh_list ? NOTE_EH_HANDLER (XEXP (eh_list, 0)) : -1);
-
-      if (GET_CODE (insn) == NOTE)
-	{
-	  int kind = NOTE_LINE_NUMBER (insn);
-	  if (kind == NOTE_INSN_EH_REGION_BEG)
-	    eh_list = alloc_INSN_LIST (insn, eh_list);
-	  else if (kind == NOTE_INSN_EH_REGION_END)
-	    {
-	      rtx t = XEXP (eh_list, 1);
-	      free_INSN_LIST_node (eh_list);
-	      eh_list = t;
-	    }
-	}
-
-      if (bb->end == insn)
-	{
-	  bb->eh_end = (eh_list ? NOTE_EH_HANDLER (XEXP (eh_list, 0)) : -1);
-	  i += 1;
-	  if (i == n_basic_blocks)
-	    break;
-	  bb = BASIC_BLOCK (i);
-	}
-    }
+  free_INSN_LIST_list (&handlers);
 }
 
 /* Identify critical edges and set the bits appropriately.  */
@@ -2223,7 +2062,6 @@ static void
 delete_unreachable_blocks ()
 {
   basic_block *worklist, *tos;
-  int deleted_handler;
   edge e;
   int i, n;
 
@@ -2261,10 +2099,9 @@ delete_unreachable_blocks ()
 	  }
     }
 
-  /* Delete all unreachable basic blocks.  Count down so that we don't
-     interfere with the block renumbering that happens in flow_delete_block.  */
-
-  deleted_handler = 0;
+  /* Delete all unreachable basic blocks.  Count down so that we
+     don't interfere with the block renumbering that happens in
+     flow_delete_block.  */
 
   for (i = n - 1; i >= 0; --i)
     {
@@ -2274,44 +2111,12 @@ delete_unreachable_blocks ()
 	/* This block was found.  Tidy up the mark.  */
 	b->aux = NULL;
       else
-	deleted_handler |= flow_delete_block (b);
+	flow_delete_block (b);
     }
 
   tidy_fallthru_edges ();
 
-  /* If we deleted an exception handler, we may have EH region begin/end
-     blocks to remove as well.  */
-  if (deleted_handler)
-    delete_eh_regions ();
-
   free (worklist);
-}
-
-/* Find EH regions for which there is no longer a handler, and delete them.  */
-
-static void
-delete_eh_regions ()
-{
-  rtx insn;
-
-  update_rethrow_references ();
-
-  for (insn = get_insns (); insn; insn = NEXT_INSN (insn))
-    if (GET_CODE (insn) == NOTE)
-      {
-	if ((NOTE_LINE_NUMBER (insn) == NOTE_INSN_EH_REGION_BEG)
-	    || (NOTE_LINE_NUMBER (insn) == NOTE_INSN_EH_REGION_END))
-	  {
-	    int num = NOTE_EH_HANDLER (insn);
-	    /* A NULL handler indicates a region is no longer needed,
-	       as long as its rethrow label isn't used.  */
-	    if (get_first_handler (num) == NULL && ! rethrow_used (num))
-	      {
-		NOTE_LINE_NUMBER (insn) = NOTE_INSN_DELETED;
-		NOTE_SOURCE_FILE (insn) = 0;
-	      }
-	  }
-      }
 }
 
 /* Return true if NOTE is not one of the ones that must be kept paired,
@@ -2387,26 +2192,7 @@ flow_delete_block (b)
   never_reached_warning (insn);
 
   if (GET_CODE (insn) == CODE_LABEL)
-    {
-      rtx x, *prev = &exception_handler_labels;
-
-      for (x = exception_handler_labels; x; x = XEXP (x, 1))
-	{
-	  if (XEXP (x, 0) == insn)
-	    {
-	      /* Found a match, splice this label out of the EH label list.  */
-	      *prev = XEXP (x, 1);
-	      XEXP (x, 1) = NULL_RTX;
-	      XEXP (x, 0) = NULL_RTX;
-
-	      /* Remove the handler from all regions */
-	      remove_handler (insn);
-	      deleted_handler = 1;
-	      break;
-	    }
-	  prev = &XEXP (x, 1);
-	}
-    }
+    maybe_remove_eh_handler (insn);
 
   /* Include any jump table following the basic block.  */
   end = b->end;
@@ -2804,7 +2590,6 @@ merge_blocks (e, b, c)
   else
     {
       edge tmp_edge;
-      basic_block d;
       int c_has_outgoing_fallthru;
       int b_has_incoming_fallthru;
 
@@ -2832,37 +2617,22 @@ merge_blocks (e, b, c)
 	  break;
       b_has_incoming_fallthru = (tmp_edge != NULL);
 
-      /* If B does not have an incoming fallthru, and the exception regions
-	 match, then it can be moved immediately before C without introducing
-	 or modifying jumps.
-
-	 C can not be the first block, so we do not have to worry about
+      /* If B does not have an incoming fallthru, then it can be moved
+	 immediately before C without introducing or modifying jumps.
+	 C cannot be the first block, so we do not have to worry about
 	 accessing a non-existent block.  */
-      d = BASIC_BLOCK (c->index - 1);
-      if (! b_has_incoming_fallthru
-	  && d->eh_end == b->eh_beg
-	  && b->eh_end == c->eh_beg)
+      if (! b_has_incoming_fallthru)
 	return merge_blocks_move_predecessor_nojumps (b, c);
 
-      /* Otherwise, we're going to try to move C after B.  Make sure the
-	 exception regions match.
+      /* Otherwise, we're going to try to move C after B.  If C does
+	 not have an outgoing fallthru, then it can be moved
+	 immediately after B without introducing or modifying jumps.  */
+      if (! c_has_outgoing_fallthru)
+	return merge_blocks_move_successor_nojumps (b, c);
 
-	 If B is the last basic block, then we must not try to access the
-	 block structure for block B + 1.  Luckily in that case we do not
-	 need to worry about matching exception regions.  */
-      d = (b->index + 1 < n_basic_blocks ? BASIC_BLOCK (b->index + 1) : NULL);
-      if (b->eh_end == c->eh_beg
-	  && (d == NULL || c->eh_end == d->eh_beg))
-	{
-	  /* If C does not have an outgoing fallthru, then it can be moved
-	     immediately after B without introducing or modifying jumps.  */
-	  if (! c_has_outgoing_fallthru)
-	    return merge_blocks_move_successor_nojumps (b, c);
-
-	  /* Otherwise, we'll need to insert an extra jump, and possibly
-	     a new block to contain it.  */
-	  /* ??? Not implemented yet.  */
-	}
+      /* Otherwise, we'll need to insert an extra jump, and possibly
+	 a new block to contain it.  */
+      /* ??? Not implemented yet.  */
 
       return 0;
     }
@@ -3502,13 +3272,43 @@ mark_regs_live_at_end (set)
     if (global_regs[i] || EPILOGUE_USES (i))
       SET_REGNO_REG_SET (set, i);
 
-  /* Mark all call-saved registers that we actaully used.  */
   if (HAVE_epilogue && reload_completed)
     {
+      /* Mark all call-saved registers that we actually used.  */
       for (i = 0; i < FIRST_PSEUDO_REGISTER; i++)
 	if (regs_ever_live[i] && ! call_used_regs[i] && ! LOCAL_REGNO (i))
 	  SET_REGNO_REG_SET (set, i);
     }
+
+#ifdef EH_RETURN_DATA_REGNO
+  /* Mark the registers that will contain data for the handler.  */
+  if (reload_completed && current_function_calls_eh_return)
+    for (i = 0; ; ++i)
+      {
+	unsigned regno = EH_RETURN_DATA_REGNO(i);
+	if (regno == INVALID_REGNUM)
+	  break;
+	SET_REGNO_REG_SET (set, regno);
+      }
+#endif
+#ifdef EH_RETURN_STACKADJ_RTX
+  if ((! HAVE_epilogue || ! reload_completed)
+      && current_function_calls_eh_return)
+    {
+      rtx tmp = EH_RETURN_STACKADJ_RTX;
+      if (tmp && REG_P (tmp))
+	mark_reg (tmp, set);
+    }
+#endif
+#ifdef EH_RETURN_HANDLER_RTX
+  if ((! HAVE_epilogue || ! reload_completed)
+      && current_function_calls_eh_return)
+    {
+      rtx tmp = EH_RETURN_HANDLER_RTX;
+      if (tmp && REG_P (tmp))
+	mark_reg (tmp, set);
+    }
+#endif
 
   /* Mark function return value.  */
   diddle_return_value (mark_reg, set);
@@ -4249,7 +4049,8 @@ init_propagate_block_info (bb, live, local_set, cond_local_set, flags)
       && (flags & PROP_SCAN_DEAD_CODE)
       && (bb->succ == NULL
 	  || (bb->succ->succ_next == NULL
-	      && bb->succ->dest == EXIT_BLOCK_PTR)))
+	      && bb->succ->dest == EXIT_BLOCK_PTR
+	      && ! current_function_calls_eh_return)))
     {
       rtx insn, set;
       for (insn = bb->end; insn != bb->head; insn = PREV_INSN (insn))
@@ -6631,8 +6432,6 @@ dump_bb (bb, outf)
 
   fprintf (outf, ";; Basic block %d, loop depth %d, count %d",
 	   bb->index, bb->loop_depth, bb->count);
-  if (bb->eh_beg != -1 || bb->eh_end != -1)
-    fprintf (outf, ", eh regions %d/%d", bb->eh_beg, bb->eh_end);
   putc ('\n', outf);
 
   fputs (";; Predecessors: ", outf);

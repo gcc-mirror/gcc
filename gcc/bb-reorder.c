@@ -92,7 +92,6 @@
 #include "flags.h"
 #include "output.h"
 #include "function.h"
-#include "except.h"
 #include "toplev.h"
 #include "recog.h"
 #include "expr.h"
@@ -395,8 +394,6 @@ make_reorder_chain_1 (bb, prev)
       taken = probability > REG_BR_PROB_BASE / 2;
 
       /* Find the normal taken edge and the normal fallthru edge.
-         Note that there may in fact be other edges due to
-	 flag_non_call_exceptions. 
 
 	 Note, conditional jumps with other side effects may not
 	 be fully optimized.  In this case it is possible for
@@ -1355,17 +1352,6 @@ reorder_basic_blocks ()
 
   if (n_basic_blocks <= 1)
     return;
-
-  /* We do not currently handle correct re-placement of EH notes.
-     But that does not matter unless we intend to use them.  */
-  if (flag_exceptions)
-    for (i = 0; i < n_basic_blocks; i++)
-      {
-	edge e;
-	for (e = BASIC_BLOCK (i)->succ; e ; e = e->succ_next)
-	  if (e->flags & EDGE_EH)
-	    return;
-      }
 
   for (i = 0; i < n_basic_blocks; i++)
     BASIC_BLOCK (i)->aux = xcalloc (1, sizeof (struct reorder_block_def));

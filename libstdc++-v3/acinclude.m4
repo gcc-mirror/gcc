@@ -1258,6 +1258,66 @@ AC_DEFUN(GLIBCPP_ENABLE_THREADS, [
 
 
 dnl
+dnl Check for exception handling support.  If an explicit enable/disable
+dnl sjlj exceptions is given, we don't have to detect.  Otherwise the
+dnl target may or may not support call frame exceptions.
+dnl
+dnl GLIBCPP_ENABLE_SJLJ_EXCEPTIONS
+dnl --enable-sjlj-exceptions forces the use of builtin setjmp.
+dnl --disable-sjlj-exceptions forces the use of call frame unwinding.
+dnl
+dnl Define _GLIBCPP_SJLJ_EXCEPTIONS if the compiler is configured for it.
+dnl
+AC_DEFUN(GLIBCPP_ENABLE_SJLJ_EXCEPTIONS, [
+  AC_MSG_CHECKING([for exception model to use])
+  AC_LANG_SAVE
+  AC_LANG_CPLUSPLUS
+  AC_ARG_ENABLE(sjlj-exceptions,
+  [  --enable-sjlj-exceptions  force use of builtin_setjmp for exceptions],
+  [:],
+  [dnl Botheration.  Now we've got to detect the exception model.
+   dnl Link tests against libgcc.a are problematic since -- at least
+   dnl as of this writing -- we've not been given proper -L bits for
+   dnl single-tree newlib and libgloss.
+   dnl
+   dnl This is what AC_TRY_COMPILE would do if it didn't delete the
+   dnl conftest files before we got a change to grep them first.
+   cat > conftest.$ac_ext << EOF
+[#]line __oline__ "configure"
+struct S { ~S(); };
+void bar();
+void foo()
+{
+  S s;
+  bar();
+}
+EOF
+   old_CXXFLAGS="$CXXFLAGS"  
+   CXXFLAGS=-S
+   if AC_TRY_EVAL(ac_compile); then
+     if grep _Unwind_SjLj_Resume conftest.s >/dev/null 2>&1 ; then
+       enable_sjlj_exceptions=yes
+     elif grep _Unwind_Resume conftest.s >/dev/null 2>&1 ; then
+       enable_sjlj_exceptions=no
+     fi
+   fi
+   CXXFLAGS="$old_CXXFLAGS"
+   rm -f conftest*])
+   if test x$enable_sjlj_exceptions = xyes; then
+     AC_DEFINE(_GLIBCPP_SJLJ_EXCEPTIONS, 1,
+	[Define if the compiler is configured for setjmp/longjmp exceptions.])
+     ac_exception_model_name=sjlj
+   elif test x$enable_sjlj_exceptions = xno; then
+     ac_exception_model_name="call frame"
+   else
+     AC_MSG_ERROR([unable to detect exception model])
+   fi
+   AC_LANG_RESTORE
+   AC_MSG_RESULT($ac_exception_model_name)
+])
+
+
+dnl
 dnl Check for template specializations for the 'long long' type extension.
 dnl
 dnl GLIBCPP_ENABLE_LONG_LONG

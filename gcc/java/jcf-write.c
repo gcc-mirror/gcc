@@ -2451,6 +2451,9 @@ generate_bytecode_insns (exp, target, state)
 	  }
       }
       break;
+    case EXC_PTR_EXPR:
+      NOTE_PUSH (1);  /* Pushed by exception system. */
+      break;
     case NEW_CLASS_EXPR:
       {
 	tree class = TREE_TYPE (TREE_TYPE (exp));
@@ -2525,11 +2528,6 @@ generate_bytecode_insns (exp, target, state)
 	    RESERVE (1);
 	    OP1 (op);
 	    NOTE_POP (1);
-	    break;
-	  }
-	else if (exp == soft_exceptioninfo_call_node)
-	  {
-	    NOTE_PUSH (1);  /* Pushed by exception system. */
 	    break;
 	  }
 	for ( ;  x != NULL_TREE;  x = TREE_CHAIN (x))

@@ -213,12 +213,6 @@ jump_optimize_1 (f, cross_jump, noop_moves, after_regscan,
   cross_jump_death_matters = (cross_jump == 2);
   max_uid = init_label_info (f) + 1;
 
-  /* If we are performing cross jump optimizations, then initialize
-     tables mapping UIDs to EH regions to avoid incorrect movement
-     of insns from one EH region to another.  */
-  if (flag_exceptions && cross_jump)
-    init_insn_eh_region (f, max_uid);
-
   if (! mark_labels_only)
     delete_barrier_successors (f);
 
@@ -237,8 +231,6 @@ jump_optimize_1 (f, cross_jump, noop_moves, after_regscan,
     if (GET_CODE (XEXP (insn, 0)) == CODE_LABEL)
       LABEL_NUSES (XEXP (insn, 0))++;
 
-  check_exception_handler_labels ();
-
   /* Keep track of labels used for marking handlers for exception
      regions; they cannot usually be deleted.  */
 
@@ -250,9 +242,6 @@ jump_optimize_1 (f, cross_jump, noop_moves, after_regscan,
      notes and recompute LABEL_NUSES.  */
   if (mark_labels_only)
     goto end;
-
-  if (! minimal)
-    exception_optimize ();
 
   last_insn = delete_unreferenced_labels (f);
 
@@ -1442,13 +1431,6 @@ find_cross_jump (e1, e2, minimum, f1, f2)
 	}
 
       if (i2 == 0 || GET_CODE (i1) != GET_CODE (i2))
-	break;
-
-      /* Avoid moving insns across EH regions if either of the insns
-	 can throw.  */
-      if (flag_exceptions
-	  && (flag_non_call_exceptions || GET_CODE (i1) == CALL_INSN)
-	  && !in_same_eh_region (i1, i2))
 	break;
 
       p1 = PATTERN (i1);

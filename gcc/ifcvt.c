@@ -1905,7 +1905,7 @@ find_if_block (test_bb, then_edge, else_edge)
   /* Make sure IF, THEN, and ELSE, blocks are adjacent.  Actually, we
      get the first condition for free, since we've already asserted that
      there's a fallthru edge from IF to THEN.  */
-  /* ??? As an enhancement, move the ELSE block.  Have to deal with EH and
+  /* ??? As an enhancement, move the ELSE block.  Have to deal with
      BLOCK notes, if by no other means than aborting the merge if they
      exist.  Sticky enough I don't want to think about it now.  */
   next_index = then_bb->index;
@@ -2187,15 +2187,6 @@ dead_or_predicable (test_bb, merge_bb, other_bb, new_dest, reversep)
      int reversep;
 {
   rtx head, end, jump, earliest, old_dest;
-
-  /* No code movement can occur if we'd be scrogging EH regions.
-     Within MERGE_BB, ensure that we've not got stray EH_BEG or EH_END
-     notes within the block.  Between the blocks, checking that the end
-     region numbers match ensures that we won't disrupt the nesting
-     between regions.  */
-  if (merge_bb->eh_beg != merge_bb->eh_end
-      || merge_bb->eh_end != test_bb->eh_end)
-    return FALSE;
 
   jump = test_bb->end;
 

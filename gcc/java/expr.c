@@ -2502,15 +2502,13 @@ java_lang_expand_expr (exp, target, tmode, modifier)
       for (current = TREE_OPERAND (exp, 1); current; 
 	   current = TREE_CHAIN (current))
 	{
-	  tree type;
 	  tree catch = TREE_OPERAND (current, 0);
 	  tree decl = BLOCK_EXPR_DECLS (catch);
-	  type = (decl ? TREE_TYPE (TREE_TYPE (decl)) : NULL_TREE);
-	  start_catch_handler (prepare_eh_table_type (type));
-	  expand_expr_stmt (TREE_OPERAND (current, 0));
+	  tree type = (decl ? TREE_TYPE (TREE_TYPE (decl)) : NULL_TREE);
 
-	  expand_resume_after_catch ();
-	  end_catch_handler ();
+	  expand_start_catch (type);
+	  expand_expr_stmt (TREE_OPERAND (current, 0));
+	  expand_end_catch ();
 	}
       expand_end_all_catch ();
       return const0_rtx;
@@ -2812,7 +2810,7 @@ process_jvm_instruction (PC, byte_ops, length)
   if (instruction_bits [PC] & BCODE_EXCEPTION_TARGET)
     {
       tree type = pop_type (ptr_type_node);
-      push_value (build1 (NOP_EXPR, type, soft_exceptioninfo_call_node));
+      push_value (build_exception_object_ref (type));
     }
 
   switch (byte_ops[PC++])

@@ -44,6 +44,7 @@ Boston, MA 02111-1307, USA.  */
 #include "regs.h"
 #include "insn-config.h"
 #include "reload.h"
+#include "function.h"
 #include "output.h"
 #include "expr.h"
 #include "except.h"
@@ -150,7 +151,9 @@ typedef struct dw_fde_struct
   const char *dw_fde_current_label;
   const char *dw_fde_end;
   dw_cfi_ref dw_fde_cfi;
-  int nothrow;
+  unsigned funcdef_number;
+  unsigned nothrow : 1;
+  unsigned uses_eh_lsda : 1;
 }
 dw_fde_node;
 
@@ -217,7 +220,7 @@ static dw_cfi_ref cie_cfi_head;
    maximum number of function definitions contained within the current
    compilation unit.  These numbers are used to create unique label id's
    unique to each function definition.  */
-static unsigned current_funcdef_number = 0;
+unsigned current_funcdef_number = 0;
 
 /* Some DWARF extensions (e.g., MIPS/SGI) implement a subprogram
    attribute that accelerates the lookup of the FDE associated
@@ -1684,22 +1687,22 @@ output_call_frame_info (for_eh)
   register dw_fde_ref fde;
   register dw_cfi_ref cfi;
   char l1[20], l2[20];
-#ifdef ASM_OUTPUT_DEFINE_LABEL_DIFFERENCE_SYMBOL
-  char ld[20];
-#endif
-
-  /* Do we want to include a pointer to the exception table?  */
-  int eh_ptr = for_eh && exception_table_p ();
+  int any_lsda_needed = 0;
+  char augmentation[6];
 
   /* If we don't have any functions we'll want to unwind out of, don't
      emit any EH unwind information.  */
   if (for_eh)
     {
+      int any_eh_needed = 0;
       for (i = 0; i < fde_table_in_use; ++i)
-	if (! fde_table[i].nothrow)
-	  goto found;
-      return;
-    found:;
+	if (fde_table[i].uses_eh_lsda)
+	  any_eh_needed = any_lsda_needed = 1;
+	else if (! fde_table[i].nothrow)
+	  any_eh_needed = 1;
+
+      if (! any_eh_needed)
+	return;
     }
 
   /* We're going to be generating comments, so turn on app.  */
@@ -1726,14 +1729,8 @@ output_call_frame_info (for_eh)
   /* Output the CIE.  */
   ASM_GENERATE_INTERNAL_LABEL (l1, CIE_AFTER_SIZE_LABEL, for_eh);
   ASM_GENERATE_INTERNAL_LABEL (l2, CIE_END_LABEL, for_eh);
-#ifdef ASM_OUTPUT_DEFINE_LABEL_DIFFERENCE_SYMBOL
-  ASM_GENERATE_INTERNAL_LABEL (ld, CIE_LENGTH_LABEL, for_eh);
-  dw2_asm_output_offset (for_eh ? 4 : DWARF_OFFSET_SIZE, ld,
-			"Length of Common Information Entry");
-#else
   dw2_asm_output_delta (for_eh ? 4 : DWARF_OFFSET_SIZE, l2, l1,
 			"Length of Common Information Entry");
-#endif
   ASM_OUTPUT_LABEL (asm_out_file, l1);
 
   /* Now that the CIE pointer is PC-relative for EH,
@@ -1744,20 +1741,23 @@ output_call_frame_info (for_eh)
 
   dw2_asm_output_data (1, DW_CIE_VERSION, "CIE Version");
 
-  if (eh_ptr)
+  augmentation[0] = 0;
+  if (for_eh)
     {
-      /* The CIE contains a pointer to the exception region info for the
-         frame.  Make the augmentation string three bytes (including the
-         trailing null) so the pointer is 4-byte aligned.  The Solaris ld
-         can't handle unaligned relocs.  */
-      dw2_asm_output_nstring ("eh", -1, "CIE Augmentation");
-      dw2_asm_output_addr (DWARF2_ADDR_SIZE, "__EXCEPTION_TABLE__",
-			   "pointer to exception region info");
+      /* Augmentation:
+	 z	Indicates that a uleb128 is present to size the
+	 	augmentation section.
+	 R	Indicates a pointer encoding for CIE and FDE pointers.
+	 P	Indicates the presence of a language personality
+	 	routine in the CIE augmentation and an LSDA in the
+		FDE augmentation.  */
+
+      /* ??? Handle pointer encodings.  */
+
+      if (any_lsda_needed)
+	strcpy (augmentation, "zP");
     }
-  else
-    {
-      dw2_asm_output_data (1, 0, "CIE Augmentation (none)");
-    }
+  dw2_asm_output_nstring (augmentation, -1, "CIE Augmentation");
 
   dw2_asm_output_data_uleb128 (1, "CIE Code Alignment Factor");
 
@@ -1766,38 +1766,37 @@ output_call_frame_info (for_eh)
 
   dw2_asm_output_data (1, DWARF_FRAME_RETURN_COLUMN, "CIE RA Column");
 
+  if (augmentation[0])
+    {
+      dw2_asm_output_data_uleb128 (DWARF2_ADDR_SIZE, "Augmentation size");
+      if (eh_personality_libfunc)
+	dw2_asm_output_addr_rtx (DWARF2_ADDR_SIZE, eh_personality_libfunc,
+				 "Personality");
+      else
+	dw2_asm_output_data (DWARF2_ADDR_SIZE, 0, "Personality (none)");
+    }
+
   for (cfi = cie_cfi_head; cfi != NULL; cfi = cfi->dw_cfi_next)
     output_cfi (cfi, NULL);
 
   /* Pad the CIE out to an address sized boundary.  */
   ASM_OUTPUT_ALIGN (asm_out_file, floor_log2 (DWARF2_ADDR_SIZE));
   ASM_OUTPUT_LABEL (asm_out_file, l2);
-#ifdef ASM_OUTPUT_DEFINE_LABEL_DIFFERENCE_SYMBOL
-  ASM_OUTPUT_DEFINE_LABEL_DIFFERENCE_SYMBOL (asm_out_file, ld, l2, l1);
-  if (flag_debug_asm)
-    fprintf (asm_out_file, "\t%s CIE Length Symbol", ASM_COMMENT_START);
-  fputc ('\n', asm_out_file);
-#endif
 
   /* Loop through all of the FDE's.  */
   for (i = 0; i < fde_table_in_use; ++i)
     {
       fde = &fde_table[i];
 
-      /* Don't emit EH unwind info for leaf functions.  */
-      if (for_eh && fde->nothrow)
+      /* Don't emit EH unwind info for leaf functions that don't need it.  */
+      if (for_eh && fde->nothrow && ! fde->uses_eh_lsda)
 	continue;
 
       ASM_OUTPUT_INTERNAL_LABEL (asm_out_file, FDE_LABEL, for_eh + i * 2);
       ASM_GENERATE_INTERNAL_LABEL (l1, FDE_AFTER_SIZE_LABEL, for_eh + i * 2);
       ASM_GENERATE_INTERNAL_LABEL (l2, FDE_END_LABEL, for_eh + i * 2);
-#ifdef ASM_OUTPUT_DEFINE_LABEL_DIFFERENCE_SYMBOL
-      ASM_GENERATE_INTERNAL_LABEL (ld, FDE_LENGTH_LABEL, for_eh + i * 2);
-      dw2_asm_output_offset (for_eh ? 4 : DWARF_OFFSET_SIZE, ld, "FDE Length");
-#else
       dw2_asm_output_delta (for_eh ? 4 : DWARF_OFFSET_SIZE, l2, l1,
 			    "FDE Length");
-#endif
       ASM_OUTPUT_LABEL (asm_out_file, l1);
 
       /* ??? This always emits a 4 byte offset when for_eh is true, but it
@@ -1821,6 +1820,21 @@ output_call_frame_info (for_eh)
       dw2_asm_output_delta (DWARF2_ADDR_SIZE, fde->dw_fde_end,
 			    fde->dw_fde_begin, "FDE address range");
 
+      if (augmentation[0])
+	{
+	  dw2_asm_output_data_uleb128 (DWARF2_ADDR_SIZE, "Augmentation size");
+
+	  if (fde->uses_eh_lsda)
+	    {
+	      ASM_GENERATE_INTERNAL_LABEL (l1, "LLSDA", fde->funcdef_number);
+	      dw2_asm_output_offset (DWARF2_ADDR_SIZE, l1,
+				     "Language Specific Data Area");
+	    }
+	  else
+	    dw2_asm_output_data (DWARF2_ADDR_SIZE, 0,
+				 "Language Specific Data Area (none)");
+	}
+
       /* Loop through the Call Frame Instructions associated with
 	 this FDE.  */
       fde->dw_fde_current_label = fde->dw_fde_begin;
@@ -1830,12 +1844,6 @@ output_call_frame_info (for_eh)
       /* Pad the FDE out to an address sized boundary.  */
       ASM_OUTPUT_ALIGN (asm_out_file, floor_log2 (DWARF2_ADDR_SIZE));
       ASM_OUTPUT_LABEL (asm_out_file, l2);
-#ifdef ASM_OUTPUT_DEFINE_LABEL_DIFFERENCE_SYMBOL
-      ASM_OUTPUT_DEFINE_LABEL_DIFFERENCE_SYMBOL (asm_out_file, ld, l2, l1);
-      if (flag_debug_asm)
-	fprintf (asm_out_file, "\t%s FDE Length Symbol", ASM_COMMENT_START);
-      fputc ('\n', asm_out_file);
-#endif
     }
 
 #ifndef EH_FRAME_SECTION
@@ -1888,7 +1896,9 @@ dwarf2out_begin_prologue ()
   fde->dw_fde_current_label = NULL;
   fde->dw_fde_end = NULL;
   fde->dw_fde_cfi = NULL;
+  fde->funcdef_number = current_funcdef_number;
   fde->nothrow = current_function_nothrow;
+  fde->uses_eh_lsda = cfun->uses_eh_lsda;
 
   args_size = old_args_size = 0;
 }

@@ -1,3 +1,23 @@
+2001-03-28  Richard Henderson  <rth@redhat.com>
+
+	IA-64 ABI Exception Handling:
+	* acinclude.m4 (GLIBCPP_ENABLE_SJLJ_EXCEPTIONS): New.
+	* configure.in: Use it.
+	* Makefile.in, aclocal.m4, config.h.in, configure: Regenerate.
+        * libsupc++/Makefile.am (sources): Update files list.
+        * libsupc++/Makefile.in: Regenerate.
+        * libsupc++/eh_alloc.cc, libsupc++/eh_aux_runtime.cc: New files.
+        * libsupc++/eh_catch.cc, libsupc++/eh_exception.cc: New files.
+	* libsupc++/eh_globals.cc, libsupc++/eh_personality.cc: New files.
+        * libsupc++/eh_terminate.cc, libsupc++/eh_throw.cc: New files.
+        * libsupc++/exception_support.cc: Remove.
+        * libsupc++/exception_support.h: Remove.
+        * libsupc++/pure.cc: Use std::terminate.
+        * libsupc++/tinfo2.cc (__throw_type_match_rtti_2): Remove.
+        (__is_pointer): Remove.
+        * libsupc++/unwind-cxx.h: New file.
+        * libsupc++/vec.cc (uncatch_exception): Update for new abi.
+
 2001-03-27  Alexandre Oliva  <aoliva@redhat.com>
 
 	* libsupc++/Makefile.am (CXXLINK): Use CXX again, and choose

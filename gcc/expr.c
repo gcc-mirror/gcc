@@ -8741,7 +8741,7 @@ expand_expr (exp, target, tmode, modifier)
 
 	op0 = expand_expr (TREE_OPERAND (exp, 0), 0, VOIDmode, 0);
 
-	expand_eh_region_end (handler);
+	expand_eh_region_end_cleanup (handler);
 
 	return op0;
       }
@@ -8788,22 +8788,11 @@ expand_expr (exp, target, tmode, modifier)
 	return const0_rtx;
       }
 
-    case POPDCC_EXPR:
-      {
-	rtx dcc = get_dynamic_cleanup_chain ();
-	emit_move_insn (dcc, validize_mem (gen_rtx_MEM (Pmode, dcc)));
-	return const0_rtx;
-      }
-
-    case POPDHC_EXPR:
-      {
-	rtx dhc = get_dynamic_handler_chain ();
-	emit_move_insn (dhc, validize_mem (gen_rtx_MEM (Pmode, dhc)));
-	return const0_rtx;
-      }
-
     case VA_ARG_EXPR:
       return expand_builtin_va_arg (TREE_OPERAND (exp, 0), type);
+
+    case EXC_PTR_EXPR:
+      return get_exception_pointer ();
 
     default:
       return (*lang_expand_expr) (exp, original_target, tmode, modifier);

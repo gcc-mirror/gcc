@@ -339,7 +339,6 @@ enum java_tree_index
   JTI_SOFT_GETJNIENVNEWFRAME_NODE,
   JTI_SOFT_JNIPOPSYSTEMFRAME_NODE,
   JTI_SOFT_FMOD_NODE,
-  JTI_SOFT_EXCEPTIONINFO_CALL_NODE,
   JTI_SOFT_IDIV_NODE,
   JTI_SOFT_IREM_NODE,
   JTI_SOFT_LDIV_NODE,
@@ -581,8 +580,6 @@ extern tree java_global_trees[JTI_MAX];
   java_global_trees[JTI_SOFT_JNIPOPSYSTEMFRAME_NODE]
 #define soft_fmod_node \
   java_global_trees[JTI_SOFT_FMOD_NODE]
-#define soft_exceptioninfo_call_node \
-  java_global_trees[JTI_SOFT_EXCEPTIONINFO_CALL_NODE]
 #define soft_idiv_node \
   java_global_trees[JTI_SOFT_IDIV_NODE]
 #define soft_irem_node \
@@ -1026,6 +1023,7 @@ extern tree build_instanceof PARAMS ((tree, tree));
 extern tree create_label_decl PARAMS ((tree));
 extern void push_labeled_block PARAMS ((tree));
 extern tree prepare_eh_table_type PARAMS ((tree));
+extern tree build_exception_object_ref PARAMS ((tree));
 extern void java_set_exception_lang_code PARAMS ((void));
 extern tree generate_name PARAMS ((void));
 extern void pop_labeled_block PARAMS ((void));

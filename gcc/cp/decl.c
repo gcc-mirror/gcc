@@ -478,7 +478,7 @@ struct binding_level
 /* The binding level currently in effect.  */
 
 #define current_binding_level			\
-  (cfun						\
+  (cfun && cp_function_chain->bindings		\
    ? cp_function_chain->bindings		\
    : scope_chain->bindings)
 
@@ -6306,7 +6306,6 @@ initialize_predefined_identifiers ()
     { VTABLE_PFN_NAME, &pfn_identifier, 0 },
     { "__pfn_or_delta2", &pfn_or_delta2_identifier, 0 },
     { "_vptr", &vptr_identifier, 0 },
-    { "__cp_push_exception", &cp_push_exception_identifier, 0 },
     { "__vtt_parm", &vtt_parm_identifier, 0 },
     { "std", &std_identifier, 0 },
     { NULL, NULL, 0 }
@@ -13721,7 +13720,7 @@ store_parm_decls (current_function_parms)
   if (flag_exceptions && !processing_template_decl
       && flag_enforce_eh_specs
       && TYPE_RAISES_EXCEPTIONS (TREE_TYPE (current_function_decl)))
-    current_eh_spec_try_block = expand_start_eh_spec ();
+    current_eh_spec_block = begin_eh_spec_block ();
 }
 
 
@@ -13966,9 +13965,9 @@ finish_function (flags)
       if (flag_exceptions && !processing_template_decl
 	  && flag_enforce_eh_specs
 	  && TYPE_RAISES_EXCEPTIONS (TREE_TYPE (current_function_decl)))
-	expand_end_eh_spec (TYPE_RAISES_EXCEPTIONS
-			    (TREE_TYPE (current_function_decl)),
-			    current_eh_spec_try_block);
+	finish_eh_spec_block (TYPE_RAISES_EXCEPTIONS
+			      (TREE_TYPE (current_function_decl)),
+			      current_eh_spec_block);
     }
 
   /* If we're saving up tree structure, tie off the function now.  */
@@ -14395,7 +14394,7 @@ mark_lang_function (p)
   ggc_mark_tree (p->x_dtor_label);
   ggc_mark_tree (p->x_current_class_ptr);
   ggc_mark_tree (p->x_current_class_ref);
-  ggc_mark_tree (p->x_eh_spec_try_block);
+  ggc_mark_tree (p->x_eh_spec_block);
   ggc_mark_tree_varray (p->x_local_names);
 
   mark_named_label_lists (&p->x_named_labels, &p->x_named_label_uses);

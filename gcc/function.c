@@ -1580,11 +1580,6 @@ fixup_var_refs (var, promoted_mode, unsignedp, ht)
 	  end_sequence ();
 	}
     }
-
-  /* Scan the catch clauses for exception handling too.  */
-  push_to_full_sequence (catch_clauses, catch_clauses_last);
-  fixup_var_refs_insns (catch_clauses, var, promoted_mode, unsignedp, 0);
-  end_full_sequence (&catch_clauses, &catch_clauses_last);
 }
 
 /* REPLACEMENTS is a pointer to a list of the struct fixup_replacement and X is
@@ -6315,20 +6310,10 @@ expand_function_start (subr, parms_have_cleanups)
   else
     cleanup_label = 0;
 
-  /* Make the label for return statements to jump to, if this machine
-     does not have a one-instruction return and uses an epilogue,
-     or if it returns a structure, or if it has parm cleanups.  */
-#ifdef HAVE_return
-  if (cleanup_label == 0 && HAVE_return
-      && ! current_function_instrument_entry_exit
-      && ! current_function_returns_pcc_struct
-      && ! (current_function_returns_struct && ! optimize))
-    return_label = 0;
-  else
-    return_label = gen_label_rtx ();
-#else
+  /* Make the label for return statements to jump to.  Do not special
+     case machines with special return instructions -- they will be
+     handled later during jump, ifcvt, or epilogue creation.  */
   return_label = gen_label_rtx ();
-#endif
 
   /* Initialize rtx used to return the value.  */
   /* Do this before assign_parms so that we copy the struct value address
@@ -6370,7 +6355,9 @@ expand_function_start (subr, parms_have_cleanups)
   else if (DECL_MODE (DECL_RESULT (subr)) == VOIDmode)
     /* If return mode is void, this decl rtl should not be used.  */
     SET_DECL_RTL (DECL_RESULT (subr), NULL_RTX);
-  else if (parms_have_cleanups || current_function_instrument_entry_exit)
+  else if (parms_have_cleanups
+	   || current_function_instrument_entry_exit
+	   || (flag_exceptions && USING_SJLJ_EXCEPTIONS))
     {
       /* If function will end with cleanup code for parms,
 	 compute the return values into a pseudo reg,
@@ -6801,27 +6788,6 @@ expand_function_end (filename, line, end_bindings)
   if (end_bindings)
     expand_end_bindings (0, 0, 0);
 
-  /* Now handle any leftover exception regions that may have been
-     created for the parameters.  */
-  {
-    rtx last = get_last_insn ();
-    rtx label;
-
-    expand_leftover_cleanups ();
-
-    /* If there are any catch_clauses remaining, output them now.  */
-    emit_insns (catch_clauses);
-    catch_clauses = catch_clauses_last = NULL_RTX;
-    /* If the above emitted any code, may sure we jump around it.  */
-    if (last != get_last_insn ())
-      {
-	label = gen_label_rtx ();
-	last = emit_jump_insn_after (gen_jump (label), last);
-	last = emit_barrier_after (last);
-	emit_label (label);
-      }
-  }
-
   if (current_function_instrument_entry_exit)
     {
       rtx fun = DECL_RTL (current_function_decl);
@@ -6836,6 +6802,11 @@ expand_function_end (filename, line, end_bindings)
 						     hard_frame_pointer_rtx),
 			 Pmode);
     }
+
+  /* Let except.c know where it should emit the call to unregister
+     the function context for sjlj exceptions.  */
+  if (flag_exceptions && USING_SJLJ_EXCEPTIONS)
+    sjlj_emit_function_exit_after (get_last_insn ());
 
   /* If we had calls to alloca, and this machine needs
      an accurate stack pointer to exit the function,
@@ -6944,15 +6915,15 @@ expand_function_end (filename, line, end_bindings)
       current_function_return_rtx = outgoing;
     }
 
+  /* If this is an implementation of throw, do what's necessary to
+     communicate between __builtin_eh_return and the epilogue.  */
+  expand_eh_return ();
+
   /* ??? This should no longer be necessary since stupid is no longer with
      us, but there are some parts of the compiler (eg reload_combine, and
      sh mach_dep_reorg) that still try and compute their own lifetime info
      instead of using the general framework.  */
   use_return_register ();
-
-  /* If this is an implementation of __throw, do what's necessary to
-     communicate between __builtin_eh_return and the epilogue.  */
-  expand_eh_return ();
 
   /* Output a return insn if we are using one.
      Otherwise, let the rtl chain end here, to drop through

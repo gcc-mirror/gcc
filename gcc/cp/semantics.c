@@ -51,6 +51,7 @@ static tree simplify_aggr_init_exprs_r PARAMS ((tree *, int *, void *));
 static void deferred_type_access_control PARAMS ((void));
 static void emit_associated_thunks PARAMS ((tree));
 static void genrtl_try_block PARAMS ((tree));
+static void genrtl_eh_spec_block PARAMS ((tree));
 static void genrtl_handler PARAMS ((tree));
 static void genrtl_catch_block PARAMS ((tree));
 static void genrtl_ctor_stmt PARAMS ((tree));
@@ -575,14 +576,14 @@ genrtl_try_block (t)
     {
       expand_eh_region_start ();
       expand_stmt (TRY_STMTS (t));
-      expand_eh_region_end (protect_with_terminate (TRY_HANDLERS (t)));
+      expand_eh_region_end_cleanup (TRY_HANDLERS (t));
     }
   else
     {
       if (!FN_TRY_BLOCK_P (t)) 
 	emit_line_note (input_filename, lineno);
-      expand_start_try_stmts ();
 
+      expand_eh_region_start ();
       expand_stmt (TRY_STMTS (t));
 
       if (FN_TRY_BLOCK_P (t))
@@ -601,6 +602,21 @@ genrtl_try_block (t)
 	  expand_end_all_catch ();
 	}
     }
+}
+
+/* Generate the RTL for T, which is an EH_SPEC_BLOCK. */
+
+static void 
+genrtl_eh_spec_block (t)
+     tree t;
+{
+  expand_eh_region_start ();
+  expand_stmt (EH_SPEC_STMTS (t));
+  expand_eh_region_end_allowed (EH_SPEC_RAISES (t),
+				build_call (call_unexpected_node,
+					    tree_cons (NULL_TREE,
+						       build_exc_ptr (),
+						       NULL_TREE)));
 }
 
 /* Begin a try-block.  Returns a newly-created TRY_BLOCK if
@@ -706,13 +722,7 @@ genrtl_handler (t)
   genrtl_do_pushlevel ();
   expand_stmt (HANDLER_BODY (t));
   if (!processing_template_decl)
-    {
-      /* Fall to outside the try statement when done executing
-	 handler and we fall off end of handler.  This is jump
-	 Lresume in the documentation.  */
-      expand_goto (top_label_entry (&caught_return_label_stack));
-      end_catch_handler ();
-    }
+    expand_end_catch ();
 }
 
 /* Begin a handler.  Returns a HANDLER if appropriate.  */
@@ -757,13 +767,13 @@ finish_handler_parms (decl, handler)
   return blocks;
 }
 
-/* Generate the RTL for a CATCH_BLOCK. */
+/* Generate the RTL for a START_CATCH_STMT. */
 
 static void
 genrtl_catch_block (type)
      tree type;
 {
-  start_catch_handler (type);
+  expand_start_catch (type);
 }
 
 /* Note the beginning of a handler for TYPE.  This function is called
@@ -2209,6 +2219,10 @@ cp_expand_stmt (t)
       genrtl_try_block (t);
       break;
 
+    case EH_SPEC_BLOCK:
+      genrtl_eh_spec_block (t);
+      break;
+
     case HANDLER:
       genrtl_handler (t);
       break;
@@ -2614,9 +2628,6 @@ genrtl_finish_function (fn)
       && current_function_return_value == NULL_TREE
       && ! DECL_NAME (DECL_RESULT (current_function_decl)))
     no_return_label = build_decl (LABEL_DECL, NULL_TREE, NULL_TREE);
-
-  if (flag_exceptions)
-    expand_exception_blocks ();
 
   /* If this function is supposed to return a value, ensure that
      we do not fall into the cleanups by mistake.  The end of our
