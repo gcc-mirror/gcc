@@ -4,11 +4,11 @@
 #include <typeinfo>
 
 struct B {
-  virtual f() { }
+  virtual int f() { }
 };
 
 struct D {
-  virtual f() { }
+  virtual int f() { }
 };
 
 main() {

@@ -1,8 +1,8 @@
 // Build don't link:
-// Special g++ Options: -w
+
 int i;
-int &const j = i;
-int &const f();
+int &const j = i;		// ERROR - invalid const
+int &const f();			// ERROR - invalid const
 void g ()
 {
   j = 1;

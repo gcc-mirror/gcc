@@ -55,7 +55,7 @@ foreach file [lsort [find $srcdir/$subdir *.C]] {
     # We don't want old-dejagnu.exp to have to know about all the global
     # variables we use.  For now we tell it about CXXFLAGS and LIBS and
     # leave LDFLAGS alone.
-    old-dejagnu $GXX_UNDER_TEST "$file" "" "$DEFAULT_CXXFLAGS" "-lstdc++"
+    old-dejagnu $GXX_UNDER_TEST "$file" "$tfile" "" "$DEFAULT_CXXFLAGS" "-lstdc++"
 }
 
 # The framework doesn't like to see any error remnants,

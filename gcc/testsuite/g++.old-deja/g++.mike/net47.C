@@ -1,5 +1,5 @@
 // Build don't link:
-// Special g++ Options: -w
+// Special g++ Options: -w -fpermissive
 
 class foo {};
 class bar : foo {
