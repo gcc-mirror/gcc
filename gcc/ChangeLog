@@ -1,3 +1,8 @@
+1999-09-23 10:56 -0700  Zack Weinberg  <zack@bitmover.com>
+
+	* iso646.h, stdarg.h, stdbool.h, stddef.h, varargs.h: Add
+	copyright notice and special exception to GPL.
+
 Thu Sep 23 13:40:23 1999  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* abi64.h (mips_function_value): Add prototype arguments.
