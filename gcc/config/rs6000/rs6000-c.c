@@ -25,7 +25,7 @@ Boston, MA 02111-1307, USA.  */
 #include "system.h"
 #include "cpplib.h"
 #include "tree.h"
-#include "c-lex.h"
+#include "c-pragma.h"
 #include "errors.h"
 #include "tm_p.h"
 

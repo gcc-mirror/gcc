@@ -76,7 +76,6 @@
 #include "tree.h"
 #include "flags.h"
 #include "output.h"
-#include "c-lex.h"
 #include "c-tree.h"
 #include "rtl.h"
 #include "tm_p.h"

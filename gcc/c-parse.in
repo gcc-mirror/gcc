@@ -43,9 +43,8 @@ end ifc
 #include "cpplib.h"
 #include "intl.h"
 #include "timevar.h"
-#include "c-lex.h"		/* Gets YYDEBUG macro.  */
+#include "c-pragma.h"		/* For YYDEBUG definition, and parse_in.  */
 #include "c-tree.h"
-#include "c-pragma.h"
 #include "flags.h"
 #include "output.h"
 #include "toplev.h"
@@ -3932,27 +3931,6 @@ yyprint (file, yychar, yyl)
 
 /* This is not the ideal place to put these, but we have to get them out
    of c-lex.c because cp/lex.c has its own versions.  */
-
-/* Return something to represent absolute declarators containing a *.
-   TARGET is the absolute declarator that the * contains.
-   TYPE_QUALS_ATTRS is a list of modifiers such as const or volatile
-   to apply to the pointer type, represented as identifiers, possible mixed
-   with attributes.
-
-   We return an INDIRECT_REF whose "contents" are TARGET (inside a TREE_LIST,
-   if attributes are present) and whose type is the modifier list.  */
-
-tree
-make_pointer_declarator (type_quals_attrs, target)
-     tree type_quals_attrs, target;
-{
-  tree quals, attrs;
-  tree itarget = target;
-  split_specs_attrs (type_quals_attrs, &quals, &attrs);
-  if (attrs != NULL_TREE)
-    itarget = tree_cons (attrs, target, NULL_TREE);
-  return build1 (INDIRECT_REF, quals, itarget);
-}
 
 /* Free malloced parser stacks if necessary.  */
 

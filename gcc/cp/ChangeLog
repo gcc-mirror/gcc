@@ -1,3 +1,8 @@
+2002-05-25  Neil Booth  <neil@daikokuya.demon.co.uk>
+
+	* lex.c: Don't include c-lex.h.
+	* parse.y, spew.c: Don't include c-lex.h; include c-pragma.h.
+
 2002-05-23  Neil Booth  <neil@daikokuya.demon.co.uk>
 
 	* spew.c (yyungetc, snarf_block): Remove indent_level handling.

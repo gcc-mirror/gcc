@@ -896,6 +896,8 @@ extern int c_staticp                            PARAMS ((tree));
 
 extern int c_common_unsafe_for_reeval		PARAMS ((tree));
 
+extern const char *init_c_lex			PARAMS ((const char *));
+
 /* Information recorded about each file examined during compilation.  */
 
 struct c_fileinfo

@@ -45,7 +45,6 @@ Boston, MA 02111-1307, USA.  */
 #include "rtl.h"
 #include "expr.h"
 #include "c-tree.h"
-#include "c-lex.h"
 #include "c-common.h"
 #include "flags.h"
 #include "objc-act.h"
@@ -55,7 +54,6 @@ Boston, MA 02111-1307, USA.  */
 #include "output.h"
 #include "toplev.h"
 #include "ggc.h"
-#include "cpplib.h"
 #include "debug.h"
 #include "target.h"
 

@@ -1,3 +1,44 @@
+2002-05-25  Neil Booth  <neil@daikokuya.demon.co.uk>
+
+	* Makefile.in (C_COMMON_H): Fix.
+	Update other targets.
+	* c-common.c: Don't include c-lex.h.
+	(builtin_define_with_value): Make static and prototype.
+	(builtin_define_std): Move from c-lex.h.
+	* c-common.h (init_c_lex): Move from c-lex.h.
+	* c-decl.c: Don't include c-lex.h.
+	(make_pointer_declarator): Move from c-parse.in.
+	* c-lex.c: Don't include c-lex.h.
+	* c-lex.h: Remove.
+	* c-parse.in: Don't include c-lex.h; include c-pragma.h.
+	(make_pointer_declarator): Move to c-decl.c.
+	* c-pragma.c: Don't include c-lex.h.
+	* c-pragma.h (yydebug, YYDEBUG, parse_in, c_lex): Move from c-lex.h.
+	* c-tree.h (make_pointer_declarator): New.
+doc:
+	* passes.texi, tm.texi: Update.
+objc:
+	* Make-lang.in: Update and correct.
+	* objc-act.c: Don't include c-lex.h or cpplib.h.
+treelang:
+	* treetree.c: Don't include c-lex.h.
+config:
+	* darwin-c.c: Don't include c-lex.h.
+	* c4x/c4x-c.c: Don't include c-lex.h.
+	* c4x/t-c4x: Update.
+	* i370/i370-c.c: Don't include c-lex.h.
+	* i370/t-i370: Update.
+	* i960/i960-c.c: Don't include c-lex.h.
+	* i960/i960.c: Don't include cpplib.h, c-lex.h or c-pragma.h.
+	* i960/t-960bare: Update.
+	* i960/t-vxworks: Update.
+	* rs6000/rs6000-c.c: Don't include c-lex.h; include c-pragma.h.
+	* rs6000/t-darwin: Update.
+	* rs6000/t-rs6000-c-rule: Update.
+	* v850/v850-c.c: Don't include c-lex.h.
+	* v850/v850.c: Don't include c-lex.h or cpplib.h.
+
+
 2002-05-25  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* tree.def: Fix typos.
