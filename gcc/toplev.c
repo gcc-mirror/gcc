@@ -568,6 +568,11 @@ int flag_syntax_only = 0;
 
 static int flag_gcse;
 
+/* Nonzero means to use global dataflow analysis to eliminate
+   useless null pointer tests.  */
+
+static int flag_delete_null_pointer_checks;
+
 /* Nonzero means to rerun cse after loop optimization.  This increases
    compilation time about 20% and picks up a few more common expressions.  */
 
@@ -894,6 +899,8 @@ lang_independent_options f_options[] =
    "Run CSE pass after loop optimisations"},
   {"rerun-loop-opt", &flag_rerun_loop_opt, 1,
    "Run the loop optimiser twice"},
+  {"delete-null-pointer-checks", &flag_delete_null_pointer_checks, 1,
+   "Delete useless null pointer checks" },
   {"pretend-float", &flag_pretend_float, 1,
    "Pretend that host and target use the same FP format"},
   {"schedule-insns", &flag_schedule_insns, 1,
@@ -3707,7 +3714,7 @@ rest_of_compilation (decl)
     goto exit_rest_of_compilation;
 
   /* Try to identify useless null pointer tests and delete them.  */
-  if (optimize > 1)
+  if (flag_delete_null_pointer_checks)
     TIMEVAR (jump_time, delete_null_pointer_checks (get_insns ()));
 
   /* Dump rtl code after jump, if we are doing that.  */
@@ -3746,7 +3753,7 @@ rest_of_compilation (decl)
 					   !JUMP_AFTER_REGSCAN));
  
       /* Try to identify useless null pointer tests and delete them.  */
-      if (optimize > 1)
+      if (flag_delete_null_pointer_checks)
 	TIMEVAR (jump_time, delete_null_pointer_checks (get_insns ()));
 
       /* Dump rtl code after cse, if we are doing that.  */
@@ -5322,6 +5329,7 @@ main (argc, argv)
 #endif
       flag_regmove = 1;
       flag_strict_aliasing = 1;
+      flag_delete_null_pointer_checks = 1;
     }
 
   if (optimize >= 3)
