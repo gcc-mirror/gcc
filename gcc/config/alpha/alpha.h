@@ -2330,6 +2330,7 @@ do {									\
 		     SYMBOL_REF, CONST, LABEL_REF}},			\
   {"some_operand", {SUBREG, REG, MEM, CONST_INT, CONST_DOUBLE,		\
 		    SYMBOL_REF, CONST, LABEL_REF}},			\
+  {"some_ni_operand", {SUBREG, REG, MEM}},				\
   {"aligned_memory_operand", {MEM}},					\
   {"unaligned_memory_operand", {MEM}},					\
   {"reg_or_unaligned_mem_operand", {SUBREG, REG, MEM}},			\

@@ -1,3 +1,11 @@
+Wed Oct 13 21:18:17 1999  Richard Henderson  <rth@cygnus.com>
+
+	* alpha.c (some_ni_operand): New.
+	* alpha-protos.h: Declare it.
+	* alpha.h (PREDICATE_CODES): Update.
+	* alpha.md (sXaddq reload insns): Use some_ni_operand 
+	for SET_DEST instead of some_operand.
+
 Wed Oct 13 21:04:45 1999  Richard Henderson  <rth@cygnus.com>
 			  Jim Wilson  <wilson@cygnus.com>
 
