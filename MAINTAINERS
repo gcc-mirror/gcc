@@ -31,7 +31,7 @@ i960 port		Jim Wilson		wilson@cygnus.com
 a29k port		Jim Wilson		wilson@cygnus.com
 alpha port		Richard Henderson	rth@cygnus.com
 sparc port		Richard Henderson	rth@cygnus.com
-sparc port (?) 		David S. Miller		davem@dm.cobaltmicro.com
+sparc port		David S. Miller		davem@dm.cobaltmicro.com
 x86 ports		Stan Cox		scox@cygnus.com
 *fortran		Craig Burley		burley@gnu.org
 fortran			Richard Henderson	rth@cygnus.com	
@@ -57,7 +57,7 @@ sco5 & unixware		Robert Lipe		robertl@dgii.com
 new fixincludes		Bruce Korb		korbb@datadesign.com
 gcse.c 			Jeff Law		law@cygnus.com
 global opt framework	Jeff Law		law@cygnus.com
-
+jump.c			David S. Miller		davem@dm.cobaltmicro.com
 
 			
 
