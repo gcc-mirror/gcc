@@ -29,9 +29,7 @@
    ---------------------------------------------------------------------
    
    Written by Tim Josling 1999-2001, based in part on other parts of
-   the GCC compiler. 
- 
-*/
+   the GCC compiler.  */
 
 %{
 #include "config.h"
@@ -51,7 +49,7 @@ extern int option_lexer_trace;
 int yylex (void);
 void update_yylval (int a); 
 
-static int next_tree_charno=1;
+static int next_tree_charno = 1;
  
 static void update_lineno_charno (void);
 static void dump_lex_value (int lexret);
@@ -80,13 +78,13 @@ static void dump_lex_value (int lexret);
 
 [ \n\t]+ {
   update_lineno_charno ();
-    NOT_RETURN (WHITESPACE);
+  NOT_RETURN (WHITESPACE);
 }
   
 "//".*  {
   /* Comment.  */
-    update_lineno_charno ();
-    NOT_RETURN (COMMENT);
+  update_lineno_charno ();
+  NOT_RETURN (COMMENT);
 }
    
 "{" {
@@ -254,7 +252,7 @@ void
 update_yylval (int a)
 {
   struct prod_token_parm_item * tok;
-  tok=yylval;
+  tok = yylval;
   
   tok->category = token_category;
   tok->type = a;

@@ -1,36 +1,32 @@
-  /* 
+/* TREELANG Compiler almost main (tree1)
+   Called by GCC's toplev.c
 
-    TREELANG Compiler almost main (tree1)
-    Called by GCC's toplev.c
+   Copyright (C) 1986, 87, 89, 92-96, 1997, 1999, 2000, 2001, 2002, 2003, 2004
+   Free Software Foundation, Inc.
 
-    Copyright (C) 1986, 87, 89, 92-96, 1997, 1999, 2000, 2001, 2002, 2003, 2004
-    Free Software Foundation, Inc.
+   This program is free software; you can redistribute it and/or modify it
+   under the terms of the GNU General Public License as published by the
+   Free Software Foundation; either version 2, or (at your option) any
+   later version.
 
-    This program is free software; you can redistribute it and/or modify it
-    under the terms of the GNU General Public License as published by the
-    Free Software Foundation; either version 2, or (at your option) any
-    later version.
+   This program is distributed in the hope that it will be useful,
+   but WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+   GNU General Public License for more details.
 
-    This program is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
+   You should have received a copy of the GNU General Public License
+   along with this program; if not, write to the Free Software
+   Foundation, 59 Temple Place - Suite 330,
+   Boston, MA 02111-1307, USA.
 
-    You should have received a copy of the GNU General Public License
-    along with this program; if not, write to the Free Software
-    Foundation, 59 Temple Place - Suite 330,
-    Boston, MA 02111-1307, USA.
+   In other words, you are welcome to use, share and improve this program.
+   You are forbidden to forbid anyone else to use, share and improve
+   what you give them.   Help stamp out software-hoarding!  
 
-    In other words, you are welcome to use, share and improve this program.
-    You are forbidden to forbid anyone else to use, share and improve
-    what you give them.   Help stamp out software-hoarding!  
+   ---------------------------------------------------------------------------
 
-    ---------------------------------------------------------------------------
-
-    Written by Tim Josling 1999, 2000, 2001, based in part on other
-    parts of the GCC compiler.
-
-*/
+   Written by Tim Josling 1999, 2000, 2001, based in part on other
+   parts of the GCC compiler.  */
 
 #include "config.h"
 #include "system.h"
@@ -232,19 +228,21 @@ lookup_tree_name (struct prod_token_parm_item *prod)
       sanity_check (this_tok);
       if (tok->tp.tok.length != this_tok->tp.tok.length) 
         continue;
-      if (memcmp (tok->tp.tok.chars, this_tok->tp.tok.chars, this_tok->tp.tok.length))
+      if (memcmp (tok->tp.tok.chars, this_tok->tp.tok.chars,
+		  this_tok->tp.tok.length))
         continue;
+
       if (option_parser_trace)
         fprintf (stderr, "Found symbol %s (%i:%i) as %i \n",
-		 tok->tp.tok.chars, 
-		 tok->tp.tok.location.line, tok->tp.tok.charno,
-		 NUMERIC_TYPE (this));
+		 tok->tp.tok.chars, LOCATION_LINE (tok->tp.tok.location),
+		 tok->tp.tok.charno, NUMERIC_TYPE (this));
       return this;
     }
+
   if (option_parser_trace)
     fprintf (stderr, "Not found symbol %s (%i:%i) as %i \n",
-	     tok->tp.tok.chars, 
-	     tok->tp.tok.location.line, tok->tp.tok.charno, tok->type);
+	     tok->tp.tok.chars, LOCATION_LINE (tok->tp.tok.location),
+	     tok->tp.tok.charno, tok->type);
   return NULL;
 }
 
@@ -290,7 +288,7 @@ sanity_check (struct prod_token_parm_item *item)
 {
   switch (item->category)
     {
-    case   token_category:
+    case token_category:
     case production_category:
     case parameter_category:
       break;

@@ -1,48 +1,40 @@
-%{ /* -*- c -*- emacs mode c */
-  /* 
+/* -*- c -*- emacs mode c */
+/* TREELANG Compiler parser.  
 
-     TREELANG Compiler parser.  
+---------------------------------------------------------------------
 
-     ---------------------------------------------------------------------
+Copyright (C) 1999, 2000, 2001, 2002, 2003, 2004
+Free Software Foundation, Inc.
 
-     Copyright (C) 1999, 2000, 2001, 2002, 2003, 2004
-     Free Software Foundation, Inc.
+This program is free software; you can redistribute it and/or modify it
+under the terms of the GNU General Public License as published by the
+Free Software Foundation; either version 2, or (at your option) any
+later version.
 
-     This program is free software; you can redistribute it and/or modify it
-     under the terms of the GNU General Public License as published by the
-     Free Software Foundation; either version 2, or (at your option) any
-     later version.
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
 
-     This program is distributed in the hope that it will be useful,
-     but WITHOUT ANY WARRANTY; without even the implied warranty of
-     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-     GNU General Public License for more details.
+You should have received a copy of the GNU General Public License
+along with this program; if not, write to the Free Software
+Foundation, 59 Temple Place - Suite 330,
+Boston, MA 02111-1307, USA.
 
-     You should have received a copy of the GNU General Public License
-     along with this program; if not, write to the Free Software
-     Foundation, 59 Temple Place - Suite 330,
-     Boston, MA 02111-1307, USA.
+In other words, you are welcome to use, share and improve this program.
+You are forbidden to forbid anyone else to use, share and improve
+what you give them.   Help stamp out software-hoarding!  
 
-     In other words, you are welcome to use, share and improve this program.
-     You are forbidden to forbid anyone else to use, share and improve
-     what you give them.   Help stamp out software-hoarding!  
+---------------------------------------------------------------------
 
-     ---------------------------------------------------------------------
+Written by Tim Josling 1999-2001, based in part on other parts of
+the GCC compiler.  */
 
-     Written by Tim Josling 1999-2001, based in part on other parts of
-     the GCC compiler.
- 
-   */
+/* Grammar Conflicts
+   *****************
+   There are no conflicts in this grammar.  Please keep it that way.  */
 
-  /* 
-
-     Grammar Conflicts
-     *****************
-
-     There are no conflicts in this grammar.  Please keep it that way.
-
-   */
-
+%{ 
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
@@ -57,44 +49,46 @@
 #define YYPRINT(file, type, value) print_token (file, type, value) 
 #define YYERROR_VERBOSE YES
 
-/* My yylex routine used to intercept calls to flex generated code, to
+  /* My yylex routine used to intercept calls to flex generated code, to
      record lex time.  */
-int yylex (void);
-static inline int my_yylex (void);
-/* Call lex, but ensure time is charged to TV_LEX.  */ 
-static inline int
-my_yylex (void)
-{
-  int res;
-  timevar_push (TV_LEX);
-  res = yylex ();
-  timevar_pop (TV_LEX);
-  return res;
-}
+  int yylex (void);
+  static inline int my_yylex (void);
+
+  /* Call lex, but ensure time is charged to TV_LEX.  */ 
+  static inline int
+    my_yylex (void)
+    {
+      int res;
+      timevar_push (TV_LEX);
+      res = yylex ();
+      timevar_pop (TV_LEX);
+      return res;
+    }
 #define yylex my_yylex
 
-extern int option_parser_trace;
+  extern int option_parser_trace;
 
-/* Local prototypes.  */
+  /* Local prototypes.  */
+  static void yyerror (const char *error_message);
+  int yyparse (void);
+  void print_token (FILE * file, unsigned int type ATTRIBUTE_UNUSED,
+		    YYSTYPE value);
+  static struct prod_token_parm_item *reverse_prod_list
+    (struct prod_token_parm_item *old_first);
+  static void ensure_not_void (unsigned int type,
+			       struct prod_token_parm_item* name);
+  static int check_type_match (int type_num, struct prod_token_parm_item *exp);
+  static int get_common_type (struct prod_token_parm_item *type1,
+			      struct prod_token_parm_item *type2);
+  static struct prod_token_parm_item *make_integer_constant
+    (struct prod_token_parm_item* value);
+  static struct prod_token_parm_item *make_plus_expression
+    (struct prod_token_parm_item* tok, struct prod_token_parm_item* op1,
+     struct prod_token_parm_item* op2, int type_code, int prod_code);
+  static void set_storage (struct prod_token_parm_item *prod);
 
-static void yyerror (const char *error_message);
-int yyparse (void);
-void print_token (FILE * file, unsigned int type ATTRIBUTE_UNUSED, YYSTYPE value);
-static struct prod_token_parm_item *reverse_prod_list (struct prod_token_parm_item *old_first);
-static void ensure_not_void (unsigned int type, struct prod_token_parm_item* name);
-static int check_type_match (int type_num, struct prod_token_parm_item *exp);
-static int get_common_type (struct prod_token_parm_item *type1,
-                            struct prod_token_parm_item *type2);
-static struct prod_token_parm_item *make_integer_constant (struct prod_token_parm_item* value);
-static struct prod_token_parm_item *make_plus_expression
-  (struct prod_token_parm_item* tok, struct prod_token_parm_item* op1,
-   struct prod_token_parm_item* op2, int type_code, int prod_code);
-static void set_storage (struct prod_token_parm_item *prod);
-
-/* File global variables.  */
-
-static struct prod_token_parm_item *current_function=NULL;
-
+  /* File global variables.  */
+  static struct prod_token_parm_item *current_function = NULL;
 %}
 
 /* Not %raw - seems to have bugs.  */
@@ -191,7 +185,8 @@ storage typename NAME init_opt SEMICOLON {
   SYMBOL_TABLE_NAME (prod) = tok;
   EXPRESSION_TYPE (prod) = $2;
   VAR_INIT (prod) = $4;
-  NUMERIC_TYPE (prod) = NUMERIC_TYPE (( (struct prod_token_parm_item*)EXPRESSION_TYPE (prod)));
+  NUMERIC_TYPE (prod) = 
+    NUMERIC_TYPE (( (struct prod_token_parm_item*)EXPRESSION_TYPE (prod)));
   ensure_not_void (NUMERIC_TYPE (prod), tok);
   if (insert_tree_name (prod))
     {
@@ -219,7 +214,8 @@ storage typename NAME init_opt SEMICOLON {
      ((struct prod_token_parm_item*)SYMBOL_TABLE_NAME (prod))->tp.tok.chars,
      ((struct prod_token_parm_item*)SYMBOL_TABLE_NAME (prod))->tp.tok.length,
      NUMERIC_TYPE (prod),
-     VAR_INIT (prod)? ((struct prod_token_parm_item*)VAR_INIT (prod))->tp.pro.code:NULL,
+     VAR_INIT (prod) ?
+     ((struct prod_token_parm_item*)VAR_INIT (prod))->tp.pro.code : NULL,
      tok->tp.tok.location);
   if (!prod->tp.pro.code) 
     abort ();
@@ -242,7 +238,8 @@ typename NAME {
   prod = make_production (PROD_VARIABLE_NAME, tok);
   SYMBOL_TABLE_NAME (prod) = $2;
   EXPRESSION_TYPE (prod) = $1;
-  NUMERIC_TYPE (prod) = NUMERIC_TYPE (( (struct prod_token_parm_item*)EXPRESSION_TYPE (prod)));
+  NUMERIC_TYPE (prod) =
+    NUMERIC_TYPE (( (struct prod_token_parm_item*)EXPRESSION_TYPE (prod)));
   ensure_not_void (NUMERIC_TYPE (prod), tok);
   if (insert_tree_name (prod))
     {
@@ -268,7 +265,8 @@ storage typename NAME LEFT_PARENTHESIS parameters_opt RIGHT_PARENTHESIS SEMICOLO
   prod = make_production (PROD_FUNCTION_NAME, $3);
   SYMBOL_TABLE_NAME (prod) = $3;
   EXPRESSION_TYPE (prod) = $2;
-  NUMERIC_TYPE (prod) = NUMERIC_TYPE (( (struct prod_token_parm_item*)EXPRESSION_TYPE (prod)));
+  NUMERIC_TYPE (prod) =
+    NUMERIC_TYPE (( (struct prod_token_parm_item*)EXPRESSION_TYPE (prod)));
   PARAMETERS (prod) = reverse_prod_list ($5); 
   insert_tree_name (prod);
   STORAGE_CLASS_TOKEN (prod) = $1;
@@ -307,7 +305,9 @@ storage typename NAME LEFT_PARENTHESIS parameters_opt RIGHT_PARENTHESIS SEMICOLO
       this_parms = my_malloc (sizeof (struct prod_token_parm_item));
       if (!this_parm_var->tp.pro.main_token)
         abort ();
-      this_parms->tp.par.variable_name = this_parm_var->tp.pro.main_token->tp.tok.chars;
+
+      this_parms->tp.par.variable_name =
+	this_parm_var->tp.pro.main_token->tp.tok.chars;
       this_parms->category = parameter_category;
       this_parms->type = NUMERIC_TYPE 
         (( (struct prod_token_parm_item*)EXPRESSION_TYPE (this_parm_var)));
@@ -326,9 +326,11 @@ storage typename NAME LEFT_PARENTHESIS parameters_opt RIGHT_PARENTHESIS SEMICOLO
     }
   FIRST_PARMS (prod) = first_parms;
 
-  prod->tp.pro.code = tree_code_create_function_prototype
-    (tok->tp.tok.chars, STORAGE_CLASS (prod), NUMERIC_TYPE (type),
-     first_parms, tok->tp.tok.location);
+  prod->tp.pro.code =
+    tree_code_create_function_prototype (tok->tp.tok.chars,
+					 STORAGE_CLASS (prod),
+					 NUMERIC_TYPE (type),
+					 first_parms, tok->tp.tok.location);
 }
 ;
 
@@ -592,8 +594,7 @@ INTEGER {
   int type_code = get_common_type (op1, op2);
   if (!type_code)
     YYERROR;
-  $$ = make_plus_expression
-     (tok, op1, op2, type_code, EXP_PLUS);
+  $$ = make_plus_expression (tok, op1, op2, type_code, EXP_PLUS);
 }
 |expression tl_MINUS expression %prec tl_PLUS {
   struct prod_token_parm_item *tok = $2;
@@ -602,8 +603,7 @@ INTEGER {
   int type_code = get_common_type (op1, op2);
   if (!type_code)
     YYERROR;
-  $$ = make_plus_expression
-     (tok, op1, op2, type_code, EXP_MINUS);
+  $$ = make_plus_expression (tok, op1, op2, type_code, EXP_MINUS);
 }
 |expression EQUALS expression {
   struct prod_token_parm_item *tok = $2;
@@ -695,8 +695,9 @@ NAME LEFT_PARENTHESIS expressions_with_commas RIGHT_PARENTHESIS {
     parms = tree_code_add_parameter (parms, var->tp.pro.code, exp->tp.pro.code);
   }
   type = tree_code_get_type (NUMERIC_TYPE (prod));
-  prod->tp.pro.code = tree_code_get_expression
-    (EXP_FUNCTION_INVOCATION, type, proto->tp.pro.code, parms, NULL);
+  prod->tp.pro.code = tree_code_get_expression (EXP_FUNCTION_INVOCATION, type,
+                                                proto->tp.pro.code, parms,
+                                                NULL);
   $$ = prod;
 }
 ;
@@ -746,8 +747,9 @@ NAME {
     YYERROR;
   OP1 (prod) = $1;
   
-  prod->tp.pro.code = tree_code_get_expression (EXP_REFERENCE, type, 
-                                      symbol_table_entry->tp.pro.code, NULL, NULL);
+  prod->tp.pro.code =
+    tree_code_get_expression (EXP_REFERENCE, type, 
+			      symbol_table_entry->tp.pro.code, NULL, NULL);
   $$ = prod;
 }
 ;
@@ -853,7 +855,8 @@ ensure_not_void (unsigned int type, struct prod_token_parm_item* name)
    common type (min is signed int).  */
 
 static int 
-get_common_type (struct prod_token_parm_item *type1, struct prod_token_parm_item *type2)
+get_common_type (struct prod_token_parm_item *type1,
+		 struct prod_token_parm_item *type2)
 {
   if (NUMERIC_TYPE (type1) == UNSIGNED_INT)
     return UNSIGNED_INT;
@@ -915,7 +918,8 @@ make_integer_constant (struct prod_token_parm_item* value)
     NUMERIC_TYPE (prod) = SIGNED_INT;
   else
     NUMERIC_TYPE (prod) = UNSIGNED_INT;
-  prod->tp.pro.code = tree_code_get_integer_value (tok->tp.tok.chars, tok->tp.tok.length);
+  prod->tp.pro.code = tree_code_get_integer_value (tok->tp.tok.chars,
+						   tok->tp.tok.length);
   return prod;
 }
 

@@ -1,57 +1,52 @@
-/*
+/* TREELANG Compiler interface to GCC's middle end (treetree.c)
+   Called by the parser.
 
-    TREELANG Compiler interface to GCC's middle end (treetree.c)
-    Called by the parser.
+   If you want a working example of how to write a front end to GCC,
+   you are in the right place.
 
-    If you want a working example of how to write a front end to GCC,
-    you are in the right place.
+   Copyright (C) 1988, 1992, 1993, 1994, 1995, 1996, 1997, 1998,
+   1999, 2000, 2001, 2002, 2003, 2004 Free Software Foundation, Inc.
 
-    Copyright (C) 1988, 1992, 1993, 1994, 1995, 1996, 1997, 1998,
-    1999, 2000, 2001, 2002, 2003, 2004 Free Software Foundation, Inc.
+   This code is based on toy.c written by Richard Kenner.
 
-    This code is based on toy.c written by Richard Kenner.
+   It was later modified by Jonathan Bartlett whose changes have all
+   been removed (by Tim Josling).
 
-    It was later modified by Jonathan Bartlett whose changes have all
-    been removed (by Tim Josling).
+   Various bits and pieces were cloned from the GCC main tree, as
+   GCC evolved, for COBOLForGCC, by Tim Josling.
 
-    Various bits and pieces were cloned from the GCC main tree, as
-    GCC evolved, for COBOLForGCC, by Tim Josling.
+   It was adapted to TREELANG by Tim Josling 2001.
 
-    It was adapted to TREELANG by Tim Josling 2001.
+   Updated to function-at-a-time by James A. Morrison, 2004.
 
-    Updated to function-at-a-time by James A. Morrison, 2004.
+   -----------------------------------------------------------------------
 
-    ---------------------------------------------------------------------------
+   This program is free software; you can redistribute it and/or modify it
+   under the terms of the GNU General Public License as published by the
+   Free Software Foundation; either version 2, or (at your option) any
+   later version.
 
-    This program is free software; you can redistribute it and/or modify it
-    under the terms of the GNU General Public License as published by the
-    Free Software Foundation; either version 2, or (at your option) any
-    later version.
+   This program is distributed in the hope that it will be useful,
+   but WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+   GNU General Public License for more details.
 
-    This program is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
+   You should have received a copy of the GNU General Public License
+   along with this program; if not, write to the Free Software
+   Foundation, 59 Temple Place - Suite 330,
+   Boston, MA 02111-1307, USA.
 
-    You should have received a copy of the GNU General Public License
-    along with this program; if not, write to the Free Software
-    Foundation, 59 Temple Place - Suite 330,
-    Boston, MA 02111-1307, USA.
+   In other words, you are welcome to use, share and improve this program.
+   You are forbidden to forbid anyone else to use, share and improve
+   what you give them.   Help stamp out software-hoarding!
 
-    In other words, you are welcome to use, share and improve this program.
-    You are forbidden to forbid anyone else to use, share and improve
-    what you give them.   Help stamp out software-hoarding!
+   -----------------------------------------------------------------------  */
 
-    ---------------------------------------------------------------------------
-
- */
-
-/*
-  Assumption: garbage collection is never called implicitly.  It will
-  not be called 'at any time' when short of memory.  It will only be
-  called explicitly at the end of each function.  This removes the
-  need for a *lot* of bother to ensure everything is in the mark trees
-  at all times.  */
+/* Assumption: garbage collection is never called implicitly.  It will
+   not be called 'at any time' when short of memory.  It will only be
+   called explicitly at the end of each function.  This removes the
+   need for a *lot* of bother to ensure everything is in the mark trees
+   at all times.  */
 
 /* Note, it is OK to use GCC extensions such as long long in a compiler front
    end.  This is because the GCC front ends are built using GCC.   */
@@ -263,7 +258,8 @@ tree_code_if_start (tree exp, location_t loc)
 {
   tree cond_exp, cond;
   cond_exp = fold (build2 (NE_EXPR, boolean_type_node, exp,
-                     fold (build1 (CONVERT_EXPR, TREE_TYPE (exp), integer_zero_node))));
+			   fold (build1 (CONVERT_EXPR, TREE_TYPE (exp),
+					 integer_zero_node))));
   SET_EXPR_LOCATION (cond_exp, loc);
   cond = build3 (COND_EXPR, void_type_node, cond_exp, NULL_TREE,
                  NULL_TREE);
@@ -603,7 +599,6 @@ tree_code_create_variable (unsigned int storage_class,
 
   TYPE_NAME (TREE_TYPE (var_decl)) = TYPE_NAME (var_type);
   return pushdecl (copy_node (var_decl));
-
 }
 
 
@@ -744,8 +739,8 @@ tree_code_get_expression (unsigned int exp_type,
 
       {
         tree fun_ptr;
-        fun_ptr = fold (build1 (ADDR_EXPR, build_pointer_type (TREE_TYPE (op1)),
-                                op1));
+        fun_ptr = fold (build1 (ADDR_EXPR,
+                                build_pointer_type (TREE_TYPE (op1)), op1));
         ret1 = build3 (CALL_EXPR, type, fun_ptr, nreverse (op2), NULL_TREE);
       }
       break;
@@ -773,8 +768,8 @@ tree_code_add_parameter (tree list, tree proto_exp, tree exp)
 {
   tree new_exp;
   new_exp = tree_cons (NULL_TREE,
-                       fold (build1 (CONVERT_EXPR, TREE_TYPE (proto_exp), exp)),
-                       NULL_TREE);
+                       fold (build1 (CONVERT_EXPR, TREE_TYPE (proto_exp),
+				     exp)), NULL_TREE);
   if (!list)
     return new_exp;
   return chainon (new_exp, list);
