@@ -1,3 +1,16 @@
+Tue Oct 22 19:07:03 CEST 2002  Jan Hubicka  <jh@suse.cz>
+
+	* i386.c (builtin_description): Add IX86_BUILTIN_PUNPCKHQDQ128.
+	(ix86_expand_builtin): Fix MASKMOVDQU expasion.
+	* i386.h (ix86_builtins): Add IX86_BUILTIN_PUNPCKHQDQ128.
+	* i386.md (mmx_punpck?dq): Simplify.
+	(sse2_pubpcklqdq): Fix.
+	(sse2_pubpckhqdq): New.
+	* xmmintrin.h (_mm_unpackhi_epi32): New.
+
+	* xmmintrin.h (_mm_cvt*, _mm_stream_pd): Fix prototypes.
+	(_mm_shufflehi_epi16, _mm_shufflelo_epi16): Fix typo.
+
 2002-10-22  Nathan Sidwell  <nathan@codesourcery.com>
 
 	PR c++/7209
