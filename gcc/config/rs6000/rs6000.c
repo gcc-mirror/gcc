@@ -4818,9 +4818,6 @@ function_arg_boundary (enum machine_mode mode, tree type)
 	   || (type && TREE_CODE (type) == VECTOR_TYPE
 	       && int_size_in_bytes (type) >= 16))
     return 128;
-  else if (type && TREE_CODE (type) == VECTOR_TYPE
-	   && int_size_in_bytes (type) > 16)
-    return 128;
   else
     return PARM_BOUNDARY;
 }
@@ -18606,7 +18603,7 @@ rs6000_function_value (tree valtype, tree func ATTRIBUTE_UNUSED)
     return rs6000_complex_function_value (mode);
   else if (TREE_CODE (valtype) == VECTOR_TYPE
 	   && TARGET_ALTIVEC && TARGET_ALTIVEC_ABI
-	   && ALTIVEC_VECTOR_MODE(mode))
+	   && ALTIVEC_VECTOR_MODE (mode))
     regno = ALTIVEC_ARG_RETURN;
   else if (TARGET_E500_DOUBLE && TARGET_HARD_FLOAT
 	   && (mode == DFmode || mode == DCmode))
