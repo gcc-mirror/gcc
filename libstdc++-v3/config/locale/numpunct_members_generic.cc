@@ -1,4 +1,4 @@
-// Wrapper for underlying C-language localization -*- C++ -*-
+// std::numpunct implementation details, generic version -*- C++ -*-
 
 // Copyright (C) 2001 Free Software Foundation, Inc.
 //
@@ -28,40 +28,38 @@
 // the GNU General Public License.
 
 //
-// ISO C++ 14882: 22.8  Standard locale categories.
+// ISO C++ 14882: 22.2.3.1.2  numpunct virtual functions
 //
 
 // Written by Benjamin Kosnik <bkoz@redhat.com>
 
 #include <locale>
-#include <stdexcept>
-#include <langinfo.h>
 
-namespace std 
+namespace std
 {
-  void
-  locale::facet::_S_create_c_locale(__c_locale& __cloc, const char* __s)
-  {
-    // XXX
-    // Perhaps locale::categories could be made equivalent to LC_*_MASK ?
-    // _M_c_locale = __newlocale(1 << LC_ALL, __s, 0);
-    // _M_c_locale = __newlocale(locale::all, __s, 0);
-    __cloc = __newlocale(1 << LC_ALL, __s, 0);
-    if (!__cloc)
-      {
-	// This named locale is not supported by the underlying OS.
-	throw runtime_error("attempt to create locale from unknown name");
-      }
-  }
-  
-  void
-  locale::facet::_S_destroy_c_locale(__c_locale& __cloc)
-  {
-    if (__cloc)
-      __freelocale(__cloc); 
-  }
-
-  __c_locale
-  locale::facet::_S_clone_c_locale(__c_locale& __cloc)
-  { return __duplocale(__cloc); }
-}  // namespace std
+  template<> 
+    void
+    numpunct<char>::_M_initialize_numpunct(__c_locale)
+    {
+      // "C" locale
+      _M_decimal_point = '.';
+      _M_thousands_sep = ',';
+      _M_grouping = "";
+      _M_truename = "true";
+      _M_falsename = "false";
+    }
+      
+#ifdef _GLIBCPP_USE_WCHAR_T
+  template<> 
+    void
+    numpunct<wchar_t>::_M_initialize_numpunct(__c_locale)
+    {
+      // "C" locale
+      _M_decimal_point = L'.';
+      _M_thousands_sep = L',';
+      _M_grouping = "";
+      _M_truename = L"true";
+      _M_falsename = L"false";
+    }
+#endif
+}

@@ -1058,9 +1058,11 @@ AC_DEFUN(GLIBCPP_ENABLE_CLOCALE, [
       CLOCALE_H=config/locale/c_locale_generic.h
       CLOCALE_CC=config/locale/c_locale_generic.cc
       CCODECVT_H=config/locale/codecvt_specializations_generic.h
+      CCOLLATE_CC=config/locale/collate_members_generic.cc
       CMESSAGES_H=config/locale/messages_members_generic.h
       CMESSAGES_CC=config/locale/messages_members_generic.cc
-      CCOLLATE_CC=config/locale/collate_specializations_generic.cc
+      CMONEY_CC=config/locale/moneypunct_members_generic.cc
+      CNUMERIC_CC=config/locale/numpunct_members_generic.cc
       ;;
     xgnu)
       AC_MSG_RESULT(gnu)
@@ -1084,9 +1086,11 @@ AC_DEFUN(GLIBCPP_ENABLE_CLOCALE, [
       CLOCALE_H=config/locale/c_locale_gnu.h
       CLOCALE_CC=config/locale/c_locale_gnu.cc
       CCODECVT_H=config/locale/codecvt_specializations_ieee_1003.1-200x.h
+      CCOLLATE_CC=config/locale/collate_members_gnu.cc
       CMESSAGES_H=config/locale/messages_members_gnu.h
       CMESSAGES_CC=config/locale/messages_members_gnu.cc
-      CCOLLATE_CC=config/locale/collate_specializations_gnu.cc
+      CMONEY_CC=config/locale/moneypunct_members_gnu.cc
+      CNUMERIC_CC=config/locale/numpunct_members_gnu.cc
       ;;
     xieee_1003.1)
       AC_MSG_RESULT(generic)
@@ -1097,9 +1101,11 @@ AC_DEFUN(GLIBCPP_ENABLE_CLOCALE, [
       CLOCALE_H=config/locale/c_locale_ieee_1003.1-200x.h
       CLOCALE_CC=config/locale/c_locale_ieee_1003.1-200x.cc
       CCODECVT_H=config/locale/codecvt_specializations_ieee_1003.1-200x.h
+      CCOLLATE_CC=config/locale/collate_members_generic.cc
       CMESSAGES_H=config/locale/messages_members_ieee_1003.1-200x.h
       CMESSAGES_CC=config/locale/messages_members_ieee_1003.1-200x.cc
-      CCOLLATE_CC=config/locale/collate_specializations_generic.cc
+      CMONEY_CC=config/locale/moneypunct_members_generic.cc
+      CNUMERIC_CC=config/locale/numpunct_members_generic.cc
       ;;
     *)
       echo "$enable_clocale is an unknown locale package" 1>&2
@@ -1117,8 +1123,10 @@ AC_DEFUN(GLIBCPP_ENABLE_CLOCALE, [
   AC_SUBST(CCODECVT_H)
   AC_SUBST(CMESSAGES_H)
   AC_LINK_FILES($CLOCALE_CC, src/c++locale.cc)
-  AC_LINK_FILES($CMESSAGES_CC, src/messages.cc)
   AC_LINK_FILES($CCOLLATE_CC, src/collate.cc)
+  AC_LINK_FILES($CMESSAGES_CC, src/messages.cc)
+  AC_LINK_FILES($CMONEY_CC, src/moneypunct.cc)
+  AC_LINK_FILES($CNUMERIC_CC, src/numpunct.cc)
 ])
 
 

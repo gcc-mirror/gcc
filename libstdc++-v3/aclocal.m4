@@ -1070,9 +1070,11 @@ AC_DEFUN(GLIBCPP_ENABLE_CLOCALE, [
       CLOCALE_H=config/locale/c_locale_generic.h
       CLOCALE_CC=config/locale/c_locale_generic.cc
       CCODECVT_H=config/locale/codecvt_specializations_generic.h
+      CCOLLATE_CC=config/locale/collate_members_generic.cc
       CMESSAGES_H=config/locale/messages_members_generic.h
       CMESSAGES_CC=config/locale/messages_members_generic.cc
-      CCOLLATE_CC=config/locale/collate_specializations_generic.cc
+      CMONEY_CC=config/locale/moneypunct_members_generic.cc
+      CNUMERIC_CC=config/locale/numpunct_members_generic.cc
       ;;
     xgnu)
       AC_MSG_RESULT(gnu)
@@ -1096,9 +1098,11 @@ AC_DEFUN(GLIBCPP_ENABLE_CLOCALE, [
       CLOCALE_H=config/locale/c_locale_gnu.h
       CLOCALE_CC=config/locale/c_locale_gnu.cc
       CCODECVT_H=config/locale/codecvt_specializations_ieee_1003.1-200x.h
+      CCOLLATE_CC=config/locale/collate_members_gnu.cc
       CMESSAGES_H=config/locale/messages_members_gnu.h
       CMESSAGES_CC=config/locale/messages_members_gnu.cc
-      CCOLLATE_CC=config/locale/collate_specializations_gnu.cc
+      CMONEY_CC=config/locale/moneypunct_members_gnu.cc
+      CNUMERIC_CC=config/locale/numpunct_members_gnu.cc
       ;;
     xieee_1003.1)
       AC_MSG_RESULT(generic)
@@ -1109,9 +1113,11 @@ AC_DEFUN(GLIBCPP_ENABLE_CLOCALE, [
       CLOCALE_H=config/locale/c_locale_ieee_1003.1-200x.h
       CLOCALE_CC=config/locale/c_locale_ieee_1003.1-200x.cc
       CCODECVT_H=config/locale/codecvt_specializations_ieee_1003.1-200x.h
+      CCOLLATE_CC=config/locale/collate_members_generic.cc
       CMESSAGES_H=config/locale/messages_members_ieee_1003.1-200x.h
       CMESSAGES_CC=config/locale/messages_members_ieee_1003.1-200x.cc
-      CCOLLATE_CC=config/locale/collate_specializations_generic.cc
+      CMONEY_CC=config/locale/moneypunct_members_generic.cc
+      CNUMERIC_CC=config/locale/numpunct_members_generic.cc
       ;;
     *)
       echo "$enable_clocale is an unknown locale package" 1>&2
@@ -1129,8 +1135,10 @@ AC_DEFUN(GLIBCPP_ENABLE_CLOCALE, [
   AC_SUBST(CCODECVT_H)
   AC_SUBST(CMESSAGES_H)
   AC_LINK_FILES($CLOCALE_CC, src/c++locale.cc)
-  AC_LINK_FILES($CMESSAGES_CC, src/messages.cc)
   AC_LINK_FILES($CCOLLATE_CC, src/collate.cc)
+  AC_LINK_FILES($CMESSAGES_CC, src/messages.cc)
+  AC_LINK_FILES($CMONEY_CC, src/moneypunct.cc)
+  AC_LINK_FILES($CNUMERIC_CC, src/numpunct.cc)
 ])
 
 
@@ -1959,12 +1967,12 @@ fi])
 # Macro to add for using GNU gettext.
 # Ulrich Drepper <drepper@cygnus.com>, 1995.
 #
-# This file file be copied and used freely without restrictions.  It can
+# This file can be copied and used freely without restrictions.  It can
 # be used in projects which are not available under the GNU Public License
 # but which still want to provide support for the GNU gettext functionality.
 # Please note that the actual code is *not* freely available.
 
-# serial 3
+# serial 5
 
 AC_DEFUN(AM_WITH_NLS,
   [AC_MSG_CHECKING([whether NLS is requested])
@@ -2006,9 +2014,10 @@ AC_DEFUN(AM_WITH_NLS,
 	     AC_CHECK_LIB(intl, bindtextdomain,
 	       [AC_CACHE_CHECK([for gettext in libintl],
 		 gt_cv_func_gettext_libintl,
-		 [AC_TRY_LINK([], [return (int) gettext ("")],
-		 gt_cv_func_gettext_libintl=yes,
-		 gt_cv_func_gettext_libintl=no)])])
+		 [AC_CHECK_LIB(intl, gettext,
+		  gt_cv_func_gettext_libintl=yes,
+		  gt_cv_func_gettext_libintl=no)],
+		 gt_cv_func_gettext_libintl=no)])
 	   fi
 
 	   if test "$gt_cv_func_gettext_libc" = "yes" \
@@ -2102,7 +2111,7 @@ AC_DEFUN(AM_WITH_NLS,
 	  : ;
 	else
 	  AC_MSG_RESULT(
-	    [found xgettext programs is not GNU xgettext; ignore it])
+	    [found xgettext program is not GNU xgettext; ignore it])
 	  XGETTEXT=":"
 	fi
       fi
@@ -2114,6 +2123,12 @@ AC_DEFUN(AM_WITH_NLS,
       nls_cv_header_intl=intl/libintl.h
       nls_cv_header_libgt=intl/libgettext.h
     fi
+    AC_LINK_FILES($nls_cv_header_libgt, $nls_cv_header_intl)
+    AC_OUTPUT_COMMANDS(
+     [case "$CONFIG_FILES" in *po/Makefile.in*)
+        sed -e "/POTFILES =/r po/POTFILES" po/Makefile.in > po/Makefile
+      esac])
+
 
     # If this is used in GNU gettext we have to set USE_NLS to `yes'
     # because some of the sources are only built for this goal.
@@ -2158,9 +2173,9 @@ AC_DEFUN(AM_GNU_GETTEXT,
    AC_REQUIRE([AC_FUNC_MMAP])dnl
 
    AC_CHECK_HEADERS([argz.h limits.h locale.h nl_types.h malloc.h string.h \
-unistd.h values.h sys/param.h])
+unistd.h sys/param.h])
    AC_CHECK_FUNCS([getcwd munmap putenv setenv setlocale strchr strcasecmp \
-__argz_count __argz_stringify __argz_next])
+strdup __argz_count __argz_stringify __argz_next])
 
    if test "${ac_cv_func_stpcpy+set}" != "set"; then
      AC_CHECK_FUNCS(stpcpy)
@@ -2268,7 +2283,7 @@ __argz_count __argz_stringify __argz_next])
 # Search path for a program which passes the given test.
 # Ulrich Drepper <drepper@cygnus.com>, 1996.
 #
-# This file file be copied and used freely without restrictions.  It can
+# This file can be copied and used freely without restrictions.  It can
 # be used in projects which are not available under the GNU Public License
 # but which still want to provide support for the GNU gettext functionality.
 # Please note that the actual code is *not* freely available.
@@ -2316,7 +2331,7 @@ AC_SUBST($1)dnl
 # Check whether LC_MESSAGES is available in <locale.h>.
 # Ulrich Drepper <drepper@cygnus.com>, 1995.
 #
-# This file file be copied and used freely without restrictions.  It can
+# This file can be copied and used freely without restrictions.  It can
 # be used in projects which are not available under the GNU Public License
 # but which still want to provide support for the GNU gettext functionality.
 # Please note that the actual code is *not* freely available.
@@ -2329,8 +2344,7 @@ AC_DEFUN(AM_LC_MESSAGES,
       [AC_TRY_LINK([#include <locale.h>], [return LC_MESSAGES],
        am_cv_val_LC_MESSAGES=yes, am_cv_val_LC_MESSAGES=no)])
     if test $am_cv_val_LC_MESSAGES = yes; then
-      AC_DEFINE(HAVE_LC_MESSAGES, 1,
-		[Define if your locale.h file contains LC_MESSAGES.])
+      AC_DEFINE(HAVE_LC_MESSAGES)
     fi
   fi])
 
