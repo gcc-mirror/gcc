@@ -1656,6 +1656,7 @@ java/net/JarURLConnection.java \
 java/net/MalformedURLException.java \
 java/net/MulticastSocket.java \
 java/net/NetPermission.java \
+java/net/NetworkInterface.java \
 java/net/NoRouteToHostException.java \
 java/net/PasswordAuthentication.java \
 java/net/PlainDatagramSocketImpl.java \
@@ -1997,6 +1998,7 @@ java/lang/reflect/natArray.cc \
 java/lang/reflect/natConstructor.cc \
 java/lang/reflect/natField.cc \
 java/lang/reflect/natMethod.cc \
+java/net/natNetworkInterface.cc \
 java/net/natInetAddress.cc \
 java/net/natPlainDatagramSocketImpl.cc \
 java/net/natPlainSocketImpl.cc \
@@ -2150,10 +2152,11 @@ java/lang/natStringBuffer.lo java/lang/natSystem.lo \
 java/lang/natThread.lo java/lang/natVMThrowable.lo \
 java/lang/ref/natReference.lo java/lang/reflect/natArray.lo \
 java/lang/reflect/natConstructor.lo java/lang/reflect/natField.lo \
-java/lang/reflect/natMethod.lo java/net/natInetAddress.lo \
-java/net/natPlainDatagramSocketImpl.lo java/net/natPlainSocketImpl.lo \
-java/text/natCollator.lo java/util/natTimeZone.lo \
-java/util/zip/natDeflater.lo java/util/zip/natInflater.lo
+java/lang/reflect/natMethod.lo java/net/natNetworkInterface.lo \
+java/net/natInetAddress.lo java/net/natPlainDatagramSocketImpl.lo \
+java/net/natPlainSocketImpl.lo java/text/natCollator.lo \
+java/util/natTimeZone.lo java/util/zip/natDeflater.lo \
+java/util/zip/natInflater.lo
 libgcjx_la_OBJECTS =  gnu/gcj/xlib/natClip.lo \
 gnu/gcj/xlib/natColormap.lo gnu/gcj/xlib/natDisplay.lo \
 gnu/gcj/xlib/natDrawable.lo gnu/gcj/xlib/natFont.lo \
@@ -2873,7 +2876,8 @@ DEP_FILES =  .deps/$(srcdir)/$(CONVERT_DIR)/gen-from-JIS.P \
 .deps/java/net/HttpURLConnection.P .deps/java/net/InetAddress.P \
 .deps/java/net/InetSocketAddress.P .deps/java/net/JarURLConnection.P \
 .deps/java/net/MalformedURLException.P .deps/java/net/MulticastSocket.P \
-.deps/java/net/NetPermission.P .deps/java/net/NoRouteToHostException.P \
+.deps/java/net/NetPermission.P .deps/java/net/NetworkInterface.P \
+.deps/java/net/NoRouteToHostException.P \
 .deps/java/net/PasswordAuthentication.P \
 .deps/java/net/PlainDatagramSocketImpl.P \
 .deps/java/net/PlainSocketImpl.P \
@@ -2891,7 +2895,7 @@ DEP_FILES =  .deps/$(srcdir)/$(CONVERT_DIR)/gen-from-JIS.P \
 .deps/java/net/URLStreamHandlerFactory.P \
 .deps/java/net/UnknownHostException.P \
 .deps/java/net/UnknownServiceException.P \
-.deps/java/net/natInetAddress.P \
+.deps/java/net/natInetAddress.P .deps/java/net/natNetworkInterface.P \
 .deps/java/net/natPlainDatagramSocketImpl.P \
 .deps/java/net/natPlainSocketImpl.P \
 .deps/java/nio/channels/DatagramChannel.P \

@@ -1,3 +1,14 @@
+2002-09-17  Michael Koch  <konqueror@gmx.de>
+
+	* java/net/NetworkInterface.java: New file.
+	* java/net/natNetworkInterface.java: New file.
+	* configure.in: Added check for net/if.h.
+	* configure: Regenerated.
+	* Makefile.am
+	(ordinary_java_source_files): Added NetworkInterface.java.
+	(nat_source_files): Added natNetworkInterface.cc.
+	* Makefile.in: Regenerated.
+
 2002-09-16  Tom Tromey  <tromey@redhat.com>
 
 	* java/net/URLClassLoader.java (findClass): Code source for a
