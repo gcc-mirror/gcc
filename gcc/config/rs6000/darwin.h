@@ -132,18 +132,13 @@ do {									\
 %{static: %{Zdynamic: %e conflicting code gen style switches are used}}\
 %{!static:%{!mdynamic-no-pic:-fPIC}}"
 
-/* It's virtually impossible to predict all the possible combinations
-   of -mcpu and -maltivec and whatnot, so just supply
-   -force_cpusubtype_ALL if any are seen.  Radar 3492132 against the
-   assembler is asking for a .machine directive so we could get this
-   really right.  */
-#define ASM_SPEC "-arch ppc \
-  %{Zforce_cpusubtype_ALL:-force_cpusubtype_ALL} \
-  %{!Zforce_cpusubtype_ALL:%{maltivec|mcpu=*|mpowerpc64:-force_cpusubtype_ALL}}"
-
 #undef SUBTARGET_EXTRA_SPECS
 #define SUBTARGET_EXTRA_SPECS			\
   { "darwin_arch", "ppc" },
+
+/* Output a .machine directive.  */
+#undef TARGET_ASM_FILE_START
+#define TARGET_ASM_FILE_START rs6000_darwin_file_start
 
 /* The "-faltivec" option should have been called "-maltivec" all
    along.  -ffix-and-continue and -findirect-data is for compatibility

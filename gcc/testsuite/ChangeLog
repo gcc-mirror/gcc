@@ -1,3 +1,8 @@
+2004-10-14  Geoffrey Keating  <geoffk@apple.com>
+
+	* gcc.dg/darwin-misaligned.c: Don't supply -force_cpusubtype_ALL.
+	* gcc.dg/macho-lo-sum.c: Likewise.
+
 2004-10-14  Joseph S. Myers  <joseph@codesourcery.com>
 
 	* gcc.dg/ppc-spe64-1.c: New test.

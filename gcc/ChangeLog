@@ -1,3 +1,16 @@
+2004-10-14  Geoffrey Keating  <geoffk@apple.com>
+
+	* config/rs6000/darwin.h (ASM_SPEC): Delete.
+	(TARGET_ASM_FILE_START): Define.
+	* config/darwin.h (ASM_SPEC): Define.
+	* config/rs6000/t-darwin (TARGET_LIBGCC2_CFLAGS): Don't supply
+	-mlong-double-128, it's the default.  Update comment about reason
+	for force_cpusubtype_ALL.
+	* config/rs6000/darwin-vecsave.asm: Supply .machine.
+	* config/rs6000/darwin-world.asm: Likewise.
+	* config/rs6000/rs6000.c (rs6000_darwin_file_start): New.
+	(symbolic_operand): Delete #if 0ed code.
+
 2004-10-14  Andrew Pinski  <pinskia@physics.uc.edu>
 
 	* stmt.c (add_case_node): Make sure that we have integer

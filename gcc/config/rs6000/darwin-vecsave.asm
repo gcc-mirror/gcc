@@ -41,6 +41,7 @@
    (4 bytes) to do the operation; for Vector regs, 2 instructions are
    required (8 bytes.).   */
 
+	.machine ppc7400
 .text
 	.align 2
 

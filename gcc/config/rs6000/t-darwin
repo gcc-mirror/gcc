@@ -7,7 +7,7 @@ LIB2FUNCS_STATIC_EXTRA = \
 	$(srcdir)/config/rs6000/darwin-vecsave.asm  \
 	$(srcdir)/config/rs6000/darwin-world.asm
 
-# Enable AltiVec instructions when assembling the aforementioned .asm files.
-# For libgcc, we always want 128-bit long double, since a libgcc built with
-# that will work without it.
-TARGET_LIBGCC2_CFLAGS = -mlong-double-128 -Wa,-force_cpusubtype_ALL
+# The .asm files above are designed to run on all processors,
+# even though they use AltiVec instructions.  -Wa is used because
+# -force_cpusubtype_ALL doesn't work with -dynamiclib.
+TARGET_LIBGCC2_CFLAGS = -Wa,-force_cpusubtype_ALL
