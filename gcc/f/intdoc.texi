@@ -46,7 +46,7 @@
 @end ifset
 @ifset familyF77
 * ALog Intrinsic::      Natural logarithm (archaic).
-* ALog10 Intrinsic::    Natural logarithm (archaic).
+* ALog10 Intrinsic::    Common logarithm (archaic).
 * AMax0 Intrinsic::     Maximum value (archaic).
 * AMax1 Intrinsic::     Maximum value (archaic).
 * AMin0 Intrinsic::     Minimum value (archaic).
@@ -240,7 +240,7 @@
 @ifset familyF77
 * DInt Intrinsic::      Truncate to whole number (archaic).
 * DLog Intrinsic::      Natural logarithm (archaic).
-* DLog10 Intrinsic::    Natural logarithm (archaic).
+* DLog10 Intrinsic::    Common logarithm (archaic).
 * DMax1 Intrinsic::     Maximum value (archaic).
 * DMin1 Intrinsic::     Minimum value (archaic).
 * DMod Intrinsic::      Remainder (archaic).
@@ -530,7 +530,7 @@
 @end ifset
 @ifset familyF77
 * Log Intrinsic::       Natural logarithm.
-* Log10 Intrinsic::     Natural logarithm.
+* Log10 Intrinsic::     Common logarithm.
 @end ifset
 @ifset familyF90
 * Logical Intrinsic::   (Reserved for future use.)
@@ -3012,7 +3012,8 @@ The difference between local time and UTC (GMT) in the form @var{Shhmm}:
 sign, hours and minutes, e.g.@: @samp{-0500} (winter in New York);
 @item Values
 The year, month of the year, day of the month, time difference in
-minutes from UTC, hour of the day, minutes of the hour and milliseconds
+minutes from UTC, hour of the day, minutes of the hour, seconds
+of the minute, and milliseconds
 of the second in successive values of the array.
 @end table
 
@@ -4935,16 +4936,13 @@ extracted from the @code{stat} structure as returned by
 
 @enumerate
 @item
-File mode
+Device ID
 
 @item
 Inode number
 
 @item
-ID of device containing directory entry for file
-
-@item
-Device id (if relevant)
+File mode
 
 @item
 Number of links
@@ -4954,6 +4952,10 @@ Owner's uid
 
 @item
 Owner's gid
+
+@item
+ID of device containing directory entry for file
+(0 if not available)
 
 @item
 File size (bytes)
@@ -4968,10 +4970,10 @@ Last modification time
 Last file status change time
 
 @item
-Preferred I/O block size
+Preferred I/O block size (-1 if not available)
 
 @item
-Number of blocks allocated
+Number of blocks allocated (-1 if not available)
 @end enumerate
 
 Not all these elements are relevant on all systems.
@@ -5020,16 +5022,13 @@ extracted from the @code{stat} structure as returned by
 
 @enumerate
 @item
-File mode
+Device ID
 
 @item
 Inode number
 
 @item
-ID of device containing directory entry for file
-
-@item
-Device id (if relevant)
+File mode
 
 @item
 Number of links
@@ -5039,6 +5038,10 @@ Owner's uid
 
 @item
 Owner's gid
+
+@item
+ID of device containing directory entry for file
+(0 if not available)
 
 @item
 File size (bytes)
@@ -5053,10 +5056,10 @@ Last modification time
 Last file status change time
 
 @item
-Preferred I/O block size
+Preferred I/O block size (-1 if not available)
 
 @item
-Number of blocks allocated
+Number of blocks allocated (-1 if not available)
 @end enumerate
 
 Not all these elements are relevant on all systems.
@@ -5654,7 +5657,7 @@ Description:
 
 Returns the value of @var{I} with bit @var{Pos} cleared (set to
 zero).
-@xref{BTest Intrinsic} for information on bit positions.
+@xref{BTest Intrinsic}, for information on bit positions.
 
 @node IBits Intrinsic
 @subsubsection IBits Intrinsic
@@ -5718,7 +5721,7 @@ Intrinsic groups: @code{mil}, @code{f90}, @code{vxt}.
 Description:
 
 Returns the value of @var{I} with bit @var{Pos} set (to one).
-@xref{BTest Intrinsic} for information on bit positions.
+@xref{BTest Intrinsic}, for information on bit positions.
 
 @end ifset
 @ifset familyF77
@@ -6604,7 +6607,7 @@ Bits shifted out from the left end or the right end, as the case may be,
 are lost.
 Zeros are shifted in from the opposite end.
 
-@xref{IShftC Intrinsic} for the circular-shift equivalent.
+@xref{IShftC Intrinsic}, for the circular-shift equivalent.
 
 @node IShftC Intrinsic
 @subsubsection IShftC Intrinsic
@@ -6646,7 +6649,7 @@ must be less than or equal to @var{Size}.
 The value of @var{Size} must be greater than or equal to one and less than 
 or equal to @samp{BIT_SIZE(@var{I})}.
 
-@xref{IShft Intrinsic} for the logical shift equivalent.
+@xref{IShft Intrinsic}, for the logical shift equivalent.
 
 @end ifset
 @ifset familyF77
@@ -7480,7 +7483,7 @@ be zero.
 
 @xref{Exp Intrinsic}, for the inverse of this function.
 
-@xref{Log10 Intrinsic}, for the base-10 logarithm function.
+@xref{Log10 Intrinsic}, for the `common' (base-10) logarithm function.
 
 @node Log10 Intrinsic
 @subsubsection Log10 Intrinsic
@@ -7504,9 +7507,8 @@ Intrinsic groups: (standard FORTRAN 77).
 @noindent
 Description:
 
-Returns the natural logarithm of @var{X}, which must
-be greater than zero or, if type @code{COMPLEX}, must not
-be zero.
+Returns the common logarithm (base 10) of @var{X}, which must
+be greater than zero.
 
 The inverse of this function is @samp{10. ** LOG10(@var{X})}.
 
@@ -7646,16 +7648,13 @@ The values in this array are extracted from the
 
 @enumerate
 @item
-File mode
+Device ID
 
 @item
 Inode number
 
 @item
-ID of device containing directory entry for file
-
-@item
-Device id (if relevant)
+File mode
 
 @item
 Number of links
@@ -7665,6 +7664,10 @@ Owner's uid
 
 @item
 Owner's gid
+
+@item
+ID of device containing directory entry for file
+(0 if not available)
 
 @item
 File size (bytes)
@@ -7679,10 +7682,10 @@ Last modification time
 Last file status change time
 
 @item
-Preferred I/O block size
+Preferred I/O block size (-1 if not available)
 
 @item
-Number of blocks allocated
+Number of blocks allocated (-1 if not available)
 @end enumerate
 
 Not all these elements are relevant on all systems.
@@ -7737,16 +7740,13 @@ The values in this array are extracted from the
 
 @enumerate
 @item
-File mode
+Device ID
 
 @item
 Inode number
 
 @item
-ID of device containing directory entry for file
-
-@item
-Device id (if relevant)
+File mode
 
 @item
 Number of links
@@ -7756,6 +7756,10 @@ Owner's uid
 
 @item
 Owner's gid
+
+@item
+ID of device containing directory entry for file
+(0 if not available)
 
 @item
 File size (bytes)
@@ -7770,10 +7774,10 @@ Last modification time
 Last file status change time
 
 @item
-Preferred I/O block size
+Preferred I/O block size (-1 if not available)
 
 @item
-Number of blocks allocated
+Number of blocks allocated (-1 if not available)
 @end enumerate
 
 Not all these elements are relevant on all systems.
@@ -8025,6 +8029,13 @@ Description:
 
 Returns the number of clock ticks since the start of the process.
 Supported on systems with @code{clock(3)} (q.v.).
+
+@emph{Warning:} this intrinsic does not increase the range
+of the timing values over that returned by @code{clock(3)}.
+On a system with a 32-bit @code{clock(3)},
+@code{MCLOCK8} will return a 32-bit value,
+even though converted to an @samp{INTEGER(KIND=2)} value.
+That means overflows of the 32-bit value can still occur.
 
 No Fortran implementations other than GNU Fortran are
 known to support this intrinsic at the time of this
@@ -9179,7 +9190,7 @@ Description:
 Returns the process's runtime in seconds in @var{Seconds}---the same value
 as the UNIX function @code{etime} returns.
 
-This routine is known from Cray Fortran.  @xref{CPU_Time Intrinsic}
+This routine is known from Cray Fortran.  @xref{CPU_Time Intrinsic},
 for a standard equivalent.
 
 For information on other intrinsics with the same name:
@@ -9725,16 +9736,13 @@ The values in this array are extracted from the
 
 @enumerate
 @item
-File mode
+Device ID
 
 @item
 Inode number
 
 @item
-ID of device containing directory entry for file
-
-@item
-Device id (if relevant)
+File mode
 
 @item
 Number of links
@@ -9744,6 +9752,10 @@ Owner's uid
 
 @item
 Owner's gid
+
+@item
+ID of device containing directory entry for file
+(0 if not available)
 
 @item
 File size (bytes)
@@ -9758,10 +9770,10 @@ Last modification time
 Last file status change time
 
 @item
-Preferred I/O block size
+Preferred I/O block size (-1 if not available)
 
 @item
-Number of blocks allocated
+Number of blocks allocated (-1 if not available)
 @end enumerate
 
 Not all these elements are relevant on all systems.
@@ -9812,16 +9824,13 @@ The values in this array are extracted from the
 
 @enumerate
 @item
-File mode
+Device ID
 
 @item
 Inode number
 
 @item
-ID of device containing directory entry for file
-
-@item
-Device id (if relevant)
+File mode
 
 @item
 Number of links
@@ -9831,6 +9840,10 @@ Owner's uid
 
 @item
 Owner's gid
+
+@item
+ID of device containing directory entry for file
+(0 if not available)
 
 @item
 File size (bytes)
@@ -9845,10 +9858,10 @@ Last modification time
 Last file status change time
 
 @item
-Preferred I/O block size
+Preferred I/O block size (-1 if not available)
 
 @item
-Number of blocks allocated
+Number of blocks allocated (-1 if not available)
 @end enumerate
 
 Not all these elements are relevant on all systems.
@@ -10201,7 +10214,7 @@ Description:
 Returns in @var{Time} a character representation of the current time as
 obtained from @code{ctime(3)}.
 
-@xref{Fdate Intrinsic (subroutine)} for an equivalent routine.
+@xref{Fdate Intrinsic (subroutine)}, for an equivalent routine.
 
 For information on other intrinsics with the same name:
 @xref{Time Intrinsic (UNIX)}.
@@ -10231,6 +10244,13 @@ Returns the current time encoded as a long integer
 (in the manner of the UNIX function @code{time(3)}).
 This value is suitable for passing to @code{CTIME},
 @code{GMTIME}, and @code{LTIME}.
+
+@emph{Warning:} this intrinsic does not increase the range
+of the timing values over that returned by @code{time(3)}.
+On a system with a 32-bit @code{time(3)},
+@code{TIME8} will return a 32-bit value,
+even though converted to an @samp{INTEGER(KIND=2)} value.
+That means overflows of the 32-bit value can still occur.
 
 No Fortran implementations other than GNU Fortran are
 known to support this intrinsic at the time of this

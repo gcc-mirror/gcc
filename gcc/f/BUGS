@@ -15,6 +15,18 @@ separating them out.
    For information on bugs that might afflict people who configure,
 port, build, and install `g77', *Note Problems Installing::.
 
+   * `g77' crashes when compiling I/O statements using keywords that
+     define `INTEGER' values, such as `IOSTAT=J', where J is other than
+     default `INTEGER' (such as `INTEGER*2').
+
+     Fixed in `egcs' 1.2.
+
+   * `g77' fails to warn about a reference to a function when the
+     corresponding *subsequent* function program unit disagrees with
+     the reference concerning the type of the function.
+
+     Fixed in `egcs' 1.2.
+
    * `g77' sometimes crashes when compiling code containing the
      construct `CMPLX(0.)' or similar.  This is a `gcc' back-end bug.
      It can be worked around using `-fno-emulate-complex', though that

@@ -38,6 +38,17 @@ clarify how they differ from other versions, though this can make
 getting a complete picture of what a particular `egcs' version contains
 somewhat more difficult.
 
+In 0.5.24 and `egcs' 1.1.2 (versus 0.5.23 and 1.1.1):
+=====================================================
+
+   * Fix the `Date_and_Time' intrinsic (in `libg2c') to return the
+     milliseconds value properly in VALUES(8).
+
+   * Fix the `LStat' intrinsic (in `libg2c') to return device-ID
+     information properly in SARRAY(7).
+
+   * Improve documentation.
+
 In 0.5.24 and `egcs' 1.1.1 (versus 0.5.23 and 1.1):
 ===================================================
 
@@ -192,6 +203,9 @@ In 0.5.24 and `egcs' 1.1 (versus 0.5.23):
 
    * `g77' no longer crashes when compiling code containing
      specification statements such as `INTEGER(KIND=7) PTR'.
+
+   * `g77' no longer crashes when compiling code such as `J = SIGNAL(1,
+     2)'.
 
    * `g77' now treats `%LOC(EXPR)' and `LOC(EXPR)' as "ordinary"
      expressions when they are used as arguments in procedure calls.
