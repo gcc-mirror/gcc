@@ -1,3 +1,8 @@
+2001-09-06  Aldy Hernandez  <aldyh@redhat.com>
+
+       * config/mips/mips.c (override_options): Do not override ISA when ABI
+        specified if MIPS_CPU_STRING_DEFAULT was specified.
+
 2001-09-07  Richard Henderson  <rth@redhat.com>
 
 	* loop.c (record_giv): Avoid simplifying MULT to ASHIFT.
