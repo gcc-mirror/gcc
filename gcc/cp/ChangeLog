@@ -1,3 +1,9 @@
+2003-02-17  Michael Elizabeth Chastain <mec@shout.net>
+
+	PR debug/9717
+	* class.c (build_base_field): Mark fields for base classes with
+	DECL_IGNORED_P.
+
 2003-02-13  Andrew Pinski <pinskia@physics.uc.edu>
 
         * decl.c: (define_label): Fix warning for return 0 instead of NULL.
