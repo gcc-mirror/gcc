@@ -4,12 +4,8 @@ LIB1ASMFUNCS = _ashiftrt _movstr _mulsi3 _sdivsi3 _udivsi3
 
 LIBGCC2_CFLAGS=-g -O5 $(GCC_CFLAGS)
 
-# CYGNUS LOCAL sh
-LANGUAGES=c c++ proto
-
-# CYGNUS LOCAL sh
 # These are really part of libgcc1, but this will cause them to be
-# built correctly, so... [taken from t-ose68k]
+# built correctly, so...
 
 LIB2FUNCS_EXTRA = fp-bit.c dp-bit.c ashlsi3.c ashrsi3.c lshrsi3.c
 
