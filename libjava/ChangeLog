@@ -1,5 +1,10 @@
 2003-11-11  Michael Koch  <konqueror@gmx.de>
 
+	* java/nio/ByteBuffer.java
+	(equals): Remove redundant obj == null check.
+
+2003-11-11  Michael Koch  <konqueror@gmx.de>
+
 	* gnu/java/nio/natPipeImpl.cc,
 	gnu/java/nio/natSelectorImpl.cc: Removed
 	* gnu/java/nio/natPipeImplEcos.cc,
