@@ -25,6 +25,7 @@ Boston, MA 02111-1307, USA.  */
 #include "rtl.h"
 #include "obstack.h"
 #include "errors.h"
+#include "gensupport.h"
 
 static struct obstack obstack;
 struct obstack *rtl_obstack = &obstack;
@@ -408,8 +409,6 @@ main (argc, argv)
      char **argv;
 {
   rtx desc;
-  FILE *infile;
-  register int c;
 
   max_opno = -1;
 
@@ -419,13 +418,8 @@ main (argc, argv)
   if (argc <= 1)
     fatal ("No input file name.");
 
-  infile = fopen (argv[1], "r");
-  if (infile == 0)
-    {
-      perror (argv[1]);
-      return (FATAL_EXIT_CODE);
-    }
-  read_rtx_filename = argv[1];
+  if (init_md_reader (argv[1]) != SUCCESS_EXIT_CODE)
+    return (FATAL_EXIT_CODE);
 
   printf ("/* Generated automatically by the program `genpeep'\n\
 from the machine description file `md'.  */\n\n");
@@ -458,13 +452,13 @@ from the machine description file `md'.  */\n\n");
 
   while (1)
     {
-      c = read_skip_spaces (infile);
-      if (c == EOF)
-	break;
-      ungetc (c, infile);
+      int line_no, rtx_number = 0;
 
-      desc = read_rtx (infile);
-      if (GET_CODE (desc) == DEFINE_PEEPHOLE)
+      desc = read_md_rtx (&line_no, &rtx_number);
+      if (desc == NULL)
+	break;
+
+       if (GET_CODE (desc) == DEFINE_PEEPHOLE)
 	{
 	  gen_peephole (desc);
 	  insn_code_number++;

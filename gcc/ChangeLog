@@ -1,3 +1,23 @@
+Wed May  3 12:40:53 2000  Clinton Popetz  <cpopetz@cygnus.com>
+
+	* gensupport.c: New file.
+	* gensupport.h: New file.
+	* Makefile.in (HOST_RTL): Depend on gensupport.
+	(gensupport.o) New rule.
+	* genattr.c: Use gensupport for reading .md files.
+	* genattrtab.c: Ditto. 
+	* gencodes.c: Ditto. 
+	* genconfig.c: Ditto. 
+	* genemit.c: Ditto. 
+	* genextract.c: Ditto. 
+	* genflags.c: Ditto. 
+	* genopinit.c: Ditto. 
+	* genoutput.c: Ditto. 
+	* genpeep.c: Ditto. 
+	* genrecog.c: Ditto.
+	* rtl.def (define_insn_and_split): New DEF_RTL_EXPR.
+	* md.texi (Insn Splitting): Document define_insn_and_split.
+
 Tue May  2 00:20:30 2000  Jason Eckhardt  <jle@cygnus.com>
 
         * flow.c (verify_flow_info): Added two more sanity checks. The

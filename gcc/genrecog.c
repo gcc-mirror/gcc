@@ -55,6 +55,7 @@
 #include "rtl.h"
 #include "obstack.h"
 #include "errors.h"
+#include "gensupport.h"
 
 #define OUTPUT_LABEL(INDENT_STRING, LABEL_NUMBER) \
   printf("%sL%d: ATTRIBUTE_UNUSED_LABEL\n", (INDENT_STRING), (LABEL_NUMBER))
@@ -2461,7 +2462,6 @@ make_insn_sequence (insn, type)
 	      next_insn_code);
       break;
     }
-  next_insn_code++;
 
   return head;
 }
@@ -2518,13 +2518,8 @@ main (argc, argv)
   if (argc <= 1)
     fatal ("No input file name.");
 
-  infile = fopen (argv[1], "r");
-  if (infile == 0)
-    {
-      perror (argv[1]);
-      return FATAL_EXIT_CODE;
-    }
-  read_rtx_filename = argv[1];
+  if (init_md_reader (argv[1]) != SUCCESS_EXIT_CODE)
+    return (FATAL_EXIT_CODE);
 
   next_insn_code = 0;
   next_index = 0;
@@ -2535,13 +2530,10 @@ main (argc, argv)
 
   while (1)
     {
-      c = read_skip_spaces (infile);
-      if (c == EOF)
+      desc = read_md_rtx (&pattern_lineno, &next_insn_code);
+      if (desc == NULL)
 	break;
-      ungetc (c, infile);
-      pattern_lineno = read_rtx_lineno;
 
-      desc = read_rtx (infile);
       if (GET_CODE (desc) == DEFINE_INSN)
 	{
 	  h = make_insn_sequence (desc, RECOG);
@@ -2558,9 +2550,6 @@ main (argc, argv)
 	  merge_trees (&peephole2_tree, &h);
 	}
 	
-      if (GET_CODE (desc) == DEFINE_PEEPHOLE
-	  || GET_CODE (desc) == DEFINE_EXPAND)
-	next_insn_code++;
       next_index++;
     }
 

@@ -26,6 +26,7 @@ Boston, MA 02111-1307, USA.  */
 #include "rtl.h"
 #include "obstack.h"
 #include "errors.h"
+#include "gensupport.h"
 
 static struct obstack obstack;
 struct obstack *rtl_obstack = &obstack;
@@ -279,8 +280,6 @@ main (argc, argv)
      char **argv;
 {
   rtx desc;
-  FILE *infile;
-  register int c;
 
   progname = "genconfig";
   obstack_init (rtl_obstack);
@@ -288,13 +287,8 @@ main (argc, argv)
   if (argc <= 1)
     fatal ("No input file name.");
 
-  infile = fopen (argv[1], "r");
-  if (infile == 0)
-    {
-      perror (argv[1]);
-      return (FATAL_EXIT_CODE);
-    }
-  read_rtx_filename = argv[1];
+  if (init_md_reader (argv[1]) != SUCCESS_EXIT_CODE)
+    return (FATAL_EXIT_CODE);
 
   printf ("/* Generated automatically by the program `genconfig'\n\
 from the machine description file `md'.  */\n\n");
@@ -307,27 +301,38 @@ from the machine description file `md'.  */\n\n");
 
   while (1)
     {
-      c = read_skip_spaces (infile);
-      if (c == EOF)
-	break;
-      ungetc (c, infile);
+      int line_no, insn_code_number = 0;
 
-      desc = read_rtx (infile);
-      if (GET_CODE (desc) == DEFINE_INSN)
-	gen_insn (desc);
-      if (GET_CODE (desc) == DEFINE_EXPAND)
-	gen_expand (desc);
-      if (GET_CODE (desc) == DEFINE_SPLIT)
-	gen_split (desc);
-      if (GET_CODE (desc) == DEFINE_PEEPHOLE2)
+      desc = read_md_rtx (&line_no, &insn_code_number);
+      if (desc == NULL)
+	break;
+	
+      switch (GET_CODE (desc)) 
 	{
-	  have_peephole2_flag = 1;
-	  gen_split (desc);
-	}
-      if (GET_CODE (desc) == DEFINE_PEEPHOLE)
-	{
-	  have_peephole_flag = 1;
-	  gen_peephole (desc);
+  	  case DEFINE_INSN:
+	    gen_insn (desc);
+	    break;
+	  
+	  case DEFINE_EXPAND:
+	    gen_expand (desc);
+	    break;
+
+	  case DEFINE_SPLIT:
+	    gen_split (desc);
+	    break;
+
+	  case DEFINE_PEEPHOLE2:
+	    have_peephole2_flag = 1;
+	    gen_split (desc);
+	    break;
+
+	  case DEFINE_PEEPHOLE:
+	    have_peephole_flag = 1;
+	    gen_peephole (desc);
+	    break;
+
+	  default:
+	    break;
 	}
     }
 

@@ -586,7 +586,9 @@ HOST_LIBS = $(USE_HOST_OBSTACK) $(USE_HOST_ALLOCA) $(USE_HOST_MALLOC)  \
 	    $(HOST_INTLLIBS) $(USE_HOST_VFPRINTF) $(USE_HOST_DOPRINT) \
 	    $(HOST_CLIB)
 
-HOST_RTL = $(HOST_PREFIX)rtl.o $(HOST_PREFIX)bitmap.o $(HOST_PREFIX)ggc-none.o
+HOST_RTL = $(HOST_PREFIX)rtl.o $(HOST_PREFIX)bitmap.o \
+		$(HOST_PREFIX)ggc-none.o $(HOST_PREFIX)gensupport.o
+
 HOST_PRINT = $(HOST_PREFIX)print-rtl.o
 HOST_ERRORS = $(HOST_PREFIX)errors.o
 
@@ -1514,6 +1516,7 @@ toplev.o : toplev.c $(CONFIG_H) system.h $(TREE_H) $(RTL_H) function.h \
 	  -c `echo $(srcdir)/toplev.c | sed 's,^\./,,'`
 
 rtl.o : rtl.c $(CONFIG_H) system.h $(RTL_H) bitmap.h $(GGC_H) toplev.h
+gensupport.o : gensupport.c $(CONFIG_H) system.h $(RTL_H) 
 
 print-rtl.o : print-rtl.c $(CONFIG_H) system.h $(RTL_H) $(BASIC_BLOCK_H)
 rtlanal.o : rtlanal.c $(CONFIG_H) system.h $(RTL_H)
