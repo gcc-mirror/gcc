@@ -1,5 +1,35 @@
 2004-07-09  Bryce McKinlay  <mckinlay@redhat.com>
 
+	PR java/8618
+	* parse.y (create_anonymous_class): Remove 'location' argument. Use
+	the WFL from TYPE_NAME to get line number for the decl. Fix comment.
+	(craft_constructor): Inherit access flags for implicit constructor
+	from the enclosing class.
+	(create_class): Fix comment typo.
+	(resolve_qualified_expression_name): Pass type of qualifier to
+	not_accessible_p, not the type in which target field was found.
+	(not_accessible_p): Handle inner classes. Expand protected 
+	qualifier-subtype check to enclosing instances, but don't apply this 
+	check to static members. Allow protected access to inner classes
+	of a subtype. Allow private access within common enclosing context.
+	(build_super_invocation): Get WFL line number info from current
+	class decl.
+	(build_incomplete_class_ref): Update for new create_anonymous_class
+	signature.
+	* parse.h (INNER_ENCLOSING_SCOPE_CHECK): Use
+	common_enclosing_instance_p.
+	* class.c (common_enclosing_context_p): New. Determine if types
+	share a common enclosing context, even across static contexts.
+	(common_enclosing_instance_p): Renamed from 
+	common_enclosing_context_p. Determines if types share a common
+	non-static enclosing instance.
+	* java-tree.h (common_enclosing_instance_p): Declare.
+	* jcf-write.c (get_method_access_flags): New. Surpress private flag
+	for inner class constructors.
+	(generate_classfile): Use get_method_access_flags.
+
+2004-07-09  Bryce McKinlay  <mckinlay@redhat.com>
+
 	* class.c (interface_of_p): Check for null TYPE_BINFO.
 
 2004-07-09  Nathan Sidwell  <nathan@codesourcery.com>

@@ -2903,6 +2903,22 @@ get_classfile_modifiers (tree class)
   return flags;
 }
 
+/* Get the access flags (modifiers) for a method to be used in the class 
+   file.  */
+
+static int
+get_method_access_flags (tree decl)
+{
+  int flags = get_access_flags (decl);
+
+  /* Promote "private" inner-class constructors to package-private.  */
+  if (DECL_CONSTRUCTOR_P (decl)
+      && INNER_CLASS_DECL_P (TYPE_NAME (DECL_CONTEXT (decl))))
+    flags &= ~(ACC_PRIVATE);
+
+  return flags;
+}
+
 /* Generate and return a list of chunks containing the class CLAS
    in the .class file representation.  The list can be written to a
    .class file using write_chunks.  Allocate chunks from obstack WORK. */
@@ -3034,7 +3050,7 @@ generate_classfile (tree clas, struct jcf_partial *state)
 
       current_function_decl = part;
       ptr = append_chunk (NULL, 8, state);
-      i = get_access_flags (part);  PUT2 (i);
+      i = get_method_access_flags (part);  PUT2 (i);
       i = find_utf8_constant (&state->cpool, name);  PUT2 (i);
       i = find_utf8_constant (&state->cpool, build_java_signature (type));
       PUT2 (i);

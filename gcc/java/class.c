@@ -587,11 +587,33 @@ enclosing_context_p (tree type1, tree type2)
   return 0;
 }
 
-/* Return 1 iff there exists a common enclosing context between TYPE1
-   and TYPE2.  */
+
+/* Return 1 iff TYPE1 and TYPE2 share a common enclosing class, regardless of
+   nesting level.  */
 
 int
 common_enclosing_context_p (tree type1, tree type2)
+{
+  for (type1; type1; 
+       type1 = (INNER_CLASS_TYPE_P (type1) ?
+		TREE_TYPE (DECL_CONTEXT (TYPE_NAME (type1))) : NULL_TREE))
+    {
+      tree current;
+      for (current = type2; current;
+	   current = (INNER_CLASS_TYPE_P (current) ?
+		      TREE_TYPE (DECL_CONTEXT (TYPE_NAME (current))) : 
+		      NULL_TREE))
+	if (type1 == current)
+	  return 1;
+    }
+  return 0;
+}
+
+/* Return 1 iff there exists a common enclosing "this" between TYPE1
+   and TYPE2, without crossing any static context.  */
+
+int
+common_enclosing_instance_p (tree type1, tree type2)
 {
   if (!PURE_INNER_CLASS_TYPE_P (type1) || !PURE_INNER_CLASS_TYPE_P (type2))
     return 0;

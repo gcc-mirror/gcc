@@ -842,7 +842,7 @@ struct parser_ctxt GTY(()) {
 	    != TYPE_NAME (TREE_TYPE (TREE_TYPE (current_this))))	      \
 	&& !inherits_from_p (TREE_TYPE (TREE_TYPE (current_this)),	      \
 			     TREE_TYPE (DECL_CONTEXT (TYPE_NAME (T))))	      \
-        && !common_enclosing_context_p (TREE_TYPE (TREE_TYPE (current_this)), \
+        && !common_enclosing_instance_p (TREE_TYPE (TREE_TYPE (current_this)),\
 					(T))                                  \
 	&& INNER_CLASS_TYPE_P (TREE_TYPE (TREE_TYPE (current_this)))          \
 	&& !inherits_from_p                                                   \

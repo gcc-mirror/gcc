@@ -320,7 +320,7 @@ static int outer_field_expanded_access_p (tree, tree *,
 static tree outer_field_access_fix (tree, tree, tree);
 static tree build_incomplete_class_ref (int, tree);
 static tree patch_incomplete_class_ref (tree);
-static tree create_anonymous_class (int, tree);
+static tree create_anonymous_class (tree);
 static void patch_anonymous_class (tree, tree, tree);
 static void add_inner_class_fields (tree, tree);
 
@@ -2034,7 +2034,7 @@ class_instance_creation_expression:
 
 anonymous_class_creation:
 	NEW_TK class_type OP_TK argument_list CP_TK
-		{ create_anonymous_class ($1.location, $2); }
+		{ create_anonymous_class ($2); }
         class_body
 		{
 		  tree id = build_wfl_node (DECL_NAME (GET_CPC ()));
@@ -2067,7 +2067,7 @@ anonymous_class_creation:
 
 		}
 |	NEW_TK class_type OP_TK CP_TK
-		{ create_anonymous_class ($1.location, $2); }
+		{ create_anonymous_class ($2); }
         class_body
 		{
 		  tree id = build_wfl_node (DECL_NAME (GET_CPC ()));
@@ -3905,8 +3905,11 @@ patch_anonymous_class (tree type_decl, tree class_decl, tree wfl)
     }
 }
 
+/* Create an anonymous class which extends/implements TYPE_NAME, and return
+   its decl.  */
+
 static tree
-create_anonymous_class (int location, tree type_name)
+create_anonymous_class (tree type_name)
 {
   char buffer [80];
   tree super = NULL_TREE, itf = NULL_TREE;
@@ -3915,7 +3918,7 @@ create_anonymous_class (int location, tree type_name)
   /* The unqualified name of the anonymous class. It's just a number. */
   sprintf (buffer, "%d", anonymous_class_counter++);
   id = build_wfl_node (get_identifier (buffer));
-  EXPR_WFL_LINECOL (id) = location;
+  EXPR_WFL_LINECOL (id) = EXPR_WFL_LINECOL (type_name);
 
   /* We know about the type to extend/implement. We go ahead */
   if ((type_decl = IDENTIFIER_CLASS_VALUE (EXPR_WFL_NODE (type_name))))
@@ -4035,7 +4038,7 @@ create_class (int flags, tree id, tree super, tree interfaces)
 
   /* Add the private this$<n> field, Replicate final locals still in
      scope as private final fields mangled like val$<local_name>.
-     This doesn't not occur for top level (static) inner classes. */
+     This does not occur for top level (static) inner classes. */
   if (PURE_INNER_CLASS_DECL_P (decl))
     add_inner_class_fields (decl, current_function_decl);
 
@@ -5393,8 +5396,9 @@ craft_constructor (tree class_decl, tree args)
 {
   tree class_type = TREE_TYPE (class_decl);
   tree parm = NULL_TREE;
-  int flags = (get_access_flags_from_decl (class_decl) & ACC_PUBLIC ?
-	       ACC_PUBLIC : 0);
+  /* Inherit access flags for the constructor from its enclosing class. */
+  int valid_ctor_flags = ACC_PUBLIC | ACC_PROTECTED | ACC_PRIVATE;
+  int flags = (get_access_flags_from_decl (class_decl) & valid_ctor_flags);
   int i = 0, artificial = 0;
   tree decl, ctor_name;
   char buffer [80];
@@ -9961,7 +9965,7 @@ resolve_qualified_expression_name (tree wfl, tree *found_decl,
 
 	      /* Check on accessibility here */
 	      if (not_accessible_p (current_class, field_decl,
-				    DECL_CONTEXT (field_decl), from_super))
+				    *type_found, from_super))
  		return not_accessible_field_error (qual_wfl,field_decl);    
 	      check_deprecation (qual_wfl, field_decl);
 
@@ -10047,10 +10051,13 @@ static int
 not_accessible_p (tree reference, tree member, tree where, int from_super)
 {
   int access_flag = get_access_flags_from_decl (member);
-
-  /* Inner classes are processed by check_inner_class_access */
-  if (INNER_CLASS_TYPE_P (reference))
-    return 0;
+  bool is_static = false;
+ 
+  if (TREE_CODE (member) == FIELD_DECL ||
+      TREE_CODE (member) == VAR_DECL)
+    is_static = FIELD_STATIC (member);
+  else
+    is_static = METHOD_STATIC (member);
 
   /* Access always granted for members declared public */
   if (access_flag & ACC_PUBLIC)
@@ -10069,26 +10076,34 @@ not_accessible_p (tree reference, tree member, tree where, int from_super)
       if (from_super)
 	return 0;
 
-      /* If where is active, access was made through a
-	 qualifier. Access is granted if the type of the qualifier is
-	 or is a sublass of the type the access made from (6.6.2.1.)  */
-      if (where && !inherits_from_p (reference, where))
-	return 1;
-
-      /* Otherwise, access is granted if occurring from the class where
-	 member is declared or a subclass of it. Find the right
-	 context to perform the check */
-      if (PURE_INNER_CLASS_TYPE_P (reference))
+      /* If WHERE is active, access was made through a qualifier. For 
+         non-static members, access is granted if the type of the qualifier 
+	 is or is a sublass of the type the access is made from (6.6.2.1.)  */
+      if (where && !is_static)
         {
-          while (INNER_CLASS_TYPE_P (reference))
+	  while (reference)
             {
-              if (inherits_from_p (reference, DECL_CONTEXT (member)))
-                return 0;
-              reference = TREE_TYPE (DECL_CONTEXT (TYPE_NAME (reference)));
-            }
+	      if (inherits_from_p (where, reference))
+	        return 0;
+	      if (PURE_INNER_CLASS_TYPE_P (reference))
+		reference = TREE_TYPE (DECL_CONTEXT (TYPE_NAME (reference)));
+	      else
+	        break;
+	    }
+	  return 1;
+	}
+
+      /* Otherwise, access is granted if occurring from within the class
+         where member is declared, or a subclass of it.  */
+      while (reference)
+        {
+          if (inherits_from_p (reference, DECL_CONTEXT (member)))
+            return 0;
+	  if (PURE_INNER_CLASS_TYPE_P (reference))
+            reference = TREE_TYPE (DECL_CONTEXT (TYPE_NAME (reference)));
+	  else
+	    break;
         }
-      if (inherits_from_p (reference, DECL_CONTEXT (member)))
-	return 0;
       return 1;
     }
 
@@ -10097,9 +10112,8 @@ not_accessible_p (tree reference, tree member, tree where, int from_super)
      it for innerclasses too. */
   if (access_flag & ACC_PRIVATE)
     {
-      if (reference == DECL_CONTEXT (member))
-	return 0;
-      if (enclosing_context_p (reference, DECL_CONTEXT (member)))
+      if (reference == DECL_CONTEXT (member) ||
+          common_enclosing_context_p (DECL_CONTEXT (member), reference))
 	return 0;
       return 1;
     }
@@ -10506,8 +10520,6 @@ patch_method_invocation (tree patch, tree primary, tree where, int from_super,
 	IDENTIFIER_POINTER (DECL_NAME (TYPE_NAME (current_class)));
       const char *const what = (DECL_CONSTRUCTOR_P (list)
 				? "constructor" : "method");
-      /* FIXME: WFL yields the wrong message here but I don't know
-	 what else to use.  */
       parse_error_context (wfl,
 			   "Can't access %s %s `%s.%s' from `%s'",
 			   access, what, klass, fct_name, refklass);
@@ -12343,6 +12355,10 @@ build_super_invocation (tree mdecl)
   else
     {
       tree super_wfl = build_wfl_node (super_identifier_node);
+      /* This is called after parsing is done, so the parser context
+         won't be accurate. Set location info from current_class decl. */
+      tree class_wfl = lookup_cl (TYPE_NAME (current_class));
+      EXPR_WFL_LINECOL (super_wfl) = EXPR_WFL_LINECOL (class_wfl);
       tree a = NULL_TREE, t;
       /* If we're dealing with an anonymous class, pass the arguments
          of the crafted constructor along. */
@@ -13922,7 +13938,7 @@ build_incomplete_class_ref (int location, tree class_name)
 	  /* We want the generated inner class inside the outermost class. */
 	  GET_CPC_LIST() = cpc;
 	  t = build_wfl_node (DECL_NAME (TYPE_NAME (object_type_node)));
-	  inner = create_anonymous_class (0, t);
+	  inner = create_anonymous_class (t);
 	  target_class = TREE_TYPE (inner);
 	  end_class_declaration (1);
 	  GET_CPC_LIST() = cpc_list;
