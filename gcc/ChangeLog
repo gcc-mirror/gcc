@@ -1,3 +1,8 @@
+2003-10-31  Richard Earnshaw  <rearnsha@arm.com>
+
+	* postreload.c (reload_combine): Check that REGY doesn't die in an
+	insn of the form (set (regx) (plus (regx) (regy))), ie REGX != REGY.
+
 2003-10-31  Josef Zlomek  <zlomekj@suse.cz>
 
 	PR/10239

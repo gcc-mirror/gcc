@@ -718,7 +718,9 @@ reload_combine (void)
 	 ... (MEM (PLUS (REGZ) (REGY)))... .
 
 	 First, check that we have (set (REGX) (PLUS (REGX) (REGY)))
-	 and that we know all uses of REGX before it dies.  */
+	 and that we know all uses of REGX before it dies.  
+	 Also, explicitly check that REGX != REGY; our life information
+	 does not yet show whether REGY changes in this insn.  */
       set = single_set (insn);
       if (set != NULL_RTX
 	  && GET_CODE (SET_DEST (set)) == REG
@@ -728,6 +730,7 @@ reload_combine (void)
 	  && GET_CODE (SET_SRC (set)) == PLUS
 	  && GET_CODE (XEXP (SET_SRC (set), 1)) == REG
 	  && rtx_equal_p (XEXP (SET_SRC (set), 0), SET_DEST (set))
+	  && !rtx_equal_p (XEXP (SET_SRC (set), 1), SET_DEST (set))
 	  && last_label_ruid < reg_state[REGNO (SET_DEST (set))].use_ruid)
 	{
 	  rtx reg = SET_DEST (set);
