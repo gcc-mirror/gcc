@@ -1,3 +1,8 @@
+2002-03-31  Richard Henderson  <rth@redhat.com>
+
+	* config/ia64/unwind-ia64.c (alloc_spill_area): Fix offset.
+	(desc_frgr_mem): Fix reference to f16-f31.
+
 2002-03-31  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* rtl.h (RTL_CHECK1, RTL_CHECK2, RTL_CHECKC1, RTL_CHECKC2,
