@@ -3752,7 +3752,7 @@ arm_add_operand (rtx op, enum machine_mode mode)
 
 /* Return TRUE for valid ARM constants (or when valid if negated).  */
 int
-arm_addimm_operand (rtx op, enum machine_mode mode)
+arm_addimm_operand (rtx op, enum machine_mode mode ATTRIBUTE_UNUSED)
 {
   return (GET_CODE (op) == CONST_INT
 	  && (const_ok_for_arm (INTVAL (op))

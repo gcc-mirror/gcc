@@ -5286,13 +5286,13 @@
      switch (get_attr_length (insn) - (which_alternative ? 2 : 0))
        {
 	 case 4:
-	   output_asm_insn (\"b%d0\\t%l1\", &cond);
+	   output_asm_insn (\"b%d0\\t%l1\", cond);
 	   return \"\";
 	 case 6:
-	   output_asm_insn (\"b%D0\\t.LCB%=\", &cond);
+	   output_asm_insn (\"b%D0\\t.LCB%=\", cond);
 	   return \"b\\t%l4\\t%@long jump\\n.LCB%=:\";
 	 default:
-	   output_asm_insn (\"b%D0\\t.LCB%=\", &cond);
+	   output_asm_insn (\"b%D0\\t.LCB%=\", cond);
 	   return \"bl\\t%l4\\t%@far jump\\n.LCB%=:\";
        }
    }
