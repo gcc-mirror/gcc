@@ -1881,7 +1881,9 @@ merge_if_block (test_bb, then_bb, else_bb, join_bb)
      is more than one remaining edge, it must come from elsewhere.  There
      may be zero incoming edges if the THEN block didn't actually join 
      back up (as with a call to abort).  */
-  else if (join_bb->pred == NULL || join_bb->pred->pred_next == NULL)
+  else if ((join_bb->pred == NULL
+	    || join_bb->pred->pred_next == NULL)
+	   && join_bb != EXIT_BLOCK_PTR)
     {
       /* We can merge the JOIN.  */
       if (life_data_ok)
@@ -1901,7 +1903,8 @@ merge_if_block (test_bb, then_bb, else_bb, join_bb)
 	abort ();
 
       /* Remove the jump and cruft from the end of the COMBO block.  */
-      tidy_fallthru_edge (combo_bb->succ, combo_bb, join_bb);
+      if (join_bb != EXIT_BLOCK_PTR)
+        tidy_fallthru_edge (combo_bb->succ, combo_bb, join_bb);
     }
 
   /* Make sure we update life info properly.  */
@@ -2067,7 +2070,7 @@ find_if_block (test_bb, then_edge, else_edge)
   next_index = then_bb->index;
   if (else_bb && ++next_index != else_bb->index)
     return FALSE;
-  if (++next_index != join_bb->index)
+  if (++next_index != join_bb->index && join_bb->index != EXIT_BLOCK)
     {
       if (else_bb)
 	join_bb = NULL;
