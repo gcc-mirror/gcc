@@ -5910,7 +5910,7 @@ main (argc, argv)
   /* If not cross-compiling, look for startfiles in the standard places.
      Similarly, don't add the standard prefixes if startfile handling
      will be under control of startfile_prefix_spec.  */
-  if (*cross_compile == '0' || *startfile_prefix_spec == 0)
+  if (*cross_compile == '0' && *startfile_prefix_spec == 0)
     {
       if (*md_exec_prefix)
 	{
