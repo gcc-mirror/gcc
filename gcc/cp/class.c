@@ -540,19 +540,6 @@ build_vtbl_ref (instance, idx)
   return aref;
 }
 
-/* Given an object INSTANCE, return an expression which yields the
-   virtual function corresponding to IDX. */
-
-tree
-build_vfn_ref (instance, idx)
-     tree instance;
-     tree idx;
-{
-  tree aref = build_vtbl_ref (instance, idx);
-
-  return aref;
-}
-
 /* Return the name of the virtual function table (as an IDENTIFIER_NODE)
    for the given TYPE.  */
 
