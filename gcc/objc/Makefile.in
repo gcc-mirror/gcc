@@ -72,7 +72,7 @@ copy-headers:
 	for file in $(OBJC_H); do \
 	  realfile=$(srcdir)/objc/$$file; \
 	  cp $$realfile $(incinstalldir)/objc; \
-	  chmod a+r $(incinstalldir)/objc; \
+	  chmod a+r $(incinstalldir)/objc/$$file; \
 	done
 
 sendmsg.o: sendmsg.c fflags
