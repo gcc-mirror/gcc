@@ -1,3 +1,25 @@
+2004-02-05  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
+
+	PR middle-end/13750
+	Revert:
+	2004-01-15  Geoffrey Keating  <geoffk@apple.com>
+	PR pch/13361
+	* c-typeck.c (constructor_asmspec): Delete.
+	(struct initializer_stack): Delete field 'asmspec'.
+	(start_init): Delete saving of asmspec.
+	(finish_init): Don't update constructor_asmspec.
+	* dwarf2out.c (rtl_for_decl_location): Duplicate string from tree.
+	* stmt.c (expand_asm): Duplicate strings from tree.
+	(expand_asm_operands): Likewise.
+	* tree.c (tree_size): Update computation of size of STRING_CST.
+	(make_node): Don't make STRING_CST nodes.
+	(build_string): Allocate string with tree node.
+	* tree.def (STRING_CST): Update comment.
+	* tree.h (TREE_STRING_POINTER): Adjust for change to STRING_CST.
+	(tree_string): Place contents of string in tree node.
+	* config/sh/sh.c (sh_handle_sp_switch_attribute): Duplicate string
+	from tree.
+
 2004-02-05  Joseph S. Myers  <jsm@polyomino.org.uk>
 
 	* diagnostic.h (DEFINE_DIAGNOSTIC_KIND): Change parameter M to
