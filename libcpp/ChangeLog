@@ -1,5 +1,9 @@
 2004-09-17  Zack Weinberg  <zack@codesourcery.com>
 
+	* charset.c (_cpp_destroy_iconv, emit_numeric_escape)
+	(_cpp_convert_input, _cpp_default_encoding): Add comments.
+	Some other comments in this file also tweaked.
+
 	* directives.c (do_pragma): Save current buffer position
 	before lexing the pragma keywords; don't call
 	_cpp_backup_tokens in the defer_pragmas case.

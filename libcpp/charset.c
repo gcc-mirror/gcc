@@ -701,6 +701,7 @@ cpp_init_iconv (cpp_reader *pfile)
   pfile->wide_cset_desc = init_iconv_desc (pfile, wcset, SOURCE_CHARSET);
 }
 
+/* Destroy iconv(3) descriptors set up by cpp_init_iconv, if necessary.  */
 void
 _cpp_destroy_iconv (cpp_reader *pfile)
 {
@@ -791,8 +792,7 @@ ucn_valid_in_identifier (cpp_reader *pfile, cppchar_t c)
    invalid character.
 
    IDENTIFIER_POS is 0 when not in an identifier, 1 for the start of
-   an identifier, or 2 otherwise.
-*/
+   an identifier, or 2 otherwise.  */
 
 cppchar_t
 _cpp_valid_ucn (cpp_reader *pfile, const uchar **pstr,
@@ -873,8 +873,6 @@ _cpp_valid_ucn (cpp_reader *pfile, const uchar **pstr,
 /* Convert an UCN, pointed to by FROM, to UTF-8 encoding, then translate
    it to the execution character set and write the result into TBUF.
    An advanced pointer is returned.  Issues all relevant diagnostics.  */
-
-
 static const uchar *
 convert_ucn (cpp_reader *pfile, const uchar *from, const uchar *limit,
 	     struct _cpp_strbuf *tbuf, bool wide)
@@ -904,6 +902,11 @@ convert_ucn (cpp_reader *pfile, const uchar *from, const uchar *limit,
   return from;
 }
 
+/* Subroutine of convert_hex and convert_oct.  N is the representation
+   in the execution character set of a numeric escape; write it into the
+   string buffer TBUF and update the end-of-string pointer therein.  WIDE
+   is true if it's a wide string that's being assembled in TBUF.  This
+   function issues no diagnostics and never fails.  */
 static void
 emit_numeric_escape (cpp_reader *pfile, cppchar_t n,
 		     struct _cpp_strbuf *tbuf, bool wide)
@@ -937,6 +940,8 @@ emit_numeric_escape (cpp_reader *pfile, cppchar_t n,
     }
   else
     {
+      /* Note: this code does not handle the case where the target
+	 and host have a different number of bits in a byte.  */
       if (tbuf->len + 1 > tbuf->asize)
 	{
 	  tbuf->asize += OUTBUF_BLOCK_SIZE;
@@ -1353,7 +1358,17 @@ cpp_interpret_charconst (cpp_reader *pfile, const cpp_token *token,
   return result;
 }
 
-uchar *
+/* Convert an input buffer (containing the complete contents of one
+   source file) from INPUT_CHARSET to the source character set.  INPUT
+   points to the input buffer, SIZE is its allocated size, and LEN is
+   the length of the meaningful data within the buffer.  The
+   translated buffer is returned, and *ST_SIZE is set to the length of
+   the meaningful data within the translated buffer.
+
+   INPUT is expected to have been allocated with xmalloc.  This function
+   will either return INPUT, or free it and return a pointer to another
+   xmalloc-allocated block of memory.  */
+uchar * 
 _cpp_convert_input (cpp_reader *pfile, const char *input_charset,
 		    uchar *input, size_t size, size_t len, off_t *st_size)
 {
@@ -1395,6 +1410,7 @@ _cpp_convert_input (cpp_reader *pfile, const char *input_charset,
   return to.text;
 }
 
+/* Decide on the default encoding to assume for input files.  */
 const char *
 _cpp_default_encoding (void)
 {
@@ -1414,7 +1430,7 @@ _cpp_default_encoding (void)
      - now we can parse something like "#pragma GCC encoding <xyz>
        on the first line, or even Emacs/VIM's mode line tags (there's
        a problem here in that VIM uses the last line, and Emacs has
-       its more elaborate "Local variables:" convention).
+       its more elaborate "local variables" convention).
      - investigate whether Java has another common convention, which
        would be friendly to support.
      (Zack Weinberg and Paolo Bonzini, May 20th 2004)  */
