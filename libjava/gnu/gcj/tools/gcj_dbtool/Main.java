@@ -259,9 +259,16 @@ public class Main
 
     if (s[0].equals("-p"))
       {
-	insist (s.length == 1);
-	String result = System.getProperty("gnu.gcj.precompiled.db.path",
-					   "");
+	insist (s.length == 1 || s.length == 2);
+	String result;
+	
+	if (s.length == 1)
+	  result = System.getProperty("gnu.gcj.precompiled.db.path", "");
+	else 
+	  result = (s[1] 
+		    + (s[1].endsWith(File.separator) ? "" : File.separator)
+		    + getDbPathTail ());
+
 	System.out.println (result);
 	return;
       }
@@ -270,6 +277,8 @@ public class Main
     System.exit(1);	    
   }
 
+  private static native String getDbPathTail ();
+    
   private static void insist(boolean ok)
   {
     if (! ok)
@@ -296,7 +305,7 @@ public class Main
        + "             - Merge gcj map databases into dest\n"
        + "               Replaces dest\n"
        + "               To add to dest, include dest in the list of sources\n"
-       + "    gcj-dbtool -p                       - Print default database name");
+       + "    gcj-dbtool -p [LIBDIR]              - Print default database name");
   }
 
   // Add a jar to a map.  This copies the map first and returns a

@@ -1,3 +1,13 @@
+2005-03-24  Anthony Green  <green@redhat.com>
+
+	* gnu/gcj/tools/gcj_dbtool/Main.java: Accept libdir argument with
+	-p option.
+	(usage): Add [LIBDIR] to help output.
+	* gnu/gcj/tools/gcj_dbtool/natMain.cc: New file.
+	* Makefile.am (AM_CXXFLAGS): Define
+	LIBGCJ_DEFAULT_DATABASE_PATH_TAIL.
+	(db_pathtail): New macro.
+
 2005-03-23  Sven de Marothy  <sven@physto.se>
 
 	PR libgcj/2641, PR libgcj/9854, PR libgcj/14892, PR libgcj/18083,

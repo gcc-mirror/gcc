@@ -4762,7 +4762,8 @@ libjawt_la_OBJECTS = $(am_libjawt_la_OBJECTS)
 @GTK_AWT_TRUE@am_libjawt_la_rpath = -rpath $(toolexeclibdir)
 binPROGRAMS_INSTALL = $(INSTALL_PROGRAM)
 PROGRAMS = $(bin_PROGRAMS) $(noinst_PROGRAMS)
-am_gcj_dbtool_OBJECTS = gnu/gcj/tools/gcj_dbtool/Main.$(OBJEXT)
+am_gcj_dbtool_OBJECTS = gnu/gcj/tools/gcj_dbtool/Main.$(OBJEXT) \
+	gnu/gcj/tools/gcj_dbtool/natMain.$(OBJEXT)
 gcj_dbtool_OBJECTS = $(am_gcj_dbtool_OBJECTS)
 am__gen_from_JIS_SOURCES_DIST = gnu/gcj/convert/gen-from-JIS.c \
 	gnu/gcj/convert/make-trie.c
@@ -5117,6 +5118,7 @@ secdir = $(libdir)/security
 propdir = $(libdir)
 dbexecdir = $(libdir)/gcj-@gcc_version@
 db_name = classmap.db
+db_pathtail = gcj-@gcc_version@/$(db_name)
 @NATIVE_TRUE@dbexec_DATA = $(db_name)
 bin_SCRIPTS = addr2name.awk
 GCJ_WITH_FLAGS = $(GCJ) --encoding=UTF-8 -Wno-deprecated
@@ -5139,7 +5141,8 @@ AM_CXXFLAGS = \
 	-DLIBDIR="\"$(libdir)\"" \
 	-DBOOT_CLASS_PATH="\"$(jardir)/$(jar_DATA)\"" \
 	-DJAVA_EXT_DIRS="\"$(jardir)/ext\"" \
-	-DLIBGCJ_DEFAULT_DATABASE="\"$(dbexecdir)/$(db_name)\""
+	-DLIBGCJ_DEFAULT_DATABASE="\"$(dbexecdir)/$(db_name)\"" \
+	-DLIBGCJ_DEFAULT_DATABASE_PATH_TAIL="\"$(db_pathtail)\""
 
 AM_GCJFLAGS = \
 	@LIBGCJ_JAVAFLAGS@ \
@@ -5383,7 +5386,7 @@ inner_nat_headers = java/io/ObjectOutputStream$$PutField.h \
 	gnu/java/nio/PipeImpl$$SourceChannelImpl.h \
 	$(PLATFORM_INNER_NAT_HDRS)
 
-nat_headers = $(ordinary_nat_headers) $(inner_nat_headers)
+nat_headers = $(ordinary_nat_headers) $(inner_nat_headers) gnu/gcj/tools/gcj_dbtool/Main.h
 nat_headers_install = $(ordinary_nat_headers)
 xlib_nat_headers = $(xlib_java_source_files:.java=.h)
 extra_headers = java/lang/Object.h java/lang/Class.h
@@ -5404,7 +5407,9 @@ jv_convert_LDFLAGS = --main=gnu.gcj.convert.Convert \
 jv_convert_LINK = $(GCJLINK)
 jv_convert_LDADD = -L$(here)/.libs libgcj.la
 jv_convert_DEPENDENCIES = libgcj.la libgcj.spec
-gcj_dbtool_SOURCES = gnu/gcj/tools/gcj_dbtool/Main.java
+gcj_dbtool_SOURCES = gnu/gcj/tools/gcj_dbtool/Main.java \
+	gnu/gcj/tools/gcj_dbtool/natMain.cc
+
 gcj_dbtool_LDFLAGS = --main=gnu.gcj.tools.gcj_dbtool.Main \
 	-rpath $(toolexeclibdir) -shared-libgcc $(THREADLDFLAGS)
 
@@ -16199,6 +16204,9 @@ gnu/gcj/tools/gcj_dbtool/$(DEPDIR)/$(am__dirstamp):
 gnu/gcj/tools/gcj_dbtool/Main.$(OBJEXT):  \
 	gnu/gcj/tools/gcj_dbtool/$(am__dirstamp) \
 	gnu/gcj/tools/gcj_dbtool/$(DEPDIR)/$(am__dirstamp)
+gnu/gcj/tools/gcj_dbtool/natMain.$(OBJEXT):  \
+	gnu/gcj/tools/gcj_dbtool/$(am__dirstamp) \
+	gnu/gcj/tools/gcj_dbtool/$(DEPDIR)/$(am__dirstamp)
 gcj-dbtool$(EXEEXT): $(gcj_dbtool_OBJECTS) $(gcj_dbtool_DEPENDENCIES) 
 	@rm -f gcj-dbtool$(EXEEXT)
 	$(gcj_dbtool_LINK) $(gcj_dbtool_LDFLAGS) $(gcj_dbtool_OBJECTS) $(gcj_dbtool_LDADD) $(LIBS)
@@ -16399,6 +16407,7 @@ mostlyclean-compile:
 	-rm -f gnu/gcj/runtime/natVMClassLoader.$(OBJEXT)
 	-rm -f gnu/gcj/runtime/natVMClassLoader.lo
 	-rm -f gnu/gcj/tools/gcj_dbtool/Main.$(OBJEXT)
+	-rm -f gnu/gcj/tools/gcj_dbtool/natMain.$(OBJEXT)
 	-rm -f gnu/gcj/util/Debug.$(OBJEXT)
 	-rm -f gnu/gcj/util/Debug.lo
 	-rm -f gnu/gcj/util/natDebug.$(OBJEXT)
@@ -22013,6 +22022,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@gnu/gcj/runtime/$(DEPDIR)/natStringBuffer.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@gnu/gcj/runtime/$(DEPDIR)/natVMClassLoader.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@gnu/gcj/tools/gcj_dbtool/$(DEPDIR)/Main.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@gnu/gcj/tools/gcj_dbtool/$(DEPDIR)/natMain.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@gnu/gcj/util/$(DEPDIR)/Debug.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@gnu/gcj/util/$(DEPDIR)/natDebug.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@gnu/gcj/xlib/$(DEPDIR)/Clip.Plo@am__quote@
