@@ -66,7 +66,7 @@ about previous `g77' versions up-to-date.
 the mainline, development version of `g77' within `egcs') is available
 at `http://egcs.cygnus.com/onlinedocs/g77_news.html'.
 
-   The following information was last updated on 1999-05-06:
+   The following information was last updated on 1999-05-10:
 
 In `egcs' 1.2 (versus 1.1.2):
 =============================
@@ -151,7 +151,7 @@ In `egcs' 1.2 (versus 1.1.2):
      2000 (Y2K) compliance, and providing more information on internals
      of the front end.
 
- 11. Upgrade to `libf2c' as of 1999-05-03.
+ 11. Upgrade to `libf2c' as of 1999-05-10.
 
 In 0.5.24 and `egcs' 1.1.2 (versus 0.5.23 and 1.1.1):
 =====================================================
