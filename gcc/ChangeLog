@@ -1,3 +1,10 @@
+2001-04-04  Andrew MacLeod  <amacleod@redhat.com>
+
+	* dwarf2out.c (output_cfi): Add 'for_eh' parameter, use PTR_SIZE 
+	instead of DWARF2_ADDR_SIZE for EH addresses.
+	(output_call_frame_info): Use PTR_SIZE instead of DWARF2_ADDR_SIZE for 
+	EH addresses.
+
 2001-04-04  Richard Henderson  <rth@redhat.com>
 
 	* config/ia64/ia64.h (IA64_UNWIND_INFO): Disable.

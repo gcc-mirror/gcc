@@ -241,7 +241,7 @@ static void reg_save			PARAMS ((const char *, unsigned,
 						 unsigned, long));
 static void initial_return_save		PARAMS ((rtx));
 static long stack_adjust_offset		PARAMS ((rtx));
-static void output_cfi			PARAMS ((dw_cfi_ref, dw_fde_ref));
+static void output_cfi			PARAMS ((dw_cfi_ref, dw_fde_ref, int));
 static void output_call_frame_info	PARAMS ((int));
 static void dwarf2out_stack_adjust	PARAMS ((rtx));
 static void queue_reg_save		PARAMS ((const char *, rtx, long));
@@ -1614,9 +1614,10 @@ dwarf2out_frame_debug (insn)
 /* Output a Call Frame Information opcode and its operand(s).  */
 
 static void
-output_cfi (cfi, fde)
+output_cfi (cfi, fde, for_eh)
      register dw_cfi_ref cfi;
      register dw_fde_ref fde;
+     int for_eh;
 {
   if (cfi->dw_cfi_opc == DW_CFA_advance_loc)
     {
@@ -1648,7 +1649,7 @@ output_cfi (cfi, fde)
       switch (cfi->dw_cfi_opc)
 	{
 	case DW_CFA_set_loc:
-	  dw2_asm_output_addr (DWARF2_ADDR_SIZE, 
+	  dw2_asm_output_addr ((for_eh ? PTR_SIZE : DWARF2_ADDR_SIZE), 
 			       cfi->dw_cfi_oprnd1.dw_cfi_addr, NULL);
 	  break;
 	case DW_CFA_advance_loc1:
@@ -1744,7 +1745,7 @@ output_call_frame_info (for_eh)
       tree label = get_file_function_name ('F');
 
       force_data_section ();
-      ASM_OUTPUT_ALIGN (asm_out_file, floor_log2 (DWARF2_ADDR_SIZE));
+      ASM_OUTPUT_ALIGN (asm_out_file, floor_log2 (PTR_SIZE));
       ASM_GLOBALIZE_LABEL (asm_out_file, IDENTIFIER_POINTER (label));
       ASM_OUTPUT_LABEL (asm_out_file, IDENTIFIER_POINTER (label));
 #endif
@@ -1795,19 +1796,20 @@ output_call_frame_info (for_eh)
 
   if (augmentation[0])
     {
-      dw2_asm_output_data_uleb128 (DWARF2_ADDR_SIZE, "Augmentation size");
+      dw2_asm_output_data_uleb128 (PTR_SIZE, "Augmentation size");
       if (eh_personality_libfunc)
-	dw2_asm_output_addr_rtx (DWARF2_ADDR_SIZE, eh_personality_libfunc,
+	dw2_asm_output_addr_rtx (PTR_SIZE, eh_personality_libfunc,
 				 "Personality");
       else
-	dw2_asm_output_data (DWARF2_ADDR_SIZE, 0, "Personality (none)");
+	dw2_asm_output_data (PTR_SIZE, 0, "Personality (none)");
     }
 
   for (cfi = cie_cfi_head; cfi != NULL; cfi = cfi->dw_cfi_next)
-    output_cfi (cfi, NULL);
+    output_cfi (cfi, NULL, for_eh);
 
   /* Pad the CIE out to an address sized boundary.  */
-  ASM_OUTPUT_ALIGN (asm_out_file, floor_log2 (DWARF2_ADDR_SIZE));
+  ASM_OUTPUT_ALIGN (asm_out_file, 
+		    floor_log2 (for_eh ? PTR_SIZE : DWARF2_ADDR_SIZE));
   ASM_OUTPUT_LABEL (asm_out_file, l2);
 
   /* Loop through all of the FDE's.  */
@@ -1841,35 +1843,40 @@ output_call_frame_info (for_eh)
 			       stripattributes (FRAME_SECTION),
 			       "FDE CIE offset");
 
-      dw2_asm_output_addr (DWARF2_ADDR_SIZE, fde->dw_fde_begin,
+      dw2_asm_output_addr ((for_eh ? PTR_SIZE : DWARF2_ADDR_SIZE),
+			   fde->dw_fde_begin,
 			   "FDE initial location");
 
-      dw2_asm_output_delta (DWARF2_ADDR_SIZE, fde->dw_fde_end,
-			    fde->dw_fde_begin, "FDE address range");
+      dw2_asm_output_delta ((for_eh ? PTR_SIZE : DWARF2_ADDR_SIZE), 
+			    fde->dw_fde_end, 
+			    fde->dw_fde_begin, 
+			    "FDE address range");
 
       if (augmentation[0])
 	{
-	  dw2_asm_output_data_uleb128 (DWARF2_ADDR_SIZE, "Augmentation size");
+	  dw2_asm_output_data_uleb128 ((for_eh ? PTR_SIZE : DWARF2_ADDR_SIZE),
+				       "Augmentation size");
 
 	  if (fde->uses_eh_lsda)
 	    {
 	      ASM_GENERATE_INTERNAL_LABEL (l1, "LLSDA", fde->funcdef_number);
-	      dw2_asm_output_offset (DWARF2_ADDR_SIZE, l1,
-				     "Language Specific Data Area");
+	      dw2_asm_output_offset ((for_eh ? PTR_SIZE : DWARF2_ADDR_SIZE), 
+				     l1, "Language Specific Data Area");
 	    }
 	  else
-	    dw2_asm_output_data (DWARF2_ADDR_SIZE, 0,
-				 "Language Specific Data Area (none)");
+	    dw2_asm_output_data ((for_eh ? PTR_SIZE : DWARF2_ADDR_SIZE), 
+				 0, "Language Specific Data Area (none)");
 	}
 
       /* Loop through the Call Frame Instructions associated with
 	 this FDE.  */
       fde->dw_fde_current_label = fde->dw_fde_begin;
       for (cfi = fde->dw_fde_cfi; cfi != NULL; cfi = cfi->dw_cfi_next)
-	output_cfi (cfi, fde);
+	output_cfi (cfi, fde, for_eh);
 
       /* Pad the FDE out to an address sized boundary.  */
-      ASM_OUTPUT_ALIGN (asm_out_file, floor_log2 (DWARF2_ADDR_SIZE));
+      ASM_OUTPUT_ALIGN (asm_out_file, 
+		      floor_log2 ((for_eh ? PTR_SIZE : DWARF2_ADDR_SIZE)));
       ASM_OUTPUT_LABEL (asm_out_file, l2);
     }
 
