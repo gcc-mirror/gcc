@@ -3288,6 +3288,27 @@ x86_64_movabs_operand (rtx op, enum machine_mode mode)
   return 0;
 }
 
+/* Return nonzero if OPNUM's MEM should be matched
+   in movabs* patterns.  */
+
+int
+ix86_check_movabs (rtx insn, int opnum)
+{
+  rtx set, mem;
+
+  set = PATTERN (insn);
+  if (GET_CODE (set) == PARALLEL)
+    set = XVECEXP (set, 0, 0);
+  if (GET_CODE (set) != SET)
+    abort ();
+  mem = XEXP (set, opnum);
+  while (GET_CODE (mem) == SUBREG)
+    mem = SUBREG_REG (mem);
+  if (GET_CODE (mem) != MEM)
+    abort ();
+  return (volatile_ok || !MEM_VOLATILE_P (mem));
+}
+
 /* Return nonzero if OP is nonmemory operand representable on x86_64.  */
 
 int
