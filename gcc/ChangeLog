@@ -1,3 +1,8 @@
+Fri Nov  9 00:25:18 EST 2001  John Wehle  (john@feith.com)
+
+	* fold-const.c (lshift_double): Honor PREC.
+	(rshift_double): Likewise.
+
 2001-11-08  Kazu Hirata  <kazu@hxi.com>
 
 	* config/1750a/1750a.c: Fix comment formatting.

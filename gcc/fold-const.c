@@ -383,6 +383,8 @@ lshift_double (l1, h1, count, prec, lv, hv, arith)
      HOST_WIDE_INT *hv;
      int arith;
 {
+  unsigned HOST_WIDE_INT signmask;
+
   if (count < 0)
     {
       rshift_double (l1, h1, -count, prec, lv, hv, arith);
@@ -412,6 +414,26 @@ lshift_double (l1, h1, count, prec, lv, hv, arith)
 	     | (l1 >> (HOST_BITS_PER_WIDE_INT - count - 1) >> 1));
       *lv = l1 << count;
     }
+
+  /* Sign extend all bits that are beyond the precision.  */
+
+  signmask = -((prec > HOST_BITS_PER_WIDE_INT
+		? (*hv >> (prec - HOST_BITS_PER_WIDE_INT - 1))
+		: (*lv >> (prec - 1))) & 1);
+
+  if (prec >= 2 * HOST_BITS_PER_WIDE_INT)
+    ;
+  else if (prec >= HOST_BITS_PER_WIDE_INT)
+    {
+      *hv &= ~((HOST_WIDE_INT) (-1) << (prec - HOST_BITS_PER_WIDE_INT));
+      *hv |= signmask << (prec - HOST_BITS_PER_WIDE_INT);
+    }
+  else
+    {
+      *hv = signmask;
+      *lv &= ~((unsigned HOST_WIDE_INT) (-1) << prec);
+      *lv |= signmask << prec;
+    }
 }
 
 /* Shift the doubleword integer in L1, H1 right by COUNT places
@@ -423,7 +445,7 @@ void
 rshift_double (l1, h1, count, prec, lv, hv, arith)
      unsigned HOST_WIDE_INT l1;
      HOST_WIDE_INT h1, count;
-     unsigned int prec ATTRIBUTE_UNUSED;
+     unsigned int prec;
      unsigned HOST_WIDE_INT *lv;
      HOST_WIDE_INT *hv;
      int arith;
@@ -443,21 +465,40 @@ rshift_double (l1, h1, count, prec, lv, hv, arith)
     {
       /* Shifting by the host word size is undefined according to the
 	 ANSI standard, so we must handle this as a special case.  */
-      *hv = signmask;
-      *lv = signmask;
+      *hv = 0;
+      *lv = 0;
     }
   else if (count >= HOST_BITS_PER_WIDE_INT)
     {
-      *hv = signmask;
-      *lv = ((signmask << (2 * HOST_BITS_PER_WIDE_INT - count - 1) << 1)
-	     | ((unsigned HOST_WIDE_INT) h1 >> (count - HOST_BITS_PER_WIDE_INT)));
+      *hv = 0;
+      *lv = (unsigned HOST_WIDE_INT) h1 >> (count - HOST_BITS_PER_WIDE_INT);
     }
   else
     {
+      *hv = (unsigned HOST_WIDE_INT) h1 >> count;
       *lv = ((l1 >> count)
 	     | ((unsigned HOST_WIDE_INT) h1 << (HOST_BITS_PER_WIDE_INT - count - 1) << 1));
-      *hv = ((signmask << (HOST_BITS_PER_WIDE_INT - count))
-	     | ((unsigned HOST_WIDE_INT) h1 >> count));
+    }
+
+  /* Zero / sign extend all bits that are beyond the precision.  */
+
+  if (count >= (HOST_WIDE_INT)prec)
+    {
+      *hv = signmask;
+      *lv = signmask;
+    }
+  else if ((prec - count) >= 2 * HOST_BITS_PER_WIDE_INT)
+    ;
+  else if ((prec - count) >= HOST_BITS_PER_WIDE_INT)
+    {
+      *hv &= ~((HOST_WIDE_INT) (-1) << (prec - count - HOST_BITS_PER_WIDE_INT));
+      *hv |= signmask << (prec - count - HOST_BITS_PER_WIDE_INT);
+    }
+  else
+    {
+      *hv = signmask;
+      *lv &= ~((unsigned HOST_WIDE_INT) (-1) << (prec - count));
+      *lv |= signmask << (prec - count);
     }
 }
 
