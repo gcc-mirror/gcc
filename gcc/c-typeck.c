@@ -1152,7 +1152,7 @@ build_component_ref (datum, component)
 	 end does it - by giving the anonymous entities each a
 	 separate name and type, and then have build_component_ref
 	 recursively call itself.  We can't do that here.  */
-      for (; field; field = TREE_CHAIN (field))
+      do
 	{
 	  tree subdatum = TREE_VALUE (field);
 
@@ -1169,7 +1169,10 @@ build_component_ref (datum, component)
 	    warn_deprecated_use (subdatum);
 
 	  datum = ref;
+
+	  field = TREE_CHAIN (field);
 	}
+      while (field);
 
       return ref;
     }

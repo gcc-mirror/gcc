@@ -1,3 +1,9 @@
+2003-03-16  Roger Sayle  <roger@eyesopen.com>
+
+	* c-typeck.c (build_component_ref):  Turn "for" into "do .. while"
+	to avoid "may be used uninitialized" warning on ia64-hpux.
+	* config/ia64/ia64-c.c: Include "tm_p.h" for function prototypes.
+
 2003-03-16  Andreas Jaeger  <aj@suse.de>
 
 	* configure.in: Improve check for memcheck.h.
