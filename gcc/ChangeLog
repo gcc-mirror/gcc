@@ -4,15 +4,6 @@ Sun Dec  6 01:14:46 1998  Paul Eggert  <eggert@twinsun.com>
 
 Sat Dec  5 21:02:13 1998  Paul Eggert  <eggert@twinsun.com>
 
-	Add new option -Wwhite-space, implied by -Wall.
-	If DEPENDENCIES_OUTPUT is `FILE TARGET', have TARGET depend on source.
-	Simplify VMS fwrite workaround.
-	Bug fixes (notably with backslash-newlines in strings).
-	Allow multiple-char constants like 'abcde' that are longer than long.
-	Other minor porting issues.
-	
-	* cpp.texi: Document -Wwhite-space, implied by -Wall.
-
 	* cccp.c (fwrite): New VMS macro.
 	(VMS_fwrite): New VMS function.
 	(strerror): Declare only if NEED_DECLARATION_STRERROR.
@@ -21,34 +12,29 @@ Sat Dec  5 21:02:13 1998  Paul Eggert  <eggert@twinsun.com>
 	(directive_table): Use do_error to print warnings.
 	(eprint_string): Remove.  All callers now use fwrite instead.
 	(check_white_space): New function.
-	(fatal): Now extern; it's needed by cexp.y on some platforms.
+	(fatal): Now extern.
 	(main): Add new option --White-space, implied by -Wall.
-	If DEPENDENCIES_OUTPUT has the form `FILE TARGET',
-	have TARGET depend on the source file as well as the files
-	that it includes.
+	If DEPENDENCIES_OUTPUT has the form `FILE TARGET', have TARGET depend
+	on source file as well as files it includes.
 	(newline_fix, name_newline_fix): Assume that *BP == '\\',
-	but don't assume that BP[1] == '\n'.  This shortens the callers' code.
-	All callers changed.
+	but don't assume that BP[1] == '\n'; all callers changed.
 	(rescan): Warn about white space at end of line in string.
-	Fix bug with counting newlines in strings as the result of
-	macro-expanding.
+	Fix bug with counting newlines in strings as result of macro-expanding.
 	(expand_to_temp_buffer): Do not stomp on the output buffer length;
-	we need the length field for expand_size (see below).
-	All callers changed.
+	all callers changed.
 	(handle_directive): No need to check bp < limit if *bp == '\n'.
-	Allocate a larger directive buffer; expand newline
-	to backslash-'n' in string literals.
+	Allocate a larger directive buffer; expand newline to
+	backslash-'n' in string literals.
 	(timestamp): Don't assume that localtime succeeds.
 	(finclude): Add call to check_white_space in included file.
 	(collect_expansion): No need to check for p < limit at backslash.
 	(do_line): Allow nulls in file name.
 	(do_error): Also do warnings.
 	(do_pragma): Handle escapes in strings correctly.
-	(skip_quoted_string): Don't say ``Unterminated string or
-	character'' if it's known to be a character.
+	(skip_quoted_string): Don't say ``Unterminated string or character''
+	if it's known to be a character.
 	Warn about white space at end of line in string.
-	(struct argdata): New member expand_size, giving allocated size
-	of expansion.
+	(struct argdata): New member expand_size.
 	Rename member stringified_length to stringified_length_bound.
 	All uses changed.
 	(macroexpand): Record expand_size separately from expand_length.
@@ -75,8 +61,7 @@ Fri Dec  4 16:24:36 1998  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 	original idea from rth@cygnus.com
 	* rtl.def (CONSTANT_P_RTX): New RTL code.
 	* expr.c (expand_builtin, case BUILT_IN_CONSTANT_P): Rework to
-	consider constant CONSTRUCTOR constant and to defer some cases
-	to cse.
+	consider constant CONSTRUCTOR constant and to defer some cases to cse.
 	* cse.c (fold_rtx, case CONST): Add handling for CONSTANT_P_RTX.
 	* regclass.c (reg_scan_mark_refs, case CONST): Likewise.
 	
