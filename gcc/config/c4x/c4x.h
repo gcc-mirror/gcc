@@ -1589,11 +1589,18 @@ extern struct rtx_def *c4x_gen_compare_reg ();
 #define HAVE_PRE_MODIFY_DISP 1
 #define HAVE_POST_MODIFY_DISP 1
 
-#define HAVE_MULTIPLE_PACK 2
+/* The number of insns that can be packed into a single opcode.  */
+#define MULTIPACK_INSNS 2
 
-/* What about LABEL_REF?  */
+/* Recognize any constant value that is a valid address. 
+   We could allow arbitrary constant addresses in the large memory
+   model but for the small memory model we can only accept addresses
+   within the data page.  I suppose we could also allow
+   CONST PLUS SYMBOL_REF.  */
 #define CONSTANT_ADDRESS_P(X) (GET_CODE (X) == SYMBOL_REF)
 
+/* Maximum number of registers that can appear in a valid memory
+   address.  */
 #define MAX_REGS_PER_ADDRESS	2
 
 /* The macros REG_OK_FOR..._P assume that the arg is a REG rtx
