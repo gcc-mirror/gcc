@@ -1,3 +1,9 @@
+2005-04-06  Jason Merrill  <jason@redhat.com>
+
+	PR c++/19312
+	* tree.c (stabilize_init): Don't bother trying to stabilize
+	something with no side-effects.
+
 2005-04-05  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/20763
