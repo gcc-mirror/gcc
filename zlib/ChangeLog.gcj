@@ -1,3 +1,8 @@
+2002-03-17  Bryce McKinlay  <bryce@waitaki.otago.ac.nz>
+
+	* Makefile.am: Make target library a convenience library.
+	* Makefile.in: Rebuilt.
+
 2002-03-11  Tom Tromey  <tromey@redhat.com>
 
 	* ChangeLog.gcj: Imported 1.1.4, while preserving local changes.
