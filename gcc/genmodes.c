@@ -213,7 +213,6 @@ new_adjust (const char *name,
       return;
     }
   
-
   for (a = *category; a; a = a->next)
     if (a->mode == mode)
       {
