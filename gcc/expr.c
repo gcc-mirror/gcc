@@ -2200,7 +2200,8 @@ copy_blkmode_from_reg (tgtblk, srcreg, type)
 	 (the first time through).  */
       if (xbitpos % BITS_PER_WORD == 0
 	  || xbitpos == big_endian_correction)
-	src = operand_subword_force (srcreg, xbitpos / BITS_PER_WORD, BLKmode);
+	src = operand_subword_force (srcreg, xbitpos / BITS_PER_WORD,
+				     GET_MODE (srcreg));
 
       /* We need a new destination operand each time bitpos is on
 	 a word boundary.  */

@@ -1,3 +1,14 @@
+Thu Jun  7 13:20:14 CEST 2001  Jan Hubicka  <jh@suse.cz>
+
+	* expr.c (copy_blkmode_from_reg): Fix operand_subword_force call.
+
+Thu Jun  7 12:12:58 CEST 2001  Jan Hubicka  <jh@suse.cz>
+
+	* toplev.c (rest_of_compilation): Call split_all_insns
+	before reg-stack and shorten-branches. Do shorten-branches
+	after reg-stack.
+	* final.c (shorten_branches): Remove insn splitting code.
+
 2001-06-07  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* configure.in (sparc*-*-*): Check assembler R_SPARC_UA32 support.
