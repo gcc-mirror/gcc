@@ -1,3 +1,10 @@
+Sun Jun 28 00:00:10 1998   Carlo Wood  <carlo@runaway.xs4all.nl>
+
+        * lib/libstdc++.exp: Use global variable ld_library_path (not local)
+	that is a lot more persistent; dejagnu-980528 needs this.
+	* lib/libstdc++.exp (test_stdc++): Use regular expression " -lstdc.."
+	to remove -lstdc++ arguments (not " -lstdc.*").
+
 Thu Dec 25 00:34:03 1997  Jeffrey A Law  (law@cygnus.com)
 
 	* lib/libstdc++.exp (test_libstdc++): Set LD_LIBRARY_PATH
