@@ -2077,6 +2077,7 @@ decompose (x)
 
   val.reg_flag = 0;
   val.safe = 0;
+  val.base = 0;
   if (GET_CODE (x) == MEM)
     {
       rtx base, offset = 0;

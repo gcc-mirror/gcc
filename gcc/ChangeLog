@@ -1,3 +1,7 @@
+Tue Oct  7 10:52:29 1997  Thomas Koenig (ig25@rz.uni-karlsruhe.de)
+
+	* reload.c (decompose): Always initialize val.base.
+
 Tue Oct  7 10:19:26 1997  Manfred Hollstein  (manfred@lts.sel.alcatel.de)
 
 	* m68k/mot3300.h (ASM_OUTPUT_ALIGN): Accept any alignment
