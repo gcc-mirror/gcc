@@ -928,6 +928,52 @@ DEF_RTL_EXPR(CONSTANT_P_RTX, "constant_p_rtx", "e", 'x')
    tree-based optimizations once front-end conversions are complete.  */
 DEF_RTL_EXPR(CALL_PLACEHOLDER, "call_placeholder", "uuuu", 'x')
 
+/* Describes a merge operation between two vector values.
+   Operands 0 and 1 are the vectors to be merged, operand 2 is a bitmask
+   that specifies where the parts of the result are taken from.  Set bits
+   indicate operand 0, clear bits indicate operand 1.  The parts are defined
+   by the mode of the vectors.  */
+DEF_RTL_EXPR(VEC_MERGE, "vec_merge", "eee", 'x')
+
+/* Describes an operation that selects parts of a vector.
+   Operands 0 is the source vector, operand 1 is a PARALLEL that contains
+   a CONST_INT for each of the subparts of the result vector, giving the
+   number of the source subpart that should be stored into it.  */
+DEF_RTL_EXPR(VEC_SELECT, "vec_select", "ee", 'x')
+
+/* Describes a vector concat operation.  Operands 0 and 1 are the source
+   vectors, the result is a vector that is as long as operands 0 and 1
+   combined and is the concatenation of the two source vectors.  */
+DEF_RTL_EXPR(VEC_CONCAT, "vec_concat", "ee", 'x')
+
+/* Describes a vector constant.  Each part of the PARALLEL that is operand 0
+   describes a constant for one of the subparts.  */
+DEF_RTL_EXPR(VEC_CONST, "vec_const", "e", 'x')
+
+/* Describes an operation that converts a small vector into a larger one by
+   duplicating the input values.  The output vector mode must have the same
+   submodes as the input vector mode, and the number of output parts must be
+   an integer multiple of the number of input parts.  */
+DEF_RTL_EXPR(VEC_DUPLICATE, "vec_duplicate", "e", 'x')
+     
+/* Addition with signed saturation */
+DEF_RTL_EXPR(SS_PLUS, "ss_plus", "ee", 'c')
+
+/* Addition with unsigned saturation */
+DEF_RTL_EXPR(US_PLUS, "us_plus", "ee", 'c')
+
+/* Operand 0 minus operand 1, with signed saturation.  */
+DEF_RTL_EXPR(SS_MINUS, "ss_minus", "ee", '2')
+
+/* Operand 0 minus operand 1, with unsigned saturation.  */
+DEF_RTL_EXPR(US_MINUS, "us_minus", "ee", '2')
+
+/* Signed saturating truncate.  */
+DEF_RTL_EXPR(SS_TRUNCATE, "ss_truncate", "e", '1')
+
+/* Unsigned saturating truncate.  */
+DEF_RTL_EXPR(US_TRUNCATE, "us_truncate", "e", '1')
+
 /* The SSA phi operator. 
 
    The argument is a vector of 2N rtxes.  Element 2N+1 is a CONST_INT

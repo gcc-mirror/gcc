@@ -1,3 +1,18 @@
+2000-06-24  Bernd Schmidt  <bernds@cygnus.co.uk>
+
+	* rtl.texi (Vector Operations): New node.
+	(Arithmetic): Add ss_plus, us_plus, ss_minus, us_minus.
+	(Conversions): Add ss_truncate, us_truncate.
+	* rtl.def (VEC_MERGE, VEC_SELECT, VEC_CONCAT, VEC_REORDER,
+	VEC_CONST, VEC_DUPLICATE, SS_PLUS, SS_MINUS, SS_TRUNCATE,
+	US_TRUNCATE): New rtx codes.
+	* machmode.def: Add vector modes.
+	* machmode.h (enum mode_class): Add MODE_VECTOR_INT and
+	MODE_VECTOR_FLOAT.
+	(INTEGER_MODE_P): Check for MODE_VECTOR_INT.
+	(FLOAT_MODE_P): Check for MODE_VECTOR_FLOAT.
+	(VECTOR_MODE_P): New.
+
 2000-06-24  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* cpp.texi: Clarify #pragma GCC namespace.	
