@@ -1,5 +1,5 @@
 /* Sparse Arrays for Objective C dispatch tables
-   Copyright (C) 1993 Free Software Foundation, Inc.
+   Copyright (C) 1993, 1995 Free Software Foundation, Inc.
 
 Author: Kresten Krab Thorup
 
@@ -51,7 +51,7 @@ extern int idxsize;
 /* An unsigned integer of same size as a pointer */
 #define SIZET_BITS (sizeof(size_t)*8)
 
-#if defined(sparc) || defined(OBJC_SPARSE2)
+#if defined(__sparc__) || defined(OBJC_SPARSE2)
 #define PRECOMPUTE_SELECTORS
 #endif
 
@@ -89,7 +89,7 @@ struct soffset {
   unsigned int boffset : SIZET_BITS/4;
   unsigned int ioffset : SIZET_BITS/4;
 #else /* OBJC_SPARSE2 */
-#ifdef sparc
+#ifdef __sparc__
   unsigned int boffset : (SIZET_BITS - 2) - BUCKET_BITS;
   unsigned int eoffset : BUCKET_BITS;
   unsigned int unused  : 2;
