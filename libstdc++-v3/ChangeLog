@@ -1,3 +1,8 @@
+2001-04-12  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* libsupc++/eh_alloc.cc (__cxa_allocate_exception): Don't
+	terminate holding the mutex. Make sure size fits in EMERGENCY_OBJ_SIZE.
+
 2001-04-12  Gabriel Dos Reis  <gdr@codesourcery.com>
 
 	* testsuite/README: Add DejaGnu specific documentation.
