@@ -243,11 +243,27 @@ public abstract class IntBuffer extends Buffer
 
   /**
    * Calculates a hash code for this buffer.
+   *
+   * This is done with <code>int</code> arithmetic,
+   * where ** represents exponentiation, by this formula:<br>
+   * <code>s[position()] + 31 + (s[position()+1] + 30)*31**1 + ... +
+   * (s[limit()-1]+30)*31**(limit()-1)</code>.
+   * Where s is the buffer data. Note that the hashcode is dependent
+   * on buffer content, and therefore is not useful if the buffer
+   * content may change.
+   *
+   * @return the hash code
    */
   public int hashCode ()
   {
-    // FIXME: Check what SUN calculates here.
-    return super.hashCode ();
+    int hashCode = get(position()) + 31;
+    int multiplier = 1;
+    for (int i = position() + 1; i < limit(); ++i)
+      {
+	  multiplier *= 31;
+	  hashCode += (get(i) + 30)*multiplier;
+      }
+    return hashCode;
   }
 
   /**
