@@ -1269,7 +1269,7 @@ shorten_branches (first)
 	    }
 	}
 
-      INSN_ADDRESSES (uid) = insn_current_address;
+      INSN_ADDRESSES (uid) = insn_current_address + insn_lengths[uid];
 
       if (GET_CODE (insn) == NOTE || GET_CODE (insn) == BARRIER
 	  || GET_CODE (insn) == CODE_LABEL)
