@@ -1,3 +1,8 @@
+2001-06-08  Tom Tromey  <tromey@redhat.com>
+
+	* configure: Rebuilt.
+	* configure.in: Compute new aux dir using `pwd'.
+
 2001-06-07  Tom Tromey  <tromey@redhat.com>
 
 	For PR bootstrap/3075:
