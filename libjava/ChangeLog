@@ -1,5 +1,24 @@
 2004-01-05  Thomas Fitzsimmons  <fitzsim@redhat.com>
 
+	* jni/gtk-peer/gnu_java_awt_peer_gtk_GtkEvents.c
+	(pre_event_handler): Set all insets to 0 when a Configure event
+	is received for a GtkPlug.
+	* gnu/java/awt/EmbeddedWindow.java (window_id): Rename handle.
+	Make handle long, not int.
+	(EmbeddedWindow()): New constructor.
+	(EmbeddedWindow(int)): Rename window_id to handle.  Make handle
+	long, not int.
+	(setHandle): New method.
+	(getHandle): Return long, not int.
+	* gnu/java/awt/peer/EmbeddedWindowPeer.java (embed): New method
+	declaration.
+	* gnu/java/awt/peer/gtk/GtkEmbeddedWindowPeer.java,
+	jni/gtk-peer/gnu_java_awt_peer_gtk_GtkEmbeddedWindowPeer.c:
+	(create(long)): Take long parameter, not int.  Cast gtk_plug_new
+	argument to GdkNativeWindow.
+	(construct): New method.
+	(embed): New method.
+
 	* gnu/java/awt/peer/gtk/GtkScrollPanePeer.java,
 	jni/gtk-peer/gnu_java_awt_peer_gtk_GtkScrollPanePeer.c
 	(create(int, int)): New method.

@@ -43,4 +43,5 @@ import java.awt.peer.FramePeer;
 
 public interface EmbeddedWindowPeer extends FramePeer
 {
+  void embed (long handle);
 }

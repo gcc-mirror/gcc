@@ -50,18 +50,29 @@ import java.awt.Toolkit;
  */
 public class EmbeddedWindow extends Frame
 {
-  private int window_id;
+  private long handle;
   
   /**
-   * Creates an window to be embedded into another application.
-   *
-   * @param window_id The native handle to the screen area where the AWT window
-   * should be embedded.
+   * Creates a window to be embedded into another application.  The
+   * window will only be embedded after its setHandle method has been
+   * called.
    */
-  public EmbeddedWindow (int window_id)
+  public EmbeddedWindow ()
   {
     super();
-    this.window_id = window_id;
+    this.handle = 0;
+  }
+  
+  /**
+   * Creates a window to be embedded into another application.
+   *
+   * @param handle the native handle to the screen area where the AWT
+   * window should be embedded
+   */
+  public EmbeddedWindow (long handle)
+  {
+    super();
+    this.handle = handle;
   }
   
   /**
@@ -84,13 +95,31 @@ public class EmbeddedWindow extends Frame
   native void setWindowPeer (EmbeddedWindowPeer peer);
 
   /**
+   * If the native peer for this embedded window has been created,
+   * then setHandle will embed the window.  If not, setHandle tells
+   * us where to embed ourselves when our peer is created.
+   *
+   * @param handle the native handle to the screen area where the AWT
+   * window should be embedded
+   */
+  public void setHandle(long handle)
+  {
+    if (this.handle != 0)
+      throw new RuntimeException ("EmbeddedWindow is already embedded");
+
+    this.handle = handle;
+    if (peer != null)
+      ((EmbeddedWindowPeer) peer).embed (this.handle);
+  }
+
+  /**
    * Gets the native handle of the screen area where the window will
    * be embedded.
    *
    * @return The native handle that was passed to the constructor.
    */
-  public int getHandle()
+  public long getHandle()
   {
-    return window_id;
+    return handle;
   }
 }

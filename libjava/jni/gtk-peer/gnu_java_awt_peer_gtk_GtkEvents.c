@@ -998,10 +998,20 @@ pre_event_handler (GtkWidget *widget, GdkEvent *event, jobject peer)
 	    gdk_threads_leave ();
 
 	    /* FIXME: hard-code these values for now. */
-	    top = 20;
-	    left = 6;
-	    bottom = 6;
-	    right = 6;
+	    if (GTK_IS_PLUG (widget))
+	      {
+		top = 0;
+		left = 0;
+		bottom = 0;
+		right = 0;
+	      }
+	    else
+	      {
+		top = 20;
+		left = 6;
+		bottom = 6;
+		right = 6;
+	      }
 
  	    (*gdk_env)->CallVoidMethod (gdk_env, peer,
 					postConfigureEventID,
