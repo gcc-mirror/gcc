@@ -633,8 +633,7 @@ static int handle_avail_expr	  PROTO ((rtx, struct expr *));
 static int classic_gcse	       PROTO ((void));
 static int one_classic_gcse_pass      PROTO ((int));
 static void invalidate_nonnull_info	PROTO ((rtx, rtx, void *));
-static void delete_null_pointer_checks_1 PROTO ((int_list_ptr *, int *, 
-						 sbitmap *, sbitmap *,
+static void delete_null_pointer_checks_1 PROTO ((int *, sbitmap *, sbitmap *,
 						 struct null_pointer_info *));
 static rtx process_insert_insn	PROTO ((struct expr *));
 static int pre_edge_insert	PROTO ((struct edge_list *, struct expr **));
@@ -4977,9 +4976,7 @@ invalidate_nonnull_info (x, setter, data)
    they are not our responsibility to free.  */
 
 static void
-delete_null_pointer_checks_1 (s_preds, block_reg, nonnull_avin, 
-			      nonnull_avout, npi)
-     int_list_ptr *s_preds;
+delete_null_pointer_checks_1 (block_reg, nonnull_avin, nonnull_avout, npi)
      int *block_reg;
      sbitmap *nonnull_avin;
      sbitmap *nonnull_avout;
@@ -5143,8 +5140,6 @@ void
 delete_null_pointer_checks (f)
      rtx f;
 {
-  int_list_ptr *s_preds, *s_succs;
-  int *num_preds, *num_succs;
   sbitmap *nonnull_avin, *nonnull_avout;
   int *block_reg;
   int bb;
@@ -5178,14 +5173,6 @@ delete_null_pointer_checks (f)
       free_basic_block_vars (0);
       return;
     }
-
-  /* We need predecessor/successor lists as well as pred/succ counts for
-     each basic block.  */
-  s_preds = (int_list_ptr *) gmalloc (n_basic_blocks * sizeof (int_list_ptr));
-  s_succs = (int_list_ptr *) gmalloc (n_basic_blocks * sizeof (int_list_ptr));
-  num_preds = (int *) gmalloc (n_basic_blocks * sizeof (int));
-  num_succs = (int *) gmalloc (n_basic_blocks * sizeof (int));
-  compute_preds_succs (s_preds, s_succs, num_preds, num_succs);
 
   /* We need four bitmaps, each with a bit for each register in each
      basic block.  */
@@ -5238,18 +5225,12 @@ delete_null_pointer_checks (f)
     {
       npi.min_reg = reg;
       npi.max_reg = MIN (reg + regs_per_pass, max_reg);
-      delete_null_pointer_checks_1 (s_preds, block_reg, nonnull_avin,
+      delete_null_pointer_checks_1 (block_reg, nonnull_avin,
 				    nonnull_avout, &npi);
     }
 
   /* Free storage allocated by find_basic_blocks.  */
   free_basic_block_vars (0);
-
-  /* Free our local predecessor/successor lists. */
-  free (s_preds);
-  free (s_succs);
-  free (num_preds);
-  free (num_succs);
 
   /* Free the table of registers compared at the end of every block.  */
   free (block_reg);
