@@ -1,3 +1,13 @@
+2001-05-07  John David Anglin  <dave@hiauly1.hia.nrc.ca>
+
+	* pa.md (interspace_jump): Revise comment.
+	(builtin_longjmp): Block initial setup insns from delay slot of
+	interspace branch.
+	(builtin_setjmp_receiver): New expander to save and restore PIC
+	register.
+
+	* som.h (NM_FLAGS): Remove `-n' sort option.  Revise comment.
+
 2001-05-07  Mark Mitchell  <mark@codesourcery.com>
 
 	* gcc.texi: Remove references to CHILL.

@@ -6211,8 +6211,7 @@
 
 ;;; EH does longjmp's from and within the data section.  Thus,
 ;;; an interspace branch is required for the longjmp implementation.
-;;; Registers r1 and r2 are not saved in the jmpbuf environment.
-;;; Thus, they can be used as scratch registers for the jump.
+;;; Registers r1 and r2 are used as scratch registers for the jump.
 (define_expand "interspace_jump"
   [(parallel
      [(set (pc) (match_operand 0 "pmode_register_operand" "a"))
@@ -6262,10 +6261,16 @@
      where to look for it when we get back to setjmp's function for
      restoring the gp.  */
   emit_move_insn (pv, lab);
+
+  /* Prevent the insns above from being scheduled into the delay slot
+     of the interspace jump because the space register could change.  */
+  emit_insn (gen_blockage ());
+
   emit_jump_insn (gen_interspace_jump (pv));
   emit_barrier ();
   DONE;
 }")
+
 ;;; Hope this is only within a function...
 (define_insn "indirect_jump"
   [(set (pc) (match_operand 0 "register_operand" "r"))]
@@ -7129,5 +7134,20 @@
 			       plus_constant (stack_pointer_rtx, -32)));
   emit_insn (gen_rtx (USE, VOIDmode, pic_offset_table_rtx));
   emit_insn (gen_blockage ());
+  DONE;
+}")
+
+(define_expand "builtin_setjmp_receiver"
+  [(label_ref (match_operand 0 "" ""))]
+  "flag_pic"
+  "
+{
+  if (PIC_OFFSET_TABLE_SAVE_RTX == NULL_RTX)
+    hppa_init_pic_save ();
+
+  /* Restore the PIC register.  Hopefully, this will always be from
+     a stack slot.  The only registers that are valid after a
+     builtin_longjmp are the stack and frame pointers.  */
+  emit_move_insn (pic_offset_table_rtx, PIC_OFFSET_TABLE_SAVE_RTX);
   DONE;
 }")
