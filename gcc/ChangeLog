@@ -1,5 +1,11 @@
 2004-03-07  Roger Sayle  <roger@eyesopen.com>
 
+	* fold-const.c (fold) <IOR_EXPR>: Fold x | x as x.
+	<XOR_EXPR>: Fold x ^ x as zero.
+	<AND_EXPR>: Fold x & x as x.
+
+2004-03-07  Roger Sayle  <roger@eyesopen.com>
+
 	* fold-const.c (fold) <EQ_EXPR>: Rewrite optimization to transform
 	"foo++ == const" into "++foo == const+incr".
 
