@@ -1,3 +1,13 @@
+Tue Mar 30 11:31:53 1999  Alexandre Petit-Bianco  <apbianco@cygnus.com>
+
+	* parse.y (patch_bc_statement): Fixed identation and a bogus
+ 	`printf' format.
+
+Tue Mar 30 11:29:29 1999  Alexandre Petit-Bianco  <apbianco@cygnus.com>
+
+	* parse.y (patch_assignment): Allow static variables in other
+ 	classes to be assigned.
+
 Sun Mar 28 22:12:10 1999  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* class.c (maybe_add_interface): Remove unused variable
