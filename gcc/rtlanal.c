@@ -1259,6 +1259,10 @@ find_reg_note (insn, kind, datum)
 {
   register rtx link;
 
+  /* Ignore anything that is not an INSN, JUMP_INSN or CALL_INSN.  */
+  if (GET_RTX_CLASS (GET_CODE (insn)) != 'i')
+    return 0;
+
   for (link = REG_NOTES (insn); link; link = XEXP (link, 1))
     if (REG_NOTE_KIND (link) == kind
 	&& (datum == 0 || datum == XEXP (link, 0)))
@@ -1278,6 +1282,10 @@ find_regno_note (insn, kind, regno)
      int regno;
 {
   register rtx link;
+
+  /* Ignore anything that is not an INSN, JUMP_INSN or CALL_INSN.  */
+  if (GET_RTX_CLASS (GET_CODE (insn)) != 'i')
+    return 0;
 
   for (link = REG_NOTES (insn); link; link = XEXP (link, 1))
     if (REG_NOTE_KIND (link) == kind
