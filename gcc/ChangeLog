@@ -1,3 +1,7 @@
+2001-08-27  Richard Henderson  <rth@redhat.com>
+
+	* genattr.c (main): Emit state_t even when not doing scheduling.
+
 2001-08-27  Roman Zippel <zippel@linux-m68k.org>
 	    Richard Henderson  <rth@redhat.com>
 
