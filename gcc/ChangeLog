@@ -1,3 +1,8 @@
+Sat Sep 12 11:37:19 1998  Michael Meissner  <meissner@cygnus.com>
+
+	* rs6000.h ({ASM,CPP}_CPU_SPEC): Add support for all machines
+	supported with -mcpu=xxx.
+
 Fri Sep 11 23:55:54 1998  David S. Miller  <davem@pierdol.cobaltmicro.com>
 
 	* flow.c (mark_set_1): Recognize multi-register structure return

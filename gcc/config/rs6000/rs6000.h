@@ -70,15 +70,19 @@ Boston, MA 02111-1307, USA.  */
 %{mcpu=rios2: -D_ARCH_PWR2} \
 %{mcpu=rsc: -D_ARCH_PWR} \
 %{mcpu=rsc1: -D_ARCH_PWR} \
+%{mcpu=401: -D_ARCH_PPC} \
 %{mcpu=403: -D_ARCH_PPC} \
 %{mcpu=505: -D_ARCH_PPC} \
 %{mcpu=601: -D_ARCH_PPC -D_ARCH_PWR} \
 %{mcpu=602: -D_ARCH_PPC} \
 %{mcpu=603: -D_ARCH_PPC} \
 %{mcpu=603e: -D_ARCH_PPC} \
+%{mcpu=ec603e: -D_ARCH_PPC} \
 %{mcpu=604: -D_ARCH_PPC} \
+%{mcpu=604e: -D_ARCH_PPC} \
 %{mcpu=620: -D_ARCH_PPC} \
 %{mcpu=821: -D_ARCH_PPC} \
+%{mcpu=823: -D_ARCH_PPC} \
 %{mcpu=860: -D_ARCH_PPC}"
 
 #ifndef CPP_DEFAULT_SPEC
@@ -119,15 +123,19 @@ Boston, MA 02111-1307, USA.  */
 %{mcpu=rios2: -mpwrx} \
 %{mcpu=rsc: -mpwr} \
 %{mcpu=rsc1: -mpwr} \
+%{mcpu=401: -mppc} \
 %{mcpu=403: -mppc} \
 %{mcpu=505: -mppc} \
 %{mcpu=601: -m601} \
 %{mcpu=602: -mppc} \
 %{mcpu=603: -mppc} \
 %{mcpu=603e: -mppc} \
+%{mcpu=ec603e: -mppc} \
 %{mcpu=604: -mppc} \
+%{mcpu=604e: -mppc} \
 %{mcpu=620: -mppc} \
 %{mcpu=821: -mppc} \
+%{mcpu=823: -mppc} \
 %{mcpu=860: -mppc}"
 
 #ifndef ASM_DEFAULT_SPEC
