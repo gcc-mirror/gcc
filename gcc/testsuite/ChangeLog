@@ -1,5 +1,14 @@
 1998-10-12  Alexandre Oliva  <oliva@dcc.unicamp.br>
 
+	* g++.old-deja/g++.pt/explicit74.C: New test.  Explicit
+ 	instantiation of template produces incorrect code for delete
+ 	expression.
+
+	* g++.old-deja/g++.pt/instantiate5.C: New test.  `global
+	constructors' name is not unique
+	* g++.old-deja/g++.pt/instantiate5.cc: ditto
+	* g++.old-deja/g++.pt/instantiate5-main.cc: ditto
+
 	* g++.old-deja/g++.other/init8.C: New test.  uninitialized
  	automatic array of const is ill-formed
 
