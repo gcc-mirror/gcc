@@ -1,3 +1,9 @@
+2004-04-26  Hans-Peter Nilsson  <hp@bitrange.com>
+
+	PR bootstrap/15141
+	* except.c (connect_post_landing_pads): Delete insns after the
+	barrier when generating a unwind_resume_libfunc call.
+
 2004-04-25  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	PR/c++ 15119

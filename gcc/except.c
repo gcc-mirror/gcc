@@ -1830,8 +1830,21 @@ connect_post_landing_pads (void)
 	  e->count = src->count;
 	}
       else
-	emit_library_call (unwind_resume_libfunc, LCT_THROW,
-			   VOIDmode, 1, cfun->eh->exc_ptr, ptr_mode);
+	{
+	  emit_library_call (unwind_resume_libfunc, LCT_THROW,
+			     VOIDmode, 1, cfun->eh->exc_ptr, ptr_mode);
+
+	  /* What we just emitted was a throwing libcall, so it got a
+	     barrier automatically added after it.  If the last insn in
+	     the libcall sequence isn't the barrier, it's because the
+	     target emits multiple insns for a call, and there are insns
+	     after the actual call insn (which are redundant and would be
+	     optimized away).  The barrier is inserted exactly after the
+	     call insn, so let's go get that and delete the insns after
+	     it, because below we need the barrier to be the last insn in
+	     the sequence.  */
+	  delete_insns_since (NEXT_INSN (last_call_insn ()));
+	}
 
       seq = get_insns ();
       end_sequence ();
