@@ -57,64 +57,56 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include "hashtab.h"
 #include "langhooks.h"
 
-static void encode		PARAMS ((HOST_WIDE_INT *,
-					 unsigned HOST_WIDE_INT,
-					 HOST_WIDE_INT));
-static void decode		PARAMS ((HOST_WIDE_INT *,
-					 unsigned HOST_WIDE_INT *,
-					 HOST_WIDE_INT *));
-static bool negate_expr_p	PARAMS ((tree));
-static tree negate_expr		PARAMS ((tree));
-static tree split_tree		PARAMS ((tree, enum tree_code, tree *, tree *,
-					 tree *, int));
-static tree associate_trees	PARAMS ((tree, tree, enum tree_code, tree));
-static tree int_const_binop	PARAMS ((enum tree_code, tree, tree, int));
-static tree const_binop		PARAMS ((enum tree_code, tree, tree, int));
-static hashval_t size_htab_hash	PARAMS ((const void *));
-static int size_htab_eq		PARAMS ((const void *, const void *));
-static tree fold_convert	PARAMS ((tree, tree));
-static enum tree_code invert_tree_comparison PARAMS ((enum tree_code));
-static enum tree_code swap_tree_comparison PARAMS ((enum tree_code));
-static int comparison_to_compcode PARAMS ((enum tree_code));
-static enum tree_code compcode_to_comparison PARAMS ((int));
-static int truth_value_p	PARAMS ((enum tree_code));
-static int operand_equal_for_comparison_p PARAMS ((tree, tree, tree));
-static int twoval_comparison_p	PARAMS ((tree, tree *, tree *, int *));
-static tree eval_subst		PARAMS ((tree, tree, tree, tree, tree));
-static tree pedantic_omit_one_operand PARAMS ((tree, tree, tree));
-static tree distribute_bit_expr PARAMS ((enum tree_code, tree, tree, tree));
-static tree make_bit_field_ref	PARAMS ((tree, tree, int, int, int));
-static tree optimize_bit_field_compare PARAMS ((enum tree_code, tree,
-						tree, tree));
-static tree decode_field_reference PARAMS ((tree, HOST_WIDE_INT *,
-					    HOST_WIDE_INT *,
-					    enum machine_mode *, int *,
-					    int *, tree *, tree *));
-static int all_ones_mask_p	PARAMS ((tree, int));
-static tree sign_bit_p		PARAMS ((tree, tree));
-static int simple_operand_p	PARAMS ((tree));
-static tree range_binop		PARAMS ((enum tree_code, tree, tree, int,
-					 tree, int));
-static tree make_range		PARAMS ((tree, int *, tree *, tree *));
-static tree build_range_check	PARAMS ((tree, tree, int, tree, tree));
-static int merge_ranges		PARAMS ((int *, tree *, tree *, int, tree, tree,
-				       int, tree, tree));
-static tree fold_range_test	PARAMS ((tree));
-static tree unextend		PARAMS ((tree, int, int, tree));
-static tree fold_truthop	PARAMS ((enum tree_code, tree, tree, tree));
-static tree optimize_minmax_comparison PARAMS ((tree));
-static tree extract_muldiv	PARAMS ((tree, tree, enum tree_code, tree));
-static tree extract_muldiv_1	PARAMS ((tree, tree, enum tree_code, tree));
-static tree strip_compound_expr PARAMS ((tree, tree));
-static int multiple_of_p	PARAMS ((tree, tree, tree));
-static tree constant_boolean_node PARAMS ((int, tree));
-static int count_cond		PARAMS ((tree, int));
-static tree fold_binary_op_with_conditional_arg
-  PARAMS ((enum tree_code, tree, tree, tree, int));
-static bool fold_real_zero_addition_p	PARAMS ((tree, tree, int));
-static tree fold_mathfn_compare	PARAMS ((enum built_in_function,
-					 enum tree_code, tree, tree, tree));
-static tree fold_inf_compare	PARAMS ((enum tree_code, tree, tree, tree));
+static void encode (HOST_WIDE_INT *, unsigned HOST_WIDE_INT, HOST_WIDE_INT);
+static void decode (HOST_WIDE_INT *, unsigned HOST_WIDE_INT *, HOST_WIDE_INT *);
+static bool negate_expr_p (tree);
+static tree negate_expr (tree);
+static tree split_tree (tree, enum tree_code, tree *, tree *, tree *, int);
+static tree associate_trees (tree, tree, enum tree_code, tree);
+static tree int_const_binop (enum tree_code, tree, tree, int);
+static tree const_binop (enum tree_code, tree, tree, int);
+static hashval_t size_htab_hash (const void *);
+static int size_htab_eq (const void *, const void *);
+static tree fold_convert (tree, tree);
+static enum tree_code invert_tree_comparison (enum tree_code);
+static enum tree_code swap_tree_comparison (enum tree_code);
+static int comparison_to_compcode (enum tree_code);
+static enum tree_code compcode_to_comparison (int);
+static int truth_value_p (enum tree_code);
+static int operand_equal_for_comparison_p (tree, tree, tree);
+static int twoval_comparison_p (tree, tree *, tree *, int *);
+static tree eval_subst (tree, tree, tree, tree, tree);
+static tree pedantic_omit_one_operand (tree, tree, tree);
+static tree distribute_bit_expr (enum tree_code, tree, tree, tree);
+static tree make_bit_field_ref (tree, tree, int, int, int);
+static tree optimize_bit_field_compare (enum tree_code, tree, tree, tree);
+static tree decode_field_reference (tree, HOST_WIDE_INT *, HOST_WIDE_INT *,
+				    enum machine_mode *, int *, int *,
+				    tree *, tree *);
+static int all_ones_mask_p (tree, int);
+static tree sign_bit_p (tree, tree);
+static int simple_operand_p (tree);
+static tree range_binop (enum tree_code, tree, tree, int, tree, int);
+static tree make_range (tree, int *, tree *, tree *);
+static tree build_range_check (tree, tree, int, tree, tree);
+static int merge_ranges (int *, tree *, tree *, int, tree, tree, int, tree,
+			 tree);
+static tree fold_range_test (tree);
+static tree unextend (tree, int, int, tree);
+static tree fold_truthop (enum tree_code, tree, tree, tree);
+static tree optimize_minmax_comparison (tree);
+static tree extract_muldiv (tree, tree, enum tree_code, tree);
+static tree extract_muldiv_1 (tree, tree, enum tree_code, tree);
+static tree strip_compound_expr (tree, tree);
+static int multiple_of_p (tree, tree, tree);
+static tree constant_boolean_node (int, tree);
+static int count_cond (tree, int);
+static tree fold_binary_op_with_conditional_arg (enum tree_code, tree, tree,
+						 tree, int);
+static bool fold_real_zero_addition_p (tree, tree, int);
+static tree fold_mathfn_compare (enum built_in_function, enum tree_code,
+				 tree, tree, tree);
+static tree fold_inf_compare (enum tree_code, tree, tree, tree);
 
 /* The following constants represent a bit based encoding of GCC's
    comparison operators.  This encoding simplifies transformations
@@ -154,10 +146,7 @@ static tree fold_inf_compare	PARAMS ((enum tree_code, tree, tree, tree));
    WORDS points to the array of HOST_WIDE_INTs.  */
 
 static void
-encode (words, low, hi)
-     HOST_WIDE_INT *words;
-     unsigned HOST_WIDE_INT low;
-     HOST_WIDE_INT hi;
+encode (HOST_WIDE_INT *words, unsigned HOST_WIDE_INT low, HOST_WIDE_INT hi)
 {
   words[0] = LOWPART (low);
   words[1] = HIGHPART (low);
@@ -170,10 +159,7 @@ encode (words, low, hi)
    The integer is stored into *LOW and *HI as two `HOST_WIDE_INT' pieces.  */
 
 static void
-decode (words, low, hi)
-     HOST_WIDE_INT *words;
-     unsigned HOST_WIDE_INT *low;
-     HOST_WIDE_INT *hi;
+decode (HOST_WIDE_INT *words, unsigned HOST_WIDE_INT *low, HOST_WIDE_INT *hi)
 {
   *low = words[0] + words[1] * BASE;
   *hi = words[2] + words[3] * BASE;
@@ -187,9 +173,7 @@ decode (words, low, hi)
    propagate it.  */
 
 int
-force_fit_type (t, overflow)
-     tree t;
-     int overflow;
+force_fit_type (tree t, int overflow)
 {
   unsigned HOST_WIDE_INT low;
   HOST_WIDE_INT high;
@@ -268,11 +252,8 @@ force_fit_type (t, overflow)
    The value is stored as two `HOST_WIDE_INT' pieces in *LV and *HV.  */
 
 int
-add_double (l1, h1, l2, h2, lv, hv)
-     unsigned HOST_WIDE_INT l1, l2;
-     HOST_WIDE_INT h1, h2;
-     unsigned HOST_WIDE_INT *lv;
-     HOST_WIDE_INT *hv;
+add_double (unsigned HOST_WIDE_INT l1, HOST_WIDE_INT h1, unsigned HOST_WIDE_INT l2,
+	    HOST_WIDE_INT h2, unsigned HOST_WIDE_INT *lv, HOST_WIDE_INT *hv)
 {
   unsigned HOST_WIDE_INT l;
   HOST_WIDE_INT h;
@@ -291,11 +272,8 @@ add_double (l1, h1, l2, h2, lv, hv)
    The value is stored as two `HOST_WIDE_INT' pieces in *LV and *HV.  */
 
 int
-neg_double (l1, h1, lv, hv)
-     unsigned HOST_WIDE_INT l1;
-     HOST_WIDE_INT h1;
-     unsigned HOST_WIDE_INT *lv;
-     HOST_WIDE_INT *hv;
+neg_double (unsigned HOST_WIDE_INT l1, HOST_WIDE_INT h1, unsigned HOST_WIDE_INT *lv,
+	    HOST_WIDE_INT *hv)
 {
   if (l1 == 0)
     {
@@ -318,11 +296,8 @@ neg_double (l1, h1, lv, hv)
    The value is stored as two `HOST_WIDE_INT' pieces in *LV and *HV.  */
 
 int
-mul_double (l1, h1, l2, h2, lv, hv)
-     unsigned HOST_WIDE_INT l1, l2;
-     HOST_WIDE_INT h1, h2;
-     unsigned HOST_WIDE_INT *lv;
-     HOST_WIDE_INT *hv;
+mul_double (unsigned HOST_WIDE_INT l1, HOST_WIDE_INT h1, unsigned HOST_WIDE_INT l2,
+	    HOST_WIDE_INT h2, unsigned HOST_WIDE_INT *lv, HOST_WIDE_INT *hv)
 {
   HOST_WIDE_INT arg1[4];
   HOST_WIDE_INT arg2[4];
@@ -378,13 +353,9 @@ mul_double (l1, h1, l2, h2, lv, hv)
    Store the value as two `HOST_WIDE_INT' pieces in *LV and *HV.  */
 
 void
-lshift_double (l1, h1, count, prec, lv, hv, arith)
-     unsigned HOST_WIDE_INT l1;
-     HOST_WIDE_INT h1, count;
-     unsigned int prec;
-     unsigned HOST_WIDE_INT *lv;
-     HOST_WIDE_INT *hv;
-     int arith;
+lshift_double (unsigned HOST_WIDE_INT l1, HOST_WIDE_INT h1, HOST_WIDE_INT count,
+	       unsigned int prec, unsigned HOST_WIDE_INT *lv, HOST_WIDE_INT *hv,
+	       int arith)
 {
   unsigned HOST_WIDE_INT signmask;
 
@@ -446,13 +417,9 @@ lshift_double (l1, h1, count, prec, lv, hv, arith)
    Store the value as two `HOST_WIDE_INT' pieces in *LV and *HV.  */
 
 void
-rshift_double (l1, h1, count, prec, lv, hv, arith)
-     unsigned HOST_WIDE_INT l1;
-     HOST_WIDE_INT h1, count;
-     unsigned int prec;
-     unsigned HOST_WIDE_INT *lv;
-     HOST_WIDE_INT *hv;
-     int arith;
+rshift_double (unsigned HOST_WIDE_INT l1, HOST_WIDE_INT h1, HOST_WIDE_INT count,
+	       unsigned int prec, unsigned HOST_WIDE_INT *lv, HOST_WIDE_INT *hv,
+	       int arith)
 {
   unsigned HOST_WIDE_INT signmask;
 
@@ -512,12 +479,8 @@ rshift_double (l1, h1, count, prec, lv, hv, arith)
    Store the value as two `HOST_WIDE_INT' pieces in *LV and *HV.  */
 
 void
-lrotate_double (l1, h1, count, prec, lv, hv)
-     unsigned HOST_WIDE_INT l1;
-     HOST_WIDE_INT h1, count;
-     unsigned int prec;
-     unsigned HOST_WIDE_INT *lv;
-     HOST_WIDE_INT *hv;
+lrotate_double (unsigned HOST_WIDE_INT l1, HOST_WIDE_INT h1, HOST_WIDE_INT count,
+		unsigned int prec, unsigned HOST_WIDE_INT *lv, HOST_WIDE_INT *hv)
 {
   unsigned HOST_WIDE_INT s1l, s2l;
   HOST_WIDE_INT s1h, s2h;
@@ -537,12 +500,8 @@ lrotate_double (l1, h1, count, prec, lv, hv)
    Store the value as two `HOST_WIDE_INT' pieces in *LV and *HV.  */
 
 void
-rrotate_double (l1, h1, count, prec, lv, hv)
-     unsigned HOST_WIDE_INT l1;
-     HOST_WIDE_INT h1, count;
-     unsigned int prec;
-     unsigned HOST_WIDE_INT *lv;
-     HOST_WIDE_INT *hv;
+rrotate_double (unsigned HOST_WIDE_INT l1, HOST_WIDE_INT h1, HOST_WIDE_INT count,
+		unsigned int prec, unsigned HOST_WIDE_INT *lv, HOST_WIDE_INT *hv)
 {
   unsigned HOST_WIDE_INT s1l, s2l;
   HOST_WIDE_INT s1h, s2h;
@@ -567,17 +526,13 @@ rrotate_double (l1, h1, count, prec, lv, hv)
    UNS nonzero says do unsigned division.  */
 
 int
-div_and_round_double (code, uns,
-		      lnum_orig, hnum_orig, lden_orig, hden_orig,
-		      lquo, hquo, lrem, hrem)
-     enum tree_code code;
-     int uns;
-     unsigned HOST_WIDE_INT lnum_orig; /* num == numerator == dividend */
-     HOST_WIDE_INT hnum_orig;
-     unsigned HOST_WIDE_INT lden_orig; /* den == denominator == divisor */
-     HOST_WIDE_INT hden_orig;
-     unsigned HOST_WIDE_INT *lquo, *lrem;
-     HOST_WIDE_INT *hquo, *hrem;
+div_and_round_double (enum tree_code code, int uns,
+		      unsigned HOST_WIDE_INT lnum_orig, /* num == numerator == dividend */
+		      HOST_WIDE_INT hnum_orig,
+		      unsigned HOST_WIDE_INT lden_orig, /* den == denominator == divisor */
+		      HOST_WIDE_INT hden_orig, unsigned HOST_WIDE_INT *lquo,
+		      HOST_WIDE_INT *hquo, unsigned HOST_WIDE_INT *lrem,
+		      HOST_WIDE_INT *hrem)
 {
   int quo_neg = 0;
   HOST_WIDE_INT num[4 + 1];	/* extra element for scaling.  */
@@ -842,8 +797,7 @@ div_and_round_double (code, uns,
    the function negate_expr.  */
 
 static bool
-negate_expr_p (t)
-     tree t;
+negate_expr_p (tree t)
 {
   unsigned HOST_WIDE_INT val;
   unsigned int prec;
@@ -891,8 +845,7 @@ negate_expr_p (t)
    null, in which case return null.  */
 
 static tree
-negate_expr (t)
-     tree t;
+negate_expr (tree t)
 {
   tree type;
   tree tem;
@@ -953,11 +906,7 @@ negate_expr (t)
    same type as IN, but they will have the same signedness and mode.  */
 
 static tree
-split_tree (in, code, conp, litp, minus_litp, negate_p)
-     tree in;
-     enum tree_code code;
-     tree *conp, *litp, *minus_litp;
-     int negate_p;
+split_tree (tree in, enum tree_code code, tree *conp, tree *litp, tree *minus_litp, int negate_p)
 {
   tree var = 0;
 
@@ -1035,10 +984,7 @@ split_tree (in, code, conp, litp, minus_litp, negate_p)
    we build an operation, do it in TYPE and with CODE.  */
 
 static tree
-associate_trees (t1, t2, code, type)
-     tree t1, t2;
-     enum tree_code code;
-     tree type;
+associate_trees (tree t1, tree t2, enum tree_code code, tree type)
 {
   if (t1 == 0)
     return t2;
@@ -1072,10 +1018,7 @@ associate_trees (t1, t2, code, type)
    If NOTRUNC is nonzero, do not truncate the result to fit the data type.  */
 
 static tree
-int_const_binop (code, arg1, arg2, notrunc)
-     enum tree_code code;
-     tree arg1, arg2;
-     int notrunc;
+int_const_binop (enum tree_code code, tree arg1, tree arg2, int notrunc)
 {
   unsigned HOST_WIDE_INT int1l, int2l;
   HOST_WIDE_INT int1h, int2h;
@@ -1267,10 +1210,7 @@ int_const_binop (code, arg1, arg2, notrunc)
    If NOTRUNC is nonzero, do not truncate the result to fit the data type.  */
 
 static tree
-const_binop (code, arg1, arg2, notrunc)
-     enum tree_code code;
-     tree arg1, arg2;
-     int notrunc;
+const_binop (enum tree_code code, tree arg1, tree arg2, int notrunc)
 {
   STRIP_NOPS (arg1);
   STRIP_NOPS (arg2);
@@ -1395,8 +1335,7 @@ const_binop (code, arg1, arg2, notrunc)
 /* Return the hash code code X, an INTEGER_CST.  */
 
 static hashval_t
-size_htab_hash (x)
-     const void *x;
+size_htab_hash (const void *x)
 {
   tree t = (tree) x;
 
@@ -1409,9 +1348,7 @@ size_htab_hash (x)
    is the same as that given by *Y, which is the same.  */
 
 static int
-size_htab_eq (x, y)
-     const void *x;
-     const void *y;
+size_htab_eq (const void *x, const void *y)
 {
   tree xt = (tree) x;
   tree yt = (tree) y;
@@ -1426,9 +1363,7 @@ size_htab_eq (x, y)
    bits are given by NUMBER and of the sizetype represented by KIND.  */
 
 tree
-size_int_wide (number, kind)
-     HOST_WIDE_INT number;
-     enum size_type_kind kind;
+size_int_wide (HOST_WIDE_INT number, enum size_type_kind kind)
 {
   return size_int_type_wide (number, sizetype_tab[(int) kind]);
 }
@@ -1440,9 +1375,7 @@ static GTY ((if_marked ("ggc_marked_p"), param_is (union tree_node)))
      htab_t size_htab;
 
 tree
-size_int_type_wide (number, type)
-     HOST_WIDE_INT number;
-     tree type;
+size_int_type_wide (HOST_WIDE_INT number, tree type)
 {
   void **slot;
 
@@ -1480,9 +1413,7 @@ size_int_type_wide (number, type)
    If the operands are constant, so is the result.  */
 
 tree
-size_binop (code, arg0, arg1)
-     enum tree_code code;
-     tree arg0, arg1;
+size_binop (enum tree_code code, tree arg0, tree arg1)
 {
   tree type = TREE_TYPE (arg0);
 
@@ -1517,8 +1448,7 @@ size_binop (code, arg0, arg1)
    in signed type corresponding to the type of the operands.  */
 
 tree
-size_diffop (arg0, arg1)
-     tree arg0, arg1;
+size_diffop (tree arg0, tree arg1)
 {
   tree type = TREE_TYPE (arg0);
   tree ctype;
@@ -1559,9 +1489,7 @@ size_diffop (arg0, arg1)
    return a constant tree representing the result of conversion.  */
 
 static tree
-fold_convert (t, arg1)
-     tree t;
-     tree arg1;
+fold_convert (tree t, tree arg1)
 {
   tree type = TREE_TYPE (t);
   int overflow = 0;
@@ -1680,8 +1608,7 @@ fold_convert (t, arg1)
 /* Return an expr equal to X but certainly not valid as an lvalue.  */
 
 tree
-non_lvalue (x)
-     tree x;
+non_lvalue (tree x)
 {
   tree result;
 
@@ -1707,8 +1634,7 @@ int pedantic_lvalues;
    pedantic lvalue.  Otherwise, return X.  */
 
 tree
-pedantic_non_lvalue (x)
-     tree x;
+pedantic_non_lvalue (tree x)
 {
   if (pedantic_lvalues)
     return non_lvalue (x);
@@ -1721,8 +1647,7 @@ pedantic_non_lvalue (x)
    comparisons, except for NE_EXPR and EQ_EXPR.  */
 
 static enum tree_code
-invert_tree_comparison (code)
-     enum tree_code code;
+invert_tree_comparison (enum tree_code code)
 {
   switch (code)
     {
@@ -1747,8 +1672,7 @@ invert_tree_comparison (code)
    swapped.  This is safe for floating-point.  */
 
 static enum tree_code
-swap_tree_comparison (code)
-     enum tree_code code;
+swap_tree_comparison (enum tree_code code)
 {
   switch (code)
     {
@@ -1774,8 +1698,7 @@ swap_tree_comparison (code)
    compcode_to_comparison.  */
 
 static int
-comparison_to_compcode (code)
-     enum tree_code code;
+comparison_to_compcode (enum tree_code code)
 {
   switch (code)
     {
@@ -1801,8 +1724,7 @@ comparison_to_compcode (code)
    inverse of comparison_to_compcode.  */
 
 static enum tree_code
-compcode_to_comparison (code)
-     int code;
+compcode_to_comparison (int code)
 {
   switch (code)
     {
@@ -1826,8 +1748,7 @@ compcode_to_comparison (code)
 /* Return nonzero if CODE is a tree code that represents a truth value.  */
 
 static int
-truth_value_p (code)
-     enum tree_code code;
+truth_value_p (enum tree_code code)
 {
   return (TREE_CODE_CLASS (code) == '<'
 	  || code == TRUTH_AND_EXPR || code == TRUTH_ANDIF_EXPR
@@ -1844,9 +1765,7 @@ truth_value_p (code)
    (2) two NaNs may be indistinguishable, but NaN!=NaN.  */
 
 int
-operand_equal_p (arg0, arg1, only_const)
-     tree arg0, arg1;
-     int only_const;
+operand_equal_p (tree arg0, tree arg1, int only_const)
 {
   /* If both types don't have the same signedness, then we can't consider
      them equal.  We must check this before the STRIP_NOPS calls
@@ -2067,9 +1986,7 @@ operand_equal_p (arg0, arg1, only_const)
    When in doubt, return 0.  */
 
 static int
-operand_equal_for_comparison_p (arg0, arg1, other)
-     tree arg0, arg1;
-     tree other;
+operand_equal_for_comparison_p (tree arg0, tree arg1, tree other)
 {
   int unsignedp1, unsignedpo;
   tree primarg0, primarg1, primother;
@@ -2130,10 +2047,7 @@ operand_equal_for_comparison_p (arg0, arg1, other)
    If this is true, return 1.  Otherwise, return zero.  */
 
 static int
-twoval_comparison_p (arg, cval1, cval2, save_p)
-     tree arg;
-     tree *cval1, *cval2;
-     int *save_p;
+twoval_comparison_p (tree arg, tree *cval1, tree *cval2, int *save_p)
 {
   enum tree_code code = TREE_CODE (arg);
   char class = TREE_CODE_CLASS (code);
@@ -2225,9 +2139,7 @@ twoval_comparison_p (arg, cval1, cval2, save_p)
    NEW1 and OLD1.  */
 
 static tree
-eval_subst (arg, old0, new0, old1, new1)
-     tree arg;
-     tree old0, new0, old1, new1;
+eval_subst (tree arg, tree old0, tree new0, tree old1, tree new1)
 {
   tree type = TREE_TYPE (arg);
   enum tree_code code = TREE_CODE (arg);
@@ -2311,8 +2223,7 @@ eval_subst (arg, old0, new0, old1, new1)
    the conversion of RESULT to TYPE.  */
 
 tree
-omit_one_operand (type, result, omitted)
-     tree type, result, omitted;
+omit_one_operand (tree type, tree result, tree omitted)
 {
   tree t = convert (type, result);
 
@@ -2325,8 +2236,7 @@ omit_one_operand (type, result, omitted)
 /* Similar, but call pedantic_non_lvalue instead of non_lvalue.  */
 
 static tree
-pedantic_omit_one_operand (type, result, omitted)
-     tree type, result, omitted;
+pedantic_omit_one_operand (tree type, tree result, tree omitted)
 {
   tree t = convert (type, result);
 
@@ -2341,8 +2251,7 @@ pedantic_omit_one_operand (type, result, omitted)
    returns a truth value (0 or 1).  */
 
 tree
-invert_truthvalue (arg)
-     tree arg;
+invert_truthvalue (tree arg)
 {
   tree type = TREE_TYPE (arg);
   enum tree_code code = TREE_CODE (arg);
@@ -2455,16 +2364,13 @@ invert_truthvalue (arg)
    operands are another bit-wise operation with a common input.  If so,
    distribute the bit operations to save an operation and possibly two if
    constants are involved.  For example, convert
-   	(A | B) & (A | C) into A | (B & C)
+	(A | B) & (A | C) into A | (B & C)
    Further simplification will occur if B and C are constants.
 
    If this optimization cannot be done, 0 will be returned.  */
 
 static tree
-distribute_bit_expr (code, type, arg0, arg1)
-     enum tree_code code;
-     tree type;
-     tree arg0, arg1;
+distribute_bit_expr (enum tree_code code, tree type, tree arg0, tree arg1)
 {
   tree common;
   tree left, right;
@@ -2510,11 +2416,7 @@ distribute_bit_expr (code, type, arg0, arg1)
    starting at BITPOS.  The field is unsigned if UNSIGNEDP is nonzero.  */
 
 static tree
-make_bit_field_ref (inner, type, bitsize, bitpos, unsignedp)
-     tree inner;
-     tree type;
-     int bitsize, bitpos;
-     int unsignedp;
+make_bit_field_ref (tree inner, tree type, int bitsize, int bitpos, int unsignedp)
 {
   tree result = build (BIT_FIELD_REF, type, inner,
 		       size_int (bitsize), bitsize_int (bitpos));
@@ -2545,10 +2447,7 @@ make_bit_field_ref (inner, type, bitsize, bitpos, unsignedp)
    tree.  Otherwise we return zero.  */
 
 static tree
-optimize_bit_field_compare (code, compare_type, lhs, rhs)
-     enum tree_code code;
-     tree compare_type;
-     tree lhs, rhs;
+optimize_bit_field_compare (enum tree_code code, tree compare_type, tree lhs, tree rhs)
 {
   HOST_WIDE_INT lbitpos, lbitsize, rbitpos, rbitsize, nbitpos, nbitsize;
   tree type = TREE_TYPE (lhs);
@@ -2722,14 +2621,9 @@ optimize_bit_field_compare (code, compare_type, lhs, rhs)
    do anything with.  */
 
 static tree
-decode_field_reference (exp, pbitsize, pbitpos, pmode, punsignedp,
-			pvolatilep, pmask, pand_mask)
-     tree exp;
-     HOST_WIDE_INT *pbitsize, *pbitpos;
-     enum machine_mode *pmode;
-     int *punsignedp, *pvolatilep;
-     tree *pmask;
-     tree *pand_mask;
+decode_field_reference (tree exp, HOST_WIDE_INT *pbitsize, HOST_WIDE_INT *pbitpos,
+			enum machine_mode *pmode, int *punsignedp, int *pvolatilep,
+			tree *pmask, tree *pand_mask)
 {
   tree and_mask = 0;
   tree mask, inner, offset;
@@ -2784,9 +2678,7 @@ decode_field_reference (exp, pbitsize, pbitpos, pmode, punsignedp,
    bit positions.  */
 
 static int
-all_ones_mask_p (mask, size)
-     tree mask;
-     int size;
+all_ones_mask_p (tree mask, int size)
 {
   tree type = TREE_TYPE (mask);
   unsigned int precision = TYPE_PRECISION (type);
@@ -2811,9 +2703,7 @@ all_ones_mask_p (mask, size)
    or NULL_TREE otherwise.  */
 
 static tree
-sign_bit_p (exp, val)
-     tree exp;
-     tree val;
+sign_bit_p (tree exp, tree val)
 {
   unsigned HOST_WIDE_INT lo;
   HOST_WIDE_INT hi;
@@ -2857,8 +2747,7 @@ sign_bit_p (exp, val)
    to be evaluated unconditionally.  */
 
 static int
-simple_operand_p (exp)
-     tree exp;
+simple_operand_p (tree exp)
 {
   /* Strip any conversions that don't change the machine mode.  */
   while ((TREE_CODE (exp) == NOP_EXPR
@@ -2886,9 +2775,9 @@ simple_operand_p (exp)
    try to change a logical combination of comparisons into a range test.
 
    For example, both
-   	X == 2 || X == 3 || X == 4 || X == 5
+	X == 2 || X == 3 || X == 4 || X == 5
    and
-   	X >= 2 && X <= 5
+	X >= 2 && X <= 5
    are converted to
 	(unsigned) (X - 2) <= 3
 
@@ -2918,11 +2807,8 @@ simple_operand_p (exp)
    type if both are specified.  */
 
 static tree
-range_binop (code, type, arg0, upper0_p, arg1, upper1_p)
-     enum tree_code code;
-     tree type;
-     tree arg0, arg1;
-     int upper0_p, upper1_p;
+range_binop (enum tree_code code, tree type, tree arg0, int upper0_p, tree arg1,
+	     int upper1_p)
 {
   tree tem;
   int result;
@@ -2986,10 +2872,7 @@ range_binop (code, type, arg0, upper0_p, arg1, upper1_p)
    likely not be returning a useful value and range.  */
 
 static tree
-make_range (exp, pin_p, plow, phigh)
-     tree exp;
-     int *pin_p;
-     tree *plow, *phigh;
+make_range (tree exp, int *pin_p, tree *plow, tree *phigh)
 {
   enum tree_code code;
   tree arg0 = NULL_TREE, arg1 = NULL_TREE, type = NULL_TREE;
@@ -3254,11 +3137,7 @@ make_range (exp, pin_p, plow, phigh)
    on IN_P) the range.  */
 
 static tree
-build_range_check (type, exp, in_p, low, high)
-     tree type;
-     tree exp;
-     int in_p;
-     tree low, high;
+build_range_check (tree type, tree exp, int in_p, tree low, tree high)
 {
   tree etype = TREE_TYPE (exp);
   tree value;
@@ -3334,11 +3213,8 @@ build_range_check (type, exp, in_p, low, high)
    can, 0 if we can't.  Set the output range into the specified parameters.  */
 
 static int
-merge_ranges (pin_p, plow, phigh, in0_p, low0, high0, in1_p, low1, high1)
-     int *pin_p;
-     tree *plow, *phigh;
-     int in0_p, in1_p;
-     tree low0, high0, low1, high1;
+merge_ranges (int *pin_p, tree *plow, tree *phigh, int in0_p, tree low0, tree high0,
+	      int in1_p, tree low1, tree high1)
 {
   int no_overlap;
   int subset;
@@ -3474,8 +3350,7 @@ merge_ranges (pin_p, plow, phigh, in0_p, low0, high0, in1_p, low1, high1)
    merge it into some range test.  Return the new tree if so.  */
 
 static tree
-fold_range_test (exp)
-     tree exp;
+fold_range_test (tree exp)
 {
   int or_op = (TREE_CODE (exp) == TRUTH_ORIF_EXPR
 	       || TREE_CODE (exp) == TRUTH_OR_EXPR);
@@ -3547,11 +3422,7 @@ fold_range_test (exp)
    it is an INTEGER_CST that should be AND'ed with the extra bits.  */
 
 static tree
-unextend (c, p, unsignedp, mask)
-     tree c;
-     int p;
-     int unsignedp;
-     tree mask;
+unextend (tree c, int p, int unsignedp, tree mask)
 {
   tree type = TREE_TYPE (c);
   int modesize = GET_MODE_BITSIZE (TYPE_MODE (type));
@@ -3611,14 +3482,12 @@ unextend (c, p, unsignedp, mask)
    We return the simplified tree or 0 if no optimization is possible.  */
 
 static tree
-fold_truthop (code, truth_type, lhs, rhs)
-     enum tree_code code;
-     tree truth_type, lhs, rhs;
+fold_truthop (enum tree_code code, tree truth_type, tree lhs, tree rhs)
 {
   /* If this is the "or" of two comparisons, we can do something if
      the comparisons are NE_EXPR.  If this is the "and", we can do something
      if the comparisons are EQ_EXPR.  I.e.,
-     	(a->b == 2 && a->c == 4) can become (a->new == NEW).
+	(a->b == 2 && a->c == 4) can become (a->new == NEW).
 
      WANTED_CODE is this operation code.  For single bit fields, we can
      convert EQ_EXPR to NE_EXPR so we need not reject the "wrong"
@@ -4037,8 +3906,7 @@ fold_truthop (code, truth_type, lhs, rhs)
    constant.  */
 
 static tree
-optimize_minmax_comparison (t)
-     tree t;
+optimize_minmax_comparison (tree t)
 {
   tree type = TREE_TYPE (t);
   tree arg0 = TREE_OPERAND (t, 0);
@@ -4149,11 +4017,7 @@ optimize_minmax_comparison (t)
    original computation, but need not be in the original type.  */
 
 static tree
-extract_muldiv (t, c, code, wide_type)
-     tree t;
-     tree c;
-     enum tree_code code;
-     tree wide_type;
+extract_muldiv (tree t, tree c, enum tree_code code, tree wide_type)
 {
   /* To avoid exponential search depth, refuse to allow recursion past
      three levels.  Beyond that (1) it's highly unlikely that we'll find
@@ -4174,11 +4038,7 @@ extract_muldiv (t, c, code, wide_type)
 }
 
 static tree
-extract_muldiv_1 (t, c, code, wide_type)
-     tree t;
-     tree c;
-     enum tree_code code;
-     tree wide_type;
+extract_muldiv_1 (tree t, tree c, enum tree_code code, tree wide_type)
 {
   tree type = TREE_TYPE (t);
   enum tree_code tcode = TREE_CODE (t);
@@ -4464,9 +4324,7 @@ extract_muldiv_1 (t, c, code, wide_type)
    that we may sometimes modify the tree.  */
 
 static tree
-strip_compound_expr (t, s)
-     tree t;
-     tree s;
+strip_compound_expr (tree t, tree s)
 {
   enum tree_code code = TREE_CODE (t);
 
@@ -4499,9 +4357,7 @@ strip_compound_expr (t, s)
    1), and is of the indicated TYPE.  */
 
 static tree
-constant_boolean_node (value, type)
-     int value;
-     tree type;
+constant_boolean_node (int value, tree type)
 {
   if (type == integer_type_node)
     return value ? integer_one_node : integer_zero_node;
@@ -4522,9 +4378,7 @@ constant_boolean_node (value, type)
    we don't care (to avoid spending too much time on complex expressions.).  */
 
 static int
-count_cond (expr, lim)
-     tree expr;
-     int lim;
+count_cond (tree expr, int lim)
 {
   int ctrue, cfalse;
 
@@ -4547,12 +4401,7 @@ count_cond (expr, lim)
    original expression.  */
 
 static tree
-fold_binary_op_with_conditional_arg (code, type, cond, arg, cond_first_p)
-     enum tree_code code;
-     tree type;
-     tree cond;
-     tree arg;
-     int cond_first_p;
+fold_binary_op_with_conditional_arg (enum tree_code code, tree type, tree cond, tree arg, int cond_first_p)
 {
   tree test, true_value, false_value;
   tree lhs = NULL_TREE;
@@ -4693,9 +4542,7 @@ fold_binary_op_with_conditional_arg (code, type, cond, arg, cond_first_p)
    modes, X + 0 is not the same as X because -0 + 0 is 0.  */
 
 static bool
-fold_real_zero_addition_p (type, addend, negate)
-     tree type, addend;
-     int negate;
+fold_real_zero_addition_p (tree type, tree addend, int negate)
 {
   if (!real_zerop (addend))
     return false;
@@ -4732,10 +4579,7 @@ fold_real_zero_addition_p (type, addend, negate)
    can be made, and NULL_TREE otherwise.  */
 
 static tree
-fold_mathfn_compare (fcode, code, type, arg0, arg1)
-     enum built_in_function fcode;
-     enum tree_code code;
-     tree type, arg0, arg1;
+fold_mathfn_compare (enum built_in_function fcode, enum tree_code code, tree type, tree arg0, tree arg1)
 {
   REAL_VALUE_TYPE c;
 
@@ -4869,9 +4713,7 @@ fold_mathfn_compare (fcode, code, type, arg0, arg1)
    can be made, and NULL_TREE otherwise.  */
 
 static tree
-fold_inf_compare (code, type, arg0, arg1)
-     enum tree_code code;
-     tree type, arg0, arg1;
+fold_inf_compare (enum tree_code code, tree type, tree arg0, tree arg1)
 {
   enum machine_mode mode;
   REAL_VALUE_TYPE max;
@@ -4950,8 +4792,7 @@ fold_inf_compare (code, type, arg0, arg1)
    but we can constant-fold them if they have constant operands.  */
 
 tree
-fold (expr)
-     tree expr;
+fold (tree expr)
 {
   tree t = expr;
   tree t1 = NULL_TREE;
@@ -5342,7 +5183,7 @@ fold (expr)
 		{
 		  tree uns = (*lang_hooks.types.unsigned_type) (TREE_TYPE (and0));
 		  and0 = convert (uns, and0);
-	  	  and1 = convert (uns, and1);
+		  and1 = convert (uns, and1);
 		}
 #endif
 	    }
@@ -5409,7 +5250,7 @@ fold (expr)
 	  tree targ0 = strip_float_extensions (arg0);
 	  if (targ0 != arg0)
 	    return convert (type, build1 (NEGATE_EXPR, TREE_TYPE (targ0), targ0));
-			   
+
 	}
 
       /* Convert - (a - b) to (b - a) for non-floating-point.  */
@@ -5583,15 +5424,15 @@ fold (expr)
 	      if (TREE_CODE (parg0) == MULT_EXPR
 		  && TREE_CODE (parg1) != MULT_EXPR)
 		return fold (build (PLUS_EXPR, type,
-				    fold (build (PLUS_EXPR, type, 
-						 convert (type, parg0), 
+				    fold (build (PLUS_EXPR, type,
+						 convert (type, parg0),
 						 convert (type, marg))),
 				    convert (type, parg1)));
 	      if (TREE_CODE (parg0) != MULT_EXPR
 		  && TREE_CODE (parg1) == MULT_EXPR)
 		return fold (build (PLUS_EXPR, type,
-				    fold (build (PLUS_EXPR, type, 
-						 convert (type, parg1), 
+				    fold (build (PLUS_EXPR, type,
+						 convert (type, parg1),
 						 convert (type, marg))),
 				    convert (type, parg0)));
 	    }
@@ -6235,8 +6076,8 @@ fold (expr)
 	{
 	  return fold (build (MULT_EXPR, type,
 			      build (RDIV_EXPR, type, arg0,
-			     	     TREE_OPERAND (arg1, 0)),
-	 		      TREE_OPERAND (arg1, 1)));
+				     TREE_OPERAND (arg1, 0)),
+			      TREE_OPERAND (arg1, 1)));
 	}
 
       if (flag_unsafe_math_optimizations)
@@ -7373,7 +7214,7 @@ fold (expr)
 
       /* Optimize comparisons of strlen vs zero to a compare of the
 	 first character of the string vs zero.  To wit,
-	 	strlen(ptr) == 0   =>  *ptr == 0
+		strlen(ptr) == 0   =>  *ptr == 0
 		strlen(ptr) != 0   =>  *ptr != 0
 	 Other cases should reduce to one of these two (or a constant)
 	 due to the return value of strlen being unsigned.  */
@@ -7969,10 +7810,7 @@ fold (expr)
    transformed version).  */
 
 static int
-multiple_of_p (type, top, bottom)
-     tree type;
-     tree top;
-     tree bottom;
+multiple_of_p (tree type, tree top, tree bottom)
 {
   if (operand_equal_p (top, bottom, 0))
     return 1;
@@ -8039,8 +7877,7 @@ multiple_of_p (type, top, bottom)
 /* Return true if `t' is known to be non-negative.  */
 
 int
-tree_expr_nonnegative_p (t)
-     tree t;
+tree_expr_nonnegative_p (tree t)
 {
   switch (TREE_CODE (t))
     {
@@ -8238,8 +8075,7 @@ tree_expr_nonnegative_p (t)
    Only handles constants at the moment.  */
 
 int
-rtl_expr_nonnegative_p (r)
-     rtx r;
+rtl_expr_nonnegative_p (rtx r)
 {
   switch (GET_CODE (r))
     {
