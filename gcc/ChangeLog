@@ -1,3 +1,10 @@
+2002-03-14  Richard Earnshaw  <rearnsha@arm.com>
+	    Jeroen Dobbelaere  <jeroen.dobbelaere@acunia.com>
+
+	PR target/5828
+	* arm.c (arm_output_epilogue): Fix floating-point register save
+	adjustment when using a frame pointer.
+
 2002-03-14  Richard Sandiford  <rsandifo@redhat.com>
 
 	* config/mips/mips.h (FP_INC, UNITS_PER_FPVALUE): New macros.
