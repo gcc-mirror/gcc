@@ -92,4 +92,8 @@ extern void add_predicate (struct pred_data *);
 
 #define FOR_ALL_PREDICATES(p) for (p = first_predicate; p; p = p->next)
 
+/* This callback will be invoked whenever an rtl include directive is
+   processed.  To be used for creation of the dependency file.  */
+extern void (*include_callback) (const char *);
+
 #endif /* GCC_GENSUPPORT_H */
