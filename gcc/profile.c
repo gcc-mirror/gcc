@@ -260,6 +260,8 @@ get_exec_counts ()
   char *function_name_buffer;
   int function_name_buffer_len;
   gcov_type max_counter_in_run;
+  const char *name = IDENTIFIER_POINTER
+		      (DECL_ASSEMBLER_NAME (current_function_decl));
 
   profile_info.max_counter_in_program = 0;
   profile_info.count_profiles_merged = 0;
@@ -282,7 +284,7 @@ get_exec_counts ()
 
   profile = xmalloc (sizeof (gcov_type) * num_edges);
   rewind (da_file);
-  function_name_buffer_len = strlen (current_function_name) + 1;
+  function_name_buffer_len = strlen (name) + 1;
   function_name_buffer = xmalloc (function_name_buffer_len + 1);
 
   for (i = 0; i < num_edges; i++)
@@ -349,7 +351,7 @@ get_exec_counts ()
 	      break;
 	    }
 
-	  if (strcmp (function_name_buffer, current_function_name) != 0)
+	  if (strcmp (function_name_buffer, name) != 0)
 	    {
 	      /* skip */
 	      if (fseek (da_file, arc_count * 8, SEEK_CUR) < 0)
@@ -772,6 +774,8 @@ branch_prob ()
   int i;
   int num_edges, ignored_edges;
   struct edge_list *el;
+  const char *name = IDENTIFIER_POINTER
+		       (DECL_ASSEMBLER_NAME (current_function_decl));
 
   profile_info.current_function_cfg_checksum = compute_checksum ();
 
@@ -781,7 +785,7 @@ branch_prob ()
 
   /* Start of a function.  */
   if (flag_test_coverage)
-    output_gcov_string (current_function_name, (long) -2);
+    output_gcov_string (name, (long) -2);
 
   total_num_times_called++;
 
@@ -995,8 +999,7 @@ branch_prob ()
     {
       int flag_bits;
 
-      __write_gcov_string (current_function_name,
-		           strlen (current_function_name), bbg_file, -1);
+      __write_gcov_string (name, strlen (name), bbg_file, -1);
 
       /* write checksum.  */
       __write_long (profile_info.current_function_cfg_checksum, bbg_file, 4);
