@@ -95,6 +95,12 @@ BEGIN {
 '${prepend_logs+"  system(\"cat $prepend_logs\"); "}'
 }
 $1 ~ /\/configure$/ {
+    srcdir = $1;
+    gsub(/\/configure$/, "", srcdir);
+    printf "LAST_UPDATED: ";
+    system("tail -1 " srcdir "/LAST_UPDATED");
+    print "";
+
     $1 = "configure flags:"; configflags = $0;
     gsub(/--with-gcc-version-trigger=[^ ]* /, "", configflags);
     gsub(/ --norecursion/, "", configflags)
