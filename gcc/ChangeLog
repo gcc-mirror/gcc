@@ -1,3 +1,7 @@
+2004-02-23  James E Wilson  <wilson@specifixinc.com>
+
+	* calls.c (preompute_arguments): Update comment.
+
 2004-02-23  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* et-forest.c: Replace et_occurences with et_occurrences.
