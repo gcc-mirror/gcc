@@ -21,6 +21,7 @@ details.  */
 
 /* This is wrong, because it pollutes the name-space too much! */
 #include <gcj/javaprims.h>
+#include <gcj/array.h>
 
 typedef struct _Jv_JNIEnv JNIEnv;
 typedef struct _Jv_JavaVM JavaVM;
