@@ -1,5 +1,17 @@
 2003-01-31  Tom Tromey  <tromey@redhat.com>
 
+	* Makefile.in: Rebuilt.
+	* Makefile.am (cond_x_ltlibrary): Renamed library to
+	lib-gnu-awt-xlib.la.
+	(lib_gnu_awt_xlib_la_SOURCES): Renamed.
+	(EXTRA_lib_gnu_awt_xlib_la_SOURCES): Likewise.
+	(lib_gnu_awt_xlib_la_DEPENDENCIES): Likewise.
+	(lib_gnu_awt_xlib_la_LIBADD): Likewise.
+	(lib_gnu_awt_xlib_la_LDFLAGS): Likewise.
+	(lib_gnu_awt_xlib_la_LINK): Likewise.
+	(install-exec-hook): Removed.
+	(lib-gnu-awt-xlib.la): Renamed.
+
 	* aclocal.m4, configure, include/config.h.in: Rebuilt.
 	* acinclude.m4 (CHECK_FOR_BROKEN_MINGW_LD): Moved from
 	aclocal.m4.

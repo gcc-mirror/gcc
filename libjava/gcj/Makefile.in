@@ -129,6 +129,9 @@ here = @here@
 libgcj_basedir = @libgcj_basedir@
 mkinstalldirs = @mkinstalldirs@
 tool_include_dir = @tool_include_dir@
+toolexecdir = @toolexecdir@
+toolexeclibdir = @toolexeclibdir@
+toolexecmainlibdir = @toolexecmainlibdir@
 
 AUTOMAKE_OPTIONS = foreign
 
