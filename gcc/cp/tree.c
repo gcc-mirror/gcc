@@ -28,12 +28,6 @@ Boston, MA 02111-1307, USA.  */
 #include "rtl.h"
 #include "toplev.h"
 
-#ifdef __STDC__
-#include <stdarg.h>
-#else
-#include <varargs.h>
-#endif
-
 extern void compiler_error ();
 
 static tree get_identifier_list PROTO((tree));

@@ -1,3 +1,38 @@
+Wed Aug 26 10:53:03 1998  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* system.h: Include stdarg.h/varargs.h, make sure they are ordered
+ 	correctly with regards to stdio.h.
+	
+	* calls.c: Remove stdarg.h/varargs.h.
+	* cccp.c: Likewise.
+	* cexp.y: Likewise.
+	* combine.c: Likewise.
+	* cpperror.c: Likewise.
+	* cpplib.c: Likewise.
+	* cpplib.h: Likewise.
+	* doprint.c: Likewise.
+	* emit-rtl.c: Likewise.
+	* final.c: Likewise.
+	* fix-header.c: Likewise.
+	* gcc.c: Likewise.
+	* genattr.c: Likewise.
+	* genattrtab.c: Likewise.
+	* gencodes.c: Likewise.
+	* genconfig.c: Likewise.
+	* genemit.c: Likewise.
+	* genextract.c: Likewise.
+	* genflags.c: Likewise.
+	* genopinit.c: Likewise.
+	* genoutput.c: Likewise.
+	* genpeep.c: Likewise.
+	* genrecog.c: Likewise.
+	* mips-tfile.c: Likewise.
+	* prefix.c: Likewise.
+	* protoize.c: Likewise.
+	* regmove.c: Likewise.
+	* toplev.c: Likewise.
+	* tree.c: Likewise.
+
 Wed Aug 26 05:09:27 1998  Jakub Jelinek  <jj@sunsite.ms.mff.cuni.cz>
 
 	* config/sparc/sparc.c (sparc_override_options): If not

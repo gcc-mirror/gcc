@@ -1,3 +1,8 @@
+Wed Aug 26 10:54:51 1998  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* errfn.c: Remove stdarg.h/varargs.h.
+	* tree.c: Likewise.
+
 1998-08-25  Brendan Kehoe  <brendan@cygnus.com>
 
 	* pt.c (tsubst_copy): Only do typename overloading on an

@@ -75,16 +75,8 @@ Boston, MA 02111-1307, USA.  */
    combine anyway.  */
 
 #include "config.h"
-#ifdef __STDC__
-#include <stdarg.h>
-#else
-#include <varargs.h>
-#endif
-
-/* stdio.h must precede rtl.h for FFS.  */
 #include "system.h"
-
-#include "rtl.h"
+#include "rtl.h" /* stdio.h must precede rtl.h for FFS.  */
 #include "flags.h"
 #include "regs.h"
 #include "hard-reg-set.h"

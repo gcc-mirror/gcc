@@ -26,11 +26,6 @@ Boston, MA 02111-1307, USA.
    
 %{
 #include "config.h"
-#ifdef __STDC__
-# include <stdarg.h>
-#else
-# include <varargs.h>
-#endif
 
 #define PRINTF_PROTO(ARGS, m, n) PVPROTO (ARGS) ATTRIBUTE_PRINTF(m, n)
 

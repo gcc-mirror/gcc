@@ -22,11 +22,6 @@
 #line 27 "cexp.y"
 
 #include "config.h"
-#ifdef __STDC__
-# include <stdarg.h>
-#else
-# include <varargs.h>
-#endif
 
 #define PRINTF_PROTO(ARGS, m, n) PVPROTO (ARGS) ATTRIBUTE_PRINTF(m, n)
 

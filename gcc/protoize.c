@@ -57,11 +57,6 @@ Boston, MA 02111-1307, USA.  */
 #define _POSIX_SOURCE
 #endif
 
-#ifdef __STDC__
-#include <stdarg.h>
-#else
-#include <varargs.h>
-#endif
 #include "system.h"
 #include <sys/stat.h>
 #if ! defined (_WIN32) || defined (__CYGWIN32__)
