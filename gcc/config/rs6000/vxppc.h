@@ -22,9 +22,15 @@ Boston, MA 02111-1307, USA.  */
 
 #include "rs6000/sysv4.h"
 
+/* ??? This file redefines CPP_SPEC which is wrong.  It should instead define
+   one of the extra specs that gets included in CPP_SPEC.  For instance,
+   CPP_OS_DEFAULT_SPEC.  The mrelocatable line was copied from CPP_SYSV_SPEC.
+   There is probably other stuff missing.  */
+
 #undef CPP_SPEC
 #define CPP_SPEC "\
 %{posix: -D_POSIX_SOURCE} \
+%{mrelocatable*: -D_RELOCATABLE} \
 %{!mcpu*: \
   %{mpowerpc*: -D_ARCH_PPC -DCPU=PPC603} \
   %{!mno-powerpc: -D_ARCH_PPC -DCPU=PPC603}} \
