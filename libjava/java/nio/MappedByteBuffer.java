@@ -1,5 +1,5 @@
 /* MappedByteBuffer.java -- 
-   Copyright (C) 2002 Free Software Foundation, Inc.
+   Copyright (C) 2002, 2004  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -39,7 +39,7 @@ exception statement from your version. */
 package java.nio;
 
 /**
- * @author Michael Koch
+ * @author Michael Koch (konqueror@gmx.de)
  * @since 1.4
  */
 public abstract class MappedByteBuffer extends ByteBuffer
