@@ -1,3 +1,12 @@
+2003-07-28  Phil Edwards  <pme@gcc.gnu.org>
+
+	* testsuite/22_locale/messages/members/char/1.cc,
+	testsuite/22_locale/messages/members/char/2.cc,
+	testsuite/22_locale/messages/members/char/3.cc,
+	testsuite/22_locale/messages_byname/1.cc:  Update comment regarding
+	the origin of LOCALEDIR.
+	* testsuite/lib/libstdc++-v3.exp:  New file.
+
 2003-07-25  Benjamin Kosnik  <bkoz@redhat.com>
 
 	* include/bits/char_traits.h: Update copyright, tweak.

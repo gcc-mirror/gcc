@@ -31,7 +31,7 @@ void test01()
 
   bool test = true;
   string str;
-  // This is exported through RUNTESTFLAGS in testsuite/Makefile.am.
+  // This is defined through CXXFLAGS in scripts/testsuite_flags[.in].
   const char* dir = LOCALEDIR;
   locale loc_c = locale::classic();
 
