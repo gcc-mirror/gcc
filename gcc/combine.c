@@ -624,7 +624,7 @@ combine_instructions (f, nregs)
 	      /* If the linked insn has been replaced by a note, then there
 		 is no point in pursuing this chain any further.  */
 	      if (GET_CODE (link) == NOTE)
-		break;
+		continue;
 
 	      for (nextlinks = LOG_LINKS (link);
 		   nextlinks;
