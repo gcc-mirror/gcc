@@ -1,3 +1,8 @@
+2003-11-06  Ulrich Weigand  <uweigand@de.ibm.com>
+
+	* config/s390/s390.c (s390_emit_epilogue): Recognize more cases
+	where register 14 will be saved.
+
 2003-11-06  Geoffrey Keating  <geoffk@apple.com>
 
 	* config/rs6000/rs6000.h (USE_FP_FOR_ARG_P): Move to rs6000.c.
