@@ -414,6 +414,24 @@ ffeintrin_check_ (ffeintrinImp imp, ffebldOp op,
 		: firstarg_kt;
 	      break;
 
+	    case 'N':
+	      /* Accept integers and logicals not wider than the default integer/logical.  */
+	      if (ffeinfo_basictype (i) == FFEINFO_basictypeINTEGER)
+		{
+		  okay &= anynum || (ffeinfo_kindtype (i) == FFEINFO_kindtypeINTEGER1
+					|| ffeinfo_kindtype (i) == FFEINFO_kindtypeINTEGER2
+					|| ffeinfo_kindtype (i) == FFEINFO_kindtypeINTEGER3);
+		  akt = FFEINFO_kindtypeINTEGER1;	/* The default.  */
+		}
+	      else if (ffeinfo_basictype (i) == FFEINFO_basictypeLOGICAL)
+		{
+		  okay &= anynum || (ffeinfo_kindtype (i) == FFEINFO_kindtypeLOGICAL1
+					|| ffeinfo_kindtype (i) == FFEINFO_kindtypeLOGICAL2
+					|| ffeinfo_kindtype (i) == FFEINFO_kindtypeLOGICAL3);
+		  akt = FFEINFO_kindtypeLOGICAL1;	/* The default.  */
+		}
+	      break;
+
 	    case '*':
 	    default:
 	      break;
