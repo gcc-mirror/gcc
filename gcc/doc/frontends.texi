@@ -11,7 +11,7 @@
 @cindex Java
 @cindex Ada
 @cindex treelang
-Several versions of the compiler (C, C++, Objective-C, Ada, 
+Several versions of the compiler (C, C++, Objective-C, Ada,
 Fortran, Java and treelang) are integrated; this is why we use the name
 ``GNU Compiler Collection''.  GCC can compile programs written in any of these
 languages.  The Ada, Fortran, Java and treelang compilers are described in

@@ -152,7 +152,7 @@ We recommend you browse the entire generic installation instructions before
 you proceed.
 
 Lists of successful builds for released versions of GCC are
-available at @uref{http://gcc.gnu.org/buildstat.html}. 
+available at @uref{http://gcc.gnu.org/buildstat.html}.
 These lists are updated as new information becomes available.
 
 The installation procedure itself is broken into five steps.
@@ -256,7 +256,7 @@ use @command{bash} to be sure.  Then set @env{CONFIG_SHELL} in your
 environment to your ``good'' shell prior to running
 @command{configure}/@command{make}.
 
-@command{zsh} is not a fully compliant POSIX shell and will not 
+@command{zsh} is not a fully compliant POSIX shell and will not
 work when configuring GCC.
 
 @item GNU binutils
@@ -980,7 +980,7 @@ If you configure with @option{--enable-generated-files-in-srcdir} then those
 generated files will go into the source directory.  This is mainly intended
 for generating release or prerelease tarballs of the GCC sources, since it
 is not a requirement that the users of source releases to have flex, bison, or
-makeinfo.  
+makeinfo.
 
 @item --enable-version-specific-runtime-libs
 Specify
@@ -1091,7 +1091,7 @@ without optimization.
 @item --enable-gather-detailed-mem-stats
 When this option is specified more detailed information on memory
 allocation is gathered.  This information is printed when using
-@option{-fmem-report}. 
+@option{-fmem-report}.
 
 @item --enable-nls
 @itemx --disable-nls
@@ -1205,7 +1205,7 @@ corresponding @option{--without} option.
 Now that GCC is configured, you are ready to build the compiler and
 runtime libraries.
 
-We @strong{highly} recommend that GCC be built using GNU make; 
+We @strong{highly} recommend that GCC be built using GNU make;
 other versions may work, then again they might not.
 GNU make is required for compiling GNAT (the Ada compiler) and the Java
 runtime library.
@@ -1537,7 +1537,7 @@ Finally, you can run the testsuite (which may take a long time):
 This will test various components of GCC, such as compiler
 front ends and runtime libraries.  While running the testsuite, DejaGnu
 might emit some harmless messages resembling
-@samp{WARNING: Couldn't find the global config file.} or 
+@samp{WARNING: Couldn't find the global config file.} or
 @samp{WARNING: Couldn't find tool init file} that can be ignored.
 
 @section How can I run the test suite on selected tests?
@@ -1662,8 +1662,8 @@ the libjava testsuite at @file{libjava/testsuite/libjava.jacks/jacks}.
 The result of running the testsuite are various @file{*.sum} and @file{*.log}
 files in the testsuite subdirectories.  The @file{*.log} files contain a
 detailed log of the compiler invocations and the corresponding
-results, the @file{*.sum} files summarize the results.  These summaries 
-contain status codes for all tests: 
+results, the @file{*.sum} files summarize the results.  These summaries
+contain status codes for all tests:
 
 @itemize @bullet
 @item
@@ -1915,7 +1915,7 @@ OpenServer/Unixware}.
 
 @item
 Sinix/Reliant Unix---@uref{ftp://ftp.fujitsu-siemens.com/pub/pd/gnu/gcc/,,Siemens}.
- 
+
 @item
 Solaris 2 (SPARC, Intel)---@uref{http://www.sunfreeware.com/,,Sunfreeware}.
 
@@ -2690,7 +2690,7 @@ A modern bintuils (as well as a plethora of other development related
 GNU utilities) can be found in Support Level Supplement OSS658A, the
 "GNU Development Tools" package.  See the SCO web and ftp sites for details.
 That package also contains the currently "officially supported" version of
-GCC, version 2.95.3.  It is useful for bootstrapping this version.  
+GCC, version 2.95.3.  It is useful for bootstrapping this version.
 
 @html
 <hr />
@@ -3234,7 +3234,7 @@ zSeries system (64-bit) running GNU/Linux for zSeries@.
 <hr />
 @end html
 @heading @anchor{s390x-ibm-tpf*}s390x-ibm-tpf*
-zSeries system (64-bit) running TPF.  This platform is 
+zSeries system (64-bit) running TPF.  This platform is
 supported as cross-compilation target only.
 
 @html
@@ -3495,7 +3495,7 @@ to do so.
 GCC's exception handling runtime requires a special ``configlette''
 module, @file{contrib/gthr_supp_vxw_5x.c}.  Follow the instructions in
 that file to add the module to your kernel build.  (Future versions of
-VxWorks will incorporate this module.)  
+VxWorks will incorporate this module.)
 
 @html
 <hr />
