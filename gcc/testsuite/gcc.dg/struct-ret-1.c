@@ -1,5 +1,6 @@
 /* { dg-do run { target hppa*-*-* } } */
 /* { dg-options { -O2 } { target hppa*-*-* } } */
+extern void abort (void);
 extern void exit (int);
 typedef struct {
         int             x;
