@@ -45,7 +45,7 @@ Boston, MA 02111-1307, USA.  */
 { "console",		  0, N_("Create console application") },\
 { "dll",		  0, N_("Generate code for a DLL") },	\
 { "nop-fun-dllimport",	  MASK_NOP_FUN_DLLIMPORT,		\
-  N_("Ignore dllimport for functions") }, 			\
+  N_("Ignore dllimport for functions") },			\
 { "no-nop-fun-dllimport", -MASK_NOP_FUN_DLLIMPORT, "" },	\
 { "threads",		  0, N_("Use Mingw-specific thread support") },
 
@@ -94,7 +94,7 @@ Boston, MA 02111-1307, USA.  */
    Do not define this macro if it does not need to do anything.  */
 
 #undef  SUBTARGET_EXTRA_SPECS
-#define SUBTARGET_EXTRA_SPECS 						\
+#define SUBTARGET_EXTRA_SPECS						\
   { "mingw_include_path", DEFAULT_TARGET_MACHINE }
 
 #undef MATH_LIBRARY
@@ -130,7 +130,7 @@ drectve_section ()							\
       in_section = in_drectve;						\
     }									\
 }
-void drectve_section PARAMS ((void));
+void drectve_section (void);
 
 /* Switch to SECTION (an `enum in_section').
 
@@ -138,21 +138,19 @@ void drectve_section PARAMS ((void));
    The problem is that we want to temporarily switch sections in
    ASM_DECLARE_OBJECT_NAME and then switch back to the original section
    afterwards.  */
-#define SWITCH_TO_SECTION_FUNCTION 				\
-void switch_to_section PARAMS ((enum in_section, tree));        \
-void 								\
-switch_to_section (section, decl) 				\
-     enum in_section section; 					\
-     tree decl; 						\
-{ 								\
-  switch (section) 						\
-    { 								\
-      case in_text: text_section (); break; 			\
-      case in_data: data_section (); break; 			\
-      case in_named: named_section (decl, NULL, 0); break; 	\
-      case in_drectve: drectve_section (); break; 		\
-      default: abort (); break; 				\
-    } 								\
+#define SWITCH_TO_SECTION_FUNCTION				\
+void switch_to_section (enum in_section, tree);			\
+void								\
+switch_to_section (enum in_section section, tree decl)		\
+{								\
+  switch (section)						\
+    {								\
+      case in_text: text_section (); break;			\
+      case in_data: data_section (); break;			\
+      case in_named: named_section (decl, NULL, 0); break;	\
+      case in_drectve: drectve_section (); break;		\
+      default: abort (); break;				\
+    }								\
 }
 
 /* Don't allow flag_pic to propagate since gas may produce invalid code
@@ -173,15 +171,15 @@ do {									\
    differently depending on something about the variable or
    function named by the symbol (such as what section it is in).
 
-   On i386 running Windows NT, modify the assembler name with a suffix 
+   On i386 running Windows NT, modify the assembler name with a suffix
    consisting of an atsign (@) followed by string of digits that represents
-   the number of bytes of arguments passed to the function, if it has the 
+   the number of bytes of arguments passed to the function, if it has the
    attribute STDCALL.
 
-   In addition, we must mark dll symbols specially. Definitions of 
-   dllexport'd objects install some info in the .drectve section.  
+   In addition, we must mark dll symbols specially. Definitions of
+   dllexport'd objects install some info in the .drectve section.
    References to dllimport'd objects are fetched indirectly via
-   _imp__.  If both are declared, dllexport overrides.  This is also 
+   _imp__.  If both are declared, dllexport overrides.  This is also
    needed to implement one-only vtables: they go into their own
    section and we need to set DECL_SECTION_NAME so we do that here.
    Note that we can be called twice on the same decl.  */
@@ -203,7 +201,7 @@ do {							\
     i386_pe_record_exported_symbol (NAME, 1);		\
   if (! i386_pe_dllimport_name_p (NAME))		\
     {							\
-      fprintf ((STREAM), "\t.comm\t"); 			\
+      fprintf ((STREAM), "\t.comm\t");			\
       assemble_name ((STREAM), (NAME));			\
       fprintf ((STREAM), ", %d\t%s %d\n",		\
 	       (int)(ROUNDED), ASM_COMMENT_START, (int)(SIZE));	\
@@ -212,7 +210,7 @@ do {							\
 
 /* Output the label for an initialized variable.  */
 #undef ASM_DECLARE_OBJECT_NAME
-#define ASM_DECLARE_OBJECT_NAME(STREAM, NAME, DECL) 	\
+#define ASM_DECLARE_OBJECT_NAME(STREAM, NAME, DECL)	\
 do {							\
   if (i386_pe_dllexport_name_p (NAME))			\
     i386_pe_record_exported_symbol (NAME, 1);		\
@@ -248,7 +246,7 @@ do {							\
    symbols must be explicitly imported from shared libraries (DLLs).  */
 #define MULTIPLE_SYMBOL_SPACES
 
-extern void i386_pe_unique_section PARAMS ((TREE, int));
+extern void i386_pe_unique_section (TREE, int);
 #define TARGET_ASM_UNIQUE_SECTION i386_pe_unique_section
 
 #define SUPPORTS_ONE_ONLY 1
@@ -328,12 +326,12 @@ extern void i386_pe_unique_section PARAMS ((TREE, int));
 
 /* External function declarations.  */
 
-extern void i386_pe_record_external_function PARAMS ((const char *));
-extern void i386_pe_declare_function_type PARAMS ((FILE *, const char *, int));
-extern void i386_pe_record_exported_symbol PARAMS ((const char *, int));
-extern void i386_pe_file_end PARAMS ((void));
-extern int i386_pe_dllexport_name_p PARAMS ((const char *));
-extern int i386_pe_dllimport_name_p PARAMS ((const char *));
+extern void i386_pe_record_external_function (const char *);
+extern void i386_pe_declare_function_type (FILE *, const char *, int);
+extern void i386_pe_record_exported_symbol (const char *, int);
+extern void i386_pe_file_end (void);
+extern int i386_pe_dllexport_name_p (const char *);
+extern int i386_pe_dllimport_name_p (const char *);
 
 /* For Win32 ABI compatibility */
 #undef DEFAULT_PCC_STRUCT_RETURN
