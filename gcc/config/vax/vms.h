@@ -95,23 +95,27 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
  * if we are running g++, and add the jsb if it is.  In gcc there should never
  * be a space in the function name, and in g++ there is always a "(" in the
  * function name, thus there should never be any confusion.
+ *
+ * Adjusting the stack pointer by 4 before calling C$MAIN_ARGS is required
+ * when linking with the VMS POSIX version of the C run-time library; using
+ * `subl2 $4,r0' is adequate but we use `clrl -(sp)' instead.  The extra 4
+ * bytes could be removed after the call because STARTING_FRAME_OFFSET's
+ * setting of -4 will end up adding them right back again, but don't bother.
  */
 #define MAYBE_VMS_FUNCTION_PROLOGUE(FILE)	\
 { extern char *current_function_name;		\
-  if (!strcmp ("main", current_function_name))	\
-    fprintf(FILE, "\tjsb _C$MAIN_ARGS\n"); 	\
-  else {					\
-    char *p = current_function_name;		\
-    while (*p != '\0')				\
-      if (*p == *__MAIN_NAME)			\
-        if (strncmp(p, __MAIN_NAME, (sizeof __MAIN_NAME)-1) == 0) {\
-          fprintf(FILE, "\tjsb _C$MAIN_ARGS\n");\
-          break;				\
-        } else					\
-          p++;					\
-      else					\
-        p++;					\
-     };						\
+  char *p = current_function_name;		\
+  int is_main = strcmp ("main", p) == 0;	\
+  while (!is_main && *p != '\0')		\
+    {						\
+       if (*p == *__MAIN_NAME			\
+	   && strncmp (p, __MAIN_NAME, sizeof __MAIN_NAME - sizeof "") == 0) \
+	 is_main = 1;				\
+       else					\
+	 p++;					\
+     }						\
+  if (is_main)					\
+    fprintf (FILE, "\t%s\n\t%s\n", "clrl -(sp)", "jsb _C$MAIN_ARGS");	\
 }
 
 /* This macro definition sets up a default value for `main' to return.  */
