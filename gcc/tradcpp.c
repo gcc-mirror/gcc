@@ -515,6 +515,8 @@ main (argc, argv)
   pending_dir *pend = (pending_dir *) xcalloc (argc, sizeof (pending_dir));
   int no_standard_includes = 0;
 
+  hex_init ();
+
 #ifdef RLIMIT_STACK
   /* Get rid of any avoidable limit on stack size.  */
   {

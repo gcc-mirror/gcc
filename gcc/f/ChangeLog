@@ -1,3 +1,9 @@
+Sun Dec 16 08:52:48 2001  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* lex.c (ffelex_backslash_, ffelex_cfebackslash_): Use hex_value.
+	* target.c (ffetarget_integerhex, ffetarget_typeless_hex): Use
+	hex_p/hex_value.
+
 2001-12-14  Roger Sayle <roger@eyesopen.com>
 
 	* com-rt.def: Use __builtin_sqrt instead of __builtin_fsqrt.

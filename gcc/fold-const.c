@@ -1170,13 +1170,7 @@ real_hex_to_f (s, mode)
     {
       if (ISXDIGIT (c))
 	{
-	  k = c & CHARMASK;
-	  if (k >= 'a' && k <= 'f')
-	    k = k - 'a' + 10;
-	  else if (k >= 'A')
-	    k = k - 'A' + 10;
-	  else
-	    k = k - '0';
+	  k = hex_value (c & CHARMASK);
 
 	  if ((high & 0xf0000000) == 0)
 	    {

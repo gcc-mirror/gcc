@@ -904,9 +904,10 @@ lex_number (str, len)
 	  /* It is not a decimal point.
 	     It should be a digit (perhaps a hex digit).  */
 
-	  if (ISDIGIT (c))
+	  if (ISDIGIT (c)
+	      || (base == 16 && ISXDIGIT (c)))
 	    {
-	      n = c - '0';
+	      n = hex_value (c);
 	    }
 	  else if (base <= 10 && (c == 'e' || c == 'E'))
 	    {
@@ -918,14 +919,6 @@ lex_number (str, len)
 	    {
 	      floatflag = AFTER_EXPON;
 	      break;   /* start of exponent */
-	    }
-	  else if (base == 16 && c >= 'a' && c <= 'f')
-	    {
-	      n = c - 'a' + 10;
-	    }
-	  else if (base == 16 && c >= 'A' && c <= 'F')
-	    {
-	      n = c - 'A' + 10;
 	    }
 	  else
 	    {
