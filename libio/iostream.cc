@@ -621,21 +621,21 @@ ostream& ostream::operator<<(double n)
 	// Do actual conversion.
 #if _G_HAVE_PRINTF_FP
 	{
-	  struct printf_info info = { prec: prec,
-				      width: width(0),
-				      spec: format_char,
-				      is_long_double: 0,
-				      is_short: 0,
-				      is_long: 0,
-				      alt: (flags() & ios::showpoint) != 0,
-				      space: 0,
-				      left: (flags() & ios::left) != 0,
-				      showsign: (flags() & ios::showpos) != 0,
-				      group: 0,
+	  struct printf_info info = { /* prec: */ prec,
+				      /* width: */ width(0),
+				      /* spec: */ format_char,
+				      /* is_long_double: */ 0,
+				      /* is_short: */ 0,
+				      /* is_long: */ 0,
+				      /* alt: */ (flags() & ios::showpoint) != 0,
+				      /* space: */ 0,
+				      /* left: */ (flags() & ios::left) != 0,
+				      /* showsign: */ (flags() & ios::showpos) != 0,
+				      /* group: */ 0,
 #if defined __GLIBC__ && __GLIBC__ >= 2
-				      extra: 0,
+				      /* extra: */ 0,
 #endif
-				      pad: fill()
+				      /* pad: */ fill()
 	  };
 	  const void *ptr = (const void *) &n;
 	  if (__printf_fp (rdbuf(), &info, &ptr) < 0)
@@ -724,21 +724,21 @@ ostream& ostream::operator<<(long double n)
 
 #if _G_HAVE_PRINTF_FP
       // Do actual conversion.
-      struct printf_info info = { prec: prec,
-				  width: width(0),
-				  spec: format_char,
-				  is_long_double: 1,
-				  is_short: 0,
-				  is_long: 0,
-				  alt: (flags() & ios::showpoint) != 0,
-				  space: 0,
-				  left: (flags() & ios::left) != 0,
-				  showsign: (flags() & ios::showpos) != 0,
-				  group: 0,
+      struct printf_info info = { /* prec: */ prec,
+				  /* width: */ width(0),
+				  /* spec: */ format_char,
+			          /* is_long_double: */ 1,
+				  /* is_short: */ 0,
+				  /* is_long: */ 0,
+				  /* alt: */ (flags() & ios::showpoint) != 0,
+				  /* space: */ 0,
+				  /* left: */ (flags() & ios::left) != 0,
+				  /* showsign: */ (flags() & ios::showpos) != 0,
+				  /* group: */ 0,
 #if defined __GLIBC__ && __GLIBC__ >= 2
-				  extra: 0,
+				  /* extra: */ 0,
 #endif
-				  pad: fill()
+				  /* pad: */ fill()
       };
 
       const void *ptr = (const void *) &n;
