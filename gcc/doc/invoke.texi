@@ -6220,6 +6220,8 @@ The local registers and the input registers (0--5) are still treated as
 With @option{-mno-flat} (the default), the compiler emits save/restore
 instructions (except for leaf functions) and is the normal mode of operation.
 
+These options are deprecated and will be deleted in a future GCC release.
+
 @item -mno-unaligned-doubles
 @itemx -munaligned-doubles
 @opindex mno-unaligned-doubles

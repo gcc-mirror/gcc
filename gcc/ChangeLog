@@ -1,3 +1,7 @@
+2004-02-02  Eric Botcazou  <ebotcazou@libertysurf.fr>
+
+	* doc/invoke.texi (SPARC options): Document that -mflat is deprecated.
+
 2004-02-01  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
 	* config/sparc/sol2-bi.h: Handle TARGET_CPU_ultrasparc3.
