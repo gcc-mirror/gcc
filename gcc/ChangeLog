@@ -1,3 +1,12 @@
+2003-10-29  David Edelsohn  <edelsohn@gnu.org>
+
+	* config/rs6000/rs6000.h (UNITS_PER_WORD): Revert to
+	!TARGET_POWERPC64.
+	(UNITS_PER_GPR_WORD): Delete.
+	(HARD_REGNO_NREGS): Revert to UNITS_PER_WORD.
+	(HARD_REGNO_MODE_OK): Same.
+	(CLASS_MAX_NREGS): Same.
+
 2003-10-29  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
 	* pa.h (ASM_COMMENT_START): Define.
