@@ -1,3 +1,13 @@
+2001-05-23  Jeff Sturm  <jsturm@one-point.com>
+
+	* java/net/natPlainDatagramSocketImpl.cc: Undefine bind if defined.
+	(_Jv_bind): New static function.
+	(bind): Use _Jv_bind.
+	* java/net/natPlainSocketImpl.cc: Undefine bind, connect if defined.
+	(_Jv_bind, _Jv_connect): New static functions.
+	(bind): Use _Jv_bind.
+	(connect): Use _Jv_connect.
+
 2001-05-23  Joseph S. Myers  <jsm28@cam.ac.uk>
 
 	* gij.cc (version): Update copyright year.

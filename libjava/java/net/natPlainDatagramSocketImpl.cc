@@ -1,4 +1,4 @@
-/* Copyright (C) 1999, 2000  Free Software Foundation
+/* Copyright (C) 1999, 2000, 2001  Free Software Foundation
 
    This file is part of libgcj.
 
@@ -34,6 +34,18 @@ details.  */
 #if HAVE_BSTRING_H
 // Needed for bzero, implicitly used by FD_ZERO on IRIX 5.2 
 #include <bstring.h>
+#endif
+
+// Avoid macro definitions of bind from system headers, e.g. on
+// Solaris 7 with _XOPEN_SOURCE.  FIXME
+static inline int
+_Jv_bind (int fd, struct sockaddr *addr, int addrlen)
+{
+  return ::bind (fd, addr, addrlen);
+}
+
+#ifdef bind
+#undef bind
 #endif
 
 #include <gcj/cni.h>
@@ -210,7 +222,7 @@ java::net::PlainDatagramSocketImpl::bind (jint lport,
   else
     throw new java::net::SocketException (JvNewStringUTF ("invalid length"));
 
-  if (::bind (fnum, ptr, len) == 0)
+  if (_Jv_bind (fnum, ptr, len) == 0)
     {
       socklen_t addrlen = sizeof(u);
       if (lport != 0)
