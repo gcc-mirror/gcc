@@ -3492,7 +3492,7 @@
 ;; with a ZAP.
 (define_split
   [(set (match_operand:DI 0 "register_operand" "")
-	(match_operator 1 "comparison_operator"
+	(match_operator:DI 1 "comparison_operator"
 			[(match_operand:DI 2 "register_operand" "")
 			 (match_operand:DI 3 "const_int_operand" "")]))
    (clobber (match_operand:DI 4 "register_operand" ""))]
@@ -4892,39 +4892,39 @@
 ;; expansion, so we must delay our address manipulations until after.
 
 (define_insn "reload_inqi_help"
-  [(set (match_operand:QI 0 "register_operand" "r")
+  [(set (match_operand:QI 0 "register_operand" "=r")
         (match_operand:QI 1 "memory_operand" "m"))
-   (clobber (match_operand:SI 2 "register_operand" "r"))]
+   (clobber (match_operand:SI 2 "register_operand" "=r"))]
   "! TARGET_BWX && (reload_in_progress || reload_completed)"
   "#")
 
 (define_insn "reload_inhi_help"
-  [(set (match_operand:HI 0 "register_operand" "r")
+  [(set (match_operand:HI 0 "register_operand" "=r")
         (match_operand:HI 1 "memory_operand" "m"))
-   (clobber (match_operand:SI 2 "register_operand" "r"))]
+   (clobber (match_operand:SI 2 "register_operand" "=r"))]
   "! TARGET_BWX && (reload_in_progress || reload_completed)"
   "#")
 
 (define_insn "reload_outqi_help"
-  [(set (match_operand:QI 0 "memory_operand" "m")
+  [(set (match_operand:QI 0 "memory_operand" "=m")
         (match_operand:QI 1 "register_operand" "r"))
-   (clobber (match_operand:SI 2 "register_operand" "r"))
-   (clobber (match_operand:SI 3 "register_operand" "r"))]
+   (clobber (match_operand:SI 2 "register_operand" "=r"))
+   (clobber (match_operand:SI 3 "register_operand" "=r"))]
   "! TARGET_BWX && (reload_in_progress || reload_completed)"
   "#")
 
 (define_insn "reload_outhi_help"
-  [(set (match_operand:HI 0 "memory_operand" "m")
+  [(set (match_operand:HI 0 "memory_operand" "=m")
         (match_operand:HI 1 "register_operand" "r"))
-   (clobber (match_operand:SI 2 "register_operand" "r"))
-   (clobber (match_operand:SI 3 "register_operand" "r"))]
+   (clobber (match_operand:SI 2 "register_operand" "=r"))
+   (clobber (match_operand:SI 3 "register_operand" "=r"))]
   "! TARGET_BWX && (reload_in_progress || reload_completed)"
   "#")
 
 (define_split
-  [(set (match_operand:QI 0 "register_operand" "r")
-        (match_operand:QI 1 "memory_operand" "m"))
-   (clobber (match_operand:SI 2 "register_operand" "r"))]
+  [(set (match_operand:QI 0 "register_operand" "")
+        (match_operand:QI 1 "memory_operand" ""))
+   (clobber (match_operand:SI 2 "register_operand" ""))]
   "! TARGET_BWX && reload_completed"
   [(const_int 0)]
   "
@@ -4937,9 +4937,9 @@
 }")
   
 (define_split
-  [(set (match_operand:HI 0 "register_operand" "r")
-        (match_operand:HI 1 "memory_operand" "m"))
-   (clobber (match_operand:SI 2 "register_operand" "r"))]
+  [(set (match_operand:HI 0 "register_operand" "")
+        (match_operand:HI 1 "memory_operand" ""))
+   (clobber (match_operand:SI 2 "register_operand" ""))]
   "! TARGET_BWX && reload_completed"
   [(const_int 0)]
   "
@@ -4952,10 +4952,10 @@
 }")
   
 (define_split
-  [(set (match_operand:QI 0 "memory_operand" "m")
-        (match_operand:QI 1 "register_operand" "r"))
-   (clobber (match_operand:SI 2 "register_operand" "r"))
-   (clobber (match_operand:SI 3 "register_operand" "r"))]
+  [(set (match_operand:QI 0 "memory_operand" "")
+        (match_operand:QI 1 "register_operand" ""))
+   (clobber (match_operand:SI 2 "register_operand" ""))
+   (clobber (match_operand:SI 3 "register_operand" ""))]
   "! TARGET_BWX && reload_completed"
   [(const_int 0)]
   "
@@ -4968,10 +4968,10 @@
 }")
 
 (define_split
-  [(set (match_operand:HI 0 "memory_operand" "m")
-        (match_operand:HI 1 "register_operand" "r"))
-   (clobber (match_operand:SI 2 "register_operand" "r"))
-   (clobber (match_operand:SI 3 "register_operand" "r"))]
+  [(set (match_operand:HI 0 "memory_operand" "")
+        (match_operand:HI 1 "register_operand" ""))
+   (clobber (match_operand:SI 2 "register_operand" ""))
+   (clobber (match_operand:SI 3 "register_operand" ""))]
   "! TARGET_BWX && reload_completed"
   [(const_int 0)]
   "
@@ -5218,9 +5218,9 @@
   "alpha_expand_prologue (); DONE;")
 
 (define_insn "init_fp"
-  [(set (match_operand:DI 0 "register_operand" "r")
+  [(set (match_operand:DI 0 "register_operand" "=r")
         (match_operand:DI 1 "register_operand" "r"))
-   (clobber (mem:BLK (match_operand:DI 2 "register_operand" "r")))]
+   (clobber (mem:BLK (match_operand:DI 2 "register_operand" "=r")))]
   ""
   "mov %1,%0")
 
@@ -5249,7 +5249,7 @@
 ;; the frame size into a register.  We use this pattern to ensure
 ;; we get lda instead of addq.
 (define_insn "nt_lda"
-  [(set (match_operand:DI 0 "register_operand" "r")
+  [(set (match_operand:DI 0 "register_operand" "=r")
 	(unspec:DI [(match_dup 0)
 		    (match_operand:DI 1 "const_int_operand" "n")] 6))]
   ""
