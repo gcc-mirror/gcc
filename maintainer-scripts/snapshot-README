@@ -2,7 +2,8 @@ gcc-ss-@RELEASE@ is now available on
   ftp://gcc.gnu.org/pub/gcc/snapshots/@RELEASE@/
 and on various mirrors, see http://gcc.gnu.org/mirrors.html for details.
 
-This snapshot has been generated from the GCC CVS @BRANCH@ branch.
+This snapshot has been generated from the GCC @BRANCH@ CVS branch
+with the following options: @EXPORT@
 
 You'll find:
 
