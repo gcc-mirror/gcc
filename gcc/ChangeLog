@@ -1,3 +1,31 @@
+2000-09-11  Richard Henderson  <rth@cygnus.com>
+
+	* config/ia64/ia64-protos.h (fr_nonimmediate_operand): Declare.
+	* config/ia64/ia64.c (fr_nonimmediate_operand): New.
+	(ia64_override_options): Prevent optimizing division for both
+	latency and throughput.
+	(rtx_needs_barrier): Handle frcpa.
+	* config/ia64/ia64.h (MASK_INLINE_DIV_LAT): New.
+	(MASK_INLINE_DIV_THR, TARGET_INLINE_DIV_LAT): New.
+	(TARGET_INLINE_DIV_THR, TARGET_INLINE_DIV): New.
+	(TARGET_SWITCHES): Add -minline-divide-min-latency and
+	-minline-divide-max-throughput.
+	(PREDICATE_CODES): Update.
+	* config/ia64/ia64.md (extendsidi2): Remove * from f case.
+	(zero_extendsidi2): Likewise.  Fix typo in f case insn.
+	(extendsfdf2): Add cases for gr<->fr and fr<->mem.
+	(extendsftf2): Likewise.
+	(extenddftf2): Likewise.
+	(fix_trunctfdi2_alts): New.
+	(fixuns_trunctfdi2_alts): New.
+	(madd*4): Rename from madd*3.
+	(divsi3, modsi3, udivsi3, umodsi3): New.
+	(divsi3_internal): New.
+	(divdi3, moddi3, udivdi3, umoddi3): New.
+	(divdi3_internal_lat, divdi3_internal_thr): New.
+	(multf3_alts, maddtf4_alts, nmaddtf4_alts): New.
+	(recip_approx): New.
+
 2000-09-11  Alexandre Oliva  <aoliva@redhat.com>
 
 	* print-rtl.c (debug_call_placeholder_verbose): New variable.
