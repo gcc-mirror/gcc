@@ -45,7 +45,18 @@ lambda_trans_matrix_new (int colsize, int rowsize)
   return ret;
 }
 
-/* Compute the inverse of the transformation.  */
+/* Return true if MAT is an identity matrix.  */
+
+bool
+lambda_trans_matrix_id_p (lambda_trans_matrix mat)
+{
+  if (LTM_ROWSIZE (mat) != LTM_COLSIZE (mat))
+    return false;
+  return lambda_matrix_id_p (LTM_MATRIX (mat), LTM_ROWSIZE (mat));
+}
+
+
+/* Compute the inverse of the transformation matrix MAT.  */
 
 lambda_trans_matrix 
 lambda_trans_matrix_inverse (lambda_trans_matrix mat)

@@ -29,8 +29,6 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include "cfglayout.h"
 #include "output.h"
 
-static struct loop * duplicate_loop (struct loops *, struct loop *,
-				     struct loop *);
 static void duplicate_subloops (struct loops *, struct loop *, struct loop *);
 static void copy_loops_to (struct loops *, struct loop **, int,
 			   struct loop *);
@@ -701,7 +699,7 @@ place_new_loop (struct loops *loops, struct loop *loop)
 
 /* Copies copy of LOOP as subloop of TARGET loop, placing newly
    created loop into LOOPS structure.  */
-static struct loop *
+struct loop *
 duplicate_loop (struct loops *loops, struct loop *loop, struct loop *target)
 {
   struct loop *cloop;

@@ -1,3 +1,53 @@
+2004-09-16  Daniel Berlin  <dberlin@dberlin.org>
+	
+	* cfgloop.h (duplicate_loop):  Add prototype.
+	* cfgloopmanip.c (duplicate_loop): Make non-static.
+	* lambda-code.c (perfect_nestify): Factor out test whether
+	we can handle this loop into separate function.
+	Call it.
+	(can_convert_to_perfect_nest): New function.
+	(replace_uses_of_x_with_y): Add modify_stmt call.
+	* tree-loop-linear.c (linear_transform_loops): Call
+	rewrite_into_loop_closed_ssa and free_df.
+
+2004-09-16  Daniel Berlin  <dberlin@dberlin.org>
+
+	* lambda-code.c (invariant_in_loop): is_gimple_min_invariant is
+	loop invariant as well.
+	(perfect_nestify): new function.
+	(gcc_loop_to_lambda_loop): New parameters to track lower bounds,
+	upper bounds, and steps. 
+	Set outerinductionvar properly.
+	(gcc_loopnest_to_lambda_loopnest): Add loops and need_perfect
+	parameters.
+	Return NULL if we need a perfect loop and can't make one.
+	(lambda_loopnest_to_gcc_loopnest): Correct algorithm.
+	(not_interesting_stmt): New function.
+	(phi_loop_edge_uses_def): Ditto.
+	(stmt_uses_phi_result): Ditto.
+	(stmt_is_bumper_for_loop): Ditto.
+	(perfect_nest_p): Ditto.
+	(nestify_update_pending_stmts): Ditto.
+	(replace_uses_of_x_with_y): Ditto.
+	(stmt_uses_op): Ditto.
+	(perfect_nestify): Ditto.
+	* lambda-mat.c (lambda_matrix_id_p): New function.
+	* lambda-trans.c (lambda_trans_matrix_id_p): Ditto.
+	* lambda.h: Update prototypes.
+	* tree-loop-linear (linear_transform_loop): Use new
+	perfect_nest_p. Detect and ignore identity transform.
+	* tree-ssa-loop.c (pass_linear_transform): Use TODO_write_loop_closed.
+
+2004-09-16  Sebastian Pop  <pop@cri.ensmp.fr>
+
+	* tree-loop-linear.c (gather_interchange_stats): Add more comments.
+	Gather also strides of accessed data.  Pass in the data references 
+	array.
+	(try_interchange_loops): Add a new heuristic for handling the temporal 
+	locality.  Pass in the data references array.
+	(linear_transform_loops): Pass the data references array to
+	try_interchange_loops.
+
 2004-09-16  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* doc/invoke.texi: Fix typos.  Follow spelling conventions.

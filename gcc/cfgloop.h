@@ -308,6 +308,8 @@ extern bool can_duplicate_loop_p (struct loop *loop);
 #define DLTHE_FLAG_UPDATE_FREQ	1	/* Update frequencies in
 					   duplicate_loop_to_header_edge.  */
 
+extern struct loop * duplicate_loop (struct loops *, struct loop *,
+				     struct loop *);
 extern int duplicate_loop_to_header_edge (struct loop *, edge, struct loops *,
 					  unsigned, sbitmap, edge, edge *,
 					  unsigned *, int);

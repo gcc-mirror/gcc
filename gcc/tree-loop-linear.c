@@ -55,22 +55,56 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
    transform matrix for locality purposes.
    TODO: Completion of partial transforms.  */
 
-/* Gather statistics for loop interchange.  Initializes SUM the sum of
-   all the data dependence distances carried by loop LOOP_NUMBER.
-   NB_DEPS_NOT_CARRIED_BY_LOOP is initialized to the number of
-   dependence relations for which the loop LOOP_NUMBER is not carrying
-   any dependence.  */
+/* Gather statistics for loop interchange.  LOOP_NUMBER is a relative
+   index in the considered loop nest.  The first loop in the
+   considered loop nest is FIRST_LOOP, and consequently the index of
+   the considered loop is obtained by FIRST_LOOP + LOOP_NUMBER.
+   
+   Initializes:
+   - DEPENDENCE_STEPS the sum of all the data dependence distances
+   carried by loop LOOP_NUMBER,
+
+   - NB_DEPS_NOT_CARRIED_BY_LOOP the number of dependence relations
+   for which the loop LOOP_NUMBER is not carrying any dependence,
+
+   - ACCESS_STRIDES the sum of all the strides in LOOP_NUMBER.
+
+   Example: for the following loop,
+
+   | loop_1 runs 1335 times
+   |   loop_2 runs 1335 times
+   |     A[{{0, +, 1}_1, +, 1335}_2]
+   |     B[{{0, +, 1}_1, +, 1335}_2]
+   |   endloop_2
+   |   A[{0, +, 1336}_1]
+   | endloop_1
+
+   gather_interchange_stats (in loop_1) will return 
+   DEPENDENCE_STEPS = 3002
+   NB_DEPS_NOT_CARRIED_BY_LOOP = 5
+   ACCESS_STRIDES = 10694
+
+   gather_interchange_stats (in loop_2) will return 
+   DEPENDENCE_STEPS = 3000
+   NB_DEPS_NOT_CARRIED_BY_LOOP = 7
+   ACCESS_STRIDES = 8010
+  */
 
 static void
 gather_interchange_stats (varray_type dependence_relations, 
+			  varray_type datarefs,
 			  unsigned int loop_number, 
-			  unsigned int *sum, 
-			  unsigned int *nb_deps_not_carried_by_loop)
+			  unsigned int first_loop,
+			  unsigned int *dependence_steps, 
+			  unsigned int *nb_deps_not_carried_by_loop, 
+			  unsigned int *access_strides)
 {
   unsigned int i;
 
-  *sum = 0;
+  *dependence_steps = 0;
   *nb_deps_not_carried_by_loop = 0;
+  *access_strides = 0;
+
   for (i = 0; i < VARRAY_ACTIVE_SIZE (dependence_relations); i++)
     {
       int dist;
@@ -78,11 +112,11 @@ gather_interchange_stats (varray_type dependence_relations,
 	(struct data_dependence_relation *) 
 	VARRAY_GENERIC_PTR (dependence_relations, i);
 
+      /* Compute the dependence strides.  */
+
       if (DDR_ARE_DEPENDENT (ddr) == chrec_dont_know)
 	{
-	  /* Some constants will need tweaking, but not something that should
-	     be user-accessible.  Thus, no --param.  */
-	  *sum += 100;
+	  (*dependence_steps) += 0;
 	  continue;
 	}
 
@@ -90,34 +124,64 @@ gather_interchange_stats (varray_type dependence_relations,
 	 is no reuse of the data.  */
       if (DDR_ARE_DEPENDENT (ddr) == chrec_known)
 	{
-	  /* Ditto on the no --param here */
-	  *sum += 1000;
+	  (*dependence_steps) += 0;
 	  continue;
 	}
 
       dist = DDR_DIST_VECT (ddr)[loop_number];
       if (dist == 0)
-	*nb_deps_not_carried_by_loop++;
+	(*nb_deps_not_carried_by_loop) += 1;
       else if (dist < 0)
-	*sum += -dist;
+	(*dependence_steps) += -dist;
       else
-	*sum += dist;
+	(*dependence_steps) += dist;
+    }
+
+  /* Compute the access strides.  */
+  for (i = 0; i < VARRAY_ACTIVE_SIZE (datarefs); i++)
+    {
+      unsigned int it;
+      struct data_reference *dr = VARRAY_GENERIC_PTR (datarefs, i);
+      tree stmt = DR_STMT (dr);
+      struct loop *stmt_loop = loop_containing_stmt (stmt);
+      struct loop *inner_loop = current_loops->parray[first_loop + 1];
+
+      if (!flow_loop_nested_p (inner_loop, stmt_loop)
+	  && inner_loop->num != stmt_loop->num)
+	continue;
+
+      for (it = 0; it < DR_NUM_DIMENSIONS (dr); it++)
+	{
+	  tree chrec = DR_ACCESS_FN (dr, it);
+	  tree tstride = evolution_part_in_loop_num 
+	    (chrec, first_loop + loop_number);
+	  
+	  if (tstride == NULL_TREE
+	      || TREE_CODE (tstride) != INTEGER_CST)
+	    continue;
+	  
+	  (*access_strides) += int_cst_value (tstride);
+	}
     }
 }
 
 /* Apply to TRANS any loop interchange that minimize inner loop steps.
-   DEPTH is the depth of the loop nest, and DEPENDENCE_RELATIONS is an array
-   of dependence relations.
    Returns the new transform matrix.  The smaller the reuse vector
-   distances in the inner loops, the fewer the cache misses.  */
+   distances in the inner loops, the fewer the cache misses.
+   FIRST_LOOP is the loop->num of the first loop in the analyzed loop
+   nest.  */
+
 
 static lambda_trans_matrix
 try_interchange_loops (lambda_trans_matrix trans, 
 		       unsigned int depth,		       
-		       varray_type dependence_relations)
+		       varray_type dependence_relations,
+		       varray_type datarefs, 
+		       unsigned int first_loop)
 {
   unsigned int loop_i, loop_j;
-  unsigned int steps_i, steps_j;
+  unsigned int dependence_steps_i, dependence_steps_j;
+  unsigned int access_strides_i, access_strides_j;
   unsigned int nb_deps_not_carried_by_i, nb_deps_not_carried_by_j;
   struct data_dependence_relation *ddr;
 
@@ -132,33 +196,40 @@ try_interchange_loops (lambda_trans_matrix trans,
   for (loop_j = 1; loop_j < depth; loop_j++)
     for (loop_i = 0; loop_i < loop_j; loop_i++)
       {
-	gather_interchange_stats (dependence_relations, loop_i, &steps_i, 
-				  &nb_deps_not_carried_by_i);
-	gather_interchange_stats (dependence_relations, loop_j, &steps_j, 
-				  &nb_deps_not_carried_by_j);
+	gather_interchange_stats (dependence_relations, datarefs,
+				  loop_i, first_loop,
+				  &dependence_steps_i, 
+				  &nb_deps_not_carried_by_i,
+				  &access_strides_i);
+	gather_interchange_stats (dependence_relations, datarefs,
+				  loop_j, first_loop,
+				  &dependence_steps_j, 
+				  &nb_deps_not_carried_by_j, 
+				  &access_strides_j);
 	
 	/* Heuristics for loop interchange profitability:
-	   1. Inner loops should have smallest steps.
-	   2. Inner loops should contain more dependence relations not
-	   carried by the loop.
+
+	   1. (spatial locality) Inner loops should have smallest
+              dependence steps.
+
+	   2. (spatial locality) Inner loops should contain more
+	   dependence relations not carried by the loop.
+
+	   3. (temporal locality) Inner loops should have smallest 
+	      array access strides.
 	*/
-	if (steps_i < steps_j 
-	    || nb_deps_not_carried_by_i > nb_deps_not_carried_by_j)
+	if (dependence_steps_i < dependence_steps_j 
+	    || nb_deps_not_carried_by_i > nb_deps_not_carried_by_j
+	    || access_strides_i < access_strides_j)
 	  {
 	    lambda_matrix_row_exchange (LTM_MATRIX (trans), loop_i, loop_j);
-	
 	    /* Validate the resulting matrix.  When the transformation
-	       is not valid, reverse to the previous matrix.  
-	       
-	       FIXME: In this case of transformation it could be
-	       faster to verify the validity of the interchange
-	       without applying the transform to the matrix.  But for
-	       the moment do it cleanly: this is just a prototype.  */
+	       is not valid, reverse to the previous transformation.  */
 	    if (!lambda_transform_legal_p (trans, depth, dependence_relations))
 	      lambda_matrix_row_exchange (LTM_MATRIX (trans), loop_i, loop_j);
 	  }
       }
-  
+
   return trans;
 }
 
@@ -181,6 +252,7 @@ linear_transform_loops (struct loops *loops)
       lambda_loopnest before, after;
       lambda_trans_matrix trans;
       bool problem = false;
+      bool need_perfect_nest = false;
       /* If it's not a loop nest, we don't want it.
          We also don't handle sibling loops properly, 
          which are loops of the following form:
@@ -197,7 +269,8 @@ linear_transform_loops (struct loops *loops)
            } */
       if (!loop_nest->inner)
 	continue;
-      for (temp = loop_nest; temp; temp = temp->inner)
+      depth = 1;
+      for (temp = loop_nest->inner; temp; temp = temp->inner)
 	{
 	  flow_loop_scan (temp, LOOP_ALL);
 	  /* If we have a sibling loop or multiple exit edges, jump ship.  */
@@ -246,7 +319,15 @@ linear_transform_loops (struct loops *loops)
       /* Build the transformation matrix.  */
       trans = lambda_trans_matrix_new (depth, depth);
       lambda_matrix_id (LTM_MATRIX (trans), depth);
-      trans = try_interchange_loops (trans, depth, dependence_relations);
+      trans = try_interchange_loops (trans, depth, dependence_relations,
+				     datarefs, loop_nest->num);
+
+      if (lambda_trans_matrix_id_p (trans))
+	{
+	  if (dump_file)
+	   fprintf (dump_file, "Won't transform loop. Optimal transform is the identity transform\n");
+	  continue;
+	}
 
       /* Check whether the transformation is legal.  */
       if (!lambda_transform_legal_p (trans, depth, dependence_relations))
@@ -255,8 +336,12 @@ linear_transform_loops (struct loops *loops)
 	    fprintf (dump_file, "Can't transform loop, transform is illegal:\n");
 	  continue;
 	}
-      before = gcc_loopnest_to_lambda_loopnest (loop_nest, &oldivs, 
-						&invariants);
+      if (!perfect_nest_p (loop_nest))
+	need_perfect_nest = true;
+      before = gcc_loopnest_to_lambda_loopnest (loops,
+						loop_nest, &oldivs, 
+						&invariants,
+						need_perfect_nest);
       if (!before)
 	continue;
             
@@ -279,4 +364,6 @@ linear_transform_loops (struct loops *loops)
       free_dependence_relations (dependence_relations);
       free_data_refs (datarefs);
     }
+  rewrite_into_loop_closed_ssa ();
+  free_df ();
 }
