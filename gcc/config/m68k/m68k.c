@@ -3176,7 +3176,19 @@ print_operand_address (file, addr)
 	  }
 	else
 	  {
-	    output_addr_const (file, addr);
+	    /* Special case for SYMBOL_REF if the symbol name ends in
+	       `.<letter>', this can be mistaken as a size suffix.  Put
+	       the name in parentheses.  */
+	    if (GET_CODE (addr) == SYMBOL_REF
+		&& strlen (XSTR (addr, 0)) > 2
+		&& XSTR (addr, 0)[strlen (XSTR (addr, 0)) - 2] == '.')
+	      {
+		putc ('(', file);
+		output_addr_const (file, addr);
+		putc (')', file);
+	      }
+	    else
+	      output_addr_const (file, addr);
 	  }
 	break;
     }

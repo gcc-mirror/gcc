@@ -1,3 +1,8 @@
+Wed Feb  3 10:59:07 1999  Andreas Schwab  <schwab@issan.cs.uni-dortmund.de>
+
+	* config/m68k/m68k.c (print_operand_address): When printing a
+	SYMBOL_REF that ends in `.<letter>' put parentheses around it.
+
 Tue Feb  2 23:38:35 1999  David O'Brien <obrien@FreeBSD.org>
 
 	* i386/freebsd*.h now allows '$' in label names and does not use the
