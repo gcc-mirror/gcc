@@ -23,7 +23,7 @@
 
 2003-06-08  Kazu Hirata  <kazu@cs.umass.edu>
 
-	* gcc.c-torture/compile/20000804-1.x: Dsiable on h8300 port.
+	* gcc.c-torture/compile/20000804-1.x: Disable on h8300 port.
 
 2003-06-08  Mark Mitchell  <mark@codesourcery.com>
 
