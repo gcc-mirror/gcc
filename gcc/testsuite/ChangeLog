@@ -1,3 +1,8 @@
+2004-08-27  Bud Davis  <bdavis9659@comcast.net>
+
+	PR fortran/16597
+	* gfortran.dg/pr16597.f90: New test.
+
 2004-08-26  Joseph S. Myers  <jsm@polyomino.org.uk>
 
 	PR c/13801

@@ -40,7 +40,7 @@ st_rewind (void)
 			"Cannot REWIND a file opened for DIRECT access");
       else
 	{
-          if (g.mode==WRITING)
+          if (u->mode==WRITING)
             struncate(u->s);
 	  u->last_record = 0;
 	  if (sseek (u->s, 0) == FAILURE)

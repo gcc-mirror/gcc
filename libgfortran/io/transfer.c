@@ -1044,12 +1044,18 @@ data_transfer_init (int read_flag)
 	  return;
 	}
 
-      /* Position the file.  */
+      /* Check to see if we might be reading what we wrote before  */
 
+      if (g.mode == READING && current_unit->mode  == WRITING)
+         flush(current_unit->s);
+
+      /* Position the file.  */
       if (sseek (current_unit->s,
                (ioparm.rec - 1) * current_unit->recl) == FAILURE)
 	generate_error (ERROR_OS, NULL);
     }
+
+  current_unit->mode = g.mode;
 
   /* Set the initial value of flags.  */
 
