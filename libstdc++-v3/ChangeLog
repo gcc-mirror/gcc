@@ -1,4 +1,11 @@
 2002-11-28  Paolo Carlini  <pcarlini@unitus.it>
+            Nathan Myers  <ncm@cantrip.org>
+
+	* src/localename.cc
+	(locale::_Impl::_Impl(const char*, size_t)):
+	Improve previous fix for the strtok vs MT issue.
+
+2002-11-28  Paolo Carlini  <pcarlini@unitus.it>
 
 	* config/locale/gnu/c_locale.cc (locale::_S_categories):
 	Reorder the categories to match that of glibc's setlocale(LC_ALL, ""))
