@@ -697,6 +697,8 @@ execute_cfa_insn (void *p, struct frame_state_internal *state,
       offset *= info->data_align;
       state->s.saved[reg] = REG_SAVED_OFFSET;
       state->s.reg_or_offset[reg] = offset;
+      if (reg == state->s.cfa_reg)
+	state->s.cfa_saved = 1;
     }
   else if (insn & DW_CFA_restore)
     {
@@ -728,6 +730,8 @@ execute_cfa_insn (void *p, struct frame_state_internal *state,
       offset *= info->data_align;
       state->s.saved[reg] = REG_SAVED_OFFSET;
       state->s.reg_or_offset[reg] = offset;
+      if (reg == state->s.cfa_reg)
+	state->s.cfa_saved = 1;
       break;
     case DW_CFA_restore_extended:
       p = decode_uleb128 (p, &reg);

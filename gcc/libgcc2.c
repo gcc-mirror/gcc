@@ -3679,6 +3679,7 @@ throw_helper (struct eh_context *eh, void *pc, frame_state *my_udata,
   void *handler;
   void *handler_p = 0;
   void *pc_p = 0;
+  void *restored_cfa = 0;
   frame_state saved_ustruct;
   int new_eh_model;
   int cleanup = 0;
@@ -3788,6 +3789,11 @@ throw_helper (struct eh_context *eh, void *pc, frame_state *my_udata,
       pc = saved_pc;
       memcpy (udata, my_udata, sizeof (*udata));
 
+      if (udata->cfa_saved)
+	/* We saved the CFA register into the stack in this frame, so we
+	   will restore it in the __throw epilogue.  Remember the value.  */
+	restored_cfa = udata->cfa;
+
       while (pc != handler_pc)
 	{
 	  frame_state *p = udata;
@@ -3808,6 +3814,9 @@ throw_helper (struct eh_context *eh, void *pc, frame_state *my_udata,
 		copy_reg (i, udata, my_udata);
 	      }
 
+	  if (udata->cfa_saved)
+	    restored_cfa = udata->cfa;
+
 	  pc = get_return_addr (udata, sub_udata) - 1;
 	}
 
@@ -3822,6 +3831,13 @@ throw_helper (struct eh_context *eh, void *pc, frame_state *my_udata,
 	}
     }
   /* udata now refers to the frame called by the handler frame.  */
+
+  if (my_udata->cfa_saved)
+    /* If we saved the CFA register into the stack (after it became the
+       CFA register), we'll restore that value into SP in the epilogue,
+       as on the ARM.  So calculate the adjustment based on the value that
+       will be restored.  */
+    my_udata->cfa = restored_cfa;
 
   /* We adjust SP by the difference between __throw's CFA and the CFA for
      the frame called by the handler frame, because those CFAs correspond

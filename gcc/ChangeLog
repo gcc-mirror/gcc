@@ -1,3 +1,36 @@
+2000-03-22  Jason Merrill  <jason@casey.cygnus.com>
+
+	* config/rs6000/rs6000.h (DWARF_FRAME_RETURN_COLUMN): Define.
+	* config/alpha/alpha.h (DWARF_FRAME_RETURN_COLUMN): Define.
+	* config/sparc/sparc.h (DWARF_FRAME_RETURN_COLUMN): Define.
+	* dwarf2out.c (throw_helper): Adjust.
+
+	Implement dwarf2 exception handling for the ARM.
+	* config/arm/arm.h (INCOMING_RETURN_ADDR_RTX): Define.
+	(DWARF_FRAME_RETURN_COLUMN): Define.
+	* config/arm/arm.c (emit_multi_reg_push): Return rtx.  Attach
+	REG_FRAME_RELATED_EXPR note.
+	(emit_sfm): Likewise.
+	(arm_expand_prologue): Set RTX_FRAME_RELATED_P on everything.
+	* dwarf2out.c (reg_save): Handle saving a register to itself.
+	(dwarf2out_frame_debug_expr): Handle an intermediate cfa reg.
+	* except.c (eh_regs): Don't use the static chain reg if it's
+	callee-saved.
+	* frame.h (frame_state): Add cfa_saved field.
+	* frame.c (execute_cfa_insn): Set it.
+	* libgcc2.c (throw_helper): Don't adjust sp if it's restored in 
+	the epilogue.
+	* function.c (ARG_POINTER_CFA_OFFSET): Default to FIRST_PARM_OFFSET.
+	Now takes a parm.
+	(instantiate_virtual_regs): Adjust.
+	* tm.texi: Adjust.
+	* config/m68k/m68k.h (ARG_POINTER_CFA_OFFSET): Don't define.
+	* config/ns32k/ns32k.h (ARG_POINTER_CFA_OFFSET): Don't define.
+	* config/sparc/sparc.h (ARG_POINTER_CFA_OFFSET): Take a parm.
+
+	* dwarf2out.c (reg_number): Refer to FIRST_PSEUDO_REGISTER.
+	(initial_return_save): Use DWARF_FRAME_REGNUM, not reg_number.
+
 2000-03-22  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* builtins.def: New file.

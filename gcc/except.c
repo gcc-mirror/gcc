@@ -2910,9 +2910,10 @@ expand_builtin_frob_return_addr (addr_tree)
    The first passes the exception context to the handler.  For this
    we use the return value register for a void*.
 
-   The second holds the stack pointer value to be restored.  For
-   this we use the static chain register if it exists and is different
-   from the previous, otherwise some arbitrary call-clobbered register.
+   The second holds the stack pointer value to be restored.  For this
+   we use the static chain register if it exists, is different from
+   the previous, and is call-clobbered; otherwise some arbitrary
+   call-clobbered register.
 
    The third holds the address of the handler itself.  Here we use
    some arbitrary call-clobbered register.  */
@@ -2939,7 +2940,8 @@ eh_regs (pcontext, psp, pra, outgoing)
     rsp = static_chain_incoming_rtx;
   else
     rsp = static_chain_rtx;
-  if (REGNO (rsp) == REGNO (rcontext))
+  if (REGNO (rsp) == REGNO (rcontext)
+      || ! call_used_regs [REGNO (rsp)])
 #endif /* STATIC_CHAIN_REGNUM */
     rsp = NULL_RTX;
 

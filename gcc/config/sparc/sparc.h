@@ -1603,9 +1603,11 @@ extern char leaf_reg_remap[];
   (TARGET_ARCH64 ? (SPARC_STACK_BIAS + 16 * UNITS_PER_WORD) \
    : (STRUCT_VALUE_OFFSET + UNITS_PER_WORD))
 
-/* Offset from the argument pointer register value to the CFA.  */
+/* Offset from the argument pointer register value to the CFA.
+   This is different from FIRST_PARM_OFFSET because the register window
+   comes between the CFA and the arguments.  */
 
-#define ARG_POINTER_CFA_OFFSET  SPARC_STACK_BIAS
+#define ARG_POINTER_CFA_OFFSET(FNDECL)  SPARC_STACK_BIAS
 
 /* When a parameter is passed in a register, stack space is still
    allocated for it.

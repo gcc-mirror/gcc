@@ -64,8 +64,8 @@ static int eliminate_lr2ip 		PARAMS ((rtx *));
 static char * shift_op 			PARAMS ((rtx, HOST_WIDE_INT *));
 static int pattern_really_clobbers_lr 	PARAMS ((rtx));
 static int function_really_clobbers_lr 	PARAMS ((rtx));
-static void emit_multi_reg_push 	PARAMS ((int));
-static void emit_sfm 			PARAMS ((int, int));
+static rtx emit_multi_reg_push	 	PARAMS ((int));
+static rtx emit_sfm 			PARAMS ((int, int));
 static enum arm_cond_code get_arm_condition_code PARAMS ((rtx));
 static int const_ok_for_op 		PARAMS ((HOST_WIDE_INT, enum rtx_code));
 static void arm_add_gc_roots 		PARAMS ((void));
@@ -6268,13 +6268,20 @@ output_func_epilogue (frame_size)
   after_arm_reorg = 0;
 }
 
-static void
+/* Generate and emit an insn that we will recognize as a push_multi.
+   Unfortunately, since this insn does not reflect very well the actual
+   semantics of the operation, we need to annotate the insn for the benefit
+   of DWARF2 frame unwind information.  */
+
+static rtx
 emit_multi_reg_push (mask)
      int mask;
 {
   int num_regs = 0;
   int i, j;
   rtx par;
+  rtx dwarf;
+  rtx tmp, reg;
 
   for (i = 0; i < 16; i++)
     if (mask & (1 << i))
@@ -6284,20 +6291,32 @@ emit_multi_reg_push (mask)
     abort ();
 
   par = gen_rtx_PARALLEL (VOIDmode, rtvec_alloc (num_regs));
+  dwarf = gen_rtx_PARALLEL (VOIDmode, rtvec_alloc (num_regs));
+  RTX_FRAME_RELATED_P (dwarf) = 1;
 
   for (i = 0; i < 16; i++)
     {
       if (mask & (1 << i))
 	{
+	  reg = gen_rtx_REG (SImode, i);
+
 	  XVECEXP (par, 0, 0)
 	    = gen_rtx_SET (VOIDmode,
 			   gen_rtx_MEM (BLKmode,
 					gen_rtx_PRE_DEC (BLKmode,
 							 stack_pointer_rtx)),
 			   gen_rtx_UNSPEC (BLKmode,
-					   gen_rtvec (1,
-						      gen_rtx_REG (SImode, i)),
+					   gen_rtvec (1, reg),
 					   2));
+
+	  tmp = gen_rtx_SET (VOIDmode,
+			     gen_rtx_MEM (SImode,
+					  gen_rtx_PRE_DEC (BLKmode,
+							   stack_pointer_rtx)),
+			     reg);
+	  RTX_FRAME_RELATED_P (tmp) = 1;
+	  XVECEXP (dwarf, 0, num_regs - 1) = tmp;	  
+
 	  break;
 	}
     }
@@ -6306,38 +6325,77 @@ emit_multi_reg_push (mask)
     {
       if (mask & (1 << i))
 	{
-	  XVECEXP (par, 0, j)
-	    = gen_rtx_USE (VOIDmode, gen_rtx_REG (SImode, i));
+	  reg = gen_rtx_REG (SImode, i);
+
+	  XVECEXP (par, 0, j) = gen_rtx_USE (VOIDmode, reg);
+
+	  tmp = gen_rtx_SET (VOIDmode,
+			     gen_rtx_MEM (SImode,
+					  gen_rtx_PRE_DEC (BLKmode,
+							   stack_pointer_rtx)),
+			     reg);
+	  RTX_FRAME_RELATED_P (tmp) = 1;
+	  XVECEXP (dwarf, 0, num_regs - j - 1) = tmp;
+			   
 	  j++;
 	}
     }
 
-  emit_insn (par);
+  par = emit_insn (par);
+  REG_NOTES (par) = gen_rtx_EXPR_LIST (REG_FRAME_RELATED_EXPR, dwarf,
+				       REG_NOTES (par));
+  return par;
 }
 
-static void
+static rtx
 emit_sfm (base_reg, count)
      int base_reg;
      int count;
 {
   rtx par;
+  rtx dwarf;
+  rtx tmp, reg;
   int i;
 
   par = gen_rtx_PARALLEL (VOIDmode, rtvec_alloc (count));
+  dwarf = gen_rtx_PARALLEL (VOIDmode, rtvec_alloc (count));
+  RTX_FRAME_RELATED_P (dwarf) = 1;
+
+  reg = gen_rtx_REG (XFmode, base_reg++);
 
   XVECEXP (par, 0, 0)
     = gen_rtx_SET (VOIDmode, 
 		   gen_rtx_MEM (BLKmode,
 				gen_rtx_PRE_DEC (BLKmode, stack_pointer_rtx)),
 		   gen_rtx_UNSPEC (BLKmode,
-				   gen_rtvec (1, gen_rtx_REG (XFmode, 
-							      base_reg++)),
+				   gen_rtvec (1, reg),
 				   2));
+  tmp
+    = gen_rtx_SET (VOIDmode, 
+		   gen_rtx_MEM (XFmode,
+				gen_rtx_PRE_DEC (BLKmode, stack_pointer_rtx)),
+		   reg);
+  RTX_FRAME_RELATED_P (tmp) = 1;
+  XVECEXP (dwarf, 0, count - 1) = tmp;	  
+  
   for (i = 1; i < count; i++)
-    XVECEXP (par, 0, i) = gen_rtx_USE (VOIDmode, 
-				       gen_rtx_REG (XFmode, base_reg++));
+    {
+      reg = gen_rtx_REG (XFmode, base_reg++);
+      XVECEXP (par, 0, i) = gen_rtx_USE (VOIDmode, reg);
 
-  emit_insn (par);
+      tmp = gen_rtx_SET (VOIDmode, 
+			 gen_rtx_MEM (XFmode,
+				      gen_rtx_PRE_DEC (BLKmode,
+						       stack_pointer_rtx)),
+			 reg);
+      RTX_FRAME_RELATED_P (tmp) = 1;
+      XVECEXP (dwarf, 0, count - i - 1) = tmp;	  
+    }
+
+  par = emit_insn (par);
+  REG_NOTES (par) = gen_rtx_EXPR_LIST (REG_FRAME_RELATED_EXPR, dwarf,
+				       REG_NOTES (par));
+  return par;
 }
 
 void
@@ -6352,6 +6410,7 @@ arm_expand_prologue ()
      the call-saved regs.  */
   int volatile_func = (optimize > 0
 		       && TREE_THIS_VOLATILE (current_function_decl));
+  rtx insn;
 
   /* Naked functions don't have prologues.  */
   if (arm_naked_function_p (current_function_decl))
@@ -6376,18 +6435,21 @@ arm_expand_prologue ()
   if (frame_pointer_needed)
     {
       live_regs_mask |= 0xD800;
-      emit_insn (gen_movsi (gen_rtx_REG (SImode, IP_REGNUM),
-			    stack_pointer_rtx));
+      insn = emit_insn (gen_movsi (gen_rtx_REG (SImode, IP_REGNUM),
+				   stack_pointer_rtx));
+      RTX_FRAME_RELATED_P (insn) = 1;
     }
 
   if (current_function_pretend_args_size)
     {
       if (store_arg_regs)
-	emit_multi_reg_push ((0xf0 >> (current_function_pretend_args_size / 4))
-			     & 0xf);
+	insn = emit_multi_reg_push
+	  ((0xf0 >> (current_function_pretend_args_size / 4)) & 0xf);
       else
-	emit_insn (gen_addsi3 (stack_pointer_rtx, stack_pointer_rtx, 
-			       GEN_INT (-current_function_pretend_args_size)));
+	insn = emit_insn
+	  (gen_addsi3 (stack_pointer_rtx, stack_pointer_rtx, 
+		       GEN_INT (-current_function_pretend_args_size)));
+      RTX_FRAME_RELATED_P (insn) = 1;
     }
 
   if (live_regs_mask)
@@ -6395,10 +6457,11 @@ arm_expand_prologue ()
       /* If we have to push any regs, then we must push lr as well, or
 	 we won't get a proper return.  */
       live_regs_mask |= 1 << LR_REGNUM;
-      emit_multi_reg_push (live_regs_mask);
+      insn = emit_multi_reg_push (live_regs_mask);
+      RTX_FRAME_RELATED_P (insn) = 1;
     }
       
-  /* For now the integer regs are still pushed in output_func_epilogue ().  */
+  /* And now the floating point regs.  */
 
   if (! volatile_func)
     {
@@ -6406,12 +6469,13 @@ arm_expand_prologue ()
 	{
 	  for (reg = 23; reg > 15; reg--)
 	    if (regs_ever_live[reg] && ! call_used_regs[reg])
-	      emit_insn (gen_rtx_SET
-			 (VOIDmode, 
-			  gen_rtx_MEM (XFmode, 
-				       gen_rtx_PRE_DEC (XFmode,
-							stack_pointer_rtx)),
-			  gen_rtx_REG (XFmode, reg)));
+	      {
+		insn = gen_rtx_PRE_DEC (XFmode, stack_pointer_rtx);
+		insn = gen_rtx_MEM (XFmode, insn);
+		insn = emit_insn (gen_rtx_SET (VOIDmode, insn,
+					       gen_rtx_REG (XFmode, reg)));
+		RTX_FRAME_RELATED_P (insn) = 1;
+	      }
 	}
       else
 	{
@@ -6423,31 +6487,44 @@ arm_expand_prologue ()
 		{
 		  if (start_reg - reg == 3)
 		    {
-		      emit_sfm (reg, 4);
+		      insn = emit_sfm (reg, 4);
+		      RTX_FRAME_RELATED_P (insn) = 1;
 		      start_reg = reg - 1;
 		    }
 		}
 	      else
 		{
 		  if (start_reg != reg)
-		    emit_sfm (reg + 1, start_reg - reg);
+		    {
+		      insn = emit_sfm (reg + 1, start_reg - reg);
+		      RTX_FRAME_RELATED_P (insn) = 1;
+		    }
 		  start_reg = reg - 1;
 		}
 	    }
 
 	  if (start_reg != reg)
-	    emit_sfm (reg + 1, start_reg - reg);
+	    {
+	      insn = emit_sfm (reg + 1, start_reg - reg);
+	      RTX_FRAME_RELATED_P (insn) = 1;
+	    }
 	}
     }
 
   if (frame_pointer_needed)
-    emit_insn (gen_addsi3 (hard_frame_pointer_rtx, gen_rtx_REG (SImode, IP_REGNUM),
-			   (GEN_INT
-			    (-(4 + current_function_pretend_args_size)))));
+    {
+      insn = GEN_INT (-(4 + current_function_pretend_args_size));
+      insn = emit_insn (gen_addsi3 (hard_frame_pointer_rtx,
+				    gen_rtx_REG (SImode, IP_REGNUM),
+				    insn));
+      RTX_FRAME_RELATED_P (insn) = 1;
+    }
 
   if (amount != const0_rtx)
     {
-      emit_insn (gen_addsi3 (stack_pointer_rtx, stack_pointer_rtx, amount));
+      insn = emit_insn (gen_addsi3 (stack_pointer_rtx, stack_pointer_rtx,
+				    amount));
+      RTX_FRAME_RELATED_P (insn) = 1;
       emit_insn (gen_rtx_CLOBBER (VOIDmode, 
 				  gen_rtx_MEM (BLKmode, stack_pointer_rtx)));
     }

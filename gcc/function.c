@@ -2760,10 +2760,10 @@ static int cfa_offset;
 #endif
 #endif
 
-/* On a few machines, the CFA coincides with the arg pointer.  */
+/* On most machines, the CFA coincides with the first incoming parm.  */
 
 #ifndef ARG_POINTER_CFA_OFFSET
-#define ARG_POINTER_CFA_OFFSET 0
+#define ARG_POINTER_CFA_OFFSET(FNDECL) FIRST_PARM_OFFSET (FNDECL)
 #endif
 
 
@@ -3335,7 +3335,7 @@ instantiate_virtual_regs (fndecl, insns)
   var_offset = STARTING_FRAME_OFFSET;
   dynamic_offset = STACK_DYNAMIC_OFFSET (fndecl);
   out_arg_offset = STACK_POINTER_OFFSET;
-  cfa_offset = ARG_POINTER_CFA_OFFSET;
+  cfa_offset = ARG_POINTER_CFA_OFFSET (fndecl);
 
   /* Scan all variables and parameters of this function.  For each that is
      in memory, instantiate all virtual registers if the result is a valid
