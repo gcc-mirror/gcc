@@ -551,16 +551,16 @@ FFEBAD_MSGS1 (FFEBAD_FORMAT_UNSUPPORTED, FATAL,
 "Unsupported FORMAT specifier at %0")
 FFEBAD_MSGS1 (FFEBAD_FORMAT_VARIABLE, FATAL,
 "Variable-expression FORMAT specifier at %0 -- unsupported")
-FFEBAD_MSGS2 (FFEBAD_OPEN_UNSUPPORTED, WARN,
+FFEBAD_MSGS2 (FFEBAD_OPEN_UNSUPPORTED, FATAL,
 "Unsupported OPEN control item at %0 -- ACTION=, ASSOCIATEVARIABLE=, BLOCKSIZE=, BUFFERCOUNT=, CARRIAGECONTROL=, DEFAULTFILE=, DELIM=, DISPOSE=, EXTENDSIZE=, INITIALSIZE=, KEY=, MAXREC=, NOSPANBLOCKS, ORGANIZATION=, PAD=, POSITION=, READONLY=, RECORDTYPE=, SHARED=, and USEROPEN= are not supported",
 "Unsupported OPEN control item at %0")
-FFEBAD_MSGS2 (FFEBAD_INQUIRE_UNSUPPORTED, WARN,
+FFEBAD_MSGS2 (FFEBAD_INQUIRE_UNSUPPORTED, FATAL,
 "Unsupported INQUIRE control item at %0 -- ACTION=, CARRIAGECONTROL=, DEFAULTFILE=, DELIM=, KEYED=, ORGANIZATION=, PAD=, POSITION=, READ=, READWRITE=, RECORDTYPE=, and WRITE= are not supported",
 "Unsupported INQUIRE control item at %0")
-FFEBAD_MSGS2 (FFEBAD_READ_UNSUPPORTED, WARN,
+FFEBAD_MSGS2 (FFEBAD_READ_UNSUPPORTED, FATAL,
 "Unsupported READ control item at %0 -- ADVANCE=, EOR=, KEYEQ=, KEYGE=, KEYGT=, KEYID=, NULLS=, and SIZE= are not supported",
 "Unsupported READ control item at %0")
-FFEBAD_MSGS2 (FFEBAD_WRITE_UNSUPPORTED, WARN,
+FFEBAD_MSGS2 (FFEBAD_WRITE_UNSUPPORTED, FATAL,
 "Unsupported WRITE control item at %0 -- ADVANCE= and EOR= are not supported",
 "Unsupported WRITE control item at %0")
 FFEBAD_MSGS1 (FFEBAD_VXT_UNSUPPORTED, FATAL,
@@ -656,23 +656,23 @@ FFEBAD_MSGS1 (FFEBAD_NESTED_PERCENT, WARN,
 FFEBAD_MSGS2 (FFEBAD_ACTUALARG, WARN,
 "Invalid actual argument at %0 -- replace hollerith constants with %%REF('string') and typeless constants with INTEGER constant equivalents, or use -fugly-args or -fugly",
 "Invalid actual argument at %0")
-FFEBAD_MSGS2 (FFEBAD_QUAD_UNSUPPORTED, WARN,
+FFEBAD_MSGS2 (FFEBAD_QUAD_UNSUPPORTED, FATAL,
 "Quadruple-precision floating-point unsupported -- treating constant at %0 as double-precision",
 "Quadruple-precision floating-point unsupported")
 FFEBAD_MSGS2 (FFEBAD_TOO_BIG_INIT, WARN,
 "Initialization of large (%B-unit) aggregate area `%A' at %0 currently very slow and takes lots of memory during g77 compile -- to be improved in 0.6",
 "This could take a while (initializing `%A' at %0)...")
-FFEBAD_MSGS1 (FFEBAD_BLOCKDATA_STMT, WARN,
+FFEBAD_MSGS1 (FFEBAD_BLOCKDATA_STMT, FATAL,
 "Statement at %0 invalid in BLOCK DATA program unit at %1")
-FFEBAD_MSGS1 (FFEBAD_TRUNCATING_CHARACTER, WARN,
+FFEBAD_MSGS1 (FFEBAD_TRUNCATING_CHARACTER, FATAL,
 "Truncating characters on right side of character constant at %0")
-FFEBAD_MSGS1 (FFEBAD_TRUNCATING_HOLLERITH, WARN,
+FFEBAD_MSGS1 (FFEBAD_TRUNCATING_HOLLERITH, FATAL,
 "Truncating characters on right side of hollerith constant at %0")
-FFEBAD_MSGS1 (FFEBAD_TRUNCATING_NUMERIC, WARN,
+FFEBAD_MSGS1 (FFEBAD_TRUNCATING_NUMERIC, FATAL,
 "Truncating non-zero data on left side of numeric constant at %0")
-FFEBAD_MSGS1 (FFEBAD_TRUNCATING_TYPELESS, WARN,
+FFEBAD_MSGS1 (FFEBAD_TRUNCATING_TYPELESS, FATAL,
 "Truncating non-zero data on left side of typeless constant at %0")
-FFEBAD_MSGS1 (FFEBAD_TYPELESS_OVERFLOW, WARN,
+FFEBAD_MSGS1 (FFEBAD_TYPELESS_OVERFLOW, FATAL,
 "Typeless constant at %0 too large")
 FFEBAD_MSGS1 (FFEBAD_AMPERSAND, WARN,
 "First-column ampersand continuation at %0")
