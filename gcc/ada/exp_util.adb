@@ -3510,7 +3510,7 @@ package body Exp_Util is
               Make_Object_Declaration (Loc,
                 Defining_Identifier => Def_Id,
                 Object_Definition   => New_Reference_To (Exp_Type, Loc),
-                Constant_Present    => True,
+                Constant_Present    => not Is_Variable (Exp),
                 Expression          => Relocate_Node (Exp));
 
             Set_Assignment_OK (E);

@@ -1266,6 +1266,13 @@ package Sinfo is
    --    where the generated assignments are more initialisations than real
    --    assignments.
 
+   --  No_Elaboration_Check (Flag14-Sem)
+   --    Present in N_Function_Call and N_Procedure_Call_Statement. Indicates
+   --    that no elaboration check is needed on the call, because it appears
+   --    in the context of a local Suppress pragma. This is used on calls
+   --    within task bodies, where the actual elaboration checks are applied
+   --    after analysis, when the local scope stack is not present.
+
    --  No_Entities_Ref_In_Spec (Flag8-Sem)
    --    Present in N_With_Clause nodes. Set if the with clause is on the
    --    package or subprogram spec where the main unit is the corresponding
@@ -4043,6 +4050,7 @@ package Sinfo is
       --  First_Named_Actual (Node4-Sem)
       --  Controlling_Argument (Node1-Sem) (set to Empty if not dispatching)
       --  Do_Tag_Check (Flag13-Sem)
+      --  No_Elaboration_Check (Flag14-Sem)
       --  Parameter_List_Truncated (Flag17-Sem)
       --  ABE_Is_Certain (Flag18-Sem)
       --  plus fields for expression
@@ -4073,6 +4081,7 @@ package Sinfo is
       --  First_Named_Actual (Node4-Sem)
       --  Controlling_Argument (Node1-Sem) (set to Empty if not dispatching)
       --  Do_Tag_Check (Flag13-Sem)
+      --  No_Elaboration_Check (Flag14-Sem)
       --  Parameter_List_Truncated (Flag17-Sem)
       --  ABE_Is_Certain (Flag18-Sem)
       --  plus fields for expression
@@ -7391,6 +7400,9 @@ package Sinfo is
    function No_Ctrl_Actions
      (N : Node_Id) return Boolean;    -- Flag7
 
+   function No_Elaboration_Check
+     (N : Node_Id) return Boolean;    -- Flag14
+
    function No_Entities_Ref_In_Spec
      (N : Node_Id) return Boolean;    -- Flag8
 
@@ -8165,6 +8177,9 @@ package Sinfo is
    procedure Set_No_Ctrl_Actions
      (N : Node_Id; Val : Boolean := True);    -- Flag7
 
+   procedure Set_No_Elaboration_Check
+     (N : Node_Id; Val : Boolean := True);    -- Flag14
+
    procedure Set_No_Entities_Ref_In_Spec
      (N : Node_Id; Val : Boolean := True);    -- Flag8
 
@@ -8600,6 +8615,7 @@ package Sinfo is
    pragma Inline (Next_Rep_Item);
    pragma Inline (Next_Use_Clause);
    pragma Inline (No_Ctrl_Actions);
+   pragma Inline (No_Elaboration_Check);
    pragma Inline (No_Entities_Ref_In_Spec);
    pragma Inline (No_Initialization);
    pragma Inline (No_Truncation);
@@ -8854,6 +8870,7 @@ package Sinfo is
    pragma Inline (Set_Next_Named_Actual);
    pragma Inline (Set_Next_Use_Clause);
    pragma Inline (Set_No_Ctrl_Actions);
+   pragma Inline (Set_No_Elaboration_Check);
    pragma Inline (Set_No_Entities_Ref_In_Spec);
    pragma Inline (Set_No_Initialization);
    pragma Inline (Set_No_Truncation);

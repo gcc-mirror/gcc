@@ -870,6 +870,17 @@ package body Lib is
       return Int (Units.Last) - Int (Main_Unit) + 1;
    end Num_Units;
 
+   -----------------
+   -- Remove_Unit --
+   -----------------
+
+   procedure Remove_Unit (U : Unit_Number_Type) is
+   begin
+      if U = Units.Last then
+         Units.Decrement_Last;
+      end if;
+   end Remove_Unit;
+
    ----------------------------------
    -- Replace_Linker_Option_String --
    ----------------------------------

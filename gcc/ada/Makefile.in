@@ -461,6 +461,7 @@ ifeq ($(strip $(filter-out alpha% dec vx%,$(targ))),)
   a-numaux.ads<4znumaux.ads \
   s-inmaop.adb<7sinmaop.adb \
   s-interr.adb<5zinterr.adb \
+  s-intman.ads<5zintman.ads \
   s-intman.adb<5zintman.adb \
   s-osinte.adb<5zosinte.adb \
   s-osinte.ads<5zosinte.ads \
@@ -487,6 +488,7 @@ ifeq ($(strip $(filter-out m68k% wrs vx%,$(targ))),)
   a-numaux.ads<4znumaux.ads \
   s-inmaop.adb<7sinmaop.adb \
   s-interr.adb<5zinterr.adb \
+  s-intman.ads<5zintman.ads \
   s-intman.adb<5zintman.adb \
   s-osinte.adb<5zosinte.adb \
   s-osinte.ads<5zosinte.ads \
@@ -524,6 +526,7 @@ ifeq ($(strip $(filter-out powerpc% wrs vxworks,$(targ))),)
   a-numaux.ads<4znumaux.ads \
   s-inmaop.adb<7sinmaop.adb \
   s-interr.adb<5zinterr.adb \
+  s-intman.ads<5zintman.ads \
   s-intman.adb<5zintman.adb \
   s-osinte.adb<5zosinte.adb \
   s-osinte.ads<5zosinte.ads \
@@ -593,6 +596,7 @@ ifeq ($(strip $(filter-out powerpc% wrs vxworks,$(targ))),)
   s-soflin.ads<2ssoflin.ads \
   s-stalib.adb<1sstalib.adb \
   s-stalib.ads<1sstalib.ads \
+  s-thread.adb<5zthread.adb \
   s-thrini.ads<2sthrini.ads \
   s-thrini.adb<5zthrini.adb \
   s-tiitho.adb<5ztiitho.adb \
@@ -619,6 +623,7 @@ ifeq ($(strip $(filter-out powerpc% wrs vxworksae,$(targ))),)
   a-numaux.ads<4znumaux.ads \
   s-inmaop.adb<7sinmaop.adb \
   s-interr.adb<5zinterr.adb \
+  s-intman.ads<5zintman.ads \
   s-intman.adb<5zintman.adb \
   s-osinte.adb<5zosinte.adb \
   s-osinte.ads<5zosinte.ads \
@@ -692,7 +697,7 @@ ifeq ($(strip $(filter-out powerpc% wrs vxworksae,$(targ))),)
   s-soflin.ads<2ssoflin.ads \
   s-stalib.adb<1sstalib.adb \
   s-stalib.ads<1sstalib.ads \
-  s-thrini.adb<5zthrini.adb \
+  s-thread.adb<5zthread.adb \
   s-thrini.ads<2sthrini.ads \
   s-thrini.adb<5zthrini.adb \
   s-tiitho.adb<5ytiitho.adb \
@@ -736,6 +741,7 @@ ifeq ($(strip $(filter-out sparc% wrs vx%,$(targ))),)
   a-numaux.ads<4znumaux.ads \
   s-inmaop.adb<7sinmaop.adb \
   s-interr.adb<5zinterr.adb \
+  s-intman.ads<5zintman.ads \
   s-intman.adb<5zintman.adb \
   s-osinte.adb<5zosinte.adb \
   s-osinte.ads<5zosinte.ads \
@@ -764,6 +770,7 @@ ifeq ($(strip $(filter-out xscale% coff wrs vx%,$(targ))),)
   a-numaux.ads<4znumaux.ads \
   s-inmaop.adb<7sinmaop.adb \
   s-interr.adb<5zinterr.adb \
+  s-intman.ads<5zintman.ads \
   s-intman.adb<5zintman.adb \
   s-osinte.adb<5zosinte.adb \
   s-osinte.ads<5zosinte.ads \
@@ -792,6 +799,7 @@ ifeq ($(strip $(filter-out mips% wrs vx%,$(targ))),)
   a-numaux.ads<4znumaux.ads \
   s-inmaop.adb<7sinmaop.adb \
   s-interr.adb<5zinterr.adb \
+  s-intman.ads<5zintman.ads \
   s-intman.adb<5zintman.adb \
   s-osinte.adb<5zosinte.adb \
   s-osinte.ads<5zosinte.ads \
@@ -2055,8 +2063,10 @@ rts-cert: force
 	../../../$(GCC_FOR_TARGET) -B../../../ $(TARGET_LIBGCC2_CFLAGS) \
 	$(ALL_CFLAGS) $(GNATLIBCFLAGS_FOR_C) -c ../adainclude/$(f).c \
 	-I../adainclude $(INCLUDES_FOR_SUBDIR) -I../../../ ;) \
-	$(AR) $(AR_FLAGS) libgnat$(arext) \
-	   $(addsuffix .o,$(CERT_LEVEL_B_C_FILES))
+	../../../xgcc -B../../../ *.o -o libgnat ; \
+	$(CHMOD) a-wx *.ali ; \
+	$(RM) *.o ; \
+	$(MV) libgnat libgnat.o
 
 rts-none: force
 	$(MAKE) $(FLAGS_TO_PASS) prepare-rts \

@@ -688,14 +688,11 @@ package body Lib.Load is
 
    procedure Make_Instance_Unit (N : Node_Id) is
       Sind : constant Source_File_Index := Source_Index (Main_Unit);
-
    begin
       Units.Increment_Last;
-
       Units.Table (Units.Last)               := Units.Table (Main_Unit);
       Units.Table (Units.Last).Cunit         := Library_Unit (N);
       Units.Table (Units.Last).Generate_Code := True;
-
       Units.Table (Main_Unit).Cunit          := N;
       Units.Table (Main_Unit).Unit_Name      :=
         Get_Body_Name (Unit_Name (Get_Cunit_Unit_Number (Library_Unit (N))));
@@ -713,7 +710,6 @@ package body Lib.Load is
    is
       Sunit : constant Node_Id := Cunit (Spec_Unit);
       Bunit : constant Node_Id := Cunit (Body_Unit);
-
    begin
       --  The spec is irrelevant if the body is a subprogram body, and the
       --  spec is other than a subprogram spec or generic subprogram spec.
@@ -725,7 +721,6 @@ package body Lib.Load is
          Nkind (Unit (Bunit)) = N_Subprogram_Body
            and then Nkind (Unit (Sunit)) /= N_Subprogram_Declaration
            and then Nkind (Unit (Sunit)) /= N_Generic_Subprogram_Declaration;
-
    end Spec_Is_Irrelevant;
 
    --------------------
@@ -735,9 +730,7 @@ package body Lib.Load is
    procedure Version_Update (U : Node_Id; From : Node_Id) is
       Unum  : constant Unit_Number_Type := Get_Cunit_Unit_Number (U);
       Fnum  : constant Unit_Number_Type := Get_Cunit_Unit_Number (From);
-
    begin
-
       if Source_Index (Fnum) /= No_Source_File then
          Units.Table (Unum).Version :=
            Units.Table (Unum).Version

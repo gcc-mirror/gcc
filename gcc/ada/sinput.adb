@@ -1111,7 +1111,7 @@ package body Sinput is
    function Source_First (S : SFI) return Source_Ptr is
    begin
       if S = Internal_Source_File then
-         return Internal_Source_Ptr'First;
+         return Internal_Source'First;
       else
          return Source_File.Table (S).Source_First;
       end if;
@@ -1120,7 +1120,7 @@ package body Sinput is
    function Source_Last (S : SFI) return Source_Ptr is
    begin
       if S = Internal_Source_File then
-         return Internal_Source_Ptr'Last;
+         return Internal_Source'Last;
       else
          return Source_File.Table (S).Source_Last;
       end if;

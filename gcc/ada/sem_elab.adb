@@ -325,6 +325,16 @@ package body Sem_Elab is
       --  we ignore this flag.
 
    begin
+      --  If the call is known to be within a local Suppress Elaboration
+      --  pragma, nothing to check. This can happen in task bodies.
+
+      if (Nkind (N) = N_Function_Call
+           or else Nkind (N) = N_Procedure_Call_Statement)
+        and then  No_Elaboration_Check (N)
+      then
+         return;
+      end if;
+
       --  Go to parent for derived subprogram, or to original subprogram
       --  in the case of a renaming (Alias covers both these cases)
 
@@ -826,9 +836,40 @@ package body Sem_Elab is
      (N           : Node_Id;
       Outer_Scope : Entity_Id := Empty)
    is
-      Nam : Node_Id;
       Ent : Entity_Id;
       P   : Node_Id;
+
+      function Get_Called_Ent return Entity_Id;
+      --  Retrieve called entity. If this is a call to a protected subprogram,
+      --  entity is a selected component. The callable entity may be absent,
+      --  in which case there is no check to perform.  This happens with
+      --  non-analyzed calls in nested generics.
+
+      --------------------
+      -- Get_Called_Ent --
+      --------------------
+
+      function Get_Called_Ent return Entity_Id is
+         Nam : Node_Id;
+
+      begin
+         Nam := Name (N);
+
+         if No (Nam) then
+            return Empty;
+
+         elsif Nkind (Nam) = N_Selected_Component then
+            return Entity (Selector_Name (Nam));
+
+         elsif not Is_Entity_Name (Nam) then
+            return Empty;
+
+         else
+            return Entity (Nam);
+         end if;
+      end Get_Called_Ent;
+
+   --  Start of processing for Check_Elab_Call
 
    begin
       --  For an entry call, check relevant restriction
@@ -1014,6 +1055,26 @@ package body Sem_Elab is
 
                         exit;
 
+                     elsif Nkind (P) = N_Task_Body then
+
+                        --  The check is deferred until Check_Task_Activation
+                        --  but we need to capture local suppress pragmas
+                        --  that may inhibit checks on this call.
+
+                        Ent := Get_Called_Ent;
+
+                        if No (Ent) then
+                           return;
+
+                        elsif Elaboration_Checks_Suppressed (Current_Scope)
+                          or else Elaboration_Checks_Suppressed (Ent)
+                          or else Elaboration_Checks_Suppressed (Scope (Ent))
+                        then
+                           Set_No_Elaboration_Check (N);
+                        end if;
+
+                        return;
+
                      --  Static model, call is not in elaboration code, we
                      --  never need to worry, because in the static model
                      --  the top level caller always takes care of things.
@@ -1027,25 +1088,7 @@ package body Sem_Elab is
          end if;
       end if;
 
-      --  Retrieve called entity. If this is a call to a protected subprogram,
-      --  the entity is a selected component.
-      --  The callable entity may be absent, in which case there is nothing
-      --  to do. This happens with non-analyzed calls in nested generics.
-
-      Nam := Name (N);
-
-      if No (Nam) then
-         return;
-
-      elsif Nkind (Nam) = N_Selected_Component then
-         Ent := Entity (Selector_Name (Nam));
-
-      elsif not Is_Entity_Name (Nam) then
-         return;
-
-      else
-         Ent := Entity (Nam);
-      end if;
+      Ent := Get_Called_Ent;
 
       if No (Ent) then
          return;

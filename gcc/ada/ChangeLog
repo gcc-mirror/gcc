@@ -1,3 +1,108 @@
+2003-11-24  Jose Ruiz  <ruiz@act-europe.fr>
+
+	* Makefile.in: 
+	Use 5zintman.ads for VxWorks targets. This file avoid confusion between
+	signals and interrupts.
+
+	* 5zintman.ads: New File.
+
+	* 5zintman.adb: Replace Exception_Interrupts by Exception_Signals, and
+	add exception signals to the set of unmasked signals.
+
+	* 5ztaprop.adb: 
+	Use Abort_Task_Signal instead of Abort_Task_Interrupt to avoid confusion
+	between signals and interrupts.
+	Add to Unblocked_Signal_Mask the set of signals that are in
+	Keep_Unmasked.
+
+	* 7sinmaop.adb: 
+	Adding a check to see whether the Interrupt_ID we want to unmask is in
+	the range of Keep_Unmasked (in procedure Interrupt_Self_Process). The
+	reason is that the index type of the Keep_Unmasked array is not always
+	Interrupt_ID; it may be a subtype of Interrupt_ID.
+
+2003-11-24  Gary Dismukes  <dismukes@gnat.com>
+
+	* exp_util.adb: 
+	(Remove_Side_Effects): Condition constantness of object created for a
+	 an unchecked type conversion on the constantness of the expression
+	 to ensure the correct value for 'Constrained when passing components
+	 of view-converted class-wide objects.
+
+2003-11-24  Robert Dewar  <dewar@gnat.com>
+
+	* par-load.adb (Load): Improve handling of misspelled and missing units
+	Removes several cases of compilation abandoned messages
+
+	* lib.adb: (Remove_Unit): New procedure
+
+	* lib.ads: (Remove_Unit): New procedure
+
+	* lib-load.adb: Minor reformatting
+
+2003-11-24  Vincent Celier  <celier@gnat.com>
+
+	* make.adb: 
+	(Gnatmake, Initialize): Call Usage instead of Makeusg directly
+	(Marking_Label): Label to mark processed source files. Incremented for
+	each executable.
+	(Gnatmake): Increase Marking_Labet for each executable
+	(Is_Marked): Compare against marking label
+	(Mark): Mark with marking label
+
+2003-11-24  Jerome Guitton  <guitton@act-europe.fr>
+
+	* s-thread.ads: 
+	Move the declaration of the TSD for System.Threads to System.Soft_Links.
+	Add some comments.
+
+	* Makefile.in: Added target pair for s-thread.adb for cert runtime.
+	(rts-cert): build a single relocatable object for the run-time lib.
+	Fix perms.
+
+2003-11-24  Vasiliy Fofanov  <fofanov@act-europe.fr>
+
+	* Make-lang.in: 
+	Use gnatls rather than gcc to obtain the location of GNAT RTL for
+	crosstools build.
+
+2003-11-24  Sergey Rybin  <rybin@act-europe.fr>
+
+	* opt.adb (Tree_Write): Gnat_Version_String is now a function, so we
+	can not use it as before (that is, as a variable) when dumping it into
+	the tree file. Add a local variable to store the result of this
+	function and to be used as the string to be written into the tree.
+
+	* scn.adb (Initialize_Scanner): Add comments explaining the recent
+	changes.
+
+	* sinput.adb (Source_First, Source_Last): In case of
+	Internal_Source_File, replace returning attributes of
+	Internal_Source_Ptr (which is wrong) with returning attributes of
+	Internal_Source.
+
+2003-11-24  Ed Schonberg  <schonberg@gnat.com>
+
+	* sem_ch3.adb: 
+	(New_Concatenation_Op): Proper name for New_Binary_Operator, only
+	used for implicit concatenation operators.
+	Code cleanup.
+
+	* sem_elab.adb: 
+	(Check_Elab_Call): Set No_Elaboration_Check appropriately on calls in
+	task bodies that are in the scope of a Suppress pragma.
+	(Check_A Call): Use the flag to prevent spurious elaboration checks.
+
+	* sinfo.ads, sinfo.adb: 
+	New flag No_Elaboration_Check on function/procedure calls, to properly
+	suppress checks on calls in task bodies that are within a local suppress
+	pragma.
+
+	* exp_ch4.adb: 
+	(Expand_Concatenate_Other): Use the proper integer type for the
+	expression for the upper bound, to avoid universal_integer computations
+	when possible.
+
 2003-11-21  Kelley Cook  <kcook@gcc.gnu.org>
 
 	* .cvsignore: Delete.

@@ -1472,7 +1472,7 @@ package body Exp_Ch4 is
    --  their base type, Ind_Typ their index type, and Arr_Typ the original
    --  array type to which the concatenantion operator applies, then the
    --  following subprogram is constructed:
-   --
+
    --  [function Cnn (S1 : Base_Typ; ...; Sn : Base_Typ) return Base_Typ is
    --      L : Ind_Typ;
    --   begin
@@ -1489,7 +1489,7 @@ package body Exp_Ch4 is
    --      else
    --         return Sn;
    --      end if;
-   --
+
    --      declare
    --         P : Ind_Typ;
    --         H : Ind_Typ :=
@@ -1516,9 +1516,9 @@ package body Exp_Ch4 is
    --               P := Ind_Typ'Succ (P);
    --            end loop;
    --         end if;
-   --
+
    --         ...
-   --
+
    --         if Sn'Length /= 0 then
    --            P := Sn'First;
    --            loop
@@ -1528,7 +1528,7 @@ package body Exp_Ch4 is
    --               P := Ind_Typ'Succ (P);
    --            end loop;
    --         end if;
-   --
+
    --         return R;
    --      end;
    --   end Cnn;]
@@ -1598,7 +1598,9 @@ package body Exp_Ch4 is
       --  Builds reference to identifier L.
 
       function L_Pos return Node_Id;
-      --  Builds expression Ind_Typ'Pos (L).
+      --  Builds expression Integer_Type'(Ind_Typ'Pos (L)).
+      --  We qualify the expression to avoid universal_integer computations
+      --  whenever possible, in the expression for the upper bound H.
 
       function L_Succ return Node_Id;
       --  Builds expression Ind_Typ'Succ (L).
@@ -1743,12 +1745,31 @@ package body Exp_Ch4 is
       -----------
 
       function L_Pos return Node_Id is
+         Target_Type : Entity_Id;
+
       begin
+         --  If the index type is an enumeration type, the computation
+         --  can be done in standard integer. Otherwise, choose a large
+         --  enough integer type.
+
+         if Is_Enumeration_Type (Ind_Typ)
+           or else Root_Type (Ind_Typ) = Standard_Integer
+           or else Root_Type (Ind_Typ) = Standard_Short_Integer
+           or else Root_Type (Ind_Typ) = Standard_Short_Short_Integer
+         then
+            Target_Type := Standard_Integer;
+         else
+            Target_Type := Root_Type (Ind_Typ);
+         end if;
+
          return
-           Make_Attribute_Reference (Loc,
-             Prefix         => New_Reference_To (Ind_Typ, Loc),
-             Attribute_Name => Name_Pos,
-             Expressions    => New_List (L));
+           Make_Qualified_Expression (Loc,
+              Subtype_Mark => New_Reference_To (Target_Type, Loc),
+              Expression   =>
+                Make_Attribute_Reference (Loc,
+                  Prefix         => New_Reference_To (Ind_Typ, Loc),
+                  Attribute_Name => Name_Pos,
+                  Expressions    => New_List (L)));
       end L_Pos;
 
       ------------
