@@ -1,5 +1,5 @@
 /* C Compatible Compiler Preprocessor (CCCP)
-   Copyright (C) 1986, 87, 89, 92-97, 1998 Free Software Foundation, Inc.
+   Copyright (C) 1986, 87, 89, 92-98, 1999 Free Software Foundation, Inc.
    Written by Paul Rubin, June 1986
    Adapted to ANSI C, Richard Stallman, Jan 1987
 
