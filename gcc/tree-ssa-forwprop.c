@@ -80,9 +80,32 @@ Boston, MA 02111-1307, USA.  */
    For these cases, we propagate A into all, possibly more than one,
    COND_EXPRs that use X.
 
+   Or
+
+     bb0:
+       x = (typecast) a
+       if (x) goto ... else goto ...
+
+   Will be transformed into:
+
+     bb0:
+        if (a != 0) goto ... else goto ...
+
+   (Assuming a is an integral type and x is a boolean or x is an
+    integral and a is a boolean.)
+
+   Similarly for the tests (x == 0), (x != 0), (x == 1) and (x != 1).
+   For these cases, we propagate A into all, possibly more than one,
+   COND_EXPRs that use X.
+
    In addition to eliminating the variable and the statement which assigns
    a value to the variable, we may be able to later thread the jump without
    adding insane complexity in the dominator optimizer. 
+
+   Also note these transformations can cascade.  We handle this by having
+   a worklist of COND_EXPR statements to examine.  As we make a change to
+   a statement, we put it back on the worklist to examine on the next
+   iteration of the main loop.
 
    This will (of course) be extended as other needs arise.  */
 
@@ -92,8 +115,10 @@ static bitmap vars;
 
 static bool need_imm_uses_for (tree);
 static void tree_ssa_forward_propagate_single_use_vars (void);
-static varray_type record_single_argument_cond_exprs (void);
-static void substitute_single_use_vars (varray_type);
+static void record_single_argument_cond_exprs (varray_type,
+					       varray_type *,
+					       bitmap);
+static void substitute_single_use_vars (varray_type *, varray_type);
 
 /* Function indicating whether we ought to include information for 'var'
    when calculating immediate uses.  */
@@ -115,24 +140,22 @@ need_imm_uses_for (tree var)
    filter out here, the faster this pass will run since its runtime is
    dominated by the time to build immediate uses.  */
 
-static varray_type
-record_single_argument_cond_exprs (void)
+static void
+record_single_argument_cond_exprs (varray_type cond_worklist,
+				   varray_type *vars_worklist,
+				   bitmap vars)
+
 {
-  basic_block bb;
-  varray_type retval;
-
-  vars = BITMAP_XMALLOC ();
-
-  VARRAY_TREE_INIT (retval, 10, "forward propagation vars");
-
   /* The first pass over the blocks gathers the set of variables we need
      immediate uses for as well as the set of interesting COND_EXPRs.
 
      A simpler implementation may be appropriate if/when we have a lower
      overhead means of getting immediate use information.  */
-  FOR_EACH_BB (bb)
+  while (VARRAY_ACTIVE_SIZE (cond_worklist) > 0)
     {
-      tree last = last_stmt (bb);
+      tree last = VARRAY_TOP_TREE (cond_worklist);
+
+      VARRAY_POP (cond_worklist);
 
       /* See if this block ends in a COND_EXPR.  */
       if (last && TREE_CODE (last) == COND_EXPR)
@@ -225,6 +248,27 @@ record_single_argument_cond_exprs (void)
 			      && !is_gimple_min_invariant (def_rhs))
 			    continue;
 			}
+
+		      /* If TEST_VAR was set from a cast of an integer type
+			 to a boolean type or a cast of a boolean to an
+			 integral, then it is interesting.  */
+		      else if (TREE_CODE (def_rhs) == NOP_EXPR
+			       || TREE_CODE (def_rhs) == CONVERT_EXPR)
+			{
+			  tree outer_type;
+			  tree inner_type;
+
+			  outer_type = TREE_TYPE (def_rhs);
+			  inner_type = TREE_TYPE (TREE_OPERAND (def_rhs, 0));
+
+			  if ((TREE_CODE (outer_type) == BOOLEAN_TYPE
+			       && INTEGRAL_TYPE_P (inner_type))
+			      || (TREE_CODE (inner_type) == BOOLEAN_TYPE
+				  && INTEGRAL_TYPE_P (outer_type)))
+			    ;
+			  else
+			    continue;
+			}
 		      else
 			continue;
 		    }
@@ -232,13 +276,12 @@ record_single_argument_cond_exprs (void)
 		    continue;
 
 		  /* All the tests passed, record TEST_VAR as interesting.  */
-		  VARRAY_PUSH_TREE (retval, test_var);
+		  VARRAY_PUSH_TREE (*vars_worklist, test_var);
 		  bitmap_set_bit (vars, SSA_NAME_VERSION (test_var));
 		}
 	    }
 	}
     }
-  return retval;
 }
 
 /* Given FORWPROP_DATA containing SSA_NAMEs which are used in COND_EXPRs
@@ -247,17 +290,18 @@ record_single_argument_cond_exprs (void)
    SSA_NAME used in the COND_EXPR.  */
   
 static void
-substitute_single_use_vars (varray_type forwprop_data)
+substitute_single_use_vars (varray_type *cond_worklist,
+			    varray_type vars_worklist)
 {
-  unsigned int i;
-
-  for (i = 0; i < VARRAY_ACTIVE_SIZE (forwprop_data); i++)
+  while (VARRAY_ACTIVE_SIZE (vars_worklist) > 0)
     {
-      tree test_var = VARRAY_TREE (forwprop_data, i);
+      tree test_var = VARRAY_TOP_TREE (vars_worklist);
       tree def = SSA_NAME_DEF_STMT (test_var);
       dataflow_t df;
       int j, num_uses, propagated_uses;
       block_stmt_iterator bsi;
+
+      VARRAY_POP (vars_worklist);
 
       /* Now compute the immediate uses of TEST_VAR.  */
       df = get_immediate_uses (def);
@@ -345,21 +389,30 @@ substitute_single_use_vars (varray_type forwprop_data)
 	    }
 	  else
 	    {
-	      /* TEST_VAR was set from a TRUTH_NOT_EXPR.  */
+	      bool invert = false;
+	      enum tree_code new_code;
+
+	      /* TEST_VAR was set from a TRUTH_NOT_EXPR or a NOP_EXPR.  */
+	      if (def_rhs_code == TRUTH_NOT_EXPR)
+		invert = true;
+		
 	      if (cond_code == SSA_NAME
 		  || (cond_code == NE_EXPR
 		      && integer_zerop (TREE_OPERAND (cond, 1)))
 		  || (cond_code == EQ_EXPR
 		      && integer_onep (TREE_OPERAND (cond, 1))))
-		new_cond = build (EQ_EXPR, boolean_type_node,
-				  TREE_OPERAND (def_rhs, 0),
-				  convert (TREE_TYPE (def_rhs),
-					   integer_zero_node));
+		new_code = NE_EXPR;
 	      else
-		new_cond = build (NE_EXPR, boolean_type_node,
-				  TREE_OPERAND (def_rhs, 0),
-				  convert (TREE_TYPE (def_rhs),
-					   integer_zero_node));
+		new_code = EQ_EXPR;
+
+	      if (invert)
+		new_code = (new_code == EQ_EXPR ? NE_EXPR  : EQ_EXPR);
+
+	      new_cond = build (new_code, 
+				boolean_type_node,
+				TREE_OPERAND (def_rhs, 0),
+				convert (TREE_TYPE (def_rhs),
+					 integer_zero_node));
 	    }
 
 	  /* Dump details.  */
@@ -376,6 +429,7 @@ substitute_single_use_vars (varray_type forwprop_data)
 	  COND_EXPR_COND (cond_stmt) = new_cond;
 	  modify_stmt (cond_stmt);
 	  propagated_uses++;
+	  VARRAY_PUSH_TREE (*cond_worklist, cond_stmt);
 	}
 
       /* If we propagated into all the uses, then we can delete DEF.
@@ -400,25 +454,52 @@ substitute_single_use_vars (varray_type forwprop_data)
 static void
 tree_ssa_forward_propagate_single_use_vars (void)
 {
-  varray_type forwprop_data;
+  basic_block bb;
+  varray_type vars_worklist, cond_worklist;
 
-  /* First get a list of all the interesting COND_EXPRs and potential single
-     use variables which feed those COND_EXPRs.  */
-  forwprop_data = record_single_argument_cond_exprs ();
+  vars = BITMAP_XMALLOC ();
+  VARRAY_TREE_INIT (vars_worklist, 10, "VARS worklist");
+  VARRAY_TREE_INIT (cond_worklist, 10, "COND worklist");
 
-  /* Now compute immediate uses for all the variables we care about.  */
-  compute_immediate_uses (TDFA_USE_OPS, need_imm_uses_for);
+  /* Prime the COND_EXPR worklist by placing all the COND_EXPRs on the
+     worklist.  */
+  FOR_EACH_BB (bb)
+    {
+      tree last = last_stmt (bb);
+      if (last && TREE_CODE (last) == COND_EXPR)
+	VARRAY_PUSH_TREE (cond_worklist, last);
+    }
 
-  /* We are done with the VARS bitmap and other dataflow information.  */
-  BITMAP_XFREE (vars);
-  vars = NULL;
+  while (VARRAY_ACTIVE_SIZE (cond_worklist) > 0)
+    {
+      /* First get a list of all the interesting COND_EXPRs and potential
+	 single use variables which feed those COND_EXPRs.  This will drain
+	 COND_WORKLIST and initialize VARS_WORKLIST.  */
+      record_single_argument_cond_exprs (cond_worklist, &vars_worklist, vars);
 
-  /* And optimize.  */
-  substitute_single_use_vars (forwprop_data);
+      if (VARRAY_ACTIVE_SIZE (vars_worklist) > 0)
+	{
+	  /* Now compute immediate uses for all the variables we care about.  */
+	  compute_immediate_uses (TDFA_USE_OPS, need_imm_uses_for);
+
+	  /* We've computed immediate uses, so we can/must clear the VARS
+	     bitmap for the next iteration.  */
+	  bitmap_clear (vars);
+
+	  /* And optimize.  This will drain VARS_WORKLIST and initialize
+	     COND_WORKLIST for the next iteration.  */
+	  substitute_single_use_vars (&cond_worklist, vars_worklist);
+
+	  /* We do not incrementally update the dataflow information
+	     so we must free it here and recompute the necessary bits
+	     on the next iteration.  If this turns out to be expensive,
+	     methods for incrementally updating the dataflow are known.  */
+	  free_df ();
+	}
+    }
 
   /* All done.  Clean up.  */
-  free_df ();
-  VARRAY_CLEAR (forwprop_data);
+  BITMAP_XFREE (vars);
 }
 
 

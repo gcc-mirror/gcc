@@ -1,3 +1,18 @@
+2004-05-13  Jeff Law  <law@redhat.com>
+
+	* tree-ssa-forwprop.c (record_single_argument_cond_exprs): Accept
+	new parameters for the statement and variable worklist as well
+	as a bitmap of interesting SSA_NAMEs.  Walk over the statement
+	worklist recording interesting variables in the variable worklist
+	and bitmap.  Handle casts between integral and boolean types.
+	(substitute_single_use_vars): Accept new parameters for the statement
+	and variable worklist.  When a substitution is made add a new
+	entry to the statement worklist.  Handle casts between integral
+	and boolean types.
+	(tree_ssa_forward_propagate_single_use_vars): Rework to pass
+	worklists to children.  Iterate until the statement worklist
+	is empty.
+
 2004-05-13  Andrew Pinski  <pinskia@physics.uc.edu>
 
 	* tree-outof-ssa.c (rewrite_vars_out_of_ssa): Free map at
