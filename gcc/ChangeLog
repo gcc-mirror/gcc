@@ -1,3 +1,21 @@
+2003-08-01  Neil Booth  <neil@daikokuya.co.uk>
+
+	* Makefile.in: Refine dependencies.
+	* c-opts.c (c_common_handle_option): Do nothing for -Wimport.
+	* c.opt: Update help for -Wimport.
+	* cppfiles.c: Include hashtab.h.  Update comments.
+	(stack_file): Read the file before updating dependencies.
+	(once_only_file_p): Be smarter about marking once-only files.
+	(_cpp_mark_file_once_only): Correct the check for existence on
+	the list.
+	(open_file_failed): Use name not path, which is NULL.
+	* cpphash.h: Don't include hashtab.h.
+	(struct _cpp_file): Remove.
+	(struct cpp_reader): Update.
+	* cppinit.c (cpp_create_reader): Don't initialize warn_import.
+	* cpplib.h (struct cpp_options): Remove warn_import.
+	(cpp_simplify_path): Remove.
+
 2003-08-01  Nathan Sidwell  <nathan@codesourcery.com>
 
 	PR c++/11295

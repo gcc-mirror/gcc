@@ -27,6 +27,7 @@ Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.  */
 #include "cpphash.h"
 #include "intl.h"
 #include "mkdeps.h"
+#include "hashtab.h"
 #include <dirent.h>
 
 /* Variable length record files on VMS will have a stat size that includes
@@ -68,8 +69,8 @@ struct _cpp_file
   /* The full path of the pch file.  */
   const char *pchname;
 
-  /* The file's path with the basename stripped, malloced.  NULL if it
-     hasn't been calculated yet.  */
+  /* The file's path with the basename stripped.  NULL if it hasn't
+     been calculated yet.  */
   const char *dir_name;
 
   /* Chain through #import-ed files or those  containing #pragma once.  */
@@ -83,8 +84,7 @@ struct _cpp_file
 
   /* The directory in the search path where FILE was found.  Used for
      #include_next and determining whether a header is a system
-     header.  Is NULL if the file was given as an absolute path, or
-     opened with read_file.  */
+     header.  */
   cpp_dir *dir;
 
   /* As filled in by stat(2) for the file.  */
@@ -126,23 +126,28 @@ struct _cpp_file
    its head pointed to by a slot in FILE_HASH.  The file name is what
    appeared between the quotes in a #include directive; it can be
    determined implicity from the hash table location or explicitly
-   from FILE->fname.
+   from FILE->name.
 
    FILE is a structure containing details about the file that was
    found with that search, or details of how the search failed.
 
    START_DIR is the starting location of the search in the include
    chain.  The current directories for "" includes are also hashed in
-   the hash table.  Files that are looked up without using a search
-   path, such as absolute filenames and file names from the command
-   line share a special starting directory so they don't get confused
-   with normal include-chain lookups in the cache.
+   the hash table and therefore unique.  Files that are looked up
+   without using a search path, such as absolute filenames and file
+   names from the command line share a special starting directory so
+   they don't cause cache hits with normal include-chain lookups.
 
    If START_DIR is NULL then the entry is for a directory, not a file,
    and the directory is in DIR.  Since the starting point in a file
    lookup chain is never NULL, this means that simple pointer
    comparisons against START_DIR can be made to determine cache hits
    in file lookups.
+
+   If a cache lookup fails because of e.g. an extra "./" in the path,
+   then nothing will break.  It is just less efficient as CPP will
+   have to do more work re-preprocessing the file, and/or comparing
+   its contents against earlier once-only files.
 */
 struct file_hash_entry
 {
@@ -530,6 +535,9 @@ stack_file (cpp_reader *pfile, _cpp_file *file, bool import)
   if (once_only_file_p (pfile, file, import))
       return false;
 
+  if (!read_file (pfile, file))
+    return false;
+
   sysp = MAX ((pfile->map ? pfile->map->sysp : 0),
 	      (file->dir ? file->dir->sysp : 0));
 
@@ -539,9 +547,6 @@ stack_file (cpp_reader *pfile, _cpp_file *file, bool import)
       if (!file->main_file || !CPP_OPTION (pfile, deps.ignore_main_file))
 	deps_add_dep (pfile->deps, file->path);
     }
-
-  if (!read_file (pfile, file))
-    return false;
 
   /* Clear buffer_valid since _cpp_clean_line messes it up.  */
   file->buffer_valid = false;
@@ -580,15 +585,12 @@ once_only_file_p (cpp_reader *pfile, _cpp_file *file, bool import)
     return true;
 
   /* Are we #import-ing a previously #import-ed file?  */
-  if (import)
-    {
-      if (file->import)
-	return true;
-      _cpp_mark_file_once_only (pfile, file, true);
-    }
+  if (import && file->import)
+    return true;
 
   /* Read the file contents now.  stack_file would do it later, and
-     we're smart enough to not do it twice, so this is no loss.  */
+     we're smart enough to not do it twice, so this is no loss.  Note
+     we don't mark the file once-only if we can't read it.  */
   if (!read_file (pfile, file))
     return false;
 
@@ -609,10 +611,13 @@ once_only_file_p (cpp_reader *pfile, _cpp_file *file, bool import)
 	  /* Size might have changed in read_file().  */
 	  && f->st.st_size == file->st.st_size
 	  && !memcmp (f->buffer, file->buffer, f->st.st_size))
-	return true;
+	break;
     }
 
-  return false;
+  if (import || f != NULL)
+    _cpp_mark_file_once_only (pfile, file, import);
+
+  return f != NULL;
 }
 
 /* Mark FILE to be included once only.  IMPORT is true if because of
@@ -620,21 +625,21 @@ once_only_file_p (cpp_reader *pfile, _cpp_file *file, bool import)
 void
 _cpp_mark_file_once_only (cpp_reader *pfile, _cpp_file *file, bool import)
 {
+  /* Put it on the once-only list if it's not on there already (an
+     earlier #include with a #pragma once might have put it on there
+     already).  */
+  if (!file->import && !file->pragma_once)
+    {
+      file->once_only_next = pfile->once_only_files;
+      pfile->once_only_files = file;
+    }
+
   if (import)
     file->import = true;
   else
     {
       pfile->saw_pragma_once = true;
       file->pragma_once = true;
-    }
-
-  /* Put it on the once-only list if it's not on there already (an
-     earlier #include with a #pragma once might have put it on there
-     already).  */
-  if (file->once_only_next == NULL)
-    {
-      file->once_only_next = pfile->once_only_files;
-      pfile->once_only_files = file;
     }
 }
 
@@ -731,7 +736,7 @@ open_file_failed (cpp_reader *pfile, _cpp_file *file)
 
   errno = file->err_no;
   if (print_dep && CPP_OPTION (pfile, deps.missing_files) && errno == ENOENT)
-    deps_add_dep (pfile->deps, file->path);
+    deps_add_dep (pfile->deps, file->name);
   else
     {
       /* If we are outputting dependencies but not for this file then

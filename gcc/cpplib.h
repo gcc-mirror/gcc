@@ -267,9 +267,6 @@ struct cpp_options
   /* Nonzero means warn if there are any trigraphs.  */
   unsigned char warn_trigraphs;
 
-  /* Nonzero means warn if #import is used.  */
-  unsigned char warn_import;
-
   /* Nonzero means warn about multicharacter charconsts.  */
   unsigned char warn_multichar;
 
@@ -712,7 +709,6 @@ extern unsigned char *cpp_quote_string (unsigned char *, const unsigned char *,
 /* In cppfiles.c */
 extern bool cpp_included (cpp_reader *, const char *);
 extern void cpp_make_system_header (cpp_reader *, int, int);
-extern void cpp_simplify_path (char *);
 extern bool cpp_push_include (cpp_reader *, const char *);
 extern void cpp_change_file (cpp_reader *, enum lc_reason, const char *);
 

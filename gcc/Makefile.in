@@ -2354,7 +2354,7 @@ LIBCPP_OBJS =	cpplib.o cpplex.o cppmacro.o cppexp.o cppfiles.o cpptrad.o \
 		hashtable.o line-map.o mkdeps.o cpppch.o
 
 LIBCPP_DEPS =	$(CPPLIB_H) cpphash.h line-map.h hashtable.h intl.h \
-		$(HASHTAB_H) $(OBSTACK_H) $(CONFIG_H) $(SYSTEM_H)
+		$(OBSTACK_H) $(CONFIG_H) $(SYSTEM_H)
 
 # Most of the other archives built/used by this makefile are for
 # targets.  This one is strictly for the host.
@@ -2371,7 +2371,7 @@ cppmacro.o: cppmacro.c $(LIBCPP_DEPS)
 cpplib.o:   cpplib.c   $(LIBCPP_DEPS)
 cpphash.o:  cpphash.c  $(LIBCPP_DEPS)
 cpptrad.o:  cpptrad.c  $(LIBCPP_DEPS)
-cppfiles.o: cppfiles.c $(LIBCPP_DEPS) $(SPLAY_TREE_H) mkdeps.h
+cppfiles.o: cppfiles.c $(LIBCPP_DEPS) $(HASHTAB_H) mkdeps.h
 cppinit.o:  cppinit.c  $(LIBCPP_DEPS) mkdeps.h
 cpppch.o:   cpppch.c   $(LIBCPP_DEPS) mkdeps.h
 
