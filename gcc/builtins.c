@@ -156,8 +156,6 @@ static tree fold_builtin_bitop (tree);
 static tree fold_builtin_memcpy (tree);
 static tree fold_builtin_mempcpy (tree);
 static tree fold_builtin_memmove (tree);
-static tree fold_builtin_strcpy (tree);
-static tree fold_builtin_strncpy (tree);
 static tree fold_builtin_strchr (tree, bool);
 static tree fold_builtin_memcmp (tree);
 static tree fold_builtin_strcmp (tree);
@@ -170,6 +168,7 @@ static tree fold_builtin_isdigit (tree);
 static tree fold_builtin_fabs (tree, tree);
 static tree fold_builtin_abs (tree, tree);
 static tree fold_builtin_unordered_cmp (tree, enum tree_code, enum tree_code);
+static tree fold_builtin_1 (tree, bool);
 
 static tree simplify_builtin_memcmp (tree);
 static tree simplify_builtin_strcmp (tree);
@@ -7314,14 +7313,15 @@ fold_builtin_memmove (tree exp)
   return 0;
 }
 
-/* Fold function call to builtin strcpy.  Return
-   NULL_TREE if no simplification can be made.  */
+/* Fold function call to builtin strcpy.  If LEN is not NULL, it represents
+   the length of the string to be copied.  Return NULL_TREE if no
+   simplification can be made.  */
 
-static tree
-fold_builtin_strcpy (tree exp)
+tree
+fold_builtin_strcpy (tree exp, tree len)
 {
   tree arglist = TREE_OPERAND (exp, 1);
-  tree dest, src;
+  tree dest, src, fn;
 
   if (!validate_arglist (arglist,
 			 POINTER_TYPE, POINTER_TYPE, VOID_TYPE))
@@ -7334,17 +7334,37 @@ fold_builtin_strcpy (tree exp)
   if (operand_equal_p (src, dest, 0))
     return fold_convert (TREE_TYPE (exp), dest);
 
-  return 0;
+  if (optimize_size)
+    return 0;
+
+  fn = implicit_built_in_decls[BUILT_IN_MEMCPY];
+  if (!fn)
+    return 0;
+
+  if (!len)
+    {
+      len = c_strlen (src, 1);
+      if (! len || TREE_SIDE_EFFECTS (len))
+	return 0;
+    }
+
+  len = size_binop (PLUS_EXPR, len, ssize_int (1));
+  arglist = build_tree_list (NULL_TREE, len);
+  arglist = tree_cons (NULL_TREE, src, arglist);
+  arglist = tree_cons (NULL_TREE, dest, arglist);
+  return fold_convert (TREE_TYPE (exp),
+		       build_function_call_expr (fn, arglist));
 }
 
-/* Fold function call to builtin strncpy.  Return
-   NULL_TREE if no simplification can be made.  */
+/* Fold function call to builtin strncpy.  If SLEN is not NULL, it represents
+   the length of the source string.  Return NULL_TREE if no simplification
+   can be made.  */
 
-static tree
-fold_builtin_strncpy (tree exp)
+tree
+fold_builtin_strncpy (tree exp, tree slen)
 {
   tree arglist = TREE_OPERAND (exp, 1);
-  tree dest, src, len;
+  tree dest, src, len, fn;
 
   if (!validate_arglist (arglist,
 			 POINTER_TYPE, POINTER_TYPE, INTEGER_TYPE, VOID_TYPE))
@@ -7358,7 +7378,27 @@ fold_builtin_strncpy (tree exp)
   if (integer_zerop (len))
     return omit_one_operand (TREE_TYPE (exp), dest, src);
 
-  return 0;
+  if (!slen)
+    slen = c_strlen (src, 1);
+
+  /* Now, we must be passed a constant src ptr parameter.  */
+  if (slen == 0 || TREE_CODE (slen) != INTEGER_CST)
+    return 0;
+
+  slen = size_binop (PLUS_EXPR, slen, ssize_int (1));
+
+  /* We do not support simplification of this case, though we do
+     support it when expanding trees into RTL.  */
+  /* FIXME: generate a call to __builtin_memset.  */
+  if (tree_int_cst_lt (slen, len))
+    return 0;
+
+  /* OK transform into builtin memcpy.  */
+  fn = implicit_built_in_decls[BUILT_IN_MEMCPY];
+  if (!fn)
+    return 0;
+  return fold_convert (TREE_TYPE (exp),
+		       build_function_call_expr (fn, arglist));
 }
 
 /* Fold function call to builtin strchr and strrchr.
@@ -7886,11 +7926,13 @@ fold_builtin_unordered_cmp (tree exp,
 		       fold (build2 (code, type, arg0, arg1))));
 }
 
-/* Used by constant folding to eliminate some builtin calls early.  EXP is
-   the CALL_EXPR of a call to a builtin function.  */
+/* Used by constant folding to simplify calls to builtin functions.  EXP is
+   the CALL_EXPR of a call to a builtin function.  IGNORE is true if the
+   result of the function call is ignored.  This function returns NULL_TREE
+   if no simplification was possible.  */
 
 static tree
-fold_builtin_1 (tree exp)
+fold_builtin_1 (tree exp, bool ignore)
 {
   tree fndecl = get_callee_fndecl (exp);
   tree arglist = TREE_OPERAND (exp, 1);
@@ -8397,10 +8439,10 @@ fold_builtin_1 (tree exp)
       return fold_builtin_memmove (exp);
 
     case BUILT_IN_STRCPY:
-      return fold_builtin_strcpy (exp);
+      return fold_builtin_strcpy (exp, NULL_TREE);
 
     case BUILT_IN_STRNCPY:
-      return fold_builtin_strncpy (exp);
+      return fold_builtin_strncpy (exp, NULL_TREE);
 
     case BUILT_IN_INDEX:
     case BUILT_IN_STRCHR:
@@ -8466,6 +8508,12 @@ fold_builtin_1 (tree exp)
     case BUILT_IN_ISUNORDERED:
       return fold_builtin_unordered_cmp (exp, UNORDERED_EXPR, NOP_EXPR);
 
+    case BUILT_IN_FPUTS:
+      return fold_builtin_fputs (arglist, ignore, false, NULL_TREE);
+
+    case BUILT_IN_FPUTS_UNLOCKED:
+      return fold_builtin_fputs (arglist, ignore, true, NULL_TREE);
+
     default:
       break;
     }
@@ -8478,9 +8526,9 @@ fold_builtin_1 (tree exp)
    call node earlier than the warning is generated.  */
 
 tree
-fold_builtin (tree exp)
+fold_builtin (tree exp, bool ignore)
 {
-  exp = fold_builtin_1 (exp);
+  exp = fold_builtin_1 (exp, ignore);
   if (exp)
     {
       /* ??? Don't clobber shared nodes such as integer_zero_node.  */
@@ -8614,10 +8662,10 @@ simplify_builtin (tree exp, int ignore)
   switch (fcode)
     {
     case BUILT_IN_FPUTS:
-      val = simplify_builtin_fputs (arglist, ignore, 0, NULL_TREE);
+      val = fold_builtin_fputs (arglist, ignore, false, NULL_TREE);
       break;
     case BUILT_IN_FPUTS_UNLOCKED:
-      val = simplify_builtin_fputs (arglist, ignore, 1, NULL_TREE);
+      val = fold_builtin_fputs (arglist, ignore, true, NULL_TREE);
       break;
     case BUILT_IN_STRSTR:
       val = simplify_builtin_strstr (arglist);
@@ -8643,10 +8691,10 @@ simplify_builtin (tree exp, int ignore)
       val = simplify_builtin_strrchr (arglist);
       break;
     case BUILT_IN_STRCPY:
-      val = simplify_builtin_strcpy (arglist, NULL_TREE);
+      val = fold_builtin_strcpy (exp, NULL_TREE);
       break;
     case BUILT_IN_STRNCPY:
-      val = simplify_builtin_strncpy (arglist, NULL_TREE);
+      val = fold_builtin_strncpy (exp, NULL_TREE);
       break;
     case BUILT_IN_STRCMP:
       val = simplify_builtin_strcmp (arglist);
@@ -8932,115 +8980,6 @@ simplify_builtin_strpbrk (tree arglist)
       arglist =
 	build_tree_list (NULL_TREE, build_int_2 (p2[0], 0));
       arglist = tree_cons (NULL_TREE, s1, arglist);
-      return build_function_call_expr (fn, arglist);
-    }
-}
-
-/* Simplify a call to the strcpy builtin.
-
-   Return 0 if no simplification was possible, otherwise return the
-   simplified form of the call as a tree.
-
-   The simplified form may be a constant or other expression which
-   computes the same value, but in a more efficient manner (including
-   calls to other builtin functions).
-
-   The call may contain arguments which need to be evaluated, but
-   which are not useful to determine the result of the call.  In
-   this case we return a chain of COMPOUND_EXPRs.  The LHS of each
-   COMPOUND_EXPR will be an argument which must be evaluated.
-   COMPOUND_EXPRs are chained through their RHS.  The RHS of the last
-   COMPOUND_EXPR in the chain will contain the tree for the simplified
-   form of the builtin function call.  */
-
-tree
-simplify_builtin_strcpy (tree arglist, tree len)
-{
-  tree fn, src, dst;
-
-  if (!validate_arglist (arglist, POINTER_TYPE, POINTER_TYPE, VOID_TYPE))
-    return 0;
-
-  fn = implicit_built_in_decls[BUILT_IN_MEMCPY];
-  if (!fn)
-    return 0;
-
-  src = TREE_VALUE (TREE_CHAIN (arglist));
-  dst = TREE_VALUE (arglist);
-
-  if (!len)
-    {
-      len = c_strlen (src, 1);
-      if (!len || TREE_SIDE_EFFECTS (len))
-	return 0;
-    }
-
-  len = size_binop (PLUS_EXPR, len, ssize_int (1));
-  arglist = build_tree_list (NULL_TREE, len);
-  arglist = tree_cons (NULL_TREE, src, arglist);
-  arglist = tree_cons (NULL_TREE, dst, arglist);
-  return build_function_call_expr (fn, arglist);
-}
-
-/* Simplify a call to the strncpy builtin.
-
-   Return 0 if no simplification was possible, otherwise return the
-   simplified form of the call as a tree.
-
-   The simplified form may be a constant or other expression which
-   computes the same value, but in a more efficient manner (including
-   calls to other builtin functions).
-
-   The call may contain arguments which need to be evaluated, but
-   which are not useful to determine the result of the call.  In
-   this case we return a chain of COMPOUND_EXPRs.  The LHS of each
-   COMPOUND_EXPR will be an argument which must be evaluated.
-   COMPOUND_EXPRs are chained through their RHS.  The RHS of the last
-   COMPOUND_EXPR in the chain will contain the tree for the simplified
-   form of the builtin function call.  */
-
-tree
-simplify_builtin_strncpy (tree arglist, tree slen)
-{
-  if (!validate_arglist (arglist,
-			 POINTER_TYPE, POINTER_TYPE, INTEGER_TYPE, VOID_TYPE))
-    return 0;
-  else
-    {
-      tree len = TREE_VALUE (TREE_CHAIN (TREE_CHAIN (arglist)));
-      tree fn;
-
-      /* We must be passed a constant len parameter.  */
-      if (TREE_CODE (len) != INTEGER_CST)
-	return 0;
-
-      /* If the len parameter is zero, return the dst parameter.  */
-      if (integer_zerop (len))
-	/* Evaluate and ignore the src argument in case it has
-	   side-effects and return the dst parameter.  */
-	return omit_one_operand (TREE_TYPE (TREE_VALUE (arglist)),
-				 TREE_VALUE (arglist),
-				 TREE_VALUE (TREE_CHAIN (arglist)));
-
-      if (!slen)
-        slen = c_strlen (TREE_VALUE (TREE_CHAIN (arglist)), 0);
-
-      /* Now, we must be passed a constant src ptr parameter.  */
-      if (slen == 0 || TREE_CODE (slen) != INTEGER_CST)
-	return 0;
-
-      slen = size_binop (PLUS_EXPR, slen, ssize_int (1));
-
-      /* We do not support simplification of this case, though we do
-         support it when expanding trees into RTL.  */
-      /* FIXME: generate a call to __builtin_memset.  */
-      if (tree_int_cst_lt (slen, len))
-	return 0;
-
-      /* OK transform into builtin memcpy.  */
-      fn = implicit_built_in_decls[BUILT_IN_MEMCPY];
-      if (!fn)
-	return 0;
       return build_function_call_expr (fn, arglist);
     }
 }
@@ -9454,31 +9393,16 @@ simplify_builtin_strcspn (tree arglist)
     }
 }
 
-/* Simplify a call to the fputs builtin.
-
-   Return 0 if no simplification was possible, otherwise return the
-   simplified form of the call as a tree.
-
-   The simplified form may be a constant or other expression which
-   computes the same value, but in a more efficient manner (including
-   calls to other builtin functions).
-
-   The call may contain arguments which need to be evaluated, but
-   which are not useful to determine the result of the call.  In
-   this case we return a chain of COMPOUND_EXPRs.  The LHS of each
-   COMPOUND_EXPR will be an argument which must be evaluated.
-   COMPOUND_EXPRs are chained through their RHS.  The RHS of the last
-   COMPOUND_EXPR in the chain will contain the tree for the simplified
-   form of the builtin function call.
-
-   If KNOWN_LEN is non-NULL, it represents the known length of the string.
-   This is determined by SSA-CCP in cases where the string itself is not
-   known to be constant but its length is always the same constant.  */
+/* Fold a call to the fputs builtin.  IGNORE is true if the value returned
+   by the builtin will be ignored.  UNLOCKED is true is true if this
+   actually a call to fputs_unlocked.  If LEN in non-NULL, it represents
+   the known length of the string.  Return NULL_TREE if no simplification
+   was possible.  */
 
 tree
-simplify_builtin_fputs (tree arglist, int ignore, int unlocked, tree known_len)
+fold_builtin_fputs (tree arglist, bool ignore, bool unlocked, tree len)
 {
-  tree len, fn;
+  tree fn;
   tree fn_fputc = unlocked ? implicit_built_in_decls[BUILT_IN_FPUTC_UNLOCKED]
     : implicit_built_in_decls[BUILT_IN_FPUTC];
   tree fn_fwrite = unlocked ? implicit_built_in_decls[BUILT_IN_FWRITE_UNLOCKED]
@@ -9493,7 +9417,8 @@ simplify_builtin_fputs (tree arglist, int ignore, int unlocked, tree known_len)
   if (!validate_arglist (arglist, POINTER_TYPE, POINTER_TYPE, VOID_TYPE))
     return 0;
 
-  len = (known_len) ? known_len : c_strlen (TREE_VALUE (arglist), 0);
+  if (! len)
+    len = c_strlen (TREE_VALUE (arglist), 0);
 
   /* Get the length of the string passed to fputs.  If the length
      can't be determined, punt.  */
@@ -9517,8 +9442,7 @@ simplify_builtin_fputs (tree arglist, int ignore, int unlocked, tree known_len)
 	       fputc(string[0], stream).  */
 	    arglist =
 	      build_tree_list (NULL_TREE, TREE_VALUE (TREE_CHAIN (arglist)));
-	    arglist =
-	      tree_cons (NULL_TREE, build_int_2 (p[0], 0), arglist);
+	    arglist = tree_cons (NULL_TREE, build_int_2 (p[0], 0), arglist);
 	    fn = fn_fputc;
 	    break;
 	  }
@@ -9534,7 +9458,8 @@ simplify_builtin_fputs (tree arglist, int ignore, int unlocked, tree known_len)
 	string_arg = TREE_VALUE (arglist);
 	/* New argument list transforming fputs(string, stream) to
 	   fwrite(string, 1, len, stream).  */
-	arglist = build_tree_list (NULL_TREE, TREE_VALUE (TREE_CHAIN (arglist)));
+	arglist = build_tree_list (NULL_TREE,
+				   TREE_VALUE (TREE_CHAIN (arglist)));
 	arglist = tree_cons (NULL_TREE, len, arglist);
 	arglist = tree_cons (NULL_TREE, size_one_node, arglist);
 	arglist = tree_cons (NULL_TREE, string_arg, arglist);
@@ -9545,7 +9470,8 @@ simplify_builtin_fputs (tree arglist, int ignore, int unlocked, tree known_len)
       abort ();
     }
 
-  return build_function_call_expr (fn, arglist);
+  return fold_convert (integer_type_node,
+		       build_function_call_expr (fn, arglist));
 }
 
 static void

@@ -3423,7 +3423,10 @@ extern bool tree_swap_operands_p (tree, tree, bool);
 extern enum tree_code swap_tree_comparison (enum tree_code);
 
 /* In builtins.c */
-extern tree fold_builtin (tree);
+extern tree fold_builtin (tree, bool);
+extern tree fold_builtin_fputs (tree, bool, bool, tree);
+extern tree fold_builtin_strcpy (tree, tree);
+extern tree fold_builtin_strncpy (tree, tree);
 extern enum built_in_function builtin_mathfn_code (tree);
 extern tree build_function_call_expr (tree, tree);
 extern tree mathfn_built_in (tree, enum built_in_function fn);

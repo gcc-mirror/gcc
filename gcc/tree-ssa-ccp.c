@@ -950,7 +950,7 @@ ccp_fold (tree stmt)
 
 	  /* Substitute operands with their values and try to fold.  */
 	  replace_uses_in (stmt, NULL);
-	  retval = fold_builtin (rhs);
+	  retval = fold_builtin (rhs, false);
 
 	  /* Restore operands to their original form.  */
 	  for (i = 0; i < NUM_USES (uses); i++)
@@ -963,13 +963,7 @@ ccp_fold (tree stmt)
 
   /* If we got a simplified form, see if we need to convert its type.  */
   if (retval)
-    {
-      if (TREE_TYPE (retval) != TREE_TYPE (rhs))
-	retval = fold_convert (TREE_TYPE (rhs), retval);
-
-      if (TREE_TYPE (retval) == TREE_TYPE (rhs))
-	return retval;
-    }
+    return fold_convert (TREE_TYPE (rhs), retval);
 
   /* No simplification was possible.  */
   return rhs;
@@ -2307,23 +2301,31 @@ static tree
 ccp_fold_builtin (tree stmt, tree fn)
 {
   tree result, strlen_val[2];
-  tree arglist = TREE_OPERAND (fn, 1), a;
-  tree callee = get_callee_fndecl (fn);
-  bitmap visited;
+  tree callee, arglist, a;
   int strlen_arg, i;
+  bitmap visited;
+  bool ignore;
 
-  /* Ignore MD builtins.  */
-  if (DECL_BUILT_IN_CLASS (callee) == BUILT_IN_MD)
-    return NULL_TREE;
+  ignore = TREE_CODE (stmt) != MODIFY_EXPR;
 
   /* First try the generic builtin folder.  If that succeeds, return the
      result directly.  */
-  result = fold_builtin (fn);
+  result = fold_builtin (fn, ignore);
   if (result)
+  {
+    if (ignore)
+      STRIP_NOPS (result);
     return result;
+  }
+
+  /* Ignore MD builtins.  */
+  callee = get_callee_fndecl (fn);
+  if (DECL_BUILT_IN_CLASS (callee) == BUILT_IN_MD)
+    return NULL_TREE;
 
   /* If the builtin could not be folded, and it has no argument list,
      we're done.  */
+  arglist = TREE_OPERAND (fn, 1);
   if (!arglist)
     return NULL_TREE;
 
@@ -2359,16 +2361,13 @@ ccp_fold_builtin (tree stmt, tree fn)
 
   BITMAP_XFREE (visited);
 
-  /* FIXME.  All this code looks dangerous in the sense that it might
-     create non-gimple expressions.  */
+  result = NULL_TREE;
   switch (DECL_FUNCTION_CODE (callee))
     {
     case BUILT_IN_STRLEN:
-      /* Convert from the internal "sizetype" type to "size_t".  */
-      if (strlen_val[0]
-	  && size_type_node)
+      if (strlen_val[0])
 	{
-	  tree new = convert (size_type_node, strlen_val[0]);
+	  tree new = fold_convert (TREE_TYPE (fn), strlen_val[0]);
 
 	  /* If the result is not a valid gimple value, or not a cast
 	     of a valid gimple value, then we can not use the result.  */
@@ -2376,32 +2375,38 @@ ccp_fold_builtin (tree stmt, tree fn)
 	      || (is_gimple_cast (new)
 		  && is_gimple_val (TREE_OPERAND (new, 0))))
 	    return new;
-	  else
-	    return NULL_TREE;
 	}
-      return strlen_val[0];
+      break;
+
     case BUILT_IN_STRCPY:
-      if (strlen_val[1]
-	  && is_gimple_val (strlen_val[1]))
-      return simplify_builtin_strcpy (arglist, strlen_val[1]);
+      if (strlen_val[1] && is_gimple_val (strlen_val[1]))
+        result = fold_builtin_strcpy (fn, strlen_val[1]);
+      break;
+
     case BUILT_IN_STRNCPY:
-      if (strlen_val[1]
-	  && is_gimple_val (strlen_val[1]))
-      return simplify_builtin_strncpy (arglist, strlen_val[1]);
+      if (strlen_val[1] && is_gimple_val (strlen_val[1]))
+	result = fold_builtin_strncpy (fn, strlen_val[1]);
+      break;
+
     case BUILT_IN_FPUTS:
-      return simplify_builtin_fputs (arglist,
-				     TREE_CODE (stmt) != MODIFY_EXPR, 0,
-				     strlen_val[0]);
+      result = fold_builtin_fputs (arglist,
+				   TREE_CODE (stmt) != MODIFY_EXPR, 0,
+				   strlen_val[0]);
+      break;
+
     case BUILT_IN_FPUTS_UNLOCKED:
-      return simplify_builtin_fputs (arglist,
-				     TREE_CODE (stmt) != MODIFY_EXPR, 1,
-				     strlen_val[0]);
+      result = fold_builtin_fputs (arglist,
+				   TREE_CODE (stmt) != MODIFY_EXPR, 1,
+				   strlen_val[0]);
+      break;
 
     default:
       abort ();
     }
 
-  return NULL_TREE;
+  if (result && ignore)
+    STRIP_NOPS (result);
+  return result;
 }
 
 

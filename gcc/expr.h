@@ -389,9 +389,6 @@ extern void expand_builtin_setjmp_receiver (rtx);
 extern void expand_builtin_longjmp (rtx, rtx);
 extern rtx expand_builtin_saveregs (void);
 extern void expand_builtin_trap (void);
-extern tree simplify_builtin_fputs (tree, int, int, tree);
-extern tree simplify_builtin_strcpy (tree, tree);
-extern tree simplify_builtin_strncpy (tree, tree);
 
 /* Functions from expr.c:  */
 

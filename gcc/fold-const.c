@@ -8937,7 +8937,7 @@ fold (tree expr)
 	      == FUNCTION_DECL)
 	  && DECL_BUILT_IN (TREE_OPERAND (TREE_OPERAND (t, 0), 0)))
 	{
-	  tree tmp = fold_builtin (t);
+	  tree tmp = fold_builtin (t, false);
 	  if (tmp)
 	    return tmp;
 	}
