@@ -1,3 +1,8 @@
+Fri Oct 22 09:03:44 1999  Mark Mitchell  <mark@codesourcery.com>
+
+	* i386.md: Add missing `y' modifiers to uses of fst, fstp, fld,
+	and fld.
+
 1999-10-22  Bruce Korb  <autogen@linuxbox.com>
 
 	* fixinc/README: document the "mach" machine matching test
