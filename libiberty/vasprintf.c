@@ -18,14 +18,14 @@ License along with libiberty; see the file COPYING.LIB.  If
 not, write to the Free Software Foundation, Inc., 59 Temple Place - Suite 330,
 Boston, MA 02111-1307, USA.  */
 
-#include <stdio.h>
-#include <string.h>
-#include <ansidecl.h>
 #ifdef __STDC__
 #include <stdarg.h>
 #else
 #include <varargs.h>
 #endif
+#include <stdio.h>
+#include <string.h>
+#include <ansidecl.h>
 
 #ifdef TEST
 int global_total_width;
