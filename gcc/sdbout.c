@@ -44,9 +44,9 @@ AT&T C compiler.  From the example below I would conclude the following:
 
 #ifdef SDB_DEBUGGING_INFO
 
+#include <stdio.h>
 #include "tree.h"
 #include "rtl.h"
-#include <stdio.h>
 #include "regs.h"
 #include "defaults.h"
 #include "flags.h"

@@ -59,8 +59,8 @@ Boston, MA 02111-1307, USA.  */
    register is used as a spill register.  So we don't allocate such pseudos
    here if their preferred class is likely to be used by spills.  */
 
-#include <stdio.h>
 #include "config.h"
+#include <stdio.h>
 #include "rtl.h"
 #include "flags.h"
 #include "basic-block.h"
@@ -695,6 +695,9 @@ memref_referenced_p (memref, x)
 	return 1;
 
       return memref_referenced_p (memref, SET_SRC (x));
+      
+    default:
+      break;
     }
 
   fmt = GET_RTX_FORMAT (code);
@@ -758,13 +761,11 @@ optimize_reg_copy_1 (insn, dest, src)
   int sregno = REGNO (src);
   int dregno = REGNO (dest);
 
+  /* We don't want to mess with hard regs if register classes are small. */
   if (sregno == dregno
-#ifdef SMALL_REGISTER_CLASSES
-      /* We don't want to mess with hard regs if register classes are small. */
       || (SMALL_REGISTER_CLASSES
 	  && (sregno < FIRST_PSEUDO_REGISTER
 	      || dregno < FIRST_PSEUDO_REGISTER))
-#endif
       /* We don't see all updates to SP if they are in an auto-inc memory
 	 reference, so we must disallow this optimization on them.  */
       || sregno == STACK_POINTER_REGNUM || dregno == STACK_POINTER_REGNUM)

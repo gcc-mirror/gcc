@@ -506,6 +506,7 @@ extern rtx chkr_check_addr_libfunc;
 extern rtx chkr_set_right_libfunc;
 extern rtx chkr_copy_bitmap_libfunc;
 extern rtx chkr_check_exec_libfunc;
+extern rtx chkr_check_str_libfunc;
 
 typedef rtx (*rtxfun) PROTO ((rtx));
 
@@ -681,7 +682,7 @@ extern rtx convert_to_mode PROTO((enum machine_mode, rtx, int));
 extern rtx convert_modes PROTO((enum machine_mode, enum machine_mode, rtx, int));
 
 /* Emit code to move a block Y to a block X.  */
-extern void emit_block_move PROTO((rtx, rtx, rtx, int));
+extern rtx emit_block_move PROTO((rtx, rtx, rtx, int));
 
 /* Copy all or part of a value X into registers starting at REGNO.
    The number of registers to be filled is NREGS.  */
@@ -709,7 +710,7 @@ extern void use_group_regs PROTO((rtx *, rtx));
 /* Write zeros through the storage of OBJECT.
    If OBJECT has BLKmode, SIZE is its length in bytes and ALIGN is its
    alignment.  */
-extern void clear_storage PROTO((rtx, rtx, int));
+extern rtx clear_storage PROTO((rtx, rtx, int));
 
 /* Emit insns to set X from Y.  */
 extern rtx emit_move_insn PROTO((rtx, rtx));
@@ -918,8 +919,6 @@ extern rtx hard_libcall_value PROTO((enum machine_mode));
 /* Given an rtx, return an rtx for a value rounded up to a multiple
    of STACK_BOUNDARY / BITS_PER_UNIT.  */
 extern rtx round_push PROTO((rtx));
-
-extern void emit_block_move PROTO((rtx, rtx, rtx, int));
 
 extern rtx store_bit_field PROTO((rtx, int, int, enum machine_mode, rtx, int, int));
 extern rtx extract_bit_field PROTO((rtx, int, int, int, rtx, enum machine_mode, enum machine_mode, int, int));

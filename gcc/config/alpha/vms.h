@@ -127,19 +127,98 @@ Boston, MA 02111-1307, USA.  */
   if ((TO) == STACK_POINTER_REGNUM)					\
     (OFFSET) += ALPHA_ROUND (current_function_outgoing_args_size);	\
 }
+
+/* Define a data type for recording info about an argument list
+   during the scan of that argument list.  This data type should
+   hold all necessary information about the function itself
+   and about the args processed so far, enough to enable macros
+   such as FUNCTION_ARG to determine where the next arg should go.
+
+   On Alpha/VMS, this is a structure that contains the number of
+   arguments and, for each argument, the datatype of that argument.
+
+   The number of arguments is a number of words of arguments scanned so far.
+   Thus 6 or more means all following args should go on the stack.  */
+
+enum avms_arg_type {I64, FF, FD, FG, FS, FT};
+typedef struct {char num_args; enum avms_arg_type atypes[6];} avms_arg_info;
+
+#undef CUMULATIVE_ARGS
+#define CUMULATIVE_ARGS avms_arg_info
+
+/* Initialize a variable CUM of type CUMULATIVE_ARGS
+   for a call to a function whose data type is FNTYPE.
+   For a library call, FNTYPE is 0.  */
+
+#undef INIT_CUMULATIVE_ARGS
+#define INIT_CUMULATIVE_ARGS(CUM,FNTYPE,LIBNAME,INDIRECT) \
+  (CUM).num_args = 0;						\
+  (CUM).atypes[0] = (CUM).atypes[1] = (CUM).atypes[2] = I64;	\
+  (CUM).atypes[3] = (CUM).atypes[4] = (CUM).atypes[5] = I64;
+
+/* Update the data in CUM to advance over an argument
+   of mode MODE and data type TYPE.
+   (TYPE is null for libcalls where that information may not be available.)  */
+
+extern enum avms_arg_type alpha_arg_type ();
+
+/* Determine where to put an argument to a function.
+   Value is zero to push the argument on the stack,
+   or a hard register in which to store the argument.
+
+   MODE is the argument's machine mode (or VOIDmode for no more args).
+   TYPE is the data type of the argument (as a tree).
+    This is null for libcalls where that information may
+    not be available.
+   CUM is a variable of type CUMULATIVE_ARGS which gives info about
+    the preceding args and about the function being called.
+   NAMED is nonzero if this argument is a named parameter
+    (otherwise it is an extra parameter matching an ellipsis).
+
+   On Alpha the first 6 words of args are normally in registers
+   and the rest are pushed.  */
+
+extern struct rtx_def *alpha_arg_info_reg_val ();
+#undef FUNCTION_ARG
+#define FUNCTION_ARG(CUM, MODE, TYPE, NAMED)	\
+((MODE) == VOIDmode ? alpha_arg_info_reg_val (CUM)		\
+ : ((CUM.num_args) < 6 && ! MUST_PASS_IN_STACK (MODE, TYPE)	\
+    ? gen_rtx(REG, (MODE),					\
+	      ((CUM).num_args + 16				\
+	       + ((TARGET_FPREGS				\
+		   && (GET_MODE_CLASS (MODE) == MODE_COMPLEX_FLOAT \
+		       || GET_MODE_CLASS (MODE) == MODE_FLOAT)) \
+		  * 32)))			\
+    : 0))
 
 #undef FUNCTION_ARG_ADVANCE
 #define FUNCTION_ARG_ADVANCE(CUM, MODE, TYPE, NAMED)			\
   if (MUST_PASS_IN_STACK (MODE, TYPE))					\
-    (CUM) = (CUM & ~0xff) + 6;						\
+    (CUM).num_args += 6;						\
   else									\
-    (CUM) += ALPHA_ARG_SIZE (MODE, TYPE, NAMED)
+    {									\
+      if ((CUM).num_args < 6)						\
+        (CUM).atypes[(CUM).num_args] = alpha_arg_type (MODE);		\
+									\
+     (CUM).num_args += ALPHA_ARG_SIZE (MODE, TYPE, NAMED);		\
+    }
+
+/* For an arg passed partly in registers and partly in memory,
+   this is the number of registers used.
+   For args passed entirely in registers or entirely in memory, zero.  */
 
 #undef FUNCTION_ARG_PARTIAL_NREGS
 #define FUNCTION_ARG_PARTIAL_NREGS(CUM, MODE, TYPE, NAMED)		\
-((CUM & 0xff) < 6 && 6 < (CUM & 0xff)					\
+((CUM).num_args < 6 && 6 < (CUM).num_args				\
    + ALPHA_ARG_SIZE (MODE, TYPE, NAMED)					\
- ? 6 - (CUM & 0xff) : 0)
+ ? 6 - (CUM).num_args : 0)
+
+#undef ENCODE_SECTION_INFO
+#define ENCODE_SECTION_INFO(DECL)				\
+do {								\
+  if (TREE_CODE (DECL) == FUNCTION_DECL && ! TREE_PUBLIC (DECL)) \
+    SYMBOL_REF_FLAG (XEXP (DECL_RTL (DECL), 0)) = 1;		\
+} while (0)
 
 /* Perform any needed actions needed for a function that is receiving a
    variable number of arguments. 
@@ -164,7 +243,7 @@ Boston, MA 02111-1307, USA.  */
 
 #undef SETUP_INCOMING_VARARGS
 #define SETUP_INCOMING_VARARGS(CUM,MODE,TYPE,PRETEND_SIZE,NO_RTL)	\
-{ if ((CUM) < 6)					\
+{ if ((CUM).num_args < 6)				\
     {							\
       if (! (NO_RTL))					\
 	{						\
@@ -206,11 +285,11 @@ Boston, MA 02111-1307, USA.  */
   }
 
 #define LINK_SECTION_ASM_OP ".link"
-
 #define READONLY_SECTION_ASM_OP ".rdata"
+#define LITERALS_SECTION_ASM_OP ".literals"
 
 #undef EXTRA_SECTIONS
-#define EXTRA_SECTIONS	in_link, in_rdata
+#define EXTRA_SECTIONS	in_link, in_rdata, in_literals
 
 #undef EXTRA_SECTION_FUNCTIONS
 #define EXTRA_SECTION_FUNCTIONS					\
@@ -231,6 +310,15 @@ link_section ()							\
       fprintf (asm_out_file, "%s\n", LINK_SECTION_ASM_OP); 	\
       in_section = in_link;					\
     }								\
+}                                                               \
+void								\
+literals_section ()						\
+{								\
+  if (in_section != in_literals)				\
+    {								\
+      fprintf (asm_out_file, "%s\n", LITERALS_SECTION_ASM_OP); 	\
+      in_section = in_literals;					\
+    }								\
 }
 
 #undef ASM_OUTPUT_ADDR_DIFF_ELT
@@ -244,10 +332,6 @@ link_section ()							\
 #define READONLY_DATA_SECTION readonly_section
 
 #define ASM_FILE_END(FILE) alpha_write_linkage (FILE);
-
-#undef FUNCTION_ARG
-void *function_arg ();
-#define FUNCTION_ARG(CUM, MODE, TYPE, NAMED)	function_arg (&CUM, MODE, TYPE, NAMED)
 
 #undef CASE_VECTOR_MODE
 #define CASE_VECTOR_MODE DImode
@@ -273,46 +357,101 @@ void *function_arg ();
 {						\
   fprintf (FILE, "\t.quad 0\n");		\
   fprintf (FILE, "\t.linkage __tramp\n");	\
+  fprintf (FILE, "\t.quad 0\n");		\
 }
 
 /* Length in units of the trampoline for entering a nested function.  */
 
 #undef TRAMPOLINE_SIZE
-#define TRAMPOLINE_SIZE    24
+#define TRAMPOLINE_SIZE    32
 
 /* Emit RTL insns to initialize the variable parts of a trampoline.
    FNADDR is an RTX for the address of the function's pure code.
    CXT is an RTX for the static chain value for the function.  */
 
 #undef INITIALIZE_TRAMPOLINE
-#define INITIALIZE_TRAMPOLINE(TRAMP, FNADDR, CXT)			\
-{									\
-  emit_move_insn (gen_rtx (MEM, Pmode, (TRAMP)), (FNADDR));		\
-  emit_move_insn (gen_rtx (MEM, Pmode,					\
-			   memory_address (Pmode,			\
+#define INITIALIZE_TRAMPOLINE(TRAMP, FNADDR, CXT)			  \
+{									  \
+  emit_move_insn (gen_rtx (MEM, Pmode,                                    \
+			   memory_address (Pmode,			  \
 					   plus_constant ((TRAMP), 16))), \
-		  (CXT));						\
+		  (FNADDR));		                                  \
+  emit_move_insn (gen_rtx (MEM, Pmode,					  \
+			   memory_address (Pmode,			  \
+					   plus_constant ((TRAMP), 24))), \
+		  (CXT));						  \
 }
 
 #undef TRANSFER_FROM_TRAMPOLINE
 
+#define VALID_MACHINE_DECL_ATTRIBUTE(DECL, ATTRIBUTES, NAME, ARGS) \
+  (vms_valid_decl_attribute_p (DECL, ATTRIBUTES, NAME, ARGS))
+extern int vms_valid_decl_attribute_p ();
+
 #undef SDB_DEBUGGING_INFO
 #undef MIPS_DEBUGGING_INFO
-
-#ifndef DBX_DEBUGGING_INFO
-#define DBX_DEBUGGING_INFO
-#endif
+#undef DBX_DEBUGGING_INFO
 
 #define DWARF2_DEBUGGING_INFO
 
-#ifdef PREFERRED_DEBUGGING_TYPE
-#undef PREFERRED_DEBUGGING_TYPE
-#endif
-#define PREFERRED_DEBUGGING_TYPE DBX_DEBUG
+/* This is how to output an assembler line
+   that says to advance the location counter
+   to a multiple of 2**LOG bytes.  */
 
-#ifdef ASM_FORMAT_PRIVATE_NAME
+#undef ASM_OUTPUT_ALIGN
+#define ASM_OUTPUT_ALIGN(FILE,LOG)	\
+    fprintf (FILE, "\t.align %d\n", LOG);
+
+#define UNALIGNED_SHORT_ASM_OP	".word"
+#define UNALIGNED_INT_ASM_OP	".long"
+#define UNALIGNED_DOUBLE_INT_ASM_OP	".quad"
+
+#undef ASM_OUTPUT_ALIGNED_COMMON
+#define ASM_OUTPUT_ALIGNED_COMMON(FILE, NAME, SIZE, ALIGN)		\
+do {									\
+  fprintf ((FILE), "\t.comm\t");					\
+  assemble_name ((FILE), (NAME));					\
+  fprintf ((FILE), ",%u,%u\n", (SIZE), (ALIGN) / BITS_PER_UNIT);	\
+} while (0)
+
+#define ASM_OUTPUT_SECTION(FILE,SECTION)			\
+   (strcmp (SECTION, ".text") == 0)				\
+     ? text_section ()						\
+     : named_section (NULL_TREE, SECTION, 0),			\
+       ASM_OUTPUT_ALIGN (FILE, 0)				\
+
+#define ASM_OUTPUT_SECTION_NAME(FILE,DECL,NAME,RELOC)		\
+  do								\
+    {								\
+      char *flags;					 	\
+      int ovr = 0;						\
+      if (DECL && DECL_MACHINE_ATTRIBUTES (DECL)		\
+	  && lookup_attribute					\
+	      ("overlaid", DECL_MACHINE_ATTRIBUTES (DECL)))	\
+	flags = ",OVR", ovr = 1;				\
+      else if (strncmp (NAME,".debug", 6) == 0)			\
+	flags = ",NOWRT";					\
+      else							\
+	flags = "";						\
+      fputc ('\n', (FILE));					\
+      fprintf (FILE, ".section\t%s%s\n", NAME, flags);		\
+      if (ovr)							\
+        (NAME) = "";						\
+    } while (0)
+
+#define ASM_OUTPUT_DEF(FILE,LABEL1,LABEL2)				\
+  do {	literals_section();                                             \
+	fprintf ((FILE), "\t");						\
+	assemble_name (FILE, LABEL1);					\
+	fprintf (FILE, " = ");						\
+	assemble_name (FILE, LABEL2);					\
+	fprintf (FILE, "\n");						\
+  } while (0)
+
+#undef PREFERRED_DEBUGGING_TYPE
+#define PREFERRED_DEBUGGING_TYPE DWARF2_DEBUG
+
 #undef ASM_FORMAT_PRIVATE_NAME
-#endif
 #define ASM_FORMAT_PRIVATE_NAME(OUTPUT, NAME, LABELNO)	\
 ( (OUTPUT) = (char *) alloca (strlen ((NAME)) + 12),	\
   sprintf ((OUTPUT), "%s___%d", (NAME), (LABELNO)))
@@ -321,9 +460,6 @@ void *function_arg ();
 #define ASM_SPEC "-nocpp %{pg}"
 
 #undef ASM_FINAL_SPEC
-
-#undef LIBGCC_SPEC
-#define LIBGCC_SPEC "-lgcc2 -lgcclib"
 
 #define OPTIMIZATION_OPTIONS                       \
 {                                                  \
@@ -340,13 +476,9 @@ void *function_arg ();
 }
 
 #undef LINK_SPEC
-#define LINK_SPEC "%{g3:-g3} %{g0:-g0}"
+#define LINK_SPEC "%{g3:-g3} %{g0:-g0} %{shared:-shared} %{v:-v}"
 
 #undef STARTFILE_SPEC
-#define STARTFILE_SPEC ""
-
-#undef ENDFILE_SPEC
-#define ENDFILE_SPEC "gnu:[000000]crt0.obj"
 
 /* Define the names of the division and modulus functions.  */
 #define DIVSI3_LIBCALL "OTS$DIV_I"

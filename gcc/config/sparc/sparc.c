@@ -21,8 +21,8 @@ along with GNU CC; see the file COPYING.  If not, write to
 the Free Software Foundation, 59 Temple Place - Suite 330,
 Boston, MA 02111-1307, USA.  */
 
-#include <stdio.h>
 #include "config.h"
+#include <stdio.h>
 #include "tree.h"
 #include "rtl.h"
 #include "regs.h"
@@ -102,6 +102,10 @@ static int frame_base_offset;
 
 static rtx find_addr_reg ();
 static void sparc_init_modes ();
+
+#ifdef DWARF2_DEBUGGING_INFO
+extern char *dwarf2out_cfi_label ();
+#endif
 
 /* Option handling.  */
 

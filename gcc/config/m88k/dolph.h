@@ -1,7 +1,7 @@
 /* Definitions of target machine for GNU compiler.
    Motorola m88100 running the Dolphin UNIX System V/88 Release 3.2,
    Version 3.8/7.83 and 3.6/5.86
-   Copyright (C) 1992, 1993 Free Software Foundation, Inc.
+   Copyright (C) 1992, 1993, 1997 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 

@@ -561,7 +561,8 @@ struct cse_basic_block_data {
 	   || XEXP (X, 0) == hard_frame_pointer_rtx		\
 	   || XEXP (X, 0) == arg_pointer_rtx			\
 	   || XEXP (X, 0) == virtual_stack_vars_rtx		\
-	   || XEXP (X, 0) == virtual_incoming_args_rtx)))
+	   || XEXP (X, 0) == virtual_incoming_args_rtx))	\
+   || GET_CODE (X) == ADDRESSOF)
 
 /* Similar, but also allows reference to the stack pointer.
 
@@ -585,7 +586,8 @@ struct cse_basic_block_data {
    || (GET_CODE (X) == PLUS && GET_CODE (XEXP (X, 1)) == CONST_INT \
        && (XEXP (X, 0) == stack_pointer_rtx			\
 	   || XEXP (X, 0) == virtual_stack_dynamic_rtx		\
-	   || XEXP (X, 0) == virtual_outgoing_args_rtx)))
+	   || XEXP (X, 0) == virtual_outgoing_args_rtx))	\
+   || GET_CODE (X) == ADDRESSOF)
 
 static int notreg_cost		PROTO((rtx));
 static void new_basic_block	PROTO((void));
@@ -1871,15 +1873,12 @@ canon_hash (x, mode)
 
 	if (regno < FIRST_PSEUDO_REGISTER
 	    && (global_regs[regno]
-#ifdef SMALL_REGISTER_CLASSES
 		|| (SMALL_REGISTER_CLASSES
 		    && ! fixed_regs[regno]
 		    && regno != FRAME_POINTER_REGNUM
 		    && regno != HARD_FRAME_POINTER_REGNUM
 		    && regno != ARG_POINTER_REGNUM
-		    && regno != STACK_POINTER_REGNUM)
-#endif
-		))
+		    && regno != STACK_POINTER_REGNUM)))
 	  {
 	    do_not_record = 1;
 	    return 0;
@@ -1955,6 +1954,10 @@ canon_hash (x, mode)
 	  do_not_record = 1;
 	  return 0;
 	}
+      break;
+      
+    default:
+      break;
     }
 
   i = GET_RTX_LENGTH (code) - 1;
@@ -1991,6 +1994,8 @@ canon_hash (x, mode)
 	  register unsigned tem = XINT (x, i);
 	  hash += tem;
 	}
+      else if (fmt[i] == '0')
+	/* unused */;
       else
 	abort ();
     }
@@ -2129,6 +2134,9 @@ exp_equiv_p (x, y, validate, equal_values)
 			       validate, equal_values)
 		  && exp_equiv_p (XEXP (x, 1), XEXP (y, 0),
 				  validate, equal_values)));
+      
+    default:
+      break;
     }
 
   /* Compare the elements.  If any pair of corresponding elements
@@ -2357,6 +2365,9 @@ set_nonvarying_address_components (addr, size, pbase, pstart, pend)
 	      base = *pbase;
 	    }
 	  break;
+
+	default:
+	  break;
 	}
 
       break;
@@ -2479,6 +2490,9 @@ canon_reg (x, insn)
 		: REGNO_REG_CLASS (first) == NO_REGS ? x
 		: gen_rtx (REG, qty_mode[reg_qty[REGNO (x)]], first));
       }
+      
+    default:
+      break;
     }
 
   fmt = GET_RTX_FORMAT (code);
@@ -2562,6 +2576,7 @@ find_best_addr (insn, loc)
 	  && (regno = REGNO (addr), regno == FRAME_POINTER_REGNUM
 	      || regno == HARD_FRAME_POINTER_REGNUM
 	      || regno == ARG_POINTER_REGNUM))
+      || GET_CODE (addr) == ADDRESSOF
       || CONSTANT_ADDRESS_P (addr))
     return;
 
@@ -3322,6 +3337,9 @@ simplify_unary_operation (code, mode, op, op_mode)
 	    return convert_memory_address (Pmode, op);
 	  break;
 #endif
+	  
+	default:
+	  break;
 	}
 
       return 0;
@@ -4249,6 +4267,9 @@ simplify_plus_minus (code, mode, op0, op1)
 	    if (negs[i])
 	      ops[i] = GEN_INT (- INTVAL (ops[i])), negs[i] = 0, changed = 1;
 	    break;
+
+	  default:
+	    break;
 	  }
     }
 
@@ -4574,6 +4595,9 @@ simplify_relational_operation (code, mode, op0, op1)
 	      && INTEGRAL_MODE_P (mode))
 	    return const0_rtx;
 	  break;
+	  
+	default:
+	  break;
 	}
 
       return 0;
@@ -4603,9 +4627,9 @@ simplify_relational_operation (code, mode, op0, op1)
       return equal || op0ltu ? const_true_rtx : const0_rtx;
     case GEU:
       return equal || op1ltu ? const_true_rtx : const0_rtx;
+    default:
+      abort ();
     }
-
-  abort ();
 }
 
 /* Simplify CODE, an operation with result mode MODE and three operands,
@@ -4994,6 +5018,8 @@ fold_rtx (x, insn)
 	else if (GET_CODE (addr) == LO_SUM
 		 && GET_CODE (XEXP (addr, 1)) == SYMBOL_REF)
 	  base = XEXP (addr, 1);
+	else if (GET_CODE (addr) == ADDRESSOF)
+	  XEXP (x, 0) = addr;
 
 	/* If this is a constant pool reference, we can fold it into its
 	   constant to allow better value tracking.  */
@@ -5084,6 +5110,9 @@ fold_rtx (x, insn)
       for (i = XVECLEN (x, 3) - 1; i >= 0; i--)
 	validate_change (insn, &XVECEXP (x, 3, i),
 			 fold_rtx (XVECEXP (x, 3, i), insn), 0);
+      break;
+      
+    default:
       break;
     }
 
@@ -5420,6 +5449,8 @@ fold_rtx (x, insn)
 		  if (has_sign)
 		    return false;
 		  break;
+		default:
+		  break;
 		}
 	    }
 	}
@@ -5615,6 +5646,10 @@ fold_rtx (x, insn)
 
 	      return cse_gen_binary (code, mode, y, new_const);
 	    }
+	  break;
+
+	default:
+	  break;
 	}
 
       new = simplify_binary_operation (code, mode,
@@ -7678,6 +7713,9 @@ cse_process_notes (x, object)
 
       /* Otherwise, canonicalize this register.  */
       return canon_reg (x, NULL_RTX);
+      
+    default:
+      break;
     }
 
   for (i = 0; i < GET_RTX_LENGTH (code); i++)
@@ -8359,6 +8397,7 @@ cse_basic_block (from, to, next_branch, around_loop)
   register rtx insn;
   int to_usage = 0;
   int in_libcall_block = 0;
+  int num_insns = 0;
 
   /* Each of these arrays is undefined before max_reg, so only allocate
      the space actually needed and adjust the start below.  */
@@ -8391,6 +8430,29 @@ cse_basic_block (from, to, next_branch, around_loop)
   for (insn = from; insn != to; insn = NEXT_INSN (insn))
     {
       register enum rtx_code code;
+      int i;
+      struct table_elt *p, *next;
+
+      /* If we have processed 1,000 insns, flush the hash table to avoid
+	 extreme quadratic behavior.
+
+	 ??? This is a real kludge and needs to be done some other way.
+	 Perhaps for 2.9.  */
+      if (num_insns++ > 1000)
+	{
+	  for (i = 0; i < NBUCKETS; i++)
+	    for (p = table[i]; p; p = next)
+	      {
+		next = p->next_same_hash;
+
+		if (GET_CODE (p->exp) == REG)
+		  invalidate (p->exp, p->mode);
+		else
+		  remove_from_table (p, i);
+	      }
+
+	  num_insns = 0;
+	}
 
       /* See if this is a branch that is part of the path.  If so, and it is
 	 to be taken, do so.  */
@@ -8614,6 +8676,9 @@ count_reg_usage (x, counts, dest, incr)
 	count_reg_usage (XEXP (x, 0), counts, NULL_RTX, incr);
       count_reg_usage (XEXP (x, 1), counts, NULL_RTX, incr);
       return;
+      
+    default:
+      break;
     }
 
   fmt = GET_RTX_FORMAT (code);

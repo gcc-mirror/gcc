@@ -1,5 +1,5 @@
 /* Generate code from machine description to compute values of attributes.
-   Copyright (C) 1991, 1993, 1994, 1995, 1996 Free Software Foundation, Inc.
+   Copyright (C) 1991, 93, 94, 95, 96, 1997 Free Software Foundation, Inc.
    Contributed by Richard Kenner (kenner@vlsi1.ultra.nyu.edu)
 
 This file is part of GNU CC.
@@ -102,9 +102,9 @@ Boston, MA 02111-1307, USA.  */
 #else
 #include <varargs.h>
 #endif
+#include <stdio.h>
 #include "rtl.h"
 #include "insn-config.h"	/* For REGISTER_CONSTRAINTS */
-#include <stdio.h>
 
 #ifndef VMS
 #ifndef USG
@@ -393,7 +393,9 @@ static rtx zero_fn		PROTO((rtx));
 static rtx one_fn		PROTO((rtx));
 static rtx max_fn		PROTO((rtx));
 static rtx simplify_cond	PROTO((rtx, int, int));
+#if 0
 static rtx simplify_by_alternatives PROTO((rtx, int, int));
+#endif
 static rtx simplify_by_exploding PROTO((rtx));
 static int find_and_mark_used_attributes PROTO((rtx, rtx *, int *));
 static void unmark_used_attributes PROTO((rtx, struct dimension *, int));
@@ -864,6 +866,9 @@ attr_copy_rtx (orig)
     case PC:
     case CC0:
       return orig;
+
+    default:
+      break;
     }
 
   copy = rtx_alloc (code);
@@ -1420,8 +1425,11 @@ make_canonical (attr, exp)
 	  }
 	if (allsame)
 	  return defval;
-	break;
       }
+      break;
+
+    default:
+      break;
     }
 
   return exp;
@@ -2181,6 +2189,9 @@ encode_units_mask (x)
     case CC0:
     case EQ_ATTR:
       return x;
+      
+    default:
+      break;
     }
 
   /* Compare the elements.  If any pair of corresponding elements
@@ -3274,6 +3285,10 @@ simplify_test_exp (exp, insn_code, insn_index)
 	  for (ie = av->first_insn; ie; ie = ie->next)
 	    if (ie->insn_code == insn_code)
 	      return evaluate_eq_attr (exp, av->value, insn_code, insn_index);
+      break;
+      
+    default:
+      break;
     }
 
   /* We have already simplified this expression.  Simplifying it again
@@ -3626,9 +3641,10 @@ find_and_mark_used_attributes (exp, terms, nterms)
       if (! find_and_mark_used_attributes (XEXP (exp, 1), terms, nterms))
 	return 0;
       return 1;
-    }
 
-  return 0;
+    default:
+      return 0;
+    }
 }
 
 /* Clear the MEM_VOLATILE_P flag in all EQ_ATTR expressions on LIST and
@@ -3864,8 +3880,10 @@ simplify_with_current_value_aux (exp)
 			 have been selected.  */
 	}
       return simplify_with_current_value_aux (XEXP (exp, 1));
+
+    default:
+      abort ();
     }
-  abort ();
 }
 
 /* Clear the MEM_IN_STRUCT_P flag in EXP and its subexpressions.  */
@@ -3898,6 +3916,9 @@ clear_struct_flag (x)
     case EQ_ATTR:
     case ATTR_FLAG:
       return;
+      
+    default:
+      break;
     }
 
   /* Compare the elements.  If any pair of corresponding elements
@@ -3950,6 +3971,9 @@ count_sub_rtxs (x, max)
     case EQ_ATTR:
     case ATTR_FLAG:
       return 1;
+      
+    default:
+      break;
     }
 
   /* Compare the elements.  If any pair of corresponding elements
@@ -4174,6 +4198,9 @@ gen_insn (exp)
       id->vec_idx = 0;
       got_define_asm_attributes = 1;
       break;
+      
+    default:
+      abort ();
     }
 }
 
@@ -4386,6 +4413,8 @@ write_test_expr (exp, in_comparison)
 	case ASHIFTRT:
 	  printf (" >> ");
 	  break;
+	default:
+	  abort ();
         }
 
       write_test_expr (XEXP (exp, 1), in_comparison || comparison_operator);
@@ -4418,6 +4447,8 @@ write_test_expr (exp, in_comparison)
 	case NEG:
 	  printf ("-");
 	  break;
+	default:
+	  abort ();
 	}
 
       write_test_expr (XEXP (exp, 0), in_comparison);
@@ -4609,6 +4640,9 @@ walk_attr_value (exp)
 
     case ATTR_FLAG:
       return;
+
+    default:
+      break;
     }
 
   for (i = 0, fmt = GET_RTX_FORMAT (code); i < GET_RTX_LENGTH (code); i++)
@@ -5463,6 +5497,9 @@ copy_rtx_unchanging (orig)
     case SYMBOL_REF:
     case CODE_LABEL:
       return orig;
+      
+    default:
+      break;
     }
 
   copy = rtx_alloc (code);
@@ -5650,6 +5687,7 @@ from the machine description file `md'.  */\n\n");
     expand_units ();
 
   printf ("#include \"config.h\"\n");
+  printf ("#include <stdio.h>\n");
   printf ("#include \"rtl.h\"\n");
   printf ("#include \"insn-config.h\"\n");
   printf ("#include \"recog.h\"\n");

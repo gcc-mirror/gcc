@@ -31,7 +31,3 @@ Boston, MA 02111-1307, USA.  */
 #define WCHAR_TYPE "short unsigned int"
 #undef WCHAR_TYPE_SIZE
 #define WCHAR_TYPE_SIZE 16
-
-/* The .arch pseudo op is not supported.  */
-#undef ARCH_ASM_FILE_START
-#define ARCH_ASM_FILE_START(FILE)

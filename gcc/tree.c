@@ -33,8 +33,8 @@ Boston, MA 02111-1307, USA.  */
    are used also for allocating many other kinds of objects
    by all passes of the compiler.  */
 
-#include <setjmp.h>
 #include "config.h"
+#include <setjmp.h>
 #include "flags.h"
 #include "tree.h"
 #include "except.h"
@@ -2310,9 +2310,10 @@ staticp (arg)
       if (TREE_CODE (TYPE_SIZE (TREE_TYPE (arg))) == INTEGER_CST
 	  && TREE_CODE (TREE_OPERAND (arg, 1)) == INTEGER_CST)
 	return staticp (TREE_OPERAND (arg, 0));
-    }
 
-  return 0;
+    default:
+      return 0;
+    }
 }
 
 /* Wrap a SAVE_EXPR around EXPR, if appropriate.
@@ -2456,6 +2457,9 @@ unsave_expr_now (expr)
     case METHOD_CALL_EXPR:
       first_rtl = 3;
       break;
+
+    default:
+      break;
     }
 
   switch (TREE_CODE_CLASS (code))
@@ -2490,6 +2494,7 @@ contains_placeholder_p (exp)
      tree exp;
 {
   register enum tree_code code = TREE_CODE (exp);
+  int result;
 
   /* If we have a WITH_RECORD_EXPR, it "cancels" any PLACEHOLDER_EXPR
      in it since it is supplying a value for it.  */
@@ -2507,6 +2512,13 @@ contains_placeholder_p (exp)
 	 here will be valid.  */
       return contains_placeholder_p (TREE_OPERAND (exp, 0));
 
+    case 'x':
+      if (code == TREE_LIST)
+	return (contains_placeholder_p (TREE_VALUE (exp))
+		|| (TREE_CHAIN (exp) != 0
+		    && contains_placeholder_p (TREE_CHAIN (exp))));
+      break;
+					
     case '1':
     case '2':  case '<':
     case 'e':
@@ -2526,8 +2538,24 @@ contains_placeholder_p (exp)
 		  || contains_placeholder_p (TREE_OPERAND (exp, 2)));
 
 	case SAVE_EXPR:
-	   return (SAVE_EXPR_RTL (exp) == 0
-		   && contains_placeholder_p (TREE_OPERAND (exp, 0)));
+	  /* If we already know this doesn't have a placeholder, don't
+	     check again.  */
+	  if (SAVE_EXPR_NOPLACEHOLDER (exp) || SAVE_EXPR_RTL (exp) != 0)
+	    return 0;
+
+	  SAVE_EXPR_NOPLACEHOLDER (exp) = 1;
+	  result = contains_placeholder_p (TREE_OPERAND (exp, 0));
+	  if (result)
+	    SAVE_EXPR_NOPLACEHOLDER (exp) = 0;
+
+	  return result;
+
+	case CALL_EXPR:
+	  return (TREE_OPERAND (exp, 1) != 0
+		  && contains_placeholder_p (TREE_OPERAND (exp, 1)));
+
+	default:
+	  break;
 	}
 
       switch (tree_code_length[(int) code])
@@ -2537,16 +2565,20 @@ contains_placeholder_p (exp)
 	case 2:
 	  return (contains_placeholder_p (TREE_OPERAND (exp, 0))
 		  || contains_placeholder_p (TREE_OPERAND (exp, 1)));
+	default:
+	  return 0;
 	}
-    }
 
-  return 0;
+    default:
+      return 0;
+    }
 }
 
 /* Given a tree EXP, a FIELD_DECL F, and a replacement value R,
    return a tree with all occurrences of references to F in a
    PLACEHOLDER_EXPR replaced by R.   Note that we assume here that EXP
-   contains only arithmetic expressions.  */
+   contains only arithmetic expressions or a CALL_EXPR with a
+   PLACEHOLDER_EXPR occurring only in its arglist.  */
 
 tree
 substitute_in_expr (exp, f, r)
@@ -2556,7 +2588,7 @@ substitute_in_expr (exp, f, r)
 {
   enum tree_code code = TREE_CODE (exp);
   tree op0, op1, op2;
-  tree new = 0;
+  tree new;
   tree inner;
 
   switch (TREE_CODE_CLASS (code))
@@ -2568,7 +2600,18 @@ substitute_in_expr (exp, f, r)
     case 'x':
       if (code == PLACEHOLDER_EXPR)
 	return exp;
-      break;
+      else if (code == TREE_LIST)
+	{
+	  op0 = (TREE_CHAIN (exp) == 0
+		 ? 0 : substitute_in_expr (TREE_CHAIN (exp), f, r));
+	  op1 = substitute_in_expr (TREE_VALUE (exp), f, r);
+	  if (op0 == TREE_CHAIN (exp) || op1 == TREE_VALUE (exp))
+	    return exp;
+
+	  return tree_cons (TREE_PURPOSE (exp), op0, op1);
+	}
+
+      abort ();
 
     case '1':
     case '2':
@@ -2606,7 +2649,17 @@ substitute_in_expr (exp, f, r)
 	  if (code == SAVE_EXPR)
 	    return exp;
 
-	  if (code != COND_EXPR)
+	  else if (code == CALL_EXPR)
+	    {
+	      op1 = substitute_in_expr (TREE_OPERAND (exp, 1), f, r);
+	      if (op1 == TREE_OPERAND (exp, 1))
+		return exp;
+
+	      return build (code, TREE_TYPE (exp),
+			    TREE_OPERAND (exp, 0), op1, NULL_TREE);
+	    }
+
+	  else if (code != COND_EXPR)
 	    abort ();
 
 	  op0 = substitute_in_expr (TREE_OPERAND (exp, 0), f, r);
@@ -2617,6 +2670,10 @@ substitute_in_expr (exp, f, r)
 	    return exp;
 
 	  new = fold (build (code, TREE_TYPE (exp), op0, op1, op2));
+	  break;
+
+	default:
+	  abort ();
 	}
 
       break;
@@ -2668,12 +2725,15 @@ substitute_in_expr (exp, f, r)
 
 	  new = fold (build1 (code, TREE_TYPE (exp), op0));
 	  break;
-	}
-    }
 
-  /* If it wasn't one of the cases we handle, give up.  */
-  if (new == 0)
-    abort ();
+	default:
+	  abort ();
+	}
+      break;
+      
+    default:
+      abort ();
+    }
 
   TREE_READONLY (new) = TREE_READONLY (exp);
   return new;
@@ -3153,18 +3213,20 @@ build_type_attribute_variant (ttype, attribute)
 
       switch (TREE_CODE (ntype))
         {
-	  case FUNCTION_TYPE:
-	    hashcode += TYPE_HASH (TYPE_ARG_TYPES (ntype));
-	    break;
-	  case ARRAY_TYPE:
-	    hashcode += TYPE_HASH (TYPE_DOMAIN (ntype));
-	    break;
-	  case INTEGER_TYPE:
-	    hashcode += TYPE_HASH (TYPE_MAX_VALUE (ntype));
-	    break;
-	  case REAL_TYPE:
-	    hashcode += TYPE_HASH (TYPE_PRECISION (ntype));
-	    break;
+	case FUNCTION_TYPE:
+	  hashcode += TYPE_HASH (TYPE_ARG_TYPES (ntype));
+	  break;
+	case ARRAY_TYPE:
+	  hashcode += TYPE_HASH (TYPE_DOMAIN (ntype));
+	  break;
+	case INTEGER_TYPE:
+	  hashcode += TYPE_HASH (TYPE_MAX_VALUE (ntype));
+	  break;
+	case REAL_TYPE:
+	  hashcode += TYPE_HASH (TYPE_PRECISION (ntype));
+	  break;
+	default:
+	  break;
         }
 
       ntype = type_hash_canon (hashcode, ntype);
@@ -3831,6 +3893,9 @@ simple_cst_equal (t1, t2)
     case CONST_DECL:
     case FUNCTION_DECL:
       return 0;
+      
+    default:
+      break;
     }
 
   /* This general rule works for most tree codes.  All exceptions should be
@@ -3858,9 +3923,10 @@ simple_cst_equal (t1, t2)
 	    return cmp;
 	}
       return cmp;
-    }
 
-  return -1;
+    default:
+      return -1;
+    }
 }
 
 /* Constructors for pointer, array and function types.
@@ -3901,7 +3967,12 @@ build_pointer_type (to_type)
 
 /* Create a type of integers to be the TYPE_DOMAIN of an ARRAY_TYPE.
    MAXVAL should be the maximum value in the domain
-   (one less than the length of the array).  */
+   (one less than the length of the array).
+
+   The maximum value that MAXVAL can have is INT_MAX for a HOST_WIDE_INT.
+   We don't enforce this limit, that is up to caller (e.g. language front end).
+   The limit exists because the result is a signed type and we don't handle
+   sizes that use more than one HOST_WIDE_INT.  */
 
 tree
 build_index_type (maxval)
@@ -4515,7 +4586,7 @@ print_inline_obstack_statistics ()
 {
   struct simple_obstack_stack *current = toplev_inline_obstacks;
   int n_obstacks = 0;
-  unsigned long n_alloc = 0;
+  int n_alloc = 0;
   int n_chunks = 0;
 
   for (; current; current = current->next, ++n_obstacks)
@@ -4529,7 +4600,7 @@ print_inline_obstack_statistics ()
       for (; chunk; chunk = chunk->prev, ++n_chunks)
 	n_alloc += chunk->limit - &chunk->contents[0];
     }
-  fprintf (stderr, "inline obstacks: %d obstacks, %lu bytes, %d chunks\n",
+  fprintf (stderr, "inline obstacks: %d obstacks, %d bytes, %d chunks\n",
 	   n_obstacks, n_alloc, n_chunks);
 }
 
@@ -4542,7 +4613,7 @@ print_obstack_statistics (str, o)
 {
   struct _obstack_chunk *chunk = o->chunk;
   int n_chunks = 1;
-  unsigned long n_alloc = 0;
+  int n_alloc = 0;
 
   n_alloc += o->next_free - chunk->contents;
   chunk = chunk->prev;

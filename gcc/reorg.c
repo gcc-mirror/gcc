@@ -115,8 +115,8 @@ Boston, MA 02111-1307, USA.  */
    The HP-PA can conditionally nullify insns, providing a similar
    effect to the ARM, differing mostly in which insn is "in charge".   */
 
-#include <stdio.h>
 #include "config.h"
+#include <stdio.h>
 #include "rtl.h"
 #include "insn-config.h"
 #include "conditions.h"

@@ -90,8 +90,8 @@ g++.o: $(CONFIG_H) multilib.h config.status $(lang_specs_files) g++.c
   -c g++.c
 
 # Create the compiler driver for g++.
-g++$(exeext): g++.o g++spec.o version.o choose-temp.o pexecute.o $(LIBDEPS) $(EXTRA_GCC_OBJS)
-	$(CC) $(ALL_CFLAGS) $(LDFLAGS) -o $@ g++.o g++spec.o version.o \
+g++$(exeext): g++.o g++spec.o version.o choose-temp.o pexecute.o prefix.o $(LIBDEPS) $(EXTRA_GCC_OBJS)
+	$(CC) $(ALL_CFLAGS) $(LDFLAGS) -o $@ g++.o g++spec.o prefix.o version.o \
 	  choose-temp.o pexecute.o $(EXTRA_GCC_OBJS) $(LIBS)
 
 # Create a version of the g++ driver which calls the cross-compiler.

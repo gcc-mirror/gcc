@@ -41,12 +41,13 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
    achieve this, see Dain Sample's UC Berkeley thesis.  */
 
 #include "config.h"
+#include <stdio.h>
 #include "rtl.h"
 #include "flags.h"
 #include "insn-flags.h"
 #include "insn-config.h"
 #include "output.h"
-#include <stdio.h>
+#include "regs.h"
 #include "tree.h"
 #include "output.h"
 #include "gcov-io.h"
@@ -1514,7 +1515,6 @@ output_arc_profiler (arcno, insert_after)
   rtx mem_ref, add_ref;
   rtx sequence;
 
-#ifdef SMALL_REGISTER_CLASSES
   /* In this case, reload can use explicitly mentioned hard registers for
      reloads.  It is not safe to output profiling code between a call
      and the instruction that copies the result to a pseudo-reg.  This
@@ -1550,11 +1550,15 @@ output_arc_profiler (arcno, insert_after)
 	  else
 	    return_reg = SET_DEST (XVECEXP (PATTERN (insert_after), 0, 0));
 
-	  if (reg_referenced_p (return_reg, PATTERN (next_insert_after)))
+	  /* Now, NEXT_INSERT_AFTER may be an instruction that uses the
+	     return value.  However, it could also be something else,
+	     like a CODE_LABEL, so check that the code is INSN.  */
+	  if (next_insert_after != 0
+	      && GET_RTX_CLASS (GET_CODE (next_insert_after)) == 'i'
+	      && reg_referenced_p (return_reg, PATTERN (next_insert_after)))
 	    insert_after = next_insert_after;
 	}
     }
-#endif
 
   start_sequence ();
 

@@ -2,7 +2,7 @@
    contain debugging information specified by the GNU compiler
    in the form of comments (the mips assembler does not support
    assembly access to debug information).
-   Copyright (C) 1991, 1993, 1994. 1995 Free Software Foundation, Inc.
+   Copyright (C) 1991, 1993, 1994, 1995, 1997 Free Software Foundation, Inc.
    Contributed by Michael Meissner, meissner@osf.org
    
 This file is part of GNU CC.
@@ -599,12 +599,12 @@ Boston, MA 02111-1307, USA.  */
 */
 
 
+#include "config.h"
 #ifdef __STDC__
 #include <stdarg.h>
 #else
 #include <varargs.h>
 #endif
-#include "config.h"
 #include <stdio.h>
 
 #ifndef __SABER__

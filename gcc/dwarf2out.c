@@ -1,7 +1,7 @@
 /* Output Dwarf2 format symbol table information from the GNU C compiler.
    Copyright (C) 1992, 1993, 1995, 1996, 1997 Free Software Foundation, Inc.
-   Contributed by Gary Funck (gary@intrepid.com).  Derived from the
-   DWARF 1 implementation written by Ron Guilmette (rfg@monkeys.com).
+   Contributed by Gary Funck (gary@intrepid.com).
+   Derived from DWARF 1 implementation of Ron Guilmette (rfg@monkeys.com).
    Extensively modified by Jason Merrill (jason@cygnus.com).
 
 This file is part of GNU CC.
@@ -743,6 +743,8 @@ lookup_cfa_1 (cfi, regp, offsetp)
       *regp = cfi->dw_cfi_oprnd1.dw_cfi_reg_num;
       *offsetp = cfi->dw_cfi_oprnd2.dw_cfi_offset;
       break;
+    default:
+      break;
     }
 }
 
@@ -1170,7 +1172,6 @@ dwarf2out_frame_debug (insn)
 	      assert (XEXP (src, 1) == stack_pointer_rtx);
 	      assert (GET_CODE (XEXP (src, 0)) == REG
 		      && REGNO (XEXP (src, 0)) == cfa_temp_reg);
-	      assert (cfa_store_reg == STACK_POINTER_REGNUM);
 	      cfa_store_reg = REGNO (dest);
 	      cfa_store_offset -= cfa_temp_value;
 	    }
@@ -1488,13 +1489,6 @@ output_call_frame_info (for_eh)
 
   /* Do we want to include a pointer to the exception table?  */
   int eh_ptr = for_eh && exception_table_p ();
-
-  /* Only output the info if it will be interesting.  */
-  for (i = 0; i < fde_table_in_use; ++i)
-    if (fde_table[i].dw_fde_cfi != NULL)
-      break;
-  if (i == fde_table_in_use)
-    return;
 
   fputc ('\n', asm_out_file);
 
@@ -4093,6 +4087,8 @@ print_die (die, outfile)
 	    fprintf (outfile, "\"%s\"", a->dw_attr_val.v.val_str);
 	  else
 	    fprintf (outfile, "<null>");
+	  break;
+	default:
 	  break;
 	}
 
@@ -6880,6 +6876,11 @@ add_location_or_const_value_attribute (die, decl)
 
   switch (GET_CODE (rtl))
     {
+    case ADDRESSOF:
+      /* The address of a variable that was optimized away; don't emit
+	 anything.  */
+      break;
+
     case CONST_INT:
     case CONST_DOUBLE:
     case CONST_STRING:
@@ -7667,7 +7668,7 @@ gen_enumeration_type_die (type, context_die)
 
       TREE_ASM_WRITTEN (type) = 1;
       add_byte_size_attribute (type_die, type);
-      if (type_tag (type))
+      if (TYPE_STUB_DECL (type) != NULL_TREE)
 	add_src_coords_attributes (type_die, TYPE_STUB_DECL (type));
 
       /* If the first reference to this type was as the return type of an
@@ -8542,7 +8543,7 @@ gen_struct_or_union_type_die (type, context_die)
          this type is expressed in terms of this type itself.  */
       TREE_ASM_WRITTEN (type) = 1;
       add_byte_size_attribute (type_die, type);
-      if (type_tag (type))
+      if (TYPE_STUB_DECL (type) != NULL_TREE)
 	add_src_coords_attributes (type_die, TYPE_STUB_DECL (type));
 
       /* If the first reference to this type was as the return type of an

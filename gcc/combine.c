@@ -970,13 +970,10 @@ can_combine_p (insn, i3, pred, succ, pdest, psrc)
 		 inputs.  */
 	      || (REGNO (src) < FIRST_PSEUDO_REGISTER
 		  && (! HARD_REGNO_MODE_OK (REGNO (src), GET_MODE (src))
-#ifdef SMALL_REGISTER_CLASSES
 		      || (SMALL_REGISTER_CLASSES
 			  && ((! all_adjacent && ! REG_USERVAR_P (src))
 			      || (FUNCTION_VALUE_REGNO_P (REGNO (src))
-				  && ! REG_USERVAR_P (src))))
-#endif
-		      ))))
+				  && ! REG_USERVAR_P (src))))))))
 	return 0;
     }
   else if (GET_CODE (dest) != CC0)
@@ -1086,7 +1083,7 @@ can_combine_p (insn, i3, pred, succ, pdest, psrc)
    If I1_NOT_IN_SRC is non-zero, it means that finding I1 in the source
    of a SET must prevent combination from occurring.
 
-   On machines where SMALL_REGISTER_CLASSES is defined, we don't combine
+   On machines where SMALL_REGISTER_CLASSES is non-zero, we don't combine
    if the destination of a SET is a hard register that isn't a user
    variable.
 
@@ -1163,12 +1160,9 @@ combinable_i3pat (i3, loc, i2dest, i1dest, i1_not_in_src, pi3dest_killed)
 	      && REGNO (inner_dest) < FIRST_PSEUDO_REGISTER
 	      && (! HARD_REGNO_MODE_OK (REGNO (inner_dest),
 					GET_MODE (inner_dest))
-#ifdef SMALL_REGISTER_CLASSES
-		 || (SMALL_REGISTER_CLASSES
-		     && GET_CODE (src) != CALL && ! REG_USERVAR_P (inner_dest)
-		     && FUNCTION_VALUE_REGNO_P (REGNO (inner_dest)))
-#endif
-		  ))
+		 || (SMALL_REGISTER_CLASSES && GET_CODE (src) != CALL
+		     && ! REG_USERVAR_P (inner_dest)
+		     && FUNCTION_VALUE_REGNO_P (REGNO (inner_dest)))))
 	  || (i1_not_in_src && reg_overlap_mentioned_p (i1dest, src)))
 	return 0;
 
@@ -1308,12 +1302,10 @@ try_combine (i3, i2, i1)
   if (i1 == 0 && GET_CODE (i3) == INSN && GET_CODE (PATTERN (i3)) == SET
       && GET_CODE (SET_SRC (PATTERN (i3))) == REG
       && REGNO (SET_SRC (PATTERN (i3))) >= FIRST_PSEUDO_REGISTER
-#ifdef SMALL_REGISTER_CLASSES
       && (! SMALL_REGISTER_CLASSES
-	  || GET_CODE (SET_DEST (PATTERN (i3))) != REG
-	  || REGNO (SET_DEST (PATTERN (i3))) >= FIRST_PSEUDO_REGISTER
-	  || REG_USERVAR_P (SET_DEST (PATTERN (i3))))
-#endif
+	  || (GET_CODE (SET_DEST (PATTERN (i3))) != REG
+	      || REGNO (SET_DEST (PATTERN (i3))) >= FIRST_PSEUDO_REGISTER
+	      || REG_USERVAR_P (SET_DEST (PATTERN (i3)))))
       && find_reg_note (i3, REG_DEAD, SET_SRC (PATTERN (i3)))
       && GET_CODE (PATTERN (i2)) == PARALLEL
       && ! side_effects_p (SET_DEST (PATTERN (i3)))
@@ -2066,8 +2058,21 @@ try_combine (i3, i2, i1)
 	   && ! reg_referenced_p (SET_DEST (XVECEXP (newpat, 0, 0)),
 				  XVECEXP (newpat, 0, 1)))
     {
-      newi2pat = XVECEXP (newpat, 0, 1);
-      newpat = XVECEXP (newpat, 0, 0);
+      /* Normally, it doesn't matter which of the two is done first,
+	 but it does if one references cc0.  In that case, it has to
+	 be first.  */
+#ifdef HAVE_cc0
+      if (reg_referenced_p (cc0_rtx, XVECEXP (newpat, 0, 0)))
+	{
+	  newi2pat = XVECEXP (newpat, 0, 0);
+	  newpat = XVECEXP (newpat, 0, 1);
+	}
+      else
+#endif
+	{
+	  newi2pat = XVECEXP (newpat, 0, 1);
+	  newpat = XVECEXP (newpat, 0, 0);
+	}
 
       i2_code_number
 	= recog_for_combine (&newi2pat, i2, &new_i2_notes, &i2_scratches);
@@ -2293,7 +2298,9 @@ try_combine (i3, i2, i1)
       }
 
     /* If I3DEST was used in I3SRC, it really died in I3.  We may need to
-       put a REG_DEAD note for it somewhere.  Similarly for I2 and I1.
+       put a REG_DEAD note for it somewhere.  If NEWI2PAT exists and sets
+       I3DEST, the death must be somewhere before I2, not I3.  If we passed I3
+       in that case, it might delete I2.  Similarly for I2 and I1.
        Show an additional death due to the REG_DEAD note we make here.  If
        we discard it in distribute_notes, we will decrement it again.  */
 
@@ -2302,15 +2309,16 @@ try_combine (i3, i2, i1)
 	if (GET_CODE (i3dest_killed) == REG)
 	  REG_N_DEATHS (REGNO (i3dest_killed))++;
 
-	distribute_notes (gen_rtx (EXPR_LIST, REG_DEAD, i3dest_killed,
-				   NULL_RTX),
-			  NULL_RTX, i3, newi2pat ? i2 : NULL_RTX,
-			  NULL_RTX, NULL_RTX);
+	if (newi2pat && reg_set_p (i3dest_killed, newi2pat))
+	  distribute_notes (gen_rtx (EXPR_LIST, REG_DEAD, i3dest_killed,
+				     NULL_RTX),
+			    NULL_RTX, i2, NULL_RTX, NULL_RTX, NULL_RTX);
+	else
+	  distribute_notes (gen_rtx (EXPR_LIST, REG_DEAD, i3dest_killed,
+				     NULL_RTX),
+			    NULL_RTX, i3, newi2pat ? i2 : NULL_RTX,
+			    NULL_RTX, NULL_RTX);
       }
-
-    /* For I2 and I1, we have to be careful.  If NEWI2PAT exists and sets
-       I2DEST or I1DEST, the death must be somewhere before I2, not I3.  If
-       we passed I3 in that case, it might delete I2.  */
 
     if (i2dest_in_i2src)
       {
@@ -2730,6 +2738,9 @@ find_split_point (loc, insn)
 	      unsignedp = (code == ZERO_EXTRACT);
 	    }
 	  break;
+
+	default:
+	  break;
 	}
 
       if (len && pos >= 0 && pos + len <= GET_MODE_BITSIZE (GET_MODE (inner)))
@@ -2825,6 +2836,9 @@ find_split_point (loc, insn)
 	  SUBST (XEXP (x, 0), XEXP (x, 1));
 	  SUBST (XEXP (x, 1), tem);
 	}
+      break;
+
+    default:
       break;
     }
 
@@ -4083,6 +4097,9 @@ simplify_rtx (x, op0_mode, last, in_dest)
 #endif
 
       break;
+
+    default:
+      break;
     }
 
   return x;
@@ -4230,6 +4247,8 @@ simplify_if_then_else (x)
       case LT:
       case LE:
 	return gen_unary (NEG, mode, mode, gen_unary (ABS, mode, mode, true));
+    default:
+      break;
       }
 
   /* Look for MIN or MAX.  */
@@ -4253,6 +4272,8 @@ simplify_if_then_else (x)
       case LEU:
       case LTU:
 	return gen_binary (UMIN, mode, true, false);
+      default:
+	break;
       }
   
   /* If we have (if_then_else COND (OP Z C1) Z) and OP is an identity when its
@@ -4943,6 +4964,9 @@ simplify_logical (x, last)
 	return gen_rtx_combine (reverse_condition (GET_CODE (op0)),
 				mode, XEXP (op0, 0), XEXP (op0, 1));
       break;
+
+    default:
+      abort ();
     }
 
   return x;
@@ -5656,6 +5680,9 @@ extract_left_shift (x, count)
 			   GEN_INT (INTVAL (XEXP (x, 1)) >> count));
 
       break;
+      
+    default:
+      break;
     }
 
   return 0;
@@ -5897,6 +5924,10 @@ make_compound_operation (x, in_code)
 
 	  return newer;
 	}
+      break;
+      
+    default:
+      break;
     }
 
   if (new)
@@ -6466,6 +6497,9 @@ force_to_mode (x, mode, mask, reg, just_select)
 				      force_to_mode (XEXP (x, 2), mode,
 						     mask, reg,next_select)));
       break;
+      
+    default:
+      break;
     }
 
   /* Ensure we return a value of the proper mode.  */
@@ -6688,6 +6722,8 @@ known_cond (x, cond, reg, val)
       case LT:  case LE:
 	return gen_unary (NEG, GET_MODE (XEXP (x, 0)), GET_MODE (XEXP (x, 0)),
 			  XEXP (x, 0));
+      default:
+	break;
       }
 
   /* The only other cases we handle are MIN, MAX, and comparisons if the
@@ -6724,6 +6760,8 @@ known_cond (x, cond, reg, val)
 		  return unsignedp ? XEXP (x, 1) : x;
 		case LEU:  case LTU:
 		  return unsignedp ? XEXP (x, 0) : x;
+		default:
+		  break;
 		}
 	    }
 	}
@@ -7435,6 +7473,8 @@ nonzero_bits (x, mode)
 	    result_width = MIN (width0, width1);
 	    result_low = MIN (low0, low1);
 	    break;
+	  default:
+	    abort ();
 	  }
 
 	if (result_width < mode_width)
@@ -7537,6 +7577,9 @@ nonzero_bits (x, mode)
       nonzero &= (nonzero_bits (XEXP (x, 1), mode)
 		  | nonzero_bits (XEXP (x, 2), mode));
       break;
+      
+    default:
+      break;
     }
 
   return nonzero;
@@ -7578,13 +7621,25 @@ num_sign_bit_copies (x, mode)
     return MAX (1, (num_sign_bit_copies (x, GET_MODE (x))
 		    - (GET_MODE_BITSIZE (GET_MODE (x)) - bitwidth)));
      
+  if (GET_MODE (x) != VOIDmode && bitwidth > GET_MODE_BITSIZE (GET_MODE (x)))
+    {
 #ifndef WORD_REGISTER_OPERATIONS
   /* If this machine does not do all register operations on the entire
      register and MODE is wider than the mode of X, we can say nothing
      at all about the high-order bits.  */
-  if (GET_MODE (x) != VOIDmode && bitwidth > GET_MODE_BITSIZE (GET_MODE (x)))
-    return 1;
+      return 1;
+#else
+      /* Likewise on machines that do, if the mode of the object is smaller
+	 than a word and loads of that size don't sign extend, we can say
+	 nothing about the high order bits.  */
+      if (GET_MODE_BITSIZE (GET_MODE (x)) < BITS_PER_WORD
+#ifdef LOAD_EXTEND_OP
+	  && LOAD_EXTEND_OP (GET_MODE (x)) != SIGN_EXTEND
 #endif
+	  )
+	return 1;
+#endif
+    }
 
   switch (code)
     {
@@ -7824,6 +7879,10 @@ num_sign_bit_copies (x, mode)
     case GEU: case GTU: case LEU: case LTU:
       if (STORE_FLAG_VALUE == -1)
 	return bitwidth;
+      break;
+      
+    default:
+      break;
     }
 
   /* If we haven't been able to figure it out by one of the above rules,
@@ -7935,6 +7994,8 @@ merge_outer_ops (pop0, pconst0, op1, const1, mode, pcomp_p)
 	case NEG:
 	  op0 = NIL;
 	  break;
+	default:
+	  break;
 	}
     }
 
@@ -7975,6 +8036,8 @@ merge_outer_ops (pop0, pconst0, op1, const1, mode, pcomp_p)
 	else /* op1 == XOR */
 	  /* (a ^ b) & b) == (~a) & b */
 	  *pcomp_p = 1;
+	break;
+      default:
 	break;
       }
 
@@ -8608,6 +8671,9 @@ simplify_shift_const (x, code, result_mode, varop, count)
 
 	      continue;
 	    }
+	  break;
+	  
+	default:
 	  break;
 	}
 
@@ -9441,6 +9507,9 @@ simplify_comparison (code, pop0, pop1)
 	      code = LT;
 	    }
 	  break;
+
+	default:
+	  break;
 	}
 
       /* Compute some predicates to simplify code below.  */
@@ -9973,6 +10042,9 @@ simplify_comparison (code, pop0, pop1)
 	      continue;
 	    }
 	  break;
+	  
+	default:
+	  break;
 	}
 
       break;
@@ -10103,9 +10175,10 @@ reversible_comparison_p (x)
       x = get_last_value (XEXP (x, 0));
       return (x && GET_CODE (x) == COMPARE
 	      && ! FLOAT_MODE_P (GET_MODE (XEXP (x, 0))));
+      
+    default:
+      return 0;
     }
-
-  return 0;
 }
 
 /* Utility function for following routine.  Called when X is part of a value
@@ -10712,8 +10785,11 @@ mark_used_regs_combine (x)
 	  mark_used_regs_combine (XEXP (testreg, 0));
 
 	mark_used_regs_combine (SET_SRC (x));
-	return;
       }
+      return;
+
+    default:
+      break;
     }
 
   /* Recursively scan the operands of this expression.  */

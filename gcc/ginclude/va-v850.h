@@ -1,5 +1,3 @@
-/* CYGNUS LOCAL v850/law (entire file ) */
-
 /* Define __gnuc_va_list. */
 
 #ifndef __GNUC_VA_LIST
@@ -34,4 +32,3 @@ void va_end (__gnuc_va_list);
   : (AP = (__gnuc_va_list) ((char *) (AP) + __va_rounded_size (TYPE)),	\
     *((TYPE *) (void *) ((char *) (AP) - __va_rounded_size (TYPE)))))
 #endif
-/* END CYGNUS LOCAL */

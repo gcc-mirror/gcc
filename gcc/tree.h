@@ -266,6 +266,8 @@ struct tree_common
            FUNCTION_DECL
        TREE_PARMLIST in
            TREE_PARMLIST (C++)
+       SAVE_EXPR_NOPLACEHOLDER in
+	   SAVE_EXPR
 
    asm_written_flag:
 
@@ -617,6 +619,7 @@ struct tree_vec
 /* In a SAVE_EXPR node.  */
 #define SAVE_EXPR_CONTEXT(NODE) TREE_OPERAND(NODE, 1)
 #define SAVE_EXPR_RTL(NODE) (*(struct rtx_def **) &(NODE)->exp.operands[2])
+#define SAVE_EXPR_NOPLACEHOLDER(NODE) TREE_UNSIGNED (NODE)
 
 /* In a RTL_EXPR node.  */
 #define RTL_EXPR_SEQUENCE(NODE) (*(struct rtx_def **) &(NODE)->exp.operands[0])
@@ -1229,6 +1232,7 @@ extern char *oballoc			PROTO((int));
 extern char *permalloc			PROTO((int));
 extern char *savealloc			PROTO((int));
 extern char *expralloc			PROTO((int));
+extern void free			PROTO((void *));
 
 /* Lowest level primitive for allocating a node.
    The TREE_CODE is the only argument.  Contents are initialized
@@ -1672,6 +1676,7 @@ extern void (*incomplete_decl_finalize_hook) ();
 
 /* In tree.c */
 extern char *perm_calloc			PROTO((int, long));
+extern tree get_file_function_name		PROTO((int));
 extern tree get_set_constructor_bits		PROTO((tree, char *, int));
 extern tree get_set_constructor_bytes		PROTO((tree,
 						       unsigned char *, int));

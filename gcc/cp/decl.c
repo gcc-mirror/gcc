@@ -5585,6 +5585,9 @@ init_decl_processing ()
 
   /* Prepare to check format strings against argument lists.  */
   init_function_format_info ();
+
+  /* Show we use EH for cleanups.  */
+  using_eh_for_cleanups ();
 }
 
 /* initialize type descriptor type node of various rtti type.  */

@@ -1,4 +1,4 @@
-;; Machine description of the ARC cpu for GNU C compiler
+;; Machine description of the Argonaut ARC cpu for GNU C compiler
 ;; Copyright (C) 1994, 1997 Free Software Foundation, Inc.
 
 ;; This file is part of GNU CC.
