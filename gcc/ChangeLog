@@ -1,5 +1,25 @@
 2005-03-10  Nathan Sidwell  <nathan@codesourcery.com>
 
+	* value-prof.c (rtl_find_values_to_profile): Use gcc_assert and
+	gcc_unreachable.
+	(rtl_register_value_prof_hooks,
+	tree_value_profile_transformations,
+	tree_register_value_prof_hooks): Likewise.
+	* var-tracking.c (stack_adjust_offset_pre_post,
+	variable_htab_free, variable_union, dataflow_set_different_2,
+	count_uses, variable_was_changed, set_frame_base_location,
+	set_variable_part, emit_note_insn_var_location, vt_emit_notes,
+	vt_add_function_parameters): Likewise.
+	* varasm.c (named_section_real, named_section, make_decl_rtl,
+	asm_emit_uninitialised, assemble_integer, decode_addr_const,
+	const_hash_1, compare_constant, copy_constant, force_const_mem,
+	output_constant_pool_2, output_constant_pool_1, output_constant,
+	output_constructor, make_decl_one_only, decl_tls_model,
+	default_no_named_section, default_elf_select_section_1,
+	default_unique_section_1): Likewise.
+	* vec.c (vec_gc_o_reserve, vec_heap_o_reserve): Likewise.
+	* vmsdbgout.c (addr_const_to_string): Likewise.
+
 	PR c++/20375
 	* function.c (struct assign_parm_data_one): Remove last_named
 	field.
