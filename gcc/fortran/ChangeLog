@@ -17,6 +17,10 @@
 	* primary.c (match_boz_constant): Call gfc_notify_std only if
 	we actually have a non-standard boz-literal-constant.
 
+	PR fortran/15754
+	* expr.c (gfc_check_assign): Print ranks if incompatible. Issue
+	warning if assigning NULL().
+
 2004-07-11  Joseph S. Myers  <jsm@polyomino.org.uk>
 
 	* f95-lang.c (set_block): Remove.
