@@ -4931,14 +4931,16 @@ add_warning (winner, loser)
 }
 
 /* Returns true iff functions are equivalent. Equivalent functions are
-   not identical only if one is a function-local extern function.  */
+   not '==' only if one is a function-local extern function or if
+   both are extern "C".  */
 
 static inline int
 equal_functions (fn1, fn2)
      tree fn1;
      tree fn2;
 {
-  if (DECL_LOCAL_FUNCTION_P (fn1) || DECL_LOCAL_FUNCTION_P (fn2))
+  if (DECL_LOCAL_FUNCTION_P (fn1) || DECL_LOCAL_FUNCTION_P (fn2)
+      || DECL_EXTERN_C_FUNCTION_P (fn1))
     return decls_match (fn1, fn2);
   return fn1 == fn2;
 }

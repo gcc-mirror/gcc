@@ -1,3 +1,12 @@
+2000-10-23  Jason Merrill  <jason@redhat.com>
+
+	* call.c (equal_functions): Also call decls_match for extern "C" fns.
+
+2000-10-22  Jason Merrill  <jason@redhat.com>
+
+	* call.c (build_conditional_expr): Use ocp_convert to force
+	rvalue conversion.
+
 2000-10-22  Mark Mitchell  <mark@codesourcery.com>
 
 	* call.c (standard_conversion): Use RVALUE_CONVs for all
