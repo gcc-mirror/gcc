@@ -4650,8 +4650,7 @@ assign_parms (fndecl)
 	  SET_DECL_RTL (parm, stack_parm);
 	}
       else if (! ((! optimize
-		   && ! DECL_REGISTER (parm)
-		   && ! DECL_INLINE (fndecl))
+		   && ! DECL_REGISTER (parm))
 		  || TREE_SIDE_EFFECTS (parm)
 		  /* If -ffloat-store specified, don't put explicit
 		     float variables into registers.  */
@@ -4751,8 +4750,7 @@ assign_parms (fndecl)
 	     can safely live in a register, put it in one.  */
 	  if (passed_pointer && TYPE_MODE (TREE_TYPE (parm)) != BLKmode
 	      && ! ((! optimize
-		     && ! DECL_REGISTER (parm)
-		     && ! DECL_INLINE (fndecl))
+		     && ! DECL_REGISTER (parm))
 		    || TREE_SIDE_EFFECTS (parm)
 		    /* If -ffloat-store specified, don't put explicit
 		       float variables into registers.  */

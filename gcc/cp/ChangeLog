@@ -1,5 +1,7 @@
 2002-01-22  Jason Merrill  <jason@redhat.com>
 
+	* decl2.c (grokclassfn): Don't set DECL_REGISTER on 'this'.
+
 	* parse.y (function_body): Suppress the block for the outermost
 	curly braces.
 	* decl.c (pushdecl): Don't try to skip it.
