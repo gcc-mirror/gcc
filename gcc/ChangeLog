@@ -1,5 +1,18 @@
 2004-04-16  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
 
+	* doc/install.texi (Specific, mips-sgi-irix5): Reflect working
+	IRIX 5 port.
+	Remove -save-temps workaround, handled automatically.
+	Require GNU binutils 2.15 for debugging.
+	Remove SGI make warnings since GNU make is now required.
+	(Specific, mips-sgi-irix6): Some markup fixes.
+	Describe MIPSpro C problems and workarounds.
+	Mention working O32 ABI support.
+	Recommend GNU as 2.15 for O32 with debugging.
+	Remove description of fixed structure pass/return bug.
+
+2004-04-16  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
+
 	* aclocal.m4 (gcc_AC_PROG_GNAT): Check if ${CC} produces object
 	file for Ada compilation.
 	Fix gcc_cv_cc_supports_ada spelling.
