@@ -8371,7 +8371,8 @@ expand_expr (exp, target, tmode, modifier)
 	    }
 
 	  else if (GET_CODE (op0) == REG || GET_CODE (op0) == SUBREG
-		   || GET_CODE (op0) == CONCAT || GET_CODE (op0) == ADDRESSOF)
+		   || GET_CODE (op0) == CONCAT || GET_CODE (op0) == ADDRESSOF
+		   || GET_CODE (op0) == PARALLEL)
 	    {
 	      /* If this object is in a register, it must be not
 		 be BLKmode.  */
@@ -8379,7 +8380,14 @@ expand_expr (exp, target, tmode, modifier)
 	      rtx memloc = assign_temp (inner_type, 1, 1, 1);
 
 	      mark_temp_addr_taken (memloc);
-	      emit_move_insn (memloc, op0);
+	      if (GET_CODE (op0) == PARALLEL)
+		/* Handle calls that pass values in multiple non-contiguous
+		   locations.  The Irix 6 ABI has examples of this.  */
+		emit_group_store (memloc, op0,
+				  int_size_in_bytes (inner_type),
+				  TYPE_ALIGN (inner_type));
+	      else
+		emit_move_insn (memloc, op0);
 	      op0 = memloc;
 	    }
 
