@@ -25,6 +25,7 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #define MACH
 #endif
 #define DBX_DEBUGGING_INFO
+#define DEFAULT_GDB_EXTENSIONS 0
 
 #include "aoutos.h"
 #include "m88k.h"
