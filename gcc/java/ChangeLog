@@ -1,3 +1,21 @@
+2003-05-29  Roger Sayle  <roger@eyesopen.com>
+
+	* builtins.c (cos_builtin, sin_builtin, sqrt_builtin): Delete.
+	(builtin_record): Add an additional builtin_code field to
+	record which GCC built-in corresponds to the Java function.
+	(java_builtins):  Add new entries for atan, atan2, exp, log,
+	pow and tan.
+	(max_builtin, min_builtin, abs_builtin): Perform constant
+	folding on the resulting tree.
+	(java_build_function_call_expr): Likewise, perform constant
+	folding on the resulting tree.
+	(initialize_builtins): The NULL creators are now allowed in
+	the java_builtins table, which is now terminated by an entry
+	with builtin_code == END_BUILTINS.
+	(check_for_builtin): Likewise.  If the matching creator is
+	NULL, construct the call using java_build_function_call_expr
+	directly with the decl for the corresponding builtin_code.
+
 2003-05-23  Nathanael Nerode  <neroden@gcc.gnu.org>
 
 	* win32-host.c: Normalize copyright boilerplate.
