@@ -1,3 +1,7 @@
+2004-07-17  Paolo Bonzini  <bonzini@gnu.org>
+
+	* config/i386/i386.md (movv16qi_internal): Fix typo.
+
 2004-07-17  Steven Bosscher  <stevenb@suse.de>
 
 	* final.c (final_scan_insn): Fix broken commit from previous
