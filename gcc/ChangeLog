@@ -1,3 +1,9 @@
+1998-12-02  Ulrich Drepper  <drepper@cygnus.com>
+
+	* c-lex.c: Fix indentation from last patch.
+	Remove trailing whitespace.
+	* real.c: Likewise.
+
 Wed Dec  2 10:11:12 1998  Jeffrey A Law  (law@cygnus.com)
 
 	* flow.c (delete_block): Call set_last_insn after we have reset
