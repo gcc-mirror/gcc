@@ -1862,6 +1862,7 @@ gnu/java/nio/ByteBufferImpl.java \
 gnu/java/nio/CharBufferImpl.java \
 gnu/java/nio/CharViewBufferImpl.java \
 gnu/java/nio/DatagramChannelImpl.java \
+gnu/java/nio/DirectByteBufferImpl.java \
 gnu/java/nio/DoubleBufferImpl.java \
 gnu/java/nio/DoubleViewBufferImpl.java \
 gnu/java/nio/FileChannelImpl.java \
@@ -2322,6 +2323,7 @@ gnu/gcj/runtime/natSharedLibLoader.cc \
 gnu/gcj/runtime/natStackTrace.cc \
 gnu/gcj/runtime/natStringBuffer.cc \
 gnu/gcj/runtime/natVMClassLoader.cc \
+gnu/java/nio/natDirectByteBufferImpl.cc \
 gnu/java/nio/natFileChannelImpl.cc \
 gnu/java/nio/natMappedByteFileBuffer.cc \
 gnu/java/nio/natSelectorImpl.cc \
@@ -2496,7 +2498,9 @@ gnu/gcj/io/shs.lo gnu/gcj/protocol/core/natCoreInputStream.lo \
 gnu/gcj/runtime/natFinalizerThread.lo gnu/gcj/runtime/natFirstThread.lo \
 gnu/gcj/runtime/natNameFinder.lo gnu/gcj/runtime/natSharedLibLoader.lo \
 gnu/gcj/runtime/natStackTrace.lo gnu/gcj/runtime/natStringBuffer.lo \
-gnu/gcj/runtime/natVMClassLoader.lo gnu/java/nio/natFileChannelImpl.lo \
+gnu/gcj/runtime/natVMClassLoader.lo \
+gnu/java/nio/natDirectByteBufferImpl.lo \
+gnu/java/nio/natFileChannelImpl.lo \
 gnu/java/nio/natMappedByteFileBuffer.lo gnu/java/nio/natSelectorImpl.lo \
 gnu/java/nio/natSocketChannelImpl.lo java/io/natFile.lo \
 java/io/natFileDescriptor.lo java/io/natObjectInputStream.lo \
@@ -2963,6 +2967,7 @@ DEP_FILES =  .deps/$(srcdir)/$(CONVERT_DIR)/gen-from-JIS.P \
 .deps/gnu/java/nio/CharBufferImpl.P \
 .deps/gnu/java/nio/CharViewBufferImpl.P \
 .deps/gnu/java/nio/DatagramChannelImpl.P \
+.deps/gnu/java/nio/DirectByteBufferImpl.P \
 .deps/gnu/java/nio/DoubleBufferImpl.P \
 .deps/gnu/java/nio/DoubleViewBufferImpl.P \
 .deps/gnu/java/nio/FileChannelImpl.P \
@@ -2988,6 +2993,7 @@ DEP_FILES =  .deps/$(srcdir)/$(CONVERT_DIR)/gen-from-JIS.P \
 .deps/gnu/java/nio/charset/UTF_16Encoder.P \
 .deps/gnu/java/nio/charset/UTF_16LE.P \
 .deps/gnu/java/nio/charset/UTF_8.P \
+.deps/gnu/java/nio/natDirectByteBufferImpl.P \
 .deps/gnu/java/nio/natFileChannelImpl.P \
 .deps/gnu/java/nio/natMappedByteFileBuffer.P \
 .deps/gnu/java/nio/natSelectorImpl.P \

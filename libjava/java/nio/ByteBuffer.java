@@ -1,5 +1,5 @@
 /* ByteBuffer.java -- 
-   Copyright (C) 2002 Free Software Foundation, Inc.
+   Copyright (C) 2002, 2003 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -38,70 +38,81 @@ exception statement from your version. */
 package java.nio;
 
 import gnu.java.nio.ByteBufferImpl;
+import gnu.java.nio.DirectByteBufferImpl;
 
 /**
  * @since 1.4
  */
-public abstract class ByteBuffer extends Buffer implements Comparable
+public abstract class ByteBuffer extends Buffer
+  implements Comparable
 {
   private ByteOrder endian = ByteOrder.BIG_ENDIAN;
 
-  int offset;
+  int array_offset;
   byte[] backing_buffer;
-  
+
+  ByteBuffer (int capacity, int limit, int position, int mark)
+  {
+    super (capacity, limit, position, mark);
+    array_offset = 0;
+  }
+
+  ByteBuffer (byte[] buffer, int offset, int capacity, int limit, int position, int mark)
+  {
+    super (capacity, limit, position, mark);
+    this.backing_buffer = buffer;
+    this.array_offset = offset;
+  }
   /**
    * Allocates a new direct byte buffer.
    */ 
   public static ByteBuffer allocateDirect (int capacity)
   {
-    throw new Error ("direct buffers are not implemented");
+    return DirectByteBufferImpl.allocate (capacity);
   }
 
   /**
-   * Allocates a new byte buffer.
+   * Allocates a new <code>ByteBuffer</code> object with a given capacity.
    */
   public static ByteBuffer allocate (int capacity)
   {
-    return new ByteBufferImpl (capacity, 0, capacity);
+    return new ByteBufferImpl (capacity);
   }
- 
+
   /**
-   * Wraps a byte array into a buffer.
-   * 
+   * Wraps a <code>byte</code> array into a <code>ByteBuffer</code>
+   * object.
+   *
    * @exception IndexOutOfBoundsException If the preconditions on the offset
    * and length parameters do not hold
    */
   final public static ByteBuffer wrap (byte[] array, int offset, int length)
   {
-    return new ByteBufferImpl (array, offset, length);
+    return new ByteBufferImpl (array, 0, array.length, offset + length, offset, -1, false);
   }
 
   /**
-   * Wraps a byte array into a buffer.
+   * Wraps a <code>byte</code> array into a <code>ByteBuffer</code>
+   * object.
    */
   final public static ByteBuffer wrap (byte[] array)
   {
     return wrap (array, 0, array.length);
   }
-
-  ByteBuffer (int capacity, int limit, int position, int mark)
-  {
-    super (capacity, limit, position, mark);
-  }
-
+  
   /**
-   * This method transfers bytes from this buffer into
-   * the given destination array.
+   * This method transfers <code>bytes<code> from this buffer into the given
+   * destination array.
    *
    * @param dst The destination array
-   * @param offset The offset within the array of the first byte to be written;
-   * must be non-negative and no larger than dst.length.
+   * @param offset The offset within the array of the first <code>byte</code>
+   * to be written; must be non-negative and no larger than dst.length.
    * @param length The maximum number of bytes to be written to the given array;
    * must be non-negative and no larger than dst.length - offset.
    *
-   * @exception BufferUnderflowException If there are fewer than length bytes
-   * remaining in this buffer.
-   * @exception IndexOutOfBoundsException - If the preconditions on the offset
+   * @exception BufferUnderflowException If there are fewer than length
+   * <code>bytes</code> remaining in this buffer.
+   * @exception IndexOutOfBoundsException If the preconditions on the offset
    * and length parameters do not hold.
    */
   public ByteBuffer get (byte[] dst, int offset, int length)
@@ -114,61 +125,70 @@ public abstract class ByteBuffer extends Buffer implements Comparable
 
     for (int i = offset; i < offset + length; i++)
       {
-        dst [i] = get();
+        dst [i] = get ();
       }
 
     return this;
   }
 
   /**
-   * This method transfers bytes from this buffer into the given
+   * This method transfers <code>bytes<code> from this buffer into the given
    * destination array.
    *
    * @param dst The byte array to write into.
    *
    * @exception BufferUnderflowException If there are fewer than dst.length
-   * bytes remaining in this buffer.
+   * <code>bytes</code> remaining in this buffer.
    */
   public ByteBuffer get (byte[] dst)
   {
     return get (dst, 0, dst.length);
   }
- 
+
   /**
-   * Writes the content of src into the buffer.
+   * Writes the content of the the <code>ByteBUFFER</code> src
+   * into the buffer.
    *
    * @param src The source data.
    *
    * @exception BufferOverflowException If there is insufficient space in this
-   * buffer for the remaining bytes in the source buffer.
+   * buffer for the remaining <code>bytes<code> in the source buffer.
    * @exception IllegalArgumentException If the source buffer is this buffer.
-   * @exception ReadOnlyBufferException If this buffer is read only.
+   * @exception ReadOnlyBufferException If this buffer is read-only.
    */
   public ByteBuffer put (ByteBuffer src)
   {
     if (src == this)
       throw new IllegalArgumentException ();
 
-    while (src.hasRemaining ())
-      put (src.get ());
-    
+    if (src.remaining () > remaining ())
+      throw new BufferOverflowException ();
+
+    if (src.remaining () > 0)
+      {
+        byte[] toPut = new byte [src.remaining ()];
+        src.get (toPut);
+        src.put (toPut);
+      }
+
     return this;
   }
 
   /**
-   * Writes the content of the the array src into the buffer.
+   * Writes the content of the the <code>byte array</code> src
+   * into the buffer.
    *
    * @param src The array to copy into the buffer.
    * @param offset The offset within the array of the first byte to be read;
    * must be non-negative and no larger than src.length.
    * @param length The number of bytes to be read from the given array;
    * must be non-negative and no larger than src.length - offset.
-   *
+   * 
    * @exception BufferOverflowException If there is insufficient space in this
-   * buffer for the remaining bytes in the source buffer.
+   * buffer for the remaining <code>bytes<code> in the source array.
    * @exception IndexOutOfBoundsException If the preconditions on the offset
-   * and length parameters do not hold.
-   * @exception ReadOnlyBufferException If this buffer is read only.
+   * and length parameters do not hold
+   * @exception ReadOnlyBufferException If this buffer is read-only.
    */
   public ByteBuffer put (byte[] src, int offset, int length)
   {
@@ -180,18 +200,19 @@ public abstract class ByteBuffer extends Buffer implements Comparable
 
     for (int i = offset; i < offset + length; i++)
       put (src [i]);
-    
+
     return this;
   }
 
   /**
-   * Writes the content of the the array src into the buffer.
+   * Writes the content of the the <code>byte array</code> src
+   * into the buffer.
    *
    * @param src The array to copy into the buffer.
-   *
+   * 
    * @exception BufferOverflowException If there is insufficient space in this
-   * buffer for the remaining bytes in the source buffer.
-   * @exception ReadOnlyBufferException If this buffer is read only.
+   * buffer for the remaining <code>bytes<code> in the source array.
+   * @exception ReadOnlyBufferException If this buffer is read-only.
    */
   public final ByteBuffer put (byte[] src)
   {
@@ -199,19 +220,19 @@ public abstract class ByteBuffer extends Buffer implements Comparable
   }
 
   /**
-   * Tells whether or not this buffer is backed by an accessible array.
+   * Tells whether ot not this buffer is backed by an accessible
+   * <code>byte</code> array.
    */
   public final boolean hasArray ()
   {
     return (backing_buffer != null
-             && !isReadOnly ());
+            && !isReadOnly ());
   }
 
   /**
-   * Returns the byte array that backs this buffer.
+   * Returns the <code>byte</code> array that backs this buffer.
    *
-   * @exception ReadOnlyBufferException If this buffer is backed by an array
-   * but is read-only.
+   * @exception ReadOnlyBufferException If this buffer is read-only.
    * @exception UnsupportedOperationException If this buffer is not backed
    * by an accessible array.
    */
@@ -222,16 +243,14 @@ public abstract class ByteBuffer extends Buffer implements Comparable
 
     if (isReadOnly ())
       throw new ReadOnlyBufferException ();
-
+    
     return backing_buffer;
   }
 
   /**
-   * Returns the offset within this buffer's backing array of the first element
-   * of the buffer  
+   * Returns the offset within this buffer's backing array of the first element.
    *
-   * @exception ReadOnlyBufferException If this buffer is backed by an array
-   * but is read-only.
+   * @exception ReadOnlyBufferException If this buffer is read-only.
    * @exception UnsupportedOperationException If this buffer is not backed
    * by an accessible array.
    */
@@ -242,21 +261,21 @@ public abstract class ByteBuffer extends Buffer implements Comparable
 
     if (isReadOnly ())
       throw new ReadOnlyBufferException ();
-
-    return offset;
+    
+    return array_offset;
   }
-  
+
   /**
-   * Returns the current hash code of this buffer.
+   * Calculates a hash code for this buffer.
    */
-  public int hashCode()
+  public int hashCode ()
   {
-    // FIXME: Check what SUN calculates here
-    return super.hashCode();
+    // FIXME: Check what SUN calculates here.
+    return super.hashCode ();
   }
 
   /**
-   * Tells whether or not this buffer is equal to another object.
+   * Checks if this buffer is equal to obj.
    */
   public boolean equals (Object obj)
   {
@@ -265,51 +284,50 @@ public abstract class ByteBuffer extends Buffer implements Comparable
       {
         return compareTo (obj) == 0;
       }
-    
+
     return false;
   }
- 
+
   /**
-   * Compares this buffer to another object.
+   * Compares two <code>ByteBuffer</code> objects.
    *
-   * @exception ClassCastException If the argument is not a byte buffer
+   * @exception ClassCastException If obj is not an object derived from
+   * <code>ByteBuffer</code>.
    */
   public int compareTo (Object obj)
   {
     ByteBuffer a = (ByteBuffer) obj;
 
-    if (a.remaining() != remaining())
+    if (a.remaining () != remaining ())
+      return 1;
+
+    if (! hasArray () ||
+        ! a.hasArray ())
       {
         return 1;
       }
-   
-    if (! hasArray() ||
-        ! a.hasArray())
-      {
-        return 1;
-      }
-   
-    int r = remaining();
+
+    int r = remaining ();
     int i1 = position ();
     int i2 = a.position ();
-   
+
     for (int i = 0; i < r; i++)
       {
         int t = (int) (get (i1) - a.get (i2));
-   
+
         if (t != 0)
           {
             return (int) t;
           }
       }
-  
+
     return 0;
   }
 
   /**
-   * Retrieves this buffer's byte order.
+   * Returns the byte order of this buffer.
    */  
-  public final ByteOrder order()
+  public final ByteOrder order ()
   {
     return endian;
   }
@@ -324,97 +342,100 @@ public abstract class ByteBuffer extends Buffer implements Comparable
   }
   
   /**
-   * Reads the byte at this buffer's current position,
+   * Reads the <code>byte</code> at this buffer's current position,
    * and then increments the position.
    *
-   * @exception BufferUnderflowException If the buffer's current position
-   * is not smaller than its limit.
+   * @exception BufferUnderflowException If there are no remaining
+   * <code>bytes</code> in this buffer.
    */
   public abstract byte get ();
-  
+
   /**
-   * Relative put method.
+   * Writes the <code>byte</code> at this buffer's current position,
+   * and then increments the position.
    *
-   * @exception BufferOverflowException If this buffer's current position is
-   * not smaller than its limit.
+   * @exception BufferOverflowException If there no remaining 
+   * <code>bytes</code> in this buffer.
    * @exception ReadOnlyBufferException If this buffer is read-only.
    */
   public abstract ByteBuffer put (byte b);
-  
+
   /**
    * Absolute get method.
    *
-   * @exception IndexOutOfBoundsException If index &lt; 0 or index &gt;= this
-   * buffers limit.
+   * @exception IndexOutOfBoundsException If index is negative or not smaller
+   * than the buffer's limit.
    */
   public abstract byte get (int index);
   
   /**
    * Absolute put method.
    *
-   * @exception ReadOnlyBufferException If this buffer is read-only
-   * @exception IndexOutOfBoundsException If index &lt; 0 or index &gt;= this
-   * buffers limit.
+   * @exception IndexOutOfBoundsException If index is negative or not smaller
+   * than the buffer's limit.
+   * @exception ReadOnlyBufferException If this buffer is read-only.
    */
   public abstract ByteBuffer put (int index, byte b);
-  
-  /**
-   * Compacts this buffer.
-   *
-   * @exception ReadOnlyBufferException If this buffer is read-only
-   */
-  public abstract ByteBuffer compact();
 
   /**
-   * Tells whether or not this buffer is direct.
+   * Compacts this buffer.
+   * 
+   * @exception ReadOnlyBufferException If this buffer is read-only.
    */
-  public abstract boolean isDirect();
-  
+  public abstract ByteBuffer compact ();
+
   /**
-   * Creates a new byte buffer whose content is a shared subsequence of this
+   * Tells wether or not this buffer is direct.
+   */
+  public abstract boolean isDirect ();
+
+  /**
+   * Creates a new <code>ByteBuffer</code> whose content is a shared
+   * subsequence of this buffer's content.
+   */
+  public abstract ByteBuffer slice ();
+
+  /**
+   * Creates a new <code>ByteBuffer</code> that shares this buffer's
+   * content.
+   */
+  public abstract ByteBuffer duplicate ();
+
+  /**
+   * Creates a new read-only <code>ByteBuffer</code> that shares this
    * buffer's content.
    */
-  public abstract ByteBuffer slice();
-  
-  /**
-   * Creates a new byte buffer that shares this buffer's content.
-   */
-  public abstract ByteBuffer duplicate();
-  
-  /**
-   * Creates a new, read-only byte buffer that shares this buffer's content.
-   */
-  public abstract ByteBuffer asReadOnlyBuffer();
+  public abstract ByteBuffer asReadOnlyBuffer ();
  
   /**
    * Creates a view of this byte buffer as a short buffer.
    */
-  public abstract ShortBuffer asShortBuffer();
+  public abstract ShortBuffer asShortBuffer ();
   
   /**
    * Creates a view of this byte buffer as a char buffer.
    */
-  public abstract CharBuffer asCharBuffer();
+  public abstract CharBuffer asCharBuffer ();
   
   /**
    * Creates a view of this byte buffer as an integer buffer.
    */
-  public abstract IntBuffer asIntBuffer();
+  public abstract IntBuffer asIntBuffer ();
   
   /**
    * Creates a view of this byte buffer as a long buffer.
    */
-  public abstract LongBuffer asLongBuffer();
+  public abstract LongBuffer asLongBuffer ();
   
   /**
    * Creates a view of this byte buffer as a float buffer.
    */
-  public abstract FloatBuffer asFloatBuffer();
+  public abstract FloatBuffer asFloatBuffer ();
   
   /**
    * Creates a view of this byte buffer as a double buffer.
    */
-  public abstract DoubleBuffer asDoubleBuffer();
+  public abstract DoubleBuffer asDoubleBuffer ();
 
   /**
    * Relative get method for reading a character value.
@@ -422,7 +443,7 @@ public abstract class ByteBuffer extends Buffer implements Comparable
    * @exception BufferUnderflowException  If there are fewer than two bytes
    * remaining in this buffer.
    */
-  public abstract char getChar();
+  public abstract char getChar ();
   
   /**
    * Relative put method for writing a character value.
@@ -430,7 +451,7 @@ public abstract class ByteBuffer extends Buffer implements Comparable
    * @exception BufferOverflowException If this buffer's current position is
    * not smaller than its limit.
    */
-  public abstract ByteBuffer putChar(char value);
+  public abstract ByteBuffer putChar (char value);
   
   /**
    * Absolute get method for reading a character value.
@@ -438,7 +459,7 @@ public abstract class ByteBuffer extends Buffer implements Comparable
    * @exception IndexOutOfBoundsException If there are fewer than two bytes
    * remaining in this buffer
    */
-  public abstract char getChar(int index);
+  public abstract char getChar (int index);
   
   /**
    * Absolute put method for writing a character value.
@@ -446,7 +467,7 @@ public abstract class ByteBuffer extends Buffer implements Comparable
    * @exception IndexOutOfBoundsException If index is negative or not smaller
    * than the buffer's limit, minus one.
    */
-  public abstract ByteBuffer putChar(int index, char value);
+  public abstract ByteBuffer putChar (int index, char value);
   
   /**
    * Relative get method for reading a short value.
@@ -454,7 +475,7 @@ public abstract class ByteBuffer extends Buffer implements Comparable
    * @exception BufferUnderflowException If index is negative or not smaller
    * than the buffer's limit, minus one.
    */
-  public abstract short getShort();
+  public abstract short getShort ();
   
   /**
    * Relative put method for writing a short value.
@@ -462,7 +483,7 @@ public abstract class ByteBuffer extends Buffer implements Comparable
    * @exception BufferOverflowException If this buffer's current position is
    * not smaller than its limit.
    */
-  public abstract ByteBuffer putShort(short value);
+  public abstract ByteBuffer putShort (short value);
   
   /**
    * Absolute get method for reading a short value.
@@ -470,7 +491,7 @@ public abstract class ByteBuffer extends Buffer implements Comparable
    * @exception IndexOutOfBoundsException If there are fewer than two bytes
    * remaining in this buffer
    */
-  public abstract short getShort(int index);
+  public abstract short getShort (int index);
  
   /**
    * Absolute put method for writing a short value.
@@ -478,7 +499,7 @@ public abstract class ByteBuffer extends Buffer implements Comparable
    * @exception IndexOutOfBoundsException If index is negative or not smaller
    * than the buffer's limit, minus one.
    */
-  public abstract ByteBuffer putShort(int index, short value);
+  public abstract ByteBuffer putShort (int index, short value);
   
   /**
    * Relative get method for reading an integer value.
@@ -486,7 +507,7 @@ public abstract class ByteBuffer extends Buffer implements Comparable
    * @exception BufferUnderflowException If there are fewer than four bytes
    * remaining in this buffer.
    */
-  public abstract int getInt();
+  public abstract int getInt ();
   
   /**
    * Relative put method for writing an integer value.
@@ -494,7 +515,7 @@ public abstract class ByteBuffer extends Buffer implements Comparable
    * @exception BufferOverflowException If this buffer's current position is
    * not smaller than its limit.
    */
-  public abstract ByteBuffer putInt(int value);
+  public abstract ByteBuffer putInt (int value);
   
   /**
    * Absolute get method for reading an integer value.
@@ -502,7 +523,7 @@ public abstract class ByteBuffer extends Buffer implements Comparable
    * @exception IndexOutOfBoundsException If index is negative or not smaller
    * than the buffer's limit, minus three.
    */
-  public abstract int getInt(int index);
+  public abstract int getInt (int index);
   
   /**
    * Absolute put method for writing an integer value.
@@ -510,7 +531,7 @@ public abstract class ByteBuffer extends Buffer implements Comparable
    * @exception IndexOutOfBoundsException If index is negative or not smaller
    * than the buffer's limit, minus three.
    */
-  public abstract ByteBuffer putInt(int index, int value);
+  public abstract ByteBuffer putInt (int index, int value);
   
   /**
    * Relative get method for reading a long value.
@@ -518,7 +539,7 @@ public abstract class ByteBuffer extends Buffer implements Comparable
    * @exception BufferUnderflowException If there are fewer than eight bytes
    * remaining in this buffer.
    */
-  public abstract long getLong();
+  public abstract long getLong ();
   
   /**
    * Relative put method for writing a long value.
@@ -526,7 +547,7 @@ public abstract class ByteBuffer extends Buffer implements Comparable
    * @exception BufferOverflowException If this buffer's current position is
    * not smaller than its limit.
    */
-  public abstract ByteBuffer putLong(long value);
+  public abstract ByteBuffer putLong (long value);
   
   /**
    * Absolute get method for reading a long value.
@@ -534,7 +555,7 @@ public abstract class ByteBuffer extends Buffer implements Comparable
    * @exception IndexOutOfBoundsException If index is negative or not smaller
    * than the buffer's limit, minus seven.
    */
-  public abstract long getLong(int index);
+  public abstract long getLong (int index);
   
   /**
    * Absolute put method for writing a float value.
@@ -542,7 +563,7 @@ public abstract class ByteBuffer extends Buffer implements Comparable
    * @exception IndexOutOfBoundsException If index is negative or not smaller
    * than the buffer's limit, minus seven.
    */
-  public abstract ByteBuffer putLong(int index, long value);
+  public abstract ByteBuffer putLong (int index, long value);
   
   /**
    * Relative get method for reading a float value.
@@ -550,7 +571,7 @@ public abstract class ByteBuffer extends Buffer implements Comparable
    * @exception BufferUnderflowException If there are fewer than four bytes
    * remaining in this buffer.
    */
-  public abstract float getFloat();
+  public abstract float getFloat ();
   
   /**
    * Relative put method for writing a float value.
@@ -558,7 +579,7 @@ public abstract class ByteBuffer extends Buffer implements Comparable
    * @exception BufferOverflowException If there are fewer than four bytes
    * remaining in this buffer.
    */
-  public abstract ByteBuffer putFloat(float value);
+  public abstract ByteBuffer putFloat (float value);
   
   /**
    * Absolute get method for reading a float value.
@@ -566,7 +587,7 @@ public abstract class ByteBuffer extends Buffer implements Comparable
    * @exception IndexOutOfBoundsException If index is negative or not smaller
    * than the buffer's limit, minus three.
    */
-  public abstract float getFloat(int index);
+  public abstract float getFloat (int index);
   
   /**
    * Relative put method for writing a float value.
@@ -574,7 +595,7 @@ public abstract class ByteBuffer extends Buffer implements Comparable
    * @exception IndexOutOfBoundsException If index is negative or not smaller
    * than the buffer's limit, minus three.
    */
-  public abstract ByteBuffer putFloat(int index, float value);
+  public abstract ByteBuffer putFloat (int index, float value);
   
   /**
    * Relative get method for reading a double value.
@@ -582,7 +603,7 @@ public abstract class ByteBuffer extends Buffer implements Comparable
    * @exception BufferUnderflowException If there are fewer than eight bytes
    * remaining in this buffer.
    */
-  public abstract double getDouble();
+  public abstract double getDouble ();
   
   /**
    * Relative put method for writing a double value.
@@ -590,7 +611,7 @@ public abstract class ByteBuffer extends Buffer implements Comparable
    * @exception BufferOverflowException If this buffer's current position is
    * not smaller than its limit.
    */
-  public abstract ByteBuffer putDouble(double value);
+  public abstract ByteBuffer putDouble (double value);
   
   /**
    * Absolute get method for reading a double value.
@@ -598,7 +619,7 @@ public abstract class ByteBuffer extends Buffer implements Comparable
    * @exception IndexOutOfBoundsException If index is negative or not smaller
    * than the buffer's limit, minus seven.
    */
-  public abstract double getDouble(int index);
+  public abstract double getDouble (int index);
   
   /**
    * Absolute put method for writing a double value.
@@ -606,7 +627,7 @@ public abstract class ByteBuffer extends Buffer implements Comparable
    * @exception IndexOutOfBoundsException If index is negative or not smaller
    * than the buffer's limit, minus seven.
    */
-  public abstract ByteBuffer putDouble(int index, double value);
+  public abstract ByteBuffer putDouble (int index, double value);
 
   /**
    * Returns a string summarizing the state of this buffer.
