@@ -275,7 +275,6 @@ namespace __gnu_norm
   */
   template<typename _Tp, typename _Alloc>
     class _List_base
-    : public _Alloc::template rebind<_List_node<_Tp> >::other
     {
     protected:
       // NOTA BENE
@@ -295,25 +294,33 @@ namespace __gnu_norm
 
       _Node_Alloc_type;
 
-      _List_node_base _M_node;
+      struct _List_impl 
+	: public _Node_Alloc_type {
+	_List_node_base _M_node;
+	_List_impl (const _Node_Alloc_type& __a)
+	  : _Node_Alloc_type(__a)
+	{ }
+      };
+
+      _List_impl _M_impl;
 
       _List_node<_Tp>*
       _M_get_node()
-      { return _Node_Alloc_type::allocate(1); }
-
+      { return _M_impl._Node_Alloc_type::allocate(1); }
+      
       void
       _M_put_node(_List_node<_Tp>* __p)
-      { _Node_Alloc_type::deallocate(__p, 1); }
-
+      { _M_impl._Node_Alloc_type::deallocate(__p, 1); }
+      
   public:
       typedef _Alloc allocator_type;
 
       allocator_type
       get_allocator() const
-      { return allocator_type(*static_cast<const _Node_Alloc_type*>(this)); }
+      { return allocator_type(*static_cast<const _Node_Alloc_type*>(&this->_M_impl)); }
 
       _List_base(const allocator_type& __a)
-      : _Node_Alloc_type(__a)
+	: _M_impl(__a)
       { _M_init(); }
 
       // This is what actually destroys the list.
@@ -326,8 +333,8 @@ namespace __gnu_norm
       void
       _M_init()
       {
-        this->_M_node._M_next = &this->_M_node;
-        this->_M_node._M_prev = &this->_M_node;
+        this->_M_impl._M_node._M_next = &this->_M_impl._M_node;
+        this->_M_impl._M_node._M_prev = &this->_M_impl._M_node;
       }
     };
 
@@ -409,7 +416,7 @@ namespace __gnu_norm
        *  will also be included, accumulated from the topmost parent.
        *  @endif
        */
-      using _Base::_M_node;
+      using _Base::_M_impl;
       using _Base::_M_put_node;
       using _Base::_M_get_node;
 
@@ -588,7 +595,7 @@ namespace __gnu_norm
        */
       iterator
       begin()
-      { return this->_M_node._M_next; }
+      { return this->_M_impl._M_node._M_next; }
 
       /**
        *  Returns a read-only (constant) iterator that points to the
@@ -597,7 +604,7 @@ namespace __gnu_norm
        */
       const_iterator
       begin() const
-      { return this->_M_node._M_next; }
+      { return this->_M_impl._M_node._M_next; }
 
       /**
        *  Returns a read/write iterator that points one past the last
@@ -605,7 +612,7 @@ namespace __gnu_norm
        *  order.
        */
       iterator
-      end() { return &this->_M_node; }
+      end() { return &this->_M_impl._M_node; }
 
       /**
        *  Returns a read-only (constant) iterator that points one past
@@ -614,7 +621,7 @@ namespace __gnu_norm
        */
       const_iterator
       end() const
-      { return &this->_M_node; }
+      { return &this->_M_impl._M_node; }
 
       /**
        *  Returns a read/write reverse iterator that points to the last
@@ -659,7 +666,7 @@ namespace __gnu_norm
        */
       bool
       empty() const
-      { return this->_M_node._M_next == &this->_M_node; }
+      { return this->_M_impl._M_node._M_next == &this->_M_impl._M_node; }
 
       /**  Returns the number of elements in the %list.  */
       size_type
@@ -788,7 +795,7 @@ namespace __gnu_norm
        */
       void
       pop_back()
-      { this->_M_erase(this->_M_node._M_prev); }
+      { this->_M_erase(this->_M_impl._M_node._M_prev); }
 
       /**
        *  @brief  Inserts given value into %list before specified iterator.
@@ -901,7 +908,7 @@ namespace __gnu_norm
        */
       void
       swap(list& __x)
-      { _List_node_base::swap(this->_M_node,__x._M_node); }
+      { _List_node_base::swap(this->_M_impl._M_node,__x._M_impl._M_node); }
 
       /**
        *  Erases all the elements.  Note that this function only erases
@@ -1064,7 +1071,7 @@ namespace __gnu_norm
        */
       void
       reverse()
-      { this->_M_node.reverse(); }
+      { this->_M_impl._M_node.reverse(); }
 
       /**
        *  @brief  Sort the elements.

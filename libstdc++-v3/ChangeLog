@@ -1,11 +1,50 @@
+2004-03-25  Dhruv Matani  <dhruvbird@gmx.net>
+
+	* include/bits/stl_list.h: Created a _List_impl class and made it
+	derive from the allocator, instead of the list deriving from the
+	allocator class, which was not conformant. Changed all references
+	from this->_M_node to this->_M_impl._M_node * bits/list.tcc: Same
+	as above (changed all references to the concerned variables).
+
+2004-03-25  Dhruv Matani  <dhruvbird@gmx.net>
+
+	* include/bits/stl_deque.h: Created a _Deque_impl class and made
+	it derive from the allocator, instead of the deque deriving from
+	the allocator class, which was not conformant. Changed all
+	references to the _M_start, _M_finish, _M_map, and _M_map_size to
+	_M_impl.*.
+	(_Deque_base<_Tp,_Alloc>::~_Deque_base()): Added this->
+	qualification in 2 places where it was missing.
+	(_Deque_base<_Tp,_Alloc>::_M_initialize_map(size_t)): Same as
+	above.
+	* include/bits/deque.tcc: Same as above (changed all references to
+	the concerned variables).
+
+2004-03-25  Dhruv Matani  <dhruvbird@gmx.net>
+
+	* include/bits/stl_vector.h: Created a _Vector_impl class and made
+	it derive from the allocator, instead of the _Vector_base class,
+	deriving from the allocator which was not conformant. Changed all
+	references to the _M_start, _M_finish, and _M_end_of_storage to
+	_M_impl.*.
+	* include/bits/vector.tcc: Same as above (changed all references
+	to the concerned variables).
+
+2004-03-25  Dhruv Matani  <dhruvbird@gmx.net>
+
+	* testsuite/23_containers/deque/cons/clear_allocator.cc: New.
+	* testsuite/23_containers/list/cons/clear_allocator.cc: New.
+	* testsuite/23_containers/vector/cons/clear_allocator.cc: New.
+	
 2004-03-24  Dhruv Matani  <dhruvbird@gmx.net>
 
-	* ext/malloc_allocator.h: Fixed the construct function to call
-	global placement new instead of assignment. Added a check after
-	the return from malloc to check whether returned pointer is NULL,
-	and if so, throw std::bad_alloc().
-	* ext/debug_allocator.h: Added a check in the deallocate function
-	to check whether the user has passed a NULL pointer or not.
+	* include/ext/malloc_allocator.h: Fixed the construct function to
+	call global placement new instead of assignment. Added a check
+	after the return from malloc to check whether returned pointer is
+	NULL, and if so, throw std::bad_alloc().
+	* include/ext/debug_allocator.h: Added a check in the deallocate
+	function to check whether the user has passed a NULL pointer or
+	not.
 	
 2004-03-24  Benjamin Kosnik  <bkoz@redhat.com>
 
