@@ -231,7 +231,7 @@ integer f_open(olist *a)
 		(void) strcpy (buf, s);
 		free (s);
 #else /* ! defined (HAVE_TEMPNAM) */
-#ifdef _POSIX_SOURCE
+#ifdef HAVE_TMPNAM
 		tmpnam(buf);
 #else
 		(void) strcpy(buf,"tmp.FXXXXXX");

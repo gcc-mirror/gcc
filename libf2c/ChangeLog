@@ -1,3 +1,15 @@
+2002-01-15  Loren J. Rittle  <ljrittle@acm.org>
+
+	* libI77/configure.in: Remove fcntl.h check; never define
+	_POSIX_SOURCE, NO_FCNTL or OPEN_DECL.  Add check for tmpnam().
+	* libI77/configure: Rebuilt.
+	* libI77/config.h.in: Rebuilt.
+	* libI77/Makefile.in: Remove all traces of rawio.h from
+	dependencies lists.
+	* libI77/fio.h (FSEEK): Unroll -j1.7 -j1.6 made 2002-01-04.
+	* libI77/open.c (f_open): Use HAVE_TMPNAM.
+	* libI77/rawio.h: Remove file.
+
 2002-01-14  John David Anglin  <dave@hiauly1.hia.nrc.ca>
 
 	* libI77/configure.in (_LARGEFILE_SOURCE): AC_DEFINE.

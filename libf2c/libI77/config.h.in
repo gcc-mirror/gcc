@@ -6,9 +6,6 @@
 /* Define to `long' if <sys/types.h> doesn't define.  */
 #undef off_t
 
-/* Define if you need to in order for stat and other things to work.  */
-#undef _POSIX_SOURCE
-
 /* Define to `unsigned' if <sys/types.h> doesn't define.  */
 #undef size_t
 
@@ -30,6 +27,9 @@
 /* Define if you have the tempnam function.  */
 #undef HAVE_TEMPNAM
 
+/* Define if you have the tmpnam function.  */
+#undef HAVE_TMPNAM
+
 /* Get Single Unix Specification semantics */
 #undef _XOPEN_SOURCE
 
@@ -44,12 +44,6 @@
 
 /* Define for HP-UX ftello and fseeko extension. */
 #undef _LARGEFILE_SOURCE
-
-/* Define if fcntl.h is missing. */
-#undef NO_FCNTL
-
-/* Define if fcntl.h is missing. */
-#undef OPEN_DECL
 
 /* Define if we do not have Unix Stdio. */
 #undef NON_UNIX_STDIO
