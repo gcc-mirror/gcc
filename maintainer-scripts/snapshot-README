@@ -7,7 +7,7 @@ This snapshot has been generated from the GCC CVS 3.3 branch.
 You'll find:
 
   gcc-@DATE@.tar.bz2                 The full GCC snapshot, including all
-                                     languages and runtime libraries.
+                                       languages and runtime libraries.
 
   gcc-core-@DATE@.tar.bz2            Just the C front end and core compiler.
 
@@ -17,7 +17,7 @@ You'll find:
 
   gcc-g++-@DATE@.tar.bz2             The C++ front end and runtime.
 
-  gcc-g77-@DATE@.tar.bz2             The g77 language and runtime.
+  gcc-g77-@DATE@.tar.bz2             The F77 front end and runtime.
 
   gcc-objc-@DATE@.tar.bz2            The Objective-C front end and runtime.
 
