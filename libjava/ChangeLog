@@ -1,3 +1,10 @@
+2002-02-20  Per Bothner  <per@bothner.com>
+
+	* gnu/gcj/protocol/file/Connection.java (conect):  Open the input
+	and/or output streams immediately here, instead of using File.exists.
+	(inputStream, outputStream):  New fields to save open streams.
+	(getInputStream, getOutputStream):  Use already-opened streams.
+
 2002-02-22  Alexandre Oliva  <aoliva@redhat.com>
 
 	* acinclude.m4 (LIB_AC_PROG_CXX): Copied from libstdc++-v3.
