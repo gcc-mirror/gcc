@@ -436,7 +436,7 @@ TEST_TIME_END=$($TIMER_COMMAND)
 # grep can count faster than we can...
 total_failures=`expr ${shared_fail} + ${static_fail}`
 total_successes=`expr ${shared_pass} + ${static_pass}`
-resultstext="pass/fail results:  ${shared_pass}/${shared_fail} shared + ${static_pass}/${static_fail} static = ${total_successes}/${total_failures} total"
+resultstext="pass/fail results:  ${static_pass}/${static_fail} static + ${shared_pass}/${shared_fail} shared = ${total_successes}/${total_failures} total"
 if [ $total_failures -eq 0 ]; then
     resultstext="${resultstext}, WIN WIN"
 fi

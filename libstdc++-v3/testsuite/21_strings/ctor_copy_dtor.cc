@@ -1,6 +1,6 @@
 // 1999-06-04 bkoz
 
-// Copyright (C) 1999, 2000 Free Software Foundation, Inc.
+// Copyright (C) 1999, 2000, 2001 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -176,9 +176,28 @@ void test02()
 #endif
 }
 
+void test03()
+{
+  bool test = true;
+  const char* with_nulls = "This contains \0 a zero byte.";
+
+  // These are tests to see how basic_string handles data with NUL
+  // bytes.  Obviously basic_string(char*) will halt at the first one, but
+  // nothing else should.
+  std::string s1 (with_nulls, 28);
+  VERIFY( s1.size() == 28 );
+  std::string s2 (s1);
+  VERIFY( s2.size() == 28 );
+
+#ifdef DEBUG_ASSERT
+  assert(test);
+#endif
+}
+
 int main()
 { 
   test01();
   test02();
+  test03();
   return 0;
 }
