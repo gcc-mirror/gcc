@@ -1,3 +1,12 @@
+1999-06-03  Nathan Sidwell  <nathan@acm.org>
+
+	* semantics.c (begin_class_definition): Update the struct's
+	location here ...
+	* class.c (finish_struct): ... rather than here.
+
+	* decl.c (make_typename_type): Don't rely on uninitialized
+	variable.
+
 1999-05-31  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* Makefile.in (ALL_CFLAGS): Add '-W -Wall'.
