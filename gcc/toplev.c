@@ -3211,7 +3211,7 @@ rest_of_compilation (decl)
 
       TIMEVAR (cse_time, tem = cse_main (insns, max_reg_num (),
 					 0, rtl_dump_file));
-      TIMEVAR (cse_time, delete_dead_from_cse (insns, max_reg_num ()));
+      TIMEVAR (cse_time, delete_trivially_dead_insns (insns, max_reg_num ()));
 
       if (tem || optimize > 1)
 	TIMEVAR (jump_time, jump_optimize (insns, 0, 0, 0));
@@ -3244,8 +3244,15 @@ rest_of_compilation (decl)
 	       
 	       loop_optimize (insns, rtl_dump_file, 0);
 	       
-	       /* The regscan pass may not be necessary, but let's
-		  be safe until we can prove otherwise.  */
+	
+	       /* The first call to loop_optimize makes some instructions
+		  trivially dead.  We delete those instructions now in the
+		  hope that doing so will make the heuristics in loop work
+		  better and possibly speed up compilation.  */
+	       delete_trivially_dead_insns (insns, max_reg_num ());
+
+	       /* The regscan pass is currently necessary as the alias
+		  analysis code depends on this information.  */
 	       reg_scan (insns, max_reg_num (), 1);
 	     }
 	   loop_optimize (insns, rtl_dump_file, flag_unroll_loops);
