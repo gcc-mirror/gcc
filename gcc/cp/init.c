@@ -200,6 +200,12 @@ perform_member_init (member, name, init, explicit)
 	      /* default-initialization.  */
 	      if (AGGREGATE_TYPE_P (type))
 		init = build (CONSTRUCTOR, type, NULL_TREE, NULL_TREE);
+	      else if (TREE_CODE (type) == REFERENCE_TYPE)
+		{
+		  cp_error ("default-initialization of `%#D', which has reference type",
+			    member);
+		  init = error_mark_node;
+		}
 	      else
 		init = integer_zero_node;
 	    }

@@ -1,3 +1,14 @@
+1998-06-17  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* typeck.c (build_binary_op_nodefault): Change % in format strings
+	to %%.
+
+	* decl.c (grokvardecl): Don't build_static_name for decls that
+	aren't at namespace scope.
+
+	* init.c (perform_member_init): Catch default-initialization of
+	references.
+
 1998-06-17  Mark Mitchell  <mark@markmitchell.com>
 
 	* errfn.c (cp_thing): Handle the `%%' formatting sequence.
@@ -139,7 +150,7 @@
 
 1998-06-10  Jason Merrill  <jason@yorick.cygnus.com>
 
-	* init.c (resolve_offset_ref): Handle default-initialization.
+	* init.c (perform_member_init): Handle default-initialization.
 
 	* except.c (build_throw): Handle throwing NULL.
 
