@@ -4851,8 +4851,8 @@ finish_message_expr (receiver, sel_name, method_params)
 	       && TREE_STATIC_TEMPLATE (TREE_TYPE (rtype)))
 	statically_typed = 1;
       else if ((flag_next_runtime
-		|| (IS_ID (rtype)
-		    && (class_ident = receiver_is_class_object (receiver)))))
+		|| (IS_ID (rtype)))
+	       && (class_ident = receiver_is_class_object (receiver)))
 	;
       else if (! IS_ID (rtype)
 	       /* Allow any type that matches objc_class_type.  */
