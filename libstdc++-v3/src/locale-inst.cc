@@ -31,6 +31,7 @@
 // ISO C++ 14882: 22.1  Locales
 //
 
+#include <bits/std_cstdlib.h>
 #include <bits/std_clocale.h>
 #include <bits/std_cstring.h>
 #include <bits/std_cassert.h>
