@@ -1,3 +1,12 @@
+Tue Mar 30 10:43:49 1999  Philip Blundell  <pb@nexus.co.uk>
+
+	* config/arm/aout.h (DBX_DEBUGGING_INFO): Avoid redefinition if
+	dbxelf.h was previously included.
+	(CPP_APCS_PC_DEFAULT_SPEC): No need to undefine.
+	
+	* config/arm/linux-elf.h (FP_DEFAULT): Correctly override the
+	definition from arm.h.
+
 Wed Mar 31 10:33:37 1999  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
         * Makefile.in (c-gperf.h): Generate using gperf language 'C', not

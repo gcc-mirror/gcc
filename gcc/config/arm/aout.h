@@ -107,7 +107,9 @@ Boston, MA 02111-1307, USA.  */
 
 /* Generate DBX debugging information.  riscix.h will undefine this because
    the native assembler does not support stabs. */
+#ifndef DBX_DEBUGGING_INFO
 #define DBX_DEBUGGING_INFO  1
+#endif
 
 /* Acorn dbx moans about continuation chars, so don't use any.  */
 #ifndef DBX_CONTIN_LENGTH
