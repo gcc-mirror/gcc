@@ -282,9 +282,6 @@ case $machine in
 	i[34567]86-*-*)
 		tm_file="${cpu_type}/${cpu_type}.h i386/att.h linux.h i386/linux.h gnu.h ${tm_file}"
 		;;
-	mips*-*-*)
-		tm_file="svr4.h ${cpu_type}/${cpu_type}.h ${tm_file}"
-		;;
 	esac
 	;;
 *-*-openbsd*)
@@ -2440,8 +2437,6 @@ mips-*-riscos[56789]*)		# Default MIPS RISC-OS 5.0.
 	then
 		use_collect2=yes
 	fi
-	;;
-mips-*-gnu*)
 	;;
 mipsel-*-ecoff*)
 	tm_file=mips/ecoffl.h
