@@ -1,6 +1,6 @@
 /* Subroutines used for code generation on IBM RS/6000.
    Copyright (C) 1991, 1993, 1994, 1995, 1996, 1997, 1998, 1999, 
-   2000, 2001, 2002 Free Software Foundation, Inc.
+   2000, 2001, 2002, 2003 Free Software Foundation, Inc.
    Contributed by Richard Kenner (kenner@vlsi1.ultra.nyu.edu)
 
 This file is part of GNU CC.
@@ -155,6 +155,7 @@ static void rs6000_elf_asm_out_destructor PARAMS ((rtx, int));
 #ifdef OBJECT_FORMAT_COFF
 static void xcoff_asm_named_section PARAMS ((const char *, unsigned int));
 #endif
+static bool rs6000_binds_local_p PARAMS ((tree));
 static int rs6000_adjust_cost PARAMS ((rtx, rtx, rtx, int));
 static int rs6000_adjust_priority PARAMS ((rtx, int));
 static int rs6000_issue_rate PARAMS ((void));
@@ -10939,7 +10940,45 @@ rs6000_unique_section (decl, reloc)
   DECL_SECTION_NAME (decl) = build_string (len, string);
 }
 
-
+
+static bool
+rs6000_binds_local_p (exp)
+     tree exp;
+{
+  bool local_p;
+  tree attr;
+
+  /* A non-decl is an entry in the constant pool.  */
+  if (!DECL_P (exp))
+    local_p = true;
+  /* Static variables are always local.  */
+  else if (! TREE_PUBLIC (exp))
+    local_p = true;
+  /* Otherwise, variables defined outside this object may not be local.  */
+  else if (DECL_EXTERNAL (exp))
+    local_p = false;
+  /* Linkonce and weak data are never local.  */
+  else if (DECL_ONE_ONLY (exp) || DECL_WEAK (exp))
+    local_p = false;
+  /* If PIC, then assume that any global name can be overridden by
+   *      symbols resolved from other modules.  */
+  else if (flag_pic || rs6000_flag_pic)
+    local_p = false;
+  /* Uninitialized COMMON variable may be unified with symbols
+   *      resolved from other modules.  */
+  else if (DECL_COMMON (exp)
+	   && (DECL_INITIAL (exp) == NULL
+	       || DECL_INITIAL (exp) == error_mark_node))
+    local_p = false;
+  /* Otherwise we're left with initialized (or non-common) global data
+   *      which is of necessity defined locally.  */
+  else
+    local_p = true;
+
+  return local_p;
+}
+
+
 /* If we are referencing a function that is static or is known to be
    in this file, make the SYMBOL_REF special.  We can use this to indicate
    that we can branch to this function without emitting a no-op after the
@@ -10955,12 +10994,7 @@ rs6000_encode_section_info (decl)
   if (TREE_CODE (decl) == FUNCTION_DECL)
     {
       rtx sym_ref = XEXP (DECL_RTL (decl), 0);
-      if (!TREE_PUBLIC (decl)
-	  || (!DECL_EXTERNAL (decl)
-	      && !DECL_ONE_ONLY (decl)
-	      && !DECL_WEAK (decl)
-	      && !flag_pic
-	      && !rs6000_flag_pic))
+      if (rs6000_binds_local_p (decl))
 	SYMBOL_REF_FLAG (sym_ref) = 1;
 
       if (DEFAULT_ABI == ABI_AIX)
@@ -10979,10 +11013,14 @@ rs6000_encode_section_info (decl)
 	   && DEFAULT_ABI == ABI_V4
 	   && TREE_CODE (decl) == VAR_DECL)
     {
+      rtx sym_ref = XEXP (DECL_RTL (decl), 0);
       int size = int_size_in_bytes (TREE_TYPE (decl));
       tree section_name = DECL_SECTION_NAME (decl);
       const char *name = (char *)0;
       int len = 0;
+
+      if (rs6000_binds_local_p (decl))
+	SYMBOL_REF_FLAG (sym_ref) = 1;
 
       if (section_name)
 	{
