@@ -8085,24 +8085,8 @@ maybe-info-fixincludes:
 @if fixincludes
 maybe-info-fixincludes: info-fixincludes
 
-info-fixincludes: \
-    configure-fixincludes 
-	@[ -f ./fixincludes/Makefile ] || exit 0; \
-	r=`${PWD_COMMAND}`; export r; \
-	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
-	$(SET_LIB_PATH) \
-	$(HOST_EXPORTS) \
-	for flag in $(EXTRA_HOST_FLAGS) ; do \
-	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
-	done; \
-	echo "Doing info in fixincludes" ; \
-	(cd fixincludes && \
-	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
-	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
-	          "RANLIB=$${RANLIB}" \
-	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" \
-	          info) \
-	  || exit 1
+# fixincludes doesn't support info.
+info-fixincludes:
 
 @endif fixincludes
 
@@ -8111,24 +8095,8 @@ maybe-dvi-fixincludes:
 @if fixincludes
 maybe-dvi-fixincludes: dvi-fixincludes
 
-dvi-fixincludes: \
-    configure-fixincludes 
-	@[ -f ./fixincludes/Makefile ] || exit 0; \
-	r=`${PWD_COMMAND}`; export r; \
-	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
-	$(SET_LIB_PATH) \
-	$(HOST_EXPORTS) \
-	for flag in $(EXTRA_HOST_FLAGS) ; do \
-	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
-	done; \
-	echo "Doing dvi in fixincludes" ; \
-	(cd fixincludes && \
-	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
-	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
-	          "RANLIB=$${RANLIB}" \
-	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" \
-	          dvi) \
-	  || exit 1
+# fixincludes doesn't support dvi.
+dvi-fixincludes:
 
 @endif fixincludes
 
@@ -8137,24 +8105,8 @@ maybe-TAGS-fixincludes:
 @if fixincludes
 maybe-TAGS-fixincludes: TAGS-fixincludes
 
-TAGS-fixincludes: \
-    configure-fixincludes 
-	@[ -f ./fixincludes/Makefile ] || exit 0; \
-	r=`${PWD_COMMAND}`; export r; \
-	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
-	$(SET_LIB_PATH) \
-	$(HOST_EXPORTS) \
-	for flag in $(EXTRA_HOST_FLAGS) ; do \
-	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
-	done; \
-	echo "Doing TAGS in fixincludes" ; \
-	(cd fixincludes && \
-	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
-	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
-	          "RANLIB=$${RANLIB}" \
-	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" \
-	          TAGS) \
-	  || exit 1
+# fixincludes doesn't support TAGS.
+TAGS-fixincludes:
 
 @endif fixincludes
 
@@ -8163,25 +8115,8 @@ maybe-install-info-fixincludes:
 @if fixincludes
 maybe-install-info-fixincludes: install-info-fixincludes
 
-install-info-fixincludes: \
-    configure-fixincludes \
-    info-fixincludes 
-	@[ -f ./fixincludes/Makefile ] || exit 0; \
-	r=`${PWD_COMMAND}`; export r; \
-	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
-	$(SET_LIB_PATH) \
-	$(HOST_EXPORTS) \
-	for flag in $(EXTRA_HOST_FLAGS) ; do \
-	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
-	done; \
-	echo "Doing install-info in fixincludes" ; \
-	(cd fixincludes && \
-	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
-	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
-	          "RANLIB=$${RANLIB}" \
-	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" \
-	          install-info) \
-	  || exit 1
+# fixincludes doesn't support install-info.
+install-info-fixincludes:
 
 @endif fixincludes
 
@@ -8190,24 +8125,8 @@ maybe-installcheck-fixincludes:
 @if fixincludes
 maybe-installcheck-fixincludes: installcheck-fixincludes
 
-installcheck-fixincludes: \
-    configure-fixincludes 
-	@[ -f ./fixincludes/Makefile ] || exit 0; \
-	r=`${PWD_COMMAND}`; export r; \
-	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
-	$(SET_LIB_PATH) \
-	$(HOST_EXPORTS) \
-	for flag in $(EXTRA_HOST_FLAGS) ; do \
-	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
-	done; \
-	echo "Doing installcheck in fixincludes" ; \
-	(cd fixincludes && \
-	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
-	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
-	          "RANLIB=$${RANLIB}" \
-	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" \
-	          installcheck) \
-	  || exit 1
+# fixincludes doesn't support installcheck.
+installcheck-fixincludes:
 
 @endif fixincludes
 
