@@ -7669,7 +7669,7 @@ arm_output_epilogue (really_return)
 	 to load use the LDR instruction - it is faster.  */
       if (saved_regs_mask == (1 << LR_REGNUM))
 	{
-	  /* The excpetion handler ignores the LR, so we do
+	  /* The exception handler ignores the LR, so we do
 	     not really need to load it off the stack.  */
 	  if (eh_ofs)
 	    asm_fprintf (f, "\tadd\t%r, %r, #4\n", SP_REGNUM, SP_REGNUM);
@@ -7695,7 +7695,10 @@ arm_output_epilogue (really_return)
 		 REGNO (eh_ofs));
 #endif
 
-  if (! really_return)
+  if (! really_return
+    || (ARM_FUNC_TYPE (func_type) == ARM_FT_NORMAL
+	&& current_function_pretend_args_size == 0
+	&& saved_regs_mask & (1 << PC_REGNUM)))
     return "";
 
   /* Generate the return instruction.  */
