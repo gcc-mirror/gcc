@@ -1833,7 +1833,7 @@ rtl_verify_flow_info_1 (void)
 	{
 	  if (INTVAL (XEXP (note, 0)) != BRANCH_EDGE (bb)->probability)
 	    {
-	      error ("verify_flow_info: REG_BR_PROB does not match cfg %i %i",
+	      error ("verify_flow_info: REG_BR_PROB does not match cfg %wi %i",
 		     INTVAL (XEXP (note, 0)), BRANCH_EDGE (bb)->probability);
 	      err = 1;
 	    }
