@@ -1,5 +1,19 @@
 2004-10-11  Nathan Sidwell  <nathan@codesourcery.com>
 
+	* cp-tree.h (get_dynamic_cast_base_type): Rename to ...
+	(dcast_base_hint): ... here.
+	* rtti.c (build_dynamic_cast_1): Use dcast_base_hint.
+	* search.c (struct dcast_data_s): New.
+	(dynamic_cast_base_recurse): Remove. Replace with ...
+	(dfs_dcast_hint_pre, dfs_dcast_base_post): ... these. New.
+	(get_dynamic_cast_base_type): Rename to ...
+	(dcast_base_hint): ... here.  Use dfs_walk_once_accessible.
+	(accessible_r): Remove.
+	(dfs_accessible_post): New, broken out of accessible_r.
+	(accessible_p): Use dfs_walk_once_accessible.
+	(dfs_walk_once_accessible_r): New. From accessible_r.
+	(dfs_walk_once_accessible): New. From acessible_p.
+
 	* cp-tree.h (SAME_BINFO_TYPE_P): New.
 	* class.c (build_base_path): Use SAME_BINFO_TYPE_P to compare
 	binfo types.

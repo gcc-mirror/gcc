@@ -37,8 +37,9 @@ Boston, MA 02111-1307, USA.  */
 #include "stack.h"
 
 static int is_subobject_of_p (tree, tree);
+static tree dfs_dcast_hint_pre (tree, void *);
+static tree dfs_dcast_hint_post (tree, void *);
 static base_kind lookup_base_r (tree, tree, base_access, bool, tree *);
-static int dynamic_cast_base_recurse (tree, tree, bool, tree *);
 static tree dfs_debug_mark (tree, void *);
 static tree dfs_walk_once_r (tree, tree (*pre_fn) (tree, void *),
 			     tree (*post_fn) (tree, void *), void *data);
@@ -49,7 +50,15 @@ static int lookup_conversions_r (tree, int, int,
 				 tree, tree, tree, tree, tree *, tree *);
 static int look_for_overrides_r (tree, tree);
 static tree lookup_field_r (tree, void *);
-static tree accessible_r (tree, bool);
+static tree dfs_accessible_post (tree, void *);
+static tree dfs_walk_once_accessible_r (tree, bool, bool,
+					tree (*pre_fn) (tree, void *),
+					tree (*post_fn) (tree, void *),
+					void *data);
+static tree dfs_walk_once_accessible (tree, bool,
+				      tree (*pre_fn) (tree, void *),
+				      tree (*post_fn) (tree, void *),
+				      void *data);
 static tree dfs_access_in_type (tree, void *);
 static access_kind access_in_type (tree, tree);
 static int protected_accessible_p (tree, tree, tree);
@@ -268,49 +277,58 @@ lookup_base (tree t, tree base, base_access access, base_kind *kind_ptr)
   return binfo;
 }
 
-/* Worker function for get_dynamic_cast_base_type.  */
+/* Data for dcast_base_hint walker.  */
 
-static int
-dynamic_cast_base_recurse (tree subtype, tree binfo, bool is_via_virtual,
-			   tree *offset_ptr)
+struct dcast_data_s
 {
-  VEC (tree) *accesses;
-  tree base_binfo;
-  int i;
-  int worst = -2;
+  tree subtype;   /* The base type we're looking for.  */
+  int virt_depth; /* Number of virtual bases encountered from most
+		     derived.  */
+  tree offset;    /* Best hint offset discovered so far.  */
+  bool repeated_base;  /* Whether there are repeated bases in the
+			  heirarchy.  */
+};
+
+/* Worker for dcast_base_hint.  Search for the base type being cast
+   from.  */
+
+static tree
+dfs_dcast_hint_pre (tree binfo, void *data_)
+{
+  struct dcast_data_s *data = data_;
+
+  if (BINFO_VIRTUAL_P (binfo))
+    data->virt_depth++;
   
-  if (SAME_BINFO_TYPE_P (BINFO_TYPE (binfo), subtype))
+  if (SAME_BINFO_TYPE_P (BINFO_TYPE (binfo), data->subtype))
     {
-      if (is_via_virtual)
-        return -1;
+      if (data->virt_depth)
+	{
+	  data->offset = ssize_int (-1);
+	  return data->offset;
+	}
+      if (data->offset)
+	data->offset = ssize_int (-3);
       else
-        {
-          *offset_ptr = BINFO_OFFSET (binfo);
-          return 0;
-        }
+	data->offset = BINFO_OFFSET (binfo);
+
+      return data->repeated_base ? dfs_skip_bases : data->offset;
     }
-  
-  accesses = BINFO_BASE_ACCESSES (binfo);
-  for (i = 0; BINFO_BASE_ITERATE (binfo, i, base_binfo); i++)
-    {
-      tree base_access = VEC_index (tree, accesses, i);
-      int rval;
-      
-      if (base_access != access_public_node)
-        continue;
-      rval = dynamic_cast_base_recurse
-             (subtype, base_binfo,
-              is_via_virtual || BINFO_VIRTUAL_P (base_binfo), offset_ptr);
-      if (worst == -2)
-        worst = rval;
-      else if (rval >= 0)
-        worst = worst >= 0 ? -3 : worst;
-      else if (rval == -1)
-        worst = -1;
-      else if (rval == -3 && worst != -1)
-        worst = -3;
-    }
-  return worst;
+
+  return NULL_TREE;
+}
+
+/* Worker for dcast_base_hint.  Track the virtual depth.  */
+
+static tree
+dfs_dcast_hint_post (tree binfo, void *data_)
+{
+  struct dcast_data_s *data = data_;
+
+  if (BINFO_VIRTUAL_P (binfo))
+    data->virt_depth--;
+
+  return NULL_TREE;
 }
 
 /* The dynamic cast runtime needs a hint about how the static SUBTYPE type
@@ -325,16 +343,18 @@ dynamic_cast_base_recurse (tree subtype, tree binfo, bool is_via_virtual,
    BOFF == -3, SUBTYPE occurs as multiple public non-virtual bases.  */
 
 tree
-get_dynamic_cast_base_type (tree subtype, tree target)
+dcast_base_hint (tree subtype, tree target)
 {
-  tree offset = NULL_TREE;
-  int boff = dynamic_cast_base_recurse (subtype, TYPE_BINFO (target),
-                                        false, &offset);
+  struct dcast_data_s data;
+
+  data.subtype = subtype;
+  data.virt_depth = 0;
+  data.offset = NULL_TREE;
+  data.repeated_base = CLASSTYPE_REPEATED_BASE_P (target);
   
-  if (!boff)
-    return offset;
-  offset = ssize_int (boff);
-  return offset;
+  dfs_walk_once_accessible (TYPE_BINFO (target), /*friends=*/false,
+			    dfs_dcast_hint_pre, dfs_dcast_hint_post, &data);
+  return data.offset ? data.offset : ssize_int (-2);
 }
 
 /* Search for a member with name NAME in a multiple inheritance
@@ -806,41 +826,16 @@ friend_accessible_p (tree scope, tree decl, tree binfo)
   return 0;
 }
 
+/* Called via dfs_walk_once_accessible from accessible_p */
+
 static tree
-accessible_r (tree binfo, bool once)
+dfs_accessible_post (tree binfo, void *data ATTRIBUTE_UNUSED)
 {
-  tree rval = NULL_TREE;
-  unsigned ix;
-  tree base_binfo;
-  
-  /* Find the next child binfo to walk.  */
-  for (ix = 0; BINFO_BASE_ITERATE (binfo, ix, base_binfo); ix++)
-    {
-      bool mark = once && BINFO_VIRTUAL_P (base_binfo);
-
-      if (mark && BINFO_MARKED (base_binfo))
-	continue;
-  
-      /* If the base is inherited via private or protected
-     	 inheritance, then we can't see it, unless we are a friend of
-     	 the current binfo.  */
-      if (BINFO_BASE_ACCESS (binfo, ix) != access_public_node
-	  && !is_friend (BINFO_TYPE (binfo), current_scope ()))
-	continue;
-
-      if (mark)
-	BINFO_MARKED (base_binfo) = 1;
-
-      rval = accessible_r (base_binfo, once);
-      if (rval)
-	return rval;
-    }
-  
   if (BINFO_ACCESS (binfo) != ak_none
       && is_friend (BINFO_TYPE (binfo), current_scope ()))
-    rval = binfo;
+    return binfo;
   
-  return rval;
+  return NULL_TREE;
 }
 
 /* DECL is a declaration from a base class of TYPE, which was the
@@ -929,27 +924,8 @@ accessible_p (tree type, tree decl)
     {
       /* Walk the hierarchy again, looking for a base class that allows
 	 access.  */
-      t = accessible_r
-	(binfo, CLASSTYPE_DIAMOND_SHAPED_P (BINFO_TYPE (binfo)));
-
-      if (!CLASSTYPE_DIAMOND_SHAPED_P (BINFO_TYPE (binfo)))
-	;/* We are not diamond shaped, and therefore cannot
-	    encounter the same binfo twice.  */
-      else if (!BINFO_INHERITANCE_CHAIN (binfo))
-	{
-	  /* We are at the top of the hierarchy, and can use the
-             CLASSTYPE_VBASECLASSES list for unmarking the virtual
-             bases.  */
-	  VEC (tree) *vbases;
-	  unsigned ix;
-	  tree base_binfo;
-	  
-	  for (vbases = CLASSTYPE_VBASECLASSES (BINFO_TYPE (binfo)), ix = 0;
-	       VEC_iterate (tree, vbases, ix, base_binfo); ix++)
-	    BINFO_MARKED (base_binfo) = 0;
-	}
-      else
-	dfs_unmark_r (binfo);
+      t = dfs_walk_once_accessible (binfo, /*friends=*/true,
+				    NULL, dfs_accessible_post, NULL);
       
       return t != NULL_TREE;
     }
@@ -1654,6 +1630,99 @@ dfs_walk_once (tree binfo, tree (*pre_fn) (tree, void *),
       if (!BINFO_INHERITANCE_CHAIN (binfo))
 	{
 	  /* We are at the top of the hierarchy, and can use the
+             CLASSTYPE_VBASECLASSES list for unmarking the virtual
+             bases.  */
+	  VEC (tree) *vbases;
+	  unsigned ix;
+	  tree base_binfo;
+	  
+	  for (vbases = CLASSTYPE_VBASECLASSES (BINFO_TYPE (binfo)), ix = 0;
+	       VEC_iterate (tree, vbases, ix, base_binfo); ix++)
+	    BINFO_MARKED (base_binfo) = 0;
+	}
+      else
+	dfs_unmark_r (binfo);
+    }
+  return rval;
+}
+
+/* Worker function for dfs_walk_once_accessible.  Behaves like
+   dfs_walk_once_r, except (a) FRIENDS_P is true if special
+   access given by the current context should be considered, (b) ONCE
+   indicates whether bases should be marked during traversal.  */
+
+static tree
+dfs_walk_once_accessible_r (tree binfo, bool friends_p, bool once,
+			    tree (*pre_fn) (tree, void *),
+			    tree (*post_fn) (tree, void *), void *data)
+{
+  tree rval = NULL_TREE;
+  unsigned ix;
+  tree base_binfo;
+
+  /* Call the pre-order walking function.  */
+  if (pre_fn)
+    {
+      rval = pre_fn (binfo, data);
+      if (rval)
+	{
+	  if (rval == dfs_skip_bases)
+	    goto skip_bases;
+	  
+	  return rval;
+	}
+    }
+
+  /* Find the next child binfo to walk.  */
+  for (ix = 0; BINFO_BASE_ITERATE (binfo, ix, base_binfo); ix++)
+    {
+      bool mark = once && BINFO_VIRTUAL_P (base_binfo);
+
+      if (mark && BINFO_MARKED (base_binfo))
+	continue;
+  
+      /* If the base is inherited via private or protected
+     	 inheritance, then we can't see it, unless we are a friend of
+     	 the current binfo.  */
+      if (BINFO_BASE_ACCESS (binfo, ix) != access_public_node
+	  && !(friends_p && is_friend (BINFO_TYPE (binfo), current_scope ())))
+	continue;
+
+      if (mark)
+	BINFO_MARKED (base_binfo) = 1;
+
+      rval = dfs_walk_once_accessible_r (base_binfo, friends_p, once,
+					 pre_fn, post_fn, data);
+      if (rval)
+	return rval;
+    }
+  
+ skip_bases:
+  /* Call the post-order walking function.  */
+  if (post_fn)
+    return post_fn (binfo, data);
+  
+  return NULL_TREE;
+}
+
+/* Like dfs_walk_once except that only accessible bases are walked.
+   FRIENDS_P indicates whether friendship of the local context
+   should be considered when determining accessibility.  */
+
+static tree
+dfs_walk_once_accessible (tree binfo, bool friends_p,
+			    tree (*pre_fn) (tree, void *),
+			    tree (*post_fn) (tree, void *), void *data)
+{
+  bool diamond_shaped = CLASSTYPE_DIAMOND_SHAPED_P (BINFO_TYPE (binfo));
+  tree rval = dfs_walk_once_accessible_r (binfo, friends_p, diamond_shaped,
+					  pre_fn, post_fn, data);
+  
+  if (diamond_shaped)
+    {
+      if (!BINFO_INHERITANCE_CHAIN (binfo))
+	{
+	  /* We are at the top of the hierachy, and can use the
              CLASSTYPE_VBASECLASSES list for unmarking the virtual
              bases.  */
 	  VEC (tree) *vbases;
