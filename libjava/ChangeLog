@@ -1,3 +1,8 @@
+2002-09-15  Adam Megacz <adam@xwt.org>
+	
+	* java/net/natPlainSocketImpl.cc: #ifdef-shielded socket timeouts,
+	which don't work on Win32 (yet).
+
 2002-09-14  Adam Megacz <adam@xwt.org>
 	
 	* java/net/natPlainDatagramSocket.cc: removed #include

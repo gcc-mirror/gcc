@@ -357,6 +357,8 @@ java::net::PlainSocketImpl::connect (java::net::SocketAddress *addr,
   else
     throw new java::net::SocketException (JvNewStringUTF ("invalid length"));
 
+// FIXME: implement timeout support for Win32
+#ifndef WIN32
   if (timeout > 0)
     {
       int flags = ::fcntl (fnum, F_GETFL);
@@ -379,7 +381,7 @@ java::net::PlainSocketImpl::connect (java::net::SocketAddress *addr,
 	throw new java::net::SocketTimeoutException ( 
 	         JvNewStringUTF("Connect timed out"));
     }
-  else
+#endif
     {
       if (_Jv_connect (fnum, ptr, len) != 0)
         goto error;
