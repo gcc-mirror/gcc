@@ -2546,16 +2546,35 @@ expand_end_bindings (vars, mark_ends, dont_jump_in)
 #if ARG_POINTER_REGNUM != FRAME_POINTER_REGNUM
       if (fixed_regs[ARG_POINTER_REGNUM])
 	{
-	  /* Now restore our arg pointer from the address at which it was saved
-	     in our stack frame.
-	     If there hasn't be space allocated for it yet, make some now.  */
-	  if (arg_pointer_save_area == 0)
-	    arg_pointer_save_area
-	      = assign_stack_local (Pmode, GET_MODE_SIZE (Pmode), 0);
-	  emit_move_insn (virtual_incoming_args_rtx,
-			  /* We need a pseudo here,
-			     or else instantiate_virtual_regs_1 complains.  */
-			  copy_to_reg (arg_pointer_save_area));
+#ifdef ELIMINABLE_REGS
+	  /* If the argument pointer can be eliminated in favor of the
+	     frame pointer, we don't need to restore it.  We assume here
+	     that if such an elimination is present, it can always be used.
+	     This is the case on all known machines; if we don't make this
+	     assumption, we do unnecessary saving on many machines.  */
+	  static struct elims {int from, to;} elim_regs[] = ELIMINABLE_REGS;
+	  int i;
+
+	  for (i = 0; i < sizeof elim_regs / sizeof elim_regs[0]; i++)
+	    if (elim_regs[i].from == ARG_POINTER_REGNUM
+		&& elim_regs[i].to == FRAME_POINTER_REGNUM)
+	      break;
+
+	  if (i == sizeof elim_regs / sizeof elim_regs [0])
+#endif
+	    {
+	      /* Now restore our arg pointer from the address at which it
+		 was saved in our stack frame.
+		 If there hasn't be space allocated for it yet, make
+		 some now.  */
+	      if (arg_pointer_save_area == 0)
+		arg_pointer_save_area
+		  = assign_stack_local (Pmode, GET_MODE_SIZE (Pmode), 0);
+	      emit_move_insn (virtual_incoming_args_rtx,
+			      /* We need a pseudo here, or else
+				 instantiate_virtual_regs_1 complains.  */
+			      copy_to_reg (arg_pointer_save_area));
+	    }
 	}
 #endif
 

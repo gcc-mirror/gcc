@@ -2451,8 +2451,9 @@ find_best_addr (insn, loc)
       && validate_change (insn, loc, fold_rtx (addr, insn), 0))
     addr = *loc;
 	
-  /* If this address is not in the hash table, we can't do any better.
-     Also, ignore if volatile.  */
+  /* If this address is not in the hash table, we can't look for equivalences
+     of the whole address.  Also, ignore if volatile.  */
+
   do_not_record = 0;
   hash_code = HASH (addr, Pmode);
   addr_volatile = do_not_record;
@@ -2465,56 +2466,138 @@ find_best_addr (insn, loc)
 
   elt = lookup (addr, hash_code, Pmode);
 
-  if (elt == 0)
-    return;
-
 #ifndef ADDRESS_COST
-  our_cost = elt->cost;
+  if (elt)
+    {
+      our_cost = elt->cost;
 
-  /* Find the lowest cost below ours that works.  */
-  for (elt = elt->first_same_value; elt; elt = elt->next_same_value)
-    if (elt->cost < our_cost
-	&& (GET_CODE (elt->exp) == REG || exp_equiv_p (elt->exp, elt->exp, 1, 0))
-	&& validate_change (insn, loc, canon_reg (copy_rtx (elt->exp), 0), 0))
-      return;
-
+      /* Find the lowest cost below ours that works.  */
+      for (elt = elt->first_same_value; elt; elt = elt->next_same_value)
+	if (elt->cost < our_cost
+	    && (GET_CODE (elt->exp) == REG
+		|| exp_equiv_p (elt->exp, elt->exp, 1, 0))
+	    && validate_change (insn, loc,
+				canon_reg (copy_rtx (elt->exp), 0), 0))
+	  return;
+    }
 #else
 
-  /* We need to find the best (under the criteria documented above) entry in
-     the class that is valid.  We use the `flag' field to indicate choices
-     that were invalid and iterate until we can't find a better one that
-     hasn't already been tried.  */
-
-  for (p = elt->first_same_value; p; p = p->next_same_value)
-    p->flag = 0;
-
-  while (found_better)
+  if (elt)
     {
-      int best_addr_cost = ADDRESS_COST (*loc);
-      int best_rtx_cost = (elt->cost + 1) >> 1;
-      struct table_elt *best_elt = elt; 
+      /* We need to find the best (under the criteria documented above) entry
+	 in the class that is valid.  We use the `flag' field to indicate
+	 choices that were invalid and iterate until we can't find a better
+	 one that hasn't already been tried.  */
 
-      found_better = 0;
       for (p = elt->first_same_value; p; p = p->next_same_value)
-	if (! p->flag
-	    && (GET_CODE (p->exp) == REG || exp_equiv_p (p->exp, p->exp, 1, 0))
-	    && (ADDRESS_COST (p->exp) < best_addr_cost
-		|| (ADDRESS_COST (p->exp) == best_addr_cost
-		    && (p->cost + 1) >> 1 > best_rtx_cost)))
-	  {
-	    found_better = 1;
-	    best_addr_cost = ADDRESS_COST (p->exp);
-	    best_rtx_cost = (p->cost + 1) >> 1;
-	    best_elt = p;
-	  }
+	p->flag = 0;
 
-      if (found_better)
+      while (found_better)
 	{
-	  if (validate_change (insn, loc,
-			       canon_reg (copy_rtx (best_elt->exp), 0), 0))
-	    return;
-	  else
-	    best_elt->flag = 1;
+	  int best_addr_cost = ADDRESS_COST (*loc);
+	  int best_rtx_cost = (elt->cost + 1) >> 1;
+	  struct table_elt *best_elt = elt; 
+
+	  found_better = 0;
+	  for (p = elt->first_same_value; p; p = p->next_same_value)
+	    if (! p->flag
+		&& (GET_CODE (p->exp) == REG
+		    || exp_equiv_p (p->exp, p->exp, 1, 0))
+		&& (ADDRESS_COST (p->exp) < best_addr_cost
+		    || (ADDRESS_COST (p->exp) == best_addr_cost
+			&& (p->cost + 1) >> 1 > best_rtx_cost)))
+	      {
+		found_better = 1;
+		best_addr_cost = ADDRESS_COST (p->exp);
+		best_rtx_cost = (p->cost + 1) >> 1;
+		best_elt = p;
+	      }
+
+	  if (found_better)
+	    {
+	      if (validate_change (insn, loc,
+				   canon_reg (copy_rtx (best_elt->exp), 0), 0))
+		return;
+	      else
+		best_elt->flag = 1;
+	    }
+	}
+    }
+
+  /* If the address is a binary operation with the first operand a register
+     and the second a constant, do the same as above, but looking for
+     equivalences of the register.  Then try to simplify before checking for
+     the best address to use.  This catches a few cases:  First is when we
+     have REG+const and the register is another REG+const.  We can often merge
+     the constants and eliminate one insn and one register.  It may also be
+     that a machine has a cheap REG+REG+const.  Finally, this improves the
+     code on the Alpha for unaligned byte stores.  */
+
+  if (flag_expensive_optimizations
+      && (GET_RTX_CLASS (GET_CODE (*loc)) == '2'
+	  || GET_RTX_CLASS (GET_CODE (*loc)) == 'c')
+      && GET_CODE (XEXP (*loc, 0)) == REG
+      && GET_CODE (XEXP (*loc, 1)) == CONST_INT)
+    {
+      rtx c = XEXP (*loc, 1);
+
+      do_not_record = 0;
+      hash_code = HASH (XEXP (*loc, 0), Pmode);
+      do_not_record = save_do_not_record;
+      hash_arg_in_memory = save_hash_arg_in_memory;
+      hash_arg_in_struct = save_hash_arg_in_struct;
+
+      elt = lookup (XEXP (*loc, 0), hash_code, Pmode);
+      if (elt == 0)
+	return;
+
+      /* We need to find the best (under the criteria documented above) entry
+	 in the class that is valid.  We use the `flag' field to indicate
+	 choices that were invalid and iterate until we can't find a better
+	 one that hasn't already been tried.  */
+
+      for (p = elt->first_same_value; p; p = p->next_same_value)
+	p->flag = 0;
+
+      while (found_better)
+	{
+	  int best_addr_cost = ADDRESS_COST (*loc);
+	  int best_rtx_cost = (COST (*loc) + 1) >> 1;
+	  struct table_elt *best_elt = elt; 
+	  rtx best_rtx = *loc;
+
+	  found_better = 0;
+	  for (p = elt->first_same_value; p; p = p->next_same_value)
+	    if (! p->flag
+		&& (GET_CODE (p->exp) == REG
+		    || exp_equiv_p (p->exp, p->exp, 1, 0)))
+	      {
+		rtx new = simplify_binary_operation (GET_CODE (*loc), Pmode,
+						     p->exp, c);
+
+		if (new == 0)
+		  new = gen_rtx (GET_CODE (*loc), Pmode, p->exp, c);
+
+		if ((ADDRESS_COST (new) < best_addr_cost
+		    || (ADDRESS_COST (new) == best_addr_cost
+			&& (COST (new) + 1) >> 1 > best_rtx_cost)))
+		  {
+		    found_better = 1;
+		    best_addr_cost = ADDRESS_COST (new);
+		    best_rtx_cost = (COST (new) + 1) >> 1;
+		    best_elt = p;
+		    best_rtx = new;
+		  }
+	      }
+
+	  if (found_better)
+	    {
+	      if (validate_change (insn, loc,
+				   canon_reg (copy_rtx (best_rtx), 0), 0))
+		return;
+	      else
+		best_elt->flag = 1;
+	    }
 	}
     }
 #endif
