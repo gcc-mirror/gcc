@@ -1,5 +1,8 @@
 2000-05-19  Zack Weinberg  <zack@wolery.cumb.org>
 
+	* cpphash.c (funlike_macroexpand): Make sure not to walk p1
+	past l1 when deleting whitespace and markers.              
+
 	* cpplex.c (_cpp_scan_until): Clear AUX field of tokens.
 	* cpplib.c (do_unassert): Put the list to compare against on
 	the stack.

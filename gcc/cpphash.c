@@ -1578,7 +1578,7 @@ funlike_macroexpand (pfile, hp, args)
 	    {
 	      /* Arg is concatenated before: delete leading whitespace,
 		 whitespace markers, and no-reexpansion markers.  */
-	      while (p1 != l1)
+	      while (p1 < l1)
 		{
 		  if (is_space(p1[0]))
 		    p1++;
@@ -1592,7 +1592,7 @@ funlike_macroexpand (pfile, hp, args)
 	    {
 	      /* Arg is concatenated after: delete trailing whitespace,
 		 whitespace markers, and no-reexpansion markers.  */
-	      while (p1 != l1)
+	      while (p1 < l1)
 		{
 		  if (is_space(l1[-1]))
 		    l1--;
@@ -1612,7 +1612,7 @@ funlike_macroexpand (pfile, hp, args)
 
 	  /* Delete any no-reexpansion marker that precedes
 	     an identifier at the beginning of the argument. */
-	  if (p1[0] == '\r' && p1[1] == '-')
+	  if (p1 + 2 <= l1 && p1[0] == '\r' && p1[1] == '-')
 	    p1 += 2;
 
 	  memcpy (xbuf + totlen, p1, l1 - p1);
