@@ -1,6 +1,4 @@
-// 2001-05-21 Benjamin Kosnik  <bkoz@redhat.com>
-
-// Copyright (C) 2001, 2002, 2003 Free Software Foundation, Inc.
+// Copyright (C) 2003 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -21,28 +19,39 @@
 // 27.8.1.4 Overridden virtual functions
 
 #include <fstream>
+#include <cstdio>
+#include <cstring>
 #include <testsuite_hooks.h>
 
-void test03()
+// libstdc++/12875
+void test01()
 {
   using namespace std;
-
   bool test __attribute__((unused)) = true;
-  char buf[512];
-  const char* strlit = "how to tell a story and other essays: mark twain";
-  const size_t strlitsize = std::strlen(strlit);
-  filebuf fbuf01;
-  // NB: +2 otherwise sputn is optimized to a direct write,
-  // bypassing the buffer.
-  fbuf01.pubsetbuf(buf, strlitsize + 2);
-  fbuf01.open("tmp_setbuf3", ios_base::out);
 
-  fbuf01.sputn(strlit, strlitsize);
-  VERIFY( std::strncmp(strlit, buf, strlitsize) == 0 );
+  const char* name = "tmp_setbuf4";
+  static char buf[1024];
+  
+  FILE* out = fopen(name, "w");
+  fputs("Hello, world", out);
+  fclose(out);
+  
+  filebuf in;
+  in.open(name, ios_base::in);
+  char str[256];
+  streamsize r = in.sgetn(str, 6);
+  VERIFY( r == 6 );
+  VERIFY( !memcmp(str, "Hello,", 6) );
+  in.pubsetbuf(buf, 1024);
+  r = in.sgetn(str, 6);
+  VERIFY( r == 6 );
+  VERIFY( !memcmp(str, " world", 6) );
+  in.close();
 }
 
-int main() 
+// libstdc++/12875
+int main()
 {
-  test03();
+  test01();
   return 0;
 }

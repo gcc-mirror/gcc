@@ -66,9 +66,7 @@ namespace __gnu_cxx
        *  @param  fd  An open file descriptor.
        *  @param  mode  Same meaning as in a standard filebuf.
        *  @param  del  Whether to close the file on destruction.
-       *  @param  size  Optimal or preferred size of internal buffer, in bytes.
-       *                Note that it includes a position for the overflow char,
-       *                therefore, can't be smaller than 2.
+       *  @param  size  Optimal or preferred size of internal buffer, in chars.
        *
        *  This constructor associates a file stream buffer with an open
        *  POSIX file descriptor.  Iff @a del is true, then the associated
@@ -80,10 +78,8 @@ namespace __gnu_cxx
       /**
        *  @param  f  An open @c FILE*.
        *  @param  mode  Same meaning as in a standard filebuf.
-       *  @param  size  Optimal or preferred size of internal buffer, in bytes.
-       *                Defaults to system's @c BUFSIZ. Note that it includes
-       *                a position for the overflow char, therefore, can't be
-       *                smaller than 2.
+       *  @param  size  Optimal or preferred size of internal buffer, in chars.
+       *                Defaults to system's @c BUFSIZ. 
        *
        *  This constructor associates a file stream buffer with an open
        *  C @c FILE*.  The @c FILE* will not be automatically closed when the
