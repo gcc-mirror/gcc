@@ -49,9 +49,9 @@ chill			Per Bothner		per@bothner.com
 java			Per Bothner		per@bothner.com
 java			Alexandre Petit-Bianco	apbianco@cygnus.com
 objective-c		Ovidiu Predescu		ovidiu@cup.hp.com
-cpplib			Dave Brolley		brolley@cygnus.com
-cpplib			Per Bothner		per@bothner.com
-cpplib			Zack Weinberg		zack@wolery.cumb.org
+cpplib/cccp		Dave Brolley		brolley@cygnus.com
+cpplib/cccp		Per Bothner		per@bothner.com
+cpplib/cccp		Zack Weinberg		zack@wolery.cumb.org
 fixincludes		Ian Taylor		ian@cygnus.com
 alias analysis		John Carr		jfc@mit.edu
 loop unrolling		Jim Wilson		wilson@cygnus.com
