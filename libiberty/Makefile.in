@@ -260,7 +260,7 @@ argv.o: config.h $(INCDIR)/libiberty.h
 basename.o: $(INCDIR)/libiberty.h
 choose-temp.o: config.h
 clock.o: config.h
-concat.o: $(INCDIR)/libiberty.h
+concat.o: config.h $(INCDIR)/libiberty.h
 cplus-dem.o: config.h $(INCDIR)/demangle.h
 cp-demangle.o: config.h $(INCDIR)/dyn-string.h $(INCDIR)/demangle.h
 dyn-string.o: config.h $(INCDIR)/dyn-string.h
