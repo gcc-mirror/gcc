@@ -3070,7 +3070,7 @@ emit_initial_value_sets ()
    register initial values, register these allocations now.  */
 void
 allocate_initial_values (reg_equiv_memory_loc)
-     rtx *reg_equiv_memory_loc;
+     rtx *reg_equiv_memory_loc ATTRIBUTE_UNUSED;
 {
 #ifdef ALLOCATE_INITIAL_VALUE
   struct initial_value_struct *ivs = cfun->hard_reg_initial_vals;
