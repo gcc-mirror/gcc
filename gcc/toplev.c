@@ -2277,7 +2277,8 @@ rest_of_decl_compilation (decl, asmspec, top_level, at_end)
       /* If asmspec non-zero, we may be creating a global register variable.
 	 If asmspec zero, we may be making sure that ENCODE_SECTION_INFO is
 	 up-to-date.  */
-      make_decl_rtl (decl, asmspec);
+      if (TREE_CODE (decl) != TYPE_DECL && TREE_CODE (decl) != LABEL_DECL)
+        make_decl_rtl (decl, asmspec);
 
       /* Don't output anything when a tentative file-scope definition
 	 is seen.  But at end of compilation, do output code for them.  */
