@@ -1,5 +1,14 @@
 2004-12-20  Tom Tromey  <tromey@redhat.com>
 
+	* testsuite/libjava.jar/jar.exp (gcj_jar_interpret): Updated.
+	* testsuite/libjava.verify/verify.exp (gcj_verify_run): Updated.
+	* testsuite/libjava.jni/jni.exp (gcj_jni_test_one): Updated.
+	* testsuite/lib/libjava.exp (libjava_find_spec): Don't use
+	get_multilibs.
+	(libjava_find_gij): Likewise.  Changed return result if gij not
+	found.
+	(test_libjava_from_javac): Updated.
+
 	PR java/15001
 	* testsuite/libjava.jni/iface.c: New file.
 	* testsuite/libjava.jni/iface.out: New file.

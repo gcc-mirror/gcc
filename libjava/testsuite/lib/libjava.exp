@@ -270,28 +270,17 @@ proc libjava_find_lib {dir name} {
 # is used with -B.
 proc libjava_find_spec {} {
     global objdir
-    set gp [get_multilibs]
-
-    if {[file exists $gp/libjava/libgcj.spec]} then {
-	return "$gp/libjava/"
-    }
     return "$objdir/../"
 }
 
-# Find `gij'.
+# Find `gij'.  Return empty string if not found.
 proc libjava_find_gij {} {
-    global base_dir
-    set gp [get_multilibs]
-    if {$gp != ""} {
-	set file $gp/libjava/gij
-    } else {
-	set file $base_dir/../gij
-    }
+    global base_dir objdir
 
-    if {[file exists $file]} {
-	return $file
+    if {! [file exists $objdir/../gij]} {
+	return ""
     }
-    return gij
+    return $objdir/../gij
 }
 
 # Remove a bunch of files.
@@ -814,9 +803,9 @@ proc test_libjava_from_javac { options srcfile compile_args inpfile resultfile e
     # We purposely ignore errors here; we still want to run the other
     # appropriate tests.
     set gij [libjava_find_gij]
-    # libjava_find_gij will return `gij' if it couldn't find the
+    # libjava_find_gij will return "" if it couldn't find the
     # program; in this case we want to skip the test.
-    if {$INTERPRETER == "yes" && $gij != "gij"} {
+    if {$INTERPRETER == "yes" && $gij != ""} {
 	libjava_invoke $errname "gij test" opts $gij \
 	  $inpfile $resultfile "" $main_name
     }

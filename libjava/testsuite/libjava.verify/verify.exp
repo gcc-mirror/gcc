@@ -61,9 +61,9 @@ proc gcj_verify_run {} {
 
   set gij [libjava_find_gij] 
   set interpret 1
-  # libjava_find_gij will return `gij' if it couldn't find the
+  # libjava_find_gij will return "" if it couldn't find the
   # program; in this case we want to skip the test.
-  if {$INTERPRETER != "yes" || $gij == "gij"} {
+  if {$INTERPRETER != "yes" || $gij == ""} {
     set interpret 0
   }
 
