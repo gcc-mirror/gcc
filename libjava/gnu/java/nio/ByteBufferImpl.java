@@ -60,9 +60,9 @@ public final class ByteBufferImpl extends ByteBuffer
     readOnly = false;
   }
 
-  public ByteBufferImpl (byte[] array, int off, int lim)
+  public ByteBufferImpl (byte[] array, int offset, int length)
   {
-    super (array.length, lim, off, 0);
+    super (array.length, length, offset, 0);
     this.backing_buffer = array;
     readOnly = false;
   }

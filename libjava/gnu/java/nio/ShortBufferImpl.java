@@ -56,9 +56,9 @@ public final class ShortBufferImpl extends ShortBuffer
     readOnly = false;
   }
 
-  public ShortBufferImpl(short[] array, int off, int lim)
+  public ShortBufferImpl(short[] array, int offset, int length)
   {
-    super (array.length, lim, off, 0);
+    super (array.length, length, offset, 0);
     this.backing_buffer = array;
     readOnly = false;
   }
