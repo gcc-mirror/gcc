@@ -1,3 +1,8 @@
+2003-03-12  Andreas Jaeger  <aj@suse.de>
+
+	* config/i386/netbsd64.h (TARGET_OS_CPP_BUILTINS): Remove call to
+	NETBSD_OS_CPP_BUILTINS_LP64.
+
 2003-03-12  Nathanael Nerode  <neroden@gcc.gnu.org>
 
 	* Makefile.in: Eliminate all.indirect.  Update and clean up comments.
