@@ -540,7 +540,6 @@ static struct default_include { char *fname; int cplusplus; } include_defaults_a
   = {
     /* Pick up GNU C++ specific include files.  */
     { GPLUSPLUS_INCLUDE_DIR, 1},
-    { GCC_INCLUDE_DIR, 0},
     { TOOL_INCLUDE_DIR, 0},
 #ifdef CROSS_COMPILE
     /* For cross-compilation, this dir name is generated
@@ -548,6 +547,9 @@ static struct default_include { char *fname; int cplusplus; } include_defaults_a
     { CROSS_INCLUDE_DIR, 0 },
 #else /* not CROSS_COMPILE */
     { LOCAL_INCLUDE_DIR, 0},
+    /* This is the dir for fixincludes.  Put it just before
+       the files that we fix.  */
+    { GCC_INCLUDE_DIR, 0},
     /* Some systems have an extra dir of include files.  */
 #ifdef SYSTEM_INCLUDE_DIR
     { SYSTEM_INCLUDE_DIR, 0},
