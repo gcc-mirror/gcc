@@ -35,7 +35,7 @@ void func(int n, int m)
   {
     /* Compatible, but undefined behavior; (2, 2) is not a constant
        expression, and thus A is a VLA.  */
-    int a[(2, 2)];
+    int a[6][(2, 2)];
     int (*p)[3];
     p = a; /* { dg-bogus "incompatible" "bad vla handling" { xfail *-*-* } } */
   }
