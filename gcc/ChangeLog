@@ -1,3 +1,11 @@
+2000-05-18  Chris Demetriou  <cgd@sibyte.com>
+	    Richard Henderson  <rth@cygnus.com>
+
+	* c-common.h (enum c_tree_index): Add g77 type entries.
+	(g77_integer_type_node, g77_uinteger_type_node): New.
+	(g77_longint_type_node, g77_ulongint_type_node): New.
+	* c-decl.c (init_decl_processing): Initialize them.
+
 2000-05-18  Richard Henderson  <rth@cygnus.com>
 
 	* config/h8300/h8300.md (subs patterns): Use %G to negate.
