@@ -1,3 +1,9 @@
+2004-07-12  Roger Sayle  <roger@eyesopen.com>
+
+	* config/rs6000/rs6000.c (rs6000_rtx_costs): Indicate that the
+	rs6000 doesn't have shift-and-add or shift-and-sub instructions
+	by returning the cost of a multiplication plus an addition.
+
 2004-07-12  Paolo Bonzini  <bonzini@gnu.org>
 
 	PR tree-optimization/14107

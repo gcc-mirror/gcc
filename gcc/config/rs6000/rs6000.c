@@ -16535,6 +16535,12 @@ rs6000_rtx_costs (rtx x, int code, int outer_code ATTRIBUTE_UNUSED,
 		 : rs6000_cost->fp;
       else if (mode == SFmode)
 	*total = rs6000_cost->fp;
+      else if (GET_CODE (XEXP (x, 0)) == MULT)
+	{
+	  /* The rs6000 doesn't have shift-and-add instructions.  */
+	  rs6000_rtx_costs (XEXP (x, 0), MULT, PLUS, total);
+	  *total += COSTS_N_INSNS (1);
+	}
       else
 	*total = ((GET_CODE (XEXP (x, 1)) == CONST_INT
 		  && ((unsigned HOST_WIDE_INT) (INTVAL (XEXP (x, 1))
@@ -16551,6 +16557,12 @@ rs6000_rtx_costs (rtx x, int code, int outer_code ATTRIBUTE_UNUSED,
 		 : rs6000_cost->fp;
       else if (mode == SFmode)
 	*total = rs6000_cost->fp;
+      else if (GET_CODE (XEXP (x, 0)) == MULT)
+	{
+	  /* The rs6000 doesn't have shift-and-sub instructions.  */
+	  rs6000_rtx_costs (XEXP (x, 0), MULT, MINUS, total);
+	  *total += COSTS_N_INSNS (1);
+	}
       else
         *total = COSTS_N_INSNS (1);
       return true;
