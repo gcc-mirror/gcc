@@ -1,3 +1,7 @@
+2003-02-12  Phil Edwards  <pme@gcc.gnu.org>
+
+	* decl.c (build_enumerator):  Remove unneeded test.
+
 2003-02-09  Dan Nicolaescu  <dann@ics.uci.edu>
 
 	* cp-tree.h (struct lang_type_header): Make all fields unsigned

@@ -13147,7 +13147,7 @@ build_enumerator (tree name, tree value, tree enumtype)
 	}
 
       /* Default based on previous value.  */
-      if (value == NULL_TREE && ! processing_template_decl)
+      if (value == NULL_TREE)
 	{
 	  tree prev_value;
 
