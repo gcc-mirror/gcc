@@ -1,3 +1,11 @@
+2000-09-21  Nick Clifton  <nickc@redhat.com>
+
+	* gcc.c-torture/execute/divmod-1.c (mod5): New function - perform
+	a signed long modulo operation.
+	(mod6): New funciton - perform an unsigned long modulo operation.
+	(main): Add tests for modulos of very large numbers by very small
+	dividends.
+
 2000-09-19  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* g++.old-deja/g++.other/virtual8.C: Declare printf correctly.
