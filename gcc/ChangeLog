@@ -1,3 +1,13 @@
+Sat Sep  4 22:53:13 1999  Bernd Schmidt  <bernds@cygnus.co.uk>
+
+	* expr.h: Collapse individual optab and libfunc vars to arrays.
+	(optab_index, libfunc_index): New enumerations.
+	(optab_table, libfunc_table): New arrays.
+	Add accessor macros for both.
+
+	* optabs.c (optab_table, libfunc_table): New.
+	Delete declarations for individual optab and libfunc vars.
+
 Sat Sep  4 12:57:17 1999  Richard Henderson  <rth@cygnus.com>
 
 	* i386/sco5.h (RETURN_POPS_ARGS): Name change ix86_return_pops_args.
