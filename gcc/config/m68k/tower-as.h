@@ -30,7 +30,15 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 
 
 #include "tower.h"
+#undef SELECT_RTX_SECTION
 
+/* Use default settings for system V.3.  */
+
+#include "svr3.h"
+
+/* Names to predefine in the preprocessor for this target machine.  */
+
+#define CPP_PREDEFINES "-Dunix -Dtower32 -Dtower32_600"
 
 /* Define __HAVE_68881 in preprocessor only if -m68881 is specified.
    This will control the use of inline 68881 insns in certain macros.
@@ -43,7 +51,8 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 
 #define STARTFILE_SPEC                                         \
 "%{p:%{m68881:/usr/lib/fp/mcrt1.o}%{!m68881:/lib/mcrt1.o}}     \
- %{!p:%{m68881:/usr/lib/fp/crt1.o}%{!m68881:/lib/crt1.o}}"
+ %{!p:%{m68881:/usr/lib/fp/crt1.o}%{!m68881:/lib/crt1.o}}      \
+ crtbegin.o%s"
 
 /* These four macros control how m68k.md is expanded.  */
 
@@ -64,13 +73,20 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 /* All the ASM_OUTPUT macros need to conform to the Tower as syntax.  */
 
 #define ASM_OUTPUT_SOURCE_FILENAME(FILE, FILENAME) \
-  fprintf (FILE, "\tfile\t\"%s\"\n", FILENAME)
+  do {						   \
+    fprintf (FILE, "\tfile\t\"%s\"\n", FILENAME);  \
+    fprintf (FILE, "section ~init,\"x\"\n");	   \
+    fprintf (FILE, "section ~fini,\"x\"\n");	   \
+    fprintf (FILE, "section ~rodata,\"x\"\n");   \
+    fprintf (FILE, "text\n");			   \
+  } while (0)
 
 #define ASM_OUTPUT_SOURCE_LINE(FILE, LINENO)	\
   fprintf (FILE, "\tln\t%d\n",			\
 	   (sdb_begin_function_line		\
 	    ? last_linenum - sdb_begin_function_line : 1))
 
+#undef ASM_OUTPUT_IDENT
 #define ASM_OUTPUT_IDENT(FILE, NAME) \
   fprintf (FILE, "\tident\t\"%s\" \n", NAME)
 
@@ -586,3 +602,55 @@ do { fprintf (asm_out_file, "\ttag\t");	\
 
 #define SDB_GENERATE_FAKE(BUFFER, NUMBER) \
   sprintf ((BUFFER), "~%dfake", (NUMBER));
+
+#define NO_DOLLAR_IN_LABEL
+#define NO_DOT_IN_LABEL
+
+/* Define a few machine-specific details
+   of the implementation of constructors.
+
+   The __CTORS_LIST__ goes in the .init section.  Define CTOR_LIST_BEGIN
+   and CTOR_LIST_END to contribute to the .init section an instruction to
+   push a word containing 0 (or some equivalent of that).
+
+   ASM_OUTPUT_CONSTRUCTOR should be defined
+   to push the address of the constructor.  */
+
+#define ASM_LONG	"\tlong"
+#undef INIT_SECTION_ASM_OP
+#define INIT_SECTION_ASM_OP	"section\t~init"
+#undef FINI_SECTION_ASM_OP
+#define FINI_SECTION_ASM_OP	"section\t~fini"
+#undef CONST_SECTION_ASM_OP
+#define CONST_SECTION_ASM_OP	"section\t~rodata"
+
+#define CTOR_LIST_BEGIN				\
+  asm (INIT_SECTION_ASM_OP);			\
+  asm ("clr.l -(%sp)")
+#define CTOR_LIST_END CTOR_LIST_BEGIN
+
+#define BSS_SECTION_ASM_OP	"section\t~bss"
+#define BSS_SECTION_FUNCTION \
+void								\
+bss_section ()							\
+{								\
+  if (in_section != in_bss)					\
+    {								\
+      fprintf (asm_out_file, "%s\n", BSS_SECTION_ASM_OP);	\
+      in_section = in_bss;					\
+    }								\
+}
+
+#define ASM_OUTPUT_CONSTRUCTOR(FILE,NAME)	\
+  do {						\
+    init_section ();				\
+    fprintf (FILE, "\tmov.l &");		\
+    assemble_name (FILE, NAME);			\
+    fprintf (FILE, ",-(%%sp)\n");		\
+  } while (0)
+
+/* We do not want leading underscores.  */
+
+#undef ASM_OUTPUT_LABELREF
+#define ASM_OUTPUT_LABELREF(FILE,NAME)  \
+  fprintf (FILE, "%s", NAME)
