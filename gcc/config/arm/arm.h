@@ -2191,9 +2191,6 @@ do {							\
 #define DEFAULT_SIGNED_CHAR  0
 #endif
 
-/* Don't cse the address of the function being compiled.  */
-#define NO_RECURSIVE_FUNCTION_CSE 1
-
 /* Max number of bytes we can move from memory to memory
    in one reasonably fast instruction.  */
 #define MOVE_MAX 4

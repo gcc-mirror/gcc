@@ -297,10 +297,7 @@ prepare_call_address (rtx funexp, rtx static_chain_value,
     {
 #ifndef NO_FUNCTION_CSE
       if (optimize && ! flag_no_function_cse)
-#ifdef NO_RECURSIVE_FUNCTION_CSE
-	if (fndecl != current_function_decl)
-#endif
-	  funexp = force_reg (Pmode, funexp);
+	funexp = force_reg (Pmode, funexp);
 #endif
     }
 

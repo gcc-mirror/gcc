@@ -1364,9 +1364,6 @@ __transfer_from_trampoline ()					\
 /* Define this as 1 if `char' should by default be signed; else as 0.  */
 #define DEFAULT_SIGNED_CHAR 1
 
-/* Don't cse the address of the function being compiled.  */
-#define NO_RECURSIVE_FUNCTION_CSE
-
 /* Max number of bytes we can move from memory to memory
    in one reasonably fast instruction.  */
 #define MOVE_MAX 4

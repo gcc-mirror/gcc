@@ -1743,11 +1743,6 @@ extern char mips_hard_regno_mode_ok[][FIRST_PSEUDO_REGISTER];
    function address than to call an address kept in a register.  */
 #define NO_FUNCTION_CSE 1
 
-/* Define this macro if it is as good or better for a function to
-   call itself with an explicit address than to call an address
-   kept in a register.  */
-#define NO_RECURSIVE_FUNCTION_CSE 1
-
 /* The ABI-defined global pointer.  Sometimes we use a different
    register in leaf functions: see PIC_OFFSET_TABLE_REGNUM.  */
 #define GLOBAL_POINTER_REGNUM (GP_REG_FIRST + 28)

@@ -699,8 +699,6 @@ typedef struct iq2000_args
 
 #define NO_FUNCTION_CSE 1
 
-#define NO_RECURSIVE_FUNCTION_CSE 1
-
 #define ADJUST_COST(INSN,LINK,DEP_INSN,COST)				\
   if (REG_NOTE_KIND (LINK) != 0)					\
     (COST) = 0; /* Anti or output dependence.  */

@@ -2646,12 +2646,6 @@ do {							\
    faster than one with a register address.  */
 
 #define NO_FUNCTION_CSE
-
-/* Define this macro if it is as good or better for a function to call
-   itself with an explicit address than to call an address kept in a
-   register.  */
-
-#define NO_RECURSIVE_FUNCTION_CSE
 
 /* Given a comparison code (EQ, NE, etc.) and the first operand of a COMPARE,
    return the mode to be used for the comparison.

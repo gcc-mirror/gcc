@@ -951,12 +951,6 @@ arc_select_cc_mode (OP, X, Y)
    function address than to call an address kept in a register.  */
 /* On the ARC, calling through registers is slow.  */
 #define NO_FUNCTION_CSE
-
-/* Define this macro if it is as good or better for a function to call
-   itself with an explicit address than to call an address kept in a
-   register.  */
-/* On the ARC, calling through registers is slow.  */
-#define NO_RECURSIVE_FUNCTION_CSE
 
 /* Section selection.  */
 /* WARNING: These section names also appear in dwarfout.c.  */
