@@ -4341,8 +4341,9 @@ build_unary_op (code, xarg, noconvert)
 			((code == PREINCREMENT_EXPR
 			  || code == POSTINCREMENT_EXPR)
 			 ? "increment" : "decrement"), TREE_TYPE (argtype));
-	    else if (tmp == FUNCTION_TYPE || tmp == METHOD_TYPE
-		     || tmp == VOID_TYPE || tmp == OFFSET_TYPE)
+	    else if ((pedantic || warn_pointer_arith)
+		     && (tmp == FUNCTION_TYPE || tmp == METHOD_TYPE
+			 || tmp == VOID_TYPE || tmp == OFFSET_TYPE))
 	      cp_pedwarn ("ANSI C++ forbids %sing a pointer of type `%T'",
 			  ((code == PREINCREMENT_EXPR
 			    || code == POSTINCREMENT_EXPR)
