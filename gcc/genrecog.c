@@ -545,34 +545,51 @@ validate_pattern (pattern, insn, set, set_code)
 		}
 	  }
 
-	/* A MATCH_OPERAND that is a SET should have an output reload.  */
-	if (set && code == MATCH_OPERAND
-	    && XSTR (pattern, 2)[0] != '\0')
+	if (code == MATCH_OPERAND)
 	  {
-	    if (set_code == '+')
+	    const char constraints0 = XSTR (pattern, 2)[0];
+
+	    /* In DEFINE_EXPAND, DEFINE_SPLIT, and DEFINE_PEEPHOLE2, we 
+	       don't use the MATCH_OPERAND constraint, only the predicate.
+	       This is confusing to folks doing new ports, so help them
+	       not make the mistake.  */
+	    if (GET_CODE (insn) == DEFINE_EXPAND
+		|| GET_CODE (insn) == DEFINE_SPLIT
+		|| GET_CODE (insn) == DEFINE_PEEPHOLE2)
 	      {
-		if (XSTR (pattern, 2)[0] == '+')
-		  ;
-		/* If we've only got an output reload for this operand,
-		   we'd better have a matching input operand.  */
-		else if (XSTR (pattern, 2)[0] == '='
-			 && find_matching_operand (insn, XINT (pattern, 0)))
-		  ;
-		else
+		if (constraints0)
+		  message_with_line (pattern_lineno,
+				     "warning: constraints not supported in %s",
+				     rtx_name[GET_CODE (insn)]);
+	      }
+	      
+	    /* A MATCH_OPERAND that is a SET should have an output reload.  */
+	    else if (set && constraints0)
+	      {
+		if (set_code == '+')
+		  {
+		    if (constraints0 == '+')
+		      ;
+		    /* If we've only got an output reload for this operand,
+		       we'd better have a matching input operand.  */
+		    else if (constraints0 == '='
+			     && find_matching_operand (insn, XINT (pattern, 0)))
+		      ;
+		    else
+		      {
+			message_with_line (pattern_lineno,
+					   "operand %d missing in-out reload",
+					   XINT (pattern, 0));
+			error_count++;
+		      }
+		  }
+		else if (constraints0 != '=' && constraints0 != '+')
 		  {
 		    message_with_line (pattern_lineno,
-				       "operand %d missing in-out reload",
+				       "operand %d missing output reload", 
 				       XINT (pattern, 0));
 		    error_count++;
 		  }
-	      }
-	    else if (XSTR (pattern, 2)[0] != '='
-		     && XSTR (pattern, 2)[0] != '+')
-	      {
-		message_with_line (pattern_lineno,
-				   "operand %d missing output reload",
-				   XINT (pattern, 0));
-		error_count++;
 	      }
 	  }
 
@@ -623,6 +640,11 @@ validate_pattern (pattern, insn, set, set_code)
 	dest = SET_DEST (pattern);
 	src = SET_SRC (pattern);
 
+	/* STRICT_LOW_PART is a wrapper.  Its argument is the real
+	   destination, and it's mode should match the source.  */
+	if (GET_CODE (dest) == STRICT_LOW_PART)
+	  dest = XEXP (dest, 0);
+
 	/* Find the referant for a DUP.  */
 
 	if (GET_CODE (dest) == MATCH_DUP
@@ -634,11 +656,6 @@ validate_pattern (pattern, insn, set, set_code)
 	    || GET_CODE (src) == MATCH_OP_DUP
 	    || GET_CODE (src) == MATCH_PAR_DUP)
 	  src = find_operand (insn, XINT (src, 0));
-
-	/* STRICT_LOW_PART is a wrapper.  Its argument is the real
-	   destination, and it's mode should match the source.  */
-	if (GET_CODE (dest) == STRICT_LOW_PART)
-	  dest = XEXP (dest, 0);
 
 	dmode = GET_MODE (dest);
 	smode = GET_MODE (src);
