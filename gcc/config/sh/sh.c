@@ -8325,6 +8325,7 @@ sh_output_mi_thunk (file, thunk_fndecl, delta, vcall_offset, function)
   int did_load = 0;
   rtx scratch0, scratch1, scratch2;
 
+  insn_locators_initialize ();
   reload_completed = 1;
   no_new_pseudos = 1;
   current_function_uses_only_leaf_regs = 1;
