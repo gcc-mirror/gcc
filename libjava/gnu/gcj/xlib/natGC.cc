@@ -1,4 +1,4 @@
-/* Copyright (C) 2000  Free Software Foundation
+/* Copyright (C) 2000, 2003  Free Software Foundation
 
    This file is part of libgcj.
 
@@ -11,6 +11,7 @@ details.  */
 #include <X11/Xlib.h>
 
 #include <gcj/cni.h>
+#include <gcj/array.h>
 #include <gnu/gcj/RawData.h>
 #include <java/lang/String.h>
 #include <java/awt/Rectangle.h>
@@ -151,6 +152,27 @@ void gnu::gcj::xlib::GC::fillRectangle(jint x, jint y, jint w, jint h)
   ::Drawable drawableXID = target->getXID();
   ::GC gc = (::GC) structure;
   XFillRectangle(dpy, drawableXID, gc, x, y, w, h);
+  // no fast fail
+}
+
+void gnu::gcj::xlib::GC::fillPolygon(jintArray xPoints, jintArray yPoints,
+				     jint nPoints,
+				     jint translateX, jint translateY)
+{
+  Display* display = target->getDisplay();
+  ::Display* dpy = (::Display*) (display->display);
+  ::Drawable drawableXID = target->getXID();
+  ::GC gc = (::GC) structure;
+  typedef ::XPoint xpoint;
+  std::vector<xpoint> points(nPoints+1);
+  for (int i=0; i<nPoints; i++)
+    {
+      points[i].x = elements(xPoints)[i] + translateX;
+      points[i].y = elements(yPoints)[i] + translateY;
+    }
+  points[nPoints] = points[0];
+  XFillPolygon(dpy, drawableXID, gc, &(points.front()), nPoints,
+	       Complex, CoordModeOrigin);
   // no fast fail
 }
 

@@ -1,4 +1,4 @@
-/* Copyright (C) 2000  Free Software Foundation
+/* Copyright (C) 2000, 2003  Free Software Foundation
 
    This file is part of libgcj.
 
@@ -212,7 +212,7 @@ public class IntegerGraphicsState extends AbstractGraphicsState
   
   public void drawPolyline(int[] xPoints, int[] yPoints, int nPoints)
   {
-    if ((tx == 0) || (ty == 0))
+    if ((tx == 0) && (ty == 0))
       {
 	directGfx.drawPolyline(xPoints, yPoints, nPoints);
 	return;
@@ -223,7 +223,7 @@ public class IntegerGraphicsState extends AbstractGraphicsState
 
   public void drawPolygon(int[] xPoints, int[] yPoints, int nPoints)
   {
-    if ((tx == 0) || (ty == 0))
+    if ((tx == 0) && (ty == 0))
       {
 	directGfx.drawPolygon(xPoints, yPoints, nPoints);
 	return;
@@ -232,15 +232,11 @@ public class IntegerGraphicsState extends AbstractGraphicsState
     throw new UnsupportedOperationException("translate not implemented");
   }
   
-  public void fillPolygon(int[] xPoints, int[] yPoints, int nPoints)
+  public void fillPolygon (int[] xPoints, int[] yPoints, int nPoints)
   {
-    if ((tx == 0) || (ty == 0))
-      {
-	directGfx.fillPolygon(xPoints, yPoints, nPoints);
-	return;
-      }
-    
-    throw new UnsupportedOperationException("translate not implemented");
+    // FIXME: remove tx & ty args once translation via AffineTransform
+    // is implemented.
+    directGfx.fillPolygon (xPoints, yPoints, nPoints, tx, ty);
   }
 
   public boolean drawImage(Image image, int x, int y,

@@ -1,4 +1,4 @@
-/* Copyright (C) 2000  Free Software Foundation
+/* Copyright (C) 2000, 2003  Free Software Foundation
 
    This file is part of libgcj.
 
@@ -61,7 +61,8 @@ public interface DirectRasterGraphics extends Cloneable
   
   public void drawPolygon(int[] xPoints, int[] yPoints, int nPoints);
   
-  public void fillPolygon(int[] xPoints, int[] yPoints, int nPoints);
+  public void fillPolygon(int[] xPoints, int[] yPoints, int nPoints,
+			  int translateX, int translateY);
   
   public void drawString(String str, int x, int y);
   
