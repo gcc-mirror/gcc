@@ -1086,7 +1086,7 @@ This configuration is intended for embedded systems.
 
 @item m68000-hp-bsd
 HP 9000 series 200 running BSD.  Note that the C compiler that comes
-with this system cannot compile GNU CC; contact @code{law@@cs.utah.edu}
+with this system cannot compile GNU CC; contact @code{law@@cygnus.com}
 to get binaries of GNU CC for bootstrapping.
 
 @item m68k-altos
