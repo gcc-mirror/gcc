@@ -1,5 +1,10 @@
 2003-04-04  Nick Clifton  <nickc@redhat.com>
 
+	* config/sparc/sol2-bi.h: Revert previous delta.
+	* config/sparc/sol2-gas-bi.h (AS_SPARC64_FLAG): Prepend -TSO
+
+2003-04-04  Nick Clifton  <nickc@redhat.com>
+
 	* config/v850/v850.c (expand_prologue): Only use register save
 	helper functions if long calls are not being used.
 	Add a clobber of r11 id using long calls.
