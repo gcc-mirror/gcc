@@ -11,7 +11,14 @@ original "small format".  A correct version of the routines is shipped
 with AIX 4.3.2.
 
 
-			    AIX 4.3 assembler
+			     AIX 4.3.2 binder
+
+The AIX 4.3.2.1 linker (bos.rte.bind_cmds Level 4.3.2.1) will dump core
+with a segmentation fault when invoked by any version of GCC.  A fix for
+APAR IX87327 will be available from IBM Customer Support.
+
+
+			   AIX 4.3.0 assembler
 
 The AIX 4.3.0.0 assembler generates incorrect object files if the ".bs"
 pseudo-op references symbols in certain sections.  If GCC is invoked with
