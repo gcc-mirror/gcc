@@ -51,20 +51,8 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 
 /* We use stabs-in-elf for debugging, because that is what the native
    toolchain uses.  */
-#define DBX_DEBUGGING_INFO
+#undef PREFERRED_DEBUGGING_TYPE
 #define PREFERRED_DEBUGGING_TYPE DBX_DEBUG
-
-#define DBX_BLOCKS_FUNCTION_RELATIVE 1
-
-/* "gcc2_compiled." must be a .stabs, not an ordinary symbol, or GDB won't
-   see it.  Furthermore, since GDB reads the input piecemeal, starting
-   with each N_SO, it's a lot easier if the gcc2 flag symbol is *after*
-   the N_SO rather than before it.  So we emit an N_OPT stab here.  */
-
-#define ASM_IDENTIFY_GCC(FILE)	/* Do nothing */
-
-#define ASM_IDENTIFY_GCC_AFTER_SOURCE(FILE)	\
- fputs ("\t.stabs\t\"gcc2_compiled.\", 0x3c, 0, 0, 0\n", FILE)
 
 /* The Solaris 2 assembler uses .skip, not .zero, so put this back. */
 #undef ASM_OUTPUT_SKIP
@@ -105,20 +93,6 @@ do {									\
 #undef  ASM_GENERATE_INTERNAL_LABEL
 #define ASM_GENERATE_INTERNAL_LABEL(LABEL,PREFIX,NUM)	\
   sprintf (LABEL, "*.L%s%d", PREFIX, NUM)
-
-/* in Solaris 2.0, linenos are relative to the current fn. */
-#undef  ASM_OUTPUT_SOURCE_LINE
-#define ASM_OUTPUT_SOURCE_LINE(file, line)		\
-  { static int sym_lineno = 1;				\
-    fprintf (file, ".stabn 68,0,%d,.LM%d-%s\n.LM%d:\n",	\
-	     line, sym_lineno, 				\
-	     XSTR (XEXP (DECL_RTL (current_function_decl), 0), 0), \
-	     sym_lineno);				\
-    sym_lineno += 1; }
-
-/* But, to make this work, we have to output the stabs for the function
-   name *first*...  */
-#define	DBX_FUNCTION_FIRST
 
 
 /* We don't use the standard svr4 STARTFILE_SPEC because it's wrong for us.
