@@ -290,7 +290,7 @@ extern const char *alpha_mlat_string;	/* For -mmemory-latency= */
 
 #ifndef CPP_CPU_DEFAULT_SPEC
 # if TARGET_CPU_DEFAULT & MASK_CPU_EV6
-#  if TARGET_CPU_DEFAULT & MAX_CIX
+#  if TARGET_CPU_DEFAULT & MASK_CIX
 #    define CPP_CPU_DEFAULT_SPEC	CPP_CPU_EV67_SPEC
 #  else
 #    define CPP_CPU_DEFAULT_SPEC	CPP_CPU_EV6_SPEC
@@ -2333,6 +2333,7 @@ do {									\
   {"mode_width_operand", {CONST_INT}},					\
   {"reg_or_fp0_operand", {SUBREG, REG, CONST_DOUBLE}},			\
   {"alpha_comparison_operator", {EQ, LE, LT, LEU, LTU}},		\
+  {"alpha_zero_comparison_operator", {EQ, NE, LE, LT, LEU, LTU}},	\
   {"alpha_swapped_comparison_operator", {EQ, GE, GT, GEU, GTU}},	\
   {"signed_comparison_operator", {EQ, NE, LE, LT, GE, GT}},		\
   {"alpha_fp_comparison_operator", {EQ, LE, LT, UNORDERED}},		\

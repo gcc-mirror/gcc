@@ -1,5 +1,24 @@
 2000-05-29  Richard Henderson  <rth@cygnus.com>
 
+	* longlong.h [__alpha] (count_leading_zeros): New.
+	(count_trailing_zeros): New.
+	(COUNT_LEADING_ZEROS_0): New.
+
+	* config/alpha/alpha.c (alpha_zero_comparison_operator): New.
+	(alpha_split_conditional_move): New.
+	* config/alpha/alpha-protos.h: Prototype them.
+	* config/alpha/alpha.h (PREDICATE_CODES): Update.
+	(CPP_CPU_DEFAULT_SPEC): Fix typo for EV67.
+	* config/alpha/alpha.md: Update ffs cix commentary.
+	(*ze_and_ne): New.
+	(*nabssf2, *nabsdf2): New.
+	(*mov[qhsd]icc_internal): Use add_operand.
+	(if_then_else constant splitters): New.
+	(*cmp_sadd_di, *cmp_sadd_si, *cmp_sadd_sidi): New.
+	(*cmp_ssub_di, *cmp_ssub_si, *cmp_ssub_sidi): New.
+
+2000-05-29  Richard Henderson  <rth@cygnus.com>
+
 	* combine.c (force_to_mode) [MINUS]: Convert subtraction from
 	a constant to NEG or NOT when conditions allow.
 
