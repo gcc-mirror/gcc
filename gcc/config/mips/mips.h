@@ -1966,7 +1966,9 @@ extern struct mips_frame_info current_frame_info;
   else if ((FROM) == RETURN_ADDRESS_POINTER_REGNUM			 \
 	   && ((TO) == FRAME_POINTER_REGNUM				 \
 	       || (TO) == STACK_POINTER_REGNUM))			 \
-    (OFFSET) = current_frame_info.gp_sp_offset;				 \
+    (OFFSET) = current_frame_info.gp_sp_offset				 \
+	       + ((UNITS_PER_WORD - (POINTER_SIZE / BITS_PER_UNIT))	 \
+		  * (BYTES_BIG_ENDIAN != 0));				 \
   else									 \
     abort ();								 \
 }
@@ -4047,3 +4049,8 @@ while (0)
 #define NO_BUILTIN_PTRDIFF_TYPE
 #define PTRDIFF_TYPE (TARGET_LONG64 ? "long int" : "int")
 #endif
+
+/* See mips_expand_prologue's use of loadgp for when this should be
+   true.  */
+
+#define DONT_ACCESS_GBLS_AFTER_EPILOGUE (TARGET_ABICALLS && mips_abi != ABI_32)
