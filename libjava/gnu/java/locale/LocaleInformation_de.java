@@ -1,5 +1,5 @@
 /* LocaleInformation_de.java -- German locale data
-   Copyright (C) 1999 Free Software Foundation, Inc.
+   Copyright (C) 1999, 2001 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -47,7 +47,7 @@ public class LocaleInformation_de extends ListResourceBundle
   * proper format.
   */
 private static final String collation_rules = 
-  "-<0,1<2<3<4<5<6<7<8<9<A,a<b,B<c,C<d,D<e,E<f,F<g,G<h,H<i,I<j,J<j,K" +
+  "<0<1<2<3<4<5<6<7<8<9<A,a<b,B<c,C<d,D<e,E<f,F<g,G<h,H<i,I<j,J<k,K" +
   "<l,L<m,M<n,N<o,O<p,P<q,Q<r,R<s,S<t,T<u,U<v,V<w,W<x,X<y,Y,z<Z" + 
   "&ae,\u00e4&Ae,\u00c4&oe,\u00f6&Oe,\u00d6&ue,\u00fc&Ue,\u00dc&ss,\u00df";
 

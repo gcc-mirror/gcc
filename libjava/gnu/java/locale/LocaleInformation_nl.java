@@ -1,5 +1,5 @@
 /* LocaleInformation_nl.java -- Dutch locale data
-   Copyright (C) 1999 Free Software Foundation, Inc.
+   Copyright (C) 1999, 2001 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -50,38 +50,8 @@ public class LocaleInformation_nl extends ListResourceBundle
   * This is the same rule as used in the English locale.
   */
 private static final String collation_rules = 
-  "-<0,1<2<3<4<5<6<7<8<9A,a<b,B<c,C<d,D<e,E<f,F<g,G<h,H<i,I<j,J<j,K" +
+  "<0<1<2<3<4<5<6<7<8<9<A,a<b,B<c,C<d,D<e,E<f,F<g,G<h,H<i,I<j,J<k,K" +
   "<l,L<m,M<n,N<o,O<p,P<q,Q<r,R<s,S<t,T<u,U<v,V<w,W<x,X<y,Y,z<Z";
-
-/*
- * For the followings lists, strings that are subsets of other break strings
- * must be listed first.  For example, if "\r" and "\r\n" are sequences,
- * the "\r" must be first or it will never be used.
- */
-
-/**
-  * This is the list of word separator characters used by 
-  * java.text.BreakIterator 
-  * <p>
-  * This is the same list as used in the English local
-  */
-private static final String[] word_breaks = { " ", "\t", "\r\n", "\n" }; 
-
-/**
-  * This is the list of sentence break sequences used by 
-  * java.text.BreakIterator
-  * <p>
-  * This is the same list as used in the English local
-  */
-private static final String[] sentence_breaks = { ". " };
-
-/**
-  * This is the list of potential line break locations.
-  * <p>
-  * This is the same list as used in the English local
-  */
-private static final String[] line_breaks = { "\t", "-", "\r\n", 
-  "\n", ".  ", ". ", ".",  "?  ", "? ", "?",  "!  ", "! ", "!", ", ", " " };
 
 /**
   * This is the list of months, fully spelled out
@@ -281,10 +251,6 @@ private static final Object[][] contents =
 {
   // For RuleBasedCollator
   { "collation_rules", collation_rules },
-  // For BreakIterator
-  { "word_breaks", word_breaks },
-  { "sentence_breaks", sentence_breaks },
-  { "line_breaks", line_breaks },
   // For SimpleDateFormat/DateFormatSymbols
   { "months", months },
   { "shortMonths", shortMonths },

@@ -1,44 +1,111 @@
-/* Copyright (C) 1998, 1999, 2000  Free Software Foundation
+/* Format.java -- Abstract superclass for formatting/parsing strings.
+   Copyright (C) 1998, 1999, 2000, 2001 Free Software Foundation, Inc.
 
-   This file is part of libgcj.
+This file is part of GNU Classpath.
 
-This software is copyrighted work licensed under the terms of the
-Libgcj License.  Please consult the file "LIBGCJ_LICENSE" for
-details.  */
+GNU Classpath is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 2, or (at your option)
+any later version.
+ 
+GNU Classpath is distributed in the hope that it will be useful, but
+WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with GNU Classpath; see the file COPYING.  If not, write to the
+Free Software Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA
+02111-1307 USA.
+
+As a special exception, if you link this library with other files to
+produce an executable, this library does not by itself cause the
+resulting executable to be covered by the GNU General Public License.
+This exception does not however invalidate any other reasons why the
+executable file might be covered by the GNU General Public License. */
+
 
 package java.text;
 
-/**
- * @author Per Bothner <bothner@cygnus.com>
- * @date October 25, 1998.
- */
-/* Written using "Java Class Libraries", 2nd edition, plus online
- * API docs for JDK 1.2 beta from http://www.javasoft.com.
- * Status:  Believed complete and correct.
- */
+import java.io.Serializable;
 
-public abstract class Format implements java.io.Serializable, Cloneable
+/**
+ * This class is the abstract superclass of classes that format and parse
+ * data to/from <code>Strings</code>.  It is guaranteed that any 
+ * <code>String</code> produced by a concrete subclass of <code>Format</code>
+ * will be parseable by that same subclass.
+ * <p>
+ * In addition to implementing the abstract methods in this class, subclasses
+ * should provide static factory methods of the form 
+ * <code>getInstance()</code> and <code>getInstance(Locale)</code> if the
+ * subclass loads different formatting/parsing schemes based on locale.
+ * These subclasses should also implement a static method called
+ * <code>getAvailableLocales()</code> which returns an array of 
+ * available locales in the current runtime environment.
+ *
+ * @author Aaron M. Renn (arenn@urbanophile.com)
+ * @author Per Bothner <bothner@cygnus.com>
+ */
+public abstract class Format implements Serializable, Cloneable
 {
+  /**
+   * This method initializes a new instance of <code>Format</code>.
+   * It performs no actions, but acts as a default constructor for
+   * subclasses.
+   */
   public Format ()
   {
   }
 
-  public abstract StringBuffer format (Object obj,
-				       StringBuffer sbuf, FieldPosition pos);
-
-  public final String format (Object obj)
+  /**
+   * This method formats an <code>Object</code> into a <code>String</code>.
+   * 
+   * @param obj The <code>Object</code> to format.
+   *
+   * @return The formatted <code>String</code>.
+   *
+   * @exception IllegalArgumentException If the <code>Object</code>
+   * cannot be formatted. 
+   */
+  public final String format(Object obj) throws IllegalArgumentException
   {
-    StringBuffer sbuf = new StringBuffer();
-    format(obj, sbuf, new FieldPosition(0));
-    return sbuf.toString();
+    StringBuffer sb = new StringBuffer ();
+    format (obj, sb, new FieldPosition (0));
+    return sb.toString ();
   }
 
-  public abstract Object parseObject (String source, ParsePosition pos);
+  /**
+   * This method formats an <code>Object</code> into a <code>String</code> and
+   * appends the <code>String</code> to a <code>StringBuffer</code>.
+   *
+   * @param obj The <code>Object</code> to format.
+   * @param sb The <code>StringBuffer</code> to append to.
+   * @param pos The desired <code>FieldPosition</code>, which is also
+   *            updated by this call. 
+   *
+   * @return The updated <code>StringBuffer</code>.
+   *
+   * @exception IllegalArgumentException If the <code>Object</code>
+   * cannot be formatted. 
+   */
+  public abstract StringBuffer format (Object obj, StringBuffer sb,
+				       FieldPosition pos)
+    throws IllegalArgumentException;
 
-  public Object parseObject (String source) throws ParseException
+  /**
+   * This method parses a <code>String</code> and converts the parsed 
+   * contents into an <code>Object</code>.
+   *
+   * @param str The <code>String to parse.
+   *
+   * @return The resulting <code>Object</code>.
+   *
+   * @exception ParseException If the <code>String</code> cannot be parsed.
+   */
+  public Object parseObject (String str) throws ParseException
   {
     ParsePosition pos = new ParsePosition(0);
-    Object result = parseObject (source, pos);
+    Object result = parseObject (str, pos);
     if (result == null)
       {
 	int index = pos.getErrorIndex();
@@ -49,8 +116,33 @@ public abstract class Format implements java.io.Serializable, Cloneable
     return result;
   }
 
+  /**
+   * This method parses a <code>String</code> and converts the parsed
+   * contents into an <code>Object</code>. 
+   *
+   * @param str The <code>String</code> to parse.
+   * @param pos The starting parse index on input, the ending parse
+   *            index on output. 
+   *
+   * @return The parsed <code>Object</code>, or <code>null</code> in
+   *         case of error.
+   */
+  public abstract Object parseObject (String str, ParsePosition pos);
+
+  /**
+   * Creates a copy of this object.
+   *
+   * @return The copied <code>Object</code>.
+   */
   public Object clone ()
   {
-    return super.clone ();
+    try
+      {
+	return super.clone ();
+      }
+    catch (CloneNotSupportedException e)
+      {
+	return null;
+      }
   }
 }
