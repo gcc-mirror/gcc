@@ -1481,7 +1481,7 @@ tsubst (t, args, nargs, in_decl)
       {
 	int len = TREE_VEC_LENGTH (t), need_new = 0, i;
 	tree *elts = (tree *) alloca (len * sizeof (tree));
-	bzero (elts, len * sizeof (tree));
+	bzero ((char *) elts, len * sizeof (tree));
 
 	for (i = 0; i < len; i++)
 	  {
@@ -1930,7 +1930,7 @@ reinit_parse_for_template (yychar, d1, d2)
   if (!template_info)
     {
       template_info = (struct template_info *) permalloc (sizeof (struct template_info));
-      bzero (template_info, sizeof (struct template_info));
+      bzero ((char *) template_info, sizeof (struct template_info));
       DECL_TEMPLATE_INFO (d2) = template_info;
     }
   template_info->filename = input_filename;
@@ -1980,7 +1980,7 @@ type_unification (tparms, targs, parms, args, nsubsts, subr)
   my_friendly_assert (ntparms > 0, 292);
 
   if (!subr)
-    bzero (targs, sizeof (tree) * ntparms);
+    bzero ((char *) targs, sizeof (tree) * ntparms);
 
   while (parms
 	 && parms != void_list_node

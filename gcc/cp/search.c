@@ -236,7 +236,7 @@ my_new_memoized_entry (chain)
   struct memoized_entry *p =
     (struct memoized_entry *)obstack_alloc (&type_obstack_entries,
 					    sizeof (struct memoized_entry));
-  bzero (p, sizeof (struct memoized_entry));
+  bzero ((char *) p, sizeof (struct memoized_entry));
   MEMOIZED_CHAIN (p) = chain;
   MEMOIZED_UID (p) = ++my_memoized_entry_counter;
   return p;

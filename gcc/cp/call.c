@@ -718,7 +718,7 @@ compute_conversion_costs (function, tta_in, cp, arglen)
   cp->h.code = 0;
   cp->h.distance = 0;
   cp->h.int_penalty = 0;
-  bzero (cp->harshness,
+  bzero ((char *) cp->harshness,
 	 (cp->h_len + 1) * sizeof (struct harshness_code));
 
   while (ttf && tta)
@@ -2059,7 +2059,7 @@ build_method_call (instance, name, parms, basetype_path, flags)
 	  candidates
 	    = (struct candidate *) alloca ((ever_seen+1)
 					   * sizeof (struct candidate));
-	  bzero (candidates, (ever_seen + 1) * sizeof (struct candidate));
+	  bzero ((char *) candidates, (ever_seen + 1) * sizeof (struct candidate));
 	  cp = candidates;
 	  len = list_length (parms);
 	  ever_seen = 0;
@@ -2775,7 +2775,7 @@ build_overload_call_real (fnname, parms, flags, final_cp, buildxxx)
     {
       candidates
 	= (struct candidate *)alloca ((length+1) * sizeof (struct candidate));
-      bzero (candidates, (length + 1) * sizeof (struct candidate));
+      bzero ((char *) candidates, (length + 1) * sizeof (struct candidate));
     }
 
   cp = candidates;

@@ -942,7 +942,7 @@ add_method (type, fields, method)
 				   * sizeof (char *)
 				 + len * sizeof (tree));
 		  tmp_vec = (tree) obstack_base (ob);
-		  bcopy (method_vec, tmp_vec,
+		  bcopy ((char *) method_vec, (char *) tmp_vec,
 			 (sizeof (struct tree_common)
 			  + tree_code_length[(int) TREE_VEC] * sizeof (char *)
 			  + (len-1) * sizeof (tree)));
@@ -1338,7 +1338,7 @@ finish_base_struct (t, b, t_binfo)
   tree binfos = BINFO_BASETYPES (t_binfo);
   int i, n_baseclasses = binfos ? TREE_VEC_LENGTH (binfos) : 0;
   int first_vfn_base_index = -1;
-  bzero (b, sizeof (struct base_info));
+  bzero ((char *) b, sizeof (struct base_info));
 
   for (i = 0; i < n_baseclasses; i++)
     {
@@ -1680,8 +1680,8 @@ finish_struct_bits (t, max_has_virtual)
       tree *tmp;
       int i;
 
-      bzero (first_conversions, sizeof (first_conversions));
-      bzero (last_conversions, sizeof (last_conversions));
+      bzero ((char *) first_conversions, sizeof (first_conversions));
+      bzero ((char *) last_conversions, sizeof (last_conversions));
       for (tmp = &TREE_VEC_ELT (method_vec, 1);
 	   tmp != TREE_VEC_END (method_vec); tmp += 1)
 	{
@@ -2057,7 +2057,7 @@ duplicate_tag_error (t)
       int interface_only = CLASSTYPE_INTERFACE_ONLY (t);
       int interface_unknown = CLASSTYPE_INTERFACE_UNKNOWN (t);
 
-      bzero (TYPE_LANG_SPECIFIC (t), sizeof (struct lang_type));
+      bzero ((char *) TYPE_LANG_SPECIFIC (t), sizeof (struct lang_type));
       BINFO_BASETYPES(binfo) = NULL_TREE;
 
       CLASSTYPE_AS_LIST (t) = as_list;
