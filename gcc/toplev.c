@@ -253,11 +253,11 @@ enum dump_file_index
   DFI_sibling,
   DFI_eh,
   DFI_jump,
-  DFI_cse,
-  DFI_addressof,
   DFI_ssa,
   DFI_ssa_dce,
   DFI_ussa,
+  DFI_cse,
+  DFI_addressof,
   DFI_gcse,
   DFI_loop,
   DFI_cse2,
@@ -299,11 +299,11 @@ struct dump_file_info dump_file[DFI_MAX] =
   { "sibling",  'i', 0, 0, 0 },
   { "eh",	'h', 0, 0, 0 },
   { "jump",	'j', 0, 0, 0 },
-  { "cse",	's', 0, 0, 0 },
-  { "addressof", 'F', 0, 0, 0 },
   { "ssa",	'e', 1, 0, 0 },
   { "ssadce",	'X', 1, 0, 0 },
   { "ussa",	'e', 1, 0, 0 },	/* Yes, duplicate enable switch.  */
+  { "cse",	's', 0, 0, 0 },
+  { "addressof", 'F', 0, 0, 0 },
   { "gcse",	'G', 1, 0, 0 },
   { "loop",	'L', 1, 0, 0 },
   { "cse2",	't', 1, 0, 0 },
@@ -2947,6 +2947,61 @@ rest_of_compilation (decl)
       goto exit_rest_of_compilation;
     }
 
+  /* Long term, this should probably move before the jump optimizer too,
+     but I didn't want to disturb the rtl_dump_and_exit and related
+     stuff at this time.  */
+  if (optimize > 0 && flag_ssa)
+    {
+      /* Convert to SSA form.  */
+
+      timevar_push (TV_TO_SSA);
+      open_dump_file (DFI_ssa, decl);
+
+      find_basic_blocks (insns, max_reg_num (), rtl_dump_file);
+      cleanup_cfg ();
+      convert_to_ssa ();
+
+      close_dump_file (DFI_ssa, print_rtl_with_bb, insns);
+      timevar_pop (TV_TO_SSA);
+
+      /* The SSA implementation uses basic block numbers in its phi
+	 nodes.  Thus, changing the control-flow graph or the basic
+	 blocks, e.g., calling find_basic_blocks () or cleanup_cfg (),
+	 may cause problems.  */
+
+      if (flag_ssa_dce)
+	{
+	  /* Remove dead code. */
+
+	  timevar_push (TV_SSA_DCE);
+	  open_dump_file (DFI_ssa_dce, decl);
+
+	  insns = get_insns ();
+	  ssa_eliminate_dead_code();
+
+	  close_dump_file (DFI_ssa_dce, print_rtl_with_bb, insns);
+	  timevar_pop (TV_SSA_DCE);
+	}
+
+      /* Convert from SSA form.  */
+
+      timevar_push (TV_FROM_SSA);
+      open_dump_file (DFI_ussa, decl);
+
+      convert_from_ssa ();
+      /* New registers have been created.  Rescan their usage.  */
+      reg_scan (insns, max_reg_num (), 1);
+      /* Life analysis used in SSA adds log_links but these
+	 shouldn't be there until the flow stage, so clear
+	 them away.  */
+      clear_log_links (insns);
+
+      close_dump_file (DFI_ussa, print_rtl_with_bb, insns);
+      timevar_pop (TV_FROM_SSA);
+
+      ggc_collect ();
+    }
+
   timevar_push (TV_JUMP);
 
   if (optimize > 0)
@@ -3044,58 +3099,6 @@ rest_of_compilation (decl)
   close_dump_file (DFI_addressof, print_rtl, insns);
 
   ggc_collect ();
-
-  if (optimize > 0 && flag_ssa)
-    {
-      /* Convert to SSA form.  */
-
-      timevar_push (TV_TO_SSA);
-      open_dump_file (DFI_ssa, decl);
-
-      find_basic_blocks (insns, max_reg_num (), rtl_dump_file);
-      cleanup_cfg ();
-      convert_to_ssa ();
-
-      close_dump_file (DFI_ssa, print_rtl_with_bb, insns);
-      timevar_pop (TV_TO_SSA);
-
-      /* The SSA implementation uses basic block numbers in its phi
-	 nodes.  Thus, changing the control-flow graph or the basic
-	 blocks, e.g., calling find_basic_blocks () or cleanup_cfg (),
-	 may cause problems.  */
-
-      if (flag_ssa_dce)
-	{
-	  /* Remove dead code. */
-
-	  timevar_push (TV_SSA_DCE);
-	  open_dump_file (DFI_ssa_dce, decl);
-
-	  insns = get_insns ();
-	  ssa_eliminate_dead_code();
-
-	  close_dump_file (DFI_ssa_dce, print_rtl_with_bb, insns);
-	  timevar_pop (TV_SSA_DCE);
-	}
-
-      /* Convert from SSA form.  */
-
-      timevar_push (TV_FROM_SSA);
-      open_dump_file (DFI_ussa, decl);
-
-      convert_from_ssa ();
-      /* New registers have been created.  Rescan their usage.  */
-      reg_scan (insns, max_reg_num (), 1);
-      /* Life analysis used in SSA adds log_links but these
-	 shouldn't be there until the flow stage, so clear
-	 them away.  */
-      clear_log_links (insns);
-
-      close_dump_file (DFI_ussa, print_rtl_with_bb, insns);
-      timevar_pop (TV_FROM_SSA);
-
-      ggc_collect ();
-    }
 
   /* Perform global cse.  */
 

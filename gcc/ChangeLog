@@ -1,3 +1,14 @@
+Mon Jul  2 14:20:13 2001  Jeffrey A Law  (law@cygnus.com)
+
+	* toplev.c (dump_file_index): Move SSA dumps just after first
+	jump dump.
+	(dump_file): Corresponding changes.
+	(rest_of_compilation): Move SSA path to just after the first
+	jump pass.
+	* doc/gcc.texi (Passes): Update due to movement of SSA path.
+	* doc/invoke.texi: Update dump file #s as they were completely
+	out of date with reality.
+
 2001-07-02  Geoffrey Keating  <geoffk@redhat.com>
 
 	* doc/tm.texi (Frame Layout): Document STACK_PUSH_CODE.

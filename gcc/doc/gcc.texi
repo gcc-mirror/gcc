@@ -3372,6 +3372,7 @@ The option @option{-dj} causes a debugging dump of the RTL code after
 this pass is run for the first time.  This dump file's name is made by
 appending @samp{.jump} to the input file name.
 
+
 @cindex register use analysis
 @item
 Register scan.  This pass finds the first and last use of each
@@ -3386,20 +3387,6 @@ identical or inverse test.  Such jumps can be @samp{threaded} through
 the second conditional test.  The source code for this pass is in
 @file{jump.c}.  This optimization is only performed if
 @option{-fthread-jumps} is enabled.
-
-@cindex common subexpression elimination
-@cindex constant propagation
-@item
-Common subexpression elimination.  This pass also does constant
-propagation.  Its source files are @file{cse.c}, and @file{cselib.c}.
-If constant  propagation causes conditional jumps to become
-unconditional or to become no-ops, jump optimization is run again when
-CSE is finished.
-
-@opindex ds
-The option @option{-ds} causes a debugging dump of the RTL code after
-this pass.  This dump file's name is made by appending @samp{.cse} to
-the input file name.
 
 @cindex SSA optimizations
 @cindex Single Static Assignment optimizations
@@ -3435,6 +3422,21 @@ The option @option{-dX} causes a debugging dump of the RTL code after
 this pass.  This dump file's name is made by appending @samp{.ssadce} to
 the input file name.
 @end itemize
+
+@cindex common subexpression elimination
+@cindex constant propagation
+@item
+Common subexpression elimination.  This pass also does constant
+propagation.  Its source files are @file{cse.c}, and @file{cselib.c}.
+If constant  propagation causes conditional jumps to become
+unconditional or to become no-ops, jump optimization is run again when
+CSE is finished.
+
+@opindex ds
+The option @option{-ds} causes a debugging dump of the RTL code after
+this pass.  This dump file's name is made by appending @samp{.cse} to
+the input file name.
+
 @cindex global common subexpression elimination
 @cindex constant propagation
 @cindex copy propagation
