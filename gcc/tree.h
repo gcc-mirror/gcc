@@ -1077,6 +1077,10 @@ struct tree_type
 /* Used to indicate that this DECL has weak linkage.  */
 #define DECL_WEAK(NODE) ((NODE)->decl.weak_flag)
 
+/* Used in TREE_PUBLIC decls to indicate that copies of this DECL in
+   multiple translation units should be merged.  */
+#define DECL_ONE_ONLY(NODE) ((NODE)->decl.transparent_union)
+
 /* Additional flags for language-specific uses.  */
 #define DECL_LANG_FLAG_0(NODE) ((NODE)->decl.lang_flag_0)
 #define DECL_LANG_FLAG_1(NODE) ((NODE)->decl.lang_flag_1)
