@@ -85,8 +85,8 @@ F2CEXT = abort derf derfc ef1asc ef1cmc erf erfc exit getarg getenv iargc \
 # These dependencies can be satisfied in parallel.  The [fiu]77
 # targets update stamp files which the $(LIBG2C) target checks in the
 # sub-make.  (Probably only one stamp file is really needed.)
-all: i77 f77 u77 s-libe77
-	$(MULTIDO) $(FLAGS_TO_PASS) $(LIBG2C) multi-do DO="all $(LIBG2C)"
+all: i77 f77 u77 s-libe77 $(LIBG2C)
+	$(MULTIDO) $(FLAGS_TO_PASS) multi-do DO="all"
 
 i77 f77 u77: g2c.h
 
@@ -187,7 +187,7 @@ clean: mostlyclean
 distclean: clean
 	rm -f Makefile config.cache config.status g2c.h s-libe77
 	$(MAKE) DO=$@ DODIRS="$(SUBDIRS)" $(FLAGS_TO_PASS) subdir_do; \
-	@$(MULTICLEAN) multi-clean DO=distclean
+	$(MULTICLEAN) multi-clean DO=distclean
 
 maintainer-clean:
 
