@@ -75,7 +75,7 @@
 #define CPP_SPEC "\
 %{!m30:%{!m31:%{!m32:%{!m33:%{!mcpu=30:%{!mcpu=31:%{!mcpu=32:%{!mcpu=33:\
 %{!mcpu=40:%{!mcpu=44:%{\
-  !m40:%{!m44:-D_TMS320C4x -D_C4x -D_TMS320C40 -D_C40}}}}}}}}}}}} \
+!m40:%{!m44:-D_TMS320C4x -D_C4x -D_TMS320C40 -D_C40}}}}}}}}}}}} \
 %{mcpu=30:-D_TMS320C3x -D_C3x -D_TMS320C30 -D_C30 } \
 %{m30:-D_TMS320C3x -D_C3x -D_TMS320C30 -D_C30 } \
 %{mcpu=31:-D_TMS320C3x -D_C3x -D_TMS320C31 -D_C31 } \
