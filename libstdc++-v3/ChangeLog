@@ -1,18 +1,27 @@
+2000-11-14  Benjamin Kosnik  <bkoz@purist.soma.redhat.com>
+
+	* acinclude.m4 (GLIBCPP_CHECK_WCHAR_T_SUPPOR): Set LIBS back to
+	initial value.
+	* aclocal.m4: Regenerate.
+	
+	* include/bits/c++config (__GLIBCPP__): Set release version for 2.91.
+
 2000-11-14  Phil Edwards  <pme@sources.redhat.com>
 
-	* mkcheck.in:  On a platform where we don't know how to extract
-	  section sizes, just set them to zero.  Use old method of reading
-	  file contents.
+	* mkcheck.in: On a platform where we don't know how to extract
+	section sizes, just set them to zero.  Use old method of reading
+	file contents.
 
 2000-11-13  Loren J. Rittle  <ljrittle@acm.org>
+
         * config/c_io_stdio.h: Don't define __c_wfile_type
         when _GLIBCPP_USE_WCHAR_T is not defined.
 
 2000-11-13  Phil Edwards  <pme@sources.redhat.com>
 
 	* acinclude.m4 (GLIBCPP_CHECK_TARGET):  New macro, replacing
-	  GLIBCPP_CHECK_CPU and GLIBCPP_CHECK_OS, sourcing configure.target.
-	  (GLIBCPP_CONFIGURE):  Call new macro here.
+	GLIBCPP_CHECK_CPU and GLIBCPP_CHECK_OS, sourcing configure.target.
+	(GLIBCPP_CONFIGURE):  Call new macro here.
 	* configure.host:  Cleanup.
 	* configure.in:  Remove those two macros.
 	* configure.target:  New file.
