@@ -5626,19 +5626,31 @@ vec_ste (vector bool int a1, int a2, unsigned int *a3)
 /* vec_stvewx */
 
 inline void
-vec_stvewx (vector float a1, int a2, void *a3)
+vec_stvewx (vector float a1, int a2, float *a3)
 {
   __builtin_altivec_stvewx ((vector signed int) a1, a2, (void *) a3);
 }
 
 inline void
-vec_stvewx (vector signed int a1, int a2, void *a3)
+vec_stvewx (vector signed int a1, int a2, int *a3)
 {
   __builtin_altivec_stvewx ((vector signed int) a1, a2, (void *) a3);
 }
 
 inline void
-vec_stvewx (vector unsigned int a1, int a2, void *a3)
+vec_stvewx (vector unsigned int a1, int a2, unsigned int *a3)
+{
+  __builtin_altivec_stvewx ((vector signed int) a1, a2, (void *) a3);
+}
+
+inline void
+vec_stvewx (vector bool int a1, int a2, int *a3)
+{
+  __builtin_altivec_stvewx ((vector signed int) a1, a2, (void *) a3);
+}
+
+inline void
+vec_stvewx (vector bool int a1, int a2, unsigned int *a3)
 {
   __builtin_altivec_stvewx ((vector signed int) a1, a2, (void *) a3);
 }
@@ -5646,13 +5658,37 @@ vec_stvewx (vector unsigned int a1, int a2, void *a3)
 /* vec_stvehx */
 
 inline void
-vec_stvehx (vector signed short a1, int a2, void *a3)
+vec_stvehx (vector signed short a1, int a2, short *a3)
 {
   __builtin_altivec_stvehx ((vector signed short) a1, a2, (void *) a3);
 }
 
 inline void
-vec_stvehx (vector unsigned short a1, int a2, void *a3)
+vec_stvehx (vector unsigned short a1, int a2, unsigned short *a3)
+{
+  __builtin_altivec_stvehx ((vector signed short) a1, a2, (void *) a3);
+}
+
+inline void
+vec_stvehx (vector bool short a1, int a2, short *a3)
+{
+  __builtin_altivec_stvehx ((vector signed short) a1, a2, (void *) a3);
+}
+
+inline void
+vec_stvehx (vector bool short a1, int a2, unsigned short *a3)
+{
+  __builtin_altivec_stvehx ((vector signed short) a1, a2, (void *) a3);
+}
+
+inline void
+vec_stvehx (vector pixel a1, int a2, short *a3)
+{
+  __builtin_altivec_stvehx ((vector signed short) a1, a2, (void *) a3);
+}
+
+inline void
+vec_stvehx (vector pixel a1, int a2, unsigned short *a3)
 {
   __builtin_altivec_stvehx ((vector signed short) a1, a2, (void *) a3);
 }
@@ -5660,13 +5696,25 @@ vec_stvehx (vector unsigned short a1, int a2, void *a3)
 /* vec_stvebx */
 
 inline void
-vec_stvebx (vector signed char a1, int a2, void *a3)
+vec_stvebx (vector signed char a1, int a2, signed char *a3)
 {
   __builtin_altivec_stvebx ((vector signed char) a1, a2, (void *) a3);
 }
 
 inline void
-vec_stvebx (vector unsigned char a1, int a2, void *a3)
+vec_stvebx (vector unsigned char a1, int a2, unsigned char *a3)
+{
+  __builtin_altivec_stvebx ((vector signed char) a1, a2, (void *) a3);
+}
+
+inline void
+vec_stvebx (vector bool char a1, int a2, signed char *a3)
+{
+  __builtin_altivec_stvebx ((vector signed char) a1, a2, (void *) a3);
+}
+
+inline void
+vec_stvebx (vector bool char a1, int a2, unsigned char *a3)
 {
   __builtin_altivec_stvebx ((vector signed char) a1, a2, (void *) a3);
 }
@@ -10476,27 +10524,43 @@ __ch (__bin_args_eq (vector float, (a), float, *(c)), \
      __builtin_altivec_compiletime_error ("vec_ste"))))))))))))))))
 
 #define vec_stvewx(a, b, c) \
-__ch (__un_args_eq (vector unsigned int, (a)), \
+__ch (__bin_args_eq (vector unsigned int, (a), unsigned int, *(c)), \
      __builtin_altivec_stvewx ((vector signed int) (a), (b), (c)), \
-__ch (__un_args_eq (vector signed int, (a)), \
+__ch (__bin_args_eq (vector signed int, (a), int, *(c)), \
      __builtin_altivec_stvewx ((vector signed int) (a), (b), (c)), \
-__ch (__un_args_eq (vector float, (a)), \
+__ch (__bin_args_eq (vector bool int, (a), unsigned int, *(c)), \
      __builtin_altivec_stvewx ((vector signed int) (a), (b), (c)), \
-__builtin_altivec_compiletime_error ("vec_stvewx"))))
+__ch (__bin_args_eq (vector bool int, (a), int, *(c)), \
+     __builtin_altivec_stvewx ((vector signed int) (a), (b), (c)), \
+__ch (__bin_args_eq (vector float, (a), float, *(c)), \
+     __builtin_altivec_stvewx ((vector signed int) (a), (b), (c)), \
+__builtin_altivec_compiletime_error ("vec_stvewx"))))))
 
 #define vec_stvehx(a, b, c) \
-__ch (__un_args_eq (vector unsigned short, (a)), \
+__ch (__bin_args_eq (vector unsigned short, (a), unsigned short, *(c)), \
      __builtin_altivec_stvehx ((vector signed short) (a), (b), (c)), \
-__ch (__un_args_eq (vector signed short, (a)), \
+__ch (__bin_args_eq (vector signed short, (a), short, *(c)), \
      __builtin_altivec_stvehx ((vector signed short) (a), (b), (c)), \
-__builtin_altivec_compiletime_error ("vec_stvehx")))
+__ch (__bin_args_eq (vector bool short, (a), unsigned short, *(c)), \
+     __builtin_altivec_stvehx ((vector signed short) (a), (b), (c)), \
+__ch (__bin_args_eq (vector bool short, (a), short, *(c)), \
+     __builtin_altivec_stvehx ((vector signed short) (a), (b), (c)), \
+__ch (__bin_args_eq (vector pixel, (a), unsigned short, *(c)), \
+     __builtin_altivec_stvehx ((vector signed short) (a), (b), (c)), \
+__ch (__bin_args_eq (vector pixel, (a), short, *(c)), \
+     __builtin_altivec_stvehx ((vector signed short) (a), (b), (c)), \
+__builtin_altivec_compiletime_error ("vec_stvehx")))))))
 
 #define vec_stvebx(a, b, c) \
-__ch (__un_args_eq (vector unsigned char, (a)), \
+__ch (__bin_args_eq (vector unsigned char, (a), unsigned char, *(c)), \
       __builtin_altivec_stvebx ((vector signed char) (a), (b), (c)), \
-__ch (__un_args_eq (vector signed char, (a)), \
+__ch (__bin_args_eq (vector signed char, (a), signed char, *(c)), \
       __builtin_altivec_stvebx ((vector signed char) (a), (b), (c)), \
-__builtin_altivec_compiletime_error ("vec_stvebx")))
+__ch (__bin_args_eq (vector bool char, (a), unsigned char, *(c)), \
+      __builtin_altivec_stvebx ((vector signed char) (a), (b), (c)), \
+__ch (__bin_args_eq (vector bool char, (a), signed char, *(c)), \
+      __builtin_altivec_stvebx ((vector signed char) (a), (b), (c)), \
+__builtin_altivec_compiletime_error ("vec_stvebx")))))
 
 #define vec_sub(a1, a2) \
 __ch (__bin_args_eq (vector bool char, (a1), vector signed char, (a2)), \
