@@ -20889,7 +20889,7 @@
 	* gcc.dg/altivec-4.c: Make the 'char' entries signed also for
 	consistency.
 
-002-01-07  Aldy Hernandez  <aldyh@redhat.com>
+2002-01-07  Aldy Hernandez  <aldyh@redhat.com>
 
 	* gcc.dg/altivec-4.c: Test altivec predicates.
 
@@ -22817,11 +22817,11 @@ Wed May 23 2001  Jeffrey D. Oldham  <oldham@codesourcery.com>
 
 	* g++.old-deja/g++.other/warn6.C: New test.
 
-22001-04-11  Peter Schmid  <schmid@snake.iap.physik.tu-darmstadt.de>
+2001-04-11  Peter Schmid  <schmid@snake.iap.physik.tu-darmstadt.de>
 
 	* g++.old-deja/g++.robertl/eb42.C: Same.
 
-001-04-10  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+2001-04-10  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* gcc.dg/wtr-conversion-1.c: New testcase.
 
