@@ -1402,6 +1402,7 @@ expand_asm_operands (string, outputs, inputs, clobbers, vol, filename, line)
   for (i = 0, tail = outputs; tail; tail = TREE_CHAIN (tail), i++)
     {
       tree val = TREE_VALUE (tail);
+      tree type = TREE_TYPE (val);
       tree val1;
       int j;
       int found_equal;
@@ -1429,31 +1430,29 @@ expand_asm_operands (string, outputs, inputs, clobbers, vol, filename, line)
 	  return;
 	}
 
-      /* If an output operand is not a variable or indirect ref,
-	 or a part of one,
-	 create a SAVE_EXPR which is a pseudo-reg
-	 to act as an intermediate temporary.
-	 Make the asm insn write into that, then copy it to
-	 the real output operand.  */
+      /* If an output operand is not a decl or indirect ref,
+	 make a temporary to act as an intermediate.   Make the asm insn
+	 write into that, then our caller will copy it to the real output
+	 operand.  Likewise for promoted variables.  */
 
-      while (TREE_CODE (val) == COMPONENT_REF
-	     || TREE_CODE (val) == ARRAY_REF)
-	val = TREE_OPERAND (val, 0);
-
-      if (TREE_CODE (val) != VAR_DECL
-	  && TREE_CODE (val) != PARM_DECL
-	  && TREE_CODE (val) != INDIRECT_REF)
+      if (TREE_CODE (val) == INDIRECT_REF
+	  || (TREE_CODE_CLASS (TREE_CODE (val)) == 'd'
+	      && ! (GET_CODE (DECL_RTL (val)) == REG
+		    && GET_MODE (DECL_RTL (val)) != TYPE_MODE (type))))
+	output_rtx[i] = expand_expr (TREE_VALUE (tail), NULL_RTX, VOIDmode, 0);
+      else
 	{
-	  TREE_VALUE (tail) = save_expr (TREE_VALUE (tail));
-	  /* If it's a constant, print error now so don't crash later.  */
-	  if (TREE_CODE (TREE_VALUE (tail)) != SAVE_EXPR)
+	  if (TYPE_MODE (type) == BLKmode)
 	    {
-	      error ("invalid output in `asm'");
-	      return;
+	      output_rtx[i] = assign_stack_temp (BLKmode,
+						 int_size_in_bytes (type), 0);
+	      MEM_IN_STRUCT_P (output_rtx[i]) = AGGREGATE_TYPE_P (type);
 	    }
-	}
+	  else
+	    output_rtx[i] = gen_reg_rtx (TYPE_MODE (type));
 
-      output_rtx[i] = expand_expr (TREE_VALUE (tail), NULL_RTX, VOIDmode, 0);
+	  TREE_VALUE (tail) = make_tree (type, output_rtx[i]);
+	}
     }
 
   if (ninputs + noutputs > MAX_RECOG_OPERANDS)
