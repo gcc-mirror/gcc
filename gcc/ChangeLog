@@ -13,13 +13,13 @@
 	* c-typeck.c (build_array_ref): Use TYPE_DOMAIN, not TYPE_VALUES.
 	* dwarf2out.c (gen_enumeration_type_die): Use TYPE_VALUES,
 	not TYPE_FIELDS.
+	* stor-layout.c (set_sizetype): Use TYPE_ORIG_SIZE_TYPE.
 
 2004-03-18  Mostafa Hagog  <mustafa@il.ibm.com>
 
 	* gcse.c (eliminate_partially_redundant_loads): Reject change if
 	dest is set between beginning and current insn.
 
->>>>>>> 2.3204
 2004-03-18  Mark Mitchell  <mark@codesourcery.com>
 
 	* c-decl.c (grokdeclarator): Do not complain about redeclaring
