@@ -138,6 +138,8 @@ extern int    byte_immediate_operand PARAMS ((register rtx op,
 extern int    test_hard_reg_class    PARAMS ((enum reg_class class, rtx x));
 extern int    jump_over_one_insn_p   PARAMS ((rtx insn, rtx dest));
 
+extern int    avr_hard_regno_mode_ok PARAMS ((int regno,
+					     enum machine_mode mode));
 #endif /* RTX_CODE */
 
 #ifdef HAVE_MACHINE_MODES

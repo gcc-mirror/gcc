@@ -1,3 +1,22 @@
+2000-06-24  Marek Michalkiewicz  <marekm@linux.org.pl>
+
+	* config/avr/avr-protos.h (avr_hard_regno_mode_ok): New prototype.
+	* config/avr/avr.c (out_adj_frame_ptr, out_set_stack_ptr):
+	New functions, common code moved from function_{prologue,epilogue}
+	and extended to support the -mtiny-stack option.
+	(function_prologue, function_epilogue): Use them.
+	Use lo8/hi8 consistently for asm output readability.
+	(avr_hard_regno_mode_ok): New function.
+	* config/avr/avr.h (TARGET_SWITCHES): Fix typo.  Add -mtiny-stack.
+	(UNITS_PER_WORD): Define as 4 (not 1) when compiling libgcc2.c.
+	(HARD_REGNO_MODE_OK): Call the avr_hard_regno_mode_ok function.
+	* config/avr/avr.md (*mov_sp_r): Add support for -mtiny-stack.
+	Write SPH before SPL.
+	(*movqi): No need to disable interrupts for just one "out"
+	in alternative 5.  Change length attribute from 4 to 1.
+	* config/avr/libgcc.S (__prologue_saves__, __epilogue_restores__):
+	Write SPH before SPL.
+
 2000-06-24  Bernd Schmidt  <bernds@cygnus.co.uk>
 
 	* rtl.texi (Vector Operations): New node.

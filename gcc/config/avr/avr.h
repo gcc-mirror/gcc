@@ -52,6 +52,7 @@ extern int target_flags;
 #define TARGET_NO_INTERRUPTS	(target_flags & 0x20000)
 #define TARGET_INSN_SIZE_DUMP	(target_flags &  0x2000)
 #define TARGET_CALL_PROLOGUES	(target_flags & 0x40000)
+#define TARGET_TINY_STACK	(target_flags & 0x80000)
 
 /* Dump each assembler insn's rtl into the output file.
    This is for debugging the compiler itself.  */
@@ -87,7 +88,8 @@ extern int target_flags;
   {"int8",0x10000,"Assume int to be 8 bit integer"},			\
   {"no-interrupts",0x20000,"Don't output interrupt compatible code"},	\
   {"call-prologues",0x40000,						\
-   "Use subroutines for functions prologeu/epilogue"},			\
+   "Use subroutines for functions prologue/epilogue"},			\
+  {"tiny-stack", 0x80000, "Change only low 8 bits of stack pointer"},	\
   {"rtl",0x10, NULL},							\
   {"size",0x2000,"Output instruction size's to the asm file"},		\
   {"deb",0xfe0, NULL},							\
@@ -194,8 +196,13 @@ extern struct mcu_type_s *avr_mcu_type;
    Note that this is not necessarily the width of data type `int';  */
 #define BITS_PER_WORD 8
 
+#ifdef IN_LIBGCC2
+/* This is to get correct SI and DI modes in libgcc2.c (32 and 64 bits).  */
+#define UNITS_PER_WORD 4
+#else
 /* Width of a word, in units (bytes). */
 #define UNITS_PER_WORD 1
+#endif
 
 /* Width in bits of a pointer.
    See also the macro `Pmode' defined below.  */
@@ -452,9 +459,7 @@ extern struct mcu_type_s *avr_mcu_type;
    ((GET_MODE_SIZE (MODE) + UNITS_PER_WORD - 1)  \
    / UNITS_PER_WORD))  */
 
-#define HARD_REGNO_MODE_OK(REGNO, MODE) (((REGNO) >= 24 && (MODE) != QImode) \
-					 ? ! ((REGNO) & 1)		     \
-					 : 1)
+#define HARD_REGNO_MODE_OK(REGNO, MODE) avr_hard_regno_mode_ok(REGNO, MODE)
 /* A C expression that is nonzero if it is permissible to store a
    value of mode MODE in hard register number REGNO (or in several
    registers starting with that one).  For a machine where all
