@@ -3086,8 +3086,9 @@ calculate_global_regs_live (blocks_in, blocks_out, flags)
 	 global_live_at_start, since they are live only along a
 	 particular edge.  Set those regs that are live because of a
 	 phi node alternative corresponding to this particular block.  */
-      for_each_successor_phi (bb, &set_phi_alternative_reg, 
-			      new_live_at_end);
+      if (in_ssa_form)
+	for_each_successor_phi (bb, &set_phi_alternative_reg, 
+				new_live_at_end);
 
       if (bb == ENTRY_BLOCK_PTR)
 	{
