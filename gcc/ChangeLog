@@ -1,3 +1,8 @@
+Sat May  8 01:57:58 1999  Donn Terry (donn@interix.com)
+
+	* calls.c (rtx_for_function_call): Extend function pointer being
+	passed to chkr_check_exec_libfunc, if needed.
+
 Sat May  8 01:51:50 1999  David Edelsohn  <edelsohn@gnu.org>
 
 	* ginclude/stdarg.h (__va_rounded_size): Use long type for

@@ -1407,15 +1407,25 @@ rtx_for_function_call (fndecl, exp)
   else
     /* Generate an rtx (probably a pseudo-register) for the address.  */
     {
+      rtx funaddr;
       push_temp_slots ();
-      funexp = expand_expr (TREE_OPERAND (exp, 0), NULL_RTX, VOIDmode, 0);
+      funaddr = funexp = 
+	  expand_expr (TREE_OPERAND (exp, 0), NULL_RTX, VOIDmode, 0);
       pop_temp_slots ();	/* FUNEXP can't be BLKmode */
 
       /* Check the function is executable.  */
       if (current_function_check_memory_usage)
-	emit_library_call (chkr_check_exec_libfunc, 1,
-			   VOIDmode, 1,
-			   funexp, Pmode);
+	{
+#ifdef POINTERS_EXTEND_UNSIGNED
+	  /* It might be OK to convert funexp in place, but there's
+	     a lot going on between here and when it happens naturally
+	     that this seems safer. */
+          funaddr = convert_memory_address (Pmode, funexp);
+#endif
+	  emit_library_call (chkr_check_exec_libfunc, 1,
+			     VOIDmode, 1,
+			     funaddr, Pmode);
+	}
       emit_queue ();
     }
   return funexp;
