@@ -3878,6 +3878,11 @@ simplify_binary_operation (code, mode, op0, op1)
 	     we are still generating RTL.  This test is a kludge.  */
 	  if (GET_CODE (op1) == CONST_INT
 	      && (val = exact_log2 (INTVAL (op1))) >= 0
+	      /* If the mode is larger than the host word size, and the
+		 uppermost bit is set, then this isn't a power of two due
+		 to implicit sign extension.  */
+	      && (width <= HOST_BITS_PER_WIDE_INT
+		  || val != HOST_BITS_PER_WIDE_INT - 1)
 	      && ! rtx_equal_function_value_matters)
 	    return gen_rtx (ASHIFT, mode, op0, GEN_INT (val));
 
