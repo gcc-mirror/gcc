@@ -1555,6 +1555,12 @@ __transfer_from_trampoline ()					\
   case SYMBOL_REF:						\
     return 3;							\
   case CONST_DOUBLE:						\
+    /* Make 0.0 cheaper than other floating constants to	\
+       encourage creating tstsf and tstdf insns.  */		\
+    if ((OUTER_CODE) == COMPARE					\
+        && ((RTX) == CONST0_RTX (SFmode)			\
+	    || (RTX) == CONST0_RTX (DFmode)))			\
+      return 4;							\
     return 5;
 
 /* Compute the cost of various arithmetic operations.
