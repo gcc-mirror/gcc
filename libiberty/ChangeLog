@@ -1,3 +1,9 @@
+Fri Feb  6 01:35:17 1998  Manfred Hollstein  <manfred@s-direktnet.de>
+
+	* Makefile.in (FLAGS_TO_PASS): Don't pass PICFLAG.
+	(.c.o): Check value of enable_shared, not PICFLAG.
+	(stamp-picdir): Dito.
+
 Sun Feb  1 02:52:32 1998  Mike Stump  <mrs@wrs.com>
 
 	* config.table (vxworks configs): Default to VxWorks 5.x, as that is
