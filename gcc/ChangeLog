@@ -1,3 +1,8 @@
+2001-09-15  Neil Booth  <neil@daikokuya.demon.co.uk>
+
+	* cppmain.c (setup_callbacks): Set line callback only
+	if outputting preprocessed source.
+
 2001-09-15  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* collect2.c (main): Const-ification.
