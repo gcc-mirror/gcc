@@ -141,8 +141,10 @@ unknown arithmetic type
 #define VAX_HALFWORD_ORDER 1
 #endif
 #else
-#if defined(IBM) && !REAL_WORDS_BIG_ENDIAN
+#if defined(IBM)
+#if !REAL_WORDS_BIG_ENDIAN
   #error "Little-endian representations are not supported for IBM."
+#endif
 #endif
 #endif
 

@@ -153,6 +153,8 @@ extern void   common_section		PARAMS ((void));
 
 #endif /* RTX_CODE */
 
+extern int    arm_float_words_big_endian PARAMS ((void));
+
 /* Thumb functions.  */
 extern void   arm_init_expanders	PARAMS ((void));
 extern int    thumb_far_jump_used_p	PARAMS ((int));
