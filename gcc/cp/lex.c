@@ -83,7 +83,7 @@ static void reinit_parse_for_expr PROTO((struct obstack *));
 static int *init_cpp_parse PROTO((void));
 static int handle_cp_pragma PROTO((char *));
 #ifdef HANDLE_SYSV_PRAGMA
-static int handle_sysv_pragma PROTO((FILE *, int));
+static int handle_sysv_pragma PROTO((int));
 #endif
 #ifdef GATHER_STATISTICS
 #ifdef REDUCE_LENGTH
@@ -112,7 +112,10 @@ file_name_nondirectory (x)
 struct obstack inline_text_obstack;
 char *inline_text_firstobj;
 
-#if !USE_CPPLIB
+#if USE_CPPLIB
+#include "cpplib.h"
+extern cpp_reader parse_in;
+#else
 FILE *finput;
 #endif
 int end_of_file;
@@ -2198,9 +2201,6 @@ get_last_nonwhite_on_line ()
 
 int linemode;
 
-#ifdef HANDLE_SYSV_PRAGMA
-static int handle_sysv_pragma PROTO((FILE *, int));
-#endif
 static int handle_cp_pragma PROTO((char *));
 
 static int
@@ -2261,12 +2261,17 @@ check_newline ()
 		goto skipline;
 
 #ifdef HANDLE_SYSV_PRAGMA
-	      if (handle_sysv_pragma (finput, token))
+	      if (handle_sysv_pragma (token))
 		goto skipline;
 #else
 #ifdef HANDLE_PRAGMA
-	      if (HANDLE_PRAGMA (finput, yylval.ttype))
-		goto skipline;
+#if USE_CPPLIB
+              /* TODO: ??? */
+              goto skipline;
+#else
+  	      if (HANDLE_PRAGMA (finput, yylval.ttype))
+  		goto skipline;
+#endif /* !USE_CPPLIB */
 #endif
 #endif
 	    }
@@ -2281,7 +2286,7 @@ check_newline ()
 	      && getch () == 'e'
 	      && ((c = getch ()) == ' ' || c == '\t'))
 	    {
-	      debug_define (lineno, get_directive_line (finput));
+	      debug_define (lineno, GET_DIRECTIVE_LINE ());
 	      goto skipline;
 	    }
 	}
@@ -2293,7 +2298,7 @@ check_newline ()
 	      && getch () == 'f'
 	      && ((c = getch ()) == ' ' || c == '\t'))
 	    {
-	      debug_undef (lineno, get_directive_line (finput));
+	      debug_undef (lineno, GET_DIRECTIVE_LINE ());
 	      goto skipline;
 	    }
 	}
@@ -4749,8 +4754,7 @@ handle_cp_pragma (pname)
    the token types.  */
 
 static int
-handle_sysv_pragma (finput, token)
-     FILE *finput;
+handle_sysv_pragma (token)
      register int token;
 {
   for (;;)
