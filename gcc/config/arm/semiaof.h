@@ -32,6 +32,9 @@ Boston, MA 02111-1307, USA.  */
 %{msoft-float:-D__SOFTFP__} \
 %{mhard-float:-U__SOFTFP__} \
 %{!mhard-float: %{!msoft-float:-U__SOFTFP__}} \
+%{mbig-endian:-D__ARMEB__ %{mwords-little-endian:-D__ARMWEL__}} \
+%{mbe:-D__ARMEB__ %{mwords-little-endian:-D__ARMWEL__}} \
+%{!mbe: %{!mbig-endian:-D__ARMEL__}} \
 "
 
 #define ASM_SPEC "%{g -g} -arch 4 \
