@@ -9974,6 +9974,9 @@ mark_decl_instantiated (result, extern_p)
        set correctly by tsubst.  */
     TREE_PUBLIC (result) = 1;
 
+  /* This might have been set by an earlier implicit instantiation.  */
+  DECL_COMDAT (result) = 0;
+
   if (! extern_p)
     {
       DECL_INTERFACE_KNOWN (result) = 1;
