@@ -366,10 +366,6 @@ extern int warn_missing_braces;
 
 extern int warn_sign_compare;
 
-/* Warn about possible violations of sequence point rules.  */
-
-extern int warn_sequence_point;
-
 /* Warn about testing equality of floating point numbers. */
 
 extern int warn_float_equal;

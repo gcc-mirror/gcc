@@ -140,6 +140,10 @@ cpp_reader  parse_in;
 
 tree c_global_trees[CTI_MAX];
 
+/* Nonzero means warn about possible violations of sequence point rules.  */
+
+int warn_sequence_point;
+
 /* The elements of `ridpointers' are identifier nodes for the reserved
    type names and storage classes.  It is indexed by a RID_... value.  */
 tree *ridpointers;
@@ -3346,6 +3350,263 @@ convert_and_check (type, expr)
   return t;
 }
 
+/* Describe a reversed version of a normal tree, so that we can get to the
+   parent of each node.  */
+struct reverse_tree
+{
+  /* All reverse_tree structures for a given tree are chained through this
+     field.  */
+  struct reverse_tree *next;
+  /* The parent of this node.  */
+  struct reverse_tree *parent;
+  /* The actual tree node.  */
+  tree x;
+  /* The operand number this node corresponds to in the parent.  */
+  int operandno;
+  /* Describe whether this expression is written to or read.  */
+  char read, write;
+};
+
+/* A list of all reverse_tree structures for a given expression, built by
+   build_reverse_tree.  */
+static struct reverse_tree *reverse_list;
+/* The maximum depth of a tree, computed by build_reverse_tree.  */
+static int reverse_max_depth;
+
+static void build_reverse_tree PARAMS ((tree, struct reverse_tree *, int, int,
+					int, int));
+static struct reverse_tree *common_ancestor PARAMS ((struct reverse_tree *,
+						     struct reverse_tree *,
+						     struct reverse_tree **,
+						     struct reverse_tree **));
+static int modify_ok PARAMS ((struct reverse_tree *, struct reverse_tree *));
+static void verify_sequence_points PARAMS ((tree));
+
+/* Recursively process an expression, X, building a reverse tree while
+   descending and recording OPERANDNO, READ, and WRITE in the created
+   structures.  DEPTH is used to compute reverse_max_depth.
+   FIXME: if walk_tree gets moved out of the C++ front end, this should
+   probably use walk_tree.  */
+
+static void
+build_reverse_tree (x, parent, operandno, read, write, depth)
+     tree x;
+     struct reverse_tree *parent;
+     int operandno, read, write, depth;
+{
+  struct reverse_tree *node;
+
+  if (x == 0 || x == error_mark_node)
+    return;
+
+  node = (struct reverse_tree *) xmalloc (sizeof (struct reverse_tree));
+
+  node->parent = parent;
+  node->x = x;
+  node->read = read;
+  node->write = write;
+  node->operandno = operandno;
+  node->next = reverse_list;
+  reverse_list = node;
+  if (depth > reverse_max_depth)
+    reverse_max_depth = depth;
+
+  switch (TREE_CODE (x))
+    {
+    case PREDECREMENT_EXPR:
+    case PREINCREMENT_EXPR:
+    case POSTDECREMENT_EXPR:
+    case POSTINCREMENT_EXPR:
+      build_reverse_tree (TREE_OPERAND (x, 0), node, 0, 1, 1, depth + 1);
+      break;
+
+    case CALL_EXPR:
+      build_reverse_tree (TREE_OPERAND (x, 0), node, 0, 1, 0, depth + 1);
+      x = TREE_OPERAND (x, 1);
+      while (x)
+	{
+	  build_reverse_tree (TREE_VALUE (x), node, 1, 1, 0, depth + 1);
+	  x = TREE_CHAIN (x);
+	}
+      break;
+
+    case TREE_LIST:
+      /* Scan all the list, e.g. indices of multi dimensional array.  */
+      while (x)
+	{
+	  build_reverse_tree (TREE_VALUE (x), node, 0, 1, 0, depth + 1);
+	  x = TREE_CHAIN (x);
+	}
+      break;
+
+    case MODIFY_EXPR:
+      build_reverse_tree (TREE_OPERAND (x, 0), node, 0, 0, 1, depth + 1);
+      build_reverse_tree (TREE_OPERAND (x, 1), node, 1, 1, 0, depth + 1);
+      break;
+
+    default:
+      switch (TREE_CODE_CLASS (TREE_CODE (x)))
+	{
+	case 'r':
+	case '<':
+	case '2':
+	case 'b':
+	case '1':
+	case 'e':
+	case 's':
+	case 'x':
+	  {
+	    int lp;
+	    int max = first_rtl_op (TREE_CODE (x));
+	    for (lp = 0; lp < max; lp++)
+	      build_reverse_tree (TREE_OPERAND (x, lp), node, lp, 1, 0,
+				  depth + 1);
+	    break;
+	  }
+	default:
+	  break;
+	}
+      break;
+    }
+}
+
+/* Given nodes P1 and P2 as well as enough scratch space pointed to by TMP1
+   and TMP2, find the common ancestor of P1 and P2.  */
+
+static struct reverse_tree *
+common_ancestor (p1, p2, tmp1, tmp2)
+     struct reverse_tree *p1, *p2;
+     struct reverse_tree **tmp1, **tmp2;
+{
+  struct reverse_tree *t1 = p1;
+  struct reverse_tree *t2 = p2;
+  int i, j;
+
+  /* First, check if we're actually looking at the same expression twice,
+     which can happen if it's wrapped in a SAVE_EXPR - in this case there's
+     no chance of conflict.  */
+  while (t1 && t2 && t1->x == t2->x)
+    {
+      if (TREE_CODE (t1->x) == SAVE_EXPR)
+	return 0;
+      t1 = t1->parent;
+      t2 = t2->parent;
+    }
+
+  for (i = 0; p1; i++, p1 = p1->parent)
+    tmp1[i] = p1;
+  for (j = 0; p2; j++, p2 = p2->parent)
+    tmp2[j] = p2;
+  while (tmp1[i - 1] == tmp2[j - 1])
+    i--, j--;
+
+  return tmp1[i];
+}
+
+/* Subroutine of verify_sequence_points to check whether a node T corresponding
+   to a MODIFY_EXPR invokes undefined behaviour.  OTHER occurs somewhere in the
+   RHS, and an identical expression is the LHS of T.
+   For MODIFY_EXPRs, some special cases apply when testing for undefined
+   behaviour if one of the expressions we found is the LHS of the MODIFY_EXPR.
+   If the other expression is just a use, then there's no undefined behaviour.
+   Likewise, if the other expression is wrapped inside another expression that
+   will force a sequence point, then there's no undefined behaviour either.  */
+
+static int
+modify_ok (t, other)
+     struct reverse_tree *t, *other;
+{
+  struct reverse_tree *p;
+
+  if (! other->write)
+    return 1;
+
+  /* See if there's an intervening sequence point.  */
+  for (p = other; p->parent != t; p = p->parent)
+    {
+      if ((TREE_CODE (p->parent->x) == COMPOUND_EXPR
+	   || TREE_CODE (p->parent->x) == TRUTH_ANDIF_EXPR
+	   || TREE_CODE (p->parent->x) == TRUTH_ORIF_EXPR
+	   || TREE_CODE (p->parent->x) == COND_EXPR)
+	  && p->operandno == 0)
+	return 1;
+      if (TREE_CODE (p->parent->x) == SAVE_EXPR)
+	return 1;
+      if (TREE_CODE (p->parent->x) == CALL_EXPR
+	  && p->operandno != 0)
+	return 1;
+    }
+  return 0;
+}
+
+/* Try to warn for undefined behaviour in EXPR due to missing sequence
+   points.  */
+
+static void
+verify_sequence_points (expr)
+     tree expr;
+{
+  struct reverse_tree **tmp1, **tmp2;
+  struct reverse_tree *p;
+
+  reverse_list = 0;
+  reverse_max_depth = 0;
+  build_reverse_tree (expr, NULL, 0, 1, 0, 1);
+
+  tmp1 = (struct reverse_tree **) xmalloc (sizeof (struct reverse_tree *)
+					   * reverse_max_depth);
+  tmp2 = (struct reverse_tree **) xmalloc (sizeof (struct reverse_tree *)
+					   * reverse_max_depth);
+
+  /* Search for multiple occurrences of the same variable, where either both
+     occurrences are writes, or one is a read and a write.  If we can't prove
+     that these are ordered by a sequence point, warn that the expression is
+     undefined.  */
+  for (p = reverse_list; p; p = p->next)
+    {
+      struct reverse_tree *p2;
+      if (TREE_CODE (p->x) != VAR_DECL && TREE_CODE (p->x) != PARM_DECL)
+	continue;
+      for (p2 = p->next; p2; p2 = p2->next)
+	{
+	  if ((TREE_CODE (p2->x) == VAR_DECL || TREE_CODE (p2->x) == PARM_DECL)
+	      && DECL_NAME (p->x) == DECL_NAME (p2->x)
+	      && (p->write || p2->write))
+	    {
+	      struct reverse_tree *t = common_ancestor (p, p2, tmp1, tmp2);
+
+	      if (t == 0
+		  || TREE_CODE (t->x) == COMPOUND_EXPR
+		  || TREE_CODE (t->x) == TRUTH_ANDIF_EXPR
+		  || TREE_CODE (t->x) == TRUTH_ORIF_EXPR
+		  || TREE_CODE (t->x) == COND_EXPR)
+		continue;
+	      if (TREE_CODE (t->x) == MODIFY_EXPR
+		  && p->parent == t
+		  && modify_ok (t, p2))
+		continue;
+	      if (TREE_CODE (t->x) == MODIFY_EXPR
+		  && p2->parent == t
+		  && modify_ok (t, p))
+		continue;
+
+	      warning ("operation on `%s' may be undefined",
+		       IDENTIFIER_POINTER (DECL_NAME (p->x)));
+	      break;
+	    }
+	}
+    }
+
+  while (reverse_list)
+    {
+      struct reverse_tree *p = reverse_list;
+      reverse_list = p->next;
+      free (p);
+    }
+  free (tmp1);
+  free (tmp2);
+}
+
 void
 c_expand_expr_stmt (expr)
      tree expr;
@@ -3355,6 +3616,9 @@ c_expand_expr_stmt (expr)
   if ((TREE_CODE (TREE_TYPE (expr)) == ARRAY_TYPE && lvalue_p (expr))
       || TREE_CODE (TREE_TYPE (expr)) == FUNCTION_TYPE)
     expr = default_conversion (expr);
+
+  if (warn_sequence_point)
+    verify_sequence_points (expr);
 
   if (TREE_TYPE (expr) != error_mark_node
       && !COMPLETE_OR_VOID_TYPE_P (TREE_TYPE (expr))

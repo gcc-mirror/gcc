@@ -498,10 +498,6 @@ int warn_float_equal = 0;
 
 int warn_multichar = 1;
 
-/* Nonzero means warn about possible violations of sequence point rules.  */
-
-int warn_sequence_point;
-
 /* The variant of the C language being processed.  */
 
 c_language_kind c_language = clk_c;
