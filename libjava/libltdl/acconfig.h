@@ -10,3 +10,6 @@
 
 /* Define if you have the shl_load function.  */
 #undef HAVE_SHL_LOAD
+
+/* Define if you are using the Boehm GC.  */
+#undef HAVE_BOEHM_GC
