@@ -117,9 +117,6 @@ static sbitmap stored_args_map;
    argument list for the constructor call.  */
 int stack_arg_under_construction;
 
-static int calls_function (tree, int);
-static int calls_function_1 (tree, int);
-
 static void emit_call_1 (rtx, tree, tree, tree, HOST_WIDE_INT, HOST_WIDE_INT,
 			 HOST_WIDE_INT, rtx, rtx, int, rtx, int,
 			 CUMULATIVE_ARGS *);
@@ -154,123 +151,6 @@ static bool shift_returned_value (tree, rtx *);
 static rtx save_fixed_argument_area (int, rtx, int *, int *);
 static void restore_fixed_argument_area (rtx, rtx, int, int);
 #endif
-
-/* If WHICH is 1, return 1 if EXP contains a call to the built-in function
-   `alloca'.
-
-   If WHICH is 0, return 1 if EXP contains a call to any function.
-   Actually, we only need return 1 if evaluating EXP would require pushing
-   arguments on the stack, but that is too difficult to compute, so we just
-   assume any function call might require the stack.  */
-
-static tree calls_function_save_exprs;
-
-static int
-calls_function (tree exp, int which)
-{
-  int val;
-
-  calls_function_save_exprs = 0;
-  val = calls_function_1 (exp, which);
-  calls_function_save_exprs = 0;
-  return val;
-}
-
-/* Recursive function to do the work of above function.  */
-
-static int
-calls_function_1 (tree exp, int which)
-{
-  int i;
-  enum tree_code code = TREE_CODE (exp);
-  int class = TREE_CODE_CLASS (code);
-  int length = first_rtl_op (code);
-
-  /* If this code is language-specific, we don't know what it will do.  */
-  if ((int) code >= NUM_TREE_CODES)
-    return 1;
-
-  switch (code)
-    {
-    case CALL_EXPR:
-      if (which == 0)
-	return 1;
-      else if ((TREE_CODE (TREE_TYPE (TREE_TYPE (TREE_OPERAND (exp, 0))))
-		== FUNCTION_TYPE)
-	       && (TYPE_RETURNS_STACK_DEPRESSED
-		   (TREE_TYPE (TREE_TYPE (TREE_OPERAND (exp, 0))))))
-	return 1;
-      else if (TREE_CODE (TREE_OPERAND (exp, 0)) == ADDR_EXPR
-	       && (TREE_CODE (TREE_OPERAND (TREE_OPERAND (exp, 0), 0))
-		   == FUNCTION_DECL)
-	       && (special_function_p (TREE_OPERAND (TREE_OPERAND (exp, 0), 0),
-				       0)
-		   & ECF_MAY_BE_ALLOCA))
-	return 1;
-
-      break;
-
-    case CONSTRUCTOR:
-      {
-	tree tem;
-
-	for (tem = CONSTRUCTOR_ELTS (exp); tem != 0; tem = TREE_CHAIN (tem))
-	  if (calls_function_1 (TREE_VALUE (tem), which))
-	    return 1;
-      }
-
-      return 0;
-
-    case SAVE_EXPR:
-      if (SAVE_EXPR_RTL (exp) != 0)
-	return 0;
-      if (value_member (exp, calls_function_save_exprs))
-	return 0;
-      calls_function_save_exprs = tree_cons (NULL_TREE, exp,
-					     calls_function_save_exprs);
-      return (TREE_OPERAND (exp, 0) != 0
-	      && calls_function_1 (TREE_OPERAND (exp, 0), which));
-
-    case BLOCK:
-      {
-	tree local;
-	tree subblock;
-
-	for (local = BLOCK_VARS (exp); local; local = TREE_CHAIN (local))
-	  if (DECL_INITIAL (local) != 0
-	      && calls_function_1 (DECL_INITIAL (local), which))
-	    return 1;
-
-	for (subblock = BLOCK_SUBBLOCKS (exp);
-	     subblock;
-	     subblock = TREE_CHAIN (subblock))
-	  if (calls_function_1 (subblock, which))
-	    return 1;
-      }
-      return 0;
-
-    case TREE_LIST:
-      for (; exp != 0; exp = TREE_CHAIN (exp))
-	if (calls_function_1 (TREE_VALUE (exp), which))
-	  return 1;
-      return 0;
-
-    default:
-      break;
-    }
-
-  /* Only expressions and blocks can contain calls.
-     Blocks were handled above.  */
-  if (! IS_EXPR_CODE_CLASS (class))
-    return 0;
-
-  for (i = 0; i < length; i++)
-    if (TREE_OPERAND (exp, i) != 0
-	&& calls_function_1 (TREE_OPERAND (exp, i), which))
-      return 1;
-
-  return 0;
-}
 
 /* Force FUNEXP into a form suitable for the address of a CALL,
    and return that as an rtx.  Also load the static chain register
@@ -1372,58 +1252,50 @@ precompute_arguments (int flags, int num_actuals, struct arg_data *args)
   int i;
 
   /* If this is a libcall, then precompute all arguments so that we do not
-     get extraneous instructions emitted as part of the libcall sequence.
-
-     If this target defines ACCUMULATE_OUTGOING_ARGS to true, then we must
-     precompute all arguments that contain function calls.  Otherwise,
-     computing arguments for a subcall may clobber arguments for this call.
-
-     If this target defines ACCUMULATE_OUTGOING_ARGS to false, then we only
-     need to precompute arguments that change the stack pointer, such as calls
-     to alloca, and calls that do not pop all of their arguments.  */
-
+     get extraneous instructions emitted as part of the libcall sequence.  */
+  if ((flags & ECF_LIBCALL_BLOCK) == 0)
+    return;
+    
   for (i = 0; i < num_actuals; i++)
-    if ((flags & ECF_LIBCALL_BLOCK)
-	|| calls_function (args[i].tree_value, !ACCUMULATE_OUTGOING_ARGS))
-      {
-	enum machine_mode mode;
+    {
+      enum machine_mode mode;
 
-	/* If this is an addressable type, we cannot pre-evaluate it.  */
-	if (TREE_ADDRESSABLE (TREE_TYPE (args[i].tree_value)))
-	  abort ();
+      /* If this is an addressable type, we cannot pre-evaluate it.  */
+      if (TREE_ADDRESSABLE (TREE_TYPE (args[i].tree_value)))
+	abort ();
 
-	args[i].value
-	  = expand_expr (args[i].tree_value, NULL_RTX, VOIDmode, 0);
+      args[i].value
+	= expand_expr (args[i].tree_value, NULL_RTX, VOIDmode, 0);
 
-	/* ANSI doesn't require a sequence point here,
-	   but PCC has one, so this will avoid some problems.  */
-	emit_queue ();
+      /* ANSI doesn't require a sequence point here,
+	 but PCC has one, so this will avoid some problems.  */
+      emit_queue ();
 
-	args[i].initial_value = args[i].value
-	  = protect_from_queue (args[i].value, 0);
+      args[i].initial_value = args[i].value
+	= protect_from_queue (args[i].value, 0);
 
-	mode = TYPE_MODE (TREE_TYPE (args[i].tree_value));
-	if (mode != args[i].mode)
-	  {
-	    args[i].value
-	      = convert_modes (args[i].mode, mode,
-			       args[i].value, args[i].unsignedp);
+      mode = TYPE_MODE (TREE_TYPE (args[i].tree_value));
+      if (mode != args[i].mode)
+	{
+	  args[i].value
+	    = convert_modes (args[i].mode, mode,
+			     args[i].value, args[i].unsignedp);
 #if defined(PROMOTE_FUNCTION_MODE) && !defined(PROMOTE_MODE)
-	    /* CSE will replace this only if it contains args[i].value
-	       pseudo, so convert it down to the declared mode using
-	       a SUBREG.  */
-	    if (REG_P (args[i].value)
-		&& GET_MODE_CLASS (args[i].mode) == MODE_INT)
-	      {
-		args[i].initial_value
-		  = gen_lowpart_SUBREG (mode, args[i].value);
-		SUBREG_PROMOTED_VAR_P (args[i].initial_value) = 1;
-		SUBREG_PROMOTED_UNSIGNED_SET (args[i].initial_value,
-		  args[i].unsignedp);
-	      }
+	  /* CSE will replace this only if it contains args[i].value
+	     pseudo, so convert it down to the declared mode using
+	     a SUBREG.  */
+	  if (REG_P (args[i].value)
+	      && GET_MODE_CLASS (args[i].mode) == MODE_INT)
+	    {
+	      args[i].initial_value
+		= gen_lowpart_SUBREG (mode, args[i].value);
+	      SUBREG_PROMOTED_VAR_P (args[i].initial_value) = 1;
+	      SUBREG_PROMOTED_UNSIGNED_SET (args[i].initial_value,
+					    args[i].unsignedp);
+	    }
 #endif
-	  }
-      }
+	}
+    }
 }
 
 /* Given the current state of MUST_PREALLOCATE and information about

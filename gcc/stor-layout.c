@@ -66,7 +66,6 @@ static void place_union_field (record_layout_info, tree);
 static int excess_unit_span (HOST_WIDE_INT, HOST_WIDE_INT, HOST_WIDE_INT,
 			     HOST_WIDE_INT, tree);
 #endif
-static void force_type_save_exprs_1 (tree);
 extern void debug_rli (record_layout_info);
 
 /* SAVE_EXPRs for sizes of types and decls, waiting to be expanded.  */
@@ -146,8 +145,6 @@ variable_size (tree size)
      not wish to do that here; the array-size is the same in both
      places.  */
   save = skip_simple_arithmetic (size);
-  if (TREE_CODE (save) == SAVE_EXPR)
-    SAVE_EXPR_PERSISTENT_P (save) = 1;
 
   if (cfun && cfun->x_dont_save_pending_sizes_p)
     /* The front-end doesn't want us to keep a list of the expressions
@@ -167,60 +164,6 @@ variable_size (tree size)
   put_pending_size (save);
 
   return size;
-}
-
-/* Given a type T, force elaboration of any SAVE_EXPRs used in the definition
-   of that type.  */
-
-void
-force_type_save_exprs (tree t)
-{
-  tree field;
-
-  switch (TREE_CODE (t))
-    {
-    case ERROR_MARK:
-      return;
-
-    case ARRAY_TYPE:
-    case SET_TYPE:
-    case VECTOR_TYPE:
-      /* It's probably overly-conservative to force elaboration of bounds and
-	 also the sizes, but it's better to be safe than sorry.  */
-      force_type_save_exprs_1 (TYPE_MIN_VALUE (TYPE_DOMAIN (t)));
-      force_type_save_exprs_1 (TYPE_MAX_VALUE (TYPE_DOMAIN (t)));
-      break;
-
-    case RECORD_TYPE:
-    case UNION_TYPE:
-    case QUAL_UNION_TYPE:
-      for (field = TYPE_FIELDS (t); field; field = TREE_CHAIN (field))
-	if (TREE_CODE (field) == FIELD_DECL)
-	  {
-	    force_type_save_exprs (TREE_TYPE (field));
-	    force_type_save_exprs_1 (DECL_FIELD_OFFSET (field));
-	  }
-      break;
-
-    default:
-      break;
-    }
-
-  force_type_save_exprs_1 (TYPE_SIZE (t));
-  force_type_save_exprs_1 (TYPE_SIZE_UNIT (t));
-}
-
-/* Utility routine of above, to verify that SIZE has been elaborated and
-   do so it it is a SAVE_EXPR and has not been.  */
-
-static void
-force_type_save_exprs_1 (tree size)
-{
-  if (size
-      && (size = skip_simple_arithmetic (size))
-      && TREE_CODE (size) == SAVE_EXPR
-      && !SAVE_EXPR_RTL (size))
-    expand_expr (size, NULL_RTX, VOIDmode, 0);
 }
 
 #ifndef MAX_FIXED_MODE_SIZE

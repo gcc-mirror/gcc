@@ -436,7 +436,6 @@ free_after_compilation (struct function *f)
   f->x_nonlocal_goto_handler_labels = NULL;
   f->x_return_label = NULL;
   f->x_naked_return_label = NULL;
-  f->x_save_expr_regs = NULL;
   f->x_stack_slot_list = NULL;
   f->x_tail_recursion_reentry = NULL;
   f->x_arg_pointer_save_area = NULL;
@@ -1305,9 +1304,7 @@ put_var_into_stack (tree decl, int rescan)
   context = decl_function_context (decl);
 
   /* Get the current rtl used for this object and its original mode.  */
- orig_reg = reg = (TREE_CODE (decl) == SAVE_EXPR
-		   ? SAVE_EXPR_RTL (decl)
-		   : DECL_RTL_IF_SET (decl));
+  orig_reg = reg = DECL_RTL_IF_SET (decl);
 
   /* No need to do anything if decl has no rtx yet
      since in that case caller is setting TREE_ADDRESSABLE
@@ -2824,10 +2821,8 @@ gen_mem_addressof (rtx reg, tree decl, int rescan)
   if (decl)
     {
       tree type = TREE_TYPE (decl);
-      enum machine_mode decl_mode
-	= (DECL_P (decl) ? DECL_MODE (decl) : TYPE_MODE (TREE_TYPE (decl)));
-      rtx decl_rtl = (TREE_CODE (decl) == SAVE_EXPR ? SAVE_EXPR_RTL (decl)
-		      : DECL_RTL_IF_SET (decl));
+      enum machine_mode decl_mode = DECL_MODE (decl);
+      rtx decl_rtl = DECL_RTL_IF_SET (decl);
 
       PUT_MODE (reg, decl_mode);
 

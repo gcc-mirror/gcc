@@ -1,3 +1,43 @@
+2004-07-02  Richard Henderson  <rth@redhat.com>
+
+	* c-decl.c (grokdeclarator): Don't frob current_function_decl
+	around variable_size.
+	(set_decl_nonlocal): Remove.
+	(store_parm_decls): Add stmts for pending sizes.
+	* calls.c (calls_function, calls_function_1): Remove.
+	(precompute_arguments): Don't call it.
+	* cfgexpand.c (set_save_expr_context): Remove.
+	(tree_expand_cfg): Don't call it.
+	* dwarf2out.c (add_bound_info): Don't handle SAVE_EXPR.
+	(dwarf2out_finish): Likewise.
+	* expr.c (emit_block_move): Adjust addresses to BLKmode.
+	(store_constructor): Don't pre-evaluate SAVE_EXPR.
+	(safe_from_p): Don't queue SAVE_EXPRs.
+	(expand_expr_real_1 <case SAVE_EXPR>): Rewrite to expect,
+	or build plain VAR_DECLs.
+	* fold-const.c (twoval_comparison_p): Don't look at SAVE_EXPR_RTL.
+	(fold): Likewise.
+	(fold_checksum_tree): Don't special-case SAVE_EXPR.
+	* function.c (free_after_compilation): Don't clear x_save_expr_regs.
+	(put_var_into_stack): Don't handle SAVE_EXPR.
+	(gen_mem_addressof): Likewise.
+	* function.h (struct function): Remove x_save_expr_regs.
+	(save_expr_regs): Remove.
+	* gengtype.c (adjust_field_tree_exp): Don't special-case SAVE_EXPR.
+	* print-tree.c (print_node): Don't dump SAVE_EXPR_NOPLACEHOLDER.
+	* stor-layout.c (variable_size): Don't set it.
+	(force_type_save_exprs, force_type_save_exprs_1): Remove.
+	* tree-inline.c (remap_save_expr): Remove fn argument.  Update
+	all callers.  Don't set SAVE_EXPR_CONTEXT.
+	* tree-inline.h (remap_save_expr): Update decl.
+	* tree.c (save_expr): Update build size.
+	(first_rtl_op): Don't handle SAVE_EXPR.
+	(unsave_expr_1, contains_placeholder_p): Likewise.
+	(decl_function_context): Likewise.
+	* tree.def (SAVE_EXPR): Remove args 1 and 2.
+	* tree.h (SAVE_EXPR_CONTEXT, SAVE_EXPR_RTL): Remove.
+	(SAVE_EXPR_NOPLACEHOLDER, SAVE_EXPR_PERSISTENT_P): Remove.
+
 2004-07-03  Joseph S. Myers  <jsm@polyomino.org.uk>
 
 	* doc/bugreport.texi, doc/configterms.texi, doc/contrib.texi,

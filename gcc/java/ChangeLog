@@ -1,3 +1,7 @@
+2004-07-02  Richard Henderson  <rth@redhat.com>
+
+	* jcf-write.c (generate_bytecode_insns <case SAVE_EXPR>): Rewrite.
+
 2004-07-01  Richard Henderson  <rth@redhat.com>
 
 	* class.c (registerClass_libfunc): Remove.

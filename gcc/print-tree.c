@@ -578,8 +578,6 @@ print_node (FILE *file, const char *prefix, tree node, int indent)
     case 's':
       if (TREE_CODE (node) == BIT_FIELD_REF && BIT_FIELD_REF_UNSIGNED (node))
 	fputs (" unsigned", file);
-      else if (TREE_CODE (node) == SAVE_EXPR && SAVE_EXPR_NOPLACEHOLDER (node))
-	fputs (" noplaceholder", file);
       if (TREE_CODE (node) == BIND_EXPR)
 	{
 	  print_node (file, "vars", TREE_OPERAND (node, 0), indent + 4);

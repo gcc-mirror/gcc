@@ -1375,8 +1375,7 @@ save_expr (tree expr)
   if (contains_placeholder_p (inner))
     return t;
 
-  t = build3 (SAVE_EXPR, TREE_TYPE (expr), t, current_function_decl,
-	      NULL_TREE);
+  t = build1 (SAVE_EXPR, TREE_TYPE (expr), t);
 
   /* This expression might be placed ahead of a jump to ensure that the
      value was computed on both sides of the jump.  So make sure it isn't
@@ -1451,8 +1450,6 @@ first_rtl_op (enum tree_code code)
 {
   switch (code)
     {
-    case SAVE_EXPR:
-      return 2;
     case GOTO_SUBROUTINE_EXPR:
       return 0;
     case WITH_CLEANUP_EXPR:
@@ -1511,11 +1508,6 @@ unsave_expr_1 (tree expr)
 {
   switch (TREE_CODE (expr))
     {
-    case SAVE_EXPR:
-      if (! SAVE_EXPR_PERSISTENT_P (expr))
-	SAVE_EXPR_RTL (expr) = 0;
-      break;
-
     case TARGET_EXPR:
       /* Don't mess with a TARGET_EXPR that hasn't been expanded.
          It's OK for this to happen if it was part of a subtree that
@@ -1640,7 +1632,6 @@ bool
 contains_placeholder_p (tree exp)
 {
   enum tree_code code;
-  int result;
 
   if (!exp)
     return 0;
@@ -1677,19 +1668,6 @@ contains_placeholder_p (tree exp)
 	  return (CONTAINS_PLACEHOLDER_P (TREE_OPERAND (exp, 0))
 		  || CONTAINS_PLACEHOLDER_P (TREE_OPERAND (exp, 1))
 		  || CONTAINS_PLACEHOLDER_P (TREE_OPERAND (exp, 2)));
-
-	case SAVE_EXPR:
-	  /* If we already know this doesn't have a placeholder, don't
-	     check again.  */
-	  if (SAVE_EXPR_NOPLACEHOLDER (exp) || SAVE_EXPR_RTL (exp) != 0)
-	    return 0;
-
-	  SAVE_EXPR_NOPLACEHOLDER (exp) = 1;
-	  result = CONTAINS_PLACEHOLDER_P (TREE_OPERAND (exp, 0));
-	  if (result)
-	    SAVE_EXPR_NOPLACEHOLDER (exp) = 0;
-
-	  return result;
 
 	default:
 	  break;
@@ -4780,9 +4758,6 @@ decl_function_context (tree decl)
 
   if (TREE_CODE (decl) == ERROR_MARK)
     return 0;
-
-  if (TREE_CODE (decl) == SAVE_EXPR)
-    context = SAVE_EXPR_CONTEXT (decl);
 
   /* C++ virtual functions use DECL_CONTEXT for the class of the vtable
      where we look up the function at runtime.  Such functions always take

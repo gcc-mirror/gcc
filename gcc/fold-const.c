@@ -2661,7 +2661,7 @@ twoval_comparison_p (tree arg, tree *cval1, tree *cval2, int *save_p)
 	       || code == COMPOUND_EXPR))
     class = '2';
 
-  else if (class == 'e' && code == SAVE_EXPR && SAVE_EXPR_RTL (arg) == 0
+  else if (class == 'e' && code == SAVE_EXPR
 	   && ! TREE_SIDE_EFFECTS (TREE_OPERAND (arg, 0)))
     {
       /* If we've already found a CVAL1 or CVAL2, this expression is
@@ -5971,10 +5971,6 @@ fold (tree expr)
      if all operands are constant.  */
   int wins = 1;
 
-  /* Don't try to process an SAVE_EXPR that's already been evaluated.  */
-  if (code == SAVE_EXPR && SAVE_EXPR_RTL (t) != 0)
-    return t;
-
   /* Return right away if a constant.  */
   if (kind == 'c')
     return t;
@@ -8985,14 +8981,7 @@ fold_checksum_tree (tree expr, struct md5_ctx *ctx, htab_t ht)
     return;
   *slot = expr;
   code = TREE_CODE (expr);
-  if (code == SAVE_EXPR && SAVE_EXPR_NOPLACEHOLDER (expr))
-    {
-      /* Allow SAVE_EXPR_NOPLACEHOLDER flag to be modified.  */
-      memcpy (buf, expr, tree_size (expr));
-      expr = (tree) buf;
-      SAVE_EXPR_NOPLACEHOLDER (expr) = 0;
-    }
-  else if (TREE_CODE_CLASS (code) == 'd' && DECL_ASSEMBLER_NAME_SET_P (expr))
+  if (TREE_CODE_CLASS (code) == 'd' && DECL_ASSEMBLER_NAME_SET_P (expr))
     {
       /* Allow DECL_ASSEMBLER_NAME to be modified.  */
       memcpy (buf, expr, tree_size (expr));
@@ -9051,7 +9040,6 @@ fold_checksum_tree (tree expr, struct md5_ctx *ctx, htab_t ht)
     case 'e':
       switch (code)
 	{
-	case SAVE_EXPR: len = 2; break;
 	case GOTO_SUBROUTINE_EXPR: len = 0; break;
 	case WITH_CLEANUP_EXPR: len = 2; break;
 	default: break;

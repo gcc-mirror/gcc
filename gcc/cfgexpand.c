@@ -360,26 +360,6 @@ construct_exit_block (void)
   update_bb_for_insn (exit_block);
 }
 
-/* Called to move the SAVE_EXPRs for parameter declarations in a
-   nested function into the nested function.  DATA is really the
-   nested FUNCTION_DECL.  */
-
-static tree
-set_save_expr_context (tree *tp,
-                       int *walk_subtrees,
-                       void *data)
-{
-  if (TREE_CODE (*tp) == SAVE_EXPR && !SAVE_EXPR_CONTEXT (*tp))
-    SAVE_EXPR_CONTEXT (*tp) = (tree) data;
-  /* Do not walk back into the SAVE_EXPR_CONTEXT; that will cause
-     circularity.  */
-  else if (DECL_P (*tp))
-    *walk_subtrees = 0;
-
-  return NULL;
-}
-
-
 /* Translate the intermediate representation contained in the CFG
    from GIMPLE trees to RTL.
 
@@ -402,15 +382,6 @@ tree_expand_cfg (void)
       fprintf (dump_file, " (%s)\n",
 	       IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (current_function_decl)));
     }
-
-  /* If the function has a variably modified type, there may be
-     SAVE_EXPRs in the parameter types.  Their context must be set to
-     refer to this function; they cannot be expanded in the containing
-     function.  */
-  if (decl_function_context (current_function_decl) == current_function_decl
-      && variably_modified_type_p (TREE_TYPE (current_function_decl)))
-    walk_tree (&TREE_TYPE (current_function_decl), set_save_expr_context,
-	       current_function_decl, NULL);
 
   /* Prepare the rtl middle end to start recording block changes.  */
   reset_block_changes ();
