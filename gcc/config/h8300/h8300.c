@@ -4070,7 +4070,7 @@ compute_a_rotate_length (rtx *operands)
    operating insn.  */
 
 int
-fix_bit_operand (rtx *operands, int what, enum rtx_code type)
+fix_bit_operand (rtx *operands, int what, enum rtx_code code)
 {
   /* The bit_operand predicate accepts any memory during RTL generation, but
      only 'U' memory afterwards, so if this is a MEM operand, we must force
@@ -4107,7 +4107,7 @@ fix_bit_operand (rtx *operands, int what, enum rtx_code type)
   operands[1] = force_reg (QImode, operands[1]);
   {
     rtx res = gen_reg_rtx (QImode);
-    switch (type)
+    switch (code)
       {
       case AND:
 	emit_insn (gen_andqi3_1 (res, operands[1], operands[2]));

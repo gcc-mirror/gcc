@@ -1,5 +1,10 @@
 2004-02-17  Kazu Hirata  <kazu@cs.umass.edu>
 
+	* config/h8300/h8300.c (fix_bit_operand): Change the name of
+	the last argument to "code" from "type".
+
+2004-02-17  Kazu Hirata  <kazu@cs.umass.edu>
+
 	* config/h8300/h8300.c: Remove an extern declaration of
 	rtx_equal_function_value_matters.
 
