@@ -171,10 +171,21 @@ dnl specific precautions need to be taken.
 dnl
 dnl Define OPTLEVEL='-O2' if new inlining code present.
 dnl Define WERROR='-Werror' if possible; g++'s that lack the new inlining
-dnl    code or the new system_header pragma will die.
+dnl    code or the new system_header pragma will die.  Other options dealing
+dnl    with warnings, errors, and compiler complaints may be folded into
+dnl    the WERROR variable.
 dnl
 dnl GLIBCPP_CHECK_COMPILER_VERSION
 AC_DEFUN(GLIBCPP_CHECK_COMPILER_VERSION, [
+  # All these tests are for C++; save the language and the compiler flags.
+  # The CXXFLAGS thing is suspicious, but based on similar bits 
+  # found in GLIBCPP_CONFIGURE.
+  AC_LANG_SAVE
+  AC_LANG_CPLUSPLUS
+  ac_test_CXXFLAGS="${CXXFLAGS+set}"
+  ac_save_CXXFLAGS="$CXXFLAGS"
+  WERROR='-Werror'
+
   AC_MSG_CHECKING([for g++ that will successfullly compile this code])
   AC_EGREP_CPP([ok], [
   #if __GNUC__ > 2 || (__GNUC__ == 2 && __GNUC_MINOR__ >= 95) 
@@ -183,14 +194,7 @@ AC_DEFUN(GLIBCPP_CHECK_COMPILER_VERSION, [
   ], gpp_satisfactory=yes, AC_MSG_ERROR("please upgrade to gcc-2.95 or above"))
   AC_MSG_RESULT($gpp_satisfactory)
 
-  WERROR='-Werror'
   AC_MSG_CHECKING([for g++ that supports new system_header pragma])
-  AC_LANG_SAVE
-  AC_LANG_CPLUSPLUS
-  # the CXXFLAGS thing is suspicious, but based on similar
-  # bits in GLIBCPP_CONFIGURE
-  ac_test_CXXFLAGS="${CXXFLAGS+set}"
-  ac_save_CXXFLAGS="$CXXFLAGS"
   CXXFLAGS='-Wunknown-pragmas -Werror'
   AC_TRY_COMPILE([#pragma system_header], [int foo;
   ], [ac_newpragma=yes], [ac_newpragma=no])
@@ -200,11 +204,25 @@ AC_DEFUN(GLIBCPP_CHECK_COMPILER_VERSION, [
     # this is the suspicious part
     CXXFLAGS=''
   fi
-  AC_LANG_RESTORE
   if test "$ac_newpragma" = "no"; then
     WERROR="$WERROR -Wno-unknown-pragmas"
   fi
   AC_MSG_RESULT($ac_newpragma)
+
+  AC_MSG_CHECKING([for g++ that supports new warning options])
+  CXXFLAGS='-fdiagnostics-show-location=once'
+  AC_TRY_COMPILE(, [int foo;
+  ], [ac_gabydiags=yes], [ac_gabydiags=no])
+  if test "$ac_test_CXXFLAGS" = set; then
+    CXXFLAGS="$ac_save_CXXFLAGS"
+  else
+    # this is the suspicious part
+    CXXFLAGS=''
+  fi
+  if test "$ac_gabydiags" = "yes"; then
+    WERROR="$WERROR -fdiagnostics-show-location=once"
+  fi
+  AC_MSG_RESULT($ac_gabydiags)
 
   AC_MSG_CHECKING([for g++ that supports new inlining mechanism])
   AC_EGREP_CPP([ok], [
@@ -220,6 +238,7 @@ AC_DEFUN(GLIBCPP_CHECK_COMPILER_VERSION, [
     AC_MSG_RESULT(yes)
   fi
 
+  AC_LANG_RESTORE
   AC_SUBST(OPTLEVEL)
   AC_SUBST(WERROR)
 ])
