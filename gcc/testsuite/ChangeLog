@@ -1,3 +1,9 @@
+2000-11-07  Jeffrey Oldham  <oldham@oz.codesourcery.com>
+
+	* gcc.c-torture/execute/va-arg-15.x: Changed to mips*-sgi-irix6.*.
+	* gcc.c-torture/execute/va-arg-16.x: Likewise.
+	* gcc.c-torture/execute/va-arg-17.x: Likewise.
+
 2000-11-07  DJ Delorie  <dj@redhat.com>
 
 	* testsuite/gcc.dg/20000614-1.c: Add return so that test can pass.
