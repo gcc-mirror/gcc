@@ -423,7 +423,18 @@ store_bit_field (str_rtx, bitsize, bitnum, fieldmode, value, align, total_size)
 	  || GET_MODE_SIZE (GET_MODE (op0)) > UNITS_PER_WORD)
 	{
 	  if (GET_CODE (op0) != REG)
-	    op0 = copy_to_reg (op0);
+	    {
+	      /* Since this is a destination (lvalue), we can't copy it to a
+		 pseudo.  We can trivially remove a SUBREG that does not
+		 change the size of the operand.  Such a SUBREG may have been
+		 added above.  Otherwise, abort.  */
+	      if (GET_CODE (op0) == SUBREG
+		  && (GET_MODE_SIZE (GET_MODE (op0))
+		      == GET_MODE_SIZE (GET_MODE (SUBREG_REG (op0)))))
+		op0 = SUBREG_REG (op0);
+	      else
+		abort ();
+	    }
 	  op0 = gen_rtx_SUBREG (mode_for_size (BITS_PER_WORD, MODE_INT, 0),
 		                op0, offset);
 	}
