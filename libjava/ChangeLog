@@ -1,3 +1,8 @@
+2004-04-16  Bryce McKinlay  <mckinlay@redhat.com>
+
+	* interpret.cc (_Jv_InterpMethod::run): Update _Jv_AllocObject
+	arguments to match new signature. Remove FIXME comments.
+
 2004-04-09  Thomas Fitzsimmons  <fitzsim@redhat.com>
 
 	* gnu/java/awt/peer/gtk/GtkPanelPeer.java (connectSignals):
@@ -259,6 +264,7 @@
 	* java/applet/Applet.java (getPreferredSize): New method.
 	(getMinimumSize): New method.
 
+>>>>>>> 1.2732
 2004-04-15  Bryce McKinlay  <mckinlay@redhat.com>
 
 	* prims.cc (_Jv_AllocObject): Remove `size' argument.
