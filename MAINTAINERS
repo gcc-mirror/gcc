@@ -16,11 +16,9 @@ i960 port		Jim Wilson		wilson@cygnus.com
 a29k port		Jim Wilson		wilson@cygnus.com
 alpha port		Richard Henderson	rth@cygnus.com
 sparc port		Richard Henderson	rth@cygnus.com
-*sparc port (?)		David Miller
+*sparc port (?)		David Miller		davem@dm.cobaltmicro.com
 x86 ports		Stan Cox		scox@cygnus.com
 *fortran		Craig Burley
-*fortran		David Love
-*fortran		Toon Moene
 fortran			Richard Henderson	rth@cygnus.com	
 c++			Jason Merrill		jason@cygnus.com
 chill			Per Bothner		bothner@cygnus.com
@@ -45,6 +43,8 @@ Gavin Koch			gavin@cygnus.com
 Brendan Kehoe			brendan@cygnus.com
 Benjamin Kosnik			bkoz@cygnus.com
 Andrew Macleod			amacleod@cygnus.com
+*fortran		David Love
+*fortran		Toon Moene
 
 
 * Indicates folks we need to get Kerberos/ssh accounts ready so they
