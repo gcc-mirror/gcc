@@ -62,9 +62,7 @@ static tree synthesize_exception_spec (tree, tree (*) (tree, void *), void *);
 static tree locate_dtor (tree, void *);
 static tree locate_ctor (tree, void *);
 static tree locate_copy (tree, void *);
-#ifdef ASM_OUTPUT_DEF
 static tree make_alias_for_thunk (tree);
-#endif
 
 /* Called once to initialize method.c.  */
 
@@ -273,10 +271,7 @@ thunk_adjust (tree ptr, bool this_adjusting,
   return ptr;
 }
 
-/* Garbage collector tables contains thunk_labelno even when places
-   inside ifdef block.  */
 static GTY (()) int thunk_labelno;
-#ifdef ASM_OUTPUT_DEF
 
 /* Create a static alias to function.  */
 
@@ -322,7 +317,6 @@ make_alias_for_thunk (tree function)
     assemble_alias (alias, DECL_ASSEMBLER_NAME (function));
   return alias;
 }
-#endif
 
 /* Emit the definition of a C++ multiple inheritance or covariant
    return vtable thunk.  If EMIT_P is nonzero, the thunk is emitted
