@@ -713,7 +713,7 @@ STAGESTUFF = *$(objext) insn-flags.h insn-config.h insn-codes.h \
  genextract$(build_exeext) genflags$(build_exeext) gencodes$(build_exeext) \
  genconfig$(build_exeext) genpeep$(build_exeext) genattrtab$(build_exeext) \
  genattr$(build_exeext) genopinit$(build_exeext) gengenrtl$(build_exeext) \
- gencheck$(build_exeext) \
+ gencheck$(build_exeext) genrtl.c genrtl.h \
  xgcc$(exeext) xcpp$(exeext) cc1$(exeext) cpp$(exeext) $(EXTRA_PASSES) \
  $(EXTRA_PARTS) $(EXTRA_PROGRAMS) gcc-cross$(exeext) cc1obj$(exeext) \
  enquire$(exeext) protoize$(exeext) unprotoize$(exeext) \
@@ -2119,6 +2119,9 @@ mostlyclean: $(INTL_MOSTLYCLEAN) lang.mostlyclean
 # Delete files generated for fixproto
 	-rm -rf fix-header xsys-protos.h deduced.h tmp-deduced.h \
 	  gen-protos fixproto.list fixtmp.* fixhdr.ready
+# Delete files generated for fixincl
+	-rm -rf fixincl fixinc.sh specs.ready
+	(cd fixinc && make clean)
 # Delete unwanted output files from TeX.
 	-rm -f *.toc *.log *.vr *.fn *.cp *.tp *.ky *.pg
 	-rm -f */*.toc */*.log */*.vr */*.fn */*.cp */*.tp */*.ky */*.pg
