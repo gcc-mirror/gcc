@@ -180,7 +180,7 @@ public class DefaultKeyboardFocusManager extends KeyboardFocusManager
       {
         // Loop through all registered KeyEventDispatchers, giving
         // each a chance to handle this event.
-        Iterator i = keyEventDispatchers.iterator ();
+        Iterator i = getKeyEventDispatchers().iterator();
 
         while (i.hasNext ())
           {
@@ -234,7 +234,7 @@ public class DefaultKeyboardFocusManager extends KeyboardFocusManager
 
     // Loop through all registered KeyEventPostProcessors, giving
     // each a chance to process this event.
-    Iterator i = keyEventPostProcessors.iterator ();
+    Iterator i = getKeyEventPostProcessors().iterator();
 
     while (i.hasNext ())
       {

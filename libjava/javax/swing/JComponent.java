@@ -305,7 +305,7 @@ public abstract class JComponent extends Container implements Serializable
    * handled by this listener list. PropertyChangeEvents are handled in
    * {@link #changeSupport}.
    */
-  EventListenerList listenerList = new EventListenerList();
+  protected EventListenerList listenerList = new EventListenerList();
 
   /** 
    * Support for {@link PropertyChangeEvent} events. This is constructed

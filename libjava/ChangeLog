@@ -1,3 +1,21 @@
+2004-05-30  Michael Koch  <konqueror@gmx.de>
+
+	* java/awt/DefaultKeyboardFocusManager.java
+	(dispatchEvent): Call method to get key event dispatchers.
+	(dispatchKeyEvent): Call method to get key event post processors.
+	* javax/swing/JComponent.java
+	(listenerList): Made protected.
+	* javax/swing/JOptionPane.java
+	(message): Don't initialize.
+	(JOptionPane): Set message text.
+	* javax/swing/JPopupMenu.java
+	(show): Fixed typo in argument name.
+	* javax/swing/RepaintManager.java
+	(paintDirtyRegions): Use public API of java.util.Map.
+	* javax/swing/plaf/basic/BasicSplitPaneDivider.java
+	(positionForMouseEvent): Removed redundant ';'.
+	(continueDrag): Use method arguments.
+
 2004-05-29  Ranjit Mathew  <rmathew@hotmail.com>
 
 	* testsuite/libjava.jacks/jacks.xfail: Update for post tree-ssa merge
