@@ -141,6 +141,7 @@ extern void ix86_expand_branch PARAMS ((enum rtx_code, rtx));
 extern int ix86_expand_setcc PARAMS ((enum rtx_code, rtx));
 extern int ix86_expand_int_movcc PARAMS ((rtx[]));
 extern int ix86_expand_fp_movcc PARAMS ((rtx[]));
+extern int ix86_expand_int_addcc PARAMS ((rtx[]));
 extern void ix86_expand_call PARAMS ((rtx, rtx, rtx, rtx, rtx, int));
 extern void x86_initialize_trampoline PARAMS ((rtx, rtx, rtx));
 extern rtx ix86_zero_extend_to_Pmode PARAMS ((rtx));

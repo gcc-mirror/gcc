@@ -1037,7 +1037,7 @@ regs_set_between_p (x, start, end)
 
 /* Similar to reg_set_between_p, but check all registers in X.  Return 0
    only if none of them are modified between START and END.  Return 1 if
-   X contains a MEM; this routine does not perform any memory aliasing.  */
+   X contains a MEM; this routine does usememory aliasing.  */
 
 int
 modified_between_p (x, start, end)
@@ -1047,6 +1047,10 @@ modified_between_p (x, start, end)
   enum rtx_code code = GET_CODE (x);
   const char *fmt;
   int i, j;
+  rtx insn;
+
+  if (start == end)
+    return 0;
 
   switch (code)
     {
@@ -1063,10 +1067,14 @@ modified_between_p (x, start, end)
       return 1;
 
     case MEM:
-      /* If the memory is not constant, assume it is modified.  If it is
-	 constant, we still have to check the address.  */
-      if (! RTX_UNCHANGING_P (x))
+      if (RTX_UNCHANGING_P (x))
+	return 0;
+      if (modified_between_p (XEXP (x, 0), start, end))
 	return 1;
+      for (insn = NEXT_INSN (start); insn != end; insn = NEXT_INSN (insn))
+	if (memory_modified_in_insn_p (x, insn))
+	  return 1;
+      return 0;
       break;
 
     case REG:
@@ -1093,7 +1101,7 @@ modified_between_p (x, start, end)
 
 /* Similar to reg_set_p, but check all registers in X.  Return 0 only if none
    of them are modified in INSN.  Return 1 if X contains a MEM; this routine
-   does not perform any memory aliasing.  */
+   does use memory aliasing.  */
 
 int
 modified_in_p (x, insn)
@@ -1119,10 +1127,13 @@ modified_in_p (x, insn)
       return 1;
 
     case MEM:
-      /* If the memory is not constant, assume it is modified.  If it is
-	 constant, we still have to check the address.  */
-      if (! RTX_UNCHANGING_P (x))
+      if (RTX_UNCHANGING_P (x))
+	return 0;
+      if (modified_in_p (XEXP (x, 0), insn))
 	return 1;
+      if (memory_modified_in_insn_p (x, insn))
+	return 1;
+      return 0;
       break;
 
     case REG:

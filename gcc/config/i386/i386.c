@@ -9981,6 +9981,69 @@ ix86_expand_fp_movcc (operands)
   return 1;
 }
 
+/* Expand conditional increment or decrement using adb/sbb instructions.
+   The default case using setcc followed by the conditional move can be
+   done by generic code.  */
+int
+ix86_expand_int_addcc (operands)
+     rtx operands[];
+{
+  enum rtx_code code = GET_CODE (operands[1]);
+  rtx compare_op;
+  rtx val = const0_rtx;
+
+  if (operands[3] != const1_rtx
+      && operands[3] != constm1_rtx)
+    return 0;
+  if (!ix86_expand_carry_flag_compare (code, ix86_compare_op0,
+				       ix86_compare_op1, &compare_op))
+     return 0;
+  if (GET_CODE (compare_op) != LTU)
+    val = operands[3] == const1_rtx ? constm1_rtx : const1_rtx;
+  if ((GET_CODE (compare_op) == LTU) == (operands[3] == constm1_rtx))
+    {
+      switch (GET_MODE (operands[0]))
+	{
+	  case QImode:
+            emit_insn (gen_subqi3_carry (operands[0], operands[2], val));
+	    break;
+	  case HImode:
+            emit_insn (gen_subhi3_carry (operands[0], operands[2], val));
+	    break;
+	  case SImode:
+            emit_insn (gen_subsi3_carry (operands[0], operands[2], val));
+	    break;
+	  case DImode:
+            emit_insn (gen_subdi3_carry_rex64 (operands[0], operands[2], val));
+	    break;
+	  default:
+	    abort ();
+	}
+    }
+  else
+    {
+      switch (GET_MODE (operands[0]))
+	{
+	  case QImode:
+            emit_insn (gen_addqi3_carry (operands[0], operands[2], val));
+	    break;
+	  case HImode:
+            emit_insn (gen_addhi3_carry (operands[0], operands[2], val));
+	    break;
+	  case SImode:
+            emit_insn (gen_addsi3_carry (operands[0], operands[2], val));
+	    break;
+	  case DImode:
+            emit_insn (gen_adddi3_carry_rex64 (operands[0], operands[2], val));
+	    break;
+	  default:
+	    abort ();
+	}
+    }
+  return 1; /* DONE */
+}
+
+
 /* Split operands 0 and 1 into SImode parts.  Similar to split_di, but
    works for floating pointer parameters and nonoffsetable memories.
    For pushes, it returns just stack offsets; the values will be saved

@@ -1,3 +1,20 @@
+Wed Jan  8 12:10:57 CET 2003  Jan Hubicka  <jh@suse.cz>
+
+	* i386.md (adddi3_carry_rex64, subdi3_carry_rex64): Name pattern.
+	(addhi3_carry, addqi3_carry, subhi3_carry, subqi3_carry): New patterns.
+	(add??cc): New expanders.
+	* i386.c (expand_int_addcc): New function.
+	* i386-protos.h (expand_int_addcc): Declare.
+
+	* alias.c (memory_modified_1): New static function.
+	(memory_modified): New static varaible.
+	(memory_modified_in_insn_p): New global function.
+	* rtl.h (memory_modified_in_insn_p): Declare.
+	* rtlanal.c (modified_between_p, modified_in_p): Be smart about memory
+	references.
+
+	* expr.h (emit_conditional_add): Declare.
+
 2003-01-07  Janis Johnson  <janis187@us.ibm.com>
 
 	PR other/8947
