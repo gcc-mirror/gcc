@@ -1,3 +1,12 @@
+2003-08-13  Per Bothner  <pbothner@apple.com>
+
+	* regclass.c (init_reg_modes):  Make non-static.
+	Rename to init_reg_modes_once per new naming convention.
+	(init_regs):  Don't call init_reg_modes here.
+	* emit-rtl.c (init_emit_once):  Call init_reg_modes_once here instead.
+	* rtl.h (init_reg_modes_once):  New declaration.
+	* toplev.c (backend_init):  Call init_regs after init_emit_once.
+
 2003-08-13  Kaz Kojima  <kkojima@gcc.gnu.org>
 
 	* config/sh/linux.h (DBX_REGISTER_NUMBER): Define so to map a

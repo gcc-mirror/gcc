@@ -46,7 +46,6 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include "timevar.h"
 
 static void init_reg_sets_1 (void);
-static void init_reg_modes (void);
 static void init_reg_autoinc (void);
 
 /* If we have auto-increment or auto-decrement and we can have secondary
@@ -546,8 +545,8 @@ init_reg_sets_1 (void)
    These values are used to record death information for individual registers
    (as opposed to a multi-register mode).  */
 
-static void
-init_reg_modes (void)
+void
+init_reg_modes_once (void)
 {
   int i;
 
@@ -574,8 +573,6 @@ init_regs (void)
   /* This finishes what was started by init_reg_sets, but couldn't be done
      until after register usage was specified.  */
   init_reg_sets_1 ();
-
-  init_reg_modes ();
 
   init_reg_autoinc ();
 }
