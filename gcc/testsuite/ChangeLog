@@ -1,3 +1,8 @@
+2003-07-03  Roger Sayle  <roger@eyesopen.com>
+
+	PR target/10700
+	* gcc.c-torture/compile/20030703-1.c: New test case.
+
 2003-07-03  Mark Mitchell  <mark@codesourcery.com>
 
 	* g++.dg/template/local3.C: Remove extra semicolon.

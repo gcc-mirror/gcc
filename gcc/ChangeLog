@@ -1,3 +1,9 @@
+2003-07-03  Roger Sayle  <roger@eyesopen.com>
+
+	PR target/10700
+	* fold-const.c (extract_muldiv_1): There's nothing that can be done
+	if the expression is a SAVE_EXPR.
+
 2003-07-03  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* config/m32r/m32r.c: Fix comment typos.
