@@ -187,6 +187,8 @@ static int c4x_arn_mem_operand PARAMS ((rtx, enum machine_mode, unsigned int));
 static void c4x_check_attribute PARAMS ((const char *, tree, tree, tree *));
 static int c4x_parse_pragma PARAMS ((const char *, tree *, tree *));
 static int c4x_r11_set_p PARAMS ((rtx));
+static int c4x_rptb_valid_p PARAMS ((rtx, rtx));
+static int c4x_label_ref_used_p PARAMS ((rtx, rtx));
 
 /* Called to register all of our global variables with the garbage
    collector.  */
@@ -2288,7 +2290,105 @@ c4x_rptb_nop_p (insn)
   there are no instructions in the loop which would cause problems).
   Any additional labels can be emitted at this point.  In addition, if
   the desired loop count register was not allocated, this routine does
-  nothing.  */
+  nothing. 
+
+  Before we can create a repeat block looping instruction we have to
+  verify that there are no jumps outside the loop and no jumps outside
+  the loop go into this loop. This can happen in the basic blocks reorder
+  pass. The C4x cpu can not handle this.  */
+
+static int
+c4x_label_ref_used_p (x, code_label)
+     rtx x, code_label;
+{
+  enum rtx_code code;
+  int i, j;
+  const char *fmt;
+
+  if (x == 0)
+    return 0;
+
+  code = GET_CODE (x);
+  if (code == LABEL_REF)
+    return INSN_UID (XEXP (x,0)) == INSN_UID (code_label);
+
+  fmt = GET_RTX_FORMAT (code);
+  for (i = GET_RTX_LENGTH (code) - 1; i >= 0; i--)
+    {
+      if (fmt[i] == 'e')
+	{
+          if (c4x_label_ref_used_p (XEXP (x, i), code_label))
+	    return 1;
+	}
+      else if (fmt[i] == 'E')
+        for (j = XVECLEN (x, i) - 1; j >= 0; j--)
+          if (c4x_label_ref_used_p (XVECEXP (x, i, j), code_label))
+	    return 1;
+    }
+  return 0;
+}
+
+
+static int
+c4x_rptb_valid_p (insn, start_label)
+     rtx insn, start_label;
+{
+  rtx end = insn;
+  rtx start;
+  rtx tmp;
+
+  /* Find the start label.  */
+  for (; insn; insn = PREV_INSN (insn))
+    if (insn == start_label)
+      break;
+
+  /* Note found then we can not use a rptb or rpts.  The label was
+     probably moved by the basic block reorder pass.  */
+  if (! insn)
+    return 0;
+
+  start = insn;
+  /* If any jump jumps inside this block then we must fail.  */
+  for (insn = PREV_INSN (start); insn; insn = PREV_INSN (insn))
+    {
+      if (GET_CODE (insn) == CODE_LABEL)
+	{
+	  for (tmp = NEXT_INSN (start); tmp != end; tmp = NEXT_INSN(tmp))
+	    if (GET_CODE (tmp) == JUMP_INSN
+                && c4x_label_ref_used_p (tmp, insn))
+	      return 0;
+        }
+    }
+  for (insn = NEXT_INSN (end); insn; insn = NEXT_INSN (insn))
+    {
+      if (GET_CODE (insn) == CODE_LABEL)
+	{
+	  for (tmp = NEXT_INSN (start); tmp != end; tmp = NEXT_INSN(tmp))
+	    if (GET_CODE (tmp) == JUMP_INSN
+                && c4x_label_ref_used_p (tmp, insn))
+	      return 0;
+        }
+    }
+  /* If any jump jumps outside this block then we must fail.  */
+  for (insn = NEXT_INSN (start); insn != end; insn = NEXT_INSN (insn))
+    {
+      if (GET_CODE (insn) == CODE_LABEL)
+	{
+	  for (tmp = NEXT_INSN (end); tmp; tmp = NEXT_INSN(tmp))
+	    if (GET_CODE (tmp) == JUMP_INSN
+                && c4x_label_ref_used_p (tmp, insn))
+	      return 0;
+	  for (tmp = PREV_INSN (start); tmp; tmp = PREV_INSN(tmp))
+	    if (GET_CODE (tmp) == JUMP_INSN
+                && c4x_label_ref_used_p (tmp, insn))
+	      return 0;
+        }
+    }
+
+  /* All checks OK.  */
+  return 1;
+}
+
 
 void
 c4x_rptb_insert (insn)
@@ -2310,6 +2410,18 @@ c4x_rptb_insert (insn)
   /* Extract the start label from the jump pattern (rptb_end).  */
   start_label = XEXP (XEXP (SET_SRC (XVECEXP (PATTERN (insn), 0, 0)), 1), 0);
   
+  if (! c4x_rptb_valid_p (insn, start_label))
+    {
+      /* We can not use the rptb insn.  Replace it so reorg can use
+         the delay slots of the jump insn.  */
+      emit_insn_before (gen_addqi3 (count_reg, count_reg, GEN_INT (-1)), insn);
+      emit_insn_before (gen_cmpqi (count_reg, GEN_INT (0)), insn);
+      emit_insn_before (gen_bge (start_label), insn);
+      LABEL_NUSES (start_label)++;
+      delete_insn (insn);
+      return;
+    }
+
   end_label = gen_label_rtx ();
   LABEL_NUSES (end_label)++;
   emit_label_after (end_label, insn);

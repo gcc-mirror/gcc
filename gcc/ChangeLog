@@ -1,5 +1,11 @@
 2001-01-22 Herman A.J. ten Brugge <Haj.Ten.Brugge@net.HCC.nl>
 
+	* c4x.c (c4x_valid_rptb_p, c4x_label_ref_used_p): New functions.
+	(c4x_rptb_insert): Call c4x_valid_rptb_p to check if repeat block is
+	valid.  If not replace it by equivalent insns.
+
+2001-01-22 Herman A.J. ten Brugge <Haj.Ten.Brugge@net.HCC.nl>
+
 	* c4x.c (c4x_check_legit_addr): Only check CONST.  Not if CONST
 	contains SYMBOL_REF, LABEL_REF and CONST_INT.
 	(c4x_U_constraint, symbolic_address_operand): Likewise.
