@@ -2414,11 +2414,6 @@ mark_vtable_entries (decl)
 
       fn = TREE_OPERAND (fnaddr, 0);
       TREE_ADDRESSABLE (fn) = 1;
-      if (DECL_LANG_SPECIFIC (fn) && DECL_ABSTRACT_VIRTUAL_P (fn))
-	{
-	  TREE_OPERAND (fnaddr, 0) = abort_fndecl;
-	  mark_used (abort_fndecl);
-	}
       if (TREE_CODE (fn) == THUNK_DECL && DECL_EXTERNAL (fn))
 	{
 	  DECL_EXTERNAL (fn) = 0;

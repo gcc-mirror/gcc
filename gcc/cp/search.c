@@ -2032,10 +2032,10 @@ get_abstract_virtuals_1 (binfo, do_self, abstract_virtuals)
 
       while (virtuals)
 	{
-	  tree base_pfn = FNADDR_FROM_VTABLE_ENTRY (TREE_VALUE (virtuals));
-	  tree base_fndecl = TREE_OPERAND (base_pfn, 0);
+	  tree base_fndecl = TREE_VALUE (virtuals);
 	  if (DECL_ABSTRACT_VIRTUAL_P (base_fndecl))
-	    abstract_virtuals = tree_cons (NULL_TREE, base_fndecl, abstract_virtuals);
+	    abstract_virtuals = tree_cons (NULL_TREE, base_fndecl, 
+					   abstract_virtuals);
 	  virtuals = TREE_CHAIN (virtuals);
 	}
     }
@@ -2065,12 +2065,12 @@ get_abstract_virtuals (type)
 
       while (virtuals)
 	{
-	  tree base_pfn = FNADDR_FROM_VTABLE_ENTRY (TREE_VALUE (virtuals));
-	  tree base_fndecl = TREE_OPERAND (base_pfn, 0);
+	  tree base_fndecl = TREE_VALUE (virtuals);
 	  if (DECL_NEEDS_FINAL_OVERRIDER_P (base_fndecl))
 	    cp_error ("`%#D' needs a final overrider", base_fndecl);
 	  else if (DECL_ABSTRACT_VIRTUAL_P (base_fndecl))
-	    abstract_virtuals = tree_cons (NULL_TREE, base_fndecl, abstract_virtuals);
+	    abstract_virtuals = tree_cons (NULL_TREE, base_fndecl, 
+					   abstract_virtuals);
 	  virtuals = TREE_CHAIN (virtuals);
 	}
     }
@@ -2541,8 +2541,7 @@ expand_upcast_fixups (binfo, addr, orig_addr, vbase, vbase_addr, t,
   while (virtuals)
     {
       tree current_fndecl = TREE_VALUE (virtuals);
-      current_fndecl = FNADDR_FROM_VTABLE_ENTRY (current_fndecl);
-      current_fndecl = TREE_OPERAND (current_fndecl, 0);
+
       if (current_fndecl
 	  && current_fndecl != abort_fndecl
 	  && (vc=virtual_context (current_fndecl, t, vbase)) != vbase)

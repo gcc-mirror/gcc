@@ -1245,7 +1245,7 @@ debug_binfo (elem)
 
   while (virtuals)
     {
-      tree fndecl = TREE_OPERAND (FNADDR_FROM_VTABLE_ENTRY (TREE_VALUE (virtuals)), 0);
+      tree fndecl = TREE_VALUE (virtuals);
       fprintf (stderr, "%s [%ld =? %ld]\n",
 	       IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (fndecl)),
 	       (long) n, (long) TREE_INT_CST_LOW (DECL_VINDEX (fndecl)));

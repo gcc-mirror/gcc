@@ -121,12 +121,10 @@ static void mark_overriders PROTO((tree, tree));
 static void check_for_override PROTO((tree, tree));
 static tree get_class_offset_1 PROTO((tree, tree, tree, tree, tree));
 static tree get_class_offset PROTO((tree, tree, tree, tree));
-static void modify_one_vtable PROTO((tree, tree, tree, tree));
-static void modify_all_vtables PROTO((tree, tree, tree));
-static void modify_all_direct_vtables PROTO((tree, int, tree, tree,
-					     tree));
-static void modify_all_indirect_vtables PROTO((tree, int, int, tree,
-					       tree, tree));
+static void modify_one_vtable PROTO((tree, tree, tree));
+static void modify_all_vtables PROTO((tree, tree));
+static void modify_all_direct_vtables PROTO((tree, int, tree, tree));
+static void modify_all_indirect_vtables PROTO((tree, int, int, tree, tree));
 static int finish_base_struct PROTO((tree, struct base_info *));
 static void finish_struct_methods PROTO((tree));
 static void maybe_warn_about_overly_private_class PROTO ((tree));
@@ -139,6 +137,8 @@ static tree fixed_type_or_null PROTO((tree, int *));
 static tree resolve_address_of_overloaded_function PROTO((tree, tree, int,
 							  int, tree));
 static void build_vtable_entry_ref PROTO((tree, tree, tree));
+static tree build_vtable_entry_for_fn PROTO((tree, tree));
+static tree build_vtbl_initializer PROTO((tree));
 
 /* Way of stacking language names.  */
 tree *current_lang_base, *current_lang_stack;
@@ -466,6 +466,25 @@ build_vtable_entry (delta, pfn)
     }
 }
 
+/* Build a vtable entry for FNDECL.  DELTA is the amount by which we
+   must adjust the this pointer when calling F.  */
+
+static tree
+build_vtable_entry_for_fn (delta, fndecl)
+     tree delta;
+     tree fndecl;
+{
+  tree pfn;
+
+  /* Take the address of the function, considering it to be of an
+     appropriate generic type.  */
+  pfn = build1 (ADDR_EXPR, vfunc_ptr_type_node, fndecl);
+  /* The address of a function can't change.  */
+  TREE_CONSTANT (pfn) = 1;
+  /* Now build the vtable entry itself.  */
+  return build_vtable_entry (delta, pfn);
+}
+
 /* We want to give the assembler the vtable identifier as well as
    the offset to the function pointer.  So we generate
 
@@ -669,30 +688,34 @@ static void
 set_rtti_entry (virtuals, offset, type)
      tree virtuals, offset, type;
 {
-  tree vfn;
+  tree fn;
 
   if (CLASSTYPE_COM_INTERFACE (type))
     return;
 
   if (flag_rtti)
-    vfn = build1 (ADDR_EXPR, vfunc_ptr_type_node, get_tinfo_fn (type));
+    fn = get_tinfo_fn (type);
   else
-    vfn = build1 (NOP_EXPR, vfunc_ptr_type_node, size_zero_node);
-  TREE_CONSTANT (vfn) = 1;
+    /* If someone tries to get RTTI information for a type compiled
+       without RTTI, they're out of luck.  By calling __pure_virtual
+       in this case, we give a small clue as to what went wrong.  We
+       could consider having a __no_typeinfo function as well, for a
+       more specific hint.  */
+    fn = abort_fndecl;
 
-  if (! flag_vtable_thunks)
-    TREE_VALUE (virtuals) = build_vtable_entry (offset, vfn);
-  else
+  if (flag_vtable_thunks)
     {
-      tree voff = build1 (NOP_EXPR, vfunc_ptr_type_node, offset);
-      TREE_CONSTANT (voff) = 1;
+      /* The first slot holds the offset.  */
+      TREE_PURPOSE (virtuals) = offset;
 
-      TREE_VALUE (virtuals) = build_vtable_entry (integer_zero_node, voff);
-
-      /* The second slot is for the tdesc pointer when thunks are used.  */
-      TREE_VALUE (TREE_CHAIN (virtuals))
-	= build_vtable_entry (integer_zero_node, vfn);
+      /* The next node holds the function.  */
+      virtuals = TREE_CHAIN (virtuals);
+      offset = integer_zero_node;
     }
+
+  /* This slot holds the function to call.  */
+  TREE_PURPOSE (virtuals) = offset;
+  TREE_VALUE (virtuals) = fn;
 }
 
 /* Build a virtual function for type TYPE.
@@ -952,25 +975,21 @@ get_vtable_entry (virtuals, base_fndecl)
 }
 #endif
 
-/* Put new entry ENTRY into virtual function table initializer
-   VIRTUALS.
-
-   Also update DECL_VINDEX (FNDECL).  */
+/* Change the offset for the FNDECL entry to NEW_OFFSET.  Also update
+   DECL_VINDEX (FNDECL).  */
 
 static void
-modify_vtable_entry (old_entry_in_list, new_entry, fndecl)
-     tree old_entry_in_list, new_entry, fndecl;
+modify_vtable_entry (old_entry_in_list, new_offset, fndecl)
+     tree old_entry_in_list, new_offset, fndecl;
 {
-  tree base_fndecl = TREE_OPERAND (FNADDR_FROM_VTABLE_ENTRY (TREE_VALUE (old_entry_in_list)), 0);
+  tree base_fndecl = TREE_VALUE (old_entry_in_list);
 
-#ifdef NOTQUITE
-  cp_warning ("replaced %D with %D", DECL_ASSEMBLER_NAME (base_fndecl),
-	      DECL_ASSEMBLER_NAME (fndecl));
-#endif
-  TREE_VALUE (old_entry_in_list) = new_entry;
+  /* Update the entry.  */
+  TREE_PURPOSE (old_entry_in_list) = new_offset;
+  TREE_VALUE (old_entry_in_list) = fndecl;
 
-  /* Now assign virtual dispatch information, if unset.  */
-  /* We can dispatch this, through any overridden base function.  */
+  /* Now assign virtual dispatch information, if unset.  We can
+     dispatch this, through any overridden base function.  */
   if (TREE_CODE (DECL_VINDEX (fndecl)) != INTEGER_CST)
     {
       DECL_VINDEX (fndecl) = DECL_VINDEX (base_fndecl);
@@ -1012,11 +1031,6 @@ add_virtual_function (pv, phv, has_virtual, fndecl, t)
   tree pending_virtuals = *pv;
   tree pending_hard_virtuals = *phv;
 
-  /* FUNCTION_TYPEs and OFFSET_TYPEs no longer freely
-     convert to void *.  Make such a conversion here.  */
-  tree vfn = build1 (ADDR_EXPR, vfunc_ptr_type_node, fndecl);
-  TREE_CONSTANT (vfn) = 1;
-
 #ifndef DUMB_USER
   if (current_class_type == 0)
     cp_warning ("internal problem, current_class_type is zero when adding `%D', please report",
@@ -1032,8 +1046,6 @@ add_virtual_function (pv, phv, has_virtual, fndecl, t)
      to hold that entry.  */
   if (DECL_VINDEX (fndecl) == error_mark_node)
     {
-      tree entry;
-
       /* We remember that this was the base sub-object for rtti.  */
       CLASSTYPE_RTTI (t) = t;
 
@@ -1068,8 +1080,10 @@ add_virtual_function (pv, phv, has_virtual, fndecl, t)
 	DECL_VINDEX (fndecl) = idx;
 	DECL_CONTEXT (fndecl) = t;
       }
-      entry = build_vtable_entry (integer_zero_node, vfn);
-      pending_virtuals = tree_cons (DECL_VINDEX (fndecl), entry, pending_virtuals);
+      /* Save the state we've computed on the PENDING_VIRTUALS list.  */
+      pending_virtuals = tree_cons (integer_zero_node,
+				    fndecl,
+				    pending_virtuals);
     }
   /* Might already be INTEGER_CST if declared twice in class.  We will
      give error later or we've already given it.  */
@@ -1077,7 +1091,9 @@ add_virtual_function (pv, phv, has_virtual, fndecl, t)
     {
       /* Need an entry in some other virtual function table.
          Deal with this after we have laid out our virtual base classes.  */
-      pending_hard_virtuals = temp_tree_cons (fndecl, vfn, pending_hard_virtuals);
+      pending_hard_virtuals = temp_tree_cons (NULL_TREE, 
+					      fndecl, 
+					      pending_hard_virtuals);
     }
   *pv = pending_virtuals;
   *phv = pending_hard_virtuals;
@@ -2207,6 +2223,78 @@ duplicate_tag_error (t)
   TYPE_NONCOPIED_PARTS (t) = NULL_TREE;
 }
 
+/* Construct the initializer for BINFOs virtual function table.  */
+
+static tree
+build_vtbl_initializer (binfo)
+     tree binfo;
+{
+  tree v = BINFO_VIRTUALS (binfo);
+  tree inits = NULL_TREE;
+
+  /* Process the RTTI stuff at the head of the list.  If we're not
+     using vtable thunks, then the RTTI entry is just an ordinary
+     function, and we can process it just like the other virtual
+     function entries.  */
+  if (!CLASSTYPE_COM_INTERFACE (BINFO_TYPE (binfo))
+      && flag_vtable_thunks)
+    {
+      tree offset;
+      tree init;
+
+      /* The first entry is an offset.  */
+      offset = TREE_PURPOSE (v);
+      my_friendly_assert (TREE_CODE (offset) == INTEGER_CST,
+			  19990727);
+
+      /* Convert the offset to look like a function pointer, so that
+	 we can put it in the vtable.  */
+      init = build1 (NOP_EXPR, vfunc_ptr_type_node, offset);
+      TREE_CONSTANT (init) = 1;
+      init = build_vtable_entry (integer_zero_node, init);
+      inits = tree_cons (NULL_TREE, init, inits);
+
+      /* Even in this case, the second entry (the tdesc pointer) is
+	 just an ordinary function.  */
+      v = TREE_CHAIN (v);
+    }
+
+  /* Go through all the ordinary virtual functions, building up
+     initializers.  */
+  while (v)
+    {
+      tree delta;
+      tree fn;
+      tree init;
+
+      /* Pull the offset for `this', and the function to call, out of
+	 the list.  */
+      delta = TREE_PURPOSE (v);
+      fn = TREE_VALUE (v);
+      my_friendly_assert (TREE_CODE (delta) == INTEGER_CST, 19990727);
+      my_friendly_assert (TREE_CODE (fn) == FUNCTION_DECL, 19990727);
+
+      /* You can't call an abstract virtual function; it's abstract.
+	 So, we replace these functions with __pure_virtual.  */
+      if (DECL_ABSTRACT_VIRTUAL_P (fn))
+	fn = abort_fndecl;
+
+      /* Package up that information for the vtable.  */
+      init = build_vtable_entry_for_fn (delta, fn);
+      /* And add it to the chain of initializers.  */
+      inits = tree_cons (NULL_TREE, init, inits);
+
+      /* Keep going.  */
+      v = TREE_CHAIN (v);
+    }
+
+  /* The initializers were built up in reverse order; straighten them
+     out now.  */
+  inits = nreverse (inits);
+  /* Package all the initializers up as an array initializer.  */
+  return build_nt (CONSTRUCTOR, NULL_TREE, inits);
+}
+
 /* finish up all new vtables.  */
 
 static void
@@ -2228,14 +2316,7 @@ finish_vtbls (binfo, do_self, t)
 	  decl = BINFO_VTABLE (binfo);
 	  context = DECL_CONTEXT (decl);
 	  DECL_CONTEXT (decl) = 0;
-
-	  /* We make a copy here in case we need to replace pure
-	     virtual functions with __pure_virtual.  We don't want to
-	     mess up BINFO_VIRTUALS when we do this.  */
-	  DECL_INITIAL (decl) = copy_list (BINFO_VIRTUALS (binfo));
-	  DECL_INITIAL (decl) = build_nt (CONSTRUCTOR, NULL_TREE,
-					  DECL_INITIAL (decl));
-
+	  DECL_INITIAL (decl) = build_vtbl_initializer (binfo);
 	  cp_finish_decl (decl, DECL_INITIAL (decl), NULL_TREE, 0, 0);
 	  DECL_CONTEXT (decl) = context;
 	}
@@ -2248,9 +2329,8 @@ finish_vtbls (binfo, do_self, t)
       int is_not_base_vtable
 	= i != CLASSTYPE_VFIELD_PARENT (BINFO_TYPE (binfo));
       if (TREE_VIA_VIRTUAL (base_binfo))
-	{
-	  base_binfo = binfo_member (BINFO_TYPE (base_binfo), CLASSTYPE_VBASECLASSES (t));
-	}
+	base_binfo = binfo_member (BINFO_TYPE (base_binfo), 
+				   CLASSTYPE_VBASECLASSES (t));
       finish_vtbls (base_binfo, is_not_base_vtable, t);
     }
 }
@@ -2396,8 +2476,8 @@ skip_rtti_stuff (virtuals, t)
 }
 
 static void
-modify_one_vtable (binfo, t, fndecl, pfn)
-     tree binfo, t, fndecl, pfn;
+modify_one_vtable (binfo, t, fndecl)
+     tree binfo, t, fndecl;
 {
   tree virtuals = BINFO_VIRTUALS (binfo);
   unsigned HOST_WIDE_INT n;
@@ -2424,8 +2504,14 @@ modify_one_vtable (binfo, t, fndecl, pfn)
   while (virtuals)
     {
       tree current_fndecl = TREE_VALUE (virtuals);
-      current_fndecl = FNADDR_FROM_VTABLE_ENTRY (current_fndecl);
-      current_fndecl = TREE_OPERAND (current_fndecl, 0);
+
+      /* We should never have an instance of __pure_virtual on the
+	 BINFO_VIRTUALS list.  If we do, then we will never notice
+	 that the function that should have been there instead has
+	 been overridden.  */
+      my_friendly_assert (current_fndecl != abort_fndecl,
+			  19990727);
+
       if (current_fndecl && overrides (fndecl, current_fndecl))
 	{
 	  tree base_offset, offset;
@@ -2469,7 +2555,7 @@ modify_one_vtable (binfo, t, fndecl, pfn)
 	  cp_warning ("in %D", DECL_NAME (BINFO_VTABLE (binfo)));
 #endif
 	  modify_vtable_entry (get_vtable_entry_n (BINFO_VIRTUALS (binfo), n),
-			       build_vtable_entry (this_offset, pfn),
+			       this_offset,
 			       fndecl);
 	}
       ++n;
@@ -2480,19 +2566,17 @@ modify_one_vtable (binfo, t, fndecl, pfn)
 /* These are the ones that are not through virtual base classes.  */
 
 static void
-modify_all_direct_vtables (binfo, do_self, t, fndecl, pfn)
+modify_all_direct_vtables (binfo, do_self, t, fndecl)
      tree binfo;
      int do_self;
-     tree t, fndecl, pfn;
+     tree t, fndecl;
 {
   tree binfos = BINFO_BASETYPES (binfo);
   int i, n_baselinks = binfos ? TREE_VEC_LENGTH (binfos) : 0;
 
   /* Should we use something besides CLASSTYPE_VFIELDS? */
   if (do_self && CLASSTYPE_VFIELDS (BINFO_TYPE (binfo)))
-    {
-      modify_one_vtable (binfo, t, fndecl, pfn);
-    }
+    modify_one_vtable (binfo, t, fndecl);
 
   for (i = 0; i < n_baselinks; i++)
     {
@@ -2500,7 +2584,7 @@ modify_all_direct_vtables (binfo, do_self, t, fndecl, pfn)
       int is_not_base_vtable
 	= i != CLASSTYPE_VFIELD_PARENT (BINFO_TYPE (binfo));
       if (! TREE_VIA_VIRTUAL (base_binfo))
-	modify_all_direct_vtables (base_binfo, is_not_base_vtable, t, fndecl, pfn);
+	modify_all_direct_vtables (base_binfo, is_not_base_vtable, t, fndecl);
     }
 }
 
@@ -2518,9 +2602,8 @@ fixup_vtable_deltas1 (binfo, t)
   while (virtuals)
     {
       tree fndecl = TREE_VALUE (virtuals);
-      tree pfn = FNADDR_FROM_VTABLE_ENTRY (fndecl);
-      tree delta = DELTA_FROM_VTABLE_ENTRY (fndecl);
-      fndecl = TREE_OPERAND (pfn, 0);
+      tree delta = TREE_PURPOSE (virtuals);
+
       if (fndecl)
 	{
 	  tree base_offset, offset;
@@ -2565,7 +2648,7 @@ fixup_vtable_deltas1 (binfo, t)
 		}
 
 	      modify_vtable_entry (get_vtable_entry_n (BINFO_VIRTUALS (binfo), n),
-				   build_vtable_entry (this_offset, pfn),
+				   this_offset,
 				   fndecl);
 	    }
 	}
@@ -2598,27 +2681,23 @@ fixup_vtable_deltas (binfo, init_self, t)
     }
   /* Should we use something besides CLASSTYPE_VFIELDS? */
   if (init_self && CLASSTYPE_VFIELDS (BINFO_TYPE (binfo)))
-    {
-      fixup_vtable_deltas1 (binfo, t);
-    }
+    fixup_vtable_deltas1 (binfo, t);
 }
 
 /* These are the ones that are through virtual base classes.  */
 
 static void
-modify_all_indirect_vtables (binfo, do_self, via_virtual, t, fndecl, pfn)
+modify_all_indirect_vtables (binfo, do_self, via_virtual, t, fndecl)
      tree binfo;
      int do_self, via_virtual;
-     tree t, fndecl, pfn;
+     tree t, fndecl;
 {
   tree binfos = BINFO_BASETYPES (binfo);
   int i, n_baselinks = binfos ? TREE_VEC_LENGTH (binfos) : 0;
 
   /* Should we use something besides CLASSTYPE_VFIELDS? */
   if (do_self && via_virtual && CLASSTYPE_VFIELDS (BINFO_TYPE (binfo)))
-    {
-      modify_one_vtable (binfo, t, fndecl, pfn);
-    }
+    modify_one_vtable (binfo, t, fndecl);
 
   for (i = 0; i < n_baselinks; i++)
     {
@@ -2630,19 +2709,20 @@ modify_all_indirect_vtables (binfo, do_self, via_virtual, t, fndecl, pfn)
 	  via_virtual = 1;
 	  base_binfo = binfo_member (BINFO_TYPE (base_binfo), CLASSTYPE_VBASECLASSES (t));
 	}
-      modify_all_indirect_vtables (base_binfo, is_not_base_vtable, via_virtual, t, fndecl, pfn);
+      modify_all_indirect_vtables (base_binfo, is_not_base_vtable, via_virtual, t, fndecl);
     }
 }
 
 static void
-modify_all_vtables (t, fndecl, vfn)
-     tree t, fndecl, vfn;
+modify_all_vtables (t, fndecl)
+     tree t;
+     tree fndecl;
 {
   /* Do these first, so that we will make use of any non-virtual class's
      vtable, over a virtual classes vtable.  */
-  modify_all_direct_vtables (TYPE_BINFO (t), 1, t, fndecl, vfn);
+  modify_all_direct_vtables (TYPE_BINFO (t), 1, t, fndecl);
   if (TYPE_USES_VIRTUAL_BASECLASSES (t))
-    modify_all_indirect_vtables (TYPE_BINFO (t), 1, 0, t, fndecl, vfn);
+    modify_all_indirect_vtables (TYPE_BINFO (t), 1, 0, t, fndecl);
 }
 
 /* Here, we already know that they match in every respect.
@@ -2693,10 +2773,7 @@ override_one_vtable (binfo, old, t)
     {
       tree fndecl = TREE_VALUE (virtuals);
       tree old_fndecl = TREE_VALUE (old_virtuals);
-      fndecl = FNADDR_FROM_VTABLE_ENTRY (fndecl);
-      old_fndecl = FNADDR_FROM_VTABLE_ENTRY (old_fndecl);
-      fndecl = TREE_OPERAND (fndecl, 0);
-      old_fndecl = TREE_OPERAND (old_fndecl, 0);
+
       /* First check to see if they are the same.  */
       if (DECL_ASSEMBLER_NAME (fndecl) == DECL_ASSEMBLER_NAME (old_fndecl))
 	{
@@ -2748,8 +2825,7 @@ override_one_vtable (binfo, old, t)
 	    }
 	  {
 	    /* This MUST be overridden, or the class is ill-formed.  */
-	    tree fndecl = TREE_OPERAND (FNADDR_FROM_VTABLE_ENTRY (TREE_VALUE (virtuals)), 0);
-	    tree vfn;
+	    tree fndecl = TREE_VALUE (virtuals);
 
 	    fndecl = copy_node (fndecl);
 	    copy_lang_decl (fndecl);
@@ -2758,12 +2834,10 @@ override_one_vtable (binfo, old, t)
 	    if (! CLASSTYPE_ABSTRACT_VIRTUALS (t))
 	      CLASSTYPE_ABSTRACT_VIRTUALS (t) = error_mark_node;
 
-	    vfn = build1 (ADDR_EXPR, vfunc_ptr_type_node, fndecl);
-	    TREE_CONSTANT (vfn) = 1;
-	    
 	    /* We can use integer_zero_node, as we will core dump
 	       if this is used anyway.  */
-	    TREE_VALUE (virtuals) = build_vtable_entry (integer_zero_node, vfn);
+	    TREE_VALUE (virtuals) = build_vtable_entry (integer_zero_node, 
+							fndecl);
 	  }
 	}
       virtuals = TREE_CHAIN (virtuals);
@@ -3960,12 +4034,11 @@ finish_struct_1 (t)
     TYPE_VIRTUAL_P (t) = 1;
 
   if (flag_rtti && TYPE_VIRTUAL_P (t) && !pending_hard_virtuals)
-    modify_all_vtables (t, NULL_TREE, NULL_TREE);
+    modify_all_vtables (t, NULL_TREE);
 
   while (pending_hard_virtuals)
     {
       modify_all_vtables (t,
-			  TREE_PURPOSE (pending_hard_virtuals),
 			  TREE_VALUE (pending_hard_virtuals));
       pending_hard_virtuals = TREE_CHAIN (pending_hard_virtuals);
     }
@@ -4146,26 +4219,6 @@ finish_struct_1 (t)
 
   if (CLASSTYPE_VSIZE (t) != 0)
     {
-#if 0
-      /* This is now done above.  */
-      if (DECL_FIELD_CONTEXT (vfield) != t)
-	{
-	  tree binfo = get_binfo (DECL_FIELD_CONTEXT (vfield), t, 0);
-	  tree offset = BINFO_OFFSET (binfo);
-
-	  vfield = copy_node (vfield);
-	  copy_lang_decl (vfield);
-
-	  if (! integer_zerop (offset))
-	    offset = size_binop (MULT_EXPR, offset, size_int (BITS_PER_UNIT));
-	  DECL_FIELD_CONTEXT (vfield) = t;
-	  DECL_CLASS_CONTEXT (vfield) = t;
-	  DECL_FIELD_BITPOS (vfield)
-	    = size_binop (PLUS_EXPR, offset, DECL_FIELD_BITPOS (vfield));
-	  CLASSTYPE_VFIELD (t) = vfield;
-	}
-#endif
-
       /* In addition to this one, all the other vfields should be listed.  */
       /* Before that can be done, we have to have FIELD_DECLs for them, and
 	 a place to find them.  */

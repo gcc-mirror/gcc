@@ -1,3 +1,28 @@
+1999-07-27  Mark Mitchell  <mark@codesourcery.com>
+
+	* cp-tree.h (BINFO_VIRTUALS): Document new format.
+	* class.c (modify_one_vtable): Change prototype accordingly.
+	(modify_all_vtables): Likewise.
+	(modify_all_direct_vtables): Likewise.
+	(modify_all_indirect_vtables): Likewise.
+	(build_vtable_entry_for_fn): New function.
+	(set_rtti_entry): Simplify for new BINFO_VIRTUALS format.
+	(modify_vtable_entry): Likewise.
+	(add_virtual_function): Likewise.
+	(build_vtbl_initializer): New function.
+	(finish_vtbls): Simplify for new BINFO_VIRTUALS format.
+	(fixup_vtable_deltas1): Likewise.
+	(fixup_vtable_deltas): Likewise.
+	(override_one_vtable): Likewise.
+	(finish_struct_1): Likewise.
+	* error.c (dump_expr): Likewise.
+	* search.c (get_abstract_virtuals_1): Likewise.
+	(get_abstract_virtuals): Likewise.
+	(expand_upcast_fixups): Likewise.
+	* tree.c (debug_binfo): Likewise.
+	* decl2.c (mark_vtable_entries): Don't bash abstract virtuals to
+	__pure_virtual here.
+	
 1999-07-26  Mark Mitchell  <mark@codesourcery.com>
 
 	* tree.c (build_cplus_new): Adjust call to abstract_virtuals_error

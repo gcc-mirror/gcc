@@ -98,7 +98,14 @@ Boston, MA 02111-1307, USA.  */
 
    DECL_SAVED_INSNS/DECL_FIELD_SIZE
      For a static VAR_DECL, this is DECL_INIT_PRIORITY.
-*/
+
+   BINFO_VIRTUALS
+     For a binfo, this is a TREE_LIST.  The TREE_PURPOSE of each node
+     gives the amount by which to adjust the `this' pointer when
+     calling the function.  The TREE_VALUE is the declaration for the 
+     virtual function itself.  When CLASSTYPE_COM_INTERFACE_P does not
+     hold, the first entry does not have a TREE_VALUE; it is just an
+     offset.  */ 
 
 /* Language-dependent contents of an identifier.  */
 
