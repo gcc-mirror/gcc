@@ -1,3 +1,8 @@
+2001-06-06  Richard Henderson  <rth@redhat.com>
+
+	* flow.c (mark_used_reg): Clean up looping over multiple hard
+	registers.  Do conditional life bits across multiple hard regs.
+
 2001-06-05  Jeffrey D. Oldham  <oldham@codesourcery.com>
 
 	* reload1.c (reload): Revert Schmidt's change so all USEs are not
