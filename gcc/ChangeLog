@@ -1,5 +1,10 @@
 2004-10-22  Kazu Hirata  <kazu@cs.umass.edu>
 
+	* c-semantics.c (re_push_stmt_list): Remove.
+	* c-common.h: Remove the corresponding prototype.
+
+2004-10-22  Kazu Hirata  <kazu@cs.umass.edu>
+
 	* stmt.c (asm_op_is_mem_input): Remove.
 	* tree.h: Remove the corresponding prototype.
 

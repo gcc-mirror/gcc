@@ -58,29 +58,6 @@ push_stmt_list (void)
   return t;
 }
 
-/* Similarly, except that T may have already been pushed/popped, and
-   thus may already contain statement(s).  Arrage for new statements
-   to be appended.  */
-
-tree
-re_push_stmt_list (tree t)
-{
-  if (t)
-    {
-      if (TREE_CODE (t) != STATEMENT_LIST)
-	{
-	  tree u = alloc_stmt_list ();
-	  append_to_statement_list_force (t, &u);
-	  t = u;
-	}
-    }
-  else
-    t = alloc_stmt_list ();
-  TREE_CHAIN (t) = cur_stmt_list;
-  cur_stmt_list = t;
-  return t;
-}
-
 /* Finish the statement tree rooted at T.  */
 
 tree
