@@ -446,6 +446,16 @@ int flag_unroll_loops;
 
 int flag_unroll_all_loops;
 
+/* Nonzero forces all invariant computations in loops to be moved
+   outside the loop. */
+
+int flag_move_all_movables = 0;
+
+/* Nonzero forces all general induction variables in loops to be
+   strength reduced. */
+
+int flag_reduce_all_givs = 0;
+
 /* Nonzero for -fwritable-strings:
    store string constants in data segment and don't uniquize them.  */
 
@@ -679,6 +689,8 @@ struct { char *string; int *variable; int on_value;} f_options[] =
   {"strength-reduce", &flag_strength_reduce, 1},
   {"unroll-loops", &flag_unroll_loops, 1},
   {"unroll-all-loops", &flag_unroll_all_loops, 1},
+  {"move-all-movables", &flag_move_all_movables, 1},
+  {"reduce-all-givs", &flag_reduce_all_givs, 1},
   {"writable-strings", &flag_writable_strings, 1},
   {"peephole", &flag_no_peephole, 0},
   {"force-mem", &flag_force_mem, 1},

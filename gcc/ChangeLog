@@ -1,3 +1,15 @@
+Wed Aug 27 21:32:20 1997  Jeffrey A Law  (law@cygnus.com)
+
+	* flags.h (flag_move_all_movables): Declare.
+	(flag_reduce_all_givs): Likewise.
+	* loop.c (move_movables): Handle flag_move_all_movables.
+	(strength_reduce): Handle flag_reduce_all_givs.
+	* toplev.c (flag_move_all_movables): Define.
+	(flag_reduce_all_givs): Likewise.
+	(f_options): Add -fmove-all-movables and -freduce-all-givs.
+	* invoke.texi: Document new options, including alias stuff that
+	wasn't included last time.
+
 Wed Aug 27 18:08:51 1997  Bob Manson  (manson@cygnus.com)
 
 	* t-h8300: Use TARGET_LIBGCC2_CFLAGS instead of LIBGCC2_CFLAGS.
