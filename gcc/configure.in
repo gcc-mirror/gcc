@@ -273,7 +273,7 @@ opt)
 	AC_MSG_ERROR(unknown coverage setting $enableval)
 	;;
 esac],
-[coverage_flags="-O2"])
+[coverage_flags=""])
 AC_SUBST(coverage_flags)
 
 AC_ARG_WITH(cpp_install_dir,
