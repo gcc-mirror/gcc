@@ -1,3 +1,9 @@
+2001-04-27  Andreas Jaeger  <aj@suse.de>
+	    Richard Henderson  <rth@redhat.com>
+
+	* md.texi (Machine Constraints): Document additional i386
+	constraints and fix description of "A".
+
 Fri Apr 27 10:43:49 2001  Jeffrey A Law  (law@cygnus.com)
 
 	* tm.texi (TARGET_MEM_FUNCTIONS): Update text.
@@ -31,7 +37,7 @@ Thu Apr 26 19:20:28 CEST 2001  Jan Hubicka  <jh@suse.cz>
 2001-04-26  Andrew Haley  <aph@cambridge.redhat.com>
 
 	* except.c (expand_eh_region_end_cleanup): Force pending stack
-	adjust before emitting label that branches around cleanup code. 
+	adjust before emitting label that branches around cleanup code.
 
 2001-04-26  H.J. Lu  (hjl@gnu.org)
 
@@ -296,7 +302,7 @@ Mon Apr 23 14:32:12 CEST 2001  Jan Hubicka  <jh@suse.cz>
 	(loop_delete_insns): New function.
 	* unroll.c (initial_reg_note_copy): Copy INSN_LIST notes, even if
 	we're not substituting into them yet.
-	
+
 2001-04-21  Kazu Hirata  <kazu@hxi.com>
 
 	* config/h8300/h8300.c (general_operand_src): Fix a comment typo.
@@ -404,7 +410,7 @@ Thu Apr 19 19:15:26 2001  Jeffrey A Law  (law@cygnus.com)
 	instead of OBJECT_SUFFIX.
 	* collect2.c (find_a_file): Look for files matching the extension
 	HOST_EXECUTABLE_SUFFIX instead of EXECUTABLE_SUFFIX.
-	* gcc.c (DEFAULT_SWITCH_CURTAILS_COMPILATION): Depend on 
+	* gcc.c (DEFAULT_SWITCH_CURTAILS_COMPILATION): Depend on
 	TARGET_EXECUTABLE_SUFFIX.
 	(find_a_file): Use HOST_EXECUTABLE_SUFFIX.
 	(make_relative_prefix): Likewise.
