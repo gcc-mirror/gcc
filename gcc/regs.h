@@ -223,14 +223,5 @@ extern int caller_save_needed;
 #define HARD_REGNO_CALL_PART_CLOBBERED(REGNO, MODE) 0
 #endif
 
-/* Allocated in local_alloc.  */
-
-/* A list of SCRATCH rtl allocated by local-alloc.  */
-extern rtx *scratch_list;
-/* The basic block in which each SCRATCH is used.  */
-extern int *scratch_block;
-/* The length of the arrays pointed to by scratch_block and scratch_list.  */
-extern int scratch_list_length;
-
 /* Allocate reg_n_info tables */
 extern void allocate_reg_info PROTO((size_t, int, int));
