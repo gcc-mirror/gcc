@@ -11284,7 +11284,7 @@ record_promoted_value (insn, subreg)
   unsigned int regno = REGNO (SUBREG_REG (subreg));
   enum machine_mode mode = GET_MODE (subreg);
 
-  if (GET_MODE_BITSIZE (mode) >= HOST_BITS_PER_WIDE_INT)
+  if (GET_MODE_BITSIZE (mode) > HOST_BITS_PER_WIDE_INT)
     return;
 
   for (links = LOG_LINKS (insn); links; )
