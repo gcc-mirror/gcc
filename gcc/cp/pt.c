@@ -731,8 +731,10 @@ maybe_process_partial_specialization (tree type)
       if (CLASSTYPE_IMPLICIT_INSTANTIATION (type)
 	  && !COMPLETE_TYPE_P (type))
 	{
-	  if (current_namespace
-	      != decl_namespace_context (CLASSTYPE_TI_TEMPLATE (type)))
+	  tree tpl_ns = decl_namespace_context (CLASSTYPE_TI_TEMPLATE (type));
+	  if (is_associated_namespace (current_namespace, tpl_ns))
+	    /* Same or super-using namespace.  */;
+	  else
 	    {
 	      pedwarn ("specializing `%#T' in different namespace", type);
 	      cp_pedwarn_at ("  from definition of `%#D'",

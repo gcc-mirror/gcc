@@ -1,3 +1,15 @@
+2003-11-11  Jason Merrill  <jason@redhat.com>
+
+	* cp-tree.h (DECL_NAMESPACE_ASSOCIATIONS): New macro.
+	* name-lookup.c (parse_using_directive): New fn.
+	(is_associated_namespace): New fn.
+	(arg_assoc_namespace): Also check associated namespaces.
+	* name-lookup.h: Declare new fns.
+	* pt.c (maybe_process_partial_specialization): Allow
+	specialization in associated namespace.
+	* parser.c (cp_parser_using_directive): Accept attributes.  Use
+	parse_using_directive.
+
 2003-11-10  Richard Henderson  <rth@redhat.com>
 
 	* cvt.c (convert_to_void): Use void_zero_node after overload failure.
