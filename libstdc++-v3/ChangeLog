@@ -1,3 +1,10 @@
+2004-07-29  Phil Edwards  <phil@codesourcery.com>
+
+	* docs/html/faq/index.html:  Update version references.  Make
+	clear that code from SGI has diverged greatly.  Remove references
+	to library snapshots and what's-new sections.
+	* docs/html/faq/index.txt:  Regenerate.
+
 2004-07-28  Matt Austern  <austern@apple.com>
 
 	* include/bits/stl_construct.h (_Destroy): New three-argument

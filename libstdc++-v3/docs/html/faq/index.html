@@ -13,10 +13,6 @@
 <link rel="Start" rev="Help" href="../documentation.html" type="text/html"
  title="GNU C++ Standard Library" />
 <link rel="Copyright" href="../17_intro/license.html" type="text/html" />
-<!--
-  ** Locations of "the most recent snapshot is the Nth" text are
-  ** answers 1_1, .
--->
 </head>
 <body>
 
@@ -137,12 +133,8 @@
    <h2><a name="1_1">1.1 What is libstdc++-v3?</a></h2>
       <p>The GNU Standard C++ Library v3 is an
          ongoing project to implement the ISO 14882 Standard C++ library
-         as described in chapters 17 through 27 and annex D.  As the
-         library reaches stable plateaus, it is captured in a snapshot
-         and released.  The latest release is
-         <a href="http://gcc.gnu.org/libstdc++/index.html#download">the
-         fourteenth snapshot</a> but newer versions have been included
-         in recent GCC releases.  For those who want to see exactly how
+         as described in chapters 17 through 27 and annex D.
+         For those who want to see exactly how
          far the project has come, or just want the latest
          bleeding-edge code, the up-to-date source is available over
          anonymous CVS, and can even be browsed over the Web (see
@@ -169,10 +161,10 @@
       <p>The GNU C/C++/FORTRAN/&lt;pick-a-language&gt; compiler
          (<code>gcc</code>, <code>g++</code>, etc) is widely considered to be
          one of the leading compilers in the world.  Its development
-         has recently been taken over by the
+         is overseen by the
          <a href="http://gcc.gnu.org/">GCC team</a>.  All of
          the rapid development and near-legendary
-         <a href="http://gcc.gnu.org/gcc-3.0/buildstat.html">portability</a>
+         <a href="http://gcc.gnu.org/gcc-3.3/buildstat.html">portability</a>
          that are the hallmarks of an open-source project are being
          applied to libstdc++.
       </p>
@@ -209,7 +201,7 @@
       </p>
       <p>The subset commonly known as the Standard Template Library
          (chapters 23 through 25, mostly) is adapted from the final release
-         of the SGI STL.
+         of the SGI STL, with extensive changes.
       </p>
 
 <hr />
@@ -306,7 +298,7 @@ which is no longer available, thanks deja...-->
                  series was.  If you are using GCC 2.95, you can still
                  build earlier snapshots of libstdc++.
             </li>
-            <li> GNU Make is recommended, but should not be required.
+            <li> GNU Make is required for GCC 3.4 and later.
             </li>
             <li> The GNU Autotools are needed if you are messing with
                  the configury or makefiles.
@@ -636,25 +628,16 @@ which is no longer available, thanks deja...-->
       respond to your report.  Thank you.
    </p>
 
+<hr />
    <h2><a name="4_1">4.1 What works already?</a></h2>
       <p>Short answer:  Pretty much everything <em>works</em> except for some
          corner cases.  Also, localization is incomplete.  For whether it works
          well, or as you expect it to work, see 5.2.
       </p>
       <p>Long answer:  See the docs/html/17_intro/CHECKLIST file, which is
-         badly outdated...
+         badly outdated...  Also see the RELEASE-NOTES file, which is kept
+         more up to date.
       </p>
-      <p>What follows is a verbatim clip from the &quot;Status&quot; section
-         of the RELEASE-NOTES for the latest snapshot.  For a list of
-         fixed bugs, see that file.
-      </p>
-
-<!-- Yeah, I meant that "verbatim clip" thing literally... :-)  -->
-
-<pre>
-New:
-</pre>
-
 
 <hr />
    <h2><a name="4_2">4.2 Bugs in gcc/g++ (not libstdc++-v3)</a></h2>
@@ -915,9 +898,9 @@ http://clisp.cons.org/~haible/gccinclude-glibc-2.2-compat.diff
 <hr />
    <h2><a name="5_3">5.3 What about the STL from SGI?</a></h2>
       <p>The <a href="http://www.sgi.com/tech/stl/">STL from SGI</a>,
-         version 3.3, was the most recent merge of the STL codebase.  The
-         code in libstdc++ contains many fixes and changes, and it is
-         very likely that the SGI code is no longer under active
+         version 3.3, was the final merge of the STL codebase.  The
+         code in libstdc++ contains many fixes and changes, and
+         the SGI code is no longer under active
          development.  We expect that no future merges will take place.
       </p>
       <p>In particular, <code>string</code> is not from SGI and makes no
