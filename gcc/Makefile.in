@@ -786,7 +786,7 @@ libgcc1.a: libgcc1.c $(CONFIG_H) $(LIB1FUNCS_EXTRA) config.status
 	  else true; \
 	  fi; \
 	done
-	$(RANLIB) tmplibgcc1.a
+	-if $(RANLIB_TEST) ; then $(RANLIB) tmplibgcc1.a; else true; fi
 	mv tmplibgcc1.a libgcc1.a
 
 # Build libgcc1.a from assembler source.  LIB1ASMFUNCS is the list of
@@ -1021,13 +1021,13 @@ c-parse.o : $(srcdir)/c-parse.c $(CONFIG_H) $(TREE_H) c-lex.h \
 $(srcdir)/c-parse.h: $(srcdir)/c-parse.c
 $(srcdir)/c-parse.c: $(srcdir)/c-parse.y
 	cd $(srcdir); $(BISON) $(BISONFLAGS) -d c-parse.y -o c-parse.c
-$(srcdir)/c-parse.y: $(srcdir)/c-parse.in
+$(srcdir)/c-parse.y: c-parse.in
 	sed -e "/^ifobjc$$/,/^end ifobjc$$/d" \
 	  -e "/^ifc$$/d" -e "/^end ifc$$/d" \
 	  $(srcdir)/c-parse.in >tmp-c-parse.y
 	$(srcdir)/move-if-change tmp-c-parse.y $(srcdir)/c-parse.y
 
-$(srcdir)/c-gperf.h: $(srcdir)/c-parse.gperf
+$(srcdir)/c-gperf.h: c-parse.gperf
 	gperf -p -j1 -i 1 -g -o -t -G -N is_reserved_word -k1,3,$$ \
 	   $(srcdir)/c-parse.gperf >tmp-gperf.h
 	 $(srcdir)/move-if-change tmp-gperf.h $(srcdir)/c-gperf.h
@@ -1516,10 +1516,10 @@ $(srcdir)/bi-parser.h: $(srcdir)/bi-parser.c
 $(srcdir)/bi-parser.c: $(srcdir)/bi-parser.y
 	cd $(srcdir); $(BISON) $(BISONFLAGS) -d bi-parser.y -o bi-parser.c
 
-bi-parser.o: bi-parser.c bi-defs.h $(build_xm_file)
+bi-parser.o: $(srcdir)/bi-parser.c bi-defs.h $(build_xm_file)
 	$(HOST_CC) -c $(HOST_CFLAGS) $(HOST_CPPFLAGS) $(INCLUDES) \
 	   $(srcdir)/bi-parser.c
-bi-lexer.o: bi-lexer.c bi-parser.h $(build_xm_file)
+bi-lexer.o: bi-lexer.c $(srcdir)/bi-parser.h $(build_xm_file)
 	$(HOST_CC) -c $(HOST_CFLAGS) $(HOST_CPPFLAGS) $(INCLUDES) \
 	   $(srcdir)/bi-lexer.c
 bi-arity.o: bi-arity.c bi-defs.h $(build_xm_file)
@@ -1573,7 +1573,7 @@ cpp: $(CCCP)
 cccp: cccp.o cexp.o version.o $(LIBDEPS)
 	$(CC) $(ALL_CFLAGS) $(LDFLAGS) -o $@ cccp.o cexp.o \
 	  version.o $(LIBS)
-cexp.o: cexp.c $(CONFIG_H)
+cexp.o: $(srcdir)/cexp.c $(CONFIG_H)
 	$(CC) $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) -c $(srcdir)/cexp.c
 $(srcdir)/cexp.c: $(srcdir)/cexp.y
 	cd $(srcdir); $(BISON) -o cexp.c cexp.y
@@ -2237,8 +2237,9 @@ gcc.xtar: distdir
 
 # This target exists to do the initial work before the language specific
 # stuff gets done.
-distdir-start: doc $(srcdir)/INSTALL c-parse.y $(srcdir)/c-gperf.h objc-parse.y \
-  c-parse.c objc-parse.c cexp.c
+distdir-start: doc $(srcdir)/INSTALL $(srcdir)/c-parse.y $(srcdir)/c-gperf.h \
+  $(srcdir)/objc-parse.y $(srcdir)/c-parse.c $(srcdir)/objc-parse.c \
+  $(srcdir)/cexp.c
 	@if grep -s "for version ${mainversion}" gcc.texi > /dev/null; \
 	then true; \
 	else echo "You must update the version number in \`gcc.texi'"; sleep 10;\
