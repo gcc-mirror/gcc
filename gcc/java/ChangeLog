@@ -1,3 +1,8 @@
+2003-01-30  Tom Tromey  <tromey@redhat.com>
+
+	* jcf-parse.c (read_class): Update identifier's class value if it
+	changed during parsing.
+
 2003-01-29  Tom Tromey  <tromey@redhat.com>
 
 	* parse.y (patch_assignment): Only transform the rhs of an
