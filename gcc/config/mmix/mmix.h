@@ -953,9 +953,6 @@ const_section ()						\
 #define ASM_FILE_END(STREAM) \
  mmix_asm_file_end (STREAM)
 
-#define ASM_IDENTIFY_GCC(STREAM) \
- mmix_asm_identify_gcc (STREAM)
-
 /* While any other punctuation character but ";" would do, we prefer "%"
    or "!"; "!" is an unary operator and so will not be mistakenly included
    in correctly formed expressions.  The hash character adds mass; catches
