@@ -1,3 +1,9 @@
+2002-07-18  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
+
+	* libjava.compile/compile.exp: Sort sources.
+	* libjava.jni/jni.exp (gcj_jni_run): Likewise.
+	* libjava.lang/lang.exp: Likewise.
+
 2002-07-02  Andrew Haley  <aph@redhat.com>
 
 	* libjava.lang/inline.java: New file.
