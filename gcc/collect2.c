@@ -1534,7 +1534,7 @@ main (argc, argv)
      undefined symbols from repository information.  */
 
   /* On AIX we do this later.  */
-#ifdef COLLECT_EXPORT_LIST
+#ifndef COLLECT_EXPORT_LIST
   do_tlink (ld1_argv, object_lst); 
 #endif
 
