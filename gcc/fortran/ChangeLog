@@ -1,3 +1,12 @@
+2004-09-16  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* array.c, data.c, decl.c, dependency.c, error.c, f95-lang.c,
+	interface.c, intrinsic.c, io.c, misc.c, module.c, parse.h,
+	resolve.c, scanner.c, trans-array.c, trans-array.h,
+	trans-common.c, trans-const.h, trans-decl.c, trans-expr.c,
+	trans-intrinsic.c, trans-stmt.c, trans-types.c, trans.c,
+	trans.h: Fix comment typos.  Follow spelling conventions.
+
 2004-09-16  Victor Leikehman  <lei@il.ibm.com>
 
 	PR/15364

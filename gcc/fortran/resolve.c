@@ -2735,7 +2735,7 @@ validate_case_label_expr (gfc_expr * e, gfc_expr * case_expr)
    because they are illegal and we never even try to generate code.
 
    We have the additional caveat that a SELECT construct could have
-   been a computed GOTO in the source code. Furtunately we can fairly
+   been a computed GOTO in the source code. Fortunately we can fairly
    easily work around that here: The case_expr for a "real" SELECT CASE
    is in code->expr1, but for a computed GOTO it is in code->expr2. All
    we have to do is make sure that the case_expr is a scalar integer
@@ -4160,7 +4160,7 @@ check_data_variable (gfc_data_variable * var, locus * where)
 	}
       gcc_assert (ref);
 
-      /* Set marks asscording to the reference pattern.  */
+      /* Set marks according to the reference pattern.  */
       switch (ref->u.ar.type)
 	{
 	case AR_FULL:

@@ -1133,7 +1133,7 @@ gfc_conv_function_call (gfc_se * se, gfc_symbol * sym,
 		 actual argument is passed according to the
 		 corresponding formal argument.  If the corresponding
 		 formal argument is a POINTER or assumed shape, we do
-		 not use g77's calling aonvention, and pass the
+		 not use g77's calling convention, and pass the
 		 address of the array descriptor instead. Otherwise we
 		 use g77's calling convention.  */
 	      int f;

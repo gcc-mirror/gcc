@@ -689,7 +689,7 @@ load_line (FILE * input, char **pbuf, char *filename, int linenum)
   static int buflen = 0;
   char *buffer;
 
-  /* Detemine the maximum allowed line length.  */
+  /* Determine the maximum allowed line length.  */
   if (gfc_current_form == FORM_FREE)
     maxlen = GFC_MAX_LINE;
   else
@@ -739,7 +739,7 @@ load_line (FILE * input, char **pbuf, char *filename, int linenum)
 	}
 
       if (gfc_current_form == FORM_FIXED && c == '\t' && i <= 6)
-	{			/* Tab expandsion.  */
+	{			/* Tab expansion.  */
 	  while (i <= 6)
 	    {
 	      *buffer++ = ' ';

@@ -619,7 +619,7 @@ gfc_conv_intrinsic_exponent (gfc_se * se, gfc_expr * expr)
 }
 
 /* Evaluate a single upper or lower bound.  */
-/* TODO: bound intrinsic generates way too much unneccessary code.  */
+/* TODO: bound intrinsic generates way too much unnecessary code.  */
 
 static void
 gfc_conv_intrinsic_bound (gfc_se * se, gfc_expr * expr, int upper)
@@ -2286,7 +2286,7 @@ gfc_conv_intrinsic_scan (gfc_se * se, gfc_expr * expr)
 
 
 /* Verify that a set of characters contains all the characters in a string
-   by indentifying the position of the first character in a string of
+   by identifying the position of the first character in a string of
    characters that does not appear in a given set of characters.  */
 
 static void

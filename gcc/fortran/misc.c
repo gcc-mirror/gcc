@@ -178,7 +178,7 @@ gfc_basic_typename (bt type)
 }
 
 
-/* Return a string descibing the type and kind of a typespec.  Because
+/* Return a string describing the type and kind of a typespec.  Because
    we return alternating buffers, this subroutine can appear twice in
    the argument list of a single statement.  */
 

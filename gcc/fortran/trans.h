@@ -35,7 +35,7 @@ typedef struct
 }
 stmtblock_t;
 
-/* a simplified expresson */
+/* a simplified expression */
 typedef struct gfc_se
 {
   /* Code blocks to be executed before and after using the value.  */
@@ -199,7 +199,7 @@ typedef struct gfc_ss
 gfc_ss;
 #define gfc_get_ss() gfc_getmem(sizeof(gfc_ss))
 
-/* The contents of this aren't actualy used.  A NULL SS chain indicates a
+/* The contents of this aren't actually used.  A NULL SS chain indicates a
    scalar expression, so this pointer is used to terminate SS chains.  */
 extern gfc_ss * const gfc_ss_terminator;
 
@@ -415,7 +415,7 @@ void gfc_generate_constructors (void);
 /* Generate a runtime error check.  */
 void gfc_trans_runtime_check (tree, tree, stmtblock_t *);
 
-/* Generate code for an assigment, includes scalarization.  */
+/* Generate code for an assignment, includes scalarization.  */
 tree gfc_trans_assignment (gfc_expr *, gfc_expr *);
 
 /* Generate code for an pointer assignment.  */
@@ -521,7 +521,7 @@ struct lang_decl		GTY(())
   tree saved_descriptor;
   /* Assigned integer nodes.  Stringlength is the IO format string's length.
      Addr is the address of the string or the target label. Stringlength is
-     initialized to -2 and assiged to -1 when addr is assigned to the
+     initialized to -2 and assigned to -1 when addr is assigned to the
      address of target label.  */
   tree stringlen;
   tree addr;
