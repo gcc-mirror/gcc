@@ -1,3 +1,8 @@
+2003-10-22  Kriang Lerdsuwanakij  <lerdsuwa@users.sourceforge.net>
+
+	* decl.c (start_decl): Exit if push_template_decl returns
+	error_mark_node.
+
 2003-10-20  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* ChangeLog: Fix typos.
