@@ -1633,9 +1633,6 @@ init_spec (void)
 #else
 			    "-lgcc_s%M"
 #endif
-#ifdef USE_LIBUNWIND_EXCEPTIONS
-			    " -lunwind"
-#endif
 			    ,
 			    "-lgcc",
 			    "-lgcc_eh"
@@ -1656,9 +1653,6 @@ init_spec (void)
 			    "-lgcc_s"
 #else
 			    "-lgcc_s%M"
-#endif
-#ifdef USE_LIBUNWIND_EXCEPTIONS
-			    " -lunwind"
 #endif
 			    ,
 			    "libgcc.a%s",

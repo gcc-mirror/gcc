@@ -26,9 +26,11 @@ LIBGCC1_TEST =
 LIB2ADDEH =
 
 SHLIB_EXT = .so
+# Must include -lunwind in the link, so that libgcc_s.so has the necessary
+# DT_NEEDED entry for libunwind.
 SHLIB_LINK = $(GCC_FOR_TARGET) $(LIBGCC2_CFLAGS) -shared -nodefaultlibs \
 	-Wl,+h,@shlib_base_name@.so.0 \
-	-o @shlib_base_name@.so @multilib_flags@ @shlib_objs@ -lc && \
+	-o @shlib_base_name@.so @multilib_flags@ @shlib_objs@ -lunwind -lc && \
 	rm -f @shlib_base_name@.so.0 && \
 	$(LN_S) @shlib_base_name@.so @shlib_base_name@.so.0
 # $(slibdir) double quoted to protect it from expansion while building
