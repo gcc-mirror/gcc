@@ -2102,6 +2102,42 @@ push_template_decl_real (decl, is_friend)
       && CLASSTYPE_TEMPLATE_SPECIALIZATION (TREE_TYPE (decl)))
     return process_partial_specialization (decl);
 
+  /* [temp.param] A default template-argument shall not be specified in a
+     function template declaration or a function template definition, nor
+     in the template-parameter-list of the definition of a member of a
+     class template.  */
+  {
+    tree parms;
+    int issued_default_arg_message = 0;
+
+    parms = current_template_parms;
+    if (primary)
+      parms = TREE_CHAIN (parms);
+    for (; parms; parms = TREE_CHAIN (parms))
+      {
+	tree inner_parms = TREE_VALUE (parms);
+	int i, ntparms;
+
+	if (TREE_TYPE (inner_parms))
+	  continue;
+
+	ntparms = TREE_VEC_LENGTH (inner_parms);
+	for (i = 0; i < ntparms; ++i) 
+	  {
+	    if (TREE_PURPOSE (TREE_VEC_ELT (inner_parms, i)))
+	      {
+		if (!issued_default_arg_message)
+		  {
+		    cp_error ("default argument for template parameter of class enclosing `%D'", 
+			      decl);
+		    issued_default_arg_message = 1;
+		  }
+		TREE_PURPOSE (TREE_VEC_ELT (inner_parms, i)) = NULL_TREE;
+	      }
+	  }
+      }
+  }
+
   args = current_template_args ();
 
   if (!ctx 
