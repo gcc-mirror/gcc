@@ -79,6 +79,9 @@
    this is either `int' or `gid_t'. */
 #undef GETGROUPS_T
 
+/* Define if the zone collector is in use */
+#undef GGC_ZONE
+
 /* Define to 1 if you have the `alphasort' function. */
 #undef HAVE_ALPHASORT
 

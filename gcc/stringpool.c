@@ -197,7 +197,8 @@ gt_pch_p_S (void *obj ATTRIBUTE_UNUSED, void *x ATTRIBUTE_UNUSED,
 void
 gt_pch_n_S (const void *x)
 {
-  gt_pch_note_object ((void *)x, (void *)x, &gt_pch_p_S);
+  gt_pch_note_object ((void *)x, (void *)x, &gt_pch_p_S,
+		      gt_types_enum_last);
 }
 
 /* Handle saving and restoring the string pool for PCH.  */

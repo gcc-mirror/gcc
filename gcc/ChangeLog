@@ -1,4 +1,42 @@
 2005-03-13  Daniel Jacobowitz  <dan@codesourcery.com>
+
+	* ggc-zone.c: Rewritten.
+
+	* alloc-pool.c (dump_alloc_pool_statistics): Don't print statistics
+	if there are none.
+	* configure.ac: Define GGC_ZONE for --with-gc=zone.
+	* config.in: Regenerated.
+	* configure: Regenerated.
+	* gentype.c (write_types_process_field, write_func_for_structure):
+	Pass new argument to gt_pch_note_object.
+	* ggc-common.c (struct ptr_data): Add TYPE.
+	(gt_pch_note_object): Take TYPE argument and save it.
+	(call_count): Update call to ggc_pch_count_object.
+	(call_alloc): Update call to ggc_pch_alloc_object.
+	(gt_pch_save): Call ggc_pch_prepare_write after paddng the PCH
+	file.
+	* ggc-none.c (rtl_zone, garbage_zone, ggc_alloc_zone_stat): Delete.
+	* ggc-page.c (rtl_zone, tree_zone, garbage_zone)
+	(ggc_alloc_zone_stat): Delete.
+	(ggc_pch_count_object, ggc_pch_alloc_object): Add TYPE argument.
+	* ggc.h (gt_pch_note_object, ggc_pch_count_object)
+	(ggc_pch_alloc_object): Update prototypes.
+	(garbage_zone): Delete.
+	(tree_zone, rtl_zone, ggc_alloc_zone_stat, ggc_alloc_zone): Move to
+	GGC_ZONE conditional.  Update.  Change tree_zone and rtl_zone into
+	pointers.
+	(tree_id_zone): New variable.
+	(ggc_alloc_cleared_zone): Remove unused.
+	(ggc_alloc_zone): Define.
+	(ggc_alloc_rtvec, ggc_alloc_tree): Update to use ggc_alloc_zone.
+	* rtl.c (rtx_alloc_stat, shallow_copy_rtx_stat): Use
+	ggc_alloc_zone_stat.
+	* stringpool.c (gt_pch_n_S): Update call to gt_pch_note_object.
+	* tree.c (copy_node_stat, make_tree_binfo_stat, make_tree_vec_stat)
+	(tree_cons_stat, build1_stat): Update call to ggc_alloc_zone_stat.
+	(make_node_stat): Likewise.  Use tree_id_zone.
+
+2005-03-13  Daniel Jacobowitz  <dan@codesourcery.com>
 	    Joseph S. Myers  <joseph@codesourcery.com>
 
 	* configure.ac: Check for MIPS TLS.

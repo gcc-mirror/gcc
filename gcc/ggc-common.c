@@ -244,6 +244,7 @@ struct ptr_data
   gt_handle_reorder reorder_fn;
   size_t size;
   void *new_addr;
+  enum gt_types_enum type;
 };
 
 #define POINTER_HASH(x) (hashval_t)((long)x >> 3)
@@ -252,7 +253,8 @@ struct ptr_data
 
 int
 gt_pch_note_object (void *obj, void *note_ptr_cookie,
-		    gt_note_pointers note_ptr_fn)
+		    gt_note_pointers note_ptr_fn,
+		    enum gt_types_enum type)
 {
   struct ptr_data **slot;
 
@@ -277,6 +279,7 @@ gt_pch_note_object (void *obj, void *note_ptr_cookie,
     (*slot)->size = strlen (obj) + 1;
   else
     (*slot)->size = ggc_get_size (obj);
+  (*slot)->type = type;
   return 1;
 }
 
@@ -330,7 +333,9 @@ call_count (void **slot, void *state_p)
   struct ptr_data *d = (struct ptr_data *)*slot;
   struct traversal_state *state = (struct traversal_state *)state_p;
 
-  ggc_pch_count_object (state->d, d->obj, d->size, d->note_ptr_fn == gt_pch_p_S);
+  ggc_pch_count_object (state->d, d->obj, d->size,
+			d->note_ptr_fn == gt_pch_p_S,
+			d->type);
   state->count++;
   return 1;
 }
@@ -341,7 +346,9 @@ call_alloc (void **slot, void *state_p)
   struct ptr_data *d = (struct ptr_data *)*slot;
   struct traversal_state *state = (struct traversal_state *)state_p;
 
-  d->new_addr = ggc_pch_alloc_object (state->d, d->obj, d->size, d->note_ptr_fn == gt_pch_p_S);
+  d->new_addr = ggc_pch_alloc_object (state->d, d->obj, d->size,
+				      d->note_ptr_fn == gt_pch_p_S,
+				      d->type);
   state->ptrs[state->ptrs_i++] = d;
   return 1;
 }
@@ -476,8 +483,6 @@ gt_pch_save (FILE *f)
   write_pch_globals (gt_ggc_rtab, &state);
   write_pch_globals (gt_pch_cache_rtab, &state);
 
-  ggc_pch_prepare_write (state.d, state.f);
-
   /* Pad the PCH file so that the mmapped area starts on an allocation
      granularity (usually page) boundary.  */
   {
@@ -495,6 +500,8 @@ gt_pch_save (FILE *f)
   if (mmi.offset != 0
       && fseek (state.f, mmi.offset, SEEK_SET) != 0)
     fatal_error ("can't write padding to PCH file: %m");
+
+  ggc_pch_prepare_write (state.d, state.f);
 
   /* Actually write out the objects.  */
   for (i = 0; i < state.count; i++)
