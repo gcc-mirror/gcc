@@ -1,3 +1,11 @@
+1999-12-08  Alexandre Oliva  <oliva@lsd.ic.unicamp.br>
+
+	* config/sparc/sol2-64.h: Same as sol2-sld-64.h, except that
+	`-m EMULATION' is added to non-default LINK_ARCH_SPECs.
+	* configure.in: Use sol2-64.h instead of sol2-sld-64.h if linker
+	is GNU ld.
+	* configure: Rebuilt.
+
 Wed Dec  8 03:45:40 1999  Richard Henderson  <rth@cygnus.com>
 
 	* alpha.c (secondary_reload_class): For !BWX, sub-simode
