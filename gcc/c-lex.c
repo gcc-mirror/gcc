@@ -1370,24 +1370,10 @@ yylex ()
 #ifdef ERANGE
 	    if (errno == ERANGE && !flag_traditional && pedantic)
 	      {
-		char *p1 = token_buffer;
-		/* Check for "0.0" and variants;
-		   SunOS 4 spuriously returns ERANGE for them.  */
-		while (*p1 == '0') p1++;
-		if (*p1 == '.')
-		  {
-		    p1++;
-		    while (*p1 == '0') p1++;
-		  }
-		if (*p1 == 'e' || *p1 == 'E')
-		  {
-		    /* with significand==0, ignore the exponent */
-		    p1++;
-		    while (*p1 != 0) p1++;
-		  }
-		/* ERANGE is also reported for underflow,
-		   so test the value to distinguish overflow from that.  */
-		if (*p1 != 0 && (value > 1.0 || value < -1.0))
+  		/* ERANGE is also reported for underflow,
+  		   so test the value to distinguish overflow from that.  */
+		if (REAL_VALUES_LESS (dconst1, value)
+		    || REAL_VALUES_LESS (value, dconstm1))
 		  {
 		    pedwarn ("floating point number exceeds range of `double'");
 		    exceeds_double = 1;
