@@ -51,7 +51,7 @@ typedef enum
   while(0)
 
 static void
-die ()
+die (void)
 {
   exit (1);
 }
