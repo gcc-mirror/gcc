@@ -46,8 +46,40 @@ test01()
   VERIFY( bool(sentry1) == true );
 }
 
+// libstdc++/9563
+struct buf: std::streambuf
+{
+  std::ios *io_;
+  
+  buf (std::ios *io): io_ (io) { }
+  
+  virtual int sync ()
+  {
+    io_->setstate (std::ios::failbit);
+    return 0;
+  }
+};
+
+void
+test02()
+{
+  bool test = true;
+
+  buf b(0);
+  std::ostream strm(&b);
+  
+  buf tb(&strm);
+  std::ostream tied(&tb);
+
+  strm.tie(&tied);
+  std::ostream::sentry s(strm);
+
+  VERIFY( !s );
+}
+
 int main() 
 {
   test01();
+  test02();
   return 0;
 }
