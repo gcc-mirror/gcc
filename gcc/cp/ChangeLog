@@ -1,5 +1,31 @@
 1999-04-30  Mark Mitchell  <mark@codesourcery.com>
 
+	* class.c (build_vtable): Use build_lang_decl when building
+	vtables, not just build_decl.
+	(prepare_fresh_vtable): Likewise.
+	* decl.c (wrapup_globals_for_namespace): Mark vtables as
+	DECL_EXTERNAL when calling wrapup_global_declarations.
+	* decl2.c (priority_info_s): Add initializations_p and
+	destructions_p members.
+	(finish_vtable_vardecl): Use TREE_SYMBOL_REFERENCED, not TREE_USED,
+	when deciding what vtables to write out.
+	(ssdf_decls): New variable.
+	(ssdf_decls_used): Likewise.
+	(start_static_storage_duration_function): Deal with being called
+	multiple times.  Avoid inlining this function.
+	(generate_inits_for_priority): Deal with reuse of priority map.
+	(get_priority_info): Clear initializations_p and destructions_p.
+	(do_static_initialization): Tweak comment.
+	(do_static_destruction): Likewise.  Fix condition on sentries for
+	destruction. 
+	(generate_ctor_or_dtor_function): Call all of the static storage
+	duration functions.
+	(generate_ctor_or_dtor_function_for_priority): Check
+	initializations_p and destructions_p to see what priorities need
+	initialization functions.
+	(finish_file): Rework to generate multiple static storage duration
+	functions, rather than just one.
+	
 	* typeck.c (build_const_cast): Tweak last change to handle
 	templates correctly.
 

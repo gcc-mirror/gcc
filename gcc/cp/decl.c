@@ -1988,6 +1988,7 @@ wrapup_globals_for_namespace (namespace, data)
   int len = list_length (globals);
   tree *vec = (tree *) alloca (sizeof (tree) * len);
   int i;
+  int result;
   tree decl;
   int last_time = (data != 0);
 
@@ -2001,11 +2002,35 @@ wrapup_globals_for_namespace (namespace, data)
   for (i = 0, decl = globals; i < len; i++, decl = TREE_CHAIN (decl))
     vec[len - i - 1] = decl;
   
-  if (!last_time)
-    return wrapup_global_declarations (vec, len);
+  if (last_time)
+    {
+      check_global_declarations (vec, len);
+      return 0;
+    }
 
-  check_global_declarations (vec, len);
-  return 0;
+  /* Temporarily mark vtables as external.  That prevents
+     wrapup_global_declarations from writing them out; we must process
+     them ourselves in finish_vtable_vardecl.  */
+  for (i = 0; i < len; ++i)
+    if (vtable_decl_p (vec[i], /*data=*/0))
+      {
+	DECL_NOT_REALLY_EXTERN (vec[i]) = 1;
+	DECL_EXTERNAL (vec[i]) = 1;
+      }
+
+  /* Write out any globals that need to be output.  */
+  result = wrapup_global_declarations (vec, len);
+
+  /* Undo the hack to DECL_EXTERNAL above.  */
+  for (i = 0; i < len; ++i)
+    if (vtable_decl_p (vec[i], /*data=*/0)
+	&& DECL_NOT_REALLY_EXTERN (vec[i]))
+      {
+	DECL_NOT_REALLY_EXTERN (vec[i]) = 0;
+	DECL_EXTERNAL (vec[i]) = 0;
+      }
+
+  return result;
 }
 
 

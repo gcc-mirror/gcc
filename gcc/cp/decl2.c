@@ -59,6 +59,12 @@ typedef struct priority_info_s {
   /* A label indicating where we should generate the next destruction
      with this priority.  */
   rtx destruction_sequence;
+  /* Non-zero if there have been any initializations at this priority
+     throughout the translation unit.  */
+  int initializations_p;
+  /* Non-zero if there have been any destructions at this priority
+     throughout the translation unit.  */
+  int destructions_p;
 } *priority_info;
 
 static tree get_sentry PROTO((tree));
@@ -2655,7 +2661,9 @@ finish_vtable_vardecl (t, data)
   import_export_vtable (vars, ctype, 1);
 
   if (! DECL_EXTERNAL (vars)
-      && (DECL_INTERFACE_KNOWN (vars) || TREE_USED (vars))
+      && (DECL_INTERFACE_KNOWN (vars) 
+	  || TREE_SYMBOL_REFERENCED (DECL_ASSEMBLER_NAME (vars))
+	  || (hack_decl_function_context (vars) && TREE_USED (vars)))
       && ! TREE_ASM_WRITTEN (vars))
     {
       /* Write it out.  */
@@ -2700,7 +2708,7 @@ finish_vtable_vardecl (t, data)
 
       return 1;
     }
-  else if (! TREE_USED (vars))
+  else if (! TREE_SYMBOL_REFERENCED (DECL_ASSEMBLER_NAME (vars)))
     /* We don't know what to do with this one yet.  */
     return 0;
 
@@ -2973,6 +2981,11 @@ static tree priority_decl;
 /* The declaration for the static storage duration function.  */
 static tree ssdf_decl;
 
+/* All the static storage duration functions created in this
+   translation unit.  */
+static varray_type ssdf_decls;
+static size_t ssdf_decls_used;
+
 /* A map from priority levels to information about that priority
    level.  There may be many such levels, so efficient lookup is
    important.  */
@@ -2993,8 +3006,22 @@ static splay_tree priority_info_map;
 static void
 start_static_storage_duration_function ()
 {
+  static unsigned ssdf_number;
+
   tree parm_types;
   tree type;
+  char id[sizeof (SSDF_IDENTIFIER) + 1 /* '\0' */ + 32];
+
+  /* Create the identifier for this function.  It will be of the form
+     SSDF_IDENTIFIER_<number>.  */
+  sprintf (id, "%s_%u", SSDF_IDENTIFIER, ssdf_number++);
+  if (ssdf_number == 0)
+    {
+      /* Overflow occurred.  That means there are at least 4 billion
+	 initialization functions.  */
+      sorry ("too many initialization functions required");
+      my_friendly_abort (19990430);
+    }
 
   /* Create the parameters.  */
   parm_types = void_list_node;
@@ -3004,11 +3031,35 @@ start_static_storage_duration_function ()
 
   /* Create the FUNCTION_DECL itself.  */
   ssdf_decl = build_lang_decl (FUNCTION_DECL, 
-			       get_identifier (SSDF_IDENTIFIER),
+			       get_identifier (id),
 			       type);
   TREE_PUBLIC (ssdf_decl) = 0;
   DECL_ARTIFICIAL (ssdf_decl) = 1;
-  DECL_INLINE (ssdf_decl) = 1;
+
+  /* Put this function in the list of functions to be called from the
+     static constructors and destructors.  */
+  if (!ssdf_decls)
+    {
+      VARRAY_TREE_INIT (ssdf_decls, 32, "ssdf_decls");
+
+      /* Take this opportunity to initialize the map from priority
+	 numbers to information about that priority level. */
+      priority_info_map = splay_tree_new (splay_tree_compare_ints,
+					  /*delete_key_fn=*/0,
+					  /*delete_value_fn=*/
+					  (splay_tree_delete_value_fn) &free);
+
+      /* We always need to generate functions for the
+	 DEFAULT_INIT_PRIORITY so enter it now.  That way when we walk
+	 priorities later, we'll be sure to find the
+	 DEFAULT_INIT_PRIORITY.  */
+      get_priority_info (DEFAULT_INIT_PRIORITY);
+    }
+
+  if (ssdf_decls_used == ssdf_decls->num_elements)
+    VARRAY_GROW (ssdf_decls, 2 * ssdf_decls_used);
+  VARRAY_TREE (ssdf_decls, ssdf_decls_used) = ssdf_decl;
+  ++ssdf_decls_used;
 
   /* Create the argument list.  */
   initialize_p_decl = build_decl (PARM_DECL,
@@ -3045,12 +3096,10 @@ start_static_storage_duration_function ()
   push_momentary ();
   expand_start_bindings (0);
 
-  /* Initialize the map from priority numbers to information about
-     that priority level. */
-  priority_info_map = splay_tree_new (splay_tree_compare_ints,
-				      /*delete_key_fn=*/0,
-				      /*delete_value_fn=*/
-				      (splay_tree_delete_value_fn) &free);
+  /* This function must not be deferred because we are depending on
+     its compilation to tell us what is TREE_SYMBOL_REFERENCED.  */
+  current_function_cannot_inline 
+    = "static storage duration functions cannot be inlined";
 }
 
 /* Generate the initialization code for the priority indicated in N.  */
@@ -3093,6 +3142,8 @@ generate_inits_for_priority (n, data)
       end_sequence ();
 
       emit_insn (insns);
+      pi->initialization_sequence = NULL_RTX;
+      pi->initializations_p = 1;
     }
 
   /* Do the destructions.  */
@@ -3106,6 +3157,8 @@ generate_inits_for_priority (n, data)
       end_sequence ();
 
       emit_insn (insns);
+      pi->destruction_sequence = NULL_RTX;
+      pi->destructions_p = 1;
     }
   
   /* Close out the conditionals.  */
@@ -3154,6 +3207,8 @@ get_priority_info (priority)
       pi = (priority_info) xmalloc (sizeof (struct priority_info_s));
       pi->initialization_sequence = NULL_RTX;
       pi->destruction_sequence = NULL_RTX;
+      pi->initializations_p = 0;
+      pi->destructions_p = 0;
       splay_tree_insert (priority_info_map,
 			 (splay_tree_key) priority,
 			 (splay_tree_value) pi);
@@ -3221,7 +3276,7 @@ do_static_initialization (decl, init, sentry, priority)
   expand_end_target_temps ();
 
   /* Cleanup any deferred pops from function calls.  This would be done
-     by expand_end_cond, but we also need it when !sentry, since we are
+     by expand_end_cond, but we also need it when !SENTRY, since we are
      constructing these sequences by parts.  */
   do_pending_stack_adjust ();
 
@@ -3266,21 +3321,21 @@ do_static_destruction (decl, sentry, priority)
      variable in question.  */
   emit_note (input_filename, lineno);
   
-  /* If there's a SENTRY, we only do the initialization if it is
-     one, i.e., if we are the last to initialize it.  */
+  /* If there's a SENTRY, we only do the destruction if it is one,
+     i.e., if we are the last to destroy it.  */
   if (sentry)
     expand_start_cond (build_binary_op (EQ_EXPR,
 					build_unary_op (PREDECREMENT_EXPR,
 							sentry,
 							/*nonconvert=*/1),
-					integer_one_node),
+					integer_zero_node),
 		       /*exit_flag=*/0);
   
   /* Actually to the destruction.  */
   expand_expr_stmt (build_cleanup (decl));
 
   /* Cleanup any deferred pops from function calls.  This would be done
-     by expand_end_cond, but we also need it when !sentry, since we are
+     by expand_end_cond, but we also need it when !SENTRY, since we are
      constructing these sequences by parts.  */
   do_pending_stack_adjust ();
 
@@ -3390,6 +3445,7 @@ generate_ctor_or_dtor_function (constructor_p, priority)
 {
   char function_key;
   tree arguments;
+  size_t i;
 
   /* We use `I' to indicate initialization and `D' to indicate
      destruction.  */
@@ -3403,11 +3459,15 @@ generate_ctor_or_dtor_function (constructor_p, priority)
 
   /* Call the static storage duration function with appropriate
      arguments.  */
-  arguments = tree_cons (NULL_TREE, build_int_2 (priority, 0), 
-			 NULL_TREE);
-  arguments = tree_cons (NULL_TREE, build_int_2 (constructor_p, 0),
-			 arguments);
-  expand_expr_stmt (build_function_call (ssdf_decl, arguments));
+  for (i = 0; i < ssdf_decls_used; ++i) 
+    {
+      arguments = tree_cons (NULL_TREE, build_int_2 (priority, 0), 
+			     NULL_TREE);
+      arguments = tree_cons (NULL_TREE, build_int_2 (constructor_p, 0),
+			     arguments);
+      expand_expr_stmt (build_function_call (VARRAY_TREE (ssdf_decls, i),
+					     arguments));
+    }
 
   /* If we're generating code for the DEFAULT_INIT_PRIORITY, throw in
      calls to any functions marked with attributes indicating that
@@ -3427,28 +3487,23 @@ generate_ctor_or_dtor_function (constructor_p, priority)
 }
 
 /* Generate constructor and destructor functions for the priority
-   indicated by N.  DATA is really an `int*', and it set to `1' if we
-   process the DEFAULT_INIT_PRIORITY.  */
+   indicated by N.  */
 
 static int
 generate_ctor_and_dtor_functions_for_priority (n, data)
      splay_tree_node n;
-     void *data;
+     void *data ATTRIBUTE_UNUSED;
 {
   int priority = (int) n->key;
   priority_info pi = (priority_info) n->value;
-  int *did_default_priority_p = (int*) data;
-
-  if (priority == DEFAULT_INIT_PRIORITY)
-    *did_default_priority_p = 1;
 
   /* Generate the functions themselves, but only if they are really
      needed.  */
-  if (pi->initialization_sequence
+  if (pi->initializations_p
       || (priority == DEFAULT_INIT_PRIORITY && static_ctors))
     generate_ctor_or_dtor_function (/*constructor_p=*/1,
 				    priority);
-  if (pi->destruction_sequence
+  if (pi->destructions_p
       || (priority == DEFAULT_INIT_PRIORITY && static_dtors))
     generate_ctor_or_dtor_function (/*constructor_p=*/0,
 				    priority);
@@ -3467,7 +3522,6 @@ finish_file ()
 {
   extern int lineno;
   int start_time, this_time;
-  int did_default_priority_p = 0;
   tree vars;
   int reconsider;
   size_t i;
@@ -3509,18 +3563,18 @@ finish_file ()
   start_time = get_run_time ();
   permanent_allocation (1);
 
-  /* Create the function that will contain all initializations and
-     destructions for objects with static storage duration.  We cannot
-     conclude that because a symbol is not TREE_SYMBOL_REFERENCED the
-     corresponding entity is not used until we call finish_function
-     for the static storage duration function.  We give C linkage to
-     static constructors and destructors.  */
-  push_lang_context (lang_name_c);
-  start_static_storage_duration_function ();
-  push_to_top_level ();
-
   do 
     {
+      /* We need to start a new initialization function each time
+	 through the loop.  That's because we need to know which
+	 vtables have been referenced, and TREE_SYMBOL_REFERENCED
+	 isn't computed until a function is finished, and written out.
+	 That's a deficiency in the back-end.  When this is fixed,
+	 these initialization functions could all become inline, with
+	 resulting performance improvements.  */
+      start_static_storage_duration_function ();
+      push_to_top_level ();
+
       reconsider = 0;
 
       /* If there are templates that we've put off instantiating, do
@@ -3560,8 +3614,11 @@ finish_file ()
 	  reconsider = 1;
 	  vars = TREE_CHAIN (vars);
 	}
-      push_to_top_level ();
       
+      /* Finish up the static storage duration function for this
+         round.  */
+      finish_static_storage_duration_function ();
+
       /* Go through the various inline functions, and see if any need
 	 synthesizing.  */
       for (i = 0; i < saved_inlines_used; ++i)
@@ -3586,81 +3643,24 @@ finish_file ()
 	      reconsider = 1;
 	    }
 	}
-    } 
-  while (reconsider);
 
-  /* Finish up the static storage duration function, now that we now
-     there can be no more things in need of initialization or
-     destruction.  */
-  pop_from_top_level ();
-  finish_static_storage_duration_function ();
+      /* Mark all functions that might deal with exception-handling as
+	 referenced.  */
+      mark_all_runtime_matches ();
 
-  /* Generate initialization and destruction functions for all
-     priorities for which they are required.  */
-  if (priority_info_map)
-    splay_tree_foreach (priority_info_map, 
-			generate_ctor_and_dtor_functions_for_priority,
-			&did_default_priority_p);
-
-  if (!did_default_priority_p) 
-    {
-      /* Even if there were no explicit initializations or
-	 destructions required, we may still have to handle the
-	 default priority if there functions declared as constructors
-	 or destructors via attributes.  */
-      if (static_ctors)
-	generate_ctor_or_dtor_function (/*constructor_p=*/1, 
-					DEFAULT_INIT_PRIORITY);
-      if (static_dtors)
-	generate_ctor_or_dtor_function (/*constructor_p=*/0, 
-					DEFAULT_INIT_PRIORITY);
-    }
-
-  /* We're done with the splay-tree now.  */
-  if (priority_info_map)
-    splay_tree_delete (priority_info_map);
-
-  /* We're done with static constructors, so we can go back to "C++"
-     linkage now.  */
-  pop_lang_context ();
-
-  /* Mark all functions that might deal with exception-handling as
-     referenced.  */
-  mark_all_runtime_matches ();
-
-  /* Now delete from the chain of variables all virtual function tables.
-     We output them all ourselves, because each will be treated
-     specially.  */
-  walk_globals (vtable_decl_p, prune_vtable_vardecl, /*data=*/0);
-
-  /* We'll let wrapup_global_declarations handle the inline functions,
-     but it will be fooled by DECL_NOT_REALL_EXTERN funtions, so we
-     fix them up here.  */
-  for (i = 0; i < saved_inlines_used; ++i)
-    {
-      tree decl = VARRAY_TREE (saved_inlines, i);
-      
-      if (DECL_NOT_REALLY_EXTERN (decl) && !DECL_COMDAT (decl)
-	  && DECL_INITIAL (decl)) 
-	DECL_EXTERNAL (decl) = 0;
-    }
-
-  /* We haven't handled non-local objects that don't need dynamic
-     initialization.  Do that now.  */
-  do
-    {
-      reconsider = 0;
-
-      /* Above, we hung back on weak functions; they will be defined
-	 where they are needed.  But, here we loop again, so that we
-	 output the things that *are* needed.  */
+      /* We lie to the back-end, pretending that some functions are
+	 not defined when they really are.  This keeps these functions
+	 from being put out unncessarily.  But, we must stop lying
+	 when the functions are referenced, or if they are not comdat
+	 since they need to be put out now.  */
       for (i = 0; i < saved_inlines_used; ++i)
 	{
 	  tree decl = VARRAY_TREE (saved_inlines, i);
       
 	  if (DECL_NOT_REALLY_EXTERN (decl)
 	      && DECL_INITIAL (decl)
-	      && TREE_SYMBOL_REFERENCED (DECL_ASSEMBLER_NAME (decl)))
+	      && (TREE_SYMBOL_REFERENCED (DECL_ASSEMBLER_NAME (decl))
+		  || !DECL_COMDAT (decl)))
 	    DECL_EXTERNAL (decl) = 0;
 	}
 
@@ -3668,7 +3668,6 @@ finish_file ()
 	  && wrapup_global_declarations (&VARRAY_TREE (saved_inlines, 0),
 					 saved_inlines_used))
 	reconsider = 1;
-
       if (walk_namespaces (wrapup_globals_for_namespace, /*data=*/0))
 	reconsider = 1;
 
@@ -3686,8 +3685,31 @@ finish_file ()
 	  && wrapup_global_declarations (&VARRAY_TREE (pending_statics, 0),
 					 pending_statics_used))
 	reconsider = 1;
-    }
+    } 
   while (reconsider);
+
+  /* We give C linkage to static constructors and destructors.  */
+  push_lang_context (lang_name_c);
+
+  /* Generate initialization and destruction functions for all
+     priorities for which they are required.  */
+  if (priority_info_map)
+    splay_tree_foreach (priority_info_map, 
+			generate_ctor_and_dtor_functions_for_priority,
+			/*data=*/0);
+
+  /* We're done with the splay-tree now.  */
+  if (priority_info_map)
+    splay_tree_delete (priority_info_map);
+
+  /* We're done with static constructors, so we can go back to "C++"
+     linkage now.  */
+  pop_lang_context ();
+
+  /* Now delete from the chain of variables all virtual function tables.
+     We output them all ourselves, because each will be treated
+     specially.  */
+  walk_globals (vtable_decl_p, prune_vtable_vardecl, /*data=*/0);
 
   /* Now, issue warnings about static, but not defined, functions,
      etc.  */
