@@ -55,6 +55,8 @@ extern void   m32r_expand_block_move 		PARAMS ((rtx *));
 extern void   m32r_print_operand		PARAMS ((FILE *, rtx, int));
 extern void   m32r_print_operand_address	PARAMS ((FILE *, rtx));
 extern int    m32r_not_same_reg 		PARAMS ((rtx, rtx));
+extern int    m32r_hard_regno_rename_ok		PARAMS ((unsigned int,
+							 unsigned int));
 
 #ifdef HAVE_MACHINE_MODES
 extern int    call_address_operand		PARAMS ((rtx, Mmode));
