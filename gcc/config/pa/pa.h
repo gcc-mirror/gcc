@@ -1362,12 +1362,25 @@ extern struct rtx_def *hppa_builtin_saveregs ();
    (IS_RELOADING_PSEUDO_P (OP)				\
     || (GET_CODE (OP) == MEM				\
 	&& memory_address_p (GET_MODE (OP), XEXP (OP, 0))\
-	&& ! symbolic_memory_operand (OP, VOIDmode)))	\
+	&& ! symbolic_memory_operand (OP, VOIDmode)	\
+        && !(GET_CODE (XEXP (OP, 0)) == PLUS		\
+	     && (GET_CODE (XEXP (XEXP (OP, 0), 0)) == MULT\
+		 || GET_CODE (XEXP (XEXP (OP, 0), 1)) == MULT))))\
+   : ((C) == 'R' ?					\
+     (GET_CODE (OP) == MEM				\
+      && GET_CODE (XEXP (OP, 0)) == PLUS		\
+      && (GET_CODE (XEXP (XEXP (OP, 0), 0)) == MULT	\
+	  || GET_CODE (XEXP (XEXP (OP, 0), 1)) == MULT)	\
+      && (move_operand (OP, GET_MODE (OP))		\
+	  || memory_address_p (GET_MODE (OP), XEXP (OP, 0))))\
    : ((C) == 'T' ? 					\
       (GET_CODE (OP) == MEM				\
        /* Using DFmode forces only short displacements	\
 	  to be recognized as valid in reg+d addresses.  */\
-       && memory_address_p (DFmode, XEXP (OP, 0))) : 0))
+       && memory_address_p (DFmode, XEXP (OP, 0))	\
+       && !(GET_CODE (XEXP (OP, 0)) == PLUS		\
+	    && (GET_CODE (XEXP (XEXP (OP, 0), 0)) == MULT\
+		|| GET_CODE (XEXP (XEXP (OP, 0), 1)) == MULT))) : 0)))
 
 /* The macros REG_OK_FOR..._P assume that the arg is a REG rtx
    and check its validity for a certain class.
@@ -1462,6 +1475,15 @@ extern struct rtx_def *hppa_builtin_saveregs ();
 		     || ((MODE) != SFmode && (MODE) != DFmode))) \
 		|| INT_5_BITS (index)))			\
 	  goto ADDR;					\
+      if (base						\
+	  && (mode == SFmode || mode == DFmode)		\
+	  && GET_CODE (index) == MULT			\
+	  && GET_CODE (XEXP (index, 0)) == REG		\
+	  && REG_OK_FOR_BASE_P (XEXP (index, 0))	\
+	  && GET_CODE (XEXP (index, 1)) == CONST_INT	\
+	  && INTVAL (XEXP (index, 1)) == (mode == SFmode ? 4 : 8)\
+	  && shadd_operand (XEXP (index, 1), VOIDmode)) \
+	goto ADDR;					\
     }							\
   else if (GET_CODE (X) == LO_SUM			\
 	   && GET_CODE (XEXP (X, 0)) == REG		\

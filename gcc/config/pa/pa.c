@@ -270,8 +270,6 @@ move_operand (op, mode)
   if (GET_CODE (op) == CONST_INT)
     return cint_ok_for_move (INTVAL (op));
 
-  if (GET_MODE (op) != mode)
-    return 0;
   if (GET_CODE (op) == SUBREG)
     op = SUBREG_REG (op);
   if (GET_CODE (op) != MEM)
@@ -281,6 +279,22 @@ move_operand (op, mode)
   if (GET_CODE (op) == LO_SUM)
     return (register_operand (XEXP (op, 0), Pmode)
 	    && CONSTANT_P (XEXP (op, 1)));
+
+  /* Since move_operand is only used for source operands, we can always
+     allow scaled indexing!  */
+  if (GET_CODE (op) == PLUS
+      && ((GET_CODE (XEXP (op, 0)) == MULT
+	   && GET_CODE (XEXP (XEXP (op, 0), 0)) == REG
+	   && GET_CODE (XEXP (XEXP (op, 0), 1)) == CONST_INT
+	   && INTVAL (XEXP (XEXP (op, 0), 1)) == GET_MODE_SIZE (mode)
+	   && GET_CODE (XEXP (op, 1)) == REG)
+	  || (GET_CODE (XEXP (op, 1)) == MULT
+	      &&GET_CODE (XEXP (XEXP (op, 1), 0)) == REG
+	      && GET_CODE (XEXP (XEXP (op, 1), 1)) == CONST_INT
+	      && INTVAL (XEXP (XEXP (op, 1), 1)) == GET_MODE_SIZE (mode)
+	      && GET_CODE (XEXP (op, 0)) == REG)))
+    return 1;
+
   return memory_address_p (mode, op);
 }
 
@@ -1610,11 +1624,11 @@ output_fp_move_double (operands)
 	  || operands[1] == CONST0_RTX (GET_MODE (operands[0])))
 	output_asm_insn ("fcpy,dbl %r1,%0", operands);
       else
-	output_asm_insn ("fldds%F1 %1,%0", operands);
+	output_asm_insn ("fldd%F1 %1,%0", operands);
     }
   else if (FP_REG_P (operands[1]))
     {
-      output_asm_insn ("fstds%F0 %1,%0", operands);
+      output_asm_insn ("fstd%F0 %1,%0", operands);
     }
   else if (operands[1] == CONST0_RTX (GET_MODE (operands[0])))
     {
@@ -3324,6 +3338,7 @@ print_operand (file, x, code)
 	fputs ("i", file);
       return;
     case 'M':
+    case 'F':
       switch (GET_CODE (XEXP (x, 0)))
 	{
 	case PRE_DEC:
@@ -3334,22 +3349,16 @@ print_operand (file, x, code)
 	case POST_INC:
 	  fputs ("s,ma", file);
 	  break;
-	default:
-	  break;
-	}
-      return;
-    case 'F':
-      switch (GET_CODE (XEXP (x, 0)))
-	{
-	case PRE_DEC:
-	case PRE_INC:
-	  fputs (",mb", file);
-	  break;
-	case POST_DEC:
-	case POST_INC:
-	  fputs (",ma", file);
+	case PLUS:
+	  if (GET_CODE (XEXP (XEXP (x, 0), 0)) == MULT
+	      || GET_CODE (XEXP (XEXP (x, 0), 1)) == MULT)
+	    fputs ("x,s", file);
+	  else if (code == 'F')
+	    fputs ("s", file);
 	  break;
 	default:
+	  if (code == 'F')
+	    fputs ("s", file);
 	  break;
 	}
       return;
@@ -3392,7 +3401,18 @@ print_operand (file, x, code)
 	  fprintf (file, "%d(0,%s)", size, reg_names [REGNO (base)]);
 	  break;
 	default:
-	  output_address (XEXP (x, 0));
+	  if (GET_CODE (XEXP (x, 0)) == PLUS
+	      && GET_CODE (XEXP (XEXP (x, 0), 0)) == MULT)
+	    fprintf (file, "%s(0,%s)",
+		     reg_names [REGNO (XEXP (XEXP (XEXP (x, 0), 0), 0))],
+		     reg_names [REGNO (XEXP (XEXP (x, 0), 1))]);
+	  else if (GET_CODE (XEXP (x, 0)) == PLUS
+		   && GET_CODE (XEXP (XEXP (x, 0), 1)) == MULT)
+	    fprintf (file, "%s(0,%s)",
+		     reg_names [REGNO (XEXP (XEXP (XEXP (x, 0), 1), 0))],
+		     reg_names [REGNO (XEXP (XEXP (x, 0), 0))]);
+	  else
+	    output_address (XEXP (x, 0));
 	  break;
 	}
     }
