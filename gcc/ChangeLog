@@ -1,3 +1,9 @@
+2003-05-05  Mark Mitchell  <mark@codesourcery.com>
+            Kean Johnston <jkj@sco.com>
+	
+	* toplev.c (check_global_declarations): Do not warn about unused
+	static consts.
+
 2003-05-05  Richard Henderson  <rth@redhat.com>
 
         * builtins.c (expand_builtin) <BUILT_IN_DWARF_FP_REGNUM>: Remove.
