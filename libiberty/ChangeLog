@@ -1,3 +1,8 @@
+2000-11-19  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* cplus-dem.c (grow_vect): Prototype.
+	(ada_demangle): Cast the arg of ctype macros to unsigned char.
+
 2000-11-15  Hans-Peter Nilsson  <hp@bitrange.com>
 
 	* cplus-dem.c (ada_demangle): Add back ATTRIBUTE_UNUSED for
