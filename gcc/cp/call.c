@@ -2754,8 +2754,8 @@ build_conditional_expr (arg1, arg2, arg3)
 
   /* As a G++ extension, the second argument to the conditional can be
      omitted.  (So that `a ? : c' is roughly equivalent to `a ? a :
-     c'.)  If second operand is omitted, make sure it is calculated
-     only once.  */
+     c'.)  If the second operand is omitted, make sure it is
+     calculated only once.  */
   if (!arg2)
     {
       if (pedantic)
