@@ -1,3 +1,10 @@
+Wed Nov  8 21:58:20 2000  Christopher Faylor <cgf@cygnus.com>
+
+	* config/i386/cygwin.h: Add -no-win32 switch.  Separate -mno-cygwin
+	include and library paths from -mcygwin case.  Parameterize some
+	declarations to avoid warnings.  Use standard locations for include and
+	lib dirs.
+
 2000-11-08  Nick Clifton  <nickc@redhat.com>
 
 	* config/arm/arm.md (mulsidi3adddi): Change output operand
