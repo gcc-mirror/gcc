@@ -39,6 +39,8 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
   "%{pg:gcrt1.o%s}%{!pg:%{posix:%{p:mcrtp1.o%s}%{!p:crtp1.o%s}}%{!posix:%{p:mcrt1.o%s}%{!p:crt1.o%s}}} crtbegin.o%s\
    %{p:-L/usr/lib/libp}%{pg:-L/usr/lib/libp}"
 
+/* ??? There is a suggestion that -lg is needed here.
+   Does anyone know whether this is right?  */
 #define LIB_SPEC "%{posix:-lcposix} %{shlib:-lc_s} -lc crtend.o%s crtn.o%s"
 
 /* Specify predefined symbols in preprocessor.  */
