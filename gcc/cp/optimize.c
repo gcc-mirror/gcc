@@ -56,7 +56,30 @@ optimize_function (tree fn)
          and (d) TARGET_ASM_OUTPUT_MI_THUNK is there to DTRT anyway.  */
       && !DECL_THUNK_P (fn))
     {
+      /* ??? Work around GC problem.  Call stack is
+
+	 -> instantiate_decl
+	 -> expand_or_defer_fn
+	 -> maybe_clone_body
+	 -> expand_body
+	 -> tree_rest_of_compilation
+
+	 which of course collects.  This used to be protected by the
+	 "regular" nested call ggc_push_context that now lives in 
+	 tree_rest_of_compilation.
+
+	 Two good fixes:
+	 (1) Do inlining in tree_rest_of_compilation.  This is good
+	     in that this common optimization happens in common code.
+	 (2) Don't nest compilation of functions.  Instead queue the
+	     new function to cgraph, and let it get picked up in the
+	     next round of "emit everything that needs emitting".
+
+	 For the nonce, just protect things here.  */
+
+      ggc_push_context ();
       optimize_inline_calls (fn);
+      ggc_pop_context ();
 
       dump_function (TDI_inlined, fn);
     }
