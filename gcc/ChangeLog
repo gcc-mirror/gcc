@@ -1,3 +1,10 @@
+2005-01-09  David Edelsohn  <edelsohn@gnu.org>
+
+	PR target/18720
+	* collect2.c (main): Set aixrtl_flag for -brtl option.
+	(resolve_lib_name): Search for .so file extension before .a
+	if aixrtl_flag set.
+
 2005-01-09  Dorit Naishlos  <dorit@il.ibm.com>
 
 	* tree-vectorizer.c (vect_enhance_data_refs_alignment): Add dump prints.
