@@ -6,7 +6,7 @@
 
 2001-07-11  David Billinghurst <David.Billinghurst@riotinto.com>
 
-	* simplify-rtx.c: (simplify_subreg) Fix typo in comment
+	* simplify-rtx.c (simplify_subreg): Fix typo in comment
 
 Tue Jul 10 07:27:53 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
