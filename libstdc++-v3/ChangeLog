@@ -1,3 +1,28 @@
+2000-11-03  David Edelsohn <dje@watson.ibm.com>
+
+	* acinclude.m4 (GLIBCPP_CHECK_OS): Add AIX target selecting threads
+	  flag based on multilib definition of $CXX.
+	* mknumeric_limits (LDFLAGS): Add AIX target linking with pthreads
+	  based on multilib definition of $CXX.
+	* config/os/aix/bits/os_defines.h (_G_USING_THUNKS): Define as 0.
+
+2000-11-03  Phil Edwards  <pme@sources.redhat.com>
+
+	* acinclude.m4:  Cleanups.
+	* aclocal.m4:  Regenerated.
+	* configure:  Ditto.
+	* Makefile.in:  Ditto.
+	* libio/Makefile.in:  Ditto.
+	* libmath/Makefile.in:  Ditto.
+	* libsupc++/Makefile.in:  Ditto.
+	* src/Makefile.in:  Ditto.
+
+	* docs/install.html:  Removal of EGCS.
+	* docs/23_containers/wrappers_h.txt:  Likewise.
+	* docs/faq/index.html:  Likewise.
+	* docs/faq/index.txt:  Regenerated.
+	* docs/thanks.html:  More people.
+
 2000-11-03  David Edelsohn  <edelsohn@gnu.org>
 
 	* include/c/bits/std_cwchar.h: Undefine macro that conflicts

@@ -15,7 +15,7 @@
  * produces assembly code of
  *       mov 17,register0
  *       call ofstream_put
- * i.e., the template function inlining really does work; g++/egcs
+ * i.e., the template function inlining really does work; g++
  * requires -O3 (or -finline-functions) before it does this, though.
  *
  * pedwards 13Nov98

@@ -805,10 +805,21 @@ dnl are required for compilation, add them here.
 dnl 
 dnl GLIBCPP_CHECK_OS
 AC_DEFUN(GLIBCPP_CHECK_OS, [
-    AC_MSG_CHECKING([for os config directory])
+    AC_MSG_CHECKING([for OS config directory])
 # Currently unused, but could be useful.
 #    OS_FLAGS=
     case "${target_os}" in
+      aix4.[[3456789]]* | aix[[56789]]*)
+        os_include_dir="config/os/aix"
+        case "$CXX" in
+          *pthread*)
+            enable_threads='posix'
+            ;;
+          *)
+            enable_threads='no'
+            ;;
+        esac
+        ;;
       aix*)
         os_include_dir="config/os/aix"
         ;;
@@ -1455,12 +1466,9 @@ AC_DEFUN(GLIBCPP_ENABLE_ATOMICITY, [
       *-*-linux* | sparc*-*-*)
         ATOMICITYH=$cpu_include_dir
         ;;    
-      *-*-aix*)
+      *-*-aix* | *-*-irix*)
         ATOMICITYH=$os_include_dir
         ;;
-      *-*-irix*)
-	ATOMICITYH=$os_include_dir
-	;;
       *)
         # bit of overkill on this text...
         AC_MSG_ERROR([Atomic locking requested, but $enable_threads is an unknown thread package and atomic operations are not present in the CPU])
@@ -1758,7 +1766,7 @@ AC_DEFUN(
           _cv_gnu_make_command='' ;
 dnl Search all the common names for GNU make
           for a in "${MAKE:-make}" make gmake gnumake ; do
-                  if ( $a --version 2> /dev/null | grep -c GNU )
+                  if ( $a --version 2> /dev/null | grep -c GNU > /dev/null )
                   then
                           _cv_gnu_make_command=$a ;
                           break;
