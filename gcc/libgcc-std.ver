@@ -106,10 +106,7 @@ GCC_3.0 {
   __bb_trace_ret
 
   # ??? Symbols that perhaps unused should be nuked.
-  __builtin_saveregs
   __clear_cache
-  __dummy
-  __empty
   __eprintf
   __gcc_bcmp
 
