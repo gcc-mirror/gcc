@@ -1,3 +1,11 @@
+2004-02-24  Jason Merrill  <jason@redhat.com>
+
+	* tree.c (check_qualified_type): New fn.
+	(get_qualified_type): Use it.  If type already has the desired
+	quals, just return it.
+	* tree.h: Declare it.
+	* cp/tree.c (build_exception_variant): Use it.
+
 2003-02-24  Sanjiv Kumar Gupta  <sanjivg@noida.hcltech.com>
 
 	* target-def.h (TARGET_SCHED_INIT_GLOBAL,
@@ -1864,7 +1872,7 @@
 2004-02-10  Danny Smith  <dannysmith@users.sourceforge.net>
 
 	PR c/14088
-	real.c (real_from_string): Look for 'X' as well as 'x' in
+	* real.c (real_from_string): Look for 'X' as well as 'x' in
 	hexfloat strings.
 
 2004-02-10  Kazu Hirata  <kazu@cs.umass.edu>
