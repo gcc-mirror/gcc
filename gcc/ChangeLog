@@ -1,3 +1,9 @@
+2003-03-17  Andreas Schwab  <schwab@suse.de>
+
+	PR target/7248
+	* config/m68k/m68k.md (iordi3): Fix setting low half to -1.  From
+	martin@blom.org.
+
 2003-03-16  Richard Henderson  <rth@redhat.com>
 
 	* config/i386/i386.md (movstrictqi, movstrictqi_1): Check
