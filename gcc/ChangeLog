@@ -1,3 +1,12 @@
+Sat Sep  5 23:29:39 1998  Mumit Khan  <khan@xraylith.wisc.edu>
+
+	* i386/cygwin32.h (ASM_OUTPUT_SECTION_NAME): Don't check for
+	for exact section attributions.
+
+	* i386/mingw32.h (CPP_PREDEFINES): Add __MSVCRT__ for msvc
+	runtime.
+	* i386/crtdll.h (CPP_PREDEFINES): Define.
+
 Sat Sep  5 21:46:47 1998  Richard Henderson  <rth@cygnus.com>
 
 	* alpha.c (alpha_ra_ever_killed): Inspect the topmost sequence,

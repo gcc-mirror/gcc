@@ -376,9 +376,6 @@ do {									\
     }									\
   else									\
     {									\
-      if (DECL && s->type != type)					\
-	error_with_decl (DECL, "%s causes a section type conflict");	\
-									\
       fprintf (STREAM, ".section\t%s,\"%s\"\n", NAME, mode);		\
     }									\
 } while (0)

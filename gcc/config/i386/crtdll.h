@@ -22,6 +22,15 @@ along with GNU CC; see the file COPYING.  If not, write to
 the Free Software Foundation, 59 Temple Place - Suite 330,
 Boston, MA 02111-1307, USA. */
 
+#undef CPP_PREDEFINES
+#define CPP_PREDEFINES "-Di386 -D_WIN32 -DWIN32 -D__WIN32__ \
+  -D__MINGW32__ -DWINNT  -D_X86_=1 -D__STDC__=1\
+  -D__stdcall=__attribute__((__stdcall__)) \
+  _D_stdcall=__attribute__((__stdcall__)) \
+  -D__cdecl=__attribute__((__cdecl__)) \
+  -D__declspec(x)=__attribute__((x)) \
+  -Asystem(winnt) -Acpu(i386) -Amachine(i386)"
+
 #undef LIBGCC_SPEC
 #define LIBGCC_SPEC "-lmingw32 -lgcc -lmoldname -lcrtdll"
 
