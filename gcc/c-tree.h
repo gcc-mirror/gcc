@@ -169,7 +169,6 @@ extern void objc_check_decl			PARAMS ((tree));
 extern void finish_file				PARAMS ((void));
 extern int objc_comptypes                 	PARAMS ((tree, tree, int));
 extern tree objc_message_selector		PARAMS ((void));
-extern int recognize_objc_keyword		PARAMS ((void));
 extern tree lookup_objc_ivar			PARAMS ((tree));
 
 

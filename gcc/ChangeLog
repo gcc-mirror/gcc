@@ -1,3 +1,9 @@
+2002-09-03  Stan Shebs  <shebs@apple.com>
+
+	* c-lang.c (recognize_objc_keyword): Remove, no longer used.
+	* c-tree.h (recognize_objc_keyword): Remove decl.
+	* c-typeck.c (comp_target_types): Update a comment.
+
 2002-09-03  Ulrich Weigand  <uweigand@de.ibm.com>
 
 	* config/s390/s390.c (s390_decompose_address): Remove STRICT parameter
