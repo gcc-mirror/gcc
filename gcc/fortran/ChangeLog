@@ -1,3 +1,7 @@
+2005-01-17  Ira Rosen  <irar@il.ibm.com>
+
+	* f95-lang.c (gfc_init_builtin_functions): Call targetm.init_builtins.
+
 2005-01-16  Tobias Schlueter  <tobias.schlueter@physik.uni-muenchen.de>
 
 	PR fortran/19182
