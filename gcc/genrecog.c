@@ -164,26 +164,37 @@ static struct pred_table
 
 #define NUM_KNOWN_PREDS (sizeof preds / sizeof preds[0])
 
-static int try_merge_1 ();
-static int no_same_mode ();
-static int same_codes ();
-static int same_modes ();
-char *xmalloc ();
-static struct decision *add_to_sequence ();
-static struct decision_head merge_trees ();
-static struct decision *try_merge_2 ();
-static void write_subroutine ();
-static void print_code ();
-static void clear_codes ();
-static void clear_modes ();
-static void change_state ();
-static void write_tree ();
-static char *copystr ();
-static char *concat ();
-static void fatal ();
-void fancy_abort ();
-static void mybzero ();
-static void mybcopy ();
+static struct decision_head make_insn_sequence PROTO((rtx, enum routine_type));
+static struct decision *add_to_sequence PROTO((rtx, struct decision_head *,
+					       char *));
+static int not_both_true	PROTO((struct decision *, struct decision *,
+				       int));
+static int position_merit	PROTO((struct decision *, enum machine_mode,
+				       enum rtx_code));
+static struct decision_head merge_trees PROTO((struct decision_head,
+					       struct decision_head));
+static int break_out_subroutines PROTO((struct decision_head,
+					enum routine_type, int));
+static void write_subroutine	PROTO((struct decision *, enum routine_type));
+static void write_tree_1	PROTO((struct decision *, char *,
+				       struct decision *, enum routine_type));
+static void print_code		PROTO((enum rtx_code));
+static int same_codes		PROTO((struct decision *, enum rtx_code));
+static void clear_codes		PROTO((struct decision *));
+static int same_modes		PROTO((struct decision *, enum machine_mode));
+static void clear_modes		PROTO((struct decision *));
+static void write_tree		PROTO((struct decision *, char *,
+				       struct decision *, int,
+				       enum routine_type));
+static void change_state	PROTO((char *, char *, int));
+static char *copystr		PROTO((char *));
+static void mybzero		PROTO((char *, unsigned));
+static void mybcopy		PROTO((char *, char *, unsigned));
+static char *concat		PROTO((char *, char *));
+static void fatal		PROTO((char *));
+char *xrealloc			PROTO((char *, unsigned));
+char *xmalloc			PROTO((unsigned));
+void fancy_abort		PROTO((void));
 
 /* Construct and return a sequence of decisions
    that will recognize INSN.
@@ -653,7 +664,7 @@ static int
 position_merit (p, mode, code)
      struct decision *p;
      enum machine_mode mode;
-     RTX_CODE code;
+     enum rtx_code code;
 {
   enum machine_mode p_mode;
 
@@ -793,7 +804,8 @@ merge_trees (oldh, addh)
 		      struct decision *split
 			= (struct decision *) xmalloc (sizeof (struct decision));
 
-		      mybcopy (old, split, sizeof (struct decision));
+		      mybcopy ((char *) old, (char *) split,
+			       sizeof (struct decision));
 
 		      old->success.first = old->success.last = split;
 		      old->c_test = 0;
@@ -819,7 +831,8 @@ merge_trees (oldh, addh)
 		      struct decision *split
 			= (struct decision *) xmalloc (sizeof (struct decision));
 
-		      mybcopy (add, split, sizeof (struct decision));
+		      mybcopy ((char *) add, (char *) split,
+			       sizeof (struct decision));
 
 		      add->success.first = add->success.last = split;
 		      add->c_test = 0;
@@ -1018,7 +1031,7 @@ static char *indents[]
    resulting function.   We do check for when every test is the same mode
    or code.  */
 
-void
+static void
 write_tree_1 (tree, prevpos, afterward, type)
      struct decision *tree;
      char *prevpos;
@@ -1441,7 +1454,7 @@ write_tree_1 (tree, prevpos, afterward, type)
 
 static void
 print_code (code)
-     RTX_CODE code;
+     enum rtx_code code;
 {
   register char *p1;
   for (p1 = GET_RTX_NAME (code); *p1; p1++)
@@ -1456,7 +1469,7 @@ print_code (code)
 static int
 same_codes (p, code)
      register struct decision *p;
-     register RTX_CODE code;
+     register enum rtx_code code;
 {
   for (; p; p = p->next)
     if (p->code != code)
@@ -1652,11 +1665,11 @@ xmalloc (size)
 }
 
 static void
-fatal (s, a1, a2)
+fatal (s)
      char *s;
 {
   fprintf (stderr, "genrecog: ");
-  fprintf (stderr, s, a1, a2);
+  fprintf (stderr, s);
   fprintf (stderr, "\n");
   fprintf (stderr, "after %d definitions\n", next_index);
   exit (FATAL_EXIT_CODE);
