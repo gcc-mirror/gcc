@@ -576,25 +576,28 @@ static int n_default_compilers
 #ifdef LINK_LIBGCC_SPECIAL_1
 /* Have gcc do the search for libgcc.a, but generate -L options as usual.  */
 static char *link_command_spec = "\
-%{!c:%{!M:%{!MM:%{!E:%{!S:ld %l %X %{o*} %{A} %{d} %{e*} %{m} %{N} %{n} \
+%{!fsyntax-only:
+ %{!c:%{!M:%{!MM:%{!E:%{!S:ld %l %X %{o*} %{A} %{d} %{e*} %{m} %{N} %{n} \
 			%{r} %{s} %{T*} %{t} %{u*} %{x} %{z}\
 			%{!A:%{!nostdlib:%S}} %{static:}\
-			%{L*} %D %o %{!nostdlib:libgcc.a%s %L libgcc.a%s %{!A:%E}}\n }}}}}";
+			%{L*} %D %o %{!nostdlib:libgcc.a%s %L libgcc.a%s %{!A:%E}}\n }}}}}}";
 #else
 #ifdef LINK_LIBGCC_SPECIAL
 /* Have gcc do the search for libgcc.a, and don't generate -L options.  */
 static char *link_command_spec = "\
-%{!c:%{!M:%{!MM:%{!E:%{!S:ld %l %X %{o*} %{A} %{d} %{e*} %{m} %{N} %{n} \
+%{!fsyntax-only:
+ %{!c:%{!M:%{!MM:%{!E:%{!S:ld %l %X %{o*} %{A} %{d} %{e*} %{m} %{N} %{n} \
 			%{r} %{s} %{T*} %{t} %{u*} %{x} %{z}\
 			%{!A:%{!nostdlib:%S}} %{static:}\
-			%{L*} %o %{!nostdlib:libgcc.a%s %L libgcc.a%s %{!A:%E}}\n }}}}}";
+			%{L*} %o %{!nostdlib:libgcc.a%s %L libgcc.a%s %{!A:%E}}\n }}}}}}";
 #else
 /* Use -L and have the linker do the search for -lgcc.  */
 static char *link_command_spec = "\
-%{!c:%{!M:%{!MM:%{!E:%{!S:ld %l %X %{o*} %{A} %{d} %{e*} %{m} %{N} %{n} \
+%{!fsyntax-only:
+ %{!c:%{!M:%{!MM:%{!E:%{!S:ld %l %X %{o*} %{A} %{d} %{e*} %{m} %{N} %{n} \
 			%{r} %{s} %{T*} %{t} %{u*} %{x} %{z}\
 			%{!A:%{!nostdlib:%S}} %{static:}\
-			%{L*} %D %o %{!nostdlib:-lgcc %L -lgcc %{!A:%E}}\n }}}}}";
+			%{L*} %D %o %{!nostdlib:-lgcc %L -lgcc %{!A:%E}}\n }}}}}}";
 #endif
 #endif
 
