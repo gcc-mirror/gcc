@@ -1,3 +1,16 @@
+2002-08-06  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* gcov.c: Tidy.
+	(struct line_info, struct coverage): New structures.
+	(gcov_file_name, gcov_file): Remove globals.
+	(output_data): Take source file parameter. Fix memory leak. Break
+	up into ...
+	(init_line_info, output_line_info, make_gcov_file_name,
+	accumulate_branch_counts): ... here.
+	(calculate_branch_probs, function_summary): Adjust.
+	(main): Adjust.
+	(function_*): Remove global variables.
+
 2002-08-06  Neil Booth  <neil@daikokuya.co.uk>
 
 	* dwarf2out.c: Remove unused macros.

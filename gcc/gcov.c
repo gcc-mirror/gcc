@@ -103,7 +103,8 @@ struct sourcefile *sources;
 /* One of these is dynamically created whenever we identify an arc in the
    function.  */
 
-struct adj_list {
+struct adj_list
+{
   int source;
   int target;
   gcov_type arc_count;
@@ -122,7 +123,8 @@ struct adj_list {
 /* Count the number of basic blocks, and create an array of these structures,
    one for each bb in the function.  */
 
-struct bb_info {
+struct bb_info
+{
   struct adj_list *succ;
   struct adj_list *pred;
   gcov_type succ_count;
@@ -149,11 +151,35 @@ struct arcdata
 
 /* Used to save the list of bb_graphs, one per function.  */
 
-struct bb_info_list {
+struct bb_info_list
+{
   /* Indexed by block number, holds the basic block graph for one function.  */
   struct bb_info *bb_graph;
   int num_blocks;
   struct bb_info_list *next;
+};
+
+/* Used to hold information about each line. */
+struct line_info
+{
+  gcov_type count;	      /* execution count */
+  struct arcdata *branches;   /* list of branch probabilities for line. */
+  unsigned exists : 1;	      /* has code associated with it. */
+};
+  
+struct coverage
+{
+  int lines;
+  int lines_executed;
+  
+  int branches;
+  int branches_executed;
+  int branches_taken;
+  
+  int calls;
+  int calls_executed;
+  
+  char *name;
 };
 
 /* Holds a list of function basic block graphs.  */
@@ -186,11 +212,6 @@ static char *bb_data;
 /* Size of bb_data array in longs.  */
 
 static long bb_data_size;
-
-/* Name and file pointer of the output file.  */
-
-static char *gcov_file_name;
-static FILE *gcov_file;
 
 /* Name of the file mentioned on the command line.  */
 
@@ -235,7 +256,7 @@ static void process_args PARAMS ((int, char **));
 static void open_files PARAMS ((void));
 static void read_files PARAMS ((void));
 static void scan_for_source_files PARAMS ((void));
-static void output_data PARAMS ((void));
+static void output_data PARAMS ((struct sourcefile *));
 static void print_usage PARAMS ((int)) ATTRIBUTE_NORETURN;
 static void print_version PARAMS ((void)) ATTRIBUTE_NORETURN;
 static void init_arc PARAMS ((struct adj_list *, int, int, struct bb_info *));
@@ -243,10 +264,19 @@ static struct adj_list *reverse_arcs PARAMS ((struct adj_list *));
 static gcov_type *read_profile PARAMS ((char *, long, int));
 static void create_program_flow_graph PARAMS ((struct bb_info_list *));
 static void solve_program_flow_graph PARAMS ((struct bb_info_list *));
-static void calculate_branch_probs PARAMS ((struct bb_info_list *, int,
-					    struct arcdata **, int));
-static void function_summary PARAMS ((void));
-static const char *format_hwint PARAMS ((HOST_WIDEST_INT, HOST_WIDEST_INT, int));
+static void accumulate_branch_counts PARAMS ((struct coverage *,
+					      struct arcdata *));
+static void calculate_branch_probs PARAMS ((struct bb_info *,
+					    struct line_info *,
+					    struct coverage *));
+static void function_summary PARAMS ((struct coverage *, const char *));
+static void init_line_info PARAMS ((struct line_info *,
+				    struct coverage *, long));
+static void output_line_info PARAMS ((FILE *, const struct line_info *,
+				      const struct coverage *, long));
+static char *make_gcov_file_name PARAMS ((char *));
+static const char *format_hwint PARAMS ((HOST_WIDEST_INT, HOST_WIDEST_INT,
+					 int));
 
 extern int main PARAMS ((int, char **));
 
@@ -255,6 +285,8 @@ main (argc, argv)
      int argc;
      char **argv;
 {
+  struct sourcefile *s_ptr;
+  
   gcc_init_libintl ();
 
   process_args (argc, argv);
@@ -265,7 +297,8 @@ main (argc, argv)
 
   scan_for_source_files ();
 
-  output_data ();
+  for (s_ptr = sources; s_ptr; s_ptr = s_ptr->next)
+    output_data (s_ptr);
 
   return 0;
 }
@@ -529,7 +562,6 @@ init_arc (arcptr, source, target, bb_graph)
   bb_graph[target].pred = arcptr;
   bb_graph[target].pred_count++;
 }
-
 
 /* Reverse the arcs on an arc list.  */
 
@@ -1037,77 +1069,61 @@ scan_for_source_files ()
     }
 }
 
-/* For calculating coverage at the function level.  */
 
-static int function_source_lines;
-static int function_source_lines_executed;
-static int function_branches;
-static int function_branches_executed;
-static int function_branches_taken;
-static int function_calls;
-static int function_calls_executed;
-static char *function_name;
+/* Increment totals in FUNCTION according to arc A_PTR.  */
+
+static void
+accumulate_branch_counts (function, a_ptr)
+     struct coverage *function;
+     struct arcdata *a_ptr;
+{
+  if (a_ptr->call_insn)
+    {
+      function->calls++;
+      if (a_ptr->total)
+	function->calls_executed++;
+    }
+  else
+    {
+      function->branches++;
+      if (a_ptr->total)
+	function->branches_executed++;
+      if (a_ptr->hits)
+	function->branches_taken++;
+    }
+}
 
 /* Calculate the branch taken probabilities for all arcs branches at the
    end of this block.  */
 
 static void
-calculate_branch_probs (current_graph, block_num, branch_probs, last_line_num)
-     struct bb_info_list *current_graph;
-     int block_num;
-     struct arcdata **branch_probs;
-     int last_line_num;
+calculate_branch_probs (block_ptr, line_info, function)
+     struct bb_info *block_ptr;
+     struct line_info *line_info;
+     struct coverage *function;
 {
   gcov_type total;
   struct adj_list *arcptr;
-  struct arcdata *end_ptr, *a_ptr;
 
-  total = current_graph->bb_graph[block_num].exec_count;
-  for (arcptr = current_graph->bb_graph[block_num].succ; arcptr;
-       arcptr = arcptr->succ_next)
+  total = block_ptr->exec_count;
+  for (arcptr = block_ptr->succ; arcptr; arcptr = arcptr->succ_next)
     {
+      struct arcdata *a_ptr;
+      
       /* Ignore fall through arcs as they aren't really branches.  */
-
       if (arcptr->fall_through)
 	continue;
 
       a_ptr = (struct arcdata *) xmalloc (sizeof (struct arcdata));
       a_ptr->total = total;
-      if (total == 0)
-	a_ptr->hits = 0;
-      else
-	a_ptr->hits = arcptr->arc_count;
+      a_ptr->hits = total ? arcptr->arc_count : 0;
       a_ptr->call_insn = arcptr->fake;
 
-      if (output_function_summary)
-	{
-	  if (a_ptr->call_insn)
-	    {
-	      function_calls++;
-	      if (a_ptr->total != 0)
-		function_calls_executed++;
-	    }
-	  else
-	    {
-	      function_branches++;
-	      if (a_ptr->total != 0)
-		function_branches_executed++;
-	      if (a_ptr->hits > 0)
-		function_branches_taken++;
-	    }
-	}
-
-      /* Append the new branch to the end of the list.  */
-      a_ptr->next = 0;
-      if (! branch_probs[last_line_num])
-	branch_probs[last_line_num] = a_ptr;
-      else
-	{
-	  end_ptr = branch_probs[last_line_num];
-	  while (end_ptr->next != 0)
-	    end_ptr = end_ptr->next;
-	  end_ptr->next = a_ptr;
-	}
+      if (function)
+	accumulate_branch_counts (function, a_ptr);
+      /* Prepend the new branch to the list.  */
+      a_ptr->next = line_info->branches;
+      line_info->branches = a_ptr;
     }
 }
 
@@ -1162,502 +1178,457 @@ format_hwint (top, bottom, dp)
 /* Output summary info for a function.  */
 
 static void
-function_summary ()
+function_summary (function, title)
+     struct coverage *function;
+     const char *title;
 {
-  if (function_source_lines)
-    fnotice (stdout, "%s of %d source lines executed in function %s\n",
-	     format_hwint (function_source_lines_executed,
-			   function_source_lines, 2),
-	     function_source_lines, function_name);
+  if (function->lines)
+    fnotice (stdout, "%s of %d lines executed in %s %s\n",
+	     format_hwint (function->lines_executed,
+			   function->lines, 2),
+	     function->lines, title, function->name);
   else
-    fnotice (stdout, "No executable source lines in function %s\n",
-	     function_name);
+    fnotice (stdout, "No executable lines in %s %s\n",
+	     title, function->name);
 
   if (output_branch_probs)
     {
-      if (function_branches)
+      if (function->branches)
 	{
-	  fnotice (stdout, "%s of %d branches executed in function %s\n",
-		   format_hwint (function_branches_executed,
-				 function_branches, 2),
-		   function_branches, function_name);
+	  fnotice (stdout, "%s of %d branches executed in %s %s\n",
+		   format_hwint (function->branches_executed,
+				 function->branches, 2),
+		   function->branches, title, function->name);
 	  fnotice (stdout,
-		"%s of %d branches taken at least once in function %s\n",
-		   format_hwint (function_branches_taken,
-				 function_branches, 2),
-		   function_branches, function_name);
+		"%s of %d branches taken at least once in %s %s\n",
+		   format_hwint (function->branches_taken,
+				 function->branches, 2),
+		   function->branches, title, function->name);
 	}
       else
-	fnotice (stdout, "No branches in function %s\n", function_name);
-      if (function_calls)
-	fnotice (stdout, "%s of %d calls executed in function %s\n",
-		 format_hwint (function_calls_executed,
-			       function_calls, 2),
-		 function_calls, function_name);
+	fnotice (stdout, "No branches in %s %s\n", title, function->name);
+      if (function->calls)
+	fnotice (stdout, "%s of %d calls executed in %s %s\n",
+		 format_hwint (function->calls_executed,
+			       function->calls, 2),
+		 function->calls, title, function->name);
       else
-	fnotice (stdout, "No calls in function %s\n", function_name);
+	fnotice (stdout, "No calls in %s %s\n", title, function->name);
     }
 }
 
-/* Calculate line execution counts, and output the data to a .tcov file.  */
+/* Generate an output file name. LONG_OUTPUT_NAMES and PRESERVE_PATHS
+   affect name generation. With preserve_paths we create a filename
+   from all path components of the source file, replacing '/' with
+   '#', without it we simply take the basename component. With
+   long_output_names we prepend the processed name of the input file
+   to each output name (except when the current source file is the
+   input file, so you don't get a double concatenation). The two
+   components are separated by '##'. Also '.' filename components are
+   removed and '..'  components are renamed to '^'. */
+
+static char *
+make_gcov_file_name (src_name)
+     char *src_name;
+{
+  char *cptr;
+  char *name = xmalloc (strlen (src_name) + strlen (input_file_name) + 10);
+  
+  name[0] = 0;
+  if (output_long_names && strcmp (src_name, input_file_name))
+    {
+      /* Generate the input filename part.  */
+      cptr = preserve_paths ? NULL : strrchr (input_file_name, '/');
+      cptr = cptr ? cptr + 1 : input_file_name;
+      strcat (name, cptr);
+      strcat (name, "##");
+    }
+   
+  /* Generate the source filename part. */
+  cptr = preserve_paths ? NULL : strrchr (src_name, '/');
+  cptr = cptr ? cptr + 1 : src_name;
+  strcat (name, cptr);
+  
+  if (preserve_paths)
+    {
+      /* Convert '/' to '#', remove '/./', convert '/../' to '/^/' */
+      char *prev;
+      
+      for (cptr = name; (cptr = strchr ((prev = cptr), '/'));)
+ 	{
+ 	  unsigned shift = 0;
+ 	  
+ 	  if (prev + 1 == cptr && prev[0] == '.')
+ 	    {
+ 	      /* Remove '.' */
+ 	      shift = 2;
+ 	    }
+ 	  else if (prev + 2 == cptr && prev[0] == '.' && prev[1] == '.')
+ 	    {
+ 	      /* Convert '..' */
+ 	      shift = 1;
+ 	      prev[1] = '^';
+ 	    }
+ 	  else
+ 	    *cptr++ = '#';
+ 	  if (shift)
+ 	    {
+ 	      cptr = prev;
+ 	      do
+ 		prev[0] = prev[shift];
+	      while (*prev++);
+ 	    }
+ 	}
+    }
+  
+  /* Don't strip off the ending for compatibility with tcov, since
+     this results in confusion if there is more than one file with the
+     same basename, e.g. tmp.c and tmp.h.  */
+  strcat (name, ".gcov");
+  return name;
+}
+
+/* Scan through the bb_data, and when the file name matches the
+   source file name, then for each following line number, increment
+   the line number execution count indicated by the execution count of
+   the appropriate basic block.  */
 
 static void
-output_data ()
+init_line_info (line_info, total, maxlineno)
+     struct line_info *line_info;
+     struct coverage *total;
+     long maxlineno;
 {
-  /* When scanning data, this is true only if the data applies to the
-     current source file.  */
-  int this_file;
-  /* An array indexed by line number which indicates how many times that line
-     was executed.  */
-  gcov_type *line_counts;
-  /* An array indexed by line number which indicates whether the line was
-     present in the bb file (i.e. whether it had code associate with it).
-     Lines never executed are those which both exist, and have zero execution
-     counts.  */
-  char *line_exists;
-  /* An array indexed by line number, which contains a list of branch
-     probabilities, one for each branch on that line.  */
-  struct arcdata **branch_probs = NULL;
-  struct sourcefile *s_ptr;
-  char *source_file_name;
-  FILE *source_file;
-  struct bb_info_list *current_graph;
+  long block_num = 0;		/* current block number */
+  struct bb_info *block_ptr = NULL;	/* current block ptr */
+  struct coverage function;
+  struct coverage *func_ptr = NULL;
+  struct bb_info_list *current_graph = NULL; /* Graph for current function. */
+  int is_this_file = 0;	/* We're scanning a block from the desired file. */
+  char *ptr = bb_data;
   long count;
-  char *cptr;
-  long block_num;
   long line_num;
-  long last_line_num = 0;
-  int i;
-  struct arcdata *a_ptr;
-  /* Buffer used for reading in lines from the source file.  */
-  char string[STRING_SIZE];
-  /* For calculating coverage at the file level.  */
-  int total_source_lines;
-  int total_source_lines_executed;
-  int total_branches;
-  int total_branches_executed;
-  int total_branches_taken;
-  int total_calls;
-  int total_calls_executed;
-
-  /* Now, for each source file, allocate an array big enough to hold a count
-     for each line.  Scan through the bb_data, and when the file name matches
-     the current file name, then for each following line number, increment
-     the line number execution count indicated by the execution count of
-     the appropriate basic block.  */
-
-  for (s_ptr = sources; s_ptr; s_ptr = s_ptr->next)
+  struct line_info *line_ptr; /* line info ptr. */
+   
+  memset (&function, 0, sizeof (function));
+  if (output_function_summary)
+    func_ptr = &function;
+  
+  for (count = 0; count < bb_data_size; count++)
     {
-      source_file_name = s_ptr->name;
-
-      line_counts = (gcov_type *) xcalloc (sizeof (gcov_type), s_ptr->maxlineno);
-      line_exists = xcalloc (1, s_ptr->maxlineno);
-      if (output_branch_probs)
-	branch_probs = (struct arcdata **)
-	  xcalloc (sizeof (struct arcdata *), s_ptr->maxlineno);
-
-      /* There will be a zero at the beginning of the bb info, before the
-	 first list of line numbers, so must initialize block_num to 0.  */
-      block_num = 0;
-      this_file = 0;
-      current_graph = 0;
-      {
-	/* Pointer into the bb_data, incremented while scanning the data.  */
-	char *ptr = bb_data;
-	for (count = 0; count < bb_data_size; count++)
-	  {
-	    long delim;
-
-	    __fetch_long (&line_num, ptr, 4);
-	    ptr += 4;
-	    if (line_num == -1)
-	      {
-		/* Marks the beginning of a file name.  Check to see whether
-		   this is the filename we are currently collecting data for.  */
-
-		if (strcmp (s_ptr->name, ptr))
-		  this_file = 0;
-		else
-		  this_file = 1;
-
-		/* Scan past the file name.  */
-		do {
-		  count++;
-		  __fetch_long (&delim, ptr, 4);
-		  ptr += 4;
-		} while (delim != line_num);
-	      }
-	    else if (line_num == -2)
-	      {
-		/* Marks the start of a new function.  Advance to the next
-		   program flow graph.  */
-
-		if (! current_graph)
-		  current_graph = bb_graph_list;
-		else
-		  {
-		    if (block_num == current_graph->num_blocks - 1)
-		      /* Last block falls through to exit.  */
-		      ;
-		    else if (block_num == current_graph->num_blocks - 2)
-		      {
-			if (output_branch_probs && this_file)
-			  calculate_branch_probs (current_graph, block_num,
-						  branch_probs, last_line_num);
-		      }
-		    else
-		      {
-			fnotice (stderr,
-				 "didn't use all bb entries of graph, function %s\n",
-				 function_name);
-			fnotice (stderr, "block_num = %ld, num_blocks = %d\n",
-				 block_num, current_graph->num_blocks);
-		      }
-
-		    current_graph = current_graph->next;
-		    block_num = 0;
-
-		    if (output_function_summary && this_file)
-		      function_summary ();
-		  }
-
-		if (output_function_summary)
-		  {
-		    function_source_lines = 0;
-		    function_source_lines_executed = 0;
-		    function_branches = 0;
-		    function_branches_executed = 0;
-		    function_branches_taken = 0;
-		    function_calls = 0;
-		    function_calls_executed = 0;
-		  }
-
-		/* Save the function name for later use.  */
-		function_name = ptr;
-
-		/* Scan past the file name.  */
-		do {
-		  count++;
-		  __fetch_long (&delim, ptr, 4);
-		  ptr += 4;
-		} while (delim != line_num);
-	      }
-	    else if (line_num == 0)
-	      {
-		/* Marks the end of a block.  */
-
-		if (block_num >= current_graph->num_blocks)
-		  {
-		    fnotice (stderr, "ERROR: too many basic blocks in .bb file %s\n",
-			     function_name);
-		    abort ();
-		  }
-
-		if (output_branch_probs && this_file)
-		  calculate_branch_probs (current_graph, block_num,
-					  branch_probs, last_line_num);
-
-		block_num++;
-	      }
-	    else if (this_file)
-	      {
-		if (output_function_summary)
-		  {
-		    if (line_exists[line_num] == 0)
-		      function_source_lines++;
-		    if (line_counts[line_num] == 0
-			&& current_graph->bb_graph[block_num].exec_count != 0)
-		      function_source_lines_executed++;
-		  }
-
-		/* Accumulate execution data for this line number.  */
-
-		line_counts[line_num]
-		  += current_graph->bb_graph[block_num].exec_count;
-		line_exists[line_num] = 1;
-		last_line_num = line_num;
-	      }
-	  }
-      }
-
-      if (output_function_summary && this_file)
-	function_summary ();
-
-      /* Calculate summary test coverage statistics.  */
-
-      total_source_lines = 0;
-      total_source_lines_executed = 0;
-      total_branches = 0;
-      total_branches_executed = 0;
-      total_branches_taken = 0;
-      total_calls = 0;
-      total_calls_executed = 0;
-
-      for (count = 1; count < s_ptr->maxlineno; count++)
+      __fetch_long (&line_num, ptr, 4);
+      ptr += 4;
+      if (line_num < 0)
 	{
-	  if (line_exists[count])
+	  long delim;
+	  
+	  if (line_num == -1)
 	    {
-	      total_source_lines++;
-	      if (line_counts[count])
-		total_source_lines_executed++;
+	      /* Marks the beginning of a file name.  Check to see
+	     	 whether this is the filename we are currently
+	     	 collecting data for.  */
+	      is_this_file = !strcmp (total->name, ptr);
 	    }
-	  if (output_branch_probs)
+	  else if (line_num == -2)
 	    {
-	      for (a_ptr = branch_probs[count]; a_ptr; a_ptr = a_ptr->next)
+	      /* Marks the start of a new function.  Advance to the
+	     	 next program flow graph.  */
+	      if (!current_graph)
+		current_graph = bb_graph_list;
+	      else
 		{
-		  if (a_ptr->call_insn)
+		  if (block_num == current_graph->num_blocks - 1)
+		    /* Last block falls through to exit.  */
+		    ;
+		  else if (block_num == current_graph->num_blocks - 2)
 		    {
-		      total_calls++;
-		      if (a_ptr->total != 0)
-			total_calls_executed++;
+		      if (output_branch_probs && is_this_file)
+			calculate_branch_probs (block_ptr, line_ptr, func_ptr);
 		    }
 		  else
 		    {
-		      total_branches++;
-		      if (a_ptr->total != 0)
-			total_branches_executed++;
-		      if (a_ptr->hits > 0)
-			total_branches_taken++;
+		      fnotice (stderr,
+			       "didn't use all bb entries of graph, function %s\n",
+			       function.name);
+		      fnotice (stderr, "block_num = %ld, num_blocks = %d\n",
+			       block_num, current_graph->num_blocks);
 		    }
+		  if (func_ptr && is_this_file)
+		    function_summary (func_ptr, "function");
+		  current_graph = current_graph->next;
 		}
+	      block_num = 0;
+	      block_ptr = current_graph->bb_graph;
+	      memset (&function, 0, sizeof (function));
+	      function.name = ptr;
+	    }
+	  else
+	    {
+	      fnotice (stderr, "ERROR: unexpected line number %ld\n", line_num);
+	      abort ();
+	    }
+
+	  /* Scan past the string.  */
+	  for (delim = 0; delim != line_num; count++)
+	    {
+	      __fetch_long (&delim, ptr, 4);
+	      ptr += 4;
 	    }
 	}
-
-      if (total_source_lines)
-	fnotice (stdout,
-		 "%s of %d source lines executed in file %s\n",
-		 format_hwint (total_source_lines_executed,
-			       total_source_lines, 2),
-		 total_source_lines, source_file_name);
-      else
-	fnotice (stdout, "No executable source lines in file %s\n",
-		 source_file_name);
-
-      if (output_branch_probs)
+      else if (!line_num)
 	{
-	  if (total_branches)
+	  /* Marks the end of a block.  */
+	  if (block_num >= current_graph->num_blocks)
 	    {
-	      fnotice (stdout, "%s of %d branches executed in file %s\n",
-		       format_hwint (total_branches_executed,
-				     total_branches, 2),
-		       total_branches, source_file_name);
-	      fnotice (stdout,
-		       "%s of %d branches taken at least once in file %s\n",
-		       format_hwint (total_branches_taken,
-				     total_branches, 2),
-		       total_branches, source_file_name);
+	      fnotice (stderr, "ERROR: too many basic blocks in function %s\n",
+		       function.name);
+	      abort ();
 	    }
-	  else
-	    fnotice (stdout, "No branches in file %s\n", source_file_name);
-	  if (total_calls)
-	    fnotice (stdout, "%s of %d calls executed in file %s\n",
-		     format_hwint (total_calls_executed, total_calls, 2),
-		     total_calls, source_file_name);
-	  else
-	    fnotice (stdout, "No calls in file %s\n", source_file_name);
+	  
+	  if (output_branch_probs && is_this_file)
+	    calculate_branch_probs (block_ptr, line_ptr, func_ptr);
+	  
+	  block_num++;
+	  block_ptr++;
+	}
+      else if (is_this_file)
+	{
+	  if (line_num >= maxlineno)
+	    {
+	      fnotice (stderr, "ERROR: out of range line number in function %s\n",
+		       function.name);
+	      abort ();
+	    }
+
+	  line_ptr = &line_info[line_num];
+	  if (func_ptr)
+	    {
+	      if (!line_ptr->exists)
+		func_ptr->lines++;
+	      if (!line_ptr->count && block_ptr->exec_count)
+		func_ptr->lines_executed++;
+	    }
+	  
+	  /* Accumulate execution data for this line number.  */
+	  line_ptr->count += block_ptr->exec_count;
+	  line_ptr->exists = 1;
+	}
+    }
+  
+  if (func_ptr && is_this_file)
+    function_summary (func_ptr, "function");
+  
+  /* Calculate summary test coverage statistics.  */
+  for (line_num = 1, line_ptr = &line_info[line_num];
+       line_num < maxlineno; line_num++, line_ptr++)
+    {
+      struct arcdata *a_ptr, *prev, *next;
+      
+      if (line_ptr->exists)
+	{
+	  total->lines++;
+	  if (line_ptr->count)
+	    total->lines_executed++;
 	}
 
-      if (output_gcov_file)
+      /* Total and reverse the branch information. */
+      for (a_ptr = line_ptr->branches, prev = NULL; a_ptr; a_ptr = next)
 	{
-	  /* Now the statistics are ready.  Read in the source file one line
-	     at a time, and output that line to the gcov file preceded by
-	     its execution count if non zero.  */
-	  char const *retval;
+	  next = a_ptr->next;
+	  a_ptr->next = prev;
+	  prev = a_ptr;
 
-	  /* Generate an output file name. LONG_OUTPUT_NAMES and
-	     PRESERVE_PATHS affect name generation. With
-	     preserve_paths we create a filename from all path
-	     components of the source file, replacing '/' with '#',
-	     without it we simply take the basename component. With
-	     long_output_names we prepend the processed name of the
-	     input file to each output name (except when the current
-	     source file is the input file, so you don't get a double
-	     concatenation). The two components are separated by
-	     '##'. Also '.' filename components are removed and '..'
-	     components are renamed to '^'. */
-	  gcov_file_name = xmalloc (strlen (source_file_name)
-				    + strlen (input_file_name) + 10);
-	  gcov_file_name[0] = 0;
-	  if (output_long_names && strcmp (source_file_name, input_file_name))
+	  accumulate_branch_counts (total, a_ptr);
+	}
+      line_ptr->branches = prev;
+    }
+}
+
+/* Read in the source file one line at a time, and output that line to
+   the gcov file preceded by its execution count and other
+   information.  */
+
+static void
+output_line_info (gcov_file, line_info, total, maxlineno)
+     FILE *gcov_file;
+     const struct line_info *line_info;
+     const struct coverage *total;
+     long maxlineno;
+{
+  FILE *source_file;
+  long line_num;                    /* current line number */
+  const struct line_info *line_ptr; /* current line info ptr. */
+  char string[STRING_SIZE];         /* line buffer. */
+  char const *retval = "";	    /* status of source file reading. */
+
+  fprintf (gcov_file, "%9s:%5d:Source:%s\n", "-", 0, total->name);
+  fprintf (gcov_file, "%9s:%5d:Object:%s\n", "-", 0, bb_file_name);
+  
+  source_file = fopen (total->name, "r");
+  if (!source_file)
+    {
+      fnotice (stderr, "Could not open source file %s.\n", total->name);
+      retval = NULL;
+    }
+  else
+    {
+      struct stat status;
+      
+      if (!fstat (fileno (source_file), &status)
+	  && status.st_mtime > bb_file_time)
+	{
+	  fnotice (stderr, "Warning: source file %s is newer than %s\n",
+		   total->name, bb_file_name);
+	  fprintf (gcov_file, "%9s:%5d:Source is newer than compiler output\n",
+		   "-", 0);
+	}
+    }
+
+  for (line_num = 1, line_ptr = &line_info[line_num];
+       line_num < maxlineno; line_num++, line_ptr++)
+    {
+      /* For lines which don't exist in the .bb file, print '-' before
+ 	 the source line.  For lines which exist but were never
+ 	 executed, print '#####' before the source line.  Otherwise,
+ 	 print the execution count before the source line.  There are
+ 	 16 spaces of indentation added before the source line so that
+ 	 tabs won't be messed up.  */
+      fprintf (gcov_file, "%9s:%5ld:",
+	       !line_ptr->exists ? "-"
+	       : !line_ptr->count ? "#####"
+	       : format_hwint (line_ptr->count, 0, -1), line_num);
+      
+      if (retval)
+	{
+	  /* Copy source line.  */
+	  do
 	    {
-	      /* Generate the input filename part.  */
-	      cptr = preserve_paths ? NULL : strrchr (input_file_name, '/');
-	      cptr = cptr ? cptr + 1 : input_file_name;
-	      strcat (gcov_file_name, cptr);
-	      strcat (gcov_file_name, "##");
-	    }
-	  /* Generate the source filename part. */
-	  cptr = preserve_paths ? NULL : strrchr (source_file_name, '/');
-	  cptr = cptr ? cptr + 1 : source_file_name;
-	  strcat (gcov_file_name, cptr);
-
-	  if (preserve_paths)
-	    {
-	      /* Convert '/' to '#', remove '/./', convert '/../' to
-		 '/^/' */
-	      char *prev;
-	      
-	      for (cptr = gcov_file_name;
-		   (cptr = strchr ((prev = cptr), '/'));)
-		{
-		  unsigned shift = 0;
-		  
-		  if (prev + 1 == cptr && prev[0] == '.')
-		    {
-		      /* Remove '.' */
-		      shift = 2;
-		    }
-		  else if (prev + 2 == cptr
-			   && prev[0] == '.' && prev[1] == '.')
-		    {
-		      /* Convert '..' */
-		      shift = 1;
-		      prev[1] = '^';
-		    }
-		  else
-		    *cptr++ = '#';
-		  if (shift)
-		    {
-		      cptr = prev;
-		      do
-			prev[0] = prev[shift];
-		      while (*prev++);
-		    }
-		}
-	    }
-	  
-	  /* Don't strip off the ending for compatibility with tcov, since
-	     this results in confusion if there is more than one file with
-	     the same basename, e.g. tmp.c and tmp.h.  */
-	  strcat (gcov_file_name, ".gcov");
-
-	  gcov_file = fopen (gcov_file_name, "w");
-
-	  if (gcov_file == NULL)
-	    {
-	      fnotice (stderr, "Could not open output file %s.\n",
-		       gcov_file_name);
-	      free (line_counts);
-	      free (line_exists);
-	      continue;
-	    }
-
-	  fnotice (stdout, "Creating %s.\n", gcov_file_name);
-
-	  fprintf (gcov_file, "%9s:%5d:Source:%s\n", "-", 0, source_file_name);
-	  fprintf (gcov_file, "%9s:%5d:Object:%s\n", "-", 0, bb_file_name);
-	  
-	  source_file = fopen (source_file_name, "r");
-	  if (source_file == NULL)
-	    fnotice (stderr, "Could not open source file %s.\n",
-		     source_file_name);
-	  else
-	    {
-	      struct stat status;
-
-	      if (!fstat (fileno (source_file), &status)
-		  && status.st_mtime > bb_file_time)
-		{
-		  fnotice (stderr, "Warning: source file %s is newer than %s\n",
-			   source_file_name, bb_file_name);
-		  fprintf (gcov_file, "%9s:%5d:Source is newer than compiler output\n", "-", 0);
-		}
-	    }
-	  
-	  for (retval = source_file ? "" : NULL, count = 1;
-	       count < s_ptr->maxlineno; count++)
-	    {
-	      /* For lines which don't exist in the .bb file, print
-		 '-' before the source line.  For lines which exist
-		 but were never executed, print '#####' before the source
-		 line.  Otherwise, print the execution count before
-		 the source line.  */
-	      
-	      /* There are 16 spaces of indentation added before the source
-		 line so that tabs won't be messed up.  */
-	      fprintf (gcov_file, "%9s:%5ld:",
-		       !line_exists[count] ? "-"
-		       : !line_counts[count] ? "#####"
-		       : format_hwint (line_counts[count], 0, -1), count);
-	      
-	      if (retval)
-		{
-		  do
-		    {
-		      retval = fgets (string, STRING_SIZE, source_file);
-		      if (!retval)
-			{
-			  fnotice (stderr,
-				   "Unexpected EOF while reading source file %s.\n",
-				   source_file_name);
-			  break;
-			}
-		      fputs (retval, gcov_file);
-		    }
-		  while (!retval[0] || retval[strlen (retval) - 1] != '\n');
-		}
+	      retval = fgets (string, STRING_SIZE, source_file);
 	      if (!retval)
-		fputs ("??\n", gcov_file);
-	      
-	      if (output_branch_probs)
 		{
-		  for (i = 0, a_ptr = branch_probs[count]; a_ptr;
-		       a_ptr = a_ptr->next, i++)
-		    {
-		      if (a_ptr->call_insn)
-			{
-			  if (a_ptr->total == 0)
-			    fnotice (gcov_file, "call   %2d never executed\n", i);
-			  else
-			    fnotice
-			      (gcov_file, "call   %2d returns %s\n", i,
-			       format_hwint (a_ptr->total - a_ptr->hits,
-					     a_ptr->total,
-					     -output_branch_counts));
-			}
-		      else
-			{
-			  if (a_ptr->total == 0)
-			    fnotice (gcov_file, "branch %2d never executed\n",
-				     i);
-			  else
-			    fnotice
-			      (gcov_file, "branch %2d taken %s\n", i,
-			       format_hwint (a_ptr->hits, a_ptr->total,
-					     -output_branch_counts));
-			}
-		   }
-	      }
+		  fnotice (stderr,
+			   "Unexpected EOF while reading source file %s.\n",
+			   total->name);
+		  break;
+		}
+	      fputs (retval, gcov_file);
 	    }
-
-	  /* Handle all remaining source lines.  There may be lines
-	     after the last line of code.  */
-	  if (retval)
+	  while (!retval[0] || retval[strlen (retval) - 1] != '\n');
+	}
+      if (!retval)
+	fputs ("??\n", gcov_file);
+      
+      if (output_branch_probs)
+	{
+	  int i;
+	  struct arcdata *a_ptr;
+	  
+	  for (i = 0, a_ptr = line_ptr->branches; a_ptr;
+	       a_ptr = a_ptr->next, i++)
 	    {
-	      for (; (retval = fgets (string, STRING_SIZE, source_file));
-		   count++)
+	      if (a_ptr->call_insn)
 		{
-		  fprintf (gcov_file, "%9s:%5ld:%s", "-", count, retval);
-
-		  while (!retval[0] || retval[strlen (retval) - 1] != '\n')
-		    {
-		      retval = fgets (string, STRING_SIZE, source_file);
-		      if (!retval)
-			break;
-		      fputs (retval, gcov_file);
-		    }
+		  if (a_ptr->total == 0)
+		    fnotice (gcov_file, "call   %2d never executed\n", i);
+		  else
+		    fnotice
+		      (gcov_file, "call   %2d returns %s\n", i,
+		       format_hwint (a_ptr->total - a_ptr->hits,
+				     a_ptr->total,
+				     -output_branch_counts));
+		}
+	      else
+		{
+		  if (a_ptr->total == 0)
+		    fnotice (gcov_file, "branch %2d never executed\n", i);
+		  else
+		    fnotice
+		      (gcov_file, "branch %2d taken %s\n", i,
+		       format_hwint (a_ptr->hits, a_ptr->total,
+				     -output_branch_counts));
 		}
 	    }
+	}
+    }
+  
+  /* Handle all remaining source lines.  There may be lines after the
+     last line of code.  */
+  if (retval)
+    {
+      for (; (retval = fgets (string, STRING_SIZE, source_file)); line_num++)
+	{
+	  fprintf (gcov_file, "%9s:%5ld:%s", "-", line_num, retval);
+	  
+	  while (!retval[0] || retval[strlen (retval) - 1] != '\n')
+	    {
+	      retval = fgets (string, STRING_SIZE, source_file);
+	      if (!retval)
+		break;
+	      fputs (retval, gcov_file);
+	    }
+	}
+    }
+  
+  if (source_file)
+    fclose (source_file);
+}
 
-	  if (source_file)
-	    fclose (source_file);
+/* Calculate line execution counts, and output a .gcov file for source
+   file S_PTR. Allocate an array big enough to hold a count for each
+   line.  Scan through the bb_data, and when the file name matches the
+   current file name, then for each following line number, increment
+   the line number execution count indicated by the execution count of
+   the appropriate basic block.  */
+
+static void
+output_data (s_ptr)
+	     struct sourcefile *s_ptr;
+{
+  struct line_info *line_info	/* line info data */
+    = (struct line_info *) xcalloc (s_ptr->maxlineno,
+				    sizeof (struct line_info));
+  long line_num;
+  struct coverage total;
+  
+  memset (&total, 0, sizeof (total));
+  total.name = s_ptr->name;
+  
+  init_line_info (line_info, &total, s_ptr->maxlineno);
+  function_summary (&total, "file");
+
+  if (output_gcov_file)
+    {
+      /* Now the statistics are ready.  Read in the source file one
+	 line at a time, and output that line to the gcov file
+	 preceded by its execution information.  */
+      
+      char *gcov_file_name = make_gcov_file_name (total.name);
+      FILE *gcov_file = fopen (gcov_file_name, "w");
+      
+      if (gcov_file)
+	{
+	  fnotice (stdout, "Creating %s.\n", gcov_file_name);
+	  output_line_info (gcov_file, line_info, &total, s_ptr->maxlineno);
 	  if (ferror (gcov_file))
 	    fnotice (stderr, "Error writing output file %s.\n",
 		     gcov_file_name);
 	  fclose (gcov_file);
 	}
-
-      free (line_counts);
-      free (line_exists);
+      else
+	fnotice (stderr, "Could not open output file %s.\n", gcov_file_name);
+      free (gcov_file_name);
     }
+
+  /* Free data. */
+  for (line_num = 1; line_num != s_ptr->maxlineno; line_num++)
+    {
+      struct arcdata *branch, *next;
+
+      for (branch = line_info[line_num].branches; branch; branch = next)
+	{
+	  next = branch->next;
+	  free (branch);
+	}
+    }
+  free (line_info);
 }
