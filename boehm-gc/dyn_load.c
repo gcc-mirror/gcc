@@ -735,6 +735,10 @@ void GC_register_dynamic_libraries()
   
 # define HAVE_REGISTER_MAIN_STATIC_DATA
 
+  /* The frame buffer testing code is dead in this version.	*/
+  /* We leave it here temporarily in case the switch to just 	*/
+  /* testing for MEM_IMAGE sections causes un expected 		*/
+  /* problems.							*/
   GC_bool GC_warn_fb = TRUE;	/* Warn about traced likely 	*/
   				/* graphics memory.		*/
   GC_bool GC_disallow_ignore_fb = FALSE;
@@ -856,7 +860,11 @@ void GC_register_dynamic_libraries()
 		&& (protect == PAGE_EXECUTE_READWRITE
 		    || protect == PAGE_READWRITE)
 		&& !GC_is_heap_base(buf.AllocationBase)
-		&& !is_frame_buffer(p, buf.RegionSize)) {  
+		/* This used to check for
+		 * !is_frame_buffer(p, buf.RegionSize, buf.Type)
+		 * instead of just checking for MEM_IMAGE.
+		 * If something breaks, change it back. */
+		&& buf.Type == MEM_IMAGE) {
 #	        ifdef DEBUG_VIRTUALQUERY
 	          GC_dump_meminfo(&buf);
 #	        endif
