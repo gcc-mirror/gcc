@@ -195,13 +195,13 @@ void test02()
   const wstring empty;
 
   // total EPA budget FY 2002
-  const long double  digits1 = 720000000000;
+  const long double  digits1 = 720000000000.0;
 
   // est. cost, national missile "defense", expressed as a loss in USD 2001
-  const long double digits2 = -10000000000000;  
+  const long double digits2 = -10000000000000.0;  
 
   // input less than frac_digits
-  const long double digits4 = -1;
+  const long double digits4 = -1.0;
   
 
   wostringstream oss;
@@ -256,7 +256,7 @@ void test03()
   const locale loc_c = locale::classic();
   // woman, art, thief (stole the blues)
   const wstring str(L"1943 Janis Joplin");
-  const long double ld = 1943;
+  const long double ld = 1943.0;
   const wstring x(str.size(), 'x'); // have to have allocated string!
   wstring res;
 
@@ -357,7 +357,7 @@ void test06()
 
   bool intl = false;
 
-  long double val = 1e50L;
+  long double val = 1.0e50L;
   const money_put<wchar_t,OutIt>& mp  =
     use_facet<money_put<wchar_t, OutIt> >(loc);
 

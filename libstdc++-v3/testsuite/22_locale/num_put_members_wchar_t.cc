@@ -209,8 +209,8 @@ void test01()
   VERIFY( result1.find(L'x') == 1 );
 
 #ifdef _GLIBCPP_USE_LONG_LONG
-  long long ll1 = 9223372036854775807;
-  long long ll2 = -9223372036854775807;
+  long long ll1 = 9223372036854775807LL;
+  long long ll2 = -9223372036854775807LL;
 
   oss.str(empty);
   oss.clear();
@@ -257,7 +257,7 @@ void test02()
   VERIFY( sanity1 == L"1798" );
 
   // 02 put(long double)
-  const long double ld = 1798;
+  const long double ld = 1798.0;
   res = x;
   iter_type ret2 = tp.put(res.begin(), oss, L' ', ld);
   wstring sanity2(res.begin(), ret2);

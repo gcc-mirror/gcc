@@ -236,13 +236,13 @@ void test02()
   const string empty;
 
   // total EPA budget FY 2002
-  const long double  digits1 = 720000000000;
+  const long double  digits1 = 720000000000.0;
 
   // est. cost, national missile "defense", expressed as a loss in USD 2001
-  const long double digits2 = -10000000000000;  
+  const long double digits2 = -10000000000000.0;  
 
   // input less than frac_digits
-  const long double digits4 = -1;
+  const long double digits4 = -1.0;
   
   iterator_type end;
   istringstream iss;
