@@ -1,5 +1,5 @@
 /* AbstractSelector.java -- 
-   Copyright (C) 2002 Free Software Foundation, Inc.
+   Copyright (C) 2002, 2003 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -42,11 +42,13 @@ import java.io.IOException;
 import java.nio.channels.SelectionKey;
 import java.nio.channels.Selector;
 import java.util.Set;
+import java.util.HashSet;
 
 public abstract class AbstractSelector extends Selector
 {
-  boolean closed = false;
-  SelectorProvider provider;
+  private boolean closed = false;
+  private SelectorProvider provider;
+  private HashSet cancelledKeys;
 
   /**
    * Initializes the slector.
@@ -54,15 +56,9 @@ public abstract class AbstractSelector extends Selector
   protected AbstractSelector (SelectorProvider provider)
   {
     this.provider = provider;
+    this.cancelledKeys = new HashSet();
   }
  
-  /**
-   * Marks the beginning of an I/O operation that might block indefinitely.
-   */
-  protected final void begin ()
-  {
-  }
-
   /**
    * Closes the channel.
    * 
@@ -73,8 +69,8 @@ public abstract class AbstractSelector extends Selector
     if (closed)
       return;
     
+    implCloseSelector();
     closed = true;
-    implCloseSelector ();
   }
 
   /**
@@ -85,11 +81,16 @@ public abstract class AbstractSelector extends Selector
     return ! closed;
   }
 
-  protected final void deregister (AbstractSelectionKey key)
+  /**
+   * Marks the beginning of an I/O operation that might block indefinitely.
+   */
+  protected final void begin()
   {
-    cancelledKeys ().remove (key);
   }
-    
+
+  /**
+   * Marks the end of an I/O operation that might block indefinitely.
+   */
   protected final void end()
   {
   }
@@ -101,7 +102,12 @@ public abstract class AbstractSelector extends Selector
 
   protected final Set cancelledKeys()
   {
-    return null;
+    return cancelledKeys;
+  }
+
+  final void cancelKey (AbstractSelectionKey key)
+  {
+    cancelledKeys.remove (key);
   }
 
   /**
@@ -111,4 +117,9 @@ public abstract class AbstractSelector extends Selector
 
   protected abstract SelectionKey register (AbstractSelectableChannel ch,
                                             int ops, Object att);   
+
+  protected final void deregister (AbstractSelectionKey key)
+  {
+    // FIXME
+  }
 }

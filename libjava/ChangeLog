@@ -1,3 +1,28 @@
+2003-10-09  Michael Koch  <konqueror@gmx.de>
+
+	* java/nio/channels/spi/AbstractSelectableChannel.java
+	(registered): Made private.
+	(blocking): Likewise.
+	(LOCK): Likewise.
+	(provider): Likewise.
+	(keys): Made it a private LinkedList.
+	(AbstractSelectableChannel): Initialize keys.
+	(isRegistered): New implementation.
+	(locate): Rewritten.
+	(register): Rewritten.
+	* java/nio/channels/spi/AbstractSelectionKey.java
+	(ok): Removed.
+	(cancelled): New member variable.
+	(cancel): Rewritten.
+	(isValid): Rewritten.
+	* java/nio/channels/spi/AbstractSelector.java:
+	Some methods moved.
+	(closed): Make private.
+	(provider): Likewise.
+	(cancelledKeys): New member variable.
+	(AbstractSelector): Initialize cancelledKeys.
+	(cancelKey): New method.
+
 2003-10-09  Tom Tromey  <tromey@redhat.com>
 
 	* java/lang/ClassLoader.java (setSigners): Implemented.

@@ -1,5 +1,5 @@
 /* AbstractSelectableChannel.java
-   Copyright (C) 2002 Free Software Foundation, Inc.
+   Copyright (C) 2002, 2003 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -48,11 +48,11 @@ import java.util.ListIterator;
 
 public abstract class AbstractSelectableChannel extends SelectableChannel
 {
-  int registered;
-  boolean blocking = true;
-  Object LOCK = new Object ();
-  SelectorProvider provider;
-  List keys;
+  private int registered;
+  private boolean blocking = true;
+  private Object LOCK = new Object();
+  private SelectorProvider provider;
+  private LinkedList keys;
 
   /**
    * Initializes the channel
@@ -60,6 +60,7 @@ public abstract class AbstractSelectableChannel extends SelectableChannel
   protected AbstractSelectableChannel (SelectorProvider provider)
   {
     this.provider = provider;
+    this.keys = new LinkedList();
   }
 
   /**
@@ -122,7 +123,7 @@ public abstract class AbstractSelectableChannel extends SelectableChannel
    */
   public final boolean isRegistered()
   {
-    return registered > 0;
+    return !keys.isEmpty();
   }
 
   /**
@@ -154,28 +155,21 @@ public abstract class AbstractSelectableChannel extends SelectableChannel
     if (keys == null)
       return null;
     
-    SelectionKey k = null;
     ListIterator it = keys.listIterator ();
     
     while (it.hasNext ())
       {
-    	k = (SelectionKey) it.next ();
-    	if (k.selector () == selector)
-          {
-            return k;
-          }
+        SelectionKey key = (SelectionKey) it.next();
+        
+    	if (key.selector() == selector)
+          return key;
       }
     
-    return k;
+    return null;
   }
 
   private void add (SelectionKey key)
   {
-    if (keys == null)
-      {
-        keys = new LinkedList ();
-      }
-    
     keys.add (key);
   }
 
@@ -190,26 +184,26 @@ public abstract class AbstractSelectableChannel extends SelectableChannel
     if (!isOpen ())
       throw new ClosedChannelException();
 
-    SelectionKey k = null;
+    SelectionKey key = null;
     AbstractSelector selector = (AbstractSelector) selin;
 
     synchronized (LOCK)
       {
-        k = locate (selector);
+        key = locate (selector);
 
-        if (k != null)
+        if (key != null)
           {
-            k.attach (att);
+            key.attach (att);
           }
         else
           {
-            k = selector.register (this, ops, att);
+            key = selector.register (this, ops, att);
     		
-            if (k != null)
-              add (k);
+            if (key != null)
+              add (key);
           }
       }
 
-    return k;
+    return key;
   }
 }
