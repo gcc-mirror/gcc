@@ -673,7 +673,7 @@ copy_src_to_dest (insn, src, dest, loop_depth)
       bb = regmove_bb_head[insn_uid];
       if (bb >= 0)
 	{
-	  basic_block_head[bb] = move_insn;
+	  BLOCK_HEAD (bb) = move_insn;
 	  regmove_bb_head[insn_uid] = -1;
 	}
 
@@ -936,7 +936,7 @@ regmove_optimize (f, nregs, regmove_dump_file)
   regmove_bb_head = (int *)alloca (sizeof (int) * (old_max_uid + 1));
   for (i = old_max_uid; i >= 0; i--) regmove_bb_head[i] = -1;
   for (i = 0; i < n_basic_blocks; i++)
-    regmove_bb_head[INSN_UID (basic_block_head[i])] = i;
+    regmove_bb_head[INSN_UID (BLOCK_HEAD (i))] = i;
 
   /* A forward/backward pass.  Replace output operands with input operands.  */
 
@@ -1390,13 +1390,13 @@ regmove_optimize (f, nregs, regmove_dump_file)
      ends.  Fix that here.  */
   for (i = 0; i < n_basic_blocks; i++)
     {
-      rtx end = basic_block_end[i];
+      rtx end = BLOCK_END (i);
       rtx new = end;
       rtx next = NEXT_INSN (new);
       while (next != 0 && INSN_UID (next) >= old_max_uid
-	     && (i == n_basic_blocks - 1 || basic_block_head[i + 1] != next))
+	     && (i == n_basic_blocks - 1 || BLOCK_HEAD (i + 1) != next))
 	new = next, next = NEXT_INSN (new);
-      basic_block_end[i] = new;
+      BLOCK_END (i) = new;
     }
 }
 

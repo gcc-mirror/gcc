@@ -102,11 +102,11 @@ extern int n_basic_blocks;
 
 /* Index by basic block number, get first insn in the block.  */
 
-extern rtx *basic_block_head;
+extern rtx *x_basic_block_head;
 
 /* Index by basic block number, get last insn in the block.  */
 
-extern rtx *basic_block_end;
+extern rtx *x_basic_block_end;
 
 /* Index by basic block number, determine whether the block can be reached
    through a computed jump.  */
@@ -176,8 +176,8 @@ extern void free_int_list               PROTO ((int_list_block **));
 
 /* Stuff for recording basic block info.  */
 
-#define BLOCK_HEAD(B)      basic_block_head[(B)]
-#define BLOCK_END(B)       basic_block_end[(B)]
+#define BLOCK_HEAD(B)      x_basic_block_head[(B)]
+#define BLOCK_END(B)       x_basic_block_end[(B)]
 
 /* Special block numbers [markers] for entry and exit.  */
 #define ENTRY_BLOCK (-1)

@@ -680,7 +680,7 @@ global_conflicts ()
 #endif
       }
 
-      insn = basic_block_head[b];
+      insn = BLOCK_HEAD (b);
 
       /* Scan the code of this basic block, noting which allocnos
 	 and hard regs are born or die.  When one is born,
@@ -777,7 +777,7 @@ global_conflicts ()
 		  mark_reg_death (regs_set[n_regs_set]);
 	    }
 
-	  if (insn == basic_block_end[b])
+	  if (insn == BLOCK_END (b))
 	    break;
 	  insn = NEXT_INSN (insn);
 	}
@@ -1667,7 +1667,7 @@ build_insn_chain (first)
     {
       struct insn_chain *c;
 
-      if (first == basic_block_head[b])
+      if (first == BLOCK_HEAD (b))
 	{
 	  int i;
 	  CLEAR_REG_SET (live_relevant_regs);
@@ -1727,7 +1727,7 @@ build_insn_chain (first)
 	    }
 	}
 
-      if (first == basic_block_end[b])
+      if (first == BLOCK_END (b))
 	b++;
 
       /* Stop after we pass the end of the last basic block.  Verify that

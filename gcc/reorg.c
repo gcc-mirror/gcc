@@ -2349,7 +2349,7 @@ find_basic_block (insn)
        insn = next_nonnote_insn (insn))
     {
       for (i = 0; i < n_basic_blocks; i++)
-	if (insn == basic_block_head[i])
+	if (insn == BLOCK_HEAD (i))
 	  return i;
     }
 
@@ -2818,7 +2818,7 @@ mark_target_live_regs (target, res)
      we can get it from there unless the insn at the start of the basic block
      has been deleted.  */
   if (tinfo && tinfo->block != -1
-      && ! INSN_DELETED_P (basic_block_head[tinfo->block]))
+      && ! INSN_DELETED_P (BLOCK_HEAD (tinfo->block)))
     b = tinfo->block;
 
   if (b == -1)
@@ -2876,7 +2876,7 @@ mark_target_live_regs (target, res)
 
       /* Get starting and ending insn, handling the case where each might
 	 be a SEQUENCE.  */
-      start_insn = (b == 0 ? get_insns () : basic_block_head[b]);
+      start_insn = (b == 0 ? get_insns () : BLOCK_HEAD (b));
       stop_insn = target;
 
       if (GET_CODE (start_insn) == INSN

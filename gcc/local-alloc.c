@@ -888,7 +888,7 @@ update_equiv_regs ()
 
       /* Keep track of which basic block we are in.  */
       if (block + 1 < n_basic_blocks
-	  && basic_block_head[block + 1] == insn)
+	  && BLOCK_HEAD (block + 1) == insn)
 	++block;
 
       if (GET_RTX_CLASS (GET_CODE (insn)) != 'i')
@@ -962,8 +962,8 @@ update_equiv_regs ()
 		  REG_N_CALLS_CROSSED (regno) = 0;
 		  REG_LIVE_LENGTH (regno) = 2;
 
-		  if (block >= 0 && insn == basic_block_head[block])
-		    basic_block_head[block] = PREV_INSN (insn);
+		  if (block >= 0 && insn == BLOCK_HEAD (block))
+		    BLOCK_HEAD (block) = PREV_INSN (insn);
 
 		  for (l = 0; l < n_basic_blocks; l++)
 		    CLEAR_REGNO_REG_SET (basic_block_live_at_start[l], regno);
@@ -1020,13 +1020,13 @@ block_alloc (b)
 
   /* Count the instructions in the basic block.  */
 
-  insn = basic_block_end[b];
+  insn = BLOCK_END (b);
   while (1)
     {
       if (GET_CODE (insn) != NOTE)
 	if (++insn_count > max_uid)
 	  abort ();
-      if (insn == basic_block_head[b])
+      if (insn == BLOCK_HEAD (b))
 	break;
       insn = PREV_INSN (insn);
     }
@@ -1045,7 +1045,7 @@ block_alloc (b)
      and assigns quantities to registers.
      It computes which registers to tie.  */
 
-  insn = basic_block_head[b];
+  insn = BLOCK_HEAD (b);
   while (1)
     {
       register rtx body = PATTERN (insn);
@@ -1283,7 +1283,7 @@ block_alloc (b)
       IOR_HARD_REG_SET (regs_live_at[2 * insn_number], regs_live);
       IOR_HARD_REG_SET (regs_live_at[2 * insn_number + 1], regs_live);
 
-      if (insn == basic_block_end[b])
+      if (insn == BLOCK_END (b))
 	break;
 
       insn = NEXT_INSN (insn);

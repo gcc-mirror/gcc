@@ -136,8 +136,8 @@
 
    This pass must update information that subsequent passes expect to
    be correct.  Namely: reg_n_refs, reg_n_sets, reg_n_deaths,
-   reg_n_calls_crossed, and reg_live_length.  Also, basic_block_head,
-   basic_block_end.
+   reg_n_calls_crossed, and reg_live_length.  Also, BLOCK_HEAD,
+   BLOCK_END.
 
    The information in the line number notes is carefully retained by
    this pass.  Notes that refer to the starting and ending of
@@ -1101,7 +1101,7 @@ is_cfg_nonregular ()
      the cfg not well structured.  */
   /* check for labels referred to other thn by jumps */
   for (b = 0; b < n_basic_blocks; b++)
-    for (insn = basic_block_head[b];; insn = NEXT_INSN (insn))
+    for (insn = BLOCK_HEAD (b);; insn = NEXT_INSN (insn))
       {
 	code = GET_CODE (insn);
 	if (GET_RTX_CLASS (code) == 'i')
@@ -1113,7 +1113,7 @@ is_cfg_nonregular ()
 		return 1;
 	  }
 
-	if (insn == basic_block_end[b])
+	if (insn == BLOCK_END (b))
 	  break;
       }
 
@@ -1406,8 +1406,8 @@ too_large (block, num_bbs, num_insns)
      int block, *num_bbs, *num_insns;
 {
   (*num_bbs)++;
-  (*num_insns) += (INSN_LUID (basic_block_end[block]) -
-		   INSN_LUID (basic_block_head[block]));
+  (*num_insns) += (INSN_LUID (BLOCK_END (block)) -
+		   INSN_LUID (BLOCK_HEAD (block)));
   if ((*num_bbs > MAX_RGN_BLOCKS) || (*num_insns > MAX_RGN_INSNS))
     return 1;
   else
@@ -1683,8 +1683,8 @@ find_rgns (s_preds, s_succs, num_preds, num_succs, dom)
 
 	      /* Estimate # insns, and count # blocks in the region.  */
 	      num_bbs = 1;
-	      num_insns	= (INSN_LUID (basic_block_end[i])
-			   - INSN_LUID (basic_block_head[i]));
+	      num_insns	= (INSN_LUID (BLOCK_END (i))
+			   - INSN_LUID (BLOCK_HEAD (i)));
 
 
 	      /* Find all loop latches (blocks which back edges to the loop
@@ -4840,8 +4840,8 @@ get_block_head_tail (bb, headp, tailp)
   b = BB_TO_BLOCK (bb);
 
   /* HEAD and TAIL delimit the basic block being scheduled.  */
-  head = basic_block_head[b];
-  tail = basic_block_end[b];
+  head = BLOCK_HEAD (b);
+  tail = BLOCK_END (b);
 
   /* Don't include any notes or labels at the beginning of the
      basic block, or notes at the ends of basic blocks.  */
@@ -4922,7 +4922,7 @@ save_line_notes (bb)
   get_block_head_tail (bb, &head, &tail);
   next_tail = NEXT_INSN (tail);
 
-  for (insn = basic_block_head[BB_TO_BLOCK (bb)];
+  for (insn = BLOCK_HEAD (BB_TO_BLOCK (bb));
        insn != next_tail;
        insn = NEXT_INSN (insn))
     if (GET_CODE (insn) == NOTE && NOTE_LINE_NUMBER (insn) > 0)
@@ -4945,8 +4945,8 @@ restore_line_notes (bb)
 
   b = BB_TO_BLOCK (bb);
 
-  head = basic_block_head[b];
-  next_tail = NEXT_INSN (basic_block_end[b]);
+  head = BLOCK_HEAD (b);
+  next_tail = NEXT_INSN (BLOCK_END (b));
 
   /* Determine the current line-number.  We want to know the current
      line number of the first insn of the block here, in case it is
@@ -6683,8 +6683,7 @@ schedule_block (bb, rgn_n_insns)
       fprintf (dump, ";;   ======================================================\n");
       fprintf (dump,
 	       ";;   -- basic block %d from %d to %d -- %s reload\n",
-	       b, INSN_UID (basic_block_head[b]),
-	       INSN_UID (basic_block_end[b]),
+	       b, INSN_UID (BLOCK_HEAD (b)), INSN_UID (BLOCK_END (b)),
 	       (reload_completed ? "after" : "before"));
       fprintf (dump, ";;   ======================================================\n");
       fprintf (dump, "\n");
@@ -6821,9 +6820,9 @@ schedule_block (bb, rgn_n_insns)
   last = prev_head;
 
   /* Initialize INSN_QUEUE, LIST and NEW_NEEDS.  */
-  new_needs = (NEXT_INSN (prev_head) == basic_block_head[b]
+  new_needs = (NEXT_INSN (prev_head) == BLOCK_HEAD (b)
 	       ? NEED_HEAD : NEED_NOTHING);
-  if (PREV_INSN (next_tail) == basic_block_end[b])
+  if (PREV_INSN (next_tail) == BLOCK_END (b))
     new_needs |= NEED_TAIL;
 
   /* loop until all the insns in BB are scheduled.  */
@@ -6907,29 +6906,29 @@ schedule_block (bb, rgn_n_insns)
 
 		  /* Update source block boundaries.   */
 		  b1 = INSN_BLOCK (temp);
-		  if (temp == basic_block_head[b1]
-		      && insn == basic_block_end[b1])
+		  if (temp == BLOCK_HEAD (b1)
+		      && insn == BLOCK_END (b1))
 		    {
 		      /* We moved all the insns in the basic block.
 			 Emit a note after the last insn and update the
 			 begin/end boundaries to point to the note.  */
 		      emit_note_after (NOTE_INSN_DELETED, insn);
-		      basic_block_end[b1] = NEXT_INSN (insn);
-		      basic_block_head[b1] = NEXT_INSN (insn);
+		      BLOCK_END (b1) = NEXT_INSN (insn);
+		      BLOCK_HEAD (b1) = NEXT_INSN (insn);
 		    }
-		  else if (insn == basic_block_end[b1])
+		  else if (insn == BLOCK_END (b1))
 		    {
 		      /* We took insns from the end of the basic block,
 			 so update the end of block boundary so that it
 			 points to the first insn we did not move.  */
-		      basic_block_end[b1] = PREV_INSN (temp);
+		      BLOCK_END (b1) = PREV_INSN (temp);
 		    }
-		  else if (temp == basic_block_head[b1])
+		  else if (temp == BLOCK_HEAD (b1))
 		    {
 		      /* We took insns from the start of the basic block,
 			 so update the start of block boundary so that
 			 it points to the first insn we did not move.  */
-		      basic_block_head[b1] = NEXT_INSN (insn);
+		      BLOCK_HEAD (b1) = NEXT_INSN (insn);
 		    }
 		}
 	      else
@@ -7005,18 +7004,18 @@ schedule_block (bb, rgn_n_insns)
 
   /* update target block boundaries.  */
   if (new_needs & NEED_HEAD)
-    basic_block_head[b] = head;
+    BLOCK_HEAD (b) = head;
 
   if (new_needs & NEED_TAIL)
-    basic_block_end[b] = tail;
+    BLOCK_END (b) = tail;
 
   /* debugging */
   if (sched_verbose)
     {
       fprintf (dump, ";;   total time = %d\n;;   new basic block head = %d\n",
-	       clock_var, INSN_UID (basic_block_head[b]));
+	       clock_var, INSN_UID (BLOCK_HEAD (b)));
       fprintf (dump, ";;   new basic block end = %d\n\n",
-	       INSN_UID (basic_block_end[b]));
+	       INSN_UID (BLOCK_END (b)));
     }
 
   return (sched_n_insns);
@@ -8418,7 +8417,7 @@ split_block_insns (b)
 {
   rtx insn, next;
 
-  for (insn = basic_block_head[b];; insn = next)
+  for (insn = BLOCK_HEAD (b);; insn = next)
     {
       rtx set, last, first, notes;
 
@@ -8427,7 +8426,7 @@ split_block_insns (b)
       next = NEXT_INSN (insn);
       if (GET_CODE (insn) != INSN)
 	{
-	  if (insn == basic_block_end[b])
+	  if (insn == BLOCK_END (b))
 	    break;
 
 	  continue;
@@ -8439,7 +8438,7 @@ split_block_insns (b)
       set = single_set (insn);
       if (set && rtx_equal_p (SET_SRC (set), SET_DEST (set)))
 	{
-	  if (insn == basic_block_end[b])
+	  if (insn == BLOCK_END (b))
 	    break;
 
 	  /* Nops get in the way while scheduling, so delete them now if
@@ -8469,16 +8468,16 @@ split_block_insns (b)
 	  PUT_CODE (insn, NOTE);
 	  NOTE_SOURCE_FILE (insn) = 0;
 	  NOTE_LINE_NUMBER (insn) = NOTE_INSN_DELETED;
-	  if (insn == basic_block_head[b])
-	    basic_block_head[b] = first;
-	  if (insn == basic_block_end[b])
+	  if (insn == BLOCK_HEAD (b))
+	    BLOCK_HEAD (b) = first;
+	  if (insn == BLOCK_END (b))
 	    {
-	      basic_block_end[b] = last;
+	      BLOCK_END (b) = last;
 	      break;
 	    }
 	}
 
-      if (insn == basic_block_end[b])
+      if (insn == BLOCK_END (b))
 	break;
     }
 }
@@ -8554,12 +8553,12 @@ schedule_insns (dump_file)
 
   luid = 0;
   for (b = 0; b < n_basic_blocks; b++)
-    for (insn = basic_block_head[b];; insn = NEXT_INSN (insn))
+    for (insn = BLOCK_HEAD (b);; insn = NEXT_INSN (insn))
       {
 	INSN_BLOCK (insn) = b;
 	INSN_LUID (insn) = luid++;
 
-	if (insn == basic_block_end[b])
+	if (insn == BLOCK_END (b))
 	  break;
       }
 
@@ -8570,7 +8569,7 @@ schedule_insns (dump_file)
       rtx insn;
 
       for (b = 0; b < n_basic_blocks; b++)
-	for (insn = basic_block_head[b];; insn = NEXT_INSN (insn))
+	for (insn = BLOCK_HEAD (b);; insn = NEXT_INSN (insn))
 	  {
 	    rtx link, prev;
 
@@ -8592,7 +8591,7 @@ schedule_insns (dump_file)
 		  }
 	      }
 
-	    if (insn == basic_block_end[b])
+	    if (insn == BLOCK_END (b))
 	      break;
 	  }
     }
@@ -8725,7 +8724,7 @@ schedule_insns (dump_file)
          determine the correct line number for the first insn of the block.  */
 
       for (b = 0; b < n_basic_blocks; b++)
-	for (line = basic_block_head[b]; line; line = PREV_INSN (line))
+	for (line = BLOCK_HEAD (b); line; line = PREV_INSN (line))
 	  if (GET_CODE (line) == NOTE && NOTE_LINE_NUMBER (line) > 0)
 	    {
 	      line_note_head[b] = line;
@@ -8752,15 +8751,15 @@ schedule_insns (dump_file)
   /* ??? Add a NOTE after the last insn of the last basic block.  It is not
      known why this is done.  */
 
-  insn = basic_block_end[n_basic_blocks - 1];
+  insn = BLOCK_END (n_basic_blocks - 1);
   if (NEXT_INSN (insn) == 0
       || (GET_CODE (insn) != NOTE
 	  && GET_CODE (insn) != CODE_LABEL
-  /* Don't emit a NOTE if it would end up between an unconditional
-     jump and a BARRIER.  */
+	  /* Don't emit a NOTE if it would end up between an unconditional
+	     jump and a BARRIER.  */
 	  && !(GET_CODE (insn) == JUMP_INSN
 	       && GET_CODE (NEXT_INSN (insn)) == BARRIER)))
-    emit_note_after (NOTE_INSN_DELETED, basic_block_end[n_basic_blocks - 1]);
+    emit_note_after (NOTE_INSN_DELETED, BLOCK_END (n_basic_blocks - 1));
 
   /* Schedule every region in the subroutine */
   for (rgn = 0; rgn < nr_regions; rgn++)
