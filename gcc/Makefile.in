@@ -2664,6 +2664,7 @@ compare compare3 compare4 compare-lean compare3-lean compare4-lean: force
 	else \
 	  case "$@" in \
 	    *-lean ) rm -rf stage$$stage ;; \
+	    *) ;; \
 	  esac; true; \
 	fi
 
