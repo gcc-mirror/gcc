@@ -336,6 +336,7 @@ static rtx eliminate_known_true (rtx, rtx, int, int);
 static void write_attr_set	(struct attr_desc *, int, rtx,
 				 const char *, const char *, rtx,
 				 int, int);
+static void write_insn_cases	(struct insn_ent *, int);
 static void write_attr_case	(struct attr_desc *, struct attr_value *,
 				 int, const char *, const char *, int, rtx);
 static void write_attr_valueq	(struct attr_desc *, const char *);
@@ -3873,6 +3874,25 @@ write_attr_set (struct attr_desc *attr, int indent, rtx value,
     }
 }
 
+/* Write a series of case statements for every instruction in list IE.
+   INDENT is the amount of indentation to write before each case.  */
+
+static void
+write_insn_cases (struct insn_ent *ie, int indent)
+{
+  for (; ie != 0; ie = ie->next)
+    if (ie->def->insn_code != -1)
+      {
+	write_indent (indent);
+	if (GET_CODE (ie->def->def) == DEFINE_PEEPHOLE)
+	  printf ("case %d:  /* define_peephole, line %d */\n",
+		  ie->def->insn_code, ie->def->lineno);
+	else
+	  printf ("case %d:  /* %s */\n",
+		  ie->def->insn_code, XSTR (ie->def->def, 0));
+      }
+}
+
 /* Write out the computation for one attribute value.  */
 
 static void
@@ -3880,8 +3900,6 @@ write_attr_case (struct attr_desc *attr, struct attr_value *av,
 		 int write_case_lines, const char *prefix, const char *suffix,
 		 int indent, rtx known_true)
 {
-  struct insn_ent *ie;
-
   if (av->num_insns == 0)
     return;
 
@@ -3898,15 +3916,7 @@ write_attr_case (struct attr_desc *attr, struct attr_value *av,
     }
 
   if (write_case_lines)
-    {
-      for (ie = av->first_insn; ie; ie = ie->next)
-	if (ie->def->insn_code != -1)
-	  {
-	    write_indent (indent);
-	    printf ("case %d:  /* %s */\n",
-		    ie->def->insn_code, XSTR (ie->def->def, 0));
-	  }
-    }
+    write_insn_cases (av->first_insn, indent);
   else
     {
       write_indent (indent);
@@ -4357,7 +4367,6 @@ write_const_num_delay_slots (void)
 {
   struct attr_desc *attr = find_attr (&num_delay_slots_str, 0);
   struct attr_value *av;
-  struct insn_ent *ie;
 
   if (attr)
     {
@@ -4371,13 +4380,7 @@ write_const_num_delay_slots (void)
 	  length_used = 0;
 	  walk_attr_value (av->value);
 	  if (length_used)
-	    {
-	      for (ie = av->first_insn; ie; ie = ie->next)
-		if (ie->def->insn_code != -1)
-		  printf ("    case %d:  /* %s */\n",
-			  ie->def->insn_code, XSTR (ie->def->def, 0));
-	      printf ("      return 0;\n");
-	    }
+	    write_insn_cases (av->first_insn, 4);
 	}
 
       printf ("    default:\n");

@@ -1,3 +1,10 @@
+2004-09-09  Richard Sandiford  <rsandifo@redhat.com>
+
+	* genattrtab.c (write_insn_cases): New function, split out from
+	write_attr_case.  Correctly handle define_peepholes when printing
+	the instruction name.
+	(write_attr_case, write_const_num_delay_slots): Use write_insn_cases.
+
 2004-09-09  Hans-Peter Nilsson  <hp@axis.com>
 
 	PR target/17377
