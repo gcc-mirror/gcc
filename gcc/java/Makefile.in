@@ -198,15 +198,15 @@ compiler: ../jc1$(exeext) ../jv-scan$(exeext)
 	$(CC) $(ALL_CFLAGS) $(LDFLAGS) -o $@ \
 	      $(JAVA_OBJS_LITE) $(LIBS)
 
-../jcf-dump$(exeext): jcf-dump.o jcf-io.o zextract.o
-	$(CC) $(ALL_CFLAGS) $(LDFLAGS) -o $@ jcf-dump.o jcf-io.o zextract.o
+../jcf-dump$(exeext): jcf-dump.o jcf-io.o zextract.o memmove.o
+	$(CC) $(ALL_CFLAGS) $(LDFLAGS) -o $@ jcf-dump.o jcf-io.o zextract.o memmove.o
 
 # Dependencies here must be kept in sync with dependencies in Make-lang.in.
 ../jvgenmain$(exeext):  jvgenmain.o mangle.o
 	$(CC) $(ALL_CFLAGS) $(LDFLAGS) -o $@ jvgenmain.o mangle.o ../obstack.o
 
-../gcjh$(exeext): gjavah.o jcf-io.o zextract.o
-	$(CC) $(ALL_CFLAGS) $(LDFLAGS) -o $@ gjavah.o jcf-io.o zextract.o
+../gcjh$(exeext): gjavah.o jcf-io.o zextract.o memmove.o
+	$(CC) $(ALL_CFLAGS) $(LDFLAGS) -o $@ gjavah.o jcf-io.o zextract.o memmove.o 
 
 Makefile: $(srcdir)/Makefile.in $(srcdir)/../configure
 	cd ..; $(SHELL) config.status
