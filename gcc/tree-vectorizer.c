@@ -556,6 +556,7 @@ static void
 update_phi_nodes_for_guard (edge guard_true_edge, struct loop * loop)
 {
   tree phi, phi1;
+  basic_block bb = loop->exit_edges[0]->dest;
 
   for (phi = phi_nodes (loop->header); phi; phi = PHI_CHAIN (phi))
       {
@@ -563,8 +564,7 @@ update_phi_nodes_for_guard (edge guard_true_edge, struct loop * loop)
 	tree phi_arg;
 
 	/* Generate new phi node.  */
-	new_phi = create_phi_node (SSA_NAME_VAR (PHI_RESULT (phi)),
-			           loop->exit_edges[0]->dest);
+	new_phi = create_phi_node (SSA_NAME_VAR (PHI_RESULT (phi)), bb);
 
 	/* Add argument coming from guard true edge.  */
 	phi_arg = PHI_ARG_DEF_FROM_EDGE (phi, loop->entry_edges[0]);
@@ -575,15 +575,14 @@ update_phi_nodes_for_guard (edge guard_true_edge, struct loop * loop)
 	add_phi_arg (&new_phi, phi_arg, loop->exit_edges[0]);
       
 	/* Update all phi nodes at the loop exit successor.  */
-	for (phi1 = phi_nodes (EDGE_SUCC (loop->exit_edges[0]->dest, 0)->dest); 
+	for (phi1 = phi_nodes (EDGE_SUCC (bb, 0)->dest); 
 	     phi1; 
 	     phi1 = TREE_CHAIN (phi1))
 	  {
-	    tree old_arg = PHI_ARG_DEF_FROM_EDGE (phi1, 
-				  EDGE_SUCC (loop->exit_edges[0]->dest, 0));
+	    tree old_arg = PHI_ARG_DEF_FROM_EDGE (phi1, EDGE_SUCC (bb, 0));
 	    if (old_arg == phi_arg)
 	      {	
-		edge e = EDGE_SUCC (loop->exit_edges[0]->dest, 0);
+		edge e = EDGE_SUCC (bb, 0);
 
 		SET_PHI_ARG_DEF (phi1, 
 				 phi_arg_from_edge (phi1, e),
@@ -591,6 +590,8 @@ update_phi_nodes_for_guard (edge guard_true_edge, struct loop * loop)
 	      }
 	  }
       }       
+
+  set_phi_nodes (bb, phi_reverse (phi_nodes (bb)));
 }
 
 
@@ -2884,44 +2885,76 @@ vect_transform_loop_bound (loop_vec_info loop_vinfo, tree niters)
 }
 
 
-/*   Advance IVs of the loop (to be vectorized later) to correct position.
+/*   Function vect_update_ivs_after_vectorizer.
 
-     When loop is vectorized, its IVs are not always advanced
-     correctly since vectorization changes the loop count. It's ok
-     in case epilog loop was not produced after original one before 
-     vectorization process (the vectorizer checks that there is no uses 
-     of IVs after the loop). However, in case the epilog loop was peeled, 
-     IVs from original loop are used in epilog loop and should be 
-     advanced correctly.
+     "Advance" the induction variables of LOOP to the value they should take
+     after the execution of LOOP.  This is currently necessary because the
+     vectorizer does not handle induction variables that are used after the
+     loop.  Such a situation occurs when the last iterations of LOOP are
+     peeled, because:
+     1. We introduced new uses after LOOP for IVs that were not originally used
+        after LOOP: the IVs of LOOP are now used by an epilog loop.
+     2. LOOP is going to be vectorized; this means that it will iterate N/VF
+        times, whereas the loop IVs should be bumped N times.
 
-     Here we use access functions of IVs and number of
-     iteration loop executes in order to bring IVs to correct position.
+     Input:
+     - LOOP - a loop that is going to be vectorized. The last few iterations
+              of LOOP were peeled.
+     - NITERS - the number of iterations that LOOP executes (before it is
+                vectorized). i.e, the number of times the ivs should be bumped.
 
-     Function also update phis of basic block at the exit
-     from the loop.  */
+     We have:
+
+        bb_before_loop:
+          if (guard-cond) GOTO bb_before_epilog_loop
+          else            GOTO loop
+
+        loop:
+          do {
+          } while ...
+
+        bb_before_epilog_loop:
+
+     bb_before_epilog_loop has edges coming in form the loop exit and
+     from bb_before_loop.  New definitions for ivs will be placed on the edge
+     from loop->exit to bb_before_epilog_loop.  This also requires that we update
+     the phis in bb_before_epilog_loop. (In the code this bb is denoted 
+     "update_bb").
+
+     Assumption 1: Like the rest of the vectorizer, this function assumes
+     a single loop exit that has a single predecessor.
+
+     Assumption 2: The phi nodes in the LOOP header and in update_bb are
+     organized in the same order.
+
+     Assumption 3: The access function of the ivs is simple enough (see
+     vect_can_advance_ivs_p).  This assumption will be relaxed in the future.
+ */
 
 static void
 vect_update_ivs_after_vectorizer (struct loop *loop, tree niters)
 {
   edge exit = loop->exit_edges[0];
-  tree phi;
-  edge latch = loop_latch_edge (loop);
+  tree phi, phi1;
+  basic_block update_bb = exit->dest;
+  edge update_e;
 
   /* Generate basic block at the exit from the loop.  */
   basic_block new_bb = split_edge (exit);
+
   add_bb_to_loop (new_bb, EDGE_SUCC (new_bb, 0)->dest->loop_father);
-  
   loop->exit_edges[0] = EDGE_PRED (new_bb, 0);
+  update_e = EDGE_SUCC (new_bb, 0);
   
-  for (phi = phi_nodes (loop->header); phi; phi = PHI_CHAIN (phi))
+  for (phi = phi_nodes (loop->header), phi1 = phi_nodes (update_bb); 
+       phi && phi1; 
+       phi = PHI_CHAIN (phi), phi1 = PHI_CHAIN (phi1))
     {
       tree access_fn = NULL;
       tree evolution_part;
       tree init_expr;
       tree step_expr;
       tree var, stmt, ni, ni_name;
-      int i, j, num_elem1, num_elem2;
-      tree phi1;
       block_stmt_iterator last_bsi;
 
       /* Skip virtual phi's. The data dependences that are associated with
@@ -2935,15 +2968,17 @@ vect_update_ivs_after_vectorizer (struct loop *loop, tree niters)
 	}
 
       access_fn = analyze_scalar_evolution (loop, PHI_RESULT (phi)); 
-
-      evolution_part = evolution_part_in_loop_num (access_fn, loop->num);
+      gcc_assert (access_fn);
+      evolution_part =
+	 unshare_expr (evolution_part_in_loop_num (access_fn, loop->num));
       
       /* FORNOW: We do not transform initial conditions of IVs 
 	 which evolution functions are a polynomial of degree >= 2 or
 	 exponential.  */
+      gcc_assert (!tree_is_chrec (evolution_part));
 
       step_expr = evolution_part;
-      init_expr = initial_condition (access_fn);
+      init_expr = unshare_expr (initial_condition (access_fn));
 
       ni = build2 (PLUS_EXPR, TREE_TYPE (init_expr),
 		  build2 (MULT_EXPR, TREE_TYPE (niters),
@@ -2956,31 +2991,14 @@ vect_update_ivs_after_vectorizer (struct loop *loop, tree niters)
       
       /* Insert stmt into new_bb.  */
       last_bsi = bsi_last (new_bb);
-      bsi_insert_after (&last_bsi, stmt, BSI_NEW_STMT);   
+      if (stmt)
+        bsi_insert_after (&last_bsi, stmt, BSI_NEW_STMT);   
 
       /* Fix phi expressions in duplicated loop.  */
-      num_elem1 = PHI_NUM_ARGS (phi);
-      for (i = 0; i < num_elem1; i++)
-	if (PHI_ARG_EDGE (phi, i) == latch)
-	  {
-	    tree def = PHI_ARG_DEF (phi, i);
-
-	    for (phi1 = phi_nodes (EDGE_SUCC (new_bb, 0)->dest); phi1; 
-		 phi1 = TREE_CHAIN (phi1))
-	      {
-		num_elem2 = PHI_NUM_ARGS (phi1);
-		for (j = 0; j < num_elem2; j++)
-		  if (PHI_ARG_DEF (phi1, j) == def)
-		    {
-		      SET_PHI_ARG_DEF (phi1, j, ni_name);
-		      PHI_ARG_EDGE (phi1, j) = EDGE_SUCC (new_bb, 0);		      
-		      break;
- 		    }		    
-	      }
-	    break;
-	  }
+      gcc_assert (PHI_ARG_DEF_FROM_EDGE (phi1, update_e) ==
+                  PHI_ARG_DEF_FROM_EDGE (phi, EDGE_SUCC (loop->latch, 0)));
+      SET_PHI_ARG_DEF (phi1, phi_arg_from_edge (phi1, update_e), ni_name);
     }
-        
 }
 
 
@@ -4426,8 +4444,8 @@ vect_enhance_data_refs_alignment (loop_vec_info loop_vinfo)
        in code size).
 
      The scheme we use FORNOW: peel to force the alignment of the first
-     misaligned store in the loop.
-     Rationale: misaligned store are not yet supported.
+     misaliged store in the loop.
+     Rationale: misaligned stores are not yet supported.
 
      TODO: Use a better cost model.  */
 
