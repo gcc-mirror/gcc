@@ -1,6 +1,6 @@
 // SGI's rope class -*- C++ -*-
 
-// Copyright (C) 2001, 2002 Free Software Foundation, Inc.
+// Copyright (C) 2001, 2002, 2003, 2004 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -74,7 +74,6 @@ using std::ptrdiff_t;
 using std::allocator;
 using std::iterator;
 using std::reverse_iterator;
-using std::_Alloc_traits;
 using std::_Destroy;
 
 // The _S_eos function is used for those functions that
@@ -414,16 +413,6 @@ identity_element(_Rope_Concat_fn<_CharT, _Alloc>)
 //
 // Some of the static member functions of _RopeRep have identically
 // named functions in rope that simply invoke the _RopeRep versions.
-//
-// A macro to introduce various allocation and deallocation functions
-// These need to be defined differently depending on whether or not
-// we are using standard conforming allocators, and whether the allocator
-// instances have real state.  Thus this macro is invoked repeatedly
-// with different definitions of __ROPE_DEFINE_ALLOC.
-// __ROPE_DEFINE_ALLOC(type,name) defines
-//   type * name_allocate(size_t) and
-//   void name_deallocate(tipe *, size_t)
-// Both functions may or may not be static.
 
 #define __ROPE_DEFINE_ALLOCS(__a) \
         __ROPE_DEFINE_ALLOC(_CharT,_Data) /* character data */ \
@@ -442,77 +431,32 @@ identity_element(_Rope_Concat_fn<_CharT, _Alloc>)
 //  in some form to nearly all internal functions, since any pointer
 //  assignment may result in a zero reference count and thus require
 //  deallocation.
-//  The _Rope_rep_base class encapsulates
-//  the differences between SGI-style allocators and standard-conforming
-//  allocators.
 
 #define __STATIC_IF_SGI_ALLOC  /* not static */
 
-// Base class for ordinary allocators.
-template <class _CharT, class _Allocator, bool _IsStatic>
-class _Rope_rep_alloc_base {
-public:
-  typedef typename _Alloc_traits<_CharT,_Allocator>::allocator_type
-          allocator_type;
-  allocator_type get_allocator() const { return _M_data_allocator; }
-  _Rope_rep_alloc_base(size_t __size, const allocator_type& __a)
-        : _M_size(__size), _M_data_allocator(__a) {}
-  size_t _M_size;       // This is here only to avoid wasting space
-                // for an otherwise empty base class.
-
-
-protected:
-    allocator_type _M_data_allocator;
-
-# define __ROPE_DEFINE_ALLOC(_Tp, __name) \
-        typedef typename \
-          _Alloc_traits<_Tp,_Allocator>::allocator_type __name##Allocator; \
-        /*static*/ _Tp * __name##_allocate(size_t __n) \
-          { return __name##Allocator(_M_data_allocator).allocate(__n); } \
-        void __name##_deallocate(_Tp* __p, size_t __n) \
-          { __name##Allocator(_M_data_allocator).deallocate(__p, __n); }
-  __ROPE_DEFINE_ALLOCS(_Allocator);
-# undef __ROPE_DEFINE_ALLOC
-};
-
-// Specialization for allocators that have the property that we don't
-//  actually have to store an allocator object.
-template <class _CharT, class _Allocator>
-class _Rope_rep_alloc_base<_CharT,_Allocator,true> {
-public:
-  typedef typename _Alloc_traits<_CharT,_Allocator>::allocator_type
-          allocator_type;
-  allocator_type get_allocator() const { return allocator_type(); }
-  _Rope_rep_alloc_base(size_t __size, const allocator_type&)
-                : _M_size(__size) {}
-  size_t _M_size;
-
-protected:
-
-# define __ROPE_DEFINE_ALLOC(_Tp, __name) \
-        typedef typename \
-          _Alloc_traits<_Tp,_Allocator>::_Alloc_type __name##Alloc; \
-        typedef typename \
-          _Alloc_traits<_Tp,_Allocator>::allocator_type __name##Allocator; \
-        static _Tp* __name##_allocate(size_t __n) \
-                { return __name##Alloc::allocate(__n); } \
-        void __name##_deallocate(_Tp *__p, size_t __n) \
-                { __name##Alloc::deallocate(__p, __n); }
-  __ROPE_DEFINE_ALLOCS(_Allocator);
-# undef __ROPE_DEFINE_ALLOC
-};
-
 template <class _CharT, class _Alloc>
 struct _Rope_rep_base
-  : public _Rope_rep_alloc_base<_CharT,_Alloc,
-                                _Alloc_traits<_CharT,_Alloc>::_S_instanceless>
+: public _Alloc
 {
-  typedef _Rope_rep_alloc_base<_CharT,_Alloc,
-                               _Alloc_traits<_CharT,_Alloc>::_S_instanceless>
-          _Base;
-  typedef typename _Base::allocator_type allocator_type;
-  _Rope_rep_base(size_t __size, const allocator_type& __a)
-    : _Base(__size, __a) {}
+  typedef _Alloc allocator_type;
+
+  allocator_type
+  get_allocator() const { return *static_cast<const _Alloc*>(this); }
+
+  _Rope_rep_base(size_t __size, const allocator_type&)
+  : _M_size(__size) {}
+
+  size_t _M_size;
+
+# define __ROPE_DEFINE_ALLOC(_Tp, __name) \
+        typedef typename \
+          _Alloc::template rebind<_Tp>::other __name##Alloc; \
+        static _Tp* __name##_allocate(size_t __n) \
+          { return __name##Alloc().allocate(__n); } \
+        static void __name##_deallocate(_Tp *__p, size_t __n) \
+          { __name##Alloc().deallocate(__p, __n); }
+  __ROPE_DEFINE_ALLOCS(_Alloc)
+# undef __ROPE_DEFINE_ALLOC
 };
 
 
@@ -538,6 +482,7 @@ struct _Rope_RopeRep : public _Rope_rep_base<_CharT,_Alloc>
                         /* the same memory as the data field.       */
     typedef typename _Rope_rep_base<_CharT,_Alloc>::allocator_type
                         allocator_type;
+    using _Rope_rep_base<_CharT,_Alloc>::get_allocator;
     _Rope_RopeRep(_Tag __t, int __d, bool __b, size_t __size,
                   allocator_type __a)
         : _Rope_rep_base<_CharT,_Alloc>(__size, __a),
@@ -1219,82 +1164,35 @@ class _Rope_iterator : public _Rope_iterator_base<_CharT,_Alloc> {
          const _Rope_iterator<_CharT2,_Alloc2>& __x);
 };
 
-//  The rope base class encapsulates
-//  the differences between SGI-style allocators and standard-conforming
-//  allocators.
-
-// Base class for ordinary allocators.
-template <class _CharT, class _Allocator, bool _IsStatic>
-class _Rope_alloc_base {
-public:
-  typedef _Rope_RopeRep<_CharT,_Allocator> _RopeRep;
-  typedef typename _Alloc_traits<_CharT,_Allocator>::allocator_type
-          allocator_type;
-  allocator_type get_allocator() const { return _M_data_allocator; }
-  _Rope_alloc_base(_RopeRep *__t, const allocator_type& __a)
-        : _M_tree_ptr(__t), _M_data_allocator(__a) {}
-  _Rope_alloc_base(const allocator_type& __a)
-        : _M_data_allocator(__a) {}
-
-protected:
-  // The only data members of a rope:
-    allocator_type _M_data_allocator;
-    _RopeRep* _M_tree_ptr;
-
-# define __ROPE_DEFINE_ALLOC(_Tp, __name) \
-        typedef typename \
-          _Alloc_traits<_Tp,_Allocator>::allocator_type __name##Allocator; \
-        _Tp* __name##_allocate(size_t __n) const \
-          { return __name##Allocator(_M_data_allocator).allocate(__n); } \
-        void __name##_deallocate(_Tp *__p, size_t __n) const \
-                { __name##Allocator(_M_data_allocator).deallocate(__p, __n); }
-  __ROPE_DEFINE_ALLOCS(_Allocator)
-# undef __ROPE_DEFINE_ALLOC
-};
-
-// Specialization for allocators that have the property that we don't
-//  actually have to store an allocator object.
-template <class _CharT, class _Allocator>
-class _Rope_alloc_base<_CharT,_Allocator,true> {
-public:
-  typedef _Rope_RopeRep<_CharT,_Allocator> _RopeRep;
-  typedef typename _Alloc_traits<_CharT,_Allocator>::allocator_type
-          allocator_type;
-  allocator_type get_allocator() const { return allocator_type(); }
-  _Rope_alloc_base(_RopeRep *__t, const allocator_type&)
-                : _M_tree_ptr(__t) {}
-  _Rope_alloc_base(const allocator_type&) {}
-
-protected:
-  // The only data member of a rope:
-    _RopeRep *_M_tree_ptr;
-
-# define __ROPE_DEFINE_ALLOC(_Tp, __name) \
-        typedef typename \
-          _Alloc_traits<_Tp,_Allocator>::_Alloc_type __name##Alloc; \
-        typedef typename \
-          _Alloc_traits<_Tp,_Allocator>::allocator_type __name##Allocator; \
-        static _Tp* __name##_allocate(size_t __n) \
-          { return __name##Alloc::allocate(__n); } \
-        static void __name##_deallocate(_Tp *__p, size_t __n) \
-          { __name##Alloc::deallocate(__p, __n); }
-  __ROPE_DEFINE_ALLOCS(_Allocator)
-# undef __ROPE_DEFINE_ALLOC
-};
 
 template <class _CharT, class _Alloc>
 struct _Rope_base
-  : public _Rope_alloc_base<_CharT,_Alloc,
-                            _Alloc_traits<_CharT,_Alloc>::_S_instanceless>
+: public _Alloc
 {
-  typedef _Rope_alloc_base<_CharT,_Alloc,
-                            _Alloc_traits<_CharT,_Alloc>::_S_instanceless>
-          _Base;
-  typedef typename _Base::allocator_type allocator_type;
+  typedef _Alloc allocator_type;
+
+  allocator_type
+  get_allocator() const { return *static_cast<const _Alloc*>(this); }
+
   typedef _Rope_RopeRep<_CharT,_Alloc> _RopeRep;
-        // The one in _Base may not be visible due to template rules.
-  _Rope_base(_RopeRep* __t, const allocator_type& __a) : _Base(__t, __a) {}
-  _Rope_base(const allocator_type& __a) : _Base(__a) {}
+  // The one in _Base may not be visible due to template rules.
+
+  _Rope_base(_RopeRep* __t, const allocator_type&)
+  : _M_tree_ptr(__t) {}
+  _Rope_base(const allocator_type&) {}
+
+  // The only data member of a rope:
+  _RopeRep *_M_tree_ptr;
+
+# define __ROPE_DEFINE_ALLOC(_Tp, __name) \
+        typedef typename \
+          _Alloc::template rebind<_Tp>::other __name##Alloc; \
+        static _Tp* __name##_allocate(size_t __n) \
+          { return __name##Alloc().allocate(__n); } \
+        static void __name##_deallocate(_Tp *__p, size_t __n) \
+          { __name##Alloc().deallocate(__p, __n); }
+  __ROPE_DEFINE_ALLOCS(_Alloc)
+# undef __ROPE_DEFINE_ALLOC
 };
 
 
@@ -1328,6 +1226,7 @@ class rope : public _Rope_base<_CharT,_Alloc> {
         typedef _Rope_base<_CharT,_Alloc> _Base;
         typedef typename _Base::allocator_type allocator_type;
         using _Base::_M_tree_ptr;
+        using _Base::get_allocator;
         typedef __GC_CONST _CharT* _Cstrptr;
 
         static _CharT _S_empty_c_str[1];
@@ -1435,7 +1334,7 @@ class rope : public _Rope_base<_CharT,_Alloc> {
         static _RopeLeaf* _S_new_RopeLeaf(__GC_CONST _CharT *__s,
                                           size_t __size, allocator_type __a)
         {
-            _RopeLeaf* __space = typename _Base::_LAllocator(__a).allocate(1);
+            _RopeLeaf* __space = typename _Base::_LAlloc(__a).allocate(1);
             return new(__space) _RopeLeaf(__s, __size, __a);
         }
 
@@ -1443,14 +1342,14 @@ class rope : public _Rope_base<_CharT,_Alloc> {
                         _RopeRep* __left, _RopeRep* __right,
                         allocator_type __a)
         {
-            _RopeConcatenation* __space = typename _Base::_CAllocator(__a).allocate(1);
+            _RopeConcatenation* __space = typename _Base::_CAlloc(__a).allocate(1);
             return new(__space) _RopeConcatenation(__left, __right, __a);
         }
 
         static _RopeFunction* _S_new_RopeFunction(char_producer<_CharT>* __f,
                 size_t __size, bool __d, allocator_type __a)
         {
-            _RopeFunction* __space = typename _Base::_FAllocator(__a).allocate(1);
+            _RopeFunction* __space = typename _Base::_FAlloc(__a).allocate(1);
             return new(__space) _RopeFunction(__f, __size, __d, __a);
         }
 
@@ -1458,7 +1357,7 @@ class rope : public _Rope_base<_CharT,_Alloc> {
                 _Rope_RopeRep<_CharT,_Alloc>* __b, size_t __s,
                 size_t __l, allocator_type __a)
         {
-            _RopeSubstring* __space = typename _Base::_SAllocator(__a).allocate(1);
+            _RopeSubstring* __space = typename _Base::_SAlloc(__a).allocate(1);
             return new(__space) _RopeSubstring(__b, __s, __l, __a);
         }
 

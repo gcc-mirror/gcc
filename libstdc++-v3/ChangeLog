@@ -1,5 +1,18 @@
 2004-01-13  Paolo Carlini  <pcarlini@suse.de>
 
+	* include/ext/rope (_Rope_rep_alloc_base): Eliminate.
+	(_Rope_rep_base): Inherit directly from the rope allocator;
+	use rebinding instead of _Alloc_traits; pick up data member
+	from _Rope_rep_alloc_base.
+	(_Rope_alloc_base): Eliminate.
+	(_Rope_base): Inherit directly from the rope allocator; use
+	rebinding instead of _Alloc_traits; pick up data member from
+	_Rope_alloc_base.
+	(rope::_S_new_RopeLeaf, rope::_S_new_RopeConcatenation,
+	rope::_S_new_RopeFunction, rope::_S_new_RopeSubstring): Tweak.
+
+2004-01-13  Paolo Carlini  <pcarlini@suse.de>
+
 	PR libstdc++/13650
 	* include/bits/basic_string.tcc (compare(size_type, size_type,
 	const _CharT*, size_type)): Implement correctly the resolution
