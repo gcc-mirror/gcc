@@ -53,6 +53,11 @@ typedef unsigned char U_CHAR;
 #define STDC_VALUE 1
 #endif
 
+/* By default, colon separates directories in a path.  */
+#ifndef PATH_SEPARATOR
+#define PATH_SEPARATOR ':'
+#endif
+
 /* In case config.h defines these.  */
 #undef bcopy
 #undef bzero
@@ -1459,12 +1464,14 @@ main (argc, argv)
       num_dirs = 0;
       while (1) {
         /* Handle cases like c:/usr/lib:d:/gcc/lib */
-        if ((*endp == ':'
+        if ((*endp == PATH_SEPARATOR
+#if 0 /* Obsolete, now that we use semicolons as the path separator.  */
 #ifdef __MSDOS__
 	     && (endp-startp != 1 || !isalpha (*startp)))
 #endif
+#endif
 	     )
-            || (*endp == 0)) {
+            || *endp == 0) {
 	  strncpy (nstore, startp, endp-startp);
 	  if (endp == startp)
 	    strcpy (nstore, ".");
