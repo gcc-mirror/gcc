@@ -18,6 +18,7 @@ along with GNU CC; see the file COPYING.  If not, write to
 the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 
 
+#include <stdio.h>
 #include "config.h"
 #include "rtl.h"
 #include "obstack.h"
@@ -32,7 +33,6 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #include "recog.h"
 #include "basic-block.h"
 #include "output.h"
-#include <stdio.h>
 
 /* This file contains the reload pass of the compiler, which is
    run after register allocation has been done.  It checks that
