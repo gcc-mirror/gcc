@@ -1,3 +1,44 @@
+Don Feb 28 11:07:36 CET 2002  Jan Hubicka  <jh@suse.cz>
+
+	* basic-block.h (BB_REACHABLE): Renumber.
+	(BB_DIRTY, BB_NEW): New flags.
+	(clear_bb_flags): Declare.
+	(update_life_info_in_dirty_blocks): Declare.
+	* cfg.c (clear_bb_flags): New function.
+	* cfgrtl.c (create_basic_block_structure): Set flags to BB_NEW.
+	* emit-rtl.c (add_insn_after, add_insn_before, remove_insn,
+	reorder_insns, emit_insn_after): Mark block as dirty.
+	* flow.c (update_life_info): Fix clearing of PROP_LOG_LINKS.
+	(update_life_info_in_dirty_blocks): New function.
+	* recog.c (apply_change_group): Dirtify block.
+
+	* cse.c (cse_insn): Reorder emitting of jump insn to keep
+	cfg consistent.
+	* gcse.c (delete_null_pointer_checks): Likewise.
+
+	* toplev.c (dump_file_index): Move cse2 after bp,
+	add DFI_null
+	(dump_file_info): Similary.
+	(rest_of_compilation): Avoid most of CFG rebuilds;
+	do first if converision after null pointer checks, do cse2
+	after branch prediction; avoid full liveness rebuild after
+	initializing subregs.
+	* invoke.texi (-d options): Document -du, renumber.
+
+	* cfgcleanup.c (bb_flags): Remove BB_UPDATE_LIFE.
+	(notice_new_block): Do not set BB_UPDATE_LIFE.
+	(try_forward_edges, merge_blocks_move_predecessor_nojumps,
+	 merge_blocks_move_successor_nojumps, merge_blocks,
+	 try_crossjump_to_edge): Likewise.
+	(try_optimize_cfg): Likewise; use update_life_info_in_dirty_blocks.
+	* cfgrtl.c (merge_blocks_nomove): Copy b's flags to a.
+	* ifcvt.c (SET_UPDATE_LIFE, UPDATE_LIFE): Kill.
+	(merge_of_block): Do not use life_data_ok.
+	(find_if_case_1): Do not use SET_UPDATE_LIFE.
+	(if_convert): Use BB_DIRTY mechanizm to update life.
+	* lcm.c (optimize_mode_switching): Update
+	update_life_info_in_dirty_blocks
+
 2002-02-28  Neil Booth  <neil@daikokuya.demon.co.uk>
 
 	* Makefile.in (integrate.o): Update.

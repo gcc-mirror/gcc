@@ -240,13 +240,14 @@ enum dump_file_index
   DFI_ssa_ccp,
   DFI_ssa_dce,
   DFI_ussa,
+  DFI_null,
   DFI_cse,
   DFI_addressof,
   DFI_gcse,
   DFI_loop,
-  DFI_cse2,
   DFI_cfg,
   DFI_bp,
+  DFI_cse2,
   DFI_life,
   DFI_combine,
   DFI_ce,
@@ -272,7 +273,7 @@ enum dump_file_index
 
    Remaining -d letters:
 
-	"              o q   u     "
+	"              o q         "
 	"       H JK   OPQ  TUV  YZ"
 */
 
@@ -286,13 +287,14 @@ static struct dump_file_info dump_file[DFI_MAX] =
   { "ssaccp",	'W', 1, 0, 0 },
   { "ssadce",	'X', 1, 0, 0 },
   { "ussa",	'e', 1, 0, 0 },	/* Yes, duplicate enable switch.  */
+  { "null",	'u', 0, 0, 0 },
   { "cse",	's', 0, 0, 0 },
   { "addressof", 'F', 0, 0, 0 },
   { "gcse",	'G', 1, 0, 0 },
   { "loop",	'L', 1, 0, 0 },
-  { "cse2",	't', 1, 0, 0 },
   { "cfg",	'f', 1, 0, 0 },
   { "bp",	'b', 1, 0, 0 },
+  { "cse2",	't', 1, 0, 0 },
   { "life",	'f', 1, 0, 0 },	/* Yes, duplicate enable switch.  */
   { "combine",	'c', 1, 0, 0 },
   { "ce",	'C', 1, 0, 0 },
@@ -2608,6 +2610,8 @@ rest_of_compilation (decl)
   reg_scan (insns, max_reg_num (), 0);
   rebuild_jump_labels (insns);
   find_basic_blocks (insns, max_reg_num (), rtl_dump_file);
+  if (rtl_dump_file)
+    dump_flow_info (rtl_dump_file);
   cleanup_cfg ((optimize ? CLEANUP_EXPENSIVE : 0) | CLEANUP_PRE_LOOP);
 
   /* CFG is no longer maintained up-to-date.  */
@@ -2616,11 +2620,11 @@ rest_of_compilation (decl)
   purge_line_number_notes (insns);
 
   timevar_pop (TV_JUMP);
+  close_dump_file (DFI_jump, print_rtl, insns);
 
   /* Now is when we stop if -fsyntax-only and -Wreturn-type.  */
   if (rtl_dump_and_exit || flag_syntax_only || DECL_DEFER_OUTPUT (decl))
     {
-      close_dump_file (DFI_jump, print_rtl, insns);
       goto exit_rest_of_compilation;
     }
 
@@ -2697,23 +2701,22 @@ rest_of_compilation (decl)
 
   if (optimize > 0)
     {
+      open_dump_file (DFI_null, decl);
       find_basic_blocks (insns, max_reg_num (), rtl_dump_file);
+      if (rtl_dump_file)
+	dump_flow_info (rtl_dump_file);
       cleanup_cfg (CLEANUP_EXPENSIVE | CLEANUP_PRE_LOOP
  		   | (flag_thread_jumps ? CLEANUP_THREADING : 0));
 
-      /* ??? Run if-conversion before delete_null_pointer_checks,
-         since the later does not preserve the CFG.  This should
-	 be changed -- no since converting if's that are going to
-	 be deleted.  */
-      timevar_push (TV_IFCVT);
-      if_convert (0);
-      timevar_pop (TV_IFCVT);
-
-      /* CFG is no longer maintained up-to-date.  */
-      free_bb_for_insn ();
       /* Try to identify useless null pointer tests and delete them.  */
       if (flag_delete_null_pointer_checks)
 	delete_null_pointer_checks (insns);
+
+      timevar_push (TV_IFCVT);
+      if_convert (0);
+      timevar_pop (TV_IFCVT);
+      cleanup_cfg (CLEANUP_EXPENSIVE | CLEANUP_PRE_LOOP);
+      close_dump_file (DFI_null, print_rtl_with_bb, insns);
     }
 
   /* Jump optimization, and the removal of NULL pointer checks, may
@@ -2722,9 +2725,11 @@ rest_of_compilation (decl)
      maximum instruction UID, so if we can reduce the maximum UID
      we'll save big on memory.  */
   renumber_insns (rtl_dump_file);
+  if (optimize)
+    compute_bb_for_insn (get_max_uid ());
   timevar_pop (TV_JUMP);
 
-  close_dump_file (DFI_jump, print_rtl, insns);
+  close_dump_file (DFI_jump, print_rtl_with_bb, insns);
 
   ggc_collect ();
 
@@ -2736,36 +2741,32 @@ rest_of_compilation (decl)
   if (optimize > 0)
     {
       open_dump_file (DFI_cse, decl);
+      if (rtl_dump_file)
+	dump_flow_info (rtl_dump_file);
       timevar_push (TV_CSE);
 
       reg_scan (insns, max_reg_num (), 1);
 
       tem = cse_main (insns, max_reg_num (), 0, rtl_dump_file);
+      if (tem)
+	rebuild_jump_labels (insns);
+      purge_all_dead_edges (0);
 
       /* If we are not running more CSE passes, then we are no longer
 	 expecting CSE to be run.  But always rerun it in a cheap mode.  */
       cse_not_expected = !flag_rerun_cse_after_loop && !flag_gcse;
 
       if (tem || optimize > 1)
-	{
-	  timevar_push (TV_JUMP);
-	  rebuild_jump_labels (insns);
-	  find_basic_blocks (insns, max_reg_num (), rtl_dump_file);
-	  cleanup_cfg (CLEANUP_EXPENSIVE | CLEANUP_PRE_LOOP);
-	  timevar_pop (TV_JUMP);
-	  /* CFG is no longer maintained up-to-date.  */
-	  free_bb_for_insn ();
-	}
+	cleanup_cfg (CLEANUP_EXPENSIVE | CLEANUP_PRE_LOOP);
 
       /* Run this after jump optmizations remove all the unreachable code
 	 so that unreachable code will not keep values live.  */
-      delete_trivially_dead_insns (insns, max_reg_num (), 0);
+      delete_trivially_dead_insns (insns, max_reg_num (), 1);
 
       /* Try to identify useless null pointer tests and delete them.  */
       if (flag_delete_null_pointer_checks || flag_thread_jumps)
 	{
 	  timevar_push (TV_JUMP);
-	  find_basic_blocks (insns, max_reg_num (), rtl_dump_file);
 
 	  cleanup_cfg (CLEANUP_EXPENSIVE | CLEANUP_PRE_LOOP
 		       | (flag_thread_jumps ? CLEANUP_THREADING : 0));
@@ -2773,21 +2774,23 @@ rest_of_compilation (decl)
 	  if (flag_delete_null_pointer_checks)
 	    delete_null_pointer_checks (insns);
 	  /* CFG is no longer maintained up-to-date.  */
-	  free_bb_for_insn ();
 	  timevar_pop (TV_JUMP);
 	}
 
       /* The second pass of jump optimization is likely to have
          removed a bunch more instructions.  */
       renumber_insns (rtl_dump_file);
+      compute_bb_for_insn (get_max_uid ());
 
       timevar_pop (TV_CSE);
-      close_dump_file (DFI_cse, print_rtl, insns);
+      close_dump_file (DFI_cse, print_rtl_with_bb, insns);
     }
 
   open_dump_file (DFI_addressof, decl);
 
   purge_addressof (insns);
+  if (optimize)
+    purge_all_dead_edges (0);
   reg_scan (insns, max_reg_num (), 1);
 
   close_dump_file (DFI_addressof, print_rtl, insns);
@@ -2804,7 +2807,6 @@ rest_of_compilation (decl)
       timevar_push (TV_GCSE);
       open_dump_file (DFI_gcse, decl);
 
-      find_basic_blocks (insns, max_reg_num (), rtl_dump_file);
       cleanup_cfg (CLEANUP_EXPENSIVE | CLEANUP_PRE_LOOP);
       tem = gcse_main (insns, rtl_dump_file);
       rebuild_jump_labels (insns);
@@ -2813,8 +2815,6 @@ rest_of_compilation (decl)
       save_cfj = flag_cse_follow_jumps;
       flag_cse_skip_blocks = flag_cse_follow_jumps = 0;
 
-      /* CFG is no longer maintained up-to-date.  */
-      free_bb_for_insn ();
       /* If -fexpensive-optimizations, re-run CSE to clean up things done
 	 by gcse.  */
       if (flag_expensive_optimizations)
@@ -2822,6 +2822,7 @@ rest_of_compilation (decl)
 	  timevar_push (TV_CSE);
 	  reg_scan (insns, max_reg_num (), 1);
 	  tem2 = cse_main (insns, max_reg_num (), 0, rtl_dump_file);
+	  purge_all_dead_edges (0);
 	  timevar_pop (TV_CSE);
 	  cse_not_expected = !flag_rerun_cse_after_loop;
 	}
@@ -2833,11 +2834,8 @@ rest_of_compilation (decl)
 	  tem = tem2 = 0;
 	  timevar_push (TV_JUMP);
 	  rebuild_jump_labels (insns);
-	  delete_trivially_dead_insns (insns, max_reg_num (), 0);
-	  find_basic_blocks (insns, max_reg_num (), rtl_dump_file);
+	  delete_trivially_dead_insns (insns, max_reg_num (), 1);
 	  cleanup_cfg (CLEANUP_EXPENSIVE | CLEANUP_PRE_LOOP);
-	  /* CFG is no longer maintained up-to-date.  */
-	  free_bb_for_insn ();
 	  timevar_pop (TV_JUMP);
 
 	  if (flag_expensive_optimizations)
@@ -2845,16 +2843,20 @@ rest_of_compilation (decl)
 	      timevar_push (TV_CSE);
 	      reg_scan (insns, max_reg_num (), 1);
 	      tem2 = cse_main (insns, max_reg_num (), 0, rtl_dump_file);
+	      purge_all_dead_edges (0);
 	      timevar_pop (TV_CSE);
 	    }
 	}
 
-      close_dump_file (DFI_gcse, print_rtl, insns);
+      close_dump_file (DFI_gcse, print_rtl_with_bb, insns);
       timevar_pop (TV_GCSE);
 
       ggc_collect ();
       flag_cse_skip_blocks = save_csb;
       flag_cse_follow_jumps = save_cfj;
+#ifdef ENABLE_CHECKING
+      verify_flow_info ();
+#endif
     }
 
   /* Move constant computations out of loops.  */
@@ -2863,6 +2865,7 @@ rest_of_compilation (decl)
     {
       timevar_push (TV_LOOP);
       open_dump_file (DFI_loop, decl);
+      /* CFG is no longer maintained up-to-date.  */
       free_bb_for_insn ();
 
       if (flag_rerun_loop_opt)
@@ -2888,70 +2891,13 @@ rest_of_compilation (decl)
 		     (flag_unroll_loops ? LOOP_UNROLL : 0) | LOOP_BCT
 		     | (flag_prefetch_loop_arrays ? LOOP_PREFETCH : 0));
 
+      /* Loop can create trivially dead instructions.  */
+      delete_trivially_dead_insns (insns, max_reg_num (), 0);
       close_dump_file (DFI_loop, print_rtl, insns);
       timevar_pop (TV_LOOP);
 
       ggc_collect ();
     }
-
-  if (optimize > 0)
-    {
-      timevar_push (TV_CSE2);
-      open_dump_file (DFI_cse2, decl);
-
-      if (flag_rerun_cse_after_loop)
-	{
-	  /* Running another jump optimization pass before the second
-	     cse pass sometimes simplifies the RTL enough to allow
-	     the second CSE pass to do a better job.  Jump_optimize can change
-	     max_reg_num so we must rerun reg_scan afterwards.
-	     ??? Rework to not call reg_scan so often.  */
-	  timevar_push (TV_JUMP);
-
-	  /* The previous call to loop_optimize makes some instructions
-	     trivially dead.  We delete those instructions now in the
-	     hope that doing so will make the heuristics in jump work
-	     better and possibly speed up compilation.  */
-	  delete_trivially_dead_insns (insns, max_reg_num (), 0);
-
-	  reg_scan (insns, max_reg_num (), 0);
-
-	  timevar_push (TV_IFCVT);
-
-	  find_basic_blocks (insns, max_reg_num (), rtl_dump_file);
-	  cleanup_cfg (CLEANUP_EXPENSIVE);
-	  if_convert (0);
-
-	  timevar_pop(TV_IFCVT);
-
-	  timevar_pop (TV_JUMP);
-
-	  /* CFG is no longer maintained up-to-date.  */
-	  free_bb_for_insn ();
-	  reg_scan (insns, max_reg_num (), 0);
-	  tem = cse_main (insns, max_reg_num (), 1, rtl_dump_file);
-
-	  if (tem)
-	    {
-	      timevar_push (TV_JUMP);
-	      rebuild_jump_labels (insns);
-	      find_basic_blocks (insns, max_reg_num (), rtl_dump_file);
-	      cleanup_cfg (CLEANUP_EXPENSIVE);
-	      /* CFG is no longer maintained up-to-date.  */
-	      free_bb_for_insn ();
-	      timevar_pop (TV_JUMP);
-	    }
-	}
-
-      close_dump_file (DFI_cse2, print_rtl, insns);
-      timevar_pop (TV_CSE2);
-
-      ggc_collect ();
-    }
-
-  cse_not_expected = 1;
-
-  regclass_init ();
 
   /* Do control and data flow analysis; wrote some of the results to
      the dump file.  */
@@ -2960,9 +2906,10 @@ rest_of_compilation (decl)
   open_dump_file (DFI_cfg, decl);
 
   find_basic_blocks (insns, max_reg_num (), rtl_dump_file);
+  if (rtl_dump_file)
+    dump_flow_info (rtl_dump_file);
   cleanup_cfg ((optimize ? CLEANUP_EXPENSIVE : 0)
 	       | (flag_thread_jumps ? CLEANUP_THREADING : 0));
-  check_function_return_warnings ();
 
   /* It may make more sense to mark constant functions after dead code is
      eliminated by life_analyzis, but we need to do it early, as -fprofile-arcs
@@ -2975,21 +2922,16 @@ rest_of_compilation (decl)
 
   close_dump_file (DFI_cfg, print_rtl_with_bb, insns);
 
-  if (profile_arc_flag || flag_test_coverage || flag_branch_probabilities)
-    {
-      timevar_push (TV_BRANCH_PROB);
-      open_dump_file (DFI_bp, decl);
-
-      branch_prob ();
-
-      close_dump_file (DFI_bp, print_rtl_with_bb, insns);
-      timevar_pop (TV_BRANCH_PROB);
-    }
-
-  open_dump_file (DFI_life, decl);
-  if (optimize)
+  /* Do branch profiling and static profile estimation passes.  */
+  if (optimize > 0 || profile_arc_flag || flag_test_coverage
+      || flag_branch_probabilities)
     {
       struct loops loops;
+
+      timevar_push (TV_BRANCH_PROB);
+      open_dump_file (DFI_bp, decl);
+      if (profile_arc_flag || flag_test_coverage || flag_branch_probabilities)
+	branch_prob ();
 
       /* Discover and record the loop depth at the head of each basic
 	 block.  The loop infrastructure does the real job for us.  */
@@ -3003,8 +2945,62 @@ rest_of_compilation (decl)
 	flow_loops_dump (&loops, rtl_dump_file, NULL, 0);
 
       flow_loops_free (&loops);
+      close_dump_file (DFI_bp, print_rtl_with_bb, insns);
+      timevar_pop (TV_BRANCH_PROB);
     }
+
+  if (optimize > 0)
+    {
+      timevar_push (TV_CSE2);
+      open_dump_file (DFI_cse2, decl);
+      if (rtl_dump_file)
+	dump_flow_info (rtl_dump_file);
+
+      if (flag_rerun_cse_after_loop)
+	{
+	  timevar_push (TV_JUMP);
+
+	  reg_scan (insns, max_reg_num (), 0);
+
+	  timevar_push (TV_IFCVT);
+	  cleanup_cfg (CLEANUP_EXPENSIVE);
+	  if_convert (0);
+	  timevar_pop(TV_IFCVT);
+
+	  timevar_pop (TV_JUMP);
+	  /* CFG is no longer maintained up-to-date.  */
+	  reg_scan (insns, max_reg_num (), 0);
+	  tem = cse_main (insns, max_reg_num (), 1, rtl_dump_file);
+	  purge_all_dead_edges (0);
+
+	  if (tem)
+	    {
+	      timevar_push (TV_JUMP);
+	      rebuild_jump_labels (insns);
+	      cleanup_cfg (CLEANUP_EXPENSIVE);
+	      timevar_pop (TV_JUMP);
+	    }
+	}
+
+      close_dump_file (DFI_cse2, print_rtl_with_bb, insns);
+      timevar_pop (TV_CSE2);
+
+      ggc_collect ();
+    }
+
+  cse_not_expected = 1;
+
+  close_dump_file (DFI_life, print_rtl_with_bb, insns);
+  regclass_init ();
+
+  check_function_return_warnings ();
+
+#ifdef ENABLE_CHECKING
+  verify_flow_info ();
+#endif
   life_analysis (insns, rtl_dump_file, PROP_FINAL);
+  if (optimize)
+    cleanup_cfg (CLEANUP_EXPENSIVE | CLEANUP_UPDATE_LIFE);
   timevar_pop (TV_FLOW);
 
   no_new_pseudos = 1;
@@ -3018,12 +3014,14 @@ rest_of_compilation (decl)
 
   if (optimize)
     {
+      clear_bb_flags ();
       if (initialize_uninitialized_subregs ())
 	{
 	  /* Insns were inserted, so things might look a bit different.  */
 	  insns = get_insns ();
-	  life_analysis (insns, rtl_dump_file, 
-			 (PROP_LOG_LINKS | PROP_REG_INFO | PROP_DEATH_NOTES));
+	  update_life_info_in_dirty_blocks (UPDATE_LIFE_GLOBAL_RM_NOTES,
+					    PROP_LOG_LINKS | PROP_REG_INFO
+					    | PROP_DEATH_NOTES);
 	}
     }
 
@@ -3089,6 +3087,7 @@ rest_of_compilation (decl)
 
       regmove_optimize (insns, max_reg_num (), rtl_dump_file);
 
+      cleanup_cfg (CLEANUP_EXPENSIVE | CLEANUP_UPDATE_LIFE);
       close_dump_file (DFI_regmove, print_rtl_with_bb, insns);
       timevar_pop (TV_REGMOVE);
 
@@ -3107,13 +3106,7 @@ rest_of_compilation (decl)
   timevar_push (TV_MODE_SWITCH);
 
   no_new_pseudos = 0;
-  if (optimize_mode_switching (NULL))
-    {
-      /* We did work, and so had to regenerate global life information.
-	 Take advantage of this and don't re-recompute register life
-	 information below.  */
-      register_life_up_to_date = 1;
-    }
+  optimize_mode_switching (NULL);
   no_new_pseudos = 1;
 
   timevar_pop (TV_MODE_SWITCH);

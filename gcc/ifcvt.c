@@ -113,10 +113,8 @@ static void noce_emit_move_insn		PARAMS ((rtx, rtx));
    as well as a flag indicating that the block should be rescaned for
    life analysis.  */
 
-#define SET_ORIG_INDEX(BB,I)	((BB)->aux = (void *)((size_t)(I) << 1))
-#define ORIG_INDEX(BB)		((size_t)(BB)->aux >> 1)
-#define SET_UPDATE_LIFE(BB)	((BB)->aux = (void *)((size_t)(BB)->aux | 1))
-#define UPDATE_LIFE(BB)		((size_t)(BB)->aux & 1)
+#define SET_ORIG_INDEX(BB,I)	((BB)->aux = (void *)((size_t)(I)))
+#define ORIG_INDEX(BB)		((size_t)(BB)->aux)
 
 
 /* Count the number of non-jump active insns in BB.  */
@@ -1845,7 +1843,7 @@ merge_if_block (test_bb, then_bb, else_bb, join_bb)
   /* First merge TEST block into THEN block.  This is a no-brainer since
      the THEN block did not have a code label to begin with.  */
 
-  if (life_data_ok)
+  if (combo_bb->global_live_at_end)
     COPY_REG_SET (combo_bb->global_live_at_end, then_bb->global_live_at_end);
   merge_blocks_nomove (combo_bb, then_bb);
   num_removed_blocks++;
@@ -1886,7 +1884,7 @@ merge_if_block (test_bb, then_bb, else_bb, join_bb)
 	   && join_bb != EXIT_BLOCK_PTR)
     {
       /* We can merge the JOIN.  */
-      if (life_data_ok)
+      if (combo_bb->global_live_at_end)
 	COPY_REG_SET (combo_bb->global_live_at_end,
 		      join_bb->global_live_at_end);
       merge_blocks_nomove (combo_bb, join_bb);
@@ -1906,9 +1904,6 @@ merge_if_block (test_bb, then_bb, else_bb, join_bb)
       if (join_bb != EXIT_BLOCK_PTR)
         tidy_fallthru_edge (combo_bb->succ, combo_bb, join_bb);
     }
-
-  /* Make sure we update life info properly.  */
-  SET_UPDATE_LIFE (combo_bb);
 
   num_updated_if_blocks++;
 }
@@ -2324,7 +2319,6 @@ find_if_case_1 (test_bb, then_edge, else_edge)
   /* Conversion went ok, including moving the insns and fixing up the
      jump.  Adjust the CFG to match.  */
 
-  SET_UPDATE_LIFE (test_bb);
   bitmap_operation (test_bb->global_live_at_end,
 		    else_bb->global_live_at_start,
 		    then_bb->global_live_at_end, BITMAP_IOR);
@@ -2333,10 +2327,7 @@ find_if_case_1 (test_bb, then_edge, else_edge)
   /* Make rest of code believe that the newly created block is the THEN_BB
      block we are going to remove.  */
   if (new_bb)
-    {
-      new_bb->aux = then_bb->aux;
-      SET_UPDATE_LIFE (then_bb);
-    }
+    new_bb->aux = then_bb->aux;
   flow_delete_block (then_bb);
   /* We've possibly created jump to next insn, cleanup_cfg will solve that
      later.  */
@@ -2403,7 +2394,6 @@ find_if_case_2 (test_bb, then_edge, else_edge)
   /* Conversion went ok, including moving the insns and fixing up the
      jump.  Adjust the CFG to match.  */
 
-  SET_UPDATE_LIFE (test_bb);
   bitmap_operation (test_bb->global_live_at_end,
 		    then_bb->global_live_at_start,
 		    else_bb->global_live_at_end, BITMAP_IOR);
@@ -2718,6 +2708,8 @@ if_convert (x_life_data_ok)
       post_dominators = sbitmap_vector_alloc (n_basic_blocks, n_basic_blocks);
       calculate_dominance_info (NULL, post_dominators, CDI_POST_DOMINATORS);
     }
+  if (life_data_ok)
+    clear_bb_flags ();
 
   /* Record initial block numbers.  */
   for (block_num = 0; block_num < n_basic_blocks; block_num++)
@@ -2742,28 +2734,15 @@ if_convert (x_life_data_ok)
   /* Rebuild life info for basic blocks that require it.  */
   if (num_removed_blocks && life_data_ok)
     {
-      sbitmap update_life_blocks = sbitmap_alloc (n_basic_blocks);
-      sbitmap_zero (update_life_blocks);
-
       /* If we allocated new pseudos, we must resize the array for sched1.  */
       if (max_regno < max_reg_num ())
 	{
 	  max_regno = max_reg_num ();
 	  allocate_reg_info (max_regno, FALSE, FALSE);
 	}
-
-      for (block_num = 0; block_num < n_basic_blocks; block_num++)
-	if (UPDATE_LIFE (BASIC_BLOCK (block_num)))
-	  SET_BIT (update_life_blocks, block_num);
-
-      count_or_remove_death_notes (update_life_blocks, 1);
-      /* ??? See about adding a mode that verifies that the initial
-	set of blocks don't let registers come live.  */
-      update_life_info (update_life_blocks, UPDATE_LIFE_GLOBAL,
-			PROP_DEATH_NOTES | PROP_SCAN_DEAD_CODE
-			| PROP_KILL_DEAD_CODE);
-
-      sbitmap_free (update_life_blocks);
+      update_life_info_in_dirty_blocks (UPDATE_LIFE_GLOBAL_RM_NOTES,
+					PROP_DEATH_NOTES | PROP_SCAN_DEAD_CODE
+					| PROP_KILL_DEAD_CODE);
     }
   clear_aux_for_blocks ();
 

@@ -5800,10 +5800,11 @@ cse_insn (insn, libcall_insn)
 	     and hope for the best.  */
 	  if (n_sets == 1)
 	    {
-	      rtx new = emit_jump_insn_before (gen_jump (XEXP (src, 0)), insn);
+	      rtx new = emit_jump_insn_after (gen_jump (XEXP (src, 0)), insn);
 
 	      JUMP_LABEL (new) = XEXP (src, 0);
 	      LABEL_NUSES (XEXP (src, 0))++;
+	      delete_insn (insn);
 	      insn = new;
 
 	      /* Now emit a BARRIER after the unconditional jump.  */
