@@ -692,6 +692,7 @@ dump_type_prefix (t, flags)
     case TYPENAME_TYPE:
     case COMPLEX_TYPE:
     case VECTOR_TYPE:
+    case TYPEOF_TYPE:
       dump_type (t, flags);
       padding = before;
       break;
@@ -788,6 +789,7 @@ dump_type_suffix (t, flags)
     case TYPENAME_TYPE:
     case COMPLEX_TYPE:
     case VECTOR_TYPE:
+    case TYPEOF_TYPE:
       break;
 
     default:

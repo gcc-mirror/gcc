@@ -1,3 +1,9 @@
+2003-02-19  Kriang Lerdsuwanakij  <lerdsuwa@users.sourceforge.net>
+
+	PR c++/9459
+	* error.c (dump_type_prefix): Handle TYPEOF_TYPE.
+	(dump_type_suffix): Likewise.
+
 2003-02-10  Jason Merrill  <jason@redhat.com>
 
 	* call.c (call_builtin_trap): New fn.
