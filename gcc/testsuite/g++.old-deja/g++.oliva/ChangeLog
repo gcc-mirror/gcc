@@ -1,3 +1,9 @@
+1999-08-06  Alexandre Oliva  <oliva@dcc.unicamp.br>
+
+	* dwarf2.C, dwarf3.C: Added XFAIL for Solaris/x86.  Removed
+	-gdwarf.
+	* dwarf1.C: Removed -gdwarf.
+
 1999-08-05  Alexandre Oliva  <oliva@dcc.unicamp.br>
 
 	* new1.C, template8.C: Removed XFAIL.

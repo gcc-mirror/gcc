@@ -4,8 +4,8 @@
 
 // by Alexandre Oliva <oliva@dcc.unicamp.br>
 
-// Special g++ Options: -gdwarf
-// crash test
+// Fails with dwarf debugging.
+// crash test - XFAIL i386-pc-solaris*
 
 typedef __java_boolean jboolean;
 void foo() {}
