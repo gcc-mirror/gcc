@@ -4463,7 +4463,7 @@ reloads_conflict (r1, r2)
 
     case RELOAD_FOR_OUTPUT:
       return (r2_type == RELOAD_FOR_INSN || r2_type == RELOAD_FOR_OUTPUT
-	      || (r2_type == RELOAD_FOR_OPERAND_ADDRESS
+	      || (r2_type == RELOAD_FOR_OUTPUT_ADDRESS
 		  && r2_opnum >= r1_opnum));
 
     case RELOAD_FOR_INSN:
