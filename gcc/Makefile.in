@@ -1446,10 +1446,9 @@ install-cross-rest: install-float-h-cross
 # Install float.h for cross compiler.
 # Run this on the target machine!
 install-float-h-cross:
-# I don't see what this line is for.
-# If you see what good it does, please tell me.  -- rms.
-	if [ -f enquire ] ; then true; else false; fi
-	-./enquire -f > $(tmpdir)/float.h
+#	if [ -f enquire ] ; then true; else false; fi
+# Note: don't use -.  We should fail right away if enquire was not made.
+	./enquire -f > $(tmpdir)/float.h
 	-rm -f $(libsubdir)/include/float.h
 	$(INSTALL_DATA) $(tmpdir)/float.h $(libsubdir)/include/float.h
 	-rm -f $(tmpdir)/float.h
