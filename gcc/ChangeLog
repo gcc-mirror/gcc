@@ -1,3 +1,8 @@
+Thu Apr 13 19:39:56 2000  Clinton Popetz  <cpopetz@cygnus.com>
+                                                                                
+	* emit-rtl.c (try_split): Avoid infinite loop if the split              
+	results in a sequence that contains the original insn.                  
+
 2000-04-13  Andreas Jaeger  <aj@suse.de>
 
 	* config/mips/mips.c (expand_block_move): Pass alignment
