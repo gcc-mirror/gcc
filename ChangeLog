@@ -1,3 +1,7 @@
+2001-07-30  Eric Christopher  <echristo@redhat.com>
+
+	* MAINTAINERS (Various maintainers: mips port): Added myself.
+
 2001-07-25  Andrew Haley  <aph@cambridge.redhat.com>
 
         * configure.in (sh-*-linux*): New.
@@ -49,7 +53,7 @@ Fri Jul 13 14:31:57 2001  Nicola Pero  <nicola@brainstorm.co.uk>
 2001-06-11  Daniel Berlin  <dan@cgsoftware.com>
 
 	* MAINTAINERS (Write After Approval): Add myself.
-	
+
 2001-06-09  Alexandre Oliva  <aoliva@redhat.com>
 
 	* config.guess: Import CVS version 1.195.
@@ -146,7 +150,7 @@ Fri Jun  1 18:55:19 2001  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
 
 	* configure.in (noconfigdirs): Don't reset it from scratch in the
 	target case; only append to it.
-	
+
 	* configure.in (noconfigdirs) [hppa*-*-*, mips*-*-irix6*,
 	sparc-*-solaris2.8]: Disable ${libgcj}.
 
@@ -159,7 +163,7 @@ Fri Jun  1 18:55:19 2001  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
 2001-04-25  Gavin Romig-Koch  <gavin@redhat.com>
 
 	* MAINTAINERS: Remove self as MIPS maintainer and
-	C front end maintainer.  
+	C front end maintainer.
 
 Mon Apr 23 09:15:03 2001  Anthony Green  <green@redhat.com>
 
@@ -297,20 +301,20 @@ Mon Apr 23 09:15:03 2001  Anthony Green  <green@redhat.com>
 	* Makefile.in: Remove RANLIB definition. Use RANLIB
 	in RANLIB_FOR_TARGET, EXTRA_HOST_FLAGS, EXTRA_TARGET_FLAGS,
 	EXTRA_GCC_FLAGS, $(DO_X) targets only when the RANLIB is set.
-		    
+
 2001-02-28  Benjamin Kosnik  <bkoz@redhat.com>
             Alexandre Oliva  <aoliva@redhat.com>
-	
+
 	* Makefile.in (check-c++): Use tabs, not spaces.
 
 2001-02-20  Laurynas Biveinis  <lauras@softhome.net>
-	
+
 	* MAINTAINERS: add myself to Write After Approval list.
 
 2001-02-19  Benjamin Kosnik  <bkoz@redhat.com>
 
         * Makefile.in (check-c++): New rule.
-	
+
 	* configure.in (target_libs): Remove libg++.
 	(noconfigdirs): Remove libg++.
 	(noconfigdirs): Same.
@@ -487,12 +491,12 @@ Mon Apr 23 09:15:03 2001  Anthony Green  <green@redhat.com>
 
 2000-12-18  Benjamin Kosnik  <bkoz@redhat.com>
 
-	* Makefile.in (BASE_FLAGS_TO_PASS): Alphabetize. 
+	* Makefile.in (BASE_FLAGS_TO_PASS): Alphabetize.
 	(libstdcxx_incdir): Pass down.
 	* config.if: Remove expired bits for cxx_interface, add stub.
 	(libstdcxx_incdir): Add variable for g++ include directory.
 	* configure.in (gxx_include_dir): Use it.
-	
+
 2000-12-18  Alexandre Oliva  <aoliva@redhat.com>
 
 	* MAINTAINERS: Added self as sh port co-maintainer.  Removed entry
@@ -509,11 +513,11 @@ Mon Apr 23 09:15:03 2001  Anthony Green  <green@redhat.com>
 	* MAINTAINERS: Added gcj developers.
 
 2000-12-13  Anthony Green  <green@redhat.com>
-	
+
 	* configure.in: Disable libgcj for any target not specifically
  	listed.  Disable libgcj for x86 and Alpha Linux until compatible
  	with g++ abi.
- 
+
 2000-12-13  Mike Stump  <mrs@wrs.com>
 
 	* Makefile.in (local-distclean): Also remove fastjar.
@@ -662,7 +666,7 @@ Mon Nov  6 14:19:35 2000  Christopher Faylor <cgf@cygnus.com>
 	* MAINTAINERS: Rename <name>@cygnus.com addresses to
 	<name>@redhat.com.  Also installed new email address for Clint
 	Popetz.
-	
+
 2000-10-30  Joseph S. Myers  <jsm28@cam.ac.uk>
 
 	* etc: Remove directory from GCC.
@@ -672,8 +676,8 @@ Mon Nov  6 14:19:35 2000  Christopher Faylor <cgf@cygnus.com>
 	* configure (gcc/configargs.h): Only create if there is a build GCC
 	directory created.
 
-2000-10-16  Matthias Klose  <doko@debian.org> 
- 
+2000-10-16  Matthias Klose  <doko@debian.org>
+
 	* config.if: Search libstdc++-v3/configure.in for INTERFACE,
 	when configured for libstdc++-v3.
 
@@ -811,7 +815,7 @@ Wed Sep 13 11:11:29 2000  Jeffrey A Law  (law@cygnus.com)
 
 	* configure.in (libstdcxx_flags): Remove -isystem $$s/libio/stdio.
 
-	* configure: Make enable_threads and enable_shared defaults  
+	* configure: Make enable_threads and enable_shared defaults
 	explicit.  Substitute enable_threads into generated Makefiles.
 	* configure.in: Accept *-*-linux* not just *-*-linux-gnu*.
 	* libtool.m4: Accept *-*-linux* not just *-*-linux-gnu*.
@@ -893,7 +897,7 @@ Wed Sep 13 11:11:29 2000  Jeffrey A Law  (law@cygnus.com)
 	* libtool.m4, ltcf-c.sh, ltcf-cxx.sh, ltcf-gcj.sh: New files from
 	the libtool CVS tree multi-language branch.
 	* ltconfig, ltmain.sh: Updated.
-	
+
 2000-07-27  Alexandre Oliva  <aoliva@redhat.com>
 
 	* Makefile.in (clean-target-libgcc): Remove gcc/libgcc.
