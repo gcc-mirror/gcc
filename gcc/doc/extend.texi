@@ -1101,7 +1101,8 @@ expressions are equivalent:
 (a ? b = 5 : (c = 5))
 @end example
 
-A cast is a valid lvalue if its operand is an lvalue.  A simple
+A cast is a valid lvalue if its operand is an lvalue.  This extension
+is deprecated.  A simple
 assignment whose left-hand side is a cast works by converting the
 right-hand side first to the specified type, then to the type of the
 inner left-hand side expression.  After this is stored, the value is

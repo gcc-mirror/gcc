@@ -1,3 +1,7 @@
+2003-10-20  Joseph S. Myers  <jsm@polyomino.org.uk>
+
+	* doc/extend.texi: Deprecate casts as lvalues.
+
 2003-10-20  Jan Hubicka  <jh@suse.cz>
 
 	* toplev.c (rest_of_compilation): Fix webizer pass ordering.
