@@ -912,14 +912,6 @@ m68k_output_function_epilogue (FILE *stream, HOST_WIDE_INT size ATTRIBUTE_UNUSED
     fprintf (stream, "\trts\n");
 }
 
-/* Similar to general_operand, but exclude stack_pointer_rtx.  */
-
-int
-not_sp_operand (rtx op, enum machine_mode mode)
-{
-  return op != stack_pointer_rtx && nonimmediate_operand (op, mode);
-}
-
 /* Return true if X is a valid comparison operator for the dbcc 
    instruction.  
 
@@ -929,7 +921,7 @@ not_sp_operand (rtx op, enum machine_mode mode)
    It also rejects some comparisons when CC_NO_OVERFLOW is set.  */
    
 int
-valid_dbcc_comparison_p (rtx x, enum machine_mode mode ATTRIBUTE_UNUSED)
+valid_dbcc_comparison_p_2 (rtx x, enum machine_mode mode ATTRIBUTE_UNUSED)
 {
   switch (GET_CODE (x))
     {
@@ -1283,53 +1275,6 @@ output_btst (rtx *operands, rtx countop, rtx dataop, rtx insn, int signpos)
     }
   return "btst %0,%1";
 }
-
-/* Returns true if OP is either a symbol reference or a sum of a symbol
-   reference and a constant.  */
-
-int
-symbolic_operand (rtx op, enum machine_mode mode ATTRIBUTE_UNUSED)
-{
-  switch (GET_CODE (op))
-    {
-    case SYMBOL_REF:
-    case LABEL_REF:
-      return true;
-
-    case CONST:
-      op = XEXP (op, 0);
-      return ((GET_CODE (XEXP (op, 0)) == SYMBOL_REF
-	       || GET_CODE (XEXP (op, 0)) == LABEL_REF)
-	      && GET_CODE (XEXP (op, 1)) == CONST_INT);
-
-#if 0 /* Deleted, with corresponding change in m68k.h,
-	 so as to fit the specs.  No CONST_DOUBLE is ever symbolic.  */
-    case CONST_DOUBLE:
-      return GET_MODE (op) == mode;
-#endif
-
-    default:
-      return false;
-    }
-}
-
-/* Check for sign_extend or zero_extend.  Used for bit-count operands.  */
-
-int
-extend_operator(rtx x, enum machine_mode mode)
-{
-    if (mode != VOIDmode && GET_MODE(x) != mode)
-	return 0;
-    switch (GET_CODE(x))
-	{
-	case SIGN_EXTEND :
-	case ZERO_EXTEND :
-	    return 1;
-	default :
-	    return 0;
-	}
-}
-
 
 /* Legitimize PIC addresses.  If the address is already
    position-independent, we return ORIG.  Newly generated
@@ -3047,45 +2992,6 @@ strict_low_part_peephole_ok (enum machine_mode mode, rtx first_insn,
   return false;
 }
 
-/* Accept integer operands in the range 0..0xffffffff.  We have to check the
-   range carefully since this predicate is used in DImode contexts.  Also, we
-   need some extra crud to make it work when hosted on 64-bit machines.  */
-
-int
-const_uint32_operand (rtx op, enum machine_mode mode)
-{
-  /* It doesn't make sense to ask this question with a mode that is
-     not larger than 32 bits.  */
-  if (GET_MODE_BITSIZE (mode) <= 32)
-    abort ();
-
-#if HOST_BITS_PER_WIDE_INT > 32
-  /* All allowed constants will fit a CONST_INT.  */
-  return (GET_CODE (op) == CONST_INT
-	  && (INTVAL (op) >= 0 && INTVAL (op) <= 0xffffffffL));
-#else
-  return (GET_CODE (op) == CONST_INT
-	  || (GET_CODE (op) == CONST_DOUBLE && CONST_DOUBLE_HIGH (op) == 0));
-#endif
-}
-
-/* Accept integer operands in the range -0x80000000..0x7fffffff.  We have
-   to check the range carefully since this predicate is used in DImode
-   contexts.  */
-
-int
-const_sint32_operand (rtx op, enum machine_mode mode)
-{
-  /* It doesn't make sense to ask this question with a mode that is
-     not larger than 32 bits.  */
-  if (GET_MODE_BITSIZE (mode) <= 32)
-    abort ();
-
-  /* All allowed constants will fit a CONST_INT.  */
-  return (GET_CODE (op) == CONST_INT
-	  && (INTVAL (op) >= (-0x7fffffff - 1) && INTVAL (op) <= 0x7fffffff));
-}
-
 /* Operand predicates for implementing asymmetric pc-relative addressing
    on m68k.  The m68k supports pc-relative addressing (mode 7, register 2)
    when used as a source operand, but not as a destination operand.
@@ -3142,75 +3048,6 @@ const_sint32_operand (rtx op, enum machine_mode mode)
 
    ***************************************************************************/
 
-
-/* Special case of a general operand that's used as a source operand.
-   Use this to permit reads from PC-relative memory when -mpcrel
-   is specified.  */
-
-int
-general_src_operand (rtx op, enum machine_mode mode)
-{
-  if (TARGET_PCREL
-      && GET_CODE (op) == MEM
-      && (GET_CODE (XEXP (op, 0)) == SYMBOL_REF
-	  || GET_CODE (XEXP (op, 0)) == LABEL_REF
-	  || GET_CODE (XEXP (op, 0)) == CONST))
-    return 1;
-  return general_operand (op, mode);
-}
-
-/* Special case of a nonimmediate operand that's used as a source.
-   Use this to permit reads from PC-relative memory when -mpcrel
-   is specified.  */
-
-int
-nonimmediate_src_operand (rtx op, enum machine_mode mode)
-{
-  if (TARGET_PCREL && GET_CODE (op) == MEM
-      && (GET_CODE (XEXP (op, 0)) == SYMBOL_REF
-	  || GET_CODE (XEXP (op, 0)) == LABEL_REF
-	  || GET_CODE (XEXP (op, 0)) == CONST))
-    return 1;
-  return nonimmediate_operand (op, mode);
-}
-
-/* Special case of a memory operand that's used as a source.
-   Use this to permit reads from PC-relative memory when -mpcrel
-   is specified.  */
-
-int
-memory_src_operand (rtx op, enum machine_mode mode)
-{
-  if (TARGET_PCREL && GET_CODE (op) == MEM
-      && (GET_CODE (XEXP (op, 0)) == SYMBOL_REF
-	  || GET_CODE (XEXP (op, 0)) == LABEL_REF
-	  || GET_CODE (XEXP (op, 0)) == CONST))
-    return 1;
-  return memory_operand (op, mode);
-}
-
-int
-post_inc_operand (rtx op, enum machine_mode mode ATTRIBUTE_UNUSED)
-{
-  return MEM_P (op) && GET_CODE (XEXP (op, 0)) == POST_INC;
-}
-
-int
-pre_dec_operand (rtx op, enum machine_mode mode ATTRIBUTE_UNUSED)
-{
-  return MEM_P (op) && GET_CODE (XEXP (op, 0)) == PRE_DEC;
-}
-
-/* Predicate that accepts only a pc-relative address.  This is needed
-   because pc-relative addresses don't satisfy the predicate
-   "general_src_operand".  */
-
-int
-pcrel_address (rtx op, enum machine_mode mode ATTRIBUTE_UNUSED)
-{
-  return (GET_CODE (op) == SYMBOL_REF || GET_CODE (op) == LABEL_REF
-	  || GET_CODE (op) == CONST);
-}
 
 const char *
 output_andsi3 (rtx *operands)
