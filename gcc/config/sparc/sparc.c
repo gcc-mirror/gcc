@@ -781,6 +781,36 @@ arith_operand (op, mode)
   return SPARC_SIMM13_P (val);
 }
 
+/* Return true if OP is a CONST_INT or a CONST_DOUBLE which can fit in the
+   immediate field of OR and XOR instructions.  Used for 64-bit
+   constant formation patterns.  */
+int
+const64_operand (op, mode)
+     rtx op;
+     enum machine_mode mode;
+{
+  return ((GET_CODE (op) == CONST_INT
+	   && SPARC_SIMM13_P (INTVAL (op)))
+	  || (GET_CODE (op) == CONST_DOUBLE
+	      && CONST_DOUBLE_HIGH (op) == 0
+	      && SPARC_SIMM13_P (CONST_DOUBLE_LOW (op)))
+	  || GET_CODE (op) == CONSTANT_P_RTX);
+}
+
+/* The same, but considering what can fit for a sethi instruction.  */
+int
+const64_high_operand (op, mode)
+     rtx op;
+     enum machine_mode mode;
+{
+  return ((GET_CODE (op) == CONST_INT
+	   && SPARC_SETHI_P (INTVAL (op)))
+	  || (GET_CODE (op) == CONST_DOUBLE
+	      && CONST_DOUBLE_HIGH (op) == 0
+	      && SPARC_SETHI_P (CONST_DOUBLE_LOW (op)))
+	  || GET_CODE (op) == CONSTANT_P_RTX);
+}
+
 /* Return true if OP is a register, or is a CONST_INT that can fit in a
    signed 11 bit immediate field.  This is an acceptable SImode operand for
    the movcc instructions.  */

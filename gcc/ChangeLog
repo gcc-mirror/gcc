@@ -18,6 +18,13 @@ Tue Aug 11 04:46:01 1998  David S. Miller  <davem@pierdol.cobaltmicro.com>
 	(define_insn zero_extendsidi2_insn_sp32): New pattern and
 	assosciated forced split for it.
 
+	* config/sparc/sparc.c (const64_operand, const64_high_operand):
+	New predicates.
+	* config/sparc/sparc.h: Declare them.
+	(PREDICATE_CODES): Add them.
+	* config/sparc/sparc.md (movdi_lo_sum_sp64_dbl,
+	movdi_high_sp64_dbl, xordi3_sp64_dbl): Use them.
+
 Mon Aug 10 22:57:24 1998  John Carr  <jfc@mit.edu>
 
 	* config/sparc/sparc.md (define_insn jump): Output ba,pt not b,pt

@@ -2355,14 +2355,9 @@
 (define_insn "*movdi_lo_sum_sp64_dbl"
   [(set (match_operand:DI 0 "register_operand" "=r")
         (lo_sum:DI (match_operand:DI 1 "register_operand" "r")
-                   (match_operand:DI 2 "const_double_operand" "")))]
-  "TARGET_ARCH64
-   && CONST_DOUBLE_HIGH (operands[2]) == 0"
-  "*
-{
-  operands[2] = GEN_INT (CONST_DOUBLE_LOW (operands[2]));
-  return \"or\\t%1, %%lo(%a2), %0\";
-}"
+                   (match_operand:DI 2 "const64_operand" "")))]
+  "TARGET_ARCH64"
+  "or\\t%1, %%lo(%a2), %0"
   [(set_attr "type" "ialu")
    (set_attr "length" "1")])
 
@@ -2376,14 +2371,9 @@
 
 (define_insn "*movdi_high_sp64_dbl"
   [(set (match_operand:DI 0 "register_operand" "=r")
-	(high:DI (match_operand:DI 1 "const_double_operand" "")))]
-  "TARGET_ARCH64
-   && CONST_DOUBLE_HIGH (operands[1]) == 0"
-  "*
-{
-  operands[1] = GEN_INT (CONST_DOUBLE_LOW (operands[1]));
-  return \"sethi\\t%%hi(%a1), %0\";
-}"
+	(high:DI (match_operand:DI 1 "const64_high_operand" "")))]
+  "TARGET_ARCH64"
+  "sethi\\t%%hi(%a1), %0"
   [(set_attr "type" "move")
    (set_attr "length" "1")])
 
@@ -5604,14 +5594,9 @@ movtf_is_ok:
 (define_insn "*xordi3_sp64_dbl"
   [(set (match_operand:DI 0 "register_operand" "=r")
 	(xor:DI (match_operand:DI 1 "register_operand" "%r")
-		(match_operand:DI 2 "const_double_operand" "")))]
-  "TARGET_ARCH64
-   && CONST_DOUBLE_HIGH (operands[2]) == 0"
-  "*
-{
-  operands[2] = GEN_INT (CONST_DOUBLE_LOW (operands[2]));
-  return \"xor\\t%1, %2, %0\";
-}"
+		(match_operand:DI 2 "const64_operand" "")))]
+  "TARGET_ARCH64"
+  "xor\\t%1, %2, %0"
   [(set_attr "type" "ialu")
    (set_attr "length" "1")])
 
