@@ -1,3 +1,22 @@
+2004-07-12  Giovanni Bajo  <giovannibajo@gcc.gnu.org>
+
+	PR c++/2204
+	* config-lang.in (gtfiles): Add typeck2.c.
+	* Make-lang.in: Tweak typeck2.c dependencies, and add rule for
+	gt-cp-typeck2.h.
+	* cp-tree.h: Declare complete_type_check_abstract.
+	* typeck2.c (pat_calc_hash, pat_compare,
+	complete_type_check_abstract): New functions.
+	(abstract_virtuals_error): If the type is abstract, register the
+	declaration within abstract_pending_vars for further checks.
+	Inspect also dependent types. Handle IDENTIFIER_NODEs as decl.
+	* decl.c (cp_finish_decl): Do not strip array types.
+	(create_array_type_for_decl): Check for abstractness of the element
+	type.
+	(complete_vars): Call complete_type_check_abstract.
+	* class.c (finish_struct): Prepare a list of virtual functions for
+	template types, and call complete_vars on it to check for abstractness.
+
 2004-07-12  Paolo Bonzini  <bonzini@gnu.org>
 
 	PR tree-optimization/14107

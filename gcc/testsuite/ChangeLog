@@ -1,3 +1,8 @@
+2004-07-12  Giovanni Bajo  <giovannibajo@gcc.gnu.org>
+
+	PR c++/2204
+	* g++.dg/other/abstract2.C: New test.
+
 2004-07-12  Paul Brook  <paul@codesourcery.com>
 
 	* gfortran.dg/pointer_init_1.f90: New test.
