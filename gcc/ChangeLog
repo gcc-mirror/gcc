@@ -1,5 +1,12 @@
 2003-01-08  Kazu Hirata  <kazu@cs.umass.edu>
 
+	* config/h8300/h8300.c (output_logical_op): Replace byte/word
+	extraction of det with b0, b1, w0, w2, etc.
+	(compute_logical_op_length): Likewise.
+	(compute_logical_op_cc): Likewise.
+
+2003-01-08  Kazu Hirata  <kazu@cs.umass.edu>
+
 	* config/h8300/h8300.h (CONSTANT_ADDRESS_P): Allow CONST and
 	HIGH on all variants.
 
