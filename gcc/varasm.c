@@ -976,7 +976,8 @@ assemble_start_function (decl, fnname)
 
   if (TREE_PUBLIC (decl))
     {
-      if (!first_global_object_name)
+      if (!first_global_object_name && ! DECL_WEAK (decl)
+	  && ! DECL_ONE_ONLY (decl))
 	{
 	  char *p;
 
@@ -1259,6 +1260,20 @@ assemble_variable (decl, top_level, at_end, dont_output_data)
 
   name = XSTR (XEXP (DECL_RTL (decl), 0), 0);
 
+  if (TREE_PUBLIC (decl) && DECL_NAME (decl)
+      && ! first_global_object_name
+      && ! (DECL_COMMON (decl) && (DECL_INITIAL (decl) == 0
+				   || DECL_INITIAL (decl) == error_mark_node))
+      && ! DECL_WEAK (decl)
+      && ! DECL_ONE_ONLY (decl))
+    {
+      char *p;
+
+      STRIP_NAME_ENCODING (p, name);
+      first_global_object_name = permalloc (strlen (p) + 1);
+      strcpy (first_global_object_name, p);
+    }
+
   /* Handle uninitialized definitions.  */
 
   if ((DECL_INITIAL (decl) == 0 || DECL_INITIAL (decl) == error_mark_node)
@@ -1387,15 +1402,6 @@ assemble_variable (decl, top_level, at_end, dont_output_data)
   /* First make the assembler name(s) global if appropriate.  */
   if (TREE_PUBLIC (decl) && DECL_NAME (decl))
     {
-      if (!first_global_object_name)
-	{
-	  char *p;
-
-	  STRIP_NAME_ENCODING (p, name);
-	  first_global_object_name = permalloc (strlen (p) + 1);
-	  strcpy (first_global_object_name, p);
-	}
-
 #ifdef ASM_WEAKEN_LABEL
       if (DECL_WEAK (decl))
 	ASM_WEAKEN_LABEL (asm_out_file, name);
@@ -4236,4 +4242,54 @@ assemble_alias (decl, target)
 #else
   warning ("alias definitions not supported in this configuration");
 #endif
+}
+
+/* This determines whether or not we support link-once semantics.  */
+#ifndef SUPPORTS_ONE_ONLY
+#ifdef MAKE_DECL_ONE_ONLY
+#define SUPPORTS_ONE_ONLY 1
+#else
+#define SUPPORTS_ONE_ONLY 0
+#endif
+#endif
+
+/* Returns 1 if the target configuration supports defining public symbols
+   so that one of them will be chosen at link time instead of generating a
+   multiply-defined symbol error, whether through the use of weak symbols or
+   a target-specific mechanism for having duplicates discarded.  */
+
+int
+supports_one_only ()
+{
+  if (SUPPORTS_ONE_ONLY)
+    return 1;
+  return SUPPORTS_WEAK;
+}
+
+/* Set up DECL as a public symbol that can be defined in multiple
+   translation units without generating a linker error.  */
+
+void
+make_decl_one_only (decl)
+     tree decl;
+{
+  if (TREE_CODE (decl) != VAR_DECL && TREE_CODE (decl) != FUNCTION_DECL)
+    abort ();
+
+  TREE_PUBLIC (decl) = 1;
+
+  if (TREE_CODE (decl) == VAR_DECL
+      && (DECL_INITIAL (decl) == 0 || DECL_INITIAL (decl) == error_mark_node))
+    DECL_COMMON (decl) = 1;
+  else if (SUPPORTS_ONE_ONLY)
+    {
+#ifdef MAKE_DECL_ONE_ONLY
+      MAKE_DECL_ONE_ONLY (decl);
+#endif
+      DECL_ONE_ONLY (decl) = 1;
+    }
+  else if (SUPPORTS_WEAK)
+    DECL_WEAK (decl) = 1;
+  else
+    abort ();
 }
