@@ -1,3 +1,7 @@
+2004-10-14  Joseph S. Myers  <jsm@polyomino.org.uk>
+
+	* errors.c (_cpp_begin_message): Print "error: " for errors.
+
 2004-10-10  Andreas Jaeger  <aj@suse.de>
 
 	* makedepend.c: Include mkdeps.h for prototype of deps_add_vpath.
