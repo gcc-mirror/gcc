@@ -49,9 +49,14 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
   (INSN_UID (INSN) < max_uid_for_loop ? uid_luid[INSN_UID (INSN)] \
    : (abort (), -1))
 
-#define REGNO_FIRST_LUID(REGNO) uid_luid[REGNO_FIRST_UID (REGNO)]
-#define REGNO_LAST_LUID(REGNO) uid_luid[REGNO_LAST_UID (REGNO)]
-
+#define REGNO_FIRST_LUID(REGNO)			\
+  (REGNO_FIRST_UID (REGNO) < max_uid_for_loop	\
+	? uid_luid[REGNO_FIRST_UID (REGNO)]	\
+	: 0)
+#define REGNO_LAST_LUID(REGNO)			\
+  (REGNO_LAST_UID (REGNO) < max_uid_for_loop	\
+	? uid_luid[REGNO_LAST_UID (REGNO)]	\
+	: INT_MAX)
 
 /* A "basic induction variable" or biv is a pseudo reg that is set
    (within this loop) only by incrementing or decrementing it.  */
