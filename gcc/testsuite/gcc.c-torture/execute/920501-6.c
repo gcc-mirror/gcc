@@ -33,7 +33,7 @@ sqrtllu (long long unsigned t)
   for (b = 0, s = t;  b++, (s >>= 1) != 0; )
     ;
 
-  s = 1 << (b >> 1);
+  s = 1LL << (b >> 1);
 
   if (b & 1)
     s += s >> 1;
