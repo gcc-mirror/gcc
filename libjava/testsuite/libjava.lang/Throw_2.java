@@ -34,6 +34,7 @@ public class Throw_2
 	}
       catch (NullPointerException _)
 	{
+	  System.out.println ("1");
 	}
       catch (Throwable _)
 	{
@@ -48,6 +49,7 @@ public class Throw_2
 	}
       catch (NullPointerException _)
 	{
+	  System.out.println ("2");
 	}
       catch (Throwable _)
 	{
