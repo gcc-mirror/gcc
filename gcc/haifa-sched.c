@@ -1162,8 +1162,13 @@ build_control_flow (s_preds, s_succs, num_preds, num_succs)
   for (i = 0; i < n_basic_blocks; i++)
     {
       nr_edges += num_succs[i];
-      /* ??? We must also detect unreachable loops here.  We only handle the
-	 trivial case of a loop with one basic block for now.  */
+
+      /* Unreachable loops with more than one basic block are detected
+	 during the DFS traversal in find_rgns.
+
+	 Unreachable loops with a single block are detected here.  This
+	 test is redundant with the one in find_rgns, but it's much
+	 cheaper to go ahead and catch the trivial case here.  */
       if (num_preds[i] == 0
 	  || (num_preds[i] == 1 && INT_LIST_VAL (s_preds[i]) == i))
 	unreachable = 1;
@@ -1487,7 +1492,7 @@ find_rgns (s_preds, s_succs, num_preds, num_succs, dom)
   char no_loops = 1;
   int node, child, loop_head, i, j, head, tail;
   int count = 0, sp, idx = 0, current_edge = out_edges[0];
-  int num_bbs, num_insns;
+  int num_bbs, num_insns, unreachable;
   int too_large_failure;
 
   /* Note if an edge has been passed.  */
@@ -1598,13 +1603,20 @@ find_rgns (s_preds, s_succs, num_preds, num_succs, dom)
       current_edge = OUT_EDGES (child);
     }
 
-  /* ?!? This might be a good place to detect unreachable loops and
-     avoid problems with them by forcing single block scheduling.  */
-  if (no_loops)
-    SET_BIT (header, 0);
+  /* Another check for unreachable blocks.  The earlier test in
+     is_cfg_nonregular only finds unreachable blocks that do not
+     form a loop.
 
-  /* Second travsersal:find reducible inner loops and topologically sort
-     block of each region.  */
+     The DFS traversal will mark every block that is reachable from
+     the entry node by placing a nonzero value in dfs_nr.  Thus if
+     dfs_nr is zero for any block, then it must be unreachable.  */
+  unreachable = 0;
+  for (i = 0; i < n_basic_blocks; i++)
+    if (dfs_nr[i] == 0)
+      {
+	unreachable = 1;
+	break;
+      }
 
   /* Gross.  To avoid wasting memory, the second pass uses the dfs_nr array
      to hold degree counts.  */
@@ -1614,81 +1626,94 @@ find_rgns (s_preds, s_succs, num_preds, num_succs, dom)
   for (i = 0; i < n_basic_blocks; i++)
     degree[i] = num_preds[i];
 
-  queue = (int *) alloca (n_basic_blocks * sizeof (int));
-
-  /* Find blocks which are inner loop headers.  */
-  for (i = 0; i < n_basic_blocks; i++)
+  /* Do not perform region scheduling if there are any unreachable
+     blocks.  */
+  if (!unreachable)
     {
-      if (TEST_BIT (header, i) && TEST_BIT (inner, i))
+      if (no_loops)
+	SET_BIT (header, 0);
+
+      /* Second travsersal:find reducible inner loops and topologically sort
+	 block of each region.  */
+
+      queue = (int *) alloca (n_basic_blocks * sizeof (int));
+
+      /* Find blocks which are inner loop headers.  */
+      for (i = 0; i < n_basic_blocks; i++)
 	{
-	  int_list_ptr ps;
-
-	  /* I is a header of a reducible inner loop, or block 0 in a
-	     subroutine with no loops at all.  */
-	  head = tail = -1;
-	  too_large_failure = 0;
-	  loop_head = max_hdr[i];
-
-	  /* Decrease degree of all I's successors for topological
-	     ordering.  */
-	  for (ps = s_succs[i]; ps; ps = ps->next)
-	    if (INT_LIST_VAL (ps) != EXIT_BLOCK
-		&& INT_LIST_VAL (ps) != ENTRY_BLOCK)
-	      --degree[INT_LIST_VAL (ps)];
-
-	  /* Estimate # insns, and count # blocks in the region.  */
-	  num_bbs = 1;
-	  num_insns
-	    = INSN_LUID (basic_block_end[i]) - INSN_LUID (basic_block_head[i]);
-
-
-	  /* Find all loop latches (blocks which back edges to the loop
-	     header) or all the leaf blocks in the cfg has no loops.
-
-	     Place those blocks into the queue.  */
-	  if (no_loops)
-	    {
-	      for (j = 0; j < n_basic_blocks; j++)
-		if (num_succs[j] == 0)
-		  {
-		    queue[++tail] = j;
-		    SET_BIT (in_queue, j);
-
-		    if (too_large (j, &num_bbs, &num_insns))
-		      {
-			too_large_failure = 1;
-			break;
-		      }
-		  }
-	    }
-	  else
+	  if (TEST_BIT (header, i) && TEST_BIT (inner, i))
 	    {
 	      int_list_ptr ps;
 
-	      for (ps = s_preds[i]; ps; ps = ps->next)
+	      /* I is a header of a reducible inner loop, or block 0 in a
+		 subroutine with no loops at all.  */
+	      head = tail = -1;
+	      too_large_failure = 0;
+	      loop_head = max_hdr[i];
+
+	      /* Decrease degree of all I's successors for topological
+		 ordering.  */
+	      for (ps = s_succs[i]; ps; ps = ps->next)
+		if (INT_LIST_VAL (ps) != EXIT_BLOCK
+		    && INT_LIST_VAL (ps) != ENTRY_BLOCK)
+		  --degree[INT_LIST_VAL (ps)];
+
+	      /* Estimate # insns, and count # blocks in the region.  */
+	      num_bbs = 1;
+	      num_insns	= (INSN_LUID (basic_block_end[i])
+			   - INSN_LUID (basic_block_head[i]));
+
+
+	      /* Find all loop latches (blocks which back edges to the loop
+		 header) or all the leaf blocks in the cfg has no loops.
+
+		 Place those blocks into the queue.  */
+	      if (no_loops)
 		{
-		  node = INT_LIST_VAL (ps);
+		  for (j = 0; j < n_basic_blocks; j++)
+		    /* Leaf nodes have only a single successor which must
+		       be EXIT_BLOCK.  */
+		    if (num_succs[j] == 1
+			&& INT_LIST_VAL (s_succs[j]) == EXIT_BLOCK)
+		      {
+			queue[++tail] = j;
+			SET_BIT (in_queue, j);
 
-		  if (node == ENTRY_BLOCK || node == EXIT_BLOCK)
-		    continue;
- 
-		  if (max_hdr[node] == loop_head && node != i)
-		    {
-		      /* This is a loop latch.  */
-		      queue[++tail] = node;
-		      SET_BIT (in_queue, node);
-
-		      if (too_large (node, &num_bbs, &num_insns))
-			{
-			  too_large_failure = 1;
-			  break;
-			}
-		    }
-		  
+			if (too_large (j, &num_bbs, &num_insns))
+			  {
+			    too_large_failure = 1;
+			    break;
+			  }
+		      }
 		}
-	    }
+	      else
+		{
+		  int_list_ptr ps;
 
-	  /* Now add all the blocks in the loop to the queue.
+		  for (ps = s_preds[i]; ps; ps = ps->next)
+		    {
+		      node = INT_LIST_VAL (ps);
+
+		      if (node == ENTRY_BLOCK || node == EXIT_BLOCK)
+			continue;
+ 
+		      if (max_hdr[node] == loop_head && node != i)
+			{
+			  /* This is a loop latch.  */
+			  queue[++tail] = node;
+			  SET_BIT (in_queue, node);
+
+			  if (too_large (node, &num_bbs, &num_insns))
+			    {
+			      too_large_failure = 1;
+			      break;
+			    }
+			}
+		      
+		    }
+		}
+
+	      /* Now add all the blocks in the loop to the queue.
 
 	     We know the loop is a natural loop; however the algorithm
 	     above will not always mark certain blocks as being in the
@@ -1719,74 +1744,75 @@ find_rgns (s_preds, s_succs, num_preds, num_succs, dom)
 	     We do not do this because I'm not sure that the actual
 	     scheduling code will properly handle this case. ?!? */
 	
-	  while (head < tail && !too_large_failure)
-	    {
-	      int_list_ptr ps;
-	      child = queue[++head];
-
-	      for (ps = s_preds[child]; ps; ps = ps->next)
+	      while (head < tail && !too_large_failure)
 		{
-		  node = INT_LIST_VAL (ps);
+		  int_list_ptr ps;
+		  child = queue[++head];
 
-		  /* See discussion above about nodes not marked as in
-		     this loop during the initial DFS traversal.  */
-		  if (node == ENTRY_BLOCK || node == EXIT_BLOCK
-		      || max_hdr[node] != loop_head)
+		  for (ps = s_preds[child]; ps; ps = ps->next)
 		    {
-		      tail = -1;
-		      break;
-		    }
-		  else if (!TEST_BIT (in_queue, node) && node != i)
-		    {
-		      queue[++tail] = node;
-		      SET_BIT (in_queue, node);
+		      node = INT_LIST_VAL (ps);
 
-		      if (too_large (node, &num_bbs, &num_insns))
+		      /* See discussion above about nodes not marked as in
+			 this loop during the initial DFS traversal.  */
+		      if (node == ENTRY_BLOCK || node == EXIT_BLOCK
+			  || max_hdr[node] != loop_head)
 			{
-			  too_large_failure = 1;
+			  tail = -1;
 			  break;
+			}
+		      else if (!TEST_BIT (in_queue, node) && node != i)
+			{
+			  queue[++tail] = node;
+			  SET_BIT (in_queue, node);
+
+			  if (too_large (node, &num_bbs, &num_insns))
+			    {
+			      too_large_failure = 1;
+			      break;
+			    }
 			}
 		    }
 		}
-	    }
 
-	  if (tail >= 0 && !too_large_failure)
-	    {
-	      /* Place the loop header into list of region blocks.  */
-	      degree[i] = -1;
-	      rgn_bb_table[idx] = i;
-	      RGN_NR_BLOCKS (nr_regions) = num_bbs;
-	      RGN_BLOCKS (nr_regions) = idx++;
-	      CONTAINING_RGN (i) = nr_regions;
-	      BLOCK_TO_BB (i) = count = 0;
+	      if (tail >= 0 && !too_large_failure)
+		{
+		  /* Place the loop header into list of region blocks.  */
+		  degree[i] = -1;
+		  rgn_bb_table[idx] = i;
+		  RGN_NR_BLOCKS (nr_regions) = num_bbs;
+		  RGN_BLOCKS (nr_regions) = idx++;
+		  CONTAINING_RGN (i) = nr_regions;
+		  BLOCK_TO_BB (i) = count = 0;
 
-	      /* Remove blocks from queue[] when their in degree becomes
+		  /* Remove blocks from queue[] when their in degree becomes
 		 zero.  Repeat until no blocks are left on the list.  This
 		 produces a topological list of blocks in the region.  */
-	      while (tail >= 0)
-		{
-		  int_list_ptr ps;
-
-		  if (head < 0)
-		    head = tail;
-		  child = queue[head];
-		  if (degree[child] == 0)
+		  while (tail >= 0)
 		    {
-		      degree[child] = -1;
-		      rgn_bb_table[idx++] = child;
-		      BLOCK_TO_BB (child) = ++count;
-		      CONTAINING_RGN (child) = nr_regions;
-		      queue[head] = queue[tail--];
+		      int_list_ptr ps;
 
-		      for (ps = s_succs[child]; ps; ps = ps->next)
-			if (INT_LIST_VAL (ps) != ENTRY_BLOCK
-			    && INT_LIST_VAL (ps) != EXIT_BLOCK)
-			  --degree[INT_LIST_VAL (ps)];
+		      if (head < 0)
+			head = tail;
+		      child = queue[head];
+		      if (degree[child] == 0)
+			{
+			  degree[child] = -1;
+			  rgn_bb_table[idx++] = child;
+			  BLOCK_TO_BB (child) = ++count;
+			  CONTAINING_RGN (child) = nr_regions;
+			  queue[head] = queue[tail--];
+
+			  for (ps = s_succs[child]; ps; ps = ps->next)
+			    if (INT_LIST_VAL (ps) != ENTRY_BLOCK
+				&& INT_LIST_VAL (ps) != EXIT_BLOCK)
+			      --degree[INT_LIST_VAL (ps)];
+			}
+		      else
+			--head;
 		    }
-		  else
-		    --head;
+		  ++nr_regions;
 		}
-	      ++nr_regions;
 	    }
 	}
     }
