@@ -1770,7 +1770,7 @@ copy_loop_body (loop, copy_start, copy_end, map, exit_label, last_iteration,
 	      unsigned int regno = REGNO (SET_DEST (set));
 
 	      v = addr_combined_regs[REGNO (SET_DEST (set))];
-	      bl = ivs->reg_biv_class[REGNO (v->src_reg)];
+	      bl = REG_IV_CLASS (ivs, REGNO (v->src_reg));
 
 	      /* Although the giv_inc amount is not needed here, we must call
 		 calculate_giv_inc here since it might try to delete the
@@ -1915,7 +1915,7 @@ copy_loop_body (loop, copy_start, copy_end, map, exit_label, last_iteration,
 		  if (regno < max_reg_before_loop
 		      && REG_IV_TYPE (ivs, regno) == BASIC_INDUCT)
 		    {
-		      giv_src_reg = ivs->reg_biv_class[regno]->biv->src_reg;
+		      giv_src_reg = REG_IV_CLASS (ivs, regno)->biv->src_reg;
 		      giv_dest_reg = giv_src_reg;
 		    }
 
@@ -3030,7 +3030,7 @@ find_splittable_givs (loop, bl, unroll_type, increment, unroll_number)
 	{
 	  int count = 1;
 	  if (! v->ignore)
-	    count = ivs->reg_biv_class[REGNO (v->src_reg)]->biv_count;
+	    count = REG_IV_CLASS (ivs, REGNO (v->src_reg))->biv_count;
 
 	  splittable_regs_updates[REGNO (v->new_reg)] = count;
 	}
@@ -3226,7 +3226,7 @@ final_giv_value (loop, v)
   rtx loop_end = loop->end;
   unsigned HOST_WIDE_INT n_iterations = LOOP_INFO (loop)->n_iterations;
 
-  bl = ivs->reg_biv_class[REGNO (v->src_reg)];
+  bl = REG_IV_CLASS (ivs, REGNO (v->src_reg));
 
   /* The final value for givs which depend on reversed bivs must be calculated
      differently than for ordinary givs.  In this case, there is already an
@@ -3598,7 +3598,7 @@ loop_iterations (loop)
 	abort ();
 
       /* Grab initial value, only useful if it is a constant.  */
-      bl = ivs->reg_biv_class[REGNO (iteration_var)];
+      bl = REG_IV_CLASS (ivs, REGNO (iteration_var));
       initial_value = bl->initial_value;
 
       increment = biv_total_increment (bl);
@@ -3612,7 +3612,7 @@ loop_iterations (loop)
       if (REGNO (v->src_reg) >= max_reg_before_loop)
 	abort ();
 
-      bl = ivs->reg_biv_class[REGNO (v->src_reg)];
+      bl = REG_IV_CLASS (ivs, REGNO (v->src_reg));
 
       /* Increment value is mult_val times the increment value of the biv.  */
 
@@ -4014,7 +4014,7 @@ remap_split_bivs (loop, x)
 #endif
       if (REGNO (x) < max_reg_before_loop
 	  && REG_IV_TYPE (ivs, REGNO (x)) == BASIC_INDUCT)
-	return ivs->reg_biv_class[REGNO (x)]->biv->src_reg;
+	return REG_IV_CLASS (ivs, REGNO (x))->biv->src_reg;
       break;
 
     default:

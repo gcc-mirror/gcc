@@ -1,3 +1,9 @@
+2001-01-01  Michael Hayes  <mhayes@redhat.com>
+
+	* loop.h (REG_IV_CLASS): New accessor macro.
+	* loop.c (REG_IV_CLASS): Use it instead of reg_iv_class array.
+	* unroll.c (REG_IV_CLASS): Likewise.
+	
 Sun Dec 31 19:20:51 2000  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* dwarf2out.c (loc_descriptor_from_tree, case WITH_RECORD_EXPR): New.
@@ -33,7 +39,6 @@ Sun Dec 31 19:20:51 2000  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 	(loop_movables_add, loop_movables_free): New functions.
 	(scan_loop): Use xmalloc instead of alloca for movables.
 	Call loop_movables_free.
-	
 
 	* loop.c (debug_loops): New.
 
