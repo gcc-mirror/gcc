@@ -13,8 +13,8 @@ developers.
 These tests are included "as is". If any of them fails, do not report
 a bug.  Bug reports for DejaGnu can go to bug-dejagnu@prep.ai.mit.edu.
 Discussion and comments about this testsuite should be sent to
-egcs@egcs.cygnus.com; additions and changes to should go to sent to
-egcs-patches@egcs.cygnus.com.
+gcc@gcc.gnu.org; additions and changes to should go to sent to
+gcc-patches@gcc.gnu.org.
 
 The entire testsuite is invoked by `make check` at the top level of
 the EGCS tree. `make check-g++` runs the C++ testsuite only.
@@ -41,7 +41,7 @@ the following structure:
   g++.other
   g++.pt  	Tests for templates
   g++.rfg
-  g++.robertl	Tests from egcs-bugs@egcs.cygnus.com, gathered by Robert Lipe
+  g++.robertl	Tests from gcc-bugs@gcc.gnu.org, gathered by Robert Lipe
 	
 g++.old-deja uses a fixed driver for all g++ tests based on the old
 DejaGnu drivers. But just because its old, doesn't mean its redundant!
