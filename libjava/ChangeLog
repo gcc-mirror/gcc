@@ -1,3 +1,8 @@
+2002-04-30  Tom Tromey  <tromey@redhat.com>
+
+	* java/io/BufferedReader.java (fill): Handle case where markPos
+	point to ignored \n.  Fixes PR libgcj/6301.
+
 2002-04-29  Gerhard Tonn  <GerhardTonn@swol.de>
 
 	* java/lang/ieeefp.h: Define __IEEE_BIG_ENDIAN for S/390.

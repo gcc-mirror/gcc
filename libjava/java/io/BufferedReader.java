@@ -1,5 +1,5 @@
 /* BufferedReader.java
-   Copyright (C) 1998, 1999, 2000, 2001 Free Software Foundation, Inc.
+   Copyright (C) 1998, 1999, 2000, 2001, 2002 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -355,7 +355,12 @@ public class BufferedReader extends Reader
     if (retAtEndOfBuffer && buffer[pos] == '\n')
       {
 	--count;
-	pos++;
+	// If the mark was set to the location of the \n, then we
+	// must change it to fully pretend that the \n does not
+	// exist.
+	if (markPos == pos)
+	  ++markPos;
+	++pos;
       }
 
     return count;
