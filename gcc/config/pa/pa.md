@@ -1974,7 +1974,7 @@
 {
   return output_move_double (operands);
 }"
-  [(set_attr "type" "move,store,store,load,load,misc")
+  [(set_attr "type" "move,store,store,load,load,multi")
    (set_attr "length" "8,8,16,8,16,16")])
 
 (define_insn ""
