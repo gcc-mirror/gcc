@@ -28,7 +28,7 @@ Boston, MA 02111-1307, USA.  */
 #include "gcov-io.c"
 
 static void dump_file PARAMS ((const char *));
-static void print_prefix PARAMS ((const char *, unsigned));
+static void print_prefix PARAMS ((const char *, unsigned, gcov_position_t));
 static void print_usage PARAMS ((void));
 static void print_version PARAMS ((void));
 static void tag_function PARAMS ((const char *, unsigned, unsigned));
@@ -47,12 +47,14 @@ typedef struct tag_format
 } tag_format_t;
 
 static int flag_dump_contents = 0;
+static int flag_dump_positions = 0;
 
 static const struct option options[] =
 {
   { "help",                 no_argument,       NULL, 'h' },
   { "version",              no_argument,       NULL, 'v' },
   { "long",                 no_argument,       NULL, 'l' },
+  { "positions",	    no_argument,       NULL, 'o' },
 };
 
 static const tag_format_t tag_table[] =
@@ -75,7 +77,7 @@ int main (argc, argv)
 {
   int opt;
 
-  while ((opt = getopt_long (argc, argv, "hlv", options, NULL)) != -1)
+  while ((opt = getopt_long (argc, argv, "hlpv", options, NULL)) != -1)
     {
       switch (opt)
 	{
@@ -87,6 +89,9 @@ int main (argc, argv)
 	  break;
 	case 'l':
 	  flag_dump_contents = 1;
+	  break;
+	case 'p':
+	  flag_dump_positions = 1;
 	  break;
 	default:
 	  fprintf (stderr, "unknown flag `%c'\n", opt);
@@ -106,6 +111,7 @@ print_usage ()
   printf ("  -h, --help           Print this help\n");
   printf ("  -v, --version        Print version number\n");
   printf ("  -l, --long           Dump record contents too\n");
+  printf ("  -p, --positions      Dump record positions\n");
 }
 
 static void
@@ -124,13 +130,17 @@ warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.\n\n"
 }
 
 static void
-print_prefix (filename, depth)
+print_prefix (filename, depth, position)
      const char *filename;
      unsigned depth;
+     gcov_position_t position;
 {
   static const char prefix[] = "    ";
   
-  printf ("%s:%.*s", filename, (int) depth, prefix);
+  printf ("%s:", filename);
+  if (flag_dump_positions)
+    printf ("%lu:", (unsigned long) position);
+  printf ("%.*s", (int) depth, prefix);
 }
 
 static void
@@ -178,30 +188,29 @@ dump_file (filename)
       printf ("%s:warning:current version is `%.4s'\n", filename, e);
   }
 
-  while (!gcov_is_eof ())
+  while (1)
     {
-      unsigned tag = gcov_read_unsigned ();
-      unsigned length = gcov_read_unsigned ();
-      unsigned long base = gcov_position ();
+      gcov_position_t base, position = gcov_position ();
+      unsigned tag, length;
       tag_format_t const *format;
       unsigned tag_depth;
       int error;
-      
+      unsigned mask;
+
+      tag = gcov_read_unsigned ();
       if (!tag)
-	tag_depth = depth;
-      else
+	break;
+      length = gcov_read_unsigned ();
+      base = gcov_position ();
+      mask = GCOV_TAG_MASK (tag) >> 1;
+      for (tag_depth = 4; mask; mask >>= 8)
 	{
-	  unsigned mask = GCOV_TAG_MASK (tag) >> 1;
-	  
-	  for (tag_depth = 4; mask; mask >>= 8)
+	  if ((mask & 0xff) != 0xff)
 	    {
-	      if ((mask & 0xff) != 0xff)
-		{
-		  printf ("%s:tag `%08x' is invalid\n", filename, tag);
-		  break;
-		}
-	      tag_depth--;
+	      printf ("%s:tag `%08x' is invalid\n", filename, tag);
+	      break;
 	    }
+	  tag_depth--;
 	}
       for (format = tag_table; format->name; format++)
 	if (format->tag == tag)
@@ -220,7 +229,7 @@ dump_file (filename)
 	  tags[depth - 1] = tag;
 	}
       
-      print_prefix (filename, tag_depth);
+      print_prefix (filename, tag_depth, position);
       printf ("%08x:%4u:%s", tag, length, format->name);
       if (format->proc)
 	(*format->proc) (filename, tag, length);
@@ -246,6 +255,8 @@ dump_file (filename)
 	  break;
 	}
     }
+  if (!gcov_is_eof ())
+    printf ("%s:early end of file\n", filename);
   gcov_close ();
 }
 
@@ -289,7 +300,11 @@ tag_blocks (filename, tag, length)
       for (ix = 0; ix != n_blocks; ix++)
 	{
 	  if (!(ix & 7))
-	    printf ("\n%s:\t\t%u", filename, ix);
+	    {
+	      printf ("\n");
+	      print_prefix (filename, 0, gcov_position ());
+	      printf ("\t\t%u", ix);
+	    }
 	  printf (" %04x", gcov_read_unsigned ());
 	}
     }
@@ -311,11 +326,16 @@ tag_arcs (filename, tag, length)
 
       for (ix = 0; ix != n_arcs; ix++)
 	{
-	  unsigned dst = gcov_read_unsigned ();
-	  unsigned flags = gcov_read_unsigned ();
+	  unsigned dst, flags;
 	  
 	  if (!(ix & 3))
-	    printf ("\n%s:\tblock %u:", filename, blockno);
+	    {
+	      printf ("\n");
+	      print_prefix (filename, 0, gcov_position ());
+	      printf ("\tblock %u:", blockno);
+	    }
+	  dst = gcov_read_unsigned ();
+	  flags = gcov_read_unsigned ();
 	  printf (" %u:%04x", dst, flags);
 	}
     }
@@ -334,6 +354,7 @@ tag_lines (filename, tag, length)
 
       while (1)
 	{
+	  gcov_position_t position = gcov_position ();
 	  const char *source = NULL;
 	  unsigned lineno = gcov_read_unsigned ();
 	  
@@ -347,7 +368,9 @@ tag_lines (filename, tag, length)
 	  
 	  if (!sep)
 	    {
-	      printf ("\n%s:\tblock %u:", filename, blockno);
+	      printf ("\n");
+	      print_prefix (filename, 0, position);
+	      printf ("\tblock %u:", blockno);
 	      sep = "";
 	    }
 	  if (lineno)
@@ -381,10 +404,16 @@ tag_counters (filename, tag, length)
 
       for (ix = 0; ix != n_counts; ix++)
 	{
-	  gcov_type count = gcov_read_counter ();
+	  gcov_type count;
 	  
 	  if (!(ix & 7))
-	    printf ("\n%s:\t\t%u", filename, ix);
+	    {
+	      printf ("\n");
+	      print_prefix (filename, 0, gcov_position ());
+	      printf ("\t\t%u", ix);
+	    }
+	  
+	  count = gcov_read_counter ();
 	  printf (" ");
 	  printf (HOST_WIDEST_INT_PRINT_DEC, count);
 	}
@@ -405,7 +434,9 @@ tag_summary (filename, tag, length)
   
   for (ix = 0; ix != GCOV_COUNTERS; ix++)
     {
-      printf ("\n%sL\t\tcounts=%u, runs=%u", filename,
+      printf ("\n");
+      print_prefix (filename, 0, 0);
+      printf ("\t\tcounts=%u, runs=%u",
 	      summary.ctrs[ix].num, summary.ctrs[ix].runs);
       
       printf (", sum_all=" HOST_WIDEST_INT_PRINT_DEC,

@@ -711,7 +711,8 @@ read_graph_file ()
   struct function_info *fn = NULL;
   source_t *src = NULL;
   unsigned ix;
-
+  unsigned tag;
+  
   if (!gcov_open (bbg_file_name, 1))
     {
       fnotice (stderr, "%s:cannot open graph file\n", bbg_file_name);
@@ -740,11 +741,10 @@ read_graph_file ()
 	       bbg_file_name, v, e);
     }
   
-  while (!gcov_is_eof ())
+  while ((tag = gcov_read_unsigned ()))
     {
-      unsigned tag = gcov_read_unsigned ();
       unsigned length = gcov_read_unsigned ();
-      unsigned long base = gcov_position ();
+      gcov_position_t base = gcov_position ();
 
       if (tag == GCOV_TAG_FUNCTION)
 	{
@@ -906,12 +906,14 @@ read_graph_file ()
 	}
       gcov_sync (base, length);
       if (gcov_is_error ())
-	{
-	corrupt:;
-	  fnotice (stderr, "%s:corrupted\n", bbg_file_name);
-	  gcov_close ();
-	  return 1;
-	}
+	break;
+    }
+  if (!gcov_is_eof ())
+    {
+    corrupt:;
+      fnotice (stderr, "%s:corrupted\n", bbg_file_name);
+      gcov_close ();
+      return 1;
     }
   gcov_close ();
   
@@ -976,7 +978,9 @@ read_count_file ()
 {
   unsigned ix;
   unsigned version;
+  unsigned tag;
   function_t *fn = NULL;
+  int error = 0;
 
   if (!gcov_open (da_file_name, 1))
     {
@@ -1005,12 +1009,10 @@ read_count_file ()
 	       da_file_name, v, e);
     }
   
-  while (!gcov_is_eof ())
+  while ((tag = gcov_read_unsigned ()))
     {
-      unsigned tag = gcov_read_unsigned ();
       unsigned length = gcov_read_unsigned ();
       unsigned long base = gcov_position ();
-      int error;
 
       if (tag == GCOV_TAG_OBJECT_SUMMARY)
 	gcov_read_summary (&object_summary);
@@ -1061,13 +1063,16 @@ read_count_file ()
 	}
       gcov_sync (base, length);
       if ((error = gcov_is_error ()))
-	{
-	  fnotice (stderr, error < 0
-		   ? "%s:overflowed\n" : "%s:corrupted\n", da_file_name);
-	  goto cleanup;
-	}
+	break;
     }
 
+  if (!gcov_is_eof ())
+    {
+      fnotice (stderr, error < 0 ? "%s:overflowed\n" : "%s:corrupted\n",
+	       da_file_name);
+      goto cleanup;
+    }
+  
   gcov_close ();
   return 0;
 }

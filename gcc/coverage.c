@@ -158,7 +158,9 @@ read_counts_file ()
   unsigned ix;
   counts_entry_t *summaried = NULL;
   unsigned seen_summary = 0;
-  
+  gcov_unsigned_t tag;
+  int error = 0;
+
   if (!gcov_open (da_file_name, 1))
     return;
   
@@ -187,13 +189,11 @@ read_counts_file ()
   counts_hash = htab_create (10,
 			     htab_counts_entry_hash, htab_counts_entry_eq,
 			     htab_counts_entry_del);
-  while (!gcov_is_eof ())
+  while ((tag = gcov_read_unsigned ()))
     {
-      gcov_unsigned_t tag, length;
+      gcov_unsigned_t length;
       gcov_position_t offset;
-      int error;
       
-      tag = gcov_read_unsigned ();
       length = gcov_read_unsigned ();
       offset = gcov_position ();
       if (tag == GCOV_TAG_FUNCTION)
@@ -284,14 +284,16 @@ read_counts_file ()
 	}
       gcov_sync (offset, length);
       if ((error = gcov_is_error ()))
-	{
-	  warning (error < 0 ? "`%s' has overflowed" : "`%s' is corrupted",
-		   da_file_name);
-	  htab_delete (counts_hash);
-	  break;
-	}
+	break;
     }
 
+  if (!gcov_is_eof ())
+    {
+      warning (error < 0 ? "`%s' has overflowed" : "`%s' is corrupted",
+	       da_file_name);
+      htab_delete (counts_hash);
+    }
+  
   gcov_close ();
 }
 
