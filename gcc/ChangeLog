@@ -1,3 +1,8 @@
+2002-01-15  Craig Rodrigues  <rodrigc@gcc.gnu.org>
+
+	* doc/install.texi (hppa*-hp-hpux11): --enable-threads does
+	not work on this platform currently.
+
 2002-01-15  Joseph S. Myers  <jsm28@cam.ac.uk>
 
 	* c-typeck.c (build_unary_op): Don't wrap msgid argument of
