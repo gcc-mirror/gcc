@@ -3172,7 +3172,7 @@
 (define_insn "*movsi_y"
   [(set (match_operand:SI 0 "register_operand" "=y,y")
 	(match_operand:SI 1 "immediate_operand" "Qi,I"))
-   (clobber (match_scratch:SI 3 "=&z,r"))]
+   (clobber (match_scratch:SI 2 "=&z,r"))]
   "TARGET_SH3E
    && (reload_in_progress || reload_completed)"
   "#"

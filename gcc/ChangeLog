@@ -1,5 +1,23 @@
 2000-11-28  Richard Henderson  <rth@redhat.com>
 
+	* genoutput.c (validate_insn_operands): New.
+	(gen_insn): Call it.
+
+	* config/alpha/alpha.md (divmodsi_internal): Renumber operands.
+	(divmoddi_internal): Likewise.
+	* config/arm/arm.md (andsi3_compare0_scratch): Likewise.
+	* config/i960/i960.md (branch patterns): Likewise.
+	* config/ia64/ia64.md (tbit_and_0): Likewise.
+	(tbit_and_1, tbit_or_0, tbit_or_1): Likewise.
+	* config/m68k/m68k.md (zero_extract memory patterns): Likewise.
+	* config/mips/mips.md (divmodsi4_internal): Likewise.
+	(divmoddi4_internal): Likewise.
+	* config/rs6000/rs6000.md (call patterns): Likewise.
+	* config/sh/sh.md (movsi_y): Likewise.
+	* config/sparc/sparc.md: Comment out if 0 v8p shift pattern.
+
+2000-11-28  Richard Henderson  <rth@redhat.com>
+
 	* config.gcc: Kill residual pyramid support.
 
 2000-11-28  Neil Booth  <neilb@earthling.net>

@@ -2291,7 +2291,7 @@
    (set (match_operand:SI 3 "register_operand" "=h")
 	(mod:SI (match_dup 1)
 		(match_dup 2)))
-   (clobber (match_scratch:SI 6 "=a"))]
+   (clobber (match_scratch:SI 4 "=a"))]
   "optimize"
   "div\\t$0,%1,%2"
   [(set_attr "type"	"idiv")
@@ -2338,7 +2338,7 @@
    (set (match_operand:DI 3 "register_operand" "=h")
 	(mod:DI (match_dup 1)
 		(match_dup 2)))
-   (clobber (match_scratch:DI 6 "=a"))]
+   (clobber (match_scratch:DI 4 "=a"))]
   "TARGET_64BIT && optimize"
   "ddiv\\t$0,%1,%2"
   [(set_attr "type"	"idiv")
@@ -2376,7 +2376,7 @@
    (set (match_operand:SI 3 "register_operand" "=h")
 	(umod:SI (match_dup 1)
 		 (match_dup 2)))
-   (clobber (match_scratch:SI 6 "=a"))]
+   (clobber (match_scratch:SI 4 "=a"))]
   "optimize"
   "divu\\t$0,%1,%2"
   [(set_attr "type"	"idiv")
@@ -2414,7 +2414,7 @@
    (set (match_operand:DI 3 "register_operand" "=h")
 	(umod:DI (match_dup 1)
 		 (match_dup 2)))
-   (clobber (match_scratch:DI 6 "=a"))]
+   (clobber (match_scratch:DI 4 "=a"))]
   "TARGET_64BIT && optimize"
   "ddivu\\t$0,%1,%2"
   [(set_attr "type"	"idiv")
