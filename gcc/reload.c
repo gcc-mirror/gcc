@@ -296,6 +296,15 @@ static int output_reloadnum;
 	 || (when1) == RELOAD_FOR_OPERAND_ADDRESS	\
 	 || (when1) == RELOAD_FOR_OTHER_ADDRESS))
 
+  /* If we are going to reload an address, compute the reload type to
+     use.  */
+#define ADDR_TYPE(type)					\
+  ((type) == RELOAD_FOR_INPUT_ADDRESS			\
+   ? RELOAD_FOR_INPADDR_ADDRESS				\
+   : ((type) == RELOAD_FOR_OUTPUT_ADDRESS		\
+      ? RELOAD_FOR_OUTADDR_ADDRESS			\
+      : (type)))
+
 static int push_secondary_reload PROTO((int, rtx, int, int, enum reg_class,
 					enum machine_mode, enum reload_type,
 					enum insn_code *));
@@ -359,7 +368,10 @@ push_secondary_reload (in_p, x, opnum, optional, reload_class, reload_mode,
   int i;
   int s_reload, t_reload = -1;
 
-  if (type == RELOAD_FOR_INPUT_ADDRESS || type == RELOAD_FOR_OUTPUT_ADDRESS)
+  if (type == RELOAD_FOR_INPUT_ADDRESS
+      || type == RELOAD_FOR_OUTPUT_ADDRESS
+      || type == RELOAD_FOR_INPADDR_ADDRESS
+      || type == RELOAD_FOR_OUTADDR_ADDRESS)
     secondary_type = type;
   else
     secondary_type = in_p ? RELOAD_FOR_INPUT_ADDRESS : RELOAD_FOR_OUTPUT_ADDRESS;
@@ -1528,6 +1540,7 @@ combine_reloads ()
     if (reload_in[i] && ! reload_optional[i] && ! reload_nocombine[i]
 	/* Life span of this reload must not extend past main insn.  */
 	&& reload_when_needed[i] != RELOAD_FOR_OUTPUT_ADDRESS
+	&& reload_when_needed[i] != RELOAD_FOR_OUTADDR_ADDRESS
 	&& reload_when_needed[i] != RELOAD_OTHER
 	&& (CLASS_MAX_NREGS (reload_reg_class[i], reload_inmode[i])
 	    == CLASS_MAX_NREGS (reload_reg_class[output_reload],
@@ -3535,10 +3548,19 @@ find_reloads (insn, replace, ind_levels, live_known, reload_reg_p)
 	       we must change these to RELOAD_FOR_INPUT_ADDRESS.  */
 
 	    if (modified[i] == RELOAD_WRITE)
-	      for (j = 0; j < n_reloads; j++)
-		if (reload_opnum[j] == i
-		    && reload_when_needed[j] == RELOAD_FOR_OUTPUT_ADDRESS)
-		  reload_when_needed[j] = RELOAD_FOR_INPUT_ADDRESS;
+	      {
+		for (j = 0; j < n_reloads; j++)
+		  {
+		    if (reload_opnum[j] == i)
+		      {
+			if (reload_when_needed[j] == RELOAD_FOR_OUTPUT_ADDRESS)
+			  reload_when_needed[j] = RELOAD_FOR_INPUT_ADDRESS;
+			else if (reload_when_needed[j]
+				 == RELOAD_FOR_OUTADDR_ADDRESS)
+			  reload_when_needed[j] = RELOAD_FOR_INPADDR_ADDRESS;
+		      }
+		  }
+	      }
 	  }
 	else if (goal_alternative_matched[i] == -1)
 	  operand_reloadnum[i] =
@@ -3725,9 +3747,13 @@ find_reloads (insn, replace, ind_levels, live_known, reload_reg_p)
 
       for (j = i + 1; j < n_reloads; j++)
 	if ((reload_when_needed[i] == RELOAD_FOR_INPUT_ADDRESS
-	     || reload_when_needed[i] == RELOAD_FOR_OUTPUT_ADDRESS)
+	     || reload_when_needed[i] == RELOAD_FOR_OUTPUT_ADDRESS
+	     || reload_when_needed[i] == RELOAD_FOR_INPADDR_ADDRESS
+	     || reload_when_needed[i] == RELOAD_FOR_OUTADDR_ADDRESS)
 	    && (reload_when_needed[j] == RELOAD_FOR_INPUT_ADDRESS
-		|| reload_when_needed[j] == RELOAD_FOR_OUTPUT_ADDRESS)
+		|| reload_when_needed[j] == RELOAD_FOR_OUTPUT_ADDRESS
+		|| reload_when_needed[j] == RELOAD_FOR_INPADDR_ADDRESS
+		|| reload_when_needed[j] == RELOAD_FOR_OUTADDR_ADDRESS)
 	    && rtx_equal_p (reload_in[i], reload_in[j])
 	    && (operand_reloadnum[reload_opnum[i]] < 0
 		|| reload_optional[operand_reloadnum[reload_opnum[i]]])
@@ -3741,7 +3767,11 @@ find_reloads (insn, replace, ind_levels, live_known, reload_reg_p)
 	      if (replacements[k].what == j)
 		replacements[k].what = i;
 
-	    reload_when_needed[i] = RELOAD_FOR_OPERAND_ADDRESS;
+	    if (reload_when_needed[i] == RELOAD_FOR_INPADDR_ADDRESS
+		|| reload_when_needed[i] == RELOAD_FOR_OUTADDR_ADDRESS)
+	      reload_when_needed[i] = RELOAD_FOR_OPADDR_ADDR;
+	    else
+	      reload_when_needed[i] = RELOAD_FOR_OPERAND_ADDRESS;
 	    reload_in[j] = 0;
 	  }
     }
@@ -3770,14 +3800,17 @@ find_reloads (insn, replace, ind_levels, live_known, reload_reg_p)
 	reload_when_needed[i] = address_type[reload_opnum[i]];
 
       if ((reload_when_needed[i] == RELOAD_FOR_INPUT_ADDRESS
-	   || reload_when_needed[i] == RELOAD_FOR_OUTPUT_ADDRESS)
+	   || reload_when_needed[i] == RELOAD_FOR_OUTPUT_ADDRESS
+	   || reload_when_needed[i] == RELOAD_FOR_INPADDR_ADDRESS
+	   || reload_when_needed[i] == RELOAD_FOR_OUTADDR_ADDRESS)
 	  && (operand_reloadnum[reload_opnum[i]] < 0
 	      || reload_optional[operand_reloadnum[reload_opnum[i]]]))
 	{
 	  /* If we have a secondary reload to go along with this reload,
 	     change its type to RELOAD_FOR_OPADDR_ADDR.  */
 
-	  if (reload_when_needed[i] == RELOAD_FOR_INPUT_ADDRESS
+	  if ((reload_when_needed[i] == RELOAD_FOR_INPUT_ADDRESS
+	       || reload_when_needed[i] == RELOAD_FOR_INPADDR_ADDRESS)
 	      && reload_secondary_in_reload[i] != -1)
 	    {
 	      int secondary_in_reload = reload_secondary_in_reload[i];
@@ -3792,7 +3825,8 @@ find_reloads (insn, replace, ind_levels, live_known, reload_reg_p)
 		  = RELOAD_FOR_OPADDR_ADDR;
 	    }
 
-	  if (reload_when_needed[i] == RELOAD_FOR_OUTPUT_ADDRESS
+	  if ((reload_when_needed[i] == RELOAD_FOR_OUTPUT_ADDRESS
+	       || reload_when_needed[i] == RELOAD_FOR_OUTADDR_ADDRESS)
 	      && reload_secondary_out_reload[i] != -1)
 	    {
 	      int secondary_out_reload = reload_secondary_out_reload[i];
@@ -3806,10 +3840,15 @@ find_reloads (insn, replace, ind_levels, live_known, reload_reg_p)
 		reload_when_needed[reload_secondary_out_reload[secondary_out_reload]] 
 		  = RELOAD_FOR_OPADDR_ADDR;
 	    }
-	  reload_when_needed[i] = RELOAD_FOR_OPERAND_ADDRESS;
+	  if (reload_when_needed[i] == RELOAD_FOR_INPADDR_ADDRESS
+	      || reload_when_needed[i] == RELOAD_FOR_OUTADDR_ADDRESS)
+	    reload_when_needed[i] = RELOAD_FOR_OPADDR_ADDR;
+	  else
+	    reload_when_needed[i] = RELOAD_FOR_OPERAND_ADDRESS;
 	}
 
-      if (reload_when_needed[i] == RELOAD_FOR_INPUT_ADDRESS
+      if ((reload_when_needed[i] == RELOAD_FOR_INPUT_ADDRESS
+	   || reload_when_needed[i] == RELOAD_FOR_INPADDR_ADDRESS)
 	  && operand_reloadnum[reload_opnum[i]] >= 0
 	  && (reload_when_needed[operand_reloadnum[reload_opnum[i]]] 
 	      == RELOAD_OTHER))
@@ -3827,6 +3866,7 @@ find_reloads (insn, replace, ind_levels, live_known, reload_reg_p)
   for (i = 0; i < n_reloads; i++)
     if (reload_in[i] != 0 && reload_out[i] == 0
 	&& (reload_when_needed[i] == RELOAD_FOR_OPERAND_ADDRESS
+	    || reload_when_needed[i] == RELOAD_FOR_OPADDR_ADDR
 	    || reload_when_needed[i] == RELOAD_FOR_OTHER_ADDRESS))
       for (j = 0; j < n_reloads; j++)
 	if (i != j && reload_in[j] != 0 && reload_out[j] == 0
@@ -4217,7 +4257,8 @@ find_reloads_address (mode, memrefloc, ad, loc, opnum, type, ind_levels)
 	{
 	  tem = make_memloc (ad, regno);
 	  find_reloads_address (GET_MODE (tem), NULL_PTR, XEXP (tem, 0),
-				&XEXP (tem, 0), opnum, type, ind_levels);
+				&XEXP (tem, 0), opnum, ADDR_TYPE (type),
+				ind_levels);
 	  push_reload (tem, NULL_RTX, loc, NULL_PTR,
 		       reload_address_base_reg_class,
 		       GET_MODE (ad), VOIDmode, 0, 0,
@@ -4292,7 +4333,8 @@ find_reloads_address (mode, memrefloc, ad, loc, opnum, type, ind_levels)
 	 indirect addresses are valid, reload the MEM into a register.  */
       tem = ad;
       find_reloads_address (GET_MODE (ad), &tem, XEXP (ad, 0), &XEXP (ad, 0),
-			    opnum, type, ind_levels == 0 ? 0 : ind_levels - 1);
+			    opnum, ADDR_TYPE (type),
+			    ind_levels == 0 ? 0 : ind_levels - 1);
 
       /* If tem was changed, then we must create a new memory reference to
 	 hold it and store it back into memrefloc.  */
@@ -4815,7 +4857,8 @@ find_reloads_address_1 (mode, x, context, loc, opnum, type, ind_levels)
 	      rtx tem = make_memloc (XEXP (x, 0), regno);
 	      /* First reload the memory location's address.  */
 	      find_reloads_address (GET_MODE (tem), 0, XEXP (tem, 0),
-				    &XEXP (tem, 0), opnum, type, ind_levels);
+				    &XEXP (tem, 0), opnum, ADDR_TYPE (type),
+				    ind_levels);
 	      /* Put this inside a new increment-expression.  */
 	      x = gen_rtx (GET_CODE (x), GET_MODE (x), tem);
 	      /* Proceed to reload that, as if it contained a register.  */
@@ -4883,7 +4926,7 @@ find_reloads_address_1 (mode, x, context, loc, opnum, type, ind_levels)
 	     reload1.c here.  */
 	  find_reloads_address (GET_MODE (x), &XEXP (x, 0),
 				XEXP (XEXP (x, 0), 0), &XEXP (XEXP (x, 0), 0),
-				opnum, type, ind_levels);
+				opnum, ADDR_TYPE (type), ind_levels);
 
 	  reloadnum = push_reload (x, NULL_RTX, loc, NULL_PTR,
 				   (context
@@ -4915,7 +4958,7 @@ find_reloads_address_1 (mode, x, context, loc, opnum, type, ind_levels)
 	 reload1.c here.  */
 
       find_reloads_address (GET_MODE (x), loc, XEXP (x, 0), &XEXP (x, 0),
-			    opnum, type, ind_levels);
+			    opnum, ADDR_TYPE (type), ind_levels);
       push_reload (*loc, NULL_RTX, loc, NULL_PTR,
 		   (context ? reload_address_index_reg_class
 		    : reload_address_base_reg_class),
@@ -4953,7 +4996,7 @@ find_reloads_address_1 (mode, x, context, loc, opnum, type, ind_levels)
 	  {
 	    x = make_memloc (x, regno);
 	    find_reloads_address (GET_MODE (x), 0, XEXP (x, 0), &XEXP (x, 0),
-				  opnum, type, ind_levels);
+				  opnum, ADDR_TYPE (type), ind_levels);
 	  }
 
 	if (reg_renumber[regno] >= 0)
@@ -5958,8 +6001,10 @@ static char *reload_when_needed_name[] =
   "RELOAD_FOR_INPUT", 
   "RELOAD_FOR_OUTPUT", 
   "RELOAD_FOR_INSN",
-  "RELOAD_FOR_INPUT_ADDRESS", 
+  "RELOAD_FOR_INPUT_ADDRESS",
+  "RELOAD_FOR_INPADDR_ADDRESS",
   "RELOAD_FOR_OUTPUT_ADDRESS",
+  "RELOAD_FOR_OUTADDR_ADDRESS",
   "RELOAD_FOR_OPERAND_ADDRESS", 
   "RELOAD_FOR_OPADDR_ADDR",
   "RELOAD_OTHER", 

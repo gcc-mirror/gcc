@@ -1050,7 +1050,9 @@ reload (first, global, dumpfile)
 		struct needs op_addr;
 		struct needs op_addr_reload;
 		struct needs in_addr[MAX_RECOG_OPERANDS];
+		struct needs in_addr_addr[MAX_RECOG_OPERANDS];
 		struct needs out_addr[MAX_RECOG_OPERANDS];
+		struct needs out_addr_addr[MAX_RECOG_OPERANDS];
 	      } insn_needs;
 
 	      /* If needed, eliminate any eliminable registers.  */
@@ -1210,8 +1212,14 @@ reload (first, global, dumpfile)
 		    case RELOAD_FOR_INPUT_ADDRESS:
 		      this_needs = &insn_needs.in_addr[reload_opnum[i]];
 		      break;
+		    case RELOAD_FOR_INPADDR_ADDRESS:
+		      this_needs = &insn_needs.in_addr_addr[reload_opnum[i]];
+		      break;
 		    case RELOAD_FOR_OUTPUT_ADDRESS:
 		      this_needs = &insn_needs.out_addr[reload_opnum[i]];
+		      break;
+		    case RELOAD_FOR_OUTADDR_ADDRESS:
+		      this_needs = &insn_needs.out_addr_addr[reload_opnum[i]];
 		      break;
 		    case RELOAD_FOR_OPERAND_ADDRESS:
 		      this_needs = &insn_needs.op_addr;
@@ -1286,8 +1294,14 @@ reload (first, global, dumpfile)
 			{
 			  in_max
 			    = MAX (in_max, insn_needs.in_addr[k].regs[j][i]);
+			  in_max
+			    = MAX (in_max,
+				   insn_needs.in_addr_addr[k].regs[j][i]);
 			  out_max
 			    = MAX (out_max, insn_needs.out_addr[k].regs[j][i]);
+			  out_max
+			    = MAX (out_max,
+				   insn_needs.out_addr_addr[k].regs[j][i]);
 			}
 
 		      /* RELOAD_FOR_INSN reloads conflict with inputs, outputs,
@@ -1321,8 +1335,12 @@ reload (first, global, dumpfile)
 		       j < reload_n_operands; j++)
 		    {
 		      in_max = MAX (in_max, insn_needs.in_addr[j].groups[i]);
+		      in_max = MAX (in_max,
+				     insn_needs.in_addr_addr[j].groups[i]);
 		      out_max
 			= MAX (out_max, insn_needs.out_addr[j].groups[i]);
+		      out_max
+			= MAX (out_max, insn_needs.out_addr_addr[j].groups[i]);
 		    }
 
 		  in_max = MAX (MAX (insn_needs.op_addr.groups[i],
@@ -4277,8 +4295,12 @@ reload_reg_class_lower (r1p, r2p)
 static HARD_REG_SET reload_reg_used;
 /* If reg is in use for a RELOAD_FOR_INPUT_ADDRESS reload for operand I.  */
 static HARD_REG_SET reload_reg_used_in_input_addr[MAX_RECOG_OPERANDS];
+/* If reg is in use for a RELOAD_FOR_INPADDR_ADDRESS reload for operand I.  */
+static HARD_REG_SET reload_reg_used_in_inpaddr_addr[MAX_RECOG_OPERANDS];
 /* If reg is in use for a RELOAD_FOR_OUTPUT_ADDRESS reload for operand I.  */
 static HARD_REG_SET reload_reg_used_in_output_addr[MAX_RECOG_OPERANDS];
+/* If reg is in use for a RELOAD_FOR_OUTADDR_ADDRESS reload for operand I.  */
+static HARD_REG_SET reload_reg_used_in_outaddr_addr[MAX_RECOG_OPERANDS];
 /* If reg is in use for a RELOAD_FOR_INPUT reload for operand I.  */
 static HARD_REG_SET reload_reg_used_in_input[MAX_RECOG_OPERANDS];
 /* If reg is in use for a RELOAD_FOR_OUTPUT reload for operand I.  */
@@ -4325,8 +4347,16 @@ mark_reload_reg_in_use (regno, opnum, type, mode)
 	  SET_HARD_REG_BIT (reload_reg_used_in_input_addr[opnum], i);
 	  break;
 
+	case RELOAD_FOR_INPADDR_ADDRESS:
+	  SET_HARD_REG_BIT (reload_reg_used_in_inpaddr_addr[opnum], i);
+	  break;
+
 	case RELOAD_FOR_OUTPUT_ADDRESS:
 	  SET_HARD_REG_BIT (reload_reg_used_in_output_addr[opnum], i);
+	  break;
+
+	case RELOAD_FOR_OUTADDR_ADDRESS:
+	  SET_HARD_REG_BIT (reload_reg_used_in_outaddr_addr[opnum], i);
 	  break;
 
 	case RELOAD_FOR_OPERAND_ADDRESS:
@@ -4382,8 +4412,16 @@ clear_reload_reg_in_use (regno, opnum, type, mode)
 	  CLEAR_HARD_REG_BIT (reload_reg_used_in_input_addr[opnum], i);
 	  break;
 
+	case RELOAD_FOR_INPADDR_ADDRESS:
+	  CLEAR_HARD_REG_BIT (reload_reg_used_in_inpaddr_addr[opnum], i);
+	  break;
+
 	case RELOAD_FOR_OUTPUT_ADDRESS:
 	  CLEAR_HARD_REG_BIT (reload_reg_used_in_output_addr[opnum], i);
+	  break;
+
+	case RELOAD_FOR_OUTADDR_ADDRESS:
+	  CLEAR_HARD_REG_BIT (reload_reg_used_in_outaddr_addr[opnum], i);
 	  break;
 
 	case RELOAD_FOR_OPERAND_ADDRESS:
@@ -4439,7 +4477,9 @@ reload_reg_free_p (regno, opnum, type)
 
       for (i = 0; i < reload_n_operands; i++)
 	if (TEST_HARD_REG_BIT (reload_reg_used_in_input_addr[i], regno)
+	    || TEST_HARD_REG_BIT (reload_reg_used_in_inpaddr_addr[i], regno)
 	    || TEST_HARD_REG_BIT (reload_reg_used_in_output_addr[i], regno)
+	    || TEST_HARD_REG_BIT (reload_reg_used_in_outaddr_addr[i], regno)
 	    || TEST_HARD_REG_BIT (reload_reg_used_in_input[i], regno)
 	    || TEST_HARD_REG_BIT (reload_reg_used_in_output[i], regno))
 	  return 0;
@@ -4461,7 +4501,8 @@ reload_reg_free_p (regno, opnum, type)
 
       /* If it is used in a later operand's address, can't use it.  */
       for (i = opnum + 1; i < reload_n_operands; i++)
-	if (TEST_HARD_REG_BIT (reload_reg_used_in_input_addr[i], regno))
+	if (TEST_HARD_REG_BIT (reload_reg_used_in_input_addr[i], regno)
+	    || TEST_HARD_REG_BIT (reload_reg_used_in_inpaddr_addr[i], regno))
 	  return 0;
 
       return 1;
@@ -4469,7 +4510,21 @@ reload_reg_free_p (regno, opnum, type)
     case RELOAD_FOR_INPUT_ADDRESS:
       /* Can't use a register if it is used for an input address for this
 	 operand or used as an input in an earlier one.  */
-      if (TEST_HARD_REG_BIT (reload_reg_used_in_input_addr[opnum], regno))
+      if (TEST_HARD_REG_BIT (reload_reg_used_in_input_addr[opnum], regno)
+	  || TEST_HARD_REG_BIT (reload_reg_used_in_inpaddr_addr[opnum], regno))
+	return 0;
+
+      for (i = 0; i < opnum; i++)
+	if (TEST_HARD_REG_BIT (reload_reg_used_in_input[i], regno))
+	  return 0;
+
+      return 1;
+
+    case RELOAD_FOR_INPADDR_ADDRESS:
+      /* Can't use a register if it is used for an input address
+         address for this operand or used as an input in an earlier
+         one.  */
+      if (TEST_HARD_REG_BIT (reload_reg_used_in_inpaddr_addr[opnum], regno))
 	return 0;
 
       for (i = 0; i < opnum; i++)
@@ -4482,6 +4537,19 @@ reload_reg_free_p (regno, opnum, type)
       /* Can't use a register if it is used for an output address for this
 	 operand or used as an output in this or a later operand.  */
       if (TEST_HARD_REG_BIT (reload_reg_used_in_output_addr[opnum], regno))
+	return 0;
+
+      for (i = opnum; i < reload_n_operands; i++)
+	if (TEST_HARD_REG_BIT (reload_reg_used_in_output[i], regno))
+	  return 0;
+
+      return 1;
+
+    case RELOAD_FOR_OUTADDR_ADDRESS:
+      /* Can't use a register if it is used for an output address
+         address for this operand or used as an output in this or a
+         later operand.  */
+      if (TEST_HARD_REG_BIT (reload_reg_used_in_outaddr_addr[opnum], regno))
 	return 0;
 
       for (i = opnum; i < reload_n_operands; i++)
@@ -4516,7 +4584,8 @@ reload_reg_free_p (regno, opnum, type)
 	  return 0;
 
       for (i = 0; i <= opnum; i++)
-	if (TEST_HARD_REG_BIT (reload_reg_used_in_output_addr[i], regno))
+	if (TEST_HARD_REG_BIT (reload_reg_used_in_output_addr[i], regno)
+	    || TEST_HARD_REG_BIT (reload_reg_used_in_outaddr_addr[i], regno))
 	  return 0;
 
       return 1;
@@ -4570,12 +4639,14 @@ reload_reg_free_before_p (regno, opnum, type)
 	 the first place, since we know that it was allocated.  */
 
     case RELOAD_FOR_OUTPUT_ADDRESS:
+    case RELOAD_FOR_OUTADDR_ADDRESS:
       /* Earlier reloads are for earlier outputs or their addresses,
 	 any RELOAD_FOR_INSN reloads, any inputs or their addresses, or any
 	 RELOAD_FOR_OTHER_ADDRESS reloads (we know it can't conflict with
 	 RELOAD_OTHER)..  */
       for (i = 0; i < opnum; i++)
 	if (TEST_HARD_REG_BIT (reload_reg_used_in_output_addr[i], regno)
+	    || TEST_HARD_REG_BIT (reload_reg_used_in_outaddr_addr[i], regno)
 	    || TEST_HARD_REG_BIT (reload_reg_used_in_output[i], regno))
 	  return 0;
 
@@ -4584,6 +4655,7 @@ reload_reg_free_before_p (regno, opnum, type)
 
       for (i = 0; i < reload_n_operands; i++)
 	if (TEST_HARD_REG_BIT (reload_reg_used_in_input_addr[i], regno)
+	    || TEST_HARD_REG_BIT (reload_reg_used_in_inpaddr_addr[i], regno)
 	    || TEST_HARD_REG_BIT (reload_reg_used_in_input[i], regno))
 	  return 0;
 
@@ -4596,16 +4668,19 @@ reload_reg_free_before_p (regno, opnum, type)
 	 anything that can't be used for it, except that we've already
 	 tested for RELOAD_FOR_INSN objects.  */
 
-      if (TEST_HARD_REG_BIT (reload_reg_used_in_output_addr[opnum], regno))
+      if (TEST_HARD_REG_BIT (reload_reg_used_in_output_addr[opnum], regno)
+	  || TEST_HARD_REG_BIT (reload_reg_used_in_outaddr_addr[opnum], regno))
 	return 0;
 
       for (i = 0; i < opnum; i++)
 	if (TEST_HARD_REG_BIT (reload_reg_used_in_output_addr[i], regno)
+	    || TEST_HARD_REG_BIT (reload_reg_used_in_outaddr_addr[i], regno)
 	    || TEST_HARD_REG_BIT (reload_reg_used_in_output[i], regno))
 	  return 0;
 
       for (i = 0; i < reload_n_operands; i++)
 	if (TEST_HARD_REG_BIT (reload_reg_used_in_input_addr[i], regno)
+	    || TEST_HARD_REG_BIT (reload_reg_used_in_inpaddr_addr[i], regno)
 	    || TEST_HARD_REG_BIT (reload_reg_used_in_input[i], regno)
 	    || TEST_HARD_REG_BIT (reload_reg_used_in_op_addr, regno))
 	  return 0;
@@ -4619,7 +4694,8 @@ reload_reg_free_before_p (regno, opnum, type)
 	 test is input addresses and the addresses of OTHER items.  */
 
       for (i = 0; i < reload_n_operands; i++)
-	if (TEST_HARD_REG_BIT (reload_reg_used_in_input_addr[i], regno))
+	if (TEST_HARD_REG_BIT (reload_reg_used_in_input_addr[i], regno)
+	    || TEST_HARD_REG_BIT (reload_reg_used_in_inpaddr_addr[i], regno))
 	  return 0;
 
       return ! TEST_HARD_REG_BIT (reload_reg_used_in_other_addr, regno);
@@ -4630,16 +4706,19 @@ reload_reg_free_before_p (regno, opnum, type)
 	 with), and addresses of RELOAD_OTHER objects.  */
 
       for (i = 0; i <= opnum; i++)
-	if (TEST_HARD_REG_BIT (reload_reg_used_in_input_addr[i], regno))
+	if (TEST_HARD_REG_BIT (reload_reg_used_in_input_addr[i], regno)
+	    || TEST_HARD_REG_BIT (reload_reg_used_in_inpaddr_addr[i], regno))
 	  return 0;
 
       return ! TEST_HARD_REG_BIT (reload_reg_used_in_other_addr, regno);
 
     case RELOAD_FOR_INPUT_ADDRESS:
+    case RELOAD_FOR_INPADDR_ADDRESS:
       /* Similarly, all we have to check is for use in earlier inputs'
 	 addresses.  */
       for (i = 0; i < opnum; i++)
-	if (TEST_HARD_REG_BIT (reload_reg_used_in_input_addr[i], regno))
+	if (TEST_HARD_REG_BIT (reload_reg_used_in_input_addr[i], regno)
+	    || TEST_HARD_REG_BIT (reload_reg_used_in_inpaddr_addr[i], regno))
 	  return 0;
 
       return ! TEST_HARD_REG_BIT (reload_reg_used_in_other_addr, regno);
@@ -4681,8 +4760,10 @@ reload_reg_reaches_end_p (regno, opnum, type)
 
       for (i = 0; i < reload_n_operands; i++)
 	if (TEST_HARD_REG_BIT (reload_reg_used_in_output_addr[i], regno)
+	    || TEST_HARD_REG_BIT (reload_reg_used_in_outaddr_addr[i], regno)
 	    || TEST_HARD_REG_BIT (reload_reg_used_in_output[i], regno)
 	    || TEST_HARD_REG_BIT (reload_reg_used_in_input_addr[i], regno)
+	    || TEST_HARD_REG_BIT (reload_reg_used_in_inpaddr_addr[i], regno)
 	    || TEST_HARD_REG_BIT (reload_reg_used_in_input[i], regno))
 	  return 0;
 
@@ -4691,6 +4772,7 @@ reload_reg_reaches_end_p (regno, opnum, type)
 	      && ! TEST_HARD_REG_BIT (reload_reg_used, regno));
 
     case RELOAD_FOR_INPUT_ADDRESS:
+    case RELOAD_FOR_INPADDR_ADDRESS:
       /* Similar, except that we check only for this and subsequent inputs
 	 and the address of only subsequent inputs and we do not need
 	 to check for RELOAD_OTHER objects since they are known not to
@@ -4701,11 +4783,13 @@ reload_reg_reaches_end_p (regno, opnum, type)
 	  return 0;
 
       for (i = opnum + 1; i < reload_n_operands; i++)
-	if (TEST_HARD_REG_BIT (reload_reg_used_in_input_addr[i], regno))
+	if (TEST_HARD_REG_BIT (reload_reg_used_in_input_addr[i], regno)
+	    || TEST_HARD_REG_BIT (reload_reg_used_in_inpaddr_addr[i], regno))
 	  return 0;
 
       for (i = 0; i < reload_n_operands; i++)
 	if (TEST_HARD_REG_BIT (reload_reg_used_in_output_addr[i], regno)
+	    || TEST_HARD_REG_BIT (reload_reg_used_in_outaddr_addr[i], regno)
 	    || TEST_HARD_REG_BIT (reload_reg_used_in_output[i], regno))
 	  return 0;
 
@@ -4723,6 +4807,7 @@ reload_reg_reaches_end_p (regno, opnum, type)
 
       for (i = opnum + 1; i < reload_n_operands; i++)
 	if (TEST_HARD_REG_BIT (reload_reg_used_in_input_addr[i], regno)
+	    || TEST_HARD_REG_BIT (reload_reg_used_in_inpaddr_addr[i], regno)
 	    || TEST_HARD_REG_BIT (reload_reg_used_in_input[i], regno))
 	  return 0;
 
@@ -4733,6 +4818,7 @@ reload_reg_reaches_end_p (regno, opnum, type)
 
       for (i = 0; i < reload_n_operands; i++)
 	if (TEST_HARD_REG_BIT (reload_reg_used_in_output_addr[i], regno)
+	    || TEST_HARD_REG_BIT (reload_reg_used_in_outaddr_addr[i], regno)
 	    || TEST_HARD_REG_BIT (reload_reg_used_in_output[i], regno))
 	  return 0;
 
@@ -4741,6 +4827,7 @@ reload_reg_reaches_end_p (regno, opnum, type)
     case RELOAD_FOR_OPADDR_ADDR:
       for (i = 0; i < reload_n_operands; i++)
 	if (TEST_HARD_REG_BIT (reload_reg_used_in_output_addr[i], regno)
+	    || TEST_HARD_REG_BIT (reload_reg_used_in_outaddr_addr[i], regno)
 	    || TEST_HARD_REG_BIT (reload_reg_used_in_output[i], regno))
 	  return 0;
 
@@ -4757,10 +4844,12 @@ reload_reg_reaches_end_p (regno, opnum, type)
 
     case RELOAD_FOR_OUTPUT:
     case RELOAD_FOR_OUTPUT_ADDRESS:
+    case RELOAD_FOR_OUTADDR_ADDRESS:
       /* We already know these can't conflict with a later output.  So the
 	 only thing to check are later output addresses.  */
       for (i = opnum + 1; i < reload_n_operands; i++)
-	if (TEST_HARD_REG_BIT (reload_reg_used_in_output_addr[i], regno))
+	if (TEST_HARD_REG_BIT (reload_reg_used_in_output_addr[i], regno)
+	    || TEST_HARD_REG_BIT (reload_reg_used_in_outaddr_addr[i], regno))
 	  return 0;
 
       return 1;
@@ -4796,14 +4885,24 @@ reloads_conflict (r1, r2)
 	      || r2_type == RELOAD_FOR_OPERAND_ADDRESS
 	      || r2_type == RELOAD_FOR_OPADDR_ADDR
 	      || r2_type == RELOAD_FOR_INPUT
-	      || (r2_type == RELOAD_FOR_INPUT_ADDRESS && r2_opnum > r1_opnum));
+	      || ((r2_type == RELOAD_FOR_INPUT_ADDRESS
+		   || r2_type == RELOAD_FOR_INPADDR_ADDRESS)
+		  && r2_opnum > r1_opnum));
 
     case RELOAD_FOR_INPUT_ADDRESS:
       return ((r2_type == RELOAD_FOR_INPUT_ADDRESS && r1_opnum == r2_opnum)
 	      || (r2_type == RELOAD_FOR_INPUT && r2_opnum < r1_opnum));
 
+    case RELOAD_FOR_INPADDR_ADDRESS:
+      return ((r2_type == RELOAD_FOR_INPADDR_ADDRESS && r1_opnum == r2_opnum)
+	      || (r2_type == RELOAD_FOR_INPUT && r2_opnum < r1_opnum));
+
     case RELOAD_FOR_OUTPUT_ADDRESS:
       return ((r2_type == RELOAD_FOR_OUTPUT_ADDRESS && r2_opnum == r1_opnum)
+	      || (r2_type == RELOAD_FOR_OUTPUT && r2_opnum >= r1_opnum));
+
+    case RELOAD_FOR_OUTADDR_ADDRESS:
+      return ((r2_type == RELOAD_FOR_OUTADDR_ADDRESS && r2_opnum == r1_opnum)
 	      || (r2_type == RELOAD_FOR_OUTPUT && r2_opnum >= r1_opnum));
 
     case RELOAD_FOR_OPERAND_ADDRESS:
@@ -4816,7 +4915,8 @@ reloads_conflict (r1, r2)
 
     case RELOAD_FOR_OUTPUT:
       return (r2_type == RELOAD_FOR_INSN || r2_type == RELOAD_FOR_OUTPUT
-	      || (r2_type == RELOAD_FOR_OUTPUT_ADDRESS
+	      || ((r2_type == RELOAD_FOR_OUTPUT_ADDRESS
+		   || r2_type == RELOAD_FOR_OUTADDR_ADDRESS)
 		  && r2_opnum >= r1_opnum));
 
     case RELOAD_FOR_INSN:
@@ -5078,7 +5178,9 @@ choose_reload_regs (insn, avoid_return_reg)
   int save_reload_spill_index[MAX_RELOADS];
   HARD_REG_SET save_reload_reg_used;
   HARD_REG_SET save_reload_reg_used_in_input_addr[MAX_RECOG_OPERANDS];
+  HARD_REG_SET save_reload_reg_used_in_inpaddr_addr[MAX_RECOG_OPERANDS];
   HARD_REG_SET save_reload_reg_used_in_output_addr[MAX_RECOG_OPERANDS];
+  HARD_REG_SET save_reload_reg_used_in_outaddr_addr[MAX_RECOG_OPERANDS];
   HARD_REG_SET save_reload_reg_used_in_input[MAX_RECOG_OPERANDS];
   HARD_REG_SET save_reload_reg_used_in_output[MAX_RECOG_OPERANDS];
   HARD_REG_SET save_reload_reg_used_in_op_addr;
@@ -5103,7 +5205,9 @@ choose_reload_regs (insn, avoid_return_reg)
       CLEAR_HARD_REG_SET (reload_reg_used_in_output[i]);
       CLEAR_HARD_REG_SET (reload_reg_used_in_input[i]);
       CLEAR_HARD_REG_SET (reload_reg_used_in_input_addr[i]);
+      CLEAR_HARD_REG_SET (reload_reg_used_in_inpaddr_addr[i]);
       CLEAR_HARD_REG_SET (reload_reg_used_in_output_addr[i]);
+      CLEAR_HARD_REG_SET (reload_reg_used_in_outaddr_addr[i]);
     }
 
 #ifdef SMALL_REGISTER_CLASSES
@@ -5242,8 +5346,12 @@ choose_reload_regs (insn, avoid_return_reg)
 			 reload_reg_used_in_input[i]);
       COPY_HARD_REG_SET (save_reload_reg_used_in_input_addr[i],
 			 reload_reg_used_in_input_addr[i]);
+      COPY_HARD_REG_SET (save_reload_reg_used_in_inpaddr_addr[i],
+			 reload_reg_used_in_inpaddr_addr[i]);
       COPY_HARD_REG_SET (save_reload_reg_used_in_output_addr[i],
 			 reload_reg_used_in_output_addr[i]);
+      COPY_HARD_REG_SET (save_reload_reg_used_in_outaddr_addr[i],
+			 reload_reg_used_in_outaddr_addr[i]);
     }
 
   /* If -O, try first with inheritance, then turning it off.
@@ -5621,8 +5729,12 @@ choose_reload_regs (insn, avoid_return_reg)
 			     save_reload_reg_used_in_output[i]);
 	  COPY_HARD_REG_SET (reload_reg_used_in_input_addr[i],
 			     save_reload_reg_used_in_input_addr[i]);
+	  COPY_HARD_REG_SET (reload_reg_used_in_inpaddr_addr[i],
+			     save_reload_reg_used_in_inpaddr_addr[i]);
 	  COPY_HARD_REG_SET (reload_reg_used_in_output_addr[i],
 			     save_reload_reg_used_in_output_addr[i]);
+	  COPY_HARD_REG_SET (reload_reg_used_in_outaddr_addr[i],
+			     save_reload_reg_used_in_outaddr_addr[i]);
 	}
     }
 
@@ -5796,8 +5908,9 @@ merge_assigned_reloads (insn)
 		  && reg_overlap_mentioned_for_reload_p (reload_in[j],
 							 reload_in[i]))
 		reload_when_needed[j]
-		  = reload_when_needed[i] == RELOAD_FOR_INPUT_ADDRESS
-		    ? RELOAD_FOR_OTHER_ADDRESS : RELOAD_OTHER;
+		  = ((reload_when_needed[i] == RELOAD_FOR_INPUT_ADDRESS
+		      || reload_when_needed[i] == RELOAD_FOR_INPADDR_ADDRESS)
+		     ? RELOAD_FOR_OTHER_ADDRESS : RELOAD_OTHER);
 	}
     }
 }	    
@@ -5814,8 +5927,10 @@ emit_reload_insns (insn)
   rtx other_input_address_reload_insns = 0;
   rtx other_input_reload_insns = 0;
   rtx input_address_reload_insns[MAX_RECOG_OPERANDS];
+  rtx inpaddr_address_reload_insns[MAX_RECOG_OPERANDS];
   rtx output_reload_insns[MAX_RECOG_OPERANDS];
   rtx output_address_reload_insns[MAX_RECOG_OPERANDS];
+  rtx outaddr_address_reload_insns[MAX_RECOG_OPERANDS];
   rtx operand_reload_insns = 0;
   rtx other_operand_reload_insns = 0;
   rtx other_output_reload_insns[MAX_RECOG_OPERANDS];
@@ -5827,7 +5942,9 @@ emit_reload_insns (insn)
 
   for (j = 0; j < reload_n_operands; j++)
     input_reload_insns[j] = input_address_reload_insns[j]
+      = inpaddr_address_reload_insns[j]
       = output_reload_insns[j] = output_address_reload_insns[j]
+      = outaddr_address_reload_insns[j]
       = other_output_reload_insns[j] = 0;
 
   /* Now output the instructions to copy the data into and out of the
@@ -6022,8 +6139,14 @@ emit_reload_insns (insn)
 	    case RELOAD_FOR_INPUT_ADDRESS:
 	      where = &input_address_reload_insns[reload_opnum[j]];
 	      break;
+	    case RELOAD_FOR_INPADDR_ADDRESS:
+	      where = &inpaddr_address_reload_insns[reload_opnum[j]];
+	      break;
 	    case RELOAD_FOR_OUTPUT_ADDRESS:
 	      where = &output_address_reload_insns[reload_opnum[j]];
+	      break;
+	    case RELOAD_FOR_OUTADDR_ADDRESS:
+	      where = &outaddr_address_reload_insns[reload_opnum[j]];
 	      break;
 	    case RELOAD_FOR_OPERAND_ADDRESS:
 	      where = &operand_reload_insns;
@@ -6627,8 +6750,9 @@ emit_reload_insns (insn)
 
      RELOAD_OTHER reloads.
 
-     For each operand, any RELOAD_FOR_INPUT_ADDRESS reloads followed by
-     the RELOAD_FOR_INPUT reload for the operand.
+     For each operand, any RELOAD_FOR_INPADDR_ADDRESS reloads followed
+     by any RELOAD_FOR_INPUT_ADDRESS reloads followed by the
+     RELOAD_FOR_INPUT reload for the operand.
 
      RELOAD_FOR_OPADDR_ADDRS reloads.
 
@@ -6636,16 +6760,18 @@ emit_reload_insns (insn)
 
      After the insn being reloaded, we write the following:
 
-     For each operand, any RELOAD_FOR_OUTPUT_ADDRESS reload followed by
-     the RELOAD_FOR_OUTPUT reload, followed by any RELOAD_OTHER output
-     reloads for the operand.  The RELOAD_OTHER output reloads are output
-     in descending order by reload number.  */
+     For each operand, any RELOAD_FOR_OUTADDR_ADDRESS reloads followed
+     by any RELOAD_FOR_OUTPUT_ADDRESS reload followed by the
+     RELOAD_FOR_OUTPUT reload, followed by any RELOAD_OTHER output
+     reloads for the operand.  The RELOAD_OTHER output reloads are
+     output in descending order by reload number.  */
 
   emit_insns_before (other_input_address_reload_insns, before_insn);
   emit_insns_before (other_input_reload_insns, before_insn);
 
   for (j = 0; j < reload_n_operands; j++)
     {
+      emit_insns_before (inpaddr_address_reload_insns[j], before_insn);
       emit_insns_before (input_address_reload_insns[j], before_insn);
       emit_insns_before (input_reload_insns[j], before_insn);
     }
@@ -6655,6 +6781,7 @@ emit_reload_insns (insn)
 
   for (j = 0; j < reload_n_operands; j++)
     {
+      emit_insns_before (outaddr_address_reload_insns[j], following_insn);
       emit_insns_before (output_address_reload_insns[j], following_insn);
       emit_insns_before (output_reload_insns[j], following_insn);
       emit_insns_before (other_output_reload_insns[j], following_insn);
