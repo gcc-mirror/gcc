@@ -1,5 +1,9 @@
 2001-01-21  Per Bothner  <per@bothner.com>
 
+	* lang.c (put_decl_node):  Print method's name.
+
+2001-01-21  Per Bothner  <per@bothner.com>
+
 	* verify.c (VERIFICATION_ERROR_WITH_INDEX):  New macro.
 	(verify_jvm_instructions):  Use it, for better error messages on loads.
 
