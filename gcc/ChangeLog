@@ -1,3 +1,8 @@
+2001-10-01  Hans Boehm  <boehm@acm.org>
+
+	* optabs.c (emit_libcall_block): When using non-call exceptions,
+	don't add REG_LIBCALL reg notes to trapping calls.
+
 2001-10-01  David Billinghurst <David.Billinghurst@riotinto.com>
 
 	* flow.c (propagate_block_delete_libcall): Remove unused first arg
