@@ -1800,7 +1800,8 @@ cleanup_cfg (mode)
       changed = true;
       /* We've possibly created trivially dead code.  Cleanup it right
 	 now to introduce more oppurtunities for try_optimize_cfg.  */
-      if (!(mode & (CLEANUP_UPDATE_LIFE | CLEANUP_PRE_SIBCALL))
+      if (!(mode & (CLEANUP_NO_INSN_DEL
+		    | CLEANUP_UPDATE_LIFE | CLEANUP_PRE_SIBCALL))
 	  && !reload_completed)
 	delete_trivially_dead_insns (get_insns(), max_reg_num ());
     }
@@ -1819,7 +1820,8 @@ cleanup_cfg (mode)
 						 | PROP_LOG_LINKS))
 	    break;
 	}
-      else if (!(mode & CLEANUP_PRE_SIBCALL) && !reload_completed)
+      else if (!(mode & (CLEANUP_NO_INSN_DEL | CLEANUP_PRE_SIBCALL))
+	       && !reload_completed)
 	{
 	  if (!delete_trivially_dead_insns (get_insns(), max_reg_num ()))
 	    break;
