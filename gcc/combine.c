@@ -7210,7 +7210,6 @@ if_then_else_cond (x, ptrue, pfalse)
 {
   enum machine_mode mode = GET_MODE (x);
   enum rtx_code code = GET_CODE (x);
-  unsigned int size = GET_MODE_BITSIZE (mode);
   rtx cond0, cond1, true0, true1, false0, false1;
   unsigned HOST_WIDE_INT nz;
 
@@ -7361,9 +7360,9 @@ if_then_else_cond (x, ptrue, pfalse)
 	  true0 = operand_subword (true0, SUBREG_WORD (x), 0, mode);
 	  false0 = operand_subword (false0, SUBREG_WORD (x), 0, mode);
 	}
-      *ptrue = force_to_mode (true0, mode, GET_MODE_MASK (mode), NULL_RTX, 0);
+      *ptrue = force_to_mode (true0, mode, ~(HOST_WIDE_INT) 0, NULL_RTX, 0);
       *pfalse
-	= force_to_mode (false0, mode, GET_MODE_MASK (mode), NULL_RTX, 0);
+	= force_to_mode (false0, mode, ~(HOST_WIDE_INT) 0, NULL_RTX, 0);
 
       return cond0;
     }
@@ -7376,14 +7375,18 @@ if_then_else_cond (x, ptrue, pfalse)
 
   /* If X is known to be either 0 or -1, those are the true and 
      false values when testing X.  */
-  else if (num_sign_bit_copies (x, mode) == size)
+  else if (x == constm1_rtx || x == const0_rtx
+	   || (mode != VOIDmode
+	       && num_sign_bit_copies (x, mode) == GET_MODE_BITSIZE (mode)))
     {
       *ptrue = constm1_rtx, *pfalse = const0_rtx;
       return x;
     }
 
   /* Likewise for 0 or a single bit.  */
-  else if (exact_log2 (nz = nonzero_bits (x, mode)) >= 0)
+  else if (mode != VOIDmode
+	   && GET_MODE_BITSIZE (mode) <= HOST_BITS_PER_WIDE_INT
+	   && exact_log2 (nz = nonzero_bits (x, mode)) >= 0)
     {
       *ptrue = GEN_INT (nz), *pfalse = const0_rtx;
       return x;

@@ -1,3 +1,7 @@
+Sun Jul 30 20:30:41 MET DST 2000  Jan Hubicka  <jh@suse.cz>
+
+	* combine.c (if_then_else_cond): Be sure that mode fits in HOST_WIDE_INT
+
 Sun Jul 30 20:27:36 MET DST 2000  Jan Hubicka  <jh@suse.cz>
 
 	* combine.c (record_promoted_value):  Allow bitsize of mode
