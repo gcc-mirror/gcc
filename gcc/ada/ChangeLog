@@ -1,3 +1,8 @@
+2002-03-29  Andreas Schwab  <schwab@suse.de>
+
+	* Makefile.in: Pass VPATH=$(fsrcdir) when calling make in rts
+	directory.
+
 2001-03-28  Robert Dewar <dewar@gnat.com>
 
 	* checks.ads:
