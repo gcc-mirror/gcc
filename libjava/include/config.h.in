@@ -135,9 +135,6 @@
    getenv("GCJ_PROPERTIES").  */
 #undef DISABLE_GETENV_PROPERTIES
 
-/* Define if using setjmp/longjmp exceptions.  */
-#undef SJLJ_EXCEPTIONS
-
 /* Define if you have /proc/self/exe */
 #undef HAVE_PROC_SELF_EXE
 
@@ -205,9 +202,6 @@
 
 /* Define if you have the gmtime_r function.  */
 #undef HAVE_GMTIME_R
-
-/* Define if you have the iconv function.  */
-#undef HAVE_ICONV
 
 /* Define if you have the inet_addr function.  */
 #undef HAVE_INET_ADDR
@@ -365,11 +359,20 @@
 /* Version number of package */
 #undef VERSION
 
+/* Define if the compiler is configured for setjmp/longjmp exceptions. */
+#undef SJLJ_EXCEPTIONS
+
 /* Required define if using POSIX threads */
 #undef _REENTRANT
 
 /* Required define if using POSIX threads */
 #undef _POSIX_PTHREAD_SEMANTICS
+
+/* Define if you have the iconv() function. */
+#undef HAVE_ICONV
+
+/* Define as const if the declaration of iconv() needs const. */
+#undef ICONV_CONST
 
 /* Required define if using POSIX threads */
 #undef _REENTRANT

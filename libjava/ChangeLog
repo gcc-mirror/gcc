@@ -1,3 +1,14 @@
+2001-07-18  Tom Tromey  <tromey@redhat.com>
+
+	For PR java/2812:
+	* libgcj.spec.in (*lib): Added LIBICONV.
+	* Makefile.am (GCJLINK): Added ICONV_LDFLAGS.
+	(LIBLINK): Likewise.
+	* configure: Rebuilt.
+	* configure.in: Call AM_ICONV.  Don't check for iconv function.
+	* acinclude.m4 (AM_ICONV): New macro, from Bruno Haible.  Then
+	modified to generate ICONV_LDFLAGS.
+
 2001-07-05  Tom Tromey  <tromey@redhat.com>
 
 	For PR java/3562:
