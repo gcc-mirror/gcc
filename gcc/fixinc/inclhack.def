@@ -1,0 +1,2340 @@
+/* -*- Mode: C -*-  $Id: inclhack.def,v 1.2 1998/12/16 21:19:09 law Exp $  */
+
+autogen definitions inclhack;
+
+/*
+ *  Define all the fixes we know about for repairing damaged headers
+ */
+
+/*
+ *  sys/wait.h on AIX 3.2.5 puts the declaration of wait3 before the definition
+ *  of struct rusage, so the prototype (added by fixproto) causes havoc.
+ */
+fix = {
+    hackname = aix_syswait;
+    files    = sys/wait.h;
+    select = "bos325,";
+    sed    = "/^extern pid_t wait3();$/i\\\n"
+             "struct rusage;\n";
+};
+
+
+/*
+ *  sys/signal.h on some versions of AIX uses volatile in the typedef of
+ *  sig_atomic_t, which causes gcc to generate a warning about duplicate
+ *  volatile when a sig_atomic_t variable is declared volatile, as
+ *  required by ANSI C.
+ */
+fix = {
+    hackname = aix_volatile;
+    files    = sys/signal.h;
+    select   = "typedef volatile int sig_atomic_t";
+    sed      = "s/typedef volatile int sig_atomic_t"
+                "/typedef int sig_atomic_t/";
+};
+
+
+/*
+ *  Fix getopt declarations in stdio.h and stdlib.h on Alpha OSF/1 and AIX.
+ */
+fix = {
+    hackname = alpha_getopt;
+    files  = "stdio.h";
+    files  = "stdlib.h";
+    select = 'getopt\(int, char \*\[';
+    sed    = 's/getopt(int, char \*\[\],[ ]*char \*)/'
+               'getopt(int, char *const[], const char *)/';
+};
+
+
+/* 
+ * Determine if we're on Interactive Unix 2.2 or later, in which case we
+ * need to fix some additional files.  This is the same test for ISC that
+ * Autoconf uses.  On Interactive 2.2, certain traditional Unix
+ * definitions (notably getc and putc in stdio.h) are omitted if __STDC__
+ * is defined, not just if _POSIX_SOURCE is defined.  This makes it
+ * impossible to compile any nontrivial program except with -posix.
+ */
+fix = {
+    hackname = alpha_parens;
+    files    = sym.h;
+    select   = '#ifndef\(__mips64\)';
+    sed      = "s/#ifndef(__mips64)/#ifndef __mips64/";
+};
+
+
+/*
+ *  Fix return value of sbrk in unistd.h on Alpha OSF/1 V2.0
+ */
+fix = {
+    hackname = alpha_sbrk;
+    files    = unistd.h;
+    select   = "char[ \t]*\\*[\t ]*sbrk[ \t]*\\(";
+    sed  = "s/char\\([ \t]*\\*[\t ]*sbrk[ \t]*(\\)/void\\1/";
+};
+
+
+/*
+ *  Fix this ARM/RISCiX file where ___type is a Compiler
+ *  hint that is specific to the Norcroft compiler.
+ */
+fix = {
+    hackname = arm_norcroft_hint;
+    files    = "X11/Intrinsic.h";
+    sed      = "s/___type p_type/p_type/";
+};
+
+
+/*
+ *  Fix this ARM/RISCiX file to avoid interfering
+ *  with the use of __wchar_t in cc1plus.
+ */
+fix = {
+    hackname = arm_wchar;
+    files  = stdlib.h;
+    select = "#[ \t]*define[ \t]*__wchar_t";
+    sed    = "s/\\(#[ \t]*ifndef[ \t]*\\)__wchar_t/\\1_GCC_WCHAR_T/";
+    sed    = "s/\\(#[ \t]*define[ \t]*\\)__wchar_t/\\1_GCC_WCHAR_T/";
+};
+
+
+/*
+ *  This file in A/UX 3.0.x/3.1.x contains an __asm directive for c89;
+ *  gcc doesn't understand it.
+ */
+fix = {
+    hackname = aux_asm;
+    files    = sys/param.h;
+    select   = "#ifndef NOINLINE";
+    sed      = "s|#ifndef NOINLINE"
+                "|#if !defined(NOINLINE) \\&\\& !defined(__GNUC__)|";
+};
+
+
+/*
+ *  For C++, avoid any typedef or macro definition of bool,
+ *  and use the built in type instead.
+ */
+fix = {
+    hackname = avoid_bool;
+    files    = curses.h;
+    files    = term.h;
+    files    = tinfo.h;
+
+    sed = "/^#[ \t]*define[ \t][ \t]*bool[ \t][ \t]*char[ \t]*$/i\\\n"
+                "#ifndef __cplusplus\n";
+
+    sed = "/^#[ \t]*define[ \t][ \t]*bool[ \t][ \t]*char[ \t]*$/a\\\n"
+                "#endif\n";
+
+    sed = "/^typedef[ \t][ \t]*char[ \t][ \t]*bool[ \t]*;/i\\\n"
+                "#ifndef __cplusplus\n";
+
+    sed = "/^typedef[ \t][ \t]*char[ \t][ \t]*bool[ \t]*;/a\\\n"
+                "#endif\n";
+};
+
+
+/*
+ *  rpc/types.h on OSF1/2.0 is not C++ ready, even though NO_IMPLICIT_EXTERN_C
+ *  is defined for the alpha.  The problem is the declaration of malloc.
+ */
+fix = {
+    hackname = bad_malloc_decl;
+    files    = rpc/types.h;
+    bypass   = '"C"';
+    sed      = "1i\\\n"
+               "#ifdef __cplusplus\\\n"
+               "extern \"C\" {\\\n"
+               "#endif\\\n\n";
+    sed      = "$a\\\n"
+               "#ifdef __cplusplus\\\n"
+               "}\\\n"
+               "#endif\n";
+};
+
+
+/*
+ *  Fix `typedef struct term;' on hppa1.1-hp-hpux9.
+ */
+fix = {
+    hackname = bad_struct_term;
+    files  = curses.h;
+    select = "^[ \t]*typedef[ \t]+struct[ \t]+term[ \t]*;";
+    sed    = "s/^[ \t]*typedef[ \t][ \t]*"
+             "\\(struct[ \t][ \t]*term[ \t]*;[ \t]*\\)$/\\1/";
+};
+
+
+/*
+ *  Fix one other error in this file:
+ *  a mismatched quote not inside a C comment.
+ */
+fix = {
+    hackname = badquote;
+    files    = sundev/vuid_event.h;
+    sed      = "s/doesn't/does not/";
+};
+
+
+/*
+ *  Fix #defines under Alpha OSF/1:
+ *  The following files contain '#pragma extern_prefix "_FOO"' followed by
+ *  a '#define something(x,y,z) _FOOsomething(x,y,z)'.  The intent of these
+ *  statements is to reduce namespace pollution.  While these macros work
+ *  properly in most cases, they don't allow you to take a pointer to the
+ *  "something" being modified.  To get around this limitation, change these
+ *  statements to be of the form '#define something _FOOsomething'.
+ */
+fix = {
+    hackname = bad_lval;
+    select   = "^[ \t]*#[ \t]*pragma[ \t]extern_prefix";
+    files    = libgen.h;
+    files    = dirent.h;
+    files    = ftw.h;
+    files    = grp.h;
+    files    = ndbm.h;
+    files    = pthread.h;
+    files    = pwd.h;
+    files    = signal.h;
+    files    = standards.h;
+    files    = stdlib.h;
+    files    = string.h;
+    files    = stropts.h;
+    files    = time.h;
+    files    = unistd.h;
+    sed      =
+        "s/^[ \t]*#[ \t]*define[ \t]*\\([^(]*\\)\\(([^)]*)\\)[ \t]*"
+               "\\(_.\\)\\1\\2[ \t]*$/#define \\1 \\3\\1/";
+};
+
+
+/*
+ *  check for broken assert.h that needs stdio.h
+ */
+fix = {
+    hackname = broken_assert_stdio;
+    files    = assert.h;
+    select   = stderr;
+    bypass   = "include.*stdio.h";
+    sed      = "1i\\\n"
+               "#include <stdio.h>\n";
+};
+
+
+/*
+ *  check for broken assert.h that needs stdlib.h
+ */
+fix = {
+    hackname = broken_assert_stdlib;
+    files    = assert.h;
+    select   = 'exit *\(|abort *\(';
+    bypass   = "include.*stdlib.h";
+    sed      = "1i\\\n"
+               "#ifdef __cplusplus\\\n"
+               "#include <stdlib.h>\\\n"
+               "#endif\n";
+};
+
+
+/*
+ *  Note that BSD43_* are used on recent MIPS systems.
+ */
+fix = {
+    hackname = bsd43_io_macros;
+    select   = "BSD43__IO";
+    /*
+     *  Put single quotes aroung the character that appears after '('
+     *  and before ',', UNLESS it is a 'c' or 'g' or 'x'.
+     */
+    sed = "/[ \t]BSD43__IO[A-Z]*[ \t]*(/"       's/(\(.\),/(\'\1\',/';
+    sed = "/#[ \t]*define[ \t]*[ \t]BSD43__IO/" 's/\'\([cgx]\)\'/\1/g';
+};
+
+#IFDEF no_more
+/*
+ *  And also with the HP-UX 10 and HP-UX 11 sys/pci.h file
+ */
+fix = {
+    hackname = cxx_cmnt_hpux;
+    files    = sys/pci.h;
+    select   = "System Private Structures";
+    sed      = "s|//.*$||g";
+};
+
+
+/*
+ *  Turning // comments into normal comments trashes this IRIX 4.0.1
+ *  header file, which embeds // comments inside multi-line
+ *  comments.  If this looks like the IRIX header file, we refix it by
+ *  just throwing away the // comments.
+ */
+fix = {
+    hackname = cxx_cmnt_irix;
+    files    = fam.h;
+    select   = indigo.esd;
+    sed      = "s|//.*$||g";
+};
+
+
+/*
+ *  Same problem with a file from SunOS 4.1.3 : a header file containing
+ *  the string "//" embedded in "/ * * /"
+ */
+fix = {
+    hackname = cxx_cmnt_sunos;
+    files    = sbusdev/audiovar.h;
+    files    = sys/audiovar.h;
+    sed      = "s|//.*$||g";
+};
+
+
+/*
+ *  There is a similar problem with the VxWorks drv/netif/if_med.h file.
+ */
+fix = {
+    hackname = cxx_cmnt_vxworks;
+    files    = drv/netif/if_med.h;
+    select   = "Wind River";
+    sed      = "s|//.*$||g";
+};
+#endif
+
+/*
+ *  Remove the double-slash comments
+ *  They *must* be removed so it will not create nested comments!!
+ *  However, they will *not* be removed if '++' is in any part of
+ *  the file name, or if the name ends with ".hh" or ".H".
+ *
+ *  There *used* to be a number of similar problems in various OSes:
+
+ *  Turning // comments into normal comments trashes this IRIX 4.0.1
+ *  header file, which embeds // comments inside multi-line
+ *  comments.  If this looks like the IRIX header file, we refix it by
+ *  just throwing away the // comments.
+
+ *  Same problem with a file from SunOS 4.1.3 : a header file containing
+ *  the string "//" embedded in "/ * * /"
+
+ *  There is a similar problem with the VxWorks drv/netif/if_med.h file.
+
+ *  And also with the HP-UX 10 and HP-UX 11 sys/pci.h file
+ */
+fix = {
+    hackname = no_double_slash;
+    test     = '-z "`echo ${file}|egrep \'++$|\.hh$|\.H$\'`"';
+    select = '//[^*]';
+    sed    = '/\/\/[^*]/' "s|//.*$||g";
+};
+
+
+/*
+ *  Multiline comment after typedef on IRIX 4.0.1.
+ */
+fix = {
+    hackname = irix_bogus_cxx_cmnt;
+    files  = "elf_abi.h";
+    files  = "elf.h";
+    /*
+     *  This really looks like it is replacing "/ * * /" with "//"
+     *  Shouldn't the replacement really be " ## "?
+     */
+    sed      = 's@"/\*"\*/@"//"@';
+};
+
+
+/*
+ * Fix these Sun OS files to avoid an invalid identifier in an #ifdef.
+ */
+fix = {
+    hackname = ecd_cursor;
+    files  = "sunwindow/win_lock.h";
+    files  = "sunwindow/win_cursor.h";
+    sed    = "s/ecd.cursor/ecd_cursor/";
+};
+
+
+
+/*
+ *  Fix else directives that contain non-commentary text
+ *
+ * The fixinc_eol stuff is to work around a bug in the sed
+ */
+fix = {
+    hackname = else_label;
+    select   = "^[ \t]*#[ \t]*else[ \t]+[!-.0-~]";
+    sed =      ":loop\n"
+               '/\\\\$/'                       "N\n"
+               's/\\\\$/\\\\+++fixinc_eol+++/' "\n"
+               '/\\\\$/'                       "b loop\n"
+               's/\\\\+++fixinc_eol+++/\\\\/g' "\n"
+
+               "s%^\\([ \t]*#[ \t]*else\\)[ \t]*/[^*].*%\\1%\n"
+               "s%^\\([ \t]*#[ \t]*else\\)[ \t]*[^/ \t].*%\\1%";
+};
+
+
+/*
+ *  Fix endif directives that contain non-commentary text
+ */
+fix = {
+    hackname = endif_label;
+    /*
+     *  Select files that contain '#endif' directives with
+     *  some sort of following junk.  (Between the ascii '.'
+     *  and '0' lies the character '/'.  This will *NOT*
+     *  match '#endif / * foo * /', but it also wont match
+     *  '#endif / done' either.
+     *
+     *  We use the pattern [!-.0-z{|}~] instead of [^/ \t] to match a noncomment
+     *  following #else or #endif because some buggy egreps think [^/] matches
+     *  newline, and they thus think `#else ' matches
+     *  `#e[ndiflse]*[ \t]+[^/ \t]'.
+     *  [!-.0-~] does not work properly on AIX 4.1.
+     */
+    select   = "^[ \t]*#[ \t]*endif[ \t]+[!-.0-z\{\|\}\~]";
+
+    /*
+     *  First, join the continued input lines.
+     *  IF the resulting line is an endif preprocessing directive,
+     *  then trim off the following patterns:
+     *  1.  sequences that start with '/' and is *NOT* followed by '*'
+     *  2.  Sequences that start with '*' and is *NOT* followed by '/'
+     *  3.  sequences that do not start with any of '/', '*', '\t' or ' '.
+     *
+     * The fixinc_eol stuff is to work around a bug in the sed
+     */
+    sed =      ":loop\n"
+               '/\\\\$/'                       "N\n"
+               's/\\\\$/\\\\+++fixinc_eol+++/' "\n"
+               '/\\\\$/'                       "b loop\n"
+               's/\\\\+++fixinc_eol+++/\\\\/g' "\n"
+
+               "s%^\\([ \t]*#[ \t]*endif\\)[ \t]*/[^*].*%\\1%\n"
+               "s%^\\([ \t]*#[ \t]*endif\\)[ \t]*\\*[^/].*%\\1%\n"
+               "s%^\\([ \t]*#[ \t]*endif\\)[ \t]*[^/* \t].*%\\1%";
+};
+
+
+/*
+ *  Fix HP's use of ../machine/inline.h to refer to
+ *    /usr/include/machine/inline.h
+ */
+fix = {
+    hackname = hp_inline;
+    files  = sys/spinlock.h;
+    select = 'include.*"\.\./machine/';
+    sed    = "s,\"../machine/inline.h\",<machine/inline.h>,";
+    sed    = "s,\"../machine/psl.h\",<machine/psl.h>,";
+};
+
+
+/*
+ *  Check for (...) in C++ code in HP/UX sys/file.h.
+ */
+fix = {
+    hackname = hp_sysfile;
+    files    = sys/file.h;
+    select   = "HPUX_SOURCE";
+    sed      = 's/(\.\.\.)/(struct file * ...)/';
+};
+
+
+/*
+ *  sys/mman.h on HP/UX is not C++ ready,
+ *  even though NO_IMPLICIT_EXTERN_C is defined on HP/UX.
+ */
+fix = {
+    hackname = hpux_cxx_unready;
+    files    = sys/mman.h;
+    bypass = '"C"|__BEGIN_DECLS';
+
+    sed      = "1i\\\n"
+               "#ifdef __cplusplus\\\n"
+               "extern \"C\" {\\\n"
+               "#endif\\\n\n";
+    sed      = "$a\\\n"
+               "#ifdef __cplusplus\\\n"
+               "}\\\n"
+               "#endif\n";
+};
+
+
+/*
+ *  HPUX 10.x sys/param.h defines MAXINT which clashes with values.h
+ */
+fix = {
+    hackname = hpux_maxint;
+    files    = sys/param.h;
+    sed      = "/^#[ \t]*define[ \t]*MAXINT[ \t]/i\\\n"
+               "#ifndef MAXINT\n";
+
+    sed      = "/^#[ \t]*define[ \t]*MAXINT[ \t]/a\\\n"
+               "#endif\n";
+};
+
+
+/*
+ *  Fix hpux10.20 <sys/time.h> to avoid invalid forward decl
+ */
+fix = {
+    hackname = hpux_systime;
+    files    = sys/time.h;
+    select   = "^extern struct sigevent;";
+    sed      = "s/^extern struct sigevent;/struct sigevent;/";
+};
+
+
+/*
+ *  Fix various _IO* defines, but do *not* quote the characters cgxtf.
+ */
+fix = {
+    hackname = interactv_add1;
+
+    test   = "-d /etc/conf/kconfig.d";
+    test   = '-n "`grep _POSIX_VERSION /usr/include/sys/unistd.h`"';
+
+    files  = "stdio.h";
+    files  = "math.h";
+    files  = "ctype.h";
+    files  = "sys/limits.h";
+    files  = "sys/fcntl.h";
+    files  = "sys/dirent.h";
+
+    sed    = "s/!defined(__STDC__) && !defined(_POSIX_SOURCE)/"
+               "!defined(_POSIX_SOURCE)/";
+};
+
+fix = {
+    hackname = interactv_add2;
+
+    test   = "-d /etc/conf/kconfig.d";
+    test   = '-n "`grep _POSIX_VERSION /usr/include/sys/unistd.h`"';
+
+    files  = math.h;
+    sed    = "s/fmod(double)/fmod(double, double)/";
+};
+
+fix = {
+    hackname = interactv_add3;
+
+    test   = "-d /etc/conf/kconfig.d";
+    test   = '-n "`grep _POSIX_VERSION /usr/include/sys/unistd.h`"';
+
+    files  = sys/limits.h;
+
+    sed    = "/CHILD_MAX/s,/\\* Max, Max,";
+    sed    = "/OPEN_MAX/s,/\\* Max, Max,";
+};
+
+
+/*
+ *  Remove erroneous parentheses in sym.h on Alpha OSF/1.
+ */
+fix = {
+    hackname = io_def_quotes;
+    select = "[ \t]_IO[A-Z]*[ \t]*\\([A-Za-z]";
+    sed = "s/\\([ \t]_IO[A-Z]*[ \t]*(\\)\\([A-Za-z]\\),/\\1'\\2',/";
+    sed = "/#[ \t]*define[ \t]*[ \t]_IO/"
+              "s/'\\([cgxtf]\\)'/\\1/g";
+    sed = "/#[ \t]*define[ \t]*[ \t]DESIOC/"    's/\'\([cdgx]\)\'/\1/g';
+};
+
+
+/*
+ *  Fix CTRL macros
+ */
+fix = {
+    hackname = ioctl_fix_ctrl;
+    select = "CTRL[ \t]";
+
+    sed = "/[^A-Z0-9_]CTRL[ \t]*(/"
+              "s/\\([^']\\))/'\\1')/";
+
+    sed = "/[^A-Z0-9]_CTRL[ \t]*(/"
+              "s/\\([^']\\))/'\\1')/";
+
+    sed = "/#[ \t]*define[ \t]*[ \t]CTRL/"
+              "s/'\\([cgx]\\)'/\\1/g";
+
+    sed = "/#[ \t]*define[ \t]*[ \t]_CTRL/"
+              "s/'\\([cgx]\\)'/\\1/g";
+
+    sed = "/#[ \t]*define[ \t]*[ \t]BSD43_CTRL/"
+              "s/'\\([cgx]\\)'/\\1/g";
+};
+
+
+/*
+ *  Check for missing ';' in struct
+ */
+fix = {
+    hackname = ip_missing_semi;
+    files    = netinet/ip.h;
+    sed      = "/^struct/,/^};/s/}$/};/";
+};
+
+
+/*
+ *  IRIX 4.0.5 <rpc/auth.h> uses struct sockaddr
+ *  in prototype without previous definition.
+ */
+fix = {
+    hackname = irix_multiline_cmnt;
+    files    = sys/types.h;
+
+    sed   = "s@type of the result@type of the result */@";
+    sed   = "s@of the sizeof@/* of the sizeof@";
+};
+
+
+/*
+ *  Some IRIX header files contain the string "//"
+ */
+fix = {
+    hackname = irix_sockaddr;
+    files    = rpc/auth.h;
+    select   = "authdes_create.*struct sockaddr";
+    sed      = "/authdes_create.*struct sockaddr/i\\\n"
+               "struct sockaddr;\n";
+};
+
+
+/*
+ *  IRIX 4.0.5 <rpc/xdr.h> uses struct __file_s
+ *  in prototype without previous definition.
+ */
+fix = {
+    hackname = irix_struct__file;
+    files = rpc/xdr.h;
+    sed   = "/xdrstdio_create.*struct __file_s/i\\\n"
+            "struct __file_s;\n";
+};
+
+
+/*
+ * Fixing ISC fmod declaration
+ */
+fix = {
+    hackname = isc_fmod;
+    files    = math.h;
+    select   = 'fmod\(double\)';
+    sed      = "s/fmod(double)/fmod(double, double)/";
+};
+
+  
+/*
+ * Fix nested comments in Motorola's <limits.h> and <sys/limits.h>
+ */
+fix = {
+    hackname = motorola_nested;
+    files    = limits.h;
+    files    = sys/limits.h;
+    sed = "s@^\\(#undef[ \t][ \t]*PIPE_BUF[ \t]*"
+                   "/\\* max # bytes atomic in write to a\\)$@\\1 */@";
+    sed = "s@\\(/\\*#define\tHUGE_VAL\t3.40282346638528860e+38 \\)"
+          "\\(/\\*error value returned by Math lib\\*/\\)$@\\1*/ \\2@";
+};
+
+  
+/*
+ * Fixing nested comments in ISC <sys/limits.h>
+ */
+fix = {
+    hackname = isc_sys_limits;
+    files  = sys/limits.h;
+    select = CHILD_MAX;
+    sed    = "/CHILD_MAX/s,/\\* Max, Max,";
+    sed    = "/OPEN_MAX/s,/\\* Max, Max,";
+};
+
+
+/*
+ * These files in Sun OS 4.x and ARM/RISCiX and BSD4.3
+ * use / * * / to concatenate tokens.
+ */
+fix = {
+    hackname = kandr_concat;
+    files  = "sparc/asm_linkage.h";
+    files  = "sun3/asm_linkage.h";
+    files  = "sun3x/asm_linkage.h";
+    files  = "sun4/asm_linkage.h";
+    files  = "sun4c/asm_linkage.h";
+    files  = "sun4m/asm_linkage.h";
+    files  = "sun4c/debug/asm_linkage.h";
+    files  = "sun4m/debug/asm_linkage.h";
+    files  = "arm/as_support.h";
+    files  = "arm/mc_type.h";
+    files  = "arm/xcb.h";
+    files  = "dev/chardefmac.h";
+    files  = "dev/ps_irq.h";
+    files  = "dev/screen.h";
+    files  = "dev/scsi.h";
+    files  = "sys/tty.h";
+    files  = "Xm.acorn/XmP.h";
+    files  = bsd43/bsd43_.h;
+    select = '/\*\*/';
+    sed    = 's|/\*\*/| ## |g';
+};
+
+
+/*
+ *  In limits.h, put #ifndefs around things that are supposed to be defined
+ *  in float.h to avoid redefinition errors if float.h is included first.
+ *  On HP/UX this patch does not work, because on HP/UX limits.h uses
+ *  multi line comments and the inserted #endif winds up inside the
+ *  comment.  Fortunately, HP/UX already uses #ifndefs in limits.h; if
+ *  we find a #ifndef FLT_MIN we assume that all the required #ifndefs
+ *  are there, and we do not add them ourselves.
+ *  Also fix a nested comment problem in sys/limits.h on Motorola sysV68 R3V7.1
+ */
+fix = {
+    hackname = limits_ifndefs;
+    files  = "limits.h";
+    bypass = "ifndef[ \t]+FLT_MIN";
+
+    sed  = "/[ \t]FLT_MIN[ \t]/i\\\n#ifndef FLT_MIN\n";
+    sed  = "/[ \t]FLT_MIN[ \t]/a\\\n#endif\n";
+    sed  = "/[ \t]FLT_MAX[ \t]/i\\\n#ifndef FLT_MAX\n";
+    sed  = "/[ \t]FLT_MAX[ \t]/a\\\n#endif\n";
+    sed  = "/[ \t]FLT_DIG[ \t]/i\\\n#ifndef FLT_DIG\n";
+    sed  = "/[ \t]FLT_DIG[ \t]/a\\\n#endif\n";
+    sed  = "/[ \t]DBL_MIN[ \t]/i\\\n#ifndef DBL_MIN\n";
+    sed  = "/[ \t]DBL_MIN[ \t]/a\\\n#endif\n";
+    sed  = "/[ \t]DBL_MAX[ \t]/i\\\n#ifndef DBL_MAX\n";
+    sed  = "/[ \t]DBL_MAX[ \t]/a\\\n#endif\n";
+    sed  = "/[ \t]DBL_DIG[ \t]/i\\\n#ifndef DBL_DIG\n";
+    sed  = "/[ \t]DBL_DIG[ \t]/a\\\n#endif\n";
+    sed  = "/^\\(\\/\\*#define\tHUGE_VAL\t3\\.[0-9e+]* *\\)\\/\\*/s//\\1/";
+};
+
+
+/*
+ *  Delete the '#define void int' line from curses.h on Lynx
+ */
+fix = {
+    hackname = lynx_void_int;
+    files    = curses.h;
+    select   = "#[ \t]*define[ \t]+void[ \t]+int";
+    sed      = "/#[ \t]*define[ \t][ \t]*void[ \t]int/d";
+};
+
+
+/*
+ *  Fix fcntl prototype in fcntl.h on LynxOS.
+ */
+fix = {
+    hackname = lynxos_fcntl_proto;
+    files    = fcntl.h;
+
+  sed = 's/\(fcntl.*(int, int, \)int)/\1...)/';
+};
+
+
+/*
+ *  Fix incorrect S_IF* definitions on m88k-sysv3.
+ */
+fix = {
+    hackname = m88k_bad_hypot_opt;
+    mach     = "m88k-motorola-sysv3*";
+    files    = "math.h";
+
+    sed = "s/extern double floor(), ceil(), fmod(), fabs();/"
+            "extern double floor(), ceil(), fmod(), fabs _PARAMS((double));/";
+
+    sed = "/^extern double hypot();$/a\\\n"
+          "\\/* Workaround a stupid Motorola optimization if one\\\n"
+          "   of x or y is 0.0 and the other is negative!  *\\/\\\n"
+          "#ifdef __STDC__\\\n"
+          "static __inline__ double fake_hypot (double x, double y)\\\n"
+          "#else\\\n"
+          "static __inline__ double fake_hypot (x, y)\\\n"
+          "\tdouble x, y;\\\n"
+          "#endif\\\n"
+          "{\\\n"
+          "\treturn fabs (hypot (x, y));\\\n"
+          "}\\\n"
+          "#define hypot\tfake_hypot\n";
+};
+
+
+/*
+ *  Fix non-ansi machine name defines
+ *  This is split into two parts:  the shell version as a single
+ *  patch, and the program version with each patch separate.
+ *  Each is substantially faster for the particular environment.
+ * You have a dual maintenance problem here.  */
+fix = {
+    hackname = m88k_bad_s_if;
+    mach     = "m88k-*-sysv3*";
+    files    = sys/stat.h;
+    select   = "#define[ \t]+S_IS[A-Z]*(m)[ \t]";
+
+    sed = "s/^\\(#define[ \t]*S_IS[A-Z]*(m)\\)[ \t]*"
+            "(m[ \t]*&[ \t]*\\(S_IF[A-Z][A-Z][A-Z][A-Z]*\\)[ \t]*)/"
+            "\\1 (((m)\\&S_IFMT)==\\2)/";
+
+    sed = "s/^\\(#define[ \t]*S_IS[A-Z]*(m)\\)[ \t]*"
+            "(m[ \t]*&[ \t]*\\(0[0-9]*\\)[ \t]*)/"
+            "\\1 (((m)\\&S_IFMT)==\\2)/";
+};
+
+
+/*
+ * Put cpp wrappers around these include files to avoid redeclaration
+ * errors during multiple inclusion on m88k-tektronix-sysv3.
+ */
+fix = {
+    hackname = m88k_multi_incl;
+    mach     = "m88k-tektronix-sysv3*";
+    files    = "time.h";
+    bypass   = "#ifndef";
+    shell    =
+      "echo Fixing $file, to protect against multiple inclusion. >&2
+      cpp_wrapper=`echo $file | sed -e 's,\\.,_,g' -e 's,/,_,g'`
+      sed -e \"1i\\\n"
+        "#ifndef __GCC_GOT_${cpp_wrapper}_\\\n"
+        "#define __GCC_GOT_${cpp_wrapper}_\\\n\" \\\n"
+                "\t-e \"$a\\\n"
+        "#endif /* ! __GCC_GOT_${cpp_wrapper}_ */\n\"";
+};
+
+
+/*
+ *  libm.a on m88k-motorola-sysv3 contains a stupid optimization for
+ *  function hypot(), which returns the second argument without even
+ *  looking at its value if the other is 0.0 Another drawback is that
+ *  fix-header doesn't fix fabs' prototype, and I have no idea why.
+ */
+fix = {
+    hackname = machine_name;
+    /*
+     *  Select '#if.*' and '#elif" with possible non-ansi symbols
+     *  The only non-ansi symbols we know about start with one of:
+     *     MRS_bhimnprstuv
+     *  If any are added to the substitution list, then add it to
+     *  the selection list as well.  Hopefully we can avoid names
+     *  starting with "d" and "l", because this pattern would then
+     *  match "defined" and "lint" as well.  I suppose we could add
+     *  a "bypass = lint" if we had to though.
+     *
+     * The fixinc_eol stuff is to work around a bug in the sed
+     */
+    select = "^#[ \t]*(if|elif).*"
+             "[^a-zA-Z0-9_](_*[MSRrhim]|[Mbimnpstuv])[a-zA-Z0-9_]";
+    exesel = "^#[ \t]*(if|elif).*[^a-zA-Z0-9_]"
+             "("
+                  "M32"
+                 "|_*("
+                       "MIPSE[LB]"
+                      "|SYSTYPE_[A-Z0-9]"
+                      "|[Rr][34]000"
+                      "|host_mips"
+                      "|i386"
+                      "|mips"
+                    ")($|[^a-zA-Z0-9_])"
+                 "|bsd4"
+                 "|is68k"
+                 "|m[68]8k"
+                 "|mc680"
+                 "|news"
+                 "|ns32000"
+                 "|pdp11"
+                 "|pyr"
+                 "|sel"
+                 "|sony_news"
+                 "|sparc"
+                 "|sun"
+                 "|tahoe"
+                 "|tower"
+                 "|u370"
+                 "|u3b"
+                 "|unix"
+                 "|vax"
+             ")";
+
+    sed =      ":loop\n"
+               '/\\\\$/'                       "N\n"
+               's/\\\\$/\\\\+++fixinc_eol+++/' "\n"
+               '/\\\\$/'                       "b loop\n"
+               's/\\\\+++fixinc_eol+++/\\\\/g' "\n"
+
+          "/#[\t ]*[el]*if/ {\n"
+                "\ts/[a-zA-Z0-9_][a-zA-Z0-9_]*/ & /g\n"
+
+                "\ts/ M32 / __M32__ /g\n"
+                "\ts/ _*MIPSE\\([LB]\\) / __MIPSE\\1__ /g\n"
+                "\ts/ _*SYSTYPE_\\([A-Z0-9]*\\) / __SYSTYPE_\\1__ /g\n"
+                "\ts/ _*\\([Rr][34]\\)000 / __\\1000__ /g\n"
+                "\ts/ _*host_mips / __host_mips__ /g\n"
+                "\ts/ _*i386 / __i386__ /g\n"
+                "\ts/ _*mips / __mips__ /g\n"
+                "\ts/ bsd4\\([0-9]\\) / __bsd4\\1__ /g\n"
+                "\ts/ is68k / __is68k__ /g\n"
+                "\ts/ m68k / __m68k__ /g\n"
+                "\ts/ m88k / __m88k__ /g\n"
+                "\ts/ mc680\\([0-9]\\)0 / __mc680\\10__ /g\n"
+                "\ts/ news\\([0-9]*\\) / __news\\1__ /g\n"
+                "\ts/ ns32000 / __ns32000__ /g\n"
+                "\ts/ pdp11 / __pdp11__ /g\n"
+                "\ts/ pyr / __pyr__ /g\n"
+                "\ts/ sel / __sel__ /g\n"
+                "\ts/ sony_news / __sony_news__ /g\n"
+                "\ts/ sparc / __sparc__ /g\n"
+                "\ts/ sun\\([a-z0-9]*\\) / __sun\\1__ /g\n"
+                "\ts/ tahoe / __tahoe__ /g\n"
+                "\ts/ tower\\([_0-9]*\\) / __tower\\1__ /g\n"
+                "\ts/ u370 / __u370__ /g\n"
+                "\ts/ u3b\\([0-9]*\\) / __u3b\\1__ /g\n"
+                "\ts/ unix / __unix__ /g\n"
+                "\ts/ vax / __vax__ /g\n"
+
+                "\ts/ \\([a-zA-Z0-9_][a-zA-Z0-9_]*\\) /\\1/g\n\t}";
+};
+
+
+/*
+ *  Some math.h files define struct exception, which conflicts with
+ *  the class exception defined in the C++ file std/stdexcept.h.  We
+ *  redefine it to __math_exception.  This is not a great fix, but I
+ *  haven't been able to think of anything better.
+ */
+fix = {
+    hackname = math_exception;
+    files    = math.h;
+    select   = "struct exception";
+    sed      = "/struct exception/i\\\n"
+               "#ifdef __cplusplus\\\n"
+               "#define exception __math_exception\\\n"
+               "#endif\n";
+    sed      = "/struct exception/a\\\n"
+               "#ifdef __cplusplus\\\n"
+               "#undef exception\\\n"
+               "#endif\n";
+
+    sed      = "/matherr/i\\\n"
+               "#ifdef __cplusplus\\\n"
+               "#define exception __math_exception\\\n"
+               "#endif\n";
+
+    sed      = "/matherr/a\\\n"
+               "#ifdef __cplusplus\\\n"
+               "#undef exception\\\n"
+               "#endif\n";
+};
+
+
+/*
+ * In math.h, put #ifndefs around things that might be defined
+ * in a gcc specific math-*.h file.
+ */
+fix = {
+    hackname = math_gcc_ifndefs;
+    files    = math.h;
+    shell    = " dbl_max_def="
+        "\"`egrep 'define[ \t]+DBL_MAX[ \t]+.*' ${SRCDIR}/float.h "
+                "2>/dev/null`\"\n\n"
+
+        "\tif ( test -n \"${dbl_max_def}\" \\\n"
+        "\t\t-a -n \"`egrep '#define[ \t]*HUGE_VAL[ \t]+DBL_MAX' $file`\" \\\n"
+        "\t\t-a -z \"`egrep '#define[ \t]+DBL_MAX[ \t]+' $file`\"\n"
+              "\t   ) > /dev/null 2>&1\n"
+
+        "\tthen sed -e '/define[ \t]HUGE_VAL[ \t]/i\\\n"
+            "#ifndef HUGE_VAL\n' \\\n"
+        "\t-e '/define[ \t]HUGE_VAL[ \t]/a\\\n#endif\n'\\\n"
+        "\t-e \"/define[ \t]HUGE_VAL[ \t]DBL_MAX/s/DBL_MAX/$dbl_max_def/\"\n"
+
+        "\telse sed -e '/define[ \t]HUGE_VAL[ \t]/i\\\n"
+            "#ifndef HUGE_VAL\n' \\\n"
+        "\t-e '/define[ \t]HUGE_VAL[ \t]/a\\\n#endif\n'\n"
+        "\tfi";
+};
+
+
+/*
+ * libm.a on m88k-motorola-sysv3 contains a stupid optimization for
+ * function hypot(), which returns the second argument without even
+ * looking at its value
+ */
+fix = {
+    hackname = motorola_stupid_opt;
+    mach     = "m88k-motorola-sysv3*";
+    files    = math.h;
+    select   = "^extern double hypot();$";
+    sed      =
+          '/^extern double hypot();$/a' "\\\n"
+          '\/* Workaround a stupid Motorola optimization if one' "\\\n"
+          '   of x or y is 0.0 and the other is negative!  *\/' "\\\n"
+          '#ifdef __STDC__' "\\\n"
+          'static __inline__ double fake_hypot (double x, double y)' "\\\n"
+          '#else' "\\\n"
+          'static __inline__ double fake_hypot (x, y)' "\\\n"
+          "\tdouble x, y;\\\n"
+          '#endif' "\\\n"
+          '{' "\\\n"
+          "\treturn fabs (hypot (x, y));\\\n"
+          '}' "\\\n"
+          "#define hypot\tfake_hypot\n";
+};
+
+
+/*
+ *  nested comment
+ */
+fix = {
+    hackname = nested_comment;
+    files    = rpc/rpc.h;
+    sed      = 's@^\(/\*.*rpc/auth_des.h>.*\)/\*@\1*/ /*@';
+};
+
+
+/*
+ *  fix bogus recursive stdlib.h in NEWS-OS 4.0C
+ */
+fix = {
+    hackname = news_os_recursion;
+    files    = stdlib.h;
+    select   = "#include <stdlib.h>";
+    sed      = "/^#include <stdlib.h>/i\\\n"
+                    "#ifdef BOGUS_RECURSION\n";
+    sed      = "/^#include <stdlib.h>/a\\\n"
+                    "#endif\n";
+};
+
+
+/*
+ *  NeXT 3.2 adds const prefix to some math functions.
+ *  These conflict with the built-in functions.
+ */
+fix = {
+    hackname = next_math_prefix;
+    files    = ansi/math.h;
+    select   = "^extern.*double.*__const__.*";
+
+    sed = "/^extern.*double.*__const__.*sqrt(/s/__const__//";
+    sed = "/^extern.*double.*__const__.*fabs(/s/__const__//";
+    sed = "/^extern.*double.*__const__.*cos(/s/__const__//";
+    sed = "/^extern.*double.*__const__.*hypot(/s/__const__//";
+    sed = "/^extern.*double.*__const__.*sin(/s/__const__//";
+};
+
+
+/*
+ *  NeXT 3.2 uses the word "template" as a parameter for some
+ *  functions. GCC reports an invalid use of a reserved key word
+ *  with the built-in functions. NeXT 3.2 includes the keyword
+ *  volatile in the prototype for abort(). This conflicts with
+ *  the built-in definition.
+ */
+fix = {
+    hackname = next_template;
+    files    = bsd/libc.h;
+    select   = template;
+
+    sed = '/\(.*template\)/s/template//';
+    sed = "/extern.*volatile.*void.*abort/s/volatile//";
+};
+
+
+/*
+ *  NeXT 3.2 includes the keyword volatile in the abort() and  exit()
+ *  function prototypes. That conflicts with the  built-in functions.
+ */
+fix = {
+    hackname = next_volitile;
+    files    = ansi/stdlib.h;
+    select   = volatile;
+
+    sed    = "/extern.*volatile.*void.*exit/s/volatile//";
+    sed    = "/extern.*volatile.*void.*abort/s/volatile//";
+};
+
+
+/*
+ *  NeXT 2.0 defines 'int wait(union wait*)', which conflicts with Posix.1.
+ *  Note that version 3 of the NeXT system has wait.h in a different directory,
+ *  so that this code won't do anything.  But wait.h in version 3 has a
+ *  conditional, so it doesn't need this fix.  So everything is okay.
+ */
+fix = {
+    hackname = next_wait_union;
+    files    = sys/wait.h;
+
+    select = 'wait\(union wait';
+
+    sed = "s@wait(union wait@wait(void@";
+};
+
+
+/*
+ *  a missing semi-colon at the end of the nodeent structure definition.
+ */
+fix = {
+    hackname = nodeent_syntax;
+    files    = netdnet/dnetdb.h;
+    sed      = "s/char.*na_addr *$/char *na_addr;/";
+};
+
+
+/*
+ *  sys/lc_core.h on some versions of OSF1/4.x pollutes the namespace by
+ *  defining regex.h related types.  This causes libg++ build and usage
+ *  failures.  Fixing this correctly requires checking and modifying 3 files.
+ */
+fix = {
+    hackname = osf_namespace_a;
+    files    = reg_types.h;
+    files    = sys/lc_core.h;
+    test     =    "-r reg_types.h"
+               "-a -r sys/lc_core.h"
+               "-a -n \"`grep '} regex_t;' reg_types.h`\""
+               "-a -z \"`grep __regex_t regex.h`\"";
+
+    sed      = "s/regex_t/__regex_t/g";
+    sed      = "s/regoff_t/__regoff_t/g";
+    sed      = "s/regmatch_t/__regmatch_t/g";
+};
+
+fix = {
+    hackname = osf_namespace_b;
+    files    = regex.h;
+    test     =    "-r reg_types.h"
+               "-a -r sys/lc_core.h"
+               "-a -n \"`grep '} regex_t;' reg_types.h`\""
+               "-a -z \"`grep __regex_t regex.h`\"";
+    sed      = "/#include <reg_types.h>/a\\\n"
+               "typedef __regex_t\tregex_t;\\\n"
+               "typedef __regoff_t\tregoff_t;\\\n"
+               "typedef __regmatch_t\tregmatch_t;\n";
+};
+
+
+/*
+ *  Fix __page_size* declarations in pthread.h AIX 4.1.[34].
+ *  The original ones fail if uninitialized externs are not common.
+ *  This is the default for all ANSI standard C++ compilers.
+ */
+fix = {
+    hackname = pthread_page_size;
+    files    = pthread.h;
+    select   = "^int __page_size";
+    sed      = "s/^int __page_size/extern int __page_size/";
+};
+
+
+/*
+ *  Fix return type of fread and fwrite on sysV68
+ */
+#ifdef LATER
+fix = {
+    hackname = read_ret_type;
+    files    = stdio.h;
+    sed      = "s/^\\(extern int\tfclose(), fflush()\\), "
+                 "\\(fread(), fwrite()\\)\\(.*\\)$"
+               "/extern unsigned int\t\\2;\\\n\\1\\3/";
+};
+#endif
+
+
+/*
+ *  function class(double x) conflicts with C++ keyword on rs/6000 
+ */
+fix = {
+    hackname = rs6000_double;
+    files    = math.h;
+    select   = '[^a-zA-Z_]class\(';
+    
+    sed   = "/class[(]/i\\\n#ifndef __cplusplus\n";
+    sed   = "/class[(]/a\\\n#endif\n";
+};
+
+
+/*
+ *  Wrong fchmod prototype on RS/6000.
+ */
+fix = {
+    hackname = rs6000_fchmod;
+    files    = sys/stat.h;
+    select   = 'fchmod\(char';
+    sed      = 's/fchmod(char \*/fchmod(int/';
+};
+
+
+/*
+ *  parameters conflict with C++ new on rs/6000 
+ */
+fix = {
+    hackname = rs6000_param;
+    files  = "stdio.h";
+    files  = "unistd.h";
+
+    sed = 's@rename(const char \*old, const char \*new)@'
+            'rename(const char *_old, const char *_new)@';
+};
+
+
+/*
+ *  Sony NEWSOS 5.0 does not support the complete ANSI C standard.
+ */
+#ifdef SONY
+fix = {
+    hackname = sony_ctype;
+    files    = ctype.h;
+    test     = "-x /bin/sony";
+    test     = "! -z \"`if /bin/sony ; then echo true ; fi`\"";
+    sed      = "s/__ctype/_ctype/g";
+};
+#endif
+
+/*
+ *  Incorrect #include in Sony News-OS 3.2.
+ */
+fix = {
+    hackname = sony_include;
+    files    = machine/machparam.h;
+    select   = '"\.\./machine/endian.h"';
+    sed      = 's@"../machine/endian.h"@<machine/endian.h>@';
+};
+
+
+/*
+ *  Sony NEWSOS 5.0 does not support the complete ANSI C standard.
+ */
+#ifdef SONY
+fix = {
+    hackname = sony_stdio;
+    files    = stdio.h;
+    test     = "-x /bin/sony";
+    test     = "! -z \"`if /bin/sony ; then echo true ; fi`\"";
+    sed      = "s/__filbuf/_filbuf/g\n"
+               "s/__flsbuf/_flsbuf/g\n"
+               "s/__iob/_iob/g";
+};
+#endif
+
+/*
+ *  Add a `static' declaration of `getrnge' into <regexp.h>.
+ *
+ *  Don't do this if there is already a `static void getrnge' declaration
+ *  present, since this would cause a redeclaration error.  Solaris 2.x has
+ *  such a declaration.
+ */
+#ifdef SVR4
+fix = {
+    hackname = static_getrnge;
+    files    = regexp.h;
+    bypass   = "static void getrnge";
+    sed      = "/^static int[ \t]*size;/c\\\n"
+               "static int      size ;\\\n\\\n"
+               "static int getrnge ();";
+};
+#endif
+
+/*
+ *  a missing semi-colon at the end of the statsswtch structure definition.
+ */
+fix = {
+    hackname = statsswtch;
+    files    = rpcsvc/rstat.h;
+    select   = "boottime$";
+    sed      = "s/boottime$/boottime;/";
+};
+
+
+/*
+ *  Don't use or define the name va_list in stdio.h.
+ *  This is for ANSI and also to interoperate properly with gcc's varargs.h.
+ *  Arrange for stdio.h to use stdarg.h to define __gnuc_va_list
+ */
+fix = {
+    hackname = stdio_va_list;
+    files    = stdio.h;
+
+    /*
+     * Use __gnuc_va_list in arg types in place of va_list.
+     * On 386BSD use __gnuc_va_list instead of _VA_LIST_.  We're hoping the
+     * trailing parentheses and semicolon save all other systems from this.
+     * Define __va_list__ (something harmless and unused) instead of va_list.
+     * Don't claim to have defined va_list.
+     */
+    shell =
+ "if ( egrep \"__need___va_list\" $file ) > /dev/null 2>&1 ; then
+    :
+  else
+    echo \"#define __need___va_list\"
+    echo \"#include <stdarg.h>\"
+  fi
+
+  sed -e 's@ va_list @ __gnuc_va_list @' \\
+      -e 's@ va_list)@ __gnuc_va_list)@' \\
+      -e 's@ _BSD_VA_LIST_));@ __gnuc_va_list));@' \\
+      -e 's@ _VA_LIST_));@ __gnuc_va_list));@' \\
+      -e 's@ va_list@ __va_list__@' \\
+      -e 's@\\*va_list@*__va_list__@' \\
+      -e 's@ __va_list)@ __gnuc_va_list)@' \\
+      -e 's@GNUC_VA_LIST@GNUC_Va_LIST@' \\
+      -e 's@_NEED___VA_LIST@_NEED___Va_LIST@' \\
+      -e 's@VA_LIST@DUMMY_VA_LIST@' \\
+      -e 's@_Va_LIST@_VA_LIST@'";
+};
+
+
+/*
+ *  Check for strict ansi compliance
+ */
+#ifdef STRICT_ANSI
+fix = {
+    hackname = strict_ansi;
+    select   = "__STDC__[ \t]*[=!]=[ \t]*[01]";
+    sed      = "s/__STDC__[ \t]*==[ \t]*0/!defined (__STRICT_ANSI__)/g";
+    sed      = "s/__STDC__[ \t]*!=[ \t]*0/defined (__STRICT_ANSI__)/g";
+    sed      = "s/__STDC__[ \t]*==[ \t]*1/defined (__STRICT_ANSI__)/g";
+    sed      = "s/__STDC__[ \t]*!=[ \t]*1/!defined (__STRICT_ANSI__)/g";
+};
+#endif
+
+/*
+ *  Fix bogus #ifdef on SunOS 4.1.
+ */
+fix = {
+    hackname = sun_bogus_ifdef;
+    files  = "hsfs/hsfs_spec.h";
+    files  = "hsfs/iso_spec.h";
+    select = '#ifdef __i386__ || __vax__';
+    sed    = "s/\\#ifdef __i386__ || __vax__/\\#if __i386__ || __vax__/g";
+};
+
+
+/*
+ *  Fix bogus #ifdef on SunOS 4.1.
+ */
+fix = {
+    hackname = sun_bogus_ifdef_sun4c;
+    files  = "hsfs/hsnode.h";
+    select = '#ifdef __i386__ || __sun4c__';
+    sed    = "s/\\#ifdef __i386__ || __sun4c__/\\#if __i386__ || __sun4c__/g";
+};
+
+
+/*
+ *  Fix the CAT macro in SunOS memvar.h.
+ */
+fix = {
+    hackname = sun_catmacro;
+    files  = pixrect/memvar.h;
+    select = "^#define[ \t]+CAT(a,b)";
+    sed    = "/^#define[ \t]CAT(a,b)/ i\\\n"
+                 "#ifdef __STDC__ \\\n"
+                 "#define CAT(a,b) a##b\\\n"
+                 "#else\n";
+
+    sed    = "/^#define[ \t]CAT(a,b)/ a\\\n"
+                 "#endif\n";
+};
+
+
+/*
+ *  Fix return type of free and {c,m,re}alloc in <malloc.h> on SunOS 4.1.
+ *  Also fix return type of {m,re}alloc in <malloc.h> on sysV68
+ */
+fix = {
+    hackname = sun_malloc;
+    files    = malloc.h;
+
+    sed   = "s/typedef[ \t]char \\*\tmalloc_t/typedef void \\*\tmalloc_t/g";
+    sed   = "s/int[ \t][ \t]*free/void\tfree/g";
+    sed   = "s/char\\([ \t]*\\*[ \t]*malloc\\)/void\\1/g";
+    sed   = "s/char\\([ \t]*\\*[ \t]*realloc\\)/void\\1/g";
+};
+
+
+/*
+ *  Fix non-ANSI memcpy declaration that conflicts with gcc's builtin
+ *  declaration on Sun OS 4.x.  We must only fix this on Sun OS 4.x, because
+ *  many other systems have similar text but correct versions of the file.
+ *  To ensure only Sun's is fixed, we grep for a likely unique string.
+ *  Fix also on sysV68 R3V7.1 (head/memory.h\t50.1\t )
+ */
+fix = {
+    hackname = sun_memcpy;
+    files    = memory.h;
+    select = "/\\*\t@\\(#\\)"
+             "(head/memory.h\t50.1\t "
+             "|memory\\.h 1\\.[2-4] 8./../.. SMI; from S5R2 1\\.2\t)\\*/";
+
+    sed    = "1i\\\n/* This file was generated by fixincludes */\\\n"
+             "#ifndef __memory_h__\\\n"
+             "#define __memory_h__\\\n\\\n"
+             "#ifdef __STDC__\\\n"
+             "extern void *memccpy();\\\n"
+             "extern void *memchr();\\\n"
+             "extern void *memcpy();\\\n"
+             "extern void *memset();\\\n"
+             "#else\\\n"
+             "extern char *memccpy();\\\n"
+             "extern char *memchr();\\\n"
+             "extern char *memcpy();\\\n"
+             "extern char *memset();\\\n"
+             "#endif /* __STDC__ */\\\n\\\n"
+             "extern int memcmp();\\\n\\\n"
+             "#endif /* __memory_h__ */\n";
+
+    sed    = "1,$d";
+};
+
+
+/*
+ *  Check for yet more missing ';' in struct (in SunOS 4.0.x)
+ */
+fix = {
+    hackname = sun_rusers_semi;
+    files    = rpcsvc/rusers.h;
+    select   = "_cnt$";
+    sed      = "/^struct/,/^};/s/_cnt$/_cnt;/";
+};
+
+
+/*
+ *  signal.h on SunOS defines signal using (),
+ *  which causes trouble when compiling with g++ -pedantic.
+ */
+fix = {
+    hackname = sun_signal;
+    files    = sys/signal.h;
+    files    = signal.h;
+    select   = "^void\t" '\(\*signal\(\)\)\(\);';
+
+    sed = "/^void\t" '(\*signal())();$/i'  "\\\n"
+          "#ifdef __cplusplus"             "\\\n"
+          "void\t(*signal(...))(...);"     "\\\n"
+          "#else"                          "\n";
+
+    sed = "/^void\t" '(\*signal())();$/a'  "\\\n"
+          '#endif'                         "\n";
+};
+
+
+/*
+ *  On *some* SunOS-es, rpc/auth.h, rpc/clnt.h, rpc/svc.h, and
+ *  rpc/xdr.h need prototypes for its ops function pointers.
+ */
+fix = {
+    hackname = sun_auth_proto;
+    files    = rpc/auth.h;
+    files    = rpc/clnt.h;
+    files    = rpc/svc.h;
+    files    = rpc/xdr.h;
+    mach     = "*-sun-*";
+    /*
+     *  Select those files containing '(*name)()' but *not*
+     *  containing '(*name)(junk)'.  The change would be innocuous
+     *  but there is no point bothering if the fix is not needed.
+     */
+    select   = '\(\*[a-z][a-z_]*\)\(\)';
+    bypass   = '\(\*[a-z][a-z_]*\)\(' "[ \t]*[a-zA-Z.].*" '\)';
+    sed      = 's'
+                '/^\(.*(\*[a-z][a-z_]*)(\)'      '\();.*\)'
+                "/\\\n"
+                    "#ifdef __cplusplus\\\n"
+                    '\1...\2' "\\\n"
+                    "#else\\\n"
+                    '\1\2' "\\\n"
+                    "#endif"
+                "/";
+};
+
+
+/*
+ *  This file on SunOS 4 has a very large macro.  When the sed loop
+ *  tries pull it in, it overflows the pattern space size of the SunOS
+ *  sed (GNU sed does not have this problem).  Since the file does not
+ *  require fixing, we remove it from the fixed directory.
+ */
+fix = {
+    hackname = sunos_large_macro;
+    files    = sundev/ipi_error.h;
+    shell    =
+        "echo \"Removing incorrect fix to SunOS <sundev/ipi_error.h>\" >&2\n"
+         "rm -f ${DESTDIR}/$file ${DESTDIR}/$file.\ncat > /dev/null";
+};
+
+
+/*
+ *  math.h on SunOS 4 puts the declaration of matherr before the definition
+ *  of struct exception, so the prototype (added by fixproto) causes havoc.
+ */
+fix = {
+    hackname = sunos_matherr_decl;
+    files    = math.h;
+    /*
+     *  Find the first occurrance of 'struct exception'.
+     *  If it is the definition, then the file is okay.
+     *  If it is a usage, then the order is wrong and we
+     *  must insert a forward reference.
+     */
+    test = "\"`fgrep 'struct exception' $file | line`\""
+                  " != 'struct exception {'";
+
+    sed = "/matherr/i\\\nstruct exception;\n";
+};
+
+
+/*
+ *  Correct the return type for strlen in strings.h in SunOS 4.
+ */
+fix = {
+    hackname = sunos_strlen;
+    files    = strings.h;
+    sed = "s/int[ \t]*strlen();/__SIZE_TYPE__ strlen();/";
+};
+
+
+/*
+ *  Solaris math.h and floatingpoint.h define __P without protection,
+ *  which conflicts with the fixproto definition.  The fixproto
+ *  definition and the Solaris definition are used the same way.
+ */
+#ifdef SVR4
+fix = {
+    hackname = svr4__p;
+    files    = math.h;
+    files    = floatingpoint.h;
+    select   = "^#define[ \t]*__P";
+    sed      = "/^#define[ \t]*__P/i\\\n#ifndef __P\n";
+    sed      = "/^#define[ \t]*__P/a\\\n#endif\n";
+};
+#endif
+
+/*
+ *  Disable apparent native compiler optimization cruft in SVR4.2 <string.h>
+ *  that is visible to any ANSI compiler using this include.  Simply
+ *  delete the lines that #define some string functions to internal forms.
+ */
+#ifdef SVR4
+fix = {
+    hackname = svr4_disable_opt;
+    files    = string.h;
+    select   = '#define.*__std_hdr_';
+    sed      = '/#define.*__std_hdr_/d';
+};
+#endif
+
+/*
+ *  Conditionalize some of <sys/endian.h> on __GNUC__ and __GNUG__.
+ */
+#ifdef SVR4
+fix = {
+    hackname = svr4_endian;
+    files    = sys/endian.h;
+    bypass   = '__GNUC__';
+
+    sed      = "/#\tifdef\t__STDC__/i\\\n"
+               "#   if !defined (__GNUC__) && !defined (__GNUG__)\n";
+
+    sed      = "/#\t\tinclude\t<sys\\/byteorder.h>/s/\t\t/   /";
+
+    sed      = "/#   include\t<sys\\/byteorder.h>/i\\\n"
+               "#   endif /* !defined (__GNUC__) && !defined (__GNUG__) */\n";
+};
+#endif
+
+/*
+ *  Remove useless extern keyword from struct forward declarations
+ *  in <sys/stream.h> and <sys/strsubr.h>
+ */
+#ifdef SVR4
+fix = {
+    hackname = svr4_extern_struct;
+    files    = sys/stream.h;
+    files    = sys/strsubr.h;
+    select   = 'extern struct [a-z_]*;';
+    sed      = 's/extern struct \([a-z][a-z_]*\)/struct \1/';
+};
+#endif
+
+/*
+ *  Fix declarations of `ftw' and `nftw' in <ftw.h>.  On some/most SVR4
+ *  systems the file <ftw.h> contains extern declarations of these
+ *  functions followed by explicitly `static' definitions of these
+ *  functions... and that's not allowed according to ANSI C.  (Note
+ *  however that on Solaris, this header file glitch has been pre-fixed by
+ *  Sun.  In the Solaris version of <ftw.h> there are no static
+ *  definitions of any function so we don't need to do any of this stuff
+ *  when on Solaris.
+ */
+#ifdef SVR4
+#ifndef SOLARIS
+fix = {
+    hackname = svr4_ftw;
+    files    = ftw.h;
+    select   = '^extern int ftw\(const';
+
+    sed = '/^extern int ftw(const/i' "\\\n"
+            "#if !defined(_STYPES)\\\n"
+            "static\\\n"
+            "#else\\\n"
+            "extern\\\n"
+            "#endif";
+    sed = 's/extern \(int ftw(const.*\)$/\1/';
+    sed = "/^extern int nftw/i\\\n"
+            "#if defined(_STYPES)\\\n"
+            "static\\\n"
+            "#else\\\n"
+            "extern\\\n"
+            "#endif";
+    sed = 's/extern \(int nftw.*\)$/\1/';
+    sed = "/^extern int ftw(),/c\\\n"
+            "#if !defined(_STYPES)\\\n"
+            "static\\\n"
+            "#else\\\n"
+            "extern\\\n"
+            "#endif\\\n"
+            "  int ftw();\\\n"
+            "#if defined(_STYPES)\\\n"
+            "static\\\n"
+            "#else\\\n"
+            "extern\\\n"
+            "#endif\\\n"
+            "  int nftw();";
+};
+#endif
+#endif
+
+
+/*
+ *   Fix broken decl of getcwd present on some svr4 systems.
+ */
+#ifdef SVR4
+fix = {
+    hackname = svr4_getcwd;
+    files    = stdlib.h;
+    files    = unistd.h;
+    select   = 'getcwd\(char \*, int\)';
+
+    sed = 's/getcwd(char \*, int)/getcwd(char *, size_t)/';
+};
+#endif
+
+/*
+ *  set ifdef _KERNEL
+ */
+#ifdef SVR4
+fix = {
+    hackname = svr4_kernel;
+    files    = fs/rfs/rf_cache.h;
+    files    = sys/erec.h;
+    files    = sys/err.h;
+    files    = sys/char.h;
+    files    = sys/getpages.h;
+    files    = sys/map.h;
+    files    = sys/cmn_err.h;
+    files    = sys/kdebugger.h;
+    bypass   = '_KERNEL';
+    sed      = "1i\\\n#ifdef _KERNEL";
+    sed      = "$a\\\n#endif /* _KERNEL */";
+};
+#endif
+
+/*
+ *  Delete any #defines of `__i386' which may be present in <ieeefp.h>.  They
+ *  tend to conflict with the compiler's own definition of this symbol.  (We
+ *  will use the compiler's definition.)
+ *  Likewise __sparc, for Solaris, and __i860, and a few others
+ *  (guessing it is necessary for all of them).
+ */
+#ifdef SVR4
+fix = {
+    hackname = svr4_mach_defines;
+    files    = ieeefp.h;
+    select   = "#define[ \t]*__(i386|i860|mips|sparc|m88k|m68k)[ \t]";
+    sed      = "/#define[ \t]*__\\(i386|i860|mips|sparc|m88k|m68k\\)[ \t]/d";
+};
+#endif
+
+/*
+ *  Fix declarations of `makedev', `major', and `minor' in <sys/mkdev.h>.
+ */
+#ifdef SVR4
+fix = {
+    hackname = svr4_mkdev;
+    files    = sys/mkdev.h;
+
+    sed      = "/^dev_t makedev(const/c\\\n"
+               "static dev_t makedev(const major_t, const minor_t);";
+
+    sed      = "/^dev_t makedev()/c\\\n"
+               "static dev_t makedev();";
+
+    sed      = "/^major_t major(const/c\\\n"
+               "static major_t major(const dev_t);";
+
+    sed      = "/^major_t major()/c\\\n"
+               "static major_t major();";
+
+    sed      = "/^minor_t minor(const/c\\\n"
+               "static minor_t minor(const dev_t);";
+
+    sed      = "/^minor_t minor()/c\\\n"
+               "static minor_t minor();";
+};
+#endif
+
+/*
+ *  Fix reference to NC_NPI_RAW in <sys/netcspace.h>.
+ *  Also fix types of array initializers.
+ */
+#ifdef SVR4
+fix = {
+    hackname = svr4_netcspace;
+    files    = sys/netcspace.h;
+    select   = 'NC_NPI_RAW';
+    sed      = 's/NC_NPI_RAW/NC_TPI_RAW/g';
+    sed      = 's/NC_/(unsigned long) NC_/';
+};
+#endif
+
+/*
+ *  Fix reference to NMSZ in <sys/adv.h>.
+ */
+#ifdef SVR4
+fix = {
+    hackname = svr4_nmsz;
+    files    = sys/adv.h;
+    select   = '\[NMSZ\]';
+    sed      = 's/\[NMSZ\]/\[RFS_NMSZ\]/g';
+};
+#endif
+
+/*
+ *  Completely replace <sys/varargs.h> with a file that includes gcc's
+ *  stdarg.h or varargs.h files as appropriate.
+ */
+#ifdef SVR4
+fix = {
+    hackname = svr4_no_varargs;
+    files    = sys/varargs.h;
+    shell    = "cat > /dev/null\n"
+               "cat << _EOF_\n"
+               "/* This file was generated by fixincludes.  */\n"
+               "#ifndef _SYS_VARARGS_H\n"
+               "#define _SYS_VARARGS_H\n\n"
+
+               "#ifdef __STDC__\n"
+               "#include <stdarg.h>\n"
+               "#else\n"
+               "#include <varargs.h>\n"
+               "#endif\n\n"
+
+               "#endif  /* _SYS_VARARGS_H */\n"
+               "_EOF_";
+};
+#endif
+
+/*
+ *   Fix broken decl of profil present on some svr4 systems.
+ */
+#ifdef SVR4
+fix = {
+    hackname = svr4_profil;
+    files    = stdlib.h;
+    files    = unistd.h;
+
+    sed = 's/profil(unsigned short \*, unsigned int, '
+                         'unsigned int, unsigned int)'
+           '/profil(unsigned short *, size_t, int, unsigned)/';
+};
+#endif
+
+/*
+ *  Convert functions to prototype form, and fix arg names in <sys/stat.h>.
+ */
+#ifdef SVR4
+fix = {
+    hackname = svr4_proto_form;
+    files    = sys/stat.h;
+    select   = 'const extern';
+
+    sed      = "/^stat([ \t]*[^c]/ {\nN\nN\n"
+                   "s/(.*)\\n/( /\n"
+                   "s/;\\n/, /\n"
+                   "s/;$/)/\n"  "}";
+
+    sed      = "/^lstat([ \t]*[^c]/ {\nN\nN\n"
+                   "s/(.*)\\n/( /\n"
+                   "s/;\\n/, /\n"
+                   "s/;$/)/\n"  "}";
+
+    sed      = "/^fstat([ \t]*[^i]/ {\nN\nN\n"
+                   "s/(.*)\\n/( /\n"
+                   "s/;\\n/, /\n"
+                   "s/;$/)/\n"  "}";
+
+    sed      = "/^mknod([ \t]*[^c]/{\nN\nN\nN\n"
+                   "s/(.*)\\n/( /\n"
+                   "s/;\\n/, /g\n"
+                   "s/;$/)/\n"  "}";
+
+    sed      = "1,$s/\\([^A-Za-z]\\)path\\([^A-Za-z]\\)/\\1__path\\2/g";
+    sed      = "1,$s/\\([^A-Za-z]\\)buf\\([^A-Za-z]\\)/\\1__buf\\2/g";
+    sed      = "1,$s/\\([^A-Za-z]\\)fd\\([^A-Za-z]\\)/\\1__fd\\2/g";
+    sed      = "1,$s/ret\\([^u]\\)/__ret\\1/g";
+    sed      = "1,$s/\\([^_]\\)mode\\([^_]\\)/\\1__mode\\2/g";
+    sed      = "1,$s/\\([^_r]\\)dev\\([^_]\\)/\\1__dev\\2/g";
+};
+#endif
+
+/*
+ *  Add a prototyped declaration of mmap to <sys/mman.h>.
+ */
+#ifdef SVR4
+fix = {
+    hackname = svr4_proto_mmap;
+    files    = sys/mman.h;
+    select   = '^extern caddr_t mmap();$';
+    sed = '/^extern caddr_t mmap();$/c' "\\\n"
+          "#ifdef __STDC__\\\n"
+          "extern caddr_t mmap (caddr_t, size_t, int, int, int, off_t);\\\n"
+          "#else /* !defined(__STDC__) */\\\n"
+          "extern caddr_t mmap ();\\\n"
+          "#endif /* !defined(__STDC__) */\\\n";
+};
+#endif
+
+/*
+ *  Add a #define of _SIGACTION_ into <sys/signal.h>.
+ */
+#ifdef SVR4
+fix = {
+    hackname = svr4_sigaction;
+    files    = sys/signal.h;
+    sed      = "/^struct sigaction {/i\\\n"
+               "#define _SIGACTION_";
+    sed      = 's/(void *(\*)())/(void (*)(int))/';
+};
+#endif
+
+/*
+ *  Put storage class at start of decl, to avoid warning.
+ */
+#ifdef SVR4
+fix = {
+    hackname = svr4_storage_class;
+    files    = rpc/types.h;
+    select   = 'const extern';
+    sed      = 's/const extern/extern const/g';
+};
+#endif
+
+/*
+ *  Fix return value of mem{ccpy,chr,cpy,set} and str{len,spn,cspn}
+ *  in string.h on sysV68
+ *  Correct the return type for strlen in string.h on Lynx.
+ *  Correct the argument type for ffs in string.h on Alpha OSF/1 V2.0.
+ *  Add missing const for strdup on OSF/1 V3.0.
+ *  On sysV88 layout is slightly different.
+ */
+fix = {
+    hackname = systypes;
+    files  = "sys/types.h";
+    files  = "stdlib.h";
+    files  = "sys/stdtypes.h";
+    files  = "stddef.h";
+    files  = "memory.h";
+    files  = "unistd.h";
+    select = "typedef[ \t]+[a-z_][ \ta-z_]*[ \t]"
+             "(size|ptrdiff|wchar)_t";
+
+      sed  = "/^[ \t]*\\*[ \t]*typedef unsigned int size_t;/N";
+
+      sed  = "s/^\\([ \t]*\\*[ \t]*typedef unsigned int size_t;\\n"
+               "[ \t]*\\*\\/\\)/\\1\\\n"
+             "#ifndef __SIZE_TYPE__\\\n"
+             "#define __SIZE_TYPE__ long unsigned int\\\n"
+             "#endif\\\n"
+             "typedef __SIZE_TYPE__ size_t;\\\n/";
+
+      sed  = "/typedef[ \t][ \t]*[a-z_][ \ta-z_]*[ \t]size_t/i\\\n"
+                   "#ifndef __SIZE_TYPE__\\\n"
+                   "#define __SIZE_TYPE__ long unsigned int\\\n"
+                   "#endif\n";
+
+      sed  = "s/typedef[ \t][ \t]*[a-z_][ \ta-z_]*[ \t]size_t/"
+               "typedef __SIZE_TYPE__ size_t/";
+
+      sed  = "/typedef[ \t][ \t]*[a-z_][ \ta-z_]*[ \t]ptrdiff_t/i\\\n"
+                   "#ifndef __PTRDIFF_TYPE__\\\n"
+                   "#define __PTRDIFF_TYPE__ long int\\\n"
+                   "#endif\n";
+
+      sed  = "s/typedef[ \t][ \t]*[a-z_][ \ta-z_]*[ \t]ptrdiff_t/"
+               "typedef __PTRDIFF_TYPE__ ptrdiff_t/";
+
+      sed  = "/typedef[ \t][ \t]*[a-z_][ \ta-z_]*[ \t]wchar_t/i\\\n"
+                   "#ifndef __WCHAR_TYPE__\\\n"
+                   "#define __WCHAR_TYPE__ int\\\n"
+                   "#endif\\\n"
+                   "#ifndef __cplusplus\n";
+
+      sed  = "/typedef[ \t][ \t]*[a-z_][ \ta-z_]*[ \t]wchar_t/a\\\n"
+                   "#endif\n";
+
+      sed  = "s/typedef[ \t][ \t]*[a-z_][ \ta-z_]*[ \t]wchar_t/"
+               "typedef __WCHAR_TYPE__ wchar_t/";
+};
+
+
+/*
+ *  Fix return type of exit and abort in <stdlib.h> on SunOS 4.1.
+ *  Also wrap protection around size_t for m88k-sysv3 systems.
+ *  We use a funny name to ensure it follows 'systypes' fix.
+ */
+fix = {
+    hackname = systypes_for_aix;
+    files    = sys/types.h;
+    select   = "typedef[ \t][ \t]*[A-Za-z_][ \tA-Za-z_]*[ \t]size_t";
+    bypass   = "_GCC_SIZE_T";
+
+    sed    = "/typedef[ \t][ \t]*[A-Za-z_][ \tA-Za-z_]*[ \t]size_t/i\\\n"
+                 "#ifndef _GCC_SIZE_T\\\n"
+                 "#define _GCC_SIZE_T\n";
+
+    sed    = "/typedef[ \t][ \t]*[A-Za-z_][ \tA-Za-z_]*[ \t]size_t/a\\\n"
+                 "#endif\n";
+};
+
+
+/*
+ *  if the #if says _cplusplus, not the double underscore __cplusplus
+ *  that it should be
+ */
+fix = {
+    hackname = sysv68_string;
+    files    = string.h;
+
+    sed = "s/extern[ \t]*int[ \t]*strlen();/extern unsigned int strlen();/";
+    sed = "s/extern[ \t]*int[ \t]*ffs[ \t]*(long);/extern int ffs(int);/";
+    sed = "s/strdup(char \\*s1);/strdup(const char *s1);/";
+    sed = "/^extern char$/N";
+    sed = "s/^extern char\\(\\n\t\\*memccpy(),\\)$/extern void\\1/";
+    sed = "/^\tstrncmp(),$/N";
+    sed = "s/^\\(\tstrncmp()\\),\\n\\(\tstrlen(),\\)$/\\1;\\\n"
+          "extern unsigned int\\\n\\2/";
+    sed = "/^extern int$/N";
+    sed = "s/^extern int\\(\\n\tstrlen(),\\)/extern size_t\\1/";
+};
+
+
+/*
+ *  Replace definitions of size_t, ptrdiff_t and wchar_t
+ *  Install the proper definition of the three standard types
+ *  in header files that they come from.
+ */
+fix = {
+    hackname = sysz_stdlib_for_sun;
+    mach     = "*-sun-*";
+    mach     = "m88k-*-sysv3*";
+    files    = stdlib.h;
+
+    sed   = "s/int\tabort/void\tabort/g";
+    sed   = "s/int\tfree/void\tfree/g";
+    sed   = "s/char[ \t]*\\*[ \t]*calloc/void \\*\tcalloc/g";
+    sed   = "s/char[ \t]*\\*[ \t]*malloc/void \\*\tmalloc/g";
+    sed   = "s/char[ \t]*\\*[ \t]*realloc/void \\*\trealloc/g";
+    sed   = "s/int[ \t][ \t]*exit/void\texit/g";
+
+    sed   = "/typedef[ \ta-zA-Z_]*[ \t]size_t[ \t]*;/i\\\n"
+                "#ifndef _GCC_SIZE_T\\\n"
+                "#define _GCC_SIZE_T\n";
+
+    sed   = "/typedef[ \ta-zA-Z_]*[ \t]size_t[ \t]*;/a\\\n"
+                "#endif\n";
+};
+
+
+/*
+ *  Fix this Sun file to avoid interfering with stddef.h.
+ *  We use a funny name to ensure it follows 'systypes' fix.
+ */
+fix = {
+    hackname = sysz_stdtypes_for_sun;
+    files = sys/stdtypes.h;
+    sed   = "/[\t ]size_t.*;/i\\\n"
+              "#ifndef _GCC_SIZE_T\\\n"
+              "#define _GCC_SIZE_T\n";
+
+    sed   = "/[\t ]size_t.*;/a\\\n"
+              "#endif\n";
+
+    sed   = "/[\t ]ptrdiff_t.*;/i\\\n"
+              "#ifndef _GCC_PTRDIFF_T\\\n"
+              "#define _GCC_PTRDIFF_T\n";
+
+    sed   = "/[\t ]ptrdiff_t.*;/a\\\n"
+              "#endif\n";
+
+    sed   = "/[\t ]wchar_t.*;/i\\\n"
+              "#ifndef _GCC_WCHAR_T\\\n"
+              "#define _GCC_WCHAR_T\n";
+
+    sed   = "/[\t ]wchar_t.*;/a\\\n"
+              "#endif\n";
+};
+
+
+/*
+ *  Fix this file to avoid interfering with stddef.h,
+ *  but don't mistakenly match ssize_t present in AIX for the ps/2,
+ *  or typedefs which use (but do not set) size_t.
+ */
+fix = {
+    hackname = tinfo_cplusplus;
+    files    = tinfo.h;
+    sed      = "s/[ \t]_cplusplus/ __cplusplus/";
+};
+
+
+/*
+ *  Cancel out ansi_compat.h on Ultrix.  Replace it with empty file.
+ */
+fix = {
+    hackname = ultrix_ansi_compat;
+    files    = ansi_compat.h;
+    select   = ULTRIX;
+    sed      = "1i\\\n/* This file intentionally left blank. */\n";
+    sed      = "1,$d";
+};
+
+
+/*
+ *  parameter to atof not const on DECstation Ultrix V4.0 and NEWS-OS 4.2R.
+ *  also get rid of bogus inline definitions in HP-UX 8.0
+ */
+fix = {
+    hackname = ultrix_atof_param;
+    files    = math.h;
+
+    sed = "s@atof(\\([ \t]*char[ \t]*\\*[^)]*\\))@atof(const \\1)@";
+    sed = "s@inline int abs(int [a-z][a-z]*) {.*}@extern \"C\" int abs(int);@";
+    sed = "s@inline double abs(double [a-z][a-z]*) {.*}@@";
+    sed = "s@inline int sqr(int [a-z][a-z]*) {.*}@@";
+    sed = "s@inline double sqr(double [a-z][a-z]*) {.*}@@";
+};
+
+
+/*
+ *  parameters not const on DECstation Ultrix V4.0 and OSF/1.
+ */
+fix = {
+    hackname = ultrix_const;
+    files    = stdio.h;
+
+    sed   = 's@perror( char \*__s );@perror( const char *__s );@';
+    sed   = 's@fputs( char \*__s,@fputs( const char *__s,@';
+    sed   = 's@fopen( char \*__filename, char \*__type );@'
+              'fopen( const char *__filename, const char *__type );@';
+    sed   = 's@fwrite( void \*__ptr,@fwrite( const void *__ptr,@';
+    sed   = 's@fscanf( FILE \*__stream, char \*__format,@'
+              'fscanf( FILE *__stream, const char *__format,@';
+    sed   = 's@scanf( char \*__format,@scanf( const char *__format,@';
+    sed   = 's@sscanf( char \*__s, char \*__format,@'
+              'sscanf( const char *__s, const char *__format,@';
+    sed   = 's@popen(char \*, char \*);@popen(const char *, const char *);@';
+    sed   = 's@tempnam(char\*,char\*);@tempnam(const char*,const char*);@';
+};
+
+
+/*
+ *  Check for bad #ifdef line (in Ultrix 4.1)
+ */
+fix = {
+    hackname = ultrix_ifdef;
+    select   = "#ifdef KERNEL";
+    files    = sys/file.h;
+    sed      = "s/#ifdef KERNEL/#if defined(KERNEL)/";
+};
+
+
+/*
+ *  Avoid nested comments on Ultrix 4.3.
+ */
+fix = {
+    hackname = ultrix_nested_cmnt;
+    files    = rpc/svc.h;
+    sed      = "s@^\\( \\*\tint protocol;  \\)/\\*@\\1*/ /*@";
+};
+
+
+/*
+ *  Check for superfluous `static' (in Ultrix 4.2)
+ *  On Ultrix 4.3, includes of other files (r3_cpu.h,r4_cpu.h) is broken.
+ */
+fix = {
+    hackname = ultrix_static;
+    files  = machine/cpu.h;
+    select = '#include "r[34]_cpu';
+    sed    = "s/^static struct tlb_pid_state/struct tlb_pid_state/";
+    sed    = 's/^#include "r3_cpu\.h"$/#include <machine\/r3_cpu\.h>/';
+    sed    = 's/^#include "r4_cpu\.h"$/#include <machine\/r4_cpu\.h>/';
+};
+
+
+/*
+ *  Fix multiple defines for NULL
+ */
+fix = {
+    hackname = undefine_null;
+    select = "^#[ \t]*define[ \t]*[ \t]NULL[ \t]";
+    bypass = "#[ \t]*(ifn|un)def[ \t]*[ \t]NULL($|[ \t])";
+    sed    = "/^#[ \t]*define[ \t][ \t]*NULL[ \t]/i\\\n"
+                "#undef NULL\n";
+};
+
+
+/*
+ *  Fix definitions of macros used by va-i960.h in VxWorks header file.
+ */
+fix = {
+    hackname = va_i960_macro;
+    files    = arch/i960/archI960.h;
+    select   = "__(vsiz|vali|vpad|alignof__)";
+    sed = "s/__vsiz/__vxvsiz/";
+    sed = "s/__vali/__vxvali/";
+    sed = "s/__vpad/__vxvpad/";
+    sed = "s/__alignof__/__vxalignof__/";
+};
+
+
+/*
+ *  AIX headers define NULL to be cast to a void pointer,
+ *  which is illegal in ANSI C++.
+ */
+fix = {
+    hackname = void_null;
+    files    = curses.h;
+    files    = dbm.h;
+    files    = locale.h;
+    files    = stdio.h;
+    files    = stdlib.h;
+    files    = string.h;
+    files    = time.h;
+    files    = unistd.h;
+    files    = sys/dir.h;
+    files    = sys/param.h;
+    files    = sys/types.h;
+    select   = "#[ \t]*define[ \t][ \t]*NULL[ \t].*void";
+    sed      = "s/^#[ \t]*define[ \t]*NULL[ \t]*((void[ \t]*\\*)0)"
+                "/#define NULL 0/";
+};
+
+
+/*
+ *  Make VxWorks header which is almost gcc ready fully gcc ready.
+ */
+fix = {
+    hackname = vxworks_gcc_problem;
+    files    = types/vxTypesBase.h;
+    select   = "__GNUC_TYPEOF_FEATURE_BROKEN_USE_DEFAULT_UNTIL_FIXED__";
+
+    sed = "s/#ifdef __GNUC_TYPEOF_FEATURE_BROKEN_USE_DEFAULT_UNTIL_FIXED__/"
+          "#if 1/";
+
+    sed = "/[ \t]size_t/i\\\n"
+        "#ifndef _GCC_SIZE_T\\\n"
+        "#define _GCC_SIZE_T\n";
+
+    sed = "/[ \t]size_t/a\\\n"
+        "#endif\n";
+
+    sed = "/[ \t]ptrdiff_t/i\\\n"
+        "#ifndef _GCC_PTRDIFF_T\\\n"
+        "#define _GCC_PTRDIFF_T\n";
+
+    sed = "/[ \t]ptrdiff_t/a\\\n"
+        "#endif\n";
+
+    sed = "/[ \t]wchar_t/i\\\n"
+        "#ifndef _GCC_WCHAR_T\\\n"
+        "#define _GCC_WCHAR_T\n";
+
+    sed = "/[ \t]wchar_t/a\\\n"
+        "#endif\n";
+};
+
+
+/*
+ *  Fix VxWorks <time.h> to not require including <vxTypes.h>.
+ */
+fix = {
+    hackname = vxworks_needs_vxtypes;
+    files    = time.h;
+    select   = "uint_t[ \t][ \t]*_clocks_per_sec";
+    sed      = "s/uint_t/unsigned int/";
+};
+
+
+/*
+ *  Fix VxWorks <sys/stat.h> to not require including <vxWorks.h>.
+ */
+fix = {
+    hackname = vxworks_needs_vxworks;
+    files    = sys/stat.h;
+    test     = "-r types/vxTypesOld.h";
+    test     = "-n \"`fgrep '#include' $file`\"";
+    test     = "-n \"`fgrep ULONG $file`\"";
+    select   = "#[ \t]define[ \t][ \t]*__INCstath";
+
+    sed = "/#[ \t]define[ \t][ \t]*__INCstath/a\\\n"
+          "#include <types/vxTypesOld.h>\n";
+};
+
+
+/*
+ *  Another bad dependency in VxWorks 5.2 <time.h>.
+ */
+fix = {
+    hackname = vxworks_time;
+    files    = time.h;
+    select   = "VOIDFUNCPTR";
+    test     = "-r vxWorks.h";
+    sed      = "/VOIDFUNCPTR/i\\\n"
+               "#ifndef __gcc_VOIDFUNCPTR_defined\\\n"
+               "#ifdef __cplusplus\\\n"
+               "typedef void (*__gcc_VOIDFUNCPTR) (...);\\\n"
+               "#else\\\n"
+               "typedef void (*__gcc_VOIDFUNCPTR) ();\\\n"
+               "#endif\\\n"
+               "#define __gcc_VOIDFUNCPTR_defined\\\n"
+               "#endif\n";
+
+    sed      = "s/VOIDFUNCPTR/__gcc_VOIDFUNCPTR/g";
+};
+
+
+/*
+ *  There are several name conflicts with C++ reserved words in X11 header
+ *  files.  These are fixed in some versions, so don't do the fixes if
+ *  we find __cplusplus in the file.  These were found on the RS/6000.
+ */
+fix = {
+    hackname = x11_class;
+    files    = X11/ShellP.h;
+    bypass   = __cplusplus;
+    sed      = "/char \\*class;/i\\\n"
+                   "#ifdef __cplusplus\\\n"
+                   "\tchar *c_class;\\\n"
+                   "#else\n";
+    sed      = "/char \\*class;/a\\\n"
+                   "#endif\n";
+};
+
+
+/*
+ *  class in Xm/BaseClassI.h
+ */
+fix = {
+    hackname = x11_class_usage;
+    files    = Xm/BaseClassI.h;
+    bypass   = "__cplusplus";
+    sed      = "s/ class[)]/ c_class)/g";
+};
+
+
+/*
+ *  new in Xm/Traversal.h
+ */
+fix = {
+    hackname = x11_new;
+    files    = Xm/Traversal.h;
+    bypass   = __cplusplus;
+
+    sed      = "/Widget\told, new;/i\\\n"
+                   "#ifdef __cplusplus\\\n"
+                   "\tWidget\told, c_new;\\\n"
+                   "#else\n";
+
+    sed      = "/Widget\told, new;/a\\\n"
+                   "#endif\n";
+
+    sed      = "s/Widget new,/Widget c_new,/g";
+};
+
+
+/*
+ *  Incorrect sprintf declaration in X11/Xmu.h
+ */
+fix = {
+    hackname = x11_sprintf;
+    files    = X11*/Xmu.h;
+    sed      = "s,^extern char \\*\tsprintf();$,#ifndef __STDC__\\\n"
+               "extern char *\tsprintf();\\\n"
+               "#endif /* !defined __STDC__ */,";
+};
+
+
+/*
+ *  Purge some HP-UX 11 files that are only borken after they are "fixed".
+ */
+fix = {
+    hackname = zzz_ki_iface;
+    files    = sys/ki_iface.h;
+    select   = 'These definitions are for HP Internal developers';
+    shell    =
+        "echo \"Removing incorrect fix to HP-UX <$file>\" >&2\n"
+         "rm -f ${DESTDIR}/$file ${DESTDIR}/$file.\ncat > /dev/null";
+};
+
+
+/*
+ *  Purge some HP-UX 11 files that are only borken after they are "fixed".
+ */
+fix = {
+    hackname = zzz_ki;
+    files    = sys/ki.h;
+    select   = '11.00 HP-UX LP64';
+    shell    =
+        "echo \"Removing incorrect fix to HP-UX <$file>\" >&2\n"
+         "rm -f ${DESTDIR}/$file ${DESTDIR}/$file.\ncat > /dev/null";
+};
+
+
+/*
+ *  Purge some HP-UX 11 files that are only borken after they are "fixed".
+ */
+fix = {
+    hackname = zzz_ki_calls;
+    files    = sys/ki_calls.h;
+    select   = 'KI_MAX_PROCS is an arbitrary number';
+    shell    =
+        "echo \"Removing incorrect fix to HP-UX <$file>\" >&2\n"
+         "rm -f ${DESTDIR}/$file ${DESTDIR}/$file.\ncat > /dev/null";
+};
+
+
+/*
+ *  Purge some HP-UX 11 files that are only borken after they are "fixed".
+ */
+fix = {
+    hackname = zzz_ki_defs;
+    files    = sys/ki_defs.h;
+    select   = 'Kernel Instrumentation Definitions';
+    shell    =
+        "echo \"Removing incorrect fix to HP-UX <$file>\" >&2\n"
+         "rm -f ${DESTDIR}/$file ${DESTDIR}/$file.\ncat > /dev/null";
+};
+
+
+/*
+ *  Purge some HP-UX 11 files that are only borken after they are "fixed".
+ */
+fix = {
+    hackname = zzz_time;
+    files    = sys/time.h;
+    select   = 'For CASPEC, look in';
+    shell    =
+        "echo \"Removing incorrect fix to HP-UX <$file>\" >&2\n"
+         "rm -f ${DESTDIR}/$file ${DESTDIR}/$file.\ncat > /dev/null";
+};
+
+
+/*EOF*/
