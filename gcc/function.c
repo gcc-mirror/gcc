@@ -3751,7 +3751,7 @@ assign_parms (fndecl, second_time)
 	    = promote_mode (TREE_TYPE (parm), nominal_mode, &unsignedp, 0);
 
 	  parmreg = gen_reg_rtx (promoted_nominal_mode);
-	  REG_USERVAR_P (parmreg) = 1;
+	  mark_user_reg (parmreg);
 
 	  /* If this was an item that we received a pointer to, set DECL_RTL
 	     appropriately.  */
@@ -3819,7 +3819,7 @@ assign_parms (fndecl, second_time)
 	      /* We can't use nominal_mode, because it will have been set to
 		 Pmode above.  We must use the actual mode of the parm.  */
 	      parmreg = gen_reg_rtx (TYPE_MODE (TREE_TYPE (parm)));
-	      REG_USERVAR_P (parmreg) = 1;
+	      mark_user_reg (parmreg);
 	      emit_move_insn (parmreg, DECL_RTL (parm));
 	      DECL_RTL (parm) = parmreg;
 	      /* STACK_PARM is the pointer, not the parm, and PARMREG is
