@@ -746,7 +746,7 @@ _cpp_get_fresh_line (cpp_reader *pfile)
    get diagnostics pointing to the correct location.
 
    Does not handle issues such as token lookahead, multiple-include
-   optimisation, directives, skipping etc.  This function is only
+   optimization, directives, skipping etc.  This function is only
    suitable for use by _cpp_lex_token, and in special cases like
    lex_expansion_token which doesn't care for any of these issues.
 

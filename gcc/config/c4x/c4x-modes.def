@@ -25,7 +25,7 @@
 
    On the C4x, we have a "no-overflow" mode which is used when an ADD,
    SUB, NEG, or MPY insn is used to set the condition code.  This is
-   to prevent the combiner from optimising away a following CMP of the
+   to prevent the combiner from optimizing away a following CMP of the
    result with zero when a signed conditional branch or load insn
    follows.
 

@@ -236,7 +236,7 @@ Boston, MA 02111-1307, USA.  */
 #define TARGET_NOP_FUN_DLLIMPORT 1
 #define drectve_section()  /* nothing */
 
-/* Objective C has its own packing rules...
+/* Objective-C has its own packing rules...
    Objc tries to parallel the code in stor-layout.c at runtime	
    (see libobjc/encoding.c).  This (compile-time) packing info isn't 
    available at runtime, so it's hopeless to try.

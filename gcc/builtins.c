@@ -242,9 +242,9 @@ get_pointer_alignment (tree exp, unsigned int max_align)
    way, because it could contain a zero byte in the middle.
    TREE_STRING_LENGTH is the size of the character array, not the string.
 
-   ONLY_VALUE should be non-zero if the result is not going to be emitted
+   ONLY_VALUE should be nonzero if the result is not going to be emitted
    into the instruction stream and zero if it is going to be expanded.
-   E.g. with i++ ? "foo" : "bar", if ONLY_VALUE is non-zero, constant 3
+   E.g. with i++ ? "foo" : "bar", if ONLY_VALUE is nonzero, constant 3
    is returned, otherwise NULL, since
    len = c_strlen (src, 1); if (len) expand_expr (len, ...); would not
    evaluate the side-effects.
