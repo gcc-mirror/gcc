@@ -26,7 +26,6 @@ libmudflap_la_SOURCES = \
 	mf-heuristics.c \
 	mf-hooks1.c \
 	mf-hooks2.c
-mf-runtime.lo: mf-runtime.c splay-tree.c splay-tree.h
 libmudflap_la_LIBADD = 
 libmudflap_la_DEPENDENCIES = $(libmudflap_la_LIBADD)
 libmudflap_la_LDFLAGS = -version-info `grep -v '^\#' $(srcdir)/libtool-version`
@@ -34,7 +33,7 @@ libmudflap_la_LDFLAGS = -version-info `grep -v '^\#' $(srcdir)/libtool-version`
 clean-local:
 	rm -f pth/*.o pth/*.lo
 
-pth/mf-runtime.lo: mf-runtime.c mf-runtime.h mf-impl.h splay-tree.c splay-tree.h
+pth/mf-runtime.lo: mf-runtime.c mf-runtime.h mf-impl.h
 	$(LTCOMPILE) -DLIBMUDFLAPTH -c $(srcdir)/mf-runtime.c -o $@
 pth/mf-heuristics.lo: mf-heuristics.c mf-runtime.h mf-impl.h
 	$(LTCOMPILE) -DLIBMUDFLAPTH -c $(srcdir)/mf-heuristics.c -o $@

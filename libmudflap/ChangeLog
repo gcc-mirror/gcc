@@ -1,3 +1,11 @@
+2004-07-27  Frank Ch. Eigler  <fche@redhat.com>
+
+	* splay-tree.[ch]: Remove.  Merge contents into ...
+	* mf-runtime.c: ... here, renaming symbols and making all functions
+	static.  Remove unused min/max functions.
+	* Makefile.am: Forget about splay-tree.[ch].
+	* Makefile.in, testsuite/Makefile.in: Regenerated.
+
 2004-07-21  Frank Ch. Eigler  <fche@redhat.com>
 
 	* mf-runtime.c (__mfu_check): Remove mistaken mode-nop handling.
