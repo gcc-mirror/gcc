@@ -1,3 +1,9 @@
+2001-07-18  Martin Kahlert  <martin.kahlert@infineon.com>
+
+	* java/lang/natClass.cc: Move calls of _Jv_InitClass from
+	java::lang::Class::isAssignableFrom and java::lang::Class::isInstance
+	into _Jv_IsAssignableFrom
+
 2001-07-18  Tom Tromey  <tromey@redhat.com>
 
 	For PR java/2812:

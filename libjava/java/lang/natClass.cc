@@ -624,9 +624,6 @@ java::lang::Class::getMethods (void)
 jboolean
 java::lang::Class::isAssignableFrom (jclass klass)
 {
-  // Arguments may not have been initialized, given ".class" syntax.
-  _Jv_InitClass (this);
-  _Jv_InitClass (klass);
   return _Jv_IsAssignableFrom (this, klass);
 }
 
@@ -635,7 +632,6 @@ java::lang::Class::isInstance (jobject obj)
 {
   if (! obj)
     return false;
-  _Jv_InitClass (this);
   return _Jv_IsAssignableFrom (this, JV_CLASS (obj));
 }
 
@@ -909,6 +905,10 @@ _Jv_LookupInterfaceMethodIdx (jclass klass, jclass iface, int method_idx)
 jboolean
 _Jv_IsAssignableFrom (jclass target, jclass source)
 {
+  // Arguments may not have been initialized, given ".class" syntax.
+  _Jv_InitClass (target);
+  _Jv_InitClass (source);
+
   if (source == target)
     return true;
      
