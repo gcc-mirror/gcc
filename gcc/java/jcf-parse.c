@@ -193,7 +193,7 @@ set_source_filename (jcf, index)
   while (c--)								  \
     {									  \
       tree class = get_class_constant (jcf, JCF_readu2 (jcf));	    	  \
-      if (!CLASS_COMPLETE_P (class))					  \
+      if (DECL_P (class) && !CLASS_COMPLETE_P (class))			  \
 	{								  \
 	  tree outer = TYPE_NAME (get_class_constant (jcf, 		  \
 						      JCF_readu2 (jcf))); \

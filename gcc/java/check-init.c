@@ -463,7 +463,7 @@ check_init (exp, before)
 	words tmp = ALLOC_WORDS (2 * num_current_words);
 	words when_true = tmp;
 	words when_false = tmp + num_current_words;
-#ifdef ENABLE_CHECKING
+#ifdef ENABLE_JC1_CHECKING
 	if (TREE_CODE (alt->block) != LOOP_EXPR)
 	  fatal ("internal error in check-init:  EXIT_EXPR not in LOOP_EXPR");
 #endif
@@ -534,7 +534,7 @@ check_init (exp, before)
     case WITH_CLEANUP_EXPR:
       {
 	struct alternatives *alt = alternatives;	
-#ifdef ENABLE_CHECKING
+#ifdef ENABLE_JC1_CHECKING
 	if (TREE_CODE (alt->block) != CLEANUP_POINT_EXPR)
 	  fatal ("internal error in check-init:  WITH_CLEANUP_EXPR not in CLEANUP_POINT_EXPR");
 #endif
