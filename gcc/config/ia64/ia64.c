@@ -119,6 +119,7 @@ static void ia64_free_machine_status PARAMS ((struct function *));
 static void emit_insn_group_barriers PARAMS ((FILE *, rtx));
 static void emit_all_insn_group_barriers PARAMS ((FILE *, rtx));
 static void emit_predicate_relation_info PARAMS ((void));
+static void process_epilogue PARAMS ((void));
 static int process_set PARAMS ((FILE *, rtx));
 
 static rtx ia64_expand_fetch_and_op PARAMS ((optab, enum machine_mode,
@@ -3827,6 +3828,8 @@ static void rws_update PARAMS ((struct reg_write_state *, int,
 				struct reg_flags, int));
 static int rws_access_regno PARAMS ((int, struct reg_flags, int));
 static int rws_access_reg PARAMS ((rtx, struct reg_flags, int));
+static void update_set_flags PARAMS ((rtx, struct reg_flags *, int *, rtx *));
+static int set_src_needs_barrier PARAMS ((rtx, struct reg_flags, int, rtx));
 static int rtx_needs_barrier PARAMS ((rtx, struct reg_flags, int));
 static void init_insn_group_barriers PARAMS ((void));
 static int group_barrier_needed_p PARAMS ((rtx));
@@ -3995,6 +3998,132 @@ rws_access_reg (reg, flags, pred)
     }
 }
 
+/* Examine X, which is a SET rtx, and update the flags, the predicate, and
+   the condition, stored in *PFLAGS, *PPRED and *PCOND.  */
+
+static void
+update_set_flags (x, pflags, ppred, pcond)
+     rtx x;
+     struct reg_flags *pflags;
+     int *ppred;
+     rtx *pcond;
+{
+  rtx src = SET_SRC (x);
+
+  *pcond = 0;
+
+  switch (GET_CODE (src))
+    {
+    case CALL:
+      return;
+
+    case IF_THEN_ELSE:
+      if (SET_DEST (x) == pc_rtx)
+	/* X is a conditional branch.  */
+	return;	
+      else
+	{
+	  int is_complemented = 0;
+
+	  /* X is a conditional move.  */
+	  rtx cond = XEXP (src, 0);
+	  if (GET_CODE (cond) == EQ)
+	    is_complemented = 1;
+	  cond = XEXP (cond, 0);
+	  if (GET_CODE (cond) != REG
+	      && REGNO_REG_CLASS (REGNO (cond)) != PR_REGS)
+	    abort ();
+	  *pcond = cond;
+	  if (XEXP (src, 1) == SET_DEST (x)
+	      || XEXP (src, 2) == SET_DEST (x))
+	    {
+	      /* X is a conditional move that conditionally writes the
+		 destination.  */
+
+	      /* We need another complement in this case.  */
+	      if (XEXP (src, 1) == SET_DEST (x))
+		is_complemented = ! is_complemented;
+
+	      *ppred = REGNO (cond);
+	      if (is_complemented)
+		++*ppred;
+	    }
+
+	  /* ??? If this is a conditional write to the dest, then this
+	     instruction does not actually read one source.  This probably
+	     doesn't matter, because that source is also the dest.  */
+	  /* ??? Multiple writes to predicate registers are allowed
+	     if they are all AND type compares, or if they are all OR
+	     type compares.  We do not generate such instructions
+	     currently.  */
+	}
+      /* ... fall through ... */
+
+    default:
+      if (GET_RTX_CLASS (GET_CODE (src)) == '<'
+	  && GET_MODE_CLASS (GET_MODE (XEXP (src, 0))) == MODE_FLOAT)
+	/* Set pflags->is_fp to 1 so that we know we're dealing
+	   with a floating point comparison when processing the
+	   destination of the SET.  */
+	pflags->is_fp = 1;
+
+      /* Discover if this is a parallel comparison.  We only handle
+	 and.orcm and or.andcm at present, since we must retain a
+	 strict inverse on the predicate pair.  */
+      else if (GET_CODE (src) == AND)
+	pflags->is_and = 1;
+      else if (GET_CODE (src) == IOR)
+	pflags->is_or = 1;
+
+      break;
+    }
+}
+
+/* Subroutine of rtx_needs_barrier; this function determines whether the
+   source of a given SET rtx found in X needs a barrier.  FLAGS and PRED
+   are as in rtx_needs_barrier.  COND is an rtx that holds the condition
+   for this insn.  */
+   
+static int
+set_src_needs_barrier (x, flags, pred, cond)
+     rtx x;
+     struct reg_flags flags;
+     int pred;
+     rtx cond;
+{
+  int need_barrier = 0;
+  rtx dst;
+  rtx src = SET_SRC (x);
+
+  if (GET_CODE (src) == CALL)
+    /* We don't need to worry about the result registers that
+       get written by subroutine call.  */
+    return rtx_needs_barrier (src, flags, pred);
+  else if (SET_DEST (x) == pc_rtx)
+    {
+      /* X is a conditional branch.  */
+      /* ??? This seems redundant, as the caller sets this bit for
+	 all JUMP_INSNs.  */
+      flags.is_branch = 1;
+      return rtx_needs_barrier (src, flags, pred);
+    }
+
+  need_barrier = rtx_needs_barrier (src, flags, pred);
+
+  /* This instruction unconditionally uses a predicate register.  */
+  if (cond)
+    need_barrier |= rws_access_reg (cond, flags, 0);
+
+  dst = SET_DEST (x);
+  if (GET_CODE (dst) == ZERO_EXTRACT)
+    {
+      need_barrier |= rtx_needs_barrier (XEXP (dst, 1), flags, pred);
+      need_barrier |= rtx_needs_barrier (XEXP (dst, 2), flags, pred);
+      dst = XEXP (dst, 0);
+    }
+  return need_barrier;
+}
+
 /* Handle an access to rtx X of type FLAGS using predicate register PRED.
    Return 1 is this access creates a dependency with an earlier instruction
    in the same group.  */
@@ -4010,7 +4139,6 @@ rtx_needs_barrier (x, flags, pred)
   int need_barrier = 0;
   const char *format_ptr;
   struct reg_flags new_flags;
-  rtx src, dst;
   rtx cond = 0;
 
   if (! x)
@@ -4020,95 +4148,14 @@ rtx_needs_barrier (x, flags, pred)
 
   switch (GET_CODE (x))
     {
-    case SET:
-      src = SET_SRC (x);
-      switch (GET_CODE (src))
+    case SET:      
+      update_set_flags (x, &new_flags, &pred, &cond);
+      need_barrier = set_src_needs_barrier (x, new_flags, pred, cond);
+      if (GET_CODE (SET_SRC (x)) != CALL)
 	{
-	case CALL:
-	  /* We don't need to worry about the result registers that
-             get written by subroutine call.  */
-	  need_barrier = rtx_needs_barrier (src, flags, pred);
-	  return need_barrier;
-
-	case IF_THEN_ELSE:
-	  if (SET_DEST (x) == pc_rtx)
-	    {
-	      /* X is a conditional branch.  */
-	      /* ??? This seems redundant, as the caller sets this bit for
-		 all JUMP_INSNs.  */
-	      new_flags.is_branch = 1;
-	      need_barrier = rtx_needs_barrier (src, new_flags, pred);
-	      return need_barrier;
-	    }
-	  else
-	    {
-	      /* X is a conditional move.  */
-	      cond = XEXP (src, 0);
-	      if (GET_CODE (cond) == EQ)
-		is_complemented = 1;
-	      cond = XEXP (cond, 0);
-	      if (GET_CODE (cond) != REG
-		  && REGNO_REG_CLASS (REGNO (cond)) != PR_REGS)
-		abort ();
-
-	      if (XEXP (src, 1) == SET_DEST (x)
-		  || XEXP (src, 2) == SET_DEST (x))
-		{
-		  /* X is a conditional move that conditionally writes the
-		     destination.  */
-
-		  /* We need another complement in this case.  */
-		  if (XEXP (src, 1) == SET_DEST (x))
-		    is_complemented = ! is_complemented;
-
-		  pred = REGNO (cond);
-		  if (is_complemented)
-		    ++pred;
-		}
-
-	      /* ??? If this is a conditional write to the dest, then this
-		 instruction does not actually read one source.  This probably
-		 doesn't matter, because that source is also the dest.  */
-	      /* ??? Multiple writes to predicate registers are allowed
-		 if they are all AND type compares, or if they are all OR
-		 type compares.  We do not generate such instructions
-		 currently.  */
-	    }
-	  /* ... fall through ... */
-
-	default:
-	  if (GET_RTX_CLASS (GET_CODE (src)) == '<'
-	       && GET_MODE_CLASS (GET_MODE (XEXP (src, 0))) == MODE_FLOAT)
-	    /* Set new_flags.is_fp to 1 so that we know we're dealing
-	       with a floating point comparison when processing the
-	       destination of the SET.  */
-	    new_flags.is_fp = 1;
-
-	  /* Discover if this is a parallel comparison.  We only handle
-	     and.orcm and or.andcm at present, since we must retain a
-	     strict inverse on the predicate pair.  */
-	  else if (GET_CODE (src) == AND)
-	    new_flags.is_and = flags.is_and = 1;
-	  else if (GET_CODE (src) == IOR)
-	    new_flags.is_or = flags.is_or = 1;
-
-	  break;
+	  new_flags.is_write = 1;
+	  need_barrier |= rtx_needs_barrier (SET_DEST (x), new_flags, pred);
 	}
-      need_barrier = rtx_needs_barrier (src, flags, pred);
-
-      /* This instruction unconditionally uses a predicate register.  */
-      if (cond)
-	need_barrier |= rws_access_reg (cond, flags, 0);
-
-      dst = SET_DEST (x);
-      if (GET_CODE (dst) == ZERO_EXTRACT)
-	{
-	  need_barrier |= rtx_needs_barrier (XEXP (dst, 1), flags, pred);
-	  need_barrier |= rtx_needs_barrier (XEXP (dst, 2), flags, pred);
-	  dst = XEXP (dst, 0);
-	}
-      new_flags.is_write = 1;
-      need_barrier |= rtx_needs_barrier (dst, new_flags, pred);
       break;
 
     case CALL:
@@ -4181,8 +4228,33 @@ rtx_needs_barrier (x, flags, pred)
 
     case PARALLEL:
       for (i = XVECLEN (x, 0) - 1; i >= 0; --i)
-	if (rtx_needs_barrier (XVECEXP (x, 0, i), flags, pred))
-	  need_barrier = 1;
+	{
+	  rtx pat = XVECEXP (x, 0, i);
+	  if (GET_CODE (pat) == SET)
+	    {
+	      update_set_flags (pat, &new_flags, &pred, &cond);
+	      need_barrier |= set_src_needs_barrier (pat, new_flags, pred, cond);
+	    }
+	  else if (GET_CODE (pat) == USE || GET_CODE (pat) == CALL)
+	    need_barrier |= rtx_needs_barrier (pat, flags, pred);
+	  else if (GET_CODE (pat) != CLOBBER && GET_CODE (pat) != RETURN)
+	    abort ();
+	}
+      for (i = XVECLEN (x, 0) - 1; i >= 0; --i)
+	{
+	  rtx pat = XVECEXP (x, 0, i);
+	  if (GET_CODE (pat) == SET)
+	    {
+	      if (GET_CODE (SET_SRC (pat)) != CALL)
+		{
+		  new_flags.is_write = 1;
+		  need_barrier |= rtx_needs_barrier (SET_DEST (pat), new_flags,
+						     pred);
+		}
+	    }
+	  else if (GET_CODE (pat) == CLOBBER)
+	    need_barrier |= rtx_needs_barrier (pat, flags, pred);
+	}
       break;
 
     case SUBREG:
@@ -4533,9 +4605,10 @@ emit_insn_group_barriers (dump, insns)
 			     INSN_UID (last_label));
 		  emit_insn_before (gen_insn_group_barrier (GEN_INT (3)), last_label);
 		  insn = last_label;
+
+		  init_insn_group_barriers ();
+		  last_label = 0;
 		}
-	      init_insn_group_barriers ();
-	      last_label = 0;
 	    }
 	}
     }
@@ -4774,9 +4847,7 @@ static int itanium_split_issue PARAMS ((const struct ia64_packet *, int));
 static rtx ia64_single_set PARAMS ((rtx));
 static int insn_matches_slot PARAMS ((const struct ia64_packet *, enum attr_type, int, rtx));
 static void ia64_emit_insn_before PARAMS ((rtx, rtx));
-#if 0
-static rtx gen_nop_type PARAMS ((enum attr_type));
-#endif
+static void maybe_rotate PARAMS ((FILE *));
 static void finish_last_head PARAMS ((FILE *, int));
 static void rotate_one_bundle PARAMS ((FILE *));
 static void rotate_two_bundles PARAMS ((FILE *));
