@@ -378,7 +378,26 @@ public class X509CRLSelector implements CRLSelector, Cloneable
     BigInteger crlNumber = null;
     if (maxCrlNumber != null)
       {
+        byte[] b = crl.getExtensionValue(CRL_NUMBER_ID);
+        if (b == null)
+          return false;
         try
+          {
+            DERValue val = DERReader.read(b);
+            if (!(val.getValue() instanceof BigInteger))
+              return false;
+            crlNumber = (BigInteger) val.getValue();
+          }
+        catch (IOException ioe)
+          {
+            return false;
+          }
+        if (maxCrlNumber.compareTo(crlNumber) < 0)
+          return false;
+      }
+    if (minCrlNumber != null)
+      {
+        if (crlNumber == null)
           {
             byte[] b = crl.getExtensionValue(CRL_NUMBER_ID);
             if (b == null)
@@ -394,42 +413,9 @@ public class X509CRLSelector implements CRLSelector, Cloneable
               {
                 return false;
               }
-            if (maxCrlNumber.compareTo(crlNumber) < 0)
-              return false;
           }
-        catch (CertificateParsingException cpe)
-          {
-            return false;
-          }
-      }
-    if (minCrlNumber != null)
-      {
-        try
-          {
-            if (crlNumber == null)
-              {
-                byte[] b = crl.getExtensionValue(CRL_NUMBER_ID);
-                if (b == null)
-                  return false;
-                try
-                  {
-                    DERValue val = DERReader.read(b);
-                    if (!(val.getValue() instanceof BigInteger))
-                      return false;
-                    crlNumber = (BigInteger) val.getValue();
-                  }
-                catch (IOException ioe)
-                  {
-                    return false;
-                  }
-              }
-            if (minCrlNumber.compareTo(crlNumber) > 0)
-              return false;
-          }
-        catch (CertificateParsingException cpe)
-          {
-            return false;
-          }
+        if (minCrlNumber.compareTo(crlNumber) > 0)
+          return false;
       }
     if (date != null)
       {

@@ -1,3 +1,15 @@
+2004-09-21  Casey Marshall  <csm@gnu.org>
+
+	* java/security/cert/X509CRLSelector.java:
+	(match): remove unreachable try-catch clauses.
+	Reported by: Dalibor Topic <robilad@kaffe.org>
+
+2004-09-21  Mark Wielaard  <mark@klomp.org>
+
+	* java/util/TreeMap.java (root): Don't initialize.
+	(TreeMap(Comparator)): Call fabricateTree(0).
+	(fabricateTree): Initialize root and size when count is 0.
+
 2004-09-21  Sven de Marothy <sven@physto.se>
 
 	* java/nio/ByteBuffer.java (hashCode): Implemented.
