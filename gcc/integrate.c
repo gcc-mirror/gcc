@@ -426,6 +426,7 @@ save_for_inline_nocopy (fndecl)
      perform constant folding when its incoming value is constant).
      Otherwise, we have to copy its value into a new register and track
      the new register's life.  */
+  in_nonparm_insns = 0;
   save_parm_insns (insn, first_nonparm_insn);
 
   /* We have now allocated all that needs to be allocated permanently
@@ -455,8 +456,6 @@ save_parm_insns (insn, first_nonparm_insn)
     rtx insn;
     rtx first_nonparm_insn;
 {
-  in_nonparm_insns = 0;
-
   if (insn == NULL_RTX)
     return;
 
