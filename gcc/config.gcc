@@ -2876,7 +2876,8 @@ powerpc*-*-* | rs6000-*-*)
 		x)
 			;;
 
-		xcommon | xpower | xpower2 | xpower3 | xpowerpc | xpowerpc64 \
+		xcommon | xpowerpc | xpowerpc64 \
+		  | xpower | xpower2 | xpower3 | xpower4 \
 		  | xrios | xrios1 | xrios2 | xrsc | xrsc1 | xrs64a \
 		  | x601 | x602 | x603 | x603e | x604 | x604e | x620 | x630 \
 		  | x740 | x750 | x7400 | x7450 | x505)

@@ -1,3 +1,7 @@
+2003-02-26  David Edelsohn  <edelsohn@gnu.org>
+
+	* config.gcc: Add power4 to PowerPC with_cpu list.
+
 Wed Feb 26 19:46:25 CET 2003  Jan Hubicka  <jh@suse.cz>
 
 	* objc-act.c: (mark_referenced_methods): Fix compilation problem.
