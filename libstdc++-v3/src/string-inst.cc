@@ -50,45 +50,43 @@ namespace std
   template C S::_Rep::_S_terminal;
   template S::size_type S::_Rep::_S_max_size;
   template S::size_type S::_S_empty_rep_storage[];
-
-  template S::basic_string(S const&);
   template S::_Rep* S::_Rep::_S_create(size_t, S::allocator_type const&);
-  template void S::_Rep::_M_destroy(S::allocator_type const&) throw();
+  template void S::_Rep::_M_destroy(const S::allocator_type&) throw();
   template void __destroy_aux(S*, S*, __false_type);
 
-  template 
-    S::basic_string(S::size_type, C, S::allocator_type const&);
+  template S::basic_string(S const&);
 
   template 
-    S::basic_string(S::allocator_type const&);
+    S::basic_string(S::size_type, C, const S::allocator_type&);
 
   template 
-    S::basic_string(S const&, S::size_type, S::size_type);
+    S::basic_string(const S::allocator_type&);
 
   template 
-    S::basic_string(
-      S const&, S::size_type, S::size_type, S::allocator_type const&);
+    S::basic_string(const S&, S::size_type, S::size_type);
 
   template 
-    S::basic_string(
-      C const*, S::size_type, S::allocator_type const&);
+    S::basic_string(const S&, S::size_type, S::size_type, 
+		    const S::allocator_type&);
 
   template 
-    S::basic_string(
-      C const*, S::allocator_type const&);
+    S::basic_string(C const*, S::size_type, const S::allocator_type&);
 
   template 
-    S::basic_string
-    (C*, C*, const allocator<C>&);
+    S::basic_string(C const*, S::allocator_type const&);
 
   template 
-    S::basic_string
-    (S::iterator, S::iterator, const allocator<C>&);
+    S::basic_string(C*, C*, const allocator<C>&);
+
+  template 
+    S::basic_string(S::iterator, S::iterator, const allocator<C>&);
 
   template
     void S::_M_leak_hard();
+
   template
     void S::_M_mutate(S::size_type, S::size_type, S::size_type);
+
   template
     C* S::_Rep::_M_clone(S::allocator_type const&, S::size_type);
 
@@ -101,6 +99,7 @@ namespace std
 # ifdef _GLIBCPP_ALLOC_CONTROL
     template
       bool (* S::_Rep::_S_excess_slop)(size_t, size_t); 
+
     template
       bool S::_Rep::_S_default_excess(size_t, size_t); 
 # endif
@@ -122,8 +121,7 @@ namespace std
 
   template 
     S& 
-    S::append<S::iterator>
-    (S::iterator, S::iterator);
+    S::append<S::iterator>(S::iterator, S::iterator);
 
   template
     S& 
@@ -131,8 +129,7 @@ namespace std
 
   template 
     S& 
-    S::assign<S::iterator>
-    (S::iterator, S::iterator);
+    S::assign<S::iterator>(S::iterator, S::iterator);
 
   template 
     void
@@ -140,8 +137,8 @@ namespace std
     (S::iterator, S::iterator, S::iterator); //it, c+, c+ and temptype = char*
 
   template
-    S& S::replace(
-      S::size_type, S::size_type, S const&, S::size_type, S::size_type);
+    S& S::replace(S::size_type, S::size_type, S const&, 
+		  S::size_type, S::size_type);
 
   template 
     S& S::replace(S::iterator, S::iterator, S::size_type, C);
@@ -272,6 +269,7 @@ namespace std
   template void _S_string_copy(const S&, C*, allocator<C>::size_type);
 
 } // std
+
 
 
 
