@@ -1,5 +1,6 @@
 /* Demangler for GNU C++
-   Copyright 1989, 91, 94, 95, 96, 97, 98, 1999 Free Software Foundation, Inc.
+   Copyright 1989, 1991, 1994, 1995, 1996, 1997, 1998, 1999,
+   2000 Free Software Foundation, Inc.
    Written by James Clark (jjc@jclark.uucp)
    Rewritten by Fred Fish (fnf@cygnus.com) for ARM and Lucid demangling
    Modified by Satish Pai (pai@apollo.hp.com) for HP demangling
@@ -705,7 +706,7 @@ cplus_demangle_opname (opname, result, options)
 	{
 	  /* Operator.  */
 	  size_t i;
-	  for (i = 0; i < sizeof (optable) / sizeof (optable[0]); i++)
+	  for (i = 0; i < ARRAY_SIZE (optable); i++)
 	    {
 	      if (strlen (optable[i].in) == 2
 		  && memcmp (optable[i].in, opname + 2, 2) == 0)
@@ -723,7 +724,7 @@ cplus_demangle_opname (opname, result, options)
 	    {
 	      /* Assignment.  */
 	      size_t i;
-	      for (i = 0; i < sizeof (optable) / sizeof (optable[0]); i++)
+	      for (i = 0; i < ARRAY_SIZE (optable); i++)
 		{
 		  if (strlen (optable[i].in) == 3
 		      && memcmp (optable[i].in, opname + 2, 3) == 0)
@@ -747,7 +748,7 @@ cplus_demangle_opname (opname, result, options)
 	  && memcmp (opname + 3, "assign_", 7) == 0)
 	{
 	  size_t i;
-	  for (i = 0; i < sizeof (optable) / sizeof (optable[0]); i++)
+	  for (i = 0; i < ARRAY_SIZE (optable); i++)
 	    {
 	      len1 = len - 10;
 	      if ((int) strlen (optable[i].in) == len1
@@ -764,7 +765,7 @@ cplus_demangle_opname (opname, result, options)
       else
 	{
 	  size_t i;
-	  for (i = 0; i < sizeof (optable) / sizeof (optable[0]); i++)
+	  for (i = 0; i < ARRAY_SIZE (optable); i++)
 	    {
 	      len1 = len - 3;
 	      if ((int) strlen (optable[i].in) == len1
@@ -811,7 +812,7 @@ cplus_mangle_opname (opname, options)
   int len;
 
   len = strlen (opname);
-  for (i = 0; i < sizeof (optable) / sizeof (optable[0]); i++)
+  for (i = 0; i < ARRAY_SIZE (optable); i++)
     {
       if ((int) strlen (optable[i].out) == len
 	  && (options & DMGL_ANSI) == (optable[i].flags & DMGL_ANSI)
@@ -1573,9 +1574,7 @@ demangle_expression (work, mangled, s, tk)
 
 	  len = strlen (*mangled);
 
-	  for (i = 0;
-	       i < sizeof (optable) / sizeof (optable [0]);
-	       ++i)
+	  for (i = 0; i < ARRAY_SIZE (optable); ++i)
 	    {
 	      size_t l = strlen (optable[i].in);
 
@@ -4430,7 +4429,7 @@ demangle_function_name (work, mangled, declp, scan)
       if (declp->p - declp->b >= 10 /* op$assign_ */
 	  && memcmp (declp->b + 3, "assign_", 7) == 0)
 	{
-	  for (i = 0; i < sizeof (optable) / sizeof (optable[0]); i++)
+	  for (i = 0; i < ARRAY_SIZE (optable); i++)
 	    {
 	      int len = declp->p - declp->b - 10;
 	      if ((int) strlen (optable[i].in) == len
@@ -4446,7 +4445,7 @@ demangle_function_name (work, mangled, declp, scan)
 	}
       else
 	{
-	  for (i = 0; i < sizeof (optable) / sizeof (optable[0]); i++)
+	  for (i = 0; i < ARRAY_SIZE (optable); i++)
 	    {
 	      int len = declp->p - declp->b - 3;
 	      if ((int) strlen (optable[i].in) == len
@@ -4494,7 +4493,7 @@ demangle_function_name (work, mangled, declp, scan)
       if (declp->b[4] == '\0')
 	{
 	  /* Operator.  */
-	  for (i = 0; i < sizeof (optable) / sizeof (optable[0]); i++)
+	  for (i = 0; i < ARRAY_SIZE (optable); i++)
 	    {
 	      if (strlen (optable[i].in) == 2
 		  && memcmp (optable[i].in, declp->b + 2, 2) == 0)
@@ -4511,7 +4510,7 @@ demangle_function_name (work, mangled, declp, scan)
 	  if (declp->b[2] == 'a' && declp->b[5] == '\0')
 	    {
 	      /* Assignment.  */
-	      for (i = 0; i < sizeof (optable) / sizeof (optable[0]); i++)
+	      for (i = 0; i < ARRAY_SIZE (optable); i++)
 		{
 		  if (strlen (optable[i].in) == 3
 		      && memcmp (optable[i].in, declp->b + 2, 3) == 0)
