@@ -364,9 +364,24 @@ extern int i386_pe_dllimport_name_p (const char *);
 #ifndef SET_ASM_OP
 #define SET_ASM_OP "\t.set\t"
 #endif
+/* This implements the `alias' attribute, keeping any stdcall or
+   fastcall decoration.  */
+#undef	ASM_OUTPUT_DEF_FROM_DECLS
+#define	ASM_OUTPUT_DEF_FROM_DECLS(STREAM, DECL, TARGET) 		\
+  do									\
+    {									\
+      const char *alias;						\
+      rtx rtlname = XEXP (DECL_RTL (DECL), 0);				\
+      if (GET_CODE (rtlname) == SYMBOL_REF)				\
+	alias = XSTR (rtlname, 0);					\
+      else								\
+	abort ();							\
+      ASM_OUTPUT_DEF (STREAM, alias, IDENTIFIER_POINTER (TARGET));	\
+    } while (0)
 
 #undef TREE
 
 #ifndef BUFSIZ
 # undef FILE
 #endif
+

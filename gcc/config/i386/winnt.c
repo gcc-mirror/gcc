@@ -47,12 +47,12 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 */
 
 static tree associated_type (tree);
-const char * gen_stdcall_suffix (tree);
-const char * gen_fastcall_suffix (tree);
-int i386_pe_dllexport_p (tree);
-int i386_pe_dllimport_p (tree);
-void i386_pe_mark_dllexport (tree);
-void i386_pe_mark_dllimport (tree);
+static const char * gen_stdcall_suffix (tree);
+static const char * gen_fastcall_suffix (tree);
+static int i386_pe_dllexport_p (tree);
+static int i386_pe_dllimport_p (tree);
+static void i386_pe_mark_dllexport (tree);
+static void i386_pe_mark_dllimport (tree);
 
 /* This is we how mark internal identifiers with dllimport or dllexport
    attributes.  */
@@ -182,7 +182,7 @@ associated_type (tree decl)
 
 /* Return nonzero if DECL is a dllexport'd object.  */
 
-int
+static int
 i386_pe_dllexport_p (tree decl)
 {
   tree exp;
@@ -208,7 +208,7 @@ i386_pe_dllexport_p (tree decl)
 
 /* Return nonzero if DECL is a dllimport'd object.  */
 
-int
+static int
 i386_pe_dllimport_p (tree decl)
 {
   tree imp;
@@ -308,7 +308,7 @@ i386_pe_dllimport_name_p (const char *symbol)
 /* Mark a DECL as being dllexport'd.
    Note that we override the previous setting (eg: dllimport).  */
 
-void
+static void
 i386_pe_mark_dllexport (tree decl)
 {
   const char *oldname;
@@ -350,7 +350,7 @@ i386_pe_mark_dllexport (tree decl)
 
 /* Mark a DECL as being dllimport'd.  */
 
-void
+static void
 i386_pe_mark_dllimport (tree decl)
 {
   const char *oldname;
@@ -406,11 +406,10 @@ i386_pe_mark_dllimport (tree decl)
    prefix consisting of FASTCALL_PREFIX and a suffix consisting of an
    atsign (@) followed by the number of bytes of arguments.  */
 
-const char *
+static const char *
 gen_fastcall_suffix (tree decl)
 {
   int total = 0;
-
   const char *asmname = IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (decl));
   char *newsym;
 
@@ -446,7 +445,7 @@ gen_fastcall_suffix (tree decl)
    suffix consisting of an atsign (@) followed by the number of bytes of
    arguments */
 
-const char *
+static const char *
 gen_stdcall_suffix (tree decl)
 {
   int total = 0;
@@ -717,14 +716,14 @@ i386_pe_asm_named_section (const char *name, unsigned int flags)
       *f++ ='r';
     }
   else	
-  {
-    if (flags & SECTION_CODE)
-      *f++ = 'x';
-    if (flags & SECTION_WRITE)
-      *f++ = 'w';
-    if (flags & SECTION_PE_SHARED)
-      *f++ = 's';
-  }
+    {
+      if (flags & SECTION_CODE)
+        *f++ = 'x';
+      if (flags & SECTION_WRITE)
+        *f++ = 'w';
+      if (flags & SECTION_PE_SHARED)
+        *f++ = 's';
+    }
 
   *f = '\0';
 
