@@ -1,3 +1,11 @@
+2004-11-01  Andrew Pinski  <pinskia@physics.uc.edu>
+
+	PR bootstrap/18232
+	* bitmap.h (bmp_iter_end_p): Take a const pointer instead of a struct.
+	(EXECUTE_IF_SET_IN_BITMAP): Update call to bmp_iter_end_p.
+	(EXECUTE_IF_AND_COMPL_IN_BITMAP): Likewise.
+	(EXECUTE_IF_AND_IN_BITMAP): Likewise.
+
 2004-11-01  Joseph S. Myers  <joseph@codesourcery.com>
 
 	PR c/18239
