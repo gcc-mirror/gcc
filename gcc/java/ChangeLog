@@ -1,3 +1,9 @@
+2000-07-02  Bryce McKinlay  <bryce@albatross.co.nz>
+
+        * gjavah.c (HANDLE_METHOD): Call print_method_info with a NULL stream
+        argument on the first pass for CNI as well as JNI.
+        (print_method_info): Set up method name on the first pass only.
+	
 2000-06-29  Alexandre Petit-Bianco  <apbianco@cygnus.com>
 
 	* jcf-write.c (push_long_const): Appropriately cast short negative
