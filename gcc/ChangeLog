@@ -1,3 +1,8 @@
+2004-06-29  J"orn Rennecke <joern.rennecke@superh.com>
+
+	* cfglayout.c (fixup_reorder_chain): Don't do anything for
+	e_fall->dest == EXIT_BLOCK_PTR.
+
 2004-06-28  Richard Henderson  <rth@redhat.com>
 
 	* tree-cfg.c (verify_stmt): Add last_in_block parameter.  Verify
