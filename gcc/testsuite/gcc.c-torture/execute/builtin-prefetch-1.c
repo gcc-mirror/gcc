@@ -49,11 +49,21 @@ good_expr (int *p)
   __builtin_prefetch (p, 1 + 0, 1 + 2);
 }
 
+void
+good_vararg (int *p)
+{
+  __builtin_prefetch (p, 0, 3);
+  __builtin_prefetch (p, 0);
+  __builtin_prefetch (p, 1);
+  __builtin_prefetch (p);
+}
+
 int
 main ()
 {
   good_const (arr);
   good_enum (arr);
   good_expr (arr);
+  good_vararg (arr);
   exit (0);
 }
