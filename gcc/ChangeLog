@@ -1,3 +1,9 @@
+2002-06-08  Jason Thorpe  <thorpej@wasabisystems.com>
+
+	* config/netbsd-elf.h (LINK_SPEC): Rename to...
+	(NETBSD_LINK_SPEC_ELF): ...this.  Use %(netbsd_entry_point)
+	to specify program entry point.
+
 2002-06-07  Jeff Law <law@redhat.com
 
 	* emit-rtl.c (init_emit): Add hard registers to regno_reg_rtx.
