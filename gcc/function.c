@@ -4972,11 +4972,14 @@ expand_function_start (subr, parms_have_cleanups)
   if (tem && ! obey_regdecls)
     {
 #ifdef SMALL_REGISTER_CLASSES
+      /* If the static chain originally came in a register, put it back
+	 there, then move it out in the next insn.  The reason for
+	 this peculiar code is to satisfy function integration.  */
       if (GET_CODE (static_chain_incoming_rtx) == REG)
-	last_ptr = copy_to_reg (last_ptr);
-      else
+	emit_move_insn (static_chain_incoming_rtx, last_ptr);
 #endif
-	last_ptr = copy_to_reg (static_chain_incoming_rtx);
+
+      last_ptr = copy_to_reg (static_chain_incoming_rtx);
     }
 
   context_display = 0;
