@@ -302,7 +302,7 @@ fp_zero_operand (op)
   REAL_VALUE_TYPE r;
 
   REAL_VALUE_FROM_CONST_DOUBLE (r, op);
-  return REAL_VALUES_EQUAL (r, dconst0);
+  return (REAL_VALUES_EQUAL (r, dconst0) && ! REAL_VALUE_MINUS_ZERO (r));
 }
 
 /* Nonzero if OP is an integer register.  */
