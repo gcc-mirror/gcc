@@ -3,7 +3,7 @@
 
 
 /* These denote "generic" GCC vectors.  */
-static int __attribute__((mode(V4SI))) x, y;
+static int __attribute__((vector_size(16))) x, y;
 
 static vector signed int i,j;
 static vector signed short s,t;
