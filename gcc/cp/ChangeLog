@@ -1,3 +1,8 @@
+2003-02-18  Ben Elliston  <bje@redhat.com>
+
+	PR other/7350
+	* decl.c (duplicate_decls): Fix typo in comment.
+
 2003-02-17  Michael Elizabeth Chastain <mec@shout.net>
 
 	PR debug/9717
