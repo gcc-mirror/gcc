@@ -169,7 +169,7 @@ namespace std
       string __found_grouping;
       int __sep_pos = 0;
       bool __e;
-      for (; __beg != __end; ++__beg)
+      while (__beg != __end)
         {
 	  // Only look in digits.
 	  const char_type __c = *__beg;
@@ -182,6 +182,7 @@ namespace std
 	      __xtrc += _S_atoms_in[__p - __lit];
 	      __found_mantissa = true;
 	      ++__sep_pos;
+	      ++__beg;
 	    }
           else if (__traits_type::eq(__c, __lc->_M_thousands_sep) 
 		   && __lc->_M_use_grouping && !__found_dec)
@@ -192,6 +193,7 @@ namespace std
                 {
                   __found_grouping += static_cast<char>(__sep_pos);
                   __sep_pos = 0;
+		  ++__beg;
                 }
               else
 		{
@@ -209,6 +211,7 @@ namespace std
 		__found_grouping += static_cast<char>(__sep_pos);
 	      __xtrc += '.';
 	      __found_dec = true;
+	      ++__beg;
 	    }
 	  else if ((__e = __traits_type::eq(__c, __lit[_S_ie]) 
 		    || __traits_type::eq(__c, __lit[_S_iE])) 
@@ -216,18 +219,19 @@ namespace std
 	    {
 	      // Scientific notation.
 	      __xtrc += __e ? _S_atoms_in[_S_ie] : _S_atoms_in[_S_iE];
-	      
+	      __found_sci = true;
+
 	      // Remove optional plus or minus sign, if they exist.
 	      if (++__beg != __end)
 		{
 		  const bool __plus = __traits_type::eq(*__beg, __lit[_S_iplus]);
 		  if (__plus || __traits_type::eq(*__beg, __lit[_S_iminus]))
-		    __xtrc += __plus ? _S_atoms_in[_S_iplus] 
-		                     : _S_atoms_in[_S_iminus];
-		  __found_sci = true;
+		    {
+		      __xtrc += __plus ? _S_atoms_in[_S_iplus] 
+			               : _S_atoms_in[_S_iminus];
+		      ++__beg;
+		    }
 		}
-	      else
-		break;
 	    }
 	  else
 	    // Not a valid input item.
