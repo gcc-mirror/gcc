@@ -3688,15 +3688,14 @@ yylexstring ()
       varray_type strings;
 
 ifc
-      static int last_lineno = 0;
-      static const char *last_input_filename = 0;
+      static location_t last_location;
       if (warn_traditional && !in_system_header
-	  && (input_line != last_lineno || !last_input_filename ||
-	      strcmp (last_input_filename, input_filename)))
+	  && (input_location.line != last_location.line
+	      || !last_location.file ||
+	      strcmp (last_location.file, input_location.file)))
 	{
 	  warning ("traditional C rejects string concatenation");
-	  last_lineno = input_line;
-	  last_input_filename = input_filename;
+	  last_location = input_location;
 	}
 end ifc
 
