@@ -453,7 +453,7 @@ testTest (pTest, pzFile)
   tSuccess res = FAILURE;
 
   static char zCmdBuf[4096];
-  tSCC zCmdFmt[] = "f=%s\nif ( test %s ) > /dev/null 2>&1\n"
+  tSCC zCmdFmt[] = "file=%s\nif ( test %s ) > /dev/null 2>&1\n"
   "then echo TRUE\n" "else echo FALSE\n" "fi";
 
   sprintf (zCmdBuf, zCmdFmt, pzFile, pTest->pzTest);

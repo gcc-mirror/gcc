@@ -598,7 +598,7 @@ fix = {
  */
 fix = {
     hackname = motorola_nested;
-    files    = limits.h
+    files    = limits.h;
     files    = sys/limits.h;
     sed = "s@^\\(#undef[ \t][ \t]*PIPE_BUF[ \t]*"
                    "/\\* max # bytes atomic in write to a\\)$@\\1 */@";
@@ -1041,11 +1041,11 @@ fix = {
  *  Remove the double-slash comments
  *  They *must* be removed so it will not create nested comments!!
  *  However, they will *not* be removed if '++' is in any part of
- *  their file name.
+ *  the file name, or if the name ends with ".hh" or ".H".
  */
 fix = {
     hackname = no_double_slash;
-    test     = '-z "`echo ${f}|grep ++`"';
+    test     = '-z "`echo ${file}|egrep \'++|\.hh$|\.H$\'`"';
     select = '//[^*]';
     sed    = '/\/\/[^*]/' "s|//\\(.*\\)$|/* \\1 */|";
 };
@@ -2190,11 +2190,11 @@ fix = {
     hackname = x11_class;
     files    = X11/ShellP.h;
     bypass   = __cplusplus;
-    sed      = "/char [*]class;/i\\\n"
+    sed      = "/char \\*class;/i\\\n"
                    "#ifdef __cplusplus\\\n"
                    "\tchar *c_class;\\\n"
                    "#else\n";
-    sed      = "/char [*]class;/a\\\n"
+    sed      = "/char \\*class;/a\\\n"
                    "#endif\n";
 };
 
@@ -2249,7 +2249,9 @@ fix = {
     hackname = zzz_ki_iface;
     files    = sys/ki_iface.h;
     select   = 'These definitions are for HP Internal developers';
-    shell    = "cat > /dev/null ; rm -f $file";
+    shell    =
+        "echo \"Removing incorrect fix to HP-UX <$file>\" >&2\n"
+         "rm -f ${DESTDIR}/$file ${DESTDIR}/$file.\ncat > /dev/null";
 };
 
 
@@ -2260,7 +2262,9 @@ fix = {
     hackname = zzz_ki;
     files    = sys/ki.h;
     select   = '11.00 HP-UX LP64';
-    shell    = "cat > /dev/null ; rm -f $file";
+    shell    =
+        "echo \"Removing incorrect fix to HP-UX <$file>\" >&2\n"
+         "rm -f ${DESTDIR}/$file ${DESTDIR}/$file.\ncat > /dev/null";
 };
 
 
@@ -2271,7 +2275,9 @@ fix = {
     hackname = zzz_ki_calls;
     files    = sys/ki_calls.h;
     select   = 'KI_MAX_PROCS is an arbitrary number';
-    shell    = "cat > /dev/null ; rm -f $file";
+    shell    =
+        "echo \"Removing incorrect fix to HP-UX <$file>\" >&2\n"
+         "rm -f ${DESTDIR}/$file ${DESTDIR}/$file.\ncat > /dev/null";
 };
 
 
@@ -2282,7 +2288,9 @@ fix = {
     hackname = zzz_ki_defs;
     files    = sys/ki_defs.h;
     select   = 'Kernel Instrumentation Definitions';
-    shell    = "cat > /dev/null ; rm -f $file";
+    shell    =
+        "echo \"Removing incorrect fix to HP-UX <$file>\" >&2\n"
+         "rm -f ${DESTDIR}/$file ${DESTDIR}/$file.\ncat > /dev/null";
 };
 
 
@@ -2293,7 +2301,9 @@ fix = {
     hackname = zzz_time;
     files    = sys/time.h;
     select   = 'For CASPEC, look in';
-    shell    = "cat > /dev/null ; rm -f $file";
+    shell    =
+        "echo \"Removing incorrect fix to HP-UX <$file>\" >&2\n"
+         "rm -f ${DESTDIR}/$file ${DESTDIR}/$file.\ncat > /dev/null";
 };
 
 
