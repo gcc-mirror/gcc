@@ -8311,6 +8311,8 @@ grokvardecl (type, declarator, specbits_in, initialized, constp, in_namespace)
 	context = in_namespace;
       else if (namespace_bindings_p () || RIDBIT_SETP (RID_EXTERN, specbits))
 	context = current_namespace;
+      else
+	context = NULL_TREE;
 
       decl = build_decl (VAR_DECL, declarator, complete_type (type));
 
