@@ -1,5 +1,17 @@
 2001-03-04  Stephane Carrez  <Stephane.Carrez@worldnet.fr>
 
+	* config/m68hc11/larith.asm (__mulqi3): Fix multiplication of two
+	negative numbers.
+	(___subdi3, ___adddi3): Use x instead of y as index register.
+	(__init_bss_section, __map_data_section): Optimize for 68HC12.
+	(__memset, __memcpy): Likewise.
+	(regs): Put the soft registers in bss for 68HC12.
+	(abort): Use trap to abort for 68hc12.
+	(__mulhi3, __mulhi32): Use emul for 68hc12.
+	(__mulsi3): Avoid to use the tmp soft register for 68hc12.
+
+2001-03-04  Stephane Carrez  <Stephane.Carrez@worldnet.fr>
+
 	* config/m68hc11/m68hc11.h (LIMIT_RELOAD_CLASS): Don't define.
 	* config/m68hc11/m68hc11-protos.h (limit_reload_class): Remove.
 	* config/m68hc11/m68hc11.c (limit_reload_class): Remove.
