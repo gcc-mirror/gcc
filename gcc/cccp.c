@@ -240,7 +240,6 @@ my_bzero (b, length)
 #define freopen(fname,mode,ofile) VMS_freopen (fname,mode,ofile)
 #define strncat(dst,src,cnt) VMS_strncat (dst,src,cnt)
 #define fstat(fd,stbuf)		VMS_fstat (fd,stbuf)
-#define stat(name,stbuf)	VMS_stat (name,stbuf)
 static int VMS_fstat (), VMS_stat ();
 static char * VMS_strncat ();
 static int VMS_read ();
@@ -682,7 +681,7 @@ struct macrodef
 };
 
 enum sharp_token_type {
-  NO_SHARP_TOKEN,		/* token not present */
+  NO_SHARP_TOKEN = 0,		/* token not present */
 
   SHARP_TOKEN = '#',		/* token spelled with # only */
   WHITE_SHARP_TOKEN,		/* token spelled with # and white space */
@@ -8155,7 +8154,7 @@ macroexpand (hp, op)
       for (ap = defn->pattern; ap != NULL; ap = ap->next) {
 	if (ap->stringify)
 	  xbuf_len += args[ap->argno].stringified_length;
-	else if (ap->raw_before || ap->raw_after || traditional)
+	else if (ap->raw_before != 0 || ap->raw_after != 0 || traditional)
 	  /* Add 4 for two newline-space markers to prevent
 	     token concatenation.  */
 	  xbuf_len += args[ap->argno].raw_length + 4;
@@ -8201,9 +8200,9 @@ macroexpand (hp, op)
 	/* If followed by an empty rest arg with concatenation,
 	   delete the last run of nonwhite chars.  */
 	if (rest_zero && totlen > count_before
-	    && ((ap->rest_args && ap->raw_before)
+	    && ((ap->rest_args && ap->raw_before != 0)
 		|| (last_ap != NULL && last_ap->rest_args
-		    && last_ap->raw_after))) {
+		    && last_ap->raw_after != 0))) {
 	  /* Delete final whitespace.  */
 	  while (totlen > count_before && is_space[xbuf[totlen - 1]]) {
 	    totlen--;
@@ -8281,10 +8280,10 @@ macroexpand (hp, op)
 	  }
 	  if (!traditional)
 	    xbuf[totlen++] = '\"'; /* insert ending quote */
-	} else if (ap->raw_before || ap->raw_after || traditional) {
+	} else if (ap->raw_before != 0 || ap->raw_after != 0 || traditional) {
 	  U_CHAR *p1 = arg->raw;
 	  U_CHAR *l1 = p1 + arg->raw_length;
-	  if (ap->raw_before) {
+	  if (ap->raw_before != 0) {
 	    while (p1 != l1 && is_space[*p1]) p1++;
 	    while (p1 != l1 && is_idchar[*p1])
 	      xbuf[totlen++] = *p1++;
@@ -8299,7 +8298,7 @@ macroexpand (hp, op)
 	    xbuf[totlen++] = '\n';
 	    xbuf[totlen++] = ' ';
 	  }
-	  if (ap->raw_after) {
+	  if (ap->raw_after != 0) {
 	    /* Arg is concatenated after: delete trailing whitespace,
 	       whitespace markers, and no-reexpansion markers.  */
 	    while (p1 != l1) {
@@ -8320,7 +8319,7 @@ macroexpand (hp, op)
 
 	  bcopy ((char *) p1, (char *) (xbuf + totlen), l1 - p1);
 	  totlen += l1 - p1;
-	  if (!traditional && !ap->raw_after) {
+	  if (!traditional && ap->raw_after == 0) {
 	    /* Ordinary expanded use of the argument.
 	       Put in newline-space markers to prevent token pasting.  */
 	    xbuf[totlen++] = '\n';
@@ -8365,7 +8364,7 @@ macroexpand (hp, op)
 	if (exp[i] == ')')
 	  rest_zero = 0;
 	if (! (rest_zero && last_ap != NULL && last_ap->rest_args
-	       && last_ap->raw_after))
+	       && last_ap->raw_after != 0))
 	  xbuf[totlen++] = exp[i];
       }
 
@@ -9399,7 +9398,7 @@ dump_single_macro (hp, of)
 	 default: abort ();
 	}
       }
-      if (ap->raw_before) {
+      if (ap->raw_before != 0) {
 	if (concat) {
 	  switch (ap->raw_before) {
 	   case WHITE_SHARP_TOKEN:
@@ -9422,7 +9421,7 @@ dump_single_macro (hp, of)
       concat = 0;
     }
     dump_arg_n (defn, ap->argno, of);
-    if (!traditional && ap->raw_after) {
+    if (!traditional && ap->raw_after != 0) {
       switch (ap->raw_after) {
        case SHARP_TOKEN: fprintf (of, "##"); break;
        case WHITE_SHARP_TOKEN: fprintf (of, " ##"); break;
@@ -10354,12 +10353,13 @@ extern unsigned long sys$parse(), sys$search();
    bad enough, but then compounding the problem by reporting the reason for
    failure as "normal successful completion."  */
 
+#undef fstat	/* get back to library version */
+
 static int
-fstat (fd, statbuf)
+VMS_fstat (fd, statbuf)
      int fd;
      struct stat *statbuf;
 {
-#undef fstat
   int result = fstat (fd, statbuf);
 
   if (result < 0)
@@ -10368,7 +10368,7 @@ fstat (fd, statbuf)
       char nambuf[NAM$C_MAXRSS+1];
 
       if ((fp = fdopen (fd, "r")) != 0 && fgetname (fp, nambuf) != 0)
-	result = stat (nambuf, statbuf);
+	result = VMS_stat (nambuf, statbuf);
       /* No fclose(fp) here; that would close(fd) as well.  */
     }
 
@@ -10376,11 +10376,10 @@ fstat (fd, statbuf)
 }
 
 static int
-stat (name, statbuf)
+VMS_stat (name, statbuf)
      const char *name;
      struct stat *statbuf;
 {
-#undef stat
   int result = stat (name, statbuf);
 
   if (result < 0)
