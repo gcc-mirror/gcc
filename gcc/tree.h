@@ -3917,4 +3917,7 @@ extern bool thread_through_all_blocks (void);
 /* In tree-gimple.c.  */
 extern tree get_base_address (tree t);
 
+/* In tree-vectorizer.c.  */
+extern void vect_set_verbosity_level (const char *);
+
 #endif  /* GCC_TREE_H  */

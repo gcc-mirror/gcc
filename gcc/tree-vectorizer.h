@@ -56,6 +56,19 @@ enum dr_alignment_support {
   dr_aligned
 };
 
+/* Define verbosity levels.  */
+enum verbosity_levels {
+  REPORT_NONE,
+  REPORT_VECTORIZED_LOOPS,
+  REPORT_UNVECTORIZED_LOOPS,
+  REPORT_ALIGNMENT,
+  REPORT_BAD_FORM_LOOPS,
+  REPORT_OUTER_LOOPS,
+  REPORT_DETAILS,
+  /* New verbosity levels should be added before this one.  */
+  MAX_VERBOSITY_LEVEL
+};
+
 /*-----------------------------------------------------------------*/
 /* Info on vectorized loops.                                       */
 /*-----------------------------------------------------------------*/
