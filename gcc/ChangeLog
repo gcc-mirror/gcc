@@ -1,3 +1,7 @@
+Tue Jan 13 00:44:02 1998  Jim Wilson  <wilson@cygnus.com> 
+
+	* mips.md (return_internal): Change mode from SImode to VOIDmode.
+
 Sat Jan 10 22:11:39 1998  J. Kean Johnston  <jkj@sco.com>
 
 	* i386/sco5.h (STARTFILE_SPEC, ENDFILE_SPEC): Correctly handle
