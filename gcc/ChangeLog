@@ -1,3 +1,18 @@
+2003-08-27  Richard Earnshaw  <rearnsha@arm.com>
+
+	* lib1funcs.asm (L_ieee754_sp): New.  Include ieee754-sf.S.
+	(L_ieee754_dp): New.  Include ieee754-df.S.
+	* arm/ieee754-sf.S: Rework to allow interworking, calling from Thumb,
+	and compilation in apcs-26 mode.
+	* arm/ieee754-df.S: Likewise.
+	* t-arm-elf (DPBIT, FPBIT, fp-bit.c dp-bit.c): Delete rules
+	(LIB1ASMFUNCS): Add _ieee754_sp and _ieee754_dp targets.
+
+2003-08-27  Nicolas Pitre  <nico@cam.org>
+
+	* arm/ieee754-sf.S: New.
+	* arm/ieee754-df.S: New.
+
 2003-08-27  Jakub Jelinek  <jakub@redhat.com>
 
 	* builtins.c (expand_builtin_expect_jump): Save pending_stack_adjust
