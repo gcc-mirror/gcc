@@ -38,14 +38,27 @@ exception statement from your version. */
 
 package javax.swing;
 
-import java.awt.*;
-import java.awt.event.*;
-import java.beans.*;
-import java.io.*;
-import java.util.*;
-import javax.accessibility.*;
-import javax.swing.event.*;
-import javax.swing.plaf.*;
+import java.awt.ItemSelectable;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.ItemEvent;
+import java.awt.event.ItemListener;
+import java.awt.event.KeyEvent;
+import java.beans.PropertyChangeListener;
+import java.io.IOException;
+import java.io.ObjectOutputStream;
+import java.util.Vector;
+import javax.accessibility.Accessible;
+import javax.accessibility.AccessibleContext;
+import javax.accessibility.AccessibleAction;
+import javax.accessibility.AccessibleRole;
+import javax.accessibility.AccessibleSelection;
+import javax.swing.event.MenuEvent;
+import javax.swing.event.MenuListener;
+import javax.swing.event.ListDataEvent;
+import javax.swing.event.ListDataListener;
+import javax.swing.event.PopupMenuListener;
+import javax.swing.plaf.ComboBoxUI;
 
 /**
  * JComboBox
@@ -580,38 +593,6 @@ public class JComboBox extends JComponent
 	} // isPopupVisible()
 
 	/**
-	 * addItemListener
-	 * @param value0 TODO
-	 */
-	public void addItemListener(ItemListener value0) {
-		// TODO
-	} // addItemListener()
-
-	/**
-	 * removeItemListener
-	 * @param value0 TODO
-	 */
-	public void removeItemListener(ItemListener value0) {
-		// TODO
-	} // removeItemListener()
-
-	/**
-	 * addActionListener
-	 * @param value0 TODO
-	 */
-	public void addActionListener(ActionListener value0) {
-		// TODO
-	} // addActionListener()
-
-	/**
-	 * removeActionListener
-	 * @param value0 TODO
-	 */
-	public void removeActionListener(ActionListener value0) {
-		// TODO
-	} // removeActionListener()
-
-	/**
 	 * setActionCommand
 	 * @param value0 TODO
 	 */
@@ -834,6 +815,73 @@ public class JComboBox extends JComponent
 		} // if
 		return accessibleContext;
 	} // getAccessibleContext()
+  /**
+   * addActionListener
+   * @param listener TODO
+   */
+  public void addActionListener (ActionListener listener)
+  {
+    listenerList.add (ActionListener.class, listener);
+  }
 
+  /**
+   * removeActionListener
+   * @param listener TODO
+   */
+  public void removeActionListener (ActionListener listener)
+  {
+    listenerList.remove (ActionListener.class, listener);
+  }
 
-} // JComboBox
+  /**
+   * @since 1.4
+   */
+  public ActionListener[] getActionListeners()
+  {
+    return (ActionListener[]) getListeners (ActionListener.class);
+  }
+
+  /**
+   * addItemListener
+   * @param listener TODO
+   */
+  public void addItemListener(ItemListener listener)
+  {
+    listenerList.add (ItemListener.class, listener);
+  }
+
+  /**
+   * removeItemListener
+   * @param listener TODO
+   */
+  public void removeItemListener(ItemListener listener)
+  {
+    listenerList.remove (ItemListener.class, listener);
+  }
+
+  /**
+   * @since 1.4
+   */
+  public ItemListener[] getItemListeners()
+  {
+    return (ItemListener[]) getListeners (ItemListener.class);
+  }
+
+  public void addPopupMenuListener (PopupMenuListener listener)
+  {
+    listenerList.add (PopupMenuListener.class, listener);
+  }
+
+  public void removePopupMenuListener (PopupMenuListener listener)
+  {
+    listenerList.remove (PopupMenuListener.class, listener);
+  }
+
+  /**
+   * @since 1.4
+   */
+  public PopupMenuListener[] getPopupMenuListeners()
+  {
+    return (PopupMenuListener[]) getListeners (PopupMenuListener.class);
+  }
+}

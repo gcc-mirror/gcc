@@ -56,10 +56,6 @@ public abstract class AbstractAction
 {
   static final long serialVersionUID = -6803159439231523484L;
 
-	//-------------------------------------------------------------
-	// Variables --------------------------------------------------
-	//-------------------------------------------------------------
-
 	/**
 	 * enabled
 	 */
@@ -75,11 +71,6 @@ public abstract class AbstractAction
 	 * store
 	 */
 	private transient HashMap store = new HashMap();
-
-
-	//-------------------------------------------------------------
-	// Initialization ---------------------------------------------
-	//-------------------------------------------------------------
 
 	/**
 	 * Constructor AbstractAction
@@ -105,11 +96,6 @@ public abstract class AbstractAction
 		putValue(NAME, name);
 		putValue(SMALL_ICON, icon);
 	} // AbstractAction()
-
-
-	//-------------------------------------------------------------
-	// Methods ----------------------------------------------------
-	//-------------------------------------------------------------
 
 	/**
 	 * readObject
@@ -183,30 +169,48 @@ public abstract class AbstractAction
 		return store.keySet().toArray();
 	} // getKeys()
 
-	/**
-	 * firePropertyChange
-	 * @param propertyName TODO
-	 * @param oldValue TODO
-	 * @param newValue TODO
-	 */
-	protected void firePropertyChange(String propertyName,
-			Object oldValue, Object newValue) {
-		changeSupport.firePropertyChange(propertyName, oldValue, newValue);
-	} // firePropertyChange()
+  /**
+   * firePropertyChange
+   *
+   * @param propertyName TODO
+   * @param oldValue TODO
+   * @param newValue TODO
+   */
+  protected void firePropertyChange(String propertyName, Object oldValue,
+                                    Object newValue)
+  {
+    changeSupport.firePropertyChange(propertyName, oldValue, newValue);
+  }
 
-	/**
-	 * addPropertyChangeListener
-	 * @param listener TODO
-	 */
-	public synchronized void addPropertyChangeListener(PropertyChangeListener listener) {
-		changeSupport.addPropertyChangeListener(listener);
-	} // addPropertyChangeListener()
+  /**
+   * addPropertyChangeListener
+   *
+   * @param listener the listener to add
+   */
+  public void addPropertyChangeListener(PropertyChangeListener listener)
+  {
+    changeSupport.addPropertyChangeListener(listener);
+  }
 
-	/**
-	 * removePropertyChangeListener
-	 * @param listener TODO
-	 */
-	public synchronized void removePropertyChangeListener(PropertyChangeListener listener) {
-		changeSupport.removePropertyChangeListener(listener);
-	} // removePropertyChangeListener()
+  /**
+   * removePropertyChangeListener
+   *
+   * @param listener the listener to remove
+   */
+  public void removePropertyChangeListener(PropertyChangeListener listener)
+  {
+    changeSupport.removePropertyChangeListener(listener);
+  }
+
+  /**
+   * Returns all registered listeners.
+   *
+   * @return array of listeners.
+   * 
+   * @since 1.4
+   */
+  public PropertyChangeListener[] getPropertyChangeListeners()
+  {
+    return changeSupport.getPropertyChangeListeners();
+  }
 }
