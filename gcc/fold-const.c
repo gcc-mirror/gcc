@@ -4610,11 +4610,10 @@ fold (expr)
       /* If arg0 is a multiple of arg1, then rewrite to the fastest div
 	 operation, EXACT_DIV_EXPR.
 
-	 Note that only CEIL_DIV_EXPR is rewritten now, only because the
-	 others seem to be faster in some cases.  This is probably just
-	 due to more work being done to optimize others in expmed.c than on
-	 EXACT_DIV_EXPR.  */
-      if (code == CEIL_DIV_EXPR
+	 Note that only CEIL_DIV_EXPR and FLOOR_DIV_EXPR are rewritten now.
+	 At one time others generated faster code, it's not clear if they do
+	 after the last round to changes to the DIV code in expmed.c.  */
+      if ((code == CEIL_DIV_EXPR || code == FLOOR_DIV_EXPR)
 	  && multiple_of_p (type, arg0, arg1))
 	return fold (build (EXACT_DIV_EXPR, type, arg0, arg1));
 
