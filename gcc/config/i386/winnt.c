@@ -345,7 +345,7 @@ i386_pe_mark_dllexport (tree decl)
   idp = get_identifier (newname);
 
   XEXP (DECL_RTL (decl), 0) =
-    gen_rtx (SYMBOL_REF, Pmode, IDENTIFIER_POINTER (idp));
+    gen_rtx_SYMBOL_REF (Pmode, IDENTIFIER_POINTER (idp));
 }
 
 /* Mark a DECL as being dllimport'd.  */
@@ -393,9 +393,9 @@ i386_pe_mark_dllimport (tree decl)
      identical.  */
   idp = get_identifier (newname);
 
-  newrtl = gen_rtx (MEM, Pmode,
-		    gen_rtx (SYMBOL_REF, Pmode,
-			     IDENTIFIER_POINTER (idp)));
+  newrtl = gen_rtx_MEM (Pmode,
+			gen_rtx_SYMBOL_REF (Pmode,
+					    IDENTIFIER_POINTER (idp)));
   XEXP (DECL_RTL (decl), 0) = newrtl;
 
   /* Can't treat a pointer to this as a constant address */
@@ -492,11 +492,11 @@ i386_pe_encode_section_info (tree decl, rtx rtl, int first)
       if (lookup_attribute ("stdcall",
 			    TYPE_ATTRIBUTES (TREE_TYPE (decl))))
         XEXP (DECL_RTL (decl), 0) =
-	  gen_rtx (SYMBOL_REF, Pmode, gen_stdcall_suffix (decl));
+	  gen_rtx_SYMBOL_REF (Pmode, gen_stdcall_suffix (decl));
       else if (lookup_attribute ("fastcall",
 				 TYPE_ATTRIBUTES (TREE_TYPE (decl))))
         XEXP (DECL_RTL (decl), 0) =
-	  gen_rtx (SYMBOL_REF, Pmode, gen_fastcall_suffix (decl));
+	  gen_rtx_SYMBOL_REF (Pmode, gen_fastcall_suffix (decl));
     }
 
   /* Mark the decl so we can tell from the rtl whether the object is
@@ -523,7 +523,7 @@ i386_pe_encode_section_info (tree decl, rtx rtl, int first)
 
       /* Remove DLL_IMPORT_PREFIX.  */
       tree idp = get_identifier (oldname + strlen (DLL_IMPORT_PREFIX));
-      rtx newrtl = gen_rtx (SYMBOL_REF, Pmode, IDENTIFIER_POINTER (idp));
+      rtx newrtl = gen_rtx_SYMBOL_REF (Pmode, IDENTIFIER_POINTER (idp));
 
       if (DECL_INITIAL (decl) || !DECL_EXTERNAL (decl))
 	warning ("%J'%D' defined locally after being "

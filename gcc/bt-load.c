@@ -1155,7 +1155,7 @@ move_btr_def (basic_block new_def_bb, int btr, btr_def def, bitmap live_range,
   set = single_set (old_insn);
   src = SET_SRC (set);
   btr_mode = GET_MODE (SET_DEST (set));
-  btr_rtx = gen_rtx (REG, btr_mode, btr);
+  btr_rtx = gen_rtx_REG (btr_mode, btr);
 
   new_insn = gen_move_insn (btr_rtx, src);
 
@@ -1184,7 +1184,7 @@ move_btr_def (basic_block new_def_bb, int btr, btr_def def, bitmap live_range,
 	  || GET_MODE (user->use) == VOIDmode)
 	replacement_rtx = btr_rtx;
       else
-	replacement_rtx = gen_rtx (REG, GET_MODE (user->use), btr);
+	replacement_rtx = gen_rtx_REG (GET_MODE (user->use), btr);
       replace_rtx (user->insn, user->use, replacement_rtx);
       user->use = replacement_rtx;
     }

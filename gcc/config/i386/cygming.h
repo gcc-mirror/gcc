@@ -315,7 +315,7 @@ extern void i386_pe_unique_section (TREE, int);
 #define PROFILE_HOOK(LABEL)						\
   if (MAIN_NAME_P (DECL_NAME (current_function_decl)))			\
     {									\
-      emit_call_insn (gen_rtx (CALL, VOIDmode,				\
+      emit_call_insn (gen_rtx_CALL (VOIDmode,				\
 	gen_rtx_MEM (FUNCTION_MODE,					\
 		     gen_rtx_SYMBOL_REF (Pmode, "_monstartup")),	\
 	const0_rtx));							\
