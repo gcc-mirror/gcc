@@ -1,3 +1,19 @@
+2000-09-05  Alex Samuel  <samuel@codesourcery.com>
+
+	* cp-demangle.c (demangle_encoding): Rename variable.
+	(demangle_name): Rename parameter.  Handle return type
+	suppression.
+	(demangle_nested_name): Rename parameter.
+	(demangle_prefix): Likewise.  Change return type suppression.
+	(demangle_unqualified_name): Add parameter.  Flag constructors and
+	conversion operators.
+	(demangle_special_name): Fix comment.
+	(demangle_type): Rename variable.
+	(demangle_bare_function_type): Check for missing return type and
+	parameter. 
+	(demangle_class_enum_type): Rename parameter.
+	(demangle_discriminator): Fix misspelling in comment.
+
 2000-08-31  DJ Delorie  <dj@redhat.com>
 
 	* configure.in (Cygwin): special case cygwin only when we're

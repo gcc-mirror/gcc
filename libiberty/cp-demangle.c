@@ -805,7 +805,7 @@ static status_t demangle_nested_name
 static status_t demangle_prefix
   PARAMS ((demangling_t, int *));
 static status_t demangle_unqualified_name
-  PARAMS ((demangling_t));
+  PARAMS ((demangling_t, int *));
 static status_t demangle_source_name
   PARAMS ((demangling_t));
 static status_t demangle_number
@@ -922,7 +922,7 @@ static status_t
 demangle_encoding (dm)
      demangling_t dm;
 {
-  int template_p;
+  int encode_return_type;
   int start_position;
   template_arg_list_t old_arg_list = current_template_arg_list (dm);
   char peek = peek_char (dm);
@@ -938,14 +938,14 @@ demangle_encoding (dm)
   else
     {
       /* Now demangle the name.  */
-      RETURN_IF_ERROR (demangle_name (dm, &template_p));
+      RETURN_IF_ERROR (demangle_name (dm, &encode_return_type));
 
       /* If there's anything left, the name was a function name, with
 	 maybe its return type, and its parameters types, following.  */
       if (!end_of_name_p (dm) 
 	  && peek_char (dm) != 'E')
 	{
-	  if (template_p)
+	  if (encode_return_type)
 	    /* Template functions have their return type encoded.  The
 	       return type should be inserted at start_position.  */
 	    RETURN_IF_ERROR 
@@ -980,13 +980,19 @@ demangle_encoding (dm)
                         ::= <substitution>  */
 
 static status_t
-demangle_name (dm, template_p)
+demangle_name (dm, encode_return_type)
      demangling_t dm;
-     int *template_p;
+     int *encode_return_type;
 {
   int start = substitution_start (dm);
   char peek = peek_char (dm);
   int is_std_substitution = 0;
+
+  /* Generally, the return type is encoded if the function is a
+     template-id, and suppressed otherwise.  There are a few cases,
+     though, in which the return type is not encoded even for a
+     templated function.  In these cases, this flag is set.  */
+  int suppress_return_type = 0;
 
   DEMANGLE_TRACE ("name", dm);
 
@@ -994,12 +1000,12 @@ demangle_name (dm, template_p)
     {
     case 'N':
       /* This is a <nested-name>.  */
-      RETURN_IF_ERROR (demangle_nested_name (dm, template_p));
+      RETURN_IF_ERROR (demangle_nested_name (dm, encode_return_type));
       break;
 
     case 'Z':
       RETURN_IF_ERROR (demangle_local_name (dm));
-      *template_p = 0;
+      *encode_return_type = 0;
       break;
 
     case 'S':
@@ -1010,13 +1016,12 @@ demangle_name (dm, template_p)
 	  (void) next_char (dm);
 	  (void) next_char (dm);
 	  RETURN_IF_ERROR (result_append (dm, "std::"));
-	  RETURN_IF_ERROR (demangle_unqualified_name (dm));
+	  RETURN_IF_ERROR 
+	    (demangle_unqualified_name (dm, &suppress_return_type));
 	  is_std_substitution = 1;
 	}
       else
-	{
-	  RETURN_IF_ERROR (demangle_substitution (dm, template_p));
-	}
+	RETURN_IF_ERROR (demangle_substitution (dm, encode_return_type));
       /* Check if a template argument list immediately follows.
 	 If so, then we just demangled an <unqualified-template-name>.  */
       if (peek_char (dm) == 'I') 
@@ -1027,16 +1032,16 @@ demangle_name (dm, template_p)
 	    RETURN_IF_ERROR (substitution_add (dm, start, 0));
 	  /* Demangle the <template-args> here.  */
 	  RETURN_IF_ERROR (demangle_template_args (dm));
-	  *template_p = 1;
+	  *encode_return_type = !suppress_return_type;
 	}
       else
-	*template_p = 0;
+	*encode_return_type = 0;
 
       break;
 
     default:
       /* This is an <unscoped-name> or <unscoped-template-name>.  */
-      RETURN_IF_ERROR (demangle_unqualified_name (dm));
+      RETURN_IF_ERROR (demangle_unqualified_name (dm, &suppress_return_type));
 
       /* If the <unqualified-name> is followed by template args, this
 	 is an <unscoped-template-name>.  */
@@ -1046,10 +1051,10 @@ demangle_name (dm, template_p)
 	  RETURN_IF_ERROR (substitution_add (dm, start, 0));
 
 	  RETURN_IF_ERROR (demangle_template_args (dm));
-	  *template_p = 1;
+	  *encode_return_type = !suppress_return_type;
 	}
       else
-	*template_p = 0;
+	*encode_return_type = 0;
 
       break;
     }
@@ -1062,9 +1067,9 @@ demangle_name (dm, template_p)
     <nested-name>     ::= N [<CV-qualifiers>] <prefix> <unqulified-name> E  */
 
 static status_t
-demangle_nested_name (dm, template_p)
+demangle_nested_name (dm, encode_return_type)
      demangling_t dm;
-     int *template_p;
+     int *encode_return_type;
 {
   char peek;
 
@@ -1089,7 +1094,7 @@ demangle_nested_name (dm, template_p)
       RETURN_IF_ERROR (result_append_space (dm));
     }
   
-  RETURN_IF_ERROR (demangle_prefix (dm, template_p));
+  RETURN_IF_ERROR (demangle_prefix (dm, encode_return_type));
   /* No need to demangle the final <unqualified-name>; demangle_prefix
      will handle it.  */
   RETURN_IF_ERROR (demangle_char (dm, 'E'));
@@ -1108,20 +1113,22 @@ demangle_nested_name (dm, template_p)
                         ::= <substitution>  */
 
 static status_t
-demangle_prefix (dm, template_p)
+demangle_prefix (dm, encode_return_type)
      demangling_t dm;
-     int *template_p;
+     int *encode_return_type;
 {
   int start = substitution_start (dm);
   int nested = 0;
 
-  /* This flag is set to non-zero if the most recent (rightmost)
-     element in the prefix was a constructor.  */
-  int last_was_ctor = 0;
+  /* ENCODE_RETURN_TYPE is updated as we decend the nesting chain.
+     After <template-args>, it is set to non-zero; after everything
+     else it is set to zero.  */
 
-  /* TEMPLATE_P is updated as we decend the nesting chain.  After
-     <template-args>, it is set to non-zero; after everything else it
-     is set to zero.  */
+  /* Generally, the return type is encoded if the function is a
+     template-id, and suppressed otherwise.  There are a few cases,
+     though, in which the return type is not encoded even for a
+     templated function.  In these cases, this flag is set.  */
+  int suppress_return_type = 0;
 
   DEMANGLE_TRACE ("prefix", dm);
 
@@ -1134,14 +1141,14 @@ demangle_prefix (dm, template_p)
 
       peek = peek_char (dm);
       
-      /* We'll initialize last_was_ctor to false, and set it to true
+      /* We'll initialize suppress_return_type to false, and set it to true
 	 if we end up demangling a constructor name.  However, make
 	 sure we're not actually about to demangle template arguments
 	 -- if so, this is the <template-args> following a
 	 <template-prefix>, so we'll want the previous flag value
 	 around.  */
       if (peek != 'I')
-	last_was_ctor = 0;
+	suppress_return_type = 0;
 
       if (IS_DIGIT ((unsigned char) peek)
 	  || (peek >= 'a' && peek <= 'z')
@@ -1157,18 +1164,14 @@ demangle_prefix (dm, template_p)
 	  if (peek == 'S')
 	    /* The substitution determines whether this is a
 	       template-id.  */
-	    RETURN_IF_ERROR (demangle_substitution (dm, template_p));
+	    RETURN_IF_ERROR (demangle_substitution (dm, encode_return_type));
 	  else
 	    {
 	      /* It's just a name.  */
-	      RETURN_IF_ERROR (demangle_unqualified_name (dm));
-	      *template_p = 0;
+	      RETURN_IF_ERROR 
+		(demangle_unqualified_name (dm, &suppress_return_type));
+	      *encode_return_type = 0;
 	    }
-
-	  /* If this element was a constructor name, make a note of
-	     that.  */
-	  if (peek == 'C')
-	    last_was_ctor = 1;
 	}
       else if (peek == 'Z')
 	RETURN_IF_ERROR (demangle_local_name (dm));
@@ -1180,14 +1183,10 @@ demangle_prefix (dm, template_p)
 	     demangled template arguments, thus the prefix was a
 	     <template-prefix>.  That's so that the caller knows to
 	     demangle the function's return type, if this turns out to
-	     be a function name.  */
-	  if (!last_was_ctor)
-	    *template_p = 1;
-	  else
-	    /* But, if it's a member template constructor, report it
-	       as untemplated.  We don't ever want to demangle the
-	       return type of a constructor.  */
-	    *template_p = 0;
+	     be a function name.  But, if it's a member template
+	     constructor or a templated conversion operator, report it
+	     as untemplated.  Those never get encoded return types.  */
+	  *encode_return_type = !suppress_return_type;
 	}
       else if (peek == 'E')
 	/* All done.  */
@@ -1198,36 +1197,53 @@ demangle_prefix (dm, template_p)
       if (peek != 'S'
 	  && peek_char (dm) != 'E')
 	/* Add a new substitution for the prefix thus far.  */
-	RETURN_IF_ERROR (substitution_add (dm, start, *template_p));
+	RETURN_IF_ERROR (substitution_add (dm, start, *encode_return_type));
     }
 }
 
-/* Demangles and emits an <unqualified-name>.  If the
-   <unqualified-name> is a function and the first element in the
-   argument list should be taken to be its return type,
-   ENCODE_RETURN_TYPE is non-zero.
+/* Demangles and emits an <unqualified-name>.  If this
+   <unqualified-name> is for a special function type that should never
+   have its return type encoded (particularly, a constructor or
+   conversion operator), *SUPPRESS_RETURN_TYPE is set to 1; otherwise,
+   it is set to zero.
 
     <unqualified-name>  ::= <operator-name>
 			::= <special-name>  
 			::= <source-name>  */
 
 static status_t
-demangle_unqualified_name (dm)
+demangle_unqualified_name (dm, suppress_return_type)
      demangling_t dm;
+     int *suppress_return_type;
 {
   char peek = peek_char (dm);
 
   DEMANGLE_TRACE ("unqualified-name", dm);
+
+  /* By default, don't force suppression of the return type (though
+     non-template functions still don't get a return type encoded).  */ 
+  *suppress_return_type = 0;
 
   if (IS_DIGIT ((unsigned char) peek))
     RETURN_IF_ERROR (demangle_source_name (dm));
   else if (peek >= 'a' && peek <= 'z')
     {
       int num_args;
+
+      /* Conversion operators never have a return type encoded.  */
+      if (peek == 'c' && peek_char_next (dm) == 'v')
+	*suppress_return_type = 1;
+
       RETURN_IF_ERROR (demangle_operator_name (dm, 0, &num_args));
     }
   else if (peek == 'C' || peek == 'D')
-    RETURN_IF_ERROR (demangle_ctor_dtor_name (dm));
+    {
+      /* Constructors never have a return type encoded.  */
+      if (peek == 'C')
+	*suppress_return_type = 1;
+
+      RETURN_IF_ERROR (demangle_ctor_dtor_name (dm));
+    }
   else
     return "Unexpected character in <unqualified-name>.";
 
@@ -1725,7 +1741,7 @@ demangle_call_offset (dm)
 
    Also demangles the special g++ manglings,
 
-    <special-name> ::= CT <type> <offset number> _ <base type>
+    <special-name> ::= TC <type> <offset number> _ <base type>
                                           # construction vtable
 		   ::= TF <type>	  # typeinfo function (old ABI only)
 		   ::= TJ <type>	  # java Class structure  */
@@ -2148,7 +2164,7 @@ demangle_type (dm)
   int start = substitution_start (dm);
   char peek = peek_char (dm);
   char peek_next;
-  int template_p = 0;
+  int encode_return_type = 0;
   template_arg_list_t old_arg_list = current_template_arg_list (dm);
   int insert_pos;
 
@@ -2162,7 +2178,7 @@ demangle_type (dm)
   /* A <class-enum-type> can start with a digit (a <source-name>), an
      N (a <nested-name>), or a Z (a <local-name>).  */
   if (IS_DIGIT ((unsigned char) peek) || peek == 'N' || peek == 'Z')
-    RETURN_IF_ERROR (demangle_class_enum_type (dm, &template_p));
+    RETURN_IF_ERROR (demangle_class_enum_type (dm, &encode_return_type));
   /* Lower-case letters begin <builtin-type>s, except for `r', which
      denotes restrict.  */
   else if (peek >= 'a' && peek <= 'z' && peek != 'r')
@@ -2235,7 +2251,7 @@ demangle_type (dm)
 	    /* Add a substitution candidate.  The template parameter
 	       `T' token is a substitution candidate by itself,
 	       without the template argument list.  */
-	    RETURN_IF_ERROR (substitution_add (dm, start, template_p));
+	    RETURN_IF_ERROR (substitution_add (dm, start, encode_return_type));
 
 	    /* Now demangle the template argument list.  */
 	    RETURN_IF_ERROR (demangle_template_args (dm));
@@ -2254,7 +2270,7 @@ demangle_type (dm)
 	peek_next = peek_char_next (dm);
 	if (IS_DIGIT (peek_next) || peek_next == '_')
 	  {
-	    RETURN_IF_ERROR (demangle_substitution (dm, &template_p));
+	    RETURN_IF_ERROR (demangle_substitution (dm, &encode_return_type));
 	    
 	    /* The substituted name may have been a template name.
 	       Check if template arguments follow, and if so, demangle
@@ -2271,7 +2287,7 @@ demangle_type (dm)
 	  /* While the special substitution token itself is not a
 	     substitution candidate, the <class-enum-type> is, so
 	     don't clear is_substitution_candidate.  */
-	  RETURN_IF_ERROR (demangle_class_enum_type (dm, &template_p));
+	  RETURN_IF_ERROR (demangle_class_enum_type (dm, &encode_return_type));
 
 	break;
 
@@ -2315,7 +2331,7 @@ demangle_type (dm)
        <template-param>, pass its index since from the point of
        substitutions; a <template-param> token is a substitution
        candidate distinct from the type that is substituted for it.  */
-    RETURN_IF_ERROR (substitution_add (dm, start, template_p));
+    RETURN_IF_ERROR (substitution_add (dm, start, encode_return_type));
 
   /* Pop off template argument lists added during mangling of this
      type.  */
@@ -2536,38 +2552,46 @@ demangle_bare_function_type (dm, return_type_pos)
 	     the only type in a parameter list; in that case, we want
 	     to print `foo ()' instead of `foo (void)'.  */
 	  if (peek_char (dm) == 'v')
+	    /* Consume the v.  */
+	    advance_char (dm);
+	  else
 	    {
-	      /* Consume the v.  */
-	      advance_char (dm);
-	      continue;
+	      /* Separate parameter types by commas.  */
+	      if (sequence > 0)
+		RETURN_IF_ERROR (result_append (dm, ", "));
+	      /* Demangle the type.  */
+	      RETURN_IF_ERROR (demangle_type (dm));
 	    }
-	  /* Separate parameter types by commas.  */
-	  if (sequence > 0)
-	    RETURN_IF_ERROR (result_append (dm, ", "));
-	  /* Demangle the type.  */
-	  RETURN_IF_ERROR (demangle_type (dm));
 	}
 
       ++sequence;
     }
   RETURN_IF_ERROR (result_append_char (dm, ')'));
 
+  /* We should have demangled at least one parameter type (which would
+     be void, for a function that takes no parameters), plus the
+     return type, if we were supposed to demangle that.  */
+  if (sequence == -1)
+    return "Missing function return type.";
+  else if (sequence == 0)
+    return "Missing function parameter.";
+
   return STATUS_OK;
 }
 
-/* Demangles and emits a <class-enum-type>.  *TEMPLATE_P is set to
+/* Demangles and emits a <class-enum-type>.  *ENCODE_RETURN_TYPE is set to
    non-zero if the type is a template-id, zero otherwise.  
 
     <class-enum-type> ::= <name>  */
 
 static status_t
-demangle_class_enum_type (dm, template_p)
+demangle_class_enum_type (dm, encode_return_type)
      demangling_t dm;
-     int *template_p;
+     int *encode_return_type;
 {
   DEMANGLE_TRACE ("class-enum-type", dm);
 
-  RETURN_IF_ERROR (demangle_name (dm, template_p));
+  RETURN_IF_ERROR (demangle_name (dm, encode_return_type));
   return STATUS_OK;
 }
 
@@ -3204,7 +3228,7 @@ demangle_discriminator (dm, suppress_first)
      int suppress_first;
 {
   /* Output for <discriminator>s to the demangled name is completely
-     supressed if not in verbose mode.  */
+     suppressed if not in verbose mode.  */
 
   if (peek_char (dm) == '_')
     {
