@@ -185,6 +185,7 @@ struct attr_desc
   unsigned is_special	: 1;	/* Don't call `write_attr_set'.  */
   unsigned func_units_p	: 1;	/* this is the function_units attribute */
   unsigned blockage_p	: 1;	/* this is the blockage range function */
+  unsigned static_p	: 1;	/* Make the output function static.  */
 };
 
 #define NULL_ATTR (struct attr_desc *) NULL
@@ -2078,18 +2079,20 @@ expand_units (void)
 	      str = attr_printf ((strlen (unit->name)
 				  + sizeof "*_unit_blockage_range"),
 				 "*%s_unit_blockage_range", unit->name);
-	      make_internal_attr (str, newexp, (ATTR_BLOCKAGE|ATTR_UNSIGNED));
+	      make_internal_attr (str, newexp, (ATTR_STATIC|ATTR_BLOCKAGE|ATTR_UNSIGNED));
 	    }
 
 	  str = attr_printf (strlen (unit->name) + sizeof "*_unit_ready_cost",
 			     "*%s_unit_ready_cost", unit->name);
+	  make_internal_attr (str, readycost, ATTR_STATIC);
 	}
       else
-	str = "*result_ready_cost";
-
-      /* Make an attribute for the ready_cost function.  Simplifying
-	 further with simplify_by_exploding doesn't win.  */
-      make_internal_attr (str, readycost, ATTR_NONE);
+        {
+	  /* Make an attribute for the ready_cost function.  Simplifying
+	     further with simplify_by_exploding doesn't win.  */
+	  str = "*result_ready_cost";
+	  make_internal_attr (str, readycost, ATTR_NONE);
+	}
     }
 
   /* For each unit that requires a conflict cost function, make an attribute
@@ -4766,23 +4769,10 @@ write_attr_get (struct attr_desc *attr)
      switch we will generate.  */
   common_av = find_most_used (attr);
 
-  /* Write out prototype of function.  */
-  if (!attr->is_numeric)
-    printf ("extern enum attr_%s ", attr->name);
-  else if (attr->unsigned_p)
-    printf ("extern unsigned int ");
-  else
-    printf ("extern int ");
-  /* If the attribute name starts with a star, the remainder is the name of
-     the subroutine to use, instead of `get_attr_...'.  */
-  if (attr->name[0] == '*')
-    printf ("%s (rtx);\n", &attr->name[1]);
-  else
-    printf ("get_attr_%s (%s);\n", attr->name,
-	    (attr->is_const ? "void" : "rtx"));
-
   /* Write out start of function, then all values with explicit `case' lines,
      then a `default', then the value with the most uses.  */
+  if (attr->static_p)
+    printf ("static ");
   if (!attr->is_numeric)
     printf ("enum attr_%s\n", attr->name);
   else if (attr->unsigned_p)
@@ -5593,7 +5583,7 @@ find_attr (const char *name, int create)
   attr->name = attr_string (name, strlen (name));
   attr->first_value = attr->default_val = NULL;
   attr->is_numeric = attr->negative_ok = attr->is_const = attr->is_special = 0;
-  attr->unsigned_p = attr->func_units_p = attr->blockage_p = 0;
+  attr->unsigned_p = attr->func_units_p = attr->blockage_p = attr->static_p = 0;
   attr->next = attrs[index];
   attrs[index] = attr;
 
@@ -5618,6 +5608,7 @@ make_internal_attr (const char *name, rtx value, int special)
   attr->unsigned_p = (special & ATTR_UNSIGNED) != 0;
   attr->func_units_p = (special & ATTR_FUNC_UNITS) != 0;
   attr->blockage_p = (special & ATTR_BLOCKAGE) != 0;
+  attr->static_p = (special & ATTR_STATIC) != 0;
   attr->default_val = get_attr_value (value, attr, -2);
 }
 

@@ -1,5 +1,19 @@
 2003-07-08  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
+	* genattr.c (internal_dfa_insn_code): Don't prototype.
+	* genattrtab.c (attr_desc): Add `static_p' field.
+	(expand_units): Make blockage range and ready cost functions
+	static.
+	(write_attr_get): Don't add extern prototypes in C file.  Mark
+	static functions as appropriate.
+	(find_attr, make_internal_attr): Initialize static_p.
+	* genattrtab.h (ATTR_STATIC): New macro.
+	* genautomata.c (output_internal_reset_func): Mark output function
+	as inline.
+	(make_internal_dfa_insn_code_attr): Mark output function as static.
+
+2003-07-08  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
 	* genattrtab.h: Add new macros for attr `special' flags.
 	* genattrtab.c (attr_desc): Reorder/resize fields better.
 	Use attr `special' macros in all calls to make_internal_attr.

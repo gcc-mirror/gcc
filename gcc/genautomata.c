@@ -8572,7 +8572,7 @@ output_dead_lock_func (void)
 static void
 output_internal_reset_func (void)
 {
-  fprintf (output_file, "static void\n%s (struct %s *%s)\n",
+  fprintf (output_file, "static inline void\n%s (struct %s *%s)\n",
 	   INTERNAL_RESET_FUNC_NAME, CHIP_NAME, CHIP_PARAMETER_NAME);
   fprintf (output_file, "{\n  memset (%s, 0, sizeof (struct %s));\n}\n\n",
 	   CHIP_PARAMETER_NAME, CHIP_NAME);
@@ -9474,7 +9474,7 @@ make_internal_dfa_insn_code_attr (void)
     (attr_printf (sizeof ("*")
 		  + strlen (INTERNAL_DFA_INSN_CODE_FUNC_NAME) + 1,
 		  "*%s", INTERNAL_DFA_INSN_CODE_FUNC_NAME),
-     condexp, ATTR_NONE);
+     condexp, ATTR_STATIC);
 }
 
 
