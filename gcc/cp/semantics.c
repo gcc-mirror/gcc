@@ -1331,6 +1331,10 @@ finish_parenthesized_expr (expr)
     /* This inhibits warnings in truthvalue_conversion.  */
     C_SET_EXP_ORIGINAL_CODE (expr, ERROR_MARK); 
 
+  if (TREE_CODE (expr) == OFFSET_REF)
+    /* [expr.unary.op]/3 The qualified id of a pointer-to-member must not be
+       enclosed in parentheses.  */
+    PTRMEM_OK_P (expr) = 0;
   return expr;
 }
 

@@ -1710,13 +1710,13 @@ build_offset_ref (type, name)
 	       expects to encounter OVERLOADs, not raw functions.  */
 	    t = ovl_cons (t, NULL_TREE);
 
-	  return build (OFFSET_REF, 
-			unknown_type_node,
-			decl,
-			build (TEMPLATE_ID_EXPR, 
-			       TREE_TYPE (t),
-			       t,
-			       TREE_OPERAND (orig_name, 1)));
+          t = build (TEMPLATE_ID_EXPR, TREE_TYPE (t), t,
+	             TREE_OPERAND (orig_name, 1));
+	  t = build (OFFSET_REF, unknown_type_node, decl, t);
+          
+          PTRMEM_OK_P (t) = 1;
+          	  
+	  return t;
 	}
 
       if (!really_overloaded_fn (t))
@@ -1730,11 +1730,16 @@ build_offset_ref (type, name)
 	  mark_used (t);
 	  if (DECL_STATIC_FUNCTION_P (t))
 	    return t;
-	  return build (OFFSET_REF, TREE_TYPE (t), decl, t);
+	  t = build (OFFSET_REF, TREE_TYPE (t), decl, t);
+	  PTRMEM_OK_P (t) = 1;
+	  return t;
 	}
 
       TREE_TYPE (fnfields) = unknown_type_node;
-      return build (OFFSET_REF, unknown_type_node, decl, fnfields);
+      
+      t = build (OFFSET_REF, unknown_type_node, decl, fnfields);
+      PTRMEM_OK_P (t) = 1;
+      return t;
     }
 
   t = member;
@@ -1772,7 +1777,9 @@ build_offset_ref (type, name)
   /* In member functions, the form `type::name' is no longer
      equivalent to `this->type::name', at least not until
      resolve_offset_ref.  */
-  return build (OFFSET_REF, build_offset_type (type, TREE_TYPE (t)), decl, t);
+  t = build (OFFSET_REF, build_offset_type (type, TREE_TYPE (t)), decl, t);
+  PTRMEM_OK_P (t) = 1;
+  return t;
 }
 
 /* If a OFFSET_REF made it through to here, then it did
@@ -1806,16 +1813,15 @@ resolve_offset_ref (exp)
     }
 
   if (BASELINK_P (member))
-    {
-      if (! flag_ms_extensions)
-	cp_pedwarn ("assuming & on overloaded member function");
-      return build_unary_op (ADDR_EXPR, exp, 0);
-    }
-
+    return build_unary_op (ADDR_EXPR, exp, 0);
+  
   if (TREE_CODE (TREE_TYPE (member)) == METHOD_TYPE)
     {
-      if (! flag_ms_extensions)
-	cp_pedwarn ("assuming & on `%E'", member);
+      if (!flag_ms_extensions)
+        /* A single non-static member, make sure we don't allow a
+           pointer-to-member.  */
+        exp = ovl_cons (member, NULL_TREE);
+      
       return build_unary_op (ADDR_EXPR, exp, 0);
     }
 
