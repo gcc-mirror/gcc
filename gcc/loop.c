@@ -4782,8 +4782,11 @@ check_final_value (v, loop_start, loop_end)
 
 	      if (GET_CODE (p) == JUMP_INSN && JUMP_LABEL (p)
 		  && LABEL_NAME (JUMP_LABEL (p))
-		  && ((INSN_LUID (JUMP_LABEL (p)) < INSN_LUID (v->insn)
-		       && INSN_LUID (JUMP_LABEL (p)) > INSN_LUID (loop_start))
+		  && ((INSN_UID (JUMP_LABEL (p)) >= max_uid_for_loop)
+		      || (INSN_UID (v->insn) >= max_uid_for_loop)
+		      || (INSN_UID (last_giv_use) >= max_uid_for_loop)
+		      || (INSN_LUID (JUMP_LABEL (p)) < INSN_LUID (v->insn)
+			  && INSN_LUID (JUMP_LABEL (p)) > INSN_LUID (loop_start))
 		      || (INSN_LUID (JUMP_LABEL (p)) > INSN_LUID (last_giv_use)
 			  && INSN_LUID (JUMP_LABEL (p)) < INSN_LUID (loop_end))))
 		{
