@@ -1,5 +1,5 @@
 /* AccessibleText.java -- aids in accessibly manipulating text
-   Copyright (C) 2000, 2002 Free Software Foundation, Inc.
+   Copyright (C) 2000, 2002, 2004 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -38,8 +38,9 @@ exception statement from your version. */
 
 package javax.accessibility;
 
-import java.awt.Rectangle;
 import java.awt.Point;
+import java.awt.Rectangle;
+
 import javax.swing.text.AttributeSet;
 
 /**
