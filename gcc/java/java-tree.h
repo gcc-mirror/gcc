@@ -1459,7 +1459,7 @@ extern tree *type_map;
   if (!((F) = maybe_get_identifier ((S))))	\
     {						\
       (F) = get_identifier ((S));		\
-      ggc_mark_tree ((F));			\
+      ggc_add_tree_root (&(F), 1);		\
     }
 
 /* Add a FIELD_DECL to RECORD_TYPE RTYPE.
