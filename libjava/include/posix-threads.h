@@ -1,7 +1,7 @@
 // -*- c++ -*-
 // posix-threads.h - Defines for using POSIX threads.
 
-/* Copyright (C) 1998, 1999, 2001  Free Software Foundation
+/* Copyright (C) 1998, 1999, 2001, 2003  Free Software Foundation
 
    This file is part of libgcj.
 
@@ -247,6 +247,8 @@ _Jv_ThreadSelf (void)
 #ifdef __FreeBSD__
 #include <machine/pal.h>
 #define PAL_rduniq PAL_rdunique
+#elif defined (__osf__)
+#include <machine/pal.h>
 #else
 #include <asm/pal.h>
 #endif
