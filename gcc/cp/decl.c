@@ -7774,31 +7774,9 @@ cp_finish_decl (decl, init, asmspec_tree, need_pop, flags)
       else if (TREE_CODE (decl) == VAR_DECL
 	       && DECL_LANG_SPECIFIC (decl)
 	       && DECL_COMDAT (decl))
-	{
-	  /* Dynamically initialized vars go into common.  */
-	  if (DECL_INITIAL (decl) == NULL_TREE
-	      || DECL_INITIAL (decl) == error_mark_node)
-	    DECL_COMMON (decl) = 1;
-	  else if (EMPTY_CONSTRUCTOR_P (DECL_INITIAL (decl)))
-	    {
-	      DECL_COMMON (decl) = 1;
-	      DECL_INITIAL (decl) = error_mark_node;
-	    }
-	  else
-	    {
-	      /* Statically initialized vars are weak or comdat, if
-                 supported.  */
-	      if (flag_weak)
-		make_decl_one_only (decl);
-	      else
-		{
-		  /* We can't do anything useful; leave vars for explicit
-		     instantiation.  */
-		  DECL_EXTERNAL (decl) = 1;
-		  DECL_NOT_REALLY_EXTERN (decl) = 0;
-		}
-	    }
-	}
+	/* Set it up again; we might have set DECL_INITIAL since the
+	   last time.  */
+	comdat_linkage (decl);
 
       if (TREE_CODE (decl) == VAR_DECL && DECL_VIRTUAL_P (decl))
 	make_decl_rtl (decl, NULL_PTR, toplev);
@@ -8093,6 +8071,9 @@ expand_static_init (decl, init)
      tree init;
 {
   tree oldstatic = value_member (decl, static_aggregates);
+
+  /* If at_eof is 2, we're too late.  */
+  my_friendly_assert (at_eof <= 1, 990323);
 
   if (oldstatic)
     {

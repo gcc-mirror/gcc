@@ -1,3 +1,16 @@
+1999-03-23  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* decl2.c (finish_file): Set at_eof to 2 after expanding ctors.
+	* decl.c (expand_static_init): Make sure we don't add any after
+	then.
+
+	* decl.c (cp_finish_decl): Move intelligence about handling
+	DECL_COMDAT for variables from here...
+	* decl2.c (comdat_linkage): ...to here.
+	(maybe_make_one_only): Tweak.
+	(import_export_decl): Call comdat_linkage for variables, too.
+	(finish_file): Handle template statics properly.
+
 1999-03-22  Mark Mitchell  <mark@codesourcery.com>
 
 	* cp-tree.h (TYPE_PTRMEMFUNC_P): Use TYPE_PTRMEMFUNC_FLAG.
