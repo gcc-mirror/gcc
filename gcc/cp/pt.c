@@ -7401,11 +7401,13 @@ tsubst_expr (t, args, complain, in_decl)
     case GOTO_STMT:
       lineno = STMT_LINENO (t);
       t = GOTO_DESTINATION (t);
-      if (TREE_CODE (t) != IDENTIFIER_NODE)
+      if (TREE_CODE (t) != LABEL_DECL)
 	/* Computed goto's must be tsubst'd into.  On the other hand,
 	   non-computed gotos must not be; the identifier in question
 	   will have no binding.  */
 	t = tsubst_expr (t, args, complain, in_decl);
+      else
+	t = DECL_NAME (t);
       finish_goto_stmt (t);
       break;
 
@@ -9132,7 +9134,11 @@ do_decl_instantiation (declspecs, declarator, storage)
   tree result = NULL_TREE;
   int extern_p = 0;
 
-  if (! DECL_LANG_SPECIFIC (decl))
+  if (!decl)
+    /* An error ocurred, for which grokdeclarator has already issued
+       an appropriate message.  */
+    return;
+  else if (! DECL_LANG_SPECIFIC (decl))
     {
       cp_error ("explicit instantiation of non-template `%#D'", decl);
       return;

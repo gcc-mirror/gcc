@@ -4829,10 +4829,14 @@ lookup_label (id)
       return decl;
     }
 
+  if (building_stmt_tree ())
+    push_permanent_obstack ();
   decl = build_decl (LABEL_DECL, id, void_type_node);
-
-  /* Make sure every label has an rtx.  */
-  label_rtx (decl);
+  if (building_stmt_tree ())
+    pop_obstacks ();
+  else
+    /* Make sure every label has an rtx.  */
+    label_rtx (decl);
 
   /* A label not explicitly declared must be local to where it's ref'd.  */
   DECL_CONTEXT (decl) = current_function_decl;

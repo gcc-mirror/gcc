@@ -1,5 +1,15 @@
 1999-08-26  Mark Mitchell  <mark@codesourcery.com>
 
+	* decl.c (lookup_label): Build labels on the permanent obstack
+	when building statement trees.  Don't build RTL for labels when
+	building statement trees.
+	* semantics.c (finish_goto_stmt): Use LABEL_DECLs even when
+	building statement trees.
+	(finish_label_stmt): Likewise.
+	(expand_stmt): Adjust accordingly.
+	* pt.c (tsubst_expr); Likewise.
+	(do_decl_instantiation): Robustify.
+	
 	* cp-tree.h (AGGR_INIT_VIA_CTOR_P): New macro.
 	* tree.c (build_cplus_new): Set it.
 	* expr.c (cplus_expand_expr): Use it.
