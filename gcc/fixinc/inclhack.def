@@ -579,6 +579,7 @@ fix = {
 
 /*
  *  Fix return value of sbrk in unistd.h on Alpha OSF/1 V2.0
+ *  And OpenBSD.
  */
 fix = {
     hackname = alpha_sbrk;
