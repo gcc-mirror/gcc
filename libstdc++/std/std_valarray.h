@@ -212,10 +212,7 @@ public:
     _Tp    sum() const;	
     _Tp    min() const;	
     _Tp    max() const;	
-    
-    // FIXME: Extension
-    _Tp    product () const;
-
+  
     valarray<_Tp> shift (int) const;
     valarray<_Tp> cshift(int) const;
     _Expr<_ValFunClos<_ValArray,_Tp>,_Tp> apply(_Tp func(_Tp)) const;
@@ -285,54 +282,69 @@ inline valarray<_Tp>::valarray () : _M_size (0), _M_data (0) {}
 
 template<typename _Tp>
 inline valarray<_Tp>::valarray (size_t __n) 
-        : _M_size (__n), _M_data (new _Tp[__n]) {}
+  : _M_size (__n), _M_data(__valarray_get_storage<_Tp>(__n))
+{ __valarray_default_construct(_M_data, _M_data + __n); }
 
 template<typename _Tp>
 inline valarray<_Tp>::valarray (const _Tp& __t, size_t __n)
-        : _M_size (__n), _M_data (new _Tp[__n])
-{ __valarray_fill (_M_data, _M_size, __t); }
+  : _M_size (__n), _M_data(__valarray_get_storage<_Tp>(__n))
+{ __valarray_fill_construct(_M_data, _M_data + __n, __t); }
 
 template<typename _Tp>
 inline valarray<_Tp>::valarray (const _Tp* __restrict__ __pT, size_t __n)
-        : _M_size (__n), _M_data (new _Tp[__n])
-{ __valarray_copy (__pT, __n, _M_data); }
+        : _M_size (__n), _M_data(__valarray_get_storage<_Tp>(__n))
+{ __valarray_copy_construct(__pT, __pT + __n, _M_data); }
 
 template<typename _Tp>
 inline valarray<_Tp>::valarray (const valarray<_Tp>& __v)
-        : _M_size (__v._M_size), _M_data (new _Tp[__v._M_size])
-{ __valarray_copy (__v._M_data, _M_size, _M_data); }
+  : _M_size (__v._M_size), _M_data(__valarray_get_storage<_Tp>(__v._M_size))
+{ __valarray_copy_construct (__v._M_data, __v._M_data + _M_size, _M_data); }
 
 template<typename _Tp>
 inline valarray<_Tp>::valarray (const slice_array<_Tp>& __sa)
-        : _M_size (__sa._M_sz), _M_data (new _Tp[__sa._M_sz])
-{ __valarray_copy (__sa._M_array, __sa._M_sz, __sa._M_stride,
-                   _Array<_Tp>(_M_data)); }
+  : _M_size (__sa._M_sz), _M_data(__valarray_get_storage<_Tp>(__sa._M_sz))
+{
+  __valarray_copy_construct
+    (__sa._M_array, __sa._M_sz, __sa._M_stride, _Array<_Tp>(_M_data));
+}
 
 template<typename _Tp>
 inline valarray<_Tp>::valarray (const gslice_array<_Tp>& __ga)
-        : _M_size (__ga._M_index.size()), _M_data (new _Tp[_M_size])
-{ __valarray_copy (__ga._M_array, _Array<size_t>(__ga._M_index), 
-                   _Array<_Tp>(_M_data), _M_size); }
+  : _M_size (__ga._M_index.size()),
+    _M_data(__valarray_get_storage<_Tp>(_M_size))
+{
+  __valarray_copy_construct
+    (__ga._M_array, _Array<size_t>(__ga._M_index),
+     _Array<_Tp>(_M_data), _M_size);
+}
 
 template<typename _Tp>
 inline valarray<_Tp>::valarray (const mask_array<_Tp>& __ma)
-        : _M_size (__ma._M_sz), _M_data (new _Tp[__ma._M_sz])
-{ __valarray_copy (__ma._M_array, __ma._M_mask,
-                   _Array<_Tp>(_M_data), _M_size); }
+  : _M_size (__ma._M_sz), _M_data(__valarray_get_storage<_Tp>(__ma._M_sz))
+{
+  __valarray_copy_construct
+    (__ma._M_array, __ma._M_mask, _Array<_Tp>(_M_data), _M_size);
+}
 
 template<typename _Tp>
 inline valarray<_Tp>::valarray (const indirect_array<_Tp>& __ia)
-        : _M_size (__ia._M_sz), _M_data (new _Tp[__ia._M_sz])
-{ __valarray_copy (__ia._M_array, __ia._M_index, 
-                   _Array<_Tp>(_M_data), _M_size); }
+  : _M_size (__ia._M_sz), _M_data(__valarray_get_storage<_Tp>(__ia._M_size))
+{
+  __valarray_copy_construct
+    (__ia._M_array, __ia._M_index, _Array<_Tp>(_M_data), _M_size);
+}
 
 template<typename _Tp> template<class _Dom>
 inline valarray<_Tp>::valarray (const _Expr<_Dom, _Tp>& __e)
-        : _M_size (__e.size ()), _M_data (new _Tp[_M_size])
-{ __valarray_copy (__e, _M_size, _Array<_Tp>(_M_data)); }
+  : _M_size (__e.size ()), _M_data (__valarray_get_storage<_Tp>(_M_size))
+{ __valarray_copy_construct (__e, _M_size, _Array<_Tp>(_M_data)); }
 
 template<typename _Tp>
-inline valarray<_Tp>::~valarray () { delete[] _M_data; }
+inline valarray<_Tp>::~valarray ()
+{
+  __valarray_destroy_elements(_M_data, _M_data + _M_size);
+  __valarray_release_storage(_M_data);
+}
 
 template<typename _Tp>
 inline valarray<_Tp>&
@@ -472,14 +484,7 @@ template<class _Tp>
 inline _Tp
 valarray<_Tp>::sum () const
 {
-    return accumulate (_M_data, _M_data + _M_size, _Tp ());
-}
-
-template<typename _Tp>
-inline _Tp
-valarray<_Tp>::product () const
-{
-    return accumulate (_M_data, _M_data+_M_size, _Tp(1), multiplies<_Tp> ());
+  return __valarray_sum(_M_data, _M_data + _M_size);
 }
 
 template <class _Tp>
@@ -488,18 +493,18 @@ valarray<_Tp>::shift (int __n) const
 {
     _Tp* const __a = static_cast<_Tp*> (alloca (sizeof(_Tp) * _M_size));
     if (! __n)                          // __n == 0: no shift
-        __valarray_copy (_M_data, _M_size, __a);
+        __valarray_copy_construct (_M_data, _M_size, __a);
     else if (__n > 0) {                  // __n > 0: shift left
         if (__n > _M_size)
-            __valarray_fill(__a, __n, _Tp());
+            __valarray_default_construct(__a, __a + __n);
         else {
-            __valarray_copy (_M_data+__n, _M_size-__n, __a);
-            __valarray_fill (__a+_M_size-__n, __n, _Tp());
+            __valarray_copy_construct (_M_data+__n, _M_size-__n, __a);
+            __valarray_default_construct (__a+_M_size-__n, __a + _M_size);
         }
     }
     else {                             // __n < 0: shift right
-        __valarray_copy (_M_data, _M_size+__n, __a-__n);
-        __valarray_fill(__a, -__n, _Tp());
+      __valarray_copy_construct (_M_data, _M_data+_M_size+__n, __a-__n);
+        __valarray_default_construct(__a, __a-__n);
     }
     return valarray<_Tp> (__a, _M_size);
 }
@@ -509,15 +514,17 @@ inline valarray<_Tp>
 valarray<_Tp>::cshift (int __n) const
 {
     _Tp* const __a = static_cast<_Tp*> (alloca (sizeof(_Tp) * _M_size));
-    if (! __n)                          // __n == 0: no cshift
-        __valarray_copy(_M_data, _M_size, __a);
+    if (__n == 0)                          // __n == 0: no cshift
+      __valarray_copy_construct(_M_data, _M_data + _M_size, __a);
     else if (__n > 0) {                 // __n > 0: cshift left
-        __valarray_copy (_M_data, __n, __a + _M_size-__n);
-        __valarray_copy (_M_data + __n, _M_size-__n, __a);
+      __valarray_copy_construct (_M_data, _M_data + __n, __a + _M_size-__n);
+      __valarray_copy_construct (_M_data + __n, _M_data + _M_size, __a);
     }
     else {                            // __n < 0: cshift right
-        __valarray_copy (_M_data + _M_size + __n, -__n, __a);
-        __valarray_copy (_M_data, _M_size + __n, __a - __n);
+      __valarray_copy_construct
+        (_M_data + _M_size + __n, _M_data + _M_size, __a);
+        __valarray_copy_construct
+          (_M_data, _M_data + _M_size + __n, __a - __n);
     }
     return valarray<_Tp> (__a, _M_size);
 }
@@ -526,12 +533,15 @@ template <class _Tp>
 inline void
 valarray<_Tp>::resize (size_t __n, _Tp __c)
 {
-    if (_M_size != __n) {
-        delete[] _M_data;
-        _M_size = __n;
-        _M_data = new _Tp[_M_size];
-    }
-    __valarray_fill (_M_data, _M_size, __c);
+  // this is so to make valarray<valarray<T> > work
+  // even though it is not required by the standard.
+  __valarray_destroy_elements(_M_data, _M_data + _M_size);
+  if (_M_size != __n) {
+    __valarray_release_storage(_M_data);
+    _M_size = __n;
+    _M_data = __valarray_get_storage<_Tp>(__n);
+  }
+  __valarray_fill_construct (_M_data, _M_data + _M_size, __c);
 }
 
 template<typename _Tp>

@@ -1,3 +1,34 @@
+2000-07-15  Gabriel Dos Reis  <gdr@codesourcery.com>
+
+	* std/valarray_array.h (__valarray_get_memory,
+	__valarray_get_storage, __valarray_release_storage): New
+	functions.
+	(_Array_default_ctor, _Array_init_ctor, _Array_copy_ctor,
+	_Array_copier): New traits classes.
+	(__valarray_default_construct): New function.  Implements valarray
+	default construction.
+	(__valarray_fill_construct): New function. Implements valarray
+	construction with initializer.
+	(__valarray_copy_construct): New function.  Implements valarray
+	copy construction.
+	(__valarray_destroy_elements): New function. 
+	(__valarray_copy, __valarray_fill): Tweak.
+	(__valarray_sum, __valarray_product): New helper functions.
+	(_Array<>::free_data): Remove.
+	(_Array<>::_Array): Tweak.
+
+	* std/std_valarray.h (valarray<>::product): Remove.
+	(valarray<>::valarray): Use __valarray_get_storage.
+	(valarray<>::shift, valarray<>::cshift, valarray<>::resize):
+	Tweak. 
+
+	* std/cpp_type_traits.h: New file.
+
+	* valarray.cc (multiplies<>, accumulate, valarray<>::product):
+	Remove explicit instantiation. 
+	(__valarray_product): New function.
+	(_Indexer::_Indexer): Use.
+
 2000-07-14  Jean-Francois Panisset <panisset@discreet.com>
 	
 	* std/bastring.h (basic_string<>::clear): Add function.
