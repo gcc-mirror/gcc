@@ -4890,19 +4890,27 @@ function_arg_slotno (const struct sparc_args *cum, enum machine_mode mode,
 	 See emit_call_1.  */
       return -1;
 
+    case TImode : case CTImode :
+      if (TARGET_ARCH64 && (slotno & 1) != 0)
+	slotno++, *ppadding = 1;
+      /* fallthrough */
+
     case QImode : case CQImode :
     case HImode : case CHImode :
     case SImode : case CSImode :
     case DImode : case CDImode :
-    case TImode : case CTImode :
       if (slotno >= SPARC_INT_ARG_MAX)
 	return -1;
       regno = regbase + slotno;
       break;
 
+    case TFmode : case TCmode :
+      if (TARGET_ARCH64 && (slotno & 1) != 0)
+	slotno++, *ppadding = 1;
+      /* fallthrough */
+
     case SFmode : case SCmode :
     case DFmode : case DCmode :
-    case TFmode : case TCmode :
       if (TARGET_ARCH32)
 	{
 	  if (slotno >= SPARC_INT_ARG_MAX)
@@ -4911,9 +4919,6 @@ function_arg_slotno (const struct sparc_args *cum, enum machine_mode mode,
 	}
       else
 	{
-	  if ((mode == TFmode || mode == TCmode)
-	      && (slotno & 1) != 0)
-	    slotno++, *ppadding = 1;
 	  if (TARGET_FPU && named)
 	    {
 	      if (slotno >= SPARC_FP_ARG_MAX)

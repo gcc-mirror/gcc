@@ -1,3 +1,7 @@
+2004-02-02  Eric Botcazou  <ebotcazou@libertysurf.fr>
+
+	* gcc.dg/titype-1.c: New test.
+
 2004-01-30  Michael Matz  <matz@suse.de>
 
 	* g++.dg/ext/case-range1.C, g++.dg/ext/case-range2.C,
