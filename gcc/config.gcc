@@ -849,27 +849,6 @@ hppa1.0-*-hpux11*)
 	esac
 	use_collect2=yes
 	;;
-i370-*-opened*)			 # IBM 360/370/390 Architecture
-	xm_defines='FATAL_EXIT_CODE=12'
-	tm_file="i370/oe.h i370/i370.h"
-	tmake_file="i370/t-i370"
-	c_target_objs="i370-c.o"
-	cxx_target_objs="i370-c.o"
-	# Don't bother fixing up header files; they're weird.
-	;;
-i370-*-mvs*)
-	xm_defines='FATAL_EXIT_CODE=12'
-	tm_file="i370/mvs.h i370/i370.h"
-	tmake_file="i370/t-i370"
-	c_target_objs="i370-c.o"
-	cxx_target_objs="i370-c.o"
-	use_fixproto=yes
-	;;
-i370-*-linux*)
-	tm_file="dbxelf.h elfos.h svr4.h linux.h i370/linux.h i370/i370.h"
-	tmake_file="t-slibgcc-elf-ver t-linux"
-	# broken_install=yes
-	;;
 i[34567]86-*-darwin*)
 	tm_file="${tm_file} i386/darwin.h"
 	;;
