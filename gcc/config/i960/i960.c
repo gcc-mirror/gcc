@@ -2053,7 +2053,14 @@ i960_arg_size_and_align (mode, type, size_out, align_out)
     size = (GET_MODE_SIZE (mode) + UNITS_PER_WORD - 1) / UNITS_PER_WORD;
 
   if (type == 0)
-    align = size;
+    {
+      /* ??? This is a hack to properly correct the alignment of XFmode
+	 values without affecting anything else.  */
+      if (size == 3)
+	align = 4;
+      else
+	align = size;
+    }
   else if (TYPE_ALIGN (type) >= BITS_PER_WORD)
     align = TYPE_ALIGN (type) / BITS_PER_WORD;
   else
@@ -2068,7 +2075,9 @@ i960_arg_size_and_align (mode, type, size_out, align_out)
    subsequent arguments are placed on the stack.
 
    Additionally, parameters with an alignment requirement stronger than
-   a word must be be aligned appropriately.  */
+   a word must be aligned appropriately.  Note that this means that a
+   64 bit object with a 32 bit alignment is not 64 bit aligned and may be
+   passed in an odd/even register pair.  */
 
 /* Update CUM to advance past an argument described by MODE and TYPE.  */
 
