@@ -185,7 +185,7 @@ typedef struct stack_def
 {
   int top;			/* index to top stack element */
   HARD_REG_SET reg_set;		/* set of live registers */
-  char reg[REG_STACK_SIZE];	/* register - stack mapping */
+  unsigned char reg[REG_STACK_SIZE];/* register - stack mapping */
 } *stack;
 
 /* This is used to carry information about basic blocks.  It is 
@@ -239,7 +239,8 @@ static int check_asm_stack_operands	PARAMS ((rtx));
 static int get_asm_operand_n_inputs	PARAMS ((rtx));
 static rtx stack_result			PARAMS ((tree));
 static void replace_reg			PARAMS ((rtx *, int));
-static void remove_regno_note		PARAMS ((rtx, enum reg_note, int));
+static void remove_regno_note		PARAMS ((rtx, enum reg_note,
+						 unsigned int));
 static int get_hard_regnum		PARAMS ((stack, rtx));
 static void delete_insn_for_stacker	PARAMS ((rtx));
 static rtx emit_pop_insn		PARAMS ((rtx, stack, rtx,
@@ -841,7 +842,7 @@ static void
 remove_regno_note (insn, note, regno)
      rtx insn;
      enum reg_note note;
-     int regno;
+     unsigned int regno;
 {
   register rtx *note_link, this;
 
