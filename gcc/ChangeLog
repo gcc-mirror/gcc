@@ -1,5 +1,8 @@
 2000-05-28  Richard Henderson  <rth@cygnus.com>
 
+	* regclass.c (record_operand_costs): Protect reg_changes_size
+	with CLASS_CANNOT_CHANGE_SIZE.
+
 	* loop.c (instrument_loop_bct): Set JUMP_LABEL on the new insn.
 
 2000-05-28  Richard Henderson  <rth@cygnus.com>
