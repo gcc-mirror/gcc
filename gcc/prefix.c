@@ -89,7 +89,7 @@ static char *
 get_key_value (key)
      char *key;
 {
-  char *prefix = 0;
+  char *prefix;
 
 #ifdef _WIN32
   prefix = lookup_key (key);
