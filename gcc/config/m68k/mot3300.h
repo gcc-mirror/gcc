@@ -792,9 +792,8 @@ do {(CUM).offset = 0;\
 #define MATH_LIBRARY	"-lm881"
 #endif
 
-/* Currently we do not have the atexit() function;
- *  so take that from libgcc2.c
- */
+/* Currently we do not have the atexit() function,
+   so take that from libgcc2.c */
 
 #define NEED_ATEXIT 1
 #define HAVE_ATEXIT 1
@@ -805,3 +804,13 @@ do {(CUM).offset = 0;\
       __stop_monitor ();					\
       _cleanup ();						\
     } while (0)
+
+/* FINALIZE_TRAMPOLINE clears the instruction cache. */
+
+#undef FINALIZE_TRAMPOLINE
+#define FINALIZE_TRAMPOLINE(TRAMP)	\
+  if (!TARGET_68040)			\
+    ;					\
+  else					\
+    emit_library_call (gen_rtx (SYMBOL_REF, Pmode, "__clear_insn_cache"), \
+		       0, VOIDmode, 0)
