@@ -1,3 +1,8 @@
+2000-01-11  Zack Weinberg  <zack@wolery.cumb.org>
+
+	* Add self as cpplib maintainer, as requested by Jason
+	Merrill.  Correct my e-mail address.
+
 2000-01-06  Geoff Keating  <geoffk@cygnus.com>
 
 	* configure.in: Use mt-aix43 to handle *_TARGET defs,

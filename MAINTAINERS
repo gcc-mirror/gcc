@@ -51,6 +51,7 @@ java			Alexandre Petit-Bianco	apbianco@cygnus.com
 objective-c		Ovidiu Predescu		ovidiu@cup.hp.com
 cpplib			Dave Brolley		brolley@cygnus.com
 cpplib			Per Bothner		per@bothner.com
+cpplib			Zack Weinberg		zack@wolery.cumb.org
 fixincludes		Ian Taylor		ian@cygnus.com
 alias analysis		John Carr		jfc@mit.edu
 loop unrolling		Jim Wilson		wilson@cygnus.com
@@ -118,7 +119,6 @@ Franz Sirl					franz.sirl-kernel@lauterbach.com
 Mike Stump					mrs@windriver.com
 Tom Tromey					tromey@cygnus.com
 John Wehle					john@feith.com
-Zack Weinberg					zack@bitmover.com
 Martin v. Löwis					loewis@informatik.hu-berlin.de
 
 * Indicates folks we need to get Kerberos/ssh accounts ready so they
