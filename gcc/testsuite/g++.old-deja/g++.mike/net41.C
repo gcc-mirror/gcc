@@ -1,3 +1,0 @@
-main() {
-  int i = ~ false;
-}

@@ -1,1 +1,0 @@
-test_libio tfformat.c "-DTEST_LIBIO -DTEST_EXACTNESS" "" "" ""

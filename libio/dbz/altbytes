@@ -1,7 +1,0 @@
-NR == 1 {
-	printf "%s %s %s %s %s %s %s %s %s", $1, $2, $3, $4, $5, $6, $7, $8, $9
-	for (i = 10; i <= NF; i += 2)
-		printf " %s %s", $(i+1), $i
-	printf "\n"
-}
-NR > 1 { print }

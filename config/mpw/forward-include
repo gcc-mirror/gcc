@@ -1,3 +1,0 @@
-Echo '#include' ¶""{1}"¶" >"{2}".tem
-MoveIfChange "{2}".tem "{2}"
-

@@ -1,2 +1,0 @@
-# RTEMS uses newlib which does not require prototype fixing
-STMP_FIXPROTO =

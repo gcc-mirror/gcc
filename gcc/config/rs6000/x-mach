@@ -1,7 +1,0 @@
-# configuration for IBM rs6000 running MACH
-
-# Show we need to use the C version of ALLOCA
-ALLOCA=alloca.o
-
-# For some reason, we need -lm for cc1.
-CLIB=-lm

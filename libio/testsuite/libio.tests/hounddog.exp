@@ -1,3 +1,0 @@
-test_libio hounddog.cc "" hounddog.inp hounddog.exp ""
-test_libio hounddog.cc "" hounddog.inp hounddog.exp "-b0"
-test_libio hounddog.cc "" hounddog.inp hounddog.exp "-b2"

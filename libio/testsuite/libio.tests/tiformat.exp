@@ -1,1 +1,0 @@
-test_libio tiformat.c "-DTEST_LIBIO" "" "" ""

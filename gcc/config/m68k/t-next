@@ -1,6 +1,0 @@
-# libgcc1.c is not needed, since the standard library has these functions.
-LIBGCC1=
-CROSS_LIBGCC1=
-
-nextstep.o: $(srcdir)/config/nextstep.c $(CONFIG_H) flags.h tree.h
-	$(CC) -c $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) $<

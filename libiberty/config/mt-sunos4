@@ -1,2 +1,0 @@
-XTRAFLAGS = -isystem /s1/cygnus/dejagnu/sparc-sun-sunos4.1.3/include/
-LOADLIBES = -L/s1/cygnus/dejagnu/sparc-sun-sunos4.1.3/lib

@@ -1,2 +1,0 @@
-HDEFINES=-DNEED_basename -DNEED_sys_siglist -DNEED_strsignal -DNO_SYS_FILE_H
-EXTRA_OFILES=asprintf.o strcasecmp.o strncasecmp.o vasprintf.o

@@ -1,2 +1,0 @@
-RANLIB=ranlib
-CC= cc -A ansi -A runtype,any -A systype,any -U__STDC__

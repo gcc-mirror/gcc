@@ -1,2 +1,0 @@
-HDEFINES=-DNEED_sys_siglist -DNEED_basename -DNEED_strsignal
-EXTRA_OFILES=vasprintf.o random.o

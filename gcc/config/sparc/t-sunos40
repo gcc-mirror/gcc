@@ -1,7 +1,0 @@
-# SunOS 4.0.* 
-# /bin/as doesn't recognize the v8 instructions, so we can't do a v8
-# multilib build.
-
-LIBGCC1 =
-CROSS_LIBGCC1 =
-LIBGCC1_TEST =

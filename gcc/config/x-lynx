@@ -1,6 +1,0 @@
-# /bin/cc is hopelessly broken, so we must use /bin/gcc instead.
-CC	= $(OLDCC)
-OLDCC	= /bin/gcc
-
-# /bin/sh is too buggy, so use /bin/bash instead.
-SHELL = /bin/bash

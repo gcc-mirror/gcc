@@ -1,8 +1,0 @@
-LIBGCC1=libgcc1.null
-CROSS_LIBGCC1=libgcc1.null
-
-# Don't run fixproto
-STMP_FIXPROTO =
-
-# Don't install "assert.h" in gcc. We use the one in glibc.
-INSTALL_ASSERT_H =
