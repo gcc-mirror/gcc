@@ -1,3 +1,22 @@
+2004-08-15  Andrew Pinski  <apinski@apple.com>
+
+	PR fortran/17030
+	* f95-lang.c (gfc_init_builtin_functions): Initialize the builtins
+	for cabs{,f} and copysign{,f}.
+	* trans-decl.c (gfor_fndecl_math_cabsf): Delete. 
+	(gfor_fndecl_math_cabs): Delete. 
+	(gfor_fndecl_math_sign4): Delete. 
+	(gfor_fndecl_math_sign8): Delete. 
+	(gfc_build_intrinsic_function_decls): Remove the
+	initializing of cabs{,f} and copysign{,f} functions.
+	* trans-intrinsic.c (gfc_conv_intrinsic_abs): Use the builtins
+	instead of the functions definitions.
+	(gfc_conv_intrinsic_sign): Likewise.
+	* trans.h (gfor_fndecl_math_cabsf): Delete. 
+	(gfor_fndecl_math_cabs): Delete. 
+	(gfor_fndecl_math_sign4): Delete. 
+	(gfor_fndecl_math_sign8): Delete. 
+
 2004-08-15  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* trans-array.c (gfc_trans_array_constructor_value): Use

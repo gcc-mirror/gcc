@@ -96,10 +96,6 @@ tree gfor_fndecl_associated;
 gfc_powdecl_list gfor_fndecl_math_powi[3][2];
 tree gfor_fndecl_math_cpowf;
 tree gfor_fndecl_math_cpow;
-tree gfor_fndecl_math_cabsf;
-tree gfor_fndecl_math_cabs;
-tree gfor_fndecl_math_sign4;
-tree gfor_fndecl_math_sign8;
 tree gfor_fndecl_math_ishftc4;
 tree gfor_fndecl_math_ishftc8;
 tree gfor_fndecl_math_exponent4;
@@ -1460,22 +1456,6 @@ gfc_build_intrinsic_function_decls (void)
     gfc_build_library_function_decl (get_identifier ("cpow"),
 				     gfc_complex8_type_node,
 				     1, gfc_complex8_type_node);
-  gfor_fndecl_math_cabsf =
-    gfc_build_library_function_decl (get_identifier ("cabsf"),
-				     gfc_real4_type_node,
-				     1, gfc_complex4_type_node);
-  gfor_fndecl_math_cabs =
-    gfc_build_library_function_decl (get_identifier ("cabs"),
-				     gfc_real8_type_node,
-				     1, gfc_complex8_type_node);
-  gfor_fndecl_math_sign4 =
-    gfc_build_library_function_decl (get_identifier ("copysignf"),
-				     gfc_real4_type_node,
-				     1, gfc_real4_type_node);
-  gfor_fndecl_math_sign8 =
-    gfc_build_library_function_decl (get_identifier ("copysign"),
-				     gfc_real8_type_node,
-				     1, gfc_real8_type_node);
   gfor_fndecl_math_ishftc4 =
     gfc_build_library_function_decl (get_identifier (PREFIX("ishftc4")),
 				     gfc_int4_type_node,

@@ -723,6 +723,8 @@ gfc_init_builtin_functions (void)
 {
   tree mfunc_float[2];
   tree mfunc_double[2];
+  tree func_cfloat_float;
+  tree func_cdouble_double;
   tree ftype;
   tree tmp;
 
@@ -730,11 +732,19 @@ gfc_init_builtin_functions (void)
   mfunc_float[0] = build_function_type (float_type_node, tmp);
   tmp = tree_cons (NULL_TREE, float_type_node, tmp);
   mfunc_float[1] = build_function_type (float_type_node, tmp);
+  
+  tmp = tree_cons (NULL_TREE, complex_float_type_node, void_list_node);
+  func_cfloat_float = build_function_type (float_type_node, tmp);
+  
 
   tmp = tree_cons (NULL_TREE, double_type_node, void_list_node);
   mfunc_double[0] = build_function_type (double_type_node, tmp);
   tmp = tree_cons (NULL_TREE, double_type_node, tmp);
   mfunc_double[1] = build_function_type (double_type_node, tmp);
+  
+  
+  tmp = tree_cons (NULL_TREE, complex_double_type_node, void_list_node);
+  func_cdouble_double = build_function_type (double_type_node, tmp);
 
 #include "mathbuiltins.def"
 
@@ -748,6 +758,17 @@ gfc_init_builtin_functions (void)
 		      BUILT_IN_ROUND, "round", true);
   gfc_define_builtin ("__builtin_roundf", mfunc_float[0], 
 		      BUILT_IN_ROUNDF, "roundf", true);
+  
+  gfc_define_builtin ("__builtin_cabs", func_cdouble_double, 
+		      BUILT_IN_CABS, "cabs", true);
+  gfc_define_builtin ("__builtin_cabsf", func_cfloat_float, 
+		      BUILT_IN_CABSF, "cabsf", true);
+		      
+  
+  gfc_define_builtin ("__builtin_copysign", mfunc_double[1], 
+		      BUILT_IN_COPYSIGN, "copysign", true);
+  gfc_define_builtin ("__builtin_copysignf", mfunc_float[1], 
+		      BUILT_IN_COPYSIGNF, "copysignf", true);
 
   /* These are used to implement the ** operator.  */
   gfc_define_builtin ("__builtin_pow", mfunc_double[1], 
