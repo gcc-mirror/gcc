@@ -96,7 +96,6 @@ extern int frame_pointer_needed;
 extern int target_flags;
 
 /* These two are used by TARGET_OPTIONS, they are parsed in OVERRIDE_OPTIONS */
-extern char *target_cpu_name;
 extern char *target_fpe_name;
 
 /* Nonzero if the function prologue (and epilogue) should obey
@@ -204,9 +203,7 @@ extern char *target_fpe_name;
   {"soft-float",		ARM_FLAG_SOFT_FLOAT},	\
   {"hard-float",	       -ARM_FLAG_SOFT_FLOAT},	\
   {"big-endian",		ARM_FLAG_BIG_END},	\
-  {"be",			ARM_FLAG_BIG_END},	\
   {"little-endian",	       -ARM_FLAG_BIG_END},	\
-  {"le",		       -ARM_FLAG_BIG_END},	\
   {"thumb-interwork",		ARM_FLAG_THUMB},	\
   {"no-thumb-interwork",       -ARM_FLAG_THUMB},	\
   {"words-little-endian",       ARM_FLAG_LITTLE_WORDS},	\
@@ -214,13 +211,31 @@ extern char *target_fpe_name;
   {"",				TARGET_DEFAULT }	\
 }
 
-#define TARGET_OPTIONS				\
-{						\
-  {"cpu-", &target_cpu_name},			\
-  {"cpu=", &target_cpu_name},			\
-  {"fpe-", &target_fpe_name},			\
-  {"fpe=", &target_fpe_name}			\
+#define TARGET_OPTIONS			\
+{					\
+  {"cpu=",  &arm_select[1].string},	\
+  {"tune=", &arm_select[2].string},	\
+  {"fpe=",  &target_fpe_name}		\
 }
+
+/* arm_select[0] is reserved for the default cpu.  */
+struct arm_cpu_select
+{
+  char *string;
+  char *name;
+  int set_tune_p;
+  int set_arch_p;
+};
+
+extern struct arm_cpu_select arm_select[];
+
+#ifndef PROCESSOR_DEFAULT
+#define PROCESSOR_DEFAULT PROCESSOR_ARM2
+#endif
+
+#ifndef TARGET_CPU_DEFAULT
+#define TARGET_CPU_DEFAULT ((char *) 0)
+#endif
 
 /* Which processor we are running on.  */
 enum processor_type 
@@ -1463,16 +1478,29 @@ do									\
 #define EXTRA_CC_MODES CC_NOOVmode, CC_Zmode, CC_SWPmode, \
   CCFPmode, CCFPEmode, CC_DNEmode, CC_DEQmode, CC_DLEmode, \
   CC_DLTmode, CC_DGEmode, CC_DGTmode, CC_DLEUmode, CC_DLTUmode, \
-  CC_DGEUmode, CC_DGTUmode
+  CC_DGEUmode, CC_DGTUmode, CC_Cmode
 
 #define EXTRA_CC_NAMES "CC_NOOV", "CC_Z", "CC_SWP", "CCFP", "CCFPE", \
   "CC_DNE", "CC_DEQ", "CC_DLE", "CC_DLT", "CC_DGE", "CC_DGT", "CC_DLEU", \
-  "CC_DLTU", "CC_DGEU", "CC_DGTU"
+  "CC_DLTU", "CC_DGEU", "CC_DGTU", "CC_C"
 
 enum machine_mode arm_select_cc_mode ();
 #define SELECT_CC_MODE(OP,X,Y)  arm_select_cc_mode ((OP), (X), (Y))
 
 #define REVERSIBLE_CC_MODE(MODE) ((MODE) != CCFPEmode)
+
+enum rtx_code arm_canonicalize_comparison ();
+#define CANONICALIZE_COMPARISON(CODE,OP0,OP1)			\
+do								\
+{								\
+  if (GET_CODE (OP1) == CONST_INT				\
+      && ! (const_ok_for_arm (INTVAL (OP1))			\
+	    || (const_ok_for_arm (- INTVAL (OP1)))))		\
+    {								\
+      rtx const_op = OP1;					\
+      CODE = arm_canonicalize_comparison ((CODE), &const_op);	\
+    }								\
+} while (0)
 
 #define STORE_FLAG_VALUE 1
 
@@ -1658,3 +1686,32 @@ extern int arm_compare_fp;
     }									\
   else output_addr_const(STREAM, X);					\
 }
+
+/* Output code to add DELTA to the first argument, and then jump to FUNCTION.
+   Used for C++ multiple inheritance.  */
+#define ASM_OUTPUT_MI_THUNK(FILE, THUNK_FNDECL, DELTA, FUNCTION)	\
+do {									\
+  int mi_delta = (DELTA);						\
+  char *mi_op = mi_delta < 0 ? "sub" : "add";				\
+  int shift = 0;							\
+  if (mi_delta < 0) mi_delta = -mi_delta;				\
+  while (mi_delta != 0)							\
+    {									\
+      if (mi_delta & (3 << shift) == 0)					\
+	shift += 2;							\
+      else								\
+	{								\
+	  fprintf (FILE, "\t%s\t%s%s, %s%s, #%d\n",			\
+		   mi_op, REGISTER_PREFIX, reg_names[0],		\
+		   REGISTER_PREFIX, reg_names[0],			\
+		   mi_delta & (0xff << shift));				\
+	  arm_increase_location (4);					\
+	  mi_delta &= ~(0xff << shift);					\
+	  shift += 8;							\
+	}								\
+    }									\
+  fprintf (FILE, "\tldr\t%spc, [%spc, #-4]\n", REGISTER_PREFIX,		\
+	   REGISTER_PREFIX);						\
+  arm_increase_location (4);						\
+  ASM_OUTPUT_INT (FILE, XEXP (DECL_RTL (FUNCTION), 0));			\
+} while (0)
