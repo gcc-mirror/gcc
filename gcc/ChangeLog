@@ -1,3 +1,9 @@
+2003-06-03  Richard Henderson  <rth@redhat.com>
+
+	PR target/10673
+        * config/i386/i386.c (ix86_split_long_move): Fix base register
+        mode for XFmode splits for TARGET_64BIT.
+
 2003-06-02  Kazuhiro Inaoka  <inaoka.kazuhiro@renesas.com>
 
         * gcc/config.gcc Add support multilib parts for m32rx processor.
