@@ -7929,7 +7929,6 @@ ffecom_start_progunit_ ()
       id = ffecom_get_invented_identifier ("__g77_masterfun_%s",
 					   ffesymbol_text (fn),
 					   0);
-      IDENTIFIER_INVENTED (id) = 0;	/* Allow this to be debugged. */
     }
 #if FFETARGET_isENFORCED_MAIN
   else if (main_program)
@@ -9473,11 +9472,6 @@ ffecom_transform_equiv_ (ffestorag eqst)
     DECL_INITIAL (eqt) = NULL_TREE;
 
   eqt = start_decl (eqt, FALSE);
-
-  /* Make sure this shows up as a debug symbol, which is not normally
-     the case for invented identifiers.  */
-
-  DECL_IGNORED_P (eqt) = 0;
 
   /* Make sure that any type can live in EQUIVALENCE and be referenced
      without getting a bus error.  We could pick the most restrictive
@@ -15330,10 +15324,6 @@ pushdecl (x)
 	  DECL_ARTIFICIAL (x) = 1;
 #endif
 	  DECL_IN_SYSTEM_HEADER (x) = 1;
-	  DECL_IGNORED_P (x) = 1;
-	  TREE_USED (x) = 1;
-	  if (TREE_CODE (x) == TYPE_DECL)
-	    TYPE_DECL_SUPPRESS_DEBUG (x) = 1;
 	}
 
       t = lookup_name_current_level (name);
