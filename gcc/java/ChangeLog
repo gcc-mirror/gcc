@@ -1,3 +1,8 @@
+1999-08-26  Tom Tromey  <tromey@cygnus.com>
+
+	* gjavah.c (print_cxx_classname): Print "::" before qualified
+	name.
+
 Thu Aug 26 09:10:58 1999  Alexandre Petit-Bianco  <apbianco@cygnus.com>
 
 	* parse.y (lookup_cl): Changed leading comment. Now does its best
