@@ -28,6 +28,10 @@ Boston, MA 02111-1307, USA.  */
 #ifndef GCC_CP_TREE_H
 #define GCC_CP_TREE_H
 
+#ifndef __GNUC__
+#error "You should be using 'make bootstrap' -- see installation instructions"
+#endif
+
 #include "c-common.h"
 
 /* Usage of TREE_LANG_FLAG_?:
@@ -3900,6 +3904,7 @@ extern void init_init_processing		PARAMS ((void));
 extern void emit_base_init			PARAMS ((tree, tree));
 extern tree expand_member_init			PARAMS ((tree, tree, tree));
 extern tree build_aggr_init			PARAMS ((tree, tree, int));
+extern tree build_init				PARAMS ((tree, tree, int));
 extern int is_aggr_type				PARAMS ((tree, int));
 extern tree get_aggr_from_typedef		PARAMS ((tree, int));
 extern tree get_type_value			PARAMS ((tree));
