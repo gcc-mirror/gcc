@@ -1,3 +1,8 @@
+2000-07-31  Jim Wilson  <wilson@cygnus.com>
+
+	* config/ia64/ia64.c (ia64_function_arg): Use alignment not size
+	when computing offset.
+
 Mon Jul 31 20:35:50 2000  Denis Chertykov  <denisc@overta.ru>
 
 	* genpeep.c (main): Handle DEFINE_PEEPHOLE2.
