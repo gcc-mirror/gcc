@@ -571,6 +571,7 @@ in the following sections.
 -mtda=@var{n}  -msda=@var{n}  -mzda=@var{n} @gol
 -mapp-regs  -mno-app-regs @gol
 -mdisable-callt  -mno-disable-callt @gol
+-mv850e1 @gol
 -mv850e @gol
 -mv850  -mbig-switch}
 
@@ -9700,14 +9701,20 @@ the compiler.  This setting is the default.
 @opindex mno-app-regs
 This option will cause r2 and r5 to be treated as fixed registers.
   
+@item -mv850e1
+@opindex mv850e1
+Specify that the target processor is the V850E1.  The preprocessor
+constants @samp{__v850e1__} and @samp{__v850e__} will be defined if
+this option is used.
+
 @item -mv850e
 @opindex mv850e
 Specify that the target processor is the V850E.  The preprocessor
 constant @samp{__v850e__} will be defined if this option is used.
 
-If neither @option{-mv850} nor @option{-mv850e} are defined
-then a default target processor will be chosen and the relevant
-@samp{__v850*__} preprocessor constant will be defined.
+If neither @option{-mv850} nor @option{-mv850e} nor @option{-mv850e1}
+are defined then a default target processor will be chosen and the
+relevant @samp{__v850*__} preprocessor constant will be defined.
 
 The preprocessor constants @samp{__v850} and @samp{__v851__} are always
 defined, regardless of which processor variant is the target.
@@ -9715,7 +9722,7 @@ defined, regardless of which processor variant is the target.
 @item -mdisable-callt
 @opindex mdisable-callt
 This option will suppress generation of the CALLT instruction for the
-v850e flavors of the v850 architecture.  The default is
+v850e and v850e1 flavors of the v850 architecture.  The default is
 @option{-mno-disable-callt} which allows the CALLT instruction to be used.
 
 @end table

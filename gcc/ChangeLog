@@ -1,5 +1,15 @@
 2003-09-04  Nick Clifton  <nickc@redhat.com>
 
+	* config.gcc: Add v850e1 target.  Allow --with-cpu to accept
+	v850e1.
+	* config/v850/v850.h: Accept v850e1 as a default CPU.
+	Accept -mv850e1 as a command line option.
+	* doc/invoke.texi: Document new -mv850e1 command line switch.
+	* config/v850/t-v850: Treat -mv850e1 as a multilib alias for
+	-mv850e.
+
+2003-09-04  Nick Clifton  <nickc@redhat.com>
+
 	* config.gcc (v850e-*-*): Use t-v850e makefile fragment.
         * config/v850/t-v850: Only produce one extra multilib - for
         the v850e.
