@@ -1,3 +1,10 @@
+2002-04-16  Richard Henderson  <rth@redhat.com>
+
+	* config.gcc (sparcv9-solaris): Configure for 64-bit default.
+	Adjust tm_file order to get TARGET_DEFAULT set properly.
+	(sparc-solaris): Configure 2.[78] for 64-bit multilibs.
+	* doc/install.texi (sparc-solaris): Update.
+
 2002-04-16  Dale Johannesen <dalej@apple.com>
 
 	* config/rs6000/rs6000.c (rs6000_emit_cmove): Fail if modes of
@@ -12,7 +19,7 @@
 
 2002-04-16  Aldy Hernandez  <aldyh@redhat.com>
 
-        * config/rs6000/altivec.h (vec_addc): Type check.
+	* config/rs6000/altivec.h (vec_addc): Type check.
 
 2002-04-16  Jakub Jelinek  <jakub@redhat.com>
 
