@@ -1729,7 +1729,7 @@ readonly_data ()							\
    PREFIX is the class of label and NUM is the number within the class.  */
 
 #define ASM_OUTPUT_INTERNAL_LABEL(FILE,PREFIX,NUM)	\
-  {fprintf (FILE, "%s$%04d", PREFIX, NUM);		\
+  {fprintf (FILE, "%c$%s%04d", (PREFIX)[0], (PREFIX) + 1, NUM);\
    if (TARGET_GAS)					\
      fputs (":\n", FILE);				\
    else							\
@@ -1741,7 +1741,7 @@ readonly_data ()							\
    This is suitable for output with `assemble_name'.  */
 
 #define ASM_GENERATE_INTERNAL_LABEL(LABEL,PREFIX,NUM)	\
-  sprintf (LABEL, "*%s$%04d", PREFIX, NUM)
+  sprintf (LABEL, "*%c$%s%04d", (PREFIX)[0], (PREFIX) + 1, NUM)
 
 /* This is how to output an assembler line defining a `double' constant.  */
 
