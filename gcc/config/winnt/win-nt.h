@@ -71,8 +71,8 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.
 #define LIB_SPEC "%{mwindows:-subsystem:windows -entry:WinMainCRTStartup \
   USER32.LIB GDI32.LIB COMDLG32.LIB WINSPOOL.LIB} \
  %{!mwindows:-subsystem:console -entry:mainCRTStartup} \
- %{mcrtmt:LIBCMT.LIB KERNEL32.LIB ADVAPI32.LIB} \
- %{!mcrtmt:LIBC.LIB KERNEL32.LIB ADVAPI32.LIB} \
+ %{mcrtmt:OLDNAMES.LIB LIBCMT.LIB KERNEL32.LIB ADVAPI32.LIB} \
+ %{!mcrtmt:OLDNAMES.LIB LIBC.LIB KERNEL32.LIB ADVAPI32.LIB} \
  %{g:-debugtype:coff -debug:full} \
  %{v}"
 
