@@ -1227,11 +1227,14 @@ extern struct rtx_def *sh_builtin_saveregs ();
 
 /* Assembler output control.  */
 
+/* A C string constant describing how to begin a comment in the target
+   assembler language.  The compiler assumes that the comment will end at
+   the end of the line.  */
+#define ASM_COMMENT_START "!"
+
 /* The text to go at the start of the assembler file.  */
-#define ASM_FILE_START(STREAM) 						\
-  output_file_start (STREAM, f_options,					\
-		     sizeof f_options / sizeof f_options[0],		\
-		     W_options, sizeof W_options / sizeof W_options[0]);
+#define ASM_FILE_START(STREAM) \
+  output_file_start (STREAM)
 
 #define ASM_FILE_END(STREAM)
 
