@@ -1,3 +1,20 @@
+2000-09-25  Hans-Peter Nilsson  <hp@axis.com>
+
+	Changes below marked "here" add TABs on either or both sides,
+	covering start of line, up to any operand for all noted .*ASM.*_OP
+	definitions.
+	* crtstuff.c (CTORS_SECTION_ASM_OP, DTORS_SECTION_ASM_OP): Explain
+	why these defaults don't have leading spacing.
+	* dbxout.c (ASM_STABS_OP, ASM_STABN_OP): Here.
+	* dwarf2out.c (UNALIGNED_SHORT_ASM_OP, UNALIGNED_INT_ASM_OP,
+	UNALIGNED_DOUBLE_INT_ASM_OP, SECTION_ASM_OP, ASM_BYTE_OP): Here.
+	* dwarfout.c (FILE_ASM_OP, VERSION_ASM_OP,
+ 	UNALIGNED_SHORT_ASM_OP, UNALIGNED_INT_ASM_OP, ASM_BYTE_OP,
+	PUSHSECTION_ASM_OP, POPSECTION_ASM_OP): Here.
+	* defaults.h (ASM_STABD_OP, EH_FRAME_SECTION_ASM_OP): Here.
+	* varasm.c (ASM_STABS_OP): Here.
+	* xcoffout.h (ASM_STABS_OP): Here.
+
 2000-09-25  Richard Henderson  <rth@cygnus.com>
 
 	* expmed.c (store_bit_field): Adjust last change to not consider

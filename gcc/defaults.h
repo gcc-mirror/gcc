@@ -44,7 +44,7 @@ Boston, MA 02111-1307, USA.  */
 #endif
 
 #ifndef ASM_STABD_OP
-#define ASM_STABD_OP ".stabd"
+#define ASM_STABD_OP "\t.stabd\t"
 #endif
 
 /* This is how to output an element of a case-vector that is absolute.
@@ -170,7 +170,7 @@ do { ASM_OUTPUT_LABEL(FILE,LABEL_ALTERNATE_NAME (INSN)); } while (0)
 # else
    /* If we aren't using crtstuff to run ctors, don't use it for EH.  */
 #  if defined (ASM_OUTPUT_SECTION_NAME) && defined (ASM_OUTPUT_CONSTRUCTOR)
-#   define EH_FRAME_SECTION_ASM_OP	".section\t.eh_frame,\"aw\""
+#   define EH_FRAME_SECTION_ASM_OP	"\t.section\t.eh_frame,\"aw\""
 #   define EH_FRAME_SECTION() \
      do { named_section (NULL_TREE, ".eh_frame", 0); } while (0)
 #  endif

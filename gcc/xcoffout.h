@@ -20,7 +20,7 @@ the Free Software Foundation, 59 Temple Place - Suite 330,
 Boston, MA 02111-1307, USA.  */
 
 
-#define ASM_STABS_OP ".stabx"
+#define ASM_STABS_OP "\t.stabx\t"
 
 /* Tags and typedefs are C_DECL in XCOFF, not C_LSYM.  */
 
