@@ -44,6 +44,7 @@ Boston, MA 02111-1307, USA.  */
 #include "timevar.h"
 #include "cpplib.h"
 #include "target.h"
+#include "c-common.h"
 extern cpp_reader *parse_in;
 
 /* This structure contains information about the initializations
@@ -287,10 +288,6 @@ int warn_old_style_cast;
 /* Warn about #pragma directives that are not recognised.  */      
 
 int warn_unknown_pragmas; /* Tri state variable.  */  
-
-/* Nonzero means warn about use of multicharacter literals.  */
-
-int warn_multichar = 1;
 
 /* Nonzero means warn when non-templatized friend functions are
    declared within a template */

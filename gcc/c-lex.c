@@ -1359,7 +1359,7 @@ lex_charconst (token)
   unsigned int chars_seen;
   int unsignedp;
  
-  result = cpp_interpret_charconst (parse_in, token, warn_multichar,
+  result = cpp_interpret_charconst (parse_in, token,
  				    &chars_seen, &unsignedp);
 
   /* Cast to cppchar_signed_t to get correct sign-extension of RESULT

@@ -201,6 +201,10 @@ int flag_short_double;
 
 int flag_short_wchar;
 
+/* Nonzero means warn about use of multicharacter literals.  */
+
+int warn_multichar = 1;
+
 /* Nonzero means warn about possible violations of sequence point rules.  */
 
 int warn_sequence_point;
@@ -4306,6 +4310,8 @@ c_common_init (filename)
   options->char_precision = TYPE_PRECISION (char_type_node);
   options->int_precision = TYPE_PRECISION (integer_type_node);
   options->wchar_precision = TYPE_PRECISION (wchar_type_node);
+
+  options->warn_multichar = warn_multichar;
 
   /* NULL is passed up to toplev.c and we exit quickly.  */
   if (flag_preprocess_only)

@@ -1,3 +1,21 @@
+2002-05-07  Neil Booth  <neil@daikokuya.demon.co.uk>
+
+	* c-common.c (warn_multichar): New.
+	(c_common_init): Set CPP's warn_multichar.
+	* c-common.h (warn_multichar): New.
+	* c-decl.c (warn_multichar): Remove.
+	* c-lex.c (lex_charconst): Update.
+	* c-tree.h (warn_multichar): Remove.
+	* cppexp.c (eval_token): Sign-extend charconst value.
+	* cppinit.c (cpp_create_reader): Set warn_multichar.
+	* cpplex.c (cpp_interpret_charconst): Don't sign-extend
+	each character.  Update prototype.  Sign-extend the result.
+	* cpplib.h: Fix conditions.
+	(struct cpp_options): Add new warning flag.
+	(cpp_interpret_charconst): Update prototype.
+doc:
+	* cpp.texi: Update documentation.
+
 2002-05-06  Vladimir Makarov  <vmakarov@redhat.com>
 
 	* genautomata.c (form_the_same_automaton_unit_lists_from_regexp):

@@ -3111,9 +3111,6 @@ extern int flag_ms_extensions;
    type signature of any virtual function in the base class.  */
 extern int warn_overloaded_virtual;
 
-/* Nonzero means warn about use of multicharacter literals.  */
-extern int warn_multichar;
-
 /* Set by add_implicitly_declared_members() to keep those members from
    being flagged as deprecated or reported as using deprecated
    types.  */
