@@ -2088,8 +2088,7 @@ decode_addr_const (exp, value)
 
     case LABEL_DECL:
       x = gen_rtx_MEM (FUNCTION_MODE,
-		       gen_rtx_LABEL_REF (VOIDmode,
-					  label_rtx (TREE_OPERAND (exp, 0))));
+		       gen_rtx_LABEL_REF (VOIDmode, force_label_rtx (target)));
       break;
 
     case REAL_CST:

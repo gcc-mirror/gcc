@@ -67,6 +67,8 @@ TREE_EXES = tree1$(exeext)
 treelang-warn = $(LOOSE_WARN) -pedantic -Wno-long-long -Wmissing-prototypes -Wmissing-declarations $(WERROR)
 # bison emits some unused static arrays (yytoknum)
 treelang/parse.o-warn = -Wno-error
+# flex produces 'no previous prototype' warnings
+treelang/lex.o-warn = -Wno-error
 
 #
 # Define the names for selecting treelang in LANGUAGES.

@@ -595,6 +595,11 @@ extern rtx expand_inline_function PARAMS ((tree, tree, rtx, int, tree, rtx));
 
 /* Return the CODE_LABEL rtx for a LABEL_DECL, creating it if necessary.  */
 extern rtx label_rtx PARAMS ((tree));
+
+/* As label_rtx, but additionally the label is placed on the forced label
+   list of its containing function (i.e. it is treated as reachable even
+   if how is not obvious).  */
+extern rtx force_label_rtx PARAMS ((tree));
 #endif
 
 /* Indicate how an input argument register was promoted.  */
