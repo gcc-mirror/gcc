@@ -1,5 +1,12 @@
 2000-05-09  Richard Henderson  <rth@cygnus.com>
 
+	* flow.c (find_basic_blocks_1): Do not delete the first
+	bb_note we run across.
+	(create_basic_block): Use reorder_insns to move an existing
+	bb_note to the correct place.
+
+2000-05-09  Richard Henderson  <rth@cygnus.com>
+
 	* calls.c (expand_call): Increment currently_expanding_call
 	before calling optimize_tail_recursion.
 
