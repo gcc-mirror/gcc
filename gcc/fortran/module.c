@@ -2483,8 +2483,7 @@ mio_expr (gfc_expr ** ep)
     case EXPR_SUBSTRING:
       e->value.character.string = (char *)
 	mio_allocated_string (e->value.character.string);
-      mio_expr (&e->op1);
-      mio_expr (&e->op2);
+      mio_ref_list (&e->ref);
       break;
 
     case EXPR_STRUCTURE:

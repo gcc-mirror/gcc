@@ -1,3 +1,14 @@
+2005-02-08  Tobias Schl"uter  <tobias.schlueter@physik.uni-muenchen.de>
+
+	* expr.c (gfc_copy_expr): Don't copy 'op1' and 'op2' for
+	EXPR_SUBSTRING.
+	(gfc_is_constant_expr): Check 'ref' to determine if substring
+	reference is constant.
+	(gfc_simplify_expr): Simplify 'ref' instead of 'op1' and 'op2'.
+	(check_init_expr, check_restricted): Check 'ref' instead of 'op1'
+	and 'op2'.
+	* module.c (mio_expr): Read / write 'ref' instead of 'op1' and 'op2'.
+
 2005-02-07  Tobias Schl"uter  <tobias.schlueter@physik.uni-muenchen.de>
 
 	* gfortran.h (gfc_add_dimension, gfc_add_result, gfc_add_save,
