@@ -23,31 +23,8 @@ Boston, MA 02111-1307, USA.  */
 
 /* use ANSI/SYSV style byte manipulation routines instead of BSD ones */
 
-#undef bcopy
-#define bcopy(s,d,n)	memmove((d),(s),(n))
-
-/* Define various things that the BeOS host has. */
-
-#ifndef HAVE_VPRINTF
-#define HAVE_VPRINTF
-#endif
-#ifndef HAVE_PUTENV
-#define HAVE_PUTENV
-#endif
-#ifndef HAVE_RENAME
-#define HAVE_RENAME
-#endif
-
 /* STANDARD_INCLUDE_DIR is the equivalent of "/usr/include" on UNIX. */
-
 #define STANDARD_INCLUDE_DIR	"/boot/develop/headers/posix"
 
 /* SYSTEM_INCLUDE_DIR is the location for system specific, non-POSIX headers. */
-
 #define SYSTEM_INCLUDE_DIR	"/boot/develop/headers/be"
-
-/* This is a temporary hack until the wimpy default 64k stack
-   limit in BeOS is either increased or made user settable somehow.
-   This probably won't happen until after the DR9 release.  */
-#undef USE_C_ALLOCA
-#define USE_C_ALLOCA 1
