@@ -1,4 +1,4 @@
-/* Control and data flow functions for trees.
+/* Tree inlining.
    Copyright 2001, 2002, 2003, 2004 Free Software Foundation, Inc.
    Contributed by Alexandre Oliva <aoliva@redhat.com>
 

@@ -1,4 +1,4 @@
-/* Control and data flow functions for trees.
+/* Top-level control of tree optimizations.
    Copyright 2001, 2002, 2003, 2004 Free Software Foundation, Inc.
    Contributed by Diego Novillo <dnovillo@redhat.com>
 
