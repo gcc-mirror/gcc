@@ -96,12 +96,12 @@ static int ignore_escape_flag = 0;
 /* Command-line: gperf -p -j1 -i 1 -g -o -t -N is_reserved_word -k1,3,$ c-parse.gperf  */ 
 struct resword { char *name; short token; enum rid rid; };
 
-#define TOTAL_KEYWORDS 53
+#define TOTAL_KEYWORDS 55
 #define MIN_WORD_LENGTH 2
 #define MAX_WORD_LENGTH 13
-#define MIN_HASH_VALUE 7
-#define MAX_HASH_VALUE 102
-/* maximum key range = 96, duplicates = 0 */
+#define MIN_HASH_VALUE 8
+#define MAX_HASH_VALUE 81
+/* maximum key range = 74, duplicates = 0 */
 
 #ifdef __GNUC__
 __inline
@@ -113,19 +113,19 @@ hash (str, len)
 {
   static unsigned char asso_values[] =
     {
-     103, 103, 103, 103, 103, 103, 103, 103, 103, 103,
-     103, 103, 103, 103, 103, 103, 103, 103, 103, 103,
-     103, 103, 103, 103, 103, 103, 103, 103, 103, 103,
-     103, 103, 103, 103, 103, 103, 103, 103, 103, 103,
-     103, 103, 103, 103, 103, 103, 103, 103, 103, 103,
-     103, 103, 103, 103, 103, 103, 103, 103, 103, 103,
-     103, 103, 103, 103, 103, 103, 103, 103, 103, 103,
-     103, 103, 103, 103, 103, 103, 103, 103, 103, 103,
-     103, 103, 103, 103, 103, 103, 103, 103, 103, 103,
-     103, 103, 103, 103, 103,   1, 103,   2,   1,  24,
-       1,   5,  19,  39,  16,  13, 103,   1,  25,   1,
-      34,  34,  24, 103,  13,  12,   1,  45,  24,   7,
-     103, 103,   2, 103, 103, 103, 103, 103,
+      82, 82, 82, 82, 82, 82, 82, 82, 82, 82,
+      82, 82, 82, 82, 82, 82, 82, 82, 82, 82,
+      82, 82, 82, 82, 82, 82, 82, 82, 82, 82,
+      82, 82, 82, 82, 82, 82, 82, 82, 82, 82,
+      82, 82, 82, 82, 82, 82, 82, 82, 82, 82,
+      82, 82, 82, 82, 82, 82, 82, 82, 82, 82,
+      82, 82, 82, 82, 82, 82, 82, 82, 82, 82,
+      82, 82, 82, 82, 82, 82, 82, 82, 82, 82,
+      82, 82, 82, 82, 82, 82, 82, 82, 82, 82,
+      82, 82, 82, 82, 82,  1, 82, 18, 13, 25,
+      7, 11,  1,  9,  2,  5, 82,  1, 26, 19,
+      26, 46, 12, 82, 14,  2,  1, 32, 36,  1,
+      82, 82,  3, 82, 82, 82, 82, 82,
     };
   register int hval = len;
 
@@ -151,78 +151,70 @@ is_reserved_word (str, len)
 {
   static struct resword wordlist[] =
     {
-      {"",}, {"",}, {"",}, {"",}, {"",}, {"",}, {"",}, 
-      {"asm",  ASM_KEYWORD, NORID},
-      {"",}, 
-      {"__asm",  ASM_KEYWORD, NORID},
-      {"",}, 
-      {"__asm__",  ASM_KEYWORD, NORID},
-      {"break",  BREAK, NORID},
-      {"__typeof__",  TYPEOF, NORID},
-      {"",}, 
-      {"__alignof__",  ALIGNOF, NORID},
-      {"",}, 
-      {"__attribute__",  ATTRIBUTE, NORID},
-      {"int",  TYPESPEC, RID_INT},
-      {"__attribute",  ATTRIBUTE, NORID},
-      {"__extension__",  EXTENSION, NORID},
-      {"",}, 
-      {"__signed",  TYPESPEC, RID_SIGNED},
-      {"",}, 
-      {"__signed__",  TYPESPEC, RID_SIGNED},
-      {"__inline__",  SCSPEC, RID_INLINE},
-      {"else",  ELSE, NORID},
-      {"__inline",  SCSPEC, RID_INLINE},
-      {"default",  DEFAULT, NORID},
-      {"__typeof",  TYPEOF, NORID},
-      {"while",  WHILE, NORID},
-      {"__alignof",  ALIGNOF, NORID},
-      {"struct",  STRUCT, NORID},
-      {"__const",  TYPE_QUAL, RID_CONST},
+      {"",}, {"",}, {"",}, {"",}, {"",}, {"",}, {"",}, {"",}, 
       {"if",  IF, NORID},
-      {"__const__",  TYPE_QUAL, RID_CONST},
-      {"__label__",  LABEL, NORID},
-      {"do",  DO, NORID},
-      {"__volatile__",  TYPE_QUAL, RID_VOLATILE},
+      {"",}, 
+      {"int",  TYPESPEC, RID_INT},
+      {"__typeof",  TYPEOF, NORID},
       {"sizeof",  SIZEOF, NORID},
-      {"__volatile",  TYPE_QUAL, RID_VOLATILE},
-      {"auto",  SCSPEC, RID_AUTO},
-      {"void",  TYPESPEC, RID_VOID},
-      {"char",  TYPESPEC, RID_CHAR},
-      {"static",  SCSPEC, RID_STATIC},
-      {"case",  CASE, NORID},
-      {"extern",  SCSPEC, RID_EXTERN},
+      {"__typeof__",  TYPEOF, NORID},
+      {"__signed__",  TYPESPEC, RID_SIGNED},
       {"switch",  SWITCH, NORID},
-      {"for",  FOR, NORID},
-      {"inline",  SCSPEC, RID_INLINE},
+      {"default",  DEFAULT, NORID},
+      {"__inline__",  SCSPEC, RID_INLINE},
+      {"__signed",  TYPESPEC, RID_SIGNED},
+      {"__iterator__",  SCSPEC, RID_ITERATOR},
       {"typeof",  TYPEOF, NORID},
       {"typedef",  SCSPEC, RID_TYPEDEF},
-      {"short",  TYPESPEC, RID_SHORT},
+      {"while",  WHILE, NORID},
+      {"struct",  STRUCT, NORID},
+      {"signed",  TYPESPEC, RID_SIGNED},
+      {"__inline",  SCSPEC, RID_INLINE},
+      {"__extension__",  EXTENSION, NORID},
+      {"__asm__",  ASM_KEYWORD, NORID},
+      {"else",  ELSE, NORID},
+      {"__alignof",  ALIGNOF, NORID},
+      {"break",  BREAK, NORID},
+      {"__alignof__",  ALIGNOF, NORID},
+      {"for",  FOR, NORID},
+      {"__attribute__",  ATTRIBUTE, NORID},
+      {"__const",  TYPE_QUAL, RID_CONST},
+      {"",}, 
+      {"__const__",  TYPE_QUAL, RID_CONST},
+      {"__label__",  LABEL, NORID},
+      {"iterator",  SCSPEC, RID_ITERATOR},
+      {"",}, {"",}, 
+      {"__attribute",  ATTRIBUTE, NORID},
+      {"case",  CASE, NORID},
+      {"__asm",  ASM_KEYWORD, NORID},
+      {"extern",  SCSPEC, RID_EXTERN},
+      {"register",  SCSPEC, RID_REGISTER},
       {"",}, 
       {"return",  RETURN, NORID},
+      {"inline",  SCSPEC, RID_INLINE},
+      {"unsigned",  TYPESPEC, RID_UNSIGNED},
+      {"__volatile__",  TYPE_QUAL, RID_VOLATILE},
+      {"static",  SCSPEC, RID_STATIC},
+      {"void",  TYPESPEC, RID_VOID},
+      {"float",  TYPESPEC, RID_FLOAT},
+      {"short",  TYPESPEC, RID_SHORT},
+      {"do",  DO, NORID},
+      {"double",  TYPESPEC, RID_DOUBLE},
+      {"const",  TYPE_QUAL, RID_CONST},
+      {"__volatile",  TYPE_QUAL, RID_VOLATILE},
+      {"asm",  ASM_KEYWORD, NORID},
+      {"goto",  GOTO, NORID},
+      {"char",  TYPESPEC, RID_CHAR},
+      {"",}, {"",}, {"",}, 
+      {"long",  TYPESPEC, RID_LONG},
       {"enum",  ENUM, NORID},
       {"",}, 
-      {"double",  TYPESPEC, RID_DOUBLE},
-      {"signed",  TYPESPEC, RID_SIGNED},
-      {"float",  TYPESPEC, RID_FLOAT},
-      {"",}, {"",}, 
-      {"volatile",  TYPE_QUAL, RID_VOLATILE},
-      {"",}, 
-      {"const",  TYPE_QUAL, RID_CONST},
-      {"",}, 
-      {"unsigned",  TYPESPEC, RID_UNSIGNED},
-      {"",}, {"",}, {"",}, {"",}, 
-      {"continue",  CONTINUE, NORID},
-      {"",}, 
-      {"register",  SCSPEC, RID_REGISTER},
-      {"",}, {"",}, {"",}, {"",}, 
-      {"goto",  GOTO, NORID},
-      {"",}, {"",}, {"",}, {"",}, {"",}, {"",}, {"",}, {"",}, {"",}, 
-      {"",}, {"",}, {"",}, {"",}, {"",}, {"",}, {"",}, {"",}, {"",}, 
-      
       {"union",  UNION, NORID},
-      {"",}, {"",}, {"",}, {"",}, 
-      {"long",  TYPESPEC, RID_LONG},
+      {"auto",  SCSPEC, RID_AUTO},
+      {"continue",  CONTINUE, NORID},
+      {"",}, {"",}, {"",}, {"",}, {"",}, {"",}, {"",}, {"",}, {"",}, 
+      {"",}, 
+      {"volatile",  TYPE_QUAL, RID_VOLATILE},
     };
 
   if (len <= MAX_WORD_LENGTH && len >= MIN_WORD_LENGTH)
@@ -290,6 +282,7 @@ init_lex ()
   ridpointers[(int) RID_EXTERN] = get_identifier ("extern");
   ridpointers[(int) RID_TYPEDEF] = get_identifier ("typedef");
   ridpointers[(int) RID_REGISTER] = get_identifier ("register");
+  ridpointers[(int) RID_ITERATOR] = get_identifier ("iterator");
 
   /* Some options inhibit certain reserved words.
      Clear those words out of the hash table so they won't be recognized.  */
