@@ -1,5 +1,5 @@
 /* Proxy.java -- build a proxy class that implements reflected interfaces
-   Copyright (C) 2001, 2002 Free Software Foundation, Inc.
+   Copyright (C) 2001, 2002, 2003 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -733,7 +733,7 @@ public class Proxy implements Serializable
      * The package this class is in.  Possibly null, meaning the unnamed
      * package.
      */
-    Package pack;
+    String pack;
 
     /**
      * The interfaces this class implements.  Non-null, but possibly empty.
@@ -774,6 +774,21 @@ public class Proxy implements Serializable
      */
     ProxyData()
     {
+    }
+
+    /**
+     * Return the name of a package given the name of a class.
+     * Returns null if no package.  We use this in preference to
+     * using Class.getPackage() to avoid problems with ClassLoaders
+     * that don't set the package.
+     */
+    static String getPackage(Class k)
+    {
+      String name = k.getName();
+      int idx = name.lastIndexOf('.');
+      if (idx >= 0)
+	return name.substring(0, idx);
+      return null;
     }
 
     /**
@@ -818,8 +833,8 @@ public class Proxy implements Serializable
           if (! Modifier.isPublic(inter.getModifiers()))
             if (in_package)
               {
-                Package p = inter.getPackage();
-                if (data.pack != inter.getPackage())
+		String p = getPackage(inter);
+                if (! data.pack.equals(p))
                   throw new IllegalArgumentException("non-public interfaces "
                                                      + "from different "
                                                      + "packages");
@@ -827,7 +842,7 @@ public class Proxy implements Serializable
             else
               {
                 in_package = true;
-                data.pack = inter.getPackage();
+                data.pack = getPackage(inter);
               }
           for (int j = i-1; j >= 0; j--)
             if (data.interfaces[j] == inter)
@@ -954,7 +969,7 @@ public class Proxy implements Serializable
       // access_flags
       putU2(Modifier.SUPER | Modifier.FINAL | Modifier.PUBLIC);
       // this_class
-      qualName = ((data.pack == null ? "" : data.pack.getName() + '.')
+      qualName = ((data.pack == null ? "" : data.pack + '.')
                   + "$Proxy" + data.id);
       putU2(classInfo(TypeSignature.getEncodingOfClass(qualName, false)));
       // super_class
