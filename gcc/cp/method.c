@@ -513,6 +513,9 @@ use_thunk (thunk_fndecl, emit_p)
        referenced.  */
     TREE_SYMBOL_REFERENCED (DECL_ASSEMBLER_NAME (thunk_fndecl)) = 1;
 
+    /* But we don't want debugging information about it.  */
+    DECL_IGNORED_P (thunk_fndecl) = 1;
+
     expand_body (finish_function (0));
   }
 

@@ -753,6 +753,14 @@ standard_conversion (to, from, expr)
       conv = build_conv (STD_CONV, to, conv);
       ICS_BAD_FLAG (conv) = 1;
     }
+  else if (tcode == ENUMERAL_TYPE && fcode == INTEGER_TYPE
+	   && TYPE_PRECISION (to) == TYPE_PRECISION (from))
+    {
+      /* For backwards brain damage compatibility, allow interconversion of
+	 enums and integers with a pedwarn.  */
+      conv = build_conv (STD_CONV, to, conv);
+      ICS_BAD_FLAG (conv) = 1;
+    }
   else if (tcode == POINTER_TYPE && fcode == POINTER_TYPE)
     {
       enum tree_code ufcode = TREE_CODE (TREE_TYPE (from));
@@ -3748,7 +3756,7 @@ convert_like_real (convs, expr, fn, argnum, inner)
       tree t = convs; 
       for (; t; t = TREE_OPERAND (t, 0))
 	{
-	  if (TREE_CODE (t) == USER_CONV)
+	  if (TREE_CODE (t) == USER_CONV || !ICS_BAD_FLAG (t))
 	    {
 	      expr = convert_like_real (t, expr, fn, argnum, 1);
 	      break;

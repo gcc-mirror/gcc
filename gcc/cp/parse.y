@@ -3021,6 +3021,13 @@ nested_name_specifier:
 	| nested_name_specifier TEMPLATE explicit_template_type SCOPE
                 { got_scope = $$ 
 		    = make_typename_type ($1, $3, /*complain=*/1); }
+	/* Error handling per Core 125.  */
+	| nested_name_specifier IDENTIFIER SCOPE
+                { got_scope = $$ 
+		    = make_typename_type ($1, $2, /*complain=*/1); }
+	| nested_name_specifier PTYPENAME SCOPE
+                { got_scope = $$ 
+		    = make_typename_type ($1, $2, /*complain=*/1); }
 	;
 
 /* Why the @#$%^& do type_name and notype_identifier need to be expanded
@@ -3050,16 +3057,6 @@ nested_name_specifier_1:
 		}
 	| template_type SCOPE
 		{ got_scope = $$ = complete_type (TREE_TYPE ($1)); }
-/* 	These break 'const i;'
-	| IDENTIFIER SCOPE
-		{
-		 failed_scope:
-		  cp_error ("`%D' is not an aggregate typedef", 
-			    lastiddecl ? lastiddecl : $$);
-		  $$ = error_mark_node;
-		}
-	| PTYPENAME SCOPE
-		{ goto failed_scope; } */
 	;
 
 typename_sub:
