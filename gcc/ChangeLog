@@ -1,3 +1,10 @@
+2002-04-18  Loren J. Rittle  <ljrittle@acm.org>
+
+	Revert this change:
+
+	* doc/install.texi (Installing GCC: Configuration): Clarify
+	the only supported ways to configure gcc.
+
 2002-04-17  Dale Johannesen <dalej@apple.com>
 
         * config/rs6000/rs6000.c (rs6000_emit_cmove): Fail if modes of
