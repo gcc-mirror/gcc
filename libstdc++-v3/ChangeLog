@@ -1,3 +1,9 @@
+2000-11-21  scott snyder  <snyder@fnal.gov>
+
+        * config/c_io_stdio.cc (seekoff): Fix return value.
+        (seekpos): Likewise.
+        (sys_seek): Likewise.
+
 2000-11-21  Loren J. Rittle  <ljrittle@acm.org>
 
         * mkcheck.in (explanation): Retain output of all failing
