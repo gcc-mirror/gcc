@@ -87,6 +87,7 @@ declare_hidden_char_array (name, value)
   TREE_READONLY (decl) = 1;
   TREE_ASM_WRITTEN (decl) = 1;
   DECL_SOURCE_LINE (decl) = 0;
+  DECL_ARTIFICIAL (decl) = 1;
   DECL_IN_SYSTEM_HEADER (decl) = 1;
   DECL_IGNORED_P (decl) = 1;
   init = build_string (vlen, value);
