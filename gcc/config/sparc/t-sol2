@@ -3,6 +3,7 @@
 
 LIBGCC1 =
 CROSS_LIBGCC1 =
+LIBGCC1_TEST =
 
 # gmon build rule:
 gmon.o:	$(srcdir)/config/sparc/gmon-sol2.c $(GCC_PASSES) $(CONFIG_H)
