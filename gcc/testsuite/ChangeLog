@@ -1,3 +1,7 @@
+2005-02-19  Steven G. Kargl  <kargls@comcast.net>
+
+	* gfortran.dg/achar_1.f90: New test.
+
 2005-02-19  Hans-Peter Nilsson  <hp@axis.com>
 
 	* gcc.c-torture/execute/20020720-1.x: Don't XFAIL cris-*-*.

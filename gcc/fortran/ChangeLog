@@ -1,3 +1,9 @@
+2005-02-19  Steven G. Kargl  <kargls@comcast.net>
+  
+	* check.c (gfc_check_achar): New function
+	* intrinsic.h: Prototype it.
+	* intrinsic.c (add_function): Use it.
+
 2005-02-13  Tobias Schl"uter  <tobias.schlueter@physik.uni-muenchen.de>
 
 	* trans-stmt.c (generate_loop_for_temp_to_lhs,

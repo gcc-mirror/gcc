@@ -31,6 +31,7 @@ try gfc_check_a_xkind (gfc_expr *, gfc_expr *);
 try gfc_check_a_p (gfc_expr *, gfc_expr *);
 
 try gfc_check_abs (gfc_expr *);
+try gfc_check_achar (gfc_expr *);
 try gfc_check_all_any (gfc_expr *, gfc_expr *);
 try gfc_check_allocated (gfc_expr *);
 try gfc_check_associated (gfc_expr *, gfc_expr *);
