@@ -1333,8 +1333,9 @@ i960_function_prologue (file, size)
      unsigned int size;
 {
   register int i, j, nr;
-  int n_iregs = 0;
-  int rsize = 0;
+  int n_saved_regs = 0;
+  int n_remaining_saved_regs;
+  int lvar_size;
   int actual_fsize, offset;
   int gnw, lnw;
   struct reg_group *g, *l;
@@ -1357,10 +1358,12 @@ i960_function_prologue (file, size)
 	regs[i] = -1;
         /* Count global registers that need saving.  */
 	if (i < 16)
-	  n_iregs++;
+	  n_saved_regs++;
       }
     else
       regs[i] = 0;
+
+  n_remaining_saved_regs = n_saved_regs;
 
   epilogue_string[0] = '\0';
 
@@ -1397,7 +1400,7 @@ i960_function_prologue (file, size)
 		    (g->length == 2) ? "l" : ""),
 		   reg_names[l->start_reg], reg_names[g->start_reg]);
 	  strcat (epilogue_string, tmpstr);
-	  n_iregs -= g->length;
+	  n_remaining_saved_regs -= g->length;
 	  for (i = 0; i < g->length; i++)
 	    {
 	      regs [i + g->start_reg] = 1;
@@ -1415,11 +1418,7 @@ i960_function_prologue (file, size)
 	lnw = i960_split_reg_group (l, lnw, g->length);
     }
 
-  /* N_iregs is now the number of global registers that haven't been saved
-     yet.  */
-
-  rsize = (n_iregs * 4);
-  actual_fsize = compute_frame_size (size) + rsize;
+  actual_fsize = compute_frame_size (size);
 #if 0
   /* ??? The 1.2.1 compiler does this also.  This is meant to round the frame
      size up to the nearest multiple of 16.  I don't know whether this is
@@ -1443,11 +1442,12 @@ i960_function_prologue (file, size)
 
   /* Take hardware register save area created by the call instruction
      into account, but store them before the argument block area.  */
-  offset = 64 + actual_fsize - compute_frame_size (0) - rsize;
+  lvar_size = actual_fsize - compute_frame_size (0) - n_saved_regs * 4;
+  offset = 64 + lvar_size;
   /* Save registers on stack if needed.  */
   /* ??? Is it worth to use the same algorithm as one for saving
      global registers in local registers? */
-  for (i = 0, j = n_iregs; j > 0 && i < 16; i++)
+  for (i = 0, j = n_remaining_saved_regs; j > 0 && i < 16; i++)
     {
       if (regs[i] != -1)
 	continue;
@@ -1480,17 +1480,17 @@ i960_function_prologue (file, size)
       offset += nr * 4;
     }
 
-  if (actual_fsize == 0 && size == 0 && rsize == 0)
+  if (actual_fsize == 0)
     return;
 
   fprintf (file, "\t#Prologue stats:\n");
   fprintf (file, "\t#  Total Frame Size: %d bytes\n", actual_fsize);
 
-  if (size)
-    fprintf (file, "\t#  Local Variable Size: %d bytes\n", size);
-  if (rsize)
+  if (lvar_size)
+    fprintf (file, "\t#  Local Variable Size: %d bytes\n", lvar_size);
+  if (n_saved_regs)
     fprintf (file, "\t#  Register Save Size: %d regs, %d bytes\n",
-	     n_iregs, rsize);
+	     n_saved_regs, n_saved_regs * 4);
   fprintf (file, "\t#End Prologue#\n");
 }
 

@@ -1,3 +1,14 @@
+Fri Nov 12 15:14:19 1999  Vladimir Makarov  <vmakarov@tofu.to.cygnus.com>
+
+	* i960.h (CAN_DEBUG_WITHOUT_FP): Don't define it.
+	(FRAME_POINTER_REQUIRED): Don't worry about nonlocal goto.
+	(ELIMINABLE_REGS, CAN_ELIMINATE, INITIAL_ELIMINATION_OFFSET): New.
+	(INITIAL_FRAME_POINTER_OFFSET): Remove it.
+
+	* i960.c (i960_function_prologue): Don't allocate space for g8-g11
+ 	saved on the stack.  Output more accurate stack frame statistics
+	into assembler file.
+
 1999-11-12 11:47 -0800  Zack Weinberg  <zack@bitmover.com>
 
 	* genextract.c (record_insn_name): New function.
