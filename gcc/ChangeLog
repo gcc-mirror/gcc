@@ -1,3 +1,9 @@
+Fri Oct 15 00:00:24 1999  Loren J. Rittle <ljrittle@acm.org>
+
+	* fixinc/inclhack.def: Restore patch lost during last merge of
+	"no_bogosity" branch.
+	* fixinc/inclhack.sh, fixinc/fixincl.x: Rebuilt.
+
 Thu Oct 14 23:57:56 1999  Gavin Romig-Koch  <gavin@cygnus.com>
 
 	* fixincludes: Add a HPUX 11 fix for inttypes.h.

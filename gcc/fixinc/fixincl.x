@@ -2730,7 +2730,7 @@ const char* apzStdio_Va_ListPatch[] = { "sh", "-c",
 \n\
   sed -e 's@ va_list @ __gnuc_va_list @' \\\n\
       -e 's@ va_list)@ __gnuc_va_list)@' \\\n\
-      -e 's@ _BSD_VA_LIST_));@ __gnuc_va_list));@' \\\n\
+      -e 's@ _BSD_VA_LIST_))@ __gnuc_va_list))@' \\\n\
       -e 's@ _VA_LIST_));@ __gnuc_va_list));@' \\\n\
       -e 's@ va_list@ __va_list__@' \\\n\
       -e 's@\\*va_list@*__va_list__@' \\\n\
