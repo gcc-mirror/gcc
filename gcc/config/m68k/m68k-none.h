@@ -92,4 +92,19 @@ Boston, MA 02111-1307, USA.  */
 
 #endif
 
-/* end of m68k-none.h */
+/* Avoid building multilib libraries for the defaults.
+   t-m68kbare doesn't support -mfpa in the multilib'd libraries, so we don't
+   either.  */
+#if (TARGET_DEFAULT & 5) == 5
+#if TARGET_DEFAULT & 2
+#define MULTILIB_DEFAULTS { "m68020", "m68881" }
+#else
+#define MULTILIB_DEFAULTS { "m68020", "msoft-float" }
+#endif
+#else
+#if TARGET_DEFAULT & 2
+#define MULTILIB_DEFAULTS { "m68000", "m68881" }
+#else
+#define MULTILIB_DEFAULTS { "m68000", "msoft-float" }
+#endif
+#endif
