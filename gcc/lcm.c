@@ -274,7 +274,7 @@ compute_laterin (edge_list, earliest, antloc, later, laterin)
      the entry block.  That edge should always have a LATER value the
      same as EARLIEST for that edge.  */
   for (e = ENTRY_BLOCK_PTR->succ; e; e = e->succ_next)
-    sbitmap_copy (later[(int)e->aux], earliest[(int)e->aux]);
+    sbitmap_copy (later[(size_t)e->aux], earliest[(size_t)e->aux]);
 
   /* Add all the blocks to the worklist.  This prevents an early exit from
      the loop given our optimistic initialization of LATER above.  */
@@ -610,7 +610,7 @@ compute_nearerout (edge_list, farthest, st_avloc, nearer, nearerout)
      the exit block.  That edge should always have a NEARER value the
      same as FARTHEST for that edge.  */
   for (e = EXIT_BLOCK_PTR->pred; e; e = e->pred_next)
-    sbitmap_copy (nearer[(int)e->aux], farthest[(int)e->aux]);
+    sbitmap_copy (nearer[(size_t)e->aux], farthest[(size_t)e->aux]);
 
   /* Add all the blocks to the worklist.  This prevents an early exit
      from the loop given our optimistic initialization of NEARER.  */

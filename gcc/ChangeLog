@@ -1,3 +1,10 @@
+Tue Nov 30 14:21:00 1999  Richard Henderson  <rth@cygnus.com>
+
+	* lcm.c (compute_laterin): Cast bb->aux to size_t not int.
+	(compute_nearerout): Likewise.
+	* ggc-page.c (ggc_page_print_statistics): Explicitly cast
+	size_t to unsigned long for formatting.
+
 1999-11-30  Jakub Jelinek  <jakub@redhat.com>
 
 	* config/sparc/sparc.h (FIXED_REGISTERS, CONDITIONAL_REGISTER_USAGE):
