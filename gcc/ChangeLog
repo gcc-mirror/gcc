@@ -1,3 +1,7 @@
+Wed Dec 30 23:38:55 1998  Jeffrey A Law  (law@cygnus.com)
+
+	* i386.md (doubleword shifts): Avoid namespace pollution.
+
 Wed Dec 30 23:00:28 1998  David O'Brien <obrien@NUXI.com>
 
 	* configure.in (FreeBSD ELF): Needs special crt files.
