@@ -2841,7 +2841,10 @@ do {									\
 
 extern int ia64_final_schedule;
 
+/* ??? Hack until frame-ia64.c is updated.
 #define IA64_UNWIND_INFO	1
+*/
+
 #define HANDLER_SECTION fprintf (asm_out_file, "\t.personality\t__ia64_personality_v1\n\t.handlerdata\n");
 #define IA64_UNWIND_EMIT(f,i)	process_for_unwind_directive (f,i)
 

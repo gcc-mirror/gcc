@@ -1,5 +1,11 @@
 2001-04-04  Richard Henderson  <rth@redhat.com>
 
+	* config/ia64/ia64.h (IA64_UNWIND_INFO): Disable.
+	* config/ia64/t-glibc (LIB2ADDEH): Disable.
+	* config/ia64/t-ia64 (LIB2ADDEH): Disable.
+
+2001-04-04  Richard Henderson  <rth@redhat.com>
+
 	* configure.in (gcc_cv_as_leb128): Escape "." in regexp.
 	* configure: Rebuilt.
 
