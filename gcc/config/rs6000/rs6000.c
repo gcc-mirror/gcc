@@ -1510,6 +1510,9 @@ easy_vector_constant (op, mode)
   if (GET_MODE_CLASS (mode) != MODE_VECTOR_INT)
     return 0;
 
+  if (TARGET_SPE && mode == V1DImode)
+    return 0;
+
   cst  = INTVAL (CONST_VECTOR_ELT (op, 0));
   cst2 = INTVAL (CONST_VECTOR_ELT (op, 1));
 
@@ -1524,7 +1527,7 @@ easy_vector_constant (op, mode)
      have the e500 timing specs.  */
   if (TARGET_SPE && mode == V2SImode
       && cst  >= -0x7fff && cst <= 0x7fff
-      && cst2 >= -0x7fff && cst <= 0x7fff)
+      && cst2 >= -0x7fff && cst2 <= 0x7fff)
     return 1;
 
   if (TARGET_ALTIVEC && EASY_VECTOR_15 (cst, op, mode))
@@ -4721,6 +4724,7 @@ rs6000_expand_binop_builtin (icode, arglist, target)
       || icode == CODE_FOR_spe_evrlwi
       || icode == CODE_FOR_spe_evslwi
       || icode == CODE_FOR_spe_evsrwis
+      || icode == CODE_FOR_spe_evsubifw
       || icode == CODE_FOR_spe_evsrwiu)
     {
       /* Only allow 5-bit unsigned literals.  */
