@@ -1,3 +1,7 @@
+Tue Aug 27 18:00:11 CEST 2002  Jan Hubicka  <jh@suse.cz>
+
+	* i386.c (classify_argument): Properly compute word size of the analyzed object.
+
 Tue Aug 27 14:39:09 2002  J"orn Rennecke <joern.rennecke@superh.com>
 
 	* sh.md (attribute type): Add types mt_group, fload, pcfload, fpul_gp,
