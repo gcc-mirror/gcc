@@ -1,6 +1,6 @@
 /* rtl.j -- Wrapper for GCC's rtl.h
    Copyright (C) 1995 Free Software Foundation, Inc.
-   Contributed by James Craig Burley (burley@gnu.org).
+   Contributed by James Craig Burley.
 
 This file is part of GNU Fortran.
 

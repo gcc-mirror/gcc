@@ -99,7 +99,7 @@ translations approved by the Free Software Foundation instead of in the
 original English.
 @end ifinfo
 
-Contributed by James Craig Burley (@email{burley@@gnu.org}).
+Contributed by James Craig Burley (@email{craig@jcb-sc.com}).
 Inspired by a first pass at translating @file{g77-0.5.16/f/DOC} that
 was contributed to Craig by David Ronis (@email{ronis@@onsager.chem.mcgill.ca}).
 
@@ -775,7 +775,7 @@ without royalty; alteration is not permitted.
 @cindex improvements, funding
 
 Work on GNU Fortran is still being done mostly by its author,
-James Craig Burley (@email{burley@@gnu.org}), who is a volunteer
+James Craig Burley (@email{craig@jcb-sc.com}), who is a volunteer
 for, not an employee of, the Free Software Foundation (FSF).
 As with other GNU software, funding is important because it can pay for
 needed equipment, personnel, and so on.
@@ -6293,12 +6293,12 @@ are given arguments that do not conform to their stated requirements:
 @smallexample
       PROGRAM JCB002
 C Version 1:
+C Modified 1999-02-15 (Burley) to delete my email address.
 C Modified 1997-05-21 (Burley) to accommodate compilers that implement
 C INT(I1-I2) as INT(I1)-INT(I2) given INTEGER*2 I1,I2.
 C
 C Version 0:
 C Written by James Craig Burley 1997-02-20.
-C Contact via Internet email: burley@@gnu.org
 C
 C Purpose:
 C Determine how compilers handle non-standard IDIM
@@ -14698,7 +14698,6 @@ The following sample program might help:
       PROGRAM JCB003
 C
 C Written by James Craig Burley 1997-02-23.
-C Contact via Internet email: burley@@gnu.org
 C
 C Determine how compilers handle non-standard REAL
 C and AIMAG on DOUBLE COMPLEX operands.
