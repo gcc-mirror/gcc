@@ -1,5 +1,6 @@
 /* System.java -- useful methods to interface with the system
-   Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003 Free Software Foundation, Inc.
+   Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004
+   Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -96,6 +97,20 @@ public final class System
 	if (index != -1)
 	  value = value.substring(index + 1);
 	defaultProperties.put("gnu.classpath.vm.shortname", value);
+      }
+
+    // Network properties
+    if (defaultProperties.get("http.agent") == null)
+      {
+	String userAgent
+	  = ("gnu-classpath/"
+	     + defaultProperties.getProperty("gnu.classpath.version")
+	     + " ("
+	     + defaultProperties.getProperty("gnu.classpath.vm.shortname")
+	     + "/"
+	     + defaultProperties.getProperty("java.vm.version")
+	     + ")");
+	defaultProperties.put("http.agent", userAgent);
       }
 
     defaultProperties.put("gnu.cpu.endian",

@@ -1,5 +1,16 @@
 2004-07-23  Mark Wielaard  <mark@klomp.org>
 
+	* java/lang/System.java (static): Set http.agent system property when
+	not yet set.
+	* gnu/java/net/protocol/http/Connection.java (static): Get httpAgent
+	from system property inside AccessController.doPrivileged() call.
+	(proxyPort): Made package private.
+	(proxyInUse): Likewise.
+	(proxyHost): Likewise.
+	(userAgent): Likewise.
+
+2004-07-23  Mark Wielaard  <mark@klomp.org>
+
 	* gnu/java/net/DefaultContentHandlerFactory.java: New dummy
 	implementation.
 
