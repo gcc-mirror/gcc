@@ -346,68 +346,60 @@ do_pushlevel (scope_kind sk)
   return ret;
 }
 
-/* Finish processing a conditional.  COND contains the raw expression;
-   STMT_P is a stacked statement list that will contain any other stmts
-   emitting during the processing of this conditional.  Place the 
-   resulting conditional back in STMT_P.  */
+/* Begin a conditional that might contain a declaration.  When generating
+   normal code, we want the declaration to appear before the statement
+   containing the conditional.  When generating template code, we want the
+   conditional to be rendered as the raw DECL_STMT.  */
 
 static void
-finish_cond (tree cond, tree *stmt_p)
+begin_cond (tree *cond_p)
 {
-  tree stmt = *stmt_p;
-  stmt = pop_stmt_list (stmt);
-  if (TREE_SIDE_EFFECTS (stmt))
+  if (processing_template_decl)
+    *cond_p = push_stmt_list ();
+}
+
+/* Finish such a conditional.  */
+
+static void
+finish_cond (tree *cond_p, tree expr)
+{
+  if (processing_template_decl)
     {
-      /* If stmt is set, it will be a DECL_STMT.  When processing a template, 
-	 using this is enough, because tsubst_expr considers the result of a
-	 DECL_STMT to be the DECL.  When generating real code, we build a
-	 funny little TREE_LIST thingy that's handled by the gimplifier.  */
-      /* ??? The object of this thingy is to get the DECL declared in the
-	 proper scope.  Seems like this oughtn't be terribly hard with the
-	 new explicit uses of BIND_EXPR and such.  */
-      if (processing_template_decl)
-	{
-	  stmt = expr_only (stmt);
-	  if (!stmt)
-	    abort ();
-	}
-      else
-        stmt = build_tree_list (stmt, cond);
+      tree cond = pop_stmt_list (*cond_p);
+      if (TREE_CODE (cond) == DECL_STMT)
+	expr = cond;
     }
-  else
-    stmt = cond;
-  *stmt_p = stmt;
+  *cond_p = expr;
 }
 
 /* If *COND_P specifies a conditional with a declaration, transform the
    loop such that
-	    while (A x = 42) { }
-	    for (; A x = 42;) { }
+            while (A x = 42) { }
+            for (; A x = 42;) { }
    becomes
-	    while (true) { A x = 42; if (!x) break; }
-	    for (;;) { A x = 42; if (!x) break; }
-   The statement list for the loop body should have been pushed.  */
-
+            while (true) { A x = 42; if (!x) break; }
+            for (;;) { A x = 42; if (!x) break; }
+   The statement list for BODY will be empty if the conditional did
+   not declare anything.  */
+                                                                                
 static void
-simplify_loop_decl_cond (tree *cond_p)
+simplify_loop_decl_cond (tree *cond_p, tree body)
 {
-  tree cond = *cond_p;
-  if (TREE_CODE (cond) == TREE_LIST)
-    {
-      tree if_stmt;
+  tree cond, if_stmt;
 
-      *cond_p = boolean_true_node;
-  
-      if_stmt = begin_if_stmt ();
-      add_stmt (TREE_PURPOSE (cond));
-      cond = build_unary_op (TRUTH_NOT_EXPR, TREE_VALUE (cond), 0);
-      finish_if_stmt_cond (cond, if_stmt);
-      finish_break_stmt ();
-      finish_then_clause (if_stmt);
-      finish_if_stmt (if_stmt);
-    }
+  if (!TREE_SIDE_EFFECTS (body))
+    return;
+
+  cond = *cond_p;
+  *cond_p = boolean_true_node;
+   
+  if_stmt = begin_if_stmt ();
+  cond = build_unary_op (TRUTH_NOT_EXPR, cond, 0);
+  finish_if_stmt_cond (cond, if_stmt);
+  finish_break_stmt ();
+  finish_then_clause (if_stmt);
+  finish_if_stmt (if_stmt);
 }
-
 
 /* Finish a goto-statement.  */
 
@@ -494,8 +486,7 @@ begin_if_stmt (void)
   scope = do_pushlevel (sk_block);
   r = build_stmt (IF_STMT, NULL_TREE, NULL_TREE, NULL_TREE);
   TREE_CHAIN (r) = scope;
-  add_stmt (r);
-  IF_COND (r) = push_stmt_list ();
+  begin_cond (&IF_COND (r));
   return r;
 }
 
@@ -505,8 +496,8 @@ begin_if_stmt (void)
 void 
 finish_if_stmt_cond (tree cond, tree if_stmt)
 {
-  cond = maybe_convert_cond (cond);
-  finish_cond (cond, &IF_COND (if_stmt));
+  finish_cond (&IF_COND (if_stmt), maybe_convert_cond (cond));
+  add_stmt (if_stmt);
   THEN_CLAUSE (if_stmt) = push_stmt_list ();
 }
 
@@ -558,7 +549,7 @@ begin_while_stmt (void)
   r = build_stmt (WHILE_STMT, NULL_TREE, NULL_TREE);
   add_stmt (r);
   WHILE_BODY (r) = do_pushlevel (sk_block);
-  WHILE_COND (r) = push_stmt_list ();
+  begin_cond (&WHILE_COND (r));
   return r;
 }
 
@@ -568,9 +559,8 @@ begin_while_stmt (void)
 void 
 finish_while_stmt_cond (tree cond, tree while_stmt)
 {
-  cond = maybe_convert_cond (cond);
-  finish_cond (cond, &WHILE_COND (while_stmt));
-  simplify_loop_decl_cond (&WHILE_COND (while_stmt));
+  finish_cond (&WHILE_COND (while_stmt), maybe_convert_cond (cond));
+  simplify_loop_decl_cond (&WHILE_COND (while_stmt), WHILE_BODY (while_stmt));
 }
 
 /* Finish a while-statement, which may be given by WHILE_STMT.  */
@@ -668,7 +658,7 @@ finish_for_init_stmt (tree for_stmt)
     FOR_INIT_STMT (for_stmt) = pop_stmt_list (FOR_INIT_STMT (for_stmt));
   add_stmt (for_stmt);
   FOR_BODY (for_stmt) = do_pushlevel (sk_block);
-  FOR_COND (for_stmt) = push_stmt_list ();
+  begin_cond (&FOR_COND (for_stmt));
 }
 
 /* Finish the COND of a for-statement, which may be given by
@@ -677,10 +667,8 @@ finish_for_init_stmt (tree for_stmt)
 void
 finish_for_cond (tree cond, tree for_stmt)
 {
-  cond = maybe_convert_cond (cond);
-  finish_cond (cond, &FOR_COND (for_stmt));
-  if (FOR_COND (for_stmt))
-    simplify_loop_decl_cond (&FOR_COND (for_stmt));
+  finish_cond (&FOR_COND (for_stmt), maybe_convert_cond (cond));
+  simplify_loop_decl_cond (&FOR_COND (for_stmt), FOR_BODY (for_stmt));
 }
 
 /* Finish the increment-EXPRESSION in a for-statement, which may be
@@ -747,9 +735,7 @@ begin_switch_stmt (void)
 
   scope = do_pushlevel (sk_block);
   TREE_CHAIN (r) = scope;
-
-  add_stmt (r);
-  SWITCH_COND (r) = push_stmt_list ();
+  begin_cond (&SWITCH_COND (r));
 
   return r;
 }
@@ -793,8 +779,9 @@ finish_switch_cond (tree cond, tree switch_stmt)
 	    cond = index;
 	}
     }
-  finish_cond (cond, &SWITCH_COND (switch_stmt));
+  finish_cond (&SWITCH_COND (switch_stmt), cond);
   SWITCH_TYPE (switch_stmt) = orig_type;
+  add_stmt (switch_stmt);
   push_switch (switch_stmt);
   SWITCH_BODY (switch_stmt) = push_stmt_list ();
 }
