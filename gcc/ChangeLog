@@ -1,3 +1,8 @@
+2000-09-16  Hans-Peter Nilsson  <hp@axis.com>
+
+	* gcc.c: In description for %{<S}, say the option removed is -S.
+	* invoke.texi (Spec Files): Ditto.
+
 2000-09-16  Andreas Jaeger  <aj@suse.de>
 
 	* configure.in: Always define _GNU_SOURCE to make interfaces

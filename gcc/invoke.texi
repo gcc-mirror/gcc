@@ -3708,9 +3708,9 @@ Like %@{@code{S}*@}, but don't put a blank between a switch and its
 argument.  Thus %@{^o*@} would only generate one argument, not two.
 
 @item %@{<@code{S}@}
-Remove all occurrences of @code{S} from the command line.  Note - this
+Remove all occurrences of @code{-S} from the command line.  Note - this
 command is position dependent.  @samp{%} commands in the spec string
-before this option will see @code{S}, @samp{%} commands in the spec
+before this option will see @code{-S}, @samp{%} commands in the spec
 string after this option will not.
 
 @item %@{@code{S}*:@code{X}@}
