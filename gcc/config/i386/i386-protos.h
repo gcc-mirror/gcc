@@ -131,6 +131,8 @@ extern void init_cumulative_args PARAMS ((CUMULATIVE_ARGS *, tree, rtx));
 extern rtx function_arg PARAMS ((CUMULATIVE_ARGS *, enum machine_mode, tree, int));
 extern void function_arg_advance PARAMS ((CUMULATIVE_ARGS *, enum machine_mode,
 					tree, int));
+extern void ix86_init_builtins PARAMS ((void));
+extern rtx ix86_expand_builtin PARAMS ((tree, rtx, rtx, enum machine_mode, int));
 #endif
 
 #endif

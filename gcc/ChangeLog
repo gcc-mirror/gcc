@@ -2,6 +2,23 @@
 
 	* optabs.c (emit_libcall_block): Set CONST_CALL_P for the call.
 
+	* i386-protos.h (ix86_init_builtins, ix86_expand_builtin): Declare.
+	* i386.c (struct builtin_description): New.
+	(bdesc_comi, bdesc_2arg, bdesc_1arg): New arrays.
+	(mmx_reg_operand): Declare MODE arg as unused.
+	(ix86_expand_sse_comi, ix86_expand_sse_compare, safe_vector_operand,
+	ix86_expand_unop1_builtin, ix86_expand_unop_builtin,
+	ix86_expand_binop_builtin, ix86_expand_store_builtin,
+	ix86_init_builtins, ix86_expand_builtin): New functions.
+	* i386.h (ix86_builtins): New enumeration.
+	(MD_INIT_BUILTINS, MD_EXPAND_BUILTIN): New macros.
+	* i386.md (attr length_immediate): 0 for mmx/sse types.
+	(attr prefix_0f): 1 for mmx/sse types.
+	(setcc_2): Remove "*" so we get gen_setcc_2.
+	(emms): Account for changed register numbering.  Set "memory" attr
+	to unknown.
+	(sfence): Set "memory" attr to unknown.
+
 2000-09-18  Andreas Jaeger  <aj@suse.de>
 
 	* configure.in: Define _GNU_SOURCE only when using the GNU C
