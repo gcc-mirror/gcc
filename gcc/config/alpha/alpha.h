@@ -164,11 +164,11 @@ extern enum alpha_fp_trap_mode alpha_fptm;
     {"alpha-as", -MASK_GAS},			\
     {"gas", MASK_GAS},				\
     {"ieee-conformant", MASK_IEEE_CONFORMANT},	\
-    {"ieee", MASK_IEEE},			\
-    {"ieee-with-inexact", MASK_IEEE_WITH_INEXACT}, \
+    {"ieee", MASK_IEEE|MASK_IEEE_CONFORMANT},	\
+    {"ieee-with-inexact", MASK_IEEE_WITH_INEXACT|MASK_IEEE_CONFORMANT}, \
     {"", TARGET_DEFAULT | TARGET_CPU_DEFAULT} }
 
-#define TARGET_DEFAULT 3
+#define TARGET_DEFAULT MASK_FP|MASK_FPREGS
 
 #ifndef TARGET_CPU_DEFAULT
 #define TARGET_CPU_DEFAULT 0
