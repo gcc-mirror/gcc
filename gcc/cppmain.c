@@ -72,8 +72,8 @@ main (argc, argv)
 #ifdef HAVE_LC_MESSAGES
   setlocale (LC_MESSAGES, "");
 #endif
-  bindtextdomain (PACKAGE, localedir);
-  textdomain (PACKAGE);
+  (void) bindtextdomain (PACKAGE, localedir);
+  (void) textdomain (PACKAGE);
 
   cpp_reader_init (&parse_in);
   parse_in.opts = opts;
