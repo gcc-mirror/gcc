@@ -1,3 +1,8 @@
+2002-03-15  Jason Merrill  <jason@redhat.com>
+
+	* toplev.c (wrapup_global_declarations): Clarify variable handling.
+	-fkeep-static-consts doesn't apply to comdats.
+
 2002-03-14  Richard Henderson  <rth@redhat.com>
 
 	* c-decl.c: Include c-pragma.h.
