@@ -1,3 +1,7 @@
+2004-02-07  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* rtti.c, tree.c: Update copyright.
+
 2003-02-06  Giovanni Bajo  <giovannibajo@gcc.gnu.org>
 
 	PR c++/14033

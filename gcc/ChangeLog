@@ -1,3 +1,9 @@
+2004-02-07  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* c-opts.c, c-ppoutput.c, cppfiles.c, cpphash.h, cppinit.c,
+	cpplib.h, diagnostic.h, fix-header.c, config/fp-bit.c,
+	config/mips/iris5.h, doc/makefile.texi: Update copyright.
+
 2004-02-06  James E Wilson  <wilson@specifixinc.com>
 
 	* config/ia64/linux.h (MD_FALLBACK_FRAME_STATE_FOR): Only define for

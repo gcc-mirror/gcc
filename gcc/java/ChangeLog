@@ -1,3 +1,7 @@
+2004-02-07  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* typeck.c: Update copyright.
+
 2004-02-05  Kelley Cook  <kcook@gcc.gnu.org>
 
 	Make-lang.in (po-generated):  Delete.
