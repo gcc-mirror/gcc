@@ -1,6 +1,17 @@
 2004-01-12  Jan Hubicka  <jh@suse.cz>
 
-	Partial fox for PR opt/10776 II
+	* alias.c:  Invlude varray.h
+	(alias_sets): Turn into varray.
+	(get_alias_set_entry): Use VARRAY; mark inline.
+	(mems_in_disjoint_alias_sets_p): Mark inline.
+	(record_alias_subset): Use varray.
+	(init_alias_once): Initialize varray.
+	(new_alias_set): Grow array.
+	* varray.c: Make VARRAY_GENERIC_PTR non GTYized.
+
+2004-01-12  Jan Hubicka  <jh@suse.cz>
+
+	Partial fix for PR opt/10776 II
 	* cselib.c: Include params.h
 	(cselib_invalidate_mem):  Limit amount of nonconflicting memory
 	locations.

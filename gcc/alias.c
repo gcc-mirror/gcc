@@ -42,6 +42,7 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include "timevar.h"
 #include "target.h"
 #include "cgraph.h"
+#include "varray.h"
 
 /* The alias sets assigned to MEMs assist the back-end in determining
    which MEMs can alias which other MEMs.  In general, two MEMs in
@@ -205,24 +206,21 @@ char *reg_known_equiv_p;
 static bool copying_arguments;
 
 /* The splay-tree used to store the various alias set entries.  */
-static splay_tree alias_sets;
+varray_type alias_sets;
 
 /* Returns a pointer to the alias set entry for ALIAS_SET, if there is
    such an entry, or NULL otherwise.  */
 
-static alias_set_entry
+static inline alias_set_entry
 get_alias_set_entry (HOST_WIDE_INT alias_set)
 {
-  splay_tree_node sn
-    = splay_tree_lookup (alias_sets, (splay_tree_key) alias_set);
-
-  return sn != 0 ? ((alias_set_entry) sn->value) : 0;
+  return (alias_set_entry)VARRAY_GENERIC_PTR (alias_sets, alias_set);
 }
 
 /* Returns nonzero if the alias sets for MEM1 and MEM2 are such that
    the two MEMs cannot alias each other.  */
 
-static int
+static inline int
 mems_in_disjoint_alias_sets_p (rtx mem1, rtx mem2)
 {
 #ifdef ENABLE_CHECKING
@@ -599,7 +597,10 @@ new_alias_set (void)
   static HOST_WIDE_INT last_alias_set;
 
   if (flag_strict_aliasing)
-    return ++last_alias_set;
+    {
+      VARRAY_GROW (alias_sets, last_alias_set + 2);
+      return ++last_alias_set;
+    }
   else
     return 0;
 }
@@ -641,8 +642,7 @@ record_alias_subset (HOST_WIDE_INT superset, HOST_WIDE_INT subset)
       superset_entry->children
 	= splay_tree_new (splay_tree_compare_ints, 0, 0);
       superset_entry->has_zero_child = 0;
-      splay_tree_insert (alias_sets, (splay_tree_key) superset,
-			 (splay_tree_value) superset_entry);
+      VARRAY_GENERIC_PTR (alias_sets, superset) = superset_entry;
     }
 
   if (subset == 0)
@@ -2673,7 +2673,7 @@ init_alias_once (void)
     = gen_rtx_ADDRESS (Pmode, hard_frame_pointer_rtx);
 #endif
 
-  alias_sets = splay_tree_new (splay_tree_compare_ints, 0, 0);
+  VARRAY_GENERIC_PTR_INIT (alias_sets, 10, "alias sets");
 }
 
 /* Set MEMORY_MODIFIED when X modifies DATA (that is assumed

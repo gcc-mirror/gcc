@@ -58,7 +58,6 @@ static cselib_val *new_cselib_val (unsigned int, enum machine_mode);
 static void add_mem_for_addr (cselib_val *, cselib_val *, rtx);
 static cselib_val *cselib_lookup_mem (rtx, int);
 static void cselib_invalidate_regno (unsigned int, enum machine_mode);
-static int cselib_mem_conflict_p (rtx, rtx);
 static void cselib_invalidate_mem (rtx);
 static void cselib_invalidate_rtx (rtx, rtx, void *);
 static void cselib_record_set (rtx, cselib_val *, cselib_val *);
@@ -168,6 +167,7 @@ new_elt_loc_list (struct elt_loc_list *next, rtx loc)
     el = ggc_alloc (sizeof (struct elt_loc_list));
   el->next = next;
   el->loc = loc;
+  el->canon_loc = NULL;
   el->setting_insn = cselib_current_insn;
   el->in_libcall = cselib_current_insn_in_libcall;
   return el;
@@ -1050,60 +1050,18 @@ cselib_invalidate_regno (unsigned int regno, enum machine_mode mode)
 	}
     }
 }
-
-/* The memory at address MEM_BASE is being changed.
-   Return whether this change will invalidate VAL.  */
+
+/* Return 1 if X has a value that can vary even between two
+   executions of the program.  0 means X can be compared reliably
+   against certain constants or near-constants.  */
 
 static int
-cselib_mem_conflict_p (rtx mem_base, rtx val)
+cselib_rtx_varies_p (rtx x ATTRIBUTE_UNUSED, int from_alias ATTRIBUTE_UNUSED)
 {
-  enum rtx_code code;
-  const char *fmt;
-  int i, j;
-
-  code = GET_CODE (val);
-  switch (code)
-    {
-      /* Get rid of a few simple cases quickly.  */
-    case REG:
-    case PC:
-    case CC0:
-    case SCRATCH:
-    case CONST:
-    case CONST_INT:
-    case CONST_DOUBLE:
-    case CONST_VECTOR:
-    case SYMBOL_REF:
-    case LABEL_REF:
-      return 0;
-
-    case MEM:
-      if (GET_MODE (mem_base) == BLKmode
-	  || GET_MODE (val) == BLKmode
-	  || anti_dependence (val, mem_base))
-	return 1;
-
-      /* The address may contain nested MEMs.  */
-      break;
-
-    default:
-      break;
-    }
-
-  fmt = GET_RTX_FORMAT (code);
-  for (i = GET_RTX_LENGTH (code) - 1; i >= 0; i--)
-    {
-      if (fmt[i] == 'e')
-	{
-	  if (cselib_mem_conflict_p (mem_base, XEXP (val, i)))
-	    return 1;
-	}
-      else if (fmt[i] == 'E')
-	for (j = 0; j < XVECLEN (val, i); j++)
-	  if (cselib_mem_conflict_p (mem_base, XVECEXP (val, i, j)))
-	    return 1;
-    }
-
+  /* We actually don't need to verify very hard.  This is because
+     if X has actually changed, we invalidate the memory anyway,
+     so assume that all common memory addresses are
+     invariant.  */
   return 0;
 }
 
@@ -1116,6 +1074,10 @@ cselib_invalidate_mem (rtx mem_rtx)
 {
   cselib_val **vp, *v, *next;
   int num_mems = 0;
+  rtx mem_addr;
+
+  mem_addr = canon_rtx (get_addr (XEXP (mem_rtx, 0)));
+  mem_rtx = canon_rtx (mem_rtx);
 
   vp = &first_containing_mem;
   for (v = *vp; v != &dummy_val; v = next)
@@ -1127,6 +1089,7 @@ cselib_invalidate_mem (rtx mem_rtx)
       while (*p)
 	{
 	  rtx x = (*p)->loc;
+	  rtx canon_x = (*p)->canon_loc;
 	  cselib_val *addr;
 	  struct elt_list **mem_chain;
 
@@ -1137,8 +1100,11 @@ cselib_invalidate_mem (rtx mem_rtx)
 	      p = &(*p)->next;
 	      continue;
 	    }
+	  if (!canon_x)
+	    canon_x = (*p)->canon_loc = canon_rtx (x);
 	  if (num_mems < PARAM_VALUE (PARAM_MAX_CSELIB_MEMORY_LOCATIONS)
-	      && ! cselib_mem_conflict_p (mem_rtx, x))
+	      && ! canon_true_dependence (mem_rtx, GET_MODE (mem_rtx), mem_addr,
+		      			  x, cselib_rtx_varies_p))
 	    {
 	      has_mem = true;
 	      num_mems++;

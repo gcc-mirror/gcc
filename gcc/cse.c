@@ -1768,6 +1768,7 @@ struct check_dependence_data
 {
   enum machine_mode mode;
   rtx exp;
+  rtx addr;
 };
 
 static int
@@ -1775,7 +1776,8 @@ check_dependence (rtx *x, void *data)
 {
   struct check_dependence_data *d = (struct check_dependence_data *) data;
   if (*x && GET_CODE (*x) == MEM)
-    return true_dependence (d->exp, d->mode, *x, cse_rtx_varies_p);
+    return canon_true_dependence (d->exp, d->mode, d->addr, *x,
+		    		  cse_rtx_varies_p);
   else
     return 0;
 }
@@ -1797,6 +1799,7 @@ invalidate (rtx x, enum machine_mode full_mode)
 {
   int i;
   struct table_elt *p;
+  rtx addr;
 
   switch (GET_CODE (x))
     {
@@ -1887,6 +1890,7 @@ invalidate (rtx x, enum machine_mode full_mode)
       return;
 
     case MEM:
+      addr = canon_rtx (get_addr (XEXP (x, 0)));
       /* Calculate the canonical version of X here so that
 	 true_dependence doesn't generate new RTL for X on each call.  */
       x = canon_rtx (x);
@@ -1914,6 +1918,7 @@ invalidate (rtx x, enum machine_mode full_mode)
 		  if (!p->canon_exp)
 		    p->canon_exp = canon_rtx (p->exp);
 		  d.exp = x;
+		  d.addr = addr;
 		  d.mode = full_mode;
 		  if (for_each_rtx (&p->canon_exp, check_dependence, &d))
 		    remove_from_table (p, i);
