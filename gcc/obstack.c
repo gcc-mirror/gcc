@@ -3,7 +3,7 @@
 
 
    NOTE: The canonical source of this file is maintained with the GNU C Library.
-   Bugs can be reported to bug-glibc@prep.ai.mit.edu.
+   Bugs can be reported to bug-glibc@gnu.org.
 
    This program is free software; you can redistribute it and/or modify it
    under the terms of the GNU General Public License as published by the
