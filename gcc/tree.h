@@ -911,6 +911,10 @@ extern tree build_unary_op ();
 
 extern tree build_type_variant ();
 
+/* Make a copy of a type node.  */
+
+extern tree build_type_copy ();
+
 /* Return the mode for data of a given size SIZE and mode class CLASS.
    If LIMIT is nonzero, then don't use modes bigger than MAX_FIXED_MODE_SIZE.
    The value is BLKmode if no other mode is found.  */
