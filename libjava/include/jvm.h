@@ -211,4 +211,7 @@ extern void _Jv_JNI_Init (void);
 _Jv_JNIEnv *_Jv_GetCurrentJNIEnv ();
 void _Jv_SetCurrentJNIEnv (_Jv_JNIEnv *);
 
+struct _Jv_JavaVM;
+_Jv_JavaVM *_Jv_GetJavaVM ();
+
 #endif /* __JAVA_JVM_H__ */

@@ -79,6 +79,12 @@ protected:
 
   // Size of raw arguments.
   _Jv_ushort args_raw_size;
+
+public:
+  _Jv_Method *get_method ()
+  {
+    return self;
+  }
 };
 
 class _Jv_InterpMethod : public _Jv_MethodBase
@@ -156,7 +162,15 @@ class _Jv_InterpClass : public java::lang::Class
   friend void  _Jv_PrepareClass(jclass);
   friend void  _Jv_InitField (jobject, jclass, int);
   friend void* _Jv_MarkObj (void *, void *, void *, void *);
+
+  friend _Jv_MethodBase ** _Jv_GetFirstMethod (_Jv_InterpClass *klass);
 };
+
+extern inline _Jv_MethodBase **
+_Jv_GetFirstMethod (_Jv_InterpClass *klass)
+{
+  return klass->interpreted_methods;
+}
 
 struct _Jv_ResolvedMethod {
   jint            stack_item_count;	
@@ -190,6 +204,13 @@ class _Jv_JNIMethod : public _Jv_MethodBase
 
   friend class _Jv_ClassReader;
   friend void _Jv_PrepareClass(jclass);
+
+public:
+  // FIXME: this is ugly.
+  void set_function (void *f)
+  {
+    function = f;
+  }
 };
 
 #endif /* INTERPRETER */

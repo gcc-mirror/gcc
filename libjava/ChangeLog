@@ -1,3 +1,20 @@
+2000-02-18  Tom Tromey  <tromey@cygnus.com>
+
+	* include/jvm.h (_Jv_GetJavaVM): Declare.
+	* include/java-interp.h (_Jv_GetFirstMethod): New function.
+	(_Jv_MethodBase::get_method): New method.
+	(_Jv_JNIMethod::set_function): New method.
+	* jni.cc (_Jv_JNI_UnregisterNatives): New function.
+	(_Jv_JNI_RegisterNatives): New function.
+	(_Jv_JNIFunctions): Updated for new functions.
+	(_Jv_GetJavaVM): New function.
+	(_Jv_JNI_GetJavaVM): Use it.  Now static.
+	(_Jv_JNI_AttachCurrentThread): Create a new JNIEnv if this thread
+	is already a Java thread but does not have a JNIEnv yet.
+
+	* java/lang/natRuntime.cc (_load): Pass the JavaVM to the onload
+	function.
+
 2000-02-17  Tom Tromey  <tromey@cygnus.com>
 
 	* gcj/field.h (_Jv_Field::getClass): Don't use JvAssert.
