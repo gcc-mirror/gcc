@@ -91,8 +91,6 @@ extern int c4x_hard_regno_mode_ok PARAMS ((unsigned int, enum machine_mode));
 extern struct rtx_def *c4x_legitimize_address PARAMS ((rtx,
 						       enum machine_mode));
 
-extern struct rtx_def *c4x_legitimize_reload_address PARAMS ((rtx, enum machine_mode, rtx));
-
 extern int c4x_address_cost PARAMS ((rtx));
 
 extern void c4x_print_operand PARAMS ((FILE *, rtx, int));

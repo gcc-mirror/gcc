@@ -1679,32 +1679,6 @@ c4x_legitimize_address (orig, mode)
 }
 
 
-rtx
-c4x_legitimize_reload_address (orig, mode, insn)
-     rtx orig ATTRIBUTE_UNUSED;
-     enum machine_mode mode;
-     rtx insn;
-{                                                                    	
-  if (mode != HImode 
-      && mode != HFmode
-      && GET_MODE (orig) != HImode
-      && GET_MODE (orig) != HFmode
-      && (GET_CODE (orig) == CONST					
-          || GET_CODE (orig) == SYMBOL_REF				
-          || GET_CODE (orig) == LABEL_REF))
-    {                                                                   
-      rtx dp_reg = gen_rtx_REG (Pmode, DP_REGNO);			
-      if (! TARGET_SMALL)						
-        emit_insn_before (gen_rtx_SET (VOIDmode, dp_reg, 		
-				       gen_rtx_HIGH (Pmode, orig)),	
-			  insn);
-      return gen_rtx_LO_SUM (Pmode, dp_reg, orig);
-    }
-
-  return NULL_RTX;
-}
-
-
 /* Provide the costs of an addressing mode that contains ADDR.
    If ADDR is not a valid address, its cost is irrelevant.  
    This is used in cse and loop optimisation to determine

@@ -1705,17 +1705,54 @@ CUMULATIVE_ARGS;
 
 #define LEGITIMIZE_RELOAD_ADDRESS(X,MODE,OPNUM,TYPE,IND_LEVELS,WIN)     \
 {									\
-  rtx new;								\
-  new = c4x_legitimize_reload_address (X, MODE, insn);			\
-  if (new != NULL_RTX)							\
-  {									\
-    (X) = new;								\
-   /* We do not have to call push_reload because we do not require      \
-      any more reloads.  */						\
-    goto WIN;								\
-  }									\
+  if (MODE != HImode							\
+      && MODE != HFmode							\
+      && GET_MODE (X) != HImode						\
+      && GET_MODE (X) != HFmode						\
+      && (GET_CODE (X) == CONST						\
+          || GET_CODE (X) == SYMBOL_REF					\
+          || GET_CODE (X) == LABEL_REF))				\
+    {									\
+      if (! TARGET_SMALL)						\
+	{								\
+          int i;							\
+      	  X = gen_rtx_LO_SUM (GET_MODE (X),				\
+			      gen_rtx_HIGH (GET_MODE (X), X), X);	\
+          i = push_reload (XEXP (X, 0), NULL_RTX,			\
+			   &XEXP (X, 0), NULL_PTR,			\
+		           DP_REG, GET_MODE (X), VOIDmode, 0, 0,	\
+		           OPNUM, TYPE);				\
+          /* The only valid reg is DP. This is a fixed reg and will	\
+	     normally not be used so force it.  */			\
+          rld[i].reg_rtx = gen_rtx_REG (Pmode, DP_REGNO); 		\
+          rld[i].nocombine = 1; 					\
+        }								\
+      goto WIN;								\
+   }									\
+  else if (MODE != HImode						\
+           && MODE != HFmode						\
+           && GET_MODE (X) != HImode					\
+           && GET_MODE (X) != HFmode					\
+           && GET_CODE (X) == LO_SUM					\
+           && GET_CODE (XEXP (X,0)) == HIGH				\
+           && (GET_CODE (XEXP (XEXP (X,0),0)) == CONST			\
+               || GET_CODE (XEXP (XEXP (X,0),0)) == SYMBOL_REF		\
+               || GET_CODE (XEXP (XEXP (X,0),0)) == LABEL_REF))		\
+    {									\
+      if (! TARGET_SMALL)						\
+	{								\
+          int i = push_reload (XEXP (X, 0), NULL_RTX,			\
+			       &XEXP (X, 0), NULL_PTR,			\
+		               DP_REG, GET_MODE (X), VOIDmode, 0, 0,	\
+		               OPNUM, TYPE);				\
+          /* The only valid reg is DP. This is a fixed reg and will	\
+	     normally not be used so force it.  */			\
+          rld[i].reg_rtx = gen_rtx_REG (Pmode, DP_REGNO); 		\
+          rld[i].nocombine = 1; 					\
+        }								\
+      goto WIN;								\
+   }									\
 }
-
 
 /* No mode-dependent addresses on the C4x are autoincrements.  */
 
