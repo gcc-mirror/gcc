@@ -43,7 +43,13 @@ Boston, MA 02111-1307, USA.  */
 #define SIGNED_CHAR_SPEC "%{funsigned-char:-D__CHAR_UNSIGNED__}"
 
 /* No point in running CPP on our assembler output.  */
-#define ASM_SPEC "-nocpp %{pg}"
+/* In OSF/1 v3.2c, the assembler by default does not output file names which
+   causes mips-tfile to fail.  Passing -g to the assembler fixes this problem.
+   ??? Stricly speaking, we only need -g if the user specifies -g.  Passing
+   it always means that we get slightly larger than necessary object files
+   if the user does not specify -g.  If we don't pass -g, then mips-tfile
+   will need to be fixed to work in this case.  */
+#define ASM_SPEC "-g -nocpp %{pg}"
 
 /* Under OSF/1, -p and -pg require -lprof1.  */
 
