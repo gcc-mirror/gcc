@@ -25,8 +25,6 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 
 #include "config.h"
 #include "system.h"
-#include "coretypes.h"
-#include "tm.h"
 #include "errors.h"
 
 /* Set this to argv[0] at the beginning of main.  */
@@ -116,11 +114,7 @@ trim_filename (const char *name)
     p++, q++;
 
   /* Now go backwards until the previous directory separator.  */
-  while (p > name && p[-1] != DIR_SEPARATOR
-#ifdef DIR_SEPARATOR_2
-	 && p[-1] != DIR_SEPARATOR_2
-#endif
-	 )
+  while (p > name && !IS_DIR_SEPARATOR (p[-1]))
     p--;
 
   return p;
