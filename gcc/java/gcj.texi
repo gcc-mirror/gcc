@@ -949,16 +949,26 @@ be retrieved at runtime using the @code{java.lang.System.getProperty}
 method.
 
 @item -ms=@var{number}
-This sets the initial heap size.
+Equivalent to @code{-Xms}.
 
 @item -mx=@var{number}
-This sets the maximum heap size.
+Equivalent to @code{-Xmx}.
 
 @item -X
 @itemx -X@var{argument}
 Supplying @code{-X} by itself will cause @code{gij} to list all the
-supported @code{-X} options.  Currently there are none.  Unrecognized
-@code{-X} options are ignored, for compatibility with other runtimes.
+supported @code{-X} options.  Currently these options are supported:
+
+@table @gcctabopt
+@item -Xms@var{size}
+Set the initial heap size.
+
+@item -Xmx@var{size}
+Set the maximum heap size.
+@end table
+
+Unrecognized @code{-X} options are ignored, for compatibility with
+other runtimes.
 
 @item -jar
 This indicates that the name passed to @code{gij} should be interpreted
@@ -971,6 +981,9 @@ Print help, then exit.
 @item --showversion
 Print version number and continue.
 
+@item --fullversion
+Print detailed version information, then exit.
+
 @item --version
 Print version number, then exit.
 
@@ -978,6 +991,12 @@ Print version number, then exit.
 @itemx -verbose:class
 Each time a class is initialized, print a short message on standard error.
 @end table
+
+@code{gij} also recognizes and ignores the following options, for
+compatibility with existing application launch scripts:
+@code{-client}, @code{-server}, @code{-hotspot}, @code{-jrockit},
+@code{-agentlib}, @code{-agentpath}, @code{-debug}, @code{-d32},
+@code{-d64}, @code{-javaagent} and @code{-noclassgc}.
 
 @c man end
 
@@ -1250,6 +1269,7 @@ alternative to the standard JNI (Java Native Interface).
 * Objects and Classes::         C++ and Java classes.
 * Class Initialization::        How objects are initialized.
 * Object allocation::           How to create Java objects in C++.
+* Memory allocation::           How to allocate and free memory.
 * Arrays::                      Dealing with Java arrays in C++.
 * Methods::                     Java methods in C++.
 * Strings::                     Information about Java Strings.
@@ -1629,6 +1649,27 @@ using standard C++ overload resolution rules.
 java::util::Hashtable *ht = new java::util::Hashtable(120);
 @end example
 
+
+@node Memory allocation
+@section Memory allocation
+
+When allocting memory in @acronym{CNI} methods it is best to handle
+out-of-memory conditions by throwing a Java exception.  These
+functions are provided for that purpose:
+
+@deftypefun void* JvMalloc (jsize @var{size})
+Calls malloc.  Throws @code{java.lang.OutOfMemoryError} if allocation
+fails.
+@end deftypefun
+
+@deftypefun void* JvRealloc (void* @var{ptr}, jsize @var{size})
+Calls realloc.  Throws @code{java.lang.OutOfMemoryError} if
+reallocation fails.
+@end deftypefun
+
+@deftypefun void JvFree (void* @var{ptr})
+Calls free.
+@end deftypefun
 
 @node Arrays
 @section Arrays

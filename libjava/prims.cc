@@ -85,9 +85,6 @@ static java::lang::OutOfMemoryError *no_memory;
 const char **_Jv_Compiler_Properties = NULL;
 int _Jv_Properties_Count = 0;
 
-// The JAR file to add to the beginning of java.class.path.
-const char *_Jv_Jar_Class_Path;
-
 #ifndef DISABLE_GETENV_PROPERTIES
 // Property key/value pairs.
 property_pair *_Jv_Environment_Properties;
@@ -909,9 +906,115 @@ namespace gcj
   bool runtimeInitialized = false;
 }
 
+// We accept all non-standard options accepted by Sun's java command,
+// for compatibility with existing application launch scripts.
+static jint
+parse_x_arg (char* option_string)
+{
+  if (strlen (option_string) <= 0)
+    return -1;
+
+  if (! strcmp (option_string, "int"))
+    {
+      // FIXME: this should cause the vm to never load shared objects
+    }
+  else if (! strcmp (option_string, "mixed"))
+    {
+      // FIXME: allow interpreted and native code
+    }
+  else if (! strcmp (option_string, "batch"))
+    {
+      // FIXME: disable background JIT'ing
+    }
+  else if (! strcmp (option_string, "debug"))
+    {
+      // FIXME: add JDWP/JVMDI support
+    }
+  else if (! strncmp (option_string, "bootclasspath:", 14))
+    {
+      // FIXME: add a parse_bootclasspath_arg function
+    }
+  else if (! strncmp (option_string, "bootclasspath/a:", 16))
+    {
+    }
+  else if (! strncmp (option_string, "bootclasspath/p:", 16))
+    {
+    }
+  else if (! strcmp (option_string, "check:jni"))
+    {
+      // FIXME: enable strict JNI checking
+    }
+  else if (! strcmp (option_string, "future"))
+    {
+      // FIXME: enable strict class file format checks
+    }
+  else if (! strcmp (option_string, "noclassgc"))
+    {
+      // FIXME: disable garbage collection for classes
+    }
+  else if (! strcmp (option_string, "incgc"))
+    {
+      // FIXME: incremental garbage collection
+    }
+  else if (! strncmp (option_string, "loggc:", 6))
+    {
+      if (option_string[6] == '\0')
+        {
+          fprintf (stderr,
+                   "libgcj: filename argument expected for loggc option\n");
+          return -1;
+        }
+      // FIXME: set gc logging filename
+    }
+  else if (! strncmp (option_string, "ms", 2))
+    {
+      // FIXME: ignore this option until PR 20699 is fixed.
+      // _Jv_SetInitialHeapSize (option_string + 2);
+    }
+  else if (! strncmp (option_string, "mx", 2))
+    _Jv_SetMaximumHeapSize (option_string + 2);
+  else if (! strcmp (option_string, "prof"))
+    {
+      // FIXME: enable profiling of program running in vm
+    }
+  else if (! strncmp (option_string, "runhprof:", 9))
+    {
+      // FIXME: enable specific type of vm profiling.  add a
+      // parse_runhprof_arg function
+    }
+  else if (! strcmp (option_string, "rs"))
+    {
+      // FIXME: reduced system signal usage.  disable thread dumps,
+      // only terminate in response to user-initiated calls,
+      // e.g. System.exit()
+    }
+  else if (! strncmp (option_string, "ss", 2))
+    {
+      // FIXME: set thread stack size
+    }
+  else if (! strcmp (option_string, "X:+UseAltSigs"))
+    {
+      // FIXME: use signals other than SIGUSR1 and SIGUSR2
+    }
+  else if (! strcmp (option_string, "share:off"))
+    {
+      // FIXME: don't share class data
+    }
+  else if (! strcmp (option_string, "share:auto"))
+    {
+      // FIXME: share class data where possible
+    }
+  else if (! strcmp (option_string, "share:on"))
+    {
+      // FIXME: fail if impossible to share class data
+    }
+
+  return 0;
+}
+
 static jint
 parse_verbose_args (char* option_string,
-		    bool ignore_unrecognized)
+                    bool ignore_unrecognized)
 {
   size_t len = sizeof ("-verbose");
 
@@ -1045,7 +1148,7 @@ parse_init_args (JvVMInitArgs* vm_args)
 			  "-verbose", sizeof ("-verbose") - 1))
 	{
 	  jint result = parse_verbose_args (option_string,
-					    vm_args->ignoreUnrecognized);
+                                            vm_args->ignoreUnrecognized);
 	  if (result < 0)
 	    return result;
 	}
@@ -1061,11 +1164,20 @@ parse_init_args (JvVMInitArgs* vm_args)
 	  continue;
 	}
       else if (vm_args->ignoreUnrecognized)
-	{
-	  if (option_string[0] == '_'
-	      || ! strncmp (option_string, "-X", 2))
-	    continue;
+        {
+          if (option_string[0] == '_')
+            parse_x_arg (option_string + 1);
+          else if (! strncmp (option_string, "-X", 2))
+            parse_x_arg (option_string + 2);
+          else
+            {
+            unknown_option:
+              fprintf (stderr, "libgcj: unknown option: %s\n", option_string);
+              return -1;
+            }
 	}
+      else
+        goto unknown_option;
     }
   return 0;
 }
@@ -1167,8 +1279,8 @@ _Jv_CreateJavaVM (JvVMInitArgs* vm_args)
 }
 
 void
-_Jv_RunMain (jclass klass, const char *name, int argc, const char **argv, 
-	     bool is_jar)
+_Jv_RunMain (JvVMInitArgs *vm_args, jclass klass, const char *name, int argc,
+             const char **argv, bool is_jar)
 {
 #ifndef DISABLE_MAIN_ARGS
   _Jv_SetArgs (argc, argv);
@@ -1178,12 +1290,7 @@ _Jv_RunMain (jclass klass, const char *name, int argc, const char **argv,
 
   try
     {
-      // Set this very early so that it is seen when java.lang.System
-      // is initialized.
-      if (is_jar)
-	_Jv_Jar_Class_Path = strdup (name);
-
-      if (_Jv_CreateJavaVM (NULL) < 0)
+      if (_Jv_CreateJavaVM (vm_args) < 0)
 	{
 	  fprintf (stderr, "libgcj: couldn't create virtual machine\n");
 	  exit (1);
@@ -1223,6 +1330,13 @@ _Jv_RunMain (jclass klass, const char *name, int argc, const char **argv,
 
   int status = (int) java::lang::ThreadGroup::had_uncaught_exception;
   runtime->exit (status);
+}
+
+void
+_Jv_RunMain (jclass klass, const char *name, int argc, const char **argv, 
+	     bool is_jar)
+{
+  _Jv_RunMain (NULL, klass, name, argc, argv, is_jar);
 }
 
 void

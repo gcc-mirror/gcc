@@ -13829,6 +13829,17 @@ _ACEOF
 
 
 
+cat >>confdefs.h <<\_ACEOF
+#define JV_VERSION "1.4.2"
+_ACEOF
+
+
+cat >>confdefs.h <<\_ACEOF
+#define JV_API_VERSION "1.4"
+_ACEOF
+
+
+
 case "${with_gxx_include_dir}" in
   yes)
     { { echo "$as_me:$LINENO: error: --with-gxx-include-dir=[dir] requires a directory" >&5

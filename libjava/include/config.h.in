@@ -364,6 +364,9 @@
 /* Define if you want a bytecode interpreter. */
 #undef INTERPRETER
 
+/* API compatibility version string */
+#undef JV_API_VERSION
+
 /* Define if hash synchronization is in use */
 #undef JV_HASH_SYNCHRONIZATION
 
@@ -372,6 +375,9 @@
 
 /* Indicate that linker is not able to 8-byte align static data */
 #undef JV_LINKER_CANNOT_8BYTE_ALIGN_STATICS
+
+/* Compatibility version string */
+#undef JV_VERSION
 
 /* Define if we want to use debug calls into the garbage collector. */
 #undef LIBGCJ_GC_DEBUG
