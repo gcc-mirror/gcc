@@ -1,3 +1,8 @@
+2004-06-16  Andreas Jaeger  <aj@suse.de>
+
+	* doc/install.texi (Configuration): Update description for
+	--enable-version-specific-runtime-libs.
+
 2004-06-16  Paolo Bonzini  <bonzini@gnu.org>
 
 	* doc/install.texi: boehm-gc now uses automake 1.8.5.
@@ -182,7 +187,7 @@
 2004-06-15  Daniel Berlin  <dberlin@dberlin.org>
 
 	* tree-flow-inline.h: Document all functions.
-	
+
 2004-06-15  Daniel Berlin  <dberlin@dberlin.org>
 
 	* tree-flow-inline.h (stmt_ann): Remove use of is_essa_node.
@@ -451,8 +456,8 @@
 	(m32r_return_addr): Added for __builtin_return_address(0).
 	(m32r_reload_lr): Ditto.
 
-	* longlong.h: Fix macros for m32r add_ssaaaa and sub_ddmmss. 
-	
+	* longlong.h: Fix macros for m32r add_ssaaaa and sub_ddmmss.
+
 2004-06-15  Paolo Bonzini  <bonzini@gnu.org>
 
 	* doc/install.texi (Prerequisites): Update libbanshee,
