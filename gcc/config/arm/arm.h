@@ -963,8 +963,17 @@ extern const char * structure_size_string;
 #define FIRST_HI_REGNUM		8
 #define LAST_HI_REGNUM		11
 
+/* We use sjlj exceptions for backwards compatibility.  */
+#define MUST_USE_SJLJ_EXCEPTIONS 1
+/* We can generate DWARF2 Unwind info, even though we don't use it.  */
+#define DWARF2_UNWIND_INFO 1
+			     
+/* Use r0 and r1 to pass exception handling information.  */
+#define EH_RETURN_DATA_REGNO(N) (((N) < 2) ? N : INVALID_REGNUM)
+
 /* The register that holds the return address in exception handlers.  */
-#define EXCEPTION_LR_REGNUM	2
+#define ARM_EH_STACKADJ_REGNUM	2
+#define EH_RETURN_STACKADJ_RTX	gen_rtx_REG (SImode, ARM_EH_STACKADJ_REGNUM)
 
 /* The native (Norcroft) Pascal compiler for the ARM passes the static chain
    as an invisible last argument (possible since varargs don't exist in
@@ -1592,7 +1601,6 @@ enum reg_class
 #define ARM_FT_UNKNOWN		 0 /* Type has not yet been determined.  */
 #define ARM_FT_NORMAL		 1 /* Your normal, straightforward function.  */
 #define ARM_FT_INTERWORKED	 2 /* A function that supports interworking.  */
-#define ARM_FT_EXCEPTION_HANDLER 3 /* A C++ exception handler.  */
 #define ARM_FT_ISR		 4 /* An interrupt service routine.  */
 #define ARM_FT_FIQ		 5 /* A fast interrupt service routine.  */
 #define ARM_FT_EXCEPTION	 6 /* An ARM exception handler (subcase of ISR).  */

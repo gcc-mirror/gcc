@@ -1,3 +1,22 @@
+2004-08-10  Paul Brook  <paul@codesourcery.com>
+
+	* config/arm/arm-protos.h (arm_set_return_address,
+	thumb_set_return_address): Add prototypes.
+	* config/arm/arm.h (ARM_FT_EXCEPTION_HANDLER): Remove.
+	* config/arm/arm.c (arm_compute_func_type,
+	use_return_insn, arm_compute_save_reg0_reg12_mask,
+	arm_compute_save_reg_mask, arm_output_function_prologue,
+	arm_output_epilogue): Replace ARM_FT_EXCEPTION_HANDLER with
+	current_function_calls_eh_return.
+	(thumb_exit, thumb_pushpop, thumb_unexpanded_epilogue): Replace
+	old eh code.
+	(arm_set_return_address, thumb_set_return_address): New functions.
+	* config/arm/arm.h (MUST_USE_SJLJ_EXCEPTIONS, DWARF2_UNWIND_INFO,
+	ARM_EH_STACKADJ_REGNUM, EH_RETURN_STACKADJ_RTX): Define.
+	* config/arm/arm.md (VUNSPEC_EH_RETURN): Add.
+	(epilogue): Use the stackadj register.
+	(eh_return, arm_eh_return, thumb_eh_return): New pattern.
+
 2004-08-10  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/3144

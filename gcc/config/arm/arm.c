@@ -87,7 +87,7 @@ static const char *shift_op (rtx, HOST_WIDE_INT *);
 static struct machine_function *arm_init_machine_status (void);
 static int number_of_first_bit_set (int);
 static void replace_symbols_in_block (tree, rtx, rtx);
-static void thumb_exit (FILE *, int, rtx);
+static void thumb_exit (FILE *, int);
 static void thumb_pushpop (FILE *, int, int, int *, int);
 static rtx is_jump_table (rtx);
 static HOST_WIDE_INT get_jump_table_size (rtx);
@@ -1142,19 +1142,14 @@ arm_compute_func_type (void)
   if (a != NULL_TREE)
     type |= ARM_FT_NAKED;
 
-  if (cfun->machine->eh_epilogue_sp_ofs != NULL_RTX)
-    type |= ARM_FT_EXCEPTION_HANDLER;
+  a = lookup_attribute ("isr", attr);
+  if (a == NULL_TREE)
+    a = lookup_attribute ("interrupt", attr);
+  
+  if (a == NULL_TREE)
+    type |= TARGET_INTERWORK ? ARM_FT_INTERWORKED : ARM_FT_NORMAL;
   else
-    {
-      a = lookup_attribute ("isr", attr);
-      if (a == NULL_TREE)
-	a = lookup_attribute ("interrupt", attr);
-      
-      if (a == NULL_TREE)
-	type |= TARGET_INTERWORK ? ARM_FT_INTERWORKED : ARM_FT_NORMAL;
-      else
-	type |= arm_isr_value (TREE_VALUE (a));
-    }
+    type |= arm_isr_value (TREE_VALUE (a));
   
   return type;
 }
@@ -1205,7 +1200,7 @@ use_return_insn (int iscond, rtx sibling)
   if (current_function_pretend_args_size
       || cfun->machine->uses_anonymous_args
       /* Or if the function calls __builtin_eh_return () */
-      || ARM_FUNC_TYPE (func_type) == ARM_FT_EXCEPTION_HANDLER
+      || current_function_calls_eh_return
       /* Or if the function calls alloca */
       || current_function_calls_alloca
       /* Or if there is a stack adjustment.  However, if the stack pointer
@@ -8899,7 +8894,7 @@ output_ascii_pseudo_op (FILE *stream, const unsigned char *p, int len)
   fputs ("\"\n", stream);
 }
 
-/* Compute the register sabe mask for registers 0 through 12
+/* Compute the register save mask for registers 0 through 12
    inclusive.  This code is used by arm_compute_save_reg_mask.  */
 static unsigned long
 arm_compute_save_reg0_reg12_mask (void)
@@ -8955,6 +8950,20 @@ arm_compute_save_reg0_reg12_mask (void)
 	save_reg_mask |= 1 << PIC_OFFSET_TABLE_REGNUM;
     }
 
+  /* Save registers so the exception handler can modify them.  */
+  if (current_function_calls_eh_return)
+    {
+      unsigned int i;
+      
+      for (i = 0; ; i++)
+	{
+	  reg = EH_RETURN_DATA_REGNO (i);
+	  if (reg == INVALID_REGNUM)
+	    break;
+	  save_reg_mask |= 1 << reg;
+	}
+    }
+
   return save_reg_mask;
 }
 
@@ -8999,7 +9008,8 @@ arm_compute_save_reg_mask (void)
   if (regs_ever_live [LR_REGNUM]
 	  || (save_reg_mask
 	      && optimize_size
-	      && ARM_FUNC_TYPE (func_type) == ARM_FT_NORMAL))
+	      && ARM_FUNC_TYPE (func_type) == ARM_FT_NORMAL
+	      && !current_function_calls_eh_return))
     save_reg_mask |= 1 << LR_REGNUM;
 
   if (cfun->machine->lr_save_eliminated)
@@ -9356,9 +9366,6 @@ arm_output_function_prologue (FILE *f, HOST_WIDE_INT frame_size)
     case ARM_FT_INTERWORKED:
       asm_fprintf (f, "\t%@ Function supports interworking.\n");
       break;
-    case ARM_FT_EXCEPTION_HANDLER:
-      asm_fprintf (f, "\t%@ C++ Exception Handler.\n");
-      break;
     case ARM_FT_ISR:
       asm_fprintf (f, "\t%@ Interrupt Service Routine.\n");
       break;
@@ -9390,6 +9397,9 @@ arm_output_function_prologue (FILE *f, HOST_WIDE_INT frame_size)
   if (cfun->machine->lr_save_eliminated)
     asm_fprintf (f, "\t%@ link register save eliminated.\n");
 
+  if (current_function_calls_eh_return)
+    asm_fprintf (f, "\t@ Calls __builtin_eh_return.\n");
+
 #ifdef AOF_ASSEMBLER
   if (flag_pic)
     asm_fprintf (f, "\tmov\t%r, %r\n", IP_REGNUM, PIC_OFFSET_TABLE_REGNUM);
@@ -9409,7 +9419,6 @@ arm_output_epilogue (rtx sibling)
   int floats_offset = 0;
   rtx operands[3];
   FILE * f = asm_out_file;
-  rtx eh_ofs = cfun->machine->eh_epilogue_sp_ofs;
   unsigned int lrm_count = 0;
   int really_return = (sibling == NULL);
   int start_reg;
@@ -9438,7 +9447,7 @@ arm_output_epilogue (rtx sibling)
       return "";
     }
 
-  if (ARM_FUNC_TYPE (func_type) == ARM_FT_EXCEPTION_HANDLER
+  if (current_function_calls_eh_return
       && ! really_return)
     /* If we are throwing an exception, then we really must
        be doing a return,  so we can't tail-call.  */
@@ -9572,7 +9581,9 @@ arm_output_epilogue (rtx sibling)
 	 only need to restore the LR register (the return address), but to
 	 save time we can load it directly into the PC, unless we need a
 	 special function exit sequence, or we are not really returning.  */
-      if (really_return && ARM_FUNC_TYPE (func_type) == ARM_FT_NORMAL)
+      if (really_return
+	  && ARM_FUNC_TYPE (func_type) == ARM_FT_NORMAL
+	  && !current_function_calls_eh_return)
 	/* Delete the LR from the register mask, so that the LR on
 	   the stack is loaded into the PC in the register mask.  */
 	saved_regs_mask &= ~ (1 << LR_REGNUM);
@@ -9677,7 +9688,8 @@ arm_output_epilogue (rtx sibling)
       if (ARM_FUNC_TYPE (func_type) == ARM_FT_NORMAL
 	  && really_return
 	  && current_function_pretend_args_size == 0
-	  && saved_regs_mask & (1 << LR_REGNUM))
+	  && saved_regs_mask & (1 << LR_REGNUM)
+	  && !current_function_calls_eh_return)
 	{
 	  saved_regs_mask &= ~ (1 << LR_REGNUM);
 	  saved_regs_mask |=   (1 << PC_REGNUM);
@@ -9687,12 +9699,7 @@ arm_output_epilogue (rtx sibling)
 	 to load use the LDR instruction - it is faster.  */
       if (saved_regs_mask == (1 << LR_REGNUM))
 	{
-	  /* The exception handler ignores the LR, so we do
-	     not really need to load it off the stack.  */
-	  if (eh_ofs)
-	    asm_fprintf (f, "\tadd\t%r, %r, #4\n", SP_REGNUM, SP_REGNUM);
-	  else
-	    asm_fprintf (f, "\tldr\t%r, [%r], #4\n", LR_REGNUM, SP_REGNUM);
+	  asm_fprintf (f, "\tldr\t%r, [%r], #4\n", LR_REGNUM, SP_REGNUM);
 	}
       else if (saved_regs_mask)
 	{
@@ -9719,13 +9726,14 @@ arm_output_epilogue (rtx sibling)
   if (!really_return || saved_regs_mask & (1 << PC_REGNUM))
     return "";
 
+  /* Stack adjustment for exception handler.  */
+  if (current_function_calls_eh_return)
+    asm_fprintf (f, "\tadd\t%r, %r, %r\n", SP_REGNUM, SP_REGNUM, 
+		 ARM_EH_STACKADJ_REGNUM);
+
   /* Generate the return instruction.  */
   switch ((int) ARM_FUNC_TYPE (func_type))
     {
-    case ARM_FT_EXCEPTION_HANDLER:
-      asm_fprintf (f, "\tmov\t%r, %r\n", PC_REGNUM, EXCEPTION_LR_REGNUM);
-      break;
-
     case ARM_FT_ISR:
     case ARM_FT_FIQ:
       asm_fprintf (f, "\tsubs\t%r, %r, #4\n", PC_REGNUM, LR_REGNUM);
@@ -9978,6 +9986,7 @@ thumb_force_lr_save (void)
 /* Compute the distance from register FROM to register TO.
    These can be the arg pointer (26), the soft frame pointer (25),
    the stack pointer (13) or the hard frame pointer (11).
+   In thumb mode r7 is used as the soft frame pointer, if needed.
    Typical stack layout looks like this:
 
        old stack pointer -> |    |
@@ -12443,7 +12452,7 @@ number_of_first_bit_set (int mask)
    If 'reg_containing_return_addr' is -1, then the return address is
    actually on the stack, at the stack pointer.  */
 static void
-thumb_exit (FILE *f, int reg_containing_return_addr, rtx eh_ofs)
+thumb_exit (FILE *f, int reg_containing_return_addr)
 {
   unsigned regs_available_for_popping;
   unsigned regs_to_pop;
@@ -12458,15 +12467,8 @@ thumb_exit (FILE *f, int reg_containing_return_addr, rtx eh_ofs)
   regs_to_pop = 0;
   pops_needed = 0;
 
-  /* There is an assumption here, that if eh_ofs is not NULL, the
-     normal return address will have been pushed.  */
-  if (reg_containing_return_addr == -1 || eh_ofs)
+  if (reg_containing_return_addr == -1)
     {
-      /* When we are generating a return for __builtin_eh_return, 
-	 reg_containing_return_addr must specify the return regno.  */
-      if (eh_ofs && reg_containing_return_addr == -1)
-	abort ();
-
       regs_to_pop |= 1 << LR_REGNUM;
       ++pops_needed;
     }
@@ -12482,8 +12484,8 @@ thumb_exit (FILE *f, int reg_containing_return_addr, rtx eh_ofs)
      return.  */
   if (pops_needed == 0)
     {
-      if (eh_ofs)
-	asm_fprintf (f, "\tadd\t%r, %r\n", SP_REGNUM, REGNO (eh_ofs));
+      if (current_function_calls_eh_return)
+	asm_fprintf (f, "\tadd\t%r, %r\n", SP_REGNUM, ARM_EH_STACKADJ_REGNUM);
 
       asm_fprintf (f, "\tbx\t%r\n", reg_containing_return_addr);
       return;
@@ -12493,17 +12495,10 @@ thumb_exit (FILE *f, int reg_containing_return_addr, rtx eh_ofs)
      just pop the return address straight into the PC.  */
   else if (!TARGET_INTERWORK
 	   && !TARGET_BACKTRACE
-	   && !is_called_in_ARM_mode (current_function_decl))
+	   && !is_called_in_ARM_mode (current_function_decl)
+	   && !current_function_calls_eh_return)
     {
-      if (eh_ofs)
-	{
-	  asm_fprintf (f, "\tadd\t%r, #4\n", SP_REGNUM);
-	  asm_fprintf (f, "\tadd\t%r, %r\n", SP_REGNUM, REGNO (eh_ofs));
-	  asm_fprintf (f, "\tbx\t%r\n", reg_containing_return_addr);
-	}
-      else
-	asm_fprintf (f, "\tpop\t{%r}\n", PC_REGNUM);
-
+      asm_fprintf (f, "\tpop\t{%r}\n", PC_REGNUM);
       return;
     }
 
@@ -12512,7 +12507,7 @@ thumb_exit (FILE *f, int reg_containing_return_addr, rtx eh_ofs)
 
   /* If returning via __builtin_eh_return, the bottom three registers
      all contain information needed for the return.  */
-  if (eh_ofs)
+  if (current_function_calls_eh_return)
     size = 12;
   else
     {
@@ -12723,8 +12718,8 @@ thumb_exit (FILE *f, int reg_containing_return_addr, rtx eh_ofs)
       asm_fprintf (f, "\tmov\t%r, %r\n", LAST_ARG_REGNUM, IP_REGNUM);
     }
 
-  if (eh_ofs)
-    asm_fprintf (f, "\tadd\t%r, %r\n", SP_REGNUM, REGNO (eh_ofs));
+  if (current_function_calls_eh_return)
+    asm_fprintf (f, "\tadd\t%r, %r\n", SP_REGNUM, ARM_EH_STACKADJ_REGNUM);
 
   /* Return to caller.  */
   asm_fprintf (f, "\tbx\t%r\n", reg_containing_return_addr);
@@ -12745,11 +12740,11 @@ thumb_pushpop (FILE *f, int mask, int push, int *cfa_offset, int real_regs)
   int lo_mask = mask & 0xFF;
   int pushed_words = 0;
 
-  if (lo_mask == 0 && !push && (mask & (1 << 15)))
+  if (lo_mask == 0 && !push && (mask & (1 << PC_REGNUM)))
     {
       /* Special case.  Do not generate a POP PC statement here, do it in
 	 thumb_exit() */
-      thumb_exit (f, -1, NULL_RTX);
+      thumb_exit (f, -1);
       return;
     }
       
@@ -12782,13 +12777,14 @@ thumb_pushpop (FILE *f, int mask, int push, int *cfa_offset, int real_regs)
   else if (!push && (mask & (1 << PC_REGNUM)))
     {
       /* Catch popping the PC.  */
-      if (TARGET_INTERWORK || TARGET_BACKTRACE)
+      if (TARGET_INTERWORK || TARGET_BACKTRACE
+	  || current_function_calls_eh_return)
 	{
 	  /* The PC is never poped directly, instead
 	     it is popped into r3 and then BX is used.  */
 	  fprintf (f, "}\n");
 
-	  thumb_exit (f, -1, NULL_RTX);
+	  thumb_exit (f, -1);
 
 	  return;
 	}
@@ -12942,7 +12938,6 @@ thumb_unexpanded_epilogue (void)
   int live_regs_mask = 0;
   int high_regs_pushed = 0;
   int had_to_push_lr;
-  rtx eh_ofs = cfun->machine->eh_epilogue_sp_ofs;
 
   if (return_used_this_function)
     return "";
@@ -13050,8 +13045,7 @@ thumb_unexpanded_epilogue (void)
   if (current_function_pretend_args_size == 0 || TARGET_BACKTRACE)
     {
       if (had_to_push_lr
-	  && !is_called_in_ARM_mode (current_function_decl)
-	  && !eh_ofs)
+	  && !is_called_in_ARM_mode (current_function_decl))
 	live_regs_mask |= 1 << PC_REGNUM;
 
       /* Either no argument registers were pushed or a backtrace
@@ -13061,17 +13055,15 @@ thumb_unexpanded_epilogue (void)
 	thumb_pushpop (asm_out_file, live_regs_mask, FALSE, NULL,
 		       live_regs_mask);
       
-      if (eh_ofs)
-	thumb_exit (asm_out_file, 2, eh_ofs);
       /* We have either just popped the return address into the
 	 PC or it is was kept in LR for the entire function or
 	 it is still on the stack because we do not want to
 	 return by doing a pop {pc}.  */
-      else if ((live_regs_mask & (1 << PC_REGNUM)) == 0)
+      if ((live_regs_mask & (1 << PC_REGNUM)) == 0)
 	thumb_exit (asm_out_file,
 		    (had_to_push_lr
 		     && is_called_in_ARM_mode (current_function_decl)) ?
-		    -1 : LR_REGNUM, NULL_RTX);
+		    -1 : LR_REGNUM);
     }
   else
     {
@@ -13092,11 +13084,8 @@ thumb_unexpanded_epilogue (void)
 		   SP_REGNUM, SP_REGNUM,
 		   current_function_pretend_args_size);
       
-      if (eh_ofs)
-	thumb_exit (asm_out_file, 2, eh_ofs);
-      else
-	thumb_exit (asm_out_file,
-		    had_to_push_lr ? LAST_ARG_REGNUM : LR_REGNUM, NULL_RTX);
+      thumb_exit (asm_out_file,
+		  had_to_push_lr ? LAST_ARG_REGNUM : LR_REGNUM);
     }
 
   return "";
@@ -14595,3 +14584,105 @@ arm_cxx_cdtor_returns_this (void)
 {
   return TARGET_AAPCS_BASED;
 }
+
+
+void
+arm_set_return_address (rtx source, rtx scratch)
+{
+  arm_stack_offsets *offsets;
+  HOST_WIDE_INT delta;
+  rtx addr;
+  unsigned long saved_regs;
+
+  saved_regs = arm_compute_save_reg_mask ();
+
+  if ((saved_regs & (1 << LR_REGNUM)) == 0)
+    emit_move_insn (gen_rtx_REG (Pmode, LR_REGNUM), source);
+  else
+    {
+      if (frame_pointer_needed)
+	addr = plus_constant(hard_frame_pointer_rtx, -4);
+      else
+	{
+	  /* LR will be the first saved register.  */
+	  offsets = arm_get_frame_offsets ();
+	  delta = offsets->outgoing_args - (offsets->frame + 4);
+
+	  
+	  if (delta >= 4096)
+	    {
+	      emit_insn (gen_addsi3 (scratch, stack_pointer_rtx,
+				     GEN_INT (delta & ~4095)));
+	      addr = scratch;
+	      delta &= 4095;
+	    }
+	  else
+	    addr = stack_pointer_rtx;
+
+	  addr = plus_constant (addr, delta);
+	}
+      emit_move_insn (gen_rtx_MEM (Pmode, addr), source);
+    }
+}
+
+
+void
+thumb_set_return_address (rtx source, rtx scratch)
+{
+  arm_stack_offsets *offsets;
+  bool lr_saved;
+  HOST_WIDE_INT delta;
+  int reg;
+  rtx addr;
+
+  emit_insn (gen_rtx_USE (VOIDmode, source));
+  lr_saved = FALSE;
+  for (reg = 0; reg <= LAST_LO_REGNUM; reg++)
+    {
+      if (THUMB_REG_PUSHED_P (reg))
+	{
+	  lr_saved = TRUE;
+	  break;
+	}
+    }
+  lr_saved |= thumb_force_lr_save ();
+
+  if (lr_saved)
+    {
+      offsets = arm_get_frame_offsets ();
+
+      /* Find the saved regs.  */
+      if (frame_pointer_needed)
+	{
+	  delta = offsets->soft_frame - offsets->saved_args;
+	  reg = THUMB_HARD_FRAME_POINTER_REGNUM;
+	}
+      else
+	{
+	  delta = offsets->outgoing_args - offsets->saved_args;
+	  reg = SP_REGNUM;
+	}
+      /* Allow for the stack frame.  */
+      if (TARGET_BACKTRACE)
+	delta -= 16;
+      /* The link register is always the first saved register.  */
+      delta -= 4;
+      
+      /* Construct the address.  */
+      addr = gen_rtx_REG (SImode, reg);
+      if ((reg != SP_REGNUM && delta >= 128)
+	  || delta >= 1024)
+	{
+	  emit_insn (gen_movsi (scratch, GEN_INT (delta)));
+	  emit_insn (gen_addsi3 (scratch, scratch, stack_pointer_rtx));
+	  addr = scratch;
+	}
+      else
+	addr = plus_constant (addr, delta);
+
+      emit_move_insn (gen_rtx_MEM (Pmode, addr), source);
+    }
+  else
+    emit_move_insn (gen_rtx_REG (Pmode, LR_REGNUM), source);
+}
+
