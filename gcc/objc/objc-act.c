@@ -852,7 +852,7 @@ define_decl (declarator, declspecs)
      tree declarator;
      tree declspecs;
 {
-  tree decl = start_decl (declarator, declspecs, 0, NULL_TREE, NULL_TREE);
+  tree decl = start_decl (declarator, declspecs, 0, NULL_TREE);
   finish_decl (decl, NULL_TREE, NULL_TREE);
   return decl;
 }
@@ -1753,7 +1753,7 @@ generate_objc_symtab_decl ()
 				   tree_cons (NULL_TREE,
 					      objc_symtab_template, sc_spec),
 				   1,
-				   NULL_TREE, NULL_TREE);
+				   NULL_TREE);
 
   TREE_USED (UOBJC_SYMBOLS_decl) = 1;
   DECL_IGNORED_P (UOBJC_SYMBOLS_decl) = 1;
@@ -1853,7 +1853,7 @@ build_module_descriptor ()
 					   ridpointers[(int) RID_STATIC]));
 
   UOBJC_MODULES_decl = start_decl (get_identifier ("_OBJC_MODULES"),
-				   decl_specs, 1, NULL_TREE, NULL_TREE);
+				   decl_specs, 1, NULL_TREE);
 
   DECL_ARTIFICIAL (UOBJC_MODULES_decl) = 1;
   DECL_IGNORED_P (UOBJC_MODULES_decl) = 1;
@@ -1910,7 +1910,7 @@ build_module_descriptor ()
 			      tree_cons (NULL_TREE, NULL_TREE,
 					 void_list_node_1),
 			      NULL_TREE),
-		    NULL_TREE, NULL_TREE);
+		    NULL_TREE);
 #if 0 /* This should be turned back on later
 	 for the systems where collect is not needed.  */
     /* Make these functions nonglobal
@@ -2003,7 +2003,7 @@ generate_static_references ()
       decl_spec = tree_cons (NULL_TREE, build_pointer_type (void_type_node),
 			     build_tree_list (NULL_TREE,
 					      ridpointers[(int) RID_STATIC]));
-      decl = start_decl (expr_decl, decl_spec, 1, NULL_TREE, NULL_TREE);
+      decl = start_decl (expr_decl, decl_spec, 1, NULL_TREE);
       DECL_CONTEXT (decl) = 0;
       DECL_ARTIFICIAL (decl) = 1;
 
@@ -2043,7 +2043,7 @@ generate_static_references ()
 			 build_tree_list (NULL_TREE,
 					  ridpointers[(int) RID_STATIC]));
   static_instances_decl
-    = start_decl (expr_decl, decl_spec, 1, NULL_TREE, NULL_TREE);
+    = start_decl (expr_decl, decl_spec, 1, NULL_TREE);
   TREE_USED (static_instances_decl) = 1;
   DECL_CONTEXT (static_instances_decl) = 0;
   DECL_ARTIFICIAL (static_instances_decl) = 1;
@@ -2069,7 +2069,7 @@ generate_strings ()
 	= tree_cons (NULL_TREE, ridpointers[(int) RID_STATIC], NULL_TREE);
       decl_specs = tree_cons (NULL_TREE, ridpointers[(int) RID_CHAR], sc_spec);
       expr_decl = build_nt (ARRAY_REF, DECL_NAME (decl), NULL_TREE);
-      decl = start_decl (expr_decl, decl_specs, 1, NULL_TREE, NULL_TREE);
+      decl = start_decl (expr_decl, decl_specs, 1, NULL_TREE);
       DECL_CONTEXT (decl) = NULL_TREE;
       string_expr = my_build_string (IDENTIFIER_LENGTH (string) + 1,
 				     IDENTIFIER_POINTER (string));
@@ -2084,7 +2084,7 @@ generate_strings ()
 	= tree_cons (NULL_TREE, ridpointers[(int) RID_STATIC], NULL_TREE);
       decl_specs = tree_cons (NULL_TREE, ridpointers[(int) RID_CHAR], sc_spec);
       expr_decl = build_nt (ARRAY_REF, DECL_NAME (decl), NULL_TREE);
-      decl = start_decl (expr_decl, decl_specs, 1, NULL_TREE, NULL_TREE);
+      decl = start_decl (expr_decl, decl_specs, 1, NULL_TREE);
       DECL_CONTEXT (decl) = NULL_TREE;
       string_expr = my_build_string (IDENTIFIER_LENGTH (string) + 1,
 				     IDENTIFIER_POINTER (string));
@@ -2099,7 +2099,7 @@ generate_strings ()
 	= tree_cons (NULL_TREE, ridpointers[(int) RID_STATIC], NULL_TREE);
       decl_specs = tree_cons (NULL_TREE, ridpointers[(int) RID_CHAR], sc_spec);
       expr_decl = build_nt (ARRAY_REF, DECL_NAME (decl), NULL_TREE);
-      decl = start_decl (expr_decl, decl_specs, 1, NULL_TREE, NULL_TREE);
+      decl = start_decl (expr_decl, decl_specs, 1, NULL_TREE);
       DECL_CONTEXT (decl) = NULL_TREE;
       string_expr = my_build_string (IDENTIFIER_LENGTH (string) + 1,
 				IDENTIFIER_POINTER (string));
@@ -2172,7 +2172,7 @@ build_selector_translation_table ()
 
 	  /* The `decl' that is returned from start_decl is the one that we
 	     forward declared in `build_selector_reference'  */
-	  decl = start_decl (var_decl, decl_specs, 1, NULL_TREE, NULL_TREE);
+	  decl = start_decl (var_decl, decl_specs, 1, NULL_TREE );
 	}
 
       /* add one for the '\0' character */
@@ -2967,7 +2967,7 @@ generate_descriptor_table (type, name, size, list, proto)
   decl_specs = tree_cons (NULL_TREE, type, sc_spec);
 
   decl = start_decl (synth_id_with_class_suffix (name, proto),
-		     decl_specs, 1, NULL_TREE, NULL_TREE);
+		     decl_specs, 1, NULL_TREE);
   DECL_CONTEXT (decl) = NULL_TREE;
 
   initlist = build_tree_list (NULL_TREE, build_int_2 (size, 0));
@@ -3060,14 +3060,14 @@ build_tmp_function_decl ()
 		  (build_tree_list (decl_specs,
 				    build1 (INDIRECT_REF, NULL_TREE,
 					    NULL_TREE)),
-		   build_tree_list (NULL_TREE, NULL_TREE)));
+		   NULL_TREE));
 
   decl_specs = build_tree_list (NULL_TREE, xref_tag (RECORD_TYPE,
 					  get_identifier (TAG_SELECTOR)));
   expr_decl = build1 (INDIRECT_REF, NULL_TREE, NULL_TREE);
 
   push_parm_decl (build_tree_list (build_tree_list (decl_specs, expr_decl),
-				   build_tree_list (NULL_TREE, NULL_TREE)));
+				   NULL_TREE));
   parms = get_parm_info (0);
   poplevel (0, 0, 0);
 
@@ -3223,7 +3223,7 @@ generate_protocols ()
       decl_specs = tree_cons (NULL_TREE, objc_protocol_template, sc_spec);
 
       decl = start_decl (synth_id_with_class_suffix ("_OBJC_PROTOCOL", p),
-			 decl_specs, 1, NULL_TREE, NULL_TREE);
+			 decl_specs, 1, NULL_TREE);
 
       DECL_CONTEXT (decl) = NULL_TREE;
 
@@ -3929,7 +3929,7 @@ generate_ivars_list (type, name, size, list)
   decl_specs = tree_cons (NULL_TREE, type, sc_spec);
 
   decl = start_decl (synth_id_with_class_suffix (name, implementation_context),
-		     decl_specs, 1, NULL_TREE, NULL_TREE);
+		     decl_specs, 1, NULL_TREE);
 
   initlist = build_tree_list (NULL_TREE, build_int_2 (size, 0));
   initlist = tree_cons (NULL_TREE, list, initlist);
@@ -4094,7 +4094,7 @@ generate_dispatch_table (type, name, size, list)
   decl_specs = tree_cons (NULL_TREE, type, sc_spec);
 
   decl = start_decl (synth_id_with_class_suffix (name, implementation_context),
-		     decl_specs, 1, NULL_TREE, NULL_TREE);
+		     decl_specs, 1, NULL_TREE);
 
   initlist = build_tree_list (NULL_TREE, build_int_2 (0, 0));
   initlist = tree_cons (NULL_TREE, build_int_2 (size, 0), initlist);
@@ -4252,7 +4252,7 @@ generate_protocol_list (i_or_p)
 
   expr_decl = build1 (INDIRECT_REF, NULL_TREE, expr_decl);
 
-  refs_decl = start_decl (expr_decl, decl_specs, 1, NULL_TREE, NULL_TREE);
+  refs_decl = start_decl (expr_decl, decl_specs, 1, NULL_TREE);
   DECL_CONTEXT (refs_decl) = NULL_TREE;
 
   finish_decl (refs_decl, build_constructor (TREE_TYPE (refs_decl),
@@ -4462,7 +4462,7 @@ generate_category (cat)
 
   decl = start_decl (synth_id_with_class_suffix ("_OBJC_CATEGORY",
 						 implementation_context),
-		     decl_specs, 1, NULL_TREE, NULL_TREE);
+		     decl_specs, 1, NULL_TREE);
 
   initlist = build_category_initializer (TREE_TYPE (decl),
 					 cat_name_expr, class_name_expr,
@@ -4545,7 +4545,7 @@ generate_shared_structures ()
   decl_specs = tree_cons (NULL_TREE, objc_class_template, sc_spec);
 
   decl = start_decl (DECL_NAME (UOBJC_METACLASS_decl), decl_specs, 1,
-		     NULL_TREE, NULL_TREE);
+		     NULL_TREE);
 
   initlist
     = build_shared_structure_initializer
@@ -4562,7 +4562,7 @@ generate_shared_structures ()
   /* static struct objc_class _OBJC_CLASS_Foo={ ... }; */
 
   decl = start_decl (DECL_NAME (UOBJC_CLASS_decl), decl_specs, 1,
-		     NULL_TREE, NULL_TREE);
+		     NULL_TREE);
 
   initlist
     = build_shared_structure_initializer
@@ -6953,7 +6953,7 @@ start_method_def (method)
   push_parm_decl (build_tree_list
 		  (build_tree_list (decl_specs,
 				    build1 (INDIRECT_REF, NULL_TREE, self_id)),
-		   build_tree_list (unused_list, NULL_TREE)));
+		   unused_list));
 
   decl_specs = build_tree_list (NULL_TREE,
 				xref_tag (RECORD_TYPE,
@@ -6961,7 +6961,7 @@ start_method_def (method)
   push_parm_decl (build_tree_list
 		  (build_tree_list (decl_specs,
 				    build1 (INDIRECT_REF, NULL_TREE, ucmd_id)),
-		   build_tree_list (unused_list, NULL_TREE)));
+		   unused_list));
 
   /* Generate argument declarations if a keyword_decl.  */
   if (METHOD_SEL_ARGS (method))
@@ -6980,7 +6980,7 @@ start_method_def (method)
 	      TREE_OPERAND (last_expr, 0) = KEYWORD_ARG_NAME (arglist);
 	      push_parm_decl (build_tree_list
 			      (build_tree_list (arg_spec, arg_decl),
-			       build_tree_list (NULL_TREE, NULL_TREE)));
+			       NULL_TREE));
 
 	      /* Unhook: restore the abstract declarator.  */
 	      TREE_OPERAND (last_expr, 0) = NULL_TREE;
@@ -6990,7 +6990,7 @@ start_method_def (method)
 	    push_parm_decl (build_tree_list
 			    (build_tree_list (arg_spec,
 					      KEYWORD_ARG_NAME (arglist)),
-			     build_tree_list (NULL_TREE, NULL_TREE)));
+			     NULL_TREE));
 
 	  arglist = TREE_CHAIN (arglist);
 	}
@@ -7133,7 +7133,7 @@ really_start_method (method, parmlist)
       method_decl = ret_decl;
 
       /* Fool the parser into thinking it is starting a function.  */
-      start_function (decl_specs, method_decl, NULL_TREE, NULL_TREE);
+      start_function (decl_specs, method_decl, NULL_TREE);
 
       /* Unhook: this has the effect of restoring the abstract declarator.  */
       TREE_OPERAND (save_expr, 0) = NULL_TREE;
@@ -7144,7 +7144,7 @@ really_start_method (method, parmlist)
       TREE_VALUE (TREE_TYPE (method)) = method_decl;
 
       /* Fool the parser into thinking it is starting a function.  */
-      start_function (decl_specs, method_decl, NULL_TREE, NULL_TREE);
+      start_function (decl_specs, method_decl, NULL_TREE);
 
       /* Unhook: this has the effect of restoring the abstract declarator.  */
       TREE_VALUE (TREE_TYPE (method)) = NULL_TREE;
@@ -7210,7 +7210,7 @@ add_objc_decls ()
       UOBJC_SUPER_decl = start_decl (get_identifier (UTAG_SUPER),
 				     build_tree_list (NULL_TREE,
 						      objc_super_template),
-				     0, NULL_TREE, NULL_TREE);
+				     0, NULL_TREE);
 
       finish_decl (UOBJC_SUPER_decl, NULL_TREE, NULL_TREE);
 
@@ -8342,7 +8342,7 @@ generate_classref_translation_entry (chain)
 
   /* The decl that is returned from start_decl is the one that we
      forward declared in build_class_reference.  */
-  decl = start_decl (name, decl_specs, 1, NULL_TREE, NULL_TREE);
+  decl = start_decl (name, decl_specs, 1, NULL_TREE);
   DECL_CONTEXT (decl) = NULL_TREE;
   finish_decl (decl, expr, NULL_TREE);
   return;

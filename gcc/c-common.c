@@ -722,14 +722,12 @@ default_valid_lang_attribute (attr_name, attr_args, decl, type)
 int (*valid_lang_attribute) PARAMS ((tree, tree, tree, tree))
      = default_valid_lang_attribute;
 
-/* Process the attributes listed in ATTRIBUTES and PREFIX_ATTRIBUTES
-   and install them in NODE, which is either a DECL (including a TYPE_DECL)
-   or a TYPE.  PREFIX_ATTRIBUTES can appear after the declaration specifiers
-   and declaration modifiers but before the declaration proper.  */
+/* Process the attributes listed in ATTRIBUTES and install them in NODE,
+   which is either a DECL (including a TYPE_DECL) or a TYPE.  */
 
 void
-decl_attributes (node, attributes, prefix_attributes)
-     tree node, attributes, prefix_attributes;
+decl_attributes (node, attributes)
+     tree node, attributes;
 {
   tree decl = 0, type = 0;
   int is_type = 0;
@@ -752,14 +750,12 @@ decl_attributes (node, attributes, prefix_attributes)
      allow it to do so.  Do this before allowing machine back ends to
      insert attributes, so that they have the opportunity to override
      anything done here.  */
-  PRAGMA_INSERT_ATTRIBUTES (node, & attributes, & prefix_attributes);
+  PRAGMA_INSERT_ATTRIBUTES (node, & attributes);
 #endif
 
 #ifdef INSERT_ATTRIBUTES
-  INSERT_ATTRIBUTES (node, & attributes, & prefix_attributes);
+  INSERT_ATTRIBUTES (node, & attributes);
 #endif
-
-  attributes = chainon (prefix_attributes, attributes);
 
   for (a = attributes; a; a = TREE_CHAIN (a))
     {

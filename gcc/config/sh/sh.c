@@ -4604,10 +4604,9 @@ sh_pr_nosave_low_regs (pfile)
 /* Generate 'handle_interrupt' attribute for decls */
 
 void
-sh_pragma_insert_attributes (node, attributes, prefix)
+sh_pragma_insert_attributes (node, attributes)
      tree node;
      tree * attributes;
-     tree * prefix ATTRIBUTE_UNUSED;
 {
   if (! pragma_interrupt
       || TREE_CODE (node) != FUNCTION_DECL)

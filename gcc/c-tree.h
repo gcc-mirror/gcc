@@ -207,10 +207,9 @@ extern void shadow_record_fields                PARAMS ((tree));
 extern void shadow_tag                          PARAMS ((tree));
 extern void shadow_tag_warned                   PARAMS ((tree, int));
 extern tree start_enum                          PARAMS ((tree));
-extern int  start_function                      PARAMS ((tree, tree, tree,
-							 tree));
+extern int  start_function                      PARAMS ((tree, tree, tree));
 extern tree start_decl                          PARAMS ((tree, tree, int,
-							 tree, tree));
+							 tree));
 extern tree start_struct                        PARAMS ((enum tree_code, tree));
 extern void store_parm_decls                    PARAMS ((void));
 extern tree xref_tag                            PARAMS ((enum tree_code, tree));

@@ -1,3 +1,37 @@
+2001-07-08  Joseph S. Myers  <jsm28@cam.ac.uk>
+
+	* c-common.c (decl_attributes): Only take a single attributes
+	parameter.
+	* c-common.h (decl_attributes): Update prototype.
+	* c-decl.c (start_decl, start_function): Only take a single
+	attributes parameter.  Update calls to decl_attributes.
+	(finish_struct, finish_enum): Update calls to decl_attributes.
+	(push_parm_decl): Expect unified list of attributes.  Update call
+	to decl_attributes.
+	* c-parse.in (fndef, initdcl, notype_initdcl, nested_function,
+	notype_nested_function, component_declarator,
+	component_notype_declarator, label): Update calls to
+	decl_attributes.
+	(absdcl_maybe_attribute, parm, firstparm, myparm): Unify attribute
+	lists that are passed to push_parm_decl.
+	* c-tree.h (start_function, start_decl): Update prototypes.
+	* config/sh/sh-protos.h, config/sh/sh.c
+	(sh_pragma_insert_attributes): Only take a single attributes
+	parameter.
+	* config/sh/sh.h (PRAGMA_INSERT_ATTRIBUTES): Likewise.
+	* doc/tm.texi (INSERT_ATTRIBUTES): Update.
+	* objc/objc-act.c (define_decl, generate_objc_symtab_decl,
+	build_module_descriptor, generate_static_references,
+	generate_strings, build_selector_translation_table,
+	generate_descriptor_table, generate_protocols,
+	generate_ivars_list, generate_dispatch_table,
+	generate_protocol_list, generate_category,
+	generate_shared_structures, really_start_method, add_objc_decls,
+	generate_classref_translation_entry): Update calls to start_decl
+	and start_function.
+	(build_tmp_function_decl, start_method_def): Unify attribute lists
+	that are passed to push_parm_decl.
+
 2001-07-08  Neil Booth  <neil@daikokuya.demon.co.uk>
 
 	* final.c (no_asm_to_stream): New.

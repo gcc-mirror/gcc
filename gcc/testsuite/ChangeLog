@@ -1,3 +1,8 @@
+2001-07-08  Joseph S. Myers  <jsm28@cam.ac.uk>
+
+	* gcc.c-torture/compile/20010701-1.c,
+	g++.old-deja/g++.ext/attrib6.C: New tests.
+
 Fri Jul  6 09:31:43 2001  Jeffrey A Law  (law@cygnus.com)
 
 	* gcc.c-torture/compile/20010706-1.c: New test.
