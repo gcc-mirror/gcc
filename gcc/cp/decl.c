@@ -1032,6 +1032,16 @@ add_binding (id, decl)
 	 the name of any type declared in that scope to refer to the
 	 type to which it already refers.  */
     ok = 0;
+  /* There can be two block-scope declarations of the same variable,
+     so long as they are `extern' declarations.  */
+  else if (TREE_CODE (decl) == VAR_DECL
+	   && TREE_CODE (BINDING_VALUE (binding)) == VAR_DECL
+	   && DECL_EXTERNAL (decl)
+	   && DECL_EXTERNAL (BINDING_VALUE (binding)))
+    {
+      duplicate_decls (decl, BINDING_VALUE (binding));
+      ok = 0;
+    }
   else
     {
       cp_error ("declaration of `%#D'", decl);
