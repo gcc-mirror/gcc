@@ -557,8 +557,10 @@ fix_register (name, fixed, call_used)
 
   if (output_bytecode)
     {
-      warning ("request to mark `%s' as %s ignored by bytecode compiler",
-	       name, call_used ? "call-used" : "fixed");
+      if (call_used)
+	warning ("request to mark `%s' as call-used ignored by bytecode compiler");
+      else
+	warning ("request to mark `%s' as fixed ignored by bytecode compiler");
       return;
     }
 
