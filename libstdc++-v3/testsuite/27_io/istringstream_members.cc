@@ -1,6 +1,6 @@
 // 2000-01-10 bkoz
 
-// Copyright (C) 2000 Free Software Foundation, Inc.
+// Copyright (C) 2000, 2001 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -18,19 +18,16 @@
 // Software Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307,
 // USA.
 
-// 27.7.2 template class basic_istringstream
 // 27.7.2.2 member functions (istringstream_members)
-
-// stringbuf* rdbuf() const
 
 #include <sstream>
 #include <debug_assert.h>
-
 
 void test01()
 {
   bool test = true;
   std::istringstream is01;
+  const std::string str00; 
   const std::string str01 = "123";
   std::string str02;
   const int i01 = 123;
@@ -39,9 +36,15 @@ void test01()
   std::ios_base::iostate state1, state2, statefail, stateeof;
   statefail = std::ios_base::failbit;
   stateeof = std::ios_base::eofbit;
-  
+
+  // string str() const
+  str02 = is01.str();
+  VERIFY( str00 == str02 );
+
   // void str(const basic_string&)
   is01.str(str01);
+  str02 = is01.str();
+  VERIFY( str01 == str02 );
   state1 = is01.rdstate();
   is01 >> a;
   state2 = is01.rdstate();
@@ -66,17 +69,63 @@ void test01()
   VERIFY( state1 != state2 );
   VERIFY( state2 == stateeof ); 
 
-  // string str() const
-  str02 = is01.str();
-  VERIFY( str01 == str02 );
-
  #ifdef DEBUG_ASSERT
   assert(test);
 #endif
 }
 
+void 
+redirect_buffer(std::ios& stream, std::streambuf* new_buf) 
+{ stream.rdbuf(new_buf); }
+
+std::streambuf*
+active_buffer(std::ios& stream)
+{ return stream.rdbuf(); }
+
+// libstdc++/2832
+void test02()
+{
+  bool test = true;
+  const char* strlit01 = "fuck war";
+  const char* strlit02 = "two less cars abstract riot crew, critical mass/SF";
+  const std::string str00;
+  const std::string str01(strlit01);
+  std::string str02;
+  std::stringbuf sbuf(str01);
+  std::streambuf* pbasebuf0 = &sbuf;
+
+  std::istringstream sstrm1;
+  VERIFY( sstrm1.str() == str00 );
+  // derived rdbuf() always returns original streambuf, even though
+  // it's no longer associated with the stream.
+  std::stringbuf* const buf1 = sstrm1.rdbuf();
+  // base rdbuf() returns the currently associated streambuf
+  std::streambuf* pbasebuf1 = active_buffer(sstrm1);
+  redirect_buffer(sstrm1, &sbuf);
+  std::stringbuf* const buf2 = sstrm1.rdbuf();
+  std::streambuf* pbasebuf2 = active_buffer(sstrm1);
+  VERIFY( buf1 == buf2 ); 
+  VERIFY( pbasebuf1 != pbasebuf2 );
+  VERIFY( pbasebuf2 == pbasebuf0 );
+
+  // derived rdbuf() returns the original buf, so str() doesn't change.
+  VERIFY( sstrm1.str() != str01 );
+  VERIFY( sstrm1.str() == str00 );
+  // however, casting the active streambuf to a stringbuf shows what's up:
+  std::stringbuf* psbuf = dynamic_cast<std::stringbuf*>(pbasebuf2);
+  str02 = psbuf->str();
+  VERIFY( str02 == str01 );
+
+  // How confusing and non-intuitive is this?
+  // These semantics are a joke, a serious defect, and incredibly lame.
+}
+
 int main()
 {
   test01();
+  test02();
   return 0;
 }
+
+
+
