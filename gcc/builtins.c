@@ -3198,7 +3198,7 @@ expand_builtin_fputs (arglist, ignore)
 	   fwrite(string, 1, len, stream).  */
 	arglist = build_tree_list (NULL_TREE, TREE_VALUE (TREE_CHAIN (arglist)));
 	arglist = tree_cons (NULL_TREE, len, arglist);
-	arglist = tree_cons (NULL_TREE, integer_one_node, arglist);
+	arglist = tree_cons (NULL_TREE, size_one_node, arglist);
 	arglist = tree_cons (NULL_TREE, string_arg, arglist);
 	fn = fn_fwrite;
 	break;
