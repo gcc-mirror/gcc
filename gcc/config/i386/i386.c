@@ -5097,24 +5097,10 @@ i386_encode_section_info (decl, first)
 {
   if (flag_pic)
     {
-      rtx rtl = (TREE_CODE_CLASS (TREE_CODE (decl)) != 'd'
-		 ? TREE_CST_RTL (decl) : DECL_RTL (decl));
+      rtx rtl = DECL_P (decl) ? DECL_RTL (decl) : TREE_CST_RTL (decl);
 
-      if (GET_CODE (rtl) == MEM)
-	{
-	  if (TARGET_DEBUG_ADDR
-	      && TREE_CODE_CLASS (TREE_CODE (decl)) == 'd')
-	    {
-	      fprintf (stderr, "Encode %s, public = %d\n",
-		       IDENTIFIER_POINTER (DECL_NAME (decl)),
-		       TREE_PUBLIC (decl));
-	    }
-
-	  SYMBOL_REF_FLAG (XEXP (rtl, 0))
-	    = (TREE_CODE_CLASS (TREE_CODE (decl)) != 'd'
-	       || ! TREE_PUBLIC (decl)
-	       || MODULE_LOCAL_P (decl));
-	}
+      if (GET_CODE (rtl) == MEM && GET_CODE (XEXP (rtl, 0)) == SYMBOL_REF)
+	SYMBOL_REF_FLAG (XEXP (rtl, 0)) = (*targetm.binds_local_p) (decl);
     }
 }
 

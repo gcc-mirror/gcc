@@ -5838,6 +5838,21 @@ the characters that @code{TARGET_ENCODE_SECTION_INFO}
 may have added.
 @end deftypefn
 
+@deftypefn {Target Hook} bool TARGET_IN_SMALL_DATA_P (tree @var{exp})
+Returns true if @var{exp} should be placed into a ``small data'' section.
+The default version of this hook always returns false.
+@end deftypefn
+
+@deftypefn {Target Hook} bool TARGET_BINDS_LOCAL_P (tree @var{exp})
+Returns true if @var{exp} names an object for which name resolution
+rules must resolve to the current ``module'' (dynamic shared library
+or executable image).
+
+The default version of this hook implements the name resolution rules
+for ELF, which has a looser model of global name binding than other
+currently supported object file formats.
+@end deftypefn
+
 @node PIC
 @section Position Independent Code
 @cindex position independent code
