@@ -1,3 +1,9 @@
+2000-10-19  Mark Mitchell  <mark@codesourcery.com>
+
+	* cp-tree.h (DECL_ANTICIPATED): Don't require a FUNCTION_DECL.
+	* decl.c (select_decl): Don't return declarations that are
+	DECL_ANTICIPATED.
+
 2000-10-18  Mark Mitchell  <mark@codesourcery.com>
 
 	* cp-tree.h (cp_tree_index): Add CPTI_FAKE_STD.

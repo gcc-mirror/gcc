@@ -2481,7 +2481,7 @@ extern int flag_new_for_scope;
 /* Nonzero if NODE is a FUNCTION_DECL for a built-in function, and we have
    not yet seen a prototype for that function.  */
 #define DECL_ANTICIPATED(NODE) \
-  (DECL_LANG_SPECIFIC (FUNCTION_DECL_CHECK (NODE))->decl_flags.anticipated_p)
+  (DECL_LANG_SPECIFIC (DECL_CHECK (NODE))->decl_flags.anticipated_p)
 
 /* Record whether a typedef for type `int' was actually `signed int'.  */
 #define C_TYPEDEF_EXPLICITLY_SIGNED(exp) DECL_LANG_FLAG_1 ((exp))
