@@ -98,8 +98,27 @@ static value *value_vector;
 /* Worklist of SSA edges which will need reexamination as their definition
    has changed.  SSA edges are def-use edges in the SSA web.  For each
    edge, we store the definition statement or PHI node D.  The destination
-   nodes that need to be visited are accessed using immediate_uses (D).  */
+   nodes that need to be visited are accessed using immediate_uses
+   (D).  */
 static GTY(()) varray_type ssa_edges;
+
+/* Identical to SSA_EDGES.  For performance reasons, the list of SSA
+   edges is split into two.  One contains all SSA edges who need to be
+   reexamined because their lattice value changed to varying (this
+   worklist), and the other contains all other SSA edges to be
+   reexamined (ssa_edges).
+   
+   Since most values in the program are varying, the ideal situation
+   is to move them to that lattice value as quickly as possible.
+   Thus, it doesn't make sense to process any other type of lattice
+   value until all varying values are propagated fully, which is one
+   thing using the varying worklist achieves.  In addition, if you
+   don't use a separate worklist for varying edges, you end up with
+   situations where lattice values move from
+   undefined->constant->varying instead of undefined->varying.
+*/
+static GTY(()) varray_type varying_ssa_edges;
+
 
 static void initialize (void);
 static void finalize (void);
@@ -109,7 +128,7 @@ static value cp_lattice_meet (value, value);
 static void visit_stmt (tree);
 static void visit_cond_stmt (tree);
 static void visit_assignment (tree);
-static void add_var_to_ssa_edges_worklist (tree);
+static void add_var_to_ssa_edges_worklist (tree, value);
 static void add_outgoing_control_edges (basic_block);
 static void add_control_edge (edge);
 static void def_to_varying (tree);
@@ -132,6 +151,31 @@ static void cfg_blocks_add (basic_block);
 static basic_block cfg_blocks_get (void);
 static bool need_imm_uses_for (tree var);
 
+/* Process an SSA edge worklist.  WORKLIST is the SSA edge worklist to
+   drain. This pops statements off the given WORKLIST and processes
+   them until there are no more statements on WORKLIST.  */
+
+static void
+process_ssa_edge_worklist (varray_type *worklist)
+{
+  /* Drain the entire worklist.  */
+  while (VARRAY_ACTIVE_SIZE (*worklist) > 0)
+    {
+      /* Pull the statement to simulate off the worklist.  */
+      tree stmt = VARRAY_TOP_TREE (*worklist);
+      stmt_ann_t ann = stmt_ann (stmt);
+      VARRAY_POP (*worklist);
+      
+      /* visit_stmt can "cancel" reevaluation of some statements.
+	 If it does, then in_ccp_worklist will be zero.  */
+      if (ann->in_ccp_worklist)
+	{
+	  ann->in_ccp_worklist = 0;
+	  simulate_stmt (stmt);
+	}
+    } 
+}
+ 
 /* Main entry point for SSA Conditional Constant Propagation.  FNDECL is
    the declaration for the function to optimize.
    
@@ -148,7 +192,9 @@ tree_ssa_ccp (void)
   initialize ();
 
   /* Iterate until the worklists are empty.  */
-  while (!cfg_blocks_empty_p () || VARRAY_ACTIVE_SIZE (ssa_edges) > 0)
+  while (!cfg_blocks_empty_p () 
+	 || VARRAY_ACTIVE_SIZE (ssa_edges) > 0
+	 || VARRAY_ACTIVE_SIZE (varying_ssa_edges) > 0)
     {
       if (!cfg_blocks_empty_p ())
 	{
@@ -157,23 +203,12 @@ tree_ssa_ccp (void)
 	  simulate_block (dest_block);
 	}
 
-      /* The SSA_EDGES worklist can get rather large.  Go ahead and
-         drain the entire worklist each iteration through this loop.  */
-      while (VARRAY_ACTIVE_SIZE (ssa_edges) > 0)
-	{
-	  /* Pull the statement to simulate off the worklist.  */
-	  tree stmt = VARRAY_TOP_TREE (ssa_edges);
-	  stmt_ann_t ann = stmt_ann (stmt);
-	  VARRAY_POP (ssa_edges);
+      /* In order to move things to varying as quickly as
+         possible,process the VARYING_SSA_EDGES worklist first.  */
+      process_ssa_edge_worklist (&varying_ssa_edges);
 
-	  /* visit_stmt can "cancel" reevaluation of some statements.
-	     If it does, then in_ccp_worklist will be zero.  */
-	  if (ann->in_ccp_worklist)
-	    {
-	      ann->in_ccp_worklist = 0;
-	      simulate_stmt (stmt);
-	    }
-	}
+      /* Now process the SSA_EDGES worklist.  */
+      process_ssa_edge_worklist (&ssa_edges);
     }
 
   /* Now perform substitutions based on the known constant values.  */
@@ -1069,8 +1104,9 @@ initialize (void)
   basic_block bb;
   sbitmap virtual_var;
 
-  /* Worklist of SSA edges.  */
+  /* Worklists of SSA edges.  */
   VARRAY_TREE_INIT (ssa_edges, 20, "ssa_edges");
+  VARRAY_TREE_INIT (varying_ssa_edges, 20, "varying_ssa_edges");
 
   executable_blocks = sbitmap_alloc (last_basic_block);
   sbitmap_zero (executable_blocks);
@@ -1187,6 +1223,7 @@ static void
 finalize (void)
 {
   ssa_edges = NULL;
+  varying_ssa_edges = NULL;
   cfg_blocks = NULL;
   free (value_vector);
   sbitmap_free (bb_in_list);
@@ -1258,9 +1295,9 @@ cfg_blocks_get (void)
 }
 
 /* We have just defined a new value for VAR.  Add all immediate uses
-   of VAR to the ssa_edges worklist.  */
+   of VAR to the ssa_edges or varying_ssa_edges worklist.  */
 static void
-add_var_to_ssa_edges_worklist (tree var)
+add_var_to_ssa_edges_worklist (tree var, value val)
 {
   tree stmt = SSA_NAME_DEF_STMT (var);
   dataflow_t df = get_immediate_uses (stmt);
@@ -1277,7 +1314,10 @@ add_var_to_ssa_edges_worklist (tree var)
 	  if (ann->in_ccp_worklist == 0)
 	    {
 	      ann->in_ccp_worklist = 1;
-	      VARRAY_PUSH_TREE (ssa_edges, use);
+	      if (val.lattice_val == VARYING)
+		VARRAY_PUSH_TREE (varying_ssa_edges, use);
+	      else
+		VARRAY_PUSH_TREE (ssa_edges, use);
 	    }
 	}
     }
@@ -1341,7 +1381,7 @@ set_lattice_value (tree var, value val)
 	  fprintf (dump_file, ".  Adding definition to SSA edges.\n");
 	}
 
-      add_var_to_ssa_edges_worklist (var);
+      add_var_to_ssa_edges_worklist (var, val);
       *old = val;
     }
 }
