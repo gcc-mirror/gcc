@@ -1,3 +1,7 @@
+2000-12-30  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* builtins.c (validate_arglist): New function, use it.
+
 2000-12-30  Philip Blundell  <philb@gnu.org>
 
 	* config/arm/arm.c (arm_expand_prologue): Fix typos in error 
