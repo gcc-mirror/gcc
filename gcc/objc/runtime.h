@@ -60,6 +60,7 @@ extern int __objc_selector_max_index;
 #define DEBUG_PRINTF
 #endif 
 
+BOOL __objc_responds_to (id object, SEL sel); /* for internal use only! */
 
 /* standard functions */
 int bcopy(void*, void*, size_t);
