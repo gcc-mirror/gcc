@@ -1631,6 +1631,8 @@ static tree cp_parser_single_declaration
   (cp_parser *, bool, bool *);
 static tree cp_parser_functional_cast
   (cp_parser *, tree);
+static tree cp_parser_enclosed_template_argument_list
+  (cp_parser *);
 static void cp_parser_save_default_args
   (cp_parser *, tree);
 static void cp_parser_late_parsing_for_member
@@ -7509,11 +7511,7 @@ cp_parser_template_id (cp_parser *parser,
 {
   tree template;
   tree arguments;
-  tree saved_scope;
-  tree saved_qualifying_scope;
-  tree saved_object_scope;
   tree template_id;
-  bool saved_greater_than_is_operator_p;
   ptrdiff_t start_of_id;
   tree access_check = NULL_TREE;
   cp_token *next_token;
@@ -7576,33 +7574,8 @@ cp_parser_template_id (cp_parser *parser,
       return error_mark_node;
     }
 
-  /* [temp.names]
-
-     When parsing a template-id, the first non-nested `>' is taken as
-     the end of the template-argument-list rather than a greater-than
-     operator.  */
-  saved_greater_than_is_operator_p 
-    = parser->greater_than_is_operator_p;
-  parser->greater_than_is_operator_p = false;
-  /* Parsing the argument list may modify SCOPE, so we save it
-     here.  */
-  saved_scope = parser->scope;
-  saved_qualifying_scope = parser->qualifying_scope;
-  saved_object_scope = parser->object_scope;
-  /* Parse the template-argument-list itself.  */
-  if (cp_lexer_next_token_is (parser->lexer, CPP_GREATER))
-    arguments = NULL_TREE;
-  else
-    arguments = cp_parser_template_argument_list (parser);
-  /* Look for the `>' that ends the template-argument-list.  */
-  cp_parser_require (parser, CPP_GREATER, "`>'");
-  /* The `>' token might be a greater-than operator again now.  */
-  parser->greater_than_is_operator_p 
-    = saved_greater_than_is_operator_p;
-  /* Restore the SAVED_SCOPE.  */
-  parser->scope = saved_scope;
-  parser->qualifying_scope = saved_qualifying_scope;
-  parser->object_scope = saved_object_scope;
+  /* Parse the arguments.  */
+  arguments = cp_parser_enclosed_template_argument_list (parser);
 
   /* Build a representation of the specialization.  */
   if (TREE_CODE (template) == IDENTIFIER_NODE)
@@ -8428,6 +8401,21 @@ cp_parser_simple_type_specifier (cp_parser* parser, cp_parser_flags flags,
     {
       cp_parser_error (parser, "expected type-name");
       return error_mark_node;
+    }
+
+  /* There is no valid C++ program where a non-template type can never
+     be followed by a "<".  That usually indicates that the user
+     thought that the type was a template.  */
+  if (type && cp_lexer_next_token_is (parser->lexer, CPP_LESS))
+    {
+      error ("`%T' is not a template", TREE_TYPE (type));
+      /* Consume the "<".  */
+      cp_lexer_consume_token (parser->lexer);
+      /* Parse the template arguments.  */
+      cp_parser_enclosed_template_argument_list (parser);
+      /* Attempt to recover by using the basic type, ignoring the
+	 template arguments.  */
+      return type;
     }
 
   return type;
@@ -13856,6 +13844,51 @@ cp_parser_functional_cast (cp_parser* parser, tree type)
 
   return build_functional_cast (type, expression_list);
 }
+
+/* Parse a template-argument-list, as well as the trailing ">" (but
+   not the opening ">").  See cp_parser_template_argument_list for the
+   return value.  */
+
+static tree
+cp_parser_enclosed_template_argument_list (cp_parser* parser)
+{
+  tree arguments;
+  tree saved_scope;
+  tree saved_qualifying_scope;
+  tree saved_object_scope;
+  bool saved_greater_than_is_operator_p;
+
+  /* [temp.names]
+
+     When parsing a template-id, the first non-nested `>' is taken as
+     the end of the template-argument-list rather than a greater-than
+     operator.  */
+  saved_greater_than_is_operator_p 
+    = parser->greater_than_is_operator_p;
+  parser->greater_than_is_operator_p = false;
+  /* Parsing the argument list may modify SCOPE, so we save it
+     here.  */
+  saved_scope = parser->scope;
+  saved_qualifying_scope = parser->qualifying_scope;
+  saved_object_scope = parser->object_scope;
+  /* Parse the template-argument-list itself.  */
+  if (cp_lexer_next_token_is (parser->lexer, CPP_GREATER))
+    arguments = NULL_TREE;
+  else
+    arguments = cp_parser_template_argument_list (parser);
+  /* Look for the `>' that ends the template-argument-list.  */
+  cp_parser_require (parser, CPP_GREATER, "`>'");
+  /* The `>' token might be a greater-than operator again now.  */
+  parser->greater_than_is_operator_p 
+    = saved_greater_than_is_operator_p;
+  /* Restore the SAVED_SCOPE.  */
+  parser->scope = saved_scope;
+  parser->qualifying_scope = saved_qualifying_scope;
+  parser->object_scope = saved_object_scope;
+
+  return arguments;
+}
+
 
 /* MEMBER_FUNCTION is a member function, or a friend.  If default
    arguments, or the body of the function have not yet been parsed,

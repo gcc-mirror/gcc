@@ -1,3 +1,8 @@
+2003-11-14  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/12762
+	* g++.dg/template/error3.C: New test.
+
 2003-11-14  Arnaud Charlet  <charlet@act-europe.fr>
 
 	PR ada/13035
