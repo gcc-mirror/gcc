@@ -1,3 +1,7 @@
+2000-11-22  Jakub Jelinek  <jakub@redhat.com>
+
+	* gcc.c-torture/execute/ieee/20001122-1.c: New test.
+
 2000-11-22  Hans-Peter Nilsson  <hp@bitrange.com>
 
 	* lib/gcc-dg.exp: load_lib scanasm.exp.
