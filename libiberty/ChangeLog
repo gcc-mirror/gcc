@@ -1,3 +1,7 @@
+2000-09-08  Alex Samuel  <samuel@codesourcery.com>
+
+	* cp-demangle.c: Fix copyright banner.
+
 2000-09-07  Michael Sokolov  <msokolov@ivan.Harhan.ORG>
 
 	* md5.c: #include "ansidecl.h".
