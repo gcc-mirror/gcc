@@ -1,3 +1,8 @@
+Thu Dec 10 15:05:59 1998  Dave Brolley  <brolley@cygnus.com>
+
+	* objc/objc-act.c (lang_init_options): Enclose cpplib related code in
+	#if USE_CPPLIB.
+
 Thu Dec 10 13:39:46 1998  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* collect2.h: New header file for prototypes.
