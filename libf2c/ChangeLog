@@ -1,3 +1,9 @@
+1999-02-20  Craig Burley  <craig@jcb-sc.com>
+
+	From Krister Walfridsson <cato@df.lth.se>:
+	* libU77/lstat_.c (G77_lstat_0): Kill spurious setting
+	of element 6 to zero, as it undid the previous setting.
+
 1999-02-15  Craig Burley  <craig@jcb-sc.com>
 
 	* f2c.h: Delete my (old) email address.
