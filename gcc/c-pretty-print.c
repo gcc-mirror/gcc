@@ -74,8 +74,6 @@ static void pp_c_type_id (c_pretty_printer, tree);
 static void pp_c_storage_class_specifier (c_pretty_printer, tree);
 static void pp_c_function_specifier (c_pretty_printer, tree);
 
-#define pp_buffer(PP) pp_base (PP)->buffer
-#define pp_newline(PP) (pp_newline) (pp_base (PP))
 
 
 /* Declarations.  */
@@ -339,7 +337,7 @@ pp_c_char (c_pretty_printer ppi, int c)
       break;
     default:
       if (ISPRINT (c))
-	pp_character (&ppi->base, c);
+	pp_character (ppi, c);
       else
 	pp_scalar (ppi, "\\%03o", (unsigned) c);
       break;

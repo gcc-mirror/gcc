@@ -145,36 +145,39 @@ struct pretty_print_info
   bool need_newline;
 };
 
-#define pp_space(PP)            pp_character (pp_base (PP), ' ')
-#define pp_left_paren(PP)       pp_character (pp_base (PP), '(')
-#define pp_right_paren(PP)      pp_character (pp_base (PP), ')')
-#define pp_left_bracket(PP)     pp_character (pp_base (PP), '[')
-#define pp_right_bracket(PP)    pp_character (pp_base (PP), ']')
-#define pp_left_brace(PP)       pp_character (pp_base (PP), '{')
-#define pp_right_brace(PP)      pp_character (pp_base (PP), '}')
-#define pp_semicolon(PP)        pp_character (pp_base (PP), ';')
-#define pp_comma(PP)            pp_string (pp_base (PP), ", ")
-#define pp_dot(PP)              pp_character (pp_base (PP), '.')
-#define pp_colon(PP)            pp_character (pp_base (PP), ':')
-#define pp_colon_colon(PP)      pp_string (pp_base (PP), "::")
-#define pp_arrow(PP)            pp_string (pp_base (PP), "->")
-#define pp_equal(PP)            pp_character (pp_base (PP), '=')
-#define pp_question(PP)         pp_character (pp_base (PP), '?')
-#define pp_bar(PP)              pp_character (pp_base (PP), '|')
-#define pp_carret(PP)           pp_character (pp_base (PP), '^')
-#define pp_ampersand(PP)        pp_character (pp_base (PP), '&')
-#define pp_less(PP)             pp_character (pp_base (PP), '<')
-#define pp_greater(PP)          pp_character (pp_base (PP), '>')
-#define pp_plus(PP)             pp_character (pp_base (PP), '+')
-#define pp_minus(PP)            pp_character (pp_base (PP), '-')
-#define pp_star(PP)             pp_character (pp_base (PP), '*')
-#define pp_slash(PP)            pp_character (pp_base (PP), '/')
-#define pp_modulo(PP)           pp_character (pp_base (PP), '%')
-#define pp_exclamation(PP)      pp_character (pp_base (PP), '!')
-#define pp_complement(PP)       pp_character (pp_base (PP), '~')
-#define pp_quote(PP)            pp_character (pp_base (PP), '\'')
-#define pp_backquote(PP)        pp_character (pp_base (PP), '`')
-#define pp_doublequote(PP)      pp_character (pp_base (PP), '"')
+#define pp_character(PP, C)     pp_base_character (pp_base (PP), C)
+#define pp_string(PP, S)        pp_base_string (pp_base (PP), S)
+#define pp_newline(PP)          pp_base_newline (pp_base (PP))
+#define pp_space(PP)            pp_character (PP, ' ')
+#define pp_left_paren(PP)       pp_character (PP, '(')
+#define pp_right_paren(PP)      pp_character (PP, ')')
+#define pp_left_bracket(PP)     pp_character (PP, '[')
+#define pp_right_bracket(PP)    pp_character (PP, ']')
+#define pp_left_brace(PP)       pp_character (PP, '{')
+#define pp_right_brace(PP)      pp_character (PP, '}')
+#define pp_semicolon(PP)        pp_character (PP, ';')
+#define pp_comma(PP)            pp_string (PP, ", ")
+#define pp_dot(PP)              pp_character (PP, '.')
+#define pp_colon(PP)            pp_character (PP, ':')
+#define pp_colon_colon(PP)      pp_string (PP, "::")
+#define pp_arrow(PP)            pp_string (PP, "->")
+#define pp_equal(PP)            pp_character (PP, '=')
+#define pp_question(PP)         pp_character (PP, '?')
+#define pp_bar(PP)              pp_character (PP, '|')
+#define pp_carret(PP)           pp_character (PP, '^')
+#define pp_ampersand(PP)        pp_character (PP, '&')
+#define pp_less(PP)             pp_character (PP, '<')
+#define pp_greater(PP)          pp_character (PP, '>')
+#define pp_plus(PP)             pp_character (PP, '+')
+#define pp_minus(PP)            pp_character (PP, '-')
+#define pp_star(PP)             pp_character (PP, '*')
+#define pp_slash(PP)            pp_character (PP, '/')
+#define pp_modulo(PP)           pp_character (PP, '%')
+#define pp_exclamation(PP)      pp_character (PP, '!')
+#define pp_complement(PP)       pp_character (PP, '~')
+#define pp_quote(PP)            pp_character (PP, '\'')
+#define pp_backquote(PP)        pp_character (PP, '`')
+#define pp_doublequote(PP)      pp_character (PP, '"')
 #define pp_newline_and_indent(PP, N) \
   do {                               \
     pp_indentation (PP) += N;        \
@@ -182,31 +185,32 @@ struct pretty_print_info
   } while (0)
 #define pp_separate_with(PP, C)     \
    do {                             \
-     pp_character (pp_base (PP), C);\
+     pp_character (PP, C);          \
      pp_space (PP);                 \
    } while (0)
-#define pp_scalar(PP, FORMAT, SCALAR)	                            \
-  do								    \
-    {								    \
-      sprintf (pp_base (PP)->buffer->digit_buffer, FORMAT, SCALAR); \
-      pp_string (pp_base (PP), pp_base (PP)->buffer->digit_buffer); \
-    }								    \
+#define pp_scalar(PP, FORMAT, SCALAR)	                      \
+  do					        	      \
+    {			         			      \
+      sprintf (pp_buffer (PP)->digit_buffer, FORMAT, SCALAR); \
+      pp_string (PP, pp_buffer (PP)->digit_buffer);           \
+    }						              \
   while (0)
 #define pp_decimal_int(PP, I)  pp_scalar (PP, "%d", I)
 #define pp_wide_integer(PP, I) \
    pp_scalar (PP, HOST_WIDE_INT_PRINT_DEC, (HOST_WIDE_INT) I)
 #define pp_pointer(PP, P)      pp_scalar (PP, "%p", P)
 
-#define pp_identifier(PP, ID)  pp_string (pp_base (PP), ID)
+#define pp_identifier(PP, ID)  pp_string (PP, ID)
 #define pp_tree_identifier(PP, T)                      \
   pp_append_text(pp_base (PP), IDENTIFIER_POINTER (T), \
                  IDENTIFIER_POINTER (T) + IDENTIFIER_LENGTH (T))
 
-#define pp_unsupported_tree(PP, T) \
-  pp_verbatim (pp_base (PP), "#`%s' not supported by %s#",\
-                   tree_code_name[(int) TREE_CODE (T)], __FUNCTION__)
+#define pp_unsupported_tree(PP, T)                         \
+  pp_verbatim (pp_base (PP), "#`%s' not supported by %s#", \
+               tree_code_name[(int) TREE_CODE (T)], __FUNCTION__)
 
 
+#define pp_buffer(PP) pp_base (PP)->buffer
 /* Clients that directly derive from pretty_printer need to override
    this macro to return a pointer to the base pretty_printer structrure.  */
 #define pp_base(PP) (PP)
@@ -227,8 +231,8 @@ extern void pp_flush (pretty_printer *);
 extern void pp_format_text (pretty_printer *, text_info *);
 extern void pp_format_verbatim (pretty_printer *, text_info *);
 
-extern void pp_newline (pretty_printer *);
-extern void pp_character (pretty_printer *, int);
-extern void pp_string (pretty_printer *, const char *);
+extern void pp_base_newline (pretty_printer *);
+extern void pp_base_character (pretty_printer *, int);
+extern void pp_base_string (pretty_printer *, const char *);
 
 #endif /* GCC_PRETTY_PRINT_H */

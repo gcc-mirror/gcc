@@ -515,7 +515,7 @@ pp_verbatim (pretty_printer *pp, const char *msg, ...)
 
 /* Have PRETTY-PRINTER start a new line.  */
 void
-pp_newline (pretty_printer *pp)
+pp_base_newline (pretty_printer *pp)
 {
   obstack_1grow (&pp->buffer->obstack, '\n');
   pp->buffer->line_length = 0;
@@ -523,7 +523,7 @@ pp_newline (pretty_printer *pp)
 
 /* Have PRETTY-PRINTER add a CHARACTER.  */
 void
-pp_character (pretty_printer *pp, int c)
+pp_base_character (pretty_printer *pp, int c)
 {
   if (pp_is_wrapping_line (pp)
       && pp_remaining_character_count_for_line (pp) <= 0)
@@ -539,7 +539,7 @@ pp_character (pretty_printer *pp, int c)
 /* Append a STRING to the output area of PRETTY-PRINTER; the STRING may
    be line-wrapped if in appropriate mode.  */
 void
-pp_string (pretty_printer *pp, const char *str)
+pp_base_string (pretty_printer *pp, const char *str)
 {
   pp_maybe_wrap_text (pp, str, str + (str ? strlen (str) : 0));
 }
