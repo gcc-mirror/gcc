@@ -175,7 +175,6 @@ static int check_pkg_class_access PROTO ((tree, tree));
 static tree resolve_package PROTO ((tree, tree *));
 static tree lookup_package_type PROTO ((char *, int));
 static tree resolve_class PROTO ((tree, tree, tree));
-static tree do_resolve_class PROTO ((tree, tree, tree));
 static void declare_local_variables PROTO ((int, tree, tree));
 static void source_start_java_method PROTO ((tree));
 static void source_end_java_method PROTO ((void));
@@ -315,6 +314,7 @@ static int array_constructor_check_entry PROTO ((tree, tree));
 static char *purify_type_name PROTO ((char *));
 static tree patch_initialized_static_field PROTO ((tree));
 static tree fold_constant_for_init PROTO ((tree, tree));
+static tree strip_out_static_field_access_decl PROTO ((tree));
 
 /* Number of error found so far. */
 int java_error_count; 
@@ -6407,16 +6407,14 @@ obtain_incomplete_type (type_name)
     fatal ("invalid type name - obtain_incomplete_type");
 
   for (ptr = ctxp->incomplete_class; ptr; ptr = TREE_CHAIN (ptr))
-    if (TYPE_NAME (TREE_PURPOSE (ptr)) == name)
+    if (TYPE_NAME (ptr) == name)
       break;
 
   if (!ptr)
     {
-      tree core;
       push_obstacks (&permanent_obstack, &permanent_obstack);
-      BUILD_PTR_FROM_NAME (core, name);
-      layout_type (core);
-      ptr = build_tree_list (core, NULL_TREE);
+      BUILD_PTR_FROM_NAME (ptr, name);
+      layout_type (ptr);
       pop_obstacks ();
       TREE_CHAIN (ptr) = ctxp->incomplete_class;
       ctxp->incomplete_class = ptr;
@@ -6678,8 +6676,22 @@ resolve_class (class_type, decl, cl)
 {
   char *name = IDENTIFIER_POINTER (TYPE_NAME (class_type));
   char *base = name;
-  tree resolved_type, resolved_type_decl;
+  tree resolved_type = TREE_TYPE (class_type);
+  tree resolved_type_decl;
   
+  if (resolved_type != NULL_TREE)
+    {
+      tree resolved_type_decl = TYPE_NAME (resolved_type);
+      if (resolved_type_decl == NULL_TREE
+	  || TREE_CODE (resolved_type_decl) == IDENTIFIER_NODE)
+	{
+	  resolved_type_decl = build_decl (TYPE_DECL,
+					   TYPE_NAME (class_type),
+					   resolved_type);
+	}
+      return resolved_type_decl;
+    }
+
   /* 1- Check to see if we have an array. If true, find what we really
      want to resolve  */
   while (name[0] == '[')
@@ -6710,14 +6722,16 @@ resolve_class (class_type, decl, cl)
       /* Figure how those two things are important for error report. FIXME */
       DECL_SOURCE_LINE (resolved_type_decl) = 0;
       DECL_SOURCE_FILE (resolved_type_decl) = input_filename;
+      TYPE_NAME (class_type) = TYPE_NAME (resolved_type);
     }
+  TREE_TYPE (class_type) = resolved_type;
   return resolved_type_decl;
 }
 
 /* Effectively perform the resolution of class CLASS_TYPE. DECL or CL
    are used to report error messages.  */
 
-static tree
+tree
 do_resolve_class (class_type, decl, cl)
      tree class_type;
      tree decl;
@@ -7808,6 +7822,13 @@ check_pkg_class_access (class_name, cl)
 
   if (!CLASS_PUBLIC (TYPE_NAME (type)))
     {
+      /* Access to a private class within the same package is
+         allowed. */
+      tree l, r;
+      breakdown_qualified (&l, &r, class_name);
+      if (l == ctxp->package)
+	return 0;
+
       parse_error_context 
 	(cl, "Can't access %s `%s'. Only public classes and interfaces in "
 	 "other packages can be accessed",
@@ -8758,6 +8779,30 @@ resolve_field_access (qual_wfl, field_decl, field_type)
     *field_type = (QUAL_DECL_TYPE (decl) ? 
 		   QUAL_DECL_TYPE (decl) : TREE_TYPE (decl));
   return field_ref;
+}
+
+/* If NODE is an access to f static field, strip out the class
+   initialization part and return the field decl, otherwise, return
+   NODE. */
+
+static tree
+strip_out_static_field_access_decl (node)
+    tree node;
+{
+  if (TREE_CODE (node) == COMPOUND_EXPR)
+    {
+      tree op1 = TREE_OPERAND (node, 1);
+      if (TREE_CODE (op1) == COMPOUND_EXPR)
+	 {
+	   tree call = TREE_OPERAND (op1, 0);
+	   if (TREE_CODE (call) == CALL_EXPR
+	       && TREE_CODE (TREE_OPERAND (call, 0)) == ADDR_EXPR
+	       && TREE_OPERAND (TREE_OPERAND (call, 0), 0)
+	       == soft_initclass_node)
+	     return TREE_OPERAND (op1, 1);
+	 }
+    }
+  return node;
 }
 
 /* 6.5.5.2: Qualified Expression Names */
@@ -12095,7 +12140,7 @@ patch_unaryop (node, wfl_op)
 {
   tree op = TREE_OPERAND (node, 0);
   tree op_type = TREE_TYPE (op);
-  tree prom_type, value;
+  tree prom_type, value, decl;
   int code = TREE_CODE (node);
   int error_found = 0;
 
@@ -12111,9 +12156,11 @@ patch_unaryop (node, wfl_op)
     case PREINCREMENT_EXPR:
       /* 15.14.2 Prefix Decrement Operator -- */
     case PREDECREMENT_EXPR:
-      if (!JDECL_P (op) && !((TREE_CODE (op) == INDIRECT_REF 
-			      || TREE_CODE (op) == COMPONENT_REF) 
-			     && JPRIMITIVE_TYPE_P (TREE_TYPE (op))))
+      decl = strip_out_static_field_access_decl (op);
+      if (!JDECL_P (decl) 
+	  && !((TREE_CODE (decl) == INDIRECT_REF 
+		|| TREE_CODE (decl) == COMPONENT_REF) 
+	       && JPRIMITIVE_TYPE_P (TREE_TYPE (decl))))
 	{
 	  tree lvalue;
 	  /* Before screaming, check that we're not in fact trying to
