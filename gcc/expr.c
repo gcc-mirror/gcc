@@ -5510,7 +5510,7 @@ get_inner_reference (tree exp, HOST_WIDE_INT *pbitsize,
 				 index, low_bound));
 
 	  /* If the index has a self-referential type, instantiate it with
-	     the object; likewise fkor the component size.  */
+	     the object; likewise for the component size.  */
 	  index = SUBSTITUTE_PLACEHOLDER_IN_EXPR (index, exp);
 	  unit_size = SUBSTITUTE_PLACEHOLDER_IN_EXPR (unit_size, array);
 	  offset = size_binop (PLUS_EXPR, offset,
