@@ -1998,14 +1998,30 @@ gfc_conv_intrinsic_merge (gfc_se * se, gfc_expr * expr)
   tree fsource;
   tree mask;
   tree type;
+  tree len;
 
   arg = gfc_conv_intrinsic_function_args (se, expr);
-  tsource = TREE_VALUE (arg);
-  arg = TREE_CHAIN (arg);
-  fsource = TREE_VALUE (arg);
-  arg = TREE_CHAIN (arg);
-  mask = TREE_VALUE (arg);
+  if (expr->ts.type != BT_CHARACTER)
+    {
+      tsource = TREE_VALUE (arg);
+      arg = TREE_CHAIN (arg);
+      fsource = TREE_VALUE (arg);
+      mask = TREE_VALUE (TREE_CHAIN (arg));
+    }
+  else
+    {
+      /* We do the same as in the non-character case, but the argument
+	 list is different because of the string length arguments. We
+	 also have to set the string length for the result.  */
+      len = TREE_VALUE (arg);
+      arg = TREE_CHAIN (arg);
+      tsource = TREE_VALUE (arg);
+      arg = TREE_CHAIN (TREE_CHAIN (arg));
+      fsource = TREE_VALUE (arg);
+      mask = TREE_VALUE (TREE_CHAIN (arg));
 
+      se->string_length = len;
+    }
   type = TREE_TYPE (tsource);
   se->expr = fold (build3 (COND_EXPR, type, mask, tsource, fsource));
 }
