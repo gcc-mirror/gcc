@@ -1,3 +1,7 @@
+2001-05-01  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* c-tree.texi (USING_STMT): Document.
+
 2001-04-30  Mark Mitchell  <mark@codesourcery.com>
             Richard Henderson  <rth@redhat.com>
 	
