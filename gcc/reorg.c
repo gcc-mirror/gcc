@@ -1815,7 +1815,7 @@ try_merge_delay_insns (insn, thread)
      merged insns.  Also clear the INSN_FROM_TARGET_P bit of each insn the
      the delay list so that we know that it isn't only being used at the
      target.  */
-  if (next_to_match == 0 && annul_p)
+  if (slot_number == num_slots && annul_p)
     {
       for (; merged_insns; merged_insns = XEXP (merged_insns, 1))
 	{
