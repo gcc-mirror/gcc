@@ -1,3 +1,8 @@
+Tue Mar 17 10:22:37 1998  H.J. Lu  (hjl@gnu.ai.mit.edu)
+
+	* configure: When making link, also check the current
+	directory. The configure scripts may create one.
+
 Fri Mar  6 01:02:03 1998  Richard Henderson  <rth@cygnus.com>
 
 	* config.sub: Accept alphapca56 and alphaev6 properly.
