@@ -213,8 +213,6 @@ typedef struct { unsigned :16, :16, :16; } vms_ino_t;
 
 /* Externals defined here.  */
 
-#define FFECOM_FASTER_ARRAY_REFS 0	/* Generates faster code? */
-
 #if FFECOM_targetCURRENT == FFECOM_targetGCC
 
 /* tree.h declares a bunch of stuff that it expects the front end to
