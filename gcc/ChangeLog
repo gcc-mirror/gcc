@@ -1,3 +1,8 @@
+2000-07-31  Jason McMullan  <jmcmullan@linuxcare.com>
+
+	* builtins.c (expand_builtin_apply): Don't defer pop during
+	argument setup.
+
 2000-07-31 Herman A.J. ten Brugge <Haj.Ten.Brugge@net.HCC.nl>
 
 	* calls.c (combine_pending_stack_adjustment_and_call): Only use

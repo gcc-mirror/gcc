@@ -885,8 +885,11 @@ expand_builtin_apply (function, arguments, argsize)
   /* Perform postincrements before actually calling the function.  */
   emit_queue ();
 
-  /* Push a new argument block and copy the arguments.  */
+  /* Push a new argument block and copy the arguments.  Do not allow
+     the (potential) memcpy call below to interfere with our stack
+     manipulations.  */
   do_pending_stack_adjust ();
+  NO_DEFER_POP;
 
   /* Save the stack with nonlocal if available */
 #ifdef HAVE_save_stack_nonlocal
@@ -1025,6 +1028,8 @@ expand_builtin_apply (function, arguments, argsize)
   else
 #endif
     emit_stack_restore (SAVE_BLOCK, old_stack_level, NULL_RTX);
+
+  OK_DEFER_POP;
 
   /* Return the address of the result block.  */
   return copy_addr_to_reg (XEXP (result, 0));
