@@ -1572,7 +1572,7 @@ build_offset_ref (type, name)
 
   /* A lot of this logic is now handled in lookup_field and
      lookup_fnfield.  */
-  if (member && TREE_CODE (member) == TREE_LIST)
+  if (member && BASELINK_P (member))
     {
       /* Go from the TREE_BASELINK to the member function info.  */
       tree fnfields = member;
@@ -1627,9 +1627,8 @@ build_offset_ref (type, name)
 	  && ! allocation_temporary_p ())
 	fnfields = copy_list (fnfields);
 
-      t = build_tree_list (error_mark_node, fnfields);
-      TREE_TYPE (t) = build_offset_type (type, unknown_type_node);
-      return t;
+      TREE_TYPE (fnfields) = build_offset_type (type, unknown_type_node);
+      return fnfields;
     }
 
   t = member;
