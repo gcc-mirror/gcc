@@ -384,6 +384,42 @@ void test05()
   mg.get(ibegn_ns,iendn_ns,intl,fmtn_ns,err,valn_ns);
   VERIFY( valn_ns == L"-123456" );
 }
+
+void test06()
+{
+  using namespace std;
+
+  typedef istreambuf_iterator<wchar_t> InIt;
+  InIt iend1, iend2, iend3;
+
+  locale loc;
+  wstring buffer1(L"123");
+  wstring buffer2(L"456");
+  wstring buffer3(L"Golgafrincham");
+
+  wstring val;
+
+  ios_base::iostate err;
+
+  const money_get<wchar_t,InIt>& mg =
+    use_facet<money_get<wchar_t, InIt> >(loc);
+
+  wistringstream fmt1(buffer1);
+  InIt ibeg1(fmt1);
+  mg.get(ibeg1,iend1,false,fmt1,err,val);
+  VERIFY( val == buffer1 );
+
+  wistringstream fmt2(buffer2);
+  InIt ibeg2(fmt2);
+  mg.get(ibeg2,iend2,false,fmt2,err,val);
+  VERIFY( val == buffer2 );
+
+  val = buffer3;
+  wistringstream fmt3(buffer3);
+  InIt ibeg3(fmt3);
+  mg.get(ibeg3,iend3,false,fmt3,err,val);
+  VERIFY( val == buffer3 );
+}
 #endif
 
 int main()
@@ -394,6 +430,7 @@ int main()
   test03();
   test04();
   test05();
+  test06();
 #endif
   return 0;
 }

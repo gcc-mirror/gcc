@@ -930,6 +930,9 @@ namespace std
       // Flag marking when a decimal point is found.
       bool __testdecfound = false; 
 
+      // The tentative returned string is stored here.
+      string_type __temp_units;
+
       char_type __c = *__beg;
       char_type __eof = static_cast<char_type>(char_traits<char_type>::eof());
       for (int __i = 0; __beg != __end && __i < 4 && __testvalid; ++__i)
@@ -1019,7 +1022,7 @@ namespace std
 			}
 		      else
 			{
-			  __units += __c;
+			  __temp_units += __c;
 			  ++__sep_pos;
 			}
 		      __c = *(++__beg);
@@ -1050,11 +1053,11 @@ namespace std
 	}
 
       // Strip leading zeros.
-      while (__units[0] == __ctype.widen('0'))
-	__units.erase(__units.begin());
+      while (__temp_units[0] == __ctype.widen('0'))
+	__temp_units.erase(__temp_units.begin());
 
       if (__sign.size() && __sign == __neg_sign)
-	__units.insert(__units.begin(), __ctype.widen('-'));
+	__temp_units.insert(__temp_units.begin(), __ctype.widen('-'));
 
       // Test for grouping fidelity.
       if (__grouping.size() && __grouping_tmp.size())
@@ -1068,8 +1071,12 @@ namespace std
 	__err |= ios_base::eofbit;
 
       // Iff valid sequence is not recognized.
-      if (!__testvalid || !__units.size())
+      if (!__testvalid || !__temp_units.size())
 	__err |= ios_base::failbit;
+      else
+	// Use the "swap trick" to copy __temp_units into __units.
+	__temp_units.swap(__units);
+
       return __beg; 
     }
 

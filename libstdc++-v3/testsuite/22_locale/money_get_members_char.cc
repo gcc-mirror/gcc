@@ -383,6 +383,42 @@ void test05()
   VERIFY( valn_ns == "-123456" );
 }
 
+void test06()
+{
+  using namespace std;
+
+  typedef istreambuf_iterator<char> InIt;
+  InIt iend1, iend2, iend3;
+
+  locale loc;
+  string buffer1("123");
+  string buffer2("456");
+  string buffer3("Golgafrincham"); // From Nathan's original idea.
+
+  string val;
+
+  ios_base::iostate err;
+
+  const money_get<char,InIt>& mg =
+    use_facet<money_get<char, InIt> >(loc);
+
+  istringstream fmt1(buffer1);
+  InIt ibeg1(fmt1);
+  mg.get(ibeg1,iend1,false,fmt1,err,val);
+  VERIFY( val == buffer1 );
+
+  istringstream fmt2(buffer2);
+  InIt ibeg2(fmt2);
+  mg.get(ibeg2,iend2,false,fmt2,err,val);
+  VERIFY( val == buffer2 );
+
+  val = buffer3;
+  istringstream fmt3(buffer3);
+  InIt ibeg3(fmt3);
+  mg.get(ibeg3,iend3,false,fmt3,err,val);
+  VERIFY( val == buffer3 );
+}
+
 int main()
 {
   test01();
@@ -390,5 +426,6 @@ int main()
   test03();
   test04();
   test05();
+  test06();
   return 0;
 }
