@@ -15,3 +15,6 @@ X_CFLAGS	= -O1
 # The bison output files are machine-indep,
 # so different flags for a particular machine are not useful.
 #BISONFLAGS	= -l
+
+# This is so we can link collect2 running native.
+CLIB		= -lmld
