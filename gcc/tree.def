@@ -602,8 +602,8 @@ DEFTREECODE (ABS_EXPR, "abs_expr", '1', 1)
 DEFTREECODE (FFS_EXPR, "ffs_expr", '1', 1)
 
 /* Shift operations for shift and rotate.
-   Shift is supposed to mean logical shift if done on an
-   unsigned type, arithmetic shift on a signed type.
+   Shift means logical shift if done on an
+   unsigned type, arithmetic shift if done on a signed type.
    The second operand is the number of bits to
    shift by; it need not be the same type as the first operand and result.  */
 DEFTREECODE (LSHIFT_EXPR, "lshift_expr", '2', 2)

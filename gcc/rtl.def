@@ -688,15 +688,11 @@ DEF_RTL_EXPR(NOT, "not", "e", '1')
 /* Operand:
      0:  value to be shifted.
      1:  number of bits.  */
-DEF_RTL_EXPR(ASHIFT, "ashift", "ee", '2')
-DEF_RTL_EXPR(ROTATE, "rotate", "ee", '2')
-
-/* Right shift operations, for machines where these are not the same
-   as left shifting with a negative argument.  */
-
-DEF_RTL_EXPR(ASHIFTRT, "ashiftrt", "ee", '2')
-DEF_RTL_EXPR(LSHIFTRT, "lshiftrt", "ee", '2')
-DEF_RTL_EXPR(ROTATERT, "rotatert", "ee", '2')
+DEF_RTL_EXPR(ASHIFT, "ashift", "ee", '2') /* shift left */
+DEF_RTL_EXPR(ROTATE, "rotate", "ee", '2') /* rotate left */
+DEF_RTL_EXPR(ASHIFTRT, "ashiftrt", "ee", '2') /* arithmetic shift right */
+DEF_RTL_EXPR(LSHIFTRT, "lshiftrt", "ee", '2') /* logical shift right */
+DEF_RTL_EXPR(ROTATERT, "rotatert", "ee", '2') /* rotate right */
 
 /* Minimum and maximum values of two operands.  We need both signed and
    unsigned forms.  (We cannot use MIN for SMIN because it conflicts
