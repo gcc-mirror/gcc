@@ -526,6 +526,26 @@ call_insn_operand (op, mode)
      enum machine_mode mode;
 {
   if (GET_CODE (op) == MEM
+      && ((CONSTANT_ADDRESS_P (XEXP (op, 0))
+	   /* This makes a difference for PIC.  */
+	   && general_operand (XEXP (op, 0), Pmode))
+	  || (GET_CODE (XEXP (op, 0)) == REG
+	      && XEXP (op, 0) != arg_pointer_rtx
+	      && !(REGNO (XEXP (op, 0)) >= FIRST_PSEUDO_REGISTER
+		   && REGNO (XEXP (op, 0)) <= LAST_VIRTUAL_REGISTER))))
+    return 1;
+  return 0;
+}
+
+/* Like call_insn_operand but allow (mem (symbol_ref ...))
+   even if pic.  */
+
+int
+expander_call_insn_operand (op, mode)
+     rtx op;
+     enum machine_mode mode;
+{
+  if (GET_CODE (op) == MEM
       && (CONSTANT_ADDRESS_P (XEXP (op, 0))
 	  || (GET_CODE (XEXP (op, 0)) == REG
 	      && XEXP (op, 0) != arg_pointer_rtx
