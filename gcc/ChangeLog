@@ -1,5 +1,13 @@
 2003-02-04  Richard Henderson  <rth@redhat.com>
 
+	* config/i386/i386.md (UNSPEC_BSF): Remove.
+	(ffssi2): Split into cmove and no_cmove insns and splitters;
+	lose pentium float trick for now.
+	(ffssi_1): Add * to name; use CTZ instead of UNSPEC.
+	(ctzsi2, clzsi2, bsr): New.
+
+2003-02-04  Richard Henderson  <rth@redhat.com>
+
 	* config/ia64/ia64.c (rtx_needs_barrier): Handle POPCOUNT,
 	UNSPEC_GETF_EXP; remove UNSPEC_POPCNT.
 	* config/ia64/ia64.md (UNSPEC_POPCNT): Remove.
