@@ -1,3 +1,10 @@
+1998-10-30  Tom Tromey  <tromey@cygnus.com>
+
+	* class.c (make_class_data): Renamed fields: nmethods to
+	method_count, method_count to dtable_method_count.  Always set
+	`state' field to 0.
+	* decl.c (init_decl_processing): Likewise.
+
 Wed Oct 28 08:03:31 1998  Alexandre Petit-Bianco  <apbianco@cygnus.com>
 
 	* class.c (layout_class): Don't mangle <finit>, produce
