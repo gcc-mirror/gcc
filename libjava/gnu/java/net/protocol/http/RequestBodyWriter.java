@@ -1,4 +1,4 @@
-/* Handler.java --
+/* RequestBodyWriter.java --
    Copyright (C) 2004 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -38,36 +38,32 @@ exception statement from your version. */
 
 package gnu.java.net.protocol.http;
 
-import java.io.IOException;
-import java.net.URL;
-import java.net.URLConnection;
-import java.net.URLStreamHandler;
-
 /**
- * An HTTP URL stream handler.
+ * Callback interface for writing request body content.
  *
  * @author Chris Burdess (dog@gnu.org)
  */
-public class Handler
-  extends URLStreamHandler
+public interface RequestBodyWriter
 {
 
   /**
-   * Returns the default HTTP port (80).
+   * Returns the total number of bytes that will be written in a single pass
+   * by this writer.
    */
-  protected int getDefaultPort()
-  {
-    return HTTPConnection.HTTP_PORT;
-  }
+  int getContentLength();
 
   /**
-   * Returns an HTTPURLConnection for the given URL.
+   * Initialises the writer.
+   * This will be called before each pass.
    */
-  public URLConnection openConnection(URL url)
-    throws IOException
-  {
-    return new HTTPURLConnection(url);
-  }
+  void reset();
 
+  /**
+   * Writes body content to the supplied buffer.
+   * @param buffer the content buffer
+   * @return the number of bytes written
+   */
+  int write(byte[] buffer);
+  
 }
 

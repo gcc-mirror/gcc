@@ -1,4 +1,4 @@
-/* Handler.java --
+/* ConnectionEvent.java --
    Copyright (C) 2004 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -36,38 +36,46 @@ obligated to do so.  If you do not wish to do so, delete this
 exception statement from your version. */
 
 
-package gnu.java.net.protocol.http;
+package gnu.java.net.protocol.http.event;
 
-import java.io.IOException;
-import java.net.URL;
-import java.net.URLConnection;
-import java.net.URLStreamHandler;
+import java.util.EventObject;
 
 /**
- * An HTTP URL stream handler.
+ * A connection event.
  *
  * @author Chris Burdess (dog@gnu.org)
  */
-public class Handler
-  extends URLStreamHandler
+public class ConnectionEvent
+  extends EventObject
 {
 
   /**
-   * Returns the default HTTP port (80).
+   * The connection closed event type.
    */
-  protected int getDefaultPort()
+  public static final int CONNECTION_CLOSED = 0;
+  
+  /**
+   * The type of this event.
+   */
+  protected int type;
+
+  /**
+   * Constructs a connection event with the specified source and type.
+   */
+  public ConnectionEvent(Object source, int type)
   {
-    return HTTPConnection.HTTP_PORT;
+    super(source);
+    this.type = type;
   }
 
   /**
-   * Returns an HTTPURLConnection for the given URL.
+   * Returns the type of this event.
+   * @see #type
    */
-  public URLConnection openConnection(URL url)
-    throws IOException
+  public int getType()
   {
-    return new HTTPURLConnection(url);
+    return type;
   }
-
+  
 }
 

@@ -1,4 +1,4 @@
-/* Handler.java --
+/* ResponseBodyReader.java --
    Copyright (C) 2004 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -38,36 +38,33 @@ exception statement from your version. */
 
 package gnu.java.net.protocol.http;
 
-import java.io.IOException;
-import java.net.URL;
-import java.net.URLConnection;
-import java.net.URLStreamHandler;
-
 /**
- * An HTTP URL stream handler.
+ * Callback interface for receiving notification of response body content.
  *
  * @author Chris Burdess (dog@gnu.org)
  */
-public class Handler
-  extends URLStreamHandler
+public interface ResponseBodyReader
 {
 
   /**
-   * Returns the default HTTP port (80).
-   */
-  protected int getDefaultPort()
-  {
-    return HTTPConnection.HTTP_PORT;
-  }
+   * Indicate whether this reader is interested in the specified response.
+   * If it returns false, it will not receive body content notifications for
+   * that response.
+   */ 
+  boolean accept(Request request, Response response);
 
   /**
-   * Returns an HTTPURLConnection for the given URL.
+   * Receive notification of body content.
+   * @param buffer the content buffer
+   * @param offset the offset within the buffer that content starts
+   * @param length the length of the content
    */
-  public URLConnection openConnection(URL url)
-    throws IOException
-  {
-    return new HTTPURLConnection(url);
-  }
+  void read(byte[] buffer, int offset, int length);
 
+  /**
+   * Notifies the reader that the end of the content was reached.
+   */
+  void close();
+  
 }
 

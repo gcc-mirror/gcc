@@ -754,9 +754,11 @@ am__libgcj_la_SOURCES_DIST = prims.cc jni.cc exception.cc link.cc \
 	gnu/java/locale/LocaleInformation_zh_HK.java \
 	gnu/java/locale/LocaleInformation_zh_SG.java \
 	gnu/java/locale/LocaleInformation_zh_TW.java \
-	gnu/java/math/MPN.java \
+	gnu/java/math/MPN.java gnu/java/net/BASE64.java \
 	gnu/java/net/DefaultContentHandlerFactory.java \
+	gnu/java/net/EmptyX509TrustManager.java \
 	gnu/java/net/HeaderFieldHelper.java \
+	gnu/java/net/LineInputStream.java \
 	gnu/java/net/PlainDatagramSocketImpl.java \
 	gnu/java/net/PlainSocketImpl.java \
 	gnu/java/net/URLParseError.java \
@@ -767,8 +769,28 @@ am__libgcj_la_SOURCES_DIST = prims.cc jni.cc exception.cc link.cc \
 	gnu/java/net/protocol/file/Handler.java \
 	gnu/java/net/protocol/gcjlib/Connection.java \
 	gnu/java/net/protocol/gcjlib/Handler.java \
-	gnu/java/net/protocol/http/Connection.java \
+	gnu/java/net/protocol/http/Authenticator.java \
+	gnu/java/net/protocol/http/ByteArrayRequestBodyWriter.java \
+	gnu/java/net/protocol/http/ByteArrayResponseBodyReader.java \
+	gnu/java/net/protocol/http/ChunkedInputStream.java \
+	gnu/java/net/protocol/http/Cookie.java \
+	gnu/java/net/protocol/http/CookieManager.java \
+	gnu/java/net/protocol/http/Credentials.java \
+	gnu/java/net/protocol/http/HTTPConnection.java \
+	gnu/java/net/protocol/http/HTTPDateFormat.java \
+	gnu/java/net/protocol/http/HTTPURLConnection.java \
 	gnu/java/net/protocol/http/Handler.java \
+	gnu/java/net/protocol/http/Headers.java \
+	gnu/java/net/protocol/http/Request.java \
+	gnu/java/net/protocol/http/RequestBodyWriter.java \
+	gnu/java/net/protocol/http/Response.java \
+	gnu/java/net/protocol/http/ResponseBodyReader.java \
+	gnu/java/net/protocol/http/ResponseHeaderHandler.java \
+	gnu/java/net/protocol/http/SimpleCookieManager.java \
+	gnu/java/net/protocol/http/event/ConnectionEvent.java \
+	gnu/java/net/protocol/http/event/ConnectionListener.java \
+	gnu/java/net/protocol/http/event/RequestEvent.java \
+	gnu/java/net/protocol/http/event/RequestListener.java \
 	gnu/java/net/protocol/jar/Connection.java \
 	gnu/java/net/protocol/jar/Handler.java \
 	gnu/java/nio/ChannelInputStream.java \
@@ -3786,9 +3808,11 @@ am__objects_14 = $(am__objects_9) gnu/classpath/ServiceFactory.lo \
 	gnu/java/locale/LocaleInformation_zh_HK.lo \
 	gnu/java/locale/LocaleInformation_zh_SG.lo \
 	gnu/java/locale/LocaleInformation_zh_TW.lo \
-	gnu/java/math/MPN.lo \
+	gnu/java/math/MPN.lo gnu/java/net/BASE64.lo \
 	gnu/java/net/DefaultContentHandlerFactory.lo \
+	gnu/java/net/EmptyX509TrustManager.lo \
 	gnu/java/net/HeaderFieldHelper.lo \
+	gnu/java/net/LineInputStream.lo \
 	gnu/java/net/PlainDatagramSocketImpl.lo \
 	gnu/java/net/PlainSocketImpl.lo gnu/java/net/URLParseError.lo \
 	gnu/java/net/protocol/core/Connection.lo \
@@ -3798,8 +3822,28 @@ am__objects_14 = $(am__objects_9) gnu/classpath/ServiceFactory.lo \
 	gnu/java/net/protocol/file/Handler.lo \
 	gnu/java/net/protocol/gcjlib/Connection.lo \
 	gnu/java/net/protocol/gcjlib/Handler.lo \
-	gnu/java/net/protocol/http/Connection.lo \
+	gnu/java/net/protocol/http/Authenticator.lo \
+	gnu/java/net/protocol/http/ByteArrayRequestBodyWriter.lo \
+	gnu/java/net/protocol/http/ByteArrayResponseBodyReader.lo \
+	gnu/java/net/protocol/http/ChunkedInputStream.lo \
+	gnu/java/net/protocol/http/Cookie.lo \
+	gnu/java/net/protocol/http/CookieManager.lo \
+	gnu/java/net/protocol/http/Credentials.lo \
+	gnu/java/net/protocol/http/HTTPConnection.lo \
+	gnu/java/net/protocol/http/HTTPDateFormat.lo \
+	gnu/java/net/protocol/http/HTTPURLConnection.lo \
 	gnu/java/net/protocol/http/Handler.lo \
+	gnu/java/net/protocol/http/Headers.lo \
+	gnu/java/net/protocol/http/Request.lo \
+	gnu/java/net/protocol/http/RequestBodyWriter.lo \
+	gnu/java/net/protocol/http/Response.lo \
+	gnu/java/net/protocol/http/ResponseBodyReader.lo \
+	gnu/java/net/protocol/http/ResponseHeaderHandler.lo \
+	gnu/java/net/protocol/http/SimpleCookieManager.lo \
+	gnu/java/net/protocol/http/event/ConnectionEvent.lo \
+	gnu/java/net/protocol/http/event/ConnectionListener.lo \
+	gnu/java/net/protocol/http/event/RequestEvent.lo \
+	gnu/java/net/protocol/http/event/RequestListener.lo \
 	gnu/java/net/protocol/jar/Connection.lo \
 	gnu/java/net/protocol/jar/Handler.lo \
 	gnu/java/nio/ChannelInputStream.lo \
@@ -6687,8 +6731,11 @@ gnu/java/locale/LocaleInformation_zh_HK.java \
 gnu/java/locale/LocaleInformation_zh_SG.java \
 gnu/java/locale/LocaleInformation_zh_TW.java \
 gnu/java/math/MPN.java \
+gnu/java/net/BASE64.java \
 gnu/java/net/DefaultContentHandlerFactory.java \
+gnu/java/net/EmptyX509TrustManager.java \
 gnu/java/net/HeaderFieldHelper.java \
+gnu/java/net/LineInputStream.java \
 gnu/java/net/PlainDatagramSocketImpl.java \
 gnu/java/net/PlainSocketImpl.java \
 gnu/java/net/URLParseError.java \
@@ -6699,8 +6746,28 @@ gnu/java/net/protocol/file/Connection.java \
 gnu/java/net/protocol/file/Handler.java \
 gnu/java/net/protocol/gcjlib/Connection.java \
 gnu/java/net/protocol/gcjlib/Handler.java \
-gnu/java/net/protocol/http/Connection.java \
+gnu/java/net/protocol/http/Authenticator.java \
+gnu/java/net/protocol/http/ByteArrayRequestBodyWriter.java \
+gnu/java/net/protocol/http/ByteArrayResponseBodyReader.java \
+gnu/java/net/protocol/http/ChunkedInputStream.java \
+gnu/java/net/protocol/http/Cookie.java \
+gnu/java/net/protocol/http/CookieManager.java \
+gnu/java/net/protocol/http/Credentials.java \
+gnu/java/net/protocol/http/HTTPConnection.java \
+gnu/java/net/protocol/http/HTTPDateFormat.java \
+gnu/java/net/protocol/http/HTTPURLConnection.java \
 gnu/java/net/protocol/http/Handler.java \
+gnu/java/net/protocol/http/Headers.java \
+gnu/java/net/protocol/http/Request.java \
+gnu/java/net/protocol/http/RequestBodyWriter.java \
+gnu/java/net/protocol/http/Response.java \
+gnu/java/net/protocol/http/ResponseBodyReader.java \
+gnu/java/net/protocol/http/ResponseHeaderHandler.java \
+gnu/java/net/protocol/http/SimpleCookieManager.java \
+gnu/java/net/protocol/http/event/ConnectionEvent.java \
+gnu/java/net/protocol/http/event/ConnectionListener.java \
+gnu/java/net/protocol/http/event/RequestEvent.java \
+gnu/java/net/protocol/http/event/RequestListener.java \
 gnu/java/net/protocol/jar/Connection.java \
 gnu/java/net/protocol/jar/Handler.java \
 gnu/java/nio/ChannelInputStream.java \
@@ -9435,10 +9502,16 @@ gnu/java/math/$(DEPDIR)/$(am__dirstamp):
 	@: > gnu/java/math/$(DEPDIR)/$(am__dirstamp)
 gnu/java/math/MPN.lo: gnu/java/math/$(am__dirstamp) \
 	gnu/java/math/$(DEPDIR)/$(am__dirstamp)
+gnu/java/net/BASE64.lo: gnu/java/net/$(am__dirstamp) \
+	gnu/java/net/$(DEPDIR)/$(am__dirstamp)
 gnu/java/net/DefaultContentHandlerFactory.lo:  \
 	gnu/java/net/$(am__dirstamp) \
 	gnu/java/net/$(DEPDIR)/$(am__dirstamp)
+gnu/java/net/EmptyX509TrustManager.lo: gnu/java/net/$(am__dirstamp) \
+	gnu/java/net/$(DEPDIR)/$(am__dirstamp)
 gnu/java/net/HeaderFieldHelper.lo: gnu/java/net/$(am__dirstamp) \
+	gnu/java/net/$(DEPDIR)/$(am__dirstamp)
+gnu/java/net/LineInputStream.lo: gnu/java/net/$(am__dirstamp) \
 	gnu/java/net/$(DEPDIR)/$(am__dirstamp)
 gnu/java/net/PlainDatagramSocketImpl.lo: gnu/java/net/$(am__dirstamp) \
 	gnu/java/net/$(DEPDIR)/$(am__dirstamp)
@@ -9485,12 +9558,78 @@ gnu/java/net/protocol/http/$(am__dirstamp):
 gnu/java/net/protocol/http/$(DEPDIR)/$(am__dirstamp):
 	@$(mkdir_p) gnu/java/net/protocol/http/$(DEPDIR)
 	@: > gnu/java/net/protocol/http/$(DEPDIR)/$(am__dirstamp)
-gnu/java/net/protocol/http/Connection.lo:  \
+gnu/java/net/protocol/http/Authenticator.lo:  \
+	gnu/java/net/protocol/http/$(am__dirstamp) \
+	gnu/java/net/protocol/http/$(DEPDIR)/$(am__dirstamp)
+gnu/java/net/protocol/http/ByteArrayRequestBodyWriter.lo:  \
+	gnu/java/net/protocol/http/$(am__dirstamp) \
+	gnu/java/net/protocol/http/$(DEPDIR)/$(am__dirstamp)
+gnu/java/net/protocol/http/ByteArrayResponseBodyReader.lo:  \
+	gnu/java/net/protocol/http/$(am__dirstamp) \
+	gnu/java/net/protocol/http/$(DEPDIR)/$(am__dirstamp)
+gnu/java/net/protocol/http/ChunkedInputStream.lo:  \
+	gnu/java/net/protocol/http/$(am__dirstamp) \
+	gnu/java/net/protocol/http/$(DEPDIR)/$(am__dirstamp)
+gnu/java/net/protocol/http/Cookie.lo:  \
+	gnu/java/net/protocol/http/$(am__dirstamp) \
+	gnu/java/net/protocol/http/$(DEPDIR)/$(am__dirstamp)
+gnu/java/net/protocol/http/CookieManager.lo:  \
+	gnu/java/net/protocol/http/$(am__dirstamp) \
+	gnu/java/net/protocol/http/$(DEPDIR)/$(am__dirstamp)
+gnu/java/net/protocol/http/Credentials.lo:  \
+	gnu/java/net/protocol/http/$(am__dirstamp) \
+	gnu/java/net/protocol/http/$(DEPDIR)/$(am__dirstamp)
+gnu/java/net/protocol/http/HTTPConnection.lo:  \
+	gnu/java/net/protocol/http/$(am__dirstamp) \
+	gnu/java/net/protocol/http/$(DEPDIR)/$(am__dirstamp)
+gnu/java/net/protocol/http/HTTPDateFormat.lo:  \
+	gnu/java/net/protocol/http/$(am__dirstamp) \
+	gnu/java/net/protocol/http/$(DEPDIR)/$(am__dirstamp)
+gnu/java/net/protocol/http/HTTPURLConnection.lo:  \
 	gnu/java/net/protocol/http/$(am__dirstamp) \
 	gnu/java/net/protocol/http/$(DEPDIR)/$(am__dirstamp)
 gnu/java/net/protocol/http/Handler.lo:  \
 	gnu/java/net/protocol/http/$(am__dirstamp) \
 	gnu/java/net/protocol/http/$(DEPDIR)/$(am__dirstamp)
+gnu/java/net/protocol/http/Headers.lo:  \
+	gnu/java/net/protocol/http/$(am__dirstamp) \
+	gnu/java/net/protocol/http/$(DEPDIR)/$(am__dirstamp)
+gnu/java/net/protocol/http/Request.lo:  \
+	gnu/java/net/protocol/http/$(am__dirstamp) \
+	gnu/java/net/protocol/http/$(DEPDIR)/$(am__dirstamp)
+gnu/java/net/protocol/http/RequestBodyWriter.lo:  \
+	gnu/java/net/protocol/http/$(am__dirstamp) \
+	gnu/java/net/protocol/http/$(DEPDIR)/$(am__dirstamp)
+gnu/java/net/protocol/http/Response.lo:  \
+	gnu/java/net/protocol/http/$(am__dirstamp) \
+	gnu/java/net/protocol/http/$(DEPDIR)/$(am__dirstamp)
+gnu/java/net/protocol/http/ResponseBodyReader.lo:  \
+	gnu/java/net/protocol/http/$(am__dirstamp) \
+	gnu/java/net/protocol/http/$(DEPDIR)/$(am__dirstamp)
+gnu/java/net/protocol/http/ResponseHeaderHandler.lo:  \
+	gnu/java/net/protocol/http/$(am__dirstamp) \
+	gnu/java/net/protocol/http/$(DEPDIR)/$(am__dirstamp)
+gnu/java/net/protocol/http/SimpleCookieManager.lo:  \
+	gnu/java/net/protocol/http/$(am__dirstamp) \
+	gnu/java/net/protocol/http/$(DEPDIR)/$(am__dirstamp)
+gnu/java/net/protocol/http/event/$(am__dirstamp):
+	@$(mkdir_p) gnu/java/net/protocol/http/event
+	@: > gnu/java/net/protocol/http/event/$(am__dirstamp)
+gnu/java/net/protocol/http/event/$(DEPDIR)/$(am__dirstamp):
+	@$(mkdir_p) gnu/java/net/protocol/http/event/$(DEPDIR)
+	@: > gnu/java/net/protocol/http/event/$(DEPDIR)/$(am__dirstamp)
+gnu/java/net/protocol/http/event/ConnectionEvent.lo:  \
+	gnu/java/net/protocol/http/event/$(am__dirstamp) \
+	gnu/java/net/protocol/http/event/$(DEPDIR)/$(am__dirstamp)
+gnu/java/net/protocol/http/event/ConnectionListener.lo:  \
+	gnu/java/net/protocol/http/event/$(am__dirstamp) \
+	gnu/java/net/protocol/http/event/$(DEPDIR)/$(am__dirstamp)
+gnu/java/net/protocol/http/event/RequestEvent.lo:  \
+	gnu/java/net/protocol/http/event/$(am__dirstamp) \
+	gnu/java/net/protocol/http/event/$(DEPDIR)/$(am__dirstamp)
+gnu/java/net/protocol/http/event/RequestListener.lo:  \
+	gnu/java/net/protocol/http/event/$(am__dirstamp) \
+	gnu/java/net/protocol/http/event/$(DEPDIR)/$(am__dirstamp)
 gnu/java/net/protocol/jar/$(am__dirstamp):
 	@$(mkdir_p) gnu/java/net/protocol/jar
 	@: > gnu/java/net/protocol/jar/$(am__dirstamp)
@@ -15332,10 +15471,16 @@ mostlyclean-compile:
 	-rm -f gnu/java/locale/LocaleInformation_zh_TW.lo
 	-rm -f gnu/java/math/MPN.$(OBJEXT)
 	-rm -f gnu/java/math/MPN.lo
+	-rm -f gnu/java/net/BASE64.$(OBJEXT)
+	-rm -f gnu/java/net/BASE64.lo
 	-rm -f gnu/java/net/DefaultContentHandlerFactory.$(OBJEXT)
 	-rm -f gnu/java/net/DefaultContentHandlerFactory.lo
+	-rm -f gnu/java/net/EmptyX509TrustManager.$(OBJEXT)
+	-rm -f gnu/java/net/EmptyX509TrustManager.lo
 	-rm -f gnu/java/net/HeaderFieldHelper.$(OBJEXT)
 	-rm -f gnu/java/net/HeaderFieldHelper.lo
+	-rm -f gnu/java/net/LineInputStream.$(OBJEXT)
+	-rm -f gnu/java/net/LineInputStream.lo
 	-rm -f gnu/java/net/PlainDatagramSocketImpl.$(OBJEXT)
 	-rm -f gnu/java/net/PlainDatagramSocketImpl.lo
 	-rm -f gnu/java/net/PlainSocketImpl.$(OBJEXT)
@@ -15362,10 +15507,50 @@ mostlyclean-compile:
 	-rm -f gnu/java/net/protocol/gcjlib/Connection.lo
 	-rm -f gnu/java/net/protocol/gcjlib/Handler.$(OBJEXT)
 	-rm -f gnu/java/net/protocol/gcjlib/Handler.lo
-	-rm -f gnu/java/net/protocol/http/Connection.$(OBJEXT)
-	-rm -f gnu/java/net/protocol/http/Connection.lo
+	-rm -f gnu/java/net/protocol/http/Authenticator.$(OBJEXT)
+	-rm -f gnu/java/net/protocol/http/Authenticator.lo
+	-rm -f gnu/java/net/protocol/http/ByteArrayRequestBodyWriter.$(OBJEXT)
+	-rm -f gnu/java/net/protocol/http/ByteArrayRequestBodyWriter.lo
+	-rm -f gnu/java/net/protocol/http/ByteArrayResponseBodyReader.$(OBJEXT)
+	-rm -f gnu/java/net/protocol/http/ByteArrayResponseBodyReader.lo
+	-rm -f gnu/java/net/protocol/http/ChunkedInputStream.$(OBJEXT)
+	-rm -f gnu/java/net/protocol/http/ChunkedInputStream.lo
+	-rm -f gnu/java/net/protocol/http/Cookie.$(OBJEXT)
+	-rm -f gnu/java/net/protocol/http/Cookie.lo
+	-rm -f gnu/java/net/protocol/http/CookieManager.$(OBJEXT)
+	-rm -f gnu/java/net/protocol/http/CookieManager.lo
+	-rm -f gnu/java/net/protocol/http/Credentials.$(OBJEXT)
+	-rm -f gnu/java/net/protocol/http/Credentials.lo
+	-rm -f gnu/java/net/protocol/http/HTTPConnection.$(OBJEXT)
+	-rm -f gnu/java/net/protocol/http/HTTPConnection.lo
+	-rm -f gnu/java/net/protocol/http/HTTPDateFormat.$(OBJEXT)
+	-rm -f gnu/java/net/protocol/http/HTTPDateFormat.lo
+	-rm -f gnu/java/net/protocol/http/HTTPURLConnection.$(OBJEXT)
+	-rm -f gnu/java/net/protocol/http/HTTPURLConnection.lo
 	-rm -f gnu/java/net/protocol/http/Handler.$(OBJEXT)
 	-rm -f gnu/java/net/protocol/http/Handler.lo
+	-rm -f gnu/java/net/protocol/http/Headers.$(OBJEXT)
+	-rm -f gnu/java/net/protocol/http/Headers.lo
+	-rm -f gnu/java/net/protocol/http/Request.$(OBJEXT)
+	-rm -f gnu/java/net/protocol/http/Request.lo
+	-rm -f gnu/java/net/protocol/http/RequestBodyWriter.$(OBJEXT)
+	-rm -f gnu/java/net/protocol/http/RequestBodyWriter.lo
+	-rm -f gnu/java/net/protocol/http/Response.$(OBJEXT)
+	-rm -f gnu/java/net/protocol/http/Response.lo
+	-rm -f gnu/java/net/protocol/http/ResponseBodyReader.$(OBJEXT)
+	-rm -f gnu/java/net/protocol/http/ResponseBodyReader.lo
+	-rm -f gnu/java/net/protocol/http/ResponseHeaderHandler.$(OBJEXT)
+	-rm -f gnu/java/net/protocol/http/ResponseHeaderHandler.lo
+	-rm -f gnu/java/net/protocol/http/SimpleCookieManager.$(OBJEXT)
+	-rm -f gnu/java/net/protocol/http/SimpleCookieManager.lo
+	-rm -f gnu/java/net/protocol/http/event/ConnectionEvent.$(OBJEXT)
+	-rm -f gnu/java/net/protocol/http/event/ConnectionEvent.lo
+	-rm -f gnu/java/net/protocol/http/event/ConnectionListener.$(OBJEXT)
+	-rm -f gnu/java/net/protocol/http/event/ConnectionListener.lo
+	-rm -f gnu/java/net/protocol/http/event/RequestEvent.$(OBJEXT)
+	-rm -f gnu/java/net/protocol/http/event/RequestEvent.lo
+	-rm -f gnu/java/net/protocol/http/event/RequestListener.$(OBJEXT)
+	-rm -f gnu/java/net/protocol/http/event/RequestListener.lo
 	-rm -f gnu/java/net/protocol/jar/Connection.$(OBJEXT)
 	-rm -f gnu/java/net/protocol/jar/Connection.lo
 	-rm -f gnu/java/net/protocol/jar/Handler.$(OBJEXT)
@@ -20116,8 +20301,11 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@gnu/java/locale/$(DEPDIR)/LocaleInformation_zh_SG.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@gnu/java/locale/$(DEPDIR)/LocaleInformation_zh_TW.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@gnu/java/math/$(DEPDIR)/MPN.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@gnu/java/net/$(DEPDIR)/BASE64.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@gnu/java/net/$(DEPDIR)/DefaultContentHandlerFactory.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@gnu/java/net/$(DEPDIR)/EmptyX509TrustManager.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@gnu/java/net/$(DEPDIR)/HeaderFieldHelper.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@gnu/java/net/$(DEPDIR)/LineInputStream.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@gnu/java/net/$(DEPDIR)/PlainDatagramSocketImpl.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@gnu/java/net/$(DEPDIR)/PlainSocketImpl.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@gnu/java/net/$(DEPDIR)/URLParseError.Plo@am__quote@
@@ -20131,8 +20319,28 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@gnu/java/net/protocol/file/$(DEPDIR)/Handler.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@gnu/java/net/protocol/gcjlib/$(DEPDIR)/Connection.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@gnu/java/net/protocol/gcjlib/$(DEPDIR)/Handler.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@gnu/java/net/protocol/http/$(DEPDIR)/Connection.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@gnu/java/net/protocol/http/$(DEPDIR)/Authenticator.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@gnu/java/net/protocol/http/$(DEPDIR)/ByteArrayRequestBodyWriter.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@gnu/java/net/protocol/http/$(DEPDIR)/ByteArrayResponseBodyReader.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@gnu/java/net/protocol/http/$(DEPDIR)/ChunkedInputStream.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@gnu/java/net/protocol/http/$(DEPDIR)/Cookie.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@gnu/java/net/protocol/http/$(DEPDIR)/CookieManager.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@gnu/java/net/protocol/http/$(DEPDIR)/Credentials.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@gnu/java/net/protocol/http/$(DEPDIR)/HTTPConnection.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@gnu/java/net/protocol/http/$(DEPDIR)/HTTPDateFormat.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@gnu/java/net/protocol/http/$(DEPDIR)/HTTPURLConnection.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@gnu/java/net/protocol/http/$(DEPDIR)/Handler.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@gnu/java/net/protocol/http/$(DEPDIR)/Headers.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@gnu/java/net/protocol/http/$(DEPDIR)/Request.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@gnu/java/net/protocol/http/$(DEPDIR)/RequestBodyWriter.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@gnu/java/net/protocol/http/$(DEPDIR)/Response.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@gnu/java/net/protocol/http/$(DEPDIR)/ResponseBodyReader.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@gnu/java/net/protocol/http/$(DEPDIR)/ResponseHeaderHandler.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@gnu/java/net/protocol/http/$(DEPDIR)/SimpleCookieManager.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@gnu/java/net/protocol/http/event/$(DEPDIR)/ConnectionEvent.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@gnu/java/net/protocol/http/event/$(DEPDIR)/ConnectionListener.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@gnu/java/net/protocol/http/event/$(DEPDIR)/RequestEvent.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@gnu/java/net/protocol/http/event/$(DEPDIR)/RequestListener.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@gnu/java/net/protocol/jar/$(DEPDIR)/Connection.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@gnu/java/net/protocol/jar/$(DEPDIR)/Handler.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@gnu/java/nio/$(DEPDIR)/ChannelInputStream.Plo@am__quote@
@@ -23174,6 +23382,7 @@ clean-libtool:
 	-rm -rf gnu/java/net/protocol/file/.libs gnu/java/net/protocol/file/_libs
 	-rm -rf gnu/java/net/protocol/gcjlib/.libs gnu/java/net/protocol/gcjlib/_libs
 	-rm -rf gnu/java/net/protocol/http/.libs gnu/java/net/protocol/http/_libs
+	-rm -rf gnu/java/net/protocol/http/event/.libs gnu/java/net/protocol/http/event/_libs
 	-rm -rf gnu/java/net/protocol/jar/.libs gnu/java/net/protocol/jar/_libs
 	-rm -rf gnu/java/nio/.libs gnu/java/nio/_libs
 	-rm -rf gnu/java/nio/channels/.libs gnu/java/nio/channels/_libs
@@ -23699,6 +23908,8 @@ distclean-generic:
 	-rm -f gnu/java/net/protocol/gcjlib/$(am__dirstamp)
 	-rm -f gnu/java/net/protocol/http/$(DEPDIR)/$(am__dirstamp)
 	-rm -f gnu/java/net/protocol/http/$(am__dirstamp)
+	-rm -f gnu/java/net/protocol/http/event/$(DEPDIR)/$(am__dirstamp)
+	-rm -f gnu/java/net/protocol/http/event/$(am__dirstamp)
 	-rm -f gnu/java/net/protocol/jar/$(DEPDIR)/$(am__dirstamp)
 	-rm -f gnu/java/net/protocol/jar/$(am__dirstamp)
 	-rm -f gnu/java/nio/$(DEPDIR)/$(am__dirstamp)
@@ -23951,7 +24162,7 @@ clean-am: clean-binPROGRAMS clean-generic clean-libtool clean-local \
 
 distclean: distclean-recursive
 	-rm -f $(am__CONFIG_DISTCLEAN_FILES)
-	-rm -rf ./$(DEPDIR) gnu/awt/$(DEPDIR) gnu/awt/j2d/$(DEPDIR) gnu/awt/xlib/$(DEPDIR) gnu/classpath/$(DEPDIR) gnu/gcj/$(DEPDIR) gnu/gcj/convert/$(DEPDIR) gnu/gcj/io/$(DEPDIR) gnu/gcj/runtime/$(DEPDIR) gnu/gcj/tools/gcj_dbtool/$(DEPDIR) gnu/gcj/util/$(DEPDIR) gnu/gcj/xlib/$(DEPDIR) gnu/java/awt/$(DEPDIR) gnu/java/awt/color/$(DEPDIR) gnu/java/awt/image/$(DEPDIR) gnu/java/awt/peer/$(DEPDIR) gnu/java/awt/peer/gtk/$(DEPDIR) gnu/java/beans/$(DEPDIR) gnu/java/beans/editors/$(DEPDIR) gnu/java/beans/info/$(DEPDIR) gnu/java/io/$(DEPDIR) gnu/java/lang/$(DEPDIR) gnu/java/lang/reflect/$(DEPDIR) gnu/java/locale/$(DEPDIR) gnu/java/math/$(DEPDIR) gnu/java/net/$(DEPDIR) gnu/java/net/protocol/core/$(DEPDIR) gnu/java/net/protocol/file/$(DEPDIR) gnu/java/net/protocol/gcjlib/$(DEPDIR) gnu/java/net/protocol/http/$(DEPDIR) gnu/java/net/protocol/jar/$(DEPDIR) gnu/java/nio/$(DEPDIR) gnu/java/nio/channels/$(DEPDIR) gnu/java/nio/charset/$(DEPDIR) gnu/java/rmi/$(DEPDIR) gnu/java/rmi/dgc/$(DEPDIR) gnu/java/rmi/registry/$(DEPDIR) gnu/java/rmi/rmic/$(DEPDIR) gnu/java/rmi/server/$(DEPDIR) gnu/java/security/$(DEPDIR) gnu/java/security/action/$(DEPDIR) gnu/java/security/der/$(DEPDIR) gnu/java/security/provider/$(DEPDIR) gnu/java/security/util/$(DEPDIR) gnu/java/security/x509/$(DEPDIR) gnu/java/security/x509/ext/$(DEPDIR) gnu/java/text/$(DEPDIR) gnu/java/util/$(DEPDIR) gnu/java/util/prefs/$(DEPDIR) gnu/regexp/$(DEPDIR) java/applet/$(DEPDIR) java/awt/$(DEPDIR) java/awt/color/$(DEPDIR) java/awt/datatransfer/$(DEPDIR) java/awt/dnd/$(DEPDIR) java/awt/dnd/peer/$(DEPDIR) java/awt/event/$(DEPDIR) java/awt/font/$(DEPDIR) java/awt/geom/$(DEPDIR) java/awt/im/$(DEPDIR) java/awt/im/spi/$(DEPDIR) java/awt/image/$(DEPDIR) java/awt/image/renderable/$(DEPDIR) java/awt/peer/$(DEPDIR) java/awt/print/$(DEPDIR) java/beans/$(DEPDIR) java/beans/beancontext/$(DEPDIR) java/io/$(DEPDIR) java/lang/$(DEPDIR) java/lang/ref/$(DEPDIR) java/lang/reflect/$(DEPDIR) java/math/$(DEPDIR) java/net/$(DEPDIR) java/nio/$(DEPDIR) java/nio/channels/$(DEPDIR) java/nio/channels/spi/$(DEPDIR) java/nio/charset/$(DEPDIR) java/nio/charset/spi/$(DEPDIR) java/rmi/$(DEPDIR) java/rmi/activation/$(DEPDIR) java/rmi/dgc/$(DEPDIR) java/rmi/registry/$(DEPDIR) java/rmi/server/$(DEPDIR) java/security/$(DEPDIR) java/security/acl/$(DEPDIR) java/security/cert/$(DEPDIR) java/security/interfaces/$(DEPDIR) java/security/spec/$(DEPDIR) java/sql/$(DEPDIR) java/text/$(DEPDIR) java/util/$(DEPDIR) java/util/jar/$(DEPDIR) java/util/logging/$(DEPDIR) java/util/prefs/$(DEPDIR) java/util/regex/$(DEPDIR) java/util/zip/$(DEPDIR) javax/accessibility/$(DEPDIR) javax/crypto/$(DEPDIR) javax/crypto/interfaces/$(DEPDIR) javax/crypto/spec/$(DEPDIR) javax/imageio/$(DEPDIR) javax/imageio/event/$(DEPDIR) javax/imageio/metadata/$(DEPDIR) javax/imageio/spi/$(DEPDIR) javax/imageio/stream/$(DEPDIR) javax/naming/$(DEPDIR) javax/naming/directory/$(DEPDIR) javax/naming/event/$(DEPDIR) javax/naming/ldap/$(DEPDIR) javax/naming/spi/$(DEPDIR) javax/net/$(DEPDIR) javax/net/ssl/$(DEPDIR) javax/print/$(DEPDIR) javax/print/attribute/$(DEPDIR) javax/print/attribute/standard/$(DEPDIR) javax/print/event/$(DEPDIR) javax/security/auth/$(DEPDIR) javax/security/auth/callback/$(DEPDIR) javax/security/auth/login/$(DEPDIR) javax/security/auth/spi/$(DEPDIR) javax/security/auth/x500/$(DEPDIR) javax/security/cert/$(DEPDIR) javax/security/sasl/$(DEPDIR) javax/sql/$(DEPDIR) javax/swing/$(DEPDIR) javax/swing/border/$(DEPDIR) javax/swing/colorchooser/$(DEPDIR) javax/swing/event/$(DEPDIR) javax/swing/filechooser/$(DEPDIR) javax/swing/plaf/$(DEPDIR) javax/swing/plaf/basic/$(DEPDIR) javax/swing/plaf/metal/$(DEPDIR) javax/swing/table/$(DEPDIR) javax/swing/text/$(DEPDIR) javax/swing/text/html/$(DEPDIR) javax/swing/text/html/parser/$(DEPDIR) javax/swing/tree/$(DEPDIR) javax/swing/undo/$(DEPDIR) javax/transaction/$(DEPDIR) javax/transaction/xa/$(DEPDIR) jni/classpath/$(DEPDIR) jni/gtk-peer/$(DEPDIR) org/ietf/jgss/$(DEPDIR) org/w3c/dom/$(DEPDIR) org/w3c/dom/ranges/$(DEPDIR) org/w3c/dom/traversal/$(DEPDIR) org/xml/sax/$(DEPDIR) org/xml/sax/ext/$(DEPDIR) org/xml/sax/helpers/$(DEPDIR) sysdep/$(DEPDIR)
+	-rm -rf ./$(DEPDIR) gnu/awt/$(DEPDIR) gnu/awt/j2d/$(DEPDIR) gnu/awt/xlib/$(DEPDIR) gnu/classpath/$(DEPDIR) gnu/gcj/$(DEPDIR) gnu/gcj/convert/$(DEPDIR) gnu/gcj/io/$(DEPDIR) gnu/gcj/runtime/$(DEPDIR) gnu/gcj/tools/gcj_dbtool/$(DEPDIR) gnu/gcj/util/$(DEPDIR) gnu/gcj/xlib/$(DEPDIR) gnu/java/awt/$(DEPDIR) gnu/java/awt/color/$(DEPDIR) gnu/java/awt/image/$(DEPDIR) gnu/java/awt/peer/$(DEPDIR) gnu/java/awt/peer/gtk/$(DEPDIR) gnu/java/beans/$(DEPDIR) gnu/java/beans/editors/$(DEPDIR) gnu/java/beans/info/$(DEPDIR) gnu/java/io/$(DEPDIR) gnu/java/lang/$(DEPDIR) gnu/java/lang/reflect/$(DEPDIR) gnu/java/locale/$(DEPDIR) gnu/java/math/$(DEPDIR) gnu/java/net/$(DEPDIR) gnu/java/net/protocol/core/$(DEPDIR) gnu/java/net/protocol/file/$(DEPDIR) gnu/java/net/protocol/gcjlib/$(DEPDIR) gnu/java/net/protocol/http/$(DEPDIR) gnu/java/net/protocol/http/event/$(DEPDIR) gnu/java/net/protocol/jar/$(DEPDIR) gnu/java/nio/$(DEPDIR) gnu/java/nio/channels/$(DEPDIR) gnu/java/nio/charset/$(DEPDIR) gnu/java/rmi/$(DEPDIR) gnu/java/rmi/dgc/$(DEPDIR) gnu/java/rmi/registry/$(DEPDIR) gnu/java/rmi/rmic/$(DEPDIR) gnu/java/rmi/server/$(DEPDIR) gnu/java/security/$(DEPDIR) gnu/java/security/action/$(DEPDIR) gnu/java/security/der/$(DEPDIR) gnu/java/security/provider/$(DEPDIR) gnu/java/security/util/$(DEPDIR) gnu/java/security/x509/$(DEPDIR) gnu/java/security/x509/ext/$(DEPDIR) gnu/java/text/$(DEPDIR) gnu/java/util/$(DEPDIR) gnu/java/util/prefs/$(DEPDIR) gnu/regexp/$(DEPDIR) java/applet/$(DEPDIR) java/awt/$(DEPDIR) java/awt/color/$(DEPDIR) java/awt/datatransfer/$(DEPDIR) java/awt/dnd/$(DEPDIR) java/awt/dnd/peer/$(DEPDIR) java/awt/event/$(DEPDIR) java/awt/font/$(DEPDIR) java/awt/geom/$(DEPDIR) java/awt/im/$(DEPDIR) java/awt/im/spi/$(DEPDIR) java/awt/image/$(DEPDIR) java/awt/image/renderable/$(DEPDIR) java/awt/peer/$(DEPDIR) java/awt/print/$(DEPDIR) java/beans/$(DEPDIR) java/beans/beancontext/$(DEPDIR) java/io/$(DEPDIR) java/lang/$(DEPDIR) java/lang/ref/$(DEPDIR) java/lang/reflect/$(DEPDIR) java/math/$(DEPDIR) java/net/$(DEPDIR) java/nio/$(DEPDIR) java/nio/channels/$(DEPDIR) java/nio/channels/spi/$(DEPDIR) java/nio/charset/$(DEPDIR) java/nio/charset/spi/$(DEPDIR) java/rmi/$(DEPDIR) java/rmi/activation/$(DEPDIR) java/rmi/dgc/$(DEPDIR) java/rmi/registry/$(DEPDIR) java/rmi/server/$(DEPDIR) java/security/$(DEPDIR) java/security/acl/$(DEPDIR) java/security/cert/$(DEPDIR) java/security/interfaces/$(DEPDIR) java/security/spec/$(DEPDIR) java/sql/$(DEPDIR) java/text/$(DEPDIR) java/util/$(DEPDIR) java/util/jar/$(DEPDIR) java/util/logging/$(DEPDIR) java/util/prefs/$(DEPDIR) java/util/regex/$(DEPDIR) java/util/zip/$(DEPDIR) javax/accessibility/$(DEPDIR) javax/crypto/$(DEPDIR) javax/crypto/interfaces/$(DEPDIR) javax/crypto/spec/$(DEPDIR) javax/imageio/$(DEPDIR) javax/imageio/event/$(DEPDIR) javax/imageio/metadata/$(DEPDIR) javax/imageio/spi/$(DEPDIR) javax/imageio/stream/$(DEPDIR) javax/naming/$(DEPDIR) javax/naming/directory/$(DEPDIR) javax/naming/event/$(DEPDIR) javax/naming/ldap/$(DEPDIR) javax/naming/spi/$(DEPDIR) javax/net/$(DEPDIR) javax/net/ssl/$(DEPDIR) javax/print/$(DEPDIR) javax/print/attribute/$(DEPDIR) javax/print/attribute/standard/$(DEPDIR) javax/print/event/$(DEPDIR) javax/security/auth/$(DEPDIR) javax/security/auth/callback/$(DEPDIR) javax/security/auth/login/$(DEPDIR) javax/security/auth/spi/$(DEPDIR) javax/security/auth/x500/$(DEPDIR) javax/security/cert/$(DEPDIR) javax/security/sasl/$(DEPDIR) javax/sql/$(DEPDIR) javax/swing/$(DEPDIR) javax/swing/border/$(DEPDIR) javax/swing/colorchooser/$(DEPDIR) javax/swing/event/$(DEPDIR) javax/swing/filechooser/$(DEPDIR) javax/swing/plaf/$(DEPDIR) javax/swing/plaf/basic/$(DEPDIR) javax/swing/plaf/metal/$(DEPDIR) javax/swing/table/$(DEPDIR) javax/swing/text/$(DEPDIR) javax/swing/text/html/$(DEPDIR) javax/swing/text/html/parser/$(DEPDIR) javax/swing/tree/$(DEPDIR) javax/swing/undo/$(DEPDIR) javax/transaction/$(DEPDIR) javax/transaction/xa/$(DEPDIR) jni/classpath/$(DEPDIR) jni/gtk-peer/$(DEPDIR) org/ietf/jgss/$(DEPDIR) org/w3c/dom/$(DEPDIR) org/w3c/dom/ranges/$(DEPDIR) org/w3c/dom/traversal/$(DEPDIR) org/xml/sax/$(DEPDIR) org/xml/sax/ext/$(DEPDIR) org/xml/sax/helpers/$(DEPDIR) sysdep/$(DEPDIR)
 	-rm -f Makefile
 distclean-am: clean-am distclean-compile distclean-generic \
 	distclean-libtool distclean-local distclean-tags
@@ -23981,7 +24192,7 @@ installcheck-am:
 maintainer-clean: maintainer-clean-recursive
 	-rm -f $(am__CONFIG_DISTCLEAN_FILES)
 	-rm -rf $(top_srcdir)/autom4te.cache
-	-rm -rf ./$(DEPDIR) gnu/awt/$(DEPDIR) gnu/awt/j2d/$(DEPDIR) gnu/awt/xlib/$(DEPDIR) gnu/classpath/$(DEPDIR) gnu/gcj/$(DEPDIR) gnu/gcj/convert/$(DEPDIR) gnu/gcj/io/$(DEPDIR) gnu/gcj/runtime/$(DEPDIR) gnu/gcj/tools/gcj_dbtool/$(DEPDIR) gnu/gcj/util/$(DEPDIR) gnu/gcj/xlib/$(DEPDIR) gnu/java/awt/$(DEPDIR) gnu/java/awt/color/$(DEPDIR) gnu/java/awt/image/$(DEPDIR) gnu/java/awt/peer/$(DEPDIR) gnu/java/awt/peer/gtk/$(DEPDIR) gnu/java/beans/$(DEPDIR) gnu/java/beans/editors/$(DEPDIR) gnu/java/beans/info/$(DEPDIR) gnu/java/io/$(DEPDIR) gnu/java/lang/$(DEPDIR) gnu/java/lang/reflect/$(DEPDIR) gnu/java/locale/$(DEPDIR) gnu/java/math/$(DEPDIR) gnu/java/net/$(DEPDIR) gnu/java/net/protocol/core/$(DEPDIR) gnu/java/net/protocol/file/$(DEPDIR) gnu/java/net/protocol/gcjlib/$(DEPDIR) gnu/java/net/protocol/http/$(DEPDIR) gnu/java/net/protocol/jar/$(DEPDIR) gnu/java/nio/$(DEPDIR) gnu/java/nio/channels/$(DEPDIR) gnu/java/nio/charset/$(DEPDIR) gnu/java/rmi/$(DEPDIR) gnu/java/rmi/dgc/$(DEPDIR) gnu/java/rmi/registry/$(DEPDIR) gnu/java/rmi/rmic/$(DEPDIR) gnu/java/rmi/server/$(DEPDIR) gnu/java/security/$(DEPDIR) gnu/java/security/action/$(DEPDIR) gnu/java/security/der/$(DEPDIR) gnu/java/security/provider/$(DEPDIR) gnu/java/security/util/$(DEPDIR) gnu/java/security/x509/$(DEPDIR) gnu/java/security/x509/ext/$(DEPDIR) gnu/java/text/$(DEPDIR) gnu/java/util/$(DEPDIR) gnu/java/util/prefs/$(DEPDIR) gnu/regexp/$(DEPDIR) java/applet/$(DEPDIR) java/awt/$(DEPDIR) java/awt/color/$(DEPDIR) java/awt/datatransfer/$(DEPDIR) java/awt/dnd/$(DEPDIR) java/awt/dnd/peer/$(DEPDIR) java/awt/event/$(DEPDIR) java/awt/font/$(DEPDIR) java/awt/geom/$(DEPDIR) java/awt/im/$(DEPDIR) java/awt/im/spi/$(DEPDIR) java/awt/image/$(DEPDIR) java/awt/image/renderable/$(DEPDIR) java/awt/peer/$(DEPDIR) java/awt/print/$(DEPDIR) java/beans/$(DEPDIR) java/beans/beancontext/$(DEPDIR) java/io/$(DEPDIR) java/lang/$(DEPDIR) java/lang/ref/$(DEPDIR) java/lang/reflect/$(DEPDIR) java/math/$(DEPDIR) java/net/$(DEPDIR) java/nio/$(DEPDIR) java/nio/channels/$(DEPDIR) java/nio/channels/spi/$(DEPDIR) java/nio/charset/$(DEPDIR) java/nio/charset/spi/$(DEPDIR) java/rmi/$(DEPDIR) java/rmi/activation/$(DEPDIR) java/rmi/dgc/$(DEPDIR) java/rmi/registry/$(DEPDIR) java/rmi/server/$(DEPDIR) java/security/$(DEPDIR) java/security/acl/$(DEPDIR) java/security/cert/$(DEPDIR) java/security/interfaces/$(DEPDIR) java/security/spec/$(DEPDIR) java/sql/$(DEPDIR) java/text/$(DEPDIR) java/util/$(DEPDIR) java/util/jar/$(DEPDIR) java/util/logging/$(DEPDIR) java/util/prefs/$(DEPDIR) java/util/regex/$(DEPDIR) java/util/zip/$(DEPDIR) javax/accessibility/$(DEPDIR) javax/crypto/$(DEPDIR) javax/crypto/interfaces/$(DEPDIR) javax/crypto/spec/$(DEPDIR) javax/imageio/$(DEPDIR) javax/imageio/event/$(DEPDIR) javax/imageio/metadata/$(DEPDIR) javax/imageio/spi/$(DEPDIR) javax/imageio/stream/$(DEPDIR) javax/naming/$(DEPDIR) javax/naming/directory/$(DEPDIR) javax/naming/event/$(DEPDIR) javax/naming/ldap/$(DEPDIR) javax/naming/spi/$(DEPDIR) javax/net/$(DEPDIR) javax/net/ssl/$(DEPDIR) javax/print/$(DEPDIR) javax/print/attribute/$(DEPDIR) javax/print/attribute/standard/$(DEPDIR) javax/print/event/$(DEPDIR) javax/security/auth/$(DEPDIR) javax/security/auth/callback/$(DEPDIR) javax/security/auth/login/$(DEPDIR) javax/security/auth/spi/$(DEPDIR) javax/security/auth/x500/$(DEPDIR) javax/security/cert/$(DEPDIR) javax/security/sasl/$(DEPDIR) javax/sql/$(DEPDIR) javax/swing/$(DEPDIR) javax/swing/border/$(DEPDIR) javax/swing/colorchooser/$(DEPDIR) javax/swing/event/$(DEPDIR) javax/swing/filechooser/$(DEPDIR) javax/swing/plaf/$(DEPDIR) javax/swing/plaf/basic/$(DEPDIR) javax/swing/plaf/metal/$(DEPDIR) javax/swing/table/$(DEPDIR) javax/swing/text/$(DEPDIR) javax/swing/text/html/$(DEPDIR) javax/swing/text/html/parser/$(DEPDIR) javax/swing/tree/$(DEPDIR) javax/swing/undo/$(DEPDIR) javax/transaction/$(DEPDIR) javax/transaction/xa/$(DEPDIR) jni/classpath/$(DEPDIR) jni/gtk-peer/$(DEPDIR) org/ietf/jgss/$(DEPDIR) org/w3c/dom/$(DEPDIR) org/w3c/dom/ranges/$(DEPDIR) org/w3c/dom/traversal/$(DEPDIR) org/xml/sax/$(DEPDIR) org/xml/sax/ext/$(DEPDIR) org/xml/sax/helpers/$(DEPDIR) sysdep/$(DEPDIR)
+	-rm -rf ./$(DEPDIR) gnu/awt/$(DEPDIR) gnu/awt/j2d/$(DEPDIR) gnu/awt/xlib/$(DEPDIR) gnu/classpath/$(DEPDIR) gnu/gcj/$(DEPDIR) gnu/gcj/convert/$(DEPDIR) gnu/gcj/io/$(DEPDIR) gnu/gcj/runtime/$(DEPDIR) gnu/gcj/tools/gcj_dbtool/$(DEPDIR) gnu/gcj/util/$(DEPDIR) gnu/gcj/xlib/$(DEPDIR) gnu/java/awt/$(DEPDIR) gnu/java/awt/color/$(DEPDIR) gnu/java/awt/image/$(DEPDIR) gnu/java/awt/peer/$(DEPDIR) gnu/java/awt/peer/gtk/$(DEPDIR) gnu/java/beans/$(DEPDIR) gnu/java/beans/editors/$(DEPDIR) gnu/java/beans/info/$(DEPDIR) gnu/java/io/$(DEPDIR) gnu/java/lang/$(DEPDIR) gnu/java/lang/reflect/$(DEPDIR) gnu/java/locale/$(DEPDIR) gnu/java/math/$(DEPDIR) gnu/java/net/$(DEPDIR) gnu/java/net/protocol/core/$(DEPDIR) gnu/java/net/protocol/file/$(DEPDIR) gnu/java/net/protocol/gcjlib/$(DEPDIR) gnu/java/net/protocol/http/$(DEPDIR) gnu/java/net/protocol/http/event/$(DEPDIR) gnu/java/net/protocol/jar/$(DEPDIR) gnu/java/nio/$(DEPDIR) gnu/java/nio/channels/$(DEPDIR) gnu/java/nio/charset/$(DEPDIR) gnu/java/rmi/$(DEPDIR) gnu/java/rmi/dgc/$(DEPDIR) gnu/java/rmi/registry/$(DEPDIR) gnu/java/rmi/rmic/$(DEPDIR) gnu/java/rmi/server/$(DEPDIR) gnu/java/security/$(DEPDIR) gnu/java/security/action/$(DEPDIR) gnu/java/security/der/$(DEPDIR) gnu/java/security/provider/$(DEPDIR) gnu/java/security/util/$(DEPDIR) gnu/java/security/x509/$(DEPDIR) gnu/java/security/x509/ext/$(DEPDIR) gnu/java/text/$(DEPDIR) gnu/java/util/$(DEPDIR) gnu/java/util/prefs/$(DEPDIR) gnu/regexp/$(DEPDIR) java/applet/$(DEPDIR) java/awt/$(DEPDIR) java/awt/color/$(DEPDIR) java/awt/datatransfer/$(DEPDIR) java/awt/dnd/$(DEPDIR) java/awt/dnd/peer/$(DEPDIR) java/awt/event/$(DEPDIR) java/awt/font/$(DEPDIR) java/awt/geom/$(DEPDIR) java/awt/im/$(DEPDIR) java/awt/im/spi/$(DEPDIR) java/awt/image/$(DEPDIR) java/awt/image/renderable/$(DEPDIR) java/awt/peer/$(DEPDIR) java/awt/print/$(DEPDIR) java/beans/$(DEPDIR) java/beans/beancontext/$(DEPDIR) java/io/$(DEPDIR) java/lang/$(DEPDIR) java/lang/ref/$(DEPDIR) java/lang/reflect/$(DEPDIR) java/math/$(DEPDIR) java/net/$(DEPDIR) java/nio/$(DEPDIR) java/nio/channels/$(DEPDIR) java/nio/channels/spi/$(DEPDIR) java/nio/charset/$(DEPDIR) java/nio/charset/spi/$(DEPDIR) java/rmi/$(DEPDIR) java/rmi/activation/$(DEPDIR) java/rmi/dgc/$(DEPDIR) java/rmi/registry/$(DEPDIR) java/rmi/server/$(DEPDIR) java/security/$(DEPDIR) java/security/acl/$(DEPDIR) java/security/cert/$(DEPDIR) java/security/interfaces/$(DEPDIR) java/security/spec/$(DEPDIR) java/sql/$(DEPDIR) java/text/$(DEPDIR) java/util/$(DEPDIR) java/util/jar/$(DEPDIR) java/util/logging/$(DEPDIR) java/util/prefs/$(DEPDIR) java/util/regex/$(DEPDIR) java/util/zip/$(DEPDIR) javax/accessibility/$(DEPDIR) javax/crypto/$(DEPDIR) javax/crypto/interfaces/$(DEPDIR) javax/crypto/spec/$(DEPDIR) javax/imageio/$(DEPDIR) javax/imageio/event/$(DEPDIR) javax/imageio/metadata/$(DEPDIR) javax/imageio/spi/$(DEPDIR) javax/imageio/stream/$(DEPDIR) javax/naming/$(DEPDIR) javax/naming/directory/$(DEPDIR) javax/naming/event/$(DEPDIR) javax/naming/ldap/$(DEPDIR) javax/naming/spi/$(DEPDIR) javax/net/$(DEPDIR) javax/net/ssl/$(DEPDIR) javax/print/$(DEPDIR) javax/print/attribute/$(DEPDIR) javax/print/attribute/standard/$(DEPDIR) javax/print/event/$(DEPDIR) javax/security/auth/$(DEPDIR) javax/security/auth/callback/$(DEPDIR) javax/security/auth/login/$(DEPDIR) javax/security/auth/spi/$(DEPDIR) javax/security/auth/x500/$(DEPDIR) javax/security/cert/$(DEPDIR) javax/security/sasl/$(DEPDIR) javax/sql/$(DEPDIR) javax/swing/$(DEPDIR) javax/swing/border/$(DEPDIR) javax/swing/colorchooser/$(DEPDIR) javax/swing/event/$(DEPDIR) javax/swing/filechooser/$(DEPDIR) javax/swing/plaf/$(DEPDIR) javax/swing/plaf/basic/$(DEPDIR) javax/swing/plaf/metal/$(DEPDIR) javax/swing/table/$(DEPDIR) javax/swing/text/$(DEPDIR) javax/swing/text/html/$(DEPDIR) javax/swing/text/html/parser/$(DEPDIR) javax/swing/tree/$(DEPDIR) javax/swing/undo/$(DEPDIR) javax/transaction/$(DEPDIR) javax/transaction/xa/$(DEPDIR) jni/classpath/$(DEPDIR) jni/gtk-peer/$(DEPDIR) org/ietf/jgss/$(DEPDIR) org/w3c/dom/$(DEPDIR) org/w3c/dom/ranges/$(DEPDIR) org/w3c/dom/traversal/$(DEPDIR) org/xml/sax/$(DEPDIR) org/xml/sax/ext/$(DEPDIR) org/xml/sax/helpers/$(DEPDIR) sysdep/$(DEPDIR)
 	-rm -f Makefile
 maintainer-clean-am: distclean-am maintainer-clean-generic
 

@@ -1,4 +1,4 @@
-/* Handler.java --
+/* ByteArrayRequestBodyWriter.java --
    Copyright (C) 2004 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -38,36 +38,70 @@ exception statement from your version. */
 
 package gnu.java.net.protocol.http;
 
-import java.io.IOException;
-import java.net.URL;
-import java.net.URLConnection;
-import java.net.URLStreamHandler;
-
 /**
- * An HTTP URL stream handler.
+ * A simple request body writer using a byte array.
  *
  * @author Chris Burdess (dog@gnu.org)
  */
-public class Handler
-  extends URLStreamHandler
+public class ByteArrayRequestBodyWriter
+  implements RequestBodyWriter
 {
 
   /**
-   * Returns the default HTTP port (80).
+   * The content.
    */
-  protected int getDefaultPort()
+  protected byte[] content;
+
+  /**
+   * The position within the content at which the next read will occur.
+   */
+  protected int pos;
+
+  /**
+   * Constructs a new byte array request body writer with the specified
+   * content.
+   * @param content the content buffer
+   */
+  public ByteArrayRequestBodyWriter(byte[] content)
   {
-    return HTTPConnection.HTTP_PORT;
+    this.content = content;
+    pos = 0;
   }
 
   /**
-   * Returns an HTTPURLConnection for the given URL.
+   * Returns the total number of bytes that will be written in a single pass
+   * by this writer.
    */
-  public URLConnection openConnection(URL url)
-    throws IOException
+  public int getContentLength()
   {
-    return new HTTPURLConnection(url);
+    return content.length;
   }
 
+  /**
+   * Initialises the writer.
+   * This will be called before each pass.
+   */
+  public void reset()
+  {
+    pos = 0;
+  }
+
+  /**
+   * Writes body content to the supplied buffer.
+   * @param buffer the content buffer
+   * @return the number of bytes written
+   */
+  public int write(byte[] buffer)
+  {
+    int len = content.length - pos;
+    len = (buffer.length < len) ? buffer.length : len;
+    if (len > -1)
+      {
+        System.arraycopy(content, pos, buffer, 0, len);
+        pos += len;
+      }
+    return len;
+  }
+  
 }
 
