@@ -1,3 +1,7 @@
+2004-09-08  Adam Nemet  <anemet@lnxw.com>
+
+	* vasprintf.c: Accept __va_copy in addition to va_copy.
+
 2004-09-03  Paolo Bonzini  <bonzini@gnu.org> 
 
 	* configure: Regenerate.
