@@ -1,3 +1,11 @@
+2004-11-29  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* opts.c (decode_options): Do not set max-inline-insns-rtl.
+	(common_handle_option): Likewise.
+	* params.def (PARAM_MAX_INLINE_INSNS_RTL): Remove.
+	* params.h (MAX_INLINE_INSNS_RTL): Remove.
+	* doc/invoke.texi (max-inline-insns-rtl): Remove.
+
 2004-11-29  Alan Modra  <amodra@bigpond.net.au>
 
 	PR target/9571

@@ -104,16 +104,6 @@ DEFPARAM (PARAM_MAX_INLINE_RECURSIVE_DEPTH_AUTO,
 	  "The maximum depth of recursive inlining for non-inline functions",
 	  8)
 
-/* For languages that (still) use the RTL inliner, we can specify
-   limits for the RTL inliner separately.
-   The parameter here defines the maximum number of RTL instructions
-   a function may have to be eligible for inlining in the RTL inliner.
-   The default value is 600.  */
-DEFPARAM (PARAM_MAX_INLINE_INSNS_RTL,
-	  "max-inline-insns-rtl",
-	  "The maximum number of instructions for the RTL inliner",
-	  600)
-
 /* Limit the number of expansions created by the variable expansion
    optimization to avoid register pressure.  */
 DEFPARAM (PARAM_MAX_VARIABLE_EXPANSIONS,

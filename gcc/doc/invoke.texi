@@ -5426,12 +5426,6 @@ happens only when @option{-finline-functions} (included in @option{-O3}) is
 enabled and @option{--param max-inline-recursive-depth-auto} is used.  The
 default value is 500.
 
-@item max-inline-insns-rtl
-For languages that use the RTL inliner (this happens at a later stage
-than tree inlining), you can set the maximum allowable size (counted
-in RTL instructions) for the RTL inliner with this parameter.
-The default value is 600.
-
 @item max-unrolled-insns
 The maximum number of instructions that a loop should have if that loop
 is unrolled, and if the loop is unrolled, it determines how many times

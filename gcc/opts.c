@@ -572,7 +572,6 @@ decode_options (unsigned int argc, const char **argv)
       /* Inlining of very small functions usually reduces total size.  */
       set_param_value ("max-inline-insns-single", 5);
       set_param_value ("max-inline-insns-auto", 5);
-      set_param_value ("max-inline-insns-rtl", 10);
       flag_inline_functions = 1;
 
       /* We want to crossjump as much as possible.  */
@@ -808,7 +807,6 @@ common_handle_option (size_t scode, const char *arg, int value)
     case OPT_finline_limit_eq:
       set_param_value ("max-inline-insns-single", value / 2);
       set_param_value ("max-inline-insns-auto", value / 2);
-      set_param_value ("max-inline-insns-rtl", value);
       break;
 
     case OPT_fmessage_length_:
