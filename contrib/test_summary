@@ -22,16 +22,18 @@
 
 # The usage pattern of this script is as follows:
 
-# summarize | more   # so as to observe what should be done
+# test_summary | more   # so as to observe what should be done
 
-# summarize | sh     # so as to actually send e-mail and move log files
+# test_summary | sh     # so as to actually send e-mail and move log files
 
 # It accepts a few command line arguments.  For example:
 # -o: re-reads logs that have been mailed already (.sum.sent)
 # -t: prevents logs from being renamed
 # -i: append specified file (or list of files: -i "a b") to the report
-# -m: specify the e-mail address to send notes to.  An appropriate default should be selected from the log files.
-# -f: force reports to be mailed; if omitted, only reports that differ from the sent.* version are sent
+# -m: specify the e-mail address to send notes to.  An appropriate default
+#     should be selected from the log files.
+# -f: force reports to be mailed; if omitted, only reports that differ
+#     from the sent.* version are sent.
 
 # Find a good awk.
 if test -z "$AWK" ; then
