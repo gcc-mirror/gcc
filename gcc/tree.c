@@ -3259,12 +3259,14 @@ type_hash_lookup (hashcode, type)
 	&& (TYPE_MIN_VALUE (h->type) == TYPE_MIN_VALUE (type)
 	    || tree_int_cst_equal (TYPE_MIN_VALUE (h->type),
 				   TYPE_MIN_VALUE (type)))
+	/* Note that TYPE_DOMAIN is TYPE_ARG_TYPES for FUNCTION_TYPE.  */
 	&& (TYPE_DOMAIN (h->type) == TYPE_DOMAIN (type)
 	    || (TYPE_DOMAIN (h->type)
 		&& TREE_CODE (TYPE_DOMAIN (h->type)) == TREE_LIST
 		&& TYPE_DOMAIN (type)
 		&& TREE_CODE (TYPE_DOMAIN (type)) == TREE_LIST
-		&& type_list_equal (TYPE_DOMAIN (h->type), TYPE_DOMAIN (type)))))
+		&& type_list_equal (TYPE_DOMAIN (h->type),
+				    TYPE_DOMAIN (type)))))
       return h->type;
   return 0;
 }
@@ -3386,7 +3388,8 @@ attribute_list_contained (l1, l2)
 
   for (; t2; t2 = TREE_CHAIN (t2))
     {
-      tree attr = lookup_attribute (IDENTIFIER_POINTER (TREE_PURPOSE (t2)), l1);
+      tree attr
+	= lookup_attribute (IDENTIFIER_POINTER (TREE_PURPOSE (t2)), l1);
 
       if (attr == NULL_TREE)
 	return 0;
@@ -3407,21 +3410,15 @@ type_list_equal (l1, l2)
      tree l1, l2;
 {
   register tree t1, t2;
+
   for (t1 = l1, t2 = l2; t1 && t2; t1 = TREE_CHAIN (t1), t2 = TREE_CHAIN (t2))
-    {
-      if (TREE_VALUE (t1) != TREE_VALUE (t2))
-	return 0;
-      if (TREE_PURPOSE (t1) != TREE_PURPOSE (t2))
-	{
-	  int cmp = simple_cst_equal (TREE_PURPOSE (t1), TREE_PURPOSE (t2));
-	  if (cmp < 0)
-	    abort ();
-	  if (cmp == 0
-	      || TREE_TYPE (TREE_PURPOSE (t1))
-	         != TREE_TYPE (TREE_PURPOSE (t2)))
-	    return 0;
-	}
-    }
+    if (TREE_VALUE (t1) != TREE_VALUE (t2)
+	|| (TREE_PURPOSE (t1) != TREE_PURPOSE (t2)
+	    && ! ((TREE_TYPE (TREE_PURPOSE (t1))
+		   == TREE_TYPE (TREE_PURPOSE (t2)))
+		  && 1 == simple_cst_equal (TREE_PURPOSE (t1),
+					    TREE_PURPOSE (t2)))))
+      return 0;
 
   return t1 == t2;
 }
@@ -3478,21 +3475,22 @@ tree_int_cst_sgn (t)
     return 1;
 }
 
-/* Compare two constructor-element-type constants.  */
+/* Compare two constructor-element-type constants.  Return 1 if the lists
+   are known to be equal; otherwise return 0.  */
+
 int
 simple_cst_list_equal (l1, l2)
      tree l1, l2;
 {
   while (l1 != NULL_TREE && l2 != NULL_TREE)
     {
-      int cmp = simple_cst_equal (TREE_VALUE (l1), TREE_VALUE (l2));
-      if (cmp < 0)
-	abort ();
-      if (cmp == 0)
+      if (simple_cst_equal (TREE_VALUE (l1), TREE_VALUE (l2)) != 1)
 	return 0;
+
       l1 = TREE_CHAIN (l1);
       l2 = TREE_CHAIN (l2);
     }
+
   return (l1 == l2);
 }
 
@@ -3745,13 +3743,16 @@ index_type_equal (itype1, itype2)
     {
       if (TYPE_PRECISION (itype1) != TYPE_PRECISION (itype2)
 	  || TYPE_MODE (itype1) != TYPE_MODE (itype2)
-	  || ! simple_cst_equal (TYPE_SIZE (itype1), TYPE_SIZE (itype2))
+	  || simple_cst_equal (TYPE_SIZE (itype1), TYPE_SIZE (itype2)) != 1
 	  || TYPE_ALIGN (itype1) != TYPE_ALIGN (itype2))
 	return 0;
-      if (simple_cst_equal (TYPE_MIN_VALUE (itype1), TYPE_MIN_VALUE (itype2))
-	  && simple_cst_equal (TYPE_MAX_VALUE (itype1), TYPE_MAX_VALUE (itype2)))
+      if (1 == simple_cst_equal (TYPE_MIN_VALUE (itype1),
+				 TYPE_MIN_VALUE (itype2))
+	  && 1 == simple_cst_equal (TYPE_MAX_VALUE (itype1),
+				    TYPE_MAX_VALUE (itype2)))
 	return 1;
     }
+
   return 0;
 }
 
