@@ -1373,7 +1373,7 @@ memory_displacement_operand (op, mode)
   return parts.disp != NULL_RTX;
 }
 
-/* To avoid problems when jump re-emits comparisons like testqi_ext_0,
+/* To avoid problems when jump re-emits comparisons like testqi_ext_ccno_0,
    re-recognize the operand to avoid a copy_to_mode_reg that will fail.
 
    ??? It seems likely that this will only work because cmpsi is an
@@ -4252,6 +4252,45 @@ ix86_unary_operator_ok (code, mode, operands)
   return TRUE;
 }
 
+/* Return TRUE or FALSE depending on whether the first SET in INSN
+   has source and destination with matching CC modes, and that the
+   CC mode is at least as constrained as REQ_MODE.  */
+
+int
+ix86_match_ccmode (insn, req_mode)
+     rtx insn;
+     enum machine_mode req_mode;
+{
+  rtx set;
+  enum machine_mode set_mode;
+
+  set = PATTERN (insn);
+  if (GET_CODE (set) == PARALLEL)
+    set = XVECEXP (set, 0, 0);
+  if (GET_CODE (set) != SET)
+    abort ();
+
+  set_mode = GET_MODE (SET_DEST (set));
+  switch (set_mode)
+    {
+    case CCmode:
+      if (req_mode == CCNOmode)
+	return 0;
+      /* FALLTHRU */
+    case CCNOmode:
+      if (req_mode == CCZmode)
+	return 0;
+      /* FALLTHRU */
+    case CCZmode:
+      break;
+
+    default:
+      abort ();
+    }
+
+  return (GET_MODE (SET_SRC (set)) == set_mode);
+}
+
 /* Produce an unsigned comparison for a given signed comparison.  */
 
 static enum rtx_code
@@ -4455,7 +4494,7 @@ ix86_expand_fp_compare (code, op0, op1, unordered)
 		  abort ();
 		}
 
-	      emit_insn (gen_testqi_ext_0 (tmp, GEN_INT (mask)));
+	      emit_insn (gen_testqi_ext_ccno_0 (tmp, GEN_INT (mask)));
 	      intcmp_mode = CCNOmode;
 	    }
 	}
@@ -4470,7 +4509,7 @@ ix86_expand_fp_compare (code, op0, op1, unordered)
 	  switch (code)
 	    {
 	    case GT:
-	      emit_insn (gen_testqi_ext_0 (tmp, GEN_INT (0x45)));
+	      emit_insn (gen_testqi_ext_ccno_0 (tmp, GEN_INT (0x45)));
 	      code = EQ;
 	      break;
 	    case LT:
@@ -4480,7 +4519,7 @@ ix86_expand_fp_compare (code, op0, op1, unordered)
 	      code = EQ;
 	      break;
 	    case GE:
-	      emit_insn (gen_testqi_ext_0 (tmp, GEN_INT (0x05)));
+	      emit_insn (gen_testqi_ext_ccno_0 (tmp, GEN_INT (0x05)));
 	      code = EQ;
 	      break;
 	    case LE:
@@ -5490,7 +5529,8 @@ ix86_expand_strlensi_unroll_1 (out, align_rtx, scratch)
   rtx align_4_label = gen_label_rtx ();
   rtx end_0_label = gen_label_rtx ();
   rtx mem;
-  rtx flags = gen_rtx_REG (CCNOmode, FLAGS_REG);
+  rtx no_flags = gen_rtx_REG (CCNOmode, FLAGS_REG);
+  rtx z_flags = gen_rtx_REG (CCNOmode, FLAGS_REG);
   rtx tmpreg = gen_reg_rtx (SImode);
 
   align = 0;
@@ -5512,25 +5552,25 @@ ix86_expand_strlensi_unroll_1 (out, align_rtx, scratch)
 	  align_rtx = expand_binop (SImode, and_optab, scratch, GEN_INT (3),
 				    NULL_RTX, 0, OPTAB_WIDEN);
 
-	  emit_insn (gen_cmpsi_0 (align_rtx, const0_rtx));
+	  emit_insn (gen_cmpsi_ccz_1 (align_rtx, const0_rtx));
 
-	  tmp = gen_rtx_EQ (VOIDmode, flags, const0_rtx);
+	  tmp = gen_rtx_EQ (VOIDmode, z_flags, const0_rtx);
 	  tmp = gen_rtx_IF_THEN_ELSE (VOIDmode, tmp, 
 				      gen_rtx_LABEL_REF (VOIDmode,
 							 align_4_label),
 				      pc_rtx);
 	  emit_jump_insn (gen_rtx_SET (VOIDmode, pc_rtx, tmp));
 
-	  emit_insn (gen_cmpsi_1 (align_rtx, GEN_INT (2)));
+	  emit_insn (gen_cmpsi_ccno_1 (align_rtx, GEN_INT (2)));
 
-	  tmp = gen_rtx_EQ (VOIDmode, flags, const0_rtx);
+	  tmp = gen_rtx_EQ (VOIDmode, no_flags, const0_rtx);
 	  tmp = gen_rtx_IF_THEN_ELSE (VOIDmode, tmp, 
 				      gen_rtx_LABEL_REF (VOIDmode,
 							 align_2_label),
 				      pc_rtx);
 	  emit_jump_insn (gen_rtx_SET (VOIDmode, pc_rtx, tmp));
 
-	  tmp = gen_rtx_GTU (VOIDmode, flags, const0_rtx);
+	  tmp = gen_rtx_GTU (VOIDmode, no_flags, const0_rtx);
 	  tmp = gen_rtx_IF_THEN_ELSE (VOIDmode, tmp, 
 				      gen_rtx_LABEL_REF (VOIDmode,
 							 align_3_label),
@@ -5545,9 +5585,9 @@ ix86_expand_strlensi_unroll_1 (out, align_rtx, scratch)
 	  align_rtx = expand_binop (SImode, and_optab, scratch, GEN_INT (2),
 				    NULL_RTX, 0, OPTAB_WIDEN);
 
-	  emit_insn (gen_cmpsi_0 (align_rtx, const0_rtx));
+	  emit_insn (gen_cmpsi_ccz_1 (align_rtx, const0_rtx));
 
-	  tmp = gen_rtx_EQ (VOIDmode, flags, const0_rtx);
+	  tmp = gen_rtx_EQ (VOIDmode, z_flags, const0_rtx);
 	  tmp = gen_rtx_IF_THEN_ELSE (VOIDmode, tmp, 
 				      gen_rtx_LABEL_REF (VOIDmode,
 							 align_4_label),
@@ -5560,9 +5600,9 @@ ix86_expand_strlensi_unroll_1 (out, align_rtx, scratch)
       /* Now compare the bytes.  */
 
       /* Compare the first n unaligned byte on a byte per byte basis. */
-      emit_insn (gen_cmpqi_0 (mem, const0_rtx));
+      emit_insn (gen_cmpqi_ccz_1 (mem, const0_rtx));
 
-      tmp = gen_rtx_EQ (VOIDmode, flags, const0_rtx);
+      tmp = gen_rtx_EQ (VOIDmode, z_flags, const0_rtx);
       tmp = gen_rtx_IF_THEN_ELSE (VOIDmode, tmp, 
 				  gen_rtx_LABEL_REF (VOIDmode, end_0_label),
 				  pc_rtx);
@@ -5576,9 +5616,9 @@ ix86_expand_strlensi_unroll_1 (out, align_rtx, scratch)
 	{
 	  emit_label (align_2_label);
 
-	  emit_insn (gen_cmpqi_0 (mem, const0_rtx));
+	  emit_insn (gen_cmpqi_ccz_1 (mem, const0_rtx));
 
-	  tmp = gen_rtx_EQ (VOIDmode, flags, const0_rtx);
+	  tmp = gen_rtx_EQ (VOIDmode, z_flags, const0_rtx);
 	  tmp = gen_rtx_IF_THEN_ELSE (VOIDmode, tmp, 
 				      gen_rtx_LABEL_REF (VOIDmode,
 							 end_0_label),
@@ -5590,9 +5630,9 @@ ix86_expand_strlensi_unroll_1 (out, align_rtx, scratch)
 	  emit_label (align_3_label);
 	}
 
-      emit_insn (gen_cmpqi_0 (mem, const0_rtx));
+      emit_insn (gen_cmpqi_ccz_1 (mem, const0_rtx));
 
-      tmp = gen_rtx_EQ (VOIDmode, flags, const0_rtx);
+      tmp = gen_rtx_EQ (VOIDmode, z_flags, const0_rtx);
       tmp = gen_rtx_IF_THEN_ELSE (VOIDmode, tmp, 
 				  gen_rtx_LABEL_REF (VOIDmode, end_0_label),
 				  pc_rtx);
@@ -5626,7 +5666,7 @@ ix86_expand_strlensi_unroll_1 (out, align_rtx, scratch)
        emit_insn (gen_lshrsi3 (reg, reg, GEN_INT (16)));
 
        /* If zero is not in the first two bytes, move two bytes forward. */
-       emit_insn (gen_testsi_1 (tmpreg, GEN_INT (0x8080)));
+       emit_insn (gen_testsi_ccno_1 (tmpreg, GEN_INT (0x8080)));
        tmp = gen_rtx_REG (CCNOmode, FLAGS_REG);
        tmp = gen_rtx_EQ (VOIDmode, tmp, const0_rtx);
        emit_insn (gen_rtx_SET (VOIDmode, tmpreg,
@@ -5650,7 +5690,7 @@ ix86_expand_strlensi_unroll_1 (out, align_rtx, scratch)
        rtx end_2_label = gen_label_rtx ();
        /* Is zero in the first two bytes? */
 
-       emit_insn (gen_testsi_1 (tmpreg, GEN_INT (0x8080)));
+       emit_insn (gen_testsi_ccno_1 (tmpreg, GEN_INT (0x8080)));
        tmp = gen_rtx_REG (CCNOmode, FLAGS_REG);
        tmp = gen_rtx_NE (VOIDmode, tmp, const0_rtx);
        tmp = gen_rtx_IF_THEN_ELSE (VOIDmode, tmp,
