@@ -1,3 +1,20 @@
+Wed Feb  3 12:38:43 1999  Per Bothner  <bothner@cygnus.com>
+
+	* java-tree.def (FINALLY_EXPR):  Removed.  (Now uses TRY_FINALLY_EXPR.)
+	(TRY_EXPR):  Simplify - it no longer has a finally clause.
+	* check-init.c (check_init):  Handle TRY_FINALLY_EXPR.
+	Simpler handling of TRY_EXPR, which no longer has a finally clause.
+	* expr.c (java_lang_expand_expr):  Likewise.
+	* java-tree.h (CATCH_EXPR_GET_EXPR):  Removed - no longer needed.
+	* parse.h (java_get_catch_block), parse.y:  Removed - no longer needed.
+	* parse.y (java_complete_lhs):  Add support for TRY_FIANLLY_EXPR.
+	(build_try_statement):  Remove finally parameter and handling.
+	(build_try_finally_statement):  New function.
+	(patch_try_statement):   No longer need to support finally clause.
+	(try_statement):  Update grammar action rules.
+	* jcf-write.c (generate_bytecode_insns):  Handle TRY_FINALLY_EXPR.
+	Simpler handling of TRY_EXPR, which no longer has a finally clause.
+
 1998-11-26  Andrew Haley  <aph@viagra.cygnus.co.uk>
 
 	* jcf-parse.c (get_constant): Add braces around computation of 'd'
