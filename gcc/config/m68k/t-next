@@ -5,7 +5,3 @@ LIBGCC1=
 
 EXTRA_PROGRAMS = ld
 
-ld : collect2
-	rm -f ld
-	ln collect2 ld
-

@@ -1,4 +1,5 @@
-EXTRA_PASSES	= ld
+# Use collect2 to link.
+EXTRA_PROGRAMS	= ld
 EXTRA_OBJS	= halfpic.o
 LIMITS_H	=
 CONFIG2_H	= $(srcdir)/config/mips.h $(srcdir)/config/decrose.h $(srcdir)/halfpic.h
@@ -37,9 +38,3 @@ recog.o: $(CONFIG2_H)
 reload.o: $(CONFIG2_H)
 
 halfpic.o: halfpic.c $(CONFIG_H) $(CONFIG2_H) $(RTL_H) $(TREE_H)
-
-# Build collect
-
-ld: collect2
-	rm -f ld
-	ln collect2 ld
