@@ -548,69 +548,98 @@ build_dynamic_cast_1 (type, expr)
 {
   enum tree_code tc = TREE_CODE (type);
   tree exprtype;
-  enum tree_code ec;
   tree dcast_fn;
   tree old_expr = expr;
+  char* errstr = NULL;
 
-  if (TREE_CODE (expr) == OFFSET_REF)
-    expr = resolve_offset_ref (expr);
-  
-  exprtype = TREE_TYPE (expr);
-  assert (exprtype != NULL_TREE);
-  ec = TREE_CODE (exprtype);
-
+  /* T shall be a pointer or reference to a complete class type, or
+     `pointer to cv void''.  */
   switch (tc)
     {
     case POINTER_TYPE:
-      if (ec == REFERENCE_TYPE)
-	{
-	  expr = convert_from_reference (expr);
-	  exprtype = TREE_TYPE (expr);
-	  ec = TREE_CODE (exprtype);
-	}
-      if (ec != POINTER_TYPE)
-	goto fail;
-      if (TREE_CODE (TREE_TYPE (exprtype)) != RECORD_TYPE)
-	goto fail;
-      if (TYPE_SIZE (complete_type (TREE_TYPE (exprtype))) == NULL_TREE)
-	goto fail;
-      if (!at_least_as_qualified_p (TREE_TYPE (type),
-				    TREE_TYPE (exprtype)))
-	goto fail;
-      if (TYPE_MAIN_VARIANT (TREE_TYPE (type)) == void_type_node)
+      if (TREE_CODE (TREE_TYPE (type)) == VOID_TYPE)
 	break;
-      /* else fall through */
     case REFERENCE_TYPE:
-      if (TREE_CODE (TREE_TYPE (type)) != RECORD_TYPE)
-	goto fail;
+      if (! IS_AGGR_TYPE (TREE_TYPE (type)))
+	{
+	  errstr = "target is not pointer or reference to class";
+	  goto fail;
+	}
       if (TYPE_SIZE (complete_type (TREE_TYPE (type))) == NULL_TREE)
-	goto fail;
+	{
+	  errstr = "target is not pointer or reference to complete type";
+	  goto fail;
+	}
       break;
-      /* else fall through */
+
     default:
+      errstr = "target is not pointer or reference";
       goto fail;
     }
 
-  /* Apply trivial conversion T -> T& for dereferenced ptrs.  */
-  if (ec == RECORD_TYPE)
+  if (TREE_CODE (expr) == OFFSET_REF)
+    expr = resolve_offset_ref (expr);
+
+  exprtype = TREE_TYPE (expr);
+  assert (exprtype != NULL_TREE);
+
+  if (tc == POINTER_TYPE)
+    expr = convert_from_reference (expr);
+  else if (TREE_CODE (exprtype) != REFERENCE_TYPE)
     {
+      /* Apply trivial conversion T -> T& for dereferenced ptrs.  */
       exprtype = build_reference_type (exprtype);
       expr = convert_to_reference (exprtype, expr, CONV_IMPLICIT,
 				   LOOKUP_NORMAL, NULL_TREE);
-      ec = REFERENCE_TYPE;
     }
 
-  if (tc == REFERENCE_TYPE)
+  exprtype = TREE_TYPE (expr);
+
+  if (tc == POINTER_TYPE)
     {
-      if (ec != REFERENCE_TYPE)
-	goto fail;
-      if (TREE_CODE (TREE_TYPE (exprtype)) != RECORD_TYPE)
-	goto fail;
+      /* If T is a pointer type, v shall be an rvalue of a pointer to
+	 complete class type, and the result is an rvalue of type T.  */
+
+      if (TREE_CODE (exprtype) != POINTER_TYPE)
+	{
+	  errstr = "source is not a pointer";
+	  goto fail;
+	}
+      if (! IS_AGGR_TYPE (TREE_TYPE (exprtype)))
+	{
+	  errstr = "source is not a pointer to class";
+	  goto fail;
+	}
       if (TYPE_SIZE (complete_type (TREE_TYPE (exprtype))) == NULL_TREE)
-	goto fail;
-      if (!at_least_as_qualified_p (TREE_TYPE (type),
-				    TREE_TYPE (exprtype)))
-	goto fail;
+	{
+	  errstr = "source is a pointer to incomplete type";
+	  goto fail;
+	}
+    }
+  else
+    {
+      /* T is a reference type, v shall be an lvalue of a complete class
+	 type, and the result is an lvalue of the type referred to by T.  */
+
+      if (! IS_AGGR_TYPE (TREE_TYPE (exprtype)))
+	{
+	  errstr = "source is not of class type";
+	  goto fail;
+	}
+      if (TYPE_SIZE (complete_type (TREE_TYPE (exprtype))) == NULL_TREE)
+	{
+	  errstr = "source is of incomplete class type";
+	  goto fail;
+	}
+      
+    }
+
+  /* The dynamic_cast operator shall not cast away constness.  */
+  if (!at_least_as_qualified_p (TREE_TYPE (type),
+				TREE_TYPE (exprtype)))
+    {
+      errstr = "conversion casts away constness";
+      goto fail;
     }
 
   /* If *type is an unambiguous accessible base class of *exprtype,
@@ -669,7 +698,7 @@ build_dynamic_cast_1 (type, expr)
 
  	  /* If we got here, we can't convert statically.  Therefore,
 	     dynamic_cast<D&>(b) (b an object) cannot succeed.  */
-	  if (ec == REFERENCE_TYPE)
+	  if (tc == REFERENCE_TYPE)
 	    {
 	      if (TREE_CODE (old_expr) == VAR_DECL
 		  && TREE_CODE (TREE_TYPE (old_expr)) == RECORD_TYPE)
@@ -717,7 +746,7 @@ build_dynamic_cast_1 (type, expr)
 	      tree expr2 = build_headof (expr1);
 	      tree td1 = expr;
 
-	      if (ec == POINTER_TYPE)
+	      if (tc == POINTER_TYPE)
 	        td1 = build_indirect_ref (td1, NULL_PTR);
   	      td1 = get_tinfo_decl_dynamic (td1);
 	  
@@ -802,13 +831,12 @@ build_dynamic_cast_1 (type, expr)
           return ifnonnull (expr, result);
 	}
     }
-
-  cp_error ("dynamic_cast from non-polymorphic type `%#T'", exprtype);
-  return error_mark_node;
+  else
+    errstr = "source type is not polymorphic";
 
  fail:
-  cp_error ("cannot dynamic_cast `%E' (of type `%#T') to type `%#T'",
-	    expr, exprtype, type);
+  cp_error ("cannot dynamic_cast `%E' (of type `%#T') to type `%#T' (%s)",
+	    expr, exprtype, type, errstr);
   return error_mark_node;
 }
 
@@ -1275,7 +1303,7 @@ tinfo_base_init (desc, target)
   
   init = tree_cons (NULL_TREE, decay_conversion (name_string), init);
   
-  init = build (CONSTRUCTOR, NULL_TREE, NULL_TREE, nreverse(init));
+  init = build (CONSTRUCTOR, NULL_TREE, NULL_TREE, nreverse (init));
   TREE_HAS_CONSTRUCTOR (init) = TREE_CONSTANT (init) = TREE_STATIC (init) = 1;
   init = tree_cons (NULL_TREE, init, NULL_TREE);
   
