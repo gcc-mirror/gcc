@@ -3088,6 +3088,44 @@ package body Freeze is
          else
             Append (F_Node, Result);
          end if;
+
+         --  A final pass over record types with discriminants. If the type
+         --  has an incomplete declaration, there may be constrained access
+         --  subtypes declared elsewhere, which do not depend on the discrimi-
+         --  nants of the type, and which are used as component types (i.e.
+         --  the full view is a recursive type). The designated types of these
+         --  subtypes can only be elaborated after the type itself, and they
+         --  need an itype reference.
+
+         if Ekind (E) = E_Record_Type
+           and then Has_Discriminants (E)
+         then
+            declare
+               Comp : Entity_Id;
+               IR   : Node_Id;
+               Typ  : Entity_Id;
+
+            begin
+               Comp := First_Component (E);
+
+               while Present (Comp) loop
+                  Typ  := Etype (Comp);
+
+                  if Ekind (Comp) = E_Component
+                    and then Is_Access_Type (Typ)
+                    and then Scope (Typ) /= E
+                    and then Base_Type (Designated_Type (Typ)) = E
+                    and then Is_Itype (Designated_Type (Typ))
+                  then
+                     IR := Make_Itype_Reference (Sloc (Comp));
+                     Set_Itype (IR, Designated_Type (Typ));
+                     Append (IR, Result);
+                  end if;
+
+                  Next_Component (Comp);
+               end loop;
+            end;
+         end if;
       end if;
 
       --  When a type is frozen, the first subtype of the type is frozen as

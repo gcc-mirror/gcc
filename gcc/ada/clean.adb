@@ -1065,7 +1065,7 @@ package body Clean is
    begin
       --  Do the necessary initializations
 
-      Initialize;
+      Clean.Initialize;
 
       --  Parse the command line, getting the switches and the executable names
 

@@ -60,6 +60,9 @@ with System.Soft_Links;
 --  used for the non-tasking routines (*_NT) that refer to global data.
 --  They are needed here before the tasking run time has been elaborated.
 
+with System.Soft_Links.Tasking;
+--  Used for Init_Tasking_Soft_Links
+
 with System.Tasking.Debug;
 --  used for Trace
 
@@ -87,9 +90,9 @@ package body System.Tasking.Initialization is
      (Ada, Current_Target_Exception, "__gnat_current_target_exception");
    --  Import this subprogram from the private part of Ada.Exceptions.
 
-   -----------------------------------------------------------------
-   -- Tasking versions of services needed by non-tasking programs --
-   -----------------------------------------------------------------
+   ----------------------------------------------------------------------
+   -- Tasking versions of some services needed by non-tasking programs --
+   ----------------------------------------------------------------------
 
    procedure Task_Lock;
    --  Locks out other tasks. Preceding a section of code by Task_Lock and
@@ -104,30 +107,12 @@ package body System.Tasking.Initialization is
    --  all nested locks must be released before other tasks competing for the
    --  tasking lock are released.
 
-   function  Get_Jmpbuf_Address return  Address;
-   procedure Set_Jmpbuf_Address (Addr : Address);
-   --  Get/Set Jmpbuf_Address for current task
-
-   function  Get_Sec_Stack_Addr return  Address;
-   procedure Set_Sec_Stack_Addr (Addr : Address);
-   --  Get/Set location of current task's secondary stack
-
    function  Get_Exc_Stack_Addr return Address;
    --  Get the exception stack for the current task
 
    procedure Set_Exc_Stack_Addr (Self_ID : Address; Addr : Address);
    --  Self_ID is the Task_Id of the task that gets the exception stack.
    --  For Self_ID = Null_Address, the current task gets the exception stack.
-
-   function  Get_Machine_State_Addr return Address;
-   procedure Set_Machine_State_Addr (Addr : Address);
-   --  Get/Set the address for storing the current task's machine state
-
-   function Get_Current_Excep return SSL.EOA;
-   --  Task-safe version of SSL.Get_Current_Excep
-
-   procedure Timed_Delay_T (Time : Duration; Mode : Integer);
-   --  Task-safe version of SSL.Timed_Delay
 
    function Get_Stack_Info return Stack_Checking.Stack_Access;
    --  Get access to the current task's Stack_Info
@@ -404,30 +389,21 @@ package body System.Tasking.Initialization is
          SSL.Abort_Undefer := Undefer_Abortion'Access;
       end if;
 
-      SSL.Update_Exception       := Update_Exception'Access;
-      SSL.Lock_Task              := Task_Lock'Access;
-      SSL.Unlock_Task            := Task_Unlock'Access;
-      SSL.Get_Jmpbuf_Address     := Get_Jmpbuf_Address'Access;
-      SSL.Set_Jmpbuf_Address     := Set_Jmpbuf_Address'Access;
-      SSL.Get_Sec_Stack_Addr     := Get_Sec_Stack_Addr'Access;
-      SSL.Set_Sec_Stack_Addr     := Set_Sec_Stack_Addr'Access;
-      SSL.Get_Exc_Stack_Addr     := Get_Exc_Stack_Addr'Access;
-      SSL.Set_Exc_Stack_Addr     := Set_Exc_Stack_Addr'Access;
-      SSL.Get_Machine_State_Addr := Get_Machine_State_Addr'Access;
-      SSL.Set_Machine_State_Addr := Set_Machine_State_Addr'Access;
-      SSL.Get_Current_Excep      := Get_Current_Excep'Access;
-      SSL.Timed_Delay            := Timed_Delay_T'Access;
-      SSL.Check_Abort_Status     := Check_Abort_Status'Access;
-      SSL.Get_Stack_Info         := Get_Stack_Info'Access;
-      SSL.Task_Name              := Task_Name'Access;
+      SSL.Update_Exception   := Update_Exception'Access;
+      SSL.Lock_Task          := Task_Lock'Access;
+      SSL.Unlock_Task        := Task_Unlock'Access;
+      SSL.Get_Exc_Stack_Addr := Get_Exc_Stack_Addr'Access;
+      SSL.Set_Exc_Stack_Addr := Set_Exc_Stack_Addr'Access;
+      SSL.Check_Abort_Status := Check_Abort_Status'Access;
+      SSL.Get_Stack_Info     := Get_Stack_Info'Access;
+      SSL.Task_Name          := Task_Name'Access;
 
-      --  No need to create a new Secondary Stack, since we will use the
-      --  default one created in s-secsta.adb
+      SSL.Set_Exc_Stack_Addr (Null_Address, SSL.Get_Exc_Stack_Addr_NT);
 
-      SSL.Set_Sec_Stack_Addr     (SSL.Get_Sec_Stack_Addr_NT);
-      SSL.Set_Exc_Stack_Addr     (Null_Address, SSL.Get_Exc_Stack_Addr_NT);
-      SSL.Set_Jmpbuf_Address     (SSL.Get_Jmpbuf_Address_NT);
-      SSL.Set_Machine_State_Addr (SSL.Get_Machine_State_Addr_NT);
+      --  Initialize the tasking soft links (if not done yet) that are common
+      --  to the full and the restricted run times.
+
+      SSL.Tasking.Init_Tasking_Soft_Links;
 
       --  Install tasking locks in the GCC runtime.
 
@@ -920,30 +896,10 @@ package body System.Tasking.Initialization is
    -- Soft-Link Bodies --
    ----------------------
 
-   function Get_Current_Excep return SSL.EOA is
-   begin
-      return STPO.Self.Common.Compiler_Data.Current_Excep'Access;
-   end Get_Current_Excep;
-
    function Get_Exc_Stack_Addr return Address is
    begin
       return STPO.Self.Common.Compiler_Data.Exc_Stack_Addr;
    end Get_Exc_Stack_Addr;
-
-   function Get_Jmpbuf_Address return  Address is
-   begin
-      return STPO.Self.Common.Compiler_Data.Jmpbuf_Address;
-   end Get_Jmpbuf_Address;
-
-   function Get_Machine_State_Addr return Address is
-   begin
-      return STPO.Self.Common.Compiler_Data.Machine_State_Addr;
-   end Get_Machine_State_Addr;
-
-   function Get_Sec_Stack_Addr return  Address is
-   begin
-      return STPO.Self.Common.Compiler_Data.Sec_Stack_Addr;
-   end Get_Sec_Stack_Addr;
 
    function Get_Stack_Info return Stack_Checking.Stack_Access is
    begin
@@ -959,26 +915,6 @@ package body System.Tasking.Initialization is
 
       Me.Common.Compiler_Data.Exc_Stack_Addr := Addr;
    end Set_Exc_Stack_Addr;
-
-   procedure Set_Jmpbuf_Address (Addr : Address) is
-   begin
-      STPO.Self.Common.Compiler_Data.Jmpbuf_Address := Addr;
-   end Set_Jmpbuf_Address;
-
-   procedure Set_Machine_State_Addr (Addr : Address) is
-   begin
-      STPO.Self.Common.Compiler_Data.Machine_State_Addr := Addr;
-   end Set_Machine_State_Addr;
-
-   procedure Set_Sec_Stack_Addr (Addr : Address) is
-   begin
-      STPO.Self.Common.Compiler_Data.Sec_Stack_Addr := Addr;
-   end Set_Sec_Stack_Addr;
-
-   procedure Timed_Delay_T (Time : Duration; Mode : Integer) is
-   begin
-      STPO.Timed_Delay (STPO.Self, Time, Mode);
-   end Timed_Delay_T;
 
    -----------------------
    -- Soft-Link Dummies --

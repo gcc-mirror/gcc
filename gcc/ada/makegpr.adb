@@ -2938,7 +2938,7 @@ package body Makegpr is
 
    procedure Gprmake is
    begin
-      Initialize;
+      Makegpr.Initialize;
 
       if Verbose_Mode then
          Write_Eol;

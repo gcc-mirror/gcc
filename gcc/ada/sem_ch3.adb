@@ -6075,11 +6075,22 @@ package body Sem_Ch3 is
          Set_Ekind (Def_Id, E_Class_Wide_Subtype);
 
       else
-         --  Incomplete type. Attach subtype to list of dependents, to be
-         --  completed with full view of parent type.
+         --  Incomplete type.  attach subtype to list of dependents, to be
+         --  completed with full view of parent type,  unless is it the
+         --  designated subtype of a record component within an init_proc.
+         --  This last case arises for a component of an access type whose
+         --  designated type is incomplete (e.g. a Taft Amendment type).
+         --  The designated subtype is within an inner scope, and needs no
+         --  elaboration, because only the access type is needed in the
+         --  initialization procedure.
 
          Set_Ekind (Def_Id, Ekind (T));
-         Append_Elmt (Def_Id, Private_Dependents (T));
+
+         if For_Access and then Within_Init_Proc then
+            null;
+         else
+            Append_Elmt (Def_Id, Private_Dependents (T));
+         end if;
       end if;
 
       Set_Etype             (Def_Id, T);
@@ -6831,6 +6842,12 @@ package body Sem_Ch3 is
          if Has_Discriminants (Full_Base) then
             Set_Discriminant_Constraint
               (Full, Discriminant_Constraint (Full_Base));
+
+            --  The partial view may have been indefinite, the full view
+            --  might not be.
+
+            Set_Has_Unknown_Discriminants
+              (Full, Has_Unknown_Discriminants (Full_Base));
          end if;
       end if;
 

@@ -2820,7 +2820,7 @@ begin
       Lib_Search_Directories.Set_Last (Primary_Directory);
       Lib_Search_Directories.Table (Primary_Directory) := new String'("");
 
-      Initialize;
+      Osint.Initialize;
    end Initialization;
 
 end Osint;
