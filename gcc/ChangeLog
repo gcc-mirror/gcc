@@ -1,5 +1,10 @@
 2000-04-04  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
+	* regrename.c (regno_first_use_in): Wrap prototype in PARAMS.
+	(regrename_optimize): Rename variables `def_uses' and
+	`ext_basic_blocks' to avoid conflicts with similarly named
+	typedefs in traditional C.
+
 	* calls.c (initialize_argument_information): Fix typo in previous
 	change.
 
