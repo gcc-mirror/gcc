@@ -1886,6 +1886,7 @@ java/net/DatagramSocketImpl.java \
 java/net/FileNameMap.java \
 java/net/HttpURLConnection.java	\
 java/net/InetAddress.java \
+java/net/InetSocketAddress.java \
 java/net/JarURLConnection.java \
 java/net/MalformedURLException.java \
 java/net/MulticastSocket.java \
@@ -1898,6 +1899,7 @@ java/net/PortUnreachableException.java \
 java/net/ProtocolException.java	\
 java/net/ServerSocket.java \
 java/net/Socket.java \
+java/net/SocketAddress.java \
 java/net/SocketException.java \
 java/net/SocketImpl.java \
 java/net/SocketImplFactory.java	\

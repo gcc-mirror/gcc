@@ -1,4 +1,4 @@
-/* URISyntaxException.java
+/* URISyntaxException.java -- a string could not be parsed as a URI
    Copyright (C) 2002 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -7,7 +7,7 @@ GNU Classpath is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
 the Free Software Foundation; either version 2, or (at your option)
 any later version.
- 
+
 GNU Classpath is distributed in the hope that it will be useful, but
 WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
@@ -38,59 +38,70 @@ exception statement from your version. */
 package java.net;
 
 /**
- * This exception indicates that a generic error occurred related to an
- * operation on a socket.  Check the descriptive message (if any) for
- * details on the nature of this error
+ * This exception is thrown when a String cannot be parsed as a URI.
  *
- * @author Michael Koch <konqueror@gmx.de>
+ * @author Eric Blake <ebb9@email.byu.edu>
+ * @see URI
  * @since 1.4
- * @status Should be completely JDK 1.4 compatible
+ * @status updated to 1.4
  */
 public class URISyntaxException extends Exception
 {
-  private String input;
-  private String reason;
-  private int index;
- 
   /**
-   * @param input Input that cause the exception
-   * @param reason Reason of the exception
-   * @param index Position of the index or -1 if unknown
-   *
-   * @exception NullPointerException
-   * @exception IllegalArgumentException
+   * Compatible with JDK 1.4+.
    */
-  public URISyntaxException(String input, String reason, int index)
+  private static final long serialVersionUID = 2137979680897488891L;
+
+  /**
+   * The failed input.
+   *
+   * @serial the bad URI
+   */
+  private final String input;
+
+  /**
+   * The index of failure.
+   *
+   * @serial the location of the problem
+   */
+  private final int index;
+
+  /**
+   * Create an exception from the invalid string, with the index set to -1.
+   *
+   * @param input the bad URI
+   * @param msg the descriptive error message
+   * @throws NullPointerException if input or msg are null
+   */
+  public URISyntaxException(String input, String msg)
   {
-    if (input == null || reason == null)
-      throw new NullPointerException();
-    
+    this(input, msg, -1);
+  }
+
+  /**
+   * Create an exception from the invalid string, with the index of the
+   * point of failure.
+   *
+   * @param input the bad URI
+   * @param msg the descriptive error message
+   * @param index the index of the parse error, or -1
+   * @throws NullPointerException if input or msg are null
+   * @throws IllegalArgumentException if index &lt; -1
+   */
+  public URISyntaxException(String input, String msg, int index)
+  {
+    // The toString() hack checks for null.
+    super(msg.toString());
+    this.input = input.toString();
+    this.index = index;
     if (index < -1)
       throw new IllegalArgumentException();
-
-    this.input = input;
-    this.reason = reason;
-    this.index = index;
   }
 
   /**
-   * @param input Input that cause the exception
-   * @param reason Reason of the exception
+   * Returns the bad input string.
    *
-   * @exception NullPointerException
-   */
-  public URISyntaxException(String input, String reason)
-  {
-    if (input == null || reason == null)
-      throw new NullPointerException();
-    
-    this.input = input;
-    this.reason = reason;
-    this.index = -1;
-  }
-
-  /**
-   * @return Returns the input that caused this exception
+   * @return the bad URI, guaranteed non-null
    */
   public String getInput()
   {
@@ -98,15 +109,19 @@ public class URISyntaxException extends Exception
   }
 
   /**
-   * @return Returns the reason of this exception
+   * Returns the reason for the failure.
+   *
+   * @return the message, guaranteed non-null
    */
   public String getReason()
   {
-    return reason;
+    return super.getMessage();
   }
 
   /**
-   * @return Returns the index/position of this exception or -1 if unknown
+   * Returns the index of the failure, or -1.
+   *
+   * @return the index of failure
    */
   public int getIndex()
   {
@@ -114,12 +129,15 @@ public class URISyntaxException extends Exception
   }
 
   /**
-   * This function returns an error message including input and reason.
-   * 
-   * @return Returns a exception message
+   * Returns a message describing the parse error, as if by
+   * <code>getReason() + (getIndex() &gt;= 0 ? " at index " + getIndex() : "")
+   * + ": " + getInput()</code>.
+   *
+   * @return the message string
    */
   public String getMessage()
   {
-    return input + ":" + reason;
+    return super.getMessage() + (index >= 0 ? " at index " + index : "")
+      + ": " + input;
   }
-} // class URISyntaxException
+}

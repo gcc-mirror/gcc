@@ -1,4 +1,4 @@
-/* SocketTimeoutException.java
+/* SocketTimeoutException.java -- the socket timed out
    Copyright (C) 2002 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -7,7 +7,7 @@ GNU Classpath is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
 the Free Software Foundation; either version 2, or (at your option)
 any later version.
- 
+
 GNU Classpath is distributed in the hope that it will be useful, but
 WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
@@ -37,19 +37,22 @@ exception statement from your version. */
 
 package java.net;
 
-import java.io.IOException;
+import java.io.InterruptedIOException;
 
 /**
- * This exception indicates that a generic error occurred related to an
- * operation on a socket.  Check the descriptive message (if any) for
- * details on the nature of this error
+ * This exception signals that a socket read or accept timed out.
  *
- * @author Michael Koch <konqueror@gmx.de>
+ * @author Eric Blake <ebb9@email.byu.edu>
  * @since 1.4
- * @status should be completele JDK 1.4 compatible
+ * @status updated to 1.4
  */
-public class SocketTimeoutException extends IOException
+public class SocketTimeoutException extends InterruptedIOException
 {
+  /**
+   * Compatible with JDK 1.4+.
+   */
+  private static final long serialVersionUID = -8846654841826352300L;
+
   /**
    * Create a new instance without a descriptive error message.
    */
