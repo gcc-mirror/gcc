@@ -6,6 +6,7 @@ EXTRA_PARTS=crt1.o crti.o crtn.o gmon.o crtbegin.o crtend.o
 # since the user may not have native 'cc' available
 
 LIBGCC1 = libgcc1.null
+CROSS_LIBGCC1 = libgcc1.null
 
 # gmon build rule:
 gmon.o:	$(srcdir)/config/sparc/gmon-sol2.c $(GCC_PASSES) $(CONFIG_H)
