@@ -2979,7 +2979,13 @@ finish_decl (tree decl, tree init, tree asmspec_tree)
     mark_referenced (DECL_ASSEMBLER_NAME (decl));
 
   if (TREE_CODE (decl) == TYPE_DECL)
-    rest_of_decl_compilation (decl, NULL, DECL_FILE_SCOPE_P (decl), 0);
+    {
+      if (!DECL_FILE_SCOPE_P (decl)
+	  && variably_modified_type_p (TREE_TYPE (decl)))
+	add_decl_stmt (decl);
+
+      rest_of_decl_compilation (decl, NULL, DECL_FILE_SCOPE_P (decl), 0);
+    }
 
   /* At the end of a declaration, throw away any variable type sizes
      of types defined inside that declaration.  There is no use

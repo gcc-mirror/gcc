@@ -66,6 +66,7 @@ static void place_union_field (record_layout_info, tree);
 static int excess_unit_span (HOST_WIDE_INT, HOST_WIDE_INT, HOST_WIDE_INT,
 			     HOST_WIDE_INT, tree);
 #endif
+static void force_type_save_exprs_1 (tree);
 static unsigned int update_alignment_for_field (record_layout_info, tree,
 						unsigned int);
 extern void debug_rli (record_layout_info);
@@ -146,12 +147,7 @@ variable_size (tree size)
       || CONTAINS_PLACEHOLDER_P (size))
     return size;
 
-  if (TREE_CODE (size) == MINUS_EXPR && integer_onep (TREE_OPERAND (size, 1)))
-    /* If this is the upper bound of a C array, leave the minus 1 outside
-       the SAVE_EXPR so it can be folded away.  */
-    TREE_OPERAND (size, 0) = save = save_expr (TREE_OPERAND (size, 0));
-  else
-    size = save = save_expr (size);
+  size = save_expr (size);
 
   /* If an array with a variable number of elements is declared, and
      the elements require destruction, we will emit a cleanup for the
@@ -161,6 +157,7 @@ variable_size (tree size)
      `unsaved', i.e., all SAVE_EXPRs are recalculated.  However, we do
      not wish to do that here; the array-size is the same in both
      places.  */
+  save = skip_simple_arithmetic (size);
   if (TREE_CODE (save) == SAVE_EXPR)
     SAVE_EXPR_PERSISTENT_P (save) = 1;
 
@@ -184,6 +181,60 @@ variable_size (tree size)
     put_pending_size (save);
 
   return size;
+}
+
+/* Given a type T, force elaboration of any SAVE_EXPRs used in the definition
+   of that type.  */
+
+void
+force_type_save_exprs (tree t)
+{
+  tree field;
+
+  switch (TREE_CODE (t))
+    {
+    case ERROR_MARK:
+      return;
+
+    case ARRAY_TYPE:
+    case SET_TYPE:
+    case VECTOR_TYPE:
+      /* It's probably overly-conservative to force elaboration of bounds and
+	 also the sizes, but it's better to be safe than sorry.  */
+      force_type_save_exprs_1 (TYPE_MIN_VALUE (TYPE_DOMAIN (t)));
+      force_type_save_exprs_1 (TYPE_MAX_VALUE (TYPE_DOMAIN (t)));
+      break;
+
+    case RECORD_TYPE:
+    case UNION_TYPE:
+    case QUAL_UNION_TYPE:
+      for (field = TYPE_FIELDS (t); field; field = TREE_CHAIN (field))
+	if (TREE_CODE (field) == FIELD_DECL)
+	  {
+	    force_type_save_exprs (TREE_TYPE (field));
+	    force_type_save_exprs_1 (DECL_FIELD_OFFSET (field));
+	  }
+      break;
+
+    default:
+      break;
+    }
+
+  force_type_save_exprs_1 (TYPE_SIZE (t));
+  force_type_save_exprs_1 (TYPE_SIZE_UNIT (t));
+}
+
+/* Utility routine of above, to verify that SIZE has been elaborated and
+   do so it it is a SAVE_EXPR and has not been.  */
+
+static void
+force_type_save_exprs_1 (tree size)
+{
+  if (size
+      && (size = skip_simple_arithmetic (size))
+      && TREE_CODE (size) == SAVE_EXPR
+      && !SAVE_EXPR_RTL (size))
+    expand_expr (size, NULL_RTX, VOIDmode, 0);
 }
 
 #ifndef MAX_FIXED_MODE_SIZE

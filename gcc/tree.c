@@ -4629,38 +4629,62 @@ variably_modified_type_p (tree type)
     case POINTER_TYPE:
     case REFERENCE_TYPE:
     case ARRAY_TYPE:
-      /* If TYPE is a pointer or reference, it is variably modified if
-	 the type pointed to is variably modified.  Similarly for arrays;
-	 note that VLAs are handled by the TYPE_SIZE check above.  */
-      return variably_modified_type_p (TREE_TYPE (type));
+    case SET_TYPE:
+    case VECTOR_TYPE:
+      if (variably_modified_type_p (TREE_TYPE (type)))
+	return true;
+      break;
 
     case FUNCTION_TYPE:
     case METHOD_TYPE:
       /* If TYPE is a function type, it is variably modified if any of the
          parameters or the return type are variably modified.  */
-      {
-	tree parm;
-
-	if (variably_modified_type_p (TREE_TYPE (type)))
+      if (variably_modified_type_p (TREE_TYPE (type)))
 	  return true;
-	for (parm = TYPE_ARG_TYPES (type);
-	     parm && parm != void_list_node;
-	     parm = TREE_CHAIN (parm))
-	  if (variably_modified_type_p (TREE_VALUE (parm)))
-	    return true;
-      }
+
+      for (t = TYPE_ARG_TYPES (type);
+	   t && t != void_list_node;
+	   t = TREE_CHAIN (t))
+	if (variably_modified_type_p (TREE_VALUE (t)))
+	  return true;
       break;
 
     case INTEGER_TYPE:
+    case REAL_TYPE:
+    case ENUMERAL_TYPE:
+    case BOOLEAN_TYPE:
+    case CHAR_TYPE:
       /* Scalar types are variably modified if their end points
 	 aren't constant.  */
       t = TYPE_MIN_VALUE (type);
       if (t && t != error_mark_node && TREE_CODE (t) != INTEGER_CST)
 	return true;
+
       t = TYPE_MAX_VALUE (type);
       if (t && t != error_mark_node && TREE_CODE (t) != INTEGER_CST)
 	return true;
-      return false;
+      break;
+
+    case RECORD_TYPE:
+    case UNION_TYPE:
+    case QUAL_UNION_TYPE:
+      /* We can't see if any of the field are variably-modified by the
+	 definition we normally use, since that would produce infinite
+	 recursion via pointers.  */
+      /* This is variably modified if some field's type is.  */
+      for (t = TYPE_FIELDS (type); t; t = TREE_CHAIN (t))
+	if (TREE_CODE (t) == FIELD_DECL)
+	  {
+	    tree t1 = DECL_FIELD_OFFSET (t);
+
+	    if (t1 && t1 != error_mark_node && TREE_CODE (t1) != INTEGER_CST)
+	      return true;
+
+	    t1 = DECL_SIZE (t);
+	    if (t1 && t1 != error_mark_node && TREE_CODE (t1) != INTEGER_CST)
+	      return true;
+	  }
+	break;
 
     default:
       break;
