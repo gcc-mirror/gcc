@@ -2443,7 +2443,7 @@ for machine in $build $host $target; do
 		fi
 		use_collect2=yes
 		;;
-	rs6000-ibm-aix[[456789]].* | powerpc-ibm-aix[[456789]].*)
+	rs6000-ibm-aix4.[[12]].* | powerpc-ibm-aix4.[[12]].*)
 		tm_file=rs6000/aix41.h
 		if [[ x$host != x$target ]]
 		then
@@ -2451,7 +2451,29 @@ for machine in $build $host $target; do
 		else
 			tmake_file=rs6000/t-newas
 		fi
-		xmake_file=rs6000/x-aix31
+		xmake_file=rs6000/x-aix41
+		use_collect2=yes
+		;;
+	rs6000-ibm-aix4.[[3456789]].* | powerpc-ibm-aix4.[[3456789]].*)
+		tm_file=rs6000/aix43.h
+		if [[ x$host != x$target ]]
+		then
+			tmake_file=rs6000/t-xaix43
+		else
+			tmake_file=rs6000/t-aix43
+		fi
+		xmake_file=rs6000/x-aix43
+		use_collect2=yes
+		;;
+	rs6000-ibm-aix[[56789]].* | powerpc-ibm-aix[[56789]].*)
+		tm_file=rs6000/aix43.h
+		if [[ x$host != x$target ]]
+		then
+			tmake_file=rs6000/t-xaix43
+		else
+			tmake_file=rs6000/t-aix43
+		fi
+		xmake_file=rs6000/x-aix43
 		use_collect2=yes
 		;;
 	rs6000-ibm-aix*)

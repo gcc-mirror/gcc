@@ -1,3 +1,118 @@
+Thu Jun  4 14:35:27 1998  David Edelsohn  <edelsohn@mhpcc.edu>
+
+	* tree.c (get_inner_array_type): New function.
+	* tree.h (get_inner_array_type): Prototype.
+	* expr.h (STACK_SAVEAREA_MODE): New macro.
+	* expr.c (expand_builtin_setjmp): Initialize sa_mode using
+	STACK_SAVEAREA_MODE.
+	(expand_builtin_longjmp): Likewise.
+	* explow.c (emit_stack_save): Likewise.
+	(allocate_dynamic_stack_space): Use Pmode not insn_operand_mode.
+
+	* rs6000/aix41.h (ASM_CPU_SPEC): Define relative to ASM_DEFAULT_SPEC.
+	(CPP_CPU_SPEC): Define relative to CPU_DEFAULT_SPEC.
+	* rs6000/aix43.h: New file.
+	* rs6000/t-aix43: New file.
+	* rs6000/x-aix41: New file.
+	* rs6000/x-aix43: New file.
+	* configure.in (rs6000-ibm-aix*): Use them.
+	* rs6000/powerpc.h: Delete.
+	* rs6000/sysv4.h: Move necessary powerpc.h definitions to here.
+	* rs6000/netware.h: and here.
+	* rs6000/win-nt.h: and here.
+
+	* rs6000/rs6000.c (processor_target_table, 620): Do not affect
+	MASK_POWERPC64.
+	(rs6000_override_options): Ignore flag_pic for AIX.
+	(rs6000_immed_double_const): Delete.
+	(u_short_cint_operand): Don't assume 32-bit CONST_INT.
+	(reg_or_u_short_operand): Don't assume 32-bit CONST_INT.
+	(num_insns_constant): mask64_operand() is 2 insns.
+	(logical_operand): Don't assume 32-bit CONST_INT.
+	(non_logical_cint_operand): Don't assume 32-bit CONST_INT.
+	(easy_fp_constant): Any CONST_DOUBLE_HIGH is okay for 64-bit.
+	(mask_constant): HOST_WIDE_INT parameter.
+	(non_and_cint_operand): Delete.
+	(mask64_operand): New function.
+	(and64_operand): New function.
+	(function_arg_advance): DImode arguments do not need special
+	alignment when 64-bit.
+	(function_arg): Likewise.
+	(setup_incoming_varargs): Reverse reg_size assignment.
+	(print_operand): HOST_WIDE_INT second parameter.
+	(print_operand, 'B'): New case.
+	(print_operand, 'M'): Fix typo in lossage string.
+	(print_operandm 'S'): New case.
+	(rs6000_stack_info): Reverse reg_size assignment.  Use total_raw_size
+	to compute AIX push_p.  Use reg_size to compute {cr,lr}_save_offset.
+	(rs6000_output_load_toc_table): Reverse init_ptr assignment.  Use
+	TARGET_64BIT not TARGET_POWERPC64.  Convert fprintf to fputs.
+	Load GOT highpart, don't add it.  Add lowpart with {cal|la}.
+	(rs6000_allocate_stack_space): Use {cal|la}.
+	(output_epilog): Use {cal|la}
+	(output_function_profiler): Add call glue to mcount call.
+	Load GOT highpart, don't add it.  Add lowpart with {cal|la}.
+
+	* rs6000/rs6000.h (TARGET_SWITCHES): Add powerpc64.
+	(STACK_BOUNDARY): Depend on TARGET_32BIT.
+	(ADJUST_FIELD_ALIGN): Calculate array alignment using innermost type.
+	(CONST_OK_FOR_LETTER_P): Don't assume 32-bit CONST_INT.
+	(EXTRA_CONSTRAINTS): Remove NT 'S' and 'T'.  Replace 'S' with
+	64-bit mask operand.
+	(RS6000_SAVE_TOC): Depend on TARGET_32BIT.
+	(STACK_SAVEAREA_MODE): New macro.
+	(LEGITIMATE_CONSTANT_P): DImode okay for 64bit.
+	(LEGITIMIZE_RELOAD_ADDRESS): New macro.
+	(RTX_COSTS, AND/IOR/XOR): Reflect current machine description.
+	(ASM_FILE_START): Emit 64-bit ABI directive.
+	(ASM_DECLARE_FUNCTION_NAME): Align CSECT on doubleword in 64-bit mode.
+	(ASM_OUTPUT_SPECIAL_POOL_ENTRY): DImode okay for 64-bit.
+	(PREDICATE_CODES): Add "and64_operand" and "mask64_operand".
+	Delete "non_and_cint_operand".  "input_operand" includes CONST_DOUBLE.
+
+	* rs6000/rs6000.md (iorsi3, xorsi3): Use HOST_WIDE_INT for mask.
+	Restore define_splits.
+	(floatsidf2, floatunssidf2): Remove !TARGET_POWERPC64 final constraint.
+	(floatsidf2_internal, floatunssidf2_internal2): Likewise.
+	Do not specify base register operand mode.
+	(floatsidf2_loadaddr): Do not specify base register operand mode.
+	(floatsidf2_store1, floatsidf2_store2): Operand 1 must be base
+	register; do not specify mode.  Remove !TARGET_POWERPC64 final
+	constraint.
+	(floatsidf2_load): Do not specify base register operand mode.  Remove
+	!TARGET_POWERPC64 final constraint.
+	(fix_truncdfsi2_internal, fix_truncdfsi2_{store,load}): Do not specify
+	base register operand mode.
+	(adddi3): Split large constants early.
+	(absdi3): Shift by 63, not 31.
+	(*mulsidi3_ppc64): New pattern.
+	(rotldi3): Add masking combiner patterns.
+	(anddi3): Add rldic{r,l} masking.  Remove split of large constants
+	because PPC insns zero-extend.
+	(iordi3, xordi3): Split large constants early.
+	(movsi matcher): Remove S and T constraints.
+	(movsf const_double): create SImode constant from TARGET_DOUBLE.
+	(movdf_hardfloat32): Add default abort() case.
+	(movdf easy_fp_const): create DImode constant from TARGET_DOUBLE.
+	(movdi): Remove 64-bit constant generator.  Try to convert
+	CONST_DOUBLE to CONST_INT.  Handle TOC memory constants.
+	(movdi_32): Add default abort() case.
+	(movdi_64): Add numerous ways to split 64-bit constants.
+	Make catch-all define_split more optimal and never FAIL.
+	(movti_ppc64): Add default abort() case.
+	(allocate_stack): Remove operand modes.  Use Pmode.
+	(restore_stack_block): Remove operand modes.  Generate Pmode
+	temporary.
+	(save_stack_nonlocal, restore_stack_nonlocal):  Generate Pmode
+	temporary.  Save area is double Pmode.
+	(call_indirect_aix64, call_value_indirect_aix64): New patterns.
+	(call, call_value): Do not specify address operand mode.  Choose
+	appropriate AIX ABI.
+	(*call_local64, *ret_call_local64): New patterns.
+	(*call_nonlocal_aix64, *ret_call_nonlocal_aix64): New patterns.
+	(*ret_call_nonlocal_aix32): Use call_value_indirect for REG.
+	(compare): Materialize DImode truthvalues.
+
 Thu Jun  4 01:26:57 1998  Craig Burley  <burley@gnu.org>
 
 	* expr.c (safe_from_p): Avoid combinatorial explosion

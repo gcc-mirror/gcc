@@ -7771,7 +7771,8 @@ expand_builtin_setjmp (buf_addr, target, first_label, next_label)
      rtx first_label, next_label;
 {
   rtx lab1 = gen_label_rtx ();
-  enum machine_mode sa_mode = Pmode, value_mode;
+  enum machine_mode sa_mode = STACK_SAVEAREA_MODE (SAVE_NONLOCAL);
+  enum machine_mode value_mode;
   rtx stack_save;
 
   value_mode = TYPE_MODE (integer_type_node);
@@ -7802,11 +7803,6 @@ expand_builtin_setjmp (buf_addr, target, first_label, next_label)
 				plus_constant (buf_addr,
 					       GET_MODE_SIZE (Pmode)))),
 		  gen_rtx_LABEL_REF (Pmode, lab1));
-
-#ifdef HAVE_save_stack_nonlocal
-  if (HAVE_save_stack_nonlocal)
-    sa_mode = insn_operand_mode[(int) CODE_FOR_save_stack_nonlocal][0];
-#endif
 
   stack_save = gen_rtx_MEM (sa_mode,
 			    plus_constant (buf_addr,
@@ -7899,7 +7895,7 @@ expand_builtin_longjmp (buf_addr, value)
      rtx buf_addr, value;
 {
   rtx fp, lab, stack;
-  enum machine_mode sa_mode;
+  enum machine_mode sa_mode = STACK_SAVEAREA_MODE (SAVE_NONLOCAL);
 
 #ifdef POINTERS_EXTEND_UNSIGNED
   buf_addr = convert_memory_address (Pmode, buf_addr);
@@ -7941,14 +7937,6 @@ expand_builtin_longjmp (buf_addr, value)
       fp = gen_rtx_MEM (Pmode, buf_addr);
       lab = gen_rtx_MEM (Pmode, plus_constant (buf_addr,
 					       GET_MODE_SIZE (Pmode)));
-
-#ifdef HAVE_save_stack_nonlocal
-      sa_mode = (HAVE_save_stack_nonlocal
-		 ? insn_operand_mode[(int) CODE_FOR_save_stack_nonlocal][0]
-		 : Pmode);
-#else
-      sa_mode = Pmode;
-#endif
 
       stack = gen_rtx_MEM (sa_mode, plus_constant (buf_addr,
 						   2 * GET_MODE_SIZE (Pmode)));

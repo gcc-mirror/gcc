@@ -245,6 +245,13 @@ enum direction {none, upward, downward};  /* Value has this type.  */
 #define RETURN_IN_MEMORY(TYPE) (TYPE_MODE (TYPE) == BLKmode)
 #endif
 
+/* Supply a default definition of STACK_SAVEAREA_MODE for emit_stack_save.
+   Normally move_insn, so Pmode stack pointer.  */
+
+#ifndef STACK_SAVEAREA_MODE
+#define STACK_SAVEAREA_MODE(LEVEL) Pmode
+#endif
+
 /* Provide default values for the macros controlling stack checking.  */
 
 #ifndef STACK_CHECK_BUILTIN
