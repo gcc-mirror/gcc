@@ -1,3 +1,8 @@
+2002-06-02  Tom Tromey  <tromey@redhat.com>
+
+	* fixinc/fixincl.x: Rebuilt.
+	* fixinc/inclhack.def (thread_keyword): Match `*__thread'.
+
 2002-06-02  Neil Booth  <neil@daikokuya.demon.co.uk>
 
 config/i370:
