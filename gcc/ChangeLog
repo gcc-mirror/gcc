@@ -1,3 +1,8 @@
+Thu Sep 30 05:40:34 1999  Richard Earnshaw <rearnsha@arm.com>
+
+	* c-lang.c (finish_file case ndef ASM_OUTPUT_{CON,DE}STRUCTOR): 
+	Correctly build argument list to constructor and destructor functions.
+
 Wed Sep 22 17:55:31 1999  David Edelsohn  <edelsohn@gnu.org>
 
 	* rs6000.c (expand_block_move): DImode loads and stores require
