@@ -392,19 +392,38 @@ and a path ending in @code{/} returns the empty string after it.
 
 @end deftypefn
 
+@c lrealpath.c:25
+@deftypefn Replacement {const char*} lrealpath (const char *@var{name})
+
+Given a pointer to a string containing a pathname, returns a canonical
+version of the filename.  Symlinks will be resolved, and ``.'' and ``..''
+components will be simplified.  The returned value will be allocated using
+@code{xmalloc} or @code{malloc}.
+
+@end deftypefn
+
 @c make-relative-prefix.c:24
 @deftypefn Extension {const char*} make_relative_prefix (const char *@var{progname}, const char *@var{bin_prefix}, const char *@var{prefix})
 
-Given three strings @var{progname}, @var{bin_prefix}, @var{prefix}, return a string
-that gets to @var{prefix} starting with the directory portion of @var{progname} and
-a relative pathname of the difference between @var{bin_prefix} and @var{prefix}.
+Given three paths @var{progname}, @var{bin_prefix}, @var{prefix},
+return the path that is in the same position relative to
+@var{progname}'s directory as @var{prefix} is relative to
+@var{bin_prefix}.  That is, a string starting with the directory
+portion of @var{progname}, followed by a relative pathname of the
+difference between @var{bin_prefix} and @var{prefix}.
 
-For example, if @var{bin_prefix} is @code{/alpha/beta/gamma/gcc/delta}, @var{prefix}
-is @code{/alpha/beta/gamma/omega/}, and @var{progname} is @code{/red/green/blue/gcc},
-then this function will return @code{/red/green/blue/../../omega/}.
+If @var{progname} does not contain any directory separators,
+@code{make_relative_prefix} will search @env{PATH} to find a program
+named @var{progname}.  Also, if @var{progname} is a symbolic link,
+the symbolic link will be resolved.
 
-The return value is normally allocated via @code{malloc}.  If no relative prefix
-can be found, return @code{NULL}.
+For example, if @var{bin_prefix} is @code{/alpha/beta/gamma/gcc/delta},
+@var{prefix} is @code{/alpha/beta/gamma/omega/}, and @var{progname} is
+@code{/red/green/blue/gcc}, then this function will return
+@code{/red/green/blue/../../omega/}.
+
+The return value is normally allocated via @code{malloc}.  If no
+relative prefix can be found, return @code{NULL}.
 
 @end deftypefn
 
