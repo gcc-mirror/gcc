@@ -1934,7 +1934,7 @@ yylex ()
 
 #ifdef MULTIBYTE_CHARS
 	    len = mbstowcs ((wchar_t *) widep, token_buffer + 1, p - token_buffer);
-	    if ((unsigned) len >= (p - token_buffer))
+	    if (len < 0 || len >= (p - token_buffer))
 	      {
 		warning ("Ignoring invalid multibyte string");
 		len = 0;
