@@ -1,3 +1,9 @@
+Wed Jan 24 23:51:55 2001  J"orn Rennecke <amylaar@redhat.com>
+
+	* reload1.c (reload_reg_free_for_value_p): New parameter start_regno.
+	Changed all callers.  Take it into account when deciding if a
+	previously loaded value matches.
+
 2001-01-24  Richard Henderson  <rth@redhat.com>
 
 	* reload.c (find_reloads_subreg_address): Fail the substitution
