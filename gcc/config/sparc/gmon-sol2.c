@@ -39,11 +39,11 @@
 static char sccsid[] = "@(#)gmon.c	5.3 (Berkeley) 5/22/91";
 #endif /* not lint */
 
-#include <unistd.h>
-
-#ifdef DEBUG
 #include <stdio.h>
-#endif
+#include <stdlib.h>
+#include <string.h>
+#include <limits.h>
+#include <unistd.h>
 
 #if 0
 #include "sparc/gmon.h"
@@ -172,6 +172,7 @@ monstartup(lowpc, highpc)
     moncontrol(1);
 }
 
+void
 _mcleanup()
 {
     int			fd;
@@ -180,11 +181,35 @@ _mcleanup()
     char		*frompc;
     int			toindex;
     struct rawarc	rawarc;
+    char		*profdir;
+    char		*proffile;
+    char		*progname;
+    char		 buf[PATH_MAX];
+    extern char	       **___Argv;
 
     moncontrol(0);
-    fd = creat( "gmon.out" , 0666 );
+
+    if ((profdir = getenv("PROFDIR")) != NULL) {
+	/* If PROFDIR contains a null value, no profiling output is produced */
+	if (*profdir == '\0') {
+	    return;
+	}
+
+	progname=strrchr(___Argv[0], '/');
+	if (progname == NULL)
+	    progname=___Argv[0];
+	else
+	    progname++;
+
+	sprintf(buf, "%s/%d.%s", profdir, getpid(), progname);
+	proffile = buf;
+    } else {
+	proffile = "gmon.out";
+    }
+
+    fd = creat( proffile, 0666 );
     if ( fd < 0 ) {
-	perror( "mcount: gmon.out" );
+	perror( proffile );
 	return;
     }
 #   ifdef DEBUG
