@@ -1,3 +1,15 @@
+2004-11-25  Andrew Pinski  <pinskia@physics.uc.edu>
+
+	PR middle-end/17957
+	* tree-complex.c (vector_inner_type): New variable moved from
+	build_word_mode_vector_type.
+	(vector_last_type): Likewise.
+	(vector_last_nunits): Likewise.
+	(build_word_mode_vector_type): Use the new variables.
+	* Makefile.in (tree-complex.o): Add gt-tree-complex.h $(GGC_H).
+	(GTFILES): Add tree-complex.c.
+	(gt-tree-complex.h): New rule, add it to the rest of the gt-* rules.
+
 2004-11-25  Bob Wilson  <bob.wilson@acm.org>
 
 	* config/xtensa/xtensa.h (TARGET_CPU_CPP_BUILTINS): Define

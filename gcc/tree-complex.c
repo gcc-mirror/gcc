@@ -35,6 +35,7 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include "tree-iterator.h"
 #include "tree-pass.h"
 #include "flags.h"
+#include "ggc.h"
 
 
 /* Extract the real or imaginary part of a complex variable or constant.
@@ -509,25 +510,30 @@ build_replicated_const (tree type, tree inner_type, HOST_WIDE_INT value)
   return ret;
 }
 
+static GTY(()) tree vector_inner_type;
+static GTY(()) tree vector_last_type;
+static GTY(()) int vector_last_nunits;
+
 /* Return a suitable vector types made of SUBPARTS units each of mode
    "word_mode" (the global variable).  */
 static tree
 build_word_mode_vector_type (int nunits)
 {
-  static tree innertype;
-  static tree last;
-  static int last_nunits;
-
-  if (!innertype)
-    innertype = lang_hooks.types.type_for_mode (word_mode, 1);
-  else if (last_nunits == nunits)
-    return last;
+  if (!vector_inner_type)
+    vector_inner_type = lang_hooks.types.type_for_mode (word_mode, 1);
+  else if (vector_last_nunits == nunits)
+    {
+      gcc_assert (TREE_CODE (vector_last_type) == VECTOR_TYPE);
+      return vector_last_type;
+    }
 
   /* We build a new type, but we canonicalize it nevertheless,
      because it still saves some memory.  */
-  last_nunits = nunits;
-  last = type_hash_canon (nunits, build_vector_type (innertype, nunits));
-  return last;
+  vector_last_nunits = nunits;
+  vector_last_type = type_hash_canon (nunits,
+				      build_vector_type (vector_inner_type,
+							 nunits));
+  return vector_last_type;
 }
 
 typedef tree (*elem_op_func) (block_stmt_iterator *,
@@ -953,3 +959,5 @@ struct tree_opt_pass pass_pre_expand =
     | TODO_verify_stmts,		/* todo_flags_finish */
   0					/* letter */
 };
+
+#include "gt-tree-complex.h"
