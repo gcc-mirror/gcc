@@ -1,3 +1,7 @@
+1998-09-30  Dave Love  <d.love@dl.ac.uk>
+
+	* Makefile.in (f2cext.c): Depend on g2c.h.
+
 1998-09-30  Robert Lipe  <robertl@dgii.com> 
 
 	* Makefile.in (all): Correct dependencies do --disable-multilibs 

@@ -121,6 +121,8 @@ s-libe77: f2cext.c
 	done
 	echo timestamp >s-libe77
 
+f2cext.c: g2c.h
+
 ${srcdir}/configure: configure.in
 	rm -f config.cache
 	cd $(srcdir) && autoconf
