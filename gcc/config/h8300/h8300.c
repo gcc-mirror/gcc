@@ -41,7 +41,6 @@ void print_operand_address ();
 char *index ();
 
 static int h8300_interrupt_function_p PROTO ((tree));
-static int h8300_funcvec_function_p PROTO ((tree));
 
 /* CPU_TYPE, says what cpu we're compiling for.  */
 int cpu_type;
