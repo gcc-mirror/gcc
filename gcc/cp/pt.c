@@ -3962,10 +3962,14 @@ lookup_template_class (d1, arglist, in_decl, context, entering_scope)
 	if (comp_template_args (TREE_PURPOSE (*tp), arglist))
 	  {
 	    found = *tp;
+
+	    /* Use the move-to-front heuristic to speed up future
+	       searches.  */
 	    *tp = TREE_CHAIN (*tp);
 	    TREE_CHAIN (found) 
 	      = DECL_TEMPLATE_INSTANTIATIONS (template);
 	    DECL_TEMPLATE_INSTANTIATIONS (template) = found;
+
 	    return TREE_VALUE (found);
 	  }
 
