@@ -3105,7 +3105,7 @@ while (0)
 
 #define PRINT_OPERAND_PUNCT_VALID_P(CHAR) \
   ((CHAR) == '.' || (CHAR) == '#' || (CHAR) == '@' || (CHAR) == ','	\
-   || (CHAR) == '$')
+   || (CHAR) == '$'|| (CHAR) == '\'')
 
 /* Recognize machine-specific patterns that may appear within
    constants.  Used for PIC-specific UNSPECs.  */
@@ -3234,6 +3234,7 @@ extern int rtx_equal_function_value_matters;
   {"arith_reg_or_0_operand", {SUBREG, REG, CONST_INT, CONST_VECTOR}},	\
   {"binary_float_operator", {PLUS, MULT}},				\
   {"commutative_float_operator", {PLUS, MULT}},				\
+  {"equality_comparison_operator", {EQ,NE}},				\
   {"extend_reg_operand", {SUBREG, REG, TRUNCATE}},			\
   {"extend_reg_or_0_operand", {SUBREG, REG, TRUNCATE, CONST_INT}},	\
   {"fp_arith_reg_operand", {SUBREG, REG}},				\
@@ -3241,6 +3242,8 @@ extern int rtx_equal_function_value_matters;
   {"fpul_operand", {REG}},						\
   {"general_movsrc_operand", {SUBREG, REG, CONST_INT, CONST_DOUBLE, MEM}}, \
   {"general_movdst_operand", {SUBREG, REG, MEM}},			\
+  {"greater_comparison_operator", {GT,GE,GTU,GEU}},			\
+  {"less_comparison_operator", {LT,LE,LTU,LEU}},			\
   {"logical_operand", {SUBREG, REG, CONST_INT}},			\
   {"mextr_bit_offset", {CONST_INT}},					\
   {"noncommutative_float_operator", {MINUS, DIV}},			\

@@ -325,6 +325,7 @@ print_operand_address (stream, x)
    ','  print LOCAL_LABEL_PREFIX
    '@'  print trap, rte or rts depending upon pragma interruptness
    '#'  output a nop if there is nothing to put in the delay slot
+   '''  print likelyhood suffix (/u for unlikely).
    'O'  print a constant without the #
    'R'  print the LSW of a dp value - changes if in little endian
    'S'  print the MSW of a dp value - changes if in little endian
@@ -364,6 +365,14 @@ print_operand (stream, x, code)
       if (dbr_sequence_length () == 0)
 	fprintf (stream, "\n\tnop");
       break;
+    case '\'':
+      {
+	rtx note = find_reg_note (current_output_insn, REG_BR_PROB, 0);
+
+	if (note && INTVAL (XEXP (note, 0)) * 2 < REG_BR_PROB_BASE)
+	  fputs ("/u", stream);
+	break;
+      }
     case 'O':
       x = mark_constant_pool_use (x);
       output_addr_const (stream, x);
@@ -398,6 +407,12 @@ print_operand (stream, x, code)
 	case MINUS: fputs ("sub", stream); break;
 	case MULT:  fputs ("mul", stream); break;
 	case DIV:   fputs ("div", stream); break;
+	case EQ:    fputs ("eq",  stream); break;
+	case NE:    fputs ("ne",  stream); break;
+	case GT:  case LT:  fputs ("gt",  stream); break;
+	case GE:  case LE:  fputs ("ge",  stream); break;
+	case GTU: case LTU: fputs ("gtu", stream); break;
+	case GEU: case LEU: fputs ("geu", stream); break;
 	default:
 	  break;
 	}
@@ -443,7 +458,7 @@ print_operand (stream, x, code)
       goto default_output;
     case 'u':
       if (GET_CODE (x) == CONST_INT)
-        {
+	{
 	  fprintf ((stream), "%u", (unsigned) INTVAL (x) & (0x10000 - 1));
 	  break;
 	}
@@ -6139,6 +6154,51 @@ binary_float_operator (op, mode)
   return 0;
 }
 
+int
+equality_comparison_operator (op, mode)
+     rtx op;
+     enum machine_mode mode;
+{
+  return ((mode == VOIDmode || GET_MODE (op) == mode)
+	  && (GET_CODE (op) == EQ || GET_CODE (op) == NE));
+}
+
+int greater_comparison_operator (op, mode)
+     rtx op;
+     enum machine_mode mode;
+{
+  if (mode != VOIDmode && GET_MODE (op) == mode)
+    return 0;
+  switch (GET_CODE (op))
+    {
+    case GT:
+    case GE:
+    case GTU:
+    case GEU:
+      return 1;
+    default:
+      return 0;
+    }
+}
+
+int less_comparison_operator (op, mode)
+     rtx op;
+     enum machine_mode mode;
+{
+  if (mode != VOIDmode && GET_MODE (op) == mode)
+    return 0;
+  switch (GET_CODE (op))
+    {
+    case LT:
+    case LE:
+    case LTU:
+    case LEU:
+      return 1;
+    default:
+      return 0;
+    }
+}
+
 /* Accept pseudos and branch target registers.  */
 int
 target_reg_operand (op, mode)
@@ -6251,12 +6311,12 @@ sh_rep_vec (v, mode)
       for (i -= 2 ; i >= 0; i -= 2)
 	if (! rtx_equal_p (XVECEXP (v, 0, i + 1), x)
 	    || ! rtx_equal_p (XVECEXP (v, 0, i), y))
-          return 0;
+	  return 0;
     }
   else
     for (; i >= 0; i--)
       if (XVECEXP (v, 0, i) != x)
-        return 0;
+	return 0;
   return 1;
 }
 

@@ -4707,16 +4707,18 @@
   "TARGET_SHMEDIA"
   "")
 
-(define_insn "beq_media_i"
+(define_insn "*beq_media_i"
   [(set (pc)
-	(if_then_else (eq (match_operand:DI 1 "arith_reg_operand" "r,r")
-			  (match_operand:DI 2 "arith_operand" "r,O"))
+	(if_then_else (match_operator 3 "equality_comparison_operator"
+			[(match_operand:DI 1 "arith_reg_operand" "r,r")
+			 (match_operand:DI 2 "arith_operand" "r,O")])
 		      (match_operand:DI 0 "target_operand" "b,b")
 		      (pc)))]
   "TARGET_SHMEDIA"
   "@
-	beq	%1, %2, %0
-	beqi	%1, %2, %0")
+	b%o3%'	%1, %2, %0
+	b%o3i%'	%1, %2, %0"
+  [(set_attr "type" "cbranch_media")])
 
 (define_expand "bne_media"
   [(set (pc)
@@ -4727,17 +4729,6 @@
   "TARGET_SHMEDIA"
   "")
 
-(define_insn "bne_media_i"
-  [(set (pc)
-	(if_then_else (ne (match_operand:DI 1 "arith_reg_operand" "r,r")
-			  (match_operand:DI 2 "arith_operand" "r,O"))
-		      (match_operand:DI 0 "target_operand" "b,b")
-		      (pc)))]
-  "TARGET_SHMEDIA"
-  "@
-	bne	%1, %2, %0
-	bnei	%1, %2, %0")
-
 (define_expand "bgt_media"
   [(set (pc)
 	(if_then_else (gt (match_operand:DI 1 "arith_reg_operand" "r")
@@ -4746,15 +4737,6 @@
 		      (pc)))]
   "TARGET_SHMEDIA"
   "")
-
-(define_insn "bgt_media_i"
-  [(set (pc)
-	(if_then_else (gt (match_operand:DI 1 "arith_reg_operand" "r")
-			  (match_operand:DI 2 "arith_reg_operand" "r"))
-		      (match_operand:DI 0 "target_operand" "b")
-		      (pc)))]
-  "TARGET_SHMEDIA"
-  "bgt	%1, %2, %0")
 
 (define_expand "bge_media"
   [(set (pc)
@@ -4765,15 +4747,6 @@
   "TARGET_SHMEDIA"
   "")
 
-(define_insn "bge_media_i"
-  [(set (pc)
-	(if_then_else (ge (match_operand:DI 1 "arith_reg_operand" "r")
-			  (match_operand:DI 2 "arith_reg_operand" "r"))
-		      (match_operand:DI 0 "target_operand" "b")
-		      (pc)))]
-  "TARGET_SHMEDIA"
-  "bge	%1, %2, %0")
-
 (define_expand "bgtu_media"
   [(set (pc)
 	(if_then_else (gtu (match_operand:DI 1 "arith_reg_operand" "r")
@@ -4782,15 +4755,6 @@
 		      (pc)))]
   "TARGET_SHMEDIA"
   "")
-
-(define_insn "bgtu_media_i"
-  [(set (pc)
-	(if_then_else (gtu (match_operand:DI 1 "arith_reg_operand" "r")
-			   (match_operand:DI 2 "arith_reg_operand" "r"))
-		      (match_operand:DI 0 "target_operand" "b")
-		      (pc)))]
-  "TARGET_SHMEDIA"
-  "bgtu	%1, %2, %0")
 
 (define_expand "bgeu_media"
   [(set (pc)
@@ -4801,51 +4765,28 @@
   "TARGET_SHMEDIA"
   "")
 
-(define_insn "bgeu_media_i"
+(define_insn "*bgt_media_i"
   [(set (pc)
-	(if_then_else (geu (match_operand:DI 1 "arith_reg_operand" "r")
-			   (match_operand:DI 2 "arith_reg_operand" "r"))
+	(if_then_else (match_operator 3 "greater_comparison_operator"
+			[(match_operand:DI 1 "arith_reg_or_0_operand" "rN")
+			 (match_operand:DI 2 "arith_reg_or_0_operand" "rN")])
 		      (match_operand:DI 0 "target_operand" "b")
 		      (pc)))]
   "TARGET_SHMEDIA"
-  "bgeu	%1, %2, %0")
+  "b%o3%'	%N1, %N2, %0"
+  [(set_attr "type" "cbranch_media")])
 
 ;; These are only needed to make invert_jump() happy.
 (define_insn "*ble_media_i"
   [(set (pc)
-	(if_then_else (le (match_operand:DI 1 "arith_reg_operand" "r")
-			  (match_operand:DI 2 "arith_reg_operand" "r"))
+	(if_then_else (match_operator 3 "less_comparison_operator"
+			[(match_operand:DI 1 "arith_reg_operand" "rN")
+			 (match_operand:DI 2 "arith_reg_operand" "rN")])
 		      (match_operand:DI 0 "target_operand" "b")
 		      (pc)))]
   "TARGET_SHMEDIA"
-  "bge	%2, %1, %0")
-
-(define_insn "*blt_media_i"
-  [(set (pc)
-	(if_then_else (lt (match_operand:DI 1 "arith_reg_operand" "r")
-			  (match_operand:DI 2 "arith_reg_operand" "r"))
-		      (match_operand:DI 0 "target_operand" "b")
-		      (pc)))]
-  "TARGET_SHMEDIA"
-  "bgt	%2, %1, %0")
-
-(define_insn "*bleu_media_i"
-  [(set (pc)
-	(if_then_else (leu (match_operand:DI 1 "arith_reg_operand" "r")
-			   (match_operand:DI 2 "arith_reg_operand" "r"))
-		      (match_operand:DI 0 "target_operand" "b")
-		      (pc)))]
-  "TARGET_SHMEDIA"
-  "bgeu	%2, %1, %0")
-
-(define_insn "*bltu_media_i"
-  [(set (pc)
-	(if_then_else (ltu (match_operand:DI 1 "arith_reg_operand" "r")
-			   (match_operand:DI 2 "arith_reg_operand" "r"))
-		      (match_operand:DI 0 "target_operand" "b")
-		      (pc)))]
-  "TARGET_SHMEDIA"
-  "bgtu	%2, %1, %0")
+  "b%o3%'	%N2, %N1, %0"
+  [(set_attr "type" "cbranch_media")])
 
 (define_expand "beq"
   [(set (pc)
@@ -4922,8 +4863,10 @@
 	  DONE;
 	}
 
-      sh_compare_op0 = force_reg (DImode, sh_compare_op0);
-      sh_compare_op1 = force_reg (DImode, sh_compare_op1);
+      if (sh_compare_op0 != const0_rtx)
+	sh_compare_op0 = force_reg (DImode, sh_compare_op0);
+      if (sh_compare_op1 != const0_rtx)
+	sh_compare_op1 = force_reg (DImode, sh_compare_op1);
       emit_jump_insn (gen_bgt_media (operands[0],
 				     sh_compare_op0, sh_compare_op1));
       DONE;
@@ -4951,8 +4894,10 @@
 	  DONE;
 	}
 
-      sh_compare_op0 = force_reg (DImode, sh_compare_op0);
-      sh_compare_op1 = force_reg (DImode, sh_compare_op1);
+      if (sh_compare_op0 != const0_rtx)
+	sh_compare_op0 = force_reg (DImode, sh_compare_op0);
+      if (sh_compare_op1 != const0_rtx)
+	sh_compare_op1 = force_reg (DImode, sh_compare_op1);
       emit_jump_insn (gen_bgt_media (operands[0],
 				     sh_compare_op1, sh_compare_op0));
       DONE;
@@ -4988,8 +4933,10 @@
 	  DONE;
 	}
 
-      sh_compare_op0 = force_reg (DImode, sh_compare_op0);
-      sh_compare_op1 = force_reg (DImode, sh_compare_op1);
+      if (sh_compare_op0 != const0_rtx)
+	sh_compare_op0 = force_reg (DImode, sh_compare_op0);
+      if (sh_compare_op1 != const0_rtx)
+	sh_compare_op1 = force_reg (DImode, sh_compare_op1);
       emit_jump_insn (gen_bge_media (operands[0],
 				     sh_compare_op1, sh_compare_op0));
       DONE;
@@ -5027,8 +4974,10 @@
 	  DONE;
 	}
 
-      sh_compare_op0 = force_reg (DImode, sh_compare_op0);
-      sh_compare_op1 = force_reg (DImode, sh_compare_op1);
+      if (sh_compare_op0 != const0_rtx)
+	sh_compare_op0 = force_reg (DImode, sh_compare_op0);
+      if (sh_compare_op1 != const0_rtx)
+	sh_compare_op1 = force_reg (DImode, sh_compare_op1);
       emit_jump_insn (gen_bge_media (operands[0],
 				     sh_compare_op0, sh_compare_op1));
       DONE;
@@ -5057,8 +5006,10 @@
 {
   if (TARGET_SHMEDIA)
     {
-      sh_compare_op0 = force_reg (DImode, sh_compare_op0);
-      sh_compare_op1 = force_reg (DImode, sh_compare_op1);
+      if (sh_compare_op0 != const0_rtx)
+	sh_compare_op0 = force_reg (DImode, sh_compare_op0);
+      if (sh_compare_op1 != const0_rtx)
+	sh_compare_op1 = force_reg (DImode, sh_compare_op1);
       emit_jump_insn (gen_bgtu_media (operands[0],
 				      sh_compare_op0, sh_compare_op1));
       DONE;
@@ -5077,8 +5028,10 @@
 {
   if (TARGET_SHMEDIA)
     {
-      sh_compare_op0 = force_reg (DImode, sh_compare_op0);
-      sh_compare_op1 = force_reg (DImode, sh_compare_op1);
+      if (sh_compare_op0 != const0_rtx)
+	sh_compare_op0 = force_reg (DImode, sh_compare_op0);
+      if (sh_compare_op1 != const0_rtx)
+	sh_compare_op1 = force_reg (DImode, sh_compare_op1);
       emit_jump_insn (gen_bgtu_media (operands[0],
 				      sh_compare_op1, sh_compare_op0));
       DONE;
@@ -5097,8 +5050,10 @@
 {
   if (TARGET_SHMEDIA)
     {
-      sh_compare_op0 = force_reg (DImode, sh_compare_op0);
-      sh_compare_op1 = force_reg (DImode, sh_compare_op1);
+      if (sh_compare_op0 != const0_rtx)
+	sh_compare_op0 = force_reg (DImode, sh_compare_op0);
+      if (sh_compare_op1 != const0_rtx)
+	sh_compare_op1 = force_reg (DImode, sh_compare_op1);
       emit_jump_insn (gen_bgeu_media (operands[0],
 				      sh_compare_op0, sh_compare_op1));
       DONE;
@@ -5117,8 +5072,10 @@
 {
   if (TARGET_SHMEDIA)
     {
-      sh_compare_op0 = force_reg (DImode, sh_compare_op0);
-      sh_compare_op1 = force_reg (DImode, sh_compare_op1);
+      if (sh_compare_op0 != const0_rtx)
+	sh_compare_op0 = force_reg (DImode, sh_compare_op0);
+      if (sh_compare_op1 != const0_rtx)
+	sh_compare_op1 = force_reg (DImode, sh_compare_op1);
       emit_jump_insn (gen_bgeu_media (operands[0],
 				      sh_compare_op1, sh_compare_op0));
       DONE;

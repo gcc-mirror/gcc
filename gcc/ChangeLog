@@ -1,3 +1,20 @@
+Sun Jul  7 20:38:38 2002  J"orn Rennecke <joern.rennecke@superh.com>
+
+	* sh.h (PRINT_OPERAND_PUNCT_VALID_P): Allow '\''.
+	(PREDICATE_CODES): Add entries for equality_comparison_operator,
+	greater_comparison_operator and less_comparison_operator.
+	* sh.c (print_operand): Add '\'' code.  Make 'o' handle
+	more operators.
+	(equality_comparison_operator): New function.
+	(greater_comparison_operator, less_comparison_operator): Likewise.
+	* sh.md (beq_media_i): Disable generator function generation.
+	Use match_operator to handle a whole class of comparisons.  Add
+	modifier in output template to provide branch prediction.  Add type.
+	(bgt_media_i, ble_media_i): Likewise.  Allow zero operands.
+	(bne_media_i, bge_media_i, bgtu_media_i, bgeu_media_i): Delete.
+	(blt_media_i, bleu_media_i, bltu_media_i): Likewise.
+	(bgt, blt, ble, bge, bgtu, bltu, bgeu, bleu): Allow zero operands.
+
 2002-07-07  Hans-Peter Nilsson  <hp@bitrange.com>
 
 	Emit MMIX function prologue and epilogue as rtl.
