@@ -28,6 +28,10 @@ Mon Jun 24 18:53:56 2002  J"orn Rennecke <joern.rennecke@superh.com>
 	* expmed.c (expand_divmod): Do not set optab1/optab2 to the shift
 	optabs if op1 is const0_rtx.
 
+	* Makefile.in (GTFILES): Add basic-block.h
+	* basic-block.h (label_value_list, tail_recursion_label_list):
+	Mark with GTY.
+
 2002-06-24  Neil Booth  <neil@daikokuya.co.uk>
 
 	* cpptrad.c (scan_out_logical_line): Check recursing only when
