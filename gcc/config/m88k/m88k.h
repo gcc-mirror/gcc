@@ -204,9 +204,9 @@ extern char * reg_names[];
 /* Print subsidiary information on the compiler version in use.
    Redefined in m88kv4.h, and m88kluna.h.  */
 #define VERSION_INFO1	"88open OCS/BCS, "
-#define VERSION_INFO2	"09 Mar 1992"
+#define VERSION_INFO2	"19 Mar 1992"
 #define VERSION_STRING	version_string
-#define	TM_SCCS_ID	"@(#)m88k.h	2.0.2.3 09 Mar 1992 14:20:23"
+#define	TM_SCCS_ID	"@(#)m88k.h	2.0.3.5 19 Mar 1992 12:40:46"
 
 /* Run-time compilation parameters selecting different hardware subsets.  */
 
@@ -1773,7 +1773,7 @@ enum reg_class { NO_REGS, AP_REG, GENERAL_REGS, ALL_REGS, LIM_REG_CLASSES };
 
 /* The singl-byte pseudo-op is the default.  Override svr[34].h.  */
 #undef	ASM_BYTE_OP
-#define ASM_BYTE_OP "byte"
+#define ASM_BYTE_OP "\tbyte"
 #undef	ASM_OUTPUT_ASCII
 #define ASM_OUTPUT_ASCII(FILE, P, SIZE)  \
   output_ascii ((FILE), (P), (SIZE))
