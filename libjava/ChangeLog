@@ -1,3 +1,9 @@
+2002-12-03  Raif Naffah  <raif@fl.net.au>
+
+        * java/security/spec/DSAParameterSpec.java (getP): Return p, not q.
+        * java/security/spec/DSAPrivateKeySpec.java (getP): Likewise.
+        * java/security/spec/DSAPublicKeySpec.java (getP): Likewise.
+
 2002-12-03  Andrew Haley  <aph@redhat.com>
 
         * java/lang/natClassLoader.cc (_Jv_PrepareCompiledClass): Call
