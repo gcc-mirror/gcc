@@ -1,6 +1,6 @@
-// natClass.cc - Implementation of java.lang.Class native methods.
+// PlainSocketImpl.java - Implementation of SocketImpl.
 
-/* Copyright (C) 1998, 1999  Cygnus Solutions
+/* Copyright (C) 1999  Cygnus Solutions
 
    This file is part of libgcj.
 
@@ -10,6 +10,17 @@ details.  */
 
 package java.net;
 import java.io.*;
+
+/**
+ * @author Per Bothner <bothner@cygnus.com>
+ * @date February 22, 1999.
+ */
+
+/**
+ * Written using on-line Java Platform 1.2 API Specification, as well
+ * as "The Java Class Libraries", 2nd edition (Addison-Wesley, 1998).
+ * Status:  Believed complete and correct.
+ */
 
 class PlainSocketImpl extends SocketImpl
 {

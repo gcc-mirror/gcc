@@ -18,6 +18,8 @@ details.  */
 #include <cni.h>
 #include <java/io/IOException.h>
 #include <java/io/FileDescriptor.h>
+#include <java/net/BindException.h>
+#include <java/net/ConnectException.h>
 #include <java/net/PlainSocketImpl.h>
 #include <java/net/InetAddress.h>
 
@@ -84,7 +86,7 @@ java::net::PlainSocketImpl::bind (java::net::InetAddress *host, jint lport)
   char msg[100];
   char* strerr = strerror (errno);
   sprintf (msg, "SocketImpl.bind: %.*s", 80, strerr);
-  JvThrow (new java::io::IOException (JvNewStringUTF (msg)));
+  JvThrow (new java::net::BindException (JvNewStringUTF (msg)));
 }
 
 void
@@ -123,7 +125,7 @@ java::net::PlainSocketImpl::connect (java::net::InetAddress *host, jint rport)
   char msg[100];
   char* strerr = strerror (errno);
   sprintf (msg, "SocketImpl.connect: %.*s", 80, strerr);
-  JvThrow (new java::io::IOException (JvNewStringUTF (msg)));
+  JvThrow (new java::net::ConnectException (JvNewStringUTF (msg)));
 }
 
 void

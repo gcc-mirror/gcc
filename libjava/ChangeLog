@@ -1,3 +1,10 @@
+1999-05-12  Warren Levy  <warrenl@cygnus.com>
+
+	* java/net/PlainSocketImpl.java: Corrected copyright & header comments.
+	* java/net/SocketImpl.java: Added marker for JDK 1.2 work.
+	* java/net/natPlainSocketImpl.cc (bind): Throw BindException.
+	(connect): Throw ConnectException.
+
 1999-05-11  Tom Tromey  <tromey@cygnus.com>
 
 	* Makefile.in: Rebuilt.
