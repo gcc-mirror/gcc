@@ -1,5 +1,10 @@
 2004-09-13  Daniel Jacobowitz  <dan@debian.org>
 
+	* fold-const.c (fold_checksum_tree): Ignore TYPE_CACHED_VALUES.
+	Only use TYPE_BINFO for aggregates.
+
+2004-09-13  Daniel Jacobowitz  <dan@debian.org>
+
 	* expmed.c (synth_mult): Initialize latency.  Check cost before
 	checking ops count.
 
