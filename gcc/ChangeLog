@@ -1,3 +1,9 @@
+2005-01-23  Richard Henderson  <rth@redhat.com>
+
+	PR 19486
+	* tree-complex.c (expand_complex_div_wide): Set EDGE_FALLTHRU on
+	edges leading to join block.
+
 2005-01-23  Roger Sayle  <roger@eyesopen.com>
 
 	* expmed.c (expand_mult_highpart): Make static.  Change type of
