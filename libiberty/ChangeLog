@@ -1,5 +1,7 @@
 2004-11-12  Mike Stump  <mrs@apple.com>
 
+	* Makefile.in (libiberty.html): Fix html generation.
+
 	* libiberty.texi (Index): Fix html generation with makeinfo by
 	renaming this node to Manual Index.
 
