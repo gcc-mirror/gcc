@@ -493,6 +493,38 @@ savestring (input, size)
   output[size] = 0;
   return output;
 }
+
+/* Parse a reasonable subset of shell quoting syntax.  */
+
+static char *
+extract_string (pp)
+     char **pp;
+{
+  char *p = *pp;
+  int backquote = 0;
+  int inside = 0;
+
+  for (;;)
+    {
+      char c = *p;
+      if (c == '\0')
+	break;
+      ++p;
+      if (backquote)
+	obstack_1grow (&temporary_obstack, c);
+      else if (! inside && c == ' ')
+	break;
+      else if (! inside && c == '\\')
+	backquote = 1;
+      else if (c == '\'')
+	inside = !inside;
+      else
+	obstack_1grow (&temporary_obstack, c);
+    }
+
+  *pp = p;
+  return obstack_finish (&temporary_obstack);
+}
 
 void
 dump_file (name)
@@ -957,17 +989,13 @@ main (argc, argv)
   putenv (p);
 
   p = (char *) getenv ("COLLECT_GCC_OPTIONS");
-  if (p)
-    while (*p)
-      {
-	char *q = p;
-	while (*q && *q != ' ') q++;
-	if (*p == '-' && p[1] == 'm')
-	  num_c_args++;
-
-	if (*q) q++;
-	p = q;
-      }
+  while (p && *p)
+    {
+      char *q = extract_string (&p);
+      if (*q == '-' && (q[1] == 'm' || q[1] == 'f'))
+	num_c_args++;
+    }
+  obstack_free (&temporary_obstack, temporary_firstobj);
 
   c_ptr = c_argv = (char **) xcalloc (sizeof (char *), num_c_args);
 
@@ -1254,19 +1282,15 @@ main (argc, argv)
 
   /* Get any options that the upper GCC wants to pass to the sub-GCC.  */
   p = (char *) getenv ("COLLECT_GCC_OPTIONS");
-  if (p)
-    while (*p)
-      {
-	char *q = p;
-	while (*q && *q != ' ') q++;
-	if (*p == '-' && (p[1] == 'm' || p[1] == 'f'))
-	  *c_ptr++ = savestring (p, q - p);
-	if (strncmp (p, "-shared", sizeof ("shared") - 1) == 0)
-	  shared_obj = 1;
-
-	if (*q) q++;
-	p = q;
-      }
+  while (p && *p)
+    {
+      char *q = extract_string (&p);
+      if (*q == '-' && (q[1] == 'm' || q[1] == 'f'))
+	*c_ptr++ = obstack_copy0 (&permanent_obstack, q, strlen (q));
+      if (strncmp (q, "-shared", sizeof ("shared") - 1) == 0)
+	shared_obj = 1;
+    }
+  obstack_free (&temporary_obstack, temporary_firstobj);
 
 #ifdef COLLECT_EXPORT_LIST
   /* The AIX linker will discard static constructors in object files if
