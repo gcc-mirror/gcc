@@ -33,6 +33,7 @@ Boston, MA 02111-1307, USA.  */
 #include "output.h"
 #include "integrate.h"
 #include "real.h"
+#include "except.h"
 #include "function.h"
 #include "bytecode.h"
 
@@ -169,6 +170,19 @@ function_cannot_inline_p (fndecl)
   /* We cannot inline a nested function that jumps to a nonlocal label.  */
   if (current_function_has_nonlocal_goto)
     return "function with nonlocal goto cannot be inline";
+
+  /* This is a hack, until the inliner is taught about eh regions at
+     the start of the function.  */
+  for (insn = get_insns ();
+       insn &&
+         ! (GET_CODE (insn) == NOTE
+	    && NOTE_LINE_NUMBER (insn) == NOTE_INSN_FUNCTION_BEG);
+       insn = NEXT_INSN (insn))
+    {
+      if (insn && GET_CODE (insn) == NOTE
+	  && NOTE_LINE_NUMBER (insn) == NOTE_INSN_EH_REGION_BEG)
+	return "function with complex parameters cannot be inline";
+    }
 
   return 0;
 }
@@ -309,6 +323,7 @@ initialize_for_inline (fndecl, min_labelno, max_labelno, max_reg, copy)
      the size of the incoming stack area for parameters,
      the number of bytes popped on return,
      the stack slot list,
+     the labels that are forced to exist,
      some flags that are used to restore compiler globals,
      the value of current_function_outgoing_args_size,
      the original argument vector,
@@ -335,7 +350,7 @@ finish_inline (fndecl, head)
      tree fndecl;
      rtx head;
 {
-  NEXT_INSN (head) = get_first_nonparm_insn ();
+  FIRST_FUNCTION_INSN (head) = get_first_nonparm_insn ();
   FIRST_PARM_INSN (head) = get_insns ();
   DECL_SAVED_INSNS (fndecl) = head;
   DECL_FRAME_SIZE (fndecl) = get_frame_size ();
@@ -564,6 +579,15 @@ save_for_inline_copying (fndecl)
 	    {
 	      NOTE_SOURCE_FILE (insn) = (char *) copy;
 	      NOTE_SOURCE_FILE (copy) = 0;
+	    }
+	  if (NOTE_LINE_NUMBER (copy) == NOTE_INSN_EH_REGION_BEG
+	      || NOTE_LINE_NUMBER (copy) == NOTE_INSN_EH_REGION_END)
+	    {
+	      /* We have to forward these both to match the new exception
+		 region.  */
+	      NOTE_BLOCK_NUMBER (copy)
+		= CODE_LABEL_NUMBER (label_map[NOTE_BLOCK_NUMBER (copy)]);
+	      
 	    }
 	  RTX_INTEGRATED_P (copy) = RTX_INTEGRATED_P (insn);
 	  break;
@@ -1872,7 +1896,18 @@ expand_inline_function (fndecl, parms, target, ignore, type,
 	  if (NOTE_LINE_NUMBER (insn) != NOTE_INSN_FUNCTION_END
 	      && NOTE_LINE_NUMBER (insn) != NOTE_INSN_FUNCTION_BEG
 	      && NOTE_LINE_NUMBER (insn) != NOTE_INSN_DELETED)
-	    copy = emit_note (NOTE_SOURCE_FILE (insn), NOTE_LINE_NUMBER (insn));
+	    {
+	      copy = emit_note (NOTE_SOURCE_FILE (insn), NOTE_LINE_NUMBER (insn));
+	      if (copy && (NOTE_LINE_NUMBER (copy) == NOTE_INSN_EH_REGION_BEG
+			   || NOTE_LINE_NUMBER (copy) == NOTE_INSN_EH_REGION_END))
+		{
+		  rtx label = map->label_map[NOTE_BLOCK_NUMBER (copy)];
+
+		  /* We have to forward these both to match the new exception
+		     region.  */
+		  NOTE_BLOCK_NUMBER (copy) = CODE_LABEL_NUMBER (label);
+		}
+	    }
 	  else
 	    copy = 0;
 	  break;

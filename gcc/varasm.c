@@ -33,6 +33,7 @@ Boston, MA 02111-1307, USA.  */
 #include "rtl.h"
 #include "tree.h"
 #include "flags.h"
+#include "except.h"
 #include "function.h"
 #include "expr.h"
 #include "output.h"
@@ -413,6 +414,26 @@ variable_section (decl, reloc)
 	data_section ();
 #endif
     }
+}
+
+/* Tell assembler to switch to the section for the exception handling
+   table.  */
+
+void
+exception_section ()
+{
+#ifdef ASM_OUTPUT_SECTION_NAME
+  named_section (NULL_TREE, ".gcc_except_table");
+#else
+  if (flag_pic)
+    data_section ();
+  else
+#if defined (EXCEPTION_SECTION)
+    EXCEPTION_SECTION ();
+#else
+    readonly_data_section ();
+#endif
+#endif
 }
 
 /* Create the rtl to represent a function, for a function definition.

@@ -41,6 +41,7 @@ Boston, MA 02111-1307, USA.  */
 #include "rtl.h"
 #include "tree.h"
 #include "flags.h"
+#include "except.h"
 #include "function.h"
 #include "insn-flags.h"
 #include "insn-config.h"
@@ -134,8 +135,6 @@ extern tree rtl_expr_chain;
    cleanup list whenever an empty list is required.  */
 static tree empty_cleanup_list;
 #endif
-
-extern void (*interim_eh_hook)	PROTO((tree));
 
 /* Functions and data structures for expanding case statements.  */
 
@@ -473,9 +472,7 @@ void
 init_stmt ()
 {
   gcc_obstack_init (&stmt_obstack);
-#if 0
-  empty_cleanup_list = build_tree_list (NULL_TREE, NULL_TREE);
-#endif
+  init_eh ();
 }
 
 void
@@ -498,6 +495,8 @@ init_stmt_for_function ()
   /* We are not processing a ({...}) grouping.  */
   expr_stmts_for_value = 0;
   last_expr_type = 0;
+
+  init_eh_for_function ();
 }
 
 void
@@ -518,6 +517,7 @@ save_stmt_status (p)
   p->emit_filename = emit_filename;
   p->emit_lineno = emit_lineno;
   p->goto_fixup_chain = goto_fixup_chain;
+  save_eh_status (p);
 }
 
 void
@@ -538,6 +538,7 @@ restore_stmt_status (p)
   emit_filename = p->emit_filename;
   emit_lineno = p->emit_lineno;
   goto_fixup_chain = p->goto_fixup_chain;
+  restore_eh_status (p);
 }
 
 /* Emit a no-op instruction.  */
@@ -3730,7 +3731,7 @@ expand_decl_cleanup (decl, cleanup)
 	= temp_tree_cons (decl, cleanup, thisblock->data.block.cleanups);
       /* If this block has a cleanup, it belongs in stack_block_stack.  */
       stack_block_stack = thisblock;
-      (*interim_eh_hook) (NULL_TREE);
+      expand_eh_region_start ();
     }
   return 1;
 }
@@ -3831,7 +3832,7 @@ expand_cleanups (list, dont_do, in_fixup, reachable)
 	else
 	  {
 	    if (! in_fixup)
-	      (*interim_eh_hook) (TREE_VALUE (tail));
+	      expand_eh_region_end (TREE_VALUE (tail));
 
 	    if (reachable)
 	      {

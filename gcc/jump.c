@@ -60,6 +60,7 @@ Boston, MA 02111-1307, USA.  */
 #include "insn-flags.h"
 #include "expr.h"
 #include "real.h"
+#include "except.h"
 
 /* ??? Eventually must record somehow the labels used by jumps
    from nested functions.  */
@@ -233,6 +234,16 @@ jump_optimize (f, cross_jump, noop_moves, after_regscan)
 
   for (insn = forced_labels; insn; insn = XEXP (insn, 1))
     LABEL_NUSES (XEXP (insn, 0))++;
+
+  check_exception_handler_labels ();
+
+  /* Keep track of labels used for marking handlers for exception
+     regions; they cannot usually be deleted.  */
+
+  for (insn = exception_handler_labels; insn; insn = XEXP (insn, 1))
+    LABEL_NUSES (XEXP (insn, 0))++;
+
+  exception_optimize ();
 
   /* Delete all labels already not referenced.
      Also find the last insn.  */

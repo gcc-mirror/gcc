@@ -47,6 +47,7 @@ Boston, MA 02111-1307, USA.  */
 #include "flags.h"
 #include "real.h"
 #include "loop.h"
+#include "except.h"
 
 /* Vector mapping INSN_UIDs to luids.
    The luids are like uids but increase monotonically always.
@@ -2281,6 +2282,19 @@ find_and_verify_loops (f)
      because it can be jumped into from anywhere.  */
 
   for (label = forced_labels; label; label = XEXP (label, 1))
+    {
+      int loop_num;
+
+      for (loop_num = uid_loop_num[INSN_UID (XEXP (label, 0))];
+	   loop_num != -1;
+	   loop_num = loop_outer_loop[loop_num])
+	loop_invalid[loop_num] = 1;
+    }
+
+  /* Any loop containing a label used for an exception handler must be
+     invalidated, because it can be jumped into from anywhere.  */
+
+  for (label = exception_handler_labels; label; label = XEXP (label, 1))
     {
       int loop_num;
 
