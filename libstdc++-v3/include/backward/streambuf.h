@@ -1,4 +1,3 @@
-
 // Copyright (C) 2000 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
@@ -31,11 +30,9 @@
 
 #include <bits/std_streambuf.h>
 
-#ifdef __STL_USE_NAMESPACES
-using __STD::streambuf;
-#endif /* __STL_USE_NAMESPACES */
+using std::streambuf;
 
-#endif /* _CPP_BACKWARD_STREAMBUF_H */
+#endif 
 
 // Local Variables:
 // mode:C++
