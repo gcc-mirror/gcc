@@ -1,3 +1,7 @@
+2001-06-06  Andrew Haley  <aph@redhat.com>
+
+        * src/alpha/osf.S (__FRAME_BEGIN__): Conditionalize for ELF.
+
 2001-06-03  Andrew Haley  <aph@redhat.com>
 
         * src/alpha/osf.S: Add unwind info.
