@@ -1,3 +1,8 @@
+2004-10-15  Andrew Haley  <aph@redhat.com>
+
+        * Makefile.am (nat_files, xlib_nat_files): New.
+        * Makefile.in: Regenerate.
+
 2004-10-14  Ulrich Weigand  <uweigand@de.ibm.com>
 
 	* jni.cc (_Jv_JNIMethod::call): Use ffi_java_raw_call instead of
