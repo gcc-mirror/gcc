@@ -1,3 +1,7 @@
+2004-07-24  Zack Weinberg  <zack@codesourcery.com>
+
+	* config/ia64/hpux.h: Do not disable TLS.
+
 2004-07-24  Alexander Kabaev  <kan@freebsd.org>
 	    Zack Weinberg  <zack@codesourcery.com
 
