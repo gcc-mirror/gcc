@@ -2100,6 +2100,7 @@ static struct csa_memlist *record_one_stack_memref
 static int try_apply_stack_adjustment
   PARAMS ((rtx, struct csa_memlist *, HOST_WIDE_INT, HOST_WIDE_INT));
 static void combine_stack_adjustments_for_block PARAMS ((basic_block));
+static int record_stack_memrefs 	PARAMS ((rtx *, void *));
 
 
 /* Main entry point for stack adjustment combination.  */
@@ -2258,6 +2259,51 @@ try_apply_stack_adjustment (insn, memlist, new_adjust, delta)
     return 0;
 }
 
+/* Called via for_each_rtx and used to record all stack memory references in
+   the insn and discard all other stack pointer references.  */
+struct record_stack_memrefs_data
+{
+  rtx insn;
+  struct csa_memlist *memlist;
+};
+
+static int
+record_stack_memrefs (xp, data)
+     rtx *xp;
+     void *data;
+{
+  rtx x = *xp;
+  struct record_stack_memrefs_data *d =
+    (struct record_stack_memrefs_data *) data;
+  if (!x)
+    return 0;
+  switch (GET_CODE (x))
+    {
+    case MEM:
+      if (!reg_mentioned_p (stack_pointer_rtx, x))
+	return -1;
+      /* We are not able to handle correctly all possible memrefs containing
+         stack pointer, so this check is neccesary.  */
+      if (stack_memref_p (x))
+	{
+	  d->memlist = record_one_stack_memref (d->insn, xp, d->memlist);
+	  return -1;
+	}
+      return 1;
+    case REG:
+      /* ??? We want be able to handle non-memory stack pointer references
+         later.  For now just discard all insns refering to stack pointer
+         outside mem expressions.  We would probably want to teach
+	 validate_replace to simplify expressions first.  */
+      if (x == stack_pointer_rtx)
+	return 1;
+      break;
+    default:
+      break;
+    }
+  return 0;
+}
+
 /* Subroutine of combine_stack_adjustments, called for each basic block.  */
 
 static void 
@@ -2269,6 +2315,7 @@ combine_stack_adjustments_for_block (bb)
   struct csa_memlist *memlist = NULL;
   rtx pending_delete;
   rtx insn, next;
+  struct record_stack_memrefs_data data;
 
   for (insn = bb->head; ; insn = next)
     {
@@ -2277,7 +2324,7 @@ combine_stack_adjustments_for_block (bb)
       pending_delete = NULL_RTX;
       next = NEXT_INSN (insn);
 
-      if (GET_RTX_CLASS (GET_CODE (insn)) != 'i')
+      if (! INSN_P (insn))
 	goto processed;
 
       set = single_set_for_csa (insn);
@@ -2337,23 +2384,6 @@ combine_stack_adjustments_for_block (bb)
 	      goto processed;
 	    }
 
-	  /* Find loads from stack memory and record them.  */
-	  if (last_sp_set && stack_memref_p (src)
-	      && ! reg_mentioned_p (stack_pointer_rtx, dest))
-	    {
-	      memlist = record_one_stack_memref (insn, &SET_SRC (set), memlist);
-	      goto processed;
-	    }
-
-	  /* Find stores to stack memory and record them.  */
-	  if (last_sp_set && stack_memref_p (dest)
-	      && ! reg_mentioned_p (stack_pointer_rtx, src))
-	    {
-	      memlist = record_one_stack_memref (insn, &SET_DEST (set),
-						 memlist);
-	      goto processed;
-	    }
-
 	  /* Find a predecrement of exactly the previous adjustment and
 	     turn it into a direct store.  Obviously we can't do this if
 	     there were any intervening uses of the stack pointer.  */
@@ -2379,6 +2409,16 @@ combine_stack_adjustments_for_block (bb)
 	      goto processed;
 	    }
 	}
+
+      data.insn = insn;
+      data.memlist = memlist;
+      if (GET_CODE (insn) != CALL_INSN && last_sp_set
+	  && !for_each_rtx (&PATTERN (insn), record_stack_memrefs, &data))
+	{
+	   memlist = data.memlist;
+	   goto processed;
+	}
+      memlist = data.memlist;
 
       /* Otherwise, we were not able to process the instruction. 
 	 Do not continue collecting data across such a one.  */
