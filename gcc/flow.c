@@ -138,6 +138,7 @@ Boston, MA 02111-1307, USA.  */
 #include "expr.h"
 
 #include "obstack.h"
+#include "splay-tree.h"
 
 #define obstack_chunk_alloc xmalloc
 #define obstack_chunk_free free
@@ -253,6 +254,16 @@ varray_type basic_block_for_insn;
 
 static rtx label_value_list;
 
+/* Holds information for tracking conditional register life information.  */
+struct reg_cond_life_info
+{
+  /* An EXPR_LIST of conditions under which a register is dead.  */
+  rtx condition;
+
+  /* ??? Could store mask of bytes that are dead, so that we could finally
+     track lifetimes of multi-word registers accessed via subregs.  */
+};
+
 /* For use in communicating between propagate_block and its subroutines.
    Holds all information needed to compute life and def-use information.  */
 
@@ -277,6 +288,15 @@ struct propagate_block_info
 
   /* If non-null, record the set of registers set in the basic block.  */
   regset local_set;
+
+#ifdef HAVE_conditional_execution
+  /* Indexed by register number, holds a reg_cond_life_info for each
+     register that is not unconditionally live or dead.  */
+  splay_tree reg_cond_dead;
+
+  /* Bit N is set if register N is in an expression in reg_cond_dead.  */
+  regset reg_cond_reg;
+#endif
 
   /* Non-zero if the value of CC0 is live.  */
   int cc0_live;
@@ -335,6 +355,17 @@ static void mark_set_regs		PARAMS ((struct propagate_block_info *,
 static void mark_set_1			PARAMS ((struct propagate_block_info *,
 						 enum rtx_code, rtx, rtx,
 						 rtx, int));
+#ifdef HAVE_conditional_execution
+static int mark_regno_cond_dead		PARAMS ((struct propagate_block_info *,
+						 int, rtx));
+static void free_reg_cond_life_info	PARAMS ((splay_tree_value));
+static int flush_reg_cond_reg_1		PARAMS ((splay_tree_node, void *));
+static void flush_reg_cond_reg		PARAMS ((struct propagate_block_info *,
+						 int));
+static rtx ior_reg_cond			PARAMS ((rtx, rtx));
+static rtx not_reg_cond			PARAMS ((rtx));
+static rtx nand_reg_cond		PARAMS ((rtx, rtx));
+#endif
 #ifdef AUTO_INC_DEC
 static void find_auto_inc		PARAMS ((struct propagate_block_info *,
 						 rtx, rtx));
@@ -3522,6 +3553,80 @@ init_propagate_block_info (bb, live, local_set, flags)
 
   pbi->new_set = BITMAP_XMALLOC ();
 
+#ifdef HAVE_conditional_execution
+  pbi->reg_cond_dead = splay_tree_new (splay_tree_compare_ints, NULL,
+				       free_reg_cond_life_info);
+  pbi->reg_cond_reg = BITMAP_XMALLOC ();
+
+  /* If this block ends in a conditional branch, for each register live
+     from one side of the branch and not the other, record the register
+     as conditionally dead.  */
+  if (GET_CODE (bb->end) == JUMP_INSN
+      && condjump_p (bb->end)
+      && ! simplejump_p (bb->end))
+    {
+      regset_head diff_head;
+      regset diff = INITIALIZE_REG_SET (diff_head);
+      basic_block bb_true, bb_false;
+      rtx cond_true, cond_false;
+      int i;
+
+      /* Identify the successor blocks.  */
+      bb_false = bb->succ->succ_next->dest;
+      bb_true = bb->succ->dest;
+      if (bb->succ->flags & EDGE_FALLTHRU)
+	{
+	  basic_block t = bb_false;
+	  bb_false = bb_true;
+	  bb_true = t;
+	}
+      else if (! (bb->succ->succ_next->flags & EDGE_FALLTHRU))
+	abort ();
+     
+      /* Extract the condition from the branch.  */
+      cond_true = XEXP (SET_SRC (PATTERN (bb->end)), 0);
+      cond_false = gen_rtx_fmt_ee (reverse_condition (GET_CODE (cond_true)),
+				   GET_MODE (cond_true), XEXP (cond_true, 0),
+				   XEXP (cond_true, 1));
+      if (GET_CODE (XEXP (SET_SRC (PATTERN (bb->end)), 1)) == PC)
+	{
+	  rtx t = cond_false;
+	  cond_false = cond_true;
+	  cond_true = t;
+	}
+
+      /* Compute which register lead different lives in the successors.  */
+      if (bitmap_operation (diff, bb_true->global_live_at_start,
+			    bb_false->global_live_at_start, BITMAP_XOR))
+	{
+	  if (GET_CODE (XEXP (cond_true, 0)) != REG)
+	    abort ();
+	  SET_REGNO_REG_SET (pbi.reg_cond_reg, REGNO (XEXP (cond_true, 0)));
+
+	  /* For each such register, mark it conditionally dead.  */
+	  EXECUTE_IF_SET_IN_REG_SET
+	    (diff, 0, i,
+	     {
+	       struct reg_cond_life_info *rcli;
+	       rtx cond;
+
+	       rcli = (struct reg_cond_life_info *) xmalloc (sizeof (*rcli));
+
+	       if (REGNO_REG_SET_P (bb_true->global_live_at_start, i))
+		 cond = cond_false;
+	       else
+		 cond = cond_true;
+	       rcli->condition = alloc_EXPR_LIST (0, cond, NULL_RTX);
+
+	       splay_tree_insert (pbi.reg_cond_dead, i,
+				  (splay_tree_value) rcli);
+	     });
+	}
+
+      FREE_REG_SET (diff);
+    }
+#endif
+
   return pbi;
 }
 
@@ -3534,6 +3639,11 @@ free_propagate_block_info (pbi)
   free_EXPR_LIST_list (&pbi->mem_set_list);
 
   BITMAP_XFREE (pbi->new_set);
+
+#ifdef HAVE_conditional_execution
+  splay_tree_delete (pbi->reg_cond_dead);
+  BITMAP_XFREE (pbi->reg_cond_reg);
+#endif
 
   if (pbi->reg_next_use)
     free (pbi->reg_next_use);
@@ -4137,6 +4247,22 @@ mark_set_1 (pbi, code, reg, cond, insn, flags)
 	  some_was_dead |= ! needed_regno;
 	}
 
+#ifdef HAVE_conditional_execution
+      /* Consider conditional death in deciding that the register needs
+	 a death note.  */
+      if (some_was_live
+	  /* The stack pointer is never dead.  Well, not strictly true,
+	     but it's very difficult to tell from here.  Hopefully
+	     combine_stack_adjustments will fix up the most egregious
+	     errors.  */
+	  && regno_first != STACK_POINTER_REGNUM)
+	{
+	  for (i = regno_first; i <= regno_last; ++i)
+	    if (! mark_regno_cond_dead (pbi, i, cond))
+	      not_dead = 1;
+	}
+#endif
+
       /* Additional data to record if this is the final pass.  */
       if (flags & (PROP_LOG_LINKS | PROP_REG_INFO
 		   | PROP_DEATH_NOTES | PROP_AUTOINC))
@@ -4271,6 +4397,263 @@ mark_set_1 (pbi, code, reg, cond, insn, flags)
 	  = alloc_EXPR_LIST (REG_UNUSED, reg, REG_NOTES (insn));
     }
 }
+
+#ifdef HAVE_conditional_execution
+/* Mark REGNO conditionally dead.  Return true if the register is
+   now unconditionally dead.  */
+
+static int
+mark_regno_cond_dead (pbi, regno, cond)
+     struct propagate_block_info *pbi;
+     int regno;
+     rtx cond;
+{
+  /* If this is a store to a predicate register, the value of the
+     predicate is changing, we don't know that the predicate as seen
+     before is the same as that seen after.  Flush all dependant
+     conditions from reg_cond_dead.  This will make all such
+     conditionally live registers unconditionally live.  */
+  if (REGNO_REG_SET_P (pbi->reg_cond_reg, regno))
+    flush_reg_cond_reg (pbi, regno);
+
+  /* If this is an unconditional store, remove any conditional
+     life that may have existed.  */
+  if (cond == NULL_RTX)
+    splay_tree_remove (pbi->reg_cond_dead, regno);
+  else
+    {
+      splay_tree_node node;
+      struct reg_cond_life_info *rcli;
+      rtx ncond;
+
+      /* Otherwise this is a conditional set.  Record that fact.
+	 It may have been conditionally used, or there may be a
+	 subsequent set with a complimentary condition.  */
+
+      node = splay_tree_lookup (pbi->reg_cond_dead, regno);
+      if (node == NULL)
+	{
+	  /* The register was unconditionally live previously.
+	     Record the current condition as the condition under
+	     which it is dead.  */
+	  rcli = (struct reg_cond_life_info *)
+	    xmalloc (sizeof (*rcli));
+	  rcli->condition = alloc_EXPR_LIST (0, cond, NULL_RTX);
+	  splay_tree_insert (pbi->reg_cond_dead, regno,
+			     (splay_tree_value) rcli);
+
+	  SET_REGNO_REG_SET (pbi->reg_cond_reg,
+			     REGNO (XEXP (cond, 0)));
+
+	  /* Not unconditionaly dead.  */
+	  return 0;
+	}
+      else
+	{
+	  /* The register was conditionally live previously. 
+	     Add the new condition to the old.  */
+	  rcli = (struct reg_cond_life_info *) node->value;
+	  ncond = rcli->condition;
+	  ncond = ior_reg_cond (ncond, cond);
+
+	  /* If the register is now unconditionally dead,
+	     remove the entry in the splay_tree.  */
+	  if (ncond == const1_rtx)
+	    splay_tree_remove (pbi->reg_cond_dead, regno);
+	  else
+	    {
+	      rcli->condition = ncond;
+
+	      SET_REGNO_REG_SET (pbi->reg_cond_reg,
+				 REGNO (XEXP (cond, 0)));
+
+	      /* Not unconditionaly dead.  */
+	      return 0;
+	    }
+	}
+    }
+
+  return 1;
+}
+
+/* Called from splay_tree_delete for pbi->reg_cond_life.  */
+
+static void
+free_reg_cond_life_info (value)
+     splay_tree_value value;
+{
+  struct reg_cond_life_info *rcli = (struct reg_cond_life_info *) value;
+  free_EXPR_LIST_list (&rcli->condition);
+  free (rcli);
+}
+
+/* Helper function for flush_reg_cond_reg.  */
+
+static int
+flush_reg_cond_reg_1 (node, data)
+     splay_tree_node node;
+     void *data;
+{
+  struct reg_cond_life_info *rcli;
+  int *xdata = (int *) data;
+  unsigned int regno = xdata[0];
+  rtx c, *prev;
+
+  /* Don't need to search if last flushed value was farther on in
+     the in-order traversal.  */
+  if (xdata[1] >= (int) node->key)
+    return 0;
+
+  /* Splice out portions of the expression that refer to regno.  */
+  rcli = (struct reg_cond_life_info *) node->value;
+  c = *(prev = &rcli->condition);
+  while (c)
+    {
+      if (regno == REGNO (XEXP (XEXP (c, 0), 0)))
+	{
+	  rtx next = XEXP (c, 1);
+	  free_EXPR_LIST_node (c);
+	  c = *prev = next;
+	}
+      else
+	c = *(prev = &XEXP (c, 1));
+    }
+
+  /* If the entire condition is now NULL, signal the node to be removed.  */
+  if (! rcli->condition)
+    {
+      xdata[1] = node->key;
+      return -1;
+    }
+  else
+    return 0;
+}
+
+/* Flush all (sub) expressions referring to REGNO from REG_COND_LIVE.  */
+
+static void
+flush_reg_cond_reg (pbi, regno)
+     struct propagate_block_info *pbi;
+     int regno;
+{
+  int pair[2];
+
+  pair[0] = regno;
+  pair[1] = -1;
+  while (splay_tree_foreach (pbi->reg_cond_dead,
+			     flush_reg_cond_reg_1, pair) == -1)
+    splay_tree_remove (pbi->reg_cond_dead, pair[1]);
+
+  CLEAR_REGNO_REG_SET (pbi->reg_cond_reg, regno);
+}
+
+/* Logical arithmetic on predicate conditions.  IOR, NOT and NAND.
+   We actually use EXPR_LIST to chain the sub-expressions together
+   instead of IOR because it's easier to manipulate and we have 
+   the lists.c functions to reuse nodes.
+   
+   Return a new rtl expression as appropriate.  */
+
+static rtx
+ior_reg_cond (old, x)
+     rtx old, x;
+{
+  enum rtx_code x_code;
+  rtx x_reg;
+  rtx c;
+
+  /* We expect these conditions to be of the form (eq reg 0).  */
+  x_code = GET_CODE (x);
+  if (GET_RTX_CLASS (x_code) != '<'
+      || GET_CODE (x_reg = XEXP (x, 0)) != REG
+      || XEXP (x, 1) != const0_rtx)
+    abort ();
+
+  /* Search the expression for an existing sub-expression of X_REG.  */
+  for (c = old; c ; c = XEXP (c, 1))
+    {
+      rtx y = XEXP (c, 0);
+      if (REGNO (XEXP (y, 0)) == REGNO (x_reg))
+	{
+	  /* If we find X already present in OLD, we need do nothing.  */
+	  if (GET_CODE (y) == x_code)
+	    return old;
+
+	  /* If we find X being a compliment of a condition in OLD, 
+	     then the entire condition is true.  */
+	  if (GET_CODE (y) == reverse_condition (x_code))
+	    return const1_rtx;
+	}
+    }
+
+  /* Otherwise just add to the chain.  */
+  return alloc_EXPR_LIST (0, x, old);
+}
+
+static rtx
+not_reg_cond (x)
+     rtx x;
+{
+  enum rtx_code x_code;
+  rtx x_reg;
+
+  /* We expect these conditions to be of the form (eq reg 0).  */
+  x_code = GET_CODE (x);
+  if (GET_RTX_CLASS (x_code) != '<'
+      || GET_CODE (x_reg = XEXP (x, 0)) != REG
+      || XEXP (x, 1) != const0_rtx)
+    abort ();
+
+  return alloc_EXPR_LIST (0, gen_rtx_fmt_ee (reverse_condition (x_code),
+					     VOIDmode, x_reg, const0_rtx),
+			  NULL_RTX);
+}
+
+static rtx
+nand_reg_cond (old, x)
+     rtx old, x;
+{
+  enum rtx_code x_code;
+  rtx x_reg;
+  rtx c, *prev;
+
+  /* We expect these conditions to be of the form (eq reg 0).  */
+  x_code = GET_CODE (x);
+  if (GET_RTX_CLASS (x_code) != '<'
+      || GET_CODE (x_reg = XEXP (x, 0)) != REG
+      || XEXP (x, 1) != const0_rtx)
+    abort ();
+
+  /* Search the expression for an existing sub-expression of X_REG.  */
+
+  for (c = *(prev = &old); c ; c = *(prev = &XEXP (c, 1)))
+    {
+      rtx y = XEXP (c, 0);
+      if (REGNO (XEXP (y, 0)) == REGNO (x_reg))
+	{
+	  /* If we find X already present in OLD, then we need to 
+	     splice it out.  */
+	  if (GET_CODE (y) == x_code)
+	    {
+	      *prev = XEXP (c, 1);
+	      free_EXPR_LIST_node (c);
+	      return old ? old : const0_rtx;
+	    }
+
+	  /* If we find X being a compliment of a condition in OLD, 
+	     then we need do nothing.  */
+	  if (GET_CODE (y) == reverse_condition (x_code))
+	    return old;
+	}
+    }
+
+  /* Otherwise, by implication, the register in question is now live for
+     the inverse of the condition X.  */
+  return alloc_EXPR_LIST (0, gen_rtx_fmt_ee (reverse_condition (x_code),
+					     VOIDmode, x_reg, const0_rtx),
+			  old);
+}
+#endif /* HAVE_conditional_execution */
 
 #ifdef AUTO_INC_DEC
 
@@ -4594,6 +4977,54 @@ mark_used_reg (pbi, reg, cond, insn)
       while (--n > 0)
 	SET_REGNO_REG_SET (pbi->reg_live, regno + n);
     }
+
+#ifdef HAVE_conditional_execution
+  /* If this is a conditional use, record that fact.  If it is later
+     conditionally set, we'll know to kill the register.  */
+  if (cond != NULL_RTX)
+    {
+      splay_tree_node node;
+      struct reg_cond_life_info *rcli;
+      rtx ncond;
+
+      if (some_was_live)
+	{
+	  node = splay_tree_lookup (pbi->reg_cond_dead, regno);
+	  if (node == NULL)
+	    {
+	      /* The register was unconditionally live previously.
+		 No need to do anything.  */
+	    }
+	  else
+	    {
+	      /* The register was conditionally live previously. 
+		 Subtract the new life cond from the old death cond.  */
+	      rcli = (struct reg_cond_life_info *) node->value;
+	      ncond = rcli->condition;
+	      ncond = nand_reg_cond (ncond, cond);
+
+	      /* If the register is now unconditionally live, remove the
+		 entry in the splay_tree.  */
+	      if (ncond == const0_rtx)
+		{
+		  rcli->condition = NULL_RTX;
+		  splay_tree_remove (pbi->reg_cond_dead, regno);
+		}
+	      else
+		rcli->condition = ncond;
+	    }
+	}
+      else
+	{
+	  /* The register was not previously live at all.  Record
+	     the condition under which it is still dead.  */
+	  rcli = (struct reg_cond_life_info *) xmalloc (sizeof (*rcli));
+	  rcli->condition = not_reg_cond (cond);
+	  splay_tree_insert (pbi->reg_cond_dead, regno,
+			     (splay_tree_value) rcli);
+	}
+    }
+#endif
 }
 
 /* Scan expression X and store a 1-bit in NEW_LIVE for each reg it uses.

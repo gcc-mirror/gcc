@@ -1,5 +1,21 @@
 2000-04-30  Richard Henderson  <rth@cygnus.com>
 
+	* flow.c (struct reg_cond_life_info): New.
+	(struct propagate_block_info): Add reg_cond_dead and reg_cond_reg.
+	(init_propagate_block_info): Initialize them.
+	(free_propagate_block_info): Destruct them.
+	(mark_set_1): Consider conditional life before killing a register.
+	(mark_regno_cond_dead): New.
+	(free_reg_cond_life_info): New.
+	(flush_reg_cond_reg_1, flush_reg_cond_reg): New.
+	(ior_reg_cond, not_reg_cond, nand_reg_cond): New.
+	(mark_used_reg): Record conditional life.
+
+	* haifa-sched.c (schedule_insns): Disable death counting
+	sanity check for HAVE_conditional_execution.
+
+2000-04-30  Richard Henderson  <rth@cygnus.com>
+
 	* Makefile.in (TIMEVAR_H): New.
 	(ggc-simple.o, ggc-page.o, toplev.o, timevar.o): Use it.
 	(timevar.h): Remove rule.
