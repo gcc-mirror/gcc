@@ -1354,7 +1354,7 @@ JMP	FUNCTION	0x0058  0x0000 <- FUNCTION
     else if (GET_MODE(X) == SImode)					\
 	total = COSTS_N_INSNS(6);					\
     else								\
-	abort();							\
+	total = COSTS_N_INSNS(2);					\
     break;								\
   /* case LSHIFT: */		       					\
   case ASHIFT:								\
@@ -1365,7 +1365,8 @@ JMP	FUNCTION	0x0058  0x0000 <- FUNCTION
     else if (GET_MODE(X) ==  QImode)					\
     {									\
       if (GET_CODE(XEXP (X,1)) != CONST_INT)				\
-   	  abort();							\
+   	total = COSTS_N_INSNS(8); /* worst case */ 			\
+      else                                                              \
 	total = COSTS_N_INSNS(INTVAL(XEXP (X,1)));			\
     }									\
     else if (GET_MODE(X) == HImode)					\
