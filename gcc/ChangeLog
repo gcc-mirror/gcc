@@ -1,3 +1,13 @@
+Thu Sep 18 14:22:22 1997  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* final.c (final_scan_insn): Hand BARRIERs off to the dwarf2 code.
+	* dwarf2out.c (dwarf2out_frame_debug): Pass the whole insn along.
+	(dwarf2out_stack_adjust): A BARRIER resets the args space to 0.
+
+	* except.c (end_eh_unwinder): Subtract 1 from return address.
+	* libgcc2.c (__throw): Likewise.
+	(find_exception_handler): Don't change PC here.  Compare end with >.
+
 Thu Sep 18 10:43:07 1997  Nick Clifton  <nickc@cygnus.com>
  
  	* v850.c (compute_register_save_size): Correct register

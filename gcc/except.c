@@ -1668,6 +1668,8 @@ end_eh_unwinder ()
   /* Get the address we need to use to determine what exception
      handler should be invoked, and store it in __eh_pc.  */
   return_val_rtx = eh_outer_context (return_val_rtx);
+  return_val_rtx = expand_binop (Pmode, sub_optab, return_val_rtx, GEN_INT (1),
+				 NULL_RTX, 0, OPTAB_LIB_WIDEN);
   emit_move_insn (eh_saved_pc_rtx, return_val_rtx);
   
   /* Either set things up so we do a return directly to __throw, or

@@ -3337,15 +3337,11 @@ find_exception_handler (void *pc, exception_table *table)
       int pos;
       int best = -1;
 
-      /* We subtract 1 from PC to avoid hitting the beginning of the next
-	 region.  */
-      --pc;
-
       /* We can't do a binary search because the table isn't guaranteed
 	 to be sorted from function to function.  */
       for (pos = 0; table[pos].exception_handler != (void *) -1; ++pos)
 	{
-	  if (table[pos].start <= pc && table[pos].end >= pc)
+	  if (table[pos].start <= pc && table[pos].end > pc)
 	    {
 	      /* This can apply.  Make sure it is at least as small as
 		 the previous best.  */
@@ -3354,7 +3350,7 @@ find_exception_handler (void *pc, exception_table *table)
 		best = pos;
 	    }
 	  /* But it is sorted by starting PC within a function.  */
-	  else if (best && table[pos].start > pc)
+	  else if (best >= 0 && table[pos].start > pc)
 	    break;
 	}
       if (best != -1)
@@ -3686,8 +3682,9 @@ label:
 	  break;
 	}
 
-      /* Otherwise, we continue searching.  */
-      pc = get_return_addr (udata, sub_udata);
+      /* Otherwise, we continue searching.  We subtract 1 from PC to avoid
+	 hitting the beginning of the next region.  */
+      pc = get_return_addr (udata, sub_udata) - 1;
     }
 
   /* If we haven't found a handler by now, this is an unhandled
@@ -3736,7 +3733,7 @@ label:
 		put_reg (i, val, my_udata);
 	      }
 
-	  pc = get_return_addr (udata, sub_udata);
+	  pc = get_return_addr (udata, sub_udata) - 1;
 	}
 
 #ifdef INCOMING_REGNO
