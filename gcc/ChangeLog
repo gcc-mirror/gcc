@@ -1,5 +1,12 @@
 2004-11-04  Kazu Hirata  <kazu@cs.umass.edu>
 
+	* jump.c (cleanup_barriers): Use delete_insn instead of
+	delete_barrier.
+	(delete_barrier): Remove.
+	* rtl.h: Remove the corresponding prototype.
+
+2004-11-04  Kazu Hirata  <kazu@cs.umass.edu>
+
 	* expr.c (mostly_zero_p): Make it static.
 	* tree.h: Remove the prototype for mostly_zeros_p.
 

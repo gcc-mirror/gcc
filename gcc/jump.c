@@ -114,7 +114,7 @@ cleanup_barriers (void)
 	{
 	  prev = prev_nonnote_insn (insn);
 	  if (BARRIER_P (prev))
-	    delete_barrier (insn);
+	    delete_insn (insn);
 	  else if (prev != PREV_INSN (insn))
 	    reorder_insns (insn, insn, prev);
 	}
@@ -1165,17 +1165,6 @@ delete_jump (rtx insn)
 
   if (set && GET_CODE (SET_DEST (set)) == PC)
     delete_computation (insn);
-}
-
-/* Verify INSN is a BARRIER and delete it.  */
-
-void
-delete_barrier (rtx insn)
-{
-  if (!BARRIER_P (insn))
-    abort ();
-
-  delete_insn (insn);
 }
 
 /* Recursively delete prior insns that compute the value (used only by INSN

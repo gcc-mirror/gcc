@@ -1528,7 +1528,6 @@ extern void cleanup_barriers (void);
 extern bool squeeze_notes (rtx *, rtx *);
 extern rtx delete_related_insns (rtx);
 extern void delete_jump (rtx);
-extern void delete_barrier (rtx);
 extern rtx get_label_before (rtx);
 extern rtx get_label_after (rtx);
 extern rtx follow_jumps (rtx);
