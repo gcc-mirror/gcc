@@ -517,6 +517,44 @@ java_parse_escape_sequence ()
     }
 }
 
+/* Isolate the code which may raise an arithmetic exception in its
+   own function.  */
+
+#ifndef JC1_LITE
+struct jpa_args
+{
+  YYSTYPE *java_lval;
+  char *literal_token;
+  int fflag;
+  int number_beginning;
+};
+
+static void java_perform_atof	PARAMS ((PTR));
+
+static void
+java_perform_atof (av)
+     PTR av;
+{
+  struct jpa_args *a = (struct jpa_args *)av;
+  YYSTYPE *java_lval = a->java_lval;
+  int number_beginning = a->number_beginning;
+  REAL_VALUE_TYPE value;
+  tree type = (a->fflag ? FLOAT_TYPE_NODE : DOUBLE_TYPE_NODE);
+
+  SET_REAL_VALUE_ATOF (value,
+		       REAL_VALUE_ATOF (a->literal_token, TYPE_MODE (type)));
+
+  if (REAL_VALUE_ISINF (value)
+      || REAL_VALUE_ISNAN (value))
+    {
+      JAVA_FLOAT_RANGE_ERROR ((a->fflag ? "float" : "double"));
+      value = DCONST0;
+    }
+
+  SET_LVAL_NODE_TYPE (build_real (type, value), type);
+}
+#endif
+
 static int yylex		PARAMS ((YYSTYPE *));
 
 static int
@@ -762,12 +800,9 @@ java_lex (java_lval)
 		}
 	      else
 		{
-		  jmp_buf handler;
-		  REAL_VALUE_TYPE value;
 #ifndef JC1_LITE
-		  tree type = (fflag ? FLOAT_TYPE_NODE : DOUBLE_TYPE_NODE);
+		  struct jpa_args a;
 #endif
-
 		  if (stage != 4) /* Don't push back fF/dD */
 		    java_unget_unicode ();
 		  
@@ -778,28 +813,18 @@ java_lex (java_lval)
 		  literal_token [literal_index] = '\0';
 		  JAVA_LEX_LIT (literal_token, radix);
 
-		  if (setjmp (handler))
-		    {
-		      JAVA_FLOAT_RANGE_ERROR ((fflag ? "float" : "double"));
-		      value = DCONST0;
-		    }
-		  else
-		    {
-		      SET_FLOAT_HANDLER (handler);
-		      SET_REAL_VALUE_ATOF 
-		        (value, REAL_VALUE_ATOF (literal_token, 
-						 TYPE_MODE (type)));
+#ifndef JC1_LITE
+		  a.literal_token = literal_token;
+		  a.fflag = fflag;
+		  a.java_lval = java_lval;
+		  a.number_beginning = number_beginning;
+		  if (do_float_handler (java_perform_atof, (PTR) &a))
+		    return FP_LIT_TK;
 
-		      if (REAL_VALUE_ISINF (value))
-			JAVA_FLOAT_RANGE_ERROR ((fflag ? "float" : "double"));
-
-		      if (REAL_VALUE_ISNAN (value))
-			JAVA_FLOAT_RANGE_ERROR ((fflag ? "float" : "double"));
-
-		      SET_LVAL_NODE_TYPE (build_real (type, value), type);
-		      SET_FLOAT_HANDLER (NULL_PTR);
-		      return FP_LIT_TK;
-		    }
+		  JAVA_FLOAT_RANGE_ERROR ((fflag ? "float" : "double"));
+#else
+		  return FP_LIT_TK;
+#endif
 		}
 	    }
 	} /* JAVA_ASCCI_FPCHAR (c) */

@@ -1,3 +1,13 @@
+2000-02-16  Zack Weinberg  <zack@wolery.cumb.org>
+
+	* Makefile.in (PARSE_C, PARSE_SCAN_C): Move dependencies on
+	lex.c, lex.h, and PARSE_H to...                            
+	(parse.o, parse-scan.o): ...here, respectively.
+
+	* lex.c: Split out code that may trigger SIGFPE from yylex()
+	to its own function.
+	* lex.h (JAVA_FLOAT_RANGE_ERROR): Don't set value.
+
 2000-02-16  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* Make-lang.in (jvspec.o): Depend on $(GCC_H), not gcc.h.
