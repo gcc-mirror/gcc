@@ -2800,7 +2800,7 @@ do_identifier (token, parsing)
     yychar = yylex ();
   /* Scope class declarations before global
      declarations.  */
-  if (id == IDENTIFIER_GLOBAL_VALUE (token)
+  if (id == IDENTIFIER_NAMESPACE_VALUE (token)
       && current_class_type != 0
       && TYPE_SIZE (current_class_type) == 0)
     {
@@ -2868,7 +2868,7 @@ do_identifier (token, parsing)
 	}
       else
 	{
-	  if (IDENTIFIER_GLOBAL_VALUE (token) != error_mark_node
+	  if (IDENTIFIER_NAMESPACE_VALUE (token) != error_mark_node
 	      || IDENTIFIER_ERROR_LOCUS (token) != current_function_decl)
 	    {
 	      static int undeclared_variable_notice;
@@ -2884,7 +2884,7 @@ do_identifier (token, parsing)
 	    }
 	  id = error_mark_node;
 	  /* Prevent repeated error messages.  */
-	  IDENTIFIER_GLOBAL_VALUE (token) = error_mark_node;
+	  IDENTIFIER_NAMESPACE_VALUE (token) = error_mark_node;
 	  SET_IDENTIFIER_ERROR_LOCUS (token, current_function_decl);
 	}
     }
@@ -2896,7 +2896,7 @@ do_identifier (token, parsing)
 	     && DECL_DEAD_FOR_LOCAL (shadowed))
 	shadowed = DECL_SHADOWED_FOR_VAR (shadowed);
       if (!shadowed)
-	shadowed = IDENTIFIER_GLOBAL_VALUE (DECL_NAME (id));
+	shadowed = IDENTIFIER_NAMESPACE_VALUE (DECL_NAME (id));
       if (shadowed)
 	{
 	  if (!DECL_ERROR_REPORTED (id))
@@ -2953,7 +2953,7 @@ do_identifier (token, parsing)
 	{
 	  tree t = build_min (LOOKUP_EXPR, unknown_type_node,
 			      token, get_first_fn (id));
-	  if (id != IDENTIFIER_GLOBAL_VALUE (token))
+	  if (id != IDENTIFIER_NAMESPACE_VALUE (token))
 	    TREE_OPERAND (t, 1) = error_mark_node;
 	  id = t;
 	}
@@ -2971,7 +2971,12 @@ do_scoped_id (token, parsing)
      tree token;
      int parsing;
 {
-  tree id = IDENTIFIER_GLOBAL_VALUE (token);
+  tree id;
+  /* during parsing, this is ::name. Otherwise, it is black magic. */
+  if (parsing)
+    id = qualified_lookup_using_namespace (token, global_namespace);
+  else
+    id = IDENTIFIER_GLOBAL_VALUE (token);
   if (parsing && yychar == YYEMPTY)
     yychar = yylex ();
   if (! id)
@@ -2986,12 +2991,12 @@ do_scoped_id (token, parsing)
 	id = implicitly_declare (token);
       else
 	{
-	  if (IDENTIFIER_GLOBAL_VALUE (token) != error_mark_node)
+	  if (IDENTIFIER_NAMESPACE_VALUE (token) != error_mark_node)
 	    error ("undeclared variable `%s' (first use here)",
 		   IDENTIFIER_POINTER (token));
 	  id = error_mark_node;
 	  /* Prevent repeated error messages.  */
-	  IDENTIFIER_GLOBAL_VALUE (token) = error_mark_node;
+	  IDENTIFIER_NAMESPACE_VALUE (token) = error_mark_node;
 	}
     }
   else
@@ -3040,7 +3045,7 @@ identifier_typedecl_value (node)
   }
   do (IDENTIFIER_LOCAL_VALUE (node));
   do (IDENTIFIER_CLASS_VALUE (node));
-  do (IDENTIFIER_GLOBAL_VALUE (node));
+  do (IDENTIFIER_NAMESPACE_VALUE (node));
 #undef do
   /* Will this one ever happen?  */
   if (TYPE_MAIN_DECL (type))
@@ -4375,6 +4380,8 @@ build_lang_decl (code, name, type)
   else if (current_lang_name == lang_name_c)
     DECL_LANGUAGE (t) = lang_c;
   else my_friendly_abort (64);
+
+  SET_DECL_NAMESPACE (t, current_namespace);
 
 #if 0 /* not yet, should get fixed properly later */
   if (code == TYPE_DECL)

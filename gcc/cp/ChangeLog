@@ -1,3 +1,81 @@
+Wed Feb 25 00:35:33 1998  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* decl.c (push_namespace): Handle redeclaration error.
+
+	* cp-tree.h (IDENTIFIER_NAMESPACE_VALUE): New macro.
+	(IDENTIFIER_NAMESPACE_BINDINGS): New macro.
+	(NAMESPACE_BINDING): New macro.
+	(IDENTIFIER_GLOBAL_VALUE): Use NAMESPACE_BINDING.
+	* *.c: Use them.
+
+	* pt.c (push_template_decl): Use innermost_args.
+
+	* decl.c (get_unique_name): Tweak from earlier in the name.
+
+Tue Feb 24 22:15:04 1998  Martin von Loewis  <loewis@informatik.hu-berlin.de>
+
+	* cp-tree.def: Add CPLUS_BINDING node.
+	* cp-tree.h (tree_binding): new struct
+	(BINDING_SCOPE, BINDING_VALUE): new macros
+	(current_namespace, global_namespace): declare extern
+	(struct lang_decl_flags): new field in_namespace
+	(DECL_NAMESPACE_USING, DECL_NAMESPACE_USERS): new macros
+	(DECL_NAMESPACE, SET_DECL_NAMESPACE): new macros
+	(TREE_INDIRECT_USING): new macro
+	* decl2.c (current_namespace, global_namespace): Declare.  The
+	value is a NAMESPACE_DECL now, not a TREE_LIST.
+	(is_namespace_ancestor, namespace_ancestor):new static functions.
+	(add_using_namespace, ambiguous_decl): likewise.
+	(lookup_using_namespace): new support function for lookup_name.
+	(qualified_lookup_using_namespace): new support function for
+	do_scoped_id and lookup_namespace_name
+	(get_namespace_id): mark as obsolete.
+	(current_namespace_id): Likewise.
+	(do_namespace_alias): Implement.
+	(do_using_directive): Implement as call to add_using_namespace.
+	* decl.c (binding_for_name): new function.
+	(push_namespace, pop_namespace): implement.
+	(push_decl): don't install a FUNCTION_DECL in the global branch.
+	(lookup_namespace_name): implement using qualified lookup.
+	(lookup_name_real): For global scoping, lookup in
+	global_namespace. For namespace scoping, lookup in given
+	namespace. For unscoped lookup, iterate over namespace,
+	considering using directives.
+	(init_decl_processing): initialize global_namespace.
+	(grokvardecl): Build assembler name as static name for globals.
+	(grokdeclarator): Remove old namespace mangling.
+	(xref_tag): When installing a global binding for the
+	tag, make sure we have an identifier.
+	* method.c (build_overload_nested_name): mangle namespaces.
+	(build_qualified_name): Likewise.
+	(build_decl_overload_real): Likewise.
+	* lex.c (build_lang_decl): set namespace for new declaration to
+	current_namespace.
+	(do_scoped_id): find global names in global or current
+	namespace, or using qualified namespace lookup, depending on
+	context.
+	* init.c (build_member_call): When scope is namespace, use
+	build_x_function_call instead.
+	(build_offset_ref): When scope is namespace, collapse processing
+	to lookup_namespace_name instead.
+	* error.c (dump_decl): Support NAMESPACE_DECL.
+	* decl.c (pushdecl): Bind globals to current namespace.
+	(push_overloaded_decl): Likewise.
+	(lookup_tag): Likewise.
+	(lookup_name_current_level): Likewise.
+	(xref_tag): Likewise.
+	(start_function): Likewise.
+	* lex.c (do_identifier): Likewise.
+	(identifier_typedecl_value): Likewise.
+	(real_yylex): Likewise.
+	* method.c (do_inline_function_hair): Likewise.
+	* parse.y (unscoped): Likewise.
+	* pt.c (check_explicit_specialization): Likewise.
+	(lookup_template_class): Likewise.
+	* rtti.c (call_void_fn): Likewise.
+	* sig.c (build_sigtable): Likewise.
+	* ptree.c (lang_print_xnode): New function.
+
 Tue Feb 24 01:40:24 1998  Jason Merrill  <jason@yorick.cygnus.com>
 
 	* pt.c (instantiate_class_template): Don't instantiate if pedantic

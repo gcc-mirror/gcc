@@ -1703,6 +1703,9 @@ build_member_call (type, name, parmlist)
   if (type == std_node)
     return build_x_function_call (do_scoped_id (name, 0), parmlist,
 				  current_class_ref);
+  if (TREE_CODE (type) == NAMESPACE_DECL)
+    return build_x_function_call (lookup_namespace_name (type, name),
+				  parmlist, current_class_ref);
 
   if (TREE_CODE (name) != TEMPLATE_ID_EXPR)
     method_name = name;
@@ -1840,20 +1843,8 @@ build_offset_ref (type, name)
     return build_min_nt (SCOPE_REF, type, name);
 
   /* Handle namespace names fully here.  */
-  if (TREE_CODE (type) == IDENTIFIER_NODE
-      && get_aggr_from_typedef (type, 0) == 0)
-    {
-      tree ns = lookup_name (type, 0);
-      tree val;
-      if (ns && TREE_CODE (ns) == NAMESPACE_DECL)
-	{
-	  val = lookup_namespace_name (ns, name);
-	  if (val)
-	    return val;
-	  cp_error ("namespace `%D' has no member named `%D'", ns, name);
-	  return error_mark_node;
-	}
-    }
+  if (TREE_CODE (type) == NAMESPACE_DECL)
+      return lookup_namespace_name (type, name);
 
   if (type == NULL_TREE || ! is_aggr_type (type, 1))
     return error_mark_node;

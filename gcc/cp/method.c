@@ -537,7 +537,14 @@ build_overload_nested_name (decl)
             }
         }
     }
-
+  else if (decl == global_namespace)
+    return;
+  else if (DECL_NAMESPACE (decl))
+    build_overload_nested_name (DECL_NAMESPACE (decl));
+  else
+    /* XXX the above does not work for non-namespaces */
+    if (current_namespace && TREE_CODE (decl) != NAMESPACE_DECL)
+      build_overload_nested_name (current_namespace);
 
   if (TREE_CODE (decl) == FUNCTION_DECL)
     {
@@ -553,6 +560,8 @@ build_overload_nested_name (decl)
       OB_PUTCP (label);
       numeric_output_need_bar = 1;
     }
+  else if (TREE_CODE (decl) == NAMESPACE_DECL)
+    build_overload_identifier (DECL_NAME (decl));
   else				/* TYPE_DECL */
     build_overload_identifier (decl);
 }
@@ -969,16 +978,37 @@ build_qualified_name (decl)
   context = decl;
   /* if we can't find a Ktype, do it the hard way */
   if (check_ktype (context, FALSE) == -1)
-    while (DECL_CONTEXT (context))
-      {
-        i += 1;
-        context = DECL_CONTEXT (context);
-        if (check_ktype (context, FALSE) != -1)  /* found it! */
-          break;
-        if (TREE_CODE_CLASS (TREE_CODE (context)) == 't')
-          context = TYPE_NAME (context);
-      }
+    {
+      /* count type scopes */
+      while (DECL_CONTEXT (context))
+	{
+	  i += 1;
+	  context = DECL_CONTEXT (context);
+	  if (check_ktype (context, FALSE) != -1)  /* found it! */
+	    break;
+	  if (TREE_CODE_CLASS (TREE_CODE (context)) == 't')
+	    context = TYPE_NAME (context);
+	}
+      /* now count namespace scopes */
+      if (TREE_CODE (decl) == NAMESPACE_DECL)
+	{
+	  i = 0; /* we have nothing done, yet: reset */
+	  context = decl;
+	}
+      else
+	/* decl must be a type, which we have to scope with the
+	   namespace */
+	{
+	  /* XXX MvL somehow, types have no lang_decl, so no namespace */
+	  context = current_namespace;
+	}    
+    }
 
+  while (context != global_namespace)
+    {
+      i += 1;
+      context = DECL_NAMESPACE (context);
+    }
 
   if (i > 1)
     {
@@ -1515,7 +1545,10 @@ build_decl_overload_real (dname, parms, ret_type, tparms, targs,
     }
   else if (tparms)
     OB_PUTC ('H');
-  else
+  /* XXX this works only if we call this in the same namespace
+     as the declaration. Unfortunately, we don't have the _DECL,
+     only its name */
+  else if (current_namespace == global_namespace)
     OB_PUTC ('F');
 
   if (tparms)
@@ -1523,6 +1556,10 @@ build_decl_overload_real (dname, parms, ret_type, tparms, targs,
       build_template_parm_names (tparms, targs);
       OB_PUTC ('_');
     }
+
+  /* qualify with namespace */
+  if (!for_method && current_namespace != global_namespace)
+    build_qualified_name (current_namespace);
 
   if (parms == NULL_TREE)
     OB_PUTC ('e');
@@ -1552,7 +1589,14 @@ build_decl_overload_real (dname, parms, ret_type, tparms, targs,
 	    OB_PUTC ('e');
 	}
       else
-	build_mangled_name (parms, 0, 0);
+	{
+	  /* the namespace qualifier for a global function 
+	     will count as type */
+	  if (current_namespace != global_namespace
+	      && !flag_do_squangling)
+	    typevec[maxtype++] = current_namespace;
+	  build_mangled_name (parms, 0, 0);
+	}
 
       if (!flag_do_squangling)     /* Deallocate typevec array */
         {

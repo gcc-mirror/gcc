@@ -163,3 +163,21 @@ print_lang_identifier (file, node, indent)
   print_node (file, "implicit", IDENTIFIER_IMPLICIT_DECL (node), indent + 4);
   print_node (file, "error locus", IDENTIFIER_ERROR_LOCUS (node), indent + 4);
 }
+
+void
+lang_print_xnode (file, node, indent)
+     FILE *file;
+     tree node;
+     int indent;
+{
+  switch (TREE_CODE (node))
+    {
+    case CPLUS_BINDING:
+      print_node (file, "scope", BINDING_SCOPE (node), indent+4);
+      print_node (file, "value", BINDING_VALUE (node), indent+4);
+      print_node (file, "chain", TREE_CHAIN (node), indent+4);
+      break;
+    default:
+      break;
+    }
+}
