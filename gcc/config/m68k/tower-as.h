@@ -406,7 +406,7 @@ do { union { float f; long l;} tem;			\
   else if (CODE == '-') fprintf (FILE, "-(%%sp)");			\
   else if (CODE == '+') fprintf (FILE, "(%%sp)+");			\
   else if (CODE == '@') fprintf (FILE, "(%%sp)");			\
-  else if (CODE == '!') fprintf (FILE, "%%cc");				\
+  else if (CODE == '!') fprintf (FILE, "%%fpcr");			\
   else if (GET_CODE (X) == REG)						\
     fprintf (FILE, "%s", reg_names[REGNO (X)]);				\
   else if (GET_CODE (X) == MEM)						\
