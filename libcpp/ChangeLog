@@ -1,3 +1,9 @@
+2004-06-05  Andrew Pinski  <pinskia@physics.uc.edu>
+
+	* Makefile.am (LIBINTL): Declare
+	(makedepend_LDADD): Use LIBINTL.
+	* Makefile.in: Regenerate.
+
 2004-06-05  Zack Weinberg  <zack@codesourcery.com>
 
 	* Makefile.am: Add makedepend.
