@@ -488,8 +488,10 @@ private:
 
   friend void ::_Jv_sharedlib_register_hook (jclass klass);
 
-  // Chain for class pool.
-  jclass next;
+  // Chain for class pool.  This also doubles as the ABI version
+  // number.  It is only used for this purpose at class registration
+  // time, and only for precompiled classes.
+  jclass next_or_version;
   // Name of class.
   _Jv_Utf8Const *name;
   // Access flags for class.
