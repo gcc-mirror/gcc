@@ -1,3 +1,7 @@
+1999-12-21  Tom Tromey  <tromey@cygnus.com>
+
+	* mauve-libgcj: Added java.lang.reflect.Modifier.toString12.
+
 1999-12-20  Tom Tromey  <tromey@cygnus.com>
 
 	* java/lang/reflect/Modifier.java (STRICT): New constant.
