@@ -8661,6 +8661,7 @@ mips_output_conditional_branch (insn,
 
 	default:
 	  /* Not a special case.  */
+	  break;
 	}
     }
 
