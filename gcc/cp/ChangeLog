@@ -1,3 +1,10 @@
+2002-04-03  Jason Merrill  <jason@redhat.com>
+
+	PR c++/5104
+	* typeck.c (comptypes) [FUNCTION_TYPE]: Don't compare exception
+	specifiers.
+	[METHOD_TYPE]: Use same code as FUNCTION_TYPE.
+
 2002-03-25  Jeff Knaggs  <jknaggs@redhat.com>
 
 	* typeck.c (expand_ptrmemfunc_cst): Scale idx down to an index
