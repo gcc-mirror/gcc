@@ -1203,6 +1203,7 @@ changequote([,])dnl			# with ELF format using glibc 2
 		;;
 changequote(,)dnl
 	i[34567]86-*-gnu*)
+		float_format=i386
 changequote([,])dnl
 		;;
 changequote(,)dnl
