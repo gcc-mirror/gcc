@@ -6,6 +6,9 @@
 	invalidated_by_call.  Initialize from regs_invalidated_by_call
 	instead of call_used_regs.
 
+	* varasm.c (default_binds_local_p): Check TREE_PUBLIC before
+	DECL_EXTERNAL.
+
 2002-05-28  Zack Weinberg  <zack@codesourcery.com>
 
 	* tree.h: Forward-declare struct realvaluetype.

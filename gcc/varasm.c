@@ -5597,7 +5597,10 @@ default_binds_local_p (exp)
   /* A non-decl is an entry in the constant pool.  */
   if (!DECL_P (exp))
     local_p = true;
-  /* A variable is considered "local" if it is defined by this module.  */
+  /* Static variables are always local.  */
+  else if (! TREE_PUBLIC (exp))
+    local_p = true;
+  /* A variable is local if the user tells us so.  */
   else if (MODULE_LOCAL_P (exp))
     local_p = true;
   /* Otherwise, variables defined outside this object may not be local.  */
@@ -5606,9 +5609,6 @@ default_binds_local_p (exp)
   /* Linkonce and weak data are never local.  */
   else if (DECL_ONE_ONLY (exp) || DECL_WEAK (exp))
     local_p = false;
-  /* Static variables are always local.  */
-  else if (! TREE_PUBLIC (exp))
-    local_p = true;
   /* If PIC, then assume that any global name can be overridden by
      symbols resolved from other modules.  */
   else if (flag_pic)
