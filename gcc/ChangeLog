@@ -1,3 +1,7 @@
+2000-06-20  J. David Anglin  <dave@hiauly1.hia.nrc.ca>
+
+	* pa.h (CPP_SPEC): Add whitespace after -D__STDC_EXT__.
+
 2000-06-20  Zack Weinberg  <zack@wolery.cumb.org>
 
 	* configure.in: Use 'test a = b' not 'test a == b'.

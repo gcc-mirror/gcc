@@ -312,8 +312,8 @@ extern int target_flags;
 %{!mpa-risc-1-0:%{!mpa-risc-1-1:%{!mpa-risc-2-0:%{!msnake:%(cpp_cpu_default)}}}} \
 %{m64bit:%(cpp_64bit)} \
 %{!m64bit:%(cpp_64bit_default)} \
-%{!ansi: -D_HPUX_SOURCE -D_HIUX_SOURCE -D__STDC_EXT__}\
-%{threads:-D_REENTRANT -D_DCE_THREADS}"
+%{!ansi: -D_HPUX_SOURCE -D_HIUX_SOURCE -D__STDC_EXT__} \
+%{threads: -D_REENTRANT -D_DCE_THREADS}"
 
 /* Defines for a K&R CC */
 
