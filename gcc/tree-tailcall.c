@@ -395,11 +395,12 @@ find_tail_calls (basic_block bb, struct tailcall **ret)
       if (TREE_CODE (call) == CALL_EXPR)
 	break;
 
-      /* If the statement has virtual operands, fail.  */
+      /* If the statement has virtual or volatile operands, fail.  */
       ann = stmt_ann (stmt);
       if (NUM_V_MAY_DEFS (V_MAY_DEF_OPS (ann))
           || NUM_V_MUST_DEFS (V_MUST_DEF_OPS (ann))
-	  || NUM_VUSES (VUSE_OPS (ann)))
+	  || NUM_VUSES (VUSE_OPS (ann))
+	  || ann->has_volatile_ops)
 	return;
     }
 
