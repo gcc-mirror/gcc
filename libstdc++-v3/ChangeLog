@@ -1,5 +1,14 @@
 2002-07-02  Phil Edwards  <pme@gcc.gnu.org>
 
+	PR libstdc++/7173
+	* acinclude.m4:  Simplify determination of gcc_version, and move
+	up to GLIBCPP_CONFIGURE.
+	* configure.in (release_VERSION):  Really remove.
+	(AM_INIT_AUTOMAKE, AM_CONFIG_HEADER):  Move after GLIBCPP_CONFIGURE.
+	* aclocal.m4, configure:  Regenerate.
+
+2002-07-02  Phil Edwards  <pme@gcc.gnu.org>
+
 	* docs/html/configopts.html, docs/html/install.html:  Tweaks.
 	* include/ext/algorithm, include/ext/hash_map, include/ext/hash_set,
 	include/ext/iterator, include/ext/numeric, include/ext/rb_tree,

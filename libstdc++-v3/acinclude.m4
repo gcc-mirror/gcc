@@ -167,6 +167,11 @@ AC_DEFUN(GLIBCPP_CONFIGURE, [
 
   LIB_AC_PROG_CXX
 
+  # For directory versioning (e.g., headers) and other variables.
+  AC_MSG_CHECKING([for GCC version number])
+  gcc_version=`$glibcpp_CXX -dumpversion`
+  AC_MSG_RESULT($gcc_version)
+
   # For some reason, gettext needs this.
   AC_ISC_POSIX
 
@@ -200,7 +205,6 @@ AC_DEFUN(GLIBCPP_CONFIGURE, [
   # Find platform-specific directories containing configuration info.  In
   # addition to possibly modifying the same flags, it also sets up symlinks.
   GLIBCPP_CHECK_TARGET
-
 ])
 
 
@@ -1839,15 +1843,6 @@ AC_ARG_ENABLE(version-specific-runtime-libs,
 version_specific_libs=no)dnl
 # Option set, now we can test it.
 AC_MSG_RESULT($version_specific_libs)
-
-# Get the gcc version number. This is lifted from gcc/configure.in
-AC_MSG_CHECKING([for gcc version number])
-changequote(,)dnl
-gcc_version_trigger=${srcdir}/../gcc/version.c
-gcc_version_full=`grep version_string ${gcc_version_trigger} | sed -e 's/.*\"\([^\"]*\)\".*/\1/'`
-gcc_version=`echo ${gcc_version_full} | sed -e 's/\([^ ]*\) .*/\1/'`
-changequote([,])dnl
-AC_MSG_RESULT($gcc_version)
 
 # Default case for install directory for include files.
 if test $version_specific_libs = no && test $gxx_include_dir = no; then
