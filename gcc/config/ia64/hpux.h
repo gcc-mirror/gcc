@@ -27,9 +27,9 @@ Boston, MA 02111-1307, USA.  */
 
 #undef CPP_PREDEFINES
 #define CPP_PREDEFINES "\
-  -D__IA64__ -D__ia64 -D__ia64__ -D__hpux -D__hpux__ -Dhpux -Dunix \
-  -D__BIG_ENDIAN__ -D_LONGLONG -D__ELF__ \
-  -Asystem=hpux -Asystem=posix -Asystem=unix -Acpu=ia64 -Amachine=ia64 \
+  -D__IA64__ -D__hpux -D__hpux__ -Dhpux -Dunix \
+  -D__BIG_ENDIAN__ -D_LONGLONG \
+  -Asystem=hpux -Asystem=posix -Asystem=unix \
   -D_UINT128_T"
 
 /* -D__fpreg=long double is needed to compensate for the lack of __fpreg
@@ -46,9 +46,8 @@ Boston, MA 02111-1307, USA.  */
   -D__float80=long\\ double \
   -D__float128=long\\ double"
 
-#undef ASM_SPEC
-#define ASM_SPEC "-x %{mconstant-gp} %{mauto-pic} \
-  %{milp32:-milp32} %{mlp64:-mlp64}"
+#undef  ASM_EXTRA_SPEC
+#define ASM_EXTRA_SPEC "%{milp32:-milp32} %{mlp64:-mlp64}"
 
 #undef ENDFILE_SPEC
 
@@ -84,7 +83,6 @@ Boston, MA 02111-1307, USA.  */
 
 #define POINTERS_EXTEND_UNSIGNED -1
 
-#define DONT_USE_BUILTIN_SETJMP
 #define JMP_BUF_SIZE  (8 * 76)
 
 #undef CONST_SECTION_ASM_OP

@@ -11,12 +11,8 @@
 
 /* ??? Maybe this should be in sysv4.h?  */
 #define CPP_PREDEFINES "\
--D__ia64 -D__ia64__ -D__linux -D__linux__ -D_LONGLONG -Dlinux -Dunix \
--D_LP64 -D__LP64__ -D__ELF__ -Asystem=linux -Acpu=ia64 -Amachine=ia64"
-
-/* ??? ia64 gas doesn't accept standard svr4 assembler options?  */
-#undef ASM_SPEC
-#define ASM_SPEC "-x %{mconstant-gp} %{mauto-pic}"
+  -D__linux -D__linux__ -D_LONGLONG -Dlinux -Dunix \
+  -Asystem=linux"
 
 /* Need to override linux.h STARTFILE_SPEC, since it has crtbeginT.o in.  */
 #undef STARTFILE_SPEC
@@ -46,13 +42,7 @@
       %{static:-static}}"
 
 
-#define DONT_USE_BUILTIN_SETJMP
 #define JMP_BUF_SIZE  76
-
-/* Output any profiling code before the prologue.  */
-
-#undef PROFILE_BEFORE_PROLOGUE
-#define PROFILE_BEFORE_PROLOGUE 1
 
 /* Override linux.h LINK_EH_SPEC definition.
    Signalize that because we have fde-glibc, we don't need all C shared libs

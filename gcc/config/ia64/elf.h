@@ -17,10 +17,12 @@
 
 #if ((TARGET_CPU_DEFAULT | TARGET_DEFAULT) & MASK_GNU_AS) != 0
 /* GNU AS.  */
-#define ASM_SPEC \
-  "%{mno-gnu-as:-N so} %{!mno-gnu-as:-x} %{mconstant-gp} %{mauto-pic}"
+#undef  ASM_EXTRA_SPEC
+#define ASM_EXTRA_SPEC \
+  "%{mno-gnu-as:-N so} %{!mno-gnu-as:-x}"
 #else
 /* Intel ias.  */
+#undef  ASM_SPEC
 #define ASM_SPEC \
   "%{!mgnu-as:-N so} %{mgnu-as:-x} %{mconstant-gp:-M const_gp}\
    %{mauto-pic:-M no_plabel}"
