@@ -4008,7 +4008,7 @@ Enabled by default when gcse is enabled.
 @opindex fgcse-las
 When @option{-fgcse-las} is enabled, the global common subexpression
 elimination pass eliminates redundant loads that come after stores to the
-same memory location (both partial and full redundacies).
+same memory location (both partial and full redundancies).
 
 Enabled by default when gcse is enabled.
 

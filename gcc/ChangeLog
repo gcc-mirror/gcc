@@ -1,3 +1,7 @@
+2003-10-17  David Edelsohn  <edelsohn@gnu.org>
+
+	* doc/invoke.texi (gcse-las): Fix typo.
+
 2003-10-17  Andrew Pinski  <pinskia@physics.uc.edu>
 
 	* doc/install.texi: Remove first part of the sentence for
