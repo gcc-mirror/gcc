@@ -7,8 +7,8 @@ template <typename K1> struct O {
 }; 
 
 template <typename T> 
-struct A : typename O<T>::template I<int> {   // { dg-error "keyword `typename' not allowed" }
-  A() :    typename O<T>::template I<int>()   // { dg-error "keyword `typename' not allowed" }
+struct A : typename O<T>::template I<int> {   // { dg-error "keyword 'typename' not allowed" }
+  A() :    typename O<T>::template I<int>()   // { dg-error "keyword 'typename' not allowed" }
   {};
 };
 

@@ -1872,26 +1872,26 @@ cp_parser_name_lookup_error (cp_parser* parser,
   if (decl == error_mark_node)
     {
       if (parser->scope && parser->scope != global_namespace)
-	error ("`%D::%D' has not been declared",
+	error ("%<%D::%D%> has not been declared",
 	       parser->scope, name);
       else if (parser->scope == global_namespace)
-	error ("`::%D' has not been declared", name);
+	error ("%<::%D%> has not been declared", name);
       else if (parser->object_scope 
 	       && !CLASS_TYPE_P (parser->object_scope))
-	error ("request for member `%D' in non-class type `%T'",
+	error ("request for member %qD in non-class type %qT",
 	       name, parser->object_scope);
       else if (parser->object_scope)
-	error ("`%T::%D' has not been declared", 
+	error ("%<%T::%D%> has not been declared", 
 	       parser->object_scope, name);
       else
 	error ("`%D' has not been declared", name);
     }
   else if (parser->scope && parser->scope != global_namespace)
-    error ("`%D::%D' %s", parser->scope, name, desired);
+    error ("%<%D::%D%> %s", parser->scope, name, desired);
   else if (parser->scope == global_namespace)
-    error ("`::%D' %s", name, desired);
+    error ("%<::%D%> %s", name, desired);
   else
-    error ("`%D' %s", name, desired);
+    error ("%qD %s", name, desired);
 }
 
 /* If we are parsing tentatively, remember that an error has occurred
@@ -1962,9 +1962,9 @@ cp_parser_check_for_invalid_template_id (cp_parser* parser,
   if (cp_lexer_next_token_is (parser->lexer, CPP_LESS))
     {
       if (TYPE_P (type))
-	error ("`%T' is not a template", type);
+	error ("%qT is not a template", type);
       else if (TREE_CODE (type) == IDENTIFIER_NODE)
-	error ("`%E' is not a template", type);
+	error ("%qE is not a template", type);
       else
 	error ("invalid template-id");
       /* Remember the location of the invalid "<".  */
@@ -2031,12 +2031,12 @@ cp_parser_diagnose_invalid_type_name (cp_parser *parser, tree scope, tree id)
   /* If the lookup found a template-name, it means that the user forgot
   to specify an argument list. Emit an useful error message.  */
   if (TREE_CODE (decl) == TEMPLATE_DECL)
-    error ("invalid use of template-name `%E' without an argument list",
+    error ("invalid use of template-name %qE without an argument list",
       decl);
   else if (!parser->scope)
     {
       /* Issue an error message.  */
-      error ("`%E' does not name a type", id);
+      error ("%qE does not name a type", id);
       /* If we're in a template class, it's possible that the user was
 	 referring to a type from a base class.  For example:
 
@@ -2082,11 +2082,10 @@ cp_parser_diagnose_invalid_type_name (cp_parser *parser, tree scope, tree id)
   else
     {
       if (TREE_CODE (parser->scope) == NAMESPACE_DECL)
-	error ("`%E' in namespace `%E' does not name a type",
+	error ("%qE in namespace %qE does not name a type",
 	       id, parser->scope);
       else if (TYPE_P (parser->scope))
-	error ("`%E' in class `%T' does not name a type",
-	       id, parser->scope);
+	error ("q%E in class %qT does not name a type", id, parser->scope);
       else
 	gcc_unreachable ();
     }
@@ -2816,7 +2815,7 @@ cp_parser_primary_expression (cp_parser *parser,
 	  cp_lexer_consume_token (parser->lexer);
 	  if (parser->local_variables_forbidden_p)
 	    {
-	      error ("`this' may not be used in this context");
+	      error ("%<this%> may not be used in this context");
 	      return error_mark_node;
 	    }
 	  /* Pointers cannot appear in constant-expressions.  */
@@ -2951,7 +2950,7 @@ cp_parser_primary_expression (cp_parser *parser,
 		decl = check_for_out_of_scope_variable (decl);
 		if (local_variable_p (decl))
 		  {
-		    error ("local variable `%D' may not appear in this context",
+		    error ("local variable %qD may not appear in this context",
 			   decl);
 		    return error_mark_node;
 		  }
@@ -3316,7 +3315,7 @@ cp_parser_unqualified_id (cp_parser* parser,
 	if (declarator_p
 	    && !DECL_IMPLICIT_TYPEDEF_P (type_decl)
 	    && !DECL_SELF_REFERENCE_P (type_decl))
-	  error ("typedef-name `%D' used as destructor declarator",
+	  error ("typedef-name %qD used as destructor declarator",
 		 type_decl);
 
 	return build_nt (BIT_NOT_EXPR, TREE_TYPE (type_decl));
@@ -3522,8 +3521,7 @@ cp_parser_nested_name_specifier_opt (cp_parser *parser,
 
 		  decl = cp_parser_lookup_name_simple (parser, token->value);
 		  if (TREE_CODE (decl) == TEMPLATE_DECL)
-		    error ("`%D' used without template parameters",
-			   decl);
+		    error ("%qD used without template parameters", decl);
 		  else
 		    cp_parser_name_lookup_error
 		      (parser, token->value, decl,
@@ -5051,7 +5049,8 @@ cp_parser_direct_new_declarator (cp_parser* parser)
 					      /*complain=*/true);
 	      if (!expression)
 		{
-		  error ("expression in new-declarator must have integral or enumeration type");
+		  error ("expression in new-declarator must have integral "
+                         "or enumeration type");
 		  expression = error_mark_node;
 		}
 	    }
@@ -5987,7 +5986,7 @@ cp_parser_labeled_statement (cp_parser* parser, tree in_statement_expr)
 	  expr_hi = NULL_TREE;
 
 	if (!parser->in_switch_statement_p)
-	  error ("case label `%E' not within a switch statement", expr);
+	  error ("case label %qE not within a switch statement", expr);
 	else
 	  statement = finish_case_label (expr, expr_hi);
       }
@@ -6493,7 +6492,7 @@ cp_parser_jump_statement (cp_parser* parser)
 	}
       else
 	statement = finish_break_stmt ();
-      cp_parser_require (parser, CPP_SEMICOLON, "`;'");
+      cp_parser_require (parser, CPP_SEMICOLON, "%<;%>");
       break;
 
     case RID_CONTINUE:
@@ -6504,7 +6503,7 @@ cp_parser_jump_statement (cp_parser* parser)
 	}
       else
 	statement = finish_continue_stmt ();
-      cp_parser_require (parser, CPP_SEMICOLON, "`;'");
+      cp_parser_require (parser, CPP_SEMICOLON, "%<;%>");
       break;
 
     case RID_RETURN:
@@ -6520,7 +6519,7 @@ cp_parser_jump_statement (cp_parser* parser)
 	/* Build the return-statement.  */
 	statement = finish_return_stmt (expr);
 	/* Look for the final `;'.  */
-	cp_parser_require (parser, CPP_SEMICOLON, "`;'");
+	cp_parser_require (parser, CPP_SEMICOLON, "%<;%>");
       }
       break;
 
@@ -6539,7 +6538,7 @@ cp_parser_jump_statement (cp_parser* parser)
       else
 	finish_goto_stmt (cp_parser_identifier (parser));
       /* Look for the final `;'.  */
-      cp_parser_require (parser, CPP_SEMICOLON, "`;'");
+      cp_parser_require (parser, CPP_SEMICOLON, "%<;%>");
       break;
 
     default:
@@ -6997,7 +6996,7 @@ cp_parser_simple_declaration (cp_parser* parser,
 	  if (decl != error_mark_node
 	      || (cp_parser_parsing_tentatively (parser)
 		  && !cp_parser_committed_to_tentative_parse (parser)))
-	    cp_parser_error (parser, "expected `,' or `;'");
+	    cp_parser_error (parser, "expected %<,%> or %<;%>");
 	  /* Skip tokens until we reach the end of the statement.  */
 	  cp_parser_skip_to_end_of_statement (parser);
 	  /* If the next token is now a `;', consume it.  */
@@ -7105,7 +7104,7 @@ cp_parser_decl_specifier_seq (cp_parser* parser,
 	       friend  */
 	case RID_FRIEND:
 	  if (decl_specs->specs[(int) ds_friend]++)
-	    error ("duplicate `friend'");
+	    error ("duplicate %<friend%>");
 	  /* Consume the token.  */
 	  cp_lexer_consume_token (parser->lexer);
 	  break;
@@ -7679,7 +7678,7 @@ cp_parser_mem_initializer_id (cp_parser* parser)
   /* `typename' is not allowed in this context ([temp.res]).  */
   if (cp_lexer_next_token_is_keyword (parser->lexer, RID_TYPENAME))
     {
-      error ("keyword `typename' not allowed in this context (a qualified "
+      error ("keyword %<typename%> not allowed in this context (a qualified "
 	     "member initializer is implicitly a type)");
       cp_lexer_consume_token (parser->lexer);
     }
@@ -8041,7 +8040,7 @@ cp_parser_template_declaration (cp_parser* parser, bool member_p)
       /* Consume the `export' token.  */
       cp_lexer_consume_token (parser->lexer);
       /* Warn that we do not support `export'.  */
-      warning ("keyword `export' not implemented, and will be ignored");
+      warning ("keyword %<export%> not implemented, and will be ignored");
     }
 
   cp_parser_template_declaration_after_export (parser, member_p);
@@ -8294,7 +8293,7 @@ cp_parser_type_parameter (cp_parser* parser)
     default:
       /* Anything else is an error.  */
       cp_parser_error (parser,
-		       "expected `class', `typename', or `template'");
+		       "expected %<class%>, %<typename%>, or %<template%>");
       parameter = error_mark_node;
     }
 
@@ -8408,21 +8407,21 @@ cp_parser_template_id (cp_parser *parser,
 	     and return simply an error. Maybe this is not a template-id
 	     after all.  */
 	  next_token_2->type = CPP_COLON;
-	  cp_parser_error (parser, "expected `<'");
+	  cp_parser_error (parser, "expected %<<%>");
 	  pop_deferring_access_checks ();
 	  return error_mark_node;
 	}
       /* Otherwise, emit an error about the invalid digraph, but continue
          parsing because we got our argument list.  */
-      pedwarn ("`<::' cannot begin a template-argument list");
-      inform ("`<:' is an alternate spelling for `['. Insert whitespace "
-	      "between `<' and `::'");
+      pedwarn ("%<<::%> cannot begin a template-argument list");
+      inform ("%<<:%> is an alternate spelling for %<[%>. Insert whitespace "
+	      "between %<<%> and %<::%>");
       if (!flag_permissive)
 	{
 	  static bool hint;
 	  if (!hint)
 	    {
-	      inform ("(if you use `-fpermissive' G++ will accept your code)");
+	      inform ("(if you use -fpermissive G++ will accept your code)");
 	      hint = true;
 	    }
 	}
@@ -8597,8 +8596,8 @@ cp_parser_template_name (cp_parser* parser,
 	  ptrdiff_t start;
 	  cp_token* token;
 	  /* Explain what went wrong.  */
-	  error ("non-template `%D' used as template", identifier);
-	  inform ("use `%T::template %D' to indicate that it is a template",
+	  error ("non-template %qD used as template", identifier);
+	  inform ("use %<%T::template %D%> to indicate that it is a template",
 		  parser->scope, identifier);
 	  /* If parsing tentatively, find the location of the "<"
 	     token.  */
@@ -9625,7 +9624,7 @@ cp_parser_elaborated_type_specifier (cp_parser* parser,
       tag_type = typename_type;
       /* The `typename' keyword is only allowed in templates.  */
       if (!processing_template_decl)
-	pedwarn ("using `typename' outside of template");
+	pedwarn ("using %<typename%> outside of template");
     }
   /* Otherwise it must be a class-key.  */
   else
@@ -11068,7 +11067,7 @@ cp_parser_direct_declarator (cp_parser* parser,
 						 /*only_current_p=*/false);
 		  /* If that failed, the declarator is invalid.  */
 		  if (type == error_mark_node)
-		    error ("`%T::%D' is not a type",
+		    error ("%<%T::%D%> is not a type",
 			   TYPE_CONTEXT (scope),
 			   TYPE_IDENTIFIER (scope));
 		  /* Build a new DECLARATOR.  */
@@ -11114,8 +11113,9 @@ cp_parser_direct_declarator (cp_parser* parser,
 		      && CLASSTYPE_USE_TEMPLATE (TREE_TYPE (unqualified_name)))
 		    {
 		      error ("invalid use of constructor as a template");
-		      inform ("use `%T::%D' instead of `%T::%T' to name the "
-			      "constructor in a qualified name", class_type,
+		      inform ("use %<%T::%D%> instead of %<%T::%T%> to name "
+                              "the constructor in a qualified name",
+                              class_type,
 			      DECL_NAME (TYPE_TI_TEMPLATE (class_type)),
 			      class_type, class_type);
 		    }
@@ -11626,7 +11626,7 @@ cp_parser_parameter_declaration_list (cp_parser* parser, bool *is_error)
 	}
       else
 	{
-	  cp_parser_error (parser, "expected `,' or `...'");
+	  cp_parser_error (parser, "expected %<,%> or %<...%>");
 	  if (!cp_parser_parsing_tentatively (parser)
 	      || cp_parser_committed_to_tentative_parse (parser))
 	    cp_parser_skip_to_closing_parenthesis (parser,
@@ -12595,7 +12595,7 @@ cp_parser_class_head (cp_parser* parser,
      xref_tag, since that has irreversible side-effects.  */
   if (!cp_parser_next_token_starts_class_definition_p (parser))
     {
-      cp_parser_error (parser, "expected `{' or `:'");
+      cp_parser_error (parser, "expected %<{%> or %<:%>");
       return error_mark_node;
     }
 
@@ -12620,8 +12620,8 @@ cp_parser_class_head (cp_parser* parser,
 	 class was originally declared, the program is invalid.  */
       if (scope && !is_ancestor (scope, nested_name_specifier))
 	{
-	  error ("declaration of `%D' in `%D' which does not "
-		 "enclose `%D'", type, scope, nested_name_specifier);
+	  error ("declaration of %qD in %qD which does not enclose %qD",
+                 type, scope, nested_name_specifier);
 	  type = NULL_TREE;
 	  goto done;
 	}
@@ -12644,7 +12644,7 @@ cp_parser_class_head (cp_parser* parser,
       && parser->num_template_parameter_lists == 0
       && template_id_p)
     {
-      error ("an explicit specialization must be preceded by 'template <>'");
+      error ("an explicit specialization must be preceded by %<template <>%>");
       invalid_explicit_specialization_p = true;
       /* Take the same action that would have been taken by
 	 cp_parser_explicit_specialization.  */
@@ -13179,7 +13179,7 @@ cp_parser_member_declaration (cp_parser* parser)
 	  else if (cp_lexer_next_token_is_not (parser->lexer,
 					       CPP_SEMICOLON))
 	    {
-	      cp_parser_error (parser, "expected `;'");
+	      cp_parser_error (parser, "expected %<;%>");
 	      /* Skip tokens until we find a `;'.  */
 	      cp_parser_skip_to_end_of_statement (parser);
 
@@ -13364,7 +13364,7 @@ cp_parser_base_specifier (cp_parser* parser)
 	  if (virtual_p && !duplicate_virtual_error_issued_p)
 	    {
 	      cp_parser_error (parser,
-			       "`virtual' specified more than once in base-specified");
+			       "%<virtual%> specified more than once in base-specified");
 	      duplicate_virtual_error_issued_p = true;
 	    }
 
@@ -13406,9 +13406,9 @@ cp_parser_base_specifier (cp_parser* parser)
   if (cp_lexer_next_token_is_keyword (parser->lexer, RID_TYPENAME))
     {
       if (!processing_template_decl)
-	error ("keyword `typename' not allowed outside of templates");
+	error ("keyword %<typename%> not allowed outside of templates");
       else
-	error ("keyword `typename' not allowed in this context "
+	error ("keyword %<typename%> not allowed in this context "
 	       "(the base class is implicitly a type)");
       cp_lexer_consume_token (parser->lexer);
     }
@@ -14243,7 +14243,7 @@ cp_parser_lookup_name (cp_parser *parser, tree name,
 	 cp_parser_error, so we incorporate its actions directly.  */
       if (!cp_parser_simulate_error (parser))
 	{
-	  error ("reference to `%D' is ambiguous", name);
+	  error ("reference to %qD is ambiguous", name);
 	  print_candidates (decl);
 	}
       return error_mark_node;
@@ -15203,7 +15203,7 @@ cp_parser_late_parsing_default_args (cp_parser *parser, tree fn)
 	 there was extra junk after the end of the default
 	 argument.  */
       if (!cp_lexer_next_token_is (parser->lexer, CPP_EOF))
-	cp_parser_error (parser, "expected `,'");
+	cp_parser_error (parser, "expected %<,%>");
 
       /* Revert to the main lexer.  */
       cp_parser_pop_lexer (parser);
@@ -15572,7 +15572,7 @@ static void
 cp_parser_check_class_key (enum tag_types class_key, tree type)
 {
   if ((TREE_CODE (type) == UNION_TYPE) != (class_key == union_type))
-    pedwarn ("`%s' tag used in naming `%#T'",
+    pedwarn ("%qs tag used in naming %q#T",
 	    class_key == union_type ? "union"
 	     : class_key == record_type ? "struct" : "class",
 	     type);
@@ -15583,7 +15583,8 @@ cp_parser_check_class_key (enum tag_types class_key, tree type)
    This applies to nested classes and nested class templates.
    [class.mem/1].  */
 
-static void cp_parser_check_access_in_redeclaration (tree decl)
+static void
+cp_parser_check_access_in_redeclaration (tree decl)
 {
   if (!CLASS_TYPE_P (TREE_TYPE (decl)))
     return;
@@ -15592,7 +15593,7 @@ static void cp_parser_check_access_in_redeclaration (tree decl)
        != (current_access_specifier == access_private_node))
       || (TREE_PROTECTED (decl)
 	  != (current_access_specifier == access_protected_node)))
-    error ("%D redeclared with different access", decl);
+    error ("%qD redeclared with different access", decl);
 }
 
 /* Look for the `template' keyword, as a syntactic disambiguator.
@@ -15609,7 +15610,7 @@ cp_parser_optional_template_keyword (cp_parser *parser)
 	 template and what is not.  */
       if (!processing_template_decl)
 	{
-	  error ("`template' (as a disambiguator) is only allowed "
+	  error ("%<template%> (as a disambiguator) is only allowed "
 		 "within templates");
 	  /* If this part of the token stream is rescanned, the same
 	     error message would be generated.  So, we purge the token

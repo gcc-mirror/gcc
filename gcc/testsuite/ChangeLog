@@ -1,3 +1,9 @@
+2004-10-05  Gabriel Dos Reis  <gdr@integrable-solutions.net>
+
+	* g++.dg/other/classkey1.C: Adjust quoting marks.
+	* g++.dg/parse/error15.C: Likewise.
+	* g++.dg/template/meminit2.C (int>): Likewise.
+
 2004-10-04  Tobias Schlueter  <tobias.schlueter@physik.uni-muenchen.de>
 
 	PR fortran/17283
