@@ -195,16 +195,45 @@ char **tree_code_name;
 /* Statistics-gathering stuff.  */
 typedef enum
 {
-  d_kind, t_kind, s_kind, r_kind, e_kind, c_kind,
-  id_kind, op_id_kind, perm_list_kind, temp_list_kind,
-  vec_kind, x_kind, lang_decl, lang_type, all_kinds
+  d_kind,
+  t_kind,
+  b_kind,
+  s_kind,
+  r_kind,
+  e_kind,
+  c_kind,
+  id_kind,
+  op_id_kind,
+  perm_list_kind,
+  temp_list_kind,
+  vec_kind,
+  x_kind,
+  lang_decl,
+  lang_type,
+  all_kinds
 } tree_node_kind;
+
 int tree_node_counts[(int)all_kinds];
 int tree_node_sizes[(int)all_kinds];
 int id_string_size = 0;
-char *tree_node_kind_names[] = { "decls", "types", "stmts", "refs", "exprs", "constants",
-				 "identifiers", "op_identifiers", "perm_tree_lists", "temp_tree_lists",
-				 "vecs", "random kinds", "lang_decl kinds", "lang_type kinds" };
+
+char *tree_node_kind_names[] = {
+  "decls",
+  "types",
+  "blocks",
+  "stmts",
+  "refs",
+  "exprs",
+  "constants",
+  "identifiers",
+  "op_identifiers",
+  "perm_tree_lists",
+  "temp_tree_lists",
+  "vecs",
+  "random kinds",
+  "lang_decl kinds",
+  "lang_type kinds"
+};
 
 /* Hash table for uniquizing IDENTIFIER_NODEs by name.  */
 
@@ -774,6 +803,16 @@ make_node (code)
 	obstack = all_types_permanent ? &permanent_obstack : saveable_obstack;
       break;
 
+    case 'b':  /* a lexical block */
+#ifdef GATHER_STATISTICS
+      kind = b_kind;
+#endif
+      length = sizeof (struct tree_block);
+      /* All BLOCK nodes are put where we can preserve them if nec.  */
+      if (obstack != &permanent_obstack)
+	obstack = saveable_obstack;
+      break;
+
     case 's':  /* an expression with side effects */
 #ifdef GATHER_STATISTICS
       kind = s_kind;
@@ -793,10 +832,8 @@ make_node (code)
     usual_kind:
 #endif
       obstack = expression_obstack;
-      /* All BLOCK nodes are put where we can preserve them if nec.
-	 Also their potential controllers.  */
-      if ((code == BLOCK || code == BIND_EXPR)
-	  && obstack != &permanent_obstack)
+      /* All BIND_EXPR nodes are put where we can preserve them if nec.  */
+      if (code == BIND_EXPR && obstack != &permanent_obstack)
 	obstack = saveable_obstack;
       length = sizeof (struct tree_exp)
 	+ (tree_code_length[(int) code] - 1) * sizeof (char *);
@@ -905,6 +942,10 @@ copy_node (node)
 
     case 't':  /* a type node */
       length = sizeof (struct tree_type);
+      break;
+
+    case 'b':  /* a lexical block node */
+      length = sizeof (struct tree_block);
       break;
 
     case 'r':  /* a reference */
@@ -1861,6 +1902,7 @@ stabilize_reference_1 (e)
     case 'x':
     case 't':
     case 'd':
+    case 'b':
     case '<':
     case 's':
     case 'e':
