@@ -8965,7 +8965,8 @@ fold (tree expr)
 
       /* We can fold X/C1 op C2 where C1 and C2 are integer constants
 	 into a single range test.  */
-      if (TREE_CODE (arg0) == TRUNC_DIV_EXPR
+      if ((TREE_CODE (arg0) == TRUNC_DIV_EXPR
+	   || TREE_CODE (arg0) == EXACT_DIV_EXPR)
 	  && TREE_CODE (arg1) == INTEGER_CST
 	  && TREE_CODE (TREE_OPERAND (arg0, 1)) == INTEGER_CST
 	  && !integer_zerop (TREE_OPERAND (arg0, 1))
