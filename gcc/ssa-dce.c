@@ -113,6 +113,8 @@ static int find_inherently_necessary
   PARAMS ((rtx current_rtx));
 static int propagate_necessity_through_operand
   PARAMS ((rtx *current_rtx, void *data));
+static void note_inherently_necessary_set
+  PARAMS ((rtx, rtx, void *));
 
 /* Unnecessary insns are indicated using insns' in_struct bit.  */
 
@@ -328,6 +330,31 @@ inherently_necessary_register (current_rtx)
 		       &inherently_necessary_register_1, NULL);
 }
 
+
+/* Called via note_stores for each store in an insn.  Note whether
+   or not a particular store is inherently necessary.  Store a
+   nonzero value in inherently_necessary_p if such a storeis found.  */
+   
+static void
+note_inherently_necessary_set (dest, set, data)
+     rtx set;
+     rtx dest;
+     void *data;
+{
+  int *inherently_necessary_set_p = (int *)data;
+
+  while (GET_CODE (dest) == SUBREG
+	 || GET_CODE (dest) == STRICT_LOW_PART
+	 || GET_CODE (dest) == ZERO_EXTRACT
+	 || GET_CODE (dest) == SIGN_EXTRACT)
+    dest = XEXP (dest, 0);
+
+  if (GET_CODE (dest) == MEM
+      || GET_CODE (dest) == UNSPEC
+      || GET_CODE (dest) == UNSPEC_VOLATILE)
+    *inherently_necessary_set_p = 1;
+}
+
 /* Mark X as inherently necessary if appropriate.  For example,
    function calls and storing values into memory are inherently
    necessary.  This function is to be used with for_each_rtx ().
@@ -346,39 +373,29 @@ find_inherently_necessary (x)
     switch (GET_CODE (x))
       {  
       case CALL_INSN:
+	return !0;
       case CODE_LABEL:
       case NOTE:
       case BARRIER:
-	return !0;
+	return 0;
 	break;
       case JUMP_INSN:
 	return JUMP_TABLE_DATA_P (x) || computed_jump_p (x) != 0;
 	break;
       case INSN:
-	pattern = PATTERN (x);
-	switch (GET_CODE (pattern))
-	  {
-	  case SET:
-	  case PRE_DEC:
-	  case PRE_INC:
-	  case POST_DEC:
-	  case POST_INC:
-	    return GET_CODE (SET_DEST (pattern)) == MEM;
-	  case CALL:
-	  case RETURN:
-	  case USE:
-	  case CLOBBER:
-	    return !0;
-	    break;
-	  case ASM_INPUT:
-	    /* We treat assembler instructions as inherently
-	       necessary, and we hope that its operands do not need to
-	       be propagated.  */
-	    return !0;
-	    break;
-	  default:
-	    return 0;
-	  }
+	{
+	  int inherently_necessary_set = 0;
+	  note_stores (PATTERN (x),
+		       note_inherently_necessary_set,
+		       &inherently_necessary_set);
+
+	  /* If we found an inherently necessary set or an asm
+	     instruction, then we consider this insn inherently
+	     necessary.  */
+	  return (inherently_necessary_set
+		  || GET_CODE (PATTERN (x)) == ASM_INPUT
+		  || asm_noperands (PATTERN (x)) >= 0);
+	}
       default:
 	/* Found an impossible insn type.  */
 	abort();
@@ -457,6 +474,15 @@ delete_insn_bb (insn)
   basic_block bb;
   if (!insn)
     abort ();
+
+  /* Do not actually delete anything that is not an INSN.
+
+     We can get here because we only consider INSNs as
+     potentially necessary.  We leave it to later passes
+     to remove unnecessary notes, unused labels, etc.  */
+  if (! INSN_P (insn))
+    return;
+
   bb = BLOCK_FOR_INSN (insn);
   if (!bb)
     abort ();
