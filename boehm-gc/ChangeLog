@@ -1,3 +1,10 @@
+1999-05-05  Gilles Zunino  <Gilles.Zunino@hei.fr>
+
+	* configure.in: Switch from irix threads to posix threads
+	Defined IRIX_THREADS. Put mips_sgi_mach_dep.lo into machdep
+	for mips architecture.
+	* configure: Regenerate.
+
 1999-04-30  Tom Tromey  <tromey@cygnus.com>
 
 	* linux_threads.c: Don't reference __pthread_initial_thread_bos.

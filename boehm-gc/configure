@@ -2275,7 +2275,9 @@ if test "$THREADS" = yes; then
        THREADS=win32
        ;;
     *-*-irix*)
-       THREADS=irix
+       # FIXME: for now, choose POSIX, because we implement that.
+       # Later, choose irix threads.
+       THREADS=posix
        ;;
     *-*-solaris*)
        # FIXME: for now, choose POSIX, because we implement that.
@@ -2314,6 +2316,12 @@ EOF
 
 	cat >> confdefs.h <<\EOF
 #define _SOLARIS_PTHREADS 1
+EOF
+
+	;;
+     *-*-irix*)
+	cat >> confdefs.h <<\EOF
+#define IRIX_THREADS 1
 EOF
 
 	;;
@@ -2382,6 +2390,13 @@ machdep=
 case "$host" in
  alpha-*-*)
     machdep="alpha_mach_dep.lo"
+    ;;
+ mips-*-*)
+    machdep="mips_sgi_mach_dep.lo"
+    cat >> confdefs.h <<\EOF
+#define NO_EXECUTE_PERMISSION 1
+EOF
+
     ;;
  mipstx39-*-elf*)
     machdep="mips_ultrix_mach_dep.lo"
