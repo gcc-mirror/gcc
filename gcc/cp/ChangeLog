@@ -1,5 +1,9 @@
 2004-08-11  Mark Mitchell  <mark@codesourcery.com>
 
+	PR c++/16698
+	* except.c (build_throw): Allocate cleanup_type and the function
+	for __cxa_throw separately.
+
 	PR c++/16853
 	* call.c (standard_conversion): Do not accept conversions between
 	pointers to members if the class types are unrelated.
