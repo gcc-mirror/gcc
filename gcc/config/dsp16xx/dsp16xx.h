@@ -1615,7 +1615,7 @@ extern struct dsp16xx_frame_info current_frame_info;
    PREFIX is the class of label and NUM is the number within the class.
    This is suitable for output with `assemble_name'.  */
 #define ASM_GENERATE_INTERNAL_LABEL(LABEL,PREFIX,NUM)	\
-  sprintf (LABEL, "*%s%d", PREFIX, NUM)
+  sprintf (LABEL, "*%s%lu", PREFIX, (unsigned long)(NUM))
 
 
 /* OUTPUT OF ASSEMBLER INSTRUCTIONS */

@@ -206,7 +206,7 @@ do {							\
       fprintf ((STREAM), "\t.comm\t"); 			\
       assemble_name ((STREAM), (NAME));			\
       fprintf ((STREAM), ", %d\t%s %d\n",		\
-	       (ROUNDED), ASM_COMMENT_START, (SIZE));	\
+	       (int)(ROUNDED), ASM_COMMENT_START, (int)(SIZE));	\
     }							\
 } while (0)
 

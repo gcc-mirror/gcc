@@ -1178,7 +1178,7 @@ extern long mcore_current_compilation_timestamp;
         {							\
           fputs ("\t.comm\t", FILE);				\
           assemble_name (FILE, NAME);				\
-          fprintf (FILE, ",%d\n", SIZE);			\
+          fprintf (FILE, ",%lu\n", (unsigned long)(SIZE));	\
         }							\
     }								\
   while (0)

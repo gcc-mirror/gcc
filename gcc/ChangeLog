@@ -1,3 +1,27 @@
+2003-06-04  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* alpha.c (print_operand_address): Fix format specifier warnings.
+	* alpha/elf.h (ASM_OUTPUT_ALIGNED_COMMON): Likewise.
+	* alpha/vms.h (ASM_OUTPUT_ALIGNED_COMMON): Likewise.
+	* arm/aof.h (ASM_OUTPUT_COMMON, ASM_OUTPUT_LOCAL): Likewise.
+	* arm/pe.h (ASM_OUTPUT_COMMON): Likewise.
+	* avr.h (ASM_OUTPUT_COMMON, ASM_GENERATE_INTERNAL_LABEL,
+	ASM_OUTPUT_SKIP): Likewise. 
+	* c4x.h (ASM_GENERATE_INTERNAL_LABEL): Likewise.
+	* dsp16xx.h (ASM_GENERATE_INTERNAL_LABEL): Likewise.
+	* h8300.h (ASM_GENERATE_INTERNAL_LABEL, ASM_OUTPUT_COMMON):
+	Likewise.
+	* i370.h (ASM_GENERATE_INTERNAL_LABEL): Likewise.
+	* i386/cygming.h (ASM_OUTPUT_COMMON): Likewise.
+	* i386/darwin.h (ASM_OUTPUT_COMMON): Likewise.
+	* i960.h (ASM_GENERATE_INTERNAL_LABEL): Likewise.
+	* m68k/hp320.h (PRINT_OPERAND_ADDRESS): Likewise.
+	* mcore.h (ASM_OUTPUT_ALIGNED_COMMON): Likewise.
+	* pdp11.h (ASM_GENERATE_INTERNAL_LABEL): Likewise.
+	* ptx4.h (ASM_OUTPUT_ALIGNED_COMMON): Likewise.
+	* sparc/freebsd.h (ASM_GENERATE_INTERNAL_LABEL): Likewise.
+	* svr3.h (ASM_OUTPUT_COMMON): Likewise.
+
 2003-06-04  J"orn Rennecke <joern.rennecke@superh.com>
 
 	* c-decl.c (c_init_decl_processing): Clear input_file_name

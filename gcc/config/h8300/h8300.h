@@ -1140,7 +1140,7 @@ struct cum_arg
    N.B.: The h8300.md branch_true and branch_false patterns also know
    how to generate internal labels.  */
 #define ASM_GENERATE_INTERNAL_LABEL(LABEL, PREFIX, NUM)	\
-  sprintf (LABEL, "*.%s%d", PREFIX, NUM)
+  sprintf (LABEL, "*.%s%lu", PREFIX, (unsigned long)(NUM))
 
 /* This is how to output an insn to push a register on the stack.
    It need not be very fast code.  */
@@ -1187,7 +1187,7 @@ struct cum_arg
 #define ASM_OUTPUT_COMMON(FILE, NAME, SIZE, ROUNDED)	\
 ( fputs ("\t.comm ", (FILE)),				\
   assemble_name ((FILE), (NAME)),			\
-  fprintf ((FILE), ",%d\n", (SIZE)))
+  fprintf ((FILE), ",%lu\n", (unsigned long)(SIZE)))
 
 /* This says how to output the assembler to define a global
    uninitialized but not common symbol.

@@ -1074,7 +1074,7 @@ enum reg_class
 }
 
 #define ASM_GENERATE_INTERNAL_LABEL(LABEL, PREFIX, NUM)			\
-  sprintf (LABEL, "*%s%d", PREFIX, NUM)
+  sprintf (LABEL, "*%s%lu", PREFIX, (unsigned long)(NUM))
 
 /* Generate case label.  For HLASM we can change to the data CSECT
    and put the vectors out of the code body. The assembler just

@@ -231,5 +231,5 @@ while (0)
 do {									\
   fprintf ((FILE), "%s", COMMON_ASM_OP);				\
   assemble_name ((FILE), (NAME));					\
-  fprintf ((FILE), ",%u\n", (SIZE));					\
+  fprintf ((FILE), ",%lu\n", (unsigned long)(SIZE)); \
 } while (0)
