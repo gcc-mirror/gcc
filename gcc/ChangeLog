@@ -120,7 +120,6 @@ Tue Jan 22 06:26:33 2002  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 	(sparc-*-netbsd*): Add netbsd-aout.h to tm_file.
 	(vax-*-netbsd*): Add netbsd-aout.h to tm_file.
 
->>>>>>> 1.12770
 2002-01-21  John David Anglin  <dave@hiauly1.hia.nrc.ca>
 
 	* pa-protos.h (reg_before_reload_operand): New function prototype.
