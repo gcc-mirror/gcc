@@ -29,6 +29,7 @@ details.  */
 #include <java/lang/ConcreteProcess.h>
 #include <java/lang/ClassLoader.h>
 #include <gnu/gcj/runtime/StackTrace.h>
+#include <java/lang/ArrayIndexOutOfBoundsException.h>
 
 #include <jni.h>
 
@@ -181,19 +182,26 @@ java::lang::Runtime::_load (jstring path, jboolean do_search)
       ClassLoader *sys = ClassLoader::getSystemClassLoader();
       ClassLoader *look = NULL;
       gnu::gcj::runtime::StackTrace *t = new gnu::gcj::runtime::StackTrace(10);
-      for (int i = 0; i < 10; ++i)
-	{
-	  jclass klass = t->classAt(i);
-	  if (klass != NULL)
+      try
+      	{
+	  for (int i = 0; i < 10; ++i)
 	    {
-	      ClassLoader *loader = klass->getClassLoaderInternal();
-	      if (loader != NULL && loader != sys)
+	      jclass klass = t->classAt(i);
+	      if (klass != NULL)
 		{
-		  look = loader;
-		  break;
+		  ClassLoader *loader = klass->getClassLoaderInternal();
+		  if (loader != NULL && loader != sys)
+		    {
+		      look = loader;
+		      break;
+		    }
 		}
 	    }
 	}
+      catch (::java::lang::ArrayIndexOutOfBoundsException *e)
+	{
+	}
+
       if (look != NULL)
 	{
 	  // Don't include solib prefix in string passed to
