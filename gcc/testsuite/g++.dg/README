@@ -2,6 +2,7 @@ Subdirectories:
 
 abi	 Tests for ABI compatibility -- mangling, object layout, etc.
 eh	 Tests for exception handling.
+expr     Tests for expressions.
 ext	 Tests for GNU language extensions.
 inherit	 Tests for inheritance -- virtual functions, multiple inheritance, etc.
 init	 Tests for initialization semantics, constructors/destructors, etc.
