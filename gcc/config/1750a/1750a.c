@@ -1,5 +1,5 @@
 /* Subroutines for insn-output.c for MIL-STD-1750.
-   Copyright (C) 1994 Free Software Foundation, Inc.
+   Copyright (C) 1994, 1995 Free Software Foundation, Inc.
    Contributed by O.M.Kellogg, DASA (okellogg@salyko.cube.net).
 
 This file is part of GNU CC.
@@ -21,6 +21,7 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #ifndef FILE
 #include <stdio.h>
 #endif
+#include <string.h>
 
 #define __datalbl
 #include "config.h"
@@ -195,7 +196,8 @@ float_label (code, value)
 
 
 char *
-movcnt_regno_adjust (rtx * op)
+movcnt_regno_adjust (op)
+     rtx *op;
 {
   static char outstr[40];
   int cntreg = REGNO (op[2]), cntreg_1750 = REGNO (op[0]) + 1;
@@ -216,7 +218,9 @@ movcnt_regno_adjust (rtx * op)
 }
 
 char *
-mod_regno_adjust (char *instr, rtx * op)
+mod_regno_adjust (instr, op)
+     char *instr;
+     rtx *op;
 {
   static char outstr[40];
   char *r = (!strncmp (instr, "dvr", 3) ? "r" : "");
@@ -235,7 +239,8 @@ mod_regno_adjust (char *instr, rtx * op)
    Check if op is a valid memory operand for 1750A arith./logic (non-move)
    instructions. */
 int
-memop_valid (register rtx op)
+memop_valid (op)
+     rtx op;
 {
   if (GET_MODE (op) != Pmode && GET_MODE (op) != VOIDmode)
     return 0;
@@ -267,7 +272,9 @@ memop_valid (register rtx op)
 
 /* extra predicate for recog: */
 int
-nonindirect_operand (register rtx op, enum machine_mode mode)
+nonindirect_operand (op, mode)
+     rtx op;
+     enum machine_mode mode;
 {
   int retval;
 
@@ -287,7 +294,9 @@ nonindirect_operand (register rtx op, enum machine_mode mode)
 
 /* predicate for the STC instruction: */
 int
-small_nonneg_const (register rtx op, enum machine_mode mode)
+small_nonneg_const (op, mode)
+     rtx op;
+     enum machine_mode mode;
 {
   if (GET_CODE (op) == CONST_INT && INTVAL (op) >= 0 && INTVAL (op) <= 15)
     return 1;
@@ -298,7 +307,8 @@ small_nonneg_const (register rtx op, enum machine_mode mode)
    or as a "Branch Conditional": */
 
 int
-find_jmplbl (int labelnum)
+find_jmplbl (labelnum)
+     int labelnum;
 {
   int i, found = 0;
 
@@ -314,7 +324,9 @@ find_jmplbl (int labelnum)
 }
 
 char *
-branch_or_jump (char *condition, int targetlabel_number)
+branch_or_jump (condition, targetlabel_number)
+     char *condition;
+     int targetlabel_number;
 {
   static char buf[30];
   int index;
