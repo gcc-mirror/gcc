@@ -1,3 +1,7 @@
+2001-08-17  Hans-J. Boehm <Hans_Boehm@hp.com>
+
+	* BigInteger.java: fix right shifts by nonzero multiples of 32.
+	
 2001-08-15  Tom Tromey  <tromey@redhat.com>
 
 	* jni.cc: Include IdentityHashMap.h, not Hashtable.h.
