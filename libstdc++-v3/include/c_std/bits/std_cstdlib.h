@@ -85,6 +85,9 @@ namespace std
   extern "C" long int labs(long int); 
   extern "C" div_t div(int, int); 
   extern "C" ldiv_t ldiv(long int, long int); 
+#ifdef mblen
+#undef mblen
+#endif
   extern "C" int mblen(const char*, size_t); 
   extern "C" int mbtowc(wchar_t*, const char*, size_t); 
   extern "C" int wctomb(char*, wchar_t); 
