@@ -1653,6 +1653,7 @@ javax/swing/ListSelectionModel.java \
 javax/swing/LookAndFeel.java \
 javax/swing/Scrollable.java \
 javax/swing/SortingFocusTraversalPolicy.java \
+javax/swing/SpinnerDateModel.java \
 javax/swing/SpinnerListModel.java \
 javax/swing/SpinnerModel.java \
 javax/swing/SpinnerNumberModel.java \

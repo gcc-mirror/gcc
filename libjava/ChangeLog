@@ -1,3 +1,12 @@
+2005-02-19  Sven de Marothy  <sven@physto.se>
+
+	* javax/swing/SpinnerDateModel.java: Implemented.
+
+2005-02-19  Michael Koch  <konqueror@gmx.de>
+
+	* Makefile.am: Added javax/swing/SpinnerDateModel.java.
+	* Makefile.in: Regenerated.
+
 2005-02-19  Michael Koch  <konqueror@gmx.de>
 
 	* gnu/java/nio/SelectorImpl.java:
