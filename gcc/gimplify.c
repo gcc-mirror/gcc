@@ -191,6 +191,10 @@ gimple_conditional_context (void)
 static void
 gimple_push_condition (void)
 {
+#ifdef ENABLE_CHECKING
+  if (gimplify_ctxp->conditions == 0)
+    gcc_assert (!gimplify_ctxp->conditional_cleanups);
+#endif
   ++(gimplify_ctxp->conditions);
 }
 
