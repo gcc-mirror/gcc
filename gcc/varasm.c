@@ -1071,10 +1071,13 @@ assemble_trampoline_template ()
   char *name;
   int align;
 
-  /* Some assemblers don't like instructions in data segment, so always
-     put trampoline template in text segment.  */
+  /* By default, put trampoline templates in read-only data section.  */
 
+#ifdef TRAMPOLINE_SECTION
+  TRAMPOLINE_SECTION ();
+#else
   readonly_data_section ();
+#endif
 
   /* Write the assembler code to define one.  */
   align = floor_log2 (FUNCTION_BOUNDARY / BITS_PER_UNIT);
