@@ -1009,12 +1009,18 @@ main (argc, argv)
   if (debug)
     {
       char *ptr;
-      fprintf (stderr, "ld_file_name        = %s\n", ld_file_name);
-      fprintf (stderr, "c_file_name         = %s\n", c_file_name);
-      fprintf (stderr, "nm_file_name        = %s\n", nm_file_name);
-      fprintf (stderr, "strip_file_name     = %s\n", strip_file_name);
-      fprintf (stderr, "c_file              = %s\n", c_file);
-      fprintf (stderr, "o_file              = %s\n", o_file);
+      fprintf (stderr, "ld_file_name        = %s\n",
+	       (ld_file_name ? ld_file_name : "not found"));
+      fprintf (stderr, "c_file_name         = %s\n",
+	       (c_file_name ? c_file_name : "not found"));
+      fprintf (stderr, "nm_file_name        = %s\n",
+	       (nm_file_name ? nm_file_name : "not found"));
+      fprintf (stderr, "strip_file_name     = %s\n",
+	       (strip_file_name ? strip_file_name : "not found"));
+      fprintf (stderr, "c_file              = %s\n",
+	       (c_file ? c_file : "not found"));
+      fprintf (stderr, "o_file              = %s\n",
+	       (o_file ? o_file : "not found"));
 
       ptr = getenv ("COLLECT_GCC_OPTIONS");
       if (ptr)
