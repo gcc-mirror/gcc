@@ -1628,14 +1628,20 @@ extern struct mips_frame_info current_frame_info;
    function.
 
    If `ARGS_GROW_DOWNWARD', this is the offset to the location above
-   the first argument's address.  */
+   the first argument's address.
+
+   On the MIPS, we must skip the first argument position if we are
+   returning a structure or a union, to account for it's address being
+   passed in $4.  */
 
 #define FIRST_PARM_OFFSET(FNDECL)					\
   (FNDECL != 0								\
    && TREE_TYPE (FNDECL) != 0						\
    && TREE_TYPE (TREE_TYPE (FNDECL)) != 0				\
    && (TREE_CODE (TREE_TYPE (TREE_TYPE (FNDECL))) == RECORD_TYPE	\
-       || TREE_CODE (TREE_TYPE (TREE_TYPE (FNDECL))) == UNION_TYPE) ? 4 : 0)
+       || TREE_CODE (TREE_TYPE (TREE_TYPE (FNDECL))) == UNION_TYPE)	\
+		? UNITS_PER_WORD					\
+		: 0)
 
 /* When a parameter is passed in a register, stack space is still
    allocated for it.  For the MIPS, stack space must be allocated, cf
@@ -1645,7 +1651,7 @@ extern struct mips_frame_info current_frame_info;
    in register. In case an argument list is of form GF used registers
    are a0 (a2,a3), but we should push over a1...  */
 
-#define REG_PARM_STACK_SPACE(FNDECL) (4*4)
+#define REG_PARM_STACK_SPACE(FNDECL) (4*UNITS_PER_WORD) - FIRST_PARM_OFFSET(FNDECL)
 
 /* Define this if it is the responsibility of the caller to
    allocate the area reserved for arguments passed in registers. 
