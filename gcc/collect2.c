@@ -386,7 +386,7 @@ is_ctor_dtor (s)
 			 for linking happens to be GCC.  */
     { "sti__", sizeof ("sti__")-1, 1, 1 },
     { "std__", sizeof ("std__")-1, 2, 1 },
-#endif /* 0 */
+#endif /* CFRONT_LOSSAGE */
     { NULL, 0, 0, 0 }
   };
 
