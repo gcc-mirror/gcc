@@ -1,4 +1,20 @@
+2004-02-27  Eric Christopher  <echristo@redhat.com>
+            Phil Edwards  <phil@codesourcery.com>
+
+	* testsuite/22_locale/collate/compare/wchar_t/2.cc,
+	testsuite/22_locale/collate/compare/wchar_t/wrapped_env.cc,
+	testsuite/22_locale/collate/compare/wchar_t/wrapped_locale.cc,
+	testsuite/22_locale/collate/hash/wchar_t/2.cc,
+	testsuite/22_locale/collate/hash/wchar_t/wrapped_env.cc,
+	testsuite/22_locale/collate/hash/wchar_t/wrapped_locale.cc,
+	testsuite/22_locale/collate/transform/wchar_t/2.cc,
+	testsuite/22_locale/collate/transform/wchar_t/wrapped_env.cc,
+	testsuite/22_locale/collate/transform/wchar_t/wrapped_locale.cc:
+	Use dg-require-iconv.
+	* testsuite/lib/libstdc++.exp:  Load target-supports.exp.
+
 2004-02-27  Phil Edwards  <phil@codesourcery.com>
+            Eric Christopher  <echristo@redhat.com>
 
 	* testsuite/config/default.exp:  Update with comments.
 	(${tool}_target_compile):  New wrapper routine.
