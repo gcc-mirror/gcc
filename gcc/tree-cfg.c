@@ -3759,6 +3759,174 @@ tree_forwarder_block_p (basic_block bb)
   return true;
 }
 
+/* Thread jumps from BB.  */
+
+static bool
+thread_jumps_from_bb (basic_block bb)
+{
+  edge_iterator ei;
+  edge e;
+  bool retval = false;
+
+  /* Examine each of our block's successors to see if it is
+     forwardable.  */
+  for (ei = ei_start (bb->succs); (e = ei_safe_edge (ei)); )
+    {
+      int freq;
+      gcov_type count;
+      edge last, old;
+      basic_block dest, tmp, curr, old_dest;
+      tree phi;
+      int arg;
+
+      /* If the edge is abnormal or its destination is not
+	 forwardable, then there's nothing to do.  */
+      if ((e->flags & EDGE_ABNORMAL)
+	  || !bb_ann (e->dest)->forwardable)
+	{
+	  ei_next (&ei);
+	  continue;
+	}
+
+      count = e->count;
+      freq = EDGE_FREQUENCY (e);
+
+      /* Now walk through as many forwarder blocks as possible to find
+	 the ultimate destination we want to thread our jump to.  */
+      last = EDGE_SUCC (e->dest, 0);
+      bb_ann (e->dest)->forwardable = 0;
+      for (dest = EDGE_SUCC (e->dest, 0)->dest;
+	   bb_ann (dest)->forwardable;
+	   last = EDGE_SUCC (dest, 0),
+	     dest = EDGE_SUCC (dest, 0)->dest)
+	bb_ann (dest)->forwardable = 0;
+
+      /* Reset the forwardable marks to 1.  */
+      for (tmp = e->dest;
+	   tmp != dest;
+	   tmp = EDGE_SUCC (tmp, 0)->dest)
+	bb_ann (tmp)->forwardable = 1;
+
+      if (dest == e->dest)
+	{
+	  ei_next (&ei);
+	  continue;
+	}
+
+      old = find_edge (bb, dest);
+      if (old)
+	{
+	  /* If there already is an edge, check whether the values in
+	     phi nodes differ.  */
+	  if (!phi_alternatives_equal (dest, last, old))
+	    {
+	      /* The previous block is forwarder.  Redirect our jump
+		 to that target instead since we know it has no PHI
+		 nodes that will need updating.  */
+	      dest = last->src;
+
+	      /* That might mean that no forwarding at all is
+		 possible.  */
+	      if (dest == e->dest)
+		{
+		  ei_next (&ei);
+		  continue;
+		}
+
+	      old = find_edge (bb, dest);
+	    }
+	}
+
+      /* Perform the redirection.  */
+      retval = true;
+      old_dest = e->dest;
+      e = redirect_edge_and_branch (e, dest);
+
+      /* Update the profile.  */
+      if (profile_status != PROFILE_ABSENT)
+	for (curr = old_dest;
+	     curr != dest;
+	     curr = EDGE_SUCC (curr, 0)->dest)
+	  {
+	    curr->frequency -= freq;
+	    if (curr->frequency < 0)
+	      curr->frequency = 0;
+	    curr->count -= count;
+	    if (curr->count < 0)
+	      curr->count = 0;
+	    EDGE_SUCC (curr, 0)->count -= count;
+	    if (EDGE_SUCC (curr, 0)->count < 0)
+	      EDGE_SUCC (curr, 0)->count = 0;
+	  }
+
+      if (!old)
+	{
+	  /* Update PHI nodes.  We know that the new argument should
+	     have the same value as the argument associated with LAST.
+	     Otherwise we would have changed our target block
+	     above.  */
+	  for (phi = phi_nodes (dest); phi; phi = PHI_CHAIN (phi))
+	    {
+	      arg = phi_arg_from_edge (phi, last);
+	      gcc_assert (arg >= 0);
+	      add_phi_arg (&phi, PHI_ARG_DEF (phi, arg), e);
+	    }
+	}
+
+      /* Remove the unreachable blocks (observe that if all blocks
+	 were reachable before, only those in the path we threaded
+	 over and did not have any predecessor outside of the path
+	 become unreachable).  */
+      for (; old_dest != dest; old_dest = tmp)
+	{
+	  tmp = EDGE_SUCC (old_dest, 0)->dest;
+
+	  if (EDGE_COUNT (old_dest->preds) > 0)
+	    break;
+
+	  delete_basic_block (old_dest);
+	}
+
+      /* Update the dominators.  */
+      if (dom_info_available_p (CDI_DOMINATORS))
+	{
+	  /* If the dominator of the destination was in the
+	     path, set its dominator to the start of the
+	     redirected edge.  */
+	  if (get_immediate_dominator (CDI_DOMINATORS, old_dest) == NULL)
+	    set_immediate_dominator (CDI_DOMINATORS, old_dest, bb);
+
+	  /* Now proceed like if we forwarded just over one edge at a
+	     time.  Algorithm for forwarding edge S --> A over
+	     edge A --> B then is
+
+	     if (idom (B) == A
+	         && !dominated_by (S, B))
+	       idom (B) = idom (A);
+	     recount_idom (A);  */
+
+	  for (; old_dest != dest; old_dest = tmp)
+	    {
+	      basic_block dom;
+
+	      tmp = EDGE_SUCC (old_dest, 0)->dest;
+
+	      if (get_immediate_dominator (CDI_DOMINATORS, tmp) == old_dest
+		  && !dominated_by_p (CDI_DOMINATORS, bb, tmp))
+		{
+		  dom = get_immediate_dominator (CDI_DOMINATORS, old_dest);
+		  set_immediate_dominator (CDI_DOMINATORS, tmp, dom);
+		}
+
+	      dom = recount_dominator (CDI_DOMINATORS, old_dest);
+	      set_immediate_dominator (CDI_DOMINATORS, old_dest, dom);
+	    }
+	}
+    }
+
+  return retval;
+}
+
 
 /* Thread jumps over empty statements.
 
@@ -3768,14 +3936,11 @@ tree_forwarder_block_p (basic_block bb)
    As a precondition, we require that all basic blocks be reachable.
    That is, there should be no opportunities left for
    delete_unreachable_blocks.  */
-   
+
 static bool
 thread_jumps (void)
 {
-  edge e, last, old;
-  basic_block bb, dest, tmp, old_dest, curr, dom;
-    tree phi;
-  int arg;
+  basic_block bb;
   bool retval = false;
   bool rerun;
 
@@ -3787,171 +3952,22 @@ thread_jumps (void)
       rerun = false;
       FOR_EACH_BB (bb)
 	{
-	  edge_iterator ei;
-	  bool this_jump_threaded = false;
-
 	  /* Don't waste time on forwarders.  */
 	  if (bb_ann (bb)->forwardable)
 	    continue;
 
-	  /* Examine each of our block's successors to see if it is
-	     forwardable.  */
-	  for (ei = ei_start (bb->succs); (e = ei_safe_edge (ei)); )
+	  if (thread_jumps_from_bb (bb))
 	    {
-	      int freq;
-	      gcov_type count;
+	      retval = true;
 
-	      /* If the edge is abnormal or its destination is not
-		 forwardable, then there's nothing to do.  */
-	      if ((e->flags & EDGE_ABNORMAL)
-		  || !bb_ann (e->dest)->forwardable)
-		{
-		  ei_next (&ei);
-		  continue;
-		}
-
-	      count = e->count;
-	      freq = EDGE_FREQUENCY (e);
-
-	      /* Now walk through as many forwarder blocks as possible to
-		 find the ultimate destination we want to thread our jump
-		 to.  */
-	      last = EDGE_SUCC (e->dest, 0);
-	      bb_ann (e->dest)->forwardable = 0;
-	      for (dest = EDGE_SUCC (e->dest, 0)->dest;
-		   bb_ann (dest)->forwardable;
-		   last = EDGE_SUCC (dest, 0),
-		     dest = EDGE_SUCC (dest, 0)->dest)
-		bb_ann (dest)->forwardable = 0;
-
-	      /* Reset the forwardable marks to 1.  */
-	      for (tmp = e->dest;
-		   tmp != dest;
-		   tmp = EDGE_SUCC (tmp, 0)->dest)
-		bb_ann (tmp)->forwardable = 1;
-
-	      if (dest == e->dest)
-		{
-		  ei_next (&ei);
-		  continue;
-		}
-	      
-	      old = find_edge (bb, dest);
-	      if (old)
-		{
-		  /* If there already is an edge, check whether the values
-		     in phi nodes differ.  */
-		  if (!phi_alternatives_equal (dest, last, old))
-		    {
-		      /* The previous block is forwarder.  Redirect our jump
-			 to that target instead since we know it has no PHI
-			 nodes that will need updating.  */
-		      dest = last->src;
-	  
-		      /* That might mean that no forwarding at all is
-			 possible.  */
-		      if (dest == e->dest)
-			{
-			  ei_next (&ei);
-			  continue;
-			}
-
-		      old = find_edge (bb, dest);
-		    }
-		}
-
-	      /* Perform the redirection.  */
-	      retval = this_jump_threaded = true;
-	      old_dest = e->dest;
-	      e = redirect_edge_and_branch (e, dest);
-
-	      /* Update the profile.  */
-	      if (profile_status != PROFILE_ABSENT)
-		for (curr = old_dest;
-		     curr != dest;
-		     curr = EDGE_SUCC (curr, 0)->dest)
-		  {
-		    curr->frequency -= freq;
-		    if (curr->frequency < 0)
-		      curr->frequency = 0;
-		    curr->count -= count;
-		    if (curr->count < 0)
-		      curr->count = 0;
-		    EDGE_SUCC (curr, 0)->count -= count;
-		    if (EDGE_SUCC (curr, 0)->count < 0)
-		      EDGE_SUCC (curr, 0)->count = 0;
-		  }
-
-	      if (!old)
-		{
-		  /* Update PHI nodes.  We know that the new argument
-		     should have the same value as the argument
-		     associated with LAST.  Otherwise we would have
-		     changed our target block above.  */
-		  for (phi = phi_nodes (dest); phi; phi = PHI_CHAIN (phi))
-		    {
-		      arg = phi_arg_from_edge (phi, last);
-		      gcc_assert (arg >= 0);
-		      add_phi_arg (&phi, PHI_ARG_DEF (phi, arg), e);
-		    }
-		}
-
-	      /* Remove the unreachable blocks (observe that if all blocks
-		 were reachable before, only those in the path we threaded
-		 over and did not have any predecessor outside of the path
-		 become unreachable).  */
-	      for (; old_dest != dest; old_dest = tmp)
-		{
-		  tmp = EDGE_SUCC (old_dest, 0)->dest;
-
-		  if (EDGE_COUNT (old_dest->preds) > 0)
-		    break;
-
-		  delete_basic_block (old_dest);
-		}
-
-	      /* Update the dominators.  */
-	      if (dom_info_available_p (CDI_DOMINATORS))
-		{
-		  /* If the dominator of the destination was in the
-		     path, set its dominator to the start of the
-		     redirected edge.  */
-		  if (get_immediate_dominator (CDI_DOMINATORS, old_dest) == NULL)
-		    set_immediate_dominator (CDI_DOMINATORS, old_dest, bb);
-
-		  /* Now proceed like if we forwarded just over one
-		     edge at a time.  Algorithm for forwarding edge
-		     S --> A over edge A --> B then is
-
-		     if (idom (B) == A
-		         && !dominated_by (S, B))
-		       idom (B) = idom (A);
-		     recount_idom (A);  */
-
-		  for (; old_dest != dest; old_dest = tmp)
-		    {
-		      tmp = EDGE_SUCC (old_dest, 0)->dest;
-
-		      if (get_immediate_dominator (CDI_DOMINATORS, tmp) == old_dest
-			  && !dominated_by_p (CDI_DOMINATORS, bb, tmp))
-			{
-			  dom = get_immediate_dominator (CDI_DOMINATORS, old_dest);
-			  set_immediate_dominator (CDI_DOMINATORS, tmp, dom);
-			}
-
-		      dom = recount_dominator (CDI_DOMINATORS, old_dest);
-		      set_immediate_dominator (CDI_DOMINATORS, old_dest, dom);
-		    }
-		}
+	      /* If we succeeded in threading a jump at BB, update the
+		 forwardable mark as BB may have become a new
+		 forwarder block.  This could happen if we have a
+		 useless "if" statement whose two arms eventually
+		 merge without any intervening statements.  */
+	      if (tree_forwarder_block_p (bb))
+		bb_ann (bb)->forwardable = rerun = true;
 	    }
-
-	  /* If we succeeded in threading a jump at BB, update the
-	     forwardable mark as BB may have become a new forwarder
-	     block.  This could happen if we have a useless "if"
-	     statement whose two arms eventually merge without any
-	     intervening statements.  */
-	  if (this_jump_threaded && tree_forwarder_block_p (bb))
-	    bb_ann (bb)->forwardable = rerun = true;
 	}
     }
   while (rerun);
