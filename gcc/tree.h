@@ -899,7 +899,8 @@ struct tree_type
    class pointer" for the given inheritance.  */
 #define BINFO_VPTR_FIELD(NODE) TREE_VEC_ELT ((NODE), 5)
 
-/* The size of a base class subobject of this type.  */
+/* The size of a base class subobject of this type.  Not all frontends
+   currently allocate the space for this field.  */
 #define BINFO_SIZE(NODE) TREE_VEC_ELT ((NODE), 6)
 #define TYPE_BINFO_SIZE(NODE) BINFO_SIZE (TYPE_BINFO (NODE))
 

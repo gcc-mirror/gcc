@@ -1,3 +1,12 @@
+Fri May 15 18:55:22 1998  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* tree.h (BINFO_SIZE, TYPE_BINFO_SIZE): New macros.
+	* stor-layout.c (layout_record): Set it.
+
+Fri May 15 18:49:30 1998  Mark Mitchell  <mmitchell@usa.net>
+
+	* toplev.c (rest_of_compilation): Don't defer nested functions.
+
 Fri May 15 17:42:52 1998  Bob Manson  <manson@charmed.cygnus.com>
 
 	* config/rs6000/rs6000.c (rs6000_stack_info): Align the stack bottom
