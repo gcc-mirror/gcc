@@ -1,3 +1,8 @@
+2005-01-24  Roger Sayle  <roger@eyesopen.com>
+
+	PR java/19295
+	* testsuite/libjava.compile/PR19295.java: New test case.
+
 2005-01-19  Tom Tromey  <tromey@redhat.com>
 
 	* java/lang/VMCompiler.java (compileClass): Ignore UnknownError.
