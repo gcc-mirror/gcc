@@ -1,3 +1,7 @@
+2000-05-11  Jason Merrill  <jason@casey.cygnus.com>
+
+	* fixinc/fixincl.c (run_compiles): Don't crash on null pz_machine.
+
 2000-05-11  Zack Weinberg  <zack@wolery.cumb.org>
 
 	* fixinc/fixfixes.c, fixinc/fixtests.c: Update commentary.
@@ -27,7 +31,7 @@ Thu May 11 22:28:05 2000  Denis Chertykov  <denisc@overta.ru>
 
 2000-05-11  Bruce Korb  <bkorb@gnu.org>
 
-	* fixinc/fixfixes.c(double_slash_fix):  obsolete
+	* fixinc/fixfixes.c (double_slash_fix):  obsolete
 	(else_endif_label_fix): obsolete
 	(format_fix):  new, unused as yet
 	(main): obsolete
@@ -38,7 +42,7 @@ Thu May 11 22:28:05 2000  Denis Chertykov  <denisc@overta.ru>
 	Added support for "make check".
 	* fixinc/check.diff: base diff file (needs work!!)
 	* fixinc/check.tpl: quiet the fixup output
-	* fixinc/fixtests.c(main): obsolete
+	* fixinc/fixtests.c (main): obsolete
 	* fixinc/fixincl.sh:  don't bother copying fixincl to ..
 	* fixinc/fixincl.tpl:  provide for arguments to c_fix routines
 
