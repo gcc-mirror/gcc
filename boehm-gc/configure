@@ -2394,7 +2394,6 @@ case "$host" in
  alpha*-*-*)
     machdep="alpha_mach_dep.lo"
     ;;
-    ;;
  mipstx39-*-elf*)
     machdep="mips_ultrix_mach_dep.lo"
     cat >> confdefs.h <<\EOF
