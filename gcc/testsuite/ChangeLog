@@ -1,3 +1,7 @@
+Sun Jul 25 21:41:37 1999  Jeffrey A Law  (law@cygnus.com)
+
+	* README: More listname related changes.
+
 1999-07-08  Catherine Moore  <clm@cygnus.com>
 
 	* gcc.c-torture/execute/920501-5.c: Fix typo.  Change | to ||.
