@@ -1,12 +1,47 @@
-0. Improved efficiency.
+Haifa scheduler (haifa-sched.c, loop.[ch], unroll.[ch], genattrtab.c):
+(contact law@cygnus.com before starting any serious haifa work)
 
-* Parse and output array initializers an element at a time, freeing
-storage after each, instead of parsing the whole initializer first and
-then outputting.  This would reduce memory usage for large
-initializers.
+  * Fix all the formatting problems.  Simple, mindless work.
 
-* See if the techniques describe in Oct 1991 SIGPLAN Notices
-(Frazer and Hanson) are applicable to GCC.
+  * Fix/add comments throughout the code.  Many of the comments are from
+  the old scheduler and are out of date and misleading.  Many new hunks
+  of code don't have sufficient comments and documentation.  Those which
+  do have comments need to be rewritten to use complete sentences and
+  proper formatting.
+
+  * Someone needs make one (or more) passes over the scheduler as a whole to
+  just clean it up.  Try to move the machine dependent bits into the target
+  files where they belong, avoid re-creating functions where or near
+  equivalents already exist (ie is_conditional_branch and friends), etc etc.
+
+  * Document the new scheduling options.  Remove those options which are
+  not really useful (like reverse scheduling for example).  In general
+  the haifa scheduler adds _way_ too many options.  I'm definitely of the
+  opinion that gcc already has too many -foptions, and haifa doesn't help
+  that situation.
+
+  * Testing and benchmarking.  Haifa has received little testing inside
+  Cygnus -- it needs to be throughly tested on a wide variety of platforms
+  which benefit from instruction scheduling (sparc, alpha, pa, ppc, mips, x86,
+  i960, m88k, sh, etc).    It needs to be benchmarked -- my tests showed
+  haifa was very much a hit or miss in terms of performance improvements.
+
+  Some benchmarks ran significantly fasters, other significantly slower.
+  We need to work on making haifa generate better overall code.
+
+  We need to have some kind of docs for how to best describe a machine to
+  the haifa scheduler to get good performance.  Some existing ports have
+  been tuned to deal with the old scheduler -- they may need to be tuned
+  to generate good schedules with haifa.
+
+  
+
+
+-------------
+
+The old PROJECTS file.  Stuff I know has been done has been deleted.
+Stuff in progress has a contact name associated with it.
+has been 
 
 1. Better optimization.
 
@@ -25,22 +60,8 @@ to point to the constant and cause it to be output.
 The techniques for doing full global cse are described in the red
 dragon book, or (a different version) in Frederick Chow's thesis from
 Stanford.  It is likely to be slow and use a lot of memory, but it
-might be worth offering as an additional option.
-
-It is probably possible to extend cse to a few very frequent cases
-without so much expense.
-
-For example, it is not very hard to handle cse through if-then
-statements with no else clauses.  Here's how to do it.  On reaching a
-label, notice that the label's use-count is 1 and that the last
-preceding jump jumps conditionally to this label.  Now you know it
-is a simple if-then statement.  Remove from the hash table
-all the expressions that were entered since that jump insn
-and you can continue with cse.
-
-It is probably not hard to handle cse from the end of a loop
-around to the beginning, and a few loops would be greatly sped
-up by this.
+might be worth offering as an additional option.  Contact dje@cygnus.com
+before doing any work on CSE.
 
 * Optimize a sequence of if statements whose conditions are exclusive.
 
@@ -174,42 +195,8 @@ or outside of a particular loop where the variable is not used.  (The
 latter is nice because it might let the variable be in a register most
 of the time even though the loop needs all the registers.)
 
-It might not be very hard to do this in global.c when a variable
-fails to get a hard register for its entire life span.
-
-The first step is to find a loop in which the variable is live, but
-which is not the whole life span or nearly so.  It's probably best to
-use a loop in which the variable is heavily used.
-
-Then create a new pseudo-register to represent the variable in that loop.
-Substitute this for the old pseudo-register there, and insert move insns
-to copy between the two at the loop entry and all exits.  (When several
-such moves are inserted at the same place, some new feature should be
-added to say that none of those registers conflict merely because of
-overlap between the new moves.  And the reload pass should reorder them
-so that a store precedes a load, for any given hard register.)
-
-After doing this for all the reasonable candidates, run global-alloc
-over again.  With luck, one of the two pseudo-registers will be fit
-somewhere.  It may even have a much higher priority due to its reduced
-life span.
-
-There will be no room in general for the new pseudo-registers in
-basic_block_live_at_start, so there will need to be a second such
-matrix exclusively for the new ones.  Various other vectors indexed by
-register number will have to be made bigger, or there will have to be
-secondary extender vectors just for global-alloc.
-
-A simple new feature could arrange that both pseudo-registers get the
-same stack slot if they both fail to get hard registers.
-
-Other compilers split live ranges when they are not connected, or
-try to split off pieces `at the edge'.  I think splitting around loops
-will provide more speedup.
-
-Creating a fake binding block and a new like-named variable with
-shorter life span and different address might succeed in describing
-this technique for the debugger.
+Contact meissner@cygnus.com before starting any work on live range
+splitting.
 
 * Detect dead stores into memory?
 
