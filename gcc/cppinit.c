@@ -515,7 +515,6 @@ cpp_create_reader (table, lang)
   _cpp_init_tokenrun (&pfile->base_run, 250);
   pfile->cur_run = &pfile->base_run;
   pfile->cur_token = pfile->base_run.base;
-  pfile->state.bol = 1;
 
   /* Initialise the base context.  */
   pfile->context = &pfile->base_context;
@@ -581,7 +580,6 @@ cpp_destroy (pfile)
 
   _cpp_destroy_hashtable (pfile);
   _cpp_cleanup_includes (pfile);
-  _cpp_free_lookaheads (pfile);
 
   _cpp_free_pool (&pfile->ident_pool);
   _cpp_free_pool (&pfile->macro_pool);

@@ -1,3 +1,40 @@
+2001-09-13  Neil Booth  <neil@daikokuya.demon.co.uk>
+
+	* c-parse.in (_yylex): Use _cpp_backup_tokens.
+	* cpphash.h (struct tokenrun): Add prev.
+	(struct lexer_state): Remove bol.
+	(struct cpp_reader): Remove old lookahead stuff, add lookaheads.
+	(_cpp_free_lookaheads, _cpp_release_lookahead, _cpp_push_token)
+	: Remove.
+	* cppinit.c (cpp_create_reader): Don't set bol.
+	(cpp_destroy): Don't free lookaheads.
+	* cpplex.c (lex_directive): Remove.
+	(next_tokenrun): Update.
+	(_cpp_lex_token): Clean up logic.
+	(lex_token): Update to return a pointer to lexed token, since it
+	can move to the start of the buffer.  Simpify newline handling.
+	* cpplib.c (SEEN_EOL): Update.
+	(skip_rest_of_line): Remove lookahead stuff.
+	(end_directive): Line numbers are already incremented.  Revert
+	to start of lexed token buffer if we can.
+	(_cpp_handle_directive, do_pragma, do_pragma_dependency,
+	parse_answer): Use _cpp_backup_tokens.
+	(run_directive, cpp_pop_buffer): Don't set bol, set saved_flags
+	instead.  Don't check for EOL.
+	(do_include_common, do_line, do_pragma_system_header): Use
+	skip_rest_of_line.
+	* cpplib.h (BOL, _cpp_backup_tokens): New.
+	* cppmacro.c (save_lookahead_token, take_lookahead_token,
+	alloc_lookahead, free_lookahead, _cpp_free_lookaheads,
+	cpp_start_lookahead, cpp_stop_lookahead, _cpp_push_token): Remove.
+	(builtin_macro): Don't use cpp_get_line.
+	(cpp_get_line): Short term kludge.
+	(parse_arg): Handle directives in arguments here.  Back up when
+	appropriate.  Store EOF at end of argument list.
+	(funlike_invocation_p): Use _cpp_backup_tokens.
+	(push_arg_context): Account for EOF at end of list.
+	(cpp_get_token): Remove lookahead stuff.  Update.
+
 2001-09-13  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* c-parse.in (yyerror): Const-ification and/or static-ization.

@@ -102,8 +102,7 @@ static void lex_dot PARAMS ((cpp_reader *, cpp_token *));
 static int name_p PARAMS ((cpp_reader *, const cpp_string *));
 static int maybe_read_ucs PARAMS ((cpp_reader *, const unsigned char **,
 				   const unsigned char *, unsigned int *));
-static int lex_directive PARAMS ((cpp_reader *));
-static void lex_token PARAMS ((cpp_reader *, cpp_token *, int));
+static cpp_token *lex_token PARAMS ((cpp_reader *, cpp_token *));
 static tokenrun *next_tokenrun PARAMS ((tokenrun *));
 
 static cpp_chunk *new_chunk PARAMS ((unsigned int));
@@ -925,114 +924,69 @@ next_tokenrun (run)
   if (run->next == NULL)
     {
       run->next = xnew (tokenrun);
+      run->next->prev = run;
       _cpp_init_tokenrun (run->next, 250);
     }
 
   return run->next;
 }
 
-static int
-lex_directive (pfile)
-     cpp_reader *pfile;
-{
-  /* 6.10.3 paragraph 11: If there are sequences of preprocessing
-     tokens within the list of arguments that would otherwise act as
-     preprocessing directives, the behavior is undefined.
-
-     This implementation will report a hard error, terminate the macro
-     invocation, and proceed to process the directive.  */
-  if (pfile->state.parsing_args)
-    {
-      pfile->lexer_pos.output_line = pfile->line;
-      if (pfile->state.parsing_args == 2)
-	{
-	  cpp_error (pfile,
-		     "directives may not be used inside a macro argument");
-	  pfile->state.bol = 1;
-	  pfile->buffer->cur = pfile->buffer->line_base;
-	  pfile->buffer->read_ahead = EOF;
-	  pfile->cur_token->type = CPP_EOF;
-	}
-
-      return 0;
-    }
-
-  /* This is a directive.  If the return value is false, it is an
-     assembler #.  */
-  {
-    /* FIXME: short-term kludge only - it doesn't handle the case that
-       the # is at the end of a run and we moved to the start of the
-       next one.  Easily fixed once we kill lookaheads.  */
-    cpp_token *token = pfile->cur_token++;
-    if (_cpp_handle_directive (pfile, token->flags & PREV_WHITE))
-      return 1;
-    pfile->cur_token = token;
-    return 0;
-  }
-}
-
 /* Lex a token into RESULT (external interface).  */
 void
-_cpp_lex_token (pfile, result)
+_cpp_lex_token (pfile, dest)
      cpp_reader *pfile;
-     cpp_token *result;
+     cpp_token *dest;
 {
-  if (pfile->cur_token == pfile->cur_run->limit)
-    {
-      pfile->cur_run = next_tokenrun (pfile->cur_run);
-      pfile->cur_token = pfile->cur_run->base;
-    }
+  cpp_token *result;
 
- next_token:
-  if (pfile->state.bol)
+  for (;;)
     {
-    start_new_line:
-      pfile->state.bol = 0;
-
-      /* Return lexer back to base.  */
-      if (!pfile->keep_tokens)
+      if (pfile->cur_token == pfile->cur_run->limit)
 	{
-	  pfile->cur_run = &pfile->base_run;
-	  pfile->cur_token = pfile->base_run.base;
+	  pfile->cur_run = next_tokenrun (pfile->cur_run);
+	  pfile->cur_token = pfile->cur_run->base;
+	}
+      result = pfile->cur_token++;
+
+      if (pfile->lookaheads)
+	pfile->lookaheads--;
+      else
+	result = lex_token (pfile, result);
+
+      if (result->flags & BOL)
+	{
+	  pfile->lexer_pos.output_line = result->line;
+	  /* Is this a directive.  If _cpp_handle_directive returns
+	     false, it is an assembler #.  */
+	  if (result->type == CPP_HASH
+	      && !pfile->state.parsing_args
+	      && _cpp_handle_directive (pfile, result->flags & PREV_WHITE))
+	    continue;
 	}
 
-      lex_token (pfile, pfile->cur_token, 1);
-      pfile->lexer_pos.output_line = pfile->cur_token->line;
-      if (pfile->cur_token->type == CPP_HASH && lex_directive (pfile))
-	goto start_new_line;
-    }
-  else
-    {
-      lex_token (pfile, pfile->cur_token, 0);
-      if (pfile->cur_token->type == CPP_EOF)
-	{
-	  if (!pfile->state.in_directive)
-	    goto start_new_line;
-	  /* Decrementing pfile->line allows directives to recognise
-	     that the newline has been seen, and also means that
-	     diagnostics don't point to the next line.  */
-	  pfile->lexer_pos.output_line = pfile->line--;
-	}
-    }
+      /* We don't skip tokens in directives.  */
+      if (pfile->state.in_directive)
+	break;
 
-  if (!pfile->state.in_directive)
-    {
-      if (pfile->state.skipping && pfile->cur_token->type != CPP_EOF)
-	goto next_token;
-
-      /* Outside a directive, invalidate controlling macros.  */
+      /* Outside a directive, invalidate controlling macros.  At file
+	 EOF, lex_token takes care of popping the buffer, so we never
+	 get here and MI optimisation works.  */
       pfile->mi_valid = false;
+
+      if (!pfile->state.skipping || result->type == CPP_EOF)
+	break;
     }
 
-  *result = *pfile->cur_token++;
+  *dest = *result;
 }
 
-/* Lex a token into RESULT (internal interface).  */
-static void
-lex_token (pfile, result, skip_newlines)
+/* Lex a token into RESULT.  When meeting a newline, returns CPP_EOF
+   if parsing a directive, otherwise returns to the start of the token
+   buffer if permissible.  Returns the location of the lexed token.  */
+static cpp_token *
+lex_token (pfile, result)
      cpp_reader *pfile;
      cpp_token *result;
-     int skip_newlines;
 {
   cppchar_t c;
   cpp_buffer *buffer;
@@ -1058,27 +1012,26 @@ lex_token (pfile, result, skip_newlines)
   switch (c)
     {
     case EOF:
+      buffer->saved_flags = BOL;
       if (!pfile->state.parsing_args && !pfile->state.in_directive)
 	{
-	  if (buffer->cur == buffer->line_base)
-	    {
-	      /* Don't pop the last buffer.  */
-	      if (buffer->prev)
-		{
-		  unsigned char stop = buffer->return_at_eof;
-
-		  _cpp_pop_buffer (pfile);
-		  if (!stop)
-		    goto fresh_line;
-		}
-	    }
-	  else
+	  if (buffer->cur != buffer->line_base)
 	    {
 	      /* Non-empty files should end in a newline.  Don't warn
 		 for command line and _Pragma buffers.  */
 	      if (!buffer->from_stage3)
 		cpp_pedwarn (pfile, "no newline at end of file");
 	      handle_newline (pfile, '\n');
+	    }
+
+	  /* Don't pop the last buffer.  */
+	  if (buffer->prev)
+	    {
+	      unsigned char stop = buffer->return_at_eof;
+
+	      _cpp_pop_buffer (pfile);
+	      if (!stop)
+		goto fresh_line;
 	    }
 	}
       result->type = CPP_EOF;
@@ -1090,13 +1043,17 @@ lex_token (pfile, result, skip_newlines)
       goto skipped_white;
 
     case '\n': case '\r':
-      if (pfile->state.in_directive && pfile->state.parsing_args)
-	buffer->read_ahead = c;
-      else
+      handle_newline (pfile, c);
+      buffer->saved_flags = BOL;
+      if (! pfile->state.in_directive)
 	{
-	  handle_newline (pfile, c);
-	  if (skip_newlines)
-	    goto fresh_line;
+	  if (!pfile->keep_tokens)
+	    {
+	      pfile->cur_run = &pfile->base_run;
+	      result = pfile->base_run.base;
+	      pfile->cur_token = result + 1;
+	    }
+	  goto fresh_line;
 	}
       result->type = CPP_EOF;
       break;
@@ -1228,7 +1185,7 @@ lex_token (pfile, result, skip_newlines)
       /* Save the comment as a token in its own right.  */
       save_comment (pfile, result, comment_start);
       /* Don't do MI optimisation.  */
-      return;
+      break;
 
     case '<':
       if (pfile->state.angled_headers)
@@ -1397,6 +1354,8 @@ lex_token (pfile, result, skip_newlines)
       result->val.c = c;
       break;
     }
+
+  return result;
 }
 
 /* An upper bound on the number of bytes needed to spell a token,
