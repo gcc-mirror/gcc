@@ -77,7 +77,12 @@
 
 2003-06-16  J"orn Rennecke <joern.rennecke@superh.com>
 
-	* (REG_CLASS_FROM_CONSTRAINT): Only define if not already defined.
+	* sh.c (prepare_move_operand): Check if operand 0 is an invalid
+	memory reference.  Fix test that checks if operand 1 is using r0.
+	* sh.md (movhi_i): Don't allow st.w r0,@(rX,rY) .
+
+	* defaults.h (REG_CLASS_FROM_CONSTRAINT): Only define if not already
+	defined.
 
 2003-06-15  Nathan Sidwell  <nathan@codesourcery.com>
 

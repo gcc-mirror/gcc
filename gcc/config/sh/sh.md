@@ -3674,12 +3674,17 @@
   operands[3] = gen_rtx_REG (DImode, REGNO (operands[2]));
 }")
 
+/* When storing r0, we have to avoid reg+reg addressing.  */
 (define_insn "movhi_i"
   [(set (match_operand:HI 0 "general_movdst_operand" "=r,r,r,r,m,r,l,r")
 	(match_operand:HI 1 "general_movsrc_operand" "Q,rI,m,t,r,l,r,i"))]
   "TARGET_SH1
    && (arith_reg_operand (operands[0], HImode)
-       || arith_reg_operand (operands[1], HImode))"
+       || arith_reg_operand (operands[1], HImode))
+   && (GET_CODE (operands[0]) != MEM
+       || GET_CODE (XEXP (operands[0], 0)) != PLUS
+       || GET_CODE (XEXP (XEXP (operands[0], 0), 1)) != REG
+       || ! refers_to_regno_p (R0_REG, R0_REG + 1, operands[1], (rtx *)0))"
   "@
 	mov.w	%1,%0
 	mov	%1,%0
