@@ -2777,7 +2777,7 @@ stage_a:
 	+$(MAKE) CC="$(CC)" libdir=$(libdir) LANGUAGES="$(BOOT_LANGUAGES)" LANG_LIB2FUNCS=
 	touch stage_a
 
-stage_b:
+stage_b: stage_a
 	$(MAKE) stage1
 	touch stage_b
 
@@ -2786,20 +2786,20 @@ stage_b:
 # To prevent `make install' from compiling alloca.o and then relinking cc1
 # because alloca.o is newer, we permit these recursive makes to compile
 # alloca.o.  Then cc1 is newer, so it won't have to be relinked.
-stage_c:
+stage_c: stage_b
 	+$(MAKE) CC="stage1/xgcc$(exeext) -Bstage1/ -B$(build_tooldir)/bin/" CFLAGS="$(BOOT_CFLAGS)" WARN_CFLAGS="$(WARN2_CFLAGS)" LDFLAGS="$(BOOT_LDFLAGS)" libdir=$(libdir) STAGE_PREFIX=stage1/ LANGUAGES="$(LANGUAGES)"
 	touch stage_c
 
-stage_d:
+stage_d: stage_c
 	+$(MAKE) stage2
 	touch stage_d
  
-stage_e:
+stage_e: stage_d
 	+$(MAKE) CC="stage2/xgcc$(exeext) -Bstage2/ -B$(build_tooldir)/bin/" CFLAGS="$(BOOT_CFLAGS)" WARN_CFLAGS="$(WARN2_CFLAGS)" LDFLAGS="$(BOOT_LDFLAGS)" libdir=$(libdir) STAGE_PREFIX=stage2/ LANGUAGES="$(LANGUAGES)"
 	touch stage_e
 
 # For bootstrap4:
-stage_f:
+stage_f: stage_e
 	+$(MAKE) CC="stage3/xgcc$(exeext) -B$(build_tooldir)/bin/ -Bstage3/" CFLAGS="$(WARN_CFLAGS) $(BOOT_CFLAGS)" LDFLAGS="$(BOOT_LDFLAGS)" libdir=$(libdir) STAGE_PREFIX=stage3/ LANGUAGES="$(LANGUAGES)"
 	touch stage_f
 
