@@ -1,3 +1,7 @@
+Wed Nov 14 12:30:57 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	* function.c (struct temp_slot): ALIGN now unsigned.
+
 2001-11-14  Kazu Hirata  <kazu@hxi.com>
 
 	* config/dsp16xx/dsp16xx.c: Fix comment formatting.
