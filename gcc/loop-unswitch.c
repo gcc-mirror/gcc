@@ -379,6 +379,8 @@ unswitch_single_loop (struct loops *loops, struct loop *loop,
   free_EXPR_LIST_node (conds);
   if (rcond)
     free_EXPR_LIST_node (rconds);
+
+  free (bbs);
 }
 
 /* Unswitch a LOOP w.r. to given basic block UNSWITCH_ON.  We only support
