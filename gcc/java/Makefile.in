@@ -217,12 +217,11 @@ PARSE_C = $(PARSE_DIR)/parse.c
 PARSE_SCAN_C = $(PARSE_DIR)/parse-scan.c
 PARSE_H = $(srcdir)/parse.h
 
-$(PARSE_C):  $(srcdir)/parse.y $(srcdir)/lex.c $(PARSE_H) $(srcdir)/lex.h
+$(PARSE_C):  $(srcdir)/parse.y
 	$(SET_BISON); \
 	cd $(PARSE_DIR) && $$bison -t $(BISONFLAGS) $(JAVABISONFLAGS) \
 	    -o parse.c $(PARSE_RELDIR)/parse.y
-$(PARSE_SCAN_C):  $(srcdir)/parse-scan.y $(srcdir)/lex.c $(PARSE_H) \
-	  $(srcdir)/lex.h
+$(PARSE_SCAN_C):  $(srcdir)/parse-scan.y
 	$(SET_BISON); \
 	cd $(PARSE_DIR) && $$bison -t $(BISONFLAGS) -o parse-scan.c \
 	    $(PARSE_RELDIR)/parse-scan.y
@@ -262,7 +261,8 @@ clean:  mostlyclean
 force:
 
 parse.o : $(PARSE_C) jcf-reader.c $(CONFIG_H) $(srcdir)/../system.h \
-  $(srcdir)/../function.h $(JAVA_TREE_H)
+  $(srcdir)/../function.h $(JAVA_TREE_H) $(srcdir)/lex.c $(PARSE_H) \
+  $(srcdir)/lex.h
 jcf-dump.o : $(CONFIG_H) $(srcdir)/../system.h $(JAVA_TREE_H) jcf-dump.c \
   jcf-reader.c jcf.h javaop.h javaop.def $(srcdir)/../version.h
 gjavah.o : $(CONFIG_H) $(srcdir)/../system.h $(JAVA_TREE_H) gjavah.c \
@@ -300,7 +300,8 @@ lang.o : lang.c $(CONFIG_H) $(JAVA_TREE_H) jcf.h $(srcdir)/../input.h \
   $(srcdir)/../toplev.h $(srcdir)/../system.h $(RTL_H) $(EXPR_H)
 mangle.o : mangle.c $(CONFIG_H) jcf.h $(JAVA_TREE_H) $(srcdir)/../system.h \
   $(srcdir)/../toplev.h
-parse-scan.o : $(CONFIG_H) $(srcdir)/../system.h $(srcdir)/../toplev.h
+parse-scan.o : $(CONFIG_H) $(srcdir)/../system.h $(srcdir)/../toplev.h \
+  $(srcdir)/lex.c $(PARSE_H) $(srcdir)/lex.h
 typeck.o : typeck.c $(CONFIG_H) $(JAVA_TREE_H) jcf.h convert.h \
   $(srcdir)/../toplev.h $(srcdir)/../system.h
 verify.o : verify.c $(CONFIG_H) $(JAVA_TREE_H) jcf.h javaop.h java-opcodes.h \

@@ -180,7 +180,6 @@ extern void set_float_handler PARAMS ((jmp_buf));
     sprintf (msg, "Floating pointer literal exceeds range of `%s'", (m)); \
     java_lex_error (msg, 0);						  \
     ctxp->c_line->current = i;						  \
-    value = dconst0;							  \
   }
 #define JAVA_INTEGRAL_RANGE_ERROR(m)		\
   {						\
