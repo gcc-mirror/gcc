@@ -1113,7 +1113,10 @@
     {
       rtx macl = gen_rtx_REG (SImode, MACL_REG);
       first = emit_insn (gen_mul_l (operands[1], operands[2]));
-      last = emit_insn (gen_movsi_i ((operands[0]), macl));
+      emit_insn (gen_movsi_i ((operands[0]), macl));
+      /* The sequence must end in a no-op move, lest cse puts macl in its
+	 tables and does invalid substitutions.  */
+      last = emit_insn (gen_movsi_i ((operands[0]), operands[0]));
     }
   /* Wrap the sequence in REG_LIBCALL / REG_RETVAL notes so that loop
      invariant code motion can move it.  */
