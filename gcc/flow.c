@@ -1736,8 +1736,11 @@ libcall_dead_p (x, needed, note, insn)
 		    && GET_CODE (SET_SRC (XVECEXP (call, 0, i))) == CALL)
 		  break;
 
+	      /* This may be a library call that is returning a value
+		 via invisible pointer.  Do nothing special, since
+		 ordinary death handling can understand these insns.  */
 	      if (i < 0)
-		abort ();
+		return 0;
 
 	      call = XVECEXP (call, 0, i);
 	    }
