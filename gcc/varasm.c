@@ -5061,7 +5061,7 @@ static void
 globalize_decl (decl)
      tree decl;
 {
-  const char *name = IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (decl));
+  const char *name = XSTR (XEXP (DECL_RTL (decl), 0), 0);
 
 #if defined (ASM_WEAKEN_LABEL) || defined (ASM_WEAKEN_DECL)
   if (DECL_WEAK (decl))
