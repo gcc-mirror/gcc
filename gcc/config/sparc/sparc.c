@@ -1032,10 +1032,13 @@ mem_aligned_8 (mem)
     }
   /* Anything else we know is properly aligned unless TARGET_UNALIGNED_DOUBLES
      is true, in which case we can only assume that an access is aligned if
-     it is to an aggregate, it is to a constant address, or the address
-     involves a LO_SUM.  */
-  else if (! TARGET_UNALIGNED_DOUBLES || MEM_IN_STRUCT_P (mem)
-	   || CONSTANT_P (addr) || GET_CODE (addr) == LO_SUM)
+     it is to a constant address, or the address involves a LO_SUM.
+
+     We used to assume an address was aligned if MEM_IN_STRUCT_P was true.
+     That assumption was deleted so that gcc generated code can be used with
+     memory allocators that only guarantee 4 byte alignment.  */
+  else if (! TARGET_UNALIGNED_DOUBLES || CONSTANT_P (addr)
+	   || GET_CODE (addr) == LO_SUM)
     return 1;
 
   /* An obviously unaligned address.  */
