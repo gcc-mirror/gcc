@@ -4273,7 +4273,8 @@ mips_build_va_list ()
 {
   if (EABI_FLOAT_VARARGS_P)
     {
-      tree f_ovfl, f_gtop, f_ftop, f_goff, f_foff, record;
+      tree f_ovfl, f_gtop, f_ftop, f_goff, f_foff, f_res, record;
+      tree array, index;
 
       record = make_node (RECORD_TYPE);
 
@@ -4287,19 +4288,26 @@ mips_build_va_list ()
 			  unsigned_char_type_node);
       f_foff = build_decl (FIELD_DECL, get_identifier ("__fpr_offset"),
 			  unsigned_char_type_node);
-
+      /* Explicitly pad to the size of a pointer, so that -Wpadded won't
+	 warn on every user file.  */
+      index = build_int_2 (GET_MODE_SIZE (ptr_mode) - 2 - 1, 0);
+      array = build_array_type (unsigned_char_type_node,
+			        build_index_type (index));
+      f_res = build_decl (FIELD_DECL, get_identifier ("__reserved"), array);
 
       DECL_FIELD_CONTEXT (f_ovfl) = record;
       DECL_FIELD_CONTEXT (f_gtop) = record;
       DECL_FIELD_CONTEXT (f_ftop) = record;
       DECL_FIELD_CONTEXT (f_goff) = record;
       DECL_FIELD_CONTEXT (f_foff) = record;
+      DECL_FIELD_CONTEXT (f_res) = record;
 
       TYPE_FIELDS (record) = f_ovfl;
       TREE_CHAIN (f_ovfl) = f_gtop;
       TREE_CHAIN (f_gtop) = f_ftop;
       TREE_CHAIN (f_ftop) = f_goff;
       TREE_CHAIN (f_goff) = f_foff;
+      TREE_CHAIN (f_foff) = f_res;
 
       layout_type (record);
       return record;
