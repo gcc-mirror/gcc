@@ -16,10 +16,10 @@ License along with GNU Fortran; see the file COPYING.LIB.  If
 not, write to the Free Software Foundation, Inc., 59 Temple Place - Suite 330,
 Boston, MA 02111-1307, USA.  */
 
+#if 0 	/* Don't include these unless necessary -- dnp. */
 #include "f2c.h"
 #include <math.h>
 
-#if 0 	/* Don't include these unless necessary -- dnp. */
 double G77_dbesj0_0 (const double *x) {
     return j0 (*x);
 }

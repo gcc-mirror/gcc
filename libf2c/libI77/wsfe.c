@@ -4,6 +4,7 @@
 #include "fmt.h"
 extern int f__hiwater;
 
+ int
 x_wSL(Void)
 {
 	int n = f__putbuf('\n');
