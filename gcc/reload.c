@@ -1254,7 +1254,8 @@ push_reload (rtx in, rtx out, rtx *inloc, rtx *outloc,
 	mode = outmode;
       if (mode == VOIDmode)
 	{
-	  error_for_asm (this_insn, "cannot reload integer constant operand in `asm'");
+	  error_for_asm (this_insn, "cannot reload integer constant "
+			 "operand in %<asm%>");
 	  mode = word_mode;
 	  if (in != 0)
 	    inmode = word_mode;
@@ -1276,7 +1277,8 @@ push_reload (rtx in, rtx out, rtx *inloc, rtx *outloc,
 	  }
       if (i == FIRST_PSEUDO_REGISTER)
 	{
-	  error_for_asm (this_insn, "impossible register constraint in `asm'");
+	  error_for_asm (this_insn, "impossible register constraint "
+			 "in %<asm%>");
 	  class = ALL_REGS;
 	}
     }
@@ -3513,7 +3515,7 @@ find_reloads (rtx insn, int replace, int ind_levels, int live_known,
 		this_alternative_earlyclobber[i] = 0;
 		gcc_assert (this_insn_is_asm);
 		error_for_asm (this_insn,
-				"`&' constraint used with no register class");
+			       "%<&%> constraint used with no register class");
 	      }
 
 	    for (j = 0; j < noperands; j++)
@@ -3680,7 +3682,7 @@ find_reloads (rtx insn, int replace, int ind_levels, int live_known,
       /* No alternative works with reloads??  */
       if (insn_code_number >= 0)
 	fatal_insn ("unable to generate reloads for:", insn);
-      error_for_asm (insn, "inconsistent operand constraints in an `asm'");
+      error_for_asm (insn, "inconsistent operand constraints in an %<asm%>");
       /* Avoid further trouble with this insn.  */
       PATTERN (insn) = gen_rtx_USE (VOIDmode, const0_rtx);
       n_reloads = 0;
@@ -3891,7 +3893,8 @@ find_reloads (rtx insn, int replace, int ind_levels, int live_known,
 	else
 	  {
 	    gcc_assert (insn_code_number < 0);
-	    error_for_asm (insn, "inconsistent operand constraints in an `asm'");
+	    error_for_asm (insn, "inconsistent operand constraints "
+			   "in an %<asm%>");
 	    /* Avoid further trouble with this insn.  */
 	    PATTERN (insn) = gen_rtx_USE (VOIDmode, const0_rtx);
 	    n_reloads = 0;

@@ -1871,11 +1871,12 @@ spill_failure (rtx insn, enum reg_class class)
 {
   static const char *const reg_class_names[] = REG_CLASS_NAMES;
   if (asm_noperands (PATTERN (insn)) >= 0)
-    error_for_asm (insn, "can't find a register in class `%s' while reloading `asm'",
+    error_for_asm (insn, "can't find a register in class %qs while "
+		   "reloading %<asm%>",
 		   reg_class_names[class]);
   else
     {
-      error ("unable to find a register to spill in class `%s'",
+      error ("unable to find a register to spill in class %qs",
 	     reg_class_names[class]);
       fatal_insn ("this is the insn:", insn);
     }
@@ -3867,7 +3868,8 @@ reload_as_needed (int live_known)
 			  || (extract_insn (p), ! constrain_operands (1))))
 		    {
 		      error_for_asm (insn,
-				     "`asm' operand requires impossible reload");
+				     "%<asm%> operand requires "
+				     "impossible reload");
 		      delete_insn (p);
 		    }
 	    }
@@ -4990,7 +4992,7 @@ failed_reload (rtx insn, int r)
   /* It's the user's fault; the operand's mode and constraint
      don't match.  Disable this reload so we don't crash in final.  */
   error_for_asm (insn,
-		 "`asm' operand constraint incompatible with operand size");
+		 "%<asm%> operand constraint incompatible with operand size");
   rld[r].in = 0;
   rld[r].out = 0;
   rld[r].reg_rtx = 0;
@@ -6609,7 +6611,7 @@ emit_output_reload_insns (struct insn_chain *chain, struct reload *rl,
       if (asm_noperands (PATTERN (insn)) < 0)
 	/* It's the compiler's fault.  */
 	fatal_insn ("VOIDmode on an output", insn);
-      error_for_asm (insn, "output operand is constant in `asm'");
+      error_for_asm (insn, "output operand is constant in %<asm%>");
       /* Prevent crash--use something we know is valid.  */
       mode = word_mode;
       old = gen_rtx_REG (mode, REGNO (reloadreg));

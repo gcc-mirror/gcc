@@ -172,7 +172,7 @@ decl_attributes (tree *node, tree attributes, int flags)
 
       if (spec == NULL)
 	{
-	  warning ("`%s' attribute directive ignored",
+	  warning ("%qs attribute directive ignored",
 		   IDENTIFIER_POINTER (name));
 	  continue;
 	}
@@ -180,7 +180,7 @@ decl_attributes (tree *node, tree attributes, int flags)
 	       || (spec->max_length >= 0
 		   && list_length (args) > spec->max_length))
 	{
-	  error ("wrong number of arguments specified for `%s' attribute",
+	  error ("wrong number of arguments specified for %qs attribute",
 		 IDENTIFIER_POINTER (name));
 	  continue;
 	}
@@ -197,7 +197,7 @@ decl_attributes (tree *node, tree attributes, int flags)
 	    }
 	  else
 	    {
-	      warning ("`%s' attribute does not apply to types",
+	      warning ("%qs attribute does not apply to types",
 		       IDENTIFIER_POINTER (name));
 	      continue;
 	    }
@@ -243,7 +243,7 @@ decl_attributes (tree *node, tree attributes, int flags)
 	  if (TREE_CODE (*anode) != FUNCTION_TYPE
 	      && TREE_CODE (*anode) != METHOD_TYPE)
 	    {
-	      warning ("`%s' attribute only applies to function types",
+	      warning ("%qs attribute only applies to function types",
 		       IDENTIFIER_POINTER (name));
 	      continue;
 	    }

@@ -342,13 +342,13 @@ static const format_length_info strfmon_length_specs[] =
 
 static const format_flag_spec printf_flag_specs[] =
 {
-  { ' ',  0, 0, N_("` ' flag"),        N_("the ` ' printf flag"),              STD_C89 },
-  { '+',  0, 0, N_("`+' flag"),        N_("the `+' printf flag"),              STD_C89 },
-  { '#',  0, 0, N_("`#' flag"),        N_("the `#' printf flag"),              STD_C89 },
-  { '0',  0, 0, N_("`0' flag"),        N_("the `0' printf flag"),              STD_C89 },
-  { '-',  0, 0, N_("`-' flag"),        N_("the `-' printf flag"),              STD_C89 },
-  { '\'', 0, 0, N_("`'' flag"),        N_("the `'' printf flag"),              STD_EXT },
-  { 'I',  0, 0, N_("`I' flag"),        N_("the `I' printf flag"),              STD_EXT },
+  { ' ',  0, 0, N_("' ' flag"),        N_("the ' ' printf flag"),              STD_C89 },
+  { '+',  0, 0, N_("'+' flag"),        N_("the '+' printf flag"),              STD_C89 },
+  { '#',  0, 0, N_("'#' flag"),        N_("the '#' printf flag"),              STD_C89 },
+  { '0',  0, 0, N_("'0' flag"),        N_("the '0' printf flag"),              STD_C89 },
+  { '-',  0, 0, N_("'-' flag"),        N_("the '-' printf flag"),              STD_C89 },
+  { '\'', 0, 0, N_("''' flag"),        N_("the ''' printf flag"),              STD_EXT },
+  { 'I',  0, 0, N_("'I' flag"),        N_("the 'I' printf flag"),              STD_EXT },
   { 'w',  0, 0, N_("field width"),     N_("field width in printf format"),     STD_C89 },
   { 'p',  0, 0, N_("precision"),       N_("precision in printf format"),       STD_C89 },
   { 'L',  0, 0, N_("length modifier"), N_("length modifier in printf format"), STD_C89 },
@@ -366,11 +366,11 @@ static const format_flag_pair printf_flag_pairs[] =
 
 static const format_flag_spec asm_fprintf_flag_specs[] =
 {
-  { ' ',  0, 0, N_("` ' flag"),        N_("the ` ' printf flag"),              STD_C89 },
-  { '+',  0, 0, N_("`+' flag"),        N_("the `+' printf flag"),              STD_C89 },
-  { '#',  0, 0, N_("`#' flag"),        N_("the `#' printf flag"),              STD_C89 },
-  { '0',  0, 0, N_("`0' flag"),        N_("the `0' printf flag"),              STD_C89 },
-  { '-',  0, 0, N_("`-' flag"),        N_("the `-' printf flag"),              STD_C89 },
+  { ' ',  0, 0, N_("' ' flag"),        N_("the ' ' printf flag"),              STD_C89 },
+  { '+',  0, 0, N_("'+' flag"),        N_("the '+' printf flag"),              STD_C89 },
+  { '#',  0, 0, N_("'#' flag"),        N_("the '#' printf flag"),              STD_C89 },
+  { '0',  0, 0, N_("'0' flag"),        N_("the '0' printf flag"),              STD_C89 },
+  { '-',  0, 0, N_("'-' flag"),        N_("the '-' printf flag"),              STD_C89 },
   { 'w',  0, 0, N_("field width"),     N_("field width in printf format"),     STD_C89 },
   { 'p',  0, 0, N_("precision"),       N_("precision in printf format"),       STD_C89 },
   { 'L',  0, 0, N_("length modifier"), N_("length modifier in printf format"), STD_C89 },
@@ -395,7 +395,7 @@ static const format_flag_pair gcc_diag_flag_pairs[] =
 
 static const format_flag_spec gcc_diag_flag_specs[] =
 {
-  { 'q',  0, 0, N_("`q' flag"),        N_("the `q' diagnostic flag"),          STD_C89 },
+  { 'q',  0, 0, N_("'q' flag"),        N_("the 'q' diagnostic flag"),          STD_C89 },
   { 'p',  0, 0, N_("precision"),       N_("precision in printf format"),       STD_C89 },
   { 'L',  0, 0, N_("length modifier"), N_("length modifier in printf format"), STD_C89 },
   { 0, 0, 0, NULL, NULL, 0 }
@@ -405,9 +405,9 @@ static const format_flag_spec gcc_diag_flag_specs[] =
 
 static const format_flag_spec gcc_cxxdiag_flag_specs[] =
 {
-  { '+',  0, 0, N_("`+' flag"),        N_("the `+' printf flag"),              STD_C89 },
-  { '#',  0, 0, N_("`#' flag"),        N_("the `#' printf flag"),              STD_C89 },
-  { 'q',  0, 0, N_("`q' flag"),        N_("the `q' diagnostic flag"),          STD_C89 },
+  { '+',  0, 0, N_("'+' flag"),        N_("the '+' printf flag"),              STD_C89 },
+  { '#',  0, 0, N_("'#' flag"),        N_("the '#' printf flag"),              STD_C89 },
+  { 'q',  0, 0, N_("'q' flag"),        N_("the 'q' diagnostic flag"),          STD_C89 },
   { 'p',  0, 0, N_("precision"),       N_("precision in printf format"),       STD_C89 },
   { 'L',  0, 0, N_("length modifier"), N_("length modifier in printf format"), STD_C89 },
   { 0, 0, 0, NULL, NULL, 0 }
@@ -416,11 +416,11 @@ static const format_flag_spec gcc_cxxdiag_flag_specs[] =
 static const format_flag_spec scanf_flag_specs[] =
 {
   { '*',  0, 0, N_("assignment suppression"), N_("the assignment suppression scanf feature"), STD_C89 },
-  { 'a',  0, 0, N_("`a' flag"),               N_("the `a' scanf flag"),                       STD_EXT },
+  { 'a',  0, 0, N_("'a' flag"),               N_("the 'a' scanf flag"),                       STD_EXT },
   { 'w',  0, 0, N_("field width"),            N_("field width in scanf format"),              STD_C89 },
   { 'L',  0, 0, N_("length modifier"),        N_("length modifier in scanf format"),          STD_C89 },
-  { '\'', 0, 0, N_("`'' flag"),               N_("the `'' scanf flag"),                       STD_EXT },
-  { 'I',  0, 0, N_("`I' flag"),               N_("the `I' scanf flag"),                       STD_EXT },
+  { '\'', 0, 0, N_("''' flag"),               N_("the ''' scanf flag"),                       STD_EXT },
+  { 'I',  0, 0, N_("'I' flag"),               N_("the 'I' scanf flag"),                       STD_EXT },
   { 0, 0, 0, NULL, NULL, 0 }
 };
 
@@ -434,15 +434,15 @@ static const format_flag_pair scanf_flag_pairs[] =
 
 static const format_flag_spec strftime_flag_specs[] =
 {
-  { '_', 0,   0, N_("`_' flag"),     N_("the `_' strftime flag"),          STD_EXT },
-  { '-', 0,   0, N_("`-' flag"),     N_("the `-' strftime flag"),          STD_EXT },
-  { '0', 0,   0, N_("`0' flag"),     N_("the `0' strftime flag"),          STD_EXT },
-  { '^', 0,   0, N_("`^' flag"),     N_("the `^' strftime flag"),          STD_EXT },
-  { '#', 0,   0, N_("`#' flag"),     N_("the `#' strftime flag"),          STD_EXT },
+  { '_', 0,   0, N_("'_' flag"),     N_("the '_' strftime flag"),          STD_EXT },
+  { '-', 0,   0, N_("'-' flag"),     N_("the '-' strftime flag"),          STD_EXT },
+  { '0', 0,   0, N_("'0' flag"),     N_("the '0' strftime flag"),          STD_EXT },
+  { '^', 0,   0, N_("'^' flag"),     N_("the '^' strftime flag"),          STD_EXT },
+  { '#', 0,   0, N_("'#' flag"),     N_("the '#' strftime flag"),          STD_EXT },
   { 'w', 0,   0, N_("field width"),  N_("field width in strftime format"), STD_EXT },
-  { 'E', 0,   0, N_("`E' modifier"), N_("the `E' strftime modifier"),      STD_C99 },
-  { 'O', 0,   0, N_("`O' modifier"), N_("the `O' strftime modifier"),      STD_C99 },
-  { 'O', 'o', 0, NULL,               N_("the `O' modifier"),               STD_EXT },
+  { 'E', 0,   0, N_("'E' modifier"), N_("the 'E' strftime modifier"),      STD_C99 },
+  { 'O', 0,   0, N_("'O' modifier"), N_("the 'O' strftime modifier"),      STD_C99 },
+  { 'O', 'o', 0, NULL,               N_("the 'O' modifier"),               STD_EXT },
   { 0, 0, 0, NULL, NULL, 0 }
 };
 
@@ -461,11 +461,11 @@ static const format_flag_pair strftime_flag_pairs[] =
 static const format_flag_spec strfmon_flag_specs[] =
 {
   { '=',  0, 1, N_("fill character"),  N_("fill character in strfmon format"),  STD_C89 },
-  { '^',  0, 0, N_("`^' flag"),        N_("the `^' strfmon flag"),              STD_C89 },
-  { '+',  0, 0, N_("`+' flag"),        N_("the `+' strfmon flag"),              STD_C89 },
-  { '(',  0, 0, N_("`(' flag"),        N_("the `(' strfmon flag"),              STD_C89 },
-  { '!',  0, 0, N_("`!' flag"),        N_("the `!' strfmon flag"),              STD_C89 },
-  { '-',  0, 0, N_("`-' flag"),        N_("the `-' strfmon flag"),              STD_C89 },
+  { '^',  0, 0, N_("'^' flag"),        N_("the '^' strfmon flag"),              STD_C89 },
+  { '+',  0, 0, N_("'+' flag"),        N_("the '+' strfmon flag"),              STD_C89 },
+  { '(',  0, 0, N_("'(' flag"),        N_("the '(' strfmon flag"),              STD_C89 },
+  { '!',  0, 0, N_("'!' flag"),        N_("the '!' strfmon flag"),              STD_C89 },
+  { '-',  0, 0, N_("'-' flag"),        N_("the '-' strfmon flag"),              STD_C89 },
   { 'w',  0, 0, N_("field width"),     N_("field width in strfmon format"),     STD_C89 },
   { '#',  0, 0, N_("left precision"),  N_("left precision in strfmon format"),  STD_C89 },
   { 'p',  0, 0, N_("right precision"), N_("right precision in strfmon format"), STD_C89 },
@@ -587,7 +587,7 @@ static const format_char_info gcc_cxxdiag_char_table[] =
   /* These will require a "tree" at runtime.  */
   { "ADEFJTV",0,STD_C89,{ T89_V,   BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN  }, "q+#",   "",   NULL },
 
-  /* These accept either an `int' or an `enum tree_code' (which is handled as an `int'.)  */
+  /* These accept either an 'int' or an 'enum tree_code' (which is handled as an 'int'.)  */
   { "CLOPQ",0,STD_C89, { T89_I,   BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN  }, "q",  "",   NULL },
 
   { "<>'", 0, STD_C89, NOARGUMENTS, "",      "",   NULL },
@@ -1720,7 +1720,7 @@ check_format_info_main (format_check_results *res,
 	      if (format_chars[1] == 's' || format_chars[1] == 'S'
 		  || format_chars[1] == '[')
 		{
-		  /* `a' is used as a flag.  */
+		  /* 'a' is used as a flag.  */
 		  i = strlen (flag_chars);
 		  flag_chars[i++] = 'a';
 		  flag_chars[i] = 0;
@@ -2137,7 +2137,7 @@ check_format_types (format_wanted_type *types, const char *format_start,
       /* Check the type of the "real" argument, if there's a type we want.  */
       if (wanted_type == cur_type)
 	continue;
-      /* If we want `void *', allow any pointer type.
+      /* If we want 'void *', allow any pointer type.
 	 (Anything else would already have got a warning.)
 	 With -pedantic, only allow pointers to void and to character
 	 types.  */
@@ -2327,7 +2327,7 @@ init_dynamic_diag_info (void)
       unsigned int i;
 
       /* For the GCC-diagnostics custom format specifiers to work, one
-	 must have declared `tree' and/or `location_t' prior to using
+	 must have declared 'tree' and/or 'location_t' prior to using
 	 those attributes.  If we haven't seen these declarations then
 	 you shouldn't use the specifiers requiring these types.
 	 However we don't force a hard ICE because we may see only one
@@ -2335,7 +2335,7 @@ init_dynamic_diag_info (void)
       if ((loc = maybe_get_identifier ("location_t")))
 	loc = TREE_TYPE (identifier_global_value (loc));
 
-      /* We need to grab the underlying `union tree_node' so peek into
+      /* We need to grab the underlying 'union tree_node' so peek into
 	 an extra type level.  */
       if ((t = maybe_get_identifier ("tree")))
 	t = TREE_TYPE (TREE_TYPE (identifier_global_value (t)));
@@ -2529,7 +2529,7 @@ handle_format_attribute (tree *node, tree ARG_UNUSED (name), tree args,
       if (info.format_type == asm_fprintf_format_type)
 	init_dynamic_asm_fprintf_info();
       /* If this is one of the diagnostic attributes, then we have to
-         initialize `location_t' and `tree' at runtime.  */
+         initialize 'location_t' and 'tree' at runtime.  */
       else if (info.format_type == gcc_diag_format_type
 	       || info.format_type == gcc_cdiag_format_type
 	       || info.format_type == gcc_cxxdiag_format_type)
