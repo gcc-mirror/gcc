@@ -21,5 +21,5 @@ class ctype : public __ctype_abstract_base<_CharT>
 template<typename _CharT>
 class ctype2 : public __ctype_abstract_base<_CharT>
 {
-  typedef mask mask; // { dg-warning "(`typename )|(implicit typename)" "" }
+  typedef mask mask; // { dg-warning "(implicitly a typename)|(implicit typename)" "" }
 };
