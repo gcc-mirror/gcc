@@ -1,3 +1,9 @@
+2003-10-15  Bernardo Innocenti <bernie@develer.com>
+
+	* config/m68k/m68k.h (MASK_SEP_DATA, TARGET_SEP_DATA,
+	MASK_ID_SHARED_LIBRARY, TARGET_ID_SHARED_LIBRARY): Move
+	definitions after the other flags.
+
 2003-10-14  Ziemowit Laski  <zlaski@apple.com>
 
 	* c-parse.in (methoddef, methodproto): Call objc_add_method()
