@@ -1344,6 +1344,6 @@ verify_jvm_instructions (jcf, byte_ops, length)
   goto verify_error;
  verify_error:
   error ("verification error at PC=%d", oldpc);
-  error (message);
+  error ("%s", message);
   return 0;
 }

@@ -222,12 +222,19 @@ extern tree stabilize_reference PROTO ((tree));
      "numeric type", operator_string ((NODE)), lang_printable_name ((TYPE), 0))
 
 #define ERROR_CAST_NEEDED_TO_INTEGRAL(OPERATOR, NODE, TYPE)		\
-  parse_error_context							\
-    ((OPERATOR), (JPRIMITIVE_TYPE_P (TYPE) ?				\
-     "Incompatible type for `%s'. Explicit cast needed to convert "	\
-      "`%s' to integral" : "Incompatible type for `%s'. Can't convert "	\
-      "`%s' to integral"), operator_string ((NODE)),			\
-      lang_printable_name ((TYPE), 0))
+do {									\
+  tree _operator = (OPERATOR), _node = (NODE), _type = (TYPE);		\
+  if (JPRIMITIVE_TYPE_P (_type))					\
+    parse_error_context (_operator, "Incompatible type for `%s'. Explicit" \
+                         " cast needed to convert `%s' to integral",	\
+			 operator_string(_node),			\
+			 lang_printable_name (_type, 0));		\
+  else									\
+    parse_error_context (_operator, "Incompatible type for `%s'. Can't" \
+                         " convert `%s' to integral",			\
+			 operator_string(_node),			\
+			 lang_printable_name (_type, 0));		\
+} while (0)
 
 #define ERROR_VARIABLE_NOT_INITIALIZED(WFL, V)			\
   parse_error_context						\

@@ -1,3 +1,19 @@
+1999-10-14  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* jcf-dump.c (print_constant, disassemble_method): Don't call a
+	variadic function with a non-literal format string.
+
+	* parse-scan.y (report_main_declaration): Likewise.
+
+	* parse.h (ERROR_CAST_NEEDED_TO_INTEGRAL): Likewise.
+
+	* parse.y (read_import_dir, patch_assignment, patch_binop,
+	patch_array_ref): Likewise.
+
+	* typeck.c (build_java_array_type): Likewise.
+
+	* verify.c (verify_jvm_instructions): Likewise.
+
 Tue Oct 12 22:28:10 1999  Alexandre Petit-Bianco  <apbianco@cygnus.com>
 
 	* jcf-write.c (RELOCATION_VALUE_1): Fixed integer value from 0 to 1.

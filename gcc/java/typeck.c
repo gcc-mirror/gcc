@@ -374,7 +374,11 @@ build_java_array_type (element_type, length)
   char buf[12];
   tree elsig = build_java_signature (element_type);
   tree el_name = element_type;
-  sprintf (buf, length >= 0 ? "[%d" : "[", length);
+  buf[0] = '[';
+  if (length >= 0)
+    sprintf (buf+1, HOST_WIDE_INT_PRINT_DEC, length);
+  else
+    buf[1] = '\0';
   sig = ident_subst (IDENTIFIER_POINTER (elsig), IDENTIFIER_LENGTH (elsig),
 		     buf, 0, 0, "");
   t = IDENTIFIER_SIGNATURE_TYPE (sig);

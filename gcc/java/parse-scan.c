@@ -2406,7 +2406,7 @@ report_main_declaration (declarator)
 	  if (package_name)
 	    fprintf (out, "%s.%s ", package_name, current_class);
 	  else
-	    fprintf (out, current_class);
+	    fprintf (out, "%s", current_class);
 	  previous_output = 1;
 	}
     }

@@ -5324,11 +5324,9 @@ read_import_dir (wfl)
       static int first = 1;
       if (first)
 	{
-	  char buffer [256];
-	  sprintf (buffer, "Can't find default package `%s'. Check "
-		   "the CLASSPATH environment variable and the access to the "
-		   "archives.", package_name);
-	  error (buffer);
+	  error ("Can't find default package `%s'. Check "
+		 "the CLASSPATH environment variable and the access to the "
+		 "archives.", package_name);
 	  java_error_count++;
 	  first = 0;
 	}
@@ -9130,11 +9128,14 @@ patch_assignment (node, wfl_op1, wfl_op2)
 	    strcpy (operation, "`='");
 	}
 
-      parse_error_context 
-	(wfl, (!valid_cast_to_p (rhs_type, lhs_type) ?
-	       "Incompatible type for %s. Can't convert `%s' to `%s'" :
-	       "Incompatible type for %s. Explicit cast "
-	       "needed to convert `%s' to `%s'"), operation, t1, t2);
+      if (!valid_cast_to_p (rhs_type, lhs_type))
+	parse_error_context (wfl, "Incompatible type for %s. "
+			     "Can't convert `%s' to `%s'",
+			     operation, t1, t2);
+      else
+	parse_error_context (wfl, "Incompatible type for %s. "
+			     "Explicit cast needed to convert `%s' to `%s'",
+			     operation, t1, t2);
       free (t1); free (t2);
       error_found = 1;
     }
@@ -9738,13 +9739,21 @@ patch_binop (node, wfl_op1, wfl_op2)
 	  if (!JINTEGRAL_TYPE_P (op1_type))
 	    ERROR_CAST_NEEDED_TO_INTEGRAL (wfl_operator, node, op1_type);
 	  else
-	    parse_error_context 
-	      (wfl_operator, (JPRIMITIVE_TYPE_P (op2_type) ? 
-	       "Incompatible type for `%s'. Explicit cast needed to convert "
-	       "shift distance from `%s' to integral" : 
-	       "Incompatible type for `%s'. Can't convert shift distance from "
-	       "`%s' to integral"), 
-	       operator_string (node), lang_printable_name (op2_type, 0));
+	    {
+	      if (JPRIMITIVE_TYPE_P (op2_type))
+		parse_error_context (wfl_operator,
+				     "Incompatible type for `%s'. "
+				     "Explicit cast needed to convert "
+				     "shift distance from `%s' to integral",
+				     operator_string (node),
+				     lang_printable_name (op2_type, 0));
+	      else
+		parse_error_context (wfl_operator, "Incompatible type for `%s'."
+				     " Can't convert shift distance from "
+				     "`%s' to integral", 
+				     operator_string (node),
+				     lang_printable_name (op2_type, 0));
+	    }
 	  TREE_TYPE (node) = error_mark_node;
 	  error_found = 1;
 	  break;
@@ -10604,13 +10613,14 @@ patch_array_ref (node)
   index = do_unary_numeric_promotion (index);
   if (TREE_TYPE (index) != int_type_node)
     {
-      int could_cast = valid_cast_to_p (index_type, int_type_node);
-      parse_error_context 
-	(wfl_operator, 
-	 (could_cast ? "Incompatible type for `[]'. Explicit cast needed to "
-	  "convert `%s' to `int'" : "Incompatible type for `[]'. "
-	  "Can't convert `%s' to `int'"),
-	 lang_printable_name (index_type, 0));
+      if (valid_cast_to_p (index_type, int_type_node))
+	parse_error_context (wfl_operator, "Incompatible type for `[]'. "
+			     "Explicit cast needed to convert `%s' to `int'",
+			     lang_printable_name (index_type, 0));
+      else
+	parse_error_context (wfl_operator, "Incompatible type for `[]'. "
+			     "Can't convert `%s' to `int'",
+			     lang_printable_name (index_type, 0));
       TREE_TYPE (node) = error_mark_node;
       error_found = 1;
     }
