@@ -220,6 +220,7 @@ FLAGS_FOR_TARGET =
 CC_FOR_TARGET =
 CHILL_FOR_TARGET =
 CXX_FOR_TARGET =
+CXX_FOR_TARGET_FOR_RECURSIVE_MAKE =
 GCJ_FOR_TARGET =
 
 # If GCC_FOR_TARGET is not overriden on the command line, then this
@@ -387,6 +388,14 @@ BASE_FLAGS_TO_PASS = \
 	"gcc_version=$(gcc_version)" \
 	"gcc_version_trigger=$(gcc_version_trigger)" \
 	"target_alias=$(target_alias)" 
+
+# For any flags above that may contain shell code that varies from one
+# target library to another.  When doing recursive invocations of the
+# top-level Makefile, we don't want the outer make to evaluate them,
+# so we pass these variables down unchanged.  They must not contain
+# single nor double quotes.
+RECURSE_FLAGS = \
+	CXX_FOR_TARGET='$(CXX_FOR_TARGET_FOR_RECURSIVE_MAKE)'
 
 # Flags to pass down to most sub-makes, in which we're building with
 # the host environment.
@@ -1343,7 +1352,8 @@ $(ALL_TARGET_MODULES):
 	  r=`pwd`; export r; \
 	  s=`cd $(srcdir); pwd`; export s; \
 	  $(SET_LIB_PATH) \
-	  (cd $(TARGET_SUBDIR)/$${dir}; $(MAKE) $(TARGET_FLAGS_TO_PASS) all); \
+	  (cd $(TARGET_SUBDIR)/$${dir}; \
+	    $(MAKE) $(TARGET_FLAGS_TO_PASS) all); \
 	else \
 	  true; \
 	fi
@@ -1357,7 +1367,8 @@ $(CHECK_TARGET_MODULES):
 	  r=`pwd`; export r; \
 	  s=`cd $(srcdir); pwd`; export s; \
 	  $(SET_LIB_PATH) \
-	  (cd $(TARGET_SUBDIR)/$${dir};$(MAKE) $(TARGET_FLAGS_TO_PASS) check);\
+	  (cd $(TARGET_SUBDIR)/$${dir}; \
+	    $(MAKE) $(TARGET_FLAGS_TO_PASS) check);\
 	else \
 	  true; \
 	fi
@@ -1472,7 +1483,7 @@ bootstrap bootstrap-lean bootstrap2 bootstrap2-lean bootstrap3 bootstrap3-lean b
 	s=`cd $(srcdir); pwd` ; export s; \
 	$(SET_LIB_PATH) \
 	echo "Building runtime libraries"; \
-	$(MAKE) $(BASE_FLAGS_TO_PASS) all
+	$(MAKE) $(BASE_FLAGS_TO_PASS) $(RECURSE_FLAGS) all
 
 .PHONY: cross
 cross: all-texinfo all-bison all-byacc all-binutils all-gas all-ld
@@ -1485,7 +1496,8 @@ cross: all-texinfo all-bison all-byacc all-binutils all-gas all-ld
 	s=`cd $(srcdir); pwd` ; export s; \
 	$(SET_LIB_PATH) \
 	echo "Building runtime libraries"; \
-	$(MAKE) $(BASE_FLAGS_TO_PASS) all LANGUAGES="c c++"
+	$(MAKE) $(BASE_FLAGS_TO_PASS) $(RECURSE_FLAGS) \
+	  LANGUAGES="c c++" all
 
 .PHONY: check-gcc
 check-gcc:

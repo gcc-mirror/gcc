@@ -1466,7 +1466,15 @@ case $CXX_FOR_TARGET in
 *' $(FLAGS_FOR_TARGET)') ;;
 *) CXX_FOR_TARGET=$CXX_FOR_TARGET' $(FLAGS_FOR_TARGET)' ;;
 esac
-qCXX_FOR_TARGET=`echo "$CXX_FOR_TARGET" | sed 's,&,\\\&,g'`
+qCXX_FOR_TARGET=`echo "$CXX_FOR_TARGET" | sed 's,[&%],\\\&,g'`
+
+# We want to defer the evaluation of `cmd`s and shell variables in
+# CXX_FOR_TARGET when recursing in the top-level Makefile, such as for
+# bootstrap.  We'll enclose CXX_FOR_TARGET_FOR_RECURSIVE_MAKE in single
+# quotes, but we still have to duplicate `$'s so that shell variables
+# can be expanded by the nested make as shell variables, not as make
+# macros.
+qqCXX_FOR_TARGET=`echo "$qCXX_FOR_TARGET" | sed -e 's,[$][$],$$$$,g'`
 
 targargs="--cache-file=../config.cache --host=${target_alias} --build=${build_alias} ${targargs}"
 sed -e "s:^TARGET_CONFIGDIRS[ 	]*=.*$:TARGET_CONFIGDIRS = ${target_configdirs}:" \
@@ -1476,6 +1484,7 @@ sed -e "s:^TARGET_CONFIGDIRS[ 	]*=.*$:TARGET_CONFIGDIRS = ${target_configdirs}:"
     -e "s%^CHILL_FOR_TARGET[ 	]*=.*$%CHILL_FOR_TARGET = ${CHILL_FOR_TARGET}%" \
     -e "s%^GCJ_FOR_TARGET[      ]*=.*$%GCJ_FOR_TARGET = ${GCJ_FOR_TARGET}%" \
     -e "s%^CXX_FOR_TARGET[ 	]*=.*$%CXX_FOR_TARGET = ${qCXX_FOR_TARGET}%" \
+    -e "s%^CXX_FOR_TARGET_FOR_RECURSIVE_MAKE[ 	]*=.*$%CXX_FOR_TARGET_FOR_RECURSIVE_MAKE = ${qqCXX_FOR_TARGET}%" \
     -e "s%^TARGET_SUBDIR[ 	]*=.*$%TARGET_SUBDIR = ${target_subdir}%" \
     -e "s%^gxx_include_dir[ 	]*=.*$%gxx_include_dir=${gxx_include_dir}%" \
        Makefile > Makefile.tem
