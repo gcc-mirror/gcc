@@ -1,3 +1,8 @@
+2002-03-12  Richard Sandiford  <rsandifo@redhat.com>
+
+	* mangle.c (write_builtin_type): Handle 128-bit integers even if
+	they are not a standard integer type.
+
 2002-03-12  Nathan Sidwell  <nathan@codesourcery.com>
 
 	PR c++/5659
