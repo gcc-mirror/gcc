@@ -8623,7 +8623,7 @@ fi
     
   
 
-   if test "x$create_catalogs" == "xno"; then
+   if test "x$create_catalogs" = "xno"; then
      echo "configure: warning: No program for building catalogs found -> building disabled" 1>&2
    fi
 

@@ -1,4 +1,9 @@
 2000-10-08  Philipp Thomas  <pthomas@suse.de>
+	* aclocal.m4 (AM_GNU_GETTEXT): Fix non portable use of == operator
+	for test.
+	* configure: Rebuilt.
+
+2000-10-08  Philipp Thomas  <pthomas@suse.de>
 	* aclocal.m4 (AM_WITH_NLS): When not using included gettext,
 	disable catalog building if no suitable program was found.
 	Move warning message from here
