@@ -885,19 +885,25 @@ expand_fixup (tree_label, rtl_label, last_insn)
 	 code which we might later insert at this point in the insn
 	 stream.  Also, the BLOCK node will be the parent (i.e. the
 	 `SUPERBLOCK') of any other BLOCK nodes which we might create
-	 later on when we are expanding the fixup code.  */
+	 later on when we are expanding the fixup code.
+
+	 Note that optimization passes (including expand_end_loop)
+	 might move the *_BLOCK notes away, so we use a NOTE_INSN_DELETED
+	 as a placeholder.  */
 
       {
         register rtx original_before_jump
           = last_insn ? last_insn : get_last_insn ();
+	rtx start;
 
         start_sequence ();
         pushlevel (0);
-        fixup->before_jump = emit_note (NULL_PTR, NOTE_INSN_BLOCK_BEG);
+        start = emit_note (NULL_PTR, NOTE_INSN_BLOCK_BEG);
+	fixup->before_jump = emit_note (NULL_PTR, NOTE_INSN_DELETED);
         last_block_end_note = emit_note (NULL_PTR, NOTE_INSN_BLOCK_END);
         fixup->context = poplevel (1, 0, 0);  /* Create the BLOCK node now! */
         end_sequence ();
-        emit_insns_after (fixup->before_jump, original_before_jump);
+        emit_insns_after (start, original_before_jump);
       }
 
       fixup->block_start_count = block_start_count;

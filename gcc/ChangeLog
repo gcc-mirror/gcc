@@ -1,3 +1,8 @@
+Sun Oct 25 23:36:52 1998  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* stmt.c (expand_fixup): Set fixup->before_jump to a
+	NOTE_INSN_DELETED instead of a NOTE_INSN_BLOCK_BEG.
+
 Sun Oct 25 18:35:06 1998  David Edelsohn  <edelsohn@mhpcc.edu>
 
 	* ginclude/va-ppc.h (va_arg): longlong types in overflow area are
