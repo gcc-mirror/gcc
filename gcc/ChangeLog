@@ -1,3 +1,7 @@
+Wed Oct 27 01:42:26 1999  Scott Christley  <scottc@net-community.com>
+
+	* sparc.md (call): Don't bound structure return size to 0xfff.
+
 Wed Oct 27 00:56:59 1999  Richard Henderson  <rth@cygnus.com>
 
 	* resource.c (mark_target_live_regs): Check that the target
