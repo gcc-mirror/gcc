@@ -1482,7 +1482,8 @@ complete_start_java_method (fndecl)
 
 #endif
 
-  if (METHOD_STATIC (fndecl) && ! METHOD_PRIVATE (fndecl))
+  if (METHOD_STATIC (fndecl) && ! METHOD_PRIVATE (fndecl)
+      && ! flag_emit_class_files)
     {
       tree clas = DECL_CONTEXT (fndecl);
       tree init = build (CALL_EXPR, void_type_node,

@@ -140,6 +140,18 @@ find_class_constant (cpool, type)
 					build_internal_class_name (type));
 }
 
+/* Allocate a CONSTANT_string entry given a STRING_CST. */
+
+int
+find_string_constant (cpool, string)
+     CPool *cpool;
+     tree string;
+{
+  string = get_identifier (TREE_STRING_POINTER (string));
+  return find_class_or_string_constant (cpool, CONSTANT_String, string);
+
+}
+
 /* Find (or create) a CONSTANT_NameAndType matching NAME and TYPE.
    Return its index in the constant pool CPOOL. */
 
@@ -202,8 +214,7 @@ count_constant_pool_bytes (cpool)
 {
   int size = 2;
   int i = 1;
-  jword *datap = &cpool->data[1];;
-  for ( ;  i < cpool->count;  i++, datap++)
+  for ( ;  i < cpool->count;  i++)
     {
       size++;
       switch (cpool->tags[i])
@@ -222,15 +233,19 @@ count_constant_pool_bytes (cpool)
 	  break;
 	case CONSTANT_Long:
 	case CONSTANT_Double:
-	  size += 4;
+	  size += 8;
+	  i++;
 	  break;
 	case CONSTANT_Utf8:
 	  {
-	    tree t = (tree) *datap;
+	    tree t = (tree) cpool->data[i];
 	    int len = IDENTIFIER_LENGTH (t);
 	    size += len + 2;
 	  }
 	  break;
+	default:
+	  /* Second word of CONSTANT_Long and  CONSTANT_Double. */
+	  size--;
 	}
     }
   return size;
