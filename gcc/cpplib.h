@@ -453,7 +453,6 @@ struct cpp_options {
   char *include_prefix;
   int include_prefix_len;
 
-  char inhibit_predefs;
   char no_standard_includes;
   char no_standard_cplusplus_includes;
 

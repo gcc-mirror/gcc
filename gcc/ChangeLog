@@ -1,3 +1,29 @@
+1999-04-06 12:51 -0400  Zack Weinberg  <zack@rabi.columbia.edu>
+
+	* cppinit.c (install_predefs): Delete function.
+	(cpp_start_read): Don't call install_predefs.
+	(cpp_handle_option): Remove case 'u' and all refs to
+	opts->inhibit_predefs.
+	(print_help): Don't mention -undef.
+	(initialize_builtins): Define __HAVE_BUILTIN_SETJMP__, to
+	match cccp.
+	* cpplib.h (struct cpp_options): Remove inhibit_predefs
+	member.
+
+	* cccp.c (predefs): Delete variable.
+	(main): Remove case 'u' in argument parse loop,
+	'inhibit_predefs' variable, and the code block that would
+	process CPP_PREDEFINES.
+	(initialize_builtins): Don't define __OBJC__, the driver will
+	do that.
+
+	* gcc.c (default_compilers): Remove -undef from all specs that
+	invoke a C preprocessor.
+	* ch/lang-specs.h: Likewise.
+	* cp/lang-specs.h: Likewise.
+	* f/lang-specs.h: Likewise.
+	* objc/lang-specs.h: Likewise.
+
 Mon Apr  5 11:55:31 1999  Donn Terry (donn@interix.com)
 
 	* Makefile.in (SUBDIR_FLAGS_TO_PASS): Fix misapplied patch.

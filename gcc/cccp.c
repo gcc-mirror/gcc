@@ -658,13 +658,6 @@ static HASHNODE *hashtab[HASHSIZE];
 #define HASHSTEP(old, c) ((old << 2) + c)
 #define MAKE_POS(v) (v & 0x7fffffff) /* make number positive */
 
-/* Symbols to predefine.  */
-
-#ifdef CPP_PREDEFINES
-static char *predefs = CPP_PREDEFINES;
-#else
-static char *predefs = "";
-#endif
 
 /* We let tm.h override the types used here, to handle trivial differences
    such as the choice of unsigned int or long unsigned int for size_t.
@@ -1210,7 +1203,6 @@ main (argc, argv)
      This is preparation for supporting more than one option for making
      an assertion.  */
   char **pend_assertion_options;
-  int inhibit_predefs = 0;
   int no_standard_includes = 0;
   int no_standard_cplusplus_includes = 0;
   int missing_newline = 0;
@@ -1659,7 +1651,6 @@ main (argc, argv)
 	       on the command line.  That way we can get rid of any
 	       that were passed automatically in from GCC.  */
 	    int j;
-	    inhibit_predefs = 1;
 	    for (j = 0; j < i; j++)
 	      pend_defs[j] = pend_assertions[j] = 0;
 	  } else {
@@ -1727,12 +1718,6 @@ main (argc, argv)
 	  remap = 1;
 	break;
 
-      case 'u':
-	/* Sun compiler passes undocumented switch "-undef".
-	   Let's assume it means to inhibit the predefined symbols.  */
-	inhibit_predefs = 1;
-	break;
-
       case '\0': /* JF handle '-' as file name meaning stdin or stdout */
 	if (in_fname == NULL) {
 	  in_fname = "";
@@ -1782,135 +1767,6 @@ main (argc, argv)
   /* Install __LINE__, etc.  Must follow initialize_char_syntax
      and option processing.  */
   initialize_builtins (fp, &outbuf);
-
-  /* Do standard #defines and assertions
-     that identify system and machine type.  */
-
-  if (!inhibit_predefs) {
-    char *p = (char *) alloca (strlen (predefs) + 1);
-
-#ifdef VMS
-    struct dsc$descriptor_s lcl_name;
-    struct item_list {
-      unsigned short length;  /* input length */
-      unsigned short code;    /* item code */   
-      unsigned long dptr;     /* data ptr */
-      unsigned long lptr;     /* output length ptr */
-    };
-
-    unsigned long syi_length;
-    char syi_data[16];
-
-    struct item_list items[] = {
-      { 16, SYI$_VERSION, 0, 0 },
-      { 0, 0, 0, 0 }
-    };
-
-    items[0].dptr = (unsigned long)syi_data;
-    items[0].lptr = (unsigned long)(&syi_length);
-
-    if (SYS$GETSYIW (0, 0, 0, items, NULL, NULL, NULL, NULL) == SS$_NORMAL)
-      {
-	unsigned long vms_version_value;
-	char *vers;
-
-	vers = syi_data;
-	vms_version_value = 0;
-
-	if (*vers == 'V')
-	  vers++;
-	if (ISDIGIT (*vers))
-	  {
-	    vms_version_value = (*vers - '0') * 10000000;
-	  }
-	vers++;
-	if (*vers == '.')
-	  {
-	    vers++;
-	    if (ISDIGIT (*vers))
-	      {
-		vms_version_value += (*vers - '0') * 100000;
-	      }
-	  }
-
-	if (vms_version_value > 0)
-	  {
-	    char versbuf[32];
-
-	    sprintf (versbuf, "__VMS_VER=%08ld", vms_version_value);
-	    if (debug_output)
-	      output_line_directive (fp, &outbuf, 0, same_file);
-	    make_definition (versbuf);
-	  }
-      }
-#endif
-
-    strcpy (p, predefs);
-    while (*p) {
-      char *q;
-      while (*p == ' ' || *p == '\t')
-	p++;
-      /* Handle -D options.  */ 
-      if (p[0] == '-' && p[1] == 'D') {
-	q = &p[2];
-	while (*p && *p != ' ' && *p != '\t')
-	  p++;
-	if (*p != 0)
-	  *p++= 0;
-	if (debug_output)
-	  output_line_directive (fp, &outbuf, 0, same_file);
-	make_definition (q);
-	while (*p == ' ' || *p == '\t')
-	  p++;
-      } else if (p[0] == '-' && p[1] == 'A') {
-	/* Handle -A options (assertions).  */ 
-	char *assertion;
-	char *past_name;
-	char *value;
-	char *past_value;
-	char *termination;
-	int save_char;
-
-	assertion = &p[2];
-	past_name = assertion;
-	/* Locate end of name.  */
-	while (*past_name && *past_name != ' '
-	       && *past_name != '\t' && *past_name != '(')
-	  past_name++;
-	/* Locate `(' at start of value.  */
-	value = past_name;
-	while (*value && (*value == ' ' || *value == '\t'))
-	  value++;
-	if (*value++ != '(')
-	  abort ();
-	while (*value && (*value == ' ' || *value == '\t'))
-	  value++;
-	past_value = value;
-	/* Locate end of value.  */
-	while (*past_value && *past_value != ' '
-	       && *past_value != '\t' && *past_value != ')')
-	  past_value++;
-	termination = past_value;
-	while (*termination && (*termination == ' ' || *termination == '\t'))
-	  termination++;
-	if (*termination++ != ')')
-	  abort ();
-	if (*termination && *termination != ' ' && *termination != '\t')
-	  abort ();
-	/* Temporarily null-terminate the value.  */
-	save_char = *termination;
-	*termination = '\0';
-	/* Install the assertion.  */
-	make_assertion ("-A", assertion);
-	*termination = (char) save_char;
-	p = termination;
-	while (*p == ' ' || *p == '\t')
-	  p++;
-      } else {
-	abort ();
-      }
-    }
-  }
 
   /* Now handle the command line options.  */
 
@@ -10217,8 +10073,6 @@ initialize_builtins (inp, outp)
     install ((U_CHAR *) "__STDC__", -1, T_CONST, "1", -1);
     install ((U_CHAR *) "__STDC_VERSION__", -1, T_CONST, "199409L", -1);
   }
-  if (objc)
-    install ((U_CHAR *) "__OBJC__", -1, T_CONST, "1", -1);
 /*  This is supplied using a -D by the compiler driver
     so that it is present only when truly compiling with GNU C.  */
 /*  install ((U_CHAR *) "__GNUC__", -1, T_CONST, "2", -1);  */
