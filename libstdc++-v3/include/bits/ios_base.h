@@ -495,7 +495,7 @@ namespace std
       // NB: Allows debugger applications use of the standard streams
       // from operator new. 
       static bool
-      _S_initialized() { return _S_refcount > 0; }
+      _S_initialized();
 
     private:
       static _Atomic_word	_S_refcount;

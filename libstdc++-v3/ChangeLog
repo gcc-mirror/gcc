@@ -1,3 +1,9 @@
+2003-12-15  Carlo Wood  <carlo@alinoe.com>
+
+	* include/bits/ios_base.h (Init::_S_initialized): Change into
+	declaration.
+	* src/ios_init.cc (Init::_S_initialized): Add definition.
+
 2003-12-15  Benjamin Kosnik  <bkoz@redhat.com>
 
 	PR libstdc++/12658
