@@ -9690,8 +9690,8 @@ strip_out_static_field_access_decl (tree node)
 	   tree call = TREE_OPERAND (op1, 0);
 	   if (TREE_CODE (call) == CALL_EXPR
 	       && TREE_CODE (TREE_OPERAND (call, 0)) == ADDR_EXPR
-	       && TREE_OPERAND (TREE_OPERAND (call, 0), 0)
-	       == soft_initclass_node)
+	       && (TREE_OPERAND (TREE_OPERAND (call, 0), 0)
+		   == soft_initclass_node))
 	     return TREE_OPERAND (op1, 1);
 	 }
       else if (JDECL_P (op1))
@@ -11025,7 +11025,7 @@ patch_invoke (tree patch, tree method, tree args)
   if (TREE_CODE (original_call) == NEW_CLASS_EXPR)
     {
       tree class = DECL_CONTEXT (method);
-      tree c1, saved_new, size, new;
+      tree c1, saved_new, new;
       tree alloc_node;
 
       if (flag_emit_class_files || flag_emit_xref)
@@ -11035,7 +11035,6 @@ patch_invoke (tree patch, tree method, tree args)
 	}
       if (!TYPE_SIZE (class))
 	safe_layout_class (class);
-      size = size_in_bytes (class);
       alloc_node =
 	(class_has_finalize_method (class) ? alloc_object_node
 		  			   : alloc_no_finalizer_node);
@@ -11109,11 +11108,20 @@ invocation_mode (tree method, int super)
   if (DECL_CONSTRUCTOR_P (method))
     return INVOKE_STATIC;
 
-  if (access & ACC_FINAL || access & ACC_PRIVATE)
+  if (access & ACC_PRIVATE)
     return INVOKE_NONVIRTUAL;
 
-  if (CLASS_FINAL (TYPE_NAME (DECL_CONTEXT (method))))
-    return INVOKE_NONVIRTUAL;
+  /* Binary compatibility: just because it's final today, that doesn't
+     mean it'll be final tomorrow.  */
+  if (! flag_indirect_dispatch  
+      || DECL_CONTEXT (method) == object_type_node)
+    {
+      if (access & ACC_FINAL)
+	return INVOKE_NONVIRTUAL;
+
+      if (CLASS_FINAL (TYPE_NAME (DECL_CONTEXT (method))))
+	return INVOKE_NONVIRTUAL;
+    }
 
   if (CLASS_INTERFACE (TYPE_NAME (DECL_CONTEXT (method))))
     return INVOKE_INTERFACE;

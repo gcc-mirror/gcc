@@ -1,4 +1,4 @@
-/* Copyright (C) 1999, 2000, 2001, 2002, 2003  Free Software Foundation
+/* Copyright (C) 1999, 2000, 2001, 2002, 2003, 2004  Free Software Foundation
 
    This file is part of libgcj.
 
@@ -35,6 +35,7 @@ help ()
   printf ("  -X                print help on supported -X options, then exit\n");
   printf ("  --ms=NUMBER       set initial heap size\n");
   printf ("  --mx=NUMBER       set maximum heap size\n");
+  printf ("  --verbose[:class] print information about class loading\n");
   printf ("  --showversion     print version number, then keep going\n");
   printf ("  --version         print version number, then exit\n");
   printf ("\nOptions can be specified with `-' or `--'.\n");
@@ -133,7 +134,7 @@ main (int argc, const char **argv)
 	  // correct behavior.
 	  _Jv_Jar_Class_Path = argv[++i];
 	}
-      else if (! strcmp (arg, "-verbose:class"))
+      else if (! strcmp (arg, "-verbose") || ! strcmp (arg, "-verbose:class"))
 	gcj::verbose_class_flag = true;
       else if (arg[1] == 'X')
 	{

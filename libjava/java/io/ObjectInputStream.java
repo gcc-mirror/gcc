@@ -121,15 +121,15 @@ public class ObjectInputStream extends InputStream
    */
   public final Object readObject() throws ClassNotFoundException, IOException
   {
-      if (callersClassLoader == null)
-	{
-	  callersClassLoader = getCallersClassLoader ();
-	  if (Configuration.DEBUG && dump)
-	    {
-	      dumpElementln ("CallersClassLoader = " + callersClassLoader);
-	    }
-	}
-
+	if (callersClassLoader == null)
+	  {
+		callersClassLoader = getCallersClassLoader ();
+		if (Configuration.DEBUG && dump)
+		  {
+			dumpElementln ("CallersClassLoader = " + callersClassLoader);
+		  }
+	  }
+	
     if (this.useSubclassMethod)
       return readObjectOverride();
 
@@ -271,7 +271,7 @@ public class ObjectInputStream extends InputStream
 	      readArrayElements(array, componentType);
 	      if(dump)
 	        for (int i = 0, len = Array.getLength(array); i < len; i++)
-		  dumpElementln("  ELEMENT[" + i + "]=" + Array.get(array, i));
+			  dumpElementln("  ELEMENT[" + i + "]=" + Array.get(array, i));
 	      ret_val = processResolution(null, array, handle);
 	      break;
 	    }
@@ -398,6 +398,8 @@ public class ObjectInputStream extends InputStream
 	setBlockDataMode(old_mode);
 	
 	this.isDeserializing = was_deserializing;
+
+	depth -= 2;
 	
 	depth -= 2;
 	
@@ -1806,6 +1808,7 @@ public class ObjectInputStream extends InputStream
    * @param sm SecurityManager instance which should be called.
    * @return The current class loader in the calling stack.
    */
+
   private static native ClassLoader currentClassLoader (SecurityManager sm);
   
   private native ClassLoader getCallersClassLoader();
@@ -1875,7 +1878,7 @@ public class ObjectInputStream extends InputStream
   private int depth = 0;
 
   private void dumpElement (String msg)
-  {
+  {	
     System.out.print(msg);
   }
   

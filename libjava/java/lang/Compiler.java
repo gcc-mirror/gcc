@@ -1,5 +1,5 @@
 /* Compiler.java -- placeholder for Java-to-native runtime compilers
-   Copyright (C) 1998, 1999, 2001, 2002 Free Software Foundation, Inc.
+   Copyright (C) 1998, 1999, 2001, 2002, 2004 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -76,8 +76,7 @@ public final class Compiler
    */
   public static boolean compileClass(Class oneClass)
   {
-    // Never succeed.
-    return false;
+    return VMCompiler.compileClass(oneClass);
   }
 
   /**
@@ -90,8 +89,7 @@ public final class Compiler
    */
   public static boolean compileClasses(String classNames)
   {
-    // Note the incredibly lame interface.  Always fail.
-    return false;
+    return VMCompiler.compileClasses(classNames);
   }
 
   /**
@@ -105,8 +103,7 @@ public final class Compiler
    */
   public static Object command(Object arg)
   {
-    // Our implementation defines this to a no-op.
-    return null;
+    return VMCompiler.command(arg);
   }
 
   /**
@@ -116,6 +113,7 @@ public final class Compiler
    */
   public static void enable()
   {
+    VMCompiler.enable();
   }
 
   /**
@@ -124,5 +122,6 @@ public final class Compiler
    */
   public static void disable()
   {
+    VMCompiler.disable();
   }
 }

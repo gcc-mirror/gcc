@@ -54,11 +54,12 @@ class VMSecurityManager
     // The docs above are wrong.  See the online docs.
     // FIXME this implementation is a bit wrong too -- the docs say we
     // must also consider ancestors of the system class loader.
+    ClassLoader systemClassLoader = VMClassLoader.getSystemClassLoader();
     Class[] classStack = getClassContext ();
     for (int i = 0; i < classStack.length; i++)
       {
 	ClassLoader loader = classStack[i].getClassLoader();
-	if (loader != null)
+	if (loader != null && loader != systemClassLoader)
 	  return loader;
       }
 

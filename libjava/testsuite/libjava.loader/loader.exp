@@ -1,5 +1,15 @@
 # Tests for ClassLoader and native library loader code.
 
+# Compute the correct name for an object file.
+# This is an awful hack.
+proc gcj_object_file_name {compiler base} {
+  verbose "OBJECT: compiler = $compiler"
+  if {[string match *libtool* $compiler]} {
+    return $base.lo
+  }
+  return $base.o
+}
+
 # Do all the work for a single JNI test.  Return 0 on failure.
 proc gcj_loader_test_one {srcfile} {
   global objdir srcdir subdir
@@ -9,9 +19,9 @@ proc gcj_loader_test_one {srcfile} {
   regsub "^.*/(\[^/.\]+)\[.\]\[^/]*$" "$srcfile" "\\1" out
   set executable "${objdir}/$out.exe"
 
-    set errname [file rootname [file tail $srcfile]]
-    set args [libjava_arguments link]
-    lappend args "additional_flags=--main=[file rootname [file tail $srcfile]] $srcdir/$subdir/MyLoader.java $objdir/dummy.o"
+  set errname [file rootname [file tail $srcfile]]
+  set args [libjava_arguments link]
+  lappend args "additional_flags=--main=[file rootname [file tail $srcfile]] $srcdir/$subdir/MyLoader.java $objdir/[gcj_object_file_name $args dummy]"
   set x [libjava_prune_warnings \
 	     [libjava_tcompile $srcfile "$executable" executable $args]]
 
@@ -47,7 +57,7 @@ proc gcj_loader_run {} {
   set args [libjava_arguments compile]
   lappend args "additional_flags=--resource $objdir/dummy.class"
   set x [libjava_prune_warnings \
-	   [libjava_tcompile "$objdir/dummy.class" "$objdir/dummy.o" object $args]]
+	   [libjava_tcompile "$objdir/dummy.class" "$objdir/[gcj_object_file_name $args dummy]" object $args]]
 
     if { $x != "" } {
 	verbose "resource compilation failed: $x" 2

@@ -242,17 +242,44 @@ check_local_unnamed_variable (tree best, tree decl, tree type)
       || (INTEGRAL_TYPE_P (decl_type)
 	  && INTEGRAL_TYPE_P (type)
 	  && TYPE_PRECISION (decl_type) <= 32
-	    && TYPE_PRECISION (type) <= 32
+	  && TYPE_PRECISION (type) <= 32
 	  && TYPE_PRECISION (decl_type) >= TYPE_PRECISION (type))      
-	|| (TREE_CODE (TREE_TYPE (decl)) == POINTER_TYPE
-	    && type == ptr_type_node))
-      {
-	if (best == NULL_TREE
-	  || (decl_type == type && TREE_TYPE (best) != type))
-	  return decl;
-      }
+      /*  ptr_type_node is used for null pointers, which are
+	  assignment compatible with everything.  */
+      || (TREE_CODE (decl_type) == POINTER_TYPE
+	  && type == ptr_type_node)
+      /* Whenever anyone wants to use a slot that is initially
+	 occupied by a PARM_DECL of pointer type they must get that
+	 decl, even if they asked for a pointer to a different type.
+	 However, if someone wants a scalar variable in a slot that
+	 initially held a pointer arg -- or vice versa -- we create a
+	 new VAR_DECL.  
 
-    return best;
+	 ???: As long as verification is correct, this will be a
+	 compatible type.  But maybe we should create a dummy vribale
+	 and replace all references to it with the DECL and a
+	 NOP_EXPR.
+      */
+      || (TREE_CODE (decl_type) == POINTER_TYPE
+	  && TREE_CODE (decl) == PARM_DECL
+	  && TREE_CODE (type) == POINTER_TYPE)
+
+      /* The new verifier requires a similar treatment in the
+	 situation where the parameter has an integral type which
+	 promotes to `int'.  */
+      || (flag_new_verifier
+	  && TREE_CODE (decl) == PARM_DECL
+	  && INTEGRAL_TYPE_P (decl_type)
+	  && TYPE_PRECISION (decl_type) <= 32
+	  && INTEGRAL_TYPE_P (type)
+	  && TYPE_PRECISION (type) <= 32))
+    {
+      if (best == NULL_TREE
+	  || (decl_type == type && TREE_TYPE (best) != type))
+	return decl;
+    }
+
+  return best;
 }
 
 
@@ -286,9 +313,9 @@ find_local_variable (int index, tree type, int pc ATTRIBUTE_UNUSED)
      variable that is used for every reference in that local variable
      slot.  */
   if (! decl)
-  {
-    char buf[64];
-    tree name;
+    {
+      char buf[64];
+      tree name;
       sprintf (buf, "#slot#%d#%d", index, uniq++);
       name = get_identifier (buf);
       decl = build_decl (VAR_DECL, name, type);
@@ -688,6 +715,11 @@ java_init_decl_processing (void)
   TYPE_NONALIASED_COMPONENT (atable_type) = 1;
   atable_ptr_type = build_pointer_type (atable_type);
 
+  itable_type = build_array_type (ptr_type_node, 
+				  one_elt_array_domain_type);
+  TYPE_NONALIASED_COMPONENT (itable_type) = 1;
+  itable_ptr_type = build_pointer_type (itable_type);
+
   symbol_type = make_node (RECORD_TYPE);
   PUSH_FIELD (symbol_type, field, "clname", utf8const_ptr_type);
   PUSH_FIELD (symbol_type, field, "name", utf8const_ptr_type);
@@ -697,6 +729,15 @@ java_init_decl_processing (void)
   symbols_array_type = build_array_type (symbol_type, 
 					 one_elt_array_domain_type);
   symbols_array_ptr_type = build_pointer_type (symbols_array_type);
+
+  assertion_entry_type = make_node (RECORD_TYPE);
+  PUSH_FIELD (assertion_entry_type, field, "assertion_code", integer_type_node);
+  PUSH_FIELD (assertion_entry_type, field, "op1", utf8const_ptr_type);
+  PUSH_FIELD (assertion_entry_type, field, "op2", utf8const_ptr_type);
+  FINISH_RECORD (assertion_entry_type);
+  
+  assertion_table_type = build_array_type (assertion_entry_type,
+                                           one_elt_array_domain_type);
 
   /* As you're adding items here, please update the code right after
      this section, so that the filename containing the source code of
@@ -813,6 +854,9 @@ java_init_decl_processing (void)
   PUSH_FIELD (class_type_node, field, "atable", atable_ptr_type);
   PUSH_FIELD (class_type_node, field, "atable_syms", 
   	      symbols_array_ptr_type);
+  PUSH_FIELD (class_type_node, field, "itable", itable_ptr_type);
+  PUSH_FIELD (class_type_node, field, "itable_syms", 
+  	      symbols_array_ptr_type);
   PUSH_FIELD (class_type_node, field, "catch_classes", ptr_type_node);
   PUSH_FIELD (class_type_node, field, "interfaces",
 	      build_pointer_type (class_ptr_type));
@@ -825,9 +869,11 @@ java_init_decl_processing (void)
   PUSH_FIELD (class_type_node, field, "idt", ptr_type_node);  
   PUSH_FIELD (class_type_node, field, "arrayclass", ptr_type_node);  
   PUSH_FIELD (class_type_node, field, "protectionDomain", ptr_type_node);
+  PUSH_FIELD (class_type_node, field, "assertion_table", ptr_type_node);
   PUSH_FIELD (class_type_node, field, "hack_signers", ptr_type_node);
   PUSH_FIELD (class_type_node, field, "chain", ptr_type_node);
   PUSH_FIELD (class_type_node, field, "aux_info", ptr_type_node);
+  PUSH_FIELD (class_type_node, field, "engine", ptr_type_node);
   for (t = TYPE_FIELDS (class_type_node);  t != NULL_TREE;  t = TREE_CHAIN (t))
     FIELD_PRIVATE (t) = 1;
   push_super_field (class_type_node, object_type_node);
@@ -993,8 +1039,14 @@ java_init_decl_processing (void)
     = builtin_function ("_Jv_LookupInterfaceMethodIdx",
 			build_function_type (ptr_type_node, t),
 			0, NOT_BUILT_IN, NULL, NULL_TREE);
-
   DECL_IS_PURE (soft_lookupinterfacemethod_node) = 1;
+  t = tree_cons (NULL_TREE, ptr_type_node,
+		 tree_cons (NULL_TREE, ptr_type_node,
+			    tree_cons (NULL_TREE, ptr_type_node, endlink)));
+  soft_lookupinterfacemethodbyname_node 
+    = builtin_function ("_Jv_LookupInterfaceMethod",
+			build_function_type (ptr_type_node, t),
+			0, NOT_BUILT_IN, NULL, NULL_TREE);
   t = tree_cons (NULL_TREE, object_ptr_type_node,
 		 tree_cons (NULL_TREE, ptr_type_node,
 			    tree_cons (NULL_TREE, ptr_type_node, 

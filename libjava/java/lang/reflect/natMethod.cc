@@ -1,6 +1,6 @@
 // natMethod.cc - Native code for Method class.
 
-/* Copyright (C) 1998, 1999, 2000, 2001 , 2002, 2003 Free Software Foundation
+/* Copyright (C) 1998, 1999, 2000, 2001 , 2002, 2003, 2004 Free Software Foundation
 
    This file is part of libgcj.
 
@@ -149,7 +149,6 @@ java::lang::reflect::Method::invoke (jobject obj, jobjectArray args)
     getType ();
     
   jmethodID meth = _Jv_FromReflectedMethod (this);
-  jclass objClass;
 
   if (Modifier::isStatic(meth->accflags))
     {
@@ -157,12 +156,10 @@ java::lang::reflect::Method::invoke (jobject obj, jobjectArray args)
       // here and not in _Jv_CallAnyMethodA because JNI initializes a
       // class whenever a method lookup is done.
       _Jv_InitClass (declaringClass);
-      objClass = declaringClass;
     }
   else
     {
-      objClass = JV_CLASS (obj);
-     
+      jclass objClass = JV_CLASS (obj);
       if (! _Jv_IsAssignableFrom (declaringClass, objClass))
         throw new java::lang::IllegalArgumentException;
     }
@@ -184,7 +181,7 @@ java::lang::reflect::Method::invoke (jobject obj, jobjectArray args)
 	{
 	}
 
-      if (! _Jv_CheckAccess(caller, objClass, meth->accflags))
+      if (! _Jv_CheckAccess(caller, declaringClass, meth->accflags))
 	throw new IllegalAccessException;
     }
 

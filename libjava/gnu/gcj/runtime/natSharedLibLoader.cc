@@ -1,6 +1,6 @@
 // natSharedLibLoader.cc - Implementation of SharedLibHelper native methods.
 
-/* Copyright (C) 2001, 2003  Free Software Foundation
+/* Copyright (C) 2001, 2003, 2004  Free Software Foundation
 
    This file is part of libgcj.
 
@@ -12,6 +12,8 @@ details.  */
 
 #include <gcj/cni.h>
 #include <jvm.h>
+#include <execution.h>
+
 #include <gnu/gcj/runtime/SharedLibHelper.h>
 #include <java/io/IOException.h>
 #include <java/lang/UnsupportedOperationException.h>
@@ -30,9 +32,10 @@ typedef void (*CoreHookFunc) (_Jv_core_chain *);
 void
 _Jv_sharedlib_register_hook (jclass cls)
 {
-  curHelper->registerClass(cls->getName(), cls);
   cls->protectionDomain = curHelper->domain;
   cls->loader = curLoader;
+  cls->engine = &_Jv_soleCompiledEngine;
+  curHelper->registerClass(cls->getName(), cls);
 }
 
 static void
@@ -121,4 +124,10 @@ gnu::gcj::runtime::SharedLibHelper::finalize()
 #ifdef HAVE_DLOPEN
   dlclose (handler);
 #endif
+}
+
+void
+gnu::gcj::runtime::SharedLibHelper::ensureSupersLinked(jclass k)
+{
+  _Jv_Linker::wait_for_state (k, JV_STATE_LOADING);
 }

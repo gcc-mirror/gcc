@@ -134,9 +134,11 @@ libgcj_javaflags=
 LIBGCJ_CFLAGS="${libgcj_cflags}"
 LIBGCJ_CXXFLAGS="${libgcj_cxxflags}"
 LIBGCJ_JAVAFLAGS="${libgcj_javaflags}"
+LIBGCJ_LD_SYMBOLIC="${libgcj_ld_symbolic}"
 AC_SUBST(LIBGCJ_CFLAGS)
 AC_SUBST(LIBGCJ_CXXFLAGS)
 AC_SUBST(LIBGCJ_JAVAFLAGS)
+AC_SUBST(LIBGCJ_LD_SYMBOLIC)
 
 AC_CONFIG_HEADERS([include/config.h gcj/libgcj-config.h])
 

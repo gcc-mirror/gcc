@@ -36,7 +36,7 @@ The Free Software Foundation is independent of Sun Microsystems, Inc.  */
 /* The basic idea is that we assign each local variable declaration
    and each blank final field an index, and then we pass around
    bitstrings, where the (2*i)'th bit is set if decl whose DECL_BIT_INDEX
-   is i is definitely assigned, and the (2*i+1)'th bit is set if 
+   is i is definitely assigned, and the the (2*i=1)'th bit is set if 
    decl whose DECL_BIT_INDEX is i is definitely unassigned */
 
 /* One segment of a bitstring. */
@@ -45,7 +45,7 @@ typedef unsigned int word;
 /* Pointer to a bitstring. */
 typedef word *words;
 
-/* Number of local variables currently active. */
+/* Number of locals variables currently active. */
 static int num_current_locals = 0;
 
 /* The value of num_current_locals when we entered the closest
@@ -191,6 +191,50 @@ get_variable_decl (tree exp)
 	    return op1;
 	}
     }
+  else if (TREE_CODE (exp) == INDIRECT_REF)
+    {
+      /* For indirect dispatch, look for an expression of the form 
+      (indirect_ref (+ (array_ref otable <N>) this)).  
+      FIXME: it would probably be better to generate a JAVA_FIELD_REF
+      expression that gets converted to OTABLE access at
+      gimplification time.  */
+      exp = TREE_OPERAND (exp, 0);
+      if (TREE_CODE (exp) == PLUS_EXPR)
+	{
+	  tree op0 = TREE_OPERAND (exp, 0);
+	  STRIP_NOPS (op0);
+	  if (TREE_CODE (op0) == ARRAY_REF)
+	    {
+	      tree table = TREE_OPERAND (op0, 0);
+	      if (TREE_CODE (table) == VAR_DECL
+		  && DECL_LANG_SPECIFIC (table)
+		  && DECL_OWNER (table) 
+		  && TYPE_OTABLE_DECL (DECL_OWNER (table)) == table)
+		{
+		  HOST_WIDE_INT index 
+		    = TREE_INT_CST_LOW (TREE_OPERAND (op0, 1));
+		  tree otable_methods 
+		    = TYPE_OTABLE_METHODS (DECL_OWNER (table));
+		  tree element;
+		  for (element = otable_methods; 
+		       element; 
+		       element = TREE_CHAIN (element))
+		    {
+		      if (index == 1)
+			{
+			  tree purpose = TREE_PURPOSE (element);
+			  if (TREE_CODE (purpose) == FIELD_DECL)
+			    return purpose;
+			  else
+			    return NULL_TREE;
+			}
+		      --index;
+		    }
+		}
+	    }
+	}
+    }
+
   return NULL_TREE;
 }
 
@@ -306,7 +350,7 @@ check_bool2_init (enum tree_code code, tree exp0, tree exp1,
 /* Check a boolean expression EXP for definite [un]assignment.
    BEFORE is the set of variables definitely [un]assigned before the
    conditional.  (This bitstring may be modified arbitrarily in this function.)
-   On output, WHEN_FALSE is the set of variables definitely [un]assigned after
+   On output, WHEN_FALSE is the set of variables [un]definitely assigned after
    the conditional when the conditional is false.
    On output, WHEN_TRUE is the set of variables definitely [un]assigned after
    the conditional when the conditional is true.
@@ -432,8 +476,8 @@ done_alternative (words after, struct alternatives *current)
 	      WORDS_NEEDED (2 * current->num_locals));
 }
 
-/* Used when we are done with a control flow branch and are all merged again.
-   AFTER is the merged state of [un]assigned variables,
+/* Used when we done with a control flow branch and are all merged again.
+ * AFTER is the merged state of [un]assigned variables,
    CURRENT is a struct alt that was passed to BEGIN_ALTERNATIVES. */
 
 #define END_ALTERNATIVES(after, current) \
@@ -445,7 +489,7 @@ done_alternative (words after, struct alternatives *current)
   start_current_locals = current.save_start_current_locals; \
 }
 
-/* Check for [un]initialized local variables in EXP.  */
+/* Check for (un)initialized local variables in EXP.  */
 
 static void
 check_init (tree exp, words before)
@@ -460,7 +504,7 @@ check_init (tree exp, words before)
 	  && DECL_NAME (exp) != this_identifier_node)
 	{
 	  int index = DECL_BIT_INDEX (exp);
-	  /* We don't want to report and mark as non-initialized class
+	  /* We don't want to report and mark as non initialized class
 	     initialization flags. */
 	  if (! LOCAL_CLASS_INITIALIZATION_FLAG_P (exp)
 	      && index >= 0 && ! ASSIGNED_P (before, index))
@@ -604,7 +648,7 @@ check_init (tree exp, words before)
 	   "hypothetical" analysis model.  We do something much
 	   simpler: We just disallow assignments inside loops to final
 	   variables declared outside the loop.  This means we may
-	   disallow some contrived assignments that the JLS allows, but I
+	   disallow some contrived assignments that the JLS, but I
 	   can't see how anything except a very contrived testcase (a
 	   do-while whose condition is false?) would care. */
 

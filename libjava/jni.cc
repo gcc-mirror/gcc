@@ -563,11 +563,12 @@ _Jv_JNI_ThrowNew (JNIEnv *env, jclass clazz, const char *message)
 					       NULL);
 
       jclass *elts = elements (argtypes);
-      elts[0] = &StringClass;
+      elts[0] = &java::lang::String::class$;
 
       Constructor *cons = clazz->getConstructor (argtypes);
 
-      jobjectArray values = JvNewObjectArray (1, &StringClass, NULL);
+      jobjectArray values = JvNewObjectArray (1, &java::lang::String::class$,
+					      NULL);
       jobject *velts = elements (values);
       velts[0] = JvNewStringUTF (message);
 
@@ -1204,7 +1205,7 @@ _Jv_JNI_GetAnyFieldID (JNIEnv *env, jclass clazz,
 
 	      // The field might be resolved or it might not be.  It
 	      // is much simpler to always resolve it.
-	      _Jv_ResolveField (field, loader);
+	      _Jv_Linker::resolve_field (field, loader);
 	      if (_Jv_equalUtf8Consts (f_name, a_name)
 		  && field->getClass() == field_class)
 		return field;

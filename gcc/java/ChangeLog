@@ -1,3 +1,586 @@
+2004-11-24  Tom Tromey  <tromey@redhat.com>
+
+	* Merged gcj-abi-2-dev-branch to trunk.
+
+2004-11-24  Andrew Haley  <aph@redhat.com>
+
+	* jcf-parse.c (parse_class_file): Set file_start_location.
+
+2004-11-10  Tom Tromey  <tromey@redhat.com>
+
+	* class.c (make_field_value): Don't call build_static_field_ref.
+	(build_static_field_ref): Don't emit direct references when using
+	indirect dispatch.
+
+	* gcj.texi (Invoking gij): Document -verbose.  Put -verbose and
+	-verbose:class into man page synopsis.
+
+2004-11-09  Tom Tromey  <tromey@redhat.com>
+
+	* expr.c (build_java_arraystore_check): Still generate check if
+	element type is itself an array.
+
+2004-11-08  Tom Tromey  <tromey@redhat.com>
+
+	* java-tree.h (soft_check_assignment_node): Removed.
+	(enum java_tree_index): Removed JTI_SOFT_CHECK_ASSIGNMENT_NODE.
+	* decl.c (java_init_decl_processing): Don't initialize
+	soft_check_assignment_node.
+
+2004-11-05  Tom Tromey  <tromey@redhat.com>
+
+	* class.c (layout_class_methods): Don't add Miranda methods when
+	using indirect dispatch.
+
+2004-11-05  Bryce McKinlay  <mckinlay@redhat.com>
+
+	* class.c (make_class_data): Call emit_assertion_table to set the
+	'assertion_table' field.
+	(build_signature_for_libgcj): Move here from expr.c.
+	(add_assertion_table_entry): New function. Callback for assertion
+	hashtable traversal.
+	(emit_assertion_table): New. Take class argument, and generate 
+	assertion table DECL based on the TYPE_ASSERTIONS hashtable.
+	* decl.c (init_decl_processing): Define assertion_entry_type record.
+	Push 'assertion_table' class field instead of 'verify'.
+	* expr.c (type_assertion_eq): Compare 'assertion_code' field.
+	(type_assertion_hash): Include 'assertion_code' in hash.
+	(add_type_assertion): Rewritten. Take class and assertion_code
+	arguments. Add assertions to the TYPE_ASSERTIONS hashtable.
+	(can_widen_reference_to): Use new add_type_assertion() arguments.
+	* java-tree.h (java_tree_index): Add JTI_ASSERTION_ENTRY_TYPE, 
+	JTI_ASSERTION_TABLE_TYPE. Remove JTI_VERIFY_IDENTIFIER_NODE.
+	(verify_identifier_node): Removed.
+	(assertion_entry_type, assertion_table_type): New.
+	(ASSERTION_TYPES_COMPATIBLE, ASSERTION_IS_INSTANTIABLE): New. Type
+	assertion code definitions.
+	(struct type_assertion): Add assertion_code. Rename 'source_type' and
+	'target_type' to 'op1' and 'op2'.
+	(add_type_assertion): Declare.
+	(lang_printable_name_wls): Remove unused definition.
+	* verify-glue.c: (vfy_is_assignable_from): New. Call add_type_assertion
+	to emit runtime assertion.
+	(vfy_note_stack_type): Clean up non-C90 declarations.
+	(vfy_note_local_type): Likewise.
+	* verify.h (vfy_is_assignable_from): Declare.
+	* verify-impl.c (is_assignable_from_slow): Remove unused function.
+	(ref_compatible): Rename arguments. Call vfy_is_assignable_from() 
+	instead of is_assignable_from_slow().
+	(types_compatible): Reinstate ref_compatible() call.
+
+2004-11-04  Tom Tromey  <tromey@redhat.com>
+
+	* class.c (build_static_field_ref): Reverted previous patch.
+
+	* class.c (build_static_field_ref): Don't emit direct references
+	when using indirect dispatch.
+
+2004-11-03  Tom Tromey  <tromey@redhat.com>
+
+	* expr.c (expand_java_arrayload): Set lhs_type_node.
+	(expand_java_arraystore): Set rhs_type_node.
+
+2004-11-02  Tom Tromey  <tromey@redhat.com>
+
+	* jcf-parse.c (compute_class_name): Use filename length from zip
+	directory, not strlen.
+
+	* expr.c (expand_invoke): Mark new interface methods as abstract.
+
+2004-11-01  Tom Tromey  <tromey@redhat.com>
+
+	* verify-impl.c (push_jump): Removed check for uninitialized
+	objects.
+	(push_exception_jump): Likewise.
+	(handle_ret_insn): Likewise.
+	(handle_jsr_insn): Likewise.
+	(state_check_no_uninitialized_objects): Removed.
+
+	* decl.c (check_local_unnamed_variable): Recognize
+	promoted-to-int parameters when using the new verifier.
+	* expr.c (expand_java_arraystore): Explicitly request array type
+	when using new verifier.
+	(expand_java_arrayload): Likewise.
+	(invoke_build_dtable): Don't pass object_type_node as
+	expression argument to build_java_indirect_ref.
+	(build_java_check_indexed_type): Do nothing.
+	(build_java_arraystore_check): Handle case where array doesn't
+	have array type.
+	(build_java_array_length_access): Likewise.
+	(expand_invoke): Handle case where interface overrides a method
+	from Object.
+	(pop_type_0): Always succeed for reference types.
+	(process_jvm_instruction): Don't pop a value in a dead
+	exception handler.
+	(pop_arguments): Convert arguments to correct types.
+
+2004-10-29  Andrew Haley  <aph@redhat.com>
+
+	* jcf-parse.c (give_name_to_class): Remove line that was
+	incorrectly merged.
+
+2004-10-29  Andrew Haley  <aph@redhat.com>
+
+	* jcf-parse.c (set_source_filename): Add code to build new sfname.
+
+2004-10-20  Andrew Haley  <aph@redhat.com>
+
+	* decl.c (end_java_method): Don't expand if flag_syntax_only.
+
+2004-10-26  Tom Tromey  <tromey@redhat.com>
+
+	* verify.h (vfy_notify_verified): Removed.
+	* verify-glue.c (vfy_notify_verified): Removed.
+
+2004-10-26  Tom Tromey  <tromey@redhat.com>
+
+	* verify-impl.c (debug_print_state): Declare `i' before code.
+	(merge_types): Modify `t' when it is null_type.
+
+2004-10-26  Tom Tromey  <tromey@redhat.com>
+
+	* verify-impl.c (type_print): Renamed from print.  Now static and
+	takes an argument.
+	(debug_print_state): Use type_print.
+
+2004-10-25  Tom Tromey  <tromey@redhat.com>
+
+	* expr.c (build_invokeinterface): Compute correct offset for
+	index into interface methods.
+
+2004-10-20  Tom Tromey  <tromey@redhat.com>
+
+	* java-tree.h (verify_jvm_instructions_new): Declare.
+
+	* jvspec.c (jvgenmain_spec): Remove -fnew-verifier from cc1
+	command line.
+
+	* verify-impl.c (verify_instructions): Correctly handle wide
+	types on the stack.
+	* verify-glue.c (vfy_get_class_name): Use DECL_NAME.
+	(vfy_get_component_type): Strip pointer types.
+	(vfy_find_class): Use get_type_from_signature.  Strip pointer
+	types.
+	Include java-except.h.
+
+2004-10-20  Bryce McKinlay  <mckinlay@redhat.com>
+
+	* verify-impl.c (type_array_elementpop_raw, vfy_pop_type_t, 
+	vfy_push_type_t, set_variable, add_new_state, merge_into,
+	handle_jsr_insn, branch_prepass, check_class_constant,
+	check_wide_constant, get_one_type, compute_static_types, 
+	verify_instructions_0): Clean up C99 declarations after statements.
+
+2004-10-20  Tom Tromey  <tromey@redhat.com>
+
+	* verify-impl.c (merge_refs): Compare reference against iterator,
+	not ref2.
+
+	* verify-glue.c (vfy_tag): Mask off resolved flag.
+
+2004-10-19  Tom Tromey  <tromey@redhat.com>
+
+	* verify-impl.c (verify_instructions): Call vfy_note_local_type.
+	(init_state_with_stack): Initialize `this_type' in state.
+	(verify_method): Use debug_print.
+	* verify-glue.c (vfy_is_primitive): Removed debugging print.
+	(vfy_note_stack_depth): Reverted last patch.
+	(vfy_note_stack_type): Note pointer to Object, not Object.
+	(vfy_note_local_type): Likewise.
+
+	* verify.h (vfy_note_instruction_seen): Declare.
+	* verify-glue.c (verify_jvm_instructions_new): Set
+	BCODE_EXCEPTION_TARGET on target instruction.
+	(vfy_note_instruction_seen): New function.
+	* verify-impl.c (FLAG_INSN_SEEN): New define.
+	(verify_instructions_0): Set flag on instruction.  Save state for
+	PC=0 later.
+	(verify_instructions): Call vfy_note_instruction_seen.
+
+	* verify-glue.c (vfy_note_stack_depth): Fix off-by-one error.
+	(verify_jvm_instructions_new): Call method_init_exceptions,
+	add_handler, and handle_nested_ranges.
+	* verify-impl.c (verify_method): Return 1 on success.
+	(verify_instructions_0): Save the state at PC=0.
+
+	* verify-impl.c (init_type_from_class): Set is_resolved and
+	ref_next on new ref_intersection.
+	(init_type_from_string): Likewise.
+
+2004-10-15  Bryce McKinlay  <mckinlay@redhat.com>
+
+	* expr.c (expand_bytecode): Use verify_jvm_instructions_new
+	if flag_new_verifier is set.
+	* java-tree.h (flag_new_verifier): Declare.
+	* lang.opt (fnew-verifier): New option.
+	* verify-impl.c: Work around namespace pollution by undef'ing 
+	'current_class'.
+	(struct verifier_context): Make 'bytecode' const.
+	(verify_fail_pc): Pass -1 PC argument to vfy_fail.
+	(types_compatible): For the BC-ABI, always consider reference types
+	compatible.
+	(check_class_constant): Use vfr->current_class.
+	(check_constant): Likewise.
+	(check_wide_constant): Likewise.
+	(check_field_constant): Check for 'L' at start of type name.
+	(get_one_type): Return pointer instead of type. Set type result in
+	caller via passed type pointer.
+	(compute_argument_types): Update to use new get_one_type arguments.
+	(compute_return_type): Likewise.
+	(make_verifier_context): New. Allocate and initialize 'vfr'.
+	(free_verifier_context): New. Free 'vfr' and its contents.
+	(verify_method): Remove ATTRIBUTE_UNUSED. Call make_verifier_context
+	and free_verifier_context.
+
+2004-10-15  Tom Tromey  <tromey@redhat.com>
+
+	* verify-glue.c (vfy_note_local_type): Mark argument as unused.
+	* verify.h (vfy_fail): Fixed formatting.
+
+	* verify-impl.c (vfr): Fixed comment formatting.
+	(collapse_type): New function.
+	(verify_instructions): Notify compiler about type map.
+	* verify.h (vfy_note_stack_depth): Updated.
+	(vfy_note_stack_type): Likewise.
+	(vfy_note_local_type): Likewise.
+	(vfy_unsuitable_type, vfy_return_address_type, vfy_null_type):
+	Declare.
+	* verify-glue.c (vfy_note_stack_depth): Correctly size type
+	state.  Added `method' argument.
+	(vfy_note_stack_type): Renamed from vfy_note_type.  Added `method'
+	argument.
+	(vfy_note_local_type): New function.
+	(vfy_unsuitable_type): Likewise.
+	(vfy_return_address_type): Likewise.
+	(vfy_null_type): Likewise.
+
+	* verify.h (VFY_IN_GCC): Removed.
+	(VFY_WANT_TYPEMAP): Removed.
+	* verify-impl.c (verify_instructions_0): Removed useless "\".
+	(struct state) <next>: Uncomment.
+
+2004-10-13  Bryce McKinlay  <mckinlay@redhat.com>
+
+	* verify-impl.c: Formatting fixes. Reformat C++-style comments to 
+	C-style.
+
+2004-10-06  Bryce McKinlay  <mckinlay@redhat.com>
+
+	* Make-lang.in (verify.o): Re-enabled this target.
+	* verify-glue.c (vfy_get_interface_count): Add ATTRIBUTE_UNUSED.
+	(vfy_get_interface): Likewise.
+	(verify_jvm_instructions_new): Renamed from verify_jvm_instructions.
+	* verify.h (verify_jvm_instructions_new): Declare.
+	* verify-impl.c (free_state): Temporarily comment out unused
+	function.
+
+2004-10-06  Tom Tromey  <tromey@redhat.com>
+
+	* java-tree.h (JV_STATE_READ): New enum value.
+
+2004-10-06  Bryce McKinlay  <mckinlay@redhat.com>
+
+	* verify.h: New file.
+
+2004-10-05  Bryce McKinlay  <mckinlay@redhat.com>
+
+	* verify-impl.c, verify-glue.c, verify.h: New files.
+	* Make-lang.in: Add rules for verify-impl.o and verify-glue.o.
+
+2004-09-24  Andrew Haley  <aph@redhat.com>
+
+	* decl.c (check_local_unnamed_variable): Always use the PARM_DECL
+	for a slot if it's of pointer type.
+
+2004-09-14  Tom Tromey  <tromey@redhat.com>
+
+	* class.c (make_class_data): Correctly initialize "state" field.
+	Initialize "engine" field.
+	* decl.c (java_init_decl_processing): Add "engine" field.
+
+2004-09-10  Andrew Haley  <aph@redhat.com>
+
+	PR java/12760
+	* expr.c (build_invokeinterface): Use fast method for interface
+	dispatch.
+	* java-tree.h (enum java_tree_index): Add JTI_ITABLE_TYPE,
+	JTI_ITABLE_PTR_TYPE.
+	(struct lang_type): Add  itable_methods, itable_decl, itable_syms_decl.
+	(emit_symbol_table): Add new arg, element_size.
+	* decl.c (java_init_decl_processing): Initialize Class.itable.
+	* class.c (GEN_TABLE): New macro.
+	(gen_indirect_dispatch_tables): Use it.  Add itable.
+	(make_class_data): Add new arg for emit_symbol_table().
+	Emit itable.
+	(add_miranda_methods): Make sure search_class has been parsed.
+	(emit_symbol_table): Add new arg, element_size.
+
+2004-09-06  Andrew Haley  <aph@redhat.com>
+
+	* verify.c (merge_types): Return Object for all merges of
+	interfaces.
+	* expr.c (add_type_assertion): Don't generate assertions when
+	source type is array of Object.
+		
+2004-09-03  Andrew Haley  <aph@redhat.com>
+
+	* class.c (finish_class): Nullify TYPE_VERIFY_METHOD.
+
+	* lang.c (java_post_options): Force flag_verify_invocations if
+	we're not using indirect dispatch.
+
+	* expr.c (pop_type_0): Move test for interfaces before call to
+	can_widen_reference_to().
+	(build_signature_for_libgcj): Remove generation of canonical array
+	type.
+	(add_type_assertion): Canonicalize both arrays.
+	Don't assert that type X can be assigned to Object.
+	Don't assert that type X an be assigned to type X.
+	Don't assert that Object can be assigned to type X.
+	(can_widen_reference_to): Warn whenever we generate an assertion.
+	(process_jvm_instruction): Use throwable_type_node for the type of
+	an exception class.
+
+2004-09-01  Andrew Haley  <aph@redhat.com>
+
+	* decl.c (java_init_decl_processing): Change
+	verify_identifier_node to "__verify".
+	* expr.c (add_type_assertion): Use verify_identifier_node for name.
+	* java-tree.h (verify_identifier_node): Change to "__verify".
+
+	* expr.c (build_signature_for_libgcj): New function.
+	(add_type_assertion): Use it to construct signatures for
+	source_type and target_type.
+
+2004-08-27  Andrew Haley  <aph@redhat.com>
+
+	* java-tree.h (enum java_tree_index): Add JTI_VERIFY_IDENTIFIER_NODE.
+	(verify_identifier_node): New.
+	(TYPE_VERIFY_METHOD): New.
+	(struct type_assertion): New type.
+	* expr.c (type_assertion_eq): New function.
+	(type_assertion_hash): New function.
+	(add_type_assertion): New function.
+	(can_widen_reference_to): Call add_type_assertion().
+	* decl.c (java_init_decl_processing): Add verify_identifier_node.
+	* class.c (make_class_data): Initialize TYPE_VERIFY_METHOD (type).
+	(finish_class): Output TYPE_VERIFY_METHOD (type).
+
+	* decl.c (end_java_method): Nullify unused fields.
+
+2004-08-17  Andrew Haley  <aph@redhat.com>
+
+	* verify.c (defer_merging): Quieten.
+	* jcf-parse.c (load_class): Only try to open a class file if it's
+	java.lang.Object or if it's part of the current compilation.
+	Check that the class we just tried to load is the class we just
+	loaded.  Quieten.
+	(java_parse_file): Set flag_verify_invocations off if we're
+	compiling from .class.
+	(parse_zip_file_entries): Abort if we try to read a dummy class.
+	* expr.c (can_widen_reference_to): Quieten.
+	(build_invokevirtual): Abort if we try to invokevirtual an
+	interface.
+	(expand_invoke): Don't build a non-interface call to an interface.
+	(build_instanceof): Don't do premature optimization if
+	flag_verify_invocations is not set.
+	* class.c (set_super_info): Disable code that inherits TYPE_DUMMY
+	from superclass.
+	(build_static_field_ref): Add correct type conversion for
+	field_address.
+	(add_miranda_methods): Disable generation of Miranda methods for
+	dummy classes.
+	(layout_class_method): Don't complain about non-static method
+	overrides static method with dummy classes.
+
+2004-08-13  Tom Tromey  <tromey@redhat.com>
+
+	* class.c (build_static_field_ref): Re-enable atable lookups for
+	static fields.
+
+	* parse.y (strip_out_static_field_access_decl): Indentation fix.
+
+2004-08-11  Tom Tromey  <tromey@redhat.com>
+
+	* gcj.texi (libgcj Runtime Properties): Document new properties.
+
+2004-08-06  Andrew Haley  <aph@redhat.com>
+
+	* jcf-parse.c (load_class): Check that we really have loaded the
+	class we're looking for.
+
+2004-07-19  Andrew Haley  <aph@redhat.com>
+
+	* verify.c (verify_jvm_instructions): Comment change only.
+
+	* typeck.c (build_java_array_type): Add size field to array name.
+
+	* java-tree.h (LOCAL_SLOT_P): New.
+	(update_aliases): Add PC argument.
+	(pushdecl_function_level): New function.
+
+	* java-gimplify.c (java_gimplify_expr): Handle VAR_DECL,
+	MODIFY_EXPR, and SAVE_EXPR.
+	(java_gimplify_modify_expr): New function.
+
+	* expr.c (push_type_0): Call find_stack_slot() to create temporary.
+	(expand_iinc): Pass PC to update_aliases().
+	(STORE_INTERNAL): Likewise.
+	(process_jvm_instruction): Likewise.
+
+	* decl.c (base_decl_map): New variable.
+	(uniq): New variable.
+	(update_aliases): Rewrite with more thorough checking.
+	(debug_variable_p): New function.
+	(push_jvm_slot): Don't initialize local variable.  Don't pushdecl.
+	(check_local_named_variable): Delete whole function.
+	(initialize_local_variable): New function.
+	(check_local_unnamed_variable): Add checks and comments.
+	(find_local_variable): Rewrite.
+	(java_replace_reference): New function.
+	(function_binding_level): New variable.
+	(pushdecl_function_level): New function.
+	(maybe_pushlevels): Set DECL_LOCAL_END_PC.
+	(maybe_pushlevels): Call pushdecl() on each of the new decls.
+	(start_java_method): Reset uniq.  Create base_decl_map.  Set
+	function_binding_level.
+	(end_java_method): Null unused fields to save memory.
+
+2004-06-29  Andrew Haley  <aph@redhat.com>
+
+	* except.c (expand_start_java_handler): Push a new binding level.
+	Don't build a TRY_CATCH_EXPR now, we'll do it later.  Call
+	register_exception_range() to register where we'll do it.
+	(expand_end_java_handler): Remove old bogus code.  Replace with
+	new logic that simply builds TRY_CATCH_EXPRs and inserts them at
+	the top of the expression we're curently building.
+	(maybe_end_try): Delete.
+	* decl.c (binding_level.exception_range): New field.
+	(clear_binding_level): Add field exception_range.  Reformat.
+	(poplevel): Call expand_end_java_handler().
+	(poplevel): Call java_add_stmt only if functionbody is false.
+	(maybe_poplevels): Don't call maybe_end_try() from here.
+	(end_java_method): Clear no longer used trees in function decl.
+	(register_exception_range): New function.
+	* java-tree.h (register_exception_range, struct eh_range): Declare.
+
+2004-06-22  Andrew Haley  <aph@redhat.com>
+
+	* class.c (gen_indirect_dispatch_tables): Set the DECL_OWNER of
+	the otable.
+	* check-init.c (get_variable_decl): Teach check-init about
+	FIELD_DECLs addressed via the otable.
+	* jcf-parse.c (load_class): Check CLASS_LOADED_P, not
+	CLASS_PARSED_P.
+
+2004-05-28  Andrew Haley  <aph@redhat.com>
+
+	* jcf-parse.c (load_class): Don't try to read a class that we've
+	already read.
+
+	* expr.c (build_invokeinterface): Use the old-fashioned way of
+	doing indirect dispatch: look up interfaces by name.
+	* java-tree.h (enum java_tree_index): Add
+	JTI_SOFT_LOOKUPINTERFACEMETHODBYNAME_NODE
+	* decl.c (java_init_decl_processing): Add
+	soft_lookupinterfacemethodbyname_node.
+
+	* gjavah.c (print_method_info): Final methods have vtable entries,
+	so gjavah needs to output them. 
+	* class.c (layout_class_method): Generate vtable entries for final
+	methods.
+	* parse.y (invocation_mode): Use INVOKE_VIRTUAL for indirect
+	dispatch, even if a method is final.
+
+2004-05-25  Andrew Haley  <aph@redhat.com>
+
+	* class.c (build_symbol_entry): Convert the names of constructors
+	to init_identifier_node when generating an entry for the indirect
+	dispatch table.
+	
+	* expr.c (build_known_method_ref): Generate indirect calls for
+	all methods marked DECL_EXTERNAL or TREE_PUBLIC.
+
+2004-05-24  Andrew Haley  <aph@redhat.com>
+
+        * expr.c (build_known_method_ref): Make sure ARRAY_REF access to
+        atable element is of the right type.
+
+        * class.c (build_static_field_ref): Cast pointer to correct type
+        for field.
+
+2004-04-20  Bryce McKinlay  <mckinlay@redhat.com>
+
+	* Merged with HEAD as of 20040514. Diff against
+	gcj-abi-2-merge-20040514.
+
+2004-04-16  Andrew Haley  <aph@redhat.com>
+
+	* verify.c (check_pending_block): Disable subroutine checks.
+	(defer_merging): New function.
+	(merge_types): If types are dummy, use defer_merging to combine them.
+	(verify_jvm_instructions): If invocation is invokeinterface and
+	target is dummy, assume target really is an interface.
+
+	* parse.y (patch_invoke): Break out call to java_create_object.
+
+	* lang.c (flag_verify_invocations): New.
+
+	* jcf-parse.c (load_class): If we've already failed to load a
+	class, don't try again.
+	(load_class): If we can't find a .class file, don't fail, but emit
+	a warning.
+	(parse_class_file): Don't act on dummy methods.
+
+	* java-tree.h (flag_verify_invocations): New.
+	(TYPE_DUMMY): New.
+	(lang_type.dummy_class): New field.
+	(java_create_object): New function.
+	(METHOD_DUMMY): New.
+
+	* expr.c (build_field_ref): Widen field offset.
+	(pop_type_0): If the type in stack_type_map is a TREE_LIST, check
+	that each of its elements is compatible with the one we're
+	popping.
+	(pop_type_0): Issue a warning to say that we need to generate a
+	runtime check.
+	(java_create_object): New function.
+	(build_field_ref): Only generate hard refs if we're not using
+	indirect dispatch.
+	(expand_java_field_op): If we're using !verify_invocations and we
+	see a missing field, generate a decl for it.
+
+	(expand_invoke): If a class doesn't have the method we seek and
+	we're using !flag_verify_invocations, generate a decl for the
+	method now.
+
+	(build_known_method_ref): Always use indirect dispatch via the
+	atable for static methods.
+
+	(expand_java_NEW): Break out object creation into new function,	
+	java_create_object.
+
+	(can_widen_reference_to): Issue a warning to say that we need to
+	generate a runtime check.
+
+	* class.c (set_super_info): Inherit TYPE_DUMMY from sureclass.
+	(make_method_value): Also use index for interfaces.
+	(make_class_data): Skip dummy field for inherited data.
+	Don't build method array for dummy methods.
+	Set size_in_byte to -1 when using inirect dispatch
+	Don't build a hard class ref if we don't have a hard ref to our
+	superclass, or if we're using inirect dispatch.
+	Null out dispatch tables.
+
+	(layout_class_method): Don't complain about non-static method
+	overrides static method is method is artificial.
+
+	(build_static_field_ref): Disable atable references to static
+	fields for the time being.
+
+	(layout_class_methods): Check for CLASS_INTERFACE as
+	well as CLASS_ABSTRACT.
+
 2004-11-24  Steven Bosscher  <stevenb@suse.de>
 
 	* class.c (make_class_data): Don't check flag_inline_functions.

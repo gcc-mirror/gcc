@@ -128,6 +128,17 @@ int flag_wall = 0;
 /* The encoding of the source file.  */
 const char *current_encoding = NULL;
 
+/* When nonzero, report use of deprecated classes, methods, or fields.  */
+int flag_deprecated = 1;
+
+/* When zero, don't optimize static class initialization. This flag shouldn't
+   be tested alone, use STATIC_CLASS_INITIALIZATION_OPTIMIZATION_P instead.  */
+/* FIXME: Make this work with gimplify.  */
+/* int flag_optimize_sci = 0;  */
+
+/* Don't attempt to verify invocations.  */
+int flag_verify_invocations = 0; 
+
 /* When nonzero, print extra version information.  */
 static int v_flag = 0;
 
@@ -593,6 +604,11 @@ java_post_options (const char **pfilename)
   if (flag_inline_functions)
     flag_inline_trees = 2;
 
+  /* An absolute requirement: if we're not using indirect dispatch, we
+     must always verify everything.  */
+  if (! flag_indirect_dispatch)
+    flag_verify_invocations = true;
+
   /* Open input file.  */
 
   if (filename == 0 || !strcmp (filename, "-"))
@@ -971,6 +987,10 @@ java_get_callee_fndecl (tree call_expr)
   tree method, table, element, atable_methods;
 
   HOST_WIDE_INT index;
+
+  /* FIXME: This is disabled because we end up passing calls through
+     the PLT, and we do NOT want to do that.  */
+  return NULL;
 
   if (TREE_CODE (call_expr) != CALL_EXPR)
     return NULL;

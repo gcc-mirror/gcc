@@ -227,6 +227,9 @@ extern int flag_indirect_dispatch;
 /* When zero, don't generate runtime array store checks. */
 extern int flag_store_check;
 
+/* When nonzero, use the new bytecode verifier.  */
+extern int flag_new_verifier;
+
 /* Encoding used for source files.  */
 extern const char *current_encoding;
 
@@ -236,6 +239,8 @@ extern GTY(()) struct JCF * current_jcf;
 /* Set to nonzero value in order to emit class initialization code
    before static field references.  */
 extern int always_initialize_class_p;
+
+extern int flag_verify_invocations;
 
 typedef struct CPool constant_pool;
 
@@ -367,9 +372,13 @@ enum java_tree_index
   JTI_OTABLE_PTR_TYPE,
   JTI_ATABLE_TYPE,
   JTI_ATABLE_PTR_TYPE,
+  JTI_ITABLE_TYPE,
+  JTI_ITABLE_PTR_TYPE,
   JTI_SYMBOL_TYPE,
   JTI_SYMBOLS_ARRAY_TYPE,
   JTI_SYMBOLS_ARRAY_PTR_TYPE,
+  JTI_ASSERTION_ENTRY_TYPE,
+  JTI_ASSERTION_TABLE_TYPE,
 
   JTI_END_PARAMS_NODE,
 
@@ -388,6 +397,7 @@ enum java_tree_index
   JTI_SOFT_MONITORENTER_NODE,
   JTI_SOFT_MONITOREXIT_NODE,
   JTI_SOFT_LOOKUPINTERFACEMETHOD_NODE,
+  JTI_SOFT_LOOKUPINTERFACEMETHODBYNAME_NODE,
   JTI_SOFT_LOOKUPJNIMETHOD_NODE,
   JTI_SOFT_GETJNIENVNEWFRAME_NODE,
   JTI_SOFT_JNIPOPSYSTEMFRAME_NODE,
@@ -597,18 +607,24 @@ extern GTY(()) tree java_global_trees[JTI_MAX];
   java_global_trees[JTI_OTABLE_TYPE]
 #define atable_type \
   java_global_trees[JTI_ATABLE_TYPE]
+#define itable_type \
+  java_global_trees[JTI_ITABLE_TYPE]
 #define otable_ptr_type \
   java_global_trees[JTI_OTABLE_PTR_TYPE]
 #define atable_ptr_type \
   java_global_trees[JTI_ATABLE_PTR_TYPE]
+#define itable_ptr_type \
+  java_global_trees[JTI_ITABLE_PTR_TYPE]
 #define symbol_type \
   java_global_trees[JTI_SYMBOL_TYPE]
 #define symbols_array_type \
   java_global_trees[JTI_SYMBOLS_ARRAY_TYPE]
 #define symbols_array_ptr_type \
-  java_global_trees[JTI_SYMBOLS_ARRAY_PTR_TYPE]
-#define class_refs_decl \
-  Jjava_global_trees[TI_CLASS_REFS_DECL]
+  java_global_trees[JTI_SYMBOLS_ARRAY_PTR_TYPE]  
+#define assertion_entry_type \
+  java_global_trees[JTI_ASSERTION_ENTRY_TYPE]
+#define assertion_table_type \
+  java_global_trees[JTI_ASSERTION_TABLE_TYPE]
 
 #define end_params_node \
   java_global_trees[JTI_END_PARAMS_NODE]
@@ -644,6 +660,8 @@ extern GTY(()) tree java_global_trees[JTI_MAX];
   java_global_trees[JTI_SOFT_MONITOREXIT_NODE]
 #define soft_lookupinterfacemethod_node \
   java_global_trees[JTI_SOFT_LOOKUPINTERFACEMETHOD_NODE]
+#define soft_lookupinterfacemethodbyname_node \
+  java_global_trees[JTI_SOFT_LOOKUPINTERFACEMETHODBYNAME_NODE]
 #define soft_lookupjnimethod_node \
   java_global_trees[JTI_SOFT_LOOKUPJNIMETHOD_NODE]
 #define soft_getjnienvnewframe_node \
@@ -984,6 +1002,7 @@ struct lang_decl_func GTY(())
   unsigned int invisible : 1;	/* Set for methods we generate
 				   internally but which shouldn't be
 				   written to the .class file.  */
+  unsigned int dummy:1;		
 };
 
 struct treetreehash_entry GTY(())
@@ -991,6 +1010,22 @@ struct treetreehash_entry GTY(())
   tree key;
   tree value;
 };
+
+/* These represent the possible assertion_code's that can be emitted in the
+   type assertion table.  */
+enum
+{
+  JV_ASSERT_END_OF_TABLE = 0,     /* Last entry in table.  */
+  JV_ASSERT_TYPES_COMPATIBLE = 1, /* Operand A is assignable to Operand B.  */
+  JV_ASSERT_IS_INSTANTIABLE = 2   /* Operand A is an instantiable class.  */
+};
+
+typedef struct type_assertion GTY(())
+{
+  int assertion_code; /* 'opcode' for the type of this assertion. */
+  tree op1;           /* First operand. */
+  tree op2;           /* Second operand. */
+} type_assertion;
 
 extern tree java_treetreehash_find (htab_t, tree);
 extern tree * java_treetreehash_new (htab_t, tree);
@@ -1043,6 +1078,9 @@ struct lang_decl GTY(())
 #define TYPE_II_STMT_LIST(T)     (TYPE_LANG_SPECIFIC (T)->ii_block)
 /* The decl of the synthetic method `class$' used to handle `.class'
    for non primitive types when compiling to bytecode. */
+
+#define TYPE_DUMMY(T)		(TYPE_LANG_SPECIFIC(T)->dummy_class)
+
 #define TYPE_DOT_CLASS(T)        (TYPE_LANG_SPECIFIC (T)->dot_class)
 #define TYPE_PACKAGE_LIST(T)     (TYPE_LANG_SPECIFIC (T)->package_list)
 #define TYPE_IMPORT_LIST(T)      (TYPE_LANG_SPECIFIC (T)->import_list)
@@ -1060,10 +1098,16 @@ struct lang_decl GTY(())
 #define TYPE_OTABLE_SYMS_DECL(T) (TYPE_LANG_SPECIFIC (T)->otable_syms_decl)
 #define TYPE_OTABLE_DECL(T)      (TYPE_LANG_SPECIFIC (T)->otable_decl)
 
+#define TYPE_ITABLE_METHODS(T)   (TYPE_LANG_SPECIFIC (T)->itable_methods)
+#define TYPE_ITABLE_SYMS_DECL(T) (TYPE_LANG_SPECIFIC (T)->itable_syms_decl)
+#define TYPE_ITABLE_DECL(T)      (TYPE_LANG_SPECIFIC (T)->itable_decl)
+
 #define TYPE_CTABLE_DECL(T)      (TYPE_LANG_SPECIFIC (T)->ctable_decl)
 #define TYPE_CATCH_CLASSES(T)    (TYPE_LANG_SPECIFIC (T)->catch_classes)
+#define TYPE_VERIFY_METHOD(T)    (TYPE_LANG_SPECIFIC (T)->verify_method)
 
 #define TYPE_TO_RUNTIME_MAP(T)   (TYPE_LANG_SPECIFIC (T)->type_to_runtime_map)
+#define TYPE_ASSERTIONS(T)   	 (TYPE_LANG_SPECIFIC (T)->type_assertions)
 
 struct lang_type GTY(())
 {
@@ -1092,18 +1136,31 @@ struct lang_type GTY(())
   tree atable_decl;		/* The static address table.  */
   tree atable_syms_decl;
 
+  tree itable_methods;          /* List of interfaces methods referred
+				   to by this class.  */
+  tree itable_decl;		/* The interfaces table.  */
+  tree itable_syms_decl;
+
   tree ctable_decl;             /* The table of classes for the runtime
 				   type matcher.  */
   tree catch_classes;
+
+  tree verify_method;		/* The verify method for this class.
+				   Used in split verification.  */
 
   htab_t GTY ((param_is (struct treetreehash_entry))) type_to_runtime_map;   
                                 /* The mapping of classes to exception region
 				   markers.  */
 
+  htab_t GTY ((param_is (struct type_assertion))) type_assertions;
+				/* Table of type assertions to be evaluated 
+  				   by the runtime when this class is loaded. */
+
   unsigned pic:1;		/* Private Inner Class. */
   unsigned poic:1;		/* Protected Inner Class. */
   unsigned strictfp:1;		/* `strictfp' class.  */
   unsigned assertions:1;	/* Any method uses `assert'.  */
+  unsigned dummy_class:1;		/* Not a real class, just a placeholder.  */
 };
 
 #define JCF_u4 unsigned long
@@ -1243,7 +1300,7 @@ extern void make_class_data (tree);
 extern void register_class (void);
 extern int alloc_name_constant (int, tree);
 extern void emit_register_classes (tree *);
-extern tree emit_symbol_table (tree, tree, tree, tree, tree);
+extern tree emit_symbol_table (tree, tree, tree, tree, tree, int);
 extern void lang_init_source (int);
 extern void write_classfile (tree);
 extern char *print_int_node (tree);
@@ -1259,9 +1316,12 @@ extern int alloc_class_constant (tree);
 extern void init_expr_processing (void);
 extern void push_super_field (tree, tree);
 extern void init_class_processing (void);
+extern void add_type_assertion (tree, int, tree, tree);
 extern int can_widen_reference_to (tree, tree);
 extern int class_depth (tree);
 extern int verify_jvm_instructions (struct JCF *, const unsigned char *, long);
+extern int verify_jvm_instructions_new (struct JCF *, const unsigned char *,
+					long);
 extern void maybe_pushlevels (int);
 extern void maybe_poplevels (int);
 extern void force_poplevels (int);
@@ -1274,6 +1334,7 @@ extern void push_type (tree);
 extern void load_type_state (tree);
 extern void add_interface (tree, tree);
 extern tree force_evaluation_order (tree);
+extern tree java_create_object (tree);
 extern int verify_constant_pool (struct JCF *);
 extern void start_java_method (tree);
 extern void end_java_method (void);
@@ -1321,7 +1382,6 @@ extern tree java_mangle_decl (struct obstack *, tree);
 extern tree java_mangle_class_field (struct obstack *, tree);
 extern tree java_mangle_class_field_from_string (struct obstack *, char *);
 extern tree java_mangle_vtable (struct obstack *, tree);
-extern const char *lang_printable_name_wls (tree, int);
 extern void append_gpp_mangled_name (const char *, int);
 
 extern void add_predefined_file (tree);
@@ -1362,6 +1422,8 @@ extern tree builtin_function (const char *, tree, int, enum built_in_class,
 #define DECL_FINAL(DECL) DECL_LANG_FLAG_3 (DECL)
 
 /* Access flags etc for a method (a FUNCTION_DECL): */
+
+#define METHOD_DUMMY(DECL) (DECL_LANG_SPECIFIC (DECL)->u.f.dummy)
 
 #define METHOD_PUBLIC(DECL) DECL_LANG_FLAG_1 (FUNCTION_DECL_CHECK (DECL))
 #define METHOD_PRIVATE(DECL) TREE_PRIVATE (FUNCTION_DECL_CHECK (DECL))
@@ -1800,7 +1862,8 @@ enum
 
   JV_STATE_PRELOADING = 1,	/* Can do _Jv_FindClass.  */
   JV_STATE_LOADING = 3,		/* Has super installed.  */
-  JV_STATE_LOADED = 5,		/* Is complete.  */
+  JV_STATE_READ = 4,		/* Has been completely defined.  */
+  JV_STATE_LOADED = 5,		/* Has Miranda methods defined.  */
 
   JV_STATE_COMPILED = 6,	/* This was a compiled class.  */
 

@@ -553,7 +553,7 @@ private:
 	      {
 		// We use a recursive call because we also need to
 		// check superinterfaces.
-		if (is_assignable_from_slow (target, source->interfaces[i]))
+		if (is_assignable_from_slow (target, source->getInterface (i)))
 		  return true;
 	      }
 	  }
