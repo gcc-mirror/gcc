@@ -1,3 +1,10 @@
+2002-08-01  David Edelsohn  <edelsohn@gnu.org>
+
+	* varasm.c (asm_emit_uninitialized): Return false if global BSS
+	and ASM_EMIT_BSS not supported by target.
+	(assemble_variable): Do not duplicate uninitialized logic.
+	Fall through if asm_emit_uninitialized failed.
+
 2002-08-01  Chris Demetriou  <cgd@broadcom.com>
 
 	* config/mips/mips.h (BRANCH_LIKELY_P): Remove unused macro.
