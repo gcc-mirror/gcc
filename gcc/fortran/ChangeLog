@@ -1,3 +1,7 @@
+2005-01-14  Steven G. Kargl  <kargls@comcast.net>
+
+	* resolve.c (compare_case): Give arguments correct type.
+
 2005-01-13  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* iresolve.c, trans-common.c, trans-types.c: Fix comment
