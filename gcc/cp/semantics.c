@@ -1316,7 +1316,7 @@ finish_stmt_expr (rtl_expr)
   if (!building_stmt_tree ())
     {
       rtl_expr = expand_end_stmt_expr (rtl_expr);
-      /* The statements have side effects, so the group does.  */
+      /* The statements have side effects, so the group does too.  */
       TREE_SIDE_EFFECTS (rtl_expr) = 1;
     }
 
