@@ -1172,15 +1172,14 @@ AC_DEFUN(GLIBCPP_ENABLE_CLOCALE, [
 
       # Declare intention to use gettext, and add support for specific
       # languages.
-      # For some reason, ALL_LINGUAS has to be before AM_GNU_GETTEXT
+      # For some reason, ALL_LINGUAS has to be before AM-GNU-GETTEXT
       ALL_LINGUAS="de fr"
 
-      # Don't call AM_GNU_GETTEXT here. Instead, assume glibc.
+      # Don't call AM-GNU-GETTEXT here. Instead, assume glibc.
       AC_CHECK_PROG(check_msgfmt, msgfmt, yes, no)
       if test x"$check_msgfmt" = x"yes" && test x"$enable_nls" = x"yes"; then
 	USE_NLS=yes
       fi
-
       # Export the build objects.
       for ling in $ALL_LINGUAS; do \
         glibcpp_MOFILES="$glibcpp_MOFILES $ling.mo"; \
