@@ -423,7 +423,7 @@ static tree lookup_tag_reverse		PROTO((tree));
 static tree grokdeclarator		PROTO((tree, tree, enum decl_context,
 					       int));
 static tree grokparms			PROTO((tree, int));
-static int field_decl_cmp		PROTO((tree *, tree *));
+static int field_decl_cmp		PROTO((const GENERIC_PTR, const GENERIC_PTR));
 static void layout_array_type		PROTO((tree));
 
 /* C-specific option variables.  */
@@ -5475,9 +5475,12 @@ grokfield (filename, line, declarator, declspecs, width)
 /* Function to help qsort sort FIELD_DECLs by name order.  */
 
 static int
-field_decl_cmp (x, y)
-     tree *x, *y;
+field_decl_cmp (xp, yp)
+     const GENERIC_PTR xp;
+     const GENERIC_PTR yp;
 {
+  tree *x = (tree *)xp, *y = (tree *)yp;
+
   if (DECL_NAME (*x) == DECL_NAME (*y))
     return 0;
   if (DECL_NAME (*x) == NULL)
