@@ -1,3 +1,28 @@
+Sat Nov 28 06:01:525 1998  John F. Carr  <jfc@mit.edu>
+
+	* emit-rtl.c (const_int_rtx): Now array of rtx_def, not rtx.
+
+Sat Nov 28 05:53:45 1998  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	* rtl.h (obstack_alloc_rtx): New declaration.
+	* rtl.c (rtx_alloc): Try to clear as integer or HOST_WIDE_INT indirect.
+	(obstack_alloc_rtx): New function.
+
+Sat Nov 28 05:46:41 1998  Richard Henderson  <rth@cygnus.com>
+
+	* gengenrtl.c: New file.
+	* Makefile.in (OBJS): Add genrtl.c.
+	(GEN): Add gengenrtl.
+	(STAGESTUFF): Add s-genrtl and gengenrtl$(exeext);
+	(RTL_BASE_H): New, from RTL_H.
+	(RTL_H): Contains RTL_BASE_H and genrtl.h
+	(genrtl.o, genrtl.c, s-genrtl, gengenrtl): New rules.
+	* emit-rtl.c (gen_rtx_{CONST_INT,REG,MEM}): New functions.
+	* genemit.c (gen_exp, gen_insn): Call gen_rtx_FOO for constant FOO.
+	* rtl.h (genrtl.h): Include ifndef NO_GENRTL_H.
+	(gen_rtx_{CONST_INT,REG,MEM}): New declarations.
+	(GEN_INT): Call gen_rtx_CONST_INT.
+
 Fri Nov 27 20:16:12 1998  Michael Meissner  <meissner@cygnus.com>
 
 	* configure.in (AC_CHECK_FUNCS): Check for strchr and strrchr.
