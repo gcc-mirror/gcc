@@ -257,7 +257,7 @@ typedef __WCHAR_TYPE__ wchar_t;
     are already defined.  */
 #ifdef _ANSI_H_
 /*  The references to _GCC_PTRDIFF_T_, _GCC_SIZE_T_, and _GCC_WCHAR_T_
-    are probably typos and should be removed before 2.7 is released.  */
+    are probably typos and should be removed before 2.8 is released.  */
 #ifdef _GCC_PTRDIFF_T_
 #undef _PTRDIFF_T_
 #undef _BSD_PTRDIFF_T_
@@ -273,12 +273,15 @@ typedef __WCHAR_TYPE__ wchar_t;
 /*  The following ones are the real ones.  */
 #ifdef _GCC_PTRDIFF_T
 #undef _PTRDIFF_T_
+#undef _BSD_PTRDIFF_T_
 #endif
 #ifdef _GCC_SIZE_T
 #undef _SIZE_T_
+#undef _BSD_SIZE_T_
 #endif
 #ifdef _GCC_WCHAR_T
 #undef _WCHAR_T_
+#undef _BSD_WCHAR_T_
 #endif
 #endif /* _ANSI_H_ */
 
