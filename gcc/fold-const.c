@@ -5464,14 +5464,16 @@ fold (expr)
 	  return t1 ? t1 : t;
 	}
 
-      /* If this is a comparison of complex values and either or both
-	 sizes are a COMPLEX_EXPR, it is best to split up the comparisons
-	 and join them with a TRUTH_ANDIF_EXPR or TRUTH_ORIF_EXPR.  This
-	 may prevent needless evaluations.  */
+      /* If this is a comparison of complex values and either or both sides
+	 are a COMPLEX_EXPR or COMPLEX_CST, it is best to split up the
+	 comparisons and join them with a TRUTH_ANDIF_EXPR or TRUTH_ORIF_EXPR.
+	 This may prevent needless evaluations.  */
       if ((code == EQ_EXPR || code == NE_EXPR)
 	  && TREE_CODE (TREE_TYPE (arg0)) == COMPLEX_TYPE
 	  && (TREE_CODE (arg0) == COMPLEX_EXPR
-	      || TREE_CODE (arg1) == COMPLEX_EXPR))
+	      || TREE_CODE (arg1) == COMPLEX_EXPR
+	      || TREE_CODE (arg0) == COMPLEX_CST
+	      || TREE_CODE (arg1) == COMPLEX_CST))
 	{
 	  tree subtype = TREE_TYPE (TREE_TYPE (arg0));
 	  tree real0 = fold (build1 (REALPART_EXPR, subtype, arg0));
