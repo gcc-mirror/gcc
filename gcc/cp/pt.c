@@ -5863,7 +5863,7 @@ tsubst_decl (t, args, type, in_decl)
 	my_friendly_assert (DECL_LANG_SPECIFIC (t) 
 			    && DECL_TEMPLATE_INFO (t) != NULL_TREE, 0);
 
-	if (TYPE_P (DECL_CONTEXT (t)))
+	if (TYPE_P (CP_DECL_CONTEXT (t)))
 	  ctx = tsubst_aggr_type (DECL_CONTEXT (t), args, 
 				  /*complain=*/1,
 				  in_decl, /*entering_scope=*/1);
