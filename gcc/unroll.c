@@ -853,6 +853,19 @@ unroll_loop (loop_end, insn_count, loop_start, end_insert_before,
 	  for (i = 0; i < unroll_number; i++)
 	    labels[i] = gen_label_rtx ();
 
+	  /* Check for the case where the initial value is greater than or equal
+	     to the final value.  In that case, we want to execute exactly
+	     one loop iteration.  The code below will fail for this case.  */
+
+	  emit_cmp_insn (initial_value, final_value, neg_inc ? LE : GE,
+			 NULL_RTX, mode, 0, 0);
+	  if (neg_inc)
+	    emit_jump_insn (gen_ble (labels[1]));
+	  else
+	    emit_jump_insn (gen_bge (labels[1]));
+	  JUMP_LABEL (get_last_insn ()) = labels[1];
+	  LABEL_NUSES (labels[1])++;
+
 	  /* Assuming the unroll_number is 4, and the increment is 2, then
 	     for a negative increment:	for a positive increment:
 	     diff = 0,1   precond 0	diff = 0,7   precond 0
@@ -869,18 +882,28 @@ unroll_loop (loop_end, insn_count, loop_start, end_insert_before,
 	  for (i = 0; i < unroll_number - 1; i++)
 	    {
 	      int cmp_const;
+	      enum rtx_code cmp_code;
 
 	      /* For negative increments, must invert the constant compared
 		 against, except when comparing against zero.  */
 	      if (i == 0)
-		cmp_const = 0;
+		{
+		  cmp_const = 0;
+		  cmp_code = EQ;
+		}
 	      else if (neg_inc)
-		cmp_const = unroll_number - i;
+		{
+		  cmp_const = unroll_number - i;
+		  cmp_code = GE;
+		}
 	      else
-		cmp_const = i;
+		{
+		  cmp_const = i;
+		  cmp_code = LE;
+		}
 
 	      emit_cmp_insn (diff, GEN_INT (abs_inc * cmp_const),
-			     EQ, NULL_RTX, mode, 0, 0);
+			     cmp_code, NULL_RTX, mode, 0, 0);
 
 	      if (i == 0)
 		emit_jump_insn (gen_beq (labels[i]));
@@ -904,13 +927,20 @@ unroll_loop (loop_end, insn_count, loop_start, end_insert_before,
 	  if (abs_inc != 1)
 	    {
 	      int cmp_const;
+	      enum rtx_code cmp_code;
 
 	      if (neg_inc)
-		cmp_const = abs_inc - 1;
+		{
+		  cmp_const = abs_inc - 1;
+		  cmp_code = LE;
+		}
 	      else
-		cmp_const = abs_inc * (unroll_number - 1) + 1;
+		{
+		  cmp_const = abs_inc * (unroll_number - 1) + 1;
+		  cmp_code = GE;
+		}
 
-	      emit_cmp_insn (diff, GEN_INT (cmp_const), EQ, NULL_RTX,
+	      emit_cmp_insn (diff, GEN_INT (cmp_const), cmp_code, NULL_RTX,
 			     mode, 0, 0);
 
 	      if (neg_inc)
