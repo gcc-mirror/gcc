@@ -2468,6 +2468,8 @@ alpha_return_addr (count, frame)
 static int
 alpha_ra_ever_killed ()
 {
+  rtx top;
+
 #ifdef ASM_OUTPUT_MI_THUNK
   if (current_function_is_thunk)
     return 0;
@@ -2475,8 +2477,11 @@ alpha_ra_ever_killed ()
   if (!alpha_return_addr_rtx)
     return regs_ever_live[REG_RA];
 
-  return reg_set_between_p (gen_rtx_REG (Pmode, REG_RA),
-			    get_insns(), NULL_RTX);
+  push_topmost_sequence ();
+  top = get_insns();
+  pop_topmost_sequence ();
+  
+  return reg_set_between_p (gen_rtx_REG (Pmode, REG_RA), top, NULL_RTX);
 }
 
 

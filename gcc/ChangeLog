@@ -1,3 +1,8 @@
+Sat Sep  5 21:46:47 1998  Richard Henderson  <rth@cygnus.com>
+
+	* alpha.c (alpha_ra_ever_killed): Inspect the topmost sequence,
+	not whatever we're generating now.
+
 Sat Sep  5 14:23:31 1998  Torbjorn Granlund <tege@matematik.su.se>
 
 	* m68k.md (zero_extendsidi2): Fix typo.
