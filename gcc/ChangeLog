@@ -13,6 +13,9 @@ Sat Apr 10 05:14:50 1999  Mark Elbrecht  <snowball3@usa.net>
 
 	* i386/djgpp.h (SET_ASM_OP): Define.
 
+	* cccp.c (DIR_SEPARATOR): Move to the top of the file.
+	(is_dir_separator): New function.
+	(simplify_filename): Use it.
 	* collect2.c (find_a_file): Use HAVE_DOS_BASED_FILE_SYSTEM in place
 	of the DIR_SEPARATOR test.
 	Consider any file starting with a drivename to be absolute.
