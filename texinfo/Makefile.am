@@ -15,7 +15,5 @@ EXTRA_DIST = INTRODUCTION dir-example
 # Others are alphabetical.
 SUBDIRS = intl lib info makeinfo po util doc
 # ??? For EGCS, only build the stuff we actually need.  This eliminates the
-# need for xgettext that exists in the po subdirectory.  We do need util in
-# order to get install-info, which is used as part of the gcc build/install
-# process.
-SUBDIRS = intl lib makeinfo util
+# need for xgettext that exists in the po subdirectory.
+SUBDIRS = intl lib makeinfo
