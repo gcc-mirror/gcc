@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                            $Revision: 1.201 $
+--                            $Revision$
 --                                                                          --
 --          Copyright (C) 1992-2001 Free Software Foundation, Inc.          --
 --                                                                          --
@@ -895,6 +895,15 @@ package body Bindgen is
          end if;
       end loop;
 
+      if Num = 0 then
+
+         --  Happens with "gnatmake -a -f -gnatL ..."
+
+         WBI (" ");
+         WBI ("   begin");
+         return;
+      end if;
+
       WBI ("      procedure SDP_Table_Build");
       WBI ("        (SDP_Addresses   : System.Address;");
       WBI ("         SDP_Count       : Natural;");
@@ -1043,6 +1052,13 @@ package body Bindgen is
             Write_Statement_Buffer;
          end if;
       end loop;
+
+      if Num = 0 then
+
+         --  Happens with "gnatmake -a -f -gnatL ..."
+
+         return;
+      end if;
 
       WBI (" ");
 
