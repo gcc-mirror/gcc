@@ -171,7 +171,6 @@ static tree copy_default_args_to_explicit_spec_1 PARAMS ((tree, tree));
 static void copy_default_args_to_explicit_spec PARAMS ((tree));
 static int invalid_nontype_parm_type_p PARAMS ((tree, tsubst_flags_t));
 static int eq_local_specializations (const void *, const void *);
-static tree template_for_substitution (tree);
 static bool dependent_type_p_r (tree);
 static bool dependent_template_id_p (tree, tree);
 static tree tsubst (tree, tree, tsubst_flags_t, tree);
@@ -10736,7 +10735,7 @@ regenerate_decl_from_template (decl, tmpl)
 /* Return the TEMPLATE_DECL into which DECL_TI_ARGS(DECL) should be
    substituted to get DECL.  */
 
-static tree
+tree
 template_for_substitution (tree decl)
 {
   tree tmpl = DECL_TI_TEMPLATE (decl);

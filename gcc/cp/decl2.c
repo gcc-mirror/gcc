@@ -4590,7 +4590,9 @@ mark_used (tree decl)
   if ((DECL_NON_THUNK_FUNCTION_P (decl) || TREE_CODE (decl) == VAR_DECL)
       && DECL_LANG_SPECIFIC (decl) && DECL_TEMPLATE_INFO (decl)
       && (!DECL_EXPLICIT_INSTANTIATION (decl)
-	  || (TREE_CODE (decl) == FUNCTION_DECL && DECL_INLINE (decl))))
+	  || (TREE_CODE (decl) == FUNCTION_DECL 
+	      && DECL_INLINE (DECL_TEMPLATE_RESULT 
+			      (template_for_substitution (decl))))))
     {
       bool defer;
 

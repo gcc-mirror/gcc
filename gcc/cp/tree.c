@@ -2204,10 +2204,6 @@ cp_cannot_inline_tree_fn (fnp)
 {
   tree fn = *fnp;
 
-  if (flag_really_no_inline
-      && lookup_attribute ("always_inline", DECL_ATTRIBUTES (fn)) == NULL)
-    return 1;
-
   /* We can inline a template instantiation only if it's fully
      instantiated.  */
   if (DECL_TEMPLATE_INFO (fn)
@@ -2217,6 +2213,13 @@ cp_cannot_inline_tree_fn (fnp)
       if (TI_PENDING_TEMPLATE_FLAG (DECL_TEMPLATE_INFO (fn)))
 	return 1;
     }
+
+  if (!DECL_INLINE (fn))
+    return 1;
+
+  if (flag_really_no_inline
+      && lookup_attribute ("always_inline", DECL_ATTRIBUTES (fn)) == NULL)
+    return 1;
 
   /* Don't auto-inline anything that might not be bound within
      this unit of translation.  */
