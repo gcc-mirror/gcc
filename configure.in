@@ -304,7 +304,7 @@ if [ x${shared} = xyes ]; then
     arm*-*-*)
       host_makefile_frag="${host_makefile_frag} config/mh-armpic"
       ;;
-    hppa*-*-*)
+    parisc*-*-* | hppa*-*-*)
       host_makefile_frag="${host_makefile_frag} config/mh-papic"
       ;;
     i[3456]86-*-cygwin*)
@@ -714,8 +714,14 @@ case "${target}" in
   h8500-*-*)
     noconfigdirs="$noconfigdirs ${libstdcxx_version} target-librx target-libgloss ${libgcj}"
     ;;
+  hppa*64*-*-linux* | parisc*64*-*-linux*)
+    # In this case, it's because the hppa64-linux target is for
+    # the kernel only at this point and has no libc, and thus no
+    # headers, crt*.o, etc., all of which are needed by these.
+    noconfigdirs="$noconfigdirs target-zlib"
+    ;;
   hppa*-*-*elf* | \
-  hppa*-*-linux* | \
+  parisc*-*-linux* | hppa*-*-linux* | \
   hppa*-*-lites* | \
   hppa*64*-*-*)
     noconfigdirs="${libgcj}"
@@ -1193,7 +1199,7 @@ fi
 
 if [ x${shared} = xyes ]; then
   case "${target}" in
-    hppa*)
+    hppa* | parisc*)
       target_makefile_frag="${target_makefile_frag} config/mt-papic"
       ;;
     i[3456]86-*)
