@@ -1,3 +1,7 @@
+2002-05-25  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* combine.c (simplify_set): Remove an unnecessary subreg.
+
 2002-05-25  Marek Michalkiewicz  <marekm@amelek.gda.pl>
 
 	* config/avr/avr.c (avr_handle_progmem_attribute): Handle TYPE_DECL.

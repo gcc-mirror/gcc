@@ -5160,6 +5160,30 @@ simplify_set (x)
       src = SET_SRC (x), dest = SET_DEST (x);
     }
 
+#ifdef HAVE_cc0
+  /* If we have (set (cc0) (subreg ...)), we try to remove the subreg
+     in SRC.  */
+  if (dest == cc0_rtx
+      && GET_CODE (src) == SUBREG
+      && subreg_lowpart_p (src)
+      && (GET_MODE_BITSIZE (GET_MODE (src))
+	  < GET_MODE_BITSIZE (GET_MODE (SUBREG_REG (src)))))
+    {
+      rtx inner = SUBREG_REG (src);
+      enum machine_mode inner_mode = GET_MODE (inner);
+
+      /* Here we make sure that we don't have a sign bit on.  */
+      if (GET_MODE_BITSIZE (inner_mode) <= HOST_BITS_PER_WIDE_INT
+	  && (nonzero_bits (inner, inner_mode)
+	      < ((unsigned HOST_WIDE_INT) 1
+		 << (GET_MODE_BITSIZE (inner_mode) - 1))))
+	{
+	  SUBST (SET_SRC (x), inner);
+	  src = SET_SRC (x);
+	}
+    }
+#endif
+
 #ifdef LOAD_EXTEND_OP
   /* If we have (set FOO (subreg:M (mem:N BAR) 0)) with M wider than N, this
      would require a paradoxical subreg.  Replace the subreg with a
