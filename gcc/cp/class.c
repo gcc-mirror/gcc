@@ -1439,8 +1439,8 @@ finish_struct_bits (tree t)
     }
 
   if (BINFO_N_BASE_BINFOS (TYPE_BINFO (t)) && TYPE_POLYMORPHIC_P (t))
-    /* For a class w/o baseclasses, `finish_struct' has set
-       CLASS_TYPE_ABSTRACT_VIRTUALS correctly (by definition).
+    /* For a class w/o baseclasses, 'finish_struct' has set
+       CLASSTYPE_PURE_VIRTUALS correctly (by definition).
        Similarly for a class whose base classes do not have vtables.
        When neither of these is true, we might have removed abstract
        virtuals (by providing a definition), added some (by declaring
@@ -1448,7 +1448,7 @@ finish_struct_bits (tree t)
        recalculate what's really an abstract virtual at this point (by
        looking in the vtables).  */
     get_pure_virtuals (t);
-
+  
   /* If this type has a copy constructor or a destructor, force its
      mode to be BLKmode, and force its TREE_ADDRESSABLE bit to be
      nonzero.  This will cause it to be passed by invisible reference

@@ -1908,20 +1908,6 @@ get_pure_virtuals (tree type)
 
   /* Put the pure virtuals in dfs order.  */
   CLASSTYPE_PURE_VIRTUALS (type) = nreverse (CLASSTYPE_PURE_VIRTUALS (type));
-
-  for (vbases = CLASSTYPE_VBASECLASSES (type), ix = 0;
-       VEC_iterate (tree, vbases, ix, binfo); ix++)
-    {
-      tree virtuals;
-      
-      for (virtuals = BINFO_VIRTUALS (binfo); virtuals;
-	   virtuals = TREE_CHAIN (virtuals))
-	{
-	  tree base_fndecl = BV_FN (virtuals);
-	  if (DECL_NEEDS_FINAL_OVERRIDER_P (base_fndecl))
-	    error ("`%#D' needs a final overrider", base_fndecl);
-	}
-    }
 }
 
 /* DEPTH-FIRST SEARCH ROUTINES.  */
