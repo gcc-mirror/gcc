@@ -1,6 +1,5 @@
 /* Subroutines used for code generation on the DEC Alpha.
-   Copyright (C) 1992, 93, 94, 95, 96, 97, 1998, 1999 Free Software
-   Foundation, Inc. 
+   Copyright (C) 1992, 93-98, 1999 Free Software Foundation, Inc. 
    Contributed by Richard Kenner (kenner@vlsi1.ultra.nyu.edu)
 
 This file is part of GNU CC.
@@ -2935,33 +2934,30 @@ print_operand_address (file, addr)
     FILE *file;
      rtx addr;
 {
-  rtx basereg = NULL_RTX;
+  int basereg = 31;
   HOST_WIDE_INT offset = 0;
 
   if (GET_CODE (addr) == AND)
     addr = XEXP (addr, 0);
-  if (GET_CODE (addr) == SUBREG)
-    addr = SUBREG_REG (addr);
 
-  if (GET_CODE (addr) == REG)
-    basereg = addr;
-  else if (GET_CODE (addr) == CONST_INT)
-    offset = INTVAL (addr);
-  else if (GET_CODE (addr) == PLUS
-           && GET_CODE (XEXP (addr, 1)) == CONST_INT)
+  if (GET_CODE (addr) == PLUS
+      && GET_CODE (XEXP (addr, 1)) == CONST_INT)
     {
       offset = INTVAL (XEXP (addr, 1));
-      basereg = XEXP (addr, 0);
-      if (GET_CODE (basereg) == SUBREG)
-	basereg = SUBREG_REG (basereg);
-      if (GET_CODE (basereg) != REG)
-	abort ();
+      addr = XEXP (addr, 0);
     }
+  if (GET_CODE (addr) == REG)
+    basereg = REGNO (addr);
+  else if (GET_CODE (addr) == SUBREG
+	   && GET_CODE (SUBREG_REG (addr)) == REG)
+    basereg = REGNO (SUBREG_REG (addr)) + SUBREG_WORD (addr);
+  else if (GET_CODE (addr) == CONST_INT)
+    offset = INTVAL (addr);
   else
     abort ();
 
   fprintf (file, HOST_WIDE_INT_PRINT_DEC, offset);
-  fprintf (file, "($%d)", basereg ? REGNO (basereg) : 31);
+  fprintf (file, "($%d)", basereg);
 }
 
 /* Emit RTL insns to initialize the variable parts of a trampoline at
