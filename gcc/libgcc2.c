@@ -2390,6 +2390,22 @@ __unwind_function(void *ptr)
   asm("# br");
   asm("mtctr 3;bctr # b 3");
 }
+#elif #machine(vax)
+__unwind_function(void *ptr)
+{
+  __label__ return_again;
+
+  /* Replace our frame's return address with the label below.
+     During execution, we will first return here instead of to
+     caller, then second return takes caller's frame off the stack.
+     Two returns matches two actual calls, so is less likely to
+     confuse debuggers.  `16' corresponds to RETURN_ADDRESS_OFFSET.  */
+  __asm ("movl %0,16(fp)" : : "p" (&& return_again));
+  return;
+
+ return_again:
+  return;
+}
 #else
 __unwind_function(void *ptr)
 {
