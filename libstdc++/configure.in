@@ -71,7 +71,7 @@ if [ "${shared}" = "yes" ]; then
     *-*-hpux*)		frags="${frags} hpux.ml" ;;
     *-*-irix[56]*)	frags="${frags} irix5.ml" ;;
     *-*-linux*aout*)	;;
-    *-*-freebsd2)	;;
+    *-*-freebsd2*)	;;
     *-*-freebsd*)	frags="${frags} freebsd.ml" ;;
     *-*-linux*)		frags="${frags} linux.ml" ;;
     *-*-openbsd*)		frags="${frags} openbsd.ml" ;;
