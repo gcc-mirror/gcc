@@ -1070,7 +1070,7 @@ typedef struct m68hc11_args
 
 /* Initialize a variable CUM of type CUMULATIVE_ARGS for a call to a
    function whose data type is FNTYPE. For a library call, FNTYPE is 0.  */
-#define INIT_CUMULATIVE_ARGS(CUM,FNTYPE,LIBNAME,INDIRECT) \
+#define INIT_CUMULATIVE_ARGS(CUM, FNTYPE, LIBNAME, INDIRECT, N_NAMED_ARGS) \
     (m68hc11_init_cumulative_args (&CUM, FNTYPE, LIBNAME))
 
 /* Update the data in CUM to advance over an argument of mode MODE and data
