@@ -1939,7 +1939,11 @@ compile_file (name)
 	    && DECL_EXTERNAL (decl)
 	    && ! TREE_PUBLIC (decl))
 	  {
-	    pedwarn_with_decl (decl, 
+	    /* This should be a pedwarn, except that there is
+	       no easy way to prevent it from happening when the
+	       name is used only inside a sizeof.
+	       This at least avoids being incorrect.  */
+	    warning_with_decl (decl, 
 			       "`%s' declared `static' but never defined");
 	    /* This symbol is effectively an "extern" declaration now.  */
 	    TREE_PUBLIC (decl) = 1;
