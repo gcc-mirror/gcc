@@ -2159,6 +2159,10 @@ Procedure F_check(precision, val1) int precision; Long_double val1; {
 	/* On the Sun 3, sscanf clobbers 4 words,
 	   which leads to a crash when this function tries to return.  */
 	f2= "%le";   /* Input */
+	/* It is no use checking long doubles if we can't
+	   read and write them.  */
+	if (sizeof (Number) > sizeof(double))
+	  return;
 #else
 	Long_double new1;
 	if (sizeof(double) == sizeof(Long_double)) {
