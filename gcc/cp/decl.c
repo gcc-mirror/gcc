@@ -206,6 +206,7 @@ static void mark_binding_level PROTO((void *));
 static void mark_cp_function_context PROTO((struct function *));
 static void mark_saved_scope PROTO((void *));
 static void check_function_type PROTO((tree));
+static void destroy_local_static PROTO((tree));
 
 #if defined (DEBUG_CP_BINDING_LEVELS)
 static void indent PROTO((void));
@@ -8043,6 +8044,77 @@ finish_decl (decl, init, asmspec_tree)
   cp_finish_decl (decl, init, asmspec_tree, 1, 0);
 }
 
+/* Generate code to handle the destruction of the function-scoped
+   static variable DECL.  */
+
+static void
+destroy_local_static (decl)
+     tree decl;
+{
+  tree cleanup, fcall;
+  tree compound_stmt;
+  int saved_flag_access_control;
+
+  if (atexit_node == 0)
+    {
+      tree atexit_fndecl, PFV, pfvlist;
+      /* Remember this information until end of file.  */
+      push_obstacks (&permanent_obstack, &permanent_obstack);
+      PFV = build_pointer_type (build_function_type
+				(void_type_node, void_list_node));
+
+      pfvlist = tree_cons (NULL_TREE, PFV, void_list_node);
+
+      push_lang_context (lang_name_c);
+      /* Note that we do not call pushdecl for this function;
+	 there's no reason that this declaration should be
+	 accessible to anyone.  */
+      atexit_fndecl
+	= define_function ("atexit",
+			   build_function_type (void_type_node,
+						pfvlist),
+			   NOT_BUILT_IN, 
+			   /*pfn=*/0,
+			   NULL_PTR);
+      mark_used (atexit_fndecl);
+      atexit_node = default_conversion (atexit_fndecl);
+      pop_lang_context ();
+      pop_obstacks ();
+    }
+	      
+  /* Call build_cleanup before we enter the anonymous function so that
+     any access checks will be done relative to the current scope,
+     rather than the scope of the anonymous function.  */
+  build_cleanup (decl);
+
+  /* Now start the function.  */
+  cleanup = start_anon_func ();
+
+  /* Now, recompute the cleanup.  It may contain SAVE_EXPRs that refer
+     to the original function, rather than the anonymous one.  That
+     will make the back-end think that nested functions are in use,
+     which causes confusion.  */
+  saved_flag_access_control = flag_access_control;
+  flag_access_control = 0;
+  fcall = build_cleanup (decl);
+  flag_access_control = saved_flag_access_control;
+
+  /* Create the body of the anonymous function.  */
+  compound_stmt = begin_compound_stmt (/*has_no_scope=*/0);
+  finish_expr_stmt (fcall);
+  finish_compound_stmt (/*has_no_scope=*/0, compound_stmt);
+  end_anon_func ();
+
+  /* Call atexit with the cleanup function.  */
+  mark_addressable (cleanup);
+  cleanup = build_unary_op (ADDR_EXPR, cleanup, 0);
+  fcall = build_function_call (atexit_node,
+			       tree_cons (NULL_TREE, 
+					  cleanup, 
+					  NULL_TREE));
+  finish_expr_stmt (fcall);
+}
+
 void
 expand_static_init (decl, init)
      tree decl;
@@ -8060,6 +8132,7 @@ expand_static_init (decl, init)
       /* Emit code to perform this initialization but once.  */
       tree temp;
       tree if_stmt;
+      tree then_clause;
       tree assignment;
       tree temp_init;
 
@@ -8098,6 +8171,7 @@ expand_static_init (decl, init)
       finish_if_stmt_cond (build_binary_op (EQ_EXPR, temp,
 					    integer_zero_node), 
 			   if_stmt);
+      then_clause = begin_compound_stmt (/*has_no_scope=*/0);
 
       /* Do the initialization itself.  */
       if (TYPE_NEEDS_CONSTRUCTING (TREE_TYPE (decl))
@@ -8133,73 +8207,9 @@ expand_static_init (decl, init)
       /* Use atexit to register a function for destroying this static
 	 variable.  */
       if (TYPE_NEEDS_DESTRUCTOR (TREE_TYPE (decl)))
-	{
-	  tree cleanup, fcall;
-	  static tree Atexit = 0;
-	  int saved_flag_access_control;
+	destroy_local_static (decl);
 
-	  if (Atexit == 0)
-	    {
-	      tree atexit_fndecl, PFV, pfvlist;
-
-	      ggc_add_tree_root (&Atexit, 1);
-
-	      /* Remember this information until end of file.  */
-	      push_obstacks (&permanent_obstack, &permanent_obstack);
-	      PFV = build_pointer_type (build_function_type
-					(void_type_node, void_list_node));
-
-	      pfvlist = tree_cons (NULL_TREE, PFV, void_list_node);
-
-	      push_lang_context (lang_name_c);
-	      /* Note that we do not call pushdecl for this function;
-		 there's no reason that this declaration should be
-		 accessible to anyone.  */
-	      atexit_fndecl
-		= define_function ("atexit",
-				   build_function_type (void_type_node,
-							pfvlist),
-				   NOT_BUILT_IN, 
-				   /*pfn=*/0,
-				   NULL_PTR);
-	      mark_used (atexit_fndecl);
-	      Atexit = default_conversion (atexit_fndecl);
-	      pop_lang_context ();
-	      pop_obstacks ();
-	    }
-	      
-	  /* Call build_cleanup before we enter the anonymous function
-	     so that any access checks will be done relative to the
-	     current scope, rather than the scope of the anonymous
-	     function.  */
-	  build_cleanup (decl);
-
-	  /* Now start the function.  */
-	  cleanup = start_anon_func ();
-
-	  /* Now, recompute the cleanup.  It may contain SAVE_EXPRs
-	     that refer to the original function, rather than the
-	     anonymous one.  That will make the back-end think that
-	     nested functions are in use, which causes confusion.  */
-	  saved_flag_access_control = flag_access_control;
-	  flag_access_control = 0;
-	  fcall = build_cleanup (decl);
-	  flag_access_control = saved_flag_access_control;
-
-	  /* Finish off the function.  */
-	  expand_expr_stmt (fcall);
-	  end_anon_func ();
-
-	  /* Call atexit with the cleanup function.  */
-	  mark_addressable (cleanup);
-	  cleanup = build_unary_op (ADDR_EXPR, cleanup, 0);
-	  fcall = build_function_call (Atexit, 
-				       tree_cons (NULL_TREE, 
-						  cleanup, 
-						  NULL_TREE));
-	  finish_expr_stmt (fcall);
-	}
-
+      finish_compound_stmt (/*has_no_scope=*/0, then_clause);
       finish_then_clause (if_stmt);
       finish_if_stmt ();
 

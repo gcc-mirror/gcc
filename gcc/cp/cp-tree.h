@@ -429,6 +429,7 @@ enum cp_tree_index
     CPTI_JCLASS,
     CPTI_MINUS_ONE,
     CPTI_TERMINATE,
+    CPTI_ATEXIT,
 
     CPTI_MAX
 };
@@ -519,6 +520,9 @@ extern tree cp_global_trees[CPTI_MAX];
 
 /* The declaration for `std::terminate'.  */
 #define terminate_node                  cp_global_trees[CPTI_TERMINATE]
+
+/* The declaration for `std::atexit'.  */
+#define atexit_node                     cp_global_trees[CPTI_ATEXIT]
 
 /* Global state.  */
 

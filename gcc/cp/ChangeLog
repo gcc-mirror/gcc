@@ -1,5 +1,10 @@
 1999-09-10  Mark Mitchell  <mark@codesourcery.com>
 
+	* cp-tree.h (CPTI_ATEXIT): New macro.
+	(atexit_node): Likewise.
+	* decl.c (destroy_local_static): New function, broken out from ...
+	(expand_static_init): Here.
+
 	* rtti.c (get_tinfo_var): These should always be global
 	(expand_si_desc): Use tree, not RTL, functions to generate code.
 	(expand_class_desc): Likewise.
