@@ -1,3 +1,14 @@
+2003-07-31  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
+
+	* testsuite/thread/pthread1.cc: Add alpha*-*-osf* to dg-do run,
+	dg-options.
+	* testsuite/thread/pthread2.cc: Likewise.
+	* testsuite/thread/pthread3.cc: Likewise.
+	* testsuite/thread/pthread4.cc: Likewise.
+	* testsuite/thread/pthread5.cc: Likewise.
+	* testsuite/thread/pthread6.cc: Likewise.
+	* testsuite/thread/pthread7-rope.cc: Likewise.
+
 2003-07-30  Phil Edwards  <pme@gcc.gnu.org>
 
 	* include/bits/c++config:  Partial reversion (comment placement) of
