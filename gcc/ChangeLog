@@ -1,5 +1,8 @@
 1999-12-27  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
+	* diagnostic.c (v_message_with_decl): Use .* format specifier
+	instead of building the format specifier width manually.
+
 	* system.h (strsignal): Don't check HAVE_STRSIGNAL when
 	determining whether to provide a prototype.  Remove the
 	sys_siglist clause in the conditional.
