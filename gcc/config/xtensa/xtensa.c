@@ -203,7 +203,6 @@ static unsigned int xtensa_multibss_section_type_flags
   PARAMS ((tree, const char *, int));
 static void xtensa_select_rtx_section
   PARAMS ((enum machine_mode, rtx, unsigned HOST_WIDE_INT));
-static void xtensa_encode_section_info PARAMS ((tree, int));
 static bool xtensa_rtx_costs PARAMS ((rtx, int, int, int *));
 
 static rtx frame_size_const;
@@ -238,8 +237,6 @@ static const int reg_nonleaf_alloc_order[FIRST_PSEUDO_REGISTER] =
 
 #undef TARGET_ASM_SELECT_RTX_SECTION
 #define TARGET_ASM_SELECT_RTX_SECTION  xtensa_select_rtx_section
-#undef TARGET_ENCODE_SECTION_INFO
-#define TARGET_ENCODE_SECTION_INFO  xtensa_encode_section_info
 
 #undef TARGET_RTX_COSTS
 #define TARGET_RTX_COSTS xtensa_rtx_costs
@@ -596,8 +593,8 @@ call_insn_operand (op, mode)
   if (CONSTANT_ADDRESS_P (op))
     {
       /* Direct calls only allowed to static functions with PIC.  */
-      return (!flag_pic || (GET_CODE (op) == SYMBOL_REF
-			    && SYMBOL_REF_FLAG (op)));
+      return (!flag_pic
+	      || (GET_CODE (op) == SYMBOL_REF && SYMBOL_REF_LOCAL_P (op)));
     }
 
   return FALSE;
@@ -2831,18 +2828,6 @@ xtensa_select_rtx_section (mode, x, align)
      unsigned HOST_WIDE_INT align ATTRIBUTE_UNUSED;
 {
   function_section (current_function_decl);
-}
-
-/* If we are referencing a function that is static, make the SYMBOL_REF
-   special so that we can generate direct calls to it even with -fpic.  */
-
-static void
-xtensa_encode_section_info (decl, first)
-     tree decl;
-     int first ATTRIBUTE_UNUSED;
-{
-  if (TREE_CODE (decl) == FUNCTION_DECL && ! TREE_PUBLIC (decl))
-    SYMBOL_REF_FLAG (XEXP (DECL_RTL (decl), 0)) = 1;
 }
 
 /* Compute a (partial) cost for rtx X.  Return true if the complete
