@@ -921,23 +921,15 @@ _Jv_IsAssignableFrom (jclass target, jclass source)
 
   if (target->isInterface())
     {
-      // Abstract classes have no IDTs, so compare superclasses instead.
-      if (java::lang::reflect::Modifier::isAbstract (source->accflags))
-	{
-	  jclass super = source->getSuperclass();
-	  return super ? _Jv_IsAssignableFrom (target, super) : false;
-	}
-
-      if (source->state != JV_STATE_DONE)
-	source->initializeClass ();
-      if (target->state != JV_STATE_DONE)
-	target->initializeClass ();
-
+      // Abstract classes have no IDT, and IDTs provide no way to check
+      // two interfaces for assignability.
+      if (__builtin_expect 
+         (java::lang::reflect::Modifier::isAbstract (source->accflags)
+          || source->isInterface(), false))
+        return _Jv_InterfaceAssignableFrom (target, source);
+	
       _Jv_IDispatchTable *cl_idt = source->idt;
       _Jv_IDispatchTable *if_idt = target->idt;
-
-      if (if_idt == NULL) // The interface has no implementations
-	return false;
 
       if (__builtin_expect ((if_idt == NULL), false))
 	return false; // No class implementing TARGET has been loaded.    
@@ -951,6 +943,28 @@ _Jv_IsAssignableFrom (jclass target, jclass source)
 	}
     }
     
+  return false;
+}
+
+// Interface type checking, the slow way. Returns TRUE if IFACE is a 
+// superinterface of SOURCE. This is used when SOURCE is also an interface,
+// or a class with no interface dispatch table.
+jboolean
+_Jv_InterfaceAssignableFrom (jclass iface, jclass source)
+{
+  for (int i = 0; i < source->interface_count; i++)
+    {
+      jclass interface = source->interfaces[i];
+      if (iface == interface
+          || _Jv_InterfaceAssignableFrom (iface, interface))
+        return true;      
+    }
+    
+  if (!source->isInterface()
+      && source->superclass 
+      && _Jv_InterfaceAssignableFrom (iface, source->superclass))
+    return true;
+        
   return false;
 }
 
