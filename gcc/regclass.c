@@ -2305,7 +2305,7 @@ int max_parallel;
 static int max_set_parallel;
 
 void
-reg_scan (rtx f, unsigned int nregs, int repeat ATTRIBUTE_UNUSED)
+reg_scan (rtx f, unsigned int nregs)
 {
   rtx insn;
 
