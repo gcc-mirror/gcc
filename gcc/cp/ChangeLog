@@ -1,3 +1,21 @@
+2003-08-29  Richard Henderson  <rth@redhat.com>
+	    Jason Merrill <jason@redhat.com>
+
+	* cp-lang.c (LANG_HOOKS_RTL_EXPAND_START): New.
+	(LANG_HOOKS_RTL_EXPAND_STMT): New.
+	* cp-tree.h (cxx_expand_function_start): Declare.
+	* decl.c (start_function): Use allocate_struct_function.
+	Move stmts_are_full_exprs_p assertion from expand_body.
+	Do not free_after_parsing or free_after_compilation.
+	(cxx_push_function_context): Move code to set struct function
+	data from genrtl_start_function.
+	* optimize.c (optimize_function): Don't inc/dec function_depth.
+	* semantics.c (expand_body): Use tree_rest_of_compilation.
+	(cxx_expand_function_start): Rename from genrtl_start_function,
+	omit bits done by tree_rest_of_compilation.
+	(genrtl_finish_function): Remove.
+	(clear_decl_rtl): Move to ../tree-optimize.c.
+
 2003-08-29  Gabriel Dos Reis  <gdr@integrable-solutions.net>
 
 	PR c++/11811

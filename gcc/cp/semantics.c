@@ -59,9 +59,7 @@ static void genrtl_try_block (tree);
 static void genrtl_eh_spec_block (tree);
 static void genrtl_handler (tree);
 static void cp_expand_stmt (tree);
-static void genrtl_start_function (tree);
-static void genrtl_finish_function (tree);
-static tree clear_decl_rtl (tree *, int *, void *);
+
 
 /* Finish processing the COND, the SUBSTMT condition for STMT.  */
 
@@ -2863,9 +2861,6 @@ expand_body (tree fn)
   location_t saved_loc;
   tree saved_function;
   
-  if (flag_unit_at_a_time && !cgraph_global_info_ready)
-    abort ();
-
   /* Compute the appropriate object-file linkage for inline
      functions.  */
   if (DECL_DECLARED_INLINE_P (fn))
@@ -2879,61 +2874,35 @@ expand_body (tree fn)
   if (DECL_EXTERNAL (fn))
     return;
 
-  /* Save the current file name and line number.  When we expand the
-     body of the function, we'll set INPUT_LOCATION so that
-     error-messages come out in the right places.  */
+  /* ??? When is this needed?  */
   saved_loc = input_location;
   saved_function = current_function_decl;
-  input_location = DECL_SOURCE_LOCATION (fn);
-  current_function_decl = fn;
 
   timevar_push (TV_INTEGRATION);
-
-  /* Optimize the body of the function before expanding it.  */
   optimize_function (fn);
-
   timevar_pop (TV_INTEGRATION);
-  timevar_push (TV_EXPAND);
 
-  genrtl_start_function (fn);
-  current_function_is_thunk = DECL_THUNK_P (fn);
+  tree_rest_of_compilation (fn);
 
-  /* Expand the body.  */
-  expand_stmt (DECL_SAVED_TREE (fn));
-
-  /* Statements should always be full-expressions at the outermost set
-     of curly braces for a function.  */
-  my_friendly_assert (stmts_are_full_exprs_p (), 19990831);
-
-  /* The outermost statement for a function contains the line number
-     recorded when we finished processing the function.  */
-  input_line = STMT_LINENO (DECL_SAVED_TREE (fn));
-
-  /* Generate code for the function.  */
-  genrtl_finish_function (fn);
-
-  /* If possible, obliterate the body of the function so that it can
-     be garbage collected.  */
-  if (dump_enabled_p (TDI_all))
-    /* Keep the body; we're going to dump it.  */
-    ;
-  else if (DECL_INLINE (fn) && flag_inline_trees)
-    /* We might need the body of this function so that we can expand
-       it inline somewhere else.  */
-    ;
-  else
-    /* We don't need the body; blow it away.  */
-    DECL_SAVED_TREE (fn) = NULL_TREE;
-
-  /* And restore the current source position.  */
   current_function_decl = saved_function;
   input_location = saved_loc;
-  extract_interface_info ();
 
-  timevar_pop (TV_EXPAND);
+  extract_interface_info ();
 
   /* Emit any thunks that should be emitted at the same time as FN.  */
   emit_associated_thunks (fn);
+
+  /* If this function is marked with the constructor attribute, add it
+     to the list of functions to be called along with constructors
+     from static duration objects.  */
+  if (DECL_STATIC_CONSTRUCTOR (fn))
+    static_ctors = tree_cons (NULL_TREE, fn, static_ctors);
+
+  /* If this function is marked with the destructor attribute, add it
+     to the list of functions to be called along with destructors from
+     static duration objects.  */
+  if (DECL_STATIC_DESTRUCTOR (fn))
+    static_dtors = tree_cons (NULL_TREE, fn, static_dtors);
 }
 
 /* Generate RTL for FN.  */
@@ -3062,197 +3031,16 @@ nullify_returns_r (tree* tp, int* walk_subtrees, void* data)
 
 /* Start generating the RTL for FN.  */
 
-static void
-genrtl_start_function (tree fn)
+void
+cxx_expand_function_start (void)
 {
-  /* Tell everybody what function we're processing.  */
-  current_function_decl = fn;
-  /* Get the RTL machinery going for this function.  */
-  init_function_start (fn);
   /* Let everybody know that we're expanding this function, not doing
      semantic analysis.  */
   expanding_p = 1;
 
-  /* Even though we're inside a function body, we still don't want to
-     call expand_expr to calculate the size of a variable-sized array.
-     We haven't necessarily assigned RTL to all variables yet, so it's
-     not safe to try to expand expressions involving them.  */
-  immediate_size_expand = 0;
-  cfun->x_dont_save_pending_sizes_p = 1;
-
-  /* Let the user know we're compiling this function.  */
-  announce_function (fn);
-
-  /* Initialize the per-function data.  */
-  my_friendly_assert (!DECL_PENDING_INLINE_P (fn), 20000911);
-  if (DECL_SAVED_FUNCTION_DATA (fn))
-    {
-      /* If we already parsed this function, and we're just expanding it
-	 now, restore saved state.  */
-      *cp_function_chain = *DECL_SAVED_FUNCTION_DATA (fn);
-
-      /* This function is being processed in whole-function mode; we
-	 already did semantic analysis.  */
-      cfun->x_whole_function_mode_p = 1;
-
-      /* If we decided that we didn't want to inline this function,
-	 make sure the back-end knows that.  */
-      if (!current_function_cannot_inline)
-	current_function_cannot_inline = cp_function_chain->cannot_inline;
-
-      /* We don't need the saved data anymore.  Unless this is an inline
-         function; we need the named return value info for
-         cp_copy_res_decl_for_inlining.  */
-      if (! DECL_INLINE (fn))
-	DECL_SAVED_FUNCTION_DATA (fn) = NULL;
-    }
-
-  /* Keep track of how many functions we're presently expanding.  */
-  ++function_depth;
-
-  /* Create a binding level for the parameters.  */
-  expand_function_start (fn, /*parms_have_cleanups=*/0);
-  /* If this function is `main'.  */
-  if (DECL_MAIN_P (fn))
-    expand_main_function ();
-
   /* Give our named return value the same RTL as our RESULT_DECL.  */
   if (current_function_return_value)
-    COPY_DECL_RTL (DECL_RESULT (fn), current_function_return_value);
-}
-
-/* Finish generating the RTL for FN.  */
-
-static void
-genrtl_finish_function (tree fn)
-{
-  tree t;
-
-#if 0
-  if (write_symbols != NO_DEBUG)
-    {
-      /* Keep this code around in case we later want to control debug info
-	 based on whether a type is "used".  (jason 1999-11-11) */
-
-      tree ttype = target_type (fntype);
-      tree parmdecl;
-
-      if (IS_AGGR_TYPE (ttype))
-	/* Let debugger know it should output info for this type.  */
-	note_debug_info_needed (ttype);
-
-      for (parmdecl = DECL_ARGUMENTS (fndecl); parmdecl; parmdecl = TREE_CHAIN (parmdecl))
-	{
-	  ttype = target_type (TREE_TYPE (parmdecl));
-	  if (IS_AGGR_TYPE (ttype))
-	    /* Let debugger know it should output info for this type.  */
-	    note_debug_info_needed (ttype);
-	}
-    }
-#endif
-
-  /* Clean house because we will need to reorder insns here.  */
-  do_pending_stack_adjust ();
-
-  /* If we have a named return value, we need to force a return so that
-     the return register is USEd.  */
-  if (DECL_NAME (DECL_RESULT (fn)))
-    emit_jump (return_label);
-
-  /* We hard-wired immediate_size_expand to zero in start_function.
-     Expand_function_end will decrement this variable.  So, we set the
-     variable to one here, so that after the decrement it will remain
-     zero.  */
-  immediate_size_expand = 1;
-
-  /* Generate rtl for function exit.  */
-  expand_function_end ();
-
-  /* If this is a nested function (like a template instantiation that
-     we're compiling in the midst of compiling something else), push a
-     new GC context.  That will keep local variables on the stack from
-     being collected while we're doing the compilation of this
-     function.  */
-  if (function_depth > 1)
-    ggc_push_context ();
-
-  /* There's no need to defer outputting this function any more; we
-     know we want to output it.  */
-  DECL_DEFER_OUTPUT (fn) = 0;
-
-  /* Run the optimizers and output the assembler code for this
-     function.  */
-  rest_of_compilation (fn);
-
-  /* Undo the call to ggc_push_context above.  */
-  if (function_depth > 1)
-    ggc_pop_context ();
-
-#if 0
-  /* Keep this code around in case we later want to control debug info
-     based on whether a type is "used".  (jason 1999-11-11) */
-
-  if (ctype && TREE_ASM_WRITTEN (fn))
-    note_debug_info_needed (ctype);
-#endif
-
-  /* If this function is marked with the constructor attribute, add it
-     to the list of functions to be called along with constructors
-     from static duration objects.  */
-  if (DECL_STATIC_CONSTRUCTOR (fn))
-    static_ctors = tree_cons (NULL_TREE, fn, static_ctors);
-
-  /* If this function is marked with the destructor attribute, add it
-     to the list of functions to be called along with destructors from
-     static duration objects.  */
-  if (DECL_STATIC_DESTRUCTOR (fn))
-    static_dtors = tree_cons (NULL_TREE, fn, static_dtors);
-
-  --function_depth;
-
-  /* In C++, we should never be saving RTL for the function.  */
-  my_friendly_assert (!DECL_SAVED_INSNS (fn), 20010903);
-
-  /* Since we don't need the RTL for this function anymore, stop
-     pointing to it.  That's especially important for LABEL_DECLs,
-     since you can reach all the instructions in the function from the
-     CODE_LABEL stored in the DECL_RTL for the LABEL_DECL.  Walk the
-     BLOCK-tree, clearing DECL_RTL for LABEL_DECLs and non-static
-     local variables.  */
-  walk_tree_without_duplicates (&DECL_SAVED_TREE (fn),
-				clear_decl_rtl,
-				NULL);
-
-  /* Clear out the RTL for the arguments.  */
-  for (t = DECL_ARGUMENTS (fn); t; t = TREE_CHAIN (t))
-    {
-      SET_DECL_RTL (t, NULL_RTX);
-      DECL_INCOMING_RTL (t) = NULL_RTX;
-    }
-
-  if (!(flag_inline_trees && DECL_INLINE (fn)))
-    /* DECL_INITIAL must remain nonzero so we know this was an
-       actual function definition.  */
-    DECL_INITIAL (fn) = error_mark_node;
-  
-  /* Let the error reporting routines know that we're outside a
-     function.  For a nested function, this value is used in
-     pop_cp_function_context and then reset via pop_function_context.  */
-  current_function_decl = NULL_TREE;
-}
-
-/* Clear out the DECL_RTL for the non-static variables in BLOCK and
-   its sub-blocks.  */
-
-static tree
-clear_decl_rtl (tree* tp, 
-                int* walk_subtrees ATTRIBUTE_UNUSED , 
-                void* data ATTRIBUTE_UNUSED )
-{
-  if (nonstatic_local_decl_p (*tp)) 
-    SET_DECL_RTL (*tp, NULL_RTX);
-    
-  return NULL_TREE;
+    COPY_DECL_RTL (DECL_RESULT (cfun->decl), current_function_return_value);
 }
 
 /* Perform initialization related to this module.  */
