@@ -1033,11 +1033,10 @@ get_aligned_mem (ref, paligned_mem, pbitnum)
 
   *paligned_mem = gen_rtx_MEM (SImode, plus_constant (base, offset & ~3));
   MEM_COPY_ATTRIBUTES (*paligned_mem, ref);
-  RTX_UNCHANGING_P (*paligned_mem) = RTX_UNCHANGING_P (ref);
 
   /* Sadly, we cannot use alias sets here because we may overlap other
      data in a different alias set.  */
-  /* MEM_ALIAS_SET (*paligned_mem) = MEM_ALIAS_SET (ref); */
+  MEM_ALIAS_SET (*paligned_mem) = 0;
 
   *pbitnum = GEN_INT ((offset & 3) * 8);
 }

@@ -4228,7 +4228,6 @@ expand_anon_union_decl (decl, cleanup, decl_elts)
 	    {
 	      DECL_RTL (decl_elt) = gen_rtx_MEM (mode, copy_rtx (XEXP (x, 0)));
 	      MEM_COPY_ATTRIBUTES (DECL_RTL (decl_elt), x);
-	      RTX_UNCHANGING_P (DECL_RTL (decl_elt)) = RTX_UNCHANGING_P (x);
 	    }
 	}
       else if (GET_CODE (x) == REG)

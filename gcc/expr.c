@@ -402,9 +402,7 @@ protect_from_queue (x, modify)
 	  register rtx y = XEXP (x, 0);
 	  register rtx new = gen_rtx_MEM (GET_MODE (x), QUEUED_VAR (y));
 
-	  RTX_UNCHANGING_P (new) = RTX_UNCHANGING_P (x);
 	  MEM_COPY_ATTRIBUTES (new, x);
-	  MEM_ALIAS_SET (new) = MEM_ALIAS_SET (x);
 
 	  if (QUEUED_INSN (y))
 	    {
@@ -2748,9 +2746,7 @@ emit_move_insn_1 (x, y)
 	{
 	  rtx new = gen_rtx_MEM (GET_MODE (x), inner);
 
-	  RTX_UNCHANGING_P (new) = RTX_UNCHANGING_P (x);
 	  MEM_COPY_ATTRIBUTES (new, x);
-	  MEM_ALIAS_SET (new) = MEM_ALIAS_SET (x);
 	  x = new;
 	}
       if (reload_in_progress && GET_CODE (y) == MEM
@@ -2758,9 +2754,7 @@ emit_move_insn_1 (x, y)
 	{
 	  rtx new = gen_rtx_MEM (GET_MODE (y), inner);
 
-	  RTX_UNCHANGING_P (new) = RTX_UNCHANGING_P (y);
 	  MEM_COPY_ATTRIBUTES (new, y);
-	  MEM_ALIAS_SET (new) = MEM_ALIAS_SET (y);
 	  y = new;
 	}
 

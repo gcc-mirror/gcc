@@ -402,7 +402,6 @@ legitimize_address (pic, orig, reg, scratch)
       && GET_CODE (orig) == MEM)
     {
       new = gen_rtx_MEM (GET_MODE (orig), new);
-      RTX_UNCHANGING_P (new) = RTX_UNCHANGING_P (orig);
       MEM_COPY_ATTRIBUTES (new, orig);
     }
   return new;
@@ -602,7 +601,6 @@ block_move_loop (dest, dest_mem, src, src_mem, size, align)
 			   gen_rtx_PLUS (Pmode,
 					 gen_rtx_REG (Pmode, 3),
 					 offset_rtx));
-  RTX_UNCHANGING_P (value_rtx) = RTX_UNCHANGING_P (src_mem);
   MEM_COPY_ATTRIBUTES (value_rtx, src_mem);
 
   emit_insn (gen_call_movstrsi_loop
@@ -659,7 +657,6 @@ block_move_no_loop (dest, dest_mem, src, src_mem, size, align)
 					 gen_rtx_REG (Pmode, 3),
 					 offset_rtx));
 
-  RTX_UNCHANGING_P (value_rtx) = RTX_UNCHANGING_P (src_mem);
   MEM_COPY_ATTRIBUTES (value_rtx, src_mem);
 
   value_reg = ((((most - (size - remainder)) / align) & 1) == 0
@@ -730,7 +727,6 @@ block_move_sequence (dest, dest_mem, src, src_mem, size, align, offset)
 	  srcp = gen_rtx_MEM (MEM_IN_STRUCT_P (src_mem) ? mode[next] : BLKmode,
 			      plus_constant (src, offset_ld));
 
-	  RTX_UNCHANGING_P (srcp) = RTX_UNCHANGING_P (src_mem);
 	  MEM_COPY_ATTRIBUTES (srcp, src_mem);
 	  emit_insn (gen_rtx_SET (VOIDmode, temp[next], srcp));
 	  offset_ld += amount[next];
@@ -744,7 +740,6 @@ block_move_sequence (dest, dest_mem, src, src_mem, size, align, offset)
 	    = gen_rtx_MEM (MEM_IN_STRUCT_P (dest_mem) ? mode[phase] : BLKmode,
 			   plus_constant (dest, offset_st));
 
-	  RTX_UNCHANGING_P (dstp) = RTX_UNCHANGING_P (dest_mem);
 	  MEM_COPY_ATTRIBUTES (dstp, dest_mem);
 	  emit_insn (gen_rtx_SET (VOIDmode, dstp, temp[phase]));
 	  offset_st += amount[phase];

@@ -2046,7 +2046,6 @@ fixup_var_refs_1 (var, promoted_mode, loc, insn, replacements)
 
 		  newmem = gen_rtx_MEM (wanted_mode,
 					plus_constant (XEXP (tem, 0), offset));
-		  RTX_UNCHANGING_P (newmem) = RTX_UNCHANGING_P (tem);
 		  MEM_COPY_ATTRIBUTES (newmem, tem);
 
 		  /* Make the change and see if the insn remains valid.  */
@@ -2238,7 +2237,6 @@ fixup_var_refs_1 (var, promoted_mode, loc, insn, replacements)
 		    newmem = gen_rtx_MEM (wanted_mode,
 					  plus_constant (XEXP (tem, 0),
 							 offset));
-		    RTX_UNCHANGING_P (newmem) = RTX_UNCHANGING_P (tem);
 		    MEM_COPY_ATTRIBUTES (newmem, tem);
 
 		    /* Make the change and see if the insn remains valid.  */
@@ -2928,7 +2926,6 @@ purge_addressof_1 (loc, insn, force, store, ht)
 	{
 	  sub2 = gen_rtx_MEM (GET_MODE (x), copy_rtx (XEXP (sub, 0)));
 	  MEM_COPY_ATTRIBUTES (sub2, sub);
-	  RTX_UNCHANGING_P (sub2) = RTX_UNCHANGING_P (sub);
 	  sub = sub2;
 	}
       else if (GET_CODE (sub) == REG

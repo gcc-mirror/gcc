@@ -2814,7 +2814,6 @@ fix_bit_operand (operands, what, type)
 	      rtx mem = gen_rtx_MEM (GET_MODE (operands[0]),
 				     copy_to_mode_reg (Pmode,
 						       XEXP (operands[0], 0)));
-	      RTX_UNCHANGING_P (mem) = RTX_UNCHANGING_P (operands[0]);
 	      MEM_COPY_ATTRIBUTES (mem, operands[0]);
 	      operands[0] = mem;
 	    }
@@ -2824,7 +2823,6 @@ fix_bit_operand (operands, what, type)
 	      rtx mem = gen_rtx_MEM (GET_MODE (operands[1]),
 				     copy_to_mode_reg (Pmode,
 						       XEXP (operands[1], 0)));
-	      RTX_UNCHANGING_P (mem) = RTX_UNCHANGING_P (operands[1]);
 	      MEM_COPY_ATTRIBUTES (mem, operands[0]);
 	      operands[1] = mem;
 	    }

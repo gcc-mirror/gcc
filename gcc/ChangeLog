@@ -1,3 +1,33 @@
+Thu May  4 09:45:12 2000  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	* rtl.h (MEM_COPY_ATTRIBUTES): Also copy RTX_UNCHANGING_P and
+	MEM_ALIAS_SET.
+	* alias.c (canon_rtx): Don't copy RTX_UNCHANGING_P or MEM_ALIAS_SET
+	when calling MEM_COPY_ATTRIBUTES.
+	* emit-rtl.c (operand_subword, change_address): Likewise.
+	* explow.c (stabilize): Likewise.
+	* expr.c (protect_from_queue, emit_move_insn_1): Likewise.
+	* integrate.c (copy_rtx_and_substitute): Likewise.
+	* combine.c (combine_simplify_rtx): Don't copy RTX_UNCHANGING_P
+	when calling MEM_COPY_ATTRIBUTES.
+	(make_extraction, simplify_shift_const, gen_lowpart_for_combine):
+	Likewise.
+	* cse.c (gen_lowpart_if_possible): Likewise.
+	* function.c (fixup_var_refs_1, purge_addressof_1): Likewise.
+	* optabs.c (gen_move_insn): Likewise.
+	* recog.c (validate_replace_rtx_1): Likewise.
+	* simplify-rtx.c (add_mem_for_addr): Likewise.
+	* stmt.c (expand_anon_union_decl): Likewise.
+	* config/arm/arm.md: Likewise.
+	* config/h8300/h7300.c (fix_bit_operand): Likewise.
+	* config/m88k/m88k.c (legitimize_address, block_move_loop): Likewise.
+	(block_move_no_loop, block_move_sequence): Likewise.
+	* config/rs6000/rs6000.c (expand_block_move_mem): Likewise.
+	* config/alpha/alpha.c (get_aligned_mem): Likewise.
+	Clear MEM_ALIAS_SET.
+	* final.c (alter_subreg): Don't copy MEM_ALIAS_SET when calling
+	MEM_COPY_ATTRIBUTES.
+
 2000-05-03  Robert Lipe <robertlipe@usa.net>
         
         * configure.in (i[34567]86-*-isc*) [tmake_file]: Add t-i386bare

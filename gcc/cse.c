@@ -4176,7 +4176,6 @@ gen_lowpart_if_possible (mode, x)
       new = gen_rtx_MEM (mode, plus_constant (XEXP (x, 0), offset));
       if (! memory_address_p (mode, XEXP (new, 0)))
 	return 0;
-      RTX_UNCHANGING_P (new) = RTX_UNCHANGING_P (x);
       MEM_COPY_ATTRIBUTES (new, x);
       return new;
     }

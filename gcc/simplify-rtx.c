@@ -2604,11 +2604,9 @@ add_mem_for_addr (addr_elt, mem_elt, x)
       return;
 
   new = gen_rtx_MEM (GET_MODE (x), addr_elt->u.val_rtx);
-  addr_elt->addr_list = new_elt_list (addr_elt->addr_list, mem_elt);
-
-  RTX_UNCHANGING_P (new) = RTX_UNCHANGING_P (x);
   MEM_COPY_ATTRIBUTES (new, x);
 
+  addr_elt->addr_list = new_elt_list (addr_elt->addr_list, mem_elt);
   mem_elt->locs = new_elt_loc_list (mem_elt->locs, new);
 }
 
