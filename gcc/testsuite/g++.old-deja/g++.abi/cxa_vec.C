@@ -1,12 +1,12 @@
 // Test __cxa_vec routines
-// Copyright (C) 2000 Free Software Foundation, Inc.
+// Copyright (C) 2000, 2001 Free Software Foundation, Inc.
 // Contributed by Nathan Sidwell 7 Apr 2000 <nathan@nathan@codesourcery.com>
 
 #if defined (__GXX_ABI_VERSION) && __GXX_ABI_VERSION >= 100
 #include <cxxabi.h>
 #include <stdio.h>
 #include <new>
-#include <malloc.h>
+#include <stdlib.h>
 #include <setjmp.h>
 
 static int ctor_count = 0;
