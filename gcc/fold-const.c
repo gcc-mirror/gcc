@@ -4864,7 +4864,7 @@ fold (expr)
 
   /* Don't try to process an RTL_EXPR since its operands aren't trees.
      Likewise for a SAVE_EXPR that's already been evaluated.  */
-  if (code == RTL_EXPR || (code == SAVE_EXPR && SAVE_EXPR_RTL (t)) != 0)
+  if (code == RTL_EXPR || (code == SAVE_EXPR && SAVE_EXPR_RTL (t) != 0))
     return t;
 
   /* Return right away if a constant.  */
@@ -4903,7 +4903,7 @@ fold (expr)
     }
   else if (IS_EXPR_CODE_CLASS (kind) || kind == 'r')
     {
-      register int len = TREE_CODE_LENGTH (code);
+      register int len = first_rtl_op (code);
       register int i;
       for (i = 0; i < len; i++)
 	{
