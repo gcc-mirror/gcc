@@ -1,3 +1,7 @@
+2004-01-09  Alexandre Oliva  <aoliva@redhat.com>
+
+	* g++.dg/lookup/strong-using-1.C: New.
+
 2004-01-09  Joseph S. Myers  <jsm@polyomino.org.uk>
 
 	PR c/11234
