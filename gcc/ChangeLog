@@ -1,3 +1,12 @@
+1999-12-09  Jakub Jelinek  <jakub@redhat.com>
+
+	* config/sparc/linux64.h (TARGET_DEFAULT): Make -mapp-regs
+	default on linux64 again.
+	* config/sparc/t-linux64: Add mno-app-regs and non-medlow code
+	models for multilibing.
+	* genmultilib: Accept | as alternative separator within a set in
+	MULTILIB_OPTIONS.
+
 Wed Dec  8 22:24:15 1999  Richard Henderson  <rth@cygnus.com>
 
 	* flow.c (count_basic_blocks): Don't add (use (const_int 0)) insns.
