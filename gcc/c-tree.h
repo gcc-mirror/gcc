@@ -137,6 +137,13 @@ struct lang_type
        || TYPE_MAIN_VARIANT (t) == unsigned_char_type_node	\
        || TYPE_MAIN_VARIANT (t) == short_integer_type_node	\
        || TYPE_MAIN_VARIANT (t) == short_unsigned_type_node))
+
+/* In a VAR_DECL, means the variable is really an iterator.  */
+#define ITERATOR_P(D) (DECL_LANG_FLAG_4(D))
+
+/* In a VAR_DECL for an iterator, means we are within
+   an explicit loop over that iterator.  */
+#define ITERATOR_BOUND_P(NODE) ((NODE)->common.readonly_flag)
 
 extern int maybe_objc_comptypes                 PROTO((tree, tree));
 extern tree maybe_building_objc_message_expr    PROTO((void));
@@ -311,6 +318,14 @@ extern tree default_conversion                  PROTO((tree));
 extern tree digest_init                         PROTO((tree, tree, tree *, int, int, char *));
 extern tree parser_build_binary_op              PROTO((enum tree_code, tree, tree));
 extern void store_init_value                    PROTO((tree, tree));
+
+/* in c-iterate.c */
+extern void iterator_expand			PROTO((tree));
+extern void iterator_for_loop_start		PROTO((tree));
+extern void iterator_for_loop_end		PROTO((tree));
+extern void iterator_for_loop_record		PROTO((tree));
+extern void push_iterator_stack			PROTO((void));
+extern void pop_iterator_stack			PROTO((void));
 
 /* Set to 0 at beginning of a function definition, set to 1 if
    a return statement that specifies a return value is seen.  */
