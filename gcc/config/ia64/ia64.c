@@ -6457,7 +6457,7 @@ ia64_reorg (insns)
 {
   /* If optimizing, we'll have split before scheduling.  */
   if (optimize == 0)
-    split_all_insns (0);
+    split_all_insns_noflow ();
 
   /* Make sure the CFG and global_live_at_start are correct
      for emit_predicate_relation_info.  */
