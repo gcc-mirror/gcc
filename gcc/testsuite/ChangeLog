@@ -1,3 +1,8 @@
+2002-09-22  John David Anglin  <dave@hiauly1.hia.nrc.ca>
+
+	* gcc.dg/20020219-1.c: Add "-mdisable-indexing" option for target
+	hppa*-*-hpux*.  Update test comment.
+
 2002-09-20  Jakub Jelinek  <jakub@redhat.com>
 
 	* gcc.dg/tls/struct-1.c: New test.
