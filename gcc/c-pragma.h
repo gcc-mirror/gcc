@@ -55,5 +55,6 @@ extern tree maybe_apply_renaming_pragma (tree, tree);
 extern void add_to_renaming_pragma_list (tree, tree);
 
 extern int c_lex (tree *);
+extern int c_lex_with_flags (tree *, unsigned char *);
 
 #endif /* GCC_C_PRAGMA_H */

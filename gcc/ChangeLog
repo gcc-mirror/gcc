@@ -1,3 +1,10 @@
+2004-01-29  Giovanni Bajo  <giovannibajo@gcc.gnu.org>
+
+	* c-lex.c (c_lex): Rename to...
+	(c_lex_with_flags): Add new parameter to get CPP flags.
+	(c_lex): Thunk to c_lex_with_flags while keeping the old interface.
+	* c-pragma.h (c_lex_with_flags): Declare.
+
 2004-01-29  Roger Sayle  <roger@eyesopen.com>
 
 	PR java/13824
