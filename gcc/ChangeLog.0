@@ -841,6 +841,18 @@ Tue Jun 30 00:56:19 1998  Bruno Haible <haible@ilog.fr>
 	* invoke.texi: Document new implicit structure initialization
 	warning.
 
+Mon Jun 29 21:40:15 1998  J"orn Rennecke <amylaar@cygnus.co.uk>
+
+	* toplev.c (flag_dump_unnumbered): Declare.
+	(f_options): Add dump-unnumbered.
+	* print-rtl.c (flag_dump_unnumbered): Define.
+	(print_rtx): Print only '#' for insn numbers if flag_dump_unnumbered
+	is nonzero.
+	(print_rtl): Don't output line number notes if flag_dump_unnumbered
+	is nonzero.
+	* flow.c (print_rtl_with_bb): Don't output newline after line
+	numbers note if flag_dump_unnumbered is nonzero.
+
 Mon Jun 29 22:12:06 1998  Jeffrey A Law  (law@cygnus.com)
 
 	* Merge from gcc2 June 9, 1998 snapshot.  See ChangeLog.13 for
