@@ -2346,7 +2346,7 @@ struct lang_decl
 
 /* The number of levels of template parameters given by NODE.  */
 #define TMPL_PARMS_DEPTH(NODE) \
-  (TREE_INT_CST_HIGH (TREE_PURPOSE (NODE)))
+  (TREE_INT_CST_LOW (TREE_PURPOSE (NODE)))
 
 /* The TEMPLATE_DECL instantiated or specialized by NODE.  This
    TEMPLATE_DECL will be the immediate parent, not the most general
@@ -2791,7 +2791,7 @@ extern int flag_new_for_scope;
 /* Accessor macros for C++ template decl nodes.  */
 
 /* The DECL_TEMPLATE_PARMS are a list.  The TREE_PURPOSE of each node
-   is a INT_CST whose TREE_INT_CST_HIGH indicates the level of the
+   is a INT_CST whose TREE_INT_CST_LOW indicates the level of the
    template parameters, with 1 being the outermost set of template
    parameters.  The TREE_VALUE is a vector, whose elements are the
    template parameters at each level.  Each element in the vector is a
@@ -2919,7 +2919,7 @@ extern int flag_new_for_scope;
 #define PRIMARY_TEMPLATE_P(NODE) (DECL_PRIMARY_TEMPLATE (NODE) == NODE)
 
 #define CLASSTYPE_TEMPLATE_LEVEL(NODE) \
-  (TREE_INT_CST_HIGH (TREE_PURPOSE (CLASSTYPE_TI_TEMPLATE (NODE))))
+  (TREE_INT_CST_LOW (TREE_PURPOSE (CLASSTYPE_TI_TEMPLATE (NODE))))
 
 /* Indicates whether or not (and how) a template was expanded for this
    FUNCTION_DECL or VAR_DECL.

@@ -5643,12 +5643,11 @@ invalidate_class_lookup_cache ()
 {
   tree t;
   
-  /* This code can be seen as a cache miss.  When we've cached a
-     class' scope's bindings and we can't use them, we need to reset
-     them.  This is it!  */
+  /* The IDENTIFIER_CLASS_VALUEs are no longer valid.  */
   for (t = previous_class_values; t; t = TREE_CHAIN (t))
     IDENTIFIER_CLASS_VALUE (TREE_PURPOSE (t)) = NULL_TREE;
-  
+
+  previous_class_values = NULL_TREE;
   previous_class_type = NULL_TREE;
 }
  
