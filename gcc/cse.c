@@ -4015,7 +4015,17 @@ simplify_plus_minus (code, mode, op0, op1)
 		ncode = MINUS;
 
 	      tem = simplify_binary_operation (ncode, mode, lhs, rhs);
-	      if (tem)
+
+	      /* If we got a simple object, a SUBREG of a simple
+		 object, or a NEG, use it.  Otherwise, we either got nothing
+		 or we got something (like a NOT), which can cause an
+		 infinite loop.  */
+
+	      if (tem != 0
+		  && ((GET_CODE (tem) == SUBREG
+		       && GET_RTX_CLASS (GET_CODE (SUBREG_REG (tem))) == 'o')
+		      || GET_CODE (tem) == NEG
+		      || GET_RTX_CLASS (GET_CODE (tem)) == 'o'))
 		{
 		  ops[i] = tem, ops[j] = 0;
 		  negs[i] = negs[i] && negs[j];
