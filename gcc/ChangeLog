@@ -1,3 +1,8 @@
+Wed Mar 18 13:42:01 1998  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	* expr.c (expand_expr, case COND_EXPR): If have conditional move,
+	don't use ORIGINAL_TARGET unless REG.
+
 Wed Mar 18 16:53:19 1998  J"orn Rennecke <amylaar@cygnus.co.uk>
 
 	* netbsd.h (ASM_OUTPUT_ALIGN): Redefine.
