@@ -88,7 +88,7 @@ public class GtkFramePeer extends GtkWindowPeer
       setMenuBarPeer(menuBar);
       menuBarHeight = getMenuBarHeight (menuBar);
       if (oldHeight != menuBarHeight)
-        moveLayout(oldHeight-menuBarHeight);
+        moveLayout(oldHeight - menuBarHeight);
       insets.top += menuBarHeight;
       awtComponent.doLayout();
     }
