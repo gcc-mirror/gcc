@@ -1,3 +1,9 @@
+2002-06-13  Akim Demaille  <akim@epita.fr>
+
+	* parse.y (class_declaration, interface_declaration): Make sure
+	all their rules have an action, in order to avoid meaningless `$$
+	= $1' and their type clashes.
+
 2002-06-11  Tom Tromey  <tromey@redhat.com>
 
 	* jcf-write.c (generate_classfile): Use FIELD_SYNTHETIC.

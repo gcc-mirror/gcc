@@ -579,7 +579,7 @@ static GTY(()) tree src_parse_roots[1];
 			anonymous_class_creation trap_overflow_corner_case
 %type    <node>         return_statement break_statement continue_statement
 
-%type    <operator>     ASSIGN_TK      MULT_ASSIGN_TK  DIV_ASSIGN_TK  
+%type    <operator>     ASSIGN_TK      MULT_ASSIGN_TK  DIV_ASSIGN_TK
 %type    <operator>     REM_ASSIGN_TK  PLUS_ASSIGN_TK  MINUS_ASSIGN_TK
 %type    <operator>     LS_ASSIGN_TK   SRS_ASSIGN_TK   ZRS_ASSIGN_TK
 %type    <operator>     AND_ASSIGN_TK  XOR_ASSIGN_TK   OR_ASSIGN_TK
@@ -846,20 +846,22 @@ class_declaration:
 	modifiers CLASS_TK identifier super interfaces
 		{ create_class ($1, $3, $4, $5); }
 	class_body
+		{;}
 |	CLASS_TK identifier super interfaces
 		{ create_class (0, $2, $3, $4); }
 	class_body
+		{;}
 |	modifiers CLASS_TK error
-		{yyerror ("Missing class name"); RECOVER;}
+		{ yyerror ("Missing class name"); RECOVER; }
 |	CLASS_TK error
-		{yyerror ("Missing class name"); RECOVER;}
+		{ yyerror ("Missing class name"); RECOVER; }
 |       CLASS_TK identifier error
 		{
 		  if (!ctxp->class_err) yyerror ("'{' expected");
 		  DRECOVER(class1);
 		}
 |       modifiers CLASS_TK identifier error
-		{if (!ctxp->class_err) yyerror ("'{' expected"); RECOVER;}
+		{ if (!ctxp->class_err) yyerror ("'{' expected"); RECOVER; }
 ;
 
 super:
@@ -1279,19 +1281,23 @@ interface_declaration:
 	INTERFACE_TK identifier
 		{ create_interface (0, $2, NULL_TREE); }
 	interface_body
+		{ ; }
 |	modifiers INTERFACE_TK identifier
 		{ create_interface ($1, $3, NULL_TREE); }
 	interface_body
+		{ ; }
 |	INTERFACE_TK identifier extends_interfaces
 		{ create_interface (0, $2, $3);	}
 	interface_body
+		{ ; }
 |	modifiers INTERFACE_TK identifier extends_interfaces
 		{ create_interface ($1, $3, $4); }
 	interface_body
+		{ ; }
 |	INTERFACE_TK identifier error
-		{yyerror ("'{' expected"); RECOVER;}
+		{ yyerror ("'{' expected"); RECOVER; }
 |	modifiers INTERFACE_TK identifier error
-		{yyerror ("'{' expected"); RECOVER;}
+		{ yyerror ("'{' expected"); RECOVER; }
 ;
 
 extends_interfaces:
