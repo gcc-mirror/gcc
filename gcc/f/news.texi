@@ -9,7 +9,7 @@
 @c in the standalone derivations of this file (e.g. NEWS).
 @set copyrights-news 1995-1999
 
-@set last-update-news 1999-04-24
+@set last-update-news 1999-04-25
 
 @include root.texi
 
@@ -162,6 +162,17 @@ to type @code{INTEGER(KIND=2)}
 (often referred to as @code{INTEGER*8}).
 
 For example, @samp{INTEGER*8 J; J = 4E10} now works as documented.
+@end ifclear
+
+@ifclear USERVISONLY
+@item
+@code{g77} no longer generates bad code
+for an assignment to a @code{COMPLEX} variable or array
+that partially overlaps one or more of the sources
+of the same assignment
+(a very rare construction).
+It now assigns through a temporary,
+in cases where such partial overlap is deemed possible.
 @end ifclear
 
 @ifclear USERVISONLY

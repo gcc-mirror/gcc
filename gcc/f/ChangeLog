@@ -4,6 +4,7 @@ Sun Apr 25 20:55:10 1999  Craig Burley  <craig@jcb-sc.com>
 	* com.c (ffecom_possible_partial_overlap_): New function.
 	(ffecom_expand_let_stmt): Use it to determine whether to assign
 	to a COMPLEX operand through a temp.
+	* news.texi: Document fix.
 
 	* version.c: Bump version.
 
