@@ -1,3 +1,14 @@
+2001-09-27  Tom Tromey  <tromey@redhat.com>
+
+	* java/util/IdentityHashMap.java (containsKey): Use getHash.
+	(get): Likewise.
+	(put): Likewise.
+	(remove): Likewise.
+	(getHash): New method.
+	(tombstone, emptyslot): Now static final.
+	(put): Correctly determine when to rehash, and correctly rehash.
+	(containsKey, remove): Test against table length with `>='.
+
 2001-09-26  Tom Tromey  <tromey@redhat.com>
 
 	* gnu/classpath/Configuration.java.in (INIT_LOAD_LIBRARY): New
