@@ -58,7 +58,7 @@ static void print_rtx		PARAMS ((rtx));
 /* String printed at beginning of each RTL when it is dumped.
    This string is set to ASM_COMMENT_START when the RTL is dumped in
    the assembly output file.  */
-char *print_rtx_head = "";
+const char *print_rtx_head = "";
 
 /* Nonzero means suppress output of instruction numbers and line number
    notes in debugging dumps.
