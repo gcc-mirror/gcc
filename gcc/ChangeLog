@@ -1,3 +1,11 @@
+2002-01-15  Aldy Hernandez  <aldyh@redhat.com>
+
+        * config.gcc: Change altivec.h to altivec-defs.h.
+
+        * config/rs6000/altivec.h: Delete.
+
+        * config/rs6000/altivec-defs.h: Add.
+
 2002-01-15  John David Anglin  <dave@hiauly1.hia.nrc.ca>
 
 	* vax.c (vax_rtx_cost): Return MAX_COST for unsupported MULT, UDIV
