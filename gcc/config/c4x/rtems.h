@@ -31,4 +31,7 @@ Boston, MA 02111-1307, USA.  */
 #define TARGET_MEM_FUNCTIONS
 #endif
 
+/* Include machine independent RTEMS configuration parameters.  */
+#include <rtems.h>
+
 /* End of c4x/rtems.h.  */
