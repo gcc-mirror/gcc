@@ -1,5 +1,5 @@
 /*
-  Copyright (c) 2001 Free Software Foundation, Inc.
+  Copyright (c) 2001, 2003 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -37,10 +37,12 @@ exception statement from your version. */
 
 package gnu.java.rmi.rmic;
 
-/** A Compiler object can be used to compile a .java file into a
+/**
+ * A Compiler object can be used to compile a .java file into a
  * .class file.  This is an abstract class; the
  * <code>getInstance()</code> method is used to obtain the actual
- * compiler object.  */
+ * compiler object.
+ */
 public abstract class Compiler
 {
   // Can't directly instantiate.
@@ -67,6 +69,12 @@ public abstract class Compiler
       }
     return null;
   }
+
+   /** Get the directory where output files will be put.  */
+   public String getDestination ()
+   {
+     return dest;
+   }
 
   /** Set the directory where output files will be put.  */
   public void setDestination (String dest)

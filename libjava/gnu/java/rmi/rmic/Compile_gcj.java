@@ -1,5 +1,5 @@
 /*
-  Copyright (c) 2001 Free Software Foundation, Inc.
+  Copyright (c) 2001, 2003 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -40,21 +40,16 @@ package gnu.java.rmi.rmic;
 /** Subclass of Compiler that can be used to invoke gcj.  */
 public class Compile_gcj extends CompilerProcess
 {
+  private static final String [] COMPILER_ARGS = 
+  {
+    "gcj",
+    "-C"
+  };
+
   public String[] computeArguments (String filename)
   {
-    int len = 3 + (dest == null ? 0 : 2);
-    String[] result = new String[len];
-    int i = 0;
-
-    result[i++] = "gcj";
-    result[i++] = "-C";
-    if (dest != null)
-      {
-	result[i++] = "-d";
-	result[i++] = dest;
-      }
-    result[i++] = filename;
-
-    return result;
+    return computeTypicalArguments(COMPILER_ARGS,
+				   getDestination(),
+				   filename);
   }
 }
