@@ -812,13 +812,7 @@ sms_schedule (FILE *dump_file)
   int max_bb_index = last_basic_block;
   struct df *df;
 
-  /* SMS uses the DFA interface.  */
-  if (! targetm.sched.use_dfa_pipeline_interface
-      || ! (*targetm.sched.use_dfa_pipeline_interface) ())
-    return;
-
   stats_file = dump_file;
-
 
   /* Initialize issue_rate.  */
   if (targetm.sched.issue_rate)
@@ -1990,19 +1984,15 @@ add_node_to_ps (partial_schedule_ptr ps, ddg_node_ptr node, int cycle)
 static void
 advance_one_cycle (void)
 {
-  if (targetm.sched.use_dfa_pipeline_interface
-      && (*targetm.sched.use_dfa_pipeline_interface) ())
-    {
-      if (targetm.sched.dfa_pre_cycle_insn)
-	state_transition (curr_state,
-			  (*targetm.sched.dfa_pre_cycle_insn) ());
+  if (targetm.sched.dfa_pre_cycle_insn)
+    state_transition (curr_state,
+		      (*targetm.sched.dfa_pre_cycle_insn) ());
 
-      state_transition (curr_state, NULL);
+  state_transition (curr_state, NULL);
 
-      if (targetm.sched.dfa_post_cycle_insn)
-	state_transition (curr_state,
-			  (*targetm.sched.dfa_post_cycle_insn) ());
-    }
+  if (targetm.sched.dfa_post_cycle_insn)
+    state_transition (curr_state,
+		      (*targetm.sched.dfa_post_cycle_insn) ());
 }
 
 /* Checks if PS has resource conflicts according to DFA, starting from
@@ -2012,10 +2002,6 @@ static int
 ps_has_conflicts (partial_schedule_ptr ps, int from, int to)
 {
   int cycle;
-
-  if (! targetm.sched.use_dfa_pipeline_interface
-      || ! (*targetm.sched.use_dfa_pipeline_interface) ())
-    return true;
 
   state_reset (curr_state);
 

@@ -146,9 +146,6 @@ static bool arc_pass_by_reference (CUMULATIVE_ARGS *, enum machine_mode,
 #undef TARGET_SETUP_INCOMING_VARARGS
 #define TARGET_SETUP_INCOMING_VARARGS arc_setup_incoming_varargs
 
-#undef TARGET_SCHED_USE_DFA_PIPELINE_INTERFACE
-#define TARGET_SCHED_USE_DFA_PIPELINE_INTERFACE hook_int_void_1
-
 struct gcc_target targetm = TARGET_INITIALIZER;
 
 /* Called by OVERRIDE_OPTIONS to initialize various things.  */

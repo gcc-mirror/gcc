@@ -213,12 +213,6 @@ struct gcc_target
        by two parameter values (head and tail correspondingly).  */
     void (* dependencies_evaluation_hook) (rtx, rtx);
 
-    /* The following member value is a pointer to a function returning
-       nonzero if we should use DFA based scheduling.  The default is
-       to use the old pipeline scheduler.  */
-    int (* use_dfa_pipeline_interface) (void);
-    /* The values of all the following members are used only for the
-       DFA based scheduler: */
     /* The values of the following four members are pointers to
        functions used to simplify the automaton descriptions.
        dfa_pre_cycle_insn and dfa_post_cycle_insn give functions
@@ -234,6 +228,7 @@ struct gcc_target
     rtx (* dfa_pre_cycle_insn) (void);
     void (* init_dfa_post_cycle_insn) (void);
     rtx (* dfa_post_cycle_insn) (void);
+
     /* The following member value is a pointer to a function returning value
        which defines how many insns in queue `ready' will we try for
        multi-pass scheduling.  If the member value is nonzero and the
@@ -242,12 +237,14 @@ struct gcc_target
        try to choose ready insn which permits to start maximum number of
        insns on the same cycle.  */
     int (* first_cycle_multipass_dfa_lookahead) (void);
+
     /* The following member value is pointer to a function controlling
        what insns from the ready insn queue will be considered for the
        multipass insn scheduling.  If the hook returns zero for insn
        passed as the parameter, the insn will be not chosen to be
        issued.  */
     int (* first_cycle_multipass_dfa_lookahead_guard) (rtx);
+
     /* The following member value is pointer to a function called by
        the insn scheduler before issuing insn passed as the third
        parameter on given cycle.  If the hook returns nonzero, the
@@ -261,6 +258,7 @@ struct gcc_target
        the previous insn has been issued and the current processor
        cycle.  */
     int (* dfa_new_cycle) (FILE *, int, rtx, int, int, int *);
+
     /* The following member value is a pointer to a function called
        by the insn scheduler.  It should return true if there exists a
        dependence which is considered costly by the target, between 

@@ -5542,8 +5542,8 @@ This value must be constant over the entire compilation.  If you need
 it to vary depending on what the instructions are, you must use
 @samp{TARGET_SCHED_VARIABLE_ISSUE}.
 
-For the automaton based pipeline interface, you could define this hook
-to return the value of the macro @code{MAX_DFA_ISSUE_RATE}.
+You could define this hook to return the value of the macro
+@code{MAX_DFA_ISSUE_RATE}.
 @end deftypefn
 
 @deftypefn {Target Hook} int TARGET_SCHED_VARIABLE_ISSUE (FILE *@var{file}, int @var{verbose}, rtx @var{insn}, int @var{more})
@@ -5572,7 +5572,7 @@ description, the cost of anti-dependence is zero and the cost of
 output-dependence is maximum of one and the difference of latency
 times of the first and the second insns.  If these values are not
 acceptable, you could use the hook to modify them too.  See also
-@pxref{Automaton pipeline description}.
+@pxref{Processor pipeline description}.
 @end deftypefn
 
 @deftypefn {Target Hook} int TARGET_SCHED_ADJUST_PRIORITY (rtx @var{insn}, int @var{priority})
@@ -5651,19 +5651,6 @@ This hook is executed by the scheduler after function level initializations.
 This is the cleanup hook corresponding to TARGET_SCHED_INIT_GLOBAL.
 @var{file} is either a null pointer, or a stdio stream to write any debug output to.
 @var{verbose} is the verbose level provided by @option{-fsched-verbose-@var{n}}.
-@end deftypefn
-
-@deftypefn {Target Hook} int TARGET_SCHED_USE_DFA_PIPELINE_INTERFACE (void)
-This hook is called many times during insn scheduling.  If the hook
-returns nonzero, the automaton based pipeline description is used for
-insn scheduling.  Otherwise the traditional pipeline description is
-used.  The default is usage of the traditional pipeline description.
-
-You should also remember that to simplify the insn scheduler sources
-an empty traditional pipeline description interface is generated even
-if there is no a traditional pipeline description in the @file{.md}
-file.  The same is true for the automaton based pipeline description.
-That means that you should be accurate in defining the hook.
 @end deftypefn
 
 @deftypefn {Target Hook} int TARGET_SCHED_DFA_PRE_CYCLE_INSN (void)

@@ -5533,172 +5533,31 @@ processors.
 The task of exploiting more processor parallelism is solved by an
 instruction scheduler.  For a better solution to this problem, the
 instruction scheduler has to have an adequate description of the
-processor parallelism (or @dfn{pipeline description}).  Currently GCC
-provides two alternative ways to describe processor parallelism,
-both described below.  The first method is outlined in the next section;
-it specifies functional unit reservations for groups of instructions
-with the aid of @dfn{regular expressions}.  This is called the
-@dfn{automaton based description}.  The second method is called the
-@dfn{old pipeline description}.  This method specifies usage of
-function units for classes of insns.  This description is not as
-powerful or accurate as the automaton based description, because it
-is impossible to model instructions that use more than one function
-unit.  The second method is deprecated; new ports should use the
-automaton based description.
+processor parallelism (or @dfn{pipeline description}).  GCC
+machine descriptions describe processor parallelism and functional
+unit reservations for groups of instructions with the aid of
+@dfn{regular expressions}.
 
 The GCC instruction scheduler uses a @dfn{pipeline hazard recognizer} to
 figure out the possibility of the instruction issue by the processor
 on a given simulated processor cycle.  The pipeline hazard recognizer is
 automatically generated from the processor pipeline description.  The
-pipeline hazard recognizer generated from the automaton based
-description is more sophisticated and based on a deterministic finite
-state automaton (@acronym{DFA}) and therefore faster than one
-generated from the old description.  Furthermore, its speed is not dependent
-on processor complexity.  The instruction issue is possible if there is
-a transition from one automaton state to another one.
+pipeline hazard recognizer generated from the machine description
+is based on a deterministic finite state automaton (@acronym{DFA}):
+the instruction issue is possible if there is a transition from one
+automaton state to another one.  This algorithm is very fast, and
+furthermore, its speed is not dependent on processor
+complexity@footnote{However, the size of the automaton depends on
+  processor complexity.  To limit this effect, machine descriptions
+  can split orthogonal parts of the machine description among several
+  automata: but then, since each of these must be stepped independently,
+  this does cause a small decrease in the algorithm's performance.}.
 
-@menu
-* Old pipeline description:: Specifying information for insn scheduling.
-* Automaton pipeline description:: Describing insn pipeline characteristics.
-* Comparison of the two descriptions:: Drawbacks of the old pipeline description
-@end menu
-
-@end ifset
-@ifset INTERNALS
-@node Old pipeline description
-@subsubsection Specifying Function Units
-@cindex old pipeline description
-@cindex function units, for scheduling
-
-@emph{Note:}The old pipeline description is deprecated.
-
-On most @acronym{RISC} machines, there are instructions whose results
-are not available for a specific number of cycles.  Common cases are
-instructions that load data from memory.  On many machines, a pipeline
-stall will result if the data is referenced too soon after the load
-instruction.
-
-In addition, many newer microprocessors have multiple function units, usually
-one for integer and one for floating point, and often will incur pipeline
-stalls when a result that is needed is not yet ready.
-
-The descriptions in this section allow the specification of how much
-time must elapse between the execution of an instruction and the time
-when its result is used.  It also allows specification of when the
-execution of an instruction will delay execution of similar instructions
-due to function unit conflicts.
-
-For the purposes of the specifications in this section, a machine is
-divided into @dfn{function units}, each of which execute a specific
-class of instructions in first-in-first-out order.  Function units
-that accept one instruction each cycle and allow a result to be used
-in the succeeding instruction (usually via forwarding) need not be
-specified.  Classic @acronym{RISC} microprocessors will normally have
-a single function unit, which we can call @samp{memory}.  The newer
-``superscalar'' processors will often have function units for floating
-point operations, usually at least a floating point adder and
-multiplier.
-
-@findex define_function_unit
-Each usage of a function units by a class of insns is specified with a
-@code{define_function_unit} expression, which looks like this:
-
-@smallexample
-(define_function_unit @var{name} @var{multiplicity} @var{simultaneity}
-                      @var{test} @var{ready-delay} @var{issue-delay}
-                     [@var{conflict-list}])
-@end smallexample
-
-@var{name} is a string giving the name of the function unit.
-
-@var{multiplicity} is an integer specifying the number of identical
-units in the processor.  If more than one unit is specified, they will
-be scheduled independently.  Only truly independent units should be
-counted; a pipelined unit should be specified as a single unit.  (The
-only common example of a machine that has multiple function units for a
-single instruction class that are truly independent and not pipelined
-are the two multiply and two increment units of the CDC 6600.)
-
-@var{simultaneity} specifies the maximum number of insns that can be
-executing in each instance of the function unit simultaneously or zero
-if the unit is pipelined and has no limit.
-
-All @code{define_function_unit} definitions referring to function unit
-@var{name} must have the same name and values for @var{multiplicity} and
-@var{simultaneity}.
-
-@var{test} is an attribute test that selects the insns we are describing
-in this definition.  Note that an insn may use more than one function
-unit and a function unit may be specified in more than one
-@code{define_function_unit}.
-
-@var{ready-delay} is an integer that specifies the number of cycles
-after which the result of the instruction can be used without
-introducing any stalls.
-
-@var{issue-delay} is an integer that specifies the number of cycles
-after the instruction matching the @var{test} expression begins using
-this unit until a subsequent instruction can begin.  A cost of @var{N}
-indicates an @var{N-1} cycle delay.  A subsequent instruction may also
-be delayed if an earlier instruction has a longer @var{ready-delay}
-value.  This blocking effect is computed using the @var{simultaneity},
-@var{ready-delay}, @var{issue-delay}, and @var{conflict-list} terms.
-For a normal non-pipelined function unit, @var{simultaneity} is one, the
-unit is taken to block for the @var{ready-delay} cycles of the executing
-insn, and smaller values of @var{issue-delay} are ignored.
-
-@var{conflict-list} is an optional list giving detailed conflict costs
-for this unit.  If specified, it is a list of condition test expressions
-to be applied to insns chosen to execute in @var{name} following the
-particular insn matching @var{test} that is already executing in
-@var{name}.  For each insn in the list, @var{issue-delay} specifies the
-conflict cost; for insns not in the list, the cost is zero.  If not
-specified, @var{conflict-list} defaults to all instructions that use the
-function unit.
-
-Typical uses of this vector are where a floating point function unit can
-pipeline either single- or double-precision operations, but not both, or
-where a memory unit can pipeline loads, but not stores, etc.
-
-As an example, consider a classic @acronym{RISC} machine where the
-result of a load instruction is not available for two cycles (a single
-``delay'' instruction is required) and where only one load instruction
-can be executed simultaneously.  This would be specified as:
-
-@smallexample
-(define_function_unit "memory" 1 1 (eq_attr "type" "load") 2 0)
-@end smallexample
-
-For the case of a floating point function unit that can pipeline either
-single or double precision, but not both, the following could be specified:
-
-@smallexample
-(define_function_unit
-   "fp" 1 0 (eq_attr "type" "sp_fp") 4 4 [(eq_attr "type" "dp_fp")])
-(define_function_unit
-   "fp" 1 0 (eq_attr "type" "dp_fp") 4 4 [(eq_attr "type" "sp_fp")])
-@end smallexample
-
-@strong{Note:} The scheduler attempts to avoid function unit conflicts
-and uses all the specifications in the @code{define_function_unit}
-expression.  It has recently been discovered that these
-specifications may not allow modeling of some of the newer
-``superscalar'' processors that have insns using multiple pipelined
-units.  These insns will cause a potential conflict for the second unit
-used during their execution and there is no way of representing that
-conflict.  Any examples of how function unit conflicts work
-in such processors and suggestions for their representation would be
-welcomed.
-
-@end ifset
-@ifset INTERNALS
-@node Automaton pipeline description
-@subsubsection Describing instruction pipeline characteristics
 @cindex automaton based pipeline description
-
-This section describes constructions of the automaton based processor
-pipeline description.  The order of constructions within the machine
-description file is not important.
+The rest of this section describes the directives that constitute
+an automaton-based processor pipeline description.  The order of
+these constructions within the machine description file is not
+important.
 
 @findex define_automaton
 @cindex pipeline hazard recognizer
@@ -6113,61 +5972,6 @@ construction
                          "(i0_pipeline | i1_pipeline), finish")
 @end smallexample
 
-
-@end ifset
-@ifset INTERNALS
-@node Comparison of the two descriptions
-@subsubsection Drawbacks of the old pipeline description
-@cindex old pipeline description
-@cindex automaton based pipeline description
-@cindex processor functional units
-@cindex interlock delays
-@cindex instruction latency time
-@cindex pipeline hazard recognizer
-@cindex data bypass
-
-The old instruction level parallelism description and the pipeline
-hazards recognizer based on it have the following drawbacks in
-comparison with the @acronym{DFA}-based ones:
-
-@itemize @bullet
-@item
-Each functional unit is believed to be reserved at the instruction
-execution start.  This is a very inaccurate model for modern
-processors.
-
-@item
-An inadequate description of instruction latency times.  The latency
-time is bound with a functional unit reserved by an instruction not
-with the instruction itself.  In other words, the description is
-oriented to describe at most one unit reservation by each instruction.
-It also does not permit to describe special bypasses between
-instruction pairs.
-
-@item
-The implementation of the pipeline hazard recognizer interface has
-constraints on number of functional units.  This is a number of bits
-in integer on the host machine.
-
-@item
-The interface to the pipeline hazard recognizer is more complex than
-one to the automaton based pipeline recognizer.
-
-@item
-An unnatural description when you write a unit and a condition which
-selects instructions using the unit.  Writing all unit reservations
-for an instruction (an instruction class) is more natural.
-
-@item
-The recognition of the interlock delays has a slow implementation.  The GCC
-scheduler supports structures which describe the unit reservations.
-The more functional units a processor has, the slower its pipeline hazard
-recognizer will be.  Such an implementation would become even slower when we
-allowed to
-reserve functional units not only at the instruction execution start.
-In an automaton based pipeline hazard recognizer, speed is not dependent
-on processor complexity.
-@end itemize
 
 @end ifset
 @ifset INTERNALS

@@ -200,9 +200,6 @@ static bool       mcore_return_in_memory	(tree, tree);
 #undef  TARGET_SETUP_INCOMING_VARARGS
 #define TARGET_SETUP_INCOMING_VARARGS	mcore_setup_incoming_varargs
 
-#undef TARGET_SCHED_USE_DFA_PIPELINE_INTERFACE
-#define TARGET_SCHED_USE_DFA_PIPELINE_INTERFACE hook_int_void_1
-
 struct gcc_target targetm = TARGET_INITIALIZER;
 
 /* Adjust the stack and return the number of bytes taken to do it.  */

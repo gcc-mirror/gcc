@@ -319,8 +319,6 @@ static bool frv_must_pass_in_stack (enum machine_mode mode, tree type);
 
 #undef  TARGET_SCHED_ISSUE_RATE
 #define TARGET_SCHED_ISSUE_RATE frv_issue_rate
-#undef  TARGET_SCHED_USE_DFA_PIPELINE_INTERFACE
-#define TARGET_SCHED_USE_DFA_PIPELINE_INTERFACE hook_int_void_1
 
 #undef TARGET_FUNCTION_OK_FOR_SIBCALL
 #define TARGET_FUNCTION_OK_FOR_SIBCALL frv_function_ok_for_sibcall

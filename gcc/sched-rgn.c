@@ -1784,14 +1784,9 @@ init_ready_list (struct ready_list *ready)
 
 	    if (!CANT_MOVE (insn)
 		&& (!IS_SPECULATIVE_INSN (insn)
-		    || ((((!targetm.sched.use_dfa_pipeline_interface
-			   || !targetm.sched.use_dfa_pipeline_interface ())
-			  && insn_issue_delay (insn) <= 3)
-			 || (targetm.sched.use_dfa_pipeline_interface
-			     && targetm.sched.use_dfa_pipeline_interface ()
-			     && (recog_memoized (insn) < 0
-			         || min_insn_conflict_delay (curr_state,
-							     insn, insn) <= 3)))
+		    || ((recog_memoized (insn) < 0
+			 || min_insn_conflict_delay (curr_state,
+						     insn, insn) <= 3)
 			&& check_live (insn, bb_src)
 			&& is_exception_free (insn, bb_src, target_bb))))
 	      if (INSN_DEP_COUNT (insn) == 0)
@@ -1882,15 +1877,8 @@ new_ready (rtx next)
       && (!IS_VALID (INSN_BB (next))
 	  || CANT_MOVE (next)
 	  || (IS_SPECULATIVE_INSN (next)
-	      && (0
-		  || (targetm.sched.use_dfa_pipeline_interface
-		      && targetm.sched.use_dfa_pipeline_interface ()
-		      && recog_memoized (next) >= 0
-		      && min_insn_conflict_delay (curr_state, next,
-						  next) > 3)
-		  || ((!targetm.sched.use_dfa_pipeline_interface
-		       || !targetm.sched.use_dfa_pipeline_interface ())
-		      && insn_issue_delay (next) > 3)
+	      && ((recog_memoized (next) >= 0
+		   && min_insn_conflict_delay (curr_state, next, next) > 3)
 		  || !check_live (next, INSN_BB (next))
 		  || !is_exception_free (next, INSN_BB (next), target_bb)))))
     return 0;
@@ -2278,106 +2266,67 @@ debug_dependencies (void)
   fprintf (sched_dump, ";;   --------------- forward dependences: ------------ \n");
   for (bb = 0; bb < current_nr_blocks; bb++)
     {
-      if (1)
+      rtx head, tail;
+      rtx next_tail;
+      rtx insn;
+
+      get_block_head_tail (BB_TO_BLOCK (bb), &head, &tail);
+      next_tail = NEXT_INSN (tail);
+      fprintf (sched_dump, "\n;;   --- Region Dependences --- b %d bb %d \n",
+	       BB_TO_BLOCK (bb), bb);
+
+      fprintf (sched_dump, ";;   %7s%6s%6s%6s%6s%6s%14s\n",
+	       "insn", "code", "bb", "dep", "prio", "cost",
+	       "reservation");
+      fprintf (sched_dump, ";;   %7s%6s%6s%6s%6s%6s%14s\n",
+	       "----", "----", "--", "---", "----", "----",
+	       "-----------");
+
+      for (insn = head; insn != next_tail; insn = NEXT_INSN (insn))
 	{
-	  rtx head, tail;
-	  rtx next_tail;
-	  rtx insn;
+	  rtx link;
 
-	  get_block_head_tail (BB_TO_BLOCK (bb), &head, &tail);
-	  next_tail = NEXT_INSN (tail);
-	  fprintf (sched_dump, "\n;;   --- Region Dependences --- b %d bb %d \n",
-		   BB_TO_BLOCK (bb), bb);
-
-	  if (targetm.sched.use_dfa_pipeline_interface
-	      && targetm.sched.use_dfa_pipeline_interface ())
+	  if (! INSN_P (insn))
 	    {
-	      fprintf (sched_dump, ";;   %7s%6s%6s%6s%6s%6s%14s\n",
-		       "insn", "code", "bb", "dep", "prio", "cost",
-		       "reservation");
-	      fprintf (sched_dump, ";;   %7s%6s%6s%6s%6s%6s%14s\n",
-		       "----", "----", "--", "---", "----", "----",
-		       "-----------");
-	    }
-	  else
-	    {
-	      fprintf (sched_dump, ";;   %7s%6s%6s%6s%6s%6s%11s%6s\n",
-	      "insn", "code", "bb", "dep", "prio", "cost", "blockage", "units");
-	      fprintf (sched_dump, ";;   %7s%6s%6s%6s%6s%6s%11s%6s\n",
-	      "----", "----", "--", "---", "----", "----", "--------", "-----");
-	    }
-
-	  for (insn = head; insn != next_tail; insn = NEXT_INSN (insn))
-	    {
-	      rtx link;
-
-	      if (! INSN_P (insn))
+	      int n;
+	      fprintf (sched_dump, ";;   %6d ", INSN_UID (insn));
+	      if (NOTE_P (insn))
 		{
-		  int n;
-		  fprintf (sched_dump, ";;   %6d ", INSN_UID (insn));
-		  if (NOTE_P (insn))
+		  n = NOTE_LINE_NUMBER (insn);
+		  if (n < 0)
+		    fprintf (sched_dump, "%s\n", GET_NOTE_INSN_NAME (n));
+		  else
 		    {
-		      n = NOTE_LINE_NUMBER (insn);
-		      if (n < 0)
-			fprintf (sched_dump, "%s\n", GET_NOTE_INSN_NAME (n));
-		      else
-			{
-			  expanded_location xloc;
-			  NOTE_EXPANDED_LOCATION (xloc, insn);
-			  fprintf (sched_dump, "line %d, file %s\n",
-				   xloc.line, xloc.file);
-			}
+		      expanded_location xloc;
+		      NOTE_EXPANDED_LOCATION (xloc, insn);
+		      fprintf (sched_dump, "line %d, file %s\n",
+			       xloc.line, xloc.file);
 		    }
-		  else
-		    fprintf (sched_dump, " {%s}\n", GET_RTX_NAME (GET_CODE (insn)));
-		  continue;
-		}
-
-	      if (targetm.sched.use_dfa_pipeline_interface
-		  && targetm.sched.use_dfa_pipeline_interface ())
-		{
-		  fprintf (sched_dump,
-			   ";;   %s%5d%6d%6d%6d%6d%6d   ",
-			   (SCHED_GROUP_P (insn) ? "+" : " "),
-			   INSN_UID (insn),
-			   INSN_CODE (insn),
-			   INSN_BB (insn),
-			   INSN_DEP_COUNT (insn),
-			   INSN_PRIORITY (insn),
-			   insn_cost (insn, 0, 0));
-
-		  if (recog_memoized (insn) < 0)
-		    fprintf (sched_dump, "nothing");
-		  else
-		    print_reservation (sched_dump, insn);
 		}
 	      else
-		{
-		  int unit = insn_unit (insn);
-		  int range
-		    = (unit < 0
-		       || function_units[unit].blockage_range_function == 0
-		       ? 0
-		       : function_units[unit].blockage_range_function (insn));
-		  fprintf (sched_dump,
-			   ";;   %s%5d%6d%6d%6d%6d%6d  %3d -%3d   ",
-			   (SCHED_GROUP_P (insn) ? "+" : " "),
-			   INSN_UID (insn),
-			   INSN_CODE (insn),
-			   INSN_BB (insn),
-			   INSN_DEP_COUNT (insn),
-			   INSN_PRIORITY (insn),
-			   insn_cost (insn, 0, 0),
-			   (int) MIN_BLOCKAGE_COST (range),
-			   (int) MAX_BLOCKAGE_COST (range));
-		  insn_print_units (insn);
-		}
-
-	      fprintf (sched_dump, "\t: ");
-	      for (link = INSN_DEPEND (insn); link; link = XEXP (link, 1))
-		fprintf (sched_dump, "%d ", INSN_UID (XEXP (link, 0)));
-	      fprintf (sched_dump, "\n");
+		fprintf (sched_dump, " {%s}\n", GET_RTX_NAME (GET_CODE (insn)));
+	      continue;
 	    }
+
+	  fprintf (sched_dump,
+		   ";;   %s%5d%6d%6d%6d%6d%6d   ",
+		   (SCHED_GROUP_P (insn) ? "+" : " "),
+		   INSN_UID (insn),
+		   INSN_CODE (insn),
+		   INSN_BB (insn),
+		   INSN_DEP_COUNT (insn),
+		   INSN_PRIORITY (insn),
+		   insn_cost (insn, 0, 0));
+
+	  if (recog_memoized (insn) < 0)
+	    fprintf (sched_dump, "nothing");
+	  else
+	    print_reservation (sched_dump, insn);
+
+	  fprintf (sched_dump, "\t: ");
+	  for (link = INSN_DEPEND (insn); link; link = XEXP (link, 1))
+	    fprintf (sched_dump, "%d ", INSN_UID (XEXP (link, 0)));
+	  fprintf (sched_dump, "\n");
 	}
     }
   fprintf (sched_dump, "\n");
