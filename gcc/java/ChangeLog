@@ -1,3 +1,20 @@
+2001-09-13  Alexandre Petit-Bianco  <apbianco@redhat.com>
+
+	* java-tree.h (TYPE_IMPORT_LIST): New macro.
+	(TYPE_IMPORT_DEMAND_LIST): Likewise.
+	(struct lang_type): New fields import_list and import_demand_list.
+	* parse.y (java_complete_class): Initialize TYPE_IMPORT_LIST and
+	TYPE_IMPORT_DEMAND_LIST with ctxp counterparts.
+	(do_resolve_class): New local saved_enclosing_type, initialized,
+	passed as parameter to find_in_imports and find_in_imports_on_demand.
+	(find_in_imports): Added paramater enclosing_type, use its
+	TYPE_IMPORT_LIST when applicable.
+	(find_in_imports_on_demand): Added parameter enclosing_type, use
+	its TYPE_IMPORT_DEMAND_LIST when applicable. Reorganized locals
+	declaration and initialization.
+	(fold_constant_for_init): Switch/restore current_class to the
+	appropriate context.
+
 2001-09-13  Mark Mitchell  <mark@codesourcery.com>
 
 	* verify.c (verify_jvm_instructions): Fix typo.
