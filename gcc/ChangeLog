@@ -1,3 +1,8 @@
+2002-01-12  Tom Rix  <trix@redhat.com>
+
+	* config/rs6000/rs6000.c (rs6000_emit_set_long_const): Use ior for 
+	TARGET_POWERPC64.
+
 2002-01-12  Richard Henderson  <rth@redhat.com>
 
 	* config/i386/i386.c (bdesc_2arg): Mark psadbw MASK_3DNOW_A.
