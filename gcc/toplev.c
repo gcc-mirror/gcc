@@ -2637,32 +2637,37 @@ compile_file (name)
 
   /* Open assembler code output file.  */
 
-  if (! name_specified && asm_file_name == 0)
-    asm_out_file = stdout;
+  if (flag_syntax_only)
+    asm_out_file = NULL;
   else
     {
-      int len = strlen (dump_base_name);
-      register char *dumpname = (char *) xmalloc (len + 6);
-      strcpy (dumpname, dump_base_name);
-      strip_off_ending (dumpname, len);
-      strcat (dumpname, ".s");
-      if (asm_file_name == 0)
-	{
-	  asm_file_name = (char *) xmalloc (strlen (dumpname) + 1);
-	  strcpy (asm_file_name, dumpname);
-	}
-      if (!strcmp (asm_file_name, "-"))
+      if (! name_specified && asm_file_name == 0)
 	asm_out_file = stdout;
       else
-	asm_out_file = fopen (asm_file_name, "w");
-      if (asm_out_file == 0)
-	pfatal_with_name (asm_file_name);
-    }
+	{
+	  int len = strlen (dump_base_name);
+	  register char *dumpname = (char *) xmalloc (len + 6);
+	  strcpy (dumpname, dump_base_name);
+	  strip_off_ending (dumpname, len);
+	  strcat (dumpname, ".s");
+	  if (asm_file_name == 0)
+	    {
+	      asm_file_name = (char *) xmalloc (strlen (dumpname) + 1);
+	      strcpy (asm_file_name, dumpname);
+	    }
+	  if (!strcmp (asm_file_name, "-"))
+	    asm_out_file = stdout;
+	  else
+	    asm_out_file = fopen (asm_file_name, "w");
+	  if (asm_out_file == 0)
+	    pfatal_with_name (asm_file_name);
+	}
 
 #ifdef IO_BUFFER_SIZE
-  setvbuf (asm_out_file, (char *) xmalloc (IO_BUFFER_SIZE),
-	   _IOFBF, IO_BUFFER_SIZE);
+      setvbuf (asm_out_file, (char *) xmalloc (IO_BUFFER_SIZE),
+	       _IOFBF, IO_BUFFER_SIZE);
 #endif
+    }
 
   input_filename = name;
 
@@ -2681,32 +2686,41 @@ compile_file (name)
   if (main_input_filename == 0)
     main_input_filename = name;
 
-  ASM_FILE_START (asm_out_file);
+  if (flag_syntax_only)
+    {
+      write_symbols = NO_DEBUG;
+      profile_flag = 0;
+      profile_block_flag = 0;
+    }
+  else
+    {
+      ASM_FILE_START (asm_out_file);
 
 #ifdef ASM_COMMENT_START
-  if (flag_verbose_asm)
-    {
-      /* Print the list of options in effect.  */
-      print_version (asm_out_file, ASM_COMMENT_START);
-      print_switch_values (asm_out_file, 0, MAX_LINE,
+      if (flag_verbose_asm)
+	{
+	  /* Print the list of options in effect.  */
+	  print_version (asm_out_file, ASM_COMMENT_START);
+	  print_switch_values (asm_out_file, 0, MAX_LINE,
 			       ASM_COMMENT_START, " ", "\n");
-      /* Add a blank line here so it appears in assembler output but not
-	 screen output.  */
-      fprintf (asm_out_file, "\n");
-    }
+	  /* Add a blank line here so it appears in assembler output but not
+	     screen output.  */
+	  fprintf (asm_out_file, "\n");
+	}
 #endif
 
-  /* Output something to inform GDB that this compilation was by GCC.  */
+      /* Output something to inform GDB that this compilation was by GCC.  */
 #ifndef ASM_IDENTIFY_GCC
-  fprintf (asm_out_file, "gcc2_compiled.:\n");
+      fprintf (asm_out_file, "gcc2_compiled.:\n");
 #else
-  ASM_IDENTIFY_GCC (asm_out_file);
+      ASM_IDENTIFY_GCC (asm_out_file);
 #endif
 
   /* Output something to identify which front-end produced this file.  */
 #ifdef ASM_IDENTIFY_LANGUAGE
-  ASM_IDENTIFY_LANGUAGE (asm_out_file);
+      ASM_IDENTIFY_LANGUAGE (asm_out_file);
 #endif
+    } /* ! flag_syntax_only */
 
 #ifndef ASM_OUTPUT_SECTION_NAME
   if (flag_function_sections)
@@ -2808,6 +2822,9 @@ compile_file (name)
 
   parse_time -= integration_time;
   parse_time -= varconst_time;
+
+  if (flag_syntax_only)
+    goto finish_syntax;
 
   globals = getdecls ();
 
@@ -3051,7 +3068,7 @@ compile_file (name)
 #endif
 
   /* Language-specific end of compilation actions.  */
-
+ finish_syntax:
   lang_finish ();
 
   /* Close the dump files.  */
@@ -3076,7 +3093,8 @@ compile_file (name)
 
   finish_parse ();
 
-  if (ferror (asm_out_file) != 0 || fclose (asm_out_file) != 0)
+  if (! flag_syntax_only
+      && (ferror (asm_out_file) != 0 || fclose (asm_out_file) != 0))
     fatal_io_error (asm_file_name);
 
   /* Print the times.  */
