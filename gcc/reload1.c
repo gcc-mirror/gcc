@@ -2834,7 +2834,7 @@ check_eliminable_occurrences (rtx x)
       struct elim_table *ep;
 
       for (ep = reg_eliminate; ep < &reg_eliminate[NUM_ELIMINABLE_REGS]; ep++)
-	if (ep->from_rtx == x && ep->can_eliminate)
+	if (ep->from_rtx == x)
 	  ep->can_eliminate = 0;
       return;
     }
@@ -3100,7 +3100,7 @@ eliminate_regs_in_insn (rtx insn, int replace)
 		 eliminate this reg.  */
 	      for (ep = reg_eliminate; ep < &reg_eliminate[NUM_ELIMINABLE_REGS];
 		   ep++)
-		if (ep->from_rtx == orig_operand[i] && ep->can_eliminate)
+		if (ep->from_rtx == orig_operand[i])
 		  ep->can_eliminate = 0;
 	    }
 
