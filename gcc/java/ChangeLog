@@ -1,3 +1,8 @@
+1999-05-03  Tom Tromey  <tromey@cygnus.com>
+
+	* parse-scan.y (interface_declaration): Call
+	report_class_declaration for interfaces.
+
 1999-04-30 20:54 -0400  Zack Weinberg  <zack@rabi.columbia.edu>
 
 	* Makefile.in: Remove -v from bison command lines.
