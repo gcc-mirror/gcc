@@ -1,4 +1,10 @@
-*** Changes since G++ version 2.7.2:
+*** Changes since EGCS 1.0:
+
+* Template template parameters are now supported.
+
+* operator new now throws bad_alloc where appropriate.
+
+*** Changes in EGCS 1.0:
 
 * A public review copy of the December 1996 Draft of the ISO/ANSI C++
   standard is now available. See
@@ -61,7 +67,6 @@
   Still not supported:
 
      + Member class templates.
-     + Template template parameters.
      + Template friends.
 
 * Exception handling support has been significantly improved and is on by

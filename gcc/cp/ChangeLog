@@ -1,5 +1,8 @@
 Sun Jan 25 03:30:00 1998  Jason Merrill  <jason@yorick.cygnus.com>
 
+	* decl.c (cp_finish_decl): When bailing on a comdat variable, also
+	unset DECL_NOT_REALLY_EXTERN.
+
 	* parse.y (typename_sub*): Fix std::.
 
 Sat Jan 24 12:13:54 1998  Jason Merrill  <jason@yorick.cygnus.com>
