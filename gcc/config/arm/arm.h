@@ -1332,7 +1332,8 @@ extern int arm_compare_fp;
   {"index_operand", {SUBREG, REG, CONST_INT}},				\
   {"reg_or_int_operand", {SUBREG, REG, CONST_INT}},			\
   {"multi_register_push", {PARALLEL}},					\
-  {"cc_register", {REG}},
+  {"cc_register", {REG}},						\
+  {"reversible_cc_register", {REG}},
 
 
 /* Assembler output control */
