@@ -1,3 +1,8 @@
+Tue Oct 28 10:19:01 1997  Jason Merrill  <jason@yorick.cygnus.com>
+
+	From Brendan:
+	* dwarf2out.c (output_call_frame_info): Use l1 instead of ".".
+
 Tue Oct 28 00:32:14 1997  Richard Henderson  <rth@cygnus.com>
 
 	* alpha.c (summarize_insn [SUBREG]): Propogate SET.
