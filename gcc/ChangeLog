@@ -1,3 +1,7 @@
+2002-12-26  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* config/h8300/h8300.h (IDENT_ASM_OP): End with a tab.
+
 2002-12-23  Larin Hennessy  <larin@science.oregonstate.edu>
 
 	* doc/install.texi: Remove i386-*-isc, i860-*-bsd,
