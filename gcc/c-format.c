@@ -1,6 +1,6 @@
 /* Check calls to formatted I/O functions (-Wformat).
-   Copyright (C) 1992, 1993, 1994, 1995, 1996, 1997, 1998, 1999, 2000, 2001
-   Free Software Foundation, Inc.
+   Copyright (C) 1992, 1993, 1994, 1995, 1996, 1997, 1998, 1999, 2000,
+   2001, 2002 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -1516,13 +1516,12 @@ check_format_info_recurse (status, res, info, format_tree, params, arg_num)
 	  res->number_non_literal++;
 	  return;
 	}
-      if (!host_integerp (arg1, 1))
+      if (!host_integerp (arg1, 0)
+	  || (offset = tree_low_cst (arg1, 0)) < 0)
 	{
 	  res->number_non_literal++;
 	  return;
 	}
-
-      offset = TREE_INT_CST_LOW (arg1);
     }
   if (TREE_CODE (format_tree) != ADDR_EXPR)
     {

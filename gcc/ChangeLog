@@ -1,3 +1,14 @@
+2002-02-20  Roger Sayle  <roger@eyesopen.com>
+	    Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/4389
+	* tree.c (host_integerp): Ensure that the constant integer is
+	representable in a HOST_WIDE_INT or an unsigned HOST_WIDE_INT
+	when pos is zero or non-zero respectively.  Clarify comment.
+	* c-format.c (check_format_info_recurse): Fix host_integerp
+	usage; the pos argument should be zero when assigning to a
+	signed HOST_WIDE_INT.
+
 2002-02-20  Richard Henderson  <rth@redhat.com>
 
 	* config/i386/i386.c (ix86_expand_vector_move): Use the mode
