@@ -1,3 +1,32 @@
+2004-08-24  Richard Earnshaw  <rearnsha@arm.com>
+
+	* arm.md: Include predicates.md.
+	* predicates.md: New file.
+	* arm.c (s_register_operand, arm_hard_register_operand)
+	(arm_general_register_operand, f_register_operand, reg_or_int_operand)
+	(arm_immediate_operand, arm_neg_immediate_operand)
+	(arm_not_immediate_operand, arm_rhs_operand, arm_rhsm_operand)
+	(arm_add_operand, arm_addimm_operand, arm_not_operand)
+	(offsettable_memory_operand, alignable_memory_operand)
+	(arm_reload_memory_operand, arm_float_rhs_operand)
+	(arm_float_add_operand, vfp_compare_operand, arm_float_compare_operand)
+	(index_operand, shiftable_operator, logical_binary_operator)
+	(shift_operator, equality_operator, arm_comparison_operator)
+	(minmax_operator, cc_register, dominant_cc_register)
+	(arm_extendqisi_mem_op, power_of_two_operand, nonimmediate_di_operand)
+	(di_operand, nonimmediate_soft_df_operand, soft_df_operand)
+	(const_shift_operand, load_multiple_operation)
+	(store_multiple_operation, multi_register_push, thumb_cmp_operand)
+	(thumb_cmpneg_operand, thumb_cbrch_target_operand)
+	(cirrus_register_operand, cirrus_fp_register)
+	(cirrus_shift_const): Delete, replaced with equivalents in
+	predicates.md.
+	(shift_op): Handle ROTATE.
+	* arm-protos.h: Delete declarations for above.
+	* arm.h (PREDICATE_CODES, SPECIAL_MODE_PREDICATES): Delete.
+	* t-arm (MD_INCLUDES): Add predicates.md.
+	(s-preds): Depends on MD_INCLUDES.
+
 2004-08-24  Richard Sandiford  <rsandifo@redhat.com>
 
 	* config/mips/mips.c (mips_gen_conditional_trap): Fix mode.

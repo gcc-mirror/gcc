@@ -2594,57 +2594,6 @@ extern int making_const_table;
    : arm_gen_return_addr_mask ())
 
 
-/* Define the codes that are matched by predicates in arm.c */
-#define PREDICATE_CODES							\
-  {"s_register_operand", {SUBREG, REG}},				\
-  {"arm_general_register_operand", {SUBREG, REG}},			\
-  {"arm_hard_register_operand", {REG}},					\
-  {"f_register_operand", {SUBREG, REG}},				\
-  {"arm_add_operand",    {SUBREG, REG, CONST_INT}},			\
-  {"arm_addimm_operand", {CONST_INT}},					\
-  {"arm_float_add_operand",    {SUBREG, REG, CONST_DOUBLE}},		\
-  {"arm_float_rhs_operand",    {SUBREG, REG, CONST_DOUBLE}},		\
-  {"arm_rhs_operand",    {SUBREG, REG, CONST_INT}},			\
-  {"arm_not_operand",    {SUBREG, REG, CONST_INT}},			\
-  {"reg_or_int_operand", {SUBREG, REG, CONST_INT}},			\
-  {"index_operand",      {SUBREG, REG, CONST_INT}},			\
-  {"thumb_cmp_operand",  {SUBREG, REG, CONST_INT}},			\
-  {"thumb_cmpneg_operand", {CONST_INT}},				\
-  {"thumb_cbrch_target_operand", {SUBREG, REG, MEM}},			\
-  {"offsettable_memory_operand", {MEM}},				\
-  {"alignable_memory_operand", {MEM}},					\
-  {"shiftable_operator", {PLUS, MINUS, AND, IOR, XOR}},			\
-  {"minmax_operator", {SMIN, SMAX, UMIN, UMAX}},			\
-  {"shift_operator", {ASHIFT, ASHIFTRT, LSHIFTRT, ROTATERT, MULT}},	\
-  {"di_operand", {SUBREG, REG, CONST_INT, CONST_DOUBLE, MEM}},		\
-  {"nonimmediate_di_operand", {SUBREG, REG, MEM}},			\
-  {"soft_df_operand", {SUBREG, REG, CONST_DOUBLE, MEM}},		\
-  {"nonimmediate_soft_df_operand", {SUBREG, REG, MEM}},			\
-  {"load_multiple_operation",  {PARALLEL}},				\
-  {"store_multiple_operation", {PARALLEL}},				\
-  {"equality_operator", {EQ, NE}},					\
-  {"arm_comparison_operator", {EQ, NE, LE, LT, GE, GT, GEU, GTU, LEU,	\
-			       LTU, UNORDERED, ORDERED, UNLT, UNLE,	\
-			       UNGE, UNGT}},				\
-  {"arm_rhsm_operand", {SUBREG, REG, CONST_INT, MEM}},			\
-  {"const_shift_operand", {CONST_INT}},					\
-  {"multi_register_push", {PARALLEL}},					\
-  {"cc_register", {REG}},						\
-  {"logical_binary_operator", {AND, IOR, XOR}},				\
-  {"cirrus_register_operand", {REG}},					\
-  {"cirrus_fp_register", {REG}},					\
-  {"cirrus_shift_const", {CONST_INT}},					\
-  {"dominant_cc_register", {REG}},					\
-  {"arm_float_compare_operand", {REG, CONST_DOUBLE}},			\
-  {"vfp_compare_operand", {REG, CONST_DOUBLE}},
-
-/* Define this if you have special predicates that know special things
-   about modes.  Genrecog will warn about certain forms of
-   match_operand without a mode; if the operand predicate is listed in
-   SPECIAL_MODE_PREDICATES, the warning will be suppressed.  */
-#define SPECIAL_MODE_PREDICATES			\
- "cc_register", "dominant_cc_register",
-
 enum arm_builtins
 {
   ARM_BUILTIN_GETWCX,
