@@ -2905,7 +2905,7 @@ override_options ()
   /* If -mstats and -quiet, make stderr line buffered.  */
   if (quiet_flag && TARGET_STATS)
     {
-#ifdef MIPS_BSD43
+#if defined (MIPS_BSD43) || defined (MIPS_NEWS)
       setlinebuf (stderr);
 #else
       setvbuf (stderr, (char *)0, _IOLBF, BUFSIZ);
