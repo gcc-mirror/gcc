@@ -316,7 +316,7 @@ Objective-C and Objective-C++ Dialects}.
 -funroll-all-loops  -funroll-loops  -fpeel-loops @gol
 -funswitch-loops  -fold-unroll-loops  -fold-unroll-all-loops @gol
 -ftree-pre  -ftree-ccp  -ftree-dce -ftree-loop-optimize @gol
--ftree-lim -fivcanon @gol
+-ftree-loop-im -ftree-loop-ivcanon @gol
 -ftree-dominator-opts -ftree-dse -ftree-copyrename @gol
 -ftree-ch -ftree-sra -ftree-ter -ftree-lrs -ftree-fre -ftree-vectorize @gol
 --param @var{name}=@var{value}

@@ -137,7 +137,7 @@ tree_ssa_loop_im (void)
 static bool
 gate_tree_ssa_loop_im (void)
 {
-  return flag_tree_lim != 0;
+  return flag_tree_loop_im != 0;
 }
 
 struct tree_opt_pass pass_lim = 
@@ -204,7 +204,7 @@ tree_ssa_loop_ivcanon (void)
 static bool
 gate_tree_ssa_loop_ivcanon (void)
 {
-  return flag_ivcanon != 0;
+  return flag_tree_loop_ivcanon != 0;
 }
 
 struct tree_opt_pass pass_iv_canon =
