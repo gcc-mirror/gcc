@@ -116,11 +116,27 @@ case "${UNAME_MACHINE}:${UNAME_SYSTEM}:${UNAME_RELEASE}:${UNAME_VERSION}" in
     VAX*:ULTRIX*:*:*)
 	echo vax-dec-ultrix${UNAME_RELEASE}
 	exit 0 ;;
-    mips:*:4*:UMIPS)
-	echo mips-mips-riscos4sysv
-	exit 0 ;;
-    mips:*:5*:RISCos)
-	echo mips-mips-riscos${UNAME_RELEASE}
+    mips:*:*:UMIPS | mips:*:*:RISCos)
+	sed 's/^	//' << EOF >dummy.c
+	int main (argc, argv) int argc; char **argv; {
+	#if defined (host_mips) && defined (MIPSEB)
+	#if defined (SYSTYPE_SYSV)
+	  printf ("mips-mips-riscos%ssysv\n", argv[1]); exit (0);
+	#endif
+	#if defined (SYSTYPE_SVR4)
+	  printf ("mips-mips-riscos%ssvr4\n", argv[1]); exit (0);
+	#endif
+	#if defined (SYSTYPE_BSD43) || defined(SYSTYPE_BSD)
+	  printf ("mips-mips-riscos%sbsd\n", argv[1]); exit (0);
+	#endif
+	#endif
+	  exit (-1);
+	}
+EOF
+	${CC-cc} dummy.c -o dummy && ./dummy "${UNAME_RELEASE}" \
+	  && rm dummy.c dummy && exit 0
+	rm -f dummy.c dummy
+	echo mips-mips-riscos{UNAME_RELEASE}
 	exit 0 ;;
     Night_Hawk:Power_UNIX:*:*)
 	echo powerpc-harris-powerunix
