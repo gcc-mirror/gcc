@@ -1,3 +1,13 @@
+2003-09-10  Martin Husemann  <martin@duskware.de>
+
+	PR target/11965
+	* config/sparc/sparc.c (sparc_v8plus_shift): Protect against
+	constants greater than 63.
+	* config/sparc/sparc.md (ashlsi3, ashrsi3, lshrsi3): Protect
+	against constants greater than 31.
+	(*ashldi3_sp64, *ashrdi3_sp64, *lshrdi3_sp64): Protect against
+	constants greater than 63.
+
 2003-09-09  Richard Henderson  <rth@redhat.com>
 
 	* cgraphunit.c (cgraph_finalize_function): Remove unused argument.
