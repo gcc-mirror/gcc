@@ -3192,6 +3192,10 @@ aggregate_value_p (exp)
 
   if (RETURN_IN_MEMORY (type))
     return 1;
+  /* Types that are TREE_ADDRESSABLE must be contructed in memory,
+     and thus can't be returned in registers.  */
+  if (TREE_ADDRESSABLE (type))
+    return 1;
   if (flag_pcc_struct_return && AGGREGATE_TYPE_P (type))
     return 1;
   /* Make sure we have suitable call-clobbered regs to return
