@@ -1,3 +1,7 @@
+2000-04-28  Scott Bambrough  <scottb@netwinder.org>
+
+	* cpplex.c (_cpp_scan_line): Fix buffer overwrite.
+
 2000-04-28  Richard Henderson  <rth@cygnus.com>
 
 	* toplev.c (rest_of_type_compilation): Fix sdb TIMEVAR typo.

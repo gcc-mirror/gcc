@@ -532,7 +532,7 @@ _cpp_scan_line (pfile, list)
       if (list->tokens_used >= list->tokens_cap)
 	expand_token_space (list);
       if (list->name_used + len >= list->name_cap)
-	auto_expand_name_space (list);
+	expand_name_space (list, list->name_used + len + 1 - list->name_cap);
 
       if (type == CPP_MACRO)
 	type = CPP_NAME;
