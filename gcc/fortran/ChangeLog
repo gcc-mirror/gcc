@@ -1,3 +1,12 @@
+2004-06-15  Tobias Schlueter  <tobias.schlueter@physik.uni-muenchen.de>
+
+	PR fortran/15962
+	* match.c (match_case_selector): Call gfc_match_init_expr
+	instead of gfc_match_expr.
+	* resolve.c (validate_case_label_expr): No need to check for
+	constant, since it wouldn't have been matched with the fix to
+	match.c.
+
 2004-06-14  Tobias Schlueter  <tobias.schlueter@physik.uni-muenchen.de>
 
 	PR fortran/15211
