@@ -4112,14 +4112,24 @@ output_simode_bld (bild, operands)
     }
   else
     {
+      /* Determine if we can clear the destination first.  */
+      int clear_first = (REG_P (operands[0]) && REG_P (operands[1])
+			 && REGNO (operands[0]) != REGNO (operands[1]));
+
+      if (clear_first)
+	output_asm_insn ("sub.l\t%S0,%S0", operands);
+
       /* Output the bit load or bit inverse load.  */
       if (bild)
 	output_asm_insn ("bild\t%Z2,%Y1", operands);
       else
 	output_asm_insn ("bld\t%Z2,%Y1", operands);
 
-      /* Clear the destination register and perform the bit store.  */
-      output_asm_insn ("xor.l\t%S0,%S0\n\tbst\t#0,%w0", operands);
+      if (!clear_first)
+	output_asm_insn ("xor.l\t%S0,%S0", operands);
+
+      /* Perform the bit store.  */
+      output_asm_insn ("bst\t#0,%w0", operands);
     }
 
   /* All done.  */
