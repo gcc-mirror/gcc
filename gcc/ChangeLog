@@ -1,3 +1,15 @@
+2002-02-04  Nick Clifton  <nickc@cambridge.redhat.com>
+
+	* config/arm/arm.h (machine_function): Add uses_anonymous_args
+	field.
+        (SETUP_INCOMING_VARARGS): Set uses_anonymous_args.
+	* config/arm/arm.c (current_function_anonymous_args): Delete,
+        replace uses with cfun->machine->uses_anonymous_args.
+        (arm_reorg): Do not reset uses_anonymous_args.
+
+	* config/arm/arm.c (arm_hard_regno_mode_ok): Allow any value in
+	any geenral register.
+	
 2001-02-04  Bernd Schmidt  <bernds@redhat.com>
 
 	* cfgrtl.c (force_nonfallthru_and_redirect): Don't try to redirect
