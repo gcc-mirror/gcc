@@ -1,3 +1,16 @@
+2000-04-30  Bernd Schmidt  <bernds@cygnus.co.uk>
+
+	* simplify-rtx.c (check_value_useless): Delete function.
+	(discard_useless_locs): Don't call it; manage N_USELES_VALUES counter
+	by hand.
+	(cselib_invalidate_regno): Likewise.
+	(cselib_invalidate_mem_1): Likewise.
+	(references_value_p): Recognize useless values by the fact that they
+	have no locations.
+	(discard_useless_values): Likewise.
+	(cselib_record_set): This may turn a useless value
+	into a useful one.
+	
 2000-04-30  Richard Henderson  <rth@cygnus.com>
 
 	* config/d30v: New port.

@@ -106,7 +106,6 @@ static void unchain_one_value		PARAMS ((cselib_val *));
 static void unchain_one_elt_list	PARAMS ((struct elt_list **));
 static void unchain_one_elt_loc_list	PARAMS ((struct elt_loc_list **));
 static void clear_table			PARAMS ((void));
-static int check_value_useless		PARAMS ((cselib_val *));
 static int discard_useless_locs		PARAMS ((void **, void *));
 static int discard_useless_values	PARAMS ((void **, void *));
 static void remove_useless_values	PARAMS ((void));
@@ -2183,26 +2182,6 @@ get_value_hash (entry)
   return v->value;
 }
 
-/* If there are no more locations that hold a value, the value has become
-   useless.  See whether that is the case for V.  Return 1 if this has
-   just become useless.  */
-
-static int
-check_value_useless (v)
-     cselib_val *v;
-{
-  if (v->locs != 0)
-    return 0;
-
-  if (v->value == 0)
-    return 0;
-
-  /* This is a marker to indicate that the value will be reclaimed.  */
-  v->value = 0;
-  n_useless_values++;
-  return 1;
-}
-
 /* Return true if X contains a VALUE rtx.  If ONLY_USELESS is set, we
    only return true for values which point to a cselib_val whose value
    element has been set to zero, which implies the cselib_val will be
@@ -2218,7 +2197,7 @@ references_value_p (x, only_useless)
   int i, j;
 
   if (GET_CODE (x) == VALUE
-      && (! only_useless || CSELIB_VAL_PTR (x)->value == 0))
+      && (! only_useless || CSELIB_VAL_PTR (x)->locs == 0))
     return 1;
 
   for (i = GET_RTX_LENGTH (code) - 1; i >= 0; i--)
@@ -2245,6 +2224,7 @@ discard_useless_locs (x, info)
 {
   cselib_val *v = (cselib_val *)*x;
   struct elt_loc_list **p = &v->locs;
+  int had_locs = v->locs != 0;
 
   while (*p)
     {
@@ -2254,9 +2234,11 @@ discard_useless_locs (x, info)
 	p = &(*p)->next;
     }
 
-  if (check_value_useless (v))
-    values_became_useless = 1;
-
+  if (had_locs && v->locs == 0)
+    {
+      n_useless_values++;
+      values_became_useless = 1;
+    }
   return 1;
 }
 
@@ -2269,7 +2251,7 @@ discard_useless_values (x, info)
 {
   cselib_val *v = (cselib_val *)*x;
 
-  if (v->value == 0)
+  if (v->locs == 0)
     {
       htab_clear_slot (hash_table, x);
       unchain_one_value (v);
@@ -2877,8 +2859,8 @@ cselib_invalidate_regno (regno, mode)
 		  break;
 		}
 	    }
-
-	  check_value_useless (v);
+	  if (v->locs == 0)
+	    n_useless_values++;
 	}
     }
 }
@@ -2951,6 +2933,7 @@ cselib_invalidate_mem_1 (slot, info)
   cselib_val *v = (cselib_val *) *slot;
   rtx mem_rtx = (rtx) info;
   struct elt_loc_list **p = &v->locs;
+  int had_locs = v->locs != 0;
 
   while (*p)
     {
@@ -2986,7 +2969,9 @@ cselib_invalidate_mem_1 (slot, info)
       unchain_one_elt_loc_list (p);
     }
 
-  check_value_useless (v);
+  if (had_locs && v->locs == 0)
+    n_useless_values++;
+
   return 1;
 }
 
@@ -3045,10 +3030,16 @@ cselib_record_set (dest, src_elt, dest_addr_elt)
   if (dreg >= 0)
     {
       REG_VALUES (dreg) = new_elt_list (REG_VALUES (dreg), src_elt);
+      if (src_elt->locs == 0)
+	n_useless_values--;
       src_elt->locs = new_elt_loc_list (src_elt->locs, dest);
     }
   else if (GET_CODE (dest) == MEM && dest_addr_elt != 0)
-    add_mem_for_addr (dest_addr_elt, src_elt, dest);
+    {
+      if (src_elt->locs == 0)
+	n_useless_values--;
+      add_mem_for_addr (dest_addr_elt, src_elt, dest);
+    }
 }
 
 /* Describe a single set that is part of an insn.  */
