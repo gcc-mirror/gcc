@@ -522,6 +522,9 @@ insert_into_set (value_set_t set, tree expr)
   value_set_node_t newnode = pool_alloc (value_set_node_pool);
   tree val = get_value_handle (expr);
   gcc_assert (val);
+  
+  if (is_gimple_min_invariant (val))
+    return;
 
   /* For indexed sets, insert the value into the set value bitmap.
      For all sets, add it to the linked list and increment the list
