@@ -264,10 +264,8 @@ get_unit (int read_flag)
   /* Has to be an external unit */
 
   u = find_unit (ioparm.unit);
-  if (u != NULL)
-    return u;
 
-  return NULL;
+  return u;
 }
 
 
