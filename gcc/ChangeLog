@@ -1,5 +1,8 @@
 Sat Dec 26 06:31:43 1998  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
+	* cse.c (cse_insn): Always make SET a nop if dest is hard regster and
+	src is equivalent.
+
 	* flow.c (print_rtl_with_bb): Write insns in epilogue delay list.
 
 	* combine.c (simplify_set): Update SET_SRC after force_to_mode call.
