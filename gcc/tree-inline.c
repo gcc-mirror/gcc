@@ -2002,8 +2002,7 @@ remap_save_expr (tree *tp, void *st_, tree fn, int *walk_subtrees)
 			     (splay_tree_key) *tp,
 			     (splay_tree_value) t);
       /* Make sure we don't remap an already-remapped SAVE_EXPR.  */
-      splay_tree_insert (st, (splay_tree_key) t,
-			 (splay_tree_value) error_mark_node);
+      splay_tree_insert (st, (splay_tree_key) t, (splay_tree_value) t);
     }
   else
     /* We've already walked into this SAVE_EXPR, so we needn't do it
