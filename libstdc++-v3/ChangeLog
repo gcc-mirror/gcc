@@ -1,3 +1,10 @@
+2004-03-31  Paolo Carlini  <pcarlini@suse.de>
+
+	* config/locale/generic/c_locale.cc (__convert_to_v(long double&)):
+	In v3 uses of sscanf, the special floating-point numbers INF,
+	INFINITY, etc., cannot occur in input, therefore, if the latter
+	is too large, ERANGE is always stored in errno, no need of finitel.
+
 2004-03-30  Benjamin Kosnik  <bkoz@redhat.com>
 
 	PR libstdc++/14783
