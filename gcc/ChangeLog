@@ -1,3 +1,9 @@
+2003-03-12  Daniel Jacobowitz  <drow@mvista.com>
+
+        Fix PR target/9797 and PR c/9853.
+        * stmt.c (expand_decl_init): Call push_temp_slots () and
+        pop_temp_slots ().
+
 2003-03-12  Hans-Peter Nilsson  <hp@bitrange.com>
 
 	* configure.in (rlim_t): Define to long if no valid definition
