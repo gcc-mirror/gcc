@@ -413,8 +413,9 @@ read_include_file (pfile, inc)
 		  if (!STAT_SIZE_TOO_BIG (inc->st))
 		    cpp_warning
 		      (pfile, "%s is shorter than expected", inc->name);
-		  buf = xrealloc (buf, offset);
-		  inc->st.st_size = offset;
+		  size = offset;
+		  buf = xrealloc (buf, size + 1);
+		  inc->st.st_size = size;
 		  break;
 		}
 	      offset += count;
