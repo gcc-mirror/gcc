@@ -1,3 +1,11 @@
+2004-10-18  Kaz Kojima  <kkojima@gcc.gnu.org>
+
+	* src/sh/ffi.c (ffi_prep_closure): Set T bit in trampoline for
+	the function returning a structure pointed with R2.
+	* src/sh/sysv.S (ffi_closure_SYSV): Use R2 as the pointer to
+	the structure return value if T bit set.  Emit position
+	independent code and EH data if PIC.
+
 2004-10-13  Kazuhiro Inaoka  <inaoka.kazuhiro@renesas.com>
 
 	* Makefile.am: Add m32r support.
