@@ -266,7 +266,17 @@ do {									\
 /* Default ABI to compile code for */
 #define DEFAULT_ABI rs6000_current_abi
 
-#include "rs6000/powerpc.h"
+#define CPP_DEFAULT_SPEC "-D_ARCH_PPC"
+
+#define ASM_DEFAULT_SPEC "-mppc"
+
+#include "rs6000/rs6000.h"
+
+#undef TARGET_DEFAULT
+#define TARGET_DEFAULT (MASK_POWERPC | MASK_NEW_MNEMONICS)
+
+#undef PROCESSOR_DEFAULT
+#define PROCESSOR_DEFAULT PROCESSOR_PPC601
 
 /* System V.4 uses register 13 as a pointer to the small data area,
    so it is not available to the normal user.  */

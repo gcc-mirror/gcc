@@ -1,6 +1,6 @@
 /* Core target definitions for GNU compiler
    for IBM RS/6000 PowerPC running NetWare
-   Copyright (C) 1994, 1995, 1996 Free Software Foundation, Inc.
+   Copyright (C) 1994, 1995, 1996, 1998 Free Software Foundation, Inc.
    Contributed by Cygnus Support.
 
 This file is part of GNU CC.
@@ -21,7 +21,17 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 
 #define TARGET_AIX 0
 
-#include "rs6000/powerpc.h"
+#define CPP_DEFAULT_SPEC "-D_ARCH_PPC"
+
+#define ASM_DEFAULT_SPEC "-mppc"
+
+#include "rs6000/rs6000.h"
+
+#undef TARGET_DEFAULT
+#define TARGET_DEFAULT (MASK_POWERPC | MASK_NEW_MNEMONICS)
+
+#undef PROCESSOR_DEFAULT
+#define PROCESSOR_DEFAULT PROCESSOR_PPC601
 
 /* Don't generate XCOFF debugging information.  */
 

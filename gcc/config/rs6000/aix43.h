@@ -1,7 +1,7 @@
 /* Definitions of target machine for GNU compiler,
-   for IBM RS/6000 POWER running AIX version 4.1.
-   Copyright (C) 1994, 1995, 1996, 1997, 1998 Free Software Foundation, Inc.
-   Contributed by David Edelsohn (edelsohn@npac.syr.edu).
+   for IBM RS/6000 POWER running AIX version 4.3.
+   Copyright (C) 1998 Free Software Foundation, Inc.
+   Contributed by David Edelsohn (edelsohn@mhpcc.edu).
 
 This file is part of GNU CC.
 
@@ -25,26 +25,48 @@ Boston, MA 02111-1307, USA.  */
 #define MASK_XL_CALL		0x40000000
 #define	TARGET_XL_CALL		(target_flags & MASK_XL_CALL)
 #undef  SUBTARGET_SWITCHES
-#define SUBTARGET_SWITCHES		\
-  {"xl-call", 		MASK_XL_CALL},	\
-  {"no-xl-call",	- MASK_XL_CALL}, \
-  {"threads",		0},		\
+#define SUBTARGET_SWITCHES					\
+  {"aix64", 		MASK_64BIT | MASK_POWERPC64 | MASK_POWERPC}, \
+  {"aix32",		- (MASK_64BIT | MASK_POWERPC64)},	\
+  {"xl-call", 		MASK_XL_CALL},				\
+  {"no-xl-call",	- MASK_XL_CALL}, 			\
+  {"threads",		0},					\
   {"pe",		0},
+
+/* Sometimes certain combinations of command options do not make sense
+   on a particular target machine.  You can define a macro
+   `OVERRIDE_OPTIONS' to take account of this.  This macro, if
+   defined, is executed once just after all the command options have
+   been parsed.
+
+   The macro SUBTARGET_OVERRIDE_OPTIONS is provided for subtargets, to
+   get control.  */
+
+#define NON_POWERPC_MASKS (MASK_POWER | MASK_POWER2 | MASK_STRING)
+#define SUBTARGET_OVERRIDE_OPTIONS					\
+do {									\
+  if (TARGET_64BIT && (target_flags & NON_POWERPC_MASKS))		\
+    {									\
+      target_flags &= ~NON_POWERPC_MASKS;				\
+      error ("-maix64 and POWER architecture are incompatible.");	\
+    }									\
+} while (0);
 
 #include "rs6000/rs6000.h"
 
 #undef ASM_SPEC
-#define ASM_SPEC "-u %(asm_cpu)"
+#define ASM_SPEC "-u %{maix64:-a64 -mppc64} %(asm_cpu)"
 
 /* Common ASM definitions used by ASM_SPEC amonst the various targets
    for handling -mcpu=xxx switches.  */
 #undef ASM_CPU_SPEC
 #define ASM_CPU_SPEC \
-"%{!mcpu*: \
+"%{!mcpu*: %{!maix64: \
   %{mpower: %{!mpower2: -mpwr}} \
   %{mpower2: -mpwr2} \
-  %{mpowerpc*: -mppc} \
-  %{!mpower*: %{!mpowerpc*: %(asm_default)}}} \
+  %{mpowerpc*: %{!mpowerpc64: -mppc}} \
+  %{mpowerpc64: -mppc64} \
+  %{!mpower*: %{!mpowerpc*: %(asm_default)}}}} \
 %{mcpu=common: -mcom} \
 %{mcpu=power: -mpwr} \
 %{mcpu=power2: -mpwr2} \
@@ -69,11 +91,12 @@ Boston, MA 02111-1307, USA.  */
 #define ASM_DEFAULT_SPEC "-mcom"
 
 #undef CPP_PREDEFINES
-#define CPP_PREDEFINES "-D_IBMR2 -D_POWER -D_AIX -D_AIX32 -D_AIX41 \
+#define CPP_PREDEFINES "-D_IBMR2 -D_POWER -D_AIX -D_AIX32 -D_AIX41 -D_AIX43 \
 -Asystem(unix) -Asystem(aix)"
 
 #undef CPP_SPEC
 #define CPP_SPEC "%{posix: -D_POSIX_SOURCE}\
+   %{maix64: -D__64BIT__ -D_ARCH_PPC}\
    %{mpe: -I/usr/lpp/ppe.poe/include}\
    %{mthreads: -D_THREAD_SAFE}\
    %(cpp_cpu)"
@@ -82,11 +105,11 @@ Boston, MA 02111-1307, USA.  */
    for handling -mcpu=xxx switches.  */
 #undef CPP_CPU_SPEC
 #define CPP_CPU_SPEC \
-"%{!mcpu*: \
+"%{!mcpu*: %{!maix64: \
   %{mpower: %{!mpower2: -D_ARCH_PWR}} \
   %{mpower2: -D_ARCH_PWR2} \
   %{mpowerpc*: -D_ARCH_PPC} \
-  %{!mpower*: %{!mpowerpc*: %(cpp_default)}}} \
+  %{!mpower*: %{!mpowerpc*: %(cpp_default)}}}} \
 %{mcpu=common: -D_ARCH_COM} \
 %{mcpu=power: -D_ARCH_PWR} \
 %{mcpu=power2: -D_ARCH_PWR2} \
@@ -114,7 +137,7 @@ Boston, MA 02111-1307, USA.  */
 #define TARGET_DEFAULT MASK_NEW_MNEMONICS
 
 #undef PROCESSOR_DEFAULT
-#define PROCESSOR_DEFAULT PROCESSOR_PPC601
+#define PROCESSOR_DEFAULT PROCESSOR_PPC604
 
 /* Define this macro as a C expression for the initializer of an
    array of string to tell the driver program which options are
@@ -156,7 +179,7 @@ Boston, MA 02111-1307, USA.  */
 #undef LINK_SPEC
 #define LINK_SPEC "-bpT:0x10000000 -bpD:0x20000000 %{!r:-btextro} -bnodelcsect\
    %{static:-bnso %(link_syscalls) } %{!shared: %{g*: %(link_libg) }}\
-   %{shared:-bM:SRE %{!e:-bnoentry}}"
+   %{shared:-bM:SRE %{!e:-bnoentry}} %{maix64:-b64}"
 
 #undef STARTFILE_SPEC
 #define STARTFILE_SPEC "%{!shared:\
@@ -164,6 +187,13 @@ Boston, MA 02111-1307, USA.  */
          %{!pg:%{p:/usr/lpp/ppe.poe/lib/mcrt0.o}\
                %{!p:/usr/lpp/ppe.poe/lib/crt0.o}}}\
    %{!mpe:\
-     %{mthreads:%{pg:gcrt0_r%O%s}%{!pg:%{p:mcrt0_r%O%s}%{!p:crt0_r%O%s}}}\
-     %{!mthreads:%{pg:gcrt0%O%s}%{!pg:%{p:mcrt0%O%s}%{!p:crt0%O%s}}}}}"
+     %{maix64:%{pg:gcrt0_64%O%s}%{!pg:%{p:mcrt0_64%O%s}%{!p:crt0_64%O%s}}}\
+     %{!maix64:\
+       %{mthreads:%{pg:gcrt0_r%O%s}%{!pg:%{p:mcrt0_r%O%s}%{!p:crt0_r%O%s}}}\
+       %{!mthreads:%{pg:gcrt0%O%s}%{!pg:%{p:mcrt0%O%s}%{!p:crt0%O%s}}}}}}"
+
+/* AIX 4.3 typedefs ptrdiff_t as "long" while earlier releases used "int".  */
+
+#undef PTRDIFF_TYPE
+#define PTRDIFF_TYPE "long int"
 

@@ -1,0 +1,48 @@
+# Do not build libgcc1.
+LIBGCC1 =
+CROSS_LIBGCC1 =
+
+# These are really part of libgcc1, but this will cause them to be
+# built correctly, so... [taken from t-sparclite]
+LIB2FUNCS_EXTRA = fp-bit.c dp-bit.c
+
+dp-bit.c: $(srcdir)/config/fp-bit.c
+	cat $(srcdir)/config/fp-bit.c > dp-bit.c
+
+fp-bit.c: $(srcdir)/config/fp-bit.c
+	echo '#define FLOAT' > fp-bit.c
+	cat $(srcdir)/config/fp-bit.c >> fp-bit.c
+
+# Build the libraries for both hard and soft floating point and all of the 
+# different processor models
+
+MULTILIB_OPTIONS	= msoft-float \
+			  mcpu=common/mcpu=power/mcpu=powerpc/maix64
+
+MULTILIB_DIRNAMES	= soft-float \
+			  common power powerpc aix64
+
+MULTILIB_MATCHES	= msoft-float=mcpu?403 \
+			  maix64=maix64 \
+			  mcpu?power=mpower \
+			  mcpu?power=mrios1 \
+			  mcpu?power=mcpu?rios1 \
+			  mcpu?power=mcpu?rsc \
+			  mcpu?power=mcpu?rsc1 \
+			  mcpu?power=mpower2 \
+			  mcpu?power=mrios2 \
+			  mcpu?power=mcpu=rios2 \
+			  mcpu?powerpc=mcpu?601 \
+			  mcpu?powerpc=mcpu?602 \
+			  mcpu?powerpc=mcpu?603 \
+			  mcpu?powerpc=mcpu?603e \
+			  mcpu?powerpc=mcpu?604 \
+			  mcpu?powerpc=mcpu?620 \
+			  mcpu?powerpc=mcpu?403 \
+			  mcpu?powerpc=mpowerpc \
+			  mcpu?powerpc=mpowerpc-gpopt \
+			  mcpu?powerpc=mpowerpc-gfxopt
+
+LIBGCC = stmp-multilib
+INSTALL_LIBGCC = install-multilib
+

@@ -1,6 +1,6 @@
 /* Definitions of target machine for GNU compiler, for PowerPC
    running Windows/NT.
-   Copyright (C) 1995, 1996 Free Software Foundation, Inc.
+   Copyright (C) 1995, 1996, 1997, 1998 Free Software Foundation, Inc.
    Contributed by Cygnus Support.
 
 This file is part of GNU CC.
@@ -27,11 +27,20 @@ Boston, MA 02111-1307, USA.  */
 /* Default ABI to compile code for */
 #define DEFAULT_ABI ABI_NT
 
-#include "rs6000/powerpc.h"
+#define CPP_DEFAULT_SPEC "-D_ARCH_PPC"
+
+#define ASM_DEFAULT_SPEC "-mppc"
 
 /* Pseudo target that we can test in the md file.  */
-#undef 	TARGET_WINDOWS_NT
 #define	TARGET_WINDOWS_NT 1
+
+#include "rs6000/rs6000.h"
+
+#undef TARGET_DEFAULT
+#define TARGET_DEFAULT (MASK_POWERPC | MASK_NEW_MNEMONICS)
+
+#undef PROCESSOR_DEFAULT
+#define PROCESSOR_DEFAULT PROCESSOR_POWERPC
 
 #undef	CPP_PREDEFINES
 #define	CPP_PREDEFINES "-DWIN32 -D_WIN32 \
@@ -71,9 +80,6 @@ Boston, MA 02111-1307, USA.  */
 #undef	PREFERRED_DEBUGGING_TYPE
 #define PREFERRED_DEBUGGING_TYPE DBX_DEBUG
 
-#undef PROCESSOR_DEFAULT
-#define PROCESSOR_DEFAULT PROCESSOR_POWERPC
-
 /* NT always runs little endian */
 #undef  BYTES_BIG_ENDIAN
 #define BYTES_BIG_ENDIAN 0 
@@ -112,9 +118,6 @@ Boston, MA 02111-1307, USA.  */
 
 #undef TARGET_DEFAULT 
 #define TARGET_DEFAULT (MASK_POWERPC | MASK_NEW_MNEMONICS | MASK_NO_FP_IN_TOC | MASK_NO_SUM_IN_TOC)
-
-#undef PROCESSOR_DEFAULT
-#define PROCESSOR_DEFAULT PROCESSOR_PPC601
 
 /* Address to save the TOC register */
 #undef	RS6000_SAVE_TOC
@@ -162,7 +165,7 @@ do {									\
   ASM_OUTPUT_SKIP (FILE, SIZE);						\
 } while (0)
 
-/* Describe how to emit unitialized external linkage items  */
+/* Describe how to emit uninitialized external linkage items  */
 #define ASM_OUTPUT_ALIGNED_BSS(FILE, DECL, NAME, SIZE, ALIGN)		\
 do {									\
   ASM_GLOBALIZE_LABEL (FILE, NAME);					\
