@@ -1570,8 +1570,10 @@ emit_group_load_1 (rtx *tmps, rtx dst, rtx orig_src, tree type, int ssize)
 
   gcc_assert (GET_CODE (dst) == PARALLEL);
 
-  if (!SCALAR_INT_MODE_P (m)
-      && !MEM_P (orig_src) && GET_CODE (orig_src) != CONCAT)
+  if (m != VOIDmode
+      && !SCALAR_INT_MODE_P (m)
+      && !MEM_P (orig_src)
+      && GET_CODE (orig_src) != CONCAT)
     {
       enum machine_mode imode = int_mode_for_mode (GET_MODE (orig_src));
       if (imode == BLKmode)
