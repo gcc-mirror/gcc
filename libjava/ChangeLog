@@ -1,3 +1,9 @@
+1999-05-21  Andrew Haley  <aph@cygnus.com>
+
+	* include/sparc-signal.h (INIT_FPE, INIT_SEGV): SA_NODEFER added
+	to signal options to allow the same exceptions to be rethrown
+	later.
+
 1999-05-20  Andrew Haley  <aph@cygnus.com>
 
 	* libjava/prims.cc (catch_fpe): Call to HANDLE_DIVIDE_OVERFLOW

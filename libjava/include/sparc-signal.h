@@ -42,7 +42,7 @@ do								\
     nullp = new java::lang::NullPointerException ();		\
     struct sigaction act;					\
     act.sa_sigaction = catch_segv;				\
-    act.sa_flags = SA_SIGINFO;					\
+    act.sa_flags = SA_SIGINFO | SA_NODEFER;			\
     sigemptyset (&act.sa_mask);					\
     sigaction (SIGSEGV, &act, NULL);				\
   }								\
@@ -54,7 +54,7 @@ do								\
     arithexception = new java::lang::ArithmeticException 	\
       (JvNewStringLatin1 ("/ by zero"));			\
     struct sigaction act;					\
-    act.sa_flags = SA_SIGINFO;					\
+    act.sa_flags = SA_SIGINFO | SA_NODEFER;			\
     act.sa_sigaction = catch_fpe;				\
     sigemptyset (&act.sa_mask);					\
     sigaction (SIGFPE, &act, NULL);				\
