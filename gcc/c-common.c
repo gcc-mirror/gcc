@@ -339,21 +339,33 @@ type_for_size (bits, unsignedp)
      unsigned bits;
      int unsignedp;
 {
-  if (bits <= TYPE_PRECISION (signed_char_type_node))
+  if (bits == TYPE_PRECISION (signed_char_type_node))
     return unsignedp ? unsigned_char_type_node : signed_char_type_node;
 
-  if (bits <= TYPE_PRECISION (short_integer_type_node))
+  if (bits == TYPE_PRECISION (short_integer_type_node))
     return unsignedp ? short_unsigned_type_node : short_integer_type_node;
 
-  if (bits <= TYPE_PRECISION (integer_type_node))
+  if (bits == TYPE_PRECISION (integer_type_node))
     return unsignedp ? unsigned_type_node : integer_type_node;
 
-  if (bits <= TYPE_PRECISION (long_integer_type_node))
+  if (bits == TYPE_PRECISION (long_integer_type_node))
     return unsignedp ? long_unsigned_type_node : long_integer_type_node;
 
-  if (bits <= TYPE_PRECISION (long_long_integer_type_node))
+  if (bits == TYPE_PRECISION (long_long_integer_type_node))
     return (unsignedp ? long_long_unsigned_type_node
 	    : long_long_integer_type_node);
+
+  if (bits <= TYPE_PRECISION (intQI_type_node))
+    return unsignedp ? unsigned_intQI_type_node : intQI_type_node;
+
+  if (bits <= TYPE_PRECISION (intHI_type_node))
+    return unsignedp ? unsigned_intHI_type_node : intHI_type_node;
+
+  if (bits <= TYPE_PRECISION (intSI_type_node))
+    return unsignedp ? unsigned_intSI_type_node : intSI_type_node;
+
+  if (bits <= TYPE_PRECISION (intDI_type_node))
+    return unsignedp ? unsigned_intDI_type_node : intDI_type_node;
 
   return 0;
 }
@@ -381,6 +393,18 @@ type_for_mode (mode, unsignedp)
 
   if (mode == TYPE_MODE (long_long_integer_type_node))
     return unsignedp ? long_long_unsigned_type_node : long_long_integer_type_node;
+
+  if (mode == TYPE_MODE (intQI_type_node))
+    return unsignedp ? unsigned_intQI_type_node : intQI_type_node;
+
+  if (mode == TYPE_MODE (intHI_type_node))
+    return unsignedp ? unsigned_intHI_type_node : intHI_type_node;
+
+  if (mode == TYPE_MODE (intSI_type_node))
+    return unsignedp ? unsigned_intSI_type_node : intSI_type_node;
+
+  if (mode == TYPE_MODE (intDI_type_node))
+    return unsignedp ? unsigned_intDI_type_node : intDI_type_node;
 
   if (mode == TYPE_MODE (float_type_node))
     return float_type_node;
