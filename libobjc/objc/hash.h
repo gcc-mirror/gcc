@@ -29,6 +29,7 @@ Boston, MA 02111-1307, USA.  */
 #define __hash_INCLUDE_GNU
 
 #include <stddef.h>
+#include <string.h>
 #include <objc/objc.h>
 
 /*
