@@ -1997,6 +1997,10 @@ find_free_reg (class, mode, qty, accept_call_clobbered, just_try_suggested,
 			    born_index, dead_index);
     }
 
+  /* We need not check to see if the current function has nonlocal
+     labels because we don't put any pseudos that are live over calls in
+     registers in that case.  */
+
   if (! accept_call_clobbered
       && flag_caller_saves
       && ! just_try_suggested
