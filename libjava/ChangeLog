@@ -1,3 +1,12 @@
+2004-07-23  Bryce McKinlay  <mckinlay@redhat.com>
+
+	* prims.cc (_Jv_InitPrimClass): Don't create an array class.
+	(_Jv_CreateJavaVM): Don't pass array vtable parameter to
+	_Jv_InitPrimClass.
+	(DECLARE_PRIM_TYPE): Don't declare array vtables.
+	* include/jvm.h (struct _Jv_ArrayVTable): Removed.
+	* java/lang/Class.h (_Jv_InitPrimClass): Update friend declaration.
+
 2004-07-23  Thomas Fitzsimmons  <fitzsim@redhat.com>
 
 	* Makefile.am: Replace jar, rmic and rmiregistry references with

@@ -328,7 +328,7 @@ private:
   friend void _Jv_InitNewClassFields (jclass klass);
 
   // in prims.cc
-  friend void _Jv_InitPrimClass (jclass, char *, char, int, _Jv_ArrayVTable *);
+  friend void _Jv_InitPrimClass (jclass, char *, char, int);
 
   friend void _Jv_PrepareCompiledClass (jclass);
   friend void _Jv_PrepareConstantTimeTables (jclass);

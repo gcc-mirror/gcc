@@ -79,12 +79,6 @@ struct _Jv_VTable
 // to keep this up to date by hand.
 #define NUM_OBJECT_METHODS 5
 
-// This structure is the type of an array's vtable.
-struct _Jv_ArrayVTable : public _Jv_VTable
-{
-  vtable_elt extra_method[NUM_OBJECT_METHODS - 1];
-};
-
 union _Jv_word
 {
   jobject o;
