@@ -1,3 +1,11 @@
+2004-11-17  Diego Novillo  <dnovillo@redhat.com>
+
+	PR tree-optimization/18307
+	* tree-ssa-alias.c (merge_pointed_to_info): ICE if 'dest' and
+	'orig' are the same node.
+	(collect_points_to_info_r): Do not call merge_pointed_to_info
+	when the PHI argument is identical to the LHS.
+
 2004-11-17  Steven Bosscher  <stevenb@suse.de>
 
 	* tree-ssa-propagate.c (cfg_blocks_add) Assert we're not trying

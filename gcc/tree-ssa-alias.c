@@ -1697,12 +1697,8 @@ merge_pointed_to_info (struct alias_info *ai, tree dest, tree orig)
 {
   struct ptr_info_def *dest_pi, *orig_pi;
 
-  /* FIXME: It is erroneous to call this function with identical
-     nodes, however that currently occurs during bootstrap.  This check
-     stops further breakage.  PR 18307 documents the issue.  */
-  if (dest == orig)
-    return;
-  
+  gcc_assert (dest != orig);
+
   /* Make sure we have points-to information for ORIG.  */
   collect_points_to_info_for (ai, orig);
 
@@ -1938,7 +1934,9 @@ collect_points_to_info_r (tree var, tree stmt, void *data)
 	    break;
 	    
 	  case SSA_NAME:
-	    merge_pointed_to_info (ai, lhs, var);
+	    /* Avoid unnecessary merges.  */
+	    if (lhs != var)
+	      merge_pointed_to_info (ai, lhs, var);
 	    break;
 	    
 	  default:
