@@ -422,7 +422,7 @@ package Prj is
       Attributes => No_Variable,
       Arrays     => No_Array,
       Packages   => No_Package);
-   --  Default value of Declarations: indicates that there is no declarations.
+   --  Default value of Declarations: indicates that there is no declarations
 
    type Package_Element is record
       Name   : Name_Id      := No_Name;
@@ -430,7 +430,7 @@ package Prj is
       Parent : Package_Id   := No_Package;
       Next   : Package_Id   := No_Package;
    end record;
-   --  A package. Includes declarations that may include other packages.
+   --  A package. Includes declarations that may include other packages
 
    package Package_Table is new GNAT.Dynamic_Tables
      (Table_Component_Type => Package_Element,
@@ -438,7 +438,7 @@ package Prj is
       Table_Low_Bound      => 1,
       Table_Initial        => 100,
       Table_Increment      => 100);
-   --  The table that contains all packages.
+   --  The table that contains all packages
 
    function Image (Casing : Casing_Type) return String;
    --  Similar to 'Image (but avoid use of this attribute in compiler)
@@ -452,14 +452,14 @@ package Prj is
    type Naming_Data is record
 
       Dot_Replacement : Name_Id := No_Name;
-      --  The string to replace '.' in the source file name (for Ada).
+      --  The string to replace '.' in the source file name (for Ada)
 
       Dot_Repl_Loc : Source_Ptr := No_Location;
-      --  The position in the project file source where
-      --  Dot_Replacement is defined.
+      --  The position in the project file source where Dot_Replacement is
+      --  defined.
 
       Casing : Casing_Type := All_Lower_Case;
-      --  The casing of the source file name (for Ada).
+      --  The casing of the source file name (for Ada)
 
       Spec_Suffix : Array_Element_Id := No_Array_Element;
       --  The string to append to the unit name for the
@@ -490,17 +490,17 @@ package Prj is
       --  Ada_Body_Suffix is defined.
 
       Separate_Suffix : Name_Id := No_Name;
-      --  String to append to unit name for source file name of an Ada subunit.
+      --  String to append to unit name for source file name of an Ada subunit
 
       Sep_Suffix_Loc : Source_Ptr := No_Location;
-      --  Position in the project file source where Separate_Suffix is defined.
+      --  Position in the project file source where Separate_Suffix is defined
 
       Specs : Array_Element_Id := No_Array_Element;
-      --  An associative array mapping individual specs to source file names.
+      --  An associative array mapping individual specs to source file names
       --  This is specific to Ada.
 
       Bodies : Array_Element_Id := No_Array_Element;
-      --  An associative array mapping individual bodies to source file names.
+      --  An associative array mapping individual bodies to source file names
       --  This is specific to Ada.
 
       Specification_Exceptions : Array_Element_Id := No_Array_Element;
@@ -554,15 +554,18 @@ package Prj is
       --  Indicate the different languages of the source of this project
 
       First_Referred_By  : Project_Id := No_Project;
-      --  The project, if any, that was the first to be known
-      --  as importing or extending this project.
-      --  Set by Prj.Proc.Process.
+      --  The project, if any, that was the first to be known as importing or
+      --  extending this project. Set by Prj.Proc.Process.
 
       Name : Name_Id := No_Name;
-      --  The name of the project. Set by Prj.Proc.Process.
+      --  The name of the project. Set by Prj.Proc.Process
+
+      Display_Name : Name_Id := No_Name;
+      --  The name of the project with the spelling of its declaration.
+      --  Set by Prj.Proc.Process.
 
       Path_Name : Name_Id := No_Name;
-      --  The path name of the project file. Set by Prj.Proc.Process.
+      --  The path name of the project file. Set by Prj.Proc.Process
 
       Display_Path_Name : Name_Id := No_Name;
       --  The path name used for display purposes. May be different from
@@ -576,36 +579,36 @@ package Prj is
       --  project. Set by Prj.Proc.Process.
 
       Mains : String_List_Id := Nil_String;
-      --  List of mains specified by attribute Main. Set by Prj.Nmsc.Check.
+      --  List of mains specified by attribute Main. Set by Prj.Nmsc.Check
 
       Directory : Name_Id := No_Name;
-      --  Directory where the project file resides. Set by Prj.Proc.Process.
+      --  Directory where the project file resides. Set by Prj.Proc.Process
 
       Display_Directory : Name_Id := No_Name;
 
       Dir_Path : String_Access;
-      --  Same as Directory, but as an access to String.
-      --  Set by Make.Compile_Sources.Collect_Arguments_And_Compile.
+      --  Same as Directory, but as an access to String. Set by
+      --  Make.Compile_Sources.Collect_Arguments_And_Compile.
 
       Library : Boolean := False;
-      --  True if this is a library project.
-      --  Set by Prj.Nmsc.Language_Independent_Check.
+      --  True if this is a library project. Set by
+      --  Prj.Nmsc.Language_Independent_Check.
 
       Library_Dir : Name_Id := No_Name;
-      --  If a library project, directory where resides the library
-      --  Set by Prj.Nmsc.Language_Independent_Check.
+      --  If a library project, directory where resides the library Set by
+      --  Prj.Nmsc.Language_Independent_Check.
 
       Display_Library_Dir : Name_Id := No_Name;
-      --  The name of the library directory, for display purposes.
-      --  May be different from Library_Dir for platforms where the file names
-      --  are case-insensitive.
+      --  The name of the library directory, for display purposes. May be
+      --  different from Library_Dir for platforms where the file names are
+      --  case-insensitive.
 
       Library_Src_Dir : Name_Id := No_Name;
       --  If a library project, directory where the sources and the ALI files
       --  of the library are copied. By default, if attribute Library_Src_Dir
       --  is not specified, sources are not copied anywhere and ALI files are
-      --  copied in the Library Directory.
-      --  Set by Prj.Nmsc.Language_Independent_Check.
+      --  copied in the Library Directory. Set by
+      --  Prj.Nmsc.Language_Independent_Check.
 
       Display_Library_Src_Dir : Name_Id := No_Name;
       --  The name of the library source directory, for display purposes.
@@ -621,16 +624,16 @@ package Prj is
       --  Set by Prj.Nmsc.Language_Independent_Check.
 
       Lib_Internal_Name : Name_Id := No_Name;
-      --  If a library project, internal name store inside the library
-      --  Set by Prj.Nmsc.Language_Independent_Check.
+      --  If a library project, internal name store inside the library Set by
+      --  Prj.Nmsc.Language_Independent_Check.
 
       Standalone_Library : Boolean := False;
-      --  Indicate that this is a Standalone Library Project File.
-      --  Set by Prj.Nmsc.Check.
+      --  Indicate that this is a Standalone Library Project File. Set by
+      --  Prj.Nmsc.Check.
 
       Lib_Interface_ALIs : String_List_Id := Nil_String;
-      --  For Standalone Library Project Files, indicate the list
-      --  of Interface ALI files. Set by Prj.Nmsc.Check.
+      --  For Standalone Library Project Files, indicate the list of Interface
+      --  ALI files. Set by Prj.Nmsc.Check.
 
       Lib_Auto_Init : Boolean := False;
       --  For non static Standalone Library Project Files, indicate if
@@ -691,17 +694,17 @@ package Prj is
       --  Object_Directory. Set by Prj.Nmsc.Language_Independent_Check.
 
       Display_Exec_Dir : Name_Id := No_Name;
-      --  The name of the exec directory, for display purposes.
-      --  May be different from Exec_Directory for platforms where the file
-      --  names are case-insensitive.
+      --  The name of the exec directory, for display purposes. May be
+      --  different from Exec_Directory for platforms where the file names are
+      --  case-insensitive.
 
       Extends : Project_Id := No_Project;
-      --  The reference of the project file, if any, that this
-      --  project file extends. Set by Prj.Proc.Process.
+      --  The reference of the project file, if any, that this project file
+      --  extends. Set by Prj.Proc.Process.
 
       Extended_By : Project_Id := No_Project;
-      --  The reference of the project file, if any, that
-      --  extends this project file. Set by Prj.Proc.Process.
+      --  The reference of the project file, if any, that extends this project
+      --  file. Set by Prj.Proc.Process.
 
       Naming : Naming_Data := Standard_Naming_Data;
       --  The naming scheme of this project file.
@@ -721,17 +724,17 @@ package Prj is
       --  project file. Set by Prj.Proc.Process.
 
       Imported_Projects : Project_List := Empty_Project_List;
-      --  The list of all directly imported projects, if any.
-      --  Set by Prj.Proc.Process.
+      --  The list of all directly imported projects, if any. Set by
+      --  Prj.Proc.Process.
 
       Ada_Include_Path : String_Access := null;
-      --  The cached value of ADA_INCLUDE_PATH for this project file.
-      --  Do not use this field directly outside of the compiler, use
+      --  The cached value of ADA_INCLUDE_PATH for this project file. Do not
+      --  use this field directly outside of the compiler, use
       --  Prj.Env.Ada_Include_Path instead. Set by Prj.Env.Ada_Include_Path.
 
       Ada_Objects_Path : String_Access := null;
-      --  The cached value of ADA_OBJECTS_PATH for this project file.
-      --  Do not use this field directly outside of the compiler, use
+      --  The cached value of ADA_OBJECTS_PATH for this project file. Do not
+      --  use this field directly outside of the compiler, use
       --  Prj.Env.Ada_Objects_Path instead. Set by Prj.Env.Ada_Objects_Path
 
       Include_Path_File : Name_Id := No_Name;
@@ -791,7 +794,7 @@ package Prj is
    --  The project tree Tree must have been Initialized and/or Reset.
 
    Project_Error : exception;
-   --  Raised by some subprograms in Prj.Attr.
+   --  Raised by some subprograms in Prj.Attr
 
    package Project_Table is new GNAT.Dynamic_Tables (
      Table_Component_Type => Project_Data,
@@ -813,7 +816,7 @@ package Prj is
       Project      : Project_Id := No_Project;
       Needs_Pragma : Boolean := False;
    end record;
-   --  File and Path name of a spec or body.
+   --  File and Path name of a spec or body
 
    type File_Names_Data is array (Spec_Or_Body) of File_Name_Data;
 

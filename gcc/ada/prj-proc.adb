@@ -33,6 +33,7 @@ with Prj.Attr; use Prj.Attr;
 with Prj.Err;  use Prj.Err;
 with Prj.Ext;  use Prj.Ext;
 with Prj.Nmsc; use Prj.Nmsc;
+with Sinput;   use Sinput;
 with Snames;
 
 with GNAT.Case_Util; use GNAT.Case_Util;
@@ -781,14 +782,31 @@ package body Prj.Proc is
                   Default : Name_Id           := No_Name;
                   Value   : Name_Id           := No_Name;
 
+                  Def_Var : Variable_Value;
+
                   Default_Node : constant Project_Node_Id :=
                     External_Default_Of
                       (The_Current_Term, From_Project_Node_Tree);
 
                begin
+                  --  If there is a default value for the external reference,
+                  --  get its value.
+
                   if Default_Node /= Empty_Node then
-                     Default :=
-                       String_Value_Of (Default_Node, From_Project_Node_Tree);
+                     Def_Var := Expression
+                       (Project                => Project,
+                        In_Tree                => In_Tree,
+                        From_Project_Node      => Default_Node,
+                        From_Project_Node_Tree => From_Project_Node_Tree,
+                        Pkg                    => Pkg,
+                        First_Term             =>
+                          Tree.First_Term
+                            (Default_Node, From_Project_Node_Tree),
+                        Kind                   => Single);
+
+                     if Def_Var /= Nil_Variable_Value then
+                        Default := Def_Var.Value;
+                     end if;
                   end if;
 
                   Value := Prj.Ext.Value_Of (Name, Default);
@@ -1057,11 +1075,12 @@ package body Prj.Proc is
                                                                       Obj_Dir
                   then
                      if In_Tree.Projects.Table (Extending2).Virtual then
-                        Error_Msg_Name_1 := In_Tree.Projects.Table (Proj).Name;
+                        Error_Msg_Name_1 :=
+                          In_Tree.Projects.Table (Proj).Display_Name;
 
                         if Error_Report = null then
                            Error_Msg
-                             ("project % cannot be extended by a virtual " &
+                             ("project { cannot be extended by a virtual " &
                               "project with the same object directory",
                               In_Tree.Projects.Table (Proj).Location);
                         else
@@ -1075,13 +1094,13 @@ package body Prj.Proc is
 
                      else
                         Error_Msg_Name_1 :=
-                          In_Tree.Projects.Table (Extending2).Name;
+                          In_Tree.Projects.Table (Extending2).Display_Name;
                         Error_Msg_Name_2 :=
-                          In_Tree.Projects.Table (Proj).Name;
+                          In_Tree.Projects.Table (Proj).Display_Name;
 
                         if Error_Report = null then
                            Error_Msg
-                             ("project % cannot extend project %",
+                             ("project { cannot extend project {",
                               In_Tree.Projects.Table (Extending2).Location);
                            Error_Msg
                              ("\they share the same object directory",
@@ -2158,8 +2177,14 @@ package body Prj.Proc is
             Processed_Data   : Project_Data     := Empty_Project (In_Tree);
             Imported         : Project_List     := Empty_Project_List;
             Declaration_Node : Project_Node_Id  := Empty_Node;
+            Tref             : Source_Buffer_Ptr;
             Name             : constant Name_Id :=
-              Name_Of (From_Project_Node, From_Project_Node_Tree);
+                                 Name_Of
+                                   (From_Project_Node, From_Project_Node_Tree);
+            Location         : Source_Ptr :=
+                                 Location_Of
+                                   (From_Project_Node, From_Project_Node_Tree);
+
 
          begin
             Project := Processed_Projects.Get (Name);
@@ -2184,6 +2209,26 @@ package body Prj.Proc is
                          Virtual_Prefix
             then
                Processed_Data.Virtual := True;
+               Processed_Data.Display_Name := Name;
+
+            --  If there is no file, for example when the project node tree is
+            --  built in memory by GPS, the Display_Name cannot be found in
+            --  the source, so its value is the same as Name.
+
+            elsif Location = No_Location then
+               Processed_Data.Display_Name := Name;
+
+            --  Get the spelling of the project name from the project file
+
+            else
+               Tref := Source_Text (Get_Source_File_Index (Location));
+
+               for J in 1 .. Name_Len loop
+                  Name_Buffer (J) := Tref (Location);
+                  Location := Location + 1;
+               end loop;
+
+               Processed_Data.Display_Name := Name_Find;
             end if;
 
             Processed_Data.Display_Path_Name :=

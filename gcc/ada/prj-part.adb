@@ -1068,8 +1068,8 @@ package body Prj.Part is
       --  Mark location of PROJECT token if present
 
       if Token = Tok_Project then
+         Scan (In_Tree); -- scan past PROJECT
          Set_Location_Of (Project, In_Tree, Token_Ptr);
-         Scan (In_Tree); -- scan past project
       end if;
 
       --  Clear the Buffer

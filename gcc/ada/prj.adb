@@ -90,6 +90,7 @@ package body Prj is
       Supp_Languages                 => No_Supp_Language_Index,
       First_Referred_By              => No_Project,
       Name                           => No_Name,
+      Display_Name                   => No_Name,
       Path_Name                      => No_Name,
       Display_Path_Name              => No_Name,
       Virtual                        => False,
@@ -227,9 +228,10 @@ package body Prj is
    -------------------
 
    function Empty_Project (Tree : Project_Tree_Ref)  return Project_Data is
-      Value : Project_Data := Project_Empty;
+      Value : Project_Data;
    begin
       Prj.Initialize (Tree => No_Project_Tree);
+      Value := Project_Empty;
       Value.Naming := Tree.Private_Part.Default_Naming;
       return Value;
    end Empty_Project;
