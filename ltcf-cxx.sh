@@ -298,8 +298,7 @@ case "$host_os" in
     esac   
     ;;
   netbsd*)
-    # FIXME: insert proper C++ library support
-    ld_shlibs=no
+    # NetBSD uses g++ - do we need to do anything?
     ;;
   osf3*)
     if test "$with_gcc" = yes && test "$with_gnu_ld" = no; then

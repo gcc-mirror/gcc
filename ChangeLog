@@ -1,3 +1,9 @@
+2000-09-30  Alexandre Oliva  <aoliva@redhat.com>
+
+	* ltconfig, ltmain.sh, libtool.m4, ltcf-cxx.sh: Updated from libtool
+	multi-language branch, to work around Solaris' /bin/sh bug.  Rebuilt
+	all affected `configure' scripts.
+
 2000-09-26  David Edelsohn  <edelsohn@gnu.org>
 
 	* config/mt-aix43 (NM_FOR_TARGET): Add -B bsd-style flag.

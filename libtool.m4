@@ -37,12 +37,17 @@ dnl AC_LIBTOOL_GCJ immediately, otherwise, hook it in at the end of both.
     [AC_LIBTOOL_GCJ],
     [AC_PROVIDE_IFELSE([A][M_PROG_GCJ],
         [AC_LIBTOOL_GCJ],
+	[AC_PROVIDE_IFELSE([LT_AC_PROG_GCJ],
+	  [AC_LIBTOOL_GCJ],
 	[ifdef([AC_PROG_GCJ],
 	       [define([AC_PROG_GCJ], defn([AC_PROG_GCJ])[AC_LIBTOOL_GCJ
 ])])
 	 ifdef([A][M_PROG_GCJ],
 	       [define([A][M_PROG_GCJ], defn([A][M_PROG_GCJ])[AC_LIBTOOL_GCJ
-])])])])])
+])])
+	 ifdef([LT_AC_PROG_GCJ],
+	       [define([LT_AC_PROG_GCJ], defn([LT_AC_PROG_GCJ])[AC_LIBTOOL_GCJ
+])])])])])])
 
 AC_DEFUN(_AC_PROG_LIBTOOL,
 [AC_REQUIRE([AC_LIBTOOL_SETUP])dnl
@@ -54,7 +59,7 @@ AC_CACHE_SAVE
 
 # Actually configure libtool.  ac_aux_dir is where install-sh is found.
 AR="$AR" LTCC="$CC" CC="$CC" CFLAGS="$CFLAGS" CPPFLAGS="$CPPFLAGS" \
-MAGIC="$MAGIC" LD="$LD" LDFLAGS="$LDFLAGS" LIBS="$LIBS" \
+MAGIC_CMD="$MAGIC_CMD" LD="$LD" LDFLAGS="$LDFLAGS" LIBS="$LIBS" \
 LN_S="$LN_S" NM="$NM" RANLIB="$RANLIB" STRIP="$STRIP" \
 AS="$AS" DLLTOOL="$DLLTOOL" OBJDUMP="$OBJDUMP" \
 objext="$OBJEXT" exeext="$EXEEXT" reload_flag="$reload_flag" \
@@ -99,7 +104,7 @@ dnl
 # Only perform the check for file, if the check method requires it
 case "$deplibs_check_method" in
 file_magic*)
-  if test "$file_magic_cmd" = '${MAGIC}'; then
+  if test "$file_magic_cmd" = '$MAGIC_CMD'; then
     AC_PATH_MAGIC
   fi
   ;;
@@ -168,7 +173,7 @@ case "$host" in
   ;;
 
 ifdef([AC_PROVIDE_AC_LIBTOOL_WIN32_DLL],
-[*-*-cygwin* | *-*-mingw*)
+[*-*-cygwin* | *-*-mingw* | *-*-pw32*)
   AC_CHECK_TOOL(DLLTOOL, dlltool, false)
   AC_CHECK_TOOL(AS, as, false)
   AC_CHECK_TOOL(OBJDUMP, objdump, false)
@@ -190,7 +195,7 @@ ifdef([AC_PROVIDE_AC_LIBTOOL_WIN32_DLL],
     AC_CACHE_CHECK([how to link DLLs], lt_cv_cc_dll_switch,
       [AC_TRY_LINK([], [], [lt_cv_cc_dll_switch=-mdll],[lt_cv_cc_dll_switch=-dll])])
     CFLAGS="$SAVE_CFLAGS" ;;
-  *-*-cygwin*)
+  *-*-cygwin* | *-*-pw32*)
     # cygwin systems need to pass --dll to the linker, and not link
     # crt.o which will require a WinMain@16 definition.
     lt_cv_cc_dll_switch="-Wl,--dll -nostartfiles" ;;
@@ -317,16 +322,16 @@ pic_mode=ifelse($#,1,$1,default)])
 # AC_PATH_TOOL_PREFIX - find a file program which can recognise shared library
 AC_DEFUN(AC_PATH_TOOL_PREFIX,
 [AC_MSG_CHECKING([for $1])
-AC_CACHE_VAL(lt_cv_path_MAGIC,
-[case "$MAGIC" in
+AC_CACHE_VAL(lt_cv_path_MAGIC_CMD,
+[case "$MAGIC_CMD" in
   /*)
-  lt_cv_path_MAGIC="$MAGIC" # Let the user override the test with a path.
+  lt_cv_path_MAGIC_CMD="$MAGIC_CMD" # Let the user override the test with a path.
   ;;
   ?:/*)
-  ac_cv_path_MAGIC="$MAGIC" # Let the user override the test with a dos path.
+  lt_cv_path_MAGIC_CMD="$MAGIC_CMD" # Let the user override the test with a dos path.
   ;;
   *)
-  ac_save_MAGIC="$MAGIC"
+  ac_save_MAGIC_CMD="$MAGIC_CMD"
   IFS="${IFS=   }"; ac_save_ifs="$IFS"; IFS=":"
 dnl $ac_dummy forces splitting on constant user-supplied paths.
 dnl POSIX.2 word splitting is done only on the output of word expansions,
@@ -335,12 +340,12 @@ dnl not every word.  This closes a longstanding sh security hole.
   for ac_dir in $ac_dummy; do
     test -z "$ac_dir" && ac_dir=.
     if test -f $ac_dir/$1; then
-      lt_cv_path_MAGIC="$ac_dir/$1"
+      lt_cv_path_MAGIC_CMD="$ac_dir/$1"
       if test -n "$file_magic_test_file"; then
 	case "$deplibs_check_method" in
 	"file_magic "*)
 	  file_magic_regex="`expr \"$deplibs_check_method\" : \"file_magic \(.*\)\"`"
-	  MAGIC="$lt_cv_path_MAGIC"
+	  MAGIC_CMD="$lt_cv_path_MAGIC_CMD"
 	  if eval $file_magic_cmd \$file_magic_test_file 2> /dev/null |
 	    egrep "$file_magic_regex" > /dev/null; then
 	    :
@@ -364,12 +369,12 @@ EOF
     fi
   done
   IFS="$ac_save_ifs"
-  MAGIC="$ac_save_MAGIC"
+  MAGIC_CMD="$ac_save_MAGIC_CMD"
   ;;
 esac])
-MAGIC="$lt_cv_path_MAGIC"
-if test -n "$MAGIC"; then
-  AC_MSG_RESULT($MAGIC)
+MAGIC_CMD="$lt_cv_path_MAGIC_CMD"
+if test -n "$MAGIC_CMD"; then
+  AC_MSG_RESULT($MAGIC_CMD)
 else
   AC_MSG_RESULT(no)
 fi
@@ -380,11 +385,11 @@ fi
 AC_DEFUN(AC_PATH_MAGIC,
 [AC_REQUIRE([AC_CHECK_TOOL_PREFIX])dnl
 AC_PATH_TOOL_PREFIX(${ac_tool_prefix}file, /usr/bin:$PATH)
-if test -z "$lt_cv_path_MAGIC"; then
+if test -z "$lt_cv_path_MAGIC_CMD"; then
   if test -n "$ac_tool_prefix"; then
     AC_PATH_TOOL_PREFIX(file, /usr/bin:$PATH)
   else
-    MAGIC=:
+    MAGIC_CMD=:
   fi
 fi
 ])
@@ -492,7 +497,7 @@ test -n "$reload_flag" && reload_flag=" $reload_flag"
 AC_DEFUN(AC_DEPLIBS_CHECK_METHOD,
 [AC_CACHE_CHECK([how to recognise dependant libraries],
 lt_cv_deplibs_check_method,
-[lt_cv_file_magic_cmd='${MAGIC}'
+[lt_cv_file_magic_cmd='$MAGIC_CMD'
 lt_cv_file_magic_test_file=
 lt_cv_deplibs_check_method='unknown'
 # Need to set the preceding variable on all platforms that support
@@ -523,9 +528,9 @@ bsdi4*)
   lt_cv_file_magic_test_file=/shlib/libc.so
   ;;
 
-cygwin* | mingw*)
+cygwin* | mingw* |pw32*)
   lt_cv_deplibs_check_method='file_magic file format pei*-i386(.*architecture: i386)?'
-  lt_cv_file_magic_cmd='${OBJDUMP} -f'
+  lt_cv_file_magic_cmd='$OBJDUMP -f'
   ;;
 
 freebsd* )
@@ -682,7 +687,7 @@ AC_DEFUN(AC_CHECK_LIBM,
 [AC_REQUIRE([AC_CANONICAL_HOST])dnl
 LIBM=
 case "$host" in
-*-*-beos* | *-*-cygwin*)
+*-*-beos* | *-*-cygwin* | *-*-pw32*)
   # These system don't have libm
   ;;
 *-ncr-sysv4.3*)
@@ -765,7 +770,7 @@ lt_save_CFLAGS="$CFLAGS"
 dnl Make sure LTCC is set to the C compiler, i.e. set LTCC before CC
 dnl is set to the C++ compiler.
 AR="$AR" LTCC="$CC" CC="$CXX" CXX="$CXX" CFLAGS="$CXXFLAGS" CPPFLAGS="$CPPFLAGS" \
-MAGIC="$MAGIC" LDFLAGS="$LDFLAGS" LIBS="$LIBS" \
+MAGIC_CMD="$MAGIC_CMD" LDFLAGS="$LDFLAGS" LIBS="$LIBS" \
 LN_S="$LN_S" NM="$NM" RANLIB="$RANLIB" STRIP="$STRIP" \
 AS="$AS" DLLTOOL="$DLLTOOL" OBJDUMP="$OBJDUMP" \
 objext="$OBJEXT" exeext="$EXEEXT" reload_flag="$reload_flag" \
@@ -788,16 +793,17 @@ AC_DEFUN(_AC_LIBTOOL_GCJ,
 [AC_REQUIRE([AC_PROG_LIBTOOL])
 AC_PROVIDE_IFELSE([AC_PROG_GCJ],[],
   [AC_PROVIDE_IFELSE([A][M_PROG_GCJ],[],
-    [ifdef([AC_PROG_GCJ],[AC_REQUIRE([AC_PROG_GCJ])],
-       [ifdef([A][M_PROG_GCJ],[AC_REQUIRE([A][M_PROG_GCJ])],
-         [AC_REQUIRE([A][C_PROG_GCJ_OR_A][M_PROG_GCJ])])])])])
+    [AC_PROVIDE_IFELSE([LT_AC_PROG_GCJ],[],
+      [ifdef([AC_PROG_GCJ],[AC_REQUIRE([AC_PROG_GCJ])],
+         [ifdef([A][M_PROG_GCJ],[AC_REQUIRE([A][M_PROG_GCJ])],
+           [AC_REQUIRE([A][C_PROG_GCJ_OR_A][M_PROG_GCJ])])])])])])
 LIBTOOL_DEPS=$LIBTOOL_DEPS" $ac_aux_dir/ltcf-gcj.sh"
 lt_save_CC="$CC"
 lt_save_CFLAGS="$CFLAGS"
 dnl Make sure LTCC is set to the C compiler, i.e. set LTCC before CC
 dnl is set to the C++ compiler.
 AR="$AR" LTCC="$CC" CC="$GCJ" CFLAGS="$GCJFLAGS" CPPFLAGS="" \
-MAGIC="$MAGIC" LDFLAGS="$LDFLAGS" LIBS="$LIBS" \
+MAGIC_CMD="$MAGIC_CMD" LDFLAGS="$LDFLAGS" LIBS="$LIBS" \
 LN_S="$LN_S" NM="$NM" RANLIB="$RANLIB" STRIP="$STRIP" \
 AS="$AS" DLLTOOL="$DLLTOOL" OBJDUMP="$OBJDUMP" \
 objext="$OBJEXT" exeext="$EXEEXT" reload_flag="$reload_flag" \
