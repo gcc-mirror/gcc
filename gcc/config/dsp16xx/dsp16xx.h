@@ -108,8 +108,9 @@ extern char *output_block_move();
 
 #define CROSS_LINK_SPEC  "%{!c:%{!M:%{!MM:%{!E:%{!S:ld1600 %l %X %{o*} %{m} \
 			%{r} %{s} %{t} %{u*} %{x}\
-			%{!A:%{!nostdlib:%S}} %{static:}\
-			%{L*} %D %o %{!nostdlib:-le1600 %L -le1600 %{!A:%E}}\n }}}}}"
+			%{!A:%{!nostartfiles:%S}} %{static:}\
+			%{L*} %D %o %{!nostdlib:-le1600 %L -le1600}\
+			%{!A:%{!nostartfiles:%E}}\n }}}}}"
 
 /* Nothing complicated here, just link with libc.a under normal
    circumstances */
