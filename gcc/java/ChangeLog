@@ -1,3 +1,7 @@
+2002-03-01  Bryce McKinlay  <bryce@waitaki.otago.ac.nz>
+
+	* expr.c (build_java_arraystore_check): Fix formatting.
+
 2002-02-28  Bryce McKinlay  <bryce@waitaki.otago.ac.nz>
 
 	* expr.c (java_array_data_offset): Removed function.
