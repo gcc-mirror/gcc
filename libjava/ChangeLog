@@ -1,3 +1,14 @@
+2002-01-10  Tom Tromey  <tromey@redhat.com>
+
+	For PR libgcj/5303:
+	* gnu/java/rmi/rmic/RMIC.java (parseOptions): Handle --help and
+	--version.  Recognize GNU-style long options.  Print GNU-style
+	error messages.
+	(usage): Print GNU-style help.  Exit with status 0.
+	(error): New method.
+	(run): Print error message if no class names found.
+	(main): Don't print usage on error.
+
 2002-01-09  Tom Tromey  <tromey@redhat.com>
 
 	* gnu/gcj/convert/Convert.java (version): Use java.vm.name
