@@ -1,10 +1,28 @@
 /* -*-c-*-
  * This file contains the hashing implementation.
  *
-  $Header$
-  $Author$
-  $Date$
-  $Log$
+ * Copyright (C) 1991 Threaded Technologies Inc.
+ * 
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published
+ * by the Free Software Foundation; either version 1, or any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * General Public License for more details.
+ * 
+ * You should receive a copy of the GNU General Public License 
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+ * 
+  $Header: /usr/user/dennis_glatting/ObjC/c-runtime/lib/RCS/hash.c,v 0.1 1991/10/24 00:45:39 dennisg Exp dennisg $
+  $Author: dennisg $
+  $Date: 1991/10/24 00:45:39 $
+  $Log: hash.c,v $
+ * Revision 0.1  1991/10/24  00:45:39  dennisg
+ * Initial check in.  Preliminary development stage.
+ *
 */
  
 
