@@ -125,9 +125,9 @@
 #endif
 
 #ifndef FLT_EVAL_METHOD
-#error "FLT_EVAL_METHOD undefined"
+#error "FLT_EVAL_METHOD undefined" /* { dg-bogus "undefined" "undefined" { xfail sparc-sun-solaris2.* } } */
 #endif
 
 #ifndef DECIMAL_DIG
-#error "DECIMAL_DIG undefined"
+#error "DECIMAL_DIG undefined" /* { dg-bogus "undefined" "undefined" { xfail sparc-sun-solaris2.* } } */
 #endif
