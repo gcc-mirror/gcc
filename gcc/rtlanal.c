@@ -2218,3 +2218,36 @@ insn_first_p (insn, reference)
 	return 0;
     }
 }
+
+
+/* Searches X for any reference to REGNO, returning the rtx of the
+   reference found if any.  Otherwise, returns NULL_RTX.  */
+
+rtx
+regno_use_in (regno, x)
+     int regno;
+     rtx x;
+{
+  register char *fmt;
+  int i, j;
+  rtx tem;
+
+  if (GET_CODE (x) == REG && REGNO (x) == regno)
+    return x;
+
+  fmt = GET_RTX_FORMAT (GET_CODE (x));
+  for (i = GET_RTX_LENGTH (GET_CODE (x)) - 1; i >= 0; i--)
+    {
+      if (fmt[i] == 'e')
+	{
+	  if ((tem = regno_use_in (regno, XEXP (x, i))))
+	    return tem;
+	}
+      else if (fmt[i] == 'E')
+	for (j = XVECLEN (x, i) - 1; j >= 0; j--)
+	  if ((tem = regno_use_in (regno , XVECEXP (x, i, j))))
+	    return tem;
+    }
+
+  return NULL_RTX;
+}
