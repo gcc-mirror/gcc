@@ -1,3 +1,7 @@
+2000-03-15  Tom Tromey  <tromey@cygnus.com>
+
+	* libjava.compile/pr176.java: New file, for PR gcj/176.
+
 2000-03-15  Bryce McKinlay  <bryce@albatross.co.nz>
 
 	* libjava.compile/pr172.java: Correct classname to match file name.
