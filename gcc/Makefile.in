@@ -285,7 +285,7 @@ GMPINC = @GMPINC@
 BANSHEELIB = @BANSHEELIB@
 BANSHEEINC = @BANSHEEINC@
 
-CPPLIBS = ../libcpp/libcpp.a
+CPPLIB = ../libcpp/libcpp.a
 CPPINC = -I$(srcdir)/../libcpp/include
 
 # Substitution type for target's getgroups 2nd arg.
@@ -737,7 +737,7 @@ LIBIBERTY = ../libiberty/libiberty.a
 BUILD_LIBIBERTY = @FORBUILD@/libiberty/libiberty.a
 
 # Dependencies on the intl and portability libraries.
-LIBDEPS= $(LIBIBERTY) $(LIBINTL_DEP) $(LIBICONV_DEP) $(CPPLIB) $(BANSHEELIB)
+LIBDEPS= $(CPPLIB) $(LIBIBERTY) $(LIBINTL_DEP) $(LIBICONV_DEP) $(BANSHEELIB)
 
 # Likewise, for use in the tools that must run on this machine
 # even if we are cross-building GCC.
@@ -745,7 +745,7 @@ BUILD_LIBDEPS= $(BUILD_LIBIBERTY)
 
 # How to link with both our special library facilities
 # and the system's installed libraries.
-LIBS = @LIBS@ $(LIBIBERTY) $(LIBINTL) $(LIBICONV) $(CPPLIB)  $(BANSHEELIB)
+LIBS = @LIBS@ $(CPPLIB) $(LIBIBERTY) $(LIBINTL) $(LIBICONV) $(BANSHEELIB)
 
 # Any system libraries needed just for GNAT.
 SYSLIBS = @GNAT_LIBEXC@
@@ -911,7 +911,7 @@ OBJS = $(OBJS-common) $(out_object_file) $(OBJS-archive)
 
 OBJS-onestep = libbackend.o $(OBJS-archive)
 
-BACKEND = main.o @TREEBROWSER@ libbackend.a $(CPPLIBS)
+BACKEND = main.o @TREEBROWSER@ libbackend.a $(CPPLIB)
 
 # Files to be copied away after each stage in building.
 STAGESTUFF = *$(objext) insn-flags.h insn-config.h insn-codes.h \
