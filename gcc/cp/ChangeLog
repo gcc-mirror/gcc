@@ -1,3 +1,21 @@
+2002-12-24  Nathan Sidwell  <nathan@codesourcery.com>
+
+	PR C++/7964
+	* cp-tree.h (resolve_scoped_fn_name): Prototype.
+	* call.c (resolve_scoped_fn_name): New function. Deal with
+	more template expansion. Broken out of ...
+	* parse.y (parse_finish_call_expr): ... here. Call it.
+	* decl2.c (build_expr_from_tree, CALL_EXPR): Use
+	resolve_scoped_fn_name and build_call_from_tree.
+
+	PR c++/9053
+	* decl.c (duplicate_decls): Templates may be disambiguated by
+	return type.
+	
+	PR c++/8702
+	* decl2.c (check_classfn): Use lookup_fnfield_1. List all
+	conversion operators on failure.
+
 2002-12-22  Nathan Sidwell  <nathan@codesourcery.com>
 
 	PR c++/8572

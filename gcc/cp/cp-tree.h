@@ -3528,6 +3528,7 @@ extern tree build_method_call			PARAMS ((tree, tree, tree, tree, int));
 extern int null_ptr_cst_p			PARAMS ((tree));
 extern int sufficient_parms_p                   PARAMS ((tree));
 extern tree type_decays_to			PARAMS ((tree));
+extern tree resolve_scoped_fn_name 		PARAMS ((tree, tree));
 extern tree build_user_type_conversion		PARAMS ((tree, tree, int));
 extern tree build_new_function_call		PARAMS ((tree, tree));
 extern tree build_new_method_call               (tree, tree, tree, tree, int);
