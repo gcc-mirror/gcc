@@ -1,4 +1,4 @@
-Fri Jan 21 15:37:29 2000  Kaveh R. Ghazi  <ghazi@versicolor.rutgers.edu>
+2000-01-21  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* buffer.h: PROTO -> PARAMS.
 	* check-init.c: Likewise.
