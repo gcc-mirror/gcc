@@ -1,3 +1,11 @@
+2001-11-02  Neil Booth  <neil@daikokuya.demon.co.uk>
+
+	* c-decl.c (pushdecl): Move block inside if conditional to remove
+	possibility of a segfault.  Lookup block-level extern
+	variables in enclosing scopes correctly.
+
+	* testsuite/gcc.c-torture/compile/20001018-1.x: Remove XFAIL.
+
 2001-11-02  Aldy Hernandez  <aldyh@redhat.com>
 
         * expmed.c (store_bit_field): Use simplify_gen_subreg to make
