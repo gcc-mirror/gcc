@@ -1,6 +1,6 @@
 // natClassLoader.cc - Implementation of java.lang.ClassLoader native methods.
 
-/* Copyright (C) 1999, 2000, 2001  Free Software Foundation
+/* Copyright (C) 1999, 2000, 2001, 2002  Free Software Foundation
 
    This file is part of libgcj.
 
@@ -203,7 +203,8 @@ gnu::gcj::runtime::VMClassLoader::findClass (jstring name)
       java::lang::StringBuffer *sb = new java::lang::StringBuffer (JvNewStringLatin1("lib-"));
       jstring so_base_name = (sb->append (name)->toString ())->replace ('.', '-');
 
-      while (! klass && so_base_name && so_base_name->length() > 0)
+      // Compare against `3' because that is the length of "lib".
+      while (! klass && so_base_name && so_base_name->length() > 3)
 	{
 	  using namespace ::java::lang;
 	  Runtime *rt = Runtime::getRuntime();

@@ -1,3 +1,8 @@
+2002-04-02  Tom Tromey  <tromey@redhat.com>
+
+	* java/lang/natClassLoader.cc (findClass): Compare against `3',
+	not `0'.
+
 2002-04-02  Mark Wielaard  <mark@klomp.org>
 
 	* mauve-libgcj: add java.net.DatagramSocket.DatagramSocketTest2 to
