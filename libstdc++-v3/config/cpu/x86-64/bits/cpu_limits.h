@@ -1,6 +1,4 @@
-// Specific definitions for NetBSD  -*- C++ -*-
-
-// Copyright (C) 2000 Free Software Foundation, Inc.
+// Copyright (C) 2001 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -27,12 +25,9 @@
 // invalidate any other reasons why the executable file might be covered by
 // the GNU General Public License.
 
-#ifndef _GLIBCPP_OS_DEFINES
-#define _GLIBCPP_OS_DEFINES 1
+#ifndef _GLIBCPP_CPU_LIMITS
+#define _GLIBCPP_CPU_LIMITS 1
 
-// System-specific #define, typedefs, corrections, etc, go here.  This
-// file will come before all others.
-
-#define __ssize_t ssize_t
+#define __glibcpp_long_double_bits 80
 
 #endif

@@ -32,8 +32,6 @@
 
 // Pick up any OS-specific definitions.
 #include <bits/os_defines.h>
-// And any CPU-specific definitions.
-#include <bits/limits.h>
 
 // The current version of the C++ library in compressed ISO date format.
 #define __GLIBCPP__ 20011023
@@ -51,10 +49,6 @@
 // by the compiler, but instead instantiated into the library binary.
 #define _GLIBCPP_FULLY_COMPLIANT_HEADERS 1
 
-// Define this to permit user-level control of the expansion of string
-// buffers (via a fn pointer), see basic_string.* for more.
-//#define _GLIBCPP_ALLOC_CONTROL
-
 // To enable older, ARM-style iostreams and other anachronisms use this.
 //#define _GLIBCPP_DEPRECATED 1
 
@@ -63,6 +57,10 @@
 
 // Enable concept checking code from the boost libraries.
 //#define _GLIBCPP_CONCEPT_CHECKS 1
+
+// Define this to permit user-level control of the expansion of string
+// buffers (via a fn pointer), see basic_string.* for more.
+//#define _GLIBCPP_ALLOC_CONTROL
 
 // Map gthr.h abstraction to that required for STL.  Do not key off of
 // __GTHREADS at this point since we haven't seen the correct symbol

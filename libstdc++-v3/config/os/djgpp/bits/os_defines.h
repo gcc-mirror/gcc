@@ -29,11 +29,10 @@
 
 
 #ifndef _GLIBCPP_OS_DEFINES
-#define _GLIBCPP_OS_DEFINES
+#define _GLIBCPP_OS_DEFINES 1
 
-
-/* System-specific #define, typedefs, corrections, etc, go here.  This
-   file will come before all others. */
+// System-specific #define, typedefs, corrections, etc, go here.  This
+// file will come before all others.
 
 #define __off_t off_t
 #define __off64_t off64_t
@@ -42,3 +41,5 @@
 // FIXME: should there be '#undef POSIX_SOURCE'?
 
 #endif
+
+

@@ -1,3 +1,36 @@
+2001-10-22  Benjamin Kosnik  <bkoz@redhat.com>
+
+	* config/cpu/i386/bits/limits.h: Move to...
+	* config/cpu/i386/bits/cpu_limits.h: ...here.
+	* config/cpu/cris/bits/cpu_limits.h: Same.
+	* config/cpu/powerpc/bits/cpu_limits.h: Same.	
+	* config/cpu/x86-64/bits/cpu_limits.h: Same.		
+	* config/cpu/alpha/bits/cpu_limits.h: New.
+	* config/cpu/m68k/bits/cpu_limits.h: New.
+	* config/cpu/s390/bits/cpu_limits.h: New.
+	* config/os/aix/bits/os_defines.h: Tweaks.
+	* config/os/bsd/freebsd/bits/os_defines.h: Same.
+	* config/os/bsd/netbsd/bits/os_defines.h: Same.
+	* config/os/djgpp/bits/os_defines.h: Same.
+	* config/os/generic/bits/os_defines.h: Same.
+	* config/os/gnu-linux/bits/os_defines.h: Same.
+	* config/os/hpux/bits/os_defines.h: Same.
+	* config/os/irix/irix5.2/bits/os_defines.h: Same.
+	* config/os/irix/irix6.5/bits/os_defines.h: Same.
+	* config/os/newlib/bits/os_defines.h: Same.
+	* config/os/solaris/solaris2.5/bits/os_defines.h: Same.
+	* config/os/solaris/solaris2.6/bits/os_defines.h: Same.
+	* config/os/solaris/solaris2.7/bits/os_defines.h: Same.
+	
+	* include/bits/c++config: Remove include.	
+	* include/bits/limits_generic.h: Remove.
+	* include/bits/std_limits.h: Include cpu_limits.h.
+	* include/Makefile.am: Fixup.
+	* src/limits.cc: Tweak.
+	* src/limits_generic.cc: Remove.
+	* src/gen-num-limits.cc: Remove.
+	* mknumeric_limits: Remove.
+	
 2001-10-20  Brendan Kehoe  <brendan@zen.org>
 
 	* bits/type_traits.h (_Bool): Removed this type.

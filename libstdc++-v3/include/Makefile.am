@@ -263,7 +263,7 @@ target_headers = \
 	${target_srcdir}/ctype_noninline.h \
 	${target_srcdir}/os_defines.h \
 	${glibcpp_srcdir}/@ATOMICITY_INC_SRCDIR@/atomicity.h \
-	${glibcpp_srcdir}/@LIMITS_INC_SRCDIR@/limits.h
+	${glibcpp_srcdir}/@CPU_LIMITS_INC_SRCDIR@/cpu_limits.h 
 
 thread_builddir = ./${target_alias}/bits
 thread_headers = \

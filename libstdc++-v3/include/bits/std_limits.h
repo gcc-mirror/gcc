@@ -40,6 +40,7 @@
 
 #pragma GCC system_header
 
+#include <bits/cpu_limits.h>
 #include <bits/c++config.h>
 
 //
@@ -95,7 +96,7 @@
 #define __glibcpp_wchar_t_bits 32
 #endif
 #ifndef __glibcpp_wchar_t_is_signed
-#define __glibcpp_wchar_t_is_signed __glibcpp_plain_char_is_signed
+#define __glibcpp_wchar_t_is_signed false
 #endif
 #ifdef _GLIBCPP_USE_LONG_LONG
 #ifndef __glibcpp_long_long_bits
@@ -1139,7 +1140,7 @@ namespace std
 
 
   template<>
-  struct numeric_limits<signed char>
+    struct numeric_limits<signed char>
     {
       static const bool is_specialized = true;
 
@@ -1960,8 +1961,8 @@ namespace std
 
       static const bool traps = __glibcpp_long_double_traps; 
       static const bool tinyness_before = __glibcpp_long_double_tinyness_before;
-      static const float_round_style round_style =
-                    __glibcpp_long_double_round_style;
+      static const float_round_style round_style = 
+        __glibcpp_long_double_round_style;
     };
 
 #undef __glibcpp_long_double_min

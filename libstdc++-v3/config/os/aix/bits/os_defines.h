@@ -30,20 +30,20 @@
 #ifndef _GLIBCPP_OS_DEFINES
 #define _GLIBCPP_OS_DEFINES
 
-/* System-specific #define, typedefs, corrections, etc, go here.  This
-   file will come before all others. */
+// System-specific #define, typedefs, corrections, etc, go here.  This
+// file will come before all others.
 
 #undef _XOPEN_SOURCE
 #define _XOPEN_SOURCE 500
 #undef _XOPEN_SOURCE_EXTENDED
 #define _XOPEN_SOURCE_EXTENDED 1
 
-/* off64_t */
+// off64_t
 #ifndef _LARGE_FILE_API
 #define _LARGE_FILE_API
 #endif
 
-/* atomic types */
+// atomic types
 #ifndef _ALL_SOURCE
 #define _ALL_SOURCE
 #endif
@@ -55,10 +55,9 @@
 #undef _G_USING_THUNKS
 #define _G_USING_THUNKS 0
 
-#define __glibcpp_long_double_bits 64
-
 #if !defined(_AIX51) || !defined(__64BIT__)
 #define __glibcpp_wchar_t_bits 16
+#define __glibcpp_wchar_t_is_signed false
 #endif
 
 #ifdef __64BIT__
