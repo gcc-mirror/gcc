@@ -573,7 +573,6 @@ struct tree_type
 #else
   enum machine_mode mode : 8;
 #endif
-  unsigned char align;
   unsigned char precision;
 
   unsigned no_force_blk_flag : 1;
@@ -585,6 +584,7 @@ struct tree_type
   unsigned lang_flag_5 : 1;
   unsigned lang_flag_6 : 1;
 
+  unsigned int align;
   union tree_node *pointer_to;
   union tree_node *reference_to;
   int parse_info;
@@ -1408,8 +1408,8 @@ extern void pushlevel				PROTO((int));
      REVERSE -- reverse the order of decls before returning them.
      FUNCTIONBODY -- nonzero if this level is the body of a function.  */
 extern tree poplevel				PROTO((int, int, int));
-/* Return the BLOCK node for the current scope level.  */
-extern tree current_block			PROTO((void));
+/* Set the BLOCK node for the current scope level.  */
+extern void set_block				PROTO((tree));
 /* Function to add a decl to the current scope level.
    Takes one argument, a decl to add.
    Returns that decl, or, if the same symbol is already declared, may
