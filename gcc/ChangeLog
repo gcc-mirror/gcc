@@ -1,3 +1,7 @@
+2003-10-29  Andreas Schwab  <schwab@suse.de>
+
+	* config/ia64/t-ia64 (LIB2ADDEH): Add $(srcdir)/gthr-gnat.c.
+
 2003-10-29  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
 	* config/sparc/sparc.c (function_arg_partial_nregs) [TARGET_ARCH64]:
