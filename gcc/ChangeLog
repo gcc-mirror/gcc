@@ -1,5 +1,12 @@
 2002-12-02  Kazu Hirata  <kazu@cs.umass.edu>
 
+	* config/h8300/h8300.md (stm_h8300s_2): New.
+	(stm_h8300s_3): Likewise.
+	(stm_h8300s_4): Likewise.
+	(five define_peephole2): Likewise.
+
+2002-12-02  Kazu Hirata  <kazu@cs.umass.edu>
+
 	* ra-build.c: Fix a comment typo.
 
 2002-12-01  Kazu Hirata  <kazu@cs.umass.edu>
