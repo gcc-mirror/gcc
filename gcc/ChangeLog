@@ -1,3 +1,10 @@
+Thu Feb  4 15:12:41 1999  J"orn Rennecke <amylaar@cygnus.co.uk>
+
+	* loop.c (scan_loop): New argument loop_cont.  Changed caller.
+	(strength_reduce): New argument loop_cont. Changed caller.
+	Before clearing not_every_iteration after a label, check if
+	we are not already past LOOP_CONT.
+
 1999-02-04 16:04 -0500  Zack Weinberg  <zack@rabi.columbia.edu>
 
 	* cpperror.c (cpp_print_containing_files): Fix formatting 

@@ -291,7 +291,7 @@ static void count_loop_regs_set PROTO((rtx, rtx, varray_type, varray_type,
 				       int *, int)); 
 static void note_addr_stored PROTO((rtx, rtx));
 static int loop_reg_used_before_p PROTO((rtx, rtx, rtx, rtx, rtx));
-static void scan_loop PROTO((rtx, rtx, int, int));
+static void scan_loop PROTO((rtx, rtx, rtx, int, int));
 #if 0
 static void replace_call_address PROTO((rtx, rtx, rtx));
 #endif
@@ -305,7 +305,7 @@ static int rtx_equal_for_loop_p PROTO((rtx, rtx, struct movable *));
 static void add_label_notes PROTO((rtx, rtx));
 static void move_movables PROTO((struct movable *, int, int, rtx, rtx, int));
 static int count_nonfixed_reads PROTO((rtx));
-static void strength_reduce PROTO((rtx, rtx, rtx, int, rtx, rtx, int, int));
+static void strength_reduce PROTO((rtx, rtx, rtx, int, rtx, rtx, rtx, int, int));
 static void find_single_use_in_loop PROTO((rtx, rtx, varray_type));
 static int valid_initial_value_p PROTO((rtx, rtx, int, rtx));
 static void find_mem_givs PROTO((rtx, rtx, int, rtx, rtx));
@@ -563,7 +563,7 @@ loop_optimize (f, dumpfile, unroll_p, bct_p)
   for (i = max_loop_num-1; i >= 0; i--)
     if (! loop_invalid[i] && loop_number_loop_ends[i])
       scan_loop (loop_number_loop_starts[i], loop_number_loop_ends[i],
-		 unroll_p, bct_p);
+		 loop_number_loop_cont[i], unroll_p, bct_p);
 
   /* If debugging and unrolling loops, we must replicate the tree nodes
      corresponding to the blocks inside the loop, so that the original one
@@ -608,7 +608,8 @@ next_insn_in_loop (insn, start, end, loop_top)
 
 /* Optimize one loop whose start is LOOP_START and end is END.
    LOOP_START is the NOTE_INSN_LOOP_BEG and END is the matching
-   NOTE_INSN_LOOP_END.  */
+   NOTE_INSN_LOOP_END.
+   LOOP_CONT is the NOTE_INSN_LOOP_CONT.  */
 
 /* ??? Could also move memory writes out of loops if the destination address
    is invariant, the source is invariant, the memory write is not volatile,
@@ -617,8 +618,8 @@ next_insn_in_loop (insn, start, end, loop_top)
    write, then we can also mark the memory read as invariant.  */
 
 static void
-scan_loop (loop_start, end, unroll_p, bct_p)
-     rtx loop_start, end;
+scan_loop (loop_start, end, loop_cont, unroll_p, bct_p)
+     rtx loop_start, end, loop_cont;
      int unroll_p, bct_p;
 {
   register int i;
@@ -1165,7 +1166,7 @@ scan_loop (loop_start, end, unroll_p, bct_p)
     {
       the_movables = movables;
       strength_reduce (scan_start, end, loop_top,
-		       insn_count, loop_start, end, unroll_p, bct_p);
+		       insn_count, loop_start, end, loop_cont, unroll_p, bct_p);
     }
 
   VARRAY_FREE (set_in_loop);
@@ -3631,17 +3632,19 @@ static rtx addr_placeholder;
    SCAN_START is the first instruction in the loop, as the loop would
    actually be executed.  END is the NOTE_INSN_LOOP_END.  LOOP_TOP is
    the first instruction in the loop, as it is layed out in the
-   instruction stream.  LOOP_START is the NOTE_INSN_LOOP_BEG.  */
+   instruction stream.  LOOP_START is the NOTE_INSN_LOOP_BEG.
+   LOOP_CONT is the NOTE_INSN_LOOP_CONT.  */
 
 static void
 strength_reduce (scan_start, end, loop_top, insn_count,
-		 loop_start, loop_end, unroll_p, bct_p)
+		 loop_start, loop_end, loop_cont, unroll_p, bct_p)
      rtx scan_start;
      rtx end;
      rtx loop_top;
      int insn_count;
      rtx loop_start;
      rtx loop_end;
+     rtx loop_cont;
      int unroll_p, bct_p ATTRIBUTE_UNUSED;
 {
   rtx p;
@@ -3834,7 +3837,8 @@ strength_reduce (scan_start, end, loop_top, insn_count,
 	 will be executed each iteration.  */
 
       if (not_every_iteration && GET_CODE (p) == CODE_LABEL
-	  && no_labels_between_p (p, loop_end))
+	  && no_labels_between_p (p, loop_end)
+	  && insn_first_p (p, loop_cont))
 	not_every_iteration = 0;
     }
 
@@ -4101,8 +4105,7 @@ strength_reduce (scan_start, end, loop_top, insn_count,
   first_increment_giv = max_reg_num ();
   for (n_extra_increment = 0, bl = loop_iv_list; bl; bl = bl->next)
     n_extra_increment += bl->biv_count - 1;
-  /* XXX Temporary.  */
-  if (0 && n_extra_increment)
+  if (n_extra_increment)
     {
       int nregs = first_increment_giv + n_extra_increment;
 
@@ -4391,7 +4394,8 @@ strength_reduce (scan_start, end, loop_top, insn_count,
 	 will be executed each iteration.  */
 
       if (not_every_iteration && GET_CODE (p) == CODE_LABEL
-	  && no_labels_between_p (p, loop_end))
+	  && no_labels_between_p (p, loop_end)
+	  && insn_first_p (p, loop_cont))
 	not_every_iteration = 0;
     }
 
@@ -4588,8 +4592,6 @@ strength_reduce (scan_start, end, loop_top, insn_count,
 	    }
 	}
 
-#if 0
-      /* XXX Temporary.  */
       /* Now that we know which givs will be reduced, try to rearrange the
          combinations to reduce register pressure.
          recombine_givs calls find_life_end, which needs reg_iv_type and
@@ -4608,7 +4610,6 @@ strength_reduce (scan_start, end, loop_top, insn_count,
 	  VARRAY_GROW (reg_iv_info, nregs);
 	}
       recombine_givs (bl, loop_start, loop_end, unroll_p);
-#endif
 
       /* Reduce each giv that we decided to reduce.  */
 
