@@ -59,24 +59,36 @@ public class GtkFramePeer extends GtkWindowPeer
 
   native void setMenuBarPeer (MenuBarPeer bar);
   native void removeMenuBarPeer (MenuBarPeer bar);
+  native void moveLayout (int offset);
 
   public void setMenuBar (MenuBar bar)
   {
-    if (bar == null && menuBar != null)
+    if (bar == null)
     {    
-      removeMenuBarPeer(menuBar); 
-      menuBar = null;
-      insets.top -= menuBarHeight;
-      menuBarHeight = 0;      
-      awtComponent.doLayout();
-    }
-    else if (bar != null)
-    {
       if (menuBar != null)
+      {
+        removeMenuBarPeer(menuBar); 
+        menuBar = null;
+        moveLayout(menuBarHeight);
+        insets.top -= menuBarHeight;
+        menuBarHeight = 0;      
+        awtComponent.doLayout();
+      }
+    }
+    else
+    {
+      int oldHeight = 0;
+      if (menuBar != null)
+      {
         removeMenuBarPeer(menuBar);
+        oldHeight = menuBarHeight;
+        insets.top -= menuBarHeight;
+      }
       menuBar = (MenuBarPeer) ((MenuBar) bar).getPeer();
-      setMenuBarPeer(menuBar);      
+      setMenuBarPeer(menuBar);
       menuBarHeight = getMenuBarHeight (menuBar);
+      if (oldHeight != menuBarHeight)
+        moveLayout(oldHeight-menuBarHeight);
       insets.top += menuBarHeight;
       awtComponent.doLayout();
     }

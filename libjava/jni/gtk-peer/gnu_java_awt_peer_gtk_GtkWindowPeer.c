@@ -433,6 +433,46 @@ Java_gnu_java_awt_peer_gtk_GtkFramePeer_getMenuBarHeight
   return height;
 }
 
+JNIEXPORT void JNICALL
+Java_gnu_java_awt_peer_gtk_GtkFramePeer_moveLayout
+  (JNIEnv *env, jobject obj, jint offset)
+{
+  void* ptr;
+  GList* children;
+  GtkBox* vbox;
+  GtkLayout* layout;
+  GtkWidget* widget;
+
+  ptr = NSA_GET_PTR (env, obj);
+
+  gdk_threads_enter ();
+
+  children = gtk_container_get_children (GTK_CONTAINER (ptr));
+  vbox = children->data;
+  g_assert (GTK_IS_VBOX (vbox));
+
+  children = gtk_container_get_children (GTK_CONTAINER (vbox));
+  do
+  {
+    layout = children->data;
+    children = children->next;
+  }
+  while (!GTK_IS_LAYOUT (layout) && children != NULL);
+  g_assert (GTK_IS_LAYOUT (layout));  
+  children = gtk_container_get_children (GTK_CONTAINER (layout));
+  
+  while (children != NULL)
+  {
+    widget = children->data;
+    gtk_layout_move (layout, widget, widget->allocation.x,
+                     widget->allocation.y+offset);
+    children = children->next;
+  }
+  
+  gdk_threads_leave ();
+}
+  
+
 static void
 window_get_frame_extents (GtkWidget *window,
                           int *top, int *left, int *bottom, int *right)
