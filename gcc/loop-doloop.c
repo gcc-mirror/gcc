@@ -292,7 +292,7 @@ doloop_modify (struct loop *loop, struct niter_desc *desc,
   if (GET_CODE (counter_reg) == PLUS)
     counter_reg = XEXP (counter_reg, 0);
 
-  count = desc->niter_expr;
+  count = copy_rtx (desc->niter_expr);
   increment_count = false;
   switch (GET_CODE (condition))
     {
@@ -345,7 +345,7 @@ doloop_modify (struct loop *loop, struct niter_desc *desc,
 
   if (desc->noloop_assumptions)
     {
-      rtx ass = desc->noloop_assumptions;
+      rtx ass = copy_rtx (desc->noloop_assumptions);
       basic_block preheader = loop_preheader_edge (loop)->src;
       basic_block set_zero
 	      = loop_split_edge_with (loop_preheader_edge (loop), NULL_RTX);
