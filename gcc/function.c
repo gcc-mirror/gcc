@@ -3552,13 +3552,20 @@ identify_blocks (top_block, insns)
      tree top_block;
      rtx insns;
 {
-  int n_blocks = all_blocks (top_block, 0);
-  tree *block_vector = (tree *) alloca (n_blocks * sizeof (tree));
-  int *block_stack = (int *) alloca (n_blocks * sizeof (int));
+  int n_blocks;
+  tree *block_vector;
+  int *block_stack;
   int depth = 0;
   int next_block_number = 0;
   int current_block_number = 0;
   rtx insn;
+
+  if (top_block == 0)
+    return 0;
+
+  n_blocks = all_blocks (top_block, 0);
+  block_vector = (tree *) xmalloc (n_blocks * sizeof (tree));
+  block_stack = (int *) alloca (n_blocks * sizeof (int));
 
   all_blocks (top_block, block_vector);
 
@@ -3584,15 +3591,23 @@ identify_blocks (top_block, insns)
 /* Given BLOCK_VECTOR which was returned by identify_blocks,
    and a revised instruction chain, rebuild the tree structure
    of BLOCK nodes to correspond to the new order of RTL.
+   The new block tree is inserted below TOP_BLOCK.
    Returns the current top-level block.  */
 
 tree
-reorder_blocks (block_vector, insns)
+reorder_blocks (block_vector, top_block, insns)
      tree *block_vector;
+     tree top_block;
      rtx insns;
 {
-  tree current_block = block_vector[0];
+  tree current_block = top_block;
   rtx insn;
+
+  if (block_vector == 0)
+    return top_block;
+
+  /* Prune the old tree away, so that it doesn't get in the way.  */
+  BLOCK_SUBBLOCKS (current_block) = 0;
 
   for (insn = insns; insn; insn = NEXT_INSN (insn))
     if (GET_CODE (insn) == NOTE)
@@ -3603,8 +3618,7 @@ reorder_blocks (block_vector, insns)
 	    /* If we have seen this block before, copy it.  */
 	    if (TREE_ASM_WRITTEN (block))
 	      block = copy_node (block);
-	    else
-	      BLOCK_SUBBLOCKS (block) = 0;
+	    BLOCK_SUBBLOCKS (block) = 0;
 	    TREE_ASM_WRITTEN (block) = 1;
 	    BLOCK_SUPERCONTEXT (block) = current_block; 
 	    BLOCK_CHAIN (block) = BLOCK_SUBBLOCKS (current_block);
@@ -3654,12 +3668,13 @@ all_blocks (block, vector)
 
   TREE_ASM_WRITTEN (block) = 0;
   /* Record this block.  */
-  vector[n_blocks++] = block;
+  if (vector)
+    vector[0] = block;
 
   /* Record the subblocks, and their subblocks.  */
   for (subblocks = BLOCK_SUBBLOCKS (block);
        subblocks; subblocks = BLOCK_CHAIN (subblocks))
-    n_blocks += all_blocks (subblocks, vector + n_blocks);
+    n_blocks += all_blocks (subblocks, vector ? vector + n_blocks : 0);
 
   return n_blocks;
 }
