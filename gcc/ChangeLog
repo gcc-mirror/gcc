@@ -1,3 +1,10 @@
+2004-12-23  Kaz Kojima  <kkojima@gcc.gnu.org>
+
+	PR target/18511
+	* reload1.c (emit_output_reload_insns): Check if OLD is a hard
+	register before calling regno_clobbered_p.
+	* reload.c: Update comment for regno_clobbered_p.
+
 2004-12-22  Richard Henderson  <rth@redhat.com>
 
 	* config/i386/i386.c (override_options): Respect user disable of

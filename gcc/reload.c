@@ -6940,7 +6940,8 @@ find_inc_amount (rtx x, rtx inced)
 }
 
 /* Return 1 if register REGNO is the subject of a clobber in insn INSN.
-   If SETS is nonzero, also consider SETs.  */
+   If SETS is nonzero, also consider SETs.  REGNO must refer to a hard
+   register.  */
 
 int
 regno_clobbered_p (unsigned int regno, rtx insn, enum machine_mode mode,
