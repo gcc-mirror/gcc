@@ -39,7 +39,6 @@ Boston, MA 02111-1307, USA.  */
 #include "optabs.h"
 #include "libfuncs.h"
 #include "reload.h"
-#include "c-tree.h"
 #include "integrate.h"
 #include "function.h"
 #include "obstack.h"
