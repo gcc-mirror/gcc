@@ -1,3 +1,8 @@
+2000-06-13  J. David Anglin  <dave@hiauly1.hia.nrc.ca>
+
+	* vax.h (INDEX_TERM_P): Define evaluation order of &&'s in || and
+	cast to squelch signed/unsigned warnings.
+
 2000-06-13  Zack Weinberg  <zack@wolery.cumb.org>
 
 	* cpplib.c (handle_directive): Print non-NUL-terminated string
