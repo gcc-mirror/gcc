@@ -84,7 +84,7 @@ extern int *reg_n_calls_crossed;
    -1 is used to mark a pseudo reg which has a constant or memory equivalent
    and is used infrequently enough that it should not get a hard register.
    -2 is used to mark a pseudo reg for a parameter, when a frame pointer
-   is not required.  global-alloc.c makes an allocno for this but does
+   is not required.  global.c makes an allocno for this but does
    not try to assign a hard register to it.  */
 
 extern int *reg_live_length;
