@@ -1,3 +1,8 @@
+2003-06-03  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* flow.c (initialize_uninitialized_subregs): Use
+	emit_move_insn instead of emitting a hardcoded move.
+
 2003-06-03  Richard Henderson  <rth@redhat.com>
 
 	* optabs.c (expand_abs_nojump): Split out from ...

@@ -1484,8 +1484,11 @@ initialize_uninitialized_subregs ()
 	      for_each_rtx (&i, find_regno_partial, &param);
 	      if (param.retval != NULL_RTX)
 		{
-		  insn = gen_move_insn (param.retval,
-				        CONST0_RTX (GET_MODE (param.retval)));
+		  start_sequence ();
+		  emit_move_insn (param.retval,
+				  CONST0_RTX (GET_MODE (param.retval)));
+		  insn = get_insns ();
+		  end_sequence ();
 		  insert_insn_on_edge (insn, e);
 		  did_something = 1;
 		}
