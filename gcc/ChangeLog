@@ -1,3 +1,8 @@
+Mon Oct  5 01:01:42 1998  Zack Weinberg  <zack@rabi.phys.columbia.edu>  
+
+	* cpplib.c (macroexpand): Correct off-by-one error in handling
+	of escapes.
+
 Sun Oct  4 23:58:30 1998  Richard Henderson  <rth@cygnus.com>
 
 	* combine.c (expand_field_assignment): Don't do bitwise operations

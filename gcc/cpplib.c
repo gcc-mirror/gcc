@@ -2888,8 +2888,8 @@ macroexpand (pfile, hp)
 			  /* If whitespace is preceded by an odd number
 			     of `@' signs, the last `@' was a whitespace
 			     marker; drop it too. */
-			  while (p2 != p1 && p2[-1] == '@') p2--;
-			  if ((l1 - 1 - p2) & 1)
+			  while (p2 != p1 && p2[0] == '@') p2--;
+			  if ((l1 - p2) & 1)
 			    l1--;
 			  break;
 			}
@@ -2899,8 +2899,8 @@ macroexpand (pfile, hp)
 			  /* If a `-' is preceded by an odd number of
 			     `@' signs then it and the last `@' are
 			     a no-reexpansion marker.  */
-			  while (p2 != p1 && p2[-1] == '@') p2--;
-			  if ((l1 - 1 - p2) & 1)
+			  while (p2 != p1 && p2[0] == '@') p2--;
+			  if ((l1 - p2) & 1)
 			    l1 -= 2;
 			  else
 			    break;
