@@ -1,3 +1,8 @@
+2002-03-09  Bryce McKinlay  <bryce@waitaki.otago.ac.nz>
+
+	* include/gc_priv.h: Define ALIGN_DOUBLE on 32 bit targets if GCJ 
+	support is enabled, for hash synchronization.
+
 2002-02-24  Adam Megacz  <adam@xwt.org>
 
 	* Makefile.am: Added win32_threads.c to sources list.

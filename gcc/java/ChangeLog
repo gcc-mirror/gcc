@@ -1,3 +1,8 @@
+2002-03-09  Bryce McKinlay  <bryce@waitaki.otago.ac.nz>
+
+	* decl.c (java_init_decl_processing): Make sure class_type_node
+	alignment is not less than 64 bits if hash synchronization is enabled.
+
 2002-03-08  Per Bothner  <per@bothner.com>
 
 	* parse.y (java_complete_lhs):  Check if patch_assignment

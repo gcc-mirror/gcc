@@ -586,9 +586,10 @@ _Jv_NewMultiArray (jclass array_type, jint dimensions, ...)
 
 
 
+// Ensure 8-byte alignment, for hash synchronization.
 #define DECLARE_PRIM_TYPE(NAME)			\
   _Jv_ArrayVTable _Jv_##NAME##VTable;		\
-  java::lang::Class _Jv_##NAME##Class;
+  java::lang::Class _Jv_##NAME##Class __attribute__ ((aligned (8)));
 
 DECLARE_PRIM_TYPE(byte);
 DECLARE_PRIM_TYPE(short);

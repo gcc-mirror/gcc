@@ -683,6 +683,10 @@ java_init_decl_processing ()
     FIELD_PRIVATE (t) = 1;
   push_super_field (class_type_node, object_type_node);
 
+  /* Hash synchronization requires at least 64-bit alignment. */
+  if (flag_hash_synchronization)
+    TYPE_ALIGN (class_type_node) = 64;
+
   FINISH_RECORD (class_type_node);
   build_decl (TYPE_DECL, get_identifier ("Class"), class_type_node);
 

@@ -205,6 +205,12 @@ typedef char * ptr_t;	/* A generic pointer to which we can add	*/
    /* odd numbered words to have mark bits.				*/
 #endif
 
+#if defined(GC_GCJ_SUPPORT) && ALIGNMENT < 8 && !defined(ALIGN_DOUBLE)
+   /* GCJ's Hashtable synchronization code requires 64-bit alignment.	*/
+#  define ALIGN_DOUBLE
+#endif
+
+
 /* ALIGN_DOUBLE requires MERGE_SIZES at present. */
 # if defined(ALIGN_DOUBLE) && !defined(MERGE_SIZES)
 #   define MERGE_SIZES

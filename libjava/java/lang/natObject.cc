@@ -307,128 +307,7 @@ _Jv_MonitorExit (jobject obj)
 #include <unistd.h>	// for usleep, sysconf.
 #include <sched.h>	// for sched_yield.
 #include <gcj/javaprims.h>
-
-typedef size_t obj_addr_t;	/* Integer type big enough for object	*/
-				/* address.				*/
-
-// The following should move to some standard place. Linux-threads
-// already defines roughly these, as do more recent versions of boehm-gc.
-// The problem is that neither exports them.
-
-#if defined(__GNUC__) && defined(__i386__)
-  // Atomically replace *addr by new_val if it was initially equal to old.
-  // Return true if the comparison succeeded.
-  // Assumed to have acquire semantics, i.e. later memory operations
-  // cannot execute before the compare_and_swap finishes.
-  inline static bool
-  compare_and_swap(volatile obj_addr_t *addr,
-		  				obj_addr_t old,
-						obj_addr_t new_val) 
-  {
-    char result;
-    __asm__ __volatile__("lock; cmpxchgl %2, %0; setz %1"
-	    	: "+m"(*(addr)), "=q"(result)
-		: "r" (new_val), "a"(old)
-		: "memory");
-    return (bool) result;
-  }
-
-  // Set *addr to new_val with release semantics, i.e. making sure
-  // that prior loads and stores complete before this
-  // assignment.
-  // On X86, the hardware shouldn't reorder reads and writes,
-  // so we just have to convince gcc not to do it either.
-  inline static void
-  release_set(volatile obj_addr_t *addr, obj_addr_t new_val)
-  {
-    __asm__ __volatile__(" " : : : "memory");
-    *(addr) = new_val;
-  }
-
-  // Compare_and_swap with release semantics instead of acquire semantics.
-  // On many architecture, the operation makes both guarantees, so the
-  // implementation can be the same.
-  inline static bool
-  compare_and_swap_release(volatile obj_addr_t *addr,
-		  				       obj_addr_t old,
-						       obj_addr_t new_val)
-  {
-    return compare_and_swap(addr, old, new_val);
-  }
-#endif
-
-#if defined(__GNUC__) && defined(__ia64__) && SIZEOF_VOID_P == 8
-  inline static bool
-  compare_and_swap(volatile obj_addr_t *addr,
-	 				        obj_addr_t old,
-						obj_addr_t new_val) 
-  {
-    unsigned long oldval;
-    __asm__ __volatile__("mov ar.ccv=%4 ;; cmpxchg8.acq %0=%1,%2,ar.ccv"
-		: "=r"(oldval), "=m"(*addr)
-		: "r"(new_val), "1"(*addr), "r"(old) : "memory");
-    return (oldval == old);
-  }
-
-  // The fact that *addr is volatile should cause the compiler to
-  // automatically generate an st8.rel.
-  inline static void
-  release_set(volatile obj_addr_t *addr, obj_addr_t new_val)
-  {
-    __asm__ __volatile__(" " : : : "memory");
-    *(addr) = new_val;
-  }
-
-  inline static bool
-  compare_and_swap_release(volatile obj_addr_t *addr,
-	 				               obj_addr_t old,
-						       obj_addr_t new_val) 
-  {
-    unsigned long oldval;
-    __asm__ __volatile__("mov ar.ccv=%4 ;; cmpxchg8.rel %0=%1,%2,ar.ccv"
-		: "=r"(oldval), "=m"(*addr)
-		: "r"(new_val), "1"(*addr), "r"(old) : "memory");
-    return (oldval == old);
-  }
-#endif
-
-#if defined(__GNUC__) && defined(__alpha__)
-  inline static bool
-  compare_and_swap(volatile obj_addr_t *addr,
-		  				obj_addr_t old,
-						obj_addr_t new_val) 
-  {
-    unsigned long oldval;
-    char result;
-    __asm__ __volatile__(
-	"1:ldq_l %0, %1\n\t" \
-	"cmpeq %0, %5, %2\n\t" \
-	"beq %2, 2f\n\t" \
-	"mov %3, %0\n\t" \
-	"stq_c %0, %1\n\t" \
-	"bne %0, 2f\n\t" \
-	"br 1b\n\t" \
-	"2:mb"
-	    	: "=&r"(oldval), "=m"(*addr), "=&r"(result)
-		: "r" (new_val), "m"(*addr), "r"(old) : "memory");
-    return (bool) result;
-  }
-
-  inline static void
-  release_set(volatile obj_addr_t *addr, obj_addr_t new_val)
-  {
-    __asm__ __volatile__("mb" : : : "memory");
-    *(addr) = new_val;
-  }
-
-  inline static bool
-  compare_and_swap_release(volatile obj_addr_t *addr,
-		  				       obj_addr_t old,
-						       obj_addr_t new_val)
-  {
-    return compare_and_swap(addr, old, new_val);
-  }
-#endif
+#include <sysdep/locks.h>
 
 // Try to determine whether we are on a multiprocessor, i.e. whether
 // spinning may be profitable.
@@ -452,7 +331,6 @@ keep_live(obj_addr_t p)
 {
     __asm__ __volatile__("" : : "rm"(p) : "memory");
 }
-
 
 // Each hash table entry holds a single preallocated "lightweight" lock.
 // In addition, it holds a chain of "heavyweight" locks.  Lightweight

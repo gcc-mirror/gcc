@@ -1,3 +1,27 @@
+2002-03-09  Bryce McKinlay  <bryce@waitaki.otago.ac.nz>
+
+	Hashtable synchronization for PowerPC.
+	* configure.in: Define SLOW_PTHREAD_SELF if configure.host set
+	slow_pthread_self. Set up symlink for sysdeps directory.
+	* configure: Rebuild.
+	* configure.host: Document more shell variables. Set sysdeps_dir
+	for most platforms. Set slow_pthread_self for i686. Set 
+	enable_hash_synchronization_default and slow_pthread_self for PowerPC. 
+	* posix-threads.cc (_Jv_ThreadSelf_out_of_line): Use release_set so
+	that memory barrier is emitted where required.
+	* prims.cc: 64-bit align static primitive class instances.
+	* include/posix-threads.h (_Jv_ThreadSelf for SLOW_PTHREAD_SELF): Add
+	read_barrier() to enforce ordering of reads.
+	* sysdep/powerpc/locks.h: New file. Implementation of synchronization
+	primitives for PowerPC.
+	* sysdep/i386/locks.h: New file. Synchronization primitives for i386 
+	moved from natObject.cc.
+	* sysdep/alpha/locks.h: Likewise.
+	* sysdep/ia64/locks.h: Likewise.
+	* sysdep/generic/locks.h: Likewise.
+	* java/lang/natObject.cc: Move thread synchronization primitives to
+	system-dependent headers.
+
 2002-03-09  Adam Megacz  <adam@xwt.org>
 
         * win32.cc (_CRT_MT, __mingwthr_key_dtor) Added fake
