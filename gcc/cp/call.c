@@ -3422,7 +3422,7 @@ build_over_call (cand, args, flags)
 
   mark_used (fn);
 
-  if (DECL_CONTEXT (fn) && IS_SIGNATURE (DECL_CONTEXT (fn)))
+  if (DECL_CLASS_SCOPE_P (fn) && IS_SIGNATURE (DECL_CONTEXT (fn)))
     return build_signature_method_call (fn, converted_args);
   else if (DECL_VINDEX (fn) && (flags & LOOKUP_NONVIRTUAL) == 0)
     {
