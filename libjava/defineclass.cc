@@ -35,7 +35,6 @@ details.  */
 #include <java/lang/ClassFormatError.h>
 #include <java/lang/NoClassDefFoundError.h>
 #include <java/lang/ClassCircularityError.h>
-#include <java/lang/ClassNotFoundException.h>
 #include <java/lang/IncompatibleClassChangeError.h>
 #include <java/lang/reflect/Modifier.h>
 
