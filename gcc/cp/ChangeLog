@@ -1,3 +1,11 @@
+1998-11-23  Benjamin Kosnik  <bkoz@cygnus.com>
+
+        * method.c (process_overload_item): Add call to
+        build_mangled_C9x_name for intTI_type_nodes.
+        (build_mangled_C9x_name): Add prototype, define.
+        * decl.c (init_decl_processing): Add names for
+        TImode_type_node. 
+	
 1998-11-23  Jason Merrill  <jason@yorick.cygnus.com>
 
 	* parse.y (named_class_head): Update CLASSTYPE_DECLARED_CLASS.
