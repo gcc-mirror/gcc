@@ -223,7 +223,7 @@
 2004-11-10  James A. Morrison  <phython@gcc.gnu.org>
 
 	PR target/18230
-	(addsi3, subsi3): Set "fptype" attribute.
+	config/sparc/sparc.md (addsi3, subsi3): Set "fptype" attribute.
 	(addv2si, addv4hi, addv2hi, subv2si, subv4hi, subv2hi): New patterns.
 
 2004-11-10  Steven Bosscher  <stevenb@suse.de>
