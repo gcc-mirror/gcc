@@ -212,8 +212,8 @@ expand_complex_div_wide (block_stmt_iterator *bsi, tree inner_type,
       e->flags = EDGE_TRUE_VALUE;
       redirect_edge_succ (e, bb_true);
       make_edge (bb_cond, bb_false, EDGE_FALSE_VALUE);
-      make_edge (bb_true, bb_join, 0);
-      make_edge (bb_false, bb_join, 0);
+      make_edge (bb_true, bb_join, EDGE_FALLTHRU);
+      make_edge (bb_false, bb_join, EDGE_FALLTHRU);
 
       /* Update dominance info.  Note that bb_join's data was
          updated by split_block.  */
