@@ -1689,22 +1689,22 @@ namespace std
       char* __cs = static_cast<char*>(__builtin_alloca(__cs_size));
       // _GLIBCXX_RESOLVE_LIB_DEFECTS
       // 328. Bad sprintf format modifier in money_put<>::do_put()
-      int __len = std::__convert_from_v(__cs, __cs_size, "%.0Lf", __units,
-					_S_get_c_locale());
+      int __len = std::__convert_from_v(__cs, __cs_size, "%.*Lf", __units,
+					_S_get_c_locale(), 0);
       // If the buffer was not large enough, try again with the correct size.
       if (__len >= __cs_size)
 	{
 	  __cs_size = __len + 1;
 	  __cs = static_cast<char*>(__builtin_alloca(__cs_size));
-	  __len = std::__convert_from_v(__cs, __cs_size, "%.0Lf", __units,
-					_S_get_c_locale());
+	  __len = std::__convert_from_v(__cs, __cs_size, "%.*Lf", __units,
+					_S_get_c_locale(), 0);
 	}
 #else
       // max_exponent10 + 1 for the integer part, + 2 for sign and '\0'.
       const int __cs_size = numeric_limits<long double>::max_exponent10 + 3;
       char* __cs = static_cast<char*>(__builtin_alloca(__cs_size));
-      int __len = std::__convert_from_v(__cs, 0, "%.0Lf", __units,
-					_S_get_c_locale());
+      int __len = std::__convert_from_v(__cs, 0, "%.*Lf", __units,
+					_S_get_c_locale(), 0);
 #endif
       _CharT* __ws = static_cast<_CharT*>(__builtin_alloca(sizeof(_CharT)
 							   * __cs_size));
