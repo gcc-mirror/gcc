@@ -1,3 +1,9 @@
+1999-07-01  Andrew Haley  <aph@cygnus.com>
+
+        * include/i386-signal.h: Replace sigaction () with __sigaction ().
+        This is a workaround for a bug in glibc's pthreads package which
+        doesn't deliver any sigcontext information to a signal handler.
+
 1999-06-24  Tom Tromey  <tromey@cygnus.com>
 
 	* java/lang/e_asin.c: Don't use __int32_t or __uint32_t.
