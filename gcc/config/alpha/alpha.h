@@ -46,12 +46,15 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 
 /* Right now Alpha OSF/1 doesn't seem to have debugging libraries.  */
 
-#define LIB_SPEC "%{p:-lprof1} -lc"
+#define LIB_SPEC "%{p:-lprof1} %{pg:-lprof2} -lc"
 
 /* Pass "-G 8" to ld because Alpha's CC does.  Pass -O3 if we are optimizing,
    -O1 if we are not.  Pass -non_shared or -call_shared as appropriate.  */
 #define LINK_SPEC  \
   "-G 8 %{O*:-O3} %{!O*:-O1} %{static:-non_shared} %{!static:-call_shared}"
+
+#define STARTFILE_SPEC  \
+  "%{pg:mcrt0.o%s}%{!pg:%{p:mcrt0.o%s}%{!p:crt0.o%s}}"
 
 /* Print subsidiary information on the compiler version in use.  */
 #define TARGET_VERSION
@@ -900,9 +903,56 @@ extern char *alpha_function_name;
 #define FUNCTION_PROLOGUE(FILE, SIZE)  output_prolog (FILE, SIZE)
 
 /* Output assembler code to FILE to increment profiler label # LABELNO
-   for profiling a function entry.  */
+   for profiling a function entry.  Profiling for gprof does not
+   require LABELNO so we don't reference it at all.  This does,
+   however, mean that -p won't work.  But OSF/1 doesn't support the
+   traditional prof anyways, so there is no good reason to be
+   backwards compatible. */
 
-#define FUNCTION_PROFILER(FILE, LABELNO)
+#define FUNCTION_PROFILER(FILE, LABELNO)			\
+    do {							\
+	fputs ("\tlda $27,_mcount\n"				\
+	       "\tjsr $27,($27),_mcount\n"			\
+	       "\tldgp $29,0($26)\n", (FILE));			\
+    } while (0);
+
+
+/* Output assembler code to FILE to initialize this source file's
+   basic block profiling info, if that has not already been done.
+   This assumes that __bb_init_func doesn't garble a1-a5. */
+
+#define FUNCTION_BLOCK_PROFILER(FILE, LABELNO)			\
+    do {							\
+	ASM_OUTPUT_REG_PUSH (FILE, 16);				\
+	fputs (	 "\tlda $16,$PBX32\n"				\
+		 "\tldq $26,0($16)\n"				\
+		 "\tbne $26,1f\n"				\
+		 "\tlda $27,__bb_init_func\n"			\
+		 "\tjsr $26,($27),__bb_init_func\n"		\
+		 "\tldgp $29,0($26)\n"				\
+		 "1:\n", (FILE));				\
+	ASM_OUTPUT_REG_POP (FILE, 16);				\
+    } while (0);
+
+/* Output assembler code to FILE to increment the entry-count for
+   the BLOCKNO'th basic block in this source file.  */
+
+#define BLOCK_PROFILER(FILE, BLOCKNO)				\
+    do {							\
+	int blockn = (BLOCKNO);					\
+	fprintf (FILE,						\
+		 "\tsubq $30,16,$30\n"				\
+		 "\tstq $0,0($30)\n"				\
+		 "\tstq $1,8($30)\n"				\
+		 "\tlda $0,$PBX34\n"				\
+		 "\tldq $1,%d($0)\n"				\
+		 "\taddq $1,1,$1\n"				\
+		 "\tstq $1,%d($0)\n"				\
+		 "\tldq $0,0($30)\n"				\
+		 "\tldq $1,8($30)\n"				\
+		 "\taddq $30,16,$30\n", 8*blockn, 8*blockn);	\
+    } while (0)
+
 
 /* EXIT_IGNORE_STACK should be nonzero if, when returning from a function,
    the stack pointer does not matter.  The value is tested only in
