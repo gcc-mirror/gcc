@@ -99,7 +99,7 @@ GCC_CFLAGS=$(INTERNAL_CFLAGS) $(X_CFLAGS) $(T_CFLAGS) $(CFLAGS) -B./ -B$(tooldir
 
 # Special flags for compiling enquire.
 # We disable optimization to make floating point more reliable.
-ENQUIRE_CFLAGS = -DNO_SC -DNO_MEM -DNO_STDDEF -O0
+ENQUIRE_CFLAGS = -DNO_SC -DNO_MEM -DNO_STDDEF -DNO_LONG_DOUBLE_IO -O0
 ENQUIRE_LDFLAGS = $(LDFLAGS)
 
 # Tools to use when building a cross-compiler.
@@ -685,6 +685,7 @@ cp-parse.o : $(srcdir)/cp-parse.c $(CONFIG_H) $(CPLUS_TREE_H) flags.h
 $(srcdir)/cp-parse.c $(srcdir)/cp-parse.h : $(srcdir)/cp-parse.y
 	@echo expect 30 shift/reduce conflicts and 14 reduce/reduce conflicts
 	cd $(srcdir); $(BISON) $(BISONFLAGS) -d -o cp-parse.c cp-parse.y
+	cd $(srcdir); grep '^#define[ 	]*YYEMPTY' cp-parse.c >>cp-parse.y
 
 cp-spew.o : cp-spew.c $(CONFIG_H) $(CPLUS_TREE_H) \
    $(srcdir)/cp-parse.h flags.h
@@ -795,7 +796,7 @@ dbxout.o : dbxout.c $(CONFIG_H) $(TREE_H) $(RTL_H) flags.h regs.h \
 sdbout.o : sdbout.c $(CONFIG_H) $(TREE_H) $(RTL_H) gsyms.h flags.h \
    insn-config.h reload.h
 dwarfout.o : dwarfout.c $(CONFIG_H) $(TREE_H) $(RTL_H) dwarf.h flags.h \
-   insn-config.h reload.h output.h
+   insn-config.h reload.h output.h defaults.h
 xcoffout.o : xcoffout.c $(CONFIG_H) $(TREE_H) $(RTL_H) xcoffout.h flags.h
 emit-rtl.o : emit-rtl.c $(CONFIG_H) $(RTL_H) flags.h gvarargs.h function.h  \
    regs.h insn-config.h insn-codes.h real.h expr.h
