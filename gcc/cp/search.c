@@ -1368,8 +1368,24 @@ lookup_fnfields_1 (tree type, tree name)
   if (!CLASS_TYPE_P (type))
     return -1;
 
-  method_vec = CLASSTYPE_METHOD_VEC (type);
+  if (COMPLETE_TYPE_P (type))
+    {
+      if ((name == ctor_identifier
+	   || name == base_ctor_identifier
+	   || name == complete_ctor_identifier))
+	{
+	  if (CLASSTYPE_LAZY_DEFAULT_CTOR (type))
+	    lazily_declare_fn (sfk_constructor, type);
+	  if (CLASSTYPE_LAZY_COPY_CTOR (type))
+	    lazily_declare_fn (sfk_copy_constructor, type);
+	}
+      else if (name == ansi_assopname(NOP_EXPR)
+	       && !TYPE_HAS_ASSIGN_REF (type)
+	       && !TYPE_FOR_JAVA (type))
+	lazily_declare_fn (sfk_assignment_operator, type);
+    }
 
+  method_vec = CLASSTYPE_METHOD_VEC (type);
   if (!method_vec)
     return -1;
 
@@ -1404,24 +1420,6 @@ lookup_fnfields_1 (tree type, tree name)
     {
       int lo;
       int hi;
-
-      /* All non-Java classes have "operator=" -- but we do not
-	 actually create the declaration until it is needed.  */
-      if (name == ansi_assopname(NOP_EXPR)
-	  && !TYPE_HAS_ASSIGN_REF (type)
-	  && !TYPE_FOR_JAVA (type))
-	{
-	  tree fn;
-
-	  /* Declare the function.  */
-	  fn = implicitly_declare_fn (sfk_assignment_operator, type,
-				      TYPE_HAS_CONST_ASSIGN_REF (type));
-	  add_method (type, fn);
-	  TREE_CHAIN (fn) = TYPE_METHODS (type);
-	  TYPE_METHODS (type) = fn;
-	  maybe_add_class_template_decl_list (type, fn, /*friend_p=*/0);
-	  method_vec = CLASSTYPE_METHOD_VEC (type);
-	}
 
       lo = i;
       hi = VEC_length (tree, method_vec);
@@ -1788,6 +1786,12 @@ tree
 look_for_overrides_here (tree type, tree fndecl)
 {
   int ix;
+
+  /* If there are no methods in TYPE (meaning that only implicitly
+     declared methods will ever be provided for TYPE), then there are
+     no virtual functions.  */
+  if (!CLASSTYPE_METHOD_VEC (type))
+    return NULL_TREE;
 
   if (DECL_MAYBE_IN_CHARGE_DESTRUCTOR_P (fndecl))
     ix = CLASSTYPE_DESTRUCTOR_SLOT;
