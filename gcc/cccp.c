@@ -9890,8 +9890,7 @@ append_include_chain (first, last)
 
 /* Add output to `deps_buffer' for the -M switch.
    STRING points to the text to be output.
-   SPACER is ':' for targets, ' ' for dependencies, zero for text
-   to be inserted literally.  */
+   SPACER is ':' for targets, ' ' for dependencies.  */
 
 static void
 deps_output (string, spacer)
@@ -9906,25 +9905,30 @@ deps_output (string, spacer)
 #ifndef MAX_OUTPUT_COLUMNS
 #define MAX_OUTPUT_COLUMNS 72
 #endif
-  if (spacer
-      && deps_column > 0
-      && (deps_column + size) > MAX_OUTPUT_COLUMNS)
-  {
-    deps_output (" \\\n  ", 0);
-    deps_column = 0;
+  if (MAX_OUTPUT_COLUMNS - 1 /*spacer*/ - 2 /*` \'*/ < deps_column + size
+      && 1 < deps_column) {
+    bcopy (" \\\n ", &deps_buffer[deps_size], 4);
+    deps_size += 4;
+    deps_column = 1;
+    if (spacer == ' ')
+      spacer = 0;
   }
 
   if (deps_size + size + 8 > deps_allocated_size) {
     deps_allocated_size = (deps_size + size + 50) * 2;
     deps_buffer = xrealloc (deps_buffer, deps_allocated_size);
   }
-  if (spacer == ' ' && deps_column > 0)
+  if (spacer == ' ') {
     deps_buffer[deps_size++] = ' ';
+    deps_column++;
+  }
   bcopy (string, &deps_buffer[deps_size], size);
   deps_size += size;
   deps_column += size;
-  if (spacer == ':')
+  if (spacer == ':') {
     deps_buffer[deps_size++] = ':';
+    deps_column++;
+  }
   deps_buffer[deps_size] = 0;
 }
 
