@@ -1,3 +1,8 @@
+Tue Apr  6 16:18:58 1999  Jan Hubicka  <hubicka@paru.cas.cz>
+
+	* flow.c (split_edge) update correctly flow graph, disable
+	EDGE_CRITICAL flag on the split edge, update NUSES for new label.
+
 Tue Apr  6 15:47:51 1999  Richard Henderson  <rth@cygnus.com>
 
 	* emit-rtl.c (gen_rtx_CONST_DOUBLE): Use XWINT not XINT.

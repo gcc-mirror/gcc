@@ -1180,6 +1180,7 @@ split_edge (edge_in)
     for (pp = &old_succ->pred; *pp != edge_in; pp = &(*pp)->pred_next)
       continue;
     *pp = edge_in->pred_next;
+    edge_in->pred_next = NULL;
   }
 
   /* Create the new structures.  */
@@ -1207,9 +1208,18 @@ split_edge (edge_in)
   /* Wire them up.  */
   bb->pred = edge_in;
   bb->succ = edge_out;
+
   edge_in->dest = bb;
+  edge_in->flags &= ~EDGE_CRITICAL;
+
+  edge_out->pred_next = old_succ->pred;
+  edge_out->succ_next = NULL;
   edge_out->src = bb;
   edge_out->dest = old_succ;
+  edge_out->flags = EDGE_FALLTHRU;
+  edge_out->probability = REG_BR_PROB_BASE;
+
+  old_succ->pred = edge_out;
 
   /* Tricky case -- if there existed a fallthru into the successor
      (and we're not it) we must add a new unconditional jump around
@@ -1222,7 +1232,7 @@ split_edge (edge_in)
   if ((edge_in->flags & EDGE_FALLTHRU) == 0)
     {
       edge e;
-      for (e = old_succ->pred; e ; e = e->pred_next)
+      for (e = edge_out->pred_next; e ; e = e->pred_next)
 	if (e->flags & EDGE_FALLTHRU)
 	  break;
 
@@ -1236,7 +1246,6 @@ split_edge (edge_in)
 	      /* Non critical -- we can simply add a jump to the end
 		 of the existing predecessor.  */
 	      jump_block = e->src;
-	      pos = jump_block->end;
 	    }
 	  else
 	    {
@@ -1245,13 +1254,16 @@ split_edge (edge_in)
 	         call ourselves.  */
 	      jump_block = split_edge (e);
 	      e = jump_block->succ;
-	      pos = jump_block->head;
 	    }
 
-	  /* Now add the jump insn...  */
-	  pos = emit_jump_insn_after (gen_jump (old_succ->head), pos);
+	  /* Now add the jump insn ...  */
+	  pos = emit_jump_insn_after (gen_jump (old_succ->head),
+				      jump_block->end);
 	  jump_block->end = pos;
 	  emit_barrier_after (pos);
+
+	  /* ... let jump know that label is in use, ...  */
+	  ++LABEL_NUSES (old_succ->head);
 	  
 	  /* ... and clear fallthru on the outgoing edge.  */
 	  e->flags &= ~EDGE_FALLTHRU;
@@ -1330,9 +1342,6 @@ split_edge (edge_in)
       emit_label_before (new_label, bb_note);
       bb->head = new_label;
     }
-
-  /* In all cases, the new block falls through to the successor.  */
-  edge_out->flags = EDGE_FALLTHRU;
 
   return bb;
 }
