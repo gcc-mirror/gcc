@@ -1,3 +1,10 @@
+2003-06-14  Neil Booth  <neil@daikokuya.co.uk>
+
+	* Make-lang.in: Update to use options.c and options.h.
+	* lang.c: Include options.h not j-options.h.
+	(java_handle_option): Abort on unrecognized option.
+	(java_init_options): Request Java switches.
+
 2003-06-11  Neil Booth  <neil@daikokuya.co.uk>
 
 	* Make-lang.in: Handle mostlyclean.

@@ -1,3 +1,23 @@
+2003-06-14  Neil Booth  <neil@daikokuya.co.uk>
+
+	* Makefile.in: Update to use common.opt and lang_opt_files.
+	(c-options.c, c-options.h): Remove.
+	(options.c, options.h): Add.
+	* c-opts.c: Include options.h not c-options.h.
+	* common.opt: New file.
+	* configure, configure.in: Add lang_opt_files.
+	* opts.c: Include flags.h and diagnostic.h.
+	(common_handle_option): New.
+	(handle_option): Update to recognize common options and all
+	language-dependent options.
+	* opts.h (CL_F77, CL_JAVA, CL_ADA, CL_COMMON, CL_TREELANG): New.
+	(struct cl_option): Make flags of type int.
+	* opts.h: Flag option with front ends to which it applies.
+	Handle duplicate options.
+	* toplev.c (filename): Remove.
+	(independent_decode_option): Don't handle filenames and -quiet.
+	(process_options, do_compile): Update.
+
 2003-06-14  Nick Clifton  <nickc@redhat.com>
 
 	* doc/install.texi (Specific): Add description of different

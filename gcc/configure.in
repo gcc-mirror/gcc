@@ -2893,11 +2893,15 @@ AC_SUBST(MAINT)dnl
 # Make empty files to contain the specs and options for each language.
 # Then add #include lines to for a compiler that has specs and/or options.
 
+lang_opt_files=
 lang_specs_files=
 lang_options_files=
 lang_tree_files=
 for subdir in . $subdirs
 do
+	if test -f $srcdir/$subdir/lang.opt; then
+	    lang_opt_files="$lang_opt_files $srcdir/$subdir/lang.opt"
+	fi
 	if test -f $srcdir/$subdir/lang-specs.h; then
 	    lang_specs_files="$lang_specs_files $srcdir/$subdir/lang-specs.h"
 	fi
@@ -3141,6 +3145,7 @@ AC_SUBST(host_xm_file)
 AC_SUBST(host_xm_defines)
 AC_SUBST(out_host_hook_obj)
 AC_SUBST(install)
+AC_SUBST(lang_opt_files)
 AC_SUBST(lang_options_files)
 AC_SUBST(lang_specs_files)
 AC_SUBST(lang_tree_files)

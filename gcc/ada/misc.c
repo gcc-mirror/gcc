@@ -75,7 +75,7 @@
 #include "gigi.h"
 #include "adadecode.h"
 #include "opts.h"
-#include "aoptions.h"
+#include "options.h"
 
 extern FILE *asm_out_file;
 extern int save_argc;
@@ -238,7 +238,7 @@ gnat_handle_option (size_t scode, const char *arg, int value ATTRIBUTE_UNUSED)
   switch (code)
     {
     default:
-      return 0;
+      abort();
 
     case OPT_I:
       q = xmalloc (sizeof("-I") + strlen (arg));
@@ -294,7 +294,7 @@ gnat_init_options ()
   gnat_argv[0] = save_argv[0];     /* name of the command */ 
   gnat_argc = 1;
 
-  return 0;
+  return CL_ADA;
 }
 
 /* Here is the function to handle the compiler error processing in GCC.  */

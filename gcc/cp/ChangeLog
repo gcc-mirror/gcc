@@ -1,3 +1,7 @@
+2003-06-14  Neil Booth  <neil@daikokuya.co.uk>
+
+	* Make-lang.in: Remove c-options.o.
+
 2003-06-13  Nathanael Nerode  <neroden@gcc.gnu.org>
 
 	* lex.c: Convert to ISO C.

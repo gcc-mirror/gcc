@@ -141,6 +141,7 @@ extern bool ffe_in_4;
 
 /* Declare functions with prototypes. */
 
+int ffe_init_options (void);
 int ffe_handle_option (size_t code, const char *arg, int on);
 void ffe_file (ffewhereFile wf, FILE *f);
 void ffe_init_0 (void);

@@ -85,11 +85,11 @@ treelang.done: tree1$(exeext)
 # core compiler
 tree1$(exeext): treelang/tree1.o treelang/treetree.o treelang/lex.o treelang/parse.o\
 	$(TREE_BE_LIBS) c-convert.o c-typeck.o c-common.o c-cppbuiltin.o \
-	c-decl.o attribs.o treelang/t-options.o
+	c-decl.o attribs.o
 	$(CC) $(ALL_CFLAGS) $(LDFLAGS) -o $@ \
 	treelang/tree1.o treelang/treetree.o treelang/lex.o treelang/parse.o \
 	c-convert.o c-typeck.o c-common.o c-cppbuiltin.o c-decl.o attribs.o \
-	$(TREE_BE_LIBS) treelang/t-options.o
+	$(TREE_BE_LIBS)
 
 #
 # Compiling object files from source files.
@@ -98,7 +98,7 @@ tree1$(exeext): treelang/tree1.o treelang/treetree.o treelang/lex.o treelang/par
 
 treelang/tree1.o: treelang/tree1.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) \
   flags.h toplev.h $(GGC_H) $(TREE_H) diagnostic.h treelang/treelang.h \
-  input.h treelang/treetree.h treelang/t-options.h \
+  input.h treelang/treetree.h options.h opts.h \
   treelang/treetree.h gt-treelang-tree1.h gtype-treelang.h
 
 treelang/treetree.o: treelang/treetree.c $(CONFIG_H) $(SYSTEM_H) coretypes.h \
@@ -111,12 +111,6 @@ treelang/parse.o: treelang/parse.c $(CONFIG_H) $(SYSTEM_H) coretypes.h \
 
 treelang/lex.o: treelang/lex.c $(CONFIG_H) $(SYSTEM_H) coretypes.h \
   $(TM_H) diagnostic.h $(TREE_H) treelang/treelang.h input.h treelang/parse.h
-
-treelang/t-options.c: treelang/lang.opt opts.sh treelang/t-options.h
-
-treelang/t-options.h: treelang/lang.opt opts.sh
-	AWK=$(AWK) $(SHELL) $(srcdir)/opts.sh treelang/t-options.c \
-		treelang/t-options.h $(srcdir)/treelang/lang.opt
 
 # generated files the files from lex and yacc are put into the source
 # directory in case someone wants to build but does not have
@@ -237,7 +231,6 @@ treelang.mostlyclean:
 	    rm -f treelang/$$name$(exeext); \
 	  fi ; \
 	done
-	-rm -f treelang/t-options.c treelang/t-options.h
 	-rm -f treelang/*$(objext)
 	-rm -f treelang/*$(coverageexts)
 	-rm treelang.done

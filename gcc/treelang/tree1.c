@@ -45,7 +45,7 @@
 #include "treelang.h"
 #include "treetree.h"
 #include "opts.h"
-#include "t-options.h"
+#include "options.h"
 
 extern int yyparse (void);
 
@@ -88,6 +88,13 @@ static int version_done = 0;
 
 static unsigned int work_nesting_level = 0;
 
+/* Prepare to handle switches.  */
+int
+treelang_init_options (void)
+{
+  return CL_TREELANG;
+}
+
 /* Process a switch - called by opts.c.  */
 int
 treelang_handle_option (size_t scode, const char *arg ATTRIBUTE_UNUSED,
@@ -98,7 +105,7 @@ treelang_handle_option (size_t scode, const char *arg ATTRIBUTE_UNUSED,
   switch (code)
     {
     default:
-      return 0;
+      abort();
 
     case OPT__help:
       if (!version_done)

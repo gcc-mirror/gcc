@@ -46,7 +46,7 @@ The Free Software Foundation is independent of Sun Microsystems, Inc.  */
 #include "splay-tree.h"
 #include "tree-dump.h"
 #include "opts.h"
-#include "j-options.h"
+#include "options.h"
 
 static bool java_init (void);
 static void java_finish (void);
@@ -290,7 +290,7 @@ java_handle_option (size_t scode, const char *arg, int value)
   switch (code)
     {
     default:
-      return 0;
+      abort();
 
     case OPT_I:
       jcf_path_include_arg (arg);
@@ -695,7 +695,7 @@ java_init_options (void)
 
   jcf_path_init ();
 
-  return 0;
+  return CL_JAVA;
 }
 
 static bool
