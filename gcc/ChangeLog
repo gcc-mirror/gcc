@@ -2,6 +2,7 @@
 
 	* ggc-page.c (struct page_entry): Make `context_depth' an
 	`unsigned short'.
+	(struct globals): Likewise.
 
 2000-01-23  Clinton Popetz  <cpopetz@cygnus.com>
 
