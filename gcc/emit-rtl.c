@@ -3327,7 +3327,7 @@ try_split (rtx pat, rtx trial, int last)
 	  while (insn != NULL_RTX)
 	    {
 	      if (CALL_P (insn)
-		  || (flag_non_call_exceptions
+		  || (flag_non_call_exceptions && INSN_P (insn)
 		      && may_trap_p (PATTERN (insn))))
 		REG_NOTES (insn)
 		  = gen_rtx_EXPR_LIST (REG_EH_REGION,

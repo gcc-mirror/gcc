@@ -1,3 +1,7 @@
+2004-09-06  James E Wilson  <wilson@specifixinc.com>
+
+	* emit-rtl.c (try_split): Check INSN_P before may_trap_p call.
+
 2004-09-06  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
 	* final.c (output_in_slot): Delete.
