@@ -1823,7 +1823,8 @@ build_indirect_ref (ptr, errorstring)
      tree ptr;
      char *errorstring;
 {
-  register tree pointer = default_conversion (ptr);
+  register tree pointer = (TREE_CODE (TREE_TYPE (ptr)) == REFERENCE_TYPE ?
+			   ptr : default_conversion (ptr));
   register tree type = TREE_TYPE (pointer);
 
   if (ptr == current_class_decl)
@@ -2427,6 +2428,9 @@ build_function_call_real (function, params, require_complete, flags)
     coerced_params = convert_arguments (NULL_TREE, TYPE_ARG_TYPES (fntype),
 					params, fndecl, 0);
 
+  if (coerced_params == error_mark_node)
+    return error_mark_node;
+
   /* Check for errors in format strings.  */
 
   if (warn_format && (name || assembler_name))
@@ -2541,7 +2545,7 @@ convert_arguments (return_loc, typelist, values, fndecl, flags)
       register tree val = TREE_VALUE (valtail);
 
       if (val == error_mark_node)
-	continue;
+	return error_mark_node;
 
       if (type == void_type_node)
 	{
@@ -2628,7 +2632,7 @@ convert_arguments (return_loc, typelist, values, fndecl, flags)
 	}
 
       if (val == error_mark_node)
-	continue;
+	return error_mark_node;
 
       if (type != 0)
 	{

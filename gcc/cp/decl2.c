@@ -359,6 +359,11 @@ int flag_operator_names;
 
 int flag_check_new;
 
+/* Nonzero if we want the new ANSI rules for pushing a new scope for `for'
+   initialization variables.  Default to on.  */
+
+int flag_new_for_scope = 1;
+
 /* Table of language-dependent -f options.
    STRING is the option name.  VARIABLE is the address of the variable.
    ON_VALUE is the value to store in VARIABLE
@@ -405,7 +410,8 @@ static struct { char *string; int *variable; int on_value;} lang_f_options[] =
   {"gnu-keywords", &flag_no_gnu_keywords, 0},
   {"operator-names", &flag_operator_names, 1},
   {"check-new", &flag_check_new, 1},
-  {"repo", &flag_use_repository, 1}
+  {"repo", &flag_use_repository, 1},
+  {"for-scope", &flag_new_for_scope, 1}
 };
 
 /* Decode the string P as a language-specific option.
@@ -418,7 +424,7 @@ lang_decode_option (p)
 {
   if (!strcmp (p, "-ftraditional") || !strcmp (p, "-traditional"))
     flag_traditional = 1, dollars_in_ident = 1, flag_writable_strings = 1,
-    flag_this_is_variable = 1;
+    flag_this_is_variable = 1, flag_new_for_scope = 0;
   /* The +e options are for cfront compatibility.  They come in as
      `-+eN', to kludge around gcc.c's argument handling.  */
   else if (p[0] == '-' && p[1] == '+' && p[2] == 'e')
@@ -872,10 +878,11 @@ grokclassfn (ctype, cname, function, flags, quals)
       /* Right now we just make this a pointer.  But later
 	 we may wish to make it special.  */
       tree type = TREE_VALUE (arg_types);
+      int constp = 1;
 
       if ((flag_this_is_variable > 0)
 	  && (flags == DTOR_FLAG || DECL_CONSTRUCTOR_P (function)))
-	type = TYPE_MAIN_VARIANT (type);
+	constp = 0;
 
       if (DECL_CONSTRUCTOR_P (function))
 	{
@@ -902,7 +909,7 @@ grokclassfn (ctype, cname, function, flags, quals)
       /* We can make this a register, so long as we don't
 	 accidentally complain if someone tries to take its address.  */
       DECL_REGISTER (parm) = 1;
-      if (TYPE_READONLY (type))
+      if (constp)
 	TREE_READONLY (parm) = 1;
       TREE_CHAIN (parm) = last_function_parms;
       last_function_parms = parm;
@@ -1178,9 +1185,22 @@ delete_sanity (exp, size, doing_vec, use_global_delete)
     return build_vec_delete (t, maxindex, elt_size, integer_one_node,
 			     integer_two_node, use_global_delete);
   else
-    return build_delete (type, t, integer_three_node,
-			 LOOKUP_NORMAL|LOOKUP_HAS_IN_CHARGE,
-			 use_global_delete);
+    {
+      if (IS_AGGR_TYPE (TREE_TYPE (type))
+	  && TYPE_GETS_REG_DELETE (TREE_TYPE (type)))
+	{
+	  /* Only do access checking here; we'll be calling op delete
+	     from the destructor.  */
+	  tree tmp = build_opfncall (DELETE_EXPR, LOOKUP_NORMAL, t,
+				     size_zero_node, NULL_TREE);
+	  if (tmp == error_mark_node)
+	    return error_mark_node;
+	}
+
+      return build_delete (type, t, integer_three_node,
+			   LOOKUP_NORMAL|LOOKUP_HAS_IN_CHARGE,
+			   use_global_delete);
+    }
 }
 
 /* Sanity check: report error if this function FUNCTION is not
@@ -1956,6 +1976,9 @@ cplus_decl_attributes (decl, attributes, prefix_attributes)
     decl = DECL_TEMPLATE_RESULT (decl);
 
   decl_attributes (decl, attributes, prefix_attributes);
+
+  if (TREE_CODE (decl) == TYPE_DECL)
+    SET_IDENTIFIER_TYPE_VALUE (DECL_NAME (decl), TREE_TYPE (decl));
 }
 
 /* CONSTRUCTOR_NAME:

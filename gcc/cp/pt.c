@@ -2648,10 +2648,11 @@ do_type_instantiation (name, storage)
     /* this should really be done by instantiate_member_templates */
     tmp = TREE_VEC_ELT (CLASSTYPE_METHOD_VEC (t), 0);
     for (; tmp; tmp = TREE_CHAIN (tmp))
-      {
-	mark_function_instantiated (tmp, extern_p);
-	repo_template_instantiated (tmp, extern_p);
-      }
+      if (DECL_TEMPLATE_INSTANTIATION (tmp))
+	{
+	  mark_function_instantiated (tmp, extern_p);
+	  repo_template_instantiated (tmp, extern_p);
+	}
 
 #if 0
     for (tmp = TYPE_FIELDS (t); tmp; tmp = TREE_CHAIN (tmp))

@@ -2507,7 +2507,8 @@ duplicate_decls (newdecl, olddecl)
     }
 
   /* Merge the storage class information.  */
-  if (DECL_EXTERNAL (newdecl))
+  if (DECL_EXTERNAL (newdecl) && ! DECL_INTERFACE_KNOWN (newdecl)
+      && ! (DECL_LANG_SPECIFIC (newdecl) && DECL_NOT_REALLY_EXTERN (newdecl)))
     {
       TREE_STATIC (newdecl) = TREE_STATIC (olddecl);
       DECL_EXTERNAL (newdecl) = DECL_EXTERNAL (olddecl);
@@ -5261,6 +5262,7 @@ define_function (name, type, function_code, pfn, library_name)
   DECL_EXTERNAL (decl) = 1;
   TREE_PUBLIC (decl) = 1;
   DECL_INTERFACE_KNOWN (decl) = 1;
+  DECL_ARTIFICIAL (decl) = 1;
 
   /* Since `pushdecl' relies on DECL_ASSEMBLER_NAME instead of DECL_NAME,
      we cannot change DECL_ASSEMBLER_NAME until we have installed this

@@ -172,10 +172,33 @@ convert_harshness (type, parmtype, parm)
       if (coder != TREE_CODE (type))
 	return EVIL_RETURN (h);
 
+      if (type != parmtype && coder == METHOD_TYPE)
+	{
+	  tree ttl = TYPE_METHOD_BASETYPE (type);
+	  tree ttr = TYPE_METHOD_BASETYPE (parmtype);
+
+	  int b_or_d = get_base_distance (ttr, ttl, 0, 0);
+	  if (b_or_d < 0)
+	    {
+	      b_or_d = get_base_distance (ttl, ttr, 0, 0);
+	      if (b_or_d < 0)
+		return EVIL_RETURN (h);
+	      h.distance = -b_or_d;
+	    }
+	  else
+	    h.distance = b_or_d;
+	  h.code = STD_CODE;
+
+	  type = build_function_type
+	    (TREE_TYPE (type), TREE_CHAIN (TYPE_ARG_TYPES (type)));
+	  parmtype = build_function_type
+	    (TREE_TYPE (parmtype), TREE_CHAIN (TYPE_ARG_TYPES (parmtype)));
+	}
+
       /* We allow the default conversion between function type
 	 and pointer-to-function type for free.  */
       if (type == parmtype)
-	return ZERO_RETURN (h);
+	return h;
 
       if (pedantic)
 	return EVIL_RETURN (h);
@@ -272,28 +295,34 @@ convert_harshness (type, parmtype, parm)
     }
   else if (codel == POINTER_TYPE && coder == OFFSET_TYPE)
     {
+      tree ttl, ttr;
+
       /* Get to the OFFSET_TYPE that this might be.  */
       type = TREE_TYPE (type);
 
       if (coder != TREE_CODE (type))
 	return EVIL_RETURN (h);
 
-      if (TYPE_OFFSET_BASETYPE (type) == TYPE_OFFSET_BASETYPE (parmtype))
+      ttl = TYPE_OFFSET_BASETYPE (type);
+      ttr = TYPE_OFFSET_BASETYPE (parmtype);
+
+      if (ttl == ttr)
 	h.code = 0;
-      else if (UNIQUELY_DERIVED_FROM_P (TYPE_OFFSET_BASETYPE (type),
-			       TYPE_OFFSET_BASETYPE (parmtype)))
-	{
-	  h.code = STD_CODE;
-	  h.distance = 1;
-	}
-      else if (UNIQUELY_DERIVED_FROM_P (TYPE_OFFSET_BASETYPE (parmtype),
-			       TYPE_OFFSET_BASETYPE (type)))
-	{
-	  h.code = STD_CODE;
-	  h.distance = -1;
-	}
       else
-	return EVIL_RETURN (h);
+	{
+	  int b_or_d = get_base_distance (ttr, ttl, 0, 0);
+	  if (b_or_d < 0)
+	    {
+	      b_or_d = get_base_distance (ttl, ttr, 0, 0);
+	      if (b_or_d < 0)
+		return EVIL_RETURN (h);
+	      h.distance = -b_or_d;
+	    }
+	  else
+	    h.distance = b_or_d;
+	  h.code = STD_CODE;
+	}
+
       /* Now test the OFFSET_TYPE's target compatibility.  */
       type = TREE_TYPE (type);
       parmtype = TREE_TYPE (parmtype);
