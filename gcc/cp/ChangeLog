@@ -1,3 +1,9 @@
+1998-08-25  Brendan Kehoe  <brendan@cygnus.com>
+
+	* pt.c (tsubst_copy): Only do typename overloading on an
+	IDENTIFIER_NODE that happens to look like a typename if it actually
+	has a type for us to use.
+
 1998-08-25  Jason Merrill  <jason@yorick.cygnus.com>
 
 	* typeck.c (comp_cv_target_types): Split out...
