@@ -34,8 +34,13 @@ compilation is specified by a string called a "spec".  */
 #include <ctype.h>
 #include <signal.h>
 #include <sys/stat.h>
-#include <sys/file.h>   /* May get R_OK, etc. on some systems.  */
 #include <errno.h>
+
+#ifndef WINNT
+#include <sys/file.h>   /* May get R_OK, etc. on some systems.  */
+#else
+#include <process.h>
+#endif
 
 #include "config.h"
 #include "obstack.h"
@@ -125,6 +130,12 @@ compilation is specified by a string called a "spec".  */
 #ifndef PATH_SEPARATOR
 #define PATH_SEPARATOR ':'
 #endif
+
+#ifndef DIR_SEPARATOR
+#define DIR_SEPARATOR '/'
+#endif
+
+static char dir_separator_str[] = {DIR_SEPARATOR, 0};
 
 #define obstack_chunk_alloc xmalloc
 #define obstack_chunk_free free
@@ -234,7 +245,11 @@ static void choose_temp_base	PROTO((void));
 static int check_live_switch	PROTO((int, int));
 static char *handle_braces	PROTO((char *));
 static char *save_string	PROTO((char *, int));
-static char *concat		PROTO((char *, char *, char *));
+static char *concat		PROTO((char *, char *));
+static char *concat3		PROTO((char *, char *, char *));
+static char *concat4		PROTO((char *, char *, char *, char *));
+static char *concat6		PROTO((char *, char *, char *, char *, char *, \
+                                       char *));
 static int do_spec		PROTO((char *));
 static int do_spec_1		PROTO((char *, int, char *));
 static char *find_file		PROTO((char *));
@@ -325,7 +340,7 @@ or with constant text in a single argument.
  %A	process ASM_FINAL_SPEC as a spec.  A capital A is actually
 	used here.  This can be used to run a post-processor after the
 	assembler has done it's job.
- %D	Dump out a -L option for each directory in startfile_prefix.
+ %D	Dump out a -L option for each directory in startfile_prefixes.
 	If multilib_dir is set, extra entries are generated with it affixed.
  %l     process LINK_SPEC as a spec.
  %L     process LIB_SPEC as a spec.
@@ -937,8 +952,7 @@ translate_options (argcp, argvp)
 
 		  /* Store the translation as one argv elt or as two.  */
 		  if (arg != 0 && index (arginfo, 'j') != 0)
-		    newv[newindex++] = concat (option_map[j].equivalent,
-					       arg, "");
+		    newv[newindex++] = concat (option_map[j].equivalent, arg);
 		  else if (arg != 0)
 		    {
 		      newv[newindex++] = option_map[j].equivalent;
@@ -1178,7 +1192,7 @@ set_spec (name, spec)
 
   old_spec = sl->spec;
   if (name && spec[0] == '+' && isspace (spec[1]))
-    sl->spec = concat (old_spec, spec + 1, "");
+    sl->spec = concat (old_spec, spec + 1);
   else
     sl->spec = save_string (spec, strlen (spec));
 
@@ -1273,15 +1287,15 @@ struct path_prefix
 
 /* List of prefixes to try when looking for executables. */
 
-static struct path_prefix exec_prefix = { 0, 0, "exec" };
+static struct path_prefix exec_prefixes = { 0, 0, "exec" };
 
 /* List of prefixes to try when looking for startup (crt0) files. */
 
-static struct path_prefix startfile_prefix = { 0, 0, "startfile" };
+static struct path_prefix startfile_prefixes = { 0, 0, "startfile" };
 
 /* List of prefixes to try when looking for include files.  */
 
-static struct path_prefix include_prefix = { 0, 0, "include" };
+static struct path_prefix include_prefixes = { 0, 0, "include" };
 
 /* Suffix to attach to directories searched for commands.
    This looks like `MACHINE/VERSION/'.  */
@@ -1531,18 +1545,21 @@ choose_temp_base ()
   base = choose_temp_base_try (P_tmpdir, base);
 #endif
 
-  base = choose_temp_base_try ("/usr/tmp", base);
-  base = choose_temp_base_try ("/tmp", base);
-
+  base = choose_temp_base_try (concat4 (dir_separator_str, "usr", 
+                                        dir_separator_str, "tmp"), 
+                                base);
+  base = choose_temp_base_try (concat (dir_separator_str, "tmp"), base);
+ 
   /* If all else fails, use the current directory! */  
-  if (base == (char *)0)
-    base = "./";
+  if (base == (char *)0) base = concat(".", dir_separator_str);
 
   len = strlen (base);
-  temp_filename = xmalloc (len + sizeof("/ccXXXXXX") + 1);
+  temp_filename = xmalloc (len + strlen (concat (dir_separator_str, 
+                                                 "ccXXXXXX")) + 1);
   strcpy (temp_filename, base);
-  if (len > 0 && temp_filename[len-1] != '/')
-    temp_filename[len++] = '/';
+  if (len > 0 && temp_filename[len-1] != '/'
+      && temp_filename[len-1] != DIR_SEPARATOR)
+    temp_filename[len++] = DIR_SEPARATOR;
   strcpy (temp_filename + len, "ccXXXXXX");
 
   mktemp (temp_filename);
@@ -1686,7 +1703,7 @@ find_a_file (pprefix, name, mode)
 
   /* Determine the filename to execute (special case for absolute paths).  */
 
-  if (*name == '/')
+  if (*name == '/' || *name == DIR_SEPARATOR)
     {
       if (access (name, mode))
 	{
@@ -1906,7 +1923,6 @@ static int last_pipe_input;
    NOT_LAST is nonzero if this is not the last subcommand
    (i.e. its output should be piped to the next one.)  */
 
-#ifndef OS2
 #ifdef __MSDOS__
 
 #include <process.h>
@@ -1958,7 +1974,9 @@ pexecute (search_flag, program, argv, not_last)
   return i << 8;
 }
 
-#else /* not __MSDOS__ */
+#endif
+
+#if !defined(__MSDOS__) && !defined(OS2) && !defined(WINNT)
 
 static int
 pexecute (search_flag, program, argv, not_last)
@@ -2048,8 +2066,54 @@ pexecute (search_flag, program, argv, not_last)
     }
 }
 
-#endif /* not __MSDOS__ */
-#else /* not OS2 */
+#endif /* not __MSDOS__ and not OS2 */
+
+#if defined(OS2) || defined(WINNT)
+
+#ifdef WINNT
+
+char **
+fix_argv (argvec)
+     char **argvec
+{
+   int i;
+
+   for (i = 1; argvec[i] != 0; i++)
+     {
+       int len, j;
+       char *temp, *newtemp;
+
+       temp = argvec[i];
+       len = strlen (temp);
+       for (j = 0; j < len; j++)
+	 {
+	   if (temp[j] == '"')
+	     {
+	       newtemp = xmalloc (len + 2);
+	       strncpy (newtemp, temp, j);
+	       newtemp [j] = '\\';
+	       strncpy (&newtemp [j+1], &temp [j], len-j);
+	       newtemp [len+1] = 0;
+	       free (temp);
+	       temp = newtemp;
+	       len++;
+	       j++;
+	     }
+	 }
+
+       argvec[i] = temp;
+     }
+
+   return argvec;
+}
+
+#define FIX_ARGV(a) fix_argv(a)
+
+#else
+
+#define FIX_ARGV(a) a
+
+#endif /* OS2 or WINNT */
 
 static int
 pexecute (search_flag, program, argv, not_last)
@@ -2058,9 +2122,10 @@ pexecute (search_flag, program, argv, not_last)
      char *argv[];
      int not_last;
 {
-  return (search_flag ? spawnv : spawnvp) (1, program, argv);
+  return (search_flag ? spawnv : spawnvp) (1, program, FIX_ARGV (argv));
 }
-#endif /* not OS2 */
+#endif /* OS2 or WINNT */
+
 
 /* Execute the command specified by the arguments on the current line of spec.
    When using pipes, this includes several piped-together commands
@@ -2098,7 +2163,7 @@ execute ()
 
   commands[0].prog = argbuf[0]; /* first command.  */
   commands[0].argv = &argbuf[0];
-  string = find_a_file (&exec_prefix, commands[0].prog, X_OK);
+  string = find_a_file (&exec_prefixes, commands[0].prog, X_OK);
   if (string)
     commands[0].argv[0] = string;
 
@@ -2111,7 +2176,7 @@ execute ()
 	argbuf[i] = 0;	/* termination of command args.  */
 	commands[n_commands].prog = argbuf[i + 1];
 	commands[n_commands].argv = &argbuf[i + 1];
-	string = find_a_file (&exec_prefix, commands[n_commands].prog, X_OK);
+	string = find_a_file (&exec_prefixes, commands[n_commands].prog, X_OK);
 	if (string)
 	  commands[n_commands].argv[0] = string;
 	n_commands++;
@@ -2181,7 +2246,11 @@ execute ()
 #ifdef __MSDOS__
         status = pid = commands[i].pid;
 #else
+#ifdef WINNT
+	pid = cwait (&status, commands[i].pid, WAIT_CHILD);
+#else
 	pid = wait (&status);
+#endif
 #endif
 	if (pid < 0)
 	  abort ();
@@ -2280,8 +2349,8 @@ process_command (argc, argv)
 
   if (gcc_exec_prefix)
     {
-      add_prefix (&exec_prefix, gcc_exec_prefix, 0, 0, NULL_PTR);
-      add_prefix (&startfile_prefix, gcc_exec_prefix, 0, 0, NULL_PTR);
+      add_prefix (&exec_prefixes, gcc_exec_prefix, 0, 0, NULL_PTR);
+      add_prefix (&startfile_prefixes, gcc_exec_prefix, 0, 0, NULL_PTR);
     }
 
   /* COMPILER_PATH and LIBRARY_PATH have values
@@ -2300,17 +2369,15 @@ process_command (argc, argv)
 	    {
 	      strncpy (nstore, startp, endp-startp);
 	      if (endp == startp)
+		strcpy (nstore, concat (".", dir_separator_str));
+	      else if (endp[-1] != '/' && endp[-1] != DIR_SEPARATOR)
 		{
-		  strcpy (nstore, "./");
-		}
-	      else if (endp[-1] != '/')
-		{
-		  nstore[endp-startp] = '/';
+		  nstore[endp-startp] = DIR_SEPARATOR;
 		  nstore[endp-startp+1] = 0;
 		}
 	      else
 		nstore[endp-startp] = 0;
-	      add_prefix (&exec_prefix, nstore, 0, 0, NULL_PTR);
+	      add_prefix (&exec_prefixes, nstore, 0, 0, NULL_PTR);
 	      if (*endp == 0)
 		break;
 	      endp = startp = endp + 1;
@@ -2333,17 +2400,15 @@ process_command (argc, argv)
 	    {
 	      strncpy (nstore, startp, endp-startp);
 	      if (endp == startp)
+		strcpy (nstore, concat (".", dir_separator_str));
+	      else if (endp[-1] != '/' && endp[-1] != DIR_SEPARATOR)
 		{
-		  strcpy (nstore, "./");
-		}
-	      else if (endp[-1] != '/')
-		{
-		  nstore[endp-startp] = '/';
+		  nstore[endp-startp] = DIR_SEPARATOR;
 		  nstore[endp-startp+1] = 0;
 		}
 	      else
 		nstore[endp-startp] = 0;
-	      add_prefix (&startfile_prefix, nstore, 0, 0, NULL_PTR);
+	      add_prefix (&startfile_prefixes, nstore, 0, 0, NULL_PTR);
 	      if (*endp == 0)
 		break;
 	      endp = startp = endp + 1;
@@ -2367,17 +2432,15 @@ process_command (argc, argv)
 	    {
 	      strncpy (nstore, startp, endp-startp);
 	      if (endp == startp)
+		strcpy (nstore, concat (".", dir_separator_str));
+	      else if (endp[-1] != '/' && endp[-1] != DIR_SEPARATOR)
 		{
-		  strcpy (nstore, "./");
-		}
-	      else if (endp[-1] != '/')
-		{
-		  nstore[endp-startp] = '/';
+		  nstore[endp-startp] = DIR_SEPARATOR;
 		  nstore[endp-startp+1] = 0;
 		}
 	      else
 		nstore[endp-startp] = 0;
-	      add_prefix (&startfile_prefix, nstore, 0, 0, NULL_PTR);
+	      add_prefix (&startfile_prefixes, nstore, 0, 0, NULL_PTR);
 	      if (*endp == 0)
 		break;
 	      endp = startp = endp + 1;
@@ -2572,22 +2635,26 @@ process_command (argc, argv)
 		  value = argv[++i];
 		else
 		  value = p + 1;
-		add_prefix (&exec_prefix, value, 1, 0, temp);
-		add_prefix (&startfile_prefix, value, 1, 0, temp);
-		add_prefix (&include_prefix, concat (value, "include", ""),
+		add_prefix (&exec_prefixes, value, 1, 0, temp);
+		add_prefix (&startfile_prefixes, value, 1, 0, temp);
+		add_prefix (&include_prefixes, concat (value, "include", ""),
 			    1, 0, 0);
 
 		/* As a kludge, if the arg is "[foo/]stageN/", just add
 		   "[foo/]include" to the include prefix.  */
 		{
 		  int len = strlen (value);
-		  if ((len == 7 || (len > 7 && value[len - 8] == '/'))
+		  if ((len == 7
+		       || (len > 7
+			   && (value[len - 8] == '/'
+			       || value[len - 8] == DIR_SEPARATOR)))
 		      && strncmp (value + len - 7, "stage", 5) == 0
 		      && isdigit (value[len - 2])
-		      && value[len - 1] == '/')
+		      && (value[len - 1] == '/'
+			  || value[len - 1] == DIR_SEPARATOR))
 		    {
 		      if (len == 7)
-			add_prefix (&include_prefix, "include", 1, 0, 0);
+			add_prefix (&include_prefixes, "include", 1, 0, 0);
 		      else
 			{
 			  char *string = xmalloc (len + 1);
@@ -2645,44 +2712,52 @@ process_command (argc, argv)
      (such as cpp) rather than those of the host system.  */
   /* Use 2 as fourth arg meaning try just the machine as a suffix,
      as well as trying the machine and the version.  */
-  add_prefix (&exec_prefix, standard_exec_prefix, 0, 2, NULL_PTR);
-  add_prefix (&exec_prefix, standard_exec_prefix_1, 0, 2, NULL_PTR);
+#ifndef OS2
+  add_prefix (&exec_prefixes, standard_exec_prefix, 0, 2, NULL_PTR);
+  add_prefix (&exec_prefixes, standard_exec_prefix_1, 0, 2, NULL_PTR);
+#endif
 
-  add_prefix (&startfile_prefix, standard_exec_prefix, 0, 1, NULL_PTR);
-  add_prefix (&startfile_prefix, standard_exec_prefix_1, 0, 1, NULL_PTR);
+  add_prefix (&startfile_prefixes, standard_exec_prefix, 0, 1, NULL_PTR);
+  add_prefix (&startfile_prefixes, standard_exec_prefix_1, 0, 1, NULL_PTR);
 
-  tooldir_prefix = concat (tooldir_base_prefix, spec_machine, "/");
+  tooldir_prefix = concat3 (tooldir_base_prefix, spec_machine, 
+                            dir_separator_str);
 
-  /* If tooldir is relative, base it on exec_prefix.  A relative
+  /* If tooldir is relative, base it on exec_prefixes.  A relative
      tooldir lets us move the installed tree as a unit.
 
      If GCC_EXEC_PREFIX is defined, then we want to add two relative
      directories, so that we can search both the user specified directory
      and the standard place.  */
 
-  if (*tooldir_prefix != '/')
+  if (*tooldir_prefix != '/' && *tooldir_prefix != DIR_SEPARATOR)
     {
       if (gcc_exec_prefix)
 	{
 	  char *gcc_exec_tooldir_prefix
-	    = concat (concat (gcc_exec_prefix, spec_machine, "/"),
-		      concat (spec_version, "/", tooldir_prefix),
-		      "");
+	    = concat6 (gcc_exec_prefix, spec_machine, dir_separator_str,
+		      spec_version, dir_separator_str, tooldir_prefix);
 
-	  add_prefix (&exec_prefix, concat (gcc_exec_tooldir_prefix, "bin", "/"),
+	  add_prefix (&exec_prefixes,
+		      concat3 (gcc_exec_tooldir_prefix, "bin", 
+                               dir_separator_str),
 		      0, 0, NULL_PTR);
-	  add_prefix (&startfile_prefix, concat (gcc_exec_tooldir_prefix, "lib", "/"),
+	  add_prefix (&startfile_prefixes,
+		      concat3 (gcc_exec_tooldir_prefix, "lib", 
+                               dir_separator_str),
 		      0, 0, NULL_PTR);
 	}
 
-      tooldir_prefix = concat (concat (standard_exec_prefix, spec_machine, "/"),
-			       concat (spec_version, "/", tooldir_prefix),
-			       "");
+      tooldir_prefix = concat6 (standard_exec_prefix, spec_machine,
+			        dir_separator_str, spec_version, 
+                                dir_separator_str, tooldir_prefix);
     }
 
-  add_prefix (&exec_prefix, concat (tooldir_prefix, "bin", "/"),
+  add_prefix (&exec_prefixes, 
+              concat3 (tooldir_prefix, "bin", dir_separator_str),
 	      0, 0, NULL_PTR);
-  add_prefix (&startfile_prefix, concat (tooldir_prefix, "lib", "/"),
+  add_prefix (&startfile_prefixes,
+	      concat3 (tooldir_prefix, "lib", dir_separator_str),
 	      0, 0, NULL_PTR);
 
   /* More prefixes are enabled in main, after we read the specs file
@@ -2837,9 +2912,9 @@ process_command (argc, argv)
 			       + strlen (spec_machine) + 3);
       strcpy (temp, gcc_exec_prefix);
       strcat (temp, spec_machine);
-      strcat (temp, "/");
+      strcat (temp, dir_separator_str);
       strcat (temp, spec_version);
-      strcat (temp, "/");
+      strcat (temp, dir_separator_str);
       gcc_exec_prefix = temp;
     }
 }
@@ -3051,7 +3126,7 @@ do_spec_1 (spec, inswitch, soft_matched_part)
 	     that we search for startfiles.  */
 	  case 'D':
 	    {
-	      struct prefix_list *pl = startfile_prefix.plist;
+	      struct prefix_list *pl = startfile_prefixes.plist;
 	      int bufsize = 100;
 	      char *buffer = (char *) xmalloc (bufsize);
 	      int idx;
@@ -3064,7 +3139,7 @@ do_spec_1 (spec, inswitch, soft_matched_part)
 		  /* Relative directories always come from -B,
 		     and it is better not to use them for searching
 		     at run time.  In particular, stage1 loses  */
-		  if (pl->prefix[0] != '/')
+		  if (pl->prefix[0] != '/' && pl->prefix[0] != DIR_SEPARATOR)
 		    continue;
 #endif
 		  /* Try subdirectory if there is one.  */
@@ -3121,7 +3196,8 @@ do_spec_1 (spec, inswitch, soft_matched_part)
 			  buffer = (char *) xrealloc (buffer, bufsize);
 			  strcpy (buffer, machine_suffix);
 			  idx = strlen (buffer);
-			  if (buffer[idx - 1] == '/')
+			  if (buffer[idx - 1] == '/'
+			      || buffer[idx - 1] == DIR_SEPARATOR)
 			    buffer[idx - 1] = 0;
 			  do_spec_1 (buffer, 1, NULL_PTR);
 			  /* Make this a separate argument.  */
@@ -3142,7 +3218,8 @@ do_spec_1 (spec, inswitch, soft_matched_part)
 			  buffer = (char *) xrealloc (buffer, bufsize);
 			  strcpy (buffer, pl->prefix);
 			  idx = strlen (buffer);
-			  if (buffer[idx - 1] == '/')
+			  if (buffer[idx - 1] == '/'
+			      || buffer[idx - 1] == DIR_SEPARATOR)
 			    buffer[idx - 1] = 0;
 			  do_spec_1 (buffer, 1, NULL_PTR);
 			  /* Make this a separate argument.  */
@@ -3240,7 +3317,7 @@ do_spec_1 (spec, inswitch, soft_matched_part)
 
 	  case 'I':
 	    {
-	      struct prefix_list *pl = include_prefix.plist;
+	      struct prefix_list *pl = include_prefixes.plist;
 
 	      if (gcc_exec_prefix)
 		{
@@ -4020,10 +4097,10 @@ find_file (name)
 
       try = (char *) alloca (strlen (multilib_dir) + strlen (name) + 2);
       strcpy (try, multilib_dir);
-      strcat (try, "/");
+      strcat (try, dir_separator_str);
       strcat (try, name);
 
-      newname = find_a_file (&startfile_prefix, try, R_OK);
+      newname = find_a_file (&startfile_prefixes, try, R_OK);
 
       /* If we don't find it in the multi library dir, then fall
 	 through and look for it in the normal places.  */
@@ -4031,7 +4108,7 @@ find_file (name)
 	return newname;
     }
 
-  newname = find_a_file (&startfile_prefix, name, R_OK);
+  newname = find_a_file (&startfile_prefixes, name, R_OK);
   return newname ? newname : name;
 }
 
@@ -4063,15 +4140,20 @@ is_directory (path1, path2, linker)
   bcopy (path1, path, len1);
   bcopy (path2, path + len1, len2);
   cp = path + len1 + len2;
-  if (cp[-1] != '/')
-    *cp++ = '/';
+  if (cp[-1] != '/' && cp[-1] != DIR_SEPARATOR)
+    *cp++ = DIR_SEPARATOR;
   *cp++ = '.';
   *cp = '\0';
 
   /* Exclude directories that the linker is known to search.  */
   if (linker
-      && ((cp - path == 6 && strcmp (path, "/lib/.") == 0)
-	  || (cp - path == 10 && strcmp (path, "/usr/lib/.") == 0)))
+      && ((cp - path == 6
+	   && strcmp (path, concat4 (dir_separator_str, "lib", 
+                                     dir_separator_str, ".")) == 0)
+	  || (cp - path == 10
+	      && strcmp (path, concat6 (dir_separator_str, "usr", 
+                                        dir_separator_str, "lib", 
+                                        dir_separator_str, ".")) == 0)))
     return 0;
 
   return (stat (path, &st) >= 0 && S_ISDIR (st.st_mode));
@@ -4105,7 +4187,7 @@ main (argc, argv)
   char *p;
 
   p = argv[0] + strlen (argv[0]);
-  while (p != argv[0] && p[-1] != '/') --p;
+  while (p != argv[0] && p[-1] != '/' && p[-1] != DIR_SEPARATOR) --p;
   programname = p;
 
   if (signal (SIGINT, SIG_IGN) != SIG_IGN)
@@ -4154,10 +4236,11 @@ main (argc, argv)
 
   /* Read specs from a file if there is one.  */
 
-  machine_suffix = concat (spec_machine, "/", concat (spec_version, "/", ""));
-  just_machine_suffix = concat (spec_machine, "/", "");
+  machine_suffix = concat4 (spec_machine, dir_separator_str,
+                            spec_version, dir_separator_str);
+  just_machine_suffix = concat (spec_machine, dir_separator_str);
 
-  specs_file = find_a_file (&startfile_prefix, "specs", R_OK);
+  specs_file = find_a_file (&startfile_prefixes, "specs", R_OK);
   /* Read the specs file unless it is a default one.  */
   if (specs_file != 0 && strcmp (specs_file, "specs"))
     read_specs (specs_file);
@@ -4169,46 +4252,45 @@ main (argc, argv)
   if (!cross_compile)
     {
 #ifdef MD_EXEC_PREFIX
-      add_prefix (&exec_prefix, md_exec_prefix, 0, 0, NULL_PTR);
-      add_prefix (&startfile_prefix, md_exec_prefix, 0, 0, NULL_PTR);
+      add_prefix (&exec_prefixes, md_exec_prefix, 0, 0, NULL_PTR);
+      add_prefix (&startfile_prefixes, md_exec_prefix, 0, 0, NULL_PTR);
 #endif
 
 #ifdef MD_STARTFILE_PREFIX
-      add_prefix (&startfile_prefix, md_startfile_prefix, 0, 0, NULL_PTR);
+      add_prefix (&startfile_prefixes, md_startfile_prefix, 0, 0, NULL_PTR);
 #endif
 
 #ifdef MD_STARTFILE_PREFIX_1
-      add_prefix (&startfile_prefix, md_startfile_prefix_1, 0, 0, NULL_PTR);
+      add_prefix (&startfile_prefixes, md_startfile_prefix_1, 0, 0, NULL_PTR);
 #endif
 
       /* If standard_startfile_prefix is relative, base it on
 	 standard_exec_prefix.  This lets us move the installed tree
 	 as a unit.  If GCC_EXEC_PREFIX is defined, base
 	 standard_startfile_prefix on that as well.  */
-      if (*standard_startfile_prefix == '/')
-	add_prefix (&startfile_prefix, standard_startfile_prefix, 0, 0,
+      if (*standard_startfile_prefix == '/'
+	  || *standard_startfile_prefix == DIR_SEPARATOR)
+	add_prefix (&startfile_prefixes, standard_startfile_prefix, 0, 0,
 		    NULL_PTR);
       else
 	{
 	  if (gcc_exec_prefix)
-	    add_prefix (&startfile_prefix,
-			concat (gcc_exec_prefix,
-				standard_startfile_prefix,
-				""),
+	    add_prefix (&startfile_prefixes,
+			concat (gcc_exec_prefix, standard_startfile_prefix),
 			0, 0, NULL_PTR);
-	  add_prefix (&startfile_prefix,
-		      concat (standard_exec_prefix,
-			      machine_suffix,
-			      standard_startfile_prefix),
+	  add_prefix (&startfile_prefixes,
+		      concat3 (standard_exec_prefix,
+			       machine_suffix,
+			       standard_startfile_prefix),
 		      0, 0, NULL_PTR);
 	}		       
 
-      add_prefix (&startfile_prefix, standard_startfile_prefix_1, 0, 0,
+      add_prefix (&startfile_prefixes, standard_startfile_prefix_1, 0, 0,
 		  NULL_PTR);
-      add_prefix (&startfile_prefix, standard_startfile_prefix_2, 0, 0,
+      add_prefix (&startfile_prefixes, standard_startfile_prefix_2, 0, 0,
 		  NULL_PTR);
 #if 0 /* Can cause surprises, and one can use -B./ instead.  */
-      add_prefix (&startfile_prefix, "./", 0, 1, NULL_PTR);
+      add_prefix (&startfile_prefixes, "./", 0, 1, NULL_PTR);
 #endif
     }
 
@@ -4237,7 +4319,7 @@ main (argc, argv)
 
   if (print_prog_name)
     {
-      char *newname = find_a_file (&exec_prefix, print_prog_name, X_OK);
+      char *newname = find_a_file (&exec_prefixes, print_prog_name, X_OK);
       printf ("%s\n", (newname ? newname : print_prog_name));
       exit (0);
     }
@@ -4307,7 +4389,7 @@ main (argc, argv)
 
 	  input_basename = input_filename;
 	  for (p = input_filename; *p; p++)
-	    if (*p == '/')
+	    if (*p == '/' || *p == DIR_SEPARATOR)
 	      input_basename = p + 1;
 
 	  /* Find a suffix starting with the last period,
@@ -4372,8 +4454,8 @@ main (argc, argv)
 
       /* Rebuild the COMPILER_PATH and LIBRARY_PATH environment variables
 	 for collect.  */
-      putenv_from_prefixes (&exec_prefix, "COMPILER_PATH=");
-      putenv_from_prefixes (&startfile_prefix, "LIBRARY_PATH=");
+      putenv_from_prefixes (&exec_prefixes, "COMPILER_PATH=");
+      putenv_from_prefixes (&startfile_prefixes, "LIBRARY_PATH=");
 
       /* Build COLLECT_GCC_OPTIONS to have all of the options specified to
 	 the compiler.  */
@@ -4408,8 +4490,8 @@ main (argc, argv)
     }
 
   /* Warn if a -B option was specified but the prefix was never used.  */
-  unused_prefix_warnings (&exec_prefix);
-  unused_prefix_warnings (&startfile_prefix);
+  unused_prefix_warnings (&exec_prefixes);
+  unused_prefix_warnings (&startfile_prefixes);
 
   /* If options said don't run linker,
      complain about input files to be given to the linker.  */
@@ -4466,8 +4548,16 @@ lookup_compiler (name, length, language)
 	  ||
 	  (strlen (cp->suffix) < length
 	   /* See if the suffix matches the end of NAME.  */
+#ifdef OS2
+	   && (!strcmp (cp->suffix,
+			name + length - strlen (cp->suffix))
+	    || !strpbrk (cp->suffix, "ABCDEFGHIJKLMNOPQRSTUVWXYZ")
+	     && !strcasecmp (cp->suffix,
+			  name + length - strlen (cp->suffix)))))
+#else
 	   && !strcmp (cp->suffix,
 		       name + length - strlen (cp->suffix))))
+#endif
 	{
 	  if (cp->spec[0][0] == '@')
 	    {
@@ -4512,21 +4602,42 @@ xrealloc (ptr, size)
   return value;
 }
 
-/* Return a newly-allocated string whose contents concatenate those of s1, s2, s3.  */
+/* Return a newly-allocated string whose contents concatenate those of s1, s2 */
 
 static char *
-concat (s1, s2, s3)
-     char *s1, *s2, *s3;
+concat (s1, s2)
+     char *s1, *s2;
 {
-  int len1 = strlen (s1), len2 = strlen (s2), len3 = strlen (s3);
-  char *result = xmalloc (len1 + len2 + len3 + 1);
+  int len1 = strlen (s1);
+  int len2 = strlen (s2);
+  char *result = xmalloc (len1 + len2 + 1);
 
   strcpy (result, s1);
   strcpy (result + len1, s2);
-  strcpy (result + len1 + len2, s3);
-  *(result + len1 + len2 + len3) = 0;
+  *(result + len1 + len2) = 0;
 
   return result;
+}
+
+static char *
+concat3 (s1, s2, s3)
+     char *s1, *s2, *s3;
+{
+  return concat (concat (s1, s2), s3);
+}
+
+static char *
+concat4 (s1, s2, s3, s4)
+     char *s1, *s2, *s3, *s4;
+{
+  return concat (concat (s1, s2), concat (s3, s4));
+}
+
+static char *
+concat6 (s1, s2, s3, s4, s5, s6)
+     char *s1, *s2, *s3, *s4, *s5, *s6;
+{
+  return concat3 (concat (s1, s2), concat (s3, s4), concat (s5, s6));
 }
 
 static char *
@@ -4548,7 +4659,7 @@ pfatal_with_name (name)
   char *s;
 
   if (errno < sys_nerr)
-    s = concat ("%s: ", sys_errlist[errno], "");
+    s = concat ("%s: ", sys_errlist[errno]);
   else
     s = "cannot open %s";
   fatal (s, name);
@@ -4561,7 +4672,7 @@ perror_with_name (name)
   char *s;
 
   if (errno < sys_nerr)
-    s = concat ("%s: ", sys_errlist[errno], "");
+    s = concat ("%s: ", sys_errlist[errno]);
   else
     s = "cannot open %s";
   error (s, name);
@@ -4574,8 +4685,7 @@ perror_exec (name)
   char *s;
 
   if (errno < sys_nerr)
-    s = concat ("installation problem, cannot exec %s: ",
-		sys_errlist[errno], "");
+    s = concat ("installation problem, cannot exec %s: ", sys_errlist[errno]);
   else
     s = "installation problem, cannot exec %s";
   error (s, name);
