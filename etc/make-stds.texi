@@ -209,11 +209,12 @@ don't need to replace them with other programs.
 Each program-name variable should come with an options variable that is
 used to supply options to the program.  Append @samp{FLAGS} to the
 program-name variable name to get the options variable name---for
-example, @code{BISONFLAGS}.  (The name @code{CFLAGS} is an exception to
-this rule, but we keep it because it is standard.)  Use @code{CPPFLAGS}
-in any compilation command that runs the preprocessor, and use
-@code{LDFLAGS} in any compilation command that does linking as well as
-in any direct use of @code{ld}.
+example, @code{BISONFLAGS}.  (The names @code{CFLAGS} for the C
+compiler, @code{YFLAGS} for yacc, and @code{LFLAGS} for lex, are
+exceptions to this rule, but we keep them because they are standard.)
+Use @code{CPPFLAGS} in any compilation command that runs the
+preprocessor, and use @code{LDFLAGS} in any compilation command that
+does linking as well as in any direct use of @code{ld}.
 
 If there are C compiler options that @emph{must} be used for proper
 compilation of certain files, do not include them in @code{CFLAGS}.
@@ -239,6 +240,9 @@ Put @code{CFLAGS} last in the compilation command, after other variables
 containing compiler options, so the user can use @code{CFLAGS} to
 override the others.
 
+@code{CFLAGS} should be used in every invocation of the C compiler,
+both those which do compilation and those which do linking.
+
 Every Makefile should define the variable @code{INSTALL}, which is the
 basic command for installing a file into the system.
 
@@ -251,6 +255,18 @@ respectively.  Use these variables as follows:
 @example
 $(INSTALL_PROGRAM) foo $(bindir)/foo
 $(INSTALL_DATA) libfoo.a $(libdir)/libfoo.a
+@end example
+
+Optionally, you may prepend the value of @code{DESTDIR} to the target
+filename.  Doing this allows the installer to create a snapshot of the
+installation to be copied onto the real target filesystem later.  Do not
+set the value of @code{DESTDIR} in your Makefile, and do not include it
+in any installed files.  With support for @code{DESTDIR}, the above
+examples become:
+
+@example
+$(INSTALL_PROGRAM) foo $(DESTDIR)$(bindir)/foo
+$(INSTALL_DATA) libfoo.a $(DESTDIR)$(libdir)/libfoo.a
 @end example
 
 @noindent
@@ -279,6 +295,10 @@ When building the complete GNU system, the prefix will be empty and
 @file{/usr} will be a symbolic link to @file{/}.
 (If you are using Autoconf, write it as @samp{@@prefix@@}.)
 
+Running @samp{make install} with a different value of @code{prefix}
+from the one used to build the program should @var{not} recompile
+the program.
+
 @item exec_prefix
 A prefix used in constructing the default values of some of the
 variables listed below.  The default value of @code{exec_prefix} should
@@ -288,6 +308,10 @@ be @code{$(prefix)}.
 Generally, @code{$(exec_prefix)} is used for directories that contain
 machine-specific files (such as executables and subroutine libraries),
 while @code{$(prefix)} is used directly for other directories.
+
+Running @samp{make install} with a different value of @code{exec_prefix}
+from the one used to build the program should @var{not} recompile the
+program.
 @end table
 
 Executable programs are installed in one of the following directories.
@@ -355,14 +379,11 @@ files.  This directory should normally be @file{/usr/local/etc}, but
 write it as @file{$(prefix)/etc}.
 (If you are using Autoconf, write it as @samp{@@sysconfdir@@}.)
 
-@c rewritten to avoid overfull hbox --tower
-Do not install executables
-@c here
-in this directory (they probably
-belong in @file{$(libexecdir)} or @file{$(sbindir)}).  Also do not
-install files that are modified in the normal course of their use
-(programs whose purpose is to change the configuration of the system
-excluded).  Those probably belong in @file{$(localstatedir)}.
+Do not install executables here in this directory (they probably belong
+in @file{$(libexecdir)} or @file{$(sbindir)}).  Also do not install
+files that are modified in the normal course of their use (programs
+whose purpose is to change the configuration of the system excluded).
+Those probably belong in @file{$(localstatedir)}.
 
 @item sharedstatedir
 The directory for installing architecture-independent data files which
@@ -415,7 +436,7 @@ should normally be @file{/usr/local/include}, but write it as
 @file{$(prefix)/include}.
 (If you are using Autoconf, write it as @samp{@@includedir@@}.)
 
-Most compilers other than GCC do not look for header files in
+Most compilers other than GCC do not look for header files in directory
 @file{/usr/local/include}.  So installing the header files this way is
 only useful with GCC.  Sometimes this is not a problem because some
 libraries are only really intended to work with GCC.  But some libraries
@@ -567,12 +588,12 @@ Here is a sample rule to install an Info file:
 @comment This example has been carefully formatted for the Make manual.
 @comment Please do not reformat it without talking to roland@gnu.ai.mit.edu.
 @smallexample
-$(infodir)/foo.info: foo.info
+$(DESTDIR)$(infodir)/foo.info: foo.info
         $(POST_INSTALL)
 # There may be a newer info file in . than in srcdir.
         -if test -f foo.info; then d=.; \
          else d=$(srcdir); fi; \
-        $(INSTALL_DATA) $$d/foo.info $@@; \
+        $(INSTALL_DATA) $$d/foo.info $(DESTDIR)$@@; \
 # Run install-info only if it exists.
 # Use `if' instead of just prepending `-' to the
 # line so we notice real errors from install-info.
@@ -580,8 +601,8 @@ $(infodir)/foo.info: foo.info
 # fail gracefully when there is an unknown command.
         if $(SHELL) -c 'install-info --version' \
            >/dev/null 2>&1; then \
-          install-info --dir-file=$(infodir)/dir \
-                       $(infodir)/foo.info; \
+          install-info --dir-file=$(DESTDIR)$(infodir)/dir \
+                       $(DESTDIR)$(infodir)/foo.info; \
         else true; fi
 @end smallexample
 

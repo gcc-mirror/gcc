@@ -2,8 +2,8 @@
 @c %**start of header
 @setfilename standards.info
 @settitle GNU Coding Standards
-@c UPDATE THIS DATE WHENEVER YOU MAKE CHANGES!
-@set lastupdate 16 January 1997
+@c This date is automagically updated when you save this file:
+@set lastupdate March 13, 1998
 @c %**end of header
 
 @ifinfo
@@ -28,7 +28,7 @@ END-INFO-DIR-ENTRY
 
 @ifinfo
 GNU Coding Standards
-Copyright (C) 1992, 1993, 1994, 1995, 1996 Free Software Foundation, Inc.
+Copyright (C) 1992, 1993, 1994, 1995, 1996, 1997, 1998 Free Software Foundation, Inc.
 
 Permission is granted to make and distribute verbatim copies of
 this manual provided the copyright notice and this permission notice
@@ -59,7 +59,7 @@ by the Free Software Foundation.
 @page
 
 @vskip 0pt plus 1filll
-Copyright @copyright{} 1992, 1993, 1994, 1995, 1996 Free Software Foundation, Inc.
+Copyright @copyright{} 1992, 1993, 1994, 1995, 1996, 1997, 1998 Free Software Foundation, Inc.
 
 Permission is granted to make and distribute verbatim copies of
 this manual provided the copyright notice and this permission notice
@@ -104,8 +104,8 @@ programs written in C, but many of the rules and principles are useful
 even if you write in another programming language.  The rules often
 state reasons for writing in a certain way.
 
-Corrections or suggestions regarding this document should be sent to
-@code{gnu@@prep.ai.mit.edu}.  If you make a suggestion, please include a
+Corrections or suggestions for this document should be sent to
+@email{gnu@@gnu.org}.  If you make a suggestion, please include a
 suggested new wording for it; our time is limited.  We prefer a context
 diff to the @file{standards.texi} or @file{make-stds.texi} files, but if
 you don't have those files, please mail your suggestion anyway.
@@ -168,14 +168,18 @@ contributor to a program must sign some sort of legal papers in order
 for us to have clear title to the program.  The main author alone is not
 enough.
 
-So, before adding in any contributions from other people, tell us
-so we can arrange to get the papers.  Then wait until we tell you
+So, before adding in any contributions from other people, please tell
+us, so we can arrange to get the papers.  Then wait until we tell you
 that we have received the signed papers, before you actually use the
 contribution.
 
 This applies both before you release the program and afterward.  If
 you receive diffs to fix a bug, and they make significant changes, we
-need legal papers for it.
+need legal papers for that change.
+
+This also applies to comments and documentation files.  For copyright
+law, comments and code are just text.  Copyright applies to all kinds of
+text, so we need legal papers for all kinds.
 
 You don't need papers for changes of a few lines here or there, since
 they are not significant for copyright purposes.  Also, you don't need
@@ -191,6 +195,10 @@ that code out again!
 The very worst thing is if you forget to tell us about the other
 contributor.  We could be very embarrassed in court some day as a
 result.
+
+We have more detailed advice for maintainers of programs; if you have
+reached the stage of actually maintaining a program for GNU (whether
+released or not), please ask us for a copy.
 
 @node Design Advice
 @chapter General Program Design
@@ -236,9 +244,6 @@ completely with something totally different and better.  (For example,
 feature as well.  (There is a free @code{vi} clone, so we offer it.)
 
 Additional useful features not in Berkeley Unix are welcome.
-Additional programs with no counterpart in Unix may be useful,
-but our first priority is usually to duplicate what Unix already
-has.
 
 @node Using Extensions
 @section Using Non-standard Features
@@ -323,13 +328,16 @@ write in @sc{ansi} C.
 Using a language other than C is like using a non-standard feature: it
 will cause trouble for users.  Even if GCC supports the other language,
 users may find it inconvenient to have to install the compiler for that
-other language in order to build your program.  So please write in C.
+other language in order to build your program.  For example, if you
+write your program in C++, people will have to install the C++ compiler
+in order to compile your program.  Thus, it is better if you write in C.
 
-There are three exceptions for this rule:
+But there are three situations when there is no disadvantage in using
+some other language:
 
 @itemize @bullet
 @item
-It is okay to use a special language if the same program contains an
+It is okay to use another language if your program contains an
 interpreter for that language.
 
 For example, if your program links with GUILE, it is ok to write part of
@@ -343,9 +351,13 @@ This is okay because the only people who want to build the tool will be
 those who have installed the other language anyway.
 
 @item
-If an application is not of extremely widespread interest, then perhaps
+If an application is of interest to a narrow community, then perhaps
 it's not important if the application is inconvenient to install.
 @end itemize
+
+C has one other advantage over C++ and other compiled languages: more
+people know C, so more people will find it easy to read and modify the
+program if it is written in C.
 
 @node Program Behavior
 @chapter Program Behavior for All Programs
@@ -606,10 +618,10 @@ you can do so by printing an additional line of version info for each
 library you want to mention.  Use the same format for these lines as for
 the first line.
 
-Please don't mention all the libraries that the program uses ``just for
-completeness''---that would produce a lot of unhelpful clutter.  Please
-mention library version numbers only if you find in practice that they
-are very important to you in debugging.
+Please do not mention all of the libraries that the program uses ``just
+for completeness''---that would produce a lot of unhelpful clutter.
+Please mention library version numbers only if you find in practice that
+they are very important to you in debugging.
 
 The following line, after the version number line or lines, should be a
 copyright notice.  If more than one copyright notice is called for, put
@@ -628,10 +640,12 @@ Here's an example of output that follows these rules:
 @smallexample
 GNU Emacs 19.34.5
 Copyright (C) 1996 Free Software Foundation, Inc.
-GNU Emacs comes with NO WARRANTY, to the extent permitted by law.
+GNU Emacs comes with NO WARRANTY,
+to the extent permitted by law.
 You may redistribute copies of GNU Emacs
 under the terms of the GNU General Public License.
-For more information about these matters, see the files named COPYING.
+For more information about these matters,
+see the files named COPYING.
 @end smallexample
 
 You should adapt this to your program, of course, filling in the proper
@@ -664,7 +678,7 @@ Report bugs to @var{mailing-address}.
 Here is a table of long options used by GNU programs.  It is surely
 incomplete, but we aim to list all the options that a new program might
 want to be compatible with.  If you use names not already in the table,
-please send @samp{gnu@@prep.ai.mit.edu} a list of them, with their
+please send @email{gnu@@gnu.org} a list of them, with their
 meanings, so we can update the table.
 
 @c Please leave newlines between items in this table; it's much easier
@@ -1159,7 +1173,7 @@ Used in @code{su}.
 @item machine
 No listing of which programs already use this;
 someone should check to
-see if any actually do and tell @code{gnu@@prep.ai.mit.edu}.
+see if any actually do, and tell @email{gnu@@gnu.org}.
 
 @item macro-name
 @samp{-M} in @code{ptx}.
@@ -1962,6 +1976,11 @@ its sense}.  @samp{#else} should have a comment describing the condition
   @dots{}
 #endif /* not foo */
 @end group
+@group
+#ifdef foo
+  @dots{}
+#endif /* foo */
+@end group
 @end example
 
 @noindent
@@ -1975,8 +1994,12 @@ but, by contrast, write the comments this way for a @samp{#ifndef}:
   @dots{}
 #endif /* foo */
 @end group
+@group
+#ifndef foo
+  @dots{}
+#endif /* not foo */
+@end group
 @end example
-
 
 @node Syntactic Conventions
 @section Clean Use of C Constructs
@@ -2433,7 +2456,7 @@ printf ((nfiles != 1 ? gettext ("%d files processed")
 @end example
 
 @noindent
-This can any method of forming the plural of the word for ``file'', and
+This can be any method of forming the plural of the word for ``file'', and
 also handles languages that require agreement in the word for
 ``processed''.
 
@@ -2924,9 +2947,12 @@ to work with @var{package}.
 @c  Giving an optional @var{parameter} of
 @c @samp{no} should omit @var{package}, if it is used by default.
 
-Possible values of @var{package} include @samp{x}, @samp{x-toolkit},
-@samp{gnu-as} (or @samp{gas}), @samp{gnu-ld}, @samp{gnu-libc}, and
-@samp{gdb}.
+Possible values of @var{package} include 
+@samp{gnu-as} (or @samp{gas}), @samp{gnu-ld}, @samp{gnu-libc},
+@samp{gdb},
+@samp{x}, 
+and
+@samp{x-toolkit}.
 
 Do not use a @samp{--with} option to specify the file name to use to
 find certain files.  That is outside the scope of what @samp{--with}
@@ -2993,9 +3019,9 @@ ignore most of its arguments.
 @node Releases
 @section Making Releases
 
-Package the distribution of Foo version 69.96 in a gzipped tar file
-named @file{foo-69.96.tar.gz}.  It should unpack into a subdirectory
-named @file{foo-69.96}.
+Package the distribution of @code{Foo version 69.96} up in a gzipped tar
+file with the name @file{foo-69.96.tar.gz}.  It should unpack into a
+subdirectory named @file{foo-69.96}.
 
 Building and installing the program should never modify any of the files
 contained in the distribution.  This means that all the files that form
@@ -3059,3 +3085,9 @@ other files to get.
 @contents
 
 @bye
+Local variables:
+update-date-leading-regexp: "@c This date is automagically updated when you save this file:\n@set lastupdate "
+update-date-trailing-regexp: ""
+eval: (load "/gd/gnuorg/update-date.el")
+eval: (add-hook 'write-file-hooks 'update-date)
+End:

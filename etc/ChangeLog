@@ -1,3 +1,36 @@
+Thu May 14 14:43:10 1998  Nick Clifton  <nickc@cygnus.com>
+
+	* targetdoc/arm-interwork.texi: Document dlltool support of
+	interworking. 
+
+Thu May  7 16:49:38 1998  Jason Molenda  (crash@bugshack.cygnus.com)
+
+	* Install.in: Remove references to TCL_LIBRARY, TK_LIBRARY,
+	and GDBTK_FILENAME.
+
+Wed Apr  1 17:11:44 1998  Nick Clifton  <nickc@cygnus.com>
+
+	* targetdoc/arm-interwork.texi: Document ARM/thumb interworking. 
+
+Tue Mar 31 15:28:20 1998  Ian Lance Taylor  <ian@cygnus.com>
+
+	* standards.texi, make-stds.texi: Update to current FSF versions.
+	* Makefile.in (standards.info): Depend upon make-std.texi.
+
+Tue Mar 24 16:13:26 1998  Stu Grossman  <grossman@bhuna.cygnus.co.uk>
+
+	* configure:  Regenerate with autoconf 2.12.1 to fix shell issues
+	for NT native builds. 
+
+Mon Mar  9 16:41:04 1998  Doug Evans  <devans@canuck.cygnus.com>
+
+	* make-rel-sym-tree (binprogs): Add objcopy.
+
+Tue Feb 24 18:11:58 1998  Doug Evans  <devans@canuck.cygnus.com>
+
+	* make-rel-sym-tree: as.new -> as-new, ld.new -> ld-new
+	nm.new -> nm-new.  Make symlinks to crt*.o.
+
 Fri Nov 21 12:54:58 1997  Manfred Hollstein <manfred@s-direktnet.de>
 
 	* Makefile.in: Add --no-split argument to avoid creating files
@@ -8,10 +41,24 @@ Tue Oct  7 16:27:34 1997  Manfred Hollstein  <manfred@s-direktnet.de>
         * aclocal.m4: Substitute INSTALL.
         * configure: Re-built.
 
+Thu Sep 25 13:13:11 1997  Jason Molenda  (crash@pern.cygnus.com)
+
+	* intro.texi: Add closing ifset.
+
 Mon Sep 15 22:53:01 1997  Jeffrey A Law  (law@cygnus.com)
 
 	* aclocal.m4: New file with replacement for AC_PROG_INSTALL.
 	* configure.in: Use EGCS_PROG_INSTALL.
+
+Mon Sep  1 10:31:32 1997  Angela Marie Thomas (angela@cygnus.com)
+
+	* Install.in: Move setting HOST and TARGET to the beginning
+	of the file for editing convenience.
+
+Mon Sep  1 10:28:37 1997  Angela Marie Thomas (angela@cygnus.com)
+
+	* Install.in.: More friendly options/messages when extracting
+	from a file instead of a tape device.
 
 Tue Jun 17 15:50:23 1997  Angela Marie Thomas (angela@cygnus.com)
 

@@ -59,7 +59,7 @@ install-info: info
 
 dvi: $(DVIFILES)
 
-standards.info: $(srcdir)/standards.texi
+standards.info: $(srcdir)/standards.texi $(srcdir)/make-stds.texi
 	$(MAKEINFO) --no-split -I$(srcdir) -o standards.info $(srcdir)/standards.texi
 
 standards.dvi: $(srcdir)/standards.texi
