@@ -1,3 +1,9 @@
+2002-12-23  David Edelsohn  <edelsohn@gnu.org>
+
+	PR middle-end/8784
+	* expr.c (expand_assignment): Apply special treatment to
+	ARRAY_TYPE.
+
 2002-12-21  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* config/h8300/h8300.md (zero_extendqisi2): Correct the
