@@ -1,5 +1,11 @@
 2003-05-01  Paolo Carlini  <pcarlini@unitus.it>
 
+	* include/std/std_sstream.h (str()): Revert the best of the
+	previous 'improvement', incorrect due to the COW nature of
+	v3 basic_string; simplify.
+
+2003-05-01  Paolo Carlini  <pcarlini@unitus.it>
+
 	* include/bits/streambuf.tcc (__copy_streambufs): Adjust the
 	type of __avail to ptrdiff_t to avoid signed-unsigned warning.
 
