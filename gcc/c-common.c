@@ -1232,9 +1232,12 @@ check_format_info (info, params)
 			   *format_chars);
 		  warning (message);
 		}
-	      i = strlen (flag_chars);
-	      flag_chars[i++] = *format_chars++;
-	      flag_chars[i] = 0;
+	      else
+		{
+		  i = strlen (flag_chars);
+		  flag_chars[i++] = *format_chars++;
+		  flag_chars[i] = 0;
+		}
 	    }
 	  /* "If the space and + flags both appear, 
 	     the space flag will be ignored."  */
