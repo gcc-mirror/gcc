@@ -3305,6 +3305,7 @@ build_unresolved_array_type (type_or_wfl)
      tree type_or_wfl;
 {
   const char *ptr;
+  tree wfl;
 
   /* TYPE_OR_WFL might be an array on a resolved type. In this case,
      just create a array type */
@@ -3316,10 +3317,14 @@ build_unresolved_array_type (type_or_wfl)
 		 IDENTIFIER_POINTER (EXPR_WFL_NODE (type_or_wfl)),
 		 IDENTIFIER_LENGTH (EXPR_WFL_NODE (type_or_wfl)));
   ptr = obstack_finish (&temporary_obstack);
-  return build_expr_wfl (get_identifier (ptr),
-			 EXPR_WFL_FILENAME (type_or_wfl),
-			 EXPR_WFL_LINENO (type_or_wfl),
-			 EXPR_WFL_COLNO (type_or_wfl));
+  wfl = build_expr_wfl (get_identifier (ptr),
+			EXPR_WFL_FILENAME (type_or_wfl),
+			EXPR_WFL_LINENO (type_or_wfl),
+			EXPR_WFL_COLNO (type_or_wfl));
+  /* Re-install the existing qualifications so that the type can be
+     resolved properly. */
+  EXPR_WFL_QUALIFICATION (wfl) = EXPR_WFL_QUALIFICATION (type_or_wfl);
+  return wfl;
 }
 
 static void
