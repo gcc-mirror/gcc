@@ -1,3 +1,9 @@
+2002-03-31  Jakub Jelinek  <jakub@redhat.com>
+
+	* config/sparc/sparc.c (function_arg_record_value_1): Pass complex
+	floating fields in float regs.
+	(function_arg_record_value_2): Likewise.
+
 2002-03-31  Hans-Peter Nilsson  <hp@bitrange.com>
 
 	* config/mmix/mmix.md (define_constants): Remove misleading
