@@ -885,9 +885,7 @@ init_cse_reg_info (unsigned int nregs)
     }
 }
 
-/* Given REGNO, ensure that a cse_reg_info entry exists for REGNO by
-   growing the cse_reg_info_table and/or initializing the entry for
-   REGNO.  */
+/* Given REGNO, initialize the cse_reg_info entry for REGNO.  */
 
 static void
 get_cse_reg_info_1 (unsigned int regno)
@@ -928,7 +926,7 @@ new_basic_block (void)
 
   next_qty = 0;
 
-  /* Invalidate cse_reg_info_table and its cache.  */
+  /* Invalidate cse_reg_info_table.  */
   cse_reg_info_timestamp++;
 
   /* Clear out hash table state for this pass.  */
