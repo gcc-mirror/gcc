@@ -6,6 +6,6 @@ ftnint G77_iargc_0 ()
 ftnint G77_iargc_0 (void)
 #endif
 {
-extern int xargc;
-return ( xargc - 1 );
+extern int f__xargc;
+return ( f__xargc - 1 );
 }

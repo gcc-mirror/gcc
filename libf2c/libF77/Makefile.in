@@ -34,7 +34,7 @@ VPATH = @srcdir@
 
 MISC =	F77_aloc.o VersionF.o main.o s_rnge.o abort_.o getarg_.o iargc_.o\
 	getenv_.o signal_.o s_stop.o s_paus.o system_.o cabs.o\
-	derf_.o derfc_.o erf_.o erfc_.o sig_die.o exit_.o
+	derf_.o derfc_.o erf_.o erfc_.o sig_die.o exit_.o setarg.o setsig.o
 POW =	pow_ci.o pow_dd.o pow_di.o pow_hh.o pow_ii.o  pow_ri.o pow_zi.o pow_zz.o \
 	pow_qq.o
 CX =	c_abs.o c_cos.o c_div.o c_exp.o c_log.o c_sin.o c_sqrt.o

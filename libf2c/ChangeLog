@@ -1,3 +1,15 @@
+Tue May 19 12:50:27 1998  Craig Burley  <burley@gnu.org>
+
+	Break up main() into separate .o's so making and
+	linking against shared libraries with non-Fortran
+	main() routines is easier:
+	* Makefile.in (MISC): Add setarg.o and setsig.o.
+	* libF77/Makefile.in (MISC): Ditto.
+	* libF77/setarg.c: New file, contains f_setarg().
+	* libF77/setsig.c: New file, contains f_setsig().
+	* libF77/getarg_.c: Rename xarg* to f__xarg*.
+	* libF77/iargc_.c: Ditto
+
 Sat May  2 16:44:46 1998  Craig Burley  <burley@gnu.org>
 
 	* libF77/signal_.c, libI77/dfe.c, libI77/due.c,
