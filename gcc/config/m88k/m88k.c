@@ -1,5 +1,6 @@
 /* Subroutines for insn-output.c for Motorola 88000.
-   Copyright (C) 1988, 92, 93, 94, 95, 16, 1997 Free Software Foundation, Inc.
+   Copyright (C) 1988, 92, 93, 94, 95, 16, 1997, 1999 Free Software
+   Foundation, Inc. 
    Contributed by Michael Tiemann (tiemann@mcc.com)
    Currently maintained by (gcc@dg-rtp.dg.com)
 
