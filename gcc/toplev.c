@@ -299,8 +299,8 @@ enum dump_file_index
 
    Remaining -d letters:
 
-	"              o q         "
-	"       H JK   OPQ  TUV  YZ"
+	"            m   q         "
+	"         JK   O Q   UV  YZ"
 */
 
 static struct dump_file_info dump_file[DFI_MAX] =
