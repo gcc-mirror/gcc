@@ -94,7 +94,7 @@ lower_function_body (void)
           || TREE_OPERAND (TREE_VALUE (data.return_statements), 0) != NULL))
     {
       x = build (RETURN_EXPR, void_type_node, NULL);
-      annotate_with_locus (x, cfun->function_end_locus);
+      SET_EXPR_LOCATION (x, cfun->function_end_locus);
       tsi_link_after (&i, x, TSI_CONTINUE_LINKING);
     }
 
@@ -109,7 +109,11 @@ lower_function_body (void)
 	 It now fills in for many such returns.  Failure to remove this
 	 will result in incorrect results for coverage analysis.  */
       x = TREE_VALUE (t);
+#ifdef USE_MAPPED_LOCATION
+      SET_EXPR_LOCATION (x, UNKNOWN_LOCATION);
+#else
       SET_EXPR_LOCUS (x, NULL);
+#endif
       tsi_link_after (&i, x, TSI_CONTINUE_LINKING);
     }
 

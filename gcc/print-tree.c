@@ -160,6 +160,7 @@ print_node (FILE *file, const char *prefix, tree node, int indent)
   int len;
   int first_rtl;
   int i;
+  expanded_location xloc;
 
   if (node == 0)
     return;
@@ -372,8 +373,8 @@ print_node (FILE *file, const char *prefix, tree node, int indent)
 	fputs (" decl_7", file);
 
       fprintf (file, " %s", GET_MODE_NAME (mode));
-      fprintf (file, " file %s line %d",
-	       DECL_SOURCE_FILE (node), DECL_SOURCE_LINE (node));
+      xloc = expand_location (DECL_SOURCE_LOCATION (node));
+      fprintf (file, " file %s line %d", xloc.file, xloc.line);
 
       print_node (file, "size", DECL_SIZE (node), indent + 4);
       print_node (file, "unit size", DECL_SIZE_UNIT (node), indent + 4);
@@ -745,10 +746,9 @@ print_node (FILE *file, const char *prefix, tree node, int indent)
 
   if (EXPR_HAS_LOCATION (node))
     {
+      expanded_location xloc = expand_location (EXPR_LOCATION (node));
       indent_to (file, indent+4);
-      fprintf (file, "%s:%d",
-	       EXPR_FILENAME (node),
-	       EXPR_LINENO (node));
+      fprintf (file, "%s:%d", xloc.file, xloc.line);
     }
 
   fprintf (file, ">");

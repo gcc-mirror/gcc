@@ -40,6 +40,20 @@
 	clear and restore input_Location - now handled by lang_dependent_init.
 	* function.c (init_function_start):  Use new DECL_IS_BUILTIN macro.
 	* xcoffout.c (xcoff_assign_fundamental_type_number):  Likewise.
+	* tree-mudflap.c (mf_file_function_line_tree):  Take a location_t
+	rather than a pointer to one.  Use expand_location.
+	(mf_varname_tree):  Use expand_location.
+	* tree-dump.c:  Use expand_location on DECL_SOURCE_LOCATION.
+	* coverage.c:  Likewise.
+	* print-tree.c:  Likewise.
+	* c-aux-info.c (gen_aux_info_record):  Likewise.
+	* c-parse.in:  Use SET_EXPR_LOCATION macro.
+	* gimple-low.c:  Likewise.
+	* tree-mudflap.c:  Likewise.
+	* gimplify.c:  Likewise.  Also use EXPR_LOCATION and EXPR_HAS_LOCATION.
+	* c-ppoutput.c:  Use new source_location typedef instead of fileline.
+	* c-semantics.c:  Use new macros.
+	* c-typeck.c:  Likewise.
 
 2004-06-30  Richard Sandiford  <rsandifo@redhat.com>
 	    Eric Christopher  <echristo@redhat.com>

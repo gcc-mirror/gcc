@@ -500,10 +500,11 @@ coverage_checksum_string (unsigned chksum, const char *string)
 static unsigned
 compute_checksum (void)
 {
-  unsigned chksum = DECL_SOURCE_LINE (current_function_decl);
+  expanded_location xloc
+    = expand_location (DECL_SOURCE_LOCATION (current_function_decl));
+  unsigned chksum = xloc.line;
 
-  chksum = coverage_checksum_string (chksum,
-      				     DECL_SOURCE_FILE (current_function_decl));
+  chksum = coverage_checksum_string (chksum, xloc.file);
   chksum = coverage_checksum_string
     (chksum, IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (current_function_decl)));
 
@@ -523,8 +524,8 @@ coverage_begin_output (void)
 
   if (!bbg_function_announced)
     {
-      const char *file = DECL_SOURCE_FILE (current_function_decl);
-      unsigned line = DECL_SOURCE_LINE (current_function_decl);
+      expanded_location xloc
+	= expand_location (DECL_SOURCE_LOCATION (current_function_decl));
       unsigned long offset;
 
       if (!bbg_file_opened)
@@ -546,8 +547,8 @@ coverage_begin_output (void)
       gcov_write_unsigned (compute_checksum ());
       gcov_write_string (IDENTIFIER_POINTER
 			 (DECL_ASSEMBLER_NAME (current_function_decl)));
-      gcov_write_string (file);
-      gcov_write_unsigned (line);
+      gcov_write_string (xloc.file);
+      gcov_write_unsigned (xloc.line);
       gcov_write_length (offset);
 
       bbg_function_announced = 1;
