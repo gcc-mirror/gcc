@@ -5937,7 +5937,13 @@ cannot resolve overloaded function `%D' based on conversion to type `%T'",
           explained = 1;
         }
     }
-  mark_used (fn);
+
+  /* If we're doing overload resolution purely for the purpose of
+     determining conversion sequences, we should not consider the
+     function used.  If this conversion sequence is selected, the
+     function will be marked as used at this point.  */
+  if (!(flags & tf_conv))
+    mark_used (fn);
 
   if (TYPE_PTRFN_P (target_type) || TYPE_PTRMEMFUNC_P (target_type))
     return build_unary_op (ADDR_EXPR, fn, 0);

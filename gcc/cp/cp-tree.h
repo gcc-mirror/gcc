@@ -3034,9 +3034,13 @@ typedef enum tsubst_flags_t {
 				   (lookup_template_class use) */
   tf_stmt_expr_cmpd = 1 << 6,   /* tsubsting the compound statement of
 				   a statement expr.  */
-  tf_stmt_expr_body = 1 << 7    /* tsubsting the statements in the
+  tf_stmt_expr_body = 1 << 7,   /* tsubsting the statements in the
 			       	   body of the compound statement of a
 			       	   statement expr.  */
+  tf_conv = 1 << 8              /* We are determining what kind of
+				   conversion might be permissible,
+				   not actually performing the
+				   conversion.  */
 } tsubst_flags_t;
 
 /* The kind of checking we can do looking in a class hierarchy.  */
