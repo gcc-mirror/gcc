@@ -1,3 +1,8 @@
+2001-04-11  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* method.c (implicitly_declare_fn): Commonize code for copy ctor
+	and assignment op. Set TREE_USED for parameter.
+
 2001-04-10  Mark Mitchell  <mark@codesourcery.com>
 
 	* class.c (find_final_overrider_data): Add `candidates'.
