@@ -1,3 +1,15 @@
+2004-04-19  Richard Henderson  <rth@redhat.com>
+
+	* c-common.c, c-common.h (lang_gimplify_stmt): Remove.
+	* c-gimplify.c: Remove unnecessary prototypes.
+	(c_gimplify_stmt): Merge into ...
+	(c_gimplify_expr): ... here.  Don't play with prep_stmt.
+	* c-semantics.c (prep_stmt): Remove.
+	* gimplify.c (annotate_one_with_locus): Break out from ...
+	(annotate_all_with_locus): ... here.
+	(gimplify_expr): Add locus to expressions even if pre/post queues
+	are not present.
+
 2004-06-19  Richard Henderson  <rth@redhat.com>
 
 	PR target/15941

@@ -304,14 +304,3 @@ build_case_label (tree low_value, tree high_value, tree label_decl)
 {
   return build_stmt (CASE_LABEL_EXPR, low_value, high_value, label_decl);
 }
-
-/* We're about to expand T, a statement.  Set up appropriate context
-   for the substitution.  */
-
-void
-prep_stmt (tree t)
-{
-  if (EXPR_LOCUS (t))
-    input_location = *EXPR_LOCUS (t);
-  current_stmt_tree ()->stmts_are_full_exprs_p = STMT_IS_FULL_EXPR_P (t);
-}

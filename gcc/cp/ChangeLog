@@ -1,3 +1,13 @@
+2004-06-19  Richard Henderson  <rth@redhat.com>
+
+	* cp-gimplify.c: Remove unnecessary prototypes.
+	(cp_gimplify_stmt): Merge into ...
+	(cp_gimplify_expr): ... here.  Move to end of file.  Handle
+	stmts_are_full_exprs_p frobbing.
+	* cp-tree.h (cp_gimplify_stmt): Remove.
+	* pt.c (tsubst_expr): Merge prep_stmt and unify.
+	* tree.c (init_tree): Don't set lang_gimplify_stmt.
+
 2004-06-18  Richard Henderson  <rth@redhat.com>
 
 	PR c++/16034

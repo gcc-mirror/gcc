@@ -30,43 +30,6 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include "toplev.h"
 #include "tree-gimple.h"
 
-static void genericize_try_block (tree *);
-static void genericize_catch_block (tree *);
-static void genericize_eh_spec_block (tree *);
-static void gimplify_must_not_throw_expr (tree *, tree *);
-static void cp_gimplify_init_expr (tree *, tree *, tree *);
-
-/* Genericize a C++ _STMT.  Called from c_gimplify_stmt.  */
-
-int
-cp_gimplify_stmt (tree *stmt_p)
-{
-  tree stmt = *stmt_p;
-  switch (TREE_CODE (stmt))
-    {
-    case TRY_BLOCK:
-      genericize_try_block (stmt_p);
-      return 1;
-
-    case HANDLER:
-      genericize_catch_block (stmt_p);
-      return 1;
-
-    case EH_SPEC_BLOCK:
-      genericize_eh_spec_block (stmt_p);
-      return 1;
-
-    case USING_STMT:
-      /* Just ignore for now.  Eventually we will want to pass this on to
-	 the debugger.  */
-      *stmt_p = build_empty_stmt ();
-      return 1;
-
-    default:
-      break;
-    }
-  return 0;
-}
 
 /* Genericize a TRY_BLOCK.  */
 
@@ -114,54 +77,6 @@ genericize_eh_spec_block (tree *stmt_p)
   gimplify_stmt (&body);
 
   *stmt_p = gimple_build_eh_filter (body, allowed, failure);
-}
-
-/* Do C++-specific gimplification.  Args are as for gimplify_expr.  */
-
-int
-cp_gimplify_expr (tree *expr_p, tree *pre_p, tree *post_p)
-{
-  switch (TREE_CODE (*expr_p))
-    {
-    case PTRMEM_CST:
-      *expr_p = cplus_expand_constant (*expr_p);
-      return GS_OK;
-
-    case AGGR_INIT_EXPR:
-      simplify_aggr_init_expr (expr_p);
-      return GS_OK;
-
-    case THROW_EXPR:
-      /* FIXME communicate throw type to backend, probably by moving
-	 THROW_EXPR into ../tree.def.  */
-      *expr_p = TREE_OPERAND (*expr_p, 0);
-      return GS_OK;
-
-    case MUST_NOT_THROW_EXPR:
-      gimplify_must_not_throw_expr (expr_p, pre_p);
-      return GS_OK;
-
-    case INIT_EXPR:
-    case MODIFY_EXPR:
-      cp_gimplify_init_expr (expr_p, pre_p, post_p);
-      return GS_OK;
-
-    case EMPTY_CLASS_EXPR:
-      {
-	/* Yes, an INTEGER_CST with RECORD_TYPE.  */
-	tree i = build_int_2 (0, 0);
-	TREE_TYPE (i) = TREE_TYPE (*expr_p);
-	*expr_p = i;
-      }
-      return GS_OK;
-
-    case BASELINK:
-      *expr_p = BASELINK_FUNCTIONS (*expr_p);
-      return GS_OK;
-
-    default:
-      return c_gimplify_expr (expr_p, pre_p, post_p);
-    }
 }
 
 /* Gimplify initialization from an AGGR_INIT_EXPR.  */
@@ -224,4 +139,100 @@ gimplify_must_not_throw_expr (tree *expr_p, tree *pre_p)
     }
   else
     *expr_p = stmt;
+}
+
+/* Do C++-specific gimplification.  Args are as for gimplify_expr.  */
+
+int
+cp_gimplify_expr (tree *expr_p, tree *pre_p, tree *post_p)
+{
+  int saved_stmts_are_full_exprs_p = 0;
+  enum tree_code code = TREE_CODE (*expr_p);
+  enum gimplify_status ret;
+
+  if (STATEMENT_CODE_P (code))
+    {
+      saved_stmts_are_full_exprs_p = stmts_are_full_exprs_p ();
+      current_stmt_tree ()->stmts_are_full_exprs_p
+	= STMT_IS_FULL_EXPR_P (*expr_p);
+    }
+
+  switch (code)
+    {
+    case PTRMEM_CST:
+      *expr_p = cplus_expand_constant (*expr_p);
+      ret = GS_OK;
+      break;
+
+    case AGGR_INIT_EXPR:
+      simplify_aggr_init_expr (expr_p);
+      ret = GS_OK;
+      break;
+
+    case THROW_EXPR:
+      /* FIXME communicate throw type to backend, probably by moving
+	 THROW_EXPR into ../tree.def.  */
+      *expr_p = TREE_OPERAND (*expr_p, 0);
+      ret = GS_OK;
+      break;
+
+    case MUST_NOT_THROW_EXPR:
+      gimplify_must_not_throw_expr (expr_p, pre_p);
+      ret = GS_OK;
+      break;
+
+    case INIT_EXPR:
+    case MODIFY_EXPR:
+      cp_gimplify_init_expr (expr_p, pre_p, post_p);
+      ret = GS_OK;
+      break;
+
+    case EMPTY_CLASS_EXPR:
+      {
+	/* Yes, an INTEGER_CST with RECORD_TYPE.  */
+	tree i = build_int_2 (0, 0);
+	TREE_TYPE (i) = TREE_TYPE (*expr_p);
+	*expr_p = i;
+      }
+      ret = GS_OK;
+      break;
+
+    case BASELINK:
+      *expr_p = BASELINK_FUNCTIONS (*expr_p);
+      ret = GS_OK;
+      break;
+
+    case TRY_BLOCK:
+      genericize_try_block (expr_p);
+      ret = GS_OK;
+      break;
+
+    case HANDLER:
+      genericize_catch_block (expr_p);
+      ret = GS_OK;
+      break;
+
+    case EH_SPEC_BLOCK:
+      genericize_eh_spec_block (expr_p);
+      ret = GS_OK;
+      break;
+
+    case USING_STMT:
+      /* Just ignore for now.  Eventually we will want to pass this on to
+	 the debugger.  */
+      *expr_p = build_empty_stmt ();
+      ret = GS_ALL_DONE;
+      break;
+
+    default:
+      ret = c_gimplify_expr (expr_p, pre_p, post_p);
+      break;
+    }
+
+  /* Restore saved state.  */
+  if (STATEMENT_CODE_P (code))
+    current_stmt_tree ()->stmts_are_full_exprs_p
+      = saved_stmts_are_full_exprs_p;
+
+  return ret;
 }
