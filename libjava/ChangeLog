@@ -1,5 +1,11 @@
 2004-11-17  Michael Koch  <konqueror@gmx.de>
 
+	*  java/nio/DirectByteBufferImpl.java
+	(owner): Updated comment.
+	(allocate): New method.
+
+2004-11-17  Michael Koch  <konqueror@gmx.de>
+
 	* java/net/URL.java (URL): Handle case when argument is null.
 
 2004-11-17  Michael Koch  <konqueror@gmx.de>

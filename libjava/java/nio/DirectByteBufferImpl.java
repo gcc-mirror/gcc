@@ -52,7 +52,7 @@ final class DirectByteBufferImpl extends ByteBuffer
       }
   }
   
-  /** Used by MappedByteBufferImpl to prevent premature GC. */
+  /** Used by MappedByteBufferImpl and when slicing to prevent premature GC. */
   protected Object owner;
 
   RawData address;
@@ -71,6 +71,14 @@ final class DirectByteBufferImpl extends ByteBuffer
     this.address = address;
     this.readOnly = readOnly;
     this.owner = owner;
+  }
+
+  /**
+   * Allocates a new direct byte buffer.
+   */ 
+  public static ByteBuffer allocate(int capacity)
+  {
+    return new DirectByteBufferImpl(allocateImpl(capacity), capacity);
   }
 
   private static native RawData allocateImpl (int capacity);
