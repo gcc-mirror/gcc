@@ -40,29 +40,35 @@ static int missing_braces_mentioned;
 extern char *index ();
 extern char *rindex ();
 
-int mark_addressable ();
-static tree convert_for_assignment ();
-static void warn_for_assignment ();
-static int function_types_compatible_p ();
-static int type_lists_compatible_p ();
-int self_promoting_args_p ();
-static int self_promoting_type_p ();
-static int comp_target_types ();
-static tree pointer_int_sum ();
-static tree pointer_diff ();
-static tree convert_sequence ();
-static tree unary_complex_lvalue ();
-static tree process_init_constructor ();
-static tree convert_arguments ();
-static char *get_spelling ();
-static tree digest_init ();
-static void pedantic_lvalue_warning ();
-tree truthvalue_conversion ();
-void incomplete_type_error ();
-void readonly_warning ();
-static tree internal_build_compound_expr ();
-
-void process_init_element ();
+static tree quality_type		PROTO((tree, tree));
+static int comp_target_types		PROTO((tree, tree));
+static int function_types_compatible_p	PROTO((tree, tree));
+static int type_lists_compatible_p	PROTO((tree, tree));
+static int self_promoting_type_p	PROTO((tree));
+static tree decl_constant_value		PROTO((tree));
+static tree lookup_field		PROTO((tree, tree, tree *));
+static tree convert_arguments		PROTO((tree, tree, tree, tree));
+static tree pointer_int_sum		PROTO((enum tree_code, tree, tree));
+static tree pointer_diff		PROTO((tree, tree));
+static tree unary_complex_lvalue	PROTO((enum tree_code, tree));
+static void pedantic_lvalue_warning	PROTO((enum tree_code));
+static tree internal_build_compound_expr PROTO((tree, int));
+static tree convert_for_assignment	PROTO((tree, tree, char *, tree,
+					       tree, int));
+static void warn_for_assignment		PROTO((char *, char *, tree, int));
+static tree valid_compound_expr_initializer PROTO((tree, tree));
+static void push_string			PROTO((char *));
+static void push_member_name		PROTO((tree));
+static void push_array_bounds		PROTO((int));
+static int spelling_length		PROTO((void));
+static char *print_spelling		PROTO((char *));
+static char *get_spelling		PROTO((char *));
+static void warning_init		PROTO((char *, char *,
+					       char *));
+static tree digest_init			PROTO((tree, tree, int, int));
+static void check_init_type_bitfields	PROTO((tree));
+static void output_init_element		PROTO((tree, tree, tree, int));
+static void output_pending_init_elements PROTO((int));
 
 /* Do `exp = require_complete_type (exp);' to make sure exp
    does not have an incomplete type.  (That includes void types.)  */
@@ -4042,7 +4048,9 @@ initializer_constant_valid_p (value, endtype)
     case CONSTRUCTOR:
       if (TREE_CODE (TREE_TYPE (value)) == UNION_TYPE
 	  && TREE_CONSTANT (value))
-	return initializer_constant_valid_p (TREE_VALUE (CONSTRUCTOR_ELTS (value)));
+	return
+	  initializer_constant_valid_p (TREE_VALUE (CONSTRUCTOR_ELTS (value)),
+					endtype);
 	
       return TREE_STATIC (value) ? null_pointer_node : 0;
 
@@ -4692,10 +4700,6 @@ digest_init (type, init, require_constant, constructor_constant)
 }
 
 /* Handle initializers that use braces.  */
-
-static void output_init_element ();
-static void output_pending_init_elements ();
-static void check_init_type_bitfields ();
 
 /* Type of object we are accumulating a constructor for.
    This type is always a RECORD_TYPE, UNION_TYPE or ARRAY_TYPE.  */
