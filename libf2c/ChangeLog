@@ -1,3 +1,8 @@
+2001-12-03  Toon Moene  <toon@moene.indiv.nluug.nl>
+
+	PR fortran/4885
+	* endfile.c (t_runc): After ftruncate, seek to end-of-file.
+
 2001-11-25  Toon Moene  <toon@moene.indiv.nluug.nl>
 
 	* libF77/Makefile.in: Fix non-portable use of `$<' in z_log.c's rule.
