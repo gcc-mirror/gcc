@@ -16,6 +16,9 @@
 
 	* real.c (real_nan): Remove neg.
 
+	* function.c (thread_prologue_and_epilogue_insns): Remove i
+	and newinsn.
+
 2005-03-08  Jeff Law  <law@redhat.com>
 
 	* tree-cfg.c (cleanup_control_flow): If removal of a computed

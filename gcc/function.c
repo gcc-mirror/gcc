@@ -5344,8 +5344,6 @@ epilogue_done:
     {
       basic_block bb = e->src;
       rtx insn = BB_END (bb);
-      rtx i;
-      rtx newinsn;
 
       if (!CALL_P (insn)
 	  || ! SIBLING_CALL_P (insn))
@@ -5365,8 +5363,7 @@ epilogue_done:
       record_insns (seq, &sibcall_epilogue);
       set_insn_locators (seq, epilogue_locator);
 
-      i = PREV_INSN (insn);
-      newinsn = emit_insn_before (seq, insn);
+      emit_insn_before (seq, insn);
       ei_next (&ei);
     }
 #endif
