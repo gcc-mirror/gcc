@@ -1,3 +1,7 @@
+2004-08-09  David Edelsohn  <edelsohn@gnu.org>
+
+	* gcc.dg/cpp/assert4.c: _AIX asserts #system(unix).
+
 2004-08-09  Paolo Bonzini  <bonzini@gnu.org>
 
 	* gcc.dg/wchar_t-2.c: Fix typo.
