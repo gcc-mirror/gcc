@@ -256,7 +256,12 @@ EOF
     *:Linux:*:*)
 	echo ${UNAME_MACHINE}-unknown-linux
 	exit 0 ;;
-    i[34]86:UNIX_SV:4.*:* | i[34]86:SYSTEM_V:4.*:*)
+# ptx 4.0 does uname -s correctly, with DYNIX/ptx in there.  earlier versions
+# are messed up and put the nodename in both sysname and nodename.
+    i[34]86:DYNIX/ptx:4*:*)
+	echo i386-sequent-sysv4
+	exit 0 ;;
+    i[34]86:*:4.*:* | i[34]86:SYSTEM_V:4.*:*)
 	if grep Novell /usr/include/link.h >/dev/null 2>/dev/null; then
 		echo ${UNAME_MACHINE}-univel-sysv${UNAME_RELEASE}
 	else
@@ -274,11 +279,6 @@ EOF
 	else
 		echo ${UNAME_MACHINE}-unknown-sysv32
 	fi
-	exit 0 ;;
-# ptx 4.0 does uname -s correctly, with DYNIX/ptx in there.  earlier versions
-# are messed up and put the nodename in both sysname and nodename.
-    i[34]86:DYNIX/ptx:4*:*)
-	echo i386-sequent-sysv4
 	exit 0 ;;
     Intel:Mach:3*:*)
 	echo i386-unknown-mach3
