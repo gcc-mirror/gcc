@@ -1,3 +1,8 @@
+2001-12-06  Janis Johnson  <janis187@us.ibm.com>
+
+	* gcc.c-torture/execute/builtin-prefetch-1.c: Add checks for
+	variable argument list.
+
 2001-12-06  Zack Weinberg  <zack@codesourcery.com>
 
 	* gcc.c-torture/execute/memcheck: Delete entire directory.
