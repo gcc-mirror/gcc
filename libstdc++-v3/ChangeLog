@@ -1,3 +1,15 @@
+2002-02-08   Benjamin Kosnik  <bkoz@redhat.com>
+
+	* include/bits/locale_facets.h
+	(numpunct<_CharT>::_M_initialize_numpunct): Remove definition.
+	(__timepunct<_CharT>::_M_initialize_timepunct): Same.
+	(__timepunct<_CharT>::_M_put_helper): Same.
+	(moneypunct<_CharT, _Intl>::_M_initialize_moneypunct): Same.
+
+	* include/bits/fstream.tcc (filebuf::underflow): Remove
+	__codecvt_type typedef.
+	(filebuf::_M_convert_to_external): Same.
+	
 2002-02-08  Phil Edwards  <pme@gcc.gnu.org>
 
 	* docs/doxygen/TODO:  Update.
