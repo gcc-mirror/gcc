@@ -10161,10 +10161,10 @@ rs6000_generate_compare (enum rtx_code code)
     }
 
   /* Some kinds of FP comparisons need an OR operation;
-     under flag_unsafe_math_optimizations we don't bother.  */
+     under flag_finite_math_only we don't bother.  */
   if (rs6000_compare_fp_p
-      && ! flag_unsafe_math_optimizations
-      && ! (TARGET_HARD_FLOAT && TARGET_E500 && !TARGET_FPRS)
+      && !flag_finite_math_only
+      && !(TARGET_HARD_FLOAT && TARGET_E500 && !TARGET_FPRS)
       && (code == LE || code == GE
 	  || code == UNEQ || code == LTGT
 	  || code == UNGT || code == UNLT))
