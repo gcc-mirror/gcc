@@ -1,3 +1,9 @@
+Thu Jul 11 15:39:21 2002  J"orn Rennecke <joern.rennecke@superh.com>
+                          Andrew Pinski  <pinskia@physics.uc.edu>
+
+	gcc.c-torture/compile/simd-2.c: New testcase.
+	gcc.c-torture/compile/simd-3.c: Likewise.
+
 2002-07-11  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/7224

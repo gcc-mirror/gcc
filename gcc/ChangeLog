@@ -1,3 +1,10 @@
+Fri Jul 12 00:49:36 2002  J"orn Rennecke <joern.rennecke@superh.com>
+
+	* simplify-rtx.c (simplify_subreg): Handle floating point
+	CONST_DOUBLEs.  When an integer subreg of a smaller mode than
+	the element mode is requested, compute a subreg with an
+	integer mode of the same size as the element mode first.
+
 Thu Jul 11 22:02:57 2002  J"orn Rennecke <joern.rennecke@superh.com>
 
 	* combine.c (try_combine): When converting a paradoxical subreg
