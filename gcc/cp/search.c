@@ -2005,6 +2005,35 @@ lookup_fnfields (basetype_path, name, complain)
 
   return rvals;
 }
+
+/* Look for a field or function named NAME in an inheritance lattice
+   dominated by XBASETYPE.  PROTECT is zero if we can avoid computing
+   access information, otherwise it is 1.  WANT_TYPE is 1 when we should
+   only return TYPE_DECLs, if no TYPE_DECL can be found return NULL_TREE.  */
+
+tree
+lookup_member (xbasetype, name, protect, want_type)
+     tree xbasetype, name;
+     int protect, want_type;
+{
+  tree ret, basetype_path;
+
+  if (TREE_CODE (xbasetype) == TREE_VEC)
+    basetype_path = xbasetype;
+  else if (IS_AGGR_TYPE_CODE (TREE_CODE (xbasetype)))
+    {
+      basetype_path = TYPE_BINFO (xbasetype);
+      BINFO_VIA_PUBLIC (basetype_path) = 1;
+      BINFO_INHERITANCE_CHAIN (basetype_path) = NULL_TREE;
+    }
+  else
+    my_friendly_abort (97);
+  
+  ret = lookup_field (basetype_path, name, protect, want_type);
+  if (! ret && ! want_type)
+    ret = lookup_fnfields (basetype_path, name, protect);
+  return ret;
+}
 
 /* BREADTH-FIRST SEARCH ROUTINES.  */
 

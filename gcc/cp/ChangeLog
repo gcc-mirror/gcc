@@ -1,3 +1,9 @@
+1998-06-09  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* search.c (lookup_member): New fn.
+	* class.c (finish_struct_1): Use it.
+	* decl.c (lookup_name_real): Use it.
+
 Mon Jun  8 20:45:52 1998  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* Makefile.in (decl2.o): Depend on dwarf2out.h and dwarfout.h.
