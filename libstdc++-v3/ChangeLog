@@ -1,3 +1,7 @@
+2001-02-23  David Edelsohn <dje@watson.ibm.com>
+
+	* mknumeric_limits (CC): Use $BUILD_DIR/../../gcc/xgcc
+
 2001-02-23  Phil Edwards  <pme@sources.redhat.com>
 
 	c++/2052
