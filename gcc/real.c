@@ -5868,7 +5868,6 @@ c4xtoe (d, e, mode)
 {
   unsigned EMUSHORT y[NI];
   int r;
-  int rndsav;
   int isnegative;
   int size;
   int i;
@@ -5960,7 +5959,7 @@ c4xtoe (d, e, mode)
 
      /* Now do the high order mantissa strip off the exponent and sign
 	bits and add the high 1 bit.  */
-     y[M] = d[0] & 0x7f | 0x80;	
+     y[M] = (d[0] & 0x7f) | 0x80;	
 
      y[M+1] = d[1];
      if (mode != QFmode)	/* There are only 2 words in QFmode.  */
@@ -6005,7 +6004,6 @@ toc4x (x, y, mode)
      enum machine_mode mode;
 {
   int i;
-  int r;
   int v;
   int carry;
   
