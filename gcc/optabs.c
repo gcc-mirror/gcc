@@ -4763,6 +4763,7 @@ init_optabs ()
   trunctfdf2_libfunc = init_one_libfunc ("__trunctfdf2");
 
   memcpy_libfunc = init_one_libfunc ("memcpy");
+  memmove_libfunc = init_one_libfunc ("memmove");
   bcopy_libfunc = init_one_libfunc ("bcopy");
   memcmp_libfunc = init_one_libfunc ("memcmp");
   bcmp_libfunc = init_one_libfunc ("__gcc_bcmp");

@@ -480,6 +480,7 @@ enum libfunc_index
   LTI_trunctfdf2,
 
   LTI_memcpy,
+  LTI_memmove,
   LTI_bcopy,
   LTI_memcmp,
   LTI_bcmp,
@@ -611,6 +612,7 @@ extern rtx libfunc_table[LTI_MAX];
 #define trunctfdf2_libfunc	(libfunc_table[LTI_trunctfdf2])
 
 #define memcpy_libfunc	(libfunc_table[LTI_memcpy])
+#define memmove_libfunc	(libfunc_table[LTI_memmove])
 #define bcopy_libfunc	(libfunc_table[LTI_bcopy])
 #define memcmp_libfunc	(libfunc_table[LTI_memcmp])
 #define bcmp_libfunc	(libfunc_table[LTI_bcmp])
