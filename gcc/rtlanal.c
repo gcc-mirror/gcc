@@ -500,6 +500,52 @@ reg_set_p (reg, insn)
 }
 
 /* Similar to reg_set_between_p, but check all registers in X.  Return 0
+   only if none of them are modified between START and END.  Do not
+   consider non-registers one way or the other.  */
+
+int
+regs_set_between_p (x, start, end)
+     rtx x;
+     rtx start, end;
+{
+  enum rtx_code code = GET_CODE (x);
+  char *fmt;
+  int i, j;
+
+  switch (code)
+    {
+    case CONST_INT:
+    case CONST_DOUBLE:
+    case CONST:
+    case SYMBOL_REF:
+    case LABEL_REF:
+    case PC:
+    case CC0:
+      return 0;
+
+    case REG:
+      return reg_set_between_p (x, start, end);
+      
+    default:
+      break;
+    }
+
+  fmt = GET_RTX_FORMAT (code);
+  for (i = GET_RTX_LENGTH (code) - 1; i >= 0; i--)
+    {
+      if (fmt[i] == 'e' && regs_set_between_p (XEXP (x, i), start, end))
+	return 1;
+
+      else if (fmt[i] == 'E')
+	for (j = XVECLEN (x, i) - 1; j >= 0; j--)
+	  if (regs_set_between_p (XVECEXP (x, i, j), start, end))
+	    return 1;
+    }
+
+  return 0;
+}
+
+/* Similar to reg_set_between_p, but check all registers in X.  Return 0
    only if none of them are modified between START and END.  Return 1 if
    X contains a MEM; this routine does not perform any memory aliasing.  */
 

@@ -1,3 +1,10 @@
+Thu Nov 26 00:19:19 1998  Richard Henderson  <rth@cygnus.com>
+
+	* rtlanal.c (regs_set_between_p): New function.
+	* rtl.h (regs_set_between_p): Prototype it.
+	* jump.c (jump_optimize): Use it instead of modified_between_p
+	in the Sep 2 change.
+
 Wed Nov 25 23:32:02 1998  Ian Dall  <Ian.Dall@dsto.defence.gov.au>
 			  Matthias Pfaller  <leo@dachau.marco.de>
 

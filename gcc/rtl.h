@@ -982,6 +982,7 @@ extern int reg_referenced_p		PROTO((rtx, rtx));
 extern int reg_used_between_p		PROTO((rtx, rtx, rtx));
 extern int reg_referenced_between_p	PROTO((rtx, rtx, rtx));
 extern int reg_set_between_p		PROTO((rtx, rtx, rtx));
+extern int regs_set_between_p		PROTO((rtx, rtx, rtx));
 extern int modified_between_p		PROTO((rtx, rtx, rtx));
 extern int no_labels_between_p		PROTO((rtx, rtx));
 extern int modified_in_p		PROTO((rtx, rtx));
