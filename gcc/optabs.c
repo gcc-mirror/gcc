@@ -4308,7 +4308,7 @@ init_libfuncs (optable, first_mode, last_mode, opname, suffix)
       register const char *mname = GET_MODE_NAME(mode);
       register unsigned mname_len = strlen (mname);
       register char *libfunc_name
-	= (char *) xmalloc (2 + opname_len + mname_len + 1 + 1);
+	= ggc_alloc_string (NULL, 2 + opname_len + mname_len + 1 + 1);
       register char *p;
       register const char *q;
 
@@ -4321,6 +4321,7 @@ init_libfuncs (optable, first_mode, last_mode, opname, suffix)
 	*p++ = tolower ((unsigned char)*q);
       *p++ = suffix;
       *p++ = '\0';
+
       optable->handlers[(int) mode].libfunc
 	= gen_rtx_SYMBOL_REF (Pmode, libfunc_name);
     }
@@ -4352,6 +4353,15 @@ init_floating_libfuncs (optable, opname, suffix)
     register int suffix;
 {
   init_libfuncs (optable, SFmode, TFmode, opname, suffix);
+}
+
+rtx
+init_one_libfunc (name)
+     register const char *name;
+{
+  if (ggc_p)
+    name = ggc_alloc_string (name, -1);
+  return gen_rtx_SYMBOL_REF (Pmode, name);
 }
 
 /* Mark ARG (which is really an OPTAB *) for GC.  */
@@ -4511,189 +4521,189 @@ init_optabs ()
 
 #ifdef MULSI3_LIBCALL
   smul_optab->handlers[(int) SImode].libfunc
-    = gen_rtx_SYMBOL_REF (Pmode, MULSI3_LIBCALL);
+    = init_one_libfunc (MULSI3_LIBCALL);
 #endif
 #ifdef MULDI3_LIBCALL
   smul_optab->handlers[(int) DImode].libfunc
-    = gen_rtx_SYMBOL_REF (Pmode, MULDI3_LIBCALL);
+    = init_one_libfunc (MULDI3_LIBCALL);
 #endif
 
 #ifdef DIVSI3_LIBCALL
   sdiv_optab->handlers[(int) SImode].libfunc
-    = gen_rtx_SYMBOL_REF (Pmode, DIVSI3_LIBCALL);
+    = init_one_libfunc (DIVSI3_LIBCALL);
 #endif
 #ifdef DIVDI3_LIBCALL
   sdiv_optab->handlers[(int) DImode].libfunc
-    = gen_rtx_SYMBOL_REF (Pmode, DIVDI3_LIBCALL);
+    = init_one_libfunc (DIVDI3_LIBCALL);
 #endif
 
 #ifdef UDIVSI3_LIBCALL
   udiv_optab->handlers[(int) SImode].libfunc
-    = gen_rtx_SYMBOL_REF (Pmode, UDIVSI3_LIBCALL);
+    = init_one_libfunc (UDIVSI3_LIBCALL);
 #endif
 #ifdef UDIVDI3_LIBCALL
   udiv_optab->handlers[(int) DImode].libfunc
-    = gen_rtx_SYMBOL_REF (Pmode, UDIVDI3_LIBCALL);
+    = init_one_libfunc (UDIVDI3_LIBCALL);
 #endif
 
 #ifdef MODSI3_LIBCALL
   smod_optab->handlers[(int) SImode].libfunc
-    = gen_rtx_SYMBOL_REF (Pmode, MODSI3_LIBCALL);
+    = init_one_libfunc (MODSI3_LIBCALL);
 #endif
 #ifdef MODDI3_LIBCALL
   smod_optab->handlers[(int) DImode].libfunc
-    = gen_rtx_SYMBOL_REF (Pmode, MODDI3_LIBCALL);
+    = init_one_libfunc (MODDI3_LIBCALL);
 #endif
 
 #ifdef UMODSI3_LIBCALL
   umod_optab->handlers[(int) SImode].libfunc
-    = gen_rtx_SYMBOL_REF (Pmode, UMODSI3_LIBCALL);
+    = init_one_libfunc (UMODSI3_LIBCALL);
 #endif
 #ifdef UMODDI3_LIBCALL
   umod_optab->handlers[(int) DImode].libfunc
-    = gen_rtx_SYMBOL_REF (Pmode, UMODDI3_LIBCALL);
+    = init_one_libfunc (UMODDI3_LIBCALL);
 #endif
 
   /* Use cabs for DC complex abs, since systems generally have cabs.
      Don't define any libcall for SCmode, so that cabs will be used.  */
   abs_optab->handlers[(int) DCmode].libfunc
-    = gen_rtx_SYMBOL_REF (Pmode, "cabs");
+    = init_one_libfunc ("cabs");
 
   /* The ffs function operates on `int'.  */
 #ifndef INT_TYPE_SIZE
 #define INT_TYPE_SIZE BITS_PER_WORD
 #endif
   ffs_optab->handlers[(int) mode_for_size (INT_TYPE_SIZE, MODE_INT, 0)].libfunc
-    = gen_rtx_SYMBOL_REF (Pmode, "ffs");
+    = init_one_libfunc ("ffs");
 
-  extendsfdf2_libfunc = gen_rtx_SYMBOL_REF (Pmode, "__extendsfdf2");
-  extendsfxf2_libfunc = gen_rtx_SYMBOL_REF (Pmode, "__extendsfxf2");
-  extendsftf2_libfunc = gen_rtx_SYMBOL_REF (Pmode, "__extendsftf2");
-  extenddfxf2_libfunc = gen_rtx_SYMBOL_REF (Pmode, "__extenddfxf2");
-  extenddftf2_libfunc = gen_rtx_SYMBOL_REF (Pmode, "__extenddftf2");
+  extendsfdf2_libfunc = init_one_libfunc ("__extendsfdf2");
+  extendsfxf2_libfunc = init_one_libfunc ("__extendsfxf2");
+  extendsftf2_libfunc = init_one_libfunc ("__extendsftf2");
+  extenddfxf2_libfunc = init_one_libfunc ("__extenddfxf2");
+  extenddftf2_libfunc = init_one_libfunc ("__extenddftf2");
 
-  truncdfsf2_libfunc = gen_rtx_SYMBOL_REF (Pmode, "__truncdfsf2");
-  truncxfsf2_libfunc = gen_rtx_SYMBOL_REF (Pmode, "__truncxfsf2");
-  trunctfsf2_libfunc = gen_rtx_SYMBOL_REF (Pmode, "__trunctfsf2");
-  truncxfdf2_libfunc = gen_rtx_SYMBOL_REF (Pmode, "__truncxfdf2");
-  trunctfdf2_libfunc = gen_rtx_SYMBOL_REF (Pmode, "__trunctfdf2");
+  truncdfsf2_libfunc = init_one_libfunc ("__truncdfsf2");
+  truncxfsf2_libfunc = init_one_libfunc ("__truncxfsf2");
+  trunctfsf2_libfunc = init_one_libfunc ("__trunctfsf2");
+  truncxfdf2_libfunc = init_one_libfunc ("__truncxfdf2");
+  trunctfdf2_libfunc = init_one_libfunc ("__trunctfdf2");
 
-  memcpy_libfunc = gen_rtx_SYMBOL_REF (Pmode, "memcpy");
-  bcopy_libfunc = gen_rtx_SYMBOL_REF (Pmode, "bcopy");
-  memcmp_libfunc = gen_rtx_SYMBOL_REF (Pmode, "memcmp");
-  bcmp_libfunc = gen_rtx_SYMBOL_REF (Pmode, "__gcc_bcmp");
-  memset_libfunc = gen_rtx_SYMBOL_REF (Pmode, "memset");
-  bzero_libfunc = gen_rtx_SYMBOL_REF (Pmode, "bzero");
+  memcpy_libfunc = init_one_libfunc ("memcpy");
+  bcopy_libfunc = init_one_libfunc ("bcopy");
+  memcmp_libfunc = init_one_libfunc ("memcmp");
+  bcmp_libfunc = init_one_libfunc ("__gcc_bcmp");
+  memset_libfunc = init_one_libfunc ("memset");
+  bzero_libfunc = init_one_libfunc ("bzero");
 
-  throw_libfunc = gen_rtx_SYMBOL_REF (Pmode, "__throw");
-  rethrow_libfunc = gen_rtx_SYMBOL_REF (Pmode, "__rethrow");
-  sjthrow_libfunc = gen_rtx_SYMBOL_REF (Pmode, "__sjthrow");
-  sjpopnthrow_libfunc = gen_rtx_SYMBOL_REF (Pmode, "__sjpopnthrow");
-  terminate_libfunc = gen_rtx_SYMBOL_REF (Pmode, "__terminate");
-  eh_rtime_match_libfunc = gen_rtx_SYMBOL_REF (Pmode, "__eh_rtime_match");
+  throw_libfunc = init_one_libfunc ("__throw");
+  rethrow_libfunc = init_one_libfunc ("__rethrow");
+  sjthrow_libfunc = init_one_libfunc ("__sjthrow");
+  sjpopnthrow_libfunc = init_one_libfunc ("__sjpopnthrow");
+  terminate_libfunc = init_one_libfunc ("__terminate");
+  eh_rtime_match_libfunc = init_one_libfunc ("__eh_rtime_match");
 #ifndef DONT_USE_BUILTIN_SETJMP
-  setjmp_libfunc = gen_rtx_SYMBOL_REF (Pmode, "__builtin_setjmp");
-  longjmp_libfunc = gen_rtx_SYMBOL_REF (Pmode, "__builtin_longjmp");
+  setjmp_libfunc = init_one_libfunc ("__builtin_setjmp");
+  longjmp_libfunc = init_one_libfunc ("__builtin_longjmp");
 #else
-  setjmp_libfunc = gen_rtx_SYMBOL_REF (Pmode, "setjmp");
-  longjmp_libfunc = gen_rtx_SYMBOL_REF (Pmode, "longjmp");
+  setjmp_libfunc = init_one_libfunc ("setjmp");
+  longjmp_libfunc = init_one_libfunc ("longjmp");
 #endif
 
-  eqhf2_libfunc = gen_rtx_SYMBOL_REF (Pmode, "__eqhf2");
-  nehf2_libfunc = gen_rtx_SYMBOL_REF (Pmode, "__nehf2");
-  gthf2_libfunc = gen_rtx_SYMBOL_REF (Pmode, "__gthf2");
-  gehf2_libfunc = gen_rtx_SYMBOL_REF (Pmode, "__gehf2");
-  lthf2_libfunc = gen_rtx_SYMBOL_REF (Pmode, "__lthf2");
-  lehf2_libfunc = gen_rtx_SYMBOL_REF (Pmode, "__lehf2");
+  eqhf2_libfunc = init_one_libfunc ("__eqhf2");
+  nehf2_libfunc = init_one_libfunc ("__nehf2");
+  gthf2_libfunc = init_one_libfunc ("__gthf2");
+  gehf2_libfunc = init_one_libfunc ("__gehf2");
+  lthf2_libfunc = init_one_libfunc ("__lthf2");
+  lehf2_libfunc = init_one_libfunc ("__lehf2");
 
-  eqsf2_libfunc = gen_rtx_SYMBOL_REF (Pmode, "__eqsf2");
-  nesf2_libfunc = gen_rtx_SYMBOL_REF (Pmode, "__nesf2");
-  gtsf2_libfunc = gen_rtx_SYMBOL_REF (Pmode, "__gtsf2");
-  gesf2_libfunc = gen_rtx_SYMBOL_REF (Pmode, "__gesf2");
-  ltsf2_libfunc = gen_rtx_SYMBOL_REF (Pmode, "__ltsf2");
-  lesf2_libfunc = gen_rtx_SYMBOL_REF (Pmode, "__lesf2");
+  eqsf2_libfunc = init_one_libfunc ("__eqsf2");
+  nesf2_libfunc = init_one_libfunc ("__nesf2");
+  gtsf2_libfunc = init_one_libfunc ("__gtsf2");
+  gesf2_libfunc = init_one_libfunc ("__gesf2");
+  ltsf2_libfunc = init_one_libfunc ("__ltsf2");
+  lesf2_libfunc = init_one_libfunc ("__lesf2");
 
-  eqdf2_libfunc = gen_rtx_SYMBOL_REF (Pmode, "__eqdf2");
-  nedf2_libfunc = gen_rtx_SYMBOL_REF (Pmode, "__nedf2");
-  gtdf2_libfunc = gen_rtx_SYMBOL_REF (Pmode, "__gtdf2");
-  gedf2_libfunc = gen_rtx_SYMBOL_REF (Pmode, "__gedf2");
-  ltdf2_libfunc = gen_rtx_SYMBOL_REF (Pmode, "__ltdf2");
-  ledf2_libfunc = gen_rtx_SYMBOL_REF (Pmode, "__ledf2");
+  eqdf2_libfunc = init_one_libfunc ("__eqdf2");
+  nedf2_libfunc = init_one_libfunc ("__nedf2");
+  gtdf2_libfunc = init_one_libfunc ("__gtdf2");
+  gedf2_libfunc = init_one_libfunc ("__gedf2");
+  ltdf2_libfunc = init_one_libfunc ("__ltdf2");
+  ledf2_libfunc = init_one_libfunc ("__ledf2");
 
-  eqxf2_libfunc = gen_rtx_SYMBOL_REF (Pmode, "__eqxf2");
-  nexf2_libfunc = gen_rtx_SYMBOL_REF (Pmode, "__nexf2");
-  gtxf2_libfunc = gen_rtx_SYMBOL_REF (Pmode, "__gtxf2");
-  gexf2_libfunc = gen_rtx_SYMBOL_REF (Pmode, "__gexf2");
-  ltxf2_libfunc = gen_rtx_SYMBOL_REF (Pmode, "__ltxf2");
-  lexf2_libfunc = gen_rtx_SYMBOL_REF (Pmode, "__lexf2");
+  eqxf2_libfunc = init_one_libfunc ("__eqxf2");
+  nexf2_libfunc = init_one_libfunc ("__nexf2");
+  gtxf2_libfunc = init_one_libfunc ("__gtxf2");
+  gexf2_libfunc = init_one_libfunc ("__gexf2");
+  ltxf2_libfunc = init_one_libfunc ("__ltxf2");
+  lexf2_libfunc = init_one_libfunc ("__lexf2");
 
-  eqtf2_libfunc = gen_rtx_SYMBOL_REF (Pmode, "__eqtf2");
-  netf2_libfunc = gen_rtx_SYMBOL_REF (Pmode, "__netf2");
-  gttf2_libfunc = gen_rtx_SYMBOL_REF (Pmode, "__gttf2");
-  getf2_libfunc = gen_rtx_SYMBOL_REF (Pmode, "__getf2");
-  lttf2_libfunc = gen_rtx_SYMBOL_REF (Pmode, "__lttf2");
-  letf2_libfunc = gen_rtx_SYMBOL_REF (Pmode, "__letf2");
+  eqtf2_libfunc = init_one_libfunc ("__eqtf2");
+  netf2_libfunc = init_one_libfunc ("__netf2");
+  gttf2_libfunc = init_one_libfunc ("__gttf2");
+  getf2_libfunc = init_one_libfunc ("__getf2");
+  lttf2_libfunc = init_one_libfunc ("__lttf2");
+  letf2_libfunc = init_one_libfunc ("__letf2");
 
-  floatsisf_libfunc = gen_rtx_SYMBOL_REF (Pmode, "__floatsisf");
-  floatdisf_libfunc = gen_rtx_SYMBOL_REF (Pmode, "__floatdisf");
-  floattisf_libfunc = gen_rtx_SYMBOL_REF (Pmode, "__floattisf");
+  floatsisf_libfunc = init_one_libfunc ("__floatsisf");
+  floatdisf_libfunc = init_one_libfunc ("__floatdisf");
+  floattisf_libfunc = init_one_libfunc ("__floattisf");
 
-  floatsidf_libfunc = gen_rtx_SYMBOL_REF (Pmode, "__floatsidf");
-  floatdidf_libfunc = gen_rtx_SYMBOL_REF (Pmode, "__floatdidf");
-  floattidf_libfunc = gen_rtx_SYMBOL_REF (Pmode, "__floattidf");
+  floatsidf_libfunc = init_one_libfunc ("__floatsidf");
+  floatdidf_libfunc = init_one_libfunc ("__floatdidf");
+  floattidf_libfunc = init_one_libfunc ("__floattidf");
 
-  floatsixf_libfunc = gen_rtx_SYMBOL_REF (Pmode, "__floatsixf");
-  floatdixf_libfunc = gen_rtx_SYMBOL_REF (Pmode, "__floatdixf");
-  floattixf_libfunc = gen_rtx_SYMBOL_REF (Pmode, "__floattixf");
+  floatsixf_libfunc = init_one_libfunc ("__floatsixf");
+  floatdixf_libfunc = init_one_libfunc ("__floatdixf");
+  floattixf_libfunc = init_one_libfunc ("__floattixf");
 
-  floatsitf_libfunc = gen_rtx_SYMBOL_REF (Pmode, "__floatsitf");
-  floatditf_libfunc = gen_rtx_SYMBOL_REF (Pmode, "__floatditf");
-  floattitf_libfunc = gen_rtx_SYMBOL_REF (Pmode, "__floattitf");
+  floatsitf_libfunc = init_one_libfunc ("__floatsitf");
+  floatditf_libfunc = init_one_libfunc ("__floatditf");
+  floattitf_libfunc = init_one_libfunc ("__floattitf");
 
-  fixsfsi_libfunc = gen_rtx_SYMBOL_REF (Pmode, "__fixsfsi");
-  fixsfdi_libfunc = gen_rtx_SYMBOL_REF (Pmode, "__fixsfdi");
-  fixsfti_libfunc = gen_rtx_SYMBOL_REF (Pmode, "__fixsfti");
+  fixsfsi_libfunc = init_one_libfunc ("__fixsfsi");
+  fixsfdi_libfunc = init_one_libfunc ("__fixsfdi");
+  fixsfti_libfunc = init_one_libfunc ("__fixsfti");
 
-  fixdfsi_libfunc = gen_rtx_SYMBOL_REF (Pmode, "__fixdfsi");
-  fixdfdi_libfunc = gen_rtx_SYMBOL_REF (Pmode, "__fixdfdi");
-  fixdfti_libfunc = gen_rtx_SYMBOL_REF (Pmode, "__fixdfti");
+  fixdfsi_libfunc = init_one_libfunc ("__fixdfsi");
+  fixdfdi_libfunc = init_one_libfunc ("__fixdfdi");
+  fixdfti_libfunc = init_one_libfunc ("__fixdfti");
 
-  fixxfsi_libfunc = gen_rtx_SYMBOL_REF (Pmode, "__fixxfsi");
-  fixxfdi_libfunc = gen_rtx_SYMBOL_REF (Pmode, "__fixxfdi");
-  fixxfti_libfunc = gen_rtx_SYMBOL_REF (Pmode, "__fixxfti");
+  fixxfsi_libfunc = init_one_libfunc ("__fixxfsi");
+  fixxfdi_libfunc = init_one_libfunc ("__fixxfdi");
+  fixxfti_libfunc = init_one_libfunc ("__fixxfti");
 
-  fixtfsi_libfunc = gen_rtx_SYMBOL_REF (Pmode, "__fixtfsi");
-  fixtfdi_libfunc = gen_rtx_SYMBOL_REF (Pmode, "__fixtfdi");
-  fixtfti_libfunc = gen_rtx_SYMBOL_REF (Pmode, "__fixtfti");
+  fixtfsi_libfunc = init_one_libfunc ("__fixtfsi");
+  fixtfdi_libfunc = init_one_libfunc ("__fixtfdi");
+  fixtfti_libfunc = init_one_libfunc ("__fixtfti");
 
-  fixunssfsi_libfunc = gen_rtx_SYMBOL_REF (Pmode, "__fixunssfsi");
-  fixunssfdi_libfunc = gen_rtx_SYMBOL_REF (Pmode, "__fixunssfdi");
-  fixunssfti_libfunc = gen_rtx_SYMBOL_REF (Pmode, "__fixunssfti");
+  fixunssfsi_libfunc = init_one_libfunc ("__fixunssfsi");
+  fixunssfdi_libfunc = init_one_libfunc ("__fixunssfdi");
+  fixunssfti_libfunc = init_one_libfunc ("__fixunssfti");
 
-  fixunsdfsi_libfunc = gen_rtx_SYMBOL_REF (Pmode, "__fixunsdfsi");
-  fixunsdfdi_libfunc = gen_rtx_SYMBOL_REF (Pmode, "__fixunsdfdi");
-  fixunsdfti_libfunc = gen_rtx_SYMBOL_REF (Pmode, "__fixunsdfti");
+  fixunsdfsi_libfunc = init_one_libfunc ("__fixunsdfsi");
+  fixunsdfdi_libfunc = init_one_libfunc ("__fixunsdfdi");
+  fixunsdfti_libfunc = init_one_libfunc ("__fixunsdfti");
 
-  fixunsxfsi_libfunc = gen_rtx_SYMBOL_REF (Pmode, "__fixunsxfsi");
-  fixunsxfdi_libfunc = gen_rtx_SYMBOL_REF (Pmode, "__fixunsxfdi");
-  fixunsxfti_libfunc = gen_rtx_SYMBOL_REF (Pmode, "__fixunsxfti");
+  fixunsxfsi_libfunc = init_one_libfunc ("__fixunsxfsi");
+  fixunsxfdi_libfunc = init_one_libfunc ("__fixunsxfdi");
+  fixunsxfti_libfunc = init_one_libfunc ("__fixunsxfti");
 
-  fixunstfsi_libfunc = gen_rtx_SYMBOL_REF (Pmode, "__fixunstfsi");
-  fixunstfdi_libfunc = gen_rtx_SYMBOL_REF (Pmode, "__fixunstfdi");
-  fixunstfti_libfunc = gen_rtx_SYMBOL_REF (Pmode, "__fixunstfti");
+  fixunstfsi_libfunc = init_one_libfunc ("__fixunstfsi");
+  fixunstfdi_libfunc = init_one_libfunc ("__fixunstfdi");
+  fixunstfti_libfunc = init_one_libfunc ("__fixunstfti");
 
   /* For check-memory-usage.  */
-  chkr_check_addr_libfunc = gen_rtx_SYMBOL_REF (Pmode, "chkr_check_addr");
-  chkr_set_right_libfunc = gen_rtx_SYMBOL_REF (Pmode, "chkr_set_right");
-  chkr_copy_bitmap_libfunc = gen_rtx_SYMBOL_REF (Pmode, "chkr_copy_bitmap");
-  chkr_check_exec_libfunc = gen_rtx_SYMBOL_REF (Pmode, "chkr_check_exec");
-  chkr_check_str_libfunc = gen_rtx_SYMBOL_REF (Pmode, "chkr_check_str");
+  chkr_check_addr_libfunc = init_one_libfunc ("chkr_check_addr");
+  chkr_set_right_libfunc = init_one_libfunc ("chkr_set_right");
+  chkr_copy_bitmap_libfunc = init_one_libfunc ("chkr_copy_bitmap");
+  chkr_check_exec_libfunc = init_one_libfunc ("chkr_check_exec");
+  chkr_check_str_libfunc = init_one_libfunc ("chkr_check_str");
 
   /* For function entry/exit instrumentation.  */
   profile_function_entry_libfunc
-    = gen_rtx_SYMBOL_REF (Pmode, "__cyg_profile_func_enter");
+    = init_one_libfunc ("__cyg_profile_func_enter");
   profile_function_exit_libfunc
-    = gen_rtx_SYMBOL_REF (Pmode, "__cyg_profile_func_exit");
+    = init_one_libfunc ("__cyg_profile_func_exit");
 
 #ifdef HAVE_conditional_trap
   init_traps ();

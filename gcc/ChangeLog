@@ -1,3 +1,39 @@
+Wed Sep  8 23:53:22 1999  Richard Henderson  <rth@cygnus.com>
+
+	* combine.c (SUBST): Break out to a real function do_SUBST.
+	(SUBST_INT): Likewise.
+	* gcse.c (free_pre_mem): Free `temp_bitmap'.
+	(pre_insert): Free `inserted'.
+	* loop.c (basic_induction_var): Always set `location'.
+
+	* function.c (expand_function_end): Add initial_trampoline as a root.
+	* rtl.h (init_varasm_once): Declare.
+	* toplev.c (compile_file): Call it.
+	* ggc-simple.c (ggc_mark_string_ptr): New.
+	(ggc_add_string_root): New.
+	(ggc_collect): Disable collection avoidance temporarily.
+	* ggc.h (ggc_add_string_root): Declare.
+	* except.c (create_rethrow_ref): Use ggc_alloc_string.
+	* optabs.c (init_libfuncs): Likewise.
+	* varasm.c (named_section): Use ggc_alloc_string.
+	(make_function_rtl): Likewise.
+	(make_decl_rtl): Likewise.
+	(assemble_static_space): Likewise.
+	(assemble_trampoline_template): Likewise.
+	(output_constant_def): Likewise.
+	(force_const_mem): Likewise.
+	(mark_const_hash_entry): New.
+	(mark_pool_sym_hash_table): New.
+	(mark_varasm_state): Use it.
+	(init_varasm_once): New.
+
+	* expr.h (init_one_libfunc): Declare.
+	* optabs.c (init_one_libfunc): New.
+	(init_optabs): Use it.
+	* config/gofast.h: Likewise.
+	* config/sparc/sol2.h (INIT_SUBTARGET_OPTABS): Likewise.
+	* config/sparc/sparc.h (INIT_TARGET_OPTABS): Likewise.
+
 Thu Sep  9 13:46:06 1999  Geoffrey Keating  <geoffk@cygnus.com>
 
 	* Makefile.in (cppexp.o): Depend on cpphash.h.

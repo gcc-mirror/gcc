@@ -2637,32 +2637,32 @@ do {                                                                    \
 #define INIT_TARGET_OPTABS						\
   do {									\
     add_optab->handlers[(int) TFmode].libfunc				\
-      = gen_rtx_SYMBOL_REF (Pmode, ADDTF3_LIBCALL);			\
+      = init_one_libfunc (ADDTF3_LIBCALL);				\
     sub_optab->handlers[(int) TFmode].libfunc				\
-      = gen_rtx_SYMBOL_REF (Pmode, SUBTF3_LIBCALL);			\
+      = init_one_libfunc (SUBTF3_LIBCALL);				\
     neg_optab->handlers[(int) TFmode].libfunc				\
-      = gen_rtx_SYMBOL_REF (Pmode, NEGTF2_LIBCALL);			\
+      = init_one_libfunc (NEGTF2_LIBCALL);				\
     smul_optab->handlers[(int) TFmode].libfunc				\
-      = gen_rtx_SYMBOL_REF (Pmode, MULTF3_LIBCALL);			\
+      = init_one_libfunc (MULTF3_LIBCALL);				\
     flodiv_optab->handlers[(int) TFmode].libfunc			\
-      = gen_rtx_SYMBOL_REF (Pmode, DIVTF3_LIBCALL);			\
-    eqtf2_libfunc = gen_rtx_SYMBOL_REF (Pmode, EQTF2_LIBCALL);		\
-    netf2_libfunc = gen_rtx_SYMBOL_REF (Pmode, NETF2_LIBCALL);		\
-    gttf2_libfunc = gen_rtx_SYMBOL_REF (Pmode, GTTF2_LIBCALL);		\
-    getf2_libfunc = gen_rtx_SYMBOL_REF (Pmode, GETF2_LIBCALL);		\
-    lttf2_libfunc = gen_rtx_SYMBOL_REF (Pmode, LTTF2_LIBCALL);		\
-    letf2_libfunc = gen_rtx_SYMBOL_REF (Pmode, LETF2_LIBCALL);		\
-    trunctfsf2_libfunc = gen_rtx_SYMBOL_REF (Pmode, TRUNCTFSF2_LIBCALL);   \
-    trunctfdf2_libfunc = gen_rtx_SYMBOL_REF (Pmode, TRUNCTFDF2_LIBCALL);   \
-    extendsftf2_libfunc = gen_rtx_SYMBOL_REF (Pmode, EXTENDSFTF2_LIBCALL); \
-    extenddftf2_libfunc = gen_rtx_SYMBOL_REF (Pmode, EXTENDDFTF2_LIBCALL); \
-    floatsitf_libfunc = gen_rtx_SYMBOL_REF (Pmode, FLOATSITF2_LIBCALL);    \
-    fixtfsi_libfunc = gen_rtx_SYMBOL_REF (Pmode, FIX_TRUNCTFSI2_LIBCALL);  \
+      = init_one_libfunc (DIVTF3_LIBCALL);				\
+    eqtf2_libfunc = init_one_libfunc (EQTF2_LIBCALL);			\
+    netf2_libfunc = init_one_libfunc (NETF2_LIBCALL);			\
+    gttf2_libfunc = init_one_libfunc (GTTF2_LIBCALL);			\
+    getf2_libfunc = init_one_libfunc (GETF2_LIBCALL);			\
+    lttf2_libfunc = init_one_libfunc (LTTF2_LIBCALL);			\
+    letf2_libfunc = init_one_libfunc (LETF2_LIBCALL);			\
+    trunctfsf2_libfunc = init_one_libfunc (TRUNCTFSF2_LIBCALL);		\
+    trunctfdf2_libfunc = init_one_libfunc (TRUNCTFDF2_LIBCALL);		\
+    extendsftf2_libfunc = init_one_libfunc (EXTENDSFTF2_LIBCALL);	\
+    extenddftf2_libfunc = init_one_libfunc (EXTENDDFTF2_LIBCALL);	\
+    floatsitf_libfunc = init_one_libfunc (FLOATSITF2_LIBCALL);		\
+    fixtfsi_libfunc = init_one_libfunc (FIX_TRUNCTFSI2_LIBCALL);	\
     fixunstfsi_libfunc							\
-      = gen_rtx_SYMBOL_REF (Pmode, FIXUNS_TRUNCTFSI2_LIBCALL);		\
+      = init_one_libfunc (FIXUNS_TRUNCTFSI2_LIBCALL);			\
     if (TARGET_FPU)							\
       sqrt_optab->handlers[(int) TFmode].libfunc			\
-	= gen_rtx_SYMBOL_REF (Pmode, "_Q_sqrt");			\
+	= init_one_libfunc ("_Q_sqrt");					\
     INIT_SUBTARGET_OPTABS;						\
   } while (0)
 

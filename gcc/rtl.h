@@ -1652,6 +1652,7 @@ extern int set_dominates_use		PROTO ((int, int, int, rtx, rtx));
 extern void bss_section			PROTO ((void));
 extern int in_data_section		PROTO ((void));
 extern int supports_one_only		PROTO ((void));
+extern void init_varasm_once		PROTO ((void));
 
 /* In rtl.c */
 extern void init_rtl			PROTO ((void));

@@ -125,6 +125,7 @@ static void ggc_free_rtx PROTO ((struct ggc_rtx *r));
 static void ggc_free_tree PROTO ((struct ggc_tree *t));
 static void ggc_mark_rtx_ptr PROTO ((void *elt));
 static void ggc_mark_tree_ptr PROTO ((void *elt));
+static void ggc_mark_string_ptr PROTO ((void *elt));
 static void ggc_mark_tree_varray_ptr PROTO ((void *elt));
 static void ggc_mark_tree_hash_table_ptr PROTO ((void *elt));
 static boolean ggc_mark_tree_hash_table_entry PROTO ((struct hash_entry *,
@@ -691,7 +692,7 @@ ggc_collect ()
   struct ggc_any *a, **ap;
   int time, n_rtxs, n_trees, n_vecs, n_strings, n_anys;
 
-#ifndef ENABLE_CHECKING
+#if 0
   /* See if it's even worth our while.  */
   if (ggc_chain->bytes_alloced_since_gc < 64*1024)
     return;
@@ -883,6 +884,14 @@ ggc_add_tree_root (base, nelt)
   ggc_add_root (base, nelt, sizeof(tree), ggc_mark_tree_ptr);
 }
 
+void
+ggc_add_string_root (base, nelt)
+     char **base;
+     int nelt;
+{
+  ggc_add_root (base, nelt, sizeof(char *), ggc_mark_string_ptr);
+}
+
 /* Add V (a varray full of trees) to the list of GC roots.  */
 
 void
@@ -940,6 +949,16 @@ ggc_mark_tree_ptr (elt)
      void *elt;
 {
   ggc_mark_tree (*(tree *)elt);
+}
+
+/* Type-correct function to pass to ggc_add_root.  It just forwards
+   ELT (which is really a char **) to ggc_mark_string.  */
+
+static void
+ggc_mark_string_ptr (elt)
+     void *elt;
+{
+  ggc_mark_string (*(char **)elt);
 }
 
 /* Type-correct function to pass to ggc_add_root.  It just forwards

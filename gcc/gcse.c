@@ -4086,6 +4086,7 @@ free_pre_mem ()
   free (comp);
   free (antloc);
 
+  free (temp_bitmap);
   free (pre_optimal);
   free (pre_redundant);
   free (transpout);
@@ -4412,6 +4413,8 @@ pre_insert (index_map)
 	    }
 	}
     }
+
+  sbitmap_vector_free (inserted);
 }
 
 /* Copy the result of INSN to REG.

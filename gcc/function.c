@@ -6066,6 +6066,8 @@ expand_function_end (filename, line, end_bindings)
 	  initial_trampoline
 	    = gen_rtx_MEM (BLKmode, assemble_trampoline_template ());
 	  resume_temporary_allocation ();
+
+	  ggc_add_rtx_root (&initial_trampoline, 1);
 	}
 #endif
 
