@@ -1283,8 +1283,8 @@ all-gcc:
 # In theory, on an SMP all those dependencies can be resolved
 # in parallel.
 #
-.PHONY: bootstrap bootstrap2 bootstrap3
-bootstrap bootstrap2 bootstrap3: all-texinfo all-bison all-byacc all-binutils all-gas all-ld
+.PHONY: bootstrap bootstrap-lean bootstrap2 bootstrap3 bootstrap4
+bootstrap bootstrap-lean bootstrap2 bootstrap3 bootstrap4: all-texinfo all-bison all-byacc all-binutils all-gas all-ld
 	@r=`pwd`; export r; \
 	s=`cd $(srcdir); pwd`; export s; \
 	$(SET_LIB_PATH) \
@@ -1292,24 +1292,17 @@ bootstrap bootstrap2 bootstrap3: all-texinfo all-bison all-byacc all-binutils al
 	cd gcc; $(MAKE) $(GCC_FLAGS_TO_PASS) $@
 	@r=`pwd`; export r; \
 	s=`cd $(srcdir); pwd`; export s; \
+	case "$@" in \
+	  *bootstrap4 ) msg="Comparing stage3 and stage4 of the compiler"; \
+	  		compare=compare3 ;; \
+	  *-lean )	msg="Comparing stage2 and stage3 of the compiler"; \
+	  		compare=compare-lean ;; \
+	  * )		msg="Comparing stage2 and stage3 of the compiler"; \
+	  		compare=compare ;; \
+	esac; \
 	$(SET_LIB_PATH) \
-	echo "Comparing stage2 and stage3 of the compiler"; \
-	cd gcc; $(MAKE) $(GCC_FLAGS_TO_PASS) compare
-	@echo "Building runtime libraries"; \
-	$(MAKE) all
-
-.PHONY: bootstrap-lean
-bootstrap-lean: all-texinfo all-bison all-byacc all-binutils all-gas all-ld
-	@r=`pwd`; export r; \
-	s=`cd $(srcdir); pwd`; export s; \
-	$(SET_LIB_PATH) \
-	echo "Bootstrapping the compiler"; \
-	cd gcc; $(MAKE) $(GCC_FLAGS_TO_PASS) $@
-	@r=`pwd`; export r; \
-	s=`cd $(srcdir); pwd`; export s; \
-	$(SET_LIB_PATH) \
-	echo "Comparing stage2 and stage3 of the compiler"; \
-	cd gcc; $(MAKE) $(GCC_FLAGS_TO_PASS) compare-lean
+	echo "$$msg"; \
+	cd gcc; $(MAKE) $(GCC_FLAGS_TO_PASS) $$compare
 	@echo "Building runtime libraries"; \
 	$(MAKE) all
 

@@ -1,3 +1,9 @@
+Sun Oct 26 11:48:27 1997  Manfred Hollstein  (manfred@s-direktnet.de)
+
+	* Makefile.in (bootstrap-lean): Combined with `normal' bootstrap
+	targets using "$@" to provide support for similar but not identical
+	targets without having to duplicate code.
+
 Mon Sep 29 00:38:08 1997 Aaron Jackson <jackson@negril.msrce.howard.edu>
 
 	* Makefile.in (bootstrap-lean): New target.
