@@ -2699,7 +2699,16 @@ emit_no_conflict_block (insns, target, op0, op1, equiv)
 	set_unique_reg_note (last, REG_EQUAL, equiv);
     }
   else
-    last = get_last_insn ();
+    {
+      last = get_last_insn ();
+
+      /* Remove any existing REG_EQUAL note from "last", or else it will
+	 be mistaken for a note referring to the full contents of the
+	 alleged libcall value when found together with the REG_RETVAL
+	 note added below.  An existing note can come from an insn
+	 expansion at "last".  */
+      remove_note (last, find_reg_note (last, REG_EQUAL, NULL_RTX));
+    }
 
   if (prev == 0)
     first = get_insns ();
@@ -2810,6 +2819,15 @@ emit_libcall_block (insns, target, result, equiv)
   if (mov_optab->handlers[(int) GET_MODE (target)].insn_code
       != CODE_FOR_nothing)
     set_unique_reg_note (last, REG_EQUAL, copy_rtx (equiv));
+  else
+    {
+      /* Remove any existing REG_EQUAL note from "last", or else it will
+	 be mistaken for a note referring to the full contents of the
+	 libcall value when found together with the REG_RETVAL note added
+	 below.  An existing note can come from an insn expansion at
+	 "last".  */
+      remove_note (last, find_reg_note (last, REG_EQUAL, NULL_RTX));
+    }
 
   if (prev == 0)
     first = get_insns ();
