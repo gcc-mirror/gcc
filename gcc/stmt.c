@@ -4281,7 +4281,7 @@ bc_pushcase (value, label)
 
       if (case_label != thiscase->data.case_stmt.case_list
 	  && ! tree_int_cst_lt (case_label->high, value)
-	  || case_label->left && ! tree_int_cst_lt (value, case_label->left->low))
+	  || (case_label->left && ! tree_int_cst_lt (value, case_label->left->low)))
 	return 2;
 
       new_label = (struct case_node *) oballoc (sizeof (struct case_node));
