@@ -200,6 +200,15 @@ do { union { float f; long l;} tem;			\
 #undef TARGET_VERSION
 #define TARGET_VERSION fprintf (stderr, " (68k, SGS/AT&T syntax)");
 
+/* Use proper assembler syntax for these macros.  */
+#undef ASM_OUTPUT_REG_PUSH
+#define ASM_OUTPUT_REG_PUSH(FILE,REGNO)  \
+  asm_fprintf (FILE, "\t%Omove.l %s,-(%Rsp)\n", reg_names[REGNO])
+
+#undef ASM_OUTPUT_REG_POP
+#define ASM_OUTPUT_REG_POP(FILE,REGNO)  \
+  asm_fprintf (FILE, "\t%Omove.l (%Rsp)+,%s\n", reg_names[REGNO])
+
 #undef PRINT_OPERAND_PRINT_FLOAT
 #define PRINT_OPERAND_PRINT_FLOAT(CODE,FILE)			\
 	asm_fprintf ((FILE), "%I0x%x", u1.i);
