@@ -1498,7 +1498,7 @@ output_bound_representation (bound, dim_num, u_or_l)
 
 	  if (! optimize)
 	    output_loc_descriptor
-	      (eliminate_regs (SAVE_EXPR_RTL (bound), 0, 0));
+	      (eliminate_regs (SAVE_EXPR_RTL (bound), 0, NULL_RTX));
 
 	  ASM_OUTPUT_LABEL (asm_out_file, end_label);
 	}
@@ -1573,7 +1573,7 @@ location_attribute (rtl)
      declaration, but not a definition.  So sayeth the PLSIG.  */
 
   if (! is_pseudo_reg (rtl))
-    output_loc_descriptor (eliminate_regs (rtl, 0, 0));
+    output_loc_descriptor (eliminate_regs (rtl, 0, NULL_RTX));
 
   ASM_OUTPUT_LABEL (asm_out_file, end_label);
 }
@@ -1783,8 +1783,8 @@ const_value_attribute (rtl)
 	   simplicity we always just output CONST_DOUBLEs using 8 bytes.  */
 
 	ASM_OUTPUT_DWARF_DATA8 (asm_out_file,
-				(unsigned) CONST_DOUBLE_HIGH (rtl),
-				(unsigned) CONST_DOUBLE_LOW (rtl));
+				(unsigned HOST_WIDE_INT) CONST_DOUBLE_HIGH (rtl),
+				(unsigned HOST_WIDE_INT) CONST_DOUBLE_LOW (rtl));
 	break;
 
       case CONST_STRING:
@@ -4320,7 +4320,7 @@ dwarfout_file_scope_decl (decl, set_finalizing)
   fputc ('\n', asm_out_file);
   ASM_OUTPUT_PUSH_SECTION (asm_out_file, DEBUG_SECTION);
   finalizing = set_finalizing;
-  output_decl (decl, NULL);
+  output_decl (decl, NULL_TREE);
 
   /* NOTE:  The call above to `output_decl' may have caused one or more
      file-scope named types (i.e. tagged types) to be placed onto the
@@ -4333,7 +4333,7 @@ dwarfout_file_scope_decl (decl, set_finalizing)
      `output_pending_types_for_scope' takes them off of the list and un-sets
      their TREE_ASM_WRITTEN flags.  */
 
-  output_pending_types_for_scope (NULL);
+  output_pending_types_for_scope (NULL_TREE);
 
   /* The above call should have totally emptied the pending_types_list.  */
 
