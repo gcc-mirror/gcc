@@ -1,3 +1,19 @@
+2004-03-13  Benjamin Kosnik  <bkoz@redhat.com>
+
+	* config/allocator: New.
+	* config/allocator/bitmap_allocator_base.h: New.
+	* config/allocator/malloc_allocator_base.h: New.
+	* config/allocator/mt_allocator_base.h: New.
+	* config/allocator/new_allocator_base.h: New.
+	* include/bits/allocator.h: Include c++allocator.h.
+	* acinclude.m4 (GLIBCXX_ENABLE_ALLOCATOR): New.
+	* aclocal.m4: Regenerate.
+	* configure.ac: Use GLIBCXX_ENABLE_ALLOCATOR. 
+	* configure: Regenerate.
+	* include/Makefile.am (host_headers_extra): Add c++allocator.h.
+	* include/Makefile.in: Regenerate.
+	* docs/html/configopts.html: Add enable-libstdcxx-allocator.
+
 2004-03-12  Benjamin Kosnik  <bkoz@redhat.com>
 
 	* include/bits/allocator.h: Revert.

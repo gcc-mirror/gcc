@@ -124,6 +124,23 @@ options</a></h1>
      </p>
  </dd>
 
+ <dt><code>--enable-libstdcxx-allocator  </code></dt>
+ <dd><p>This is an abbreviated form of
+        <code>'--enable-libstdcxx-allocator=auto'</code> (described
+        next). This option can change the library ABI.
+     </p>
+ </dd>
+
+ <dt><code>--enable-libstdcxx-allocator=OPTION  </code></dt>
+ <dd><p>Select a target-specific underlying std::allocator.  The
+        choices are 'new' to specify a wrapper for new, 'malloc' to
+        specify a wrapper for malloc, 'mt' for a fixed power of two allocator
+        (More <a href="http://sources.redhat.com/glibc/">info</a>) or
+        'bitmap' for a bitmap allocator. This option can change the
+        library ABI.
+     </p>
+ </dd>
+
  <dt><code>--enable-cheaders=OPTION  </code></dt>
  <dd><p>This allows the user to define what kind of C headers are
         used.  Options are: c, c_std, and c_shadow. These correspond

@@ -309,7 +309,7 @@ ac_includes_default="\
 # include <unistd.h>
 #endif"
 
-ac_subst_vars='SHELL PATH_SEPARATOR PACKAGE_NAME PACKAGE_TARNAME PACKAGE_VERSION PACKAGE_STRING PACKAGE_BUGREPORT exec_prefix prefix program_transform_name bindir sbindir libexecdir datadir sysconfdir sharedstatedir localstatedir libdir includedir oldincludedir infodir mandir build_alias host_alias target_alias DEFS ECHO_C ECHO_N ECHO_T LIBS libtool_VERSION multi_basedir build build_cpu build_vendor build_os host host_cpu host_vendor host_os target target_cpu target_vendor target_os INSTALL_PROGRAM INSTALL_SCRIPT INSTALL_DATA CYGPATH_W PACKAGE VERSION ACLOCAL AUTOCONF AUTOMAKE AUTOHEADER MAKEINFO AMTAR install_sh STRIP ac_ct_STRIP INSTALL_STRIP_PROGRAM mkdir_p AWK SET_MAKE am__leading_dot glibcxx_builddir glibcxx_srcdir toplevel_srcdir CC ac_ct_CC EXEEXT OBJEXT CXX ac_ct_CXX CFLAGS CXXFLAGS LN_S AS ac_ct_AS AR ac_ct_AR RANLIB ac_ct_RANLIB MAINTAINER_MODE_TRUE MAINTAINER_MODE_FALSE MAINT LIBTOOL CXXCPP CPPFLAGS enable_shared enable_static GLIBCXX_HOSTED_TRUE GLIBCXX_HOSTED_FALSE GLIBCXX_BUILD_PCH_TRUE GLIBCXX_BUILD_PCH_FALSE glibcxx_PCHFLAGS CSTDIO_H BASIC_FILE_H BASIC_FILE_CC CPP EGREP check_msgfmt glibcxx_MOFILES glibcxx_POFILES glibcxx_localedir USE_NLS CLOCALE_H CCODECVT_H CMESSAGES_H CCODECVT_CC CCOLLATE_CC CCTYPE_CC CMESSAGES_CC CMONEY_CC CNUMERIC_CC CTIME_H CTIME_CC CLOCALE_CC CLOCALE_INTERNAL_H C_INCLUDE_DIR GLIBCXX_C_HEADERS_C_TRUE GLIBCXX_C_HEADERS_C_FALSE GLIBCXX_C_HEADERS_C_STD_TRUE GLIBCXX_C_HEADERS_C_STD_FALSE GLIBCXX_C_HEADERS_COMPATIBILITY_TRUE GLIBCXX_C_HEADERS_COMPATIBILITY_FALSE glibcxx_thread_h DEBUG_FLAGS GLIBCXX_BUILD_DEBUG_TRUE GLIBCXX_BUILD_DEBUG_FALSE EXTRA_CXX_FLAGS WERROR SECTION_FLAGS SECTION_LDFLAGS OPT_LDFLAGS LIBMATHOBJS SYMVER_MAP port_specific_symbol_files GLIBCXX_BUILD_VERSIONED_SHLIB_TRUE GLIBCXX_BUILD_VERSIONED_SHLIB_FALSE baseline_dir GLIBCXX_TEST_WCHAR_T_TRUE GLIBCXX_TEST_WCHAR_T_FALSE GLIBCXX_TEST_ABI_TRUE GLIBCXX_TEST_ABI_FALSE ATOMICITY_SRCDIR ATOMIC_WORD_SRCDIR OS_INC_SRCDIR glibcxx_prefixdir gxx_include_dir glibcxx_toolexecdir glibcxx_toolexeclibdir GLIBCXX_INCLUDES TOPLEVEL_INCLUDES OPTIMIZE_CXXFLAGS WARN_FLAGS LIBSUPCXX_PICFLAGS LIBOBJS LTLIBOBJS'
+ac_subst_vars='SHELL PATH_SEPARATOR PACKAGE_NAME PACKAGE_TARNAME PACKAGE_VERSION PACKAGE_STRING PACKAGE_BUGREPORT exec_prefix prefix program_transform_name bindir sbindir libexecdir datadir sysconfdir sharedstatedir localstatedir libdir includedir oldincludedir infodir mandir build_alias host_alias target_alias DEFS ECHO_C ECHO_N ECHO_T LIBS libtool_VERSION multi_basedir build build_cpu build_vendor build_os host host_cpu host_vendor host_os target target_cpu target_vendor target_os INSTALL_PROGRAM INSTALL_SCRIPT INSTALL_DATA CYGPATH_W PACKAGE VERSION ACLOCAL AUTOCONF AUTOMAKE AUTOHEADER MAKEINFO AMTAR install_sh STRIP ac_ct_STRIP INSTALL_STRIP_PROGRAM mkdir_p AWK SET_MAKE am__leading_dot glibcxx_builddir glibcxx_srcdir toplevel_srcdir CC ac_ct_CC EXEEXT OBJEXT CXX ac_ct_CXX CFLAGS CXXFLAGS LN_S AS ac_ct_AS AR ac_ct_AR RANLIB ac_ct_RANLIB MAINTAINER_MODE_TRUE MAINTAINER_MODE_FALSE MAINT LIBTOOL CXXCPP CPPFLAGS enable_shared enable_static GLIBCXX_HOSTED_TRUE GLIBCXX_HOSTED_FALSE GLIBCXX_BUILD_PCH_TRUE GLIBCXX_BUILD_PCH_FALSE glibcxx_PCHFLAGS CSTDIO_H BASIC_FILE_H BASIC_FILE_CC CPP EGREP check_msgfmt glibcxx_MOFILES glibcxx_POFILES glibcxx_localedir USE_NLS CLOCALE_H CCODECVT_H CMESSAGES_H CCODECVT_CC CCOLLATE_CC CCTYPE_CC CMESSAGES_CC CMONEY_CC CNUMERIC_CC CTIME_H CTIME_CC CLOCALE_CC CLOCALE_INTERNAL_H ALLOCATOR_H ALLOCATOR_NAME C_INCLUDE_DIR GLIBCXX_C_HEADERS_C_TRUE GLIBCXX_C_HEADERS_C_FALSE GLIBCXX_C_HEADERS_C_STD_TRUE GLIBCXX_C_HEADERS_C_STD_FALSE GLIBCXX_C_HEADERS_COMPATIBILITY_TRUE GLIBCXX_C_HEADERS_COMPATIBILITY_FALSE glibcxx_thread_h DEBUG_FLAGS GLIBCXX_BUILD_DEBUG_TRUE GLIBCXX_BUILD_DEBUG_FALSE EXTRA_CXX_FLAGS WERROR SECTION_FLAGS SECTION_LDFLAGS OPT_LDFLAGS LIBMATHOBJS SYMVER_MAP port_specific_symbol_files GLIBCXX_BUILD_VERSIONED_SHLIB_TRUE GLIBCXX_BUILD_VERSIONED_SHLIB_FALSE baseline_dir GLIBCXX_TEST_WCHAR_T_TRUE GLIBCXX_TEST_WCHAR_T_FALSE GLIBCXX_TEST_ABI_TRUE GLIBCXX_TEST_ABI_FALSE ATOMICITY_SRCDIR ATOMIC_WORD_SRCDIR OS_INC_SRCDIR glibcxx_prefixdir gxx_include_dir glibcxx_toolexecdir glibcxx_toolexeclibdir GLIBCXX_INCLUDES TOPLEVEL_INCLUDES OPTIMIZE_CXXFLAGS WARN_FLAGS LIBSUPCXX_PICFLAGS LIBOBJS LTLIBOBJS'
 ac_subst_files=''
 
 # Initialize some variables set by options.
@@ -864,6 +864,9 @@ Optional Features:
                           use MODEL for target locale package
                           [default=auto]
   --enable-nls            use Native Language Support (default)
+  --enable-libstdcxx-allocator=KIND
+                          use KIND for target std::allocator base
+                          [default=auto]
   --enable-cheaders=KIND  construct "C" headers for g++
                           [default=$c_model]
   --enable-c-mbchar       enable multibyte (wide) characters
@@ -4422,7 +4425,7 @@ test x"$pic_mode" = xno && libtool_flags="$libtool_flags --prefer-non-pic"
 case $host in
 *-*-irix6*)
   # Find out which ABI we are using.
-  echo '#line 4425 "configure"' > conftest.$ac_ext
+  echo '#line 4428 "configure"' > conftest.$ac_ext
   if { (eval echo "$as_me:$LINENO: \"$ac_compile\"") >&5
   (eval $ac_compile) 2>&5
   ac_status=$?
@@ -5036,7 +5039,7 @@ fi;
     #
     # Fake what AC_TRY_COMPILE does.  XXX Look at redoing this new-style.
     cat > conftest.$ac_ext << EOF
-#line 5039 "configure"
+#line 5042 "configure"
 struct S { ~S(); };
 void bar();
 void foo()
@@ -6252,6 +6255,85 @@ _ACEOF
 
 
 
+
+
+
+
+
+  echo "$as_me:$LINENO: checking for std::allocator base class to use" >&5
+echo $ECHO_N "checking for std::allocator base class to use... $ECHO_C" >&6
+   # Check whether --enable-libstdcxx-allocator or --disable-libstdcxx-allocator was given.
+if test "${enable_libstdcxx_allocator+set}" = set; then
+  enableval="$enable_libstdcxx_allocator"
+
+      case "$enableval" in
+       new|malloc|mt|bitmap|yes|no|auto) ;;
+       *) { { echo "$as_me:$LINENO: error: Unknown argument to enable/disable libstdcxx-allocator" >&5
+echo "$as_me: error: Unknown argument to enable/disable libstdcxx-allocator" >&2;}
+   { (exit 1); exit 1; }; } ;;
+                          esac
+
+else
+  enable_libstdcxx_allocator=auto
+fi;
+
+  # If they didn't use this option switch, or if they specified --enable
+  # with no specific model, we'll have to look for one.  If they
+  # specified --disable (???), do likewise.
+  if test $enable_libstdcxx_allocator = no || test $enable_libstdcxx_allocator = yes; then
+     enable_libstdcxx_allocator=auto
+  fi
+
+  # Either a known package, or "auto"
+  enable_libstdcxx_allocator_flag=$enable_libstdcxx_allocator
+
+  # Probe for host-specific support if no specific model is specified.
+  # Default to "new".
+  if test $enable_libstdcxx_allocator_flag = auto; then
+    case ${target_os} in
+      freebsd*)
+        enable_libstdcxx_allocator_flag=mt
+        ;;
+      hpux11*)
+        enable_libstdcxx_allocator_flag=mt
+        ;;
+      irix6*)
+        enable_libstdcxx_allocator_flag=mt
+        ;;
+      linux* | gnu* | kfreebsd*-gnu | knetbsd*-gnu)
+        enable_libstdcxx_allocator_flag=mt
+        ;;
+      solaris*)
+        enable_libstdcxx_allocator_flag=mt
+        ;;
+      *)
+        enable_libstdcxx_allocator_flag=new
+        ;;
+    esac
+  fi
+  echo "$as_me:$LINENO: result: $enable_libstdcxx_allocator_flag" >&5
+echo "${ECHO_T}$enable_libstdcxx_allocator_flag" >&6
+
+
+  # Set configure bits for specified locale package
+  case ${enable_libstdcxx_allocator_flag} in
+    bitmap)
+      ALLOCATOR_H=config/allocator/bitmap_allocator_base.h
+      ALLOCATOR_NAME=__gnu_cxx::bitmap_allocator
+      ;;
+    malloc)
+      ALLOCATOR_H=config/allocator/malloc_allocator_base.h
+      ALLOCATOR_NAME=__gnu_cxx::malloc_allocator
+      ;;
+    mt)
+      ALLOCATOR_H=config/allocator/mt_allocator_base.h
+      ALLOCATOR_NAME=__gnu_cxx::__mt_alloc
+      ;;
+    new)
+      ALLOCATOR_H=config/allocator/new_allocator_base.h
+      ALLOCATOR_NAME=__gnu_cxx::new_allocator
+      ;;
+  esac
 
 
 
@@ -73754,6 +73836,8 @@ s,@CTIME_H@,$CTIME_H,;t t
 s,@CTIME_CC@,$CTIME_CC,;t t
 s,@CLOCALE_CC@,$CLOCALE_CC,;t t
 s,@CLOCALE_INTERNAL_H@,$CLOCALE_INTERNAL_H,;t t
+s,@ALLOCATOR_H@,$ALLOCATOR_H,;t t
+s,@ALLOCATOR_NAME@,$ALLOCATOR_NAME,;t t
 s,@C_INCLUDE_DIR@,$C_INCLUDE_DIR,;t t
 s,@GLIBCXX_C_HEADERS_C_TRUE@,$GLIBCXX_C_HEADERS_C_TRUE,;t t
 s,@GLIBCXX_C_HEADERS_C_FALSE@,$GLIBCXX_C_HEADERS_C_FALSE,;t t
