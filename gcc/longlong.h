@@ -978,9 +978,11 @@ UDItype __umulsidi3 (USItype, USItype);
 	   : "%g1" __AND_CLOBBER_CC)
 #define UDIV_TIME 37
 #define count_leading_zeros(count, x) \
-  __asm__ ("scan %1,0,%0"						\
-	   : "=r" ((USItype) (x))					\
-	   : "r" ((USItype) (count)))
+  do {                                                                  \
+  __asm__ ("scan %1,1,%0"                                               \
+           : "=r" ((USItype) (count))                                   \
+           : "r" ((USItype) (x)));					\
+  } while (0)    
 #else
 /* SPARC without integer multiplication and divide instructions.
    (i.e. at least Sun4/20,40,60,65,75,110,260,280,330,360,380,470,490) */

@@ -3048,6 +3048,18 @@ for machine in $build $host $target; do
 		tmake_file=i386/t-vsta
 		xmake_file=i386/x-vsta
 		;;
+	i[34567]86-*-win32)
+		xm_file="${xm_file} i386/xm-cygwin32.h"
+		tmake_file=i386/t-cygwin32
+		tm_file=i386/win32.h
+		xmake_file=i386/x-cygwin32
+		extra_objs=winnt.o
+		fixincludes=Makefile.in
+ 		if [ x$enable_threads = xyes ]; then
+			thread_file='win32'
+		fi
+		exeext=.exe
+		;;
 	i[34567]86-*-pe | i[34567]86-*-cygwin32)
 		xm_file="${xm_file} i386/xm-cygwin32.h"
 		tmake_file=i386/t-cygwin32

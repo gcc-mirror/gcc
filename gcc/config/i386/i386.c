@@ -2179,6 +2179,10 @@ ix86_prologue (do_rtl)
  	  }
       }
 
+#ifdef SUBTARGET_PROLOGUE
+  SUBTARGET_PROLOGUE;
+#endif  
+
   if (pic_reg_used)
     load_pic_register (do_rtl);
 
