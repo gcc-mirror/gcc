@@ -3144,10 +3144,6 @@ rest_of_compilation (tree decl)
 
   delete_unreachable_blocks ();
 
-  /* We have to issue these warnings now already, because CFG cleanups
-     further down may destroy the required information.  */
-  check_function_return_warnings ();
-
   /* Turn NOTE_INSN_PREDICTIONs into branch predictions.  */
   if (flag_guess_branch_prob)
     {
@@ -3158,6 +3154,14 @@ rest_of_compilation (tree decl)
 
   if (flag_optimize_sibling_calls)
     rest_of_handle_sibling_calls (insns);
+
+  /* We have to issue these warnings now already, because CFG cleanups
+     further down may destroy the required information.  However, this
+     must be done after the sibcall optimization pass because the barrier
+     emitted for noreturn calls that are candidate for the optimization
+     is folded into the CALL_PLACEHOLDER until after this pass, so the
+     CFG is inaccurate.  */
+  check_function_return_warnings ();
 
   timevar_pop (TV_JUMP);
 
