@@ -1,3 +1,9 @@
+2004-06-21  Andrew Pinski  <apinski@apple.com>
+
+	Radar #: 3701874
+	* c-decl.c (push_file_scope): Return early if we already
+	have a file scope.
+
 2004-06-21  Geoffrey Keating  <geoffk@apple.com>
 
 	* c-opts.c (c_common_handle_option): Handle -fpch-preprocess.

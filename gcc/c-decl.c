@@ -810,6 +810,9 @@ push_file_scope (void)
 {
   tree decl;
 
+  if (file_scope)
+    return;
+
   push_scope ();
   file_scope = current_scope;
 

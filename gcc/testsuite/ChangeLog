@@ -1,3 +1,8 @@
+2004-06-21  Andrew Pinski  <apinski@apple.com>
+
+	* gcc.dg/pch/struct-1.c: New.
+	* gcc.dg/pch/struct-1.hs: New.
+
 2004-06-21  Geoffrey Keating  <geoffk@apple.com>
 
 	* gcc.dg/pch/save-temps-1.c: New file.
