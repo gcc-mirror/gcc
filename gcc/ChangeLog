@@ -1,3 +1,17 @@
+2004-09-03  James E Wilson  <wilson@specifixinc.com>
+
+	* config/mips/mips.h (TARGET_CPU_CPP_BUILTINS): Add __mips3d.
+
+	* config/mips/generic.md (generic_frecip_fsqrt_step): New.
+	* config/mips/mips-ps-3d.md (mips_rsqrt1_<fmt>): Use frsqrt1 type.
+	(mips_rsqrt2_<fmt>): Use frsqrt2 type.
+	(mips_recip1_<fmt>): Use frdiv1 type.
+	(mips_recip2_<fmt>): Use frdiv2 type.
+	* config/mips/mips.md (type): Add frdiv1, frdiv2, frsqrt1, frsqrt2.
+	* config/mips/sb1.md (ir_sb1_fpu_2pipes, ir_sb1_fpu_1pipe): Add frdiv1
+	and frsqrt1.
+	(ir_sb1_fpu_step2_2pipes, ir_sb1_fpu_step2_1pipe): New.
+
 2004-09-03  Daniel Jacobowitz  <dan@debian.org>
 
 	* reload.c (find_reloads): Swap operand_loc pointers for

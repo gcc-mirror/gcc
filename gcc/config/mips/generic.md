@@ -100,3 +100,7 @@
   (and (eq_attr "type" "fsqrt,frsqrt")
        (eq_attr "mode" "DF"))
   "alu")
+
+(define_insn_reservation "generic_frecip_fsqrt_step" 5
+  (eq_attr "type" "frdiv1,frdiv2,frsqrt1,frsqrt2")
+  "alu")

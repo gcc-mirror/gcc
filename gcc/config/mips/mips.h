@@ -411,6 +411,9 @@ extern const struct mips_cpu_info *mips_tune_info;
       if (TARGET_MIPS16)					\
 	builtin_define ("__mips16");				\
 								\
+      if (TARGET_MIPS3D)					\
+	builtin_define ("__mips3d");				\
+								\
       MIPS_CPP_SET_PROCESSOR ("_MIPS_ARCH", mips_arch_info);	\
       MIPS_CPP_SET_PROCESSOR ("_MIPS_TUNE", mips_tune_info);	\
 								\
