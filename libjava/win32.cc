@@ -76,7 +76,7 @@ _Jv_platform_initProperties (java::util::Properties* newprops)
   SET ("file.separator", "\\");
   SET ("path.separator", ";");
   SET ("line.separator", "\r\n");
-  SET ("java.io.tmpdir", "C:\\temp");
+  SET ("java.io.tmpdir", GetTempPath ());
 
   // Use GetCurrentDirectory to set 'user.dir'.
   DWORD buflen = MAX_PATH;
