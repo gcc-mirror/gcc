@@ -1503,12 +1503,12 @@ qty_compare (q1, q2)
      times a register can occur in one insn (surely less than 100).
      Multiplying this by 10000 can't overflow.  */
   register int pri1
-    = (((double) (floor_log2 (qty_n_refs[q1]) * qty_n_refs[q1])
-	/ ((qty_death[q1] - qty_birth[q1]) * qty_size[q1]))
+    = (((double) (floor_log2 (qty_n_refs[q1]) * qty_n_refs[q1] * qty_size[q1])
+	/ (qty_death[q1] - qty_birth[q1]))
        * 10000);
   register int pri2
-    = (((double) (floor_log2 (qty_n_refs[q2]) * qty_n_refs[q2])
-	/ ((qty_death[q2] - qty_birth[q2]) * qty_size[q2]))
+    = (((double) (floor_log2 (qty_n_refs[q2]) * qty_n_refs[q2] * qty_size[q2])
+	/ (qty_death[q2] - qty_birth[q2]))
        * 10000);
   return pri2 - pri1;
 }
@@ -1524,12 +1524,14 @@ qty_compare_1 (q1, q2)
      times a register can occur in one insn (surely less than 100).
      Multiplying this by 10000 can't overflow.  */
   register int pri1
-    = (((double) (floor_log2 (qty_n_refs[*q1]) * qty_n_refs[*q1])
-	/ ((qty_death[*q1] - qty_birth[*q1]) * qty_size[*q1]))
+    = (((double) (floor_log2 (qty_n_refs[*q1]) * qty_n_refs[*q1]
+		  * qty_size[*q1])
+	/ (qty_death[*q1] - qty_birth[*q1]))
        * 10000);
   register int pri2
-    = (((double) (floor_log2 (qty_n_refs[*q2]) * qty_n_refs[*q2])
-	/ ((qty_death[*q2] - qty_birth[*q2]) * qty_size[*q2]))
+    = (((double) (floor_log2 (qty_n_refs[*q2]) * qty_n_refs[*q2]
+		  * qty_size[*q2])
+	/ (qty_death[*q2] - qty_birth[*q2]))
        * 10000);
 
   tem = pri2 - pri1;
