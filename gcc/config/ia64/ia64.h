@@ -2115,6 +2115,71 @@ do {									\
   fprintf (FILE, "\n");							\
 } while (0)
 
+/* This is how to output an assembler line defining a `char' constant
+   to an xdata segment.  */
+
+#define ASM_OUTPUT_XDATA_CHAR(FILE, SECTION, VALUE)			\
+do {									\
+  fprintf (FILE, "\t.xdata1\t\"%s\", ", SECTION);			\
+  output_addr_const (FILE, (VALUE));					\
+  fprintf (FILE, "\n");							\
+} while (0)
+
+/* This is how to output an assembler line defining a `short' constant
+   to an xdata segment.  */
+
+#define ASM_OUTPUT_XDATA_SHORT(FILE, SECTION, VALUE)			\
+do {									\
+  fprintf (FILE, "\t.xdata2\t\"%s\", ", SECTION);			\
+  output_addr_const (FILE, (VALUE));					\
+  fprintf (FILE, "\n");							\
+} while (0)
+
+/* This is how to output an assembler line defining an `int' constant
+   to an xdata segment.  We also handle symbol output here.  */
+
+/* ??? For ILP32, also need to handle function addresses here.  */
+
+#define ASM_OUTPUT_XDATA_INT(FILE, SECTION, VALUE)			\
+do {									\
+  fprintf (FILE, "\t.xdata4\t\"%s\", ", SECTION);			\
+  output_addr_const (FILE, (VALUE));					\
+  fprintf (FILE, "\n");							\
+} while (0)
+
+/* This is how to output an assembler line defining a `long' constant
+   to an xdata segment.  We also handle symbol output here.  */
+
+#define ASM_OUTPUT_XDATA_DOUBLE_INT(FILE, SECTION, VALUE)		\
+do {									\
+  fprintf (FILE, "\t.xdata8\t\"%s\", ", SECTION);			\
+  if (GET_CODE (VALUE) == SYMBOL_REF)					\
+    {									\
+      if (SYMBOL_REF_FLAG (VALUE))					\
+	fprintf (FILE, "@fptr(");					\
+      else								\
+	fprintf (FILE, "@segrel(");					\
+    }									\
+  output_addr_const (FILE, (VALUE));					\
+  if (GET_CODE (VALUE) == SYMBOL_REF)					\
+    fprintf (FILE, ")");						\
+  fprintf (FILE, "\n");							\
+} while (0)
+
+
+/* Output EH data to the unwind segment. */
+#define ASM_OUTPUT_EH_CHAR(FILE, VALUE)					\
+		ASM_OUTPUT_XDATA_CHAR(FILE, ".IA_64.unwind_info", VALUE)
+
+#define ASM_OUTPUT_EH_SHORT(FILE, VALUE)				\
+		ASM_OUTPUT_XDATA_SHORT(FILE, ".IA_64.unwind_info", VALUE)
+
+#define ASM_OUTPUT_EH_INT(FILE, VALUE)					\
+		ASM_OUTPUT_XDATA_INT(FILE, ".IA_64.unwind_info", VALUE)
+
+#define ASM_OUTPUT_EH_DOUBLE_INT(FILE, VALUE)				\
+		ASM_OUTPUT_XDATA_DOUBLE_INT(FILE, ".IA_64.unwind_info", VALUE)
+
 /* A C statement to output to the stdio stream STREAM an assembler instruction
    to assemble a single byte containing the number VALUE.  */
 
@@ -2453,7 +2518,7 @@ do {									\
 
    You should define this symbol if your target supports DWARF 2 frame unwind
    information and the default definition does not work.  */
-/* #define EH_FRAME_SECTION_ASM_OP */
+#define EH_FRAME_SECTION_ASM_OP ".section\t.IA_64.unwind,\"aw\""
 
 /* A C expression that is nonzero if the normal exception table output should
    be omitted.
@@ -2738,6 +2803,21 @@ do {									\
 /* ??? For now, we just schedule to fill bundles.  */
 
 #define ISSUE_RATE 3
+
+#define IA64_UNWIND_INFO	1
+#define HANDLER_SECTION fprintf (asm_out_file, "\t.personality\t__ia64_personality_v1\n\t.handlerdata\n");
+#define IA64_UNWIND_EMIT(f,i)	process_for_unwind_directive (f,i)
+
+/* This function contains machine specific function data.  */
+struct machine_function
+{
+  /* The new stack pointer when unwinding from EH.  */
+  struct rtx_def* ia64_eh_epilogue_sp;
+
+  /* The new bsp value when unwinding from EH. */
+  struct rtx_def* ia64_eh_epilogue_bsp;
+};
+
 
 enum ia64_builtins
 {

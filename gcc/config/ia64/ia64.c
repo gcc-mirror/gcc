@@ -567,7 +567,7 @@ ia64_compute_frame_size (size)
   /* The FR save area needs to be 16-byte aligned.  */
   if (fr_size)
     {
-      tmp = (size + fr_size + pr_size + br_size);
+      tmp = (size + fr_size + br_size);
       fr_pad_size = IA64_STACK_ALIGN (tmp) - tmp;
     }
   else
@@ -653,14 +653,36 @@ save_restore_insns (save_p)
 	{
 	  offset_rtx = tmp_reg;
 	  insn = emit_insn (gen_movdi (tmp_reg, GEN_INT (offset)));
-	  RTX_FRAME_RELATED_P (insn) = 1;
+	  if (save_p)
+	    RTX_FRAME_RELATED_P (insn) = 1;
 	}
       insn = emit_insn (gen_adddi3 (tmp_reg,
 				    (frame_pointer_needed ? frame_pointer_rtx
 				     : stack_pointer_rtx),
 				    offset_rtx));
-      RTX_FRAME_RELATED_P (insn) = 1;
+      if (save_p)
+	RTX_FRAME_RELATED_P (insn) = 1;
 
+      /* If one is used, we save/restore all of them.  */
+      for (regno = PR_REG (0); regno <= PR_REG (63); regno++)
+	if (TEST_HARD_REG_BIT (current_frame_info.mask, regno))
+	  {
+	    rtx mem = gen_rtx_MEM (DImode, tmp_post_inc);
+	    if (save_p)
+	      {
+		insn = emit_insn (gen_pr_spill (tmp2_reg));
+		RTX_FRAME_RELATED_P (insn) = 1;
+		insn = emit_insn (gen_movdi (mem, tmp2_reg));
+		RTX_FRAME_RELATED_P (insn) = 1;
+	      }
+	    else
+	      {
+		insn = emit_insn (gen_movdi (tmp2_reg, mem));
+		insn = emit_insn (gen_pr_restore (tmp2_reg));
+	      }
+	    break;
+	  }
+		
       /* Must save/restore ar.unat if any GR is spilled/restored.  */
       if (current_frame_info.gr_size != 0
 	  || current_function_varargs || current_function_stdarg)
@@ -669,18 +691,21 @@ save_restore_insns (save_p)
 	  if (save_p)
 	    {
 	      insn = emit_insn (gen_unat_spill (tmp2_reg));
-	      RTX_FRAME_RELATED_P (insn) = 1;
+	      if (save_p)
+		RTX_FRAME_RELATED_P (insn) = 1;
 	      insn = emit_insn (gen_movdi (mem, tmp2_reg));
-	      RTX_FRAME_RELATED_P (insn) = 1;
+	      if (save_p)
+		RTX_FRAME_RELATED_P (insn) = 1;
 	    }
 	  else
 	    {
 	      insn = emit_insn (gen_movdi (tmp2_reg, mem));
-	      RTX_FRAME_RELATED_P (insn) = 1;
+	      if (save_p)
+		RTX_FRAME_RELATED_P (insn) = 1;
 	      /* The restore happens after the last ld8.fill instruction.  */
 	    }
 	}
-
+	
       for (regno = GR_REG (0); regno <= GR_REG (127); regno++)
 	if (TEST_HARD_REG_BIT (current_frame_info.mask, regno))
 	  {
@@ -691,7 +716,8 @@ save_restore_insns (save_p)
 	    else
 	      insn = emit_insn (gen_gr_restore (gen_rtx_REG (DImode, regno),
 						mem));
-	    RTX_FRAME_RELATED_P (insn) = 1;
+	    if (save_p)
+	      RTX_FRAME_RELATED_P (insn) = 1;
 	  }
 
       /* Now restore the unat register if necessary.  */
@@ -710,31 +736,10 @@ save_restore_insns (save_p)
 	    else
 	      insn = emit_insn (gen_fr_restore (gen_rtx_REG (XFmode, regno),
 						mem));
-	    RTX_FRAME_RELATED_P (insn) = 1;
-	  }
-
-      /* If one is used, we save/restore all of them.  */
-      for (regno = PR_REG (0); regno <= PR_REG (63); regno++)
-	if (TEST_HARD_REG_BIT (current_frame_info.mask, regno))
-	  {
-	    rtx mem = gen_rtx_MEM (DImode, tmp_post_inc);
 	    if (save_p)
-	      {
-		insn = emit_insn (gen_pr_spill (tmp2_reg));
-		RTX_FRAME_RELATED_P (insn) = 1;
-		insn = emit_insn (gen_movdi (mem, tmp2_reg));
-		RTX_FRAME_RELATED_P (insn) = 1;
-	      }
-	    else
-	      {
-		insn = emit_insn (gen_movdi (tmp2_reg, mem));
-		RTX_FRAME_RELATED_P (insn) = 1;
-		insn = emit_insn (gen_pr_restore (tmp2_reg));
-		RTX_FRAME_RELATED_P (insn) = 1;
-	      }
-	    break;
+	      RTX_FRAME_RELATED_P (insn) = 1;
 	  }
-					     
+		     
       for (regno = BR_REG (0); regno <= BR_REG (7); regno++)
 	if (TEST_HARD_REG_BIT (current_frame_info.mask, regno))
 	  {
@@ -752,9 +757,11 @@ save_restore_insns (save_p)
 	      }
 
 	    insn = emit_insn (gen_movdi (tmp2_reg, src));
-	    RTX_FRAME_RELATED_P (insn) = 1;
+	    if (save_p)
+	      RTX_FRAME_RELATED_P (insn) = 1;
 	    insn = emit_insn (gen_movdi (dest, tmp2_reg));
-	    RTX_FRAME_RELATED_P (insn) = 1;
+	    if (save_p)
+	      RTX_FRAME_RELATED_P (insn) = 1;
 	  }
     }
 }
@@ -933,9 +940,10 @@ ia64_expand_prologue ()
       ia64_need_regstk = 0;
       ia64_arpfs_regno = LOC_REG (locals - 1);
 
-      emit_insn (gen_alloc (gen_rtx_REG (DImode, ia64_arpfs_regno),
-			    GEN_INT (inputs), GEN_INT (locals),
-			    GEN_INT (outputs), GEN_INT (rotates)));
+      insn = emit_insn (gen_alloc (gen_rtx_REG (DImode, ia64_arpfs_regno),
+				   GEN_INT (inputs), GEN_INT (locals),
+				   GEN_INT (outputs), GEN_INT (rotates)));
+      RTX_FRAME_RELATED_P (insn) = 1;
 
       /* Emit a save of BR_REG (0) if we call other functions.
 	 Do this even if this function doesn't return, as EH
@@ -1020,32 +1028,38 @@ ia64_expand_epilogue ()
      pointer updates anti-dependent on them.  */
   emit_insn (gen_blockage ());
 
-  if (frame_pointer_needed)
+  if (cfun->machine->ia64_eh_epilogue_sp == NULL_RTX)
     {
-      /* If there is a frame pointer, then we need to make the stack pointer
-	 restore depend on the frame pointer, so that the stack pointer
-	 restore won't be moved up past fp-relative loads from the frame.  */
-      emit_insn (gen_epilogue_deallocate_stack (stack_pointer_rtx,
-						hard_frame_pointer_rtx));
-    }
-  else
-    {
-      int frame_size = current_frame_info.total_size;
-      rtx offset;
+    if (frame_pointer_needed)
+      {
+	/* If there is a frame pointer, then we need to make the stack pointer
+	   restore depend on the frame pointer, so that the stack pointer
+	   restore won't be moved up past fp-relative loads from the frame.  */
+	emit_insn (gen_epilogue_deallocate_stack (stack_pointer_rtx,
+						  hard_frame_pointer_rtx));
+      }
+    else
+      {
+	int frame_size = current_frame_info.total_size;
+	rtx offset;
 
-      if (frame_size != 0)
-	{
-	  if (CONST_OK_FOR_I (frame_size))
-	    offset = GEN_INT (frame_size);
-	  else
-	    {
-	      offset = gen_rtx_REG (DImode, GR_REG (2));
-	      emit_insn (gen_movdi (offset, GEN_INT (frame_size)));
-	    }
-	  emit_insn (gen_adddi3 (stack_pointer_rtx, stack_pointer_rtx,
-				 offset));
-	}
+	if (frame_size != 0)
+	  {
+	    if (CONST_OK_FOR_I (frame_size))
+	      offset = GEN_INT (frame_size);
+	    else
+	      {
+		offset = gen_rtx_REG (DImode, GR_REG (2));
+		emit_insn (gen_movdi (offset, GEN_INT (frame_size)));
+	      }
+	    emit_insn (gen_adddi3 (stack_pointer_rtx, stack_pointer_rtx,
+				   offset));
+	  }
+      }
     }
+    /* Return via eh_epilogue, so we already have our new stack pointer.  */
+  else
+    emit_insn (gen_movdi (stack_pointer_rtx, cfun->machine->ia64_eh_epilogue_sp));
 
   if (ia64_arpfs_regno)
     emit_insn (gen_pfs_restore (gen_rtx_REG (DImode, ia64_arpfs_regno)));
@@ -1054,6 +1068,11 @@ ia64_expand_epilogue ()
     emit_move_insn (gen_rtx_REG (DImode, BR_REG (0)),
 		    gen_rtx_REG (DImode, ia64_rp_regno));
 
+  if (cfun->machine->ia64_eh_epilogue_bsp != NULL_RTX)
+    {
+      /* We have to restore the bsp.  */
+      emit_insn (gen_set_bsp (cfun->machine->ia64_eh_epilogue_bsp));
+    }
   emit_jump_insn (gen_return_internal (gen_rtx_REG (DImode, BR_REG (0))));
 }
 
@@ -1064,10 +1083,39 @@ ia64_function_prologue (file, size)
      FILE *file;
      int size;
 {
+  rtx insn;
   if (ia64_need_regstk)
     fprintf (file, "\t.regstk %d, 0, 0, 0\n", ia64_input_regs);
 
-  /* ??? Emit .body directive.  GNU as ignores .body currently.  */
+  if (!flag_unwind_tables && (!flag_exceptions || exceptions_via_longjmp))
+    return;
+
+  /* Emit the .prologue directive. in order to do this, we need to find
+     where the stack pointer is moved toa GR, if it is, and mark it.  */
+  
+  for (insn = get_insns (); insn != NULL_RTX; insn = NEXT_INSN (insn))
+    {
+      if (RTX_FRAME_RELATED_P (insn) && GET_CODE (insn) == INSN)
+        {
+	  rtx pat = PATTERN (insn);
+	  if (GET_CODE (pat) == SET)
+	    {
+	      rtx dest = SET_DEST (pat);
+	      rtx src = SET_SRC (pat);
+	      if (GET_CODE (src) == REG && REGNO (src) == STACK_POINTER_REGNUM
+		  && GET_CODE (dest) == REG)
+		{
+		  int reg = REGNO (dest);
+		  if (REGNO (dest) == FRAME_POINTER_REGNUM)
+		    reg = ia64_fp_regno;
+		  fprintf (file, "\t.prologue 0x2, %d\n", reg);
+		  break;
+		}
+	    }
+        }
+    }
+  if (insn == NULL_RTX)
+    fprintf (file, "\t.prologue\n");
 }
 
 /* Emit the function epilogue.  */
@@ -1987,6 +2035,23 @@ ia64_add_gc_roots ()
   ggc_add_rtx_root (&ia64_compare_op1, 1);
 }
 
+static void
+ia64_init_machine_status (p)
+     struct function *p;
+{
+  p->machine =
+    (struct machine_function *) xcalloc (1, sizeof (struct machine_function));
+}
+
+static void
+ia64_mark_machine_status (p)
+     struct function *p;
+{
+  ggc_mark_rtx (p->machine->ia64_eh_epilogue_sp);
+  ggc_mark_rtx (p->machine->ia64_eh_epilogue_bsp);
+}
+
+
 /* Handle TARGET_OPTIONS switches.  */
 
 void
@@ -1996,6 +2061,9 @@ ia64_override_options ()
     fix_range (ia64_fixed_range_string);
 
   ia64_section_threshold = g_switch_set ? g_switch_value : IA64_DEFAULT_GVALUE;
+
+  init_machine_status = ia64_init_machine_status;
+  mark_machine_status = ia64_mark_machine_status;
 
   ia64_add_gc_roots ();
 }
@@ -2445,6 +2513,9 @@ rtx_needs_barrier (x, flags, pred)
           break;
         case 19: /* fetchadd_acq */
           break;
+	case 20: /* mov = ar.bsp */
+          break;
+
 	default:
 	  abort ();
 	}
@@ -2484,6 +2555,10 @@ rtx_needs_barrier (x, flags, pred)
 	  for (i = PR_REG (0); i < PR_REG (64); i += 2)
 	    need_barrier |= rws_access_reg (i, new_flags, pred);
 	  break;
+
+	case 5: /* set_bsp  */
+	  need_barrier = 1;
+          break;
 
 	default:
 	  abort ();
@@ -2746,6 +2821,232 @@ ia64_encode_section_info (decl)
 	  strcpy (newstr + 1, str);
 	  *newstr = SDATA_NAME_FLAG_CHAR;
 	  XSTR (XEXP (DECL_RTL (decl), 0), 0) = newstr;
+	}
+    }
+}
+
+/* Output assmebly directives for prologue regions.  */
+
+static int spill_offset;
+static int sp_offset;
+static int spill_offset_emitted = 1;
+static rtx tmp_reg = NULL_RTX;
+static int tmp_saved = -1;
+
+
+/* This function processes a SET pattern looking for specific patterns
+   which result in emitting an assembly directive required for unwinding.  */
+static int
+process_set (asm_out_file, pat)
+     FILE *asm_out_file;
+     rtx pat;
+{
+  rtx src = SET_SRC (pat);
+  rtx dest = SET_DEST (pat);
+  static rtx frame_reg = NULL_RTX;
+  static int frame_size = 0;
+
+  /* Look for the ALLOC insn.  reg = alloc .... */
+  if (GET_CODE (src) == UNSPEC_VOLATILE && XINT (src, 1) == 0
+      && GET_CODE (dest) == REG && GR_REGNO_P (REGNO (dest)))
+    {
+      /* Assume this is a stack allocate insn.  */
+      fprintf (asm_out_file, "\t.save ar.pfs, r%d\n", 
+	       REGNO (dest) + ia64_input_regs);
+      return 1;
+    }
+
+  /* look for SP = .... */
+  if (GET_CODE (dest) == REG && REGNO (dest) == STACK_POINTER_REGNUM)
+    {
+      if (GET_CODE (src) == PLUS)
+        {
+	  rtx op0 = XEXP (src, 0);
+	  rtx op1 = XEXP (src, 1);
+	  if (op0 == dest && GET_CODE (op1) == CONST_INT)
+	    {
+	      fprintf (asm_out_file, "\t.fframe %d\n", -INTVAL (op1));
+	      frame_size = INTVAL (op1);
+	      return 1;
+	    }
+	  else
+	    if (op0 == dest && GET_CODE (op1) == REG)
+	     {
+		fprintf (asm_out_file, "\t.vframe r%d\n", REGNO (op1));
+	        frame_size = 0;
+		return 1;
+	     }
+	}
+    }
+  /* Look for a frame offset.  */
+  if (GET_CODE (dest) == REG)
+    {
+      if (GET_CODE (src) == PLUS)
+        {
+	  rtx op0 = XEXP (src, 0);
+	  rtx op1 = XEXP (src, 1);
+	  if (GET_CODE (op0) == REG && REGNO (op0) == FRAME_POINTER_REGNUM
+	      && GET_CODE (op1) == CONST_INT)
+	    {
+	      sp_offset = -frame_size + INTVAL (op1);
+	      spill_offset = INTVAL (op1);
+	      spill_offset_emitted = 0;
+	      frame_reg = dest;
+	      /* We delay issuing the spill offset since we might
+		 be saving non-spill things off this register,
+		 thus adjusting its offset before a spill is seen.  */
+	      return 1;
+	    }
+	}
+    }
+
+  /* Register move we need to look at.  */
+  if (GET_CODE (dest) == REG && GET_CODE (src) == REG)
+    {
+      int regno = REGNO (src);
+      if (BR_REGNO_P (regno))
+        {
+	  /* Saving return address pointer.  */
+	  if (regno == BR_REG (0))
+	    {
+	      fprintf (asm_out_file, "\t.save rp, r%d\n", 
+		       REGNO (dest) + ia64_input_regs);
+	      return 1;
+	    }
+	  /* If its br1 to br5, we copy them to temp regs, then save the
+	     temp reg to memory next.  */
+	  if (regno >= BR_REG (1) && regno <= BR_REG (5))
+	    {
+	      tmp_reg = dest;
+	      tmp_saved = regno;
+	      return 1;
+	    }
+	}
+    }
+  /* Search for special reg moves.  */
+  if (GET_CODE (dest) == REG && GET_CODE (src) == UNSPEC)
+    {
+      int unspec_code = XINT (src, 1);
+      /* Copied to a temp register, save it until we see the temp
+	 register stored.  */
+      if (unspec_code == 5 || unspec_code == 9)
+	{
+	  tmp_reg = dest;
+	  tmp_saved = unspec_code;
+	  return 1;
+	}
+    }
+  if (GET_CODE (dest) == MEM && GET_CODE (XEXP (dest, 0)) == POST_INC 
+      && GET_CODE (XEXP (XEXP (dest, 0), 0)) == REG)
+    {
+      int spill_unspec = 0;
+      /* We adjust the spill_offset early, so we dont miss it later.  */
+      spill_offset += 8;  
+      sp_offset += 8;  
+      if (GET_CODE (src) == UNSPEC)
+	{
+	  spill_unspec = XINT (src, 1);
+	  /* 1 and 3 are unspecs for the GR and FR spills.  */
+	  if (spill_unspec != 1 && spill_unspec != 3)
+	    spill_unspec = 0;
+	}
+      /* ST8 or st8.spill insn.  */
+      if ((GET_CODE (src) == REG) || spill_unspec != 0)
+        {
+	  int regno;
+	  if (spill_unspec != 0)
+	    {
+	      regno = REGNO (XVECEXP (src, 0, 0));
+	      if (!spill_offset_emitted)
+	        {
+		  fprintf (asm_out_file, "\t.spill %d\n", 
+/*			   (frame_size + 16 - spill_offset ) / 4); */
+			   (-(spill_offset - 8) + 16) / 4);
+		  spill_offset_emitted = 1;
+		}
+	    }
+	  else
+	    regno = REGNO (src);
+
+          if (GR_REGNO_P (regno))
+	    {
+	      if (regno >= GR_REG (4) && regno <= GR_REG (7))
+		fprintf (asm_out_file, "\t.save.g 0x%x\n", 
+			 1 << (regno - GR_REG (4)));
+	      else if (tmp_reg != NULL_RTX && regno == REGNO (tmp_reg))
+	        {
+		  /* We saved a special reg to a temp reg, and now we're 
+		     dumping it to memory.  */
+		  tmp_reg = NULL_RTX;
+		  /* register 9 is ar.unat.  */
+		  if (tmp_saved == 9)
+		    fprintf (asm_out_file, "\t.savesp ar.unat, %d\n", 
+			     (sp_offset - 8) / 4);
+		  else if (tmp_saved == 5)
+		    fprintf (asm_out_file, "\t.savesp pr, %d\n",
+			     (sp_offset - 8) / 4);
+		  else if (tmp_saved >= BR_REG (1) && tmp_saved <= BR_REG (5))
+		    {
+		      /* BR regs are saved this way too.  */
+		      fprintf (asm_out_file, "\t.save.b 0x%x\n", 
+			       1 << (tmp_saved - BR_REG (1)));
+		    }
+		}
+	      else 
+	        return 0;
+	    }
+	  if (FR_REGNO_P (regno))
+	    {
+	      if (regno >= FR_REG (2) && regno <= FR_REG (5))
+		fprintf (asm_out_file, "\t.save.f 0x%x\n", 
+			 1 << (regno - FR_REG (2)));
+	      else
+		if (regno >= FR_REG (16) && regno <= FR_REG (31))
+		  fprintf (asm_out_file, "\t.save.gf 0x0, 0x%x\n", 
+			   1 << (regno - FR_REG (12)));
+		else 
+		  return 0;
+	    }
+	  return 1;
+	}
+    }
+  return 0;
+}
+
+
+/* This function looks at a single insn and emits any directives
+   required to unwind this insn.  */
+void
+process_for_unwind_directive (asm_out_file, insn)
+     FILE *asm_out_file;
+     rtx insn;
+{
+  if ((flag_unwind_tables 
+       || (flag_exceptions && !exceptions_via_longjmp))
+      && RTX_FRAME_RELATED_P (insn))
+    {
+      rtx code, pat;
+      pat = PATTERN (insn);
+
+      switch (GET_CODE (pat))
+        {
+	  case SET:
+	    {
+	      process_set (asm_out_file, pat);
+	      break;
+	    }
+	  case PARALLEL:
+	    {
+	      int par_index;
+	      int limit = XVECLEN (pat, 0);
+	      for (par_index = 0; par_index < limit; par_index++)
+	        {
+		  rtx x = XVECEXP (pat, 0, par_index);
+		  if (GET_CODE (x) == SET)
+		    process_set (asm_out_file, x);
+		}
+	      break;
+	    }
 	}
     }
 }
