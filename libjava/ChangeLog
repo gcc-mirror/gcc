@@ -1,5 +1,8 @@
 2000-12-11  Tom Tromey  <tromey@redhat.com>
 
+	* gnu/gcj/runtime/FirstThread.java (Kcert, Kfile, Khttp, Kjar):
+	New static final fields.
+
 	* scripts/classes.pl (scan): Skip lines with leading `*'.
 	Fix for PR libgcj/378.
 
