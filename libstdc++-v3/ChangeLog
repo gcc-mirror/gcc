@@ -1,3 +1,9 @@
+2003-06-27  Matthias Klose  <doko@debian.org>
+
+	* testsuite/Makefile.am (check-abi, check-abi-verbose): Save
+	output of abi-check in libstdc++-v3-abi.sum.
+	* testsuite/Makefile.in: Regenerate.
+
 2003-06-25  Phil Edwards  <pme@gcc.gnu.org>
 
 	Bulk documentation merge (copy) from trunk.
