@@ -1,3 +1,9 @@
+2000-05-11  Scott Bambrough  <scottb@netwinder.org>
+
+	* libffi/src/arm/sysv.S (ffi_call_SYSV): Doubles are not saved to 
+	memory correctly.  Use conditional instructions, not branches where 
+	possible.
+
 2000-05-04  Tom Tromey  <tromey@cygnus.com>
 
 	* configure: Rebuilt.
