@@ -1921,8 +1921,6 @@ set_sizetype (tree type)
 
   if (TYPE_UNSIGNED (type))
     {
-      usizetype = sizetype;
-      ubitsizetype = bitsizetype;
       ssizetype = copy_node (make_signed_type (oprecision));
       sbitsizetype = copy_node (make_signed_type (precision));
     }
@@ -1930,8 +1928,6 @@ set_sizetype (tree type)
     {
       ssizetype = sizetype;
       sbitsizetype = bitsizetype;
-      usizetype = copy_node (make_unsigned_type (oprecision));
-      ubitsizetype = copy_node (make_unsigned_type (precision));
     }
 
   TYPE_NAME (bitsizetype) = get_identifier ("bit_size_type");

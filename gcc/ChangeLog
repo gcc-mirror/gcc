@@ -1,5 +1,11 @@
 2004-08-23  Nathan Sidwell  <nathan@codesourcery.com>
 
+	* tree.h (enum size_type_kind): Remove USIZETYPE, UBITSIZETYPE.
+	(usize_type, ubitsizetype): Remove.
+	* stor-layout.c (set_sizetype): Don't initialize usizetype,
+	ubitsizetype.
+	* fold-const.c (size_diffop): TYPE can never be ubitsizetype.
+
 	* tree.h (build_distinct_type_copy): New.
 	(build_type_copy): ... here.  Rename to ...
 	(build_variant_type_copy): ... here.
