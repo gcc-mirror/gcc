@@ -1,3 +1,9 @@
+2001-08-22  John David Anglin  <dave@hiauly1.hia.nrc.ca>
+
+	* pa32-regs.h (CONDITIONAL_REGISTER_USAGE): Add declaration for
+	variable i.
+	* pa64-regs.h (CONDITIONAL_REGISTER_USAGE): Likewise.
+	
 2001-08-22  Neil Booth  <neil@daikokuya.demon.co.uk>
 
 	* cpperror.c (print_location): Don't show _Pragma.
