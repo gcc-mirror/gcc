@@ -145,9 +145,13 @@ open_file (pfile, filename)
       if (file->fd == -2)
 	return 0;
 
-      /* -1 indicates a file we've opened previously, and since closed.  */
-      if (file->fd != -1)
-	return file;
+      /* Don't reopen an idempotent file. */
+      if (DO_NOT_REREAD (file))
+        return file;
+      
+      /* Don't reopen one which is already loaded. */
+      if (file->buffer != NULL)
+        return file;
     }
   else
     {
@@ -181,7 +185,11 @@ open_file (pfile, filename)
     {
       /* Mark a regular, zero-length file never-reread now.  */
       if (S_ISREG (file->st.st_mode) && file->st.st_size == 0)
-	file->cmacro = NEVER_REREAD;
+        {
+	  file->cmacro = NEVER_REREAD;
+	  close (file->fd);
+	  file->fd = -1;
+	}
 
       return file;
     }

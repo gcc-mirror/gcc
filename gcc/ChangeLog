@@ -1,3 +1,8 @@
+2000-11-03  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* cppfiles.c (open_file): If already read, then don't reopen.
+	Immediately close an empty file.
+
 2000-11-01  Bernd Schmidt  <bernds@redhat.co.uk>
 
 	* expr.h (fold_builtin): Move declaration...
