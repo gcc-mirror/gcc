@@ -6532,9 +6532,9 @@ init_decl_processing ()
   wchar_type_node = TREE_TYPE (IDENTIFIER_GLOBAL_VALUE (wchar_type_node));
   wchar_type_size = TYPE_PRECISION (wchar_type_node);
   if (TREE_UNSIGNED (wchar_type_node))
-    wchar_type_node = make_signed_type (wchar_type_size);
-  else
     wchar_type_node = make_unsigned_type (wchar_type_size);
+  else
+    wchar_type_node = make_signed_type (wchar_type_size);
   record_builtin_type (RID_WCHAR, "wchar_t", wchar_type_node);
 
   /* This is for wide string constants.  */
