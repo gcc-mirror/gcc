@@ -3114,6 +3114,8 @@ mark_addressable (exp)
       case ADDR_EXPR:
       case COMPONENT_REF:
       case ARRAY_REF:
+      case REALPART_EXPR:
+      case IMAGPART_EXPR:
 	x = TREE_OPERAND (x, 0);
 	break;
 
