@@ -1195,7 +1195,7 @@ extern struct rtx_def *gen_compare_reg ();
   case CONST:								\
   case LABEL_REF:							\
   case SYMBOL_REF:							\
-    return (TARGET_FLAG_C_SERIES ? 6 : 8);				\
+    return (TARGET_C_SERIES ? 6 : 8);					\
   case CONST_DOUBLE:							\
     if ((RTX) == CONST0_RTX (DFmode) || (RTX) == CONST0_RTX (SFmode)	\
 	|| (RTX) == CONST1_RTX (DFmode) || (RTX) == CONST1_RTX (SFmode))\
