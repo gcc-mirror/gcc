@@ -1186,8 +1186,8 @@ cpp_interpret_string (cpp_reader *pfile, const cpp_string *from, size_t count,
 /* Subroutine of do_line and do_linemarker.  Convert escape sequences
    in a string, but do not perform character set conversion.  */
 bool
-_cpp_interpret_string_notranslate (cpp_reader *pfile, const cpp_string *in,
-				   cpp_string *out)
+cpp_interpret_string_notranslate (cpp_reader *pfile, const cpp_string *from,
+				  size_t count,	cpp_string *to, bool wide)
 {
   struct cset_converter save_narrow_cset_desc = pfile->narrow_cset_desc;
   bool retval;
@@ -1195,7 +1195,7 @@ _cpp_interpret_string_notranslate (cpp_reader *pfile, const cpp_string *in,
   pfile->narrow_cset_desc.func = convert_no_conversion;
   pfile->narrow_cset_desc.cd = (iconv_t) -1;
 
-  retval = cpp_interpret_string (pfile, in, 1, out, false);
+  retval = cpp_interpret_string (pfile, from, count, to, wide);
 
   pfile->narrow_cset_desc = save_narrow_cset_desc;
   return retval;
