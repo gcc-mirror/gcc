@@ -330,7 +330,8 @@ combine_strings (strings)
       = build_array_type (wide_flag ? wchar_type_node : char_type_node,
 			  build_index_type (build_int_2 (nchars - 1, 0)));
 
-  TREE_READONLY (value) = TREE_CONSTANT (value) = ! flag_writable_strings;
+  TREE_CONSTANT (value) = 1;
+  TREE_READONLY (value) = ! flag_writable_strings;
   TREE_STATIC (value) = 1;
   return value;
 }

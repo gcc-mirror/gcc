@@ -1,3 +1,12 @@
+Tue Sep  7 01:27:21 1999  Jeffrey A Law  (law@cygnus.com)
+
+	Fri Aug 27 09:36:17 1999  Andreas Schwab  <schwab@suse.de>
+	* function.c (assign_stack_temp_for_type): Fix change of Mar 5 for
+	the fact that ALIGN is measured in bits, not bytes.
+
+	Wed Aug 25 14:00:18 1999  Jason Merrill  <jason@yorick.cygnus.com>
+	* c-common.c (combine_strings): Always set TREE_CONSTANT.
+
 Wed Aug 18 01:16:43 1999  David S. Miller  <davem@redhat.com>
 
 	* config/sparc/sparc.c (sparc_block_profiler): Fix typo in Aug 2
