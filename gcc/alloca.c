@@ -73,7 +73,9 @@ typedef void *pointer;
 typedef char *pointer;
 #endif
 
+#ifndef NULL
 #define	NULL	0
+#endif
 
 /* Different portions of Emacs need to call different versions of
    malloc.  The Emacs executable needs alloca to call xmalloc, because
