@@ -4034,6 +4034,11 @@ convert_default_arg (type, arg, fn, parmnum)
   return arg;
 }
 
+/* Subroutine of the various build_*_call functions.  Overload resolution
+   has chosen a winning candidate CAND; build up a CALL_EXPR accordingly.
+   ARGS is a TREE_LIST of the unconverted arguments to the call.  FLAGS is a
+   bitmask of various LOOKUP_* flags which apply to the call itself.  */
+
 static tree
 build_over_call (cand, args, flags)
      struct z_candidate *cand;
