@@ -3050,6 +3050,8 @@ finalize_nrv (tree *tp, tree var, tree result)
 
   /* Copy debugging information from VAR to RESULT.  */
   DECL_NAME (result) = DECL_NAME (var);
+  DECL_ARTIFICIAL (result) = DECL_ARTIFICIAL (var);
+  DECL_IGNORED_P (result) = DECL_IGNORED_P (var);
   DECL_SOURCE_LOCATION (result) = DECL_SOURCE_LOCATION (var);
   DECL_ABSTRACT_ORIGIN (result) = DECL_ABSTRACT_ORIGIN (var);
   /* Don't forget that we take its address.  */

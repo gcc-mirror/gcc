@@ -1687,6 +1687,8 @@ create_subprog_decl (tree subprog_name, tree asm_name,
   TREE_SIDE_EFFECTS (subprog_decl) = TYPE_VOLATILE (subprog_type);
   DECL_ARGUMENTS (subprog_decl) = param_decl_list;
   DECL_RESULT (subprog_decl)    = build_decl (RESULT_DECL, 0, return_type);
+  DECL_ARTIFICIAL (DECL_RESULT (subprog_decl)) = 1;
+  DECL_IGNORED_P (DECL_RESULT (subprog_decl)) = 1;
 
   if (inline_flag)
     DECL_DECLARED_INLINE_P (subprog_decl) = 1;

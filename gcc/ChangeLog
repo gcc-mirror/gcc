@@ -1,3 +1,11 @@
+2004-07-25  Richard Henderson  <rth@redhat.com>
+
+	* c-decl.c (start_function): Set DECL_ARTIFICIAL and DECL_IGNORED_P
+	on the RESULT_DECL.
+	* cgraphunit.c (cgraph_build_static_cdtor): Likewise.
+	* integrate.c (copy_decl_for_inlining): Copy DECL_ARTIFICIAL and
+	DECL_IGNORED_P to new decl.
+
 2004-07-24  Zack Weinberg  <zack@codesourcery.com>
 
 	* config/ia64/ia64.c (general_xfmode_operand)

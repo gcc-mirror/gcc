@@ -9689,10 +9689,14 @@ start_preparsed_function (tree decl1, tree attrs, int flags)
     restype = type_promotes_to (restype);
   if (DECL_RESULT (decl1) == NULL_TREE)
     {
-      DECL_RESULT (decl1)
-	= build_decl (RESULT_DECL, 0, TYPE_MAIN_VARIANT (restype));
-      c_apply_type_quals_to_decl (cp_type_quals (restype),
-				  DECL_RESULT (decl1));
+      tree resdecl;
+
+      resdecl = build_decl (RESULT_DECL, 0, TYPE_MAIN_VARIANT (restype));
+      DECL_ARTIFICIAL (resdecl) = 1;
+      DECL_IGNORED_P (resdecl) = 1;
+      DECL_RESULT (decl1) = resdecl;
+
+      c_apply_type_quals_to_decl (cp_type_quals (restype), resdecl);
     }
 
   /* Initialize RTL machinery.  We cannot do this until
