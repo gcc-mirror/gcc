@@ -1,7 +1,8 @@
 /* This is a software floating point library which can be used instead of
    the floating point routines in libgcc1.c for targets without hardware
    floating point. 
-   Copyright (C) 1994-1998, 2000 Free Software Foundation, Inc.
+   Copyright (C) 1994, 1995, 1996, 1997, 1998,
+   2000 Free Software Foundation, Inc.
 
 This file is free software; you can redistribute it and/or modify it
 under the terms of the GNU General Public License as published by the
