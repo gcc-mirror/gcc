@@ -1,3 +1,8 @@
+2001-02-08  Warren Levy  <warrenl@redhat.com>
+
+	* libjava.mauve/mauve.exp: Added support for XFAILs.
+	* libjava.mauve/xfails: New file.
+
 2001-01-26  Tom Tromey  <tromey@redhat.com>
 
 	* libjava.jni/martin.c (Java_martin_myNative): Flush stdout.

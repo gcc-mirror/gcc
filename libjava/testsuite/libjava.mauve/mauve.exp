@@ -1,4 +1,4 @@
-# Copyright (C) 1998, 1999, 2000 Free Software Foundation.
+# Copyright (C) 1998, 1999, 2000, 2001 Free Software Foundation.
 # Written by Tom Tromey <tromey@cygnus.com>.
 # Incorporate Mauve into libjava's DejaGNU test suite framework.
 
@@ -107,6 +107,8 @@ proc test_mauve {} {
   puts -nonewline $fd $c
   close $fd
 
+  catch {system "ln -s $full_srcdir/libjava.mauve/xfails xfails"}
+
   if {[catch {
     system "make KEYS=libgcj classes.stamp 2>&1"
   } msg]} then {
@@ -188,8 +190,11 @@ proc test_mauve {} {
 
     # Extract pass/failure info from output.
     foreach line [split [lindex $result 1] \n] {
-      if {[regexp -- {^(PASS|FAIL): (.*)$} $line ignore what msg]} then {
-	if {$what == "PASS"} then {
+      if {[regexp -- {^(PASS|FAIL|XFAIL|XPASS): (.*)$} $line ignore what msg]} then {
+	if {$what == "XFAIL" || $what == "XPASS"} then {
+	  setup_xfail *-*-*
+	}
+	if {$what == "PASS" || $what == "XPASS"} then {
 	  pass $msg
 	} else {
 	  fail $msg
@@ -236,6 +241,8 @@ proc test_mauve_sim {} {
   set fd [open mauve-libgcj w]
   puts -nonewline $fd $c
   close $fd
+
+  catch {system "ln -s $full_srcdir/libjava.mauve/xfails xfails"}
 
   if {[catch {
     system "make KEYS=libgcj classes.stamp 2>&1"
@@ -345,8 +352,11 @@ proc test_mauve_sim {} {
 
     # Extract pass/failure info from output.
     foreach line [split [lindex $result 1] \n] {
-      if {[regexp -- {^(PASS|FAIL): (.*)$} $line ignore what msg]} then {
-	if {$what == "PASS"} then {
+      if {[regexp -- {^(PASS|FAIL|XFAIL|XPASS): (.*)$} $line ignore what msg]} then {
+	if {$what == "XFAIL" || $what == "XPASS"} then {
+	  setup_xfail *-*-*
+	}
+	if {$what == "PASS" || $what == "XPASS"} then {
 	  pass $msg
 	} else {
 	  fail $msg
