@@ -1,3 +1,7 @@
+Thu Oct 14 22:14:23 1999  Richard Henderson  <rth@cygnus.com>
+
+	* i386.md (movstricthi_1): Allow r/r.
+
 Thu Oct 14 19:44:08 1999  Jan Hubicka  <hubicka@freesoft.cz>
 
 	* fold-const.c (fold): Move bit_rotate code to the EXPR_PLUS case,
