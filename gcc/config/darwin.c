@@ -455,13 +455,14 @@ machopic_indirect_data_reference (rtx orig, rtx reg)
 	  return orig;
 	}
 
-      ptr_ref = (gen_rtx_SYMBOL_REF 
+      ptr_ref = (gen_rtx_SYMBOL_REF
 		 (Pmode, 
 		  machopic_indirection_name (orig, /*stub_p=*/false)));
 
       SYMBOL_REF_DECL (ptr_ref) = SYMBOL_REF_DECL (orig);
 
       ptr_ref = gen_const_mem (Pmode, ptr_ref);
+      machopic_define_symbol (ptr_ref);
 
       return ptr_ref;
     }

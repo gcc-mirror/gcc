@@ -4791,6 +4791,28 @@ ix86_find_base_term (rtx x)
 
   return term;
 }
+
+/* Allow {LABEL | SYMBOL}_REF - SYMBOL_REF-FOR-PICBASE for Mach-O as
+   this is used for to form addresses to local data when -fPIC is in
+   use.  */
+
+static bool
+darwin_local_data_pic (rtx disp)
+{
+  if (GET_CODE (disp) == MINUS)
+    {
+      if (GET_CODE (XEXP (disp, 0)) == LABEL_REF
+          || GET_CODE (XEXP (disp, 0)) == SYMBOL_REF)
+        if (GET_CODE (XEXP (disp, 1)) == SYMBOL_REF)
+          {
+            const char *sym_name = XSTR (XEXP (disp, 1), 0);
+            if (! strcmp (sym_name, "<pic base>"))
+              return true;
+          }
+    }
+
+  return false;
+}
 
 /* Determine if a given RTX is a valid constant.  We already know this
    satisfies CONSTANT_P.  */
@@ -4817,8 +4839,17 @@ legitimate_constant_p (rtx x)
 	  && tls_symbolic_operand (XEXP (inner, 0), Pmode))
 	return false;
 
-      if (GET_CODE (inner) == PLUS
-	  || GET_CODE (inner) == MINUS)
+      if (GET_CODE (inner) == PLUS)
+	{
+	  if (GET_CODE (XEXP (inner, 1)) != CONST_INT)
+	    return false;
+	  inner = XEXP (inner, 0);
+	}
+
+      if (TARGET_MACHO && darwin_local_data_pic (inner))
+	return true;
+
+      if (GET_CODE (inner) == MINUS)
 	{
 	  if (GET_CODE (XEXP (inner, 1)) != CONST_INT)
 	    return false;
@@ -4966,18 +4997,8 @@ legitimate_pic_address_disp_p (rtx disp)
       saw_plus = true;
     }
 
-  /* Allow {LABEL | SYMBOL}_REF - SYMBOL_REF-FOR-PICBASE for Mach-O.  */
-  if (TARGET_MACHO && GET_CODE (disp) == MINUS)
-    {
-      if (GET_CODE (XEXP (disp, 0)) == LABEL_REF
-          || GET_CODE (XEXP (disp, 0)) == SYMBOL_REF)
-        if (GET_CODE (XEXP (disp, 1)) == SYMBOL_REF)
-          {
-            const char *sym_name = XSTR (XEXP (disp, 1), 0);
-            if (! strcmp (sym_name, "<pic base>"))
-              return 1;
-          }
-    }
+  if (TARGET_MACHO && darwin_local_data_pic (disp))
+    return 1;
 
   if (GET_CODE (disp) != UNSPEC)
     return 0;

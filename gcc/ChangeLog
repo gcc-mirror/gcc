@@ -1,3 +1,16 @@
+2004-08-20  Mike Stump  <mrs@apple.com>
+
+	* config/darwin.c (machopic_indirect_data_reference): Mark
+	stubs as defined.
+	* config/386/386.c (darwin_local_data_pic): Add.
+	(legitimate_constant_p): Reorder so that PLUS handling runs
+	before darwin_local_data_pic to match the ordering in
+	legitimate_pic_address_disp_p and so that MINUS runs after
+	darwin_local_data_pic as otherwise the darwin_local_data_pic
+	logic can be skipped, which would be very bad.
+	(legitimate_pic_address_disp_p): Move from from here to
+	darwin_local_data_pic so it can be reused.
+
 2004-08-21  Alan Modra  <amodra@bigpond.net.au>
 
 	* config/rs6000/linux64.h (DOT_SYMBOLS): Define.
