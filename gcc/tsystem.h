@@ -72,7 +72,7 @@ extern int atexit (void (*)(void));
 extern int errno;
 #endif
 
-#if defined(POSIX) || defined(USG)
+#ifdef POSIX
 #include <string.h>
 #endif
 
@@ -83,7 +83,7 @@ extern int errno;
 /* GCC supplies this header. */
 #include <limits.h>
 
-#if defined(POSIX) || defined(USG)
+#ifdef POSIX
 #include <time.h>
 #endif
 

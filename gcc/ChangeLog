@@ -1,5 +1,19 @@
 2001-04-30  Zack Weinberg  <zackw@stanford.edu>
 
+	* tsystem.h: Test only POSIX for availability of string.h 
+	and time.h.
+	* config.gcc (all systems): If USG appeared in xm_defines,
+	change it to POSIX.  If both USG and POSIX appeared, just
+	delete USG. Remove unnecessary quotes around xm_defines
+	settings.
+	(m68k-crds-unos*): Don't #define unos - tested nowhere.
+	(m68k-apple-aux*): Don't #define AUX - tested nowhere.
+	(alpha*-*-linux*ecoff*, powerpc-*-linux*libc1,
+	powerpc-*-linux*): No need to set xm_defines - handled by
+	global settings for *-*-linux*.
+
+2001-04-30  Zack Weinberg  <zackw@stanford.edu>
+
 	* dbxout.c, mips-tfile.c, config/mips/mips.c, xcoffout.c:
 	Always include gstab.h, not system stab.h.  Don't provide
 	default definitions of N_CATCH or N_OPT.  Always use the
