@@ -1,5 +1,10 @@
 2004-12-04  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
+	PR middle-end/18730
+	* emit-rtl.c (get_first_nonnote_insn, get_last_nonnote_insn): When
+	the first/last insn is a sequence, return the first/last insn of the
+	sequence.
+
 	PR bootstrap/18804
 	* mklibgcc.in (vis_hide): Use implementation instead of declaration
 	for test function.
