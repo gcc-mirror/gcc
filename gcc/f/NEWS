@@ -11,9 +11,10 @@ with the most recent version first.
 
    The changes are generally listed in order:
 
-  1. Code-generation and run-time-library bugs
+  1. Code-generation and run-time-library bug-fixes
 
-  2. Compiler and run-time-library crashes involving valid code
+  2. Compiler and run-time-library crashes involving valid code that
+     have been fixed
 
   3. New features
 
@@ -27,6 +28,175 @@ with the most recent version first.
 
    This order is not strict--for example, some items involve a
 combination of these elements.
+
+In `egcs' 1.1:
+==============
+
+   * `g77' no longer produces incorrect code and initial values for
+     `EQUIVALENCE' and `COMMON' aggregates that, due to "unnatural"
+     ordering of members vis-a-vis their types, require initial padding.
+
+   * `g77' no longer crashes when compiling code containing
+     specification statements such as `INTEGER(KIND=7) PTR'.
+
+   * `g77' now treats `%LOC(EXPR)' and `LOC(EXPR)' as "ordinary"
+     expressions when they are used as arguments in procedure calls.
+     This change applies only to global (filewide) analysis, making it
+     consistent with how `g77' actually generates code for these cases.
+
+     Previously, `g77' treated these expressions as denoting special
+     "pointer" arguments for the purposes of filewide analysis.
+
+   * The `g77' driver now ensures that `-lg2c' is specified in the link
+     phase prior to any occurrence of `-lm'.  This prevents
+     accidentally linking to a routine in the SunOS4 `-lm' library when
+     the generated code wants to link to the one in `libf2c' (`libg2c').
+
+   * `g77' emits more debugging information when `-g' is used.
+
+     This new information allows, for example, `which __g77_length_a'
+     to be used in `gdb' to determine the type of the phantom length
+     argument supplied with `CHARACTER' variables.
+
+     This information pertains to internally-generated type, variable,
+     and other information, not to the longstanding deficiencies
+     vis-a-vis `COMMON' and `EQUIVALENCE'.
+
+   * The F90 `DATE_AND_TIME' intrinsic now is supported.
+
+   * The F90 `SYSTEM_CLOCK' intrinsic allows the optional arguments
+     (except for the `Count' argument) to be omitted.
+
+   * Upgrade to `libf2c' as of 1998-06-18.
+
+   * Improve documentation and indexing.
+
+In 0.5.23:
+==========
+
+   * This release contains several regressions against version 0.5.22
+     of `g77', due to using the "vanilla" `gcc' back end instead of
+     patching it to fix a few bugs and improve performance in a few
+     cases.
+
+     *Note Actual Bugs We Haven't Fixed Yet: Actual Bugs, available in
+     plain-text format in `gcc/f/BUGS', for information on the known
+     bugs in this version, including the regressions.
+
+     Features that have been dropped from this version of `g77' due to
+     their being implemented via `g77'-specific patches to the `gcc'
+     back end in previous releases include:
+
+        - Support for `__restrict__' keyword, the options
+          `-fargument-alias', `-fargument-noalias', and
+          `-fargument-noalias-global', and the corresponding
+          alias-analysis code.
+
+          (Version 1.0.1 of `egcs' has the alias-analysis code, but not
+          the `__restrict__' keyword.  `egcs' `g77' users benefit from
+          the alias-analysis code despite the lack of the
+          `__restrict__' keyword, which is a C-language construct.)
+
+        - Support for the GNU compiler options `-fmove-all-movables',
+          `-freduce-all-givs', and `-frerun-loop-opt'.
+
+          (Version 1.0.1 of `egcs' supports these options.  `g77' users
+          of `egcs' benefit from them even if they are not explicitly
+          specified, because the defaults are optimized for `g77'
+          users.)
+
+        - Support for the `-W' option warning about integer division by
+          zero.
+
+        - The Intel x86-specific option `-malign-double' applying to
+          stack-allocated data as well as statically-allocate data.
+
+     Note that the `gcc/f/gbe/' subdirectory has been removed from this
+     distribution as a result of `g77' no longer including patches for
+     the `gcc' back end.
+
+   * Fix bugs in the `libU77' intrinsic `HostNm' that wrote one byte
+     beyond the end of its `CHARACTER' argument, and in the `libU77'
+     intrinsics `GMTime' and `LTime' that overwrote their arguments.
+
+   * Support `gcc' version 2.8, and remove support for prior versions
+     of `gcc'.
+
+   * Remove support for the `--driver' option, as `g77' now does all
+     the driving, just like `gcc'.
+
+   * `CASE DEFAULT' no longer crashes `g77'.
+
+   * Valid combinations of `EXTERNAL', passing that external as a dummy
+     argument without explicitly giving it a type, and, in a subsequent
+     program unit, referencing that external as an external function
+     with a different type no longer crash `g77'.
+
+   * `g77' no longer installs the `f77' command and `f77.1' man page in
+     the `/usr' or `/usr/local' heirarchy, even if the `f77-install-ok'
+     file exists in the source or build directory.  See the
+     installation documentation for more information.
+
+   * `g77' no longer installs the `libf2c.a' library and `f2c.h'
+     include file in the `/usr' or `/usr/local' heirarchy, even if the
+     `f2c-install-ok' or `f2c-exists-ok' files exist in the source or
+     build directory.  See the installation documentation for more
+     information.
+
+   * The `libf2c.a' library produced by `g77' has been renamed to
+     `libg2c.a'.  It is installed only in the `gcc' "private" directory
+     heirarchy, `gcc-lib'.  This allows system administrators and users
+     to choose which version of the `libf2c' library from `netlib' they
+     wish to use on a case-by-case basis.  See the installation
+     documentation for more information.
+
+   * The `f2c.h' include (header) file produced by `g77' has been
+     renamed to `g2c.h'.  It is installed only in the `gcc' "private"
+     directory heirarchy, `gcc-lib'.  This allows system administrators
+     and users to choose which version of the include file from
+     `netlib' they wish to use on a case-by-case basis.  See the
+     installation documentation for more information.
+
+   * The `g77' command now expects the run-time library to be named
+     `libg2c.a' instead of `libf2c.a', to ensure that a version other
+     than the one built and installed as part of the same `g77' version
+     is picked up.
+
+   * The `-Wunused' option no longer issues a spurious warning about
+     the "master" procedure generated by `g77' for procedures
+     containing `ENTRY' statements.
+
+   * `g77''s version of `libf2c' separates out the setting of global
+     state (such as command-line arguments and signal handling) from
+     `main.o' into distinct, new library archive members.
+
+     This should make it easier to write portable applications that
+     have their own (non-Fortran) `main()' routine properly set up the
+     `libf2c' environment, even when `libf2c' (now `libg2c') is a
+     shared library.
+
+   * During the configuration and build process, `g77' creates
+     subdirectories it needs only as it needs them, thus avoiding
+     unnecessary creation of, for example, `stage1/f/runtime' when
+     doing a non-bootstrap build.  Other cleaning up of the
+     configuration and build process has been performed as well.
+
+   * `install-info' now used to update the directory of Info
+     documentation to contain an entry for `g77' (during installation).
+
+   * Some diagnostics have been changed from warnings to errors, to
+     prevent inadvertent use of the resulting, probably buggy, programs.
+     These mostly include diagnostics about use of unsupported features
+     in the `OPEN', `INQUIRE', `READ', and `WRITE' statements, and
+     about truncations of various sorts of constants.
+
+   * Improve documentation and indexing.
+
+   * Upgrade to `libf2c' as of 1998-04-20.
+
+     This should fix a variety of problems, including those involving
+     some uses of the `T' format specifier, and perhaps some build
+     (porting) problems as well.
 
 In 0.5.22:
 ==========

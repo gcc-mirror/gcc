@@ -3,13 +3,14 @@ compiler.  Copyright (C) 1995, 1996 Free Software Foundation, Inc.  You
 may copy, distribute, and modify it freely as long as you preserve this
 copyright notice and permission notice.
 
-Note most of this information is out of date and superceded by the EGCS
-install procedures.  It is provided for historical reference only.
-
 Installing GNU Fortran
 **********************
 
    The following information describes how to install `g77'.
+
+   Note that, for `egcs' users, much of this information is obsolete,
+and is superceded by the `egcs' installation procedures.  Such
+information is explicitly flagged as such.
 
    The information in this file generally pertains to dealing with
 *source* distributions of `g77' and `gcc'.  It is possible that some of
@@ -24,13 +25,16 @@ from source and package up as a binary distribution are ongoing.
 Prerequisites
 =============
 
+   *Version info:* For `egcs' users, the following information is
+superceded by the `egcs' installation instructions.
+
    The procedures described to unpack, configure, build, and install
 `g77' assume your system has certain programs already installed.
 
    The following prerequisites should be met by your system before you
 follow the `g77' installation instructions:
 
-`gzip'
+`gzip' and `tar'
      To unpack the `gcc' and `g77' distributions, you'll need the
      `gunzip' utility in the `gzip' distribution.  Most UNIX systems
      already have `gzip' installed.  If yours doesn't, you can get it
@@ -45,24 +49,24 @@ follow the `g77' installation instructions:
      1.2.4.  (The version of GNU `tar' used to package this release is
      1.12.)
 
-`gcc-2.7.2.3.tar.gz'
+`gcc-2.8.1.tar.gz'
      You need to have this, or some other applicable, version of `gcc'
      on your system.  The version should be an exact copy of a
-     distribution from the FSF.  Its size is approximately 7.1MB.
+     distribution from the FSF.  Its size is approximately 8.4MB.
 
-     If you've already unpacked `gcc-2.7.2.3.tar.gz' into a directory
-     (named `gcc-2.7.2.3') called the "source tree" for `gcc', you can
+     If you've already unpacked `gcc-2.8.1.tar.gz' into a directory
+     (named `gcc-2.8.1') called the "source tree" for `gcc', you can
      delete the distribution itself, but you'll need to remember to
      skip any instructions to unpack this distribution.
 
      Without an applicable `gcc' source tree, you cannot build `g77'.
      You can obtain an FSF distribution of `gcc' from the FSF.
 
-`g77-0.5.22.tar.gz'
+`g77-0.5.24.tar.gz'
      You probably have already unpacked this package, or you are
      reading an advance copy of these installation instructions, which
      are contained in this distribution.  The size of this package is
-     approximately 1.5MB.
+     approximately 1.4MB.
 
      You can obtain an FSF distribution of `g77' from the FSF, the same
      way you obtained `gcc'.
@@ -74,46 +78,45 @@ Enough disk space
      you install).
 
      The sizes shown below assume all languages distributed in
-     `gcc-2.7.2.3', plus `g77', will be built and installed.  These
-     sizes are indicative of GNU/Linux systems on Intel x86 running
-     COFF and on Digital Alpha (AXP) systems running ELF.  These should
-     be fairly representative of 32-bit and 64-bit systems,
-     respectively.
+     `gcc-2.8.1', plus `g77', will be built and installed.  These sizes
+     are indicative of GNU/Linux systems on Intel x86 running COFF and
+     on Digital Alpha (AXP) systems running ELF.  These should be
+     fairly representative of 32-bit and 64-bit systems, respectively.
 
      Note that all sizes are approximate and subject to change without
      notice!  They are based on preliminary releases of g77 made shortly
      before the public beta release.
 
-        -- `gcc' and `g77' distributions occupy 8.6MB packed, 35MB
+        -- `gcc' and `g77' distributions occupy 10MB packed, 40MB
           unpacked.  These consist of the source code and documentation,
           plus some derived files (mostly documentation), for `gcc' and
           `g77'.  Any deviations from these numbers for different kinds
           of systems are likely to be very minor.
 
-        -- A "bootstrap" build requires an additional 67.3MB for a
-          total of 102MB on an ix86, and an additional 98MB for a total
-          of 165MB on an Alpha.
+        -- A "bootstrap" build requires an additional 91MB for a total
+          of 132MB on an ix86, and an additional 136MB for a total of
+          177MB on an Alpha.
 
-        -- Removing `gcc/stage1' after the build recovers 10.7MB for a
-          total of 91MB on an ix86, and recovers ??MB for a total of
-          ??MB on an Alpha.
+        -- Removing `gcc/stage1' after the build recovers 13MB for a
+          total of 119MB on an ix86, and recovers 21MB for a total of
+          155MB on an Alpha.
 
           After doing this, the integrity of the build can still be
           verified via `make compare', and the `gcc' compiler modified
           and used to build itself for testing fairly quickly, using
           the copy of the compiler kept in `gcc/stage2'.
 
-        -- Removing `gcc/stage2' after the build further recovers
-          27.3MB for a total of 64.3MB, and recovers ??MB for a total
-          of ??MB on an Alpha.
+        -- Removing `gcc/stage2' after the build further recovers 39MB
+          for a total of 80MB, and recovers 57MB for a total of 98MB on
+          an Alpha.
 
           After doing this, the compiler can still be installed,
           especially if GNU `make' is used to avoid gratuitous rebuilds
           (or, the installation can be done by hand).
 
-        -- Installing `gcc' and `g77' copies 14.9MB onto the `--prefix'
-          disk for a total of 79.2MB on an ix86, and copies ??MB onto
-          the `--prefix' disk for a total of ??MB on an Alpha.
+        -- Installing `gcc' and `g77' copies 23MB onto the `--prefix'
+          disk for a total of 103MB on an ix86, and copies 31MB onto
+          the `--prefix' disk for a total of 130MB on an Alpha.
 
      After installation, if no further modifications and builds of
      `gcc' or `g77' are planned, the source and build directory may be
@@ -139,56 +142,25 @@ Enough disk space
      without replacing existing installed versions (assuming they have
      different version numbers).
 
-`patch'
-     Although you can do everything `patch' does yourself, by hand,
-     without much trouble, having `patch' installed makes installation
-     of new versions of GNU utilities such as `g77' so much easier that
-     it is worth getting.  You can obtain `patch' the same way you
-     obtained `gcc' and `g77'.
-
-     In any case, you can apply patches by hand--patch files are
-     designed for humans to read them.
-
-     The version of GNU `patch' used to develop this release is
-     2.5.
-
 `make'
      Your system must have `make', and you will probably save yourself
      a lot of trouble if it is GNU `make' (sometimes referred to as
-     `gmake').
+     `gmake').  In particular, you probably need GNU `make' to build
+     outside the source directory (with `configure''s `--srcdir'
+     option.)
 
      The version of GNU `make' used to develop this release is
      3.76.1.
 
 `cc'
-     Your system must have a working C compiler.
+     Your system must have a working C compiler.  If it doesn't, you
+     might be able to obtain a prebuilt binary of some version of `gcc'
+     from the network or on CD-ROM, perhaps from the FSF.  The best
+     source of information about binaries is probably a system-specific
+     Usenet news group, initially via its FAQ.
 
      *Note Installing GNU CC: (gcc)Installation, for more information
      on prerequisites for installing `gcc'.
-
-`bison'
-     If you do not have `bison' installed, you can usually work around
-     any need for it, since `g77' itself does not use it, and `gcc'
-     normally includes all files generated by running it in its
-     distribution.  You can obtain `bison' the same way you obtained
-     `gcc' and `g77'.
-
-     The version of GNU `bison' used to develop this release is
-     1.25.
-
-     *Note Missing bison?::, for information on how to work around not
-     having `bison'.
-
-`makeinfo'
-     If you are missing `makeinfo', you can usually work around any
-     need for it.  You can obtain `makeinfo' the same way you obtained
-     `gcc' and `g77'.
-
-     The version of GNU `makeinfo' used to develop this release is
-     1.68, from GNU `texinfo' version 3.11.
-
-     *Note Missing makeinfo?::, for information on getting around the
-     lack of `makeinfo'.
 
 `sed'
      All UNIX systems have `sed', but some have a broken version that
@@ -216,6 +188,61 @@ Enough disk space
      System administrators with more experience will want to determine
      for themselves how they want to modify the procedures described
      below to suit the needs of their installation.
+
+`autoconf'
+     The version of GNU `autoconf' used to develop this release is
+     2.12.
+
+     `autoconf' is not needed in the typical case of installing `gcc'
+     and `g77'.  *Note Missing tools?::, for information on when it
+     might be needed and how to work around not having it.
+
+`bison'
+     The version of GNU `bison' used to develop this release is
+     1.25.
+
+     `bison' is not needed in the typical case of installing `gcc' and
+     `g77'.  *Note Missing tools?::, for information on when it might
+     be needed and how to work around not having it.
+
+`gperf'
+     The version of GNU `gperf' used to develop this release is
+     2.5.
+
+     `gperf' is not needed in the typical case of installing `gcc' and
+     `g77'.  *Note Missing tools?::, for information on when it might
+     be needed and how to work around not having it.
+
+`makeinfo'
+     The version of GNU `makeinfo' used to develop this release is
+     1.68.
+
+     `makeinfo' is part of the GNU `texinfo' package; `makeinfo'
+     version 1.68 is distributed as part of GNU `texinfo' version
+     3.11.
+
+     `makeinfo' is not needed in the typical case of installing `gcc'
+     and `g77'.  *Note Missing tools?::, for information on when it
+     might be needed and how to work around not having it.
+
+     An up-to-date version of GNU `makeinfo' is still convenient when
+     obtaining a new version of a GNU distribution such as `gcc' or
+     `g77', as it allows you to obtain the `.diff.gz' file instead of
+     the entire `.tar.gz' distribution (assuming you have installed
+     `patch').
+
+`patch'
+     The version of GNU `patch' used to develop this release is
+     2.5.
+
+     Beginning with `g77' version 0.5.23, it is no longer necessary to
+     patch the `gcc' back end to build `g77'.
+
+     An up-to-date version of GNU `patch' is still convenient when
+     obtaining a new version of a GNU distribution such as `gcc' or
+     `g77', as it allows you to obtain the `.diff.gz' file instead of
+     the entire `.tar.gz' distribution (assuming you have installed the
+     tools needed to rebuild derived files, such as `makeinfo').
 
 Problems Installing
 ===================
@@ -247,21 +274,12 @@ bootstrap build to automate the process of first building `gcc' using
 the working C compiler you have, then building `g77' and rebuilding
 `gcc' using that just-built `gcc', and so on.
 
-Patching GNU CC Necessary
-.........................
+Patching GNU CC
+...............
 
-   `g77' currently requires application of a patch file to the gcc
-compiler tree.  The necessary patches should be folded in to the
-mainline gcc distribution.
-
-   Some combinations of versions of `g77' and `gcc' might actually
-*require* no patches, but the patch files will be provided anyway as
-long as there are more changes expected in subsequent releases.  These
-patch files might contain unnecessary, but possibly helpful, patches.
-As a result, it is possible this issue might never be resolved, except
-by eliminating the need for the person configuring `g77' to apply a
-patch by hand, by going to a more automated approach (such as
-configure-time patching).
+   `g77' no longer requires application of a patch file to the `gcc'
+compiler tree.  In fact, no such patch file is distributed with `g77'.
+This is as of version 0.5.23 and `egcs' version 1.0.
 
 Building GNU CC Necessary
 .........................
@@ -270,31 +288,50 @@ Building GNU CC Necessary
 and other non-Fortran items, but, for now, an easy way to do that is
 not yet established.
 
-Missing strtoul
-...............
+Missing strtoul or bsearch
+..........................
 
-   On SunOS4 systems, linking the `f771' program produces an error
-message concerning an undefined symbol named `_strtoul'.
+   *Version info:* The following information does not apply to the
+`egcs' version of `g77'.
 
-   This is not a `g77' bug.  *Note Patching GNU Fortran::, for
-information on a workaround provided by `g77'.
+   On SunOS4 systems, linking the `f771' program used to produce an
+error message concerning an undefined symbol named `_strtoul', because
+the `strtoul' library function is not provided on that system.
 
-   The proper fix is either to upgrade your system to one that provides
-a complete ANSI C environment, or improve `gcc' so that it provides one
-for all the languages and configurations it supports.
+   Other systems have, in the past, been reported to not provide their
+own `strtoul' or `bsearch' function.
 
-   *Note:* In earlier versions of `g77', an automated workaround for
-this problem was attempted.  It worked for systems without `_strtoul',
-substituting the incomplete-yet-sufficient version supplied with `g77'
-for those systems.  However, the automated workaround failed
-mysteriously for systems that appeared to have conforming ANSI C
-environments, and it was decided that, lacking resources to more fully
-investigate the problem, it was better to not punish users of those
-systems either by requiring them to work around the problem by hand or
-by always substituting an incomplete `strtoul()' implementation when
-their systems had a complete, working one.  Unfortunately, this meant
-inconveniencing users of systems not having `strtoul()', but they're
-using obsolete (and generally unsupported) systems anyway.
+   Some versions `g77' tried to default to providing bare-bones
+versions of `bsearch' and `strtoul' automatically, but every attempt at
+this has failed for at least one kind of system.
+
+   To limit the failures to those few systems actually missing the
+required routines, the bare-bones versions are still provided, in
+`gcc/f/proj.c', if the appropriate macros are defined.  These are
+`NEED_BSEARCH' for `bsearch' and `NEED_STRTOUL' for `NEED_STRTOUL'.
+
+   Therefore, if you are sure your system is missing `bsearch' or
+`strtoul' in its library, define the relevant macro(s) before building
+`g77'.  This can be done by editing `gcc/f/proj.c' and inserting either
+or both of the following `#define' statements before the comment shown:
+
+     /* Insert #define statements here.  */
+     
+     #define NEED_BSEARCH
+     #define NEED_STRTOUL
+
+   Then, continue configuring and building `g77' as usual.
+
+   Or, you can define these on the `make' command line.  To build with
+the bundled `cc' on SunOS4, for example, try:
+     make bootstrap BOOT_CFLAGS='-O2 -g -DNEED_STRTOUL'
+
+   If you then encounter problems compiling `gcc/f/proj.c', it might be
+due to a discrepancy between how `bsearch' or `strtoul' are defined by
+that file and how they're declared by your system's header files.
+
+   In that case, you'll have to use some basic knowledge of C to work
+around the problem, perhaps by editing `gcc/f/proj.c' somewhat.
 
 Cleanup Kills Stage Directories
 ...............................
@@ -304,49 +341,37 @@ create the various `stageN' directories and their subdirectories, so
 developers and expert installers wouldn't have to reconfigure after
 cleaning up.
 
-Missing `gperf'?
-................
+   That help has arrived as of version 0.5.23 of `g77' and version 1.1
+of `egcs'.  Configuration itself no longer creates any particular
+directories that are unique to `g77'.  The build procedures in
+`Make-lang.in' take care of that, on demand.
 
-   If a build aborts trying to invoke `gperf', that strongly suggests
-an improper method was used to create the `gcc' source directory, such
-as the UNIX `cp -r' command instead of `cp -pr', since this problem
-very likely indicates that the date-time-modified information on the
-`gcc' source files is incorrect.
+LANGUAGES Macro Ignored
+.......................
 
-   The proper solution is to recreate the `gcc' source directory from a
-`gcc' distribution known to be provided by the FSF.
+   Prior to version 0.5.23 of `g77' and version 1.1 of `egcs', `g77'
+would sometimes ignore the absence of `f77' and `F77' in the
+`LANGUAGES' macro definition used for the `make' command being
+processed.
 
-   It is possible you might be able to temporarily work around the
-problem, however, by trying these commands:
+   As of `g77' version 0.5.23 and `egcs' version 1.1, `g77' now obeys
+this macro in all relevant situations.
 
-     sh# cd gcc
-     sh# touch c-gperf.h
-     sh#
+   However, in versions of `gcc' through 2.8.1, non-`g77' portions of
+`gcc', such as `g++', are known to go ahead and perform various
+language-specific activities when their respective language strings do
+not appear in the `LANGUAGES' macro in effect during that invocation of
+`make'.
 
-   These commands update the date-time-modified information for the
-file produced by the invocation of `gperf' in the current versions of
-`gcc', so that `make' no longer believes it needs to update it.  This
-file should already exist in a `gcc' distribution, but mistakes made
-when copying the `gcc' directory can leave the modification information
-set such that the `gperf' input files look more "recent" than the
-corresponding output files.
-
-   If the above does not work, definitely start from scratch and avoid
-copying the `gcc' using any method that does not reliably preserve
-date-time-modified information, such as the UNIX `cp -r' command (use
-`cp -pr' instead).
+   It is expected that these remaining problems will be fixed in a
+future version of `gcc'.
 
 System-specific Problems
 ------------------------
 
-   If your system is based on a Digital Alpha (AXP) architecture and
-employs a 64-bit operating system (such as GNU/Linux), you might
-consider using `egcs' instead of versions of `g77' based on versions of
-`gcc' prior to 2.8.  `http://www.cygnus.com/egcs' for information on
-`egcs', or obtain a copy from `ftp://egcs.cygnus.com/pub/egcs'.
-
-   If your system is Irix 6, to obtain a working version of `gcc',
-`http://reality.sgi.com/knobi/gcc-2.7.2.x-on-irix-6.2-6.3'.
+   A linker bug on some versions of AIX 4.1 might prevent building when
+`g77' is built within `gcc'.  It might also occur when building within
+`egcs'.  *Note LINKFAIL::.
 
 Cross-compiler Problems
 -----------------------
@@ -382,12 +407,13 @@ reasons.
      combinations of machines.  For example, it might not know how to
      handle floating-point constants.
 
-   * Improvements to the way `libf2c' is built could make building
+   * Improvements to the way `libg2c' is built could make building
      `g77' as a cross-compiler easier--for example, passing and using
-     `$(LD)' and `$(AR)' in the appropriate ways.
+     `$(LD)' and `$(AR)' in the appropriate ways.  (This is improved in
+     the `egcs' version of `g77', especially as of version 1.1.)
 
    * There are still some challenges putting together the right
-     run-time libraries (needed by `libf2c') for a target system,
+     run-time libraries (needed by `libg2c') for a target system,
      depending on the systems involved in the configuration.  (This is
      a general problem with cross-compilation, and with `gcc' in
      particular.)
@@ -453,8 +479,8 @@ reporting (immediate flagging of errors during writes) versus
 asynchronous, or, more precisely, buffered error reporting (detection
 of errors might be delayed).
 
-   `libf2c' supports flagging write errors immediately when it is built
-with the `ALWAYS_FLUSH' macro defined.  This results in a `libf2c' that
+   `libg2c' supports flagging write errors immediately when it is built
+with the `ALWAYS_FLUSH' macro defined.  This results in a `libg2c' that
 runs slower, sometimes quite a bit slower, under certain
 circumstances--for example, accessing files via the networked file
 system NFS--but the effect can be more reliable, robust file I/O.
@@ -462,18 +488,16 @@ system NFS--but the effect can be more reliable, robust file I/O.
    If you know that Fortran programs requiring this level of precision
 of error reporting are to be compiled using the version of `g77' you
 are building, you might wish to modify the `g77' source tree so that
-the version of `libf2c' is built with the `ALWAYS_FLUSH' macro defined,
+the version of `libg2c' is built with the `ALWAYS_FLUSH' macro defined,
 enabling this behavior.
 
-   To do this, find this line in `f/runtime/configure.in' in your `g77'
-source tree:
+   To do this, find this line in `f/runtime/f2c.h' in your `g77' source
+tree:
 
-     dnl AC_DEFINE(ALWAYS_FLUSH)
+     /* #define ALWAYS_FLUSH */
 
-   Remove the leading `dnl ', so the line begins with `AC_DEFINE(', and
-run `autoconf' in that file's directory.  (Or, if you don't have
-`autoconf', you can modify `f2c.h.in' in the same directory to include
-the line `#define ALWAYS_FLUSH' after `#define F2C_INCLUDE'.)
+   Remove the leading `/* ', so the line begins with `#define', and the
+trailing ` */'.
 
    Then build or rebuild `g77' as appropriate.
 
@@ -558,6 +582,9 @@ support 64-bit systems.
 Quick Start
 ===========
 
+   *Version info:* For `egcs' users, the following information is
+superceded by the `egcs' installation instructions.
+
    This procedure configures, builds, and installs `g77' "out of the
 box" and works on most UNIX systems.  Each command is identified by a
 unique number, used in the explanatory text that follows.  For the most
@@ -575,81 +602,51 @@ is assumed that the source distributions themselves already reside in
 `/usr/FSF', a naming convention used by the author of `g77' on his own
 system:
 
-     /usr/FSF/gcc-2.7.2.3.tar.gz
-     /usr/FSF/g77-0.5.22.tar.gz
+     /usr/FSF/gcc-2.8.1.tar.gz
+     /usr/FSF/g77-0.5.24.tar.gz
 
-   Users of the following systems should not blindly follow these
-quick-start instructions, because of problems their systems have coping
-with straightforward installation of `g77':
-
-   * SunOS4
-
-   Instead, see *Note Complete Installation::, for detailed information
-on how to configure, build, and install `g77' for your particular
-system.  Also, see *Note Known Causes of Trouble with GNU Fortran:
-Trouble, for information on bugs and other problems known to afflict the
-installation process, and how to report newly discovered ones.
-
-   If your system is *not* on the above list, and *is* a UNIX system or
-one of its variants, you should be able to follow the instructions
-below.  If you vary *any* of the steps below, you might run into
-trouble, including possibly breaking existing programs for other users
-of your system.  Before doing so, it is wise to review the explanations
-of some of the steps.  These explanations follow this list of steps.
+   If you vary *any* of the steps below, you might run into trouble,
+including possibly breaking existing programs for other users of your
+system.  Before doing so, it is wise to review the explanations of some
+of the steps.  These explanations follow this list of steps.
 
      sh[ 1]# cd /usr/src
      
-     sh[ 2]# gunzip -c < /usr/FSF/gcc-2.7.2.3.tar.gz | tar xf -
+     sh[ 2]# gunzip -c < /usr/FSF/gcc-2.8.1.tar.gz | tar xf -
      [Might say "Broken pipe"...that is normal on some systems.]
      
-     sh[ 3]# gunzip -c < /usr/FSF/g77-0.5.22.tar.gz | tar xf -
+     sh[ 3]# gunzip -c < /usr/FSF/g77-0.5.24.tar.gz | tar xf -
      ["Broken pipe" again possible.]
      
-     sh[ 4]# ln -s gcc-2.7.2.3 gcc
+     sh[ 4]# ln -s gcc-2.8.1 gcc
      
-     sh[ 5]# ln -s g77-0.5.22 g77
+     sh[ 5]# ln -s g77-0.5.24 g77
      
      sh[ 6]# mv -i g77/* gcc
      [No questions should be asked by mv here; or, you made a mistake.]
      
-     sh[ 7]# patch -p1 -E -V t -d gcc < gcc/f/gbe/2.7.2.3.diff
-     [Unless patch complains about rejected patches, this step worked.]
-     
-     sh[ 8]# cd gcc
-     sh[ 9]# touch f77-install-ok
-     [Do not do the above if your system already has an f77
-     command, unless you've checked that overwriting it
-     is okay.]
-     
-     sh[10]# touch f2c-install-ok
-     [Do not do the above if your system already has an f2c
-     command, unless you've checked that overwriting it
-     is okay.  Else, touch f2c-exists-ok.]
-     
-     sh[11]# ./configure --prefix=/usr
+     sh[ 7]# cd gcc
+     sh[ 8]# ./configure --prefix=/usr
      [Do not do the above if gcc is not installed in /usr/bin.
      You might need a different --prefix=..., as
      described below.]
      
-     sh[12]# make bootstrap
+     sh[ 9]# make bootstrap
      [This takes a long time, and is where most problems occur.]
      
-     sh[13]# make compare
-     [This verifies that the compiler is `sane'.  Only
-     the file `f/zzz.o' (aka `tmp-foo1' and `tmp-foo2')
-     should be in the list of object files this command
-     prints as having different contents.  If other files
-     are printed, you have likely found a g77 bug.]
+     sh[10]# make compare
+     [This verifies that the compiler is `sane'.
+     If any files are printed, you have likely found a g77 bug.]
      
-     sh[14]# rm -fr stage1
+     sh[11]# rm -fr stage1
      
-     sh[15]# make -k install
+     sh[12]# make -k install
      [The actual installation.]
      
-     sh[16]# g77 -v
+     sh[13]# g77 -v
      [Verify that g77 is installed, obtain version info.]
      
-     sh[17]#
+     sh[14]#
 
    *Note Updating Your Info Directory: Updating Documentation, for
 information on how to update your system's top-level `info' directory
@@ -664,17 +661,17 @@ Step 1: `cd /usr/src'
      your system knew where to look for the source code for the
      installed version of `g77' and `gcc' in any case.
 
-Step 3: `gunzip -d < /usr/FSF/g77-0.5.22.tar.gz | tar xf -'
+Step 3: `gunzip -d < /usr/FSF/g77-0.5.24.tar.gz | tar xf -'
      It is not always necessary to obtain the latest version of `g77'
      as a complete `.tar.gz' file if you have a complete, earlier
      distribution of `g77'.  If appropriate, you can unpack that earlier
      version of `g77', and then apply the appropriate patches to
      achieve the same result--a source tree containing version
-     0.5.22 of `g77'.
+     0.5.24 of `g77'.
 
-Step 4: `ln -s gcc-2.7.2.3 gcc'
+Step 4: `ln -s gcc-2.8.1 gcc'
 
-Step 5: `ln -s g77-0.5.22 g77'
+Step 5: `ln -s g77-0.5.24 g77'
      These commands mainly help reduce typing, and help reduce visual
      clutter in examples in this manual showing what to type to install
      `g77'.
@@ -684,7 +681,7 @@ Step 5: `ln -s g77-0.5.22 g77'
 
 Step 6: `mv -i g77/* gcc'
      After doing this, you can, if you like, type `rm g77' and `rmdir
-     g77-0.5.22' to remove the empty directory and the symbol link to
+     g77-0.5.24' to remove the empty directory and the symbol link to
      it.  But, it might be helpful to leave them around as quick
      reminders of which version(s) of `g77' are installed on your
      system.
@@ -692,57 +689,19 @@ Step 6: `mv -i g77/* gcc'
      *Note Unpacking::, for information on the contents of the `g77'
      directory (as merged into the `gcc' directory).
 
-Step 7: `patch -p1 ...'
-     If you are using GNU `patch' version 2.5 or later, this should
-     produce a list of files patched.  (Other versions of `patch' might
-     not work properly.)
-
-     If messages about "fuzz", "offset", or especially "reject files"
-     are printed, it might mean you applied the wrong patch file.  If
-     you believe this is the case, it is best to restart the sequence
-     after deleting (or at least renaming to unused names) the
-     top-level directories for `g77' and `gcc' and their symbolic links.
-
-     After this command finishes, the `gcc' directory might have old
-     versions of several files as saved by `patch'.  To remove these,
-     after `cd gcc', type `rm -i *.~*~'.
-
-     *Note Merging Distributions::, for more information.
-
-     *Note:* `gcc' versions circa 2.7.2.2 and 2.7.2.3 are known to have
-     slightly differing versions of the `gcc/ChangeLog' file, depending
-     on how they are obtained.  You can safely ignore diagnostics
-     `patch' reports when patching this particular file, since it is
-     purely a documentation file for implementors.  See
-     `gcc/f/gbe/2.7.2.3.diff' for more information.
-
-Step 9: `touch f77-install-ok'
-     Don't do this if you don't want to overwrite an existing version
-     of `f77' (such as a native compiler, or a script that invokes
-     `f2c').  Otherwise, installation will overwrite the `f77' command
-     and the `f77' man pages with copies of the corresponding `g77'
-     material.
-
-     *Note Installing `f77': Installing f77, for more information.
-
-Step 10: `touch f2c-install-ok'
-     Don't do this if you don't want to overwrite an existing
-     installation of `libf2c' (though, chances are, you do).  Instead,
-     `touch f2c-exists-ok' to allow the installation to continue
-     without any error messages about `/usr/lib/libf2c.a' already
-     existing.
-
-     *Note Installing `f2c': Installing f2c, for more information.
-
-Step 11: `./configure --prefix=/usr'
-     This is where you specify that the `g77' executable is to be
-     installed in `/usr/bin/', the `libf2c.a' library is to be
-     installed in `/usr/lib/', and so on.
+Step 8: `./configure --prefix=/usr'
+     This is where you specify that the `g77' and `gcc' executables are
+     to be installed in `/usr/bin/', the `g77' and `gcc' documentation
+     is to be installed in `/usr/info/' and `/usr/man/', and so on.
 
      You should ensure that any existing installation of the `gcc'
-     executable is in `/usr/bin/'.  Otherwise, installing `g77' so that
-     it does not fully replace the existing installation of `gcc' is
-     likely to result in the inability to compile Fortran programs.
+     executable is in `/usr/bin/'.
+
+     However, if that existing version of `gcc' is not 2.8.1, or if you
+     simply wish to avoid risking overwriting it with a newly built
+     copy of the same version, you can specify `--prefix=/usr/local'
+     (which is the default) or some other path, and invoke the newly
+     installed version directly from that path's `bin' directory.
 
      *Note Where in the World Does Fortran (and GNU CC) Go?: Where to
      Install, for more information on determining where to install
@@ -750,28 +709,30 @@ Step 11: `./configure --prefix=/usr'
      configuration process triggered by invoking the `./configure'
      script.
 
-Step 12: `make bootstrap'
+Step 9: `make bootstrap'
      *Note Installing GNU CC: (gcc)Installation, for information on the
      kinds of diagnostics you should expect during this procedure.
 
      *Note Building gcc::, for complete `g77'-specific information on
      this step.
 
-Step 13: `make compare'
+Step 10: `make compare'
      *Note Where to Port Bugs: Bug Lists, for information on where to
-     report that you observed more than `f/zzz.o' having different
-     contents during this phase.
+     report that you observed files having different contents during
+     this phase.
 
      *Note How to Report Bugs: Bug Reporting, for information on *how*
      to report bugs like this.
 
-Step 14: `rm -fr stage1'
+Step 11: `rm -fr stage1'
      You don't need to do this, but it frees up disk space.
 
-Step 15: `make -k install'
+Step 12: `make -k install'
      If this doesn't seem to work, try:
 
-          make -k install install-libf77 install-f2c-all
+          make -k install install-libf77
+
+     Or, make sure you're using GNU `make'.
 
      *Note Installation of Binaries::, for more information.
 
@@ -779,7 +740,7 @@ Step 15: `make -k install'
      information on entering this manual into your system's list of
      texinfo manuals.
 
-Step 16: `g77 -v'
+Step 13: `g77 -v'
      If this command prints approximately 25 lines of output, including
      the GNU Fortran Front End version number (which should be the same
      as the version number for the version of `g77' you just built and
@@ -815,12 +776,22 @@ Step 16: `g77 -v'
            Hello World # 10
           sh#
 
+     If invoking `g77' doesn't seem to work, the problem might be that
+     you've installed it in a location that is not in your shell's
+     search path.  For example, if you specified `--prefix=/gnu', and
+     `/gnu/bin' is not in your `PATH' environment variable, you must
+     explicitly specify the location of the compiler via `/gnu/bin/g77
+     -o smtest smtest.f'.
+
      After proper installation, you don't need to keep your gcc and g77
      source and build directories around anymore.  Removing them can
      free up a lot of disk space.
 
 Complete Installation
 =====================
+
+   *Version info:* For `egcs' users, the following information is
+mostly superceded by the `egcs' installation instructions.
 
    Here is the complete `g77'-specific information on how to configure,
 build, and install `g77'.
@@ -847,10 +818,10 @@ generally only the documentation is immediately usable.
    A sequence of commands typically used to unpack `gcc' and `g77' is:
 
      sh# cd /usr/src
-     sh# gunzip -c /usr/FSF/gcc-2.7.2.3.tar.gz | tar xf -
-     sh# gunzip -c /usr/FSF/g77-0.5.22.tar.gz | tar xf -
-     sh# ln -s gcc-2.7.2.3 gcc
-     sh# ln -s g77-0.5.22 g77
+     sh# gunzip -c /usr/FSF/gcc-2.8.1.tar.gz | tar xf -
+     sh# gunzip -c /usr/FSF/g77-0.5.24.tar.gz | tar xf -
+     sh# ln -s gcc-2.8.1 gcc
+     sh# ln -s g77-0.5.24 g77
      sh# mv -i g77/* gcc
 
    *Notes:* The commands beginning with `gunzip...' might print `Broken
@@ -869,7 +840,7 @@ and the top level of just the `g77' source tree (prior to issuing the
 
    All three entries should be moved (or copied) into a `gcc' source
 tree (typically named after its version number and as it appears in the
-FSF distributions--e.g. `gcc-2.7.2.3').
+FSF distributions--e.g. `gcc-2.8.1').
 
    `g77/f' is the subdirectory containing all of the code,
 documentation, and other information that is specific to `g77'.  The
@@ -881,10 +852,9 @@ from a single FSF distribution.  They also help people encountering an
 unmerged `g77' source tree for the first time.
 
    *Note:* Please use *only* `gcc' and `g77' source trees as
-distributed by the FSF.  Use of modified versions, such as the
-Pentium-specific-optimization port of `gcc', is likely to result in
-problems that appear to be in the `g77' code but, in fact, are not.  Do
-not use such modified versions unless you understand all the
+distributed by the FSF.  Use of modified versions is likely to result
+in problems that appear to be in the `g77' code but, in fact, are not.
+Do not use such modified versions unless you understand all the
 differences between them and the versions the FSF distributes--in which
 case you should be able to modify the `g77' (or `gcc') source trees
 appropriately so `g77' and `gcc' can coexist as they do in the stock
@@ -893,22 +863,18 @@ FSF distributions.
 Merging Distributions
 ---------------------
 
-   After merging the `g77' source tree into the `gcc' source tree, the
-final merge step is done by applying the pertinent patches the `g77'
-distribution provides for the `gcc' source tree.
+   After merging the `g77' source tree into the `gcc' source tree, you
+have put together a complete `g77' source tree.
 
-   Read the file `gcc/f/gbe/README', and apply the appropriate patch
-file for the version of the GNU CC compiler you have, if that exists.
-If the directory exists but the appropriate file does not exist, you
-are using either an old, unsupported version, or a release one that is
-newer than the newest `gcc' version supported by the version of `g77'
-you have.
+   As of version 0.5.23, `g77' no longer modifies the version number of
+`gcc', nor does it patch `gcc' itself.
 
-   As of version 0.5.18, `g77' modifies the version number of `gcc' via
-the pertinent patches.  This is done because the resulting version of
-`gcc' is deemed sufficiently different from the vanilla distribution to
-make it worthwhile to present, to the user, information signaling the
-fact that there are some differences.
+   `g77' still depends on being merged with an appropriate version of
+`gcc'.  For version 0.5.24 of `g77', the specific version of `gcc'
+supported is 2.8.1.
+
+   However, other versions of `gcc' might be suitable "hosts" for this
+version of `g77'.
 
    GNU version numbers make it easy to figure out whether a particular
 version of a distribution is newer or older than some other version of
@@ -924,9 +890,10 @@ create.)
 
    If your version of `gcc' is older than the oldest version supported
 by `g77' (as casually determined by listing the contents of
-`gcc/f/gbe/'), you should obtain a newer, supported version of `gcc'.
-(You could instead obtain an older version of `g77', or try and get
-your `g77' to work with the old `gcc', but neither approach is
+`gcc/f/INSTALL/', which contains these installation instructions in
+plain-text format), you should obtain a newer, supported version of
+`gcc'.  (You could instead obtain an older version of `g77', or try and
+get your `g77' to work with the old `gcc', but neither approach is
 recommended, and you shouldn't bother reporting any bugs you find if you
 take either approach, because they're probably already fixed in the
 newer versions you're not using.)
@@ -934,191 +901,26 @@ newer versions you're not using.)
    If your version of `gcc' is newer than the newest version supported
 by `g77', it is possible that your `g77' will work with it anyway.  If
 the version number for `gcc' differs only in the PATCH field, you might
-as well try applying the `g77' patch that is for the newest version of
-`gcc' having the same MAJOR and MINOR fields, as this is likely to work.
+as well try that version of `gcc'.  Since it has the same MAJOR and
+MINOR fields, the resulting combination is likely to work.
 
    So, for example, if a particular version of `g77' has support for
-`gcc' versions 2.7.0 and 2.7.1, it is likely that `gcc-2.7.2' would
-work well with `g77' by using the `2.7.1.diff' patch file provided with
-`g77' (aside from some offsets reported by `patch', which usually are
-harmless).
+`gcc' versions 2.8.0 and 2.8.1, it is likely that `gcc-2.8.2' would
+work well with `g77'.
 
-   However, `gcc-2.8.0' would almost certainly not work with that
-version of `g77' no matter which patch file was used, so a new version
-of `g77' would be needed (and you should wait for it rather than
-bothering the maintainers--*note User-Visible Changes: Changes.).
+   However, `gcc-2.9.0' would almost certainly not work with that
+version of `g77' without appropriate modifications, so a new version of
+`g77' would be needed (and you should wait for it rather than bothering
+the maintainers--*note User-Visible Changes: Changes.).
 
    This complexity is the result of `gcc' and `g77' being separate
 distributions.  By keeping them separate, each product is able to be
 independently improved and distributed to its user base more frequently.
 
-   However, `g77' often requires changes to contemporary versions of
-`gcc'.  Also, the GBE interface defined by `gcc' typically undergoes
-some incompatible changes at least every time the MINOR field of the
-version number is incremented, and such changes require corresponding
-changes to the `g77' front end (FFE).
-
-   It is hoped that the GBE interface, and the `gcc' and `g77' products
-in general, will stabilize sufficiently for the need for hand-patching
-to disappear.
-
-   If you are using GNU `patch' version 2.5 or later, this should
-produce a list of files patched.  (Other versions of `patch' might not
-work properly.)
-
-   If messages about "fuzz", "offset", or especially "reject files" are
-printed, it might mean you applied the wrong patch file.  If you
-believe this is the case, it is best to restart the sequence after
-deleting (or at least renaming to unused names) the top-level
-directories for `g77' and `gcc' and their symbolic links.  That is
-because `patch' might have partially patched some `gcc' source files,
-so reapplying the correct patch file might result in the correct
-patches being applied incorrectly (due to the way `patch' necessarily
-works).
-
-   After `patch' finishes, the `gcc' directory might have old versions
-of several files as saved by `patch'.  To remove these, after `cd gcc',
-type `rm -i *.~*~'.
-
-   *Note:* `gcc' versions circa 2.7.2.2 and 2.7.2.3 are known to have
-slightly differing versions of the `gcc/ChangeLog' file, depending on
-how they are obtained.  You can safely ignore diagnostics `patch'
-reports when patching this particular file, since it is purely a
-documentation file for implementors.  See `gcc/f/gbe/2.7.2.3.diff' for
-more information.
-
-   *Note:* `g77''s configuration file `gcc/f/config-lang.in' ensures
-that the source code for the version of `gcc' being configured has at
-least one indication of being patched as required specifically by `g77'.
-This configuration-time checking should catch failure to apply the
-correct patch and, if so caught, should abort the configuration with an
-explanation.  *Please* do not try to disable the check, otherwise `g77'
-might well appear to build and install correctly, and even appear to
-compile correctly, but could easily produce broken code.
-
-   `LC_ALL=C TZ=UTC0 diff -rcp2N' is used to create the patch files in
-`gcc/f/gbe/'.
-
-Installing `f77'
-----------------
-
-   You should decide whether you want installation of `g77' to also
-install an `f77' command.  On systems with a native `f77', this is not
-normally desired, so `g77' does not do this by default.
-
-   If you want `f77' installed, create the file `f77-install-ok' (e.g.
-via the UNIX command `touch f77-install-ok') in the source or build
-top-level directory (the same directory in which the `g77' `f'
-directory resides, not the `f' directory itself), or edit
-`gcc/f/Make-lang.in' and change the definition of the
-`F77_INSTALL_FLAG' macro appropriately.
-
-   Usually, this means that, after typing `cd gcc', you would type
-`touch f77-install-ok'.
-
-   When you enable installation of `f77', either a link to or a direct
-copy of the `g77' command is made.  Similarly, `f77.1' is installed as
-a man page.
-
-   (The `uninstall' target in the `gcc/Makefile' also tests this macro
-and file, when invoked, to determine whether to delete the installed
-copies of `f77' and `f77.1'.)
-
-   *Note:* No attempt is yet made to install a program (like a shell
-script) that provides compatibility with any other `f77' programs.
-Only the most rudimentary invocations of `f77' will work the same way
-with `g77'.
-
-Installing `f2c'
-----------------
-
-   Currently, `g77' does not include `f2c' itself in its distribution.
-However, it does include a modified version of the `libf2c'.  This
-version is normally compatible with `f2c', but has been modified to
-meet the needs of `g77' in ways that might possibly be incompatible
-with some versions or configurations of `f2c'.
-
-   Decide how installation of `g77' should affect any existing
-installation of `f2c' on your system.
-
-   If you do not have `f2c' on your system (e.g. no `/usr/bin/f2c', no
-`/usr/include/f2c.h', and no `/usr/lib/libf2c.a', `/usr/lib/libF77.a',
-or `/usr/lib/libI77.a'), you don't need to be concerned with this item.
-
-   If you do have `f2c' on your system, you need to decide how users of
-`f2c' will be affected by your installing `g77'.  Since `g77' is
-currently designed to be object-code-compatible with `f2c' (with very
-few, clear exceptions), users of `f2c' might want to combine
-`f2c'-compiled object files with `g77'-compiled object files in a
-single executable.
-
-   To do this, users of `f2c' should use the same copies of `f2c.h' and
-`libf2c.a' that `g77' uses (and that get built as part of `g77').
-
-   If you do nothing here, the `g77' installation process will not
-overwrite the `include/f2c.h' and `lib/libf2c.a' files with its own
-versions, and in fact will not even install `libf2c.a' for use with the
-newly installed versions of `gcc' and `g77' if it sees that
-`lib/libf2c.a' exists--instead, it will print an explanatory message
-and skip this part of the installation.
-
-   To install `g77''s versions of `f2c.h' and `libf2c.a' in the
-appropriate places, create the file `f2c-install-ok' (e.g. via the UNIX
-command `touch f2c-install-ok') in the source or build top-level
-directory (the same directory in which the `g77' `f' directory resides,
-not the `f' directory itself), or edit `gcc/f/Make-lang.in' and change
-the definition of the `F2C_INSTALL_FLAG' macro appropriately.
-
-   Usually, this means that, after typing `cd gcc', you would type
-`touch f2c-install-ok'.
-
-   Make sure that when you enable the overwriting of `f2c.h' and
-`libf2c.a' as used by `f2c', you have a recent and properly configured
-version of `bin/f2c' so that it generates code that is compatible with
-`g77'.
-
-   If you don't want installation of `g77' to overwrite `f2c''s existing
-installation, but you do want `g77' installation to proceed with
-installation of its own versions of `f2c.h' and `libf2c.a' in places
-where `g77' will pick them up (even when linking `f2c'-compiled object
-files--which might lead to incompatibilities), create the file
-`f2c-exists-ok' (e.g. via the UNIX command `touch f2c-exists-ok') in
-the source or build top-level directory, or edit `gcc/f/Make-lang.in'
-and change the definition of the `F2CLIBOK' macro appropriately.
-
-Patching GNU Fortran
---------------------
-
-   If you're using a SunOS4 system, you'll need to make the following
-change to `gcc/f/proj.h': edit the line reading
-
-     #define FFEPROJ_STRTOUL 1  ...
-
-by replacing the `1' with `0'.  Or, you can avoid editing the source by
-adding
-     CFLAGS='-DFFEPROJ_STRTOUL=0 -g -O'
-   to the command line for `make' when you invoke it.  (`-g' is the
-default for `CFLAGS'.)
-
-   This causes a minimal version of `strtoul()' provided as part of the
-`g77' distribution to be compiled and linked into whatever `g77'
-programs need it, since some systems (like SunOS4 with only the bundled
-compiler and its runtime) do not provide this function in their system
-libraries.
-
-   Similarly, a minimal version of `bsearch()' is available and can be
-enabled by editing a line similar to the one for `strtoul()' above in
-`gcc/f/proj.h', if your system libraries lack `bsearch()'.  The method
-of overriding `X_CFLAGS' may also be used.
-
-   These are not problems with `g77', which requires an ANSI C
-environment.  You should upgrade your system to one that provides a
-full ANSI C environment, or encourage the maintainers of `gcc' to
-provide one to all `gcc'-based compilers in future `gcc' distributions.
-
-   *Note Problems Installing::, for more information on why `strtoul()'
-comes up missing and on approaches to dealing with this problem that
-have already been tried.
+   However, the GBE interface defined by `gcc' typically undergoes some
+incompatible changes at least every time the MINOR field of the version
+number is incremented, and such changes require corresponding changes to
+the `g77' front end (FFE).
 
 Where in the World Does Fortran (and GNU CC) Go?
 ------------------------------------------------
@@ -1128,8 +930,8 @@ Where in the World Does Fortran (and GNU CC) Go?
 this information is given to the configuration tool and used during the
 build itself.
 
-   A `g77' installation necessarily requires installation of a
-`g77'-aware version of `gcc', so that the `gcc' command recognizes
+   A `g77' installation normally includes installation of a
+Fortran-aware version of `gcc', so that the `gcc' command recognizes
 Fortran source files and knows how to compile them.
 
    For this to work, the version of `gcc' that you will be building as
@@ -1138,24 +940,27 @@ the system.
 
    Sometimes people make the mistake of installing `gcc' as
 `/usr/local/bin/gcc', leaving an older, non-Fortran-aware version in
-`/usr/bin/gcc'.  (Or, the opposite happens.)  This can result in `g77'
-being unable to compile Fortran source files, because when it calls on
-`gcc' to do the actual compilation, `gcc' complains that it does not
-recognize the language, or the file name suffix.
+`/usr/bin/gcc'.  (Or, the opposite happens.)  This can result in `gcc'
+being unable to compile Fortran source files, because when the older
+version of `gcc' is invoked, it complains that it does not recognize
+the language, or the file name suffix.
 
    So, determine whether `gcc' already is installed on your system,
 and, if so, *where* it is installed, and prepare to configure the new
 version of `gcc' you'll be building so that it installs over the
 existing version of `gcc'.
 
-   You might want to back up your existing copy of `bin/gcc', and the
-entire `lib/' directory, before you perform the actual installation (as
-described in this manual).
+   You might want to back up your existing copy of `/usr/bin/gcc', and
+the entire `/usr/lib' directory, before you perform the actual
+installation (as described in this manual).
 
    Existing `gcc' installations typically are found in `/usr' or
-`/usr/local'.  If you aren't certain where the currently installed
-version of `gcc' and its related programs reside, look at the output of
-this command:
+`/usr/local'.  (This means the commands are installed in `/usr/bin' or
+`/usr/local/bin', the libraries in `/usr/lib' or `/usr/local/lib', and
+so on.)
+
+   If you aren't certain where the currently installed version of `gcc'
+and its related programs reside, look at the output of this command:
 
      gcc -v -o /tmp/delete-me -xc /dev/null -xnone
 
@@ -1174,7 +979,8 @@ true for any package, not just `g77', though in this case it is
 intentional that `g77' overwrites `gcc' if it is already installed--it
 is unusual that the installation process for one distribution
 intentionally overwrites a program or file installed by another
-distribution.)
+distribution, although, in this case, `g77' is an augmentation of the
+`gcc' distribution.)
 
    Another reason to back up the existing version first, or make sure
 you can restore it easily, is that it might be an older version on
@@ -1191,12 +997,12 @@ Configuring GNU CC
    `g77' is configured automatically when you configure `gcc'.  There
 are two parts of `g77' that are configured in two different
 ways--`g77', which "camps on" to the `gcc' configuration mechanism, and
-`libf2c', which uses a variation of the GNU `autoconf' configuration
+`libg2c', which uses a variation of the GNU `autoconf' configuration
 system.
 
    Generally, you shouldn't have to be concerned with either `g77' or
-`libf2c' configuration, unless you're configuring `g77' as a
-cross-compiler.  In this case, the `libf2c' configuration, and possibly
+`libg2c' configuration, unless you're configuring `g77' as a
+cross-compiler.  In this case, the `libg2c' configuration, and possibly
 the `g77' and `gcc' configurations as well, might need special
 attention.  (This also might be the case if you're porting `gcc' to a
 whole new system--even if it is just a new operating system on an
@@ -1207,19 +1013,27 @@ existing, supported CPU.)
 Pay special attention to the `--prefix=' option, which you almost
 certainly will need to specify.
 
-   (Note that `gcc' installation information is provided as a straight
-text file in `gcc/INSTALL'.)
+   (Note that `gcc' installation information is provided as a
+plain-text file in `gcc/INSTALL'.)
 
    The information printed by the invocation of `./configure' should
 show that the `f' directory (the Fortran language) has been configured.
 If it does not, there is a problem.
 
-   *Note:* Configuring with the `--srcdir' argument is known to work
-with GNU `make', but it is not known to work with other variants of
-`make'.  Irix5.2 and SunOS4.1 versions of `make' definitely won't work
-outside the source directory at present.  `g77''s portion of the
-`configure' script issues a warning message about this when you
-configure for building binaries outside the source directory.
+   *Note:* Configuring with the `--srcdir' argument, or by starting in
+an empty directory and typing a command such as `../gcc/configure' to
+build with separate build and source directories, is known to work with
+GNU `make', but it is known to not work with other variants of `make'.
+Irix5.2 and SunOS4.1 versions of `make' definitely won't work outside
+the source directory at present.
+
+   `g77''s portion of the `configure' script used to issue a warning
+message about this when configuring for building binaries outside the
+source directory, but no longer does this as of version 0.5.23.
+
+   Instead, `g77' simply rejects most common attempts to build it using
+a non-GNU `make' when the build directory is not the same as the source
+directory, issuing an explanatory diagnostic.
 
 Building GNU CC
 ---------------
@@ -1232,14 +1046,14 @@ or `gcc/Makefile', but if you do that, you're on your own.  One change
 is almost *certainly* going to cause failures: removing `c' or `f77'
 from the definition of the `LANGUAGES' macro.
 
-   After configuring `gcc', which configures `g77' and `libf2c'
+   After configuring `gcc', which configures `g77' and `libg2c'
 automatically, you're ready to start the actual build by invoking
 `make'.
 
-   *Note:* You *must* have run `./configure' before you run `make',
-even if you're using an already existing `gcc' development directory,
-because `./configure' does the work to recognize that you've added
-`g77' to the configuration.
+   *Note:* You *must* have run the `configure' script in `gcc' before
+you run `make', even if you're using an already existing `gcc'
+development directory, because `./configure' does the work to recognize
+that you've added `g77' to the configuration.
 
    There are two general approaches to building GNU CC from scratch:
 
@@ -1285,12 +1099,6 @@ large number of object files to ensure they're identical).
 you can type `rm -fr stage1' to remove the binaries built during Stage
 1.
 
-   *Note:* *Note Object File Differences::, for information on expected
-differences in object files produced during Stage 2 and Stage 3 of a
-bootstrap build.  These differences will be encountered as a result of
-using the `make compare' or similar command sequence recommended by the
-GNU CC installation documentation.
-
    Also, *Note Installing GNU CC: (gcc)Installation, for important
 information on building `gcc' that is not described in this `g77'
 manual.  For example, explanations of diagnostic messages and whether
@@ -1305,15 +1113,10 @@ object-compatible with the version of `gcc' you want to build as part
 of building `g77', you can save time and disk space by doing a straight
 build.
 
-   To build just the C and Fortran compilers and the necessary run-time
+   To build just the compilers along with the necessary run-time
 libraries, issue the following command:
 
-     make -k CC=gcc LANGUAGES=f77 all g77
-
-   (The `g77' target is necessary because the `gcc' build procedures
-apparently do not automatically build command drivers for languages in
-subdirectories.  It's the `all' target that triggers building
-everything except, apparently, the `g77' command itself.)
+     make -k CC=gcc
 
    If you run into problems using this method, you have two options:
 
@@ -1328,7 +1131,8 @@ Fortran: Trouble.
 
    However, understand that many problems preventing a straight build
 from working are not `g77' problems, and, in such cases, are not likely
-to be addressed in future versions of `g77'.
+to be addressed in future versions of `g77'.  Consider treating them as
+`gcc' bugs instead.
 
 Pre-installation Checks
 -----------------------
@@ -1341,52 +1145,51 @@ work.
 them when they work:
 
      sh# cd /usr/src/gcc
-     sh# ./g77 --driver=./xgcc -B./ -v
-     g77 version 0.5.22
-      ./xgcc -B./ -v -fnull-version -o /tmp/gfa18047 ...
+     sh# ./g77 -B./ -v
+     g77 version 0.5.24
+     Driving: ./g77 -B./ -v -c -xf77-version /dev/null -xnone
      Reading specs from ./specs
-     gcc version 2.7.2.3.f.2
-      ./cpp -lang-c -v -isystem ./include -undef ...
-     GNU CPP version 2.7.2.3.f.2 (Linux/Alpha)
+     gcc version 2.8.1
+      cpp -lang-c -v -isystem ./include -undef -D__GNUC__=2 ...
+     GNU CPP version 2.8.1 (Alpha GNU/Linux with ELF)
      #include "..." search starts here:
      #include <...> search starts here:
-      ./include
-      /usr/local/include
-      /usr/alpha-unknown-linux/include
-      /usr/lib/gcc-lib/alpha-unknown-linux/2.7.2.3.f.2/include
+      include
+      /usr/alpha-linux/include
+      /usr/lib/gcc-lib/alpha-linux/2.8.1/include
       /usr/include
      End of search list.
-      ./f771 /tmp/cca18048.i -fset-g77-defaults -quiet -dumpbase ...
-     GNU F77 version 2.7.2.3.f.2 (Linux/Alpha) compiled ...
-     GNU Fortran Front End version 0.5.22 compiled: ...
-      as -nocpp -o /tmp/cca180481.o /tmp/cca18048.s
-      ld -G 8 -O1 -o /tmp/gfa18047 /usr/lib/crt0.o -L. ...
-     __G77_LIBF77_VERSION__: 0.5.22
-     @(#)LIBF77 VERSION 19970404
-     __G77_LIBI77_VERSION__: 0.5.22
-     @(#) LIBI77 VERSION pjw,dmg-mods 19970816
-     __G77_LIBU77_VERSION__: 0.5.22
-     @(#) LIBU77 VERSION 19970609
+      ./f771 -fnull-version -quiet -dumpbase g77-version.f -version ...
+     GNU F77 version 2.8.1 (alpha-linux) compiled ...
+     GNU Fortran Front End version 0.5.24
+      as -nocpp -o /tmp/cca14485.o /tmp/cca14485.s
+      ld -m elf64alpha -G 8 -O1 -dynamic-linker /lib/ld-linux.so.2 ...
+      /tmp/cca14485
+     __G77_LIBF77_VERSION__: 0.5.24
+     @(#)LIBF77 VERSION 19970919
+     __G77_LIBI77_VERSION__: 0.5.24
+     @(#) LIBI77 VERSION pjw,dmg-mods 19980405
+     __G77_LIBU77_VERSION__: 0.5.24
+     @(#) LIBU77 VERSION 19970919
      sh# ./xgcc -B./ -v -o /tmp/delete-me -xc /dev/null -xnone
      Reading specs from ./specs
-     gcc version 2.7.2.3.f.2
+     gcc version 2.8.1
       ./cpp -lang-c -v -isystem ./include -undef ...
-     GNU CPP version 2.7.2.3.f.2 (Linux/Alpha)
+     GNU CPP version 2.8.1 (Alpha GNU/Linux with ELF)
      #include "..." search starts here:
      #include <...> search starts here:
-      ./include
-      /usr/local/include
-      /usr/alpha-unknown-linux/include
-      /usr/lib/gcc-lib/alpha-unknown-linux/2.7.2.3.f.2/include
+      include
+      /usr/alpha-linux/include
+      /usr/lib/gcc-lib/alpha-linux/2.8.1/include
       /usr/include
      End of search list.
       ./cc1 /tmp/cca18063.i -quiet -dumpbase null.c -version ...
-     GNU C version 2.7.2.3.f.2 (Linux/Alpha) compiled ...
+     GNU C version 2.8.1 (alpha-linux) compiled ...
       as -nocpp -o /tmp/cca180631.o /tmp/cca18063.s
-      ld -G 8 -O1 -o /tmp/delete-me /usr/lib/crt0.o -L. ...
-     /usr/lib/crt0.o: In function `__start':
-     crt0.S:110: undefined reference to `main'
-     /usr/lib/crt0.o(.lita+0x28): undefined reference to `main'
+      ld -m elf64alpha -G 8 -O1 -dynamic-linker /lib/ld-linux.so.2 ...
+     /usr/lib/crt1.o: In function `_start':
+     ../sysdeps/alpha/elf/start.S:77: undefined reference to `main'
+     ../sysdeps/alpha/elf/start.S:77: undefined reference to `main'
      sh#
 
    (Note that long lines have been truncated, and `...'  used to
@@ -1410,7 +1213,7 @@ use the following commands to invoke them.
 
    To invoke `g77', type:
 
-     /usr/src/gcc/g77 --driver=/usr/src/gcc/xgcc -B/usr/src/gcc/ ...
+     /usr/src/gcc/g77 -B/usr/src/gcc/ ...
 
    To invoke `gcc', type:
 
@@ -1422,7 +1225,7 @@ Installation of Binaries
    After configuring, building, and testing `g77' and `gcc', when you
 are ready to install them on your system, type:
 
-     make -k CC=gcc LANGUAGES=f77 install
+     make -k CC=gcc install
 
    As described in *Note Installing GNU CC: (gcc)Installation, the
 values for the `CC' and `LANGUAGES' macros should be the same as those
@@ -1434,83 +1237,179 @@ might have to supply the same definitions you used when building the
 final stage) or if you deviated from the instructions for a straight
 build.
 
-   If the above command does not install `libf2c.a' as expected, try
+   If the above command does not install `libg2c.a' as expected, try
 this:
 
-     make -k ... install install-libf77 install-f2c-all
+     make -k ... install install-libf77
 
    We don't know why some non-GNU versions of `make' sometimes require
 this alternate command, but they do.  (Remember to supply the
-appropriate definitions for `CC' and `LANGUAGES' where you see `...' in
-the above command.)
+appropriate definition for `CC' where you see `...' in the above
+command.)
 
    Note that using the `-k' option tells `make' to continue after some
 installation problems, like not having `makeinfo' installed on your
 system.  It might not be necessary for your system.
 
+   *Note:* `g77' no longer installs files not directly part of `g77',
+such as `/usr/bin/f77', `/usr/lib/libf2c.a', and `/usr/include/f2c.h',
+or their `/usr/local' equivalents.
+
+   *Note Distributing Binaries::, for information on how to accommodate
+systems with no existing non-`g77' `f77' compiler and systems with
+`f2c' installed.
+
 Updating Your Info Directory
 ----------------------------
 
    As part of installing `g77', you should make sure users of `info'
-can easily access this manual on-line.  Do this by making sure a line
-such as the following exists in `/usr/info/dir', or in whatever file is
-the top-level file in the `info' directory on your system (perhaps
-`/usr/local/info/dir':
+can easily access this manual on-line.
 
-     * g77: (g77).           The GNU Fortran programming language.
+   `g77' does this automatically by invoking the `install-info' command
+when you use `make install' to install `g77'.
 
-   If the menu in `dir' is organized into sections, `g77' probably
-belongs in a section with a name such as one of the following:
+   If that fails, or if the `info' directory it updates is not the one
+normally accessed by users, consider invoking it yourself.  For example:
 
-   * Fortran Programming
+     install-info --info-dir=/usr/info /usr/info/g77.info
 
-   * Writing Programs
+   The above example assumes the `g77' documentation already is
+installed in `/usr/info' and that `/usr/info/dir' is the file you wish
+to update.  Adjust the command accordingly, if those assumptions are
+wrong.
 
-   * Programming Languages
+Missing tools?
+--------------
 
-   * Languages Other Than C
+   A build of `gcc' might fail due to one or more tools being called
+upon by `make' (during the build or install process), when those tools
+are not installed on your system.
 
-   * Scientific/Engineering Tools
+   This situation can result from any of the following actions
+(performed by you or someone else):
 
-   * GNU Compilers
+   * Changing the source code or documentation yourself (as a developer
+     or technical writer).
 
-Missing `bison'?
-----------------
+   * Applying a patch that changes the source code or documentation
+     (including, sometimes, the official patches distributed by the
+     FSF).
 
-   If you cannot install `bison', make sure you have started with a
-*fresh* distribution of `gcc', do *not* do `make maintainer-clean' (in
-other versions of `gcc', this was called `make realclean'), and, to
-ensure that `bison' is not invoked by `make' during the build, type
-these commands:
+   * Deleting the files that are created by the (missing) tools.
 
-     sh# cd gcc
-     sh# touch c-parse.c c-parse.h cexp.c
-     sh# touch cp/parse.c cp/parse.h objc-parse.c
+     The `make maintainer-clean' command is supposed to delete these
+     files, so invoking this command without having all the appropriate
+     tools installed is not recommended.
+
+   * Creating the source directory using a method that does not
+     preserve the date-time-modified information in the original
+     distribution.
+
+     For example, the UNIX `cp -r' command copies a directory tree
+     without preserving the date-time-modified information.  Use `cp
+     -pr' instead.
+
+   The reason these activities cause `make' to try and invoke tools
+that it probably wouldn't when building from a perfectly "clean" source
+directory containing `gcc' and `g77' is that some files in the source
+directory (and the corresponding distribution) aren't really source
+files, but *derived* files that are produced by running tools with the
+corresponding source files as input.  These derived files "depend", in
+`make' terminology, on the corresponding source files.
+
+   `make' determines that a file that depends on another needs to be
+updated if the date-time-modified information for the source file shows
+that it is newer than the corresponding information for the derived
+file.
+
+   If it makes that determination, `make' runs the appropriate commands
+(specified in the "Makefile") to update the derived file, and this
+process typically calls upon one or more installed tools to do the work.
+
+   The "safest" approach to dealing with this situation is to recreate
+the `gcc' and `g77' source directories from complete `gcc' and `g77'
+distributions known to be provided by the FSF.
+
+   Another fairly "safe" approach is to simply install the tools you
+need to complete the build process.  This is especially appropriate if
+you've changed the source code or applied a patch to do so.
+
+   However, if you're certain that the problem is limited entirely to
+incorrect date-time-modified information, that there are no
+discrepancies between the contents of source files and files derived
+from them in the source directory, you can often update the
+date-time-modified information for the derived files to work around the
+problem of not having the appropriate tools installed.
+
+   On UNIX systems, the simplest way to update the date-time-modified
+information of a file is to use the use the `touch' command.
+
+   How to use `touch' to update the derived files updated by each of
+the tools is described below.  *Note:* New versions of `g77' might
+change the set of files it generates by invoking each of these tools.
+If you cannot figure out for yourself how to handle such a situation,
+try an older version of `g77' until you find someone who can (or until
+you obtain and install the relevant tools).
+
+Missing `autoconf'?
+...................
+
+   If you cannot install `autoconf', make sure you have started with a
+*fresh* distribution of `gcc' and `g77', do *not* do `make
+maintainer-clean', and, to ensure that `autoconf' is not invoked by
+`make' during the build, type these commands:
+
+     sh# cd gcc/f/runtime
+     sh# touch configure libU77/configure
+     sh# cd ../../..
      sh#
 
-   These commands update the date-time-modified information for all the
-files produced by the various invocations of `bison' in the current
-versions of `gcc', so that `make' no longer believes it needs to update
-them.  All of these files should already exist in a `gcc' distribution,
-but the application of patches to upgrade to a newer version can leave
-the modification information set such that the `bison' input files look
-more "recent" than the corresponding output files.
+Missing `bison'?
+................
 
-   *Note:* New versions of `gcc' might change the set of files it
-generates by invoking `bison'--if you cannot figure out for yourself
-how to handle such a situation, try an older version of `gcc' until you
-find someone who can (or until you obtain and install `bison').
+   If you cannot install `bison', make sure you have started with a
+*fresh* distribution of `gcc', do *not* do `make maintainer-clean',
+and, to ensure that `bison' is not invoked by `make' during the build,
+type these commands:
+
+     sh# cd gcc
+     sh# touch bi-parser.c bi-parser.h c-parse.c c-parse.h cexp.c
+     sh# touch cp/parse.c cp/parse.h objc-parse.c
+     sh# cd ..
+     sh#
+
+Missing `gperf'?
+................
+
+   If you cannot install `gperf', make sure you have started with a
+*fresh* distribution of `gcc', do *not* do `make maintainer-clean',
+and, to ensure that `gperf' is not invoked by `make' during the build,
+type these commands:
+
+     sh# cd gcc
+     sh# touch c-gperf.h
+     sh# cd ..
+     sh#
 
 Missing `makeinfo'?
--------------------
+...................
 
-   If you cannot install `makeinfo', either use the `-k' option when
-invoking make to specify any of the `install' or related targets, or
-specify `MAKEINFO=echo' on the `make' command line.
+   If `makeinfo' is needed but unavailable when installing (via `make
+install'), some files, like `libg2c.a', might not be installed, because
+once `make' determines that it cannot invoke `makeinfo', it cancels any
+further processing.
 
-   If you fail to do one of these things, some files, like `libf2c.a',
-might not be installed, because the failed attempt by `make' to invoke
-`makeinfo' causes it to cancel any further processing.
+   If you cannot install `makeinfo', an easy work-around is to specify
+`MAKEINFO=true' on the `make' command line, or to specify the `-k'
+option (`make -k install').
+
+   Another approach is to force the relevant files to be up-to-date by
+typing these commands and then re-trying the installation step:
+
+     sh# cd gcc
+     sh# touch f/g77.info f/BUGS f/INSTALL f/NEWS
+     sh# cd ..
+     sh#
 
 Distributing Binaries
 =====================
@@ -1526,33 +1425,62 @@ installed.
 where `g77' could be considered the native compiler for Fortran and
 `gcc' for C, etc.), you should definitely configure `g77' for
 installation in `/usr/bin' instead of `/usr/local/bin'.  Specify the
-`--prefix=/usr' option when running `./configure'.  You might also want
-to set up the distribution so the `f77' command is a link to
-`g77'--just make an empty file named `f77-install-ok' in the source or
-build directory (the one in which the `f' directory resides, not the
-`f' directory itself) when you specify one of the `install' or
-`uninstall' targets in a `make' command.
+`--prefix=/usr' option when running `./configure'.
 
-   For a system that might already have `f2c' installed, you definitely
-will want to make another empty file (in the same directory) named
-either `f2c-exists-ok' or `f2c-install-ok'.  Use the former if you
-don't want your distribution to overwrite `f2c'-related files in
-existing systems; use the latter if you want to improve the likelihood
-that users will be able to use both `f2c' and `g77' to compile code for
-a single program without encountering link-time or run-time
-incompatibilities.
+   You might also want to set up the distribution so the `f77' command
+is a link to `g77', although a script that accepts "classic" UNIX `f77'
+options and translates the command-line to the appropriate `g77'
+command line would be more appropriate.  If you do this, *please* also
+provide a "man page" in `man/man1/f77.1' describing the command.  (A
+link to `man/man1/g77.1' is appropriate if `bin/f77' is a link to
+`bin/g77'.)
 
-   (Make sure you clearly document, in the "advertising" for your
+   For a system that might already have `f2c' installed, consider
+whether inter-operation with `g77' will be important to users of `f2c'
+on that system.  If you want to improve the likelihood that users will
+be able to use both `f2c' and `g77' to compile code for a single program
+without encountering link-time or run-time incompatibilities, make sure
+that, whenever they intend to combine `f2c'-produced code with
+`g77'-produced code in an executable, they:
+
+   * Use the `lib/gcc-lib/.../include/g2c.h' file generated by the
+     `g77' build in place of the `f2c.h' file that normally comes with
+     `f2c' (or versions of `g77' prior to 0.5.23) when compiling *all*
+     of the `f2c'-produced C code
+
+   * Link to the `lib/gcc-lib/.../libg2c.a' library built by the `g77'
+     build instead of the `libf2c.a' library that normally comes with
+     `f2c' (or versions of `g77' prior to 0.5.23)
+
+   How you choose to effect the above depends on whether the existing
+installation of `f2c' must be maintained.
+
+   In any case, it is important to try and ensure that the installation
+keeps working properly even after subsequent re-installation of `f2c',
+which probably involves overwriting `/usr/local/lib/libf2c.a' and
+`/usr/local/include/f2c.h', or similar.
+
+   At least, copying `libg2c.a' and `g2c.h' into the appropriate
+"public" directories allows users to more easily select the version of
+`libf2c' they wish to use for a particular build.  The names are
+changed by `g77' to make this coexistence easier to maintain; even if
+`f2c' is installed later, the `g77' files normally installed by its
+installation process aren't disturbed.  Use of symbolic links from one
+set of files to another might result in problems after a subsequent
+reinstallation of either `f2c' or `g77', so be sure to alert users of
+your distribution accordingly.
+
+   (Make sure you clearly document, in the description of your
 distribution, how installation of your distribution will affect
 existing installations of `gcc', `f2c', `f77', `libf2c.a', and so on.
-Similarly, you should clearly document any requirements you assume are
-met by users of your distribution.)
+Similarly, you should clearly document any requirements you assume will
+be met by users of your distribution.)
 
    For other systems with native `f77' (and `cc') compilers, configure
 `g77' as you (or most of your audience) would configure `gcc' for their
 installations.  Typically this is for installation in `/usr/local', and
-would not include a copy of `g77' named `f77', so users could still use
-the native `f77'.
+would not include a new version of `/usr/bin/f77' or
+`/usr/local/bin/f77', so users could still use the native `f77'.
 
    In any case, for `g77' to work properly, you *must* ensure that the
 binaries you distribute include:
@@ -1561,17 +1489,11 @@ binaries you distribute include:
      This is the command most users use to compile Fortran.
 
 `bin/gcc'
-     This is the command all users use to compile Fortran, either
-     directly or indirectly via the `g77' command.  The `bin/gcc'
-     executable file must have been built from a `gcc' source tree into
-     which a `g77' source tree was merged and configured, or it will
-     not know how to compile Fortran programs.
-
-`bin/f77'
-     In installations with no non-GNU native Fortran compiler, this is
-     the same as `bin/g77'.  Otherwise, it should be omitted from the
-     distribution, so the one on already on a particular system does
-     not get overwritten.
+     This is the command some users use to compile Fortran, typically
+     when compiling programs written in other languages at the same
+     time.  The `bin/gcc' executable file must have been built from a
+     `gcc' source tree into which a `g77' source tree was merged and
+     configured, or it will not know how to compile Fortran programs.
 
 `info/g77.info*'
      This is the documentation for `g77'.  If it is not included, users
@@ -1591,35 +1513,36 @@ binaries you distribute include:
      Documentation.
 
 `man/man1/g77.1'
-     This is the short man page for `g77'.  It is out of date, but you
-     might as well include it for people who really like man pages.
+     This is the short man page for `g77'.  It is not always kept
+     up-to-date, but you might as well include it for people who really
+     like "man" pages.
 
-`man/man1/f77.1'
-     In installations where `f77' is the same as `g77', this is the
-     same as `man/man1/g77.1'.  Otherwise, it should be omitted from
-     the distribution, so the one already on a particular system does
-     not get overwritten.
+`lib/gcc-lib'
+     This is the directory containing the "private" files installed by
+     and for `gcc', `g77', `g++', and other GNU compilers.
 
 `lib/gcc-lib/.../f771'
      This is the actual Fortran compiler.
 
-`lib/gcc-lib/.../libf2c.a'
+`lib/gcc-lib/.../libg2c.a'
      This is the run-time library for `g77'-compiled programs.
 
    Whether you want to include the slightly updated (and possibly
 improved) versions of `cc1', `cc1plus', and whatever other binaries get
 rebuilt with the changes the GNU Fortran distribution makes to the GNU
 back end, is up to you.  These changes are highly unlikely to break any
-compilers, and it is possible they'll fix back-end bugs that can be
-demonstrated using front ends other than GNU Fortran's.
+compilers, because they involve doing things like adding to the list of
+acceptable compiler options (so, for example, `cc1plus' accepts, and
+ignores, options that only `f771' actually processes).
 
    Please assure users that unless they have a specific need for their
 existing, older versions of `gcc' command, they are unlikely to
 experience any problems by overwriting it with your version--though
 they could certainly protect themselves by making backup copies first!
-Otherwise, users might try and install your binaries in a "safe" place,
-find they cannot compile Fortran programs with your distribution
-(because, perhaps, they're picking up their old version of the `gcc'
+
+   Otherwise, users might try and install your binaries in a "safe"
+place, find they cannot compile Fortran programs with your distribution
+(because, perhaps, they're invoking their old version of the `gcc'
 command, which does not recognize Fortran programs), and assume that
 your binaries (or, more generally, GNU Fortran distributions in
 general) are broken, at least for their system.
