@@ -1253,12 +1253,7 @@ alpha_write_verstamp (file)
      FILE *file;
 {
 #ifdef MS_STAMP
-  char *p;
-
-  fprintf (file, "\t.verstamp %d %d ", MS_STAMP, LS_STAMP);
-  for (p = version_string; *p != ' ' && *p != 0; p++)
-    fprintf (file, "%c", *p == '.' ? ' ' : *p);
-  fprintf (file, "\n");
+  fprintf (file, "\t.verstamp %d %d\n", MS_STAMP, LS_STAMP);
 #endif
 }
 
