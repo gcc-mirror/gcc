@@ -505,8 +505,8 @@ out_set_stack_ptr (file, before, after)
     }
 
   /* Set/restore the I flag now - interrupts will be really enabled only
-     after the next instruction starts.  This was not clearly documented.
-     XXX - verify this on the new devices with enhanced AVR core.  */
+     after the next instruction.  This is not clearly documented, but
+     believed to be true for all AVR devices.  */
   if (do_save)
     {
       fprintf (file, AS2 (out, __SREG__, __tmp_reg__) CR_TAB);
@@ -1003,10 +1003,15 @@ print_operand (file, x, code)
   if (code >= 'A' && code <= 'D')
     abcd = code - 'A';
 
-  if (REG_P (x))
+  if (code == '~')
+    {
+      if (!AVR_MEGA)
+	fputc ('r', file);
+    }
+  else if (REG_P (x))
     {
       if (x == zero_reg_rtx)
-	fprintf (file,"__zero_reg__");
+	fprintf (file, "__zero_reg__");
       else
 	fprintf (file, reg_names[true_regnum (x) + abcd]);
     }
@@ -1021,6 +1026,13 @@ print_operand (file, x, code)
 	  fputc ('(', file);
 	  output_address (addr);
 	  fprintf (file, ")+%d", abcd);
+	}
+      else if (code == 'o')
+	{
+	  if (GET_CODE (addr) != PLUS)
+	    fatal_insn ("Bad address, not (reg+disp):", addr);
+
+	  print_operand (file, XEXP (addr, 1), 0);
 	}
       else if (GET_CODE (addr) == PLUS)
 	{

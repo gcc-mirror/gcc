@@ -1,3 +1,8 @@
+2000-12-12  Marek Michalkiewicz  <marekm@linux.org.pl>
+
+	* config/avr/avr.c (out_set_stack_ptr): Update comment.
+	(print_operand): Add support for %~ and %o.
+
 2000-12-17 Herman A.J. ten Brugge <Haj.Ten.Brugge@net.HCC.nl>
 
 	* c4x.h: Add ASM_OUTPUT_DEF definition for bounded pointer code.
