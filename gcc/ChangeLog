@@ -1,3 +1,8 @@
+2003-06-27  J"orn Rennecke <joern.rennecke@superh.com>
+
+	* flow.c (propagate_one_insn): Use proper test for a register
+	being part of the return value.
+
 2003-06-28  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* config/avr/avr.c: Fix a comment typo.

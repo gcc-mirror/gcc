@@ -1808,7 +1808,9 @@ propagate_one_insn (pbi, insn)
 	    if (TEST_HARD_REG_BIT (regs_invalidated_by_call, i)
 		&& ! (sibcall_p
 		      && REGNO_REG_SET_P (live_at_end, i)
-		      && !FUNCTION_VALUE_REGNO_P (i)))
+		      && ! refers_to_regno_p (i, i+1,
+					      current_function_return_rtx,
+					      (rtx *) 0)))
 	      {
 		/* We do not want REG_UNUSED notes for these registers.  */
 		mark_set_1 (pbi, CLOBBER, regno_reg_rtx[i], cond, insn,
