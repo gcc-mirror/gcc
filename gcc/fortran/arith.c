@@ -2595,7 +2595,7 @@ gfc_int2complex (gfc_expr * src, int kind)
   mpf_set_z (result->value.complex.r, src->value.integer);
   mpf_set_ui (result->value.complex.i, 0);
 
-  if ((rc = gfc_check_real_range (result->value.complex.i, kind)) != ARITH_OK)
+  if ((rc = gfc_check_real_range (result->value.complex.r, kind)) != ARITH_OK)
     {
       arith_error (rc, &src->ts, &result->ts, &src->where);
       gfc_free_expr (result);
