@@ -9,6 +9,9 @@ Wed Feb 18 07:32:11 1998  Jim Wilson  <wilson@cygnus.com>
 
 Wed Feb 18 07:08:05 1998  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
+	* reg-stack.c (compare_for_stack_reg): Only handle FP conditional
+	move as next insn specially.
+
 	* reload.c (find_reloads): Always convert address reload for
 	non-reloaded operand to RELOAD_FOR_OPERAND_ADDRESS.
 
