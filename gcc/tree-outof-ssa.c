@@ -2026,7 +2026,7 @@ identical_stmt_lists_p (edge e1, edge e2)
    any debug information to DEBUG_FILE.  Return true if anything other than a 
    standard edge insertion is done.  */
 
-static bool 
+static void
 analyze_edges_for_bb (basic_block bb, FILE *debug_file)
 {
   edge e;
@@ -2057,7 +2057,7 @@ analyze_edges_for_bb (basic_block bb, FILE *debug_file)
       FOR_EACH_EDGE (e, ei, bb->preds)
 	if (PENDING_STMT (e))
 	  bsi_commit_one_edge_insert (e, NULL);
-      return false;
+      return;
     }
   /* Find out how many edges there are with interesting pending stmts on them.  
      Commit the stmts on edges we are not interested in.  */
@@ -2094,7 +2094,7 @@ analyze_edges_for_bb (basic_block bb, FILE *debug_file)
     {
       if (single_edge)
         bsi_commit_one_edge_insert (single_edge, NULL);
-      return false;
+      return;
     }
 
   /* Ensure that we have empty worklists.  */
@@ -2156,7 +2156,7 @@ analyze_edges_for_bb (basic_block bb, FILE *debug_file)
       VARRAY_POP_ALL (edge_leader);
       VARRAY_POP_ALL (stmt_list);
       bitmap_clear (leader_has_match);
-      return false;
+      return;
     }
 
 
@@ -2221,8 +2221,6 @@ analyze_edges_for_bb (basic_block bb, FILE *debug_file)
   VARRAY_POP_ALL (edge_leader);
   VARRAY_POP_ALL (stmt_list);
   bitmap_clear (leader_has_match);
-
-  return true;
 }
 
 
@@ -2236,25 +2234,25 @@ static void
 perform_edge_inserts (FILE *dump_file)
 {
   basic_block bb;
-  bool changed = false;
 
   if (dump_file)
     fprintf(dump_file, "Analyzing Edge Insertions.\n");
 
-  FOR_EACH_BB (bb)
-    changed |= analyze_edges_for_bb (bb, dump_file);
+  /* analyze_edges_for_bb calls make_forwarder_block, which tries to
+     incrementally update the dominator information.  Since we don't
+     need dominator information after this pass, go ahead and free the
+     dominator information.  */
+  free_dominance_info (CDI_DOMINATORS);
+  free_dominance_info (CDI_POST_DOMINATORS);
 
-  changed |= analyze_edges_for_bb (EXIT_BLOCK_PTR, dump_file);
+  FOR_EACH_BB (bb)
+    analyze_edges_for_bb (bb, dump_file);
+
+  analyze_edges_for_bb (EXIT_BLOCK_PTR, dump_file);
 
   /* Clear out any tables which were created.  */
   edge_leader = NULL;
   BITMAP_FREE (leader_has_match);
-
-  if (changed)
-    {
-      free_dominance_info (CDI_DOMINATORS);
-      free_dominance_info (CDI_POST_DOMINATORS);
-    }
 
 #ifdef ENABLE_CHECKING
   {

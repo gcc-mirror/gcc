@@ -1,3 +1,10 @@
+2005-03-10  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* tree-outof-ssa.c (analyze_edges_for_bb): Make the return
+	type void.
+	(perform_edge_inserts): Unconditionally call
+	free_dominator_info.
+
 2005-03-10  Bob Wilson  <bob.wilson@acm.org>
 
 	* config/xtensa/xtensa.h (MEMBER_TYPE_FORCES_BLK): Define.
