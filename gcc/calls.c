@@ -4227,6 +4227,8 @@ emit_library_call_value VPARAMS((rtx orgfun, rtx value,
 				 enum libcall_type fn_type,
 				 enum machine_mode outmode, int nargs, ...))
 {
+  rtx result;
+  
   VA_OPEN (p, nargs);
   VA_FIXEDARG (p, rtx, orgfun);
   VA_FIXEDARG (p, rtx, value);
@@ -4234,11 +4236,12 @@ emit_library_call_value VPARAMS((rtx orgfun, rtx value,
   VA_FIXEDARG (p, enum machine_mode, outmode);
   VA_FIXEDARG (p, int, nargs);
 
-  value = emit_library_call_value_1 (1, orgfun, value, fn_type, outmode, nargs, p);
+  result = emit_library_call_value_1 (1, orgfun, value, fn_type, outmode,
+				      nargs, p);
 
   VA_CLOSE (p);
 
-  return value;
+  return result;
 }
 
 #if 0
