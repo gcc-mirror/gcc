@@ -6931,7 +6931,6 @@ check_dbra_loop (loop_end, insn_count, loop_start)
 		  initial_value = const0_rtx;
 		}
 
-#if 0
 	      /* Check if there is a NOTE_INSN_LOOP_VTOP note.  If there is,
 		 that means that this is a for or while style loop, with
 		 a loop exit test at the start.  Thus, we can assume that
@@ -6944,12 +6943,12 @@ check_dbra_loop (loop_end, insn_count, loop_start)
 	      vtop = loop_end;
 	      do
 		vtop = PREV_INSN (vtop);
-	      while (GET_CODE (vtop) != NOTE);
+	      while (GET_CODE (vtop) != NOTE
+		     || NOTE_LINE_NUMBER (vtop) > 0
+		     || NOTE_LINE_NUMBER (vtop) == NOTE_REPEATED_LINE_NUMBER
+		     || NOTE_LINE_NUMBER (vtop) == NOTE_INSN_DELETED);
 	      if (NOTE_LINE_NUMBER (vtop) != NOTE_INSN_LOOP_VTOP)
 		vtop = NULL_RTX;
-#else
-	      vtop = NULL_RTX;
-#endif
 		
 	      /* First check if we can do a vanilla loop reversal.  */
 	      if (initial_value == const0_rtx
