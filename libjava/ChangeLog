@@ -1,5 +1,9 @@
 1999-07-31  Alexandre Oliva  <oliva@dcc.unicamp.br>
 
+	* include/javaprims.h (TRUE, FALSE): Redefine as themselves.
+
+1999-07-31  Alexandre Oliva  <oliva@dcc.unicamp.br>
+
 	* configure.in: Check for gcc 2.95 -g jboolean bug, that affects
 	Solaris/x86, adding -g0 to JCFLAGS and CXXFLAGS if needed.
 	AC_SUBST JCFLAGS.

@@ -11,6 +11,11 @@ details.  */
 #ifndef __JAVAPRIMS_H__
 #define __JAVAPRIMS_H__
 
+#undef TRUE
+#define TRUE TRUE
+#undef FALSE
+#define FALSE FALSE
+
 // To force selection of correct types that will mangle consistently
 // across platforms.
 extern "Java"
