@@ -740,13 +740,15 @@ multiple_sets (insn)
 /* Return the last thing that X was assigned from before *PINSN.  Verify that
    the object is not modified up to VALID_TO.  If it was, if we hit
    a partial assignment to X, or hit a CODE_LABEL first, return X.  If we
-   found an assignment, update *PINSN to point to it.  */
+   found an assignment, update *PINSN to point to it.  
+   ALLOW_HWREG is set to 1 if hardware registers are allowed to be the src.  */
 
 rtx
-find_last_value (x, pinsn, valid_to)
+find_last_value (x, pinsn, valid_to, allow_hwreg)
      rtx x;
      rtx *pinsn;
      rtx valid_to;
+     int allow_hwreg;
 {
   rtx p;
 
@@ -767,8 +769,8 @@ find_last_value (x, pinsn, valid_to)
 	    if (! modified_between_p (src, PREV_INSN (p), valid_to)
 		/* Reject hard registers because we don't usually want
 		   to use them; we'd rather use a pseudo.  */
-		&& ! (GET_CODE (src) == REG
-		      && REGNO (src) < FIRST_PSEUDO_REGISTER))
+		&& (! (GET_CODE (src) == REG
+		      && REGNO (src) < FIRST_PSEUDO_REGISTER) || allow_hwreg))
 	      {
 		*pinsn = p;
 		return src;

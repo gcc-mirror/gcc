@@ -291,7 +291,6 @@ static void mark_loop_jump PROTO((rtx, int));
 static void prescan_loop PROTO((rtx, rtx));
 static int reg_in_basic_block_p PROTO((rtx, rtx));
 static int consec_sets_invariant_p PROTO((rtx, int, rtx));
-static rtx libcall_other_reg PROTO((rtx, rtx));
 static int labels_in_range_p PROTO((rtx, int));
 static void count_one_set PROTO((rtx, rtx, varray_type, rtx *));
 
@@ -1241,7 +1240,7 @@ record_excess_regs (in_this, not_in_this, output)
    If there are none, return 0.
    If there are one or more, return an EXPR_LIST containing all of them.  */
 
-static rtx
+rtx
 libcall_other_reg (insn, equiv)
      rtx insn, equiv;
 {

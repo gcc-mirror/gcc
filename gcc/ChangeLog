@@ -1,3 +1,11 @@
+Mon Feb 22 16:54:18 EST 1999  Andrew MacLeod  <amacleod@cygnus.com>
+
+	* loop.c (libcall_other_regs): Make extern.
+	* rtl.h (find_last_value): Add parameter to prototype.
+	(libcall_other_reg): Add extern declaration.
+	* rtlanal.c (find_last_value): Add another parameter to allow
+	a definition using a hardware register to be found as well.
+
 Mon Feb 22 13:33:47 1999  Mark Mitchell  <mark@markmitchell.com>
 
 	* cse.c (dump_class): New function.
