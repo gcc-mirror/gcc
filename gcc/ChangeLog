@@ -1,5 +1,10 @@
 2004-07-09  Richard Henderson  <rth@redhat.com>
 
+	* config/xtensa/xtensa-protos.h (xtensa_va_arg): Remove.
+	* config/xtensa/xtensa.c (TARGET_GIMPLIFY_VA_ARG_EXPR): New.
+	(xtensa_gimplify_va_arg_expr): Rewrite from xtensa_va_arg.
+	* config/xtensa/xtensa.h (EXPAND_BUILTIN_VA_ARG): Remove.
+
 	* config/v850/v850-protos.h (v850_va_arg): Remove.
 	* config/v850/v850.c (TARGET_GIMPLIFY_VA_ARG_EXPR): New.
 	(v850_gimplify_va_arg_expr): Rewrite from v850_va_arg.
