@@ -68,7 +68,9 @@
 %{mcpu=401: -mppc} \
 %{mcpu=403: -m403} \
 %{mcpu=405: -m405} \
-%{mcpu=405f: -m405} \
+%{mcpu=405fp: -m405} \
+%{mcpu=440: -m440} \
+%{mcpu=440fp: -m440} \
 %{mcpu=505: -mppc} \
 %{mcpu=601: -m601} \
 %{mcpu=602: -mppc} \
