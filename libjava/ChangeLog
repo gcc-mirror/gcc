@@ -3,6 +3,10 @@
 	* java/io/File.java (normalizePath): Use equals() not '==' for string 
 	comparison.
 
+	* java/util/Hashtable.java (Enumerator): Ensure that if 
+	hasMoreElements() returns true, nextElement() will always return
+	something even if the table has been modified.
+
 2001-09-12  Tom Tromey  <tromey@redhat.com>
 
 	* Makefile.in: Rebuilt.

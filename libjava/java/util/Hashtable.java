@@ -833,44 +833,57 @@ public class Hashtable extends Dictionary
     static final int VALUES = 1;
     
     int type;
-    // The total number of elements returned by nextElement(). Used to 
-    // determine if there are more elements remaining.
-    int count;
     // current index in the physical hash table.
     int idx;
-    // the last Entry returned.
+    // the last Entry returned by nextEntry().
     Entry last;
+    // Entry which will be returned by the next nextElement() call.
+    Entry next;
     
     Enumerator(int type)
     {
       this.type = type;
-      this.count = 0;
       this.idx = buckets.length;
+    }
+    
+    private Entry nextEntry()
+    {
+      Entry e = null;
+
+      if (last != null)
+        e = last.next;
+
+      while (e == null && idx > 0)
+	{
+	  e = buckets[--idx];
+	}
+      last = e;
+      return e;
     }
 
     public boolean hasMoreElements()
     {
-      return count < Hashtable.this.size;    
+      if (next != null)
+        return true;
+      next = nextEntry();
+      return (next != null);
     }
 
     public Object nextElement()
     {
-      if (count >= size)
-        throw new NoSuchElementException();
-      count++;
       Entry e = null;
-      if (last != null)
-        e = last.next;
-
-      while (e == null)
+      if (next != null)
         {
-	  e = buckets[--idx];
+          e = next;
+	  next = null;
 	}
-
-      last = e;
+      else
+        e = nextEntry();
+      if (e == null)
+        throw new NoSuchElementException("Hashtable Enumerator");
       if (type == VALUES)
         return e.value;
       return e.key;
     }
-  }  
+  }
 }
