@@ -1,3 +1,19 @@
+2000-08-27  Alex Samuel  <samuel@codesourcery.com>
+
+	* mangle.c (CLASSTYPE_TEMPLATE_ID_P): Remove unexplained voodoo.
+	(write_encoding): Pass another argument to write_name.
+	(write_name): Add ignore_local_scope parameter.  Fix handling of
+	local names.
+	(write_nested_name): Use write_unqualified_name.
+	(write_prefix): Likewise.  Skip out on FUNCTION_DECLs.
+	(write_template_prefix): Use write_unqualified_name.
+	(write_component): Remove.
+	(write_local_name): Add parameter.  Use direct local entity to
+	discriminator calculation.
+	(write_class_enum_type): Pass another argument to write_name.	
+	(write_template_template_arg): Likewise.
+	(make_guard_variable): Likewise.
+	
 2000-08-27  Jason Merrill  <jason@redhat.com>
 
 	* decl.c (pushdecl): Matching decls for local externs are found in
