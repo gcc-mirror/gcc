@@ -466,9 +466,10 @@ struct _clipper_cum_args { int num; int size; };
 /* internal helper : size of an argument */
 
 #define CLIPPER_ARG_SIZE(MODE, TYPE)				\
-((MODE) != BLKmode							\
- ? (GET_MODE_SIZE (MODE) + (UNITS_PER_WORD - 1)) / UNITS_PER_WORD 	\
- : (int_size_in_bytes (TYPE) + (UNITS_PER_WORD - 1)) / UNITS_PER_WORD)
+(((MODE) != BLKmode							\
+  ? (GET_MODE_SIZE (MODE) + (UNITS_PER_WORD - 1)) / UNITS_PER_WORD 	\
+  : (int_size_in_bytes (TYPE) + (UNITS_PER_WORD - 1)) / UNITS_PER_WORD)	\
+ * UNITS_PER_WORD)
 
 /* Update the data in CUM to advance over an argument
    of mode MODE and data type TYPE.
@@ -495,7 +496,7 @@ do									      \
     {									      \
       int align = FUNCTION_ARG_BOUNDARY (MODE, TYPE) / BITS_PER_UNIT;	      \
       (CUM).size += align - 1;						      \
-      (CUM).size &= align - 1;						      \
+      (CUM).size &= ~(align - 1);					      \
       (CUM).size += CLIPPER_ARG_SIZE (MODE, TYPE);			      \
     }									      \
 } while (0)
