@@ -56,3 +56,6 @@ Collected papers/sites on standards, compilers, optimization, etc.
 
 	http://www.dkuug.dk/JTC1/SC22/WG14/www/docs/n794.htm
 
+- DWARF v2 spec and sample implementation
+
+	ftp://sgigate.sgi.com/pub/dwarf/
