@@ -2323,12 +2323,27 @@ extern void hppa_encode_label ();
    removing the dead (but important) initialization of
    REFERENCE.  */
 
-#define DO_GLOBAL_DTORS_BODY \
-do { \
-  extern void __gcc_plt_call (); \
-  void (*reference)() = &__gcc_plt_call; \
-  func_ptr *p; \
-  __asm__ ("" : : "r" (reference)); \
-  for (p = __DTOR_LIST__ + 1; *p; ) \
-    (*p++) (); \
+#define DO_GLOBAL_DTORS_BODY			\
+do {						\
+  extern void __gcc_plt_call ();		\
+  void (*reference)() = &__gcc_plt_call;	\
+  func_ptr *p;					\
+  __asm__ ("" : : "r" (reference));		\
+  for (p = __DTOR_LIST__ + 1; *p; )		\
+    (*p++) ();					\
 } while (0)
+
+/* The current return address is in [%sp-20].  */
+#define RETURN_ADDR_RTX(COUNT, FRAME)						\
+  ((COUNT == 0)									\
+   ? gen_rtx (MEM, Pmode,							\
+	      memory_address (Pmode, plus_constant (FRAME,			\
+						    5 * UNITS_PER_WORD)))	\
+   : (rtx) 0)
+
+/* Used to mask out junk bits from the return address, such as
+   processor state, interrupt status, condition codes and the like.  */
+#define MASK_RETURN_ADDR \
+  /* The priviledge level is in the two low order bits, mask em out	\
+     of the return address.  */						\
+  (GEN_INT (0xfffffffc))
