@@ -28,6 +28,7 @@
 #ifndef _CPP_BACKWARD_IOMANIP_H
 #define _CPP_BACKWARD_IOMANIP_H 1
 
+#include "backward_warning.h"
 #include "iostream.h"
 #include <bits/std_iomanip.h>
 

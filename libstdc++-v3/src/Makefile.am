@@ -21,7 +21,7 @@
 ## Software Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307,
 ## USA.
 
-## $Id: Makefile.am,v 1.80 2001/03/31 20:15:43 bkoz Exp $
+## $Id: Makefile.am,v 1.81 2001/04/03 00:26:58 pme Exp $
 
 AUTOMAKE_OPTIONS = 1.3 gnits
 MAINT_CHARSET = latin1
@@ -110,7 +110,7 @@ backward_headers = \
 	backward/pair.h backward/queue.h backward/rope.h backward/set.h \
 	backward/slist.h backward/stack.h backward/tempbuf.h backward/tree.h \
 	backward/vector.h backward/fstream.h backward/strstream.h \
-	backward/strstream
+	backward/strstream backward/backward_warning.h
 
 ext_headers = \
 	ext/rope ext/ropeimpl.h ext/stl_rope.h \
@@ -234,6 +234,7 @@ install-data-local: myinstalldirs myinstallheaders
 # NB: installation of shadow header directories is not attempted.
 myinstalldirs:
 	if test -z "$(MULTISUBDIR)"; then \
+	$(mkinstalldirs) $(DESTDIR)$(gxx_include_dir)/backward; \
 	$(mkinstalldirs) $(DESTDIR)$(gxx_include_dir)/bits; \
 	$(mkinstalldirs) $(DESTDIR)$(gxx_include_dir)/ext; \
 	$(mkinstalldirs) $(DESTDIR)$(gxx_target_include_dir)/bits; \
@@ -248,19 +249,19 @@ c_incdir = @C_INCLUDE_DIR@
 myinstallheaders: 
 	if test -z "$(MULTISUBDIR)"; then \
 	for i in $(base_headers); do \
-	echo "$(INSTALL_DATA) $(src_incdir)/$$i $(gxx_include_dir)/bits/"; \
+	echo "$(INSTALL_DATA) $(src_incdir)/$$i $(gxx_include_dir)/bits/";\
 	  $(INSTALL_DATA) $(src_incdir)/$$i $(gxx_include_dir)/bits/; \
 	done; \
 	for i in $(ext_headers); do \
-	echo "$(INSTALL_DATA) $(src_incdir)/$$i $(gxx_include_dir)/ext/"; \
+	echo "$(INSTALL_DATA) $(src_incdir)/$$i $(gxx_include_dir)/ext/";\
 	  $(INSTALL_DATA) $(src_incdir)/$$i $(gxx_include_dir)/ext/; \
 	done; \
 	for i in $(backward_headers); do \
-	echo "$(INSTALL_DATA) $(src_incdir)/$$i $(gxx_include_dir)"; \
-	  $(INSTALL_DATA) $(src_incdir)/$$i $(gxx_include_dir); \
+	echo "$(INSTALL_DATA) $(src_incdir)/$$i $(gxx_include_dir)/backward/";\
+	  $(INSTALL_DATA) $(src_incdir)/$$i $(gxx_include_dir)/backward/; \
 	done; \
 	for i in $(c_base_headers); do \
-	echo "$(INSTALL_DATA) $(c_incdir)/$$i $(gxx_include_dir)/bits/"; \
+	echo "$(INSTALL_DATA) $(c_incdir)/$$i $(gxx_include_dir)/bits/";\
 	  $(INSTALL_DATA) $(c_incdir)/$$i $(gxx_include_dir)/bits/; \
 	done; \
 	for i in $(std_headers); do \

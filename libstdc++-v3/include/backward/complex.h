@@ -28,6 +28,7 @@
 #ifndef _CPP_BACKWARD_COMPLEX_H
 #define _CPP_BACKWARD_COMPLEX_H 1
 
+#include "backward_warning.h"
 #include <bits/std_complex.h>
 
 using std::complex;

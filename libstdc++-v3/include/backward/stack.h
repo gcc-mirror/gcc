@@ -27,6 +27,7 @@
 #ifndef _CPP_BACKWARD_STACK_H
 #define _CPP_BACKWARD_STACK_H 1
 
+#include "backward_warning.h"
 #include "vector.h"
 #include "deque.h"
 #include "heap.h"

@@ -1,5 +1,55 @@
 2001-04-05  Benjamin Kosnik  <bkoz@redhat.com>
 
+	Warn when using backward headers.
+	* include/backward/algo.h: Include warning file.	
+	* include/backward/vector.h: Same.
+	* include/backward/tree.h: Same.
+	* include/backward/tempbuf.h: Same.
+	* include/backward/strstream: Same.
+	* include/backward/streambuf.h: Same.
+	* include/backward/stream.h: Same.
+	* include/backward/stack.h: Same.
+	* include/backward/slist.h: Same.
+	* include/backward/set.h: Same.
+	* include/backward/rope.h: 
+	* include/backward/queue.h: Same.
+	* include/backward/pair.h: Same.
+	* include/backward/ostream.h: Same.
+	* include/backward/new.h: Same.
+	* include/backward/multiset.h: Same.
+	* include/backward/multimap.h: Same.
+	* include/backward/map.h: Same.
+	* include/backward/list.h: Same.
+	* include/backward/iterator.h: Same.
+	* include/backward/istream.h: Same.
+	* include/backward/iostream.h: 
+	* include/backward/iomanip.h: 
+	* include/backward/heap.h: Same.
+	* include/backward/hashtable.h: 
+	* include/backward/hash_set.h: 
+	* include/backward/hash_map.h: 
+	* include/backward/function.h: 
+	* include/backward/fstream.h: 
+	* include/backward/deque.h: 
+	* include/backward/defalloc.h: Same.
+	* include/backward/complex.h: Same.
+	* include/backward/bvector.h: 
+	* include/backward/alloc.h: 
+	* include/backward/algobase.h: Same.
+
+	* include/backward/backward_warning.h: New file.
+	* src/Makefile.am (backward_headers): Add backward_warning.h
+	* src/Makefile.in: Regenerate.
+
+2001-04-05  Benjamin Kosnik  <bkoz@redhat.com>
+
+	* src/Makefile.am (myinstalldirs): Make sure backward directory is
+	created.
+	(myinstallheaders): Install backward headers in backward directory.
+	* src/Makefile.in: Regenerate.
+	
+2001-04-05  Benjamin Kosnik  <bkoz@redhat.com>
+
 	Prepare for libstdc++-2.92.
 	* docs/html/17_intro/RELEASE-NOTES (New): Update.
 	* docs/html/configopts.html: Fix formatting.

@@ -16,6 +16,7 @@
 #ifndef _CPP_EXT_TREE
 #define _CPP_EXT_TREE 1
 
+#include "backward_warning.h"
 #include <bits/stl_tree.h>
 
 using std::rb_tree;

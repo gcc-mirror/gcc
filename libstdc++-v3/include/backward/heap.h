@@ -26,6 +26,7 @@
 #ifndef _CPP_BACKWARD_HEAP_H
 #define _CPP_BACKWARD_HEAP_H 1
 
+#include "backward_warning.h"
 #include <bits/c++config.h>
 #include <bits/stl_heap.h>
 

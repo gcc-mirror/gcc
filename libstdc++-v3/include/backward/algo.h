@@ -27,6 +27,7 @@
 #ifndef _CPP_BACKWARD_ALGO_H
 #define _CPP_BACKWARD_ALGO_H 1
 
+#include "backward_warning.h"
 #include "algobase.h"
 #include "tempbuf.h"
 #include "iterator.h"

@@ -31,6 +31,7 @@
 #ifndef _CPP_BACKWARD_HASHTABLE_H
 #define _CPP_BACKWARD_HASHTABLE_H 1
 
+#include "backward_warning.h"
 #include <ext/stl_hashtable.h>
 #include "algo.h"
 #include "alloc.h"

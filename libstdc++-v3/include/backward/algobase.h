@@ -26,6 +26,7 @@
 #ifndef _CPP_BACKWARD_ALGOBASE_H
 #define _CPP_BACKWARD_ALGOBASE_H 1
 
+#include "backward_warning.h"
 #include "pair.h"
 #include "iterator.h"
 #include <bits/stl_algobase.h>

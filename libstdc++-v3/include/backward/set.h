@@ -27,6 +27,7 @@
 #ifndef _CPP_BACKWARD_SET_H
 #define _CPP_BACKWARD_SET_H 1
 
+#include "backward_warning.h"
 #include "tree.h"
 #include <bits/std_set.h>
 
