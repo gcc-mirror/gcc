@@ -5624,15 +5624,22 @@ in_array_bounds_p (tree ref)
   return true;
 }
 
+/* Return true if T (assumed to be a DECL) is a global variable.  */
+
+bool
+is_global_var (tree t)
+{
+  return (TREE_STATIC (t) || DECL_EXTERNAL (t));
+}
+
 /* Return true if T (assumed to be a DECL) must be assigned a memory
    location.  */
 
 bool
 needs_to_live_in_memory (tree t)
 {
-  return (DECL_NEEDS_TO_LIVE_IN_MEMORY_INTERNAL (t)
-	  || TREE_STATIC (t)
-          || DECL_EXTERNAL (t)
+  return (TREE_ADDRESSABLE (t)
+	  || is_global_var (t)
 	  || (TREE_CODE (t) == RESULT_DECL
 	      && aggregate_value_p (t, current_function_decl)));
 }

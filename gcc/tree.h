@@ -2161,15 +2161,6 @@ struct tree_binfo GTY (())
   (! DECL_CONTEXT (EXP)						\
    || TREE_CODE (DECL_CONTEXT (EXP)) == TRANSLATION_UNIT_DECL)
 
-/* Nonzero for a decl that has been marked as needing a memory slot.
-   NOTE: Never use this macro directly.  It will give you incomplete
-   information. Most of the time this bit will only be set after alias
-   analysis in the tree optimizers.  It's always better to call
-   needs_to_live_in_memory instead.  To mark memory variables use
-   mark_call_clobbered.  */
-#define DECL_NEEDS_TO_LIVE_IN_MEMORY_INTERNAL(DECL)		\
-  DECL_CHECK (DECL)->decl.needs_to_live_in_memory
-
 /* Nonzero for a decl that cgraph has decided should be inlined into
    at least one call site.  It is not meaningful to look at this
    directly; always use cgraph_function_possibly_inlined_p.  */
@@ -2242,9 +2233,8 @@ struct tree_decl GTY(())
   unsigned lang_flag_6 : 1;
   unsigned lang_flag_7 : 1;
 
-  unsigned needs_to_live_in_memory : 1;
   unsigned possibly_inlined : 1;
-  /* 14 unused bits.  */
+  /* 15 unused bits.  */
 
   union tree_decl_u1 {
     /* In a FUNCTION_DECL for which DECL_BUILT_IN holds, this is
@@ -3479,6 +3469,7 @@ extern void expand_function_end (void);
 extern void expand_function_start (tree);
 extern void expand_pending_sizes (tree);
 extern void recompute_tree_invarant_for_addr_expr (tree);
+extern bool is_global_var (tree t);
 extern bool needs_to_live_in_memory (tree);
 extern tree reconstruct_complex_type (tree, tree);
 

@@ -1,3 +1,8 @@
+2004-08-12  Diego Novillo  <dnovillo@redhat.com>
+
+	PR tree-optimization/16867
+	* testsuite/libjava.lang/PR16867.java: New test.
+
 2004-08-09  Per Bothner  <per@bothner.com>
 
 	* gcj/javaprims.h (_Jv_Utf8Const): Change struct to a class,

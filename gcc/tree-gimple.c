@@ -441,7 +441,6 @@ is_gimple_reg (tree t)
 	  /* A volatile decl is not acceptable because we can't reuse it as
 	     needed.  We need to copy it into a temp first.  */
 	  && ! TREE_THIS_VOLATILE (t)
-	  && ! TREE_ADDRESSABLE (t)
 	  && ! needs_to_live_in_memory (t));
 }
 
@@ -481,9 +480,7 @@ is_gimple_non_addressable (tree t)
   if (TREE_CODE (t) == SSA_NAME)
     t = SSA_NAME_VAR (t);
 
-  return (is_gimple_variable (t)
-	  && ! TREE_ADDRESSABLE (t)
-	  && ! needs_to_live_in_memory (t));
+  return (is_gimple_variable (t) && ! needs_to_live_in_memory (t));
 }
 
 /* Return true if T is a GIMPLE rvalue, i.e. an identifier or a constant.  */

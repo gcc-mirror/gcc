@@ -562,8 +562,11 @@ dump_variable (FILE *file, tree var)
   if (ann->is_alias_tag)
     fprintf (file, ", is an alias tag");
 
-  if (needs_to_live_in_memory (var))
-    fprintf (file, ", is %s", TREE_STATIC (var) ? "static" : "global");
+  if (TREE_ADDRESSABLE (var))
+    fprintf (file, ", is addressable");
+  
+  if (is_global_var (var))
+    fprintf (file, ", is global");
 
   if (is_call_clobbered (var))
     fprintf (file, ", call clobbered");
@@ -900,7 +903,9 @@ add_referenced_var (tree var, struct walk_state *walk_state)
       v_ann->uid = num_referenced_vars;
       VARRAY_PUSH_TREE (referenced_vars, var);
 
-      /* Global and static variables are call-clobbered, always.  */
+      /* Initially assume that all memory variables are
+	 call-clobbered.  This will be refined later by the alias
+	 analyzer.  */
       if (needs_to_live_in_memory (var))
 	mark_call_clobbered (var);
 

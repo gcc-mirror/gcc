@@ -1,3 +1,37 @@
+2004-08-12  Diego Novillo  <dnovillo@redhat.com>
+
+	PR tree-optimization/16867
+	* tree.c (is_global_var): New function.
+	(needs_to_live_in_memory): Check for TREE_ADDRESSABLE.
+	Call is_global_var.
+	* tree.h (DECL_NEEDS_TO_LIVE_IN_MEMORY_INTERNAL): Remove.
+	Update all users.
+	(is_global_var): Declare.
+	* tree-dfa.c (dump_variable): Display global and addressable
+	attributes.
+	(add_referenced_var): Clarify documentation when marking
+	variables call-clobbered.
+	* tree-flow-inline.h (is_call_clobbered): Call is_global_var
+	instead of needs_to_live_in_memory.
+	(mark_call_clobbered): If the variable is a tag, mark it
+	DECL_EXTERNAL.
+	* tree-gimple.c (is_gimple_reg): Don't check for
+	TREE_ADDRESSABLE.
+	(is_gimple_non_addressable): Likewise.
+	* tree-ssa-alias.c (get_nmt_for): Always check whether the tag
+	needs to be marked call-clobbered.
+	(setup_pointers_and_addressables): Call is_global_var instead
+	of needs_to_live_in_memory.
+	* tree-ssa-dce.c (need_to_preserve_store): Remove.
+	Update all users with is_global_var.
+	(mark_stmt_if_obviously_necessary): Fix processing of aliased
+	stores.  Don't check the virtual definitions.  Rather, check
+	whether the store is going into global memory.
+	(find_obviously_necessary_stmts): Get the symbol from the PHI
+	result.
+	* tree-ssa-operands.c (get_call_expr_operands): Do not add
+	clobbering may-defs if the call does not have side effects.
+
 2004-08-12  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/16276
