@@ -1258,7 +1258,7 @@ type_promotes_to (type)
       else
 	type = totype;
     }
-  else if (C_PROMOTING_INTEGER_TYPE_P (type))
+  else if (c_promoting_integer_type_p (type))
     {
       /* Retain unsignedness if really not getting bigger.  */
       if (TREE_UNSIGNED (type)

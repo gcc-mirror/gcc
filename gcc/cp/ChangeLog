@@ -1,3 +1,8 @@
+2001-04-30  Richard Henderson  <rth@redhat.com>
+
+        * cvt.c: Downcase C_PROMOTING_INTEGER_TYPE_P invocations.
+	* decl.c: Likewise.
+
 2001-04-30  Mark Mitchell  <mark@codesourcery.com>
 
 	* gxxint.texi: Remove.
