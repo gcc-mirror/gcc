@@ -1083,6 +1083,12 @@ AC_DEFUN(GLIBCPP_CHECK_WCHAR_T_SUPPORT, [
       dnl X/Open Portability Guide, version 2 features (XPG2).
       AC_CHECK_HEADER(iconv.h, ac_has_iconv_h=yes, ac_has_iconv_h=no)
       AC_CHECK_HEADER(langinfo.h, ac_has_langinfo_h=yes, ac_has_langinfo_h=no)
+
+      dnl Check for existence of libiconv.a providing XPG2 wchar_t support.
+      AC_CHECK_LIB(iconv, iconv, libiconv="-liconv")
+      ac_save_LIBS="$LIBS"
+      LIBS="$LIBS $libiconv"
+
       AC_CHECK_FUNCS(iconv_open iconv_close iconv nl_langinfo, \
       ac_XPG2funcs=yes, ac_XPG2funcs=no)
   

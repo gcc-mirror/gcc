@@ -1,3 +1,9 @@
+2000-11-12  David Edelsohn  <edelsohn@gnu.org>
+
+        * acinclude.m4 (GLIBCPP_CHECK_WCHAR_T_SUPPORT): Add test for
+        libiconv.a providing wchar_t support functions.
+	* aclocal.m4: Regenerate.
+	
 2000-11-12  Loren J. Rittle  <ljrittle@acm.org>
 
         * acinclude.m4 (GLIBCPP_ENABLE_ATOMICITY): Handle FreeBSD.
