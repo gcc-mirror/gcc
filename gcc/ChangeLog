@@ -1,5 +1,18 @@
 2004-06-30  Roger Sayle  <roger@eyesopen.com>
 
+	* combine.c: Include "output.h" to define dump_file.
+	(uid_insn_cost, last_insn_cost): New global variables.
+	(combine_insn_cost): New function to estimate cost of an insn.
+	(combine_validate_cost): New function to determine whether a
+	try_combine replacement sequence is cheaper than the original.
+	(combine_instructions): Allocate and populate uid_insn_cost
+	array at the start of the combine pass, and deallocate it after.
+	(try_combine): Check combine_validate_cost to determine whether
+	a "recombination" should be rejected as being more expensive.
+	* Makefile.in (combine.o): Add dependency upon output.h.
+
+2004-06-30  Roger Sayle  <roger@eyesopen.com>
+
 	* config/rs6000/rs6000.c (rs6000_rtx_costs) <MINUS_EXPR>: Handle
 	subtractions identically to additions, always COSTS_N_INSNS (1).
 
