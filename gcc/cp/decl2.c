@@ -1399,7 +1399,7 @@ maybe_make_one_only (tree decl)
   if (! flag_weak)
     return;
 
-  /* We can't set DECL_COMDAT on functions, or finish_file will think
+  /* We can't set DECL_COMDAT on functions, or cp_finish_file will think
      we can get away with not emitting them if they aren't used.  We need
      to for variables so that cp_finish_decl will update their linkage,
      because their DECL_INITIAL may not have been set properly yet.  */
@@ -2709,7 +2709,7 @@ cxx_callgraph_analyze_expr (tree *tp, int *walk_subtrees ATTRIBUTE_UNUSED,
    first, since that way we only need to reverse the decls once.  */
 
 void
-finish_file (void)
+cp_finish_file (void)
 {
   tree vars;
   bool reconsider;
