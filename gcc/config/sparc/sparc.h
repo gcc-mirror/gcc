@@ -940,12 +940,6 @@ extern int apparent_fsize;
 	   4 * blockn, 4 * blockn, 4 * blockn);			\
 }
 
-/* Output rtl to increment the entry-count for the LABELNO'th instrumented
-   arc in this source file.  */
-
-#define ARC_PROFILER(ARCNO, INSERT_AFTER) \
-  output_arc_profiler (ARCNO, INSERT_AFTER)
-
 /* EXIT_IGNORE_STACK should be nonzero if, when returning from a function,
    the stack pointer does not matter.  The value is tested only in
    functions that have frame pointers.
