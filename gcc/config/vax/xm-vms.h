@@ -22,6 +22,14 @@ Boston, MA 02111-1307, USA.  */
 #define FALSE 0
 #define TRUE 1
 
+/* Other configurations get these via autoconfig.  */
+#define STDC_HEADERS 1
+#define HAVE_STDLIB_H 1
+#define HAVE_STRING_H 1
+#ifdef __DECC
+#define HAVE_UNISTD_H 1
+#endif
+
 #if defined(VAXC) || defined(__DECC)
 /* if compiling with VAXC, need to fix problem with <stdio.h>
    which defines a macro called FILE_TYPE that breaks "tree.h".
@@ -68,16 +76,6 @@ Boston, MA 02111-1307, USA.  */
 
 /* and define a local equivalent (sort of) for unlink */
 #define unlink remove
-
-/* Specify the list of include file directories.  */
-#define INCLUDE_DEFAULTS \
-{									\
-  { "GNU_GXX_INCLUDE:", 1, 1 },						\
-  { "GNU_CC_INCLUDE:", 0, 0 },	/* GNU includes */			\
-  { "SYS$SYSROOT:[SYSLIB.]", 0, 0 }, /* VAX-11 "C" includes */		\
-  { ".", 0, 1 },		/* Make normal VMS filespecs work.  */	\
-  { 0, 0, 0 }								\
-}
 
 /* Used by the preprocessor to limit size of disk I/O chunks.
    64K - 1 is the maximum supported by VAXCRTL.  Amounts in excess
@@ -144,12 +142,6 @@ Boston, MA 02111-1307, USA.  */
 #define QSORT_WORKAROUND	/* do not use VAXCRTL's qsort */
 
 /* use ANSI/SYSV style byte manipulation routines instead of BSD ones */
-#define bcopy(s,d,n)	memcpy((d),(s),(n))
-#define bzero(d,n)	memset((d),0,(n))
-#define bcmp(l,r,n)	memcmp((l),(r),(n))
-#define index	strchr
-#define rindex	strrchr
-
 /* rename all too-long external symbol names to avoid warnings */
 #define bc_check_for_full_enumeration_handling	bc_check_for_full_enum_handling
 #define check_for_full_enumeration_handling	check_for_full_enum_handling
@@ -165,11 +157,14 @@ Boston, MA 02111-1307, USA.  */
 #define current_function_uses_const_pool	curfunc_uses_const_pool
 #define current_function_uses_pic_offset_table	curfunc_uses_pic_offset_table
 #define dbxout_resume_previous_source_file	dbxout_resume_previous_src_file
+#define expand_builtin_extract_return_addr	expand_builtin_extract_ret_addr
+#define expand_builtin_set_return_addr_reg	expand_builtin_set_ret_addr_reg
 #define expand_start_loop_continue_elsewhere	expnd_start_loop_cont_elsewhere
 #define flag_schedule_insns_after_reload	flag_sched_insns_after_reload
 #define get_dynamic_handler_chain_libfunc	get_dynamic_hndlr_chain_libfunc
 #define lookup_name_current_level_global	lookup_name_current_level_gbl
 #define maybe_building_objc_message_expr	maybe_building_objc_msg_expr
+#define mesg_implicit_function_declaration	mesg_implicit_func_declaration
 #define output_deferred_addressed_constants	output_deferred_addr_constants
 #define protect_cleanup_actions_with_terminate  protect_cleanup_act_w_terminate
 #define reg_overlap_mentioned_for_reload_p	reg_overlap_mtnd_for_reload_p
