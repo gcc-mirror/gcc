@@ -1,3 +1,8 @@
+2003-04-18  Mark Mitchell  <mark@codesourcery.com>
+
+	* cfgrtl.c (try_redirect_by_replacing_jump): Create a basic block
+	for orphaned jump tables.
+
 2003-04-18  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* reload1.c: Revert my previous patch on 2002-04-17.
