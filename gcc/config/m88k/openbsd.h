@@ -67,5 +67,5 @@ Boston, MA 02111-1307, USA.  */
 #define DEFAULT_PCC_STRUCT_RETURN 0
 
 #undef SET_ASM_OP
-#define SET_ASM_OP	".def"   
+#define SET_ASM_OP	"\t.def\t"
 

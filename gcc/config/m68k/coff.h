@@ -1,6 +1,6 @@
 /* Definitions of target machine for GNU compiler.
    m68k series COFF object files and debugging, version.
-   Copyright (C) 1994, 1996, 1997 Free Software Foundation, Inc.
+   Copyright (C) 1994, 1996, 1997, 2000 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -90,7 +90,7 @@ Boston, MA 02111-1307, USA.  */
    assembler operation to identify the following data as uninitialized global
    data.  */
 
-#define BSS_SECTION_ASM_OP	".section\t.bss"
+#define BSS_SECTION_ASM_OP	"\t.section\t.bss"
 
 /* A C statement (sans semicolon) to output to the stdio stream
    FILE the assembler definition of uninitialized global DECL named
@@ -110,8 +110,8 @@ Boston, MA 02111-1307, USA.  */
 
 /* Support the ctors and dtors sections for g++.  */
 
-#define CTORS_SECTION_ASM_OP	".section\t.ctors,\"x\""
-#define DTORS_SECTION_ASM_OP	".section\t.dtors,\"x\""
+#define CTORS_SECTION_ASM_OP	"\t.section\t.ctors,\"x\""
+#define DTORS_SECTION_ASM_OP	"\t.section\t.dtors,\"x\""
 
 /* A list of other sections which the compiler might be "in" at any
    given time.  */
@@ -148,7 +148,7 @@ dtors_section ()							\
     }									\
 }
 
-#define INT_ASM_OP ".long"
+#define INT_ASM_OP "\t.long\t"
 
 /* A C statement (sans semicolon) to output an element in the table of
    global constructors.  */

@@ -1,6 +1,6 @@
 /* Definitions for Motorola 68k running Linux-based GNU systems with
    ELF format.
-   Copyright (C) 1995, 1996, 1997, 1998, 1999 Free Software Foundation, Inc.
+   Copyright (C) 1995, 1996, 1997, 1998, 1999, 2000 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -209,7 +209,7 @@ Boston, MA 02111-1307, USA.  */
    assembler operation to identify the following data as uninitialized global
    data.  */
 
-#define BSS_SECTION_ASM_OP ".section\t.bss"
+#define BSS_SECTION_ASM_OP "\t.section\t.bss"
 
 /* A C statement (sans semicolon) to output to the stdio stream
    FILE the assembler definition of uninitialized global DECL named

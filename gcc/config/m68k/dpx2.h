@@ -1,6 +1,6 @@
 /* Definitions of target machine for GNU compiler.  
    Bull DPX/2 200 and 300 systems (m68k, SysVr3).
-   Copyright (C) 1987, 1993, 1994, 1995, 1996, 1999 Free Software Foundation, Inc.
+   Copyright (C) 1987, 1993, 1994, 1995, 1996, 1999, 2000 Free Software Foundation, Inc.
    Contributed by Frederic Pierresteguy (F.Pierresteguy@frcl.bull.fr).
 
 This file is part of GNU CC.
@@ -118,7 +118,7 @@ Boston, MA 02111-1307, USA.  */
 /* Assembler pseudos to introduce constants of various size.  */
 
 #undef ASM_BYTE_OP
-#define ASM_BYTE_OP "\tdc.b"
+#define ASM_BYTE_OP "\tdc.b\t"
 #undef ASM_LONG
 #define ASM_LONG "\tdc.l"
 
@@ -134,7 +134,7 @@ Boston, MA 02111-1307, USA.  */
   fprintf (FILE, "\tdcb.b %u,0\n", (SIZE))
 
 #undef GLOBAL_ASM_OP 
-#define GLOBAL_ASM_OP "\txdef"
+#define GLOBAL_ASM_OP "\txdef\t"
 
 #undef ASM_OUTPUT_ALIGN
 #define ASM_OUTPUT_ALIGN(FILE,LOG)	\

@@ -1,6 +1,6 @@
 /* Definitions of target machine for GNU compiler.
    For NCR Tower 32/4x0 and 32/6x0 running System V Release 3.
-   Copyright (C) 1990, 1993, 1994, 1996, 1997 Free Software Foundation, Inc.
+   Copyright (C) 1990, 1993, 1994, 1996, 1997, 2000 Free Software Foundation, Inc.
    Contributed by Robert Andersson (ra@intsys.no), International Systems,
    Oslo, Norway.
 
@@ -209,10 +209,10 @@ Boston, MA 02111-1307, USA.  */
   output_file_directive ((FILE), main_input_filename))
 
 #undef TEXT_SECTION_ASM_OP
-#define TEXT_SECTION_ASM_OP "text"
+#define TEXT_SECTION_ASM_OP "\ttext"
 
 #undef DATA_SECTION_ASM_OP
-#define DATA_SECTION_ASM_OP "data"
+#define DATA_SECTION_ASM_OP "\tdata"
 
 /* This says how to output an assembler line to define a global common symbol.
    We use SIZE rather than ROUNDED, as this is what the native cc does.  */
@@ -245,7 +245,7 @@ Boston, MA 02111-1307, USA.  */
    defined for reference from other files.  */
 
 #undef GLOBAL_ASM_OP
-#define GLOBAL_ASM_OP "global"
+#define GLOBAL_ASM_OP "\tglobal\t"
 
 #undef ASM_GENERATE_INTERNAL_LABEL
 #define ASM_GENERATE_INTERNAL_LABEL(LABEL, PREFIX, NUM)	\
@@ -593,18 +593,18 @@ do { fprintf (asm_out_file, "\ttag\t");	\
 
 #define ASM_LONG	"\tlong"
 #undef INIT_SECTION_ASM_OP
-#define INIT_SECTION_ASM_OP	"section\t~init"
+#define INIT_SECTION_ASM_OP	"\tsection\t~init"
 #undef FINI_SECTION_ASM_OP
-#define FINI_SECTION_ASM_OP	"section\t~fini"
+#define FINI_SECTION_ASM_OP	"\tsection\t~fini"
 #undef CONST_SECTION_ASM_OP
-#define CONST_SECTION_ASM_OP	"section\t~rodata"
+#define CONST_SECTION_ASM_OP	"\tsection\t~rodata"
 
 #define CTOR_LIST_BEGIN				\
   asm (INIT_SECTION_ASM_OP);			\
   asm ("clr.l -(%sp)")
 #define CTOR_LIST_END CTOR_LIST_BEGIN
 
-#define BSS_SECTION_ASM_OP	"section\t~bss"
+#define BSS_SECTION_ASM_OP	"\tsection\t~bss"
 
 #define ASM_OUTPUT_CONSTRUCTOR(FILE,NAME)	\
   do {						\

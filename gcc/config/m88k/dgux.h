@@ -1,6 +1,6 @@
 /* Definitions of target machine for GNU compiler.
    Motorola m88100 running DG/UX.
-   Copyright (C) 1988, 92, 93, 94, 95, 96, 1997 Free Software Foundation, Inc.
+   Copyright (C) 1988, 92, 93, 94, 95, 96, 1997, 2000 Free Software Foundation, Inc.
    Contributed by Michael Tiemann (tiemann@mcc.com)
    Currently maintained by (gcc@dg-rtp.dg.com)
 
@@ -214,30 +214,30 @@ Boston, MA 02111-1307, USA.  */
 #if defined (CRT_BEGIN) || defined (CRT_END) || defined (L__main)
 /* routines to invoke global constructors and destructors are always COFF 
    to enable linking mixed COFF and ELF objects */
-#define FINI_SECTION_ASM_OP ("section  .fini,\"x\"")
+#define FINI_SECTION_ASM_OP ("\tsection  .fini,\"x\"")
 #ifndef BCS
 #define INIT_SECTION_PREAMBLE asm ("\taddu\tr31,r31,0x20")
 #endif
 #undef	INIT_SECTION_ASM_OP
-#define INIT_SECTION_ASM_OP ("section\t .init,\"x\"")
+#define INIT_SECTION_ASM_OP ("\tsection\t .init,\"x\"")
 #undef	CTORS_SECTION_ASM_OP
-#define CTORS_SECTION_ASM_OP ("section\t .ctors,\"d\"")
+#define CTORS_SECTION_ASM_OP ("\tsection\t .ctors,\"d\"")
 #undef	DTORS_SECTION_ASM_OP
-#define DTORS_SECTION_ASM_OP ("section\t .dtors,\"d\"")
+#define DTORS_SECTION_ASM_OP ("\tsection\t .dtors,\"d\"")
 #undef OBJECT_FORMAT_ELF
 #else
 #undef        INIT_SECTION_ASM_OP
 #define INIT_SECTION_ASM_OP (TARGET_SVR4                      \
-                           ? "section\t .init,\"xa\""         \
-                           : "section\t .init,\"x\"")
+                           ? "\tsection\t .init,\"xa\""         \
+                           : "\tsection\t .init,\"x\"")
 #undef        CTORS_SECTION_ASM_OP
 #define CTORS_SECTION_ASM_OP (TARGET_SVR4                     \
-                            ? "section\t .ctors,\"aw\""       \
-                            : "section\t .ctors,\"d\"")
+                            ? "\tsection\t .ctors,\"aw\""       \
+                            : "\tsection\t .ctors,\"d\"")
 #undef        DTORS_SECTION_ASM_OP
 #define DTORS_SECTION_ASM_OP (TARGET_SVR4                     \
-                            ? "section\t .dtors,\"aw\""       \
-                            : "section\t .dtors,\"d\"")
+                            ? "\tsection\t .dtors,\"aw\""       \
+                            : "\tsection\t .dtors,\"d\"")
 #endif /* crtstuff.c */
 
 /* The lists of global object constructors and global destructors are always

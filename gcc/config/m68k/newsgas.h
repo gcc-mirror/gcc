@@ -7,7 +7,7 @@
 /* This is the assembler directive to equate two values.  */
 
 #undef SET_ASM_OP
-#define SET_ASM_OP    ".set"
+#define SET_ASM_OP    "\t.set\t"
 
 /* This is how we tell the assembler that a symbol is weak.  */
 

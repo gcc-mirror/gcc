@@ -1,5 +1,5 @@
 /* Definitions of target machine for GNU compiler, Mitsubishi M32R cpu.
-   Copyright (C) 1996, 1997, 1998, 1999 Free Software Foundation, Inc.
+   Copyright (C) 1996, 1997, 1998, 1999, 2000 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -2018,7 +2018,7 @@ extern char m32r_punct_chars[];
    handling the required alignment of the variable.  The alignment is
    specified as the number of bits.  */
 
-#define SCOMMON_ASM_OP ".scomm"
+#define SCOMMON_ASM_OP "\t.scomm\t"
 
 #undef  ASM_OUTPUT_ALIGNED_COMMON
 #define ASM_OUTPUT_ALIGNED_COMMON(FILE, NAME, SIZE, ALIGN)		\

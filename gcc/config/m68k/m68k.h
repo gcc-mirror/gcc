@@ -1810,11 +1810,11 @@ __transfer_from_trampoline ()					\
 
 /* Output before read-only data.  */
 
-#define TEXT_SECTION_ASM_OP ".text"
+#define TEXT_SECTION_ASM_OP "\t.text"
 
 /* Output before writable data.  */
 
-#define DATA_SECTION_ASM_OP ".data"
+#define DATA_SECTION_ASM_OP "\t.data"
 
 /* Here are four prefixes that are used by asm_fprintf to
    facilitate customization for alternate assembler syntaxes.
@@ -1892,7 +1892,7 @@ __transfer_from_trampoline ()					\
 /* This is how to output a command to make the user-level label named NAME
    defined for reference from other files.  */
 
-#define GLOBAL_ASM_OP ".globl"
+#define GLOBAL_ASM_OP "\t.globl\t"
 #define ASM_GLOBALIZE_LABEL(FILE,NAME)	\
   do { fprintf (FILE, "%s ", GLOBAL_ASM_OP);		\
        assemble_name (FILE, NAME);			\
