@@ -114,6 +114,9 @@ typedef void *__gnuc_va_list;
 			   ? sizeof (TYPE) : __va_rounded_size (TYPE))))))
 #endif /* big-endian */
 
+/* Copy __gnuc_va_list into another variable of this type.  */
+#define __va_copy(dest, src) (dest) = (src)
+
 #endif /* not sh */
 #endif /* not powerpc with V.4 calling sequence */
 #endif /* not h8300 */

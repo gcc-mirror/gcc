@@ -124,5 +124,8 @@ enum {
 		 ? (6 * 8) + 8 : __va_tsize (__type)))))
 #endif
 
+/* Copy __gnuc_va_list into another variable of this type.  */
+#define __va_copy(dest, src) (dest) = (src)
+
 #endif /* defined (_STDARG_H) || defined (_VARARGS_H) */
 
