@@ -239,7 +239,13 @@ f__nowwriting (unit * x)
   extern char *f__w_mode[];
 
   if (x->urw & 2)
-    goto done;
+    {
+      /* Not required according to C99 7.19.5.3, but
+	 this really helps on Solaris.  */
+      if (feof (x->ufd))
+	FSEEK (x->ufd, 0, SEEK_END);
+      goto done;
+    }
   if (!x->ufnm)
     goto cantwrite;
   ufmt = x->url ? 0 : x->ufmt;
