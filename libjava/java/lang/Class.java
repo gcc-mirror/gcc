@@ -193,11 +193,8 @@ public final class Class implements Serializable
       return packageName.substring (0, end+1) + resourceName;
   }
 
-  // FIXME: implement.  Requires java.security.
-  public Object[] getSigners ()
-  {
-    return null;
-  }
+  public native Object[] getSigners ();
+  native void setSigners(Object[] signers);
 
   public native Class getSuperclass ();
   public native boolean isArray ();
