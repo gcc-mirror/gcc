@@ -1,5 +1,5 @@
 /* Configuration for GNU C-compiler for IBM PS/2 running AIX/386.
-   Copyright (C) 1988 Free Software Foundation, Inc.
+   Copyright (C) 1988, 1993 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -32,7 +32,5 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #ifndef __GNUC__
 #define USE_C_ALLOCA
 #endif
-
-#define HAVE_PUTENV
 
 #define HAVE_PUTENV
