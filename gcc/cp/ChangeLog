@@ -1,3 +1,8 @@
+2000-06-10  Mark Mitchell  <mark@codesourcery.com>
+
+	* decl.c (add_binding): Handle duplicate declarations of external
+	variables.
+
 2000-06-09  Chip Salzenberg  <chip@valinux.com>
 	    Mark Mitchell <mark@codesourcery.com>
 
