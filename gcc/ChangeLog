@@ -1,3 +1,12 @@
+2000-02-28  Zack Weinberg  <zack@wolery.cumb.org>
+
+	* tm.texi: Document new target switch, NO_BUILTIN_WCHAR_TYPE.
+	* cppinit.c (builtin_array): Define __WCHAR_TYPE__ only if
+	NO_BUILTIN_WCHAR_TYPE is not defined.
+	(CPP_WCHAR_TYPE): Delete.
+	* cccp.c (main): Don't change wchar_type if cplusplus.
+	(special_symbol, initialize_builtins): Honor NO_BUILTIN_WCHAR_TYPE.
+
 2000-02-28  Nick Clifton  <nickc@cygnus.com>
 
 	* config/arm/arm-wince-pe.h (SIZE_TYPE): Define to "unsigned long".

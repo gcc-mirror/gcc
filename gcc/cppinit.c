@@ -63,8 +63,6 @@ Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.  */
 #ifndef WCHAR_TYPE
 #define WCHAR_TYPE "int"
 #endif
-#define CPP_WCHAR_TYPE(PFILE) \
-	(CPP_OPTIONS (PFILE)->cplusplus ? "__wchar_t" : WCHAR_TYPE)
 
 /* The string value for __USER_LABEL_PREFIX__ */
 
@@ -530,7 +528,9 @@ static const struct builtin builtin_array[] =
 #ifndef NO_BUILTIN_PTRDIFF_TYPE
   { "__PTRDIFF_TYPE__",		PTRDIFF_TYPE,	 T_CONST, DUMP },
 #endif
+#ifndef NO_BUILTIN_WCHAR_TYPE
   { "__WCHAR_TYPE__",		WCHAR_TYPE,	 T_CONST, DUMP },
+#endif
   { 0, 0, 0, 0 }
 };
 

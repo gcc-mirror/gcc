@@ -1786,11 +1786,6 @@ main (argc, argv)
   fp->nominal_fname_len = strlen (in_fname);
   fp->lineno = 0;
 
-  /* In C++, wchar_t is a distinct basic type, and we can expect
-     __wchar_t to be defined by cc1plus.  */
-  if (cplusplus)
-    wchar_type = "__wchar_t";
-
   /* Install __LINE__, etc.  Must follow initialize_char_syntax
      and option processing.  */
   initialize_builtins (fp, &outbuf);
@@ -4273,9 +4268,11 @@ special_symbol (hp, op)
     break;
 #endif
 
+#ifndef NO_BUILTIN_WCHAR_TYPE
   case T_WCHAR_TYPE:
     buf = wchar_type;
     break;
+#endif
 
   case T_USER_LABEL_PREFIX_TYPE:
     buf = user_label_prefix;
@@ -10298,7 +10295,9 @@ initialize_builtins (inp, outp)
 #ifndef NO_BUILTIN_PTRDIFF_TYPE
   install ((const U_CHAR *) "__PTRDIFF_TYPE__ ", -1, T_PTRDIFF_TYPE, NULL_PTR, -1);
 #endif
+#ifndef NO_BUILTIN_WCHAR_TYPE
   install ((const U_CHAR *) "__WCHAR_TYPE__", -1, T_WCHAR_TYPE, NULL_PTR, -1);
+#endif
   install ((const U_CHAR *) "__USER_LABEL_PREFIX__", -1, T_USER_LABEL_PREFIX_TYPE,
 	   NULL_PTR, -1);
   install ((const U_CHAR *) "__REGISTER_PREFIX__", -1, T_REGISTER_PREFIX_TYPE,
@@ -10347,10 +10346,12 @@ initialize_builtins (inp, outp)
 			   outp, dp);
 #endif
 
+#ifndef NO_BUILTIN_WCHAR_TYPE
       sprintf (directive, " __WCHAR_TYPE__ %s\n", wchar_type);
       output_line_directive (inp, outp, 0, same_file);
       pass_thru_directive (udirective, &udirective[strlen (directive)],
 			   outp, dp);
+#endif
 
       sprintf (directive, " __DATE__ \"%s %2d %4d\"\n",
 	       monthnames[timebuf->tm_mon],

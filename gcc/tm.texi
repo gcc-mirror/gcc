@@ -128,6 +128,16 @@ This should be defined if @code{PTRDIFF_TYPE} depends on target dependent flags
 which are not accessible to the preprocessor.  Otherwise, it should not
 be defined.
 
+@findex NO_BUILTIN_WCHAR_TYPE
+@item NO_BUILTIN_WCHAR_TYPE
+If this macro is defined, the preprocessor will not define the builtin macro
+@code{__WCHAR_TYPE__}.  The macro @code{__WCHAR_TYPE__} must then be
+defined by @code{CPP_SPEC} instead.
+
+This should be defined if @code{WCHAR_TYPE} depends on target dependent flags
+which are not accessible to the preprocessor.  Otherwise, it should not
+be defined.
+
 @findex SIGNED_CHAR_SPEC
 @item SIGNED_CHAR_SPEC
 A C string constant that tells the GCC driver program options to
