@@ -3712,6 +3712,11 @@ build_c_cast (type, expr)
 	  && TREE_CODE (otype) == POINTER_TYPE
 	  && TREE_CODE (TREE_TYPE (otype)) != VOID_TYPE
 	  && TREE_CODE (TREE_TYPE (otype)) != FUNCTION_TYPE
+	  /* Don't warn about opaque types, where the actual alignment
+	     restriction is unknown.  */
+	  && !((TREE_CODE (TREE_TYPE (otype)) == UNION_TYPE
+		|| TREE_CODE (TREE_TYPE (otype)) == RECORD_TYPE)
+	       && TYPE_MODE (TREE_TYPE (otype)) == VOIDmode)
 	  && TYPE_ALIGN (TREE_TYPE (type)) > TYPE_ALIGN (TREE_TYPE (otype)))
 	warning ("cast increases required alignment of target type");
 
