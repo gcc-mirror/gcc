@@ -4362,7 +4362,6 @@ calc_live_regs (count_ptr, live_regs_mask)
   int reg;
   int count;
   int interrupt_handler;
-  rtx pr_initial;
   int pr_live;
 
   if ((lookup_attribute
@@ -4385,12 +4384,18 @@ calc_live_regs (count_ptr, live_regs_mask)
 	  target_flags &= ~FPU_SINGLE_BIT;
 	  break;
 	}
-  pr_initial = has_hard_reg_initial_val (Pmode,
-					 TARGET_SHMEDIA
-					 ? PR_MEDIA_REG : PR_REG);
-  pr_live = (pr_initial
-	     ? REGNO (pr_initial) != (TARGET_SHMEDIA ? PR_MEDIA_REG : PR_REG)
-	     : regs_ever_live[TARGET_SHMEDIA ? PR_MEDIA_REG : PR_REG]);
+  /* PR_MEDIA_REG is a general purpose register, thus global_alloc already
+     knows how to use it.  That means the pseudo originally allocated for
+     the initial value can become the PR_MEDIA_REG hard register, as seen for
+     execute/20010122-1.c:test9.  */
+  if (TARGET_SHMEDIA)
+    pr_live = regs_ever_live[PR_MEDIA_REG];
+  else
+    {
+      rtx pr_initial = has_hard_reg_initial_val (Pmode, PR_REG);
+      pr_live = (pr_initial
+		 ? REGNO (pr_initial) != (PR_REG) : regs_ever_live[PR_REG]);
+    }
   /* Force PR to be live if the prologue has to call the SHmedia
      argument decoder or register saver.  */
   if (TARGET_SHCOMPACT

@@ -1,3 +1,8 @@
+Thu Jun 13 22:29:40 2002  J"orn Rennecke <joern.rennecke@superh.com>
+
+	* config/sh/sh.c (calc_live_regs): Don't use initial_value
+	optimization for PR_MEDIA_REG.
+
 2002-06-13  Neil Booth  <neil@daikokuya.demon.co.uk>
 
 	* cpphash.h (_cpp_lex_identifier_trad): Remove.
