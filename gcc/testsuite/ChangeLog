@@ -4,6 +4,8 @@
 
 	* g++.dg/opt/vt1.C: New test.
 
+	* gcc.dg/20020530-1.c: New test.
+
 2002-05-29  Hans-Peter Nilsson  <hp@axis.com>
 
 	* gcc.c-torture/execute/20020529-1.c: New test.

@@ -1,5 +1,10 @@
 2002-06-10  Jakub Jelinek  <jakub@redhat.com>
 
+	PR c/6809
+	* print-rtl.c (print_mem_expr): Don't crash on unnamed fields.
+
+2002-06-10  Jakub Jelinek  <jakub@redhat.com>
+
 	* varasm.c (const_hash): Handle FDESC_EXPR like ADDR_EXPR.
 	(compare_constant): Likewise.
 	(output_addressed_constants): Likewise.

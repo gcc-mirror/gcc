@@ -88,8 +88,9 @@ print_mem_expr (outfile, expr)
         print_mem_expr (outfile, TREE_OPERAND (expr, 0));
       else
 	fputs (" <variable>", outfile);
-      fprintf (outfile, ".%s",
-	       IDENTIFIER_POINTER (DECL_NAME (TREE_OPERAND (expr, 1))));
+      if (DECL_NAME (TREE_OPERAND (expr, 1)))
+	fprintf (outfile, ".%s",
+		 IDENTIFIER_POINTER (DECL_NAME (TREE_OPERAND (expr, 1))));
     }
   else if (DECL_NAME (expr))
     fprintf (outfile, " %s", IDENTIFIER_POINTER (DECL_NAME (expr)));
