@@ -31,37 +31,28 @@ extern int ggc_p;
    compiler.  However, rather than force everyone who includes this
    header to include all the headers in which they are declared, we
    just forward-declare them here.  */
-struct label_node;
 struct eh_status;
 struct emit_status;
+struct hash_table;
+struct label_node;
+struct rtvec_def;
 struct stmt_status;
+union  tree_node;
 struct varasm_status;
 struct varray_head_tag;
-struct hash_table;
 
-/* Startup */
+/* Global roots that are preserved during calls to gc.  */
 
-extern void init_ggc PROTO ((void));
+struct ggc_root
+{
+  struct ggc_root *next;
+  void *base;
+  int nelt;
+  int size;
+  void (*cb) PROTO ((void *));
+};
 
-/* Start a new GGC context.  Memory allocated in previous contexts
-   will not be collected while the new context is active.  */
-extern void ggc_pop_context PROTO ((void));
-/* Finish a GC context.  Any uncollected memory in the new context
-   will be merged with the old context.  */
-extern void ggc_push_context PROTO ((void));
-
-/* Allocation.  */
-
-struct rtx_def *ggc_alloc_rtx PROTO ((int nslots));
-struct rtvec_def *ggc_alloc_rtvec PROTO ((int nelt));
-union tree_node *ggc_alloc_tree PROTO ((int length));
-char *ggc_alloc_string PROTO ((const char *contents, int length));
-void *ggc_alloc PROTO ((size_t));
-
-/* Invoke the collector.  This is really just a hint, but in the case of
-   the simple collector, the only time it will happen.  */
-
-void ggc_collect PROTO ((void));
+extern struct ggc_root *roots;
 
 /* Manipulate global roots that are needed between calls to gc.  */
 void ggc_add_root PROTO ((void *base, int nelt, int size, void (*)(void *)));
@@ -72,7 +63,8 @@ void ggc_add_tree_varray_root PROTO ((struct varray_head_tag **, int nelt));
 void ggc_add_tree_hash_table_root PROTO ((struct hash_table **, int nelt));
 void ggc_del_root PROTO ((void *base));
 
-/* Mark nodes from the gc_add_root callback.  */
+/* Mark nodes from the gc_add_root callback.  These functions follow
+   pointers to mark other objects too.  */
 void ggc_mark_rtx PROTO ((struct rtx_def *));
 void ggc_mark_rtvec PROTO ((struct rtvec_def *));
 void ggc_mark_tree PROTO ((union tree_node *));
@@ -80,6 +72,41 @@ void ggc_mark_tree_varray PROTO ((struct varray_head_tag *));
 void ggc_mark_tree_hash_table PROTO ((struct hash_table *));
 void ggc_mark_string PROTO ((char *));
 void ggc_mark PROTO ((void *));
+
+
+/* A GC implementation must provide these functions.  */
+
+/* Initialize the garbage collector.   */
+extern void init_ggc PROTO ((void));
+
+/* Start a new GGC context.  Memory allocated in previous contexts
+   will not be collected while the new context is active.  */
+extern void ggc_pop_context PROTO ((void));
+
+/* Finish a GC context.  Any uncollected memory in the new context
+   will be merged with the old context.  */
+extern void ggc_push_context PROTO ((void));
+
+/* Allocation.  */
+struct rtx_def *ggc_alloc_rtx PROTO ((int nslots));
+struct rtvec_def *ggc_alloc_rtvec PROTO ((int nelt));
+union tree_node *ggc_alloc_tree PROTO ((int length));
+char *ggc_alloc_string PROTO ((const char *contents, int length));
+void *ggc_alloc PROTO ((size_t));
+
+/* Invoke the collector.  This is really just a hint, but in the case of
+   the simple collector, the only time it will happen.  */
+void ggc_collect PROTO ((void));
+
+/* Actually set the mark on a particular region of memory, but don't
+   follow pointers.  These functions are called by ggc_mark_*.  They
+   return zero if the object was not previously marked; they return
+   non-zero if the object was already marked, or if, for any other
+   reason, pointers in this data structure should not be traversed.  */
+int ggc_set_mark_rtx PROTO ((struct rtx_def *));
+int ggc_set_mark_rtvec PROTO ((struct rtvec_def *));
+int ggc_set_mark_tree PROTO ((union tree_node *));
+
 
 /* Callbacks to the languages.  */
 

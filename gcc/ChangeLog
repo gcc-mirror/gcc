@@ -1,3 +1,39 @@
+Sat Sep 11 12:41:55 1999  Alex Samuel  <samuel@codesourcery.com>
+
+	* ggc.h (rtvec_def): Forward declare.
+	(tree_node): Likewise.
+	(ggc_root): Define.
+	(roots): Declare.
+	(ggc_set_mark_rtx): Add prototype.
+	(ggc_set_mark_rtvec): Likewise.
+	(ggc_set_mark_tree): Likewise.
+	* ggc-simple.c (ggc_root): Don't define.
+	(roots): Don't declare.
+	(ggc_mark_rtx): Remove.
+	(ggc_mark_rtvec): Likewise.
+	(ggc_mark_tree): Likewise.
+	(ggc_mark_varray): Likewise.
+	(ggc_mark_tree_hash_table_entry): Likewise.
+	(ggc_mark_tree_hash_table): Likewise.
+	(ggc_set_mart_rtx): New function.
+	(ggc_set_mark_rtvec): Likewise.
+	(ggc_set_mark_tree): Likewise.
+	(ggc_add_root): Remove.
+	(ggc_add_rtx_root): Likewise.
+	(ggc_remove_tree_root): Likewise.
+	(ggc_add_string_root): Likewise.
+	(ggc_add_tree_varray_root): Likewise.
+	(ggc_add_tree_hash_table_root): Likewise.
+	(ggc_del_root): Likewise.
+	(ggc_mark_rtx_ptr): Likewise.
+	(ggc_mark_tree_ptr): Likewise.
+	(ggc_mark_string_ptr): Likewise.
+	(ggc_mark_tree_varray_ptr): Likewise.
+	(ggc_mark_tree_hash_table_ptr): Likewise.
+	* ggc-common.c: New file.
+	* Makefile.in (OBJS): Add ggc-common.o.
+	(ggc-common.o): List dependencies.
+
 1999-09-10 22:37 -0700  Zack Weinberg  <zack@bitmover.com>
 
 	* cppalloc.c (xstrdup): Use memcpy.
