@@ -1,3 +1,7 @@
+Fri Jan 22 20:31:19 1999  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	* mips.md (movsi_usw): Use %z for operand 1 in "sw" case.
+
 Sat Jan  9 12:24:10 1999  Nick Clifton  <nickc@cygnus.com>
 
 	* cccp.c (main): Add support for parsing --help.
