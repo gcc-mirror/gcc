@@ -7503,11 +7503,31 @@ alpha_expand_prologue ()
 
       /* If we have to allocate space for outgoing args, do it now.  */
       if (current_function_outgoing_args_size != 0)
-	FRP (emit_move_insn
-	     (stack_pointer_rtx, 
-	      plus_constant (hard_frame_pointer_rtx,
-			     - (ALPHA_ROUND
-				(current_function_outgoing_args_size)))));
+	{
+	  rtx seq
+	    = emit_move_insn (stack_pointer_rtx, 
+			      plus_constant
+			      (hard_frame_pointer_rtx,
+			       - (ALPHA_ROUND
+				  (current_function_outgoing_args_size))));
+	  
+	  /* Only set FRAME_RELATED_P on the stack adjustment we just emitted
+	     if ! frame_pointer_needed. Setting the bit will change the CFA
+	     computation rule to use sp again, which would be wrong if we had
+	     frame_pointer_needed, as this means sp might move unpredictably
+	     later on.
+
+	     Also, note that
+	       frame_pointer_needed
+	       => vms_unwind_regno == HARD_FRAME_POINTER_REGNUM
+	     and
+	       current_function_outgoing_args_size != 0
+	       => alpha_procedure_type != PT_NULL,
+
+	     so when we are not setting the bit here, we are guaranteed to
+	     have emited an FRP frame pointer update just before.  */
+	  RTX_FRAME_RELATED_P (seq) = ! frame_pointer_needed;
+	}
     }
   else if (!TARGET_ABI_UNICOSMK)
     {
