@@ -1,3 +1,8 @@
+2003-03-01  Roger Sayle  <roger@eyesopen.com>
+
+	PR bootstrap/7389.
+	* basic-block.h (flow_bb_inside_loop_p): Correct prototype.
+
 2003-02-28  Jason Thorpe  <thorpej@wasabisystems.com>
 
 	* config/netbsd.h: Update copyright years.
