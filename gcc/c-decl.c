@@ -4033,6 +4033,8 @@ grokdeclarator (declarator, declspecs, decl_context, initialized)
 	{
 	  register tree itype = NULL_TREE;
 	  register tree size = TREE_OPERAND (declarator, 1);
+	  /* An uninitialized decl with `extern' is a reference.  */
+	  int extern_ref = !initialized && (specbits & (1 << (int) RID_EXTERN));
 
 	  declarator = TREE_OPERAND (declarator, 0);
 
@@ -4055,6 +4057,12 @@ grokdeclarator (declarator, declspecs, decl_context, initialized)
 
 	  if (type == error_mark_node)
 	    continue;
+
+	  /* If this is a block level extern, it must live past the end
+	     of the function so that we can check it against other extern
+	     declarations (IDENTIFIER_LIMBO_VALUE).  */
+	  if (extern_ref && allocation_temporary_p ())
+	    end_temporary_allocation ();
 
 	  /* If size was specified, set ITYPE to a range-type for that size.
 	     Otherwise, ITYPE remains null.  finish_decl may figure it out
