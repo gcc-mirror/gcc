@@ -6123,7 +6123,7 @@ check_return_expr (tree retval)
      that's supposed to return a value.  */
   if (!retval && fn_returns_value_p)
     {
-      pedwarn ("return-statement with no value, in function returning `%D'",
+      pedwarn ("return-statement with no value, in function returning '%T'",
 	       valtype);
       /* Clear this, so finish_function won't say that we reach the
 	 end of a non-void function (which we don't, we gave a
@@ -6140,8 +6140,8 @@ check_return_expr (tree retval)
 	   its side-effects.  */
 	  finish_expr_stmt (retval);
       else
-	pedwarn ("return-statement with a value, in function returning `%D'",
-		 retval);
+	pedwarn ("return-statement with a value, in function "
+                 "returning 'void'");
 
       current_function_returns_null = 1;
 
