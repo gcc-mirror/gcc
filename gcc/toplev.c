@@ -2032,7 +2032,8 @@ rest_of_compilation (decl)
      functions.  */
   rtx_equal_function_value_matters = 0;
 
-  if (rtl_dump_and_exit || flag_syntax_only)
+  /* Don't return yet if -Wreturn-type; we need to do jump_optimize.  */
+  if ((rtl_dump_and_exit || flag_syntax_only) && !warn_return_type)
     {
       goto exit_rest_of_compilation;
     }
@@ -2079,6 +2080,10 @@ rest_of_compilation (decl)
       TIMEVAR (jump_time, reg_scan (insns, max_reg_num (), 0));
       TIMEVAR (jump_time, jump_optimize (insns, 0, 0, 1));
     }
+
+  /* Now is when we stop if -fsyntax-only and -Wreturn-type.  */
+  if (rtl_dump_and_exit || flag_syntax_only)
+    goto exit_rest_of_compilation;
 
   /* Dump rtl code after jump, if we are doing that.  */
 
