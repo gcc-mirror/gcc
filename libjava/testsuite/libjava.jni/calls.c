@@ -29,7 +29,7 @@ Java_calls_docall (JNIEnv *env, jobject _this)
 
   method = (*env)->GetMethodID (env, klass, "char_f", "(I)C");
   val.i = 10;
-  c = (*env)->CallCharMethodV (env, _this, method, &val);
+  c = (*env)->CallCharMethodA (env, _this, method, &val);
   if (c != ('a' + 10))
     ++fails;
 
