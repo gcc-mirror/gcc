@@ -1,7 +1,7 @@
 2004-03-10  Andrew Pinski  <pinskia@physics.uc.edu>
 
 	PR bootstrap/14522
-	* configure.in: Fix esacping of $.
+	* configure.in: Fix escaping of $.
 	* configure: Regenerate.
 
 2004-03-11  Nathanael Nerode  <neroden@gcc.gnu.org>
