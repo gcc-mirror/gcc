@@ -1,3 +1,8 @@
+2004-01-09  Mark Mitchell  <mark@codesourcery.com>
+
+	* cp-tree.h (cxx_expand_expr): Change prototype.
+	* expr.c (cxx_expand_expr): Add alt_rtl parameter.
+
 2004-01-08  Giovanni Bajo  <giovannibajo@gcc.gnu.org>
 
 	PR c++/12573

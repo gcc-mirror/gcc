@@ -1,3 +1,7 @@
+2004-01-09  Mark Mitchell  <mark@codesourcery.com>
+
+	* misc.c (gnat_expand_expr): Add alt_rtl parameter.
+
 2004-01-07  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
 
 	* link.c [sgi] (shared_libgnat_default): Change to STATIC.

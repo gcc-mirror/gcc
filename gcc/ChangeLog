@@ -1,3 +1,26 @@
+2004-01-09  Mark Mitchell  <mark@codesourcery.com>
+
+	* expr.h (expand_expr): Make it a macro, not a function.
+	(expand_expr_real): New function.
+	* expr.c (store_expr): Adjust logic for deciding whether or not to
+	copy the value returned by expand_expr.
+	(expand_expr): Rename to ...
+	(expand_expr_real): ... this.  Add alt_rtl parameter.  Adjust
+	calls to language hooks.
+	* c-common.h (c_expand_expr): Adjust prototype.
+	* c-common.c (c_expand_expr): Add alt_rtl parameter.
+	* langhooks-def.h (lhd_expand_expr): Change prototype.
+	* langhooks.c (lhd_expand_expr): Add all_rtl parameter.
+	* langhooks.h (lang_hooks): Change type of expand_expr.
+	* stmt.c (stmt_status): Add x_last_expr_alt_rtl.
+	(last_expr_alt_rtl): Likewise.
+	(expand_expr_stmt_value): Set last_expr_alt_rtl.
+	(clear_last_expr): Clear it.
+	(expand_end_stmt_expr): Set RTL_EXPR_ATL_RTL.
+	(expand_end_bindings): Save and restor last_expr_alt_rtl.
+	* tree.def (RTL_EXPR): Give it an additional operand.
+	* tree.h (RTL_EXPR_ALT_RTL): New macro.
+	
 2004-01-09  Kazuhiro Inaoka  <inaoka.kazuhiro@renesas.com>
 
 	* config/m32r/m32r.h (TARGET_CPU_CPP_BUILTINS): Add __m32r__.

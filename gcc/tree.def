@@ -730,11 +730,15 @@ DEFTREECODE (UNSAVE_EXPR, "unsave_expr", 'e', 1)
 /* Represents something whose RTL has already been expanded as a
    sequence which should be emitted when this expression is expanded.
    The first operand is the RTL to emit.  It is the first of a chain
-   of insns.  The second is the RTL expression for the result.  Any
-   temporaries created during the building of the RTL_EXPR can be
-   reused once the RTL_EXPR has been expanded, with the exception of
-   the RTL_EXPR_RTL.  */
-DEFTREECODE (RTL_EXPR, "rtl_expr", 'e', 2)
+   of insns.  The second is the RTL expression for the result.  The
+   third operand is the "alternate RTL expression" for the result, if
+   any; if the second argument is the DECL_RTL for a VAR_DECL, but
+   with an invalid memory address replaced by a valid one, then the
+   third operand will be the original DECL_RTL.  Any temporaries
+   created during the building of the RTL_EXPR can be reused once the
+   RTL_EXPR has been expanded, with the exception of the
+   RTL_EXPR_RTL.  */
+DEFTREECODE (RTL_EXPR, "rtl_expr", 'e', 3)
 
 /* & in C.  Value is the address at which the operand's value resides.
    Operand may have any mode.  Result mode is Pmode.  */
