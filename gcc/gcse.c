@@ -4544,7 +4544,7 @@ bypass_conditional_jumps ()
 		rtx set = single_set (insn);
 		if (setcc)
 		  break;
-		if (!single_set (insn))
+		if (!set)
 		  break;
 
 		dest = SET_DEST (set);

@@ -1352,7 +1352,7 @@ commit_one_edge_insertion (e, watch_calls)
      int watch_calls;
 {
   rtx before = NULL_RTX, after = NULL_RTX, insns, tmp, last;
-  basic_block bb;
+  basic_block bb = NULL;
 
   /* Pull the insns off the edge now since the edge might go away.  */
   insns = e->insns;
