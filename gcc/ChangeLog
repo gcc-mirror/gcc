@@ -1,3 +1,14 @@
+2003-05-23  Roger Sayle  <roger@eyesopen.com>
+
+	* builtins.def: Defome atan, atanf, atanl, tan, tanf and tanl
+	builtin functions (and their __builtin_* variants).
+	* builtins.c (mathfn_built_in): Handle tan{,f,l} and atan{,f,l}.
+	(expand_builtin): Don't expand tan{,f,l} or atan{,f,l} when not
+	optimizing.
+
+	* doc/extend.texi: Document new tan and atan builtins, and
+	their float and long double variants.
+
 2003-05-23  Jason Thorpe  <thorpej@wasabisystems.com>
 
 	* config/sparc/netbsd-elf.h (TARGET_OS_CPP_BUILTINS): Define
