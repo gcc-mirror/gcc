@@ -1,3 +1,7 @@
+2003-10-10  Ian Lance Taylor  <ian@wasabisystems.com>
+
+	* gcc.c-torture/compile/20031010-1.c: New test.
+
 2003-10-10  Geoffrey Keating  <geoffk@apple.com>
 
 	* gcc.c-torture/execute/va-arg-24.c: Correct, and rename to...
