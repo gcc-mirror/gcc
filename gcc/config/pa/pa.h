@@ -111,6 +111,14 @@ extern int target_flags;
 
 #define TARGET_SHARED_LIBS (target_flags & 8)
 
+/* Force all function calls to indirect addressing via a register.  This
+   avoids lossage when the function is very far away from the current PC.
+
+   ??? What about simple jumps, they can suffer from the same problem.  
+   Would require significant surgery in pa.md.  */
+
+#define TARGET_LONG_CALLS (target_flags & 16)
+
 /* Macro to define tables used to set the flags.
    This is a list in braces of pairs in braces,
    each pair being { "NAME", VALUE }
@@ -126,6 +134,7 @@ extern int target_flags;
    {"kernel", 4},	\
    {"shared-libs", 8},	\
    {"no-shared-libs", -8},\
+   {"long-calls", 16},	\
    { "", TARGET_DEFAULT}}
 
 #define TARGET_DEFAULT 0
