@@ -1,6 +1,6 @@
 /* Definitions of target machine for GNU compiler.
    Renesas H8/300 version
-   Copyright (C) 2000, 2002, 2003, 2004 Free Software Foundation, Inc.
+   Copyright (C) 2000, 2002, 2003, 2004, 2005 Free Software Foundation, Inc.
    Contributed by Steve Chamberlain (sac@cygnus.com),
    Jim Wilson (wilson@cygnus.com), and Doug Evans (dje@cygnus.com).
 

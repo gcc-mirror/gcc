@@ -1,3 +1,14 @@
+2005-03-18  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* hooks.c, hooks.h, intl.c, opts.h, prefix.c, tree-gimple.c,
+	config/alpha/ev4.md, config/alpha/ev5.md, config/alpha/ev6.md,
+	config/alpha/freebsd.h, config/alpha/linux.h,
+	config/alpha/netbsd.h, config/alpha/osf5.h,
+	config/alpha/vms.h, config/arc/arc.c, config/arc/arc.h,
+	config/h8300/h8300-protos.h, config/h8300/h8300.c,
+	config/h8300/h8300.h, config/ia64/unwind-ia64.c,
+	doc/cppopts.texi: Update copyright.
+
 2005-03-18  Jan Hubicka  <jh@suse.cz>
 
 	PR middle-end/20225
