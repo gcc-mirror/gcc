@@ -1,5 +1,11 @@
 2004-10-04  Kazu Hirata  <kazu@cs.umass.edu>
 
+	* MAINTAINERS (Various Maintainers): Move the "windows,
+	cygwin, mingw" maintainer to ...
+	(OS Port Maintainers): ... here.
+
+2004-10-04  Kazu Hirata  <kazu@cs.umass.edu>
+
 	* MAINTAINERS (Write After Approval): Remove those that are
 	maintainers of some subsystem.
 
