@@ -1,3 +1,7 @@
+2001-05-17  Per Bothner  <per@bothner.com>
+
+	* Makefile.am (ZIP):  The "fastjar" binary is now plain "jar".
+
 2001-05-14  Andrew Haley  <aph@cambridge.redhat.com>
 
         * libgcj.spec.in (jc1): Add EXCEPTIONSPEC.
