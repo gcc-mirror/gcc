@@ -1208,9 +1208,46 @@ hooks to execute custom code at various points during traversal:
 @cindex flow-sensitive alias analysis
 @cindex flow-insensitive alias analysis
 
-Alias analysis proceeds in 3 main phases:
+Alias analysis proceeds in 4 main phases:
 
 @enumerate
+@item   Structural alias analysis.
+
+This phase walks the types for structure variables, and determines which
+of the fields can overlap using offset and size of each field.  For each
+field, a ``subvariable'' called a ``Structure field tag'' (SFT)@ is
+created, which represents that field as a separate variable.  All
+accesses that could possibly overlap with a given field will have
+virtual operands for the SFT of that field.
+
+@smallexample
+struct foo
+@{
+  int a;
+  int b;
+@}
+struct foo temp;
+int bar (void)
+@{
+  int tmp1, tmp2, tmp3;
+  SFT.0_2 = V_MUST_DEF <SFT.0_1>
+  temp.a = 5;
+  SFT.1_4 = V_MUST_DEF <SFT.1_3>
+  temp.b = 6;
+  
+  VUSE <SFT.1_4>
+  tmp1_5 = temp.b;
+  VUSE <SFT.0_2>
+  tmp2_6 = temp.a;
+
+  tmp3_7 = tmp1_5 + tmp2_6;
+  return tmp3_7;
+@}
+@end smallexample
+
+If you copy the type tag for a variable for some reason, you probably
+also want to copy the subvariables for that variable.
+
 @item	Points-to and escape analysis.
 
 This phase walks the use-def chains in the SSA web looking for

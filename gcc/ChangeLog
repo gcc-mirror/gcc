@@ -1,3 +1,65 @@
+2005-03-12  Daniel Berlin  <dberlin@dberlin.org>
+
+	* tree-flow-inline.h (ref_contains_array_ref): New function.
+	(lookup_subvars_for_var): Ditto.
+	(get_subvars_for_var): Ditto.
+	(var_can_have_subvars): Ditto.
+
+	* tree-flow.h (mem_tag_kind): Add STRUCT_FIELD.
+	(struct subvar): New type.
+
+	* tree-dfa.c (okay_component_ref_for_subvars): New function.
+
+	* tree-optimize.c (init_tree_optimization_passes): Call
+	pass_create_structure_vars.
+
+	* tree-ssa-alias.c: Include vec.h.
+	(init_alias_info): Don't auto-clear call clobbered on struct-field
+	tags.
+	(compute_flow_insensitive_aliasing): Handle subvars.
+	(group_aliases): Handle STRUCT_FIELD aliases.
+	(setup_pointers_and_addressables): Ditto.
+	Don't mark variables non-addressable if they still have
+	addressable subvars.
+	Also mark subvars addressable when the real variable is marked
+	addressable. 
+	(add_pointed_to_var): Try to prune the pointed-to set by only
+	pointing to subvars when possible.
+	Otherwise, make sure we set addresses_needed and pt_vars to
+	properly include subvars.
+	(bitpos_of_field): New function.
+	(push_fields_onto_fieldstack): Ditto.
+	(get_or_create_used_part_for): Ditto.
+	(create_overlap_variables_for): Ditto.
+	(find_used_portions): Ditto.
+	(create_structure_vars): Ditto.
+	(pass_create_structure_vars): New structure.
+
+	* tree-ssa-operands.c (finalize_ssa_v_must_defs): Remove assert.
+	(get_expr_operands): Handle subvars.  Also try to turn
+	COMPONENT_REF accesses into must-defs now that we can accurately
+	portray it.
+	(note_addressable): Try to only mark as addressable those subvars
+	we know a COMPONENT_REF touches.
+	(overlap_subvar): New function.
+
+	* tree-vect-analyze.c (vect_object_analysis): Add new parameter.
+	Handle subvar storing.
+	(vect_address_analysis): Update caller of vect_object_analysis.
+
+	* tree-vect-transform.c (vect_create_data_ref_ptr): Copy subvars.
+
+	* tree-vectorizer.h (struct _stmt_vec_info): Add subvars member.
+	(STMT_VINFO_SUBVARS): New macro.
+
+	* common.opts: add flag_tree_salias.
+	
+	* opts.c (decode_options): flag_tree_salias defaults to on.
+	
+	* doc/invoke.texi: Document fdump-tree-svars and -ftree-salias.
+
+	* doc/tree-ssa.texi: Document structural alias analysis.
+	
 2005-03-12  Steven Bosscher  <stevenb@suse.de>
 
 	* tree-cfg.c (make_goto_expr_edges): Don't use error_mark_node.

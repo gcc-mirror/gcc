@@ -872,6 +872,10 @@ ftree-pre
 Common Report Var(flag_tree_pre)
 Enable SSA-PRE optimization on trees
 
+ftree-salias
+Common Report Var(flag_tree_salias)
+Perform structural alias analysis
+
 ftree-sink
 Common Report Var(flag_tree_sink)
 Enable SSA code sinking on trees

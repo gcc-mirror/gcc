@@ -878,4 +878,60 @@ op_iter_init_mustdef (ssa_op_iter *ptr, tree stmt, use_operand_p *kill,
   op_iter_init (ptr, stmt, SSA_OP_VMUSTDEFKILL);
   op_iter_next_mustdef (kill, def, ptr);
 }
+
+/* Return true if REF, a COMPONENT_REF, has an ARRAY_REF somewhere in it.  */
+
+static inline bool
+ref_contains_array_ref (tree ref)
+{
+  while (handled_component_p (ref))
+    {
+      if (TREE_CODE (ref) == ARRAY_REF)
+	return true;
+      ref = TREE_OPERAND (ref, 0);
+    }
+  return false;
+}
+
+/* Given a variable VAR, lookup and return a pointer to the list of
+   subvariables for it.  */
+
+static inline subvar_t *
+lookup_subvars_for_var (tree var)
+{
+  var_ann_t ann = var_ann (var);
+  gcc_assert (ann);
+  return &ann->subvars;
+}
+
+/* Given a variable VAR, return a linked list of subvariables for VAR, or
+   NULL, if there are no subvariables.  */
+
+static inline subvar_t
+get_subvars_for_var (tree var)
+{
+  subvar_t subvars;
+
+  gcc_assert (SSA_VAR_P (var));  
+  
+  if (TREE_CODE (var) == SSA_NAME)
+    subvars = *(lookup_subvars_for_var (SSA_NAME_VAR (var)));
+  else
+    subvars = *(lookup_subvars_for_var (var));
+  return subvars;
+}
+
+/* Return true if V is a tree that we can have subvars for.
+   Normally, this is any aggregate type, however, due to implementation
+   limitations ATM, we exclude array types as well.  */
+
+static inline bool
+var_can_have_subvars (tree v)
+{
+  return (AGGREGATE_TYPE_P (TREE_TYPE (v)) &&
+	  TREE_CODE (TREE_TYPE (v)) != ARRAY_TYPE);
+}
+
+  
+
 #endif /* _TREE_FLOW_INLINE_H  */
