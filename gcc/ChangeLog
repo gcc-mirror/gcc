@@ -1,5 +1,12 @@
 2004-02-06  Kazu Hirata  <kazu@cs.umass.edu>
 
+	* reload1.c (eliminate_regs_in_insn): If a set has a REG_EQUAL
+	note containing (plus (reg) (const_int)), where reg is an
+	eliminable reg, then perform the register elimination without
+	depending on eliminate_regs().
+
+2004-02-06  Kazu Hirata  <kazu@cs.umass.edu>
+
 	* config/arc/arc.c (arc_return_in_memory): Check the return
 	value of int_size_in_bytes against -1.  Don't check
 	TREE_ADDRESSABLE.
