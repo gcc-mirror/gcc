@@ -103,7 +103,7 @@ t_runc(alist *a)
 	rewind(tf);
 	if (copy(tf, loc, bf))
 		goto bad1;
-	b->urwt = 1;
+	b->uwrt = 1;
 	b->urw = 2;
 #ifdef NON_UNIX_STDIO
 	if (b->ufmt) {
