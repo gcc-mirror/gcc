@@ -25,6 +25,12 @@ Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
    We want to have non-NULL default definitions of all hook functions,
    even if they do nothing.  */
 
+#define TARGET_ASM_FUNCTION_PROLOGUE default_function_pro_epilogue
+#define TARGET_ASM_FUNCTION_EPILOGUE default_function_pro_epilogue
+
+#define TARGET_ASM_OUT {TARGET_ASM_FUNCTION_PROLOGUE,	\
+			TARGET_ASM_FUNCTION_EPILOGUE}
+
 /* All in tree.c.  */
 #define TARGET_MERGE_DECL_ATTRIBUTES merge_decl_attributes
 #define TARGET_MERGE_TYPE_ATTRIBUTES merge_type_attributes
@@ -36,6 +42,7 @@ Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 /* The whole shebang.  */
 #define TARGET_INITIALIZER			\
 {						\
+  TARGET_ASM_OUT,				\
   TARGET_MERGE_DECL_ATTRIBUTES,			\
   TARGET_MERGE_TYPE_ATTRIBUTES,			\
   TARGET_VALID_DECL_ATTRIBUTE,			\

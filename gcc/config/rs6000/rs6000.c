@@ -126,6 +126,8 @@ static void rs6000_free_machine_status PARAMS ((struct function *));
 static void rs6000_init_machine_status PARAMS ((struct function *));
 static int rs6000_ra_ever_killed PARAMS ((void));
 static int rs6000_valid_type_attribute_p PARAMS ((tree, tree, tree, tree));
+static void rs6000_output_function_prologue PARAMS ((FILE *, HOST_WIDE_INT));
+static void rs6000_output_function_epilogue PARAMS ((FILE *, HOST_WIDE_INT));
 
 /* Default register names.  */
 char rs6000_reg_names[][8] =
@@ -167,6 +169,11 @@ static char alt_reg_names[][8] =
 /* Initialize the GCC target structure.  */
 #undef TARGET_VALID_TYPE_ATTRIBUTE
 #define TARGET_VALID_TYPE_ATTRIBUTE rs6000_valid_type_attribute_p
+
+#undef TARGET_ASM_FUNCTION_PROLOGUE
+#define TARGET_ASM_FUNCTION_PROLOGUE rs6000_output_function_prologue
+#undef TARGET_ASM_FUNCTION_EPILOGUE
+#define TARGET_ASM_FUNCTION_EPILOGUE rs6000_output_function_epilogue
 
 struct gcc_target target = TARGET_INITIALIZER;
 
@@ -6175,10 +6182,10 @@ rs6000_emit_prologue ()
 
 
 /* Write function prologue.  */
-void
-output_prolog (file, size)
+static void
+rs6000_output_function_prologue (file, size)
      FILE *file;
-     int size ATTRIBUTE_UNUSED;
+     HOST_WIDE_INT size ATTRIBUTE_UNUSED;
 {
   rs6000_stack_t *info = rs6000_stack_info ();
 
@@ -6532,10 +6539,10 @@ rs6000_emit_epilogue (sibcall)
 
 /* Write function epilogue.  */
 
-void
-output_epilog (file, size)
+static void
+rs6000_output_function_epilogue (file, size)
      FILE *file;
-     int size ATTRIBUTE_UNUSED;
+     HOST_WIDE_INT size ATTRIBUTE_UNUSED;
 {
   rs6000_stack_t *info = rs6000_stack_info ();
 
@@ -6793,8 +6800,8 @@ output_epilog (file, size)
 
    The effect must be as if FUNCTION had been called directly with the adjusted
    first argument.  This macro is responsible for emitting all of the code for
-   a thunk function; `FUNCTION_PROLOGUE' and `FUNCTION_EPILOGUE' are not
-   invoked.
+   a thunk function; output_function_prologue() and output_function_epilogue()
+   are not invoked.
 
    The THUNK_FNDECL is redundant.  (DELTA and FUNCTION have already been
    extracted from it.)  It might possibly be useful on some targets, but

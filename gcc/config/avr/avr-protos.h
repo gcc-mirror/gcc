@@ -35,8 +35,6 @@ extern int    frame_pointer_required_p          PARAMS ((void));
 extern void   asm_globalize_label         PARAMS ((FILE *file, const char *name));
 extern void   order_regs_for_local_alloc  PARAMS ((void));
 extern int    initial_elimination_offset  PARAMS ((int from, int to));
-extern void   function_prologue           PARAMS ((FILE *file, int size));
-extern void   function_epilogue           PARAMS ((FILE *file, int size));
 extern void   progmem_section             PARAMS ((void));
 extern int    mask_one_bit_p              PARAMS ((HOST_WIDE_INT mask));
 extern void   gas_output_limited_string PARAMS ((FILE *file, const char *str));

@@ -40,6 +40,4 @@ extern int comparison_operator_index PARAMS ((rtx));
 #endif /* RTX_CODE */
 
 extern void output_ascii PARAMS ((FILE *, const char *, int));
-extern void output_function_epilogue PARAMS ((FILE *, int));
-extern void output_function_prologue PARAMS ((FILE *, int));
 extern const char *output_jump PARAMS ((const char *, const char *, int));

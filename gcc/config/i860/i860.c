@@ -51,6 +51,8 @@ static const char *singlemove_string PARAMS ((rtx *));
 static const char *load_opcode PARAMS ((enum machine_mode, const char *, rtx));
 static const char *store_opcode PARAMS ((enum machine_mode, const char *, rtx));
 static void output_size_for_block_move PARAMS ((rtx, rtx, rtx));
+static void i860_output_function_prologue PARAMS ((FILE *, HOST_WIDE_INT));
+static void i860_output_function_epilogue PARAMS ((FILE *, HOST_WIDE_INT));
 
 #ifndef I860_REG_PREFIX
 #define I860_REG_PREFIX ""
@@ -63,6 +65,10 @@ const char *i860_reg_prefix = I860_REG_PREFIX;
 rtx i860_compare_op0, i860_compare_op1;
 
 /* Initialize the GCC target structure.  */
+#undef TARGET_ASM_FUNCTION_PROLOGUE
+#define TARGET_ASM_FUNCTION_PROLOGUE i860_output_function_prologue
+#undef TARGET_ASM_FUNCTION_EPILOGUE
+#define TARGET_ASM_FUNCTION_EPILOGUE i860_output_function_epilogue
 
 struct gcc_target target = TARGET_INITIALIZER;
 
@@ -1557,7 +1563,6 @@ sfmode_constant_to_ulong (x)
 }
 
 /* This function generates the assembly code for function entry.
-   The macro FUNCTION_PROLOGUE in i860.h is defined to call this function.
 
    ASM_FILE is a stdio stream to output the code to.
    SIZE is an int: how many units of temporary storage to allocate.
@@ -1663,14 +1668,14 @@ char *current_function_original_name;
 static int must_preserve_r1;
 static unsigned must_preserve_bytes;
 
-void
-function_prologue (asm_file, local_bytes)
+static void
+i860_output_function_prologue (asm_file, local_bytes)
      register FILE *asm_file;
-     register unsigned local_bytes;
+     register HOST_WIDE_INT local_bytes;
 {
-  register unsigned frame_lower_bytes;
-  register unsigned frame_upper_bytes;
-  register unsigned total_fsize;
+  register HOST_WIDE_INT frame_lower_bytes;
+  register HOST_WIDE_INT frame_upper_bytes;
+  register HOST_WIDE_INT total_fsize;
   register unsigned preserved_reg_bytes = 0;
   register unsigned i;
   register unsigned preserved_so_far = 0;
@@ -1929,7 +1934,6 @@ function_prologue (asm_file, local_bytes)
 }
 
 /* This function generates the assembly code for function exit.
-   The macro FUNCTION_EPILOGUE in i860.h is defined to call this function.
 
    ASM_FILE is a stdio stream to output the code to.
    SIZE is an int: how many units of temporary storage to allocate.
@@ -1985,14 +1989,14 @@ typedef struct TDESC {
 	unsigned int negative_frame_size;	/* same as frame_lower_bytes */
 } TDESC;
 
-void
-function_epilogue (asm_file, local_bytes)
+static void
+i860_output_function_epilogue (asm_file, local_bytes)
      register FILE *asm_file;
-     register unsigned local_bytes;
+     register HOST_WIDE_INT local_bytes;
 {
-  register unsigned frame_upper_bytes;
-  register unsigned frame_lower_bytes;
-  register unsigned preserved_reg_bytes = 0;
+  register HOST_WIDE_INT frame_upper_bytes;
+  register HOST_WIDE_INT frame_lower_bytes;
+  register HOST_WIDE_INT preserved_reg_bytes = 0;
   register unsigned i;
   register unsigned restored_so_far = 0;
   register unsigned int_restored;

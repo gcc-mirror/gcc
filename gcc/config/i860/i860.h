@@ -557,14 +557,6 @@ struct cumulative_args { int ints, floats; };
       ? PARM_BOUNDARY						\
       : GET_MODE_ALIGNMENT(MODE)))
 
-/* This macro generates the assembly code for function entry.
-
-   FILE is a stdio stream to output the code to.
-   SIZE is an int: how many units of temporary storage to allocate.
-*/
-
-#define FUNCTION_PROLOGUE(FILE, SIZE) function_prologue ((FILE), (SIZE))
-
 /* Output a no-op just before the beginning of the function,
    to ensure that there does not appear to be a delayed branch there.
    Such a thing would confuse interrupt recovery.  */
@@ -583,19 +575,6 @@ struct cumulative_args { int ints, floats; };
    No definition is equivalent to always zero.  */
 
 #define EXIT_IGNORE_STACK 1
-
-/* This macro generates the assembly code for function exit.
-
-   FILE is a stdio stream to output the code to.
-   SIZE is an int: how many units of temporary storage to allocate.
-
-   The function epilogue should not depend on the current stack pointer!
-   It should use the frame pointer only.  This is mandatory because
-   of alloca; we also take advantage of it to omit stack adjustments
-   before returning.
-*/
-
-#define FUNCTION_EPILOGUE(FILE, SIZE) function_epilogue ((FILE), (SIZE))
 
 /* Generate necessary RTL for __builtin_saveregs().  */
 #define EXPAND_BUILTIN_SAVEREGS() \

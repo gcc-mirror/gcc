@@ -47,6 +47,9 @@ Boston, MA 02111-1307, USA.  */
 #include "target.h"
 #include "target-def.h"
 
+static void i960_output_function_prologue PARAMS ((FILE *, HOST_WIDE_INT));
+static void i960_output_function_epilogue PARAMS ((FILE *, HOST_WIDE_INT));
+
 /* Save the operands last given to a compare for use when we
    generate a scc or bcc insn.  */
 
@@ -90,6 +93,10 @@ static int ret_label = 0;
  || current_function_varargs)
 
 /* Initialize the GCC target structure.  */
+#undef TARGET_ASM_FUNCTION_PROLOGUE
+#define TARGET_ASM_FUNCTION_PROLOGUE i960_output_function_prologue
+#undef TARGET_ASM_FUNCTION_EPILOGUE
+#define TARGET_ASM_FUNCTION_EPILOGUE i960_output_function_epilogue
 
 struct gcc_target target = TARGET_INITIALIZER;
 
@@ -1261,16 +1268,16 @@ i960_split_reg_group (reg_groups, nw, subgroup_length)
 
 /* Output code for the function prologue.  */
 
-void
-i960_function_prologue (file, size)
+static void
+i960_output_function_prologue (file, size)
      FILE *file;
-     unsigned int size;
+     HOST_WIDE_INT size;
 {
   register int i, j, nr;
   int n_saved_regs = 0;
   int n_remaining_saved_regs;
-  int lvar_size;
-  int actual_fsize, offset;
+  HOST_WIDE_INT lvar_size;
+  HOST_WIDE_INT actual_fsize, offset;
   int gnw, lnw;
   struct reg_group *g, *l;
   char tmpstr[1000];
@@ -1539,10 +1546,10 @@ output_function_profiler (file, labelno)
 
 /* Output code for the function epilogue.  */
 
-void
-i960_function_epilogue (file, size)
+static void
+i960_output_function_epilogue (file, size)
      FILE *file;
-     unsigned int size ATTRIBUTE_UNUSED;
+     HOST_WIDE_INT size ATTRIBUTE_UNUSED;
 {
   if (i960_leaf_ret_reg >= 0)
     {

@@ -834,35 +834,11 @@ arc_setup_incoming_varargs(&ARGS_SO_FAR, MODE, TYPE, &PRETEND_SIZE, NO_RTL)
    is passed to a function, or 0 to use `invisible' first argument.  */
 #define STRUCT_VALUE 0
 
-/* Function entry and exit.  */
-
-/* This macro generates the assembly code for function entry.
-   FILE is a stdio stream to output the code to.
-   SIZE is an int: how many units of temporary storage to allocate.
-   Refer to the array `regs_ever_live' to determine which registers
-   to save; `regs_ever_live[I]' is nonzero if register number I
-   is ever used in the function.  This macro is responsible for
-   knowing which registers should not be saved even if used.  */
-#define FUNCTION_PROLOGUE(FILE, SIZE) \
-arc_output_function_prologue (FILE, SIZE)
-
 /* EXIT_IGNORE_STACK should be nonzero if, when returning from a function,
    the stack pointer does not matter.  The value is tested only in
    functions that have frame pointers.
    No definition is equivalent to always zero.  */
 #define EXIT_IGNORE_STACK 0
-
-/* This macro generates the assembly code for function exit,
-   on machines that need it.  If FUNCTION_EPILOGUE is not defined
-   then individual return instructions are generated for each
-   return statement.  Args are same as for FUNCTION_PROLOGUE.
-
-   The function epilogue should not depend on the current stack pointer!
-   It should use the frame pointer only.  This is mandatory because
-   of alloca; we also take advantage of it to omit stack adjustments
-   before returning.  */
-#define FUNCTION_EPILOGUE(FILE, SIZE) \
-arc_output_function_epilogue (FILE, SIZE)
 
 /* Epilogue delay slots.  */
 #define DELAY_SLOTS_FOR_EPILOGUE arc_delay_slots_for_epilogue ()

@@ -25,6 +25,7 @@ Boston, MA 02111-1307, USA.  */
 #define SGS_NO_LI		/* Suppress jump table label usage */
 #endif
 
+#define NEWS
 #define NO_DOLLAR_IN_LABEL
 #define NO_DOT_IN_LABEL
 
@@ -98,8 +99,6 @@ Boston, MA 02111-1307, USA.  */
 #undef FUNCTION_PROFILER
 
 #ifdef MOTOROLA
-#undef FUNCTION_PROLOGUE
-#undef FUNCTION_EPILOGUE
 #undef REGISTER_NAMES
 #undef ASM_OUTPUT_REG_PUSH
 #undef ASM_OUTPUT_REG_POP
@@ -139,110 +138,8 @@ Boston, MA 02111-1307, USA.  */
 
 #ifdef MOTOROLA
 
-#define FUNCTION_PROLOGUE(FILE, SIZE)     \
-{ register int regno;						\
-  register int mask = 0;					\
-  extern char call_used_regs[];					\
-  int fsize = ((SIZE) + 3) & -4;				\
-  if (frame_pointer_needed)					\
-    { if (fsize < 0x8000)			                \
-        fprintf (FILE, "\tlink fp,#%d\n", -fsize);		\
-      else if (TARGET_68020)                                    \
-        fprintf (FILE, "\tlink.l fp,#%d\n", -fsize);            \
-      else							\
-	fprintf (FILE, "\tlink fp,#0\n\tsub.l #%d,sp\n", fsize);\
-    }								\
-  else if (fsize)						\
-    {								\
-      int amt = fsize + 4;					\
-      /* Adding negative number is faster on the 68040.  */	\
-      if (fsize + 4 < 0x8000)					\
-	asm_fprintf (FILE, "\tadd.w %0I%d,%Rsp\n", - amt);	\
-      else							\
-	asm_fprintf (FILE, "\tadd.l %0I%d,%Rsp\n", - amt);	\
-    }								\
-  for (regno = 16; regno < FIRST_PSEUDO_REGISTER; regno++)	\
-    if (regs_ever_live[regno] && ! call_used_regs[regno])	\
-       mask |= 1 << (regno - 16);				\
-  if (mask != 0)						\
-    fprintf (FILE, "\tfmovem.x #0x%x,-(sp)\n", mask & 0xff);    \
-  mask = 0;							\
-  for (regno = 0; regno < 16; regno++)				\
-    if (regs_ever_live[regno] && ! call_used_regs[regno])	\
-       mask |= 1 << (15 - regno);				\
-  if (frame_pointer_needed)					\
-    mask &= ~ (1 << (15-FRAME_POINTER_REGNUM));			\
-  if (exact_log2 (mask) >= 0)					\
-    fprintf (FILE, "\tmove.l %s,-(sp)\n", reg_names[15 - exact_log2 (mask)]);  \
-  else if (mask) fprintf (FILE, "\tmovem.l #0x%x,-(sp)\n", mask); }
-
 #define FUNCTION_PROFILER(FILE, LABEL_NO) \
    fprintf (FILE, "\tmove.l #LP%d,d0\n\tjsr mcount\n", (LABEL_NO));
-
-#define FUNCTION_EPILOGUE(FILE, SIZE) \
-{ register int regno;						\
-  register int mask, fmask;					\
-  register int nregs;						\
-  int offset, foffset;						\
-  extern char call_used_regs[];					\
-  int fsize = ((SIZE) + 3) & -4;				\
-  int big = 0;							\
-  nregs = 0;  fmask = 0;					\
-  for (regno = 16; regno < FIRST_PSEUDO_REGISTER; regno++)	\
-    if (regs_ever_live[regno] && ! call_used_regs[regno])	\
-      { nregs++; fmask |= 1 << (23 - regno); }			\
-  foffset = nregs * 12;						\
-  nregs = 0;  mask = 0;						\
-  if (frame_pointer_needed) regs_ever_live[FRAME_POINTER_REGNUM] = 0; \
-  for (regno = 0; regno < 16; regno++)				\
-    if (regs_ever_live[regno] && ! call_used_regs[regno])	\
-      { nregs++; mask |= 1 << regno; }				\
-  offset = foffset + nregs * 4;					\
-  if (offset + fsize >= 0x8000 					\
-      && frame_pointer_needed					\
-      && (mask || fmask))					\
-    { fprintf (FILE, "\tmove.l #%d,a0\n", -fsize);		\
-      fsize = 0, big = 1; }					\
-  if (exact_log2 (mask) >= 0) {					\
-    if (big)							\
-      fprintf (FILE, "\tmove.l (-%d,fp,a0.l),%s\n",		\
-	       offset + fsize, reg_names[exact_log2 (mask)]);	\
-    else if (! frame_pointer_needed)				\
-      fprintf (FILE, "\tmove.l (sp)+,%s\n",			\
-	       reg_names[exact_log2 (mask)]);			\
-    else							\
-      fprintf (FILE, "\tmove.l (-%d,fp),%s\n",			\
-	       offset + fsize, reg_names[exact_log2 (mask)]); }	\
-  else if (mask) {						\
-    if (big)							\
-      fprintf (FILE, "\tmovem.l (-%d,fp,a0.l),#0x%x\n",		\
-	       offset + fsize, mask);				\
-    else if (! frame_pointer_needed)				\
-      fprintf (FILE, "\tmovem.l (sp)+,#0x%x\n", mask);		\
-    else							\
-      fprintf (FILE, "\tmovem.l (-%d,fp),#0x%x\n",		\
-	       offset + fsize, mask); }				\
-  if (fmask) {							\
-    if (big)							\
-      fprintf (FILE, "\tfmovem.x (-%d,fp,a0.l),#0x%x\n",	\
-	       foffset + fsize, fmask);				\
-    else if (! frame_pointer_needed)				\
-      fprintf (FILE, "\tfmovem.x (sp)+,#0x%x\n", fmask);	\
-    else							\
-      fprintf (FILE, "\tfmovem.x (-%d,fp),#0x%x\n",		\
-	       foffset + fsize, fmask); }			\
-  if (frame_pointer_needed)					\
-    fprintf (FILE, "\tunlk fp\n");				\
-  else if (fsize)						\
-    {								\
-      if (fsize + 4 < 0x8000)					\
-	fprintf (FILE, "\tadd.w #%d,sp\n", fsize + 4);		\
-      else							\
-	fprintf (FILE, "\tadd.l #%d,sp\n", fsize + 4);		\
-    }								\
-  if (current_function_pops_args)				\
-    fprintf (FILE, "\trtd #%d\n", current_function_pops_args);	\
-  else fprintf (FILE, "\trts\n"); }
 
 /* Difference from m68k.h is in `fp' instead of `a6'.  */
 

@@ -68,6 +68,8 @@ static void remove_useless_addtr_insns PARAMS ((rtx, int));
 static rtx store_reg PARAMS ((int, int, int));
 static rtx load_reg PARAMS ((int, int, int));
 static rtx set_reg_plus_d PARAMS ((int, int, int));
+static void pa_output_function_prologue PARAMS ((FILE *, HOST_WIDE_INT));
+static void pa_output_function_epilogue PARAMS ((FILE *, HOST_WIDE_INT));
 
 /* Save the operands last given to a compare for use when we
    generate a scc or bcc insn.  */
@@ -109,6 +111,10 @@ struct deferred_plabel
 int n_deferred_plabels = 0;
 
 /* Initialize the GCC target structure.  */
+#undef TARGET_ASM_FUNCTION_PROLOGUE
+#define TARGET_ASM_FUNCTION_PROLOGUE pa_output_function_prologue
+#undef TARGET_ASM_FUNCTION_EPILOGUE
+#define TARGET_ASM_FUNCTION_EPILOGUE pa_output_function_epilogue
 
 struct gcc_target target = TARGET_INITIALIZER;
 
@@ -2778,7 +2784,7 @@ remove_useless_addtr_insns (insns, check_notes)
 
 */
 
-/* Global variables set by FUNCTION_PROLOGUE.  */
+/* Global variables set by output_function_prologue().  */
 /* Size of frame.  Need to know this to emit return insns from
    leaf procedures.  */
 static int actual_fsize;
@@ -2893,10 +2899,27 @@ compute_frame_size (size, fregs_live)
   return (fsize + STACK_BOUNDARY - 1) & ~(STACK_BOUNDARY - 1);
 }
 
-void
-output_function_prologue (file, size)
+/* Generate the assembly code for function entry.  FILE is a stdio
+   stream to output the code to.  SIZE is an int: how many units of
+   temporary storage to allocate.
+
+   Refer to the array `regs_ever_live' to determine which registers to
+   save; `regs_ever_live[I]' is nonzero if register number I is ever
+   used in the function.  This function is responsible for knowing
+   which registers should not be saved even if used.  */
+
+/* On HP-PA, move-double insns between fpu and cpu need an 8-byte block
+   of memory.  If any fpu reg is used in the function, we allocate
+   such a block here, at the bottom of the frame, just in case it's needed.
+
+   If this function is a leaf procedure, then we may choose not
+   to do a "save" insn.  The decision about whether or not
+   to do this is made in regclass.c.  */
+
+static void
+pa_output_function_prologue (file, size)
      FILE *file;
-     int size ATTRIBUTE_UNUSED;
+     HOST_WIDE_INT size ATTRIBUTE_UNUSED;
 {
   /* The function's label and associated .PROC must never be
      separated and must be output *after* any profiling declarations
@@ -3213,10 +3236,18 @@ load_reg (reg, disp, base)
   return i;
 }
 
-void
-output_function_epilogue (file, size)
+/* This function generates the assembly code for function exit.
+   Args are as for output_function_prologue ().
+
+   The function epilogue should not depend on the current stack
+   pointer!  It should use the frame pointer only.  This is mandatory
+   because of alloca; we also take advantage of it to omit stack
+   adjustments before returning. */
+
+static void
+pa_output_function_epilogue (file, size)
      FILE *file;
-     int size ATTRIBUTE_UNUSED;
+     HOST_WIDE_INT size ATTRIBUTE_UNUSED;
 {
   rtx insn = get_last_insn ();
 

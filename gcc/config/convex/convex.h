@@ -818,32 +818,6 @@ enum reg_class {
 #define FUNCTION_ARG(CUM, MODE, TYPE, NAMED) \
   ((MODE) == VOIDmode ? GEN_INT ((CUM)) : 0)
 
-/* This macro generates the assembly code for function entry.
-   FILE is a stdio stream to output the code to.
-   SIZE is an int: how many units of temporary storage to allocate.
-   Refer to the array `regs_ever_live' to determine which registers
-   to save; `regs_ever_live[I]' is nonzero if register number I
-   is ever used in the function.  This macro is responsible for
-   knowing which registers should not be saved even if used.  */
-
-#define FUNCTION_PROLOGUE(FILE, SIZE) 					\
-{									\
-  int size = ((SIZE) + 7) & -8;						\
-  if (size != 0)							\
-    fprintf (FILE, "\tsub.w #%d,sp\n", size);				\
-}
-
-/* This macro generates the assembly code for function exit,
-   on machines that need it.  If FUNCTION_EPILOGUE is not defined
-   then individual return instructions are generated for each
-   return statement.  Args are same as for FUNCTION_PROLOGUE.  */
-
-#define FUNCTION_EPILOGUE(FILE, SIZE)					\
-{									\
-  /* Follow function with a zero to stop c34 icache prefetching. */	\
-  fprintf (FILE, "\tds.h 0\n");						\
-}
-
 /* Output assembler code for a block containing the constant parts
    of a trampoline, leaving space for the variable parts.  */
 

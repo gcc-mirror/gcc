@@ -37,11 +37,104 @@ rtx cmp_op0=0, cmp_op1=0;
 static const char *const cmp_tab[] = {
     "gt", "gt", "eq", "eq", "ge", "ge", "lt", "lt", "ne", "ne",
     "le", "le" };
+
+static void elxsi_output_function_prologue PARAMS ((FILE *, HOST_WIDE_INT));
+static void elxsi_output_function_epilogue PARAMS ((FILE *, HOST_WIDE_INT));
 
 /* Initialize the GCC target structure.  */
+#undef TARGET_ASM_FUNCTION_PROLOGUE
+#define TARGET_ASM_FUNCTION_PROLOGUE elxsi_output_function_prologue
+#undef TARGET_ASM_FUNCTION_EPILOGUE
+#define TARGET_ASM_FUNCTION_EPILOGUE elxsi_output_function_epilogue
 
 struct gcc_target target = TARGET_INITIALIZER;
 
+/* Generate the assembly code for function entry.  FILE is a stdio
+   stream to output the code to.  SIZE is an int: how many units of
+   temporary storage to allocate.
+
+   Refer to the array `regs_ever_live' to determine which registers to
+   save; `regs_ever_live[I]' is nonzero if register number I is ever
+   used in the function.  This function is responsible for knowing
+   which registers should not be saved even if used.  */
+
+static void
+elxsi_output_function_prologue (file, size)
+     FILE *file;
+     HOST_WIDE_INT size;
+{
+  register int regno;
+  register int cnt = 0;
+  extern char call_used_regs[];
+
+  /* the below two lines are a HACK, and should be deleted, but
+     for now are very much needed (1.35) */
+  if (frame_pointer_needed)
+    regs_ever_live[14] = 1, call_used_regs[14] = 0;
+
+  for (regno = 0; regno < FIRST_PSEUDO_REGISTER; regno++)
+    if (regs_ever_live[regno] && !call_used_regs[regno])
+      cnt += 8;
+
+  if (size + cnt)
+    fprintf (file, "\tadd.64\t.sp,=%d\n", -size - cnt);
+
+  cnt = 0;
+  for (regno = 0; regno < FIRST_PSEUDO_REGISTER; regno++)
+    if (regs_ever_live[regno] && !call_used_regs[regno])
+      fprintf (file, "\tst.64\t.r%d,[.sp]%d\n", regno, (cnt += 8) - 12);
+
+  if (frame_pointer_needed)
+    fprintf (file, "\tadd.64\t.r14,.sp,=%d\n", size + cnt);
+}
+
+/* This function generates the assembly code for function exit.
+   Args are as for output_function_prologue ().
+
+   The function epilogue should not depend on the current stack
+   pointer!  It should use the frame pointer only.  This is mandatory
+   because of alloca; we also take advantage of it to omit stack
+   adjustments before returning. */
+
+static void
+elxsi_output_function_epilogue (file, size)
+     FILE *file;
+     HOST_WIDE_INT size;
+{
+  register int regno;
+  register int cnt = 0;
+  extern char call_used_regs[];
+
+  /* this conditional is ONLY here because there is a BUG;
+     EXIT_IGNORE_STACK is ignored itself when the first part of
+     the condition is true! (at least in version 1.35) */
+  /* the 8*10 is for 64 bits of .r5 - .r14 */
+  if (current_function_calls_alloca || size >= (256 - 8 * 10))
+    {
+      /* use .r4 as a temporary! Ok for now.... */
+      fprintf (file, "\tld.64\t.r4,.r14\n");
+
+      for (regno = FIRST_PSEUDO_REGISTER-1; regno >= 0; --regno)
+	if (regs_ever_live[regno] && !call_used_regs[regno])
+	  cnt += 8;
+
+      for (regno = 0; regno < FIRST_PSEUDO_REGISTER; ++regno)
+	if (regs_ever_live[regno] && !call_used_regs[regno])
+	  fprintf (file, "\tld.64\t.r%d,[.r14]%d\n", regno,
+		   -((cnt -= 8) + 8) - 4 - size);
+
+      fprintf (file, "\tld.64\t.sp,.r4\n\texit\t0\n");
+    }
+  else
+    {
+      for (regno = 0; regno < FIRST_PSEUDO_REGISTER; ++regno)
+	if (regs_ever_live[regno] && !call_used_regs[regno])
+	  fprintf (file, "\tld.64\t.r%d,[.sp]%d\n", regno, (cnt + =8) - 12);
+
+      fprintf (file, "\texit\t%d\n", size + cnt);
+    }
+}
+
 /* type is the index into the above table */
 /* s is "" for signed, or "u" for unsigned */
 const char *

@@ -156,6 +156,14 @@ static void ultra_flush_pipeline PARAMS ((void));
 static void ultra_rescan_pipeline_state PARAMS ((rtx *, int));
 static int set_extends PARAMS ((rtx));
 static void output_restore_regs PARAMS ((FILE *, int));
+static void sparc_output_function_prologue PARAMS ((FILE *, HOST_WIDE_INT));
+static void sparc_output_function_epilogue PARAMS ((FILE *, HOST_WIDE_INT));
+static void sparc_flat_function_epilogue PARAMS ((FILE *, HOST_WIDE_INT));
+static void sparc_flat_function_prologue PARAMS ((FILE *, HOST_WIDE_INT));
+static void sparc_nonflat_function_epilogue PARAMS ((FILE *, HOST_WIDE_INT,
+						     int));
+static void sparc_nonflat_function_prologue PARAMS ((FILE *, HOST_WIDE_INT,
+						     int));
 
 /* Option handling.  */
 
@@ -179,6 +187,10 @@ struct sparc_cpu_select sparc_select[] =
 enum processor_type sparc_cpu;
 
 /* Initialize the GCC target structure.  */
+#undef TARGET_ASM_FUNCTION_PROLOGUE
+#define TARGET_ASM_FUNCTION_PROLOGUE sparc_output_function_prologue
+#undef TARGET_ASM_FUNCTION_EPILOGUE
+#define TARGET_ASM_FUNCTION_EPILOGUE sparc_output_function_epilogue
 
 struct gcc_target target = TARGET_INITIALIZER;
 
@@ -3388,12 +3400,40 @@ sparc_output_scratch_registers (file)
 #endif
 }
 
+/* This function generates the assembly code for function entry.
+   FILE is a stdio stream to output the code to.
+   SIZE is an int: how many units of temporary storage to allocate.
+   Refer to the array `regs_ever_live' to determine which registers
+   to save; `regs_ever_live[I]' is nonzero if register number I
+   is ever used in the function.  This macro is responsible for
+   knowing which registers should not be saved even if used.  */
+
+/* On SPARC, move-double insns between fpu and cpu need an 8-byte block
+   of memory.  If any fpu reg is used in the function, we allocate
+   such a block here, at the bottom of the frame, just in case it's needed.
+
+   If this function is a leaf procedure, then we may choose not
+   to do a "save" insn.  The decision about whether or not
+   to do this is made in regclass.c.  */
+
+static void
+sparc_output_function_prologue (file, size)
+     FILE *file;
+     HOST_WIDE_INT size;
+{
+  if (TARGET_FLAT)
+    sparc_flat_function_prologue (file, size);
+  else
+    sparc_nonflat_function_prologue (file, size,
+				     current_function_uses_only_leaf_regs);
+}
+
 /* Output code for the function prologue.  */
 
-void
-output_function_prologue (file, size, leaf_function)
+static void
+sparc_nonflat_function_prologue (file, size, leaf_function)
      FILE *file;
-     int size;
+     HOST_WIDE_INT size;
      int leaf_function;
 {
   sparc_output_scratch_registers (file);
@@ -3555,12 +3595,32 @@ output_restore_regs (file, leaf_function)
     restore_regs (file, 32, TARGET_V9 ? 96 : 64, base, offset, n_regs);
 }
 
+/* This function generates the assembly code for function exit,
+   on machines that need it.
+
+   The function epilogue should not depend on the current stack pointer!
+   It should use the frame pointer only.  This is mandatory because
+   of alloca; we also take advantage of it to omit stack adjustments
+   before returning.  */
+
+static void
+sparc_output_function_epilogue (file, size)
+     FILE *file;
+     HOST_WIDE_INT size;
+{
+  if (TARGET_FLAT)
+    sparc_flat_function_epilogue (file, size);
+  else
+    sparc_nonflat_function_epilogue (file, size,
+				     current_function_uses_only_leaf_regs);
+}
+
 /* Output code for the function epilogue.  */
 
-void
-output_function_epilogue (file, size, leaf_function)
+static void
+sparc_nonflat_function_epilogue (file, size, leaf_function)
      FILE *file;
-     int size ATTRIBUTE_UNUSED;
+     HOST_WIDE_INT size ATTRIBUTE_UNUSED;
      int leaf_function;
 {
   const char *ret;
@@ -6571,10 +6631,10 @@ sparc_flat_save_restore (file, base_reg, offset, gmask, fmask, word_op,
 
 /* Set up the stack and frame (if desired) for the function.  */
 
-void
-sparc_flat_output_function_prologue (file, size)
+static void
+sparc_flat_function_prologue (file, size)
      FILE *file;
-     int size;
+     HOST_WIDE_INT size;
 {
   const char *sp_str = reg_names[STACK_POINTER_REGNUM];
   unsigned long gmask = current_frame_info.gmask;
@@ -6688,9 +6748,9 @@ sparc_flat_output_function_prologue (file, size)
 	  /* Subtract %sp in two steps, but make sure there is always a
 	     64 byte register save area, and %sp is properly aligned.  */
 	  /* Amount to decrement %sp by, the first time.  */
-	  unsigned int size1 = ((size - reg_offset + 64) + 15) & -16;
+	  unsigned HOST_WIDE_INT size1 = ((size - reg_offset + 64) + 15) & -16;
 	  /* Offset to register save area from %sp.  */
-	  unsigned int offset = size1 - (size - reg_offset);
+	  unsigned HOST_WIDE_INT offset = size1 - (size - reg_offset);
 	  
 	  if (size1 <= 4096)
 	    {
@@ -6756,10 +6816,10 @@ sparc_flat_output_function_prologue (file, size)
 /* Do any necessary cleanup after a function to restore stack, frame,
    and regs. */
 
-void
-sparc_flat_output_function_epilogue (file, size)
+static void
+sparc_flat_function_epilogue (file, size)
      FILE *file;
-     int size;
+     HOST_WIDE_INT size;
 {
   rtx epilogue_delay = current_function_epilogue_delay_list;
   int noepilogue = FALSE;
@@ -6791,8 +6851,8 @@ sparc_flat_output_function_epilogue (file, size)
 
   if (!noepilogue)
     {
-      unsigned int reg_offset = current_frame_info.reg_offset;
-      unsigned int size1;
+      unsigned HOST_WIDE_INT reg_offset = current_frame_info.reg_offset;
+      unsigned HOST_WIDE_INT size1;
       const char *sp_str = reg_names[STACK_POINTER_REGNUM];
       const char *fp_str = reg_names[FRAME_POINTER_REGNUM];
       const char *t1_str = "%g1";

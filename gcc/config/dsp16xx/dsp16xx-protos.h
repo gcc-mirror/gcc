@@ -81,5 +81,3 @@ extern struct rtx_def *(*dsp16xx_compare_gen) PARAMS (());
 extern int hard_regno_mode_ok PARAMS ((int, enum machine_mode));
 extern enum reg_class dsp16xx_reg_class_from_letter PARAMS ((int));
 extern int regno_reg_class PARAMS ((int));
-extern void function_prologue PARAMS ((FILE *, int));
-extern void function_epilogue PARAMS ((FILE *, int));

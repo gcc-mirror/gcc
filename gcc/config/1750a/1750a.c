@@ -32,6 +32,7 @@ Boston, MA 02111-1307, USA.  */
 #include "real.h"
 #include "regs.h"
 #include "output.h"
+#include "flags.h"
 #include "tm_p.h"
 #include "target.h"
 #include "target-def.h"
@@ -46,11 +47,106 @@ const char *const sectname[4] =
 {"Init", "Normal", "Konst", "Static"};
 
 static int which_bit PARAMS ((int));
+static void output_function_prologue PARAMS ((FILE *, HOST_WIDE_INT));
+static void output_function_epilogue PARAMS ((FILE *, HOST_WIDE_INT));
 
 /* Initialize the GCC target structure.  */
+#undef TARGET_ASM_FUNCTION_PROLOGUE
+#define TARGET_ASM_FUNCTION_PROLOGUE output_function_prologue
+#undef TARGET_ASM_FUNCTION_EPILOGUE
+#define TARGET_ASM_FUNCTION_EPILOGUE output_function_epilogue
 
 struct gcc_target target = TARGET_INITIALIZER;
 
+/* Generate the assembly code for function entry.  FILE is a stdio
+   stream to output the code to.  SIZE is an int: how many units of
+   temporary storage to allocate.
+
+   Refer to the array `regs_ever_live' to determine which registers to
+   save; `regs_ever_live[I]' is nonzero if register number I is ever
+   used in the function.  This function is responsible for knowing
+   which registers should not be saved even if used.  */
+
+static void
+output_function_prologue (file, size)
+     FILE *file;
+     HOST_WIDE_INT size;
+{
+  if (flag_verbose_asm)
+    {
+      int regno, regs_used = 0;
+
+      fprintf (file, "\t; registers used: ");
+      for (regno = 0; regno < 14; regno++)
+	if (regs_ever_live[regno])
+	  {
+	    fprintf (file, " %s", reg_names[regno]);
+	    regs_used++;
+	  }
+
+      if (regs_used == 0)
+	fprintf (file, "(none)");
+    }
+
+  if (size > 0)
+    {
+      fprintf (file, "\n\t%s\tr15,%d",
+	       (size <= 16 ? "sisp" : "sim"), size);
+      if (flag_verbose_asm)
+	fprintf (file, "  ; reserve local-variable space");
+    }
+
+  if (frame_pointer_needed)
+    {
+      fprintf(file, "\n\tpshm\tr14,r14");
+      if (flag_verbose_asm)
+	fprintf (file, "  ; push old frame");
+      fprintf (file, "\n\tlr\tr14,r15");
+      if (flag_verbose_asm)
+	fprintf (file, "  ; set new frame");
+    }
+
+  fprintf (file, "\n");
+  program_counter = 0;
+  jmplbl_ndx = -1;
+}
+
+/* This function generates the assembly code for function exit.
+   Args are as for output_function_prologue ().
+
+   The function epilogue should not depend on the current stack
+   pointer!  It should use the frame pointer only.  This is mandatory
+   because of alloca; we also take advantage of it to omit stack
+   adjustments before returning. */
+
+static void
+output_function_epilogue (file, size)
+     FILE *file;
+     HOST_WIDE_INT size;
+{
+  if (frame_pointer_needed)
+    {
+      fprintf (file, "\tlr\tr15,r14");
+      if (flag_verbose_asm)
+        fprintf (file, "  ; set stack ptr to frame ptr");
+      fprintf (file, "\n\tpopm\tr14,r14");
+      if (flag_verbose_asm)
+        fprintf (file, "  ; restore previous frame ptr");
+      fprintf (file, "\n");
+    }
+
+  if (size > 0)
+    {
+      fprintf (file, "\t%s\tr15,%d",
+	       (size <= 16 ? "aisp" : "aim"), size);
+      if (flag_verbose_asm)
+	fprintf (file, "  ; free up local-var space");
+      fprintf (file, "\n");
+    }
+
+  fprintf (file, "\turs\tr15\n\n");
+}
+
 void
 notice_update_cc (exp)
      rtx exp;

@@ -30,17 +30,88 @@ Boston, MA 02111-1307, USA.  */
 #include "function.h"
 #include "output.h"
 #include "insn-attr.h"
-#ifdef VMS_TARGET
 #include "tree.h"
-#endif
+#include "recog.h"
 #include "tm_p.h"
 #include "target.h"
 #include "target-def.h"
+
+static void vax_output_function_prologue PARAMS ((FILE *, HOST_WIDE_INT));
 
 /* Initialize the GCC target structure.  */
+#undef TARGET_ASM_FUNCTION_PROLOGUE
+#define TARGET_ASM_FUNCTION_PROLOGUE vax_output_function_prologue
 
 struct gcc_target target = TARGET_INITIALIZER;
 
+/* Generate the assembly code for function entry.  FILE is a stdio
+   stream to output the code to.  SIZE is an int: how many units of
+   temporary storage to allocate.
+
+   Refer to the array `regs_ever_live' to determine which registers to
+   save; `regs_ever_live[I]' is nonzero if register number I is ever
+   used in the function.  This function is responsible for knowing
+   which registers should not be saved even if used.  */
+
+static void
+vax_output_function_prologue (file, size)
+     FILE * file;
+     HOST_WIDE_INT size;
+{
+  register int regno;
+  register int mask = 0;
+  extern char call_used_regs[];
+
+  for (regno = 0; regno < FIRST_PSEUDO_REGISTER; regno++)
+    if (regs_ever_live[regno] && !call_used_regs[regno])
+      mask |= 1 << regno;
+
+  fprintf (file, "\t.word 0x%x\n", mask);
+
+  if (VMS_TARGET)
+    {
+      /*
+       * This works for both gcc and g++.  It first checks to see if
+       * the current routine is "main", which will only happen for
+       * GCC, and add the jsb if it is.  If is not the case then try
+       * and see if __MAIN_NAME is part of current_function_name,
+       * which will only happen if we are running g++, and add the jsb
+       * if it is.  In gcc there should never be a paren in the
+       * function name, and in g++ there is always a "(" in the
+       * function name, thus there should never be any confusion.
+       *
+       * Adjusting the stack pointer by 4 before calling C$MAIN_ARGS
+       * is required when linking with the VMS POSIX version of the C
+       * run-time library; using `subl2 $4,r0' is adequate but we use
+       * `clrl -(sp)' instead.  The extra 4 bytes could be removed
+       * after the call because STARTING_FRAME_OFFSET's setting of -4
+       * will end up adding them right back again, but don't bother.
+       */
+
+      const char *p = current_function_name;
+      int is_main = strcmp ("main", p) == 0;
+#     define __MAIN_NAME " main("
+
+      while (!is_main && *p != '\0')
+	{
+	  if (*p == *__MAIN_NAME
+	      && strncmp (p, __MAIN_NAME, sizeof __MAIN_NAME - sizeof "") == 0)
+	    is_main = 1;
+	  else
+	    p++;
+	}
+
+      if (is_main)
+	fprintf (file, "\t%s\n\t%s\n", "clrl -(sp)", "jsb _C$MAIN_ARGS");
+    }
+
+    size -= STARTING_FRAME_OFFSET;
+    if (size >= 64)
+      fprintf (file, "\tmovab %d(sp),sp\n", -size);
+    else if (size)
+      fprintf (file, "\tsubl2 $%d,sp\n", size);
+}
+
 /* This is like nonimmediate_operand with a restriction on the type of MEM.  */
 
 void
@@ -665,7 +736,7 @@ check_float_value (mode, d, overflow)
   return 0;
 }
 
-#ifdef VMS_TARGET
+#if VMS_TARGET
 /* Additional support code for VMS target. */
 
 /* Linked list of all externals that are to be emitted when optimizing

@@ -29,14 +29,76 @@ Boston, MA 02111-1307, USA.  */
 #include "real.h"
 #include "recog.h"
 #include "output.h"
+#include "regs.h"
+#include "tree.h"
 #include "tm_p.h"
 #include "target.h"
 #include "target-def.h"
+
+static void we32k_output_function_prologue PARAMS ((FILE *, HOST_WIDE_INT));
+static void we32k_output_function_epilogue PARAMS ((FILE *, HOST_WIDE_INT));
 
 /* Initialize the GCC target structure.  */
+#undef TARGET_ASM_FUNCTION_PROLOGUE
+#define TARGET_ASM_FUNCTION_PROLOGUE we32k_output_function_prologue
+#undef TARGET_ASM_FUNCTION_EPILOGUE
+#define TARGET_ASM_FUNCTION_EPILOGUE we32k_output_function_epilogue
 
 struct gcc_target target = TARGET_INITIALIZER;
 
+/* Generate the assembly code for function entry.  FILE is a stdio
+   stream to output the code to.  SIZE is an int: how many units of
+   temporary storage to allocate.
+
+   Refer to the array `regs_ever_live' to determine which registers to
+   save; `regs_ever_live[I]' is nonzero if register number I is ever
+   used in the function.  This function is responsible for knowing
+   which registers should not be saved even if used.  */
+
+static void
+we32k_output_function_prologue (file, size)
+     FILE *file;
+     HOST_WIDE_INT size;
+{
+  register int nregs_to_save;
+  register int regno;
+  extern char call_used_regs[];
+
+  nregs_to_save = 0;
+  for (regno = 8; regno > 2; regno--)
+    if (regs_ever_live[regno] && ! call_used_regs[regno])
+      nregs_to_save = (9 - regno);
+
+  fprintf (file, "\tsave &%d\n", nregs_to_save);
+  if (size)
+    fprintf (file, "\taddw2 &%d,%%sp\n", (size + 3) & ~3);
+}
+
+/* This function generates the assembly code for function exit.
+   Args are as for output_function_prologue ().
+
+   The function epilogue should not depend on the current stack
+   pointer!  It should use the frame pointer only.  This is mandatory
+   because of alloca; we also take advantage of it to omit stack
+   adjustments before returning. */
+
+static void
+we32k_output_function_epilogue (file, size)
+     FILE *file;
+     HOST_WIDE_INT size ATTRIBUTE_UNUSED;
+{
+  register int nregs_to_restore;
+  register int regno;
+  extern char call_used_regs[];
+
+  nregs_to_restore = 0;
+  for (regno = 8; regno > 2; regno--)
+    if (regs_ever_live[regno] && ! call_used_regs[regno])
+      nregs_to_restore = (9 - regno);
+
+  fprintf (file, "\tret &%d\n", nregs_to_restore);
+}
+
 void
 output_move_double (operands)
      rtx *operands;

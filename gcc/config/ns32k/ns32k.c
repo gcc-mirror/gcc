@@ -65,13 +65,393 @@ static rtx gen_indexed_expr PARAMS ((rtx, rtx, rtx));
 static const char *singlemove_string PARAMS ((rtx *));
 static void move_tail PARAMS ((rtx[], int, int));
 static int ns32k_valid_type_attribute_p PARAMS ((tree, tree, tree, tree));
+static void ns32k_output_function_prologue PARAMS ((FILE *, HOST_WIDE_INT));
+static void ns32k_output_function_epilogue PARAMS ((FILE *, HOST_WIDE_INT));
 
 /* Initialize the GCC target structure.  */
 #undef TARGET_VALID_TYPE_ATTRIBUTE
 #define TARGET_VALID_TYPE_ATTRIBUTE ns32k_valid_type_attribute_p
 
+#undef TARGET_ASM_FUNCTION_PROLOGUE
+#define TARGET_ASM_FUNCTION_PROLOGUE ns32k_output_function_prologue
+#undef TARGET_ASM_FUNCTION_EPILOGUE
+#define TARGET_ASM_FUNCTION_EPILOGUE ns32k_output_function_epilogue
+
 struct gcc_target target = TARGET_INITIALIZER;
 
+/* Generate the assembly code for function entry.  FILE is a stdio
+   stream to output the code to.  SIZE is an int: how many units of
+   temporary storage to allocate.
+
+   Refer to the array `regs_ever_live' to determine which registers to
+   save; `regs_ever_live[I]' is nonzero if register number I is ever
+   used in the function.  This function is responsible for knowing
+   which registers should not be saved even if used.  */
+
+/*
+ * The function prologue for the ns32k is fairly simple.
+ * If a frame pointer is needed (decided in reload.c ?) then
+ * we need assembler of the form
+ *
+ *  # Save the oldframe pointer, set the new frame pointer, make space
+ *  # on the stack and save any general purpose registers necessary
+ *
+ *  enter [<general purpose regs to save>], <local stack space>
+ *
+ *  movf  fn, tos    # Save any floating point registers necessary
+ *  .
+ *  .
+ *
+ * If a frame pointer is not needed we need assembler of the form
+ *
+ *  # Make space on the stack
+ *
+ *  adjspd <local stack space + 4>
+ *
+ *  # Save any general purpose registers necessary
+ *
+ *  save [<general purpose regs to save>]
+ *
+ *  movf  fn, tos    # Save any floating point registers necessary
+ *  .
+ *  .
+ */
+
+#if !defined (MERLIN_TARGET) && !defined (UTEK_ASM)
+
+#if defined(IMMEDIATE_PREFIX) && IMMEDIATE_PREFIX
+#define ADJSP(FILE, N) \
+        fprintf (FILE, "\tadjspd %c%d\n", IMMEDIATE_PREFIX, (N))
+#else
+#define ADJSP(FILE, N) \
+        fprintf (FILE, "\tadjspd %d\n", (N))
+#endif
+
+static void
+ns32k_output_function_prologue (file, size)
+     FILE *file;
+     HOST_WIDE_INT size;
+{
+  register int regno, g_regs_used = 0;
+  int used_regs_buf[8], *bufp = used_regs_buf;
+  int used_fregs_buf[17], *fbufp = used_fregs_buf;
+  extern char call_used_regs[];
+
+  for (regno = R0_REGNUM; regno < F0_REGNUM; regno++)
+    if (regs_ever_live[regno]
+	&& ! call_used_regs[regno])
+      {
+        *bufp++ = regno; g_regs_used++;
+      }
+  *bufp = -1;
+
+  for (; regno < FRAME_POINTER_REGNUM; regno++)
+    if (regs_ever_live[regno] && !call_used_regs[regno])
+      {
+        *fbufp++ = regno;
+      }
+  *fbufp = -1;
+
+  bufp = used_regs_buf;
+  if (frame_pointer_needed)
+    fprintf (file, "\tenter [");
+  else
+    {
+      if (size)
+        ADJSP (file, size + 4);
+      if (g_regs_used && g_regs_used > 4)
+        fprintf (file, "\tsave [");
+      else
+	{
+	  while (*bufp >= 0)
+            fprintf (file, "\tmovd r%d,tos\n", *bufp++);
+	  g_regs_used = 0;
+	}
+    }
+
+  while (*bufp >= 0)
+    {
+      fprintf (file, "r%d", *bufp++);
+      if (*bufp >= 0)
+	fputc (',', file);
+    }
+
+  if (frame_pointer_needed)
+    fprintf (file, "],%d\n", size);
+  else if (g_regs_used)
+    fprintf (file, "]\n");
+
+  fbufp = used_fregs_buf;
+  while (*fbufp >= 0)
+    {
+      if ((*fbufp & 1) || (fbufp[0] != fbufp[1] - 1))
+	fprintf (file, "\tmovf %s,tos\n", ns32k_out_reg_names[*fbufp++]);
+      else
+	{
+	  fprintf (file, "\tmovl %s,tos\n",
+		   ns32k_out_reg_names[fbufp[0]]);
+	  fbufp += 2;
+	}
+    }
+
+  if (flag_pic && current_function_uses_pic_offset_table)
+    {
+      fprintf (file, "\tsprd sb,tos\n");
+      if (TARGET_REGPARM)
+	{
+	  fprintf (file, "\taddr __GLOBAL_OFFSET_TABLE_(pc),tos\n");
+	  fprintf (file, "\tlprd sb,tos\n");
+	}
+      else
+	{
+	  fprintf (file, "\taddr __GLOBAL_OFFSET_TABLE_(pc),r0\n");
+	  fprintf (file, "\tlprd sb,r0\n");
+	}
+    }
+}
+
+#else /* MERLIN_TARGET || UTEK_ASM  */
+
+/* This differs from the standard one above in printing a bitmask
+   rather than a register list in the enter or save instruction.  */
+
+static void
+ns32k_output_function_prologue (file, size)
+     FILE *file;
+     HOST_WIDE_INT size;
+{
+  register int regno, g_regs_used = 0;
+  int used_regs_buf[8], *bufp = used_regs_buf;
+  int used_fregs_buf[8], *fbufp = used_fregs_buf;
+  extern char call_used_regs[];
+
+  for (regno = 0; regno < 8; regno++)
+    if (regs_ever_live[regno]
+	&& ! call_used_regs[regno])
+      {
+	*bufp++ = regno; g_regs_used++;
+      }
+  *bufp = -1;
+
+  for (; regno < 16; regno++)
+    if (regs_ever_live[regno] && !call_used_regs[regno]) {
+      *fbufp++ = regno;
+    }
+  *fbufp = -1;
+
+  bufp = used_regs_buf;
+  if (frame_pointer_needed)
+    fprintf (file, "\tenter ");
+  else if (g_regs_used)
+    fprintf (file, "\tsave ");
+
+  if (frame_pointer_needed || g_regs_used)
+    {
+      char mask = 0;
+      while (*bufp >= 0)
+	mask |= 1 << *bufp++;
+      fprintf (file, "$0x%x", (int) mask & 0xff);
+    }
+
+  if (frame_pointer_needed)
+#ifdef UTEK_ASM
+    fprintf (file, ",$%d\n", size);
+#else
+    fprintf (file, ",%d\n", size);
+#endif
+  else if (g_regs_used)
+    fprintf (file, "\n");
+
+  fbufp = used_fregs_buf;
+  while (*fbufp >= 0)
+    {
+      if ((*fbufp & 1) || (fbufp[0] != fbufp[1] - 1))
+	fprintf (file, "\tmovf f%d,tos\n", *fbufp++ - 8);
+      else
+	{
+	  fprintf (file, "\tmovl f%d,tos\n", fbufp[0] - 8);
+	  fbufp += 2;
+	}
+    }
+}
+
+#endif /* MERLIN_TARGET || UTEK_ASM  */
+
+/* This function generates the assembly code for function exit,
+   on machines that need it.
+
+   The function epilogue should not depend on the current stack pointer,
+   if EXIT_IGNORE_STACK is nonzero.  That doesn't apply here.
+
+   If a frame pointer is needed (decided in reload.c ?) then
+   we need assembler of the form
+
+    movf  tos, fn	# Restore any saved floating point registers
+    .
+    .
+
+    # Restore any saved general purpose registers, restore the stack
+    # pointer from the frame pointer, restore the old frame pointer.
+    exit [<general purpose regs to save>]
+
+   If a frame pointer is not needed we need assembler of the form
+    # Restore any general purpose registers saved
+
+    movf  tos, fn	# Restore any saved floating point registers
+    .
+    .
+    .
+    restore [<general purpose regs to save>]
+
+    # reclaim space allocated on stack
+
+    adjspd <-(local stack space + 4)> */
+
+#if !defined (MERLIN_TARGET) && !defined (UTEK_ASM)
+
+static void
+ns32k_output_function_epilogue (file, size)
+     FILE *file;
+     HOST_WIDE_INT size;
+{
+  register int regno, g_regs_used = 0, f_regs_used = 0;
+  int used_regs_buf[8], *bufp = used_regs_buf;
+  int used_fregs_buf[17], *fbufp = used_fregs_buf;
+  extern char call_used_regs[];
+
+  if (flag_pic && current_function_uses_pic_offset_table)
+    fprintf (file, "\tlprd sb,tos\n");
+
+  *fbufp++ = -2;
+  for (regno = F0_REGNUM; regno < FRAME_POINTER_REGNUM; regno++)
+    if (regs_ever_live[regno] && !call_used_regs[regno])
+      {
+	*fbufp++ = regno; f_regs_used++;
+      }
+  fbufp--;
+
+  for (regno = 0; regno < F0_REGNUM; regno++)
+    if (regs_ever_live[regno]
+	&& ! call_used_regs[regno])
+      {
+        *bufp++ = regno; g_regs_used++;
+      }
+
+  while (fbufp > used_fregs_buf)
+    {
+      if ((*fbufp & 1) && fbufp[0] == fbufp[-1] + 1)
+	{
+	  fprintf (file, "\tmovl tos,%s\n",
+		   ns32k_out_reg_names[fbufp[-1]]);
+	  fbufp -= 2;
+	}
+      else fprintf (file, "\tmovf tos,%s\n", ns32k_out_reg_names[*fbufp--]);
+    }
+
+  if (frame_pointer_needed)
+    fprintf (file, "\texit [");
+  else
+    {
+      if (g_regs_used && g_regs_used > 4)
+        fprintf (file, "\trestore [");
+      else
+        {
+	  while (bufp > used_regs_buf)
+            fprintf (file, "\tmovd tos,r%d\n", *--bufp);
+	  g_regs_used = 0;
+        }
+    }
+
+  while (bufp > used_regs_buf)
+    {
+      fprintf (file, "r%d", *--bufp);
+      if (bufp > used_regs_buf)
+	fputc (',', file);
+    }
+
+  if (g_regs_used || frame_pointer_needed)
+    fprintf (file, "]\n");
+
+  if (size && !frame_pointer_needed)
+    ADJSP (file, -(size + 4));
+
+  if (current_function_pops_args)
+    fprintf (file, "\tret %d\n", current_function_pops_args);
+  else
+    fprintf (file, "\tret 0\n");
+}
+
+#else /* MERLIN_TARGET || UTEK_ASM  */
+
+/* This differs from the standard one above in printing a bitmask
+   rather than a register list in the exit or restore instruction.  */
+
+static void
+ns32k_output_function_epilogue (file, size)
+     FILE *file;
+     HOST_WIDE_INT size ATTRIBUTE_UNUSED;
+{
+  register int regno, g_regs_used = 0, f_regs_used = 0;
+  int used_regs_buf[8], *bufp = used_regs_buf;
+  int used_fregs_buf[8], *fbufp = used_fregs_buf;
+  extern char call_used_regs[];
+
+  *fbufp++ = -2;
+  for (regno = 8; regno < 16; regno++)
+    if (regs_ever_live[regno] && !call_used_regs[regno]) {
+      *fbufp++ = regno; f_regs_used++;
+    }
+  fbufp--;
+
+  for (regno = 0; regno < 8; regno++)
+    if (regs_ever_live[regno]
+	&& ! call_used_regs[regno])
+      {
+	*bufp++ = regno; g_regs_used++;
+      }
+
+  while (fbufp > used_fregs_buf)
+    {
+      if ((*fbufp & 1) && fbufp[0] == fbufp[-1] + 1)
+	{
+	  fprintf (file, "\tmovl tos,f%d\n", fbufp[-1] - 8);
+	  fbufp -= 2;
+	}
+      else fprintf (file, "\tmovf tos,f%d\n", *fbufp-- - 8);
+    }
+
+  if (frame_pointer_needed)
+    fprintf (file, "\texit ");
+  else if (g_regs_used)
+    fprintf (file, "\trestore ");
+
+  if (g_regs_used || frame_pointer_needed)
+    {
+      char mask = 0;
+
+      while (bufp > used_regs_buf)
+	{
+	  /* Utek assembler takes care of reversing this */
+	  mask |= 1 << *--bufp;
+	}
+      fprintf (file, "$0x%x\n", (int) mask & 0xff);
+    }
+
+#ifdef UTEK_ASM
+  if (current_function_pops_args)
+    fprintf (file, "\tret $%d\n", current_function_pops_args);
+  else
+    fprintf (file, "\tret $0\n");
+#else
+  if (current_function_pops_args)
+    fprintf (file, "\tret %d\n", current_function_pops_args);
+  else
+    fprintf (file, "\tret 0\n");
+#endif
+}
+
+#endif /* MERLIN_TARGET || UTEK_ASM  */
+
 /* Value is 1 if hard register REGNO can hold a value of machine-mode MODE. */ 
 int
 hard_regno_mode_ok (regno, mode)

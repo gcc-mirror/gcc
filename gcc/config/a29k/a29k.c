@@ -46,6 +46,8 @@ static int shift_constant_operand PARAMS ((rtx, enum machine_mode, int));
 static void a29k_set_memflags_1 PARAMS ((rtx, int, int, int, int));
 static void compute_regstack_size PARAMS ((void));
 static void check_epilogue_internal_label PARAMS ((FILE *));
+static void output_function_prologue PARAMS ((FILE *, HOST_WIDE_INT));
+static void output_function_epilogue PARAMS ((FILE *, HOST_WIDE_INT));
 
 #define min(A,B)	((A) < (B) ? (A) : (B))
 
@@ -93,6 +95,10 @@ rtx a29k_compare_op0, a29k_compare_op1;
 int a29k_compare_fp_p;
 
 /* Initialize the GCC target structure.  */
+#undef TARGET_ASM_FUNCTION_PROLOGUE
+#define TARGET_ASM_FUNCTION_PROLOGUE output_function_prologue
+#undef TARGET_ASM_FUNCTION_EPILOGUE
+#define TARGET_ASM_FUNCTION_EPILOGUE output_function_epilogue
 
 struct gcc_target target = TARGET_INITIALIZER;
 
@@ -1293,10 +1299,10 @@ a29k_compute_reg_names ()
 
 /* Output function prolog code to file FILE.  Memory stack size is SIZE.  */
 
-void
-output_prolog (file, size)
+static void
+output_function_prologue (file, size)
      FILE *file;
-     int size;
+     HOST_WIDE_INT size;
 {
   int i;
   int arg_count = 0;
@@ -1465,10 +1471,10 @@ check_epilogue_internal_label (file)
    stack size.  The register stack size is in the variable
    A29K_REGSTACK_SIZE.  */
 
-void
-output_epilog (file, size)
+static void
+output_function_epilogue (file, size)
      FILE *file;
-     int size;
+     HOST_WIDE_INT size;
 {
   rtx insn;
   int locals_unavailable = 0;	/* True until after first insn

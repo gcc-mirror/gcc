@@ -60,6 +60,4 @@ extern int uses_local_reg_p PARAMS ((rtx));
 extern int null_epilogue PARAMS ((void));
 extern void print_operand PARAMS ((FILE *, rtx, int));
 extern void a29k_compute_reg_names PARAMS ((void));
-extern void output_prolog PARAMS ((FILE *, int));
-extern void output_epilog PARAMS ((FILE *, int));
 #endif /* RTX_CODE */

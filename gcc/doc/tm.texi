@@ -2004,13 +2004,14 @@ this.
 
 @findex current_function_is_leaf
 @findex current_function_uses_only_leaf_regs
-Normally, @code{FUNCTION_PROLOGUE} and @code{FUNCTION_EPILOGUE} must
-treat leaf functions specially.  They can test the C variable
-@code{current_function_is_leaf} which is nonzero for leaf functions.
-@code{current_function_is_leaf} is set prior to local register allocation
-and is valid for the remaining compiler passes.  They can also test the C
-variable @code{current_function_uses_only_leaf_regs} which is nonzero for
-leaf functions which only use leaf registers.
+Normally, @code{TARGET_ASM_FUNCTION_PROLOGUE} and
+@code{TARGET_ASM_FUNCTION_EPILOGUE} must treat leaf functions specially.
+They can test the C variable @code{current_function_is_leaf} which is
+nonzero for leaf functions.  @code{current_function_is_leaf} is set
+prior to local register allocation and is valid for the remaining
+compiler passes.  They can also test the C variable
+@code{current_function_uses_only_leaf_regs} which is nonzero for leaf
+functions which only use leaf registers.
 @code{current_function_uses_only_leaf_regs} is valid after reload and is
 only useful if @code{LEAF_REGISTERS} is defined.
 @c changed this to fix overfull.  ALSO:  why the "it" at the beginning
@@ -2772,7 +2773,8 @@ the stack, if the @option{-fstack-check} is specified, in one of three ways:
 If the value of the @code{STACK_CHECK_BUILTIN} macro is nonzero, GCC
 will assume that you have arranged for stack checking to be done at
 appropriate places in the configuration files, e.g., in
-@code{FUNCTION_PROLOGUE}.  GCC will do not other special processing.
+@code{TARGET_ASM_FUNCTION_PROLOGUE}.  GCC will do not other special
+processing.
 
 @item
 If @code{STACK_CHECK_BUILTIN} is zero and you defined a named pattern
@@ -3696,10 +3698,8 @@ will select the smallest suitable mode.
 This section describes the macros that output function entry
 (@dfn{prologue}) and exit (@dfn{epilogue}) code.
 
-@table @code
-@findex FUNCTION_PROLOGUE
-@item FUNCTION_PROLOGUE (@var{file}, @var{size})
-A C compound statement that outputs the assembler code for entry to a
+@deftypefn {Target Hook} void TARGET_ASM_FUNCTION_PROLOGUE (FILE *@var{file}, HOST_WIDE_INT @var{size})
+If defined, a function that outputs the assembler code for entry to a
 function.  The prologue is responsible for setting up the stack frame,
 initializing the frame pointer register, saving registers that must be
 saved, and allocating @var{size} additional bytes of storage for the
@@ -3714,7 +3714,7 @@ To determine which registers to save, the macro can refer to the array
 @code{regs_ever_live}: element @var{r} is nonzero if hard register
 @var{r} is used anywhere within the function.  This implies the function
 prologue should save register @var{r}, provided it is not one of the
-call-used registers.  (@code{FUNCTION_EPILOGUE} must likewise use
+call-used registers.  (@code{TARGET_ASM_FUNCTION_EPILOGUE} must likewise use
 @code{regs_ever_live}.)
 
 On machines that have ``register windows'', the function entry code does
@@ -3741,6 +3741,57 @@ for a machine if doing so is more convenient or required for
 compatibility reasons.  Except in cases where required by standard
 or by a debugger, there is no reason why the stack layout used by GCC
 need agree with that used by other compilers for a machine.
+@end deftypefn
+
+@deftypefn {Target Hook} void TARGET_ASM_FUNCTION_EPILOGUE (FILE *@var{file}, HOST_WIDE_INT @var{size})
+If defined, a function that outputs the assembler code for exit from a
+function.  The epilogue is responsible for restoring the saved
+registers and stack pointer to their values when the function was
+called, and returning control to the caller.  This macro takes the
+same arguments as the macro @code{TARGET_ASM_FUNCTION_PROLOGUE}, and the
+registers to restore are determined from @code{regs_ever_live} and
+@code{CALL_USED_REGISTERS} in the same way.
+
+On some machines, there is a single instruction that does all the work
+of returning from the function.  On these machines, give that
+instruction the name @samp{return} and do not define the macro
+@code{TARGET_ASM_FUNCTION_EPILOGUE} at all.
+
+Do not define a pattern named @samp{return} if you want the
+@code{TARGET_ASM_FUNCTION_EPILOGUE} to be used.  If you want the target
+switches to control whether return instructions or epilogues are used,
+define a @samp{return} pattern with a validity condition that tests the
+target switches appropriately.  If the @samp{return} pattern's validity
+condition is false, epilogues will be used.
+
+On machines where functions may or may not have frame-pointers, the
+function exit code must vary accordingly.  Sometimes the code for these
+two cases is completely different.  To determine whether a frame pointer
+is wanted, the macro can refer to the variable
+@code{frame_pointer_needed}.  The variable's value will be 1 when compiling
+a function that needs a frame pointer.
+
+Normally, @code{TARGET_ASM_FUNCTION_PROLOGUE} and
+@code{TARGET_ASM_FUNCTION_EPILOGUE} must treat leaf functions specially.
+The C variable @code{current_function_is_leaf} is nonzero for such a
+function.  @xref{Leaf Functions}.
+
+On some machines, some functions pop their arguments on exit while
+others leave that for the caller to do.  For example, the 68020 when
+given @option{-mrtd} pops arguments in functions that take a fixed
+number of arguments.
+
+@findex current_function_pops_args
+Your definition of the macro @code{RETURN_POPS_ARGS} decides which
+functions pop their own arguments.  @code{TARGET_ASM_FUNCTION_EPILOGUE}
+needs to know what was decided.  The variable that is called
+@code{current_function_pops_args} is the number of bytes of its
+arguments that a function should pop.  @xref{Scalar Return}.
+@c what is the "its arguments" in the above sentence referring to, pray
+@c tell?  --mew 5feb93
+@end deftypefn
+
+@table @code
 
 @itemize @bullet
 @item
@@ -3776,9 +3827,11 @@ Optionally, when @code{ACCUMULATE_OUTGOING_ARGS} is defined, a region of
 argument lists of the function.  @xref{Stack Arguments}.
 @end itemize
 
-Normally, it is necessary for the macros @code{FUNCTION_PROLOGUE} and
-@code{FUNCTION_EPILOGUE} to treat leaf functions specially.  The C
-variable @code{current_function_is_leaf} is nonzero for such a function.
+Normally, it is necessary for the macros
+@code{TARGET_ASM_FUNCTION_PROLOGUE} and
+@code{TARGET_ASM_FUNCTION_EPILOGUE} to treat leaf functions specially.
+The C variable @code{current_function_is_leaf} is nonzero for such a
+function.
 
 @findex EXIT_IGNORE_STACK
 @item EXIT_IGNORE_STACK
@@ -3797,53 +3850,6 @@ compiler knows this regardless of @code{EXIT_IGNORE_STACK}.
 Define this macro as a C expression that is nonzero for registers that are
 used by the epilogue or the @samp{return} pattern.  The stack and frame
 pointer registers are already be assumed to be used as needed.
-
-@findex FUNCTION_EPILOGUE
-@item FUNCTION_EPILOGUE (@var{file}, @var{size})
-A C compound statement that outputs the assembler code for exit from a
-function.  The epilogue is responsible for restoring the saved
-registers and stack pointer to their values when the function was
-called, and returning control to the caller.  This macro takes the
-same arguments as the macro @code{FUNCTION_PROLOGUE}, and the
-registers to restore are determined from @code{regs_ever_live} and
-@code{CALL_USED_REGISTERS} in the same way.
-
-On some machines, there is a single instruction that does all the work
-of returning from the function.  On these machines, give that
-instruction the name @samp{return} and do not define the macro
-@code{FUNCTION_EPILOGUE} at all.
-
-Do not define a pattern named @samp{return} if you want the
-@code{FUNCTION_EPILOGUE} to be used.  If you want the target switches
-to control whether return instructions or epilogues are used, define a
-@samp{return} pattern with a validity condition that tests the target
-switches appropriately.  If the @samp{return} pattern's validity
-condition is false, epilogues will be used.
-
-On machines where functions may or may not have frame-pointers, the
-function exit code must vary accordingly.  Sometimes the code for these
-two cases is completely different.  To determine whether a frame pointer
-is wanted, the macro can refer to the variable
-@code{frame_pointer_needed}.  The variable's value will be 1 when compiling
-a function that needs a frame pointer.
-
-Normally, @code{FUNCTION_PROLOGUE} and @code{FUNCTION_EPILOGUE} must
-treat leaf functions specially.  The C variable @code{current_function_is_leaf}
-is nonzero for such a function.  @xref{Leaf Functions}.
-
-On some machines, some functions pop their arguments on exit while
-others leave that for the caller to do.  For example, the 68020 when
-given @option{-mrtd} pops arguments in functions that take a fixed
-number of arguments.
-
-@findex current_function_pops_args
-Your definition of the macro @code{RETURN_POPS_ARGS} decides which
-functions pop their own arguments.  @code{FUNCTION_EPILOGUE} needs to
-know what was decided.  The variable that is called
-@code{current_function_pops_args} is the number of bytes of its
-arguments that a function should pop.  @xref{Scalar Return}.
-@c what is the "its arguments" in the above sentence referring to, pray
-@c tell?  --mew 5feb93
 
 @findex DELAY_SLOTS_FOR_EPILOGUE
 @item DELAY_SLOTS_FOR_EPILOGUE
@@ -3872,8 +3878,9 @@ The insns accepted to fill the epilogue delay slots are put in an RTL
 list made with @code{insn_list} objects, stored in the variable
 @code{current_function_epilogue_delay_list}.  The insn for the first
 delay slot comes first in the list.  Your definition of the macro
-@code{FUNCTION_EPILOGUE} should fill the delay slots by outputting the
-insns in this list, usually by calling @code{final_scan_insn}.
+@code{TARGET_ASM_FUNCTION_EPILOGUE} should fill the delay slots by
+outputting the insns in this list, usually by calling
+@code{final_scan_insn}.
 
 You need not define this macro if you did not define
 @code{DELAY_SLOTS_FOR_EPILOGUE}.
@@ -3900,8 +3907,8 @@ return to whoever called the current @samp{thunk}.
 
 The effect must be as if @var{function} had been called directly with
 the adjusted first argument.  This macro is responsible for emitting all
-of the code for a thunk function; @code{FUNCTION_PROLOGUE} and
-@code{FUNCTION_EPILOGUE} are not invoked.
+of the code for a thunk function; @code{TARGET_ASM_FUNCTION_PROLOGUE}
+and @code{TARGET_ASM_FUNCTION_EPILOGUE} are not invoked.
 
 The @var{thunk_fndecl} is redundant.  (@var{delta} and @var{function}
 have already been extracted from it.)  It might possibly be useful on
@@ -4076,15 +4083,15 @@ call __bb_trace_func
 @findex __bb_trace_ret
 @vindex profile_block_flag
 @item FUNCTION_BLOCK_PROFILER_EXIT (@var{file})
-A C statement or compound statement to output to @var{file}
-assembler code to call function @code{__bb_trace_ret}.  The
-assembler code should only be output
-if the global compile flag @code{profile_block_flag} == 2.  This
-macro has to be used at every place where code for returning from
-a function is generated (e.g.@: @code{FUNCTION_EPILOGUE}).  Although
-you have to write the definition of @code{FUNCTION_EPILOGUE}
-as well, you have to define this macro to tell the compiler, that
-the proper call to @code{__bb_trace_ret} is produced.
+A C statement or compound statement to output to @var{file} assembler
+code to call function @code{__bb_trace_ret}.  The assembler code should
+only be output if the global compile flag @code{profile_block_flag} ==
+2.  This macro has to be used at every place where code for returning
+from a function is generated (e.g.@:
+@code{TARGET_ASM_FUNCTION_EPILOGUE}).  Although you have to write the
+definition of @code{TARGET_ASM_FUNCTION_EPILOGUE} as well, you have to
+define this macro to tell the compiler, that the proper call to
+@code{__bb_trace_ret} is produced.
 
 @findex MACHINE_STATE_SAVE
 @findex __bb_init_trace_func
@@ -4097,8 +4104,9 @@ be clobbered by a function call, including condition codes.  The
 task.  Local labels in the assembler code can be concatenated with the
 string @var{id}, to obtain a unique label name.
 
-Registers or condition codes clobbered by @code{FUNCTION_PROLOGUE} or
-@code{FUNCTION_EPILOGUE} must be saved in the macros
+Registers or condition codes clobbered by
+@code{TARGET_ASM_FUNCTION_PROLOGUE} or
+@code{TARGET_ASM_FUNCTION_EPILOGUE} must be saved in the macros
 @code{FUNCTION_BLOCK_PROFILER}, @code{FUNCTION_BLOCK_PROFILER_EXIT} and
 @code{BLOCK_PROFILER} prior calling @code{__bb_init_trace_func},
 @code{__bb_trace_ret} and @code{__bb_trace_func} respectively.
@@ -4111,8 +4119,9 @@ Registers or condition codes clobbered by @code{FUNCTION_PROLOGUE} or
 A C statement or compound statement to restore all registers, including
 condition codes, saved by @code{MACHINE_STATE_SAVE}.
 
-Registers or condition codes clobbered by @code{FUNCTION_PROLOGUE} or
-@code{FUNCTION_EPILOGUE} must be restored in the macros
+Registers or condition codes clobbered by
+@code{TARGET_ASM_FUNCTION_PROLOGUE} or
+@code{TARGET_ASM_FUNCTION_EPILOGUE} must be restored in the macros
 @code{FUNCTION_BLOCK_PROFILER}, @code{FUNCTION_BLOCK_PROFILER_EXIT} and
 @code{BLOCK_PROFILER} after calling @code{__bb_init_trace_func},
 @code{__bb_trace_ret} and @code{__bb_trace_func} respectively.
@@ -4412,14 +4421,14 @@ A C expression to allocate run-time space for a trampoline.  The
 expression value should be an RTX representing a memory reference to the
 space for the trampoline.
 
-@cindex @code{FUNCTION_EPILOGUE} and trampolines
-@cindex @code{FUNCTION_PROLOGUE} and trampolines
+@cindex @code{TARGET_ASM_FUNCTION_EPILOGUE} and trampolines
+@cindex @code{TARGET_ASM_FUNCTION_PROLOGUE} and trampolines
 If this macro is not defined, by default the trampoline is allocated as
 a stack slot.  This default is right for most machines.  The exceptions
 are machines where it is impossible to execute instructions in the stack
 area.  On such machines, you may have to implement a separate stack,
-using this macro in conjunction with @code{FUNCTION_PROLOGUE} and
-@code{FUNCTION_EPILOGUE}.
+using this macro in conjunction with @code{TARGET_ASM_FUNCTION_PROLOGUE}
+and @code{TARGET_ASM_FUNCTION_EPILOGUE}.
 
 @var{fp} points to a data structure, a @code{struct function}, which
 describes the compilation status of the immediate containing function of
@@ -7565,7 +7574,7 @@ To support optional call frame debugging information, you must also
 define @code{INCOMING_RETURN_ADDR_RTX} and either set
 @code{RTX_FRAME_RELATED_P} on the prologue insns if you use RTL for the
 prologue, or call @code{dwarf2out_def_cfa} and @code{dwarf2out_reg_save}
-as appropriate from @code{FUNCTION_PROLOGUE} if you don't.
+as appropriate from @code{TARGET_ASM_FUNCTION_PROLOGUE} if you don't.
 
 @findex DWARF2_FRAME_INFO
 @item DWARF2_FRAME_INFO

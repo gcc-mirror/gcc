@@ -183,18 +183,6 @@ Boston, MA 02111-1307, USA.  */
 #undef LONG_DOUBLE_TYPE_SIZE
 #define LONG_DOUBLE_TYPE_SIZE 64
 
-/* This macro generates the assembly code for function entry.
-   FILE is a stdio stream to output the code to.
-   SIZE is an int: how many units of temporary storage to allocate.
-   Refer to the array `regs_ever_live' to determine which registers
-   to save; `regs_ever_live[I]' is nonzero if register number I
-   is ever used in the function.  This macro is responsible for
-   knowing which registers should not be saved even if used.
-
-   We override it here to allow for the new profiling code to go before
-   the prologue and the old mcount code to go after the prologue (and
-   after %ebx has been set up for ELF shared library support).  */
-
 #define OSF_PROFILE_BEFORE_PROLOGUE					\
   (!TARGET_MCOUNT							\
    && !current_function_needs_context					\
@@ -202,56 +190,6 @@ Boston, MA 02111-1307, USA.  */
        || !frame_pointer_needed						\
        || (!current_function_uses_pic_offset_table			\
 	   && !current_function_uses_const_pool)))
-
-#undef	FUNCTION_PROLOGUE
-#define FUNCTION_PROLOGUE(FILE, SIZE)					\
-do									\
-  {									\
-    char *prefix = (TARGET_UNDERSCORES) ? "_" : "";			\
-    char *lprefix = LPREFIX;						\
-    int labelno = profile_label_no;					\
-									\
-    if (profile_flag && OSF_PROFILE_BEFORE_PROLOGUE)			\
-      {									\
-	if (!flag_pic && !HALF_PIC_P ())				\
-	  {								\
-	    fprintf (FILE, "\tmovl $%sP%d,%%edx\n", lprefix, labelno);	\
-	    fprintf (FILE, "\tcall *%s_mcount_ptr\n", prefix);		\
-	  }								\
-									\
-	else if (HALF_PIC_P ())						\
-	  {								\
-	    rtx symref;							\
-									\
-	    HALF_PIC_EXTERNAL ("_mcount_ptr");				\
-	    symref = HALF_PIC_PTR (gen_rtx_SYMBOL_REF (Pmode,		\
-						       "_mcount_ptr"));	\
-									\
-	    fprintf (FILE, "\tmovl $%sP%d,%%edx\n", lprefix, labelno);	\
-	    fprintf (FILE, "\tmovl %s%s,%%eax\n", prefix,		\
-		     XSTR (symref, 0));					\
-	    fprintf (FILE, "\tcall *(%%eax)\n");			\
-	  }								\
-									\
-	else								\
-	  {								\
-	    static int call_no = 0;					\
-									\
-	    fprintf (FILE, "\tcall %sPc%d\n", lprefix, call_no);	\
-	    fprintf (FILE, "%sPc%d:\tpopl %%eax\n", lprefix, call_no);	\
-	    fprintf (FILE, "\taddl $_GLOBAL_OFFSET_TABLE_+[.-%sPc%d],%%eax\n", \
-		     lprefix, call_no++);				\
-	    fprintf (FILE, "\tleal %sP%d@GOTOFF(%%eax),%%edx\n",	\
-		     lprefix, labelno);					\
-	    fprintf (FILE, "\tmovl %s_mcount_ptr@GOT(%%eax),%%eax\n",	\
-		     prefix);						\
-	    fprintf (FILE, "\tcall *(%%eax)\n");			\
-	  }								\
-      }									\
-									\
-    function_prologue (FILE, SIZE);					\
-  }									\
-while (0)
 
 /* A C statement or compound statement to output to FILE some assembler code to
    call the profiling subroutine `mcount'.  Before calling, the assembler code

@@ -26,6 +26,8 @@ Boston, MA 02111-1307, USA.  */
 
 #include "ns32k/ns32k.h"
 
+#define MERLIN_TARGET
+
 /* This is BSD, so it wants DBX format.  */
 #define DBX_DEBUGGING_INFO
 
@@ -122,108 +124,6 @@ Boston, MA 02111-1307, USA.  */
 	   u.i[0] = CONST_DOUBLE_LOW (X); u.i[1] = CONST_DOUBLE_HIGH (X); \
 	   fprintf (FILE, "$0f%.20e", u.d); }				\
   else output_addr_const (FILE, X); }
-
-#undef  FUNCTION_PROLOGUE
-
-/* This differs from the one in ns32k.h in printing a bitmask
-   rather than a register list in the enter or save instruction.  */
-
-#define FUNCTION_PROLOGUE(FILE, SIZE)     \
-{ register int regno, g_regs_used = 0;				\
-  int used_regs_buf[8], *bufp = used_regs_buf;			\
-  int used_fregs_buf[8], *fbufp = used_fregs_buf;		\
-  extern char call_used_regs[];					\
-  MAIN_FUNCTION_PROLOGUE;					\
-  for (regno = 0; regno < 8; regno++)				\
-    if (regs_ever_live[regno]					\
-	&& ! call_used_regs[regno])				\
-    {								\
-      *bufp++ = regno; g_regs_used++;				\
-    }								\
-  *bufp = -1;							\
-  for (; regno < 16; regno++)					\
-    if (regs_ever_live[regno] && !call_used_regs[regno]) {	\
-      *fbufp++ = regno;						\
-    }								\
-  *fbufp = -1;							\
-  bufp = used_regs_buf;						\
-  if (frame_pointer_needed)					\
-    fprintf (FILE, "\tenter ");					\
-  else if (g_regs_used)						\
-    fprintf (FILE, "\tsave ");					\
-  if (frame_pointer_needed || g_regs_used)			\
-    {								\
-      char mask = 0;						\
-      while (*bufp >= 0)					\
-	mask |= 1 << *bufp++;					\
-      fprintf (FILE, "$0x%x", (int) mask & 0xff);		\
-    }								\
-  if (frame_pointer_needed)					\
-    fprintf (FILE, ",%d\n", SIZE);				\
-  else if (g_regs_used)						\
-    fprintf (FILE, "\n");					\
-  fbufp = used_fregs_buf;					\
-  while (*fbufp >= 0)						\
-    {								\
-      if ((*fbufp & 1) || (fbufp[0] != fbufp[1] - 1))		\
-	fprintf (FILE, "\tmovf f%d,tos\n", *fbufp++ - 8);	\
-      else							\
-	{							\
-	  fprintf (FILE, "\tmovl f%d,tos\n", fbufp[0] - 8);	\
-	  fbufp += 2;						\
-	}							\
-    }								\
-}
-
-#undef  FUNCTION_EPILOGUE
-
-/* This differs from the one in ns32k.h in printing a bitmask
-   rather than a register list in the exit or restore instruction.  */
-
-#define FUNCTION_EPILOGUE(FILE, SIZE) \
-{ register int regno, g_regs_used = 0, f_regs_used = 0;		\
-  int used_regs_buf[8], *bufp = used_regs_buf;			\
-  int used_fregs_buf[8], *fbufp = used_fregs_buf;		\
-  extern char call_used_regs[];					\
-  *fbufp++ = -2;						\
-  for (regno = 8; regno < 16; regno++)				\
-    if (regs_ever_live[regno] && !call_used_regs[regno]) {	\
-       *fbufp++ = regno; f_regs_used++;				\
-    }								\
-  fbufp--;							\
-  for (regno = 0; regno < 8; regno++)				\
-    if (regs_ever_live[regno]					\
-	&& ! call_used_regs[regno])				\
-    {                                                         	\
-      *bufp++ = regno; g_regs_used++;				\
-    }                                                         	\
-  while (fbufp > used_fregs_buf)				\
-    {								\
-      if ((*fbufp & 1) && fbufp[0] == fbufp[-1] + 1)		\
-	{							\
-	  fprintf (FILE, "\tmovl tos,f%d\n", fbufp[-1] - 8);	\
-	  fbufp -= 2;						\
-	}							\
-      else fprintf (FILE, "\tmovf tos,f%d\n", *fbufp-- - 8);	\
-    }								\
-  if (frame_pointer_needed)					\
-    fprintf (FILE, "\texit ");					\
-  else if (g_regs_used)						\
-    fprintf (FILE, "\trestore ");				\
-  if (g_regs_used || frame_pointer_needed)			\
-    {								\
-      char mask = 0;						\
-								\
-      while (bufp > used_regs_buf)				\
-	{							\
-	  /* Utek assembler takes care of reversing this */	\
-	  mask |= 1 << *--bufp;					\
-	}							\
-      fprintf (FILE, "$0x%x\n", (int) mask & 0xff);		\
-    }								\
-  if (current_function_pops_args)				\
-    fprintf (FILE, "\tret %d\n", current_function_pops_args);	\
-  else fprintf (FILE, "\tret 0\n"); }
 
 #endif /* UTEK_ASM */
 

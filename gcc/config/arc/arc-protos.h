@@ -71,8 +71,6 @@ extern void arc_asm_file_start PARAMS ((FILE *));
 extern unsigned int arc_compute_frame_size PARAMS ((int));
 extern void arc_save_restore PARAMS ((FILE *, const char *, unsigned int,
 				      unsigned int, const char *));
-extern void arc_output_function_prologue PARAMS ((FILE *, int));
-extern void arc_output_function_epilogue PARAMS ((FILE *, int));
 extern int arc_delay_slots_for_epilogue PARAMS ((void));
 extern void arc_finalize_pic PARAMS ((void));
 extern void arc_ccfsm_at_label PARAMS ((const char *, int));

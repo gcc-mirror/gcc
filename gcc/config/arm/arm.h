@@ -1532,17 +1532,6 @@ typedef struct
     (PRETEND_SIZE) = (NUM_ARG_REGS - (CUM).nregs) * UNITS_PER_WORD;	\
 }
 
-/* Generate assembly output for the start of a function.  */
-#define FUNCTION_PROLOGUE(STREAM, SIZE)		\
-  do						\
-    {						\
-      if (TARGET_ARM)				\
-        output_arm_prologue (STREAM, SIZE);	\
-      else					\
-	output_thumb_prologue (STREAM);		\
-    }						\
-  while (0)
-
 /* If your target environment doesn't prefix user functions with an
    underscore, you may wish to re-define this to prevent any conflicts.
    e.g. AOF may prefix mcount with an underscore.  */
@@ -1601,10 +1590,6 @@ typedef struct
    On the ARM, the function epilogue recovers the stack pointer from the
    frame.  */
 #define EXIT_IGNORE_STACK 1
-
-/* Generate the assembly code for function exit. */
-#define FUNCTION_EPILOGUE(STREAM, SIZE)	\
-  output_func_epilogue (SIZE)
 
 #define EPILOGUE_USES(REGNO) (reload_completed && (REGNO) == LR_REGNUM)
 

@@ -41,8 +41,8 @@ Boston, MA 02111-1307, USA.  */
    (the one that tests the condition codes) to be modified.
 
    The code for the function prologue and epilogue are generated
-   directly as assembler code by the macros FUNCTION_PROLOGUE and
-   FUNCTION_EPILOGUE.  Those instructions never exist as rtl.  */
+   directly in assembler by the target functions function_prologue and
+   function_epilogue.  Those instructions never exist as rtl.  */
 
 #include "config.h"
 #include "system.h"
@@ -65,6 +65,7 @@ Boston, MA 02111-1307, USA.  */
 #include "reload.h"
 #include "intl.h"
 #include "basic-block.h"
+#include "target.h"
 
 #if defined (DBX_DEBUGGING_INFO) || defined (XCOFF_DEBUGGING_INFO)
 #include "dbxout.h"
@@ -532,6 +533,17 @@ end_final (filename)
 			    1);
 	}
     }
+}
+
+/* Default target function prologue and epilogue assembler output.
+  
+   If not overridden for epilogue code, then the function body itself
+   contains return instructions wherever needed.  */
+void
+default_function_pro_epilogue (file, size)
+     FILE *file ATTRIBUTE_UNUSED;
+     HOST_WIDE_INT size ATTRIBUTE_UNUSED;
+{
 }
 
 /* Enable APP processing of subsequent output.
@@ -1617,10 +1629,8 @@ final_start_function (first, file, optimize)
       TREE_ASM_WRITTEN (DECL_INITIAL (current_function_decl)) = 1;
     }
 
-#ifdef FUNCTION_PROLOGUE
   /* First output the function prologue: code to set up the stack frame.  */
-  FUNCTION_PROLOGUE (file, get_frame_size ());
-#endif
+  (*target.asm_out.function_prologue) (file, get_frame_size ());
 
   /* If the machine represents the prologue as RTL, the profiling code must
      be emitted when NOTE_INSN_PROLOGUE_END is scanned.  */
@@ -1761,11 +1771,9 @@ final_end_function (first, file, optimize)
     xcoffout_end_function (file, high_function_linenum);
 #endif
 
-#ifdef FUNCTION_EPILOGUE
   /* Finally, output the function epilogue:
      code to restore the stack frame and return to the caller.  */
-  FUNCTION_EPILOGUE (file, get_frame_size ());
-#endif
+  (*target.asm_out.function_epilogue) (file, get_frame_size ());
 
 #ifdef SDB_DEBUGGING_INFO
   if (write_symbols == SDB_DEBUG)
@@ -1788,9 +1796,6 @@ final_end_function (first, file, optimize)
 #endif
 
   bb_func_label_num = -1;	/* not in function, nuke label # */
-
-  /* If FUNCTION_EPILOGUE is not defined, then the function body
-     itself contains return instructions wherever needed.  */
 }
 
 /* Add a block to the linked list that remembers the current line/file/function

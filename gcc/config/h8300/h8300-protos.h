@@ -68,8 +68,6 @@ extern void h8300_encode_label PARAMS ((tree));
 #endif /* TREE_CODE */
 
 extern void h8300_init_once PARAMS ((void));
-extern void function_prologue PARAMS ((FILE *, int));
-extern void function_epilogue PARAMS ((FILE *, int));
 extern void asm_file_start PARAMS ((FILE *));
 extern void asm_file_end PARAMS ((FILE *));
 extern int ok_for_bclr PARAMS ((HOST_WIDE_INT));

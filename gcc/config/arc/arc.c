@@ -88,8 +88,14 @@ static void record_cc_ref PARAMS ((rtx));
 static void arc_init_reg_tables PARAMS ((void));
 static int get_arc_condition_code PARAMS ((rtx));
 static int arc_valid_decl_attribute PARAMS ((tree, tree, tree, tree));
+static void arc_output_function_prologue PARAMS ((FILE *, HOST_WIDE_INT));
+static void arc_output_function_epilogue PARAMS ((FILE *, HOST_WIDE_INT));
 
 /* Initialize the GCC target structure.  */
+#undef TARGET_ASM_FUNCTION_PROLOGUE
+#define TARGET_ASM_FUNCTION_PROLOGUE arc_output_function_prologue
+#undef TARGET_ASM_FUNCTION_EPILOGUE
+#define TARGET_ASM_FUNCTION_EPILOGUE arc_output_function_epilogue
 #undef TARGET_VALID_DECL_ATTRIBUTE
 #define TARGET_VALID_DECL_ATTRIBUTE arc_valid_decl_attribute
 
@@ -1087,10 +1093,10 @@ arc_save_restore (file, base_reg, offset, gmask, op)
 
 /* Set up the stack and frame pointer (if desired) for the function.  */
 
-void
+static void
 arc_output_function_prologue (file, size)
      FILE *file;
-     int size;
+     HOST_WIDE_INT size;
 {
   const char *sp_str = reg_names[STACK_POINTER_REGNUM];
   const char *fp_str = reg_names[FRAME_POINTER_REGNUM];
@@ -1165,10 +1171,10 @@ arc_output_function_prologue (file, size)
 /* Do any necessary cleanup after a function to restore stack, frame,
    and regs. */
 
-void
+static void
 arc_output_function_epilogue (file, size)
      FILE *file;
-     int size;
+     HOST_WIDE_INT size;
 {
   rtx epilogue_delay = current_function_epilogue_delay_list;
   int noepilogue = FALSE;

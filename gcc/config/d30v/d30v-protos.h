@@ -110,9 +110,7 @@ extern rtx d30v_expand_builtin_va_arg	PARAMS ((tree, tree));
 #endif	/* RTX_CODE */
 #endif	/* TREE_CODE */
 
-extern void d30v_function_prologue	PARAMS ((FILE *, int));
 extern void d30v_expand_prologue	PARAMS ((void));
-extern void d30v_function_epilogue	PARAMS ((FILE *, int));
 extern void d30v_expand_epilogue	PARAMS ((void));
 extern void d30v_function_profiler	PARAMS ((FILE *, int));
 #ifdef RTX_CODE

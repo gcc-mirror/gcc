@@ -33,8 +33,6 @@ extern int fp_reg_operand PARAMS ((rtx, enum machine_mode));
 
 extern struct rtx_def *clipper_builtin_saveregs PARAMS ((void));
 extern int clipper_frame_size PARAMS ((int));
-extern void output_function_prologue PARAMS ((FILE *, int));
-extern void output_function_epilogue PARAMS ((FILE *, int));
 #ifdef TREE_CODE
 extern tree clipper_build_va_list PARAMS ((void));
 #endif /* TREE_CODE */

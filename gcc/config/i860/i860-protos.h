@@ -59,6 +59,3 @@ extern rtx i860_va_arg PARAMS ((tree, tree));
 #ifdef TREE_CODE
 extern tree i860_build_va_list PARAMS ((void));
 #endif /* TREE_CODE */
-
-extern void function_prologue PARAMS ((FILE *, unsigned));
-extern void function_epilogue PARAMS ((FILE *, unsigned));

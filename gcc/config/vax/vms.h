@@ -18,8 +18,6 @@ along with GNU CC; see the file COPYING.  If not, write to
 the Free Software Foundation, 59 Temple Place - Suite 330,
 Boston, MA 02111-1307, USA.  */
 
-#define VMS_TARGET
-
 #define TARGET_EXECUTABLE_SUFFIX ".exe"
 #define TARGET_OBJECT_SUFFIX ".obj"
 
@@ -32,12 +30,14 @@ Boston, MA 02111-1307, USA.  */
 
 #include "vax/vax.h"
 
+#undef VMS_TARGET
+#define VMS_TARGET 1
+
 #undef LIB_SPEC
 #undef CPP_PREDEFINES
 #undef TARGET_NAME
 #undef TARGET_DEFAULT
 #undef CALL_USED_REGISTERS
-#undef MAYBE_VMS_FUNCTION_PROLOGUE
 #undef STARTING_FRAME_OFFSET
 
 /* Predefine this in CPP because VMS limits the size of command options
@@ -79,37 +79,6 @@ Boston, MA 02111-1307, USA.  */
    are 4 bytes lower on the stack then they would otherwise have been.  */
 
 #define STARTING_FRAME_OFFSET -4
-
-#define __MAIN_NAME " main("
-/*
- * The MAYBE_VMS_FUNCTION_PROLOGUE macro works for both gcc and g++.  It
- * first checks to see if the current routine is "main", which will only
- * happen for GCC, and add the jsb if it is.  If is not the case then try and 
- * see if __MAIN_NAME is part of current_function_name, which will only happen
- * if we are running g++, and add the jsb if it is.  In gcc there should never
- * be a paren in the function name, and in g++ there is always a "(" in the
- * function name, thus there should never be any confusion.
- *
- * Adjusting the stack pointer by 4 before calling C$MAIN_ARGS is required
- * when linking with the VMS POSIX version of the C run-time library; using
- * `subl2 $4,r0' is adequate but we use `clrl -(sp)' instead.  The extra 4
- * bytes could be removed after the call because STARTING_FRAME_OFFSET's
- * setting of -4 will end up adding them right back again, but don't bother.
- */
-#define MAYBE_VMS_FUNCTION_PROLOGUE(FILE)	\
-{ const char *p = current_function_name;	\
-  int is_main = strcmp ("main", p) == 0;	\
-  while (!is_main && *p != '\0')		\
-    {						\
-      if (*p == *__MAIN_NAME			\
-	  && strncmp (p, __MAIN_NAME, sizeof __MAIN_NAME - sizeof "") == 0) \
-	is_main = 1;				\
-      else					\
-	p++;					\
-    }						\
-  if (is_main)					\
-    fprintf (FILE, "\t%s\n\t%s\n", "clrl -(sp)", "jsb _C$MAIN_ARGS");	\
-}
 
 /* This macro definition sets up a default value for `main' to return.  */
 #define DEFAULT_MAIN_RETURN  c_expand_return (integer_one_node)

@@ -390,35 +390,6 @@ enum reg_class { NO_REGS, GENERAL_REGS, ALL_REGS, LIM_REG_CLASSES };
 
 #define FUNCTION_ARG(CUM, MODE, TYPE, NAMED) 0
 
-/* This macro generates the assembly code for function entry.
-   FILE is a stdio stream to output the code to.
-   SIZE is an int: how many units of temporary storage to allocate.
-   Refer to the array `regs_ever_live' to determine which registers
-   to save; `regs_ever_live[I]' is nonzero if register number I
-   is ever used in the function.  This macro is responsible for
-   knowing which registers should not be saved even if used.  */
-
-#define FUNCTION_PROLOGUE(FILE, SIZE)					\
-{ register int regno;							\
-  register int cnt = 0;							\
-  extern char call_used_regs[];						\
-  /* the below two lines are a HACK, and should be deleted, but 	\
-     for now are very much needed (1.35) */				\
-  if (frame_pointer_needed)						\
-    regs_ever_live[14]=1, call_used_regs[14]=0;				\
-  for (regno = 0; regno < FIRST_PSEUDO_REGISTER; regno++)		\
-    if (regs_ever_live[regno] && !call_used_regs[regno])		\
-	cnt+=8;								\
-  if ((SIZE)+cnt)							\
-    fprintf (FILE, "\tadd.64\t.sp,=%d\n", -(SIZE)-cnt);			\
-  cnt = 0;								\
-  for (regno = 0; regno < FIRST_PSEUDO_REGISTER; regno++)		\
-    if (regs_ever_live[regno] && !call_used_regs[regno])		\
-      fprintf (FILE, "\tst.64\t.r%d,[.sp]%d\n", regno, (cnt+=8)-12); 	\
-  if (frame_pointer_needed)						\
-    fprintf (FILE, "\tadd.64\t.r14,.sp,=%d\n", (SIZE)+cnt);		\
-}
-
 /* Output assembler code to FILE to increment profiler label # LABELNO
    for profiling a function entry.  */
 
@@ -431,37 +402,6 @@ enum reg_class { NO_REGS, GENERAL_REGS, ALL_REGS, LIM_REG_CLASSES };
    No definition is equivalent to always zero.  */
 
 #define EXIT_IGNORE_STACK 0
-
-/* This macro generates the assembly code for function exit,
-   on machines that need it.  If FUNCTION_EPILOGUE is not defined
-   then individual return instructions are generated for each
-   return statement.  Args are same as for FUNCTION_PROLOGUE.  */
-
-#define FUNCTION_EPILOGUE(FILE, SIZE)					\
-{ register int regno;							\
-  register int cnt = 0;							\
-  extern char call_used_regs[];						\
-  /* this conditional is ONLY here because there is a BUG;		\
-	     EXIT_IGNORE_STACK is ignored itself when the first part of	\
-	     the condition is true! (at least in version 1.35) */	\
-  /* the 8*10 is for 64 bits of .r5 - .r14 */				\
-  if (current_function_calls_alloca || (SIZE)>=(256-8*10)) {		\
-    /* use .r4 as a temporary! Ok for now.... */			\
-    fprintf (FILE, "\tld.64\t.r4,.r14\n");				\
-    for (regno = FIRST_PSEUDO_REGISTER-1; regno >= 0; --regno)		\
-      if (regs_ever_live[regno] && !call_used_regs[regno])		\
-       	cnt+=8;								\
-    for (regno = 0; regno < FIRST_PSEUDO_REGISTER; ++regno)		\
-      if (regs_ever_live[regno] && !call_used_regs[regno])		\
-       fprintf (FILE, "\tld.64\t.r%d,[.r14]%d\n", regno,		\
-		-((cnt-=8) + 8)-4-(SIZE));				\
-    fprintf (FILE, "\tld.64\t.sp,.r4\n\texit\t0\n");			\
-  } else {								\
-    for (regno = 0; regno < FIRST_PSEUDO_REGISTER; ++regno)		\
-      if (regs_ever_live[regno] && !call_used_regs[regno])		\
-         fprintf (FILE, "\tld.64\t.r%d,[.sp]%d\n", regno, (cnt+=8)-12);	\
-    fprintf (FILE, "\texit\t%d\n", (SIZE)+cnt);				\
-  } }
 
 /* If the memory address ADDR is relative to the frame pointer,
    correct it to be relative to the stack pointer instead.

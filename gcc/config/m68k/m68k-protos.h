@@ -65,8 +65,6 @@ extern rtx legitimize_pic_address PARAMS ((rtx, enum machine_mode, rtx));
 #endif /* RTX_CODE */
 
 extern int flags_in_68881 PARAMS ((void));
-extern void output_function_prologue PARAMS ((FILE *, int));
-extern void output_function_epilogue PARAMS ((FILE *, int));
 extern int use_return_insn PARAMS ((void));
 extern void override_options PARAMS ((void));
 extern void init_68881_table PARAMS ((void));

@@ -84,16 +84,14 @@ extern int null_prologue PARAMS ((void));
 extern int integer_ok_for_set PARAMS ((unsigned));
 extern void m88k_layout_frame PARAMS ((void));
 extern void m88k_expand_prologue PARAMS ((void));
-extern void m88k_begin_prologue PARAMS ((FILE *, int));
 extern void m88k_end_prologue PARAMS ((FILE *));
 extern void m88k_expand_epilogue PARAMS ((void));
 extern void m88k_begin_epilogue PARAMS ((FILE *));
-extern void m88k_end_epilogue PARAMS ((FILE *, int));
 extern void output_function_profiler PARAMS ((FILE *, int, const char *, int));
 extern void output_function_block_profiler PARAMS ((FILE *, int));
 extern void output_block_profiler PARAMS ((FILE *, int));
 extern void output_ascii PARAMS ((FILE *, const char *, int,
-				  const unsigned char *, int));
+				  const char *, int));
 extern void output_label PARAMS ((int));
 extern struct rtx_def *m88k_builtin_saveregs PARAMS ((void));
 extern enum m88k_instruction classify_integer PARAMS ((enum machine_mode, int));

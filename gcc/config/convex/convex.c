@@ -64,11 +64,53 @@ static int frame_argblock_size;
 static rtx convert_arg_pushes ();
 #endif
 static void expand_movstr_call PARAMS ((rtx *));
+static void convex_output_function_prologue PARAMS ((FILE *, HOST_WIDE_INT));
+static void convex_output_function_epilogue PARAMS ((FILE *, HOST_WIDE_INT));
 
 /* Initialize the GCC target structure.  */
+#undef TARGET_ASM_FUNCTION_PROLOGUE
+#define TARGET_ASM_FUNCTION_PROLOGUE convex_output_function_prologue
+#undef TARGET_ASM_FUNCTION_EPILOGUE
+#define TARGET_ASM_FUNCTION_EPILOGUE convex_output_function_epilogue
 
 struct gcc_target target = TARGET_INITIALIZER;
 
+/* Generate the assembly code for function entry.  FILE is a stdio
+   stream to output the code to.  SIZE is an int: how many units of
+   temporary storage to allocate.
+
+   Refer to the array `regs_ever_live' to determine which registers to
+   save; `regs_ever_live[I]' is nonzero if register number I is ever
+   used in the function.  This function is responsible for knowing
+   which registers should not be saved even if used.  */
+
+static void
+convex_output_function_prologue (file, size)
+     FILE *file;
+     HOST_WIDE_INT size;
+{
+  size = ((size) + 7) & -8;
+  if (size)
+    fprintf (file, "\tsub.w #%d,sp\n", size);
+}
+
+/* This function generates the assembly code for function exit.
+   Args are as for output_function_prologue ().
+
+   The function epilogue should not depend on the current stack
+   pointer!  It should use the frame pointer only.  This is mandatory
+   because of alloca; we also take advantage of it to omit stack
+   adjustments before returning. */
+
+static void
+convex_output_function_epilogue (file, size)
+     FILE *file;
+     HOST_WIDE_INT size ATTRIBUTE_UNUSED;
+{
+  /* Follow function with a zero to stop c34 icache prefetching. */
+  fprintf (file, "\tds.h 0\n");
+}
+
 /* Here from OVERRIDE_OPTIONS at startup.  Initialize constant tables. */
 
 void

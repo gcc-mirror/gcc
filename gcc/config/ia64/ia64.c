@@ -137,10 +137,17 @@ static rtx ia64_expand_lock_test_and_set PARAMS ((enum machine_mode,
 						  tree, rtx));
 static rtx ia64_expand_lock_release PARAMS ((enum machine_mode, tree, rtx));
 static int ia64_valid_type_attribute PARAMS((tree, tree, tree, tree));
+static void ia64_function_prologue PARAMS((FILE *, HOST_WIDE_INT));
+static void ia64_function_epilogue PARAMS((FILE *, HOST_WIDE_INT));
 
 /* Initialize the GCC target structure.  */
 #undef TARGET_VALID_TYPE_ATTRIBUTE
 #define TARGET_VALID_TYPE_ATTRIBUTE ia64_valid_type_attribute
+
+#undef TARGET_ASM_FUNCTION_PROLOGUE
+#define TARGET_ASM_FUNCTION_PROLOGUE ia64_output_function_prologue
+#undef TARGET_ASM_FUNCTION_EPILOGUE
+#define TARGET_ASM_FUNCTION_EPILOGUE ia64_output_function_epilogue
 
 struct gcc_target target = TARGET_INITIALIZER;
 
@@ -1830,7 +1837,7 @@ gen_fr_restore_x (dest, src, offset)
 
 /* Called after register allocation to add any instructions needed for the
    prologue.  Using a prologue insn is favored compared to putting all of the
-   instructions in the FUNCTION_PROLOGUE macro, since it allows the scheduler
+   instructions in output_function_prologue(), since it allows the scheduler
    to intermix instructions with the saves of the caller saved registers.  In
    some cases, it might be necessary to emit a barrier instruction as the last
    insn to prevent such scheduling.
@@ -2188,7 +2195,7 @@ ia64_expand_prologue ()
 
 /* Called after register allocation to add any instructions needed for the
    epilogue.  Using a epilogue insn is favored compared to putting all of the
-   instructions in the FUNCTION_PROLOGUE macro, since it allows the scheduler
+   instructions in output_function_prologue(), since it allows the scheduler
    to intermix instructions with the saves of the caller saved registers.  In
    some cases, it might be necessary to emit a barrier instruction as the last
    insn to prevent such scheduling.  */
@@ -2496,10 +2503,10 @@ ia64_hard_regno_rename_ok (from, to)
 
 /* Emit the function prologue.  */
 
-void
-ia64_function_prologue (file, size)
+static void
+ia64_output_function_prologue (file, size)
      FILE *file;
-     int size ATTRIBUTE_UNUSED;
+     HOST_WIDE_INT size ATTRIBUTE_UNUSED;
 {
   int mask, grsave, grsave_prev;
 
@@ -2577,10 +2584,10 @@ ia64_output_end_prologue (file)
 
 /* Emit the function epilogue.  */
 
-void
-ia64_function_epilogue (file, size)
+static void
+ia64_output_function_epilogue (file, size)
      FILE *file ATTRIBUTE_UNUSED;
-     int size ATTRIBUTE_UNUSED;
+     HOST_WIDE_INT size ATTRIBUTE_UNUSED;
 {
   int i;
 

@@ -694,9 +694,10 @@ extern int rs6000_pic_labelno;
     the return address.  Hence returning from FUNCTION will return to whoever
     called the current thunk'.
 
-    The effect must be as if FUNCTION had been called directly with the adjusted
-    first argument.  This macro is responsible for emitting all of the code for
-    a thunk function; FUNCTION_PROLOGUE' and FUNCTION_EPILOGUE' are not
+    The effect must be as if FUNCTION had been called directly with
+    the adjusted first argument.  This macro is responsible for
+    emitting all of the code for a thunk function;
+    output_function_prologue() and output_function_epilogue() are not
     invoked.
 
     The THUNK_FNDECL is redundant.  (DELTA and FUNCTION have already been

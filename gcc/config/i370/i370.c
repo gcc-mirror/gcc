@@ -100,6 +100,8 @@ static FILE *assembler_source = 0;
 
 static label_node_t * mvs_get_label PARAMS ((int));
 static void i370_label_scan PARAMS ((void));
+static void i370_output_function_prologue PARAMS ((FILE *, HOST_WIDE_INT));
+static void i370_output_function_epilogue PARAMS ((FILE *, HOST_WIDE_INT));
 
 /* ===================================================== */
 /* defines and functions specific to the HLASM assembler */
@@ -287,6 +289,10 @@ static const unsigned char ebcasc[256] =
 };
 
 /* Initialize the GCC target structure.  */
+#undef TARGET_ASM_FUNCTION_PROLOGUE
+#define TARGET_ASM_FUNCTION_PROLOGUE i370_output_function_prologue
+#undef TARGET_ASM_FUNCTION_EPILOGUE
+#define TARGET_ASM_FUNCTION_EPILOGUE i370_output_function_epilogue
 
 struct gcc_target target = TARGET_INITIALIZER;
 
@@ -1195,13 +1201,21 @@ unsigned_jump_follows_p (insn)
     }
 }
 
+/* Generate the assembly code for function entry.  FILE is a stdio
+   stream to output the code to.  SIZE is an int: how many units of
+   temporary storage to allocate.
+
+   Refer to the array `regs_ever_live' to determine which registers to
+   save; `regs_ever_live[I]' is nonzero if register number I is ever
+   used in the function.  This function is responsible for knowing
+   which registers should not be saved even if used.  */
 
 #ifdef TARGET_HLASM
 
-void
-i370_function_prolog (f, l)
+static void
+i370_output_function_prologue (f, l)
      FILE *f;
-     int l;
+     HOST_WIDE_INT l;
 {
 #if MACROPROLOGUE == 1
   fprintf (f, "* Function %s prologue\n", mvs_function_name);
@@ -1388,10 +1402,10 @@ i370_function_prolog (f, l)
    also, to quite using addresses 136, 140, etc.
  */
 
-void
-i370_function_prolog (f, frame_size)
+static void
+i370_output_function_prologue (f, frame_size)
      FILE *f;
-     int frame_size;
+     HOST_WIDE_INT frame_size;
 {
   static int function_label_index = 1;
   static int function_first = 0;
@@ -1461,3 +1475,47 @@ i370_function_prolog (f, frame_size)
   i370_label_scan ();
 }
 #endif /* TARGET_ELF_ABI */
+
+/* This function generates the assembly code for function exit.
+   Args are as for output_function_prologue ().
+
+   The function epilogue should not depend on the current stack
+   pointer!  It should use the frame pointer only.  This is mandatory
+   because of alloca; we also take advantage of it to omit stack
+   adjustments before returning. */
+
+static void
+i370_output_function_epilogue (file, l)
+     FILE *file;
+     HOST_WIDE_INT l ATTRIBUTE_UNUSED;
+{
+  int i;
+
+  check_label_emit ();
+  mvs_check_page (file, 14, 0);
+  fprintf (file, "* Function %s epilogue\n", mvs_function_name);
+  mvs_page_num++;
+
+#if MACROEPILOGUE == 1
+  fprintf (file, "\tEDCEPIL\n");
+#else /* MACROEPILOGUE != 1 */
+  fprintf (file, "\tL\t13,4(,13)\n");
+  fprintf (file, "\tL\t14,12(,13)\n");
+  fprintf (file, "\tLM\t2,12,28(13)\n");
+  fprintf (file, "\tBALR\t1,14\n");
+  fprintf (file, "\tDC\tA(");
+  assemble_name (file, mvs_function_name);
+  fprintf (file, ")\n" );
+#endif /* MACROEPILOGUE */
+
+  fprintf (file, "* Function %s literal pool\n", mvs_function_name);
+  fprintf (file, "\tDS\t0F\n" );
+  fprintf (file, "\tLTORG\n");
+  fprintf (file, "* Function %s page table\n", mvs_function_name);
+  fprintf (file, "\tDS\t0F\n");
+  fprintf (file, "PGT%d\tEQU\t*\n", function_base_page);
+
+  mvs_free_label_list();
+  for (i = function_base_page; i < mvs_page_num; i++)
+    fprintf (file, "\tDC\tA(PG%d)\n", i);
+}

@@ -1458,12 +1458,6 @@ do {									\
 
 /* Function Entry and Exit */
 
-/* A C compound statement that outputs the assembler code for entry to a
-   function.  */
-
-#define FUNCTION_PROLOGUE(FILE, SIZE) \
-  ia64_function_prologue (FILE, SIZE)
-
 /* This macro notes the end of the prologue.  */
 
 #define FUNCTION_END_PROLOGUE(FILE)  ia64_output_end_prologue (FILE)
@@ -1479,12 +1473,6 @@ do {									\
    used by the epilogue or the `return' pattern.  */
 
 #define EPILOGUE_USES(REGNO) ia64_epilogue_uses (REGNO)
-
-/* A C compound statement that outputs the assembler code for exit from a
-   function.  */
-
-#define FUNCTION_EPILOGUE(FILE, SIZE) \
-  ia64_function_epilogue (FILE, SIZE)
 
 /* Output at beginning of assembler file.  */
 

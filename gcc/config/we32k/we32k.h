@@ -396,26 +396,6 @@ enum reg_class { NO_REGS, GENERAL_REGS,
 
 #define FUNCTION_ARG_PARTIAL_NREGS(CUM, MODE, TYPE, NAMED) 0
 
-/* This macro generates the assembly code for function entry.
-   FILE is a stdio stream to output the code to.
-   SIZE is an int: how many units of temporary storage to allocate.
-   Refer to the array `regs_ever_live' to determine which registers
-   to save; `regs_ever_live[I]' is nonzero if register number I
-   is ever used in the function.  This macro is responsible for
-   knowing which registers should not be saved even if used.  */
-
-#define FUNCTION_PROLOGUE(FILE, SIZE)     \
-{ register int nregs_to_save;					\
-  register int regno;						\
-  extern char call_used_regs[];					\
-  nregs_to_save = 0;						\
-  for (regno = 8; regno > 2; regno--)				\
-    if (regs_ever_live[regno] && ! call_used_regs[regno])	\
-      nregs_to_save = (9 - regno);				\
-  fprintf (FILE, "\tsave &%d\n", nregs_to_save);  		\
-  if (SIZE)							\
-    fprintf (FILE, "\taddw2 &%d,%%sp\n", ((SIZE) + 3) & ~3);	}
-
 /* Output assembler code to FILE to increment profiler label # LABELNO
    for profiling a function entry.  */
 
@@ -441,26 +421,6 @@ enum reg_class { NO_REGS, GENERAL_REGS,
    No definition is equivalent to always zero.  */
 
 #define EXIT_IGNORE_STACK 0
-
-/* This macro generates the assembly code for function exit,
-   on machines that need it.  If FUNCTION_EPILOGUE is not defined
-   then individual return instructions are generated for each
-   return statement.  Args are same as for FUNCTION_PROLOGUE.
-
-   The function epilogue should not depend on the current stack pointer!
-   It should use the frame pointer only.  This is mandatory because
-   of alloca; we also take advantage of it to omit stack adjustments
-   before returning.  */
-
-#define FUNCTION_EPILOGUE(FILE, SIZE) \
-{ register int nregs_to_restore;				\
-  register int regno;						\
-  extern char call_used_regs[];					\
-  nregs_to_restore = 0;						\
-  for (regno = 8; regno > 2; regno--)				\
-    if (regs_ever_live[regno] && ! call_used_regs[regno])	\
-       nregs_to_restore = (9 - regno);				\
-  fprintf (FILE, "\tret &%d\n", nregs_to_restore);  		}
 
 /* Store in the variable DEPTH the initial difference between the
    frame pointer reg contents and the stack pointer reg contents,

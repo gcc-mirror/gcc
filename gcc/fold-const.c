@@ -1051,11 +1051,11 @@ fail:
 
 REAL_VALUE_TYPE
 real_hex_to_f (s, mode)
-   char *s;
+   const char *s;
    enum machine_mode mode;
 {
   REAL_VALUE_TYPE ip;
-  char *p = s;
+  const char *p = s;
   unsigned HOST_WIDE_INT low, high;
   int shcount, nrmcount, k;
   int sign, expsign, isfloat;

@@ -49,6 +49,8 @@ static void d30v_add_gc_roots PARAMS ((void));
 static void d30v_init_machine_status PARAMS ((struct function *));
 static void d30v_mark_machine_status PARAMS ((struct function *));
 static void d30v_free_machine_status PARAMS ((struct function *));
+static void d30v_output_function_prologue PARAMS ((FILE *, HOST_WIDE_INT));
+static void d30v_output_function_epilogue PARAMS ((FILE *, HOST_WIDE_INT));
 
 /* Define the information needed to generate branch and scc insns.  This is
    stored from the compare operation.  */
@@ -80,6 +82,10 @@ enum reg_class regno_reg_class[FIRST_PSEUDO_REGISTER];
 enum reg_class reg_class_from_letter[256];
 
 /* Initialize the GCC target structure.  */
+#undef TARGET_ASM_FUNCTION_PROLOGUE
+#define TARGET_ASM_FUNCTION_PROLOGUE d30v_output_function_prologue
+#undef TARGET_ASM_FUNCTION_EPILOGUE
+#define TARGET_ASM_FUNCTION_EPILOGUE d30v_output_function_epilogue
 
 struct gcc_target target = TARGET_INITIALIZER;
 
@@ -2321,96 +2327,32 @@ d30v_expand_builtin_va_arg(valist, type)
   return ptr_rtx;
 }
 
+/* Generate the assembly code for function entry.  FILE is a stdio
+   stream to output the code to.  SIZE is an int: how many units of
+   temporary storage to allocate.
 
-/* A C compound statement that outputs the assembler code for entry to a
-   function.  The prologue is responsible for setting up the stack frame,
-   initializing the frame pointer register, saving registers that must be
-   saved, and allocating SIZE additional bytes of storage for the local
-   variables.  SIZE is an integer.  FILE is a stdio stream to which the
-   assembler code should be output.
+   Refer to the array `regs_ever_live' to determine which registers to
+   save; `regs_ever_live[I]' is nonzero if register number I is ever
+   used in the function.  This function is responsible for knowing
+   which registers should not be saved even if used.  */
 
-   The label for the beginning of the function need not be output by this
-   macro.  That has already been done when the macro is run.
-
-   To determine which registers to save, the macro can refer to the array
-   `regs_ever_live': element R is nonzero if hard register R is used anywhere
-   within the function.  This implies the function prologue should save
-   register R, provided it is not one of the call-used registers.
-   (`FUNCTION_EPILOGUE' must likewise use `regs_ever_live'.)
-
-   On machines that have "register windows", the function entry code does not
-   save on the stack the registers that are in the windows, even if they are
-   supposed to be preserved by function calls; instead it takes appropriate
-   steps to "push" the register stack, if any non-call-used registers are used
-   in the function.
-
-   On machines where functions may or may not have frame-pointers, the function
-   entry code must vary accordingly; it must set up the frame pointer if one is
-   wanted, and not otherwise.  To determine whether a frame pointer is in
-   wanted, the macro can refer to the variable `frame_pointer_needed'.  The
-   variable's value will be 1 at run time in a function that needs a frame
-   pointer.  *Note Elimination::.
-
-   The function entry code is responsible for allocating any stack space
-   required for the function.  This stack space consists of the regions listed
-   below.  In most cases, these regions are allocated in the order listed, with
-   the last listed region closest to the top of the stack (the lowest address
-   if `STACK_GROWS_DOWNWARD' is defined, and the highest address if it is not
-   defined).  You can use a different order for a machine if doing so is more
-   convenient or required for compatibility reasons.  Except in cases where
-   required by standard or by a debugger, there is no reason why the stack
-   layout used by GCC need agree with that used by other compilers for a
-   machine.
-
-      * A region of `current_function_pretend_args_size' bytes of
-        uninitialized space just underneath the first argument
-        arriving on the stack.  (This may not be at the very start of
-        the allocated stack region if the calling sequence has pushed
-        anything else since pushing the stack arguments.  But
-        usually, on such machines, nothing else has been pushed yet,
-        because the function prologue itself does all the pushing.)
-        This region is used on machines where an argument may be
-        passed partly in registers and partly in memory, and, in some
-        cases to support the features in `varargs.h' and `stdargs.h'.
-
-      * An area of memory used to save certain registers used by the
-        function.  The size of this area, which may also include
-        space for such things as the return address and pointers to
-        previous stack frames, is machine-specific and usually
-        depends on which registers have been used in the function.
-        Machines with register windows often do not require a save
-        area.
-
-      * A region of at least SIZE bytes, possibly rounded up to an
-        allocation boundary, to contain the local variables of the
-        function.  On some machines, this region and the save area
-        may occur in the opposite order, with the save area closer to
-        the top of the stack.
-
-      * Optionally, when `ACCUMULATE_OUTGOING_ARGS' is defined, a
-        region of `current_function_outgoing_args_size' bytes to be
-        used for outgoing argument lists of the function.  *Note
-        Stack Arguments::.
-
-   Normally, it is necessary for the macros `FUNCTION_PROLOGUE' and
-   `FUNCTION_EPILOGUE' to treat leaf functions specially.  The C variable
-   `leaf_function' is nonzero for such a function.  */
-
-/* For the d30v, move all of the prologue processing into separate insns.  */
-void
-d30v_function_prologue (stream, size)
+static void
+d30v_output_function_prologue (stream, size)
      FILE *stream ATTRIBUTE_UNUSED;
-     int size ATTRIBUTE_UNUSED;
+     HOST_WIDE_INT size ATTRIBUTE_UNUSED;
 {
+  /* For the d30v, move all of the prologue processing into separate
+     insns.  */
 }
 
 
-/* Called after register allocation to add any instructions needed for the
-   prologue.  Using a prologue insn is favored compared to putting all of the
-   instructions in the FUNCTION_PROLOGUE macro, since it allows the scheduler
-   to intermix instructions with the saves of the caller saved registers.  In
-   some cases, it might be necessary to emit a barrier instruction as the last
-   insn to prevent such scheduling.  */
+/* Called after register allocation to add any instructions needed for
+   the prologue.  Using a prologue insn is favored compared to putting
+   all of the instructions in output_function_prologue (), since it
+   allows the scheduler to intermix instructions with the saves of the
+   caller saved registers.  In some cases, it might be necessary to
+   emit a barrier instruction as the last insn to prevent such
+   scheduling.  */
 
 void
 d30v_expand_prologue ()
@@ -2492,60 +2434,33 @@ d30v_expand_prologue ()
 }
 
 
-/* A C compound statement that outputs the assembler code for exit from a
-   function.  The epilogue is responsible for restoring the saved registers and
-   stack pointer to their values when the function was called, and returning
-   control to the caller.  This macro takes the same arguments as the macro
-   `FUNCTION_PROLOGUE', and the registers to restore are determined from
-   `regs_ever_live' and `CALL_USED_REGISTERS' in the same way.
+/* This function generates the assembly code for function exit.
+   Args are as for output_function_prologue ().
 
-   On some machines, there is a single instruction that does all the work of
-   returning from the function.  On these machines, give that instruction the
-   name `return' and do not define the macro `FUNCTION_EPILOGUE' at all.
+   The function epilogue should not depend on the current stack
+   pointer!  It should use the frame pointer only.  This is mandatory
+   because of alloca; we also take advantage of it to omit stack
+   adjustments before returning.  */
 
-   Do not define a pattern named `return' if you want the `FUNCTION_EPILOGUE'
-   to be used.  If you want the target switches to control whether return
-   instructions or epilogues are used, define a `return' pattern with a
-   validity condition that tests the target switches appropriately.  If the
-   `return' pattern's validity condition is false, epilogues will be used.
-
-   On machines where functions may or may not have frame-pointers, the function
-   exit code must vary accordingly.  Sometimes the code for these two cases is
-   completely different.  To determine whether a frame pointer is wanted, the
-   macro can refer to the variable `frame_pointer_needed'.  The variable's
-   value will be 1 when compiling a function that needs a frame pointer.
-
-   Normally, `FUNCTION_PROLOGUE' and `FUNCTION_EPILOGUE' must treat leaf
-   functions specially.  The C variable `leaf_function' is nonzero for such a
-   function.  *Note Leaf Functions::.
-
-   On some machines, some functions pop their arguments on exit while others
-   leave that for the caller to do.  For example, the 68020 when given `-mrtd'
-   pops arguments in functions that take a fixed number of arguments.
-
-   Your definition of the macro `RETURN_POPS_ARGS' decides which functions pop
-   their own arguments.  `FUNCTION_EPILOGUE' needs to know what was decided.
-   The variable that is called `current_function_pops_args' is the number of
-   bytes of its arguments that a function should pop.  *Note Scalar Return::.  */
-
-/* For the d30v, move all processing to be as insns, but do any cleanup
-   here, since it is done after handling all of the insns.  */
-void
-d30v_function_epilogue (stream, size)
+static void
+d30v_output_function_epilogue (stream, size)
      FILE *stream ATTRIBUTE_UNUSED;
-     int size ATTRIBUTE_UNUSED;
+     HOST_WIDE_INT size ATTRIBUTE_UNUSED;
 {
+  /* For the d30v, move all processing to be as insns, but do any
+     cleanup here, since it is done after handling all of the insns.  */
   d30v_stack_cache = (d30v_stack_t *)0;	/* reset stack cache */
 }
 
 
 
-/* Called after register allocation to add any instructions needed for the
-   epilogue.  Using a epilogue insn is favored compared to putting all of the
-   instructions in the FUNCTION_PROLOGUE macro, since it allows the scheduler
-   to intermix instructions with the saves of the caller saved registers.  In
-   some cases, it might be necessary to emit a barrier instruction as the last
-   insn to prevent such scheduling.  */
+/* Called after register allocation to add any instructions needed for
+   the epilogue.  Using a epilogue insn is favored compared to putting
+   all of the instructions in output_function_prologue(), since it
+   allows the scheduler to intermix instructions with the saves of the
+   caller saved registers.  In some cases, it might be necessary to
+   emit a barrier instruction as the last insn to prevent such
+   scheduling.  */
 
 void
 d30v_expand_epilogue ()

@@ -1590,10 +1590,6 @@ enum reg_class
     }									\
 }
 
-/* This macro generates the assembly code for function entry.
-   All of the C/370 environment is preserved.  */
-#define FUNCTION_PROLOGUE(FILE, LSIZE) i370_function_prolog ((FILE), (LSIZE));
-
 #define ASM_DECLARE_FUNCTION_NAME(FILE, NAME, DECL)			\
 {									\
   if (strlen (NAME) + 1 > mvs_function_name_length)			\
@@ -1617,62 +1613,6 @@ enum reg_class
   assemble_name (FILE, mvs_function_name);				\
   fputs ("\tCSECT\n", FILE);						\
 }
-
-/* This macro generates the assembly code for function exit, on machines
-   that need it.  If FUNCTION_EPILOGUE is not defined then individual
-   return instructions are generated for each return statement.  Args are
-   same as for FUNCTION_PROLOGUE.
-
-   The function epilogue should not depend on the current stack pointer!
-   It should use the frame pointer only.  This is mandatory because
-   of alloca; we also take advantage of it to omit stack adjustments
-   before returning.  */
-
-#if MACROEPILOGUE == 1
-#define FUNCTION_EPILOGUE(FILE, LSIZE)					\
-{									\
-  int i;								\
-  check_label_emit();							\
-  mvs_check_page (FILE,14,0);						\
-  fprintf (FILE, "* Function %s epilogue\n", mvs_function_name);	\
-  fprintf (FILE, "\tEDCEPIL\n");					\
-  mvs_page_num++;							\
-  fprintf (FILE, "* Function %s literal pool\n", mvs_function_name);	\
-  fprintf (FILE, "\tDS\t0F\n" );					\
-  fprintf (FILE, "\tLTORG\n");						\
-  fprintf (FILE, "* Function %s page table\n", mvs_function_name);	\
-  fprintf (FILE, "\tDS\t0F\n");						\
-  fprintf (FILE, "PGT%d\tEQU\t*\n", function_base_page);		\
-  mvs_free_label_list();						\
-  for ( i = function_base_page; i < mvs_page_num; i++ )			\
-    fprintf (FILE, "\tDC\tA(PG%d)\n", i);				\
-}
-#else /* MACROEPILOGUE != 1 */
-#define FUNCTION_EPILOGUE(FILE, LSIZE)					\
-{									\
-  int i;								\
-  check_label_emit();							\
-  mvs_check_page (FILE,14,0);						\
-  fprintf (FILE, "* Function %s epilogue\n", mvs_function_name);	\
-  fprintf (FILE, "\tL\t13,4(,13)\n");					\
-  fprintf (FILE, "\tL\t14,12(,13)\n");					\
-  fprintf (FILE, "\tLM\t2,12,28(13)\n");				\
-  fprintf (FILE, "\tBALR\t1,14\n");					\
-  fprintf (FILE, "\tDC\tA(");						\
-  mvs_page_num++;							\
-  assemble_name (FILE, mvs_function_name);				\
-  fprintf (FILE, ")\n" );						\
-  fprintf (FILE, "* Function %s literal pool\n", mvs_function_name);	\
-  fprintf (FILE, "\tDS\t0F\n" );					\
-  fprintf (FILE, "\tLTORG\n");						\
-  fprintf (FILE, "* Function %s page table\n", mvs_function_name);	\
-  fprintf (FILE, "\tDS\t0F\n");						\
-  fprintf (FILE, "PGT%d\tEQU\t*\n", function_base_page);		\
-  mvs_free_label_list();						\
-  for ( i = function_base_page; i < mvs_page_num; i++ )			\
-    fprintf (FILE, "\tDC\tA(PG%d)\n", i);				\
-}
-#endif /* MACROEPILOGUE */
 
 /* Output assembler code to FILE to increment profiler label # LABELNO
    for profiling a function entry.  */
@@ -1950,40 +1890,6 @@ abort(); \
 	break;								\
     }									\
 }
-
-/* This macro generates the assembly code for function exit, on machines
-   that need it.  If FUNCTION_EPILOGUE is not defined then individual
-   return instructions are generated for each return statement.  Args are
-   same as for FUNCTION_PROLOGUE.
-
-   The function epilogue should not depend on the current stack pointer!
-   It should use the frame pointer only.  This is mandatory because
-   of alloca; we also take advantage of it to omit stack adjustments
-   before returning.  */
-
-#define FUNCTION_EPILOGUE(FILE, LSIZE)					\
-{									\
-  int i;								\
-  check_label_emit();							\
-  mvs_check_page (FILE,14,0);						\
-  fprintf (FILE, "# Function epilogue\n");				\
-  fprintf (FILE, "\tL\tsp,4(0,sp)\n");					\
-  fprintf (FILE, "\tL\tlr,12(0,sp)\n");					\
-  fprintf (FILE, "\tLM\t2,12,28(sp)\n");				\
-  fprintf (FILE, "\tBASR\t1,lr\n");					\
-  mvs_page_num++;							\
-  fprintf (FILE, "# Function literal pool\n");				\
-  fprintf (FILE, "\t.balign\t4\n");					\
-  fprintf (FILE, "\t.ltorg\n");						\
-  fprintf (FILE, "# Function page table\n");				\
-  fprintf (FILE, "\t.balign\t4\n");					\
-  fprintf (FILE, ".LPGT%d:\n", function_base_page);			\
-  mvs_free_label_list();						\
-  for ( i = function_base_page; i < mvs_page_num; i++ )			\
-    fprintf (FILE, "\t.long\t.LPG%d\n", i);				\
-}
-
-#define FUNCTION_PROLOGUE(FILE, LSIZE) i370_function_prolog ((FILE), (LSIZE));
 
 /* Output assembler code to FILE to increment profiler label # LABELNO
    for profiling a function entry.  */

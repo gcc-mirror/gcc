@@ -435,7 +435,7 @@ extern int target_flags;
 #define MASK_FPU 1
 #define TARGET_FPU (target_flags & MASK_FPU)
 
-/* Nonzero if we should use FUNCTION_EPILOGUE.  Otherwise, we
+/* Nonzero if we should use function_epilogue().  Otherwise, we
    use fast return insns, but lose some generality.  */
 #define MASK_EPILOGUE 2
 #define TARGET_EPILOGUE (target_flags & MASK_EPILOGUE)
@@ -584,9 +584,9 @@ extern int target_flags;
      N_("Do not use hardware fp") },					\
     {"soft-float", MASK_FPU_SET,			NULL },		\
     {"epilogue", MASK_EPILOGUE,						\
-     N_("Use FUNCTION_EPILOGUE") },					\
+     N_("Use function_epilogue()") },					\
     {"no-epilogue", -MASK_EPILOGUE,					\
-     N_("Do not use FUNCTION_EPILOGUE") }, 				\
+     N_("Do not use function_epilogue()") }, 				\
     {"unaligned-doubles", MASK_UNALIGNED_DOUBLES,			\
      N_("Assume possible double misalignment") },			\
     {"no-unaligned-doubles", -MASK_UNALIGNED_DOUBLES,			\
@@ -1929,26 +1929,6 @@ do {									\
 } while (0)
 #endif
 
-/* This macro generates the assembly code for function entry.
-   FILE is a stdio stream to output the code to.
-   SIZE is an int: how many units of temporary storage to allocate.
-   Refer to the array `regs_ever_live' to determine which registers
-   to save; `regs_ever_live[I]' is nonzero if register number I
-   is ever used in the function.  This macro is responsible for
-   knowing which registers should not be saved even if used.  */
-
-/* On SPARC, move-double insns between fpu and cpu need an 8-byte block
-   of memory.  If any fpu reg is used in the function, we allocate
-   such a block here, at the bottom of the frame, just in case it's needed.
-
-   If this function is a leaf procedure, then we may choose not
-   to do a "save" insn.  The decision about whether or not
-   to do this is made in regclass.c.  */
-
-#define FUNCTION_PROLOGUE(FILE, SIZE) \
-  (TARGET_FLAT ? sparc_flat_output_function_prologue (FILE, (int)SIZE) \
-   : output_function_prologue (FILE, (int)SIZE, \
-			       current_function_uses_only_leaf_regs))
 
 /* Output assembler code to FILE to increment profiler label # LABELNO
    for profiling a function entry.  */
@@ -2127,21 +2107,6 @@ LFLGRET"ID":\n\
 #define EXIT_IGNORE_STACK	\
  (get_frame_size () != 0	\
   || current_function_calls_alloca || current_function_outgoing_args_size)
-
-/* This macro generates the assembly code for function exit,
-   on machines that need it.  If FUNCTION_EPILOGUE is not defined
-   then individual return instructions are generated for each
-   return statement.  Args are same as for FUNCTION_PROLOGUE.
-
-   The function epilogue should not depend on the current stack pointer!
-   It should use the frame pointer only.  This is mandatory because
-   of alloca; we also take advantage of it to omit stack adjustments
-   before returning.  */
-
-#define FUNCTION_EPILOGUE(FILE, SIZE) \
-  (TARGET_FLAT ? sparc_flat_output_function_epilogue (FILE, (int)SIZE) \
-   : output_function_epilogue (FILE, (int)SIZE, \
-			       current_function_uses_only_leaf_regs))
 
 #define DELAY_SLOTS_FOR_EPILOGUE \
   (TARGET_FLAT ? sparc_flat_epilogue_delay_slots () : 1)

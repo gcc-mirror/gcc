@@ -62,8 +62,15 @@ rtx m88k_compare_op0;		/* cmpsi operand 0 */
 rtx m88k_compare_op1;		/* cmpsi operand 1 */
 
 enum processor_type m88k_cpu;	/* target cpu */
+
+static void m88k_output_function_prologue PARAMS ((FILE *, HOST_WIDE_INT));
+static void m88k_output_function_epilogue PARAMS ((FILE *, HOST_WIDE_INT));
 
 /* Initialize the GCC target structure.  */
+#undef TARGET_ASM_FUNCTION_PROLOGUE
+#define TARGET_ASM_FUNCTION_PROLOGUE m88k_output_function_prologue
+#undef TARGET_ASM_FUNCTION_EPILOGUE
+#define TARGET_ASM_FUNCTION_EPILOGUE m88k_output_function_epilogue
 
 struct gcc_target target = TARGET_INITIALIZER;
 
@@ -1611,7 +1618,7 @@ output_ascii (file, opcode, max, p, size)
      FILE *file;
      const char *opcode;
      int max;
-     const unsigned char *p;
+     const char *p;
      int size;
 {
   int i;
@@ -1622,7 +1629,7 @@ output_ascii (file, opcode, max, p, size)
   fprintf (file, "%s\"", opcode);
   for (i = 0; i < size; i++)
     {
-      register int c = p[i];
+      register int c = (unsigned char) p[i];
 
       if (num > max)
 	{
@@ -1781,7 +1788,8 @@ static int  prologue_marked;
   (((BYTES) + (STACK_UNIT_BOUNDARY - 1)) & ~(STACK_UNIT_BOUNDARY - 1))
 
 /* Establish the position of the FP relative to the SP.  This is done
-   either during FUNCTION_PROLOGUE or by INITIAL_ELIMINATION_OFFSET.  */
+   either during output_function_prologue() or by
+   INITIAL_ELIMINATION_OFFSET.  */
 
 void
 m88k_layout_frame ()
@@ -1935,10 +1943,10 @@ uses_arg_area_p ()
   return 0;
 }
 
-void
-m88k_begin_prologue (stream, size)
+static void
+m88k_output_function_prologue (stream, size)
      FILE *stream ATTRIBUTE_UNUSED;
-     int size ATTRIBUTE_UNUSED;
+     HOST_WIDE_INT size ATTRIBUTE_UNUSED;
 {
   if (TARGET_OMIT_LEAF_FRAME_POINTER && ! quiet_flag && leaf_function_p ())
     fprintf (stderr, "$");
@@ -2016,7 +2024,7 @@ m88k_expand_prologue ()
 }
 
 /* This function generates the assembly code for function exit,
-   on machines that need it.  Args are same as for FUNCTION_PROLOGUE.
+   on machines that need it.
 
    The function epilogue should not depend on the current stack pointer!
    It should use the frame pointer only, if there is a frame pointer.
@@ -2034,10 +2042,10 @@ m88k_begin_epilogue (stream)
   epilogue_marked = 1;
 }
 
-void
-m88k_end_epilogue (stream, size)
+static void
+m88k_output_function_epilogue (stream, size)
      FILE *stream;
-     int size ATTRIBUTE_UNUSED;
+     HOST_WIDE_INT size ATTRIBUTE_UNUSED;
 {
   rtx insn = get_last_insn ();
 

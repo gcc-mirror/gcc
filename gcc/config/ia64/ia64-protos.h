@@ -77,8 +77,6 @@ extern void ia64_expand_call PARAMS((rtx, rtx, rtx, int));
 extern HOST_WIDE_INT ia64_initial_elimination_offset PARAMS((int, int));
 extern void ia64_expand_prologue PARAMS((void));
 extern void ia64_expand_epilogue PARAMS((int));
-extern void ia64_function_prologue PARAMS((FILE *, int));
-extern void ia64_function_epilogue PARAMS((FILE *, int));
 
 extern int ia64_direct_return PARAMS((void));
 extern void ia64_expand_load_address PARAMS((rtx, rtx, rtx));

@@ -107,6 +107,8 @@ static void abort_with_insn			PARAMS ((rtx, const char *))
   ATTRIBUTE_NORETURN;
 static int symbolic_expression_p                PARAMS ((rtx));
 static void mips_add_gc_roots                   PARAMS ((void));
+static void mips_output_function_epilogue PARAMS ((FILE *, HOST_WIDE_INT));
+static void mips_output_function_prologue PARAMS ((FILE *, HOST_WIDE_INT));
 static enum processor_type mips_parse_cpu       PARAMS ((const char *));
 
 /* Global variables for machine-dependent things.  */
@@ -439,6 +441,10 @@ enum reg_class mips_char_to_class[256] =
 };
 
 /* Initialize the GCC target structure.  */
+#undef TARGET_ASM_FUNCTION_PROLOGUE
+#define TARGET_ASM_FUNCTION_PROLOGUE mips_output_function_prologue
+#undef TARGET_ASM_FUNCTION_EPILOGUE
+#define TARGET_ASM_FUNCTION_EPILOGUE mips_output_function_epilogue
 
 struct gcc_target target = TARGET_INITIALIZER;
 
@@ -6846,8 +6852,8 @@ save_restore_insns (store_p, large_reg, large_offset, file)
 
 /* Set up the stack and frame (if desired) for the function.  */
 
-void
-function_prologue (file, size)
+static void
+mips_output_function_prologue (file, size)
      FILE *file;
      HOST_WIDE_INT size ATTRIBUTE_UNUSED;
 {
@@ -7437,12 +7443,12 @@ mips_expand_prologue ()
 #define RA_MASK BITMASK_HIGH	/* 1 << 31 */
 #define PIC_OFFSET_TABLE_MASK (1 << (PIC_OFFSET_TABLE_REGNUM - GP_REG_FIRST))
 
-void
-function_epilogue (file, size)
+static void
+mips_output_function_epilogue (file, size)
      FILE *file ATTRIBUTE_UNUSED;
      HOST_WIDE_INT size ATTRIBUTE_UNUSED;
 {
-  const char *fnname;
+  const char *fnname = "";	/* FIXME: Correct initialisation?  */
 
 #ifndef FUNCTION_NAME_ALREADY_DECLARED
   /* Get the function name the same way that toplev.c does before calling

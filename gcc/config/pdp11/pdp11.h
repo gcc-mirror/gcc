@@ -649,10 +649,6 @@ maybe ac0 ? - as option someday! */
 
 #define FUNCTION_ARG_PARTIAL_NREGS(CUM, MODE, TYPE, NAMED) 0
 
-/* This macro generates the assembly code for function entry. */
-#define FUNCTION_PROLOGUE(FILE, SIZE) \
-    output_function_prologue(FILE, SIZE);
-
 /* Output assembler code to FILE to increment profiler label # LABELNO
    for profiling a function entry.  */
 
@@ -668,15 +664,6 @@ extern int may_call_alloca;
 
 #define EXIT_IGNORE_STACK	1
 
-/* This macro generates the assembly code for function exit,
-   on machines that need it.  If FUNCTION_EPILOGUE is not defined
-   then individual return instructions are generated for each
-   return statement.  Args are same as for FUNCTION_PROLOGUE.
-*/
-
-#define FUNCTION_EPILOGUE(FILE, SIZE) \
-    output_function_epilogue(FILE, SIZE);
-  
 #define INITIAL_FRAME_POINTER_OFFSET(DEPTH_VAR)	\
 {								\
   int offset, regno;		      				\

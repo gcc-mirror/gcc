@@ -19,18 +19,7 @@ along with GNU CC; see the file COPYING.  If not, write to
 the Free Software Foundation, 59 Temple Place - Suite 330,
 Boston, MA 02111-1307, USA.  */
 
-/* This macro generates the assembly code for function entry. */
-#undef FUNCTION_PROLOGUE
-#define FUNCTION_PROLOGUE(FILE, SIZE) \
-do {									\
-fprintf(FILE, "\tjsr	r5, csv\n");					\
-if ((SIZE) != 0)							\
-  {									\
-    fprintf(FILE, "\t/*abuse empty parameter slot for locals!*/\n");	\
-    if ((SIZE) > 2)							\
-      fprintf(FILE, "\tsub $%d, sp\n", (SIZE)-2);			\
-  };									\
-} while (0)
+#define TWO_BSD
 
 /* EXIT_IGNORE_STACK should be nonzero if, when returning from a function,
    the stack pointer does not matter.  The value is tested only in
@@ -39,19 +28,6 @@ if ((SIZE) != 0)							\
 
 #undef EXIT_IGNORE_STACK
 #define EXIT_IGNORE_STACK	1
-
-/* This macro generates the assembly code for function exit,
-   on machines that need it.  If FUNCTION_EPILOGUE is not defined
-   then individual return instructions are generated for each
-   return statement.  Args are same as for FUNCTION_PROLOGUE.
-*/
-
-#undef FUNCTION_EPILOGUE
-#define FUNCTION_EPILOGUE(FILE, SIZE) \
-do {                                                                    \
-fprintf(FILE, "\t/* SP ignored by cret? */\n");     			\
-fprintf(FILE, "\tjmp cret\n");                                    	\
-} while (0)
 
 #undef INITIAL_FRAME_POINTER_OFFSET  
 #define INITIAL_FRAME_POINTER_OFFSET(DEPTH_VAR)	\
