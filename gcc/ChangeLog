@@ -1,3 +1,8 @@
+Tue Apr  3 19:41:21 CEST 2001  Jan Hubicka  <jh@suse.cz>
+
+	* i386.c (ix86_force_to_memory, ix86_free_from_memory):
+	Update for 64bit.
+
 2001-04-03  Zack Weinberg  <zackw@stanford.edu>
 
 	* config/i386/xm-beos.h, config/i386/xm-isc.h,
