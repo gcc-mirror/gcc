@@ -1155,46 +1155,53 @@ namespace __gnu_norm
       basic_string<_CharT, _Traits> __tmp;
       __tmp.reserve(_Nb);
 
-      // Skip whitespace
+      ios_base::iostate __state = ios_base::goodbit;
       typename basic_istream<_CharT, _Traits>::sentry __sentry(__is);
       if (__sentry)
 	{
-	  ios_base::iostate  __state = ios_base::goodbit;
-	  basic_streambuf<_CharT, _Traits>* __buf = __is.rdbuf();
-	  for (size_t __i = 0; __i < _Nb; ++__i)
+	  try
 	    {
-	      static typename _Traits::int_type __eof = _Traits::eof();
-
-	      typename _Traits::int_type __c1 = __buf->sbumpc();
-	      if (_Traits::eq_int_type(__c1, __eof))
+	      basic_streambuf<_CharT, _Traits>* __buf = __is.rdbuf();
+	      // _GLIBCXX_RESOLVE_LIB_DEFECTS
+	      // 303. Bitset input operator underspecified
+	      const char_type __zero = __is.widen('0');
+	      const char_type __one = __is.widen('1');
+	      for (size_t __i = 0; __i < _Nb; ++__i)
 		{
-		  __state |= ios_base::eofbit;
-		  break;
-		}
-	      else
-		{
-		  char_type __c2 = _Traits::to_char_type(__c1);
-		  char_type __c  = __is.narrow(__c2, '*');
-
-		  if (__c == '0' || __c == '1')
-		    __tmp.push_back(__c);
-		  else if (_Traits::eq_int_type(__buf->sputbackc(__c2), __eof))
+		  static typename _Traits::int_type __eof = _Traits::eof();
+		  
+		  typename _Traits::int_type __c1 = __buf->sbumpc();
+		  if (_Traits::eq_int_type(__c1, __eof))
 		    {
-		      __state |= ios_base::failbit;
+		      __state |= ios_base::eofbit;
 		      break;
+		    }
+		  else
+		    {
+		      char_type __c2 = _Traits::to_char_type(__c1);
+		      if (__c2 == __zero)
+			__tmp.push_back('0');
+		      else if (__c2 == __one)
+			__tmp.push_back('1');
+		      else if (_Traits::eq_int_type(__buf->sputbackc(__c2),
+						    __eof))
+			{
+			  __state |= ios_base::failbit;
+			  break;
+			}
 		    }
 		}
 	    }
-
-	  if (__tmp.empty() && !_Nb)
-	    __state |= ios_base::failbit;
-	  else
-	    __x._M_copy_from_string(__tmp, static_cast<size_t>(0), _Nb);
-
-	  if (__state != ios_base::goodbit)
-	    __is.setstate(__state);    // may throw an exception
+	  catch(...)
+	    { __is._M_setstate(ios_base::badbit); }
 	}
 
+      if (__tmp.empty() && _Nb)
+	__state |= ios_base::failbit;
+      else
+	__x._M_copy_from_string(__tmp, static_cast<size_t>(0), _Nb);
+      if (__state)
+	__is.setstate(__state);
       return __is;
     }
 
