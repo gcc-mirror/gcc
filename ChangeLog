@@ -1,3 +1,7 @@
+2001-06-13  Joseph S. Myers  <jsm28@cam.ac.uk>
+
+	* README: Remove version number.
+
 2001-06-13  Gerald Pfeifer  <pfeifer@dbai.tuwien.ac.at>
 
 	* INSTALL/README: Update wrt. to the installation instructions now
