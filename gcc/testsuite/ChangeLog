@@ -1,3 +1,7 @@
+Thu May 28 00:17:42 1998  Catherine Moore <clm@cygnus.com>
+
+	* gcc.c-torture/execute/980526-3.c: New test.
+
 1998-05-27  Manfred Hollstein  <manfred@s-direktnet.de>
 
 	* g++.old-deja/g++.jason/thunk2.C: Setup this test to be expected to
