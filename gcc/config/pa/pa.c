@@ -2446,8 +2446,7 @@ hppa_expand_epilogue ()
 	
 	 That won't work since if the stack is exactly 8k set_reg_plus_d
 	 doesn't set %r1, just %r30.  */
-      load_reg (2, - (actual_fsize + 20 + ((- actual_fsize) & ~0x7ff)),
-		STACK_POINTER_REGNUM);
+      load_reg (2, - 20, STACK_POINTER_REGNUM);
     }
 
   /* Reset stack pointer (and possibly frame pointer).  The stack */
