@@ -5587,7 +5587,7 @@ get_pos_from_mask (m, plen)
 
    If JUST_SELECT is nonzero, don't optimize by noticing that bits in MASK
    are all off in X.  This is used when X will be complemented, by either
-   NOT or XOR.  */
+   NOT, NEG, or XOR.  */
 
 static rtx
 force_to_mode (x, mode, mask, reg, just_select)
@@ -5598,7 +5598,7 @@ force_to_mode (x, mode, mask, reg, just_select)
      int just_select;
 {
   enum rtx_code code = GET_CODE (x);
-  int next_select = just_select || code == XOR || code == NOT;
+  int next_select = just_select || code == XOR || code == NOT || code == NEG;
   enum machine_mode op_mode;
   unsigned HOST_WIDE_INT fuller_mask, nonzero;
   rtx op0, op1, temp;
@@ -5659,8 +5659,10 @@ force_to_mode (x, mode, mask, reg, just_select)
       return GEN_INT (cval);
     }
 
-  /* If X is narrower than MODE, just get X in the proper mode.  */
-  if (GET_MODE_SIZE (GET_MODE (x)) < GET_MODE_SIZE (mode))
+  /* If X is narrower than MODE and we want all the bits in X's mode, just
+     get X in the proper mode.  */
+  if (GET_MODE_SIZE (GET_MODE (x)) < GET_MODE_SIZE (mode)
+      && (GET_MODE_MASK (GET_MODE (x)) & ~ mask) == 0)
     return gen_lowpart_for_combine (mode, x);
 
   /* If we aren't changing the mode, X is not a SUBREG, and all zero bits in
@@ -5701,18 +5703,14 @@ force_to_mode (x, mode, mask, reg, just_select)
 
     case SUBREG:
       if (subreg_lowpart_p (x)
-	  /* We can ignore the effect this SUBREG if it narrows the mode or,
-	     on machines where register operations are performed on the full
-	     word, if the constant masks to zero all the bits the mode
-	     doesn't have.  */
+	  /* We can ignore the effect of this SUBREG if it narrows the mode or
+	     if the constant masks to zero all the bits the mode doesn't
+	     have.  */
 	  && ((GET_MODE_SIZE (GET_MODE (x))
 	       < GET_MODE_SIZE (GET_MODE (SUBREG_REG (x))))
-#ifdef WORD_REGISTER_OPERATIONS
 	      || (0 == (mask
 			& GET_MODE_MASK (GET_MODE (x))
-			& ~ GET_MODE_MASK (GET_MODE (SUBREG_REG (x)))))
-#endif
-	      ))
+			& ~ GET_MODE_MASK (GET_MODE (SUBREG_REG (x)))))))
 	return force_to_mode (SUBREG_REG (x), mode, mask, reg, next_select);
       break;
 
@@ -5991,6 +5989,11 @@ force_to_mode (x, mode, mask, reg, just_select)
       break;
 	
     case NEG:
+      /* If we just want the low-order bit, the NEG isn't needed since it
+	 won't change the low-order bit.    */
+      if (mask == 1)
+	return force_to_mode (XEXP (x, 0), mode, mask, reg, just_select);
+
       /* We need any bits less significant than the most significant bit in
 	 MASK since carries from those bits will affect the bits we are
 	 interested in.  */
