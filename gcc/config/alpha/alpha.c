@@ -115,10 +115,16 @@ override_options ()
     {
       if (! strcmp (alpha_cpu_string, "ev4")
 	  || ! strcmp (alpha_cpu_string, "21064"))
-	alpha_cpu = PROCESSOR_EV4;
+	{
+	  alpha_cpu = PROCESSOR_EV4;
+	  target_flags &= ~ MASK_BYTE_OPS;
+	}
       else if (! strcmp (alpha_cpu_string, "ev5")
 	       || ! strcmp (alpha_cpu_string, "21164"))
-	alpha_cpu = PROCESSOR_EV5;
+	{
+	  alpha_cpu = PROCESSOR_EV5;
+	  target_flags &= ~ MASK_BYTE_OPS;
+	}
       else if (! strcmp (alpha_cpu_string, "ev56")
 	       || ! strcmp (alpha_cpu_string, "21164a"))
 	{
