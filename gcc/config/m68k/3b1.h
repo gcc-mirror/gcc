@@ -379,7 +379,7 @@ do { union { float f; long l;} tem;			\
 
 #define ASM_OUTPUT_CASE_END(FILE,NUM,TABLE)				\
 { if (switch_table_difference_label_flag)				\
-    fprintf (FILE, "\tset LD%%%d,L%%%d-LI%%%d\n", (NUM), (NUM), (NUM))	\
+    fprintf (FILE, "\tset LD%%%d,L%%%d-LI%%%d\n", (NUM), (NUM), (NUM));	\
   switch_table_difference_label_flag = 0; }
 
 int switch_table_difference_label_flag;
