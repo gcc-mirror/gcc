@@ -1,3 +1,11 @@
+2002-01-29  Richard Henderson  <rth@redhat.com>
+
+	* flow.c (print_rtl_and_abort): Remove.
+	(print_rtl_and_abort_fcn): Remove.
+	(verify_local_live_at_start): Use dump_bb instead.
+	(verify_wide_reg): Likewise. Take a basic_block, not rtl endpoints.
+	(verify_wide_reg_1): Return 2 on mode test failure.
+
 2002-01-29  Neil Booth  <neil@daikokuya.demon.co.uk>
 
 	PR c/3325, c/3326, c/2511, c/3347

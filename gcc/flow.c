@@ -280,14 +280,9 @@ struct propagate_block_info
    new elements on the floor.  */
 #define MAX_MEM_SET_LIST_LEN	100
 
-/* Have print_rtl_and_abort give the same information that fancy_abort
-   does.  */
-#define print_rtl_and_abort() \
-  print_rtl_and_abort_fcn (__FILE__, __LINE__, __FUNCTION__)
-
 /* Forward declarations */
 static int verify_wide_reg_1		PARAMS ((rtx *, void *));
-static void verify_wide_reg		PARAMS ((int, rtx, rtx));
+static void verify_wide_reg		PARAMS ((int, basic_block));
 static void verify_local_live_at_start	PARAMS ((regset, basic_block));
 static void notice_stack_pointer_modification_1 PARAMS ((rtx, rtx, void *));
 static void notice_stack_pointer_modification PARAMS ((rtx));
@@ -335,10 +330,6 @@ static void mark_used_regs		PARAMS ((struct propagate_block_info *,
 						 rtx, rtx, rtx));
 void dump_flow_info			PARAMS ((FILE *));
 void debug_flow_info			PARAMS ((void));
-static void print_rtl_and_abort_fcn	PARAMS ((const char *, int,
-						 const char *))
-					ATTRIBUTE_NORETURN;
-
 static void add_to_mem_set_list		PARAMS ((struct propagate_block_info *,
 						 rtx));
 static void invalidate_mems_from_autoinc PARAMS ((struct propagate_block_info *,
@@ -510,7 +501,8 @@ life_analysis (f, file, flags)
 }
 
 /* A subroutine of verify_wide_reg, called through for_each_rtx.
-   Search for REGNO.  If found, abort if it is not wider than word_mode.  */
+   Search for REGNO.  If found, return 2 if it is not wider than
+   word_mode.  */
 
 static int
 verify_wide_reg_1 (px, pregno)
@@ -523,34 +515,43 @@ verify_wide_reg_1 (px, pregno)
   if (GET_CODE (x) == REG && REGNO (x) == regno)
     {
       if (GET_MODE_BITSIZE (GET_MODE (x)) <= BITS_PER_WORD)
-	abort ();
+	return 2;
       return 1;
     }
   return 0;
 }
 
 /* A subroutine of verify_local_live_at_start.  Search through insns
-   between HEAD and END looking for register REGNO.  */
+   of BB looking for register REGNO.  */
 
 static void
-verify_wide_reg (regno, head, end)
+verify_wide_reg (regno, bb)
      int regno;
-     rtx head, end;
+     basic_block bb;
 {
+  rtx head = bb->head, end = bb->end;
+
   while (1)
     {
-      if (INSN_P (head)
-	  && for_each_rtx (&PATTERN (head), verify_wide_reg_1, &regno))
-	return;
+      if (INSN_P (head))
+	{
+	  int r = for_each_rtx (&PATTERN (head), verify_wide_reg_1, &regno);
+	  if (r == 1)
+	    return;
+	  if (r == 2)
+	    break;
+	}
       if (head == end)
 	break;
       head = NEXT_INSN (head);
     }
 
-  /* We didn't find the register at all.  Something's way screwy.  */
   if (rtl_dump_file)
-    fprintf (rtl_dump_file, "Aborting in verify_wide_reg; reg %d\n", regno);
-  print_rtl_and_abort ();
+    {
+      fprintf (rtl_dump_file, "Register %d died unexpectedly.\n", regno);
+      dump_bb (bb, rtl_dump_file);
+    }
+  abort ();
 }
 
 /* A subroutine of update_life_info.  Verify that there are no untoward
@@ -570,12 +571,13 @@ verify_local_live_at_start (new_live_at_start, bb)
 	  if (rtl_dump_file)
 	    {
 	      fprintf (rtl_dump_file,
-		       "live_at_start mismatch in bb %d, aborting\n",
+		       "live_at_start mismatch in bb %d, aborting\nNew:\n",
 		       bb->index);
-	      debug_bitmap_file (rtl_dump_file, bb->global_live_at_start);
 	      debug_bitmap_file (rtl_dump_file, new_live_at_start);
+	      fputs ("Old:\n", rtl_dump_file);
+	      dump_bb (bb, rtl_dump_file);
 	    }
-	  print_rtl_and_abort ();
+	  abort ();
 	}
     }
   else
@@ -591,14 +593,16 @@ verify_local_live_at_start (new_live_at_start, bb)
 	  if (REGNO_REG_SET_P (bb->global_live_at_start, i))
 	    {
 	      if (rtl_dump_file)
-		fprintf (rtl_dump_file,
-			 "Register %d died unexpectedly in block %d\n", i,
-			 bb->index);
-	      print_rtl_and_abort ();
+		{
+		  fprintf (rtl_dump_file,
+			   "Register %d died unexpectedly.\n", i);
+		  dump_bb (bb, rtl_dump_file);
+		}
+	      abort ();
 	    }
 
           /* Verify that the now-live register is wider than word_mode.  */
-	  verify_wide_reg (i, bb->head, bb->end);
+	  verify_wide_reg (i, bb);
 	});
     }
 }
@@ -4110,23 +4114,6 @@ debug_regset (r)
 {
   dump_regset (r, stderr);
   putc ('\n', stderr);
-}
-
-/* Dump the rtl into the current debugging dump file, then abort.  */
-
-static void
-print_rtl_and_abort_fcn (file, line, function)
-     const char *file;
-     int line;
-     const char *function;
-{
-  if (rtl_dump_file)
-    {
-      print_rtl_with_bb (rtl_dump_file, get_insns ());
-      fclose (rtl_dump_file);
-    }
-
-  fancy_abort (file, line, function);
 }
 
 /* Recompute register set/reference counts immediately prior to register
