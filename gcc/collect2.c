@@ -206,6 +206,25 @@ generic *xmalloc ();
 extern char *index ();
 extern char *rindex ();
 
+#ifdef NO_DUP2
+dup2 (oldfd, newfd)
+     int oldfd;
+     int newfd;
+{
+  int fdtmp[256];
+  int fdx = 0;
+  int fd;
+ 
+  if (oldfd == newfd)
+    return 0;
+  close (newfd);
+  while ((fd = dup (oldfd)) != newfd) /* good enough for low fd's */
+    fdtmp[fdx++] = fd;
+  while (fdx > 0)
+    close (fdtmp[--fdx]);
+}
+#endif
+
 char *
 my_strerror (e)
      int e;
