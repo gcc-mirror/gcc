@@ -51,6 +51,12 @@ typedef char *CPTR_T;
 #define uint	unsigned int
 #define ulong	unsigned long
 
+#ifdef index
+#undef index
+#undef rindex
+#endif
+
+
 /* Do to size_t being defined in sys/types.h and different
    in stddef.h, we have to do this by hand.....  Note, these
    types are correct for MIPS based systems, and may not be
