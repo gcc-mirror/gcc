@@ -280,8 +280,6 @@ struct c_language_function GTY(()) {
 
 /* Language-specific hooks.  */
 
-extern void (*lang_expand_function_end) (void);
-
 /* Callback that determines if it's ok for a function to have no
    noreturn attribute.  */
 extern int (*lang_missing_noreturn_ok_p) (tree);
@@ -403,7 +401,6 @@ extern int flag_const_strings;
 /* Nonzero means to treat bitfields as signed unless they say `unsigned'.  */
 
 extern int flag_signed_bitfields;
-extern int explicit_flag_signed_bitfields;
 
 /* Nonzero means warn about deprecated conversion from string constant to
    `char *'.  */

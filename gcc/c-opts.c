@@ -588,7 +588,6 @@ c_common_handle_option (size_t scode, const char *arg, int value)
 
     case OPT_fsigned_bitfields:
       flag_signed_bitfields = value;
-      explicit_flag_signed_bitfields = 1;
       break;
 
     case OPT_fsigned_char:
@@ -597,7 +596,6 @@ c_common_handle_option (size_t scode, const char *arg, int value)
 
     case OPT_funsigned_bitfields:
       flag_signed_bitfields = !value;
-      explicit_flag_signed_bitfields = 1;
       break;
 
     case OPT_funsigned_char:
