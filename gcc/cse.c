@@ -5369,17 +5369,40 @@ fold_rtx (x, insn)
 	     ADDR_DIFF_VEC table.  */
 	  if (const_arg1 && GET_CODE (const_arg1) == LABEL_REF)
 	    {
-	      rtx y = lookup_as_function (folded_arg0, MINUS);
+	      rtx y
+		= GET_CODE (folded_arg0) == MINUS ? folded_arg0
+		  : lookup_as_function (folded_arg0, MINUS);
 
 	      if (y != 0 && GET_CODE (XEXP (y, 1)) == LABEL_REF
 		  && XEXP (XEXP (y, 1), 0) == XEXP (const_arg1, 0))
 		return XEXP (y, 0);
 
 	      /* Now try for a CONST of a MINUS like the above.  */
-	      if ((y = lookup_as_function (folded_arg0, CONST)) != 0
+	      if ((y = (GET_CODE (folded_arg0) == CONST ? folded_arg0
+			: lookup_as_function (folded_arg0, CONST))) != 0
 		  && GET_CODE (XEXP (y, 0)) == MINUS
 		  && GET_CODE (XEXP (XEXP (y, 0), 1)) == LABEL_REF
 		  && XEXP (XEXP (XEXP (y, 0),1), 0) == XEXP (const_arg1, 0))
+		return XEXP (XEXP (y, 0), 0);
+	    }
+
+	  /* Likewise if the operands are in the other order.  */
+	  if (const_arg0 && GET_CODE (const_arg0) == LABEL_REF)
+	    {
+	      rtx y
+		= GET_CODE (folded_arg1) == MINUS ? folded_arg1
+		  : lookup_as_function (folded_arg1, MINUS);
+
+	      if (y != 0 && GET_CODE (XEXP (y, 1)) == LABEL_REF
+		  && XEXP (XEXP (y, 1), 0) == XEXP (const_arg0, 0))
+		return XEXP (y, 0);
+
+	      /* Now try for a CONST of a MINUS like the above.  */
+	      if ((y = (GET_CODE (folded_arg1) == CONST ? folded_arg1
+			: lookup_as_function (folded_arg1, CONST))) != 0
+		  && GET_CODE (XEXP (y, 0)) == MINUS
+		  && GET_CODE (XEXP (XEXP (y, 0), 1)) == LABEL_REF
+		  && XEXP (XEXP (XEXP (y, 0),1), 0) == XEXP (const_arg0, 0))
 		return XEXP (XEXP (y, 0), 0);
 	    }
 
