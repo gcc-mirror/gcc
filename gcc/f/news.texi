@@ -10,7 +10,7 @@
 @c in the standalone derivations of this file (e.g. NEWS).
 @set copyrights-news 1995,1996,1997,1998,1999,2000,2001,2002
 
-@set last-update-news 2002-03-23
+@set last-update-news 2002-04-13
 
 @include root.texi
 
@@ -153,7 +153,13 @@ is available at
 
 The following information was last updated on @value{last-update-news}:
 
-@heading In 0.5.27, @code{GCC} 3.1 versus @code{GCC} 3.0:
+@heading In @code{GCC} 3.2 versus @code{GCC} 3.1:
+@itemize @bullet
+@item
+Nothing yet.
+@end itemize
+
+@heading In @code{GCC} 3.1 (formerly known as g77-0.5.27) versus @code{GCC} 3.0:
 @itemize @bullet
 @item
 Problem Reports fixed (in chronological order of submission):
@@ -180,6 +186,8 @@ g77 rejects accepted use of INTEGER*2 as type of DATA statement loop index
 ICE on compiling source with 540 000 000 REAL array
 @item 5473
 ICE on BESJN(integer*8,real)
+@item 5837
+bug in loop unrolling
 @end table
 
 @item

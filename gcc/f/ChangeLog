@@ -1,3 +1,8 @@
+2002-04-13  Toon Moene  <toon@moene.indiv.nluug.nl>
+
+	* news.texi: Deprecate frontend version number;
+	update list of fixed bugs.
+
 2002-04-08  Hans-Peter Nilsson  <hp@bitrange.com>
 
 	* Make-lang.in (f/target.o): Depend on diagnostic.h.
