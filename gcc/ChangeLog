@@ -1,5 +1,10 @@
 2002-07-18  Alan Modra  <amodra@bigpond.net.au>
 
+	* config/rs6000/sysv4.h (ASM_OUTPUT_REG_PUSH): Remove 64-bit support.
+	(ASM_OUTPUT_REG_POP): Likewise.
+
+2002-07-18  Alan Modra  <amodra@bigpond.net.au>
+
 	* config/rs6000/rs6000.c (first_reg_to_save): Remove bogus
 	adjustments to first_reg for profiling case.
 	(output_function_profiler): Correct lr save slot for ABI_AIX_NODESC.
