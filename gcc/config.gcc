@@ -2973,7 +2973,7 @@ sparc-*-bsd*)
 	tm_file=sparc/bsd.h
 	;;
 sparc-*-elf*)
-	tm_file=sparc/elf.h
+	tm_file="sparc/sol2.h sparc/elf.h"
 	tmake_file=sparc/t-elf
 	extra_parts="crti.o crtn.o crtbegin.o crtend.o"
 	#float_format=i128
@@ -3025,7 +3025,7 @@ sparc-*-rtemsaout*)
 	fi
 	;;
 sparc-*-rtems*|sparc-*-rtemself*)
-	tm_file="sparc/rtemself.h"
+	tm_file="sparc/sol2.h sparc/elf.h sparc/rtemself.h"
 	tmake_file="sparc/t-elf t-rtems"
 	extra_parts="crti.o crtn.o crtbegin.o crtend.o"
 	#float_format=i128
@@ -3185,7 +3185,7 @@ sparclite-*-aout*)
 	tmake_file=sparc/t-sparclite
 	;;
 sparclite-*-elf*)
-	tm_file="sparc/liteelf.h"
+	tm_file="sparc/sol2.h sparc/elf.h sparc/liteelf.h"
 	tmake_file=sparc/t-sparclite
         extra_parts="crtbegin.o crtend.o"
 	;;
@@ -3194,7 +3194,7 @@ sparc86x-*-aout*)
 	tmake_file=sparc/t-sp86x
 	;;
 sparc86x-*-elf*)	
-	tm_file="sparc/sp86x-elf.h"
+	tm_file="sparc/sol2.h sparc./elf.h sparc/sp86x-elf.h"
 	tmake_file=sparc/t-sp86x
         extra_parts="crtbegin.o crtend.o"
 	;;
