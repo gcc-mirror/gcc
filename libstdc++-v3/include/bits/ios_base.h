@@ -146,10 +146,10 @@ namespace std {
 #ifdef _GLIBCPP_RESOLVE_LIB_DEFECTS
       // Can't do exception(_msg) as defined in 27.4.2.1.1
       explicit 
-      failure(const string& __str);
+      failure(const string& __str) throw();
 
       virtual 
-      ~failure();
+      ~failure() throw();
 
       virtual const char*
       what() const throw();

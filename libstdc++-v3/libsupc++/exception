@@ -1,5 +1,6 @@
 // Exception Handling support header for -*- C++ -*-
-// Copyright (C) 1995, 1996, 1997, 1998, 2000 Free Software Foundation
+
+// Copyright (C) 1995, 1996, 1997, 1998, 2000, 2001 Free Software Foundation
 
 // This file is part of GNU CC.
 //
@@ -34,30 +35,33 @@
 
 extern "C++" {
 
-namespace std {
+namespace std 
+{
+  class exception 
+  {
+  public:
+    exception() throw() { }
+    virtual ~exception() throw() { }
+    virtual const char* what() const throw();
+  };
 
-class exception {
-public:
-  exception () { }
-  virtual ~exception () { }
-  virtual const char* what () const;
-};
+  class bad_exception : public exception 
+  {
+  public:
+    bad_exception() throw() { }
+    virtual ~bad_exception() throw() { }
+  };
 
-class bad_exception : public exception {
-public:
-  bad_exception () { }
-  virtual ~bad_exception () { }
-};
+  typedef void (*terminate_handler) ();
+  typedef void (*unexpected_handler) ();
 
-typedef void (*terminate_handler) ();
-typedef void (*unexpected_handler) ();
+  terminate_handler set_terminate(terminate_handler) throw();
+  void terminate() __attribute__ ((__noreturn__));
 
-terminate_handler set_terminate (terminate_handler);
-void terminate () __attribute__ ((__noreturn__));
-unexpected_handler set_unexpected (unexpected_handler);
-void unexpected () __attribute__ ((__noreturn__));
-bool uncaught_exception ();
+  unexpected_handler set_unexpected(unexpected_handler) throw();
+  void unexpected() __attribute__ ((__noreturn__));
 
+  bool uncaught_exception() throw();
 } // namespace std
 
 } // extern "C++"

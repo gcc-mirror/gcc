@@ -120,13 +120,13 @@ namespace std
   wostream wclog(NULL);
 #endif
 
-  ios_base::failure::failure(const string& __str)
+  ios_base::failure::failure(const string& __str) throw()
   {
     strncpy(_M_name, __str.c_str(), _M_bufsize);
     _M_name[_M_bufsize - 1] = '\0';
   }
 
-  ios_base::failure::~failure()
+  ios_base::failure::~failure() throw()
   { }
 
   const char*

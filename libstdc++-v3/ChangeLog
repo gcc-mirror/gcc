@@ -1,3 +1,18 @@
+2001-01-16  Benjamin Kosnik  <bkoz@redhat.com>
+
+	libstdc++/1605
+	* include/bits/ios_base.h (ios_base::failure): Tighten up throw specs.
+	* src/ios.cc (ios_base::failure): Make definitions match.
+        * libsupc++/typeinfo (class bad_typeid): Add throw specs.
+        (class bad_cast): Same.
+        * libsupc++/exception (class exception): Add throw specs.
+        * libsupc++/exception_support.cc (set_terminate): Add throw specs.
+        (set_unexpected): Same.
+        (uncaught_exception): Same.
+        (what): Same.
+
+	* docs/html/17_intro/C++STYLE (classname): Fix.
+	
 2001-01-16  Mark Mitchell  <mark@codesourcery.com>
 
 	* src/gen-num-limits.cc (INSTANTIATIONS): New macro.
