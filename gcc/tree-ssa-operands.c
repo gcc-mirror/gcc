@@ -80,6 +80,7 @@ typedef struct voperands_d
 
 static void note_addressable (tree, stmt_ann_t);
 static void get_expr_operands (tree, tree *, int, voperands_t);
+static void get_asm_expr_operands (tree, voperands_t);
 static inline void append_def (tree *, tree);
 static inline void append_use (tree *, tree);
 static void append_v_may_def (tree, tree, voperands_t);
@@ -777,59 +778,7 @@ get_stmt_operands (tree stmt)
       break;
 
     case ASM_EXPR:
-      {
-	int noutputs = list_length (ASM_OUTPUTS (stmt));
-	const char **oconstraints
-	  = (const char **) alloca ((noutputs) * sizeof (const char *));
-	int i;
-	tree link;
-	const char *constraint;
-	bool allows_mem, allows_reg, is_inout;
-
-	for (i=0, link = ASM_OUTPUTS (stmt); link;
-	     ++i, link = TREE_CHAIN (link))
-	  {
-	    oconstraints[i] = constraint
-	      = TREE_STRING_POINTER (TREE_VALUE (TREE_PURPOSE (link)));
-	    parse_output_constraint (&constraint, i, 0, 0,
-				     &allows_mem, &allows_reg, &is_inout);
-	    if (allows_reg && is_inout)
-	      /* This should have been split in gimplify_asm_expr.  */
-	      abort ();
-
-	    if (!allows_reg && allows_mem)
-	      {
-		tree t = get_base_address (TREE_VALUE (link));
-		if (t && DECL_P (t))
-		  mark_call_clobbered (t);
-	      }
-
-	    get_expr_operands (stmt, &TREE_VALUE (link), opf_is_def,
-			       &prev_vops);
-	  }
-
-	for (link = ASM_INPUTS (stmt); link; link = TREE_CHAIN (link))
-	  {
-	    constraint
-	      = TREE_STRING_POINTER (TREE_VALUE (TREE_PURPOSE (link)));
-	    parse_input_constraint (&constraint, 0, 0, noutputs, 0,
-				    oconstraints, &allows_mem, &allows_reg);
-
-	    if (!allows_reg && allows_mem)
-	      {
-		tree t = get_base_address (TREE_VALUE (link));
-		if (t && DECL_P (t))
-		  mark_call_clobbered (t);
-	      }
-
-	    get_expr_operands (stmt, &TREE_VALUE (link), 0, &prev_vops);
-	  }
-
-	/* Clobber memory for asm ("" : : : "memory");  */
-	for (link = ASM_CLOBBERS (stmt); link; link = TREE_CHAIN (link))
-	  if (!strcmp (TREE_STRING_POINTER (TREE_VALUE (link)), "memory"))
-	    add_call_clobber_ops (stmt, &prev_vops);
-      }
+      get_asm_expr_operands (stmt, &prev_vops);
       break;
 
     case RETURN_EXPR:
@@ -1213,6 +1162,108 @@ get_expr_operands (tree stmt, tree *expr_p, int flags, voperands_t prev_vops)
   debug_tree (expr);
   fputs ("\n", stderr);
   abort ();
+}
+
+/* Scan operands in ASM_EXPR STMT.  PREV_VOPS is as in
+   append_v_may_def and append_vuse.  */
+
+static void
+get_asm_expr_operands (tree stmt, voperands_t prev_vops)
+{
+  int noutputs = list_length (ASM_OUTPUTS (stmt));
+  const char **oconstraints
+    = (const char **) alloca ((noutputs) * sizeof (const char *));
+  int i;
+  tree link;
+  const char *constraint;
+  bool allows_mem, allows_reg, is_inout;
+  stmt_ann_t s_ann = stmt_ann (stmt);
+
+  for (i=0, link = ASM_OUTPUTS (stmt); link; ++i, link = TREE_CHAIN (link))
+    {
+      oconstraints[i] = constraint
+	= TREE_STRING_POINTER (TREE_VALUE (TREE_PURPOSE (link)));
+      parse_output_constraint (&constraint, i, 0, 0,
+	  &allows_mem, &allows_reg, &is_inout);
+
+#if defined ENABLE_CHECKING
+      /* This should have been split in gimplify_asm_expr.  */
+      if (allows_reg && is_inout)
+	abort ();
+#endif
+
+      /* Memory operands are addressable.  Note that STMT needs the
+	 address of this operand.  */
+      if (!allows_reg && allows_mem)
+	{
+	  tree t = get_base_address (TREE_VALUE (link));
+	  if (t && DECL_P (t))
+	    note_addressable (t, s_ann);
+	}
+
+      get_expr_operands (stmt, &TREE_VALUE (link), opf_is_def, prev_vops);
+    }
+
+  for (link = ASM_INPUTS (stmt); link; link = TREE_CHAIN (link))
+    {
+      constraint
+	= TREE_STRING_POINTER (TREE_VALUE (TREE_PURPOSE (link)));
+      parse_input_constraint (&constraint, 0, 0, noutputs, 0,
+	  oconstraints, &allows_mem, &allows_reg);
+
+      /* Memory operands are addressable.  Note that STMT needs the
+	 address of this operand.  */
+      if (!allows_reg && allows_mem)
+	{
+	  tree t = get_base_address (TREE_VALUE (link));
+	  if (t && DECL_P (t))
+	    note_addressable (t, s_ann);
+	}
+
+      get_expr_operands (stmt, &TREE_VALUE (link), 0, prev_vops);
+    }
+
+  /* Clobber memory for asm ("" : : : "memory");  */
+  if (!aliases_computed_p)
+    {
+      /* If we still have not computed aliasing information,
+	 mark the statement as having volatile operands to avoid
+	 optimizations from messing around with it.  */
+      stmt_ann (stmt)->has_volatile_ops = true;
+    }
+  else
+    {
+      /* Otherwise, if this ASM_EXPR clobbers memory, clobber
+	 all the call-clobbered variables and the addressable
+	 variables found by the alias analyzer.  */
+      for (link = ASM_CLOBBERS (stmt); link; link = TREE_CHAIN (link))
+	if (!strcmp (TREE_STRING_POINTER (TREE_VALUE (link)), "memory"))
+	  {
+	    /* If we had created .GLOBAL_VAR earlier, use it.
+	       Otherwise, add a V_MAY_DEF operand for every
+	       call-clobbered and addressable variable.  See
+	       compute_may_aliases for the heuristic used to decide
+	       whether to create .GLOBAL_VAR or not.  */
+	    if (global_var)
+	      add_stmt_operand (&global_var, stmt, opf_is_def, prev_vops);
+	    else
+	      {
+		size_t i;
+
+		EXECUTE_IF_SET_IN_BITMAP (call_clobbered_vars, 0, i,
+		    {
+		      tree var = referenced_var (i);
+		      add_stmt_operand (&var, stmt, opf_is_def, prev_vops);
+		    });
+
+		EXECUTE_IF_SET_IN_BITMAP (addressable_vars, 0, i,
+		    {
+		      tree var = referenced_var (i);
+		      add_stmt_operand (&var, stmt, opf_is_def, prev_vops);
+		    });
+	      }
+	  }
+    }
 }
 
 

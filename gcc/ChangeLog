@@ -1,3 +1,17 @@
+2004-07-08  Diego Novillo  <dnovillo@redhat.com>
+
+	* tree-flow.h (addressable_vars): Declare.
+	* tree-ssa-alias.c (addressable_vars): Define.
+	(setup_pointers_and_addressables): Add addressable variables
+	to addressable_vars.
+	* tree-ssa-operands.c (get_stmt_operands): Move
+	handling of ASM_EXPRs ...
+	(get_asm_expr_operands): ... here.
+	When the ASM_EXPR clobbers memory, also clobber addressable
+	variables.
+	* tree-ssa.c (init_tree_ssa): Initialize addressable_vars.
+	(delete_tree_ssa): Reset addressable_vars.
+
 2004-07-07  Jan Beulich  <jbeulich@novell.com>
 	    Richard Henderson  <rth@redhat.com>
 
