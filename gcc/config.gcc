@@ -2216,99 +2216,94 @@ esac
 
 # Support for --with-cpu and related options (and a few unrelated options,
 # too).
-	case "x$with_cpu" in
-	xyes | xno)
-		echo "--with-cpu must be passed a value" 1>&2
-		exit 1
-		;;
-	esac
+case ${with_cpu} in
+  yes | no)
+    echo "--with-cpu must be passed a value" 1>&2
+    exit 1
+    ;;
+esac
 
-	# If there is no $with_cpu option, try to infer one from ${target}.
-	# This block sets nothing except for with_cpu.
-	if test x$with_cpu = x
-	then
-		case ${target} in
-		ep9312-*-*)
-			# A Cirrus ARM variant.
-			with_cpu="ep9312"
-			;;
-		i486-*-*)
-			with_cpu=i486
-			;;
-		i586-*-*)
-			case $target_alias in
-			k6_2-*)
-				with_cpu=k6-2
-				;;
-			k6_3-*)
-				with_cpu=k6-3
-				;;
-			k6-*)
-				with_cpu=k6
-				;;
-			pentium_mmx-*|winchip_c6-*|winchip2-*|c3-*)
-				with_cpu=pentium-mmx
-				;;
-			*)
-				with_cpu=pentium
-				;;
-			esac
-			;;
-		i686-*-* | i786-*-*)
-			case $target_alias in
-			k8-*)
-				with_cpu=k8
-				;;
-			athlon_xp-*|athlon_mp-*|athlon_4-*)
-				with_cpu=athlon-4
-				;;
-			athlon_tbird-*|athlon-*)
-				with_cpu=athlon
-				;;
-			pentium2-*)
-				with_cpu=pentium2
-				;;
-			pentium3-*)
-				with_cpu=pentium3
-				;;
-			pentium4-*)
-				with_cpu=pentium4
-				;;
-			*)
-				with_cpu=pentiumpro
-				;;
-			esac
-			;;
-		x86_64-*-*)
-			with_cpu=k8
-			;;
-		alpha*-*-*)
-			case ${target} in
-			alphaev6[78]*)
-				with_cpu=ev67
-				;;
-			alphaev6*)
-				with_cpu=ev6
-				;;
-			alphapca56*)
-				with_cpu=pca56
-				;;
-			alphaev56*)
-				with_cpu=ev56
-				;;
-			alphaev5*)
-				with_cpu=ev5
-				;;
-			esac
-			;;
-		sparc*-*-*)
-			with_cpu="`echo ${target} | sed 's/-.*$//'`"
-			if [ x$with_cpu = xsparc64 ]; then
-				with_cpu=v9
-			fi
-			;;
-		esac
-	fi
+# If there is no $with_cpu option, try to infer one from ${target}.
+# This block sets nothing except for with_cpu.
+if test x$with_cpu = x ; then
+  case ${target} in
+    ep9312-*-*)
+      # A Cirrus ARM variant.
+      with_cpu="ep9312"
+      ;;
+    i486-*-*)
+      with_cpu=i486
+      ;;
+    i586-*-*)
+      case $target_alias in
+        k6_2-*)
+          with_cpu=k6-2
+          ;;
+        k6_3-*)
+          with_cpu=k6-3
+          ;;
+        k6-*)
+          with_cpu=k6
+          ;;
+        pentium_mmx-*|winchip_c6-*|winchip2-*|c3-*)
+          with_cpu=pentium-mmx
+          ;;
+        *)
+          with_cpu=pentium
+          ;;
+      esac
+      ;;
+    i686-*-* | i786-*-*)
+      case $target_alias in
+        k8-*)
+          with_cpu=k8
+          ;;
+        athlon_xp-*|athlon_mp-*|athlon_4-*)
+          with_cpu=athlon-4
+          ;;
+        athlon_tbird-*|athlon-*)
+          with_cpu=athlon
+          ;;
+        pentium2-*)
+          with_cpu=pentium2
+          ;;
+        pentium3-*)
+          with_cpu=pentium3
+          ;;
+        pentium4-*)
+          with_cpu=pentium4
+          ;;
+        *)
+          with_cpu=pentiumpro
+          ;;
+      esac
+      ;;
+    x86_64-*-*)
+      with_cpu=k8
+      ;;
+    alphaev6[78]*-*-*)
+      with_cpu=ev67
+      ;;
+    alphaev6*-*-*)
+      with_cpu=ev6
+      ;;
+    alphapca56*-*-*)
+      with_cpu=pca56
+      ;;
+    alphaev56*-*-*)
+      with_cpu=ev56
+      ;;
+    alphaev5*-*-*)
+      with_cpu=ev5
+      ;;
+    sparc*-*-*)
+      with_cpu="`echo ${target} | sed 's/-.*$//'`"
+      if [ x$with_cpu = xsparc64 ]; then
+        with_cpu=v9
+      fi
+      ;;
+  esac
+fi
 
 	# Similarly for --with-schedule.
 	if test x$with_schedule = x; then
