@@ -157,26 +157,26 @@ namespace std
     inline slice_array<_Tp>&
     slice_array<_Tp>::operator=(const slice_array<_Tp>& __a)
     {
-      __valarray_copy(__a._M_array, __a._M_sz, __a._M_stride,
-                      _M_array, _M_stride);
+      std::__valarray_copy(__a._M_array, __a._M_sz, __a._M_stride,
+			   _M_array, _M_stride);
       return *this;
     }
 
   template<typename _Tp>
     inline void
     slice_array<_Tp>::operator=(const _Tp& __t) const
-    { __valarray_fill(_M_array, _M_sz, _M_stride, __t); }
+    { std::__valarray_fill(_M_array, _M_sz, _M_stride, __t); }
     
   template<typename _Tp>
     inline void
     slice_array<_Tp>::operator=(const valarray<_Tp>& __v) const
-    { __valarray_copy(_Array<_Tp>(__v), _M_array, _M_sz, _M_stride); }
+    { std::__valarray_copy(_Array<_Tp>(__v), _M_array, _M_sz, _M_stride); }
     
   template<typename _Tp>
   template<class _Dom>
     inline void
     slice_array<_Tp>::operator=(const _Expr<_Dom,_Tp>& __e) const
-    { __valarray_copy(__e, _M_sz, _M_array, _M_stride); }
+    { std::__valarray_copy(__e, _M_sz, _M_array, _M_stride); }
 
 #undef _DEFINE_VALARRAY_OPERATOR
 #define _DEFINE_VALARRAY_OPERATOR(_Op,_Name)				\

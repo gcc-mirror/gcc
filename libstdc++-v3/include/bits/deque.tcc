@@ -72,11 +72,11 @@ namespace std
       if (&__x != this)
       {
         if (__len >= __x.size())
-          erase(copy(__x.begin(), __x.end(), this->_M_start), this->_M_finish);
+          erase(std::copy(__x.begin(), __x.end(), this->_M_start), this->_M_finish);
         else
         {
           const_iterator __mid = __x.begin() + difference_type(__len);
-          copy(__x.begin(), __mid, this->_M_start);
+          std::copy(__x.begin(), __mid, this->_M_start);
           insert(this->_M_finish, __mid, __x.end());
         }
       }
@@ -114,12 +114,12 @@ namespace std
       size_type __index = __position - this->_M_start;
       if (__index < (size() >> 1))
       {
-        copy_backward(this->_M_start, __position, __next);
+        std::copy_backward(this->_M_start, __position, __next);
         pop_front();
       }
       else
       {
-        copy(__next, this->_M_finish, __position);
+        std::copy(__next, this->_M_finish, __position);
         pop_back();
       }
       return this->_M_start + __index;
@@ -141,17 +141,17 @@ namespace std
         difference_type __elems_before = __first - this->_M_start;
         if (static_cast<size_type>(__elems_before) < (size() - __n) / 2)
         {
-          copy_backward(this->_M_start, __first, __last);
+          std::copy_backward(this->_M_start, __first, __last);
           iterator __new_start = this->_M_start + __n;
-          _Destroy(this->_M_start, __new_start);
+          std::_Destroy(this->_M_start, __new_start);
           _M_destroy_nodes(this->_M_start._M_node, __new_start._M_node);
           this->_M_start = __new_start;
         }
         else
         {
-          copy(__last, this->_M_finish, __first);
+          std::copy(__last, this->_M_finish, __first);
           iterator __new_finish = this->_M_finish - __n;
-          _Destroy(__new_finish, this->_M_finish);
+          std::_Destroy(__new_finish, this->_M_finish);
           _M_destroy_nodes(__new_finish._M_node + 1,
 			   this->_M_finish._M_node + 1);
           this->_M_finish = __new_finish;
@@ -169,18 +169,18 @@ namespace std
            __node < this->_M_finish._M_node;
            ++__node)
       {
-        _Destroy(*__node, *__node + _S_buffer_size());
+        std::_Destroy(*__node, *__node + _S_buffer_size());
         _M_deallocate_node(*__node);
       }
     
       if (this->_M_start._M_node != this->_M_finish._M_node)
       {
-        _Destroy(this->_M_start._M_cur, this->_M_start._M_last);
-        _Destroy(this->_M_finish._M_first, this->_M_finish._M_cur);
+        std::_Destroy(this->_M_start._M_cur, this->_M_start._M_last);
+        std::_Destroy(this->_M_finish._M_first, this->_M_finish._M_cur);
         _M_deallocate_node(this->_M_finish._M_first);
       }
       else
-        _Destroy(this->_M_start._M_cur, this->_M_finish._M_cur);
+        std::_Destroy(this->_M_start._M_cur, this->_M_finish._M_cur);
     
       this->_M_finish = this->_M_start;
     }
@@ -210,7 +210,7 @@ namespace std
         iterator __new_start = _M_reserve_elements_at_front(__n);
         try
           {
-            uninitialized_fill(__new_start, this->_M_start, __x);
+            std::uninitialized_fill(__new_start, this->_M_start, __x);
             this->_M_start = __new_start;
           }
         catch(...)
@@ -224,7 +224,7 @@ namespace std
         iterator __new_finish = _M_reserve_elements_at_back(__n);
         try
           {
-            uninitialized_fill(this->_M_finish, __new_finish, __x);
+            std::uninitialized_fill(this->_M_finish, __new_finish, __x);
             this->_M_finish = __new_finish;
           }
         catch(...)
@@ -249,14 +249,14 @@ namespace std
           for (__cur = this->_M_start._M_node;
 	       __cur < this->_M_finish._M_node;
 	       ++__cur)
-            uninitialized_fill(*__cur, *__cur + _S_buffer_size(), __value);
-          uninitialized_fill(this->_M_finish._M_first,
-			     this->_M_finish._M_cur,
-			     __value);
+            std::uninitialized_fill(*__cur, *__cur + _S_buffer_size(), __value);
+          std::uninitialized_fill(this->_M_finish._M_first,
+				  this->_M_finish._M_cur,
+				  __value);
         }
       catch(...)
         {
-          _Destroy(this->_M_start, iterator(*__cur, __cur));
+          std::_Destroy(this->_M_start, iterator(*__cur, __cur));
           __throw_exception_again;
         }
     }
@@ -299,15 +299,15 @@ namespace std
                  ++__cur_node)
             {
               _ForwardIterator __mid = __first;
-              advance(__mid, _S_buffer_size());
-              uninitialized_copy(__first, __mid, *__cur_node);
+              std::advance(__mid, _S_buffer_size());
+              std::uninitialized_copy(__first, __mid, *__cur_node);
               __first = __mid;
             }
-            uninitialized_copy(__first, __last, this->_M_finish._M_first);
+            std::uninitialized_copy(__first, __last, this->_M_finish._M_first);
           }
         catch(...)
           {
-            _Destroy(this->_M_start, iterator(*__cur_node, __cur_node));
+            std::_Destroy(this->_M_start, iterator(*__cur_node, __cur_node));
             __throw_exception_again;
           }
       }
@@ -323,7 +323,7 @@ namespace std
       *(this->_M_finish._M_node + 1) = _M_allocate_node();
       try
         {
-          _Construct(this->_M_finish._M_cur, __t_copy);
+          std::_Construct(this->_M_finish._M_cur, __t_copy);
           this->_M_finish._M_set_node(this->_M_finish._M_node + 1);
           this->_M_finish._M_cur = this->_M_finish._M_first;
         }
@@ -347,7 +347,7 @@ namespace std
         {
           this->_M_start._M_set_node(this->_M_start._M_node - 1);
           this->_M_start._M_cur = this->_M_start._M_last - 1;
-          _Construct(this->_M_start._M_cur, __t_copy);
+          std::_Construct(this->_M_start._M_cur, __t_copy);
         }
       catch(...)
         {
@@ -365,7 +365,7 @@ namespace std
       _M_deallocate_node(this->_M_finish._M_first);
       this->_M_finish._M_set_node(this->_M_finish._M_node - 1);
       this->_M_finish._M_cur = this->_M_finish._M_last - 1;
-      _Destroy(this->_M_finish._M_cur);
+      std::_Destroy(this->_M_finish._M_cur);
     }
     
   // Called only if _M_start._M_cur == _M_start._M_last - 1.  Note that 
@@ -376,7 +376,7 @@ namespace std
     void deque<_Tp,_Alloc>::
     _M_pop_front_aux()
     {
-      _Destroy(this->_M_start._M_cur);
+      std::_Destroy(this->_M_start._M_cur);
       _M_deallocate_node(this->_M_start._M_first);
       this->_M_start._M_set_node(this->_M_start._M_node + 1);
       this->_M_start._M_cur = this->_M_start._M_first;
@@ -390,7 +390,7 @@ namespace std
                           _InputIterator __first, _InputIterator __last,
                           input_iterator_tag)
       {
-        copy(__first, __last, inserter(*this, __pos));
+        std::copy(__first, __last, std::inserter(*this, __pos));
       }
     
   template <typename _Tp, typename _Alloc>
@@ -407,7 +407,7 @@ namespace std
           iterator __new_start = _M_reserve_elements_at_front(__n);
           try
             {
-              uninitialized_copy(__first, __last, __new_start);
+              std::uninitialized_copy(__first, __last, __new_start);
               this->_M_start = __new_start;
             }
           catch(...)
@@ -421,7 +421,7 @@ namespace std
           iterator __new_finish = _M_reserve_elements_at_back(__n);
           try
             {
-              uninitialized_copy(__first, __last, this->_M_finish);
+              std::uninitialized_copy(__first, __last, this->_M_finish);
               this->_M_finish = __new_finish;
             }
           catch(...)
@@ -452,7 +452,7 @@ namespace std
         __pos = this->_M_start + __index;
         iterator __pos1 = __pos;
         ++__pos1;
-        copy(__front2, __pos1, __front1);
+        std::copy(__front2, __pos1, __front1);
       }
       else
       {
@@ -462,7 +462,7 @@ namespace std
         iterator __back2 = __back1;
         --__back2;
         __pos = this->_M_start + __index;
-        copy_backward(__pos, __back2, __back1);
+        std::copy_backward(__pos, __back2, __back1);
       }
       *__pos = __x_copy;
       return __pos;
@@ -486,17 +486,17 @@ namespace std
             if (__elems_before >= difference_type(__n))
             {
               iterator __start_n = this->_M_start + difference_type(__n);
-              uninitialized_copy(this->_M_start, __start_n, __new_start);
+              std::uninitialized_copy(this->_M_start, __start_n, __new_start);
               this->_M_start = __new_start;
-              copy(__start_n, __pos, __old_start);
+              std::copy(__start_n, __pos, __old_start);
               fill(__pos - difference_type(__n), __pos, __x_copy);
             }
             else
             {
-              __uninitialized_copy_fill(this->_M_start, __pos, __new_start, 
-                                        this->_M_start, __x_copy);
+              std::__uninitialized_copy_fill(this->_M_start, __pos, __new_start, 
+					     this->_M_start, __x_copy);
               this->_M_start = __new_start;
-              fill(__old_start, __pos, __x_copy);
+              std::fill(__old_start, __pos, __x_copy);
             }
           }
         catch(...)
@@ -517,18 +517,18 @@ namespace std
             if (__elems_after > difference_type(__n))
             {
               iterator __finish_n = this->_M_finish - difference_type(__n);
-              uninitialized_copy(__finish_n, this->_M_finish, this->_M_finish);
+              std::uninitialized_copy(__finish_n, this->_M_finish, this->_M_finish);
               this->_M_finish = __new_finish;
-              copy_backward(__pos, __finish_n, __old_finish);
-              fill(__pos, __pos + difference_type(__n), __x_copy);
+              std::copy_backward(__pos, __finish_n, __old_finish);
+              std::fill(__pos, __pos + difference_type(__n), __x_copy);
             }
             else
             {
-              __uninitialized_fill_copy(this->_M_finish,
-					__pos + difference_type(__n),
-                                        __x_copy, __pos, this->_M_finish);
+              std::__uninitialized_fill_copy(this->_M_finish,
+					     __pos + difference_type(__n),
+					     __x_copy, __pos, this->_M_finish);
               this->_M_finish = __new_finish;
-              fill(__pos, __old_finish, __x_copy);
+              std::fill(__pos, __old_finish, __x_copy);
             }
           }
         catch(...)
@@ -560,19 +560,19 @@ namespace std
               if (__elemsbefore >= difference_type(__n))
               {
                 iterator __start_n = this->_M_start + difference_type(__n); 
-                uninitialized_copy(this->_M_start, __start_n, __new_start);
+                std::uninitialized_copy(this->_M_start, __start_n, __new_start);
                 this->_M_start = __new_start;
-                copy(__start_n, __pos, __old_start);
-                copy(__first, __last, __pos - difference_type(__n));
+                std::copy(__start_n, __pos, __old_start);
+                std::copy(__first, __last, __pos - difference_type(__n));
               }
               else
               {
                 _ForwardIterator __mid = __first;
-                advance(__mid, difference_type(__n) - __elemsbefore);
-                __uninitialized_copy_copy(this->_M_start, __pos,
-					  __first, __mid, __new_start);
+                std::advance(__mid, difference_type(__n) - __elemsbefore);
+                std::__uninitialized_copy_copy(this->_M_start, __pos,
+					       __first, __mid, __new_start);
                 this->_M_start = __new_start;
-                copy(__mid, __last, __old_start);
+                std::copy(__mid, __last, __old_start);
               }
             }
           catch(...)
@@ -593,21 +593,21 @@ namespace std
               if (__elemsafter > difference_type(__n))
               {
                 iterator __finish_n = this->_M_finish - difference_type(__n);
-                uninitialized_copy(__finish_n,
-				   this->_M_finish,
-				   this->_M_finish);
+                std::uninitialized_copy(__finish_n,
+					this->_M_finish,
+					this->_M_finish);
                 this->_M_finish = __new_finish;
-                copy_backward(__pos, __finish_n, __old_finish);
-                copy(__first, __last, __pos);
+                std::copy_backward(__pos, __finish_n, __old_finish);
+                std::copy(__first, __last, __pos);
               }
               else
               {
                 _ForwardIterator __mid = __first;
-                advance(__mid, __elemsafter);
-                __uninitialized_copy_copy(__mid, __last, __pos,
-                                          this->_M_finish, this->_M_finish);
+                std::advance(__mid, __elemsafter);
+                std::__uninitialized_copy_copy(__mid, __last, __pos,
+					       this->_M_finish, this->_M_finish);
                 this->_M_finish = __new_finish;
-                copy(__first, __mid, __pos);
+                std::copy(__first, __mid, __pos);
               }
             }
           catch(...)
@@ -679,13 +679,13 @@ namespace std
 	  = this->_M_map + (this->_M_map_size - __new_num_nodes) / 2 
 	  + (__add_at_front ? __nodes_to_add : 0);
         if (__new_nstart < this->_M_start._M_node)
-          copy(this->_M_start._M_node,
-	       this->_M_finish._M_node + 1,
-	       __new_nstart);
+          std::copy(this->_M_start._M_node,
+		    this->_M_finish._M_node + 1,
+		    __new_nstart);
         else
-          copy_backward(this->_M_start._M_node,
-			this->_M_finish._M_node + 1, 
-                        __new_nstart + __old_num_nodes);
+          std::copy_backward(this->_M_start._M_node,
+			     this->_M_finish._M_node + 1, 
+			     __new_nstart + __old_num_nodes);
       }
       else
       {
@@ -695,9 +695,9 @@ namespace std
         _Map_pointer __new_map = _M_allocate_map(__new_map_size);
         __new_nstart = __new_map + (__new_map_size - __new_num_nodes) / 2
                              + (__add_at_front ? __nodes_to_add : 0);
-        copy(this->_M_start._M_node,
-	     this->_M_finish._M_node + 1,
-	     __new_nstart);
+        std::copy(this->_M_start._M_node,
+		  this->_M_finish._M_node + 1,
+		  __new_nstart);
         _M_deallocate_map(this->_M_map, this->_M_map_size);
     
         this->_M_map = __new_map;

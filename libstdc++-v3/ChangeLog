@@ -1,3 +1,13 @@
+2003-07-04  Paolo Carlini  <pcarlini@unitus.it>
+
+	* include/bits/deque.tcc: Fully qualify standard
+	functions with std::, thus avoiding Koenig lookup.
+	* include/bits/gslice_array.h: Likewise.
+	* include/bits/indirect_array.h: Likewise.
+	* include/bits/list.tcc: Likewise.
+	* include/bits/mask_array.h: Likewise.
+	* include/bits/slice_array.h: Likewise.
+
 2003-07-04  Gawain Bolton  <gbolton@free.fr>
 
 	* include/bits/stl_tree.h: Performance and memory usage
