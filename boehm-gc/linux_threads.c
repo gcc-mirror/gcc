@@ -173,6 +173,11 @@ void GC_suspend_handler(int sig)
     /* is no race.						*/
     if (sigfillset(&mask) != 0) ABORT("sigfillset() failed");
     if (sigdelset(&mask, SIG_RESTART) != 0) ABORT("sigdelset() failed");
+#ifdef NO_SIGNALS
+    if (sigdelset(&mask, SIGINT) != 0) ABORT("sigdelset() failed");
+    if (sigdelset(&mask, SIGQUIT) != 0) ABORT("sigdelset() failed");
+    if (sigdelset(&mask, SIGTERM) != 0) ABORT("sigdelset() failed");
+#endif
     do {
 	    me->signal = 0;
 	    sigsuspend(&mask);             /* Wait for signal */
@@ -433,6 +438,21 @@ void GC_thr_init()
     if (sigfillset(&act.sa_mask) != 0) {
     	ABORT("sigfillset() failed");
     }
+
+#ifdef NO_SIGNALS
+    if (sigdelset(&act.sa_mask, SIGINT) != 0) {
+       ABORT("sigdelset() failed");
+    }
+
+    if (sigdelset(&act.sa_mask, SIGQUIT) != 0) {
+       ABORT("sigdelset() failed");
+    }
+
+    if (sigdelset(&act.sa_mask, SIGTERM) != 0) {
+       ABORT("sigdelset() failed");
+    }
+#endif
+
     /* SIG_RESTART is unmasked by the handler when necessary. 	*/
     act.sa_handler = GC_suspend_handler;
     if (sigaction(SIG_SUSPEND, &act, NULL) != 0) {

@@ -1,3 +1,8 @@
+1999-12-22  Bryce McKinlay  <bryce@albatross.co.nz>
+
+	* linux_threads.c: Don't block SIGINT, SIGQUIT, SIGTERM in the
+	NO_SIGNALS case.
+
 1999-12-19  Jeff Sturm  <jsturm@sigma6.com>
 
         * gcconfig.h: Define DATASTART for Alpha Linux.
