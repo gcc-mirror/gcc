@@ -1,5 +1,20 @@
 2004-01-07  Michael Koch  <konqueror@gmx.de>
 
+	* java/text/CollationElementIterator.java
+	(textIndex): Renamed from index.
+	* java/text/CollationKey.java
+	(collator): New member.
+	(CollationKey): New argument for parent collator.
+	(equals): Check for same collator, source string and key array.
+	* java/text/RuleBasedCollator.java:
+	Reformated.
+	(RuleBasedCollator): Don't re-initialize frenchAccents with default
+	value.
+	(getCollationElementIterator): Rewritten.
+	(getCollationKey): Added new argument to CollationKey constructor.
+
+2004-01-07  Michael Koch  <konqueror@gmx.de>
+
 	* gnu/java/nio/DatagramChannelImpl.java
 	(blocking): Removed.
 	(DatagramChannelImpl): Call configureBlocking().

@@ -76,7 +76,7 @@ public final class CollationElementIterator
   /**
    * This is the index into the String where we are currently scanning.
    */
-  int index;
+  int textIndex;
 
   // A piece of lookahead.
   boolean lookahead_set;
@@ -107,7 +107,7 @@ public final class CollationElementIterator
    */
   public int next()
   {
-    if (index == text.length())
+    if (textIndex == text.length())
       return NULLORDER;
 
     return collator.ceiNext (this);
@@ -133,7 +133,7 @@ public final class CollationElementIterator
    */
   public void reset()
   {
-    index = 0;
+    textIndex = 0;
   }
 
   /**
@@ -175,7 +175,7 @@ public final class CollationElementIterator
   public void setText(String text)
   {
     this.text = text;
-    this.index = 0;
+    this.textIndex = 0;
     this.lookahead_set = false;
     this.lookahead = 0;
   }
@@ -190,6 +190,6 @@ public final class CollationElementIterator
    */
   public int getOffset()
   {
-    return index;
+    return textIndex;
   }
 }
