@@ -1,5 +1,12 @@
 1999-11-22  Mark Mitchell  <mark@codesourcery.com>
 
+	* cp-tree.def (CTOR_COMPLETE): New tree node.
+	(finish_constructor_body): Add it, to mark the end of the
+	constructor.
+	(finish_function): Don't call end_protect_partials here.
+	* ir.texi (CTOR_COMPLETE): Document it.
+	* semantics.c (expand_stmt): Handle it.
+	
 	* cp-tree.def (FUNCTION_NAME): New tree node.
 	* cp-tree.h (current_function_name_declared): Tweak documentation.
 	(lang_decl_flags): Add pretty_function_p, adjust dummy.

@@ -1274,6 +1274,10 @@ following the @code{TREE_CHAIN} link from one substatement to the next.
 Used to represent a @code{continue} statement.  There are no additional
 fields.
 
+@item CTOR_COMPLETE
+
+Used to mark the end of the main body of a constructor.
+
 @item DECL_STMT
 
 Used to represent a local declaration.  The @code{DECL_STMT_DECL} macro
@@ -1383,7 +1387,7 @@ equalit) to @code{CATCH_ALL_TYPE} if this handler is for all types.
 
 In a constructor, these nodes are used to mark the point at which a
 subobject of @code{this} is fully constructed.  If, after this point, an
-exception is thrown before the constructor finishes executing, the
+exception is thrown before a CTOR_COMPLETE statement is encountered, the
 @code{SUBOBJECT_CLEANUP} must be executed.  The cleanups must be
 executed in the reverse order in which they appear.
 
