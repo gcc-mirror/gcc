@@ -1,3 +1,8 @@
+2001-11-22  Nick Clifton  <nickc@cambridge.redhat.com>
+
+	* config.gcc (xscale-coff): Add necessary header files to
+        tm_file variable.
+
 2001-11-20  Zack Weinberg  <zack@codesourcery.com>
 
 	* rs6000.c (output_cbranch): Use $, not %$, in output template.

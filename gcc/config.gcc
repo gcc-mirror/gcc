@@ -3214,7 +3214,7 @@ xscale-*-elf)
 	md_file=arm/arm.md
 	;;
 xscale-*-coff)
-	tm_file="coff.h arm/xscale-coff.h"
+	tm_file="arm/semi.h arm/aout.h arm/arm.h arm/coff.h arm/xscale-coff.h"
 	tmake_file=arm/t-xscale-coff
 	out_file=arm/arm.c
 	md_file=arm/arm.md
