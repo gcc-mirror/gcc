@@ -217,23 +217,3 @@ do { long value[2];							\
    necessary when compiling PIC code.  */
 
 #define JUMP_TABLES_IN_TEXT_SECTION
-
-/* Biggest alignment that any structure field can require on this
-   machine, in bits.  If packing is in effect, this can be smaller than
-   normal.  */
-
-#define BIGGEST_FIELD_ALIGNMENT \
-  (maximum_field_alignment ? maximum_field_alignment : 32)
-
-extern int maximum_field_alignment;
-
-/* If bit field type is int, don't let it cross an int,
-   and give entire struct the alignment of an int.  */
-/* Required on the 386 since it doesn't have bitfield insns.  */
-/* If packing is in effect, then the type doesn't matter.  */
-
-#undef PCC_BITFIELD_TYPE_MATTERS
-#define PCC_BITFIELD_TYPE_MATTERS (maximum_field_alignment == 0)
-
-/* Handle #pragma pack and sometimes #pragma weak.  */
-#define HANDLE_SYSV_PRAGMA
