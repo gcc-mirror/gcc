@@ -39,6 +39,10 @@ const struct default_include cpp_include_defaults[]
     /* Pick up GNU C++ target-dependent include files.  */
     { GPLUSPLUS_TOOL_INCLUDE_DIR, "G++", 1, 1 },
 #endif
+#ifdef GPLUSPLUS_BACKWARD_INCLUDE_DIR
+    /* Pick up GNU C++ backward and deprecated include files.  */
+    { GPLUSPLUS_BACKWARD_INCLUDE_DIR, "G++", 1, 1 },
+#endif
 #ifdef LOCAL_INCLUDE_DIR
     /* /usr/local/include comes before the fixincluded header files.  */
     { LOCAL_INCLUDE_DIR, 0, 0, 1 },

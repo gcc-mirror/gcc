@@ -1,3 +1,8 @@
+2001-04-06  Benjamin Kosnik  <bkoz@redhat.com>
+	
+	* cppdefault.c (GPLUSPLUS_BACKWARD_INCLUDE_DIR): Add.
+	* Makefile.in (-DGPLUSPLUS_BACKWARD_INCLUDE_DIR): Add.
+
 2001-04-06  Neil Booth  <neil@daikokuya.demon.co.uk>
 
 	* cppfiles.c (open_file): Fail directories silently, but
