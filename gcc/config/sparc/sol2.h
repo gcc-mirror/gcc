@@ -20,7 +20,7 @@ along with GNU CC; see the file COPYING.  If not, write to
 the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 
 /* Supposedly the same as vanilla sparc svr4, except for the stuff below: */
-#include "sparcv4.h"
+#include "sparc/sparcv4.h"
 
 #undef CPP_PREDEFINES
 #define CPP_PREDEFINES \
