@@ -146,6 +146,8 @@ add_scope_stmt (begin_p, partial_p)
     }
   else
     {
+      if (partial_p != SCOPE_PARTIAL_P (TREE_PURPOSE (top)))
+	abort ();
       TREE_VALUE (top) = ss;
       *stack_ptr = TREE_CHAIN (top);
     }

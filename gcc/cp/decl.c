@@ -4161,6 +4161,9 @@ pushdecl (x)
 		     them there.  */
 		  struct cp_binding_level *b = current_binding_level->level_chain;
 
+		  /* Skip the ctor/dtor cleanup level.  */
+		  b = b->level_chain;
+
 		  /* ARM $8.3 */
 		  if (b->parm_flag == 1)
 		    {

@@ -1,3 +1,15 @@
+2002-12-16  Jason Merrill  <jason@redhat.com>
+
+	* semantics.c (do_pushlevel): Call pushlevel after adding the
+	SCOPE_STMT.
+	(do_poplevel): Call poplevel before adding the SCOPE_STMT.
+	* parse.y (function_body): Go back to using compstmt.
+	* decl.c (pushdecl): Skip another level to get to the parms level.
+
+	* call.c (build_new_method_call): Use is_dummy_object to determine
+	whether or not to evaluate the object parameter to a static member
+	function.
+
 2002-12-14  Jason Merrill  <jason@redhat.com>
 
 	* semantics.c (simplify_aggr_init_exprs_r): Also prepend the
