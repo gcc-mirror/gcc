@@ -1125,6 +1125,7 @@ extract_bit_field (rtx str_rtx, unsigned HOST_WIDE_INT bitsize,
 	  || ! (*insn_data[icode].operand[1].predicate) (src, mode1)
 	  || ! (*insn_data[icode].operand[2].predicate) (rtxpos, mode2))
 	abort ();
+
       pat = GEN_FCN (icode) (dest, src, rtxpos);
       seq = get_insns ();
       end_sequence ();
@@ -1132,9 +1133,7 @@ extract_bit_field (rtx str_rtx, unsigned HOST_WIDE_INT bitsize,
 	{
 	  emit_insn (seq);
 	  emit_insn (pat);
-	  return extract_bit_field (dest, bitsize,
-				    bitnum - pos * GET_MODE_BITSIZE (innermode),
-				    unsignedp, target, mode, tmode, total_size);
+	  return dest;
 	}
     }
 
