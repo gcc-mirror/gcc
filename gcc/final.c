@@ -2082,7 +2082,7 @@ output_operand (x, code)
   /* If X is a pseudo-register, abort now rather than writing trash to the
      assembler file.  */
 
-  if (GET_CODE (x) == REG && REGNO (x) >= FIRST_PSEUDO_REGISTER)
+  if (x && GET_CODE (x) == REG && REGNO (x) >= FIRST_PSEUDO_REGISTER)
     abort ();
 
   PRINT_OPERAND (asm_out_file, x, code);
