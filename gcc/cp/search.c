@@ -2588,6 +2588,9 @@ expand_upcast_fixups (binfo, addr, orig_addr, vbase, vbase_addr, t,
 	    }
 
 	  TREE_READONLY (new_delta) = 0;
+	  TREE_TYPE (new_delta) = 
+	    cp_build_type_variant (TREE_TYPE (new_delta), /*constp=*/0,
+				   TYPE_VOLATILE (TREE_TYPE (new_delta)));
 	  expand_expr_stmt (build_modify_expr (new_delta, NOP_EXPR,
 					       old_delta));
 	}
