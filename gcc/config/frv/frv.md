@@ -1833,7 +1833,7 @@
 	(match_operand:DI 1 "const_int_operand" ""))]
   "reload_completed"
   [(set (match_dup 2) (match_dup 4))
-   (set (match_dup 3) (match_dup 1))]
+   (set (match_dup 3) (match_dup 5))]
   "
 {
   rtx op0 = operands[0];
@@ -1841,7 +1841,18 @@
 
   operands[2] = gen_highpart (SImode, op0);
   operands[3] = gen_lowpart (SImode, op0);
-  operands[4] = GEN_INT ((INTVAL (op1) < 0) ? -1 : 0);
+  if (HOST_BITS_PER_WIDE_INT <= 32)
+    {
+      operands[4] = GEN_INT ((INTVAL (op1) < 0) ? -1 : 0);
+      operands[5] = op1;
+    }
+  else
+    {
+      operands[4] = GEN_INT ((((unsigned HOST_WIDE_INT)INTVAL (op1) >> 16)
+			      >> 16) ^ ((unsigned HOST_WIDE_INT)1 << 31)
+			     - ((unsigned HOST_WIDE_INT)1 << 31));
+      operands[5] = GEN_INT (trunc_int_for_mode (INTVAL (op1), SImode));
+    }
 }")
 
 (define_split
@@ -2031,7 +2042,7 @@
 	(match_operand:DF 1 "const_int_operand" ""))]
   "reload_completed"
   [(set (match_dup 2) (match_dup 4))
-   (set (match_dup 3) (match_dup 1))]
+   (set (match_dup 3) (match_dup 5))]
   "
 {
   rtx op0 = operands[0];
@@ -2039,7 +2050,18 @@
 
   operands[2] = gen_highpart (SImode, op0);
   operands[3] = gen_lowpart (SImode, op0);
-  operands[4] = GEN_INT ((INTVAL (op1) < 0) ? -1 : 0);
+  if (HOST_BITS_PER_WIDE_INT <= 32)
+    {
+      operands[4] = GEN_INT ((INTVAL (op1) < 0) ? -1 : 0);
+      operands[5] = op1;
+    }
+  else
+    {
+      operands[4] = GEN_INT ((((unsigned HOST_WIDE_INT)INTVAL (op1) >> 16)
+			      >> 16) ^ ((unsigned HOST_WIDE_INT)1 << 31)
+			     - ((unsigned HOST_WIDE_INT)1 << 31));
+      operands[5] = GEN_INT (trunc_int_for_mode (INTVAL (op1), SImode));
+    }
 }")
 
 (define_split
