@@ -8243,7 +8243,7 @@ reload_cse_simplify_set (set, insn)
 		default:
 		  abort ();
 		}
-	      this_val = GEN_INT (this_val);
+	      this_rtx = GEN_INT (this_val);
 	    }
 #endif
 	  this_cost = rtx_cost (this_rtx, SET);

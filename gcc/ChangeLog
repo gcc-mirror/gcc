@@ -1,3 +1,7 @@
+2001-02-18  Richard Henderson  <rth@redhat.com>
+
+	* reload1.c (reload_cse_simplify_set): Fix typo.
+
 Sun Feb 18 09:30:09 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* diagnostic.c (_fatal_insn): Decrement errorcount.
