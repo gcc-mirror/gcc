@@ -1,6 +1,6 @@
 /* Process declarations and variables for C compiler.
    Copyright (C) 1988, 1992, 1993, 1994, 1995, 1996, 1997, 1998, 1999, 2000,
-   2001, 2002, 2003, 2004 Free Software Foundation, Inc.
+   2001, 2002, 2003, 2004, 2005 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -29,6 +29,7 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
+#include "input.h"
 #include "tm.h"
 #include "intl.h"
 #include "tree.h"
@@ -6287,7 +6288,13 @@ finish_function (void)
       else
 	{
 	  if (flag_isoc99)
-	    c_finish_return (integer_zero_node);
+	    {
+	      tree stmt = c_finish_return (integer_zero_node);
+	      /* Hack.  We don't want the middle-end to warn that this
+		 return is unreachable, so put the statement on the
+		 special line 0.  */
+	      annotate_with_file_line (stmt, input_filename, 0);
+	    }
 	}
     }
 

@@ -1,6 +1,6 @@
 /* Emit RTL for the GCC expander.
    Copyright (C) 1987, 1988, 1992, 1993, 1994, 1995, 1996, 1997, 1998,
-   1999, 2000, 2001, 2002, 2003, 2004 Free Software Foundation, Inc.
+   1999, 2000, 2001, 2002, 2003, 2004, 2005 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -3473,7 +3473,7 @@ add_insn_before (rtx insn, rtx before)
       if (INSN_P (insn))
 	bb->flags |= BB_DIRTY;
       /* Should not happen as first in the BB is always either NOTE or
-	 LABEl.  */
+	 LABEL.  */
       gcc_assert (BB_HEAD (bb) != insn
 		  /* Avoid clobbering of structure when creating new BB.  */
 		  || BARRIER_P (insn)

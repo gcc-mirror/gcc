@@ -1,5 +1,5 @@
 /* Control flow functions for trees.
-   Copyright (C) 2001, 2002, 2003, 2004 Free Software Foundation, Inc.
+   Copyright (C) 2001, 2002, 2003, 2004, 2005 Free Software Foundation, Inc.
    Contributed by Diego Novillo <dnovillo@redhat.com>
 
 This file is part of GCC.
@@ -1323,8 +1323,11 @@ remove_useless_stmts_warn_notreached (tree stmt)
   if (EXPR_HAS_LOCATION (stmt))
     {
       location_t loc = EXPR_LOCATION (stmt);
-      warning ("%Hwill never be executed", &loc);
-      return true;
+      if (LOCATION_LINE (loc) > 0)
+	{
+	  warning ("%Hwill never be executed", &loc);
+	  return true;
+	}
     }
 
   switch (TREE_CODE (stmt))
@@ -2021,11 +2024,17 @@ remove_bb (basic_block bb)
 	 since this way we lose warnings for gotos in the original
 	 program that are indeed unreachable.  */
       if (TREE_CODE (stmt) != GOTO_EXPR && EXPR_HAS_LOCATION (stmt) && !loc)
+	{
+	  source_locus t;
+
 #ifdef USE_MAPPED_LOCATION
-	loc = EXPR_LOCATION (stmt);
+	  t = EXPR_LOCATION (stmt);
 #else
-	loc = EXPR_LOCUS (stmt);
+	  t = EXPR_LOCUS (stmt);
 #endif
+	  if (t && LOCATION_LINE (*t) > 0)
+	    loc = t;
+	}
     }
 
   /* If requested, give a warning that the first statement in the

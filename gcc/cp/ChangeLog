@@ -1,3 +1,9 @@
+2005-01-01  Steven Bosscher  <stevenb@suse.de>
+
+	PR middle-end/17544
+	* decl.c (finish_function): Fix comment.  Annotate the compiler
+	generated return with the current file name and line 0.
+
 2004-12-31  Richard Henderson  <rth@redhat.com>
 
 	PR middle-end/17799

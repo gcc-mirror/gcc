@@ -1,3 +1,8 @@
+2005-01-01  Steven Bosscher  <stevenb@suse.de>
+
+	* gcc.dg/20041231-1.C: New test.
+	* g++.dg/warn/Wunreachable-code-1.C: New test.
+
 2004-12-30  David Edelsohn  <edelsohn@gnu.org>
 
 	* gfortran.fortran-torture/execute/read_eof.f90: Open scratch
