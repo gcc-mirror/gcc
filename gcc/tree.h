@@ -2054,6 +2054,7 @@ extern void expand_return			PROTO((tree));
 extern int optimize_tail_recursion		PROTO((tree, struct rtx_def *));
 extern void expand_start_bindings		PROTO((int));
 extern void expand_end_bindings			PROTO((tree, int, int));
+extern void warn_about_unused_variables         PROTO((tree));
 extern void start_cleanup_deferral		PROTO((void));
 extern void end_cleanup_deferral		PROTO((void));
 extern void mark_block_as_eh_region		PROTO((void));

@@ -3492,6 +3492,25 @@ expand_nl_goto_receivers (thisblock)
   emit_label (afterward);
 }
 
+/* Warn about any unused VARS (which may contain nodes other than
+   VAR_DECLs, but such nodes are ignored).  The nodes are connected
+   via the TREE_CHAIN field.  */
+
+void
+warn_about_unused_variables (vars)
+     tree vars;
+{
+  tree decl;
+
+  if (warn_unused)
+    for (decl = vars; decl; decl = TREE_CHAIN (decl))
+      if (TREE_CODE (decl) == VAR_DECL 
+	  && ! TREE_USED (decl)
+	  && ! DECL_IN_SYSTEM_HEADER (decl)
+	  && DECL_NAME (decl) && ! DECL_ARTIFICIAL (decl)) 
+	warning_with_decl (decl, "unused variable `%s'");
+}
+
 /* Generate RTL code to terminate a binding contour.
 
    VARS is the chain of VAR_DECL nodes for the variables bound in this
@@ -3532,13 +3551,9 @@ expand_end_bindings (vars, mark_ends, dont_jump_in)
      
   thisblock = block_stack;
 
-  if (warn_unused)
-    for (decl = vars; decl; decl = TREE_CHAIN (decl))
-      if (TREE_CODE (decl) == VAR_DECL 
-	  && ! TREE_USED (decl)
-	  && ! DECL_IN_SYSTEM_HEADER (decl)
-	  && DECL_NAME (decl) && ! DECL_ARTIFICIAL (decl)) 
-	warning_with_decl (decl, "unused variable `%s'");
+  /* If any of the variables in this scope were not used, warn the
+     user.  */
+  warn_about_unused_variables (vars);
 
   if (thisblock->exit_label)
     {
