@@ -1589,7 +1589,7 @@ Ldiv_zero:
 
 #endif /* L_modsi3 */
 
-#ifdef L_divmodsi_tools
+#ifdef L_dvmd_tls
 
 	.globl ___div0
 	.align 0
