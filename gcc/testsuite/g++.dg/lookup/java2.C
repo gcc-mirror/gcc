@@ -37,7 +37,7 @@ public:
  *  function, so we need to test here if it works with a normal declaration.
  */
 
-extern "C" jobject _Jv_AllocObject (jclass, jint) __attribute__((__malloc__));
+extern "C" jobject _Jv_AllocObject (jclass) __attribute__((__malloc__));
 extern "C" void _Jv_Throw (jthrowable) __attribute__ ((__noreturn__));
 
 void Bar4(void)
