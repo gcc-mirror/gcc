@@ -2356,6 +2356,13 @@ stabilize_reference (ref)
 			 stabilize_reference_1 (TREE_OPERAND (ref, 1)));
       break;
 
+    case COMPOUND_EXPR:
+      result = build_nt (COMPOUND_EXPR,
+			 stabilize_reference_1 (TREE_OPERAND (ref, 0)),
+			 stabilize_reference (TREE_OPERAND (ref, 1)));
+      break;
+
+
       /* If arg isn't a kind of lvalue we recognize, make no change.
 	 Caller should recognize the error for an invalid lvalue.  */
     default:
