@@ -940,6 +940,7 @@ demangle_template (work, mangled, tname, trawname)
 		case 'F':	/* function */
 		case 'M':	/* member function */
 		case 'O':	/* ??? */
+		case 'J':	/* complex */
 		  old_p++;
 		  continue;
 		case 'Q':	/* qualified name */
@@ -2210,6 +2211,11 @@ demangle_fund_type (work, mangled, result)
 	      APPEND_BLANK (result);
 	      string_append (result, "volatile");
 	    }
+	  break;
+	case 'J':
+	  (*mangled)++;
+	  APPEND_BLANK (result);
+	  string_append (result, "complex");
 	  break;
 	default:
 	  done = 1;
