@@ -6,7 +6,7 @@
 --                                                                          --
 --                                  B o d y                                 --
 --                                                                          --
---         Copyright (C) 1992-2003, Free Software Foundation, Inc.          --
+--         Copyright (C) 1992-2004, Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -228,7 +228,7 @@ package body System.Task_Primitives.Operations is
    pragma Inline (Check_Wakeup);
 
    function Check_Unlock (L : Lock_Ptr) return Boolean;
-   pragma Inline (Check_Lock);
+   pragma Inline (Check_Unlock);
 
    function Check_Finalize_Lock (L : Lock_Ptr) return Boolean;
    pragma Inline (Check_Finalize_Lock);
@@ -296,7 +296,7 @@ package body System.Task_Primitives.Operations is
       pragma Unreferenced (Code);
       pragma Unreferenced (Context);
 
-      Self_ID : Task_ID := Self;
+      Self_ID : constant Task_ID := Self;
       Old_Set : aliased sigset_t;
 
       Result : Interfaces.C.int;
@@ -1443,7 +1443,7 @@ package body System.Task_Primitives.Operations is
    -----------------
 
    function Record_Lock (L : Lock_Ptr) return Boolean is
-      Self_ID : Task_ID := Self;
+      Self_ID : constant Task_ID := Self;
       P       : Lock_Ptr;
 
    begin
@@ -1529,7 +1529,7 @@ package body System.Task_Primitives.Operations is
    is
       pragma Unreferenced (Reason);
 
-      Self_ID : Task_ID := Self;
+      Self_ID : constant Task_ID := Self;
       P       : Lock_Ptr;
 
    begin
@@ -1586,7 +1586,7 @@ package body System.Task_Primitives.Operations is
    ------------------
 
    function Check_Unlock (L : Lock_Ptr) return Boolean is
-      Self_ID : Task_ID := Self;
+      Self_ID : constant Task_ID := Self;
       P       : Lock_Ptr;
 
    begin

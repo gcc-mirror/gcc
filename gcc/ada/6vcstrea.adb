@@ -38,19 +38,39 @@ package body Interfaces.C_Streams is
 
    use type System.CRTL.size_t;
 
-   --  Substantial rewriting is needed here. These functions are far too
-   --  long to be inlined. They should be rewritten to be small helper
-   --  functions that are inlined, and then call the real routines.???
+   --  As the functions fread, fwrite and setvbuf are too big to be inlined,
+   --  they are just wrappers to the following implementation functions.
 
-   --  Alternatively, provide a separate spec for VMS, in which case we
-   --  could reduce the amount of junk bodies in the other cases by
-   --  interfacing directly in the spec.???
+   function fread_impl
+     (buffer : voids;
+      size   : size_t;
+      count  : size_t;
+      stream : FILEs) return size_t;
+
+   function fread_impl
+     (buffer : voids;
+      index  : size_t;
+      size   : size_t;
+      count  : size_t;
+      stream : FILEs) return size_t;
+
+   function fwrite_impl
+     (buffer : voids;
+      size   : size_t;
+      count  : size_t;
+      stream : FILEs) return size_t;
+
+   function setvbuf_impl
+     (stream : FILEs;
+      buffer : chars;
+      mode   : int;
+      size   : size_t) return int;
 
    ------------
    -- fread --
    ------------
 
-   function fread
+   function fread_impl
      (buffer : voids;
       size   : size_t;
       count  : size_t;
@@ -85,13 +105,9 @@ package body Interfaces.C_Streams is
       end loop;
 
       return Get_Count;
-   end fread;
+   end fread_impl;
 
-   ------------
-   -- fread --
-   ------------
-
-   function fread
+   function fread_impl
      (buffer : voids;
       index  : size_t;
       size   : size_t;
@@ -127,13 +143,34 @@ package body Interfaces.C_Streams is
       end loop;
 
       return Get_Count;
+   end fread_impl;
+
+   function fread
+     (buffer : voids;
+      size   : size_t;
+      count  : size_t;
+      stream : FILEs) return size_t
+   is
+   begin
+      return fread_impl (buffer, size, count, stream);
+   end fread;
+
+   function fread
+     (buffer : voids;
+      index  : size_t;
+      size   : size_t;
+      count  : size_t;
+      stream : FILEs) return size_t
+   is
+   begin
+      return fread_impl (buffer, index, size, count, stream);
    end fread;
 
    ------------
    -- fwrite --
    ------------
 
-   function fwrite
+   function fwrite_impl
      (buffer : voids;
       size   : size_t;
       count  : size_t;
@@ -164,13 +201,23 @@ package body Interfaces.C_Streams is
       end loop;
 
       return Put_Count;
+   end fwrite_impl;
+
+   function fwrite
+     (buffer : voids;
+      size   : size_t;
+      count  : size_t;
+      stream : FILEs) return size_t
+   is
+   begin
+      return fwrite_impl (buffer, size, count, stream);
    end fwrite;
 
    -------------
    -- setvbuf --
    -------------
 
-   function setvbuf
+   function setvbuf_impl
      (stream : FILEs;
       buffer : chars;
       mode   : int;
@@ -193,6 +240,16 @@ package body Interfaces.C_Streams is
          return System.CRTL.setvbuf
            (stream, buffer, mode, System.CRTL.size_t (size));
       end if;
+   end setvbuf_impl;
+
+   function setvbuf
+     (stream : FILEs;
+      buffer : chars;
+      mode   : int;
+      size   : size_t) return int
+   is
+   begin
+      return setvbuf_impl (stream, buffer, mode, size);
    end setvbuf;
 
 end Interfaces.C_Streams;

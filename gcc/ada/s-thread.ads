@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2003 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2004 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -61,7 +61,7 @@ package System.Threads is
    pragma Inline (Get_Jmpbuf_Address);
 
    procedure Set_Jmpbuf_Address (Addr : Address);
-   pragma Inline (Get_Jmpbuf_Address);
+   pragma Inline (Set_Jmpbuf_Address);
 
    function  Get_Sec_Stack_Addr return  Address;
    pragma Inline (Get_Sec_Stack_Addr);

@@ -51,6 +51,7 @@ with Nlists;   use Nlists;
 with Nmake;    use Nmake;
 with Opt;      use Opt;
 with Restrict; use Restrict;
+with Rident;   use Rident;
 with Rtsfind;  use Rtsfind;
 with Sem;      use Sem;
 with Sem_Ch6;  use Sem_Ch6;
@@ -358,7 +359,7 @@ package body Exp_Ch6 is
       --  since we won't be able to generate the code to handle the
       --  recursion in any case.
 
-      if Restrictions (No_Implicit_Conditionals) then
+      if Restriction_Active (No_Implicit_Conditionals) then
          return;
       end if;
 
@@ -1265,7 +1266,7 @@ package body Exp_Ch6 is
          --  if we can tell that the first parameter cannot possibly be null.
          --  This helps optimization and also generation of warnings.
 
-         if not Restrictions (No_Exception_Handlers)
+         if not Restriction_Active (No_Exception_Handlers)
            and then Is_RTE (Subp, RE_Raise_Exception)
          then
             declare
@@ -3004,7 +3005,7 @@ package body Exp_Ch6 is
 
          --  Create new exception handler
 
-         if Restrictions (No_Exception_Handlers) then
+         if Restriction_Active (No_Exception_Handlers) then
             Excep_Handlers := No_List;
 
          else

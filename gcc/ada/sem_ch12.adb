@@ -40,6 +40,7 @@ with Lib.Xref; use Lib.Xref;
 with Nlists;   use Nlists;
 with Nmake;    use Nmake;
 with Opt;      use Opt;
+with Rident;   use Rident;
 with Restrict; use Restrict;
 with Rtsfind;  use Rtsfind;
 with Sem;      use Sem;
@@ -1468,7 +1469,7 @@ package body Sem_Ch12 is
 
       if K = E_Generic_In_Parameter then
 
-         --  Ada0Y (AI-287): Limited aggregates allowed in generic formals
+         --  Ada 0Y (AI-287): Limited aggregates allowed in generic formals
 
          if not Extensions_Allowed and then Is_Limited_Type (T) then
             Error_Msg_N
@@ -2377,7 +2378,7 @@ package body Sem_Ch12 is
 
       elsif Ekind (Gen_Unit) /= E_Generic_Package then
 
-         --  Ada0Y (AI-50217): Instance can not be used in limited with_clause
+         --  Ada 0Y (AI-50217): Instance can not be used in limited with_clause
 
          if From_With_Type (Gen_Unit) then
             Error_Msg_N

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2002 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2004 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -193,7 +193,6 @@ package Style is
 
    function RM_Column_Check return Boolean
      renames Style_Inst.RM_Column_Check;
-   pragma Inline (RM_Column_Check);
    --  Determines whether style checking is active and the RM column check
    --  mode is set requiring checking of RM format layout.
 

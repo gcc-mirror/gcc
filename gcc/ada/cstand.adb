@@ -565,6 +565,7 @@ package body CStand is
       begin
          CompDef_Node := New_Node (N_Component_Definition, Stloc);
          Set_Aliased_Present    (CompDef_Node, False);
+         Set_Access_Definition  (CompDef_Node, Empty);
          Set_Subtype_Indication (CompDef_Node, Identifier_For (S_Character));
          Set_Component_Definition (Tdef_Node, CompDef_Node);
       end;
@@ -595,6 +596,7 @@ package body CStand is
       begin
          CompDef_Node := New_Node (N_Component_Definition, Stloc);
          Set_Aliased_Present    (CompDef_Node, False);
+         Set_Access_Definition  (CompDef_Node, Empty);
          Set_Subtype_Indication (CompDef_Node,
                                  Identifier_For (S_Wide_Character));
          Set_Component_Definition (Tdef_Node, CompDef_Node);
@@ -1503,7 +1505,6 @@ package body CStand is
             Write_Str (IEEES_First'Universal_Literal_String);
             Write_Str (" .. ");
             Write_Str (IEEES_Last'Universal_Literal_String);
-
 
          elsif Digs = IEEEL_Digits then
             Write_Str (IEEEL_First'Universal_Literal_String);

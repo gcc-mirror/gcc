@@ -50,6 +50,7 @@ with Nmake;    use Nmake;
 with Opt;      use Opt;
 with Output;   use Output;
 with Restrict; use Restrict;
+with Rident;   use Rident;
 with Rtsfind;  use Rtsfind;
 with Sem;      use Sem;
 with Sem_Ch3;  use Sem_Ch3;
@@ -522,7 +523,10 @@ package body Sem_Prag is
       --  is set to the default from the subprogram name.
 
       procedure Process_Interrupt_Or_Attach_Handler;
-      --  Attach the pragmas to the rep item chain.
+      --  Common processing for Interrupt and Attach_Handler pragmas
+
+      procedure Process_Restrictions_Or_Restriction_Warnings;
+      --  Common processing for Restrictions and Restriction_Warnings pragmas
 
       procedure Process_Suppress_Unsuppress (Suppress_Case : Boolean);
       --  Common processing for Suppress and Unsuppress. The boolean parameter
@@ -2802,9 +2806,10 @@ package body Sem_Prag is
          --  for packages, exceptions, and record components.
 
          elsif C = Convention_Java
-           and then (Ekind (Def_Id) = E_Package
-                     or else Ekind (Def_Id) = E_Exception
-                     or else Nkind (Parent (Def_Id)) = N_Component_Declaration)
+           and then
+             (Ekind (Def_Id) = E_Package
+                or else Ekind (Def_Id) = E_Exception
+                or else Nkind (Parent (Def_Id)) = N_Component_Declaration)
          then
             Set_Imported (Def_Id);
             Set_Is_Public (Def_Id);
@@ -2834,11 +2839,12 @@ package body Sem_Prag is
       --------------------
 
       procedure Process_Inline (Active : Boolean) is
-         Assoc   : Node_Id;
-         Decl    : Node_Id;
-         Subp_Id : Node_Id;
-         Subp    : Entity_Id;
-         Applies : Boolean;
+         Assoc     : Node_Id;
+         Decl      : Node_Id;
+         Subp_Id   : Node_Id;
+         Subp      : Entity_Id;
+         Applies   : Boolean;
+         Effective : Boolean := False;
 
          procedure Make_Inline (Subp : Entity_Id);
          --  Subp is the defining unit name of the subprogram
@@ -2995,6 +3001,7 @@ package body Sem_Prag is
                Set_Has_Pragma_Inline (Subp);
                Set_Next_Rep_Item (N, First_Rep_Item (Subp));
                Set_First_Rep_Item (Subp, N);
+               Effective := True;
             end if;
          end Set_Inline_Flags;
 
@@ -3035,6 +3042,12 @@ package body Sem_Prag is
             if not Applies then
                Error_Pragma_Arg
                  ("inappropriate argument for pragma%", Assoc);
+
+            elsif not Effective
+              and then Warn_On_Redundant_Constructs
+            then
+               Error_Msg_NE ("pragma inline on& is redundant?",
+                 N, Entity (Subp_Id));
             end if;
 
             Next (Assoc);
@@ -3210,12 +3223,135 @@ package body Sem_Prag is
 
          if Ekind (Proc_Scope) = E_Protected_Type then
             if Prag_Id = Pragma_Interrupt_Handler
-              or Prag_Id = Pragma_Attach_Handler
+                 or else
+               Prag_Id = Pragma_Attach_Handler
             then
                Record_Rep_Item (Proc_Scope, N);
             end if;
          end if;
       end Process_Interrupt_Or_Attach_Handler;
+
+      --------------------------------------------------
+      -- Process_Restrictions_Or_Restriction_Warnings --
+      --------------------------------------------------
+
+      procedure Process_Restrictions_Or_Restriction_Warnings is
+         Arg   : Node_Id;
+         R_Id  : Restriction_Id;
+         Id    : Name_Id;
+         Expr  : Node_Id;
+         Val   : Uint;
+
+         procedure Set_Warning (R : All_Restrictions);
+         --  If this is a Restriction_Warnings pragma, set warning flag
+
+         procedure Set_Warning (R : All_Restrictions) is
+         begin
+            if Prag_Id = Pragma_Restriction_Warnings then
+               Restriction_Warnings (R) := True;
+            end if;
+         end Set_Warning;
+
+      --  Start of processing for Process_Restrictions_Or_Restriction_Warnings
+
+      begin
+         Check_Ada_83_Warning;
+         Check_At_Least_N_Arguments (1);
+         Check_Valid_Configuration_Pragma;
+
+         Arg := Arg1;
+         while Present (Arg) loop
+            Id := Chars (Arg);
+            Expr := Expression (Arg);
+
+            --  Case of no restriction identifier
+
+            if Id = No_Name then
+               if Nkind (Expr) /= N_Identifier then
+                  Error_Pragma_Arg
+                    ("invalid form for restriction", Arg);
+
+               else
+                  --  No_Requeue is a synonym for No_Requeue_Statements
+
+                  if Chars (Expr) = Name_No_Requeue then
+                     Check_Restriction
+                       (No_Implementation_Restrictions, Arg);
+                     Set_Restriction (No_Requeue_Statements, N);
+                     Set_Warning (No_Requeue_Statements);
+
+                  --  Normal processing for all other cases
+
+                  else
+                     R_Id := Get_Restriction_Id (Chars (Expr));
+
+                     if R_Id not in All_Boolean_Restrictions then
+                        Error_Pragma_Arg
+                          ("invalid restriction identifier", Arg);
+
+                     --  Restriction is active
+
+                     else
+                        if Implementation_Restriction (R_Id) then
+                           Check_Restriction
+                             (No_Implementation_Restrictions, Arg);
+                        end if;
+
+                        Set_Restriction (R_Id, N);
+                        Set_Warning (R_Id);
+
+                        --  A very special case that must be processed here:
+                        --  pragma Restrictions (No_Exceptions) turns off
+                        --  all run-time checking. This is a bit dubious in
+                        --  terms of the formal language definition, but it
+                        --  is what is intended by RM H.4(12).
+
+                        if R_Id = No_Exceptions then
+                           Scope_Suppress := (others => True);
+                        end if;
+                     end if;
+                  end if;
+               end if;
+
+               --  Case of restriction identifier present
+
+            else
+               R_Id := Get_Restriction_Id (Id);
+               Analyze_And_Resolve (Expr, Any_Integer);
+
+               if R_Id not in All_Parameter_Restrictions then
+                  Error_Pragma_Arg
+                    ("invalid restriction parameter identifier", Arg);
+
+               elsif not Is_OK_Static_Expression (Expr) then
+                  Flag_Non_Static_Expr
+                    ("value must be static expression!", Expr);
+                  raise Pragma_Exit;
+
+               elsif not Is_Integer_Type (Etype (Expr))
+                 or else Expr_Value (Expr) < 0
+               then
+                  Error_Pragma_Arg
+                    ("value must be non-negative integer", Arg);
+
+                  --  Restriction pragma is active
+
+               else
+                  Val := Expr_Value (Expr);
+
+                  if not UI_Is_In_Int_Range (Val) then
+                     Error_Pragma_Arg
+                       ("pragma ignored, value too large?", Arg);
+                  else
+                     Set_Restriction (R_Id, N, Integer (UI_To_Int (Val)));
+                     Set_Warning (R_Id);
+                  end if;
+               end if;
+            end if;
+
+            Next (Arg);
+         end loop;
+      end Process_Restrictions_Or_Restriction_Warnings;
 
       ---------------------------------
       -- Process_Suppress_Unsuppress --
@@ -6319,7 +6455,7 @@ package body Sem_Prag is
             Check_Valid_Configuration_Pragma;
             Check_Restriction (No_Initialize_Scalars, N);
 
-            if not Restrictions (No_Initialize_Scalars) then
+            if not Restriction_Active (No_Initialize_Scalars) then
                Init_Or_Norm_Scalars := True;
                Initialize_Scalars := True;
             end if;
@@ -7389,9 +7525,10 @@ package body Sem_Prag is
                end if;
             end;
 
-            Restrictions (No_Finalization)       := True;
-            Restrictions (No_Exception_Handlers) := True;
-            Restriction_Parameters (Max_Tasks)   := Uint_0;
+            Set_Restriction (No_Finalization, N);
+            Set_Restriction (No_Exception_Handlers, N);
+            Set_Restriction (Max_Tasks, N, 0);
+            Set_Restriction (No_Tasking, N);
 
          -----------------------
          -- Normalize_Scalars --
@@ -8082,9 +8219,10 @@ package body Sem_Prag is
          --  pragma Pure_Function ([Entity =>] function_LOCAL_NAME);
 
          when Pragma_Pure_Function => Pure_Function : declare
-            E_Id   : Node_Id;
-            E      : Entity_Id;
-            Def_Id : Entity_Id;
+            E_Id      : Node_Id;
+            E         : Entity_Id;
+            Def_Id    : Entity_Id;
+            Effective : Boolean := False;
 
          begin
             GNAT_Pragma;
@@ -8114,11 +8252,22 @@ package body Sem_Prag is
                   end if;
 
                   Set_Is_Pure (Def_Id);
-                  Set_Has_Pragma_Pure_Function (Def_Id);
+
+                  if not Has_Pragma_Pure_Function (Def_Id) then
+                     Set_Has_Pragma_Pure_Function (Def_Id);
+                     Effective := True;
+                  end if;
 
                   E := Homonym (E);
                   exit when No (E) or else Scope (E) /= Current_Scope;
                end loop;
+
+               if not Effective
+                 and then Warn_On_Redundant_Constructs
+               then
+                  Error_Msg_NE ("pragma Pure_Function on& is redundant?",
+                    N, Entity (E_Id));
+               end if;
             end if;
          end Pure_Function;
 
@@ -8263,120 +8412,8 @@ package body Sem_Prag is
          --    restriction_IDENTIFIER
          --  | restriction_parameter_IDENTIFIER => EXPRESSION
 
-         when Pragma_Restrictions => Restrictions_Pragma : declare
-            Arg   : Node_Id;
-            R_Id  : Restriction_Id;
-            RP_Id : Restriction_Parameter_Id;
-            Id    : Name_Id;
-            Expr  : Node_Id;
-            Val   : Uint;
-
-         begin
-            Check_Ada_83_Warning;
-            Check_At_Least_N_Arguments (1);
-            Check_Valid_Configuration_Pragma;
-
-            Arg := Arg1;
-            while Present (Arg) loop
-               Id := Chars (Arg);
-               Expr := Expression (Arg);
-
-               --  Case of no restriction identifier
-
-               if Id = No_Name then
-                  if Nkind (Expr) /= N_Identifier then
-                     Error_Pragma_Arg
-                       ("invalid form for restriction", Arg);
-
-                  else
-                     R_Id := Get_Restriction_Id (Chars (Expr));
-
-                     if R_Id = Not_A_Restriction_Id then
-                        Error_Pragma_Arg
-                          ("invalid restriction identifier", Arg);
-
-                     --  Restriction is active
-
-                     else
-                        if Implementation_Restriction (R_Id) then
-                           Check_Restriction
-                             (No_Implementation_Restrictions, Arg);
-                        end if;
-
-                        Restrictions (R_Id) := True;
-
-                        --  Set location, but preserve location of system
-                        --  restriction for nice error msg with run time name
-
-                        if Restrictions_Loc (R_Id) /= System_Location then
-                           Restrictions_Loc (R_Id) := Sloc (N);
-                        end if;
-
-                        --  Record the restriction if we are in the main unit,
-                        --  or in the extended main unit. The reason that we
-                        --  test separately for Main_Unit is that gnat.adc is
-                        --  processed with Current_Sem_Unit = Main_Unit, but
-                        --  nodes in gnat.adc do not appear to be the extended
-                        --  main source unit (they probably should do ???)
-
-                        if Current_Sem_Unit = Main_Unit
-                          or else In_Extended_Main_Source_Unit (N)
-                        then
-                           Main_Restrictions (R_Id) := True;
-                        end if;
-
-                        --  A very special case that must be processed here:
-                        --  pragma Restrictions (No_Exceptions) turns off all
-                        --  run-time checking. This is a bit dubious in terms
-                        --  of the formal language definition, but it is what
-                        --  is intended by the wording of RM H.4(12).
-
-                        if R_Id = No_Exceptions then
-                           Scope_Suppress := (others => True);
-                        end if;
-                     end if;
-                  end if;
-
-               --  Case of restriction identifier present
-
-               else
-                  RP_Id := Get_Restriction_Parameter_Id (Id);
-                  Analyze_And_Resolve (Expr, Any_Integer);
-
-                  if RP_Id = Not_A_Restriction_Parameter_Id then
-                     Error_Pragma_Arg
-                       ("invalid restriction parameter identifier", Arg);
-
-                  elsif not Is_OK_Static_Expression (Expr) then
-                     Flag_Non_Static_Expr
-                       ("value must be static expression!", Expr);
-                     raise Pragma_Exit;
-
-                  elsif not Is_Integer_Type (Etype (Expr))
-                    or else Expr_Value (Expr) < 0
-                  then
-                     Error_Pragma_Arg
-                       ("value must be non-negative integer", Arg);
-
-                  --  Restriction pragma is active
-
-                  else
-                     Val := Expr_Value (Expr);
-
-                     --  Record pragma if most restrictive so far
-
-                     if Restriction_Parameters (RP_Id) = No_Uint
-                       or else Val < Restriction_Parameters (RP_Id)
-                     then
-                        Restriction_Parameters (RP_Id) := Val;
-                        Restriction_Parameters_Loc (RP_Id) := Sloc (N);
-                     end if;
-                  end if;
-               end if;
-
-               Next (Arg);
-            end loop;
-         end Restrictions_Pragma;
+         when Pragma_Restrictions =>
+            Process_Restrictions_Or_Restriction_Warnings;
 
          --------------------------
          -- Restriction_Warnings --
@@ -8384,49 +8421,12 @@ package body Sem_Prag is
 
          --  pragma Restriction_Warnings (RESTRICTION {, RESTRICTION});
 
-         --  RESTRICTION ::= restriction_IDENTIFIER
+         --  RESTRICTION ::=
+         --    restriction_IDENTIFIER
+         --  | restriction_parameter_IDENTIFIER => EXPRESSION
 
-         when Pragma_Restriction_Warnings => Restriction_Warn : declare
-            Arg   : Node_Id;
-            R_Id  : Restriction_Id;
-            Expr  : Node_Id;
-
-         begin
-            GNAT_Pragma;
-            Check_At_Least_N_Arguments (1);
-            Check_Valid_Configuration_Pragma;
-            Check_No_Identifiers;
-
-            Arg := Arg1;
-            while Present (Arg) loop
-               Expr := Expression (Arg);
-
-               if Nkind (Expr) /= N_Identifier then
-                  Error_Pragma_Arg
-                    ("invalid form for restriction", Arg);
-
-               else
-                  R_Id := Get_Restriction_Id (Chars (Expr));
-
-                  if R_Id = Not_A_Restriction_Id then
-                     Error_Pragma_Arg
-                       ("invalid restriction identifier", Arg);
-
-                  --  Restriction is active
-
-                  else
-                     if Implementation_Restriction (R_Id) then
-                        Check_Restriction
-                          (No_Implementation_Restrictions, Arg);
-                     end if;
-
-                     Restriction_Warnings (R_Id) := True;
-                  end if;
-               end if;
-
-               Next (Arg);
-            end loop;
-         end Restriction_Warn;
+         when Pragma_Restriction_Warnings =>
+            Process_Restrictions_Or_Restriction_Warnings;
 
          ----------------
          -- Reviewable --

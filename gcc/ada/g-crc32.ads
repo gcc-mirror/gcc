@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---              Copyright (C) 2001 Ada Core Technologies, Inc.              --
+--              Copyright (C) 2004 Ada Core Technologies, Inc.              --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -78,32 +78,27 @@ package GNAT.CRC32 is
    procedure Update
      (C     : in out CRC32;
       Value : String);
-   pragma Inline (Update);
    --  For each character in the Value string call above routine
 
    procedure Wide_Update
      (C     : in out CRC32;
       Value : Wide_Character);
-   pragma Inline (Update);
    --  Evolve CRC by including the contribution from Wide_Character'Pos (Value)
    --  with the bytes being included in the natural memory order.
 
    procedure Wide_Update
      (C     : in out CRC32;
       Value : Wide_String);
-   pragma Inline (Update);
    --  For each character in the Value string call above routine
 
    procedure Update
      (C     : in out CRC32;
       Value : Ada.Streams.Stream_Element);
-   pragma Inline (Update);
    --  Evolve CRC by including the contribution from Value
 
    procedure Update
      (C     : in out CRC32;
       Value : Ada.Streams.Stream_Element_Array);
-   pragma Inline (Update);
    --  For each element in the Value array call above routine
 
    function Get_Value (C : CRC32) return Interfaces.Unsigned_32
@@ -113,4 +108,6 @@ package GNAT.CRC32 is
    --  change the value of C, so it may be used to retrieve intermediate
    --  values of the CRC32 value during a sequence of Update calls.
 
+   pragma Inline (Update);
+   pragma Inline (Wide_Update);
 end GNAT.CRC32;

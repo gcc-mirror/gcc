@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---           Copyright (C) 2002-2003 Ada Core Technologies, Inc.            --
+--           Copyright (C) 2002-2004 Ada Core Technologies, Inc.            --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -66,7 +66,7 @@ package GNAT.MD5 is
    --  the Message-Digest of Input.
    --
    --  These procedures may be called successively with the same context and
-   --  different inputs. However, several successive calls will not produce
+   --  different inputs, and these several successive calls will produce
    --  the same final context as a call with the concatenation of the inputs.
 
    subtype Message_Digest is String (1 .. 32);
@@ -98,9 +98,13 @@ private
       B : Interfaces.Unsigned_32 := Initial_B;
       C : Interfaces.Unsigned_32 := Initial_C;
       D : Interfaces.Unsigned_32 := Initial_D;
+      Buffer : String (1 .. 64)  := (others => ASCII.NUL);
+      Last   : Natural := 0;
+      Length : Natural := 0;
    end record;
 
    Initial_Context : constant Context :=
-     (A => Initial_A, B => Initial_B, C => Initial_C, D => Initial_D);
+     (A => Initial_A, B => Initial_B, C => Initial_C, D => Initial_D,
+      Buffer => (others => ASCII.NUL), Last => 0, Length => 0);
 
 end GNAT.MD5;

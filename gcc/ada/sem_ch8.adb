@@ -41,6 +41,7 @@ with Nmake;    use Nmake;
 with Opt;      use Opt;
 with Output;   use Output;
 with Restrict; use Restrict;
+with Rident;   use Rident;
 with Rtsfind;  use Rtsfind;
 with Sem;      use Sem;
 with Sem_Cat;  use Sem_Cat;
@@ -648,7 +649,6 @@ package body Sem_Ch8 is
       Id  : constant Entity_Id := Defining_Identifier (N);
       Dec : Node_Id;
       Nam : constant Node_Id   := Name (N);
-      S   : constant Entity_Id := Subtype_Mark (N);
       T   : Entity_Id;
       T2  : Entity_Id;
 
@@ -678,10 +678,23 @@ package body Sem_Ch8 is
             Set_Etype (Nam, T);
          end if;
 
-      else
-         Find_Type (S);
-         T := Entity (S);
+      elsif Present (Subtype_Mark (N)) then
+         Find_Type (Subtype_Mark (N));
+         T := Entity (Subtype_Mark (N));
          Analyze_And_Resolve (Nam, T);
+
+      --  Ada 0Y (AI-230): Access renaming
+
+      elsif Present (Access_Definition (N)) then
+         Find_Type (Subtype_Mark (Access_Definition (N)));
+         T := Access_Definition
+                (Related_Nod => N,
+                 N           => Access_Definition (N));
+         Analyze_And_Resolve (Nam, T);
+
+      else
+         pragma Assert (False);
+         null;
       end if;
 
       --  An object renaming requires an exact match of the type;
@@ -792,7 +805,7 @@ package body Sem_Ch8 is
          Error_Msg_N
            ("expect package name in renaming", Name (N));
 
-      --  Ada0Y (AI-50217): Limited withed packages can not be renamed
+      --  Ada 0Y (AI-50217): Limited withed packages can not be renamed
 
       elsif Ekind (Old_P) = E_Package
         and then From_With_Type (Old_P)
@@ -3392,7 +3405,7 @@ package body Sem_Ch8 is
          Set_Chars (Selector, Chars (Id));
       end if;
 
-      --  Ada0Y (AI-50217): Check usage of entities in limited withed units
+      --  Ada 0Y (AI-50217): Check usage of entities in limited withed units
 
       if Ekind (P_Name) = E_Package
         and then From_With_Type (P_Name)
@@ -5299,7 +5312,7 @@ package body Sem_Ch8 is
 
       Set_In_Use (P);
 
-      --  Ada0Y (AI-50217): Check restriction.
+      --  Ada 0Y (AI-50217): Check restriction.
 
       if From_With_Type (P) then
          Error_Msg_N ("limited withed package cannot appear in use clause", N);

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2003 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2004 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -824,7 +824,7 @@ package body Sem_Type is
       then
          return True;
 
-      --  Ada0Y (AI-50217): Additional branches to make the shadow entity
+      --  Ada 0Y (AI-50217): Additional branches to make the shadow entity
       --  compatible with its real entity.
 
       elsif From_With_Type (T1) then
@@ -1468,6 +1468,23 @@ package body Sem_Type is
          return T;
 
       elsif T = Universal_Fixed then
+         return Etype (R);
+
+      --  Ada 0Y (AI-230): Support the following operators:
+
+      --    function "="  (L, R : universal_access) return Boolean;
+      --    function "/=" (L, R : universal_access) return Boolean;
+
+      elsif Extensions_Allowed
+        and then Ekind (Etype (L)) = E_Anonymous_Access_Type
+        and then Is_Access_Type (Etype (R))
+      then
+         return Etype (L);
+
+      elsif Extensions_Allowed
+        and then Ekind (Etype (R)) = E_Anonymous_Access_Type
+        and then Is_Access_Type (Etype (L))
+      then
          return Etype (R);
 
       else

@@ -39,6 +39,7 @@ with Nlists;   use Nlists;
 with Nmake;    use Nmake;
 with Opt;      use Opt;
 with Restrict; use Restrict;
+with Rident;   use Rident;
 with Rtsfind;  use Rtsfind;
 with Sinfo;    use Sinfo;
 with Sem;      use Sem;
@@ -767,7 +768,7 @@ package body Exp_Ch5 is
 
          --  Case of both are false with No_Implicit_Conditionals
 
-         elsif Restrictions (No_Implicit_Conditionals) then
+         elsif Restriction_Active (No_Implicit_Conditionals) then
             declare
                   T : constant Entity_Id :=
                         Make_Defining_Identifier (Loc, Chars => Name_T);
@@ -1710,7 +1711,7 @@ package body Exp_Ch5 is
                --  This is skipped if we have no finalization
 
                if Expand_Ctrl_Actions
-                 and then not Restrictions (No_Finalization)
+                 and then not Restriction_Active (No_Finalization)
                then
                   L := New_List (
                     Make_Block_Statement (Loc,

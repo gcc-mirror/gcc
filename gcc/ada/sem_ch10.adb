@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2003 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2004 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -443,8 +443,8 @@ package body Sem_Ch10 is
 
          declare
             Save_Style_Check : constant Boolean := Style_Check;
-            Save_C_Restrict  : constant Save_Compilation_Unit_Restrictions :=
-                                 Compilation_Unit_Restrictions_Save;
+            Save_C_Restrict  : constant Save_Cunit_Boolean_Restrictions :=
+                                 Cunit_Boolean_Restrictions_Save;
 
          begin
             if not GNAT_Mode then
@@ -454,7 +454,7 @@ package body Sem_Ch10 is
             Semantics (Parent_Spec (Unit_Node));
             Version_Update (N, Parent_Spec (Unit_Node));
             Style_Check := Save_Style_Check;
-            Compilation_Unit_Restrictions_Restore (Save_C_Restrict);
+            Cunit_Boolean_Restrictions_Restore (Save_C_Restrict);
          end;
       end if;
 
@@ -607,8 +607,8 @@ package body Sem_Ch10 is
             Un    : Unit_Number_Type;
 
             Save_Style_Check : constant Boolean := Style_Check;
-            Save_C_Restrict  : constant Save_Compilation_Unit_Restrictions :=
-                                 Compilation_Unit_Restrictions_Save;
+            Save_C_Restrict  : constant Save_Cunit_Boolean_Restrictions :=
+                                 Cunit_Boolean_Restrictions_Save;
 
          begin
             Item := First (Context_Items (N));
@@ -670,7 +670,7 @@ package body Sem_Ch10 is
             end loop;
 
             Style_Check := Save_Style_Check;
-            Compilation_Unit_Restrictions_Restore (Save_C_Restrict);
+            Cunit_Boolean_Restrictions_Restore (Save_C_Restrict);
          end;
       end if;
 
@@ -1590,8 +1590,8 @@ package body Sem_Ch10 is
       --  Set True if the unit currently being compiled is an internal unit
 
       Save_Style_Check : constant Boolean := Opt.Style_Check;
-      Save_C_Restrict  : constant Save_Compilation_Unit_Restrictions :=
-                           Compilation_Unit_Restrictions_Save;
+      Save_C_Restrict  : constant Save_Cunit_Boolean_Restrictions :=
+                           Cunit_Boolean_Restrictions_Save;
 
    begin
       if Limited_Present (N) then
@@ -1735,7 +1735,7 @@ package body Sem_Ch10 is
       --  Restore style checks and restrictions
 
       Style_Check := Save_Style_Check;
-      Compilation_Unit_Restrictions_Restore (Save_C_Restrict);
+      Cunit_Boolean_Restrictions_Restore (Save_C_Restrict);
 
       --  Record the reference, but do NOT set the unit as referenced, we
       --  want to consider the unit as unreferenced if this is the only

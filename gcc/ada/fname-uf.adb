@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2003, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2004, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -124,7 +124,8 @@ package body Fname.UF is
 
    function Get_File_Name
      (Uname   : Unit_Name_Type;
-      Subunit : Boolean) return File_Name_Type
+      Subunit : Boolean;
+      May_Fail : Boolean := False) return File_Name_Type
    is
       Unit_Char : Character;
       --  Set to 's' or 'b' for spec or body or to 'u' for a subunit
@@ -389,7 +390,12 @@ package body Fname.UF is
                   --  the file does not exist.
 
                   if No_File_Check then
-                     return Fnam;
+                     if May_Fail then
+                        return No_File;
+
+                     else
+                        return Fnam;
+                     end if;
 
                   --  Otherwise we check if the file exists
 

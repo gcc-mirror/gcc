@@ -36,6 +36,7 @@ with Nlists;   use Nlists;
 with Nmake;    use Nmake;
 with Opt;      use Opt;
 with Restrict; use Restrict;
+with Rident;   use Rident;
 with Rtsfind;  use Rtsfind;
 with Sem;      use Sem;
 with Sem_Ch3;  use Sem_Ch3;
@@ -60,8 +61,8 @@ package body Sem_Ch9 is
    -- Local Subprograms --
    -----------------------
 
-   procedure Check_Max_Entries (Def : Node_Id; R : Restriction_Parameter_Id);
-   --  Given either a protected definition or a task definition in Def, check
+   procedure Check_Max_Entries (D : Node_Id; R : All_Parameter_Restrictions);
+   --  Given either a protected definition or a task definition in D, check
    --  the corresponding restriction parameter identifier R, and if it is set,
    --  count the entries (checking the static requirement), and compare with
    --  the given maximum.
@@ -1071,7 +1072,7 @@ package body Sem_Ch9 is
       --  with interrupt handlers. Note that we need to analyze the protected
       --  definition to set Has_Entries and such.
 
-      if (Abort_Allowed or else Restrictions (No_Entry_Queue) = False
+      if (Abort_Allowed or else Restriction_Active (No_Entry_Queue) = False
            or else Number_Entries (T) > 1)
         and then
           (Has_Entries (T)
@@ -1123,7 +1124,7 @@ package body Sem_Ch9 is
       Outer_Ent  : Entity_Id;
 
    begin
-      Check_Restriction (No_Requeue, N);
+      Check_Restriction (No_Requeue_Statements, N);
       Check_Unreachable_Code (N);
       Tasking_Used := True;
 
@@ -1327,7 +1328,6 @@ package body Sem_Ch9 is
 
    begin
       Check_Restriction (No_Select_Statements, N);
-      Check_Restriction (Max_Select_Alternatives, N);
       Tasking_Used := True;
 
       Alt := First (Alts);
@@ -1410,7 +1410,7 @@ package body Sem_Ch9 is
          Next (Alt);
       end loop;
 
-      Check_Restriction (Max_Select_Alternatives, Alt_Count, N);
+      Check_Restriction (Max_Select_Alternatives, N, Alt_Count);
       Check_Potentially_Blocking_Operation (N);
 
       if Terminate_Present and Delay_Present then
@@ -1539,7 +1539,6 @@ package body Sem_Ch9 is
       --  expanded twice, with disastrous result.
 
       Analyze_Task_Type (N);
-
    end Analyze_Single_Task;
 
    -----------------------
@@ -1696,8 +1695,8 @@ package body Sem_Ch9 is
       Def_Id : constant Entity_Id := Defining_Identifier (N);
 
    begin
-      Tasking_Used := True;
       Check_Restriction (No_Tasking, N);
+      Tasking_Used := True;
       T := Find_Type_Name (N);
       Generate_Definition (T);
 
@@ -1813,7 +1812,7 @@ package body Sem_Ch9 is
    -- Check_Max_Entries --
    -----------------------
 
-   procedure Check_Max_Entries (Def : Node_Id; R : Restriction_Parameter_Id) is
+   procedure Check_Max_Entries (D : Node_Id; R : All_Parameter_Restrictions) is
       Ecount : Uint;
 
       procedure Count (L : List_Id);
@@ -1861,11 +1860,21 @@ package body Sem_Ch9 is
                         end if;
                      end;
 
-                  --  If entry family with non-static bounds, give error msg
+                  --  Entry family with non-static bounds
 
-                  elsif Restriction_Parameters (R) /= No_Uint then
-                     Error_Msg_N
-                       ("static subtype required by Restriction pragma", DSD);
+                  else
+                     --  If restriction is set, then this is an error
+
+                     if Restrictions.Set (R) then
+                        Error_Msg_N
+                          ("static subtype required by Restriction pragma",
+                           DSD);
+
+                     --  Otherwise we record an unknown count restriction
+
+                     else
+                        Check_Restriction (R, D);
+                     end if;
                   end if;
                end;
             end if;
@@ -1878,11 +1887,11 @@ package body Sem_Ch9 is
 
    begin
       Ecount := Uint_0;
-      Count (Visible_Declarations (Def));
-      Count (Private_Declarations (Def));
+      Count (Visible_Declarations (D));
+      Count (Private_Declarations (D));
 
       if Ecount > 0 then
-         Check_Restriction (R, Ecount, Def);
+         Check_Restriction (R, D, Ecount);
       end if;
    end Check_Max_Entries;
 

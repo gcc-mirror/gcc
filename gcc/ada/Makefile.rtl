@@ -395,8 +395,9 @@ GNATRTL_NONTASKING_OBJS= \
   s-poosiz$(objext) \
   s-powtab$(objext) \
   s-purexc$(objext) \
+  s-restri$(objext) \
   s-rident$(objext) \
-  s-rpc$(objext) \
+  s-rpc$(objext)    \
   s-scaval$(objext) \
   s-secsta$(objext) \
   s-sequio$(objext) \

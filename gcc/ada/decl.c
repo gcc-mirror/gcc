@@ -1315,6 +1315,10 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 
       layout_type (gnu_type);
 
+      /* If the type we are dealing with is to represent a packed array,
+	 we need to have the bits left justified on big-endian targets
+	 (see exp_packd.ads).  We build a record with a bitfield of the
+	 appropriate size to achieve this.  */
       if (Is_Packed_Array_Type (gnat_entity) && BYTES_BIG_ENDIAN)
 	{
 	  tree gnu_field_type = gnu_type;
@@ -1326,8 +1330,13 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 	  TYPE_NAME (gnu_type) = create_concat_name (gnat_entity, "LJM");
 	  TYPE_ALIGN (gnu_type) = TYPE_ALIGN (gnu_field_type);
 	  TYPE_PACKED (gnu_type) = 1;
+
+	  /* Don't notify the field as "addressable", since we won't be taking
+	     it's address and it would prevent create_field_decl from making a
+	     bitfield.  */
 	  gnu_field = create_field_decl (get_identifier ("OBJECT"),
-					 gnu_field_type, gnu_type, 1, 0, 0, 1),
+					 gnu_field_type, gnu_type, 1, 0, 0, 0);
+
 	  finish_record_type (gnu_type, gnu_field, 0, 0);
 	  TYPE_LEFT_JUSTIFIED_MODULAR_P (gnu_type) = 1;
 	  SET_TYPE_ADA_SIZE (gnu_type, bitsize_int (esize));

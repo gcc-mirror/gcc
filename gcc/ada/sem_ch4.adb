@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2003, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2004, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -38,6 +38,7 @@ with Nmake;    use Nmake;
 with Opt;      use Opt;
 with Output;   use Output;
 with Restrict; use Restrict;
+with Rident;   use Rident;
 with Sem;      use Sem;
 with Sem_Cat;  use Sem_Cat;
 with Sem_Ch3;  use Sem_Ch3;
@@ -336,9 +337,10 @@ package body Sem_Ch4 is
            and then Comes_From_Source (N)
            and then not In_Instance_Body
          then
-            --  Ada0Y (AI-287): Do not post an error if the expression corres-
-            --  ponds to a limited aggregate. Limited aggregates are checked in
-            --  sem_aggr in a per-component manner (cf. Get_Value subprogram).
+            --  Ada 0Y (AI-287): Do not post an error if the expression
+            --  corresponds to a limited aggregate. Limited aggregates
+            --  are checked in sem_aggr in a per-component manner
+            --  (compare with handling of Get_Value subprogram).
 
             if Extensions_Allowed
               and then Nkind (Expression (E)) = N_Aggregate
@@ -475,6 +477,7 @@ package body Sem_Ch4 is
       end if;
 
       if Has_Task (Designated_Type (Acc_Type)) then
+         Check_Restriction (No_Tasking, N);
          Check_Restriction (Max_Tasks, N);
          Check_Restriction (No_Task_Allocators, N);
       end if;
@@ -3449,7 +3452,7 @@ package body Sem_Ch4 is
          Actual := First_Actual (N);
 
          while Present (Actual) loop
-            --  Ada0Y (AI-50217): Post an error in case of premature usage of
+            --  Ada 0Y (AI-50217): Post an error in case of premature usage of
             --  an entity from the limited view.
 
             if not Analyzed (Etype (Actual))
@@ -3869,10 +3872,18 @@ package body Sem_Ch4 is
             return;
          end if;
 
+         --  Ada 0Y (AI-230): Keep restriction imposed by Ada 83 and 95: Do not
+         --  allow anonymous access types in equality operators.
+
+         if not Extensions_Allowed
+           and then Ekind (T1) = E_Anonymous_Access_Type
+         then
+            return;
+         end if;
+
          if T1 /= Standard_Void_Type
            and then not Is_Limited_Type (T1)
            and then not Is_Limited_Composite (T1)
-           and then Ekind (T1) /= E_Anonymous_Access_Type
            and then Has_Compatible_Type (R, T1)
          then
             if Found

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2003 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2004 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -81,9 +81,6 @@ package ALI is
 
    type Main_Program_Type is (None, Proc, Func);
    --  Indicator of whether unit can be used as main program
-
-   type Restrictions_String is array (All_Restrictions) of Character;
-   --  Type used to hold string from R line
 
    type ALIs_Record is record
 
@@ -187,9 +184,8 @@ package ALI is
       --  Set to True if file was compiled with zero cost exceptions.
       --  Not set if 'P' appears in Ignore_Lines.
 
-      Restrictions : Restrictions_String;
-      --  Copy of restrictions letters from R line.
-      --  Not set if 'R' appears in Ignore_Lines.
+      Restrictions : Restrictions_Info;
+      --  Restrictions information reconstructed from R lines
 
       First_Interrupt_State : Interrupt_State_Id;
       Last_Interrupt_State  : Interrupt_State_Id'Base;
@@ -422,11 +418,10 @@ package ALI is
    --  Set to blank by Initialize_ALI. Set to the appropriate queuing policy
    --  character if an ali file contains a P line setting the queuing policy.
 
-   Restrictions : Restrictions_String := (others => 'n');
-   --  This array records the cumulative contributions of R lines in all
-   --  ali files. An entry is changed will be set to v if any ali file
-   --  indicates that the restriction is violated, and otherwise will be
-   --  set to r if the restriction is specified by some unit.
+   Cumulative_Restrictions : Restrictions_Info;
+   --  This variable records the cumulative contributions of R lines in all
+   --  ali files, showing whether a restriction pragma exists anywhere, and
+   --  accumulating the aggregate knowledge of violations.
 
    Static_Elaboration_Model_Used : Boolean := False;
    --  Set to False by Initialize_ALI. Set to True if any ALI file for a

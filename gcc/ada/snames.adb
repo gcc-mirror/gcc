@@ -334,6 +334,7 @@ package body Snames is
      "on#" &
      "parameter_types#" &
      "reference#" &
+     "no_requeue#" &
      "restricted#" &
      "result_mechanism#" &
      "result_type#" &

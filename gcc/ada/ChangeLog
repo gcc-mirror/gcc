@@ -1,3 +1,176 @@
+2004-02-02  Vincent Celier  <celier@gnat.com>
+
+	* gprcmd.adb (Check_Args): If condition is false, print the invoked
+	comment before the usage.
+	Gprcmd: Fail when command is not recognized.
+	(Usage): Document command "prefix"
+
+	* g-md5.adb (Digest): Process last block.
+	(Update): Do not process last block. Store remaining characters and
+	length in Context.
+
+	* g-md5.ads (Update): Document that several call to update are
+	equivalent to one call with the concatenated string.
+	(Context): Add fields to allow new Update behaviour.
+
+	* fname-uf.ads/adb (Get_File_Name): New Boolean parameter May_Fail,
+	defaulted to False.
+	When May_Fail is True and no existing file can be found, return No_File.
+
+	* 6vcstrea.adb: Inlined functions are now wrappers to implementation
+	functions.
+
+	* lib-writ.adb (Write_With_Lines): When body file does not exist, use
+	spec file name instead on the W line.
+
+2004-02-02  Robert Dewar  <dewar@gnat.com>
+
+	* ali.adb: Read and acquire info from new format restrictions lines
+
+	* bcheck.adb: Add circuits for checking restrictions with parameters
+
+	* bindgen.adb: Output dummy restrictions data
+	To be changed later
+
+	* ali.ads, checks.adb, exp_aggr.adb, exp_attr.adb, exp_ch11.adb,
+	exp_ch3.adb, exp_ch5.adb, exp_ch6.adb, exp_ch7.adb, exp_util.adb,
+	freeze.adb, gnat1drv.adb, sem_attr.adb, sem_ch10.adb, sem_ch11.adb,
+	sem_ch12.adb, targparm.adb, targparm.ads, tbuild.adb, sem_ch2.adb,
+	sem_elab.adb, sem_res.adb: Minor changes for new restrictions handling.
+
+	* exp_ch9.adb (Build_Master_Entity): Cleanup the code (also suppresses
+	the warning message on access to possibly uninitialized variable S)
+	Minor changes for new restrictions handling.
+
+	* gnatbind.adb: Minor reformatting
+	Minor changes for new restrictions handling
+	Move circuit for -r processing here from bcheck (cleaner)
+
+	* gnatcmd.adb, gnatlink.adb: Minor reformatting
+
+	* lib-writ.adb: Output new format restrictions lines
+
+	* lib-writ.ads: Document new R format lines for new restrictions
+	handling.
+
+	* s-restri.ads/adb: New files
+
+	* Makefile.rtl: Add entry for s-restri.ads/adb
+
+	* par-ch3.adb: Fix bad error messages starting with upper case letter
+	Minor reformatting
+
+	* restrict.adb: Major rewrite throughout for new restrictions handling
+	Major point is to handle restrictions with parameters
+
+	* restrict.ads: Major changes in interface to handle restrictions with
+	parameters. Also generally simplifies setting of restrictions.
+
+	* snames.ads/adb: New entry for proper handling of No_Requeue
+
+	* sem_ch3.adb (Count_Tasks): New circuitry for implementing Max_Tasks
+	restriction counting.
+	Other minor changes for new restrictions handling
+
+	* sem_prag.adb: No_Requeue is a synonym for No_Requeue_Statements.
+	Restriction_Warnings now allows full parameter notation
+	Major rewrite of Restrictions for new restrictions handling
+
+2004-02-02  Javier Miranda  <miranda@gnat.com>
+
+	* par-ch3.adb (P_Identifier_Declarations): Give support to the Ada 0Y
+	syntax rule for object renaming declarations.
+	(P_Array_Type_Definition): Give support for the Ada 0Y syntax rule for
+	component definitions.
+
+	* sem_ch3.adb (Analyze_Component_Declaration): Give support to access
+	components.
+	(Array_Type_Declaration): Give support to access components. In addition
+	it was also modified to reflect the name of the object in anonymous
+	array types. The old code did not take into account that it is possible
+	to have an unconstrained anonymous array with an initial value.
+	(Check_Or_Process_Discriminants): Allow access discriminant in
+	non-limited types.
+	(Process_Discriminants): Allow access discriminant in non-limited types
+	Initialize the new Access_Definition field in N_Object_Renaming_Decl
+	node.  Change Ada0Y to Ada 0Y in comments
+
+	* sem_ch4.adb (Find_Equality_Types): Allow anonymous access types in
+	equality operators.
+	Change Ada0Y to Ada 0Y in comments
+
+	* sem_ch8.adb (Analyze_Object_Renaming): Give support to access
+	renamings Change Ada0Y to Ada 0Y in comments
+
+	* sem_type.adb (Find_Unique_Type): Give support to the equality
+	operators for universal access types
+	Change Ada0Y to Ada 0Y in comments
+
+	* sinfo.adb (Access_Definition, Set_Access_Definition): New subprograms
+
+	* sinfo.ads (N_Component_Definition): Addition of Access_Definition
+	field.
+	(N_Object_Renaming_Declaration): Addition of Access_Definition field
+	Change Ada0Y to Ada 0Y in comments
+
+	* sprint.adb (Sprint_Node_Actual): Give support to the new syntax for
+	component definition and object renaming nodes
+	Change Ada0Y to Ada 0Y in comments
+
+2004-02-02  Jose Ruiz  <ruiz@act-europe.fr>
+
+	* restrict.adb: Use the new restriction identifier
+	No_Requeue_Statements instead of the old No_Requeue for defining the
+	restricted profile.
+
+	* sem_ch9.adb (Analyze_Requeue): Check the new restriction
+	No_Requeue_Statements.
+
+	* s-rident.ads: Adding restriction No_Requeue_Statements (AI-00249)
+	that supersedes the GNAT specific restriction No_Requeue. The later is
+	kept for backward compatibility.
+
+2004-02-02  Ed Schonberg  <schonberg@gnat.com>
+
+	* lib.ads, i-cobol.ads, * s-stoele.ads, s-thread.ads, style.ads,
+	5staprop.adb, atree.adb, atree.ads, g-crc32.ads: Remove redundant
+	pragma and fix incorrect ones.
+
+	* sem_prag.adb For pragma Inline and pragma Pure_Function, emit a
+	warning if the pragma is redundant.
+
+2004-02-02  Thomas Quinot  <quinot@act-europe.fr>
+
+	* 5staprop.adb: Add missing 'constant' keywords.
+
+	* Makefile.in: use consistent value for SYMLIB on
+	platforms where libaddr2line is supported.
+
+2004-02-02  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	* utils.c (end_subprog_body): Do not call rest_of_compilation if just
+	annotating types.
+
+2004-02-02  Olivier Hainque  <hainque@act-europe.fr>
+
+	* init.c (__gnat_install_handler): Setup an alternate stack for signal
+	handlers in the environment thread. This allows proper propagation of
+	an exception on stack overflows in this thread even when the builtin
+	ABI stack-checking scheme is used without support for a stack reserve
+	region.
+
+	* utils.c (create_field_decl): Augment the head comment about bitfield
+	creation, and don't account for DECL_BIT_FIELD in DECL_NONADDRESSABLE_P
+	here, because the former is not accurate enough at this point.
+	Let finish_record_type decide instead.
+	Don't make a bitfield if the field is to be addressable.
+	Always set a size for the field if the record is packed, to ensure the
+	checks for bitfield creation are triggered.
+	(finish_record_type): During last pass over the fields, clear
+	DECL_BIT_FIELD when possible in the !STRICT_ALIGNMENT case, as this is
+	not covered by the calls to layout_decl.  Adjust DECL_NONADDRESSABLE_P
+	from DECL_BIT_FIELD.
+
 2004-01-30  Kelley Cook  <kcook@gcc.gnu.org>
 
 	* Make-lang.in (doc/gnat_ug_unx.dvi): Use $(abs_docdir). 

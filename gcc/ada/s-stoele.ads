@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 2002-2003 Free Software Foundation, Inc.          --
+--          Copyright (C) 2002-2004 Free Software Foundation, Inc.          --
 --                                                                          --
 -- This specification is derived from the Ada Reference Manual for use with --
 -- GNAT. The copyright notice above, and the license provisions that follow --
@@ -82,7 +82,7 @@ pragma Pure (Storage_Elements);
    function "-" (Left : Address; Right : Storage_Offset) return Address;
    pragma Convention (Intrinsic, "-");
    pragma Inline_Always ("-");
-   pragma Pure_Function ("+");
+   pragma Pure_Function ("-");
 
    function "-" (Left, Right : Address) return Storage_Offset;
    pragma Convention (Intrinsic, "-");
