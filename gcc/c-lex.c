@@ -1643,7 +1643,7 @@ lex_charconst (str, len, wide)
 	}
       else
 	{
-	  p += char_len;
+	  str += char_len;
 	  c = wc;
 	}
 #else
