@@ -710,6 +710,7 @@ java/util/EventListener.java \
 java/util/EventObject.java \
 java/util/GregorianCalendar.java \
 java/util/HashMap.java \
+java/util/HashSet.java \
 java/util/Hashtable.java \
 java/util/Iterator.java	\
 java/util/LinkedList.java \
@@ -737,6 +738,8 @@ java/util/TimeZone.java	\
 java/util/Timer.java \
 java/util/TimerTask.java \
 java/util/TooManyListenersException.java \
+java/util/TreeMap.java \
+java/util/TreeSet.java \
 java/util/Vector.java
 
 
@@ -1680,11 +1683,11 @@ DEP_FILES =  .deps/$(srcdir)/$(CONVERT_DIR)/gen-from-JIS.P \
 .deps/java/util/EmptyStackException.P .deps/java/util/Enumeration.P \
 .deps/java/util/EventListener.P .deps/java/util/EventObject.P \
 .deps/java/util/GregorianCalendar.P .deps/java/util/HashMap.P \
-.deps/java/util/Hashtable.P .deps/java/util/Iterator.P \
-.deps/java/util/LinkedList.P .deps/java/util/List.P \
-.deps/java/util/ListIterator.P .deps/java/util/ListResourceBundle.P \
-.deps/java/util/Locale.P .deps/java/util/Map.P \
-.deps/java/util/MissingResourceException.P \
+.deps/java/util/HashSet.P .deps/java/util/Hashtable.P \
+.deps/java/util/Iterator.P .deps/java/util/LinkedList.P \
+.deps/java/util/List.P .deps/java/util/ListIterator.P \
+.deps/java/util/ListResourceBundle.P .deps/java/util/Locale.P \
+.deps/java/util/Map.P .deps/java/util/MissingResourceException.P \
 .deps/java/util/NoSuchElementException.P .deps/java/util/Observable.P \
 .deps/java/util/Observer.P .deps/java/util/Properties.P \
 .deps/java/util/PropertyPermission.P \
@@ -1694,7 +1697,8 @@ DEP_FILES =  .deps/$(srcdir)/$(CONVERT_DIR)/gen-from-JIS.P \
 .deps/java/util/SortedSet.P .deps/java/util/Stack.P \
 .deps/java/util/StringTokenizer.P .deps/java/util/TimeZone.P \
 .deps/java/util/Timer.P .deps/java/util/TimerTask.P \
-.deps/java/util/TooManyListenersException.P .deps/java/util/Vector.P \
+.deps/java/util/TooManyListenersException.P .deps/java/util/TreeMap.P \
+.deps/java/util/TreeSet.P .deps/java/util/Vector.P \
 .deps/java/util/jar/Attributes.P .deps/java/util/jar/JarEntry.P \
 .deps/java/util/jar/JarException.P .deps/java/util/jar/JarFile.P \
 .deps/java/util/jar/JarInputStream.P \

@@ -2,7 +2,7 @@
 // Generated on Wed Feb  2 12:31:16 PST 2000
 // Simple instance initializer test case.
 
-class instinit extends foo {
+class instinit {
 
     String buffer = "No Oink! Oink!";
 
