@@ -80,8 +80,11 @@ EH_COMMON_INCLUDE = @EH_COMMON_INCLUDE@
 WARNINGS = -W -Wall
 ## We need _GNU_SOURCE defined for some Linux builds.  It doesn't hurt
 ## to always define it.
-AM_CXXFLAGS = -fno-rtti -fvtable-thunks @LIBGCJ_CXXFLAGS@ @EXCEPTIONSPEC@ \
-	$(WARNINGS) -D_GNU_SOURCE
+## Note that we need -fasynchronous-exceptions because gcc is
+## currently broken with respect to exception handling in leaf
+## functions.
+AM_CXXFLAGS = -fno-rtti -fvtable-thunks -fasynchronous-exceptions \
+	@LIBGCJ_CXXFLAGS@ @EXCEPTIONSPEC@ $(WARNINGS) -D_GNU_SOURCE
 if USING_GCC
 AM_CFLAGS = @LIBGCJ_CFLAGS@ $(WARNINGS)
 else
