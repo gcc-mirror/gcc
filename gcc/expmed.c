@@ -185,21 +185,12 @@ negate_rtx (mode, x)
      enum machine_mode mode;
      rtx x;
 {
-  if (GET_CODE (x) == CONST_INT)
-    {
-      HOST_WIDE_INT val = - INTVAL (x);
-      if (GET_MODE_BITSIZE (mode) < HOST_BITS_PER_WIDE_INT)
-	{
-	  /* Sign extend the value from the bits that are significant.  */
-	  if (val & ((HOST_WIDE_INT) 1 << (GET_MODE_BITSIZE (mode) - 1)))
-	    val |= (HOST_WIDE_INT) (-1) << GET_MODE_BITSIZE (mode);
-	  else
-	    val &= ((HOST_WIDE_INT) 1 << GET_MODE_BITSIZE (mode)) - 1;
-	}
-      return GEN_INT (val);
-    }
-  else
-    return expand_unop (GET_MODE (x), neg_optab, x, NULL_RTX, 0);
+  rtx result = simplify_unary_operation (NEG, mode, x, mode);
+
+  if (result = 0)
+    result = expand_unop (mode, neg_optab, x, NULL_RTX, 0);
+
+  return result;
 }
 
 /* Generate code to store value from rtx VALUE
