@@ -499,6 +499,7 @@ dtors_section ()							\
 
 #define TYPE_ASM_OP	".type"
 #define SIZE_ASM_OP	".size"
+#define WEAK_ASM_OP	".weak"
 
 /* The following macro defines the format used to output the second
    operand of the .type assembler directive.  Different svr4 assemblers
@@ -570,7 +571,7 @@ dtors_section ()							\
         fprintf (FILE, ",");						\
 	assemble_name (FILE, label);					\
         fprintf (FILE, "-");						\
-	ASM_OUTPUT_LABELREF (FILE, (FNAME));				\
+	assemble_name (FILE, (FNAME));					\
 	putc ('\n', FILE);						\
       }									\
   } while (0)
