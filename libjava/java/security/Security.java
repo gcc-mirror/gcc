@@ -76,10 +76,11 @@ public final class Security extends Object
 	String name;
 	StringBuffer pname = new StringBuffer("security.provider.");
 
-	while ((name = secprops.getProperty(pname.append(i).toString())) !=
+	while ((name = secprops.getProperty("security.provider." + i++)) !=
 	       null)
 	  {
 	    Exception exception = null;
+
 	    try
 	      {
 		providers.addElement(Class.forName(name).newInstance());
