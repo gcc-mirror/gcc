@@ -1,3 +1,13 @@
+2000-04-04  Ulrich Drepper  <drepper@cygnus.com>
+
+	* acconfig.h: Add HAVE_GAS_HIDDEN.
+	* config.in: Regenerated.
+	* configure.in: Add test for .hidden pseudo-op in gas.
+	* configure: Regenerated.
+	* crtstuff.c: Include auto-host.h.
+	Emit additional .hidden pseudo-op for __dso_handle if the
+	assembler knows about it.
+
 2000-04-04  Philippe De Muyter  <phdm@macqel.be>
 
 	* cpphash.c (_cpp_free_definition): Test argnames, not nargs >= 0,
