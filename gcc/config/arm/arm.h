@@ -729,6 +729,12 @@ extern const char * structure_size_string;
 #ifndef SIZE_TYPE
 #define SIZE_TYPE (TARGET_AAPCS_BASED ? "unsigned int" : "long unsigned int")
 #endif
+
+/* AAPCS requires that structure alignment is affected by bitfields.  */
+#ifndef PCC_BITFIELD_TYPE_MATTERS
+#define PCC_BITFIELD_TYPE_MATTERS TARGET_AAPCS_BASED
+#endif
+
 
 /* Standard register usage.  */
 

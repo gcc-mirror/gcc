@@ -1,5 +1,9 @@
 2004-05-13  Paul Brook  <paul@codesourcery.com>
 
+	* config/arm/arm.h (PCC_BITFIELD_TYPE_MATTERS): Define.
+
+2004-05-13  Paul Brook  <paul@codesourcery.com>
+
 	* config/arm/arm.c (arm_default_short_enums): New function.
 	(TARGET_DEFAULT_SHORT_ENUMS): Define.
 
