@@ -1104,25 +1104,25 @@ extract_bit_field (str_rtx, bitsize, bitnum, unsignedp,
 	    ? mode
 	    : mode_for_size (bitsize, GET_MODE_CLASS (tmode), 0));
 
-  if (((GET_CODE (op0) != MEM
-	&& TRULY_NOOP_TRUNCATION (GET_MODE_BITSIZE (mode),
-				  GET_MODE_BITSIZE (GET_MODE (op0)))
-	&& GET_MODE_SIZE (mode1) != 0
-	&& byte_offset % GET_MODE_SIZE (mode1) == 0)
-       || (GET_CODE (op0) == MEM
-	   && (! SLOW_UNALIGNED_ACCESS (mode, MEM_ALIGN (op0))
-	       || (offset * BITS_PER_UNIT % bitsize == 0
-		   && MEM_ALIGN (op0) % bitsize == 0))))
-      && ((bitsize >= BITS_PER_WORD && bitsize == GET_MODE_BITSIZE (mode)
-	   && bitpos % BITS_PER_WORD == 0)
-	  || (mode_for_size (bitsize, GET_MODE_CLASS (tmode), 0) != BLKmode
-	      /* ??? The big endian test here is wrong.  This is correct
-		 if the value is in a register, and if mode_for_size is not
-		 the same mode as op0.  This causes us to get unnecessarily
-		 inefficient code from the Thumb port when -mbig-endian.  */
-	      && (BYTES_BIG_ENDIAN
-		  ? bitpos + bitsize == BITS_PER_WORD
-		  : bitpos == 0))))
+  if (((bitsize >= BITS_PER_WORD && bitsize == GET_MODE_BITSIZE (mode)
+	&& bitpos % BITS_PER_WORD == 0)
+       || (mode_for_size (bitsize, GET_MODE_CLASS (tmode), 0) != BLKmode
+	   /* ??? The big endian test here is wrong.  This is correct
+	      if the value is in a register, and if mode_for_size is not
+	      the same mode as op0.  This causes us to get unnecessarily
+	      inefficient code from the Thumb port when -mbig-endian.  */
+	   && (BYTES_BIG_ENDIAN
+	       ? bitpos + bitsize == BITS_PER_WORD
+	       : bitpos == 0)))
+      && ((GET_CODE (op0) != MEM
+	   && TRULY_NOOP_TRUNCATION (GET_MODE_BITSIZE (mode),
+				     GET_MODE_BITSIZE (GET_MODE (op0)))
+	   && GET_MODE_SIZE (mode1) != 0
+	   && byte_offset % GET_MODE_SIZE (mode1) == 0)
+	  || (GET_CODE (op0) == MEM
+	      && (! SLOW_UNALIGNED_ACCESS (mode, MEM_ALIGN (op0))
+		  || (offset * BITS_PER_UNIT % bitsize == 0
+		      && MEM_ALIGN (op0) % bitsize == 0)))))
     {
       if (mode1 != GET_MODE (op0))
 	{
