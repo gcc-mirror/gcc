@@ -3756,7 +3756,7 @@ build_x_unary_op (enum tree_code code, tree xarg)
     }
 
   if (processing_template_decl && exp != error_mark_node)
-    return build_min (code, TREE_TYPE (exp), orig_expr);
+    return build_min (code, TREE_TYPE (exp), orig_expr, NULL_TREE);
   return exp;
 }
 

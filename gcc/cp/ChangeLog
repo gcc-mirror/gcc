@@ -1,5 +1,9 @@
 2003-07-09  Mark Mitchell  <mark@codesourcery.com>
 
+	* typeck.c (build_x_unary_op): Take note of the fact that
+	PREINCREMENT_EXPR and POSTINCREMENT_EXPR are binary operations on
+	trees.
+
 	* parser.c (cp_parser_primary_expression): Preserve the form of
 	qualified expressions in templates, even if they are not
 	dependent.
