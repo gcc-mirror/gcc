@@ -3120,8 +3120,12 @@ gimplify_asm_expr (tree *expr_p, tree *pre_p, tree *post_p)
   ret = GS_ALL_DONE;
   for (i = 0, link = ASM_OUTPUTS (expr); link; ++i, link = TREE_CHAIN (link))
     {
+      size_t constraint_len;
       oconstraints[i] = constraint
 	= TREE_STRING_POINTER (TREE_VALUE (TREE_PURPOSE (link)));
+      constraint_len = strlen (constraint);
+      if (constraint_len == 0)
+        continue;
 
       parse_output_constraint (&constraint, i, 0, 0,
 			       &allows_mem, &allows_reg, &is_inout);
@@ -3145,7 +3149,6 @@ gimplify_asm_expr (tree *expr_p, tree *pre_p, tree *post_p)
  	     operands.  */
 	  tree input;
 	  char buf[10];
-	  size_t constraint_len = strlen (constraint);
 
 	  /* Turn the in/out constraint into an output constraint.  */
 	  char *p = xstrdup (constraint);
