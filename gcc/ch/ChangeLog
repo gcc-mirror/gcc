@@ -1,3 +1,201 @@
+1999-08-29  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* Makefile.in (ch-version.c): Constify a char*.
+
+	* actions.c (id_cmp, warn_unhandled, adjust_return_value,
+	update_else_range_for_int_const, update_else_range_for_range,
+	update_else_range_for_range_expr, update_else_range_for_type,
+	compute_else_range, check_case_value,
+	chill_handle_case_label_range,
+	chill_handle_multi_case_label_range,
+	chill_handle_multi_case_else_label, chill_handle_multi_case_label,
+	chill_handle_multi_case_label_list print_missing_cases): Add
+	static prototypes.
+	(build_exception_variant): Cast the function argument of qsort.
+	(build_rts_call, warn_unhandled, chill_convert_for_assignment,
+	adjust_return_value, chill_expand_result,
+	build_multi_case_selector_expression, print_missing_cases):
+	Constify a char*.
+	(print_missing_cases): Introduce an intermediary non-const ptr.
+	Add brackets and indent.
+
+	* ch-tree.h (maybe_building_objc_message_expr,
+	maybe_objc_comptypes, comptypes_record_hook): Remove declarations.
+	(push_handler, pop_handler): Add prototypes.
+	(builtin_function, valid_array_index_p,
+	build_chill_exception_decl, build_rts_call,
+	chill_convert_for_assignment, display_int_cst,
+	build_chill_addr_expr, check_have_mode, get_identifier3,
+	build_chill_string, register_seize_path, get_unique_identifier,
+	add_taskstuff_to_list, gnuchill_version): Constify a char*.
+	(finish_chill_function): Add void prototype argument.
+
+	* convert.c (convert_to_reference, convert_to_boolean,
+	convert_to_char, base_type_size_in_bytes, remove_tree_element,
+	check_ps_range, digest_powerset_tuple, digest_structure_tuple,
+	digest_array_tuple, convert1): Add static prototypes.
+	(base_type_size_in_bytes): Hide unused function.
+	(display_int_cst, digest_array_tuple): Constify a char*.
+
+	* decl.c (set_nesting_level, make_chill_variants, fix_identifier,
+	proclaim_decl, maybe_acons, push_scope_decls, pop_scope_decls,
+	build_implied_names, bind_sub_modules, layout_array_type,
+	do_based_decl, handle_one_level, label_value_cmp,
+	find_implied_types): Add static prototypes.
+	(boolean_code_name, chill_tree_code_type, chill_tree_code_name):
+	Constify a char*.
+	(layout_chill_variants): Cast the function argument of qsort.
+	(start_chill_function, fix_identifier, init_decl_processing):
+	Constify a char*.
+	(init_decl_processing): Prefer memcpy over bcopy to avoid casts.
+	Use xcalloc instead of xmalloc/bzero.
+	(builtin_function, build_chill_exception_decl,
+	finish_outer_function): Constify a char*.
+
+	* except.c (start_handler_array, finish_handler_array): Add static
+	prototypes.
+
+	* expr.c (chill_expand_expr, chill_expand_case_expr,
+	check_arglist_length, internal_build_compound_expr,
+	is_really_instance, invalid_operand, invalid_right_operand,
+	build_chill_abstime, build_allocate_memory_call,
+	build_allocate_global_memory_call, build_return_memory,
+	build_chill_duration, build_chill_floatcall,
+	build_allocate_getstack, build_chill_allocate,
+	build_chill_getstack, build_chill_terminate, build_chill_inttime,
+	build_chill_lower_or_upper, build_max_min,
+	build_chill_pred_or_succ, expand_packed_set, fold_set_expr,
+	build_compare_set_expr, scalar_to_string, build_concat_expr,
+	build_compare_string_expr, compare_records, string_char_rep,
+	build_boring_bitstring): Add static prototypes.
+	(check_have_mode, chill_expand_expr, build_chill_floatcall,
+	build_allocate_getstack, build_max_min, build_chill_function_call,
+	expand_packed_set, build_compare_set_expr, build_chill_addr_expr,
+	string_char_rep): Constify a char*.
+
+	* gperf (hash, in_word_set): Add prototypes.
+
+	* grant.c (newstring, strfree, append, prepend,
+	grant_use_seizefile, decode_layout, grant_array_type,
+	grant_array_type_selective, get_tag_value,
+	get_tag_value_selective, print_enumeral, print_enumeral_selective,
+	print_integer_type, find_enum_parent, print_integer_selective,
+	print_struct, print_struct_selective, print_proc_exceptions,
+	print_proc_tail, print_proc_tail_selective, find_in_decls,
+	in_ridpointers, grant_seized_identifier, globalize_decl,
+	grant_one_decl_selective, compare_memory_file, search_in_list,
+	really_grant_this): Add static prototypes.
+	(newstring, append, prepend, grant_use_seizefile,
+	print_integer_type, decode_constant, grant_one_decl_selective,
+	header_template): Constify a char *.
+
+	* inout.c (add_enum_to_list, build_chill_io_list_type,
+	build_io_types, declare_predefined_file, build_access_part,
+	textlocation_mode, check_assoc, assoc_call, check_transfer,
+	connect_process_optionals, connect_text, connect_access,
+	check_access, check_text, get_final_type_and_range,
+	process_io_list, check_format_string, get_max_size,
+	check_exprlist): Add static prototypes.
+	(declare_predefined_file, check_assoc, assoc_call, check_transfer,
+	check_access, check_text, process_io_list): Constify a char*.
+
+	* lang.c (deep_const_expr, chill_print_error_function): Add static
+	prototypes.
+
+	* lex.c (close_input_file, maybe_number, string_or_char): Constify
+	a char*.
+	(ch_lex_init, skip_directive, same_file, getlc, yywrap,
+	yy_refill): Add static prototypes.
+	(build_chill_string, same_file, register_seize_path): Constify a
+	char*.
+
+	* lex.h (finish_chill_seizes): Remove unused prototypes.
+
+	* loop.c (build_temporary_variable, maybe_make_for_temp,
+	get_unique_identifier): Constify a char*.
+
+	* parse.c (ch_parse_init, check_end_label, end_function,
+	build_prefix_clause, PEEK_TOKEN, peek_token_, pushback_token,
+	forward_token_, require, check_token, expect, define__PROCNAME__):
+	Add static prototypes.
+	(build_prefix_clause, expect): Constify a char*.
+	(parse_expression, parse_primval, parse_untyped_expr,
+	parse_opt_untyped_expr, parse_opt_actions): Add void prototype
+	argument.
+	(parse_opt_name_string, parse_simple_name_string,
+	parse_name_string, parse_defining_occurrence, parse_name,
+	parse_optlabel, parse_opt_end_label_semi_colon, parse_modulion,
+	parse_spec_module, parse_semi_colon,
+	parse_defining_occurrence_list, parse_mode_definition,
+	parse_mode_definition_statement, parse_synonym_definition,
+	parse_synonym_definition_statement, parse_on_exception_list,
+	parse_on_alternatives, parse_loc_declaration,
+	parse_declaration_statement, parse_optforbid, parse_postfix,
+	parse_postfix_list, parse_rename_clauses, parse_opt_prefix_clause,
+	parse_grant_statement, parse_seize_statement,
+	parse_param_name_list, parse_param_attr, parse_formpar,
+	parse_formparlist, parse_opt_result_spec, parse_opt_except,
+	parse_opt_recursive, parse_procedureattr, parse_proc_body,
+	parse_procedure_definition, parse_processpar,
+	parse_processparlist, parse_process_definition,
+	parse_signal_definition, parse_signal_definition_statement,
+	parse_then_clause, parse_opt_else_clause, parse_expr_list,
+	parse_range_list_clause, pushback_paren_expr, parse_case_label,
+	parse_case_label_list, parse_case_label_specification,
+	parse_single_dimension_case_action,
+	parse_multi_dimension_case_action, parse_case_action,
+	parse_asm_operands, parse_asm_clobbers, ch_expand_asm_operands,
+	parse_asm_action, parse_begin_end_block, parse_if_action,
+	parse_iteration, parse_delay_case_event_list,
+	parse_delay_case_action, parse_do_action, parse_receive_spec,
+	parse_receive_case_action, parse_send_action, parse_start_action,
+	parse_call, parse_tuple_fieldname_list, parse_tuple_element,
+	parse_opt_element_list, parse_tuple, parse_operand6,
+	parse_operand5, parse_operand4, parse_operand3, parse_operand2,
+	parse_operand1, parse_operand0, parse_case_expression,
+	parse_then_alternative, parse_else_alternative,
+	parse_if_expression, parse_index_mode, parse_set_mode, parse_pos,
+	parse_step, parse_opt_layout, parse_field_name_list,
+	parse_fixed_field, parse_variant_field_list,
+	parse_variant_alternative, parse_field, parse_structure_mode,
+	parse_opt_queue_size, parse_procedure_mode, parse_program,
+	parse_pass_1_2): Add static prototypes.
+	(parse_process_definition): Remove extra argument in function call.
+	(parse_range_list_clause): Likewise.
+
+	* satisfy.c (satisfy, cycle_error_print, safe_satisfy_decl,
+	satisfy_list, satisfy_list_values): Add static prototype.
+	(safe_satisfy_decl): Cast DECL_TASKING_CODE_DECL() to (tree).
+
+	* tasking.c (make_process_struct): Remove unused prototype.
+	(validate_process_parameters, get_struct_variable_name,
+	decl_tasking_code_variable, get_struct_debug_type_name,
+	get_process_wrapper_name, build_tasking_enum,
+	build_tasking_message_type, build_receive_signal_case_label,
+	build_receive_buffer_case_label, build_receive_buffer_case_end,
+	build_receive_signal_case_end): Add static prototypes.
+	(struct_name, struct_debug_name, data_name, wrapper_name,
+	get_struct_type_name, get_struct_debug_type_name,
+	get_tasking_code_name, get_struct_variable_name,
+	get_process_wrapper_name): Constify a char*.
+	(validate_process_parameters, get_struct_variable_name,
+	decl_tasking_code_variable): Hide unused functions.
+	(build_start_process, add_taskstuff_to_list, build_queue_length):
+	Constify a char*.
+
+	* tree.c (make_powerset_type): Add static prototype.
+	(get_identifier3, build_alias_decl, decl_check_rename): Constify a
+	char*.
+
+	* typeck.c (extract_constant_from_buffer,
+	expand_constant_to_buffer, build_empty_string,
+	make_chill_pointer_type, make_chill_range_type,
+	apply_chill_array_layout, field_decl_cmp, make_chill_struct_type,
+	apply_chill_field_layout): Add static prototype.
+	(valid_array_index_p, extract_constant_from_buffer,
+	chill_expand_tuple): Constify a char*.
+	(layout_chill_struct_type): Cast the function argument of qsort.
+
 1999-08-09  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
         * actions.c (lang_identify): Constify a char*.

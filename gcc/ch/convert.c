@@ -36,6 +36,19 @@ Boston, MA 02111-1307, USA.  */
 extern tree bit_one_node, bit_zero_node;
 extern tree string_one_type_node;
 extern tree bitstring_one_type_node;
+
+static tree convert_to_reference	PROTO ((tree, tree));
+static tree convert_to_boolean		PROTO ((tree, tree));
+static tree convert_to_char		PROTO ((tree, tree));
+#if 0
+static tree base_type_size_in_bytes	PROTO ((tree));
+#endif
+static tree remove_tree_element		PROTO ((tree, tree *));
+static tree check_ps_range		PROTO ((tree, tree, tree));
+static tree digest_powerset_tuple	PROTO ((tree, tree));
+static tree digest_structure_tuple	PROTO ((tree, tree));
+static tree digest_array_tuple		PROTO ((tree, tree, int));
+static tree convert1			PROTO ((tree, tree));
 
 static tree
 convert_to_reference (reftype, expr)
@@ -143,7 +156,8 @@ convert_to_char (type, expr)
   }
 }
 
-tree
+#if 0
+static tree
 base_type_size_in_bytes (type)
      tree type;
 {
@@ -153,6 +167,7 @@ base_type_size_in_bytes (type)
     return error_mark_node;
   return size_in_bytes (TREE_TYPE (type));
 }
+#endif
 
 /*
  * build a singleton array type, of TYPE objects.
@@ -564,7 +579,7 @@ digest_structure_tuple (type, inits)
 /* Return a Chill representation of the INTEGER_CST VAL.
    The result may be in a static buffer, */
 
-char *
+const char *
 display_int_cst (val)
      tree val;
 {
@@ -737,7 +752,8 @@ digest_array_tuple (type, init, allow_missing_elements)
 
       if (! CH_COMPATIBLE (value, element_type))
 	{
-	  char *err_val_name = first ? display_int_cst (first) : "(default)";
+	  const char *err_val_name =
+	    first ? display_int_cst (first) : "(default)";
 	  error ("incompatible array tuple element %s", err_val_name);
 	  value = error_mark_node;
 	}
@@ -779,7 +795,7 @@ digest_array_tuple (type, init, allow_missing_elements)
 	ptr = &TREE_CHAIN (*ptr);
       if (*ptr && ! tree_int_cst_lt (CONSTRUCTOR_ELT_HI (*ptr), first))
 	{
-	  char *err_val_name = display_int_cst (first);
+	  const char *err_val_name = display_int_cst (first);
 	  error ("array tuple has duplicate index %s", err_val_name);
 	  errors++;
 	  continue;
@@ -862,7 +878,7 @@ digest_array_tuple (type, init, allow_missing_elements)
 	    }
 	  else
 	    {
-	      char *err_val_name = display_int_cst (first);
+	      const char *err_val_name = display_int_cst (first);
 	      if (TREE_CODE (last) != INTEGER_CST)
 		error ("dynamic array tuple without (*) or (ELSE)");
 	      else if (tree_int_cst_equal (first, last))

@@ -32,6 +32,22 @@ Boston, MA 02111-1307, USA.  */
 #include "assert.h"
 #include "toplev.h"
 
+static int id_cmp PROTO ((tree *, tree *));
+static void warn_unhandled PROTO ((const char *));
+static tree adjust_return_value PROTO ((tree, const char *));
+static tree update_else_range_for_int_const PROTO ((tree, tree));
+static tree update_else_range_for_range PROTO ((tree, tree, tree));
+static tree update_else_range_for_range_expr PROTO ((tree, tree));
+static tree update_else_range_for_type PROTO ((tree, tree));
+static tree compute_else_range PROTO ((tree, tree, int));
+static tree check_case_value PROTO ((tree, tree));
+static void chill_handle_case_label_range PROTO ((tree, tree, tree));
+static tree chill_handle_multi_case_label_range PROTO ((tree, tree, tree));
+static tree chill_handle_multi_case_else_label PROTO ((tree));
+static tree chill_handle_multi_case_label PROTO ((tree, tree));
+static tree chill_handle_multi_case_label_list PROTO ((tree, tree));
+static void print_missing_cases PROTO ((tree, const unsigned char *, long));
+
 #define obstack_chunk_alloc xmalloc
 #define obstack_chunk_free free
 
@@ -155,7 +171,8 @@ build_exception_variant (type, raises)
 	a[i] = t;
       /* NULL terminator for list.  */
       a[i] = NULL_TREE;
-      qsort (a, i, sizeof (tree), id_cmp);
+      qsort (a, i, sizeof (tree),
+	     (int (*) PROTO((const void*, const void*))) id_cmp);
       while (i--)
 	TREE_CHAIN (a[i]) = a[i+1];
       raises = a[0];
@@ -214,7 +231,7 @@ build_exception_variant (type, raises)
 
 tree
 build_rts_call (name, type, args)
-     char *name;
+     const char *name;
      tree type, args;
 {
   tree decl = lookup_name (get_identifier (name));
@@ -262,7 +279,7 @@ static struct already_type *already_warned = 0;
 
 static void
 warn_unhandled (ex)
-     char *ex;
+     const char *ex;
 {
   struct already_type *p = already_warned;
 
@@ -460,7 +477,7 @@ check_non_null (expr)
 tree
 chill_convert_for_assignment (type, expr, place)
      tree type, expr;
-     char *place; /* location description for error messages */
+     const char *place; /* location description for error messages */
 {
   tree ttype = type;
   tree etype = TREE_TYPE (expr);
@@ -596,7 +613,7 @@ chill_convert_for_assignment (type, expr, place)
 static tree
 adjust_return_value (expr, action)
      tree expr;
-     char *action;
+     const char *action;
 {
   tree type = TREE_TYPE (TREE_TYPE (current_function_decl));
 
@@ -632,7 +649,7 @@ chill_expand_result (expr, result_or_return)
      int result_or_return;
 {
   tree type;
-  char *action_name = result_or_return ? "RESULT" : "RETURN";
+  const char *action_name = result_or_return ? "RESULT" : "RETURN";
   
   if (pass == 1)
     return;
@@ -1352,7 +1369,7 @@ build_multi_case_selector_expression (selector_list, label_spec)
 static void
 print_missing_cases (type, cases_seen, count)
      tree type;
-     unsigned char *cases_seen;
+     const unsigned char *cases_seen;
      long count;
 {
   long i;
@@ -1364,7 +1381,7 @@ print_missing_cases (type, cases_seen, count)
 	  long x = i;
 	  long j;
 	  tree t = type;
-	  char *err_val_name = "???";
+	  const char *err_val_name = "???";
 	  if (TYPE_MIN_VALUE (t)
 	      && TREE_CODE (TYPE_MIN_VALUE (t)) == INTEGER_CST)
 	    x += TREE_INT_CST_LOW (TYPE_MIN_VALUE (t));
@@ -1377,24 +1394,28 @@ print_missing_cases (type, cases_seen, count)
 	      err_val_name = x ? "TRUE" : "FALSE";
 	      break;
 	    case CHAR_TYPE:
-	      if ((x >= ' ' && x < 127) && x != '\'' && x != '^')
-		sprintf (buf, "'%c'", (char)x);
-	      else
-		sprintf (buf, "'^(%ld)'", x);
-	      err_val_name = buf;
-	      j = i;
-	      while (j < count && !BITARRAY_TEST(cases_seen, j))
-		j++;
-	      if (j > i + 1)
-		{
-		  long y = x+j-i-1;
-		  err_val_name += strlen (err_val_name);
-		  if ((y >= ' ' && y < 127) && y != '\'' && y != '^')
-		    sprintf (err_val_name, "%s:'%c'", buf, (char)y);
-		  else
-		    sprintf (err_val_name, "%s:'^(%ld)'", buf, y);
-		  i = j - 1;      
-		}
+	      {
+		char *bufptr;
+		if ((x >= ' ' && x < 127) && x != '\'' && x != '^')
+		  sprintf (buf, "'%c'", (char)x);
+		else
+		  sprintf (buf, "'^(%ld)'", x);
+		bufptr = buf;
+		j = i;
+		while (j < count && !BITARRAY_TEST(cases_seen, j))
+		  j++;
+		if (j > i + 1)
+		  {
+		    long y = x+j-i-1;
+		    bufptr += strlen (bufptr);
+		    if ((y >= ' ' && y < 127) && y != '\'' && y != '^')
+		      sprintf (bufptr, "%s:'%c'", buf, (char)y);
+		    else
+		      sprintf (bufptr, "%s:'^(%ld)'", buf, y);
+		    i = j - 1;      
+		  }
+		err_val_name = bufptr;
+	      }
 	      break;
 	    case ENUMERAL_TYPE:
 	      for (v = TYPE_VALUES (t);  v && x;  v = TREE_CHAIN (v))

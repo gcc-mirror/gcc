@@ -41,8 +41,8 @@ static int  initialize_iter_var      PROTO((void));
 static void maybe_skip_loop          PROTO((void));
 static int  bottom_loop_end_check    PROTO((void));
 static int  increment_temps          PROTO((void));
-static tree build_temporary_variable PROTO((char *, tree));
-static tree maybe_make_for_temp      PROTO((tree, char *, tree));
+static tree build_temporary_variable PROTO((const char *, tree));
+static tree maybe_make_for_temp      PROTO((tree, const char *, tree));
 #if 0
 static tree chill_unsigned_type      PROTO((tree));
 #endif
@@ -1006,7 +1006,7 @@ top_loop_end_check (condition)
 	case DO_POWERSET:
 	  {
 	    tree temp1;
-	    char *func_name;
+	    const char *func_name;
 	    tree user_type = TREE_TYPE (ip->user_var);
 
 	    if (ip->down_flag)
@@ -1158,7 +1158,7 @@ increment_temps ()
  */
 tree
 get_unique_identifier (lead)
-     char *lead;
+     const char *lead;
 {
   char idbuf [256];
   static int idcount = 0;
@@ -1174,7 +1174,7 @@ get_unique_identifier (lead)
  */
 static tree
 build_temporary_variable (name, type)
-     char *name;
+     const char *name;
      tree type;
 {
   return decl_temp1 (get_unique_identifier (name), type, 0, NULL_TREE, 0, 0);
@@ -1190,7 +1190,7 @@ build_temporary_variable (name, type)
 static tree
 maybe_make_for_temp (exp, temp_name, exp_type)
      tree exp;
-     char *temp_name;
+     const char *temp_name;
      tree exp_type;
 {
   tree result = exp;

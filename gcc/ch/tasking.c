@@ -44,8 +44,19 @@ tree generic_signal_type_node;
 tree chill_taskingcode_type_node;
 
 /* forward declarations */
-void validate_process_parameters PROTO((tree));
-tree make_process_struct         PROTO((tree, tree));
+#if 0
+static void validate_process_parameters		PROTO((tree));
+static tree get_struct_variable_name		PROTO((tree));
+static tree decl_tasking_code_variable		PROTO((tree, tree *, int));
+#endif
+static tree get_struct_debug_type_name		PROTO((tree));
+static tree get_process_wrapper_name		PROTO((tree));
+static tree build_tasking_enum			PROTO((void));
+static void build_tasking_message_type		PROTO((void));
+static tree build_receive_signal_case_label	PROTO((tree, tree));
+static tree build_receive_buffer_case_label	PROTO((tree, tree));
+static void build_receive_buffer_case_end	PROTO((tree, tree));
+static void build_receive_signal_case_end	PROTO((tree, tree));
 
 /* list of this module's process, buffer, etc. decls.
  This is a list of TREE_VECs, chain by their TREE_CHAINs. */
@@ -58,18 +69,18 @@ tree tasking_list = NULL_TREE;
 #define TASK_INFO_STUFF_TYPE(NODE) TREE_VEC_ELT(NODE,4)
 
 /* name template for process argument type */
-static char * struct_name = "__tmp_%s_arg_type";
+static const char * struct_name = "__tmp_%s_arg_type";
 
 /* name template for process arguments for debugging type */
-static char * struct_debug_name = "__tmp_%s_debug_type";
+static const char * struct_debug_name = "__tmp_%s_debug_type";
 
 #if 0
 /* name template for process argument variable */
-static char * data_name = "__tmp_%s_arg_variable";
+static const char * data_name = "__tmp_%s_arg_variable";
 #endif
 
 /* name template for process wrapper */
-static char * wrapper_name = "__tmp_%s_wrapper";
+static const char * wrapper_name = "__tmp_%s_wrapper";
 
 extern int ignoring;
 static tree void_ftype_void;
@@ -80,18 +91,18 @@ tree
 get_struct_type_name (name)
      tree name;
 {
-  char *idp = IDENTIFIER_POINTER (name);        /* process name */
+  const char *idp = IDENTIFIER_POINTER (name);        /* process name */
   char *tmpname = xmalloc (strlen (idp) + strlen (struct_name) + 1);
 
   sprintf (tmpname, struct_name, idp);
   return get_identifier (tmpname);
 }
 
-tree
+static tree
 get_struct_debug_type_name (name)
      tree name;
 {
-  char *idp = IDENTIFIER_POINTER (name);        /* process name */
+  const char *idp = IDENTIFIER_POINTER (name);        /* process name */
   char *tmpname = xmalloc (strlen (idp) + strlen (struct_debug_name) + 1);
 
   sprintf (tmpname, struct_debug_name, idp);
@@ -103,8 +114,8 @@ tree
 get_tasking_code_name (name)
      tree name;
 {
-  char *skelname = "__tmp_%s_code";
-  char *name_str = IDENTIFIER_POINTER (name);
+  const char *skelname = "__tmp_%s_code";
+  const char *name_str = IDENTIFIER_POINTER (name);
   char *tmpname  = (char *)alloca (IDENTIFIER_LENGTH (name) +
 				   strlen (skelname) + 1);
 
@@ -117,7 +128,7 @@ static tree
 get_struct_variable_name (name)
      tree name;
 {
-  char *idp = IDENTIFIER_POINTER (name);        /* process name */
+  const char *idp = IDENTIFIER_POINTER (name);        /* process name */
   char *tmpname = xmalloc (strlen (idp) + strlen (data_name) + 1);
 
   sprintf (tmpname, data_name, idp);
@@ -129,7 +140,7 @@ static tree
 get_process_wrapper_name (name)
     tree name;
 {
-  char *idp = IDENTIFIER_POINTER (name);
+  const char *idp = IDENTIFIER_POINTER (name);
   char *tmpname = xmalloc (strlen (idp) + strlen (wrapper_name) + 1);
     
   sprintf (tmpname, wrapper_name, idp);
@@ -182,7 +193,8 @@ generate_tasking_code_variable (name, tasking_code_ptr, quasi_flag)
  * be initialized.  The other module will do that.  This is just 
  * for BUFFERs and EVENTs.
  */
-tree
+#if 0
+static tree
 decl_tasking_code_variable (name, tasking_code_ptr, quasi_flag)
      tree name, *tasking_code_ptr;
      int  quasi_flag;
@@ -223,6 +235,7 @@ decl_tasking_code_variable (name, tasking_code_ptr, quasi_flag)
 				     *tasking_code_ptr));
   return decl;
 }
+#endif
 
 /*
  * Transmute a process parameter list into an argument structure 
@@ -492,11 +505,13 @@ build_process_wrapper (plabel, processdata)
     property"
  */
 
-void
+#if 0
+static void
 validate_process_parameters (parms)
      tree parms ATTRIBUTE_UNUSED;
 {
 }
+#endif
 
 /*
  * build the tree for a start process action.  Loop through the
@@ -612,7 +627,7 @@ build_start_process (process_name, copynum,
   
       if (valtail != 0 && TREE_VALUE (valtail) != void_type_node)
 	{
-	  char *errstr = "too many arguments to process";
+	  const char *errstr = "too many arguments to process";
 	  if (process_name)
 	    error ("%s `%s'", errstr, IDENTIFIER_POINTER (process_name));
 	  else
@@ -620,7 +635,7 @@ build_start_process (process_name, copynum,
 	}
       else if (typetail != 0 && TREE_VALUE (typetail) != void_type_node)
 	{
-	  char *errstr = "too few arguments to process";
+	  const char *errstr = "too few arguments to process";
 	  if (process_name)
 	    error ("%s `%s'", errstr, IDENTIFIER_POINTER (process_name));
 	  else
@@ -926,7 +941,7 @@ void
 add_taskstuff_to_list (code_decl, stufftype, stuffnumber,
 		       proc_decl, entry)
      tree code_decl;
-     char *stufftype;
+     const char *stufftype;
      tree stuffnumber, proc_decl, entry;
 {
   if (pass == 1)
@@ -1101,7 +1116,7 @@ build_queue_length (buf_ev)
   if (CH_IS_BUFFER_MODE (TREE_TYPE (buf_ev)) ||
       CH_IS_EVENT_MODE (TREE_TYPE (buf_ev)))
     {
-      char *field_name;
+      const char *field_name;
       tree  arg1, arg2;
 
       if (CH_IS_EVENT_MODE (TREE_TYPE (buf_ev)))
@@ -1217,7 +1232,7 @@ build_instance_type ()
  *
 #endif
 
-void
+static void
 build_tasking_message_type ()
 {
   tree type_name;

@@ -316,7 +316,7 @@ typeck.o : typeck.c $(CONFIG_H) $(CHILL_TREE_H) ../insn-codes.h \
 	$(srcdir)/../system.h $(srcdir)/../toplev.h
 ch-version.o : ch-version.c
 ch-version.c : Makefile
-	echo 'char *gnuchill_version = "$(GNUCHILL_VERSION)";' > $@
+	echo 'const char * const gnuchill_version = "$(GNUCHILL_VERSION)";' > $@
 
 ## This is ugly, but I don't want GNU make to put these variables in
 ## the environment.  Older makes will see this as a set of targets

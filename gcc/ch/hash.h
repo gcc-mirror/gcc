@@ -1,12 +1,20 @@
 /* C code produced by gperf version 2.7.1 (19981006 egcs) */
 /* Command-line: gperf -L C -F , 0, 0, 0 -D -E -S1 -p -j1 -i 1 -g -o -t -k* gperf.tmp  */
 struct resword {
-  const char   *name;
+  const char  *name;
   short        token;
   enum rid     rid;
   enum toktype { RESERVED, DIRECTIVE, PREDEF } flags;
 };
 extern tree ridpointers [];
+#ifdef __GNUC__
+__inline
+#endif
+static unsigned int hash	PARAMS ((const char *, unsigned int));
+#ifdef __GNUC__
+__inline
+#endif
+struct resword *in_word_set	PARAMS ((const char *, unsigned int));
 /* maximum key range = 2815, duplicates = 6 */
 
 #ifdef __GNUC__

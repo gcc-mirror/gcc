@@ -5,6 +5,14 @@ struct resword {
   enum toktype { RESERVED, DIRECTIVE, PREDEF } flags;
 };
 extern tree ridpointers [];
+#ifdef __GNUC__
+__inline
+#endif
+static unsigned int hash	PARAMS ((const char *, unsigned int));
+#ifdef __GNUC__
+__inline
+#endif
+struct resword *in_word_set	PARAMS ((const char *, unsigned int));
 %%
 access,			ACCESS,			NORID,	RESERVED
 after,			AFTER,			NORID,	RESERVED

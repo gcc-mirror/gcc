@@ -374,9 +374,6 @@ struct mode_chain;  /* Forward reference */
 #define CH_REFERABLE(EXPR) chill_referable(EXPR)
 #define CH_LOCATION_P(EXPR) chill_location (EXPR)
 
-extern int maybe_objc_comptypes ();
-extern tree maybe_building_objc_message_expr ();
-
 /* Standard named or nameless data types of the C compiler.  */
 
 /* Nonzero means `$' can be in an identifier.  */
@@ -456,11 +453,6 @@ extern int flag_traditional;
 /* Nonzero means warn about suggesting putting in ()'s.  */
 
 extern int warn_parentheses;
-
-/* Nonzero means this is a function to call to perform comptypes
-   on two record types.  */
-
-extern int (*comptypes_record_hook) ();
 
 /* Nonzero means we are reading code that came from a system header file.  */
 extern int system_header_p;
@@ -666,6 +658,8 @@ extern tree global_function_decl;
 
 /* in except.c */
 extern void except_init_pass_2                  PROTO((void));
+extern void push_handler			PROTO((void));
+extern void pop_handler				PROTO((int));
 
 /* in ch-loop.c */
 extern int flag_local_loop_counter;
@@ -681,7 +675,7 @@ extern void nonvalue_begin_loop_scope           PROTO((void));
 extern void nonvalue_end_loop_scope             PROTO((void));
 
 extern tree build_enumerator                    PROTO((tree, tree));
-extern tree builtin_function                    PROTO((char *, tree, enum built_in_function function_, char *));
+extern tree builtin_function                    PROTO((const char *, tree, enum built_in_function function_, const char *));
 extern tree c_build_type_variant                PROTO((tree, int, int));
 extern int  c_decode_option                     PROTO((int, char **));
 extern void c_mark_varargs                      PROTO((void));
@@ -769,7 +763,7 @@ extern void set_init_index                      PROTO((tree, tree));
 extern void set_init_label                      PROTO((tree));
 extern void start_init                          PROTO((tree, tree, int));
 extern void store_init_value                    PROTO((tree, tree));
-extern tree valid_array_index_p                 PROTO((tree, tree, char *, int));
+extern tree valid_array_index_p                 PROTO((tree, tree, const char *, int));
 
 /* in ch/actions.c */
 extern int grant_only_flag;
@@ -782,7 +776,7 @@ extern tree build_chill_binary_op               PROTO((enum chill_tree_code, tre
 extern tree build_chill_card                    PROTO((tree));
 extern tree build_chill_case_expr               PROTO((tree, tree, tree)); 
 extern tree build_cause_exception               PROTO((tree, int));
-extern tree build_chill_exception_decl          PROTO((char *));
+extern tree build_chill_exception_decl          PROTO((const char *));
 extern tree build_chill_function_call           PROTO((tree, tree));
 extern tree build_chill_length                  PROTO((tree));
 extern tree build_chill_indirect_ref            PROTO((tree, tree, int));
@@ -801,10 +795,10 @@ extern tree build_chill_upper                   PROTO((tree));
 extern tree build_exception_variant             PROTO((tree, tree));
 extern tree build_generalized_call              PROTO((tree, tree));
 extern tree build_lang_decl                     PROTO((enum chill_tree_code, tree, tree));
-extern tree build_rts_call                      PROTO((char *, tree, tree));
+extern tree build_rts_call                      PROTO((const char *, tree, tree));
 extern tree build_varying_struct                PROTO((tree));
 extern void chill_check_decl                    PROTO((tree));
-extern tree chill_convert_for_assignment        PROTO((tree, tree, char*));
+extern tree chill_convert_for_assignment        PROTO((tree, tree, const char *));
 extern void chill_expand_return                 PROTO((tree, int));
 extern void chill_expand_result                 PROTO((tree, int));
 extern void chill_handle_case_default           PROTO((void));
@@ -831,7 +825,7 @@ extern tree build_array_type_for_scalar         PROTO((tree));
 extern tree convert                             PROTO((tree, tree));
 extern tree convert_from_reference              PROTO((tree));
 extern tree convert_to_class                    PROTO((ch_class, tree));
-extern char* display_int_cst			PROTO((tree));
+extern const char *display_int_cst		PROTO((tree));
 
 /* in ch/decl.c */
 extern tree build_enumerator		        PROTO((tree, tree));
@@ -844,7 +838,7 @@ extern tree do_decl                             PROTO((tree, tree, int, int, tre
 extern void do_decls                            PROTO((tree, tree, int, int, tree, int));
 extern void expand_chill_outparms               PROTO((void));
 extern void find_granted_decls		        PROTO((void));
-extern void finish_chill_function               PROTO(());
+extern void finish_chill_function               PROTO((void));
 extern tree finish_enum		                PROTO((tree, tree));
 extern void fixup_chill_parms                   PROTO((tree));
 extern void finish_outer_function               PROTO((void));
@@ -885,7 +879,7 @@ extern void expand_goto_except_cleanup          PROTO((int));
 extern int is_handled				PROTO((tree));
 
 /* in ch/expr.c */
-extern tree build_chill_addr_expr               PROTO((tree, char *));
+extern tree build_chill_addr_expr               PROTO((tree, const char *));
 extern tree build_chill_arrow_expr              PROTO((tree, int));
 extern tree build_component_ref		        PROTO((tree, tree));
 extern tree build_chill_compound_expr           PROTO((tree));
@@ -898,7 +892,7 @@ extern tree build_compare_discrete_expr		PROTO((enum tree_code,
 						       tree, tree));
 extern tree check_case_selector                 PROTO((tree));
 extern tree check_case_selector_list            PROTO((tree));
-extern tree check_have_mode                     PROTO((tree, char*));
+extern tree check_have_mode                     PROTO((tree, const char *));
 extern void init_chill_expand                   PROTO((void));
 extern void chill_expand_assignment             PROTO((tree, enum chill_tree_code, tree));
 extern void expand_assignment_action            PROTO((tree, enum chill_tree_code, tree));
@@ -934,7 +928,7 @@ extern tree build_chill_range_type              PROTO((tree, tree, tree));
 extern tree build_chill_reference_type          PROTO((tree));
 extern tree build_simple_array_type             PROTO((tree, tree, tree));
 extern tree const_expr                          PROTO((tree));
-extern tree get_identifier3			PROTO((char*, char*, char*));
+extern tree get_identifier3			PROTO((const char *, const char *, const char *));
 extern tree layout_chill_array_type             PROTO((tree));
 extern tree layout_chill_range_type             PROTO((tree, int));
 extern tree layout_chill_pointer_type           PROTO((tree));
@@ -950,11 +944,11 @@ extern int  recognize_objc_keyword              PROTO((void));
 /* in ch/lex.l */
 extern tree use_seizefile_name;
 extern tree current_seizefile_name;
-extern tree build_chill_string                  PROTO((int, char *));
+extern tree build_chill_string                  PROTO((int, const char *));
 extern int  check_newline                       PROTO((void));
 extern tree get_chill_filename                  PROTO((void)); 
 extern tree get_chill_linenumber                PROTO((void));       
-extern void register_seize_path                 PROTO((char *));
+extern void register_seize_path                 PROTO((const char *));
 extern void reinit_parse_for_function           PROTO((void));
 extern void mark_use_seizefile_written          PROTO((tree));
 
@@ -962,7 +956,7 @@ extern void mark_use_seizefile_written          PROTO((tree));
 extern void begin_chill_loop                    PROTO((tree, tree));
 extern tree build_chill_iterator                PROTO((tree, tree, tree, int, int, int));
 extern void end_chill_loop                      PROTO((void));
-extern tree get_unique_identifier               PROTO((char *));
+extern tree get_unique_identifier               PROTO((const char *));
 
 /* in ch/inout.c */
 extern tree access_recordmode                   PROTO((tree));
@@ -1027,7 +1021,7 @@ extern void to_global_binding_level             PROTO((void));
 extern tree satisfy_decl 	                PROTO((tree, int));
 
 /* in ch/tasking.c */
-extern void add_taskstuff_to_list               PROTO((tree, char *, tree, tree, tree));
+extern void add_taskstuff_to_list               PROTO((tree, const char *, tree, tree, tree));
 extern void process_buffer_decls                PROTO((tree, tree, int));
 extern tree buffer_element_mode                 PROTO((tree));
 extern void invalidate_buffer_element_mode      PROTO((tree));
@@ -1187,4 +1181,7 @@ extern struct module *current_module;
 
 /* fold a tree to constant as much as possible */
 extern tree deep_fold PROTO((tree));
+
+extern const char * const gnuchill_version;
+
 #endif

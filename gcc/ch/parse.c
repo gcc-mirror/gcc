@@ -80,6 +80,18 @@ extern struct rtx_def *expand_expr  	PROTO((tree, struct rtx_def *,
 					       enum machine_mode, int));
 
 static int parse_action				PROTO((void));
+static void ch_parse_init			PROTO((void));
+static void check_end_label			PROTO((tree, tree));
+static void end_function       			PROTO((void));
+static tree build_prefix_clause			PROTO((tree));
+static enum terminal PEEK_TOKEN			PROTO((void));
+static int peek_token_				PROTO((int));
+static void pushback_token			PROTO((int, tree));
+static void forward_token_			PROTO((void));
+static void require				PROTO((enum terminal));
+static int check_token				PROTO((enum terminal));
+static int expect				PROTO((enum terminal, const char *));
+static void define__PROCNAME__			PROTO((void));
 
 extern int  lineno;
 extern char *input_filename;
@@ -226,7 +238,7 @@ build_prefix_clause (id)
   if (!id)
     {
       if (current_module && current_module->name)
-	{ char *module_name = IDENTIFIER_POINTER (current_module->name);
+	{ const char *module_name = IDENTIFIER_POINTER (current_module->name);
 	  if (module_name[0] && module_name[0] != '_')
 	    return current_module->name;
 	}
@@ -315,7 +327,7 @@ forward_token_()
 /* Skip the next token.
    if it isn't TOKEN, the parser is broken. */
 
-void
+static void
 require(token)
      enum terminal token;
 {
@@ -328,7 +340,7 @@ require(token)
   FORWARD_TOKEN();
 }
 
-int
+static int
 check_token (token)
      enum terminal token;
 {
@@ -341,10 +353,10 @@ check_token (token)
 /* return 0 if expected token was not found,
    else return 1.
 */
-int
+static int
 expect(token, message)
      enum terminal token;
-     char *message;
+     const char *message;
 {
   if (PEEK_TOKEN() != token)
     {
@@ -363,7 +375,7 @@ expect(token, message)
 static void
 define__PROCNAME__ ()
 {
-  char *fname;
+  const char *fname;
   tree string;
   tree procname;
 
@@ -378,17 +390,114 @@ define__PROCNAME__ ()
 }
 
 /* Forward declarations. */
-static tree parse_expression ();
-static tree parse_primval ();
+static tree parse_expression PROTO((void));
+static tree parse_primval PROTO((void));
 static tree parse_mode PROTO((void));
 static tree parse_opt_mode PROTO((void));
-static tree parse_untyped_expr ();
-static tree parse_opt_untyped_expr ();
+static tree parse_untyped_expr PROTO((void));
+static tree parse_opt_untyped_expr PROTO((void));
 static int parse_definition PROTO((int));
-static void parse_opt_actions ();
+static void parse_opt_actions PROTO((void));
 static void parse_body PROTO((void));
 static tree parse_if_expression_body PROTO((void));
 static tree parse_opt_handler PROTO((void));
+static tree parse_opt_name_string PROTO((int));
+static tree parse_simple_name_string PROTO((void));
+static tree parse_name_string PROTO((void));
+static tree parse_defining_occurrence PROTO((void));
+static tree parse_name PROTO((void));
+static tree parse_optlabel PROTO((void));
+static void parse_opt_end_label_semi_colon PROTO((tree));
+static void parse_modulion PROTO((tree));
+static void parse_spec_module PROTO((tree));
+static void parse_semi_colon PROTO((void));
+static tree parse_defining_occurrence_list PROTO((void));
+static void parse_mode_definition PROTO((int));
+static void parse_mode_definition_statement PROTO((int));
+static void parse_synonym_definition PROTO((void));
+static void parse_synonym_definition_statement PROTO((void));
+static tree parse_on_exception_list PROTO((void));
+static void parse_on_alternatives PROTO((void));
+static void parse_loc_declaration PROTO((int));
+static void parse_declaration_statement PROTO((int));
+static tree parse_optforbid PROTO((void));
+static tree parse_postfix PROTO((enum terminal));
+static tree parse_postfix_list PROTO((enum terminal));
+static void parse_rename_clauses PROTO((enum terminal));
+static tree parse_opt_prefix_clause PROTO((void));
+static void parse_grant_statement PROTO((void));
+static void parse_seize_statement PROTO((void));
+static tree parse_param_name_list PROTO((void));
+static tree parse_param_attr PROTO((void));
+static tree parse_formpar PROTO((void));
+static tree parse_formparlist PROTO((void));
+static tree parse_opt_result_spec PROTO((void));
+static tree parse_opt_except PROTO((void));
+static tree parse_opt_recursive PROTO((void));
+static tree parse_procedureattr PROTO((void));
+static void parse_proc_body PROTO((tree, tree));
+static void parse_procedure_definition PROTO((int));
+static tree parse_processpar PROTO((void));
+static tree parse_processparlist PROTO((void));
+static void parse_process_definition PROTO((int));
+static void parse_signal_definition PROTO((void));
+static void parse_signal_definition_statement PROTO((void));
+static void parse_then_clause PROTO((void));
+static void parse_opt_else_clause PROTO((void));
+static tree parse_expr_list PROTO((void));
+static tree parse_range_list_clause PROTO((void));
+static void pushback_paren_expr PROTO((tree));
+static tree parse_case_label PROTO((void));
+static tree parse_case_label_list PROTO((tree, int));
+static tree parse_case_label_specification PROTO((tree));
+static void parse_single_dimension_case_action PROTO((tree));
+static void parse_multi_dimension_case_action PROTO((tree));
+static void parse_case_action PROTO((tree));
+static tree parse_asm_operands PROTO((void));
+static tree parse_asm_clobbers PROTO((void));
+static void ch_expand_asm_operands PROTO((tree, tree, tree, tree, int, char *, int));
+static void parse_asm_action PROTO((void));
+static void parse_begin_end_block PROTO((tree));
+static void parse_if_action PROTO((tree));
+static void parse_iteration PROTO((void));
+static tree parse_delay_case_event_list PROTO((void));
+static void parse_delay_case_action PROTO((tree));
+static void parse_do_action PROTO((tree));
+static tree parse_receive_spec PROTO((void));
+static void parse_receive_case_action PROTO((tree));
+static void parse_send_action PROTO((void));
+static void parse_start_action PROTO((void));
+static tree parse_call PROTO((tree));
+static tree parse_tuple_fieldname_list PROTO((void));
+static tree parse_tuple_element PROTO((void));
+static tree parse_opt_element_list PROTO((void));
+static tree parse_tuple PROTO((tree));
+static tree parse_operand6 PROTO((void));
+static tree parse_operand5 PROTO((void));
+static tree parse_operand4 PROTO((void));
+static tree parse_operand3 PROTO((void));
+static tree parse_operand2 PROTO((void));
+static tree parse_operand1 PROTO((void));
+static tree parse_operand0 PROTO((void));
+static tree parse_case_expression PROTO((void));
+static tree parse_then_alternative PROTO((void));
+static tree parse_else_alternative PROTO((void));
+static tree parse_if_expression PROTO((void));
+static tree parse_index_mode PROTO((void));
+static tree parse_set_mode PROTO((void));
+static tree parse_pos PROTO((void));
+static tree parse_step PROTO((void));
+static tree parse_opt_layout PROTO((int));
+static tree parse_field_name_list PROTO((void));
+static tree parse_fixed_field PROTO((void));
+static tree parse_variant_field_list PROTO((void));
+static tree parse_variant_alternative PROTO((void));
+static tree parse_field PROTO((void));
+static tree parse_structure_mode PROTO((void));
+static tree parse_opt_queue_size PROTO((void));
+static tree parse_procedure_mode PROTO((void));
+static void parse_program PROTO((void));
+static void parse_pass_1_2 PROTO((void));
 
 static tree
 parse_opt_name_string (allow_all)
@@ -622,7 +731,7 @@ parse_mode_definition (is_newmode)
   ignoring = save_ignoring;
 }
 
-void
+static void
 parse_mode_definition_statement (is_newmode)
      int is_newmode;
 {
@@ -883,7 +992,7 @@ parse_declaration_statement (in_spec_module)
   parse_semi_colon ();
 }
 
-tree
+static tree
 parse_optforbid ()
 {
   if (check_token (FORBID) == 0)
@@ -905,7 +1014,7 @@ parse_optforbid ()
 /* Matches: <grant postfix> or <seize postfix>
    Returns: A (singleton) TREE_LIST. */
 
-tree
+static tree
 parse_postfix (grant_or_seize)
      enum terminal grant_or_seize;
 {
@@ -921,7 +1030,7 @@ parse_postfix (grant_or_seize)
   return build_tree_list (forbid, name);
 }
 
-tree
+static tree
 parse_postfix_list (grant_or_seize)
      enum terminal grant_or_seize;
 {
@@ -931,7 +1040,7 @@ parse_postfix_list (grant_or_seize)
   return list;
 }
 
-void
+static void
 parse_rename_clauses (grant_or_seize)
      enum terminal grant_or_seize;
 {
@@ -972,7 +1081,7 @@ parse_opt_prefix_clause ()
   return build_prefix_clause (parse_opt_name_string (0));
 }
 
-void
+static void
 parse_grant_statement ()
 {
   require (GRANT);
@@ -988,7 +1097,7 @@ parse_grant_statement ()
     }
 }
 
-void
+static void
 parse_seize_statement ()
 {
   require (SEIZE);
@@ -1282,7 +1391,7 @@ parse_process_definition (in_spec_module)
     ignoring = 0;
   require (COLON); require (PROCESS);
   expect (LPRN, "missing '(' after PROCESS");
-  params = parse_processparlist (in_spec_module);
+  params = parse_processparlist ();
   expect (RPRN, "missing ')' in PROCESS");
   ignoring = save_ignoring;
   if (in_spec_module)
@@ -1479,7 +1588,7 @@ parse_range_list_clause ()
     return NULL_TREE;
   while (check_token (COMMA))
     {
-      name = parse_name_string (0);
+      name = parse_name_string ();
     }
   if (check_token (SC))
     {
@@ -1899,7 +2008,7 @@ parse_asm_clobbers ()
   return list;
 }
 
-void
+static void
 ch_expand_asm_operands (string, outputs, inputs, clobbers, vol, filename, line)
      tree string, outputs, inputs, clobbers;
      int vol;
@@ -4166,7 +4275,7 @@ parse_program()
   finish_outer_function ();
 }
 
-void
+static void
 parse_pass_1_2()
 {
   parse_program();

@@ -52,9 +52,43 @@ extern int  special_UC;
 #define HOURS_MAX                                         1193
 #define DAYS_MAX                                            49
 
-/* forward declaration */
-rtx chill_expand_expr PROTO((tree, rtx, enum machine_mode, 
-			     enum expand_modifier));
+/* forward declarations */
+static rtx chill_expand_expr		PROTO ((tree, rtx, enum machine_mode, 
+						enum expand_modifier));
+static tree chill_expand_case_expr	PROTO ((tree));
+static int check_arglist_length		PROTO ((tree, int, int, tree));
+static tree internal_build_compound_expr PROTO ((tree, int));
+static int is_really_instance		PROTO ((tree));
+static int invalid_operand		PROTO ((enum chill_tree_code,
+						tree, int));
+static int invalid_right_operand	PROTO ((enum chill_tree_code, tree));
+static tree build_chill_abstime		PROTO ((tree));
+static tree build_allocate_memory_call	PROTO ((tree, tree));
+static tree build_allocate_global_memory_call PROTO ((tree, tree));
+static tree build_return_memory		PROTO ((tree));
+static tree build_chill_duration	PROTO ((tree, unsigned long,
+						tree, unsigned long));
+static tree build_chill_floatcall	PROTO ((tree, const char *,
+						const char *));
+static tree build_allocate_getstack	PROTO ((tree, tree, const char *,
+						const char *, tree, tree));
+static tree build_chill_allocate	PROTO ((tree, tree));
+static tree build_chill_getstack	PROTO ((tree, tree));
+static tree build_chill_terminate	PROTO ((tree));
+static tree build_chill_inttime		PROTO ((tree, tree));
+static tree build_chill_lower_or_upper	PROTO ((tree, int));
+static tree build_max_min		PROTO ((tree, int));
+static tree build_chill_pred_or_succ	PROTO ((tree, enum tree_code));
+static tree expand_packed_set		PROTO ((const char *, int, tree));
+static tree fold_set_expr		PROTO ((enum chill_tree_code,
+						tree, tree));
+static tree build_compare_set_expr	PROTO ((enum tree_code, tree, tree));
+static tree scalar_to_string		PROTO ((tree));
+static tree build_concat_expr		PROTO ((tree, tree));
+static tree build_compare_string_expr	PROTO ((enum tree_code, tree, tree));
+static tree compare_records		PROTO ((tree, tree));
+static tree string_char_rep		PROTO ((int, tree));
+static tree build_boring_bitstring	PROTO ((long, int));
 
 /* variable to hold the type the DESCR built-in returns */
 static tree descr_type = NULL_TREE;
@@ -84,7 +118,7 @@ force_addr_of (value)
 tree
 check_have_mode (exp, context)
      tree exp;
-     char *context;
+     const char *context;
 {
   if (TREE_CODE (exp) != ERROR_MARK && TREE_TYPE (exp) == NULL_TREE)
     {
@@ -134,7 +168,7 @@ check_case_selector_list (list)
   return nreverse(return_list);
 }
 
-tree
+static tree
 chill_expand_case_expr (expr)
      tree expr;
 {
@@ -208,7 +242,7 @@ chill_expand_case_expr (expr)
 
 /* Hook used by expand_expr to expand CHILL-specific tree codes.  */
 
-rtx
+static rtx
 chill_expand_expr (exp, target, tmode, modifier)
      tree exp;
      rtx target;
@@ -221,7 +255,7 @@ chill_expand_expr (exp, target, tmode, modifier)
   rtx original_target = target;
   rtx op0, op1;
   int ignore = target == const0_rtx;
-  char *lib_func;                   /* name of library routine */
+  const char *lib_func;                   /* name of library routine */
 
   if (ignore)
     target = 0, original_target = 0;
@@ -1189,7 +1223,7 @@ build_chill_abs (expr)
   return temp;
 }
 
-tree
+static tree
 build_chill_abstime (exprlist)
      tree exprlist;
 {
@@ -1242,7 +1276,7 @@ build_chill_abstime (exprlist)
 }
 
 
-tree
+static tree
 build_allocate_memory_call (ptr, size)
   tree ptr, size;
 {
@@ -1283,7 +1317,7 @@ build_allocate_memory_call (ptr, size)
 }
 
 
-tree
+static tree
 build_allocate_global_memory_call (ptr, size)
   tree ptr, size;
 {
@@ -1324,7 +1358,7 @@ build_allocate_global_memory_call (ptr, size)
 }
 
 
-tree
+static tree
 build_return_memory (ptr)
   tree ptr;
 {
@@ -1484,7 +1518,7 @@ build_chill_descr (expr)
    MILLISECS, SECS, MINUTES, HOURS and DAYS.
    The built duration value is in milliseconds. */
 
-tree
+static tree
 build_chill_duration (expr, multiplier, fnname, maxvalue)
      tree           expr;
      unsigned long  multiplier;
@@ -1516,8 +1550,8 @@ build_chill_duration (expr, multiplier, fnname, maxvalue)
 static tree
 build_chill_floatcall (expr, chillname, funcname)
      tree expr;
-     char *chillname;
-     char *funcname;
+     const char *chillname;
+     const char *funcname;
 {
   tree result;
   tree type;
@@ -1545,8 +1579,8 @@ static tree
 build_allocate_getstack (mode, value, chill_name, fnname, filename, linenumber)
      tree mode;
      tree value;
-     char *chill_name;
-     char *fnname;
+     const char *chill_name;
+     const char *fnname;
      tree filename;
      tree linenumber;
 {
@@ -1622,7 +1656,7 @@ build_allocate_getstack (mode, value, chill_name, fnname, filename, linenumber)
 }
 
 /* process the ALLOCATE built-in */
-tree
+static tree
 build_chill_allocate (mode, value)
      tree mode;
      tree value;
@@ -1632,7 +1666,7 @@ build_chill_allocate (mode, value)
 }
 
 /* process the GETSTACK built-in */
-tree
+static tree
 build_chill_getstack (mode, value)
      tree mode;
      tree value;
@@ -1642,7 +1676,7 @@ build_chill_getstack (mode, value)
 }
 
 /* process the TERMINATE built-in */
-tree
+static tree
 build_chill_terminate (ptr)
      tree ptr;
 {
@@ -1686,7 +1720,7 @@ build_chill_inttime_type ()
   satisfy_decl (decl, 0);
 }
 
-tree
+static tree
 build_chill_inttime (t, loclist)
      tree t, loclist;
 {
@@ -1993,7 +2027,7 @@ build_max_min (expr, max_min)
       else
 	{
 	  tree parmlist, filename, lineno;
-	  char *funcname;
+	  const char *funcname;
 	  
 	  /* set up to call appropriate runtime function */
 	  if (max_min)
@@ -2479,7 +2513,7 @@ build_chill_function_call (function, expr)
  
   if (valtail != 0 && TREE_VALUE (valtail) != void_type_node)
     {
-      char *errstr = "too many arguments to procedure";
+      const char *errstr = "too many arguments to procedure";
       if (name)
 	error ("%s `%s'", errstr, IDENTIFIER_POINTER (name));
       else
@@ -2488,7 +2522,7 @@ build_chill_function_call (function, expr)
     }
   else if (typetail != 0 && TREE_VALUE (typetail) != void_type_node)
     {
-      char *errstr = "too few arguments to procedure";
+      const char *errstr = "too few arguments to procedure";
       if (name)
 	error ("%s `%s'", errstr, IDENTIFIER_POINTER (name));
       else
@@ -2985,9 +3019,9 @@ build_generalized_call (func, args)
 
 /* Given a set stored as one bit per char (in BUFFER[0 .. BIT_SIZE-1]),
    return a CONTRUCTOR, of type TYPE (a SET_TYPE). */
-tree
+static tree
 expand_packed_set (buffer, bit_size, type)
-     char *buffer;
+     const char *buffer;
      int   bit_size;
      tree type;
 {
@@ -3131,7 +3165,7 @@ build_compare_set_expr (code, op0, op1)
      tree op0, op1;
 {
   tree result_type = NULL_TREE;
-  char *fnname;
+  const char *fnname;
   tree x;
 
   /* These conversions are needed if -fold-strings. */
@@ -3428,7 +3462,7 @@ build_compare_string_expr (code, op0, op1)
   return build (code, boolean_type_node, op0, op1);
 }
 
-tree
+static tree
 compare_records (exp0, exp1)
      tree exp0, exp1;
 {
@@ -4017,7 +4051,7 @@ build_chill_arrow_expr (ref, force)
 tree
 build_chill_addr_expr (ref, errormsg)
      tree ref;
-     char *errormsg;
+     const char *errormsg;
 {
   if (ref == error_mark_node)
     return ref;
@@ -4067,7 +4101,7 @@ build_chill_binary_op (code, op0, op1)
 /*
  * process a string repetition phrase '(' COUNT ')' STRING
  */
-tree
+static tree
 string_char_rep (count, string)
      int count;
      tree string;
@@ -4075,7 +4109,7 @@ string_char_rep (count, string)
   int slen, charindx, repcnt;
   char ch;
   char *temp;
-  char *inp;
+  const char *inp;
   char *outp;
   tree type;
 
@@ -4102,7 +4136,7 @@ string_char_rep (count, string)
 /* Build a bit-string constant containing with the given LENGTH
    containing all ones (if VALUE is true), or all zeros (if VALUE is false). */
 
-tree
+static tree
 build_boring_bitstring (length, value)
      long length;
      int value;

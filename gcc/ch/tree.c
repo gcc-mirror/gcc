@@ -33,6 +33,8 @@ extern struct obstack permanent_obstack;
 /* This is special sentinel used to communicate from build_string_type
    to layout_chill_range_type for the index range of a string. */
 tree string_index_type_dummy;
+
+static tree make_powerset_type				PROTO ((tree));
 
 /* Build a chill string type.
    For a character string, ELT_TYPE==char_type_node; 
@@ -88,7 +90,7 @@ build_string_type (elt_type, length)
   return t;
 }
 
-tree
+static tree
 make_powerset_type (domain)
      tree domain;
 {
@@ -156,7 +158,7 @@ build_bitstring_type (size_in_bits)
 
 tree
 get_identifier3 (part1, part2, part3)
-     char *part1, *part2, *part3;
+     const char *part1, *part2, *part3;
 {
   char *buf = (char*)
     alloca (strlen(part1) + strlen(part2) + strlen(part3) + 1);
@@ -173,7 +175,7 @@ build_alias_decl (old_prefix, new_prefix, postfix)
 {
   tree decl = make_node (ALIAS_DECL);
 
-  char *postfix_pointer = IDENTIFIER_POINTER (postfix);
+  const char *postfix_pointer = IDENTIFIER_POINTER (postfix);
   int postfix_length = IDENTIFIER_LENGTH (postfix);
   int old_length = old_prefix ? IDENTIFIER_LENGTH(old_prefix) : 0;
   int new_length = new_prefix ? IDENTIFIER_LENGTH(new_prefix) : 0;
@@ -234,7 +236,7 @@ tree
 decl_check_rename (alias, old_name)
      tree alias, old_name;
 {
-  char *old_pointer = IDENTIFIER_POINTER (old_name);
+  const char *old_pointer = IDENTIFIER_POINTER (old_name);
   int old_len = IDENTIFIER_LENGTH (old_name);
   if (DECL_OLD_PREFIX (alias))
     {

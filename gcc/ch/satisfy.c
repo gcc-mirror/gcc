@@ -35,8 +35,12 @@ struct decl_chain
   tree decl;
 };
 
-/* forward declaration */
-tree satisfy PROTO((tree, struct decl_chain *));
+/* forward declarations */
+static tree satisfy		PROTO ((tree, struct decl_chain *));
+static void cycle_error_print	PROTO ((struct decl_chain *, tree));
+static tree safe_satisfy_decl	PROTO ((tree, struct decl_chain *));
+static void satisfy_list	PROTO ((tree, struct decl_chain *));
+static void satisfy_list_values	PROTO ((tree, struct decl_chain *));
 
 static struct decl_chain dummy_chain;
 #define LOOKUP_ONLY (chain==&dummy_chain)
@@ -55,7 +59,7 @@ cycle_error_print (chain, decl)
     }
 }
 
-tree
+static tree
 safe_satisfy_decl (decl, prev_chain)
      tree decl;
      struct decl_chain *prev_chain;
@@ -200,8 +204,7 @@ safe_satisfy_decl (decl, prev_chain)
     case FUNCTION_DECL:
       SATISFY (TREE_TYPE (decl));
       if (CH_DECL_PROCESS (decl))
-	safe_satisfy_decl (DECL_TASKING_CODE_DECL (decl), 
-			   prev_chain);
+	safe_satisfy_decl ((tree) DECL_TASKING_CODE_DECL (decl), prev_chain);
       break;
     case PARM_DECL:
       SATISFY (TREE_TYPE (decl));
@@ -211,8 +214,7 @@ safe_satisfy_decl (decl, prev_chain)
     case TYPE_DECL:
       SATISFY (TREE_TYPE (decl));
       if (CH_DECL_SIGNAL (decl))
-	safe_satisfy_decl (DECL_TASKING_CODE_DECL (decl), 
-			   prev_chain);
+	safe_satisfy_decl ((tree) DECL_TASKING_CODE_DECL (decl), prev_chain);
       if (!LOOKUP_ONLY)
 	{
 	  if (TYPE_NAME (TREE_TYPE (decl)) == NULL_TREE)
@@ -300,7 +302,7 @@ satisfy_list_values (exp, chain)
     }
 }
 
-tree
+static tree
 satisfy (exp, chain)
      tree exp;
      struct decl_chain *chain;
