@@ -752,10 +752,6 @@ _cpp_parse_expr (pfile)
   int skip_evaluation = 0;
   int result;
 
-  /* Save parser state and set it to something sane.  */
-  int save_skipping = pfile->skipping;
-  pfile->skipping = 0;
-
   /* Set up detection of #if ! defined().  */
   pfile->mi_lexed = 0;
   pfile->mi_if_not_defined = MI_IND_NONE;
@@ -1039,7 +1035,6 @@ _cpp_parse_expr (pfile)
   /* Free dynamic stack if we allocated one.  */
   if (stack != init_stack)
     free (stack);
-  pfile->skipping = save_skipping;
   return result;
 }
 

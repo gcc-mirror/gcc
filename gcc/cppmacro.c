@@ -86,7 +86,6 @@ static void replace_args PARAMS ((cpp_reader *, cpp_macro *, macro_arg *,
 
 static void save_lookahead_token PARAMS ((cpp_reader *, const cpp_token *));
 static void take_lookahead_token PARAMS ((cpp_reader *, cpp_token *));
-static void release_lookahead PARAMS ((cpp_reader *));
 static cpp_lookahead *alloc_lookahead PARAMS ((cpp_reader *));
 static void free_lookahead PARAMS ((cpp_lookahead *));
 
@@ -897,7 +896,7 @@ _cpp_get_token (pfile, token)
      cpp_token *token;
 {
  next_token:
-  for (;;)
+  do
     {
       cpp_context *context = pfile->context;
 
@@ -913,22 +912,15 @@ _cpp_get_token (pfile, token)
 	  if (context->macro)
 	    {
 	      _cpp_pop_context (pfile);
-	      continue;
+	      goto next_token;
 	    }
 	  /* End of argument pre-expansion.  */
 	  token->type = CPP_EOF;
 	  token->flags = 0;
+	  return;
 	}
-      break;
     }
-
-  /* Only perform macro expansion (and therefore pasting) when not
-     skipping, or when skipping but in a directive.  The only
-     directive where this could be true is #elif.  A possible later
-     optimisation: get do_elif to clear skipping so we don't need the
-     directive test here.  */
-  if (pfile->skipping && !pfile->state.in_directive)
-    return;
+  while (pfile->skipping);
 
   for (;;)
     {
@@ -985,21 +977,7 @@ cpp_get_token (pfile, token)
      cpp_reader *pfile;
      cpp_token *token;
 {
-  for (;;)
-    {
-      _cpp_get_token (pfile, token);
-
-      if (token->type == CPP_EOF)
-	break;
-      else if (pfile->skipping)
-	continue;
-
-      /* Non-comment tokens invalidate any controlling macros.  */
-      if (token->type != CPP_COMMENT)
-	pfile->mi_state = MI_FAILED;
-
-      break;
-    }
+  _cpp_get_token (pfile, token);
 
   if (pfile->la_write)
     save_lookahead_token (pfile, token);
@@ -1057,12 +1035,12 @@ take_lookahead_token (pfile, token)
   pfile->lexer_pos = twp->pos;
 
   if (++la->cur == la->count)
-    release_lookahead (pfile);
+    _cpp_release_lookahead (pfile);
 }
 
 /* Moves the lookahead at the front of the read list to the free store.  */
-static void
-release_lookahead (pfile)
+void
+_cpp_release_lookahead (pfile)
      cpp_reader *pfile;
 {
   cpp_lookahead *la = pfile->la_read;
@@ -1151,7 +1129,7 @@ cpp_stop_lookahead (pfile, drop)
   pfile->la_read = la;
 
   if (drop || la->count == 0)
-    release_lookahead (pfile);
+    _cpp_release_lookahead (pfile);
   else
     pfile->lexer_pos = la->pos;
 }

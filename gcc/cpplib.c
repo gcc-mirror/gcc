@@ -44,7 +44,7 @@ struct if_stack
   struct if_stack *next;
   cpp_lexer_pos pos;		/* line and column where condition started */
   const cpp_hashnode *mi_cmacro;/* macro name for #ifndef around entire file */
-  int was_skipping;		/* value of pfile->skipping before this if */
+  unsigned char was_skipping;	/* Value of pfile->skipping before this if.  */
   int type;			/* type of last directive seen in this group */
 };
 
@@ -92,9 +92,7 @@ static int  read_line_number	PARAMS ((cpp_reader *, int *));
 static int  strtoul_for_line	PARAMS ((const U_CHAR *, unsigned int,
 					 unsigned long *));
 static void do_diagnostic	PARAMS ((cpp_reader *, enum error_type));
-static cpp_hashnode *
-	lex_macro_node		PARAMS ((cpp_reader *));
-static void unwind_if_stack	PARAMS ((cpp_reader *, cpp_buffer *));
+static cpp_hashnode *lex_macro_node	PARAMS ((cpp_reader *));
 static void do_pragma_once	PARAMS ((cpp_reader *));
 static void do_pragma_poison	PARAMS ((cpp_reader *));
 static void do_pragma_system_header	PARAMS ((cpp_reader *));
@@ -185,17 +183,18 @@ skip_rest_of_line (pfile)
 {
   cpp_token token;
 
+  /* Discard all lookaheads.  */
+  while (pfile->la_read)
+    _cpp_release_lookahead (pfile);
+
   /* Discard all stacked contexts.  */
   while (pfile->context != &pfile->base_context)
     _cpp_pop_context (pfile);
 
-  /* Sweep up all tokens remaining on the line.  We need to read
-     tokens from lookahead, but cannot just drop the lookahead buffers
-     because they may be saving tokens prior to this directive for an
-     external client.  So we use _cpp_get_token, with macros disabled.  */
+  /* Sweep up all tokens remaining on the line.  */
   pfile->state.prevent_expansion++;
   while (!pfile->state.next_bol)
-    _cpp_get_token (pfile, &token);
+    _cpp_lex_token (pfile, &token);
   pfile->state.prevent_expansion--;
 }
 
@@ -222,6 +221,7 @@ _cpp_handle_directive (pfile, indented)
      cpp_reader *pfile;
      int indented;
 {
+  cpp_buffer *buffer = pfile->buffer;
   const directive *dir = 0;
   cpp_token dname;
   int not_asm = 1;
@@ -250,11 +250,11 @@ _cpp_handle_directive (pfile, indented)
 	 skipped conditional groups.  Complain about this form if
 	 we're being pedantic, but not if this is regurgitated input
 	 (preprocessed or fed back in by the C++ frontend).  */
-      if (!pfile->skipping  && !CPP_OPTION (pfile, lang_asm))
+      if (! pfile->skipping  && !CPP_OPTION (pfile, lang_asm))
 	{
 	  dir = &dtable[T_LINE];
 	  _cpp_push_token (pfile, &dname, &pfile->directive_pos);
-	  if (CPP_PEDANTIC (pfile) && CPP_BUFFER (pfile)->inc
+	  if (CPP_PEDANTIC (pfile) && buffer->inc
 	      && ! CPP_OPTION (pfile, preprocessed))
 	    cpp_pedwarn (pfile, "# followed by integer");
 	}
@@ -290,7 +290,7 @@ _cpp_handle_directive (pfile, indented)
 
 	  /* If we are skipping a failed conditional group, all
 	     non-conditional directives are ignored.  */
-	  if (!pfile->skipping || (dir->flags & COND))
+	  if (! pfile->skipping || (dir->flags & COND))
 	    {
 	      /* Issue -pedantic warnings for extensions.   */
 	      if (CPP_PEDANTIC (pfile) && dir->origin == EXTENSION)
@@ -301,7 +301,10 @@ _cpp_handle_directive (pfile, indented)
 	      if (! (dir->flags & IF_COND))
 		pfile->mi_state = MI_FAILED;
 
+	      buffer->was_skipping = pfile->skipping;
+	      pfile->skipping = 0;
 	      (*dir->handler) (pfile);
+	      pfile->skipping = buffer->was_skipping;
 	    }
 	}
     }
@@ -311,7 +314,7 @@ _cpp_handle_directive (pfile, indented)
       if (indented && CPP_WTRADITIONAL (pfile))
 	cpp_warning (pfile, "traditional C ignores #\\n with the # indented");
     }
-  else
+  else if (!pfile->skipping)
     {
       /* An unknown directive.  Don't complain about it in assembly
 	 source: we don't know where the comments are, and # may
@@ -323,7 +326,7 @@ _cpp_handle_directive (pfile, indented)
 	  not_asm = 0;
 	  _cpp_push_token (pfile, &dname, &pfile->directive_pos);
 	}
-      else if (!pfile->skipping)
+      else
 	cpp_error (pfile, "invalid preprocessing directive #%s",
 		   cpp_token_as_text (pfile, &dname));
     }
@@ -1164,7 +1167,7 @@ do_ifdef (pfile)
 {
   int skip = 1;
 
-  if (! pfile->skipping)
+  if (! pfile->buffer->was_skipping)
     {
       const cpp_hashnode *node = lex_macro_node (pfile);
 
@@ -1182,7 +1185,7 @@ do_ifndef (pfile)
   int skip = 1;
   const cpp_hashnode *node = 0;
 
-  if (! pfile->skipping)
+  if (! pfile->buffer->was_skipping)
     {
       node = lex_macro_node (pfile);
       if (node)
@@ -1204,7 +1207,7 @@ do_if (pfile)
   int skip = 1;
   const cpp_hashnode *cmacro = 0;
 
-  if (!pfile->skipping)
+  if (! pfile->buffer->was_skipping)
     {
       /* Controlling macro of #if ! defined ()  */
       pfile->mi_ind_cmacro = 0;
@@ -1215,7 +1218,7 @@ do_if (pfile)
   push_conditional (pfile, skip, T_IF, cmacro);
 }
 
-/* #else flips pfile->skipping and continues without changing
+/* Flip skipping state if appropriate and continue without changing
    if_stack; this is so that the error message for missing #endif's
    etc. will point to the original #if.  */
 
@@ -1223,7 +1226,8 @@ static void
 do_else (pfile)
      cpp_reader *pfile;
 {
-  struct if_stack *ifs = CPP_BUFFER (pfile)->if_stack;
+  cpp_buffer *buffer = pfile->buffer;
+  struct if_stack *ifs = buffer->if_stack;
 
   if (ifs == NULL)
     cpp_error (pfile, "#else without #if");
@@ -1235,18 +1239,15 @@ do_else (pfile)
 	  cpp_error_with_line (pfile, ifs->pos.line, ifs->pos.col,
 			       "the conditional began here");
 	}
+      ifs->type = T_ELSE;
+
+      /* Buffer->was_skipping is 1 if all conditionals in this chain
+	 have been false, 2 if a conditional has been true.  */
+      if (! ifs->was_skipping && buffer->was_skipping != 2)
+	buffer->was_skipping = ! buffer->was_skipping;
 
       /* Invalidate any controlling macro.  */
       ifs->mi_cmacro = 0;
-
-      ifs->type = T_ELSE;
-      if (! ifs->was_skipping)
-	{
-	  /* If pfile->skipping is 2, one of the blocks in an #if
-	     #elif ... chain succeeded, so we skip the else block.  */
-	  if (pfile->skipping < 2)
-	    pfile->skipping = ! pfile->skipping;
-	}
     }
 
   check_eol (pfile);
@@ -1259,35 +1260,35 @@ static void
 do_elif (pfile)
      cpp_reader *pfile;
 {
-  struct if_stack *ifs = CPP_BUFFER (pfile)->if_stack;
+  cpp_buffer *buffer = pfile->buffer;
+  struct if_stack *ifs = buffer->if_stack;
 
   if (ifs == NULL)
+    cpp_error (pfile, "#elif without #if");
+  else
     {
-      cpp_error (pfile, "#elif without #if");
-      return;
+      if (ifs->type == T_ELSE)
+	{
+	  cpp_error (pfile, "#elif after #else");
+	  cpp_error_with_line (pfile, ifs->pos.line, ifs->pos.col,
+			       "the conditional began here");
+	}
+      ifs->type = T_ELIF;
+
+      /* Don't evaluate #elif if our higher level is skipping.  */
+      if (! ifs->was_skipping)
+	{
+	  /* Buffer->was_skipping is 1 if all conditionals in this
+	     chain have been false, 2 if a conditional has been true.  */
+	  if (buffer->was_skipping == 1)
+	    buffer->was_skipping = ! _cpp_parse_expr (pfile);
+	  else
+	    buffer->was_skipping = 2;
+
+	  /* Invalidate any controlling macro.  */
+	  ifs->mi_cmacro = 0;
+	}
     }
-
-  if (ifs->type == T_ELSE)
-    {
-      cpp_error (pfile, "#elif after #else");
-      cpp_error_with_line (pfile, ifs->pos.line, ifs->pos.col,
-			   "the conditional began here");
-    }
-
-  /* Invalidate any controlling macro.  */
-  ifs->mi_cmacro = 0;
-
-  ifs->type = T_ELIF;
-  if (ifs->was_skipping)
-    return;  /* Don't evaluate a nested #if */
-
-  if (pfile->skipping != 1)
-    {
-      pfile->skipping = 2;  /* one block succeeded, so don't do any others */
-      return;
-    }
-
-  pfile->skipping = ! _cpp_parse_expr (pfile);
 }
 
 /* #endif pops the if stack and resets pfile->skipping.  */
@@ -1296,7 +1297,8 @@ static void
 do_endif (pfile)
      cpp_reader *pfile;
 {
-  struct if_stack *ifs = CPP_BUFFER (pfile)->if_stack;
+  cpp_buffer *buffer = pfile->buffer;
+  struct if_stack *ifs = buffer->if_stack;
 
   if (ifs == NULL)
     cpp_error (pfile, "#endif without #if");
@@ -1309,8 +1311,8 @@ do_endif (pfile)
 	  pfile->mi_cmacro = ifs->mi_cmacro;
 	}
 
-      CPP_BUFFER (pfile)->if_stack = ifs->next;
-      pfile->skipping = ifs->was_skipping;
+      buffer->if_stack = ifs->next;
+      buffer->was_skipping = ifs->was_skipping;
       obstack_free (pfile->buffer_ob, ifs);
     }
 
@@ -1329,39 +1331,20 @@ push_conditional (pfile, skip, type, cmacro)
      const cpp_hashnode *cmacro;
 {
   struct if_stack *ifs;
+  cpp_buffer *buffer = pfile->buffer;
 
   ifs = xobnew (pfile->buffer_ob, struct if_stack);
   ifs->pos = pfile->directive_pos;
-  ifs->next = CPP_BUFFER (pfile)->if_stack;
-  ifs->was_skipping = pfile->skipping;
+  ifs->next = buffer->if_stack;
+  ifs->was_skipping = buffer->was_skipping;
   ifs->type = type;
   if (pfile->mi_state == MI_OUTSIDE && pfile->mi_cmacro == 0)
     ifs->mi_cmacro = cmacro;
   else
     ifs->mi_cmacro = 0;
 
-  if (!pfile->skipping)
-    pfile->skipping = skip;
-
-  CPP_BUFFER (pfile)->if_stack = ifs;
-}
-
-/* Called when we reach the end of a file.  Walk back up the
-   conditional stack till we reach its level at entry to this file,
-   issuing error messages.  Then force skipping off.  */
-static void
-unwind_if_stack (pfile, pbuf)
-     cpp_reader *pfile;
-     cpp_buffer *pbuf;
-{
-  struct if_stack *ifs;
-
-  /* No need to free stack - they'll all go away with the buffer.  */
-  for (ifs = pbuf->if_stack; ifs; ifs = ifs->next)
-    cpp_error_with_line (pfile, ifs->pos.line, ifs->pos.col,
-			 "unterminated #%s", dtable[ifs->type].name);
-
-  pfile->skipping = 0;
+  buffer->was_skipping = skip;
+  buffer->if_stack = ifs;
 }
 
 /* Read the tokens of the answer into the macro pool.  Only commit the
@@ -1723,6 +1706,7 @@ cpp_push_buffer (pfile, buffer, length)
   new->rlimit = buffer + length;
   new->prev = buf;
   new->pfile = pfile;
+  new->was_skipping = 0;
   /* Preprocessed files don't do trigraph and escaped newline processing.  */
   new->from_stage3 = CPP_OPTION (pfile, preprocessed);
   /* No read ahead or extra char initially.  */
@@ -1738,22 +1722,28 @@ cpp_buffer *
 cpp_pop_buffer (pfile)
      cpp_reader *pfile;
 {
+  cpp_buffer *buffer = pfile->buffer;
+  struct if_stack *ifs = buffer->if_stack;
   int wfb;
-  cpp_buffer *buf = CPP_BUFFER (pfile);
 
-  unwind_if_stack (pfile, buf);
-  wfb = (buf->inc != 0);
+  /* Walk back up the conditional stack till we reach its level at
+     entry to this file, issuing error messages.  */
+  for (ifs = buffer->if_stack; ifs; ifs = ifs->next)
+    cpp_error_with_line (pfile, ifs->pos.line, ifs->pos.col,
+			 "unterminated #%s", dtable[ifs->type].name);
+
+  wfb = (buffer->inc != 0);
   if (wfb)
-    _cpp_pop_file_buffer (pfile, buf);
+    _cpp_pop_file_buffer (pfile, buffer);
 
-  CPP_BUFFER (pfile) = CPP_PREV_BUFFER (buf);
-  obstack_free (pfile->buffer_ob, buf);
+  pfile->buffer = buffer->prev;
+  obstack_free (pfile->buffer_ob, buffer);
   pfile->buffer_stack_depth--;
 
-  if (CPP_BUFFER (pfile) && wfb && pfile->cb.leave_file)
+  if (pfile->buffer && wfb && pfile->cb.leave_file)
     (*pfile->cb.leave_file) (pfile);
   
-  return CPP_BUFFER (pfile);
+  return pfile->buffer;
 }
 
 #define obstack_chunk_alloc xmalloc
