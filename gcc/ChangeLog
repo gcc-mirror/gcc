@@ -1,3 +1,8 @@
+2005-03-31  Olivier Hainque  <hainque@adacore.com>
+
+        * dwarf2out.c (dwarf2out_frame_finish): Honor DWARF2_FRAME_INFO
+        defined and non-zero.
+	
 2005-03-31  Alan Modra  <amodra@bigpond.net.au>
 
 	PR target/20611
