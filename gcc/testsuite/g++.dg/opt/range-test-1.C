@@ -176,6 +176,9 @@ T(24, signed char, x == SCHAR_MIN || x == SCHAR_MAX,
 T(25, integers, x == int_smallest || x == int_largest,
   { int_smallest C int_largest }, { int_minus1 C int_zero C int_one
     C int_2ndsmallest C int_2ndlargest C int_3rdsmallest C int_3rdlargest })
+T(26, enum3, x == enum3_one || x == enum3_two || x == enum3_three,
+  { enum3_one C enum3_two C enum3_three }, { enum3_zero C enum3_four
+    C enum3_five C enum3_six C enum3_seven })
 
 /* These should be optimized into unconditional jumps.  */
 T(o1, unsigned long, x <= 16 || (x >= 17 && x <= -1UL),

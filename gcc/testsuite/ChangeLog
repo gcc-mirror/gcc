@@ -1,3 +1,9 @@
+2004-07-10  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/16372
+	* gcc.dg/range-test-1.c: New test.
+	* g++.dg/opt/range-test-1.C: New test.
+
 2004-07-09  Loren James Rittle  <ljrittle@acm.org> 
 
 	* gcc.dg/builtins-config.h: Handle FreeBSD.

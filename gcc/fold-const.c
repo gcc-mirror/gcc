@@ -3535,7 +3535,13 @@ build_range_check (tree type, tree exp, int in_p, tree low, tree high)
       HOST_WIDE_INT hi;
       int prec;
 
-      prec = TYPE_PRECISION (etype);
+      /* For enums the comparison will be done in the underlying type,
+	 so using enum's precision is wrong here.
+	 Consider e.g. enum { A, B, C, D, E }, low == B and high == D.  */
+      if (TREE_CODE (etype) == ENUMERAL_TYPE)
+	prec = GET_MODE_BITSIZE (TYPE_MODE (etype));
+      else
+	prec = TYPE_PRECISION (etype);
       if (prec <= HOST_BITS_PER_WIDE_INT)
 	{
 	  hi = 0;
