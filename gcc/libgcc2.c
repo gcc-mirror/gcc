@@ -115,6 +115,7 @@ typedef union
 
 extern DItype __fixunssfdi (SFtype a);
 extern DItype __fixunsdfdi (DFtype a);
+extern DItype __fixunsxfdi (XFtype a);
 
 #if defined (L_negdi2) || defined (L_divdi3) || defined (L_moddi3)
 #if defined (L_divdi3) || defined (L_moddi3)
@@ -640,6 +641,7 @@ __udivmoddi4 (n, d, rp)
 
 #ifdef L_divdi3
 UDItype __udivmoddi4 ();
+
 DItype
 __divdi3 (u, v)
      DItype u, v;
