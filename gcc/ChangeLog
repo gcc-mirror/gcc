@@ -1,5 +1,18 @@
 2000-01-18  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
+	* vax-protos.h: New file.
+
+	* vax.c: Fix compile time warnings.
+	
+	* vax.h: Move prototypes to vax-protos.h.  Fix compile time
+	warnings.
+
+	* vax.md: Likewise.
+
+	* vaxv.md: Likewise.
+
+2000-01-18  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
 	* romp-protos.h: New file.
 
 	* romp.c: Fix compile time warnings.
