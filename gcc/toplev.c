@@ -242,6 +242,9 @@ char *main_input_filename;
 
 int lineno;
 
+/* Nonzero if it is unsafe to create any new pseudo registers.  */
+int no_new_pseudos;
+
 /* Stack of currently pending input files.  */
 
 struct file_stack *input_file_stack;
@@ -3862,6 +3865,10 @@ rest_of_compilation (decl)
 	print_rtl_graph_with_bb (dump_base_name, ".flow", insns);
     }
 
+  /* The first life analysis pass has finished.  From now on we can not
+     generate any new pseudos.  */
+  no_new_pseudos = 1;
+
   /* If -opt, try combining insns through substitution.  */
 
   if (optimize > 0)
@@ -4170,6 +4177,7 @@ rest_of_compilation (decl)
 
   reload_completed = 0;
   flow2_completed = 0;
+  no_new_pseudos = 0;
 
   TIMEVAR (final_time,
 	   {

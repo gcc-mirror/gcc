@@ -815,7 +815,9 @@ reload (first, global, dumpfile)
 #endif
   finish_spills (global, dumpfile);
 
-  /* From now on, we need to emit any moves without making new pseudos.  */
+  /* From now on, we may need to generate moves differently.  We may also
+     allow modifications of insns which cause them to not be recognized.
+     Any such modifications will be cleaned up during reload itself.  */
   reload_in_progress = 1;
 
   /* This loop scans the entire function each go-round
@@ -4487,9 +4489,9 @@ static HARD_REG_SET reload_reg_used_at_all;
    in the group.  */
 static HARD_REG_SET reload_reg_used_for_inherit;
 
-/* Records which hard regs are allocated to a pseudo during any point of the
-   current insn.  */
-static HARD_REG_SET reg_used_by_pseudo;
+/* Records which hard regs are used in any way, either as explicit use or
+   by being allocated to a pseudo during any point of the current insn.  */
+static HARD_REG_SET reg_used_in_insn;
 
 /* Mark reg REGNO as in use for a reload of the sort spec'd by OPNUM and
    TYPE. MODE is used to indicate how many consecutive regs are
@@ -5522,10 +5524,16 @@ choose_reload_regs (chain)
   CLEAR_HARD_REG_SET (reload_reg_used_in_insn);
   CLEAR_HARD_REG_SET (reload_reg_used_in_other_addr);
 
-  CLEAR_HARD_REG_SET (reg_used_by_pseudo);
-  compute_use_by_pseudos (&reg_used_by_pseudo, chain->live_before);
-  compute_use_by_pseudos (&reg_used_by_pseudo, chain->live_after);
-  
+  CLEAR_HARD_REG_SET (reg_used_in_insn);
+  {
+    HARD_REG_SET tmp;
+    REG_SET_TO_HARD_REG_SET (tmp, chain->live_before);
+    IOR_HARD_REG_SET (reg_used_in_insn, tmp);
+    REG_SET_TO_HARD_REG_SET (tmp, chain->live_after);
+    IOR_HARD_REG_SET (reg_used_in_insn, tmp);
+    compute_use_by_pseudos (&reg_used_in_insn, chain->live_before);
+    compute_use_by_pseudos (&reg_used_in_insn, chain->live_after);
+  }
   for (i = 0; i < reload_n_operands; i++)
     {
       CLEAR_HARD_REG_SET (reload_reg_used_in_output[i]);
@@ -5838,7 +5846,7 @@ choose_reload_regs (chain)
 				    (i, reload_opnum[r], reload_when_needed[r],
 				     reload_in[r], reload_out[r], r, 1))
 			      /* Don't use it if we'd clobber a pseudo reg.  */
-			      || (TEST_HARD_REG_BIT (reg_used_by_pseudo, i)
+			      || (TEST_HARD_REG_BIT (reg_used_in_insn, i)
 				  && reload_out[r]
 				  && ! TEST_HARD_REG_BIT (reg_reloaded_dead, i))
 			      /* Don't really use the inherited spill reg
