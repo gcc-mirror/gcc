@@ -349,15 +349,8 @@ constant_expression_warning (value)
      tree value;
 {
   if (TREE_CODE (value) == INTEGER_CST && TREE_CONSTANT_OVERFLOW (value))
-    {
-      /* ??? This is a warning, not a pedwarn, in 2.4,
-	 because it happens in contexts that are not
-	 "constant expressions" in ANSI C.
-	 Fix the problem differently in 2.5.  */
-      warning ("overflow in constant expression");
-      /* Suppress duplicate warnings.  */
-      TREE_CONSTANT_OVERFLOW (value) = 0;
-    }
+    if (pedantic)
+      pedwarn ("overflow in constant expression");
 }
 
 /* Print a warning if an expression had overflow in folding.
@@ -371,14 +364,10 @@ void
 overflow_warning (value)
      tree value;
 {
-  if (TREE_CODE (value) == INTEGER_CST && TREE_CONSTANT_OVERFLOW (value))
+  if (TREE_CODE (value) == INTEGER_CST && TREE_OVERFLOW (value))
     {
-      /* ??? This is a warning, not a pedwarn, in 2.4,
-	 because it happens in contexts that are not
-	 "constant expressions" in ANSI C.
-	 Fix the problem differently in 2.5.  */
+      TREE_OVERFLOW (value) = 0;
       warning ("integer overflow in expression");
-      TREE_CONSTANT_OVERFLOW (value) = 0;
     }
 }
 
@@ -415,20 +404,15 @@ convert_and_check (type, expr)
   tree t = convert (type, expr);
   if (TREE_CODE (t) == INTEGER_CST)
     {
-      if (TREE_UNSIGNED (TREE_TYPE (expr))
-	  && !TREE_UNSIGNED (type)
-	  && TREE_CODE (TREE_TYPE (expr)) == INTEGER_TYPE
-	  && TYPE_PRECISION (type) == TYPE_PRECISION (TREE_TYPE (expr)))
-	/* No warning for converting 0x80000000 to int.  */
-	TREE_CONSTANT_OVERFLOW (t) = 0;
-      else if (TREE_CONSTANT_OVERFLOW (t))
+      if (TREE_OVERFLOW (t))
 	{
-	  /* ??? This is a warning, not a pedwarn, in 2.4,
-	     because it happens in contexts that are not
-	     "constant expressions" in ANSI C.
-	     Fix the problem differently in 2.5.  */
-	  warning ("overflow in implicit constant conversion");
-	  TREE_CONSTANT_OVERFLOW (t) = 0;
+	  TREE_OVERFLOW (t) = 0;
+
+	  /* No warning for converting 0x80000000 to int.  */
+	  if (!(TREE_UNSIGNED (type) < TREE_UNSIGNED (TREE_TYPE (expr))
+		&& TREE_CODE (TREE_TYPE (expr)) == INTEGER_TYPE
+		&& TYPE_PRECISION (type) == TYPE_PRECISION (TREE_TYPE (expr))))
+	    warning ("overflow in implicit constant conversion");
 	}
       else
 	unsigned_conversion_warning (t, expr);
