@@ -1,3 +1,7 @@
+2003-06-20  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	* config/alpha/alpha.c (alpha_file_start): Fix typo.
+
 2003-06-20  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
 
 	* config/mips/mips.h (PUT_SDB_FUNCTION_END): Pass 0 as third arg
