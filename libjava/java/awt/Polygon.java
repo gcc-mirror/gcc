@@ -185,7 +185,7 @@ public class Polygon implements Shape, Serializable
     while (--i >= 0)
       {
         xpoints[i] += dx;
-        xpoints[i] += dy;
+        ypoints[i] += dy;
       }
     if (bounds != null)
       {

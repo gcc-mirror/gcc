@@ -101,7 +101,7 @@ Java_gnu_java_awt_peer_gtk_GtkTextComponentPeer_getCaretPosition
   (JNIEnv *env, jobject obj)
 {
   void *ptr;
-  int pos;
+  int pos = 0;
   GtkEditable *editable;    // type of GtkEntry    (TextField)
   GtkWidget *text = NULL;   // type of GtkTextView (TextArea)
   GtkTextBuffer *buf;
@@ -187,7 +187,7 @@ Java_gnu_java_awt_peer_gtk_GtkTextComponentPeer_getSelectionStart
   (JNIEnv *env, jobject obj)
 {
   void *ptr;
-  int pos;
+  int pos = 0;
   GtkEditable *editable;    // type of GtkEntry    (TextField)
   GtkWidget *text = NULL;   // type of GtkTextView (TextArea)
   GtkTextBuffer *buf;
@@ -244,7 +244,7 @@ Java_gnu_java_awt_peer_gtk_GtkTextComponentPeer_getSelectionEnd
   (JNIEnv *env, jobject obj)
 {
   void *ptr;
-  int pos;
+  int pos = 0;
   GtkEditable *editable;    // type of GtkEntry    (TextField)
   GtkWidget *text = NULL;   // type of GtkTextView (TextArea)
   GtkTextBuffer *buf;
@@ -384,7 +384,7 @@ Java_gnu_java_awt_peer_gtk_GtkTextComponentPeer_getText
   (JNIEnv *env, jobject obj)
 {
   void *ptr;
-  char *contents;
+  char *contents = NULL;
   jstring jcontents;
   GtkEditable *editable;    // type of GtkEntry    (TextField)
   GtkWidget *text = NULL;   // type of GtkTextView (TextArea)
