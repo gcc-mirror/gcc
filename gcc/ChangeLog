@@ -1,3 +1,9 @@
+2002-11-03  Roger Sayle  <roger@eyesopen.com>
+
+	PR c/7128
+	* c-typeck.c (c_expand_asm_operands): Defend against
+	error_mark_nodes in the output argument to avoid ICE.
+
 2002-11-03  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
 	PR middle-end/8408
