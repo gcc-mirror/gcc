@@ -370,7 +370,11 @@ getPreferredSize(int rows, int columns)
 {
   TextAreaPeer tap = (TextAreaPeer)getPeer();
   if (tap == null)
-    return(null); // FIXME: What do we do if there is no peer?
+    {
+      // Sun's JDK just seems to return Dimension(0,0) in this case.
+      // we do the same.
+      return new Dimension(0, 0);
+    }
 
   return(tap.getPreferredSize(rows, columns));
 }

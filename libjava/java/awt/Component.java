@@ -844,9 +844,10 @@ public abstract class Component
     // Inspection by subclassing shows that Sun's implementation calls
     // show(boolean) which then calls show() or hide(). It is the show()
     // method that is overriden in subclasses like Window.
-    if (peer != null)
-      peer.setVisible(b);
-    this.visible = b;
+    if (b)
+      show();
+    else
+      hide();
   }
 
   /**
@@ -856,7 +857,9 @@ public abstract class Component
    */
   public void show()
   {
-    setVisible(true);
+    if (peer != null)
+      peer.setVisible(true);
+    this.visible = true;
   }
 
   /**
@@ -877,7 +880,9 @@ public abstract class Component
    */
   public void hide()
   {
-    setVisible(false);
+    if (peer != null)
+      peer.setVisible(false);
+    this.visible = false;
   }
 
   /**
@@ -1448,8 +1453,10 @@ public abstract class Component
   public Dimension getPreferredSize()
   {
     if (prefSize == null)
-      prefSize = (peer != null ? peer.getPreferredSize()
-                       : new Dimension(width, height));
+      if (peer == null)
+	return new Dimension(width, height);
+      else 
+        prefSize = peer.getPreferredSize();
     return prefSize;
   }
 

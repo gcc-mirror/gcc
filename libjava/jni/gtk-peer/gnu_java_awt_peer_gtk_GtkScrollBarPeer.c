@@ -65,9 +65,10 @@ post_adjustment_event (GtkAdjustment *adj, struct range_scrollbar *rs)
       type = AWT_ADJUSTMENT_BLOCK_DECREMENT;
       break;
     case GTK_SCROLL_JUMP:
+    case GTK_SCROLL_NONE:  /* Apparently generated when slider is dragged. */
       type = AWT_ADJUSTMENT_TRACK;
       break;
-    default: /* GTK_SCROLL_NONE */
+    default: /* Can this happen?  If so, is this right? */
       return;
     }
   

@@ -390,8 +390,8 @@ setValues(int value, int visibleAmount, int minimum, int maximum)
   if (value > maximum)
     value = maximum;
 
-  if (visibleAmount > value)
-    visibleAmount = value;
+  if (visibleAmount > maximum - minimum)
+    visibleAmount = maximum - minimum;
 
   this.value = value;
   this.visibleAmount = visibleAmount;
@@ -664,6 +664,7 @@ processEvent(AWTEvent event)
 protected void
 processAdjustmentEvent(AdjustmentEvent event)
 {
+  value = event.getValue();
   if (adjustment_listeners != null)
     adjustment_listeners.adjustmentValueChanged(event);
 }

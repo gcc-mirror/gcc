@@ -45,6 +45,8 @@ public class GtkTextAreaPeer extends GtkTextComponentPeer
 {
   native void create (int scrollbarVisibility);
 
+  native void gtkSetFont(String xlfd, int size);
+
   void create ()
   {
     create (((TextArea)awtComponent).getScrollbarVisibility ());
@@ -98,5 +100,10 @@ public class GtkTextAreaPeer extends GtkTextComponentPeer
   public void insertText (String str, int pos)
   {
     insert (str, pos);
+  }
+
+  public void setFont (Font f)
+  {
+    gtkSetFont(((GtkFontPeer)f.getPeer()).getXLFD(), f.getSize());
   }
 }

@@ -57,14 +57,34 @@ public class GtkFontPeer implements FontPeer
       }
   }
 
-  final private String Xname;
+  final private String Xname; // uses %d for font size.
 
   public GtkFontPeer (String name, int style)
   {
     if (bundle != null)
       Xname = bundle.getString (name.toLowerCase () + "." + style);
     else
-      Xname = "-*-*-medium-r-normal-*-12-*-*-*-c-*-*-*";
+      {
+	String weight;
+	String slant;
+	String spacing;
+
+	if (style == Font.ITALIC || (style == (Font.BOLD+Font.ITALIC)))
+	  slant = "i";
+	else
+	  slant = "r";
+	if (style == Font.BOLD || (style == (Font.BOLD+Font.ITALIC)))
+	  weight = "bold";
+	else
+	  weight = "medium";
+	if (name.equals("Serif") || name.equals("SansSerif")
+	    || name.equals("Helvetica") || name.equals("Times"))
+	  spacing = "p";
+	else
+	  spacing = "c";
+
+        Xname = "-*-*-" + weight + "-" + slant + "-normal-*-%d-*-*-*-" + spacing + "-*-*-*";
+      }
   }
 
   public String getXLFD ()
