@@ -1,3 +1,7 @@
+Sun Aug  4 16:45:49 2002  Joseph S. Myers  <jsm@polyomino.org.uk>
+
+	* root.texi (version-gcc): Increase to 3.3.
+
 2002-07-30  Toon Moene  <toon@moene.indiv.nluug.nl>
 
 	* com.c (ffe_init_options): Set
