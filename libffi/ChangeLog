@@ -1,5 +1,17 @@
 2004-09-02  Andreas Tobler  <a.tobler@schweiz.ch>
 
+	* src/powerpc/ffi_darwin.c: Add flag for longdouble return values.
+	(ffi_prep_args): Handle longdouble arguments.
+	(ffi_prep_cif_machdep): Set flags for longdouble. Calculate space for
+	longdouble.
+	(ffi_closure_helper_DARWIN): Add closure handling for longdouble.
+	* src/powerpc/darwin.S (_ffi_call_DARWIN): Add handling of longdouble
+	values.
+	* src/powerpc/darwin_closure.S (_ffi_closure_ASM): Likewise.
+	* src/types.c: Defined longdouble size and alignment for darwin.
+
+2004-09-02  Andreas Tobler  <a.tobler@schweiz.ch>
+
 	* src/powerpc/aix.S: Remove whitespaces.
 	* src/powerpc/aix_closure.S: Likewise.
 	* src/powerpc/asm.h: Likewise.

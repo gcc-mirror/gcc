@@ -1,5 +1,5 @@
 /* -----------------------------------------------------------------------
-   darwin_closure.S - Copyright (c) 2002 2003 Free Software Foundation,
+   darwin_closure.S - Copyright (c) 2002, 2003, 2004, Free Software Foundation,
    Inc. based on ppc_closure.S
 
    PowerPC Assembly glue.
@@ -42,8 +42,8 @@ LCFI0:
 	/* 24 Bytes (Linkage Area)
 	   32 Bytes (outgoing parameter area, always reserved)
 	   104 Bytes (13*8 from FPR)
-	   8 Bytes (result)
-	   168 Bytes  */
+	   16 Bytes (result)
+	   176 Bytes  */
 
 	stwu	r1,-176(r1)	/* skip over caller save area
 				keep stack aligned to 16.  */
@@ -150,8 +150,8 @@ Lret_type3:
 /* case FFI_TYPE_LONGDOUBLE  */
 Lret_type4:
 	lfd	f1,0(r5)
+	lfd	f2,8(r5)
 	b	Lfinish
-	nop
 	nop
 
 /* case FFI_TYPE_UINT8  */
@@ -301,4 +301,4 @@ L_ffi_closure_helper_DARWIN$lazy_ptr:
 .data
 	.align 2
 LLFB1$non_lazy_ptr:
-        .long LFB1
+	.long LFB1

@@ -80,10 +80,15 @@ FFI_INTEGRAL_TYPEDEF(double, 8, 4, FFI_TYPE_DOUBLE);
 #endif
 FFI_INTEGRAL_TYPEDEF(longdouble, 12, 4, FFI_TYPE_LONGDOUBLE);
 
-#elif defined ARM || defined SH || defined POWERPC_AIX || defined POWERPC_DARWIN
+#elif defined ARM || defined SH || defined POWERPC_AIX
 
 FFI_INTEGRAL_TYPEDEF(double, 8, 4, FFI_TYPE_DOUBLE);
 FFI_INTEGRAL_TYPEDEF(longdouble, 8, 4, FFI_TYPE_LONGDOUBLE);
+
+#elif defined POWERPC_DARWIN
+
+FFI_INTEGRAL_TYPEDEF(double, 8, 4, FFI_TYPE_DOUBLE);
+FFI_INTEGRAL_TYPEDEF(longdouble, 16, 16, FFI_TYPE_LONGDOUBLE);
 
 #elif defined SPARC
 
