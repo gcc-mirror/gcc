@@ -1,5 +1,5 @@
 /* Optimize jump instructions, for GNU compiler.
-   Copyright (C) 1987, 88, 89, 91-95, 1996 Free Software Foundation, Inc.b
+   Copyright (C) 1987, 88, 89, 91-95, 1996 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -1165,13 +1165,9 @@ jump_optimize (f, cross_jump, noop_moves, after_regscan)
 		 We could handle BLKmode if (1) emit_store_flag could
 		 and (2) we could find the size reliably.  */
 	      && GET_MODE (XEXP (temp4, 0)) != BLKmode
-	      /* No point in doing any of this if branches are cheap or we
-		 don't have conditional moves.  */
-	      && (BRANCH_COST >= 2
-#ifdef HAVE_conditional_move
-		  || 1
-#endif
-		  )
+	      /* Even if branches are cheap, the store_flag optimization
+		 can win when the operation to be performed can be
+		 expressed directly.  */
 #ifdef HAVE_cc0
 	      /* If the previous insn sets CC0 and something else, we can't
 		 do this since we are going to delete that insn.  */
@@ -1282,8 +1278,19 @@ jump_optimize (f, cross_jump, noop_moves, after_regscan)
 		     can reverse the condition.  See if (3) applies possibly
 		     by reversing the condition.  Prefer reversing to (4) when
 		     branches are very expensive.  */
-		  && ((reversep = 0, temp2 == const0_rtx)
-		      || (temp3 == const0_rtx
+		  && (((BRANCH_COST >= 2
+			|| STORE_FLAG_VALUE == -1
+			|| (STORE_FLAG_VALUE == 1
+			 /* Check that the mask is a power of two,
+			    so that it can probably be generated
+			    with a shift.  */
+			    && exact_log2 (INTVAL (temp3)) >= 0))
+		       && (reversep = 0, temp2 == const0_rtx))
+		      || ((BRANCH_COST >= 2
+			   || STORE_FLAG_VALUE == -1
+			   || (STORE_FLAG_VALUE == 1
+			       && exact_log2 (INTVAL (temp2)) >= 0))
+			  && temp3 == const0_rtx
 			  && (reversep = can_reverse_comparison_p (temp4, insn)))
 		      || (BRANCH_COST >= 2
 			  && GET_CODE (temp2) == CONST_INT
