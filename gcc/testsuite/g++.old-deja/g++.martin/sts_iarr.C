@@ -8,13 +8,13 @@ struct Outer{
     Inner(int n): sum(n){}
 
     typename Outer<N-1>::Inner operator[](int n) const
-    { return Outer<N-1>::Inner(sum + n); }
+    { return typename Outer<N-1>::Inner(sum + n); }
 
     int sum;
   };
 
   typename Outer<N-1>::Inner operator[](int n) const
-  { return Outer<N-1>::Inner(n); }
+  { return typename Outer<N-1>::Inner(n); }
 };
 
 
