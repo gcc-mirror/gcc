@@ -176,12 +176,11 @@ namespace tr1
       static __one __test(unsigned long long);
       static __two __test(...);
 
-      template<typename _Up>
-        struct __convert
-	{ operator _Up() const; };
+      struct __convert
+      { operator _Tp() const; };
 
     public:
-      static const bool __value = sizeof(__test(__convert<_Tp>())) == 1;
+      static const bool __value = sizeof(__test(__convert())) == 1;
     };
 
   template<typename _Tp>
