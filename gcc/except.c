@@ -1622,16 +1622,16 @@ start_catch_handler (rtime)
       rtx call_rtx, rtime_address;
 
       if (catchstack.top->entry->false_label != NULL_RTX)
-        error ("never issued previous false_label");
+        fatal ("Compiler Bug: Never issued previous false_label");
       catchstack.top->entry->false_label = gen_exception_label ();
 
       rtime_address = expand_expr (rtime, NULL_RTX, Pmode, EXPAND_INITIALIZER);
       rtime_address = force_reg (Pmode, rtime_address);
 
       /* Now issue the call, and branch around handler if needed */
-      call_rtx = emit_library_call_value (
-        gen_rtx_SYMBOL_REF (Pmode, "__eh_rtime_match"), NULL_RTX, 
-                                        0, SImode, 1, rtime_address, Pmode);
+      call_rtx = emit_library_call_value 
+        (gen_rtx_SYMBOL_REF (Pmode, "__eh_rtime_match"), NULL_RTX, 
+         0, SImode, 1, rtime_address, Pmode);
 
       /* Did the function return true? */
       emit_cmp_insn (call_rtx, const0_rtx, EQ, NULL_RTX,

@@ -1,3 +1,9 @@
+Thu Sep 17 16:42:16 EDT 1998  Andrew MacLeod  <amacleod@cygnus.com>
+
+	* except.c (start_catch_handler): Issue 'fatal' instead of 'error' and
+	re-align some code.
+	* libgcc2.c (__eh_rtime_match): fprintf a runtime error. Use <stdio.h>.
+
 Thu Sep 17 12:24:33 1998  J"orn Rennecke <amylaar@cygnus.co.uk>
 
 	* regmove.c (copy_src_to_dest): Check that modes match.
