@@ -1,3 +1,9 @@
+2003-07-02  David Edelsohn  <edelsohn@gnu.org>
+
+	* dbxout.c (pending_bincls): Guard with DBX_USE_BINCLS.
+	(emit_bincl_stab): Same.
+	(emit_pending_bincls): Same.
+
 2003-07-02  Nathan Sidwell  <nathan@codesourcery.com>
 
 	PR c++/11072
