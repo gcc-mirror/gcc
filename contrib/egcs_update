@@ -15,7 +15,14 @@
 # contrib/egcs_update -A
 # contrib/egcs_update --nostdflags -P -r egcs_1_1_branch gcc/testsuite
 #
-# By Gerald Pfeifer <pfeifer@dbai.tuwien.ac.at>, August 1998.
+#
+# (C) 1998 Free Software Foundation
+# Originally by Gerald Pfeifer <pfeifer@dbai.tuwien.ac.at>, August 1998.
+#
+# This script is Free Software, and it can be copied, distributed and
+# modified as defined in the GNU General Public License.  A copy of
+# its license can be downloaded from http://www.gnu.org/copyleft/gpl.html
+
 
 UPDATE_OPTIONS=-P
 # Add -d to create any directories that exist in the repository but not
