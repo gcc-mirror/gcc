@@ -100,7 +100,8 @@
 
 #undef ASM_WEAKEN_LABEL
 #define ASM_WEAKEN_LABEL(FILE,NAME) \
-  do { fputs ("\t.weak\t", FILE); assemble_name (FILE, NAME); \
+  do { fputs ("\t.globl\t", FILE); assemble_name (FILE, NAME); \
+       fputs ("\t.weak\t", FILE); assemble_name (FILE, NAME); \
        fputc ('\n', FILE); } while (0)
 
 /* The following macro defines the format used to output the second
