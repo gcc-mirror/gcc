@@ -336,7 +336,7 @@ get_nonpadding_token (void)
   return tok;
 }
 
-int
+enum cpp_ttype
 c_lex_with_flags (tree *value, unsigned char *cpp_flags)
 {
   const cpp_token *tok;
@@ -454,7 +454,7 @@ c_lex_with_flags (tree *value, unsigned char *cpp_flags)
   return tok->type;
 }
 
-int
+enum cpp_ttype
 c_lex (tree *value)
 {
   return c_lex_with_flags (value, NULL);

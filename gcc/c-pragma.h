@@ -22,6 +22,8 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #ifndef GCC_C_PRAGMA_H
 #define GCC_C_PRAGMA_H
 
+#include <cpplib.h> /* For enum cpp_ttype.  */
+
 /* Cause the `yydebug' variable to be defined.  */
 #define YYDEBUG 1
 extern int yydebug;
@@ -59,8 +61,8 @@ extern void maybe_apply_pragma_weak (tree);
 extern tree maybe_apply_renaming_pragma (tree, tree);
 extern void add_to_renaming_pragma_list (tree, tree);
 
-extern int c_lex (tree *);
-extern int c_lex_with_flags (tree *, unsigned char *);
+extern enum cpp_ttype c_lex (tree *);
+extern enum cpp_ttype c_lex_with_flags (tree *, unsigned char *);
 
 /* If 1, then lex strings into the execution character set.  
    If 0, lex strings into the host character set.

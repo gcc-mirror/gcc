@@ -1,3 +1,11 @@
+2004-07-26  Bernardo Innocenti  <bernie@develer.com>
+
+	* Makefile.in (C_PRAGMA_H): New variable to track dependencies
+	of c-pragma.h.
+	* c-pragma.h (c_lex, c_lex_with_flags): Change returntype to
+	enum cpp_ttype.
+	* c-lex.c: Likewise.
+
 2004-07-25  Roger Sayle  <roger@eyesopen.com>
 
 	* fold-const.c (constant_boolean_node): Make extern.
