@@ -1,5 +1,5 @@
 %% TeX macros to handle Texinfo files.
-%% $Id: texinfo.tex,v 2.223 1998/02/23 22:34:20 karl Exp karl $
+%% $Id: texinfo.tex,v 2.224 1998/02/24 22:48:24 karl Exp karl $
 
 %  Copyright (C) 1985, 86, 88, 90, 91, 92, 93,
 %                94, 95, 96, 97 Free Software Foundation, Inc.
@@ -36,7 +36,7 @@
 
 % This automatically updates the version number based on RCS.
 \def\deftexinfoversion$#1: #2 ${\def\texinfoversion{#2}}
-\deftexinfoversion$Revision: 2.223 $
+\deftexinfoversion$Revision: 2.224 $
 \message{Loading texinfo package [Version \texinfoversion]:}
 
 % If in a .fmt file, print the version number
@@ -54,7 +54,8 @@
 \let\ptexdot=\.
 \let\ptexdots=\dots
 \let\ptexend=\end
-\let\ptexequiv = \equiv
+\let\ptexequiv=\equiv
+\let\ptexexclam=\!
 \let\ptexi=\i
 \let\ptexlbrace=\{
 \let\ptexrbrace=\}
@@ -3517,30 +3518,35 @@ width0pt\relax} \fi
 % But \@ or @@ will get a plain tex @ character.
 
 \def\tex{\begingroup
-\catcode `\\=0 \catcode `\{=1 \catcode `\}=2
-\catcode `\$=3 \catcode `\&=4 \catcode `\#=6
-\catcode `\^=7 \catcode `\_=8 \catcode `\~=13 \let~=\tie
-\catcode `\%=14
-\catcode 43=12 % plus
-\catcode`\"=12
-\catcode`\==12
-\catcode`\|=12
-\catcode`\<=12
-\catcode`\>=12
-\escapechar=`\\
-%
-\let\,=\ptexcomma
-\let\{=\ptexlbrace
-\let\}=\ptexrbrace
-\let\.=\ptexdot
-\let\*=\ptexstar
-\let\dots=\ptexdots
-\def\endldots{\mathinner{\ldots\ldots\ldots\ldots}}%
-\def\enddots{\relax\ifmmode\endldots\else$\mathsurround=0pt \endldots\,$\fi}%
-\def\@{@}%
-\let\bullet=\ptexbullet
-\let\b=\ptexb \let\c=\ptexc \let\i=\ptexi \let\t=\ptext
-%
+  \catcode `\\=0 \catcode `\{=1 \catcode `\}=2
+  \catcode `\$=3 \catcode `\&=4 \catcode `\#=6
+  \catcode `\^=7 \catcode `\_=8 \catcode `\~=13 \let~=\tie
+  \catcode `\%=14
+  \catcode 43=12 % plus
+  \catcode`\"=12
+  \catcode`\==12
+  \catcode`\|=12
+  \catcode`\<=12
+  \catcode`\>=12
+  \escapechar=`\\
+  %
+  \let\b=\ptexb
+  \let\bullet=\ptexbullet
+  \let\c=\ptexc
+  \let\,=\ptexcomma
+  \let\.=\ptexdot
+  \let\dots=\ptexdots
+  \let\equiv=\ptexequiv
+  \let\!=\ptexexclam
+  \let\i=\ptexi
+  \let\{=\ptexlbrace
+  \let\}=\ptexrbrace
+  \let\*=\ptexstar
+  \let\t=\ptext
+  %
+  \def\endldots{\mathinner{\ldots\ldots\ldots\ldots}}%
+  \def\enddots{\relax\ifmmode\endldots\else$\mathsurround=0pt \endldots\,$\fi}%
+  \def\@{@}%
 \let\Etex=\endgroup}
 
 % Define @lisp ... @endlisp.
