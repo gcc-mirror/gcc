@@ -1,6 +1,6 @@
 // 1999-06-04 bkoz
 
-// Copyright (C) 1999, 2000, 2001 Free Software Foundation, Inc.
+// Copyright (C) 1999, 2000, 2001, 2002 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -25,7 +25,7 @@
 #include <stdexcept>
 #include <testsuite_hooks.h>
 
-int test01(void)
+void test01(void)
 {
   bool test = true;
   typedef std::string::size_type csize_type;
@@ -59,9 +59,6 @@ int test01(void)
     VERIFY( false );
   }
 
-#if 0
-  // XXX These tests have been temporarily disabled.
-  //http://gcc.gnu.org/ml/libstdc++/2000-10/msg00033.html
   // basic_string(const char* s, size_type n, alloc)
   csz01 = str01.max_size();
   // NB: As strlen(str_lit01) != csz01, this test is undefined. It
@@ -105,7 +102,6 @@ int test01(void)
   catch(...) {
     VERIFY( false );
   }
-#endif
 
   // basic_string(const char* s, const allocator& a = allocator())
   std::string str04(str_lit01);
@@ -155,11 +151,6 @@ int test01(void)
   //   basic_string(_InputIter begin, _InputIter end, const allocator& a)
   std::string str06(str01.begin(), str01.end());
   VERIFY( str06 == str01 );
-
-#ifdef DEBUG_ASSERT
-  assert(test);
-#endif
-  return test;
 }
 
 void test02()
@@ -171,9 +162,6 @@ void test02()
   // where _InputIter is integral [21.3.1 para 15]
   std::string s(10,0);
   VERIFY( s.size() == 10 );
-#ifdef DEBUG_ASSERT
-  assert(test);
-#endif
 }
 
 void test03()
@@ -189,9 +177,28 @@ void test03()
   std::string s2 (s1);
   VERIFY( s2.size() == 28 );
 
-#ifdef DEBUG_ASSERT
-  assert(test);
-#endif
+  // Not defined, but libstdc++ throws an exception.
+  const char* bogus = 0;
+  try 
+    {
+      std::string str1(bogus);
+      VERIFY( false );
+    }		 
+  catch(std::exception& fail) 
+    {
+      VERIFY( true );
+    }
+
+  // Not defined, but libstdc++ throws an exception.
+  try 
+    {
+      std::string str2(bogus, 5);
+      VERIFY( false );
+    }		 
+  catch(std::exception& fail) 
+    {
+      VERIFY( true );
+    }
 }
 
 int main()
