@@ -13988,7 +13988,8 @@ lang_printable_name (tree decl, int v)
 
 #if BUILT_FOR_270
 static void
-lang_print_error_function (diagnostic_context *context, const char *file)
+lang_print_error_function (diagnostic_context *context __attribute__((unused)),
+                           const char *file)
 {
   static ffeglobal last_g = NULL;
   static ffesymbol last_s = NULL;
