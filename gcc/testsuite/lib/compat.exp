@@ -96,6 +96,9 @@ proc compat-run { testname objlist dest options optstr } {
     }
 
     # Run the self-checking executable.
+    if ![string match "*/*" $dest] then {
+	set dest "./$dest"
+    }
     set result [${tool}_load $dest "" ""]
     set status [lindex $result 0]
     if { $status == "pass" } then {
