@@ -1,3 +1,9 @@
+Fri Nov 13 08:51:46 EST 1998  Andrew MacLeod  <amacleod@cygnus.com>
+
+	*cplus-dem.c (demangle_prefix): Use the last "__"
+	in the mangled name when looking for the signature. This allows
+	template names to begin with "__".
+
 1998-11-08  Mark Mitchell  <mark@markmitchell.com>
 
 	* cplus-dem.c (type_kind_t): Add tk_reference.
