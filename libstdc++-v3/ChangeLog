@@ -1,3 +1,8 @@
+2003-08-07  Doug Gregor  <dgregor@apple.com>
+
+	* include/bits/char_traits.h (char_traits::not_eof): Match operand 
+        types in ? :.
+
 2003-08-07  Bernardo Innocenti  <bernie@develer.com>
 
 	PR libstdc++/11784

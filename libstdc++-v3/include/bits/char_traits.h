@@ -140,7 +140,7 @@ namespace __gnu_cxx
 
       static int_type 
       not_eof(const int_type& __c)
-      { return !eq_int_type(__c, eof()) ? __c : char_type(); }
+      { return !eq_int_type(__c, eof()) ? __c : to_int_type(char_type()); }
     };
 
   template<typename _CharT>
