@@ -1,3 +1,29 @@
+Tue Oct 30 11:08:11 CET 2001  Jan Hubicka  <jh@suse.cz>
+
+	* lcm.c (optimize_mode_switching):  Do not rebuild liveness information
+	when no changes has been made.
+
+	* gcse.c (reg_set_bitmap): Turn into reg_set.
+	(modify_mem_list_set, canon_modify_mem_list_set)
+	(clear_modify_mem_tables, free_modify_mem_tables): New.
+	(gcse_main); Use free_modify_mem_tables.
+	(free_gcse_mem): Likewise; free the bitmaps.
+	(alloc_gcse_main): Initialize the bitmaps.
+	(canon_list_insert): Set canon_modify_mem_list_set.
+	(record_last_mem_set_info): Likewise; set modify_mem_list_set.
+	(compute_hash_table): Use clear_modify_mem_tables.
+	(reset_opr_set_tables): Likewise.
+	(oprs_not_set_p): reg_set_bitmap is regset.
+	(mark_set, mark_clobber): Likewise.
+
+	* df.h (DF_EQUIV_NOTES): New constant.
+	(df_insn_refs_record): Record uses inside or REG_EQUIV/EQUAL notes
+	when asked for.
+
+	* sched-rgn.c (CHECK_DEAD_NOTES): New constant.
+	(init_regions, schedule_insns): Conditionalize the checking
+	code by CHECK_DEAD_NOTES; avoid multiple calls to update_life_info.
+
 Tue Oct 30 11:02:31 CET 2001  Jan Hubicka  <jh@suse.cz>
 
 	* i386.md (movti_rex64 splitter): Fix condition.

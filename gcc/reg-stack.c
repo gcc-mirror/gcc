@@ -442,9 +442,11 @@ reg_to_stack (first, file)
   /* Ok, floating point instructions exist.  If not optimizing, 
      build the CFG and run life analysis.  */
   if (!optimize)
-    find_basic_blocks (first, max_reg_num (), file);
-  count_or_remove_death_notes (NULL, 1);
-  life_analysis (first, file, PROP_DEATH_NOTES);
+    {
+      find_basic_blocks (first, max_reg_num (), file);
+      count_or_remove_death_notes (NULL, 1);
+      life_analysis (first, file, PROP_DEATH_NOTES);
+    }
   mark_dfs_back_edges ();
 
   /* Set up block info for each basic block.  */
