@@ -5,11 +5,11 @@
 	under the same conditions that this function formerly wasn't called.
 	Add explanatory comments.
 
-	PR 14680
+	PR 14860
 	* c-decl.c (record_builtin_type): Call debug_hooks->type_decl
 	on the new decl.
 
-	PR 13596
+	PR 13956
 	* dbxout.c (dbx_output_lbrac, dbx_output_rbrac): New
 	functions, broken out of dbxout_block.
 	(dbxout_block): The block at depth 0 should get LBRAC/RBRAC
