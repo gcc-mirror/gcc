@@ -3720,7 +3720,7 @@ optimization.  If more memory than specified is required, the
 optimization will not be done.
 
 @item max-pending-list-length
-The maximum number of pending dependancies scheduling will allow
+The maximum number of pending dependencies scheduling will allow
 before flushing the current state and starting over.  Large functions
 with few branches or calls can create excessively large lists which
 needlessly consume memory and resources.

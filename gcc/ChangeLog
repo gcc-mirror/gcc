@@ -1,5 +1,7 @@
 2001-10-28  Joseph S. Myers  <jsm28@cam.ac.uk>
 
+	* doc/invoke.texi: Fix spelling.
+
 	* doc/gcc.texi: Document use of "dependent" and American spelling.
 
 2001-10-26  Andrew Cagney  <ac131313@redhat.com>
