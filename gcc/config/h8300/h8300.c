@@ -40,7 +40,6 @@ Boston, MA 02111-1307, USA.  */
 #include "function.h"
 #include "toplev.h"
 #include "c-pragma.h"
-#include "cpplib.h"
 #include "tm_p.h"
 #include "ggc.h"
 #include "target.h"
@@ -1077,14 +1076,14 @@ bit_memory_operand (op, mode)
 
 void
 h8300_pr_interrupt (pfile)
-     cpp_reader *pfile ATTRIBUTE_UNUSED;
+     struct cpp_reader *pfile ATTRIBUTE_UNUSED;
 {
   interrupt_handler = 1;
 }
 
 void
 h8300_pr_saveall (pfile)
-     cpp_reader *pfile ATTRIBUTE_UNUSED;
+     struct cpp_reader *pfile ATTRIBUTE_UNUSED;
 {
   pragma_saveall = 1;
 }

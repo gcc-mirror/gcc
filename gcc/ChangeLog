@@ -1,3 +1,13 @@
+2003-01-01  Neil Booth  <neil@daikokuya.co.uk>
+
+	* config/arm/arm.c (arm_pr_long_calls, arm_pr_no_long_calls,
+	arm_pr_long_calls_off): Use struct.
+	* config/h8300/h8300.c (h8300_pr-interrupt, h8300_pr_saveall)
+	: Similarly.
+	Don't include cpplib.h.
+	* config/sh/sh.c (sh_pr_interrupt, sh_pr_trapa,
+	sh_pr_nosave_low_regs): Similarly.
+
 2003-01-01  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* config/h8300/h8300.c: Include cpplib.h.
