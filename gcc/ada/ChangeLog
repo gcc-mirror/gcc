@@ -1,3 +1,7 @@
+2004-12-19  Richard Henderson  <rth@redhat.com>
+
+	* trans.c (gigi): Update gimplify_body call.
+
 2004-12-09  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* decl.c (gnat_substitute_in_type): Remove SET_TYPE case.

@@ -253,7 +253,7 @@ gigi (Node_Id gnat_root, int max_gnat_node, int number_name,
       /* Set the current function to be the elaboration procedure and gimplify
 	 what we have.  */
       current_function_decl = info->elab_proc;
-      gimplify_body (&gnu_body, info->elab_proc);
+      gimplify_body (&gnu_body, info->elab_proc, false);
 
       /* We should have a BIND_EXPR, but it may or may not have any statements
 	 in it.  If it doesn't have any, we have nothing to do.  */
