@@ -1,5 +1,10 @@
 2000-02-07  Tom Tromey  <tromey@cygnus.com>
 
+	* interpret.cc (PUSHL): Don't use expression statement.
+	(PUSHD): Likewise.
+	(LOADL): Likewise.
+	(STOREL): Likewise.
+
 	* jni.cc (add_char): Conditional on INTERPRETER.
 	(mangled_name): Likewise.
 	(call): Likewise.
