@@ -230,9 +230,9 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
   else if (fsize)						\
     {								\
       if (fsize + 4 < 0x8000)					\
-	asm_fprintf (stream, "\tadd.w #%d,sp\n", fsize + 4);	\
+	fprintf (FILE, "\tadd.w #%d,sp\n", fsize + 4);		\
       else							\
-	asm_fprintf (stream, "\tadd.l #%d,sp\n", fsize + 4);	\
+	fprintf (FILE, "\tadd.l #%d,sp\n", fsize + 4);		\
     }								\
   if (current_function_pops_args)				\
     fprintf (FILE, "\trtd #%d\n", current_function_pops_args);	\
