@@ -5565,6 +5565,8 @@ create_definition (buf, limit, op)
 	/* do we have a "special" rest-args extension here? */
 	if (limit - bp > REST_EXTENSION_LENGTH
 	    && bcmp (rest_extension, bp, REST_EXTENSION_LENGTH) == 0) {
+	  if (pedantic && !instack[indepth].system_header_p)
+	    pedwarn ("ANSI C does not allow macro with variable arguments");
 	  rest_args = 1;
 	  temp->rest_args = 1;
 	  break;
