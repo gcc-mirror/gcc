@@ -2204,14 +2204,16 @@ tree
 find_data_references_in_loop (struct loop *loop, varray_type *datarefs)
 {
   bool dont_know_node_not_inserted = true;
-  basic_block bb;
+  basic_block bb, *bbs;
+  unsigned int i;
   block_stmt_iterator bsi;
 
-  FOR_EACH_BB (bb)
+  bbs = get_loop_body (loop);
+
+  for (i = 0; i < loop->num_nodes; i++)
     {
-      if (!flow_bb_inside_loop_p (loop, bb))
-	continue;
-      
+      bb = bbs[i];
+
       for (bsi = bsi_start (bb); !bsi_end_p (bsi); bsi_next (&bsi))
         {
 	  tree stmt = bsi_stmt (bsi);
@@ -2263,6 +2265,8 @@ find_data_references_in_loop (struct loop *loop, varray_type *datarefs)
       if (bb->loop_father->estimated_nb_iterations == NULL_TREE)
 	compute_estimated_nb_iterations (bb->loop_father);
     }
+
+  free (bbs);
 
   return dont_know_node_not_inserted ? NULL_TREE : chrec_dont_know;
 }

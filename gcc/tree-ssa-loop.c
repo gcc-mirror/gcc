@@ -317,7 +317,7 @@ struct tree_opt_pass pass_record_bounds =
   NULL,					/* sub */
   NULL,					/* next */
   0,					/* static_pass_number */
-  0,			  		/* tv_id */
+  TV_TREE_LOOP_BOUNDS,	  		/* tv_id */
   PROP_cfg | PROP_ssa,			/* properties_required */
   0,					/* properties_provided */
   0,					/* properties_destroyed */

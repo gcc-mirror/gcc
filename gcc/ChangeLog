@@ -1,3 +1,12 @@
+2004-10-31 Jeff Law  <law@redhat.com>
+
+	* cfgloop.h (struct loop): Remove unused "nodes" field.
+	* timevar.def (TV_TREE_LOOP_BOUNDS): New.
+	* tree-data-ref.c (find_data_references_in_loop): Use get_loop_body
+	instead of calling flow_bb_inside_loop_p for every basic block
+	in the function.
+	* tree-ssa-loop.c (pass_record_bounds): Use TV_TREE_LOOP_BOUNDS.
+
 2004-10-31  Graham Stott <graham.stott@btinternet.com>
 
 	* config/pa/pa.md: (prefetch_64, prefetch_32): Fix typo.  Use
