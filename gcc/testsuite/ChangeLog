@@ -1,3 +1,14 @@
+2004-09-22  Eric Botcazou  <ebotcazou@libertysurf.fr>
+
+	* gcc.dg/20001012-1.c: Add prototypes for builtin functions.
+	* gcc.dg/20001012-2.c: Likewise.
+	* gcc.dg/20001013-1.c: Likewise.
+	* gcc.dg/20001101-1.c: Likewise.
+	* gcc.dg/20001102-1.c: Likewise.
+	* gcc.dg/bf-spl1.c: Likewise.
+	* gcc.dg/titype-1.c: Remove special-casing for SPARC.
+	* gcc.dg/20040813-1.c: Add missing "." to the regexp.
+
 2004-09-22  Diego Novillo  <dnovillo@redhat.com>
 
 	PR tree-optimization/16721
