@@ -1,7 +1,7 @@
 /* Definitions of target machine for GNU compiler,
    For Ubicom IP2022 Communications Controller
 
-   Copyright (C) 2000, 2001, 2002 Free Software Foundation, Inc.
+   Copyright (C) 2000, 2001, 2002, 2003 Free Software Foundation, Inc.
    Contributed by Red Hat, Inc and Ubicom, Inc.
 
 This file is part of GNU CC.
@@ -2348,18 +2348,6 @@ do {							\
    The default definition of this macro is 64 plus 8 times the number
    of arguments that the function accepts.  Some people think a larger
    threshold should be used on RISC machines.  */
-
-#define VALID_MACHINE_DECL_ATTRIBUTE(DECL, ATTRIBUTES, IDENTIFIER, ARGS) \
-  valid_machine_decl_attribute (DECL, ATTRIBUTES, IDENTIFIER, ARGS)
-/* If defined, a C expression whose value is nonzero if IDENTIFIER
-   with arguments ARGS is a valid machine specific attribute for DECL.
-   The attributes in ATTRIBUTES have previously been assigned to DECL.  */
-
-#define VALID_MACHINE_TYPE_ATTRIBUTE(TYPE, ATTRIBUTES, IDENTIFIER, ARGS) \
-  valid_machine_type_attribute(TYPE, ATTRIBUTES, IDENTIFIER, ARGS)
-/* If defined, a C expression whose value is nonzero if IDENTIFIER
-   with arguments ARGS is a valid machine specific attribute for TYPE.
-   The attributes in ATTRIBUTES have previously been assigned to TYPE.  */
 
 #define DOLLARS_IN_IDENTIFIERS 0
 /* Define this macro to control use of the character `$' in identifier
