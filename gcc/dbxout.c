@@ -326,7 +326,7 @@ static void dbxout_type			PARAMS ((tree, int, int));
 static void print_int_cst_octal		PARAMS ((tree));
 static void print_octal			PARAMS ((unsigned HOST_WIDE_INT, int));
 static void dbxout_type_name		PARAMS ((tree));
-static void dbxout_symbol_location	PARAMS ((tree, tree, const char *, rtx));
+static int dbxout_symbol_location	PARAMS ((tree, tree, const char *, rtx));
 static void dbxout_symbol_name		PARAMS ((tree, const char *, int));
 static void dbxout_prepare_symbol	PARAMS ((tree));
 static void dbxout_finish_symbol	PARAMS ((tree));
