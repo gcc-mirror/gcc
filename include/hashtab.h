@@ -1,5 +1,5 @@
 /* An expandable hash tables datatype.  
-   Copyright (C) 1999, 2000 Free Software Foundation, Inc.
+   Copyright (C) 1999, 2000, 2002 Free Software Foundation, Inc.
    Contributed by Vladimir Makarov (vmakarov@cygnus.com).
 
 This program is free software; you can redistribute it and/or modify
@@ -36,7 +36,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.  */
 extern "C" {
 #endif /* __cplusplus */
 
-#include <ansidecl.h>
+#include "ansidecl.h"
 
 #ifndef GTY
 #define GTY(X)

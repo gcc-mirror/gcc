@@ -1,5 +1,5 @@
 /* Defs for interface to demanglers.
-   Copyright 1992, 1993, 1994, 1995, 1996, 1997, 1998, 2000, 2001
+   Copyright 1992, 1993, 1994, 1995, 1996, 1997, 1998, 2000, 2001, 2002
    Free Software Foundation, Inc.
    
    This program is free software; you can redistribute it and/or modify
@@ -21,7 +21,7 @@
 #if !defined (DEMANGLE_H)
 #define DEMANGLE_H
 
-#include <ansidecl.h>
+#include "ansidecl.h"
 
 /* Options passed to cplus_demangle (in 2nd parameter). */
 
