@@ -248,11 +248,6 @@ struct stmt_ann_d GTY(())
      need to be scanned again).  */
   unsigned modified : 1;
 
-  /* Nonzero if the statement is in the CCP worklist and has not been
-     "cancelled".  If we ever need to use this bit outside CCP, then
-     it should be renamed.  */
-  unsigned in_ccp_worklist: 1;
-
   /* Nonzero if the statement makes aliased loads.  */
   unsigned makes_aliased_loads : 1;
 

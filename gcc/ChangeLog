@@ -1,3 +1,15 @@
+2004-08-29  Diego Novillo  <dnovillo@redhat.com>
+
+	* Makefile.in (OBJS-common): Add tree-ssa-propagate.o
+	(tree-ssa-propagate.o): New rule.
+	(GTFILES): Add tree-ssa-propagate.c.
+	* tree-flow.h (struct stmt_ann_d): Remove field
+	in_ccp_worklist.
+	* tree-ssa-propagate.c: New file.
+	* tree-ssa-propagate.h: New file.
+	* tree-ssa-ccp.c: Re-write to use the routines from
+	tree-ssa-propagate.c.
+
 2004-08-28  Andrew Pinski  <apinski@apple.com>
 
 	* tree-ssa-loop.c: Remove extra include of basic-block.h.
