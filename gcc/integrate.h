@@ -1,5 +1,5 @@
 /* Function integration definitions for GNU C-Compiler
-   Copyright (C) 1990, 1995 Free Software Foundation, Inc.
+   Copyright (C) 1990, 1995, 1998 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -121,6 +121,13 @@ extern rtx copy_rtx_and_substitute PROTO((rtx, struct inline_remap *));
 extern void try_constants PROTO((rtx, struct inline_remap *));
 
 extern void mark_stores PROTO((rtx, rtx));
+
+/* Return the label indicated.  */
+extern rtx get_label_from_map PROTO((struct inline_remap *, int));
+
+/* Set the label indicated.  */
+#define set_label_in_map(map, i, x) \
+  ((map)->label_map[i] = (x))
 
 /* Unfortunately, we need a global copy of const_equiv map for communication
    with a function called from note_stores.  Be *very* careful that this
