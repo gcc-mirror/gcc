@@ -103,7 +103,7 @@ namespace std {
 
 #ifdef _GLIBCPP_USE_LONG_LONG
 # ifdef _GLIBCPP_HAVE_LLDIV_T
-  struct lldiv_t : _C_legacy::_CPP_lldiv_t_captur { };
+  struct lldiv_t : _C_legacy::_CPP_lldiv_t_capture { };
 # else
   struct lldiv_t
   {

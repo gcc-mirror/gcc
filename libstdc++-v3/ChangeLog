@@ -1,3 +1,7 @@
+2001-02-09  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* include/c_shadow/bits/std_cstdlib.h (lldiv_t): Fix typo.
+
 2001-02-08  Loren J. Rittle  <ljrittle@acm.org>
 
         * src/locale-inst.cc (fill_n): Instantiate with size_t arguments.
