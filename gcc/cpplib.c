@@ -47,6 +47,20 @@ struct if_stack
   int type;			/* Most recent conditional, for diagnostics.  */
 };
 
+/* Contains a registered pragma or pragma namespace.  */
+typedef void (*pragma_cb) PARAMS ((cpp_reader *));
+struct pragma_entry
+{
+  struct pragma_entry *next;
+  const char *name;
+  size_t len;
+  int is_nspace;
+  union {
+    pragma_cb handler;
+    struct pragma_entry *space;
+  } u;
+};
+
 /* Values for the origin field of struct directive.  KANDR directives
    come from traditional (K&R) C.  STDC89 directives come from the
    1989 C standard.  EXTENSION directives are extensions.  */
@@ -96,6 +110,10 @@ static int  strtoul_for_line	PARAMS ((const U_CHAR *, unsigned int,
 static void do_diagnostic	PARAMS ((cpp_reader *, enum error_type, int));
 static cpp_hashnode *lex_macro_node	PARAMS ((cpp_reader *));
 static void do_include_common	PARAMS ((cpp_reader *, enum include_type));
+static struct pragma_entry *lookup_pragma_entry
+  PARAMS ((struct pragma_entry *, const char *pragma));
+static struct pragma_entry *insert_pragma_entry
+  PARAMS ((cpp_reader *, struct pragma_entry **, const char *, pragma_cb));
 static void do_pragma_once	PARAMS ((cpp_reader *));
 static void do_pragma_poison	PARAMS ((cpp_reader *));
 static void do_pragma_system_header	PARAMS ((cpp_reader *));
@@ -842,27 +860,61 @@ do_ident (pfile)
   check_eol (pfile);
 }
 
-/* Pragmata handling.  We handle some of these, and pass the rest on
-   to the front end.  C99 defines three pragmas and says that no macro
-   expansion is to be performed on them; whether or not macro
-   expansion happens for other pragmas is implementation defined.
-   This implementation never macro-expands the text after #pragma.  */
-
-/* Sub-handlers for the pragmas needing treatment here.
-   They return 1 if the token buffer is to be popped, 0 if not.  */
-typedef void (*pragma_cb) PARAMS ((cpp_reader *));
-struct pragma_entry
+/* Lookup a PRAGMA name in a singly-linked CHAIN.  Returns the
+   matching entry, or NULL if none is found.  The returned entry could
+   be the start of a namespace chain, or a pragma.  */
+static struct pragma_entry *
+lookup_pragma_entry (chain, pragma)
+     struct pragma_entry *chain;
+     const char *pragma;
 {
-  struct pragma_entry *next;
-  const char *name;
-  size_t len;
-  int isnspace;
-  union {
-    pragma_cb handler;
-    struct pragma_entry *space;
-  } u;
-};
+  size_t len = strlen (pragma);
 
+  while (chain)
+    {
+      if (chain->len == len && !memcmp (chain->name, pragma, len))
+	break;
+      chain = chain->next;
+    }
+
+  return chain;
+}
+
+/* Create and insert a pragma entry for NAME at the beginning of a
+   singly-linked CHAIN.  If handler is NULL, it is a namespace,
+   otherwise it is a pragma and its handler.  */
+static struct pragma_entry *
+insert_pragma_entry (pfile, chain, name, handler)
+     cpp_reader *pfile;
+     struct pragma_entry **chain;
+     const char *name;
+     pragma_cb handler;
+{
+  struct pragma_entry *new;
+
+  new = (struct pragma_entry *)
+    _cpp_aligned_alloc (pfile, sizeof (struct pragma_entry));
+  new->name = name;
+  new->len = strlen (name);
+  if (handler)
+    {
+      new->is_nspace = 0;
+      new->u.handler = handler;
+    }
+  else
+    {
+      new->is_nspace = 1;
+      new->u.space = NULL;
+    }
+
+  new->next = *chain;
+  *chain = new;
+  return new;
+}
+
+/* Register a pragma NAME in namespace SPACE.  If SPACE is null, it
+   goes in the global namespace.  HANDLER is the handler it will call,
+   which must be non-NULL.  */
 void
 cpp_register_pragma (pfile, space, name, handler)
      cpp_reader *pfile;
@@ -870,121 +922,84 @@ cpp_register_pragma (pfile, space, name, handler)
      const char *name;
      pragma_cb handler;
 {
-  struct pragma_entry **x, *new;
-  size_t len;
+  struct pragma_entry **chain = &pfile->pragmas;
+  struct pragma_entry *entry;
 
-  x = &pfile->pragmas;
+  if (!handler)
+    abort ();
+
   if (space)
     {
-      struct pragma_entry *p = pfile->pragmas;
-      len = strlen (space);
-      while (p)
-	{
-	  if (p->isnspace && p->len == len && !memcmp (p->name, space, len))
-	    {
-	      x = &p->u.space;
-	      goto found;
-	    }
-	  p = p->next;
-	}
-      cpp_ice (pfile, "unknown #pragma namespace %s", space);
-      return;
+      entry = lookup_pragma_entry (*chain, space);
+      if (!entry)
+	entry = insert_pragma_entry (pfile, chain, space, NULL);
+      else if (!entry->is_nspace)
+	goto clash;
+      chain = &entry->u.space;
     }
 
- found:
-  new = (struct pragma_entry *)
-    _cpp_aligned_alloc (pfile, sizeof (struct pragma_entry));
-  new->name = name;
-  new->len = strlen (name);
-  new->isnspace = 0;
-  new->u.handler = handler;
-
-  new->next = *x;
-  *x = new;
-}
-
-void
-cpp_register_pragma_space (pfile, space)
-     cpp_reader *pfile;
-     const char *space;
-{
-  struct pragma_entry *new;
-  const struct pragma_entry *p = pfile->pragmas;
-  size_t len = strlen (space);
-
-  while (p)
+  /* Check for duplicates.  */
+  entry = lookup_pragma_entry (*chain, name);
+  if (entry)
     {
-      if (p->isnspace && p->len == len && !memcmp (p->name, space, len))
-	/* Multiple different callers are allowed to register the same
-	   namespace.  */
-	return;
-      p = p->next;
+      if (entry->is_nspace)
+	clash:
+	cpp_ice (pfile,
+		 "registering \"%s\" as both a pragma and a pragma namespace",
+		 entry->name);
+      else if (space)
+	cpp_ice (pfile, "#pragma %s %s is already registered", space, name);
+      else
+	cpp_ice (pfile, "#pragma %s is already registered", name);
     }
-
-  new = (struct pragma_entry *)
-    _cpp_aligned_alloc (pfile, sizeof (struct pragma_entry));
-  new->name = space;
-  new->len = len;
-  new->isnspace = 1;
-  new->u.space = 0;
-
-  new->next = pfile->pragmas;
-  pfile->pragmas = new;
+  else
+    insert_pragma_entry (pfile, chain, name, handler);
 }
-  
+
+/* Register the pragmas the preprocessor itself handles.  */
 void
 _cpp_init_internal_pragmas (pfile)
      cpp_reader *pfile;
 {
-  /* top level */
+  /* Pragmas in the global namespace.  */
   cpp_register_pragma (pfile, 0, "poison", do_pragma_poison);
   cpp_register_pragma (pfile, 0, "once", do_pragma_once);
 
-  /* GCC namespace */
-  cpp_register_pragma_space (pfile, "GCC");
-
+  /* New GCC-specific pragmas should be put in the GCC namespace.  */
   cpp_register_pragma (pfile, "GCC", "poison", do_pragma_poison);
   cpp_register_pragma (pfile, "GCC", "system_header", do_pragma_system_header);
   cpp_register_pragma (pfile, "GCC", "dependency", do_pragma_dependency);
 }
 
+/* Pragmata handling.  We handle some, and pass the rest on to the
+   front end.  C99 defines three pragmas and says that no macro
+   expansion is to be performed on them; whether or not macro
+   expansion happens for other pragmas is implementation defined.
+   This implementation never macro-expands the text after #pragma.  */
 static void
 do_pragma (pfile)
      cpp_reader *pfile;
 {
-  pragma_cb handler = NULL;
-  const struct pragma_entry *p;
+  const struct pragma_entry *p = NULL;
   const cpp_token *token;
-  unsigned int count = 0;
+  unsigned int count = 1;
 
-  p = pfile->pragmas;
   pfile->state.prevent_expansion++;
 
- new_space:
-  count++;
   token = cpp_get_token (pfile);
   if (token->type == CPP_NAME)
     {
-      const cpp_hashnode *node = token->val.node;
-      size_t len = NODE_LEN (node);
-
-      while (p)
+      p = lookup_pragma_entry (pfile->pragmas,
+			       (char *) NODE_NAME (token->val.node));
+      if (p && p->is_nspace)
 	{
-	  if (strlen (p->name) == len
-	      && !memcmp (p->name, NODE_NAME (node), len))
-	    {
-	      if (p->isnspace)
-		{
-		  p = p->u.space;
-		  goto new_space;
-		}
-	      else
-		{
-		  handler = p->u.handler;
-		  break;
-		}
-	    }
-	  p = p->next;
+	  count = 2;
+	  token = cpp_get_token (pfile);
+	  if (token->type == CPP_NAME)
+	    p = lookup_pragma_entry (p->u.space,
+				     (char *) NODE_NAME (token->val.node));
+	  else
+	    p = NULL;
 	}
     }
 
@@ -996,13 +1011,14 @@ do_pragma (pfile)
   if (pfile->cb.line_change)
     (*pfile->cb.line_change)(pfile, token, 1);
 
-  if (handler)
-    (*handler) (pfile);
+  if (p)
+    (*p->u.handler) (pfile);
   else if (pfile->cb.def_pragma)
     {
       _cpp_backup_tokens (pfile, count);
       (*pfile->cb.def_pragma) (pfile, pfile->directive_line);
     }
+
   pfile->state.prevent_expansion--;
 }
 

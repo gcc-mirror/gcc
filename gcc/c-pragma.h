@@ -51,7 +51,6 @@ typedef struct cpp_reader cpp_reader;
 extern void cpp_register_pragma PARAMS ((cpp_reader *,
 					 const char *, const char *,
 					 void (*) PARAMS ((cpp_reader *))));
-extern void cpp_register_pragma_space PARAMS ((cpp_reader *, const char *));
 #endif
 
 #endif /* GCC_C_PRAGMA_H */
