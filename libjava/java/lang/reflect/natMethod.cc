@@ -47,6 +47,7 @@ details.  */
 #include <ffi.h>
 
 // FIXME: remove these.
+#define BooleanClass java::lang::Boolean::class$
 #define VoidClass java::lang::Void::class$
 #define ByteClass java::lang::Byte::class$
 #define ShortClass java::lang::Short::class$
@@ -66,8 +67,8 @@ struct cpair
 // allowed.
 static cpair primitives[] =
 {
-#define VOID 0
-  { JvPrimClass (void), &VoidClass },
+#define BOOLEAN 0
+  { JvPrimClass (boolean), &BooleanClass },
   { JvPrimClass (byte), &ByteClass },
 #define SHORT 2
   { JvPrimClass (short), &ShortClass },
@@ -80,7 +81,7 @@ static cpair primitives[] =
   { NULL, NULL }
 };
 
-static jboolean
+static inline jboolean
 can_widen (jclass from, jclass to)
 {
   int fromx = -1, tox = -1;
@@ -96,17 +97,17 @@ can_widen (jclass from, jclass to)
   // Can't handle a miss.
   if (fromx == -1 || tox == -1)
     return false;
-  // Can't handle Void arguments.
-  if (fromx == VOID || tox == VOID)
+  // Boolean arguments may not be widened.
+  if (fromx == BOOLEAN && tox != BOOLEAN)
     return false;
-  // Special-case short/char conversions.
-  if ((fromx == SHORT && tox == CHAR) || (fromx == CHAR && tox == SHORT))
+  // Special-case short->char conversions.
+  if (fromx == SHORT && tox == CHAR)
     return false;
 
   return fromx <= tox;
 }
 
-static ffi_type *
+static inline ffi_type *
 get_ffi_type (jclass klass)
 {
   // A special case.
@@ -469,37 +470,36 @@ _Jv_CallAnyMethodA (jobject obj,
 	      || ! k
 	      || ! can_widen (k, paramelts[i]))
 	    JvThrow (new java::lang::IllegalArgumentException);
+	    
+	  if (paramelts[i] == JvPrimClass (boolean))
+	    COPY (&argvals[i],
+		  ((java::lang::Boolean *) argelts[i])->booleanValue(),
+		  jboolean);
+	  else if (paramelts[i] == JvPrimClass (char))
+	    COPY (&argvals[i],
+		  ((java::lang::Character *) argelts[i])->charValue(),
+		  jchar);
+          else
+	    {
+	      java::lang::Number *num = (java::lang::Number *) argelts[i];
+	      if (paramelts[i] == JvPrimClass (byte))
+		COPY (&argvals[i], num->byteValue(), jbyte);
+	      else if (paramelts[i] == JvPrimClass (short))
+		COPY (&argvals[i], num->shortValue(), jshort);
+	      else if (paramelts[i] == JvPrimClass (int))
+		COPY (&argvals[i], num->intValue(), jint);
+	      else if (paramelts[i] == JvPrimClass (long))
+		COPY (&argvals[i], num->longValue(), jlong);
+	      else if (paramelts[i] == JvPrimClass (float))
+		COPY (&argvals[i], num->floatValue(), jfloat);
+	      else if (paramelts[i] == JvPrimClass (double))
+		COPY (&argvals[i], num->doubleValue(), jdouble);
+	    }
 	}
       else
 	{
 	  if (argelts[i] && ! paramelts[i]->isAssignableFrom (k))
 	    JvThrow (new java::lang::IllegalArgumentException);
-	}
-
-      java::lang::Number *num = (java::lang::Number *) argelts[i];
-      if (paramelts[i] == JvPrimClass (byte))
-	COPY (&argvals[i], num->byteValue(), jbyte);
-      else if (paramelts[i] == JvPrimClass (short))
-	COPY (&argvals[i], num->shortValue(), jshort);
-      else if (paramelts[i] == JvPrimClass (int))
-	COPY (&argvals[i], num->intValue(), jint);
-      else if (paramelts[i] == JvPrimClass (long))
-	COPY (&argvals[i], num->longValue(), jlong);
-      else if (paramelts[i] == JvPrimClass (float))
-	COPY (&argvals[i], num->floatValue(), jfloat);
-      else if (paramelts[i] == JvPrimClass (double))
-	COPY (&argvals[i], num->doubleValue(), jdouble);
-      else if (paramelts[i] == JvPrimClass (boolean))
-	COPY (&argvals[i],
-	      ((java::lang::Boolean *) argelts[i])->booleanValue(),
-	      jboolean);
-      else if (paramelts[i] == JvPrimClass (char))
-	COPY (&argvals[i],
-	      ((java::lang::Character *) argelts[i])->charValue(),
-	      jchar);
-      else
-	{
-	  JvAssert (! paramelts[i]->isPrimitive());
 	  COPY (&argvals[i], argelts[i], jobject);
 	}
     }

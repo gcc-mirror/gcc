@@ -1,3 +1,17 @@
+2000-12-28  Bryce McKinlay  <bryce@albatross.co.nz>
+
+	* java/lang/natClass.cc (_Jv_IsAssignableFrom): Primitive TYPEs can
+	not be assigned to Object.
+
+	Fix for PR libgcj/1516:
+	* java/lang/reflect/natMethod.cc (primitives): Remove void entry.
+	Add boolean entry.
+	(can_widen): Declared inline. Remove redundant checks for void 
+	arguments and char->short conversion. Add special case for boolean 
+	conversions.
+	(ffi_type): Declared inline.
+	(_Jv_CallAnyMethodA): Move unwrapping logic inside isPrimitive() block.
+
 2000-12-26  Petter Reinholdtsen  <pere@hungry.com>
 
 	* java/sql/SQLWarning.java: Fixed typo in comment.
