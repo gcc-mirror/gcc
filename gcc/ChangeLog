@@ -1,3 +1,9 @@
+2002-02-25  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/5755
+	* config/i386/i386.c (ix86_return_pops_args): Only pop
+	fake structure return argument if it was passed on the stack.
+
 2002-02-25  Jason Merrill  <jason@redhat.com>
 
 	* attribs.c (decl_attributes): Also re-layout PARM_DECL and
