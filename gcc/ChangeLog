@@ -1,3 +1,7 @@
+2002-02-19  Robert Lipe  <robertlipe@usa.net>
+
+	* config/i386/t-sco5gas: (CRTSTUFF_T_CFLAGS_S): Delete -mcoff.
+
 2002-02-14  Bob Wilson  <bob.wilson@acm.org>
 
 	* config/xtensa/xm-xtensa.h:  Add missing SUCCESS_EXIT_CODE
