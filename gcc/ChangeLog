@@ -1,3 +1,7 @@
+2000-05-14  Franz Sirl  <Franz.Sirl-kernel@lauterbach.com>
+
+	* rs6000/rs6000.md (nonlocal_goto_receiver): Add length attribute.
+
 Wed Apr 12 00:42:19 2000  Jeffrey A Law  (law@cygnus.com)
 
 	2000-02-19  Richard Henderson  <rth@cygnus.com>
