@@ -410,13 +410,19 @@ namespace std
     has_facet<messages<wchar_t> >(const locale&);
 #endif
 
-  // iterator
-  typedef vector<locale::facet*> vec_pfacet;
   template class vector<locale::facet*>;
-  template class __normal_iterator<locale::facet**, vector<locale::facet*> >;
-  template class __normal_iterator<locale::facet* const*,
-                                   vector<locale::facet*> >;
+} // namespace std
 
+namespace __gnu_cxx
+{
+  // iterator
+  typedef std::vector<std::locale::facet*> vec_pfacet;
+  template class __normal_iterator<std::locale::facet**, vec_pfacet >;
+  template class __normal_iterator<std::locale::facet* const*, vec_pfacet>;
+} // namespace __gnu_cxx
+
+namespace std
+{
   // locale
   template
     char*
@@ -490,6 +496,7 @@ namespace std
     fill_n<locale::facet**, size_t, locale::facet*>
     (locale::facet**, size_t, locale::facet* const&);
 
+  using __gnu_cxx::__normal_iterator;
   template
     __normal_iterator<locale::facet**, vector<locale::facet*> >
     fill_n(__normal_iterator<locale::facet**, vector<locale::facet*> >,

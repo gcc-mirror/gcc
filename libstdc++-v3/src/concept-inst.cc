@@ -50,11 +50,11 @@ namespace __gnu_cxx
   template void __aux_require_boolean_expr<bool>(bool const&);
 
   _Instantiate(_BidirectionalIteratorConcept<
-    std::__normal_iterator< std::locale::facet**,
+    __normal_iterator< std::locale::facet**,
     std::vector<std::locale::facet*,std::allocator<std::locale::facet*> > > > );
 
   _Instantiate(_BidirectionalIteratorConcept<
-    std::__normal_iterator< unsigned*,
+    __normal_iterator< unsigned*,
     std::vector<unsigned, std::allocator<unsigned> > > > );
 
   _Instantiate(_ConvertibleConcept<std::locale::facet*, std::locale::facet*> );
@@ -68,15 +68,15 @@ namespace __gnu_cxx
   _Instantiate(_InputIteratorConcept<std::locale::facet**> );
 
   _Instantiate(_InputIteratorConcept<
-    std::__normal_iterator< std::locale::facet* const*,
+    __normal_iterator< std::locale::facet* const*,
     std::vector<std::locale::facet*,std::allocator<std::locale::facet*> > > > );
 
   _Instantiate(_InputIteratorConcept<
-    std::__normal_iterator< std::locale::facet**,
+    __normal_iterator< std::locale::facet**,
     std::vector<std::locale::facet*,std::allocator<std::locale::facet*> > > > );
 
   _Instantiate(_InputIteratorConcept<
-    std::__normal_iterator< unsigned*,
+    __normal_iterator< unsigned*,
     std::vector<unsigned, std::allocator<unsigned> > > > );
 
 #ifdef _GLIBCPP_USE_WCHAR_T
@@ -98,26 +98,26 @@ namespace __gnu_cxx
   _Instantiate(_LessThanComparableConcept<unsigned> );
 
   _Instantiate(_Mutable_BidirectionalIteratorConcept<
-    std::__normal_iterator< std::locale::facet**,
+    __normal_iterator< std::locale::facet**,
     std::vector<std::locale::facet*,std::allocator<std::locale::facet*> > > > );
 
   _Instantiate(_Mutable_BidirectionalIteratorConcept<
-    std::__normal_iterator< unsigned*,
+    __normal_iterator< unsigned*,
     std::vector<unsigned, std::allocator<unsigned> > > > );
 
   _Instantiate(_Mutable_ForwardIteratorConcept<
-    std::__normal_iterator< std::locale::facet**,
+    __normal_iterator< std::locale::facet**,
     std::vector<std::locale::facet*,std::allocator<std::locale::facet*> > > > );
 
   _Instantiate(_OutputIteratorConcept<
     std::locale::facet**, std::locale::facet*> );
 
   _Instantiate(_OutputIteratorConcept<
-    std::__normal_iterator< std::locale::facet**,
+    __normal_iterator< std::locale::facet**,
       std::vector<std::locale::facet*, std::allocator<std::locale::facet* > > >,
     std::locale::facet* > );
 
-  _Instantiate(_OutputIteratorConcept<std::__normal_iterator<
+  _Instantiate(_OutputIteratorConcept<__normal_iterator<
     unsigned*, std::vector<unsigned, std::allocator<unsigned> > >, unsigned> );
 
   _Instantiate(_OutputIteratorConcept<std::ostreambuf_iterator<
@@ -133,19 +133,19 @@ namespace __gnu_cxx
   _Instantiate(_RandomAccessIteratorConcept<char const*> );
 
   _Instantiate(_RandomAccessIteratorConcept<
-    std::__normal_iterator<char const*, std::string> > );
+    __normal_iterator<char const*, std::string> > );
 
   _Instantiate(_RandomAccessIteratorConcept<
-    std::__normal_iterator<char*, std::string> > );
+    __normal_iterator<char*, std::string> > );
 
 #ifdef _GLIBCPP_USE_WCHAR_T
   _Instantiate(_RandomAccessIteratorConcept<
-    std::__normal_iterator<wchar_t const*,
+    __normal_iterator<wchar_t const*,
     std::basic_string<wchar_t, std::char_traits<wchar_t>,
                                std::allocator<wchar_t> > > > );
 
   _Instantiate(_RandomAccessIteratorConcept<
-    std::__normal_iterator<wchar_t*,
+    __normal_iterator<wchar_t*,
     std::basic_string<wchar_t, std::char_traits<wchar_t>,
                                std::allocator<wchar_t> > > > );
 

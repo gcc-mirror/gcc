@@ -99,8 +99,9 @@ namespace std
       typedef typename _Alloc::const_reference 		    const_reference;
       typedef typename _Alloc::pointer 			    pointer;
       typedef typename _Alloc::const_pointer 	   	    const_pointer;
-      typedef __normal_iterator<pointer, basic_string> 	    iterator;
-      typedef __normal_iterator<const_pointer, basic_string> const_iterator;
+      typedef __gnu_cxx::__normal_iterator<pointer, basic_string>  iterator;
+      typedef __gnu_cxx::__normal_iterator<const_pointer, basic_string>
+                                                            const_iterator;
       typedef reverse_iterator<const_iterator> 	const_reverse_iterator;
       typedef reverse_iterator<iterator> 		    reverse_iterator;
     

@@ -1,3 +1,19 @@
+2002-04-16  Paolo Carlini <pcarlini@unitus.it>
+	* testsuite/24_iterators/rel_ops.cc: New test.
+	
+2002-04-16  Gabriel Dos Reis  <gdr@merlin.codesourcery.com>
+
+	* include/bits/type_traits.h (__normal_iterator): Declare in
+	__gnu_cxx.  Adjust use at global namespace.
+	* include/bits/stl_iterator.h (__normal_iterator): Move definition
+	into __gnu_cxx::. Add more operator overloads.  Tidy existing ones.
+	* include/bits/basic_string.h (basic_string): Adjust use of
+	__normal_iterator.
+	* include/bits/stl_vector.h (_Alloc>): Likewise.
+	* src/concept-inst.cc (__gnu_cxx): __normal_iterator<> is now here.
+	* src/locale-inst.cc (__gnu_cxx): Likewise.
+	* src/string-inst.cc (operator==): Instantiate in __gnu_cxx.
+
 2002-04-15  Steve Ellcey  <sje@cup.hp.com>
 
 	* gcc/libstdc++-v3/config/os/hpux/bits/os_defines.h
