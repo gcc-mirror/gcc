@@ -402,7 +402,7 @@ typedef struct gbe_block
   struct gbe_block *outer;
   ffestw block;
   int lineno;
-  char *input_filename;
+  const char *input_filename;
   bool is_stmt;
 } *gbe_block;
 
