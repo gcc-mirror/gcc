@@ -1,3 +1,7 @@
+2000-01-04  Tom Tromey  <tromey@cygnus.com>
+
+	* Makefile.in: Rebuilt with newer automake.
+
 1999-12-31  Tom Tromey  <tromey@cygnus.com>
 
 	* Makefile.am (INCLUDES): Added -I$(top_srcdir)/src.
