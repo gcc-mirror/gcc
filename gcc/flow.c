@@ -7355,7 +7355,7 @@ void
 flow_loop_dump (loop, file, loop_dump_aux, verbose)
      const struct loop *loop;
      FILE *file;
-     void (*loop_dump_aux)(const struct loop *, FILE *, int);
+     void (*loop_dump_aux) PARAMS((const struct loop *, FILE *, int));
      int verbose;
 {
   if (! loop || ! loop->header)
@@ -7399,7 +7399,7 @@ void
 flow_loops_dump (loops, file, loop_dump_aux, verbose)
      const struct loops *loops;
      FILE *file;
-     void (*loop_dump_aux)(const struct loop *, FILE *, int);
+     void (*loop_dump_aux) PARAMS((const struct loop *, FILE *, int));
      int verbose;
 {
   int i;
