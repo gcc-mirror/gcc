@@ -5548,12 +5548,8 @@ instantiate_class_template (type)
 		--processing_template_decl;
 	    }
 	  else
-	    {
-	      /* Build new DECL_FRIENDLIST.  */
-
-	      add_friend (type, 
-			  tsubst_friend_function (t, args));
-	    }
+	    /* Build new DECL_FRIENDLIST.  */
+	    add_friend (type, tsubst_friend_function (t, args));
 	}
     }
 
