@@ -14787,9 +14787,13 @@ rs6000_machopic_legitimize_pic_address (rtx orig, enum machine_mode mode,
 
       if (GET_CODE (XEXP (orig, 0)) == PLUS)
 	{
+	  /* Use a different reg for the intermediate value, as
+	     it will be marked UNCHANGING. */
+	  rtx reg_temp = no_new_pseudos ? reg : gen_reg_rtx (Pmode);
+
 	  base =
 	    rs6000_machopic_legitimize_pic_address (XEXP (XEXP (orig, 0), 0),
-						    Pmode, reg);
+						    Pmode, reg_temp);
 	  offset =
 	    rs6000_machopic_legitimize_pic_address (XEXP (XEXP (orig, 0), 1),
 						    Pmode, reg);

@@ -1,3 +1,8 @@
+2003-11-05  Geoffrey Keating  <geoffk@apple.com>
+
+	* config/rs6000/rs6000.c (rs6000_machopic_legitimize_pic_address): Use
+	an intermediate register for better optimisation.
+
 2003-11-05  Zdenek Dvorak  <rakdver@atrey.karlin.mff.cuni.cz>
 
 	* cfgloopanal.c (variable_initial_value, variable_initial_values,
