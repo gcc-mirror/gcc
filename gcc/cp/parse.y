@@ -1,5 +1,5 @@
 /* YACC parser for C++ syntax.
-   Copyright (C) 1988, 1989, 1993, 1995 Free Software Foundation, Inc.
+   Copyright (C) 1988, 1989, 1993, 1994, 1995 Free Software Foundation, Inc.
    Hacked by Michael Tiemann (tiemann@cygnus.com)
 
 This file is part of GNU CC.
@@ -531,6 +531,7 @@ template_def:
 		{
 		  int def = ($4 != ';');
 		  tree d = start_decl ($<ttype>3, $<ttype>2, 0, NULL_TREE);
+		  cplus_decl_attributes (d, NULL_TREE, prefix_attributes);
 		  cp_finish_decl (d, NULL_TREE, NULL_TREE, 0, 0);
 		  end_template_decl ($1, d, 0, def);
 		  if (def)
@@ -557,6 +558,7 @@ datadef:
 	| declmods notype_declarator ';'
 		{ tree d;
 		  d = start_decl ($<ttype>2, $<ttype>$, 0, NULL_TREE);
+		  cplus_decl_attributes (d, NULL_TREE, prefix_attributes);
 		  cp_finish_decl (d, NULL_TREE, NULL_TREE, 0, 0);
 		}
 	| typed_declspecs initdecls ';'
@@ -567,6 +569,7 @@ datadef:
 	| typed_declspecs declarator ';'
 		{ tree d;
 		  d = start_decl ($<ttype>2, $<ttype>$, 0, NULL_TREE);
+		  cplus_decl_attributes (d, NULL_TREE, prefix_attributes);
 		  cp_finish_decl (d, NULL_TREE, NULL_TREE, 0, 0);
 		  note_list_got_semicolon ($<ttype>$);
 		}
@@ -1474,18 +1477,34 @@ primary:
 		    }
 		}
 	| functional_cast
-	| DYNAMIC_CAST '<' type_id '>' '(' expr ')'
-		{ tree type = groktypename ($3);
-		  $$ = build_dynamic_cast (type, $6); }
-	| STATIC_CAST '<' type_id '>' '(' expr ')'
-		{ tree type = groktypename ($3);
-		  $$ = build_static_cast (type, $6); }
-	| REINTERPRET_CAST '<' type_id '>' '(' expr ')'
-		{ tree type = groktypename ($3);
-		  $$ = build_reinterpret_cast (type, $6); }
-	| CONST_CAST '<' type_id '>' '(' expr ')'
-		{ tree type = groktypename ($3);
-		  $$ = build_const_cast (type, $6); }
+	| DYNAMIC_CAST '<'
+		{ dont_allow_type_definitions = "inside dynamic_cast"; }
+	  type_id '>'
+		{ dont_allow_type_definitions = 0; }
+	  '(' expr ')'
+		{ tree type = groktypename ($4);
+		  $$ = build_dynamic_cast (type, $8); }
+	| STATIC_CAST '<'
+		{ dont_allow_type_definitions = "inside static_cast"; }
+	  type_id '>'
+		{ dont_allow_type_definitions = 0; }
+	  '(' expr ')'
+		{ tree type = groktypename ($4);
+		  $$ = build_static_cast (type, $8); }
+	| REINTERPRET_CAST '<'
+		{ dont_allow_type_definitions = "inside reinterpret_cast"; }
+	  type_id '>'
+		{ dont_allow_type_definitions = 0; }
+	  '(' expr ')'
+		{ tree type = groktypename ($4);
+		  $$ = build_reinterpret_cast (type, $8); }
+	| CONST_CAST '<'
+		{ dont_allow_type_definitions = "inside const_cast"; }
+	  type_id '>'
+		{ dont_allow_type_definitions = 0; }
+	  '(' expr ')'
+		{ tree type = groktypename ($4);
+		  $$ = build_const_cast (type, $8); }
 	| TYPEID '(' expr ')'
 		{ $$ = build_typeid ($3); }
 	| TYPEID '(' type_id ')'
@@ -1737,6 +1756,7 @@ decl:
 		{ tree d = $1;
 		  int yes = suspend_momentary ();
 		  d = start_decl ($2, d, 0, NULL_TREE);
+		  cplus_decl_attributes (d, NULL_TREE, prefix_attributes);
 		  cp_finish_decl (d, NULL_TREE, NULL_TREE, 0, 0);
 		  resume_momentary (yes);
 		  note_list_got_semicolon ($1);
@@ -3427,7 +3447,11 @@ try_block:
 
 handler_seq:
 	  /* empty */
-	| handler_seq CATCH .pushlevel handler_args compstmt
+	| handler_seq CATCH .pushlevel
+		{ dont_allow_type_definitions = "inside exception declarations"; }
+	  handler_args
+		{ dont_allow_type_definitions = 0; }
+	  compstmt
 		{ expand_end_catch_block (); }
 	  .poplevel
 	;
