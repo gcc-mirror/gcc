@@ -21,32 +21,14 @@
 ;; Boston, MA 02111-1307, USA.
 
 
-(define_attr "cirrus_fpu" "fpa,fpe2,fpe3,yes" (const (symbol_ref "arm_fpu_attr")))
-
-; Classification of each insn
-; farith	Floating point arithmetic (4 cycle)
-; dmult		Double multiplies (7 cycle)
-(define_attr "cirrus_type" "normal,farith,dmult" (const_string "normal"))
-
 ; Cirrus types for invalid insn combinations
-; no		Not a cirrus insn
-; yes		Cirrus insn
+; not		Not a cirrus insn
+; normal	Any Cirrus insn not covered by the special cases below
 ; double	cfldrd, cfldr64, cfstrd, cfstr64
 ; compare	cfcmps, cfcmpd, cfcmp32, cfcmp64
 ; move		cfmvdlr, cfmvdhr, cfmvsr, cfmv64lr, cfmv64hr
-(define_attr "cirrus" "no,yes,double,compare,move" (const_string "no"))
-
-(define_function_unit "cirrus_fpa" 1 0
-  (and (eq_attr "cirrus_fpu" "yes")
-       (eq_attr "cirrus_type" "farith")) 4 1)
+(define_attr "cirrus" "not,normal,double,compare,move" (const_string "not"))
 
-(define_function_unit "cirrus_fpa" 1 0
-  (and (eq_attr "cirrus_fpu" "yes")
-       (eq_attr "cirrus_type" "dmult")) 7 4)
-
-(define_function_unit "cirrus_fpa" 1 0
-  (and (eq_attr "cirrus_fpu" "yes")
-       (eq_attr "cirrus_type" "normal")) 1 1)
 
 (define_insn "cirrus_adddi3"
   [(set (match_operand:DI          0 "cirrus_fp_register" "=v")
@@ -54,8 +36,8 @@
 		 (match_operand:DI 2 "cirrus_fp_register"  "v")))]
   "TARGET_ARM && TARGET_CIRRUS"
   "cfadd64%?\\t%V0, %V1, %V2"
-  [(set_attr "cirrus_type" "farith")
-   (set_attr "cirrus" "yes")]
+  [(set_attr "type" "mav_farith")
+   (set_attr "cirrus" "normal")]
 )
 
 (define_insn "*cirrus_addsi3"
@@ -64,8 +46,8 @@
 		 (match_operand:SI 2 "cirrus_fp_register" "v")))]
   "TARGET_ARM && TARGET_CIRRUS && 0"
   "cfadd32%?\\t%V0, %V1, %V2"
-  [(set_attr "cirrus_type" "farith")
-   (set_attr "cirrus" "yes")]
+  [(set_attr "type" "mav_farith")
+   (set_attr "cirrus" "normal")]
 )
 
 ;; define_insn replaced by define_expand and define_insn
@@ -86,8 +68,8 @@
 		 (match_operand:SF 2 "cirrus_fp_register" "v")))]
   "TARGET_ARM && TARGET_CIRRUS"
   "cfadds%?\\t%V0, %V1, %V2"
-  [(set_attr "cirrus_type" "farith")
-   (set_attr "cirrus" "yes")]
+  [(set_attr "type" "mav_farith")
+   (set_attr "cirrus" "normal")]
 )
 
 ;; define_insn replaced by define_expand and define_insn
@@ -108,8 +90,8 @@
 		 (match_operand:DF 2 "cirrus_fp_register" "v")))]
   "TARGET_ARM && TARGET_CIRRUS"
   "cfaddd%?\\t%V0, %V1, %V2"
-  [(set_attr "cirrus_type" "farith")
-   (set_attr "cirrus" "yes")]
+  [(set_attr "type" "mav_farith")
+   (set_attr "cirrus" "normal")]
 )
 
 (define_insn "cirrus_subdi3"
@@ -118,8 +100,8 @@
 		  (match_operand:DI 2 "cirrus_fp_register"  "v")))]
   "TARGET_ARM && TARGET_CIRRUS"
   "cfsub64%?\\t%V0, %V1, %V2"
-  [(set_attr "cirrus_type" "farith")
-   (set_attr "cirrus" "yes")]
+  [(set_attr "type" "mav_farith")
+   (set_attr "cirrus" "normal")]
 )
 
 (define_insn "*cirrus_subsi3_insn"
@@ -128,8 +110,8 @@
 		  (match_operand:SI 2 "cirrus_fp_register" "v")))]
   "TARGET_ARM && TARGET_CIRRUS && 0"
   "cfsub32%?\\t%V0, %V1, %V2"
-  [(set_attr "cirrus_type" "farith")
-   (set_attr "cirrus" "yes")]
+  [(set_attr "type" "mav_farith")
+   (set_attr "cirrus" "normal")]
 )
 
 (define_expand "subsf3"
@@ -153,8 +135,8 @@
 		  (match_operand:SF 2 "cirrus_fp_register"  "v")))]
   "TARGET_ARM && TARGET_CIRRUS"
   "cfsubs%?\\t%V0, %V1, %V2"
-  [(set_attr "cirrus_type" "farith")
-   (set_attr "cirrus" "yes")]
+  [(set_attr "type" "mav_farith")
+   (set_attr "cirrus" "normal")]
 )
 
 (define_expand "subdf3"
@@ -178,8 +160,8 @@
 		  (match_operand:DF 2 "cirrus_fp_register" "v")))]
   "TARGET_ARM && TARGET_CIRRUS"
   "cfsubd%?\\t%V0, %V1, %V2"
-  [(set_attr "cirrus_type" "farith")
-   (set_attr "cirrus" "yes")]
+  [(set_attr "type" "mav_farith")
+   (set_attr "cirrus" "normal")]
 )
 
 (define_insn "*cirrus_mulsi3"
@@ -188,8 +170,8 @@
 		 (match_operand:SI 1 "cirrus_fp_register"  "v")))]
   "TARGET_ARM && TARGET_CIRRUS && 0"
   "cfmul32%?\\t%V0, %V1, %V2"
-  [(set_attr "cirrus_type" "farith")
-   (set_attr "cirrus" "yes")]
+  [(set_attr "type" "mav_farith")
+   (set_attr "cirrus" "normal")]
 )
 
 (define_insn "muldi3"
@@ -198,8 +180,8 @@
 		 (match_operand:DI 1 "cirrus_fp_register"  "v")))]
   "TARGET_ARM && TARGET_CIRRUS"
   "cfmul64%?\\t%V0, %V1, %V2"
-  [(set_attr "cirrus_type" "dmult")
-   (set_attr "cirrus" "yes")]
+  [(set_attr "type" "mav_dmult")
+   (set_attr "cirrus" "normal")]
 )
 
 (define_insn "*cirrus_mulsi3addsi"
@@ -210,8 +192,8 @@
 	  (match_operand:SI          3 "cirrus_fp_register"  "0")))]
   "TARGET_ARM && TARGET_CIRRUS && 0"
   "cfmac32%?\\t%V0, %V1, %V2"
-  [(set_attr "cirrus_type" "farith")
-   (set_attr "cirrus" "yes")]
+  [(set_attr "type" "mav_farith")
+   (set_attr "cirrus" "normal")]
 )
 
 ;; Cirrus SI multiply-subtract
@@ -223,8 +205,8 @@
 		   (match_operand:SI 3 "cirrus_fp_register"  "v"))))]
   "0 && TARGET_ARM && TARGET_CIRRUS"
   "cfmsc32%?\\t%V0, %V2, %V3"
-  [(set_attr "cirrus_type" "farith")
-   (set_attr "cirrus" "yes")]
+  [(set_attr "type" "mav_farith")
+   (set_attr "cirrus" "normal")]
 )
 
 (define_expand "mulsf3"
@@ -244,8 +226,8 @@
 		 (match_operand:SF 2 "cirrus_fp_register"  "v")))]
   "TARGET_ARM && TARGET_CIRRUS"
   "cfmuls%?\\t%V0, %V1, %V2"
-  [(set_attr "cirrus_type" "farith")
-   (set_attr "cirrus" "yes")]
+  [(set_attr "type" "mav_farith")
+   (set_attr "cirrus" "normal")]
 )
 
 (define_expand "muldf3"
@@ -265,8 +247,8 @@
 		 (match_operand:DF 2 "cirrus_fp_register"  "v")))]
   "TARGET_ARM && TARGET_CIRRUS"
   "cfmuld%?\\t%V0, %V1, %V2"
-  [(set_attr "cirrus_type" "dmult")
-   (set_attr "cirrus" "yes")]
+  [(set_attr "type" "mav_dmult")
+   (set_attr "cirrus" "normal")]
 )
 
 (define_insn "cirrus_ashl_const"
@@ -275,7 +257,7 @@
 		   (match_operand:SI 2 "cirrus_shift_const"  "")))]
   "TARGET_ARM && TARGET_CIRRUS && 0"
   "cfsh32%?\\t%V0, %V1, #%s2"
-  [(set_attr "cirrus" "yes")]
+  [(set_attr "cirrus" "normal")]
 )
 
 (define_insn "cirrus_ashiftrt_const"
@@ -284,7 +266,7 @@
 		     (match_operand:SI 2 "cirrus_shift_const"  "")))]
   "TARGET_ARM && TARGET_CIRRUS && 0"
   "cfsh32%?\\t%V0, %V1, #-%s2"
-  [(set_attr "cirrus" "yes")]
+  [(set_attr "cirrus" "normal")]
 )
 
 (define_insn "cirrus_ashlsi3"
@@ -293,7 +275,7 @@
 		   (match_operand:SI 2 "register_operand"    "r")))]
   "TARGET_ARM && TARGET_CIRRUS && 0"
   "cfrshl32%?\\t%V1, %V0, %s2"
-  [(set_attr "cirrus" "yes")]
+  [(set_attr "cirrus" "normal")]
 )
 
 (define_insn "ashldi3_cirrus"
@@ -302,7 +284,7 @@
 		   (match_operand:SI 2 "register_operand"    "r")))]
   "TARGET_ARM && TARGET_CIRRUS"
   "cfrshl64%?\\t%V1, %V0, %s2"
-  [(set_attr "cirrus" "yes")]
+  [(set_attr "cirrus" "normal")]
 )
 
 (define_insn "cirrus_ashldi_const"
@@ -311,7 +293,7 @@
 		   (match_operand:SI 2 "cirrus_shift_const"  "")))]
   "TARGET_ARM && TARGET_CIRRUS"
   "cfsh64%?\\t%V0, %V1, #%s2"
-  [(set_attr "cirrus" "yes")]
+  [(set_attr "cirrus" "normal")]
 )
 
 (define_insn "cirrus_ashiftrtdi_const"
@@ -320,7 +302,7 @@
 		     (match_operand:SI 2 "cirrus_shift_const"  "")))]
   "TARGET_ARM && TARGET_CIRRUS"
   "cfsh64%?\\t%V0, %V1, #-%s2"
-  [(set_attr "cirrus" "yes")]
+  [(set_attr "cirrus" "normal")]
 )
 
 (define_insn "*cirrus_absdi2"
@@ -328,7 +310,7 @@
 	(abs:DI (match_operand:DI 1 "cirrus_fp_register"  "v")))]
   "TARGET_ARM && TARGET_CIRRUS"
   "cfabs64%?\\t%V0, %V1"
-  [(set_attr "cirrus" "yes")]
+  [(set_attr "cirrus" "normal")]
 )
 
 ;; This doesn't really clobber ``cc''.  Fixme: aldyh.  
@@ -338,7 +320,7 @@
    (clobber (reg:CC CC_REGNUM))]
   "TARGET_ARM && TARGET_CIRRUS"
   "cfneg64%?\\t%V0, %V1"
-  [(set_attr "cirrus" "yes")]
+  [(set_attr "cirrus" "normal")]
 )
 
 (define_insn "*cirrus_negsi2"
@@ -346,7 +328,7 @@
 	(neg:SI (match_operand:SI 1 "cirrus_fp_register"  "v")))]
   "TARGET_ARM && TARGET_CIRRUS && 0"
   "cfneg32%?\\t%V0, %V1"
-  [(set_attr "cirrus" "yes")]
+  [(set_attr "cirrus" "normal")]
 )
 
 (define_expand "negsf2"
@@ -361,7 +343,7 @@
 	(neg:SF (match_operand:SF 1 "cirrus_fp_register"  "v")))]
   "TARGET_ARM && TARGET_CIRRUS"
   "cfnegs%?\\t%V0, %V1"
-  [(set_attr "cirrus" "yes")]
+  [(set_attr "cirrus" "normal")]
 )
 
 (define_expand "negdf2"
@@ -375,7 +357,7 @@
 	(neg:DF (match_operand:DF 1 "cirrus_fp_register"  "v")))]
   "TARGET_ARM && TARGET_CIRRUS"
   "cfnegd%?\\t%V0, %V1"
-  [(set_attr "cirrus" "yes")]
+  [(set_attr "cirrus" "normal")]
 )
 
 (define_expand "abssi2"
@@ -393,7 +375,7 @@
    (clobber (reg:CC CC_REGNUM))]
   "TARGET_ARM && TARGET_CIRRUS && 0"
   "cfabs32%?\\t%V0, %V1"
-  [(set_attr "cirrus" "yes")]
+  [(set_attr "cirrus" "normal")]
 )
 
 (define_expand "abssf2"
@@ -407,7 +389,7 @@
         (abs:SF (match_operand:SF 1 "cirrus_fp_register"  "v")))]
   "TARGET_ARM && TARGET_CIRRUS"
   "cfabss%?\\t%V0, %V1"
-  [(set_attr "cirrus" "yes")]
+  [(set_attr "cirrus" "normal")]
 )
 
 (define_expand "absdf2"
@@ -421,7 +403,7 @@
         (abs:DF (match_operand:DF 1 "cirrus_fp_register"  "v")))]
   "TARGET_ARM && TARGET_CIRRUS"
   "cfabsd%?\\t%V0, %V1"
-  [(set_attr "cirrus" "yes")]
+  [(set_attr "cirrus" "normal")]
 )
 
 (define_expand "floatsisf2"
@@ -474,14 +456,14 @@
 	(float:SF (match_operand:DI 1 "cirrus_fp_register" "v")))]
   "TARGET_ARM && TARGET_CIRRUS"
   "cfcvt64s%?\\t%V0, %V1"
-  [(set_attr "cirrus" "yes")])
+  [(set_attr "cirrus" "normal")])
 
 (define_insn "floatdidf2"
   [(set (match_operand:DF 0 "cirrus_fp_register" "=v")
 	(float:DF (match_operand:DI 1 "cirrus_fp_register" "v")))]
   "TARGET_ARM && TARGET_CIRRUS"
   "cfcvt64d%?\\t%V0, %V1"
-  [(set_attr "cirrus" "yes")])
+  [(set_attr "cirrus" "normal")])
 
 (define_expand "fix_truncsfsi2"
   [(set (match_operand:SI         0 "s_register_operand" "")
@@ -506,7 +488,7 @@
   "TARGET_ARM && TARGET_CIRRUS"
   "cftruncs32%?\\t%Y2, %V1\;cfmvr64l%?\\t%0, %Z2"
   [(set_attr "length" "8")
-   (set_attr "cirrus" "yes")]
+   (set_attr "cirrus" "normal")]
 )
 
 (define_expand "fix_truncdfsi2"
@@ -546,7 +528,7 @@
          (match_operand:DF 1 "cirrus_fp_register" "v")))]
   "TARGET_ARM && TARGET_CIRRUS"
   "cfcvtds%?\\t%V0, %V1"
-  [(set_attr "cirrus" "yes")]
+  [(set_attr "cirrus" "normal")]
 )
 
 (define_insn "*cirrus_extendsfdf2"
@@ -554,7 +536,7 @@
         (float_extend:DF (match_operand:SF 1 "cirrus_fp_register"  "v")))]
   "TARGET_ARM && TARGET_CIRRUS"
   "cfcvtsd%?\\t%V0, %V1"
-  [(set_attr "cirrus" "yes")]
+  [(set_attr "cirrus" "normal")]
 )
 
 (define_insn "*cirrus_arm_movdi"
@@ -582,11 +564,11 @@
     default: abort ();
     }
   }"
-  [(set_attr "length" "8,8,8,8,8,4,4,4")
-   (set_attr "type" "*,load,store2,*,*,load,store2,*")
-   (set_attr "pool_range" "*,1020,*,*,*,*,*,*")
-   (set_attr "neg_pool_range" "*,1012,*,*,*,*,*,*")
-   (set_attr "cirrus" "no,no,no,move,yes,double,double,yes")]
+  [(set_attr "length"         "  8,   8,     8,   8,     8,     4,     4,     4")
+   (set_attr "type"           "  *,load,store2,   *,     *,  load,store2,     *")
+   (set_attr "pool_range"     "  *,1020,     *,   *,     *,     *,     *,     *")
+   (set_attr "neg_pool_range" "  *,1012,     *,   *,     *,     *,     *,     *")
+   (set_attr "cirrus"         "not, not,   not,move,normal,double,double,normal")]
 )
 
 ;; Cirrus SI values have been outlawed.  Look in arm.h for the comment
@@ -608,10 +590,10 @@
    cfldr32%?\\t%V0, %1
    cfstr32%?\\t%V1, %0
    cfsh32%?\\t%V0, %V1, #0"
-  [(set_attr "type" "*,*,load,store1,*,*,load,store1,*")
-   (set_attr "pool_range" "*,*,4096,*,*,*,1024,*,*")
-   (set_attr "neg_pool_range" "*,*,4084,*,*,*,1012,*,*")
-   (set_attr "cirrus" "no,no,no,no,move,yes,yes,yes,yes")]
+  [(set_attr "type"           "*,  *,  load,store1,   *,     *,  load,store1,     *")
+   (set_attr "pool_range"     "*,  *,  4096,     *,   *,     *,  1024,     *,     *")
+   (set_attr "neg_pool_range" "*,  *,  4084,     *,   *,     *,  1012,     *,     *")
+   (set_attr "cirrus"         "not,not, not,   not,move,normal,normal,normal,normal")]
 )
 
 (define_insn "*cirrus_movsf_hard_insn"
@@ -629,11 +611,11 @@
    mov%?\\t%0, %1
    ldr%?\\t%0, %1\\t%@ float
    str%?\\t%1, %0\\t%@ float"
-  [(set_attr "length" "*,*,*,*,*,4,4,4")
-   (set_attr "type" "*,load,*,*,store1,*,load,store1")
-   (set_attr "pool_range" "*,*,*,*,*,*,4096,*")
-   (set_attr "neg_pool_range" "*,*,*,*,*,*,4084,*")
-   (set_attr "cirrus" "yes,yes,move,yes,yes,no,no,no")]
+  [(set_attr "length"         "     *,     *,   *,     *,     *,  4,   4,     4")
+   (set_attr "type"           "     *,  load,   *,     *,store1,  *,load,store1")
+   (set_attr "pool_range"     "     *,     *,   *,     *,     *,  *,4096,     *")
+   (set_attr "neg_pool_range" "     *,     *,   *,     *,     *,  *,4084,     *")
+   (set_attr "cirrus"         "normal,normal,move,normal,normal,not, not,   not")]
 )
 
 (define_insn "*cirrus_movdf_hard_insn"
@@ -658,10 +640,10 @@
     default: abort ();
     }
   }"
-  [(set_attr "type" "load,store2,*,store2,load,*,load,*,*,store2")
-   (set_attr "length" "4,4,8,8,8,4,4,8,8,4")
-   (set_attr "pool_range" "*,*,*,*,252,*,*,*,*,*")
-   (set_attr "neg_pool_range" "*,*,*,*,244,*,*,*,*,*")
-   (set_attr "cirrus" "no,no,no,no,no,yes,double,move,yes,double")]
+  [(set_attr "type"           "load,store2,  *,store2,load,     *,  load,   *,     *,store2")
+   (set_attr "length"         "   4,     4,  8,     8,   8,     4,     4,   8,     8,     4")
+   (set_attr "pool_range"     "   *,     *,  *,     *, 252,     *,     *,   *,     *,     *")
+   (set_attr "neg_pool_range" "   *,     *,  *,     *, 244,     *,     *,   *,     *,     *")
+   (set_attr "cirrus"         " not,   not,not,   not, not,normal,double,move,normal,double")]
 )
 

@@ -75,11 +75,8 @@ static void      arm_add_gc_roots 		PARAMS ((void));
 static int       arm_gen_constant		PARAMS ((enum rtx_code, Mmode, Hint, rtx, rtx, int, int));
 static unsigned  bit_count 			PARAMS ((Ulong));
 static int	 arm_address_register_rtx_p	PARAMS ((rtx, int));
-static int	 arm_legitimate_index_p		PARAMS ((enum machine_mode,
-							 rtx, int));
-static int	 thumb_base_register_rtx_p	PARAMS ((rtx, 
-							 enum machine_mode,
-							 int));
+static int	 arm_legitimate_index_p		PARAMS ((Mmode, rtx, int));
+static int	 thumb_base_register_rtx_p	PARAMS ((rtx, Mmode, int));
 inline static int thumb_index_register_rtx_p	PARAMS ((rtx, int));
 static int       const_ok_for_op 		PARAMS ((Hint, enum rtx_code));
 static int       eliminate_lr2ip		PARAMS ((rtx *));
@@ -116,7 +113,7 @@ static int	 arm_barrier_cost		PARAMS ((rtx));
 static Mfix *    create_fix_barrier		PARAMS ((Mfix *, Hint));
 static void	 push_minipool_barrier	        PARAMS ((rtx, Hint));
 static void	 push_minipool_fix		PARAMS ((rtx, Hint, rtx *, Mmode, rtx));
-static void	 note_invalid_constants	        PARAMS ((rtx, Hint));
+static bool	 note_invalid_constants	        PARAMS ((rtx, Hint, bool));
 static int       current_file_function_operand	PARAMS ((rtx));
 static Ulong	 arm_compute_save_reg0_reg12_mask  PARAMS ((void));
 static Ulong     arm_compute_save_reg_mask	PARAMS ((void));
@@ -128,31 +125,28 @@ static void	 arm_output_function_epilogue	PARAMS ((FILE *, Hint));
 static void	 arm_output_function_prologue	PARAMS ((FILE *, Hint));
 static void	 thumb_output_function_prologue PARAMS ((FILE *, Hint));
 static int	 arm_comp_type_attributes	PARAMS ((tree, tree));
-static void	 arm_set_default_type_attributes  PARAMS ((tree));
+static void	 arm_set_default_type_attributes PARAMS ((tree));
 static int	 arm_adjust_cost		PARAMS ((rtx, rtx, rtx, int));
-static int	 count_insns_for_constant	PARAMS ((HOST_WIDE_INT, int));
+static int	 count_insns_for_constant	PARAMS ((Hint, int));
 static int	 arm_get_strip_length		PARAMS ((int));
 static bool      arm_function_ok_for_sibcall    PARAMS ((tree, tree));
+static void	 arm_internal_label		PARAMS ((FILE *, Ccstar, Ulong));
+static void      arm_output_mi_thunk		PARAMS ((FILE *, tree, Hint, Hint, tree));
+static int       arm_rtx_costs_1		PARAMS ((rtx, enum rtx_code, enum rtx_code));
+static bool      arm_rtx_costs			PARAMS ((rtx, int, int, int *));
+static int       arm_address_cost		PARAMS ((rtx));
+static bool 	 arm_memory_load_p              PARAMS ((rtx));
+static bool      arm_cirrus_insn_p              PARAMS ((rtx));
+static void      cirrus_reorg                   PARAMS ((rtx));
 #ifdef OBJECT_FORMAT_ELF
-static void	 arm_elf_asm_named_section	PARAMS ((const char *, unsigned int));
+static void	 arm_elf_asm_named_section	PARAMS ((Ccstar, unsigned int));
 #endif
 #ifndef ARM_PE
 static void	 arm_encode_section_info	PARAMS ((tree, int));
 #endif
 #ifdef AOF_ASSEMBLER
-static void	 aof_globalize_label		PARAMS ((FILE *, const char *));
+static void	 aof_globalize_label		PARAMS ((FILE *, Ccstar));
 #endif
-static void	 arm_internal_label		PARAMS ((FILE *, const char *, unsigned long));
-static void arm_output_mi_thunk			PARAMS ((FILE *, tree,
-							 HOST_WIDE_INT,
-							 HOST_WIDE_INT, tree));
-static int arm_rtx_costs_1			PARAMS ((rtx, enum rtx_code,
-							 enum rtx_code));
-static bool arm_rtx_costs			PARAMS ((rtx, int, int, int*));
-static int arm_address_cost			PARAMS ((rtx));
-static int 	 is_load_address                PARAMS ((rtx));
-static int       is_cirrus_insn                 PARAMS ((rtx));
-static void      cirrus_reorg                   PARAMS ((rtx));
 
 #undef Hint
 #undef Mmode
@@ -3984,38 +3978,47 @@ cirrus_shift_const (op, mode)
 	  && INTVAL (op) < 64);
 }
 
-/* Return nonzero if INSN is an LDR R0,ADDR instruction.  */
+/* Returns TRUE if INSN is an "LDR REG, ADDR" instruction.
+   Use by the Cirrus Maverick code which has to workaround
+   a hardware bug triggered by such instructions.  */
 
-static int
-is_load_address (insn)
+static bool
+arm_memory_load_p (insn)
      rtx insn;
 {
   rtx body, lhs, rhs;;
 
-  if (!insn)
-    return 0;
-
-  if (GET_CODE (insn) != INSN)
-    return 0;
+  if (insn == NULL_RTX || GET_CODE (insn) != INSN)
+    return false;
 
   body = PATTERN (insn);
 
   if (GET_CODE (body) != SET)
-    return 0;
+    return false;
 
   lhs = XEXP (body, 0);
   rhs = XEXP (body, 1);
 
-  return (GET_CODE (lhs) == REG
-	  && REGNO_REG_CLASS (REGNO (lhs)) == GENERAL_REGS
-	  && (GET_CODE (rhs) == MEM
-	      || GET_CODE (rhs) == SYMBOL_REF));
+  lhs = REG_OR_SUBREG_RTX (lhs);
+
+  /* If the destination is not a general purpose
+     register we do not have to worry.  */
+  if (GET_CODE (lhs) != REG
+      || REGNO_REG_CLASS (REGNO (lhs)) != GENERAL_REGS)
+    return false;
+
+  /* As well as loads from memory we also have to react
+     to loads of invalid constants which will be turned
+     into loads from the minipool.  */
+  return (GET_CODE (rhs) == MEM
+	  || GET_CODE (rhs) == SYMBOL_REF
+	  || note_invalid_constants (insn, -1, false));
 }
 
-/* Return nonzero if INSN is a Cirrus instruction.  */
+/* Return TRUE if INSN is a Cirrus instruction.  */
 
-static int
-is_cirrus_insn (insn)
+static bool
+arm_cirrus_insn_p (insn)
      rtx insn;
 {
   enum attr_cirrus attr;
@@ -4029,7 +4032,7 @@ is_cirrus_insn (insn)
 
   attr = get_attr_cirrus (insn);
 
-  return attr != CIRRUS_NO;
+  return attr != CIRRUS_NOT;
 }
 
 /* Cirrus reorg for invalid instruction combinations.  */
@@ -4049,10 +4052,10 @@ cirrus_reorg (first)
       nops = 0;
       t = next_nonnote_insn (first);
 
-      if (is_cirrus_insn (t))
+      if (arm_cirrus_insn_p (t))
 	++ nops;
 
-      if (is_cirrus_insn (next_nonnote_insn (t)))
+      if (arm_cirrus_insn_p (next_nonnote_insn (t)))
 	++ nops;
 
       while (nops --)
@@ -4073,12 +4076,12 @@ cirrus_reorg (first)
 	 be followed by a non Cirrus insn.  */
       if (get_attr_cirrus (first) == CIRRUS_DOUBLE)
 	{
-	  if (is_cirrus_insn (next_nonnote_insn (first)))
+	  if (arm_cirrus_insn_p (next_nonnote_insn (first)))
 	    emit_insn_after (gen_nop (), first);
 
 	  return;
 	}
-      else if (is_load_address (first))
+      else if (arm_memory_load_p (first))
 	{
 	  unsigned int arm_regno;
 
@@ -4102,7 +4105,7 @@ cirrus_reorg (first)
 	  /* Next insn.  */
 	  first = next_nonnote_insn (first);
 
-	  if (!is_cirrus_insn (first))
+	  if (! arm_cirrus_insn_p (first))
 	    return;
 
 	  body = PATTERN (first);
@@ -4140,10 +4143,10 @@ cirrus_reorg (first)
 
       t = next_nonnote_insn (first);
 
-      if (is_cirrus_insn (t))
+      if (arm_cirrus_insn_p (t))
 	++ nops;
 
-      if (is_cirrus_insn (next_nonnote_insn (t)))
+      if (arm_cirrus_insn_p (next_nonnote_insn (t)))
 	++ nops;
 
       while (nops --)
@@ -6910,13 +6913,19 @@ push_minipool_fix (insn, address, loc, mode, value)
   minipool_fix_tail = fix;
 }
 
-/* Scan INSN and note any of its operands that need fixing.  */
+/* Scan INSN and note any of its operands that need fixing.
+   If DO_PUSHES is false we do not actually push any of the fixups
+   needed.  The function returns TRUE is any fixups were needed/pushed.
+   This is used by arm_memory_load_p() which needs to know about loads
+   of constants that will be converted into minipool loads.  */
 
-static void
-note_invalid_constants (insn, address)
+static bool
+note_invalid_constants (insn, address, do_pushes)
      rtx insn;
      HOST_WIDE_INT address;
+     bool do_pushes;
 {
+  bool result = false;
   int opno;
 
   extract_insn (insn);
@@ -6924,8 +6933,7 @@ note_invalid_constants (insn, address)
   if (!constrain_operands (1))
     fatal_insn_not_found (insn);
 
-  /* Fill in recog_op_alt with information about the constraints of this
-     insn.  */
+  /* Fill in recog_op_alt with information about the constraints of this insn.  */
   preprocess_constraints ();
 
   for (opno = 0; opno < recog_data.n_operands; opno++)
@@ -6943,27 +6951,27 @@ note_invalid_constants (insn, address)
 	  rtx op = recog_data.operand[opno];
 
 	  if (CONSTANT_P (op))
-	    push_minipool_fix (insn, address, recog_data.operand_loc[opno],
-			       recog_data.operand_mode[opno], op);
-#if 0
-	  /* RWE: Now we look correctly at the operands for the insn,
-	     this shouldn't be needed any more.  */
-#ifndef AOF_ASSEMBLER
-	  /* XXX Is this still needed?  */
-	  else if (GET_CODE (op) == UNSPEC && XINT (op, 1) == UNSPEC_PIC_SYM)
-	    push_minipool_fix (insn, address, recog_data.operand_loc[opno],
-			       recog_data.operand_mode[opno],
-			       XVECEXP (op, 0, 0));
-#endif
-#endif
+	    {
+	      if (do_pushes)
+		push_minipool_fix (insn, address, recog_data.operand_loc[opno],
+				   recog_data.operand_mode[opno], op);
+	      result = true;
+	    }
 	  else if (GET_CODE (op) == MEM
 		   && GET_CODE (XEXP (op, 0)) == SYMBOL_REF
 		   && CONSTANT_POOL_ADDRESS_P (XEXP (op, 0)))
-	    push_minipool_fix (insn, address, recog_data.operand_loc[opno],
-			       recog_data.operand_mode[opno],
-			       get_pool_constant (XEXP (op, 0)));
+	    {
+	      if (do_pushes)
+		push_minipool_fix (insn, address, recog_data.operand_loc[opno],
+				   recog_data.operand_mode[opno],
+				   get_pool_constant (XEXP (op, 0)));
+
+	      result = true;
+	    }
 	}
     }
+
+  return result;
 }
 
 void
@@ -6985,19 +6993,18 @@ arm_reorg (first)
   for (insn = next_nonnote_insn (first); insn; insn = next_nonnote_insn (insn))
     {
       if (TARGET_CIRRUS_FIX_INVALID_INSNS
-          && (is_cirrus_insn (insn)
+          && (arm_cirrus_insn_p (insn)
 	      || GET_CODE (insn) == JUMP_INSN
-	      || is_load_address (insn)))
+	      || arm_memory_load_p (insn)))
 	cirrus_reorg (insn);
 
       if (GET_CODE (insn) == BARRIER)
 	push_minipool_barrier (insn, address);
-      else if (GET_CODE (insn) == INSN || GET_CODE (insn) == CALL_INSN
-	       || GET_CODE (insn) == JUMP_INSN)
+      else if (INSN_P (insn))
 	{
 	  rtx table;
 
-	  note_invalid_constants (insn, address);
+	  note_invalid_constants (insn, address, true);
 	  address += get_attr_length (insn);
 
 	  /* If the insn is a vector jump, add the size of the table
@@ -10134,7 +10141,7 @@ arm_final_prescan_insn (insn)
 		 instructions to be safe.  */
 	      if (GET_CODE (scanbody) != USE
 		  && GET_CODE (scanbody) != CLOBBER
-		  && get_attr_cirrus (this_insn) != CIRRUS_NO)
+		  && get_attr_cirrus (this_insn) != CIRRUS_NOT)
 		fail = TRUE;
 	      break;
 

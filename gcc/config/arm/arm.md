@@ -167,9 +167,12 @@
 ; store2	store 2 words
 ; store3	store 3 words
 ; store4	store 4 words
+;  Additions for Cirrus Maverick co-processor:
+; mav_farith	Floating point arithmetic (4 cycle)
+; mav_dmult	Double multiplies (7 cycle)
 ;
 (define_attr "type"
-	"normal,mult,block,float,fdivx,fdivd,fdivs,fmul,ffmul,farith,ffarith,float_em,f_load,f_store,f_mem_r,r_mem_f,f_2_r,r_2_f,call,load,store1,store2,store3,store4" 
+	"normal,mult,block,float,fdivx,fdivd,fdivs,fmul,ffmul,farith,ffarith,float_em,f_load,f_store,f_mem_r,r_mem_f,f_2_r,r_2_f,call,load,store1,store2,store3,store4,mav_farith,mav_dmult" 
 	(const_string "normal"))
 
 ; Load scheduling, set from the arm_ld_sched variable
@@ -5576,11 +5579,6 @@
    (set_attr "type" "f_2_r")]
 )
 
-;; There is no CCFPE or CCFP modes in the code below so we can have
-;; one pattern to match either one.  Besides, we're pretty sure we
-;; have either CCFPE or CCFP because we made the patterns
-;; (arm_gen_compare_reg).
-
 ;; Cirrus SF compare instruction
 (define_insn "*cirrus_cmpsf"
   [(set (reg:CCFP CC_REGNUM)
@@ -5588,7 +5586,7 @@
 		      (match_operand:SF 1 "cirrus_fp_register" "v")))]
   "TARGET_ARM && TARGET_CIRRUS"
   "cfcmps%?\\tr15, %V0, %V1"
-  [(set_attr "cirrus_type" "farith")
+  [(set_attr "type"   "mav_farith")
    (set_attr "cirrus" "compare")]
 )
 
@@ -5599,7 +5597,7 @@
 		      (match_operand:DF 1 "cirrus_fp_register" "v")))]
   "TARGET_ARM && TARGET_CIRRUS"
   "cfcmpd%?\\tr15, %V0, %V1"
-  [(set_attr "cirrus_type" "farith")
+  [(set_attr "type"   "mav_farith")
    (set_attr "cirrus" "compare")]
 )
 
@@ -5620,18 +5618,7 @@
 		    (match_operand:DI 1 "cirrus_fp_register" "v")))]
   "TARGET_ARM && TARGET_CIRRUS"
   "cfcmp64%?\\tr15, %V0, %V1"
-  [(set_attr "cirrus_type" "farith")
-   (set_attr "cirrus" "compare")]
-)
-
-;; Cirrus SI compare instruction
-(define_insn "*cirrus_cmpsi_1"
-  [(set (reg:CC CC_REGNUM)
-	(compare:CC (match_operand:SI 0 "cirrus_fp_register" "v")
-		    (match_operand:SI 1 "cirrus_fp_register" "v")))]
-  "TARGET_ARM && TARGET_CIRRUS && 0"
-  "cfcmp32%?\\tr15, %V0, %V1"
-  [(set_attr "cirrus_type" "farith")
+  [(set_attr "type"   "mav_farith")
    (set_attr "cirrus" "compare")]
 )
 

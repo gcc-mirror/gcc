@@ -1,3 +1,28 @@
+2003-02-26  Nick Clifton  <nickc@redhat.com>
+
+	* config/arm/arm.c (is_load_address): Rename to...
+        (arm_memory_load_p) ... this and make it check for SUBREGs and
+        constant loads that will be converted into loads from the
+        minipool.
+        (is_cirrus_insn): Rename to ...
+        (arm_cirrus_insn_p): ... this, for consistency.  Replace test
+        of CIRRUS_NO with CIRRUS_NOT.
+        (cirrus_reorg): Use renamed functions.
+        (note_invalid_constants): Change from a void function to bool.
+        Add an extra parameter, saying whether the fixups should be
+        pushed.  Return true if fixups are needed.
+        (arm_reorg): Use renamed functions.  Use INSN_P.  Replace test
+        of CIRRUS_NO with CIRRUS_NOT.
+        * config/arm/arm.h (FLOAT_WORDS_BIG_ENDIAN): Mention that
+        other floating point co-processors can also affect this.
+        * config/arm/arm.md ("type" attribute): Add mav_farith and
+        mav_dmult.  Replace references to "cirrus_type" attribute with
+        "type".
+        * config/arm/cirrus.md ("cirrus_fpu" attribute): Delete.
+        ("cirrus_type" attribute): Delete - use "type" instead.
+        ("cirrus" attribute): Replace 'no' with 'not' and 'yes' with
+        'normal'.        
+
 Tue Feb 25 22:46:27 CET 2003  Jan Hubicka  <jh@suse.cz>
 
 	* objc-act.c: Include cgraph.h

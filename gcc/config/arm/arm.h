@@ -698,8 +698,8 @@ extern int arm_is_6_or_7;
 #endif
 
 /* Define this if most significant word of doubles is the lowest numbered.
-   The rules are different based on whether or not we use FPA-format or
-   VFP-format doubles.  */
+   The rules are different based on whether or not we use FPA-format,
+   VFP-format or some other floating point co-processor's format doubles.  */
 #define FLOAT_WORDS_BIG_ENDIAN (arm_float_words_big_endian ())
 
 #define UNITS_PER_WORD	4
