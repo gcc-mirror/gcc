@@ -1,6 +1,6 @@
 // Locale support -*- C++ -*-
 
-// Copyright (C) 1999, 2000 Free Software Foundation, Inc.
+// Copyright (C) 1999, 2000, 2001 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -54,7 +54,6 @@ namespace std {
   template class moneypunct<char, true>;
   template class moneypunct_byname<char, false>;
   template class moneypunct_byname<char, true>;
-  template class _Moneypunct<char>;
   template class money_get<char, obuf_iterator>;
   template class money_put<char, obuf_iterator>;
   template class money_get<char, ibuf_iterator>;
@@ -66,7 +65,6 @@ namespace std {
   template class moneypunct<wchar_t, true>;
   template class moneypunct_byname<wchar_t, false>;
   template class moneypunct_byname<wchar_t, true>;
-  template class _Moneypunct<wchar_t>;
   template class money_get<wchar_t, wobuf_iterator>;
   template class money_put<wchar_t, wobuf_iterator>;
   template class money_get<wchar_t, wibuf_iterator>;
@@ -77,23 +75,15 @@ namespace std {
   // numpunct, numpunct_byname, num_get, and num_put
   template class numpunct<char>;
   template class numpunct_byname<char>;
-  template class _Numpunct<char>;
   template class num_get<char, ibuf_iterator>;
   template class num_put<char, obuf_iterator>;
 #ifdef _GLIBCPP_USE_WCHAR_T
   template class numpunct<wchar_t>;
   template class numpunct_byname<wchar_t>;
-  template class _Numpunct<wchar_t>;
   template class num_get<wchar_t, wibuf_iterator>;
   template class num_put<wchar_t, wobuf_iterator>;
 #endif
 
-  // _Punct
-  template class _Punct<char>;
-#ifdef _GLIBCPP_USE_WCHAR_T
-  template class _Punct<wchar_t>;
-#endif
-  
   // time_get and time_put
   template class time_put<char, obuf_iterator>;
   template class time_put_byname<char, obuf_iterator>;
@@ -108,11 +98,9 @@ namespace std {
 #endif
 
   // messages
-  template class _Messages<char>;
   template class messages<char>;
   template class messages_byname<char>;
 #ifdef _GLIBCPP_USE_WCHAR_T
-  template class _Messages<wchar_t>;
   template class messages<wchar_t>;
   template class messages_byname<wchar_t>;
 #endif
@@ -134,12 +122,12 @@ namespace std {
 #endif
 
   // collate
-  template class _Collate<char>;
+  template class collate<char>;
   template class collate_byname<char>;
   template class _Weekdaynames<char, int>;
   template class _Monthnames<char, int>;
 #ifdef _GLIBCPP_USE_WCHAR_T
-  template class _Collate<wchar_t>;
+  template class collate<wchar_t>;
   template class collate_byname<wchar_t>;
   template class _Weekdaynames<wchar_t, int>;
   template class _Monthnames<wchar_t, int>;
@@ -155,10 +143,6 @@ namespace std {
   template
     const codecvt<char, char, mbstate_t>& 
     use_facet<codecvt<char, char, mbstate_t> >(const locale&);
-   template 
-    const num_put<char, obuf_iterator>& 
-    _Use_facet_failure_handler<num_put<char, obuf_iterator> >
-    (const locale &);
 #ifdef _GLIBCPP_USE_WCHAR_T
   template 
     const num_put<wchar_t, wobuf_iterator>& 
@@ -169,10 +153,6 @@ namespace std {
   template
     const codecvt<wchar_t, char, mbstate_t>& 
     use_facet<codecvt<wchar_t, char, mbstate_t> >(locale const &);
-  template 
-    const num_put<wchar_t, wobuf_iterator>& 
-    _Use_facet_failure_handler<num_put<wchar_t, wobuf_iterator> >
-    (const locale &);
 #endif
 
   // has_facet
@@ -296,12 +276,11 @@ namespace std {
   template 
     locale::facet** 
     fill_n<locale::facet**, unsigned int, locale::facet*>
-    (locale::facet**, unsigned int, locale::facet* const &);
+    (locale::facet**, unsigned int, locale::facet* const&);
 
   template 
     locale::facet** 
     fill_n<locale::facet**, unsigned long, locale::facet*>
-    (locale::facet**, unsigned long, locale::facet* const &);
-
+    (locale::facet**, unsigned long, locale::facet* const&);
 } //std
 

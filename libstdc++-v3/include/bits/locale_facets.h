@@ -1,6 +1,6 @@
 // Locale support -*- C++ -*-
 
-// Copyright (C) 1997-2000 Free Software Foundation, Inc.
+// Copyright (C) 1997, 1998, 1999, 2000, 2001 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -37,49 +37,15 @@
 #define _CPP_BITS_LOCFACETS_H	1
 
 #include <bits/std_ctime.h>	// For struct tm
-#include <typeinfo> 		// For bad_cast, which shouldn't be here.
 #include <bits/std_ios.h>	// For ios_base
 #ifdef _GLIBCPP_USE_WCHAR_T
+# include <langinfo.h>		// For codecvt
 # include <bits/std_cwctype.h>	// For wctype_t
 # include <iconv.h>		// For codecvt using iconv, iconv_t
-# include <langinfo.h>		// For codecvt using nl_langinfo
 #endif 
 
 namespace std
 {
-  // XXX This function is to be specialized for the "required" facets to 
-  // be constructed lazily.   The specializations must be declared after 
-  // the definitions of the facets themselves; but they shouldn't be 
-  // inline.  Corresponding new's in locale::classic() should then be 
-  // eliminated.  Note that ctype<> should not get this treatment; 
-  // see the use_facet<> specializations below.
-  //
-  struct _Bad_use_facet : public bad_cast 
-  {
-    _Bad_use_facet() throw() {}
-
-    _Bad_use_facet(_Bad_use_facet const&  __b) throw() 
-    : bad_cast(__b) { }
-
-    _Bad_use_facet& 
-    operator=(_Bad_use_facet const& __b) throw() 
-    { 
-      static_cast<bad_cast*>(this)->operator=(__b); 
-      return *this; 
-    }
-
-    virtual char const* 
-    what() const throw();
-
-    virtual 
-    ~_Bad_use_facet() throw();
-  };
-
-  template<typename _Facet>
-    const _Facet& 
-    _Use_facet_failure_handler(const locale&)
-    { throw _Bad_use_facet(); }
-
   // 22.2.1.1  Template class ctype
   // Include host-specific ctype enums for ctype_base.
   #include <bits/ctype_base.h>
@@ -809,12 +775,30 @@ namespace std
     locale::id num_put<_CharT, _OutIter>::id;
 
   template<typename _CharT>
-    class _Punct : public locale::facet
+    class numpunct : public locale::facet
     {
     public:
       // Types:
-      typedef _CharT               char_type;
-      typedef basic_string<_CharT> string_type;
+      typedef _CharT          		char_type;
+      typedef basic_string<_CharT> 	string_type;
+
+      static locale::id id;
+
+    private:
+      char_type 	_M_decimal_point;
+      char_type 	_M_thousands_sep;
+      string 		_M_grouping;
+      string_type 	_M_truename;
+      string_type 	_M_falsename;
+
+    public:
+      explicit 
+      numpunct(size_t __refs = 0) : locale::facet(__refs) 
+      { _M_initialize_numpunct(); }
+
+      explicit 
+      numpunct(__c_locale __cloc, size_t __refs = 0) : locale::facet(__refs) 
+      { _M_initialize_numpunct(__cloc); }
 
       char_type    
       decimal_point() const
@@ -827,49 +811,6 @@ namespace std
       string       
       grouping() const
       { return do_grouping(); }
-    protected:
-
-      explicit 
-      _Punct(size_t __refs = 0) : locale::facet(__refs) { }
-
-      virtual 
-      ~_Punct() { }
-
-      virtual char_type    
-      do_decimal_point() const
-      { return _M_decimal_point; }
-
-      virtual char_type    
-      do_thousands_sep() const
-      { return _M_thousands_sep; }
-
-      virtual string       
-      do_grouping() const
-      { return _M_grouping; }
-
-    private:
-      char_type _M_decimal_point;
-      char_type _M_thousands_sep;
-      string    _M_grouping;
-      
-    protected:
-      // for use at construction time only:
-      void 
-      _M_init(char_type __d, char_type __t, const string& __g)
-      {
-	_M_decimal_point = __d;
-	_M_thousands_sep = __t;
-	_M_grouping = __g;
-      }
-    };
-
-  template<typename _CharT>
-    class _Numpunct : public _Punct<_CharT>
-    {
-    public:
-      // Types:
-      typedef _CharT               char_type;
-      typedef basic_string<_CharT> string_type;
 
       string_type  
       truename() const
@@ -880,11 +821,20 @@ namespace std
       { return do_falsename(); }
 
     protected:
-      explicit 
-      _Numpunct(size_t __refs = 0) : _Punct<_CharT> (__refs) { }
-
       virtual 
-      ~_Numpunct() { }
+      ~numpunct() { }
+
+      virtual char_type    
+      do_decimal_point() const
+      { return _M_decimal_point; }
+
+      virtual char_type    
+      do_thousands_sep() const
+      { return _M_thousands_sep; }
+
+      virtual string
+      do_grouping() const
+      { return _M_grouping; }
 
       virtual string_type  
       do_truename() const
@@ -894,85 +844,66 @@ namespace std
       do_falsename() const
       { return _M_falsename; }
 
-    private:
-      string_type _M_truename;
-      string_type _M_falsename;
-      
-    protected:
-      // For use only during construction
+      // For use at construction time only.
       void 
-      _M_boolnames_init(const string_type& __t, const string_type& __f)
-      {
-	_M_truename = __t;
-	_M_falsename = __f;
-      }
+      _M_initialize_numpunct(__c_locale __cloc = NULL);
     };
 
   template<typename _CharT>
-    class numpunct : public _Numpunct<_CharT>
+    locale::id numpunct<_CharT>::id;
+
+  template<typename _CharT>
+    void
+    numpunct<_CharT>::_M_initialize_numpunct(__c_locale /*__cloc*/)
+    { 
+      // NB: Cannot be made generic. 
+    }
+
+  template<> 
+    void
+    numpunct<char>::_M_initialize_numpunct(__c_locale __cloc);
+#ifdef _GLIBCPP_USE_WCHAR_T
+  template<> 
+    void
+    numpunct<wchar_t>::_M_initialize_numpunct(__c_locale __cloc);
+#endif
+
+
+  template<typename _CharT>
+    class numpunct_byname : public numpunct<_CharT>
+    {
+      __c_locale			_M_c_locale_numpunct;
+    public:
+      typedef _CharT               	char_type;
+      typedef basic_string<_CharT> 	string_type;
+
+      explicit 
+      numpunct_byname(const char* __s, size_t __refs = 0)
+      : numpunct<_CharT>(__refs)
+      {
+	_S_create_c_locale(_M_c_locale_numpunct, __s);
+	_M_initialize_numpunct(_M_c_locale_numpunct);	
+      }
+
+    protected:
+      virtual 
+      ~numpunct_byname() 
+      { _S_destroy_c_locale(_M_c_locale_numpunct); }
+    };
+
+
+  template<typename _CharT>
+    class collate : public locale::facet
     {
     public:
+      // Types:
       typedef _CharT               char_type;
       typedef basic_string<_CharT> string_type;
 
       static locale::id id;
 
       explicit 
-      numpunct(size_t __refs = 0) : _Numpunct<_CharT>(__refs) { }
-
-    protected:
-      virtual 
-      ~numpunct() { }
-    };
-
-  template<typename _CharT>
-    locale::id numpunct<_CharT>::id;
-
-  template<> 
-    numpunct<char>::numpunct(size_t __refs): _Numpunct<char>(__refs)
-    {
-      _M_init('.', ',', "");
-      _M_boolnames_init("true", "false");
-    }
-
-#ifdef _GLIBCPP_USE_WCHAR_T
-  template<> 
-    numpunct<wchar_t>::numpunct(size_t __refs): _Numpunct<wchar_t>(__refs)
-    {
-      _M_init(L'.', L',', "");
-      _M_boolnames_init(L"true", L"false");
-    }
-#endif
-
-  template<typename _CharT>
-    class numpunct_byname : public numpunct<_CharT>
-    {
-    public:
-      typedef _CharT               char_type;
-      typedef basic_string<_CharT> string_type;
-
-      explicit 
-      numpunct_byname(const char*, size_t __refs = 0);
-      
-    protected:
-      virtual 
-      ~numpunct_byname() { }
-    };
-
-  template<>
-    numpunct_byname<char>::numpunct_byname(const char*, size_t __refs);
-#ifdef _GLIBCPP_USE_WCHAR_T
-  template<>
-    numpunct_byname<wchar_t>::numpunct_byname(const char*, size_t __refs);
-#endif
-
-  template<typename _CharT>
-    class _Collate : public locale::facet
-    {
-    public:
-      // Types:
-      typedef _CharT               char_type;
-      typedef basic_string<_CharT> string_type;
+      collate(size_t __refs = 0) : locale::facet(__refs) { }
 
       int 
       compare(const _CharT* __lo1, const _CharT* __hi1,
@@ -988,99 +919,50 @@ namespace std
       { return do_hash(__lo, __hi); }
       
   protected:
-      explicit 
-      _Collate(size_t __refs = 0) : locale::facet(__refs) { }
-
-      ~_Collate() { } // virtual
+      ~collate() { } // virtual
 
       virtual int  
       do_compare(const _CharT* __lo1, const _CharT* __hi1,
-		 const _CharT* __lo2, const _CharT* __hi2) const = 0;
+		 const _CharT* __lo2, const _CharT* __hi2) const;
 
       virtual string_type 
-      do_transform(const _CharT* __lo, const _CharT* __hi) const = 0;
+      do_transform(const _CharT* __lo, const _CharT* __hi) const;
 
       virtual long   
-      do_hash(const _CharT* __lo, const _CharT* __hi) const = 0;
-    };
-
-  template<typename _CharT>
-    class collate : public _Collate<_CharT>
-    {
-    public:      
-      // Types:
-      typedef _CharT               char_type;
-      typedef basic_string<_CharT> string_type;
-
-      explicit 
-      collate(size_t __refs = 0) : _Collate<_CharT> (__refs) { }
-
-      static locale::id id;
-      
-    protected:
-      virtual 
-      ~collate() { }
+      do_hash(const _CharT* __lo, const _CharT* __hi) const;
     };
 
   template<typename _CharT>
     locale::id collate<_CharT>::id;
 
+  // Required specializations.
   template<>
-    class collate<char> : public _Collate<char>
-    {
-    public:      
-      // Types:
-      typedef char               char_type;
-      typedef basic_string<char> string_type;
+    int 
+    collate<char>::do_compare(const char* __lo1, const char* __hi1, 
+			      const char* __lo2, const char* __hi2) const;
 
-      explicit 
-      collate(size_t __refs = 0);
+  template<>
+    string
+    collate<char>::do_transform(const char* __lo, const char* __hi) const;
 
-      static locale::id id;
-      
-    protected:
-      virtual 
-      ~collate();
-
-      virtual int  
-      do_compare(const char* __lo1, const char* __hi1,
-		 const char* __lo2, const char* __hi2) const;
-
-      virtual string_type 
-      do_transform(const char* __lo, const char* __hi) const;
-
-      virtual long   
-      do_hash(const char* __lo, const char* __hi) const;
-    };
-
+  template<>
+    long
+    collate<char>::do_hash(const char* __lo, const char* __hi) const;
 #ifdef _GLIBCPP_USE_WCHAR_T
   template<>
-    class collate<wchar_t> : public _Collate<wchar_t>
-    {
-    public:
-      // Types:
-      typedef wchar_t               char_type;
-      typedef basic_string<wchar_t> string_type;
-      
-      explicit 
-      collate(size_t __refs = 0);
+    int 
+    collate<wchar_t>::do_compare(const wchar_t* __lo1, const wchar_t* __hi1, 
+				 const wchar_t* __lo2, 
+				 const wchar_t* __hi2) const;
 
-      static locale::id id;
-      
-    protected:
-      virtual 
-      ~collate();
+  template<>
+    wstring
+    collate<wchar_t>::do_transform(const wchar_t* __lo, 
+				   const wchar_t* __hi) const;
 
-      virtual int   
-      do_compare(const wchar_t* __lo1, const wchar_t* __hi1,
-		 const wchar_t* __lo2, const wchar_t* __hi2) const;
-
-      virtual string_type 
-      do_transform(const wchar_t* __lo, const wchar_t* __hi) const;
-
-      virtual long   
-      do_hash(const wchar_t* __lo, const wchar_t* __hi) const;
-    };
+  template<>
+    long
+    collate<wchar_t>::do_hash(const wchar_t* __lo, const wchar_t* __hi) const;
 #endif
 
   template<typename _CharT>
@@ -1356,17 +1238,58 @@ namespace std
     struct pattern { char field[4]; };
 
     static const pattern _S_default_pattern;
+
+    // Construct and return valid pattern consisting of some combination of:
+    // space none symbol sign value
+    static pattern 
+    _S_construct_pattern(char __preceeds, char __space, char __posn);
   };
 
-  template<typename _CharT>
-    class _Moneypunct : public _Punct<_CharT>, public money_base
+  template<typename _CharT, bool _Intl>
+    class moneypunct : public locale::facet, public money_base
     {
     public:
-      typedef _CharT char_type;
-      typedef basic_string<_CharT> string_type;
+      // Types:
+      typedef _CharT 			char_type;
+      typedef basic_string<_CharT> 	string_type;
+
+      static const bool intl = _Intl;
+      static locale::id id;
+
+    private:
+      char_type 	_M_decimal_point;
+      char_type 	_M_thousands_sep;
+      string 		_M_grouping;
+      string_type 	_M_curr_symbol;
+      string_type 	_M_positive_sign;
+      string_type 	_M_negative_sign;
+      int 		_M_frac_digits;
+      pattern 		_M_pos_format;
+      pattern 		_M_neg_format;
+
+    public:
+      explicit 
+      moneypunct(size_t __refs = 0) : locale::facet(__refs)
+      { _M_initialize_moneypunct(); }
+
+      explicit 
+      moneypunct(__c_locale __cloc, size_t __refs = 0) : locale::facet(__refs)
+      { _M_initialize_moneypunct(__cloc); }
+
+      char_type
+      decimal_point() const
+      { return decimal_point(); }
+      
+      char_type
+      thousands_sep() const
+      { return thousands_sep(); }
+      
+      string 
+      grouping() const
+      { return grouping(); }
 
       string_type  
-      curr_symbol()   const
+      curr_symbol() const
       { return do_curr_symbol(); }
 
       string_type  
@@ -1378,66 +1301,60 @@ namespace std
       { return do_negative_sign(); }
 
       int          
-      frac_digits()   const
+      frac_digits() const
       { return do_frac_digits(); }
 
       pattern      
-      pos_format()    const
+      pos_format() const
       { return do_pos_format(); }
 
       pattern      
-      neg_format()    const
+      neg_format() const
       { return do_neg_format(); }
-
-    protected:
-      explicit 
-      _Moneypunct(size_t __refs = 0) : _Punct<_CharT> (__refs) { }
-
-      virtual 
-      ~_Moneypunct() { }
-
-      virtual string_type  
-      do_curr_symbol()   const
-      { return basic_string<_CharT>(); }
-
-      virtual string_type  
-      do_positive_sign() const
-      { return basic_string<_CharT>(); }
-
-      virtual string_type  
-      do_negative_sign() const
-      { return basic_string<_CharT>(); }
-
-      virtual int          
-      do_frac_digits() const
-      { return 0; }
-
-      virtual pattern      
-      do_pos_format() const
-      { return money_base::_S_default_pattern; }
-
-      virtual pattern      
-      do_neg_format() const
-      { return money_base::_S_default_pattern; }
-    };
-
-  template<typename _CharT, bool _Intl>
-    class moneypunct : public _Moneypunct<_CharT>
-    {
-    public:
-      // Types:
-      typedef _CharT 			char_type;
-      typedef basic_string<_CharT> 	string_type;
-
-      static const bool intl = _Intl;
-      static locale::id id;
-
-      explicit 
-      moneypunct(size_t __refs = 0) : _Moneypunct<_CharT> (__refs) { }
 
     protected:
       virtual 
       ~moneypunct() { }
+
+      virtual char_type
+      do_decimal_point() const
+      { return _M_decimal_point; }
+      
+      virtual char_type
+      do_thousands_sep() const
+      { return _M_thousands_sep; }
+      
+      virtual string 
+      do_grouping() const
+      { return _M_grouping; }
+
+      virtual string_type  
+      do_curr_symbol()   const
+      { return _M_curr_symbol; }
+
+      virtual string_type  
+      do_positive_sign() const
+      { return _M_positive_sign; }
+
+      virtual string_type  
+      do_negative_sign() const
+      { return _M_negative_sign; }
+
+      virtual int          
+      do_frac_digits() const
+      { return _M_frac_digits; }
+
+      virtual pattern      
+      do_pos_format() const
+      { return _M_pos_format; }
+
+      virtual pattern      
+      do_neg_format() const
+      { return _M_neg_format; }
+
+      // For use at construction time only.
+      void 
+      _M_initialize_moneypunct(__c_locale __cloc = NULL);
     };
 
   template<typename _CharT, bool _Intl>
@@ -1447,38 +1364,48 @@ namespace std
     const bool moneypunct<_CharT, _Intl>::intl;
 
   template<typename _CharT, bool _Intl>
-    class moneypunct_byname : public moneypunct<_CharT,_Intl>
+    void
+    moneypunct<_CharT, _Intl>::_M_initialize_moneypunct(__c_locale /*__cloc*/)
+    { 
+      // NB: Cannot be made generic. 
+    }
+
+  template<> 
+    void
+    moneypunct<char>::_M_initialize_moneypunct(__c_locale __cloc);
+#ifdef _GLIBCPP_USE_WCHAR_T
+  template<> 
+    void
+    moneypunct<wchar_t>::_M_initialize_moneypunct(__c_locale __cloc);
+#endif
+
+  template<typename _CharT, bool _Intl>
+    class moneypunct_byname : public moneypunct<_CharT, _Intl>
     {
+      __c_locale			_M_c_locale_moneypunct;
     public:
-      typedef _CharT char_type;
-      typedef basic_string<_CharT> string_type;
+      typedef _CharT 			char_type;
+      typedef basic_string<_CharT> 	string_type;
+
       static const bool intl = _Intl;
 
       explicit 
-      moneypunct_byname(const char*, size_t __refs = 0);
+      moneypunct_byname(const char* __s, size_t __refs = 0)
+      : moneypunct<_CharT, _Intl>(__refs)
+      {
+	_S_create_c_locale(_M_c_locale_moneypunct, __s);
+	_M_initialize_moneypunct(_M_c_locale_moneypunct);	
+      }
 
     protected:
       virtual 
-      ~moneypunct_byname() { }
+      ~moneypunct_byname() 
+      { _S_destroy_c_locale(_M_c_locale_moneypunct); }
     };
 
   template<typename _CharT, bool _Intl>
     const bool moneypunct_byname<_CharT, _Intl>::intl;
 
-  template<>
-    moneypunct_byname<char, false>::
-    moneypunct_byname(const char*, size_t __refs);
-  template<>
-    moneypunct_byname<char, true>::
-    moneypunct_byname(const char*, size_t __refs);
-#ifdef _GLIBCPP_USE_WCHAR_T
-  template<>
-    moneypunct_byname<wchar_t,false>::
-    moneypunct_byname(const char*, size_t __refs);
-  template<>
-    moneypunct_byname<wchar_t,true>::
-    moneypunct_byname (const char*, size_t __refs);
-#endif
 
   struct messages_base
   {
@@ -1486,11 +1413,16 @@ namespace std
   };
 
   template<typename _CharT>
-    class _Messages : public locale::facet, public messages_base
+    class messages : public locale::facet, public messages_base
     {
     public:
-      typedef _CharT char_type;
-      typedef basic_string<_CharT> string_type;
+      typedef _CharT 			char_type;
+      typedef basic_string<_CharT> 	string_type;
+
+      static locale::id id;
+
+      explicit 
+      messages(size_t __refs = 0) : locale::facet(__refs) { }
 
       catalog 
       open(const basic_string<char>& __s, const locale& __loc) const
@@ -1505,11 +1437,8 @@ namespace std
       { return do_close(__c); }
 
     protected:
-      explicit 
-      _Messages(size_t __refs = 0) : locale::facet(__refs) { }
-
       virtual 
-      ~_Messages() { }
+      ~messages() { }
 
       // NB: Probably these should be pure, and implemented only in
       //  specializations of messages<>.  But for now...
@@ -1522,22 +1451,7 @@ namespace std
       { return __dfault; }
 
       virtual void    
-      do_close (catalog) const { }
-    };
-
-  template<typename _CharT>
-    class messages : public _Messages<_CharT>
-    {
-    public:
-      typedef _CharT char_type;
-      typedef basic_string<_CharT> string_type;
-      static locale::id id;
-
-      explicit 
-      messages(size_t __refs = 0) : _Messages<_CharT> (__refs) { }
-    protected:
-      virtual 
-      ~messages() { }
+      do_close(catalog) const { }
     };
 
   template<typename _CharT>

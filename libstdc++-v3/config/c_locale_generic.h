@@ -1,6 +1,6 @@
-// -*- C++ -*- forwarding header.
+// Wrapper for underlying C-language localization -*- C++ -*-
 
-// Copyright (C) 1997, 1998, 1999, 2000, 2001 Free Software Foundation, Inc.
+// Copyright (C) 2001 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -28,27 +28,12 @@
 // the GNU General Public License.
 
 //
-// ISO C++ 14882: 18.2.2  Implementation properties: C library
+// ISO C++ 14882: 22.8  Standard locale categories.
 //
 
-// Note: This is not a conforming implementation.
-
-#ifndef _CPP_CLOCALE
-#define _CPP_CLOCALE 1
-
-#include <bits/c++config.h>
-
-#pragma GCC system_header
-#include <locale.h>
+// Written by Benjamin Kosnik <bkoz@redhat.com>
 
 namespace std
 {
-  using ::lconv;
-  extern "C" char* setlocale(int, const char*); 
-  extern "C" struct lconv* localeconv(void);
+  typedef int*			__c_locale;
 }
-
-#endif
-
-
-

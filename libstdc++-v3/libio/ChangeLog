@@ -1,3 +1,7 @@
+2001-01-28  benjamin kosnik  <bkoz@fillmore.constant.com>
+
+	* Makefile.am (LIBIO_SRCS): Remove stdio.c.
+
 2000-10-29  Benjamin Kosnik  <bkoz@gnu.org>
 
 	* Makefile.am (INCLUDES): Change to $(top_builddir)/include.
