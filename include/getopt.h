@@ -1,19 +1,23 @@
 /* Declarations for getopt.
-   Copyright (C) 1989, 1990, 1991, 1992, 1993 Free Software Foundation, Inc.
+   Copyright (C) 1989,90,91,92,93,94,96,97 Free Software Foundation, Inc.
 
-   This program is free software; you can redistribute it and/or
-   modify it under the terms of the GNU Library General Public License
-   as published by the Free Software Foundation; either version 2, or
-   (at your option) any later version.
+   NOTE: The canonical source of this file is maintained with the GNU C Library.
+   Bugs can be reported to bug-glibc@prep.ai.mit.edu.
+
+   This program is free software; you can redistribute it and/or modify it
+   under the terms of the GNU General Public License as published by the
+   Free Software Foundation; either version 2, or (at your option) any
+   later version.
 
    This program is distributed in the hope that it will be useful,
    but WITHOUT ANY WARRANTY; without even the implied warranty of
    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-   GNU Library General Public License for more details.
+   GNU General Public License for more details.
 
-   You should have received a copy of the GNU Library General Public License
+   You should have received a copy of the GNU General Public License
    along with this program; if not, write to the Free Software
-   Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.  */
+   Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307,
+   USA.  */
 
 #ifndef _GETOPT_H
 #define _GETOPT_H 1
@@ -36,7 +40,7 @@ extern char *optarg;
 
    On entry to `getopt', zero means this is the first call; initialize.
 
-   When `getopt' returns EOF, this is the index of the first of the
+   When `getopt' returns -1, this is the index of the first of the
    non-option elements that the caller should itself scan.
 
    Otherwise, `optind' communicates from one call to the next
@@ -76,7 +80,7 @@ extern int optopt;
 
 struct option
 {
-#if	__STDC__
+#if defined (__STDC__) && __STDC__
   const char *name;
 #else
   char *name;
@@ -94,15 +98,15 @@ struct option
 #define required_argument	1
 #define optional_argument	2
 
-#if __STDC__
-#if defined(__GNU_LIBRARY__)
+#if defined (__STDC__) && __STDC__
+#ifdef __GNU_LIBRARY__
 /* Many other libraries have conflicting prototypes for getopt, with
    differences in the consts, in stdlib.h.  To avoid compilation
    errors, only prototype getopt for the GNU C library.  */
 extern int getopt (int argc, char *const *argv, const char *shortopts);
 #else /* not __GNU_LIBRARY__ */
 extern int getopt ();
-#endif /* not __GNU_LIBRARY__ */
+#endif /* __GNU_LIBRARY__ */
 extern int getopt_long (int argc, char *const *argv, const char *shortopts,
 		        const struct option *longopts, int *longind);
 extern int getopt_long_only (int argc, char *const *argv,
@@ -120,10 +124,10 @@ extern int getopt_long ();
 extern int getopt_long_only ();
 
 extern int _getopt_internal ();
-#endif /* not __STDC__ */
+#endif /* __STDC__ */
 
 #ifdef	__cplusplus
 }
 #endif
 
-#endif /* _GETOPT_H */
+#endif /* getopt.h */

@@ -1,3 +1,127 @@
+Tue Feb 24 13:05:02 1998  Doug Evans  <devans@canuck.cygnus.com>
+
+	* dis-asm.h (disassemble_info): Member `symbol' renamed to `symbols'
+	and made an "asymbol **".  New member num_symbols.
+	(INIT_DISASSEMBLE_INFO_NO_ARCH): Update.
+
+Tue Feb 17 12:32:18 1998  Andrew Cagney  <cagney@b1.cygnus.com>
+
+	* remote-sim.h (sim_fetch_register, sim_store_register): Add
+ 	register length parameter.  Functions return actual length of
+ 	register.
+
+Thu Feb 12 16:29:01 1998  Ian Lance Taylor  <ian@cygnus.com>
+
+	* getopt.h: Update to latest FSF version.
+
+Wed Feb 11 16:56:06 1998  Doug Evans  <devans@canuck.cygnus.com>
+
+	* symcat.h: New file.
+
+Mon Feb  2 17:13:31 1998  Steve Haworth  <steve@pm.cse.rmit.EDU.AU>
+
+	* dis-asm.h (print_insn_tic30): Declare.
+
+Thu Jan 22 16:23:59 1998  Fred Fish <fnf@cygnus.com>
+
+	* dis-asm.h: Add flag INSN_HAS_RELOC to tell disassembly 
+	function there is a reloc on this line.
+
+Mon Dec  8 11:22:23 1997  Nick Clifton  <nickc@cygnus.com>
+
+	* dis-asm.h: Remove prototype of disasm_symaddr() as this function
+	no longer exists.
+
+Tue Dec  2 10:20:53 1997  Nick Clifton  <nickc@cygnus.com>
+
+	* dis-asm.h (disasm_symaddr): New prototype.
+
+Mon Dec  1 20:24:18 1997  J"orn Rennecke <amylaar@cygnus.co.uk>
+
+	* coff/sh.h (R_SH_SWITCH8): New.
+
+Mon Dec  1 11:29:35 1997  Doug Evans  <devans@canuck.cygnus.com>
+
+	* callback.h (CB_SYSCALL): Comment out arg names in prototypes.
+
+Wed Nov 26 16:47:58 1997  Michael Meissner  <meissner@cygnus.com>
+
+	* callback.h (CB_SYSCALL): Consistantly use names for prototype
+	arguments.
+
+Wed Nov 26 11:39:30 1997  Doug Evans  <devans@canuck.cygnus.com>
+
+	* callback.h (CB_SYSCALL): Change byte count arguments to
+	{read,write}_mem to `int'.  New member `magic'.
+	(CB_SYSCALL_MAGIC,CB_SYSCALL_INIT): New macros.
+
+Tue Nov 25 01:35:52 1997  Doug Evans  <devans@seba.cygnus.com>
+
+	* callback.h (struct stat): Move forward decl up.
+	(host_callback): Pass stat struct pointer to stat,fstat.
+	(CB_SYS_nnn): Reorganize.
+	(CB_SYSCALL): New members p1,p2.
+	(cb_host_to_target_stat): Delete fourth arg.
+
+Sat Nov 22 23:34:15 1997  Andrew Cagney  <cagney@b1.cygnus.com>
+
+	* remote-sim.h (sim_stop_reason): Clarify sim_signalled SIGRC
+ 	argument.
+
+Mon Nov 17 14:00:51 1997  Doug Evans  <devans@seba.cygnus.com>
+
+	* callback.h (CB_TARGET_DEFS_MAP): Renamed from target_defs_map.
+	(host_callback): Add stat, fstat, syscall_map, errno_map, open_map,
+	signal_map, stat_map.
+	(errn_map,open_map): Renamed to cb_init_foo_map.
+	(cb_host_to_target_errno,cb_target_to_host_open): Renamed from
+	host_to_target_errno,target_to_host_open.
+	(cb_read_target_syscall_maps): Add prototype.
+	(cb_target_to_host_syscall): Likewise.
+	(cb_host_to_target_stat): Likewise.
+	(cb_syscall): Likewise.
+	(CB_SYS_{exit,open,close,read,write,lseek,unlink,getpid,kill,fstat,
+	argvlen,argv,chdir,stat,chmod,utime,time}): Define.
+	(CB_SYSCALL): New type.
+	(CB_RC): New enum.
+
+Fri Nov  7 10:34:09 1997  Rob Savoye  <rob@darkstar.cygnus.com>
+
+	* libiberty.h: Add extern "C" { so it can be used with C++
+	programs.
+	* remote-sim.h:  Add extern "C" { so it can be used with C++
+	programs.
+
+Tue Oct 14 16:07:51 1997  Nick Clifton  <nickc@cygnus.com>
+
+	* dis-asm.h (struct disassemble_info): New field
+	'symbol_at_address_func'.
+	(INIT_DISASSEMBLE_INFO_NO_ARCH): Initialise new field with
+	generic_symbol_at_address. 
+
+Mon Oct 13 10:17:15 1997  Andrew Cagney  <cagney@b1.cygnus.com>
+
+	* remote-sim.h: Clarify sim_read, sim_write MEM argument.
+
+Wed Sep 24 18:03:10 1997  Stu Grossman  <grossman@babylon-5.cygnus.com>
+
+	* remote-sim.h (SIM_RC):  Add a bunch of new return codes for
+	breakpoint stuff.
+	* Add functions to tell the simulator to set/clear/enable/disable
+	intrinsic breakpoints.
+
+Thu Aug 28 19:41:42 1997  Andrew Cagney  <cagney@b1.cygnus.com>
+
+	* libiberty.h (dupargv): Add prototype.
+
+Tue Aug 26 12:25:49 1997  Andrew Cagney  <cagney@b1.cygnus.com>
+
+	* remote-sim.h (sim_create_inferior): Add ABFD arg. Document.
+
+Mon Aug 25 10:50:51 1997  Andrew Cagney  <cagney@b1.cygnus.com>
+
+	* remote-sim.h (sim_open): Add ABFD arg. Document.
+
 Fri Aug  8 16:43:56 1997  Doug Evans  <dje@canuck.cygnus.com>
 
 	* dis-asm.h (arc_get_disassembler): Declare.
@@ -205,6 +329,10 @@ Wed Oct  2 21:24:43 1996  Jeffrey A Law  (law@cygnus.com)
 Mon Sep 30 13:56:11 1996  Fred Fish  <fnf@cygnus.com>
 
 	* libiberty.h: Remove #ifndef PRIVATE_XMALLOC.
+
+Sat Aug 31 13:27:06 1996  Jeffrey A Law  (law@cygnus.com)
+
+	* dis-asm.h (print_insn_v850): Declare.
 
 Tue Aug 13 16:10:30 1996  Stu Grossman  (grossman@critters.cygnus.com)
 
