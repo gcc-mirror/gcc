@@ -1066,10 +1066,11 @@ extern const struct mips_cpu_info *mips_tune_info;
 #endif
 
 /* Beginning with gas 2.13, -mdebug must be passed to correctly handle COFF
-   and stabs debugging info.  */
+   debugging info.  */
 #if ((TARGET_CPU_DEFAULT | TARGET_DEFAULT) & MASK_GAS) != 0
 /* GAS */
-#define MDEBUG_ASM_SPEC "%{!gdwarf*:-mdebug} %{gdwarf*:-no-mdebug}"
+#define MDEBUG_ASM_SPEC "%{gcoff*:-mdebug} \
+                         %{!gcoff*:-no-mdebug}"
 #else /* not GAS */
 #define MDEBUG_ASM_SPEC ""
 #endif /* not GAS */
@@ -1184,6 +1185,11 @@ extern const struct mips_cpu_info *mips_tune_info;
 
 #define DBX_DEBUGGING_INFO 1		/* generate stabs (OSF/rose) */
 #define MIPS_DEBUGGING_INFO 1		/* MIPS specific debugging info */
+#define DWARF2_DEBUGGING_INFO 1         /* dwarf2 debugging info */
+
+#ifndef PREFERRED_DEBUGGING_TYPE
+#define PREFERRED_DEBUGGING_TYPE DWARF2_DEBUG
+#endif
 
 /* By default, turn on GDB extensions.  */
 #define DEFAULT_GDB_EXTENSIONS 1

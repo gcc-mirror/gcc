@@ -31,7 +31,6 @@ Boston, MA 02111-1307, USA.  */
 #define SUBTARGET_CPP_SPEC OBSD_CPP_SPEC
 
 /* Needed for ELF (inspired by netbsd-elf).  */
-#define PREFERRED_DEBUGGING_TYPE DBX_DEBUG
 #undef LOCAL_LABEL_PREFIX
 #define LOCAL_LABEL_PREFIX	"."
 
