@@ -1,3 +1,7 @@
+2000-12-13  Tom Tromey  <tromey@redhat.com>
+
+	* jartool.c (extract_jar): Use strchr, not index.
+
 2000-12-11  Alexandre Petit-Bianco  <apbianco@cygnus.com>
 
 	* install-defs.sh: Removed.
