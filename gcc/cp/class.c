@@ -2558,11 +2558,7 @@ add_implicitly_declared_members (tree t,
      of the parameter to the assignment operator will be a const or
      non-const reference.  */
   if (!TYPE_HAS_ASSIGN_REF (t) && !TYPE_FOR_JAVA (t))
-    {
-      TYPE_HAS_ASSIGN_REF (t) = 1;
-      TYPE_HAS_CONST_ASSIGN_REF (t) = !cant_have_const_assignment;
-      CLASSTYPE_LAZY_ASSIGNMENT_OP (t) = 1;
-    }
+    TYPE_HAS_CONST_ASSIGN_REF (t) = !cant_have_const_assignment;
   
   /* Now, hook all of the new functions on to TYPE_METHODS,
      and add them to the CLASSTYPE_METHOD_VEC.  */
