@@ -1,3 +1,10 @@
+2002-05-17  Zack Weinberg  <zack@codesourcery.com>
+
+	* cppinit.c (struct builtin): Remove unused fields.
+	(CPLUS, BUILTIN, OPERATOR, O, builtin_array_end): Kill.
+	(operator_array): New - was second half of builtin_array.
+	(init_builtins): Simplify loop over builtin_array/operator_array.
+
 2002-05-18  Neil Booth  <neil@daikokuya.demon.co.uk>
 
 	* defaults.h (UNIQUE_SECTION): Remove.
