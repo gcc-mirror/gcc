@@ -1,3 +1,9 @@
+2005-02-27  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/20206
+	* g++.dg/opt/thunk2.C: New test.
+	* g++.dg/opt/covariant1.C: New test.
+
 2005-02-27  Andrew Pinski  <pinskia@physics.uc.edu>
 
 	* gcc.dg/tree-ssa/inline_asm-2.c: link_error produces
