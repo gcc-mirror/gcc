@@ -315,7 +315,8 @@ struct tree_srcloc
 
 #define IDENTIFIER_VIRTUAL_P(NODE) TREE_LANG_FLAG_1(NODE)
 
-/* Nonzero if this identifier is the prefix for a mangled C++ operator name.  */
+/* Nonzero if this identifier is the prefix for a mangled C++ operator
+   name.  */
 #define IDENTIFIER_OPNAME_P(NODE) TREE_LANG_FLAG_2(NODE)
 
 /* Nonzero if this identifier is the name of a type-conversion
@@ -1296,8 +1297,13 @@ struct lang_decl
   (DESTRUCTOR_NAME_P (DECL_ASSEMBLER_NAME (NODE))	\
    && DECL_LANGUAGE (NODE) == lang_cplusplus)
 
+/* Non-zero if NODE is a user-defined conversion operator.  */
 #define DECL_CONV_FN_P(NODE)						     \
   (IDENTIFIER_TYPENAME_P (DECL_NAME (NODE)) && TREE_TYPE (DECL_NAME (NODE)))
+
+/* Non-zero if NODE is an overloaded operator.  */
+#define DECL_OVERLOADED_OPERATOR_P(NODE)	\
+  (IDENTIFIER_OPNAME_P (DECL_NAME ((NODE))))
 
 /* For FUNCTION_DECLs: nonzero means that this function is a constructor
    for an object with virtual baseclasses.  */
@@ -1857,12 +1863,22 @@ extern int flag_new_for_scope;
 #define DELTA2_FROM_PTRMEMFUNC(NODE) delta2_from_ptrmemfunc ((NODE))
 #define PFN_FROM_PTRMEMFUNC(NODE) pfn_from_ptrmemfunc ((NODE))
 
+/* For a pointer-to-member type of the form `T X::*', this is `X'.  */
+#define TYPE_PTRMEM_CLASS_TYPE(NODE)			\
+  (TYPE_PTRMEM_P ((NODE))				\
+   ? TYPE_OFFSET_BASETYPE (TREE_TYPE ((NODE)))		\
+   : TYPE_PTRMEMFUNC_OBJECT_TYPE ((NODE)))
+
+/* For a pointer-to-member type of the form `T X::*', this is `T'.  */
+#define TYPE_PTRMEM_POINTED_TO_TYPE(NODE)		\
+   (TYPE_PTRMEM_P ((NODE))				\
+    ? TREE_TYPE (TREE_TYPE (NODE))			\
+    : TREE_TYPE (TYPE_PTRMEMFUNC_FN_TYPE ((NODE))))
+
 /* For a pointer-to-member constant `X::Y' this is the RECORD_TYPE for
    `X'.  */
-#define PTRMEM_CST_CLASS(NODE)				  \
-   (TYPE_PTRMEM_P (TREE_TYPE (NODE)) 			  \
-    ? TYPE_OFFSET_BASETYPE (TREE_TYPE (TREE_TYPE (NODE))) \
-    : TYPE_PTRMEMFUNC_OBJECT_TYPE (TREE_TYPE (NODE)))
+#define PTRMEM_CST_CLASS(NODE) \
+  TYPE_PTRMEM_CLASS_TYPE (TREE_TYPE (NODE))
 
 /* For a pointer-to-member constant `X::Y' this is the _DECL for 
    `Y'.  */
@@ -2171,6 +2187,14 @@ extern int flag_new_for_scope;
 #define ASM_OUTPUTS(NODE)       TREE_OPERAND (NODE, 2)
 #define ASM_INPUTS(NODE)        TREE_OPERAND (NODE, 3)
 #define ASM_CLOBBERS(NODE)      TREE_OPERAND (NODE, 4)
+
+/* Nonzero for an ASM_STMT if the assembly statement is volatile.  */
+#define ASM_VOLATILE_P(NODE)			\
+  (ASM_CV_QUAL ((NODE)) != NULL_TREE)
+
+/* The line-number at which a statement began.  */
+#define STMT_LINENO(NODE)			\
+  (TREE_COMPLEXITY ((NODE)))
 
 /* An enumeration of the kind of tags that C++ accepts.  */
 enum tag_types { record_type, class_type, union_type, enum_type,
@@ -2990,6 +3014,7 @@ typedef int (*walk_namespaces_fn)               PROTO((tree, void *));
 extern int walk_namespaces                      PROTO((walk_namespaces_fn,
 						       void *));
 extern int wrapup_globals_for_namespace         PROTO((tree, void *));
+extern tree cp_namespace_decls                  PROTO((tree));
 
 /* in decl2.c */
 extern int check_java_method			PROTO((tree));
@@ -3603,6 +3628,9 @@ extern void GNU_xref_function			PROTO((tree, tree));
 extern void GNU_xref_assign			PROTO((tree));
 extern void GNU_xref_hier			PROTO((tree, tree, int, int, int));
 extern void GNU_xref_member			PROTO((tree, tree));
+
+/* in dump.c */
+extern void dump_node_to_file                   PROTO ((tree, char *));
 
 /* -- end of C++ */
 

@@ -38,6 +38,7 @@ DEFINE_LANG_NAME ("C++")
   { "-fconst-strings", "" },
   { "-fno-const-strings", "Make string literals `char[]' instead of `const char[]'" },
   { "-fdefault-inline", "" },
+  { "-fdump-translation-unit-", "Dump the entire translation unit to a file"},
   { "-fno-default-inline", "Do not inline member functions by default"},
   { "-frtti", "" },
   { "-fno-rtti", "Do not generate run time type descriptor information" },

@@ -1808,6 +1808,15 @@ sigtable_decl_p (t, data)
 	  && IS_SIGNATURE (TREE_TYPE (t)));
 }
 
+/* Return the declarations that are members of the namespace NS.  */
+
+tree
+cp_namespace_decls (ns)
+     tree ns;
+{
+  return NAMESPACE_LEVEL (ns)->names;
+}
+
 /* Walk all the namespaces contained NAMESPACE, including NAMESPACE
    itself, calling F for each.  The DATA is passed to F as well.  */
 
@@ -1822,7 +1831,7 @@ walk_namespaces_r (namespace, f, data)
 
   result |= (*f) (namespace, data);
 
-  for (current = NAMESPACE_LEVEL (namespace)->names;
+  for (current = cp_namespace_decls (namespace);
        current;
        current = TREE_CHAIN (current))
     {
@@ -1921,7 +1930,7 @@ wrapup_globals_for_namespace (namespace, data)
      tree namespace;
      void *data;
 {
-  tree globals = NAMESPACE_LEVEL (namespace)->names;
+  tree globals = cp_namespace_decls (namespace);
   int len = list_length (globals);
   tree *vec = (tree *) alloca (sizeof (tree) * len);
   int i;

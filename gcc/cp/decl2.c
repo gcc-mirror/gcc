@@ -246,6 +246,11 @@ int flag_optional_diags = 1;
 
 int flag_const_strings = 1;
 
+/* If non-NULL, dump the tree structure for the entire translation
+   unit to this file.  */
+
+char *flag_dump_translation_unit = 0;
+
 /* Nonzero means warn about deprecated conversion from string constant to
    `char *'.  */
 
@@ -648,6 +653,13 @@ lang_decode_option (argc, argv)
 	{
 	  name_mangling_version =
 	  	read_integral_parameter (p + 22, p - 2, name_mangling_version);
+	}
+      else if (!strncmp (p, "dump-translation-unit-", 22))
+	{
+	  if (p[22] == '\0')
+	    error ("no file specified with -fdump-translation-unit");
+	  else
+	    flag_dump_translation_unit = p + 22;
 	}
       else for (j = 0;
 		!found && j < sizeof (lang_f_options) / sizeof (lang_f_options[0]);
@@ -3720,6 +3732,11 @@ finish_file ()
   walk_namespaces (wrapup_globals_for_namespace, /*data=*/&reconsider);
 
   finish_repo ();
+
+  /* The entire file is now complete.  If requested, dump everything
+     file.   */
+  if (flag_dump_translation_unit)
+    dump_node_to_file (global_namespace, flag_dump_translation_unit);
 
   this_time = get_run_time ();
   parse_time -= this_time - start_time;

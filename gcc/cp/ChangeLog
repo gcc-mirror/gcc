@@ -1,3 +1,32 @@
+1999-08-02  Mark Mitchell  <mark@codesourcery.com>
+
+	* Make-lang.in (CXX_SRCS): Add dump.c.
+	* Makefile.in (CXX_OBJS): Add dump.o.
+	(dump.o): New target.
+	* cp-tree.h (DECL_CONV_FN_P): Document.
+	(DECL_OVERLOADED_OPERATOR_P): New function.
+	(TYPE_PTRMEM_CLASS_TYPE): New macro.
+	(TYPE_PTRMEM_POINTED_TO_TYPE): Likewise.
+	(PTRMEM_CST_CLASS): Use TYPE_PTRMEM_CLASS_TYPE.
+	(ASM_VOLATILE_P): New macro.
+	(STMT_LINENO): Likewise.
+	(cp_namespace_decls): New function.
+	(dump_node_to_file): New function.
+	* decl.c (cp_namespace_decls): New function.
+	(walk_namespaces_r): Use it.
+	(wrapup_globals_for_namespace): Likewise.
+	* decl2.c (flag_dump_translation_unit): New variable.
+	(lang_decode_option): Handle -fdump-translation-unit.
+	(finish_file): If flag_dump_translation_unit is set, dump the
+	translation unit.
+	* dump.c: New file.
+	* lang-options.h: Add -fdump-translation-unit.
+	* pt.c (tsubst_template_parms): Robustify.
+	(tsubst_decl): Use DECL_OVERLOADED_OPERATOR_P.
+	(tsubst_expr): Use STMT_LINENO.
+	* semantics.c (finish_asm_stmt): Eliminate duplicate code.  Check
+	for invalid cv-qualifiers even while building templates.
+	
 1999-08-02  Richard Henderson  <rth@cygnus.com>
 
 	* call.c: Include defaults.h instead of expr.h.
