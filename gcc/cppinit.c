@@ -47,7 +47,6 @@ struct pending_option
 struct cpp_pending
 {
   struct pending_option *directive_head, *directive_tail;
-  struct pending_option *imacros_head, *imacros_tail;
 };
 
 #ifdef __STDC__
@@ -606,16 +605,8 @@ cpp_finish_options (pfile)
       _cpp_do_file_change (pfile, LC_RENAME, _("<command line>"), 1, 0);
       for (p = CPP_OPTION (pfile, pending)->directive_head; p; p = p->next)
 	(*p->handler) (pfile, p->arg);
-
-      /* Scan -imacros files after -D, -U, but before -include.
-	 pfile->next_include_file is NULL, so _cpp_pop_buffer does not
-	 push -include files.  */
-      for (p = CPP_OPTION (pfile, pending)->imacros_head; p; p = p->next)
-	if (cpp_push_include (pfile, p->arg))
-	  cpp_scan_nooutput (pfile);
     }
 
-  free_chain (CPP_OPTION (pfile, pending)->imacros_head);
   free_chain (CPP_OPTION (pfile, pending)->directive_head);
 }
 
@@ -679,7 +670,6 @@ new_pending_directive (pend, text, handler)
    I.e. a const string initializer with parens around it.  That is
    what N_("string") resolves to, so we make no_* be macros instead.  */
 #define no_ass N_("assertion missing after %s")
-#define no_fil N_("file name missing after %s")
 #define no_mac N_("macro name missing after %s")
 
 /* This is the list of all command line options, with the leading
@@ -688,7 +678,6 @@ new_pending_directive (pend, text, handler)
   DEF_OPT("A",                        no_ass, OPT_A)                          \
   DEF_OPT("D",                        no_mac, OPT_D)                          \
   DEF_OPT("U",                        no_mac, OPT_U)                          \
-  DEF_OPT("imacros",                  no_fil, OPT_imacros)                    \
 
 
 #define DEF_OPT(text, msg, code) code,
@@ -852,16 +841,6 @@ cpp_handle_option (pfile, argc, argv)
 	  break;
 	case OPT_U:
 	  new_pending_directive (pend, arg, cpp_undef);
-	  break;
-	case OPT_imacros:
-	  {
-	    struct pending_option *o = (struct pending_option *)
-	      xmalloc (sizeof (struct pending_option));
-	    o->arg = arg;
-	    o->next = NULL;
-
-	    APPEND (pend, imacros, o);
-	  }
 	  break;
 	}
     }

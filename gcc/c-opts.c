@@ -104,6 +104,7 @@ static void sanitize_cpp_opts PARAMS ((void));
 static void add_prefixed_path PARAMS ((const char *, size_t));
 static void push_command_line_include PARAMS ((void));
 static void cb_file_change PARAMS ((cpp_reader *, const struct line_map *));
+static void finish_options PARAMS ((void));
 
 #ifndef STDC_0_IN_SYSTEM_HEADERS
 #define STDC_0_IN_SYSTEM_HEADERS 0
@@ -297,6 +298,7 @@ static void cb_file_change PARAMS ((cpp_reader *, const struct line_map *));
   OPT("fxref",			CL_CXX,   OPT_fxref)			     \
   OPT("gen-decls",		CL_OBJC,  OPT_gen_decls)		     \
   OPT("idirafter",              CL_ALL | CL_ARG, OPT_idirafter)              \
+  OPT("imacros",                CL_ALL | CL_ARG, OPT_imacros)		     \
   OPT("include",                CL_ALL | CL_ARG, OPT_include)		     \
   OPT("iprefix",		CL_ALL | CL_ARG, OPT_iprefix)		     \
   OPT("isysroot",               CL_ALL | CL_ARG, OPT_isysroot)               \
@@ -421,6 +423,8 @@ missing_arg (opt_index)
     case OPT_MF:
     case OPT_MD:
     case OPT_MMD:
+    case OPT_include:
+    case OPT_imacros:
     case OPT_o:
       error ("missing filename after \"-%s\"", opt_text);
       break;
@@ -1333,6 +1337,7 @@ c_common_decode_option (argc, argv)
       add_path (xstrdup (arg), AFTER, 0);
       break;
 
+    case OPT_imacros:
     case OPT_include:
       defer_opt (code, arg);
       break;
@@ -1566,8 +1571,7 @@ c_common_init ()
 
   if (flag_preprocess_only)
     {
-      cpp_finish_options (parse_in);
-      push_command_line_include ();
+      finish_options ();
       preprocess_file (parse_in);
       return false;
     }
@@ -1593,8 +1597,7 @@ c_common_parse_file (set_yydebug)
 #endif
 
   (*debug_hooks->start_source_file) (lineno, input_filename);
-  cpp_finish_options (parse_in);
-  push_command_line_include ();
+  finish_options();
   pch_init();
   yyparse ();
   free_parser_stacks ();
@@ -1694,6 +1697,7 @@ handle_deferred_opts ()
 	  break;
 
 	case OPT_include:
+	case OPT_imacros:
 	  break;
 
 	default:
@@ -1755,6 +1759,30 @@ add_prefixed_path (suffix, chain)
   path[prefix_len + suffix_len] = '\0';
 
   add_path (path, chain, 0);
+}
+
+/* Handle -D, -U, -A, -imacros, and the first -include.  */
+static void
+finish_options ()
+{
+  cpp_finish_options (parse_in);
+
+  if (!cpp_opts->preprocessed)
+    {
+      unsigned int i;
+
+      /* Handle -imacros after -D, -U and -A.  */
+      for (i = 0; i < deferred_count; i++)
+	{
+	  struct deferred_opt *opt = &deferred_opts[i];
+
+	  if (opt->code == OPT_imacros
+	      && cpp_push_include (parse_in, opt->arg))
+	    cpp_scan_nooutput (parse_in);
+	}
+    }
+
+  push_command_line_include ();
 }
 
 /* Give CPP the next file given by -include, if any.  */
