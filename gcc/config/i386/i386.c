@@ -1089,7 +1089,7 @@ print_operand (file, x, code)
     {
       if (code != 'P')
 	{
-	  if (GET_CODE (x) == CONST_INT)
+	  if (GET_CODE (x) == CONST_INT || GET_CODE (x) == CONST_DOUBLE)
 	    PRINT_IMMED_PREFIX (file);
 	  else if (GET_CODE (x) == CONST || GET_CODE (x) == SYMBOL_REF
 		   || GET_CODE (x) == LABEL_REF)
