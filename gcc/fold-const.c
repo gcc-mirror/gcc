@@ -458,10 +458,10 @@ div_and_round_double (code, uns,
   short den[MAX_SHORTS], quo[MAX_SHORTS];
   register int i, j, work;
   register int carry = 0;
-  unsigned int lnum = lnum_orig;
-  int hnum = hnum_orig;
-  unsigned int lden = lden_orig;
-  int hden = hden_orig;
+  unsigned HOST_WIDE_INT lnum = lnum_orig;
+  HOST_WIDE_INT hnum = hnum_orig;
+  unsigned HOST_WIDE_INT lden = lden_orig;
+  HOST_WIDE_INT hden = hden_orig;
 
   if ((hden == 0) && (lden == 0))
     abort ();
@@ -2909,9 +2909,29 @@ fold (expr)
 	return build (COMPOUND_EXPR, type, TREE_OPERAND (arg0, 0),
 		      fold (build1 (code, type, TREE_OPERAND (arg0, 1))));
       else if (TREE_CODE (arg0) == COND_EXPR)
-	return fold (build (COND_EXPR, type, TREE_OPERAND (arg0, 0),
-			    fold (build1 (code, type, TREE_OPERAND (arg0, 1))),
-			    fold (build1 (code, type, TREE_OPERAND (arg0, 2)))));
+	{
+	  t = fold (build (COND_EXPR, type, TREE_OPERAND (arg0, 0),
+			   fold (build1 (code, type, TREE_OPERAND (arg0, 1))),
+			   fold (build1 (code, type, TREE_OPERAND (arg0, 2)))));
+
+	  /* If this was a conversion, and all we did was to move into
+	     inside the COND_EXPR, bring it back out.  Then return so we
+	     don't get into an infinite recursion loop taking the conversion
+	     out and then back in.  */
+
+	  if ((code == NOP_EXPR || code == CONVERT_EXPR
+	       || code == NON_LVALUE_EXPR)
+	      && TREE_CODE (t) == COND_EXPR
+	      && TREE_CODE (TREE_OPERAND (t, 1)) == code
+	      && TREE_CODE (TREE_OPERAND (t, 2)) == code)
+	    t = build1 (code, type,
+			build (COND_EXPR,
+			       TREE_TYPE (TREE_OPERAND (TREE_OPERAND (t, 1), 0)),
+			       TREE_OPERAND (t, 0),
+			       TREE_OPERAND (TREE_OPERAND (t, 1), 0),
+			       TREE_OPERAND (TREE_OPERAND (t, 2), 0)));
+	  return t;
+	}
       else if (TREE_CODE_CLASS (TREE_CODE (arg0)) == '<') 
 	return fold (build (COND_EXPR, type, arg0,
 			    fold (build1 (code, type, integer_one_node)),
