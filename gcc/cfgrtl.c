@@ -771,7 +771,7 @@ try_redirect_by_replacing_jump (edge e, basic_block target, bool in_cfglayout)
       rtx target_label = block_label (target);
       rtx barrier, label, table;
 
-      emit_jump_insn_after (gen_jump (target_label), insn);
+      emit_jump_insn_after_noloc (gen_jump (target_label), insn);
       JUMP_LABEL (BB_END (src)) = target_label;
       LABEL_NUSES (target_label)++;
       if (dump_file)
@@ -1150,7 +1150,7 @@ force_nonfallthru_and_redirect (edge e, basic_block target)
   if (target == EXIT_BLOCK_PTR)
     {
 #ifdef HAVE_return
-	emit_jump_insn_after (gen_return (), BB_END (jump_block));
+	emit_jump_insn_after_noloc (gen_return (), BB_END (jump_block));
 #else
 	gcc_unreachable ();
 #endif
@@ -1158,7 +1158,7 @@ force_nonfallthru_and_redirect (edge e, basic_block target)
   else
     {
       rtx label = block_label (target);
-      emit_jump_insn_after (gen_jump (label), BB_END (jump_block));
+      emit_jump_insn_after_noloc (gen_jump (label), BB_END (jump_block));
       JUMP_LABEL (BB_END (jump_block)) = label;
       LABEL_NUSES (label)++;
     }
@@ -1653,11 +1653,11 @@ commit_one_edge_insertion (edge e, int watch_calls)
 
   if (before)
     {
-      emit_insn_before (insns, before);
+      emit_insn_before_noloc (insns, before);
       last = prev_nonnote_insn (before);
     }
   else
-    last = emit_insn_after (insns, after);
+    last = emit_insn_after_noloc (insns, after);
 
   if (returnjump_p (last))
     {
@@ -2779,7 +2779,7 @@ cfg_layout_merge_blocks (basic_block a, basic_block b)
     {
       rtx first = BB_END (a), last;
 
-      last = emit_insn_after (b->rbi->header, BB_END (a));
+      last = emit_insn_after_noloc (b->rbi->header, BB_END (a));
       delete_insn_chain (NEXT_INSN (first), last);
       b->rbi->header = NULL;
     }
@@ -2789,7 +2789,7 @@ cfg_layout_merge_blocks (basic_block a, basic_block b)
     {
       rtx first = unlink_insn_chain (BB_HEAD (b), BB_END (b));
 
-      emit_insn_after (first, BB_END (a));
+      emit_insn_after_noloc (first, BB_END (a));
       /* Skip possible DELETED_LABEL insn.  */
       if (!NOTE_INSN_BASIC_BLOCK_P (first))
 	first = NEXT_INSN (first);
