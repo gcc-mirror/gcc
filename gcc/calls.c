@@ -2061,7 +2061,7 @@ expand_call (exp, target, ignore)
 	 copy it into a new pseudo which is a full word.  */
       if (GET_MODE (valreg) != BLKmode
 	  && GET_MODE_SIZE (GET_MODE (valreg)) < UNITS_PER_WORD)
-	valreg = convert_to_mode (SImode, valreg,
+	valreg = convert_to_mode (word_mode, valreg,
 				  TREE_UNSIGNED (TREE_TYPE (exp)));
 
       /* Structures whose size is not a multiple of a word are aligned
