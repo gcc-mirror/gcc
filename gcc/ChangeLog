@@ -1,3 +1,21 @@
+2004-10-14  Richard Sandiford  <rsandifo@redhat.com>
+
+	* config/arm/arm.h (CONDITIONAL_REGISTER_USAGE): Make r11 fixed and
+	global for -mcaller-super-interworking.
+	(CALLER_INTERWORKING_SLOT_SIZE): New macro.
+	* config/arm/arm.c (thumb_compute_save_reg_mask): Save r11 if
+	CALLER_INTERWORKING_SLOT_SIZE is nonzero and the function does
+	not need a frame pointer.
+	(arm_get_frame_offsets): Add CALLER_INTERWORKING_SLOT_SIZE bytes to
+	the soft frame pointer offset.
+	(thumb_expand_prologue): Set up r11 for -mcaller-super-interworking.
+	* config/arm/arm.md (*call_reg_thumb, *call_value_reg_thumb): Use
+	_interwork_{r7,r11}_call_via_rN if some arguments are passed on
+	the stack.  Use frame_pointer_needed to choose between them.
+	* config/arm/lib1funcs.asm (_arm_return_{r7,r11}): New functions.
+	(interwork_with_frame): New macro.
+	(interwork): Add _interwork_{r7,r11}_call_via_rN().
+
 2004-10-14  Ben Elliston  <bje@au.ibm.com>
 
 	PR other/17900

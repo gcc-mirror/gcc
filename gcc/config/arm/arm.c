@@ -8741,6 +8741,9 @@ thumb_compute_save_reg_mask (void)
     mask |= (1 << PIC_OFFSET_TABLE_REGNUM);
   if (TARGET_SINGLE_PIC_BASE)
     mask &= ~(1 << arm_pic_register);
+  /* See if we might need r11 for calls to _interwork_r11_call_via_rN().  */
+  if (!frame_pointer_needed && CALLER_INTERWORKING_SLOT_SIZE > 0)
+    mask |= 1 << ARM_HARD_FRAME_POINTER_REGNUM;
 
   /* lr will also be pushed if any lo regs are pushed.  */
   if (mask & 0xff || thumb_force_lr_save ())
@@ -9820,7 +9823,7 @@ arm_get_frame_offsets (void)
 
   /* Saved registers include the stack frame.  */
   offsets->saved_regs = offsets->saved_args + saved;
-  offsets->soft_frame = offsets->saved_regs;
+  offsets->soft_frame = offsets->saved_regs + CALLER_INTERWORKING_SLOT_SIZE;
   /* A leaf function does not need any stack alignment if it has nothing
      on the stack.  */
   if (leaf && frame_size == 0)
@@ -12977,6 +12980,9 @@ thumb_expand_prologue (void)
 				   stack_pointer_rtx));
       RTX_FRAME_RELATED_P (insn) = 1;
     }
+  else if (CALLER_INTERWORKING_SLOT_SIZE > 0)
+    emit_move_insn (gen_rtx_REG (Pmode, ARM_HARD_FRAME_POINTER_REGNUM),
+		    stack_pointer_rtx);
 
   amount = offsets->outgoing_args - offsets->saved_regs;
   if (amount)

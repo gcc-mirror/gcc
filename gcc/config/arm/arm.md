@@ -7435,10 +7435,14 @@
   "TARGET_THUMB && !arm_arch5"
   "*
   {
-    if (TARGET_CALLER_INTERWORKING)
-      return \"bl\\t%__interwork_call_via_%0\";
-    else
+    if (!TARGET_CALLER_INTERWORKING)
       return \"bl\\t%__call_via_%0\";
+    else if (operands[1] == const0_rtx)
+      return \"bl\\t%__interwork_call_via_%0\";
+    else if (frame_pointer_needed)
+      return \"bl\\t%__interwork_r7_call_via_%0\";
+    else
+      return \"bl\\t%__interwork_r11_call_via_%0\";
   }"
   [(set_attr "type" "call")]
 )
@@ -7525,10 +7529,14 @@
   "TARGET_THUMB && !arm_arch5"
   "*
   {
-    if (TARGET_CALLER_INTERWORKING)
-      return \"bl\\t%__interwork_call_via_%1\";
-    else
+    if (!TARGET_CALLER_INTERWORKING)
       return \"bl\\t%__call_via_%1\";
+    else if (operands[2] == const0_rtx)
+      return \"bl\\t%__interwork_call_via_%1\";
+    else if (frame_pointer_needed)
+      return \"bl\\t%__interwork_r7_call_via_%1\";
+    else
+      return \"bl\\t%__interwork_r11_call_via_%1\";
   }"
   [(set_attr "type" "call")]
 )
