@@ -1049,6 +1049,9 @@ static int kill_autoinc_value PARAMS ((rtx *, void *));
 static void copy_value PARAMS ((rtx, rtx, struct value_data *));
 static bool mode_change_ok PARAMS ((enum machine_mode, enum machine_mode,
 				    unsigned int));
+static rtx maybe_mode_change PARAMS ((enum machine_mode, enum machine_mode,
+				      enum machine_mode, unsigned int,
+				      unsigned int));
 static rtx find_oldest_value_reg PARAMS ((enum reg_class, rtx,
 					  struct value_data *));
 static bool replace_oldest_value_reg PARAMS ((rtx *, enum reg_class, rtx,
@@ -1326,6 +1329,39 @@ mode_change_ok (orig_mode, new_mode, regno)
   return true;
 }
 
+/* Register REGNO was originally set in ORIG_MODE.  It - or a copy of it -
+   was copied in COPY_MODE to COPY_REGNO, and then COPY_REGNO was accessed
+   in NEW_MODE.
+   Return a NEW_MODE rtx for REGNO if that's OK, otherwise return NULL_RTX.  */
+
+static rtx
+maybe_mode_change (orig_mode, copy_mode, new_mode, regno, copy_regno)
+     enum machine_mode orig_mode, copy_mode, new_mode;
+     unsigned int regno, copy_regno;
+{
+  if (orig_mode == new_mode)
+    return gen_rtx_raw_REG (new_mode, regno);
+  else if (mode_change_ok (orig_mode, new_mode, regno))
+    {
+      int copy_nregs = HARD_REGNO_NREGS (copy_regno, copy_mode);
+      int use_nregs = HARD_REGNO_NREGS (copy_regno, new_mode);
+      int copy_offset
+	= GET_MODE_SIZE (copy_mode) / copy_nregs * (copy_nregs - use_nregs);
+      int offset
+	= GET_MODE_SIZE (orig_mode) - GET_MODE_SIZE (new_mode) - copy_offset;
+      int byteoffset = offset % UNITS_PER_WORD;
+      int wordoffset = offset - byteoffset;
+
+      offset = ((WORDS_BIG_ENDIAN ? wordoffset : 0)
+		+ (BYTES_BIG_ENDIAN ? byteoffset : 0));
+      return gen_rtx_raw_REG (new_mode,
+			      regno + subreg_regno_offset (regno, orig_mode,
+							   offset,
+							   new_mode));
+    }
+  return NULL_RTX;
+}
+
 /* Find the oldest copy of the value contained in REGNO that is in
    register class CLASS and has mode MODE.  If found, return an rtx
    of that oldest register, otherwise return NULL.  */
@@ -1357,20 +1393,12 @@ find_oldest_value_reg (class, reg, vd)
   for (i = vd->e[regno].oldest_regno; i != regno; i = vd->e[i].next_regno)
     {
       enum machine_mode oldmode = vd->e[i].mode;
+      rtx new;
 
     if (TEST_HARD_REG_BIT (reg_class_contents[class], i)
-	&& (oldmode == mode
-	    || mode_change_ok (oldmode, mode, i)))
+	&& (new = maybe_mode_change (oldmode, vd->e[regno].mode, mode, i,
+				     regno)))
       {
-	int offset = GET_MODE_SIZE (oldmode) - GET_MODE_SIZE (mode);
-	int byteoffset = offset % UNITS_PER_WORD;
-	int wordoffset = offset - byteoffset;
-	rtx new;
-
-	offset = ((WORDS_BIG_ENDIAN ? wordoffset : 0)
-		  + (BYTES_BIG_ENDIAN ? byteoffset : 0));
-	new = (gen_rtx_raw_REG
-	       (mode, i + subreg_regno_offset (i, oldmode, offset, mode)));
 	ORIGINAL_REGNO (new) = ORIGINAL_REGNO (reg);
 	return new;
       }
@@ -1657,21 +1685,23 @@ copyprop_hardreg_forward_1 (bb, vd)
 	  /* Otherwise, try all valid registers and see if its valid.  */
 	  for (i = vd->e[regno].oldest_regno; i != regno;
 	       i = vd->e[i].next_regno)
-	    if (vd->e[i].mode == mode
-		|| mode_change_ok (vd->e[i].mode, mode, i))
-	      {
-		new = gen_rtx_raw_REG (mode, i);
-		if (validate_change (insn, &SET_SRC (set), new, 0))
-		  {
-		    ORIGINAL_REGNO (new) = ORIGINAL_REGNO (src);
-		    if (rtl_dump_file)
-		      fprintf (rtl_dump_file,
-			       "insn %u: replaced reg %u with %u\n",
-			       INSN_UID (insn), regno, REGNO (new));
-		    changed = true;
-		    goto did_replacement;
-		  }
-	      }
+	    {
+	      new = maybe_mode_change (vd->e[i].mode, vd->e[regno].mode,
+				       mode, i, regno);
+	      if (new != NULL_RTX)
+		{
+		  if (validate_change (insn, &SET_SRC (set), new, 0))
+		    {
+		      ORIGINAL_REGNO (new) = ORIGINAL_REGNO (src);
+		      if (rtl_dump_file)
+			fprintf (rtl_dump_file,
+				 "insn %u: replaced reg %u with %u\n",
+				 INSN_UID (insn), regno, REGNO (new));
+		      changed = true;
+		      goto did_replacement;
+		    }
+		}
+	    }
 	}
       no_move_special_case:
 
