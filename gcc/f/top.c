@@ -239,8 +239,6 @@ ffe_handle_option (size_t scode, const char *arg, int value)
 
     case OPT_ffixed_form:
       ffe_set_is_free_form (!value);
-      if (value)
-	return -1;
       break;
 
     case OPT_fpedantic:
@@ -564,16 +562,12 @@ ffe_handle_option (size_t scode, const char *arg, int value)
 
     case OPT_ffixed_line_length_:
       if (strcmp (arg, "none") == 0)
-	{
-	  ffe_set_fixed_line_length (0);
-	  return -1;
-	}
+	ffe_set_fixed_line_length (0);
       else if (ffe_is_digit_string_ (arg))
-	{
-	  ffe_set_fixed_line_length (atol (arg));
-	  return -1;
-	}
-      return 0;
+	ffe_set_fixed_line_length (atol (arg));
+      else
+	return 0;
+      break;
 
     case OPT_Wcomment:
     case OPT_Wcomments:

@@ -820,8 +820,8 @@ c_common_handle_option (size_t scode, const char *arg, int value)
     case OPT_ffixed_form:
     case OPT_ffixed_line_length_:
       /* Fortran front end options ignored when preprocessing only.  */
-      if (flag_preprocess_only)
-        result = -1;
+      if (!flag_preprocess_only)
+        result = 0;
       break;
 
     case OPT_ffor_scope:

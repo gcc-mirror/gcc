@@ -24,6 +24,9 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include "coretypes.h"
 #include "tm.h"
 #include "tree.h"
+#include "rtl.h"
+#include "ggc.h"
+#include "output.h"
 #include "langhooks.h"
 #include "opts.h"
 #include "options.h"
@@ -196,8 +199,11 @@ find_opt (const char *input, int lang_mask)
 	      for (md = md + 1; md < cl_options_count; md++)
 		{
 		  opt_len = cl_options[md].opt_len;
-		  if (strncmp (input, cl_options[md].opt_text, opt_len))
+		  comp = strncmp (input, cl_options[md].opt_text, opt_len);
+		  if (comp < 0)
 		    break;
+		  if (comp > 0)
+		    continue;
 		  if (input[opt_len] == '\0')
 		    return md;
 		  if (cl_options[md].flags & lang_mask
@@ -237,7 +243,7 @@ handle_option (int argc ATTRIBUTE_UNUSED, char **argv, int lang_mask)
   const char *opt, *arg = 0;
   char *dup = 0;
   int value = 1;
-  int result = 0, temp;
+  int result = 0;
   const struct cl_option *option;
 
   opt = argv[0];
@@ -320,17 +326,12 @@ handle_option (int argc ATTRIBUTE_UNUSED, char **argv, int lang_mask)
 	}
 
       if (option->flags & lang_mask)
-	{
-	  temp = (*lang_hooks.handle_option) (opt_index, arg, value);
-	  if (temp <= 0)
-	    result = temp;
-	}
+	if ((*lang_hooks.handle_option) (opt_index, arg, value) == 0)
+	  result = 0;
 
-      if (result > 0 && (option->flags & CL_COMMON))
-	{
-	  if (common_handle_option (opt_index, arg, value) == 0)
-	    result = 0;
-	}
+      if (result && (option->flags & CL_COMMON))
+	if (common_handle_option (opt_index, arg, value) == 0)
+	  result = 0;
     }
 
  done:
@@ -520,6 +521,65 @@ common_handle_option (size_t scode, const char *arg,
       dump_base_name = arg;
       break;
 
+    case OPT_falign_functions_:
+      align_functions = value;
+      break;
+
+    case OPT_falign_jumps_:
+      align_jumps = value;
+      break;
+
+    case OPT_falign_labels_:
+      align_labels = value;
+      break;
+
+    case OPT_falign_loops_:
+      align_loops = value;
+      break;
+
+    case OPT_fcall_used_:
+      fix_register (arg, 0, 1);
+      break;
+
+    case OPT_fcall_saved_:
+      fix_register (arg, 0, 0);
+      break;
+
+    case OPT_ffast_math:
+      set_fast_math_flags (value);
+      break;
+
+    case OPT_ffixed_:
+      fix_register (arg, 1, 1);
+      break;
+
+    case OPT_fstack_limit_register_:
+      {
+	int reg = decode_reg_name (arg);
+	if (reg < 0)
+	  error ("unrecognized register name \"%s\"", arg);
+	else
+	  stack_limit_rtx = gen_rtx_REG (Pmode, reg);
+      }
+      break;
+
+    case OPT_fstack_limit_symbol_:
+      stack_limit_rtx = gen_rtx_SYMBOL_REF (Pmode, ggc_strdup (arg));
+      break;
+
+    case OPT_ftls_model_:
+      if (!strcmp (arg, "global-dynamic"))
+	flag_tls_default = TLS_MODEL_GLOBAL_DYNAMIC;
+      else if (!strcmp (arg, "local-dynamic"))
+	flag_tls_default = TLS_MODEL_LOCAL_DYNAMIC;
+      else if (!strcmp (arg, "initial-exec"))
+	flag_tls_default = TLS_MODEL_INITIAL_EXEC;
+      else if (!strcmp (arg, "local-exec"))
+	flag_tls_default = TLS_MODEL_LOCAL_EXEC;
+      else
+	warning ("unknown tls-model \"%s\"", arg);
+      break;
+
     case OPT_g:
       decode_g_option (arg);
       break;
@@ -618,4 +678,27 @@ set_Wunused (int setting)
   warn_unused_parameter = (setting && extra_warnings);
   warn_unused_variable = setting;
   warn_unused_value = setting;
+}
+
+/* The following routines are useful in setting all the flags that
+   -ffast-math and -fno-fast-math imply.  */
+void
+set_fast_math_flags (int set)
+{
+  flag_trapping_math = !set;
+  flag_unsafe_math_optimizations = set;
+  flag_finite_math_only = set;
+  flag_errno_math = !set;
+  if (set)
+    flag_signaling_nans = 0;
+}
+
+/* Return true iff flags are set as if -ffast-math.  */
+bool
+fast_math_flags_set_p (void)
+{
+  return (!flag_trapping_math
+	  && flag_unsafe_math_optimizations
+	  && flag_finite_math_only
+	  && !flag_errno_math);
 }
