@@ -824,6 +824,7 @@ globalize_reg (i)
   SET_HARD_REG_BIT (fixed_reg_set, i);
   SET_HARD_REG_BIT (call_used_reg_set, i);
   SET_HARD_REG_BIT (call_fixed_reg_set, i);
+  SET_HARD_REG_BIT (regs_invalidated_by_call, i);
 }
 
 /* Now the data and code for the `regclass' pass, which happens
