@@ -218,7 +218,7 @@ gfc_conv_mpz_to_tree (mpz_t i, int kind)
 	}
     }
 
-  return build_int_cst (gfc_get_int_type (kind), low, high);
+  return build_int_cst_wide (gfc_get_int_type (kind), low, high);
 }
 
 /* Converts a real constant into backend form.  Uses an intermediate string

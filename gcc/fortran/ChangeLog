@@ -1,3 +1,9 @@
+2004-08-25  Tobias Schlueter  <tobias.schlueter@physik.uni-muenchen.de>
+
+	* trans-const.c (gfc_conv_mpz_to_tree): Change call to 
+	build_int_cst to build_int_cst_wide in accordance to Nathan's
+	previous patch.
+
 2004-08-25  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* trans-array.c (gfc_trans_array_constructor_value): Adjust
