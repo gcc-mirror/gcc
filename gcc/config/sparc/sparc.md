@@ -2039,6 +2039,8 @@
   [(set_attr "type" "store,load,move,store,load")
    (set_attr "length" "1,1,2,3,3")])
 
+;; Must handle overlapping registers here, since parameters can be unaligned
+;; in registers.
 ;; ??? Do we need a v9 version of this?
 (define_split
   [(set (match_operand:DF 0 "register_operand" "")
@@ -2047,10 +2049,25 @@
   [(set (match_dup 2) (match_dup 3))
    (set (match_dup 4) (match_dup 5))]
   "
-{ operands[2] = operand_subword (operands[0], 0, 0, DFmode);
-  operands[3] = operand_subword (operands[1], 0, 0, DFmode);
-  operands[4] = operand_subword (operands[0], 1, 0, DFmode);
-  operands[5] = operand_subword (operands[1], 1, 0, DFmode); }")
+{
+  rtx first_set = operand_subword (operands[0], 0, 0, DFmode);
+  rtx second_use = operand_subword (operands[1], 1, 0, DFmode);
+
+  if (REGNO (first_set) == REGNO (second_use))
+    {
+      operands[2] = operand_subword (operands[0], 1, 0, DFmode);
+      operands[3] = second_use;
+      operands[4] = first_set;
+      operands[5] = operand_subword (operands[1], 0, 0, DFmode);
+    }
+  else
+    {
+      operands[2] = first_set;
+      operands[3] = operand_subword (operands[1], 0, 0, DFmode);
+      operands[4] = operand_subword (operands[0], 1, 0, DFmode);
+      operands[5] = second_use;
+    }
+}")
 
 (define_insn ""
   [(set (mem:DF (match_operand:SI 0 "symbolic_operand" "i,i"))
