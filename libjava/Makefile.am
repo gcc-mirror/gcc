@@ -1922,6 +1922,8 @@ java/net/DatagramSocketImplFactory.java \
 java/net/FileNameMap.java \
 java/net/HttpURLConnection.java	\
 java/net/InetAddress.java \
+java/net/Inet4Address.java \
+java/net/Inet6Address.java \
 java/net/InetSocketAddress.java \
 java/net/JarURLConnection.java \
 java/net/MalformedURLException.java \
@@ -1943,6 +1945,7 @@ java/net/SocketImplFactory.java	\
 java/net/SocketOptions.java \
 java/net/SocketPermission.java \
 java/net/SocketTimeoutException.java \
+java/net/URI.java \
 java/net/URISyntaxException.java \
 java/net/URL.java \
 java/net/URLClassLoader.java \

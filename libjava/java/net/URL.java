@@ -83,6 +83,9 @@ public final class URL implements Serializable
    * @param handler The stream handler for the URL
    *
    * @exception MalformedURLException If an error occurs
+   * @exception SecurityException If  a security manager exists and its
+   * checkPermission method doesn't allow specifying a stream handler
+   * explicitly
    *
    * @since 1.2
    */
@@ -166,6 +169,9 @@ public final class URL implements Serializable
    * @param handler The stream handler for the URL
    *
    * @exception MalformedURLException If an error occurs
+   * @exception SecurityException If  a security manager exists and its
+   * checkPermission method doesn't allow specifying a stream handler
+   * explicitly
    * 
    * @since 1.2
    */
@@ -287,11 +293,24 @@ public final class URL implements Serializable
   /**
    * Gets the contents of this URL
    *
+   * @exception IOException If an error occurs
+   *
    * @since 1.3
    */
   public final Object getContent() throws IOException
   {
     return openConnection().getContent();
+  }
+
+  /**
+   * Gets the contents of this URL
+   *
+   * @exception IOException If an error occurs
+   */
+  public final Object getContent (Class[] classes) throws IOException
+  {
+    // FIXME: implement this
+    return getContent();
   }
 
   public String getFile()
@@ -366,6 +385,14 @@ public final class URL implements Serializable
     return at < 0 ? null : host.substring(0, at);
   }
 
+  /**
+   * Returns the query of the URL
+   */
+  public String getQuery ()
+  {
+    return query;
+  }
+
   public int hashCode()
   {
     // JCL book says this is computed using (only) the hashcodes of the 
@@ -389,11 +416,23 @@ public final class URL implements Serializable
 	port + file.hashCode());
   }
 
+  /**
+   * Returns a URLConnection object that represents a connection to the remote
+   * object referred to by the URL
+   *
+   * @exception IOException If an error occurs
+   */
   public URLConnection openConnection() throws IOException
   {
     return handler.openConnection(this);
   }
 
+  /**
+   * Opens a connection to this URL and returns an InputStream for reading
+   * from that connection
+   *
+   * @exception IOException If an error occurs
+   */
   public final InputStream openStream() throws IOException
   {
     return openConnection().getInputStream();
@@ -458,6 +497,13 @@ public final class URL implements Serializable
     hashCode = hashCode();			// Used for serialization.
   }
 
+  /**
+   * Sets an application's URLStreamHandlerFactory
+   *
+   * @exception Error If the application has already set a factory
+   * @exception SecurityException If a security manager exists and its
+   * checkSetFactory method doesn't allow the operation
+   */
   public static synchronized void
 	setURLStreamHandlerFactory(URLStreamHandlerFactory fac)
   {

@@ -1,3 +1,23 @@
+2002-10-05  Michael Koch  <konqueror@gmx.de>
+
+	* java/net/InetAddress.java
+	(getByAddress): Fixed documentation.
+	(getByAddress): New method.
+	* java/net/Inet4Address.java: New file.
+	* java/net/URL.java
+	(URL): Documentation added.
+	(getContent): Documentation added.
+	(getContent): New stubbed method.
+	(getQuery): New method.
+	(openConnection): Documentation added.
+	(openStream): Documentation added.
+	(setURLStreamHandlerFactory): Documentation added.
+	* java/net/URI.java: New stub file.
+	* Makefile.am
+	(java_native_source_files): Added java/net/Inet4Address.java,
+	java/net/Inet6Address.java and java/net/URI.java.
+	* Makefile.in: Regenerated.
+
 2002-10-04  C. Scott Ananian <cananian@lesser-magoo.lcs.mit.edu>
 	
 	* java/lang/ProtectionDomain.java (linesep): Remove field.
