@@ -163,7 +163,7 @@ namespace __gnu_debug_def
         void
         insert(_InputIterator __first, _InputIterator __last)
         {
-	  __glibcxx_valid_range(__first, __last);
+	  __glibcxx_check_valid_range(__first, __last);
 	  _Base::insert(__first, __last);
 	}
 
