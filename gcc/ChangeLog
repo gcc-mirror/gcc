@@ -1,3 +1,13 @@
+2001-04-09  Richard Sandiford   <rsandifo@redhat.com>
+
+	* dwarfout.c (DEBUG_ARANGES_BEGIN_LABEL): New label.
+	(DEBUG_ARANGES_END_LABEL): Ditto.
+	(dwarfout_init): Generate length and version fields at the start
+	of the .debug_aranges info.  Insert DEBUG_ARANGES_BEGIN_LABEL
+	after the length field.
+	(dwarfout_finish): Insert DEBUG_ARANGED_END_LABEL at the end of
+	the .debug_aranges info.
+
 Sun Apr  8 00:43:27 CEST 2001  Jan Hubicka  <jh@suse.cz>
 
 	* i386.c (call, call_value): Make sure that resulting call_insn
