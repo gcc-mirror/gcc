@@ -1,3 +1,10 @@
+Fri May  7 14:19:31 1999  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
+	* fixinc/server.c (read_pipe_timeout): Declare volatile, modified
+	in signal handler.
+	(sig_handler): Add debug code.
+	* fixinc/server.c (run_shell): Don't \-escape cd, it breaks the
+	Ultrix V4.3 /bin/sh.
+
 Thu May  6 20:34:00 1999  Mark Mitchell  <mark@codesourcery.com>
 
 	* resource.c (mark_referenced_resources): Make volatil
