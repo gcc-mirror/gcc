@@ -1,3 +1,8 @@
+2005-01-31  Brad Spencer  <spencer@infointeractive.com>
+
+        * crossconfig.m4: Repair Solaris cross bits for strtold and strtof.
+	* configure: Regenerated.
+
 2005-01-26  Paolo Carlini  <pcarlini@suse.de>
 
 	* include/std/std_complex.h: Remove usages of the dead

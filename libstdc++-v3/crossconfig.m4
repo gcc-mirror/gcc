@@ -392,8 +392,13 @@ case "${host}" in
         AC_DEFINE(HAVE___BUILTIN_SINF)
        ;;
     esac
-    AC_DEFINE(HAVE_STRTOF)
-    AC_DEFINE(HAVE_STRTOLD)
+    case "$target" in
+      *-*-solaris2.10)
+      # These two C99 functions are present only in Solaris >= 10
+      AC_DEFINE(HAVE_STRTOF)
+      AC_DEFINE(HAVE_STRTOLD)
+     ;;
+    esac
     AC_DEFINE(HAVE_MMAP) 
     AC_DEFINE(HAVE_COPYSIGN)
     AC_DEFINE(HAVE_ISNAN)
