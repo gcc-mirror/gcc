@@ -381,7 +381,6 @@ extern void rm_other_notes (rtx, rtx);
 extern int insn_issue_delay (rtx);
 extern int set_priorities (rtx, rtx);
 
-extern rtx sched_emit_insn (rtx);
 extern void schedule_block (int, int);
 extern void sched_init (FILE *);
 extern void sched_finish (void);
