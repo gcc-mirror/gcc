@@ -3526,6 +3526,11 @@ duplicate_decls (newdecl, olddecl)
       /* Merge the data types specified in the two decls.  */
       newtype = common_type (TREE_TYPE (newdecl), TREE_TYPE (olddecl));
 
+      /* If common_type produces a non-typedef type, just use the old type.  */
+      if (TREE_CODE (newdecl) == TYPE_DECL
+	  && newtype == DECL_ORIGINAL_TYPE (newdecl))
+	newtype = oldtype;
+
       if (TREE_CODE (newdecl) == VAR_DECL)
 	DECL_THIS_EXTERN (newdecl) |= DECL_THIS_EXTERN (olddecl);
       /* Do this after calling `common_type' so that default

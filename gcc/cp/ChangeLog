@@ -1,3 +1,8 @@
+2000-07-27  Jason Merrill  <jason@redhat.com>
+
+	* decl.c (duplicate_decls): If common_type produces a non-typedef
+	type for a typedef, just use the old type.
+
 2000-07-27  Mark Mitchell  <mark@codesourcery.com>
 
 	* cp-tree.h (function_depth): Declare.
@@ -12,8 +17,9 @@
 
 2000-07-27  Jason Merrill  <jason@redhat.com>
 
-	* typeck.c (common_type): If we're just returning one of our
-	arguments, don't strip typedef types.
+	* pt.c (for_each_template_parm_r, case RECORD_TYPE): Use
+	TYPE_PTRMEMFUNC_P.
+	* cp-tree.h (TYPE_TEMPLATE_INFO): Check for TYPE_LANG_SPECIFIC.
 
 2000-07-26  Mark Mitchell  <mark@codesourcery.com>
 

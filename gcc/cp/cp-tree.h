@@ -2309,10 +2309,12 @@ struct lang_decl
 /* Template information for an ENUMERAL_, RECORD_, or UNION_TYPE.  */
 #define TYPE_TEMPLATE_INFO(NODE)			\
   (TREE_CODE (NODE) == ENUMERAL_TYPE			\
-   ? ENUM_TEMPLATE_INFO (NODE) : 			\
+   ? ENUM_TEMPLATE_INFO (NODE) :			\
    (TREE_CODE (NODE) == TEMPLATE_TEMPLATE_PARM		\
-    ? TEMPLATE_TEMPLATE_PARM_TEMPLATE_INFO (NODE)	\
-    : CLASSTYPE_TEMPLATE_INFO (NODE)))
+    ? TEMPLATE_TEMPLATE_PARM_TEMPLATE_INFO (NODE) :	\
+    (TYPE_LANG_SPECIFIC (NODE)				\
+     ? CLASSTYPE_TEMPLATE_INFO (NODE)			\
+     : NULL_TREE)))
 
 /* Set the template information for an ENUMERAL_, RECORD_, or
    UNION_TYPE to VAL.  */
