@@ -9,6 +9,23 @@
 
 1999-09-11  Mark Mitchell  <mark@codesourcery.com>
 
+	* decl.c (add_decl_to_level): Remove TREE_PERMANENT assertion.
+	(init_decl_processing): Don't set TREE_PERMANENT for the
+	error_mark_node.
+	(start_decl): Don't rebuild non-permanent ARRAY_TYPEs.
+	(grokdeclarator): Likewise.
+	(grokparms): Don't check TREE_PERMANENT when building up lists.
+	* decl2.c (grokfield): Don't assert TREE_PERMANENT.
+	(mark_inline_for_output): Likewise.
+	* expr.c (cplus_expand_expr): Don't check TREE_PERMANENT.
+	* init.c (build_offset_ref): Don't check TREE_PERMANENT.
+	* lex.c (check_newline): Don't check ggc_p; it is always one.
+	* pt.c (process_template_parm): Don't check TREE_PERMANENT.
+	* spew.c (yylex): Don't copy_node or probe_obstacks for
+	non-permanent CONSTANTs and STRINGs.
+	* tree.c (build_cplus_array_type_1): Don't fuss with
+	TREE_PERMANENT on ARRAY_TYPEs.
+	
 	* cp-tree.def (CLEANUP_STMT): New node.
 	* cp-tree.h (language_function): Add name_declared.
 	(current_function_name_declared): New macro.
