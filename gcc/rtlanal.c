@@ -25,10 +25,8 @@ Boston, MA 02111-1307, USA.  */
 #include "toplev.h"
 #include "rtl.h"
 
-static void reg_set_p_1		PARAMS ((rtx, rtx, void *));
+static void set_of_1		PARAMS ((rtx, rtx, void *));
 static void insn_dependent_p_1	PARAMS ((rtx, rtx, void *));
-static void reg_set_last_1	PARAMS ((rtx, rtx, void *));
-
 
 /* Forward declarations */
 static int jmp_uses_reg_or_mem		PARAMS ((rtx));
@@ -617,24 +615,6 @@ reg_set_between_p (reg, from_insn, to_insn)
 }
 
 /* Internals of reg_set_between_p.  */
-
-static rtx reg_set_reg;
-static int reg_set_flag;
-
-static void
-reg_set_p_1 (x, pat, data)
-     rtx x;
-     rtx pat ATTRIBUTE_UNUSED;
-     void *data ATTRIBUTE_UNUSED;
-{
-  /* We don't want to return 1 if X is a MEM that contains a register
-     within REG_SET_REG.  */
-
-  if ((GET_CODE (x) != MEM)
-      && reg_overlap_mentioned_p (reg_set_reg, x))
-    reg_set_flag = 1;
-}
-
 int
 reg_set_p (reg, insn)
      rtx reg, insn;
@@ -662,10 +642,7 @@ reg_set_p (reg, insn)
       body = PATTERN (insn);
     }
 
-  reg_set_reg = reg;
-  reg_set_flag = 0;
-  note_stores (body, reg_set_p_1, NULL);
-  return reg_set_flag;
+  return set_of (reg, insn) != NULL_RTX;
 }
 
 /* Similar to reg_set_between_p, but check all registers in X.  Return 0
@@ -861,6 +838,38 @@ insn_dependent_p_1 (x, pat, data)
 
   if (*pinsn && reg_mentioned_p (x, *pinsn))
     *pinsn = NULL_RTX;
+}
+
+/* Helper function for set_of.  */
+struct set_of_data
+  {
+    rtx found;
+    rtx pat;
+  };
+
+static void
+set_of_1 (x, pat, data1)
+     rtx x;
+     rtx pat;
+     void *data1;
+{
+   struct set_of_data *data = (struct set_of_data *) (data1);
+   if (rtx_equal_p (x, data->pat)
+       || (GET_CODE (x) != MEM && reg_overlap_mentioned_p (data->pat, x)))
+     data->found = pat;
+}
+
+/* Give an INSN, return a SET or CLOBBER expression that does modify PAT
+   (eighter directly or via STRICT_LOW_PART and similar modifiers).  */
+rtx
+set_of (pat, insn)
+     rtx pat, insn;
+{
+  struct set_of_data data;
+  data.found = NULL_RTX;
+  data.pat = pat;
+  note_stores (INSN_P (insn) ? PATTERN (insn) : insn, set_of_1, &data);
+  return data.found;
 }
 
 /* Given an INSN, return a SET expression if this insn has only a single SET.
@@ -1196,45 +1205,6 @@ reg_overlap_mentioned_p (x, in)
   abort ();
 }
 
-/* Used for communications between the next few functions.  */
-
-static int reg_set_last_unknown;
-static rtx reg_set_last_value;
-static unsigned int reg_set_last_first_regno, reg_set_last_last_regno;
-
-/* Called via note_stores from reg_set_last.  */
-
-static void
-reg_set_last_1 (x, pat, data)
-     rtx x;
-     rtx pat;
-     void *data ATTRIBUTE_UNUSED;
-{
-  unsigned int first, last;
-
-  /* If X is not a register, or is not one in the range we care
-     about, ignore.  */
-  if (GET_CODE (x) != REG)
-    return;
-
-  first = REGNO (x);
-  last = first + (first < FIRST_PSEUDO_REGISTER
-		  ? HARD_REGNO_NREGS (first, GET_MODE (x)) : 1);
-
-  if (first >= reg_set_last_last_regno
-      || last <= reg_set_last_first_regno)
-    return;
-
-  /* If this is a CLOBBER or is some complex LHS, or doesn't modify
-     exactly the registers we care about, show we don't know the value.  */
-  if (GET_CODE (pat) == CLOBBER || SET_DEST (pat) != x
-      || first != reg_set_last_first_regno
-      || last != reg_set_last_last_regno)
-    reg_set_last_unknown = 1;
-  else
-    reg_set_last_value = SET_SRC (pat);
-}
-
 /* Return the last value to which REG was set prior to INSN.  If we can't
    find it easily, return 0.
 
@@ -1248,16 +1218,6 @@ reg_set_last (x, insn)
 {
   rtx orig_insn = insn;
 
-  reg_set_last_first_regno = REGNO (x);
-
-  reg_set_last_last_regno
-    = reg_set_last_first_regno
-      + (reg_set_last_first_regno < FIRST_PSEUDO_REGISTER
-	 ? HARD_REGNO_NREGS (reg_set_last_first_regno, GET_MODE (x)) : 1);
-
-  reg_set_last_unknown = 0;
-  reg_set_last_value = 0;
-
   /* Scan backwards until reg_set_last_1 changed one of the above flags.
      Stop when we reach a label or X is a hard reg and we reach a
      CALL_INSN (if reg_set_last_last_regno is a hard reg).
@@ -1269,21 +1229,24 @@ reg_set_last (x, insn)
   for (;
        insn && GET_CODE (insn) != CODE_LABEL
        && ! (GET_CODE (insn) == CALL_INSN
-	     && reg_set_last_last_regno <= FIRST_PSEUDO_REGISTER);
+	     && REGNO (x) <= FIRST_PSEUDO_REGISTER);
        insn = PREV_INSN (insn))
     if (INSN_P (insn))
       {
-	note_stores (PATTERN (insn), reg_set_last_1, NULL);
-	if (reg_set_last_unknown)
-	  return 0;
-	else if (reg_set_last_value)
+	rtx set = set_of (x, insn);
+	/* OK, this function modify our register.  See if we understand it.  */
+	if (set)
 	  {
-	    if (CONSTANT_P (reg_set_last_value)
-		|| ((GET_CODE (reg_set_last_value) == REG
-		     || GET_CODE (reg_set_last_value) == SUBREG)
-		    && ! reg_set_between_p (reg_set_last_value,
+	    rtx last_value;
+	    if (GET_CODE (set) != SET || SET_DEST (set) != x)
+	      return 0;
+	    last_value = SET_SRC (x);
+	    if (CONSTANT_P (last_value)
+		|| ((GET_CODE (last_value) == REG
+		     || GET_CODE (last_value) == SUBREG)
+		    && ! reg_set_between_p (last_value,
 					    insn, orig_insn)))
-	      return reg_set_last_value;
+	      return last_value;
 	    else
 	      return 0;
 	  }

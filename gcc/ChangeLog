@@ -1,3 +1,14 @@
+Sun Jan  7 13:49:19 MET 2001  Jan Hubicka  <jh@suse.cz>
+
+	* rtlanal.c (set_of_1): New static function.
+	(reg_set_last_1, reg_set_p_1, reg_set_reg, reg_set_flag,
+	 reg_set_last_unknown, reg_set_last_value, reg_set_last_first_regno,
+	 reg_set_last_last_regno): Remove.
+	(set_of): New global function.
+	(set_of_data): New structure.
+	(reg_set_p, reg_set_last): Revamp for set_of.
+	* rtl.h (set_of): New.
+
 2001-01-07  Joseph S. Myers  <jsm28@cam.ac.uk>
 
 	* c-common.c (c_common_nodes_and_builtins): Add _Exit builtin.

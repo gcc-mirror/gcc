@@ -1378,6 +1378,7 @@ extern rtx find_last_value		PARAMS ((rtx, rtx *, rtx, int));
 extern int refers_to_regno_p		PARAMS ((unsigned int, unsigned int,
 						 rtx, rtx *));
 extern int reg_overlap_mentioned_p	PARAMS ((rtx, rtx));
+extern rtx set_of			PARAMS ((rtx, rtx));
 extern void note_stores			PARAMS ((rtx,
 						 void (*) (rtx, rtx, void *),
 						 void *));
