@@ -1,3 +1,8 @@
+2002-06-06  Adam Megacz <adam@xwt.org>
+
+        * java/io/natFileDescriptorWin32.cc (open): Disable Win32 file
+        locking, just like the Sun JVM does.
+	
 2002-06-03  Mark Mitchell  <mark@codesourcery.com>
 	
 	2002-05-23  Bryce McKinlay  <bryce@waitaki.otago.ac.nz>

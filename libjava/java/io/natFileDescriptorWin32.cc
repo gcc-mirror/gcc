@@ -82,7 +82,6 @@ java::io::FileDescriptor::open (jstring path, jint jflags) {
 
   HANDLE handle = NULL;
   DWORD access = 0;
-  DWORD share = FILE_SHARE_READ;
   DWORD create = OPEN_EXISTING;
   char buf[MAX_PATH] = "";
 
@@ -94,7 +93,6 @@ java::io::FileDescriptor::open (jstring path, jint jflags) {
   if ((jflags & READ) && (jflags & WRITE))
     {
       access = GENERIC_READ | GENERIC_WRITE;
-      share = 0;
       if (jflags & APPEND)
 	create = OPEN_ALWAYS;
       else
@@ -105,14 +103,13 @@ java::io::FileDescriptor::open (jstring path, jint jflags) {
   else
     {
       access = GENERIC_WRITE;
-      share = 0;
       if (jflags & APPEND)
 	create = OPEN_ALWAYS;
       else
         create = CREATE_ALWAYS;
     }
 
-  handle = CreateFile(buf, access, share, NULL, create, 0, NULL);
+  handle = CreateFile(buf, access, FILE_SHARE_READ | FILE_SHARE_WRITE, NULL, create, 0, NULL);
 
   if (handle == INVALID_HANDLE_VALUE)
     {
