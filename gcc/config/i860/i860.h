@@ -77,7 +77,7 @@ extern int target_flags;
 /* For the i860 this goes with BYTES_BIG_ENDIAN.  */
 #define WORDS_BIG_ENDIAN 0
 
-/* number of bits in an addressible storage unit */
+/* number of bits in an addressable storage unit */
 #define BITS_PER_UNIT 8
 
 /* Width in bits of a "word", which is the contents of a machine register.
@@ -117,9 +117,9 @@ extern int target_flags;
    boundaries.  */
 #define BIGGEST_ALIGNMENT 128
 
-/* Define this if move instructions will actually fail to work
+/* Set this nonzero if move instructions will actually fail to work
    when given unaligned data.  */
-#define STRICT_ALIGNMENT
+#define STRICT_ALIGNMENT 1
 
 /* If bit field type is int, dont let it cross an int,
    and give entire struct the alignment of an int.  */
@@ -1207,7 +1207,7 @@ struct cumulative_args { int ints, floats; };
 	`H'	The operand is a numeric constant, a constant address, or
 		a memory ref to a constant address.  Print the correct
 		notation to yield the high part of the given value or
-		address or the high part of the address of the refered
+		address or the high part of the address of the referred
 		to memory object.
 
 	`h'	The operand is a numeric constant, a constant address, or
@@ -1347,7 +1347,7 @@ extern unsigned long sfmode_constant_to_ulong ();
    libgcc1.c routines in such a way that they know the actual types
    of their formal arguments and the actual types of their return
    values.  Otherwise, gcc will generate calls to the libgcc1.c
-   routines, passing argumenst in in the floating-point registers,
+   routines, passing arguments in the floating-point registers,
    but the libgcc1.c routines will expect their arguments on the
    stack (where the i860 calling conventions require structs &
    unions to be passed).  */
@@ -1361,7 +1361,7 @@ extern unsigned long sfmode_constant_to_ulong ();
 /* Optionally define this if you have added predicates to
    `MACHINE.c'.  This macro is called within an initializer of an
    array of structures.  The first field in the structure is the
-   name of a predicate and the second field is an arrary of rtl
+   name of a predicate and the second field is an array of rtl
    codes.  For each predicate, list all rtl codes that can be in
    expressions matched by the predicate.  The list should have a
    trailing comma.  Here is an example of two entries in the list

@@ -82,7 +82,7 @@ extern int target_flags;
 #define TARGET_SKY (target_flags & 0200)
 
 /* Optimize for 68040.
-   The 68040 will execute all 68030 and 68881/2 instrcutions, but some
+   The 68040 will execute all 68030 and 68881/2 instructions, but some
    of them must be emulated in software by the OS.  When TARGET_68040 is
    turned on, these instructions won't be used.  This code will still
    run on a 68030 and 68881/2. */
@@ -158,7 +158,7 @@ extern int target_flags;
    So let's be consistent.  */
 #define WORDS_BIG_ENDIAN 1
 
-/* number of bits in an addressible storage unit */
+/* number of bits in an addressable storage unit */
 #define BITS_PER_UNIT 8
 
 /* Width in bits of a "word", which is the contents of a machine register.
@@ -189,9 +189,9 @@ extern int target_flags;
 /* No data type wants to be aligned rounder than this.  */
 #define BIGGEST_ALIGNMENT 16
 
-/* Define this if move instructions will actually fail to work
+/* Set this nonzero if move instructions will actually fail to work
    when given unaligned data.  */
-#define STRICT_ALIGNMENT
+#define STRICT_ALIGNMENT 1
 
 #define SELECT_RTX_SECTION(MODE, X)					\
 {									\
@@ -1254,11 +1254,6 @@ __transfer_from_trampoline ()					\
 /* Nonzero if access to memory by bytes is slow and undesirable.  */
 #define SLOW_BYTE_ACCESS 0
 
-/* Define if shifts truncate the shift count
-   which implies one can omit a sign-extension or zero-extension
-   of a shift count.  */
-#define SHIFT_COUNT_TRUNCATED
-
 /* Value is 1 if truncating an integer of INPREC bits to OUTPREC bits
    is done just by pretending it is already truncated.  */
 #define TRULY_NOOP_TRUNCATION(OUTPREC, INPREC) 1
@@ -1328,6 +1323,9 @@ __transfer_from_trampoline ()					\
   case LSHIFTRT:						\
     /* A shift by a big integer takes an extra instruction.  */ \
     if (GET_CODE (XEXP (X, 1)) == CONST_INT			\
+	&& (INTVAL (XEXP (X, 1)) == 16))			\
+      return COSTS_N_INSNS (2);	 /* clrw;swap */		\
+    if (GET_CODE (XEXP (X, 1)) == CONST_INT			\
 	&& !(INTVAL (XEXP (X, 1)) > 0				\
 	     && INTVAL (XEXP (X, 1)) <= 8))			\
       return COSTS_N_INSNS (3);	 /* lsr #i,dn */		\
@@ -1335,7 +1333,17 @@ __transfer_from_trampoline ()					\
   case MULT:							\
     if (GET_CODE (XEXP (x, 1)) == CONST_INT			\
 	&& exact_log2 (INTVAL (XEXP (x, 1))) >= 0)		\
-      total = 2;						\
+      {								\
+	/* A shift by a big integer takes an extra instruction.  */ \
+	if (GET_CODE (XEXP (X, 1)) == CONST_INT			\
+	    && (INTVAL (XEXP (X, 1)) == (1 << 16)))		\
+	  return COSTS_N_INSNS (2);	 /* clrw;swap */	\
+	if (GET_CODE (XEXP (X, 1)) == CONST_INT			\
+	    && !(INTVAL (XEXP (X, 1)) > 1			\
+		 && INTVAL (XEXP (X, 1)) <= 256))		\
+	  return COSTS_N_INSNS (3);	 /* lsr #i,dn */	\
+	break;							\
+      }								\
     else if (GET_MODE (X) == QImode || GET_MODE (X) == HImode)	\
       return COSTS_N_INSNS (8); /* mul.w */			\
     else							\
@@ -1565,11 +1573,11 @@ do { union { float f; long l;} tem;			\
    that says to advance the location counter
    to a multiple of 2**LOG bytes.  */
 
+/* We don't have a way to align to more than a two-byte boundary, so do the
+   best we can and don't complain.  */
 #define ASM_OUTPUT_ALIGN(FILE,LOG)	\
-  if ((LOG) == 1)			\
-    fprintf (FILE, "\t.even\n");	\
-  else if ((LOG) != 0)			\
-    abort ();
+  if ((LOG) >= 1)			\
+    fprintf (FILE, "\t.even\n");
 
 #define ASM_OUTPUT_SKIP(FILE,SIZE)  \
   fprintf (FILE, "\t.skip %u\n", (SIZE))

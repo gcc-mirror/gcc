@@ -56,6 +56,8 @@
 			    (match_operand 2 "arith_double_operand" ""))
 		       (const_int 1) (const_int 3))
 
+	 (eq_attr "type" "multi") (const_int 2)
+
 	 (eq_attr "type" "move,unary")
 	 (if_then_else (ior (match_operand 1 "arith_operand" "")
 			    (match_operand 1 "arith_double_operand" ""))
@@ -451,8 +453,7 @@
    (clobber (reg:CC 0))]
   ""
   "subcc %%g0,%1,%%g0\;addx %2,-1,%0"
-  [(set_attr "type" "unary")
-   (set_attr "length" "2")])
+  [(set_attr "length" "2")])
 
 ;; We can also do GEU and LTU directly, but these operate after a
 ;; compare.
@@ -518,8 +519,7 @@
 		 (plus:SI (match_operand:SI 1 "arith_operand" "%r")
 			  (match_operand:SI 2 "arith_operand" "rI"))))]
   ""
-  "addx %1,%2,%0"
-  [(set_attr "type" "binary")])
+  "addx %1,%2,%0")
 
 (define_insn ""
   [(set (match_operand:SI 0 "register_operand" "=r")
@@ -536,8 +536,7 @@
 			    (match_operand:SI 2 "arith_operand" "rI"))
 		  (ltu:SI (reg:CC 0) (const_int 0))))]
   ""
-  "subx %1,%2,%0"
-  [(set_attr "type" "binary")])
+  "subx %1,%2,%0")
 
 (define_insn ""
   [(set (match_operand:SI 0 "register_operand" "=r")
@@ -545,8 +544,7 @@
 		  (plus:SI (ltu:SI (reg:CC 0) (const_int 0))
 			   (match_operand:SI 2 "arith_operand" "rI"))))]
   ""
-  "subx %1,%2,%0"
-  [(set_attr "type" "binary")])
+  "subx %1,%2,%0")
 
 (define_insn ""
   [(set (match_operand:SI 0 "register_operand" "=r")
@@ -572,7 +570,8 @@
 	(match_operator:SI 1 "normal_comp_operator" [(reg 0) (const_int 0)]))]
   ""
   "* return output_scc_insn (operands, insn); "
-  [(set_attr "type" "multi")])
+  [(set_attr "type" "multi")
+   (set_attr "length" "3")])
 
 ;; These control RTL generation for conditional jump insns
 
@@ -734,7 +733,7 @@
 ;; subreg sets.
 
 ;; We cannot combine the similar 'r' and 'f' constraints, because it causes
-;; problems with register allocation.  Reload might try to put an interger
+;; problems with register allocation.  Reload might try to put an integer
 ;; in an fp register, or an fp number is an integer register.
 
 (define_insn ""
@@ -751,8 +750,8 @@
    st %r1,%0
    st %r1,%0
    st %r1,[%%fp-4]\;ld [%%fp-4],%0"
-  [(set_attr "type" "move,move,load,load,store,store,misc")
-   (set_attr "length" "*,1,*,*,*,*,2")])
+  [(set_attr "type" "move,move,load,load,store,store,multi")
+   (set_attr "length" "*,1,*,*,*,*,*")])
 
 ;; Special pic pattern, for loading the address of a label into a register.
 ;; It clobbers o7 because the call puts the return address (i.e. pc value)
@@ -803,6 +802,16 @@
   [(set_attr "type" "move")
    (set_attr "length" "2")])
 
+;; For PIC, symbol_refs are put inside unspec so that the optimizer won't
+;; confuse them with real addresses.
+(define_insn ""
+  [(set (match_operand:SI 0 "register_operand" "=r")
+	(high:SI (unspec:SI [(match_operand 1 "" "")] 0)))]
+  "check_pic (1)"
+  "sethi %%hi(%a1),%0"
+  [(set_attr "type" "move")
+   (set_attr "length" "1")])
+
 (define_insn ""
   [(set (match_operand:SI 0 "register_operand" "=r")
 	(high:SI (match_operand 1 "" "")))]
@@ -832,6 +841,18 @@
     operands[2] = gen_rtx (CONST_INT, VOIDmode, CONST_DOUBLE_LOW (operands[2]));
   return \"or %R1,%%lo(%a2),%R0\";
 }"
+  ;; Need to set length for this arith insn because operand2
+  ;; is not an "arith_operand".
+  [(set_attr "length" "1")])
+
+;; For PIC, symbol_refs are put inside unspec so that the optimizer won't
+;; confuse them with real addresses.
+(define_insn ""
+  [(set (match_operand:SI 0 "register_operand" "=r")
+	(lo_sum:SI (match_operand:SI 1 "register_operand" "r")
+		   (unspec:SI [(match_operand:SI 2 "immediate_operand" "in")] 0)))]
+  ""
+  "or %1,%%lo(%a2),%0"
   ;; Need to set length for this arith insn because operand2
   ;; is not an "arith_operand".
   [(set_attr "length" "1")])
@@ -944,7 +965,7 @@
 (define_expand "movstrsi"
   [(parallel [(set (mem:BLK (match_operand:BLK 0 "general_operand" ""))
 		   (mem:BLK (match_operand:BLK 1 "general_operand" "")))
-	      (use (match_operand:SI 2 "arith32_operand" ""))
+	      (use (match_operand:SI 2 "nonmemory_operand" ""))
 	      (use (match_operand:SI 3 "immediate_operand" ""))
 	      (clobber (match_dup 0))
 	      (clobber (match_dup 1))
@@ -967,7 +988,7 @@
 (define_insn ""
   [(set (mem:BLK (match_operand:SI 0 "register_operand" "r"))
 	(mem:BLK (match_operand:SI 1 "register_operand" "r")))
-   (use (match_operand:SI 2 "arith32_operand" "rn"))
+   (use (match_operand:SI 2 "nonmemory_operand" "rn"))
    (use (match_operand:SI 3 "immediate_operand" "i"))
    (clobber (match_dup 0))
    (clobber (match_dup 1))
@@ -976,7 +997,8 @@
    (clobber (reg:SI 1))]
   ""
   "* return output_block_move (operands);"
-  [(set_attr "type" "multi")])
+  [(set_attr "type" "multi")
+   (set_attr "length" "6")])
 
 ;; Floating point move insns
 
@@ -1071,7 +1093,7 @@
     return output_fp_move_double (operands);
   return output_move_double (operands);
 }"
-  [(set_attr "type" "move,store,load,misc,multi,fp,fpload,multi,fpstore")
+  [(set_attr "type" "move,store,load,multi,multi,fp,fpload,multi,fpstore")
    (set_attr "length" "2,3,3,3,3,2,3,3,3")])
 
 ;; Floating-point move insns.
@@ -1099,8 +1121,7 @@
    ld %1,%0
    st %r1,%0
    st %r1,%0"
-  [(set_attr "type" "fp,move,multi,fpload,load,fpstore,store")
-   (set_attr "length" "*,*,2,*,*,*,*")])
+  [(set_attr "type" "fp,move,multi,fpload,load,fpstore,store")])
 
 (define_insn ""
   [(set (mem:SF (match_operand:SI 0 "symbolic_operand" "i"))
@@ -1277,6 +1298,27 @@
   "ldsb %1,%0"
   [(set_attr "type" "load")])
 
+;; Special pattern for optimizing bit-field compares.  This is needed
+;; because combine uses this as a canonical form.
+
+(define_insn ""
+  [(set (reg:CC 0)
+	(compare:CC
+	 (zero_extract:SI (match_operand:SI 0 "register_operand" "r")
+			  (match_operand:SI 1 "small_int" "n")
+			  (match_operand:SI 2 "small_int" "n"))
+	 (const_int 0)))]
+  "INTVAL (operands[2]) > 19"
+  "*
+{
+  int len = INTVAL (operands[1]);
+  int pos = 32 - INTVAL (operands[2]) - len;
+  unsigned mask = ((1 << len) - 1) << pos;
+
+  operands[1] = gen_rtx (CONST_INT, VOIDmode, mask);
+  return \"andcc %0,%1,%%g0\";
+}")
+
 ;; Conversions between float and double.
 
 (define_insn "extendsfdf2"
@@ -1372,7 +1414,7 @@
 {
   rtx op2 = operands[2];
 
-  /* If constant is postive, upper bits zeroed, otherwise unchanged
+  /* If constant is positive, upper bits zeroed, otherwise unchanged
    * give the assembler a chance to pick the move instruction. */
   if (GET_CODE (op2) == CONST_INT)
     {
@@ -1430,8 +1472,8 @@
 {
   rtx op2 = operands[2];
 
-  /* If constant is postive, upper bits zeroed, otherwise unchanged
-   * give the assembler a chance to pick the move instruction. */
+  /* If constant is positive, upper bits zeroed, otherwise unchanged
+  /* If constant is positive, upper bits zeroed, otherwise unchanged
   if (GET_CODE (op2) == CONST_INT)
     {
       int sign = INTVAL (op2);
@@ -1498,7 +1540,7 @@
 {
   rtx op2 = operands[2];
 
-  /* If constant is postive, upper bits zeroed, otherwise unchanged
+  /* If constant is positive, upper bits zeroed, otherwise unchanged
    * give the assembler a chance to pick the move instruction. */
   if (GET_CODE (op2) == CONST_INT)
     {
@@ -1558,7 +1600,7 @@
 {
   rtx op2 = operands[2];
 
-  /* If constant is postive, upper bits zeroed, otherwise unchanged
+  /* If constant is positive, upper bits zeroed, otherwise unchanged
    * give the assembler a chance to pick the move instruction. */
   if (GET_CODE (op2) == CONST_INT)
     {
@@ -2004,7 +2046,7 @@
 ;; Unconditional and other jump instructions
 ;; Note that for the Sparc, by setting the annul bit on an unconditional
 ;; branch, the following insn is never executed.  This saves us a nop,
-;; but requires a debugger which can handle annuled branches.
+;; but requires a debugger which can handle annulled branches.
 (define_insn "jump"
   [(set (pc) (label_ref (match_operand 0 "" "")))]
   ""
@@ -2263,12 +2305,15 @@
 (define_insn ""
   [(unspec_volatile [(const_int 0)] 0)]
   ""
-  "ta 3")
+  "ta 3"
+  [(set_attr "type" "misc")])
 
 (define_insn ""
   [(unspec_volatile [(const_int 0)] 1)]
   ""
-  "jmp %%o0+0\;restore")
+  "jmp %%o0+0\;restore"
+  [(set_attr "type" "misc")
+   (set_attr "length" "2")])
 
 ;(define_insn "tail_call" ;; tail call
 ;  [(set (pc) (match_operand 0 "memory_operand" "m"))]
@@ -2469,8 +2514,7 @@
 		    (const_int 0)))]
   "rtx_equal_p (operands[2], operands[0])
    || rtx_equal_p (operands[2], operands[1])"
-  "orcc %1,%%g0,%0"
-  [(set_attr "type" "move")])
+  "orcc %1,%%g0,%0")
 
 ;; Do {sign,zero}-extended compares somewhat more efficiently.
 ;; ??? Is this now the Right Way to do this?  Or will SCRATCH
@@ -2604,7 +2648,8 @@
 	(match_operand:SF 0 "register_operand" "f"))
    (return)]
   "! TARGET_EPILOGUE"
-  "ret\;fmovs %0,%%f0")
+  "ret\;fmovs %0,%%f0"
+  [(set_attr "type" "multi")])
 
 ;; Now peepholes to go a call followed by a jump.
 
@@ -2638,8 +2683,7 @@
 	      (clobber (reg:CC 0))])
    (set (reg:CC 0) (compare (match_dup 0) (const_int 0)))]
   ""
-  "subxcc %r1,0,%0"
-  [(set_attr "type" "compare")])
+  "subxcc %r1,0,%0")
 
 ;;- Local variables:
 ;;- mode:emacs-lisp

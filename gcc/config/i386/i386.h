@@ -19,7 +19,7 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 
 
 /* The purpose of this file is to define the characteristics of the i386,
-   independant of assembler syntax or operating system.
+   independent of assembler syntax or operating system.
 
    Three other files build on this one to describe a specific assembler syntax:
    bsd386.h, att386.h, and sun386.h.
@@ -91,7 +91,7 @@ extern int target_flags;
 /* Not true for 80386 */
 #define WORDS_BIG_ENDIAN 0
 
-/* number of bits in an addressible storage unit */
+/* number of bits in an addressable storage unit */
 #define BITS_PER_UNIT 8
 
 /* Width in bits of a "word", which is the contents of a machine register.
@@ -129,9 +129,9 @@ extern int target_flags;
    quantities, but these can be aligned on any 32-bit boundary.  */
 #define BIGGEST_ALIGNMENT 32
 
-/* Define this if move instructions will actually fail to work
+/* Set this non-zero if move instructions will actually fail to work
    when given unaligned data.  */
-/* #define STRICT_ALIGNMENT */
+#define STRICT_ALIGNMENT 0
 
 /* If bit field type is int, don't let it cross an int,
    and give entire struct the alignment of an int.  */
@@ -439,10 +439,12 @@ extern enum reg_class regclass_map[FIRST_PSEUDO_REGISTER];
    0)
 
 /* Similar, but for floating constants, and defining letters G and H.
-   Here VALUE is the CONST_DOUBLE rtx itself.  */
+   Here VALUE is the CONST_DOUBLE rtx itself.  We allow constants even if
+   TARGET_387 isn't set, because the stack register converter may need to
+   load 0.0 into the function value register. */
 
 #define CONST_DOUBLE_OK_FOR_LETTER_P(VALUE, C)  \
-  ((C) == 'G' ? (TARGET_80387 && standard_80387_constant_p (VALUE)) : 0)
+  ((C) == 'G' ? standard_80387_constant_p (VALUE) : 0)
 
 /* Place additional restrictions on the register class to use when it
    is necessary to be able to hold a value of mode @var{mode} in a reload
@@ -992,7 +994,7 @@ do {						\
    differently depending on something about the variable or
    function named by the symbol (such as what section it is in).
 
-   On i386, if using PIC, mark a SYMBOL_REF for a static declaration
+   On i386, if using PIC, mark a SYMBOL_REF for a non-global symbol
    so that we may access it directly in the GOT.  */
 
 #define ENCODE_SECTION_INFO(DECL) \
@@ -1000,9 +1002,11 @@ do									\
   {									\
     if (flag_pic)							\
       {									\
-	rtx decl_rtl = (TREE_CODE_CLASS (TREE_CODE (DECL)) == 'c'	\
-			? TREE_CST_RTL (DECL) : DECL_RTL (DECL));	\
-	SYMBOL_REF_FLAG (XEXP (decl_rtl, 0)) = ! TREE_PUBLIC (DECL);	\
+	rtx rtl = (TREE_CODE_CLASS (TREE_CODE (DECL)) != 'd'		\
+		   ? TREE_CST_RTL (DECL) : DECL_RTL (DECL));		\
+	SYMBOL_REF_FLAG (XEXP (rtl, 0))					\
+	  = (TREE_CODE_CLASS (TREE_CODE (DECL)) != 'd'			\
+	     || ! TREE_PUBLIC (DECL));					\
       }									\
   }									\
 while (0)
@@ -1205,7 +1209,7 @@ to get gcc to use these, since they want the same but different
 number as al, and ax.
 */
 
-/* note the last four are not really qi_registsers, but
+/* note the last four are not really qi_registers, but
    the md will have to never output movb into one of them
    only a movw .  There is no movb into the last four regs */
 

@@ -1150,14 +1150,10 @@ expand_asm_operands (string, outputs, inputs, clobbers, vol, filename, line)
 
       for (tail = clobbers; tail; tail = TREE_CHAIN (tail), i++)
 	{
-	  int j;
 	  char *regname = TREE_STRING_POINTER (TREE_VALUE (tail));
+	  int j = decode_reg_name (regname);
 
-	  for (j = 0; j < FIRST_PSEUDO_REGISTER; j++)
-	    if (!strcmp (regname, reg_names[j]))
-	      break;
-
-	  if (j == FIRST_PSEUDO_REGISTER)
+	  if (j < 0)
 	    {
 	      error ("unknown register name `%s' in `asm'", regname);
 	      return;
@@ -1270,6 +1266,7 @@ warn_if_unused_value (exp)
 
     case NOP_EXPR:
     case CONVERT_EXPR:
+    case NON_LVALUE_EXPR:
       /* Don't warn about values cast to void.  */
       if (TREE_TYPE (exp) == void_type_node)
 	return 0;
@@ -1885,7 +1882,7 @@ expand_end_loop ()
 	  register rtx newstart_label = gen_label_rtx ();
 	  register rtx start_move = start_label;
 
-	  /* If the start label is preceeded by a NOTE_INSN_LOOP_CONT note,
+	  /* If the start label is preceded by a NOTE_INSN_LOOP_CONT note,
 	     then we want to move this note also.  */
 	  if (GET_CODE (PREV_INSN (start_move)) == NOTE
 	      && (NOTE_LINE_NUMBER (PREV_INSN (start_move))
@@ -2498,7 +2495,10 @@ expand_end_bindings (vars, mark_ends, dont_jump_in)
 	  if (arg_pointer_save_area == 0)
 	    arg_pointer_save_area
 	      = assign_stack_local (Pmode, GET_MODE_SIZE (Pmode), 0);
-	  emit_move_insn (virtual_incoming_args_rtx, arg_pointer_save_area);
+	  emit_move_insn (virtual_incoming_args_rtx,
+			  /* We need a pseudo here,
+			     or else instantiate_virtual_regs_1 complains.  */
+			  copy_to_reg (arg_pointer_save_area));
 	}
 #endif
 
@@ -2779,6 +2779,8 @@ void
 expand_decl_init (decl)
      tree decl;
 {
+  int was_used = TREE_USED (decl);
+
   if (TREE_STATIC (decl))
     return;
 
@@ -2799,6 +2801,9 @@ expand_decl_init (decl)
       expand_assignment (decl, DECL_INITIAL (decl), 0, 0);
       emit_queue ();
     }
+
+  /* Don't let the initialization count as "using" the variable.  */
+  TREE_USED (decl) = was_used;
 
   /* Free any temporaries we made while initializing the decl.  */
   free_temp_slots ();
@@ -3546,11 +3551,13 @@ expand_end_case (orig_index)
 #endif
 	       || (unsigned) (TREE_INT_CST_LOW (range)) > 10 * count
 	       || TREE_CODE (index_expr) == INTEGER_CST
-	       /* This will reduce to a constant.  */
+	       /* These will reduce to a constant.  */
 	       || (TREE_CODE (index_expr) == CALL_EXPR
 		   && TREE_CODE (TREE_OPERAND (index_expr, 0)) == ADDR_EXPR
 		   && TREE_CODE (TREE_OPERAND (TREE_OPERAND (index_expr, 0), 0)) == FUNCTION_DECL
-		   && DECL_FUNCTION_CODE (TREE_OPERAND (TREE_OPERAND (index_expr, 0), 0)) == BUILT_IN_CLASSIFY_TYPE))
+		   && DECL_FUNCTION_CODE (TREE_OPERAND (TREE_OPERAND (index_expr, 0), 0)) == BUILT_IN_CLASSIFY_TYPE)
+	       || (TREE_CODE (index_expr) == COMPOUND_EXPR
+		   && TREE_CODE (TREE_OPERAND (index_expr, 1)) == INTEGER_CST))
 	{
 	  index = expand_expr (index_expr, 0, VOIDmode, 0);
 
@@ -3668,14 +3675,16 @@ expand_end_case (orig_index)
 	  if (! win && HAVE_tablejump)
 	    {
 	      index_expr = convert (thiscase->data.case_stmt.nominal_type,
-				    build (MINUS_EXPR, TREE_TYPE (index_expr),
-					   index_expr, minval));
+				    fold (build (MINUS_EXPR,
+						 TREE_TYPE (index_expr),
+						 index_expr, minval)));
 	      index = expand_expr (index_expr, 0, VOIDmode, 0);
 	      emit_queue ();
 	      index = protect_from_queue (index, 0);
 	      do_pending_stack_adjust ();
 
 	      do_tablejump (index,
+			    TYPE_MODE (thiscase->data.case_stmt.nominal_type),
 			    gen_rtx (CONST_INT, VOIDmode,
 				     TREE_INT_CST_LOW (range)),
 			    table_label, default_label);

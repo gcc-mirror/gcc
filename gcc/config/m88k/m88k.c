@@ -47,7 +47,7 @@ extern char *ctime ();
 extern int flag_traditional;
 extern FILE *asm_out_file;
 
-static char out_sccs_id[] = "@(#)m88k.c	2.0.2.1 28 Feb 1992 12:36:54";
+static char out_sccs_id[] = "@(#)m88k.c	2.0.2.2 02 Mar 1992 13:30:28";
 static char tm_sccs_id [] = TM_SCCS_ID;
 
 char *m88k_pound_sign = "";	/* Either # for SVR4 or empty for SVR3 */
@@ -218,7 +218,7 @@ emit_move_sequence (operands, mode)
 	  emit_insn (gen_rtx (SET, VOIDmode, operand0, operand1));
 	  return 1;
 	}
-      if (! reload_in_progress)
+      if (! reload_in_progress && ! reload_completed)
 	{
 	  operands[0] = validize_mem (operand0);
 	  operands[1] = operand1 = force_reg (mode, operand1);
@@ -231,7 +231,8 @@ emit_move_sequence (operands, mode)
 	if (GET_CODE (operand1) != CONST_INT
 	    && GET_CODE (operand1) != CONST_DOUBLE)
 	  {
-	    rtx temp = reload_in_progress ? operand0 : gen_reg_rtx (Pmode);
+	    rtx temp = ((reload_in_progress || reload_completed)
+			? operand0 : gen_reg_rtx (Pmode));
 	    operands[1] = legitimize_address (flag_pic
 					      && symbolic_address_p (operand1),
 					      operand1, temp);
@@ -696,7 +697,7 @@ output_xor (operands)
 
 /* Output a call.  Normally this is just bsr or jsr, but this also deals with
    accomplishing a branch after the call by incrementing r1.  This requires
-   that various assembler bugs be accomodated.  The 4.30 DG/UX assembler
+   that various assembler bugs be accommodated.  The 4.30 DG/UX assembler
    requires that forward references not occur when computing the difference of
    two labels.  The [version?] Motorola assembler computes a word difference.
    No doubt there's more to come!
@@ -819,7 +820,7 @@ output_short_branch_defs (stream)
 
 /* Report errors on floating point, if we are given NaN's, or such.  Leave
    the number as is, though, since we output the number in hex, and the
-   assemble won't choak on it.  */
+   assembler won't choke on it.  */
 
 void
 check_float_value (mode, value)
@@ -1884,7 +1885,7 @@ m88k_output_epilogue (stream, size)
      int size;
 {
   rtx insn = get_last_insn ();
-#if (MONITOR_GCC & 0x4) /* What are interesting prologue/epiloge values?  */
+#if (MONITOR_GCC & 0x4) /* What are interesting prologue/epilogue values?  */
   fprintf (stream, "; size = %d, m88k_fp_offset = %d, m88k_stack_size = %d\n",
 	   size, m88k_fp_offset, m88k_stack_size);
 #endif
@@ -2727,7 +2728,7 @@ print_operand (file, x, code)
       fputs (reg_names[REGNO (x) + 1], file);
       return;
 
-    case 'r': /* an immediate 0 should be repesented as `r0' */
+    case 'r': /* an immediate 0 should be represented as `r0' */
       if (x == const0_rtx)
 	{
 	  fputs (reg_names[0], file);

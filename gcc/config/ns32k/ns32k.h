@@ -119,7 +119,7 @@ extern int target_flags;
    numbered. This is not true on the ns32k.  */
 #define WORDS_BIG_ENDIAN 0
 
-/* Number of bits in an addressible storage unit */
+/* Number of bits in an addressable storage unit */
 #define BITS_PER_UNIT 8
 
 /* Width in bits of a "word", which is the contents of a machine register.
@@ -711,10 +711,8 @@ __transfer_from_trampoline ()		\
   asm ("___trampoline:");		\
   asm ("movd 16(r2),tos");		\
   asm ("movd 12(r2),r2");		\
-  asm ("ret");				\
+  asm ("ret 0");			\
 }
-
-
 
 /* Addressing modes, and classification of registers for them.  */
 

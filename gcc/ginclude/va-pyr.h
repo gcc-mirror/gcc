@@ -9,7 +9,7 @@
  * C compiler.
  * As such, it depends strongly on the Pyramid conventions for
  * parameter passing.ct and indepenent implementation. 
- * These (somewhat bizarre) paramter-passing conventions are described
+ * These (somewhat bizarre) parameter-passing conventions are described
  * in the ``OSx Operating System Porting Guide''.
  * 
  * A quick summary is useful:
@@ -89,9 +89,12 @@ typedef __va_buf va_list;
    &(_AP.__pr0), (void*)&__builtin_va_alist, (void*)0,			\
         __va0,__va1,__va2,__va3,__va4,__va5,				\
 	__va6,__va7,__va8,__va9,__va10,__va11})
- 
-  
-	 
+
+
+/* Avoid errors if compiling GCC v2 with GCC v1.  */
+#if __GNUC__ == 1
+#define __extension__
+#endif
 
 #define va_arg(_AP, _MODE)	\
 __extension__								\

@@ -2168,7 +2168,7 @@ build_type_variant (type, constp, volatilep)
   constp = !!constp;
   volatilep = !!volatilep;
 
-  /* If not generating auxilliary info, search the chain of variants to see
+  /* If not generating auxiliary info, search the chain of variants to see
      if there is already one there just like the one we need to have.  If so,
      use that existing one.
 
@@ -2189,6 +2189,31 @@ build_type_variant (type, constp, volatilep)
   t = copy_node (type);
   TYPE_READONLY (t) = constp;
   TYPE_VOLATILE (t) = volatilep;
+  TYPE_POINTER_TO (t) = 0;
+  TYPE_REFERENCE_TO (t) = 0;
+
+  /* Add this type to the chain of variants of TYPE.  */
+  TYPE_NEXT_VARIANT (t) = TYPE_NEXT_VARIANT (m);
+  TYPE_NEXT_VARIANT (m) = t;
+
+  current_obstack = ambient_obstack;
+  return t;
+}
+
+/* Create a new variant of TYPE, equivalent but distinct.
+   This is so the caller can modify it.  */
+
+tree
+build_type_copy (type)
+     tree type;
+{
+  register tree t, m = TYPE_MAIN_VARIANT (type);
+  register struct obstack *ambient_obstack = current_obstack;
+
+  current_obstack
+    = TREE_PERMANENT (type) ? &permanent_obstack : saveable_obstack;
+
+  t = copy_node (type);
   TYPE_POINTER_TO (t) = 0;
   TYPE_REFERENCE_TO (t) = 0;
 

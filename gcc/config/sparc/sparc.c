@@ -406,17 +406,6 @@ arith_operand (op, mode)
 	  || (GET_CODE (op) == CONST_INT && SMALL_INT (op)));
 }
 
-/* Return truth value of whether OP can be used as an operand in a two
-   address arithmetic insn (such as set 123456,%o4) of mode MODE.  */
-
-int
-arith32_operand (op, mode)
-     rtx op;
-     enum machine_mode mode;
-{
-  return (register_operand (op, mode) || GET_CODE (op) == CONST_INT);
-}
-
 /* Return truth value of whether OP is a register or a CONST_DOUBLE.  */
 
 int
@@ -634,10 +623,20 @@ legitimize_pic_address (orig, mode, reg, scratch)
 	  rtx temp_reg = ((reload_in_progress || reload_completed)
 			  ? reg : gen_reg_rtx (Pmode));
 
+	  /* Must put the SYMBOL_REF inside an UNSPEC here so that cse
+	     won't get confused into thinking that these two instructions
+	     are loading in the true address of the symbol.  If in the
+	     future a PIC rtx exists, that should be used instead.  */
 	  emit_insn (gen_rtx (SET, VOIDmode, temp_reg,
-			      gen_rtx (HIGH, Pmode, orig)));
+			      gen_rtx (HIGH, Pmode,
+				       gen_rtx (UNSPEC, Pmode,
+						gen_rtvec (1, orig),
+						0))));
 	  emit_insn (gen_rtx (SET, VOIDmode, temp_reg,
-			      gen_rtx (LO_SUM, Pmode, temp_reg, orig)));
+			      gen_rtx (LO_SUM, Pmode, temp_reg,
+				       gen_rtx (UNSPEC, Pmode,
+						gen_rtvec (1, orig),
+						0))));
 	  address = temp_reg;
 	}
       else
@@ -1548,7 +1547,7 @@ output_block_move (operands)
      here.
 
      The SUN assembler complains about labels in branch delay slots, so we
-     do this before outputing the load address, so that there will always
+     do this before outputting the load address, so that there will always
      be a harmless insn between the branch here and the next label emitted
      below.  */
 
@@ -2048,7 +2047,7 @@ output_cbranch (op, label, reversed, annul, noop)
   enum machine_mode mode = GET_MODE (XEXP (op, 0));
   static char labelno[] = " %lX";
 
-  /* ??? FP branches can not be preceeded by another floating point insn.
+  /* ??? FP branches can not be preceded by another floating point insn.
      Because there is currently no concept of pre-delay slots, we can fix
      this only by always emitting a nop before a floating point branch.  */
 
@@ -2284,22 +2283,29 @@ output_arc_profiler (arcno, insert_after)
 	       gen_rtx (PLUS, Pmode, profiler_label,
 			gen_rtx (CONST_INT, VOIDmode, 4 * arcno)));
   register rtx profiler_reg = gen_reg_rtx (SImode);
-  register rtx temp = gen_reg_rtx (Pmode);
-  register rtx profiler_target = gen_rtx (MEM, SImode,
-					  gen_rtx (LO_SUM, Pmode, temp,
-						   profiler_target_addr));
-  /* The insns are emitted from last to first after the insn insert_after.
-     Emit_insn_after is used because sometimes we want to put the
-     instrumentation code after the last insn of the function.  */
-  emit_insn_after (gen_rtx (SET, VOIDmode, profiler_target, profiler_reg),
-		   insert_after);
-  emit_insn_after (gen_rtx (SET, VOIDmode, profiler_reg,
-			    gen_rtx (PLUS, SImode, profiler_reg, const1_rtx)),
-		   insert_after);
-  emit_insn_after (gen_rtx (SET, VOIDmode, profiler_reg, profiler_target),
-		   insert_after);
-  emit_insn_after (gen_rtx (SET, VOIDmode, temp,
-			    gen_rtx (HIGH, Pmode, profiler_target_addr)),
+  register rtx address_reg = gen_reg_rtx (Pmode);
+  rtx mem_ref;
+
+  insert_after = emit_insn_after (gen_rtx (SET, VOIDmode, address_reg,
+					   gen_rtx (HIGH, Pmode,
+						    profiler_target_addr)),
+				  insert_after);
+
+  mem_ref = gen_rtx (MEM, SImode, gen_rtx (LO_SUM, Pmode, address_reg,
+					   profiler_target_addr));
+  insert_after = emit_insn_after (gen_rtx (SET, VOIDmode, profiler_reg,
+					   mem_ref),
+				  insert_after);
+
+  insert_after = emit_insn_after (gen_rtx (SET, VOIDmode, profiler_reg,
+					   gen_rtx (PLUS, SImode, profiler_reg,
+						    const1_rtx)),
+				  insert_after);
+
+  /* This is the same rtx as above, but it is not legal to share this rtx.  */
+  mem_ref = gen_rtx (MEM, SImode, gen_rtx (LO_SUM, Pmode, address_reg,
+					   profiler_target_addr));
+  emit_insn_after (gen_rtx (SET, VOIDmode, mem_ref, profiler_reg),
 		   insert_after);
 }
 

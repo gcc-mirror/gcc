@@ -38,6 +38,10 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 
 #include "obstack.h"
 
+#ifdef XCOFF_DEBUGGING_INFO
+#include "xcoff.h"
+#endif
+
 #ifndef ASM_STABS_OP
 #define ASM_STABS_OP ".stabs"
 #endif
@@ -189,10 +193,25 @@ make_function_rtl (decl)
   function_defined = 1;
 }
 
+/* Given NAME, a putative register name, discard any customary prefixes.  */
+
+static char *
+strip_reg_name (name)
+     char *name;
+{
+#ifdef REGISTER_PREFIX
+  if (!strncmp (name, REGISTER_PREFIX, strlen (REGISTER_PREFIX)))
+    name += strlen (REGISTER_PREFIX);
+#endif
+  if (name[0] == '%' || name[0] == '#')
+    name++;
+  return name;
+}
+
 /* Decode an `asm' spec for a declaration as a register name.
    Return the register number, or -1 if nothing specified,
-   or -2 if the name is not a register.  Accept an exact spelling,
-   a decimal number, or an optional prefix of '%' or '#'.  */
+   or -2 if the name is not a register.  Accept an exact spelling or
+   a decimal number.  Prefixes such as % are optional.  */
 
 int
 decode_reg_name (asmspec)
@@ -202,6 +221,9 @@ decode_reg_name (asmspec)
     {
       int i;
 
+      /* Get rid of confusing prefixes.  */
+      asmspec = strip_reg_name (asmspec);
+	
       /* Allow a decimal number as a "register name".  */
       for (i = strlen (asmspec) - 1; i >= 0; i--)
 	if (! (asmspec[i] >= '0' && asmspec[i] <= '9'))
@@ -216,13 +238,9 @@ decode_reg_name (asmspec)
 	}
 
       for (i = 0; i < FIRST_PSEUDO_REGISTER; i++)
-	if (reg_names[i][0] && ! strcmp (asmspec, reg_names[i]))
+	if (reg_names[i][0]
+	    && ! strcmp (asmspec, strip_reg_name (reg_names[i])))
 	  return i;
-
-      if (asmspec[0] == '%' || asmspec[0] == '#')
-	for (i = 0; i < FIRST_PSEUDO_REGISTER; i++)
-	  if (reg_names[i][0] && ! strcmp (asmspec + 1, reg_names[i]))
-	    return i;
 
 #ifdef ADDITIONAL_REGISTER_NAMES
       {
@@ -232,11 +250,6 @@ decode_reg_name (asmspec)
 	for (i = 0; i < sizeof (table) / sizeof (table[0]); i++)
 	  if (! strcmp (asmspec, table[i].name))
 	    return table[i].number;
-
-	if (asmspec[0] == '%' || asmspec[0] == '#')
-	  for (i = 0; i < sizeof (table) / sizeof (table[0]); i++)
-	    if (! strcmp (asmspec + 1, table[i].name))
-	      return table[i].number;
       }
 #endif /* ADDITIONAL_REGISTER_NAMES */
 
@@ -657,9 +670,10 @@ assemble_variable (decl, top_level, at_end)
 	return;
       TREE_ASM_WRITTEN (decl) = 1;
 
-#ifdef DBX_DEBUGGING_INFO
+#if defined (DBX_DEBUGGING_INFO) || defined (XCOFF_DEBUGGING_INFO)
       /* File-scope global variables are output here.  */
-      if (write_symbols == DBX_DEBUG && top_level)
+      if ((write_symbols == DBX_DEBUG || write_symbols == XCOFF_DEBUG)
+	  && top_level)
 	dbxout_symbol (decl, 0);
 #endif
 #ifdef SDB_DEBUGGING_INFO
@@ -746,7 +760,7 @@ assemble_variable (decl, top_level, at_end)
      Error message was already made.  */
 
   if (TREE_CODE (DECL_SIZE (decl)) != INTEGER_CST)
-    return;
+    goto finish;
 
   app_disable ();
 
@@ -757,7 +771,7 @@ assemble_variable (decl, top_level, at_end)
   if (TREE_INT_CST_HIGH (size_tree) != 0)
     {
       error_with_decl (decl, "size of variable `%s' is too large");
-      return;
+      goto finish;
     }
 
   name = XSTR (XEXP (DECL_RTL (decl), 0), 0);
@@ -816,7 +830,7 @@ assemble_variable (decl, top_level, at_end)
 	    ASM_OUTPUT_LOCAL (asm_out_file, name, size, rounded);
 #endif
 	}
-      return;
+      goto finish;
     }
 
   /* Handle initialized definitions.  */
@@ -907,6 +921,22 @@ assemble_variable (decl, top_level, at_end)
   else
     /* Leave space for it.  */
     assemble_zeros (int_size_in_bytes (TREE_TYPE (decl)));
+
+ finish:
+#ifdef XCOFF_DEBUGGING_INFO
+  /* Unfortunately, the IBM assembler cannot handle stabx before the actual
+     declaration.  When something like ".stabx  "aa:S-2",aa,133,0" is emitted 
+     and `aa' hasn't been output yet, the assembler generates a stab entry with
+     a value of zero, in addition to creating an unnecessary external entry
+     for `aa'.  Hence, we must pospone dbxout_symbol to here at the end.  */
+
+  /* File-scope global variables are output here.  */
+  if (write_symbols == XCOFF_DEBUG && top_level)
+    dbxout_symbol (decl, 0);
+#else
+  /* There must be a statement after a label.  */
+  ;
+#endif
 }
 
 /* Output something to declare an external symbol to the assembler.
@@ -2703,7 +2733,7 @@ output_constructor (exp, size)
 	     separate bytes, and combine each byte with previous or
 	     following bit-fields.  */
 
-	  /* next_offset is the offset n fbits from the begining of
+	  /* next_offset is the offset n fbits from the beginning of
 	     the structure to the next bit of this element to be processed.
 	     end_offset is the offset of the first bit past the end of
 	     this element.  */

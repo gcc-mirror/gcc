@@ -324,12 +324,12 @@ unroll_loop (loop_end, insn_count, loop_start, end_insert_before,
       else if (GET_CODE (last_loop_insn) == JUMP_INSN)
 	{
 #ifdef HAVE_cc0
-	  /* The immediately preceeding insn is a compare which must be
+	  /* The immediately preceding insn is a compare which must be
 	     deleted.  */
 	  delete_insn (last_loop_insn);
 	  delete_insn (PREV_INSN (last_loop_insn));
 #else
-	  /* The immediately preceeding insn may not be the compare, so don't
+	  /* The immediately preceding insn may not be the compare, so don't
 	     delete it.  */
 	  delete_insn (last_loop_insn);
 #endif
@@ -883,11 +883,11 @@ unroll_loop (loop_end, insn_count, loop_start, end_insert_before,
 	  else if (GET_CODE (last_loop_insn) == JUMP_INSN)
 	    {
 #ifdef HAVE_cc0
-	      /* The immediately preceeding insn is a compare which we do not
+	      /* The immediately preceding insn is a compare which we do not
 		 want to copy.  */
 	      copy_end = PREV_INSN (PREV_INSN (last_loop_insn));
 #else
-	      /* The immediately preceeding insn may not be a compare, so we
+	      /* The immediately preceding insn may not be a compare, so we
 		 must copy it.  */
 	      copy_end = PREV_INSN (last_loop_insn);
 #endif
@@ -937,12 +937,12 @@ unroll_loop (loop_end, insn_count, loop_start, end_insert_before,
 	  else
 	    {
 #ifdef HAVE_cc0
-	      /* The immediately preceeding insn is a compare which we do not
+	      /* The immediately preceding insn is a compare which we do not
 		 want to copy.  */
 	      insert_before = PREV_INSN (last_loop_insn);
 	      copy_end = PREV_INSN (insert_before);
 #else
-	      /* The immediately preceeding insn may not be a compare, so we
+	      /* The immediately preceding insn may not be a compare, so we
 		 must copy it.  */
 	      insert_before = last_loop_insn;
 	      copy_end = PREV_INSN (last_loop_insn);
@@ -2053,7 +2053,7 @@ iteration_info (iteration_var, initial_value, increment, loop_start, loop_end)
     {
       if (loop_dump_stream)
 	fprintf (loop_dump_stream,
-		 "Loop unrolling: Iteration var not an interger.\n");
+		 "Loop unrolling: Iteration var not an integer.\n");
       return;
     }
   else if (reg_iv_type[REGNO (iteration_var)] == BASIC_INDUCT)
@@ -2240,7 +2240,7 @@ find_splittable_regs (unroll_type, loop_start, loop_end, end_insert_before,
 	    {
 	      /* If the initial value of the biv is itself (i.e. it is too
 		 complicated for strength_reduce to compute), or is a hard
-		 register, then we must create a new psuedo reg to hold the
+		 register, then we must create a new pseudo reg to hold the
 		 initial value of the biv.  */
 
 	      if (GET_CODE (bl->initial_value) == REG
@@ -2732,6 +2732,11 @@ final_biv_value (bl, loop_start, loop_end)
      rtx loop_start, loop_end;
 {
   rtx increment, tem;
+
+  /* ??? This only works for MODE_INT biv's.  Reject all others for now.  */
+
+  if (GET_MODE_CLASS (bl->biv->mode) != MODE_INT)
+    return 0;
 
   /* The final value for reversed bivs must be calculated differently than
       for ordinary bivs.  In this case, there is already an insn after the

@@ -136,7 +136,7 @@ extern int target_flags;
    since there are no machine instructions for them.  ????? */
 #define WORDS_BIG_ENDIAN 0
 
-/* number of bits in an addressible storage unit */
+/* number of bits in an addressable storage unit */
 #define BITS_PER_UNIT 8
 
 /* Width in bits of a "word", which is the contents of a machine register. */
@@ -167,11 +167,12 @@ extern int target_flags;
 /* This is not necessarily 32 on the Gmicro */
 #define BIGGEST_ALIGNMENT 32
 
-/* Define this if move instructions will actually fail to work
+/* Set this non-zero if move instructions will actually fail to work
    when given unaligned data.  */
-/* Unaligned data is allowed on Gmicro, though the access is slow. */
-/* But now STRICT is defined */
-#define STRICT_ALIGNMENT
+   Unaligned data is allowed on Gmicro, though the access is slow. */
+
+#define STRICT_ALIGNMENT 1
+#define SLOW_UNALIGNED_ACCESS 1
 
 /* Make strings word-aligned so strcpy from constants will be faster.  */
 #define CONSTANT_ALIGNMENT(EXP, ALIGN)  \
@@ -369,7 +370,7 @@ extern enum reg_class regno_reg_class[];
    We do a trick here to modify the effective constraints on the
    machine description; we zorch the constraint letters that aren't
    appropriate for a specific target.  This allows us to guarantee
-   that a specific kind of register will not be used for a given taget
+   that a specific kind of register will not be used for a given target
    without fiddling with the register classes above. */
 
 #define REG_CLASS_FROM_LETTER(C) \
@@ -384,7 +385,7 @@ extern enum reg_class regno_reg_class[];
    Return 1 if VALUE is in the range specified by C.
 
    For the Gmicro, all immediate value optimizations are done 
-   by assember, so no machine dependent definition is necessary ??? */
+   by assembler, so no machine dependent definition is necessary ??? */
 
 /* #define CONST_OK_FOR_LETTER_P(VALUE, C) ((C) == 'I') */
 #define CONST_OK_FOR_LETTER_P(VALUE, C) 0
@@ -402,7 +403,7 @@ extern enum reg_class regno_reg_class[];
    in class CLASS, return the class of reg to actually use.
    In general this is just CLASS; but on some machines
    in some cases it is preferable to use a more restrictive class. */
-/* On the Gmicro series, there is no restricton on GENERAL_REGS,
+/* On the Gmicro series, there is no restriction on GENERAL_REGS,
    so CLASS is returned. I do not know whether I should treat FPU_REGS
    specially or not (at least, m68k does not). */
 
@@ -438,7 +439,7 @@ extern enum reg_class regno_reg_class[];
 
 /* If we generate an insn to push BYTES bytes,
    this says how many the stack pointer really advances by. */
-/* On the Gmicro, sp is decrimented by the exact size of the operand */
+/* On the Gmicro, sp is decremented by the exact size of the operand */
 #define PUSH_ROUNDING(BYTES) (BYTES)
 
 /* Offset of first parameter from the argument pointer register value.  */
@@ -1215,7 +1216,7 @@ extern enum reg_class regno_reg_class[];
 
 #define NOTICE_UPDATE_CC(EXP, INSN) {CC_STATUS_INIT;}
 
-/* The skelton of the next macro is taken from "vax.h".
+/* The skeleton of the next macro is taken from "vax.h".
    FPU-reg manipulation is added.  M.Yuhara */
 /* Now comment out.
 #define NOTICE_UPDATE_CC(EXP, INSN) {	\

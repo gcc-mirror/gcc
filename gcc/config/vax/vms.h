@@ -38,6 +38,15 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 /* ??? __GNU__ is probably obsolete; delete it for 2.1.  */
 #define CPP_PREDEFINES "-Dvax -Dvms -DVMS -D__GNU__ -D__GNUC__=2"
 
+/* These match the definitions used in VAXCRTL, the VMS C run-time library */
+
+#define SIZE_TYPE "unsigned int"
+#define PTRDIFF_TYPE "int"
+#define WCHAR_TYPE	"unsigned int"
+
+/* Use memcpy for structure copying, and so forth.  */
+#define TARGET_MEM_FUNCTIONS
+
 /* Strictly speaking, VMS does not use DBX at all, but the interpreter built
    into gas only speaks straight DBX.  */
 
@@ -172,7 +181,7 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 
 #define NO_DOLLAR_IN_LABEL
 
-/* Add a "const" section.  This is viewed by the assember as being nearly
+/* Add a "const" section.  This is viewed by the assembler as being nearly
    the same as the "data" section, with the only difference being that a
    flag is set for variables declared while in the const section.  This
    flag is used to determine whether or not the read/write bit should be
