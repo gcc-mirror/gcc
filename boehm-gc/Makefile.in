@@ -111,7 +111,7 @@ EXTRA_LTLIBRARIES = libgcjgc.la
 libgcjgc_la_SOURCES = allchblk.c alloc.c blacklst.c checksums.c	\
 gcconfig.h dbg_mlc.c dyn_load.c finalize.c gc.h gc_alloc.h gc_cpp.h \
 gc_hdrs.h gc_mark.h gc_priv.h gc_private.h gc_typed.h headers.c	\
-irix_threads.c linux_threads.c malloc.c mallocx.c mark.c mark_rts.c \
+hpux_irix_threads.c linux_threads.c malloc.c mallocx.c mark.c mark_rts.c \
 misc.c new_hblk.c obj_map.c os_dep.c pcr_interface.c ptr_chck.c	\
 real_malloc.c reclaim.c solaris_pthreads.c solaris_threads.c \
 solaris_threads.h stubborn.c typd_mlc.c version.h weakpointer.h
@@ -199,7 +199,7 @@ CPPFLAGS = @CPPFLAGS@
 LDFLAGS = @LDFLAGS@
 LIBS = @LIBS@
 libgcjgc_la_OBJECTS =  allchblk.lo alloc.lo blacklst.lo checksums.lo \
-dbg_mlc.lo dyn_load.lo finalize.lo headers.lo irix_threads.lo \
+dbg_mlc.lo dyn_load.lo finalize.lo headers.lo hpux_irix_threads.lo \
 linux_threads.lo malloc.lo mallocx.lo mark.lo mark_rts.lo misc.lo \
 new_hblk.lo obj_map.lo os_dep.lo pcr_interface.lo ptr_chck.lo \
 real_malloc.lo reclaim.lo solaris_pthreads.lo solaris_threads.lo \

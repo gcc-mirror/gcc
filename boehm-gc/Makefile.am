@@ -28,7 +28,7 @@ EXTRA_LTLIBRARIES = libgcjgc.la
 libgcjgc_la_SOURCES = allchblk.c alloc.c blacklst.c checksums.c	\
 gcconfig.h dbg_mlc.c dyn_load.c finalize.c gc.h gc_alloc.h gc_cpp.h \
 gc_hdrs.h gc_mark.h gc_priv.h gc_private.h gc_typed.h headers.c	\
-irix_threads.c linux_threads.c malloc.c mallocx.c mark.c mark_rts.c \
+hpux_irix_threads.c linux_threads.c malloc.c mallocx.c mark.c mark_rts.c \
 misc.c new_hblk.c obj_map.c os_dep.c pcr_interface.c ptr_chck.c	\
 real_malloc.c reclaim.c solaris_pthreads.c solaris_threads.c \
 solaris_threads.h stubborn.c typd_mlc.c version.h weakpointer.h
