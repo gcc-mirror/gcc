@@ -1,5 +1,4 @@
-/* java.lang.Throwable -- Reference implementation of root class for
-   all Exceptions and Errors
+/* java.lang.Throwable -- Root class for all Exceptions and Errors
    Copyright (C) 1998, 1999, 2002 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -45,12 +44,6 @@ import java.io.ObjectOutputStream;
 import java.io.ObjectInputStream;
 import java.io.IOException;
 import java.io.OutputStream;
-
-/* Written using "Java Class Libraries", 2nd edition, ISBN 0-201-31002-3
- * "The Java Language Specification", ISBN 0-201-63451-1
- * Status: Sufficient for compiled code, but methods applicable to
- * bytecode not implemented.  JDK 1.1.
- */
 
 /**
  * Throwable is the superclass of all exceptions that can be raised.
@@ -166,7 +159,7 @@ public class Throwable implements Serializable
   public Throwable(String message)
   {
     fillInStackTrace();
-    detailMessage = message;  
+    detailMessage = message;
   }
 
   /**
@@ -373,7 +366,7 @@ public class Throwable implements Serializable
   }
 
   /**
-   * <p>Prints the exception, the detailed message and the stack trace
+   * Prints the exception, the detailed message and the stack trace
    * associated with this Throwable to the given <code>PrintWriter</code>.
    * The actual output written is implemention specific. Use the result of
    * <code>getStackTrace()</code> when more precise information is needed.
@@ -533,7 +526,7 @@ public class Throwable implements Serializable
    * serialization according to the context of the remote call.
    * <p>
    * The contents of the given stacktrace is copied so changes to the
-   * original * array do not change the stack trace elements of this
+   * original array do not change the stack trace elements of this
    * throwable.
    *
    * @param stackTrace the new trace to use
@@ -546,10 +539,11 @@ public class Throwable implements Serializable
     StackTraceElement[] st = new StackTraceElement[i];
 
     while (--i >= 0)
-      if (stackTrace[i] == null)
-	throw new NullPointerException();
-      else
+      {
 	st[i] = stackTrace[i];
+	if (st[i] == null)
+	  throw new NullPointerException("Element " + i + " null");
+      }
 
     this.stackTrace = st;
   }
