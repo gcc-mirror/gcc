@@ -1,3 +1,26 @@
+1999-12-01  Mark Mitchell  <mark@codesourcery.com>
+
+	* cp-tree.h (min_tree_cons): Remove.
+	(scratch_ovl_cons): Likewise.
+	* decl.c (saveable_obstack): Don't declare.
+	(duplicate_decls): Tweak error-message.
+	(initialize_local_var): Explicitly mark the definition as static.
+	(finish_function): Call permanent_allocation, just so
+	that the middle-end sees the obstacks it expects.
+	(mark_cp_function_context): Likewise.
+	* init.c (build_new): Don't use min_tree_cons.
+	* lex.c (permanent_obstack): Don't declare.
+	(current_obstack, saveable_obstack): Likewise.
+	* spew.c (current_obstack, saveable_obstack): Likewise.
+	* tree.c (current_obstack, saveable_obstack): Likewise.
+	(scratch_ovl_cons): Remove.
+	(build_min_nt): Don't mess with obstacks.
+	(build_min): Likewise.
+	(min_tree_cons): Remove
+	* typeck.c (build_component_ref): Don't use scratch_ovl_cons.
+	(build_x_function_call): Likewise.
+	(build_c_cast): Don't use min_tree_cons.
+	
 1999-11-29  Mark Mitchell  <mark@codesourcery.com>
 
 	* pt.c (tsubst_decl): Robustify.

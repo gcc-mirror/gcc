@@ -1999,9 +1999,9 @@ build_new (placement, decl, init, use_global_new)
   if (processing_template_decl)
     {
       if (has_array)
-	t = min_tree_cons (min_tree_cons (NULL_TREE, type, NULL_TREE),
-			   build_min_nt (ARRAY_REF, NULL_TREE, nelts),
-			   NULL_TREE);
+	t = tree_cons (tree_cons (NULL_TREE, type, NULL_TREE),
+		       build_min_nt (ARRAY_REF, NULL_TREE, nelts),
+		       NULL_TREE);
       else
 	t = type;
 	

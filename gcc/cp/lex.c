@@ -51,9 +51,6 @@ Boston, MA 02111-1307, USA.  */
 #define DIR_SEPARATOR '/'
 #endif
 
-extern struct obstack permanent_obstack;
-extern struct obstack *current_obstack, *saveable_obstack;
-
 extern void yyprint PROTO((FILE *, int, YYSTYPE));
 
 static tree get_time_identifier PROTO((const char *));
