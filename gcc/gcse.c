@@ -669,7 +669,7 @@ gcse_main (f, file)
   debug_stderr = stderr;
 
   max_gcse_regno = max_reg_num ();
-  find_basic_blocks (f, max_gcse_regno, file, 0);
+  find_basic_blocks (f, max_gcse_regno, file);
 
   /* Return if there's nothing to do.  */
   if (n_basic_blocks <= 1)

@@ -298,11 +298,10 @@ static void count_reg_references	PROTO ((rtx));
    information to be inaccurate and not suitable for passes like GCSE.  */
 
 void
-find_basic_blocks (f, nregs, file, live_reachable_p)
+find_basic_blocks (f, nregs, file)
      rtx f;
      int nregs;
      FILE *file;
-     int live_reachable_p;
 {
   register rtx insn;
   register int i;
@@ -402,7 +401,7 @@ find_basic_blocks (f, nregs, file, live_reachable_p)
   uid_volatile = (char *) xmalloc (max_uid_for_flow + 1);
   bzero (uid_volatile, max_uid_for_flow + 1);
 
-  find_basic_blocks_1 (f, nonlocal_label_list, live_reachable_p);
+  find_basic_blocks_1 (f, nonlocal_label_list);
 }
 
 /* For communication between find_basic_blocks_1 and its subroutines.  */
@@ -436,9 +435,8 @@ static rtx nonlocal_label_list;
    information to be inaccurate and not suitable for passes like GCSE.  */
 
 static void
-find_basic_blocks_1 (f, nonlocal_labels, live_reachable_p)
+find_basic_blocks_1 (f, nonlocal_labels)
      rtx f, nonlocal_labels;
-     int live_reachable_p;
 {
   register rtx insn;
   register int i;
