@@ -211,7 +211,8 @@ cxx_incomplete_type_diagnostic (value, type, warn_only)
     return;
 
   if (value != 0 && (TREE_CODE (value) == VAR_DECL
-		     || TREE_CODE (value) == PARM_DECL))
+		     || TREE_CODE (value) == PARM_DECL
+		     || TREE_CODE (value) == FIELD_DECL))
     {
       (*p_msg_at) ("`%D' has incomplete type", value);
       decl = 1;
@@ -226,7 +227,10 @@ retry:
     case ENUMERAL_TYPE:
       if (!decl)
         (*p_msg) ("invalid use of undefined type `%#T'", type);
-      (*p_msg_at)  ("forward declaration of `%#T'", type);
+      if (!TYPE_TEMPLATE_INFO (type))
+	(*p_msg_at) ("forward declaration of `%#T'", type);
+      else
+	(*p_msg_at) ("forward declaration of `%#T'", type);
       break;
 
     case VOID_TYPE:
