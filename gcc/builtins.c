@@ -3010,35 +3010,21 @@ builtin_strncpy_read_str (void *data, HOST_WIDE_INT offset,
    if we failed the caller should emit a normal call.  */
 
 static rtx
-expand_builtin_strncpy (tree arglist, rtx target, enum machine_mode mode)
+expand_builtin_strncpy (tree exp, rtx target, enum machine_mode mode)
 {
-  if (!validate_arglist (arglist,
-			 POINTER_TYPE, POINTER_TYPE, INTEGER_TYPE, VOID_TYPE))
-    return 0;
-  else
+  tree arglist = TREE_OPERAND (exp, 1);
+  if (validate_arglist (arglist,
+			POINTER_TYPE, POINTER_TYPE, INTEGER_TYPE, VOID_TYPE))
     {
       tree slen = c_strlen (TREE_VALUE (TREE_CHAIN (arglist)), 1);
       tree len = TREE_VALUE (TREE_CHAIN (TREE_CHAIN (arglist)));
-      tree fn;
+      tree result = fold_builtin_strncpy (exp, slen);
+      
+      if (result)
+	return expand_expr (result, target, mode, EXPAND_NORMAL);
 
-      /* We must be passed a constant len parameter.  */
-      if (TREE_CODE (len) != INTEGER_CST)
-	return 0;
-
-      /* If the len parameter is zero, return the dst parameter.  */
-      if (integer_zerop (len))
-	{
-	  /* Evaluate and ignore the src argument in case it has
-	     side-effects.  */
-	  expand_expr (TREE_VALUE (TREE_CHAIN (arglist)), const0_rtx,
-		       VOIDmode, EXPAND_NORMAL);
-	  /* Return the dst parameter.  */
-	  return expand_expr (TREE_VALUE (arglist), target, mode,
-			      EXPAND_NORMAL);
-	}
-
-      /* Now, we must be passed a constant src ptr parameter.  */
-      if (slen == 0 || TREE_CODE (slen) != INTEGER_CST)
+      /* We must be passed a constant len and src parameter.  */
+      if (!host_integerp (len, 1) || !slen || !host_integerp (slen, 1))
 	return 0;
 
       slen = size_binop (PLUS_EXPR, slen, ssize_int (1));
@@ -3068,14 +3054,8 @@ expand_builtin_strncpy (tree arglist, rtx target, enum machine_mode mode)
 	  dest_mem = convert_memory_address (ptr_mode, dest_mem);
 	  return dest_mem;
 	}
-
-      /* OK transform into builtin memcpy.  */
-      fn = implicit_built_in_decls[BUILT_IN_MEMCPY];
-      if (!fn)
-	return 0;
-      return expand_expr (build_function_call_expr (fn, arglist),
-			  target, mode, EXPAND_NORMAL);
     }
+  return 0;
 }
 
 /* Callback routine for store_by_pieces.  Read GET_MODE_BITSIZE (MODE)
@@ -5391,7 +5371,7 @@ expand_builtin (tree exp, rtx target, rtx subtarget, enum machine_mode mode,
       break;
 
     case BUILT_IN_STRNCPY:
-      target = expand_builtin_strncpy (arglist, target, mode);
+      target = expand_builtin_strncpy (exp, target, mode);
       if (target)
 	return target;
       break;
