@@ -33,6 +33,7 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #include "output.h"
 #include "insn-attr.h"
 #include "flags.h"
+#include "reload.h"
 
 /* The maximum number of insns skipped which will be conditionalised if
    possible.  */
@@ -762,6 +763,23 @@ gen_compare_reg (code, x, y, fp)
   return cc_reg;
 }
 
+arm_reload_out_hi (operands)
+rtx operands[];
+{
+  rtx base = find_replacement (&XEXP (operands[0], 0));
+
+  emit_insn (gen_rtx (SET, VOIDmode,
+                      gen_rtx (MEM, QImode, base),
+                      gen_rtx (SUBREG, QImode, operands[1], 0)));
+  emit_insn (gen_rtx (SET, VOIDmode, operands[2],
+                      gen_rtx (LSHIFTRT, SImode, 
+                               gen_rtx (SUBREG, SImode, operands[1], 0),
+                               GEN_INT (8))));
+  emit_insn (gen_rtx (SET, VOIDmode,
+                      gen_rtx (MEM, QImode,
+                               plus_constant (base, 1)),
+                      gen_rtx (SUBREG, QImode, operands[2], 0)));
+}
 
 /* Check to see if a branch is forwards or backwards.  Return TRUE if it
    is backwards.  */
@@ -850,8 +868,6 @@ char *
 output_call (operands)
 	rtx operands[];
 {
-  operands[0] = XEXP (operands[0], 0);
-
   /* Handle calls to lr using ip (which may be clobbered in subr anyway). */
 
   if (REGNO (operands[0]) == 14)
