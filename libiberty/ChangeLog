@@ -1,3 +1,8 @@
+2002-11-24  Nick Clifton  <nickc@redhat.com>
+
+	* make-relative-prefix.c (make_relative_prefix): Ensure return
+	string is empty before using strcat to construct it.
+
 2002-11-22  Daniel Jacobowitz  <drow@mvista.com>
 
 	* Makefile.in: Add make-relative-prefix.c.
