@@ -1,3 +1,22 @@
+2004-10-25  Ziemowit Laski  <zlaski@apple.com>
+	    David Ayers  <d.ayers@inode.at>
+
+	* objc-act.c (objc_comptypes): Use IS_PROTOCOL_QUALIFIED_UNTYPED
+	instead of IS_PROTOCOL_QUALIFIED_ID; add comparisons for:
+	'Class <Protocol> != id <Protocol>'; 'Class <Protocol> != <class> *';
+	'Class <Protocol> == id' and 'Class <Protocol> == Class'.
+	(objc_is_id): Add test for 'super'.
+	(objc_finish_message_expr): Allow for messaging of 'Class <Proto>'
+	receivers; if class methods are not found in protocol lists, search
+	for instance methods therein and warn if one is found.  Look in
+	global hash tables for suitable method as a last resort when messaging
+	'id <Proto>', 'Class <Proto>' and invalid receiver types.
+	(objc_add_method): Insert instance methods listed in protocols into
+	the global class method hash table.
+	* objc-act.h (IS_PROTOCOL_QUALIFIED_ID): Rename to
+	IS_PROTOCOL_QUALIFIED_UNTYPED and allow for 'Class <Proto>' in
+	addition to 'id <Proto>'.
+
 2004-10-21  Andrew Pinski  <pinskia@physics.uc.edu>
 
 	PR objc/17923

@@ -178,7 +178,7 @@ do {									\
    Objective C, so that the token codes are the same in both.  */
 %token AT_INTERFACE AT_IMPLEMENTATION AT_END AT_SELECTOR AT_DEFS AT_ENCODE
 %token CLASSNAME AT_PUBLIC AT_PRIVATE AT_PROTECTED AT_PROTOCOL
-%token OBJECTNAME AT_CLASS AT_ALIAS
+%token AT_CLASS AT_ALIAS
 %token AT_THROW AT_TRY AT_CATCH AT_FINALLY AT_SYNCHRONIZED
 %token OBJC_STRING
 
@@ -259,7 +259,7 @@ do {									\
 %type <ttype> selectorarg keywordnamelist keywordname objcencodeexpr
 %type <ttype> non_empty_protocolrefs protocolrefs identifier_list objcprotocolexpr
 
-%type <ttype> CLASSNAME OBJECTNAME OBJC_STRING OBJC_TYPE_QUAL
+%type <ttype> CLASSNAME OBJC_STRING OBJC_TYPE_QUAL
 
 %type <ttype> superclass objc_quals objc_qual objc_typename
 %type <itype> objc_try_catch_stmt optellipsis
@@ -472,7 +472,6 @@ identifier:
 	IDENTIFIER
 	| TYPENAME
 @@ifobjc
-	| OBJECTNAME
 	| CLASSNAME
 @@end_ifobjc
 	;
@@ -1281,7 +1280,7 @@ typespec_nonreserved_nonattr:
 	| CLASSNAME protocolrefs
 		{ $$.kind = ctsk_objc;
 		  $$.spec = objc_get_protocol_qualified_type ($1, $2); }
-	| OBJECTNAME protocolrefs
+	| TYPENAME non_empty_protocolrefs
 		{ $$.kind = ctsk_objc;
 		  $$.spec = objc_get_protocol_qualified_type ($1, $2); }
 
@@ -1567,10 +1566,6 @@ after_type_declarator:
 		{ $$ = make_pointer_declarator ($2, $3); }
 	| TYPENAME
 		{ $$ = build_id_declarator ($1); }
-@@ifobjc
-	| OBJECTNAME
-		{ $$ = build_id_declarator ($1); }
-@@end_ifobjc
 	;
 
 /* Kinds of declarator that can appear in a parameter list
@@ -1589,10 +1584,6 @@ parm_declarator_starttypename:
 		{ $$ = set_array_declarator_inner ($2, $1, false); }
 	| TYPENAME
 		{ $$ = build_id_declarator ($1); }
-@@ifobjc
-	| OBJECTNAME
-		{ $$ = build_id_declarator ($1); }
-@@end_ifobjc
 	;
 
 parm_declarator_nostarttypename:
@@ -2884,7 +2875,6 @@ selector:
 	  IDENTIFIER
 	| TYPENAME
 	| CLASSNAME
-	| OBJECTNAME
 	| reservedwords
 	;
 
@@ -3144,7 +3134,6 @@ static const struct resword reswords[] =
   { "while",		RID_WHILE,	0 },
 
 @@ifobjc
-  { "id",		RID_ID,			D_OBJC },
 
   /* These objc keywords are recognized only immediately after
      an '@'.  */
@@ -3287,7 +3276,6 @@ static const short rid_to_yy[RID_MAX] =
   /* RID_STATCAST */	0,
 
   /* Objective C */
-  /* RID_ID */			OBJECTNAME,
   /* RID_AT_ENCODE */		AT_ENCODE,
   /* RID_AT_END */		AT_END,
   /* RID_AT_CLASS */		AT_CLASS,
@@ -3356,15 +3344,6 @@ yylexname (void)
       enum rid rid_code = C_RID_CODE (yylval.ttype);
 
 @@ifobjc
-      /* Turn non-typedefed refs to "id" into plain identifiers; this
-	 allows constructs like "void foo(id id);" to work.  */
-      if (rid_code == RID_ID)
-      {
-	decl = lookup_name (yylval.ttype);
-	if (decl == NULL_TREE || TREE_CODE (decl) != TYPE_DECL)
-	  return IDENTIFIER;
-      }
-
       if (!OBJC_IS_AT_KEYWORD (rid_code)
 	  && (!OBJC_IS_PQ_KEYWORD (rid_code) || objc_pq_context))
 @@end_ifobjc
@@ -3527,7 +3506,6 @@ yyprint (FILE *file, int yychar, YYSTYPE yyl)
     {
     case IDENTIFIER:
     case TYPENAME:
-    case OBJECTNAME:
     case TYPESPEC:
     case TYPE_QUAL:
     case SCSPEC:

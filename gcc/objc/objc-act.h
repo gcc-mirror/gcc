@@ -277,8 +277,8 @@ extern GTY(()) tree objc_global_trees[OCTI_MAX];
   (POINTER_TYPE_P (TYPE) && TREE_TYPE (TYPE) == TREE_TYPE (objc_object_type))
 #define IS_CLASS(TYPE) \
   (POINTER_TYPE_P (TYPE) && TREE_TYPE (TYPE) == TREE_TYPE (objc_class_type))
-#define IS_PROTOCOL_QUALIFIED_ID(TYPE) \
-  (IS_ID (TYPE) && TYPE_PROTOCOL_LIST (TYPE))
+#define IS_PROTOCOL_QUALIFIED_UNTYPED(TYPE) \
+  ((IS_ID (TYPE) || IS_CLASS (TYPE)) && TYPE_PROTOCOL_LIST (TYPE))
 #define IS_SUPER(TYPE) \
   (POINTER_TYPE_P (TYPE) && TREE_TYPE (TYPE) == objc_super_template)
 

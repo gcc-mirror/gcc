@@ -41,7 +41,7 @@ typedef struct
   id one = [self anotherDataSource];
 
   i = i - 1;
-  // Do not issue warning about my_method not implemented by protocol
+  // Do not issue warning about my_method not found in protocol
   return [(one ? [self mainDataSource] : one) my_method:i];
 }
 
