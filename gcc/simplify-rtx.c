@@ -2215,7 +2215,7 @@ simplify_subreg (outermode, op, innermode, byte)
 	 Later it we should move all simplification code here and rewrite
 	 GEN_LOWPART_IF_POSSIBLE, GEN_HIGHPART, OPERAND_SUBWORD and friends
 	 using SIMPLIFY_SUBREG.  */
-      if (subreg_lowpart_parts_p (outermode, innermode, byte))
+      if (subreg_lowpart_offset (outermode, innermode) == byte)
 	{
 	  rtx new = gen_lowpart_if_possible (outermode, op);
 	  if (new)
@@ -2347,11 +2347,23 @@ simplify_subreg (outermode, op, innermode, byte)
      frame, or argument pointer, leave this as a SUBREG.  */
 
   if (REG_P (op)
-      && REGNO (op) < FIRST_PSEUDO_REGISTER
-      && REGNO (op) != FRAME_POINTER_REGNUM
-#if HARD_FRAME_POINTER_REGNUM != FRAME_POINTER_REGNUM
-      && REGNO (op) != HARD_FRAME_POINTER_REGNUM
+      && (! REG_FUNCTION_VALUE_P (op)
+	  || ! rtx_equal_function_value_matters)
+#ifdef CLASS_CANNOT_CHANGE_MODE
+      && ! (CLASS_CANNOT_CHANGE_MODE_P (outermode, innermode)
+	    && GET_MODE_CLASS (innermode) != MODE_COMPLEX_INT
+	    && GET_MODE_CLASS (innermode) != MODE_COMPLEX_FLOAT
+	    && (TEST_HARD_REG_BIT
+		(reg_class_contents[(int) CLASS_CANNOT_CHANGE_MODE],
+		 REGNO (op))))
 #endif
+      && REGNO (op) < FIRST_PSEUDO_REGISTER
+      && ((reload_completed && !frame_pointer_needed)
+	  || (REGNO (op) != FRAME_POINTER_REGNUM
+#if HARD_FRAME_POINTER_REGNUM != FRAME_POINTER_REGNUM
+	      && REGNO (op) != HARD_FRAME_POINTER_REGNUM
+#endif
+	     ))
 #if FRAME_POINTER_REGNUM != ARG_POINTER_REGNUM
       && REGNO (op) != ARG_POINTER_REGNUM
 #endif
@@ -2360,7 +2372,11 @@ simplify_subreg (outermode, op, innermode, byte)
       int final_regno = subreg_hard_regno (gen_rtx_SUBREG (outermode, op, byte),
 					   0);
 
-      if (HARD_REGNO_MODE_OK (final_regno, outermode))
+      /* ??? We do allow it if the current REG is not valid for
+	 its mode.  This is a kludge to work around how float/complex
+	 arguments are passed on 32-bit Sparc and should be fixed.  */
+      if (HARD_REGNO_MODE_OK (final_regno, outermode)
+	  || ! HARD_REGNO_MODE_OK (REGNO (op), innermode))
 	return gen_rtx_REG (outermode, final_regno);
     }
 

@@ -381,22 +381,12 @@ gen_lowpart_SUBREG (mode, reg)
      rtx reg;
 {
   enum machine_mode inmode;
-  int offset;
 
   inmode = GET_MODE (reg);
   if (inmode == VOIDmode)
     inmode = mode;
-  offset = 0;
-  if (GET_MODE_SIZE (mode) < GET_MODE_SIZE (inmode)
-      && (WORDS_BIG_ENDIAN || BYTES_BIG_ENDIAN))
-    {
-      offset = GET_MODE_SIZE (inmode) - GET_MODE_SIZE (mode);
-      if (! BYTES_BIG_ENDIAN)
-	offset = (offset / UNITS_PER_WORD) * UNITS_PER_WORD;
-      else if (! WORDS_BIG_ENDIAN)
-	offset %= UNITS_PER_WORD;
-    }
-  return gen_rtx_SUBREG (mode, reg, offset);
+  return gen_rtx_SUBREG (mode, reg,
+			 subreg_lowpart_offset (mode, inmode));
 }
 
 /* rtx gen_rtx (code, mode, [element1, ..., elementn])
@@ -761,16 +751,7 @@ gen_lowpart_common (mode, x)
 	  > ((xsize + (UNITS_PER_WORD - 1)) / UNITS_PER_WORD)))
     return 0;
 
-  if ((WORDS_BIG_ENDIAN || BYTES_BIG_ENDIAN)
-      && xsize > msize)
-    {
-      int difference = xsize - msize;
-
-      if (WORDS_BIG_ENDIAN)
-	offset += (difference / UNITS_PER_WORD) * UNITS_PER_WORD;
-      if (BYTES_BIG_ENDIAN)
-	offset += difference % UNITS_PER_WORD;
-    }
+  offset = subreg_lowpart_offset (mode, GET_MODE (x));
 
   if ((GET_CODE (x) == ZERO_EXTEND || GET_CODE (x) == SIGN_EXTEND)
       && (GET_MODE_CLASS (mode) == MODE_INT
@@ -791,61 +772,8 @@ gen_lowpart_common (mode, x)
       else if (GET_MODE_SIZE (mode) < GET_MODE_SIZE (GET_MODE (x)))
 	return gen_rtx_fmt_e (GET_CODE (x), mode, XEXP (x, 0));
     }
-  else if (GET_CODE (x) == SUBREG
-	   && (GET_MODE_SIZE (mode) <= UNITS_PER_WORD
-	       || GET_MODE_SIZE (mode) == GET_MODE_UNIT_SIZE (GET_MODE (x))))
-    {
-      int final_offset;
-
-      if (GET_MODE (SUBREG_REG (x)) == mode && subreg_lowpart_p (x))
-	return SUBREG_REG (x);
-
-      /* When working with SUBREGs the rule is that the byte
-	 offset must be a multiple of the SUBREG's mode.  */
-      final_offset = SUBREG_BYTE (x) + offset;
-      final_offset = (final_offset / GET_MODE_SIZE (mode));
-      final_offset = (final_offset * GET_MODE_SIZE (mode));
-      return gen_rtx_SUBREG (mode, SUBREG_REG (x), final_offset);   
-    }
-  else if (GET_CODE (x) == REG)
-    {
-      /* Hard registers are done specially in certain cases.  */  
-      if (REGNO (x) < FIRST_PSEUDO_REGISTER)
-        {
-	  int final_regno = REGNO (x) +
-			    subreg_regno_offset (REGNO (x), GET_MODE (x), 
-						 offset, mode);
-
-	  /* If the final regno is not valid for MODE, punt.  */
-	  /* ??? We do allow it if the current REG is not valid for
-	     ??? it's mode.  It is a kludge to work around how float/complex
-	     ??? arguments are passed on 32-bit Sparc and should be fixed.  */
-	  if (! HARD_REGNO_MODE_OK (final_regno, mode)
-	      && HARD_REGNO_MODE_OK (REGNO (x), GET_MODE (x)))
-	    return 0;
-
-	       /* integrate.c can't handle parts of a return value register. */
-	  if ((! REG_FUNCTION_VALUE_P (x)
-		   || ! rtx_equal_function_value_matters)
-#ifdef CLASS_CANNOT_CHANGE_MODE
-	       && ! (CLASS_CANNOT_CHANGE_MODE_P (mode, GET_MODE (x))
-		     && GET_MODE_CLASS (GET_MODE (x)) != MODE_COMPLEX_INT
-		     && GET_MODE_CLASS (GET_MODE (x)) != MODE_COMPLEX_FLOAT
-		     && (TEST_HARD_REG_BIT
-			 (reg_class_contents[(int) CLASS_CANNOT_CHANGE_MODE],
-			  REGNO (x))))
-#endif
-	       /* We want to keep the stack, frame, and arg pointers
-		  special.  */
-	       && x != frame_pointer_rtx
-#if FRAME_POINTER_REGNUM != ARG_POINTER_REGNUM
-	       && x != arg_pointer_rtx
-#endif
-	       && x != stack_pointer_rtx)
-	    return gen_rtx_REG (mode, final_regno);
-	  }
-      return gen_rtx_SUBREG (mode, x, offset);
-    }
+  else if (GET_CODE (x) == SUBREG || GET_CODE (x) == REG || GET_CODE (x) == CONCAT)
+    return simplify_gen_subreg (mode, x, GET_MODE (x), offset);
   /* If X is a CONST_INT or a CONST_DOUBLE, extract the appropriate bits
      from the low-order part of the constant.  */
   else if ((GET_MODE_CLASS (mode) == MODE_INT
@@ -1088,12 +1016,10 @@ gen_realpart (mode, x)
      enum machine_mode mode;
      register rtx x;
 {
-  if (GET_CODE (x) == CONCAT && GET_MODE (XEXP (x, 0)) == mode)
-    return XEXP (x, 0);
-  else if (WORDS_BIG_ENDIAN
-	   && GET_MODE_BITSIZE (mode) < BITS_PER_WORD
-	   && REG_P (x)
-	   && REGNO (x) < FIRST_PSEUDO_REGISTER)
+  if (WORDS_BIG_ENDIAN
+      && GET_MODE_BITSIZE (mode) < BITS_PER_WORD
+      && REG_P (x)
+      && REGNO (x) < FIRST_PSEUDO_REGISTER)
     internal_error
       ("Can't access real part of complex value in hard register");
   else if (WORDS_BIG_ENDIAN)
@@ -1110,9 +1036,7 @@ gen_imagpart (mode, x)
      enum machine_mode mode;
      register rtx x;
 {
-  if (GET_CODE (x) == CONCAT && GET_MODE (XEXP (x, 0)) == mode)
-    return XEXP (x, 1);
-  else if (WORDS_BIG_ENDIAN)
+  if (WORDS_BIG_ENDIAN)
     return gen_lowpart (mode, x);
   else if (! WORDS_BIG_ENDIAN
 	   && GET_MODE_BITSIZE (mode) < BITS_PER_WORD
@@ -1195,96 +1119,26 @@ gen_highpart (mode, x)
      register rtx x;
 {
   unsigned int msize = GET_MODE_SIZE (mode);
-  unsigned int xsize = GET_MODE_SIZE (GET_MODE (x));
+  rtx result;
 
   /* This case loses if X is a subreg.  To catch bugs early,
      complain if an invalid MODE is used even in other cases.  */
   if (msize > UNITS_PER_WORD
       && msize != GET_MODE_UNIT_SIZE (GET_MODE (x)))
     abort ();
-  if (GET_CODE (x) == CONST_DOUBLE
-#if !(TARGET_FLOAT_FORMAT != HOST_FLOAT_FORMAT || defined (REAL_IS_NOT_DOUBLE))
-      && GET_MODE_CLASS (GET_MODE (x)) != MODE_FLOAT
-#endif
-      )
-    return GEN_INT (CONST_DOUBLE_HIGH (x) & GET_MODE_MASK (mode));
-  else if (GET_CODE (x) == CONST_INT)
-    {
-      if (HOST_BITS_PER_WIDE_INT <= BITS_PER_WORD)
-	return const0_rtx;
-      return GEN_INT (INTVAL (x) >> (HOST_BITS_PER_WIDE_INT - BITS_PER_WORD));
-    }
-  else if (GET_CODE (x) == MEM)
-    {
-      register int offset = 0;
 
-      if (! WORDS_BIG_ENDIAN)
-	offset = (MAX (xsize, UNITS_PER_WORD)
-		  - MAX (msize, UNITS_PER_WORD));
-
-      if (! BYTES_BIG_ENDIAN
-	  && msize < UNITS_PER_WORD)
-	offset -= (msize - MIN (UNITS_PER_WORD, xsize));
-
-      return change_address (x, mode, plus_constant (XEXP (x, 0), offset));
-    }
-  else if (GET_CODE (x) == SUBREG)
-    {
-      /* The only time this should occur is when we are looking at a
-	 multi-word item with a SUBREG whose mode is the same as that of the
-	 item.  It isn't clear what we would do if it wasn't.  */
-      if (SUBREG_BYTE (x) != 0)
-	abort ();
-      return gen_highpart (mode, SUBREG_REG (x));
-    }
-  else if (GET_CODE (x) == REG)
-    {
-      int offset = 0;
-
-      if (GET_MODE_SIZE (GET_MODE (x)) < GET_MODE_SIZE (mode))
-	abort ();
-
-      if ((! WORDS_BIG_ENDIAN || ! BYTES_BIG_ENDIAN)
-	  && xsize > msize)
-	{
-	  int difference = xsize - msize;
-
-	  if (! WORDS_BIG_ENDIAN)
-	    offset += (difference / UNITS_PER_WORD) * UNITS_PER_WORD;
-	  if (! BYTES_BIG_ENDIAN)
-	    offset += difference % UNITS_PER_WORD;
-	}
-      if (REGNO (x) < FIRST_PSEUDO_REGISTER)
-	{
-	  int final_regno = REGNO (x) +
-	    subreg_regno_offset (REGNO (x), GET_MODE (x), offset, mode);
-
-	  /* integrate.c can't handle parts of a return value register.
-	     ??? Then integrate.c should be fixed!
-	     ??? What about CLASS_CANNOT_CHANGE_SIZE?  */
-	  if ((! REG_FUNCTION_VALUE_P (x)
-	       || ! rtx_equal_function_value_matters)
-	  /* We want to keep the stack, frame, and arg pointers special.  */
-	      && x != frame_pointer_rtx
-#if FRAME_POINTER_REGNUM != ARG_POINTER_REGNUM	
-	      && x != arg_pointer_rtx
-#endif
-	      && x != stack_pointer_rtx)
-	    return gen_rtx_REG (mode, final_regno);
-	}
-      /* Just generate a normal SUBREG.  */
-      return gen_rtx_SUBREG (mode, x, offset); 
-    }
-  else
+  result = simplify_gen_subreg (mode, x, GET_MODE (x),
+				subreg_highpart_offset (mode, GET_MODE (x)));
+  if (!result)
     abort ();
+  return result;
 }
-/* Return 1 iff (SUBREG:outermode (OP:innermode) byte)
-   refers to the least significant part of its containing reg.  */
+/* Return offset in bytes to get OUTERMODE low part
+   of the value in mode INNERMODE stored in memory in target format.  */
 
-int
-subreg_lowpart_parts_p (outermode, innermode, byte)
+unsigned int
+subreg_lowpart_offset (outermode, innermode)
      enum machine_mode outermode, innermode;
-     unsigned int byte;
 {
   unsigned int offset = 0;
   int difference = (GET_MODE_SIZE (innermode) - GET_MODE_SIZE (outermode));
@@ -1297,7 +1151,30 @@ subreg_lowpart_parts_p (outermode, innermode, byte)
 	offset += difference % UNITS_PER_WORD;
     }
 
-  return byte == offset;
+  return offset;
+}
+
+/* Return offset in bytes to get OUTERMODE high part
+   of the value in mode INNERMODE stored in memory in target format.  */
+unsigned int
+subreg_highpart_offset (outermode, innermode)
+     enum machine_mode outermode, innermode;
+{
+  unsigned int offset = 0;
+  int difference = (GET_MODE_SIZE (innermode) - GET_MODE_SIZE (outermode));
+
+  if (GET_MODE_SIZE (innermode) < GET_MODE_SIZE (outermode))
+     abort ();
+
+  if (difference > 0)
+    {
+      if (! WORDS_BIG_ENDIAN)
+	offset += (difference / UNITS_PER_WORD) * UNITS_PER_WORD;
+      if (! BYTES_BIG_ENDIAN)
+	offset += difference % UNITS_PER_WORD;
+    }
+
+  return offset;
 }
 
 /* Return 1 iff X, assumed to be a SUBREG,
@@ -1313,8 +1190,8 @@ subreg_lowpart_p (x)
   else if (GET_MODE (SUBREG_REG (x)) == VOIDmode)
     return 0;
 
-  return subreg_lowpart_parts_p (GET_MODE (x), GET_MODE (SUBREG_REG (x)),
-		 		 SUBREG_BYTE (x));
+  return (subreg_lowpart_offset (GET_MODE (x), GET_MODE (SUBREG_REG (x)))
+	  == SUBREG_BYTE (x));
 }
 
 
