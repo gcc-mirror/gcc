@@ -1,3 +1,15 @@
+2003-06-11  Neil Booth  <neil@daikokuya.co.uk>
+
+	* Make-lang.in: Update for option handling.
+	* lang.opt: New.
+	* tree1.c: Include opts.h and t-options.h.
+	(treelang_decode_option): Remove.
+	(treelang_handle_option): New.
+	* treetree.c (LANG_HOOKS_DECODE_OPTION): Remove.
+	(LANG_HOOKS_HANDLE_OPTION): Override.
+	* treetree.h (treelang_decode_option): Remove.
+	(treelang_handle_option): New.
+
 2003-06-08  Andreas Jaeger  <aj@suse.de>
 
 	* Make-lang.in: Update.

@@ -83,16 +83,6 @@ lhd_return_null_tree (t)
   return NULL_TREE;
 }
 
-/* Do nothing; the default hook to decode an option.  */
-
-int
-lhd_decode_option (argc, argv)
-     int argc ATTRIBUTE_UNUSED;
-     char **argv ATTRIBUTE_UNUSED;
-{
-  return 0;
-}
-
 /* The default post options hook.  */
 
 bool

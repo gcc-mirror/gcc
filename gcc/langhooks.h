@@ -206,16 +206,6 @@ struct lang_hooks
      the language mask to filter the switch array with.  */
   int (*init_options) PARAMS ((void));
 
-  /* Function called with an option vector as argument, to decode a
-     single option (typically starting with -f or -W or +).  It should
-     return the number of command-line arguments it uses if it handles
-     the option, or 0 and not complain if it does not recognize the
-     option.  If this function returns a negative number, then its
-     absolute value is the number of command-line arguments used, but,
-     in addition, no language-independent option processing should be
-     done for this option.  Obsoleted by handle_option.  */
-  int (*decode_option) PARAMS ((int, char **));
-
   /* Handle the switch CODE, which has real type enum opt_code from
      options.h.  If the switch takes an argument, it is passed in ARG
      which points to permanent storage.  The handler is resonsible for

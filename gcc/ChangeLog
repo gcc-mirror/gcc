@@ -1,3 +1,13 @@
+2003-06-11  Neil Booth  <neil@daikokuya.co.uk>
+
+	* hooks.c (hook_int_size_t_constcharptr_int_0): New.
+	* hooks.h (hook_int_size_t_constcharptr_int_0): New.
+	* langhooks-def.h (lhd_decode_option, LANG_HOOKS_DECODE_OPTION): Die.
+	(LANG_HOOKS_HANDLE_OPTION, LANG_HOOKS_INITIALIZER): Update.
+	* langhooks.c (lhd_decode_option): Remove.
+	* langhooks.h (struct lang_hooks): Remove decode_option.
+	* opts.c (handle_option): No longer use decode_option.
+
 2003-06-11  Zdenek Dvorak  <rakdver@atrey.karlin.mff.cuni.cz>
 
 	* cfgloopanal.c (variable_initial_value): Update the set of altered

@@ -114,8 +114,8 @@ extern char **file_names;
 #define LANG_HOOKS_NAME	"GNU treelang"
 #undef LANG_HOOKS_FINISH
 #define LANG_HOOKS_FINISH		treelang_finish
-#undef LANG_HOOKS_DECODE_OPTION
-#define LANG_HOOKS_DECODE_OPTION treelang_decode_option
+#undef LANG_HOOKS_HANDLE_OPTION
+#define LANG_HOOKS_HANDLE_OPTION treelang_handle_option
 const struct lang_hooks lang_hooks = LANG_HOOKS_INITIALIZER;
 
 /* Tree code type/name/code tables.  */

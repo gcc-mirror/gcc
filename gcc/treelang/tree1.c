@@ -44,6 +44,8 @@
 
 #include "treelang.h"
 #include "treetree.h"
+#include "opts.h"
+#include "t-options.h"
 
 extern int yyparse (void);
 
@@ -86,98 +88,54 @@ static int version_done = 0;
 
 static unsigned int work_nesting_level = 0;
 
-/* Process one switch - called by toplev.c.  */
-
+/* Process a switch - called by opts.c.  */
 int
-treelang_decode_option (num_options_left, first_option_left)
-     int num_options_left ATTRIBUTE_UNUSED; 
-     char** first_option_left;
+treelang_handle_option (size_t scode, const char *arg ATTRIBUTE_UNUSED,
+			int value)
 {
-  
-  /*
-    Process options - bear in mind I may get options that are really
-    meant for someone else (eg the main compiler) so I have to be very
-    permissive. 
-    
-  */
-  
-  if (first_option_left[0][0] != '-')
-    return 0; 
-  
-  switch (first_option_left[0][1]) 
+  enum opt_code code = (enum opt_code) scode;
+
+  switch (code)
     {
-    case '-':
-      if (!strcmp (first_option_left[0],"--help"))
-        {
-          if (!version_done)
-            {
-              fputs (language_string, stdout);
-              fputs (version_string, stdout);
-              fputs ("\n", stdout);
-              version_done = 1;
-            }
-          fprintf (stdout, "Usage: tree1 [switches] -o output input\n");
-          return 1;
-        }
-      break;
-
-    case 'v':
-      if (!strcmp (first_option_left[0],"-v"))
-        {
-          if (!version_done)
-            {
-              fputs (language_string, stdout);
-              fputs (version_string, stdout);
-              fputs ("\n", stdout);
-              version_done = 1;
-            }
-          return 1;
-        }
-      break;
-
-    case 'y':
-      if (!strcmp (first_option_left[0],"-y"))
-        {
-          option_lexer_trace = 1;
-          option_parser_trace = 1;
-          return 1;
-        }
-      break;
-
-    case 'f':
-      if (!strcmp (first_option_left[0],"-fparser-trace"))
-        {
-          option_parser_trace = 1;
-          return 1;
-        }
-      if (!strcmp (first_option_left[0],"-flexer-trace"))
-        {
-          option_lexer_trace = 1;
-          return 1;
-        }
-      break;
-
-    case 'w':
-      if (!strcmp (first_option_left[0],"-w"))
-        {
-          /* Tolerate this option but ignore it - we always put out
-             all warnings.  */
-          return 1;
-        }
-      break;
-
-    case 'W':
-      if (!strcmp (first_option_left[0],"-Wall"))
-        {
-          return 1;
-        }
-      break;
-
     default:
+      return 0;
+
+    case OPT__help:
+      if (!version_done)
+	{
+	  fputs (language_string, stdout);
+	  fputs (version_string, stdout);
+	  fputs ("\n", stdout);
+	  version_done = 1;
+	}
+      fprintf (stdout, "Usage: tree1 [switches] -o output input\n");
+      break;
+
+    case OPT_v:
+      if (!version_done)
+	{
+	  fputs (language_string, stdout);
+	  fputs (version_string, stdout);
+	  fputs ("\n", stdout);
+	  version_done = 1;
+	}
+      break;
+
+    case OPT_y:
+      option_lexer_trace = 1;
+      option_parser_trace = 1;
+      break;
+
+    case OPT_fparser_trace:
+      option_parser_trace = value;
+      break;
+
+    case OPT_flexer_trace:
+      option_lexer_trace = value;
       break;
     }
 
-  return 0;
+  return 1;
 }
 
 /* Language dependent parser setup.  */
