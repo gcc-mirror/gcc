@@ -2492,17 +2492,12 @@ pa_adjust_cost (insn, link, dep_insn, cost)
 /* Return any length adjustment needed by INSN which already has its length
    computed as LENGTH.   Return zero if no adjustment is necessary. 
 
-   For the PA: function calls, millicode calls, and short conditional branches
-   with unfilled delay slots need an adjustment by +1 (to account for
-   the NOP which will be inserted into the instruction stream).
+   For the PA: function calls, millicode calls, and backwards short
+   conditional branches with unfilled delay slots need an adjustment by +1 
+   (to account for the NOP which will be inserted into the instruction stream).
 
    Also compute the length of an inline block move here as it is too
-   complicated to express as a length attribute in pa.md.
-
-   (For 2.5) Indirect calls do not need length adjustment as their
-   delay slot is filled internally in the output template.
-
-   (For 2.5) No adjustment is necessary for jump tables or casesi insns.  */
+   complicated to express as a length attribute in pa.md.  */
 int
 pa_adjust_insn_length (insn, length)
     rtx insn;
@@ -2510,9 +2505,20 @@ pa_adjust_insn_length (insn, length)
 {
   rtx pat = PATTERN (insn);
 
-  /* Call insn with an unfilled delay slot.  */ 
+  /* Call insns which are *not* indirect and have unfilled delay slots.  */
   if (GET_CODE (insn) == CALL_INSN)
-    return 1;
+    {
+
+      if (GET_CODE (XVECEXP (pat, 0, 0)) == CALL
+	  && GET_CODE (XEXP (XEXP (XVECEXP (pat, 0, 0), 0), 0)) == SYMBOL_REF)
+	return 1;
+      else if (GET_CODE (XVECEXP (pat, 0, 0)) == SET
+	       && GET_CODE (XEXP (XEXP (XEXP (XVECEXP (pat, 0, 0), 1), 0), 0))
+		  == SYMBOL_REF)
+	return 1;
+      else
+	return 0;
+    }
   /* Millicode insn with an unfilled delay slot.  */
   else if (GET_CODE (insn) == INSN
 	   && GET_CODE (pat) != SEQUENCE
@@ -2529,9 +2535,24 @@ pa_adjust_insn_length (insn, length)
 	   && GET_MODE (XEXP (XVECEXP (pat, 0, 0), 1)) == BLKmode)
     return compute_movstrsi_length (insn) - 1;
   /* Conditional branch with an unfilled delay slot.  */
-  else if (GET_CODE (insn) == JUMP_INSN && ! simplejump_p (insn)
-	   && length != 2 && length != 4)
-    return 1;
+  else if (GET_CODE (insn) == JUMP_INSN && ! simplejump_p (insn))
+    {
+      /* Adjust a short backwards conditional with an unfilled delay slot.  */
+      if (GET_CODE (pat) == SET
+	  && length == 1
+	  && ! forward_branch_p (insn))
+	return 1;
+      /* Adjust dbra insn with short backwards conditional branch with
+	 unfilled delay slot -- only for case where counter is in a register. */
+      else if (GET_CODE (pat) == PARALLEL
+	       && GET_CODE (XVECEXP (pat, 0, 1)) == SET
+	       && GET_CODE (XEXP (XVECEXP (pat, 0, 1), 0)) == REG
+	       && length == 1
+	       && ! forward_branch_p (insn))
+	return 1;
+      else
+	return 0;
+    }
   else
     return 0;
 }
@@ -3233,19 +3254,30 @@ output_cbranch (operands, nullify, length, negated, insn)
   static char buf[100];
   int useskip = 0;
 
+  /* If this is a long branch with its delay slot unfilled, set `nullify'
+     as it can nullify the delay slot and save a nop.  */
+  if (length == 2 && dbr_sequence_length () == 0)
+    nullify = 1;
+
+  /* If this is a short forward conditional branch which did not get
+     its delay slot filled, the delay slot can still be nullified.  */
+  if (! nullify && length == 1 && dbr_sequence_length () == 0)
+    nullify = forward_branch_p (insn);
+
   /* A forward branch over a single nullified insn can be done with a 
      comclr instruction.  This avoids a single cycle penalty due to
      mis-predicted branch if we fall through (branch not taken).  */
-
   if (length == 1
-      && JUMP_LABEL (insn) == next_nonnote_insn (NEXT_INSN (insn))
+      && next_real_insn (insn) != 0
+      && get_attr_length (next_real_insn (insn)) == 1
+      && JUMP_LABEL (insn) == next_nonnote_insn (next_real_insn (insn))
       && nullify)
     useskip = 1;
 
   switch (length)
     {
-
-      /* Short conditional branch.  May nullify either direction.  */
+      /* All short conditional branches except backwards with an unfilled
+	 delay slot.  */
       case 1:
 	if (useskip)
 	  strcpy (buf, "com%I2clr,");
@@ -3260,41 +3292,43 @@ output_cbranch (operands, nullify, length, negated, insn)
 	else if (nullify)
 	  strcat (buf, ",n %2,%1,%0");
 	else 
-	  strcat (buf, " %2,%1,%0%#");
+	  strcat (buf, " %2,%1,%0");
 	break;
 
-     /* Long conditional branch, possible forward nullification.  Also
-	note all conditional branches have a length of 4 when not
-	optimizing!  */ 
+     /* All long conditionals.  Note an short backward branch with an 
+	unfilled delay slot is treated just like a long backward branch
+	with an unfilled delay slot.  */
       case 2:
-      case 4:
-	strcpy (buf, "com%I2clr,");
-	if (negated)
-	  strcat (buf, "%S3");
+	/* Handle weird backwards branch with a filled delay slot
+	   with is nullified.  */
+	if (dbr_sequence_length () != 0
+	    && ! forward_branch_p (insn)
+	    && nullify)
+	  {
+	    strcpy (buf, "com%I2b,");
+	    if (negated)
+	      strcat (buf, "%S3");
+	    else
+	      strcat (buf, "%B3");
+	    strcat (buf, ",n %2,%1,.+12\n\tbl %0,0");
+	  }
 	else
-	  strcat (buf, "%B3");
-	/* Nullify the delay slot if the delay slot was explicitly
-	   nullified by the delay branch scheduler or if no insn
-	   could be placed in the delay slot.  */
-	if (nullify)
-	  strcat (buf, " %2,%1,0\n\tbl,n %0,0");
-	else
-	  strcat (buf, " %2,%1,0\n\tbl%* %0,0");
-	break;
-
-      /* Long backward conditional branch with nullification.  */
-      case 3:
-	strcpy (buf, "com%I2b,");
-	if (negated)
-	  strcat (buf, "%S3");
-	else
-	  strcat (buf, "%B3");
-	strcat (buf, " %2,%1,.+16\n\tnop\n\t bl %0,0");
+	  {
+	    strcpy (buf, "com%I2clr,");
+	    if (negated)
+	      strcat (buf, "%S3");
+	    else
+	      strcat (buf, "%B3");
+	    if (nullify)
+	      strcat (buf, " %2,%1,0\n\tbl,n %0,0");
+	    else
+	      strcat (buf, " %2,%1,0\n\tbl %0,0");
+	  }
 	break;
 
       default:
 	abort();
-        }
+    }
   return buf;
 }
 
@@ -3313,19 +3347,32 @@ output_bb (operands, nullify, length, negated, insn, which)
   static char buf[100];
   int useskip = 0;
 
+  /* If this is a long branch with its delay slot unfilled, set `nullify'
+     as it can nullify the delay slot and save a nop.  */
+  if (length == 2 && dbr_sequence_length () == 0)
+    nullify = 1;
+
+  /* If this is a short forward conditional branch which did not get
+     its delay slot filled, the delay slot can still be nullified.  */
+  if (! nullify && length == 1 && dbr_sequence_length () == 0)
+    nullify = forward_branch_p (insn);
+
   /* A forward branch over a single nullified insn can be done with a 
      extrs instruction.  This avoids a single cycle penalty due to
      mis-predicted branch if we fall through (branch not taken).  */
 
   if (length == 1
-      && JUMP_LABEL (insn) == next_nonnote_insn (NEXT_INSN (insn))
+      && next_real_insn (insn) != 0
+      && get_attr_length (next_real_insn (insn)) == 1
+      && JUMP_LABEL (insn) == next_nonnote_insn (next_real_insn (insn))
       && nullify)
     useskip = 1;
 
   switch (length)
     {
 
-      /* Short conditional branch.  May nullify either direction.  */
+      /* All short conditional branches except backwards with an unfilled
+	 delay slot.  */
       case 1:
 	if (useskip)
 	  strcpy (buf, "extrs,");
@@ -3343,52 +3390,54 @@ output_bb (operands, nullify, length, negated, insn, which)
 	else if (nullify && ! negated)
 	  strcat (buf, ",n %0,%1,%2");
 	else if (! nullify && negated)
-	  strcat (buf, "%0,%1,%3%#");
+	  strcat (buf, "%0,%1,%3");
 	else if (! nullify && ! negated)
-	  strcat (buf, " %0,%1,%2%#");
+	  strcat (buf, " %0,%1,%2");
 	break;
 
-     /* Long conditional branch, possible forward nullification.  Also
-	note all conditional branches have a length of 4 when not
-	optimizing!  */ 
+     /* All long conditionals.  Note an short backward branch with an 
+	unfilled delay slot is treated just like a long backward branch
+	with an unfilled delay slot.  */
       case 2:
-      case 4:
-	strcpy (buf, "extrs,");
-	if ((which == 0 && negated)
-	     || (which == 1 && ! negated))
-	  strcat (buf, "<");
+	/* Handle weird backwards branch with a filled delay slot
+	   with is nullified.  */
+	if (dbr_sequence_length () != 0
+	    && ! forward_branch_p (insn)
+	    && nullify)
+	  {
+	    strcpy (buf, "bb,");
+	    if ((which == 0 && negated)
+		|| (which == 1 && ! negated))
+	      strcat (buf, "<");
+	    else
+	      strcat (buf, ">=");
+	    if (negated)
+	      strcat (buf, " %0,%1,.+12\n\tbl %3,0");
+	    else
+	      strcat (buf, " %0,%1,.+12\n\tbl %2,0");
+	  }
 	else
-	  strcat (buf, ">=");
-	/* Nullify the delay slot if the delay slot was explicitly
-	   nullified by the delay branch scheduler or if no insn
-	   could be placed in the delay slot.  */
-	if (nullify && negated)
-	  strcat (buf, " %0,%1,1,0\n\tbl,n %3,0");
-	else if (nullify && ! negated)
-	  strcat (buf, " %0,%1,1,0\n\tbl,n %2,0");
-	else if (negated)
-	  strcat (buf, " %0,%1,1,0\n\tbl%* %3,0");
-	else 
-	  strcat (buf, " %0,%1,1,0\n\tbl%* %2,0");
-	break;
-
-      /* Long backward conditional branch with nullification.  */
-      case 3:
-	strcpy (buf, "bb,");
-	if ((which == 0 && negated)
-	     || (which == 1 && ! negated))
-	  strcat (buf, "<");
-	else
-	  strcat (buf, ">=");
-	if (negated)
-	  strcat (buf, " %0,%1,.+16\n\tnop\n\t bl %3,0");
-	else
-	  strcat (buf, " %0,%1,.+16\n\tnop\n\t bl %2,0");
+	  {
+	    strcpy (buf, "extrs,");
+	    if ((which == 0 && negated)
+		|| (which == 1 && ! negated))
+	      strcat (buf, "<");
+	    else
+	      strcat (buf, ">=");
+	    if (nullify && negated)
+	      strcat (buf, " %0,%1,1,0\n\tbl,n %3,0");
+	    else if (nullify && ! negated)
+	      strcat (buf, " %0,%1,1,0\n\tbl,n %2,0");
+	    else if (negated)
+	      strcat (buf, " %0,%1,1,0\n\tbl %3,0");
+	    else 
+	      strcat (buf, " %0,%1,1,0\n\tbl %2,0");
+	  }
 	break;
 
       default:
 	abort();
-        }
+    }
   return buf;
 }
 
@@ -3534,3 +3583,23 @@ shadd_operand (op, mode)
 {
   return (GET_CODE (op) == CONST_INT && shadd_constant_p (INTVAL (op)));
 }
+
+/* Return 1 if INSN branches forward.  Should be using insn_addresses
+   to avoid walking through all the insns... */
+int
+forward_branch_p (insn)
+     rtx insn;
+{
+  rtx label = JUMP_LABEL (insn);
+
+  while (insn)
+    {
+      if (insn == label)
+	break;
+      else
+	insn = NEXT_INSN (insn);
+    }
+
+  return (insn == label);
+}
+
