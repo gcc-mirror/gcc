@@ -1,3 +1,7 @@
+Tue May 25 11:20:46 1999  H.J. Lu  (hjl@gnu.org)
+
+	* config.guess (dummy): Changed to $dummy.
+
 1999-05-24  Nick Clifton  <nickc@cygnus.com>
 
 	* config.sub: Tidied up case statements.

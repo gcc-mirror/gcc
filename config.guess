@@ -643,7 +643,7 @@ EOF
 	  m68klinux)  echo "${UNAME_MACHINE}-unknown-linux-gnuaout" ; exit 0 ;;
 	  elf32ppc)
 		# Determine Lib Version
-		cat >dummy.c <<EOF
+		cat >$dummy.c <<EOF
 #include <features.h>
 #if defined(__GLIBC__)
 extern char __libc_version[];
@@ -662,14 +662,14 @@ main(argc, argv)
 }
 EOF
 		LIBC=""
-		${CC-cc} dummy.c -o dummy 2>/dev/null
+		$CC_FOR_BUILD $dummy.c -o $dummy 2>/dev/null
 		if test "$?" = 0 ; then
-			./dummy | grep 1\.99 > /dev/null
+			./$dummy | grep 1\.99 > /dev/null
 			if test "$?" = 0 ; then
 				LIBC="libc1"
 			fi
 		fi	
-		rm -f dummy.c dummy
+		rm -f $dummy.c $dummy
 		echo powerpc-unknown-linux-gnu${LIBC} ; exit 0 ;;
 	esac
 
