@@ -33,7 +33,7 @@
 #  Step 1: Compile and profile your program.  You need to use -fprofile-arcs
 #    flag to get the profiles
 #  Step 2: Generate log files.  The information about given heuristics are
-#    saved into *.life dumps.  You need to pass the -df switch to the compiler as well
+#    saved into *.bp dumps.  You need to pass the -db switch to the compiler as well
 #    as -fbranch-probabilities to get the results of profiling noted in the dumps.
 #    Ensure that there are no "Arc profiling: some edge counts were bad." warnings.
 #  Step 3: Run this script to concatenate all *.life files:
@@ -131,12 +131,12 @@ END {
   maxcounts = longeval(counts["combined"])
   maxbranches = branches["combined"]
   max = names["combined"]
-  printf("HEURISTICS                  BRANCHES  (REL)  HITRATE             COVERAGE  (REL)\n")
+  printf("HEURISTICS                 BRANCHES  (REL)  HITRATE              COVERAGE  (REL)\n")
   for (i = 0; i < nnames ; i++)
    {
      name = names[i]
      counts[name] = longeval(counts[name])
-     printf ("%-27s %8i %5.1f%% %6s%%/%6s%% %12s %5.1f%%\n",
+     printf ("%-26s %8i %5.1f%% %6s%% / %6s%% %12s %5.1f%%\n",
 	     name,
 	     branches[name], branches[name] * 100 / maxbranches,
 	     longeval("("hits[name]") * 100 /(" counts[name]"-0.00001)"),
