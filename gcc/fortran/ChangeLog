@@ -1,3 +1,18 @@
+2004-08-06  Victor Leikehman  <lei@il.ibm.com>
+	Paul Brook  <paul@codesourcery.com>
+
+	* trans-array.c (gfc_trans_allocate_array_storage,
+	gfc_trans_allocate_temp_array, gfc_add_loop_ss_code,
+	gfc_conv_loop_setup): For functions, if the shape of the result
+	is not known in compile-time, generate an empty array descriptor for
+	the result and let the callee to allocate the memory.
+	(gfc_trans_dummy_array_bias): Do nothing for pointers.
+	(gfc_conv_expr_descriptor): Use function return values directly.
+	* trans-expr.c (gfc_conv_function_call): Always add byref call
+	insn to pre chain.
+	(gfc_trans_pointer_assignment): Add comments.
+	(gfc_trans_arrayfunc_assign): Don't chain on expression.
+
 2004-08-01  Roger Sayle  <roger@eyesopen.com>
 
 	* options.c (gfc_init_options): Don't warn about the use GNU
