@@ -158,7 +158,7 @@ public class BufferedInputStream extends FilterInputStream
    */
   public synchronized int available() throws IOException
   {
-    return count - pos + super.available();
+    return count - pos + in.available();
   }
 
   /**
@@ -173,7 +173,7 @@ public class BufferedInputStream extends FilterInputStream
     buf = null;
     pos = count = 0;
     markpos = -1;
-    super.close();
+    in.close();
   }
 
   /**
@@ -273,7 +273,7 @@ public class BufferedInputStream extends FilterInputStream
     off += totalBytesRead;
     len -= totalBytesRead;
 
-    while (len > 0 && super.available() > 0 && refill())
+    while (len > 0 && in.available() > 0 && refill())
       {
 	int remain = Math.min(count - pos, len);
 	System.arraycopy(buf, pos, b, off, remain);
@@ -327,8 +327,18 @@ public class BufferedInputStream extends FilterInputStream
 
     while (n > 0L)
       {
-	if (pos >= count && !refill())
-          break;
+	if (pos >= count)
+          {
+            if (markpos == -1)
+              {
+                // Buffer is empty and no mark is set, skip on the
+                // underlying stream.
+                n -= in.skip(n);
+                break;
+              }
+            else if (!refill())
+              break;
+          }
 
 	int numread = (int) Math.min((long) (count - pos), n);
 	pos += numread;
@@ -369,7 +379,7 @@ public class BufferedInputStream extends FilterInputStream
 	markpos = 0;
       }
 
-    int numread = super.read(buf, count, bufferSize);
+    int numread = in.read(buf, count, bufferSize);
 
     if (numread <= 0)	// EOF
       return false;

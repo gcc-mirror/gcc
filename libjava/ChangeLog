@@ -1,3 +1,17 @@
+2005-03-15  David Daney  <ddaney@avtrex.com>
+
+	* gnu/java/net/natPlainSocketImplPosix.cc (read_helper): Handle
+	count == 0 case.
+
+2005-03-15  David Daney  <ddaney@avtrex.com>
+
+	* java/io/BufferedInputStream.java (available): Use 'in' instead
+	of 'super' for underlying stream access.
+	(close): Ditto.
+	(read(byte[], int, int)): Ditto.
+	(refill): Ditto.
+	(skip): Call skip on underlying stream when possible. 
+
 2005-03-14  David Daney  <ddaney@avtrex.com>
 
 	* configure.host: Don't use -mxgot for MIPS builds.
