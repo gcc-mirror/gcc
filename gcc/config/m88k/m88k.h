@@ -1,6 +1,6 @@
 /* Definitions of target machine for GNU compiler.
    Motorola m88100 in an 88open OCS/BCS environment.
-   Copyright (C) 1988, 1989, 1990, 1991 Free Software Foundation, Inc.
+   Copyright (C) 1988, 1989, 1990, 1991, 1993 Free Software Foundation, Inc.
    Contributed by Michael Tiemann (tiemann@mcc.com)
    Enhanced by Michael Meissner (meissner@osf.org)
    Version 2 port by Tom Wood (Tom_Wood@NeXT.com)
@@ -1451,6 +1451,7 @@ enum reg_class { NO_REGS, AP_REG, XRF_REGS, GENERAL_REGS, AGRF_REGS,
   {"add_operand", {SUBREG, REG, CONST_INT}},				\
   {"reg_or_bbx_mask_operand", {SUBREG, REG, CONST_INT}},		\
   {"real_or_0_operand", {SUBREG, REG, CONST_DOUBLE}},			\
+  {"reg_or_0_operand", {SUBREG, REG, CONST_INT}},			\
   {"relop", {EQ, NE, LT, LE, GE, GT, LTU, LEU, GEU, GTU}},		\
   {"relop_no_unsigned", {EQ, NE, LT, LE, GE, GT}},			\
   {"equality_op", {EQ, NE}},						\

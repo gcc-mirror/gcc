@@ -1,5 +1,5 @@
 /* Definitions of target machine for GNU compiler, for AMD Am29000 CPU.
-   Copyright (C) 1988, 1990, 1991, 1992 Free Software Foundation, Inc.
+   Copyright (C) 1988, 1990, 1991, 1992, 1993 Free Software Foundation, Inc.
    Contributed by Richard Kenner (kenner@nyu.edu)
 
 This file is part of GNU CC.
@@ -1568,15 +1568,18 @@ extern int a29k_debug_reg_map[];
   {"long_const_operand", {CONST_INT, CONST, CONST_DOUBLE,	\
 			  LABEL_REF, SYMBOL_REF}},		\
   {"shift_constant_operand", {CONST_INT, ASHIFT}},		\
-  {"const_0__operand", {CONST_INT, ASHIFT}},			\
-  {"const_8__operand", {CONST_INT, ASHIFT}},			\
-  {"const_16__operand", {CONST_INT, ASHIFT}},			\
-  {"const_24__operand", {CONST_INT, ASHIFT}},			\
+  {"const_0_operand", {CONST_INT, ASHIFT}},			\
+  {"const_8_operand", {CONST_INT, ASHIFT}},			\
+  {"const_16_operand", {CONST_INT, ASHIFT}},			\
+  {"const_24_operand", {CONST_INT, ASHIFT}},			\
   {"float_const_operand", {CONST_DOUBLE}},			\
   {"gpc_reg_operand", {SUBREG, REG}},				\
   {"gpc_reg_or_float_constant_operand", {SUBREG, REG, CONST_DOUBLE}}, \
   {"gpc_reg_or_integer_constant_operand", {SUBREG, REG,		\
 					   CONST_INT, CONST_DOUBLE}}, \
+  {"gpc_reg_or_immediate_operand", {SUBREG, REG, CONST_INT,	\
+				    CONST_DOUBLE, CONST,	\
+				    SYMBOL_REF, LABEL_REF}},	\
   {"spec_reg_operand", {REG}},					\
   {"accum_reg_operand", {REG}},					\
   {"srcb_operand", {SUBREG, REG, CONST_INT}},			\
@@ -1592,4 +1595,6 @@ extern int a29k_debug_reg_map[];
   {"reload_memory_operand", {SUBREG, REG, MEM}},		\
   {"fp_comparison_operator", {EQ, GT, GE}},			\
   {"branch_operator", {GE, LT}},				\
+  {"load_multiple_operation", {PARALLEL}},			\
+  {"store_multiple_operation", {PARALLEL}},			\
   {"epilogue_operand", {CODE_LABEL}},

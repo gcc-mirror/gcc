@@ -1,7 +1,7 @@
 /* Definitions of target machine for GNU compiler.  MIPS version.
+   Copyright (C) 1989, 1990, 1991, 1992, 1993 Free Software Foundation, Inc.
    Contributed by   A. Lichnewsky,	lich@inria.inria.fr
    Changed by Michael Meissner,		meissner@osf.org
-   Copyright (C) 1989, 1990, 1991, 1992 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -2726,6 +2726,8 @@ while (0)
   {"cmp2_op",			{ EQ, NE, GT, GE, GTU, GEU, LT, LE,	\
 				  LTU, LEU }},				\
   {"fcmp_op",			{ EQ, NE, GT, GE, LT, LE }},		\
+  {"pc_or_label_operand",	{ PC, LABEL_REF }},			\
+  {"call_insn_operand",		{ MEM }},				\
   {"uns_cmp_op",		{ GTU, GEU, LTU, LEU }},
 
 

@@ -1,5 +1,5 @@
 /* Definitions of target machine for GNU compiler, for Intel 80960
-   Copyright (C) 1992 Free Software Foundation, Inc.
+   Copyright (C) 1992, 1993 Free Software Foundation, Inc.
    Contributed by Steven McGeady, Intel Corp.
    Additional Work by Glenn Colon-Bonet, Jonathan Shapiro, Andy Wilson
    Converted to GCC 2.0 by Jim Wilson and Michael Tiemann, Cygnus Support.
@@ -1476,7 +1476,8 @@ extern enum insn_types i960_last_insn_type;
   {"eq_or_neq", {EQ, NE}},						\
   {"arith32_operand", {SUBREG, REG, LABEL_REF, SYMBOL_REF, CONST_INT,	\
 		       CONST_DOUBLE, CONST}},				\
-  {"power2_operand", {CONST_INT}},
+  {"power2_operand", {CONST_INT}},					\
+  {"cmplpower2_operand", {CONST_INT}},
 
 /* Define functions in i960.c and used in insn-output.c.  */
 

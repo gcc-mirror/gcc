@@ -1710,7 +1710,9 @@ literal_section ()						\
   {"reg_or_fp0_operand", {SUBREG, REG, CONST_DOUBLE}},	\
   {"alpha_comparison_operator", {EQ, LE, LT, LEU, LTU}}, \
   {"signed_comparison_operator", {EQ, NE, LE, LT, GE, GT}}, \
+  {"divmod_operator", {DIV, MOD, UDIV, UMOD}},		\
   {"fp0_operand", {CONST_DOUBLE}},			\
+  {"current_file_function_operand", {SYMBOL_REF}},	\
   {"input_operand", {SUBREG, REG, MEM, CONST_INT, CONST_DOUBLE,	\
 		     SYMBOL_REF, CONST, LABEL_REF}},	\
   {"aligned_memory_operand", {MEM}},			\
