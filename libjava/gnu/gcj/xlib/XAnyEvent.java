@@ -58,7 +58,7 @@ public final class XAnyEvent
   public final static long MASK_SUBSTRUCTURE_NOTIFY   = 1L<<19,
 	                   MASK_SUBSTRUCTURE_REDIRECT = 1L<<20;
 
-  XAnyEvent(Display display)
+  public XAnyEvent(Display display)
   {
     this.display = display;
     init();
