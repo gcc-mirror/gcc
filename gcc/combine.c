@@ -1,5 +1,5 @@
 /* Optimize by combining instructions for GNU compiler.
-   Copyright (C) 1987, 88, 92-97, 1998 Free Software Foundation, Inc.
+   Copyright (C) 1987, 88, 92-98, 1999 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -10257,6 +10257,17 @@ simplify_comparison (code, pop0, pop1)
 		  && (num_sign_bit_copies (op1, tmode)
 		      > GET_MODE_BITSIZE (tmode) - GET_MODE_BITSIZE (mode))))
 	    {
+	      /* If OP0 is an AND and we don't have an AND in MODE either,
+		 make a new AND in the proper mode.  */
+	      if (GET_CODE (op0) == AND
+		  && (add_optab->handlers[(int) mode].insn_code
+		      == CODE_FOR_nothing))
+		op0 = gen_binary (AND, tmode,
+				  gen_lowpart_for_combine (tmode,
+							   XEXP (op0, 0)),
+				  gen_lowpart_for_combine (tmode,
+							   XEXP (op0, 1)));
+
 	      op0 = gen_lowpart_for_combine (tmode, op0);
 	      op1 = gen_lowpart_for_combine (tmode, op1);
 	      break;
