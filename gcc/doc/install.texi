@@ -14,6 +14,9 @@
 @ifset specifichtml
 @settitle Host/Target specific installation notes for GCC
 @end ifset
+@ifset prerequisiteshtml
+@settitle Prerequisites for GCC
+@end ifset
 @ifset downloadhtml
 @settitle Downloading GCC
 @end ifset
@@ -47,6 +50,7 @@
 @ifnothtml
 @set indexhtml
 @set specifichtml
+@set prerequisiteshtml
 @set downloadhtml
 @set configurehtml
 @set buildhtml
@@ -155,6 +159,7 @@ The installation procedure itself is broken into five steps.
 
 @ifinfo
 @menu
+* Prerequisites::
 * Downloading the source::
 * Configuration::
 * Building::
@@ -164,6 +169,8 @@ The installation procedure itself is broken into five steps.
 @end ifinfo
 @ifhtml
 @enumerate
+@item
+@uref{prerequisites.html,,Prerequisites}
 @item
 @uref{download.html,,Downloading the source}
 @item
@@ -201,10 +208,180 @@ not yet been merged into the main part of this manual.
 @end ifhtml
 @end ifset
 
+@c ***Prerequisites**************************************************
+@ifnothtml
+@comment node-name,     next,          previous, up
+@node    Prerequisites, Downloading the source, , Installing GCC
+@end ifnothtml
+@ifset prerequisiteshtml
+@ifnothtml
+@chapter Prerequisites
+@end ifnothtml
+@cindex Prerequisites
+
+GCC requires that various tools and packages be available for use in the
+build procedure.  Modifying GCC sources requires additional tools
+described below.
+
+@heading Tools/packages necessary for building GCC
+@table @asis
+@item ISO C90 compiler
+Necessary to bootstrap the GCC package, although versions of GCC prior
+to 3.4 also allow bootstrapping with a traditional (K&R) C compiler.
+
+To make all languages in a cross-compiler or other configuration where
+3-stage bootstrap is not performed, you need to start with an existing
+GCC binary (version 2.95 or later) because source code for language
+frontends other than C might use GCC extensions.
+
+@item GNAT
+
+In order to build the Ada compiler (GNAT) you must already have GNAT
+installed because portions of the Ada frontend are written in Ada (with
+GNAT extensions.)  Refer to the Ada installation instructions for more
+specific information.
+
+@item A ``working'' POSIX compatible shell, or GNU bash
+
+Necessary when running @command{configure} because some
+@command{/bin/sh} shells have bugs and may crash when configuring the
+target libraries.  In other cases, @command{/bin/sh} or even some
+@command{ksh} have disastrous corner-case performance problems.  This
+can cause target @command{configure} runs to literally take days to
+complete in some cases.
+
+So on some platforms @command{/bin/ksh} is sufficient, on others it
+isn't.  See the host/target specific instructions for your platform, or
+use @command{bash} to be sure.  Then set @env{CONFIG_SHELL} in your
+environment to your ``good'' shell prior to running
+@command{configure}/@command{make}.
+
+@item GNU binutils
+
+Necessary in some circumstances, optional in others.  See the
+host/target specific instructions for your platform for the exact
+requirements.
+
+@item gzip version 1.2.4 (or later) or
+@itemx bzip2 version 1.0.2 (or later)
+
+Necessary to uncompress GCC @command{tar} files when source code is
+obtained via FTP mirror sites.
+
+@item GNU tar version 1.12 (or later)
+
+Necessary (only on some platforms) to untar the source code.  Many
+systems' @command{tar} programs will also work, only try GNU
+@command{tar} if you have problems.
+
+@end table
+
+
+@heading Tools/packages necessary for modifying GCC
+@table @asis
+
+@item autoconf version 2.13 (NO earlier or later versions) and
+@itemx GNU m4 version 1.4 (or later)
+
+Necessary when modifying @file{configure.in}, @file{aclocal.m4}, etc.@:
+to regenerate @file{configure} and @file{config.in} files
+
+@item automake version ???
+
+Necessary when modifying a @file{Makefile.am} file to regenerate its
+associated @file{Makefile.in}
+
+@item gperf version 2.7.2 (or later)
+
+Necessary when modifying @command{gperf} input files, e.g.@:
+@file{gcc/cp/cfns.gperf} to regenerate its associated header file, e.g.@:
+@file{gcc/cp/cfns.h}.
+
+@item expect version ???
+@itemx tcl version ???
+@itemx dejagnu version ???
+
+Necessary to run the GCC testsuite.
+
+@item autogen version 5.5.4 (or later) and
+@itemx guile version 1.4.1 (or later)
+
+Necessary to regenerate @file{fixinc/fixincl.x} from
+@file{fixinc/inclhack.def} and @file{fixinc/*.tpl}.
+
+Necessary to run the @file{fixinc} @command{make check}.
+
+Necessary to regenerate the top level @file{Makefile.am} files from
+@file{Makefile.tpl} and @file{Makefile.def}.
+
+@item GNU Bison version 1.28 (or later)
+Berkeley @command{yacc} (@command{byacc}) is also reported to work other
+than for java.
+
+Necessary when modifying @file{*.y} files.
+
+Necessary to build GCC during development because the generated output
+files are not included in the CVS repository.  They are included in
+releases.
+
+@item Flex version 2.5.4 (or later)
+
+Necessary when modifying @file{*.l} files.
+
+Necessary to build GCC during development because the generated output
+files are not included in the CVS repository.  They are included in
+releases.
+
+@item Texinfo version 4.2 (or later)
+
+Necessary for running @command{makeinfo} when modifying @file{*.texi}
+files to test your changes.
+
+Necessary to build GCC documentation during development because the
+generated output files are not included in the CVS repository.  They are
+included in releases.
+
+@item @TeX{} (any working version)
+
+Necessary for running @command{texi2dvi}, used when running
+@command{make dvi} to create DVI files.
+
+@item cvs version 1.10 (or later)
+@itemx ssh (any version)
+
+Necessary to access the CVS repository.  Public releases and weekly
+snapshots of the development sources are also available via FTP.
+
+@item perl version 5.6.1 (or later)
+
+Necessary when regenerating @file{Makefile} dependencies in libiberty.
+Necessary when regenerating something with intl??? (pod2man???)
+Other stuff???
+
+@item GNU diffutils version 2.7 (or later)
+
+Necessary when creating changes to GCC source code to submit for review.
+
+@item patch version 2.5.4 (or later)
+
+Necessary when applying patches, created with @command{diff}, to one's
+own sources.
+
+@end table
+
+@html
+<hr />
+<p>
+@end html
+@ifhtml
+@uref{./index.html,,Return to the GCC Installation page}
+@end ifhtml
+@end ifset
+
 @c ***Downloading the source**************************************************
 @ifnothtml
 @comment node-name,     next,          previous, up
-@node    Downloading the source, Configuration, , Installing GCC
+@node    Downloading the source, Configuration, Prerequisites, Installing GCC
 @end ifnothtml
 @ifset downloadhtml
 @ifnothtml
