@@ -97,7 +97,11 @@ extern enum rs6000_sdata_type rs6000_sdata;
   { "emb",		 0 },						\
   { "solaris-cclib",	 0 },						\
   { "shlib",		 0 },						\
+  EXTRA_SUBTARGET_SWITCHES                                              \
   { "newlib",		 0 },
+
+/* This is meant to be redefined in the host dependent files */
+#define EXTRA_SUBTARGET_SWITCHES
 
 /* Default ABI to use */
 #define RS6000_ABI_NAME "sysv"

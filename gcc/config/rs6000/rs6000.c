@@ -19,9 +19,9 @@ along with GNU CC; see the file COPYING.  If not, write to
 the Free Software Foundation, 59 Temple Place - Suite 330,
 Boston, MA 02111-1307, USA.  */
 
-#include "config.h"
 #include <stdio.h>
 #include <ctype.h>
+#include "config.h"
 #include "rtl.h"
 #include "regs.h"
 #include "hard-reg-set.h"
@@ -2261,6 +2261,7 @@ struct machine_function
   int save_toc_p;
   int fpmem_size;
   int fpmem_offset;
+  rtx pic_offset_table_rtx;
 };
 
 /* Functions to save and restore rs6000_fpmem_size.
@@ -2278,6 +2279,7 @@ rs6000_save_machine_status (p)
   machine->sysv_varargs_p = rs6000_sysv_varargs_p;
   machine->fpmem_size     = rs6000_fpmem_size;
   machine->fpmem_offset   = rs6000_fpmem_offset;
+  machine->pic_offset_table_rtx = pic_offset_table_rtx;
 }
 
 void
@@ -2289,6 +2291,7 @@ rs6000_restore_machine_status (p)
   rs6000_sysv_varargs_p = machine->sysv_varargs_p;
   rs6000_fpmem_size     = machine->fpmem_size;
   rs6000_fpmem_offset   = machine->fpmem_offset;
+  pic_offset_table_rtx  = machine->pic_offset_table_rtx;
 
   free (machine);
   p->machine = (struct machine_function *)0;
@@ -3168,7 +3171,8 @@ rs6000_stack_info ()
 
   else if (abi == ABI_V4 || abi == ABI_NT || abi == ABI_SOLARIS)
     info_ptr->push_p = (total_raw_size > info_ptr->fixed_size
-			|| info_ptr->lr_save_p);
+			|| (abi == ABI_NT ? info_ptr->lr_save_p
+			    : info_ptr->calls_p));
 
   else
     info_ptr->push_p = (frame_pointer_needed
