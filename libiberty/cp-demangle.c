@@ -938,10 +938,10 @@ static status_t demangle_discriminator
   PARAMS ((demangling_t, int));
 static status_t cp_demangle
   PARAMS ((const char *, dyn_string_t, int));
-#ifdef IN_LIBGCC2
 static status_t cp_demangle_type
   PARAMS ((const char*, dyn_string_t));
-#endif
+static char* cplus_demangle_v3_all
+  PARAMS ((const char*, int));
 
 /* When passed to demangle_bare_function_type, indicates that the
    function's return type is not encoded before its parameter types.  */
@@ -3533,7 +3533,6 @@ cp_demangle (name, result, style)
    dyn_string_t.  On success, returns STATUS_OK.  On failiure, returns
    an error message, and the contents of RESULT are unchanged.  */
 
-#ifdef IN_LIBGCC2
 static status_t
 cp_demangle_type (type_name, result)
      const char* type_name;
@@ -3571,6 +3570,7 @@ cp_demangle_type (type_name, result)
   return status;
 }
 
+#ifdef IN_LIBGCC2
 extern char *__cxa_demangle PARAMS ((const char *, char *, size_t *, int *));
 
 /* ia64 ABI-mandated entry point in the C++ runtime library for performing
@@ -3690,17 +3690,43 @@ char *
 cplus_demangle_v3 (mangled)
      const char* mangled;
 {
+  return cplus_demangle_v3_all (mangled, 0);
+}
+
+char *
+cplus_demangle_v3_type (mangled)
+     const char* mangled;
+{
+  return cplus_demangle_v3_all (mangled, 1);
+}
+
+static char *
+cplus_demangle_v3_all (mangled, type)
+     const char* mangled;
+     int type;
+{
   dyn_string_t demangled;
   status_t status;
 
-  /* If this isn't a mangled name, don't pretend to demangle it.  */
-  if (strncmp (mangled, "_Z", 2) != 0)
-    return NULL;
+  if (mangled[0] == '_' && mangled[1] == 'Z')
+    /* It is not a type.  */
+    type = 0;
+  else
+    {
+      /* It is a type. Stop if we don't want to demangle types. */
+      if (!type)
+	return NULL;
+    }
 
   /* Create a dyn_string to hold the demangled name.  */
   demangled = dyn_string_new (0);
   /* Attempt the demangling.  */
-  status = cp_demangle ((char *) mangled, demangled, 0);
+  if (!type)
+    /* Appears to be a function or variable name.  */
+    status = cp_demangle (mangled, demangled, 0);
+  else
+    /* Try to demangle it as the name of a type.  */
+    status = cp_demangle_type (mangled, demangled);
 
   if (STATUS_NO_ERROR (status))
     /* Demangling succeeded.  */
