@@ -2027,12 +2027,24 @@ import_export_tinfo (decl, type, is_in_library)
   DECL_INTERFACE_KNOWN (decl) = 1;
 }
 
+/* Return an expression that performs the destruction of DECL, which
+   must be a VAR_DECL whose type has a non-trivial destructor, or is
+   an array whose (innermost) elements have a non-trivial destructor.  */
+
 tree
 build_cleanup (decl)
      tree decl;
 {
   tree temp;
   tree type = TREE_TYPE (decl);
+
+  /* This function should only be called for declarations that really
+     require cleanups.  */
+  my_friendly_assert (!TYPE_HAS_TRIVIAL_DESTRUCTOR (type), 20030106);
+
+  /* Treat all objects with destructors as used; the destructor may do
+     something substantive.  */
+  mark_used (decl);
 
   if (TREE_CODE (type) == ARRAY_TYPE)
     temp = decl;

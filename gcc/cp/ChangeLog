@@ -1,3 +1,8 @@
+2003-01-06  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/9165
+	* decl2.c (build_cleanup): Mark the object as used.
+
 2003-01-03  Nathan Sidwell  <nathan@codesourcery.com>
 
 	PR c++/45, c++/3784
