@@ -10451,11 +10451,23 @@ finish_function (int flags)
   /* Genericize before inlining.  */
   if (!processing_template_decl)
     {
+      struct language_function *f = DECL_SAVED_FUNCTION_DATA (fndecl);
       cp_genericize (fndecl);
+      /* Clear out the bits we don't need.  */
+      f->x_current_class_ptr = NULL;
+      f->x_current_class_ref = NULL;
+      f->x_eh_spec_block = NULL;
+      f->x_in_charge_parm = NULL;
+      f->x_vtt_parm = NULL;
+      f->x_return_value = NULL;
+      f->bindings = NULL;
 
       /* Handle attribute((warn_unused_result)).  Relies on gimple input.  */
       c_warn_unused_result (&DECL_SAVED_TREE (fndecl));
     }
+  /* Clear out the bits we don't need.  */
+  local_names = NULL;
+  named_label_uses = NULL;
 
   /* We're leaving the context of this function, so zap cfun.  It's still in
      DECL_STRUCT_FUNCTION, and we'll restore it in tree_rest_of_compilation.  */

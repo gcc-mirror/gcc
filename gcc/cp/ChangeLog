@@ -1,3 +1,7 @@
+2004-09-03  Jan Hubicka  <jh@suse.cz>
+
+	* decl.c (finish_function): Clean out pointers we no longer need.
+
 2004-09-03  Jan Beulich  <jbeulich@novell.com>
 
 	* g++spec.c (MATH_LIBRARY_PROFILE): Default to MATH_LIBRARY rather
