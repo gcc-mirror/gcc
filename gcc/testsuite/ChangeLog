@@ -1,3 +1,8 @@
+2004-08-19  Tobias Schlueter  <tobias.schlueter@physik.uni-muenchen.de>
+
+	PR fortran/16520
+	* gfortran.dg/g77/19990905-1.f: Don't expect excess errors.
+
 2004-08-19  Joseph S. Myers  <jsm@polyomino.org.uk>
 
 	PR c++/17041
