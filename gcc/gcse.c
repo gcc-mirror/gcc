@@ -4809,7 +4809,7 @@ bypass_block (bb, setcc, jump)
 	  if (new == pc_rtx)
 	    dest = FALLTHRU_EDGE (bb)->dest;
 	  else if (GET_CODE (new) == LABEL_REF)
-	    dest = BRANCH_EDGE (bb)->dest;
+	    dest = BLOCK_FOR_INSN (XEXP (new, 0));
 	  else
 	    dest = NULL;
 
@@ -4848,7 +4848,9 @@ bypass_block (bb, setcc, jump)
 /* Find basic blocks with more than one predecessor that only contain a
    single conditional jump.  If the result of the comparison is known at
    compile-time from any incoming edge, redirect that edge to the
-   appropriate target.  Returns nonzero if a change was made.  */
+   appropriate target.  Returns nonzero if a change was made.
+
+   This function is now mis-named, because we also handle indirect jumps.  */
 
 static int
 bypass_conditional_jumps ()
@@ -4891,7 +4893,8 @@ bypass_conditional_jumps ()
 	      }
 	    else if (GET_CODE (insn) == JUMP_INSN)
 	      {
-		if (any_condjump_p (insn) && onlyjump_p (insn))
+		if ((any_condjump_p (insn) || computed_jump_p (insn))
+		    && onlyjump_p (insn))
 		  changed |= bypass_block (bb, setcc, insn);
 		break;
 	      }
