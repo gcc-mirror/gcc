@@ -76,8 +76,10 @@ Boston, MA 02111-1307, USA. */
 #define CYGWIN_INCLUDES "%{!nostdinc:-isystem /usr/local/include "\
 		           "-idirafter " CYGWIN_CROSS_DIR "/include "\
 		           "-idirafter /usr/include}"
-#define W32API_INC "%{!nostdinc:-idirafter /usr/include/w32api}"
-#define W32API_LIB "-L/usr/lib/w32api/"
+#define W32API_INC "%{!nostdinc:"\
+		      "-idirafter " CYGWIN_CROSS_DIR "/include/w32api "\
+		      "-idirafter /usr/include/w32api}"
+#define W32API_LIB "-L" CYGWIN_CROSS_DIR "/lib/w32api/ -L/usr/lib/w32api/"
 #define CYGWIN_LIB "/usr/lib"
 #define MINGW_LIBS "-L/usr/local/lib/mingw -L/usr/lib/mingw"
 #define MINGW_INCLUDES "%{!nostdinc:-isystem /usr/include/mingw/g++-3 "\
