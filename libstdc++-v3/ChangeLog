@@ -1,3 +1,8 @@
+2001-05-07  Mark Mitchell  <mark@codesourcery.com>
+
+	* config/os/solaris/solaris2.7/bits/os_defines.h
+	(_LARGEFILE_SOURCE): Define it.
+
 2001-05-03  Alexandre Oliva  <aoliva@redhat.com>
 
 	* configure.in (LIBSUPCXX_PICFLAGS): Set it to -prefer-pic or

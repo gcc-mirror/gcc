@@ -33,6 +33,7 @@
 
 // Need these to get sane definitions, esp. of 64-bit types and typedefs.
 #define _XOPEN_SOURCE        500
+#define _LARGEFILE_SOURCE    1
 #define _LARGEFILE64_SOURCE  1
 #define __EXTENSIONS__
 
