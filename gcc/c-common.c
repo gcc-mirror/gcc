@@ -3332,20 +3332,19 @@ c_get_alias_set (t)
   if (t == error_mark_node)
     return 0;
 
-  type = (TYPE_P (t)) ? t : TREE_TYPE (t);
+  /* For a bit field reference that's not to a specific field,
+     all we can say is the aliasing information for the underlying object. */
+  if (TREE_CODE (t) == BIT_FIELD_REF)
+    t = TREE_OPERAND (t, 0);
 
+  /* If this is a type, use it, otherwise get the type of the expression.
+     If the type is an error type, say this may alias anything.  */
+  type = TYPE_P (t) ? t : TREE_TYPE (t);
   if (type == error_mark_node)
     return 0;
 
   /* Deal with special cases first; for certain kinds of references
      we're interested in more than just the type.  */
-
-  if (TREE_CODE (t) == BIT_FIELD_REF)
-    /* Perhaps reads and writes to this piece of data alias fields
-       neighboring the bitfield.  Perhaps that's impossible.  For now,
-       let's just assume that bitfields can alias everything, which is
-       the conservative assumption.  */
-    return 0;
 
   /* Permit type-punning when accessing a union, provided the access
      is directly through the union.  For example, this code does not
@@ -3363,11 +3362,19 @@ c_get_alias_set (t)
   if (TREE_CODE (t) == INDIRECT_REF)
     {
       /* Check for accesses through restrict-qualified pointers.  */
-      tree decl = c_find_base_decl (TREE_OPERAND (t, 0));
+      tree op = TREE_OPERAND (t, 0);
+      tree decl = c_find_base_decl (op);
 
       if (decl && DECL_POINTER_ALIAS_SET_KNOWN_P (decl))
 	/* We use the alias set indicated in the declaration.  */
 	return DECL_POINTER_ALIAS_SET (decl);
+
+      /* If this is a char *, the ANSI C standard says it can alias
+         anything.  */
+      if (TREE_CODE (TREE_TYPE (op)) == INTEGER_TYPE
+	  && (TYPE_PRECISION (TREE_TYPE (op))
+	      == TYPE_PRECISION (char_type_node)))
+	return 0;
     }
 
   /* From here on, only the type matters.  */
@@ -3424,8 +3431,7 @@ c_get_alias_set (t)
        whose type is the same as one of the fields, recursively, but
        we don't yet make any use of that information.)  */
     TYPE_ALIAS_SET (type) = 0;
-  else if (TREE_CODE (type) == POINTER_TYPE
-	   || TREE_CODE (type) == REFERENCE_TYPE)
+  else if (POINTER_TYPE_P (type))
     {
       tree t;
 
@@ -3459,7 +3465,7 @@ c_get_alias_set (t)
 	TYPE_ALIAS_SET (type) = c_get_alias_set (t);
     }
 
-  if (!TYPE_ALIAS_SET_KNOWN_P (type))
+  if (! TYPE_ALIAS_SET_KNOWN_P (type))
     /* TYPE is something we haven't seen before.  Put it in a new
        alias set.  */
     TYPE_ALIAS_SET (type) = new_alias_set ();
