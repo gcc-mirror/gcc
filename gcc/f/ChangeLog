@@ -1,3 +1,8 @@
+Sun Jun  8 12:28:14 2003  Neil Booth  <neil@daikokuya.co.uk>
+
+	* Make-lang.in: Update.
+	* top.c: Include opts.h. Define cl_options_count and cl_options.
+
 2003-06-07  Andreas Jaeger  <aj@suse.de>
 
 	* symbol.c (ffesymbol_new_): Remove tests for macro

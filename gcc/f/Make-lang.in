@@ -542,7 +542,7 @@ f/top.o: f/top.c f/proj.h $(CONFIG_H) $(SYSTEM_H) f/top.h f/malloc.h f/where.h \
  f/info-w.def f/target.h f/lex.h f/type.h f/lab.h f/storag.h \
  f/symbol.h f/symbol.def f/equiv.h f/global.h f/name.h f/intrin.h \
  f/intrin.def f/data.h f/expr.h f/implic.h f/src.h f/st.h flags.h \
- toplev.h coretypes.h $(TM_H)
+ toplev.h coretypes.h $(TM_H) opts.h
 f/type.o: f/type.c f/proj.h $(CONFIG_H) $(SYSTEM_H) f/type.h f/malloc.h \
  coretypes.h $(TM_H)
 f/where.o: f/where.c f/proj.h $(CONFIG_H) $(SYSTEM_H) f/where.h glimits.h \

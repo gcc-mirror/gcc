@@ -55,8 +55,12 @@ the Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include "where.h"
 #include "flags.h"
 #include "toplev.h"
+#include "opts.h"
 
 /* Externals defined here. */
+
+const unsigned int cl_options_count;
+const struct cl_option cl_options[1];
 
 bool ffe_is_do_internal_checks_ = FALSE;
 bool ffe_is_90_ = FFETARGET_defaultIS_90;
