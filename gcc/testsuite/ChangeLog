@@ -1,5 +1,8 @@
 2002-10-16  Mark Mitchell  <mark@codesourcery.com>
 
+	PR c++/7478
+	* g++.dg/template/ref1.C: New test.
+
 	PR c++/8134
 	* g++.dg/init/pm1.C: XFAIL it.
 

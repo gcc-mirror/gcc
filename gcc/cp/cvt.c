@@ -464,12 +464,13 @@ convert_to_reference (reftype, expr, convtype, flags, decl)
      tree decl;
 {
   register tree type = TYPE_MAIN_VARIANT (TREE_TYPE (reftype));
-  register tree intype = TREE_TYPE (expr);
+  register tree intype;
   tree rval = NULL_TREE;
   tree rval_as_conversion = NULL_TREE;
   int i;
 
-  if (TREE_CODE (type) == FUNCTION_TYPE && intype == unknown_type_node)
+  if (TREE_CODE (type) == FUNCTION_TYPE 
+      && TREE_TYPE (expr) == unknown_type_node)
     {
       expr = instantiate_type (type, expr, 
 			       (flags & LOOKUP_COMPLAIN)
@@ -477,6 +478,11 @@ convert_to_reference (reftype, expr, convtype, flags, decl)
       if (expr == error_mark_node)
 	return error_mark_node;
 
+      intype = TREE_TYPE (expr);
+    }
+  else
+    {
+      expr = convert_from_reference (expr);
       intype = TREE_TYPE (expr);
     }
 

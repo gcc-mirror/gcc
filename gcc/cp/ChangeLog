@@ -1,6 +1,10 @@
 2002-10-16  Mark Mitchell  <mark@codesourcery.com>
 
-	PR c++/8134.
+	PR c++/7478
+	* cvt.c (convert_to_reference): Allow references as the incoming
+	type.
+	
+	PR c++/8134
 	* tree.c (zero_init_p): Always return 1.
 
 	PR c++/7524
