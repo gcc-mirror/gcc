@@ -4512,8 +4512,9 @@ emit_conditional_add (target, code, op0, op1, cmode, op2, op3, mode,
   return target;
 }
 
-/* These functions generate an insn body and return it
-   rather than emitting the insn.
+/* These functions attempt to generate an insn body, rather than
+   emitting the insn, but if the gen function already emits them, we
+   make no attempt to turn them back into naked patterns.
 
    They do not protect from queued increments,
    because they may be used 1) in protect_from_queue itself

@@ -9162,8 +9162,16 @@ reload_cse_move2add (first)
 		    validate_change (insn, &SET_SRC (pat), reg, 0);
 		  else if (rtx_cost (new_src, PLUS) < rtx_cost (src, SET)
 			   && have_add2_insn (reg, new_src))
-		    validate_change (insn, &PATTERN (insn),
-				     gen_add2_insn (reg, new_src), 0);
+		    {
+		      rtx newpat = gen_add2_insn (reg, new_src);
+		      if (INSN_P (newpat) && NEXT_INSN (newpat) == NULL_RTX)
+			newpat = PATTERN (newpat);
+		      /* If it was the first insn of a sequence or
+			 some other emitted insn, validate_change will
+			 reject it.  */
+		      validate_change (insn, &PATTERN (insn),
+				       newpat, 0);
+		    }
 		  else
 		    {
 		      enum machine_mode narrow_mode;
@@ -9243,9 +9251,15 @@ reload_cse_move2add (first)
 		      else if ((rtx_cost (new_src, PLUS)
 				< COSTS_N_INSNS (1) + rtx_cost (src3, SET))
 			       && have_add2_insn (reg, new_src))
-			success
-			  = validate_change (next, &PATTERN (next),
-					     gen_add2_insn (reg, new_src), 0);
+			{
+			  rtx newpat = gen_add2_insn (reg, new_src);
+			  if (INSN_P (newpat)
+			      && NEXT_INSN (newpat) == NULL_RTX)
+			    newpat = PATTERN (newpat);
+			  success
+			    = validate_change (next, &PATTERN (next),
+					       newpat, 0);
+			}
 		      if (success)
 			delete_insn (insn);
 		      insn = next;
