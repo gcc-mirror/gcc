@@ -1,5 +1,10 @@
 2003-02-11  Michael Koch  <konqueror@gmx.de>
 
+	* gnu/java/nio/FileLockImpl.java,
+	java/nio/channels/FileLock.java: New files.
+
+2003-02-11  Michael Koch  <konqueror@gmx.de>
+
 	* java/nio/charset/IllegalCharsetNameException.java
 	(serialVersionUID): New member variable.
 	(charsetName): New member variable.
