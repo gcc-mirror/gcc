@@ -195,10 +195,11 @@ mf_file_function_line_tree (location_t location)
   tree result;
 
   /* Add FILENAME[:LINENUMBER]. */
-  if (xloc.file == NULL && current_function_decl != NULL_TREE)
-    xloc.file = DECL_SOURCE_FILE (current_function_decl);
-  if (xloc.file == NULL)
-    xloc.file = "<unknown file>";
+  file = xloc.file;
+  if (file == NULL && current_function_decl != NULL_TREE)
+    file = DECL_SOURCE_FILE (current_function_decl);
+  if (file == NULL)
+    file = "<unknown file>";
 
   if (xloc.line > 0)
     {

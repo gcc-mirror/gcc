@@ -1,3 +1,8 @@
+2004-07-16  Frank Ch. Eigler  <fche@redhat.com>
+
+	* tree-mudflap.c (mf_file_function_line_tree): Correct typo
+	that prevented descriptive __mf_check source location strings.
+
 2004-07-16  Richard Henderson  <rth@redhat.com>
 
 	* tree-def (WITH_SIZE_EXPR): New.
