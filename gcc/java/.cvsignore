@@ -1,3 +1,9 @@
 parse.c
 parse-scan.c
 gcj.info*
+gcj.1
+gcjh.1
+jv-scan.1
+jcf-dump.1
+gij.1
+jv-convert.1
