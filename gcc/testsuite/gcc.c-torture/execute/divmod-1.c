@@ -1,67 +1,51 @@
-div1 (x)
-     signed char x;
+div1 (signed char x)
 {
   return x / -1;
 }
 
-div2 (x)
-     signed short x;
+div2 (signed short x)
 {
   return x / -1;
 }
 
-div3 (x, y)
-     signed char x;
-     signed char y;
+div3 (signed char x, signed char y)
 {
   return x / y;
 }
 
-div4 (x, y)
-     signed short x;
-     signed short y;
+div4 (signed short x, signed short y)
 {
   return x / y;
 }
 
-mod1 (x)
-     signed char x;
+mod1 (signed char x)
 {
   return x % -1;
 }
 
-mod2 (x)
-     signed short x;
+mod2 (signed short x)
 {
   return x % -1;
 }
 
-mod3 (x, y)
-     signed char x;
-     signed char y;
+mod3 (signed char x, signed char y)
 {
   return x % y;
 }
 
-mod4 (x, y)
-     signed short x;
-     signed short y;
+mod4 (signed short x, signed short y)
 {
   return x % y;
 }
 
 signed long
-mod5 (x, y)
-     signed long x;
-     signed long y;
+mod5 (signed long x, signed long y)
 {
   return x % y;
 }
      
 unsigned long
-mod6 (x, y)
-     unsigned long x;
-     unsigned long y;
+mod6 (unsigned long x, unsigned long y)
 {
   return x % y;
 }
