@@ -2257,8 +2257,8 @@ v850_handle_data_area_attribute (node, name, args, flags, no_add_attrs)
     case VAR_DECL:
       if (current_function_decl != NULL_TREE)
 	{
-	  error_with_decl (decl, "\
-a data area attribute cannot be specified for local variables");
+          error ("%Ha data area attribute cannot be specified for "
+                 "local variables", &DECL_SOURCE_LOCATION (decl), decl);
 	  *no_add_attrs = true;
 	}
 
@@ -2268,8 +2268,8 @@ a data area attribute cannot be specified for local variables");
       area = v850_get_data_area (decl);
       if (area != DATA_AREA_NORMAL && data_area != area)
 	{
-	  error_with_decl (decl, "\
-data area of '%s' conflicts with previous declaration");
+	  error ("%Hdata area of '%D' conflicts with previous declaration",
+                 &DECL_SOURCE_LOCATION (decl), decl);
 	  *no_add_attrs = true;
 	}
       break;
