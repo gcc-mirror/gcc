@@ -36,3 +36,5 @@ s/tmp-/t-/g
 s/^\(SUBDIR_OBSTACK *=\).*$/\1 ..\/obstack.o/
 s/^\(SUBDIR_USE_ALLOCA *=\).*$/\1/
 s/^\(SUBDIR_MALLOC *=\).*$/\1/
+/^# Build libgcc.a/ r config/msdos/libgcc.mak
+/^# Build libgcc.a/,// d
