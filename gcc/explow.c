@@ -875,7 +875,7 @@ anti_adjust_stack (rtx adjust)
 /* Round the size of a block to be pushed up to the boundary required
    by this machine.  SIZE is the desired size, which need not be constant.  */
 
-rtx
+static rtx
 round_push (rtx size)
 {
   int align = PREFERRED_STACK_BOUNDARY / BITS_PER_UNIT;
