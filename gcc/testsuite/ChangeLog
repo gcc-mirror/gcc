@@ -1,3 +1,7 @@
+2001-02-14  Jakub Jelinek  <jakub@redhat.com>
+
+	* gcc.c-torture/execute/20010209-1.c: New test.
+
 2001-02-14  Neil Booth  <neil@daikokuya.demon.co.uk>
 
 	* gcc.dg/cpp/sysmac1.c, sysmac2.c: New tests.
