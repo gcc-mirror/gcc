@@ -1,3 +1,9 @@
+2001-03-07  Tom Tromey  <tromey@redhat.com>
+
+	* configure: Rebuilt.
+	* configure.in: Allow config-lang.in to set `lang_requires' to list
+	of other required languages.
+
 2001-03-07  Andrew MacLeod  <amacleod@redhat.com>
 
 	* config/a29k/a29k.c (print_operand): Free a29k_last_prologue_insn
