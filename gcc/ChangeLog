@@ -1,3 +1,10 @@
+2003-03-10  Segher Boessenkool  <segher@koffie.nl>
+
+        * testsuite/gcc.dg/altivec-9.c: New file.
+
+        * config/rs6000/rs6000.c (altivec_frame_fixup): Remove.
+        (rs6000_emit_prologue): Use rs6000_frame_related instead.
+
 2003-03-10  Aldy Hernandez  <aldyh@redhat.com>
 
         * config/rs6000/spe.h: Define __ev64_*64__ to use single element
