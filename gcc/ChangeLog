@@ -1,3 +1,26 @@
+Thu Nov 26 16:37:59 1998  Michael Hayes  <m.hayes@elec.canterbury.ac.nz>
+
+	* config/c4x/c4x.c (c4x_modified_between_p, c4x_mem_set_p,
+ 	c4x_mem_set_p, c4x_mem_modified_between_p, c4x_insn_moveable_p,
+	c4x_parallel_pack, c4x_parallel_find, c4x_update_info_reg,
+	c4x_update_info_regs, c4x_copy_insn_after, c4x_copy_insns_after, 
+	c4x_merge_notes, c4x_parallel_process, 
+	c4x_combine_parallel_independent, c4x_combine_parallel_dependent,
+	c4x_combine_parallel): Delete.
+
+Thu Nov 26 15:16:05 1998  Michael Hayes  <m.hayes@elec.canterbury.ac.nz>
+
+	* config/c4x/c4x.c: (c4x_override_options): For compatibility
+	with old target options clear flag_branch_on_count_reg if
+	-mno-rptb specified and set flag_argument_alias is -mno-aliases
+	specified.
+	(c4x_output_cbranch): Handle a sequence of insns rather than a
+ 	single insn.
+	(c4x_rptb_insert): Don not emit a RPTB insn if the RC register
+	has not been allocated as the loop counter.
+	(c4x_address_conflict): 
+	
+
 Thu Nov 26 14:56:32 1998  Michael Hayes  <m.hayes@elec.canterbury.ac.nz>
 
 	* config/c4x/c4x.h (TARGET_DEFAULT): Add PARALEL_MPY_FLAG.
