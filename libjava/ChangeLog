@@ -1,3 +1,14 @@
+2001-02-08  Bryce McKinlay  <bryce@albatross.co.nz>
+
+	* java/lang/Byte.java: Remove redundant instanceof and null checks.
+	* java/lang/Integer.java: Likewise.
+	* java/lang/Long.java: Likewise.
+	* java/lang/Short.java: Likewise.
+	* java/lang/Double.java: Likewise.
+	(doubleToRawLongBits): New method.
+	* java/lang/Float.java: As above.
+	(floatToRawIntBits): New method.
+
 2001-02-08  Tom Tromey  <tromey@redhat.com>
 
 	* java/lang/Float.java (parseFloat): New method.

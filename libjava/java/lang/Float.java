@@ -64,9 +64,6 @@ public final class Float extends Number implements Comparable
 
   public boolean equals (Object obj)
   {
-    if (obj == null)
-      return false;
-
     if (!(obj instanceof Float))
       return false;
 
@@ -115,12 +112,8 @@ public final class Float extends Number implements Comparable
     return Double.toString ((double) v, true);
   } 
 
-  public static Float valueOf (String s) throws NullPointerException, 
-    NumberFormatException
+  public static Float valueOf (String s) throws NumberFormatException
   {
-    if (s == null)
-      throw new NullPointerException ();
-
     return new Float (Double.valueOf (s).floatValue ());
   }
 
@@ -152,6 +145,13 @@ public final class Float extends Number implements Comparable
   }
 
   public static native int floatToIntBits (float value);
+  
+  public static int floatToRawIntBits (float value)
+  {
+    // FIXME: Is this supposed to be different? NaN values seem to be handled
+    // the same in the JDK.
+    return floatToIntBits (value);
+  }
 
   public static native float intBitsToFloat (int bits);
 

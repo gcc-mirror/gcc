@@ -1,4 +1,4 @@
-/* Copyright (C) 1998, 1999, 2000  Free Software Foundation
+/* Copyright (C) 1998, 1999, 2000, 2001  Free Software Foundation
 
    This file is part of libgcj.
 
@@ -115,18 +115,15 @@ public final class Short extends Number implements Comparable
   }
 
   // Added in JDK 1.2
-  public int compareTo(Object o) throws ClassCastException
+  /** @throws ClassCastException */
+  public int compareTo(Object o)
   {
-    if (o instanceof Short)
-      return this.value - ((Short) o).value;
-    else
-      throw new ClassCastException();
+    return this.value - ((Short) o).value;
   }
 
   public boolean equals(Object obj)
   {
-    return (obj != null && (obj instanceof Short)
-	    && ((Short) obj).value == value);
+    return (obj instanceof Short) && ((Short) obj).value == value;
   }
 
   // Verified that hashCode is returns plain value (see Short_1 test).

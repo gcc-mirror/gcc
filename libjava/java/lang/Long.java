@@ -1,4 +1,4 @@
-/* Copyright (C) 1998, 1999, 2000  Free Software Foundation
+/* Copyright (C) 1998, 1999, 2000, 2001  Free Software Foundation
 
    This file is part of libgcj.
 
@@ -86,11 +86,9 @@ public final class Long extends Number implements Comparable
   }
 
   // Added in JDK 1.2
-  public int compareTo(Object o) throws ClassCastException
+  /** @throws ClassCastException */
+  public int compareTo(Object o)
   {
-    if (!(o instanceof Long))
-      throw new ClassCastException();
-
     return this.compareTo((Long) o);
   }
 
@@ -102,7 +100,7 @@ public final class Long extends Number implements Comparable
     int radix = 10;
     final int len;
 
-    if (str == null || (len = str.length()) == 0)
+    if ((len = str.length()) == 0)
       throw new NumberFormatException();
 
     // Negative numbers are always radix 10.
@@ -141,8 +139,7 @@ public final class Long extends Number implements Comparable
 
   public boolean equals(Object obj)
   {
-    return (obj != null && (obj instanceof Long)
-            && ((Long) obj).value == value);
+    return (obj instanceof Long && ((Long) obj).value == value);
   }
 
   public static Long getLong(String prop)
@@ -183,8 +180,8 @@ public final class Long extends Number implements Comparable
   {
     final int len;
 
-    if (str == null || (len = str.length()) == 0 ||
-        radix < Character.MIN_RADIX || radix > Character.MAX_RADIX)
+    if ((len = str.length()) == 0 || radix < Character.MIN_RADIX 
+         || radix > Character.MAX_RADIX)
       throw new NumberFormatException();
 
     boolean isNeg = false;
