@@ -1,5 +1,10 @@
 2003-05-16  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
+	* stormy16-protos.h (xs_hi_general_operand,
+	xs_hi_nonmemory_operand): Prototype.
+	* stormy16.c (xstormy16_output_shift): Fix format specifier
+	warnings.
+
 	* cris.c: Fix format specifier warnings.
 
 2003-05-16  Nick Clifton  <nickc@redhat.com>

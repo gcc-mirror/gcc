@@ -2098,19 +2098,19 @@ xstormy16_output_shift (mode, code, x, size_r, temp)
     case ASHIFT:
       sprintf (r, 
 	       "mov %s,%s | shl %s,#%d | shl %s,#%d | shr %s,#%d | or %s,%s", 
-	       rt, r0, r0, (int) size, r1, (int) size, rt, (int) 16-size,
+	       rt, r0, r0, (int) size, r1, (int) size, rt, (int) (16-size),
 	       r1, rt);
       break;
     case ASHIFTRT:
       sprintf (r, 
 	       "mov %s,%s | asr %s,#%d | shr %s,#%d | shl %s,#%d | or %s,%s", 
-	       rt, r1, r1, (int) size, r0, (int) size, rt, (int) 16-size,
+	       rt, r1, r1, (int) size, r0, (int) size, rt, (int) (16-size),
 	       r0, rt);
       break;
     case LSHIFTRT:
       sprintf (r, 
 	       "mov %s,%s | shr %s,#%d | shr %s,#%d | shl %s,#%d | or %s,%s", 
-	       rt, r1, r1, (int) size, r0, (int) size, rt, (int) 16-size,
+	       rt, r1, r1, (int) size, r0, (int) size, rt, (int) (16-size),
 	       r0, rt);
       break;
     default:

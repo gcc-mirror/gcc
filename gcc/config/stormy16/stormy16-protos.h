@@ -78,6 +78,8 @@ extern int  nonimmediate_nonstack_operand PARAMS ((rtx, enum machine_mode));
 extern enum reg_class xstormy16_secondary_reload_class 
   PARAMS ((enum reg_class, enum machine_mode, rtx));
 extern int  xstormy16_carry_plus_operand PARAMS ((rtx, enum machine_mode));
+extern int  xs_hi_general_operand PARAMS ((rtx, enum machine_mode));
+extern int  xs_hi_nonmemory_operand PARAMS ((rtx, enum machine_mode));
 extern enum reg_class xstormy16_preferred_reload_class 
   PARAMS ((rtx, enum reg_class));
 extern int xstormy16_legitimate_address_p 
