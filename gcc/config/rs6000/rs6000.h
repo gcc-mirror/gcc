@@ -3109,15 +3109,15 @@ do {									\
 /* Define the codes that are matched by predicates in rs6000.c.  */
 
 #define PREDICATE_CODES						\
-  {"short_cint_operand", {CONST_INT}},				\
-  {"u_short_cint_operand", {CONST_INT}},			\
+  {"short_cint_operand", {CONST_INT, CONSTANT_P_RTX}},		\
+  {"u_short_cint_operand", {CONST_INT, CONSTANT_P_RTX}},	\
   {"non_short_cint_operand", {CONST_INT}},			\
   {"gpc_reg_operand", {SUBREG, REG}},				\
   {"cc_reg_operand", {SUBREG, REG}},				\
-  {"reg_or_short_operand", {SUBREG, REG, CONST_INT}},		\
+  {"reg_or_short_operand", {SUBREG, REG, CONST_INT, CONSTANT_P_RTX}}, \
   {"reg_or_neg_short_operand", {SUBREG, REG, CONST_INT}},	\
-  {"reg_or_u_short_operand", {SUBREG, REG, CONST_INT}},		\
-  {"reg_or_cint_operand", {SUBREG, REG, CONST_INT}},		\
+  {"reg_or_u_short_operand", {SUBREG, REG, CONST_INT, CONSTANT_P_RTX}}, \
+  {"reg_or_cint_operand", {SUBREG, REG, CONST_INT, CONSTANT_P_RTX}}, \
   {"got_operand", {SYMBOL_REF, CONST, LABEL_REF}},		\
   {"got_no_const_operand", {SYMBOL_REF, LABEL_REF}},		\
   {"easy_fp_constant", {CONST_DOUBLE}},				\
@@ -3126,11 +3126,12 @@ do {									\
   {"volatile_mem_operand", {MEM}},				\
   {"offsettable_addr_operand", {REG, SUBREG, PLUS}},		\
   {"mem_or_easy_const_operand", {SUBREG, MEM, CONST_DOUBLE}},	\
-  {"add_operand", {SUBREG, REG, CONST_INT}},			\
+  {"add_operand", {SUBREG, REG, CONST_INT, CONSTANT_P_RTX}},	\
   {"non_add_cint_operand", {CONST_INT}},			\
-  {"and_operand", {SUBREG, REG, CONST_INT}},			\
-  {"and64_operand", {SUBREG, REG, CONST_INT, CONST_DOUBLE}},	\
-  {"logical_operand", {SUBREG, REG, CONST_INT}},		\
+  {"and_operand", {SUBREG, REG, CONST_INT, CONSTANT_P_RTX}},	\
+  {"and64_operand", {SUBREG, REG, CONST_INT, CONSTANT_P_RTX,	\
+		     CONST_DOUBLE}},				\
+  {"logical_operand", {SUBREG, REG, CONST_INT, CONSTANT_P_RTX}}, \
   {"non_logical_cint_operand", {CONST_INT}},			\
   {"mask_operand", {CONST_INT}},				\
   {"mask64_operand", {CONST_INT, CONST_DOUBLE}},		\
@@ -3138,7 +3139,8 @@ do {									\
   {"fpmem_operand", {REG}},					\
   {"call_operand", {SYMBOL_REF, REG}},				\
   {"current_file_function_operand", {SYMBOL_REF}},		\
-  {"input_operand", {SUBREG, MEM, REG, CONST_INT, CONST_DOUBLE, SYMBOL_REF}}, \
+  {"input_operand", {SUBREG, MEM, REG, CONST_INT, CONSTANT_P_RTX, \
+		     CONST_DOUBLE, SYMBOL_REF}}, 		\
   {"load_multiple_operation", {PARALLEL}},			\
   {"store_multiple_operation", {PARALLEL}},			\
   {"branch_comparison_operator", {EQ, NE, LE, LT, GE,		\

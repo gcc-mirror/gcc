@@ -1,3 +1,14 @@
+Tue Jul 21 15:49:31 1998  David Edelsohn  <edelsohn@mhpcc.edu>
+
+	* rs6000.h (PREDICATE_CODES): Add CONSTANT_P_RTX.
+	* rs6000.md (movsi, movdi): Add CONSTANT_P_RTX.
+	* rs6000.c (short_cint_operand): Add CONSTANT_P_RTX.
+	(u_short_cint_operand): Same.
+	(reg_or_cint_operand): Same.
+	(logical_operand): Same.
+	(input_operand): Same.
+	(reg_or_short_operand): Use u_short_cint_operand.
+
 Tue Jul 21 03:59:08 1998  David S. Miller  <davem@pierdol.cobaltmicro.com>
 
 	* jump.c (jump_optimize): When simplifying noop moves and
