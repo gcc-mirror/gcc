@@ -1419,10 +1419,7 @@ else
 fi
 
 FLAGS_FOR_TARGET=
-case " $skipdirs " in
-*" target-newlib "*) ;;
-*)
- case " $target_configdirs " in
+case " $target_configdirs " in
  *" newlib "*)
   case " $targargs " in
   *" --with-newlib "*)
@@ -1470,8 +1467,6 @@ case " $skipdirs " in
    ;;
   esac
   ;;
- esac
- ;;
 esac
 
 # On Canadian crosses, we'll be searching the right directories for
@@ -1483,7 +1478,7 @@ if test "${build}" = "${host}" && test -d ${srcdir}/gcc; then
   FLAGS_FOR_TARGET=$FLAGS_FOR_TARGET' -B$(build_tooldir)/bin/ -B$(build_tooldir)/lib/ -isystem $(build_tooldir)/include'
 fi
 
-if test "x${use_gnu_ld}" = x && test "x${with_gnu_ld}" != xno &&
+if test "x${use_gnu_ld}" = x &&
    echo " ${configdirs} " | grep " ld " > /dev/null ; then
   # Arrange for us to find uninstalled linker scripts.
   FLAGS_FOR_TARGET=$FLAGS_FOR_TARGET' -L$$r/ld'
