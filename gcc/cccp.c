@@ -5693,6 +5693,10 @@ do_line (buf, limit, op, keyword)
      we must store a line number now that is one less.  */
   new_lineno = atoi (bp) - 1;
 
+  /* NEW_LINENO is one less than the actual line number here.  */
+  if (pedantic && new_lineno < 0)
+    pedwarn ("line number out of range in `#line' command");
+
   /* skip over the line number.  */
   while (isdigit (*bp))
     bp++;
@@ -5726,6 +5730,8 @@ do_line (buf, limit, op, keyword)
     bp++;
     SKIP_WHITE_SPACE (bp);
     if (*bp) {
+      if (pedantic)
+	pedwarn ("garbage at end of `#line' command");
       if (*bp == '1')
 	file_change = enter_file;
       else if (*bp == '2')
