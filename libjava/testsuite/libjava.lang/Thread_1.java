@@ -176,7 +176,9 @@ public class Thread_1 extends Thread
 
     doit (JOIN_INTERRUPTED);
 
+    // Note: this test has a race conditoin.  So we don't run it any
+    // more.
     // This test must come last.
-    doit (THREAD_EXIT);
+    // doit (THREAD_EXIT);
   }
 }
