@@ -1,3 +1,9 @@
+2004-07-27  Kriang Lerdsuwanakij  <lerdsuwa@users.sourceforge.net>
+
+	PR c++/14429
+	* pt.c (coerce_template_template_parms) <PARM_DECL case>: Only check
+	when the type of ARG is not dependent.
+
 2004-07-26  Geoffrey Keating  <geoffk@apple.com>
 
 	* g++spec.c (LIBSTDCXX_PROFILE): Default to LIBSTDCXX.
