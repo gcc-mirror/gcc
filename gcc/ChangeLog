@@ -1,5 +1,7 @@
 2002-06-18  Alan Modra  <amodra@bigpond.net.au>
 
+	* config/ia64/ia64.md (doloop_end_internal): Correct rtl.
+
 	* doloop.c (doloop_optimize): Extract pattern from insn.
 
 2002-06-17  Matt Kraai  <kraai@alumni.cmu.edu>
