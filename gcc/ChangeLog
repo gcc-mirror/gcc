@@ -127,6 +127,7 @@ Sat Jan 17 21:16:19 1998  Jeffrey A Law  (law@cygnus.com)
 	* rtl.h: Fix typos.
 
 	* acconfig.h (NEED_DECLARATION_ATOL): New declaration to check for.
+	* configure.in: Check for atol.
 	* rtl.c (atol): Only provide the declaration if NEED_DECLARATION_ATOL.
 
 	* rtl.c (read_rtx): Initialize list_rtx to NULL, not NULL_RTX.
