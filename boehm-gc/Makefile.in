@@ -1,4 +1,4 @@
-# Makefile.in generated automatically by automake 1.4-p1 from Makefile.am
+# Makefile.in generated automatically by automake 1.4 from Makefile.am
 
 # Copyright (C) 1994, 1995-8, 1999 Free Software Foundation, Inc.
 # This Makefile.in is free software; the Free Software Foundation
@@ -550,7 +550,7 @@ mostlyclean distclean maintainer-clean
 # The following hack produces a warning from automake, but we need it in order 
 # to build a file from a subdirectory. FIXME.
 test.o:	tests/test.c
-	$(COMPILE) -c tests/test.c
+	$(COMPILE) -c $(srcdir)/tests/test.c
 $(all_objs) : include/private/gcconfig.h include/private/gc_priv.h \
 include/private/gc_hdrs.h include/gc.h include/gc_gcj.h include/gc_mark.h
 
