@@ -3846,7 +3846,11 @@ java_demangle_v3 (mangled)
 
   free (cplus_demangled);
   
-  return_value = dyn_string_release (demangled);
+  if (demangled)
+    return_value = dyn_string_release (demangled);
+  else
+    return_value = NULL;
+
   return return_value;
 }
 
