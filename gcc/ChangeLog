@@ -1,3 +1,8 @@
+2003-12-19  James E Wilson  <wilson@specifixinc.com>
+
+	* install.texi (ia64-*-linux): Document minimum libunwind version
+	number.
+
 2003-12-19  Per Bothner  <per@bothner.com>
 
 	* langhooks.c (lhd_print_error_function):  Fix for PR c/13110.
