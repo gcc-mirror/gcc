@@ -1490,9 +1490,6 @@ extern struct rtx_def *gen_compare_reg ();
 /* This function handles all v9 scc insns */
 
 extern int gen_v9_scc ();
-
-/* ??? This is a hack until conditional move support is complete.  */
-#define HAVE_conditional_move (TARGET_V9)
 
 /* Generate the special assembly code needed to tell the assembler whatever
    it might need to know about the return value of a function.
