@@ -281,18 +281,23 @@ extern int x86_prefetch_sse;
 
 #define TARGET_RED_ZONE (!(target_flags & MASK_NO_RED_ZONE))
 
+/* WARNING: Do not mark empty strings for translation, as calling
+            gettext on an empty string does NOT return an empty
+            string. */
+
+
 #define TARGET_SWITCHES							      \
 { { "80387",			 MASK_80387, N_("Use hardware fp") },	      \
   { "no-80387",			-MASK_80387, N_("Do not use hardware fp") },  \
   { "hard-float",		 MASK_80387, N_("Use hardware fp") },	      \
   { "soft-float",		-MASK_80387, N_("Do not use hardware fp") },  \
   { "no-soft-float",		 MASK_80387, N_("Use hardware fp") },	      \
-  { "386",			 0, N_("") /*Deprecated.*/},		      \
-  { "486",			 0, N_("") /*Deprecated.*/},		      \
-  { "pentium",			 0, N_("") /*Deprecated.*/},		      \
-  { "pentiumpro",		 0, N_("") /*Deprecated.*/},		      \
-  { "intel-syntax",		 0, N_("") /*Deprecated.*/},	 	      \
-  { "no-intel-syntax",		 0, N_("") /*Deprecated.*/},	 	      \
+  { "386",			 0, "" /*Deprecated.*/},		      \
+  { "486",			 0, "" /*Deprecated.*/},		      \
+  { "pentium",			 0, "" /*Deprecated.*/},		      \
+  { "pentiumpro",		 0, "" /*Deprecated.*/},		      \
+  { "intel-syntax",		 0, "" /*Deprecated.*/},	 	      \
+  { "no-intel-syntax",		 0, "" /*Deprecated.*/},	 	      \
   { "rtd",			 MASK_RTD,				      \
     N_("Alternate calling convention") },				      \
   { "no-rtd",			-MASK_RTD,				      \
@@ -346,20 +351,20 @@ extern int x86_prefetch_sse;
     N_("Support MMX built-in functions") },				      \
   { "no-mmx",			 -MASK_MMX,				      \
     N_("Do not support MMX built-in functions") },			      \
-  { "no-mmx",			 MASK_MMX_SET, N_("") },		      \
+  { "no-mmx",			 MASK_MMX_SET, "" },			      \
   { "3dnow",                     MASK_3DNOW | MASK_3DNOW_SET,		      \
     N_("Support 3DNow! built-in functions") },				      \
-  { "no-3dnow",                  -MASK_3DNOW, N_("") },			      \
+  { "no-3dnow",                  -MASK_3DNOW, "" },			      \
   { "no-3dnow",                  MASK_3DNOW_SET,			      \
     N_("Do not support 3DNow! built-in functions") },			      \
   { "sse",			 MASK_SSE | MASK_SSE_SET,		      \
     N_("Support MMX and SSE built-in functions and code generation") },	      \
-  { "no-sse",			 -MASK_SSE, N_("") },	 		      \
+  { "no-sse",			 -MASK_SSE, "" },	 		      \
   { "no-sse",			 MASK_SSE_SET,				      \
     N_("Do not support MMX and SSE built-in functions and code generation") },\
   { "sse2",			 MASK_SSE2 | MASK_SSE2_SET,		      \
     N_("Support MMX, SSE and SSE2 built-in functions and code generation") }, \
-  { "no-sse2",			 -MASK_SSE2, N_("") },			      \
+  { "no-sse2",			 -MASK_SSE2, "" },			      \
   { "no-sse2",			 MASK_SSE2_SET,				      \
     N_("Do not support MMX, SSE and SSE2 built-in functions and code generation") },    \
   { "128bit-long-double",	 MASK_128BIT_LONG_DOUBLE,		      \
@@ -440,9 +445,9 @@ extern int ix86_arch;
   { "cmodel=", &ix86_cmodel_string,				\
     N_("Use given x86-64 code model") },			\
   { "debug-arg", &ix86_debug_arg_string,			\
-    N_("" /* Undocumented. */) },				\
+    "" /* Undocumented. */ },					\
   { "debug-addr", &ix86_debug_addr_string,			\
-    N_("" /* Undocumented. */) },				\
+    "" /* Undocumented. */ },					\
   { "asm=", &ix86_asm_string,					\
     N_("Use given assembler dialect") },			\
   SUBTARGET_OPTIONS						\
