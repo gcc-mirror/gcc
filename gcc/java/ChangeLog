@@ -362,9 +362,9 @@ Thu Mar 28 13:22:22 CET 2002  Jan Hubicka  <jh@suse.cz>
 
 	Fix for PR java/5812.
 	* expr.c (build_java_jsr):  Take pc arguments, and do lookup_label
-	gere instead of in JSR macro.  Likewise with load_type_state call.
+	here instead of in JSR macro.  Likewise with load_type_state call.
 	Do the latter on if the return_pc has been verified (the jsr returns).
-	(JSR):  No just call build_java_jsr.
+	(JSR):  Now just call build_java_jsr.
 
 2002-03-07  Jeff Sturm  <jsturm@one-point.com>
 
