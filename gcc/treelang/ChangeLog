@@ -1,3 +1,10 @@
+2003-07-28  Andreas Jaeger  <aj@suse.de>
+
+	* treetree.c: Convert remaining K&R prototypes to ISO C90.
+	* tree1.c: Likewise.
+	* parse.y: Likewise.
+	* tree-convert.c: Likewise.
+
 2003-07-19  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* treetree.c: Remove unnecessary casts.

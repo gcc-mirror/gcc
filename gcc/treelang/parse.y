@@ -59,9 +59,10 @@
 /* My yylex routine used to intercept calls to flex generated code, to
      record lex time.  */
 int yylex (void);
-static inline int my_yylex(void);
+static inline int my_yylex (void);
 /* Call lex, but ensure time is charged to TV_LEX.  */ 
-static inline int my_yylex ()
+static inline int
+my_yylex (void)
 {
   int res;
   timevar_push (TV_LEX);
