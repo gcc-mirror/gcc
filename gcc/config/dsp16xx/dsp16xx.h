@@ -1556,7 +1556,7 @@ extern struct dsp16xx_frame_info current_frame_info;
 
 /* A C expression for the cost of moving data of mode MODE between
    a register and memory. A value of 2 is the default. */
-#define MEMORY_MOVE_COST(MODE)                                  \
+#define MEMORY_MOVE_COST(MODE,CLASS,IN_P)                        \
   (GET_MODE_CLASS(MODE) == MODE_INT && MODE == QImode ? 12       \
    : 16)
 

@@ -1690,7 +1690,7 @@ enum reg_class { NO_REGS, AP_REG, XRF_REGS, GENERAL_REGS, AGRF_REGS,
 
 /* A C expressions returning the cost of moving data of MODE from a register
    to or from memory.  This is more costly than between registers.  */
-#define MEMORY_MOVE_COST(MODE) 4
+#define MEMORY_MOVE_COST(MODE,CLASS,IN) 4
 
 /* Provide the cost of a branch.  Exact meaning under development.  */
 #define BRANCH_COST (TARGET_88100 ? 1 : 2)

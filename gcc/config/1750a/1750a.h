@@ -910,7 +910,7 @@ enum reg_class { NO_REGS, R2, R0_1, INDEX_REGS, BASE_REGS, ALL_REGS, LIM_REG_CLA
 
 #define REGISTER_MOVE_COST(FROM,TO)	2
 
-#define MEMORY_MOVE_COST(M)		4
+#define MEMORY_MOVE_COST(M,C,I)		4
 
 /* Tell final.c how to eliminate redundant test instructions.  */
 

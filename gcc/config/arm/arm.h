@@ -1624,7 +1624,7 @@ extern struct rtx_def *legitimize_pic_address ();
    return arm_rtx_costs (X, CODE, OUTER_CODE);
 
 /* Moves to and from memory are quite expensive */
-#define MEMORY_MOVE_COST(MODE)  10
+#define MEMORY_MOVE_COST(MODE,CLASS,IN)  10
 
 /* All address computations that can be done are free, but rtx cost returns
    the same for practically all of them.  So we weight the different types
