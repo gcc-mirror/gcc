@@ -9351,7 +9351,7 @@ add_data_member_location_attribute (die, decl)
   add_AT_loc (die, DW_AT_data_member_location, loc_descr);
 }
 
-/* Attach an DW_AT_const_value attribute for a variable or a parameter which
+/* Attach a DW_AT_const_value attribute for a variable or a parameter which
    does not have a "location" either in memory or in a register.  These
    things can arise in GNU C when a constant is passed as an actual parameter
    to an inlined function.  They can also arise in C++ where declared
@@ -9683,7 +9683,7 @@ rtl_for_decl_location (decl)
   return rtl;
 }
 
-/* Generate *either* an DW_AT_location attribute or else an DW_AT_const_value
+/* Generate *either* a DW_AT_location attribute or else a DW_AT_const_value
    data attribute for a variable or a parameter.  We generate the
    DW_AT_const_value attribute only in those cases where the given variable
    or parameter does not have a true "location" either in memory or in a
@@ -9787,7 +9787,7 @@ tree_add_const_value_attribute (var_die, decl)
     }
 }
 
-/* Generate an DW_AT_name attribute given some string value to be included as
+/* Generate a DW_AT_name attribute given some string value to be included as
    the value of the attribute.  */
 
 static void
@@ -9804,7 +9804,7 @@ add_name_attribute (die, name_string)
     }
 }
 
-/* Generate an DW_AT_comp_dir attribute for DIE.  */
+/* Generate a DW_AT_comp_dir attribute for DIE.  */
 
 static void
 add_comp_dir_attribute (die)
@@ -10236,7 +10236,7 @@ add_src_coords_attributes (die, decl)
   add_AT_unsigned (die, DW_AT_decl_line, DECL_SOURCE_LINE (decl));
 }
 
-/* Add an DW_AT_name attribute and source coordinate attribute for the
+/* Add a DW_AT_name attribute and source coordinate attribute for the
    given decl, but only if it actually has a name.  */
 
 static void
@@ -10380,7 +10380,7 @@ class_scope_p (context_die)
 
 /* Many forms of DIEs require a "type description" attribute.  This
    routine locates the proper "type descriptor" die for the type given
-   by 'type', and adds an DW_AT_type attribute below the given die.  */
+   by 'type', and adds a DW_AT_type attribute below the given die.  */
 
 static void
 add_type_attribute (object_die, type, decl_const, decl_volatile, context_die)

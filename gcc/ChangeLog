@@ -1,5 +1,17 @@
 2003-06-23  Kazu Hirata  <kazu@cs.umass.edu>
 
+	* ChangeLog.1: Fix a typo.
+	* cfgrtl.c: Fix comment typos.
+	* dwarf2out.c: Likewise.
+	* expmed.c: Likewise.
+	* genrecog.c: Likewise.
+	* jump.c: Likewise.
+	* rtlanal.c: Likewise.
+	* ssa-dce.c: Likewise.
+	* toplev.c: Likewise.
+
+2003-06-23  Kazu Hirata  <kazu@cs.umass.edu>
+
 	* doc/extend.texi: Fix typos.
 	* doc/md.texi: Likewise.
 	* doc/tm.texi: Likewise.
