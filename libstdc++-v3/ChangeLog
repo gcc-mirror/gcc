@@ -1,3 +1,25 @@
+2000-11-29  Phil Edwards  <pme@sources.redhat.com>
+
+	Sync with the documentation from wwwdocs.
+	* docs/Makefile:  New file (rebuilds FAQ text version).
+	* docs/configopts.html:  Update.
+	* docs/documentation.html:  Update.
+	* docs/download.html:  Update.
+	* docs/index.html:  Update.
+	* docs/install.html:  Update.
+	* docs/links.html:  Update.
+	* docs/mail.html:  Update.
+	* docs/status.html:  Update.
+	* docs/thanks.html:  Update.
+	* docs/27_io/howto.html:  Update.
+	* docs/faq/index.html:  Update for 2.91.
+	* docs/faq/index.txt:  Update for 2.91.
+	* docs/footer.html:  Removed.
+	* docs/footer.ihtml:  New file.
+	* docs/gccrebuild.html:  Removed.
+	* docs/header.html:  Removed.
+	* docs/header.ihtml:  New file.
+
 2000-11-29  Loren J. Rittle  <ljrittle@acm.org>
 
         * tests_flags.in: Correct typo.

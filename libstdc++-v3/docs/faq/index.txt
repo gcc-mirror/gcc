@@ -34,33 +34,34 @@
          2. [23]Bugs in gcc/g++ (not libstdc++-v3)
          3. [24]Bugs in the C++ language/lib specification
          4. [25]Things in libstdc++ that look like bugs
-         5. [26]Aw, that's easy to fix!
-    5. [27]Miscellaneous
-         1. [28]string::iterator is not char*; vector<T>::iterator is not
+            [26]The g++-3 headers are not ours
+         5. [27]Aw, that's easy to fix!
+    5. [28]Miscellaneous
+         1. [29]string::iterator is not char*; vector<T>::iterator is not
             T*
-         2. [29]What's next after libstdc++-v3?
-         3. [30]What about the STL from SGI?
-         4. [31]Extensions and Backward Compatibility
-         5. [32]Compiling with "-fnew-abi"
-         6. [33]Is libstdc++-v3 thread-safe?
-         7. [34]How do I get a copy of the ISO C++ Standard?
+         2. [30]What's next after libstdc++-v3?
+         3. [31]What about the STL from SGI?
+         4. [32]Extensions and Backward Compatibility
+         5. [33]Compiling with "-fnew-abi"
+         6. [34]Is libstdc++-v3 thread-safe?
+         7. [35]How do I get a copy of the ISO C++ Standard?
      _________________________________________________________________
    
                             1.0 General Information
                                        
 1.1 What is libstdc++-v3?
 
-   The GNU Standard C++ Library v3, or libstdc++-2.90.x, is an ongoing
-   project to implement the ISO 14882 Standard C++ library as described
-   in chapters 17 through 27 and annex D. As the library reaches stable
-   plateaus, it is captured in a snapshot and released. The current
-   release is [35]the ninth snapshot. For those who want to see exactly
-   how far the project has come, or just want the latest bleeding-edge
-   code, the up-to-date source is available over anonymous CVS, and can
-   even be browsed over the Web (see below).
+   The GNU Standard C++ Library v3, or libstdc++-2.90.x/2.9x, is an
+   ongoing project to implement the ISO 14882 Standard C++ library as
+   described in chapters 17 through 27 and annex D. As the library
+   reaches stable plateaus, it is captured in a snapshot and released.
+   The current release is [36]the tenth snapshot. For those who want to
+   see exactly how far the project has come, or just want the latest
+   bleeding-edge code, the up-to-date source is available over anonymous
+   CVS, and can even be browsed over the Web (see below).
    
    A more formal description of the V3 goals can be found in the official
-   [36]design document.
+   [37]design document.
      _________________________________________________________________
    
 1.2 Why should I use libstdc++?
@@ -73,8 +74,8 @@
    
    The GNU C/C++/FORTRAN/<pick-a-language> compiler (gcc, g++, etc) is
    widely considered to be one of the leading compilers in the world. Its
-   development has recently been taken over by the [37]GCC team. All of
-   the rapid development and near-legendary [38]portability that are the
+   development has recently been taken over by the [38]GCC team. All of
+   the rapid development and near-legendary [39]portability that are the
    hallmarks of an open-source project are being applied to libstdc++.
    
    That means that all of the Standard classes and functions (such as
@@ -87,21 +88,21 @@
 
    The libstdc++ project is contributed to by several developers all over
    the world, in the same way as GCC or Linux. Benjamin Kosnik, Gabriel
-   Dos Reis, Nathan Myers, and Ulrich Drepper are the lead maintainers of
+   Dos Reis, Phil Edwards, and Ulrich Drepper are the lead maintainers of
    the CVS archive.
    
    Development and discussion is held on the libstdc++ mailing list.
    Subscribing to the list, or searching the list archives, is open to
-   everyone. You can read instructions for doing so on the [39]homepage.
+   everyone. You can read instructions for doing so on the [40]homepage.
    If you have questions, ideas, code, or are just curious, sign up!
      _________________________________________________________________
    
 1.4 How do I get libstdc++?
 
-   The ninth (and latest) snapshot of libstdc++-v3 is [40]available via
+   The tenth (and latest) snapshot of libstdc++-v3 is [41]available via
    ftp.
    
-   The [41]homepage has instructions for retrieving the latest CVS
+   The [42]homepage has instructions for retrieving the latest CVS
    sources, and for browsing the CVS sources over the web.
    
    The subset commonly known as the Standard Template Library (chapters
@@ -111,13 +112,13 @@
    
 1.5 When is libstdc++ going to be finished?
 
-   Nathan Myers gave the best of all possible answers in a Usenet article
-   asking this question: Sooner, if you help.
+   Nathan Myers gave the best of all possible answers, responding to a
+   Usenet article asking this question: Sooner, if you help.
      _________________________________________________________________
    
 1.6 How do I contribute to the effort?
 
-   Here is [42]a page devoted to this topic. Subscribing to the mailing
+   Here is [43]a page devoted to this topic. Subscribing to the mailing
    list (see above, or the homepage) is a very good idea if you have
    something to contribute, or if you have spare time and want to help.
    Contributions don't have to be in the form of source code; anybody who
@@ -152,11 +153,11 @@
    extracted into an updated utilities library, but nobody has stated
    such a project yet.
    
-   (The [43]Boost site houses free C++ libraries that do varying things,
+   (The [44]Boost site houses free C++ libraries that do varying things,
    and happened to be started by members of the Standards Committee.
    Certain "useful stuff" classes will probably migrate there.)
    
-   For the bold and/or desperate, the [44]GCC FAQ describes where to find
+   For the bold and/or desperate, the [45]GCC FAQ describes where to find
    the last libg++ source.
      _________________________________________________________________
    
@@ -167,11 +168,11 @@
    not need to be subscribed to the list to send a message to it. More
    information is available on the homepage (including how to browse the
    list archives); to send to the list, use
-   [45]libstdc++@sources.redhat.com.
+   [46]libstdc++@sources.redhat.com.
    
    If you have a question that you think should be included here, or if
-   you have a question about a question/answer here, contact [46]Phil
-   Edwards or [47]Gabriel Dos Reis.
+   you have a question about a question/answer here, contact [47]Phil
+   Edwards or [48]Gabriel Dos Reis.
      _________________________________________________________________
    
                                2.0 Installation
@@ -185,15 +186,15 @@
        GCC is much easier and more automated than building the GCC 2.[78]
        series was.
      * If you plan on hacking around with the makefiles, you will need
-       the tools [48]autoconfand [49]automake.
+       the tools [49]autoconfand [50]automake.
      * GNU Make is the only make that supports these makefiles.
        
-   The file [50]documentation.html provides a good overview of the steps
+   The file [51]documentation.html provides a good overview of the steps
    necessary to build, install, and use the library. Instructions for
    configuring the library with new flags such as --enable-threads are
    there also.
    
-   The top-level install.html and [51]RELEASE-NOTES files contain the
+   The top-level install.html and [52]RELEASE-NOTES files contain the
    exact build and installation instructions. You may wish to browse
    those files over CVSweb ahead of time to get a feel for what's
    required. RELEASE-NOTES is located in the ".../docs/17_intro/"
@@ -202,25 +203,17 @@
    
 2.2 Is this a drop-in replacement for the libstdc++ that's shipped with g++?
 
-   Yes, as of 2.90.8, it is intended as such.
-   
-   The installation instructions cover this in more detail, but replacing
-   the older library requires rebuilding some of the code that comes with
-   g++. You will need sources for the 2.95.2 compiler in order to build
-   this snapshot. Building the library on its own and then using -I/-L
-   will no longer work.
-   
-   After the 2.90.8 snapshot, the library sources were integrated into
-   the compiler sources. Future releases of the compiler will ship with
-   libstdc++-v3.
+   Yes, as of 2.90.8, it is intended as such. And as of 2.91,
+   libstdc++-v3 is the library that's shipped with g++, so much of this
+   answer has become moot.
      _________________________________________________________________
    
 2.3 What is this CVS thing that you keep mentioning?
 
    The Concurrent Versions System is one of several revision control
    packages. It was selected for GNU projects because it's free (speech),
-   free (beer), and very high quality. The [52]CVS entry in the GNU
-   software catalogue has a better description as well as a [53]link to
+   free (beer), and very high quality. The [53]CVS entry in the GNU
+   software catalogue has a better description as well as a [54]link to
    the makers of CVS.
    
    The "anonymous client checkout" feature of CVS is similar to anonymous
@@ -233,7 +226,8 @@
 2.4 How do I know if it works?
 
    libstdc++-v3 comes with its own testsuite. You do not need to actually
-   install the library ("gmake install") to run the testsuite.
+   install the library ("gmake install") to run the testsuite. Note that
+   2.91 does not use DejaGNU yet.
    
    To run the testsuite on the library after building it, use "gmake
    check" while in your build directory. To run the testsuite on the
@@ -246,11 +240,6 @@
    mailed to the list. The other files (-mkchecklog.txt and
    -mkcheckfiles.txt) contain messages from the compiler while building
    the test programs, and a list of the tests to be run, respectively.
-   
-   If you are using the libgcc.a-rebuilding method to enable std:: you
-   might find that the testsuite starts dying with nasty linker errors.
-   This is symptomatic of the rebuilt libgcc.a not being installed; the
-   previous one is still in use.
    
    If you find bugs in the testsuite programs themselves, or if you think
    of a new test program that should be added to the suite, please write
@@ -294,9 +283,9 @@
    doesn't prevent hanging elsewhere.
    
    You have two options. You can get a newer cygwin1.dll (see the Cygwin
-   paragraph in the [54]installation instructions). Or you can get a
+   paragraph in the [55]installation instructions). Or you can get a
    prebuilt set of bits/std_limits.h and src/limitsMEMBERS.cc files from
-   Mumit Khan's [55]Cygwin-related website.
+   Mumit Khan's [56]Cygwin-related website.
      _________________________________________________________________
    
                           4.0 Known Bugs and Non-Bugs
@@ -311,30 +300,55 @@
    This is a verbatim clip from the "Status" section of the RELEASE-NOTES
    for the latest snapshot.
 New:
----
-- MT safe string. Supported CPUs are alpha, powerpc, x86, sparc32 and sparc64.
-- Configure support for --enable-threads=posix, as well as initial IO
-  locking implementation.
-- Support for native building on Solaris 2.5.1, Solaris 2.6, Solaris
-  2.7, cygwin, [alpha, powerpc, x86]-linux, and preliminary support for
-  Irix and Aix4.2, Aix 4.3 hosts.
-- --enable-namespaces is on by default.
-- Configure and Makefile support for "drop-in" replacement to
-  libstdc++-v2 completed. It is now possible to bootstrap g++, and
-  have g++ find libstdc++-v3 headers and libraries by default.
-- Synched with CVS egcs libio.
-- Cygwin native compiling supported.
-- Cross compiling and embedded targets (newlib) with multilibs support added.
-- SGI's strstream implementation has been added.
-- Copyright on all sources assigned to the FSF.
-- Configure, build and install documentation has been added.
-- Support to enable long long has been added.
-- More valarray improvements.
-- Extractors and inserters for std::complex have been added.
-- Extractors and inserters for void* have been fixed.
-- autoconf macros are now in _GLIBCPP_ namespace.
-- group checking for num_get implemented.
+- namespace std:: is now on by default.
+- choice of "C" include strategies, including the shadow header work,
+  or generic global to std mapping of required "C" types.
+- cpu/atomicity.h tweaks, additions of ia64 and arm support.
+- abstraction of atomicity.h header to support notion of os/atomicity.h files.
+- addition of backward header bits
+- use of system_header pragma
+- Conditional use of -Werror
+- preliminary support for new g++ diagnostics capabilities, including
+  -fdiagnostics-show-location=once
+- pedantic and shadow argument warning fixes
+- Ugly, yet correct mechanism for dealing with "C" math adopted,
+  including the use of builtins.
+- updates and configure/build work to support new libtool
+- addition of strstream
+- valarray work
+- complex work
+- update to SGI STL 3.3
+- libio sync between glibc/libstdc++-v3. Some divergence since initial
+  merge, but sources remain quite close.
+- IO fixes for alpha
+- wide character work for IO when using libio
+- addition of c_io_stdio and "C" IO abstraction layer.
+- auto_ptr fixes, testsuite additions
+- Attempts to use -ffunction-sections -fdata-sections and
+  --gc-sections, depending on use of GNU ld and specific features. As of
+  late, --gc-sections has been disabled due to problems with it throwing
+  away initialization sections. This work is ongoing.
+- long double support
+- sub directory removal, coherent organization of cpu and os-specific
+  files, consolidation of include directories, integration of the C++
+  support bits for operator new/delete,exceptions, etc. All includes
+  are now either in the include/* hierarchy or in libsupc++'s sub directory.
+- Support for more platforms, including irix and bsd variants.
+- filebuf tweaks to deal with variable-size buffers.
+- filebuf implementation for putbackc, etc. al.
+- ctype rewritten. Includes ctype, ctype, and others.
+- codecvt rewritten. Includes codecvt,
+  codecvt. In addition,
+  implementation-defined conversions using iconv are now supported with
+  the __enc_traits partial-specialization of the State template
+  parameter of the codecvt class. In this manner, conversions between
+  encodings such as UCS4, USC2, UNICODE, UNICODEBIG, UNICODELITTLE, etc
+  can be performed.
+- preliminary work on named locales
+- preliminary documentation for locale implementation has been established.
 - Many, many bug fixes.
+- Many, many testsuite additions and consistent VERIFY usage.
+- work on mkcheck to make it more flexible, use libtool, etc.
      _________________________________________________________________
    
 4.2 Bugs in gcc/g++ (not libstdc++-v3)
@@ -343,39 +357,22 @@ New:
    some problems that users may encounter when building or using
    libstdc++. If you are experiencing one of these problems, you can find
    more information on the libstdc++ and the GCC mailing lists.
-     * When using associative containers (like map), and compiling with
-       -O3 (or -finline-functions) and -Winline, I get a zillion errors
-       like:
-   .../include/g++/stl_tree.h: In function `int __black_count(struct __rb_tree_
-node_base *, struct __rb_tree_node_base *)':
-   .../include/g++/stl_tree.h:1045: warning: can't inline call to `int __black_
-count(struct __rb_tree_node_base *, struct __rb_tree_node_base *)'
-   .../include/g++/stl_tree.h:1053: warning: called from here
-
-       This has been discussed a number of times; the problem is that
-       __black_count is marked inline but is also a recursive function.
-       As of 12 July 1999, it has been rewritten into an optimized
-       non-recursive form, so fresh checkouts/releases should no longer
-       see this warning. (The compiler can usually figure out how to make
-       that transformation on its own.)
-     * The reason that EGCS 1.1.2 cannot be used to build the library is
-       that lookups do not work properly, and so the compiler will ICE
-       when building the locale-related source files. This has been fixed
-       in GCC 2.95.
+     * As of 2.91, these bugs have all been fixed. We look forward to new
+       ones, well, not exactly...
      _________________________________________________________________
    
 4.3 Bugs in the C++ language/lib specification
 
-   Yes, unfortunately, there are some. In a [56]message to the list,
+   Yes, unfortunately, there are some. In a [57]message to the list,
    Nathan Myers announced that he has started a list of problems in the
    ISO C++ Standard itself, especially with regard to the chapters that
-   concern the library. The list itself is [57]posted on his website.
+   concern the library. The list itself is [58]posted on his website.
    Developers who are having problems interpreting the Standard may wish
    to consult his notes.
    
    For those people who are not part of the ISO Library Group (i.e.,
    nearly all of us needing to read this page in the first place :-), a
-   public list of the library defects is occasionally published [58]here.
+   public list of the library defects is occasionally published [59]here.
      _________________________________________________________________
    
 4.4 Things in libstdc++ that look like bugs
@@ -390,22 +387,37 @@ count(struct __rb_tree_node_base *, struct __rb_tree_node_base *)'
    Mainly, that option tries to enforce object-oriented programming,
    while the Standard Library isn't necessarily trying to be OO. There
    are multiple solutions under discussion.
+   
+  The g++-3 headers are not ours
+  
+   If you have found an extremely broken header file which is causing
+   problems for you, look carefully before submitting a "high" priority
+   bug report (which you probably shouldn't do anyhow; see the last
+   paragraph of the page describing [60]the GCC bug database).
+   
+   If the headers are in ${prefix}/include/g++-3, then you are using the
+   old libstdc++-v2 library, which is nonstandard and unmaintained. Do
+   not report problems with -v2 to the -v3 mailing list.
+   
+   Currently our header files are installed in ${prefix}/include/g++-v3
+   (see the 'v'?). This may change with the next release of GCC, as it
+   may be too confusing, but [61]the question has not yet been decided.
      _________________________________________________________________
    
 4.5 Aw, that's easy to fix!
 
    If you have found a bug in the library and you think you have a
    working fix, then send it in! The main GCC site has a page on
-   [59]submitting patches that covers the procedure, but for libstdc++
+   [62]submitting patches that covers the procedure, but for libstdc++
    you should of course send the patch to our mailing list, not the GCC
-   mailing list. The libstdc++ [60]contributors' page also talks about
+   mailing list. The libstdc++ [63]contributors' page also talks about
    how to submit patches.
    
    In addition to the description, the patch, and the ChangeLog entry, it
    is a Good Thing if you can additionally create a small test program to
    test for the presence of the bug that your patch fixes. Bugs have a
    way of being reintroduced; if an old bug creeps back in, it will be
-   caught immediately by the [61]testsuite -- but only if such a test
+   caught immediately by the [64]testsuite -- but only if such a test
    exists.
      _________________________________________________________________
    
@@ -443,13 +455,13 @@ count(struct __rb_tree_node_base *, struct __rb_tree_node_base *)'
    Bugfixes and rewrites (to improve or fix thread safety, for instance)
    will of course be a continuing task.
    
-   [62]This question about the next libstdc++ prompted some brief but
-   interesting [63]speculation.
+   [65]This question about the next libstdc++ prompted some brief but
+   interesting [66]speculation.
      _________________________________________________________________
    
 5.3 What about the STL from SGI?
 
-   The [64]STL from SGI is merged into libstdc++-v3 with changes as
+   The [67]STL from SGI is merged into libstdc++-v3 with changes as
    necessary. Currently release 3.3 is being used. Changes in the STL
    usually produce some weird bugs and lots of changes in the rest of the
    libstd++ source as we scramble to keep up. :-)
@@ -470,24 +482,13 @@ count(struct __rb_tree_node_base *, struct __rb_tree_node_base *)'
        #include <ext/hash_map>
 
 
-   Extensions to the library have [65]their own page.
+   Extensions to the library have [68]their own page.
      _________________________________________________________________
    
 5.5 Compiling with "-fnew-abi"
 
-   The library mostly works if you compile it (and programs you link with
-   it) using "-fnew-abi -fno-honor-std" on a vanilla GCC compiler.
-   However, some features, such as RTTI and error handlers, might not
-   link properly with a vanilla libgcc built in GCC under the old ABI. If
-   you rebuild libgcc using the "-f" flags above, you can get both
-   complete language support and full benefits of -fnew-abi -- short
-   mangled symbol names, far more efficient exception handling, and empty
-   base optimization, to name a few. (Note that the new ABI may change
-   from one GCC snapshot to the next, so you would have to rebuild all
-   your libraries each time you get a new compiler snapshot.)
-   
    Towards the end of July 1999, this subject was brought up again on the
-   mailing list under a different name. The related [66]thread (by the
+   mailing list under a different name. The related [69]thread (by the
    name HOWTO-honor-std) is very instructive. More info is at the end of
    RELEASE-NOTES.
    
@@ -496,13 +497,13 @@ count(struct __rb_tree_node_base *, struct __rb_tree_node_base *)'
    
 5.6 Is libstdc++-v3 thread-safe?
 
-   Quick answer: no, as of 2.90.8 (ninth snapshot), the library is not
+   Quick answer: no, as of 2.91 (tenth snapshot), the library is not
    appropriate for multithreaded access. The string class is MT-safe.
    
    This is assuming that your idea of "multithreaded" is the same as
    ours... The general question of multithreading and libstdc++-v3 is
-   addressed in the chapter-specific advice for [67]Library Introduction.
-   Threadsafe containers are covered in more detail in [68]the Received
+   addressed in the chapter-specific advice for [70]Library Introduction.
+   Threadsafe containers are covered in more detail in [71]the Received
    Wisdom section on containers.
      _________________________________________________________________
    
@@ -514,17 +515,17 @@ count(struct __rb_tree_node_base *, struct __rb_tree_node_base *)'
    their two-meeting commitment for voting rights, may get a copy of the
    standard from their respective national standards organization. In the
    USA, this national standards organization is ANSI and their website is
-   right [69]here. (And if you've already registered with them, clicking
-   this link will take you to directly to the place where you can [70]buy
+   right [72]here. (And if you've already registered with them, clicking
+   this link will take you to directly to the place where you can [73]buy
    the standard on-line.
    
-   Who is your country's member body? Visit the [71]ISO homepage and find
+   Who is your country's member body? Visit the [74]ISO homepage and find
    out!
      _________________________________________________________________
    
-   Comments and suggestions are welcome, and may be sent to [72]Phil
-   Edwards or [73]Gabriel Dos Reis.
-   $Id: index.html,v 1.7 2000/10/21 00:51:50 jsm28 Exp $ 
+   Comments and suggestions are welcome, and may be sent to [75]Phil
+   Edwards or [76]Gabriel Dos Reis.
+   $Id: index.html,v 1.12 2000/11/21 00:18:07 pme Exp $ 
 
 References
 
@@ -553,51 +554,54 @@ References
   23. ../faq/index.html#4_2
   24. ../faq/index.html#4_3
   25. ../faq/index.html#4_4
-  26. ../faq/index.html#4_5
-  27. ../faq/index.html#5_0
-  28. ../faq/index.html#5_1
-  29. ../faq/index.html#5_2
-  30. ../faq/index.html#5_3
-  31. ../faq/index.html#5_4
-  32. ../faq/index.html#5_5
-  33. ../faq/index.html#5_6
-  34. ../faq/index.html#5_7
-  35. ftp://sources.redhat.com/pub/libstdc++/libstdc++-2.90.8.tar.gz
-  36. ../17_intro/DESIGN
-  37. http://gcc.gnu.org/
-  38. http://gcc.gnu.org/gcc-2.95/buildstat.html
-  39. ../index.html
-  40. ftp://sources.redhat.com/pub/libstdc++/libstdc++-2.90.8.tar.gz
-  41. ../index.html
-  42. ../17_intro/contribute.html
-  43. http://www.boost.org/
-  44. http://gcc.gnu.org/fom_serv/cache/33.html
-  45. mailto:libstdc++@sources.redhat.com
-  46. mailto:pme@sources.redhat.com
-  47. mailto:gdr@gcc.gnu.org
-  48. http://sources.redhat.com/autoconf/
-  49. http://sources.redhat.com/automake/
-  50. ../documentation.html
-  51. ../17_intro/RELEASE-NOTES
-  52. http://www.gnu.org/software/cvs/cvs.html
-  53. http://www.cyclic.com/
-  54. ../install.html
-  55. http://www.xraylith.wisc.edu/~khan/software/gnu-win32/libstdc++-v3.html
-  56. http://sources.redhat.com/ml/libstdc++/1998/msg00006.html
-  57. http://www.cantrip.org/draft-bugs.txt
-  58. http://anubis.dkuug.dk/jtc1/sc22/wg21/
-  59. http://gcc.gnu.org/contribute.html
-  60. ../17_intro/contribute.html
-  61. ../faq/index.html#2_4
-  62. http://sources.redhat.com/ml/libstdc++/1999/msg00080.html
-  63. http://sources.redhat.com/ml/libstdc++/1999/msg00084.html
-  64. http://www.sgi.com/Technology/STL/
-  65. ../ext/howto.html
-  66. http://sources.redhat.com/ml/libstdc++/1999-q3/msg00066.html
-  67. http://sources.redhat.com/libstdc++/17_intro/howto.html#3
-  68. http://sources.redhat.com/libstdc++/23_containers/howto.html
-  69. http://www.ansi.org/
-  70. http://webstore.ansi.org/ansidocstore/product.asp?sku=ISO%2FIEC+14882%2D1998
-  71. http://www.iso.ch/
-  72. mailto:pme@sources.redhat.com
-  73. mailto:gdr@gcc.gnu.org
+  26. ../faq/index.html#4_4_interface
+  27. ../faq/index.html#4_5
+  28. ../faq/index.html#5_0
+  29. ../faq/index.html#5_1
+  30. ../faq/index.html#5_2
+  31. ../faq/index.html#5_3
+  32. ../faq/index.html#5_4
+  33. ../faq/index.html#5_5
+  34. ../faq/index.html#5_6
+  35. ../faq/index.html#5_7
+  36. ftp://sources.redhat.com/pub/libstdc++/libstdc++-2.91.tar.gz
+  37. ../17_intro/DESIGN
+  38. http://gcc.gnu.org/
+  39. http://gcc.gnu.org/gcc-2.95/buildstat.html
+  40. ../index.html
+  41. ftp://sources.redhat.com/pub/libstdc++/libstdc++-2.91.tar.gz
+  42. ../index.html
+  43. ../17_intro/contribute.html
+  44. http://www.boost.org/
+  45. http://gcc.gnu.org/fom_serv/cache/33.html
+  46. mailto:libstdc++@sources.redhat.com
+  47. mailto:pme@sources.redhat.com
+  48. mailto:gdr@gcc.gnu.org
+  49. http://sources.redhat.com/autoconf/
+  50. http://sources.redhat.com/automake/
+  51. ../documentation.html
+  52. ../17_intro/RELEASE-NOTES
+  53. http://www.gnu.org/software/cvs/cvs.html
+  54. http://www.cyclic.com/
+  55. ../install.html
+  56. http://www.xraylith.wisc.edu/~khan/software/gnu-win32/libstdc++-v3.html
+  57. http://sources.redhat.com/ml/libstdc++/1998/msg00006.html
+  58. http://www.cantrip.org/draft-bugs.txt
+  59. http://anubis.dkuug.dk/jtc1/sc22/wg21/
+  60. http://gcc.gnu.org/gnatswrite.html
+  61. http://gcc.gnu.org/ml/gcc/2000-10/msg00732.html
+  62. http://gcc.gnu.org/contribute.html
+  63. ../17_intro/contribute.html
+  64. ../faq/index.html#2_4
+  65. http://sources.redhat.com/ml/libstdc++/1999/msg00080.html
+  66. http://sources.redhat.com/ml/libstdc++/1999/msg00084.html
+  67. http://www.sgi.com/Technology/STL/
+  68. ../ext/howto.html
+  69. http://sources.redhat.com/ml/libstdc++/1999-q3/msg00066.html
+  70. http://sources.redhat.com/libstdc++/17_intro/howto.html#3
+  71. http://sources.redhat.com/libstdc++/23_containers/howto.html
+  72. http://www.ansi.org/
+  73. http://webstore.ansi.org/ansidocstore/product.asp?sku=ISO%2FIEC+14882%2D1998
+  74. http://www.iso.ch/
+  75. mailto:pme@sources.redhat.com
+  76. mailto:gdr@gcc.gnu.org

@@ -1,11 +1,8 @@
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0//EN">
 <HTML>
 <HEAD>
    <META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=iso-8859-1">
-   <META NAME="AUTHOR" CONTENT="pme@sources.redhat.com (Phil Edwards)">
    <META NAME="KEYWORDS" CONTENT="libstdc++, libstdc++-v3, GCC, g++, libg++, STL">
    <META NAME="DESCRIPTION" CONTENT="FAQ for the GNU libstdc++ effort.">
-   <META NAME="GENERATOR" CONTENT="vi and eight fingers">
    <TITLE>libstdc++-v3 FAQ</TITLE>
 <LINK REL="home" HREF="http://sources.redhat.com/libstdc++/">
 <LINK REL=StyleSheet HREF="../lib3styles.css">
@@ -13,7 +10,7 @@
   ** Locations of "the most recent snapshot is the Nth" text are 
   ** answers 1_1, 1_4, 4_1, 5_6.
 -->
-<!-- $Id: index.html,v 1.7 2000/10/21 00:51:50 jsm28 Exp $ -->
+<!-- $Id: index.html,v 1.12 2000/11/21 00:18:07 pme Exp $ -->
 </HEAD>
 <BODY>
 
@@ -65,6 +62,8 @@ http://sources.redhat.com/libstdc++/faq/</A>.</P>
          <LI><A HREF="#4_2">Bugs in gcc/g++ (not libstdc++-v3)</A>
          <LI><A HREF="#4_3">Bugs in the C++ language/lib specification</A>
          <LI><A HREF="#4_4">Things in libstdc++ that look like bugs</A>
+         <BR><A HREF="#4_4_interface">The g++-3 headers are
+                                      <STRONG>not ours</STRONG></A>
          <LI><A HREF="#4_5">Aw, that's easy to fix!</A>
       </OL>
 
@@ -89,13 +88,13 @@ http://sources.redhat.com/libstdc++/faq/</A>.</P>
 <H1><A NAME="1_0">1.0 General Information</A></H1>
 <!-- I suspect these will mostly be links to/into existing documents. -->
    <H2><A NAME="1_1">1.1 What is libstdc++-v3?</A></H2>
-      <P>The GNU Standard C++ Library v3, or libstdc++-2.90.x, is an 
+      <P>The GNU Standard C++ Library v3, or libstdc++-2.90.x/2.9x, is an 
          ongoing project to implement the ISO 14882 Standard C++ library 
          as described in chapters 17 through 27 and annex D.  As the 
          library reaches stable plateaus, it is captured in a snapshot
          and released.  The current release is <A
-HREF="ftp://sources.redhat.com/pub/libstdc++/libstdc++-2.90.8.tar.gz">the
-         ninth snapshot</A>.  For those who want to see exactly how
+HREF="ftp://sources.redhat.com/pub/libstdc++/libstdc++-2.91.tar.gz">the
+         tenth snapshot</A>.  For those who want to see exactly how
          far the project has come, or just want the latest
          bleeding-edge code, the up-to-date source is available over
          anonymous CVS, and can even be browsed over the Web (see below). 
@@ -135,7 +134,7 @@ HREF="http://gcc.gnu.org/gcc-2.95/buildstat.html">portability</A>
    <H2><A NAME="1_3">1.3 Who's in charge of it?</A></H2>
       <P>The libstdc++ project is contributed to by several developers
          all over the world, in the same way as GCC or Linux.
-         Benjamin Kosnik, Gabriel Dos Reis, Nathan Myers, and Ulrich
+         Benjamin Kosnik, Gabriel Dos Reis, Phil Edwards, and Ulrich
          Drepper are the lead maintainers of the CVS archive.
       </P>
       <P>Development and discussion is held on the libstdc++ mailing
@@ -147,8 +146,8 @@ HREF="http://gcc.gnu.org/gcc-2.95/buildstat.html">portability</A>
 
 <HR>
    <H2><A NAME="1_4">1.4 How do I get libstdc++?</A></H2>
-      <P>The ninth (and latest) snapshot of libstdc++-v3 is <A
-HREF="ftp://sources.redhat.com/pub/libstdc++/libstdc++-2.90.8.tar.gz">
+      <P>The tenth (and latest) snapshot of libstdc++-v3 is <A
+HREF="ftp://sources.redhat.com/pub/libstdc++/libstdc++-2.91.tar.gz">
          available via ftp</A>.
       </P>
       <P>The <A HREF="../index.html">homepage</A>
@@ -167,8 +166,8 @@ HREF="ftp://sources.redhat.com/pub/libstdc++/libstdc++-2.90.8.tar.gz">
          HREF="http://www.deja.com/getdoc.xp?AN=469581698&fmt=text">a 
          Usenet article</A>.</P>
 which is no longer available, thanks deja...-->
-      <P>Nathan Myers gave the best of all possible answers in a
-         Usenet article asking this question:  Sooner, if you help.
+      <P>Nathan Myers gave the best of all possible answers, responding
+         to a Usenet article asking this question:  Sooner, if you help.
       </P>
 
 
@@ -245,6 +244,7 @@ which is no longer available, thanks deja...-->
    <H2><A NAME="2_1">2.1 How do I install libstdc++-v3?</A></H2>
       <P>Complete instructions are not given here (this is a FAQ, not
          an installation document), but the tools required are few:
+      </P>
          <UL>
             <LI> A release of libstdc++.
             <LI> A recent release of GCC (version 2.95 works). Note
@@ -256,7 +256,6 @@ HREF="http://sources.redhat.com/autoconf/">autoconf</A>and <A
 HREF="http://sources.redhat.com/automake/">automake</A>. 
             <LI> GNU Make is the only make that supports these makefiles. 
          </UL>
-      </P>
       <P>The file <A HREF="../documentation.html">documentation.html</A>
          provides a good overview of the steps necessary to build, install,
          and use the library.  Instructions for configuring the library
@@ -273,16 +272,9 @@ HREF="http://sources.redhat.com/automake/">automake</A>.
 <HR>
    <H2><A NAME="2_2">2.2 Is this a drop-in replacement for the
                          libstdc++ that's shipped with g++?</A></H2>
-      <P>Yes, as of 2.90.8, it is intended as such.</P>
-      <P>The installation instructions cover this in more detail, but
-         replacing the older library requires rebuilding some of the
-         code that comes with g++.  You will need sources for the 2.95.2
-         compiler in order to build this snapshot.  Building the library
-         on its own and then using -I/-L will no longer work.
-      </P>
-      <P>After the 2.90.8 snapshot, the library sources were integrated
-         into the compiler sources.  Future releases of the compiler will
-         ship with libstdc++-v3.
+      <P>Yes, as of 2.90.8, it is intended as such.  And as of 2.91,
+         libstdc++-v3 <EM>is</EM> the library that's shipped with
+         g++, so much of this answer has become moot.
       </P>
 
 <HR>
@@ -309,7 +301,8 @@ HREF="http://sources.redhat.com/automake/">automake</A>.
    <H2><A NAME="2_4">2.4 How do I know if it works?</A></H2>
       <P>libstdc++-v3 comes with its own testsuite.  You do not need
          to actually install the library (&quot;<TT>gmake
-         install</TT>&quot;) to run the testsuite.
+         install</TT>&quot;) to run the testsuite.  Note that 2.91 does
+         not use DejaGNU yet.
       </P>
       <P>To run the testsuite on the library after building it, use
          &quot;gmake check&quot; while in your build directory.  To run
@@ -323,11 +316,6 @@ HREF="http://sources.redhat.com/automake/">automake</A>.
          and -mkcheckfiles.txt) contain messages from the compiler while
          building the test programs, and a list of the tests to be run,
          respectively.
-      </P>
-      <P>If you are using the libgcc.a-rebuilding method to enable std::
-         you might find that the testsuite starts dying with nasty linker
-         errors.  This is symptomatic of the rebuilt libgcc.a not being
-         installed; the previous one is still in use.
       </P>
       <P>If you find bugs in the testsuite programs themselves, or if
          you think of a new test program that should be added to the
@@ -398,30 +386,55 @@ HREF="http://sources.redhat.com/automake/">automake</A>.
 
 <pre>
 New: 
---- 
-- MT safe string. Supported CPUs are alpha, powerpc, x86, sparc32 and sparc64.
-- Configure support for --enable-threads=posix, as well as initial IO
-  locking implementation.
-- Support for native building on Solaris 2.5.1, Solaris 2.6, Solaris
-  2.7, cygwin, [alpha, powerpc, x86]-linux, and preliminary support for
-  Irix and Aix4.2, Aix 4.3 hosts.
-- --enable-namespaces is on by default.
-- Configure and Makefile support for "drop-in" replacement to
-  libstdc++-v2 completed. It is now possible to bootstrap g++, and
-  have g++ find libstdc++-v3 headers and libraries by default.
-- Synched with CVS egcs libio. 
-- Cygwin native compiling supported.
-- Cross compiling and embedded targets (newlib) with multilibs support added.
-- SGI's strstream implementation has been added.
-- Copyright on all sources assigned to the FSF.
-- Configure, build and install documentation has been added.
-- Support to enable long long has been added.
-- More valarray improvements.
-- Extractors and inserters for std::complex have been added.
-- Extractors and inserters for void* have been fixed.
-- autoconf macros are now in _GLIBCPP_ namespace.
-- group checking for num_get implemented.
+- namespace std:: is now on by default.
+- choice of "C" include strategies, including the shadow header work,
+  or generic global to std mapping of required "C" types.
+- cpu/atomicity.h tweaks, additions of ia64 and arm support.
+- abstraction of atomicity.h header to support notion of os/atomicity.h files.
+- addition of backward header bits
+- use of system_header pragma
+- Conditional use of -Werror
+- preliminary support for new g++ diagnostics capabilities, including
+  -fdiagnostics-show-location=once
+- pedantic and shadow argument warning fixes 
+- Ugly, yet correct mechanism for dealing with "C" math adopted,
+  including the use of builtins.
+- updates and configure/build work to support new libtool
+- addition of strstream 
+- valarray work
+- complex work
+- update to SGI STL 3.3
+- libio sync between glibc/libstdc++-v3. Some divergence since initial
+  merge, but sources remain quite close.
+- IO fixes for alpha
+- wide character work for IO when using libio
+- addition of c_io_stdio and "C" IO abstraction layer.
+- auto_ptr fixes, testsuite additions
+- Attempts to use -ffunction-sections -fdata-sections and
+  --gc-sections, depending on use of GNU ld and specific features. As of
+  late, --gc-sections has been disabled due to problems with it throwing
+  away initialization sections. This work is ongoing.
+- long double support
+- sub directory removal, coherent organization of cpu and os-specific
+  files, consolidation of include directories, integration of the C++
+  support bits for operator new/delete,exceptions, etc. All includes
+  are now either in the include/* hierarchy or in libsupc++'s sub directory.
+- Support for more platforms, including irix and bsd variants.
+- filebuf tweaks to deal with variable-size buffers.
+- filebuf implementation for putbackc, etc. al.
+- ctype rewritten. Includes ctype<char>, ctype<wchar_t>, and others.
+- codecvt rewritten. Includes codecvt<char, char, mbstate_t>,
+  codecvt<wchar_t, char, mbstate_t>. In addition,
+  implementation-defined conversions using iconv are now supported with
+  the __enc_traits partial-specialization of the State template
+  parameter of the codecvt class. In this manner, conversions between
+  encodings such as UCS4, USC2, UNICODE, UNICODEBIG, UNICODELITTLE, etc
+  can be performed.
+- preliminary work on named locales
+- preliminary documentation for locale implementation has been established.
 - Many, many bug fixes.
+- Many, many testsuite additions and consistent VERIFY usage.
+- work on mkcheck to make it more flexible, use libtool, etc.
 </pre>
 
 
@@ -434,28 +447,8 @@ New:
          the GCC mailing lists.
       </P>
       <UL>
-         <LI>When using associative containers (like <TT>map</TT>), and
-             compiling with <TT>-O3</TT> (or <TT>-finline-functions</TT>)
-             and <TT>-Winline</TT>, I get a zillion errors like:
-             <!-- Careful, the leading spaces in PRE show up directly. -->
-             <PRE>
-   .../include/g++/stl_tree.h: In function `int __black_count(struct __rb_tree_node_base *, struct __rb_tree_node_base *)':
-   .../include/g++/stl_tree.h:1045: warning: can't inline call to `int __black_count(struct __rb_tree_node_base *, struct __rb_tree_node_base *)'
-   .../include/g++/stl_tree.h:1053: warning: called from here
-             </PRE>
-             <P>This has been discussed a number of times; the problem
-                is that __black_count is marked inline but is also a
-                recursive function.  As of 12 July 1999, it has been
-                rewritten into an optimized non-recursive form, so 
-                fresh checkouts/releases should no longer see this warning.
-                (The compiler can usually figure out how to make that
-                transformation on its own.)
-             </P>
-
-         <LI>The reason that EGCS 1.1.2 cannot be used to build the
-             library is that lookups do not work properly, and so the
-             compiler will ICE when building the locale-related source
-             files.  This has been fixed in GCC 2.95.
+         <LI>As of 2.91, these bugs have all been fixed.  We look forward
+             to new ones, well, not exactly...
       </UL>
 
 <HR>
@@ -489,6 +482,25 @@ to the list</A>, Nathan Myers announced that he has started a list of
          object-oriented programming, while the Standard Library isn't
          necessarily trying to be OO.  There are multiple solutions
          under discussion.
+      </P>
+      <H3><A NAME="4_4_interface">The g++-3 headers are
+                                      <EM>not ours</EM></A></H3>
+      <P>If you have found an extremely broken header file which is
+         causing problems for you, look carefully before submitting a
+         &quot;high&quot; priority bug report (which you probably shouldn't
+         do anyhow; see the last paragraph of the page describing
+         <A HREF="http://gcc.gnu.org/gnatswrite.html">the GCC bug database</A>).
+      </P>
+      <P>If the headers are in <CODE>${prefix}/include/g++-3</CODE>, then
+         you are using the old libstdc++-v2 library, which is nonstandard
+         and unmaintained.  Do not report problems with -v2 to the -v3
+         mailing list.
+      </P>
+      <P>Currently our header files are installed in
+         <CODE>${prefix}/include/g++-v3</CODE> (see the 'v'?).  This may
+         change with the next release of GCC, as it may be too confusing,
+         but <A HREF="http://gcc.gnu.org/ml/gcc/2000-10/msg00732.html">the
+         question has not yet been decided</A>.
       </P>
 
 <HR>
@@ -578,29 +590,16 @@ HREF="http://sources.redhat.com/ml/libstdc++/1999/msg00084.html">speculation</A>
          preprocessor search the g++-v3/ext and /backward directories,
          it is better to refer to files there by their path, as in:
          <!-- Careful, the leading spaces in PRE show up directly. -->
+      </P>
          <PRE>
        #include &lt;ext/hash_map&gt;
          </PRE>
-      </P>
       <P>Extensions to the library have
          <A HREF="../ext/howto.html">their own page</A>.
       </P>
 
 <HR>
    <H2><A NAME="5_5">5.5 Compiling with &quot;-fnew-abi&quot;</A></H2>
-      <P>The library mostly works if you compile it (and programs you
-         link with it) using &quot;-fnew-abi -fno-honor-std&quot; on a
-         vanilla GCC compiler.  However, some features, such as RTTI
-         and error handlers, might not link properly with a vanilla
-         libgcc built in GCC under the old ABI.  If you rebuild libgcc
-         using the &quot;-f&quot; flags above, you can get both complete
-         language support and full benefits of -fnew-abi -- short
-         mangled symbol names, far more efficient exception handling,
-         and empty base optimization, to name a few.  (Note that the
-         new ABI may change from one GCC snapshot to the next, so you
-         would have to rebuild all your libraries each time you get a
-         new compiler snapshot.) 
-      </P>
       <P>Towards the end of July 1999, this subject was brought up again
          on the mailing list under a different name.  The related
          <A HREF="http://sources.redhat.com/ml/libstdc++/1999-q3/msg00066.html">thread</A>
@@ -612,7 +611,7 @@ HREF="http://sources.redhat.com/ml/libstdc++/1999/msg00084.html">speculation</A>
 
 <HR>
    <H2><A NAME="5_6">5.6 Is libstdc++-v3 thread-safe?</A></H2>
-      <P>Quick answer:  no, as of 2.90.8 (ninth snapshot), the
+      <P>Quick answer:  no, as of 2.91 (tenth snapshot), the
          library is not appropriate for multithreaded access.  The
          string class is MT-safe.
       </P>
@@ -654,7 +653,7 @@ HREF="http://sources.redhat.com/ml/libstdc++/1999/msg00084.html">speculation</A>
 Comments and suggestions are welcome, and may be sent to
 <A HREF="mailto:pme@sources.redhat.com">Phil Edwards</A> or
 <A HREF="mailto:gdr@gcc.gnu.org">Gabriel Dos Reis</A>.
-<BR> $Id: index.html,v 1.7 2000/10/21 00:51:50 jsm28 Exp $
+<BR> $Id: index.html,v 1.12 2000/11/21 00:18:07 pme Exp $
 </EM></P>
 
 
