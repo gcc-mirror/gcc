@@ -206,9 +206,9 @@ extern char * reg_names[];
 /* Print subsidiary information on the compiler version in use.
    Redefined in m88kv4.h, and m88kluna.h.  */
 #define VERSION_INFO1	"88open OCS/BCS, "
-#define VERSION_INFO2	"04 Jul 1992"
+#define VERSION_INFO2	"21 Jul 1992"
 #define VERSION_STRING	version_string
-#define	TM_SCCS_ID	"@(#)m88k.h	2.2.6.7 04 Jul 1992 08:35:55"
+#define	TM_SCCS_ID	"@(#)m88k.h	2.2.6.9 21 Jul 1992 09:24:47"
 
 /* Run-time compilation parameters selecting different hardware subsets.  */
 
@@ -1953,8 +1953,15 @@ enum reg_class { NO_REGS, AP_REG, XRF_REGS, GENERAL_REGS, AGRF_REGS,
 #define ASM_OUTPUT_ASCII(FILE, P, SIZE)  \
   output_ascii (FILE, ASCII_DATA_ASM_OP, 48, P, SIZE)
 
-/* Override svr4.h.  */
+/* Override svr4.h.  Change to the readonly data section for a table of
+   addresses.  final_scan_insn changes back to the text section.  */
 #undef	ASM_OUTPUT_CASE_LABEL
+#define ASM_OUTPUT_CASE_LABEL(FILE, PREFIX, NUM, TABLE)			\
+  do {									\
+    if (! CASE_VECTOR_INSNS)						\
+      readonly_data_section ();						\
+    ASM_OUTPUT_INTERNAL_LABEL (FILE, PREFIX, NUM);			\
+  } while (0)
 
 /* Epilogue for case labels.  This jump instruction is called by casesi
    to transfer to the appropriate branch instruction within the table.
@@ -2372,6 +2379,11 @@ sdata_section ()							\
   else									\
     const_section ();							\
 }
+
+/* Jump tables consist of branch instructions and should be output in
+   the text section.  When we use a table of addresses, we explicitly
+   change to the readonly data section.  */
+#define JUMP_TABLES_IN_TEXT_SECTION 1
 
 /* Define this macro if references to a symbol must be treated differently
    depending on something about the variable or function named by the
