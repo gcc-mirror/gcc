@@ -93,6 +93,61 @@ typedef int apply_fix_p_t;  /* Apply Fix Predicate Type */
 #define _P_(p)	()
 #endif
 
+/*  Test Descriptor
+
+    Each fix may have associated tests that determine
+    whether the fix needs to be applied or not.
+    Each test has a type (from the te_test_type enumeration);
+    associated test text; and, if the test is TT_EGREP or
+    the negated form TT_NEGREP, a pointer to the compiled
+    version of the text string.
+
+    */
+typedef enum
+{
+  TT_TEST, TT_EGREP, TT_NEGREP, TT_FUNCTION
+} te_test_type;
+
+typedef struct test_desc tTestDesc;
+
+struct test_desc
+{
+  te_test_type type;
+  const char *pz_test_text;
+  regex_t *p_test_regex;
+};
+
+typedef struct patch_desc tPatchDesc;
+
+/*  Fix Descriptor
+
+    Everything you ever wanted to know about how to apply
+    a particular fix (which files, how to qualify them,
+    how to actually make the fix, etc...)
+
+    NB:  the FD_ defines are BIT FLAGS
+
+    */
+#define FD_MACH_ONLY      0x0000
+#define FD_MACH_IFNOT     0x0001
+#define FD_SHELL_SCRIPT   0x0002
+#define FD_SUBROUTINE     0x0004
+#define FD_REPLACEMENT    0x0008
+#define FD_SKIP_TEST      0x8000
+
+typedef struct fix_desc tFixDesc;
+struct fix_desc
+{
+  const char*   fix_name;       /* Name of the fix */
+  const char*   file_list;      /* List of files it applies to */
+  const char**  papz_machs;     /* List of machine/os-es it applies to */
+  int           test_ct;
+  int           fd_flags;
+  tTestDesc*    p_test_desc;
+  const char**  patch_args;
+  long          unused;
+};
+
 /*
  *  Exported procedures
  */
@@ -100,6 +155,10 @@ char * load_file_data _P_(( FILE* fp ));
 t_bool is_cxx_header  _P_(( tCC* filename, tCC* filetext ));
 void   compile_re     _P_(( tCC* pat, regex_t* re, int match,
 			    tCC *e1, tCC *e2 ));
+
+void apply_fix _P_(( tFixDesc* p_fixd, tCC* filname ));
+apply_fix_p_t run_test _P_((tCC* t_name, tCC* f_name, tCC* text ));
+
 #ifdef MN_NAME_PAT
 void   mn_get_regexps _P_(( regex_t** label_re, regex_t** name_re,
 			    tCC *who ));

@@ -14,8 +14,9 @@ TARGET_MACHINE='*'
 DESTDIR=`pwd`/res
 SRCDIR=`pwd`/inc
 FIND_BASE='.'
+VERBOSE=1
 
-export TARGET_MACHINE DESTDIR SRCDIR FIND_BASE
+export TARGET_MACHINE DESTDIR SRCDIR FIND_BASE VERBOSE
 
 mkdir ${DESTDIR} ${SRCDIR}
 
@@ -39,7 +40,6 @@ cat >> inc/[=
 
 
 	#ifndef [=hackname _up=]_CHECK
-	#define [=hackname _up=]_CHECK
 [=test_text "\t" _prefix=]
 	#endif  /* [=hackname _up=]_CHECK */
 _HACK_EOF_
@@ -50,11 +50,21 @@ _HACK_EOF_
 =]
 
 cd inc
-find . -type f | ../../fixincl
+find . -type f | sed 's;\./;;' | sort > ../LIST
+../../fixincl < ../LIST
 cd ..
-diff -cr inc res | \
-  sed -e 's;^\(\*\*\* inc/[^	]*\)	.*$;\1;' \
-      -e 's;^\(--- res/[^	]*\)	.*$;\1;' > NEWDIFF
+
+while read f
+do
+  if [ ! -f res/$f ]
+  then
+    echo "Only in inc:  inc/$f"
+  else
+    diff -c inc/$f res/$f | \
+      sed -e '1,2s;	.*;;'
+  fi
+done > NEWDIFF < LIST
+
 echo
 echo Test output check:
 [=
@@ -63,7 +73,7 @@ _FOR fix =][=
 
   _IF test_text _exist =]
 fgrep [=hackname _up=]_CHECK NEWDIFF > /dev/null 2>&1 || \
-  echo "[=_eval hackname _get "#%32s test failed.  See inc/"
+  echo "[=_eval hackname _get "#%32s test failed.  See testdir/inc/"
           _printf =][=
     _IF files _exist =][=
       files[0] =][=
