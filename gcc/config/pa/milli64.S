@@ -389,7 +389,7 @@ LSYM(small_divisor)
 /*  Clear the upper 32 bits of the arg1 register.  We are working with	*/
 /*  small divisors (and 32 bit integers)   We must not be mislead  */
 /*  by "1" bits left in the upper 32 bits. */
-	depd r0,31,32,arg1
+	depd %r0,31,32,%r25
 #endif
 	blr,n	arg1,r0
 	nop
@@ -604,7 +604,7 @@ LSYM(special_divisor)
 /* Clear the upper 32 bits of the arg1 register.  We are working with
    small divisors (and 32 bit unsigned integers)   We must not be mislead
    by "1" bits left in the upper 32 bits.  */
-	depd r0,31,32,arg1
+	depd %r0,31,32,%r25
 #endif
 	comib,>	0,arg1,LREF(big_divisor)
 	nop
