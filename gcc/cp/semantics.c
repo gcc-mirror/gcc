@@ -1374,20 +1374,21 @@ tree
 finish_stmt_expr_expr (tree expr, tree stmt_expr)
 {
   tree result = NULL_TREE;
-  tree type = void_type_node;
 
   if (expr)
     {
-      type = TREE_TYPE (expr);
-      
       if (!processing_template_decl && !VOID_TYPE_P (TREE_TYPE (expr)))
 	{
+	  tree type = TREE_TYPE (expr);
+
 	  if (TREE_CODE (type) == ARRAY_TYPE
 	      || TREE_CODE (type) == FUNCTION_TYPE)
 	    expr = decay_conversion (expr);
 
 	  expr = convert_from_reference (expr);
 	  expr = require_complete_type (expr);
+
+	  type = TREE_TYPE (expr);
 
 	  /* Build a TARGET_EXPR for this aggregate.  finish_stmt_expr
 	     will then pull it apart so the lifetime of the target is
@@ -1489,25 +1490,40 @@ finish_stmt_expr (tree stmt_expr, bool has_no_scope)
 	 the target's init_expr as the final expression and then put
 	 the statement expression itself as the target's init
 	 expr. Finally, return the target expression.  */
-      tree last_expr = EXPR_STMT_EXPR (result_stmt);
-      
-      my_friendly_assert (TREE_CODE (last_expr) == TARGET_EXPR, 20030729);
-      *result_stmt_p = TREE_OPERAND (last_expr, 1);
+      tree init, target_expr = EXPR_STMT_EXPR (result_stmt);
+      my_friendly_assert (TREE_CODE (target_expr) == TARGET_EXPR, 20030729);
 
-      if (TREE_CODE (result) == BIND_EXPR)
+      /* The initializer will be void if the initialization is done by
+	 AGGR_INIT_EXPR; propagate that out to the statement-expression as
+	 a whole.  */
+      init = TREE_OPERAND (target_expr, 1);
+      type = TREE_TYPE (init);
+
+      if (stmts_are_full_exprs_p ())
+	init = fold (build1 (CLEANUP_POINT_EXPR, type, init));
+      *result_stmt_p = init;
+
+      if (VOID_TYPE_P (type))
+	/* No frobbing needed.  */;
+      else if (TREE_CODE (result) == BIND_EXPR)
 	{
+	  /* The BIND_EXPR created in finish_compound_stmt is void; if we're
+	     returning a value directly, give it the appropriate type.  */
 	  if (VOID_TYPE_P (TREE_TYPE (result)))
-	    TREE_TYPE (result) = TREE_TYPE (last_expr);
-	  else if (same_type_p (TREE_TYPE (result), TREE_TYPE (last_expr)))
+	    TREE_TYPE (result) = type;
+	  else if (same_type_p (TREE_TYPE (result), type))
 	    ;
 	  else
 	    abort ();
 	}
       else if (TREE_CODE (result) == STATEMENT_LIST)
-	result = build (BIND_EXPR, TREE_TYPE (last_expr), NULL, result, NULL);
+	/* We need to wrap a STATEMENT_LIST in a BIND_EXPR so it can have a
+	   type other than void.  FIXME why can't we just return a value
+	   from STATEMENT_LIST?  */
+	result = build3 (BIND_EXPR, type, NULL, result, NULL);
 
-      TREE_OPERAND (last_expr, 1) = result;
-      result = last_expr;
+      TREE_OPERAND (target_expr, 1) = result;
+      result = target_expr;
     }
 
   return result;
@@ -2722,7 +2738,7 @@ simplify_aggr_init_expr (tree *tp)
   tree fn = TREE_OPERAND (aggr_init_expr, 0);
   tree args = TREE_OPERAND (aggr_init_expr, 1);
   tree slot = TREE_OPERAND (aggr_init_expr, 2);
-  tree type = TREE_TYPE (aggr_init_expr);
+  tree type = TREE_TYPE (slot);
 
   tree call_expr;
   enum style_t { ctor, arg, pcc } style;
@@ -2750,7 +2766,7 @@ simplify_aggr_init_expr (tree *tp)
 	args = TREE_CHAIN (args);
 
       cxx_mark_addressable (slot);
-      addr = build1 (ADDR_EXPR, build_pointer_type (TREE_TYPE (slot)), slot);
+      addr = build1 (ADDR_EXPR, build_pointer_type (type), slot);
       if (style == arg)
 	{
 	  /* The return type might have different cv-quals from the slot.  */
@@ -2784,10 +2800,6 @@ simplify_aggr_init_expr (tree *tp)
 				   DIRECT_BIND | LOOKUP_ONLYCONVERTING);
       pop_deferring_access_checks ();
     }
-
-  /* We want to use the value of the initialized location as the
-     result.  */
-  call_expr = build (COMPOUND_EXPR, type, call_expr, slot);
 
   *tp = call_expr;
 }

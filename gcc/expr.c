@@ -8862,7 +8862,12 @@ expand_expr_real_1 (tree exp, rtx target, enum machine_mode tmode,
 	/* Mark it as expanded.  */
 	TREE_OPERAND (exp, 1) = NULL_TREE;
 
-	store_expr (exp1, target, modifier == EXPAND_STACK_PARM ? 2 : 0);
+	if (VOID_TYPE_P (TREE_TYPE (exp1)))
+	  /* If the initializer is void, just expand it; it will initialize
+	     the object directly.  */
+	  expand_expr (exp1, const0_rtx, VOIDmode, 0);
+	else
+	  store_expr (exp1, target, modifier == EXPAND_STACK_PARM ? 2 : 0);
 
 	expand_decl_cleanup_eh (NULL_TREE, cleanups, CLEANUP_EH_ONLY (exp));
 

@@ -3018,7 +3018,8 @@ gimplify_target_expr (tree *expr_p, tree *pre_p, tree *post_p)
 	gimplify_bind_expr (&init, temp, pre_p);
       if (init != temp)
 	{
-	  init = build (MODIFY_EXPR, void_type_node, temp, init);
+	  if (! VOID_TYPE_P (TREE_TYPE (init)))
+	    init = build (MODIFY_EXPR, void_type_node, temp, init);
 	  ret = gimplify_expr (&init, pre_p, post_p, is_gimple_stmt, fb_none);
 	  if (ret == GS_ERROR)
 	    return GS_ERROR;

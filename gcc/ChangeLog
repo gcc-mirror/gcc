@@ -1,3 +1,11 @@
+2004-06-17  Jason Merrill  <jason@redhat.com>
+
+	PR c++/16015
+	* gimplify.c (gimplify_target_expr): Handle void initializer.
+	* expr.c (expand_expr_real_1) [TARGET_EXPR]: Likewise.
+	* doc/c-tree.texi (Expression trees): Update TARGET_EXPR
+	and AGGR_INIT_EXPR.
+
 2004-06-17  Roger Sayle  <roger@eyesopen.com>
 
 	* fold-const.c (fold_relational_const): Use constant_boolean_node.

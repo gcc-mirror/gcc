@@ -1,10 +1,10 @@
-// { dg-do run { xfail *-*-* } }
-// { dg-options "" }
-
 // Copyright (C) 2003 Free Software Foundation, Inc.
 // Contributed by Nathan Sidwell 30 Jul 2003 <nathan@codesourcery.com>
 
-// make statement expressions work properly
+// make sure statement expressions work properly
+
+// { dg-do run }
+// { dg-options "" }
 
 extern "C" int printf (char const *, ...);
 extern "C" void abort ();
@@ -51,4 +51,3 @@ int main ()
   ({A<14> a; a; });
   Check (0, 0, 0, "end");
 }
-
