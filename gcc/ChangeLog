@@ -1,3 +1,7 @@
+2000-05-16  Alexandre Oliva  <aoliva@cygnus.com>
+
+	* config/mn10300/mn10300.h (ASM_OUTPUT_DWARF2_ADDR_CONST): Remove.
+
 2000-05-15  Richard Henderson  <rth@cygnus.com>
 
 	* toplev.c (rest_of_compilation): Run full jump pass before
