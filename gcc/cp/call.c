@@ -4326,18 +4326,20 @@ convert_like_real (conversion *convs, tree expr, tree fn, int argnum,
 }
 
 /* Build a call to __builtin_trap which can be used as an expression of
-   type TYPE.  */
+   type TYPE.  This looks like  *(__builtin_trap(), (TYPE*)NULL).  */
 
 static tree
 call_builtin_trap (tree type)
 {
   tree fn = implicit_built_in_decls[BUILT_IN_TRAP];
+  tree t;
 
   my_friendly_assert (fn != NULL, 20030927);
   fn = build_call (fn, NULL_TREE);
-  fn = build (COMPOUND_EXPR, type, fn, error_mark_node);
-  fn = force_target_expr (type, fn);
-  return fn;
+  t = convert (build_pointer_type (type), null_node);
+  t = build (COMPOUND_EXPR, TREE_TYPE (t), fn, t);
+  t = build_indirect_ref (t, NULL);
+  return t;
 }
 
 /* ARG is being passed to a varargs function.  Perform any conversions
