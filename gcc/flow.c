@@ -1031,7 +1031,7 @@ make_edges (label_value_list)
 	      /* We do know that a REG_EH_REGION note with a value less
 		 than 0 is guaranteed not to perform a non-local goto.  */
 	      rtx note = find_reg_note (insn, REG_EH_REGION, NULL_RTX);
-	      if (!note || XINT (XEXP (note, 0), 0) >=  0)
+	      if (!note || INTVAL (XEXP (note, 0)) >=  0)
 		for (x = nonlocal_goto_handler_labels; x ; x = XEXP (x, 1))
 		  make_label_edge (edge_cache, bb, XEXP (x, 0),
 				   EDGE_ABNORMAL | EDGE_ABNORMAL_CALL);
