@@ -62,7 +62,7 @@ static int go_if_legitimate_address_internal PARAMS((rtx, enum machine_mode,
 static int register_indirect_p PARAMS((rtx, enum machine_mode, int));
 static rtx m68hc11_expand_compare PARAMS((enum rtx_code, rtx, rtx));
 static int must_parenthesize PARAMS ((rtx));
-
+static int m68hc11_shift_cost PARAMS ((enum machine_mode, rtx, int));
 static int m68hc11_auto_inc_p PARAMS ((rtx));
 
 void create_regs_rtx PARAMS ((void));
@@ -120,6 +120,78 @@ rtx m68hc11_compare_op0;
 rtx m68hc11_compare_op1;
 
 
+struct processor_costs *m68hc11_cost;
+
+/* Costs for a 68HC11.  */
+struct processor_costs m6811_cost = {
+  /* add */
+  COSTS_N_INSNS (2),
+  /* logical */
+  COSTS_N_INSNS (2),
+  /* non-constant shift */
+  COSTS_N_INSNS (20),
+  /* shiftQI const */
+  { COSTS_N_INSNS (0), COSTS_N_INSNS (1), COSTS_N_INSNS (2),
+    COSTS_N_INSNS (3), COSTS_N_INSNS (4), COSTS_N_INSNS (3),
+    COSTS_N_INSNS (2), COSTS_N_INSNS (1) },
+
+  /* shiftHI const */
+  { COSTS_N_INSNS (0), COSTS_N_INSNS (2), COSTS_N_INSNS (4),
+    COSTS_N_INSNS (6), COSTS_N_INSNS (8), COSTS_N_INSNS (6),
+    COSTS_N_INSNS (4), COSTS_N_INSNS (2),
+    COSTS_N_INSNS (2), COSTS_N_INSNS (4),
+    COSTS_N_INSNS (6), COSTS_N_INSNS (8), COSTS_N_INSNS (10),
+    COSTS_N_INSNS (8), COSTS_N_INSNS (6), COSTS_N_INSNS (4)
+  },
+  /* mulQI */
+  COSTS_N_INSNS (20),
+  /* mulHI */
+  COSTS_N_INSNS (20 * 4),
+  /* mulSI */
+  COSTS_N_INSNS (20 * 16),
+  /* divQI */
+  COSTS_N_INSNS (20),
+  /* divHI */
+  COSTS_N_INSNS (80),
+  /* divSI */
+  COSTS_N_INSNS (100)
+};
+
+/* Costs for a 68HC12.  */
+struct processor_costs m6812_cost = {
+  /* add */
+  COSTS_N_INSNS (1),
+  /* logical */
+  COSTS_N_INSNS (1),
+  /* non-constant shift */
+  COSTS_N_INSNS (20),
+  /* shiftQI const */
+  { COSTS_N_INSNS (0), COSTS_N_INSNS (1), COSTS_N_INSNS (2),
+    COSTS_N_INSNS (3), COSTS_N_INSNS (4), COSTS_N_INSNS (3),
+    COSTS_N_INSNS (2), COSTS_N_INSNS (1) },
+
+  /* shiftHI const */
+  { COSTS_N_INSNS (0), COSTS_N_INSNS (2), COSTS_N_INSNS (4),
+    COSTS_N_INSNS (6), COSTS_N_INSNS (8), COSTS_N_INSNS (6),
+    COSTS_N_INSNS (4), COSTS_N_INSNS (2),
+    COSTS_N_INSNS (2), COSTS_N_INSNS (4), COSTS_N_INSNS (6),
+    COSTS_N_INSNS (8), COSTS_N_INSNS (10), COSTS_N_INSNS (8),
+    COSTS_N_INSNS (6), COSTS_N_INSNS (4)
+  },
+  /* mulQI */
+  COSTS_N_INSNS (3),
+  /* mulHI */
+  COSTS_N_INSNS (3),
+  /* mulSI */
+  COSTS_N_INSNS (3 * 4),
+  /* divQI */
+  COSTS_N_INSNS (12),
+  /* divHI */
+  COSTS_N_INSNS (12),
+  /* divSI */
+  COSTS_N_INSNS (100)
+};
+
 /* Machine specific options */
 
 const char *m68hc11_regparm_string;
@@ -130,24 +202,11 @@ static void m68hc11_add_gc_roots PARAMS ((void));
 
 static int nb_soft_regs;
 
-/* Flag defined in c-decl.c
-
-   Nonzero means don't recognize the non-ANSI builtin functions.
-   -ansi sets this.
-
-   It is set by 'm68hc11_override_options' to ensure that bcmp() and
-   bzero() are not defined.  Their prototype are wrong and they
-   conflict with newlib definition.  Don't define as external to
-   avoid a link problem for f77.  */
-int flag_no_nonansi_builtin;
-
 int
 m68hc11_override_options ()
 {
   m68hc11_add_gc_roots ();
 
-  flag_no_nonansi_builtin = 1;
-  
   memset (m68hc11_reg_valid_for_index, 0,
 	  sizeof (m68hc11_reg_valid_for_index));
   memset (m68hc11_reg_valid_for_base, 0, sizeof (m68hc11_reg_valid_for_base));
@@ -159,7 +218,8 @@ m68hc11_override_options ()
          a -m68hc11 option was specified on the command line.  */
       if (TARGET_DEFAULT != MASK_M6811)
         target_flags &= ~TARGET_DEFAULT;
-      
+
+      m68hc11_cost = &m6811_cost;
       m68hc11_min_offset = 0;
       m68hc11_max_offset = 256;
       m68hc11_index_reg_class = NO_REGS;
@@ -176,7 +236,8 @@ m68hc11_override_options ()
   /* Configure for a 68hc12 processor.  */
   if (TARGET_M6812)
     {
-      m68hc11_min_offset = 0;
+      m68hc11_cost = &m6812_cost;
+      m68hc11_min_offset = -65536;
       m68hc11_max_offset = 65536;
       m68hc11_index_reg_class = D_REGS;
       m68hc11_base_reg_class = A_OR_SP_REGS;
@@ -275,29 +336,6 @@ hard_regno_mode_ok (regno, mode)
     default:
       return 0;
     }
-}
-
-enum reg_class
-limit_reload_class (mode, class)
-     enum machine_mode mode;
-     enum reg_class class;
-{
-  if (mode == Pmode)
-    {
-      if (class == m68hc11_base_reg_class || class == SP_REGS
-	  || class == Y_REGS || class == X_REGS
-	  || class == X_OR_SP_REGS || class == Y_OR_S_REGS
-	  || class == A_OR_SP_REGS)
-	return class;
-
-      if (debug_m6811)
-	{
-	  printf ("Forcing to A_REGS\n");
-	  fflush (stdout);
-	}
-      return m68hc11_base_reg_class;
-    }
-  return class;
 }
 
 enum reg_class
@@ -733,13 +771,14 @@ m68hc11_emit_libcall (name, code, dmode, smode, noperands, operands)
   switch (noperands)
     {
     case 2:
-      ret = emit_library_call_value (libcall, NULL_RTX, 1, dmode, 1,
-                                     operands[1], smode);
+      ret = emit_library_call_value (libcall, NULL_RTX, LCT_CONST,
+                                     dmode, 1, operands[1], smode);
       equiv = gen_rtx (code, dmode, operands[1]);
       break;
 
     case 3:
-      ret = emit_library_call_value (libcall, operands[0], 1, dmode, 2,
+      ret = emit_library_call_value (libcall, NULL_RTX,
+                                     LCT_CONST, dmode, 2,
                                      operands[1], smode, operands[2],
                                      smode);
       equiv = gen_rtx (code, dmode, operands[1], operands[2]);
@@ -2125,9 +2164,19 @@ print_operand (file, op, letter)
     }
   else
     {
+      int need_parenthesize = 0;
+
       if (letter != 'i')
 	asm_fprintf (file, "%0I");
+      else
+        need_parenthesize = must_parenthesize (op);
+
+      if (need_parenthesize)
+        asm_fprintf (file, "(");
+
       output_addr_const (file, op);
+      if (need_parenthesize)
+        asm_fprintf (file, ")");
     }
 }
 
@@ -2508,6 +2557,7 @@ m68hc11_split_move (to, from, scratch)
   rtx low_to, low_from;
   rtx high_to, high_from;
   enum machine_mode mode;
+  int offset = 0;
 
   mode = GET_MODE (to);
   if (GET_MODE_SIZE (mode) == 8)
@@ -2516,6 +2566,22 @@ m68hc11_split_move (to, from, scratch)
     mode = HImode;
   else
     mode = QImode;
+
+  if (TARGET_M6812
+      && IS_STACK_PUSH (to)
+      && reg_mentioned_p (gen_rtx (REG, HImode, HARD_SP_REGNUM), from))
+    {
+      if (mode == SImode)
+        {
+          offset = 4;
+        }
+      else if (mode == HImode)
+        {
+          offset = 2;
+        }
+      else
+        offset = 0;
+    }
 
   low_to = m68hc11_gen_lowpart (mode, to);
   high_to = m68hc11_gen_highpart (mode, to);
@@ -2531,6 +2597,11 @@ m68hc11_split_move (to, from, scratch)
   else
     high_from = m68hc11_gen_highpart (mode, from);
 
+  if (offset)
+    {
+      high_from = adj_offsettable_operand (high_from, offset);
+      low_from = high_from;
+    }
   if (mode == SImode)
     {
       m68hc11_split_move (low_to, low_from, scratch);
@@ -2823,6 +2894,7 @@ m68hc11_gen_movhi (insn, operands)
     {
       if (IS_STACK_PUSH (operands[0]) && H_REG_P (operands[1]))
 	{
+          cc_status = cc_prev_status;
 	  switch (REGNO (operands[1]))
 	    {
 	    case HARD_X_REGNUM:
@@ -2837,6 +2909,7 @@ m68hc11_gen_movhi (insn, operands)
 	}
       if (IS_STACK_POP (operands[1]) && H_REG_P (operands[0]))
 	{
+          cc_status = cc_prev_status;
 	  switch (REGNO (operands[0]))
 	    {
 	    case HARD_X_REGNUM:
@@ -2851,6 +2924,7 @@ m68hc11_gen_movhi (insn, operands)
 	}
       if (H_REG_P (operands[0]) && H_REG_P (operands[1]))
 	{
+          m68hc11_notice_keep_cc (operands[0]);
 	  output_asm_insn ("tfr\t%1,%0", operands);
 	}
       else if (H_REG_P (operands[0]))
@@ -2892,6 +2966,7 @@ m68hc11_gen_movhi (insn, operands)
 	      else
 		{
 		  /* !!!! SCz wrong here.  */
+                  fatal_insn ("Move insn not handled", insn);
 		}
 	    }
 	  else
@@ -2903,6 +2978,7 @@ m68hc11_gen_movhi (insn, operands)
 		}
 	      else
 		{
+                  m68hc11_notice_keep_cc (operands[0]);
 		  output_asm_insn ("movw\t%1,%0", operands);
 		}
 	    }
@@ -2912,6 +2988,7 @@ m68hc11_gen_movhi (insn, operands)
 
   if (IS_STACK_POP (operands[1]) && H_REG_P (operands[0]))
     {
+      cc_status = cc_prev_status;
       switch (REGNO (operands[0]))
 	{
 	case HARD_X_REGNUM:
@@ -2947,7 +3024,7 @@ m68hc11_gen_movhi (insn, operands)
 		}
 	      else
 		{
-		  cc_status = cc_prev_status;
+                  m68hc11_notice_keep_cc (operands[0]);
 		  output_asm_insn ("pshx\n\tpula\n\tpulb", operands);
 		}
 	    }
@@ -3002,7 +3079,7 @@ m68hc11_gen_movhi (insn, operands)
 		}
 	      else
 		{
-		  cc_status = cc_prev_status;
+		  m68hc11_notice_keep_cc (operands[0]);
 		  output_asm_insn ("pshb", operands);
 		  output_asm_insn ("psha", operands);
 		  output_asm_insn ("pulx", operands);
@@ -3058,7 +3135,7 @@ m68hc11_gen_movhi (insn, operands)
 	case HARD_SP_REGNUM:
 	  if (D_REG_P (operands[1]))
 	    {
-	      cc_status = cc_prev_status;
+	      m68hc11_notice_keep_cc (operands[0]);
 	      output_asm_insn ("xgdx", operands);
 	      output_asm_insn ("txs", operands);
 	      output_asm_insn ("xgdx", operands);
@@ -3099,6 +3176,7 @@ m68hc11_gen_movhi (insn, operands)
 
   if (IS_STACK_PUSH (operands[0]) && H_REG_P (operands[1]))
     {
+      cc_status = cc_prev_status;
       switch (REGNO (operands[1]))
 	{
 	case HARD_X_REGNUM:
@@ -3182,25 +3260,26 @@ m68hc11_gen_movqi (insn, operands)
 
       if (H_REG_P (operands[0]) && H_REG_P (operands[1]))
 	{
+          m68hc11_notice_keep_cc (operands[0]);
 	  output_asm_insn ("tfr\t%1,%0", operands);
 	}
       else if (H_REG_P (operands[0]))
 	{
 	  if (Q_REG_P (operands[0]))
-	    output_asm_insn ("lda%0\t%1", operands);
+	    output_asm_insn ("lda%0\t%b1", operands);
 	  else if (D_REG_P (operands[0]))
-	    output_asm_insn ("ldab\t%1", operands);
+	    output_asm_insn ("ldab\t%b1", operands);
 	  else
-	    output_asm_insn ("ld%0\t%1", operands);
+	    goto m6811_move;
 	}
       else if (H_REG_P (operands[1]))
 	{
 	  if (Q_REG_P (operands[1]))
-	    output_asm_insn ("sta%1\t%0", operands);
+	    output_asm_insn ("sta%1\t%b0", operands);
 	  else if (D_REG_P (operands[1]))
-	    output_asm_insn ("staa\t%0", operands);
+	    output_asm_insn ("stab\t%b0", operands);
 	  else
-	    output_asm_insn ("st%1\t%0", operands);
+	    goto m6811_move;
 	}
       else
 	{
@@ -3227,6 +3306,7 @@ m68hc11_gen_movqi (insn, operands)
 	      else
 		{
 		  /* !!!! SCz wrong here.  */
+                  fatal_insn ("Move insn not handled", insn);
 		}
 	    }
 	  else
@@ -3237,13 +3317,15 @@ m68hc11_gen_movqi (insn, operands)
 		}
 	      else
 		{
-		  output_asm_insn ("movb\t%1,%0", operands);
+                  m68hc11_notice_keep_cc (operands[0]);
+		  output_asm_insn ("movb\t%b1,%b0", operands);
 		}
 	    }
 	}
       return;
     }
 
+ m6811_move:
   if (H_REG_P (operands[0]))
     {
       switch (REGNO (operands[0]))
@@ -3618,6 +3700,24 @@ m68hc11_notice_update_cc (exp, insn)
       && reg_overlap_mentioned_p (cc_status.value1, cc_status.value2))
     cc_status.value2 = 0;
 }
+
+/* The current instruction does not affect the flags but changes
+   the register 'reg'.  See if the previous flags can be kept for the
+   next instruction to avoid a comparison.  */
+void
+m68hc11_notice_keep_cc (reg)
+     rtx reg;
+{
+  if (reg == 0
+      || cc_prev_status.value1 == 0
+      || rtx_equal_p (reg, cc_prev_status.value1)
+      || (cc_prev_status.value2
+          && reg_mentioned_p (reg, cc_prev_status.value2)))
+    CC_STATUS_INIT;
+  else
+    cc_status = cc_prev_status;
+}
+
 
 
 /* Machine Specific Reorg. */
@@ -3911,7 +4011,7 @@ m68hc11_check_z_replacement (insn, info)
 	    }
 	  info->x_used = 1;
 	  if (z_dies_here && !reg_mentioned_p (src, ix_reg)
-	      && GET_CODE (src) == REG && REGNO (src) == HARD_X_REGNUM)
+	      && GET_CODE (dst) == REG && REGNO (dst) == HARD_X_REGNUM)
 	    {
 	      info->need_save_z = 0;
 	      info->z_died = 1;
@@ -3982,7 +4082,7 @@ m68hc11_check_z_replacement (insn, info)
 	    }
 	  info->y_used = 1;
 	  if (z_dies_here && !reg_mentioned_p (src, iy_reg)
-	      && GET_CODE (src) == REG && REGNO (src) == HARD_Y_REGNUM)
+	      && GET_CODE (dst) == REG && REGNO (dst) == HARD_Y_REGNUM)
 	    {
 	      info->need_save_z = 0;
 	      info->z_died = 1;
@@ -4356,6 +4456,8 @@ m68hc11_z_replacement (insn)
 	       && INTVAL (src) == 0)
 	{
 	  XEXP (body, 0) = gen_rtx (REG, GET_MODE (dst), SOFT_Z_REGNUM);
+          /* Force it to be re-recognized.  */
+          INSN_CODE (insn) = -1;
 	  return;
 	}
     }
@@ -4577,6 +4679,7 @@ m68hc11_reorg (first)
      rtx first;
 {
   int split_done = 0;
+  rtx insn;
 
   z_replacement_completed = 0;
   z_reg = gen_rtx (REG, HImode, HARD_Z_REGNUM);
@@ -4602,6 +4705,28 @@ m68hc11_reorg (first)
      description to use the best assembly directives.  */
   if (optimize)
     {
+      /* Before recomputing the REG_DEAD notes, remove all of them.
+         This is necessary because the reload_cse_regs() pass can
+         have replaced some (MEM) with a register.  In that case,
+         the REG_DEAD that could exist for that register may become
+         wrong.  */
+      for (insn = first; insn; insn = NEXT_INSN (insn))
+        {
+          if (INSN_P (insn))
+            {
+              rtx *pnote;
+
+              pnote = &REG_NOTES (insn);
+              while (*pnote != 0)
+                {
+                  if (REG_NOTE_KIND (*pnote) == REG_DEAD)
+                    *pnote = XEXP (*pnote, 1);
+                  else
+                    pnote = &XEXP (*pnote, 1);
+                }
+            }
+        }
+
       find_basic_blocks (first, max_reg_num (), 0);
       life_analysis (first, 0, PROP_REG_INFO | PROP_DEATH_NOTES);
     }
@@ -4650,8 +4775,6 @@ m68hc11_reorg (first)
 
 
 /* Cost functions.  */
-
-#define COSTS_N_INSNS(N) ((N) * 4 - 2)
 
 /* Cost of moving memory. */
 int
@@ -4783,10 +4906,43 @@ m68hc11_address_cost (addr)
   return cost;
 }
 
+static int
+m68hc11_shift_cost (mode, x, shift)
+     enum machine_mode mode;
+     rtx x;
+     int shift;
+{
+  int total;
+
+  total = rtx_cost (x, SET);
+  if (mode == QImode)
+    total += m68hc11_cost->shiftQI_const[shift % 8];
+  else if (mode == HImode)
+    total += m68hc11_cost->shiftHI_const[shift % 16];
+  else if (shift == 8 || shift == 16 || shift == 32)
+    total += m68hc11_cost->shiftHI_const[8];
+  else if (shift != 0 && shift != 16 && shift != 32)
+    {
+      total += m68hc11_cost->shiftHI_const[1] * shift;
+    }
+
+  /* For SI and others, the cost is higher.  */
+  if (GET_MODE_SIZE (mode) > 2)
+    total *= GET_MODE_SIZE (mode) / 2;
+
+  /* When optimizing for size, make shift more costly so that
+     multiplications are prefered.  */
+  if (optimize_size && (shift % 8) != 0)
+    total *= 2;
+  
+  return total;
+}
+
 int
 m68hc11_rtx_costs (x, code, outer_code)
      rtx x;
-     enum rtx_code code, outer_code;
+     enum rtx_code code;
+     enum rtx_code outer_code ATTRIBUTE_UNUSED;
 {
   enum machine_mode mode = GET_MODE (x);
   int extra_cost = 0;
@@ -4794,9 +4950,6 @@ m68hc11_rtx_costs (x, code, outer_code)
 
   switch (code)
     {
-    case MEM:
-      return m68hc11_address_cost (XEXP (x, 0)) + 4;
-
     case ROTATE:
     case ROTATERT:
     case ASHIFT:
@@ -4804,82 +4957,91 @@ m68hc11_rtx_costs (x, code, outer_code)
     case ASHIFTRT:
       if (GET_CODE (XEXP (x, 1)) == CONST_INT)
 	{
-	  int val = INTVAL (XEXP (x, 1));
-	  int cost;
+          return m68hc11_shift_cost (mode, XEXP (x, 0), INTVAL (XEXP (x, 1)));
+	}
 
-	  /* 8 or 16 shift instructions are fast.
-	     Others are proportional to the shift counter.  */
-	  if (val == 8 || val == 16 || val == -8 || val == -16)
-	    {
-	      val = 0;
-	    }
-	  cost = COSTS_N_INSNS (val + 1);
-	  cost += rtx_cost (XEXP (x, 0), outer_code);
-	  if (GET_MODE_SIZE (mode) >= 4 && val)
-	    {
-	      cost *= 4;
-	    }
-	  return cost;
-	}
-      total = rtx_cost (XEXP (x, 0), outer_code);
-      if (GET_MODE_SIZE (mode) >= 4)
-	{
-	  total += COSTS_N_INSNS (16);
-	}
-      else
-	{
-	  total += COSTS_N_INSNS (8);
-	}
+      total = rtx_cost (XEXP (x, 0), code) + rtx_cost (XEXP (x, 1), code);
+      total += m68hc11_cost->shift_var;
+      return total;
+
+    case AND:
+    case XOR:
+    case IOR:
+      total = rtx_cost (XEXP (x, 0), code) + rtx_cost (XEXP (x, 1), code);
+      total += m68hc11_cost->logical;
+
+      /* Logical instructions are byte instructions only.  */
+      total *= GET_MODE_SIZE (mode);
       return total;
 
     case MINUS:
     case PLUS:
-    case AND:
-    case XOR:
-    case IOR:
-      extra_cost = 0;
-
-      total = rtx_cost (XEXP (x, 0), outer_code)
-	+ rtx_cost (XEXP (x, 1), outer_code);
-      if (GET_MODE_SIZE (mode) <= 2)
+      total = rtx_cost (XEXP (x, 0), code) + rtx_cost (XEXP (x, 1), code);
+      total += m68hc11_cost->add;
+      if (GET_MODE_SIZE (mode) > 2)
 	{
-	  total += COSTS_N_INSNS (2);
-	}
-      else
-	{
-	  total += COSTS_N_INSNS (4);
+	  total *= GET_MODE_SIZE (mode) / 2;
 	}
       return total;
 
+    case UDIV:
     case DIV:
     case MOD:
-      if (mode == QImode || mode == HImode)
-	{
-	  return 30;
-	}
-      else if (mode == SImode)
-	{
-	  return 100;
-	}
-      else
-	{
-	  return 150;
-	}
+      total = rtx_cost (XEXP (x, 0), code) + rtx_cost (XEXP (x, 1), code);
+      switch (mode)
+        {
+        case QImode:
+          total += m68hc11_cost->divQI;
+          break;
 
+        case HImode:
+          total += m68hc11_cost->divHI;
+          break;
+
+        case SImode:
+        default:
+          total += m68hc11_cost->divSI;
+          break;
+        }
+      return total;
+      
     case MULT:
-      if (mode == QImode)
-	{
-	  return TARGET_OP_TIME ? 10 : 2;
-	}
-      if (mode == HImode)
-	{
-	  return TARGET_OP_TIME ? 30 : 4;
-	}
-      if (mode == SImode)
-	{
-	  return TARGET_OP_TIME ? 100 : 20;
-	}
-      return 150;
+      /* mul instruction produces 16-bit result.  */
+      if (mode == HImode && GET_CODE (XEXP (x, 0)) == ZERO_EXTEND
+          && GET_CODE (XEXP (x, 1)) == ZERO_EXTEND)
+        return m68hc11_cost->multQI
+          + rtx_cost (XEXP (XEXP (x, 0), 0), code)
+          + rtx_cost (XEXP (XEXP (x, 1), 0), code);
+
+      /* emul instruction produces 32-bit result for 68HC12.  */
+      if (TARGET_M6812 && mode == SImode
+          && GET_CODE (XEXP (x, 0)) == ZERO_EXTEND
+          && GET_CODE (XEXP (x, 1)) == ZERO_EXTEND)
+        return m68hc11_cost->multHI
+          + rtx_cost (XEXP (XEXP (x, 0), 0), code)
+          + rtx_cost (XEXP (XEXP (x, 1), 0), code);
+
+      total = rtx_cost (XEXP (x, 0), code) + rtx_cost (XEXP (x, 1), code);
+      switch (mode)
+        {
+        case QImode:
+          total += m68hc11_cost->multQI;
+          break;
+
+        case HImode:
+          total += m68hc11_cost->multHI;
+          break;
+
+        case SImode:
+          if (GET_CODE (XEXP (x, 1)) == CONST_INT
+              && INTVAL (XEXP (x, 1)) == 65536)
+            break;
+
+        default:
+          total += m68hc11_cost->multSI;
+          break;
+        }
+      return total;
 
     case NEG:
     case SIGN_EXTEND:
@@ -4890,20 +5052,20 @@ m68hc11_rtx_costs (x, code, outer_code)
     case COMPARE:
     case ABS:
     case ZERO_EXTEND:
-      total = rtx_cost (XEXP (x, 0), outer_code);
+      total = extra_cost + rtx_cost (XEXP (x, 0), code);
       if (mode == QImode)
 	{
-	  return total + extra_cost + COSTS_N_INSNS (1);
+	  return total + COSTS_N_INSNS (1);
 	}
       if (mode == HImode)
 	{
-	  return total + extra_cost + COSTS_N_INSNS (2);
+	  return total + COSTS_N_INSNS (2);
 	}
       if (mode == SImode)
 	{
-	  return total + extra_cost + COSTS_N_INSNS (4);
+	  return total + COSTS_N_INSNS (4);
 	}
-      return total + extra_cost + COSTS_N_INSNS (8);
+      return total + COSTS_N_INSNS (8);
 
     case IF_THEN_ELSE:
       if (GET_CODE (XEXP (x, 1)) == PC || GET_CODE (XEXP (x, 2)) == PC)

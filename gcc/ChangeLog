@@ -1,3 +1,88 @@
+2001-05-03  Stephane Carrez  <Stephane.Carrez@worldnet.fr>
+
+	* config/m68hc11/larith.asm (__mulqi3): Fix multiplication of two
+	negative numbers.
+	(___subdi3, ___adddi3): Use x instead of y as index register.
+	(__init_bss_section, __map_data_section): Optimize for 68HC12.
+	(__memset, __memcpy): Likewise.
+	(regs): Put the soft registers in bss for 68HC12.
+	(abort): Use trap to abort for 68hc12.
+	(__mulhi3, __mulhi32): Use emul for 68hc12.
+	(__mulsi3): Avoid to use the tmp soft register for 68hc12.
+
+2001-05-03  Stephane Carrez  <Stephane.Carrez@worldnet.fr>
+
+	* config/m68hc11/m68hc11.h (LIMIT_RELOAD_CLASS): Don't define.
+	* config/m68hc11/m68hc11-protos.h (limit_reload_class): Remove.
+	* config/m68hc11/m68hc11.c (limit_reload_class): Remove.
+	(m68hc11_override_options): Remove setting of flag_no_nonansi_builtin.
+	Set 68HC12 min offset to -65536.
+	(print_operand): Put parenthesis arround the operand if it refers 
+	to a symbol having the same name as a register.
+	(m68hc11_z_replacement): When z register is replaced by its 
+	equivalent soft register, force the insn to be re-recognized.
+	(m68hc11_check_z_replacement): Fix the test when destination is
+	the index register and z dies in the insn.
+	(m68hc11_reorg): Remove the REG_DEAD notes beforce recomputing them.
+
+2001-05-03  Stephane Carrez  <Stephane.Carrez@worldnet.fr>
+
+	* config/m68hc11/m68hc11.c (m68hc11_override_options): Initialize
+	costs according to processor variant.
+	(m68hc11_shift_cost): New function to compute shift costs.
+	(m68hc11_rtx_costs): Define costs according to processor variant.
+	(m6811_cost): Costs for 68HC11.
+	(m6812_cost): Costs for 68HC12.
+	(COSTS_N_INSNS): Remove.
+
+	* config/m68hc11/m68hc11.h (RTX_COSTS): New.
+	(DEFAULT_RTX_COSTS): Remove.
+	(CONST_COSTS): Define costs according to OUTER_CODE.
+	(processor_costs): New struct to define costs.
+	(m68hc11_cost): Pointer to current costs.
+
+2001-05-03  Stephane Carrez  <Stephane.Carrez@worldnet.fr>
+
+	* config/m68hc11/m68hc11.md (*addhi3_68hc12): Fix generation
+	and use m68hc11_notice_keep_cc when using leax/leay.
+	(addhi3 split): Reject split if the insn is handled by 
+	leax/leay above.
+	* config/m68hc11/m68hc11.c (m68hc11_split_move): For 68HC12 the
+	push must be handled in a special way if the source operand uses
+	sp as index register.
+	(m68hc11_notice_keep_cc): New function.
+	(m68hc11_gen_movhi): Use it when an insn changes a register but 
+	not the flags.
+	(m68hc11_gen_movqi): Fix move for 68HC12.
+	* config/m68hc11/m68hc11-protos.h (m68hc11_notice_keep_cc): Declare.
+
+2001-05-03  Stephane Carrez  <Stephane.Carrez@worldnet.fr>
+
+	* config/m68hc11/m68hc11.c (m68hc11_emit_libcall): Use LCT_CONST
+	and don't pass operands[0] to emit_library_call_value.
+
+2001-05-03  Stephane Carrez  <Stephane.Carrez@worldnet.fr>
+
+	* config/m68hc11/m68hc11.md (tsthi_1): Use cpd for 68HC12.
+	(zero_extendsi split): Simplify and use (zero_extendhi).
+	(*addhi3): Remove 'w' constraint since stack pointer is handled 
+	by (addhi3_sp).
+	(*ashlhi3_2): Operand 2 is clobbered use '+' for its constraint.
+	(*ashlhi3, *ashrhi3, *lshrhi3): Likewise.
+	(*ashrhi3_const): Fix shift by 7.
+	(*lshrsi3_const16): Fix template.
+	(call, call_value): Fix constraint and predicate.
+
+2001-05-03  Stephane Carrez  <Stephane.Carrez@worldnet.fr>
+
+	* config/m68hc11/m68hc11.md (X_REGNUM, D_REGNUM): New constant.
+	(Y_REGNUM, SP_REGNUM, PC_REGNUM, A_REGNUM, B_REGNUM): Likewise.
+	(CC_REGNUM): Likewise.
+	(*unnamed splits): Use above constants instead of hard coded numbers.
+	(*adcq, *subcq, *addsi_carry, *rotlqi3_with_carry): Likewise.
+	(*rotlhi3_with_carry, *rotrhi3_with_carry): Likewise.
+	(*return_16bit, *unnamed peepholes): Likewise.
+
 2001-05-03  David O'Brien  <obrien@FreeBSD.org>
 
 	* config.gcc(rs6000-ibm-aix|powerpc-ibm-aix):  Do not include

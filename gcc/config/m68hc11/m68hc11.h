@@ -207,6 +207,25 @@ extern const char *m68hc11_soft_reg_count;
    `-O'.  That is what `OPTIMIZATION_OPTIONS' is for.  */
 
 #define OVERRIDE_OPTIONS	m68hc11_override_options ();
+
+
+/* Define cost parameters for a given processor variant.  */
+struct processor_costs {
+  int add;		/* cost of an add instruction */
+  int logical;          /* cost of a logical instruction */
+  int shift_var;
+  int shiftQI_const[8];
+  int shiftHI_const[16];
+  int multQI;
+  int multHI;
+  int multSI;
+  int divQI;
+  int divHI;
+  int divSI;
+};
+
+/* Costs for the current processor.  */
+extern struct processor_costs *m68hc11_cost;
 
 
 /* target machine storage layout */
@@ -768,9 +787,6 @@ extern enum reg_class m68hc11_tmp_regs_class;
     (C) == 'z' ? Z_REGS : NO_REGS)
 
 #define PREFERRED_RELOAD_CLASS(X,CLASS)	preferred_reload_class(X,CLASS)
-
-
-#define LIMIT_RELOAD_CLASS(MODE, CLASS) limit_reload_class(MODE,CLASS)
 
 #define SMALL_REGISTER_CLASSES 1
 
@@ -1456,22 +1472,52 @@ extern unsigned char m68hc11_reg_valid_for_index[FIRST_PSEUDO_REGISTER];
 
 /* Compute the cost of computing a constant rtl expression RTX whose rtx-code
    is CODE.  The body of this macro is a portion of a switch statement.  If
-   the code is computed here, return it with a return statement. Otherwise,
-   break from the switch.  */
-#define CONST_COSTS(RTX,CODE,OUTER_CODE) \
- case CONST_INT:			 \
-    if (RTX == const0_rtx) return 0;	 \
- case CONST:				 \
-    return 0;                            \
- case LABEL_REF:			 \
- case SYMBOL_REF:			 \
-   return 1;				 \
- case CONST_DOUBLE:			 \
+   the code is computed here, return it with a return statement.  Otherwise,
+   break from the switch.
+
+   Constants are cheap.  Moving them in registers must be avoided
+   because most instructions do not handle two register operands.  */
+#define CONST_COSTS(RTX,CODE,OUTER_CODE)			\
+ case CONST_INT:						\
+     /* Logical and arithmetic operations with a constant  */	\
+     /* operand are better because they are not supported  */	\
+     /* with two registers.  */					\
+     /* 'clr' is slow */					\
+   if ((OUTER_CODE) == SET && (RTX) == const0_rtx)		\
+     return 1;							\
+   else								\
+     return 0;							\
+ case CONST:							\
+ case LABEL_REF:						\
+ case SYMBOL_REF:						\
+   if ((OUTER_CODE) == SET)					\
+      return 1;							\
+   return 0;							\
+ case CONST_DOUBLE:						\
    return 0;
 
-#define DEFAULT_RTX_COSTS(X,CODE,OUTER_CODE)		\
-    return m68hc11_rtx_costs (X, CODE, OUTER_CODE);
-
+#define RTX_COSTS(X,CODE,OUTER_CODE)				\
+ case ROTATE:							\
+ case ROTATERT:							\
+ case ASHIFT:							\
+ case LSHIFTRT:							\
+ case ASHIFTRT:							\
+ case MINUS:							\
+ case PLUS:							\
+ case AND:							\
+ case XOR:							\
+ case IOR:							\
+ case UDIV:							\
+ case DIV:							\
+ case MOD:							\
+ case MULT:							\
+ case NEG:							\
+ case SIGN_EXTEND:						\
+ case NOT:							\
+ case COMPARE:							\
+ case ZERO_EXTEND:						\
+ case IF_THEN_ELSE:						\
+   return m68hc11_rtx_costs (X, CODE, OUTER_CODE);
 
 /* An expression giving the cost of an addressing mode that contains
    ADDRESS.  If not defined, the cost is computed from the ADDRESS

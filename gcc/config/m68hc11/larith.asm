@@ -1,5 +1,5 @@
-/* libgcc1 routines for M68HC11.
-   Copyright (C) 1999, 2000 Free Software Foundation, Inc.
+/* libgcc1 routines for M68HC11 & M68HC12.
+   Copyright (C) 1999, 2000, 2001 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -47,7 +47,11 @@ NAME:	.word 0;			\
 /* Pseudo hard registers used by gcc.
    They must be located in page0. 
    They will normally appear at the end of .page0 section.  */
+#ifdef mc68hc12
+	.sect .bss
+#else
 	.sect .page0
+#endif
 	.globl _.tmp,_.frame
 	.globl _.z,_.xy
 REG(_.tmp)
@@ -61,7 +65,11 @@ REG(_.frame)
 /* Pseudo hard registers used by gcc.
    They must be located in page0. 
    They will normally appear at the end of .page0 section.  */
+#ifdef mc68hc12
+	.sect .bss
+#else
 	.sect .page0
+#endif
 	.globl _.d1,_.d2,_.d3,_.d4,_.d5,_.d6
 	.globl _.d7,_.d8
 REG(_.d1)
@@ -97,7 +105,11 @@ REG(_.d16)
 /* Pseudo hard registers used by gcc.
    They must be located in page0. 
    They will normally appear at the end of .page0 section.  */
+#ifdef mc68hc12
+	.sect .bss
+#else
 	.sect .page0
+#endif
 	.globl _.d17,_.d18,_.d19,_.d20,_.d21,_.d22
 	.globl _.d23,_.d24,_.d25,_.d26,_.d27,_.d28
 	.globl _.d29,_.d30,_.d31,_.d32
@@ -157,8 +169,12 @@ fatal:
 	.globl abort
 abort:
 	ldd	#255		; 
+#ifdef mc68hc12
+	trap	#0x30
+#else
 	.byte 0xCD		; Generate an illegal instruction trap
 	.byte 0x03		; The simulator catches this and stops.
+#endif
 	jmp _exit
 #endif
 	
@@ -189,6 +205,23 @@ _cleanup:
 ;;; 
 __memcpy:
 memcpy:
+#ifdef mc68hc12
+	ldx	2,sp
+	ldy	4,sp
+	pshd
+	xgdy
+	lsrd
+	bcc	Start
+	movb	1,x+,1,y+
+Start:
+	beq	Done
+Loop:
+	movw	2,x+,2,y+
+	dbne	d,Loop
+Done:
+	puld
+	rts
+#else
 	xgdy
 	tsx
 	ldd	4,x
@@ -214,6 +247,7 @@ End:
 	xgdy
 	rts
 #endif
+#endif
 
 #ifdef L_memset
 	.sect .text
@@ -237,6 +271,19 @@ End:
 #endif
 __memset:
 memset:
+#ifdef mc68hc12
+	xgdx
+	ldab	val,sp
+	ldy	size,sp
+	pshx
+	beq	End
+Loop:
+	stab	1,x+
+	dbne	y,Loop
+End:
+	puld
+	rts
+#else
 	xgdx
 	tsy
 	ldab	val,y
@@ -253,6 +300,7 @@ End:
 	xgdx
 	rts
 #endif
+#endif
 		
 #ifdef L_adddi3
 	.sect .text
@@ -260,29 +308,28 @@ End:
 
 ___adddi3:
 	tsx
-	tsy
 	pshb
 	psha
 	ldd	8,x
-	addd	16,y
+	addd	16,x
 	pshb
 	psha
 
 	ldd	6,x
-	adcb	15,y
-	adca	14,y
+	adcb	15,x
+	adca	14,x
 	pshb
 	psha
 
 	ldd	4,x
-	adcb	13,y
-	adca	12,y
+	adcb	13,x
+	adca	12,x
 	pshb
 	psha
 	
 	ldd	2,x
-	adcb	11,y
-	adca	10,y
+	adcb	11,x
+	adca	10,x
 	tsx
 	ldy	6,x
 
@@ -303,29 +350,28 @@ ___adddi3:
 
 ___subdi3:
 	tsx
-	tsy
 	pshb
 	psha
 	ldd	8,x
-	subd	16,y
+	subd	16,x
 	pshb
 	psha
 
 	ldd	6,x
-	sbcb	15,y
-	sbca	14,y
+	sbcb	15,x
+	sbca	14,x
 	pshb
 	psha
 
 	ldd	4,x
-	sbcb	13,y
-	sbca	12,y
+	sbcb	13,x
+	sbca	12,x
 	pshb
 	psha
 	
 	ldd	2,x
-	sbcb	11,y
-	sbca	10,y
+	sbcb	11,x
+	sbca	10,x
 	
 	tsx
 	ldy	6,x
@@ -681,7 +727,6 @@ A_or_B_neg:
 	addd	#1
 	rts
 AB_neg:
-	nega
 	negb
 	mul
 	rts
@@ -699,6 +744,13 @@ AB_neg:
 ;	b = register X
 ;
 ___mulhi3:
+#ifdef mc68hc12
+	pshx			; Preserve X
+	exg	x,y
+	emul
+	exg	x,y
+	pulx
+#else
 	stx	*_.tmp
 	pshb
 	ldab	*_.tmp+1
@@ -714,6 +766,7 @@ ___mulhi3:
 	pulb
 	mul			; A.low * B.low
 	adda	*_.tmp
+#endif
 	rts
 #endif
 
@@ -750,6 +803,11 @@ ___mulhi3:
 ;      <A-high>   0,x
 ;
 __mulhi32:
+#ifdef mc68hc12
+	ldy	2,sp
+	emul
+	exg	x,y
+#else
 	pshb
 	psha
 	tsx
@@ -781,6 +839,7 @@ N:
 Ret:
 	pshy
 	pulx
+#endif
 	rts
 	
 #endif
@@ -823,7 +882,11 @@ __mulsi3:
 ;
 ; If A.high is 0, optimize into: (A.low * B.high) << 16 + (A.low * B.low)
 ;
+#ifdef mc68hc12
+	cpx	#0
+#else
 	stx	*_.tmp
+#endif
 	beq	A_high_zero
 	bsr	___mulhi3		; A.high * B.low
 ;
@@ -933,6 +996,10 @@ __map_data_section:
 	ldx	#__data_image
 	ldy	#__data_section_start
 Loop:
+#ifdef mc68hc12
+	movb	1,x+,1,y+
+	dbne	d,Loop
+#else
 	psha
 	ldaa	0,x
 	staa	0,y
@@ -941,6 +1008,7 @@ Loop:
 	iny
 	subd	#1
 	bne	Loop
+#endif
 Done:
 
 #endif
@@ -955,10 +1023,15 @@ __init_bss_section:
 	beq	Done
 	ldx	#__bss_start
 Loop:
+#ifdef mc68hc12
+	clr	1,x+
+	dbne	d,Loop
+#else
 	clr	0,x
 	inx
 	subd	#1
 	bne	Loop
+#endif
 Done:
 
 #endif
