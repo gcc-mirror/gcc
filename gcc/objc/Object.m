@@ -194,12 +194,17 @@ extern int errno;
 
 // Indicates if the receiving class or instance conforms to the given protocol
 // not usually overridden by subclasses
-- (BOOL) conformsTo: (Protocol*)aProtocol
+//
+// Modified 9/5/94 to always search the class object's protocol list, rather
+// than the meta class.
+
++ (BOOL) conformsTo: (Protocol*)aProtocol
 {
   int i;
   struct objc_protocol_list* proto_list;
+  id parent;
 
-  for (proto_list = isa->protocols;
+  for (proto_list = ((Class*)self)->protocols;
        proto_list; proto_list = proto_list->next)
     {
       for (i=0; i < proto_list->count; i++)
@@ -209,10 +214,15 @@ extern int errno;
       }
     }
 
-  if ([self superClass])
-    return [[self superClass] conformsTo: aProtocol];
+  if (parent = [self superClass])
+    return [parent conformsTo: aProtocol];
   else
     return NO;
+}
+
+- (BOOL) conformsTo: (Protocol*)aProtocol
+{
+  return [[self class] conformsTo:aProtocol];
 }
 
 - (IMP)methodFor:(SEL)aSel
