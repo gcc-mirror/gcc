@@ -149,19 +149,12 @@ prefer_and_bit_test (enum machine_mode mode, int bitnum)
 
    do_jump always does any pending stack adjust except when it does not
    actually perform a jump.  An example where there is no jump
-   is when EXP is `(foo (), 0)' and IF_FALSE_LABEL is null.
-
-   This function is responsible for optimizing cases such as
-   &&, || and comparison operators in EXP.  */
+   is when EXP is `(foo (), 0)' and IF_FALSE_LABEL is null.  */
 
 void
 do_jump (tree exp, rtx if_false_label, rtx if_true_label)
 {
   enum tree_code code = TREE_CODE (exp);
-  /* Some cases need to create a label to jump to
-     in order to properly fall through.
-     These cases set DROP_THROUGH_LABEL nonzero.  */
-  rtx drop_through_label = 0;
   rtx temp;
   int i;
   tree type;
@@ -448,13 +441,23 @@ do_jump (tree exp, rtx if_false_label, rtx if_true_label)
             tree op0 = save_expr (TREE_OPERAND (exp, 0));
             tree op1 = save_expr (TREE_OPERAND (exp, 1));
             tree cmp0, cmp1;
+	    rtx drop_through_label = 0;
 
             /* If the target doesn't support combined unordered
                compares, decompose into two comparisons.  */
+	    if (if_true_label == 0)
+	      drop_through_label = if_true_label = gen_label_rtx ();
+	      
             cmp0 = fold (build2 (tcode1, TREE_TYPE (exp), op0, op1));
             cmp1 = fold (build2 (tcode2, TREE_TYPE (exp), op0, op1));
-            exp = build2 (TRUTH_ORIF_EXPR, TREE_TYPE (exp), cmp0, cmp1);
-            do_jump (exp, if_false_label, if_true_label);
+	    do_jump (cmp0, 0, if_true_label);
+	    do_jump (cmp1, if_false_label, if_true_label);
+
+	    if (drop_through_label)
+	      {
+		do_pending_stack_adjust ();
+		emit_label (drop_through_label);
+	      }
           }
       }
       break;
@@ -527,15 +530,6 @@ do_jump (tree exp, rtx if_false_label, rtx if_true_label)
 	}
       else
         abort ();
-    }
-
-  if (drop_through_label)
-    {
-      /* If do_jump produces code that might be jumped around,
-         do any stack adjusts from that code, before the place
-         where control merges in.  */
-      do_pending_stack_adjust ();
-      emit_label (drop_through_label);
     }
 }
 

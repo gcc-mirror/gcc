@@ -1,32 +1,39 @@
+2004-08-18  Zack Weinberg  <zack@codesourcery.com>
+
+	* dojump.c (do_jump <unordered_bcc>): Do not recursively call
+	self with a TRUTH_ORIF_EXPR; generate the appropriate jump
+	sequence inline.  Move drop_through_label code into this
+	block, being the only place it is used.  Adjust comments.
+
 2004-08-18  Fariborz Jahanian <fjahanian@apple.com>
 
-        * config/rs6000/altivec.md: Add new patterns for calls to
-        save_world/rest_world functions.
+	* config/rs6000/altivec.md: Add new patterns for calls to
+	save_world/rest_world functions.
 
-        * config/rs6000/rs6000-protos.h: (save_world_operation,
-        restore_world_operation) new declarations.
+	* config/rs6000/rs6000-protos.h: (save_world_operation,
+	restore_world_operation) new declarations.
 
-        * config/rs6000/rs6000.c: (struct rs6000_stack) new world_save_p
-        field added.
-        (rs6000_stack_info): Set world_save_p field.
-        (save_world_operation): New function.
-        (restore_world_operation): New function.
-        (compute_save_world_info): New function.
-        (rs6000_stack_info): Call compute_save_world_info.
-        (rs6000_emit_prologue): Check for world_save_p and generate
-        pattern to call save_world for saving all non-volatile and
-        special registers.
-        (rs6000_emit_epilogue): Check for world_save_p and generate
-        pattern to call rest_world to restore saved registers.
+	* config/rs6000/rs6000.c: (struct rs6000_stack) new world_save_p
+	field added.
+	(rs6000_stack_info): Set world_save_p field.
+	(save_world_operation): New function.
+	(restore_world_operation): New function.
+	(compute_save_world_info): New function.
+	(rs6000_stack_info): Call compute_save_world_info.
+	(rs6000_emit_prologue): Check for world_save_p and generate
+	pattern to call save_world for saving all non-volatile and
+	special registers.
+	(rs6000_emit_epilogue): Check for world_save_p and generate
+	pattern to call rest_world to restore saved registers.
 
-        config/rs6000/rs6000.h: macros FIRST_SAVED_ALTIVEC_REGNO,
-        FIRST_SAVED_FP_REGNO, FIRST_SAVED_GP_REGNO defined.
-        (rs6000_reg_names): New entries added for save_world_operation and
-        restore_world_operation.
+	config/rs6000/rs6000.h: macros FIRST_SAVED_ALTIVEC_REGNO,
+	FIRST_SAVED_FP_REGNO, FIRST_SAVED_GP_REGNO defined.
+	(rs6000_reg_names): New entries added for save_world_operation and
+	restore_world_operation.
 
 2004-08-18  Caroline Tice  <ctice@apple.com>
 
-        * Makefile.in (STAGEFEEDBACK_FLAGS_TO_PASS) Add
+	* Makefile.in (STAGEFEEDBACK_FLAGS_TO_PASS) Add
 	"-freorder-blocks-and-partition" to the flags used in second
 	stage of profiledbootstrap.
 	* bb-reorder.c (push_to_next_round_p): Add new variable,
@@ -88,7 +95,7 @@
 	* opts.c (decode_options): If both partitioning and DWARF debugging
 	are turned on, issue a warning that this doesn't work, and change
 	partitiong to basic block reordering (without hot/cold partitions).
-	* passes.c (rest_of_handle_final): Re-set new global variable, 
+	* passes.c (rest_of_handle_final): Re-set new global variable,
 	user_defined_section_attribute, to false.
 	(rest_of_compilation): Change options for calling partitioning
 	function: Don't call if the user defined the section attribute, and
@@ -104,7 +111,7 @@
 	* varasm.c (unlikely_section_label): New global variable.
 	(unlikely_text_section_name): New global variable.
 	(unlikely_text_section): Add code to initialize unlikely_text_section_name
-	if necessary; modify to use unlikely_text_section_name and 
+	if necessary; modify to use unlikely_text_section_name and
 	unlikely_section_label; also to use named_section properly.
 	(in_unlikely_text_section):  Modify to work correctly with named_section
 	and to use unlikely_text_section_name.
@@ -112,7 +119,7 @@
 	(function_section): Clean up if-statement.
 	* config/darwin.c (darwin_asm_named_section): Return to original code,
 	removing use of SECTION_FORMAT_STRING.
-	* config/arm/pe.h (switch_to_section):  Add case for 
+	* config/arm/pe.h (switch_to_section):  Add case for
 	in_unlikely_executed_text to switch statement.
 	* config/i386/cygming.h (switch_to_section): Likewise.
 	* config/i386/darwin.h (NORMAL_TEXT_SECTION_NAME): Remove.
@@ -174,7 +181,7 @@
 	(prescan_loop): Likewise. Don't check function usage for clobbered
 	unchanging memory.
 	* rtlanal.c (rtx_unstable_p): Check MEM_READONLY_P,
-        not RTX_UNCHANGING_P.
+	not RTX_UNCHANGING_P.
 	(rtx_varies_p, modified_between_p, modified_in_p): Likewise.
 	* varasm.c (force_const_mem): Likewise.
 	* stmt.c (expand_decl): Don't set RTX_UNCHANGING_P.
@@ -191,7 +198,7 @@
 	MEM_READONLY_P instead of RTX_UNCHANGING_P.
 	(machopic_indirect_call_target): Likewise.
 	(machopic_legitimize_pic_address): Likewise.
-	* config/arm/arm.c (legitimize_pic_address, arm_gen_load_multiple, 
+	* config/arm/arm.c (legitimize_pic_address, arm_gen_load_multiple,
 	arm_gen_store_multiple, arm_gen_movmemqi): Likewise.
 	* config/arm/arm.md (load_multiple, store_multiple): Likewise.
 	* config/frv/frv.md (symGOT2reg): Likewise.
@@ -303,7 +310,7 @@
 	xstormy16_below100_operand, xstormy16_below100_or_register,
 	xstormy16_onebit_set_operand, xstormy16_onebit_clr_operand): New.
 	(PREDICATE_CODES): Add new predicates.
-	
+
 	* config/stormy16/stormy16.c
 	(xstormy16_asm_output_aligned_common, xstormy16_below100_symbol,
 	xstormy16_below100_operand, xstormy16_below100_or_register,
@@ -347,8 +354,8 @@
 	* doc/invoke.texi (-fkeep-inline-functions): Update documentation.
 
 2004-08-17  Robert Bowdidge  <bowdidge@apple.com>
-  
-        * config/rs6000/x-darwin: Add -mdynamic-no-pic to gcc build flags.
+
+	* config/rs6000/x-darwin: Add -mdynamic-no-pic to gcc build flags.
 
 2004-08-17  Andreas Tobler  <a.tobler@schweiz.ch>
 
@@ -388,7 +395,7 @@
 	* tree-ssa-phiopt.c (empty_block_p): Expose for usage out of this file.
 	* tree-flow.h (vectorize_loops, empty_block_p): Add declaration.
 	* tree-optimize.c (pass_vectorize): Schedule the vectorization pass.
-	* tree-pass.h (tree_opt_pass pass_vectorize): Declare the new 
+	* tree-pass.h (tree_opt_pass pass_vectorize): Declare the new
 	vectorization pass.
 	* tree-ssa-loop.c (tree_ssa_loop_init): Call scev_initialize.
 	(tree_ssa_loop_done): Call scev_finalize.
@@ -475,7 +482,7 @@
 2004-08-16  Adam Nemet  <anemet@lnxw.com>
 
 	* Makefile.in (LIBS): Move $(LIBIBERTY) after $(BANSHEELIB).
-	
+
 2004-08-16  Andrew Pinski  <apinski@apple.com>
 
 	* target-def.h (TARGET_EH_RETURN_FILTER_MODE): Remove
