@@ -1,5 +1,5 @@
 /* Generate code to allocate RTL structures.
-   Copyright (C) 1997, 1998, 1999, 2000 Free Software Foundation, Inc.
+   Copyright (C) 1997, 1998, 1999, 2000, 2002 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -28,15 +28,15 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 
 #include "real.h"
 
-struct rtx_definition 
+struct rtx_definition
 {
   const char *const enumname, *const name, *const format;
 };
 
 #define DEF_RTL_EXPR(ENUM, NAME, FORMAT, CLASS) { STRINGX(ENUM), NAME, FORMAT },
 
-static const struct rtx_definition defs[] = 
-{  
+static const struct rtx_definition defs[] =
+{
 #include "rtl.def"		/* rtl expressions are documented here */
 };
 
@@ -46,6 +46,7 @@ static const char *type_from_format	PARAMS ((int));
 static const char *accessor_from_format	PARAMS ((int));
 static int special_format		PARAMS ((const char *));
 static int special_rtx			PARAMS ((int));
+static int excluded_rtx			PARAMS ((int));
 static void find_formats		PARAMS ((void));
 static void gendecl			PARAMS ((const char *));
 static void genmacro			PARAMS ((int));
@@ -188,7 +189,7 @@ gendecl (format)
 {
   const char *p;
   int i, pos;
-  
+
   printf ("extern rtx gen_rtx_fmt_%s\tPARAMS ((RTX_CODE, ", format);
   printf ("enum machine_mode mode");
 
@@ -213,7 +214,7 @@ gendecl (format)
 /* Generate macros to generate RTL of code IDX using the functions we
    write.  */
 
-static void 
+static void
 genmacro (idx)
      int idx;
 {
@@ -253,7 +254,7 @@ gendef (format)
 {
   const char *p;
   int i, j;
-  
+
   /* Start by writing the definition of the function name and the types
      of the arguments.  */
 

@@ -180,6 +180,11 @@ extern REAL_VALUE_TYPE ereal_from_double PARAMS ((HOST_WIDE_INT *));
 extern REAL_VALUE_TYPE real_value_truncate PARAMS ((enum machine_mode,
                                                  REAL_VALUE_TYPE));
 
+/* Expansion of REAL_VALUE_TRUNCATE.
+   The result is in floating point, rounded to nearest or even.  */
+extern bool exact_real_truncate PARAMS ((enum machine_mode,
+					 REAL_VALUE_TYPE *));
+
 /* These return HOST_WIDE_INT: */
 /* Convert a floating-point value to integer, rounding toward zero.  */
 #define REAL_VALUE_FIX(x) (efixi (x))
