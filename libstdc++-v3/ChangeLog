@@ -1,3 +1,8 @@
+2004-07-23  Benjamin Kosnik  <bkoz@redhat.com>
+
+	PR libstdc++/16678
+	* include/bits/locale_facets.tcc: Fix for -Werror.
+
 2004-07-23  Jonathan Wakely  <redi@gcc.gnu.org>
 
 	* docs/html/debug.html: Say debug mode only available since 3.4.0.
