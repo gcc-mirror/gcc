@@ -982,12 +982,12 @@ extern unsigned int subreg_regno 	PARAMS ((rtx));
 
 #define SUBREG_PROMOTED_UNSIGNED_SET(RTX, VAL)				\
 do {									\
-  RTL_FLAG_CHECK1("SUBREG_PROMOTED_UNSIGNED_SET", (RTX), SUBREG);	\
+  rtx const _rtx = RTL_FLAG_CHECK1("SUBREG_PROMOTED_UNSIGNED_SET", (RTX), SUBREG); \
   if ((VAL) < 0)							\
-    (RTX)->volatil = 1;							\
+    _rtx->volatil = 1;							\
   else {								\
-    (RTX)->volatil = 0;							\
-    (RTX)->unchanging = (VAL);						\
+    _rtx->volatil = 0;							\
+    _rtx->unchanging = (VAL);						\
   }									\
 } while (0)
 #define SUBREG_PROMOTED_UNSIGNED_P(RTX)	\
