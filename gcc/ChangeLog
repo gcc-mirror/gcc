@@ -8,6 +8,9 @@
 
 2003-05-16  Geoffrey Keating  <geoffk@apple.com>
 
+	* config/rs6000/rs6000.c (expand_block_move): Unify the TARGET_STRING
+	and ! TARGET_STRING cases.
+
 	* doc/cppopts.texi (-undef): Fix texinfo warning.
 
 	* doc/cppopts.texi (-H): Document that -H works for PCH files too.
