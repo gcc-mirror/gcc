@@ -8725,6 +8725,108 @@ ix86_free_from_memory (mode)
 						 : 4))));
 }
 
+/* Put float CONST_DOUBLE in the constant pool instead of fp regs.
+   QImode must go into class Q_REGS.
+   Narrow ALL_REGS to GENERAL_REGS.  This supports allowing movsf and
+   movdf to do mem-to-mem moves through integer regs. */
+enum reg_class
+ix86_preferred_reload_class (x, class)
+     rtx x;
+     enum reg_class class;
+{
+  if (GET_CODE (x) == CONST_DOUBLE && GET_MODE (x) != VOIDmode)
+    {
+      /* SSE can't load any constant directly yet.  */
+      if (SSE_CLASS_P (class))
+	return NO_REGS;
+      /* Floats can load 0 and 1.  */
+      if (MAYBE_FLOAT_CLASS_P (class) && standard_80387_constant_p (x))
+	{
+	  /* Limit class to non-SSE.  Use GENERAL_REGS if possible.  */
+	  if (MAYBE_SSE_CLASS_P (class))
+	    return (reg_class_subset_p (class, GENERAL_REGS)
+		    ? GENERAL_REGS : FLOAT_REGS);
+	  else
+	    return class;
+	}
+      /* General regs can load everything.  */
+      if (reg_class_subset_p (class, GENERAL_REGS))
+	return GENERAL_REGS;
+      /* In case we haven't resolved FLOAT or SSE yet, give up.  */
+      if (MAYBE_FLOAT_CLASS_P (class) || MAYBE_SSE_CLASS_P (class))
+	return NO_REGS;
+    }
+  if (MAYBE_MMX_CLASS_P (class) && CONSTANT_P (x))
+    return NO_REGS;
+  if (GET_MODE (x) == QImode && ! reg_class_subset_p (class, Q_REGS))
+    return Q_REGS;
+  return class;
+}
+
+/* If we are copying between general and FP registers, we need a memory
+   location. The same is true for SSE and MMX registers.
+
+   The macro can't work reliably when one of the CLASSES is class containing
+   registers from multiple units (SSE, MMX, integer).  We avoid this by never
+   combining those units in single alternative in the machine description.
+   Ensure that this constraint holds to avoid unexpected surprises.
+
+   When STRICT is false, we are being called from REGISTER_MOVE_COST, so do not
+   enforce these sanity checks.  */
+int
+ix86_secondary_memory_needed (class1, class2, mode, strict)
+     enum reg_class class1, class2;
+     enum machine_mode mode;
+     int strict;
+{
+  if (MAYBE_FLOAT_CLASS_P (class1) != FLOAT_CLASS_P (class1)
+      || MAYBE_FLOAT_CLASS_P (class2) != FLOAT_CLASS_P (class2)
+      || MAYBE_SSE_CLASS_P (class1) != SSE_CLASS_P (class1)
+      || MAYBE_SSE_CLASS_P (class2) != SSE_CLASS_P (class2)
+      || MAYBE_MMX_CLASS_P (class1) != MMX_CLASS_P (class1)
+      || MAYBE_MMX_CLASS_P (class2) != MMX_CLASS_P (class2))
+    {
+      if (strict)
+	abort ();
+      else
+	return 1;
+    }
+  return (FLOAT_CLASS_P (class1) != FLOAT_CLASS_P (class2)
+	  || (SSE_CLASS_P (class1) != SSE_CLASS_P (class2)
+	      && (mode) != SImode)
+	  || (MMX_CLASS_P (class1) != MMX_CLASS_P (class2)
+	      && (mode) != SImode));
+}
+/* Return the cost of moving data from a register in class CLASS1 to
+   one in class CLASS2. 
+
+   It is not required that the cost always equal 2 when FROM is the same as TO;
+   on some machines it is expensive to move between registers if they are not
+   general registers.  */
+int
+ix86_register_move_cost (mode, class1, class2)
+     enum machine_mode mode;
+     enum reg_class class1, class2;
+{
+  /* In case we require secondary memory, compute cost of the store followed
+     by load.  In case of copying from general_purpose_register we may emit
+     multiple stores followed by single load causing memory size mismatch
+     stall.  Count this as arbitarily high cost of 20.  */
+  if (ix86_secondary_memory_needed (class1, class2, mode, 0))
+    {
+      if (CLASS_MAX_NREGS (CLASS1, MODE) > CLASS_MAX_NREGS (CLASS2, MODE))
+	return 10;
+      return (MEMORY_MOVE_COST (MODE, CLASS1, 0)
+	      + MEMORY_MOVE_COST (MODE, CLASS2, 1));
+    }
+  /* Moves between SSE/MMX and integer unit are expensive.
+     ??? We should make this cost CPU specific.  */
+  if (MMX_CLASS_P (CLASS1) != MMX_CLASS_P (CLASS2)
+      || SSE_CLASS_P (CLASS1) != SSE_CLASS_P (CLASS2))
+    return 3;
+  return 2;
+}
+
 /* Return 1 if hard register REGNO can hold a value of machine-mode MODE.  */
 int
 ix86_hard_regno_mode_ok (regno, mode)

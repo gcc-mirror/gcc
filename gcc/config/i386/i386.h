@@ -946,6 +946,11 @@ enum reg_class
 #define N_REG_CLASSES (int) LIM_REG_CLASSES
 
 #define FLOAT_CLASS_P(CLASS) (reg_class_subset_p (CLASS, FLOAT_REGS))
+#define SSE_CLASS_P(CLASS) (reg_class_subset_p (CLASS, SSE_REGS))
+#define MMX_CLASS_P(CLASS) (reg_class_subset_p (CLASS, MMX_REGS))
+#define MAYBE_FLOAT_CLASS_P(CLASS) (reg_classes_intersect_p (CLASS, FLOAT_REGS))
+#define MAYBE_SSE_CLASS_P(CLASS) (reg_classes_intersect_p (SSE_REGS, CLASS))
+#define MAYBE_MMX_CLASS_P(CLASS) (reg_classes_intersect_p (MMX_REGS, CLASS))
 
 #define Q_CLASS_P(CLASS) (reg_class_subset_p (CLASS, Q_REGS))
 
@@ -1112,22 +1117,12 @@ enum reg_class
    movdf to do mem-to-mem moves through integer regs. */
 
 #define PREFERRED_RELOAD_CLASS(X,CLASS)					\
-  (GET_CODE (X) == CONST_DOUBLE && GET_MODE (X) != VOIDmode		\
-   ? (standard_80387_constant_p (X)					\
-      ? CLASS								\
-      : (reg_class_subset_p (CLASS, FLOAT_REGS) 			\
-	 ? NO_REGS							\
-	 : reg_class_subset_p (CLASS, GENERAL_REGS) ? CLASS : GENERAL_REGS)) \
-   : GET_MODE (X) == QImode && ! reg_class_subset_p (CLASS, Q_REGS) ? Q_REGS \
-   : (CLASS))
+   ix86_preferred_reload_class (X, CLASS)
 
 /* If we are copying between general and FP registers, we need a memory
-   location.  */
-/* The same is true for SSE and MMX registers.  */
+   location. The same is true for SSE and MMX registers.  */
 #define SECONDARY_MEMORY_NEEDED(CLASS1,CLASS2,MODE) \
-  (FLOAT_CLASS_P (CLASS1) != FLOAT_CLASS_P (CLASS2) \
-   || ((CLASS1 == SSE_REGS) != (CLASS2 == SSE_REGS)) \
-   || ((CLASS1 == MMX_REGS) != (CLASS2 == MMX_REGS) && (MODE) != SImode))
+  ix86_secondary_memory_needed (CLASS1, CLASS2, MODE, 1)
 
 /* QImode spills from non-QI registers need a scratch.  This does not
    happen often -- the only example so far requires an uninitialized 
@@ -1141,7 +1136,7 @@ enum reg_class
 /* On the 80386, this is the size of MODE in words,
    except in the FP regs, where a single reg is always enough.  */
 #define CLASS_MAX_NREGS(CLASS, MODE)					\
- (FLOAT_CLASS_P (CLASS) || (CLASS) == SSE_REGS || (CLASS) == MMX_REGS	\
+ (FLOAT_CLASS_P (CLASS) || SSE_CLASS_P (CLASS) || MMX_CLASS_P (CLASS)	\
   ? 1									\
   : ((GET_MODE_SIZE (MODE) + UNITS_PER_WORD - 1) / UNITS_PER_WORD))
 
@@ -2352,25 +2347,10 @@ while (0)
 
    It is not required that the cost always equal 2 when FROM is the same as TO;
    on some machines it is expensive to move between registers if they are not
-   general registers.
+   general registers.  */
 
-   On the i386, copying between floating-point and fixed-point
-   registers is done trough memory.  
- 
-   Integer -> fp moves are noticeably slower than the opposite direction
-   because of the partial memory stall they cause.  Give it an
-   arbitary high cost.
- */
-
-#define REGISTER_MOVE_COST(MODE, CLASS1, CLASS2)		\
-  ((FLOAT_CLASS_P (CLASS1) && ! FLOAT_CLASS_P (CLASS2))		\
-   ? (MEMORY_MOVE_COST (DFmode, CLASS1, 0)			\
-     + MEMORY_MOVE_COST (DFmode, CLASS2, 1))			\
-   : (! FLOAT_CLASS_P (CLASS1) && FLOAT_CLASS_P (CLASS2)) ? 10	\
-   : ((CLASS1) == MMX_REGS && (CLASS2) == SSE_REGS) ? 10	\
-   : ((CLASS1) == SSE_REGS && (CLASS2) == MMX_REGS) ? 10	\
-   : ((CLASS1) == MMX_REGS) != ((CLASS2) == MMX_REGS) ? 3	\
-   : 2)
+#define REGISTER_MOVE_COST(MODE, CLASS1, CLASS2) \
+   ix86_register_move_cost (mode, class1, class2);
 
 /* A C expression for the cost of moving data of mode M between a
    register and memory.  A value of 2 is the default; this cost is

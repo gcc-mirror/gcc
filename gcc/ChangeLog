@@ -1,3 +1,14 @@
+Tue Feb 13 11:37:06 CET 2001  Jan Hubicka  <jh@suse.cz>
+
+	* i386.h (SSE_CLASS_P, MMX_CLASS_P, MAYBE_FLOAT_CLASS_P,
+	MAYBE_SSE_CLASS_P, MAYBE_MMX_CLASS_P): New macros.
+	(PREFERRED_RELOAD_CLASS, SECONDARY_MEMORY_NEEDED): Move offline.
+	(REGISTER_MOVE_COST): Likewise.
+	* i386-protos.h (ix86_secondary_memory_needed,
+	ix86_preferred_reload_class, ix86_register_move_cost): Declare.
+	* i386.c (ix86_secondary_memory_needed,
+	ix86_preferred_reload_class, ix86_register_move_cost): New function.
+
 Die Feb 13 11:04:25 CET 2001  Jan Hubicka  <jh@suse.cz>
 
 	* i386.h (VALID_FP_MODE_P, VALID_INT_MODE_P): New.
