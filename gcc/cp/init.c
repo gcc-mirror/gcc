@@ -44,7 +44,7 @@ Boston, MA 02111-1307, USA.  */
 tree current_base_init_list, current_member_init_list;
 
 static void expand_aggr_vbase_init_1 PROTO((tree, tree, tree, tree));
-static void expand_aggr_vbase_init PROTO((tree, tree, tree, tree, tree));
+static void construct_virtual_bases PROTO((tree, tree, tree, tree, tree));
 static void expand_aggr_init_1 PROTO((tree, tree, tree, tree, int));
 static void expand_default_init PROTO((tree, tree, tree, tree, int));
 static tree build_vec_delete_1 PROTO((tree, tree, tree, tree, tree,
@@ -537,14 +537,13 @@ emit_base_init (t, immediately)
   sort_base_init (t, &rbase_init_list, &vbase_init_list);
   current_base_init_list = NULL_TREE;
 
+  /* First, initialize the virtual base classes, if we are
+     constructing the most-derived object.  */
   if (TYPE_USES_VIRTUAL_BASECLASSES (t))
     {
       tree first_arg = TREE_CHAIN (DECL_ARGUMENTS (current_function_decl));
-
-      expand_start_cond (first_arg, 0);
-      expand_aggr_vbase_init (t_binfo, current_class_ref, current_class_ptr,
-			      vbase_init_list, first_arg);
-      expand_end_cond ();
+      construct_virtual_bases (t, current_class_ref, current_class_ptr,
+			       vbase_init_list, first_arg);
     }
 
   /* Now, perform initialization of non-virtual base classes.  */
@@ -799,38 +798,60 @@ expand_aggr_vbase_init_1 (binfo, exp, addr, init_list)
   free_temp_slots ();
 }
 
-/* Initialize this object's virtual base class pointers.  This must be
-   done only at the top-level of the object being constructed.
-
-   INIT_LIST is list of initialization for constructor to perform.  */
+/* Construct the virtual base-classes of THIS_REF (whose address is
+   THIS_PTR).  The object has the indicated TYPE.  The construction
+   actually takes place only if FLAG is non-zero.  INIT_LIST is list
+   of initialization for constructor to perform.  */
 
 static void
-expand_aggr_vbase_init (binfo, exp, addr, init_list, flag)
-     tree binfo;
-     tree exp;
-     tree addr;
+construct_virtual_bases (type, this_ref, this_ptr, init_list, flag)
+     tree type;
+     tree this_ref;
+     tree this_ptr;
      tree init_list;
      tree flag;
 {
-  tree type = BINFO_TYPE (binfo);
+  tree vbases;
+  tree result;
 
-  if (TYPE_USES_VIRTUAL_BASECLASSES (type))
+  /* If there are no virtual baseclasses, we shouldn't even be here.  */
+  my_friendly_assert (TYPE_USES_VIRTUAL_BASECLASSES (type), 19990621);
+
+  /* First set the pointers in our object that tell us where to find
+     our virtual baseclasses.  */
+  expand_start_cond (flag, 0);
+  result = init_vbase_pointers (type, this_ptr);
+  if (result)
+    expand_expr_stmt (build_compound_expr (result));
+  expand_end_cond ();
+
+  /* Now, run through the baseclasses, initializing each.  */ 
+  for (vbases = CLASSTYPE_VBASECLASSES (type); vbases;
+       vbases = TREE_CHAIN (vbases))
     {
-      tree result = init_vbase_pointers (type, addr);
-      tree vbases;
-
-      if (result)
-	expand_expr_stmt (build_compound_expr (result));
-
-      for (vbases = CLASSTYPE_VBASECLASSES (type); vbases;
-	   vbases = TREE_CHAIN (vbases))
-	{
-	  tree tmp = purpose_member (vbases, result);
-	  expand_aggr_vbase_init_1 (vbases, exp,
-				    TREE_OPERAND (TREE_VALUE (tmp), 0),
-				    init_list);
-	  expand_cleanup_for_base (vbases, flag);
-	}
+      tree tmp = purpose_member (vbases, result);
+      
+      /* If there are virtual base classes with destructors, we need to
+	 emit cleanups to destroy them if an exception is thrown during
+	 the construction process.  These exception regions (i.e., the
+	 period during which the cleanups must occur) begin from the time
+	 the construction is complete to the end of the function.  If we
+	 create a conditional block in which to initialize the
+	 base-classes, then the cleanup region for the virtual base begins
+	 inside a block, and ends outside of that block.  This situation
+	 confuses the sjlj exception-handling code.  Therefore, we do not
+	 create a single conditional block, but one for each
+	 initialization.  (That way the cleanup regions always begin
+	 in the outer block.)  We trust the back-end to figure out
+	 that the FLAG will not change across initializations, and
+	 avoid doing multiple tests.  */
+      expand_start_cond (flag, 0);
+      expand_aggr_vbase_init_1 (vbases, this_ref,
+				TREE_OPERAND (TREE_VALUE (tmp), 0),
+				init_list);
+      expand_end_cond ();
+      
+      expand_cleanup_for_base (vbases, flag);
     }
 }
 

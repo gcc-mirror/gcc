@@ -1,3 +1,10 @@
+1999-06-21  Mark Mitchell  <mark@codesourcery.com>
+
+	* init.c (expand_aggr_vbase_init): Rename to
+	construct_virtual_bases.  Conditionalize construction here, 
+	rather than ...
+	(emit_base_init): Here.
+
 1999-06-19  Mark Mitchell  <mark@codesourcery.com>
 
         * semantics.c (finish_asm_statement): Apply decay conversions to
