@@ -1,3 +1,12 @@
+2004-03-05  Ziemowit Laski  <zlaski@apple.com>
+
+	* objc/objc-act.c (synth_module_prologue): Const-qualify
+	objc_selector type if using the GNU runtime; fix generated
+	signatures for objc_msg_lookup and objc_msg_lookup_super
+	to match what GNU ObjC headers provide; reformat and clean up.
+	(synth_self_and_ucmd_args): Use previously constructed (and
+	hence possibly const-qualified) objc_selector type.
+
 2004-03-05  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* doc/tm.texi (HARD_REGNO_RENAME_OK): Document.

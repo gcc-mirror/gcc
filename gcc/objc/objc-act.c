@@ -1159,116 +1159,99 @@ synth_module_prologue (void)
 
   /* Declare type of selector-objects that represent an operation name.  */
 
-  /* `struct objc_selector *' */
-  selector_type
-    = build_pointer_type (xref_tag (RECORD_TYPE,
-				    get_identifier (TAG_SELECTOR)));
+  if (flag_next_runtime)
+    /* `struct objc_selector *' */
+    selector_type
+      = build_pointer_type (xref_tag (RECORD_TYPE,
+				      get_identifier (TAG_SELECTOR)));
+  else
+    /* `const struct objc_selector *' */
+    selector_type
+      = build_pointer_type
+	(build_qualified_type (xref_tag (RECORD_TYPE,
+					 get_identifier (TAG_SELECTOR)),
+			       TYPE_QUAL_CONST));
 
-  /* Forward declare type, or else the prototype for msgSendSuper will
-     complain.  */
+  /* Declare receiver type used for dispatching messages to 'super'.  */
 
   /* `struct objc_super *' */
   super_type = build_pointer_type (xref_tag (RECORD_TYPE,
 					  get_identifier (TAG_SUPER)));
 
-
-  /* id objc_msgSend (id, SEL, ...); */
-
-  temp_type
-    = build_function_type (id_type,
-			   tree_cons (NULL_TREE, id_type,
-				      tree_cons (NULL_TREE, selector_type,
-						 NULL_TREE)));
-
-  if (! flag_next_runtime)
-    {
-      umsg_decl = build_decl (FUNCTION_DECL,
-			      get_identifier (TAG_MSGSEND), temp_type);
-      DECL_EXTERNAL (umsg_decl) = 1;
-      TREE_PUBLIC (umsg_decl) = 1;
-      DECL_INLINE (umsg_decl) = 1;
-      DECL_ARTIFICIAL (umsg_decl) = 1;
-
-      make_decl_rtl (umsg_decl, NULL);
-      pushdecl (umsg_decl);
-    }
-  else
-    {
-      umsg_decl = builtin_function (TAG_MSGSEND,
-				    temp_type, 0, NOT_BUILT_IN,
-				    NULL, NULL_TREE);
-      /* id objc_msgSendNonNil (id, SEL, ...); */
-      umsg_nonnil_decl = builtin_function (TAG_MSGSEND_NONNIL,
-					   temp_type, 0, NOT_BUILT_IN,
-					   NULL, NULL_TREE);
-    }
-
-  /* id objc_msgSendSuper (struct objc_super *, SEL, ...); */
-
-  temp_type
-    = build_function_type (id_type,
-			   tree_cons (NULL_TREE, super_type,
-				      tree_cons (NULL_TREE, selector_type,
-						 NULL_TREE)));
-
-  umsg_super_decl = builtin_function (TAG_MSGSENDSUPER,
-				      temp_type, 0, NOT_BUILT_IN,
-				      NULL, NULL_TREE);
-
-  /* The NeXT runtime defines the following additional entry points,
-     used for dispatching calls to methods returning structs:
-
-     #if defined(__cplusplus)
-       id objc_msgSend_stret(id self, SEL op, ...);
-       id objc_msgSendSuper_stret(struct objc_super *super, SEL op, ...);
-     #else
-       void objc_msgSend_stret(void * stretAddr, id self, SEL op, ...);
-       void objc_msgSendSuper_stret(void * stretAddr, struct objc_super *super,
-				    SEL op, ...);
-     #endif
-
-     struct objc_return_struct objc_msgSendNonNil_stret(id self, SEL op, ...);
-
-     These prototypes appear in <objc/objc-runtime.h>; however, they
-     CANNOT BE USED DIRECTLY.  In order to call one of the ..._stret
-     functions, the function must first be cast to a signature that
-     corresponds to the actual ObjC method being invoked.  This is
-     what is done by the build_objc_method_call() routine below.  */
-
   if (flag_next_runtime)
     {
-      tree objc_return_struct_type
-	= xref_tag (RECORD_TYPE,
-		    get_identifier (TAG_RETURN_STRUCT));
+      /* NB: In order to call one of the ..._stret (struct-returning)
+      functions, the function *MUST* first be cast to a signature that
+      corresponds to the actual ObjC method being invoked.  This is
+      what is done by the build_objc_method_call() routine below.  */
 
-      tree stret_temp_type
+      /* id objc_msgSend (id, SEL, ...); */
+      /* id objc_msgSendNonNil (id, SEL, ...); */
+      /* id objc_msgSend_stret (id, SEL, ...); */
+      /* id objc_msgSendNonNil_stret (id, SEL, ...); */
+      temp_type
 	= build_function_type (id_type,
 			       tree_cons (NULL_TREE, id_type,
 					  tree_cons (NULL_TREE, selector_type,
 						     NULL_TREE)));
-
+      umsg_decl = builtin_function (TAG_MSGSEND,
+				    temp_type, 0, NOT_BUILT_IN,
+				    NULL, NULL_TREE);
+      umsg_nonnil_decl = builtin_function (TAG_MSGSEND_NONNIL,
+					   temp_type, 0, NOT_BUILT_IN,
+					   NULL, NULL_TREE);
       umsg_stret_decl = builtin_function (TAG_MSGSEND_STRET,
-					  stret_temp_type, 0, NOT_BUILT_IN,
+					  temp_type, 0, NOT_BUILT_IN,
 					  NULL, NULL_TREE);
-      stret_temp_type
-	= build_function_type (objc_return_struct_type,
-			       tree_cons (NULL_TREE, id_type,
-					  tree_cons (NULL_TREE, selector_type,
-						     NULL_TREE)));
-
       umsg_nonnil_stret_decl = builtin_function (TAG_MSGSEND_NONNIL_STRET,
-						 stret_temp_type, 0, NOT_BUILT_IN,
+						 temp_type, 0, NOT_BUILT_IN,
 						 NULL, NULL_TREE);
 
-      stret_temp_type
+      /* id objc_msgSendSuper (struct objc_super *, SEL, ...); */
+      /* id objc_msgSendSuper_stret (struct objc_super *, SEL, ...); */
+      temp_type
 	= build_function_type (id_type,
 			       tree_cons (NULL_TREE, super_type,
 					  tree_cons (NULL_TREE, selector_type,
 						     NULL_TREE)));
-
+      umsg_super_decl = builtin_function (TAG_MSGSENDSUPER,
+					  temp_type, 0, NOT_BUILT_IN,
+					  NULL, NULL_TREE);
       umsg_super_stret_decl = builtin_function (TAG_MSGSENDSUPER_STRET,
-						stret_temp_type, 0, NOT_BUILT_IN, 0,
+						temp_type, 0, NOT_BUILT_IN, 0,
 						NULL_TREE);
+    }
+  else
+    {
+      /* GNU runtime messenger entry points.  */
+
+      /* typedef id (*IMP)(id, SEL, ...); */
+      tree IMP_type
+	= build_pointer_type
+	  (build_function_type (id_type,      
+				tree_cons (NULL_TREE, id_type,      
+					   tree_cons (NULL_TREE, selector_type,      
+						      NULL_TREE))));      
+
+      /* IMP objc_msg_lookup (id, SEL); */
+      temp_type
+        = build_function_type (IMP_type,
+                               tree_cons (NULL_TREE, id_type,
+                                          tree_cons (NULL_TREE, selector_type,
+                                                     OBJC_VOID_AT_END)));
+      umsg_decl = builtin_function (TAG_MSGSEND,
+				    temp_type, 0, NOT_BUILT_IN,
+				    NULL, NULL_TREE);
+
+      /* IMP objc_msg_lookup_super (struct objc_super *, SEL); */
+      temp_type
+        = build_function_type (IMP_type,
+                               tree_cons (NULL_TREE, super_type,
+                                          tree_cons (NULL_TREE, selector_type,
+                                                     OBJC_VOID_AT_END)));
+      umsg_super_decl = builtin_function (TAG_MSGSENDSUPER,
+					  temp_type, 0, NOT_BUILT_IN,
+					  NULL, NULL_TREE);
     }
 
   /* id objc_getClass (const char *); */
@@ -7538,9 +7521,7 @@ synth_self_and_ucmd_args (void)
 				    build1 (INDIRECT_REF, NULL_TREE, self_id)),
 		   unused_list));
 
-  decl_specs = build_tree_list (NULL_TREE,
-				xref_tag (RECORD_TYPE,
-					  get_identifier (TAG_SELECTOR)));
+  decl_specs = build_tree_list (NULL_TREE, TREE_TYPE (selector_type));
   push_parm_decl (build_tree_list
 		  (build_tree_list (decl_specs,
 				    build1 (INDIRECT_REF, NULL_TREE, ucmd_id)),
