@@ -1,5 +1,9 @@
 1999-05-07  Tom Tromey  <tromey@cygnus.com>
 
+	* mauve-libgcj: Don't omit Utf8Encoding or StringTest.
+	Comment out FieldPosition, ParsePosition, and SimpleDateFormat
+	again (oops).
+
 	* mauve-libgcj: Test more from java.text.  Don't mention 1.1 tests
 	(we pick those up already).
 
