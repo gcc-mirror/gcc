@@ -5,7 +5,7 @@
  * files which are fixed to work correctly with ANSI C and placed in a
  * directory that GNU C will search.
  *
- * This file contains 145 fixup descriptions.
+ * This file contains 144 fixup descriptions.
  *
  * See README for more information.
  *
@@ -218,39 +218,6 @@ static tTestDesc aAaa_StandardsTests[] = {
  *  Fix Command Arguments for Aaa_Standards
  */
 static const char* apzAaa_StandardsPatch[] = {
-    (char*)NULL };
-
-/* * * * * * * * * * * * * * * * * * * * * * * * * *
- *
- *  Description of Aaa_Time fix
- */
-tSCC zAaa_TimeName[] =
-     "AAA_time";
-
-/*
- *  File name selection pattern
- */
-tSCC zAaa_TimeList[] =
-  "|sys/time.h|";
-/*
- *  Machine/OS name selection pattern
- */
-#define apzAaa_TimeMachs (const char**)NULL
-
-/*
- *  content selection pattern - do fix if pattern found
- */
-tSCC zAaa_TimeSelect0[] =
-       "11.0 and later representation of ki time";
-
-#define    AAA_TIME_TEST_CT  1
-static tTestDesc aAaa_TimeTests[] = {
-  { TT_EGREP,    zAaa_TimeSelect0, (regex_t*)NULL }, };
-
-/*
- *  Fix Command Arguments for Aaa_Time
- */
-static const char* apzAaa_TimePatch[] = {
     (char*)NULL };
 
 /* * * * * * * * * * * * * * * * * * * * * * * * * *
@@ -2081,14 +2048,14 @@ tSCC zHpux11_Size_TName[] =
  *  Machine/OS name selection pattern
  */
 tSCC* apzHpux11_Size_TMachs[] = {
-        "*-hp-hpux*",
+        "*-hp-hpux11*",
         (const char*)NULL };
 
 /*
  *  content selection pattern - do fix if pattern found
  */
 tSCC zHpux11_Size_TSelect0[] =
-       "^#define __size_t size_t";
+       "__size_t";
 
 #define    HPUX11_SIZE_T_TEST_CT  1
 static tTestDesc aHpux11_Size_TTests[] = {
@@ -2100,7 +2067,6 @@ static tTestDesc aHpux11_Size_TTests[] = {
 static const char* apzHpux11_Size_TPatch[] = {
     "format",
     "_hpux_size_t",
-    "__size_t",
     (char*)NULL };
 
 /* * * * * * * * * * * * * * * * * * * * * * * * * *
@@ -2159,7 +2125,7 @@ tSCC zHpux11_VsnprintfList[] =
  *  content selection pattern - do fix if pattern found
  */
 tSCC zHpux11_VsnprintfSelect0[] =
-       "extern int vsnprintf\\(char \\*, __size_t, const char \\*, __va__list\\);";
+       "(extern int vsnprintf\\(char \\*, _[hpux]*_size_t, const char \\*,) __va__list\\);";
 
 #define    HPUX11_VSNPRINTF_TEST_CT  1
 static tTestDesc aHpux11_VsnprintfTests[] = {
@@ -2170,7 +2136,7 @@ static tTestDesc aHpux11_VsnprintfTests[] = {
  */
 static const char* apzHpux11_VsnprintfPatch[] = {
     "format",
-    "extern int vsnprintf(char *, __size_t, const char *, __va_list);",
+    "%1 __va_list);",
     (char*)NULL };
 
 /* * * * * * * * * * * * * * * * * * * * * * * * * *
@@ -5651,9 +5617,9 @@ static const char* apzX11_SprintfPatch[] = {
  *
  *  List of all fixes
  */
-#define REGEX_COUNT          152
+#define REGEX_COUNT          151
 #define MACH_LIST_SIZE_LIMIT 279
-#define FIX_COUNT            145
+#define FIX_COUNT            144
 
 /*
  *  Enumerate the fixes
@@ -5665,7 +5631,6 @@ typedef enum {
     AAA_KI_DEFS_FIXIDX,
     AAA_KI_IFACE_FIXIDX,
     AAA_STANDARDS_FIXIDX,
-    AAA_TIME_FIXIDX,
     AAB_DGUX_INT_VARARGS_FIXIDX,
     AAB_FD_ZERO_ASM_POSIX_TYPES_H_FIXIDX,
     AAB_FD_ZERO_GNU_TYPES_H_FIXIDX,
@@ -5836,11 +5801,6 @@ tFixDesc fixDescList[ FIX_COUNT ] = {
      apzAaa_StandardsMachs,
      AAA_STANDARDS_TEST_CT, FD_MACH_ONLY | FD_REPLACEMENT,
      aAaa_StandardsTests,   apzAaa_StandardsPatch, 0 },
-
-  {  zAaa_TimeName,    zAaa_TimeList,
-     apzAaa_TimeMachs,
-     AAA_TIME_TEST_CT, FD_MACH_ONLY | FD_REPLACEMENT,
-     aAaa_TimeTests,   apzAaa_TimePatch, 0 },
 
   {  zAab_Dgux_Int_VarargsName,    zAab_Dgux_Int_VarargsList,
      apzAab_Dgux_Int_VarargsMachs,

@@ -36,6 +36,13 @@ extern __DJ_wint_t x;
 #endif  /* DJGPP_WCHAR_H_CHECK */
 
 
+#if defined( HPUX11_SIZE_T_CHECK )
+#define _hpux_size_t size_t
+       extern int getpwuid_r( char *, _hpux_size_t, struct passwd **);
+
+#endif  /* HPUX11_SIZE_T_CHECK */
+
+
 #if defined( IO_QUOTES_DEF_CHECK )
 #define BSD43__IOWR(n, x) ((n<<8)+x)
 #define _IOWN(x,y,t)  (_IOC_IN|(((t)&_IOCPARM_MASK)<<16)|(x<<8)|y)

@@ -1,3 +1,10 @@
+2001-11-27  John David Anglin  <dave@hiauly1.hia.nrc.ca>
+	Bruce Korb <bkorb@gnu.org>
+
+	* inclhack.def (AAA_time): Delete.
+	(hpux_size_t): Revise select and fix for HP-UX 11.11.
+	(hpux11_vsnprintf): Adapt to above hack.
+
 2001-11-28  Jason Merrill  <jason@redhat.com>
 
 	* dwarf2out.c (add_data_member_location_attribute): Do the

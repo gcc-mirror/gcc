@@ -93,17 +93,6 @@ fix = {
     replace; /* empty replacement -> no fixing the file */
 };
 
-
-/*
- *  Purge some HP-UX 11 files that are only broken after they are "fixed".
- */
-fix = {
-    hackname = AAA_time;
-    files    = sys/time.h;
-    select   = '11.0 and later representation of ki time';
-    replace; /* empty replacement -> no fixing the file */
-};
-
 /* And now, the real fixes, replacement text fixes first: */
 
 /*
@@ -1222,12 +1211,11 @@ fix = {
  */
 fix = {
     hackname  = hpux11_size_t;
-    mach      = "*-hp-hpux*";
-    select    = "^#define __size_t size_t";
+    mach      = "*-hp-hpux11*";
+    select    = "__size_t";
 
     c_fix     = format;
     c_fix_arg = "_hpux_size_t";
-    c_fix_arg = "__size_t";
 
     test_text =
     "#define __size_t size_t\n"
@@ -1269,14 +1257,12 @@ fix = {
 fix = {
     hackname = hpux11_vsnprintf;
     files    = stdio.h;
-    select   = 'extern int vsnprintf\(char \*, __size_t, const char \*,'
-                                     ' __va__list\);';
-
+    select   = '(extern int vsnprintf\(char \*, _[hpux]*_size_t, '
+                                     'const char \*,) __va__list\);';
     c_fix     = format;
-    c_fix_arg = "extern int vsnprintf(char *, __size_t, const char *,"
-                                     " __va_list);";
+    c_fix_arg = "%1 __va_list);";
 
-    test_text = 'extern int vsnprintf(char *, __size_t, const char *,'
+    test_text = 'extern int vsnprintf(char *, _hpux_size_t, const char *,'
                                      ' __va__list);';
 };
 
