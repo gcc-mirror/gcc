@@ -229,9 +229,11 @@ convert_to_real (type, expr)
 	/* convert (float)-x into -(float)x.  This is always safe.  */
 	case ABS_EXPR:
 	case NEGATE_EXPR:
-	  return build1 (TREE_CODE (expr), type,
-			 fold (convert_to_real (type,
-						TREE_OPERAND (expr, 0))));
+	  if (TYPE_PRECISION (type) < TYPE_PRECISION (TREE_TYPE (expr)))
+	    return build1 (TREE_CODE (expr), type,
+			   fold (convert_to_real (type,
+						  TREE_OPERAND (expr, 0))));
+	  break;
 	/* convert (outertype)((innertype0)a+(innertype1)b)
 	   into ((newtype)a+(newtype)b) where newtype
 	   is the widest mode from all of these.  */

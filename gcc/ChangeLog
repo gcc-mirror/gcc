@@ -1,3 +1,13 @@
+Wed Jan 15 12:23:21 CET 2003  Jan Hubicka  <jh@suse.cz>
+
+	PR f/9258
+	* global.c (struct allocno): Add no_stack_reg. 
+	(global_conflicts): Set no_stack_reg.
+	(find_reg): Use it.
+
+	* convert.c (convert_to_real): Fold - and abs only when profitable.
+	* fold-const.c (fold): Fold truncates in - and abs.
+
 2003-01-15  Josef Zlomek  <zlomekj@suse.cz>
 
 	Segher Boessenkool  <segher@koffie.nl>
