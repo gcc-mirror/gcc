@@ -169,6 +169,7 @@ static void make_rtl_for_nonlocal_decl PARAMS ((tree, tree, const char *));
 static void push_cp_function_context PARAMS ((struct function *));
 static void pop_cp_function_context PARAMS ((struct function *));
 static void mark_binding_level PARAMS ((void *));
+static void mark_named_label_lists PARAMS ((void *, void *));
 static void mark_cp_function_context PARAMS ((struct function *));
 static void mark_saved_scope PARAMS ((void *));
 static void mark_lang_function PARAMS ((struct language_function *));
@@ -14025,6 +14026,8 @@ store_return_init (decl)
 	 here, we use the mode the back-end has already assigned for
 	 the return value.  */
       DECL_RTL (decl) = gen_reg_rtx (GET_MODE (original_result_rtx));
+      if (TREE_ADDRESSABLE (decl))
+	put_var_into_stack (decl);
     }
 }
 
