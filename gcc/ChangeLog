@@ -1,3 +1,36 @@
+2000-05-25  Richard Henderson  <rth@cygnus.com>
+
+	* bb-reorder.c (reorder_block_def): Reorder elements for size.
+	Remove add_jump; add next; replace flags with visited.
+	(rbd_init): Remove.
+	(REORDER_BLOCK_HEAD, REORDER_BLOCK_VISITED): Remove.
+	(REORDER_BLOCK_FLAGS, REORDER_BLOCK_INDEX): Remove.
+	(REORDER_BLOCK_ADD_JUMP, REORDER_BLOCK_EFF_HEAD): Remove.
+	(REORDER_BLOCK_EFF_END, REORDER_BLOCK_SCOPE): Remove.
+	(RBI): New.
+	(reorder_index, reorder_last_visited): Remove.
+	(skip_insns_after_block): Rewrite to use a switch.
+	(get_common_dest): Remove.
+	(chain_reorder_blocks): Remove.
+	(record_effective_endpoints): Split out from reorder_basic_blocks.
+	(make_reorder_chain): Likewise.  Loop until all blocks are placed.
+	(make_reorder_chain_1): Renamed from old make_reorder_chain.
+	Only construct the reorder chain, do not move insns.  Try harder
+	to tail recurse.
+	(label_for_bb, emit_jump_to_block_after): New.
+	(fixup_reorder_chain): Use them.  Do bulk block movement.  Examine
+	and adjust the jump insns appropriately.  Fixup basic_block_info.
+	(verify_insn_chain): Always define.
+	(relate_bbs_with_scopes): Call xmalloc, not xcalloc.  Fix thinko
+	in allocation size.
+	(make_new_scope): Don't write zeros to calloc'd space.
+	(build_scope_forest): Rely on xrealloc to DTRT.
+	(reorder_basic_blocks): Don't build loop nest.  Don't fail if
+	profile_arc_flag.  Streamline EH test.
+
+	* flow.c (redirect_edge_succ, redirect_edge_pred): New.
+	* basic-block.h: Declare them.
+
 2000-05-25  Alexandre Oliva  <aoliva@cygnus.com>
 
 	* emit-rtl.c (reset_used_decls): New function.

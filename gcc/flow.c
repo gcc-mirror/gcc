@@ -6789,6 +6789,46 @@ add_noreturn_fake_exit_edges ()
     if (BASIC_BLOCK (x)->succ == NULL)
       make_edge (NULL, BASIC_BLOCK (x), EXIT_BLOCK_PTR, EDGE_FAKE);
 }
+
+/* Redirect an edge's successor from one block to another.  */
+
+void
+redirect_edge_succ (e, new_succ)
+     edge e;
+     basic_block new_succ;
+{
+  edge *pe;
+
+  /* Disconnect the edge from the old successor block.  */
+  for (pe = &e->dest->pred; *pe != e ; pe = &(*pe)->pred_next)
+    continue;
+  *pe = (*pe)->pred_next;
+
+  /* Reconnect the edge to the new successor block.  */
+  e->pred_next = new_succ->pred;
+  new_succ->pred = e;
+  e->dest = new_succ;
+}
+
+/* Redirect an edge's predecessor from one block to another.  */
+
+void
+redirect_edge_pred (e, new_pred)
+     edge e;
+     basic_block new_pred;
+{
+  edge *pe;
+
+  /* Disconnect the edge from the old predecessor block.  */
+  for (pe = &e->src->succ; *pe != e ; pe = &(*pe)->succ_next)
+    continue;
+  *pe = (*pe)->succ_next;
+
+  /* Reconnect the edge to the new predecessor block.  */
+  e->succ_next = new_pred->succ;
+  new_pred->succ = e;
+  e->src = new_pred;
+}
 
 /* Dump the list of basic blocks in the bitmap NODES.  */
 static void 
