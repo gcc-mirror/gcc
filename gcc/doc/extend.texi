@@ -1476,6 +1476,7 @@ the enclosing block.
 @cindex function attributes
 @cindex declaring attributes of functions
 @cindex functions that never return
+@cindex functions that return more than once
 @cindex functions that have no side effects
 @cindex functions in arbitrary sections
 @cindex functions that behave like malloc
@@ -1495,7 +1496,7 @@ The keyword @code{__attribute__} allows you to specify special
 attributes when making a declaration.  This keyword is followed by an
 attribute specification inside double parentheses.  The following
 attributes are currently defined for functions on all targets:
-@code{noreturn}, @code{noinline}, @code{always_inline},
+@code{noreturn}, @code{returns_twice}, @code{noinline}, @code{always_inline},
 @code{pure}, @code{const}, @code{nothrow}, @code{sentinel},
 @code{format}, @code{format_arg}, @code{no_instrument_function},
 @code{section}, @code{constructor}, @code{destructor}, @code{used},
@@ -2088,6 +2089,16 @@ GNU systems with GLIBC 2.1 or higher, and FreeBSD, are believed to be
 safe since the loaders there save all registers.  (Lazy binding can be
 disabled with the linker or the loader if desired, to avoid the
 problem.)
+
+@item returns_twice
+@cindex @code{returns_twice} attribute
+The @code{returns_twice} attribute tells the compiler that a function may
+return more than one time.  The compiler will ensure that all registers
+are dead before calling such a function and will emit a warning about
+the variables that may be clobbered after the second return from the
+function.  Examples of such functions are @code{setjmp} and @code{vfork}.
+The @code{longjmp}-like counterpart of such function, if any, might need
+to be marked with the @code{noreturn} attribute.
 
 @item saveall
 @cindex save all registers on the H8/300, H8/300H, and H8S
