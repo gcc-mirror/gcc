@@ -2,7 +2,7 @@
 
 struct A { A(int); };
 
-void f()
+void f(int t)
 {
  throw (3,A(t));
 }
