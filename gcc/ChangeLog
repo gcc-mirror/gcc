@@ -1,3 +1,13 @@
+2002-08-15  Alexandre Oliva  <aoliva@redhat.com>
+
+	* c-tree.h (skip_evaluation): Move declaration...
+	* c-common.h: ... here.
+	* c-typeck.c (build_external_ref): Don't assemble_external nor
+	mark a tree as used if skip_evaluation is set.
+	* c-parse.in (typeof): New non-terminal to set skip_evaluation
+	around TYPEOF.
+	(typespec_nonreserved_nonattr): Use it.
+
 2002-08-15  Douglas B Rupp  <rupp@gnat.com>
 
 	* dbxout.c (dbx_debug_hooks): Update end_prologue, end_epilogue.
