@@ -1,3 +1,8 @@
+2001-03-28  Jim Wilson  <wilson@redhat.com>
+
+	* config/ia64/ia64.md (movtf): Change DImode to TFmode in calls to
+	operand_subword.
+
 2001-03-28  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* toplev.h (fatal_error): Add ATTRIBUTE_NORETURN.
