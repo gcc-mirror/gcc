@@ -6,7 +6,7 @@
 # define ASM __asm__("$30")
 #elif defined __i386__
 # define ASM __asm__("esp")
-#elif defined __powerpc__
+#elif (defined __powerpc__) || (defined __PPC__) || (defined __ppc__)
 # define ASM __asm__("r1")
 #else
 # define ASM
