@@ -6736,7 +6736,7 @@ get_condition (jump, earliest)
 
       /* If this is setting OP0, get what it sets it to if it looks
 	 relevant.  */
-      if (SET_DEST (set) == op0)
+      if (rtx_equal_p (SET_DEST (set), op0))
 	{
 	  enum machine_mode inner_mode = GET_MODE (SET_SRC (set));
 
