@@ -1095,16 +1095,14 @@ secondary_reload_class (class, mode, x, in)
      rtx x;
      int in;
 {
-  if (GET_CODE (x) == MEM
-      || (GET_CODE (x) == REG && REGNO (x) >= FIRST_PSEUDO_REGISTER)
-      || (GET_CODE (x) == SUBREG
-	  && (GET_CODE (SUBREG_REG (x)) == MEM
-	      || (GET_CODE (SUBREG_REG (x)) == REG
-		  && REGNO (SUBREG_REG (x)) >= FIRST_PSEUDO_REGISTER))))
+  if ((mode == QImode || mode == HImode) && ! TARGET_BWX)
     {
-      if (class == FLOAT_REGS && mode != DImode)
-	return GENERAL_REGS;
-      if ((mode == QImode || mode == HImode) && ! TARGET_BWX)
+      if (GET_CODE (x) == MEM
+	  || (GET_CODE (x) == REG && REGNO (x) >= FIRST_PSEUDO_REGISTER)
+	  || (GET_CODE (x) == SUBREG
+	      && (GET_CODE (SUBREG_REG (x)) == MEM
+		  || (GET_CODE (SUBREG_REG (x)) == REG
+		      && REGNO (SUBREG_REG (x)) >= FIRST_PSEUDO_REGISTER))))
 	{
 	  if (!in || !aligned_memory_operand(x, mode))
 	    return GENERAL_REGS;
