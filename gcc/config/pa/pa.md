@@ -814,7 +814,7 @@
   [(set_attr "type" "fpstore")
    (set_attr "length" "1")])
 
-;;; pic symbol refrences
+;;; pic symbol references
 
 (define_insn ""
   [(set (match_operand:SI 0 "register_operand" "=r")

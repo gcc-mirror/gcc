@@ -185,7 +185,7 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #define	TARGET_ASM_COMPAT	(target_flags & TARGET_FLAG_ASM_COMPAT)
 
 /* For compatibility with the gcc960 v1.2 compiler.  Use the old structure
-   alignement rules.  Also, turns on STRICT_ALIGNMENT.  */
+   alignment rules.  Also, turns on STRICT_ALIGNMENT.  */
 #define TARGET_FLAG_OLD_ALIGN	0x8000
 #define TARGET_OLD_ALIGN	(target_flags & TARGET_FLAG_OLD_ALIGN)
 
@@ -359,7 +359,7 @@ extern int target_flags;
 #define STRICT_ALIGNMENT TARGET_OLD_ALIGN
 
 /* Specify alignment for string literals (which might be higher than the
-   base type's minimnal alignment requirement.  This allows strings to be
+   base type's minimal alignment requirement.  This allows strings to be
    aligned on word boundaries, and optimizes calls to the str* and mem*
    library functions.  */
 #define CONSTANT_ALIGNMENT(EXP, ALIGN) \
@@ -996,7 +996,7 @@ extern struct rtx_def *i960_function_arg ();
    It is always safe for this macro to do nothing.  It exists to recognize
    opportunities to optimize the output.  */
 
-/* On 80960, convert non-cannonical addresses to canonical form.  */
+/* On 80960, convert non-canonical addresses to canonical form.  */
 
 extern struct rtx_def *legitimize_address ();
 #define LEGITIMIZE_ADDRESS(X, OLDX, MODE, WIN)	\
@@ -1417,7 +1417,7 @@ extern struct rtx_def *gen_compare_reg ();
 }
 
 #if 0
-/* Promote char and short arguments to ints, when want compitibility with
+/* Promote char and short arguments to ints, when want compatibility with
    the iC960 compilers.  */
 
 /* ??? In order for this to work, all users would need to be changed

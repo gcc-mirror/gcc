@@ -324,7 +324,7 @@ do {									\
   sprintf (LABEL, "*.%s%d", PREFIX, NUM);				\
 } while (0)
 
-/* Output the label which preceeds a jumptable.  Note that for all svr4
+/* Output the label which precedes a jumptable.  Note that for all svr4
    systems where we actually generate jumptables (which is to say every
    svr4 target except i386, where we use casesi instead) we put the jump-
    tables into the .rodata section and since other stuff could have been

@@ -69,7 +69,7 @@ extern int target_flags;
 /* Define this if most significant word of a multiword number is numbered.  */
 #define WORDS_BIG_ENDIAN 1
 
-/* Number of bits in an addressible storage unit */
+/* Number of bits in an addressable storage unit */
 #define BITS_PER_UNIT 8
 
 /* Width in bits of a "word", which is the contents of a machine register.
@@ -687,8 +687,8 @@ enum reg_class { NO_REGS, GENERAL_REGS, ALL_REGS, LIM_REG_CLASSES };
 
 /* Check a `double' value for validity for a particular machine mode.  */
 
-/* note that it is very hard to accidently create a number that fits in a
-   double but not in a float, since their ranges are almost the same */
+/* Note that it is very hard to accidentally create a number that fits in a
+   double but not in a float, since their ranges are almost the same.  */
 #define CHECK_FLOAT_VALUE(mode, d) \
   if ((mode) == SFmode) \
     { \

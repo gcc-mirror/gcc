@@ -124,7 +124,7 @@ extern int target_flags;
 #define WCHAR_TYPE "char"
 #define WCHAR_TYPE_SIZE BITS_PER_UNIT
 
-/* Define this macro if it is advisible to hold scalars in registers
+/* Define this macro if it is advisable to hold scalars in registers
    in a wider mode than that declared by the program.  In such cases, 
    the value is constrained to be within the bounds of the declared
    type, but kept valid in the wider mode.  The signedness of the

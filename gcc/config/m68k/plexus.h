@@ -66,7 +66,7 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #define PLEXUS_CC_COMPAT
 
 #ifdef PLEXUS_CC_COMPAT
-#define STRUCTURE_SIZE_BOUNDARY 16	/* for compatiblity with cc */
+#define STRUCTURE_SIZE_BOUNDARY 16	/* for compatibility with cc */
 #undef STACK_BOUNDARY
 #define STACK_BOUNDARY 32		/* ditto */
 #endif

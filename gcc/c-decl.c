@@ -4229,7 +4229,7 @@ grokdeclarator (declarator, declspecs, decl_context, initialized)
 	main_type = TYPE_MAIN_VARIANT (type);
 	if (main_type == float_type_node)
 	  DECL_ARG_TYPE (decl) = double_type_node;
-	/* Don't use TYPE_PREISION to decide whether to promote,
+	/* Don't use TYPE_PRECISION to decide whether to promote,
 	   because we should convert short if it's the same size as int,
 	   but we should not convert long if it's the same size as int.  */
 	else if (C_PROMOTING_INTEGER_TYPE_P (main_type))

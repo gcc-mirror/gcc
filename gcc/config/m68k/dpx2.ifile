@@ -4,7 +4,7 @@
  *      Peter Schauer <Peter.Schauer@regent.e-technik.tu-muenchen.dbp.de>
  *
  *      Install this file as $prefix/gcc-lib/dpx2/VERSION/gcc.ifile
- *	and comment out the lines refering to COLLECT at the top
+ *	and comment out the lines referring to COLLECT at the top
  *      of Makefile before building GCC.
  *	
  *      This file has been tested with gcc-2.2.2 on a DPX/2 340
