@@ -1,3 +1,7 @@
+Fri Jun 12 00:50:27 1998  Sergey Okhapkin <sos@prospect.com.ru>
+
+	* toplev.c (lang_options): Add -remap as a preprocessor option.
+
 Fri Jun 12 00:30:32 1998  John Wehle  (john@feith.com)
 
 	* i386.md (cmpsi_1, cmphi_1, cmpqi_1): Remove code
