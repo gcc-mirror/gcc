@@ -79,7 +79,13 @@
 
 /* Run-time target specifications */
 
-#define CPP_PREDEFINES "-D__D30V__ -Amachine=d30v"
+#define TARGET_CPU_CPP_BUILTINS()		\
+  do						\
+    {						\
+      builtin_define ("__D30V__");		\
+      builtin_assert ("machine=d30v");		\
+    }						\
+  while (0)
 
 /* This declaration should be present.  */
 extern int target_flags;

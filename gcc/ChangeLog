@@ -1,3 +1,8 @@
+2002-06-02  Neil Booth  <neil@daikokuya.demon.co.uk>
+
+	* d30v.h (CPP_PREDEFINES): Replace with
+	(TARGET_CPU_CPP_BUILTINS): New.
+
 2002-06-02  Roger Sayle  <roger@eyesopen.com>
 
 	* config/alpha/alpha.h [ASM_OUTPUT_LABELREF]: Fix typo.
