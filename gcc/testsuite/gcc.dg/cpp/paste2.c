@@ -6,13 +6,12 @@
 /* Test ## behaviour and corner cases thoroughly.  The macro expander
    failed many of these during development.  */
 
-#include <string.h>
-
 #ifndef __WCHAR_TYPE__
 #define __WCHAR_TYPE__ int
 #endif
 typedef __WCHAR_TYPE__ wchar_t;
 
+extern int strcmp (const char *, const char *);
 extern int puts (const char *);
 extern void abort (void);
 #define err(str) do { puts(str); abort(); } while (0)
