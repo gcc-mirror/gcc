@@ -2267,7 +2267,17 @@ expand_exit_loop_if_false (whichloop, cond)
 			       NULL_TREE);
     }
   else
-    do_jump (cond, whichloop->data.loop.end_label, NULL_RTX);
+    {
+      /* In order to handle fixups, we actually create a conditional jump
+	 around a unconditional branch to exit the loop.  If fixups are
+	 necessary, they go before the unconditional branch.  */
+
+      rtx label = gen_label_rtx ();
+      do_jump (cond, NULL_RTX, label);
+      expand_goto_internal (NULL_TREE, whichloop->data.loop.end_label,
+			    NULL_RTX);
+      emit_label (label);
+    }
 
   return 1;
 }
