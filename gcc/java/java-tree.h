@@ -1,6 +1,6 @@
 /* Definitions for parsing and type checking for the GNU compiler for
    the Java(TM) language.
-   Copyright (C) 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004
+   Copyright (C) 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005
    Free Software Foundation, Inc.
 
 This file is part of GCC.
@@ -274,6 +274,7 @@ typedef struct CPool constant_pool;
 
 extern GTY(()) tree java_lang_cloneable_identifier_node;
 extern GTY(()) tree java_io_serializable_identifier_node;
+extern GTY(()) tree gcj_abi_version;
 
 enum java_tree_index
 {
