@@ -50,8 +50,8 @@ ostream& operator<<(ostream& os, Graph<VertexType,EdgeType>& G)
 
         while(startN != endN)
         {
-            os << G[(*startN).first].first << ' ' // vertex
-               << (*startN).second << ' ';        // ERROR - no index operator
+            os << G[(*startN).first].first << ' ' // ERROR - no index operator
+               << (*startN).second << ' ';
             ++startN;
         }
         os << ">\n";
