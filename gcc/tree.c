@@ -1,6 +1,6 @@
 /* Language-independent node constructors for parse phase of GNU compiler.
    Copyright (C) 1987, 1988, 1992, 1993, 1994, 1995, 1996, 1997, 1998,
-   1999, 2000, 2001, 2002, 2003, 2004 Free Software Foundation, Inc.
+   1999, 2000, 2001, 2002, 2003, 2004, 2005 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -4926,10 +4926,11 @@ int_fits_type_p (tree c, tree type)
   /* Or to force_fit_type, if nothing else.  */
   else
     {
-      c = copy_node (c);
-      TREE_TYPE (c) = type;
-      c = force_fit_type (c, -1, false, false);
-      return !TREE_OVERFLOW (c);
+      tree n = copy_node (c);
+      TREE_TYPE (n) = type;
+      n = force_fit_type (n, -1, false, false);
+      return TREE_INT_CST_HIGH (n) == TREE_INT_CST_HIGH (c)
+             && TREE_INT_CST_LOW (n) == TREE_INT_CST_LOW (c);
     }
 }
 
