@@ -1,3 +1,7 @@
+2003-12-12  Jakub Jelinek  <jakub@redhat.com>
+
+	* g++.dg/eh/ia64-1.C: New test.
+
 2003-12-12  Hans-Peter Nilsson  <hp@axis.com>
 
 	PR target/13256

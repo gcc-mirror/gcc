@@ -155,6 +155,7 @@ typedef struct unw_state_record
 
   unsigned char gr_save_loc;	/* next general register to use for saving */
   unsigned char return_link_reg; /* branch register for return link */
+  unsigned short unwabi;
 
   struct unw_labeled_state *labeled_states;	/* list of all labeled states */
   struct unw_reg_state curr;	/* current state */
@@ -219,7 +220,7 @@ struct _Unwind_Context
     } nat;
   } ireg[32 - 2];	/* Indexed by <register number> - 2 */
 
-  unsigned long *br_loc[7];
+  unsigned long *br_loc[8];
   void *fr_loc[32 - 2];
 
   /* ??? We initially point pri_unat_loc here.  The entire NAT bit
@@ -619,11 +620,11 @@ desc_prologue (int body, unw_word rlen, unsigned char mask,
  */
 
 static inline void
-desc_abi (unsigned char abi __attribute__((unused)),
-	  unsigned char context __attribute__((unused)),
-	  struct unw_state_record *sr __attribute__((unused)))
+desc_abi (unsigned char abi,
+	  unsigned char context,
+	  struct unw_state_record *sr)
 {
-  /* Anything to do?  */
+  sr->unwabi = (abi << 8) | context;
 }
 
 static inline void
@@ -1812,9 +1813,9 @@ uw_update_reg_address (struct _Unwind_Context *context,
 
     case UNW_WHERE_BR:
       /* Note that while RVAL can only be 1-5 from normal descriptors,
-	 we can want to look at B0 due to having manually unwound a
+	 we can want to look at B0, B6 and B7 due to having manually unwound a
 	 signal frame.  */
-      if (rval <= 5)
+      if (rval < 8)
 	addr = context->br_loc[rval];
       else
 	abort ();
@@ -1927,6 +1928,10 @@ static void
 uw_update_context (struct _Unwind_Context *context, _Unwind_FrameState *fs)
 {
   long i;
+
+#ifdef MD_HANDLE_UNWABI
+  MD_HANDLE_UNWABI (context, fs);
+#endif
 
   context->sp = context->psp;
 
@@ -2079,22 +2084,22 @@ uw_install_context (struct _Unwind_Context *current __attribute__((unused)),
 	";;					\n\t"
 	"(p6) ld8.fill r4 = [%1]		\n\t"
 	"(p7) ld8.fill r5 = [r20]		\n\t"
-	"add r21 = uc_br_loc + 8, %0		\n\t"
+	"add r21 = uc_br_loc + 16, %0		\n\t"
 	"adds %1 = 16, %1			\n\t"
 	"adds r20 = 16, r20			\n\t"
 	";;					\n\t"
 	"(p8) ld8.fill r6 = [%1]		\n\t"
 	"(p9) ld8.fill r7 = [r20]		\n\t"
-	"add r20 = uc_br_loc, %0		\n\t"
+	"add r20 = uc_br_loc + 8, %0		\n\t"
 	";;					\n\t"
 	/* Load up call-saved branch registers.  */
 	"ld8 r22 = [r20], 16			\n\t"
 	"ld8 r23 = [r21], 16			\n\t"
 	";;					\n\t"
 	"ld8 r24 = [r20], 16			\n\t"
-	"ld8 r25 = [r21], uc_fr_loc - (uc_br_loc + 24)\n\t"
+	"ld8 r25 = [r21], uc_fr_loc - (uc_br_loc + 32)\n\t"
 	";;					\n\t"
-	"ld8 r26 = [r20], uc_fr_loc + 8 - (uc_br_loc + 32)\n\t"
+	"ld8 r26 = [r20], uc_fr_loc + 8 - (uc_br_loc + 40)\n\t"
 	"ld8 r27 = [r21], 24			\n\t"
 	"cmp.ne p6, p0 = r0, r22		\n\t"
 	";;					\n\t"
@@ -2242,7 +2247,7 @@ uw_install_context (struct _Unwind_Context *current __attribute__((unused)),
 	"(p9) mov.i ar.lc = r29			\n\t"
 	";;					\n\t"
 	"mov.m r25 = ar.rsc			\n\t"
-	"(p6) mov.i ar.fpsr = r30		\n\t"
+	"(p6) mov.m ar.fpsr = r30		\n\t"
 	";;					\n\t"
 	"and r25 = 0x1c, r25			\n\t"
 	"mov b0 = r26				\n\t"

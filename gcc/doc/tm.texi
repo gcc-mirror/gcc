@@ -2969,6 +2969,19 @@ the stack pointer value.  If the frame can be decoded, the register save
 addresses should be updated in @var{fs} and the macro should branch to
 @var{success}.  If the frame cannot be decoded, the macro should do
 nothing.
+
+@findex MD_HANDLE_UNWABI
+@item MD_HANDLE_UNWABI(@var{context}, @var{fs})
+This macro allows the target to add operating system specific code to the
+call-frame unwinder to handle the IA-64 @code{.unwabi} unwinding directive,
+usually used for signal or interrupt frames.
+
+This macro is called from @code{uw_update_context} in @file{unwind-ia64.c}.
+@var{context} is an @code{_Unwind_Context};
+@var{fs} is an @code{_Unwind_FrameState}.  Examine @code{fs->unwabi}
+for the abi and context in the @code{.unwabi} directive.  If the
+@code{.unwabi} directive can be handled, the register save addresses should
+be updated in @var{fs}.
 @end table
 
 @node Stack Checking
