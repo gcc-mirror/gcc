@@ -413,6 +413,7 @@ make_decl_rtl (decl, asmspec, top_level)
 /* Make the rtl for variable VAR be volatile.
    Use this only for static variables.  */
 
+void
 make_var_volatile (var)
      tree var;
 {
@@ -635,7 +636,7 @@ assemble_zeros (size)
 
 void
 assemble_string (p, size)
-     unsigned char *p;
+     char *p;
      int size;
 {
   register int i;
