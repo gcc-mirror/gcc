@@ -156,10 +156,6 @@ struct outf
 
 typedef struct outf * outf_p;
 
-/* The output header file that is included into pretty much every
-   source file.  */
-extern outf_p header_file;
-
 /* An output file, suitable for definitions, that can see declarations
    made in INPUT_FILE and is linked into every language that uses
    INPUT_FILE.  */
