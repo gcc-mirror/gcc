@@ -1,3 +1,8 @@
+1998-06-29  Ulrich Drepper  <drepper@cygnus.com>
+
+	* libio.h (__PMT): New macro.  Defined like __P.  Use is for
+	function pointers.
+
 1998-06-27  Manfred Hollstein  <manfred@s-direktnet.de>
 
 	* Makefile.in (install): Remove superfluous /include.
