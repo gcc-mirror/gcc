@@ -1,3 +1,8 @@
+2002-03-28  Tom Tromey  <tromey@redhat.com>
+
+	* except.c (expand_end_java_handler): If the handler type is NULL,
+	use java.lang.Throwable.  Fixes PR java/5986.
+
 2002-03-28  Alexandre Petit-Bianco  <apbianco@redhat.com>
 
 	Fix for PR java/4715:
