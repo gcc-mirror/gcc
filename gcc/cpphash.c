@@ -45,7 +45,7 @@ struct hashdummy
 struct macro_info
 {
   unsigned int paramlen;
-  signed short paramc;
+  short paramc;
   unsigned char flags;
 };
 
