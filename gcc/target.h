@@ -429,6 +429,7 @@ struct gcc_target
     bool (*promote_prototypes) (tree fntype);
     rtx (*struct_value_rtx) (tree fndecl, int incoming);
     bool (*return_in_memory) (tree type, tree fndecl);
+    bool (*return_in_msb) (tree type);
     rtx (*expand_builtin_saveregs) (void);
     /* Returns pretend_argument_size.  */
     void (*setup_incoming_varargs) (CUMULATIVE_ARGS *ca, enum machine_mode mode,

@@ -1,3 +1,27 @@
+2003-11-16  Richard Sandiford  <rsandifo@redhat.com>
+
+	* Makefile.in (expr.o): Depend on $(TARGET_H).
+	* target.h (return_in_msb): New target hook.
+	* target-def.h (TARGET_RETURN_IN_MSB): New macro.
+	(TARGET_CALLS): Include it.
+	* calls.c (shift_returned_value): New function.
+	(expand_call): Use it.
+	* expr.c: Include target.h.
+	(copy_blkmode_from_reg): Check targetm.calls.return_in_msb when
+	deciding what padding is needed.  Change the name of the local
+	padding variable from big_endian_correction to padding_correction.
+	* stmt.c (shift_return_value): New function.
+	(expand_return): Use it.  Adjust memory->register copy in the same
+	way as copy_blkmode_from_reg.  Only change the return register's
+	mode if it was originally BLKmode.
+	* doc/tm.texi (TARGET_RETURN_IN_MSB): Document.
+	* config/mips/mips.c (TARGET_RETURN_IN_MSB): Define.
+	(mips_fpr_return_fields): New, split out from mips_function_value.
+	(mips_return_in_msb, mips_return_fpr_pair): New functions.
+	(mips_function_value): Rework to use the functions above.
+	* config/mips/irix6-libc-compat.c: Delete.
+	* config/mips/t-iris6 (LIB2FUNCS_STATIC_EXTRA): Undefine.
+
 2003-11-16  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* doc/install.texi (--enable-checking): Update valgrind's URL.

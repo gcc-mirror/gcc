@@ -14,10 +14,6 @@ INSTALL_LIBGCC = install-multilib
 EXTRA_MULTILIB_PARTS=crtbegin.o crtend.o
 CRTSTUFF_T_CFLAGS=-g1
 
-# This is only needed in the static libgcc as a band-aid until gcc correctly
-# implements the N32/N64 ABI structure passing conventions
-LIB2FUNCS_STATIC_EXTRA = $(srcdir)/config/mips/irix6-libc-compat.c
-
 LIB2FUNCS_EXTRA = $(srcdir)/config/mips/_tilib.c
 
 TPBIT = tp-bit.c

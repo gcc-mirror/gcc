@@ -148,6 +148,7 @@ static int check_sibcall_argument_overlap (rtx, struct arg_data *, int);
 static int combine_pending_stack_adjustment_and_call (int, struct args_size *,
 						      int);
 static tree fix_unsafe_tree (tree);
+static bool shift_returned_value (tree, rtx *);
 
 #ifdef REG_PARM_STACK_SPACE
 static rtx save_fixed_argument_area (int, rtx, int *, int *);
@@ -2022,6 +2023,34 @@ fix_unsafe_tree (tree t)
   return t;
 }
 
+
+/* If function value *VALUE was returned at the most significant end of a
+   register, shift it towards the least significant end and convert it to
+   TYPE's mode.  Return true and update *VALUE if some action was needed.
+
+   TYPE is the type of the function's return value, which is known not
+   to have mode BLKmode.  */
+
+static bool
+shift_returned_value (tree type, rtx *value)
+{
+  if (targetm.calls.return_in_msb (type))
+    {
+      HOST_WIDE_INT shift;
+
+      shift = (GET_MODE_BITSIZE (GET_MODE (*value))
+	       - BITS_PER_UNIT * int_size_in_bytes (type));
+      if (shift > 0)
+	{
+	  *value = expand_binop (GET_MODE (*value), lshr_optab, *value,
+				 GEN_INT (shift), 0, 1, OPTAB_WIDEN);
+	  *value = convert_to_mode (TYPE_MODE (type), *value, 0);
+	  return true;
+	}
+    }
+  return false;
+}
+
 /* Generate all the code for a function call
    and return an rtx for its value.
    Store the value in TARGET (specified as an rtx) if convenient.
@@ -3281,7 +3310,12 @@ expand_call (tree exp, rtx target, int ignore)
 	  sibcall_failure = 1;
 	}
       else
-	target = copy_to_reg (valreg);
+	{
+	  if (shift_returned_value (TREE_TYPE (exp), &valreg))
+	    sibcall_failure = 1;
+
+	  target = copy_to_reg (valreg);
+	}
 
       if (targetm.calls.promote_function_return(funtype))
 	{
