@@ -27,6 +27,10 @@ involve a combination of these elements.
 @heading In 0.5.22:
 @itemize @bullet
 @item
+Fix a compiler crash on statements such as
+@samp{PRINT *, (REAL(Z(I)),I=1,2)}, where
+@samp{Z} is @code{DOUBLE COMPLEX}.
+
 @item
 Improve diagnostic messages from @code{libf2c}
 so it is more likely that the printing of the
@@ -47,6 +51,7 @@ is a constant.
 This provides a cleaner run-time diagnostic as provided
 by @code{libf2c} for statements like @samp{PRINT '(I1', 42}.
 
+@item
 Fix @code{SIGNAL} intrinsic so it offers portable
 support for 64-bit systems (such as Digital Alphas
 running GNU/Linux).
