@@ -360,13 +360,15 @@ flow_delete_block_noexpunge (b)
      and remove the associated NOTE_INSN_EH_REGION_BEG and
      NOTE_INSN_EH_REGION_END notes.  */
 
-  /* Get rid of all NOTE_INSN_PREDICTIONs hanging before the block.  */
+  /* Get rid of all NOTE_INSN_PREDICTIONs and NOTE_INSN_LOOP_CONTs
+     hanging before the block.  */
 
   for (insn = PREV_INSN (b->head); insn; insn = PREV_INSN (insn))
     {
       if (GET_CODE (insn) != NOTE)
 	break;
-      if (NOTE_LINE_NUMBER (insn) == NOTE_INSN_PREDICTION)
+      if (NOTE_LINE_NUMBER (insn) == NOTE_INSN_PREDICTION
+	  || NOTE_LINE_NUMBER (insn) == NOTE_INSN_LOOP_CONT)
 	NOTE_LINE_NUMBER (insn) = NOTE_INSN_DELETED;
     }
 
