@@ -119,7 +119,7 @@ DEFUN(utf8_equal_string, (jcf, index, value),
 #define HANDLE_SOURCEFILE(INDEX) \
 { fprintf (out, "Attribute "); \
   print_constant_terse (out, jcf, attribute_name, CONSTANT_Utf8); \
-  fprintf (out, ", length:%d, #%d=", attribute_length, INDEX); \
+  fprintf (out, ", length:%ld, #%d=", (long) attribute_length, INDEX); \
   print_constant_terse (out, jcf, INDEX, CONSTANT_Utf8); fputc ('\n', out); }
 
 #define HANDLE_CLASS_INFO(ACCESS_FLAGS, THIS, SUPER, INTERFACES_COUNT) \
@@ -228,7 +228,7 @@ DEFUN(utf8_equal_string, (jcf, index, value),
 #define COMMON_HANDLE_ATTRIBUTE(JCF, INDEX, LENGTH) \
 ( fprintf (out, "Attribute "), \
   print_constant_terse (out, jcf, INDEX, CONSTANT_Utf8), \
-  fprintf (out, ", length:%d", LENGTH) )
+  fprintf (out, ", length:%ld", (long) LENGTH) )
 
 #define HANDLE_CONSTANTVALUE(VALUE_INDEX) \
 ( COMMON_HANDLE_ATTRIBUTE(JCF, attribute_name, attribute_length), \
@@ -302,7 +302,7 @@ DEFUN(print_constant_ref, (stream, jcf, index),
     fprintf (stream, "out of range");
   else
     print_constant (stream, jcf, index, 1);
-  fprintf (stream, ">", index);
+  fprintf (stream, ">");
 }
 
 static int
@@ -916,8 +916,6 @@ DEFUN(disassemble_method, (jcf, byte_ops, len),
       int saw_index;
       jlong LONG_temp;
       jint INT_temp;
-      jfloat FLOAT_temp;
-      jdouble DOUBLE_temp;
       switch (byte_ops[PC++])
 	{
 
@@ -946,10 +944,10 @@ DEFUN(disassemble_method, (jcf, byte_ops, len),
 /* Print out operand (if not implied by the opcode) for PUSCH opcodes.
    These all push a constant onto the opcode stack. */
 #define PUSHC(OPERAND_TYPE, OPERAND_VALUE) \
-  saw_index = 0, INT_temp = (OPERAND_VALUE); \
+  saw_index = 0, i = (OPERAND_VALUE); \
   if (oldpc+1 == PC) /* nothing */; \
-  else if (saw_index) fprintf (out, " "), print_constant_ref (out, jcf, INT_temp); \
-  else fprintf (out, " %d", INT_temp);
+  else if (saw_index) fprintf (out, " "), print_constant_ref (out, jcf, i); \
+  else fprintf (out, " %d", i);
 
 /* Print out operand (a local variable index) for LOAD opcodes.
    These all push local variable onto the opcode stack. */
@@ -1055,11 +1053,11 @@ DEFUN(disassemble_method, (jcf, byte_ops, len),
   SPECIAL_##OPERAND_VALUE(OPERAND_TYPE)
 
 #define SPECIAL_IINC(OPERAND_TYPE) \
-  INT_temp = saw_wide ? IMMEDIATE_u2 : IMMEDIATE_u1; \
-  fprintf (out, " %d", INT_temp); \
+  i = saw_wide ? IMMEDIATE_u2 : IMMEDIATE_u1; \
+  fprintf (out, " %d", i); \
   INT_temp = saw_wide ? IMMEDIATE_s2 : IMMEDIATE_s1; \
   saw_wide = 0; \
-  fprintf (out, " %d", INT_temp)
+  fprintf (out, " %d", i)
 
 #define SPECIAL_WIDE(OPERAND_TYPE) \
   saw_wide = 1;
