@@ -637,9 +637,14 @@ constrain_asm_operands (n_operands, operands, operand_constraints,
      already guaranteed that all operands have the same number of
      alternatives.  */
 
-  n_alternatives = 1;
-  for (q = constraints[0]; *q; q++)
-    n_alternatives += (*q == ',');
+  if (n_operands == 0)
+    n_alternatives = 0;
+  else
+    {
+      n_alternatives = 1;
+      for (q = constraints[0]; *q; q++)
+	n_alternatives += (*q == ',');
+    }
 
   this_alternative = 0;
   while (this_alternative < n_alternatives)
