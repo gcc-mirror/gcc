@@ -312,8 +312,13 @@ frame_dummy (void)
 #endif /* CRT_GET_RFIB_DATA */
 #endif /* USE_EH_FRAME_REGISTRY */
 #ifdef JCR_SECTION_NAME
-  if (__JCR_LIST__[0] && _Jv_RegisterClasses)
-    _Jv_RegisterClasses (__JCR_LIST__);
+  if (__JCR_LIST__[0])
+    {
+      void (*register_classes) (void *) = _Jv_RegisterClasses;
+      __asm ("" : "+r" (register_classes));
+      if (register_classes)
+	register_classes (__JCR_LIST__);
+    }
 #endif /* JCR_SECTION_NAME */
 }
 
@@ -395,8 +400,13 @@ __do_global_ctors_1(void)
     __register_frame_info (__EH_FRAME_BEGIN__, &object);
 #endif
 #ifdef JCR_SECTION_NAME
-  if (__JCR_LIST__[0] && _Jv_RegisterClasses)
-    _Jv_RegisterClasses (__JCR_LIST__);
+  if (__JCR_LIST__[0])
+    {
+      void (*register_classes) (void *) = _Jv_RegisterClasses;
+      __asm ("" : "+r" (register_classes));
+      if (register_classes)
+	register_classes (__JCR_LIST__);
+    }
 #endif
 }
 #endif /* USE_EH_FRAME_REGISTRY || JCR_SECTION_NAME */

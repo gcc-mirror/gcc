@@ -1,3 +1,8 @@
+2004-01-21  Jakub Jelinek  <jakub@redhat.com>
+
+	* crtstuff.c (frame_dummy, __do_global_ctors_1): Call
+	_Jv_RegisterClasses through a function pointer.
+
 2004-01-21  Falk Hueffner  <falk@debian.org>
 
 	PR target/12898
