@@ -50,4 +50,14 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #define MD_STARTFILE_PREFIX "/svr4/usr/lib/cmplrs/cc/"
 #define MD_EXEC_PREFIX "/svr4/usr/lib/cmplrs/cc/"
 
+/* Mips System V.4 doesn't have a getpagesize() function needed by the
+   trampoline code, so use the POSIX sysconf function to get it.
+   This is only done when compiling the trampoline code.  */
+
+#ifdef  L_trampoline
+#include <unistd.h>
+
+#define getpagesize()	sysconf(_SC_PAGE_SIZE)
+#endif /*  L_trampoline */
+
 #include "mips.h"
