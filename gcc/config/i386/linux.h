@@ -54,23 +54,19 @@ Boston, MA 02111-1307, USA.  */
 #undef DBX_REGISTER_NUMBER
 #define DBX_REGISTER_NUMBER(n)  svr4_dbx_register_map[n]
 
-/* Output assembler code to FILE to increment profiler label # LABELNO
-   for profiling a function entry.  */
+/* Output assembler code to FILE to call the profiler.
+   To the best of my knowledge, no Linux libc has required the label
+   argument to mcount.  */
+
+#define NO_PROFILE_COUNTERS
 
 #undef FUNCTION_PROFILER
 #define FUNCTION_PROFILER(FILE, LABELNO)  \
 {									\
   if (flag_pic)								\
-    {									\
-      fprintf (FILE, "\tleal %sP%d@GOTOFF(%%ebx),%%edx\n",		\
-	       LPREFIX, (LABELNO));					\
-      fprintf (FILE, "\tcall *mcount@GOT(%%ebx)\n");			\
-    }									\
+    fprintf (FILE, "\tcall\t*mcount@GOT(%%ebx)\n");			\
   else									\
-    {									\
-      fprintf (FILE, "\tmovl $%sP%d,%%edx\n", LPREFIX, (LABELNO));	\
-      fprintf (FILE, "\tcall mcount\n");				\
-    }									\
+    fprintf (FILE, "\tcall\tmcount\n");					\
 }
 
 #undef SIZE_TYPE
