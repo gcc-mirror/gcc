@@ -355,6 +355,10 @@ extern int target_flags;
 /* target machine storage layout */
 
 #define LONG_DOUBLE_TYPE_SIZE 96
+
+/* Set the value of FLT_EVAL_METHOD in float.h.  When using 68040 fp
+   instructions, we get proper intermediate rounding, otherwise we
+   get extended precision results.  */
 #define TARGET_FLT_EVAL_METHOD ((TARGET_68040_ONLY || ! TARGET_68881) ? 0 : 2)
 
 #define BITS_BIG_ENDIAN 1
