@@ -7460,7 +7460,7 @@ EOF
 
     ;;
 
-  i[34567]86-*-*)
+  i[34567]86-*-* | x86_64-*-*)
     echo $ac_n "checking assembler instructions""... $ac_c" 1>&6
 echo "configure:7466: checking assembler instructions" >&5
     gcc_cv_as_instructions=
@@ -7528,7 +7528,7 @@ gcc_cv_as_dwarf2_debug_line=no
 # ??? Once 2.11 is released, probably need to add first known working
 # version to the per-target configury.
 case "$target" in
-  i?86*-*-* | mips*-*-* | alpha*-*-* | powerpc*-*-* | sparc*-*-* | m68*-*-*)
+  i?86*-*-* | mips*-*-* | alpha*-*-* | powerpc*-*-* | sparc*-*-* | m68*-*-* | x86_64*-*-*)
     insn="nop"
     ;;
   ia64*-*-*)
