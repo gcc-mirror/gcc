@@ -135,7 +135,7 @@ g77.f-torture/execute
 20010116.f			Y
 20010426.f renamed 20010426-1.f	Y 
 20010430.f			Y
-20010610.f			F PR 16579 Execution test fails
+20010610.f			Y
 5122.f				- Assembler failure
 6177.f				Y
 6367.f & 6367.x
