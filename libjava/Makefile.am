@@ -473,6 +473,7 @@ gnu/gcj/convert/Input_JavaSrc.java \
 gnu/gcj/convert/Input_SJIS.java \
 gnu/gcj/convert/Input_UTF8.java	\
 gnu/gcj/convert/Input_iconv.java \
+gnu/gcj/convert/IOConverter.java \
 gnu/gcj/convert/Output_8859_1.java \
 gnu/gcj/convert/Output_EUCJIS.java \
 gnu/gcj/convert/Output_JavaSrc.java \
@@ -494,8 +495,8 @@ java/awt/AWTEventMulticaster.java \
 java/awt/AWTException.java \
 java/awt/ActiveEvent.java \
 java/awt/Adjustable.java \
-java/awt/Button.java \
 java/awt/BorderLayout.java \
+java/awt/Button.java \
 java/awt/CheckboxGroup.java \
 java/awt/Color.java \
 java/awt/Component.java	\

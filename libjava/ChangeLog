@@ -1,3 +1,18 @@
+2000-08-02  Tom Tromey  <tromey@cygnus.com>
+
+	* scripts/encodings.pl: New file.
+	* Makefile.in: Rebuilt.
+	* Makefile.am (convert_source_files): Added IOConverter.java.
+	* gnu/gcj/convert/UnicodeToBytes.java (UnicodeToBytes): Extend
+	IOConverter.
+	(getDefaultDecodingClass): Canonicalize default encoding name.
+	(getEncoder): Likewise.
+	* gnu/gcj/convert/BytesToUnicode.java (BytesToUnicode): Extend
+	IOConverter.
+	(getDefaultDecodingClass): Canonicalize default encoding name.
+	(getDecoder): Likewise.
+	* gnu/gcj/convert/IOConverter.java: New file.
+
 2000-08-02  Bryce McKinlay  <bryce@albatross.co.nz>
 
         * interpret.cc (_Jv_InterpMethod::continue1): Type of `fun' changed
