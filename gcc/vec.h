@@ -382,8 +382,9 @@ static inline TDEF VEC_OP (TDEF,pop)					  \
 static inline void VEC_OP (TDEF,truncate)				  \
      (VEC (TDEF) *vec_, size_t size_)					  \
 {									  \
-  VEC_ASSERT (vec_->num >= size_, "truncate", TDEF);			  \
-  vec_->num = size_;							  \
+  VEC_ASSERT (vec_ ? vec_->num >= size_ : !size_, "truncate", TDEF);	  \
+  if (vec_)								  \
+    vec_->num = size_;							  \
 }									  \
 									  \
 static inline TDEF VEC_OP (TDEF,replace)		  	     	  \
@@ -406,7 +407,7 @@ static inline TDEF *VEC_OP (TDEF,quick_insert)		     	  	  \
   VEC_ASSERT (vec_->num < vec_->alloc, "insert", TDEF);			  \
   VEC_ASSERT (ix_ <= vec_->num, "insert", TDEF);			  \
   slot_ = &vec_->vec[ix_];						  \
-  memmove (slot_ + 1, slot_, vec_->num++ - ix_);			  \
+  memmove (slot_ + 1, slot_, (vec_->num++ - ix_) * sizeof (TDEF));	  \
   *slot_ = obj_;							  \
   									  \
   return slot_;								  \
@@ -429,7 +430,7 @@ static inline TDEF VEC_OP (TDEF,ordered_remove)				  \
   VEC_ASSERT (ix_ < vec_->num, "remove", TDEF);				  \
   slot_ = &vec_->vec[ix_];						  \
   obj_ = *slot_;							  \
-  memmove (slot_, slot_ + 1, --vec_->num - ix_);       			  \
+  memmove (slot_, slot_ + 1, (--vec_->num - ix_) * sizeof (TDEF));     	  \
 									  \
   return obj_;								  \
 }									  \
@@ -553,8 +554,9 @@ static inline void VEC_OP (TDEF,pop)					  \
 static inline void VEC_OP (TDEF,truncate)				  \
      (VEC (TDEF) *vec_, size_t size_)					  \
 {									  \
-  VEC_ASSERT (vec_->num >= size_, "truncate", TDEF);			  \
-  vec_->num = size_;							  \
+  VEC_ASSERT (vec_ ? vec_->num >= size_ : !size_, "truncate", TDEF);	  \
+  if (vec_)								  \
+    vec_->num = size_;							  \
 }									  \
 									  \
 static inline TDEF *VEC_OP (TDEF,replace)				  \
@@ -578,7 +580,7 @@ static inline TDEF *VEC_OP (TDEF,quick_insert)				  \
   VEC_ASSERT (vec_->num < vec_->alloc, "insert", TDEF);			  \
   VEC_ASSERT (ix_ <= vec_->num, "insert", TDEF);			  \
   slot_ = &vec_->vec[ix_];						  \
-  memmove (slot_ + 1, slot_, vec_->num++ - ix_);			  \
+  memmove (slot_ + 1, slot_, (vec_->num++ - ix_) * sizeof (TDEF));	  \
   if (obj_)								  \
     *slot_ = *obj_;							  \
   									  \
@@ -600,7 +602,7 @@ static inline void VEC_OP (TDEF,ordered_remove)				  \
 									  \
   VEC_ASSERT (ix_ < vec_->num, "remove", TDEF);				  \
   slot_ = &vec_->vec[ix_];						  \
-  memmove (slot_, slot_ + 1, --vec_->num - ix_);       			  \
+  memmove (slot_, slot_ + 1, (--vec_->num - ix_) * sizeof (TDEF));	  \
 }									  \
 									  \
 static inline void VEC_OP (TDEF,unordered_remove)			  \
