@@ -420,7 +420,7 @@ static int merge_outer_ops	PROTO((enum rtx_code *, HOST_WIDE_INT *,
 				       enum machine_mode, int *));
 static rtx simplify_shift_const	PROTO((rtx, enum rtx_code, enum machine_mode,
 				       rtx, int));
-static int recog_for_combine	PROTO((rtx *, rtx, rtx *));
+static int recog_for_combine	PROTO((rtx *, rtx, rtx *, int *));
 static rtx gen_lowpart_for_combine  PROTO((enum machine_mode, rtx));
 static rtx gen_rtx_combine PVPROTO((enum rtx_code code, enum machine_mode mode,
 				  ...));
@@ -1217,6 +1217,8 @@ try_combine (i3, i2, i1)
   int i3_subst_into_i2 = 0;
   /* Notes that I1, I2 or I3 is a MULT operation.  */
   int have_mult = 0;
+  /* Number of clobbers of SCRATCH we had to add.  */
+  int i3_scratches = 0, i2_scratches = 0, other_scratches = 0;
 
   int maxreg;
   rtx temp;
@@ -1685,7 +1687,8 @@ try_combine (i3, i2, i1)
   mark_used_regs_combine (newpat);
 
   /* Is the result of combination a valid instruction?  */
-  insn_code_number = recog_for_combine (&newpat, i3, &new_i3_notes);
+  insn_code_number
+    = recog_for_combine (&newpat, i3, &new_i3_notes, &i3_scratches);
 
   /* If the result isn't valid, see if it is a PARALLEL of two SETs where
      the second SET's destination is a register that is unused.  In that case,
@@ -1706,7 +1709,8 @@ try_combine (i3, i2, i1)
       && asm_noperands (newpat) < 0)
     {
       newpat = XVECEXP (newpat, 0, 0);
-      insn_code_number = recog_for_combine (&newpat, i3, &new_i3_notes);
+      insn_code_number
+	= recog_for_combine (&newpat, i3, &new_i3_notes, &i3_scratches);
     }
 
   else if (insn_code_number < 0 && GET_CODE (newpat) == PARALLEL
@@ -1719,7 +1723,8 @@ try_combine (i3, i2, i1)
 	   && asm_noperands (newpat) < 0)
     {
       newpat = XVECEXP (newpat, 0, 1);
-      insn_code_number = recog_for_combine (&newpat, i3, &new_i3_notes);
+      insn_code_number
+	= recog_for_combine (&newpat, i3, &new_i3_notes, &i3_scratches);
     }
 
   /* If we were combining three insns and the result is a simple SET
@@ -1788,15 +1793,15 @@ try_combine (i3, i2, i1)
 	  if (REGNO (i2dest) >= FIRST_PSEUDO_REGISTER)
 	    SUBST (regno_reg_rtx[REGNO (i2dest)], ni2dest);
 
-	  i2_code_number = recog_for_combine (&newi2pat, i2, &new_i2_notes);
+	  i2_code_number = recog_for_combine (&newi2pat, i2, &new_i2_notes,
+					      &i2_scratches);
 
 	  /* If I2 or I3 has multiple SETs, we won't know how to track
 	     register status, so don't use these insns.  */
 
 	  if (i2_code_number >= 0 && i2set && i3set)
-	    insn_code_number = recog_for_combine (&newi3pat, i3,
-						  &new_i3_notes);
-
+	    insn_code_number = recog_for_combine (&newi3pat, i3, &new_i3_notes,
+						  &i3_scratches); 
 	  if (insn_code_number >= 0)
 	    newpat = newi3pat;
 
@@ -1867,12 +1872,14 @@ try_combine (i3, i2, i1)
 
 	  newi2pat = gen_rtx_combine (SET, VOIDmode, newdest, *split);
 	  SUBST (*split, newdest);
-	  i2_code_number = recog_for_combine (&newi2pat, i2, &new_i2_notes);
+	  i2_code_number
+	    = recog_for_combine (&newi2pat, i2, &new_i2_notes, &i2_scratches);
 
 	  /* If the split point was a MULT and we didn't have one before,
 	     don't use one now.  */
 	  if (i2_code_number >= 0 && ! (split_code == MULT && ! have_mult))
-	    insn_code_number = recog_for_combine (&newpat, i3, &new_i3_notes);
+	    insn_code_number
+	      = recog_for_combine (&newpat, i3, &new_i3_notes, &i3_scratches);
 	}
     }
 
@@ -1926,9 +1933,12 @@ try_combine (i3, i2, i1)
       newpat = XVECEXP (newpat, 0, 1);
       SUBST (SET_SRC (newpat),
 	     gen_lowpart_for_combine (GET_MODE (SET_SRC (newpat)), ni2dest));
-      i2_code_number = recog_for_combine (&newi2pat, i2, &new_i2_notes);
+      i2_code_number
+	= recog_for_combine (&newi2pat, i2, &new_i2_notes, &i2_scratches);
+
       if (i2_code_number >= 0)
-	insn_code_number = recog_for_combine (&newpat, i3, &new_i3_notes);
+	insn_code_number
+	  = recog_for_combine (&newpat, i3, &new_i3_notes, &i3_scratches);
 
       if (insn_code_number >= 0)
 	{
@@ -2002,9 +2012,12 @@ try_combine (i3, i2, i1)
       newi2pat = XVECEXP (newpat, 0, 1);
       newpat = XVECEXP (newpat, 0, 0);
 
-      i2_code_number = recog_for_combine (&newi2pat, i2, &new_i2_notes);
+      i2_code_number
+	= recog_for_combine (&newi2pat, i2, &new_i2_notes, &i2_scratches);
+
       if (i2_code_number >= 0)
-	insn_code_number = recog_for_combine (&newpat, i3, &new_i3_notes);
+	insn_code_number
+	  = recog_for_combine (&newpat, i3, &new_i3_notes, &i3_scratches);
     }
 
   /* If it still isn't recognized, fail and change things back the way they
@@ -2026,8 +2039,9 @@ try_combine (i3, i2, i1)
 
       CLEAR_HARD_REG_SET (newpat_used_regs);
 
-      other_code_number = recog_for_combine (&other_pat, undobuf.other_insn,
-					     &new_other_notes);
+      other_code_number
+	= recog_for_combine (&other_pat, undobuf.other_insn,
+			     &new_other_notes, &other_scratches);
 
       if (other_code_number < 0 && ! check_asm_operands (other_pat))
 	{
@@ -2328,6 +2342,12 @@ try_combine (i3, i2, i1)
     note_stores (newpat, set_nonzero_bits_and_sign_copies);
     if (newi2pat)
       note_stores (newi2pat, set_nonzero_bits_and_sign_copies);
+
+    /* If we added any (clobber (scratch)), add them to the max for a
+       block.  This is a very pessimistic calculation, since we might
+       have had them already and this might not be the worst block, but
+       it's not worth doing any better.  */
+    max_scratch += i3_scratches + i2_scratches + other_scratches;
 
     /* If I3 is now an unconditional jump, ensure that it has a 
        BARRIER following it since it may have initially been a
@@ -4286,8 +4306,9 @@ simplify_set (x)
 	      && exact_log2 (mask = nonzero_bits (op0, GET_MODE (op0))) >= 0)
 	    {
 	      rtx pat = PATTERN (other_insn), note = 0;
+	      int scratches;
 
-	      if ((recog_for_combine (&pat, other_insn, &note) < 0
+	      if ((recog_for_combine (&pat, other_insn, &note, &scratches) < 0
 		   && ! check_asm_operands (pat)))
 		{
 		  PUT_CODE (*cc_use, old_code);
@@ -8307,20 +8328,26 @@ simplify_shift_const (x, code, result_mode, varop, count)
    PNOTES is a pointer to a location where any REG_UNUSED notes added for
    the CLOBBERs are placed.
 
+   PADDED_SCRATCHES is set to the number of (clobber (scratch)) patterns
+   we had to add.
+
    The value is the final insn code from the pattern ultimately matched,
    or -1.  */
 
 static int
-recog_for_combine (pnewpat, insn, pnotes)
+recog_for_combine (pnewpat, insn, pnotes, padded_scratches)
      rtx *pnewpat;
      rtx insn;
      rtx *pnotes;
+     int *padded_scratches;
 {
   register rtx pat = *pnewpat;
   int insn_code_number;
   int num_clobbers_to_add = 0;
   int i;
   rtx notes = 0;
+
+  *padded_scratches = 0;
 
   /* If PAT is a PARALLEL, check to see if it contains the CLOBBER
      we use to indicate that something didn't match.  If we find such a
@@ -8383,6 +8410,8 @@ recog_for_combine (pnewpat, insn, pnotes)
 	  if (GET_CODE (XEXP (XVECEXP (newpat, 0, i), 0)) == REG
 	      && ! reg_dead_at_p (XEXP (XVECEXP (newpat, 0, i), 0), insn))
 	    return -1;
+	  else if (GET_CODE (XEXP (XVECEXP (newpat, 0, i), 0)) == SCRATCH)
+	    (*padded_scratches)++;
 	  notes = gen_rtx (EXPR_LIST, REG_UNUSED,
 			   XEXP (XVECEXP (newpat, 0, i), 0), notes);
 	}
