@@ -140,7 +140,7 @@ namespace std
 	size_type __dnew = static_cast<size_type>(distance(__beg, __end));
 
 	// NB: Not required, but considered best practice.
-	if (__builtin_expect(__beg == _InIter(0), 0))
+	if (__builtin_expect(__beg == _InIter(), 0))
 	  __throw_logic_error("attempt to create string with null pointer");
 	
 	if (__beg == __end && __a == _Alloc())

@@ -1,4 +1,12 @@
 2002-06-04  Paolo Carlini  <pcarlini@unitus.it>
+            Gaby Dos Reis  <gdr@codesourcery.com>
+
+	* include/bits/basic_string.tcc
+	(basic_string::_S_construct(forward_iterator_tag):
+	Fix typo in null pointer check.
+	* testsuite/21_strings/ctor_copy_dtor.cc: Add test04.
+
+2002-06-04  Paolo Carlini  <pcarlini@unitus.it>
 
 	* testsuite/22_locale/money_get_members_char.cc
 	(test02): Add decimal point to long double constants.
