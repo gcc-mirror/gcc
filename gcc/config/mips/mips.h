@@ -28,7 +28,6 @@ Boston, MA 02111-1307, USA.  */
 
 extern char	call_used_regs[];
 extern int	may_call_alloca;
-extern char   **save_argv;
 extern int	target_flags;
 
 /* MIPS external variables defined in mips.c.  */

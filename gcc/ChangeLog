@@ -1,3 +1,7 @@
+2003-07-03  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* config/mips/mips.h (save_argv): Delete.
+
 2003-07-03  Roger Sayle  <roger@eyesopen.com>
 
 	PR target/10700
