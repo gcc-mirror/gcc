@@ -2767,6 +2767,10 @@ resolve_scoped_fn_name (tree scope, tree name)
       if (fn && current_class_type)
 	fn = (adjust_result_of_qualified_name_lookup 
 	      (fn, scope, current_class_type));
+
+      /* It might be the name of a function pointer member.  */
+      if (fn && TREE_CODE (fn) == FIELD_DECL)
+	fn = resolve_offset_ref (build_offset_ref (scope, fn));
     }
   
   if (!fn)
