@@ -592,11 +592,11 @@ get_alias_set (tree t)
 
 /* Return a brand-new alias set.  */
 
+static GTY(()) HOST_WIDE_INT last_alias_set;
+
 HOST_WIDE_INT
 new_alias_set (void)
 {
-  static HOST_WIDE_INT last_alias_set;
-
   if (flag_strict_aliasing)
     {
       if (!alias_sets)
@@ -724,29 +724,29 @@ record_component_aliases (tree type)
 /* Allocate an alias set for use in storing and reading from the varargs
    spill area.  */
 
+static GTY(()) HOST_WIDE_INT varargs_set = -1;
+
 HOST_WIDE_INT
 get_varargs_alias_set (void)
 {
-  static HOST_WIDE_INT set = -1;
+  if (varargs_set == -1)
+    varargs_set = new_alias_set ();
 
-  if (set == -1)
-    set = new_alias_set ();
-
-  return set;
+  return varargs_set;
 }
 
 /* Likewise, but used for the fixed portions of the frame, e.g., register
    save areas.  */
 
+static GTY(()) HOST_WIDE_INT frame_set = -1;
+
 HOST_WIDE_INT
 get_frame_alias_set (void)
 {
-  static HOST_WIDE_INT set = -1;
+  if (frame_set == -1)
+    frame_set = new_alias_set ();
 
-  if (set == -1)
-    set = new_alias_set ();
-
-  return set;
+  return frame_set;
 }
 
 /* Inside SRC, the source of a SET, find a base address.  */
