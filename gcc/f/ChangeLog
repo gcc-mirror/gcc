@@ -1,3 +1,7 @@
+2000-04-03  Zack Weinberg  <zack@wolery.cumb.org>
+
+	* lang-specs.h: Pass -fno-show-column to the preprocessor.
+
 2000-03-28  Franz Sirl  <Franz.Sirl-kernel@lauterbach.com>
 
 	* com.c (ffecom_decl_field): Use DECL_ALIGN for a FIELD_DECL.

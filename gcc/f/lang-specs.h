@@ -43,6 +43,7 @@ the Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 	%{!undef:%P} -D_LANGUAGE_FORTRAN %{trigraphs} \
 	%c %{Os:-D__OPTIMIZE_SIZE__} %{O*:%{!O0:-D__OPTIMIZE__}} -traditional\
 	%{ffast-math:-D__FAST_MATH__}\
+	%{fshow-column} %{fno-show-column}\
 	%{g*} %{W*} %{w} %{pedantic*} %{H} %{d*} %C %{D*} %{U*} %{i*} %Z\
 	%i %{!M:%{!MM:%{!E:%{!pipe:%g.i}}}}%{E:%W{o*}}%{M:%W{o*}}%{MM:%W{o*}} |\n",
     "%{!M:%{!MM:%{!E:f771 %{!pipe:%g.i} %1 %(f771) \

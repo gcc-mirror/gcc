@@ -1,3 +1,8 @@
+2000-04-03  Zack Weinberg  <zack@wolery.cumb.org>
+
+	* gcc.c (C specs): Pass -fno-show-column to the preprocessor.
+	* objc/lang-specs.h: Likewise.
+
 2000-04-03  Neil Booth  <NeilB@earthling.net>
 
 	* cppexp.c: wrap long lines.  New macros CPP_ICE, SYNTAX_ERROR
