@@ -6163,7 +6163,7 @@ else
   then gcc_cv_as_balign_and_p2align=yes
 fi
   elif test x$gcc_cv_as != x; then
-    echo '.balign 4
+        echo '.balign 4
 .p2align 2' > conftest.s
     if { ac_try='$gcc_cv_as  -o conftest.o conftest.s >&5'; { (eval echo configure:6169: \"$ac_try\") 1>&5; (eval $ac_try) 2>&5; }; }
     then
@@ -6195,7 +6195,7 @@ else
   then gcc_cv_as_max_skip_p2align=yes
 fi
   elif test x$gcc_cv_as != x; then
-    echo '.p2align 4,,7' > conftest.s
+        echo '.p2align 4,,7' > conftest.s
     if { ac_try='$gcc_cv_as  -o conftest.o conftest.s >&5'; { (eval echo configure:6200: \"$ac_try\") 1>&5; (eval $ac_try) 2>&5; }; }
     then
 	gcc_cv_as_max_skip_p2align=yes
@@ -6227,7 +6227,7 @@ else
   then gcc_cv_as_subsection_m1=yes
 fi
   elif test x$gcc_cv_as != x; then
-    echo 'conftest_label1: .word 0
+        echo 'conftest_label1: .word 0
 .subsection -1
 conftest_label2: .word 0
 .previous' > conftest.s
@@ -6269,7 +6269,7 @@ else
   then gcc_cv_as_weak=yes
 fi
   elif test x$gcc_cv_as != x; then
-    echo '	.weak foobar' > conftest.s
+        echo '	.weak foobar' > conftest.s
     if { ac_try='$gcc_cv_as  -o conftest.o conftest.s >&5'; { (eval echo configure:6274: \"$ac_try\") 1>&5; (eval $ac_try) 2>&5; }; }
     then
 	gcc_cv_as_weak=yes
@@ -6308,7 +6308,7 @@ else
   then gcc_cv_as_hidden=yes
 fi
   elif test x$gcc_cv_as != x; then
-    echo '	.hidden foobar
+        echo '	.hidden foobar
 foobar:' > conftest.s
     if { ac_try='$gcc_cv_as  -o conftest.o conftest.s >&5'; { (eval echo configure:6314: \"$ac_try\") 1>&5; (eval $ac_try) 2>&5; }; }
     then
@@ -6399,7 +6399,7 @@ else
   then gcc_cv_as_leb128=yes
 fi
   elif test x$gcc_cv_as != x; then
-    echo '	.data
+        echo '	.data
 	.uleb128 L2 - L1
 L1:
 	.uleb128 1280
@@ -6452,7 +6452,7 @@ else
   then gcc_cv_as_eh_frame=yes
 fi
   elif test x$gcc_cv_as != x; then
-    echo '	.text
+        echo '	.text
 .LFB1:
 	.4byte	0
 .L1:
@@ -6541,7 +6541,7 @@ else
   then gcc_cv_as_shf_merge=yes
 fi
   elif test x$gcc_cv_as != x; then
-    echo '.section .rodata.str, "aMS", @progbits, 1' > conftest.s
+        echo '.section .rodata.str, "aMS", @progbits, 1' > conftest.s
     if { ac_try='$gcc_cv_as --fatal-warnings -o conftest.o conftest.s >&5'; { (eval echo configure:6546: \"$ac_try\") 1>&5; (eval $ac_try) 2>&5; }; }
     then
 	gcc_cv_as_shf_merge=yes
@@ -6790,7 +6790,7 @@ else
   then gcc_cv_as_tls=yes
 fi
   elif test x$gcc_cv_as != x; then
-    echo "$conftest_s" > conftest.s
+        echo "$conftest_s" > conftest.s
     if { ac_try='$gcc_cv_as $tls_as_opt --fatal-warnings -o conftest.o conftest.s >&5'; { (eval echo configure:6795: \"$ac_try\") 1>&5; (eval $ac_try) 2>&5; }; }
     then
 	gcc_cv_as_tls=yes
@@ -6827,7 +6827,7 @@ else
   then gcc_cv_as_alpha_explicit_relocs=yes
 fi
   elif test x$gcc_cv_as != x; then
-    echo '	.set nomacro
+        echo '	.set nomacro
 	.text
 	extbl	$3, $2, $3	!lituse_bytoff!1
 	ldq	$2, a($29)	!literal!1
@@ -6868,7 +6868,7 @@ if eval "test \"`echo '$''{'gcc_cv_as_sparc_register_op'+set}'`\" = set"; then
 else
   gcc_cv_as_sparc_register_op=no
   if test x$gcc_cv_as != x; then
-    echo '.register %g2, #scratch' > conftest.s
+        echo '.register %g2, #scratch' > conftest.s
     if { ac_try='$gcc_cv_as  -o conftest.o conftest.s >&5'; { (eval echo configure:6873: \"$ac_try\") 1>&5; (eval $ac_try) 2>&5; }; }
     then
 	gcc_cv_as_sparc_register_op=yes
@@ -6895,7 +6895,7 @@ if eval "test \"`echo '$''{'gcc_cv_as_sparc_relax'+set}'`\" = set"; then
 else
   gcc_cv_as_sparc_relax=no
   if test x$gcc_cv_as != x; then
-    echo '.text' > conftest.s
+        echo '.text' > conftest.s
     if { ac_try='$gcc_cv_as -relax -o conftest.o conftest.s >&5'; { (eval echo configure:6900: \"$ac_try\") 1>&5; (eval $ac_try) 2>&5; }; }
     then
 	gcc_cv_as_sparc_relax=yes
@@ -6922,7 +6922,7 @@ if eval "test \"`echo '$''{'gcc_cv_as_sparc_ua_pcrel'+set}'`\" = set"; then
 else
   gcc_cv_as_sparc_ua_pcrel=no
   if test x$gcc_cv_as != x; then
-    echo '.text
+        echo '.text
 foo:
 	nop
 .data
@@ -6958,7 +6958,7 @@ if eval "test \"`echo '$''{'gcc_cv_as_sparc_ua_pcrel_hidden'+set}'`\" = set"; th
 else
   gcc_cv_as_sparc_ua_pcrel_hidden=no
   if test x$gcc_cv_as != x; then
-    echo '.data
+        echo '.data
 .align 4
 .byte 0x31
 .uaword %r_disp32(foo)
@@ -7006,7 +7006,7 @@ if eval "test \"`echo '$''{'gcc_cv_as_sparc_offsetable_lo10'+set}'`\" = set"; th
 else
   gcc_cv_as_sparc_offsetable_lo10=no
   if test x$gcc_cv_as != x; then
-    echo '.text
+        echo '.text
 	or %g1, %lo(ab) + 12, %g1
 	or %g1, %lo(ab + 12), %g1' > conftest.s
     if { ac_try='$gcc_cv_as -xarch=v9 -o conftest.o conftest.s >&5'; { (eval echo configure:7013: \"$ac_try\") 1>&5; (eval $ac_try) 2>&5; }; }
@@ -7045,7 +7045,7 @@ else
   then gcc_cv_as_ix86_filds_fists=yes
 fi
   elif test x$gcc_cv_as != x; then
-    echo 'filds mem; fists mem' > conftest.s
+        echo 'filds mem; fists mem' > conftest.s
     if { ac_try='$gcc_cv_as  -o conftest.o conftest.s >&5'; { (eval echo configure:7050: \"$ac_try\") 1>&5; (eval $ac_try) 2>&5; }; }
     then
 	gcc_cv_as_ix86_filds_fists=yes
@@ -7072,7 +7072,7 @@ if eval "test \"`echo '$''{'gcc_cv_as_ix86_cmov_sun_syntax'+set}'`\" = set"; the
 else
   gcc_cv_as_ix86_cmov_sun_syntax=no
   if test x$gcc_cv_as != x; then
-    echo 'cmovl.l %edx, %eax' > conftest.s
+        echo 'cmovl.l %edx, %eax' > conftest.s
     if { ac_try='$gcc_cv_as  -o conftest.o conftest.s >&5'; { (eval echo configure:7077: \"$ac_try\") 1>&5; (eval $ac_try) 2>&5; }; }
     then
 	gcc_cv_as_ix86_cmov_sun_syntax=yes
@@ -7105,7 +7105,7 @@ else
   then gcc_cv_as_ix86_gotoff_in_data=yes
 fi
   elif test x$gcc_cv_as != x; then
-    echo '	.text
+        echo '	.text
 .L0:
 	nop
 	.data
@@ -7141,7 +7141,7 @@ else
   then gcc_cv_as_ia64_ltoffx_ldxmov_relocs=yes
 fi
   elif test x$gcc_cv_as != x; then
-    echo '	.text
+        echo '	.text
 	addl r15 = @ltoffx(x#), gp
 	;;
 	ld8.mov r16 = [r15], x#' > conftest.s
@@ -7185,7 +7185,7 @@ else
   then gcc_cv_as_powerpc_mfcrf=yes
 fi
   elif test x$gcc_cv_as != x; then
-    echo "$conftest_s" > conftest.s
+        echo "$conftest_s" > conftest.s
     if { ac_try='$gcc_cv_as  -o conftest.o conftest.s >&5'; { (eval echo configure:7190: \"$ac_try\") 1>&5; (eval $ac_try) 2>&5; }; }
     then
 	gcc_cv_as_powerpc_mfcrf=yes
@@ -7218,7 +7218,7 @@ else
   then gcc_cv_as_mips_explicit_relocs=yes
 fi
   elif test x$gcc_cv_as != x; then
-    echo '	lw $4,%gp_rel(foo)($4)' > conftest.s
+        echo '	lw $4,%gp_rel(foo)($4)' > conftest.s
     if { ac_try='$gcc_cv_as  -o conftest.o conftest.s >&5'; { (eval echo configure:7223: \"$ac_try\") 1>&5; (eval $ac_try) 2>&5; }; }
     then
 	gcc_cv_as_mips_explicit_relocs=yes
@@ -7276,7 +7276,7 @@ else
   then gcc_cv_as_dwarf2_debug_line=yes
 fi
   elif test x$gcc_cv_as != x; then
-    echo "$conftest_s" > conftest.s
+        echo "$conftest_s" > conftest.s
     if { ac_try='$gcc_cv_as  -o conftest.o conftest.s >&5'; { (eval echo configure:7281: \"$ac_try\") 1>&5; (eval $ac_try) 2>&5; }; }
     then
 	# ??? This fails with non-gnu grep.  Maybe use objdump?
@@ -7305,7 +7305,7 @@ if eval "test \"`echo '$''{'gcc_cv_as_dwarf2_file_buggy'+set}'`\" = set"; then
 else
   gcc_cv_as_dwarf2_file_buggy=no
   if test x$gcc_cv_as != x; then
-    echo '	.file 1 "foo.s"
+        echo '	.file 1 "foo.s"
 	.file 1 "bar.s"' > conftest.s
     if { ac_try='$gcc_cv_as  -o conftest.o conftest.s >&5'; { (eval echo configure:7311: \"$ac_try\") 1>&5; (eval $ac_try) 2>&5; }; }
     then
@@ -7341,7 +7341,7 @@ else
   then gcc_cv_as_gdwarf2_flag=yes
 fi
   elif test x$gcc_cv_as != x; then
-    echo "$insn" > conftest.s
+        echo "$insn" > conftest.s
     if { ac_try='$gcc_cv_as --gdwarf2 -o conftest.o conftest.s >&5'; { (eval echo configure:7346: \"$ac_try\") 1>&5; (eval $ac_try) 2>&5; }; }
     then
 	gcc_cv_as_gdwarf2_flag=yes
@@ -7373,7 +7373,7 @@ else
   then gcc_cv_as_gstabs_flag=yes
 fi
   elif test x$gcc_cv_as != x; then
-    echo "$insn" > conftest.s
+        echo "$insn" > conftest.s
     if { ac_try='$gcc_cv_as --gstabs -o conftest.o conftest.s >&5'; { (eval echo configure:7378: \"$ac_try\") 1>&5; (eval $ac_try) 2>&5; }; }
     then
 	# The native Solaris 9/Intel assembler doesn't understand --gstabs
@@ -8502,9 +8502,9 @@ symbolic_link='$symbolic_link'
 EOF
 cat >> $CONFIG_STATUS <<\EOF
 
-case x$CONFIG_HEADERS in
-xauto-host.h:config.in)
-echo > cstamp-h ;;
+case ${CONFIG_HEADERS} in
+  *auto-host.h:config.in*)
+  echo > cstamp-h ;;
 esac
 # Make sure all the subdirs exist.
 for d in $subdirs
