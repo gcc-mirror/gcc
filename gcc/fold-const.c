@@ -48,7 +48,7 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 /* Handle floating overflow for `const_binop'.  */
 static jmp_buf float_error;
 
-void lshift_double ();
+int lshift_double ();
 void rshift_double ();
 void lrotate_double ();
 void rrotate_double ();
@@ -57,6 +57,19 @@ static tree const_binop ();
 #ifndef BRANCH_COST
 #define BRANCH_COST 1
 #endif
+
+/* Yield nonzero if a signed left shift of A by B bits overflows.  */
+#define left_shift_overflows(a, b)  ((a)  !=  ((a) << (b)) >> (b))
+
+/* Yield nonzero if A and B have the same sign.  */
+#define same_sign(a, b) ((a) ^ (b) >= 0)
+
+/* Suppose A1 + B1 = SUM1, using 2's complement arithmetic ignoring overflow.
+   Suppose A, B and SUM have the same respective signs as A1, B1, and SUM1.
+   Then this yields nonzero if overflow occurred during the addition.
+   Overflow occurs if A and B have the same sign, but A and SUM differ in sign.
+   Use `^' to test whether signs differ, and `< 0' to isolate the sign.  */
+#define overflow_sum_sign(a, b, sum) ((~((a) ^ (b)) & ((a) ^ (sum))) < 0)
 
 /* To do constant folding on INTEGER_CST nodes requires two-word arithmetic.
    We do that by representing the two-word integer as MAX_SHORTS shorts,
@@ -161,7 +174,7 @@ force_fit_type (t)
    The value is stored as two `HOST_WIDE_INT' pieces in *LV and *HV.
    We use the 8-shorts representation internally.  */
 
-void
+int
 add_double (l1, h1, l2, h2, lv, hv)
      HOST_WIDE_INT l1, h1, l2, h2;
      HOST_WIDE_INT *lv, *hv;
@@ -182,14 +195,16 @@ add_double (l1, h1, l2, h2, lv, hv)
     }
 
   decode (arg1, lv, hv);
+  return overflow_sum_sign (h1, h2, *hv);
 }
 
 /* Negate a doubleword integer with doubleword result.
+   Return nonzero if the operation overflows, assuming it's signed.
    The argument is given as two `HOST_WIDE_INT' pieces in L1 and H1.
    The value is stored as two `HOST_WIDE_INT' pieces in *LV and *HV.
    We use the 8-shorts representation internally.  */
 
-void
+int
 neg_double (l1, h1, lv, hv)
      HOST_WIDE_INT l1, h1;
      HOST_WIDE_INT *lv, *hv;
@@ -198,21 +213,24 @@ neg_double (l1, h1, lv, hv)
     {
       *lv = 0;
       *hv = - h1;
+      return same_sign (h1, *hv);
     }
   else
     {
       *lv = - l1;
       *hv = ~ h1;
+      return 0;
     }
 }
 
 /* Multiply two doubleword integers with doubleword result.
+   Return nonzero if the operation overflows, assuming it's signed.
    Each argument is given as two `HOST_WIDE_INT' pieces.
    One argument is L1 and H1; the other, L2 and H2.
    The value is stored as two `HOST_WIDE_INT' pieces in *LV and *HV.
    We use the 8-shorts representation internally.  */
 
-void
+int
 mul_double (l1, h1, l2, h2, lv, hv)
      HOST_WIDE_INT l1, h1, l2, h2;
      HOST_WIDE_INT *lv, *hv;
@@ -222,33 +240,36 @@ mul_double (l1, h1, l2, h2, lv, hv)
   short prod[MAX_SHORTS * 2];
   register int carry = 0;
   register int i, j, k;
+  HOST_WIDE_INT toplow, tophigh, neglow, neghigh;
 
-  /* These two cases are used extensively, arising from pointer
-     combinations.  */
+  /* These cases are used extensively, arising from pointer combinations.  */
   if (h2 == 0)
     {
       if (l2 == 2)
 	{
+	  int overflow = left_shift_overflows (h1, 1);
 	  unsigned HOST_WIDE_INT temp = l1 + l1;
-	  *hv = h1 * 2 + (temp < l1);
+	  *hv = (h1 << 1) + (temp < l1);
 	  *lv = temp;
-	  return;
+	  return overflow;
 	}
       if (l2 == 4)
 	{
+	  int overflow = left_shift_overflows (h1, 2);
 	  unsigned HOST_WIDE_INT temp = l1 + l1;
-	  h1 = h1 * 4 + ((temp < l1) << 1);
+	  h1 = (h1 << 2) + ((temp < l1) << 1);
 	  l1 = temp;
 	  temp += temp;
 	  h1 += (temp < l1);
 	  *lv = temp;
 	  *hv = h1;
-	  return;
+	  return overflow;
 	}
       if (l2 == 8)
 	{
+	  int overflow = left_shift_overflows (h1, 3);
 	  unsigned HOST_WIDE_INT temp = l1 + l1;
-	  h1 = h1 * 8 + ((temp < l1) << 2);
+	  h1 = (h1 << 3) + ((temp < l1) << 2);
 	  l1 = temp;
 	  temp += temp;
 	  h1 += (temp < l1) << 1;
@@ -257,7 +278,7 @@ mul_double (l1, h1, l2, h2, lv, hv)
 	  h1 += (temp < l1);
 	  *lv = temp;
 	  *hv = h1;
-	  return;
+	  return overflow;
 	}
     }
 
@@ -280,17 +301,33 @@ mul_double (l1, h1, l2, h2, lv, hv)
 	  }
       }
 
-  decode (prod, lv, hv);	/* ?? decode ignores
+  decode (prod, lv, hv);	/* This ignores
 				   prod[MAX_SHORTS] -> prod[MAX_SHORTS*2-1] */
+
+  /* Check for overflow by calculating the top half of the answer in full;
+     it should agree with the low half's sign bit.  */
+  decode (prod+MAX_SHORTS, &toplow, &tophigh);
+  if (h1 < 0)
+    {
+      neg_double (l2, h2, &neglow, &neghigh);
+      add_double (neglow, neghigh, toplow, tophigh, &toplow, &tophigh);
+    }
+  if (h2 < 0)
+    {
+      neg_double (l1, h1, &neglow, &neghigh);
+      add_double (neglow, neghigh, toplow, tophigh, &toplow, &tophigh);
+    }
+  return (*hv < 0 ? ~(toplow & tophigh) : toplow | tophigh) != 0;
 }
 
 /* Shift the doubleword integer in L1, H1 left by COUNT places
    keeping only PREC bits of result.
    Shift right if COUNT is negative.
    ARITH nonzero specifies arithmetic shifting; otherwise use logical shift.
+   Return nonzero if the arithmetic shift overflows, assuming it's signed.
    Store the value as two `HOST_WIDE_INT' pieces in *LV and *HV.  */
 
-void
+int
 lshift_double (l1, h1, count, prec, lv, hv, arith)
      HOST_WIDE_INT l1, h1;
      int count, prec;
@@ -299,12 +336,12 @@ lshift_double (l1, h1, count, prec, lv, hv, arith)
 {
   short arg1[MAX_SHORTS];
   register int i;
-  register int carry;
+  register int carry, overflow;
 
   if (count < 0)
     {
       rshift_double (l1, h1, - count, prec, lv, hv, arith);
-      return;
+      return 0;
     }
 
   encode (arg1, l1, h1);
@@ -312,6 +349,7 @@ lshift_double (l1, h1, count, prec, lv, hv, arith)
   if (count > prec)
     count = prec;
 
+  overflow = 0;
   while (count > 0)
     {
       carry = 0;
@@ -322,9 +360,11 @@ lshift_double (l1, h1, count, prec, lv, hv, arith)
 	  carry >>= 8;
 	}
       count--;
+      overflow |= carry ^ (arg1[7] >> 7);
     }
 
   decode (arg1, lv, hv);
+  return overflow;
 }
 
 /* Shift the doubleword integer in L1, H1 right by COUNT places
@@ -440,10 +480,11 @@ rrotate_double (l1, h1, count, prec, lv, hv)
    CODE is a tree code for a kind of division, one of
    TRUNC_DIV_EXPR, FLOOR_DIV_EXPR, CEIL_DIV_EXPR, ROUND_DIV_EXPR
    or EXACT_DIV_EXPR
-   It controls how the quotient is rounded to an integer.
+   It controls how the quotient is rounded to a integer.
+   Return nonzero if the operation overflows.
    UNS nonzero says do unsigned division.  */
 
-static void
+static int
 div_and_round_double (code, uns,
 		      lnum_orig, hnum_orig, lden_orig, hden_orig,
 		      lquo, hquo, lrem, hrem)
@@ -462,6 +503,7 @@ div_and_round_double (code, uns,
   HOST_WIDE_INT hnum = hnum_orig;
   unsigned HOST_WIDE_INT lden = lden_orig;
   HOST_WIDE_INT hden = hden_orig;
+  int overflow = 0;
 
   if ((hden == 0) && (lden == 0))
     abort ();
@@ -469,15 +511,17 @@ div_and_round_double (code, uns,
   /* calculate quotient sign and convert operands to unsigned.  */
   if (!uns) 
     {
+      if (hnum < 0)
+	{
+	  quo_neg = ~ quo_neg;
+	  /* (minimum integer) / (-1) is the only overflow case.  */
+	  if (neg_double (lnum, hnum, &lnum, &hnum) && (lden & hden) == -1)
+	    overflow = 1;
+	}
       if (hden < 0) 
 	{
 	  quo_neg = ~ quo_neg;
 	  neg_double (lden, hden, &lden, &hden);
-	}
-      if (hnum < 0)
-	{
-	  quo_neg = ~ quo_neg;
-	  neg_double (lnum, hnum, &lnum, &hnum);
 	}
     }
 
@@ -650,7 +694,7 @@ div_and_round_double (code, uns,
     case TRUNC_DIV_EXPR:
     case TRUNC_MOD_EXPR:	/* round toward zero */
     case EXACT_DIV_EXPR:	/* for this one, it shouldn't matter */
-      return;
+      return overflow;
 
     case FLOOR_DIV_EXPR:
     case FLOOR_MOD_EXPR:	/* round toward negative infinity */
@@ -660,7 +704,7 @@ div_and_round_double (code, uns,
 	  add_double (*lquo, *hquo, (HOST_WIDE_INT) -1, (HOST_WIDE_INT)  -1,
 		      lquo, hquo);
 	}
-      else return;
+      else return overflow;
       break;
 
     case CEIL_DIV_EXPR:
@@ -670,7 +714,7 @@ div_and_round_double (code, uns,
 	  add_double (*lquo, *hquo, (HOST_WIDE_INT) 1, (HOST_WIDE_INT) 0,
 		      lquo, hquo);
 	}
-      else return;
+      else return overflow;
       break;
     
     case ROUND_DIV_EXPR:
@@ -702,7 +746,7 @@ div_and_round_double (code, uns,
 	      add_double (*lquo, *hquo, (HOST_WIDE_INT) 1, (HOST_WIDE_INT) 0,
 			  lquo, hquo);
 	  }
-	else return;
+	else return overflow;
       }
       break;
 
@@ -714,6 +758,7 @@ div_and_round_double (code, uns,
   mul_double (*lquo, *hquo, lden_orig, hden_orig, lrem, hrem);
   neg_double (*lrem, *hrem, lrem, hrem);
   add_double (lnum_orig, hnum_orig, *lrem, *hrem, lrem, hrem);
+  return overflow;
 }
 
 /* Effectively truncate a real value to represent
@@ -1002,6 +1047,9 @@ const_binop (code, arg1, arg2)
       HOST_WIDE_INT garbagel, garbageh;
       register tree t;
       int uns = TREE_UNSIGNED (TREE_TYPE (arg1));
+      /* Propagate overflow flags from operands; also record new overflow.  */
+      int overflow
+	= TREE_CONSTANT_OVERFLOW (arg0) | TREE_CONSTANT_OVERFLOW (arg1);
 
       switch (code)
 	{
@@ -1024,10 +1072,10 @@ const_binop (code, arg1, arg2)
 	case RSHIFT_EXPR:
 	  int2l = - int2l;
 	case LSHIFT_EXPR:
-	  lshift_double (int1l, int1h, int2l,
-			 TYPE_PRECISION (TREE_TYPE (arg1)),
-			 &low, &hi,
-			 !uns);
+	  overflow = lshift_double (int1l, int1h, int2l,
+				    TYPE_PRECISION (TREE_TYPE (arg1)),
+				    &low, &hi,
+				    !uns);
 	  t = build_int_2 (low, hi);
 	  break;
 
@@ -1045,7 +1093,10 @@ const_binop (code, arg1, arg2)
 	    {
 	      int2l += int1l;
 	      if ((unsigned HOST_WIDE_INT) int2l < int1l)
-		int2h += 1;
+		{
+		  hi = int2h++;
+		  overflow = ! same_sign (hi, int2h);
+		}
 	      t = build_int_2 (int2l, int2h);
 	      break;
 	    }
@@ -1053,11 +1104,14 @@ const_binop (code, arg1, arg2)
 	    {
 	      int1l += int2l;
 	      if ((unsigned HOST_WIDE_INT) int1l < int2l)
-		int1h += 1;
+		{
+		  hi = int1h++;
+		  overflow = ! same_sign (hi, int1h);
+		}
 	      t = build_int_2 (int1l, int1h);
 	      break;
 	    }
-	  add_double (int1l, int1h, int2l, int2h, &low, &hi);
+	  overflow = add_double (int1l, int1h, int2l, int2h, &low, &hi);
 	  t = build_int_2 (low, hi);
 	  break;
 
@@ -1067,8 +1121,9 @@ const_binop (code, arg1, arg2)
 	      t = build_int_2 (int1l, int1h);
 	      break;
 	    }
-	  neg_double (int2l, int2h, &int2l, &int2h);
-	  add_double (int1l, int1h, int2l, int2h, &low, &hi);
+	  neg_double (int2l, int2h, &low, &hi);
+	  add_double (int1l, int1h, low, hi, &low, &hi);
+	  overflow = overflow_sum_sign (hi, int2h, int1h);
 	  t = build_int_2 (low, hi);
 	  break;
 
@@ -1087,8 +1142,9 @@ const_binop (code, arg1, arg2)
 		  t = build_int_2 (int2l, int2h);
 		  goto got_it;
 		case 2:
+		  overflow = left_shift_overflows (int2h, 1);
 		  temp = int2l + int2l;
-		  int2h = int2h * 2 + (temp < int2l);
+		  int2h = (int2h << 1) + (temp < int2l);
 		  t = build_int_2 (temp, int2h);
 		  goto got_it;
 #if 0 /* This code can lose carries.  */
@@ -1099,16 +1155,18 @@ const_binop (code, arg1, arg2)
 		  goto got_it;
 #endif
 		case 4:
+		  overflow = left_shift_overflows (int2h, 2);
 		  temp = int2l + int2l;
-		  int2h = int2h * 4 + ((temp < int2l) << 1);
+		  int2h = (int2h << 2) + ((temp < int2l) << 1);
 		  int2l = temp;
 		  temp += temp;
 		  int2h += (temp < int2l);
 		  t = build_int_2 (temp, int2h);
 		  goto got_it;
 		case 8:
+		  overflow = left_shift_overflows (int2h, 3);
 		  temp = int2l + int2l;
-		  int2h = int2h * 8 + ((temp < int2l) << 2);
+		  int2h = (int2h << 3) + ((temp < int2l) << 2);
 		  int2l = temp;
 		  temp += temp;
 		  int2h += (temp < int2l) << 1;
@@ -1136,7 +1194,7 @@ const_binop (code, arg1, arg2)
 		}
 	    }
 
-	  mul_double (int1l, int1h, int2l, int2h, &low, &hi);
+	  overflow = mul_double (int1l, int1h, int2l, int2h, &low, &hi);
 	  t = build_int_2 (low, hi);
 	  break;
 
@@ -1167,15 +1225,17 @@ const_binop (code, arg1, arg2)
 	      t = build_int_2 (1, 0);
 	      break;
 	    }
-	  div_and_round_double (code, uns, int1l, int1h, int2l, int2h,
-				&low, &hi, &garbagel, &garbageh);
+	  overflow = div_and_round_double (code, uns,
+					   int1l, int1h, int2l, int2h,
+					   &low, &hi, &garbagel, &garbageh);
 	  t = build_int_2 (low, hi);
 	  break;
 
 	case TRUNC_MOD_EXPR: case ROUND_MOD_EXPR: 
 	case FLOOR_MOD_EXPR: case CEIL_MOD_EXPR:
-	  div_and_round_double (code, uns, int1l, int1h, int2l, int2h,
-				&garbagel, &garbageh, &low, &hi);
+	  overflow = div_and_round_double (code, uns,
+					   int1l, int1h, int2l, int2h,
+					   &garbagel, &garbageh, &low, &hi);
 	  t = build_int_2 (low, hi);
 	  break;
 
@@ -1209,6 +1269,7 @@ const_binop (code, arg1, arg2)
     got_it:
       TREE_TYPE (t) = TREE_TYPE (arg1);
       force_fit_type (t);
+      TREE_CONSTANT_OVERFLOW (t) = overflow;
       return t;
     }
 #if ! defined (REAL_IS_NOT_DOUBLE) || defined (REAL_ARITHMETIC)
@@ -1223,7 +1284,7 @@ const_binop (code, arg1, arg2)
       d2 = TREE_REAL_CST (arg2);
       if (setjmp (float_error))
 	{
-	  warning ("floating overflow in constant folding");
+	  pedwarn ("floating overflow in constant expression");
 	  return build (code, TREE_TYPE (arg1), arg1, arg2);
 	}
       set_float_handler (float_error);
@@ -1415,6 +1476,9 @@ fold_convert (t, arg1)
 	     appropriately sign-extended or truncated.  */
 	  t = build_int_2 (TREE_INT_CST_LOW (arg1),
 			   TREE_INT_CST_HIGH (arg1));
+	  /* Carry forward overflow indication unless truncating.  */
+	  if (TYPE_PRECISION (type) >= TYPE_PRECISION (TREE_TYPE (t)))
+	    TREE_CONSTANT_OVERFLOW (t) = TREE_CONSTANT_OVERFLOW (arg1);
 	  TREE_TYPE (t) = type;
 	  force_fit_type (t);
 	}
@@ -1437,7 +1501,7 @@ fold_convert (t, arg1)
 #endif
 	  if (! (REAL_VALUES_LESS (l, x) && REAL_VALUES_LESS (x, u)))
 	    {
-	      warning ("real constant out of range for integer conversion");
+	      pedwarn ("real constant out of range for integer conversion");
 	      return t;
 	    }
 #ifndef REAL_ARITHMETIC
@@ -1481,7 +1545,7 @@ fold_convert (t, arg1)
 	{
 	  if (setjmp (float_error))
 	    {
-	      warning ("floating overflow in constant folding");
+	      pedwarn ("floating overflow in constant expression");
 	      return t;
 	    }
 	  set_float_handler (float_error);
@@ -3142,11 +3206,13 @@ fold (expr)
 	{
 	  if (TREE_CODE (arg0) == INTEGER_CST)
 	    {
-	      if (TREE_INT_CST_LOW (arg0) == 0)
-		t = build_int_2 (0, - TREE_INT_CST_HIGH (arg0));
-	      else
-		t = build_int_2 (- TREE_INT_CST_LOW (arg0),
-				 ~ TREE_INT_CST_HIGH (arg0));
+	      HOST_WIDE_INT low, high;
+	      int overflow = neg_double (TREE_INT_CST_LOW (arg0),
+					 TREE_INT_CST_HIGH (arg0),
+					 &low, &high);
+	      t = build_int_2 (low, high);
+	      TREE_CONSTANT_OVERFLOW (t)
+		= overflow | TREE_CONSTANT_OVERFLOW (arg0);
 	      TREE_TYPE (t) = type;
 	      force_fit_type (t);
 	    }
@@ -3199,6 +3265,7 @@ fold (expr)
 			     ~ TREE_INT_CST_HIGH (arg0));
 	  TREE_TYPE (t) = type;
 	  force_fit_type (t);
+	  TREE_CONSTANT_OVERFLOW (t) = TREE_CONSTANT_OVERFLOW (arg0);
 	}
       else if (TREE_CODE (arg0) == BIT_NOT_EXPR)
 	return TREE_OPERAND (arg0, 0);
