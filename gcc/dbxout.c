@@ -561,12 +561,14 @@ dbxout_type_fields (type)
      tree type;
 {
   tree tem;
+  /* Output the name, type, position (in bits), size (in bits) of each
+     field.  */
   for (tem = TYPE_FIELDS (type); tem; tem = TREE_CHAIN (tem))
     {
-      /* Output the name, type, position (in bits), size (in bits)
-	 of each field.  */
+      /* For nameless subunions and subrecords, treat their fields as ours.  */
       if (DECL_NAME (tem) == NULL_TREE
-	  && TREE_CODE (TREE_TYPE (tem)) == UNION_TYPE)
+	  && (TREE_CODE (TREE_TYPE (tem)) == UNION_TYPE
+	      || TREE_CODE (TREE_TYPE (tem)) == RECORD_TYPE))
 	dbxout_type_fields (TREE_TYPE (tem));
       /* Omit here local type decls until we know how to support them.  */
       else if (TREE_CODE (tem) == TYPE_DECL)
@@ -987,6 +989,44 @@ dbxout_type (type, full, show_arg_types)
       fprintf (asmfile, "r%d;%d;0;", TYPE_SYMTAB_ADDRESS (integer_type_node),
 	       TREE_INT_CST_LOW (size_in_bytes (type)));
       CHARS (16);
+      break;
+
+    case CHAR_TYPE:
+	/* Output the type `char' as a subrange of itself.
+	   That is what pcc seems to do.  */
+      fprintf (asmfile, "r%d;0;%d;", TYPE_SYMTAB_ADDRESS (char_type_node),
+	       TREE_UNSIGNED (type) ? 255 : 127);
+      CHARS (9);
+      break;
+
+    case BOOLEAN_TYPE:	/* Define as enumeral type (False, True) */
+      fprintf (asmfile, "eFalse:0,True:1,;");
+      CHARS (17);
+      break;
+
+    case FILE_TYPE:
+      putc ('d', asmfile);
+      CHARS (1);
+      dbxout_type (TREE_TYPE (type), 0);
+      break;
+
+    case COMPLEX_TYPE:
+      /* Differs from the REAL_TYPE by its new data type number */
+
+      if (TREE_CODE (TREE_TYPE (type)) == REAL_TYPE)
+	{
+	  fprintf (asmfile, "r%d;%d;0;",
+		   TYPE_SYMTAB_ADDRESS (type),
+		   TREE_INT_CST_LOW (size_in_bytes (TREE_TYPE (type))));
+	  CHARS (15);		/* The number is propably incorrect here */
+	} else
+	  abort (); /* What to do with CSImode complex? */
+      break;
+
+    case SET_TYPE:
+      putc ('S', asmfile);
+      CHARS (1);
+      dbxout_type (TREE_TYPE (type), 0);
       break;
 
     case ARRAY_TYPE:
