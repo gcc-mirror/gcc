@@ -4,14 +4,17 @@
  */
 /* { dg-do compile } */
 
+/* Define this so that we are more portable.  The testcase in the
+   PR failed on 64-bit hosts.  */
+typedef int __attribute__ ((mode (__pointer__))) intptr_t;
+
 typedef struct _PLCI {
   unsigned char x;
   unsigned char buf[1];
 } PLCI;
 
-
 void nl_ind(PLCI * plci)
 {
-  plci->x = -((int)(plci->buf)) & 3;
+  plci->x = -((intptr_t)(plci->buf)) & 3;
 }
 
