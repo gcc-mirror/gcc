@@ -1,3 +1,17 @@
+2005-01-30  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/19457
+	* call.c (convert_like_real): Inline call to
+	dubious_conversion_warnings here.
+	* cp-tree.h (dubious_conversion_warnings): Remove.
+	* semantics.c (finish_unary_op_expr): Copy INTEGER_CSTs before
+	setting TREE_NEGATED_INT.
+	* typeck.c (dubious_conversion_warnings): Remove.
+
+	PR c++/19349
+	* name-lookup.c (pushdecl_namespace_level): Avoid accessing free'd
+	memory. 
+
 2005-01-28  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/19253

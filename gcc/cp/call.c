@@ -4166,8 +4166,46 @@ convert_like_real (conversion *convs, tree expr, tree fn, int argnum,
     }
   
   if (issue_conversion_warnings)
-    expr = dubious_conversion_warnings
-             (totype, expr, "converting", fn, argnum);
+    {
+      tree t = non_reference (totype);
+
+      /* Issue warnings about peculiar, but valid, uses of NULL.  */
+      if (ARITHMETIC_TYPE_P (t) && expr == null_node)
+	{
+	  if (fn)
+	    warning ("passing NULL to non-pointer argument %P of %qD",
+		     argnum, fn);
+	  else
+	    warning ("converting to non-pointer type %qT from NULL", t);
+	}
+
+      /* Warn about assigning a floating-point type to an integer type.  */
+      if (TREE_CODE (TREE_TYPE (expr)) == REAL_TYPE
+	  && TREE_CODE (t) == INTEGER_TYPE)
+	{
+	  if (fn)
+	    warning ("passing %qT for argument %P to %qD",
+		     TREE_TYPE (expr), argnum, fn);
+	  else
+	    warning ("converting to %qT from %qT", t, TREE_TYPE (expr));
+	}
+      /* And warn about assigning a negative value to an unsigned
+	 variable.  */
+      else if (TYPE_UNSIGNED (t) && TREE_CODE (t) != BOOLEAN_TYPE)
+	{
+	  if (TREE_CODE (expr) == INTEGER_CST && TREE_NEGATED_INT (expr)) 
+	    {
+	      if (fn)
+		warning ("passing negative value %qE for argument %P to %qD",
+			 expr, argnum, fn);
+	      else
+		warning ("converting negative value %qE to %qT", expr, t);
+	    }
+	  
+	  overflow_warning (expr);
+	}
+    }
+
   switch (convs->kind)
     {
     case ck_user:
