@@ -1,3 +1,8 @@
+2003-02-18  Jason Merrill  <jason@redhat.com>
+
+	PR c++/9623
+	* decl.c (reshape_init): Don't mess with initializer labels.
+
 2003-02-18  Ben Elliston  <bje@redhat.com>
 
 	PR other/7350
