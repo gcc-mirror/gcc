@@ -1826,8 +1826,6 @@ emit_move_insn_1 (x, y)
       int stack = push_operand (x, GET_MODE (x));
       rtx insns;
 
-      start_sequence ();
-
       /* If this is a stack, push the highpart first, so it
 	 will be in the argument order.
 
@@ -1861,17 +1859,6 @@ emit_move_insn_1 (x, y)
 		     (gen_imagpart (submode, x), gen_imagpart (submode, y)));
 	}
 
-      insns = get_insns ();
-      end_sequence ();
-
-      /* If X is a CONCAT, we got insns like RD = RS, ID = IS,
-	 each with a separate pseudo as destination.
-	 It's not correct for flow to treat them as a unit.  */
-      if (GET_CODE (x) != CONCAT)
-	emit_no_conflict_block (insns, x, y, NULL_RTX, NULL_RTX);
-      else
-	emit_insns (insns);
-
       return get_last_insn ();
     }
 
@@ -1883,8 +1870,6 @@ emit_move_insn_1 (x, y)
       rtx last_insn = 0;
       rtx insns;
       
-      start_sequence ();
-
       for (i = 0;
 	   i < (GET_MODE_SIZE (mode)  + (UNITS_PER_WORD - 1)) / UNITS_PER_WORD;
 	   i++)
@@ -1908,10 +1893,6 @@ emit_move_insn_1 (x, y)
 
 	  last_insn = emit_move_insn (xpart, ypart);
 	}
-
-      insns = get_insns ();
-      end_sequence ();
-      emit_no_conflict_block (insns, x, y, NULL_RTX, NULL_RTX);
 
       return last_insn;
     }
