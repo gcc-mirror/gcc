@@ -1018,34 +1018,6 @@ maybe_set_first_label_num (rtx x)
     first_label_num = CODE_LABEL_NUMBER (x);
 }
 
-/* Return the final regno of X, which is a SUBREG of a hard
-   register.  */
-int
-subreg_hard_regno (rtx x, int check_mode)
-{
-  enum machine_mode mode = GET_MODE (x);
-  unsigned int byte_offset, base_regno, final_regno;
-  rtx reg = SUBREG_REG (x);
-
-  /* This is where we attempt to catch illegal subregs
-     created by the compiler.  */
-  gcc_assert (GET_CODE (x) == SUBREG && REG_P (reg));
-  base_regno = REGNO (reg);
-  gcc_assert (base_regno < FIRST_PSEUDO_REGISTER);
-  gcc_assert (!check_mode || HARD_REGNO_MODE_OK (base_regno, GET_MODE (reg)));
-#ifdef ENABLE_CHECKING
-  gcc_assert (subreg_offset_representable_p (REGNO (reg), GET_MODE (reg),
-					     SUBREG_BYTE (x), mode));
-#endif
-  /* Catch non-congruent offsets too.  */
-  byte_offset = SUBREG_BYTE (x);
-  gcc_assert (!(byte_offset % GET_MODE_SIZE (mode)));
-
-  final_regno = subreg_regno (x);
-
-  return final_regno;
-}
-
 /* Return a value representing some low-order bits of X, where the number
    of low-order bits is given by MODE.  Note that no conversion is done
    between floating-point and fixed-point values, rather, the bit

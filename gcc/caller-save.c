@@ -500,8 +500,7 @@ mark_set_regs (rtx reg, rtx setter ATTRIBUTE_UNUSED,
       rtx inner = SUBREG_REG (reg);
       if (!REG_P (inner) || REGNO (inner) >= FIRST_PSEUDO_REGISTER)
 	return;
-
-      regno = subreg_hard_regno (reg, 1);
+      regno = subreg_regno (reg);
     }
   else if (REG_P (reg)
 	   && REGNO (reg) < FIRST_PSEUDO_REGISTER)

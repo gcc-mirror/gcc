@@ -2011,7 +2011,7 @@ reg_is_born (rtx reg, int birth)
     {
       regno = REGNO (SUBREG_REG (reg));
       if (regno < FIRST_PSEUDO_REGISTER)
-	regno = subreg_hard_regno (reg, 1);
+	regno = subreg_regno (reg);
     }
   else
     regno = REGNO (reg);

@@ -1,5 +1,12 @@
 2004-11-23  Richard Henderson  <rth@redhat.com>
 
+	* emit-rtl.c, rtl.h (subreg_hard_regno): Remove.
+	* caller-save.c (mark_set_regs): Use subreg_regno instead.
+	* final.c (alter_subreg): Likewise.
+	* local-alloc.c (reg_is_born): Likewise.
+
+2004-11-23  Richard Henderson  <rth@redhat.com>
+
 	* simplify-rtx.c (simplify_subreg): Use subreg_regno_offset directly
 	instead of using a SUBREG temporary.
 
