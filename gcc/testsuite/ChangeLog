@@ -1,3 +1,8 @@
+2002-03-26  Phil Edwards  <pme@gcc.gnu.org>
+
+	* gcc.dg/cpp/endif-pedantic1.c,
+	gcc.dg/cpp/endif-pedantic2.c:  New tests.
+
 2002-03-26  Mark Mitchell  <mark@codesourcery.com>
 
 	* g++.dg/init/new1.C: New test.
