@@ -45,7 +45,7 @@ typedef struct {
 
 #ifndef va_end
 
-#define va_end(__va)
+#define va_end(__va)	((void) 0)
 
 /* Values returned by __builtin_classify_type.  */
 

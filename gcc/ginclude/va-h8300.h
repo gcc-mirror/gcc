@@ -48,6 +48,6 @@ typedef void *__gnuc_va_list;
 					 ? sizeof (TYPE)		\
 					 : __va_rounded_size (TYPE))))))
 
-#define va_end(AP)
+#define va_end(AP)	((void) 0)
 
 #endif /* defined (_STDARG_H) || defined (_VARARGS_H) */

@@ -52,6 +52,6 @@ typedef struct
       : (*(TYPE *)(AP).__va_reg[2 * (AP).__va_num++ ]))			\
    : ((AP).__va_num++, __va_round (AP,TYPE), *((TYPE *)((AP).__va_ap))++))
 
-#define va_end(AP)
+#define va_end(AP)	((void) 0)
 
 #endif /* defined (_STDARG_H) || defined (_VARARGS_H) */

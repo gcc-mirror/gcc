@@ -79,6 +79,6 @@ typedef struct
 			  ? (AP).__va_reg : (AP).__va_stk)		   \
 			 + ((AP).__va_arg - __va_size(TYPE)))))
 
-#define va_end(AP)
+#define va_end(AP)	((void)0)
 
 #endif /* defined (_STDARG_H) || defined (_VARARGS_H) */

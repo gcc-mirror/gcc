@@ -29,7 +29,7 @@ typedef struct {
 #define va_start(pvar) \
      ((pvar).__pnt = 0, (pvar).__regs = __va_regs.__regs, \
       (pvar).__stack = (char *) &__va_stack)
-#define va_end(pvar)
+#define va_end(pvar)	((void)0)
 
 /* Avoid errors if compiling GCC v2 with GCC v1.  */
 #if __GNUC__ == 1
