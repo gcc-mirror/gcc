@@ -1,3 +1,11 @@
+2003-02-25  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/9683
+	* decl2.c (prune_vars_needing_no_initialization): Do not throw
+	away initializations for DECL_EXTERNAL VAR_DECLs.
+	(finish_file): Adjust accordingly.
+	* pt.c (instantiate_decl): Do not defer VAR_DECLs.
+
 2003-02-24 Gabriel Dos Reis  <gdr@integrable-solutions.net>
 
       * decl.c (add_binding): Time TV_NAME_LOOKUP.
