@@ -1,3 +1,22 @@
+2000-04-16  Mark Mitchell  <mark@codesourcery.com>
+
+	* config/mips/mips-protos.h (mips_legitimate_address_p): New
+	function.
+	(mips_reg_mode_ok_for_base_p): Likewise.
+	* config/mips/mips.h (REG_OK_STRICT_P): Don't define.
+	(REG_OK_FOR_INDEX_P): Define unconditionally.
+	(REG_MODE_OK_FOR_BASE_P): Use mips_reg_mode_ok_for_base_p.
+	(GO_IF_LEGITIMATE_ADDRESS): Use mips_legitimate_address_p.
+	* config/mips/mips.c (mips16_simple_memory_operand): Adjust now
+	that GET_MODE_SIZE is unsigned.
+	(mips_reg_mode_ok_for_base_p): Define.
+	(mips_legitimate_address_p): Likewise.  Adjust now
+	that GET_MODE_SIZE is unsigned.
+	(block_move_loop): Make the number of bytes unsigned.
+	(expand_block_move): Likewise.
+	(function_arg): Make the loop counter unsigned to match the
+	boundary condition.
+
 2000-04-16  Richard Henderson  <rth@cygnus.com>
 
 	* rtl.h (enum insn_note): New enumeration.  Subsume
