@@ -1,5 +1,8 @@
 Wed Sep  3 10:39:42 1997  Jim Wilson  <wilson@cygnus.com>
 
+	* alias.c (true_dependence): Address with AND can alias scalars.
+	(anti_dependence, output_dependence): Likewise.
+	
 	* alias.c (true_dependence): Test x for BLKmode, in addition to mem.
 
 Wed Sep  3 09:28:50 CDT 1997  Joel Sherrill (joel@OARcorp.com)
