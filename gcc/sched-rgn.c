@@ -2338,28 +2338,11 @@ debug_dependencies (void)
 static bool
 sched_is_disabled_for_current_region_p (void)
 {
-  rtx first_bb_insn, last_bb_insn, insn;
   int bb;
 
   for (bb = 0; bb < current_nr_blocks; bb++)
-    {
-      bool disable_sched = false;
-      /* Searching for NOTE_DISABLE_SCHED_OF_BLOCK note between the
-         start and end of the basic block. */
-      get_block_head_tail (BB_TO_BLOCK (bb), &first_bb_insn,
-			   &last_bb_insn);
-      for (insn = last_bb_insn; insn != NULL && insn != first_bb_insn;
-           insn = PREV_INSN (insn))
-      	if (GET_CODE (insn) == NOTE
-	    && (NOTE_LINE_NUMBER (insn)
-	        == NOTE_INSN_DISABLE_SCHED_OF_BLOCK))
-          {
-              disable_sched = true;
-	      break;
-          }
-      if (! disable_sched)
-	return false;
-    }
+    if (!(BASIC_BLOCK (BB_TO_BLOCK (bb))->flags & BB_DISABLE_SCHEDULE))
+      return false;
 
   return true;
 }

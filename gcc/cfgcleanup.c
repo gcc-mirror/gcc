@@ -153,7 +153,7 @@ try_simplify_condjump (basic_block cbranch_block)
      and cold sections.  */
 
   if (flag_reorder_blocks_and_partition
-      && (jump_block->partition != jump_dest_block->partition
+      && (BB_PARTITION (jump_block) != BB_PARTITION (jump_dest_block)
 	  || (cbranch_jump_edge->flags & EDGE_CROSSING)))
     return false;
 
@@ -673,7 +673,7 @@ merge_blocks_move_predecessor_nojumps (basic_block a, basic_block b)
      and cold sections.  */
   
   if (flag_reorder_blocks_and_partition
-      && (a->partition != b->partition
+      && (BB_PARTITION (a) != BB_PARTITION (b)
 	  || find_reg_note (BB_END (a), REG_CROSSING_JUMP, NULL_RTX)))
     return;
 
@@ -726,7 +726,7 @@ merge_blocks_move_successor_nojumps (basic_block a, basic_block b)
   
   if (flag_reorder_blocks_and_partition
       && (find_reg_note (BB_END (a), REG_CROSSING_JUMP, NULL_RTX)
-	  || a->partition != b->partition))
+	  || BB_PARTITION (a) != BB_PARTITION (b)))
     return;
 
   real_b_end = BB_END (b);
@@ -792,7 +792,7 @@ merge_blocks_move (edge e, basic_block b, basic_block c, int mode)
   if (flag_reorder_blocks_and_partition
       && (find_reg_note (BB_END (b), REG_CROSSING_JUMP, NULL_RTX)
 	  || find_reg_note (BB_END (c), REG_CROSSING_JUMP, NULL_RTX)
-	  || b->partition != c->partition))
+	  || BB_PARTITION (b) != BB_PARTITION (c)))
     return NULL;
       
     
@@ -1673,7 +1673,7 @@ try_crossjump_bb (int mode, basic_block bb)
      and cold sections.  */
   
   if (flag_reorder_blocks_and_partition
-      && (bb->pred->src->partition != bb->pred->pred_next->src->partition
+      && (BB_PARTITION (bb->pred->src) != BB_PARTITION (bb->pred->pred_next->src)
 	  || (bb->pred->flags & EDGE_CROSSING)))
     return false;
 
