@@ -1,3 +1,10 @@
+2000-08-11  G. Helffrich  <george@gly.bris.ac.uk>
+            Toon Moene  <toon@moene.indiv.nluug.nl>
+
+	* com.c (ffecom_transform_equiv_): Make EQUIVALENCEs addressable
+	so that debug info can be attached to their storage.
+	Unconditionally list the storage set aside for them.
+
 2000-08-07  Toon Moene  <toon@moene.indiv.nluug.nl>
 
 	* g77spec.c (lang_specific_driver): Clearer g77 version message.
