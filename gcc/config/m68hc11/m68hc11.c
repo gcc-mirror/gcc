@@ -2144,6 +2144,10 @@ print_operand (file, op, letter)
 	  asm_print_register (file, REGNO (op));
 	  fprintf (file, "+1");
 	}
+      else if (letter == 'b' && D_REG_P (op))
+	{
+	  asm_print_register (file, HARD_B_REGNUM);
+	}
       else
 	{
 	  asm_print_register (file, REGNO (op));
@@ -3195,6 +3199,16 @@ m68hc11_gen_movhi (insn, operands)
 	{
 	  if (SP_REG_P (operands[0]))
 	    output_asm_insn ("lds\t%1", operands);
+	  else if (!D_REG_P (operands[0])
+                   && GET_CODE (operands[1]) == CONST_INT
+                   && (INTVAL (operands[1]) == 1 || INTVAL (operands[1]) == -1)
+                   && find_reg_note (insn, REG_WAS_0, 0))
+            {
+              if (INTVAL (operands[1]) == 1)
+                output_asm_insn ("in%0", operands);
+              else
+                output_asm_insn ("de%0", operands);
+            }
 	  else
 	    output_asm_insn ("ld%0\t%1", operands);
 	}
@@ -3360,10 +3374,16 @@ m68hc11_gen_movhi (insn, operands)
                   output_asm_insn ("xgdx", operands);
                   CC_STATUS_INIT;
                 }
-              else
+              else if (!optimize_size)
                 {
                   output_asm_insn ("sty\t%t1", operands);
                   output_asm_insn ("ldx\t%t1", operands);
+                }
+              else
+                {
+                  CC_STATUS_INIT;
+                  output_asm_insn ("pshy", operands);
+                  output_asm_insn ("pulx", operands);
                 }
 	    }
 	  else if (SP_REG_P (operands[1]))
@@ -3372,6 +3392,15 @@ m68hc11_gen_movhi (insn, operands)
 	      cc_status = cc_prev_status;
 	      output_asm_insn ("tsx", operands);
 	    }
+	  else if (GET_CODE (operands[1]) == CONST_INT
+                   && (INTVAL (operands[1]) == 1 || INTVAL (operands[1]) == -1)
+                   && find_reg_note (insn, REG_WAS_0, 0))
+            {
+              if (INTVAL (operands[1]) == 1)
+                output_asm_insn ("in%0", operands);
+              else
+                output_asm_insn ("de%0", operands);
+            }
 	  else
 	    {
 	      output_asm_insn ("ldx\t%1", operands);
@@ -3402,10 +3431,16 @@ m68hc11_gen_movhi (insn, operands)
                   output_asm_insn ("xgdy", operands);
                   CC_STATUS_INIT;
                 }
-              else
+              else if (!optimize_size)
                 {
                   output_asm_insn ("stx\t%t1", operands);
                   output_asm_insn ("ldy\t%t1", operands);
+                }
+              else
+                {
+                  CC_STATUS_INIT;
+                  output_asm_insn ("pshx", operands);
+                  output_asm_insn ("puly", operands);
                 }
 	    }
 	  else if (SP_REG_P (operands[1]))
@@ -3414,7 +3449,16 @@ m68hc11_gen_movhi (insn, operands)
 	      cc_status = cc_prev_status;
 	      output_asm_insn ("tsy", operands);
 	    }
-	  else
+	  else if (GET_CODE (operands[1]) == CONST_INT
+                   && (INTVAL (operands[1]) == 1 || INTVAL (operands[1]) == -1)
+                   && find_reg_note (insn, REG_WAS_0, 0))
+            {
+              if (INTVAL (operands[1]) == 1)
+                output_asm_insn ("in%0", operands);
+              else
+                output_asm_insn ("de%0", operands);
+            }
+          else
 	    {
 	      output_asm_insn ("ldy\t%1", operands);
 	    }
@@ -3654,6 +3698,15 @@ m68hc11_gen_movqi (insn, operands)
 		  output_asm_insn ("ldab\t%T0", operands);
 		}
 	    }
+	  else if (GET_CODE (operands[1]) == CONST_INT
+                   && (INTVAL (operands[1]) == 1 || INTVAL (operands[1]) == -1)
+                   && find_reg_note (insn, REG_WAS_0, 0))
+            {
+              if (INTVAL (operands[1]) == 1)
+                output_asm_insn ("inc%b0", operands);
+              else
+                output_asm_insn ("dec%b0", operands);
+            }          
 	  else if (!DB_REG_P (operands[1]) && !D_REG_P (operands[1])
 		   && !DA_REG_P (operands[1]))
 	    {
@@ -4181,7 +4234,7 @@ m68hc11_check_z_replacement (insn, info)
 		  info->need_save_z = 0;
 		  info->found_call = 1;
 		  info->regno = SOFT_Z_REGNUM;
-		  info->last = insn;
+		  info->last = NEXT_INSN (insn);
 		}
 	      return 0;
 	    }

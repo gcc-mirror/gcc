@@ -1,3 +1,13 @@
+2003-03-16  Stephane Carrez  <stcarrez@nerim.fr>
+
+	* config/m68hc11/m68hc11.c (print_operand): Handle 'b' modifier
+	for D register to specify the low part of it, aka B.
+	(m68hc11_gen_movhi): Use REG_WAS_0 note and increment or decrement
+	the register if we are loading 1 or -1 to it; avoid using temp
+	register when moving X/Y to Y/X.
+	(m68hc11_gen_movqi): Likewise.
+	(m68hc11_check_z_replacement): Fix last insn setting for compare case.
+
 2003-03-14  Mark Mitchell  <mark@codesourcery.com>
 
 	PR optimization/9016
