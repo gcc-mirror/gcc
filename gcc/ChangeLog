@@ -480,9 +480,9 @@ Wed Nov  8 21:58:20 2000  Christopher Faylor <cgf@cygnus.com>
 2000-11-08  Nick Clifton  <nickc@redhat.com>
 
 	* config/arm/arm.md (mulsidi3adddi): Change output operand
-	constraint from "=&" to "=&".
+	constraint from "=&" to "+&".
 	(umulsidi3adddi): Change output operand	constraint from "=&" to
-	"=&".
+	"+&".
 
 2000-11-08  Richard Henderson  <rth@redhat.com>
 
