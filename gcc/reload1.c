@@ -778,7 +778,11 @@ reload (first, global)
 #ifdef LEGITIMATE_PIC_OPERAND_P
 	      && (! function_invariant_p (XEXP (note, 0))
 		  || ! flag_pic
-		  || LEGITIMATE_PIC_OPERAND_P (XEXP (note, 0)))
+		  /* A function invariant is often CONSTANT_P but may
+		     include a register.  We promise to only pass
+		     CONSTANT_P objects to LEGITIMATE_PIC_OPERAND_P.  */
+		  || (CONSTANT_P (XEXP (note, 0))
+		      && LEGITIMATE_PIC_OPERAND_P (XEXP (note, 0))))
 #endif
 	      )
 	    {
