@@ -3312,11 +3312,6 @@ typedef struct mips_args {
 #define ASM_OUTPUT_POOL_EPILOGUE(FILE, FNNAME, FNDECL, SIZE)	\
   mips_string_length = 0;
 
-#if 0
-/* In mips16 mode, put most string constants after the function.  */
-#define CONSTANT_AFTER_FUNCTION_P(tree)				\
-  (TARGET_MIPS16 && mips16_constant_after_function_p (tree))
-#endif
 
 /* Specify the machine mode that this machine uses
    for the index in the tablejump instruction.

@@ -1,3 +1,16 @@
+2003-04-15  Zack Weinberg  <zack@codesourcery.com>
+
+	* varasm.c (output_constant_def): Do not consult
+	CONSTANT_AFTER_FUNCTION_P.  Remove all code predicated on it.
+	(after_function_constants, output_after_function_constants): Delete.
+	* doc/tm.texi: Delete documentation of CONSTANT_AFTER_FUNCTION_P.
+	* config/mips/mips-protos.h, config/mips/mips.c
+	(mips16_constant_after_function_p): Delete.
+	* config/mips/mips.h: Delete #if-0-ed definition of
+	CONSTANT_AFTER_FUNCTION_P.
+	* config/d30v/d30v.h, config/stormy16/stormy16.h: Remove
+	mention of CONSTANT_AFTER_FUNCTION_P in comment.
+
 2003-04-15  Geoffrey Keating  <geoffk@apple.com>
 
 	* tree.c (next_decl_uid): Mark with GTY.
@@ -28,7 +41,7 @@
 2003-04-14  Jason Merrill  <jason@redhat.com>
 
 	PR middle-end/10336, c++/10401
-	* jump.c (never_reached_warning): Also stop looking if we reach the 
+	* jump.c (never_reached_warning): Also stop looking if we reach the
 	beginning of the function.
 
 2003-04-15  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
@@ -106,8 +119,8 @@
 	(dbxout_type): Replace extracted code by call to
 	print_int_cst_bounds_in_octal_p.
 
-        * dwarf2out.c (gen_compile_unit_die): Emit DW_LANG_Ada95 instead
-        of DW_LANG_Ada83 for Ada units.
+	* dwarf2out.c (gen_compile_unit_die): Emit DW_LANG_Ada95 instead
+	of DW_LANG_Ada83 for Ada units.
 
 2003-04-14  Olivier Hainque <hainque@act-europe.fr>
 
@@ -125,12 +138,12 @@
 	hard regs to pseudos live across abnormal edges, as later passes are
 	not ready to handle them.
 
-        * fold-const.c (fold): Reorder tests for conditional expressions.
+	* fold-const.c (fold): Reorder tests for conditional expressions.
 
-        * expr.c (highest_pow2_factor): Return unsigned.
-        * expr.h (offset_address): Likewise.
-        * emit-rtl.c (offset_address): POW2 argument now unsigned.
-        
+	* expr.c (highest_pow2_factor): Return unsigned.
+	* expr.h (offset_address): Likewise.
+	* emit-rtl.c (offset_address): POW2 argument now unsigned.
+
 2003-04-14  Roger Sayle  <roger@eyesopen.com>
 
 	* builtins.c (expand_builtin_strlen):  Evaluate the lengths of
@@ -225,7 +238,7 @@ Mon Apr 14 16:18:37 CEST 2003  Jan Hubicka  <jh@suse.cz>
 	config/rs6000/rs64.md, config/rs6000/rtems.h, config/rs6000/spe.h,
 	config/rs6000/spe.md, config/rs6000/sysv4.h,
 	config/rs6000/sysv4le.h, config/rs6000/vxworks.h,
-	config/rs6000/windiss.h, config/rs6000/xcoff.h: Likewise.	
+	config/rs6000/windiss.h, config/rs6000/xcoff.h: Likewise.
 
 2003-04-13  Nick Clifton  <nickc@redhat.com>
 

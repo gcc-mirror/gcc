@@ -9128,46 +9128,6 @@ mips16_output_gp_offset (file, x)
   output_addr_const (file, x);
 }
 
-/* Return nonzero if a constant should not be output until after the
-   function.  This is true of most string constants, so that we can
-   use a more efficient PC relative reference.  However, a static
-   inline function may never call assemble_function_end to write out
-   the constant pool, so don't try to postpone the constant in that
-   case.
-
-   ??? It's really a bug that a static inline function can put stuff
-   in the constant pool even if the function itself is not output.
-
-   We record which string constants we've seen, so that we know which
-   ones might use the more efficient reference.  */
-
-int
-mips16_constant_after_function_p (x)
-     tree x;
-{
-  if (TREE_CODE (x) == STRING_CST
-      && ! flag_writable_strings
-      && current_function_decl != 0
-      && ! DECL_DEFER_OUTPUT (current_function_decl)
-      && ! (DECL_INLINE (current_function_decl)
-	    && ((! TREE_PUBLIC (current_function_decl)
-		 && ! TREE_ADDRESSABLE (current_function_decl)
-		 && ! flag_keep_inline_functions)
-		|| DECL_EXTERNAL (current_function_decl))))
-    {
-      struct string_constant *n;
-
-      n = (struct string_constant *) xmalloc (sizeof *n);
-      n->label = XSTR (XEXP (TREE_CST_RTL (x), 0), 0);
-      n->next = string_constants;
-      string_constants = n;
-
-      return 1;
-    }
-
-  return 0;
-}
-
 /* Validate a constant for the mips16.  This rejects general symbolic
    addresses, which must be loaded from memory.  If ADDR is nonzero,
    this should reject anything which is not a legal address.  If

@@ -6386,13 +6386,6 @@ entry from being output a second time in the usual manner.
 
 You need not define this macro if it would do nothing.
 
-@findex CONSTANT_AFTER_FUNCTION_P
-@item CONSTANT_AFTER_FUNCTION_P (@var{exp})
-Define this macro as a C expression which is nonzero if the constant
-@var{exp}, of type @code{tree}, should be output after the code for a
-function.  The compiler will normally output all constants before the
-function; you need not define this macro if this is OK@.
-
 @findex ASM_OUTPUT_POOL_EPILOGUE
 @item ASM_OUTPUT_POOL_EPILOGUE (@var{file} @var{funname} @var{fundecl} @var{size})
 A C statement to output assembler commands to at the end of the constant

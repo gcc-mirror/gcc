@@ -74,7 +74,6 @@ extern int		mips_setup_incoming_varargs
 extern int		function_arg_pass_by_reference
 				PARAMS ((const CUMULATIVE_ARGS *,
 					 enum machine_mode, tree, int));
-extern int		mips16_constant_after_function_p PARAMS ((tree));
 extern int		mips_output_external PARAMS ((FILE *, tree,
 						      const char *));
 extern tree		mips_build_va_list PARAMS ((void));
