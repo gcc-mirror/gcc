@@ -1,4 +1,8 @@
-2004-11-07  James A. Morrison  <phython@gcc.gnu.org>
+2004-11-09  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* tree-ssa-loop-ivopts.c: Fix a comment typo.
+
+2004-11-09  James A. Morrison  <phython@gcc.gnu.org>
 
 	PR pch/14940
 	* config/host-linux.c (TRY_EMPTY_VM_SPACE): Add __sparc__
