@@ -1,3 +1,8 @@
+2001-08-13  Kazu Hirata  <kazu@hxi.com>
+
+	* config/h8300/h8300.md (zero_extendqihi2): Correct the insn
+	length.
+
 2001-08-12  Geoffrey Keating  <geoffk@redhat.com>
 
 	* loop.c (check_dbra_loop): Use condjump_label to compute
