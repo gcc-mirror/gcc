@@ -835,6 +835,8 @@ char *lang_options[] =
   "-Wno-redundant-decls",
   "-Wsign-compare",
   "-Wno-sign-compare",
+  "-Wunknown-pragmas",
+  "-Wno-unknown-pragmas",
   "-Wstrict-prototypes",
   "-Wno-strict-prototypes",
   "-Wtraditional",
