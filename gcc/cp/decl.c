@@ -10797,7 +10797,7 @@ xref_basetypes (code_type_node, name, ref, binfo)
 }
   
 
-static tree current_local_enum = NULL_TREE;
+tree current_local_enum = NULL_TREE;
 
 /* Begin compiling the definition of an enumeration type.
    NAME is its name (or null if anonymous).

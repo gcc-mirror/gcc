@@ -76,7 +76,7 @@ static int comp_template_args PROTO((tree, tree));
 static int list_eq PROTO((tree, tree));
 static tree get_class_bindings PROTO((tree, tree, tree));
 static tree coerce_template_parms PROTO((tree, tree, tree));
-static tree tsubst_enum	PROTO((tree, tree, int));
+static tree tsubst_enum	PROTO((tree, tree, int, tree *));
 static tree add_to_template_args PROTO((tree, tree));
 
 /* Restore the template parameter context. */
@@ -1450,9 +1450,8 @@ instantiate_class_template (type)
       if (TREE_CODE (tag) == ENUMERAL_TYPE)
 	{
 	  tree e, newtag = tsubst_enum (tag, args, 
-					TREE_VEC_LENGTH (args));
+					TREE_VEC_LENGTH (args), field_chain);
 
-	  *field_chain = grok_enum_decls (newtag, NULL_TREE);
 	  while (*field_chain)
 	    {
 	      DECL_FIELD_CONTEXT (*field_chain) = type;
@@ -2840,7 +2839,7 @@ tsubst_expr (t, args, nargs, in_decl)
       lineno = TREE_COMPLEXITY (t);
       t = TREE_TYPE (t);
       if (TREE_CODE (t) == ENUMERAL_TYPE)
-	tsubst_enum (t, args, nargs);
+	tsubst_enum (t, args, nargs, NULL);
       break;
 
     default:
@@ -4053,10 +4052,14 @@ add_maybe_template (d, fns)
    tsubst_expr.  */
 
 static tree
-tsubst_enum (tag, args, nargs)
+tsubst_enum (tag, args, nargs, field_chain)
      tree tag, args;
      int nargs;
+     tree * field_chain;
 {
+  extern tree current_local_enum;
+  tree prev_local_enum = current_local_enum;
+
   tree newtag = start_enum (TYPE_IDENTIFIER (tag));
   tree e, values = NULL_TREE;
 
@@ -4070,6 +4073,11 @@ tsubst_enum (tag, args, nargs)
     }
 
   finish_enum (newtag, values);
+
+  if (NULL != field_chain)
+    *field_chain = grok_enum_decls (newtag, NULL_TREE);
+
+  current_local_enum = prev_local_enum;
 
   return newtag;
 }
