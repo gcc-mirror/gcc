@@ -2639,7 +2639,7 @@
 (define_insn "*lshlqi3_clobber"
   [(set (match_operand:QI 0 "reg_operand" "=d,d,?d,c,c,?c")
         (ashift:QI (match_operand:QI 1 "src_operand" "0,rR,rS<>,0,rR,rS<>")
-                   (unspec [(match_operand:QI 2 "src_operand" "rIm,JR,rS<>,rIm,JR,rS<>")] 3)))
+                   (unspec:QI [(match_operand:QI 2 "src_operand" "rIm,JR,rS<>,rIm,JR,rS<>")] 3)))
    (clobber (reg:CC 21))]
   "valid_operands (ASHIFT, operands, QImode)"
   "@
@@ -3587,7 +3587,7 @@
 ; Inlined float square root for C4x
 (define_expand "sqrtqf2_inline"
   [(parallel [(set (match_dup 2)
-	           (unspec [(match_operand:QF 1 "src_operand" "")] 10))
+	           (unspec:QF [(match_operand:QF 1 "src_operand" "")] 10))
 	      (clobber (reg:CC_NOOV 21))])
    (parallel [(set (match_dup 3) (mult:QF (match_dup 5) (match_dup 1)))
 	      (clobber (reg:CC_NOOV 21))])
@@ -3610,7 +3610,7 @@
    (parallel [(set (match_dup 4) (mult:QF (match_dup 2) (match_dup 1)))
 	      (clobber (reg:CC_NOOV 21))])
    (parallel [(set (match_operand:QF 0 "reg_operand" "")
-	           (unspec [(match_dup 4)] 6))
+	           (unspec:QF [(match_dup 4)] 6))
 	      (clobber (reg:CC_NOOV 21))])]
   "! TARGET_C3X"
   "if (! reload_in_progress
@@ -3836,7 +3836,7 @@
 ; Inlined float divide for C4x
 (define_expand "divqf3_inline"
   [(parallel [(set (match_dup 3)
-	           (unspec [(match_operand:QF 2 "src_operand" "")] 5))
+	           (unspec:QF [(match_operand:QF 2 "src_operand" "")] 5))
 	      (clobber (reg:CC_NOOV 21))])
    (parallel [(set (match_dup 4) (mult:QF (match_dup 2) (match_dup 3)))
 	      (clobber (reg:CC_NOOV 21))])
@@ -3855,7 +3855,7 @@
 	         	    (match_dup 3)))
 	      (clobber (reg:CC_NOOV 21))])
    (parallel [(set (match_operand:QF 0 "reg_operand" "")
-	           (unspec [(match_dup 3)] 6))
+	           (unspec:QF [(match_dup 3)] 6))
 	      (clobber (reg:CC_NOOV 21))])]
   "! TARGET_C3X"
   "if (! reload_in_progress
@@ -5267,7 +5267,7 @@
        (match_operand:HF 1 "reg_operand" ""))]
   "reload_completed"
   [(set (match_dup 2) (float_truncate:QF (match_dup 1)))
-   (set (match_dup 3) (unspec [(match_dup 1)] 9))]
+   (set (match_dup 3) (unspec:QI [(match_dup 1)] 9))]
  "operands[2] = c4x_operand_subword (operands[0], 0, 1, HFmode);
   operands[3] = c4x_operand_subword (operands[0], 1, 1, HFmode);
   PUT_MODE (operands[2], QFmode);
@@ -5337,7 +5337,7 @@
   [(set (mem:QF (pre_inc:QI (reg:QI 20)))
         (float_truncate:QF (match_dup 0)))
    (set (mem:QI (pre_inc:QI (reg:QI 20)))
-        (unspec [(match_dup 0)] 9))]
+        (unspec:QI [(match_dup 0)] 9))]
  "")
 
 (define_insn "pushhf_trunc"
@@ -5519,7 +5519,7 @@
 ; Inlined float square root for C4x
 (define_expand "sqrthf2_inline"
   [(parallel [(set (match_dup 2)
-	           (unspec [(match_operand:HF 1 "reg_operand" "")] 10))
+	           (unspec:HF [(match_operand:HF 1 "reg_operand" "")] 10))
 	      (clobber (reg:CC_NOOV 21))])
    (parallel [(set (match_dup 3) (mult:HF (match_dup 5) (match_dup 1)))
 	      (clobber (reg:CC_NOOV 21))])
@@ -5676,7 +5676,7 @@
 ; Inlined float divide for C4x
 (define_expand "divhf3_inline"
   [(parallel [(set (match_dup 3)
-	           (unspec [(match_operand:HF 2 "reg_operand" "")] 5))
+	           (unspec:HF [(match_operand:HF 2 "reg_operand" "")] 5))
 	      (clobber (reg:CC_NOOV 21))])
    (parallel [(set (match_dup 4) (mult:HF (match_dup 2) (match_dup 3)))
 	      (clobber (reg:CC_NOOV 21))])
@@ -6261,7 +6261,7 @@
   /* If the shift count is greater than 32 this will do an arithmetic
      right shift.  However, we need a logical right shift.  */
   (parallel [(set (match_dup 9)
-                  (ashift:QI (match_dup 4) (unspec [(match_dup 10)] 3)))
+                  (ashift:QI (match_dup 4) (unspec:QI [(match_dup 10)] 3)))
              (clobber (reg:CC 21))])
   (set (match_dup 6) (match_dup 8))
   (parallel [(set (match_dup 5)
@@ -6368,8 +6368,8 @@
                     (match_operand:HI 1 "src_operand" "")))]
   "! reload_completed"
   [(parallel [(set (reg:CC 21)
-                   (unspec [(compare:CC (match_dup 0)
-                                        (match_dup 1))] 4))
+                   (unspec:CC [(compare:CC (match_dup 0)
+                                           (match_dup 1))] 4))
               (clobber (match_scratch:QI 2 ""))
 	      (clobber (match_scratch:QI 3 ""))])]
   "")
@@ -6380,8 +6380,8 @@
                          (match_operand:HI 1 "src_operand" "")))]
   "! reload_completed"
   [(parallel [(set (reg:CC_NOOV 21)
-                   (unspec [(compare:CC_NOOV (match_dup 0)
-                                             (match_dup 1))] 4))
+                   (unspec:CC_NOOV [(compare:CC_NOOV (match_dup 0)
+                                                     (match_dup 1))] 4))
               (clobber (match_scratch:QI 2 ""))
 	      (clobber (match_scratch:QI 3 ""))])]
   "")

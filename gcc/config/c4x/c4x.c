@@ -593,6 +593,7 @@ c4x_function_arg (cum, mode, type, named)
     return NULL_RTX;
 }
 
+
 void
 c4x_va_start (stdarg_p, valist, nextarg)
      int stdarg_p;
@@ -604,9 +605,9 @@ c4x_va_start (stdarg_p, valist, nextarg)
   std_expand_builtin_va_start (stdarg_p, valist, nextarg);
 }
 
+
 /* C[34]x arguments grow in weird ways (downwards) that the standard
    varargs stuff can't handle. */
-
 rtx
 c4x_va_arg (valist, type)
      tree valist, type;
@@ -619,6 +620,7 @@ c4x_va_arg (valist, type)
 
   return expand_expr (t, NULL_RTX, Pmode, EXPAND_NORMAL);
 }
+
 
 static int
 c4x_isr_reg_used_p (regno)
@@ -3059,7 +3061,6 @@ symbolic_address_operand (op, mode)
     }
 }
 
-
 /* Check dst operand of a move instruction.  */
 int
 dst_operand (op, mode)
@@ -3073,7 +3074,7 @@ dst_operand (op, mode)
   if (REG_P (op))
     return reg_operand (op, mode);
 
-  return memory_operand (op, mode);
+  return nonimmediate_operand (op, mode);
 }
 
 
