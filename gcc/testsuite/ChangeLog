@@ -1,7 +1,12 @@
+2004-04-30  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* gcc.c-torture/execute/20040409-2.c: Fix constants used on
+	16-bit targets.
+
 2004-04-30  Andrew Pinski  <pinskia@physics.uc.edu>
 
-	* rs6000-power2-1.c: Change to compile only.
-	* rs6000-power2-2.c: Likewise.
+	* gcc.dg/rs6000-power2-1.c: Change to compile only.
+	* gcc.dg/rs6000-power2-2.c: Likewise.
 
 2004-04-29  Andrew Pinski  <pinskia@physics.uc.edu>
 
