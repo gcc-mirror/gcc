@@ -1,4 +1,4 @@
-dnl See whether we can include both string.h and strings.h.
+Fdnl See whether we can include both string.h and strings.h.
 AC_DEFUN(gcc_AC_HEADER_STRING,
 [AC_CACHE_CHECK([whether string.h and strings.h may both be included],
   gcc_cv_header_string,
@@ -404,6 +404,8 @@ AC_DEFUN(AM_WITH_NLS,
 		  [CATOBJEXT=.mo
 		   DATADIRNAME=lib])
 		INSTOBJEXT=.mo
+	      else
+		create_catalogs="no"
 	      fi
 	    fi
 	])
@@ -428,7 +430,6 @@ AC_DEFUN(AM_WITH_NLS,
 		   GCC_PATH_PROG_WITH_TEST(GMSGFMT, msgfmt,
 		    [test -z "`$ac_dir/$ac_word -h 2>&1 | grep 'dv '`"], msgfmt)
 		   if test "$GMSGFMT" = "msgfmt"; then
-		     AC_MSG_WARN(No program for catalog building found, so disabling building them)
 		     create_catalogs="no"
 		   fi
 		 fi
@@ -463,7 +464,6 @@ AC_DEFUN(AM_WITH_NLS,
         dnl If we didn't find either msgfmt or gmsgfmt, don't try to
         dnl create a catalog.
 	if test "$MSGFMT" = "msgfmt" && test "$GMSGFMT" = "msgfmt"; then
-	  AC_MSG_WARN(Neither msgfmt nor gmsgfmt found. No catalogs will be built)
 	  create_catalogs="no"
 	fi
         GCC_PATH_PROG_WITH_TEST(XGETTEXT, xgettext,
@@ -564,6 +564,10 @@ strdup __argz_count __argz_stringify __argz_next])
 
    AM_LC_MESSAGES
    AM_WITH_NLS
+
+   if test "x$create_catalogs" == "xno"; then
+     AC_MSG_WARN([No program for building catalogs found -> building disabled])
+   fi
 
    if test "x$CATOBJEXT" != "x" && test "x$create_catalogs" != "xno" ; then
      if test "x$ALL_LINGUAS" = "x"; then
