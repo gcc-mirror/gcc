@@ -55,12 +55,6 @@ Boston, MA 02111-1307, USA.  */
 #define SPARC_ARCH64 0
 #endif
 
-/* ??? Delete and use `TARGET_ARCH64' instead.  */
-/* What architecture we're compiling for.  This must coincide with the
-   `arch_type' attribute in the .md file.  */
-enum arch_type { ARCH_32BIT, ARCH_64BIT };
-extern enum arch_type sparc_arch_type;
-
 /* Names to predefine in the preprocessor for this target machine.  */
 
 /* ??? The GCC_NEW_VARARGS macro is now obsolete, because gcc always uses
@@ -204,7 +198,7 @@ extern int target_flags;
 /* Nonzero if we're compiling for v9 sparc.
    Note that v9's can run in 32 bit mode so this doesn't necessarily mean
    the word size is 64.  It does mean that the extra fp regs are available
-   as are the new instructions.  */
+   as are the new instructions that don't require 64 bit words.  */
 #define MASK_V9 0x40
 #define TARGET_V9 (target_flags & MASK_V9)
 
@@ -238,13 +232,16 @@ extern int target_flags;
 #define MASK_APP_REGS 0x400
 #define TARGET_APP_REGS (target_flags & MASK_APP_REGS)
 
-/*  Option to select how quad word floating point is implemented.
-    When TARGET_HARD_QUAD is true, we use the hardware quad instructions.
-    Otherwise, we use the SPARC ABI quad library functions.  */
+/* Option to select how quad word floating point is implemented.
+   When TARGET_HARD_QUAD is true, we use the hardware quad instructions.
+   Otherwise, we use the SPARC ABI quad library functions.  */
 #define MASK_HARD_QUAD 0x800
 #define TARGET_HARD_QUAD (target_flags & MASK_HARD_QUAD)
 
-/* Bit 0x1000 is unused.  */
+/* Non-zero to generate code that uses the instructions deprecated in
+   the v9 architecture.  This option only applies to v9 systems.  */
+#define MASK_DEPRECATED_V8_INSNS 0x1000
+#define TARGET_DEPRECATED_V8_INSNS (target_flags & MASK_DEPRECATED_V8_INSNS)
 
 /* Nonzero if ints are 64 bits.
    This automatically implies longs are 64 bits too.
@@ -266,16 +263,12 @@ extern int target_flags;
 /* Nonzero if generating code to run in a 64 bit environment.  */
 #define MASK_ARCH64 0x10000
 #define TARGET_ARCH64 (target_flags & MASK_ARCH64)
-
-/* Nonzero if generating code to run in a 32 bit environment.
-   Hence, we assume the upper 32 bits of symbolic addresses are zero, and
-   avoid generating %uhi and %ulo terms.
-   Pointers are still 64 bits though!  This option is for v9 only.  */
 #define TARGET_ARCH32 (! TARGET_ARCH64)
 
 /* SPARC64 memory models.
-   TARGET_MEDLOW: 32 bit address space, top 32 bits = 0
-                  (pointers still 64 bits)
+   TARGET_MEDLOW: 32 bit address space, top 32 bits = 0,
+                  avoid generating %uhi and %ulo terms.
+                  (pointers can be 32 or 64 bits)
    TARGET_MEDANY: 64 bit address space, data segment restricted to 4G, but
                   can be loaded anywhere (use %g4 as offset).
    TARGET_FULLANY: 64 bit address space, no restrictions.
@@ -338,7 +331,7 @@ extern int target_flags;
     {"hard-quad-float", MASK_HARD_QUAD}, \
     {"soft-quad-float", -MASK_HARD_QUAD}, \
     SUBTARGET_SWITCHES			\
-    V9_SWITCHES				\
+    ARCH64_SWITCHES			\
     { "", TARGET_DEFAULT}}
 
 #define TARGET_DEFAULT (MASK_APP_REGS + MASK_EPILOGUE + MASK_FPU)
@@ -346,10 +339,10 @@ extern int target_flags;
 /* This is meant to be redefined in the host dependent files */
 #define SUBTARGET_SWITCHES
 
-/* ??? Until we support a combination v8/v9 compiler, the v9 specific options
-   are only defined for the v9 compiler (in a true 64 bit environment).  */
+/* ??? Until we support a combination 32/64 bit compiler, these options
+   are only defined for the v9 compiler in a true 64 bit environment.  */
 #if SPARC_ARCH64
-#define V9_SWITCHES \
+#define ARCH64_SWITCHES \
 /*  {"arch32", -MASK_ARCH64}, */	\
 /*  {"arch64", MASK_ARCH64}, */		\
     {"int64", MASK_INT64+MASK_LONG64},	\
@@ -369,7 +362,7 @@ extern int target_flags;
     {"fullany", -MASK_CODE_MODEL},	\
     {"fullany", MASK_FULLANY},
 #else
-#define V9_SWITCHES
+#define ARCH64_SWITCHES
 #endif
 
 /* target machine storage layout */
