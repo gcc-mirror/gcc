@@ -2352,6 +2352,28 @@ canon_hash (x, mode)
       x = XEXP (x, 0);
       goto repeat;
 
+    case USE:
+      /* A USE that mentions non-volatile memory needs special
+	 handling since the MEM may be BLKmode which normally
+	 prevents an entry from being made.  Pure calls are
+	 marked by a USE which mentions BLKmode memory.  */
+      if (GET_CODE (XEXP (x, 0)) == MEM
+	  && ! MEM_VOLATILE_P (XEXP (x, 0)))
+	{
+	  hash += (unsigned)USE;
+	  x = XEXP (x, 0);
+
+	  if (! RTX_UNCHANGING_P (x) || FIXED_BASE_PLUS_P (XEXP (x, 0)))
+	    hash_arg_in_memory = 1;
+
+	  /* Now that we have already found this special case,
+	     might as well speed it up as much as possible.  */
+	  hash += (unsigned) MEM;
+	  x = XEXP (x, 0);
+	  goto repeat;
+	}
+      break;
+
     case PRE_DEC:
     case PRE_INC:
     case POST_DEC:
@@ -5760,9 +5782,15 @@ cse_insn (insn, libcall_insn)
 
       else if (do_not_record)
 	{
-	  if (GET_CODE (dest) == REG || GET_CODE (dest) == SUBREG
-	      || GET_CODE (dest) == MEM)
+	  if (GET_CODE (dest) == REG || GET_CODE (dest) == SUBREG)
 	    invalidate (dest, VOIDmode);
+	  else if (GET_CODE (dest) == MEM)
+	    {
+	      /* Outgoing arguments for a libcall don't
+		 affect any recorded expressions.  */
+	      if (! libcall_insn || insn == libcall_insn)
+		invalidate (dest, VOIDmode);
+	    }
 	  else if (GET_CODE (dest) == STRICT_LOW_PART
 		   || GET_CODE (dest) == ZERO_EXTRACT)
 	    invalidate (XEXP (dest, 0), GET_MODE (dest));
@@ -5919,9 +5947,15 @@ cse_insn (insn, libcall_insn)
 	   previous quantity's chain.
 	   Needed for memory if this is a nonvarying address, unless
 	   we have just done an invalidate_memory that covers even those.  */
-	if (GET_CODE (dest) == REG || GET_CODE (dest) == SUBREG
-	    || GET_CODE (dest) == MEM)
+	if (GET_CODE (dest) == REG || GET_CODE (dest) == SUBREG)
 	  invalidate (dest, VOIDmode);
+	else if (GET_CODE (dest) == MEM)
+	  {
+	    /* Outgoing arguments for a libcall don't
+	       affect any recorded expressions.  */
+	    if (! libcall_insn || insn == libcall_insn)
+	      invalidate (dest, VOIDmode);
+	  }
 	else if (GET_CODE (dest) == STRICT_LOW_PART
 		 || GET_CODE (dest) == ZERO_EXTRACT)
 	  invalidate (XEXP (dest, 0), GET_MODE (dest));

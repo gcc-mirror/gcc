@@ -1132,7 +1132,7 @@ find_base_term (x)
       return x;
 
     case ADDRESSOF:
-      return REG_BASE_VALUE (stack_pointer_rtx);
+      return REG_BASE_VALUE (frame_pointer_rtx);
 
     default:
       return 0;
