@@ -187,44 +187,8 @@ public class DatagramSocket
 	  impl = new PlainDatagramSocketImpl();
 	}
 
-    if (address == null)
-      return;
-
-    if (! (address instanceof InetSocketAddress))
-      throw new SocketException("unsupported address type");
-
-    InetAddress addr = ((InetSocketAddress) address).getAddress();
-    int port = ((InetSocketAddress) address).getPort();
-
-    if (port < 0 || port > 65535)
-      throw new IllegalArgumentException("Invalid port: " + port);
-
-    SecurityManager s = System.getSecurityManager();
-    if (s != null)
-      s.checkListen(port);
-
-    if (addr == null)
-      addr = InetAddress.ANY_IF;
-    
-    try
-      {
-        getImpl().bind(port, addr);
-      }
-    catch (SocketException exception)
-      {
-        getImpl().close();
-        throw exception;
-      }
-    catch (RuntimeException exception)
-      {
-        getImpl().close();
-        throw exception;
-      }
-    catch (Error error)
-      {
-        getImpl().close();
-        throw error;
-      }
+    if (address != null)
+      bind(address);
   }
   
   // This needs to be accessible from java.net.MulticastSocket
@@ -671,14 +635,39 @@ public class DatagramSocket
     if (! (address instanceof InetSocketAddress))
       throw new IllegalArgumentException("unsupported address type");
 
-    InetSocketAddress tmp = (InetSocketAddress) address;
+    InetAddress addr = ((InetSocketAddress) address).getAddress();
+    int port = ((InetSocketAddress) address).getPort();
+
+    if (port < 0 || port > 65535)
+      throw new IllegalArgumentException("Invalid port: " + port);
 
     SecurityManager s = System.getSecurityManager ();
     if (s != null)
-      s.checkListen(tmp.getPort ());
+      s.checkListen(port);
 
-    getImpl().bind (tmp.getPort (), tmp.getAddress ());
-    bound = true;
+    if (addr == null)
+      addr = InetAddress.ANY_IF;
+    
+    try
+      {
+        getImpl().bind(port, addr);
+	bound = true;
+      }
+    catch (SocketException exception)
+      {
+        getImpl().close();
+        throw exception;
+      }
+    catch (RuntimeException exception)
+      {
+        getImpl().close();
+        throw exception;
+      }
+    catch (Error error)
+      {
+        getImpl().close();
+        throw error;
+      }
   }
 
   /**
