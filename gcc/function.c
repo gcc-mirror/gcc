@@ -4621,10 +4621,8 @@ assign_parms (tree fndecl)
 						  offset_rtx));
 
 	set_mem_attributes (stack_parm, parm, 1);
-	if (entry_parm && MEM_ATTRS (stack_parm)->align < PARM_BOUNDARY)
-	  set_mem_align (stack_parm, PARM_BOUNDARY);
-
-	/* Set also REG_ATTRS if parameter was passed in a register.  */
+	set_mem_align (stack_parm, 
+		       FUNCTION_ARG_BOUNDARY (promoted_mode, passed_type));
 	if (entry_parm)
 	  set_reg_attrs_for_parm (entry_parm, stack_parm);
       }
@@ -4692,13 +4690,9 @@ assign_parms (tree fndecl)
       /* If we can't trust the parm stack slot to be aligned enough
 	 for its ultimate type, don't use that slot after entry.
 	 We'll make another stack slot, if we need one.  */
-      {
-	unsigned int thisparm_boundary
-	  = FUNCTION_ARG_BOUNDARY (promoted_mode, passed_type);
-
-	if (GET_MODE_ALIGNMENT (nominal_mode) > thisparm_boundary)
-	  stack_parm = 0;
-      }
+      if (STRICT_ALIGNMENT && stack_parm
+	  && GET_MODE_ALIGNMENT (nominal_mode) > MEM_ALIGN (stack_parm))
+	stack_parm = 0;
 
       /* If parm was passed in memory, and we need to convert it on entry,
 	 don't store it back in that same slot.  */
