@@ -1,5 +1,5 @@
 /* Common subexpression elimination for GNU compiler.
-   Copyright (C) 1987, 1988, 1989, 1992, 1993 Free Software Foundation, Inc.
+   Copyright (C) 1987, 88, 89, 92, 93, 1994 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -4358,7 +4358,8 @@ simplify_relational_operation (code, mode, op0, op1)
 	   && (GET_CODE (op1) == CONST_DOUBLE || GET_CODE (op1) == CONST_INT))
     {
       int width = GET_MODE_BITSIZE (mode);
-      HOST_WIDE_INT l0u, l0s, h0u, h0s, l1u, l1s, h1u, h1s;
+      HOST_WIDE_INT l0s, h0s, l1s, h1s;
+      unsigned HOST_WIDE_INT l0u, h0u, l1u, h1u;
 
       /* Get the two words comprising each integer constant.  */
       if (GET_CODE (op0) == CONST_DOUBLE)
