@@ -1,3 +1,8 @@
+2003-01-21  Ulrich Weigand  <uweigand@de.ibm.com>
+
+	* dwarf2out (output_file_names): Don't crash if called
+	with empty file_table.
+
 2003-01-21  Zack Weinberg  <zack@codesourcery.com>
 
 	* genautomata.c (output_internal_insn_latency_func): Add
