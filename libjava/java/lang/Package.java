@@ -1,5 +1,5 @@
 /* Package.java -- information about a package
-   Copyright (C) 2000, 2001, 2002 Free Software Foundation, Inc.
+   Copyright (C) 2000, 2001, 2002, 2003 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -269,8 +269,7 @@ public class Package
   public static Package getPackage(String name)
   {
     // Get the caller's classloader
-    SecurityManager sm = System.getSecurityManager();
-    Class c = sm.getClassContext()[1];
+    Class c = VMSecurityManager.getClassContext()[1];
     ClassLoader cl = c.getClassLoader();
     return cl != null ? cl.getPackage(name) : null;
   }
@@ -284,8 +283,7 @@ public class Package
   public static Package[] getPackages()
   {
     // Get the caller's classloader
-    SecurityManager sm = System.getSecurityManager();
-    Class c = sm.getClassContext()[1];
+    Class c = VMSecurityManager.getClassContext()[1];
     ClassLoader cl = c.getClassLoader();
     // Sun's implementation returns the packages loaded by the bootstrap
     // classloader if cl is null, but right now our bootstrap classloader
@@ -313,12 +311,7 @@ public class Package
    */
   public String toString()
   {
-    return "package: " + name +
-	   " spec: " + specTitle +
-	   " version: " + specVersion +
-	   " vendor: " + specVendor +
-	   " implementation: " + implTitle +
-	   " version: " + implVersion +
-	   " vendor: " + implVendor + " sealed: " + sealed;
+    return ("package " + name + (specTitle == null ? "" : ", " + specTitle)
+	    + (specVersion == null ? "" : ", version " + specVersion));
   }
 } // class Package

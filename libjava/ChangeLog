@@ -1,3 +1,8 @@
+2003-03-28  Tom Tromey  <tromey@redhat.com>
+
+	* java/lang/reflect/Proxy.java: New version from Classpath.
+	* java/lang/Package.java: New version from Classpath.
+
 2003-03-29  Ulrich Weigand  <uweigand@de.ibm.com>
 
 	* configure.in (HAVE_BACKTRACE) [s390*-*-linux*]: Define.
