@@ -659,7 +659,7 @@ SECTION_FUNCTION (objc_selector_refs_section,	\
 		  ".objc_message_refs", 1)	\
 SECTION_FUNCTION (objc_selector_fixup_section,	\
 		  in_objc_selector_fixup,	\
-		  ".section __OBJC, __sel_fixup", 1)	\
+		  ".section __OBJC, __sel_fixup, regular, no_dead_strip", 1)	\
 SECTION_FUNCTION (objc_symbols_section,		\
 		  in_objc_symbols,		\
 		  ".objc_symbols", 1)	\
@@ -674,11 +674,11 @@ SECTION_FUNCTION (objc_string_object_section,	\
 		  ".objc_string_object", 1)	\
 SECTION_FUNCTION (objc_constant_string_object_section,	\
 		  in_objc_constant_string_object,	\
-		  ".section __OBJC, __cstring_object", 1)	\
+		  ".section __OBJC, __cstring_object, regular, no_dead_strip", 1)	\
 /* Fix-and-Continue image marker.  */		\
 SECTION_FUNCTION (objc_image_info_section,	\
                   in_objc_image_info,		\
-                  ".section __OBJC, __image_info", 1)	\
+                  ".section __OBJC, __image_info, regular, no_dead_strip", 1)	\
 SECTION_FUNCTION (objc_class_names_section,	\
 		in_objc_class_names,		\
 		".objc_class_names", 1)	\
