@@ -1653,9 +1653,9 @@ applications.  There are no standard Unix configurations.
 @xref{AVR Options,, AVR Options, gcc, Using and Porting the GNU Compiler
 Collection (GCC)},
 @end ifnothtml
-@ifnotinfo
+@ifhtml
 See ``AVR Options'' in the main manual
-@end ifnotinfo
+@end ifhtml
 for the list of supported MCU types.
 
 Use @samp{configure --target=avr --enable-languages="c"} to configure GCC@.
@@ -1692,9 +1692,9 @@ standard Unix configurations.
 @xref{TMS320C3x/C4x Options,, TMS320C3x/C4x Options, gcc, Using and
 Porting the GNU Compiler Collection (GCC)},
 @end ifnothtml
-@ifnotinfo
+@ifhtml
 See ``TMS320C3x/C4x Options'' in the main manual
-@end ifnotinfo
+@end ifhtml
 for the list of supported MCU types.
 
 GCC can be configured as a cross compiler for both the C3x and C4x
