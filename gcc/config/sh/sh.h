@@ -1,6 +1,7 @@
 /* Definitions of target machine for GNU compiler for Hitachi Super-H.
    Copyright (C) 1993, 1994, 1995 Free Software Foundation, Inc.
-   Contributed by Steve Chamberlain (sac@cygnus.com)
+   Contributed by Steve Chamberlain (sac@cygnus.com).
+   Improved by Jim Wilson (wilson@cygnus.com).
 
 This file is part of GNU CC.
 
@@ -63,7 +64,6 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 
 extern int target_flags;
 #define ISIZE_BIT      	(1<<1)
-#define FAST_BIT       	(1<<2)
 #define RTL_BIT        	(1<<4)
 #define DT_BIT         	(1<<5)
 #define DALIGN_BIT     	(1<<6)
@@ -75,10 +75,7 @@ extern int target_flags;
 #define R_BIT     	(1<<12)
 #define SPACE_BIT 	(1<<13)
 #define BIGTABLE_BIT  	(1<<14)
-#define CONSTLEN_2_BIT  (1<<20)
-#define CONSTLEN_3_BIT  (1<<21)
 #define HITACHI_BIT     (1<<22)
-#define CONSTLEN_0_BIT  (1<<25)
 #define PADSTRUCT_BIT  (1<<28)
 #define LITTLE_ENDIAN_BIT (1<<29)
 
@@ -93,9 +90,6 @@ extern int target_flags;
 
 /* Nonzero if we should generate code using type 3 insns.  */
 #define TARGET_SH3 (target_flags & SH3_BIT)
-
-/* Nonzero if we should generate faster code rather than smaller code.  */
-#define TARGET_FASTCODE   (target_flags & FAST_BIT)
 
 /* Nonzero if we should generate smaller code rather than faster code.  */
 #define TARGET_SMALLCODE   (target_flags & SPACE_BIT)
@@ -117,13 +111,6 @@ extern int target_flags;
 
 /* Nonzero if combine dumping wanted.  */
 #define TARGET_CDUMP (target_flags & C_BIT)
-
-/* Select max size of computed constant code sequences to be 3 insns.  */
-#define TARGET_CLEN3 (target_flags & CONSTLEN_3_BIT)
-
-/* Select max size of computed constant code sequences to be 0 insns -
-   i.e. don't do it.  */
-#define TARGET_CLEN0 (target_flags & CONSTLEN_0_BIT)
 
 /* Nonzero if using Hitachi's calling convention.  */
 #define TARGET_HITACHI 		(target_flags & HITACHI_BIT)
@@ -147,8 +134,6 @@ extern int target_flags;
   {"b",		(-LITTLE_ENDIAN_BIT) },  	\
   {"bigtable", 	(BIGTABLE_BIT)},		\
   {"c",  	(C_BIT) },			\
-  {"clen0",     (CONSTLEN_0_BIT) },    		\
-  {"clen3",     (CONSTLEN_3_BIT) },    		\
   {"dalign",  	(DALIGN_BIT) },			\
   {"hitachi",	(HITACHI_BIT) },		\
   {"isize", 	(ISIZE_BIT) },			\
@@ -159,15 +144,7 @@ extern int target_flags;
   {"",   	TARGET_DEFAULT} 		\
 }
 
-
-#define TARGET_DEFAULT  (FAST_BIT)
-
-
-/* Macro to define table for command options with values.  */
-#define TARGET_OPTIONS \
-	{ { "maxsi-", &max_si}, \
-	  { "maxhi-", &max_hi} }
-
+#define TARGET_DEFAULT  (0)
 
 #define OVERRIDE_OPTIONS 					\
 do {								\
@@ -188,14 +165,6 @@ do {								\
      break global alloc, and generates slower code anyway due   \
      to the pressure on R0.  */                                 \
   flag_schedule_insns = 0;            				\
-  if (max_si)							\
-    max_count_si = atoi (max_si);				\
-  else                                                          \
-    max_count_si = 1010;                                        \
-  if (max_hi)							\
-    max_count_hi = atoi (max_hi);				\
-  else      							\
-    max_count_hi = 500;				                \
 } while (0)
 
 /* Target machine storage Layout.  */
@@ -312,6 +281,7 @@ do {								\
 #define GBR_REG  19
 #define MACH_REG 20
 #define MACL_REG 21
+#define SPECIAL_REG(REGNO) ((REGNO) >= 18 && (REGNO) <= 21)
 
 #define FIRST_PSEUDO_REGISTER 22
 
@@ -370,11 +340,13 @@ do {								\
    (((GET_MODE_SIZE (MODE) + UNITS_PER_WORD - 1) / UNITS_PER_WORD))
 
 /* Value is 1 if hard register REGNO can hold a value of machine-mode MODE.
-   We may keep double values in even registers.  */
+   We can allow any mode in any general register.  The special registers
+   only allow SImode.  Don't allow any mode in the PR.  */
 
-extern int hard_regno_mode_ok[];
-#define HARD_REGNO_MODE_OK(REGNO, MODE)  \
-  (hard_regno_mode_ok[REGNO] & (1<<(int)MODE))
+#define HARD_REGNO_MODE_OK(REGNO, MODE) \
+  (SPECIAL_REG (REGNO) ? (MODE) == SImode	\
+   : (REGNO) == PR_REG ? 0			\
+   : 1)
 
 /* Value is 1 if it is a good idea to tie two pseudo registers
    when one has mode MODE1 and one has mode MODE2.
@@ -841,6 +813,10 @@ extern int current_function_anonymous_args;
 
 /* Nonzero if the constant value X is a legitimate general operand.  */
 
+/* ??? Should modify this to accept CONST_DOUBLE, and then modify the
+   constant pool table code to fix loads of CONST_DOUBLEs.  If that doesn't
+   work well, then we can at least handle 'G' constraint CONST_DOUBLEs
+   here.  */
 #define LEGITIMATE_CONSTANT_P(X) \
   (GET_CODE(X) != CONST_DOUBLE /*&& GET_CODE(X) != LABEL_REF*/)
 
@@ -957,8 +933,6 @@ extern int current_function_anonymous_args;
       rtx xop1 = XEXP(X,1);					  \
       if (GET_MODE_SIZE(MODE) <= 8 && BASE_REGISTER_RTX_P (xop0)) \
 	GO_IF_LEGITIMATE_INDEX (MODE, REGNO (xop0), xop1, LABEL); \
-      if (GET_MODE_SIZE(MODE) <= 8 && BASE_REGISTER_RTX_P (xop1)) \
-	GO_IF_LEGITIMATE_INDEX (MODE, REGNO (xop1), xop0, LABEL); \
       if (GET_MODE_SIZE(MODE)<= 4) {				  \
 	if(BASE_REGISTER_RTX_P(xop1) &&			 	  \
 	   INDEX_REGISTER_RTX_P(xop0)) goto LABEL;		  \
@@ -1446,12 +1420,8 @@ extern char *output_far_jump();
 /* Set when processing a function with pragma interrupt turned on.  */
 
 extern int pragma_interrupt;
-#define MOVE_RATIO (TARGET_SMALLCODE ? 4 : 16)
 
-extern char *max_si;
-extern char *max_hi;
-extern int max_count_si;
-extern int max_count_hi;
+#define MOVE_RATIO (TARGET_SMALLCODE ? 2 : 16)
 
 /* Instructions with unfilled delay slots take up an extra two bytes for
    the nop in the delay slot.  */
@@ -1470,3 +1440,9 @@ extern int max_count_hi;
 
 /* Enable a bug fix for the shorten_branches pass.  */
 #define SHORTEN_WITH_ADJUST_INSN_LENGTH
+
+/* ??? Define CANONICALIZE_COMPARISON?  */
+
+/* ??? Define PREDICATE_CODES.  */
+
+/* ??? Define PROMOTE_MDOES?  */
