@@ -1,3 +1,8 @@
+Sat May  4 13:20:54 CEST 2002  Jan Hubicka  <jh@suse.cz>
+
+	* expr.c (force_operand): Use expand_simple_* to handle more
+	cases.
+
 2002-05-04  Neil Booth  <neil@daikokuya.demon.co.uk>
 
 	* c-lex.c (lex_string): Let cpp_parse_escape handles truncation
