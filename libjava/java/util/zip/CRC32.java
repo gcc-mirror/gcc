@@ -1,5 +1,5 @@
 /* CRC32.java - Computes CRC32 data checksum of a data stream
-   Copyright (C) 1999, 2000 Free Software Foundation, Inc.
+   Copyright (C) 1999. 2000, 2001 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -7,7 +7,7 @@ GNU Classpath is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
 the Free Software Foundation; either version 2, or (at your option)
 any later version.
- 
+
 GNU Classpath is distributed in the hope that it will be useful, but
 WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
@@ -41,7 +41,7 @@ package java.util.zip;
  * streams.
  *
  * @see InflaterInputStream
- * @see InflaterOutputStream
+ * @see DeflaterOutputStream
  *
  * @author Per Bothner
  * @date April 1, 1999.
@@ -85,6 +85,12 @@ public class CRC32 implements Checksum
    * Resets the CRC32 data checksum as if no update was ever called.
    */
   public void reset () { crc = 0; }
+
+  /**
+   * Updates the checksum with the int bval. 
+   *
+   * @param bval (the byte is taken as the lower 8 bits of bval)
+   */
 
   public void update (int bval)
   {

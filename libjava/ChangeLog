@@ -1,3 +1,11 @@
+2001-10-05  Mark Wielaard  <mark@klomp.org>
+
+	* java/util/zip/Adler32.java: Merge with Classpath
+	* java/util/zip/CRC32.java: Ditto
+	* java/util/zip/Checksum.java: Ditto
+	* java/util/zip/DataFormatException.java: Ditto
+	* java/util/zip/ZipException.java: Ditto
+
 2001-10-04  Martin Kahlert  <martin.kahlert@infineon.com>
 
 	* jni.cc (_Jv_JNI_DeleteLocalRef): Use correct frame size
