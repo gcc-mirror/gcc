@@ -304,6 +304,8 @@ struct loop_info
   int has_libcall;
   /* Nonzero if there is a non constant call in the current loop.  */
   int has_nonconst_call;
+  /* Nonzero if there is a prefetch instruction in the current loop.  */
+  int has_prefetch;
   /* Nonzero if there is a volatile memory reference in the current
      loop.  */
   int has_volatile;

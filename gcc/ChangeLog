@@ -1,3 +1,13 @@
+2002-05-16  Janis Johnson  <janis187@us.ibm.com>
+
+	* loop.h (struct loop_info): Add member has_prefetch.
+	* loop.c (PREFETCH_CONDITIONAL): Change default to 1.
+	(prescan_loop): Initialize has_prefetch.
+	(struct prefetch_info): Change prefetch_in_loop and
+	prefetch_before_loop from bit fields to ints.
+	(emit_prefetch_instructions): Several small fixes.
+	(check_dbra_loop): Don't reverse loop that uses prefetch.
+
 2002-05-16  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
 
 	* Makefile.in: Allow for PWDCMD to override hardcoded pwd.
