@@ -1602,7 +1602,7 @@ yylex ()
 	      }
 #endif
 
-	    if (!int_fits_type_p (yylval.ttype, type))
+	    if (!flag_traditional && !int_fits_type_p (yylval.ttype, type))
 	      pedwarn ("integer constant out of range");
 
 	    TREE_TYPE (yylval.ttype) = type;
