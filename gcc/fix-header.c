@@ -602,6 +602,7 @@ read_scan_file (char *in_fname, int argc, char **argv)
   options = cpp_get_options (scan_in);
   options->inhibit_warnings = 1;
   options->inhibit_errors = 1;
+  cpp_post_options (scan_in);
 
   if (! cpp_read_main_file (scan_in, in_fname))
     exit (FATAL_EXIT_CODE);

@@ -1126,6 +1126,7 @@ c_common_post_options (const char **pfilename)
     }
 
   cpp_get_callbacks (parse_in)->file_change = cb_file_change;
+  cpp_post_options (parse_in);
 
   /* NOTE: we use in_fname here, not the one supplied.  */
   *pfilename = cpp_read_main_file (parse_in, in_fnames[0]);
@@ -1196,7 +1197,7 @@ c_common_parse_file (int set_yydebug ATTRIBUTE_UNUSED)
 
 	  /* Reset cpplib's macros and start a new file.  */
 	  cpp_undef_all (parse_in);
-	  cpp_stack_file (parse_in, in_fnames[file_index]);
+	  cpp_read_main_file (parse_in, in_fnames[file_index]);
 	}
 
       finish_options(in_fnames[file_index]);

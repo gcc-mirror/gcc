@@ -533,12 +533,12 @@ extern void cpp_set_callbacks (cpp_reader *, cpp_callbacks *);
    too.  If there was an error opening the file, it returns NULL.  */
 extern const char *cpp_read_main_file (cpp_reader *, const char *);
 
-/* Stacks a new file.  It will return false if there was an error
-   opening the file.  */
-extern bool cpp_stack_file (cpp_reader *, const char *);
-
 /* Set up built-ins like __FILE__.  */
 extern void cpp_init_builtins (cpp_reader *, int);
+
+/* This is called after options have been parsed, and partially
+   processed. */
+extern void cpp_post_options (cpp_reader *);
 
 /* Set up translation to the target character set.  */
 extern void cpp_init_iconv (cpp_reader *);
