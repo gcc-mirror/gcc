@@ -11,6 +11,20 @@ s/$(srcdir)\/c-gperf/c-gperf/g
 target=winnt3.5
 /^xmake_file=/ d
 /^tmake_file=/ d
+/^out_file/ c\
+out_file=config/i386/i386.c
+/^out_object_file/ c\
+out_object_file=i386.obj
+/^md_file/ c\
+md_file=config/i386/i386.md
+/^tm_file/ c\
+tm_file=config/i386/winnt.h
+/^build_xm_file/ c\
+build_xm_file=config/i386/xm-winnt.h
+/^host_xm_file/ c\
+host_xm_file=config/i386/xm-winnt.h
+/^lang_specs_files=/ d
+/^lang_options_files=/ d
 /^version=/ c\
 version=2.6.3
 s/CC = cc/CC = cl/
@@ -24,10 +38,10 @@ s/`echo \$(srcdir)\///g
 s/ | sed 's,\^\\\.\/,,'`//g
 s/^	cd \$(srcdir)[ 	]*;/	/
 /^stamp-attrtab/,/copy/ {
-  /\\/d
-  /fi/d
+  /\\$/d
+  /	fi/d
   /copy/ i\
-\	  genattrtab md > tmp-attrtab.c
+\	  genattrtab $(md_file) > tmp-attrtab.c
 }
 /^enquire[ 	]*:/ s/\$(GCC_PARTS)//g
 /^enquire.o[ 	]*:/ s/\$(GCC_PASSES)//g
@@ -65,7 +79,12 @@ ld.obj: $(srcdir)/config/winnt/ld.c \
 \ 	-I. -I$(srcdir) -I$(srcdir)/config -c $(srcdir)/config/winnt/ld.c \
 \
 ld.exe: ld.obj \
-	link -out:ld.exe ld.obj $(LDFLAGS) $(CLIB)
+	link -out:ld.exe ld.obj $(LDFLAGS) $(CLIB) \
+\
+EXTRA_OBJS=winnt.obj \
+winnt.obj: $(srcdir)/config/i386/winnt.c \
+\	$(CC) $(CFLAGS) \\\
+\ 	-I. -I$(srcdir) -I$(srcdir)/config -c $(srcdir)/config/i386/winnt.c
 s/^C c:/Cc:/
 s/\${OBJS}/\$(OBJS)/g
 s/\${SYSTEM_HEADER_DIR}/\$(SYSTEM_HEADER_DIR)/g
@@ -93,6 +112,7 @@ s/genmultilib.exe/genmultilib/g
 s/^cccp *:/cccp.exe :/
 s/cccp$/cccp.exe/
 s/cccp /cccp.exe /
+s/CCCP=cccp.exe/CCCP=cccp/
 s/^cpp *:/cpp.exe :/
 s/cpp$/cpp.exe/
 s/cpp /cpp.exe /
