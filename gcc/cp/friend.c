@@ -127,10 +127,14 @@ is_friend (tree type, tree supplicant)
 }
 
 /* Add a new friend to the friends of the aggregate type TYPE.
-   DECL is the FUNCTION_DECL of the friend being added.  */
+   DECL is the FUNCTION_DECL of the friend being added.
+
+   If COMPLAIN is true, warning about duplicate friend is issued.
+   We want to have this diagnostics during parsing but not
+   when a template is being instantiated.  */
 
 void
-add_friend (tree type, tree decl)
+add_friend (tree type, tree decl, bool complain)
 {
   tree typedecl;
   tree list;
@@ -153,10 +157,13 @@ add_friend (tree type, tree decl)
 	    {
 	      if (decl == TREE_VALUE (friends))
 		{
-		  warning ("`%D' is already a friend of class `%T'",
-			      decl, type);
-		  cp_warning_at ("previous friend declaration of `%D'",
-				 TREE_VALUE (friends));
+		  if (complain)
+		    {
+		      warning ("`%D' is already a friend of class `%T'",
+			       decl, type);
+		      cp_warning_at ("previous friend declaration of `%D'",
+				     TREE_VALUE (friends));
+		    }
 		  return;
 		}
 	    }
@@ -192,10 +199,14 @@ add_friend (tree type, tree decl)
    classes that are not defined.  If a type has not yet been defined,
    then the DECL_WAITING_FRIENDS contains a list of types
    waiting to make it their friend.  Note that these two can both
-   be in use at the same time!  */
+   be in use at the same time!
+
+   If COMPLAIN is true, warning about duplicate friend is issued.
+   We want to have this diagnostics during parsing but not
+   when a template is being instantiated.  */
 
 void
-make_friend_class (tree type, tree friend_type)
+make_friend_class (tree type, tree friend_type, bool complain)
 {
   tree classes;
   int is_template_friend;
@@ -227,8 +238,9 @@ make_friend_class (tree type, tree friend_type)
     }
   else if (same_type_p (type, friend_type))
     {
-      pedwarn ("class `%T' is implicitly friends with itself",
-	          type);
+      if (complain)
+	pedwarn ("class `%T' is implicitly friends with itself",
+		 type);
       return;
     }
   else
@@ -275,8 +287,9 @@ make_friend_class (tree type, tree friend_type)
 	{
 	  if (friend_type == probe)
 	    {
-	      warning ("`%D' is already a friend of `%T'",
-		       probe, type);
+	      if (complain)
+		warning ("`%D' is already a friend of `%T'",
+			 probe, type);
 	      break;
 	    }
 	}
@@ -284,8 +297,9 @@ make_friend_class (tree type, tree friend_type)
 	{
 	  if (same_type_p (probe, friend_type))
 	    {
-	      warning ("`%T' is already a friend of `%T'",
-		       probe, type);
+	      if (complain)
+		warning ("`%T' is already a friend of `%T'",
+			 probe, type);
 	      break;
 	    }
 	}
@@ -369,7 +383,7 @@ do_friend (tree ctype, tree declarator, tree decl, tree parmdecls,
 	 parameters.  Instead, we rely on tsubst_friend_function
 	 to check the validity of the declaration later.  */
       if (processing_template_decl)
-	add_friend (current_class_type, decl);
+	add_friend (current_class_type, decl, /*complain=*/true);
       /* A nested class may declare a member of an enclosing class
 	 to be a friend, so we do lookup here even if CTYPE is in
 	 the process of being defined.  */
@@ -378,7 +392,7 @@ do_friend (tree ctype, tree declarator, tree decl, tree parmdecls,
 	  decl = check_classfn (ctype, decl);
 
 	  if (decl)
-	    add_friend (current_class_type, decl);
+	    add_friend (current_class_type, decl, /*complain=*/true);
 	}
       else
 	error ("member `%D' declared as friend before type `%T' defined",
@@ -446,7 +460,8 @@ do_friend (tree ctype, tree declarator, tree decl, tree parmdecls,
 	}
 
       add_friend (current_class_type, 
-		  is_friend_template ? DECL_TI_TEMPLATE (decl) : decl);
+		  is_friend_template ? DECL_TI_TEMPLATE (decl) : decl,
+		  /*complain=*/true);
       DECL_FRIEND_P (decl) = 1;
     }
 

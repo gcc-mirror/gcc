@@ -11252,7 +11252,8 @@ grokdeclarator (tree declarator,
 	    {
 	      /* A friendly class?  */
 	      if (current_class_type)
-		make_friend_class (current_class_type, TYPE_MAIN_VARIANT (type));
+		make_friend_class (current_class_type, TYPE_MAIN_VARIANT (type),
+				   /*complain=*/true);
 	      else
 		error ("trying to make class `%T' a friend of global scope",
 		          type);

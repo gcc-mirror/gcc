@@ -11840,7 +11840,8 @@ cp_parser_member_declaration (cp_parser* parser)
 		 error ("friend declaration does not name a class or "
 			"function");
 	       else
-		 make_friend_class (current_class_type, type);
+		 make_friend_class (current_class_type, type,
+				    /*complain=*/true);
 	    }
 	  /* If there is no TYPE, an error message will already have
 	     been issued.  */
@@ -13636,7 +13637,8 @@ cp_parser_template_declaration_after_export (cp_parser* parser, bool member_p)
       if (member_p && !friend_p && decl)
 	decl = finish_member_template_decl (decl);
       else if (friend_p && decl && TREE_CODE (decl) == TYPE_DECL)
-	make_friend_class (current_class_type, TREE_TYPE (decl));
+	make_friend_class (current_class_type, TREE_TYPE (decl),
+			   /*complain=*/true);
     }
   /* We are done with the current parameter list.  */
   --parser->num_template_parameter_lists;
