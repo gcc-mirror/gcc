@@ -2963,7 +2963,7 @@ s390_expand_cmpstr (target, op0, op1, len)
         emit_move_insn (target, const0_rtx);
     }
 
-  else if (TARGET_MVCLE)
+  else /* if (TARGET_MVCLE) */
     {
       enum machine_mode double_mode = TARGET_64BIT ? TImode : DImode;
       enum machine_mode single_mode = TARGET_64BIT ? DImode : SImode;
@@ -2982,6 +2982,9 @@ s390_expand_cmpstr (target, op0, op1, len)
       emit_insn ((*gen_result) (target));
     }
 
+#if 0
+  /* Deactivate for now as profile code cannot cope with
+     CC being live across basic block boundaries.  */
   else
     {
       rtx addr0, addr1, count, blocks, temp;
@@ -3047,6 +3050,7 @@ s390_expand_cmpstr (target, op0, op1, len)
 
       emit_insn ((*gen_result) (target));
     }
+#endif
 }
 
 /* This is called from dwarf2out.c via ASM_OUTPUT_DWARF_DTPREL.
