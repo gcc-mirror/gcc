@@ -1,3 +1,10 @@
+2004-10-06  Paolo Bonzini  <bonzini@gnu.org>
+
+	* configure.ac (symbolic_link): Replace with $LN_S.
+	(Assembler/Linker): Hard link from gas and binutils trees.
+	* aclocal.m4 (gcc_AC_PROG_LN_S): Try "cp -p" before cp.
+	* configure: Regenerate.
+
 2004-10-12  Paul Brook  <paul@codesourcery.com>
 
 	* configure.ac: Don't look for host assembler when building a canadian

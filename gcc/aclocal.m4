@@ -126,7 +126,12 @@ else
   then
     gcc_cv_prog_LN_S=ln
   else
-    gcc_cv_prog_LN_S=cp
+    if cp -p conftestdata_f conftestdata_t 2>/dev/null
+    then
+      gcc_cv_prog_LN_S="cp -p"
+    else
+      gcc_cv_prog_LN_S=cp
+    fi
   fi
 fi
 rm -f conftestdata_f conftestdata_t
@@ -138,7 +143,7 @@ else
   if test "$gcc_cv_prog_LN_S" = "ln"; then
     AC_MSG_RESULT([no, using ln])
   else
-    AC_MSG_RESULT([no, and neither does ln, so using cp])
+    AC_MSG_RESULT([no, and neither does ln, so using $gcc_cv_prog_LN_S])
   fi
 fi
 AC_SUBST(LN_S)dnl
