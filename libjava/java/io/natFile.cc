@@ -338,13 +338,6 @@ java::io::File::performDelete (void)
 void
 java::io::File::init_native ()
 {
-  separator = JvNewStringLatin1 ("/");
-  pathSeparator = JvNewStringLatin1 (":");
-  
-  char *tmp = ::getenv("TMPDIR");
-  if (! tmp)
-    tmp = "/tmp";
-  tmpdir = JvNewStringLatin1 (tmp);
   maxPathLen = MAXPATHLEN;
   caseSensitive = true;
 }
