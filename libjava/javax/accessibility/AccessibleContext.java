@@ -72,7 +72,7 @@ public abstract class AccessibleContext
     = "AccessibleName";
 
   /**
-   * Constanat used when the accessible description has changed. Both the old
+   * Constant used when the accessible description has changed. Both the old
    * and new values are listed in the event.
    *
    * @see #getAccessibleDescription()
