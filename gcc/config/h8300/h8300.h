@@ -1074,6 +1074,14 @@ dtors_section() 						\
 #define SDB_DEBUGGING_INFO
 #define SDB_DELIM	"\n"
 
+/* Output DBX (stabs) debugging information if doing -gstabs.  */
+
+#define DBX_DEBUGGING_INFO
+
+/* Generate SDB debugging information by default. */
+
+#define PREFERRED_DEBUGGING_TYPE SDB_DEBUG
+
 /* A C statement to output something to the assembler file to switch to section
    NAME for object DECL which is either a FUNCTION_DECL, a VAR_DECL or
    NULL_TREE.  Some target formats do not support arbitrary sections.  Do not
