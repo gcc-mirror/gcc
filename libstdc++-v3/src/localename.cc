@@ -344,10 +344,9 @@ namespace std
   locale::_Impl::
   _M_replace_categories(const _Impl* __imp, category __cat)
   {
-    category __mask;
     for (size_t __ix = 0; __ix < _S_categories_size; ++__ix)
       {
-	__mask = 1 << __ix;
+	const category __mask = 1 << __ix;
 	if (__mask & __cat)
 	  {
 	    // Need to replace entry in _M_facets with other locale's info.
@@ -377,7 +376,7 @@ namespace std
   locale::_Impl::
   _M_replace_facet(const _Impl* __imp, const locale::id* __idp)
   {
-    size_t __index = __idp->_M_id();
+    const size_t __index = __idp->_M_id();
     if ((__index > (__imp->_M_facets_size - 1)) || !__imp->_M_facets[__index])
       __throw_runtime_error("locale::_Impl::_M_replace_facet");
     _M_install_facet(__idp, __imp->_M_facets[__index]); 

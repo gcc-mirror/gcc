@@ -1,3 +1,8 @@
+2003-10-14  Paolo Carlini  <pcarlini@unitus.it>
+
+	* src/localename.cc (_M_replace_categories, M_replace_facet):
+	Const-ify a couple of variables.
+
 2003-10-14  Petur Runolfsson  <peturr02@ru.is>
 	    Andreas Tobler  <a.tobler@schweiz.ch>
 
