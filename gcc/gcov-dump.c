@@ -54,7 +54,7 @@ static const struct option options[] =
   { "long",                 no_argument,       NULL, 'l' },
 };
 
-static tag_format_t tag_table[] =
+static const tag_format_t tag_table[] =
 {
   {0, "NOP", NULL},
   {0, "UNKNOWN", NULL},
