@@ -1,3 +1,7 @@
+2001-12-28  Kazu Hirata  <kazu@hxi.com>
+
+	* doc/md.texi: Add @findex define_insn_and_split.
+
 2001-12-28  Hans Bohem  <hans_boehm@hp.com>
 
 	* config/ia64/linux.h (MD_FALLBACK_FRAME_STATE_FOR): New.
