@@ -4355,7 +4355,7 @@ extern int promotes_to_aggr_type		PARAMS ((tree, enum tree_code));
 extern int is_aggr_type_2			PARAMS ((tree, tree));
 extern const char *lang_printable_name		PARAMS ((tree, int));
 extern tree build_exception_variant		PARAMS ((tree, tree));
-extern tree copy_template_template_parm		PARAMS ((tree, tree));
+extern tree bind_template_template_parm		PARAMS ((tree, tree));
 extern tree array_type_nelts_total		PARAMS ((tree));
 extern tree array_type_nelts_top		PARAMS ((tree));
 extern tree break_out_target_exprs		PARAMS ((tree));

@@ -1,3 +1,14 @@
+2001-07-05  Kriang Lerdsuwanakij  <lerdsuwa@users.sourceforge.net>
+
+	* cp-tree.h (copy_template_template_parm): Rename to ...
+	(bind_template_template_parm): ... here.
+	* tree.c (copy_template_template_parm): Rename to ...
+	(bind_template_template_parm): ... here.  Remove the case when
+	NEWARGS is NULL_TREE.
+	(copy_tree_r): Don't copy TEMPLATE_TEMPLATE_PARM and
+	BOUND_TEMPLATE_TEMPLATE_PARM.
+	* pt.c (lookup_template_class): Adjust.
+
 2001-07-05  Jason Merrill  <jason_merrill@redhat.com>
 
 	* cvt.c (convert_lvalue): New fn.

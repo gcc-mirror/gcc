@@ -3912,8 +3912,7 @@ lookup_template_class (d1, arglist, in_decl, context, entering_scope, complain)
       if (arglist2 == error_mark_node)
 	return error_mark_node;
 
-      parm = copy_template_template_parm (TREE_TYPE (template), arglist2);
-      TYPE_SIZE (parm) = 0;
+      parm = bind_template_template_parm (TREE_TYPE (template), arglist2);
       return parm;
     }
   else 
