@@ -104,7 +104,8 @@ objc.start.encap:
 objc.rest.encap:
 
 objc.tags: force
-	cd $(srcdir)/objc; etags *.y *.c *.h
+	cd $(srcdir)/objc; etags -o TAGS.sub *.y *.c *.h; \
+	etags --include TAGS.sub --include ../TAGS.sub
 
 #
 # Install hooks:

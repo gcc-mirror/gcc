@@ -1,3 +1,8 @@
+2003-11-16  Jason Merrill  <jason@redhat.com>
+
+	* Make-lang.in (ada.tags): Create TAGS.sub files in each directory
+	and TAGS files that include them for each front end.
+
 2003-11-14  Andreas Jaeger  <aj@suse.de>
 
 	* lang.opt: Change -Wno-long-long to -Wlong-long since the latter

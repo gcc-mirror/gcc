@@ -114,7 +114,9 @@ c++.start.encap: g++$(exeext)
 c++.rest.encap:
 
 c++.tags: force
-	cd $(srcdir)/cp; etags *.c *.h
+	cd $(srcdir)/cp; etags -o TAGS.sub *.c *.h --language=none \
+	  --regex='/DEFTREECODE [(]\([A-Z_]+\)/\1/' cp-tree.def; \
+	etags --include TAGS.sub --include ../TAGS.sub
 
 generated-manpages:: cp/g++.1
 

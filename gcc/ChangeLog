@@ -1,3 +1,9 @@
+2003-11-16  Jason Merrill  <jason@redhat.com>
+
+	* Makefile.in, objc/Make-lang.in (objc.tags): Create TAGS.sub
+	files in each directory and TAGS files that include them for each
+	front end.
+
 2003-11-15  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* config/h8300/lib1funcs.asm (divnorm): Store the sign in bit
