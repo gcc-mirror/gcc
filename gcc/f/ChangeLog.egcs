@@ -1,3 +1,7 @@
+Tue Sep  9 13:20:40 1997  Jim Wilson  <wilson@cygnus.com>
+
+	* g77.c (pexecute, doit): Add checks for __CYGWIN32__.
+
 Wed Aug 27 20:32:03 1997  Jeffrey A Law  (law@cygnus.com)
 
 	* top.c (ffe_decode_option): Turn on flag_move_all_moveables
