@@ -1,3 +1,9 @@
+2004-11-18  Andrew Pinski  <pinskia@physics.uc.edu>
+
+	PR middle-end/18164
+	* gimplify.c (gimplify_asm_expr): If the length of an output operand
+	is zero, do not process it, just let it go through.
+
 2004-11-28  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 	    Diego Novillo  <dnovillo@redhat.com>	    
 
