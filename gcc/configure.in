@@ -25,15 +25,12 @@
 # Initialization and sanity checks
 # --------------------------------
 
-AC_PREREQ(2.57)
-AC_INIT
-AC_CONFIG_SRCDIR(tree.c)
+AC_PREREQ(2.13)
+AC_INIT(tree.c)
 AC_CONFIG_HEADER(auto-host.h:config.in)
 
 # Determine the host, build, and target systems
-AC_CANONICAL_BUILD
-AC_CANONICAL_HOST
-AC_CANONICAL_TARGET
+AC_CANONICAL_SYSTEM
 
 # Determine the noncanonical target name, for directory use.
 _GCC_TOPLEV_NONCANONICAL_TARGET
@@ -801,7 +798,7 @@ int main()
   fi
 fi
 
-AC_CHECK_TYPE(ssize_t, int)
+gcc_AC_CHECK_TYPE(ssize_t, int)
 
 # Try to determine the array type of the second argument of getgroups
 # for the target system (int or gid_t).
@@ -1962,16 +1959,15 @@ __FRAME_BEGIN__:
 	.byte	0x4
 	.4byte	.L1-.LFB1
 .LEFDE1:],
-[  dnl # For autoconf 2.5x, must protect trailing spaces with @&t@.
-cat > conftest.lit <<EOF
+[  cat > conftest.lit <<EOF
  0000 10000000 00000000 017a0001 781a0004  .........z..x...
  0010 01000000 12000000 18000000 00000000  ................
- 0020 08000000 04080000 0044               .........D      @&t@
+ 0020 08000000 04080000 0044               .........D      
 EOF
-cat > conftest.big <<EOF
+  cat > conftest.big <<EOF
  0000 00000010 00000000 017a0001 781a0004  .........z..x...
  0010 00000001 00000012 00000018 00000000  ................
- 0020 00000008 04000000 0844               .........D      @&t@
+ 0020 00000008 04000000 0844               .........D      
 EOF
   # If the assembler didn't choke, and we can objdump,
   # and we got the correct data, then succeed.
@@ -3041,9 +3037,7 @@ fi
 
 # Create the Makefile
 # and configure language subdirectories
-AC_CONFIG_FILES($all_outputs)
-
-AC_CONFIG_COMMANDS([default],
+AC_OUTPUT($all_outputs,
 [
 case ${CONFIG_HEADERS} in
   *auto-host.h:config.in*)
@@ -3076,4 +3070,3 @@ else true ; fi
 [subdirs='$subdirs'
 symbolic_link='$symbolic_link'
 ])
-AC_OUTPUT
