@@ -1,3 +1,7 @@
+Thu Apr 23 09:32:58 1998  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* typeck.c (comp_target_types): Fix PMFs.
+
 Wed Apr 22 13:24:48 1998  Mark Mitchell  <mmitchell@usa.net>
 
 	* class.c (finish_struct): Set TREE_PRIVATE and TREE_PROTECTED for

@@ -959,6 +959,9 @@ comp_target_types (ttl, ttr, nptrs)
     return comp_array_types (comp_target_types, ttl, ttr, 0);
   else if (TREE_CODE (ttr) == FUNCTION_TYPE || TREE_CODE (ttr) == METHOD_TYPE)
     {
+      tree argsl, argsr;
+      int saw_contra = 0;
+
       if (pedantic)
 	{
 	  if (comptypes (TREE_TYPE (ttl), TREE_TYPE (ttr), 1) == 0)
@@ -966,12 +969,45 @@ comp_target_types (ttl, ttr, nptrs)
 	}
       else
 	{
-	  if (comp_target_types (TREE_TYPE (ttl), TREE_TYPE (ttr), -1) == 0)
-	    return 0;
+	  switch (comp_target_types (TREE_TYPE (ttl), TREE_TYPE (ttr), -1))
+	    {
+	    case 0:
+	      return 0;
+	    case -1:
+	      saw_contra = 1;
+	    }
 	}
 
-      return comp_target_parms (TYPE_ARG_TYPES (ttl),
-				TYPE_ARG_TYPES (ttr), 1);
+      argsl = TYPE_ARG_TYPES (ttl);
+      argsr = TYPE_ARG_TYPES (ttr);
+
+      /* Compare 'this' here, not in comp_target_parms.  */
+      if (TREE_CODE (ttr) == METHOD_TYPE)
+	{
+	  tree tl = TYPE_METHOD_BASETYPE (ttl);
+	  tree tr = TYPE_METHOD_BASETYPE (ttr);
+
+	  if (comptypes (tr, tl, 0) == 0)
+	    {
+	      if (comptypes (tl, tr, 0))
+		saw_contra = 1;
+	      else
+		return 0;
+	    }
+
+	  argsl = TREE_CHAIN (argsl);
+	  argsr = TREE_CHAIN (argsr);
+	}
+
+	switch (comp_target_parms (argsl, argsr, 1))
+	  {
+	  case 0:
+	    return 0;
+	  case -1:
+	    saw_contra = 1;
+	  }
+
+	return saw_contra ? -1 : 1;
     }
   /* for C++ */
   else if (TREE_CODE (ttr) == OFFSET_TYPE)
