@@ -530,3 +530,7 @@ extern void i386_pe_asm_file_end STDIO_PARAMS ((FILE *));
 #define SET_ASM_OP "\t.set"
 #endif
 
+#ifndef INT_ASM_OP
+#define INT_ASM_OP ".long"
+#endif
+
