@@ -50,10 +50,6 @@ namespace std {
   typedef istreambuf_iterator<wchar_t, char_traits<wchar_t> > wibuf_iterator;
 
   // moneypunct, money_get, and money_put
-
-  const money_base::pattern
-    money_base::__default_pattern = {{symbol, sign, none, value}};
-
   template class moneypunct<char, false>;
   template class moneypunct<char, true>;
   template class moneypunct_byname<char, false>;

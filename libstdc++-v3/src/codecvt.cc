@@ -31,6 +31,9 @@
 
 namespace std {
 
+  // Definitions for static const data members of __enc_traits.
+  const int __enc_traits::_S_max_size;
+
   // codecvt<char, char, mbstate_t> required specialization
   locale::id codecvt<char, char, mbstate_t>::id;
 

@@ -45,22 +45,31 @@ namespace std
   // _Count_ones: compile-time computation of number of 1-bits in a value N
   // This takes only 5 (or 6) instantiations, doing recursive descent
   // in parallel -- ncm
-  template<unsigned _Num, int _Shift = (sizeof(unsigned) * CHAR_BIT)/2,
-           unsigned _Mask = (~0u >> _Shift) >
+  template<unsigned int _Num, int _Shift = (sizeof(unsigned) * CHAR_BIT)/2,
+           unsigned int _Mask = (~0u >> _Shift) >
     struct _Count_ones;
 
-  template<unsigned _Num, unsigned _Mask>
-    struct _Count_ones<_Num,0,_Mask> 
-    { static const unsigned _S_count = _Num; };
+  template<unsigned int _Num, unsigned int _Mask>
+    struct _Count_ones<_Num, 0, _Mask> 
+    { static const unsigned int _S_count = _Num; };
 
-  template<unsigned _Num, int _Shift, unsigned _Mask>
+  template<unsigned int _Num, unsigned int _Mask>
+    const unsigned int _Count_ones<_Num, 0, _Mask>::_S_count;
+
+  template<unsigned int _Num, int _Shift, unsigned int _Mask>
     struct _Count_ones 
     {
-      static const unsigned _S_halfcount =
+      static const unsigned int _S_halfcount =
         _Count_ones<_Num, _Shift/2, (_Mask^((~_Mask)>>(_Shift/2))) >::_S_count;
-      static const unsigned _S_count
+      static const unsigned int _S_count
       = (_S_halfcount&_Mask) + ((_S_halfcount>>_Shift)&_Mask);
     };
+
+  template<unsigned int _Num, int _Shift, unsigned int _Mask>
+    const unsigned int _Count_ones<_Num, _Shift, _Mask>::_S_count;
+
+  template<unsigned int _Num, int _Shift, unsigned int _Mask>
+    const unsigned int _Count_ones<_Num, _Shift, _Mask>::_S_halfcount;
 
   // 22.1.1 Locale
   template<typename _Tp> class allocator;
