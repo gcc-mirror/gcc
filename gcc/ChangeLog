@@ -1,3 +1,20 @@
+2004-01-27  Zack Weinberg  <zack@codesourcery.com>
+
+	PR 7198
+	* config/ia64/ia64.md (*nmaddsf4, *nmadddf4, *nmadddf4_alts)
+	(*nmadddf4_trunc, *nmaddxf4, *nmaddxf4_truncsf, *nmaddxf4_truncdf)
+	(*nmaddxf4_alts, *nmaddxf4_truncdf_alts):
+	Rewrite pattern as (minus (op 3) (mult (op 1) (op 2))).
+	Possibly rename pattern for consistency.
+	Remove ??? comments suggesting that this be done.
+	(*nmaddsf4_alts, *nmadddf4_truncsf_alts, *nmaddxf4_truncsf_alts):
+	New patterns.
+	(divsi3_internal, divdi3_internal_lat, divdi3_internal_thr)
+	(divsf3_internal_lat, divsf3_internal_thr, sqrtsf2_internal_thr)
+	(divdf3_internal_lat, divdf3_internal_thr, sqrtdf2_internal_thr)
+	(divxf3_internal_lat, divxf3_internal_thr, sqrtxf2_internal_thr):
+	Update to match.
+
 2004-01-27  Ian Lance Taylor  <ian@wasabisystems.com>
 
 	* config/arm/arm.c (output_return_instruction): Only restore IP
@@ -39,7 +56,7 @@
 	* common.opt: Add entry for -fbtr-bb-exclusive.
 	* opts.c (common_handle_options): Same.
 	* doc/invoke.texi: Document -fbtr-bb-exclusive.
-   
+
 	* bt-load.c (btrs_live_at_end): New variable.
 	(compute_defs_uses_and_gen): Compute its pointed-to array.
 	(clear_btr_from_live_range, add_btr_to_live_range): Update it.
@@ -50,7 +67,7 @@
 	(move_btr_def): Set other_btr_uses_before_def, and move new set
 	to the end of the basic block, if appropriate.
 	(migrate_btr_defs): Allocate and free btrs_live_at_end.
-   
+
 	* bt-load.c (basic_block_freq): Remove outdated comment.
 
 2004-01-27  Alan Modra  <amodra@bigpond.net.au>
@@ -126,20 +143,20 @@
 
 2004-01-26  Fariborz Jahanian <fjahanian@apple.com>
 
-         * config/rs6000/rs6000.c (rs6000_emit_move): split slow
-         unaligned load/store into smaller loads and stores.
+	 * config/rs6000/rs6000.c (rs6000_emit_move): split slow
+	 unaligned load/store into smaller loads and stores.
 
 2004-01-26  Fariborz Jahanian <fjahanian@apple.com>
 
-        * function.c (assign_parms): Do not assign
-        long long argument to memory in prologue if
-        is it loaded into register.
+	* function.c (assign_parms): Do not assign
+	long long argument to memory in prologue if
+	is it loaded into register.
 
 2004-01-26  Fariborz Jahanian <fjahanian@apple.com>
 
 	 PR middle-end/13779
-         * expr.c (emit_group_load): split constant
-         correctly into register components of PARALLEL insn.
+	 * expr.c (emit_group_load): split constant
+	 correctly into register components of PARALLEL insn.
 
 2004-01-26  Fariborz Jahanian <fjahanian@apple.com>
 
@@ -241,7 +258,7 @@
 
 	* config/c4x/c4x.h (BCT_CHECK_LOOP_ITERATIONS): Remove.
 	(HAVE_GAS_HIDDEN): Undefine as interim measure.
-	
+
 2004-01-26  Michael Hayes  <m.hayes@elec.canterbury.ac.nz>
 
 	* config/c4x/c4x.c (c4x_legitimate_address_p):  Invalidate direct
@@ -250,7 +267,7 @@
 2004-01-26  Michael Hayes  <m.hayes@elec.canterbury.ac.nz>
 
 	* config/c4x/c4x.c (legitimize_operands): Truncate invalid shift counts.
-	
+
 2004-01-26  Michael Hayes  <m.hayes@elec.canterbury.ac.nz>
 
 	* config/c4x/c4x.c (c4x_valid_operands): More aggressively reject
@@ -263,7 +280,7 @@
 
 	* config/c4x/c4x-protos.h (c4x_check_legit_addr): Adjust.
 	* config/c4x/c4x.h (c4x_check_legit_addr): Adjust.
-	
+
 2004-01-25  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* config/pa/pa-protos.h: Remove the prototype for
@@ -293,9 +310,9 @@
 	(PROMOTE_PROTOTYPES): Remove.
 
 2004-01-26  Michael Hayes  <m.hayes@elec.canterbury.ac.nz>
-	
-        * config/c4x/c4x.h (LEGITIMIZE_RELOAD_ADDRESS):  Handle symref.
- 
+
+	* config/c4x/c4x.h (LEGITIMIZE_RELOAD_ADDRESS):  Handle symref.
+
 2003-04-25  Chris Demetriou  <cgd@broadcom.com>
 
 	* config/mips/mips.h (ISA_HAS_HILO_INTERLOCKS): MIPS32, MIPS32r2,
@@ -580,10 +597,10 @@
 
 2004-01-23  Richard Henderson  <rth@redhat.com>
 
-        PR opt/12941
-        * combine.c (SHIFT_COUNT_TRUNCATED): Provide default value.
-        (simplify_comparison): Don't simplify (eq (zero_extract c 1 r) 0)
-        if SHIFT_COUNT_TRUNCATED is set.
+	PR opt/12941
+	* combine.c (SHIFT_COUNT_TRUNCATED): Provide default value.
+	(simplify_comparison): Don't simplify (eq (zero_extract c 1 r) 0)
+	if SHIFT_COUNT_TRUNCATED is set.
 
 2004-01-23  Bob Wilson  <bob.wilson@acm.org>
 
