@@ -424,6 +424,13 @@ dbxout_init (asm_file, input_file_name, syms)
   ASM_OUTPUT_INTERNAL_LABEL (asmfile, "Ltext", 0);
 #endif /* no DBX_OUTPUT_MAIN_SOURCE_FILENAME */
 
+  /* Possibly output something to inform GDB that this compilation was by
+     GCC.  It's easier for GDB to parse it when after the N_SO's.  This
+     is used in Solaris 2.  */
+#ifdef ASM_IDENTIFY_GCC_AFTER_SOURCE
+  ASM_IDENTIFY_GCC_AFTER_SOURCE (asmfile);
+#endif
+
   lastfile = input_file_name;
 
   next_type_number = 1;
@@ -2165,6 +2172,10 @@ dbxout_block (block, depth, args)
 #else
 	      fprintf (asmfile, "%s %d,0,0,", ASM_STABN_OP, N_LBRAC);
 	      assemble_name (asmfile, buf);
+#if DBX_BLOCKS_FUNCTION_RELATIVE
+	      fputc ('-', asmfile);
+	      assemble_name (asmfile, IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (current_function_decl)));
+#endif
 	      fprintf (asmfile, "\n");
 #endif
 	    }
@@ -2194,6 +2205,10 @@ dbxout_block (block, depth, args)
 #else
 	      fprintf (asmfile, "%s %d,0,0,", ASM_STABN_OP, N_RBRAC);
 	      assemble_name (asmfile, buf);
+#if DBX_BLOCKS_FUNCTION_RELATIVE
+	      fputc ('-', asmfile);
+	      assemble_name (asmfile, IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (current_function_decl)));
+#endif
 	      fprintf (asmfile, "\n");
 #endif
 	    }
