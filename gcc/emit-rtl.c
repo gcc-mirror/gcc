@@ -99,6 +99,8 @@ rtx global_rtl[GR_MAX];
    at the beginning of each function.  */
 static GTY(()) rtx static_regno_reg_rtx[FIRST_PSEUDO_REGISTER];
 
+rtx (*gen_lowpart) (enum machine_mode mode, rtx x) = gen_lowpart_general;
+
 /* We record floating-point CONST_DOUBLEs in each floating-point mode for
    the values of 0, 1, and 2.  For the integer entries and VOIDmode, we
    record a copy of const[012]_rtx.  */
@@ -1207,7 +1209,7 @@ subreg_realpart_p (rtx x)
    If X is a MEM whose address is a QUEUED, the value may be so also.  */
 
 rtx
-gen_lowpart (enum machine_mode mode, rtx x)
+gen_lowpart_general (enum machine_mode mode, rtx x)
 {
   rtx result = gen_lowpart_common (mode, x);
 
