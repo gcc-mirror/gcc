@@ -39,6 +39,7 @@ Wed Sep 22 06:06:57 1999  Jeffrey A Law  (law@cygnus.com)
 
 	* pa.md (subsi3): Turn into an expander.  Create two anonymous
 	patterns.  One for PA2.0 one for PA1.x.  Use mtsarcm for PA2.0.
+	* pa.h (EXTRA_CONSTRAINT): Handle 'S'.
 
 	* pa.md (floatunssisf2, floatunssidf2): Generate different RTL
 	for TARGET_PA_20.
