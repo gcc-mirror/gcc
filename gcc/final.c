@@ -1437,7 +1437,7 @@ profile_function (FILE *file ATTRIBUTE_UNUSED)
   function_section (current_function_decl);
 
 #if defined(ASM_OUTPUT_REG_PUSH)
-  if (sval && GET_CODE (svrtx) == REG)
+  if (sval && svrtx != NULL_RTX && GET_CODE (svrtx) == REG)
     ASM_OUTPUT_REG_PUSH (file, REGNO (svrtx));
 #endif
 
@@ -1468,7 +1468,7 @@ profile_function (FILE *file ATTRIBUTE_UNUSED)
 #endif
 
 #if defined(ASM_OUTPUT_REG_PUSH)
-  if (sval && GET_CODE (svrtx) == REG)
+  if (sval && svrtx != NULL_RTX && GET_CODE (svrtx) == REG)
     ASM_OUTPUT_REG_POP (file, REGNO (svrtx));
 #endif
 }
