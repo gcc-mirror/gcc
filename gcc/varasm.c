@@ -212,7 +212,7 @@ strip_reg_name (name)
 
 /* Decode an `asm' spec for a declaration as a register name.
    Return the register number, or -1 if nothing specified,
-   or -2 if the ASMSPEC is not `cc' and is recognized,
+   or -2 if the ASMSPEC is not `cc' and is not recognized,
    or -3 if ASMSPEC is `cc' and is not recognized.
    Accept an exact spelling or a decimal number.
    Prefixes such as % are optional.  */
