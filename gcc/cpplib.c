@@ -1879,7 +1879,7 @@ _cpp_init_stacks (pfile)
   obstack_init (pfile->buffer_ob);
 
   /* Register the directives.  */
-  for (i = 0; i < N_DIRECTIVES; i++)
+  for (i = 0; i < (unsigned int) N_DIRECTIVES; i++)
     {
       node = cpp_lookup (pfile, dtable[i].name, dtable[i].length);
       node->directive_index = i + 1;

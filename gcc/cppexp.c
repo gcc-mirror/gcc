@@ -477,7 +477,8 @@ lex (pfile, skip_evaluation, token)
       /* Fall through.  */
 
     default:
-      if ((token->type > CPP_EQ && token->type < CPP_PLUS_EQ)
+      if (((int) token->type > (int) CPP_EQ
+	   && (int) token->type < (int) CPP_PLUS_EQ)
 	  || token->type == CPP_EOF)
 	{
 	  op.op = token->type;

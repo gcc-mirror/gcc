@@ -1,3 +1,13 @@
+2001-03-01  John David Anglin  <dave@hiauly1.hia.nrc.ca>
+
+	* cpplib.c (_cpp_init_stacks): Cast enum for comparison.
+	* cppexp.c (lex): Cast enums for comparison.
+	* cppinit.c (parse_option): Cast enum for comparison.
+	* cpplex.c (cpp_spell_token): Cast enums to int for minus.
+	(cpp_output_token): Likewise.
+	(cpp_can_paste): Cast enums for comparsion and plus/minus.
+	(cpp_avoid_paste): Cast enums for minus and comparison.
+
 2001-03-01  Zack Weinberg  <zackw@stanford.edu>
 
 	* gcc.c, objc/lang-specs.h: Add zero initializer for cpp_spec
