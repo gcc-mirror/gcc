@@ -1,3 +1,13 @@
+2000-03-27  Alan Modra  <alan@linuxcare.com.au>
+
+	* config/i386/i386.c (output_387_binary_op): Correct intel
+	mode assembly output, and add spaces after commas in AT&T
+	output.  Correct Unixware assembler comment.  Document input
+	constraints.  Comment fp operations.  Reduce profligate buffer
+	size.  Remove extraneous abort.  Localize temp var.
+	(SYSV386_COMPAT): Define.  Add !SYSV386_COMPAT code.
+	(output_fix_trunc): Add spaces after commas in assembly output.
+
 2000-03-27  Richard Henderson  <rth@cygnus.com>
 
 	* i386-protos.h (ix86_match_ccmode): Declare.
@@ -575,8 +585,8 @@ Thu Mar 23 11:34:39 2000  Jim Wilson  <wilson@cygnus.com>
 
 Thu Mar 23 16:04:40 2000  Andrew Haley  <aph@cygnus.com>
 
-        * config/mips/mips.md (movdf_internal1a): Delete (set 'f', 'F')
-        alternative when using -fp64 -gp32.
+	* config/mips/mips.md (movdf_internal1a): Delete (set 'f', 'F')
+	alternative when using -fp64 -gp32.
 
 2000-03-22  Jason Merrill  <jason@casey.cygnus.com>
 
@@ -594,7 +604,7 @@ Thu Mar 23 16:04:40 2000  Andrew Haley  <aph@cygnus.com>
 
 2000-03-22  Theodore Papadopoulo <Theodore.Papadopoulo@sophia.inria.fr>
 
-        * builtin.c (get_pointer_alignment): Use DECL_P and TYPE_P macros.
+	* builtin.c (get_pointer_alignment): Use DECL_P and TYPE_P macros.
 	* c-common.c (decl_attributes,check_format_info,truthvalue_conversion,
 	  c_get_alias_set): Likewise.
 	* c-decl.c (duplicate_decls): Likewise.
@@ -679,7 +689,7 @@ Wed Mar 22 11:44:50 MET 2000  Jan Hubicka  <jh@suse.cz>
 
 2000-03-21  Richard Henderson  <rth@cygnus.com>
 
-        * flow.c (delete_block): Fix typo last change.
+	* flow.c (delete_block): Fix typo last change.
 
 2000-03-21  Mark Mitchell  <mark@codesourcery.com>
 
