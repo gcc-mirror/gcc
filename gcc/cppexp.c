@@ -73,6 +73,8 @@ Written by Per Bothner 1994.  */
    number with SUM's sign, where A, B, and SUM are all C integers.  */
 #define possible_sum_sign(a, b, sum) ((((a) ^ (b)) | ~ ((a) ^ (sum))) < 0)
 
+typedef short op_t;
+
 static void integer_overflow PARAMS ((cpp_reader *));
 static HOST_WIDEST_INT left_shift PARAMS ((cpp_reader *, HOST_WIDEST_INT,
 					   unsigned int,
@@ -88,7 +90,7 @@ static struct operation parse_defined PARAMS ((cpp_reader *));
 static HOST_WIDEST_INT parse_escape PARAMS ((cpp_reader *, U_CHAR **,
 					     HOST_WIDEST_INT));
 static struct operation lex PARAMS ((cpp_reader *, int));
-
+static const char * op_to_str PARAMS ((op_t));
 
 #define ERROR 299
 #define OROR 300
@@ -106,7 +108,7 @@ static struct operation lex PARAMS ((cpp_reader *, int));
 
 struct operation
 {
-  short op;
+  op_t op;
   U_CHAR prio;         /* Priority of op.  */
   U_CHAR flags;
   U_CHAR unsignedp;    /* True if value should be treated as unsigned.  */
@@ -379,13 +381,14 @@ parse_defined (pfile)
   return op;
 }
 
-
-struct token {
+struct token
+{
   const char *operator;
-  int token;
+  op_t token;
 };
 
-static const struct token tokentab2[] = {
+static const struct token tokentab2[] =
+{
   {"&&", ANDAND},
   {"||", OROR},
   {"<<", LSH},
@@ -476,6 +479,25 @@ lex (pfile, skip_evaluation)
   }
 }
 
+/* Convert an operator ID to a string.  */
+static const char *
+op_to_str (op)
+     op_t op;
+{
+  static char str[5];		/* XXX static variable.  */
+  const struct token *toktab;
+
+  /* See if it is a special token of length 2.  */
+  for (toktab = tokentab2; toktab->operator != NULL; toktab++)
+    if (op == toktab->token)
+      return toktab->operator;
+
+  if (ISGRAPH (op))
+    sprintf (str, "%c", (int) op);
+  else
+    sprintf (str, "\\%03o", (int) op);
+  return str;
+}
 
 /* Parse a C escape sequence.  STRING_PTR points to a variable
    containing a pointer to the string to parse.  That pointer
@@ -830,7 +852,8 @@ _cpp_parse_expr (pfile)
 	      if (top->op == '(')
 		cpp_error (pfile, "void expression between '(' and ')'");
 	      else
-		cpp_error (pfile, "operator has no right operand");
+		cpp_error (pfile, "operator `%s' has no right operand",
+			   op_to_str (top->op));
 	      goto syntax_error;
 	    }
 
@@ -993,11 +1016,8 @@ _cpp_parse_expr (pfile)
 	      op.unsignedp = unsigned2;
 	      goto push_immediate;
 	    default:
-	      if (ISGRAPH (top[1].op))
-		cpp_error (pfile, "unimplemented operator '%c'", top[1].op);
-	      else
-		cpp_error (pfile, "unimplemented operator '\\%03o'",
-			   top[1].op);
+	      cpp_error (pfile, "unimplemented operator `%s'",
+			 op_to_str (top[1].op));
 	      break;
 	    case FINISHED:
 	      /* Reducing this dummy operator indicates we've finished.  */
@@ -1029,9 +1049,11 @@ _cpp_parse_expr (pfile)
       if (((flags & NO_L_OPERAND) != 0) ^ ((top->flags & HAVE_VALUE) == 0))
 	{
 	  if (flags & NO_L_OPERAND)
-	    cpp_error (pfile, "missing binary operator");
+	    cpp_error (pfile, "missing binary operator before `%s'",
+		       op_to_str (op.op));
 	  else
-	    cpp_error (pfile, "operator has no left operand");
+	    cpp_error (pfile, "operator `%s' has no left operand",
+		       op_to_str (op.op));
 	  goto syntax_error;
 	}
 

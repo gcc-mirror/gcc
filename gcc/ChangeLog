@@ -1,3 +1,10 @@
+2000-04-02  Neil Booth <NeilB@earthling.net>
+
+	* cppexp.c:  New typedef op_t.  struct operation and struct 
+	token updated to use it.
+	(op_to_str): New function.
+	(_cpp_parse_expr): Error messages modified to use op_to_str.
+
 2000-04-02  Michael Hayes  <m.hayes@elec.canterbury.ac.nz>
 
 	* config/c4x/c4x.c (c4x_function_arg): Check for void_type_node
