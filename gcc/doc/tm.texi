@@ -8813,29 +8813,54 @@ conditional execution instructions instead of a branch.  A value of
 1 if it does use cc0.
 
 @findex IFCVT_MODIFY_TESTS
-@item IFCVT_MODIFY_TESTS
-A C expression to modify the tests in @code{TRUE_EXPR}, and
-@code{FALSE_EXPR} for use in converting insns in @code{TEST_BB},
-@code{THEN_BB}, @code{ELSE_BB}, and @code{JOIN_BB} basic blocks to
-conditional execution.  Set either @code{TRUE_EXPR} or @code{FALSE_EXPR}
-to a null pointer if the tests cannot be converted.
+@item IFCVT_MODIFY_TESTS(@var{ce_info}, @var{true_expr}, @var{false_expr})
+Used if the target needs to perform machine-dependent modifications on the
+conditionals used for turning basic blocks into conditionally executed code.
+@var{ce_info} points to a data structure, @code{struct ce_if_block}, which
+contains information about the currently processed blocks.  @var{true_expr}
+and @var{false_expr} are the tests that are used for converting the
+then-block and the else-block, respectively.  Set either @var{true_expr} or
+@var{false_expr} to a null pointer if the tests cannot be converted.
+
+@findex IFCVT_MODIFY_MULTIPLE_TESTS
+@item IFCVT_MODIFY_MULTIPLE_TESTS(@var{ce_info}, @var{bb}, @var{true_expr}, @var{false_expr})
+Like @code{IFCVT_MODIFY_TESTS}, but used when converting more complicated
+if-statements into conditions combined by @code{and} and @code{or} operations.
+@var{bb} contains the basic block that contains the test that is currently
+being processed and about to be turned into a condition.
 
 @findex IFCVT_MODIFY_INSN
-@item IFCVT_MODIFY_INSN
-A C expression to modify the @code{PATTERN} of an @code{INSN} that is to
-be converted to conditional execution format.
+@item IFCVT_MODIFY_INSN(@var{ce_info}, @var{pattern}, @var{insn})
+A C expression to modify the @var{PATTERN} of an @var{INSN} that is to
+be converted to conditional execution format.  @var{ce_info} points to
+a data structure, @code{struct ce_if_block}, which contains information
+about the currently processed blocks.
 
 @findex IFCVT_MODIFY_FINAL
-@item IFCVT_MODIFY_FINAL
+@item IFCVT_MODIFY_FINAL(@var{ce_info})
 A C expression to perform any final machine dependent modifications in
-converting code to conditional execution in the basic blocks
-@code{TEST_BB}, @code{THEN_BB}, @code{ELSE_BB}, and @code{JOIN_BB}.
+converting code to conditional execution.  The involved basic blocks
+can be found in the @code{struct ce_if_block} structure that is pointed
+to by @var{ce_info}.
 
 @findex IFCVT_MODIFY_CANCEL
-@item IFCVT_MODIFY_CANCEL
+@item IFCVT_MODIFY_CANCEL(@var{ce_info})
 A C expression to cancel any machine dependent modifications in
-converting code to conditional execution in the basic blocks
-@code{TEST_BB}, @code{THEN_BB}, @code{ELSE_BB}, and @code{JOIN_BB}.
+converting code to conditional execution.  The involved basic blocks
+can be found in the @code{struct ce_if_block} structure that is pointed
+to by @var{ce_info}.
+
+@findex IFCVT_INIT_EXTRA_FIELDS
+@item IFCVT_INIT_EXTRA_FIELDS(@var{ce_info})
+A C expression to initialize any extra fields in a @code{struct ce_if_block}
+structure, which are defined by the @code{IFCVT_EXTRA_FIELDS} macro.
+
+@findex IFCVT_EXTRA_FIELDS
+@item IFCVT_EXTRA_FIELDS
+If defined, it should expand to a set of field declarations that will be
+added to the @code{struct ce_if_block} structure.  These should be intialized
+by the @code{IFCVT_INIT_EXTRA_FIELDS} macro.
+
 @end table
 
 @deftypefn {Target Hook} void TARGET_INIT_BUILTINS ()

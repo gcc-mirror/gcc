@@ -523,6 +523,33 @@ struct loops
   sbitmap shared_headers;
 };
 
+/* Structure to group all of the information to process IF-THEN and
+   IF-THEN-ELSE blocks for the conditional execution support.  This
+   needs to be in a public file in case the IFCVT macros call
+   functions passing the ce_if_block data structure.  */
+
+typedef struct ce_if_block
+{
+  basic_block test_bb;			/* First test block.  */
+  basic_block then_bb;			/* THEN block.  */
+  basic_block else_bb;			/* ELSE block or NULL.  */
+  basic_block join_bb;			/* Join THEN/ELSE blocks.  */
+  basic_block last_test_bb;		/* Last bb to hold && or || tests.  */
+  int num_multiple_test_blocks;		/* # of && and || basic blocks.  */
+  int num_and_and_blocks;		/* # of && blocks.  */
+  int num_or_or_blocks;			/* # of || blocks.  */
+  int num_multiple_test_insns;		/* # of insns in && and || blocks.  */
+  int and_and_p;			/* Complex test is &&.  */
+  int num_then_insns;			/* # of insns in THEN block.  */
+  int num_else_insns;			/* # of insns in ELSE block.  */
+  int pass;				/* Pass number.  */
+
+#ifdef IFCVT_EXTRA_FIELDS
+  IFCVT_EXTRA_FIELDS			/* Any machine dependent fields.  */
+#endif
+
+} ce_if_block_t;
+
 extern int flow_loops_find PARAMS ((struct loops *, int flags));
 extern int flow_loops_update PARAMS ((struct loops *, int flags));
 extern void flow_loops_free PARAMS ((struct loops *));
