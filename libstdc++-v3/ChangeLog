@@ -1,3 +1,8 @@
+2003-11-14  Paolo Carlini  <pcarlini@suse.de>
+
+	* docs/html/ext/howto.html: Add entries for DR 63, 75
+	and 305; tweak entries for DR 60 and 328.
+
 2003-11-13  Douglas Gregor  <gregod@cs.rpi.edu>
 
 	* docs/html/debug.html: Users are allowed to specialize in
