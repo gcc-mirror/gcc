@@ -1,12 +1,17 @@
+Fri Nov 19 10:41:15 GMT 1999  Nathan Sidwell  <nathan@acm.org>
+
+	* extend.texi: Document C++ restricted pointers and references.	
+
 1999-11-19  Bernd Schmidt  <bernds@cygnus.co.uk>
 
 	* cse.c (addr_affects_sp): No longer conditional on AUTO_INC_DEC.
 	(invalidate_skipped_set): Call it unconditionally.
 	(cse_set_around_loop): Likewise.
 
-Fri Nov 18 13:39:22 CET 1999  Jam Hubicka  <hubicka@freesoft.cz>
-	* i386.h (struct_processor_costs): New fileds int_load, int_store, fp_move,
-	fp_load and fp_store
+Fri Nov 18 13:39:22 CET 1999  Jan Hubicka  <hubicka@freesoft.cz>
+
+	* i386.h (struct_processor_costs): New fileds int_load, int_store,
+	fp_move, fp_load and fp_store
 	(REGISTER_MOVE_COST): Fix comment, calculate exactly the cost of
 	fp->int moves
 	(MEMORY_MOVE_COST): New macro.
