@@ -1,3 +1,10 @@
+2003-10-06  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
+
+	* fixinc/inclhack.def (stdio_va_list): Removed _ap fix.
+	(irix_stdio_va_list): Don't require leading printf, IRIX 6.5.21
+	introduced some multi-line prototypes.
+	* fixinc/fixincl.x: Regenerate.
+
 2003-10-06  Richard Sandiford  <rsandifo@redhat.com>
 
 	* config/mips/mips.h (PREDICATE_CODES): Add stack_operand.

@@ -1480,9 +1480,9 @@ fix = {
     files     = stdio.h;
     files     = internal/stdio_core.h;
 
-    select = '(printf\(.*), /\* va_list \*/ char \*';
+    select = '/\* va_list \*/ char \*';
     c_fix  = format;
-    c_fix_arg = "%1, __gnuc_va_list";
+    c_fix_arg = "__gnuc_va_list";
     test_text =
     "extern int printf( const char *, /* va_list */ char * );";
 };
@@ -2406,7 +2406,6 @@ fix = {
      */
     sed = "s@ va_list @ __gnuc_va_list @\n"
           "s@ va_list)@ __gnuc_va_list)@\n"
-    	  "s@va_list _ap;@__gnuc_va_list _ap;@\n"
 	  "s@(va_list)&@(__gnuc_va_list)\\&@\n"
           "s@ _VA_LIST_));@ __gnuc_va_list));@\n"
           "s@ __VA_LIST__));@ __gnuc_va_list));@\n"
