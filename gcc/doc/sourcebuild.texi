@@ -492,6 +492,9 @@ inclusion in GCC, should be made available on the GCC FTP site
 @item
 The release and snapshot script @file{maintainer-scripts/gcc_release}
 should be updated to generate appropriate tarballs for this front end.
+The associated @file{maintainer-scripts/snapshot-README} and
+@file{maintainer-scripts/snapshot-index.html} files should be updated
+to list the tarballs and diffs for this front end.
 @item
 If this front end includes its own version files that include the
 current date, @file{maintainer-scripts/update_version} should be
