@@ -5,6 +5,9 @@ Mon Feb 28 13:07:19 MET 2000  Jan Hubicka  <jh@suse.cz>
 
 Mon Feb 28 07:03:27 2000  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
+	* lcm.c: Minor reformatting throughout.
+	(reg_dies, reg_becomes_live): Properly handle multiple hard regs.
+	
 	* toplev.c (rest_of_compilation): Account for time in
 	optimize_mode_switching.
 
