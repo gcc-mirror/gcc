@@ -1684,11 +1684,12 @@ integrate_decl_tree (let, map)
 
   next = &BLOCK_SUBBLOCKS (new_block);
   for (t = BLOCK_SUBBLOCKS (let); t; t = BLOCK_CHAIN (t))
-    {
-      *next = integrate_decl_tree (t, map);
-      BLOCK_SUPERCONTEXT (*next) = new_block;
-      next = &BLOCK_CHAIN (*next);
-    }
+    if (!BLOCK_DEAD (t))
+      {
+	*next = integrate_decl_tree (t, map);
+	BLOCK_SUPERCONTEXT (*next) = new_block;
+	next = &BLOCK_CHAIN (*next);
+      }
 
   TREE_USED (new_block) = TREE_USED (let);
   BLOCK_ABSTRACT_ORIGIN (new_block) = let;

@@ -2881,6 +2881,7 @@ remove_unnecessary_notes ()
 
 		  if (debug_ignore_block (NOTE_BLOCK (insn)))
 		    {
+		      BLOCK_DEAD (NOTE_BLOCK (insn)) = 1;
 		      remove_insn (prev);
 		      remove_insn (insn);
 		    }
