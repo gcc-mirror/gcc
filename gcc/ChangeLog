@@ -1,3 +1,7 @@
+Sun Feb 25 08:34:23 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	* config/i386/i386.md (movstrsi): Handle FAIL case.
+
 2001-02-25  Neil Booth  <neil@daikokuya.demon.co.uk>
 
         * cppinit.c (builtin_array): Update.
