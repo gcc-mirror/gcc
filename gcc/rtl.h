@@ -672,7 +672,7 @@ extern rtx gen_rtx			PVPROTO((enum rtx_code,
 						 enum machine_mode, ...));
 extern rtvec gen_rtvec			PVPROTO((int, ...));
 
-extern rtx read_rtx			STDIO_PROTO((FILE *));
+extern rtx read_rtx			PROTO((FILE *));
 
 #if 0
 /* At present, don't prototype xrealloc, since all of the callers don't

@@ -212,7 +212,7 @@ extern int regno_clobbered_p PROTO((int, rtx));
 extern void init_reload PROTO((void));
 
 /* The reload pass itself.  */
-extern int reload STDIO_PROTO((rtx, int, FILE *));
+extern int reload PROTO((rtx, int, FILE *));
 
 /* Mark the slots in regs_ever_live for the hard regs
    used by pseudo-reg number REGNO.  */
