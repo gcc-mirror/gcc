@@ -5549,13 +5549,18 @@ output_cbranch (operands, nullify, length, negated, insn)
   int useskip = 0;
   rtx xoperands[5];
 
-  /* A conditional branch to the following instruction (eg the delay slot) is
-     asking for a disaster.  This can happen when not optimizing.
+  /* A conditional branch to the following instruction (eg the delay slot)
+     is asking for a disaster.  This can happen when not optimizing and
+     when jump optimization fails.
 
-     In such cases it is safe to emit nothing.  */
+     While it usually safe to emit nothing, this can fail if the preceding
+     instruction is a nullified branch with an empty delay slot and the
+     same branch target as this branch.  We could check for this but
+     jump optimization should eliminate these jumps.  It is always
+     safe to emit a nop.  */
 
-  if (next_active_insn (JUMP_LABEL (insn)) == next_active_insn (insn))
-    return "";
+  if (next_real_insn (JUMP_LABEL (insn)) == next_real_insn (insn))
+    return "nop";
 
   /* If this is a long branch with its delay slot unfilled, set `nullify'
      as it can nullify the delay slot and save a nop.  */
@@ -5851,8 +5856,8 @@ output_bb (operands, nullify, length, negated, insn, which)
      is only used when optimizing; jump optimization should eliminate the
      jump.  But be prepared just in case.  */
 
-  if (next_active_insn (JUMP_LABEL (insn)) == next_active_insn (insn))
-    return "";
+  if (next_real_insn (JUMP_LABEL (insn)) == next_real_insn (insn))
+    return "nop";
 
   /* If this is a long branch with its delay slot unfilled, set `nullify'
      as it can nullify the delay slot and save a nop.  */
@@ -5999,8 +6004,8 @@ output_bvb (operands, nullify, length, negated, insn, which)
      is only used when optimizing; jump optimization should eliminate the
      jump.  But be prepared just in case.  */
 
-  if (next_active_insn (JUMP_LABEL (insn)) == next_active_insn (insn))
-    return "";
+  if (next_real_insn (JUMP_LABEL (insn)) == next_real_insn (insn))
+    return "nop";
 
   /* If this is a long branch with its delay slot unfilled, set `nullify'
      as it can nullify the delay slot and save a nop.  */
@@ -6140,7 +6145,7 @@ output_dbra (operands, insn, which_alternative)
   /* A conditional branch to the following instruction (eg the delay slot) is
      asking for a disaster.  Be prepared!  */
 
-  if (next_active_insn (JUMP_LABEL (insn)) == next_active_insn (insn))
+  if (next_real_insn (JUMP_LABEL (insn)) == next_real_insn (insn))
     {
       if (which_alternative == 0)
 	return "ldo %1(%0),%0";
@@ -6247,7 +6252,7 @@ output_movb (operands, insn, which_alternative, reverse_comparison)
   /* A conditional branch to the following instruction (eg the delay slot) is
      asking for a disaster.  Be prepared!  */
 
-  if (next_active_insn (JUMP_LABEL (insn)) == next_active_insn (insn))
+  if (next_real_insn (JUMP_LABEL (insn)) == next_real_insn (insn))
     {
       if (which_alternative == 0)
 	return "copy %1,%0";
@@ -7585,9 +7590,9 @@ jump_in_call_delay (insn)
 
   if (PREV_INSN (insn)
       && PREV_INSN (PREV_INSN (insn))
-      && GET_CODE (next_active_insn (PREV_INSN (PREV_INSN (insn)))) == INSN)
+      && GET_CODE (next_real_insn (PREV_INSN (PREV_INSN (insn)))) == INSN)
     {
-      rtx test_insn = next_active_insn (PREV_INSN (PREV_INSN (insn)));
+      rtx test_insn = next_real_insn (PREV_INSN (PREV_INSN (insn)));
 
       return (GET_CODE (PATTERN (test_insn)) == SEQUENCE
 	      && XVECEXP (PATTERN (test_insn), 0, 1) == insn);
