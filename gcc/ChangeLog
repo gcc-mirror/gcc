@@ -1,3 +1,9 @@
+2002-04-17  Aldy Hernandez  <aldyh@redhat.com>
+
+        * config/rs6000/altivec.h (vec_ld): Add array variants.
+        (vec_lde): Same.
+        (vec_ldl): Same.
+
 2002-04-17  Alan Matsuoka  <alanm@redhat.com>
             Aldy Hernandez <aldyh@redhat.com>
 
