@@ -4952,7 +4952,7 @@ process_init_constructor (type, init, elts, constant_value, constant_element,
 
   if (elts)
     {
-      if (extra_warnings)
+      if (warn_missing_braces)
 	warning ("aggregate has a partly bracketed initializer");
       tail = *elts;
     }
