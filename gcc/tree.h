@@ -1,5 +1,5 @@
 /* Front-end tree definitions for GNU compiler.
-   Copyright (C) 1989, 93, 94, 95, 96, 97, 1998 Free Software Foundation, Inc.
+   Copyright (C) 1989, 93-98, 1999 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -1930,6 +1930,7 @@ extern int expand_exit_something		PROTO((void));
 
 extern void expand_null_return			PROTO((void));
 extern void expand_return			PROTO((tree));
+extern void optimize_tail_recursion		PROTO((tree, struct rtx_def *));
 extern void expand_start_bindings		PROTO((int));
 extern void expand_end_bindings			PROTO((tree, int, int));
 extern void start_cleanup_deferral		PROTO((void));
