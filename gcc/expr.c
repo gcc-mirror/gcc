@@ -6656,21 +6656,7 @@ expand_expr (exp, target, tmode, modifier)
 	 but the type is complete now, lay out the decl now.  */
       if (DECL_SIZE (exp) == 0 && COMPLETE_TYPE_P (TREE_TYPE (exp))
 	  && (TREE_STATIC (exp) || DECL_EXTERNAL (exp)))
-	{
-	  rtx value = DECL_RTL_IF_SET (exp);
-
-	  layout_decl (exp, 0);
-
-	  /* If the RTL was already set, update its mode and memory
-	     attributes.  */
-	  if (value != 0)
-	    {
-	      PUT_MODE (value, DECL_MODE (exp));
-	      SET_DECL_RTL (exp, 0);
-	      set_mem_attributes (value, exp, 1);
-	      SET_DECL_RTL (exp, value);
-	    }
-	}
+	layout_decl (exp, 0);
 
       /* ... fall through ...  */
 

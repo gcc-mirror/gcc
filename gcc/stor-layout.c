@@ -366,12 +366,15 @@ layout_decl (decl, known_align)
 {
   tree type = TREE_TYPE (decl);
   enum tree_code code = TREE_CODE (decl);
+  rtx rtl = NULL_RTX;
 
   if (code == CONST_DECL)
     return;
   else if (code != VAR_DECL && code != PARM_DECL && code != RESULT_DECL
 	   && code != TYPE_DECL && code != FIELD_DECL)
     abort ();
+
+  rtl = DECL_RTL_IF_SET (decl);
 
   if (type == error_mark_node)
     type = void_type_node;
@@ -486,6 +489,15 @@ layout_decl (decl, known_align)
 	    warning_with_decl (decl, "size of `%s' is larger than %d bytes",
 			       larger_than_size);
 	}
+    }
+
+  /* If the RTL was already set, update its mode and mem attributes.  */
+  if (rtl)
+    {
+      PUT_MODE (rtl, DECL_MODE (decl));
+      SET_DECL_RTL (decl, 0);
+      set_mem_attributes (rtl, decl, 1);
+      SET_DECL_RTL (decl, rtl);
     }
 }
 
