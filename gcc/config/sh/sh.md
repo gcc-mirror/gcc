@@ -1160,7 +1160,7 @@
 		 (zero_extend:SI
 		  (match_operand:HI 1 "arith_reg_operand" "r"))))]
   ""
-  "mulu	%1,%0"
+  "mulu.w	%1,%0"
   [(set_attr "type" "smpy")])
 
 (define_insn "mulhisi3_i"
@@ -1170,7 +1170,7 @@
 		 (sign_extend:SI
 		  (match_operand:HI 1 "arith_reg_operand" "r"))))]
   ""
-  "muls	%1,%0"
+  "muls.w	%1,%0"
   [(set_attr "type" "smpy")])
 
 (define_expand "mulhisi3"

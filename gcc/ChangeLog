@@ -1,3 +1,8 @@
+2001-03-10  Toshiyasu Morita  <toshiyasu.morita@hsa.hitachi.com>
+
+	* config/sh/sh.md (umulhisi3_i, mulhisi3_i): Fix mnemonics. 
+	* config/sh/lib1funcs.asm (mulsi3): Convert mulu to mulu.w.
+
 Sat Mar 10 22:42:05 2001  Alexandre Oliva  <aoliva@redhat.com>
 
 	* tree.c (build_common_tree_nodes_2): Don't copy va_list_type_node
