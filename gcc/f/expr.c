@@ -45,6 +45,7 @@ the Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include "src.h"
 #include "st.h"
 #include "symbol.h"
+#include "str.h"
 #include "target.h"
 #include "where.h"
 
@@ -52,26 +53,6 @@ the Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 
 
 /* Simple definitions and enumerations. */
-
-typedef enum
-  {
-    FFEEXPR_dotdotNONE_,
-    FFEEXPR_dotdotTRUE_,
-    FFEEXPR_dotdotFALSE_,
-    FFEEXPR_dotdotNOT_,
-    FFEEXPR_dotdotAND_,
-    FFEEXPR_dotdotOR_,
-    FFEEXPR_dotdotXOR_,
-    FFEEXPR_dotdotEQV_,
-    FFEEXPR_dotdotNEQV_,
-    FFEEXPR_dotdotLT_,
-    FFEEXPR_dotdotLE_,
-    FFEEXPR_dotdotEQ_,
-    FFEEXPR_dotdotNE_,
-    FFEEXPR_dotdotGT_,
-    FFEEXPR_dotdotGE_,
-    FFEEXPR_dotdot
-  } ffeexprDotdot_;
 
 typedef enum
   {
@@ -242,7 +223,7 @@ struct _ffeexpr_find_
 
 static ffeexprStack_ ffeexpr_stack_;	/* Expression stack for semantic. */
 static ffelexToken ffeexpr_tokens_[10];	/* Scratchpad tokens for syntactic. */
-static ffeexprDotdot_ ffeexpr_current_dotdot_;	/* Current .FOO. keyword. */
+static ffestrOther ffeexpr_current_dotdot_;	/* Current .FOO. keyword. */
 static long ffeexpr_hollerith_count_;	/* ffeexpr_token_number_ and caller. */
 static int ffeexpr_level_;	/* Level of DATA implied-DO construct. */
 static bool ffeexpr_is_substr_ok_;	/* If OPEN_PAREN as binary "op" ok. */
@@ -286,7 +267,6 @@ static void ffeexpr_check_impdo_ (ffebld list, ffelexToken list_t,
 static void ffeexpr_update_impdo_ (ffebld expr, ffebld dovar);
 static void ffeexpr_update_impdo_sym_ (ffebld expr, ffesymbol dovar);
 static ffeexprContext ffeexpr_context_outer_ (ffeexprStack_ s);
-static ffeexprDotdot_ ffeexpr_dotdot_ (ffelexToken t);
 static ffeexprExpr_ ffeexpr_expr_new_ (void);
 static void ffeexpr_fulfill_call_ (ffebld *expr, ffelexToken t);
 static bool ffeexpr_isdigits_ (char *p);
@@ -8530,124 +8510,6 @@ ffeexpr_context_outer_ (ffeexprStack_ s)
     }
 }
 
-/* ffeexpr_dotdot_ -- Look up name in list of .FOO. possibilities
-
-   ffeexprDotdot_ d;
-   ffelexToken t;
-   d = ffeexpr_dotdot_(t);
-
-   Returns the identifier for the name, or the NONE identifier.	 */
-
-static ffeexprDotdot_
-ffeexpr_dotdot_ (ffelexToken t)
-{
-  char *p;
-
-  switch (ffelex_token_length (t))
-    {
-    case 2:
-      switch (*(p = ffelex_token_text (t)))
-	{
-	case FFESRC_CASE_MATCH_INIT ('E', 'e', match_2e, no_match_2):
-	  if (ffesrc_char_match_noninit (*++p, 'Q', 'q'))
-	    return FFEEXPR_dotdotEQ_;
-	  return FFEEXPR_dotdotNONE_;
-
-	case FFESRC_CASE_MATCH_INIT ('G', 'g', match_2g, no_match_2):
-	  if (ffesrc_char_match_noninit (*++p, 'E', 'e'))
-	    return FFEEXPR_dotdotGE_;
-	  if (ffesrc_char_match_noninit (*p, 'T', 't'))
-	    return FFEEXPR_dotdotGT_;
-	  return FFEEXPR_dotdotNONE_;
-
-	case FFESRC_CASE_MATCH_INIT ('L', 'l', match_2l, no_match_2):
-	  if (ffesrc_char_match_noninit (*++p, 'E', 'e'))
-	    return FFEEXPR_dotdotLE_;
-	  if (ffesrc_char_match_noninit (*p, 'T', 't'))
-	    return FFEEXPR_dotdotLT_;
-	  return FFEEXPR_dotdotNONE_;
-
-	case FFESRC_CASE_MATCH_INIT ('N', 'n', match_2n, no_match_2):
-	  if (ffesrc_char_match_noninit (*++p, 'E', 'e'))
-	    return FFEEXPR_dotdotNE_;
-	  return FFEEXPR_dotdotNONE_;
-
-	case FFESRC_CASE_MATCH_INIT ('O', 'o', match_2o, no_match_2):
-	  if (ffesrc_char_match_noninit (*++p, 'R', 'r'))
-	    return FFEEXPR_dotdotOR_;
-	  return FFEEXPR_dotdotNONE_;
-
-	default:
-	no_match_2:		/* :::::::::::::::::::: */
-	  return FFEEXPR_dotdotNONE_;
-	}
-
-    case 3:
-      switch (*(p = ffelex_token_text (t)))
-	{
-	case FFESRC_CASE_MATCH_INIT ('A', 'a', match_3a, no_match_3):
-	  if ((ffesrc_char_match_noninit (*++p, 'N', 'n'))
-	      && (ffesrc_char_match_noninit (*++p, 'D', 'd')))
-	    return FFEEXPR_dotdotAND_;
-	  return FFEEXPR_dotdotNONE_;
-
-	case FFESRC_CASE_MATCH_INIT ('E', 'e', match_3e, no_match_3):
-	  if ((ffesrc_char_match_noninit (*++p, 'Q', 'q'))
-	      && (ffesrc_char_match_noninit (*++p, 'V', 'v')))
-	    return FFEEXPR_dotdotEQV_;
-	  return FFEEXPR_dotdotNONE_;
-
-	case FFESRC_CASE_MATCH_INIT ('N', 'n', match_3n, no_match_3):
-	  if ((ffesrc_char_match_noninit (*++p, 'O', 'o'))
-	      && (ffesrc_char_match_noninit (*++p, 'T', 't')))
-	    return FFEEXPR_dotdotNOT_;
-	  return FFEEXPR_dotdotNONE_;
-
-	case FFESRC_CASE_MATCH_INIT ('X', 'x', match_3x, no_match_3):
-	  if ((ffesrc_char_match_noninit (*++p, 'O', 'o'))
-	      && (ffesrc_char_match_noninit (*++p, 'R', 'r')))
-	    return FFEEXPR_dotdotXOR_;
-	  return FFEEXPR_dotdotNONE_;
-
-	default:
-	no_match_3:		/* :::::::::::::::::::: */
-	  return FFEEXPR_dotdotNONE_;
-	}
-
-    case 4:
-      switch (*(p = ffelex_token_text (t)))
-	{
-	case FFESRC_CASE_MATCH_INIT ('N', 'n', match_4n, no_match_4):
-	  if ((ffesrc_char_match_noninit (*++p, 'E', 'e'))
-	      && (ffesrc_char_match_noninit (*++p, 'Q', 'q'))
-	      && (ffesrc_char_match_noninit (*++p, 'V', 'v')))
-	    return FFEEXPR_dotdotNEQV_;
-	  return FFEEXPR_dotdotNONE_;
-
-	case FFESRC_CASE_MATCH_INIT ('T', 't', match_4t, no_match_4):
-	  if ((ffesrc_char_match_noninit (*++p, 'R', 'r'))
-	      && (ffesrc_char_match_noninit (*++p, 'U', 'u'))
-	      && (ffesrc_char_match_noninit (*++p, 'E', 'e')))
-	    return FFEEXPR_dotdotTRUE_;
-	  return FFEEXPR_dotdotNONE_;
-
-	default:
-	no_match_4:		/* :::::::::::::::::::: */
-	  return FFEEXPR_dotdotNONE_;
-	}
-
-    case 5:
-      if (ffesrc_strcmp_2c (ffe_case_match (), ffelex_token_text (t), "FALSE",
-			    "false", "False")
-	  == 0)
-	return FFEEXPR_dotdotFALSE_;
-      return FFEEXPR_dotdotNONE_;
-
-    default:
-      return FFEEXPR_dotdotNONE_;
-    }
-}
-
 /* ffeexpr_percent_ -- Look up name in list of %FOO possibilities
 
    ffeexprPercent_ p;
@@ -11674,15 +11536,15 @@ ffeexpr_nil_period_ (ffelexToken t)
     {
     case FFELEX_typeNAME:
     case FFELEX_typeNAMES:
-      ffeexpr_current_dotdot_ = ffeexpr_dotdot_ (t);
+      ffeexpr_current_dotdot_ = ffestr_other (t);
       switch (ffeexpr_current_dotdot_)
 	{
-	case FFEEXPR_dotdotNONE_:
+	case FFESTR_otherNone:
 	  return (ffelexHandler) ffeexpr_nil_rhs_ (t);
 
-	case FFEEXPR_dotdotTRUE_:
-	case FFEEXPR_dotdotFALSE_:
-	case FFEEXPR_dotdotNOT_:
+	case FFESTR_otherTRUE:
+	case FFESTR_otherFALSE:
+	case FFESTR_otherNOT:
 	  return (ffelexHandler) ffeexpr_nil_end_period_;
 
 	default:
@@ -11703,13 +11565,13 @@ ffeexpr_nil_end_period_ (ffelexToken t)
 {
   switch (ffeexpr_current_dotdot_)
     {
-    case FFEEXPR_dotdotNOT_:
+    case FFESTR_otherNOT:
       if (ffelex_token_type (t) != FFELEX_typePERIOD)
 	return (ffelexHandler) ffeexpr_nil_rhs_ (t);
       return (ffelexHandler) ffeexpr_nil_rhs_;
 
-    case FFEEXPR_dotdotTRUE_:
-    case FFEEXPR_dotdotFALSE_:
+    case FFESTR_otherTRUE:
+    case FFESTR_otherFALSE:
       if (ffelex_token_type (t) != FFELEX_typePERIOD)
 	return (ffelexHandler) ffeexpr_nil_binary_ (t);
       return (ffelexHandler) ffeexpr_nil_binary_;
@@ -11979,12 +11841,12 @@ ffeexpr_nil_binary_period_ (ffelexToken t)
     {
     case FFELEX_typeNAME:
     case FFELEX_typeNAMES:
-      ffeexpr_current_dotdot_ = ffeexpr_dotdot_ (t);
+      ffeexpr_current_dotdot_ = ffestr_other (t);
       switch (ffeexpr_current_dotdot_)
 	{
-	case FFEEXPR_dotdotTRUE_:
-	case FFEEXPR_dotdotFALSE_:
-	case FFEEXPR_dotdotNOT_:
+	case FFESTR_otherTRUE:
+	case FFESTR_otherFALSE:
+	case FFESTR_otherNOT:
 	  return (ffelexHandler) ffeexpr_nil_binary_sw_per_;
 
 	default:
@@ -13559,10 +13421,10 @@ ffeexpr_token_period_ (ffelexToken t)
     {
     case FFELEX_typeNAME:
     case FFELEX_typeNAMES:
-      ffeexpr_current_dotdot_ = ffeexpr_dotdot_ (t);
+      ffeexpr_current_dotdot_ = ffestr_other (t);
       switch (ffeexpr_current_dotdot_)
 	{
-	case FFEEXPR_dotdotNONE_:
+	case FFESTR_otherNone:
 	  if (ffest_ffebad_start (FFEBAD_IGNORING_PERIOD))
 	    {
 	      ffebad_here (0, ffelex_token_where_line (ffeexpr_tokens_[0]),
@@ -13572,9 +13434,9 @@ ffeexpr_token_period_ (ffelexToken t)
 	  ffelex_token_kill (ffeexpr_tokens_[0]);
 	  return (ffelexHandler) ffeexpr_token_rhs_ (t);
 
-	case FFEEXPR_dotdotTRUE_:
-	case FFEEXPR_dotdotFALSE_:
-	case FFEEXPR_dotdotNOT_:
+	case FFESTR_otherTRUE:
+	case FFESTR_otherFALSE:
+	case FFESTR_otherNOT:
 	  ffeexpr_tokens_[1] = ffelex_token_use (t);
 	  return (ffelexHandler) ffeexpr_token_end_period_;
 
@@ -13641,7 +13503,7 @@ ffeexpr_token_end_period_ (ffelexToken t)
 
   switch (ffeexpr_current_dotdot_)
     {
-    case FFEEXPR_dotdotNOT_:
+    case FFESTR_otherNOT:
       e->type = FFEEXPR_exprtypeUNARY_;
       e->u.operator.op = FFEEXPR_operatorNOT_;
       e->u.operator.prec = FFEEXPR_operatorprecedenceNOT_;
@@ -13651,7 +13513,7 @@ ffeexpr_token_end_period_ (ffelexToken t)
 	return (ffelexHandler) ffeexpr_token_rhs_ (t);
       return (ffelexHandler) ffeexpr_token_rhs_;
 
-    case FFEEXPR_dotdotTRUE_:
+    case FFESTR_otherTRUE:
       e->type = FFEEXPR_exprtypeOPERAND_;
       e->u.operand
 	= ffebld_new_conter (ffebld_constant_new_logicaldefault (TRUE));
@@ -13663,7 +13525,7 @@ ffeexpr_token_end_period_ (ffelexToken t)
 	return (ffelexHandler) ffeexpr_token_binary_ (t);
       return (ffelexHandler) ffeexpr_token_binary_;
 
-    case FFEEXPR_dotdotFALSE_:
+    case FFESTR_otherFALSE:
       e->type = FFEEXPR_exprtypeOPERAND_;
       e->u.operand
 	= ffebld_new_conter (ffebld_constant_new_logicaldefault (FALSE));
@@ -13931,17 +13793,8 @@ ffeexpr_token_number_ (ffelexToken t)
   /* Nothing specific we were looking for, so make an integer and pass the
      current token to the binary state. */
 
-  e = ffeexpr_expr_new_ ();
-  e->type = FFEEXPR_exprtypeOPERAND_;
-  e->token = ffeexpr_tokens_[0];
-  e->u.operand = ffebld_new_conter (ffebld_constant_new_integerdefault
-				    (ffeexpr_tokens_[0]));
-  ffebld_set_info (e->u.operand,
-		   ffeinfo_new (FFEINFO_basictypeINTEGER,
-				FFEINFO_kindtypeINTEGERDEFAULT, 0,
-				FFEINFO_kindENTITY, FFEINFO_whereCONSTANT,
-				FFETARGET_charactersizeNONE));
-  ffeexpr_exprstack_push_operand_ (e);
+  ffeexpr_make_float_const_ ('I', ffeexpr_tokens_[0], NULL, NULL,
+			     NULL, NULL, NULL);
   return (ffelexHandler) ffeexpr_token_binary_ (t);
 }
 
@@ -14599,12 +14452,12 @@ ffeexpr_token_binary_period_ (ffelexToken t)
     {
     case FFELEX_typeNAME:
     case FFELEX_typeNAMES:
-      ffeexpr_current_dotdot_ = ffeexpr_dotdot_ (t);
+      ffeexpr_current_dotdot_ = ffestr_other (t);
       switch (ffeexpr_current_dotdot_)
 	{
-	case FFEEXPR_dotdotTRUE_:
-	case FFEEXPR_dotdotFALSE_:
-	case FFEEXPR_dotdotNOT_:
+	case FFESTR_otherTRUE:
+	case FFESTR_otherFALSE:
+	case FFESTR_otherNOT:
 	  if (ffest_ffebad_start (FFEBAD_MISSING_BINARY_OPERATOR))
 	    {
 	      operand = ffeexpr_stack_->exprstack;
@@ -14618,16 +14471,6 @@ ffeexpr_token_binary_period_ (ffelexToken t)
 	  ffelex_token_kill (ffeexpr_tokens_[0]);
 	  return (ffelexHandler) ffeexpr_token_binary_sw_per_;
 
-	case FFEEXPR_dotdotNONE_:
-	  if (ffest_ffebad_start (FFEBAD_INVALID_DOTDOT))
-	    {
-	      ffebad_string (ffelex_token_text (t));
-	      ffebad_here (0, ffelex_token_where_line (ffeexpr_tokens_[0]),
-			   ffelex_token_where_column (ffeexpr_tokens_[0]));
-	      ffebad_finish ();
-	    }
-	  ffeexpr_current_dotdot_ = FFEEXPR_dotdotEQ_;
-	  /* Fall through here, pretending we got a .EQ. operator. */
 	default:
 	  ffeexpr_tokens_[1] = ffelex_token_use (t);
 	  return (ffelexHandler) ffeexpr_token_binary_end_per_;
@@ -14661,6 +14504,94 @@ ffeexpr_token_binary_end_per_ (ffelexToken t)
 {
   ffeexprExpr_ e;
 
+  e = ffeexpr_expr_new_ ();
+  e->type = FFEEXPR_exprtypeBINARY_;
+  e->token = ffeexpr_tokens_[0];
+
+  switch (ffeexpr_current_dotdot_)
+    {
+    case FFESTR_otherAND:
+      e->u.operator.op = FFEEXPR_operatorAND_;
+      e->u.operator.prec = FFEEXPR_operatorprecedenceAND_;
+      e->u.operator.as = FFEEXPR_operatorassociativityAND_;
+      break;
+
+    case FFESTR_otherOR:
+      e->u.operator.op = FFEEXPR_operatorOR_;
+      e->u.operator.prec = FFEEXPR_operatorprecedenceOR_;
+      e->u.operator.as = FFEEXPR_operatorassociativityOR_;
+      break;
+
+    case FFESTR_otherXOR:
+      e->u.operator.op = FFEEXPR_operatorXOR_;
+      e->u.operator.prec = FFEEXPR_operatorprecedenceXOR_;
+      e->u.operator.as = FFEEXPR_operatorassociativityXOR_;
+      break;
+
+    case FFESTR_otherEQV:
+      e->u.operator.op = FFEEXPR_operatorEQV_;
+      e->u.operator.prec = FFEEXPR_operatorprecedenceEQV_;
+      e->u.operator.as = FFEEXPR_operatorassociativityEQV_;
+      break;
+
+    case FFESTR_otherNEQV:
+      e->u.operator.op = FFEEXPR_operatorNEQV_;
+      e->u.operator.prec = FFEEXPR_operatorprecedenceNEQV_;
+      e->u.operator.as = FFEEXPR_operatorassociativityNEQV_;
+      break;
+
+    case FFESTR_otherLT:
+      e->u.operator.op = FFEEXPR_operatorLT_;
+      e->u.operator.prec = FFEEXPR_operatorprecedenceLT_;
+      e->u.operator.as = FFEEXPR_operatorassociativityLT_;
+      break;
+
+    case FFESTR_otherLE:
+      e->u.operator.op = FFEEXPR_operatorLE_;
+      e->u.operator.prec = FFEEXPR_operatorprecedenceLE_;
+      e->u.operator.as = FFEEXPR_operatorassociativityLE_;
+      break;
+
+    case FFESTR_otherEQ:
+      e->u.operator.op = FFEEXPR_operatorEQ_;
+      e->u.operator.prec = FFEEXPR_operatorprecedenceEQ_;
+      e->u.operator.as = FFEEXPR_operatorassociativityEQ_;
+      break;
+
+    case FFESTR_otherNE:
+      e->u.operator.op = FFEEXPR_operatorNE_;
+      e->u.operator.prec = FFEEXPR_operatorprecedenceNE_;
+      e->u.operator.as = FFEEXPR_operatorassociativityNE_;
+      break;
+
+    case FFESTR_otherGT:
+      e->u.operator.op = FFEEXPR_operatorGT_;
+      e->u.operator.prec = FFEEXPR_operatorprecedenceGT_;
+      e->u.operator.as = FFEEXPR_operatorassociativityGT_;
+      break;
+
+    case FFESTR_otherGE:
+      e->u.operator.op = FFEEXPR_operatorGE_;
+      e->u.operator.prec = FFEEXPR_operatorprecedenceGE_;
+      e->u.operator.as = FFEEXPR_operatorassociativityGE_;
+      break;
+
+    default:
+      if (ffest_ffebad_start (FFEBAD_INVALID_DOTDOT))
+	{
+	  ffebad_here (0, ffelex_token_where_line (ffeexpr_tokens_[0]),
+		       ffelex_token_where_column (ffeexpr_tokens_[0]));
+	  ffebad_string (ffelex_token_text (ffeexpr_tokens_[1]));
+	  ffebad_finish ();
+	}
+      e->u.operator.op = FFEEXPR_operatorEQ_;
+      e->u.operator.prec = FFEEXPR_operatorprecedenceEQ_;
+      e->u.operator.as = FFEEXPR_operatorassociativityEQ_;
+      break;
+    }
+
+  ffeexpr_exprstack_push_binary_ (e);
+
   if (ffelex_token_type (t) != FFELEX_typePERIOD)
     {
       if (ffest_ffebad_start (FFEBAD_INSERTING_PERIOD))
@@ -14671,90 +14602,11 @@ ffeexpr_token_binary_end_per_ (ffelexToken t)
 	  ffebad_string (ffelex_token_text (ffeexpr_tokens_[1]));
 	  ffebad_finish ();
 	}
+      ffelex_token_kill (ffeexpr_tokens_[1]);	/* Kill dot-dot token. */
+      return (ffelexHandler) ffeexpr_token_rhs_ (t);
     }
 
   ffelex_token_kill (ffeexpr_tokens_[1]);	/* Kill dot-dot token. */
-
-  e = ffeexpr_expr_new_ ();
-  e->type = FFEEXPR_exprtypeBINARY_;
-  e->token = ffeexpr_tokens_[0];
-
-  switch (ffeexpr_current_dotdot_)
-    {
-    case FFEEXPR_dotdotAND_:
-      e->u.operator.op = FFEEXPR_operatorAND_;
-      e->u.operator.prec = FFEEXPR_operatorprecedenceAND_;
-      e->u.operator.as = FFEEXPR_operatorassociativityAND_;
-      break;
-
-    case FFEEXPR_dotdotOR_:
-      e->u.operator.op = FFEEXPR_operatorOR_;
-      e->u.operator.prec = FFEEXPR_operatorprecedenceOR_;
-      e->u.operator.as = FFEEXPR_operatorassociativityOR_;
-      break;
-
-    case FFEEXPR_dotdotXOR_:
-      e->u.operator.op = FFEEXPR_operatorXOR_;
-      e->u.operator.prec = FFEEXPR_operatorprecedenceXOR_;
-      e->u.operator.as = FFEEXPR_operatorassociativityXOR_;
-      break;
-
-    case FFEEXPR_dotdotEQV_:
-      e->u.operator.op = FFEEXPR_operatorEQV_;
-      e->u.operator.prec = FFEEXPR_operatorprecedenceEQV_;
-      e->u.operator.as = FFEEXPR_operatorassociativityEQV_;
-      break;
-
-    case FFEEXPR_dotdotNEQV_:
-      e->u.operator.op = FFEEXPR_operatorNEQV_;
-      e->u.operator.prec = FFEEXPR_operatorprecedenceNEQV_;
-      e->u.operator.as = FFEEXPR_operatorassociativityNEQV_;
-      break;
-
-    case FFEEXPR_dotdotLT_:
-      e->u.operator.op = FFEEXPR_operatorLT_;
-      e->u.operator.prec = FFEEXPR_operatorprecedenceLT_;
-      e->u.operator.as = FFEEXPR_operatorassociativityLT_;
-      break;
-
-    case FFEEXPR_dotdotLE_:
-      e->u.operator.op = FFEEXPR_operatorLE_;
-      e->u.operator.prec = FFEEXPR_operatorprecedenceLE_;
-      e->u.operator.as = FFEEXPR_operatorassociativityLE_;
-      break;
-
-    case FFEEXPR_dotdotEQ_:
-      e->u.operator.op = FFEEXPR_operatorEQ_;
-      e->u.operator.prec = FFEEXPR_operatorprecedenceEQ_;
-      e->u.operator.as = FFEEXPR_operatorassociativityEQ_;
-      break;
-
-    case FFEEXPR_dotdotNE_:
-      e->u.operator.op = FFEEXPR_operatorNE_;
-      e->u.operator.prec = FFEEXPR_operatorprecedenceNE_;
-      e->u.operator.as = FFEEXPR_operatorassociativityNE_;
-      break;
-
-    case FFEEXPR_dotdotGT_:
-      e->u.operator.op = FFEEXPR_operatorGT_;
-      e->u.operator.prec = FFEEXPR_operatorprecedenceGT_;
-      e->u.operator.as = FFEEXPR_operatorassociativityGT_;
-      break;
-
-    case FFEEXPR_dotdotGE_:
-      e->u.operator.op = FFEEXPR_operatorGE_;
-      e->u.operator.prec = FFEEXPR_operatorprecedenceGE_;
-      e->u.operator.as = FFEEXPR_operatorassociativityGE_;
-      break;
-
-    default:
-      assert ("Bad unary dotdot in ffeexpr_current_dotdot_" == NULL);
-    }
-
-  ffeexpr_exprstack_push_binary_ (e);
-
-  if (ffelex_token_type (t) != FFELEX_typePERIOD)
-    return (ffelexHandler) ffeexpr_token_rhs_ (t);
   return (ffelexHandler) ffeexpr_token_rhs_;
 }
 
@@ -15852,6 +15704,16 @@ ffeexpr_make_float_const_ (char exp_letter, ffelexToken integer,
 			    0, FFEINFO_kindENTITY, FFEINFO_whereCONSTANT, FFETARGET_charactersizeNONE));
       break;
 #endif
+
+    case 'I':	/* Make an integer. */
+      e->u.operand = ffebld_new_conter (ffebld_constant_new_integerdefault
+					(ffeexpr_tokens_[0]));
+      ffebld_set_info (e->u.operand,
+		       ffeinfo_new (FFEINFO_basictypeINTEGER,
+				    FFEINFO_kindtypeINTEGERDEFAULT, 0,
+				    FFEINFO_kindENTITY, FFEINFO_whereCONSTANT,
+				    FFETARGET_charactersizeNONE));
+      break;
 
     default:
     no_match:			/* :::::::::::::::::::: */
