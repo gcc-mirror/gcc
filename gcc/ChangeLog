@@ -1,5 +1,7 @@
 2003-09-26  Nathanael Nerode  <neroden@gcc.gnu.org>
 
+	* config.gcc (i960-*-coff*, m68k-*-aout*, sparclite-*-coff*):
+	Disable fixproto.
 	* config.gcc (i[34567]86-*-solaris2*, sparc64-*-solaris2*,
 	sparcv9-*-solaris2*, sparc-*-solaris2*): Disable fixproto.
 
