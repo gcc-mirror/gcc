@@ -2515,16 +2515,21 @@ cxx_callgraph_analyze_expr (tree *tp, int *walk_subtrees ATTRIBUTE_UNUSED,
 {
   tree t = *tp;
 
-  switch (TREE_CODE (t))
-    {
-    case PTRMEM_CST:
-      if (TYPE_PTRMEMFUNC_P (TREE_TYPE (t)))
-	cgraph_mark_needed_node (cgraph_node (PTRMEM_CST_MEMBER (t)));
-      break;
+  if (flag_unit_at_a_time)
+    switch (TREE_CODE (t))
+      {
+      case PTRMEM_CST:
+	if (TYPE_PTRMEMFUNC_P (TREE_TYPE (t)))
+	  cgraph_mark_needed_node (cgraph_node (PTRMEM_CST_MEMBER (t)));
+	break;
+      case BASELINK:
+	if (TREE_CODE (BASELINK_FUNCTIONS (t)) == FUNCTION_DECL)
+	  cgraph_mark_needed_node (cgraph_node (BASELINK_FUNCTIONS (t)));
+	break;
 
-    default:
-      break;
-    }
+      default:
+	break;
+      }
 
   return NULL;
 }
