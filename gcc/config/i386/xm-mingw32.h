@@ -40,3 +40,6 @@ Boston, MA 02111-1307, USA. */
 /* Even though we support "/", allow "\" since everybody tests both.  */
 #define DIR_SEPARATOR '\\'
 #define EXECUTABLE_SUFFIX ".exe"
+
+#undef PATH_SEPARATOR
+#define PATH_SEPARATOR ';'
