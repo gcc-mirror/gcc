@@ -4778,6 +4778,18 @@ do_spec_1 (spec, inswitch, soft_matched_part)
 	      p = handle_braces (p + 1);
 	      if (p == 0)
 		return -1;
+	      /* End any pending argument.  */
+	      if (arg_going)
+		{
+		  obstack_1grow (&obstack, 0);
+		  string = obstack_finish (&obstack);
+		  if (this_is_library_file)
+		    string = find_file (string);
+		  store_arg (string, delete_this_arg, this_is_output_file);
+		  if (this_is_output_file)
+		    outfiles[input_file_number] = string;
+		  arg_going = 0;
+		}
 	      /* If any args were output, mark the last one for deletion
 		 on failure.  */
 	      if (argbuf_index != cur_index)

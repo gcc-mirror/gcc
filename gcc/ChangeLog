@@ -1,5 +1,7 @@
 2002-12-17  Jason Merrill  <jason@redhat.com>
 
+        * gcc.c (do_spec_1) ['W']: End any pending argument from the braces.
+
 	* calls.c (expand_call): Don't try to be clever about expanding
 	the return slot address.
 
