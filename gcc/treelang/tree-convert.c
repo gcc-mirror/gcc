@@ -1,6 +1,6 @@
 /* Language-level data type conversion for Treelang.
    This is a very slightly modified copy of c-convert.c.
-   Copyright (C) 1987, 1988, 1991, 1998, 2002 Free Software Foundation, Inc.
+   Copyright (C) 1987, 1988, 1991, 1998, 2002, 2003 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -60,8 +60,7 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
    not permitted by the language being compiled.  */
 
 tree
-convert (type, expr)
-     tree type, expr;
+convert (tree type, tree expr)
 {
   tree e = expr;
   enum tree_code code = TREE_CODE (type);

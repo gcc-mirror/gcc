@@ -122,29 +122,26 @@ struct language_function GTY(())
   char junk; /* dummy field to ensure struct is not empty */
 };
 
-static tree tree_lang_truthvalue_conversion PARAMS((tree expr));
-static bool tree_mark_addressable PARAMS((tree exp));
-static tree tree_lang_type_for_size PARAMS((unsigned precision,
-					    int unsignedp));
-static tree tree_lang_type_for_mode PARAMS((enum machine_mode mode,
-					    int unsignedp));
-static tree tree_lang_unsigned_type PARAMS((tree type_node));
-static tree tree_lang_signed_type PARAMS((tree type_node));
-static tree tree_lang_signed_or_unsigned_type PARAMS((int unsignedp,
-						      tree type));
+static tree tree_lang_truthvalue_conversion (tree expr);
+static bool tree_mark_addressable (tree exp);
+static tree tree_lang_type_for_size (unsigned precision, int unsignedp);
+static tree tree_lang_type_for_mode (enum machine_mode mode, int unsignedp);
+static tree tree_lang_unsigned_type (tree type_node);
+static tree tree_lang_signed_type (tree type_node);
+static tree tree_lang_signed_or_unsigned_type (int unsignedp, tree type);
 
 /* XXX these should be static */
-void pushlevel PARAMS((int ignore));
-tree poplevel PARAMS((int keep, int reverse, int functionbody));
-int global_bindings_p PARAMS((void));
-void insert_block PARAMS((tree block));
-void set_block PARAMS((tree block));
-tree pushdecl PARAMS((tree decl));
-tree getdecls PARAMS((void));
-int kept_level_p PARAMS((void));
+void pushlevel (int ignore);
+tree poplevel (int keep, int reverse, int functionbody);
+int global_bindings_p (void);
+void insert_block (tree block);
+void set_block (tree block);
+tree pushdecl (tree decl);
+tree getdecls (void);
+int kept_level_p (void);
 
-static void tree_push_type_decl PARAMS((tree id, tree type_node));
-static void tree_push_atomic_type_decl PARAMS((tree id, tree type_node));
+static void tree_push_type_decl (tree id, tree type_node);
+static void tree_push_atomic_type_decl (tree id, tree type_node);
 
 /* The front end language hooks (addresses of code for this front
    end).  These are not really very language-dependent, i.e.
@@ -708,7 +705,8 @@ tree_code_get_integer_value (unsigned char* chars, unsigned int length)
    with tree type TYPE and with operands1 OP1, OP2 (maybe), OP3 (maybe).  */
 tree
 tree_code_get_expression (unsigned int exp_type,
-                          tree type, tree op1, tree op2, tree op3 ATTRIBUTE_UNUSED)
+                          tree type, tree op1, tree op2,
+			  tree op3 ATTRIBUTE_UNUSED)
 {
   tree ret1;
   int operator;
@@ -906,8 +904,7 @@ static GTY(()) tree signed_and_unsigned_types[MAX_BITS_PER_WORD + 1][2];
 
 /* XXX is this definition OK? */
 static tree
-tree_lang_truthvalue_conversion (expr)
-     tree expr;
+tree_lang_truthvalue_conversion (tree expr)
 {
   return expr;
 }
@@ -919,8 +916,7 @@ tree_lang_truthvalue_conversion (expr)
    This implementation was copied from c-decl.c. */
 
 static bool
-tree_mark_addressable (exp)
-     tree exp;
+tree_mark_addressable (tree exp)
 {
   register tree x = exp;
   while (1)
@@ -982,9 +978,7 @@ tree_mark_addressable (exp)
    it is a signed type.  */
   
 static tree
-tree_lang_type_for_size (precision, unsignedp)
-     unsigned precision;
-     int unsignedp;
+tree_lang_type_for_size (unsigned precision, int unsignedp)
 {
   tree t;
 
@@ -1006,9 +1000,7 @@ tree_lang_type_for_size (precision, unsignedp)
    an unsigned type; otherwise a signed type is returned.  */
 
 static tree
-tree_lang_type_for_mode (mode, unsignedp)
-     enum machine_mode mode;
-     int unsignedp;
+tree_lang_type_for_mode (enum machine_mode mode, int unsignedp)
 {
   return tree_lang_type_for_size (GET_MODE_BITSIZE (mode), unsignedp);
 }
@@ -1016,8 +1008,7 @@ tree_lang_type_for_mode (mode, unsignedp)
 /* Return the unsigned version of a TYPE_NODE, a scalar type.  */
 
 static tree
-tree_lang_unsigned_type (type_node)
-     tree type_node;
+tree_lang_unsigned_type (tree type_node)
 {
   return tree_lang_type_for_size (TYPE_PRECISION (type_node), 1);
 }
@@ -1025,8 +1016,7 @@ tree_lang_unsigned_type (type_node)
 /* Return the signed version of a TYPE_NODE, a scalar type.  */
 
 static tree
-tree_lang_signed_type (type_node)
-     tree type_node;
+tree_lang_signed_type (tree type_node)
 {
   return tree_lang_type_for_size (TYPE_PRECISION (type_node), 0);
 }
@@ -1035,9 +1025,7 @@ tree_lang_signed_type (type_node)
    UNSIGNEDP.  */
 
 static tree
-tree_lang_signed_or_unsigned_type (unsignedp, type)
-     int unsignedp;
-     tree type;
+tree_lang_signed_or_unsigned_type (int unsignedp, tree type)
 {
   if (! INTEGRAL_TYPE_P (type) || TREE_UNSIGNED (type) == unsignedp)
     return type;
@@ -1095,7 +1083,7 @@ static struct binding_level clear_binding_level = {NULL, NULL, NULL, NULL};
 /* Return non-zero if we are currently in the global binding level.  */
 
 int
-global_bindings_p ()
+global_bindings_p (void)
 {
   return current_binding_level == global_binding_level ? -1 : 0;
 }
@@ -1104,7 +1092,7 @@ global_bindings_p ()
    is in reverse order (it has to be so for back-end compatibility).  */
 
 tree
-getdecls ()
+getdecls (void)
 {
   return current_binding_level->names;
 }
@@ -1112,7 +1100,7 @@ getdecls ()
 /* Nonzero if the current level needs to have a BLOCK made.  */
 
 int
-kept_level_p ()
+kept_level_p (void)
 {
   return (current_binding_level->names != 0);
 }
@@ -1121,8 +1109,7 @@ kept_level_p ()
    specified for back-end compatibility.  */
 
 void
-pushlevel (ignore)
-     int ignore ATTRIBUTE_UNUSED;
+pushlevel (int ignore ATTRIBUTE_UNUSED)
 {
   struct binding_level *newlevel = xmalloc (sizeof (struct binding_level));
 
@@ -1150,10 +1137,7 @@ pushlevel (ignore)
    them into the BLOCK.  */
 
 tree
-poplevel (keep, reverse, functionbody)
-     int keep;
-     int reverse;
-     int functionbody;
+poplevel (int keep, int reverse, int functionbody)
 {
   /* Points to a BLOCK tree node. This is the BLOCK node construted for the
      binding level that we are about to exit and which is returned by this
@@ -1247,8 +1231,7 @@ poplevel (keep, reverse, functionbody)
    to handle the BLOCK node inside the BIND_EXPR.  */
 
 void
-insert_block (block)
-     tree block;
+insert_block (tree block)
 {
   TREE_USED (block) = 1;
   current_binding_level->blocks
@@ -1259,8 +1242,7 @@ insert_block (block)
    (the one we are currently in).  */
 
 void
-set_block (block)
-     tree block;
+set_block (tree block)
 {
   current_binding_level->block_created_by_back_end = block;
 }
@@ -1269,8 +1251,7 @@ set_block (block)
    Returns the ..._DECL node. */
 
 tree
-pushdecl (decl)
-     tree decl;
+pushdecl (tree decl)
 {
   /* External objects aren't nested, other objects may be.  */
     
@@ -1297,9 +1278,7 @@ pushdecl (decl)
 
 
 static void
-tree_push_type_decl(id, type_node)
-     tree id;
-     tree type_node;
+tree_push_type_decl(tree id, tree type_node)
 {
   tree decl = build_decl (TYPE_DECL, id, type_node);
   TYPE_NAME (type_node) = decl;
@@ -1312,9 +1291,7 @@ tree_push_type_decl(id, type_node)
    not for e.g. pointer or array types.  */
 
 static void
-tree_push_atomic_type_decl(id, type_node)
-     tree id;
-     tree type_node;
+tree_push_atomic_type_decl(tree id, tree type_node)
 {
   TREE_TYPE (type_node) = type_node;
   tree_push_type_decl (id, type_node);
@@ -1328,7 +1305,7 @@ tree_push_atomic_type_decl(id, type_node)
    Make definitions for built-in primitive functions.  */
 
 void
-treelang_init_decl_processing ()
+treelang_init_decl_processing (void)
 {
   current_function_decl = NULL;
   current_binding_level = NULL_BINDING_LEVEL;
@@ -1406,13 +1383,9 @@ treelang_init_decl_processing ()
 */
 
 tree
-builtin_function (name, type, function_code, class, library_name, attrs)
-     const char *name;
-     tree type;
-     int function_code;
-     enum built_in_class class;
-     const char *library_name;
-     tree attrs;
+builtin_function (const char *name, tree type, int function_code,
+		  enum built_in_class class, const char *library_name,
+		  tree attrs)
 {
   tree decl = build_decl (FUNCTION_DECL, get_identifier (name), type);
   DECL_EXTERNAL (decl) = 1;

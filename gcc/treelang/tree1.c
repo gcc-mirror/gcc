@@ -138,7 +138,7 @@ treelang_handle_option (size_t scode, const char *arg ATTRIBUTE_UNUSED,
 /* Language dependent parser setup.  */
 
 bool
-treelang_init ()
+treelang_init (void)
 {
   input_filename = main_input_filename;
   input_line = 0;

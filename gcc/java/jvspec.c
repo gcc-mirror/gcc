@@ -84,8 +84,7 @@ static const char jvgenmain_spec[] =
 /* Return full path name of spec file if it is in DIR, or NULL if
    not.  */
 static char *
-find_spec_file (dir)
-     const char *dir;
+find_spec_file (const char *dir)
 {
   char *spec;
   int x;
@@ -116,8 +115,7 @@ find_spec_file (dir)
 /* Verify that NAME is a valid Java class name that might contain
    `main'.  Return 0 on failure.  */
 static int
-verify_class_name (name)
-     const char *name;
+verify_class_name (const char *name)
 {
   /* FIXME: what encoding do we use for command-line arguments?  For
      now we assume plain ASCII, which of course is wrong.  */
@@ -144,10 +142,8 @@ verify_class_name (name)
 }
 
 void
-lang_specific_driver (in_argc, in_argv, in_added_libraries)
-     int *in_argc;
-     const char *const **in_argv;
-     int *in_added_libraries;
+lang_specific_driver (int *in_argc, const char *const **in_argv,
+		      int *in_added_libraries)
 {
   int i, j;
 
@@ -600,7 +596,7 @@ lang_specific_driver (in_argc, in_argv, in_added_libraries)
 }
 
 int
-lang_specific_pre_link ()
+lang_specific_pre_link (void)
 {
   int err;
   if (main_class_name == NULL)
