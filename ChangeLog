@@ -1,3 +1,8 @@
+2002-02-22  Alexandre Oliva  <aoliva@redhat.com>
+
+	* configure.in (CXX_FOR_TARGET): Add -shared-libgcc for
+	libstdc++-v3 and libjava.
+
 2002-02-11  Adam Megacz <adam@xwt.org>
 
 	* gcc/Makefile.in: Removed libstdc++-v3 dependancy for libjava and
