@@ -680,6 +680,8 @@ char *lang_options[] =
   "-Wno-template-debugging",
   "-Wctor-dtor-privacy",
   "-Wno-ctor-dtor-privacy",
+  "-Wextern-inline",
+  "-Wno-extern-inline",
 
   /* these are for obj c */
   "-lang-objc",
