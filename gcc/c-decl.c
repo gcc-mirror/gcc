@@ -5837,12 +5837,18 @@ start_function (declspecs, declarator, prefix_attributes, attributes)
   /* Optionally warn of old-fashioned def with no previous prototype.  */
   if (warn_strict_prototypes
       && TYPE_ARG_TYPES (TREE_TYPE (decl1)) == 0
-      && !(old_decl != 0 && TYPE_ARG_TYPES (TREE_TYPE (old_decl)) != 0))
+      && !(old_decl != 0
+	   && (TYPE_ARG_TYPES (TREE_TYPE (old_decl)) != 0
+	       || (DECL_BUILT_IN (old_decl)
+		   && ! C_DECL_ANTICIPATED (old_decl)))))
     warning ("function declaration isn't a prototype");
   /* Optionally warn of any global def with no previous prototype.  */
   else if (warn_missing_prototypes
 	   && TREE_PUBLIC (decl1)
-	   && !(old_decl != 0 && TYPE_ARG_TYPES (TREE_TYPE (old_decl)) != 0)
+	   && !(old_decl != 0
+		&& (TYPE_ARG_TYPES (TREE_TYPE (old_decl)) != 0
+		    || (DECL_BUILT_IN (old_decl)
+			&& ! C_DECL_ANTICIPATED (old_decl))))
 	   && ! MAIN_NAME_P (DECL_NAME (decl1)))
     warning_with_decl (decl1, "no previous prototype for `%s'");
   /* Optionally warn of any def with no previous prototype

@@ -1,5 +1,5 @@
 /* Definitions of target machine for GNU compiler, for DEC Alpha on OSF/1.
-   Copyright (C) 1992, 1993, 1994, 1995, 1996, 1997, 1998
+   Copyright (C) 1992, 1993, 1994, 1995, 1996, 1997, 1998, 2001
    Free Software Foundation, Inc.
    Contributed by Richard Kenner (kenner@vlsi1.ultra.nyu.edu)
 
@@ -128,10 +128,13 @@ Boston, MA 02111-1307, USA.  */
 /* Attempt to turn on access permissions for the stack.  */
 
 #define TRANSFER_FROM_TRAMPOLINE					\
+extern void __enable_execute_stack PARAMS ((void *));			\
+									\
 void									\
 __enable_execute_stack (addr)						\
      void *addr;							\
 {									\
+  extern int mprotect PARAMS ((const void *, size_t, int));		\
   long size = getpagesize ();						\
   long mask = ~(size-1);						\
   char *page = (char *) (((long) addr) & mask);				\

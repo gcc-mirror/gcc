@@ -1,3 +1,11 @@
+Sat Jan 13 07:30:02 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	* c-decl.c (start_function): Don't warn if old prototype is builtin
+	that's not in C's namespace.
+	* libgcc2.c (_varargs): Update definition of __builtin_saveregs.
+	(_bb): Add prototype for ctime.
+	* config/alpha/osf.h (TRANSFER_FROM_TRAMPOLINE): Add missing protos.
+
 Sat Jan 13 09:53:32 MET 2001  Jan Hubicka  <jh@suse.cz>
 
 	* i386.c (ix86_fp_comparison_arithmetics_cost,
