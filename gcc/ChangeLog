@@ -1,3 +1,8 @@
+1999-03-18  Gavin Romig-Koch  <gavin@cygnus.com>
+
+	* config/mips/mips.c (mips_explicit_type_size_string): Correct
+       its type.
+
 Thu Mar 18 01:24:25 1999  Jeffrey A Law  (law@cygnus.com)
 
 	* configure.in: Use "exit 1", not "exit (1)".

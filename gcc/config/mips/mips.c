@@ -224,7 +224,7 @@ const char *mips_no_mips16_string;
 /* This is only used to determine if an type size setting option was 
    explicitly specified (-mlong64, -mint64, -mlong32).  The specs
    set this option if such an option is used. */
-char *mips_explicit_type_size_string;
+const char *mips_explicit_type_size_string;
 
 /* Whether we are generating mips16 hard float code.  In mips16 mode
    we always set TARGET_SOFT_FLOAT; this variable is nonzero if
