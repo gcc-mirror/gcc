@@ -1,3 +1,18 @@
+1999-10-16  Anthony Green  <green@cygnus.com>
+
+	* java/lang/ClassLoader.java (getSystemResource): Use
+	getSystemClassLoader instead of ClassLoader.system.
+	(getSystemResourceAsStream): Ditto.
+
+	* java/lang/natClassLoader.cc (redirect): Make static and
+	remove #ifdef INTERPRETER so it is always defined.
+	(getVMClassLoader0): Remove #ifdef INTERPRETER so it always
+	returns a VMClassLoader.
+
+	* java/util/ResourceBundle.java (trySomeGetBundle): Create a
+	PropertyResourceBundle if a properties file is found before a
+	ResourceBundle class.
+
 1999-10-15  Tom Tromey  <tromey@cygnus.com>
 
 	* gij.cc (main): Formatting fixes.

@@ -8,6 +8,8 @@ details.  */
 
 package java.util;
 
+import java.io.InputStream;
+
 /**
  * @author Anthony Green <green@cygnus.com>
  * @date November 26, 1998.
@@ -105,6 +107,23 @@ public abstract class ResourceBundle
 	    {
 	      // Fall through.
 	    }
+
+	  // Look for a properties file.
+	  {
+	    InputStream i = 
+		ClassLoader.getSystemResourceAsStream (bundleName.replace ('.', '/') 
+						       + ".properties");
+	    if (i != null)
+	      {
+		try {
+		  return new PropertyResourceBundle (i);
+		} catch (java.io.IOException e) {
+		  // The docs don't appear to define what happens in
+		  // this case, but it seems like continuing the
+		  // search is a reasonable thing to do.
+		}
+	      }
+	  }
 
 	  if (bundleName.equals(stopHere))
 	    return result;

@@ -48,20 +48,14 @@ extern java::lang::Class ClassLoaderClass;
 
 /////////// java.lang.ClassLoader native methods ////////////
 
-#ifdef INTERPRETER
-gnu::gcj::runtime::VMClassLoader *redirect = 0;
-#endif
+static gnu::gcj::runtime::VMClassLoader *redirect = 0;
 
 java::lang::ClassLoader*
 java::lang::ClassLoader::getVMClassLoader0 ()
 {
-#ifdef INTERPRETER
-    if (redirect == 0)
-	redirect = new gnu::gcj::runtime::VMClassLoader;
-    return redirect;
-#else
-    return 0;
-#endif
+  if (redirect == 0)
+    redirect = new gnu::gcj::runtime::VMClassLoader;
+  return redirect;
 }
 
 void
