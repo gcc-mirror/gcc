@@ -1,3 +1,8 @@
+2000-12-13  Alexandre Oliva  <aoliva@redhat.com>
+
+	* function.c (assign_parms): Optimize incoming PARALLELs into
+	REGs if possible.
+
 2000-12-13  Bruce Korb  <bkorb@gnu.org>
 
 	* fixinc/Makefile.in(*): substantial rewrite to accommodate systems
