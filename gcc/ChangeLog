@@ -1,3 +1,48 @@
+Sun Jan 24 21:24:43 1999  Michael Hayes  <m.hayes@elec.canterbury.ac.nz>
+
+	* config/c4x/c4x.c (c4x_emit_move_sequence, c4x_encode_section_info):
+	New functions.
+	(c4x_check_legit_addr): Remove USE and PLUS, allow
+	LO_SUM, and disable SYMBOL_REF, LABEL_REF, and CONST cases.
+	(c4x_legitimize_address): Penalise SYMBOL_REF, LABEL_REF, and 
+	CONST cases.  Add LO_SUM.
+	(c4x_print_operand): Modified 'C' and 'R' cases for calls.
+	Added 'U' case.  Remove dependence on SYMBOL_REF_FLAG.
+	(c4x_print_operand_address): Handle LO_SUM.
+	(c4x_scan_for_ldp): Delete.  Hooray!
+	(c4x_process_after_reload): Remove call to c4x_scan_for_ldp.
+	Split all insns.
+	(c4x_immed_int_constant): Renamed from c4x_int_constant.  All callers
+	changed.
+	(c4x_immed_float_constant): Renamed from c4x_float_constant.  All
+ 	callers	changed.
+	(c4x_T_constraint): Allow LO_SUM, disable SYMBOL_REF, LABEL_REF, 
+	and CONST.
+	(c4x_U_constraint, symbolic_operand): New functions.
+	(src_operand): Allow 'I' constants in HImode.  Allow LO_SUM,
+	disable SYMBOL_REF, LABEL_REF, and CONST.
+	(lsrc_operand, tsrc_operand): Call src_operand instead of
+	general_operand.
+	(c4x_operand_subword): Update comments.
+
+	* config/c4x/c4x.c (TARGET_LOAD_ADDRESS): New macro.
+	(LEGITIMATE_CONSTANT_P): Allow SYMBOL_REF, LABEL_REF, CONST,
+	plus HIGH and LO_SUM for the C40.
+	(ENCODE_SECTION_INFO): Define macro.
+	(symbolic_operand, c4x_U_constraint, c4x_emit_move_sequence): New
+	prototypes.
+	(PREDICATE_CODES): Add symbolic_operand.
+
+	* config/c4x/c4x.md (movqi, movgqf, movhi, movhi): Call
+	c4x_emit_move_sequence.
+	(floatunsqiqf2, fixuns_truncqfqi2): Rework emitted RTL
+	to avoid symbol references.
+	(all patterns with g constraint): Replace 'g' constraint with 'rIm'.
+	(set_high): Renamed from set_high_use.
+	(set_lo_sum): Renamed from set_ior_lo_use.
+	(all call patterns): Make MEM explicit in call address operands.
+	Modified output templates to use 'U' modifier.
+	
 Sun Jan 24 01:15:05 PST 1999 Jeff Law  (law@cygnus.com)
 
 	* version.c: Bump for snapshot.

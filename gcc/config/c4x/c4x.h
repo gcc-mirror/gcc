@@ -258,11 +258,15 @@ extern int target_flags;
 #define TARGET_C40		(target_flags & C40_FLAG)
 #define TARGET_C44		(target_flags & C44_FLAG)
 
+#define TARGET_LOAD_ADDRESS	(1 || (! TARGET_C3X && ! TARGET_SMALL))
+
 /* -mrpts            allows the use of the RPTS instruction irregardless.
    -mrpts=max-cycles will use RPTS if the number of cycles is constant
    and less than max-cycles. */
 
 #define TARGET_RPTS_CYCLES(CYCLES) (TARGET_RPTS || (CYCLES) < c4x_rpts_cycles)
+
+#define	BCT_CHECK_LOOP_ITERATIONS  !(TARGET_LOOP_UNSIGNED)
 
 /* -mcpu=XX    with XX = target DSP version number */
 
@@ -836,16 +840,17 @@ c4x_secondary_memory_needed(CLASS1, CLASS2, MODE)
 	: ((C) == 'O') ? (IS_HIGH_CONST (VAL))			        \
         : 0 )	
 
-#define CONST_DOUBLE_OK_FOR_LETTER_P(VAL, C) 				\
-        ( ((C) == 'G') ? (fp_zero_operand (VAL))			\
-	: ((C) == 'H') ? (c4x_H_constant (VAL)) 			\
+#define CONST_DOUBLE_OK_FOR_LETTER_P(OP, C) 				\
+        ( ((C) == 'G') ? (fp_zero_operand (OP))				\
+	: ((C) == 'H') ? (c4x_H_constant (OP)) 				\
 	: 0 )
 
-#define EXTRA_CONSTRAINT(VAL, C) \
-        ( ((C) == 'Q') ? (c4x_Q_constraint (VAL))			\
-	: ((C) == 'R') ? (c4x_R_constraint (VAL))			\
-	: ((C) == 'S') ? (c4x_S_constraint (VAL))			\
-	: ((C) == 'T') ? (c4x_T_constraint (VAL))			\
+#define EXTRA_CONSTRAINT(OP, C) \
+        ( ((C) == 'Q') ? (c4x_Q_constraint (OP))			\
+	: ((C) == 'R') ? (c4x_R_constraint (OP))			\
+	: ((C) == 'S') ? (c4x_S_constraint (OP))			\
+	: ((C) == 'T') ? (c4x_T_constraint (OP))			\
+	: ((C) == 'U') ? (c4x_U_constraint (OP))			\
 	: 0 )
 
 #define SMALL_CONST(VAL, insn)						\
@@ -1613,16 +1618,43 @@ extern struct rtx_def *c4x_legitimize_address ();
 /* Nonzero if the constant value X is a legitimate general operand.
    It is given that X satisfies CONSTANT_P or is a CONST_DOUBLE. 
 
-   The C4x can only load 16-bit immediate values, so we only allow
-   a restricted subset of CONST_INT and CONST_DOUBLE and reject
-   LABEL_REF, SYMBOL_REF, CONST, and HIGH codes.  */
+   The C4x can only load 16-bit immediate values, so we only allow a
+   restricted subset of CONST_INT and CONST_DOUBLE.  Disallow
+   LABEL_REF and SYMBOL_REF (except on the C40 with the big memory
+   model) so that the symbols will be forced into the constant pool.
+   On second thoughts, lets do this with the move expanders.
+*/
 
 #define LEGITIMATE_CONSTANT_P(X)				\
   ((GET_CODE (X) == CONST_DOUBLE && c4x_H_constant (X))		\
-  || (GET_CODE (X) == CONST_INT && c4x_I_constant (X)))
-
+  || (GET_CODE (X) == CONST_INT && c4x_I_constant (X))		\
+  || (GET_CODE (X) == SYMBOL_REF)				\
+  || (GET_CODE (X) == LABEL_REF)				\
+  || (GET_CODE (X) == CONST)					\
+  || (GET_CODE (X) == HIGH && ! TARGET_C3X)			\
+  || (GET_CODE (X) == LO_SUM && ! TARGET_C3X))
 
 #define LEGITIMATE_DISPLACEMENT_P(X) IS_DISP8_CONST (INTVAL (X))
+
+/* Define this macro if references to a symbol must be treated
+   differently depending on something about the variable or
+   function named by the symbol (such as what section it is in).
+
+   The macro definition, if any, is executed immediately after the
+   rtl for DECL or other node is created.
+   The value of the rtl will be a `mem' whose address is a
+   `symbol_ref'.
+
+   The usual thing for this macro to do is to a flag in the
+   `symbol_ref' (such as `SYMBOL_REF_FLAG') or to store a modified
+   name string in the `symbol_ref' (if one bit is not enough
+   information).
+
+   On the C4x we use this to indicate if a symbol is in text or
+   data space.  */
+
+extern void c4x_encode_section_info ();
+#define ENCODE_SECTION_INFO(DECL) c4x_encode_section_info (DECL);
 
 /* Descripting Relative Cost of Operations  */
 
@@ -1912,7 +1944,7 @@ dtors_section ()							\
 	  || ! TREE_READONLY (DECL) || TREE_SIDE_EFFECTS (DECL)		\
 	  || ! DECL_INITIAL (DECL)					\
 	  || (DECL_INITIAL (DECL) != error_mark_node			\
-	      && ! TREE_CONSTANT (DECL_INITIAL (DECL))))			\
+	      && ! TREE_CONSTANT (DECL_INITIAL (DECL))))		\
 	data_section ();						\
       else								\
 	const_section ();						\
@@ -2440,8 +2472,6 @@ do { fprintf (asm_out_file, "\t.sdef\t");		\
 
 #define MACHINE_DEPENDENT_REORG(INSNS) c4x_process_after_reload(INSNS)
 
-#define MACHINE_DEPENDENT_COMBINE(INSNS) c4x_combine_parallel(INSNS)
-
 #define DBR_OUTPUT_SEQEND(FILE)		\
 if (final_sequence != NULL_RTX)		\
 {					\
@@ -2492,7 +2522,8 @@ if (final_sequence != NULL_RTX)		\
   {"any_operand", {SUBREG, REG, MEM, CONST_INT, CONST_DOUBLE}}, \
   {"par_ind_operand", {MEM}},					\
   {"parallel_operand", {SUBREG, REG, MEM}},			\
-  {"mem_operand", {MEM}},					\
+  {"symbolic_operand", {SYMBOL_REF, LABEL_REF, CONST}},		\
+  {"mem_operand", {MEM}},					
 
 
 /* Variables in c4x.c */
@@ -2582,6 +2613,8 @@ extern int rc_reg_operand ();
 
 extern int st_reg_operand ();
 
+extern int symbolic_operand ();
+
 extern int ar0_reg_operand ();
 
 extern int ar0_mem_operand ();
@@ -2652,11 +2685,15 @@ extern int c4x_S_constraint ();
 
 extern int c4x_T_constraint ();
 
+extern int c4x_U_constraint ();
+
 extern void c4x_emit_libcall ();
 
 extern void c4x_emit_libcall3 ();
 
 extern void c4x_emit_libcall_mulhi ();
+
+extern int c4x_emit_move_sequence ();
 
 extern int legitimize_operands ();
 
