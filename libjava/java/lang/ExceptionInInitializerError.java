@@ -51,7 +51,7 @@ public class ExceptionInInitializerError extends LinkageError
   {
     if (exception != null)
       {
-	System.err.print (this.getClass() + ": ");
+	System.err.print (this.getClass().getName() + ": ");
 	exception.printStackTrace ();
       }
     else
@@ -62,7 +62,7 @@ public class ExceptionInInitializerError extends LinkageError
   {
     if (exception != null)
       {
-	ps.print (this.getClass() + ": ");
+	ps.print (this.getClass().getName() + ": ");
 	exception.printStackTrace (ps);
       }
     else
@@ -73,7 +73,7 @@ public class ExceptionInInitializerError extends LinkageError
   {
     if (exception != null)
       {
-	pw.print (this.getClass() + ": ");
+	pw.print (this.getClass().getName() + ": ");
 	exception.printStackTrace (pw);
       }
     else
