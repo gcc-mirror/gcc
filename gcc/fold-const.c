@@ -4367,13 +4367,14 @@ extract_muldiv (t, c, code, wide_type)
       if (t1 != 0 && t2 != 0)
 	return fold (build (tcode, ctype, convert (ctype, t1),
 			    convert (ctype, t2)));
-      else if (TREE_CODE (op1) != INTEGER_CST)
-	break;
 
       /* If this was a subtraction, negate OP1 and set it to be an addition.
 	 This simplifies the logic below.  */
       if (tcode == MINUS_EXPR)
 	tcode = PLUS_EXPR, op1 = negate_expr (op1);
+
+      if (TREE_CODE (op1) != INTEGER_CST)
+	break;
 
       /* If either OP1 or C are negative, this optimization is not safe for
 	 some of the division and remainder types while for others we need
