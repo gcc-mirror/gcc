@@ -7,6 +7,8 @@
 	* tradcpp.c: Don't include signal.h.  Don't catch SIGPIPE.
 	Delete pipe_closed.
 
+	* tradcif.c: Remove.
+
 2000-07-12  Zack Weinberg  <zack@wolery.cumb.org>
 
 	* final.c (profile_function): Do not emit profile counters in
