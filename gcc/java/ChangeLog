@@ -1,3 +1,10 @@
+2001-12-28  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* gen-table.pl: Const-ify output.  Document the location of a
+	suitable unicode input file.
+
+	* chartables.h: Regenerate.
+
 2001-12-26  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* chartables.h: Const-ify.
