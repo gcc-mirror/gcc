@@ -123,9 +123,6 @@ Free Documentation License}''.
 @node    Installing GCC, Binaries, , Top
 @end ifnothtml
 @ifset indexhtml
-@html
-<h1 align="center">Installing GCC</h1>
-@end html
 @ifnothtml
 @chapter Installing GCC
 @end ifnothtml
@@ -214,9 +211,6 @@ not yet been merged into the main part of this manual.
 @node    Downloading the source, Configuration, , Installing GCC
 @end ifnothtml
 @ifset downloadhtml
-@html
-<h1 align="center">Downloading GCC</h1>
-@end html
 @ifnothtml
 @chapter Downloading GCC
 @end ifnothtml
@@ -269,9 +263,6 @@ components of the binutils you intend to build alongside the compiler
 @node    Configuration, Building, Downloading the source, Installing GCC
 @end ifnothtml
 @ifset configurehtml
-@html
-<h1 align="center">Installing GCC: Configuration</h1>
-@end html
 @ifnothtml
 @chapter Installing GCC: Configuration
 @end ifnothtml
@@ -864,9 +855,6 @@ corresponding @option{--without} option.
 @node    Building, Testing, Configuration, Installing GCC
 @end ifnothtml
 @ifset buildhtml
-@html
-<h1 align="center">Installing GCC: Building</h1>
-@end html
 @ifnothtml
 @chapter Building
 @end ifnothtml
@@ -1106,9 +1094,6 @@ build feature described in the previous section.
 @node    Testing, Final install, Building, Installing GCC
 @end ifnothtml
 @ifset testhtml
-@html
-<h1 align="center">Installing GCC: Testing</h1>
-@end html
 @ifnothtml
 @chapter Installing GCC: Testing
 @end ifnothtml
@@ -1262,9 +1247,6 @@ should look here first if you think your results are unreasonable.
 @node    Final install, , Testing, Installing GCC
 @end ifnothtml
 @ifset finalinstallhtml
-@html
-<h1 align="center">Installing GCC: Final installation</h1>
-@end html
 @ifnothtml
 @chapter Installing GCC: Final installation
 @end ifnothtml
@@ -1376,9 +1358,6 @@ recent version of GCC@.
 @node    Binaries, Specific, Installing GCC, Top
 @end ifnothtml
 @ifset binarieshtml
-@html
-<h1 align="center">Installing GCC: Binaries</h1>
-@end html
 @ifnothtml
 @chapter Installing GCC: Binaries
 @end ifnothtml
@@ -1473,9 +1452,6 @@ works.
 @node    Specific, Old, Binaries, Top
 @end ifnothtml
 @ifset specifichtml
-@html
-<h1 align="center">Host/target specific installation notes for GCC</h1>
-@end html
 @ifnothtml
 @chapter Host/target specific installation notes for GCC
 @end ifnothtml
@@ -3461,9 +3437,7 @@ GCC you first have to install a pre-built compiler, see our
 The Solaris 2 @command{/bin/sh} will often fail to configure
 @file{libstdc++-v3}, @file{boehm-gc} or
 @file{libjava}.  If you encounter this problem, set @env{CONFIG_SHELL} to
-@command{/bin/ksh} in your environment and run @command{make bootstrap} again.
-Another possibility that sometimes helps is to remove
-@file{*-*-solaris2*/config.cache}.
+@command{/bin/ksh} in your environment before running @command{configure}.
 
 Solaris 2 comes with a number of optional OS packages.  Some of these
 packages are needed to use GCC fully, namely @code{SUNWarc},

@@ -7415,6 +7415,10 @@ boundary.  Aligning @code{double} variables on a two word boundary will
 produce code that runs somewhat faster on a @samp{Pentium} at the
 expense of more memory.
 
+@strong{Warning:} if you use the @samp{-malign-double} switch,
+structures containing the above types will be aligned differently than
+the published application binary interface specifications for the 386.
+
 @item -m128bit-long-double
 @opindex m128bit-long-double
 Control the size of @code{long double} type. i386 application binary interface
