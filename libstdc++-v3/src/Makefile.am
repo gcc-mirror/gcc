@@ -21,7 +21,7 @@
 ## Software Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307,
 ## USA.
 
-## $Id: Makefile.am,v 1.46 2000/11/13 21:04:54 bkoz Exp $
+## $Id: Makefile.am,v 1.47 2000/11/13 23:38:41 bkoz Exp $
 
 AUTOMAKE_OPTIONS = 1.3 gnits
 MAINT_CHARSET = latin1
@@ -195,7 +195,7 @@ libstdc___la_SOURCES = $(sources)
 libinst_wstring_la_SOURCES = $(wstring_sources)
 
 libstdc___la_LIBADD = \
-	../libmath/libmath.la ../libio/libio.la \
+	../libmath/libmath.la @libio_la@ \
 	../libsupc++/libsupc++convenience.la \
 	@libinst_wstring_la@
 

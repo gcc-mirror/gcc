@@ -1,3 +1,15 @@
+Wed Nov 15 18:39:34 2000  Mark P Mitchell  <mark@codesourcery.com>
+
+	* acinclude.m4 (GLIBCPP_ENABLE_CSTDIO): Substitute libio_la.
+	* src/Makefile.am (libstdc___la_LIBADD): Use it.
+	* aclocal.m4: Regenerated.
+	* configure: Likewise.
+	* Makefile.in: Likewise.
+	* libio/Makefile.in: Likewise.
+	* libmath/Makefile.in: Likewise.
+	* libsupc++/Makefile.in: Likewise.
+	* src/Makfile.in: Likewise.
+	
 2000-11-15  Mark Mitchell  <mark@codesourcery.com>
 
 	* mkcheckin.in: Move check for bash version 2 later in the file.

@@ -1316,6 +1316,12 @@ AC_DEFUN(GLIBCPP_ENABLE_CSTDIO, [
 
   AM_CONDITIONAL(GLIBCPP_NEED_LIBIO, test "$need_libio" = yes)
   AM_CONDITIONAL(GLIBCPP_NEED_WLIBIO, test "$need_wlibio" = yes)
+  if test "$need_libio" = yes || test "$need_wlibio" = yes; then
+	libio_la=../libio/libio.la
+  else
+	libio_la=
+  fi
+  AC_SUBST(libio_la)
 ])
 
 
