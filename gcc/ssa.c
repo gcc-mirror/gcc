@@ -1061,12 +1061,12 @@ rename_block (bb, idom)
 	  else
 	    {
 	      /* When we created the PHI nodes, we did not know what mode
-	     the register should be.  Now that we've found an original,
-	     we can fill that in.  */
+		 the register should be.  Now that we've found an original,
+		 we can fill that in.  */
 	      if (GET_MODE (SET_DEST (phi)) == VOIDmode)
 		PUT_MODE (SET_DEST (phi), GET_MODE (reg));
 	      else if (GET_MODE (SET_DEST (phi)) != GET_MODE (reg))
-		abort();
+		abort ();
 
 	      *phi_alternative (phi, bb) = reg;
 	    }
