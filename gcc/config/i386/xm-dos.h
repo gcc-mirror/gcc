@@ -33,6 +33,8 @@ Boston, MA 02111-1307, USA.  */
 /* Suffix for executable file names.  */
 #define EXECUTABLE_SUFFIX ".exe"
 
-#define MKTEMP_EACH_FILE 1
+/* Tell GCC about DOS's bit bucket. */
+
+#define HOST_BIT_BUCKET "NUL"
 
 #define NO_PRECOMPILES 1

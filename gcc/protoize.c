@@ -1952,6 +1952,7 @@ munge_compile_params (params_list)
     = (const char **) alloca ((strlen (params_list) + 8) * sizeof (char *));
   int param_count = 0;
   const char *param;
+  struct stat st;
 
   temp_params[param_count++] = compiler_file_name;
   for (;;)
@@ -1998,11 +1999,15 @@ munge_compile_params (params_list)
 
   temp_params[param_count++] = "-S";
   temp_params[param_count++] = "-o";
-#if defined (_WIN32) && ! defined (__CYGWIN__) && ! defined (_UWIN)
-  temp_params[param_count++] = "NUL";
-#else
-  temp_params[param_count++] = "/dev/null";
-#endif
+  
+  if ((stat (HOST_BIT_BUCKET, &st) == 0) && (!S_ISDIR (st.st_mode))
+      (access (HOST_BIT_BUCKET, W_OK) == 0))
+    temp_params[param_count++] = HOST_BIT_BUCKET;
+  else
+    /* FIXME: This is hardly likely to be right, if HOST_BIT_BUCKET is not
+       writable.  But until this is rejigged to use make_temp_file(), this
+       is the best we can do.  */
+    temp_params[param_count++] = "/dev/null";
 
   /* Leave room for the input file name argument.  */
   input_file_name_index = param_count;
