@@ -1,3 +1,7 @@
+2001-01-12  Phil Edwards  <pme@sources.redhat.com>
+
+	* install.texi:  Remove misplaced duplicate entry.
+
 2001-01-11  Ulrich Drepper  <drepper@redhat.com>
 
 	* config/float-i386.h: Define FLT_EVAL_METHOD and DECIMAL_DIG for C99.

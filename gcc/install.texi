@@ -233,51 +233,6 @@ change the generated code, but adds error checking within the compiler.
 This will slow down the compiler and may only work properly if you
 are building the compiler with GNU C.
 
-The @file{configure} script searches subdirectories of the source
-directory for other compilers that are to be integrated into GNU CC.
-The GNU compiler for C++, called G++ is in a subdirectory named
-@file{cp}.  @file{configure} inserts rules into @file{Makefile} to build
-all of those compilers.
-
-Here we spell out what files will be set up by @code{configure}.  Normally
-you need not be concerned with these files.
-
-@itemize @bullet
-@item
-@ifset INTERNALS
-A file named @file{config.h} is created that contains a @samp{#include}
-of the top-level config file for the machine you will run the compiler
-on (@pxref{Config}).  This file is responsible for defining information
-about the host machine.  It includes @file{tm.h}.
-@end ifset
-@ifclear INTERNALS
-A file named @file{config.h} is created that contains a @samp{#include}
-of the top-level config file for the machine you will run the compiler
-on (@pxref{Config,,The Configuration File, gcc.info, Using and Porting
-GCC}).  This file is responsible for defining information about the host
-machine.  It includes @file{tm.h}.
-@end ifclear
-
-The top-level config file is located in the subdirectory @file{config}.
-Its name is always @file{xm-@var{something}.h}; usually
-@file{xm-@var{machine}.h}, but there are some exceptions.
-
-If your system does not support symbolic links, you might want to
-set up @file{config.h} to contain a @samp{#include} command which
-refers to the appropriate file.
-
-@item
-A file named @file{tconfig.h} is created which includes the top-level config
-file for your target machine.  This is used for compiling certain
-programs to run on that machine.
-
-@item
-A file named @file{tm.h} is created which includes the
-machine-description macro file for your target machine.  It should be in
-the subdirectory @file{config} and its name is often
-@file{@var{machine}.h}.
-@end itemize
-
 @cindex Native Language Support
 @cindex NLS
 @item --enable-nls
