@@ -1604,11 +1604,13 @@ __bb_init_func (struct bb *blocks)
 
 typedef void (*vfp)(void);
 extern vfp __new_handler;
+extern void __default_new_handler (void);
 
 void *
 __builtin_new (size_t sz)
 {
   void *p;
+  vfp handler = (__new_handler) ? __new_handler : __default_new_handler;
 
   /* malloc (0) is unpredictable; avoid it.  */
   if (sz == 0)
@@ -1616,7 +1618,7 @@ __builtin_new (size_t sz)
   p = (void *) malloc (sz);
   while (p == 0)
     {
-      (*__new_handler) ();
+      (*handler) ();
       p = (void *) malloc (sz);
     }
   
@@ -1657,7 +1659,7 @@ __builtin_vec_new (size_t sz)
 typedef void (*vfp)(void);
 void __default_new_handler (void);
 
-vfp __new_handler = __default_new_handler;
+vfp __new_handler = (vfp)0;
 
 vfp
 set_new_handler (vfp handler)
