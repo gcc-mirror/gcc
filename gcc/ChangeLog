@@ -1,3 +1,8 @@
+2000-08-10  Drew Moseley  <dmoseley@redhat.com>
+
+	* config/mn10300/mn10300.h: Added no-crt0 option for explicitly
+	disabling just crt0.o.
+
 2000-08-10  Richard Earnshaw <rearnshaw@arm.com> & Nick Clifton  <nickc@cygnus.com>
 
 	* arm.h (CPP_SPEC): Use sub-spec cpp_interwork.
