@@ -950,7 +950,7 @@ read_specs (filename)
 		 sizeof compilers[n_compilers].spec);
 	  compilers[n_compilers].spec[0] = spec;
 	  n_compilers++;
-	  bzero (compilers[n_compilers], sizeof compilers[n_compilers]);
+	  bzero (&compilers[n_compilers], sizeof compilers[n_compilers]);
 	}
 
       if (*suffix == 0)
