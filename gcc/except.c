@@ -2446,7 +2446,7 @@ expand_builtin_eh_stub ()
   rtx stub_start = gen_label_rtx ();
   rtx after_stub = gen_label_rtx ();
   rtx handler, offset;
-  rtx jump_to, temp;
+  rtx temp;
 
   emit_jump (after_stub);
   emit_label (stub_start);

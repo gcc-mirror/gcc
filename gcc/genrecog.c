@@ -1003,19 +1003,19 @@ write_subroutine (tree, type)
     printf (", pnum_clobbers");
 
   printf (")\n");
-  printf ("     register rtx x0;\n     rtx insn;\n");
+  printf ("     register rtx x0;\n     rtx insn ATTRIBUTE_UNUSED;\n");
   if (type == RECOG)
-    printf ("     int *pnum_clobbers;\n");
+    printf ("     int *pnum_clobbers ATTRIBUTE_UNUSED;\n");
 
   printf ("{\n");
   printf ("  register rtx *ro = &recog_operand[0];\n");
 
   printf ("  register rtx ");
   for (i = 1; i < max_depth; i++)
-    printf ("x%d, ", i);
+    printf ("x%d ATTRIBUTE_UNUSED, ", i);
 
-  printf ("x%d;\n", max_depth);
-  printf ("  %s tem;\n", type == SPLIT ? "rtx" : "int");
+  printf ("x%d ATTRIBUTE_UNUSED;\n", max_depth);
+  printf ("  %s tem ATTRIBUTE_UNUSED;\n", type == SPLIT ? "rtx" : "int");
   write_tree (tree, "", NULL_PTR, 1, type);
   printf (" ret0: return %d;\n}\n\n", type == SPLIT ? 0 : -1);
 }

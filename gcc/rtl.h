@@ -1422,6 +1422,9 @@ extern void mark_elimination		PROTO ((int, int));
 extern int global_alloc			PROTO ((FILE *));
 extern void dump_global_regs		PROTO ((FILE *));
 #endif
+#ifdef HARD_CONST
+extern void retry_global_alloc		PROTO ((int, HARD_REG_SET));
+#endif
 
 /* In regclass.c */
 extern int reg_classes_intersect_p	PROTO ((enum reg_class, enum reg_class));

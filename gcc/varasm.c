@@ -164,9 +164,11 @@ static void output_constructor		PROTO((tree, int));
 #ifdef ASM_OUTPUT_BSS
 static void asm_output_bss		PROTO((FILE *, tree, char *, int, int));
 #endif
+#ifdef BSS_SECTION_ASM_OP
 #ifdef ASM_OUTPUT_ALIGNED_BSS
 static void asm_output_aligned_bss	PROTO((FILE *, tree, char *, int, int));
 #endif
+#endif /* BSS_SECTION_ASM_OP */
 
 static enum in_section { no_section, in_text, in_data, in_named
 #ifdef BSS_SECTION_ASM_OP
