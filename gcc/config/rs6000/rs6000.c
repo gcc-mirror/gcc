@@ -4074,7 +4074,7 @@ expand_block_move (operands)
 						     dest_reg, orig_dest),
 			      tmp_reg);
 	    }
-	  else if (bytes > 4)
+	  else if (bytes > 4 && !TARGET_POWERPC64)
 	    {			/* move up to 8 bytes at a time */
 	      move_bytes = (bytes > 8) ? 8 : bytes;
 	      emit_insn (gen_movstrsi_2reg (expand_block_move_mem (BLKmode,
