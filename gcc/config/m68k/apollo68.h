@@ -87,10 +87,6 @@ Boston, MA 02111-1307, USA.  */
 #define IDENT_DIRECTIVE
 #define ASM_OUTPUT_IDENT(FILE, NAME)
 
-/* Allow dollarsigns in identifiers */
-
-#define DOLLARS_IN_IDENTIFIERS 2
-
 /* -m68000 requires special flags to the assembler.  */
 
 #define ASM_SPEC \

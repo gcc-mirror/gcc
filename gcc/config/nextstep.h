@@ -152,11 +152,6 @@ Boston, MA 02111-1307, USA.  */
      %{p:%e-p profiling is no longer supported.  Use -pg instead.} \
      %{!p:-lposixcrt0.o}}}"
 
-/* Why not? */
-
-#undef	DOLLARS_IN_IDENTIFIERS
-#define DOLLARS_IN_IDENTIFIERS 2
-
 /* Allow #sscs (but don't do anything). */
 
 #define SCCS_DIRECTIVE
