@@ -1266,6 +1266,7 @@ restore_emit_status (p)
 
   reg_rtx_no = p->reg_rtx_no;
   first_label_num = p->first_label_num;
+  last_label_num = 0;
   first_insn = p->first_insn;
   last_insn = p->last_insn;
   sequence_stack = p->sequence_stack;
