@@ -219,6 +219,8 @@ java_new_lexer (finput, encoding)
     }
   lex->first = -1;
   lex->last = -1;
+  lex->out_first = -1;
+  lex->out_last = -1;
 #else /* HAVE_ICONV */
   if (strcmp (encoding, DEFAULT_ENCODING))
     enc_error = 1;
@@ -253,81 +255,99 @@ java_read_char (lex)
 
 #ifdef HAVE_ICONV
   {
-    char out[2];
-    size_t ir, inbytesleft, in_save, out_count;
+    size_t ir, inbytesleft, in_save, out_count, out_save;
     char *inp, *outp;
+    unicode_t result;
 
-    while (1)
+    /* If there is data which has already been converted, use it.  */
+    if (lex->out_first == -1 || lex->out_first >= lex->out_last)
       {
-	/* See if we need to read more data.  If FIRST == 0 then the
-	   previous conversion attempt ended in the middle of a
-	   character at the end of the buffer.  Otherwise we only have
-	   to read if the buffer is empty.  */
-	if (lex->first == 0 || lex->first >= lex->last)
-	  {
-	    int r;
+	lex->out_first = 0;
+	lex->out_last = 0;
 
-	    if (lex->first >= lex->last)
+	while (1)
+	  {
+	    /* See if we need to read more data.  If FIRST == 0 then
+	       the previous conversion attempt ended in the middle of
+	       a character at the end of the buffer.  Otherwise we
+	       only have to read if the buffer is empty.  */
+	    if (lex->first == 0 || lex->first >= lex->last)
 	      {
-		lex->first = 0;
-		lex->last = 0;
+		int r;
+
+		if (lex->first >= lex->last)
+		  {
+		    lex->first = 0;
+		    lex->last = 0;
+		  }
+		if (feof (lex->finput))
+		  return UEOF;
+		r = fread (&lex->buffer[lex->last], 1,
+			   sizeof (lex->buffer) - lex->last,
+			   lex->finput);
+		lex->last += r;
 	      }
-	    if (feof (lex->finput))
-	      return UEOF;
-	    r = fread (&lex->buffer[lex->last], 1,
-		       sizeof (lex->buffer) - lex->last,
-		       lex->finput);
-	    lex->last += r;
-	  }
 
-	inbytesleft = lex->last - lex->first;
+	    inbytesleft = lex->last - lex->first;
+	    out_count = sizeof (lex->out_buffer) - lex->out_last;
 
-	if (inbytesleft == 0)
-	  {
-	    /* We've tried to read and there is nothing left.  */
-	    return UEOF;
-	  }
-
-	in_save = inbytesleft;
-	out_count = 2;
-	inp = &lex->buffer[lex->first];
-	outp = out;
-	ir = iconv (lex->handle, (const char **) &inp, &inbytesleft,
-		    &outp, &out_count);
-	lex->first += in_save - inbytesleft;
-
-	if (out_count == 0)
-	  {
-	    /* Success.  We assume that UCS-2 is big-endian.  This
-	       appears to be an ok assumption.  */
-	    unicode_t result;
-	    result = (((unsigned char) out[0]) << 8) | (unsigned char) out[1];
-	    return result;
-	  }
-
-	if (ir == (size_t) -1)
-	  {
-	    if (errno == EINVAL)
+	    if (inbytesleft == 0)
 	      {
-		/* This is ok.  This means that the end of our buffer
-		   is in the middle of a character sequence.  We just
-		   move the valid part of the buffer to the beginning
-		   to force a read.  */
-		/* We use bcopy() because it should work for
-		   overlapping strings.  Use memmove() instead... */
-		bcopy (&lex->buffer[lex->first], &lex->buffer[0],
-		       lex->last - lex->first);
-		lex->last -= lex->first;
-		lex->first = 0;
-	      }
-	    else
-	      {
-		/* A more serious error.  */
-		java_lex_error ("unrecognized character in input stream", 0);
+		/* We've tried to read and there is nothing left.  */
 		return UEOF;
+	      }
+
+	    in_save = inbytesleft;
+	    out_save = out_count;
+	    inp = &lex->buffer[lex->first];
+	    outp = &lex->out_buffer[lex->out_last];
+	    ir = iconv (lex->handle, (const char **) &inp, &inbytesleft,
+			&outp, &out_count);
+	    lex->first += in_save - inbytesleft;
+	    lex->out_last += out_save - out_count;
+
+	    /* If we converted anything at all, move along.  */
+	    if (out_count != out_save)
+	      break;
+
+	    if (ir == (size_t) -1)
+	      {
+		if (errno == EINVAL)
+		  {
+		    /* This is ok.  This means that the end of our buffer
+		       is in the middle of a character sequence.  We just
+		       move the valid part of the buffer to the beginning
+		       to force a read.  */
+		    /* We use bcopy() because it should work for
+		       overlapping strings.  Use memmove() instead... */
+		    bcopy (&lex->buffer[lex->first], &lex->buffer[0],
+			   lex->last - lex->first);
+		    lex->last -= lex->first;
+		    lex->first = 0;
+		  }
+		else
+		  {
+		    /* A more serious error.  */
+		    java_lex_error ("unrecognized character in input stream",
+				    0);
+		    return UEOF;
+		  }
 	      }
 	  }
       }
+
+    if (lex->out_first == -1 || lex->out_first >= lex->out_last)
+      {
+	/* Don't have any data.  */
+	return UEOF;
+      }
+
+    /* Success.  We assume that UCS-2 is big-endian.  This appears to
+       be an ok assumption.  */
+    result = ((((unsigned char) lex->out_buffer[lex->out_first]) << 8)
+	      | (unsigned char) lex->out_buffer[lex->out_first + 1]);
+    lex->out_first += 2;
+    return result;
   }
 #else /* HAVE_ICONV */
   {
