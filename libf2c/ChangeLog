@@ -1,3 +1,7 @@
+Fri Mar 16 12:46:19 GMT 2001 Bernd Schmidt  (bernds@redhat.com)
+
+	* gcc-2.95.3 Released.
+
 Mon Jan 24 20:28:35 CET 2000  David M. Gay <dmg@bell-labs.com>
 
 	* libI77/endfile.c (t_runc): set state to writing
