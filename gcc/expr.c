@@ -4730,7 +4730,8 @@ expand_expr (exp, target, tmode, modifier)
       {
 	tree function = decl_function_context (exp);
 	/* Handle using a label in a containing function.  */
-	if (function != current_function_decl && function != 0)
+	if (function != current_function_decl
+	    && function != inline_function_decl && function != 0)
 	  {
 	    struct function *p = find_function_data (function);
 	    /* Allocate in the memory associated with the function
@@ -4747,7 +4748,8 @@ expand_expr (exp, target, tmode, modifier)
 				   label_rtx (exp), forced_labels);
 	temp = gen_rtx (MEM, FUNCTION_MODE,
 			gen_rtx (LABEL_REF, Pmode, label_rtx (exp)));
-	if (function != current_function_decl && function != 0)
+	if (function != current_function_decl
+	    && function != inline_function_decl && function != 0)
 	  LABEL_REF_NONLOCAL_P (XEXP (temp, 0)) = 1;
 	return temp;
       }
@@ -4924,6 +4926,11 @@ expand_expr (exp, target, tmode, modifier)
     case SAVE_EXPR:
       context = decl_function_context (exp);
 
+      /* If this SAVE_EXPR was at global context, assume we are an
+	 initialization function and move it into our context.  */
+      if (context == 0)
+	SAVE_EXPR_CONTEXT (exp) = current_function_decl;
+
       /* We treat inline_function_decl as an alias for the current function
 	 because that is the inline function whose vars, types, etc.
 	 are being merged into the current function.
@@ -4934,6 +4941,10 @@ expand_expr (exp, target, tmode, modifier)
       /* If this is non-local, handle it.  */
       if (context)
 	{
+	  /* The following call just exists to abort if the context is
+	     not of a containing function.  */
+	  find_function_data (context);
+
 	  temp = SAVE_EXPR_RTL (exp);
 	  if (temp && GET_CODE (temp) == REG)
 	    {
