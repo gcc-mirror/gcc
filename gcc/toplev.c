@@ -591,6 +591,8 @@ char *lang_options[] =
   "-Wno-strict-prototypes",
   "-Wmissing-prototypes",
   "-Wno-missing-prototypes",
+  "-Wmissing-declarations",
+  "-Wno-missing-declarations",
   "-Wredundant-decls",
   "-Wno-redundant-decls",
   "-Wnested-externs",
