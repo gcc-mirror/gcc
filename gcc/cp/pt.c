@@ -7627,8 +7627,7 @@ tsubst_expr (tree t, tree args, tsubst_flags_t complain, tree in_decl)
 			   initializer.  */
 			const char *const name
 			  = cxx_printable_name (current_function_decl, 2);
-			init = cp_fname_init (name);
-			TREE_TYPE (decl) = TREE_TYPE (init);
+			init = cp_fname_init (name, &TREE_TYPE (decl));
 		      }
 		    else
 		      init = tsubst_expr (init, args, complain, in_decl);

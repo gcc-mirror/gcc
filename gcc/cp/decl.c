@@ -3097,11 +3097,11 @@ cxx_init_decl_processing (void)
 }
 
 /* Generate an initializer for a function naming variable from
-   NAME. NAME may be NULL, in which case we generate a special
-   ERROR_MARK node which should be replaced later.  */
+   NAME. NAME may be NULL, to indicate a dependent name.  TYPE_P is
+   filled in with the type of the init. */
 
 tree
-cp_fname_init (const char* name)
+cp_fname_init (const char* name, tree *type_p)
 {
   tree domain = NULL_TREE;
   tree type;
@@ -3118,12 +3118,12 @@ cp_fname_init (const char* name)
   type = build_qualified_type (char_type_node, TYPE_QUAL_CONST);
   type = build_cplus_array_type (type, domain);
 
+  *type_p = type;
+  
   if (init)
     TREE_TYPE (init) = type;
   else
-    /* We don't know the value until instantiation time. Make
-       something which will be digested now, but replaced later.  */
-    init = build (ERROR_MARK, type);
+    init = error_mark_node;
   
   return init;
 }
@@ -3139,8 +3139,9 @@ cp_make_fname_decl (tree id, int type_dep)
 {
   const char *const name = (type_dep && processing_template_decl
 			    ? NULL : fname_as_string (type_dep));
-  tree init = cp_fname_init (name);
-  tree decl = build_decl (VAR_DECL, id, TREE_TYPE (init));
+  tree type;
+  tree init = cp_fname_init (name, &type);
+  tree decl = build_decl (VAR_DECL, id, type);
 
   /* As we're using pushdecl_with_scope, we must set the context.  */
   DECL_CONTEXT (decl) = current_function_decl;
