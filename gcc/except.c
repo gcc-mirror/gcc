@@ -750,7 +750,8 @@ add_new_handler (region, newhandler)
   else 
     {
       for ( ; last->next != NULL; last = last->next)
-        last->next = newhandler;
+        ;
+      last->next = newhandler;
     }
 }
 
