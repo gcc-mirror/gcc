@@ -107,6 +107,7 @@ void write_global_declarations PARAMS ((void));
 #define LANG_HOOKS_SET_DECL_ASSEMBLER_NAME lhd_set_decl_assembler_name
 #define LANG_HOOKS_CAN_USE_BIT_FIELDS_P lhd_can_use_bit_fields_p
 #define LANG_HOOKS_HONOR_READONLY	false
+#define LANG_HOOKS_NO_BODY_BLOCKS	false
 #define LANG_HOOKS_PRINT_STATISTICS	lhd_do_nothing
 #define LANG_HOOKS_PRINT_XNODE		lhd_print_tree_nothing
 #define LANG_HOOKS_PRINT_DECL		lhd_print_tree_nothing
@@ -266,6 +267,7 @@ int lhd_tree_dump_type_quals			PARAMS ((tree));
   LANG_HOOKS_SET_DECL_ASSEMBLER_NAME, \
   LANG_HOOKS_CAN_USE_BIT_FIELDS_P, \
   LANG_HOOKS_HONOR_READONLY, \
+  LANG_HOOKS_NO_BODY_BLOCKS, \
   LANG_HOOKS_PRINT_STATISTICS, \
   LANG_HOOKS_PRINT_XNODE, \
   LANG_HOOKS_PRINT_DECL, \

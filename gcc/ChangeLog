@@ -1,3 +1,13 @@
+2003-06-25  Zack Weinberg  <zack@codesourcery.com>
+
+	PR 10178
+	* langhooks.h (struct lang_hooks): Add no_body_blocks bool.
+	* langhooks-def.h (LANG_HOOKS_NO_BODY_BLOCKS): New; default false.
+	* c-lang.c, objc/objc-lang.c: Override LANG_HOOKS_NO_BODY_BLOCKS
+	to true.
+	* stmt.c (is_body_block): If lang_hooks.no_body_blocks, always
+	return 0.
+
 2003-06-25  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* Makefile.in (bt-load.o): Depend on $(TM_P_H).
@@ -87,18 +97,18 @@ Wed Jun 25 11:31:59 CEST 2003  Jan Hubicka  <jh@suse.cz>
 
 	Back out these patches:
 	 2003-06-02  J"orn Rennecke <joern.rennecke@superh.com>
-          * sh.h (OLD_ARG_MODE): New macro.
-          (FUNCTION_ARG_ADVANCE, FUNCTION_ARG_PASS_BY_REFERENCE): Use it.
-          (FUNCTION_ARG_1): Break out of:
-          (FUNCTION_ARG).  Use OLD_ARG_MODE.
+	  * sh.h (OLD_ARG_MODE): New macro.
+	  (FUNCTION_ARG_ADVANCE, FUNCTION_ARG_PASS_BY_REFERENCE): Use it.
+	  (FUNCTION_ARG_1): Break out of:
+	  (FUNCTION_ARG).  Use OLD_ARG_MODE.
 	 2003-06-06  J"orn Rennecke <joern.rennecke@superh.com>
-          * sh.h (FUNCTION_ARG_1): Consistently use NEW_MODE for the mode
-          of the generated register.
+	  * sh.h (FUNCTION_ARG_1): Consistently use NEW_MODE for the mode
+	  of the generated register.
 
 	* sh.h (FUNCTION_ARG_SCmode_WART): Define.
 	(FUNCTION_ARG): Unless FUNCTION_ARG_SCmode_WART is defined and
 	an even number of floating point regs are in use, use the same
-	sequence of argument passing registers for SCmode as would be 
+	sequence of argument passing registers for SCmode as would be
 	used for two SFmode values.
 	* sh.c (sh_va_arg): If FUNCTION_ARG_SCmode_WART is defined,
 	swap real / imaginary parts in incoming SCmode values passed
@@ -106,8 +116,8 @@ Wed Jun 25 11:31:59 CEST 2003  Jan Hubicka  <jh@suse.cz>
 
 2003-06-24  Falk Hueffner  <falk.hueffner@student.uni-tuebingen.de>
 
-        PR target/11260
-        * config/alpha/alpha.md (sqrtdf2): Fix operand substitution.
+	PR target/11260
+	* config/alpha/alpha.md (sqrtdf2): Fix operand substitution.
 
 Tue Jun 24 18:49:33 CEST 2003  Jan Hubicka  <jh@suse.cz>
 
@@ -167,7 +177,7 @@ Mon Jun 23 23:07:35 CEST 2003  Jan Hubicka  <jh@suse.cz>
 	* cgraphunit.c (cgraph_finalize_function): Collect entry points here
 	instead of in cgraph_finalize_compilation_unit; constructors and
 	destructors are entry points.
-	(cgraph_finalize_compilation_unit): Reorganize debug outout; 
+	(cgraph_finalize_compilation_unit): Reorganize debug outout;
 	examine nested functions after lowerng; call collect_functions hook.
 	(cgraph_mark_local_functions): DECL_COMDAT functions are not local.
 	(cgraph_finalize_compilation_unit): Do not collect entry points.
@@ -237,7 +247,7 @@ Mon Jun 23 23:07:35 CEST 2003  Jan Hubicka  <jh@suse.cz>
 	* sched-deps.c: Likewise.
 
 2003-06-23  Roger Sayle  <roger@eyesopen.com>
-            Gerald Pfeifer  <pfeifer@dbai.tuwien.ac.at>
+	    Gerald Pfeifer  <pfeifer@dbai.tuwien.ac.at>
 
 	* doc/contrib.texi (Contributors): Add a note on testing and
 	remove duplicates from testers list.

@@ -328,6 +328,11 @@ struct lang_hooks
   /* Nonzero if TYPE_READONLY and TREE_READONLY should always be honored.  */
   bool honor_readonly;
 
+  /* Nonzero if this front end does not generate a dummy BLOCK between
+     the outermost scope of the function and the FUNCTION_DECL.  See
+     is_body_block in stmt.c, and its callers.  */
+  bool no_body_blocks;
+
   /* The front end can add its own statistics to -fmem-report with
      this hook.  It should output to stderr.  */
   void (*print_statistics) PARAMS ((void));

@@ -3511,6 +3511,9 @@ int
 is_body_block (stmt)
      tree stmt;
 {
+  if (lang_hooks.no_body_blocks)
+    return 0;
+
   if (TREE_CODE (stmt) == BLOCK)
     {
       tree parent = BLOCK_SUPERCONTEXT (stmt);
