@@ -1171,7 +1171,12 @@ print_operand_address (file, x)
   else if (GET_CODE (x) == SYMBOL_REF || GET_CODE (x) == CONST)
     {
       output_addr_const (file, x);
-      fprintf (file, "(2)");
+      /* When TARGET_MINIMAL_TOC, use the indirected toc table pointer instead
+	 of the toc pointer.  */
+      if (TARGET_MINIMAL_TOC)
+	fprintf (file, "(30)");
+      else
+	fprintf (file, "(2)");
     }
   else if (GET_CODE (x) == PLUS && GET_CODE (XEXP (x, 1)) == REG)
     {
@@ -1372,6 +1377,11 @@ output_prolog (file, size)
   /* Set frame pointer, if needed.  */
   if (frame_pointer_needed)
     fprintf (file, "\toril 31,1,0\n");
+
+  /* If TARGET_MINIMAL_TOC, and the constant pool is needed, then load the
+     TOC_TABLE address into register 30.  */
+  if (TARGET_MINIMAL_TOC && get_pool_size () != 0)
+    fprintf (file, "\tl 30,LCTOC..0(2)\n");
 }
 
 /* Write function epilogue.  */
@@ -1643,9 +1653,13 @@ output_toc (file, x, labelno)
       && BITS_PER_WORD == HOST_BITS_PER_INT
       && TARGET_FP_IN_TOC)
     {
-      fprintf (file, "\t.tc FD_%x_%x[TC],%d,%d\n",
-	       CONST_DOUBLE_LOW (x), CONST_DOUBLE_HIGH (x),
-	       CONST_DOUBLE_LOW (x), CONST_DOUBLE_HIGH (x));
+      if (TARGET_MINIMAL_TOC)
+	fprintf (file, "\t.long %d\n\t.long %d\n",
+		 CONST_DOUBLE_LOW (x), CONST_DOUBLE_HIGH (x));
+      else
+	fprintf (file, "\t.tc FD_%x_%x[TC],%d,%d\n",
+		 CONST_DOUBLE_LOW (x), CONST_DOUBLE_HIGH (x),
+		 CONST_DOUBLE_LOW (x), CONST_DOUBLE_HIGH (x));
       return;
     }
   else if (GET_CODE (x) == CONST_DOUBLE && GET_MODE (x) == SFmode
@@ -1656,7 +1670,10 @@ output_toc (file, x, labelno)
       if (val == 0 || GET_CODE (val) != CONST_INT)
 	abort ();
 
-      fprintf (file, "\t.tc FS_%x[TC],%d\n", INTVAL (val), INTVAL (val));
+      if (TARGET_MINIMAL_TOC)
+	fprintf (file, "\t.long %d\n", INTVAL (val));
+      else
+	fprintf (file, "\t.tc FS_%x[TC],%d\n", INTVAL (val), INTVAL (val));
       return;
     }
 
@@ -1675,15 +1692,20 @@ output_toc (file, x, labelno)
   else
     abort ();
 
-  fprintf (file, "\t.tc ");
-  RS6000_OUTPUT_BASENAME (file, name);
+  if (TARGET_MINIMAL_TOC)
+    fprintf (file, "\t.long ");
+  else
+    {
+      fprintf (file, "\t.tc ");
+      RS6000_OUTPUT_BASENAME (file, name);
 
-  if (offset < 0)
-    fprintf (file, ".N%d", - offset);
-  else if (offset)
-    fprintf (file, ".P%d", offset);
+      if (offset < 0)
+	fprintf (file, ".N%d", - offset);
+      else if (offset)
+	fprintf (file, ".P%d", offset);
 
-  fprintf (file, "[TC],");
+      fprintf (file, "[TC],");
+    }
   output_addr_const (file, x);
   fprintf (file, "\n");
 }
