@@ -1,3 +1,8 @@
+Wed Jul  2 08:12:36 CEST 2003  Jan Hubicka  <jh@suse.cz>
+
+	* cgraphunit.c (cgraph_finalize_unit): Set current_function_decl
+	before calling tree_inlinable_function_p.
+
 2003-07-02  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
 
 	* fixinc/inclhack.def (irix_stdio_va_list): Apply to IRIX 6.5
