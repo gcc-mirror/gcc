@@ -1,3 +1,8 @@
+2004-03-23  Roger Sayle  <roger@eyesopen.com>
+
+	PR optimization/14669
+	* g++.dg/opt/fold2.C: New test case.
+
 2004-03-22  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c/14069
