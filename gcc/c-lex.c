@@ -1,5 +1,5 @@
 /* Lexical analyzer for C and Objective C.
-   Copyright (C) 1987, 1988, 1989, 1992 Free Software Foundation, Inc.
+   Copyright (C) 1987, 1988, 1989, 1992, 1994 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -892,7 +892,7 @@ readescape (ignore_ptr)
   register int c = getc (finput);
   register int code;
   register unsigned count;
-  unsigned firstdig;
+  unsigned firstdig = 0;
   int nonnull;
 
   switch (c)
