@@ -504,6 +504,9 @@ extern int rs6000_debug_arg;		/* debug argument handling */
 /* Type used for ptrdiff_t, as a string used in a declaration.  */
 #define PTRDIFF_TYPE "int"
 
+/* Type used for size_t, as a string used in a declaration.  */
+#define SIZE_TYPE "long unsigned int"
+
 /* Type used for wchar_t, as a string used in a declaration.  */
 #define WCHAR_TYPE "short unsigned int"
 

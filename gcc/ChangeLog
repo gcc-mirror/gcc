@@ -1,3 +1,7 @@
+2000-07-21  David Edelsohn  <edelsohn@gnu.org>
+
+	* rs6000.h (SIZE_TYPE): Define.
+
 2000-07-21  Mark Mitchell  <mark@codesourcery.com>
 
 	* ssa.c (rename_insn_1): Don't rename registers that are
