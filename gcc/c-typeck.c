@@ -5667,7 +5667,7 @@ static void
 output_init_element (tree value, bool strict_string, tree type, tree field,
 		     int pending)
 {
-  if (type == error_mark_node)
+  if (type == error_mark_node || value == error_mark_node)
     {
       constructor_erroneous = 1;
       return;

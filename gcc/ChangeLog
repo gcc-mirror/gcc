@@ -1,3 +1,8 @@
+2004-11-05  Joseph S. Myers  <joseph@codesourcery.com>
+
+	* c-typeck.c (output_init_element): Return early if value is
+	error_mark_node.
+
 2004-11-05  James E Wilson  <wilson@specifixinc.com>
 
 	* invoke.texi (-fno-guess-branch-probability): Rewrite.
