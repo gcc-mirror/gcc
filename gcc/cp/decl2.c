@@ -50,7 +50,7 @@ static void finish_sigtable_vardecl PROTO((tree, tree));
 static int is_namespace_ancestor PROTO((tree, tree));
 static tree namespace_ancestor PROTO((tree, tree));
 static void add_using_namespace PROTO((tree, tree, int));
-static tree ambiguous_decl PROTO((int, tree, tree));
+static tree ambiguous_decl PROTO((tree, tree, tree));
 
 extern int current_class_depth;
 
@@ -3734,8 +3734,7 @@ add_using_namespace (user, used, indirect)
    XXX I don't want to repeat the entire duplicate_decls here */
 static tree
 ambiguous_decl (name, val1, val2)
-     int name;
-     tree val1, val2;
+     tree name, val1, val2;
 {
   my_friendly_assert (val1 != val2, 376);
   if (is_overloaded_fn (val1) && is_overloaded_fn (val1))
