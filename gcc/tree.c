@@ -3300,7 +3300,6 @@ build_type_attribute_variant (ttype, attribute)
         current_obstack = TYPE_OBSTACK (ttype);
 
       ntype = copy_node (ttype);
-      current_obstack = ambient_obstack;
 
       TYPE_POINTER_TO (ntype) = 0;
       TYPE_REFERENCE_TO (ntype) = 0;
@@ -3335,6 +3334,12 @@ build_type_attribute_variant (ttype, attribute)
 
       ntype = type_hash_canon (hashcode, ntype);
       ttype = build_qualified_type (ntype, TYPE_QUALS (ttype));
+
+      /* We must restore the current obstack after the type_hash_canon call,
+	 because type_hash_canon calls type_hash_add for permanent types, and
+	 then type_hash_add calls oballoc expecting to get something permanent
+	 back.  */
+      current_obstack = ambient_obstack;
     }
 
   return ttype;
