@@ -584,61 +584,43 @@ namespace std
       ios_base::iostate __err = ios_base::iostate(ios_base::goodbit);
       sentry __cerb(*this, true);
       if (__cerb)
-	{
+        {
           try
-	    {
-	      const int_type __idelim = traits_type::to_int_type(__delim);
-	      const int_type __eof = traits_type::eof();
-	      __streambuf_type* __sb = this->rdbuf();
-	      int_type __c = __sb->sgetc();
-	      
-	      while (_M_gcount + 1 < __n
-		     && !traits_type::eq_int_type(__c, __eof)
-		     && !traits_type::eq_int_type(__c, __idelim))
-		{
-		  streamsize __size = std::min(streamsize(__sb->egptr()
-							  - __sb->gptr()),
-					       streamsize(__n - _M_gcount
-							  - 1));
-		  if (__size > 1)
-		    {
-		      const char_type* __p = traits_type::find(__sb->gptr(),
-							       __size,
-							       __delim);
-		      if (__p)
-			__size = __p - __sb->gptr();
-		      traits_type::copy(__s, __sb->gptr(), __size);
-		      __s += __size;
-		      __sb->gbump(__size);
-		      _M_gcount += __size;
-		      __c = __sb->sgetc();
-		    }
-		  else
-		    {
-		      *__s++ = traits_type::to_char_type(__c);
-		      ++_M_gcount;
-		      __c = __sb->snextc();
-		    }
-		}
+            {
+              const int_type __idelim = traits_type::to_int_type(__delim);
+              const int_type __eof = traits_type::eof();
+              __streambuf_type* __sb = this->rdbuf();
+              int_type __c = __sb->sgetc();
 
-	      if (traits_type::eq_int_type(__c, __eof))
-		__err |= ios_base::eofbit;
-	      else if (traits_type::eq_int_type(__c, __idelim))
-		{
-		  ++_M_gcount;		  
-		  __sb->sbumpc();
-		}
-	      else
-		__err |= ios_base::failbit;
-	    }
-	  catch(...)
-	    { this->_M_setstate(ios_base::badbit); }
-	}
+              while (_M_gcount + 1 < __n
+                     && !traits_type::eq_int_type(__c, __eof)
+                     && !traits_type::eq_int_type(__c, __idelim))
+                {
+                  *__s++ = traits_type::to_char_type(__c);
+                  __c = __sb->snextc();
+                  ++_M_gcount;
+                }
+              if (traits_type::eq_int_type(__c, __eof))
+                __err |= ios_base::eofbit;
+              else
+                {
+                  if (traits_type::eq_int_type(__c, __idelim))
+                    {
+                      __sb->sbumpc();
+                      ++_M_gcount;
+                    }
+                  else
+                    __err |= ios_base::failbit;
+                }
+            }
+          catch(...)
+            { this->_M_setstate(ios_base::badbit); }
+        }
       *__s = char_type();
       if (!_M_gcount)
-	__err |= ios_base::failbit;
+        __err |= ios_base::failbit;
       if (__err)
-	this->setstate(__err);
+        this->setstate(__err);
       return *this;
     }
 
@@ -680,48 +662,31 @@ namespace std
     {
       if (__n == 1)
 	return ignore();
-      
+
       _M_gcount = 0;
       sentry __cerb(*this, true);
       if (__cerb && __n > 0)
-	{
-	  ios_base::iostate __err = ios_base::iostate(ios_base::goodbit);
-	  try
-	    {
-	      const int_type __eof = traits_type::eof();
-	      __streambuf_type* __sb = this->rdbuf();
-	      int_type __c = __sb->sgetc();
-	      
-	      const bool __bound = __n != numeric_limits<streamsize>::max();
-	      if (__bound)
-		--__n;
-	      while (_M_gcount <= __n
-		     && !traits_type::eq_int_type(__c, __eof))
-		{
-		  streamsize __size = __sb->egptr() - __sb->gptr();
-		  if (__bound)
-		    __size = std::min(__size, streamsize(__n - _M_gcount + 1));
+        {
+          ios_base::iostate __err = ios_base::iostate(ios_base::goodbit);
+          try
+            {
+              const int_type __eof = traits_type::eof();
+              __streambuf_type* __sb = this->rdbuf();
+              int_type __c = __eof;
 
-		  if (__size > 1)
-		    {
-		      __sb->gbump(__size);
-		      _M_gcount += __size;
-		      __c = __sb->sgetc();
-		    }
-		  else
-		    {
-		      ++_M_gcount;
-		      __c = __sb->snextc();
-		    }		  
-		}
+              if (__n != numeric_limits<streamsize>::max())
+                --__n;
+              while (_M_gcount <= __n
+                     && !traits_type::eq_int_type(__c = __sb->sbumpc(), __eof))
+		++_M_gcount;
 	      if (traits_type::eq_int_type(__c, __eof))
-		__err |= ios_base::eofbit;
-	    }
-	  catch(...)
-	    { this->_M_setstate(ios_base::badbit); }
-	  if (__err)
-	    this->setstate(__err);
-	}
+                __err |= ios_base::eofbit;
+            }
+          catch(...)
+            { this->_M_setstate(ios_base::badbit); }
+          if (__err)
+            this->setstate(__err);
+        }
       return *this;
     }
 
@@ -736,56 +701,31 @@ namespace std
       _M_gcount = 0;
       sentry __cerb(*this, true);
       if (__cerb && __n > 0)
-	{
-	  ios_base::iostate __err = ios_base::iostate(ios_base::goodbit);
-	  try
-	    {
-	      const char_type __cdelim = traits_type::to_char_type(__delim);	      
-	      const int_type __eof = traits_type::eof();
-	      __streambuf_type* __sb = this->rdbuf();
-	      int_type __c = __sb->sgetc();
+        {
+          ios_base::iostate __err = ios_base::iostate(ios_base::goodbit);
+          try
+            {
+              const int_type __eof = traits_type::eof();
+              __streambuf_type* __sb = this->rdbuf();
+              int_type __c = __eof;
 
-	      const bool __bound = __n != numeric_limits<streamsize>::max();
-	      if (__bound)
-		--__n;
-	      while (_M_gcount <= __n
-		     && !traits_type::eq_int_type(__c, __eof)
-		     && !traits_type::eq_int_type(__c, __delim))
-		{
-		  streamsize __size = __sb->egptr() - __sb->gptr();
-		  if (__bound)
-		    __size = std::min(__size, streamsize(__n - _M_gcount + 1));
-
-		  if (__size > 1)
-		    {
-		      const char_type* __p = traits_type::find(__sb->gptr(),
-							       __size,
-							       __cdelim);
-		      if (__p)
-			__size = __p - __sb->gptr();
-		      __sb->gbump(__size);
-		      _M_gcount += __size;
-		      __c = __sb->sgetc();
-		    }
-		  else
-		    {
-		      ++_M_gcount;
-		      __c = __sb->snextc();
-		    }		  
-		}
-	      if (traits_type::eq_int_type(__c, __eof))
-		__err |= ios_base::eofbit;
-	      else if (traits_type::eq_int_type(__c, __delim))
-		{
-		  ++_M_gcount;
-		  __sb->sbumpc();
-		}
-	    }
-	  catch(...)
-	    { this->_M_setstate(ios_base::badbit); }
-	  if (__err)
-	    this->setstate(__err);
-	}
+              if (__n != numeric_limits<streamsize>::max())
+                --__n;
+              while (_M_gcount <= __n
+                     && !traits_type::eq_int_type(__c = __sb->sbumpc(), __eof))
+                {
+                  ++_M_gcount;
+                  if (traits_type::eq_int_type(__c, __delim))
+                    break;
+                }
+              if (traits_type::eq_int_type(__c, __eof))
+                __err |= ios_base::eofbit;
+            }
+          catch(...)
+            { this->_M_setstate(ios_base::badbit); }
+          if (__err)
+            this->setstate(__err);
+        }
       return *this;
     }
 

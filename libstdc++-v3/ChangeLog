@@ -1,3 +1,16 @@
+2004-11-08  Paolo Carlini  <pcarlini@suse.de>
+
+	* include/bits/istream.tcc (getline(char_type*, streamsize,
+	char_type), ignore(streamsize), ignore(streamsize, int_type)):
+	Restore a generic version of the functions, not using the
+	protected members of basic_streambuf.
+	* include/std/std_istream.h (getline(char_type*, streamsize,
+	char_type), ignore(streamsize), ignore(streamsize, int_type)):
+	Declare optimized specializations for char and wchar_t.
+	* src/istream.cc: New file, define the latter.
+	* src/Makefile.am: Add.
+	* src/Makefile.in: Regenerate.
+
 2004-11-07  Paolo Carlini  <pcarlini@suse.de>
 
 	* testsuite/performance/27_io/ifstream_getline-2.cc: New.

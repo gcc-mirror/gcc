@@ -126,6 +126,7 @@ sources = \
 	ext-inst.cc \
 	io-inst.cc \
 	istream-inst.cc \
+	istream.cc \
 	locale-inst.cc \
 	locale-misc-inst.cc \
 	misc-inst.cc \
