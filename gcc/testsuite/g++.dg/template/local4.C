@@ -7,5 +7,5 @@ int main () {
   // We do not simply use "local|match" on line 10 because we want to
   // make sure that "local" appears.
   // { dg-error "local" "" { target *-*-* } 10 }
-  foo<S> (); // { dg-error "match" } 
+  foo<S> (); // { dg-error "trying|match" } 
 }

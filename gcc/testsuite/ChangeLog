@@ -1,3 +1,8 @@
+2005-02-02  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
+
+	PR c++/17413
+	* g++.dg/template/local4.C: Tweak.
+
 2005-02-02  Richard Sandiford  <rsandifo@redhat.com>
 
 	PR tree-optimization/19578
