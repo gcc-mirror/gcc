@@ -1,3 +1,21 @@
+Mon Nov  2 10:10:35 1998  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* configure.in: Call AC_FUNC_VFORK.
+
+	* collect2.c: Define VFORK_STRING as a printable string for
+ 	error messages (either "vfork" or "fork".)  If HAVE_VFORK_H is
+ 	defined, include vfork.h.  If VMS is defined, define vfork()
+	appropriately.  Remove vfork check on USG, we're using autoconf.
+	(collect_execute): Pass VFORK_STRING to fatal_perror instead of
+	checking locally what string to pass.
+	(scan_prog_file): Likewise.
+	(scan_libraries): Likewise.
+
+	* gcc.c: Remove vfork check on USG, we're using autoconf.
+	Besides, no calls to vfork/fork occur in this file.
+
+	* protoize.c: Likewise.
+
 Mon Nov  2 07:52:28 1998  Alexandre Oliva  <oliva@dcc.unicamp.br>
 
 	* configure.in (DEFAULT_LINKER): renamed from LD
