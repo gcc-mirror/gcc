@@ -40,6 +40,7 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 # include <sys/times.h>
 #endif
 
+#include "line-map.h"
 #include "input.h"
 #include "tree.h"
 #include "rtl.h"
