@@ -1,4 +1,4 @@
-2005-01-19  Jakub Jelinek  <jakub@redhat.com>
+2005-02-19  Jakub Jelinek  <jakub@redhat.com>
 
 	* decl.c (start_decl_1): Only check TYPE_NEEDS_CONSTRUCTING
 	if type is not error_mark_node.
