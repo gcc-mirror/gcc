@@ -2326,6 +2326,7 @@ compile_file (name)
 	if (TREE_CODE (decl) == FUNCTION_DECL
 	    && ! TREE_ASM_WRITTEN (decl)
 	    && DECL_INITIAL (decl) != 0
+	    && DECL_SAVED_INSNS (decl) != 0
 	    && (TREE_ADDRESSABLE (decl)
 		|| flag_keep_inline_functions
 		|| TREE_ADDRESSABLE (DECL_ASSEMBLER_NAME (decl)))
