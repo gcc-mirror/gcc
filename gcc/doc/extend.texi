@@ -2537,6 +2537,30 @@ compiler will generate @code{seth/add3} instructions to load their addresses),
 and may not be reachable with the @code{bl} instruction (the compiler will
 generate the much slower @code{seth/add3/jl} instruction sequence).
 
+@item far
+@cindex functions which handle memory bank switching
+On 68HC11 and 68HC12 the @code{far} attribute causes the compiler to
+use a calling convention that takes care of switching memory banks when
+entering and leaving a function.  This calling convention is also the
+default when using the @option{-mlong-calls} option.
+
+On 68HC12 the compiler will use the @code{call} and @code{rtc} instructions
+to call and return from a function.
+
+On 68HC11 the compiler will generate a sequence of instructions
+to invoke a board-specific routine to switch the memory bank and call the
+real function. The board-specific routine simulates a @code{call}.
+At the end of a function, it will jump to a board-specific routine
+instead of using @code{rts}. The board-specific return routine simulates
+the @code{rtc}.
+
+@item near
+@cindex functions which do not handle memory bank switching on 68HC11/68HC12
+On 68HC11 and 68HC12 the @code{near} attribute causes the compiler to
+use the normal calling convention based on @code{jsr} and @code{rts}.
+This attribute can be used to cancel the effect of the @option{-mlong-calls}
+option.
+
 @end table
 
 You can specify multiple attributes in a declaration by separating them
