@@ -335,6 +335,13 @@ convert_to_integer (type, expr)
 						 convert (typex, arg1),
 						 convert (typex, arg2))));
 		  }
+		else
+		  /* It is sometimes worthwhile
+		     to push the narrowing down through the conditional.  */
+		  return fold (build (COND_EXPR, type,
+				      TREE_OPERAND (expr, 0),
+				      convert (type, TREE_OPERAND (expr, 1)), 
+				      convert (type, TREE_OPERAND (expr, 2))));
 	      }
 	  }
 	}
