@@ -1,3 +1,8 @@
+2000-09-29  Alexandre Petit-Bianco  <apbianco@cygnus.com>
+
+	* parse.y (maybe_yank_clinit): Also keep <clinit> if its body
+	contains something else than MODIFY_EXPR.
+
 2000-09-23  Mark Mitchell  <mark@codesourcery.com>
 
 	* Make-lang.in (JAVA_SRCS): Include java-tree.h.
