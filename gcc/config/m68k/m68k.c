@@ -2299,3 +2299,35 @@ strict_low_part_peephole_ok (mode, first_insn, target)
 
   return 0;
 }
+
+/* Emit the machine-code interface trampoline at the beginning of a byte
+   coded function.  The argument is a label name of the interpreter
+   bytecode callinfo structure; the return value is a label name for
+   the beginning of the actual bytecode.  */
+char *
+bc_emit_trampoline (callinfo)
+  char *callinfo;
+{
+  short insn;
+  int zero = 0;
+  char mylab[256];
+  static int n;
+
+  sprintf (mylab, "*LB%d", n++);
+
+  /* Push a reference to the callinfo structure.  */
+  insn = 0x4879;		/* pea xxx.L */
+  seg_data (trampoline, (char *) &insn, sizeof insn);
+  seg_refsym (trampoline, callinfo, 0);
+
+  /* Call __interp, pop arguments, and return.  */
+  insn = 0x4EB9;		/* jsr xxx.L  */
+  seg_data (trampoline, (char *) &insn, sizeof insn);
+  seg_refsym (trampoline, "__callint", 0);
+  insn = 0x588F;		/* addql #4, sp */
+  seg_data (trampoline, (char *) &insn, sizeof insn);
+  insn = 0x4E75;		/* rts */
+  seg_data (trampoline, (char *) &insn, sizeof insn);
+  seg_defsym (bytecode, mylab);
+  return sym_lookup (mylab)->name;
+}

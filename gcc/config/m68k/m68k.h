@@ -1809,6 +1809,154 @@ do { long l;						\
 #define PRINT_OPERAND_ADDRESS(FILE, ADDR) print_operand_address (FILE, ADDR)
 
 
+/* Definitions for generating bytecode */
+
+/* Just so it's known this target is supported by the bytecode generator.
+   If this define isn't found anywhere in the target config files, then
+   dummy stubs are supplied by bytecode.h, and any attempt to use
+   -fbytecode will result in an error message. */
+
+#define TARGET_SUPPORTS_BYTECODE
+
+/* Minimal segment alignment within sections is 8 units. */
+#define MACHINE_SEG_ALIGN 3
+
+/* Integer alignment is two units. */
+#define INT_ALIGN 2
+
+/* Pointer alignment is eight units. */
+#define PTR_ALIGN 3
+
+/* Global symbols begin with `_' */
+#define NAMES_HAVE_UNDERSCORES
+
+/* BC_xxx below are similar to their ASM_xxx counterparts above. */
+#define BC_GLOBALIZE_LABEL(FP, NAME) bc_globalize_label(NAME)
+
+#define BC_OUTPUT_COMMON(FP, NAME, SIZE, ROUNDED) \
+  do { bc_emit_common(NAME, ROUNDED); bc_globalize_label(NAME); } while (0)
+
+#define BC_OUTPUT_LOCAL(FP, NAME, SIZE, ROUNDED) \
+  bc_emit_common(NAME, ROUNDED)
+
+#define BC_OUTPUT_ALIGN(FP, ALIGN) bc_align(ALIGN)
+
+#define BC_OUTPUT_LABEL(FP, NAME) bc_emit_labeldef(NAME)
+
+#define BC_OUTPUT_SKIP(FP, SIZE) bc_emit_skip(SIZE)
+
+#define BC_OUTPUT_LABELREF(FP, NAME)					      \
+  do {									      \
+    char *foo = (char *) xmalloc(strlen(NAME) + 2);			      \
+    strcpy(foo, "_");							      \
+    strcat(foo, NAME);							      \
+    bc_emit_labelref (foo);						      \
+    free (foo);								      \
+  } while (0)
+
+#define BC_OUTPUT_FLOAT(FP, VAL)					      \
+  do {									      \
+    float F = VAL;							      \
+    bc_emit ((char *) &F, sizeof F);					      \
+  } while (0)
+
+#define BC_OUTPUT_DOUBLE(FP, VAL)					      \
+  do {									      \
+    double D = VAL;							      \
+    bc_emit ((char *) &D, sizeof D);					      \
+  } while (0)
+
+#define BC_OUTPUT_BYTE(FP, VAL)					      \
+  do {									      \
+    char C = VAL;							      \
+    bc_emit (&C, 1);							      \
+  } while (0)
+
+
+#define BC_OUTPUT_FILE ASM_OUTPUT_FILE
+#define BC_OUTPUT_ASCII ASM_OUTPUT_ASCII
+#define BC_OUTPUT_IDENT ASM_OUTPUT_IDENT
+
+/* Same as XSTR, but for bytecode */
+#define BCXSTR(RTX)  ((RTX)->bc_label)
+
+
+/* Flush bytecode buffer onto file */
+#define BC_WRITE_FILE(FP) \
+{ \
+  fprintf (FP, ".text\n"); \
+  bc_seg_write (bc_text_seg, FP); \
+  fprintf(FP, "\n.data\n"); \
+  bc_seg_write (bc_data_seg, FP); \
+  bc_sym_write (FP);  /* do .globl, .bss, etc. */ \
+}
+
+/* Write one symbol */
+#define BC_WRITE_SEGSYM(SEGSYM, FP) \
+{ \
+  prsym (FP, (SEGSYM)->sym->name); \
+  fprintf (FP, ":\n"); \
+}
+
+
+/* Write one reloc entry */
+#define BC_WRITE_RELOC_ENTRY(SEGRELOC, FP, OFFSET) \
+{ \
+  fprintf (FP, "\t.long "); \
+  prsym (FP, (SEGRELOC)->sym->name); \
+  fprintf (FP, " + %d\n", OFFSET); \
+}
+
+/* Start new line of bytecodes */
+#define BC_START_BYTECODE_LINE(FP) \
+{ \
+  fprintf (FP, "\t.byte"); \
+}
+
+/* Write one bytecode */
+#define BC_WRITE_BYTECODE(SEP, VAL, FP) \
+{ \
+  fprintf (FP, "%c0x%02X", (SEP), (VAL) & 0xff); \
+}
+
+/* Write one bytecode RTL entry */
+#define BC_WRITE_RTL(R, FP) \
+{ \
+  fprintf (FP, "%s+%d/0x%08X\n", (R)->label, (R)->offset, (R)->bc_label); \
+}
+
+
+/* Emit function entry trampoline */
+#define BC_EMIT_TRAMPOLINE(TRAMPSEG, CALLINFO) \
+{ \
+  short insn; \
+ \
+  /* Push a reference to the callinfo structure.  */ \
+  insn = 0x4879;		/* pea xxx.L */ \
+  seg_data (TRAMPSEG, (char *) &insn, sizeof insn); \
+  seg_refsym (TRAMPSEG, CALLINFO, 0); \
+ \
+  /* Call __interp, pop arguments, and return.  */ \
+  insn = 0x4eb9;		/* jsr xxx.L  */ \
+  seg_data (TRAMPSEG, (char *) &insn, sizeof insn); \
+  seg_refsym (TRAMPSEG, "__callint", 0); \
+  insn = 0x588f;		/* addql #4, sp */ \
+  seg_data (TRAMPSEG, (char *) &insn, sizeof insn); \
+  insn = 0x4e75;		/* rts */ \
+  seg_data (TRAMPSEG, (char *) &insn, sizeof insn); \
+}
+
+
+
+#if 0
+#define VALIDATE_STACK()  if (stack_depth < 0) abort ();
+#else
+#if 0
+#define VALIDATE_STACK() \
+  fprintf (stderr, " %%%d%%", stack_depth);
+#endif
+#endif
+
 /* Define functions defined in aux-output.c and used in templates.  */
 
 extern char *output_move_double ();
