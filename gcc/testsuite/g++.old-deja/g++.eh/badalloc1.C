@@ -4,7 +4,7 @@
 
 // Check we can throw a bad_alloc exception when malloc dies
 
-static __SIZE_TYPE__ arena[32767]; // so things can initialize
+static __SIZE_TYPE__ arena[64]; // so things can initialize
 static int fail;
 static unsigned pos;
 
