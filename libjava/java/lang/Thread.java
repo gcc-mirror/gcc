@@ -49,7 +49,11 @@ public class Thread implements Runnable
   public native int countStackFrames ();
   public static native Thread currentThread ();
   public native void destroy ();
-  public static native void dumpStack ();
+  
+  public static void dumpStack ()
+  {
+    (new Exception ("Stack trace")).printStackTrace ();
+  }
 
   public static int enumerate (Thread[] threads)
   {
