@@ -56,6 +56,7 @@ Boston, MA 02111-1307, USA.  */
 
 static short *malloced_yyss;
 static void *malloced_yyvs;
+static int class_template_ok_as_expr;
 
 #define yyoverflow(MSG, SS, SSSIZE, VS, VSSIZE, YYSSZ)			\
 do {									\
@@ -449,7 +450,7 @@ check_class_key (key, aggr)
 %type <code>  template_close_bracket
 %type <ttype> apparent_template_type
 %type <ttype> template_type template_arg_list template_arg_list_opt
-%type <ttype> template_arg
+%type <ttype> template_arg template_arg_1
 %type <ttype> condition xcond paren_cond_or_null
 %type <ttype> type_name nested_name_specifier nested_type ptr_to_mem
 %type <ttype> complete_type_name notype_identifier nonnested_type
@@ -1121,7 +1122,7 @@ template_close_bracket:
 template_arg_list_opt:
          /* empty */
                  { $$ = NULL_TREE; }
-       | template_arg_list
+       | template_arg_list 
        ;
 
 template_arg_list:
@@ -1132,6 +1133,15 @@ template_arg_list:
 	;
 
 template_arg:
+                { ++class_template_ok_as_expr; }
+        template_arg_1 
+                { 
+		  --class_template_ok_as_expr; 
+		  $$ = $2; 
+		}
+        ;
+
+template_arg_1:
 	  type_id
 		{ $$ = groktypename ($1.t); }
 	| PTYPENAME
@@ -1704,7 +1714,14 @@ primary:
 		    $$ = $2;
 		}
 	| overqualified_id  %prec HYPERUNARY
-		{ $$ = build_offset_ref (OP0 ($$), OP1 ($$)); }
+		{ $$ = build_offset_ref (OP0 ($$), OP1 ($$));
+		  if (!class_template_ok_as_expr 
+		      && DECL_CLASS_TEMPLATE_P ($$))
+		    {
+		      error ("invalid use of template `%D'", $$); 
+		      $$ = error_mark_node;
+		    }
+                }
 	| overqualified_id '(' nonnull_exprlist ')'
                 { $$ = parse_finish_call_expr ($1, $3, 0); }
 	| overqualified_id LEFT_RIGHT
