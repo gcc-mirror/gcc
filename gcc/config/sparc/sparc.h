@@ -2489,12 +2489,29 @@ extern struct rtx_def *sparc_builtin_saveregs ();
       else if (RTX_OK_FOR_BASE_P (op0))			\
 	{						\
 	  if (RTX_OK_FOR_INDEX_P (op1)			\
+ 	      /* We prohibit REG + REG for TFmode when	\
+		 there are no instructions which accept	\
+		 REG+REG instructions.  We do this	\
+		 because REG+REG is not an offsetable	\
+		 address.  If we get the situation	\
+		 in reload where source and destination	\
+		 of a movtf pattern are both MEMs with	\
+		 REG+REG address, then only one of them	\
+		 gets converted to an offsetable	\
+		 address. */				\
+ 	      && (MODE != TFmode			\
+		  || (TARGET_FPU && TARGET_ARCH64	\
+		      && TARGET_V9 && TARGET_HARD_QUAD))\
 	      || RTX_OK_FOR_OFFSET_P (op1))		\
 	    goto ADDR;					\
 	}						\
       else if (RTX_OK_FOR_BASE_P (op1))			\
 	{						\
 	  if (RTX_OK_FOR_INDEX_P (op0)			\
+ 	      /* See the previous comment. */		\
+ 	      && (MODE != TFmode			\
+		  || (TARGET_FPU && TARGET_ARCH64	\
+		      && TARGET_V9 && TARGET_HARD_QUAD))\
 	      || RTX_OK_FOR_OFFSET_P (op0))		\
 	    goto ADDR;					\
 	}						\
