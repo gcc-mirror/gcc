@@ -253,7 +253,7 @@ static char *find_file		PROTO((char *));
 static int is_directory		PROTO((char *, char *, int));
 static void validate_switches	PROTO((char *));
 static void validate_all_switches PROTO((void));
-static void give_switch		PROTO((int, int));
+static void give_switch		PROTO((int, int, int));
 static int used_arg		PROTO((char *, int));
 static int default_arg		PROTO((char *, int));
 static void set_multilib_dir	PROTO((void));
@@ -362,6 +362,7 @@ or with constant text in a single argument.
 	arguments.  CC considers `-o foo' as being one switch whose
 	name starts with `o'.  %{o*} would substitute this text,
 	including the space; thus, two arguments would be generated.
+ %{S*^} likewise, but don't put a blank between a switch and any args.
  %{S*:X} substitutes X if one or more switches whose names start with -S are
 	specified to CC.  Note that the tail part of the -S option
 	(i.e. the part matched by the `*') will be substituted for each
@@ -3813,7 +3814,19 @@ handle_braces (p)
       for (i = 0; i < n_switches; i++)
 	if (!strncmp (switches[i].part1, filter, p - filter)
 	    && check_live_switch (i, p - filter))
-	  give_switch (i, 0);
+	  give_switch (i, 0, 1);
+    }
+  else if (p[-1] == '*' && p[0] == '^' && p[1] == '}')
+    {
+      /* Substitute all matching switches as separate args, but don't
+	 write a blank between the first part and any args, even if they
+	 were present.  */
+      register int i;
+      --p;
+      for (i = 0; i < n_switches; i++)
+	if (!strncmp (switches[i].part1, filter, p - filter)
+	    && check_live_switch (i, p - filter))
+	  give_switch (i, 0, 0);
     }
   else
     {
@@ -3852,7 +3865,7 @@ handle_braces (p)
 		  {
 		    do_spec_1 (string, 0, &switches[i].part1[hard_match_len]);
 		    /* Pass any arguments this switch has.  */
-		    give_switch (i, 1);
+		    give_switch (i, 1, 1);
 		  }
 
 	      return q;
@@ -3896,7 +3909,7 @@ handle_braces (p)
 	{
 	  if (*p == '}')
 	    {
-	      give_switch (i, 0);
+	      give_switch (i, 0, 1);
 	    }
 	  else
 	    {
@@ -3997,28 +4010,35 @@ check_live_switch (switchnum, prefix_length)
    the vector of switches gcc received, which is `switches'.
    This cannot fail since it never finishes a command line.
 
-   If OMIT_FIRST_WORD is nonzero, then we omit .part1 of the argument.  */
+   If OMIT_FIRST_WORD is nonzero, then we omit .part1 of the argument.
+
+   If INCLUDE_BLANKS is nonzero, then we include blanks before each argument
+   of the switch.  */
 
 static void
-give_switch (switchnum, omit_first_word)
+give_switch (switchnum, omit_first_word, include_blanks)
      int switchnum;
      int omit_first_word;
+     int include_blanks;
 {
   if (!omit_first_word)
     {
       do_spec_1 ("-", 0, NULL_PTR);
       do_spec_1 (switches[switchnum].part1, 1, NULL_PTR);
     }
-  do_spec_1 (" ", 0, NULL_PTR);
+
   if (switches[switchnum].args != 0)
     {
       char **p;
       for (p = switches[switchnum].args; *p; p++)
 	{
+	  if (include_blanks)
+	    do_spec_1 (" ", 0, NULL_PTR);
 	  do_spec_1 (*p, 1, NULL_PTR);
-	  do_spec_1 (" ", 0, NULL_PTR);
 	}
     }
+
+  do_spec_1 (" ", 0, NULL_PTR);
   switches[switchnum].valid = 1;
 }
 
