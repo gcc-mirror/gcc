@@ -52,6 +52,53 @@
 extern struct obstack *function_obstack;
 
 
+/* Structure to hold information about lexical scopes.  */
+typedef struct scope_def
+{
+  int level;
+
+  /* The NOTE_INSN_BLOCK_BEG that started this scope.  */
+  rtx note_beg;
+
+  /* The NOTE_INSN_BLOCK_END that ended this scope.  */
+  rtx note_end;
+
+  /* The bb containing note_beg (if any).  */
+  basic_block bb_beg;
+
+  /* The bb containing note_end (if any).  */
+  basic_block bb_end;
+
+  /* List of basic blocks contained within this scope.  */
+  basic_block *bbs;
+
+  /* Number of blocks contained within this scope.  */
+  int num_bbs;
+
+  /* The outer scope or NULL if outermost scope.  */
+  struct scope_def *outer;
+
+  /* The first inner scope or NULL if innermost scope.  */
+  struct scope_def *inner;
+
+  /* The last inner scope or NULL if innermost scope.  */
+  struct scope_def *inner_last;
+
+  /* Link to the next (sibling) scope.  */
+  struct scope_def *next;
+} *scope;
+
+/* Structure to hold information about the scope forest.  */
+typedef struct
+{
+  /* Number of trees in forest.  */
+  int num_trees;
+
+  /* List of tree roots.  */
+  scope *trees;
+} scope_forest_info;
+
+
 typedef struct reorder_block_def {
   int flags;
   int index;
@@ -62,6 +109,7 @@ typedef struct reorder_block_def {
   int block_end;
   rtx eff_head;
   rtx eff_end;
+  scope scope;
 } *reorder_block_def;
 
 static struct reorder_block_def rbd_init
@@ -74,7 +122,8 @@ static struct reorder_block_def rbd_init
     0,			/* block_begin */
     0,			/* block_end */
     NULL_RTX,		/* eff_head */
-    NULL_RTX		/* eff_end */
+    NULL_RTX,		/* eff_end */
+    NULL		/* scope */
 };
 
 
@@ -108,6 +157,9 @@ static struct reorder_block_def rbd_init
 #define REORDER_BLOCK_EFF_END(bb) \
   ((reorder_block_def) (bb)->aux)->eff_end
 
+#define REORDER_BLOCK_SCOPE(bb) \
+  ((reorder_block_def) (bb)->aux)->scope
+
 
 static int reorder_index;
 static basic_block reorder_last_visited;
@@ -126,6 +178,18 @@ static void fixup_reorder_chain		PARAMS ((void));
 #ifdef ENABLE_CHECKING
 static void verify_insn_chain		PARAMS ((void));
 #endif
+static void relate_bbs_with_scopes	PARAMS ((scope));
+static scope make_new_scope		PARAMS ((int, rtx));
+static void build_scope_forest		PARAMS ((scope_forest_info *));
+static void remove_scope_notes		PARAMS ((void));
+static void insert_intra_1		PARAMS ((scope, rtx *));
+static void insert_intra_bb_scope_notes PARAMS ((basic_block));
+static void insert_inter_bb_scope_notes PARAMS ((basic_block, basic_block));
+static void rebuild_scope_notes		PARAMS ((scope_forest_info *));
+static void free_scope_forest_1		PARAMS ((scope));
+static void free_scope_forest		PARAMS ((scope_forest_info *));
+void dump_scope_forest			PARAMS ((scope_forest_info *));
+static void dump_scope_forest_1		PARAMS ((scope, int));
 
 /* Skip over insns BEFORE or AFTER BB which are typically associated with
    basic block BB.  */
@@ -477,7 +541,7 @@ chain_reorder_blocks (e, ceb)
   dbe_insn = REORDER_BLOCK_EFF_END (db);
 
   /* Leave behind any lexical block markers.  */
-  if (debug_info_level > DINFO_LEVEL_TERSE
+  if (0 && debug_info_level > DINFO_LEVEL_TERSE
       && ceb->index + 1 < db->index)
     {
       rtx insn, last_insn = get_last_insn ();
@@ -707,7 +771,12 @@ fixup_reorder_chain ()
 		      >= REORDER_BLOCK_INDEX (bbi) + 1)
 		    REORDER_BLOCK_INDEX (bbj)++;
 		}
+	      REORDER_BLOCK_SCOPE (nb) = REORDER_BLOCK_SCOPE (bbi);
+	      REORDER_BLOCK_EFF_HEAD (nb) = nb->head;
+	      REORDER_BLOCK_EFF_END (nb) = barrier_insn;
 	    }
+	  else
+	    REORDER_BLOCK_EFF_END (bbi) = barrier_insn;
 	}
     }
 }
@@ -777,6 +846,579 @@ verify_insn_chain ()
 }
 #endif
 
+static rtx
+get_next_bb_note (x)
+     rtx x;
+{
+  while (x)
+    {
+      if (GET_CODE (x) == NOTE
+	  && NOTE_LINE_NUMBER (x) == NOTE_INSN_BASIC_BLOCK)
+	return x;
+      x = NEXT_INSN (x);
+    }
+  return NULL;
+}
+
+
+static rtx
+get_prev_bb_note (x)
+     rtx x;
+{
+  while (x)
+    {
+      if (GET_CODE (x) == NOTE
+	  && NOTE_LINE_NUMBER (x) == NOTE_INSN_BASIC_BLOCK)
+	return x;
+      x = PREV_INSN (x);
+    }
+  return NULL;
+}
+
+
+/* Determine and record the relationships between basic blocks and
+   scopes in scope tree S.  */
+
+static void
+relate_bbs_with_scopes (s)
+     scope s;
+{
+  scope p;
+  int i, bbi1, bbi2, bbs_spanned;
+  rtx bbnote;
+
+  for (p = s->inner; p; p = p->next)
+    relate_bbs_with_scopes (p);
+
+  bbi1 = bbi2 = -1;
+  bbs_spanned = 0;
+
+  /* If the begin and end notes are both inside the same basic block,
+     or if they are both outside of basic blocks, then we know immediately
+     how they are related. Otherwise, we need to poke around to make the
+     determination.  */
+  if (s->bb_beg != s->bb_end)
+    {
+      if (s->bb_beg && s->bb_end)
+        {
+	  /* Both notes are in different bbs. This implies that all the
+	     basic blocks spanned by the pair of notes are contained in
+             this scope.  */
+	  bbi1 = s->bb_beg->index;
+	  bbi2 = s->bb_end->index;
+	  bbs_spanned = 1;
+	}
+      else if (! s->bb_beg)
+        {
+	  /* First note is outside of a bb. If the scope spans more than
+	     one basic block, then they all are contained within this
+             scope. Otherwise, this scope is contained within the basic
+	     block.  */
+	  bbnote = get_next_bb_note (s->note_beg);
+	  if (! bbnote)
+	    abort ();
+	  if (NOTE_BASIC_BLOCK (bbnote) == s->bb_end)
+	    {
+	      bbs_spanned = 0;
+	      s->bb_beg = NOTE_BASIC_BLOCK (bbnote);
+	    }
+	  else
+	    {
+	      bbi1 = NOTE_BASIC_BLOCK (bbnote)->index;
+	      bbi2 = s->bb_end->index;
+	      s->bb_end = NULL;
+	      bbs_spanned = 1;
+	    }
+	}
+      else /* ! s->bb_end */
+        {
+	  /* Second note is outside of a bb. If the scope spans more than
+	     one basic block, then they all are contained within this
+             scope. Otherwise, this scope is contained within the basic
+	     block.  */
+	  bbnote = get_prev_bb_note (s->note_end);
+	  if (! bbnote)
+	    abort ();
+	  if (NOTE_BASIC_BLOCK (bbnote) == s->bb_beg)
+	    {
+	      bbs_spanned = 0;
+	      s->bb_end = NOTE_BASIC_BLOCK (bbnote);
+	    }
+	  else
+	    {
+	      bbi1 = s->bb_beg->index;
+	      bbi2 = NOTE_BASIC_BLOCK (bbnote)->index;
+	      s->bb_beg = NULL;
+	      bbs_spanned = 1;
+	    }
+	}
+    }
+  else
+    {
+      if (s->bb_beg)
+        /* Both notes are in the same bb, which implies the block
+	   contains this scope.  */
+	bbs_spanned = 0;
+      else
+	{
+          rtx x1, x2;
+	  /* Both notes are outside of any bbs. This implies that all the
+	     basic blocks spanned by the pair of notes are contained in
+             this scope. 
+	     There is a degenerate case to consider. If the notes do not
+	     span any basic blocks, then it is an empty scope that can
+	     safely be deleted or ignored. Mark these with level = -1.  */
+
+	  x1 = get_next_bb_note (s->note_beg);
+	  x2 = get_prev_bb_note (s->note_end);
+	  if (! (x1 && x2))
+	    {
+	      s->level = -1; 
+	      bbs_spanned = 0; 
+	    }
+	  else
+	    {
+	      bbi1 = NOTE_BASIC_BLOCK (x1)->index;
+	      bbi2 = NOTE_BASIC_BLOCK (x2)->index;
+	      bbs_spanned = 1;
+	    }
+	}
+    }
+
+
+  /* If the scope spans one or more basic blocks, we record them. We
+     only record the bbs that are immediately contained within this
+     scope. Note that if a scope is contained within a bb, we can tell
+     by checking that bb_beg = bb_end and that they are non-null.  */
+  if (bbs_spanned)
+    {
+      int j = 0;
+
+      s->num_bbs = 0;
+      for (i = bbi1; i <= bbi2; i++)
+	if (! REORDER_BLOCK_SCOPE (BASIC_BLOCK (i)))
+	  s->num_bbs++;
+
+      s->bbs = xcalloc (s->num_bbs, sizeof (struct basic_block_def));
+      for (i = bbi1; i <= bbi2; i++)
+	{
+	  basic_block curr_bb = BASIC_BLOCK (i);
+	  if (! REORDER_BLOCK_SCOPE (curr_bb))
+	    {
+	      s->bbs[j++] = curr_bb;
+	      REORDER_BLOCK_SCOPE (curr_bb) = s;
+	    }
+	}
+    }
+  else
+    s->num_bbs = 0;
+}
+
+
+/* Allocate and initialize a new scope structure with scope level LEVEL,
+   and record the NOTE beginning the scope.  */
+
+static scope 
+make_new_scope (level, note)
+     int level;
+     rtx note;
+{
+  scope new_scope = xcalloc (1, sizeof (struct scope_def));
+  new_scope->level = level;
+  new_scope->note_beg = note;
+  new_scope->note_end = NULL;
+  new_scope->bb_beg = NULL;
+  new_scope->bb_end = NULL;
+  new_scope->inner = NULL;
+  new_scope->inner_last = NULL;
+  new_scope->outer = NULL;
+  new_scope->next = NULL;
+  new_scope->num_bbs = 0;
+  new_scope->bbs = NULL;
+  return new_scope;
+}
+
+
+/* Build a forest representing the scope structure of the function.
+   Return a pointer to a structure describing the forest.  */
+
+static void
+build_scope_forest (forest)
+    scope_forest_info *forest;
+{
+  rtx x;
+  int level, bbi, i;
+  basic_block curr_bb;
+  scope root, curr_scope;
+
+  forest->num_trees = 0;
+  forest->trees = NULL;
+  level = -1;
+  root = NULL;
+  curr_bb = NULL;
+  bbi = 0;
+  for (x = get_insns (); x; x = NEXT_INSN (x))
+    {
+      if (bbi < n_basic_blocks && x == BASIC_BLOCK (bbi)->head)
+	curr_bb = BASIC_BLOCK (bbi);
+
+      if (GET_CODE (x) == NOTE)
+	{
+	  if (NOTE_LINE_NUMBER (x) == NOTE_INSN_BLOCK_BEG)
+	    {
+	      if (root)
+		{
+		  scope new_scope;
+		  if (! curr_scope)
+		    abort();
+		  level++;
+		  new_scope = make_new_scope (level, x);
+		  new_scope->outer = curr_scope;
+		  new_scope->next = NULL;
+		  if (! curr_scope->inner)
+		    {
+		      curr_scope->inner = new_scope;
+		      curr_scope->inner_last = new_scope;
+		    }
+		  else
+		    {
+		      curr_scope->inner_last->next = new_scope;
+		      curr_scope->inner_last = new_scope;
+		    }
+		  curr_scope = curr_scope->inner_last;
+		}
+	      else
+		{
+		  int ntrees = forest->num_trees;
+		  level++;
+	          curr_scope = make_new_scope (level, x);
+		  root = curr_scope;
+		  if (ntrees == 0)
+		    forest->trees = xcalloc (1, sizeof (scope));
+		  else
+		    forest->trees = xrealloc (forest->trees,
+					      sizeof (scope) * (ntrees + 1));
+		  forest->trees[forest->num_trees++] = root;
+		}
+	      curr_scope->bb_beg = curr_bb;
+	    }
+	  else if (NOTE_LINE_NUMBER (x) == NOTE_INSN_BLOCK_END)
+	    {
+	      curr_scope->bb_end = curr_bb;
+	      curr_scope->note_end = x;
+	      level--;
+	      curr_scope = curr_scope->outer;
+	      if (level == -1)
+		root = NULL;
+	    }
+	} /* if note */
+
+      if (curr_bb && curr_bb->end == x)
+	{
+	  curr_bb = NULL;
+	  bbi++;
+	}
+
+    } /* for */
+
+  for (i = 0; i < forest->num_trees; i++)
+    relate_bbs_with_scopes (forest->trees[i]);
+}
+
+
+/* Remove all the NOTE_INSN_BLOCK_BEG and NOTE_INSN_BLOCK_END notes from
+   the insn chain.  */
+
+static void
+remove_scope_notes ()
+{
+  rtx x, next;
+  basic_block currbb = NULL;
+
+  for (x = get_insns (); x; x = next)
+    {
+      next = NEXT_INSN (x);
+      if (GET_CODE (x) == NOTE
+	  && NOTE_LINE_NUMBER (x) == NOTE_INSN_BASIC_BLOCK)
+	currbb = NOTE_BASIC_BLOCK (x);
+
+      if (GET_CODE (x) == NOTE
+	  && (NOTE_LINE_NUMBER (x) == NOTE_INSN_BLOCK_BEG
+	      || NOTE_LINE_NUMBER (x) == NOTE_INSN_BLOCK_END))
+	{
+	  /* Check if the scope end happens to be the end of a bb.  */
+	  if (currbb && x == currbb->end
+	      && NOTE_LINE_NUMBER (x) == NOTE_INSN_BLOCK_END)
+	    currbb->end = PREV_INSN (x);
+
+	  if (PREV_INSN (x))
+	    {
+	      NEXT_INSN (PREV_INSN (x)) = next;
+	      PREV_INSN (next) = PREV_INSN (x);
+
+              NEXT_INSN (x) = NULL;
+              PREV_INSN (x) = NULL;
+	    }
+	  else
+	    abort ();
+	}
+    }
+}
+
+
+/* Insert scope note pairs for a contained scope tree S after insn IP.  */
+static void
+insert_intra_1 (s, ip)
+     scope s;
+     rtx *ip;
+{
+  scope p;
+
+  if (NOTE_BLOCK (s->note_beg))
+    {  
+      *ip = emit_note_after (NOTE_INSN_BLOCK_BEG, *ip);
+      NOTE_BLOCK (*ip) = NOTE_BLOCK (s->note_beg);
+    } 
+
+  for (p = s->inner; p; p = p->next)
+    insert_intra_1 (p, ip);
+
+  if (NOTE_BLOCK (s->note_beg))
+    {  
+      *ip = emit_note_after (NOTE_INSN_BLOCK_END, *ip);
+      NOTE_BLOCK (*ip) = NOTE_BLOCK (s->note_end);
+    }
+}
+
+
+/* Insert NOTE_INSN_BLOCK_END notes and NOTE_INSN_BLOCK_BEG notes for
+   scopes that are contained within BB.  */
+
+static void
+insert_intra_bb_scope_notes (bb)
+     basic_block bb;
+{
+  scope s = REORDER_BLOCK_SCOPE (bb);
+  scope p;
+  rtx ip;
+
+  if (! s)
+    return;
+
+  ip = bb->head;
+  if (GET_CODE (ip) == CODE_LABEL)
+    ip = NEXT_INSN (ip);
+
+  for (p = s->inner; p; p = p->next)
+    {
+      if (p->bb_beg != NULL && p->bb_beg == p->bb_end && p->bb_beg == bb)
+	insert_intra_1 (p, &ip);
+    }
+}
+
+
+/* Given two consecutive basic blocks BB1 and BB2 with different scopes,
+   insert NOTE_INSN_BLOCK_END notes after BB1 and NOTE_INSN_BLOCK_BEG
+   notes before BB2 such that the notes are correctly balanced. If BB1 or
+   BB2 is NULL, we are inserting scope notes for the first and last basic
+   blocks, respectively.  */
+
+static void
+insert_inter_bb_scope_notes (bb1, bb2)
+     basic_block bb1;
+     basic_block bb2;
+{
+  rtx ip;
+  scope com;
+
+  /* It is possible that a basic block is not contained in any scope.
+     In that case, we either open or close a scope but not both.  */
+  if (bb1 && bb2)
+    {
+      scope s1 = REORDER_BLOCK_SCOPE (bb1);
+      scope s2 = REORDER_BLOCK_SCOPE (bb2);
+      if (! s1 && ! s2)
+	return;
+      if (! s1)
+	bb1 = NULL;
+      else if (! s2)
+	bb2 = NULL;
+    }
+
+  /* Find common ancestor scope.  */
+  if (bb1 && bb2)
+    {
+      scope s1 = REORDER_BLOCK_SCOPE (bb1);
+      scope s2 = REORDER_BLOCK_SCOPE (bb2);
+      while (s1 != s2)
+	{
+          if (! (s1 && s2))
+	    abort ();
+	  if (s1->level > s2->level)
+	    s1 = s1->outer;
+	  else if (s2->level > s1->level)
+	    s2 = s2->outer;
+	  else
+	    {
+	      s1 = s1->outer;
+	      s2 = s2->outer;
+	    }
+	}
+      com = s1;
+    }
+  else
+    com = NULL;
+
+  /* Close scopes.  */
+  if (bb1)
+    {
+      scope s = REORDER_BLOCK_SCOPE (bb1);
+      ip = REORDER_BLOCK_EFF_END (bb1);
+      while (s != com)
+	{
+	  if (NOTE_BLOCK (s->note_beg))
+	    {  
+	      ip = emit_note_after (NOTE_INSN_BLOCK_END, ip);
+	      NOTE_BLOCK (ip) = NOTE_BLOCK (s->note_end);
+	    }
+	  s = s->outer;
+	}
+    }
+
+  /* Open scopes.  */
+  if (bb2)
+    {
+      scope s = REORDER_BLOCK_SCOPE (bb2);
+      ip = bb2->head;
+      while (s != com)
+	{
+	  if (NOTE_BLOCK (s->note_beg))
+	    {  
+	      ip = emit_note_before (NOTE_INSN_BLOCK_BEG, ip);
+	      NOTE_BLOCK (ip) = NOTE_BLOCK (s->note_beg);
+	    }
+	  s = s->outer;
+	}
+    }
+}
+
+
+/* Rebuild all the NOTE_INSN_BLOCK_BEG and NOTE_INSN_BLOCK_END notes based
+   on the scope forest and the newly reordered basic blocks.  */
+
+static void
+rebuild_scope_notes (forest)
+    scope_forest_info *forest;
+{
+  int i;
+
+  if (forest->num_trees == 0)
+    return;
+
+  /* Start by opening the scopes before the first basic block.  */
+  insert_inter_bb_scope_notes (NULL, BASIC_BLOCK (0));
+
+  /* Then, open and close scopes as needed between blocks.  */
+  for (i = 0; i < n_basic_blocks - 1; i++)
+    {
+      basic_block bb1 = BASIC_BLOCK (i);
+      basic_block bb2 = BASIC_BLOCK (i + 1);
+      if (REORDER_BLOCK_SCOPE (bb1) != REORDER_BLOCK_SCOPE (bb2))
+	insert_inter_bb_scope_notes (bb1, bb2);
+      insert_intra_bb_scope_notes (bb1);
+    }
+
+  /* Finally, close the scopes after the last basic block.  */
+  insert_inter_bb_scope_notes (BASIC_BLOCK (n_basic_blocks - 1), NULL);
+  insert_intra_bb_scope_notes (BASIC_BLOCK (n_basic_blocks - 1));
+}
+
+
+/* Free the storage associated with the scope tree at S.  */
+
+static void
+free_scope_forest_1 (s)
+    scope s;
+{
+  scope p, next;
+
+  for (p = s->inner; p; p = next)
+    {
+      next = p->next;
+      free_scope_forest_1 (p);
+    }
+
+  if (s->bbs)
+    free (s->bbs);
+  free (s);
+}
+
+
+/* Free the storage associated with the scope forest.  */
+
+static void
+free_scope_forest (forest)
+    scope_forest_info *forest;
+{
+  int i;
+  for (i = 0; i < forest->num_trees; i++)
+    free_scope_forest_1 (forest->trees[i]);
+}
+
+
+/* Visualize the scope forest.  */
+
+void
+dump_scope_forest (forest)
+    scope_forest_info *forest;
+{
+  if (forest->num_trees == 0)
+    fprintf (stderr, "\n< Empty scope forest >\n");
+  else
+    {
+      int i;
+      fprintf (stderr, "\n< Scope forest >\n");
+      for (i = 0; i < forest->num_trees; i++)
+	dump_scope_forest_1 (forest->trees[i], 0);
+    }
+}
+
+
+/* Recursive portion of dump_scope_forest.  */
+
+static void
+dump_scope_forest_1 (s, indent)
+     scope s;
+     int indent;
+{
+  scope p;
+  int i;
+
+  if (s->bb_beg != NULL && s->bb_beg == s->bb_end
+      && REORDER_BLOCK_SCOPE (s->bb_beg)
+      && REORDER_BLOCK_SCOPE (s->bb_beg)->level + 1 == s->level)
+    {
+      fprintf (stderr, "%*s", indent, "");
+      fprintf (stderr, "BB%d:\n", s->bb_beg->index);
+    }
+
+  fprintf (stderr, "%*s", indent, "");
+  fprintf (stderr, "{ level %d (block %p)\n", s->level,
+	   NOTE_BLOCK (s->note_beg));
+
+  fprintf (stderr, "%*s%s", indent, "", "bbs:");
+  for (i = 0; i < s->num_bbs; i++)
+    fprintf (stderr, " %d", s->bbs[i]->index);
+  fprintf (stderr, "\n");
+  
+  for (p = s->inner; p; p = p->next)
+    dump_scope_forest_1 (p, indent + 2);
+
+  fprintf (stderr, "%*s", indent, "");
+  fprintf (stderr, "}\n");
+}
+
+
 /* Reorder basic blocks.  */
 
 void
@@ -785,6 +1427,7 @@ reorder_basic_blocks ()
   int i, j;
   struct loops loops_info;
   int num_loops;
+  scope_forest_info forest;
 
   if (profile_arc_flag)
     return;
@@ -820,6 +1463,14 @@ reorder_basic_blocks ()
       basic_block bbi = BASIC_BLOCK (i);
       bbi->aux = xcalloc (1, sizeof (struct reorder_block_def));
       *((struct reorder_block_def *)bbi->aux) = rbd_init;
+    }
+
+  build_scope_forest (&forest);
+  remove_scope_notes ();
+
+  for (i = 0; i < n_basic_blocks; i++)
+    {
+      basic_block bbi = BASIC_BLOCK (i);
       REORDER_BLOCK_EFF_END (bbi)
 	= skip_insns_between_block (bbi, REORDER_SKIP_AFTER);
       if (i == 0)
@@ -876,6 +1527,10 @@ reorder_basic_blocks ()
 	  BASIC_BLOCK (j) = tempbb;
 	}
     }
+
+  rebuild_scope_notes (&forest);
+  free_scope_forest (&forest);
+  reorder_blocks ();
 
 #ifdef ENABLE_CHECKING
   verify_flow_info ();

@@ -1,3 +1,29 @@
+Sun Apr 30 22:48:24 2000  Jason Eckhardt  <jle@cygnus.com>
+
+	* bb-reorder.c (scope_def): New struct.
+	(scope_forest_info): New struct.
+	(struct reorder_block_def): New member "scope".
+	(REORDER_BLOCK_SCOPE): New macro.
+	(relate_bbs_with_scopes): New function and prototype.
+	(make_new_scope): Likewise.
+	(build_scope_forest): Likewise.
+	(remove_scope_notes): Likewise.
+	(insert_intra_1): Likewise.
+	(insert_intra_bb_scope_notes): Likewise.
+	(insert_inter_bb_scope_notes): Likewise.
+	(rebuild_scope_notes): Likewise.
+	(free_scope_forest_1): Likewise.
+	(free_scope_forest): Likewise.
+	(dump_scope_forest): Likewise.
+	(dump_scope_forest_1): Likewise.
+	(chain_reorder_blocks): Set REORDER_BLOCK_SCOPE for new block.
+	Update REORDER_BLOCK_EFF_HEAD and REORDER_BLOCK_EFF_END for new
+	block.
+	(reorder_basic_blocks): Added calls to build_scope_scope_forest
+	and remove_scope_notes before reordering is done. Added calls to
+	rebuild_scope_notes, free_scope_forest, and reorder_blocks after
+	after reordering is done.
+
 2000-40-30  Bruce Korb  <bkorb@gnu.org>
 
 	* fixinc/inclhack.def:  Added definitions needed by OSR5,
