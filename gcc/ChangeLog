@@ -1,3 +1,7 @@
+Tue Sep 30 23:48:57 1997  Jeffrey A Law  (law@cygnus.com)
+
+	* cse.c (this_insn_cc0_mode): Initialize.
+
 Tue Sep 30 23:09:40 1997  Thomas Koenig <ig25@mvmap66.ciw.uni-karlsruhe.de>
 
 	* haifa-sched.c: (get_block_head_tail) Remove unneeded initialization.
