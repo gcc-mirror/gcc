@@ -878,7 +878,21 @@ extract_bit_field (str_rtx, bitsize, bitnum, unsignedp,
     tmode = mode;
   while (GET_CODE (op0) == SUBREG)
     {
+      int outer_size = GET_MODE_BITSIZE (GET_MODE (op0));
+      int inner_size = GET_MODE_BITSIZE (GET_MODE (SUBREG_REG (op0)));
+
       offset += SUBREG_WORD (op0);
+
+      if (BYTES_BIG_ENDIAN && (outer_size < inner_size))
+	{
+	  bitpos += inner_size - outer_size;
+	  if (bitpos > unit)
+	    {
+	      offset += (bitpos / unit);
+	      bitpos %= unit;
+	    }
+	}
+
       op0 = SUBREG_REG (op0);
     }
 
