@@ -4571,7 +4571,9 @@ calc_live_regs (count_ptr, live_regs_mask)
     {
       rtx pr_initial = has_hard_reg_initial_val (Pmode, PR_REG);
       pr_live = (pr_initial
-		 ? REGNO (pr_initial) != (PR_REG) : regs_ever_live[PR_REG]);
+		 ? (GET_CODE (pr_initial) != REG
+		    || REGNO (pr_initial) != (PR_REG))
+		 : regs_ever_live[PR_REG]);
     }
   /* Force PR to be live if the prologue has to call the SHmedia
      argument decoder or register saver.  */
