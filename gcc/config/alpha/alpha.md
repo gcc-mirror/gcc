@@ -2406,28 +2406,31 @@
 ;; Here are the CALL and unconditional branch insns.
 
 (define_expand "call"
-  [(parallel [(call (mem:DI (match_dup 2))
+  [(parallel [(call (mem:DI (match_operand 0 "" ""))
 		    (match_operand 1 "" ""))
-	      (use (match_operand:DI 0 "" ""))
+	      (clobber (reg:DI 27))
 	      (clobber (reg:DI 26))])]
   ""
   "
 { if (GET_CODE (operands[0]) != MEM)
     abort ();
+
   operands[0] = XEXP (operands[0], 0);
 
-  operands[2] = gen_rtx (REG, DImode, 27);
-  emit_move_insn (operands[2], operands[0]);
-
-  if (GET_CODE (operands[0]) != SYMBOL_REF)
-    operands[0] = const0_rtx;
+  if (GET_CODE (operands[0]) != SYMBOL_REF
+      && ! (GET_CODE (operands[0]) == REG && REGNO (operands[0]) == 27))
+    {
+      rtx tem = gen_rtx (REG, DImode, 27);
+      emit_move_insn (tem, operands[0]);
+      operands[0] = tem;
+    }
 }")
 
 (define_expand "call_value"
   [(parallel [(set (match_operand 0 "" "")
-		   (call (mem:DI (match_dup 3))
+		   (call (mem:DI (match_operand 1 "" ""))
 			 (match_operand 2 "" "")))
-	      (use (match_operand:DI 1 "" ""))
+	      (clobber (reg:DI 27))
 	      (clobber (reg:DI 26))])]
   ""
   "
@@ -2436,50 +2439,39 @@
 
   operands[1] = XEXP (operands[1], 0);
 
-  operands[3] = gen_rtx (REG, DImode, 27);
-  emit_move_insn (operands[3], operands[1]);
-
-  if (GET_CODE (operands[1]) != SYMBOL_REF)
-    operands[1] = const0_rtx;
+  if (GET_CODE (operands[1]) != SYMBOL_REF
+      && ! (GET_CODE (operands[1]) == REG && REGNO (operands[1]) == 27))
+    {
+      rtx tem = gen_rtx (REG, DImode, 27);
+      emit_move_insn (tem, operands[1]);
+      operands[1] = tem;
+    }
 }")
 
 (define_insn ""
-  [(call (mem:DI (reg:DI 27))
-	 (match_operand 0 "" ""))
-   (use (match_operand:DI 1 "" ""))
+  [(call (mem:DI (match_operand:DI 0 "call_operand" "r,R,i"))
+	 (match_operand 1 "" ""))
+   (clobber (reg:DI 27))
    (clobber (reg:DI 26))]
   ""
-  "jsr $26,($27),%1\;ldgp $29,0($26)"
-  [(set_attr "type" "jsr")])
+  "@
+   jsr $26,($27),0\;ldgp $29,0($26)
+   bsr $26,%0..ng
+   jsr $26,%0\;ldgp $29,0($26)"
+  [(set_attr "type" "jsr,jsr,ibr")])
       
 (define_insn ""
-  [(set (match_operand 0 "register_operand" "=rf")
-	(call (mem:DI (reg:DI 27))
-	      (match_operand 1 "" "")))
-   (use (match_operand:DI 2 "" ""))
-   (clobber (reg:DI 26))]
-  ""
-  "jsr $26,($27),%2\;ldgp $29,0($26)"
-  [(set_attr "type" "jsr")])
-
-(define_insn ""
-  [(call (mem:DI (match_operand 1 "current_file_function_operand" "i"))
-	 (match_operand 0 "" ""))
-   (use (match_dup 1))
-   (clobber (reg:DI 26))]
-  ""
-  "bsr $26,%1..ng"
-  [(set_attr "type" "ibr")])
-      
-(define_insn ""
-  [(set (match_operand 0 "register_operand" "=rf")
-	(call (mem:DI (match_operand 1 "current_file_function_operand" "i"))
+  [(set (match_operand 0 "register_operand" "=rf,rf,rf")
+	(call (mem:DI (match_operand:DI 1 "call_operand" "r,R,i"))
 	      (match_operand 2 "" "")))
-   (use (match_dup 1))
+   (clobber (reg:DI 27))
    (clobber (reg:DI 26))]
   ""
-  "bsr $26,%1..ng"
-  [(set_attr "type" "ibr")])
+  "@
+   jsr $26,($27),0\;ldgp $29,0($26)
+   bsr $26,%1..ng
+   jsr $26,%1\;ldgp $29,0($26)"
+  [(set_attr "type" "jsr,jsr,ibr")])
 
 ;; Call subroutine returning any type.
 
