@@ -3,6 +3,11 @@
 	* decl.c (delete_block): Remove.
 	* cp-tree.h: Remove the corresponding prototype.
 
+	* decl.c (vtable_decl_p, vtype_decl_p, walk_globals_data,
+	walk_vtables_r, walk_vtables, walk_globals_r, walk_globals):
+	Remove.
+	* cp-tree.h: Remove the corresponding prototypes.
+
 2005-01-18  Andrew Pinski  <pinskia@physics.uc.edu>
 
 	PR c/19472
