@@ -1,4 +1,5 @@
 /* { dg-do link } */
+/* { dg-warning "visibility" "unsupported" { target sparc*-sun-solaris2.* } 22 } */
 /* Test that encode_section_info handles the change from externally
    defined to locally defined (via hidden).   Extracted from glibc.  */
 
