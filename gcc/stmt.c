@@ -438,7 +438,6 @@ static void fixup_gotos			PROTO((struct nesting *, rtx, tree,
 					       rtx, int));
 static void bc_fixup_gotos		PROTO((struct nesting *, int, tree,
 					       rtx, int));
-static int warn_if_unused_value		PROTO((tree));
 static void bc_expand_start_cond	PROTO((tree, int));
 static void bc_expand_end_cond		PROTO((void));
 static void bc_expand_start_else	PROTO((void));
@@ -1693,7 +1692,7 @@ expand_expr_stmt (exp)
 /* Warn if EXP contains any computations whose results are not used.
    Return 1 if a warning is printed; 0 otherwise.  */
 
-static int
+int
 warn_if_unused_value (exp)
      tree exp;
 {
