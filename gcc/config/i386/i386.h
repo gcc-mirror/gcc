@@ -2578,7 +2578,7 @@ do { long l;						\
    F,f -- likewise, but for floating-point.  */
 
 #define PRINT_OPERAND_PUNCT_VALID_P(CODE)				\
-  ((CODE) == '*')
+  ((CODE) == '*' || (CODE) == '_')
 
 /* Print the name of a register based on its machine mode and number.
    If CODE is 'w', pretend the mode is HImode.
