@@ -4244,7 +4244,7 @@ c_common_init_options (lang)
 }
 
 /* Post-switch processing.  */
-void
+bool
 c_common_post_options ()
 {
   cpp_post_options (parse_in);
@@ -4286,6 +4286,8 @@ c_common_post_options ()
   /* If an error has occurred in cpplib, note it so we fail
      immediately.  */
   errorcount += cpp_errors (parse_in);
+
+  return flag_preprocess_only;
 }
 
 /* Hook that registers front end and target-specific built-ins.  */

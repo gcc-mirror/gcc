@@ -198,9 +198,12 @@ struct lang_hooks
      initialization should be left to the "init" callback, since GC
      and the identifier hashes are set up between now and then.
 
+     Should return zero unless the compiler back-end does not need to
+     be initialized, such as with the -E option.
+     
      If errorcount is non-zero after this call the compiler exits
      immediately and the finish hook is not called.  */
-  void (*post_options) PARAMS ((void));
+  bool (*post_options) PARAMS ((void));
 
   /* Called after post_options, to initialize the front end.  The main
      input filename is passed, which may be NULL; the front end should
