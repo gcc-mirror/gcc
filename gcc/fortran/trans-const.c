@@ -252,7 +252,7 @@ gfc_conv_mpf_to_tree (mpf_t f, int kind)
   assert (gfc_real_kinds[n].radix == 2);
 
   n = MAX (abs (gfc_real_kinds[n].min_exponent),
-	   abs (gfc_real_kinds[n].min_exponent));
+	   abs (gfc_real_kinds[n].max_exponent));
 #if 0
   edigits = 2 + (int) (log (n) / log (gfc_real_kinds[n].radix));
 #endif
