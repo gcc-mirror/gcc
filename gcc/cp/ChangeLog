@@ -1,3 +1,9 @@
+2002-02-17  Craig Rodrigues  <rodrigc@gcc.gnu.org>
+
+	PR c++/5685
+	* decl.c (duplicate_decls): Make warning unconditional
+	if duplicate default argument declarations are present.
+
 2002-02-17  Jakub Jelinek  <jakub@redhat.com>
 
 	* typeck.c (build_binary_op) [BIT_XOR_EXPR]: Remove explicit
