@@ -1,3 +1,7 @@
+1999-10-25  Andreas Schwab  <schwab@suse.de>
+
+	* configure: Fix quoting inside arguments of eval.
+
 1999-10-21  Nick Clifton  <nickc@cygnus.com>
 
 	* config-ml.in: Allow suppression of some ARM multilibs.

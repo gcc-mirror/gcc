@@ -86,7 +86,7 @@ subdirs=
 target_alias=NOTARGET
 target_makefile_frag=
 undefs=NOUNDEFS
-version="$Revision: 1.22 $"
+version="$Revision: 1.23 $"
 x11=default
 bindir='${exec_prefix}/bin'
 sbindir='${exec_prefix}/sbin'
@@ -237,7 +237,7 @@ do
 		esac
 
 		enableopt=`echo ${option} | sed 's:^--::;s:=.*$::;s:-:_:g'`
-		eval "$enableopt='$optarg'"
+		eval "$enableopt=\$optarg"
 		enableoptions="$enableoptions '$option'"
 		;;
 	--exec-prefix* | --ex*)
@@ -370,7 +370,7 @@ do
 		esac
 
 		withopt=`echo ${option} | sed 's:^--::;s:=.*$::;s:-:_:g'`
-		eval $withopt="$optarg"
+		eval $withopt="\$optarg"
 		withoptions="$withoptions $option"
 		;;
 	--without-*)
@@ -913,7 +913,7 @@ if [ "${build}" != "${host}" ]; then
   tools="${tools} WINDRES WINDRES_FOR_TARGET YACC"
 
   for var in ${tools}; do
-    if [ -z "`eval 'echo $'"${var}"`" ] && [ -r Makefile ]; then
+    if eval [ -z \"\$${var}\" ] && [ -r Makefile ]; then
       sed -n -e ':loop
 /\\$/ N
 s/\\\n//g
@@ -922,7 +922,7 @@ t loop
 	< Makefile > Makefile.v
       t=`tail -1 Makefile.v`
       if [ -n "${t}" ]; then
-	eval "${var}='${t}'"
+	eval "${var}=\${t}"
       fi
       rm -f Makefile.v
     fi
@@ -1420,7 +1420,7 @@ EOF
 	    # tools.
 	    if [ "${build}" != "${host}" ]; then
 		for var in ${tools}; do
-		    val=`eval 'echo $'"${var}"`
+		    eval val=\$${var}
 		    sed -e "/^${var}[ 	]*=/{
 			   :loop1
 			   /\\\\$/ N
