@@ -243,6 +243,7 @@ static int push_secondary_reload PARAMS ((int, rtx, int, int, enum reg_class,
 static enum reg_class find_valid_class PARAMS ((enum machine_mode, int,
 						unsigned int));
 static int reload_inner_reg_of_subreg PARAMS ((rtx, enum machine_mode, int));
+static int can_reload_into	PARAMS ((rtx, int, enum machine_mode));
 static void push_replacement	PARAMS ((rtx *, int, enum machine_mode));
 static void dup_replacements	PARAMS ((rtx *, rtx *));
 static void combine_reloads	PARAMS ((void));
@@ -855,7 +856,10 @@ reload_inner_reg_of_subreg (x, mode, output)
    patterns by register elimination and substituting pseudos without a home
    by their function-invariant equivalences.  */
 static int
-can_reload_into (rtx in, int regno, enum machine_mode mode)
+can_reload_into (in, regno, mode)
+     rtx in;
+     int regno;
+     enum machine_mode mode;
 {
   rtx dst, test_insn;
   int r = 0;

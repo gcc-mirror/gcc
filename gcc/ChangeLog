@@ -1,3 +1,8 @@
+2004-01-23  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
+
+	* reload.c (can_reload_into): Add prototype and K&R style function
+	declaration.
+
 2004-01-21  Andreas Jaeger  <aj@suse.de>
 	    Michael Matz  <matz@suse.de>
 
