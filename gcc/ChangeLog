@@ -1,3 +1,11 @@
+2005-01-13  Hans-Peter Nilsson  <hp@bitrange.com>
+
+	PR target/18329
+	PR target/18330
+	* reload1.c (delete_output_reload): Don't delete an output reload
+	if the pseudo lives longer than a single basic block.  Adjust and
+	improve wording of comment.
+
 2005-01-12  Andrew Pinski  <pinskia@physics.uc.edu>
 
 	PR target/19334
