@@ -443,6 +443,7 @@
 	* config/sparc/sparc.c (function_arg_pass_by_reference): Return 1
 	for all modes whose size is greater than 8 bytes if ARCH32.
 	(sparc_va_arg): Handle all modes whose size is greater than 8 bytes
+	by reference if ARCH32.
 
 2004-02-04  Ulrich Weigand  <uweigand@de.ibm.com>
 
