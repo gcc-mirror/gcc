@@ -273,7 +273,7 @@ __mf_pthread_cleanup (void *arg)
   /* XXX: This unregistration is not safe on platforms where distinct
      threads share errno (or at least its virtual address).  */
   if (pi->thread_errno != NULL)
-    __mf_unregister (pi->thread_errno, sizeof (int));
+    __mf_unregister (pi->thread_errno, sizeof (int), __MF_TYPE_GUESS);
 
   /* XXX: Only detached threads should designate themselves as dead
      here.  Non-detached threads are marked dead after their

@@ -365,10 +365,6 @@ ret __mfwrap_ ## fname (__VA_ARGS__)
   else if (UNLIKELY (__mf_state == reentrant))   \
   {                                         \
     extern unsigned long __mf_reentrancy;   \
-    if (UNLIKELY (__mf_opts.verbose_trace)) { \
-      write (2, "mf: reentrancy detected in `", 28); \
-      write (2, __PRETTY_FUNCTION__, strlen(__PRETTY_FUNCTION__)); \
-      write (2, "'\n", 2); } \
     __mf_reentrancy ++; \
     return CALL_REAL(fname, __VA_ARGS__);   \
   }                                         \
@@ -381,7 +377,7 @@ ret __mfwrap_ ## fname (__VA_ARGS__)
 /* Unlocked variants of main entry points from mf-runtime.h.  */
 extern void __mfu_check (void *ptr, size_t sz, int type, const char *location);
 extern void __mfu_register (void *ptr, size_t sz, int type, const char *name);
-extern void __mfu_unregister (void *ptr, size_t sz);
+extern void __mfu_unregister (void *ptr, size_t sz, int type);
 extern void __mfu_report ();
 extern int __mfu_set_options (const char *opts);
 

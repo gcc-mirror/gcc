@@ -67,6 +67,7 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 
 #include "mf-runtime.h"
 #include "mf-impl.h"
+#include "splay-tree.h"
 
 
 /* ------------------------------------------------------------------------ */
@@ -145,7 +146,6 @@ const void *threads_active_p = (void *) pthread_join;
 
 static unsigned long __mf_count_check;
 static unsigned long __mf_lookup_cache_reusecount [LOOKUP_CACHE_SIZE_MAX];
-static unsigned long __mf_treerot_left, __mf_treerot_right;
 static unsigned long __mf_count_register;
 static unsigned long __mf_total_register_size [__MF_TYPE_MAX+1];
 static unsigned long __mf_count_unregister;
@@ -191,20 +191,12 @@ typedef struct __mf_object
 #endif
 } __mf_object_t;
 
-
-typedef struct __mf_object_tree
-{
-  __mf_object_t data;
-  struct __mf_object_tree *left;
-  struct __mf_object_tree *right;
-} __mf_object_tree_t;
-
-/* Live objects: binary tree on __mf_object_t.low */
-static __mf_object_tree_t *__mf_object_root;
+/* Live objects: splay trees, separated by type, ordered on .low (base address).  */
+/* Actually stored as static vars within lookup function below.  */
 
 /* Dead objects: circular arrays; _MIN_CEM .. _MAX_CEM only */
 static unsigned __mf_object_dead_head[__MF_TYPE_MAX_CEM+1]; /* next empty spot */
-static __mf_object_tree_t *__mf_object_cemetary[__MF_TYPE_MAX_CEM+1][__MF_PERSIST_MAX];
+static __mf_object_t *__mf_object_cemetary[__MF_TYPE_MAX_CEM+1][__MF_PERSIST_MAX];
 
 
 /* ------------------------------------------------------------------------ */
@@ -213,16 +205,17 @@ static __mf_object_tree_t *__mf_object_cemetary[__MF_TYPE_MAX_CEM+1][__MF_PERSIS
 static void __mf_init () CTOR;
 static void __mf_sigusr1_respond ();
 static unsigned __mf_find_objects (uintptr_t ptr_low, uintptr_t ptr_high, 
-				   __mf_object_tree_t **objs, unsigned max_objs);
+                                   __mf_object_t **objs, unsigned max_objs);
+static unsigned __mf_find_objects2 (uintptr_t ptr_low, uintptr_t ptr_high, 
+                                    __mf_object_t **objs, unsigned max_objs, int type);
 static unsigned __mf_find_dead_objects (uintptr_t ptr_low, uintptr_t ptr_high, 
-					__mf_object_tree_t **objs, unsigned max_objs);
-static void __mf_link_object (__mf_object_tree_t *obj);
-static void __mf_age_tree (__mf_object_tree_t *obj);
+                                        __mf_object_t **objs, unsigned max_objs);
 static void __mf_adapt_cache ();
-static void __mf_unlink_object (__mf_object_tree_t *obj);
 static void __mf_describe_object (__mf_object_t *obj);
 static unsigned __mf_watch_or_not (void *ptr, size_t sz, char flag);
-
+static splay_tree __mf_object_tree (int type);
+static void __mf_link_object (__mf_object_t *node);
+static void __mf_unlink_object (__mf_object_t *node);
 
 
 /* ------------------------------------------------------------------------ */
@@ -233,7 +226,6 @@ __mf_set_default_options ()
 {
   memset (& __mf_opts, 0, sizeof (__mf_opts));
 
-  __mf_opts.tree_aging =    13037;
   __mf_opts.adapt_cache = 1000003;
   __mf_opts.abbreviate = 1;
   __mf_opts.verbose_violations = 1;
@@ -305,9 +297,6 @@ options [] =
     {"internal-checking", 
      "perform more expensive internal checking",
      set_option, 1, &__mf_opts.internal_checking},
-    {"age-tree", 
-     "age the object tree after N accesses for working set",
-     read_integer_option, 1000000, &__mf_opts.tree_aging},
     {"print-leaks", 
      "print any memory leaks at program shutdown",
      set_option, 1, &__mf_opts.print_leaks},
@@ -375,28 +364,28 @@ __mf_usage ()
   struct option *opt;
 
   fprintf (stderr, 
-	   "This is a %s%sGCC \"mudflap\" memory-checked binary.\n"
-	   "Mudflap is Copyright (C) 2002-2003 Free Software Foundation, Inc.\n"
-	   "\n"
-	   "The mudflap code can be controlled by an environment variable:\n"
-	   "\n"
-	   "$ export MUDFLAP_OPTIONS='<options>'\n"
-	   "$ <mudflapped_program>\n"
-	   "\n"
-	   "where <options> is a space-separated list of \n"
-	   "any of the following options.  Use `-no-OPTION' to disable options.\n"
-	   "\n",
+           "This is a %s%sGCC \"mudflap\" memory-checked binary.\n"
+           "Mudflap is Copyright (C) 2002-2003 Free Software Foundation, Inc.\n"
+           "\n"
+           "The mudflap code can be controlled by an environment variable:\n"
+           "\n"
+           "$ export MUDFLAP_OPTIONS='<options>'\n"
+           "$ <mudflapped_program>\n"
+           "\n"
+           "where <options> is a space-separated list of \n"
+           "any of the following options.  Use `-no-OPTION' to disable options.\n"
+           "\n",
 #if HAVE_PTHREAD_H
-	   (threads_active_p ? "multi-threaded " : "single-threaded "),
+           (threads_active_p ? "multi-threaded " : "single-threaded "),
 #else
-	   "",
+           "",
 #endif
 #if LIBMUDFLAPTH
-	   "thread-aware "
+           "thread-aware "
 #else
-	   "thread-unaware "
+           "thread-unaware "
 #endif
-	    );
+            );
   /* XXX: The multi-threaded thread-unaware combination is bad.  */
 
   for (opt = options; opt->name; opt++)
@@ -404,23 +393,23 @@ __mf_usage ()
       int default_p = (opt->value == * opt->target);
 
       switch (opt->type)
-	{
-	  char buf[128];
-	case set_option:
-	  fprintf (stderr, "-%-23.23s %s", opt->name, opt->description);
-	  if (default_p)
-	    fprintf (stderr, " [active]\n");
-	  else
-	    fprintf (stderr, "\n");
-	  break;
-	case read_integer_option:
-	  strncpy (buf, opt->name, 128);
-	  strncpy (buf + strlen (opt->name), "=N", 2);
-	  fprintf (stderr, "-%-23.23s %s", buf, opt->description);
-	  fprintf (stderr, " [%d]\n", * opt->target);
-	  break;	  
-	default: abort();
-	}
+        {
+          char buf[128];
+        case set_option:
+          fprintf (stderr, "-%-23.23s %s", opt->name, opt->description);
+          if (default_p)
+            fprintf (stderr, " [active]\n");
+          else
+            fprintf (stderr, "\n");
+          break;
+        case read_integer_option:
+          strncpy (buf, opt->name, 128);
+          strncpy (buf + strlen (opt->name), "=N", 2);
+          fprintf (stderr, "-%-23.23s %s", buf, opt->description);
+          fprintf (stderr, " [%d]\n", * opt->target);
+          break;          
+        default: abort();
+        }
     }
 
   fprintf (stderr, "\n");
@@ -460,69 +449,69 @@ __mfu_set_options (const char *optstr)
       case ' ':
       case '\t':
       case '\n':
-	optstr++;
-	break;
+        optstr++;
+        break;
 
       case '-':
-	if (*optstr+1)
-	  {	    
-	    int negate = 0;
-	    optstr++;
+        if (*optstr+1)
+          {         
+            int negate = 0;
+            optstr++;
 
-	    if (*optstr == '?' || 
-		strncmp (optstr, "help", 4) == 0)
-	      {
-		/* Caller will print help and exit.  */
-		return -1;
-	      }
-	    
-	    if (strncmp (optstr, "no-", 3) == 0)
-	      {
-		negate = 1;
-		optstr = & optstr[3];
-	      }
-	    
-	    for (opts = options; opts->name; opts++)
-	      {
-		if (strncmp (optstr, opts->name, strlen (opts->name)) == 0)
-		  {
-		    optstr += strlen (opts->name);
-		    assert (opts->target);
-		    switch (opts->type) 
-		      {
-		      case set_option:
-			if (negate)
-			  *(opts->target) = 0;
-			else
-			  *(opts->target) = opts->value;
-			break;
-		      case read_integer_option:
-			if (! negate && (*optstr == '=' && *(optstr+1)))
-			  {
-			    optstr++;
-			    tmp = strtol (optstr, &nxt, 10);
-			    if ((optstr != nxt) && (tmp != LONG_MAX))
-			      {
-				optstr = nxt;				
-				*(opts->target) = (int)tmp;
-			      }
-			  }
-			else if (negate)
-			  * opts->target = 0;
-			break;
-		      }
-		  }
-	      }
-	  }
-	break;
-	
+            if (*optstr == '?' || 
+                strncmp (optstr, "help", 4) == 0)
+              {
+                /* Caller will print help and exit.  */
+                return -1;
+              }
+            
+            if (strncmp (optstr, "no-", 3) == 0)
+              {
+                negate = 1;
+                optstr = & optstr[3];
+              }
+            
+            for (opts = options; opts->name; opts++)
+              {
+                if (strncmp (optstr, opts->name, strlen (opts->name)) == 0)
+                  {
+                    optstr += strlen (opts->name);
+                    assert (opts->target);
+                    switch (opts->type) 
+                      {
+                      case set_option:
+                        if (negate)
+                          *(opts->target) = 0;
+                        else
+                          *(opts->target) = opts->value;
+                        break;
+                      case read_integer_option:
+                        if (! negate && (*optstr == '=' && *(optstr+1)))
+                          {
+                            optstr++;
+                            tmp = strtol (optstr, &nxt, 10);
+                            if ((optstr != nxt) && (tmp != LONG_MAX))
+                              {
+                                optstr = nxt;                           
+                                *(opts->target) = (int)tmp;
+                              }
+                          }
+                        else if (negate)
+                          * opts->target = 0;
+                        break;
+                      }
+                  }
+              }
+          }
+        break;
+        
       default:
-	fprintf (stderr, 
-		 "warning: unrecognized string '%s' in mudflap options\n",
-		 optstr);
-	optstr += strlen (optstr);
-	rc = -1;
-	break;
+        fprintf (stderr, 
+                 "warning: unrecognized string '%s' in mudflap options\n",
+                 optstr);
+        optstr += strlen (optstr);
+        rc = -1;
+        break;
       }
     }
 
@@ -567,7 +556,7 @@ __mf_resolve_single_dynamic (struct __mf_dynamic_entry *e)
   if (err)
     {
       fprintf (stderr, "mf: error in dlsym(\"%s\"): %s\n",
-	       e->name, err);
+               e->name, err);
       abort ();
     }  
   if (! e->pointer)
@@ -610,8 +599,20 @@ struct __mf_dynamic_entry __mf_dynamic [] =
 
 /* ------------------------------------------------------------------------ */
 
+/* Lookup & manage automatic initialization of the five or so splay trees.  */
+static splay_tree
+__mf_object_tree (int type)
+{
+  static splay_tree trees [__MF_TYPE_MAX+1];
+  assert (type >= 0 && type <= __MF_TYPE_MAX);
+  if (UNLIKELY (trees[type] == NULL))
+    trees[type] = splay_tree_new (splay_tree_compare_pointers, NULL, NULL);
+  return trees[type];
+}
 
-void __mf_init ()
+
+void
+__mf_init ()
 {
   char *ov = 0;
 
@@ -628,10 +629,10 @@ void __mf_init ()
     {
       int rc = __mfu_set_options (ov);
       if (rc < 0)
-	{
-	  __mf_usage ();
-	  exit (1);
-	}
+        {
+          __mf_usage ();
+          exit (1);
+        }
     }
 
   /* Initialize to a non-zero description epoch. */
@@ -666,19 +667,19 @@ __wrap_main (int argc, char* argv[])
       been_here = 1;
       __mf_register (argv, sizeof(char *)*(argc+1), __MF_TYPE_STATIC, "argv[]");
       for (i=0; i<argc; i++)
-	{
-	  unsigned j = strlen (argv[i]);
-	  __mf_register (argv[i], j+1, __MF_TYPE_STATIC, "argv element");
-	}
+        {
+          unsigned j = strlen (argv[i]);
+          __mf_register (argv[i], j+1, __MF_TYPE_STATIC, "argv element");
+        }
 
       for (i=0; ; i++)
-	{
-	  char *e = environ[i];
-	  unsigned j;
-	  if (e == NULL) break;
-	  j = strlen (environ[i]);
-	  __mf_register (environ[i], j+1, __MF_TYPE_STATIC, "environ element");
-	}
+        {
+          char *e = environ[i];
+          unsigned j;
+          if (e == NULL) break;
+          j = strlen (environ[i]);
+          __mf_register (environ[i], j+1, __MF_TYPE_STATIC, "environ element");
+        }
       __mf_register (environ, sizeof(char *)*(i+1), __MF_TYPE_STATIC, "environ[]");
 
       __mf_register (& errno, sizeof (errno), __MF_TYPE_STATIC, "errno area");
@@ -737,8 +738,8 @@ void __mfu_check (void *ptr, size_t sz, int type, const char *location)
     __mf_sigusr1_respond ();
 
   TRACE ("check ptr=%p b=%u size=%lu %s location=`%s'\n",
-	 ptr, entry_idx, (unsigned long)sz,
-	 (type == 0 ? "read" : "write"), location);
+         ptr, entry_idx, (unsigned long)sz,
+         (type == 0 ? "read" : "write"), location);
   
   switch (__mf_opts.mudflap_mode)
     {
@@ -756,192 +757,117 @@ void __mfu_check (void *ptr, size_t sz, int type, const char *location)
 
     case mode_check:
       {
-	unsigned heuristics = 0;
+        unsigned heuristics = 0;
+        
+        /* Advance aging/adaptation counters.  */
+        static unsigned adapt_count;
+        adapt_count ++;
+        if (UNLIKELY (__mf_opts.adapt_cache > 0 &&
+                      adapt_count > __mf_opts.adapt_cache))
+          {
+            adapt_count = 0;
+            __mf_adapt_cache ();
+          }
+        
+        /* Looping only occurs if heuristics were triggered.  */
+        while (judgement == 0)
+          {
+            DECLARE (void, free, void *p);
+            __mf_object_t* ovr_obj[1];
+            unsigned obj_count;
+            __mf_object_t** all_ovr_obj = NULL;
+            __mf_object_t** dealloc_me = NULL;
+            unsigned i;
 
-	/* Advance aging/adaptation counters.  */
-	if (__mf_object_root)
-	  {
-	    static unsigned aging_count;
-	    static unsigned adapt_count;
-	    aging_count ++;
-	    adapt_count ++;
-	    if (UNLIKELY (__mf_opts.tree_aging > 0 &&
-			  aging_count > __mf_opts.tree_aging))
-	      {
-		aging_count = 0;
-		__mf_age_tree (__mf_object_root);
-	      }
-	    if (UNLIKELY (__mf_opts.adapt_cache > 0 &&
-			  adapt_count > __mf_opts.adapt_cache))
-	      {
-		adapt_count = 0;
-		__mf_adapt_cache ();
-	      }
-	  }
+            /* Find all overlapping objects.  Be optimistic that there is just one.  */
+            obj_count = __mf_find_objects (ptr_low, ptr_high, ovr_obj, 1);
+            if (UNLIKELY (obj_count > 1))
+              {
+                /* Allocate a real buffer and do the search again.  */
+                DECLARE (void *, malloc, size_t c);
+                unsigned n;
+                all_ovr_obj = CALL_REAL (malloc, (sizeof (__mf_object_t *) *
+                                                   obj_count));
+                if (all_ovr_obj == NULL) abort ();
+                n = __mf_find_objects (ptr_low, ptr_high, all_ovr_obj, obj_count);
+                assert (n == obj_count);
+                dealloc_me = all_ovr_obj;
+              }
+            else 
+              {
+                all_ovr_obj = ovr_obj;
+                dealloc_me = NULL;
+              }
 
-	/* Looping only occurs if heuristics were triggered.  */
-	while (judgement == 0)
-	  {
-	    __mf_object_tree_t* ovr_obj[1];
-	    unsigned obj_count;
+            /* Update object statistics.  */
+            for (i = 0; i < obj_count; i++)
+              {
+                __mf_object_t *obj = all_ovr_obj[i];
+                assert (obj != NULL);
+                if (type == __MF_CHECK_READ)
+                  obj->read_count ++;
+                else
+                  obj->write_count ++;
+                obj->liveness ++;
+              }
+            
+            /* Iterate over the various objects.  There are a number of special cases.  */
+            for (i = 0; i < obj_count; i++)
+              {
+                  __mf_object_t *obj = all_ovr_obj[i];
 
-	    obj_count = __mf_find_objects (ptr_low, ptr_high, ovr_obj, 1);
+                /* Any __MF_TYPE_NOACCESS hit is bad.  */
+                if (UNLIKELY (obj->type == __MF_TYPE_NOACCESS))
+                  judgement = -1;
 
-	    if (LIKELY (obj_count == 1)) /* A single hit! */
-	      {
-		__mf_object_t *obj = & ovr_obj[0]->data;
-		assert (obj != NULL);
-		if (LIKELY (ptr_low >= obj->low && ptr_high <= obj->high))
-		  {
-		    /* XXX: hope for no overflow!  */
-		    if (type == __MF_CHECK_READ)
-		      obj->read_count ++;
-		    else
-		      obj->write_count ++;
+                /* Any object with a watch flag is bad.  */
+                if (UNLIKELY (obj->watching_p))
+                  judgement = -2; /* trigger VIOL_WATCH */
+            
+                /* A read from an uninitialized object is bad. */
+                if (UNLIKELY (__mf_opts.check_initialization
+                              /* reading */
+                              && type == __MF_CHECK_READ
+                              /* not written */
+                              && obj->write_count == 0
+                              /* uninitialized (heap) */
+                              && obj->type == __MF_TYPE_HEAP))
+                  judgement = -1;
+              }
 
-		    obj->liveness ++;
-		    
-		    if (UNLIKELY (obj->type == __MF_TYPE_NOACCESS))
-		      judgement = -1;
-		    else if (UNLIKELY (obj->watching_p))
-		      judgement = -2; /* trigger VIOL_WATCH */
-		    else if (UNLIKELY (__mf_opts.check_initialization
-				       /* reading */
-				       && type == __MF_CHECK_READ
-				       /* not written */
-				       && obj->write_count == 0
-				       /* uninitialized (heap) */
-				       && obj->type == __MF_TYPE_HEAP))
-		      judgement = -1;
-		    else
-		      {
-			/* Valid access.  */
-			entry->low = obj->low;
-			entry->high = obj->high;
-			judgement = 1;
-		      }
-		  }
-		/* The object did not cover the entire accessed region.  */
-	      }
-	    else if (LIKELY (obj_count > 1))
-	      {
-		__mf_object_tree_t **all_ovr_objs;
-		unsigned n;
-		DECLARE (void *, malloc, size_t c);
-		DECLARE (void, free, void *p);
+            /* We now know that the access spans one or more valid objects.  */
+            if (LIKELY (judgement >= 0))
+              for (i = 0; i < obj_count; i++)
+                {
+                  __mf_object_t *obj = all_ovr_obj[i];
+                  
+                  /* Is this access entirely contained within this object?  */
+                  if (LIKELY (ptr_low >= obj->low && ptr_high <= obj->high))
+                    {
+                      /* Valid access.  */
+                      entry->low = obj->low;
+                      entry->high = obj->high;
+                      judgement = 1;
+                    }
 
-		all_ovr_objs = CALL_REAL (malloc, (sizeof (__mf_object_tree_t *) *
-						   obj_count));
-		if (all_ovr_objs == NULL) abort ();
-		n = __mf_find_objects (ptr_low, ptr_high, all_ovr_objs, obj_count);
-		assert (n == obj_count);
+                  /* XXX: Access runs off left or right side of this
+                          object.  That could be okay, if there are
+                          other objects that fill in all the holes. */
+                }
 
-		/* Confirm that accessed range is covered by first/last object. */
-		if (LIKELY ((ptr_low >= all_ovr_objs[0]->data.low) &&
-			    (ptr_high <= all_ovr_objs[obj_count-1]->data.high)))
-		  {
-		    /* Presume valid access.  */
-		    judgement = 1;
+            if (dealloc_me != NULL)
+              CALL_REAL (free, dealloc_me);
 
-		    /* Confirm that intermediate objects are
-		       contiguous and share a single name.  Thus they
-		       are likely split up GUESS regions, or mmap
-		       pages.  The idea of the name check is to
-		       prevent an oversize access to a
-		       stack-registered object (followed by some GUESS
-		       type) from being accepted as a hit.  */
-		    for (n=0; n<obj_count-1; n++)
-		      {
-			__mf_object_t *obj = & (all_ovr_objs[n]->data);
-			__mf_object_t *nextobj = & (all_ovr_objs[n+1]->data);
-			
-			if (UNLIKELY (obj->type == __MF_TYPE_NOACCESS))
-			  judgement = -1; /* Force error. */
-			
-			if (UNLIKELY (judgement == 1 &&
-				      (obj->high + 1 != nextobj->low)))
-			  judgement = 0; /* Cancel presumption. */
-			
-			if (UNLIKELY (judgement == 1 &&
-				      (obj->name != nextobj->name)))
-			  judgement = 0; /* Cancel presumption. */
-			/* NB: strcmp above is not necessary since the
-			   same literal string pointer is normally
-			   used when creating regions.  */
-
-			/* XXX: hope for no overflow!  */
-			if (type == __MF_CHECK_READ)
-			  obj->read_count ++;
-			else
-			  obj->write_count ++;
-			obj->liveness ++;
-		      }
-
-		    /* If the access is otherwise successful, check whether
-		       any of the covered objects are being watched.  */
-		    if (judgement > 0)
-		      {
-			unsigned i;
-			for (i=0; i<obj_count; i++)
-			  if (all_ovr_objs[i]->data.watching_p)
-			    judgement = -2;  /* trigger VIOL_WATCH */
-		      }
-
-		    /* Check for uninitialized reads.  */
-		    if (judgement > 0 &&
-			__mf_opts.check_initialization &&
-			type == __MF_CHECK_READ)
-		      {
-			unsigned i;
-			unsigned written_count = 0;
-
-			for (i=0; i<obj_count; i++)
-			  {
-			    __mf_object_t *obj = & all_ovr_objs[i]->data;
-
-			    if (obj->write_count
-				|| obj->type == __MF_TYPE_HEAP_I
-				|| obj->type == __MF_TYPE_GUESS)
-			      written_count ++;
-			  }
-			
-			/* Check for ALL pieces having been written-to.
-			   XXX: should this be ANY instead?  */
-			if (written_count != obj_count)
-			  judgement = -1;
-		      }
-
-		    /* Fill out the cache with the bounds of the first
-		       object and the last object that covers this
-		       cache line (== includes the same __MF_CACHE_INDEX).
-		       This could let this cache line span *two* distinct
-		       registered objects: a peculiar but reasonable
-		       situation.  The cache line may not include the
-		       entire object though.  */
-		    if (judgement > 0)
-		      {
-			unsigned i;
-			entry->low = all_ovr_objs[0]->data.low;
-			for (i=0; i<obj_count; i++)
-			  {
-			    uintptr_t high = all_ovr_objs[i]->data.high;
-			    if (__MF_CACHE_INDEX (high) == entry_idx)
-			      entry->high = high;
-			  }
-		      }
-		  }
-
-		CALL_REAL (free, all_ovr_objs);
-	      }
-
-	    if (judgement == 0)
-	      {
-		if (heuristics++ < 2) /* XXX parametrize this number? */
-		  judgement = __mf_heuristic_check (ptr_low, ptr_high);
-		else
-		  judgement = -1;
-	      }
-	  }
+            /* If the judgment is still unknown at this stage, loop
+               around at most one more time.  */
+            if (judgement == 0)
+              {
+                if (heuristics++ < 2) /* XXX parametrize this number? */
+                  judgement = __mf_heuristic_check (ptr_low, ptr_high);
+                else
+                  judgement = -1;
+              }
+          }
 
       }
       break;
@@ -956,43 +882,43 @@ void __mfu_check (void *ptr, size_t sz, int type, const char *location)
       __mf_count_check ++;
       
       if (LIKELY (old_entry.low != entry->low || old_entry.high != entry->high))
-	/* && (old_entry.low != 0) && (old_entry.high != 0)) */
-	__mf_lookup_cache_reusecount [entry_idx] ++;    
+        /* && (old_entry.low != 0) && (old_entry.high != 0)) */
+        __mf_lookup_cache_reusecount [entry_idx] ++;    
     }
   
   if (UNLIKELY (judgement < 0))
     __mf_violation (ptr, sz,
-		    (uintptr_t) __builtin_return_address (0), location,
-		    ((judgement == -1) ? 
-		     (type == __MF_CHECK_READ ? __MF_VIOL_READ : __MF_VIOL_WRITE) :
-		     __MF_VIOL_WATCH));
+                    (uintptr_t) __builtin_return_address (0), location,
+                    ((judgement == -1) ? 
+                     (type == __MF_CHECK_READ ? __MF_VIOL_READ : __MF_VIOL_WRITE) :
+                     __MF_VIOL_WATCH));
 }
 
 
-static __mf_object_tree_t *
+static __mf_object_t *
 __mf_insert_new_object (uintptr_t low, uintptr_t high, int type, 
-			const char *name, uintptr_t pc)
+                        const char *name, uintptr_t pc)
 {
   DECLARE (void *, calloc, size_t c, size_t n);
 
-  __mf_object_tree_t *new_obj;
-  new_obj = CALL_REAL (calloc, 1, sizeof(__mf_object_tree_t));
-  new_obj->data.low = low;
-  new_obj->data.high = high;
-  new_obj->data.type = type;
-  new_obj->data.name = name;
-  new_obj->data.alloc_pc = pc;
+  __mf_object_t *new_obj;
+  new_obj = CALL_REAL (calloc, 1, sizeof(__mf_object_t));
+  new_obj->low = low;
+  new_obj->high = high;
+  new_obj->type = type;
+  new_obj->name = name;
+  new_obj->alloc_pc = pc;
 #if HAVE_GETTIMEOFDAY
-  gettimeofday (& new_obj->data.alloc_time, NULL);
+  gettimeofday (& new_obj->alloc_time, NULL);
 #endif
 #if LIBMUDFLAPTH
-  new_obj->data.alloc_thread = pthread_self ();
+  new_obj->alloc_thread = pthread_self ();
 #endif
 
   if (__mf_opts.backtrace > 0 && (type == __MF_TYPE_HEAP || type == __MF_TYPE_HEAP_I))
-    new_obj->data.alloc_backtrace_size = 
-      __mf_backtrace (& new_obj->data.alloc_backtrace,
-		      (void *) pc, 2);
+    new_obj->alloc_backtrace_size = 
+      __mf_backtrace (& new_obj->alloc_backtrace,
+                      (void *) pc, 2);
   
   __mf_link_object (new_obj);
   return new_obj;
@@ -1013,18 +939,18 @@ __mf_uncache_object (__mf_object_t *old_obj)
       unsigned idx_high = __MF_CACHE_INDEX (high);
       unsigned i;
       for (i = idx_low; i <= idx_high; i++)
-	{
-	  struct __mf_cache *entry = & __mf_lookup_cache [i];
-	  /* NB: the "||" in the following test permits this code to
-	     tolerate the situation introduced by __mf_check over
-	     contiguous objects, where a cache entry spans several 
-	     objects.  */
-	  if (entry->low == low || entry->high == high)
-	    {
-	      entry->low = MAXPTR;
-	      entry->high = MINPTR;
-	    }
-	}
+        {
+          struct __mf_cache *entry = & __mf_lookup_cache [i];
+          /* NB: the "||" in the following test permits this code to
+             tolerate the situation introduced by __mf_check over
+             contiguous objects, where a cache entry spans several 
+             objects.  */
+          if (entry->low == low || entry->high == high)
+            {
+              entry->low = MAXPTR;
+              entry->high = MINPTR;
+            }
+        }
     }
 }
 
@@ -1044,14 +970,14 @@ void
 __mfu_register (void *ptr, size_t sz, int type, const char *name)
 {
   TRACE ("register ptr=%p size=%lu type=%x name='%s'\n", 
-	 ptr, (unsigned long) sz, type, name ? name : "");
+         ptr, (unsigned long) sz, type, name ? name : "");
 
   if (__mf_opts.collect_stats)
     {
       __mf_count_register ++;
       __mf_total_register_size [(type < 0) ? 0 :
-				(type > __MF_TYPE_MAX) ? 0 : 
-				type] += sz;
+                                (type > __MF_TYPE_MAX) ? 0 : 
+                                type] += sz;
     }
 
   if (UNLIKELY (__mf_opts.sigusr1_report))
@@ -1064,7 +990,7 @@ __mfu_register (void *ptr, size_t sz, int type, const char *name)
       
     case mode_violate:
       __mf_violation (ptr, sz, (uintptr_t) __builtin_return_address (0), NULL,
-		      __MF_VIOL_REGISTER);
+                      __MF_VIOL_REGISTER);
       break;
 
     case mode_populate:
@@ -1078,172 +1004,79 @@ __mfu_register (void *ptr, size_t sz, int type, const char *name)
 
     case mode_check:
       {
-	__mf_object_tree_t *ovr_objs [1];
-	unsigned num_overlapping_objs;
-	uintptr_t low = (uintptr_t) ptr;
-	uintptr_t high = CLAMPSZ (ptr, sz);
-	uintptr_t pc = (uintptr_t) __builtin_return_address (0);
-	
-	/* Treat unknown size indication as 1.  */
-	if (UNLIKELY (sz == 0)) sz = 1;
-	
-	num_overlapping_objs = __mf_find_objects (low, high, ovr_objs, 1);
+        __mf_object_t *ovr_objs [1];
+        unsigned num_overlapping_objs;
+        uintptr_t low = (uintptr_t) ptr;
+        uintptr_t high = CLAMPSZ (ptr, sz);
+        uintptr_t pc = (uintptr_t) __builtin_return_address (0);
+        
+        /* Treat unknown size indication as 1.  */
+        if (UNLIKELY (sz == 0)) sz = 1;
 
-	/* Handle overlaps.  */
-	if (UNLIKELY (num_overlapping_objs > 0))
-	  {
-	    __mf_object_tree_t *ovr_obj = ovr_objs[0];
-	    
-	    /* Quietly accept a single duplicate registration for
-	       static objects, since these may come from distinct
-	       compilation units.  */
-	    if (type == __MF_TYPE_STATIC
-		&& ovr_obj->data.type == __MF_TYPE_STATIC
-		&& ovr_obj->data.low == low
-		&& ovr_obj->data.high == high)
-	      {
-		/* do nothing */
-		VERBOSE_TRACE ("duplicate static reg %p-%p `%s'\n", 
-			       (void *) low, (void *) high, 
-			       (ovr_obj->data.name ? ovr_obj->data.name : ""));
-		break;
-	      }
+        /* Look for objects only of the same type.  This will e.g. permit a registration
+           of a STATIC overlapping with a GUESS, and a HEAP with a NOACCESS.  At
+           __mf_check time however harmful overlaps will be detected. */
+        num_overlapping_objs = __mf_find_objects2 (low, high, ovr_objs, 1, type);
 
-	    /* Quietly accept a single duplicate registration for
-	       guess objects too.  */
-	    if (type == __MF_TYPE_GUESS &&
-		ovr_obj->data.type == __MF_TYPE_GUESS &&
-		ovr_obj->data.low == low &&
-		ovr_obj->data.high == high)
-	      {
-		/* do nothing */
-		VERBOSE_TRACE ("duplicate guess reg %p-%p\n", 
-			       (void *) low, (void *) high);
-		break;
-	      }
+        /* Handle overlaps.  */
+        if (UNLIKELY (num_overlapping_objs > 0))
+          {
+            __mf_object_t *ovr_obj = ovr_objs[0];
+            
+            /* Accept certain specific duplication pairs.  */
+            if (((type == __MF_TYPE_STATIC) || (type == __MF_TYPE_GUESS))
+                && ovr_obj->low == low
+                && ovr_obj->high == high
+                && ovr_obj->type == type)
+              {
+                /* Duplicate registration for static objects may come
+                   from distinct compilation units.  */
+                VERBOSE_TRACE ("harmless duplicate reg %p-%p `%s'\n", 
+                               (void *) low, (void *) high, 
+                               (ovr_obj->name ? ovr_obj->name : ""));
+                break;
+              }
 
-	    /* Quietly accept new a guess registration that overlaps
-	       at least one existing object.  Trim it down to size.  */
-	    else if (type == __MF_TYPE_GUESS)
-	      {
-		/* We need to split this new GUESS region into some
-		   smaller ones.  Or we may not need to insert it at
-		   all if it is covered by the overlapping region.  */
-
-		/* First, identify all the overlapping objects.  */
-		__mf_object_tree_t **all_ovr_objs;
-		unsigned num_ovr_objs, n;
-		uintptr_t next_low;
-		DECLARE (void *, malloc, size_t c);
-		DECLARE (void, free, void *p);
-
-		all_ovr_objs = CALL_REAL (malloc, (sizeof (__mf_object_tree_t *) *
-						   num_overlapping_objs));
-		if (all_ovr_objs == NULL) abort ();
-		num_ovr_objs = __mf_find_objects (low, high, all_ovr_objs,
-						  num_overlapping_objs);
-		assert (num_ovr_objs == num_overlapping_objs);
-
-		VERBOSE_TRACE ("splitting guess %p-%p, # overlaps: %u\n",
-			       (void *) low, (void *) high, num_ovr_objs);
-
-		/* Add GUESS regions between the holes: before each
-		   overlapping region.  */
-
-		next_low = low;
-		/* This makes use of the assumption that __mf_find_objects() returns
-		   overlapping objects in an increasing sequence.  */
-		for (n=0; n < min (num_ovr_objs, num_overlapping_objs); n++)
-		  {
-		    if (all_ovr_objs[n]->data.low > next_low) /* Gap? */
-		      {
-			uintptr_t next_high = CLAMPSUB (all_ovr_objs[n]->data.low, 1);
-			__mfu_register ((void *) next_low, next_high-next_low+1,
-					__MF_TYPE_GUESS, name);
-		      }
-		    next_low = CLAMPADD (all_ovr_objs[n]->data.high, 1);
-		  }
-		/* Add in any leftover room at the top.  */
-		if (next_low <= high)
-		  __mfu_register ((void *) next_low, high-next_low+1,
-				  __MF_TYPE_GUESS, name);
-
-		/* XXX: future optimization: allow consecutive GUESS regions to
-		   be glued together.  */
-		CALL_REAL (free, all_ovr_objs);
-		return;
-	      }
-
-	    /* Quietly accept a non-GUESS region overlaying a GUESS
-	       region.  Handle it by removing the GUESS region
-	       temporarily, then recursively adding this new object,
-	       and then the GUESS back.  The latter will be split up
-	       by the recursive process above.  */
-	    else if (ovr_obj->data.type == __MF_TYPE_GUESS)
-	      {
-		uintptr_t old_low = ovr_obj->data.low;
-		uintptr_t old_high = ovr_obj->data.high;
-		const char* old_name = ovr_obj->data.name;
-
-		/* Now to recursively remove the guess piece, and
-  		   reinsert them in the opposite order.  Recursion
-  		   should bottom out if another non-GUESS overlapping
-  		   region is found for this new object (resulting in a
-  		   violation), or if no further overlap occurs.  The
-  		   located GUESS region should end up being split up
-  		   in any case.  */
-		__mfu_unregister ((void *) old_low, old_high-old_low+1);
-		__mfu_register ((void *) low, sz, type, name);
-		__mfu_register ((void *) old_low, old_high-old_low+1,
-				__MF_TYPE_GUESS, old_name);
-		return;
-	      }
-
-	    /* Alas, a genuine violation.  */
-	    else
-	      {
-		/* Two or more *real* mappings here. */
-		__mf_violation ((void *) ptr, sz,
-				(uintptr_t) __builtin_return_address (0), NULL,
-				__MF_VIOL_REGISTER);
-	      }
-	  }
-	
-	/* No overlapping objects: AOK.  */
-	else
-	  {
-	    __mf_insert_new_object (low, high, type, name, pc);
-	  }
-	
-	/* We could conceivably call __mf_check() here to prime the cache,
-	   but then the read_count/write_count field is not reliable.  */
-	
-	break;
+            /* Alas, a genuine violation.  */
+            else
+              {
+                /* Two or more *real* mappings here. */
+                __mf_violation ((void *) ptr, sz,
+                                (uintptr_t) __builtin_return_address (0), NULL,
+                                __MF_VIOL_REGISTER);
+              }
+          }
+        else /* No overlapping objects: AOK.  */
+          __mf_insert_new_object (low, high, type, name, pc);
+        
+        /* We could conceivably call __mf_check() here to prime the cache,
+           but then the read_count/write_count field is not reliable.  */
+        break;
       }
     } /* end switch (__mf_opts.mudflap_mode) */
 }
 
 
 void
-__mf_unregister (void *ptr, size_t sz)
+__mf_unregister (void *ptr, size_t sz, int type)
 {
   LOCKTH ();
   BEGIN_RECURSION_PROTECT ();
-  __mfu_unregister (ptr, sz);
+  __mfu_unregister (ptr, sz, type);
   END_RECURSION_PROTECT ();
   UNLOCKTH ();
 }
 
 
 void
-__mfu_unregister (void *ptr, size_t sz)
+__mfu_unregister (void *ptr, size_t sz, int type)
 {
   DECLARE (void, free, void *ptr);
 
   if (UNLIKELY (__mf_opts.sigusr1_report))
-  __mf_sigusr1_respond ();
+    __mf_sigusr1_respond ();
 
-  TRACE ("unregister ptr=%p size=%lu\n", ptr, (unsigned long) sz);
+  TRACE ("unregister ptr=%p size=%lu type=%x\n", ptr, (unsigned long) sz, type);
 
   switch (__mf_opts.mudflap_mode)
     { 
@@ -1252,8 +1085,8 @@ __mfu_unregister (void *ptr, size_t sz)
 
     case mode_violate:
       __mf_violation (ptr, sz,
-		      (uintptr_t) __builtin_return_address (0), NULL,
-		      __MF_VIOL_UNREGISTER);
+                      (uintptr_t) __builtin_return_address (0), NULL,
+                      __MF_VIOL_UNREGISTER);
       break;
 
     case mode_populate:
@@ -1266,109 +1099,113 @@ __mfu_unregister (void *ptr, size_t sz)
 
     case mode_check:
       {
-	__mf_object_tree_t *old_obj = NULL;
-	__mf_object_tree_t *del_obj = NULL;  /* Object to actually delete. */
-	__mf_object_tree_t *objs[1] = {NULL};
-	unsigned num_overlapping_objs;
-		
-	/* Treat unknown size indication as 1.  */
-	if (sz == 0) sz = 1;
-	
-	num_overlapping_objs = __mf_find_objects ((uintptr_t) ptr,
-						  CLAMPSZ (ptr, sz), objs, 1);
+        __mf_object_t *old_obj = NULL;
+        __mf_object_t *del_obj = NULL;  /* Object to actually delete. */
+        __mf_object_t *objs[1] = {NULL};
+        unsigned num_overlapping_objs;
 
-	/* XXX: handle unregistration of big old GUESS region, that has since
-	   been splintered.  */
-	old_obj = objs[0];
+        num_overlapping_objs = __mf_find_objects2 ((uintptr_t) ptr,
+                                                   CLAMPSZ (ptr, sz), objs, 1, type);
 
-	if (UNLIKELY (num_overlapping_objs != 1 ||
-		      (uintptr_t)ptr != old_obj->data.low)) /* XXX: what about sz? */
-	  {
-	    __mf_violation (ptr, sz,
-			    (uintptr_t) __builtin_return_address (0), NULL,
-			    __MF_VIOL_UNREGISTER);
-	    break;
-	  }
+        /* Special case for HEAP_I - see free & realloc hook.  They don't
+           know whether the input region was HEAP or HEAP_I before
+           unmapping it.  Here we give HEAP a try in case HEAP_I
+           failed.  */
+        if ((type == __MF_TYPE_HEAP_I) && (num_overlapping_objs == 0))
+          {
+            num_overlapping_objs = __mf_find_objects2 ((uintptr_t) ptr,
+                                                       CLAMPSZ (ptr, sz), objs, 1, __MF_TYPE_HEAP);
+          }
 
-	__mf_unlink_object (old_obj);
-	__mf_uncache_object (& old_obj->data);
+        old_obj = objs[0];
+        if (UNLIKELY ((num_overlapping_objs != 1) /* more than one overlap */
+                      || ((sz == 0) ? 0 : (sz != (old_obj->high - old_obj->low + 1))) /* size mismatch */
+                      || ((uintptr_t) ptr != old_obj->low))) /* base mismatch */
+          {
+            __mf_violation (ptr, sz,
+                            (uintptr_t) __builtin_return_address (0), NULL,
+                            __MF_VIOL_UNREGISTER);
+            break;
+          }
 
-	/* Wipe buffer contents if desired.  */
-	if ((__mf_opts.wipe_stack && old_obj->data.type == __MF_TYPE_STACK)
-	    || (__mf_opts.wipe_heap && (old_obj->data.type == __MF_TYPE_HEAP 
-					|| old_obj->data.type == __MF_TYPE_HEAP_I)))
-	  {
-	    memset ((void *) old_obj->data.low,
-		    0,
-		    (size_t) (old_obj->data.high - old_obj->data.low + 1));
-	  }
-	
-	/* Manage the object cemetary.  */
-	if (__mf_opts.persistent_count > 0 && 
-	    old_obj->data.type >= 0 && 
-	    old_obj->data.type <= __MF_TYPE_MAX_CEM)
-	  {
-	    old_obj->data.deallocated_p = 1;
-	    old_obj->left = old_obj->right = NULL;
-	    old_obj->data.dealloc_pc = (uintptr_t) __builtin_return_address (0);
+        __mf_unlink_object (old_obj);
+        __mf_uncache_object (old_obj);
+
+        /* Wipe buffer contents if desired.  */
+        if ((__mf_opts.wipe_stack && old_obj->type == __MF_TYPE_STACK)
+            || (__mf_opts.wipe_heap && (old_obj->type == __MF_TYPE_HEAP 
+                                        || old_obj->type == __MF_TYPE_HEAP_I)))
+          {
+            memset ((void *) old_obj->low,
+                    0,
+                    (size_t) (old_obj->high - old_obj->low + 1));
+          }
+        
+        /* Manage the object cemetary.  */
+        if (__mf_opts.persistent_count > 0 && 
+            old_obj->type >= 0 && 
+            old_obj->type <= __MF_TYPE_MAX_CEM)
+          {
+            old_obj->deallocated_p = 1;
+            old_obj->dealloc_pc = (uintptr_t) __builtin_return_address (0);
 #if HAVE_GETTIMEOFDAY
-	    gettimeofday (& old_obj->data.dealloc_time, NULL);
+            gettimeofday (& old_obj->dealloc_time, NULL);
 #endif
 #ifdef LIBMUDFLAPTH
-	    old_obj->data.dealloc_thread = pthread_self ();
+            old_obj->dealloc_thread = pthread_self ();
 #endif
 
-	    if (__mf_opts.backtrace > 0 && old_obj->data.type == __MF_TYPE_HEAP)
-	      old_obj->data.dealloc_backtrace_size = 
-		__mf_backtrace (& old_obj->data.dealloc_backtrace,
-				NULL, 2);
+            if (__mf_opts.backtrace > 0 && old_obj->type == __MF_TYPE_HEAP)
+              old_obj->dealloc_backtrace_size = 
+                __mf_backtrace (& old_obj->dealloc_backtrace,
+                                NULL, 2);
 
-	    /* Encourage this object to be displayed again in current epoch.  */
-	    old_obj->data.description_epoch --;
+            /* Encourage this object to be displayed again in current epoch.  */
+            old_obj->description_epoch --;
 
-	    /* Put this object into the cemetary.  This may require this plot to
-	       be recycled, and the previous resident to be designated del_obj.  */
-	    {
-	      unsigned row = old_obj->data.type;
-	      unsigned plot = __mf_object_dead_head [row];
-	      
-	      del_obj = __mf_object_cemetary [row][plot];
-	      __mf_object_cemetary [row][plot] = old_obj;
-	      plot ++;
-	      if (plot == __mf_opts.persistent_count) plot = 0;
-	      __mf_object_dead_head [row] = plot;
-	    }
-	  }
-	else
-	  del_obj = old_obj;
-	
-	if (__mf_opts.print_leaks)
-	  {
-	    if ((old_obj->data.read_count + old_obj->data.write_count) == 0 &&
-		(old_obj->data.type == __MF_TYPE_HEAP 
-		 || old_obj->data.type == __MF_TYPE_HEAP_I))
-	      {
-		fprintf (stderr, 
-			 "*******\n"
-			 "mudflap warning: unaccessed registered object:\n");
-		__mf_describe_object (& old_obj->data);
-	      }
-	  }
-	
-	if (del_obj != NULL) /* May or may not equal old_obj.  */
-	  {
-	    if (__mf_opts.backtrace > 0)
-	      {
-		CALL_REAL(free, del_obj->data.alloc_backtrace);
-		if (__mf_opts.persistent_count > 0)
-		  {
-		    CALL_REAL(free, del_obj->data.dealloc_backtrace);
-		  }
-	      }
-	    CALL_REAL(free, del_obj);
-	  }
-	
-	break;
+            /* Put this object into the cemetary.  This may require this plot to
+               be recycled, and the previous resident to be designated del_obj.  */
+            {
+              unsigned row = old_obj->type;
+              unsigned plot = __mf_object_dead_head [row];
+              
+              del_obj = __mf_object_cemetary [row][plot];
+              __mf_object_cemetary [row][plot] = old_obj;
+              plot ++;
+              if (plot == __mf_opts.persistent_count) plot = 0;
+              __mf_object_dead_head [row] = plot;
+            }
+          }
+        else
+          del_obj = old_obj;
+        
+        if (__mf_opts.print_leaks)
+          {
+            if ((old_obj->read_count + old_obj->write_count) == 0 &&
+                (old_obj->type == __MF_TYPE_HEAP 
+                 || old_obj->type == __MF_TYPE_HEAP_I))
+              {
+                fprintf (stderr, 
+                         "*******\n"
+                         "mudflap warning: unaccessed registered object:\n");
+                __mf_describe_object (old_obj);
+              }
+          }
+        
+        if (del_obj != NULL) /* May or may not equal old_obj.  */
+          {
+            if (__mf_opts.backtrace > 0)
+              {
+                CALL_REAL(free, del_obj->alloc_backtrace);
+                if (__mf_opts.persistent_count > 0)
+                  {
+                    CALL_REAL(free, del_obj->dealloc_backtrace);
+                  }
+              }
+            CALL_REAL(free, del_obj);
+          }
+        
+        break;
       }
     } /* end switch (__mf_opts.mudflap_mode) */
 
@@ -1378,75 +1215,6 @@ __mfu_unregister (void *ptr, size_t sz)
       __mf_count_unregister ++;
       __mf_total_unregister_size += sz;
     }
-}
-
-/* ------------------------------------------------------------------------ */
-/* __mf_validate_live_object_tree, _object_cemetary */
-
-static void
-__mf_validate_live_object_tree (__mf_object_tree_t *obj)
-{
-  assert (obj != NULL);
-
-  if (__mf_opts.persistent_count > 0)
-    assert (! obj->data.deallocated_p);
-
-  if (obj->left)
-    {
-      assert (obj->left->data.high < obj->data.low);
-      __mf_validate_live_object_tree (obj->left);
-    }
-  if (obj->right)
-    {
-      assert (obj->right->data.low > obj->data.high);
-      __mf_validate_live_object_tree (obj->right);
-    }
-}
-
-static void
-__mf_validate_object_cemetary ()
-{
-  unsigned cls;
-  unsigned i;
-
-  for (cls = 0; cls <= __MF_TYPE_MAX_CEM; cls++)
-    {
-      assert (__mf_object_dead_head [cls] >= 0 &&
-	      __mf_object_dead_head [cls] < __mf_opts.persistent_count);
-      for (i = 0; i < __mf_opts.persistent_count; i++)
-	{
-	  __mf_object_tree_t *obj = __mf_object_cemetary [cls][i];
-	  if (obj != NULL)
-	    {
-	      assert (obj->data.deallocated_p);
-	      assert (obj->left == NULL);
-	      assert (obj->right == NULL);
-	    }
-	}
-    }
-}
-
-static void 
-__mf_validate_objects ()
-{
-  if (__mf_object_root)
-    __mf_validate_live_object_tree (__mf_object_root);
-
-  if (__mf_opts.persistent_count > 0)
-    __mf_validate_object_cemetary ();
-}
-
-
-static void
-__mf_age_tree (__mf_object_tree_t *obj)
-{
-  assert (obj != NULL);
-  obj->data.liveness = obj->data.liveness >> 1;
-
-  if (obj->left)
-    __mf_age_tree (obj->left);
-  if (obj->right)
-    __mf_age_tree (obj->right);
 }
 
 
@@ -1462,46 +1230,49 @@ struct tree_stats
 };
 
 
-static void
-__mf_tree_analyze (__mf_object_tree_t *obj, struct tree_stats* s)
+
+static int
+__mf_adapt_cache_fn (splay_tree_node n, void *param)
 {
-  assert (obj != NULL);
+  __mf_object_t *obj = (__mf_object_t *) n->value;
+  struct tree_stats *s = (struct tree_stats *) param;
 
-  if (obj->left)
-    __mf_tree_analyze (obj->left, s);
-
+  assert (obj != NULL && s != NULL);
+  
   /* Exclude never-accessed objects.  */
-  if (obj->data.read_count + obj->data.write_count)
+  if (obj->read_count + obj->write_count)
     {
       s->obj_count ++;
-      s->total_size += (obj->data.high - obj->data.low + 1);
+      s->total_size += (obj->high - obj->low + 1);
 
-      if (obj->data.liveness)
-	{
-	  unsigned i;
-	  uintptr_t addr;
+      if (obj->liveness)
+        {
+          unsigned i;
+          uintptr_t addr;
 
-	  VERBOSE_TRACE ("analyze low=%p live=%u name=`%s'\n",
-			 (void *) obj->data.low, obj->data.liveness, obj->data.name);
+          /* VERBOSE_TRACE ("analyze low=%p live=%u name=`%s'\n",
+             (void *) obj->low, obj->liveness, obj->name); */
 
-	  s->live_obj_count ++;
-	  s->total_weight += (double) obj->data.liveness;
-	  s->weighted_size +=
-	    (double) (obj->data.high - obj->data.low + 1) *
-	    (double) obj->data.liveness;
+          s->live_obj_count ++;
+          s->total_weight += (double) obj->liveness;
+          s->weighted_size +=
+            (double) (obj->high - obj->low + 1) *
+            (double) obj->liveness;
 
-	  addr = obj->data.low;
-	  for (i=0; i<sizeof(uintptr_t) * 8; i++)
-	    {
-	      unsigned bit = addr & 1;
-	      s->weighted_address_bits[i][bit] += obj->data.liveness;
-	      addr = addr >> 1;
-	    }
-	}
+          addr = obj->low;
+          for (i=0; i<sizeof(uintptr_t) * 8; i++)
+            {
+              unsigned bit = addr & 1;
+              s->weighted_address_bits[i][bit] += obj->liveness;
+              addr = addr >> 1;
+            }
+
+          /* Age the liveness value.  */
+          obj->liveness >>= 1;
+        }
     }
 
-  if (obj->right)
-    __mf_tree_analyze (obj->right, s);
+  return 0;
 }
 
 
@@ -1517,8 +1288,12 @@ __mf_adapt_cache ()
   unsigned i;
 
   memset (&s, 0, sizeof (s));
-  if (__mf_object_root)
-    __mf_tree_analyze (__mf_object_root, & s);
+
+  splay_tree_foreach (__mf_object_tree (__MF_TYPE_HEAP), __mf_adapt_cache_fn, (void *) & s);
+  splay_tree_foreach (__mf_object_tree (__MF_TYPE_HEAP_I), __mf_adapt_cache_fn, (void *) & s);
+  splay_tree_foreach (__mf_object_tree (__MF_TYPE_STACK), __mf_adapt_cache_fn, (void *) & s);
+  splay_tree_foreach (__mf_object_tree (__MF_TYPE_STATIC), __mf_adapt_cache_fn, (void *) & s);
+  splay_tree_foreach (__mf_object_tree (__MF_TYPE_GUESS), __mf_adapt_cache_fn, (void *) & s);
 
   /* Maybe we're dealing with funny aging/adaptation parameters, or an
      empty tree.  Just leave the cache alone in such cases, rather
@@ -1539,7 +1314,7 @@ __mf_adapt_cache ()
       float shoulder_factor = 0.7;  /* Include slightly less popular bits too.  */
       float value = (float) s.weighted_address_bits[i][0] * (float) s.weighted_address_bits[i][1];
       if (value >= max_value * shoulder_factor)
-	break;
+        break;
     }
   if (smoothed_new_shift < 0) smoothed_new_shift = __mf_lc_shift;
   /* Converge toward this slowly to reduce flapping. */  
@@ -1558,9 +1333,9 @@ __mf_adapt_cache ()
   new_mask &= (LOOKUP_CACHE_SIZE_MAX - 1);
 
   VERBOSE_TRACE ("adapt cache obj=%u/%u sizes=%lu/%.0f/%.0f => "
-		 "util=%u%% m=%p s=%u\n",
-		 s.obj_count, s.live_obj_count, s.total_size, s.total_weight, s.weighted_size,
-		 (unsigned)(cache_utilization*100.0), (void *) new_mask, new_shift);
+                 "util=%u%% m=%p s=%u\n",
+                 s.obj_count, s.live_obj_count, s.total_size, s.total_weight, s.weighted_size,
+                 (unsigned)(cache_utilization*100.0), (void *) new_mask, new_shift);
 
   /* We should reinitialize cache if its parameters have changed.  */
   if (new_mask != __mf_lc_mask ||
@@ -1577,89 +1352,53 @@ __mf_adapt_cache ()
 
 
 
-
 /* __mf_find_object[s] */
 
 /* Find overlapping live objecs between [low,high].  Return up to
    max_objs of their pointers in objs[].  Return total count of
    overlaps (may exceed max_objs). */
 
-/* XXX: track traversal statistics, like average depth, balance.  */
-
-static unsigned
-__mf_find_objects_rec (uintptr_t low, uintptr_t high, __mf_object_tree_t **nodep,
-		       __mf_object_tree_t **objs, unsigned max_objs)
+unsigned 
+__mf_find_objects2 (uintptr_t ptr_low, uintptr_t ptr_high, 
+                    __mf_object_t **objs, unsigned max_objs, int type)
 {
-  unsigned count;
-  __mf_object_tree_t *node = *nodep;
+  unsigned count = 0;
+  splay_tree t = __mf_object_tree (type);
+  splay_tree_key k = (splay_tree_key) ptr_low;
+  int direction;
 
-  assert (low <= high);
-  assert (max_objs == 0 || objs != NULL);
-
-  if (UNLIKELY (node == NULL)) return 0;
-
-  /* Traverse down left subtree. */
-  count = 0;
-  if (low < node->data.low)
-    count += __mf_find_objects_rec (low, min(high, node->data.low),
-				    & node->left, objs, max_objs);
-
-  /* Track the used slots of objs[].  */
-  if (count < max_objs)
+  splay_tree_node n = splay_tree_lookup (t, k);
+  /* An exact match for base address implies a hit.  */
+  if (n != NULL)
     {
-      objs += count;
-      max_objs -= count;
-    }
-  else
-    {
-      max_objs = 0;
-    }
-
-  /* Check for overlap with this node.  */
-  if (high >= node->data.low && low <= node->data.high)
-    {
+      if (count < max_objs)
+        objs[count] = (__mf_object_t *) n->value;
       count ++;
-      if (max_objs > 0)  /* Any room left?  */
-	{
-	  objs[0] = node;
-	  objs ++;
-	  max_objs --;
-	}
     }
 
-  /* Traverse down right subtree.  */
-  if (high > node->data.high)
-    count += __mf_find_objects_rec (max (low, node->data.high), high,
-				    & node->right, objs, max_objs);
-  /* There is no need to manipulate objs/max_objs any further.  */
-
-
-  /* Rotate a child node up if its access count is higher. */
-  if (UNLIKELY ((node->left && node->left->data.liveness > node->data.liveness) &&
-		((!node->right || (node->right && 
-				   node->left->data.liveness > 
-				   node->right->data.liveness)))))
+  /* Iterate left then right near this key value to find all overlapping objects. */
+  for (direction = 0; direction < 2; direction ++)
     {
-      __mf_object_tree_t *l = node->left;
-      __mf_object_tree_t *l_r = l->right;
+      /* Reset search origin.  */
+      k = (splay_tree_key) ptr_low;
 
-      *nodep = l;
-      l->right = node;
-      node->left = l_r;
-      __mf_treerot_left ++;
-    }
-  else if (UNLIKELY ((node->right && node->right->data.liveness > node->data.liveness) &&
-		     ((!node->left || (node->left && 
-				       node->right->data.liveness > 
-				       node->left->data.liveness)))))
-    {
-      __mf_object_tree_t *r = node->right;
-      __mf_object_tree_t *r_l = r->left;
+      while (1)
+        {
+          __mf_object_t *obj;
+              
+          n = (direction == 0 ? splay_tree_predecessor (t, k) : splay_tree_successor (t, k));
+          if (n == NULL) break;
+          obj = (__mf_object_t *) n->value;
+              
+          if (! (obj->low <= ptr_high && obj->high >= ptr_low)) /* No overlap? */
+            break;
+              
+          if (count < max_objs)
+            objs[count] = (__mf_object_t *) n->value;
+          count ++;
 
-      *nodep = r;
-      r->left = node;
-      node->right = r_l;
-      __mf_treerot_right ++;
+          k = (splay_tree_key) obj->low;
+        }
     }
 
   return count;
@@ -1668,88 +1407,49 @@ __mf_find_objects_rec (uintptr_t low, uintptr_t high, __mf_object_tree_t **nodep
 
 unsigned
 __mf_find_objects (uintptr_t ptr_low, uintptr_t ptr_high,
-		   __mf_object_tree_t **objs, unsigned max_objs)
+                   __mf_object_t **objs, unsigned max_objs)
 {
-  if (UNLIKELY(__mf_opts.internal_checking))
-    __mf_validate_objects ();
+  int type;
+  unsigned count = 0;
 
-  return __mf_find_objects_rec (ptr_low, ptr_high, & __mf_object_root, objs, max_objs);
+  /* Search each splay tree for overlaps.  */
+  for (type = __MF_TYPE_NOACCESS; type <= __MF_TYPE_GUESS; type++)
+    {
+      unsigned c = __mf_find_objects2 (ptr_low, ptr_high, objs, max_objs, type);
+      if (c > max_objs)
+        {
+          max_objs = 0;
+          objs = NULL;
+        }
+      else /* NB: C may equal 0 */
+        {
+          max_objs -= c;
+          objs += c;
+        }
+      count += c;
+    }
+
+  return count;
 }
+
+
 
 /* __mf_link_object */
 
 static void
-__mf_link_object2 (__mf_object_tree_t *ptr, __mf_object_tree_t **link)
+__mf_link_object (__mf_object_t *node)
 {
-  __mf_object_tree_t *node = *link;
-
-  assert (ptr != NULL);
-  if (UNLIKELY(node == NULL))
-    {
-      *link = ptr;
-      return;
-    }
-
-  if (ptr->data.high < node->data.low)
-    return __mf_link_object2 (ptr, & node->left);
-  else if (ptr->data.low > node->data.high)
-    return __mf_link_object2 (ptr, & node->right);
-  else
-    abort (); /* XXX: duplicate object */
-}
-
-
-void
-__mf_link_object (__mf_object_tree_t *ptr)
-{
-  if (UNLIKELY(__mf_opts.internal_checking))
-    __mf_validate_objects ();
-
-  return __mf_link_object2 (ptr, & __mf_object_root);
+  splay_tree t = __mf_object_tree (node->type);
+  splay_tree_insert (t, (splay_tree_key) node->low, (splay_tree_value) node);
 }
 
 /* __mf_unlink_object */
 
 static void
-__mf_unlink_object2 (__mf_object_tree_t *ptr, __mf_object_tree_t **link)
+__mf_unlink_object (__mf_object_t *node)
 {
-  __mf_object_tree_t *node = *link;
-  
-  assert (ptr != NULL);
-  if (UNLIKELY(node == ptr))
-    {
-      static unsigned promote_left_p = 0;
-      promote_left_p = 1 - promote_left_p;
-
-      /* Alternate promoting the left & right subtrees. */
-      if (promote_left_p)
-	{
-	  *link = ptr->left;
-	  if (ptr->right != NULL)
-	    __mf_link_object2 (ptr->right, link);
-	}
-      else
-	{
-	  *link = ptr->right;
-	  if (ptr->left != NULL)
-	    __mf_link_object2 (ptr->left, link);
-	}
-
-      return;
-    }
-
-  if (ptr->data.high < node->data.low)
-    return __mf_unlink_object2 (ptr, & node->left);
-  else if (ptr->data.low > node->data.high)
-    return __mf_unlink_object2 (ptr, & node->right);
-  else
-    abort (); /* XXX: missing object; should fail more gracefully. */
-}
-
-static void
-__mf_unlink_object (__mf_object_tree_t *node)
-{
-  __mf_unlink_object2 (node, & __mf_object_root);
+  splay_tree t = __mf_object_tree (node->type);
+  splay_tree_remove (t, (splay_tree_key) node->low);
 }
 
 /* __mf_find_dead_objects */
@@ -1760,7 +1460,7 @@ __mf_unlink_object (__mf_object_tree_t *node)
 
 static unsigned
 __mf_find_dead_objects (uintptr_t low, uintptr_t high,
-			__mf_object_tree_t **objs, unsigned max_objs)
+                        __mf_object_t **objs, unsigned max_objs)
 {
   if (__mf_opts.persistent_count > 0)
     {
@@ -1772,43 +1472,43 @@ __mf_find_dead_objects (uintptr_t low, uintptr_t high,
       assert (max_objs == 0 || objs != NULL);
       
       /* Widen the search from the most recent plots in each row, looking
-	 backward in time.  */
+         backward in time.  */
       recollection = 0;
       while (recollection < __mf_opts.persistent_count)
-	{
-	  count = 0;
-	  
-	  for (row = 0; row <= __MF_TYPE_MAX_CEM; row ++)
-	    {
-	      unsigned plot;
-	      unsigned i;
-	      
-	      plot = __mf_object_dead_head [row];
-	      for (i = 0; i <= recollection; i ++)
-		{
-		  __mf_object_tree_t *obj;
-		  
-		  /* Look backward through row: it's a circular buffer.  */
-		  if (plot > 0) plot --;
-		  else plot = __mf_opts.persistent_count - 1;
-		  
-		  obj = __mf_object_cemetary [row][plot];
-		  if (obj && obj->data.low <= high && obj->data.high >= low)
-		    {
-		      /* Found an overlapping dead object!  */
-		      if (count < max_objs)
-			objs [count] = obj;
-		      count ++;
-		    }
-		}
-	    }
-	  
-	  if (count)
-	    break;
-	  
-	  /* Look farther back in time.  */
-	  recollection = (recollection * 2) + 1;
-	}
+        {
+          count = 0;
+          
+          for (row = 0; row <= __MF_TYPE_MAX_CEM; row ++)
+            {
+              unsigned plot;
+              unsigned i;
+              
+              plot = __mf_object_dead_head [row];
+              for (i = 0; i <= recollection; i ++)
+                {
+                  __mf_object_t *obj;
+                  
+                  /* Look backward through row: it's a circular buffer.  */
+                  if (plot > 0) plot --;
+                  else plot = __mf_opts.persistent_count - 1;
+                  
+                  obj = __mf_object_cemetary [row][plot];
+                  if (obj && obj->low <= high && obj->high >= low)
+                    {
+                      /* Found an overlapping dead object!  */
+                      if (count < max_objs)
+                        objs [count] = obj;
+                      count ++;
+                    }
+                }
+            }
+          
+          if (count)
+            break;
+          
+          /* Look farther back in time.  */
+          recollection = (recollection * 2) + 1;
+        }
       
       return count;
     } else {
@@ -1831,39 +1531,39 @@ __mf_describe_object (__mf_object_t *obj)
   if (__mf_opts.abbreviate && obj->description_epoch == epoch)
     {
       fprintf (stderr,
-	       "mudflap object %p: name=`%s'\n",
-	       (void *) obj, (obj->name ? obj->name : ""));
+               "mudflap object %p: name=`%s'\n",
+               (void *) obj, (obj->name ? obj->name : ""));
       return;
     }
   else
     obj->description_epoch = epoch;
 
   fprintf (stderr,
-	   "mudflap object %p: name=`%s'\n"
-	   "bounds=[%p,%p] size=%lu area=%s check=%ur/%uw liveness=%u%s\n"
-	   "alloc time=%lu.%06lu pc=%p"
+           "mudflap object %p: name=`%s'\n"
+           "bounds=[%p,%p] size=%lu area=%s check=%ur/%uw liveness=%u%s\n"
+           "alloc time=%lu.%06lu pc=%p"
 #ifdef LIBMUDFLAPTH
-	   " thread=%u"
+           " thread=%u"
 #endif
-	   "\n",
-	   (void *) obj, (obj->name ? obj->name : ""), 
-	   (void *) obj->low, (void *) obj->high,
-	   (unsigned long) (obj->high - obj->low + 1),
-	   (obj->type == __MF_TYPE_NOACCESS ? "no-access" :
-	    obj->type == __MF_TYPE_HEAP ? "heap" :
-	    obj->type == __MF_TYPE_HEAP_I ? "heap-init" :
-	    obj->type == __MF_TYPE_STACK ? "stack" :
-	    obj->type == __MF_TYPE_STATIC ? "static" :
-	    obj->type == __MF_TYPE_GUESS ? "guess" :
-	    "unknown"),
-	   obj->read_count, obj->write_count, obj->liveness, 
-	   obj->watching_p ? " watching" : "",
-	   obj->alloc_time.tv_sec, obj->alloc_time.tv_usec, 
-	   (void *) obj->alloc_pc
+           "\n",
+           (void *) obj, (obj->name ? obj->name : ""), 
+           (void *) obj->low, (void *) obj->high,
+           (unsigned long) (obj->high - obj->low + 1),
+           (obj->type == __MF_TYPE_NOACCESS ? "no-access" :
+            obj->type == __MF_TYPE_HEAP ? "heap" :
+            obj->type == __MF_TYPE_HEAP_I ? "heap-init" :
+            obj->type == __MF_TYPE_STACK ? "stack" :
+            obj->type == __MF_TYPE_STATIC ? "static" :
+            obj->type == __MF_TYPE_GUESS ? "guess" :
+            "unknown"),
+           obj->read_count, obj->write_count, obj->liveness, 
+           obj->watching_p ? " watching" : "",
+           obj->alloc_time.tv_sec, obj->alloc_time.tv_usec, 
+           (void *) obj->alloc_pc
 #ifdef LIBMUDFLAPTH
-	   , (unsigned) obj->alloc_thread
+           , (unsigned) obj->alloc_thread
 #endif
-	   );
+           );
 
   if (__mf_opts.backtrace > 0)
   {
@@ -1875,55 +1575,56 @@ __mf_describe_object (__mf_object_t *obj)
   if (__mf_opts.persistent_count > 0)
     {
       if (obj->deallocated_p)
-	{
-	  fprintf (stderr, "dealloc time=%lu.%06lu pc=%p"
+        {
+          fprintf (stderr, "dealloc time=%lu.%06lu pc=%p"
 #ifdef LIBMUDFLAPTH
-		   " thread=%u"
+                   " thread=%u"
 #endif
-		   "\n",
-		   obj->dealloc_time.tv_sec, obj->dealloc_time.tv_usec, 
-		   (void *) obj->dealloc_pc
+                   "\n",
+                   obj->dealloc_time.tv_sec, obj->dealloc_time.tv_usec, 
+                   (void *) obj->dealloc_pc
 #ifdef LIBMUDFLAPTH
-		   , (unsigned) obj->dealloc_thread
+                   , (unsigned) obj->dealloc_thread
 #endif
-		   );
+                   );
 
 
-	  if (__mf_opts.backtrace > 0)
-	  {
-	    unsigned i;
-	    for (i=0; i<obj->dealloc_backtrace_size; i++)
-	      fprintf (stderr, "      %s\n", obj->dealloc_backtrace[i]);
-	  }
-	}
+          if (__mf_opts.backtrace > 0)
+          {
+            unsigned i;
+            for (i=0; i<obj->dealloc_backtrace_size; i++)
+              fprintf (stderr, "      %s\n", obj->dealloc_backtrace[i]);
+          }
+        }
     }
 }
 
-static unsigned
-__mf_report_leaks (__mf_object_tree_t *node)
+
+static int
+__mf_report_leaks_fn (splay_tree_node n, void *param)
 {
- /* The counter is amongst recursive calls, so
-    that cumulative numbers are printed below.  */
-  static unsigned count = 0;
+  __mf_object_t *node = (__mf_object_t *) n->value;
+  unsigned *count = (unsigned *) param;
 
-  if (node == NULL)  /* Reset */
-    {
-      count = 0;
-      return 0;
-    }
+  if (count != NULL)
+    (*count) ++;
 
-  /* Inorder traversal. */
-  if (node->left)
-    __mf_report_leaks (node->left);
-  if (node->data.type == __MF_TYPE_HEAP
-      || node->data.type == __MF_TYPE_HEAP_I)
-    {
-      count ++;
-      fprintf (stderr, "Leaked object %u:\n", count);
-      __mf_describe_object (& node->data);
-    }
-  if (node->right)
-    __mf_report_leaks (node->right);
+  fprintf (stderr, "Leaked object %u:\n", (*count));
+  __mf_describe_object (node);
+
+  return 0;
+}
+
+
+static unsigned
+__mf_report_leaks ()
+{
+  unsigned count = 0;
+
+  (void) splay_tree_foreach (__mf_object_tree (__MF_TYPE_HEAP),
+                             __mf_report_leaks_fn, & count);
+  (void) splay_tree_foreach (__mf_object_tree (__MF_TYPE_HEAP_I),
+                             __mf_report_leaks_fn, & count);
 
   return count;
 }
@@ -1947,65 +1648,65 @@ __mfu_report ()
   if (__mf_opts.collect_stats)
     {
       fprintf (stderr,
-	       "*******\n"
-	       "mudflap stats:\n"
-	       "calls to __mf_check: %lu rot: %lu/%lu\n"
-	       "         __mf_register: %lu [%luB, %luB, %luB, %luB, %luB]\n"
-	       "         __mf_unregister: %lu [%luB]\n"
-	       "         __mf_violation: [%lu, %lu, %lu, %lu, %lu]\n",
-	       __mf_count_check, __mf_treerot_left, __mf_treerot_right,
-	       __mf_count_register,
-	       __mf_total_register_size[0], __mf_total_register_size[1],
-	       __mf_total_register_size[2], __mf_total_register_size[3],
-	       __mf_total_register_size[4], /* XXX */
-	       __mf_count_unregister, __mf_total_unregister_size,
-	       __mf_count_violation[0], __mf_count_violation[1],
-	       __mf_count_violation[2], __mf_count_violation[3],
-	       __mf_count_violation[4]);
+               "*******\n"
+               "mudflap stats:\n"
+               "calls to __mf_check: %lu\n"
+               "         __mf_register: %lu [%luB, %luB, %luB, %luB, %luB]\n"
+               "         __mf_unregister: %lu [%luB]\n"
+               "         __mf_violation: [%lu, %lu, %lu, %lu, %lu]\n",
+               __mf_count_check,
+               __mf_count_register,
+               __mf_total_register_size[0], __mf_total_register_size[1],
+               __mf_total_register_size[2], __mf_total_register_size[3],
+               __mf_total_register_size[4], /* XXX */
+               __mf_count_unregister, __mf_total_unregister_size,
+               __mf_count_violation[0], __mf_count_violation[1],
+               __mf_count_violation[2], __mf_count_violation[3],
+               __mf_count_violation[4]);
 
       fprintf (stderr,
-	       "calls with reentrancy: %lu\n", __mf_reentrancy);
+               "calls with reentrancy: %lu\n", __mf_reentrancy);
 #ifdef LIBMUDFLAPTH
       fprintf (stderr,
-	       "           lock contention: %lu\n", __mf_lock_contention);
+               "           lock contention: %lu\n", __mf_lock_contention);
 #endif
 
       /* Lookup cache stats.  */
       {
-	unsigned i;
-	unsigned max_reuse = 0;
-	unsigned num_used = 0;
-	unsigned num_unused = 0;
+        unsigned i;
+        unsigned max_reuse = 0;
+        unsigned num_used = 0;
+        unsigned num_unused = 0;
 
-	for (i = 0; i < LOOKUP_CACHE_SIZE; i++)
-	  {
-	    if (__mf_lookup_cache_reusecount[i])
-	      num_used ++;
-	    else
-	      num_unused ++;
-	    if (max_reuse < __mf_lookup_cache_reusecount[i])
-	      max_reuse = __mf_lookup_cache_reusecount[i];
-	  }
-	fprintf (stderr, "lookup cache slots used: %u  unused: %u  peak-reuse: %u\n",
-		 num_used, num_unused, max_reuse);
+        for (i = 0; i < LOOKUP_CACHE_SIZE; i++)
+          {
+            if (__mf_lookup_cache_reusecount[i])
+              num_used ++;
+            else
+              num_unused ++;
+            if (max_reuse < __mf_lookup_cache_reusecount[i])
+              max_reuse = __mf_lookup_cache_reusecount[i];
+          }
+        fprintf (stderr, "lookup cache slots used: %u  unused: %u  peak-reuse: %u\n",
+                 num_used, num_unused, max_reuse);
       }
 
       {
-	unsigned live_count;
-	live_count = __mf_find_objects (MINPTR, MAXPTR, NULL, 0);
-	fprintf (stderr, "number of live objects: %u\n", live_count);
+        unsigned live_count;
+        live_count = __mf_find_objects (MINPTR, MAXPTR, NULL, 0);
+        fprintf (stderr, "number of live objects: %u\n", live_count);
       }
 
       if (__mf_opts.persistent_count > 0)
-	{
-	  unsigned dead_count = 0;
-	  unsigned row, plot;
-	  for (row = 0; row <= __MF_TYPE_MAX_CEM; row ++)
-	    for (plot = 0 ; plot < __mf_opts.persistent_count; plot ++)
-	      if (__mf_object_cemetary [row][plot] != 0)
-		dead_count ++;
-	  fprintf (stderr, "          zombie objects: %u\n", dead_count);
-	}
+        {
+          unsigned dead_count = 0;
+          unsigned row, plot;
+          for (row = 0; row <= __MF_TYPE_MAX_CEM; row ++)
+            for (plot = 0 ; plot < __mf_opts.persistent_count; plot ++)
+              if (__mf_object_cemetary [row][plot] != 0)
+                dead_count ++;
+          fprintf (stderr, "          zombie objects: %u\n", dead_count);
+        }
     }
   if (__mf_opts.print_leaks && (__mf_opts.mudflap_mode == mode_check))
     {
@@ -2015,8 +1716,7 @@ __mfu_report ()
       /* Free up any remaining alloca()'d blocks.  */
       __mf_wrap_alloca_indirect (0);
       __mf_describe_object (NULL); /* Reset description epoch.  */
-      __mf_report_leaks (NULL); /* Reset cumulative count.  */
-      l = __mf_report_leaks (__mf_object_root);
+      l = __mf_report_leaks ();
       fprintf (stderr, "number of leaked objects: %u\n", l);
     }
 }
@@ -2074,7 +1774,7 @@ __mf_backtrace (char ***symbols, void *guess_pc, unsigned guess_omit_levels)
   if (guess_pc != NULL)
     for (i=0; i<pc_array_size; i++)
       if (pc_array [i] == guess_pc)
-	omitted_size = i;
+        omitted_size = i;
 
   if (omitted_size == 0) /* No match? */
     if (pc_array_size > guess_omit_levels)
@@ -2098,9 +1798,9 @@ __mf_backtrace (char ***symbols, void *guess_pc, unsigned guess_omit_levels)
     chars = (char *)buffer + (remaining_size * sizeof (char *));
     for (i = 0; i < remaining_size; i++)
       {
-	pointers[i] = chars;
-	sprintf (chars, "[0x%p]", pc_array [omitted_size + i]);
-	chars = chars + perline;
+        pointers[i] = chars;
+        sprintf (chars, "[0x%p]", pc_array [omitted_size + i]);
+        chars = chars + perline;
       }
     *symbols = pointers;
   }
@@ -2115,20 +1815,20 @@ __mf_backtrace (char ***symbols, void *guess_pc, unsigned guess_omit_levels)
 
 void
 __mf_violation (void *ptr, size_t sz, uintptr_t pc, 
-		const char *location, int type)
+                const char *location, int type)
 {
   char buf [128];
   static unsigned violation_number;
   DECLARE(void, free, void *ptr);
 
   TRACE ("violation pc=%p location=%s type=%d ptr=%p size=%lu\n", 
-	 (void *) pc, 
-	 (location != NULL ? location : ""), type, ptr, (unsigned long) sz);
+         (void *) pc, 
+         (location != NULL ? location : ""), type, ptr, (unsigned long) sz);
 
   if (__mf_opts.collect_stats)
     __mf_count_violation [(type < 0) ? 0 :
-			  (type > __MF_VIOL_WATCH) ? 0 :
-			  type] ++;
+                          (type > __MF_VIOL_WATCH) ? 0 :
+                          type] ++;
 
   /* Print out a basic warning message.  */
   if (__mf_opts.verbose_violations)
@@ -2142,36 +1842,36 @@ __mf_violation (void *ptr, size_t sz, uintptr_t pc,
 
     violation_number ++;
     fprintf (stderr,
-	     "*******\n"
-	     "mudflap violation %u (%s): time=%lu.%06lu "
-	     "ptr=%p size=%lu\npc=%p%s%s%s\n", 
-	     violation_number,
-	     ((type == __MF_VIOL_READ) ? "check/read" :
-	      (type == __MF_VIOL_WRITE) ? "check/write" :
-	      (type == __MF_VIOL_REGISTER) ? "register" :
-	      (type == __MF_VIOL_UNREGISTER) ? "unregister" :
-	      (type == __MF_VIOL_WATCH) ? "watch" : "unknown"),
-	     now.tv_sec, now.tv_usec, 
-	     (void *) ptr, (unsigned long)sz, (void *) pc,
-	     (location != NULL ? " location=`" : ""),
-	     (location != NULL ? location : ""),
-	     (location != NULL ? "'" : ""));
+             "*******\n"
+             "mudflap violation %u (%s): time=%lu.%06lu "
+             "ptr=%p size=%lu\npc=%p%s%s%s\n", 
+             violation_number,
+             ((type == __MF_VIOL_READ) ? "check/read" :
+              (type == __MF_VIOL_WRITE) ? "check/write" :
+              (type == __MF_VIOL_REGISTER) ? "register" :
+              (type == __MF_VIOL_UNREGISTER) ? "unregister" :
+              (type == __MF_VIOL_WATCH) ? "watch" : "unknown"),
+             now.tv_sec, now.tv_usec, 
+             (void *) ptr, (unsigned long)sz, (void *) pc,
+             (location != NULL ? " location=`" : ""),
+             (location != NULL ? location : ""),
+             (location != NULL ? "'" : ""));
 
     if (__mf_opts.backtrace > 0)
       {
-	char ** symbols;
-	unsigned i, num;
-	
-	num = __mf_backtrace (& symbols, (void *) pc, 2);
-	/* Note: backtrace_symbols calls malloc().  But since we're in
-	   __mf_violation and presumably __mf_check, it'll detect
-	   recursion, and not put the new string into the database.  */
-	
-	for (i=0; i<num; i++)
-	  fprintf (stderr, "      %s\n", symbols[i]);
-	
-	/* Calling free() here would trigger a violation.  */
-	CALL_REAL(free, symbols);
+        char ** symbols;
+        unsigned i, num;
+        
+        num = __mf_backtrace (& symbols, (void *) pc, 2);
+        /* Note: backtrace_symbols calls malloc().  But since we're in
+           __mf_violation and presumably __mf_check, it'll detect
+           recursion, and not put the new string into the database.  */
+        
+        for (i=0; i<num; i++)
+          fprintf (stderr, "      %s\n", symbols[i]);
+        
+        /* Calling free() here would trigger a violation.  */
+        CALL_REAL(free, symbols);
       }
     
     
@@ -2183,56 +1883,56 @@ __mf_violation (void *ptr, size_t sz, uintptr_t pc,
     
     for (dead_p = 0; dead_p <= 1; dead_p ++) /* for dead_p in 0 1 */
       {
-	enum {max_objs = 3}; /* magic */
-	__mf_object_tree_t *objs[max_objs];
-	unsigned num_objs = 0;
-	uintptr_t s_low, s_high;
-	unsigned tries = 0;
-	unsigned i;
-	
-	s_low = (uintptr_t) ptr;
-	s_high = CLAMPSZ (ptr, sz);
+        enum {max_objs = 3}; /* magic */
+        __mf_object_t *objs[max_objs];
+        unsigned num_objs = 0;
+        uintptr_t s_low, s_high;
+        unsigned tries = 0;
+        unsigned i;
+        
+        s_low = (uintptr_t) ptr;
+        s_high = CLAMPSZ (ptr, sz);
 
-	while (tries < 16) /* magic */
-	  {
-	    if (dead_p)
-	      num_objs = __mf_find_dead_objects (s_low, s_high, objs, max_objs);
-	    else
-	      num_objs = __mf_find_objects (s_low, s_high, objs, max_objs);
+        while (tries < 16) /* magic */
+          {
+            if (dead_p)
+              num_objs = __mf_find_dead_objects (s_low, s_high, objs, max_objs);
+            else
+              num_objs = __mf_find_objects (s_low, s_high, objs, max_objs);
 
-	    if (num_objs) /* good enough */
-	      break;
+            if (num_objs) /* good enough */
+              break;
 
-	    tries ++;
+            tries ++;
 
-	    /* XXX: tune this search strategy.  It's too dependent on
-	     sz, which can vary from 1 to very big (when array index
-	     checking) numbers. */
-	    s_low = CLAMPSUB (s_low, (sz * tries * tries));
-	    s_high = CLAMPADD (s_high, (sz * tries * tries));
-	  }
+            /* XXX: tune this search strategy.  It's too dependent on
+             sz, which can vary from 1 to very big (when array index
+             checking) numbers. */
+            s_low = CLAMPSUB (s_low, (sz * tries * tries));
+            s_high = CLAMPADD (s_high, (sz * tries * tries));
+          }
 
-	for (i = 0; i < min (num_objs, max_objs); i++)
-	  {
-	    __mf_object_t *obj = & objs[i]->data;
-	    uintptr_t low = (uintptr_t) ptr;
-	    uintptr_t high = CLAMPSZ (ptr, sz);
-	    unsigned before1 = (low < obj->low) ? obj->low - low : 0;
-	    unsigned after1 = (low > obj->high) ? low - obj->high : 0;
-	    unsigned into1 = (high >= obj->low && low <= obj->high) ? low - obj->low : 0;
-	    unsigned before2 = (high < obj->low) ? obj->low - high : 0;
-	    unsigned after2 = (high > obj->high) ? high - obj->high : 0;
-	    unsigned into2 = (high >= obj->low && low <= obj->high) ? high - obj->low : 0;
+        for (i = 0; i < min (num_objs, max_objs); i++)
+          {
+            __mf_object_t *obj = objs[i];
+            uintptr_t low = (uintptr_t) ptr;
+            uintptr_t high = CLAMPSZ (ptr, sz);
+            unsigned before1 = (low < obj->low) ? obj->low - low : 0;
+            unsigned after1 = (low > obj->high) ? low - obj->high : 0;
+            unsigned into1 = (high >= obj->low && low <= obj->high) ? low - obj->low : 0;
+            unsigned before2 = (high < obj->low) ? obj->low - high : 0;
+            unsigned after2 = (high > obj->high) ? high - obj->high : 0;
+            unsigned into2 = (high >= obj->low && low <= obj->high) ? high - obj->low : 0;
 
-	    fprintf (stderr, "Nearby object %u: checked region begins %uB %s and ends %uB %s\n",
-		     num_helpful + i + 1,
-		     (before1 ? before1 : after1 ? after1 : into1),
-		     (before1 ? "before" : after1 ? "after" : "into"),
-		     (before2 ? before2 : after2 ? after2 : into2),
-		     (before2 ? "before" : after2 ? "after" : "into"));
-	    __mf_describe_object (obj);
-	  }
-	num_helpful += num_objs;
+            fprintf (stderr, "Nearby object %u: checked region begins %uB %s and ends %uB %s\n",
+                     num_helpful + i + 1,
+                     (before1 ? before1 : after1 ? after1 : into1),
+                     (before1 ? "before" : after1 ? "after" : "into"),
+                     (before2 ? before2 : after2 ? after2 : into2),
+                     (before2 ? "before" : after2 ? "after" : "into"));
+            __mf_describe_object (obj);
+          }
+        num_helpful += num_objs;
       }
 
     fprintf (stderr, "number of nearby objects: %u\n", num_helpful);
@@ -2296,7 +1996,7 @@ __mf_watch_or_not (void *ptr, size_t sz, char flag)
   unsigned count = 0;
 
   TRACE ("%s ptr=%p size=%lu\n",
-	 (flag ? "watch" : "unwatch"), ptr, (unsigned long) sz);
+         (flag ? "watch" : "unwatch"), ptr, (unsigned long) sz);
   
   switch (__mf_opts.mudflap_mode)
     {
@@ -2308,38 +2008,37 @@ __mf_watch_or_not (void *ptr, size_t sz, char flag)
 
     case mode_check:
       {
-	__mf_object_tree_t **all_ovr_objs;
-	unsigned obj_count;
-	unsigned n;
-	DECLARE (void *, malloc, size_t c);
-	DECLARE (void, free, void *p);
+        __mf_object_t **all_ovr_objs;
+        unsigned obj_count;
+        unsigned n;
+        DECLARE (void *, malloc, size_t c);
+        DECLARE (void, free, void *p);
 
-	obj_count = __mf_find_objects (ptr_low, ptr_high, NULL, 0);
-	VERBOSE_TRACE (" %u:", obj_count);
+        obj_count = __mf_find_objects (ptr_low, ptr_high, NULL, 0);
+        VERBOSE_TRACE (" %u:", obj_count);
 
-	all_ovr_objs = CALL_REAL (malloc, (sizeof (__mf_object_tree_t *) *
-					   obj_count));
-	if (all_ovr_objs == NULL) abort ();
-	n = __mf_find_objects (ptr_low, ptr_high, all_ovr_objs, obj_count);
-	assert (n == obj_count);
+        all_ovr_objs = CALL_REAL (malloc, (sizeof (__mf_object_t *) * obj_count));
+        if (all_ovr_objs == NULL) abort ();
+        n = __mf_find_objects (ptr_low, ptr_high, all_ovr_objs, obj_count);
+        assert (n == obj_count);
 
-	for (n = 0; n < obj_count; n ++)
-	  {
-	    __mf_object_t *obj = & (all_ovr_objs[n]->data);
+        for (n = 0; n < obj_count; n ++)
+          {
+            __mf_object_t *obj = all_ovr_objs[n];
 
-	    VERBOSE_TRACE (" [%p]", (void *) obj);
-	    if (obj->watching_p != flag)
-	      {
-		obj->watching_p = flag;
-		count ++;
+            VERBOSE_TRACE (" [%p]", (void *) obj);
+            if (obj->watching_p != flag)
+              {
+                obj->watching_p = flag;
+                count ++;
 
-		/* Remove object from cache, to ensure next access
-		   goes through __mf_check().  */
-	        if (flag)
-		  __mf_uncache_object (obj);
-	      }
-	  }
-	CALL_REAL (free, all_ovr_objs);
+                /* Remove object from cache, to ensure next access
+                   goes through __mf_check().  */
+                if (flag)
+                  __mf_uncache_object (obj);
+              }
+          }
+        CALL_REAL (free, all_ovr_objs);
       }
       break;
     }
@@ -2403,12 +2102,12 @@ write_itoa (int fd, unsigned n)
       buf[bufsize-2-i] = digit + '0';
       n /= 10;
       if (n == 0) 
-	{
-	  char *m = & buf [bufsize-2-i];
-	  buf[bufsize-1] = '\0';
-	  write (fd, m, strlen(m));
-	  break;
-	}
+        {
+          char *m = & buf [bufsize-2-i];
+          buf[bufsize-1] = '\0';
+          write (fd, m, strlen(m));
+          break;
+        }
     }
 }
 
@@ -2438,3 +2137,28 @@ __assert_fail (const char *msg, const char *file, unsigned line, const char *fun
 
 
 #endif
+
+
+
+
+
+/* #include the generic splay tree implementation from libiberty here, to
+   ensure that it uses our memory allocation primitives.  */
+
+static void
+splay_tree_free (void *p)
+{
+  DECLARE (void, free, void *p);
+  CALL_REAL (free, p);
+}
+
+static void *
+splay_tree_xmalloc (size_t s)
+{
+  DECLARE (void *, malloc, size_t s);
+  return CALL_REAL (malloc, s);
+}
+
+#define free(z) splay_tree_free(z)
+#define xmalloc(z) splay_tree_xmalloc(z)
+#include "splay-tree.c"

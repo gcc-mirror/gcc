@@ -624,7 +624,7 @@ WRAPPER2(int, fclose, FILE *stream)
     "fclose stream");
   resp = fclose (stream);
 #ifdef MF_REGISTER_fopen
-  __mf_unregister (stream, sizeof (*stream));
+  __mf_unregister (stream, sizeof (*stream), MF_REGISTER_fopen);
 #endif
 
   return resp;
@@ -1101,7 +1101,7 @@ WRAPPER2(int, closedir, DIR *dir)
   TRACE ("%s\n", __PRETTY_FUNCTION__);
   MF_VALIDATE_EXTENT (dir, 0, __MF_CHECK_WRITE, "closedir dir");
 #ifdef MF_REGISTER_opendir
-  __mf_unregister (dir, MF_RESULT_SIZE_opendir);
+  __mf_unregister (dir, MF_RESULT_SIZE_opendir, MF_REGISTER_opendir);
 #endif
   return closedir (dir);
 }
@@ -1381,7 +1381,7 @@ WRAPPER2(int, pclose, FILE *stream)
     "pclose stream");
   resp = pclose (stream);
 #ifdef MF_REGISTER_fopen
-  __mf_unregister (stream, sizeof (*stream));
+  __mf_unregister (stream, sizeof (*stream), MF_REGISTER_fopen);
 #endif
   return resp;
 }
@@ -1499,7 +1499,7 @@ WRAPPER2(int, dlclose, void *handle)
   MF_VALIDATE_EXTENT (handle, 0, __MF_CHECK_READ, "dlclose handle");
   resp = dlclose (handle);
 #ifdef MF_REGISTER_dlopen
-  __mf_unregister (handle, 0);
+  __mf_unregister (handle, 0, MF_REGISTER_dlopen);
 #endif
   return resp;
 }
@@ -1637,7 +1637,7 @@ WRAPPER2(int, shmdt, const void *shmaddr)
   TRACE ("%s\n", __PRETTY_FUNCTION__);
   resp = shmdt (shmaddr);
 #ifdef MF_REGISTER_shmat
-  __mf_unregister ((void *)shmaddr, 0);
+  __mf_unregister ((void *)shmaddr, 0, MF_REGISTER_shmat);
 #endif
   return resp;
 }
