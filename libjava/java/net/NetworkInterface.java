@@ -200,8 +200,9 @@ public final class NetworkInterface
       return false;
    
     NetworkInterface tmp = (NetworkInterface) obj;
-    return name.equals (tmp.name) &&
-           inetAddresses.equals (tmp.inetAddresses);
+    
+    return (name.equals (tmp.name)
+            && inetAddresses.equals (tmp.inetAddresses));
   }
 
   /**
