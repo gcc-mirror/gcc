@@ -317,7 +317,7 @@ static void push_replacement	PROTO((rtx *, int, enum machine_mode));
 static void combine_reloads	PROTO((void));
 static rtx find_dummy_reload	PROTO((rtx, rtx, rtx *, rtx *,
 				       enum machine_mode, enum machine_mode,
-				       enum reg_class, int));
+				       enum reg_class, int, int));
 static int earlyclobber_operand_p PROTO((rtx));
 static int hard_reg_set_here_p	PROTO((int, int, rtx));
 static struct decomposition decompose PROTO((rtx));
@@ -1379,7 +1379,8 @@ push_reload (in, out, inloc, outloc, class,
     {
       reload_reg_rtx[i] = find_dummy_reload (in, out, inloc, outloc,
 					     inmode, outmode,
-					     reload_reg_class[i], i);
+					     reload_reg_class[i], i,
+					     reload_earlyclobbers[i] != NULL);
 
       /* If the outgoing register already contains the same value
 	 as the incoming one, we can dispense with loading it.
@@ -1689,16 +1690,22 @@ combine_reloads ()
    to be computed, clear out reload_out[FOR_REAL].
 
    If FOR_REAL is -1, this should not be done, because this call
-   is just to see if a register can be found, not to find and install it.  */
+   is just to see if a register can be found, not to find and install it.
+
+   EARLYCLOBBER is non-zero if OUT is an earlyclobber operand.  This
+   puts an additional constraint on being able to use IN for OUT since
+   IN must not appear elsewhere in the insn (it is assumed that IN itself
+   is safe from the earlyclobber).  */
 
 static rtx
 find_dummy_reload (real_in, real_out, inloc, outloc,
-		   inmode, outmode, class, for_real)
+		   inmode, outmode, class, for_real, earlyclobber)
      rtx real_in, real_out;
      rtx *inloc, *outloc;
      enum machine_mode inmode, outmode;
      enum reg_class class;
      int for_real;
+     int earlyclobber;
 {
   rtx in = real_in;
   rtx out = real_out;
@@ -1780,7 +1787,8 @@ find_dummy_reload (real_in, real_out, inloc, outloc,
      or if OUT dies in this insn (like the quotient in a divmod insn).
      We can't use IN unless it is dies in this insn,
      which means we must know accurately which hard regs are live.
-     Also, the result can't go in IN if IN is used within OUT.  */
+     Also, the result can't go in IN if IN is used within OUT,
+     or if OUT is an earlyclobber and IN appears elsewhere in the insn.  */
   if (hard_regs_live_known
       && GET_CODE (in) == REG
       && REGNO (in) < FIRST_PSEUDO_REGISTER
@@ -1801,7 +1809,10 @@ find_dummy_reload (real_in, real_out, inloc, outloc,
 
       if (! refers_to_regno_for_reload_p (regno, regno + nwords, out, NULL_PTR)
 	  && ! hard_reg_set_here_p (regno, regno + nwords,
-				    PATTERN (this_insn)))
+				    PATTERN (this_insn))
+	  && (! earlyclobber
+	      || ! refers_to_regno_for_reload_p (regno, regno + nwords,
+						 PATTERN (this_insn), inloc)))
 	{
 	  int i;
 	  for (i = 0; i < nwords; i++)
@@ -2872,7 +2883,8 @@ find_reloads (insn, replace, ind_levels, live_known, reload_reg_p)
 		      = find_dummy_reload (recog_operand[i], recog_operand[c],
 					   recog_operand_loc[i], recog_operand_loc[c],
 					   operand_mode[i], operand_mode[c],
-					   this_alternative[c], -1);
+					   this_alternative[c], -1,
+					   this_alternative_earlyclobber[c]);
 
 		    if (value != 0)
 		      losers--;
