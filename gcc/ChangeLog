@@ -1,3 +1,8 @@
+2002-06-16  Jeff Law <law@redhat.com>
+
+	* toplev.c (rest_of_compilation): Perform a simpler, less costly
+	cleanup of the CFG when not optimizing.
+
 2002-06-16  Alan Modra  <amodra@bigpond.net.au>
 
 	* gcc.c (main): Correct startfile_prefix_spec check.
