@@ -45,7 +45,7 @@
 */
    
 /* This structure stores the various varieties of time that can be
-   measured.  Times are stored in microseconds.  The time may be an
+   measured.  Times are stored in milliseconds.  The time may be an
    absolute time or a time difference; in the former case, the time
    base is undefined, except that the difference between two times
    produces a valid time difference.  */
@@ -53,14 +53,14 @@
 struct timevar_time_def
 {
   /* User time in this process.  */
-  long user;
+  unsigned long user;
 
   /* System time (if applicable for this host platform) in this
      process.  */
-  long sys;
+  unsigned long sys;
 
   /* Wall clock time.  */
-  long wall;
+  unsigned long wall;
 };
 
 /* An enumeration of timing variable indentifiers.  Constructed from

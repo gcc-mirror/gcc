@@ -1,3 +1,20 @@
+2001-08-16  Zack Weinberg  <zackw@panix.com>
+
+	* final.c (shorten_branches): Clear the end of the label_align
+	array only if we made it larger.  Break up messy expressions
+	for clarity.
+
+	* diagnostic.c (internal_error): Check for error recursion
+	before doing ICE suppression.
+
+	* timevar.c: Timing variables now count in milliseconds.
+	(init_timevar): Set up ticks_to_msec and clocks_to_msec here.
+	(get_time): Not here.
+	(timevar_print): Don't print any timer whose user, cpu, and
+	wall times are all zero as displayed.
+	* timevar.h: Update comment aboout units.  Make timevar
+	counters unsigned.
+
 Thu Aug 16 17:39:45 CEST 2001  Jan Hubicka  <jh@suse.cz>
 
 	* function.c (put_var_into_stack): Temporarily clear DECL_RTL.
@@ -60,7 +77,7 @@ Tue Aug 14 17:30:59 2001  Jeffrey A Law  (law@cygnus.com)
 	note from its associated jump.
 
 2001-08-14  Ulrich Weigand  <uweigand@de.ibm.com>
- 
+
 	* config/s390/linux64.h (CPP_PREDEFINES): Define __s390__
 	also on 64-bit s390x targets.
 
@@ -74,7 +91,7 @@ Tue Aug 14 17:30:59 2001  Jeffrey A Law  (law@cygnus.com)
 	macro with an invocation of
 	arm_compute_initial_elimination_offset.
 	* config/arm/arm-protos.h: Prototype
-	arm_compute_initial_elimination_offset. 
+	arm_compute_initial_elimination_offset.
 
 2001-08-14  Gerald Pfeifer  <pfeifer@dbai.tuwien.ac.at>
 
@@ -112,15 +129,15 @@ Tue Aug 14 17:30:59 2001  Jeffrey A Law  (law@cygnus.com)
 
 Tue Aug 14 14:57:07 CEST 2001  Jan Hubicka  <jh@suse.cz>
 
-        * genattrtab.c (simplify_test_exp_in_temp): New function.
-        (simplify_test_exp): Avoid explicit use of temporary obstack.
-        (simplify_cond, insert_right_side, evaluate_eq_attr,
-        simplify_and_tree, simplify_or_tree, eliminate_known_true):
-        Use simplify_test_exp_in_temp.
-        (optimize_attrs): Iterate until expression stabilizes.
+	* genattrtab.c (simplify_test_exp_in_temp): New function.
+	(simplify_test_exp): Avoid explicit use of temporary obstack.
+	(simplify_cond, insert_right_side, evaluate_eq_attr,
+	simplify_and_tree, simplify_or_tree, eliminate_known_true):
+	Use simplify_test_exp_in_temp.
+	(optimize_attrs): Iterate until expression stabilizes.
 
 2001-08-13  Ulrich Weigand  <uweigand@de.ibm.com>:
- 
+
 	* glimits.h: Remove the __LONG_MAX__ special case for s390x.
 	* config/s390/linux64.h: Define __LONG_MAX__ in CPP_PREDEFINES.
 

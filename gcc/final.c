@@ -1062,12 +1062,20 @@ shorten_branches (first)
   if (max_labelno != max_label_num ())
     {
       int old = max_labelno;
+      int n_labels;
+      int n_old_labels;
+
       max_labelno = max_label_num ();
+
+      n_labels = max_labelno - min_labelno + 1;
+      n_old_labels = old - min_labelno + 1;
+
       label_align = (struct label_alignment *) xrealloc
-	(label_align,
-	 (max_labelno - min_labelno + 1) * sizeof (struct label_alignment));
-      memset (label_align + old + 1 - min_labelno, 0,
-	      sizeof (struct label_alignment) * (max_labelno - old));
+	(label_align, n_labels * sizeof (struct label_alignment));
+
+      if (n_old_labels < n_labels)
+	memset (label_align + n_old_labels, 0,
+		(n_labels - n_old_labels) * sizeof (struct label_alignment));
     }
 
   /* Initialize label_align and set up uid_shuid to be strictly
