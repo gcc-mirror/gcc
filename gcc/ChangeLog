@@ -3,6 +3,8 @@
 	PR target/14539
 	* config/alpha/alpha.h (STACK_BOUNDARY): Set to 128.
 
+	* simplify-rtx.c (simplify_relational_operation): Fix typo.
+
 2004-03-11  Richard Henderson  <rth@redhat.com>
 
 	PR middle-end/14477
