@@ -75,9 +75,12 @@ extern struct line_map *lookup_line
 
 /* Returns the last source line within a map.  This is the (last) line
    of the #include, or other directive, that caused a map change.  */
-#define LAST_SOURCE_LINE(MAP) SOURCE_LINE (MAP, (MAP)[1].from_line - 1)
+#define LAST_SOURCE_LINE(MAP) SOURCE_LINE ((MAP), (MAP)[1].from_line - 1)
 
 /* Non-zero if the map is at the bottom of the include stack.  */
 #define MAIN_FILE_P(MAP) ((MAP)->included_from < 0)
+
+/* The current line map.  */
+#define CURRENT_LINE_MAP(MAPS) ((MAPS)->maps + (MAPS)->used - 1)
 
 #endif /* !GCC_LINE_MAP_H  */

@@ -175,7 +175,8 @@ builtin_macro (pfile, token)
       /* If __LINE__ is embedded in a macro, it must expand to the
 	 line of the macro's invocation, not its definition.
 	 Otherwise things like assert() will not work properly.  */
-      make_number_token (pfile, token, cpp_get_line (pfile)->line);
+      make_number_token (pfile, token,
+			 SOURCE_LINE (pfile->map, cpp_get_line (pfile)->line));
       break;
 
     case BT_STDC:
@@ -484,9 +485,9 @@ parse_arg (pfile, arg, variadic)
 	}
 
       /* Newlines in arguments are white space (6.10.3.10).  */
-      line = pfile->lexer_pos.output_line;
+      line = pfile->line;
       cpp_get_token (pfile, token);
-      if (line != pfile->lexer_pos.output_line)
+      if (line != pfile->line)
 	token->flags |= PREV_WHITE;
 
       result = token->type;
@@ -1027,22 +1028,19 @@ save_lookahead_token (pfile, token)
      cpp_reader *pfile;
      const cpp_token *token;
 {
-  if (token->type != CPP_EOF)
+  cpp_lookahead *la = pfile->la_write;
+  cpp_token_with_pos *twp;
+
+  if (la->count == la->cap)
     {
-      cpp_lookahead *la = pfile->la_write;
-      cpp_token_with_pos *twp;
-
-      if (la->count == la->cap)
-	{
-	  la->cap += la->cap + 8;
-	  la->tokens = (cpp_token_with_pos *)
-	    xrealloc (la->tokens, la->cap * sizeof (cpp_token_with_pos));
-	}
-
-      twp = &la->tokens[la->count++];
-      twp->token = *token;
-      twp->pos = *cpp_get_line (pfile);
+      la->cap += la->cap + 8;
+      la->tokens = (cpp_token_with_pos *)
+	xrealloc (la->tokens, la->cap * sizeof (cpp_token_with_pos));
     }
+
+  twp = &la->tokens[la->count++];
+  twp->token = *token;
+  twp->pos = *cpp_get_line (pfile);
 }
 
 static void

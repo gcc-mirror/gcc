@@ -108,23 +108,17 @@ print_location (pfile, filename, pos)
 	{
 	  struct line_map *map;
 
-	  line = pfile->line;
 	  if (type == BUF_PRAGMA)
-	    {
-	      buffer = buffer->prev;
-	      col = CPP_BUF_COL (buffer);
-	    }
+	    buffer = buffer->prev;
 
-	  map = lookup_line (&pfile->line_maps, line);
 	  if (pos == 0)
-	    {
-	      pos = cpp_get_line (pfile);
-	      line = SOURCE_LINE (map, line);
-	    }
-	  else
-	    line = pos->line;
-	  col = pos->col;
+	    pos = cpp_get_line (pfile);
+	  map = lookup_line (&pfile->line_maps, pos->line);
+	  line = SOURCE_LINE (map, pos->line);
+	  if (filename == 0)
+	    filename = map->to_file;
 
+	  col = pos->col;
 	  if (col == 0)
 	    col = 1;
 

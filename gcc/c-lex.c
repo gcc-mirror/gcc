@@ -57,6 +57,9 @@ Boston, MA 02111-1307, USA.  */
 /* The input filename as understood by CPP, where "" represents stdin.  */
 static const char *cpp_filename;
 
+/* The current line map.  */
+static struct line_map *map;
+
 /* We may keep statistics about how long which files took to compile.  */
 static int header_time, body_time;
 static splay_tree file_info_tree;
@@ -301,9 +304,10 @@ cb_file_change (pfile, fc)
     }
 
   update_header_times (fc->map->to_file);
+  map = fc->map;
   in_system_header = fc->sysp != 0;
-  input_filename = fc->map->to_file;
-  lineno = SOURCE_LINE (fc->map, fc->line); /* Do we need this?  */
+  input_filename = map->to_file;
+  lineno = SOURCE_LINE (map, fc->line);
 
   /* Hook for C++.  */
   extract_interface_info ();
@@ -312,7 +316,7 @@ cb_file_change (pfile, fc)
 static void
 cb_def_pragma (pfile, line)
      cpp_reader *pfile;
-     unsigned int line ATTRIBUTE_UNUSED;
+     unsigned int line;
 {
   /* Issue a warning message if we have been asked to do so.  Ignore
      unknown pragmas in system headers unless an explicit
@@ -328,7 +332,7 @@ cb_def_pragma (pfile, line)
       if (s.type == CPP_NAME)
 	name = cpp_token_as_text (pfile, &s);
 
-      lineno = cpp_get_line (parse_in)->line;
+      lineno = SOURCE_LINE (map, line);
       if (name)
 	warning ("ignoring #pragma %s %s", space, name);
       else
@@ -340,21 +344,21 @@ cb_def_pragma (pfile, line)
 static void
 cb_define (pfile, line, node)
      cpp_reader *pfile;
-     unsigned int line ATTRIBUTE_UNUSED;
+     unsigned int line;
      cpp_hashnode *node;
 {
-  (*debug_hooks->define) (cpp_get_line (pfile)->line,
+  (*debug_hooks->define) (SOURCE_LINE (map, line),
 			  (const char *) cpp_macro_definition (pfile, node));
 }
 
 /* #undef callback for DWARF and DWARF2 debug info.  */
 static void
 cb_undef (pfile, line, node)
-     cpp_reader *pfile;
-     unsigned int line ATTRIBUTE_UNUSED;
+     cpp_reader *pfile ATTRIBUTE_UNUSED;
+     unsigned int line;
      cpp_hashnode *node;
 {
-  (*debug_hooks->undef) (cpp_get_line (pfile)->line,
+  (*debug_hooks->undef) (SOURCE_LINE (map, line),
 			 (const char *) NODE_NAME (node));
 }
 
@@ -763,7 +767,7 @@ c_lex (value)
   /* The C++ front end does horrible things with the current line
      number.  To ensure an accurate line number, we must reset it
      every time we return a token.  */
-  lineno = cpp_get_line (parse_in)->line;
+  lineno = SOURCE_LINE (map, cpp_get_line (parse_in)->line);
 
   *value = NULL_TREE;
   type = tok.type;

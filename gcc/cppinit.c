@@ -949,10 +949,10 @@ cpp_start_read (pfile, fname)
       p = q;
     }
 
-  /* This was zero when the initial buffer was stacked; so we must
-     make up for a non-existent new line, as well as the intervening
-     macro definitions, by setting it to 1.  */
-  pfile->line = 1;
+  /* Hopefully a short-term kludge.  We stacked the main file at line
+     zero.  The intervening macro definitions have messed up line
+     numbering, so we need to restore it.  */
+  pfile->lexer_pos.output_line = pfile->line = 0;
 
   /* The -imacros files can be scanned now, but the -include files
      have to be pushed onto the buffer stack and processed later,

@@ -1,3 +1,9 @@
+2001-08-05  Neil Booth  <neil@daikokuya.demon.co.uk>
+
+	* gcc.dg/cpp/19951025-1.c: Revert.
+	* gcc.dg/cpp/directiv.c: We no longer process directives that
+	interrupt macro arguments.
+
 2001-08-03  Zack Weinberg  <zackw@stanford.edu>
 
 	* gcc.dg/bconstp-1.c: New test.
