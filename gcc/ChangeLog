@@ -1,3 +1,7 @@
+2002-10-04  Loren J. Rittle  <ljrittle@acm.org>
+
+	* gcc/ginclude/stddef.h: Support the FreeBSD 5 typedef system.
+
 2002-10-04  Steve Ellcey  <sje@cup.hp.com>
 
 	* doc/invoke.texi (HPPA):  Add -mlinker-opt, -mgnu-ld,
