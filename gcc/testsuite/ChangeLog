@@ -1,3 +1,7 @@
+2004-05-28  Ziemowit Laski  <zlaski@apple.com>
+
+	* gcc.dg/altivec-15.c: New test.
+
 2004-05-28  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/14668
