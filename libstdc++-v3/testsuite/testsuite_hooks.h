@@ -81,25 +81,33 @@ void
 __set_testsuite_memlimit(float __size = MEMLIMIT_MB)
 {
     struct rlimit r;
-    r.rlim_cur = (rlim_t)(__size * 1048576);
+    rlim_t limit = (rlim_t)(__size * 1048576);
 
     // Heap size, seems to be common.
 #if _GLIBCPP_HAVE_MEMLIMIT_DATA
+    getrlimit(RLIMIT_DATA, &r);
+    r.rlim_cur = limit;
     setrlimit(RLIMIT_DATA, &r);
 #endif
 
     // Resident set size.
 #if _GLIBCPP_HAVE_MEMLIMIT_RSS
+    getrlimit(RLIMIT_RSS, &r);
+    r.rlim_cur = limit;
     setrlimit(RLIMIT_RSS, &r);
 #endif
 
     // Mapped memory (brk + mmap).
 #if _GLIBCPP_HAVE_MEMLIMIT_VMEM
+    getrlimit(RLIMIT_VMEM, &r);
+    r.rlim_cur = limit;
     setrlimit(RLIMIT_VMEM, &r);
 #endif
 
     // Virtual memory.
 #if _GLIBCPP_HAVE_MEMLIMIT_AS
+    getrlimit(RLIMIT_AS, &r);
+    r.rlim_cur = limit;
     setrlimit(RLIMIT_AS, &r);
 #endif
 }
