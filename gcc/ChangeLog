@@ -1,3 +1,8 @@
+2002-10-29  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* reload1.c (update_eliminables): Unconditionally check if
+	frame_pointer_needed has changed.
+
 Tue Oct 29 15:37:39 CET 2002  Jan Hubicka  <jh@suse.cz>
 
 	* toplev.c (rest_of_compilation): Reorganize way reg_scan is called
