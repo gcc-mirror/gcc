@@ -1,3 +1,8 @@
+2004-06-25  Frank Ch. Eigler  <fche@redhat.com>
+
+	* ansidecl.h, libiberty.h: New dummy files for building splay-tree.
+	* config.h.in: Regenerated.
+
 2004-06-24  Frank Ch. Eigler  <fche@redhat.com>
 
 	Adopt splay trees for object database.
