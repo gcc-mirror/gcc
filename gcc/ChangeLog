@@ -1,3 +1,9 @@
+Fri Apr  2 14:35:45 1999  Stan Cox  <scox@cygnus.com>
+
+	* config/i386/cygwin.h (CPP_SPEC): Use mingw_include_path instead
+	of a hardcoded path for -mno-cygwin.
+	(mingw_include_path): New.
+
 1999-04-02  Joseph S. Myers  <jsm28@cam.ac.uk>
 
 	* pdp11.c: Include "recog.h".

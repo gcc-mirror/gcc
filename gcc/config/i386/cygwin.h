@@ -86,7 +86,22 @@ Boston, MA 02111-1307, USA. */
 #undef CPP_SPEC
 #define CPP_SPEC "-remap %(cpp_cpu) %{posix:-D_POSIX_SOURCE} \
   %{!mno-cygwin:-D__CYGWIN32__ -D__CYGWIN__} \
-  %{mno-cygwin:-iwithprefixbefore include/mingw32 -D__MINGW32__=0.2}"
+  %{mno-cygwin:-iwithprefixbefore \
+    ../../../../%(mingw_include_path)/include/mingw32 -D__MINGW32__=0.2}"
+
+/* This macro defines names of additional specifications to put in the specs
+   that can be used in various specifications like CC1_SPEC.  Its definition
+   is an initializer with a subgrouping for each command option.
+
+   Each subgrouping contains a string constant, that defines the
+   specification name, and a string constant that used by the GNU CC driver
+   program.
+
+   Do not define this macro if it does not need to do anything.  */
+
+#undef  SUBTARGET_EXTRA_SPECS
+#define SUBTARGET_EXTRA_SPECS 						\
+  { "mingw_include_path", DEFAULT_TARGET_MACHINE }
 
 /* We have to dynamic link to get to the system DLLs.  All of libc, libm and
    the Unix stuff is in cygwin.dll.  The import library is called
@@ -98,8 +113,8 @@ Boston, MA 02111-1307, USA. */
 #define LIB_SPEC "%{pg:-lgmon} \
                   %{!mno-cygwin:-lcygwin} \
                   %{mno-cygwin:-lmingw32 -lmoldname -lcrtdll} \
-                  %{mwindows:-luser32 -lgdi32 -lcomdlg32} \
-		  -lkernel32 -ladvapi32 -lshell32"
+                  %{mwindows:-lgdi32 -lcomdlg32} \
+		  -luser32 -lkernel32 -ladvapi32 -lshell32"
 
 #define LINK_SPEC "%{mwindows:--subsystem windows} \
                    %{mdll:--dll -e _DllMainCRTStartup@12}"
