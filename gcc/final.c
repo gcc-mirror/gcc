@@ -606,7 +606,7 @@ get_attr_length (insn)
 	  return 0;
 
 	else if (GET_CODE (body) == ASM_INPUT || asm_noperands (body) >= 0)
-	  length = asm_insn_count (insn) * insn_default_length (insn);
+	  length = asm_insn_count (body) * insn_default_length (insn);
 	else if (GET_CODE (body) == SEQUENCE)
 	  for (i = 0; i < XVECLEN (body, 0); i++)
 	    length += get_attr_length (XVECEXP (body, 0, i));
