@@ -1,3 +1,14 @@
+2002-01-10  Joseph S. Myers  <jsm28@cam.ac.uk>
+
+	* Makefile.in ($(docdir)/gccint.info, gccint.dvi): Add additional
+	dependencies.
+	* doc/languages.texi, doc/sourcebuild.texi: New files.
+	* doc/configfiles.texi: Make a subsubsection.  Update.
+	* doc/configterms.texi: Add @node.  Remove warning that this isn't
+	instructions for building GCC.
+	* doc/makefile.texi: Make a subsection.
+	* doc/gccint.texi: Update.
+
 Thu Jan 10 16:39:58 CET 2002  Jan Hubicka  <jh@suse.cz>
 
 	* i386.md (sse_mov?fcc_const0_?): Fix constraints.

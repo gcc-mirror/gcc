@@ -1,14 +1,11 @@
-@c Copyright (C) 2001 Free Software Foundation, Inc.
+@c Copyright (C) 2001, 2002 Free Software Foundation, Inc.
 @c This is part of the GCC manual.
 @c For copying conditions, see the file gcc.texi.
 
+@node Configure Terms
 @section Configure Terms and History
 @cindex configure terms
 @cindex canadian
-
-This section is not instructions for building GCC.  If you are trying to
-do a build, you should first read @uref{http://gcc.gnu.org/install/} or
-whatever installation instructions came with your source package.
 
 The configure and build process has a long and colorful history, and can
 be confusing to anyone who doesn't know why things are the way they are.
