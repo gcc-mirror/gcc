@@ -1,3 +1,8 @@
+Fri Sep 25 22:09:47 1998  David Edelsohn  <edelsohn@mhpcc.edu>
+
+	* rs6000.c (function_arg_boundary): Revert accidental change on
+	September 18.
+
 Fri Sep 25 20:30:00 1998  Michael Meissner  <meissner@cygnus.com>
 
 	* rs6000.h (ASM_OUTPUT_MI_THUNK): Declare, call output_mi_thunk.

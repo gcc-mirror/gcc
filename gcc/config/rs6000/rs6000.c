@@ -228,7 +228,7 @@ rs6000_override_options (default_cpu)
 	 {"604", PROCESSOR_PPC604,
 	    MASK_POWERPC | MASK_PPC_GFXOPT | MASK_NEW_MNEMONICS,
 	    POWER_MASKS | MASK_PPC_GPOPT | MASK_POWERPC64},
-	 {"604e", PROCESSOR_PPC604,
+	 {"604e", PROCESSOR_PPC604e,
 	    MASK_POWERPC | MASK_PPC_GFXOPT | MASK_NEW_MNEMONICS,
 	    POWER_MASKS | MASK_PPC_GPOPT | MASK_POWERPC64},
 	 {"620", PROCESSOR_PPC620,
@@ -353,12 +353,10 @@ optimization_options (level, size)
      int level;
      int size ATTRIBUTE_UNUSED;
 {
-#if 0
 #ifdef HAIFA
   /* When optimizing, enable use of BCT instruction.  */
   if (level >= 1)
       flag_branch_on_count_reg = 1;
-#endif
 #endif
 }
 
@@ -1319,18 +1317,14 @@ function_arg_padding (mode, type)
    
    Windows NT wants anything >= 8 bytes to be double word aligned.
 
-   V.4 wants long longs to be double word aligned.
-
-   FP emulation: double precision passed, returned, and same alignment
-   as long long.  */
+   V.4 wants long longs to be double word aligned.  */
 
 int
 function_arg_boundary (mode, type)
      enum machine_mode mode;
      tree type;
 {
-  if ((DEFAULT_ABI == ABI_V4 || DEFAULT_ABI == ABI_SOLARIS)
-      && ((mode == DImode) || (TARGET_SOFT_FLOAT && mode == DFmode)))
+  if ((DEFAULT_ABI == ABI_V4 || DEFAULT_ABI == ABI_SOLARIS) && mode == DImode)
     return 64;
 
   if (DEFAULT_ABI != ABI_NT || TARGET_64BIT)
