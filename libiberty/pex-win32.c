@@ -59,7 +59,12 @@ fix_argv (argvec)
   int i;
   char * command0 = argvec[0];
 
-  /* Ensure that the executable pathname uses Win32 backslashes.  */
+  /* Ensure that the executable pathname uses Win32 backslashes. This
+     is not necessary on NT, but on W9x, forward slashes causes failure
+     of spawn* and exec* functions (and probably any function that
+     calls CreateProcess) *iff* the executable pathname (argvec[0]) is
+     a quoted string.  And quoting is necessary in case a pathname
+     contains  embedded white space. You can't win.  */
   for (; *command0 != '\0'; command0++)
     if (*command0 == '/')
       *command0 = '\\';

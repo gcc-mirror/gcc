@@ -1,3 +1,7 @@
+2004-05-31  Danny Smith  <dannysmith@users.sourceforge.net>
+
+	* pex-win32.c (fix_argv): Expand comment.
+
 2004-05-25  Daniel Jacobowitz  <drow@false.org>
 
 	* Makefile.in: Add .NOEXPORT.
