@@ -1,3 +1,17 @@
+Thu Jun  6 23:14:46 CEST 2002  Jan Hubicka  <jh@suse.cz>
+
+	* i386.md (and promoting splitters): Disable QI to SImode promoting
+	when doing so changes immediate to be 32bit.
+
+	* rtl.h (emit_*_scope): Declare.
+	* emit-rtl.c (emit_*_scope): New global functions.
+	(try_split): Copy scope.
+	* ifcvt.c (noce_try_store_flag, noce_try_store_flag_constants,
+	noce_try_flag_inc, noce_try_store_flag_mask, noce_try_cmove,
+	noce_try_cmove_arith, noce_try_minmax, noce_try_abs,
+	noce_process_if_block, find_cond_trap): Copy scopes.
+	* recog.c (peephole2_optimize): likewise.
+
 2002-06-06  Jeffrey Law  <law@redhat.com>
 
 	* h8300.h (OK_FOR_U): Fix thinko exposed by flag checking.
