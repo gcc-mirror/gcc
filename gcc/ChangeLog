@@ -1,3 +1,7 @@
+Thu Dec  9 18:05:48 1999  Jeffrey A Law  (law@cygnus.com)
+
+	* pa/elf.h (MAX_OFILE_ALIGNMENT): Define.
+
 Fri Dec 10 00:53:10 1999  J"orn Rennecke <amylaar@cygnus.co.uk>
 
 	* regclass.c (globalize_reg): Re-instate test that allows
