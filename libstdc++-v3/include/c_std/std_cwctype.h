@@ -1,6 +1,7 @@
 // -*- C++ -*- forwarding header.
 
-// Copyright (C) 1997, 1998, 1999, 2000, 2001 Free Software Foundation, Inc.
+// Copyright (C) 1997, 1998, 1999, 2000, 2001, 2002
+// Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -43,8 +44,12 @@
 #ifndef _CPP_CWCTYPE
 #define _CPP_CWCTYPE 1
 
+#include <bits/c++config.h>
+
+#if _GLIBCPP_HAVE_WCTYPE_H
 #pragma GCC system_header
 #include <wctype.h>
+#endif
 
 // Get rid of those macros defined in <wctype.h> in lieu of real functions.
 #undef iswalnum
@@ -67,6 +72,7 @@
 #undef wctrans
 #undef wctype
 
+#if _GLIBCPP_USE_WCHAR_T
 namespace std
 {
   using ::wint_t; 	  // cwchar
@@ -94,5 +100,6 @@ namespace std
   using ::wctrans;
   using ::wctype;
 }
+#endif //_GLIBCPP_USE_WCHAR_T
 
 #endif 
