@@ -119,13 +119,15 @@
 
 #define USER_LABEL_PREFIX  ""
 
+/* This now supports a natural alignment mode. */
 /* AIX word-aligns FP doubles but doubleword-aligns 64-bit ints.  */
 #undef  ADJUST_FIELD_ALIGN
 #define ADJUST_FIELD_ALIGN(FIELD, COMPUTED) \
+  (TARGET_ALIGN_NATURAL ? (COMPUTED) : \
   (TYPE_MODE (TREE_CODE (TREE_TYPE (FIELD)) == ARRAY_TYPE \
 	      ? get_inner_array_type (FIELD) \
 	      : TREE_TYPE (FIELD)) == DFmode \
-   ? MIN ((COMPUTED), 32) : (COMPUTED))
+   ? MIN ((COMPUTED), 32) : (COMPUTED)))
 
 /* AIX increases natural record alignment to doubleword if the first
    field is an FP double while the FP fields remain word aligned.  */
@@ -135,6 +137,7 @@
     || TREE_CODE (STRUCT) == UNION_TYPE			\
     || TREE_CODE (STRUCT) == QUAL_UNION_TYPE)		\
    && TYPE_FIELDS (STRUCT) != 0				\
+   && TARGET_ALIGN_NATURAL == 0                         \
    && DECL_MODE (TYPE_FIELDS (STRUCT)) == DFmode	\
    ? MAX (MAX ((COMPUTED), (SPECIFIED)), 64)		\
    : MAX ((COMPUTED), (SPECIFIED)))

@@ -1,3 +1,22 @@
+2003-05-19  Kevin B. Hendricks  <kevin.hendricks@sympatico.ca>
+            David Edelsohn  <edelsohn@gnu.org>
+
+	* config/rs6000/rs6000.c (rs6000_alignment_string,
+	rs6000_alignment_flags): New variables.
+	(rs6000_parse_alignment_option): New function.
+	(rs6000_override_options): Call it.
+	* config/rs6000/rs6000.h (TARGET_OPTIONS): Add -malign-XXX option.
+	(MASK_ALIGN_POWER, MASK_ALIGN_NATURAL, TARGET_ALIGN_NATURAL): New
+	macros.
+	* config/rs6000/aix.h (ADJUST_FIELD_ALIGN): Always use COMPUTED
+	natural alignment if TARGET_NATURAL_ALIGNMENT
+	(ROUND_TYPE_ALIGN): Always use default record alignment if
+	TAGET_NATURAL_ALIGNMENT.
+	* config/rs6000/darwin.h (ADJUST_FIELD_ALIGN): Same
+	(ROUND_TYPE_ALIGN): Same.
+	* config/rs6000/linux64.h (ADJUST_FIELD_ALIGN): Same
+	(ROUND_TYPE_ALIGN): Same.
+
 2003-05-19  J"orn Rennecke <joern.rennecke@superh.com>
 
 	* c-decl.c (finish_decl): When setting the DECL_ASSEMBLER_NAME

@@ -402,6 +402,8 @@ extern enum processor_type rs6000_cpu;
    {"longcall", &rs6000_longcall_switch,				\
     N_("Avoid all range limits on call instructions"), 0},		\
    {"no-longcall", &rs6000_longcall_switch, "", 0},			\
+   {"align-", &rs6000_alignment_string,					\
+    N_("Specify alignment of structure fields default/natural"), 0},	\
    SUBTARGET_OPTIONS							\
 }
 
@@ -443,6 +445,25 @@ extern const char *rs6000_altivec_vrsave_string;
 extern int rs6000_altivec_vrsave;
 extern const char *rs6000_longcall_switch;
 extern int rs6000_default_long_calls;
+extern const char* rs6000_alignment_string;
+extern int rs6000_alignment_flags;
+
+/* Alignment options for fields in structures for sub-targets following
+   AIX-like ABI.
+   ALIGN_POWER word-aligns FP doubles (default AIX ABI).
+   ALIGN_NATURAL doubleword-aligns FP doubles (align to object size).
+
+   Override the macro definitions when compiling libobjc to avoid undefined
+   reference to rs6000_alignment_flags due to library's use of GCC alignment
+   macros which use the macros below.  */
+   
+#ifndef IN_TARGET_LIBS
+#define MASK_ALIGN_POWER   0x00000000
+#define MASK_ALIGN_NATURAL 0x00000001
+#define TARGET_ALIGN_NATURAL (rs6000_alignment_flags & MASK_ALIGN_NATURAL)
+#else
+#define TARGET_ALIGN_NATURAL 0
+#endif
 
 #define TARGET_LONG_DOUBLE_128 (rs6000_long_double_type_size == 128)
 #define TARGET_ALTIVEC_ABI rs6000_altivec_abi

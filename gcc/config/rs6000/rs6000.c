@@ -178,6 +178,11 @@ static int rs6000_sr_alias_set;
 int rs6000_default_long_calls;
 const char *rs6000_longcall_switch;
 
+/* Control alignment for fields within structures. */
+/* String from -malign-XXXXX. */
+const char *rs6000_alignment_string;
+int rs6000_alignment_flags;
+
 struct builtin_description
 {
   /* mask is not const because we're going to alter it below.  This
@@ -290,6 +295,7 @@ static rtx altivec_expand_abs_builtin PARAMS ((enum insn_code, tree, rtx));
 static rtx altivec_expand_predicate_builtin PARAMS ((enum insn_code, const char *, tree, rtx));
 static rtx altivec_expand_stv_builtin PARAMS ((enum insn_code, tree));
 static void rs6000_parse_abi_options PARAMS ((void));
+static void rs6000_parse_alignment_option PARAMS ((void));
 static void rs6000_parse_tls_size_option PARAMS ((void));
 static void rs6000_parse_yes_no_option (const char *, const char *, int *);
 static int first_altivec_reg_to_save PARAMS ((void));
@@ -739,6 +745,9 @@ rs6000_override_options (default_cpu)
   /* Handle -mabi= options.  */
   rs6000_parse_abi_options ();
 
+  /* Handle -malign-XXXXX option.  */
+  rs6000_parse_alignment_option ();
+
   /* Handle generic -mFOO=YES/NO options.  */
   rs6000_parse_yes_no_option ("vrsave", rs6000_altivec_vrsave_string,
 			      &rs6000_altivec_vrsave);
@@ -886,6 +895,20 @@ rs6000_parse_abi_options ()
     rs6000_spe_abi = 0;
   else
     error ("unknown ABI specified: '%s'", rs6000_abi_string);
+}
+
+/* Handle -malign-XXXXXX options.  */
+static void
+rs6000_parse_alignment_option ()
+{
+  if (rs6000_alignment_string == 0
+      || ! strcmp (rs6000_alignment_string, "power"))
+    rs6000_alignment_flags = MASK_ALIGN_POWER;
+  else if (! strcmp (rs6000_alignment_string, "natural"))
+    rs6000_alignment_flags = MASK_ALIGN_NATURAL;
+  else
+    error ("unknown -malign-XXXXX option specified: '%s'",
+	   rs6000_alignment_string);
 }
 
 /* Validate and record the size specified with the -mtls-size option.  */

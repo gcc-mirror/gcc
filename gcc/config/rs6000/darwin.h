@@ -250,12 +250,14 @@ do {									\
 /* Fix for emit_group_load (): force large constants to be pushed via regs.  */
 #define ALWAYS_PUSH_CONSTS_USING_REGS_P		1
 
+/* This now supports a natural alignment mode */
 /* Darwin word-aligns FP doubles but doubleword-aligns 64-bit ints.  */
 #define ADJUST_FIELD_ALIGN(FIELD, COMPUTED) \
+  (TARGET_ALIGN_NATURAL ? (COMPUTED) : \
   (TYPE_MODE (TREE_CODE (TREE_TYPE (FIELD)) == ARRAY_TYPE \
 	      ? get_inner_array_type (FIELD) \
 	      : TREE_TYPE (FIELD)) == DFmode \
-   ? MIN ((COMPUTED), 32) : (COMPUTED))
+   ? MIN ((COMPUTED), 32) : (COMPUTED)))
 
 /* Darwin increases natural record alignment to doubleword if the first
    field is an FP double while the FP fields remain word aligned.  */
@@ -264,6 +266,7 @@ do {									\
     || TREE_CODE (STRUCT) == UNION_TYPE			\
     || TREE_CODE (STRUCT) == QUAL_UNION_TYPE)		\
    && TYPE_FIELDS (STRUCT) != 0				\
+   && TARGET_ALIGN_NATURAL == 0                         \
    && DECL_MODE (TYPE_FIELDS (STRUCT)) == DFmode	\
    ? MAX (MAX ((COMPUTED), (SPECIFIED)), 64)		\
    : (TARGET_ALTIVEC && TREE_CODE (STRUCT) == VECTOR_TYPE) \
