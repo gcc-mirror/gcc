@@ -296,30 +296,40 @@ the @option{--with-gmp} or @option{--with-gmp-dir} configure option.
 
 @heading Tools/packages necessary for modifying GCC
 @table @asis
-@item autoconf versions 2.13 and 2.59
+@item autoconf versions 2.13, 2.57 and 2.59
 @itemx GNU m4 version 1.4 (or later)
 
 Necessary when modifying @file{configure.ac}, @file{aclocal.m4}, etc.@:
 to regenerate @file{configure} and @file{config.in} files.  Most
-directories require autoconf 2.59 (exactly), but the toplevel, @file{libf2c},
-@file{libobjc}, @file{zlib}, and @file{libjava} (except for 
-@file{libjava/libltdl}) still require autoconf 2.13 (exactly).
+directories require autoconf 2.59 (exactly), but the toplevel and
+@file{libjava} (but not @file{libjava/libltdl}) still require autoconf
+2.13 (exactly) and @file{libmudflap} requires autoconf 2.57 (exactly).
 
-@item automake versions 1.4-gcj and 1.7.9
+@item automake versions 1.4-gcj, 1.7.8, 1.7.9, 1.8.2, 1.8.4 and 1.8.5
 
 Necessary when modifying a @file{Makefile.am} file to regenerate its
 associated @file{Makefile.in}.
 
 Much of GCC does not use automake, so directly edit the @file{Makefile.in}
 file.  Specifically this applies to the @file{gcc}, @file{intl},
-@file{libf2c}, @file{libiberty}, @file{libobjc} directories as well as any
+@file{libiberty}, @file{libobjc} directories as well as any
 of their subdirectories.
 
-The @file{libstdc++-v3}, @file{libjava/libltdl}, @file{fastjar} and
-@file{libffi} directories require automake 1.7.9. However, the Java
-directories, which include @file{boehm-gc}, @file{libjava}, and @file{zlib},
+The Java directories @file{boehm-gc} and @file{libjava}
 require a modified version of automake 1.4 downloadable from
 @uref{ftp://gcc.gnu.org/pub/java/automake-gcj-1.4.tar.gz}.
+
+The @file{libmudflap} directory requires automake 1.7.8.
+
+The @file{fastjar}, @file{libbanshee}, @file{libffi},
+@file{libjava/libltdl} and @file{zlib} directories require automake
+1.7.9.
+
+The @file{libstdc++-v3} directory requires automake 1.8.2.
+
+The @file{libcpp} directory requires automake 1.8.4.
+
+The @file{libgfortran} directory requires automake 1.8.5.
 
 @item gettext version 0.12 (or later)
 
