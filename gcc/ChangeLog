@@ -1,3 +1,9 @@
+2003-11-29  Ulrich Weigand  <uweigand@de.ibm.com>
+
+	* config/s390/s390.md ("movhi"): Do not emit extender pattern
+	when loading from a (MEM (ADDRESSOF ...)).
+	("movqi"): Likewise.
+
 2003-11-29  Joseph S. Myers  <jsm@polyomino.org.uk>
 
 	PR c/10333
