@@ -1,3 +1,7 @@
+1999-12-10  Bernd Schmidt  <bernds@cygnus.co.uk>
+
+	* loop.c (insert_loop_mem): Undo last change.
+
 1999-12-10  David S. Miller  <davem@redhat.com>
 
 	* config/sparc/sparc.c (fp_sethi_p, fp_mov_p, fp_high_losum_p):

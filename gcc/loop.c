@@ -9668,8 +9668,7 @@ insert_loop_mem (mem, data)
      because we can't put it in a register.  We still store it in the
      table, though, so that if we see the same address later, but in a
      non-BLK mode, we'll not think we can optimize it at that point.  */
-  loop_mems[loop_mems_idx].optimize = (GET_MODE (m) != BLKmode
-				       && ! MEM_VOLATILE_P (m));
+  loop_mems[loop_mems_idx].optimize = (GET_MODE (m) != BLKmode);
   loop_mems[loop_mems_idx].reg = NULL_RTX;
   ++loop_mems_idx;
 
