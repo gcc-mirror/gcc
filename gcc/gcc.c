@@ -4838,9 +4838,8 @@ lookup_compiler (name, length, language)
   if (language != 0)
     {
       for (cp = compilers + n_compilers - 1; cp >= compilers; cp--)
-	if (language != 0)
-	  if (cp->suffix[0] == '@' && !strcmp (cp->suffix + 1, language))
-	    return cp;
+	if (cp->suffix[0] == '@' && !strcmp (cp->suffix + 1, language))
+	  return cp;
 
       error ("language %s not recognized", language);
       return 0;
