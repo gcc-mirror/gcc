@@ -1526,8 +1526,8 @@ copy_default_args_to_explicit_spec (tree decl)
   else
     new_type = build_function_type (TREE_TYPE (old_type),
 				    new_spec_types);
-  new_type = build_type_attribute_variant (new_type,
-					   TYPE_ATTRIBUTES (old_type));
+  new_type = cp_build_type_attribute_variant (new_type,
+					      TYPE_ATTRIBUTES (old_type));
   new_type = build_exception_variant (new_type,
 				      TYPE_RAISES_EXCEPTIONS (old_type));
   TREE_TYPE (decl) = new_type;
@@ -6476,7 +6476,7 @@ tsubst_function_type (tree t,
 					   TREE_CHAIN (arg_types));
     }
   fntype = cp_build_qualified_type_real (fntype, TYPE_QUALS (t), complain);
-  fntype = build_type_attribute_variant (fntype, TYPE_ATTRIBUTES (t));
+  fntype = cp_build_type_attribute_variant (fntype, TYPE_ATTRIBUTES (t));
   
   return fntype;  
 }

@@ -1559,16 +1559,20 @@ build_offset_ref (tree type, tree name, bool address_p)
 	   a class derived from that class (_class.base.init_).  */
       if (DECL_NONSTATIC_MEMBER_FUNCTION_P (member))
 	{
+	  /* Build a representation of a the qualified name suitable
+	     for use as the operand to "&" -- even though the "&" is
+	     not actually present.  */
+	  member = build (OFFSET_REF, TREE_TYPE (member), decl, member);
 	  /* In Microsoft mode, treat a non-static member function as if
 	     it were a pointer-to-member.  */
 	  if (flag_ms_extensions)
 	    {
-	      member = build (OFFSET_REF, TREE_TYPE (member), decl, member);
 	      PTRMEM_OK_P (member) = 1;
 	      return build_unary_op (ADDR_EXPR, member, 0);
 	    }
-	  error ("invalid use of non-static member function `%D'", member);
-	  return error_mark_node;
+	  error ("invalid use of non-static member function `%D'", 
+		 TREE_OPERAND (member, 1));
+	  return member;
 	}
       else if (TREE_CODE (member) == FIELD_DECL)
 	{

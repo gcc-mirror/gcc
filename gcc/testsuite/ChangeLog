@@ -1,3 +1,14 @@
+2004-02-02  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/13113
+	* g++.old-deja/g++.mike/net36.C: Adjust error messages.
+
+	PR c++/13854
+	* g++.dg/ext/attrib13.C: New test.
+
+	PR c++/13907
+	* g++.dg/conversion/op2.C: New test.
+
 2004-02-02  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
 	* gcc.dg/titype-1.c: Fix pasto.

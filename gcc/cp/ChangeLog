@@ -1,3 +1,24 @@
+2004-01-30  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/13113
+	* init.c (build_offset_ref): Improve error recovery for invalid
+	uses of non-static member functions.
+
+	PR c++/13854
+	* cp-tree.h (cp_build_type_attribute_variant): New function.
+	* class.c (build_clone): Use cp_build_type_attribute_variant.
+	* decl.c (duplicate_decls): Likewise.
+	* pt.c (copy_default_args_to_explicit_spec): Likewise.
+	(tsubst_function_type): Likewise.
+	* tree.c (build_exception_variant): Check attributes before
+	concluding that two types are the same.
+	(cp_build_type-attribute_variant): New method.
+	* typeck.c (merge_types): Use cp_build_type_attribute_variant.
+
+	PR c++/13907
+	* call.c (convert_class_to_reference): Keep better track of
+	pedantically invalid user-defined conversions.
+
 2004-02-02  Giovanni Bajo  <giovannibajo@gcc.gnu.org>
 
 	PR c++/13957
