@@ -1,5 +1,6 @@
 Thu Mar 18 22:28:53 1999  Jeffrey A Law  (law@cygnus.com)
 
+	* i370.h (TARGET_SWITCHES): Add documentation.
 	* fx80.h (TARGET_SWITCHES): Add documentation.
         * elxsi.h (TARGET_SWITCHES): Add documentation.
 	* clipper.h (TARGET_SWITCHES): Add documentation.
