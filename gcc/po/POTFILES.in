@@ -208,7 +208,7 @@ config/i386/seq-sysv3.h
 config/i386/seq2-sysv3.h
 config/i386/sequent.h
 config/i386/sol2.h
-config/i386/sol2dbg.h
+config/i386/sol2gas.h
 config/i386/sun.h
 config/i386/sun386.h
 config/i386/svr3dbx.h
@@ -653,6 +653,7 @@ ginclude/math-68881.h
 ginclude/ppc-asm.h
 ginclude/proto.h
 ginclude/stdarg.h
+ginclude/stdbool.h
 ginclude/stddef.h
 ginclude/va-alpha.h
 ginclude/va-arc.h
