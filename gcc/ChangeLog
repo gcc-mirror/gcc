@@ -1,3 +1,8 @@
+2004-01-05  Julian Brown  <julian@codesourcery.com>
+
+	* config/arm/arm.c (arm_return_in_memory): Treat complex types
+	as aggregates for AAPCS ABIs.
+
 2005-01-05  Stan Shebs  <shebs@apple.com>
 
 	* unwind-dw2-fde-darwin.c (examine_objects): Use 64-bit
