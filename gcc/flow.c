@@ -1,5 +1,5 @@
 /* Data flow analysis for GNU compiler.
-   Copyright (C) 1987, 88, 92, 93, 94, 95, 1996 Free Software Foundation, Inc.
+   Copyright (C) 1987, 88, 92-96, 1997 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -1897,14 +1897,16 @@ libcall_dead_p (x, needed, note, insn)
 
 /* Return 1 if register REGNO was used before it was set.
    In other words, if it is live at function entry.
-   Don't count global register variables, though.  */
+   Don't count global register variables or variables in registers
+   that can be used for function arg passing, though.  */
 
 int
 regno_uninitialized (regno)
      int regno;
 {
   if (n_basic_blocks == 0
-      || (regno < FIRST_PSEUDO_REGISTER && global_regs[regno]))
+      || (regno < FIRST_PSEUDO_REGISTER
+	  && (global_regs[regno] || FUNCTION_ARG_REGNO_P (regno))))
     return 0;
 
   return (basic_block_live_at_start[0][regno / REGSET_ELT_BITS]
