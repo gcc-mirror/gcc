@@ -1,5 +1,10 @@
 2001-05-22  Richard Henderson  <rth@redhat.com>
 
+	* unwind-dw2-fde.c (__deregister_frame_info): Stringize use
+	of __USER_LABEL_PREFIX__.
+
+2001-05-22  Richard Henderson  <rth@redhat.com>
+
 	* unwind-dw2-fde.c (__deregister_frame_info): Stubbify in favour of...
 	(__deregister_frame_info_bases): New.
 	* unwind-dw2-fde.h: Declare it.
