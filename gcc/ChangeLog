@@ -1,3 +1,10 @@
+2003-03-17  Alan Modra  <amodra@bigpond.net.au>
+
+	* config/rs6000/linux64.h (TARGET_64BIT): Redefine.
+	(TARGET_RELOCATABLE, TARGET_EABI, TARGET_PROTOTYPE): Likewise.
+	(SUBTARGET_SWITCHES, SUBTARGET_OPTIONS): Likewise.
+	(SUBTARGET_OVERRIDE_OPTIONS, CPP_SYSV_SPEC): Likewise.
+
 2003-03-16  Richard Henderson  <rth@redhat.com>
 
         * simplify-rtx (simplify_binary_operation): Don't abort for
