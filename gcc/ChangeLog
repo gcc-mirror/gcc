@@ -1,3 +1,8 @@
+2003-10-08  Jason Merrill  <jason@redhat.com>
+
+	* c-pretty-print.c (pp_c_postfix_expression)
+	<COMPOUND_LITERAL_EXPR>: Fix thinko.
+
 2003-10-08  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
 
 	* mklibgcc.in: Don't hide undefined or typeless symbols.

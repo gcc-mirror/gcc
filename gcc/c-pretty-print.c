@@ -1217,7 +1217,7 @@ pp_c_postfix_expression (c_pretty_printer *pp, tree e)
       break;
 
     case COMPOUND_LITERAL_EXPR:
-      e = DECL_INITIAL (e);
+      e = DECL_INITIAL (COMPOUND_LITERAL_EXPR_DECL (e));
       /* Fall through.  */
     case CONSTRUCTOR:
       pp_initializer (pp, e);
