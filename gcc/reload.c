@@ -5176,7 +5176,7 @@ update_auto_inc_notes (insn, regno, reloadnum)
 
   for (link = REG_NOTES (insn); link; link = XEXP (link, 1))
     if (REG_NOTE_KIND (link) == REG_INC
-        && REGNO (XEXP (link, 0)) == regno)
+        && (int) REGNO (XEXP (link, 0)) == regno)
       push_replacement (&XEXP (link, 0), reloadnum, VOIDmode);
 #endif
 }

@@ -533,7 +533,7 @@ gen_rtx_REG (mode, regno)
       if (regno == RETURN_ADDRESS_POINTER_REGNUM)
 	return return_address_pointer_rtx;
 #endif
-      if (regno == PIC_OFFSET_TABLE_REGNUM
+      if (regno == (unsigned) PIC_OFFSET_TABLE_REGNUM
 	  && fixed_regs[PIC_OFFSET_TABLE_REGNUM])
 	return pic_offset_table_rtx;
       if (regno == STACK_POINTER_REGNUM)
@@ -1849,7 +1849,7 @@ set_mem_attributes_minus_bitpos (ref, t, objectp, bitpos)
 		  HOST_WIDE_INT ioff = tree_low_cst (off_tree, 1);
 		  HOST_WIDE_INT aoff = (ioff & -ioff) * BITS_PER_UNIT;
 		  align = DECL_ALIGN (t);
-		  if (aoff && aoff < align)
+		  if (aoff && (unsigned HOST_WIDE_INT) aoff < align)
 	            align = aoff;
 		  offset = GEN_INT (ioff);
 		  apply_bitpos = bitpos;
@@ -5493,7 +5493,7 @@ init_emit_once (line_numbers)
 #endif
 #endif
 
-  if (PIC_OFFSET_TABLE_REGNUM != INVALID_REGNUM)
+  if ((unsigned) PIC_OFFSET_TABLE_REGNUM != INVALID_REGNUM)
     pic_offset_table_rtx = gen_raw_REG (Pmode, PIC_OFFSET_TABLE_REGNUM);
 }
 

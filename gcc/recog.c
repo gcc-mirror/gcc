@@ -1316,7 +1316,7 @@ push_operand (op, mode)
 #ifdef STACK_GROWS_DOWNWARD
 	  || INTVAL (XEXP (XEXP (op, 1), 1)) != - (int) rounded_size
 #else
-	  || INTVAL (XEXP (XEXP (op, 1), 1)) != rounded_size
+	  || INTVAL (XEXP (XEXP (op, 1), 1)) != (int) rounded_size
 #endif
 	  )
 	return 0;

@@ -1,3 +1,8 @@
+2003-01-16  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* jcf-write.c (generate_bytecode_insns): Avoid signed/unsigned
+	warning.
+
 2003-01-14  Tom Tromey  <tromey@redhat.com>
 
 	* class.c (make_class_data): Check that super is compiled before

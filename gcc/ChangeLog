@@ -1,3 +1,20 @@
+2003-01-16  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* arm.h (CONDITIONAL_REGISTER_USAGE): Avoid signed/unsigned
+	warning.
+	* emit-rtl.c (gen_rtx_REG, set_mem_attributes_minus_bitpos,
+	init_emit_once): Likewise.
+	* flow.c (mark_regs_live_at_end, calculate_global_regs_live):
+	Likewise.
+	* function.c (assign_stack_temp_for_type): Likewise.
+	* loop.c (loop_invariant_p): Likewise.
+	* recog.c (push_operand): Likewise.
+	* regclass.c (init_reg_sets_1): Likewise.
+	* reload.c (update_auto_inc_notes): Likewise.
+	* reload1.c (reload_as_needed, emit_input_reload_insns): Likewise.
+	* stmt.c (expand_asm_operands): Likewise.
+	* stor-layout.c (start_record_layout): Likewise.
+
 2003-01-16  Herman A.J. ten Brugge <hermantenbrugge@home.nl>
 
         * config/c4x/c4x.md (epilogue): Correct last patch.
