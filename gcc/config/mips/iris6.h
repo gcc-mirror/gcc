@@ -438,6 +438,12 @@ do									\
  }									\
 while (0)
 
+/* Define the `__builtin_va_list' type for the ABI.  On Irix6, this
+   type is `char *'.  */
+#undef BUILD_VA_LIST_TYPE
+#define BUILD_VA_LIST_TYPE(VALIST) \
+  (VALIST) = build_pointer_type (char_type_node)
+
 /* Output the size directive for a decl in rest_of_decl_compilation
    in the case where we did not do so before the initializer.
    Once we find the error_mark_node, we know that the value of
