@@ -157,15 +157,15 @@ If this macro is not defined, the default value is @code{""}.
 @findex CPP_SPEC
 @item CPP_SPEC
 A C string constant that tells the GCC driver program options to
-pass to CPP.  It can also specify how to translate options you
-give to GCC into options for GCC to pass to the CPP.
+pass to CPP@.  It can also specify how to translate options you
+give to GCC into options for GCC to pass to the CPP@.
 
 Do not define this macro if it does not need to do anything.
 
 @findex CPLUSPLUS_CPP_SPEC
 @item CPLUSPLUS_CPP_SPEC
 This macro is just like @code{CPP_SPEC}, but is used for C++, rather
-than C.  If you do not define this macro, then the value of
+than C@.  If you do not define this macro, then the value of
 @code{CPP_SPEC} (if any) will be used instead.
 
 @findex NO_BUILTIN_SIZE_TYPE
@@ -211,7 +211,7 @@ be defined.
 @findex SIGNED_CHAR_SPEC
 @item SIGNED_CHAR_SPEC
 A C string constant that tells the GCC driver program options to
-pass to CPP.  By default, this macro is defined to pass the option
+pass to CPP@.  By default, this macro is defined to pass the option
 @option{-D__CHAR_UNSIGNED__} to CPP if @code{char} will be treated as
 @code{unsigned char} by @code{cc1}.
 
@@ -237,7 +237,7 @@ give to GCC into options for GCC to pass to the @code{cc1plus}.
 Do not define this macro if it does not need to do anything.
 Note that everything defined in CC1_SPEC is already passed to
 @code{cc1plus} so there is no need to duplicate the contents of
-CC1_SPEC in CC1PLUS_SPEC.
+CC1_SPEC in CC1PLUS_SPEC@.
 
 @findex ASM_SPEC
 @item ASM_SPEC
@@ -521,7 +521,7 @@ usually consists of @code{GCC_INCLUDE_DIR}, @code{LOCAL_INCLUDE_DIR},
 @code{SYSTEM_INCLUDE_DIR}, @code{GPLUSPLUS_INCLUDE_DIR}, and
 @code{STANDARD_INCLUDE_DIR}.  In addition, @code{GPLUSPLUS_INCLUDE_DIR}
 and @code{GCC_INCLUDE_DIR} are defined automatically by @file{Makefile},
-and specify private search areas for GCC.  The directory
+and specify private search areas for GCC@.  The directory
 @code{GPLUSPLUS_INCLUDE_DIR} is used only for C++ programs.
 
 The definition should be an initializer for an array of structures.
@@ -1018,7 +1018,7 @@ Define this macro if you wish to preserve a certain alignment for
 the stack pointer.  The definition is a C expression
 for the desired alignment (measured in bits).  If STACK_BOUNDARY is
 also defined, this macro must evaluate to a value equal to or larger
-than STACK_BOUNDARY.
+than STACK_BOUNDARY@.
 
 @cindex @code{PUSH_ROUNDING}, interaction with @code{PREFERRED_STACK_BOUNDARY}
 If @code{PUSH_ROUNDING} is not defined, the stack will always be aligned
@@ -1292,7 +1292,7 @@ There are three defined values:
 @findex IEEE_FLOAT_FORMAT
 @item IEEE_FLOAT_FORMAT
 This code indicates IEEE floating point.  It is the default; there is no
-need to define this macro when the format is IEEE.
+need to define this macro when the format is IEEE@.
 
 @findex VAX_FLOAT_FORMAT
 @item VAX_FLOAT_FORMAT
@@ -1729,7 +1729,7 @@ You need not define this macro if it has no work to do.
 If the usage of an entire class of registers depends on the target
 flags, you may indicate this to GCC by using this macro to modify
 @code{fixed_regs} and @code{call_used_regs} to 1 for each of the
-registers in the classes which should not be used by GCC.  Also define
+registers in the classes which should not be used by GCC@.  Also define
 the macro @code{REG_CLASS_FROM_LETTER} to return @code{NO_REGS} if it
 is called with a letter for a class that shouldn't be used.
 
@@ -2260,7 +2260,7 @@ from general registers, but not memory.  Some machines allow copying all
 registers to and from memory, but require a scratch register for stores
 to some memory locations (e.g., those with symbolic address on the RT,
 and those with certain symbolic address on the Sparc when compiling
-PIC).  In some cases, both an intermediate and a scratch register are
+PIC)@.  In some cases, both an intermediate and a scratch register are
 required.
 
 You should define these macros to indicate to the reload phase that it may
@@ -3215,7 +3215,7 @@ argument on the stack.
 For machines like the Vax and 68000, where normally all arguments are
 pushed, zero suffices as a definition.
 
-The value of the expression can also be a @code{parallel} RTX.  This is
+The value of the expression can also be a @code{parallel} RTX@.  This is
 used when an argument is passed in multiple locations.  The mode of the
 of the @code{parallel} should be the mode of the entire argument.  The
 @code{parallel} holds any number of @code{expr_list} pairs; each one
@@ -3364,7 +3364,7 @@ finding the arguments for the function being compiled.  If this macro is
 undefined, @code{INIT_CUMULATIVE_ARGS} is used instead.
 
 The value passed for @var{libname} is always 0, since library routines
-with special calling conventions are never compiled with GCC.  The
+with special calling conventions are never compiled with GCC@.  The
 argument @var{libname} exists for symmetry with
 @code{INIT_CUMULATIVE_ARGS}.
 @c could use "this macro" in place of @code{INIT_CUMULATIVE_ARGS}, maybe.
@@ -3575,7 +3575,7 @@ to indicate this.
 @item DEFAULT_PCC_STRUCT_RETURN
 Define this macro to be 1 if all structure and union return values must be
 in memory.  Since this results in slower code, this should be defined
-only if needed for compatibility with other compilers or with an ABI.
+only if needed for compatibility with other compilers or with an ABI@.
 If you define this macro to be 0, then the conventions used for structure
 and union return values are decided by the @code{RETURN_IN_MEMORY} macro.
 
@@ -3900,7 +3900,7 @@ assembler code to call the profiling subroutine @code{mcount}.
 
 @findex mcount
 The details of how @code{mcount} expects to be called are determined by
-your operating system environment, not by GCC.  To figure them out,
+your operating system environment, not by GCC@.  To figure them out,
 compile a small program for profiling using the system's installed C
 compiler and look at the assembler code that results.
 
@@ -3975,7 +3975,7 @@ local_label:
 Output code to call the subroutine @code{__bb_init_trace_func}
 and pass two parameters to it.  The first parameter is the same as
 for @code{__bb_init_func}.  The second parameter is the number of the
-first basic block of the function as given by BLOCK_OR_LABEL.  Note
+first basic block of the function as given by BLOCK_OR_LABEL@.  Note
 that @code{__bb_init_trace_func} has to be called, even if the object
 module has been initialized already.
 
@@ -4461,7 +4461,7 @@ its cache line.  Look in @file{m68k.h} as a guide.
 @item TRANSFER_FROM_TRAMPOLINE
 Define this macro if trampolines need a special subroutine to do their
 work.  The macro should expand to a series of @code{asm} statements
-which will be compiled with GCC.  They go in a library function named
+which will be compiled with GCC@.  They go in a library function named
 @code{__transfer_from_trampoline}.
 
 If you need to avoid executing the ordinary prologue code of a compiled
@@ -4782,7 +4782,7 @@ It is always safe for this macro to not be defined.  It exists so
 that alias analysis can understand machine-dependent addresses.
 
 The typical use of this macro is to handle addresses containing
-a label_ref or symbol_ref within an UNSPEC.
+a label_ref or symbol_ref within an UNSPEC@.
 
 @findex LEGITIMIZE_ADDRESS
 @item LEGITIMIZE_ADDRESS (@var{x}, @var{oldx}, @var{mode}, @var{win})
@@ -5486,7 +5486,7 @@ constants in the read-only data section (usually the text section).
 @item SELECT_RTX_SECTION (@var{mode}, @var{rtx})
 A C statement or statements to switch to the appropriate section for
 output of @var{rtx} in mode @var{mode}.  You can assume that @var{rtx}
-is some kind of constant in RTL.  The argument @var{mode} is redundant
+is some kind of constant in RTL@.  The argument @var{mode} is redundant
 except in the case of a @code{const_int} rtx.  Select the section by
 calling @code{text_section} or one of the alternatives for other
 sections.
@@ -5566,7 +5566,7 @@ switch statements so that they use relative addresses.
 @item PIC_OFFSET_TABLE_REGNUM
 The register number of the register used to address a table of static
 data addresses in memory.  In some cases this register is defined by a
-processor's ``application binary interface'' (ABI).  When this macro
+processor's ``application binary interface'' (ABI)@.  When this macro
 is defined, RTL is generated for this register once, as with the stack
 pointer and frame pointer registers.  If this macro is not defined, it
 is up to the machine-dependent files to allocate such a register (if
@@ -5885,7 +5885,7 @@ You need not define this macro if it would do nothing.
 Define this macro as a C expression which is nonzero if the constant
 @var{exp}, of type @code{tree}, should be output after the code for a
 function.  The compiler will normally output all constants before the
-function; you need not define this macro if this is OK.
+function; you need not define this macro if this is OK@.
 
 @findex ASM_OUTPUT_POOL_EPILOGUE
 @item ASM_OUTPUT_POOL_EPILOGUE (@var{file} @var{funname} @var{fundecl} @var{size})
@@ -6497,7 +6497,7 @@ the initialization process.
 
 The last variant uses neither arbitrary sections nor the GNU linker.
 This is preferable when you want to do dynamic linking and when using
-file formats which the GNU linker does not support, such as `ECOFF'.  In
+file formats which the GNU linker does not support, such as `ECOFF'@.  In
 this case, @code{ASM_OUTPUT_CONSTRUCTOR} does not produce an
 @code{N_SETT} symbol; initialization and termination functions are
 recognized simply by their names.  This requires an extra program in the
@@ -6897,7 +6897,7 @@ fprintf (@var{stream}, "\t.word L%d-L%d\n",
 
 You must provide this macro on machines where the addresses in a
 dispatch table are relative to the table's own address.  If defined, GCC
-will also use this macro on all machines when producing PIC.
+will also use this macro on all machines when producing PIC@.
 @var{body} is the body of the ADDR_DIFF_VEC; it is provided so that the
 mode and flags can be read.
 
@@ -7046,7 +7046,7 @@ This describes commands for alignment.
 @findex LABEL_ALIGN_AFTER_BARRIER
 @item LABEL_ALIGN_AFTER_BARRIER (@var{label})
 The alignment (log base 2) to put in front of @var{label}, which follows
-a BARRIER.
+a BARRIER@.
 
 This macro need not be defined if you don't want any special alignment
 to be done at such a time.  Most machine descriptions do not currently
@@ -7158,7 +7158,7 @@ register number @var{regno}.  In simple cases, the value of this
 expression may be @var{regno} itself.  But sometimes there are some
 registers that the compiler knows about and DBX does not, or vice
 versa.  In such cases, some register may need to have one number in
-the compiler and another for DBX.
+the compiler and another for DBX@.
 
 If two registers have consecutive numbers inside GCC, and they can be
 used as a pair to hold a multiword value, then they @emph{must} have
@@ -7397,7 +7397,7 @@ first.  To do this, define @code{DBX_OUTPUT_STANDARD_TYPES} to output
 those symbols in the necessary order.  Any predefined types that you
 don't explicitly output will be output afterward in no particular order.
 
-Be careful not to define this macro so that it works only for C.  There
+Be careful not to define this macro so that it works only for C@.  There
 are no global variables to access most of the built-in types, because
 another language may have another set of types.  The way to output a
 particular type is to look through @var{syms} to see if you can find it.
@@ -7786,7 +7786,7 @@ the FPSCR PR bit has to be cleared, while for a double precision
 operation, this bit has to be set.  Changing the PR bit requires a general
 purpose register as a scratch register, hence these FPSCR sets have to
 be inserted before reload, i.e.@: you can't put this into instruction emitting
-or MACHINE_DEPENDENT_REORG.
+or MACHINE_DEPENDENT_REORG@.
 
 You can have multiple entities that are mode-switched, and select at run time
 which entities actually need it.  @code{OPTIMIZE_MODE_SWITCHING} should
@@ -7815,7 +7815,7 @@ switch is needed / supplied.
 @code{OPTIMIZE_MODE_SWITCHING} is defined, you must define this macro to
 return an integer value not larger than the corresponding element in
 NUM_MODES_FOR_MODE_SWITCHING, to denote the mode that @var{entity} must
-be switched into prior to the execution of INSN.
+be switched into prior to the execution of INSN@.
 
 @findex NORMAL_MODE
 @item NORMAL_MODE (@var{entity})
@@ -7828,7 +7828,7 @@ mode switching.  It should evaluate to an integer, which is a mode that
 This macro specifies the order in which modes for ENTITY are processed.
 0 is the highest priority, NUM_MODES_FOR_MODE_SWITCHING[ENTITY] - 1 the
 lowest.  The value of the macro should be an integer designating a mode
-for ENTITY.  For any fixed @var{entity}, @code{mode_priority_to_mode}
+for ENTITY@.  For any fixed @var{entity}, @code{mode_priority_to_mode}
 (@var{entity}, @var{n}) shall be a bijection in 0 @dots{}
 @code{num_modes_for_mode_switching}[@var{entity}] @minus{} 1 .
 
@@ -8187,7 +8187,7 @@ and print no error message.
 
 @findex NO_IMPLICIT_EXTERN_C
 @item NO_IMPLICIT_EXTERN_C
-Define this macro if the system header files support C++ as well as C.
+Define this macro if the system header files support C++ as well as C@.
 This macro inhibits the usual method of using system header files in
 C++, which is to pretend that the file's contents are enclosed in
 @samp{extern "C" @{@dots{}@}}.
@@ -8209,7 +8209,7 @@ these functions.  The macro may also do setup required for the pragmas.
 
 The primary reason to define this macro is to provide compatibility with
 other compilers for the same target.  In general, we discourage
-definition of target-specific pragmas for GCC.
+definition of target-specific pragmas for GCC@.
 
 If the pragma can be implemented by attributes then the macro
 @samp{INSERT_ATTRIBUTES} might be a useful one to define as well.
@@ -8581,8 +8581,8 @@ is wrong.
 
 @findex TARGET_HAS_F_SETLKW
 @item TARGET_HAS_F_SETLKW
-Define this macro if the target supports file locking with fcntl / F_SETLKW.
-Note that this functionality is part of POSIX.
+Define this macro if the target supports file locking with fcntl / F_SETLKW@.
+Note that this functionality is part of POSIX@.
 Defining @code{TARGET_HAS_F_SETLKW} will enable the test coverage code
 to use file locking when exiting a program, which avoids race conditions
 if the program has forked.

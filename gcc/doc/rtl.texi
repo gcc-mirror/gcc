@@ -324,7 +324,7 @@ in operand number @var{idx} in @var{exp}.  This value is an @code{int}.
 @findex XVECEXP
 @item XVECEXP (@var{exp}, @var{idx}, @var{eltnum})
 Access element number @var{eltnum} in the vector which is
-in operand number @var{idx} in @var{exp}.  This value is an RTX.
+in operand number @var{idx} in @var{exp}.  This value is an RTX@.
 
 It is up to you to make sure that @var{eltnum} is not negative
 and is less than @code{XVECLEN (@var{exp}, @var{idx})}.
@@ -771,7 +771,7 @@ the condition code.  These modes are not used on machines that use
 ``Block'' mode represents values that are aggregates to which none of
 the other modes apply.  In RTL, only memory references can have this mode,
 and only if they appear in string-move or vector instructions.  On machines
-which have no such instructions, @code{BLKmode} will not appear in RTL.
+which have no such instructions, @code{BLKmode} will not appear in RTL@.
 
 @findex VOIDmode
 @item VOIDmode
@@ -1339,7 +1339,7 @@ of the variable @code{pc_rtx}.  Any attempt to create an expression of
 code @code{pc} will return @code{pc_rtx}.
 
 All instructions that do not jump alter the program counter implicitly
-by incrementing it, but there is no need to mention this in the RTL.
+by incrementing it, but there is no need to mention this in the RTL@.
 
 @findex mem
 @item (mem:@var{m} @var{addr} @var{alias})
@@ -2101,7 +2101,7 @@ For instructions that require a temporary register, you should use
 combiner phase to add the @code{clobber} when required.  You do this by
 coding (@code{clobber} (@code{match_scratch} @dots{})).  If you do
 clobber a pseudo register, use one which appears nowhere else---generate
-a new one each time.  Otherwise, you may confuse CSE.
+a new one each time.  Otherwise, you may confuse CSE@.
 
 There is one other known use for clobbering a pseudo register in a
 @code{parallel}: when one of the input operands of the insn is also
@@ -2998,7 +2998,7 @@ probability that the branch will be taken.
 @item REG_BR_PRED
 These notes are found in JUMP insns after delayed branch scheduling
 has taken place.  They indicate both the direction and the likelihood
-of the JUMP.  The format is a bitmask of ATTR_FLAG_* values.
+of the JUMP@.  The format is a bitmask of ATTR_FLAG_* values.
 
 @findex REG_FRAME_RELATED_EXPR
 @item REG_FRAME_RELATED_EXPR
@@ -3189,7 +3189,7 @@ problem since reading RTL occurs only as part of building the
 compiler.
 
 People frequently have the idea of using RTL stored as text in a file as
-an interface between a language front end and the bulk of GCC.  This
+an interface between a language front end and the bulk of GCC@.  This
 idea is not feasible.
 
 GCC was designed to use RTL internally only.  Correct RTL for a given
