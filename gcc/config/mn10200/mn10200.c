@@ -611,12 +611,12 @@ expand_prologue ()
 	      if (!regs_ever_live[5])
 		{
 		  regs_ever_live[5] = 1;
-		  zero_dreg = gen_rtx (REG, HImode, 5);
+		  zero_areg = gen_rtx (REG, HImode, 5);
 		}
 	      if (!regs_ever_live[6])
 		{
 		  regs_ever_live[6] = 1;
-		  zero_dreg = gen_rtx (REG, HImode, 6);
+		  zero_areg = gen_rtx (REG, HImode, 6);
 		}
 	    }
 
