@@ -26,6 +26,9 @@ Fri Oct 23 15:34:14 1998  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 Fri Oct 23 13:12:35 1998  Jeffrey A Law  (law@cygnus.com)
 
+	* sched.c (update_flow_info): Revert Oct 19, 1998 change.  Brings
+	back Oct 15, 1998 change.  
+	* haifa-sched.c (update_flow_info): Likewise.
 	* flow.c (life_analysis_1): Delete CLOBBER insns after reload.
 
 	* mn10200.md (truncated shift): Accept constant inputs too.
