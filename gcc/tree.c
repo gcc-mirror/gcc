@@ -2124,7 +2124,7 @@ substitute_in_type (t, f, r)
 	      && TREE_CODE (TYPE_MAX_VALUE (t)) != REAL_CST
 	      && contains_placeholder_p (TYPE_MAX_VALUE (t))))
 	{
-	  t = copy_type (t);
+	  t = build_type_copy (t);
 
 	  if (TYPE_MIN_VALUE (t))
 	    TYPE_MIN_VALUE (t) = substitute_in_expr (TYPE_MIN_VALUE (t), f, r);
