@@ -48,7 +48,7 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 /* Handle floating overflow for `const_binop'.  */
 static jmp_buf float_error;
 
-int lshift_double ();
+void lshift_double ();
 void rshift_double ();
 void lrotate_double ();
 void rrotate_double ();
@@ -60,9 +60,6 @@ static tree const_binop ();
 
 /* Yield nonzero if a signed left shift of A by B bits overflows.  */
 #define left_shift_overflows(a, b)  ((a)  !=  ((a) << (b)) >> (b))
-
-/* Yield nonzero if A and B have the same sign.  */
-#define same_sign(a, b) ((a) ^ (b) >= 0)
 
 /* Suppose A1 + B1 = SUM1, using 2's complement arithmetic ignoring overflow.
    Suppose A, B and SUM have the same respective signs as A1, B1, and SUM1.
@@ -116,12 +113,16 @@ decode (shorts, low, hi)
 
 /* Make the integer constant T valid for its type
    by setting to 0 or 1 all the bits in the constant
-   that don't belong in the type.  */
+   that don't belong in the type.
+   Yield 1 if a signed overflow occurs, 0 otherwise.
+   If OVERFLOW is nonzero, a signed overflow has already occurred.  */
 
-void
-force_fit_type (t)
+int
+force_fit_type (t, overflow)
      tree t;
+     int overflow;
 {
+  HOST_WIDE_INT low = TREE_INT_CST_LOW (t), high = TREE_INT_CST_HIGH (t);
   register int prec = TYPE_PRECISION (TREE_TYPE (t));
 
   if (TREE_CODE (t) != INTEGER_CST)
@@ -146,10 +147,12 @@ force_fit_type (t)
 	TREE_INT_CST_LOW (t) &= ~((HOST_WIDE_INT) (-1) << prec);
     }
 
-  /* If it's a signed type and value's sign bit is set, extend the sign.  */
+  /* Unsigned types do not suffer sign extension or overflow.  */
+  if (TREE_UNSIGNED (TREE_TYPE (t)))
+    return 0;
 
-  if (! TREE_UNSIGNED (TREE_TYPE (t))
-      && prec != 2 * HOST_BITS_PER_WIDE_INT
+  /* If the value's sign bit is set, extend the sign.  */
+  if (prec != 2 * HOST_BITS_PER_WIDE_INT
       && (prec > HOST_BITS_PER_WIDE_INT
 	  ? (TREE_INT_CST_HIGH (t)
 	     & ((HOST_WIDE_INT) 1 << (prec - HOST_BITS_PER_WIDE_INT - 1)))
@@ -169,6 +172,11 @@ force_fit_type (t)
 	    TREE_INT_CST_LOW (t) |= ((HOST_WIDE_INT) (-1) << prec);
 	}
     }
+
+  /* Yield nonzero if signed overflow occurred.  */
+  return
+    ((overflow | (low ^ TREE_INT_CST_LOW (t)) | (high ^ TREE_INT_CST_HIGH (t)))
+     != 0);
 }
 
 /* Add two doubleword integers with doubleword result.
@@ -216,7 +224,7 @@ neg_double (l1, h1, lv, hv)
     {
       *lv = 0;
       *hv = - h1;
-      return same_sign (h1, *hv);
+      return (*hv & h1) < 0;
     }
   else
     {
@@ -327,10 +335,9 @@ mul_double (l1, h1, l2, h2, lv, hv)
    keeping only PREC bits of result.
    Shift right if COUNT is negative.
    ARITH nonzero specifies arithmetic shifting; otherwise use logical shift.
-   Return nonzero if the arithmetic shift overflows, assuming it's signed.
    Store the value as two `HOST_WIDE_INT' pieces in *LV and *HV.  */
 
-int
+void
 lshift_double (l1, h1, count, prec, lv, hv, arith)
      HOST_WIDE_INT l1, h1;
      int count, prec;
@@ -339,12 +346,12 @@ lshift_double (l1, h1, count, prec, lv, hv, arith)
 {
   short arg1[MAX_SHORTS];
   register int i;
-  register int carry, overflow;
+  register int carry;
 
   if (count < 0)
     {
       rshift_double (l1, h1, - count, prec, lv, hv, arith);
-      return 0;
+      return;
     }
 
   encode (arg1, l1, h1);
@@ -352,7 +359,6 @@ lshift_double (l1, h1, count, prec, lv, hv, arith)
   if (count > prec)
     count = prec;
 
-  overflow = 0;
   while (count > 0)
     {
       carry = 0;
@@ -363,11 +369,9 @@ lshift_double (l1, h1, count, prec, lv, hv, arith)
 	  carry >>= 8;
 	}
       count--;
-      overflow |= carry ^ (arg1[7] >> 7);
     }
 
   decode (arg1, lv, hv);
-  return overflow;
 }
 
 /* Shift the doubleword integer in L1, H1 right by COUNT places
@@ -1054,9 +1058,7 @@ const_binop (code, arg1, arg2, notrunc)
       HOST_WIDE_INT garbagel, garbageh;
       register tree t;
       int uns = TREE_UNSIGNED (TREE_TYPE (arg1));
-      /* Propagate overflow flags from operands; also record new overflow.  */
-      int overflow
-	= TREE_CONSTANT_OVERFLOW (arg1) | TREE_CONSTANT_OVERFLOW (arg2);
+      int overflow = 0;
 
       switch (code)
 	{
@@ -1079,10 +1081,13 @@ const_binop (code, arg1, arg2, notrunc)
 	case RSHIFT_EXPR:
 	  int2l = - int2l;
 	case LSHIFT_EXPR:
-	  overflow = lshift_double (int1l, int1h, int2l,
-				    TYPE_PRECISION (TREE_TYPE (arg1)),
-				    &low, &hi,
-				    !uns);
+	  /* It's unclear from the C standard whether shifts can overflow.
+	     The following code ignores overflow; perhaps a C standard
+	     interpretation ruling is needed.  */
+	  lshift_double (int1l, int1h, int2l,
+			 TYPE_PRECISION (TREE_TYPE (arg1)),
+			 &low, &hi,
+			 !uns);
 	  t = build_int_2 (low, hi);
 	  break;
 
@@ -1102,7 +1107,7 @@ const_binop (code, arg1, arg2, notrunc)
 	      if ((unsigned HOST_WIDE_INT) int2l < int1l)
 		{
 		  hi = int2h++;
-		  overflow = ! same_sign (hi, int2h);
+		  overflow = int2h < hi;
 		}
 	      t = build_int_2 (int2l, int2h);
 	      break;
@@ -1113,7 +1118,7 @@ const_binop (code, arg1, arg2, notrunc)
 	      if ((unsigned HOST_WIDE_INT) int1l < int2l)
 		{
 		  hi = int1h++;
-		  overflow = ! same_sign (hi, int1h);
+		  overflow = int1h < hi;
 		}
 	      t = build_int_2 (int1l, int1h);
 	      break;
@@ -1275,9 +1280,10 @@ const_binop (code, arg1, arg2, notrunc)
 	}
     got_it:
       TREE_TYPE (t) = TREE_TYPE (arg1);
-      if (! notrunc)
-	force_fit_type (t);
-      TREE_CONSTANT_OVERFLOW (t) = overflow;
+      TREE_CONSTANT_OVERFLOW (t)
+	= ((notrunc ? !uns && overflow : force_fit_type (t, overflow))
+	   | TREE_CONSTANT_OVERFLOW (arg1)
+	   | TREE_CONSTANT_OVERFLOW (arg2));
       return t;
     }
 #if ! defined (REAL_IS_NOT_DOUBLE) || defined (REAL_ARITHMETIC)
@@ -1493,11 +1499,16 @@ fold_convert (t, arg1)
 	     appropriately sign-extended or truncated.  */
 	  t = build_int_2 (TREE_INT_CST_LOW (arg1),
 			   TREE_INT_CST_HIGH (arg1));
-	  /* Carry forward overflow indication unless truncating.  */
-	  if (TYPE_PRECISION (type) >= TYPE_PRECISION (TREE_TYPE (t)))
-	    TREE_CONSTANT_OVERFLOW (t) = TREE_CONSTANT_OVERFLOW (arg1);
 	  TREE_TYPE (t) = type;
-	  force_fit_type (t);
+	  /* Indicate an overflow if (1) ARG1 already overflowed,
+	     or (2) ARG1 is a too-large unsigned value and T is signed,
+	     or (3) force_fit_type indicates an overflow.
+	     force_fit_type can't detect (2), since it sees only T's type.  */
+	  TREE_CONSTANT_OVERFLOW (t) =
+	    (TREE_CONSTANT_OVERFLOW (arg1)
+	     | (TREE_INT_CST_HIGH (arg1) < 0
+		& TREE_UNSIGNED (type) < TREE_UNSIGNED (TREE_TYPE (arg1)))
+	     | force_fit_type (t, 0));
 	}
 #if !defined (REAL_IS_NOT_DOUBLE) || defined (REAL_ARITHMETIC)
       else if (TREE_CODE (arg1) == REAL_CST)
@@ -1537,7 +1548,7 @@ fold_convert (t, arg1)
 	    if (d >= (REAL_VALUE_TYPE) half_word * half_word / 2)
 	      {
 		low = d - (REAL_VALUE_TYPE) half_word * half_word / 2;
-		low |= (HOST_WIDE_INT) 1 << (HOST_BITS_PER_WIDE_INT - 1);
+		low |= (HOST_WIDE_INT) -1 << (HOST_BITS_PER_WIDE_INT - 1);
 	      }
 	    else
 	      low = (HOST_WIDE_INT) d;
@@ -1553,7 +1564,7 @@ fold_convert (t, arg1)
 	  }
 #endif
 	  TREE_TYPE (t) = type;
-	  force_fit_type (t);
+	  force_fit_type (t, 0);
 	}
 #endif /* not REAL_IS_NOT_DOUBLE, or REAL_ARITHMETIC */
       TREE_TYPE (t) = type;
@@ -3266,10 +3277,10 @@ fold (expr)
 					 TREE_INT_CST_HIGH (arg0),
 					 &low, &high);
 	      t = build_int_2 (low, high);
-	      TREE_CONSTANT_OVERFLOW (t)
-		= overflow | TREE_CONSTANT_OVERFLOW (arg0);
 	      TREE_TYPE (t) = type;
-	      force_fit_type (t);
+	      TREE_CONSTANT_OVERFLOW (t)
+		= (TREE_CONSTANT_OVERFLOW (arg0)
+		   | force_fit_type (t, overflow));
 	    }
 	  else if (TREE_CODE (arg0) == REAL_CST)
 	    t = build_real (type, REAL_VALUE_NEGATE (TREE_REAL_CST (arg0)));
@@ -3299,7 +3310,9 @@ fold (expr)
 					     &low, &high);
 		  t = build_int_2 (low, high);
 		  TREE_TYPE (t) = type;
-		  force_fit_type (t);
+		  TREE_CONSTANT_OVERFLOW (t)
+		    = (TREE_CONSTANT_OVERFLOW (arg0)
+		       | force_fit_type (t, overflow));
 		}
 	    }
 	  else if (TREE_CODE (arg0) == REAL_CST)
@@ -3321,7 +3334,7 @@ fold (expr)
 	    t = build_int_2 (~ TREE_INT_CST_LOW (arg0),
 			     ~ TREE_INT_CST_HIGH (arg0));
 	  TREE_TYPE (t) = type;
-	  force_fit_type (t);
+	  force_fit_type (t, 0);
 	  TREE_CONSTANT_OVERFLOW (t) = TREE_CONSTANT_OVERFLOW (arg0);
 	}
       else if (TREE_CODE (arg0) == BIT_NOT_EXPR)
