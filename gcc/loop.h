@@ -176,7 +176,9 @@ struct loop_info
      1: not unrolled.
      -1: completely unrolled
      >0: holds the unroll exact factor.  */
-  int unroll_number;
+  unsigned int unroll_number;
+  /* Non-zero if the loop has a NOTE_INSN_LOOP_VTOP.  */
+  rtx vtop;
 };
 
 /* Definitions used by the basic induction variable discovery code.  */
