@@ -1,5 +1,12 @@
 2002-12-21  Kazu Hirata  <kazu@cs.umass.edu>
 
+	* config/h8300/h8300.md (*zero_extendqihi2_h8300): Make the
+	second alternative "#".
+	(*zero_extendqihi2_h8300hs): Likewise.
+	(a define_split): New.
+
+2002-12-21  Kazu Hirata  <kazu@cs.umass.edu>
+
 	* config/h8300/h8300-protos.h: Update the prototype for
 	split_adds_subs.
 	Add prototypes for const_le_2_operand and const_le_6_operand.
