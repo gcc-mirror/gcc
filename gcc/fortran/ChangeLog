@@ -1,3 +1,11 @@
+2005-02-27  Steven G. Kargl  <kargls@comcast.net>
+
+	* arith.c (gfc_check_real_range):  Remove multiple returns
+	(check_result): New function.
+	(gfc_arith_uminus,gfc_arith_plus,gfc_arith_times,
+	gfc_arith_divide,gfc_arith_power,gfc_arith_minus): Use it.
+
+
 2005-02-24  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
 
 	* decl.c, resolve.c, trans-array.c, trans.h: Fix comment typo(s).
