@@ -1,3 +1,8 @@
+2002-05-14  Richard Henderson  <rth@redhat.com>
+
+	* config/i386/i386.md: Use define_constants for unspec numbers.
+	* config/i386/i386.c: Likewise.
+
 2002-05-13  Mark Mitchell  <mark@codesourcery.com>
 
 	* fixinc/inclhack.def (winidss_valist): Limit applicability.
