@@ -1,3 +1,27 @@
+1999-05-10 18:21 -0400  Zack Weinberg  <zack@rabi.columbia.edu>
+
+	* cppfiles.c (initialize_input_buffer): New function.
+	(finclude): Call it, if pfile->input_buffer is NULL.  Accept
+	any character device as an input file.
+	(read_and_prescan): Use pfile->input_buffer and
+	pfile->input_speccase.
+	* cppinit.c (cpp_cleanup): Free pfile->input_buffer and
+	pfile->input_speccase.
+	* cpplib.h (cpp_reader): Add input_buffer, input_speccase, and
+	input_buffer_len members.  Use memcpy in CPP_PUTS_Q.
+
+	* cppmain.c: Buffer output in the token_buffer; throttle
+	number of calls to fwrite; check for errors from fwrite.
+
+1999-05-10 18:21 -0400  Zack Weinberg  <zack@rabi.phys.columbia.edu>
+
+	* cppspec.c: Treat two non-option arguments as input and
+	output file.  Three or more non-option args is an error.
+	Clean up.
+	* gcc.c (default_compilers): Pass -$ to the preprocessor.
+	* cp/lang-specs.h, ch/lang-specs.h, f/lang-specs.h,
+	objc/lang-specs.h: Likewise.
+
 Mon May 10 12:59:20 1999  Jeffrey A Law  (law@cygnus.com)
 
 	* optabs.c (emit_cmp_and_jump_insns): Handle the case where both

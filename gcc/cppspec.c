@@ -57,13 +57,13 @@ Boston, MA 02111-1307, USA.  */
 #define WORD_SWITCH_TAKES_ARG(STR) DEFAULT_WORD_SWITCH_TAKES_ARG (STR)
 #endif
 
-/* Suffixes for known sorts of input files.  We let gcc.c worry about
-   which are appropriate preprocessor input.  */
+/* Suffixes for known sorts of input files.  Note that we do not list
+   files which are normally considered to have been preprocessed already,
+   since the user's expectation is that `cpp' always preprocesses.  */
 static const char *const known_suffixes[] =
 {
-  ".c",  ".C",   ".s",   ".S",   ".m",
+  ".c",  ".C",   ".S",   ".m",
   ".cc", ".cxx", ".cpp", ".cp",  ".c++",
-  ".i",  ".ii",  ".mi",  ".o",   ".a",
   NULL
 };
 
@@ -79,34 +79,30 @@ lang_specific_driver (errfn, in_argc, in_argv, in_added_libraries)
   char **argv = *in_argv;
   
   /* Do we need to read stdin? */
-  int read_stdin;
+  int read_stdin = 1;
 
   /* Do we need to insert -E? */
-  int need_E;
+  int need_E = 1;
 
-  /* Do we need to fixup files with unrecognized suffixes? */
-  int need_fixups;
+  /* Have we seen an input file? */
+  int seen_input = 0;
+  
+  /* Positions to insert -xc, -xassembler-with-cpp, and -o, if necessary.
+     0 means unnecessary. */
+  int lang_c_here = 0;
+  int lang_S_here = 0;
+  int o_here = 0;
 
-  /* Table of input files with unrecognized suffixes. */
-  char *urs_tab;
-  int urs_count;
-  int urs_block;
-
+  /* Do we need to fix up an input file with an unrecognized suffix? */
+  int need_fixups = 1;
+  
   int i, j, quote;
   char **new_argv;
   int new_argc;
 
   /* First pass.  If we see an -S or -c, barf.  If we see an input file,
-     turn off read_stdin, and if it has an unrecognizable suffix, mark
-     it for fixup. */
-  urs_tab = xmalloc (argc);
-  memset (urs_tab, 0, argc);
-  urs_count = 0;
-  urs_block = 0;
-  quote = 0;
-  read_stdin = 1;
-  need_E = 1;
-  need_fixups = 1;
+     turn off read_stdin.  If we see a second input file, it is actually
+     the output file.  If we see a third input file, barf.  */
   for (i = 1; i < argc; i++)
     {
       if (quote == 1)
@@ -127,7 +123,7 @@ lang_specific_driver (errfn, in_argc, in_argv, in_added_libraries)
 		{
 		  (*errfn) ("`%s' is not a legal option to the preprocessor",
 			    argv[i]);
-		  goto done;
+		  return;
 		}
 	      else if (argv[i][1] == 'x')
 		{
@@ -144,76 +140,81 @@ lang_specific_driver (errfn, in_argc, in_argv, in_added_libraries)
 	}
       else /* not an option */
 	{
-	  int l = strlen (argv[i]);
-	  int known = 0;
-	  const char *const *suff;
-	  
-	  read_stdin = 0;
-	  for (suff = known_suffixes; *suff; suff++)
-	    if (!strcmp (*suff, &argv[i][l - strlen(*suff)]))
-	      {
-		known = 1;
-		break;
-	      }
-
-	  if (known)
+	  seen_input++;
+	  if (seen_input == 3)
 	    {
-	      if (urs_block)
-		{
-		  urs_block = 0;
-		  urs_tab[i] = 2;
-		  urs_count++;
-		}
+	      (*errfn) ("too many input files");
+	      return;
+	    }
+	  else if (seen_input == 2)
+	    {
+	      o_here = i;
 	    }
 	  else
 	    {
-	      if (!urs_block)
+	      read_stdin = 0;
+	      if (need_fixups)
 		{
-		  urs_block = 1;
-		  urs_tab[i] = 1;
-		  urs_count++;
+		  int l = strlen (argv[i]);
+		  int known = 0;
+		  const char *const *suff;
+
+		  for (suff = known_suffixes; *suff; suff++)
+		    if (!strcmp (*suff, &argv[i][l - strlen(*suff)]))
+		      {
+			known = 1;
+			break;
+		      }
+
+		  if (! known)
+		    {
+		      /* .s files are a special case; we have to treat
+			 them like .S files so -D__ASSEMBLER__ will be
+			 in effect.  */
+		      if (!strcmp (".s", &argv[i][l - 2]))
+			lang_S_here = i;
+		      else
+			lang_c_here = i;
+		    }
 		}
 	    }
 	}
     }
 
-  /* If we were given an -E option and an input file, and no input
-     files have unrecognized suffixes, we can bail early.  */
-  if (!need_E && !read_stdin && (!need_fixups || urs_count == 0))
-    goto done;
+  /* If we don't need to edit the command line, we can bail early.  */
 
-  new_argc = argc + need_E + read_stdin + (need_fixups ? urs_count : 0);
+  new_argc = argc + need_E + read_stdin
+    + !!o_here + !!lang_c_here + !!lang_S_here;
+
+  if (new_argc == argc)
+    return;
+
   new_argv = xmalloc (new_argc * sizeof(char *));
 
   new_argv[0] = argv[0];
+  j = 1;
+
   if (need_E)
+    new_argv[j++] = "-E";
+
+  for (i = 1; i < argc; i++, j++)
     {
-      new_argv[1] = "-E";
-      j = 2;
+      if (i == lang_c_here)
+	new_argv[j++] = "-xc";
+      else if (i == lang_S_here)
+	new_argv[j++] = "-xassembler-with-cpp";
+      else if (i == o_here)
+	new_argv[j++] = "-o";
+
+      new_argv[j] = argv[i];
     }
-  else
-    j = 1;
-
-  if (need_fixups)
-    for (i = 1; i < argc; i++, j++)
-      {
-	if (urs_tab[i])
-	  new_argv[j++] = (urs_tab[i] == 1) ? "-xc" : "-xnone";
-
-	new_argv[j] = argv[i];
-      }
-  else
-    memcpy (&new_argv[j], &argv[1], (argc - 1)*sizeof (char *));
 
   if (read_stdin)
     new_argv[j] = "-";
 
   *in_argc = new_argc;
   *in_argv = new_argv;
-
-done:
-  free (urs_tab);
-}
+} 
 
 /* Called before linking.  Returns 0 on success and -1 on failure. */
 int lang_specific_pre_link ()
