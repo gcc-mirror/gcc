@@ -1960,30 +1960,6 @@ do {									\
    operation to identify the following data as writable initialized
    data.  Normally `".data"' is right.  */
 
-
-#undef SELECT_SECTION		/* Hide default.  */
-#define SELECT_SECTION(EXP,RELOC)	data_section ()
-/* `SELECT_SECTION (EXP, RELOC)'
-   A C statement or statements to switch to the appropriate section
-   for output of EXP.  You can assume that EXP is either a `VAR_DECL'
-   node or a constant of some sort.  RELOC indicates whether the
-   initial value of EXP requires link-time relocations.  Select the
-   section by calling `text_section' or one of the alternatives for
-   other sections.
-
-   Do not define this macro if you put all read-only variables and
-   constants in the read-only data section (usually the text section).  */
-
-/* `SELECT_RTX_SECTION (MODE, RTX)'
-   A C statement or statements to switch to the appropriate section
-   for output of RTX in mode MODE.  You can assume that RTX is some
-   kind of constant in RTL.  The argument MODE is redundant except in
-   the case of a `const_int' rtx.  Select the section by calling
-   `text_section' or one of the alternatives for other sections.
-
-   Do not define this macro if you put all constants in the read-only
-   data section.  */
-
 #define JUMP_TABLES_IN_TEXT_SECTION 1
 /* Define this macro if jump tables (for `tablejump' insns) should be
    output in the text section, along with the assembler instructions.
@@ -2072,18 +2048,6 @@ do {									\
 
    If you do not define this macro, the default is that only the
    character `;' is treated as a logical line separator.  */
-
-#define ASM_OPEN_PAREN "("
-#define ASM_CLOSE_PAREN ")"
-/* These macros are defined as C string constant, describing the
-   syntax in the assembler for grouping arithmetic expressions.  The
-   following definitions are correct for most assemblers:
-
-   #define ASM_OPEN_PAREN "("
-   #define ASM_CLOSE_PAREN ")"
-
-   These macros are provided by `real.h' for writing the definitions of
-   `ASM_OUTPUT_DOUBLE' and the like:  */
 
 #define ASM_OUTPUT_COMMON(STREAM, NAME, SIZE, ROUNDED)	\
 do {							\
@@ -2335,15 +2299,6 @@ do {							\
    register.  Most RISC machines have this property and most CISC
    machines do not.  */
 
-#define EASY_DIV_EXPR TRUNC_DIV_EXPR
-/* An alias for a tree code that is the easiest kind of division to
-   compile code for in the general case.  It may be `TRUNC_DIV_EXPR',
-   `FLOOR_DIV_EXPR', `CEIL_DIV_EXPR' or `ROUND_DIV_EXPR'.  These four
-   division operators differ in how they round the result to an
-   integer.  `EASY_DIV_EXPR' is used when it is permissible to use
-   any of those kinds of division and the choice should be made on
-   the basis of efficiency.  */
-
 #define MOVE_MAX 1
 /* The maximum number of bytes that a single instruction can move
    quickly between memory and registers or between two memory
@@ -2472,7 +2427,7 @@ extern int ip2k_reorg_merge_qimode;
    after execution of an instruction whose pattern is EXP.
    Do not alter them if the instruction would not alter the cc's.  */
 
-#define NOTICE_UPDATE_CC(EXP, INSN) (0)
+#define NOTICE_UPDATE_CC(EXP, INSN) (void)(0)
 
 /* Output assembler code to FILE to increment profiler label # LABELNO
    for profiling a function entry.  */

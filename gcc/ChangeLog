@@ -1,3 +1,15 @@
+2002-09-04  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* ip2k-protos.h (function_prologue, function_epilogue,
+	encode_section_info): Update to match target hook specification.
+	* ip2k.c: Wrap `MDR' code in IP2K_MD_REORG_PASS.
+	(function_prologue, function_epilogue, encode_section_info):
+	Update to match target hook specification.
+	* ip2k.h (SELECT_SECTION, SELECT_RTX_SECTION, ASM_OPEN_PAREN,
+	ASM_CLOSE_PAREN, EASY_DIV_EXPR): Delete.
+	(NOTICE_UPDATE_CC): Cast to void.
+	* ip2k.md: Add defaults in switch statements.
+
 2002-09-04  Janis Johnson  <janis187@us.ibm.com>
 
 	* doc/trouble.texi (Interoperation): Update information about C++ ABI
