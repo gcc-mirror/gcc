@@ -7,7 +7,8 @@
 // Subject: exception's bug?
 // Date: Wed, 10 Nov 1993 11:07:12 -0500
 
-#include <stream.h>
+#include <iostream>
+
 class X {
         int     *a;
         int     sz;
@@ -33,7 +34,7 @@ main()
                 for (int i = 0; i < 12; i++)
                         c[i] = 1;
         } catch (X::range) {
-                cerr << "invalid range\n";
+                std::cerr << "invalid range\n";
         }
         return 0;
 }

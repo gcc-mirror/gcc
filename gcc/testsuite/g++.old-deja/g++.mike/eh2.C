@@ -1,8 +1,8 @@
 // Special g++ Options: -fexceptions
 // excess errors test - XFAIL a29k-*-* sparc64-*-elf arm-*-pe
 
-#include <stdlib.h>
-#include <iostream.h>
+#include <cstdlib>
+#include <iostream>
 
 class Vector {
 private:
@@ -57,9 +57,9 @@ f(Vector& v) {
   try {
     do_something( v );
   } catch (Vector::Range& r) {
-    cout << "Invalid vector range " << r.value()
-      << " caught in f()" << endl;
-    exit(0);
+    std::cout << "Invalid vector range " << r.value()
+      << " caught in f()" << std::endl;
+    std::exit(0);
   }
 }
 
@@ -69,3 +69,6 @@ main() {
   f( v );
   return 1;
 }
+
+
+

@@ -1,12 +1,12 @@
 // Build don't link: 
 // GROUPS passed visibility
 
-#include <iostream.h>
+#include <iostream>
 
 class base {
 public:
-  void f1 () { cout << "f1" << endl; };
-  void f2 () { cout << "f2" << endl; };
+  void f1 () { std::cout << "f1" << std::endl; };
+  void f2 () { std::cout << "f2" << std::endl; };
 };
 
 class deriv : public base {
@@ -19,3 +19,4 @@ int main ()
 
   d.f2();
 }
+

@@ -8,7 +8,7 @@
    main.cc: Please report this to 'bug-g++@prep.ai.mit.edu'
    */
 
-#include <stream.h>
+#include <iostream>
 
 class INTEGER {
 int x;
@@ -16,7 +16,7 @@ public:
    typedef int BASE;
    INTEGER(int y) : x(y) {}
    INTEGER() {}
-   void encode() { cout << "Integer encoder";}
+   void encode() { std::cout << "Integer encoder";}
    int operator=(int y) { x=y; return x; }
    operator int() {return x; }
 };

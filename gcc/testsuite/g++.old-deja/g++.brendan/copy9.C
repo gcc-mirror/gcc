@@ -1,5 +1,5 @@
 // GROUPS passed copy-ctors
-#include <iostream.h>
+#include <iostream>
 
 // token types: from state parser
 const int T_EOF = 257;
@@ -35,10 +35,11 @@ main () {
 	ParseToken b(a);
 
 	if (b.doubleval == 23.2)
-	  cout << "PASS\n";
+	  std::cout << "PASS\n";
 	else
 	  {
-	    cout << "FAIL\n";
+	    std::cout << "FAIL\n";
 	    return 1;
 	  }
 }
+

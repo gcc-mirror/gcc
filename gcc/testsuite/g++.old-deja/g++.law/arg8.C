@@ -6,22 +6,22 @@
 // Date: Thu, 8 Jul 93 11:47:28 MDT
 
 
-#include <iostream.h>
-#include <stdio.h>
+#include <iostream>
+#include <cstdio>
 
 // With this declaration the program will not link.
-template <class Type> ostream & save(ostream & os, Type T);
+template <class Type> std::ostream & save(std::ostream & os, Type T);
 
-   template <class Type> ostream &
-save(ostream & os, Type T) {
+   template <class Type> std::ostream &
+save(std::ostream & os, Type T) {
    return os << T;
 }  // save
 
    int
 main() {
    int i = 10;
-   save((ostream &)cout, i) << endl;
+   save((std::ostream &)std::cout, i) << std::endl;
    short int s = 5;
-   save((ostream &)cout, s) << endl;
-   printf ("PASS\n");
+   save((std::ostream &)std::cout, s) << std::endl;
+   std::printf ("PASS\n");
 }  // main

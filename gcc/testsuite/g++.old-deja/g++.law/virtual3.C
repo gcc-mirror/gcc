@@ -5,12 +5,12 @@
 // Date: 4 Nov 1993 22:57:36 -0500
 // Message-ID: <9311041820.AA05942@ramjet.multinet.DE>
 
-#include <iostream.h>
-#include <strstream.h>
+#include <iostream>
+#include <sstream>
 
 using namespace std;
 
-class BugStream : public ostrstream {
+class BugStream : public ostringstream {
 public:
     BugStream() {}
     BugStream& eval();
@@ -26,12 +26,12 @@ BugStream& BugStream::eval()
    *this << ends;
    
    // eval the command and set the status
-   char* s = str();
+   const char* s = str().data();
    cerr << s << endl;
    
    // reset the stream for the next command    
    clear(ios::goodbit);
-   rdbuf()->freeze(0);
+   //   rdbuf()->freeze(0);
    seekp(0);
    
    return *this;

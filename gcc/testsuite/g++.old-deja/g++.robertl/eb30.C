@@ -1,7 +1,7 @@
 // Build don't link:
-#include <fstream.h>
+#include <fstream>
 
-class bifstream : public ifstream {
+class bifstream : public std::ifstream {
 public:
     bifstream();
 //     ~bifstream();

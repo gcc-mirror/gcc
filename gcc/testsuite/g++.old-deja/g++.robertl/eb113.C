@@ -1,5 +1,5 @@
 // Build don't link: 
-#include <iostream.h>
+#include <iostream>
 
 class X : public std::streambuf
 {

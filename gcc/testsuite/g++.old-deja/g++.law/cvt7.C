@@ -5,8 +5,7 @@
 // Message-Id: <9208250205.AA26351@icsib43.ICSI.Berkeley.EDU>
 // Subject: implicit int. convs. from member refs. in switch expressions
 
-#include <stream.h>
-#include <stdio.h>
+#include <cstdio>
 
 class A
 {
@@ -58,10 +57,10 @@ int main()
     switch (ar2)
     {
     case 1:
-	printf ("PASS\n");
+	std::printf ("PASS\n");
         break;
     default:
-	{ printf ("FAIL\n"); return 1; }
+	{ std::printf ("FAIL\n"); return 1; }
     }
 
     B b(a);
@@ -72,3 +71,10 @@ int main()
 
     return 0;
 }
+
+
+
+
+
+
+

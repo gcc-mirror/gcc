@@ -1,5 +1,7 @@
 // Makes bogus x86 assembly code.
-#include <iostream.h>
+#include <iostream>
+
+using namespace std;
 
 template<class T>
 T max(T a, T b)

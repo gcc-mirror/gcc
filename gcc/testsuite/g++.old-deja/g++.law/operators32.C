@@ -1,6 +1,6 @@
 // Build don't link: 
 // GROUPS passed operators
-#include <iostream.h>
+#include <iostream>
 
 //
 // frees space allocated for N-D array
@@ -43,9 +43,9 @@ long d1 = 3, d2 = 4;
 class foo
 {
 public:
-foo() {cout << "foo created" << endl; }
+foo() {std::cout << "foo created" << std::endl; }
 
-~foo() {cout << "foo deleted" << endl; }
+~foo() {std::cout << "foo deleted" << std::endl; }
 };
 
 foo **f2;

@@ -6,14 +6,14 @@
 // Subject: bug019.cc
 // Date: Fri, 5 Feb 93 15:51:42 -0800
 
-#include <iostream.h>
+#include <iostream>
 
 class Class
 {
-        class Err : public ostream
+        class Err : public std::ostream
         {
         public:
-                Err(void) : ostream(NULL) { }
+                Err(void) : std::ostream(NULL) { }
                 ~Err(void) { }
         };
 public:

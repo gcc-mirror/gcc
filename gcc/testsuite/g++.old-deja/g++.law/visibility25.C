@@ -5,7 +5,7 @@
 // Date:     Wed, 17 Nov 93 21:30:32 EST
 // Subject:  gcc 2.5.3 - can't privately inherit and contain same class
 // Message-ID: <9311171030.AA00604@mencon>
-#include        <iostream.h>
+#include        <iostream>
 
 class A {
 public:

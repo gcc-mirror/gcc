@@ -1,3 +1,81 @@
+2001-04-06  Benjamin Kosnik  <bkoz@redhat.com>
+
+	* g++.old-deja/g++.benjamin/15071.C (main): Update to conformant
+	headers and constructs.
+	* g++.old-deja/g++.robertl/eb79.C: Same.
+	* g++.old-deja/g++.robertl/eb77.C (main): Same.
+	* g++.old-deja/g++.robertl/eb73.C: Same.
+	* g++.old-deja/g++.robertl/eb66.C (main): Same.
+	* g++.old-deja/g++.robertl/eb55.C (t): Same.
+	* g++.old-deja/g++.robertl/eb54.C (main): Same.
+	* g++.old-deja/g++.robertl/eb46.C (main): Same.
+	* g++.old-deja/g++.robertl/eb44.C: Same.
+	* g++.old-deja/g++.robertl/eb41.C (main): Same.
+	* g++.old-deja/g++.robertl/eb4.C (main): Same.
+	* g++.old-deja/g++.robertl/eb39.C: Same.
+	* g++.old-deja/g++.robertl/eb33.C (main): Same.
+	* g++.old-deja/g++.robertl/eb31.C (main): Same.
+	* g++.old-deja/g++.robertl/eb30.C: Same.
+	* g++.old-deja/g++.robertl/eb3.C: Same.
+	* g++.old-deja/g++.robertl/eb24.C (T>): Same.
+	* g++.old-deja/g++.robertl/eb21.C: Same.
+	* g++.old-deja/g++.robertl/eb15.C: Same.
+	* g++.old-deja/g++.robertl/eb118.C: Same.
+	* g++.old-deja/g++.robertl/eb115.C (main): Same.
+	* g++.old-deja/g++.robertl/eb113.C (streambuf): Same.
+	* g++.old-deja/g++.robertl/eb109.C: Same.
+	* g++.old-deja/g++.other/sibcall1.C (main): Same.
+	* g++.old-deja/g++.mike/rtti1.C: Same.
+	* g++.old-deja/g++.mike/p658.C: Same.
+	* g++.old-deja/g++.mike/net46.C: Same.
+	* g++.old-deja/g++.mike/net34.C: Same.
+	* g++.old-deja/g++.mike/memoize1.C: Same.
+	* g++.old-deja/g++.mike/eh2.C: Same.
+	* g++.old-deja/g++.law/weak.C: Same.
+	* g++.old-deja/g++.law/visibility7.C: Same.
+	* g++.old-deja/g++.law/visibility25.C: Same.
+	* g++.old-deja/g++.law/visibility22.C: Same.
+	* g++.old-deja/g++.law/visibility2.C: Same.
+	* g++.old-deja/g++.law/visibility17.C: Same.
+	* g++.old-deja/g++.law/visibility13.C: Same.
+	* g++.old-deja/g++.law/visibility10.C: Same.
+	* g++.old-deja/g++.law/visibility1.C: Same.
+	* g++.old-deja/g++.law/virtual3.C (eval): Same.
+	* g++.old-deja/g++.law/vbase1.C: Same.
+	* g++.old-deja/g++.law/operators32.C: Same.
+	* g++.old-deja/g++.law/nest3.C: Same.
+	* g++.old-deja/g++.law/missed-error2.C (foo): Same.
+	* g++.old-deja/g++.law/except5.C (main): Same.
+	* g++.old-deja/g++.law/cvt7.C (run): Same.
+	* g++.old-deja/g++.law/cvt2.C: Same.
+	* g++.old-deja/g++.law/cvt16.C: Same.
+	* g++.old-deja/g++.law/ctors6.C (bar): Same.
+	* g++.old-deja/g++.law/ctors17.C (main): Same.
+	* g++.old-deja/g++.law/ctors13.C: Same.
+	* g++.old-deja/g++.law/ctors12.C (main): Same.
+	* g++.old-deja/g++.law/ctors10.C: Same.
+	* g++.old-deja/g++.law/code-gen5.C: Same.
+	* g++.old-deja/g++.law/bad-error7.C: Same.
+	* g++.old-deja/g++.law/arm9.C: Same.
+	* g++.old-deja/g++.law/arm12.C: Same.
+	* g++.old-deja/g++.law/arg8.C: Same.
+	* g++.old-deja/g++.law/arg1.C: Same.
+	* g++.old-deja/g++.jason/typeid1.C (struct foo): Same.
+	* g++.old-deja/g++.jason/template31.C: Same.
+	* g++.old-deja/g++.jason/template24.C (main): Same.
+	* g++.old-deja/g++.jason/2371.C: Same.
+	* g++.old-deja/g++.eh/new2.C: Same.
+	* g++.old-deja/g++.eh/new1.C: Same.
+	* g++.old-deja/g++.brendan/ptolemy2.C: Same.
+	* g++.old-deja/g++.brendan/nest21.C (main): Same.
+	* g++.old-deja/g++.brendan/err-msg3.C: Same.
+	* g++.old-deja/g++.brendan/crash62.C: Same.
+	* g++.old-deja/g++.brendan/crash52.C: Same.
+	* g++.old-deja/g++.brendan/crash49.C (main): Same.
+	* g++.old-deja/g++.brendan/crash38.C: Same.
+	* g++.old-deja/g++.brendan/crash15.C (main): Same.
+	* g++.old-deja/g++.brendan/copy9.C: Same.
+
 Fri Apr  6 15:36:15 2001  J"orn Rennecke <amylaar@redhat.com>
 
 	* gcc.c-torture/execute/20001203-2.c (main):

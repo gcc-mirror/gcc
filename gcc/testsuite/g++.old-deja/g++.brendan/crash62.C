@@ -1,11 +1,11 @@
 // Build don't link: 
 // GROUPS passed old-abort
-#include <iostream.h>
+#include <iostream>
 
 	void
-	fubar(ostream* out, const char* string)
+	fubar(std::ostream* out, const char* s)
 	{
-  	  (*out) << string << endl;
+  	  (*out) << s << std::endl;
   	  return;
 	}
 
@@ -14,8 +14,8 @@
 	{
   	  // Declare a ref and a pointer to the same ostream.
   	  //
-  	  ostream* out = &cerr;
-  	  ostream& die = cerr;
+  	  std::ostream* out = &std::cerr;
+  	  std::ostream& die = std::cerr;
 
   	  // Valid call to fubar.
   	  //

@@ -1,11 +1,11 @@
 #include <typeinfo>
-#include <iostream.h>
+#include <iostream>
 
 struct foo { double f(int); };
 
 int main() {
   double f (int);
   const std::type_info &r = typeid (f);
-  cout << typeid(f).name() << endl;
-  cout << typeid(foo::f).name() << endl;
+  std::cout << typeid(f).name() << std::endl;
+  std::cout << typeid(foo::f).name() << std::endl;
 }

@@ -7,7 +7,7 @@
 // Message-ID: <9308121348.aa26256@Paris.ics.uci.edu>
 
 // 5.cc
-#include <stream.h>
+#include <iostream>
 
 class A {
         int x;

@@ -7,12 +7,12 @@
 // Wendell Baker, Berkeley CAD Group, 1993 (wbaker@ic.Berkeley.EDU)
 //
 
-
 #pragma implementation "ListS.h"
 #pragma implementation "SetLS.h"
 
-#include <stdlib.h>
-#include <iostream.h>
+#include <cstdlib>
+#include <iostream>
+using namespace std;
 
 # 1 "../../templates/SetLS.h" 1
 // -*- C++ -*-
