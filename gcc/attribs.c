@@ -1307,12 +1307,33 @@ handle_vector_size_attribute (node, name, args, flags, no_add_attrs)
     error ("no vector mode with the size and type specified could be found");
   else
     {
+      tree index, array, rt;
+
       new_type = type_for_mode (new_mode, TREE_UNSIGNED (type));
+
       if (!new_type)
-	error ("no vector mode with the size and type specified could be found");
-      else
-	/* Build back pointers if needed.  */
-	*node = vector_size_helper (*node, new_type);
+	{
+	  error ("no vector mode with the size and type specified could be found");
+	  return NULL_TREE;
+	}
+
+      new_type = build_type_copy (new_type);
+
+      /* Set the debug information here, because this is the only
+	 place where we know the underlying type for a vector made
+	 with vector_size.  For debugging purposes we pretend a vector
+	 is an array within a structure.  */
+      index = build_int_2 (TYPE_VECTOR_SUBPARTS (new_type) - 1, 0);
+      array = build_array_type (type, build_index_type (index));
+      rt = make_node (RECORD_TYPE);
+
+      TYPE_FIELDS (rt) = build_decl (FIELD_DECL, get_identifier ("f"), array);
+      DECL_CONTEXT (TYPE_FIELDS (rt)) = rt;
+      layout_type (rt);
+      TYPE_DEBUG_REPRESENTATION_TYPE (new_type) = rt;
+
+      /* Build back pointers if needed.  */
+      *node = vector_size_helper (*node, new_type);
     }
     
   return NULL_TREE;
