@@ -1,3 +1,142 @@
+2005-01-08  Richard Henderson  <rth@redhat.com>
+
+	* config/i386/emmintrin.h (_mm_cvtsi128_si32): Move earlier.
+	(_mm_cvtsi128_si64x): Likewise.
+	(_mm_srl_epi64, _mm_srl_epi32, _mm_srl_epi16, _mm_sra_epi32,
+	_mm_sra_epi16, _mm_sll_epi64, _mm_sll_epi32, _mm_sll_epi16): Use
+	the _mm_{srl,sll}i_foo counterpart, and _mm_cvtsi128_si32.
+	* config/i386/i386-modes.def: Add V16HI, V32QI, V4DF, V8SF.
+	* config/i386/i386-protos.h: Update.
+	* config/i386/i386.c (print_operand): Add 'H'.
+	(ix86_fixup_binary_operands): Split out from ...
+	(ix86_expand_binary_operator): ... here.
+	(ix86_fixup_binary_operands_no_copy): New.
+	(ix86_expand_fp_absneg_operator): Handle vector mode results.
+	(bdesc_2arg): Update names for sse{,2,3}_ prefixes.
+	(ix86_init_mmx_sse_builtins): Remove *maskncmp* special cases.
+	(safe_vector_operand): Use CONST0_RTX.
+	(ix86_expand_binop_builtin): Use ix86_fixup_binary_operands.
+	(ix86_expand_builtin): Merge CODE_FOR_sse2_maskmovdqu_rex64 and
+	CODE_FOR_sse2_maskmovdqu.  Special case SSE version of MASKMOVDQU
+	expansion.  Update names for sse{,2,3}_ prefixes.  Remove *maskncmp*
+	special cases.
+	* config/i386/i386.h (IX86_BUILTIN_CMPNGTSS): New.
+	(IX86_BUILTIN_CMPNGESS): New.
+	* config/i386/i386.md (UNSPEC_FIX_NOTRUNC): New.
+	(attr type): Add sselog1.
+	(attr unit, attr memory): Handle it.
+	(movti, movti_internal, movti_rex64): Move near other integer moves.
+	(movtf, movtf_internal): Move near other fp moves.
+	(SSEMODE, SSEMODEI, vec_setv2df, vec_extractv2df, vec_initv2df,
+	vec_setv4sf, vec_extractv4sf, vec_initv4sf, movv4sf, movv4sf_internal,
+	movv2df, movv2df_internal, mov<SSEMODEI>, mov<SSEMODEI>_internal, 
+	movmisalign<SSEMODE>, sse_movups_1, sse_movmskps, sse_movntv4sf,
+	sse_movhlps, sse_movlhps, sse_storehps, sse_loadhps, sse_storelps,
+	sse_loadlps, sse_loadss, sse_loadss_1, sse_movss, sse_storess,
+	sse_shufps, addv4sf3, vmaddv4sf3, subv4sf3, vmsubv4sf3, negv4sf2,
+	mulv4sf3, vmmulv4sf3, divv4sf3, vmdivv4sf3, rcpv4sf2, vmrcpv4sf2,
+	rsqrtv4sf2, vmrsqrtv4sf2, sqrtv4sf2, vmsqrtv4sf2, sse_andv4sf3,
+	sse_nandv4sf3, sse_iorv4sf3, sse_xorv4sf3, sse2_andv2df3, 
+	sse2_nandv2df3, sse2_iorv2df3, sse2_xorv2df3, sse2_andv2di3, 
+	sse2_nandv2di3, sse2_iorv2di3, sse2_xorv2di3, maskcmpv4sf3, 
+	vmmaskcmpv4sf3, sse_comi, sse_ucomi, sse_unpckhps, sse_unpcklps,
+	smaxv4sf3, vmsmaxv4sf3, sminv4sf3, vmsminv4sf3, cvtpi2ps, cvtps2pi,
+	cvttps2pi, cvtsi2ss, cvtsi2ssq, cvtss2si, cvtss2siq, cvttss2si,
+	cvttss2siq, addv2df3, vmaddv2df3, subv2df3, vmsubv2df3, mulv2df3,
+	vmmulv2df3, divv2df3, vmdivv2df3, smaxv2df3, vmsmaxv2df3, sminv2df3,
+	vmsminv2df3, sqrtv2df2, vmsqrtv2df2, maskcmpv2df3, vmmaskcmpv2df3,
+	sse2_comi, sse2_ucomi, sse2_movmskpd, sse2_pmovmskb, sse2_maskmovdqu,
+	sse2_maskmovdqu_rex64, sse2_movntv2df, sse2_movntv2di, sse2_movntsi,
+	cvtdq2ps, cvtps2dq, cvttps2dq, cvtdq2pd, cvtpd2dq, cvttpd2dq,
+	cvtpd2pi, cvttpd2pi, cvtpi2pd, cvtsd2si, cvtsd2siq, cvttsd2si,
+	cvttsd2siq, cvtsi2sd, cvtsi2sdq, cvtsd2ss, cvtss2sd, cvtpd2ps,
+	cvtps2pd, addv16qi3, addv8hi3, addv4si3, addv2di3, ssaddv16qi3,
+	ssaddv8hi3, usaddv16qi3, usaddv8hi3, subv16qi3, subv8hi3, subv4si3,
+	subv2di3, sssubv16qi3, sssubv8hi3, ussubv16qi3, ussubv8hi3, mulv8hi3,
+	smulv8hi3_highpart, umulv8hi3_highpart, sse2_umulsidi3,
+	sse2_umulv2siv2di3, sse2_pmaddwd, sse2_uavgv16qi3, sse2_uavgv8hi3,
+	sse2_psadbw, sse2_pinsrw, sse2_pextrw, sse2_pshufd, sse2_pshuflw,
+	sse2_pshufhw, eqv16qi3, eqv8hi3, eqv4si3, gtv16qi3, gtv8hi3, 
+	gtv4si3, umaxv16qi3, smaxv8hi3, uminv16qi3, sminv8hi3, ashrv8hi3,
+	ashrv4si3, lshrv8hi3, lshrv4si3, lshrv2di3, ashlv8hi3, ashlv4si3,
+	ashlv2di3, sse2_ashlti3, sse2_lshrti3, sse2_unpckhpd, sse2_unpcklpd,
+	sse2_packsswb, sse2_packssdw, sse2_packuswb, sse2_punpckhbw, 
+	sse2_punpckhwd, sse2_punpckhdq, sse2_punpcklbw, sse2_punpcklwd,
+	sse2_punpckldq, sse2_punpcklqdq, sse2_punpckhqdq, sse2_movupd,
+	sse2_movdqu, sse2_movdq2q, sse2_movdq2q_rex64, sse2_movq2dq, 
+	sse2_movq2dq_rex64, sse2_loadd, sse2_stored, sse2_storehpd,
+	sse2_loadhpd, sse2_storelpd, sse2_loadlpd, sse2_movsd, sse2_loadsd,
+	sse2_loadsd_1, sse2_storesd, sse2_shufpd, sse2_clflush, sse2_mfence,
+	mfence_insn, sse2_lfence, lfence_insn, mwait, monitor, addsubv4sf3,
+	addsubv2df3, haddv4sf3, haddv2df3, hsubv4sf3, hsubv2df3, movshdup,
+	movsldup, lddqu, loadddup, movddup): Move to sse.md.  Any with
+	non-optabs meanings renamed with an "sse{,2,3}_" prefix at the
+	same time.
+	(SSEPUSH, push<SSEPUSH>): Remove.
+	(MMXPUSH, push<MMXPUSH>): Remove.
+	(sse_movaps, sse_movaps_1, sse_movups): Remove.
+	(sse2_movapd, sse2_movdqa, sse2_movq): Remove.
+	(sse2_andti3, sse2_nandti3, sse2_iorti3, sse2_xorti3): Remove.
+	(sse_clrv4sf, sse_clrv2df, sse2_clrti): Remove.
+	(maskncmpv4sf3, vmmaskncmpv4sf3): Remove.
+	(maskncmpv2df3, vmmaskncmpv2df3): Remove.
+	(ashrv8hi3_ti, ashrv4si3_ti, lshrv8hi3_ti, lshrv4si3_ti): Remove.
+	(lshrv2di3_ti, ashlv8hi3_ti, ashlv4si3_ti, ashlv2di3_ti): Remove.
+	* config/i386/athlon.md (athlon_sselog_load): Handle sselog1.
+	(athlon_sselog_load_k8, athlon_sselog, athlon_sselog_k8): Likewise.
+	* config/i386/ppro.md (ppro_sse_div_V4SF_load): Fix memory attr.
+	(ppro_sse_log_V4SF_load): Similarly.  Handle sselog1.
+	(ppro_sse_log_V4SF): Handle sselog1.
+	* config/i386/predicates.md (const_0_to_1_operand): New.
+	(const_0_to_255_mul_8_operand): New.
+	(const_1_to_31_operand): Rename from const_int_1_31_operand.
+	(const_2_to_3_operand, const_4_to_7_operand): New.
+	* config/i386/sse.md: New file.
+	(SSEMODE12, SSEMODE24, SSEMODE124, SSEMODE248, ssevecsize): New.
+	(sse_movups): Rename from sse_movups_1.
+	(sse_loadlss): Rename from sse_loadss_1.
+	(andv4sf3, iorv4sf3, xorv4sf3, andv2df3): Remove the sse prefix
+	from the name.
+	(negv4sf2): Use ix86_expand_fp_absneg_operator.
+	(absv4sf2, negv2df, absv2df): New.
+	(addv4sf3): Add expander to call ix86_fixup_binary_operands_no_copy.
+	(subv4sf3, mulv4sf3, divv4sf3, smaxv4sf3, sminv4sf3, andv4sf3,
+	iorv4sf3, xorv4sf3, addv2df3, subv2df3, mulv2df3, divv2df3,
+	smaxv2df3, sminv2df3, andv2df3, iorv2df3, xorv2df3, mulv8hi3,
+	umaxv16qi3, smaxv8hi3, uminv16qi3, sminv8hi3): Likewise.
+	(sse3_addsubv4sf3): Model correctly.
+	sse3_haddv4sf3, sse3_hsubv4sf3, sse3_addsubv2df3, sse3_haddv2df3,
+	sse3_hsubv2df3, sse2_ashlti3, sse2_lshrti3): Likewise.
+	(sse_movhlps): Model with vec_select+vec_concat.
+	(sse_movlhps, sse_unpckhps, sse_unpcklps, sse3_movshdup, 
+	sse3_movsldup, sse_shufps, sse_shufps_1, sse2_unpckhpd, sse3_movddup,
+	sse2_unpcklpd, sse2_shufpd, sse2_shufpd_1, sse2_punpckhbw,
+	sse2_punpcklbw, sse2_punpckhwd, sse2_punpcklwd, sse2_punpckhdq,
+	sse2_punpckldq, sse2_punpckhqdq, sse2_punpcklqdq, sse2_pshufd,
+	sse2_pshufd_1, sse2_pshuflw, sse2_pshuflw_1, sse2_pshufhw, 
+	sse2_pshufhw_1): Likewise.
+	(neg<SSEMODEI>2, one_cmpl<SSEMODEI>2): New.
+	(add<SSEMODEI>3, sse2_ssadd<SSEMODE12>3, sse2_usadd<SSEMODE12>3,
+	sub<SSEMODEI>3, sse2_sssub<SSEMODE12>3, sse2_ussub<SSEMODE12>3,
+	ashr<SSEMODE24>3, lshr<SSEMODE248>3, sse2_eq<SSEMODE124>3,
+	sse2_gt<SSEMODDE124>3, and<SSEMODEI>3, sse_nand<SSEMODEI>3,
+	ior<SSEMODEI>3, xor<SSEMODEI>3): Macroize from existing patterns.	
+	(addv4sf3, sse_vmaddv4sf3, mulv4sf3, sse_vmmulv4sf3, smaxv4sf3,
+	sse_vmsmaxv4sf3, sminv4sf3, sse_vmsminv4sf3, addv2df3, sse2_vmaddv2df3,
+	mulv2df3, sse2_vmmulv2df3, smaxv2df3, sse2_vmsmaxv2df3, sminv2df3,
+	sse2_vmsminv2df3, umaxv16qi3, smaxv8hi3, uminv16qi3
+	sminv8hi3): Mark commutative
+	operands.  Use ix86_binary_operator_ok.
+	(sse_unpckhps, sse_unpcklps, sse2_packsswb, sse2_packssdw,
+	sse2_packuswb, sse2_punpckhbw, sse2_punpcklbw, sse2_punpckhwd,
+	sse2_punpcklwd, sse2_punpckhdq, sse2_punpckldq, sse2_punpckhqdq,
+	sse2_punpcklqdq): Allow operand2 in memory.
+	(sse_movhlps, sse_movlhps, sse2_unpckhpd, sse2_unpcklpd
+	sse2_movsd): Add memory alternatives.
+	(sse_storelps): Turn expander into an insn; split after reload.
+	(sse_storess, sse2_loadhpd, sse2_loadlpd): Add non-xmm inputs.
+	(sse2_storehpd, sse2_storelpd): Add non-xmm outputs.
+
 2005-01-08  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
 	* configure.ac (DWARF-2 debug_line): Use objdump.

@@ -319,12 +319,6 @@
 	 (and (match_operand 0 "const_double_operand")
 	      (match_test "GET_MODE_SIZE (mode) <= 8")))))
 
-;; Return nonzero if OP is CONST_INT >= 1 and <= 31 (a valid operand
-;; for shift & compare patterns, as shifting by 0 does not change flags).
-(define_predicate "const_int_1_31_operand"
-  (and (match_code "const_int")
-       (match_test "INTVAL (op) >= 1 && INTVAL (op) <= 31")))
-
 ;; Returns nonzero if OP is either a symbol reference or a sum of a symbol
 ;; reference and a constant.
 (define_predicate "symbolic_operand"
@@ -521,6 +515,11 @@
   return i == 2 || i == 4 || i == 8;
 })
 
+;; Match 0 or 1.
+(define_predicate "const_0_to_1_operand"
+  (and (match_code "const_int")
+       (match_test "op == const0_rtx || op == const1_rtx")))
+
 ;; Match 0 to 3.
 (define_predicate "const_0_to_3_operand"
   (and (match_code "const_int")
@@ -545,6 +544,30 @@
 (define_predicate "const_0_to_255_operand"
   (and (match_code "const_int")
        (match_test "INTVAL (op) >= 0 && INTVAL (op) <= 255")))
+
+;; Match (0 to 255) * 8
+(define_predicate "const_0_to_255_mul_8_operand"
+  (match_code "const_int")
+{
+  unsigned HOST_WIDE_INT val = INTVAL (op);
+  return val <= 255*8 && val % 8 == 0;
+})
+
+;; Return nonzero if OP is CONST_INT >= 1 and <= 31 (a valid operand
+;; for shift & compare patterns, as shifting by 0 does not change flags).
+(define_predicate "const_1_to_31_operand"
+  (and (match_code "const_int")
+       (match_test "INTVAL (op) >= 1 && INTVAL (op) <= 31")))
+
+;; Match 2 or 3.
+(define_predicate "const_2_to_3_operand"
+  (and (match_code "const_int")
+       (match_test "INTVAL (op) == 2 || INTVAL (op) == 3")))
+
+;; Match 4 to 7.
+(define_predicate "const_4_to_7_operand"
+  (and (match_code "const_int")
+       (match_test "INTVAL (op) >= 4 && INTVAL (op) <= 7")))
 
 ;; Match exactly one bit in 4-bit mask.
 (define_predicate "const_pow2_1_to_8_operand"
