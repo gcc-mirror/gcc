@@ -1,3 +1,7 @@
+2001-11-19  Loren J. Rittle  <ljrittle@acm.org>
+
+	* Make-lang.in: Complete ``Build g77.1 in $(srcdir)''.
+
 2001-11-19  Geoffrey Keating  <geoffk@redhat.com>
 
 	* g77spec.c (lang_specific_driver) [ENABLE_SHARED_LIBGCC]: Add
