@@ -139,8 +139,8 @@ in the following sections.
 @item Debugging Options
 @xref{Debugging Options,,Options for Debugging Your Program or GCC}.
 @smallexample
--a  -ax  -d@var{letters}  -fdump-unnumbered -fpretend-float
--fprofile-arcs  -ftest-coverage
+-a  -ax  -d@var{letters}  -fdump-unnumbered -fdump-translation-unit-@var{file}
+-fpretend-float -fprofile-arcs  -ftest-coverage
 -g  -g@var{level}  -gcoff  -gdwarf  -gdwarf-1  -gdwarf-1+  -gdwarf-2
 -ggdb  -gstabs  -gstabs+  -gxcoff  -gxcoff+
 -p  -pg  -print-file-name=@var{library}  -print-libgcc-file-name
@@ -2119,6 +2119,10 @@ When doing debugging dumps (see -d option above), suppress instruction
 numbers and line number note output.  This makes it more feasible to
 use diff on debugging dumps for compiler invokations with different
 options, in particular with and without -g.
+
+@item -fdump-translation-unit-@var{file} (C++ only)
+Dump a representation of the tree structure for the entire translation
+unit to @var{file}.
 
 @item -fpretend-float
 When running a cross-compiler, pretend that the target machine uses the

@@ -5307,8 +5307,8 @@ tsubst_template_parms (parms, args, complain)
      tree args;
      int complain;
 {
-  tree r;
-  tree* new_parms = &r;
+  tree r = NULL_TREE;
+  tree* new_parms;
 
   for (new_parms = &r;
        TMPL_PARMS_DEPTH (parms) > TMPL_ARGS_DEPTH (args);
@@ -5822,7 +5822,7 @@ tsubst_decl (t, args, type, in_decl)
 	    maybe_retrofit_in_chrg (r);
 	    grok_ctor_properties (ctx, r);
 	  }
-	if (IDENTIFIER_OPNAME_P (DECL_NAME (r)))
+	else if (DECL_OVERLOADED_OPERATOR_P (r))
 	  grok_op_properties (r, DECL_VIRTUAL_P (r), DECL_FRIEND_P (r));
       }
       break;
@@ -7077,13 +7077,13 @@ tsubst_expr (t, args, complain, in_decl)
   switch (TREE_CODE (t))
     {
     case RETURN_STMT:
-      lineno = TREE_COMPLEXITY (t);
+      lineno = STMT_LINENO (t);
       finish_return_stmt (tsubst_expr (RETURN_EXPR (t),
 				       args, complain, in_decl));
       break;
 
     case EXPR_STMT:
-      lineno = TREE_COMPLEXITY (t);
+      lineno = STMT_LINENO (t);
       finish_expr_stmt (tsubst_expr (EXPR_STMT_EXPR (t),
 				     args, complain, in_decl));
       break;
@@ -7093,7 +7093,7 @@ tsubst_expr (t, args, complain, in_decl)
 	int i = suspend_momentary ();
 	tree dcl, init;
 
-	lineno = TREE_COMPLEXITY (t);
+	lineno = STMT_LINENO (t);
 	emit_line_note (input_filename, lineno);
 	dcl = start_decl
 	  (tsubst (TREE_OPERAND (t, 0), args, complain, in_decl),
@@ -7109,7 +7109,7 @@ tsubst_expr (t, args, complain, in_decl)
     case FOR_STMT:
       {
 	tree tmp;
-	lineno = TREE_COMPLEXITY (t);
+	lineno = STMT_LINENO (t);
 
 	begin_for_stmt ();
 	for (tmp = FOR_INIT_STMT (t); tmp; tmp = TREE_CHAIN (tmp))
@@ -7127,7 +7127,7 @@ tsubst_expr (t, args, complain, in_decl)
 
     case WHILE_STMT:
       {
-	lineno = TREE_COMPLEXITY (t);
+	lineno = STMT_LINENO (t);
 	begin_while_stmt ();
 	finish_while_stmt_cond (tsubst_expr (WHILE_COND (t),
 					     args, complain, in_decl),
@@ -7139,7 +7139,7 @@ tsubst_expr (t, args, complain, in_decl)
 
     case DO_STMT:
       {
-	lineno = TREE_COMPLEXITY (t);
+	lineno = STMT_LINENO (t);
 	begin_do_stmt ();
 	tsubst_expr (DO_BODY (t), args, complain, in_decl);
 	finish_do_body (NULL_TREE);
@@ -7153,7 +7153,7 @@ tsubst_expr (t, args, complain, in_decl)
       {
 	tree tmp;
 
-	lineno = TREE_COMPLEXITY (t);
+	lineno = STMT_LINENO (t);
 	begin_if_stmt ();
 	finish_if_stmt_cond (tsubst_expr (IF_COND (t),
 					  args, complain, in_decl),
@@ -7180,7 +7180,7 @@ tsubst_expr (t, args, complain, in_decl)
       {
 	tree substmt;
 
-	lineno = TREE_COMPLEXITY (t);
+	lineno = STMT_LINENO (t);
 	begin_compound_stmt (COMPOUND_STMT_NO_SCOPE (t));
 	for (substmt = COMPOUND_BODY (t); 
 	     substmt != NULL_TREE;
@@ -7192,12 +7192,12 @@ tsubst_expr (t, args, complain, in_decl)
       break;
 
     case BREAK_STMT:
-      lineno = TREE_COMPLEXITY (t);
+      lineno = STMT_LINENO (t);
       finish_break_stmt ();
       break;
 
     case CONTINUE_STMT:
-      lineno = TREE_COMPLEXITY (t);
+      lineno = STMT_LINENO (t);
       finish_continue_stmt ();
       break;
 
@@ -7205,7 +7205,7 @@ tsubst_expr (t, args, complain, in_decl)
       {
 	tree val, tmp;
 
-	lineno = TREE_COMPLEXITY (t);
+	lineno = STMT_LINENO (t);
 	begin_switch_stmt ();
 	val = tsubst_expr (SWITCH_COND (t), args, complain, in_decl);
 	finish_switch_cond (val);
@@ -7230,7 +7230,7 @@ tsubst_expr (t, args, complain, in_decl)
       break;
 
     case GOTO_STMT:
-      lineno = TREE_COMPLEXITY (t);
+      lineno = STMT_LINENO (t);
       t = GOTO_DESTINATION (t);
       if (TREE_CODE (t) != IDENTIFIER_NODE)
 	/* Computed goto's must be tsubst'd into.  On the other hand,
@@ -7241,7 +7241,7 @@ tsubst_expr (t, args, complain, in_decl)
       break;
 
     case ASM_STMT:
-      lineno = TREE_COMPLEXITY (t);
+      lineno = STMT_LINENO (t);
       finish_asm_stmt (ASM_CV_QUAL (t),
 		       tsubst_expr (ASM_STRING (t), args, complain, in_decl),
 		       tsubst_expr (ASM_OUTPUTS (t), args, complain, in_decl),
@@ -7251,7 +7251,7 @@ tsubst_expr (t, args, complain, in_decl)
       break;
 
     case TRY_BLOCK:
-      lineno = TREE_COMPLEXITY (t);
+      lineno = STMT_LINENO (t);
       begin_try_block ();
       tsubst_expr (TRY_STMTS (t), args, complain, in_decl);
       finish_try_block (NULL_TREE);
@@ -7264,7 +7264,7 @@ tsubst_expr (t, args, complain, in_decl)
       break;
 
     case HANDLER:
-      lineno = TREE_COMPLEXITY (t);
+      lineno = STMT_LINENO (t);
       begin_handler ();
       if (HANDLER_PARMS (t))
 	{
@@ -7281,7 +7281,7 @@ tsubst_expr (t, args, complain, in_decl)
       break;
 
     case TAG_DEFN:
-      lineno = TREE_COMPLEXITY (t);
+      lineno = STMT_LINENO (t);
       t = TREE_TYPE (t);
       if (TREE_CODE (t) == ENUMERAL_TYPE)
 	tsubst (t, args, complain, NULL_TREE);

@@ -741,6 +741,14 @@ finish_asm_stmt (cv_qualifier, string, output_operands,
 	pop_obstacks ();
     }
 
+  if (cv_qualifier != NULL_TREE
+      && cv_qualifier != ridpointers[(int) RID_VOLATILE])
+    {
+      cp_warning ("%s qualifier ignored on asm",
+		  IDENTIFIER_POINTER (cv_qualifier));
+      cv_qualifier = NULL_TREE;
+    }
+
   if (processing_template_decl)
     {
       tree r = build_min_nt (ASM_STMT, cv_qualifier, string,
@@ -756,30 +764,17 @@ finish_asm_stmt (cv_qualifier, string, output_operands,
 	{
 	  tree t;
 
-	  if (cv_qualifier != NULL_TREE
-	      && cv_qualifier != ridpointers[(int) RID_VOLATILE])
-	    cp_warning ("%s qualifier ignored on asm",
-			IDENTIFIER_POINTER (cv_qualifier));
-
 	  for (t = input_operands; t; t = TREE_CHAIN (t))
 	    TREE_VALUE (t) = decay_conversion (TREE_VALUE (t));
 
 	  c_expand_asm_operands (string, output_operands,
 				 input_operands, 
 				 clobbers,
-				 cv_qualifier 
-				 == ridpointers[(int) RID_VOLATILE],
+				 cv_qualifier != NULL_TREE,
 				 input_filename, lineno);
 	}
       else
-	{
-	  /* Don't warn about redundant specification of 'volatile' here.  */
-	  if (cv_qualifier != NULL_TREE
-	      && cv_qualifier != ridpointers[(int) RID_VOLATILE])
-	    cp_warning ("%s qualifier ignored on asm",
-			IDENTIFIER_POINTER (cv_qualifier));
-	  expand_asm (string);
-	}
+	expand_asm (string);
       
       finish_stmt ();
     }
