@@ -55,7 +55,7 @@ void test01()
     }
 
   // widen(const char* low, const char* high, charT* dest) const
-  ctype_c.widen(&narrow[0], &narrow[narrow.length()], &wide_chars[0]);  
+  ctype_c.widen(&narrow[0], &narrow[0] + narrow.length(), &wide_chars[0]);  
   for (int i = 0; i < narrow.length(); ++i)
     VERIFY( wide_chars[i] == wide[i] );
 }

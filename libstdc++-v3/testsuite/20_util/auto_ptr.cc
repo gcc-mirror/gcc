@@ -197,8 +197,8 @@ test06()
   std::auto_ptr<A> A_from_A_ptr(A_from_A.release());
   VERIFY( A_from_A.get() == 0 );
   VERIFY( A_from_A_ptr.get() != 0 );
-  VERIFY( A_from_A->ctor_count == 1 );
-  VERIFY( (*A_from_A).dtor_count == 0 );
+  VERIFY( A_from_A_ptr->ctor_count == 1 );
+  VERIFY( (*A_from_A_ptr).dtor_count == 0 );
 
   A* A_ptr = A_from_A_ptr.get();
 
