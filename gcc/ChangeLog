@@ -1,3 +1,7 @@
+2003-06-04  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* toplev.c (rest_of_type_compilation): Fix typo.
+
 2003-06-04  Jakub Jelinek  <jakub@redhat.com>
 	    Alan Modra  <amodra@bigpond.net.au>
 
