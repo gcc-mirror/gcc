@@ -1,5 +1,5 @@
 /* Definitions for C++ parsing and type checking.
-   Copyright (C) 1987, 1993 Free Software Foundation, Inc.
+   Copyright (C) 1987, 1993, 1995 Free Software Foundation, Inc.
    Hacked by Michael Tiemann (tiemann@cygnus.com)
 
 This file is part of GNU CC.
@@ -1376,7 +1376,7 @@ extern int warn_overloaded_virtual;
 
 /* in c-common.c */
 extern void declare_function_name               PROTO((void));
-extern void decl_attributes                     PROTO((tree, tree));
+extern void decl_attributes                     PROTO((tree, tree, tree));
 extern void init_function_format_info		PROTO((void));
 extern void record_function_format		PROTO((tree, tree, int, int, int));
 extern void check_function_format		PROTO((tree, tree, tree));
