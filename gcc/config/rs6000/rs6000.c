@@ -1016,7 +1016,7 @@ print_operand (file, x, code)
 	 write 'l'.  Otherwise, write 'r'.  This is a kludge to fix a bug
 	 in the RS/6000 assembler where "sri" with a zero shift count
 	 write a trash instruction.  */
-      if (GET_CODE (x) != CONST_INT && (INTVAL (x) & 31) == 0)
+      if (GET_CODE (x) == CONST_INT && (INTVAL (x) & 31) == 0)
 	fprintf (file, "l");
       else
 	fprintf (file, "r");
@@ -1089,6 +1089,15 @@ first_reg_to_save ()
   for (first_reg = 13; first_reg <= 31; first_reg++)
     if (regs_ever_live[first_reg])
       break;
+
+  /* If profiling, then we must save/restore every register that contains
+     a parameter before/after the .mcount call.  Use registers from 30 down
+     to 23 to do this.  Don't use the frame pointer in reg 31.
+
+     For now, save enough room for all of the parameter registers.  */
+  if (profile_flag)
+    if (first_reg > 23)
+      first_reg = 23;
 
   return first_reg;
 }
@@ -1194,8 +1203,9 @@ output_prolog (file, size)
       trunc_defined = 1;
     }
 
-  /* If we have to call a function to save fpr's, we will be using LR.  */
-  if (first_fp_reg < 62)
+  /* If we have to call a function to save fpr's, or if we are doing profiling,
+     then we will be using LR.  */
+  if (first_fp_reg < 62 || profile_flag)
     regs_ever_live[65] = 1;
 
   /* If we use the link register, get it into r0.  */
@@ -1510,4 +1520,46 @@ rs6000_gen_section_name (buf, filename, section_desc)
     strcpy (p, section_desc);
   else
     *p = '\0';
+}
+
+/* Write function profiler code. */
+
+void
+output_function_profiler (file, labelno)
+  FILE *file;
+  int labelno;
+{
+  /* The last used parameter register.  */
+  int last_parm_reg;
+  int i, j;
+
+  /* Set up a TOC entry for the profiler label.  */
+  toc_section ();
+  fprintf (file, "LPTOC..%d:\n\t.tc\tLP..%d[TC], LP..%d\n",
+	   labelno, labelno, labelno);
+  text_section ();
+
+  /* Figure out last used parameter register.  The proper thing to do is
+     to walk incoming args of the function.  A function might have live
+     parameter registers even if it has no incoming args.  */
+
+  for (last_parm_reg = 10;
+       last_parm_reg > 2 && ! regs_ever_live [last_parm_reg];
+       last_parm_reg--)
+    ;
+
+  /* Save parameter registers in regs 23-30.  Don't overwrite reg 31, since
+     it might be set up as the frame pointer.  */
+
+  for (i = 3, j = 30; i <= last_parm_reg; i++, j--)
+    fprintf (file, "\tai %d,%d,0\n", j, i);
+
+  /* Load location address into r3, and call mcount.  */
+
+  fprintf (file, "\tl 3,LPTOC..%d(2)\n\tbl .mcount\n", labelno);
+
+  /* Restore parameter registers.  */
+
+  for (i = 3, j = 30; i <= last_parm_reg; i++, j--)
+    fprintf (file, "\tai %d,%d,0\n", i, j);
 }
