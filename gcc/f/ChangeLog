@@ -1,3 +1,12 @@
+2001-06-10  Toon Moene  <toon@moene.indiv.nluug.nl>
+
+	* g77install.texi: Remove all documentation here.  Point
+	to the GCC installation procedures.
+	* g77.texi: Add documentation on how to get output always
+	flushed and how to increase the maximum unit number.
+	* bugs.texi: Add documentation on how to change the threshold
+	for putting local arrays on the stack.
+
 2001-06-07  Theodore Papadopoulo  <Theodore.Papadopoulo@sophia.inria.fr>
 
 	* Make-lang.in ($(srcdir)/f/g77.info): Added dependencies on
