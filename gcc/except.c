@@ -1848,7 +1848,7 @@ find_exception_handler_labels ()
 	}
     }
 
-  free (labels);
+  free (labels + min_labelno);
 }
 
 /* Perform sanity checking on the exception_handler_labels list.
