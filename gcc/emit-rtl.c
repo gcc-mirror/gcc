@@ -54,6 +54,7 @@ Boston, MA 02111-1307, USA.  */
 #include "bitmap.h"
 #include "basic-block.h"
 #include "ggc.h"
+#include "debug.h"
 
 /* Commonly used modes.  */
 
@@ -3003,9 +3004,13 @@ remove_unnecessary_notes ()
 
 	      if (NOTE_LINE_NUMBER (tmp) == NOTE_INSN_BLOCK_BEG)
 		{
-		  /* We just verified that this BLOCK matches us
-		     with the block_stack check above.  */
-		  if (debug_ignore_block (NOTE_BLOCK (insn)))
+		  /* We just verified that this BLOCK matches us with
+		     the block_stack check above.  Never delete the
+		     BLOCK for the outermost scope of the function; we
+		     can refer to names from that scope even if the
+		     block notes are messed up.  */
+		  if (! is_body_block (NOTE_BLOCK (insn))
+		      && (*debug_hooks->ignore_block) (NOTE_BLOCK (insn)))
 		    {
 		      remove_insn (tmp);
 		      remove_insn (insn);

@@ -289,6 +289,7 @@ static void dbxout_finish		PARAMS ((const char *));
 static void dbxout_start_source_file	PARAMS ((unsigned, const char *));
 static void dbxout_end_source_file	PARAMS ((unsigned));
 static void dbxout_source_line		PARAMS ((unsigned int, const char *));
+static void dbxout_source_file		PARAMS ((FILE *, const char *));
 #if defined(ASM_OUTPUT_SECTION_NAME)
 static void dbxout_function_end		PARAMS ((void));
 #endif
@@ -297,6 +298,7 @@ static void dbxout_type_index		PARAMS ((tree));
 #if DBX_CONTIN_LENGTH > 0
 static void dbxout_continue		PARAMS ((void));
 #endif
+static void dbxout_args			PARAMS ((tree));
 static void dbxout_type_fields		PARAMS ((tree));
 static void dbxout_type_method_1	PARAMS ((tree, const char *));
 static void dbxout_type_methods		PARAMS ((tree));
@@ -329,6 +331,7 @@ struct gcc_debug_hooks dbx_debug_hooks =
   dbxout_end_source_file,
   dbxout_begin_block,
   dbxout_end_block,
+  debug_true_tree,		/* ignore_block */
   dbxout_source_line,		/* source_line */
   dbxout_source_line,		/* begin_prologue: just output line info */
   debug_nothing_int,		/* end_prologue */
@@ -341,7 +344,9 @@ struct gcc_debug_hooks dbx_debug_hooks =
   debug_nothing_int,		/* end_function */
   dbxout_function_decl,
   debug_nothing_tree,		/* global_decl */
-  debug_nothing_tree		/* deferred_inline_function */
+  debug_nothing_tree,		/* deferred_inline_function */
+  debug_nothing_tree,		/* outlining_inline_function */
+  debug_nothing_rtx		/* label */
 };
 #endif /* DBX_DEBUGGING_INFO  */
 
@@ -356,6 +361,7 @@ struct gcc_debug_hooks xcoff_debug_hooks =
   dbxout_end_source_file,
   xcoffout_begin_block,
   xcoffout_end_block,
+  debug_true_tree,		/* ignore_block */
   xcoffout_source_line,
   xcoffout_begin_prologue,	/* begin_prologue */
   debug_nothing_int,		/* end_prologue */
@@ -364,7 +370,9 @@ struct gcc_debug_hooks xcoff_debug_hooks =
   xcoffout_end_function,
   debug_nothing_tree,		/* function_decl */
   debug_nothing_tree,		/* global_decl */
-  debug_nothing_tree		/* deferred_inline_function */
+  debug_nothing_tree,		/* deferred_inline_function */
+  debug_nothing_tree,		/* outlining_inline_function */
+  debug_nothing_rtx		/* label */
 };
 #endif /* XCOFF_DEBUGGING_INFO  */
 
@@ -547,7 +555,7 @@ dbxout_end_source_file (line)
 
 /* Output debugging info to FILE to switch to sourcefile FILENAME.  */
 
-void
+static void
 dbxout_source_file (file, filename)
      FILE *file;
      const char *filename;
@@ -2595,7 +2603,7 @@ dbxout_reg_parms (parms)
 /* Given a chain of ..._TYPE nodes (as come in a parameter list),
    output definitions of those names, in raw form */
 
-void
+static void
 dbxout_args (args)
      tree args;
 {
@@ -2605,24 +2613,6 @@ dbxout_args (args)
       dbxout_type (TREE_VALUE (args), 0);
       CHARS (1);
       args = TREE_CHAIN (args);
-    }
-}
-
-/* Given a chain of ..._TYPE nodes,
-   find those which have typedef names and output those names.
-   This is to ensure those types get output.  */
-
-void
-dbxout_types (types)
-     register tree types;
-{
-  while (types)
-    {
-      if (TYPE_NAME (types)
-	  && TREE_CODE (TYPE_NAME (types)) == TYPE_DECL
-	  && ! TREE_ASM_WRITTEN (TYPE_NAME (types)))
-	dbxout_symbol (TYPE_NAME (types), 1);
-      types = TREE_CHAIN (types);
     }
 }
 

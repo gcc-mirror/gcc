@@ -37,7 +37,6 @@ extern int read_integral_parameter	PARAMS ((const char *, const char *,
 extern int count_error			PARAMS ((int));
 extern void strip_off_ending		PARAMS ((char *, int));
 extern void print_time			PARAMS ((const char *, long));
-extern int debug_ignore_block		PARAMS ((union tree_node *));
 extern const char *trim_filename	PARAMS ((const char *));
 extern void internal_error		PARAMS ((const char *, ...))
 					       ATTRIBUTE_PRINTF_1
@@ -123,8 +122,6 @@ extern void fnotice			PARAMS ((FILE *, const char *, ...))
 
 extern int wrapup_global_declarations   PARAMS ((union tree_node **, int));
 extern void check_global_declarations   PARAMS ((union tree_node **, int));
-extern void note_outlining_of_inline_function
-					PARAMS ((union tree_node *));
 
 extern const char *progname;
 extern const char *dump_base_name;
