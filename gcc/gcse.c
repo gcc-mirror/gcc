@@ -679,6 +679,7 @@ static void compute_ld_motion_mems (void);
 static void trim_ld_motion_mems (void);
 static void update_ld_motion_stores (struct expr *);
 static void reg_set_info (rtx, rtx, void *);
+static void reg_clear_last_set (rtx, rtx, void *);
 static bool store_ops_ok (rtx, int *);
 static rtx extract_mentioned_regs (rtx);
 static rtx extract_mentioned_regs_helper (rtx, rtx);
@@ -6921,17 +6922,41 @@ static sbitmap * st_antloc;
 /* Global holding the number of store expressions we are dealing with.  */
 static int num_stores;
 
-/* Checks to set if we need to mark a register set. Called from note_stores.  */
+/* Checks to set if we need to mark a register set.  Called from
+   note_stores.  */
 
 static void
 reg_set_info (rtx dest, rtx setter ATTRIBUTE_UNUSED,
-	      void *data ATTRIBUTE_UNUSED)
+	      void *data)
 {
+  sbitmap bb_reg = data;
+
   if (GET_CODE (dest) == SUBREG)
     dest = SUBREG_REG (dest);
 
   if (GET_CODE (dest) == REG)
-    regvec[REGNO (dest)] = INSN_UID (compute_store_table_current_insn);
+    {
+      regvec[REGNO (dest)] = INSN_UID (compute_store_table_current_insn);
+      if (bb_reg)
+	SET_BIT (bb_reg, REGNO (dest));
+    }
+}
+
+/* Clear any mark that says that this insn sets dest.  Called from
+   note_stores.  */
+
+static void
+reg_clear_last_set (rtx dest, rtx setter ATTRIBUTE_UNUSED,
+	      void *data)
+{
+  int *dead_vec = data;
+
+  if (GET_CODE (dest) == SUBREG)
+    dest = SUBREG_REG (dest);
+
+  if (GET_CODE (dest) == REG &&
+      dead_vec[REGNO (dest)] == INSN_UID (compute_store_table_current_insn))
+    dead_vec[REGNO (dest)] = 0;
 }
 
 /* Return zero if some of the registers in list X are killed
@@ -7165,14 +7190,13 @@ compute_store_table (void)
 						       max_gcse_regno);
   sbitmap_vector_zero (reg_set_in_block, last_basic_block);
   pre_ldst_mems = 0;
-  last_set_in = xmalloc (sizeof (int) * max_gcse_regno);
+  last_set_in = xcalloc (max_gcse_regno, sizeof (int));
   already_set = xmalloc (sizeof (int) * max_gcse_regno);
 
   /* Find all the stores we care about.  */
   FOR_EACH_BB (bb)
     {
       /* First compute the registers set in this block.  */
-      memset (last_set_in, 0, sizeof (int) * max_gcse_regno);
       regvec = last_set_in;
 
       for (insn = bb->head;
@@ -7194,18 +7218,16 @@ compute_store_table (void)
 	      for (regno = 0; regno < FIRST_PSEUDO_REGISTER; regno++)
 		if (clobbers_all
 		    || TEST_HARD_REG_BIT (regs_invalidated_by_call, regno))
-		  last_set_in[regno] = INSN_UID (insn);
+		  {
+		    last_set_in[regno] = INSN_UID (insn);
+		    SET_BIT (reg_set_in_block[bb->index], regno);
+		  }
 	    }
 
 	  pat = PATTERN (insn);
 	  compute_store_table_current_insn = insn;
-	  note_stores (pat, reg_set_info, NULL);
+	  note_stores (pat, reg_set_info, reg_set_in_block[bb->index]);
 	}
-
-      /* Record the set registers.  */
-      for (regno = 0; regno < max_gcse_regno; regno++)
-	if (last_set_in[regno])
-	  SET_BIT (reg_set_in_block[bb->index], regno);
 
       /* Now find the stores.  */
       memset (already_set, 0, sizeof (int) * max_gcse_regno);
@@ -7239,10 +7261,31 @@ compute_store_table (void)
 	  find_moveable_store (insn, already_set, last_set_in);
 
 	  /* Unmark regs that are no longer set.  */
-	  for (regno = 0; regno < max_gcse_regno; regno++)
-	    if (last_set_in[regno] == INSN_UID (insn))
-	      last_set_in[regno] = 0;
+	  compute_store_table_current_insn = insn;
+	  note_stores (pat, reg_clear_last_set, last_set_in);
+	  if (GET_CODE (insn) == CALL_INSN)
+	    {
+	      bool clobbers_all = false;
+#ifdef NON_SAVING_SETJMP
+	      if (NON_SAVING_SETJMP
+		  && find_reg_note (insn, REG_SETJMP, NULL_RTX))
+		clobbers_all = true;
+#endif
+
+	      for (regno = 0; regno < FIRST_PSEUDO_REGISTER; regno++)
+		if ((clobbers_all
+		     || TEST_HARD_REG_BIT (regs_invalidated_by_call, regno))
+		    && last_set_in[regno] == INSN_UID (insn))
+		  last_set_in[regno] = 0;
+	    }
 	}
+
+#ifdef ENABLE_CHECKING
+      /* last_set_in should now be all-zero.  */
+      for (regno = 0; regno < max_gcse_regno; regno++)
+	if (last_set_in[regno] != 0)
+	  abort ();
+#endif
 
       /* Clear temporary marks.  */
       for (ptr = first_ls_expr (); ptr != NULL; ptr = next_ls_expr (ptr))
