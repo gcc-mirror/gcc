@@ -43,6 +43,7 @@
 #include <ext/mt_allocator.h>
 #include <ext/new_allocator.h>
 #include <ext/malloc_allocator.h>
+#include <ext/bitmap_allocator.h>
 #include <cxxabi.h>
 #include <testsuite_performance.h>
 
@@ -117,6 +118,7 @@ int main(void)
   typedef __gnu_cxx::malloc_allocator<test_type> m_alloc_type;
   typedef __gnu_cxx::new_allocator<test_type> n_alloc_type;
   typedef __gnu_cxx::__mt_alloc<test_type> so_alloc_type;
+  typedef __gnu_cxx::bitmap_allocator<test_type> bit_alloc_type;
 
 #ifdef TEST_S0
   test_container(vector<test_type, m_alloc_type>());
@@ -127,37 +129,52 @@ int main(void)
 #ifdef TEST_S2
   test_container(vector<test_type, so_alloc_type>());
 #endif
-
 #ifdef TEST_S3
+  test_container(vector<test_type, bit_alloc_type>());
+#endif
+
+
+#ifdef TEST_S4
   test_container(list<test_type, m_alloc_type>());
 #endif
-#ifdef TEST_S4
+#ifdef TEST_S5
   test_container(list<test_type, n_alloc_type>());
 #endif
-#ifdef TEST_S5
+#ifdef TEST_S6
   test_container(list<test_type, so_alloc_type>());
 #endif
+#ifdef TEST_S7
+  test_container(list<test_type, bit_alloc_type>());
+#endif
 
-#ifdef TEST_S6
+
+#ifdef TEST_S8
   test_container(deque<test_type, m_alloc_type>());
 #endif
-#ifdef TEST_S7
+#ifdef TEST_S9
   test_container(deque<test_type, n_alloc_type>());
 #endif
-#ifdef TEST_S8
+#ifdef TEST_S10
   test_container(deque<test_type, so_alloc_type>());
+#endif
+#ifdef TEST_S11
+  test_container(deque<test_type, bit_alloc_type>());
 #endif
 
   typedef less<test_type> compare_type;
-#ifdef TEST_S9
+#ifdef TEST_S12
   test_container(map<test_type, test_type, compare_type, m_alloc_type>());
 #endif
-#ifdef TEST_S10
+#ifdef TEST_S13
   test_container(map<test_type, test_type, compare_type, n_alloc_type>());
 #endif
-#ifdef TEST_S11
+#ifdef TEST_S14
   test_container(map<test_type, test_type, compare_type, so_alloc_type>());
 #endif
+#ifdef TEST_S15
+  test_container(map<test_type, test_type, compare_type, bit_alloc_type>());
+#endif
+
 
 #ifdef TEST_S12
   test_container(set<test_type, compare_type, m_alloc_type>());
@@ -167,6 +184,9 @@ int main(void)
 #endif
 #ifdef TEST_S14
   test_container(set<test_type, compare_type, so_alloc_type>());
+#endif
+#ifdef TEST_S14
+  test_container(set<test_type, compare_type, bit_alloc_type>());
 #endif
 
   return 0;
