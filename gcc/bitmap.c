@@ -552,7 +552,7 @@ bitmap_initialize (head)
 /* Debugging function to print out the contents of a bitmap.  */
 
 void
-bitmap_debug_file (file, head)
+debug_bitmap_file (file, head)
      FILE *file;
      bitmap head;
 {
@@ -602,10 +602,10 @@ void
 debug_bitmap (head)
      bitmap head;
 {
-  bitmap_debug_file (stdout, head);
+  debug_bitmap_file (stdout, head);
 }
 
-/* Function to print out the contents of a bitmap.  Unlike bitmap_debug_file,
+/* Function to print out the contents of a bitmap.  Unlike debug_bitmap_file,
    it does not print anything but the bits.  */
 
 void

@@ -1,3 +1,9 @@
+Mon Sep 20 05:41:36 1999  Jeffrey A Law  (law@cygnus.com)
+
+	* bitmap.c (debug_bitmap_file): Renmaed from bitmap_debug_file.
+	Callers and prototype changed.
+	* bitmap.h: Fix debug_bitmap and debug_bitmap_file prototypes.
+
 Mon Sep 20 06:56:32 1999  Alexandre Oliva  <oliva@lsd.ic.unicamp.br>
 
 	* config/sparc/sol2.h (LINK_SPEC): Avoid the duplication of
