@@ -1,3 +1,8 @@
+2001-07-04  Kazu Hirata  <kazu@hxi.com>
+
+	* config/h8300/h8300.c (get_shift_alg): Remove an extra operand
+	from shll.
+
 2001-07-04  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* cppinit.c (remove_dup_dirs): Inform if a system include
