@@ -288,7 +288,7 @@ ffi_prep_args (stackLayout *stack, extended_cif *ecif)
   gprcount = ssecount = 0;
   if (ecif->cif->rtype->type != FFI_TYPE_VOID 
       && examine_argument (ecif->cif->rtype, 1, &g, &s) == 0)
-    (void *)stack->gpr[gprcount++] = ecif->rvalue;
+    stack->gpr[gprcount++] = (long) ecif->rvalue;
 
   for (i=ecif->cif->nargs, p_arg=ecif->cif->arg_types, p_argv = ecif->avalue;
        i!=0; i--, p_arg++, p_argv++)

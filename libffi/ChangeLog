@@ -1,3 +1,8 @@
+2004-01-21  Michael Ritzert  <ritzert@t-online.de>
+
+	* ffi64.c (ffi_prep_args): Cast the RHS of an assignment instead
+	of the LHS.
+
 2004-01-12  Andreas Tobler  <a.tobler@schweiz.ch>
 
 	* testsuite/lib/libffi-dg.exp: Set LD_LIBRARY_PATH_32 for
@@ -421,7 +426,7 @@
 
 	* src/powerpc/ffi.c (ffi_closure_helper_SYSV) Handle struct
 	passing correctly.
-	
+
 2003-09-09  Alan Modra  <amodra@bigpond.net.au>
 
 	* configure: Regenerate.
@@ -430,7 +435,7 @@
 
 	* Makefile.am: Remove build rules for ffitest.
 	* Makefile.in: Rebuilt.
-	
+
 2003-09-04  Andreas Tobler  <a.tobler@schweiz.ch>
 
 	* src/java_raw_api.c: Include <stdlib.h> to fix compiler warning
@@ -445,7 +450,7 @@
 
 	* testsuite/Makefile.am: New file.
 	* testsuite/Makefile.in: Built
-	* testsuite/lib/libffi-dg.exp: New file. 
+	* testsuite/lib/libffi-dg.exp: New file.
 	* testsuite/config/default.exp: Likewise.
 	* testsuite/libffi.call/call.exp: Likewise.
 	* testsuite/libffi.call/ffitest.h: Likewise.
@@ -497,12 +502,12 @@
 	* testsuite/libffi.call/struct6.c: Likewise.
 	* testsuite/libffi.call/struct7.c: Likewise.
 	* testsuite/libffi.call/struct8.c: Likewise.
-	* testsuite/libffi.call/struct9.c: Likewise.	
+	* testsuite/libffi.call/struct9.c: Likewise.
 	* testsuite/libffi.special/special.exp: New file.
 	* testsuite/libffi.special/ffitestcxx.h: Likewise.
 	* testsuite/libffi.special/unwindtest.cc: Likewise.
 
-	
+
 2003-08-13  Kaz Kojima  <kkojima@gcc.gnu.org>
 
 	* src/sh/ffi.c (OFS_INT16): Set 0 for little endian case.  Update
@@ -646,11 +651,11 @@
 
 	* libffi/src/powerpc/darwin_closure.S:
 	Fix alignement bug, allocate 8 bytes for the result.
-	* libffi/src/powerpc/aix_closure.S: 
+	* libffi/src/powerpc/aix_closure.S:
 	Likewise.
 	* libffi/src/powerpc/ffi_darwin.c:
 	Update stackframe description for aix/darwin_closure.S.
- 
+
 2003-02-06  Jakub Jelinek  <jakub@redhat.com>
 
 	* src/s390/ffi.c (ffi_closure_helper_SYSV): Add hidden visibility
@@ -663,7 +668,7 @@
 	for changes to the libffi_basedir definition.
 	(libffi_basedir): Remove ${srcdir} from value and include trailing
 	slash if nonempty.
-	
+
         * configure: Regenerate.
 
 2003-01-29  Franz Sirl  <Franz.Sirl-kernel@lauterbach.com>
