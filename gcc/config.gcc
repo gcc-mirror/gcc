@@ -207,6 +207,81 @@ gas="$gas_flag"
 gnu_ld="$gnu_ld_flag"
 enable_threads=$enable_threads_flag
 
+# Obsolete configurations.
+# To avoid some tedious lists, we have a blacklist with a whitelist
+# embedded within it.
+case $machine in
+	  1750a-* \
+	| a29k-* \
+	| alpha*-*-osf[123]* \
+	| arm-*-riscix* \
+	| c*-convex-* \
+	| clipper-* \
+	| elxsi-* \
+	| i860-* \
+	| i?86-*-aix* \
+	| i?86-*-bsd* \
+	| i?86-*-chorusos* \
+	| i?86-*-dgux* \
+	| i?86-*-freebsd1.* \
+	| i?86-*-isc* \
+	| i?86-*-linux*oldld* \
+	| i?86-*-osf1* \
+	| i?86-*-osfrose* \
+	| i?86-*-rtemscoff* \
+	| i?86-*-sunos* \
+	| i?86-go32-rtems* \
+	| i?86-next-* \
+	| i?86-sequent-bsd* \
+	| i?86-sequent-ptx[12]* \
+	| i?86-sequent-sysv3* \
+	| m68[k0]*-*-lynxos* \
+	| m68[k0]*-*-rtemscoff* \
+	| m68[k0]*-*-sysv3* \
+	| m68[k0]*-altos-* \
+	| m68[k0]*-apollo-* \
+	| m68[k0]*-apple-* \
+	| m68[k0]*-bull-* \
+	| m68[k0]*-convergent-* \
+	| m68[k0]*-isi-* \
+	| m68[k0]*-next-* \
+	| m68[k0]*-sony-* \
+	| m88k-* \
+	| mips-*-bsd* \
+	| mips-*-riscos* \
+	| mips-*-sysv* \
+	| mips-*-ultrix* \
+	| mips-dec-* \
+	| mips-sgi-irix[1234]* \
+	| mips-sony-* \
+	| mips-tandem-* \
+	| ns32k-* \
+	| pj-* \
+	| pjl-* \
+	| romp-* \
+	| sparc-*-rtemsaout* \
+	| we32k-* \
+)
+  case $machine in
+	  a29k-*-udi | a29k-*-coff \
+	| mips-sni-sysv4 \
+	| m88k-*-aout* | m88k-*-openbsd* | m88k-*-sysv4* \
+	| ns32k-*-netbsd* | ns32k-*-openbsd* \
+	| romp-*-openbsd* \
+   )
+    # Whitelisted.
+    ;;
+  *)
+    if test "x$enable_obsolete" = x; then
+      echo "*** Configuration $machine is obsolete." >&2
+      echo "*** Specify --enable-obsolete to build it anyway." >&2
+      echo "*** Support will be REMOVED in the next major release of GCC," >&2
+      echo "*** unless a maintainer comes forward." >&2
+      exit 1
+    fi;;
+  esac
+esac
+
 # Set default cpu_type, tm_file, tm_p_file and xm_file so it can be
 # updated in each machine entry.  Also set default extra_headers for some
 # machines.
