@@ -1350,6 +1350,12 @@ push_operand (op, mode)
      rtx op;
      enum machine_mode mode;
 {
+  unsigned int rounded_size = GET_MODE_SIZE (mode);
+
+#ifdef PUSH_ROUNDING
+  rounded_size = PUSH_ROUNDING (rounded_size);
+#endif
+
   if (GET_CODE (op) != MEM)
     return 0;
 
@@ -1358,20 +1364,19 @@ push_operand (op, mode)
 
   op = XEXP (op, 0);
 
-  if (PUSH_ROUNDING (GET_MODE_SIZE (mode)) == GET_MODE_SIZE (mode))
+  if (rounded_size == GET_MODE_SIZE (mode))
     {
       if (GET_CODE (op) != STACK_PUSH_CODE)
 	return 0;
     }
   else
     {
-      int rounded_size = PUSH_ROUNDING (GET_MODE_SIZE (mode));
       if (GET_CODE (op) != PRE_MODIFY
 	  || GET_CODE (XEXP (op, 1)) != PLUS
 	  || XEXP (XEXP (op, 1), 0) != XEXP (op, 0)
 	  || GET_CODE (XEXP (XEXP (op, 1), 1)) != CONST_INT
 #ifdef STACK_GROWS_DOWNWARD
-	  || INTVAL (XEXP (XEXP (op, 1), 1)) != -rounded_size
+	  || INTVAL (XEXP (XEXP (op, 1), 1)) != - (int) rounded_size
 #else
 	  || INTVAL (XEXP (XEXP (op, 1), 1)) != rounded_size
 #endif
