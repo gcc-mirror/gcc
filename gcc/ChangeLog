@@ -1,3 +1,7 @@
+2000-03-25  Michael Hayes  <m.hayes@elec.canterbury.ac.nz>
+
+	* config/c4x/c4x.h (CPP_SPEC): Remove erroneous space.
+
 2000-03-24  Richard Henderson  <rth@cygnus.com>
 
 	* tree.c (lang_safe_for_unsave): Remove.
