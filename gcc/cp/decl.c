@@ -7551,10 +7551,23 @@ reshape_init (tree type, tree *initp)
 	    {
 	      /* Loop through the initializable fields, gathering
 		 initializers.  */
-              /* FIXME support non-trivial labeled initializers.  */
-	      while (*initp && field)
+	      while (*initp)
 		{
 		  tree field_init;
+
+		  /* Handle designated initializers, as an extension.  */
+		  if (TREE_PURPOSE (*initp))
+		    {
+		      if (pedantic)
+			pedwarn ("ISO C++ does not allow designated initializers");
+		      field = lookup_field_1 (type, TREE_PURPOSE (*initp),
+					      /*want_type=*/false);
+		      if (!field || TREE_CODE (field) != FIELD_DECL)
+			error ("`%T' has no non-static data member named `%D'",
+			       type, TREE_PURPOSE (*initp));
+		    }
+		  if (!field)
+		    break;
 
 		  field_init = reshape_init (TREE_TYPE (field), initp);
 		  TREE_CHAIN (field_init) = CONSTRUCTOR_ELTS (new_init);
