@@ -1,3 +1,11 @@
+2004-08-29  Paolo Carlini  <pcarlini@suse.de>
+
+	* include/bits/locale_facets.tcc (time_get<>::_M_extract_via_format,
+	case 'S'): Allow for at least one leap-second (as per C99, 7.23.1
+	and 7.23.3.5), two if !_GLIBCXX_USE_C99.
+	* testsuite/22_locale/time_get/get_time/char/4.cc: New.
+	* testsuite/22_locale/time_get/get_time/wchar_t/4.cc: Likewise.
+
 2004-08-27  Jason Merrill  <jason@redhat.com>
 
 	PR c++/13684
