@@ -1958,6 +1958,72 @@ pod_type_p (t)
   return 1;
 }
 
+/* Returns true if T is a variably modified type, in the sense of
+   C99.
+
+   In C99, a struct type is never variably modified because a VLA may
+   not appear as a structure member.  However, in GNU C code like:
+    
+     struct S { int i[f()]; };
+
+   is valid.  Even though GNU C++ does not allow that, this function
+   may sometimes be used in the C front end, so it treats any type
+   with variable size in the same way that C99 treats VLAs.
+
+   In particular, a variably modified type is one that involves a type
+   with variable size.  */
+
+bool
+variably_modified_type_p (tree type)
+{
+  /* If TYPE itself has variable size, it is variably modified.  
+
+     We do not yet have a representation of the C99 '[*]' syntax.
+     When a representation is chosen, this function should be modified
+     to test for that case as well.  */
+  if (TYPE_SIZE (type) 
+      && TYPE_SIZE (type) != error_mark_node
+      && TREE_CODE (TYPE_SIZE (type)) != INTEGER_CST)
+    return true;
+
+  /* If TYPE is a pointer or reference, it is variably modified if and
+     only if the type pointed to is variably modified.  */
+  if (TYPE_PTR_P (type)
+      || TREE_CODE (type) == REFERENCE_TYPE)
+    return variably_modified_type_p (TREE_TYPE (type));
+  
+  /* If TYPE is an array, it is variably modified if the array
+     elements are.  (Note that the VLA case has alredy been checked
+     above).  */
+  if (TREE_CODE (type) == ARRAY_TYPE)
+    return variably_modified_type_p (TREE_TYPE (type));
+
+  /* If TYPE is a pointer-to-member, it is variably modified if either
+     the class or the member are variably modified.  */
+  if (TYPE_PTRMEM_P (type) || TYPE_PTRMEMFUNC_P (type))
+    return (variably_modified_type_p (TYPE_PTRMEM_CLASS_TYPE (type))
+	    || variably_modified_type_p (TYPE_PTRMEM_POINTED_TO_TYPE (type)));
+
+  /* If TYPE Is a function type, it is variably modified if any of the
+     parameters or the return type are variably modified.  */
+  if (TREE_CODE (type) == FUNCTION_TYPE
+      || TREE_CODE (type) == METHOD_TYPE)
+    {
+      tree parm;
+
+      if (variably_modified_type_p (TREE_TYPE (type)))
+	return true;
+      for (parm = TYPE_ARG_TYPES (type); 
+	   parm && parm != void_list_node; 
+	   parm = TREE_CHAIN (parm))
+	if (variably_modified_type_p (TREE_VALUE (parm)))
+	  return true;
+    }
+
+  /* All other types are not variably modified.  */
+  return false;
+}
+
 /* Returns 1 iff zero initialization of type T means actually storing
    zeros in it.  */
 
