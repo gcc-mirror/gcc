@@ -1456,6 +1456,88 @@ __gnat_initialize(void)
 {
 }
 
+/*************************************************/
+/* __gnat_initialize (FreeBSD version) */
+/*************************************************/
+
+#elif defined (__FreeBSD__)
+
+#include <signal.h>
+#include <unistd.h>
+
+static void
+__gnat_error_handler (sig, code, sc)
+     int sig;
+     int code;
+     struct sigcontext *sc;
+{
+  struct Exception_Data *exception;
+  char *msg;
+
+  switch (sig)
+    {
+    case SIGFPE:
+      exception = &constraint_error;
+      msg = "SIGFPE";
+      break;
+
+    case SIGILL:
+      exception = &constraint_error;
+      msg = "SIGILL";
+      break;
+
+    case SIGSEGV:
+      exception = &storage_error;
+      msg = "stack overflow or erroneous memory access";
+      break;
+
+    case SIGBUS:
+      exception = &constraint_error;
+      msg = "SIGBUS";
+      break;
+
+    default:
+      exception = &program_error;
+      msg = "unhandled signal";
+    }
+
+  Raise_From_Signal_Handler (exception, msg);
+}
+
+void
+__gnat_install_handler ()
+{
+  struct sigaction act;
+
+  /* Set up signal handler to map synchronous signals to appropriate
+     exceptions.  Make sure that the handler isn't interrupted by another
+     signal that might cause a scheduling event! */
+
+  act.sa_handler = __gnat_error_handler;
+  act.sa_flags = SA_NODEFER | SA_RESTART;
+  (void) sigemptyset (&act.sa_mask);
+
+  (void) sigaction (SIGILL,  &act, NULL);
+  (void) sigaction (SIGFPE,  &act, NULL);
+  (void) sigaction (SIGSEGV, &act, NULL);
+  (void) sigaction (SIGBUS,  &act, NULL);
+}
+
+void __gnat_init_float ();
+
+void
+__gnat_initialize ()
+{
+   __gnat_install_handler ();
+
+   /* XXX - Initialize floating-point coprocessor. This call is
+      needed because FreeBSD defaults to 64-bit precision instead
+      of 80-bit precision?  We require the full precision for
+      proper operation, given that we have set Max_Digits etc
+      with this in mind */
+   __gnat_init_float ();
+}
+
 /***************************************/
 /* __gnat_initialize (VXWorks Version) */
 /***************************************/
@@ -1749,7 +1831,7 @@ __gnat_install_handler (void)
    WIN32 and could be used under OS/2 */
 
 #if defined (_WIN32) || defined (__INTERIX) || defined (__EMX__) \
-  || defined (__Lynx__) || defined(__NetBSD__)
+  || defined (__Lynx__) || defined(__NetBSD__) || defined(__FreeBSD__)
 
 #define HAVE_GNAT_INIT_FLOAT
 

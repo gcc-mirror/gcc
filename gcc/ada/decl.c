@@ -1357,8 +1357,6 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 	}
 
       {
-	enum machine_mode mode;
-
 	if (definition == 0
 	    && Present (Ancestor_Subtype (gnat_entity))
 	    && ! In_Extended_Main_Code_Unit (Ancestor_Subtype (gnat_entity))
@@ -1367,15 +1365,9 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 	  gnat_to_gnu_entity (Ancestor_Subtype (gnat_entity),
 			      gnu_expr, definition);
 
-	for (mode = GET_CLASS_NARROWEST_MODE (MODE_FLOAT);
-	     (GET_MODE_WIDER_MODE (mode) != VOIDmode
-	      && GET_MODE_BITSIZE (GET_MODE_WIDER_MODE (mode)) <= esize);
-	     mode = GET_MODE_WIDER_MODE (mode))
-	  ;
-
 	gnu_type = make_node (REAL_TYPE);
 	TREE_TYPE (gnu_type) = get_unpadded_type (Etype (gnat_entity));
-	TYPE_PRECISION (gnu_type) = GET_MODE_BITSIZE (mode);
+	TYPE_PRECISION (gnu_type) = fp_size_to_prec (esize);
 
 	TYPE_MIN_VALUE (gnu_type)
 	  = convert (TREE_TYPE (gnu_type),

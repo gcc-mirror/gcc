@@ -154,6 +154,15 @@ unsigned char objlist_file_supported = 0;
 unsigned char using_gnu_linker = 0;
 const char *object_library_extension = ".a";
 
+#elif defined (__FreeBSD__)
+char *object_file_option = "";
+char *run_path_option = "";
+char shared_libgnat_default = SHARED;
+int link_max = 2147483647;
+unsigned char objlist_file_supported = 0;
+unsigned char using_gnu_linker = 0;
+char *object_library_extension = ".a";
+
 #elif defined (linux)
 const char *object_file_option = "";
 const char *run_path_option = "-Wl,-rpath,";

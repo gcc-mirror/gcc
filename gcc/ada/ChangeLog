@@ -1,3 +1,21 @@
+2003-11-18  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	* ada-tree.def: (ALLOCATE_EXPR): Class is "2", not "s".
+
+	* decl.c (gnat_to_gnu_entity, case E_Floating_Point_Subtype): Set
+	TYPE_PRECISION directly from esize.
+
+2003-11-18  Thomas Quinot  <quinot@act-europe.fr>
+
+	* cstreams.c: 
+	Use realpath(3) on FreeBSD. Fix typo in comment while we are at it.
+
+	* init.c: Initialization routines for FreeBSD
+
+	* link.c: Link info for FreeBSD
+
+	* sysdep.c: Add the case of FreeBSD
+
 2003-11-17  Jerome Guitton  <guitton@act-europe.fr>
 
 	* 5zthrini.adb: Remove the call to Init_RTS at elaboration, as it is
