@@ -1,5 +1,7 @@
 Wed Apr  1 22:26:22 1998  Jeffrey A Law  (law@cygnus.com)
 
+	* i386/freebsd-elf.h (CPP_PREDEFINES): Update from FreeBSD folks.
+
 	* pa.md (reload peepholes): Remove unused variable "mode".
 
 Wed Apr  1 17:06:19 1998  Nick Clifton  <nickc@cygnus.com>
