@@ -1,3 +1,7 @@
+Mon Jun 15 07:16:29 PDT 1998 Jeff Law  (law@cygnus.com)
+
+	* version.c: Bump for snapshot.
+
 Sat Jun 13 13:10:40 1998  Krister Walfridsson <cato@df.lth.se>
 
 	* config/sparc/netbsd.h (DEFAULT_PCC_STRUCT_RETURN): Undefine before
