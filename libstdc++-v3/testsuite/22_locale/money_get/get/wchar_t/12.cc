@@ -1,6 +1,6 @@
-// 2001-09-12 Benjamin Kosnik  <bkoz@redhat.com>
+// 2004-02-05  Paolo Carlini  <pcarlini@suse.de>
 
-// Copyright (C) 2001, 2002, 2003, 2004 Free Software Foundation
+// Copyright (C) 2004 Free Software Foundation
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -24,38 +24,29 @@
 #include <sstream>
 #include <testsuite_hooks.h>
 
-// test double version
-void test03()
+// Same as 3.cc but no thousands-sep in input: they are always optional.
+void test01()
 {
   using namespace std;
-  typedef money_base::part part;
-  typedef money_base::pattern pattern;
-  typedef istreambuf_iterator<wchar_t> iterator_type;
-
   bool test __attribute__((unused)) = true;
+
+  typedef istreambuf_iterator<wchar_t> iterator_type;
 
   // basic construction
   locale loc_c = locale::classic();
   locale loc_de = __gnu_test::try_named_locale("de_DE@euro");
   VERIFY( loc_c != loc_de );
 
-  // cache the moneypunct facets
-  typedef moneypunct<wchar_t, true> __money_true;
-  typedef moneypunct<wchar_t, false> __money_false;
-
-  // sanity check the data is correct.
-  const wstring empty;
-
   // total EPA budget FY 2002
   const long double  digits1 = 720000000000.0;
-  
+
   iterator_type end;
   wistringstream iss;
   iss.imbue(loc_de);
   // cache the money_get facet
   const money_get<wchar_t>& mon_get = use_facet<money_get<wchar_t> >(iss.getloc()); 
 
-  iss.str(L"7.200.000.000,00 ");
+  iss.str(L"7200000000,00 ");
   iterator_type is_it01(iss);
   long double result1;
   ios_base::iostate err01 = ios_base::goodbit;
@@ -63,7 +54,7 @@ void test03()
   VERIFY( result1 == digits1 );
   VERIFY( err01 == ios_base::eofbit );
 
-  iss.str(L"7.200.000.000,00 ");
+  iss.str(L"7200000000,00 ");
   iterator_type is_it02(iss);
   long double result2;
   ios_base::iostate err02 = ios_base::goodbit;
@@ -74,6 +65,6 @@ void test03()
 
 int main()
 {
-  test03();
+  test01();
   return 0;
 }

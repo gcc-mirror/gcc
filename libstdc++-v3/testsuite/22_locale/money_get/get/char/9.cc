@@ -1,6 +1,6 @@
 // 2003-05-27 Brendan Kehoe  <brendan@zen.org>
 
-// Copyright (C) 2003 Free Software Foundation
+// Copyright (C) 2003, 2004 Free Software Foundation
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -18,7 +18,7 @@
 // Software Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307,
 // USA.
 
-// $22.2.6.3.3/8
+// $22.2.6.3/3
 // The number of digits required after the decimal point (if any) is exactly
 // the value returned by frac_digits().
 

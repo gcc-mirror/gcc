@@ -1,6 +1,6 @@
-// 2001-09-12 Benjamin Kosnik  <bkoz@redhat.com>
+// 2004-02-05  Paolo Carlini  <pcarlini@suse.de>
 
-// Copyright (C) 2001, 2002, 2003, 2004 Free Software Foundation
+// Copyright (C) 2004 Free Software Foundation
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -24,51 +24,44 @@
 #include <sstream>
 #include <testsuite_hooks.h>
 
-// test double version
-void test04()
+// No thousands-sep allowed after the decimal-point.
+void test01()
 {
   using namespace std;
-  typedef money_base::part part;
-  typedef money_base::pattern pattern;
-  typedef istreambuf_iterator<char> iterator_type;
-
   bool test __attribute__((unused)) = true;
+
+  typedef istreambuf_iterator<char> iterator_type;
 
   // basic construction
   locale loc_c = locale::classic();
-  locale loc_hk = __gnu_test::try_named_locale("en_HK");
-  VERIFY( loc_c != loc_hk );
+  locale loc_de = __gnu_test::try_named_locale("de_DE@euro");
+  VERIFY( loc_c != loc_de );
 
-  // cache the moneypunct facets
-  typedef moneypunct<char, true> __money_true;
-  typedef moneypunct<char, false> __money_false;
-
-  // sanity check the data is correct.
-  const string empty;
-
-  // input less than frac_digits
-  const long double digits4 = -1.0;
-  
-  iterator_type end;
+  iterator_type end01, end02;
   istringstream iss;
-  iss.imbue(loc_hk);
+  iss.imbue(loc_de);
   // cache the money_get facet
   const money_get<char>& mon_get = use_facet<money_get<char> >(iss.getloc()); 
 
-  // now try with showbase, to get currency symbol in format
-  iss.setf(ios_base::showbase);
+  iss.str("500,1.0 ");
+  iterator_type is_it01(iss);
+  long double result1;
+  ios_base::iostate err01 = ios_base::goodbit;
+  end01 = mon_get.get(is_it01, end01, true, iss, err01, result1);
+  VERIFY( err01 == ios_base::failbit );
+  VERIFY( *end01 == '.' );
 
-  iss.str("(HKD .01)"); 
-  iterator_type is_it03(iss);
-  long double result3;
-  ios_base::iostate err03 = ios_base::goodbit;
-  mon_get.get(is_it03, end, true, iss, err03, result3);
-  VERIFY( result3 == digits4 );
-  VERIFY( err03 == ios_base::goodbit );
+  iss.str("500,1.0 ");
+  iterator_type is_it02(iss);
+  long double result2;
+  ios_base::iostate err02 = ios_base::goodbit;
+  end02 = mon_get.get(is_it02, end02, false, iss, err02, result2);
+  VERIFY( err02 == ios_base::failbit );
+  VERIFY( *end02 == '.' );
 }
 
 int main()
 {
-  test04();
+  test01();
   return 0;
 }
