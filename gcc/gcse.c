@@ -4097,9 +4097,12 @@ cprop_jump (bb, setcc, jump, from, src)
   /* First substitute in the INSN condition as the SET_SRC of the JUMP,
      then substitute that given values in this expanded JUMP.  */
   if (setcc != NULL)
-    new_set = simplify_replace_rtx (SET_SRC (set),
-				    SET_DEST (PATTERN (setcc)),
-				    SET_SRC (PATTERN (setcc)));
+    {
+      rtx setcc_set = single_set (setcc);
+      new_set = simplify_replace_rtx (SET_SRC (set),
+				      SET_DEST (setcc_set),
+				      SET_SRC (setcc_set));
+    }
   else
     new_set = set;
 
