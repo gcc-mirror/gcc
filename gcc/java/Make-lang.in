@@ -43,6 +43,7 @@
 
 # Actual names to use when installing a native compiler.
 JAVA_INSTALL_NAME = `echo gcj|sed '$(program_transform_name)'`
+JAVA_TARGET_INSTALL_NAME = $(target_alias)-`echo gcj|sed '$(program_transform_name)'`
 
 # Actual names to use when installing a cross-compiler.
 JAVA_CROSS_NAME = `echo gcj|sed '$(program_transform_cross_name)'`
@@ -170,6 +171,8 @@ java.install-common: installdirs
 	    rm -f $(bindir)/$(JAVA_INSTALL_NAME)$(exeext); \
 	    $(INSTALL_PROGRAM) $(GCJ)$(exeext) $(bindir)/$(JAVA_INSTALL_NAME)$(exeext); \
 	    chmod a+x $(bindir)/$(JAVA_INSTALL_NAME)$(exeext); \
+	    rm -f $(bindir)/$(JAVA_TARGET_INSTALL_NAME)$(exeext); \
+	    $(LN) $(bindir)/$(JAVA_INSTALL_NAME)$(exeext) $(bindir)/$(JAVA_TARGET_INSTALL_NAME)$(exeext); \
 	  fi ; \
 	fi ; \
         for tool in $(JAVA_TARGET_INDEPENDENT_BIN_TOOLS); do \
