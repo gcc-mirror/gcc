@@ -33,8 +33,8 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include "output.h"
 #include "tm_p.h"
 
-#define BAD(msgid) do { warning (msgid); return; } while (0)
-#define BAD2(msgid, arg) do { warning (msgid, arg); return; } while (0)
+#define GCC_BAD(msgid) do { warning (msgid); return; } while (0)
+#define GCC_BAD2(msgid, arg) do { warning (msgid, arg); return; } while (0)
 
 #ifdef HANDLE_PRAGMA_PACK
 static void handle_pragma_pack PARAMS ((cpp_reader *));
@@ -159,9 +159,9 @@ mark_align_stack (p)
 #else  /* not HANDLE_PRAGMA_PACK_PUSH_POP */
 #define SET_GLOBAL_ALIGNMENT(ALIGN) (maximum_field_alignment = (ALIGN))
 #define push_alignment(ID, N) \
-    BAD("#pragma pack(push[, id], <n>) is not supported on this target")
+    GCC_BAD("#pragma pack(push[, id], <n>) is not supported on this target")
 #define pop_alignment(ID) \
-    BAD("#pragma pack(pop[, id], <n>) is not supported on this target")
+    GCC_BAD("#pragma pack(pop[, id], <n>) is not supported on this target")
 #endif /* HANDLE_PRAGMA_PACK_PUSH_POP */
 
 /* #pragma pack ()
@@ -181,7 +181,7 @@ handle_pragma_pack (dummy)
   enum { set, push, pop } action;
 
   if (c_lex (&x) != CPP_OPEN_PAREN)
-    BAD ("missing '(' after '#pragma pack' - ignored");
+    GCC_BAD ("missing '(' after '#pragma pack' - ignored");
 
   token = c_lex (&x);
   if (token == CPP_CLOSE_PAREN)
@@ -194,14 +194,14 @@ handle_pragma_pack (dummy)
       align = TREE_INT_CST_LOW (x);
       action = set;
       if (c_lex (&x) != CPP_CLOSE_PAREN)
-	BAD ("malformed '#pragma pack' - ignored");
+	GCC_BAD ("malformed '#pragma pack' - ignored");
     }
   else if (token == CPP_NAME)
     {
-#define BAD_ACTION do { if (action == push) \
-	  BAD ("malformed '#pragma pack(push[, id], <n>)' - ignored"); \
+#define GCC_BAD_ACTION do { if (action == push) \
+	  GCC_BAD ("malformed '#pragma pack(push[, id], <n>)' - ignored"); \
 	else \
-	  BAD ("malformed '#pragma pack(pop[, id])' - ignored"); \
+	  GCC_BAD ("malformed '#pragma pack(pop[, id])' - ignored"); \
 	} while (0)
 
       const char *op = IDENTIFIER_POINTER (x);
@@ -210,11 +210,11 @@ handle_pragma_pack (dummy)
       else if (!strcmp (op, "pop"))
 	action = pop;
       else
-	BAD2 ("unknown action '%s' for '#pragma pack' - ignored", op);
+	GCC_BAD2 ("unknown action '%s' for '#pragma pack' - ignored", op);
 
       token = c_lex (&x);
       if (token != CPP_COMMA && action == push)
-	BAD_ACTION;
+	GCC_BAD_ACTION;
 
       if (token == CPP_COMMA)
 	{
@@ -223,7 +223,7 @@ handle_pragma_pack (dummy)
 	    {
 	      id = x;
 	      if (action == push && c_lex (&x) != CPP_COMMA)
-		BAD_ACTION;
+		GCC_BAD_ACTION;
 	      token = c_lex (&x);
 	    }
 
@@ -235,16 +235,16 @@ handle_pragma_pack (dummy)
 		  token = c_lex (&x);
 		}
 	      else
-		BAD_ACTION;
+		GCC_BAD_ACTION;
 	    }
 	}
 
       if (token != CPP_CLOSE_PAREN)
-	BAD_ACTION;
-#undef BAD_ACTION
+	GCC_BAD_ACTION;
+#undef GCC_BAD_ACTION
     }
   else
-    BAD ("malformed '#pragma pack' - ignored");
+    GCC_BAD ("malformed '#pragma pack' - ignored");
 
   if (c_lex (&x) != CPP_EOF)
     warning ("junk at end of '#pragma pack'");
@@ -261,7 +261,7 @@ handle_pragma_pack (dummy)
 	align *= BITS_PER_UNIT;
 	break;
       default:
-	BAD2 ("alignment must be a small power of two, not %d", align);
+	GCC_BAD2 ("alignment must be a small power of two, not %d", align);
       }
 
   switch (action)
@@ -287,12 +287,12 @@ handle_pragma_weak (dummy)
   value = 0;
 
   if (c_lex (&name) != CPP_NAME)
-    BAD ("malformed #pragma weak, ignored");
+    GCC_BAD ("malformed #pragma weak, ignored");
   t = c_lex (&x);
   if (t == CPP_EQ)
     {
       if (c_lex (&value) != CPP_NAME)
-	BAD ("malformed #pragma weak, ignored");
+	GCC_BAD ("malformed #pragma weak, ignored");
       t = c_lex (&x);
     }
   if (t != CPP_EOF)
