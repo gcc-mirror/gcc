@@ -1,3 +1,7 @@
+2004-07-21  Paul brook  <paul@codesourcery.com>
+
+	* config/arm/arm.c (thumb_expand_prologue): Remove bogus GEN_INT.
+
 2004-07-20  Zack Weinberg  <zack@codesourcery.com>
 
 	* rtl.h (plus_constant): Delete.
