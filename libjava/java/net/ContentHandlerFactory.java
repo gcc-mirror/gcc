@@ -1,5 +1,5 @@
 /* ContentHandlerFactory.java -- Interface for creating content handlers
-   Copyright (C) 1998, 1999, 2000, 2001 Free Software Foundation, Inc.
+   Copyright (C) 1998, 1999, 2000, 2001, 2003 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -45,25 +45,24 @@ package java.net;
  */
 
 /**
-  * This interface maps MIME types to ContentHandler objects.  It consists
-  * of one method that, when passed a MIME type, returns a handler for that
-  * type.
+  * This interface maps MIME types to <code>ContentHandler</code> objects.  
+  * It consists of one method that, when passed a MIME type, returns a 
+  * handler for that type.
   *
   * @author Aaron M. Renn (arenn@urbanophile.com)
   * @author Warren Levy <warrenl@cygnus.com>
   */
 public interface ContentHandlerFactory
 {
-/**
-  * This method is passed a MIME type as a string and is responsible for
-  * returning the appropriate ContentType object.
-  *
-  * @param mime_type The MIME type to map to a ContentHandler
-  *
-  * @return The ContentHandler for the passed in MIME type
-  */
-ContentHandler
-createContentHandler(String mime_type);
+  /**
+    * This method is passed a MIME type as a string and is responsible for
+    * returning the appropriate <code>ContentHandler</code> object.
+    *
+    * @param mimeType The MIME type to map to a <code>ContentHandler</code>
+    *
+    * @return The <code>ContentHandler</code> for the passed in MIME type
+    */
+  public ContentHandler createContentHandler(String mimeType);
 
 } // interface ContentHandlerFactory
 

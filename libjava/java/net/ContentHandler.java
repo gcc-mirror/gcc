@@ -1,5 +1,5 @@
 /* ContentHandler.java -- Abstract class for handling content from URL's
-   Copyright (C) 1998, 1999 2000, 2001 Free Software Foundation, Inc.
+   Copyright (C) 1998, 1999, 2000, 2001, 2003 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -59,65 +59,69 @@ import java.io.IOException;
   */
 public abstract class ContentHandler
 {
+  /*
+   * Constructors
+   */
 
-/*************************************************************************/
+  /**
+    * Default, no-argument constructor.
+    */
+  public ContentHandler() 
+  { 
+  }
 
-/*
- * Constructors
- */
+  /*
+   * Instance Methods
+   */
 
-/**
-  * Default, no-argument constructor.
-  */
-public ContentHandler() { }
+  /**
+    * This method reads from the <code>InputStream</code> of the passed in URL 
+    * connection and uses the data downloaded to create an <code>Object</code> 
+    * represening the content.  For example, if the URL is pointing to a GIF 
+    * file, this method might return an <code>Image</code> object.  This method 
+    * must be implemented by subclasses.
+    *
+    * @param urlc A <code>URLConnection</code> object to read data from.
+    *
+    * @return An object representing the data read
+    *
+    * @exception IOException If an error occurs
+    */
+  public abstract Object getContent(URLConnection urlc) 
+    throws IOException;
 
-/*************************************************************************/
+  /**
+    * This method reads from the <code>InputStream</code> of the passed in URL
+    * connection and uses the data downloaded to create an <code>Object</code>
+    * represening the content.  For example, if the URL is pointing to a GIF 
+    * file, this method might return an <code>Image</code> object.  This method 
+    * must be implemented by subclasses.  This method uses the list of
+    * supplied classes as candidate types.  If the data read doesn't match 
+    * any of the supplied type, <code>null</code> is returned.
+    *
+    * @param urlc A <code>URLConnection</code> object to read data from.
+    * @param classes An array of types of objects that are candidate types
+    * for the data to be read.
+    *
+    * @return An object representing the data read, or <code>null</code>
+    * if the data does not match any of the candidate types.
+    *
+    * @exception IOException If an error occurs
+    *
+    * @since 1.3
+    */
+  public Object getContent(URLConnection urlc, Class[] classes)
+    throws IOException
+  {
+    Object obj = getContent (urlc);
 
-/**
-  * This method reads from the <code>InputStream</code> of the passed in URL 
-  * connection and uses the data downloaded to create an <code>Object</code> 
-  * represening the content.  For example, if the URL is pointing to a GIF 
-  * file, this method might return an <code>Image</code> object.  This method 
-  * must be implemented by subclasses.
-  *
-  * @param urlc A <code>URLConnection</code> object to read data from.
-  *
-  * @return An object representing the data read
-  *
-  * @exception IOException If an error occurs
-  */
-public abstract Object getContent(URLConnection urlc) throws IOException;
+    for (int i = 0; i < classes.length; i++)
+      {
+        if (classes [i].isInstance (obj))
+          return obj;
+      }
 
-/*************************************************************************/
-
-/**
-  * This method reads from the <code>InputStream</code> of the passed in URL
-  * connection and uses the data downloaded to create an <code>Object</code>
-  * represening the content.  For example, if the URL is pointing to a GIF 
-  * file, this method might return an <code>Image</code> object.  This method 
-  * must be implemented by subclasses. If the object doesnt match any type in
-  * classes it returns null.
-  *
-  * @param urlc A <code>URLConnection</code> object to read data from.
-  *
-  * @return An object representing the data read
-  *
-  * @exception IOException If an error occurs
-  *
-  * @since 1.3
-  */
-public Object getContent(URLConnection urlc, Class[] classes)
-  throws IOException
-{
-  Object obj = getContent (urlc);
-
-  for (int i = 0; i < classes.length; i++)
-    {
-      if (classes [i].isInstance (obj))
-        return obj;
-    }
-
-  return null;
-}
+    return null;
+  }
 
 } // class ContentHandler

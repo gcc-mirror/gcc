@@ -1,5 +1,20 @@
 2003-05-25  Michael Koch  <konqueror@gmx.de>
 
+	* java/io/PushbackInputStream.java,
+	java/net/Authenticator.java,
+	java/net/ContentHandler.java,
+	java/net/ContentHandlerFactory.java,
+	java/net/DatagramSocket.java,
+	java/net/DatagramSocketImpl.java,
+	java/net/DatagramSocketImplFactory.java,
+	java/net/FileNameMap.java,
+	java/net/SocketImplFactory.java,
+	java/net/SocketOptions.java,
+	java/net/URLStreamHandlerFactory.java:
+	Merged new versions from classpath.
+
+2003-05-25  Michael Koch  <konqueror@gmx.de>
+
 	* java/awt/Checkbox.java,
 	java/awt/Dialog.java,
 	java/awt/Font.java,

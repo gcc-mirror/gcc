@@ -1,5 +1,6 @@
 /* DatagramSocketImpl.java -- Abstract class for UDP socket implementations
-   Copyright (C) 1998, 1999 2000, 2001, 2002 Free Software Foundation, Inc.
+   Copyright (C) 1998, 1999 2000, 2001, 
+                 2002, 2003 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -102,8 +103,8 @@ public abstract class DatagramSocketImpl implements SocketOptions
    * Takes a peek at the next packet received in order to retrieve the
    * address of the sender
    *
-   * @param i The InetAddress to fill in with the information about the
-   *          sender if the next packet
+   * @param i The <code>InetAddress</code> to fill in with the information 
+   *          about the sender if the next packet
    *
    * @return The port number of the sender of the packet
    *
@@ -118,7 +119,7 @@ public abstract class DatagramSocketImpl implements SocketOptions
    * Takes a peek at the next packet received.  This packet is not consumed.
    * With the next peekData/receive operation this packet will be read again.
    * 
-   * @param p The DatagramPacket to fill in with the data sent.
+   * @param p The <code>DatagramPacket</code> to fill in with the data sent.
    *
    * @return The port number of the sender of the packet.
    * 
@@ -147,7 +148,7 @@ public abstract class DatagramSocketImpl implements SocketOptions
   /**
    * Receives a packet of data from the network  Will block until a packet
    * arrives.  The packet info in populated into the passed in
-   * DatagramPacket object.
+   * <code>DatagramPacket</code> object.
    *
    * @param p A place to store the incoming packet.
    *
@@ -161,7 +162,7 @@ public abstract class DatagramSocketImpl implements SocketOptions
   /**
    * Connects the socket to a host specified by address and port.
    *
-   * @param address The InetAddress of the host to connect to
+   * @param address The <code>InetAddress</code> of the host to connect to
    * @param port The port number of the host to connect to
    *
    * @exception SocketException If an error occurs
@@ -288,26 +289,26 @@ public abstract class DatagramSocketImpl implements SocketOptions
    * Sets the specified option on a socket to the passed in object.  For
    * options that take an integer argument, the passed in object is an
    * <code>Integer</code>.  For options that are set to on or off, the
-   * value passed will be a <code>Boolean</code>.   The <code>option_id</code>
+   * value passed will be a <code>Boolean</code>.   The <code>optionId</code>
    * parameter is one of the defined constants in the superinterface.
    *
-   * @param option_id The identifier of the option
+   * @param optionId The identifier of the option
    * @param val The value to set the option to
    *
    * @exception SocketException If an error occurs
    * @XXX This redeclaration from SocketOptions is a workaround to a gcj bug.
    */
-  public abstract void setOption(int option_id, Object val)
+  public abstract void setOption(int optionId, Object val)
     throws SocketException;
 
   /**
    * Returns the current setting of the specified option.  The
    * <code>Object</code> returned will be an <code>Integer</code> for options
    * that have integer values.  For options that are set to on or off, a
-   * <code>Boolean</code> will be returned.   The <code>option_id</code>
+   * <code>Boolean</code> will be returned.   The <code>optionId</code>
    * is one of the defined constants in the superinterface.
    *
-   * @param option_id The option identifier
+   * @param optionId The option identifier
    *
    * @return The current value of the option
    *

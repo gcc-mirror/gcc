@@ -1,5 +1,6 @@
 /* SocketOptions.java -- Implements options for sockets (duh!)
-   Copyright (C) 1998, 1999, 2000, 2001, 2002 Free Software Foundation, Inc.
+   Copyright (C) 1998, 1999, 2000, 2001, 
+                 2002, 2003 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -138,30 +139,30 @@ public interface SocketOptions
    * Sets the specified option on a socket to the passed in object.  For
    * options that take an integer argument, the passed in object is an
    * <code>Integer</code>.  For options that are set to on or off, the
-   * value passed will be a <code>Boolean</code>.   The <code>option_id</code>
+   * value passed will be a <code>Boolean</code>.   The <code>optionId</code>
    * parameter is one of the defined constants in this interface.
    *
-   * @param option_id The identifier of the option
+   * @param optionId The identifier of the option
    * @param val The value to set the option to
    *
    * @exception SocketException If an error occurs
    */
-  void setOption(int option_id, Object val) throws SocketException;
+  void setOption(int optionId, Object val) throws SocketException;
 
   /**
    * Returns the current setting of the specified option.  The
    * <code>Object</code> returned will be an <code>Integer</code> for options
    * that have integer values.  For options that are set to on or off, a
-   * <code>Boolean</code> will be returned.   The <code>option_id</code>
-   * is one of the defined constants in this interface.
+   * <code>Boolean</code> will be returned.   The <code>optionId</code>
+   * parameter is one of the defined constants in this interface.
    *
-   * @param option_id The option identifier
+   * @param optionId The option identifier
    *
    * @return The current value of the option
    *
    * @exception SocketException If an error occurs
    */
-  Object getOption(int option_id) throws SocketException;
+  Object getOption(int optionId) throws SocketException;
 
 } // interface SocketOptions
 
