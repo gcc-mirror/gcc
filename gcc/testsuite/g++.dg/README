@@ -5,8 +5,9 @@ eh	 Tests for exception handling.
 ext	 Tests for GNU language extensions.
 inherit	 Tests for inheritance -- virtual functions, multiple inheritance, etc.
 init	 Tests for initialization semantics, constructors/destructors, etc.
-lookup	 Tests for lookup semantics, namespaces, etc.
+lookup	 Tests for lookup semantics, namespaces, using, etc.
 overload Tests for overload resolution and conversions.
+parse	 Tests for parsing.
 rtti	 Tests for run-time type identification (typeid, dynamic_cast, etc.)
 template Tests for templates.
 warn	 Tests for compiler warnings.
