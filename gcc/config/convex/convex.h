@@ -727,7 +727,7 @@ enum reg_class {
 /* Define if shifts truncate the shift count
    which implies one can omit a sign-extension or zero-extension
    of a shift count.  */
-#define SHIFT_COUNT_TRUNCATED
+/* #define SHIFT_COUNT_TRUNCATED */
 
 /* Value is 1 if truncating an integer of INPREC bits to OUTPREC bits
    is done just by pretending it is already truncated.  */
