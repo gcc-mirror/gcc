@@ -1,6 +1,6 @@
 // Locale support -*- C++ -*-
 
-// Copyright (C) 1999, 2000, 2001, 2002 Free Software Foundation, Inc.
+// Copyright (C) 1999, 2000, 2001, 2002, 2003 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -64,26 +64,26 @@ namespace std
   template
     ostreambuf_iterator<char>
     num_put<char, ostreambuf_iterator<char> >::
-    _M_convert_int(ostreambuf_iterator<char>, ios_base&, char, char, char, 
+    _M_convert_int(ostreambuf_iterator<char>, ios_base&, char, 
 		   long) const;
 
   template
     ostreambuf_iterator<char>
     num_put<char, ostreambuf_iterator<char> >::
-    _M_convert_int(ostreambuf_iterator<char>, ios_base&, char, char, char, 
+    _M_convert_int(ostreambuf_iterator<char>, ios_base&, char, 
 		   unsigned long) const;
 
 #ifdef _GLIBCPP_USE_LONG_LONG
   template
     ostreambuf_iterator<char>
     num_put<char, ostreambuf_iterator<char> >::
-    _M_convert_int(ostreambuf_iterator<char>, ios_base&, char, char, char, 
+    _M_convert_int(ostreambuf_iterator<char>, ios_base&, char, 
 		   long long) const;
 
   template
     ostreambuf_iterator<char>
     num_put<char, ostreambuf_iterator<char> >::
-    _M_convert_int(ostreambuf_iterator<char>, ios_base&, char, char, char,
+    _M_convert_int(ostreambuf_iterator<char>, ios_base&, char, 
 		   unsigned long long) const;
 #endif
 
@@ -97,8 +97,8 @@ namespace std
     ostreambuf_iterator<char>
     num_put<char, ostreambuf_iterator<char> >::
     _M_convert_float(ostreambuf_iterator<char>, ios_base&, char, char, 
-		    long double) const;
-
+		     long double) const;
+  
 #ifdef _GLIBCPP_USE_WCHAR_T
   template class numpunct<wchar_t>;
   template class numpunct_byname<wchar_t>;
@@ -108,27 +108,27 @@ namespace std
   template
     ostreambuf_iterator<wchar_t>
     num_put<wchar_t, ostreambuf_iterator<wchar_t> >::
-    _M_convert_int(ostreambuf_iterator<wchar_t>, ios_base&, wchar_t, char, 
-		   char, long) const;
+    _M_convert_int(ostreambuf_iterator<wchar_t>, ios_base&, wchar_t, 
+		   long) const;
 
   template
     ostreambuf_iterator<wchar_t>
     num_put<wchar_t, ostreambuf_iterator<wchar_t> >::
-    _M_convert_int(ostreambuf_iterator<wchar_t>, ios_base&, wchar_t, char, 
-		   char, unsigned long) const;
+    _M_convert_int(ostreambuf_iterator<wchar_t>, ios_base&, wchar_t, 
+		   unsigned long) const;
 
 #ifdef _GLIBCPP_USE_LONG_LONG
   template
     ostreambuf_iterator<wchar_t>
     num_put<wchar_t, ostreambuf_iterator<wchar_t> >::
-    _M_convert_int(ostreambuf_iterator<wchar_t>, ios_base&, wchar_t, char, 
-		   char, long long) const;
+    _M_convert_int(ostreambuf_iterator<wchar_t>, ios_base&, wchar_t,
+		   long long) const;
 
   template
     ostreambuf_iterator<wchar_t>
     num_put<wchar_t, ostreambuf_iterator<wchar_t> >::
-    _M_convert_int(ostreambuf_iterator<wchar_t>, ios_base&, wchar_t, char, 
-		   char, unsigned long long) const;
+    _M_convert_int(ostreambuf_iterator<wchar_t>, ios_base&, wchar_t,
+		   unsigned long long) const;
 #endif
 
   template
@@ -451,6 +451,7 @@ namespace std
     __convert_from_v(char*, const int, const char*, unsigned long, 
 		     const __c_locale&, int);
 
+#ifdef _GLIBCPP_USE_LONG_LONG
   template
     int
     __convert_from_v(char*, const int, const char*, long long, 
@@ -460,4 +461,31 @@ namespace std
     int
     __convert_from_v(char*, const int, const char*, unsigned long long, 
 		     const __c_locale&, int);
+#endif
+
+  template
+    int
+    __int_to_char(char*, const int, unsigned long, const char*, 
+		  ios_base::fmtflags, bool);
+
+#ifdef _GLIBCPP_USE_WCHAR_T
+  template
+    int
+    __int_to_char(wchar_t*, const int, unsigned long, const wchar_t*, 
+		  ios_base::fmtflags, bool);
+#endif
+
+#ifdef _GLIBCPP_USE_LONG_LONG
+  template
+    int
+    __int_to_char(char*, const int, unsigned long long, const char*, 
+		  ios_base::fmtflags, bool);
+
+#ifdef _GLIBCPP_USE_WCHAR_T
+  template
+    int
+    __int_to_char(wchar_t*, const int, unsigned long long, const wchar_t*,
+		  ios_base::fmtflags, bool);
+#endif
+#endif
 } // namespace std
