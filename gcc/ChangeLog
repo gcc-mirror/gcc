@@ -1,3 +1,8 @@
+2001-12-08  Richard Earnshaw  <rearnsha@arm.com>
+
+	* final.c (cleanup_subreg_operands):  Use recog_data.operand_loc
+	in test for a subreg.
+
 2001-12-08  John David Anglin  <dave@hiauly1.hia.nrc.ca>
 
 	* rtl.c (rtx_equal_p): Check for null pointers when comparing rtx
