@@ -313,7 +313,7 @@ flush_repeats (type)
     OB_PUTC ('_');
 }
 
-static int numeric_outputed_need_bar = 0;
+static int numeric_outputed_need_bar;
 static void build_overload_identifier ();
 
 static void
@@ -920,6 +920,7 @@ build_decl_overload (dname, parms, for_method)
     {
       ALLOCATE_TYPEVEC (parms);
       nofold = 0;
+      numeric_outputed_need_bar = 0;
       if (for_method)
 	{
 	  build_overload_name (TREE_VALUE (parms), 0, 0);
