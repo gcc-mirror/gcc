@@ -54,6 +54,10 @@ main ()
 	  printf ("0");
 	printf ("}},\n");
       }
+
+  fflush (stdout);
+  exit (ferror (stdout) != 0 ? FATAL_EXIT_CODE : SUCCESS_EXIT_CODE);
+  /* NOTREACHED */
   return 0;
 }
 
@@ -68,7 +72,7 @@ xmalloc (nbytes)
   if (!tmp)
     {
       fprintf (stderr, "can't allocate %d bytes (out of virtual memory)\n", nbytes);
-      exit (1);
+      exit (FATAL_EXIT_CODE);
     }
 
   return tmp;
