@@ -1,3 +1,11 @@
+2004-11-28  Jeff Law  <law@redhat.com>
+
+	* tree-ssa-alias.c (count_calls_and_maybe_create_global_var): New.
+	(pass_maybe_create_global_var): New.
+	* tree-pass.h (pass_maybe_create_global_var): Declare.
+	* tree-optimize.c (init_tree_optimization_passes): Link in
+	pass_maybe_create_global_var.
+
 2004-11-28  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* tree-inline.c (inline_forbidden_p_1, case RECORD_TYPE): Add comment.

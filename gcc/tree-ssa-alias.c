@@ -357,6 +357,62 @@ struct tree_opt_pass pass_may_alias =
   0					/* letter */
 };
 
+/* Count the number of calls in the function and conditionally
+   create GLOBAL_VAR.   This is performed before translation
+   into SSA (and thus before alias analysis) to avoid compile time
+   and memory utilization explosions in functions with many
+   of calls and call clobbered variables.  */
+
+static void
+count_calls_and_maybe_create_global_var (void)
+{
+  struct alias_info ai;
+  basic_block bb;
+  bool temp;
+
+  memset (&ai, 0, sizeof (struct alias_info));
+
+  /* First count the number of calls in the IL.  */
+  FOR_EACH_BB (bb)
+    {
+      block_stmt_iterator si;
+
+      for (si = bsi_start (bb); !bsi_end_p (si); bsi_next (&si))
+        {
+          tree stmt = bsi_stmt (si);
+
+	  if (get_call_expr_in (stmt) != NULL_TREE)
+	    ai.num_calls_found++;
+	}
+    }
+
+  /* If there are no call clobbered variables, then maybe_create_global_var
+     will always create a GLOBAL_VAR.  At this point we do not want that
+     behavior.  So we turn on one bit in CALL_CLOBBERED_VARs, call
+     maybe_create_global_var, then reset the bit to its original state.  */
+  temp = bitmap_bit_p (call_clobbered_vars, 0);
+  bitmap_set_bit (call_clobbered_vars, 0);
+  maybe_create_global_var (&ai);
+  if (!temp)
+    bitmap_clear_bit (call_clobbered_vars, 0);
+}
+
+struct tree_opt_pass pass_maybe_create_global_var = 
+{
+  "maybe_create_global_var",		/* name */
+  NULL,					/* gate */
+  count_calls_and_maybe_create_global_var, /* execute */
+  NULL,					/* sub */
+  NULL,					/* next */
+  0,					/* static_pass_number */
+  TV_TREE_MAY_ALIAS,			/* tv_id */
+  PROP_cfg,				/* properties_required */
+  0,					/* properties_provided */
+  0,					/* properties_destroyed */
+  0,					/* todo_flags_start */
+  0,					/* todo_flags_finish */
+  0					/* letter */
+};
 
 /* Initialize the data structures used for alias analysis.  */
 
