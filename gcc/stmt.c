@@ -2799,6 +2799,13 @@ expand_decl (decl)
       /* Reference the variable indirect through that rtx.  */
       DECL_RTL (decl) = gen_rtx (MEM, DECL_MODE (decl), address);
 
+      /* If this is a memory ref that contains aggregate components,
+	 mark it as such for cse and loop optimize.  */
+      MEM_IN_STRUCT_P (DECL_RTL (decl))
+	= (TREE_CODE (TREE_TYPE (decl)) == ARRAY_TYPE
+	   || TREE_CODE (TREE_TYPE (decl)) == RECORD_TYPE
+	   || TREE_CODE (TREE_TYPE (decl)) == UNION_TYPE);
+
       /* Indicate the alignment we actually gave this variable.  */
 #ifdef STACK_BOUNDARY
       DECL_ALIGN (decl) = STACK_BOUNDARY;
