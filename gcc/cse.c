@@ -388,11 +388,6 @@ static rtx memory_extend_rtx;
 
 static int hash_arg_in_memory;
 
-/* canon_hash stores 1 in hash_arg_in_struct
-   if it notices a reference to memory that's part of a structure.  */
-
-static int hash_arg_in_struct;
-
 /* The hash table contains buckets which are chains of `struct table_elt's,
    each recording one expression's information.
    That expression is in the `exp' field.
@@ -413,9 +408,6 @@ static int hash_arg_in_struct;
    To be safe, we assume that a memory address is unidentified unless
    the address is either a symbol constant or a constant plus
    the frame pointer or argument pointer.
-
-   The `in_struct' field is nonzero for elements that
-   involve any reference to memory inside a structure or array.
 
    The `related_value' field is used to connect related expressions
    (that differ by adding an integer).
@@ -448,7 +440,6 @@ struct table_elt
   int cost;
   enum machine_mode mode;
   char in_memory;
-  char in_struct;
   char is_const;
   char flag;
 };
@@ -1683,7 +1674,6 @@ merge_equiv_classes (class1, class2)
       if (GET_CODE (exp) == REG || exp_equiv_p (exp, exp, 1, 0))
 	{
 	  hash_arg_in_memory = 0;
-	  hash_arg_in_struct = 0;
 	  hash = HASH (exp, mode);
 	      
 	  if (GET_CODE (exp) == REG)
@@ -1698,7 +1688,6 @@ merge_equiv_classes (class1, class2)
 	    }
 	  new = insert (exp, class1, hash, mode);
 	  new->in_memory = hash_arg_in_memory;
-	  new->in_struct = hash_arg_in_struct;
 	}
     }
 }
@@ -2099,8 +2088,6 @@ use_related_value (x, elt)
 
    Store 1 in hash_arg_in_memory if X contains a MEM rtx
    which does not have the RTX_UNCHANGING_P bit set.
-   In this case, also store 1 in hash_arg_in_struct
-   if there is a MEM rtx which has the MEM_IN_STRUCT_P bit set.
 
    Note that cse_insn knows that the hash code of a MEM expression
    is just (int) MEM plus the hash code of the address.  */
@@ -2212,7 +2199,6 @@ canon_hash (x, mode)
       if (! RTX_UNCHANGING_P (x) || FIXED_BASE_PLUS_P (XEXP (x, 0)))
 	{
 	  hash_arg_in_memory = 1;
-	  if (MEM_IN_STRUCT_P (x)) hash_arg_in_struct = 1;
 	}
       /* Now that we have already found this special case,
 	 might as well speed it up as much as possible.  */
@@ -2294,10 +2280,8 @@ safe_hash (x, mode)
 {
   int save_do_not_record = do_not_record;
   int save_hash_arg_in_memory = hash_arg_in_memory;
-  int save_hash_arg_in_struct = hash_arg_in_struct;
   unsigned hash = canon_hash (x, mode);
   hash_arg_in_memory = save_hash_arg_in_memory;
-  hash_arg_in_struct = save_hash_arg_in_struct;
   do_not_record = save_do_not_record;
   return hash;
 }
@@ -2842,7 +2826,6 @@ find_best_addr (insn, loc)
 #endif
   int save_do_not_record = do_not_record;
   int save_hash_arg_in_memory = hash_arg_in_memory;
-  int save_hash_arg_in_struct = hash_arg_in_struct;
   int addr_volatile;
   int regno;
   unsigned hash;
@@ -2898,7 +2881,6 @@ find_best_addr (insn, loc)
   addr_volatile = do_not_record;
   do_not_record = save_do_not_record;
   hash_arg_in_memory = save_hash_arg_in_memory;
-  hash_arg_in_struct = save_hash_arg_in_struct;
 
   if (addr_volatile)
     return;
@@ -2987,7 +2969,6 @@ find_best_addr (insn, loc)
       hash = HASH (XEXP (*loc, 0), Pmode);
       do_not_record = save_do_not_record;
       hash_arg_in_memory = save_hash_arg_in_memory;
-      hash_arg_in_struct = save_hash_arg_in_struct;
 
       elt = lookup (XEXP (*loc, 0), hash, Pmode);
       if (elt == 0)
@@ -4355,7 +4336,7 @@ record_jump_cond (code, mode, op0, op1, reversed_nonequality)
      int reversed_nonequality;
 {
   unsigned op0_hash, op1_hash;
-  int op0_in_memory, op0_in_struct, op1_in_memory, op1_in_struct;
+  int op0_in_memory, op1_in_memory;
   struct table_elt *op0_elt, *op1_elt;
 
   /* If OP0 and OP1 are known equal, and either is a paradoxical SUBREG,
@@ -4425,20 +4406,16 @@ record_jump_cond (code, mode, op0, op1, reversed_nonequality)
 
   do_not_record = 0;
   hash_arg_in_memory = 0;
-  hash_arg_in_struct = 0;
   op0_hash = HASH (op0, mode);
   op0_in_memory = hash_arg_in_memory;
-  op0_in_struct = hash_arg_in_struct;
 
   if (do_not_record)
     return;
 
   do_not_record = 0;
   hash_arg_in_memory = 0;
-  hash_arg_in_struct = 0;
   op1_hash = HASH (op1, mode);
   op1_in_memory = hash_arg_in_memory;
-  op1_in_struct = hash_arg_in_struct;
   
   if (do_not_record)
     return;
@@ -4491,7 +4468,6 @@ record_jump_cond (code, mode, op0, op1, reversed_nonequality)
 
 	  op0_elt = insert (op0, NULL_PTR, op0_hash, mode);
 	  op0_elt->in_memory = op0_in_memory;
-	  op0_elt->in_struct = op0_in_struct;
 	}
 
       qty_comparison_code[REG_QTY (REGNO (op0))] = code;
@@ -4511,7 +4487,6 @@ record_jump_cond (code, mode, op0, op1, reversed_nonequality)
 
 	      op1_elt = insert (op1, NULL_PTR, op1_hash, mode);
 	      op1_elt->in_memory = op1_in_memory;
-	      op1_elt->in_struct = op1_in_struct;
 	    }
 
 	  qty_comparison_qty[REG_QTY (REGNO (op0))] = REG_QTY (REGNO (op1));
@@ -4539,7 +4514,6 @@ record_jump_cond (code, mode, op0, op1, reversed_nonequality)
 
       op0_elt = insert (op0, NULL_PTR, op0_hash, mode);
       op0_elt->in_memory = op0_in_memory;
-      op0_elt->in_struct = op0_in_struct;
     }
 
   if (op1_elt == 0)
@@ -4552,7 +4526,6 @@ record_jump_cond (code, mode, op0, op1, reversed_nonequality)
 
       op1_elt = insert (op1, NULL_PTR, op1_hash, mode);
       op1_elt->in_memory = op1_in_memory;
-      op1_elt->in_struct = op1_in_struct;
     }
 
   merge_equiv_classes (op0_elt, op1_elt);
@@ -4587,8 +4560,6 @@ struct set
   rtx inner_dest;
   /* Nonzero if the SET_SRC is in memory.  */ 
   char src_in_memory;
-  /* Nonzero if the SET_SRC is in a structure.  */ 
-  char src_in_struct;
   /* Nonzero if the SET_SRC contains something
      whose value cannot be predicted and understood.  */
   char src_volatile;
@@ -4622,7 +4593,6 @@ cse_insn (insn, libcall_insn)
   struct table_elt *src_eqv_elt = 0;
   int src_eqv_volatile = 0;
   int src_eqv_in_memory = 0;
-  int src_eqv_in_struct = 0;
   unsigned src_eqv_hash = 0;
 
   struct set *sets = NULL_PTR;
@@ -4871,7 +4841,6 @@ cse_insn (insn, libcall_insn)
 	    eqvmode = GET_MODE (SUBREG_REG (XEXP (dest, 0)));
 	  do_not_record = 0;
 	  hash_arg_in_memory = 0;
-	  hash_arg_in_struct = 0;
 	  src_eqv = fold_rtx (src_eqv, insn);
 	  src_eqv_hash = HASH (src_eqv, eqvmode);
 
@@ -4882,7 +4851,6 @@ cse_insn (insn, libcall_insn)
 
 	  src_eqv_volatile = do_not_record;
 	  src_eqv_in_memory = hash_arg_in_memory;
-	  src_eqv_in_struct = hash_arg_in_struct;
 	}
 
       /* If this is a STRICT_LOW_PART assignment, src_eqv corresponds to the
@@ -4926,13 +4894,11 @@ cse_insn (insn, libcall_insn)
 	 prevent any further processing of this assignment.  */
       do_not_record = 0;
       hash_arg_in_memory = 0;
-      hash_arg_in_struct = 0;
 
       sets[i].src = src;
       sets[i].src_hash = HASH (src, mode);
       sets[i].src_volatile = do_not_record;
       sets[i].src_in_memory = hash_arg_in_memory;
-      sets[i].src_in_struct = hash_arg_in_struct;
 
       /* If SRC is a MEM, there is a REG_EQUIV note for SRC, and DEST is
 	 a pseudo that is set more than once, do not record SRC.  Using
@@ -5480,12 +5446,10 @@ cse_insn (insn, libcall_insn)
         {
           do_not_record = 0;
           hash_arg_in_memory = 0;
-          hash_arg_in_struct = 0;
 	  sets[i].src = src;
           sets[i].src_hash = HASH (src, mode);
           sets[i].src_volatile = do_not_record;
           sets[i].src_in_memory = hash_arg_in_memory;
-          sets[i].src_in_struct = hash_arg_in_struct;
           sets[i].src_elt = lookup (src, sets[i].src_hash, mode);
         }
 
@@ -5723,7 +5687,6 @@ cse_insn (insn, libcall_insn)
 	}
       elt = insert (src_eqv, classp, src_eqv_hash, eqvmode);
       elt->in_memory = src_eqv_in_memory;
-      elt->in_struct = src_eqv_in_struct;
       src_eqv_elt = elt;
 
       /* Check to see if src_eqv_elt is the same as a set source which
@@ -5780,7 +5743,6 @@ cse_insn (insn, libcall_insn)
 		      }
 		    elt = insert (src, classp, sets[i].src_hash, mode);
 		    elt->in_memory = sets[i].src_in_memory;
-		    elt->in_struct = sets[i].src_in_struct;
 		    sets[i].src_elt = classp = elt;
 		  }
 		else
@@ -5982,15 +5944,6 @@ cse_insn (insn, libcall_insn)
 			      || FIXED_BASE_PLUS_P (XEXP (sets[i].inner_dest,
 							  0))));
 
-	if (elt->in_memory)
-	  {
-	    /* This implicitly assumes a whole struct
-	       need not have MEM_IN_STRUCT_P.
-	       But a whole struct is *supposed* to have MEM_IN_STRUCT_P.  */
-	    elt->in_struct = (MEM_IN_STRUCT_P (sets[i].inner_dest)
-			      || sets[i].inner_dest != SET_DEST (sets[i].rtl));
-	  }
-
 	/* If we have (set (subreg:m1 (reg:m2 foo) 0) (bar:m1)), M1 is no
 	   narrower than M2, and both M1 and M2 are the same number of words,
 	   we are also doing (set (reg:m2 foo) (subreg:m2 (bar:m1) 0)) so
@@ -6047,7 +6000,6 @@ cse_insn (insn, libcall_insn)
 		      }
 		    src_elt = insert (new_src, classp, src_hash, new_mode);
 		    src_elt->in_memory = elt->in_memory;
-		    src_elt->in_struct = elt->in_struct;
 		  }
 		else if (classp && classp != src_elt->first_same_value)
 		  /* Show that two things that we've seen before are 
