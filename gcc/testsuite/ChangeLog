@@ -1,3 +1,8 @@
+2004-12-02  Alan Modra  <amodra@bigpond.net.au>
+
+	PR target/16952
+	* gcc.dg/ppc-eabi.c: New.
+
 2004-12-01  Nathan Sidwell  <nathan@codesourcery.com>
 
 	PR c++/17431
