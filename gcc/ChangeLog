@@ -1,3 +1,11 @@
+2003-12-31  Mark Mitchell  <mark@codesourcery.com>
+
+	* c-common.c (c_expand_expr): Remove code to return a value
+	different from that returned by expand_expr.
+	* expr.c (store_expr): Use the validity of a target MEM, rather
+	than checking DECL_RTL (exp), to figure out if a copy is
+	required.
+
 2003-12-31  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* config/v850/lib1funcs.asm: Fix comment formatting.

@@ -4253,11 +4253,13 @@ store_expr (tree exp, rtx target, int want_value)
 			      || side_effects_p (target))))
       && TREE_CODE (exp) != ERROR_MARK
       && ! dont_store_target
-	 /* If store_expr stores a DECL whose DECL_RTL(exp) == TARGET,
-	    but TARGET is not valid memory reference, TEMP will differ
-	    from TARGET although it is really the same location.  */
-      && (TREE_CODE_CLASS (TREE_CODE (exp)) != 'd'
-	  || target != DECL_RTL_IF_SET (exp))
+      /* If store_expr stores a DECL whose DECL_RTL(exp) == TARGET,
+	 but TARGET is not valid memory reference, TEMP will differ
+	 from TARGET although it is really the same location.  */
+      && !(GET_CODE (target) == MEM
+	   && GET_CODE (XEXP (target, 0)) != QUEUED
+	   && (!memory_address_p (GET_MODE (target), XEXP (target, 0))
+	       || (flag_force_addr && !REG_P (XEXP (target, 0)))))
       /* If there's nothing to copy, don't bother.  Don't call expr_size
 	 unless necessary, because some front-ends (C++) expr_size-hook
 	 aborts on objects that are not supposed to be bit-copied or
