@@ -1,5 +1,14 @@
 2003-01-06  Kazu Hirata  <kazu@cs.umass.edu>
 
+	* config/h8300/h8300.c (final_prescan_insn): Constify uid.
+	(output_logical_op): Constify intval and det.
+	(compute_logical_length): Likewise.
+	(compute_logical_cc): Likewise.
+	(output_a_shift): Constify mask.
+	(h8300_encode_label): Constify len.
+
+2003-01-06  Kazu Hirata  <kazu@cs.umass.edu>
+
 	* config/h8300/h8300.c (h8300_expand_prologue): Remove fsize.
 	(h8300_expand_epilogue): Likewise.
 
