@@ -79,10 +79,6 @@ int c_header_level;	 /* depth in C headers - C++ only */
 /* Nonzero tells yylex to ignore \ in string constants.  */
 static int ignore_escape_flag;
 
-static const char *readescape	PARAMS ((const char *, const char *,
-					 unsigned int *));
-static const char *read_ucs 	PARAMS ((const char *, const char *,
-					 unsigned int *, int));
 static void parse_float		PARAMS ((PTR));
 static tree lex_number		PARAMS ((const char *, unsigned int));
 static tree lex_string		PARAMS ((const char *, unsigned int, int));
@@ -348,230 +344,6 @@ cb_undef (pfile, node)
      cpp_hashnode *node;
 {
   debug_undef (lineno, (const char *) NODE_NAME (node));
-}
-
-/* Parse a '\uNNNN' or '\UNNNNNNNN' sequence.
-
-   [lex.charset]: The character designated by the universal-character-name 
-   \UNNNNNNNN is that character whose character short name in ISO/IEC 10646
-   is NNNNNNNN; the character designated by the universal-character-name
-   \uNNNN is that character whose character short name in ISO/IEC 10646 is
-   0000NNNN. If the hexadecimal value for a universal character name is
-   less than 0x20 or in the range 0x7F-0x9F (inclusive), or if the
-   universal character name designates a character in the basic source
-   character set, then the program is ill-formed.
-
-   We assume that wchar_t is Unicode, so we don't need to do any
-   mapping.  Is this ever wrong?  */
-
-static const char *
-read_ucs (p, limit, cptr, length)
-     const char *p;
-     const char *limit;
-     unsigned int *cptr;
-     int length;
-{
-  unsigned int code = 0;
-  int c;
-
-  for (; length; --length)
-    {
-      if (p >= limit)
-	{
-	  error ("incomplete universal-character-name");
-	  break;
-	}
-
-      c = *p++;
-      if (! ISXDIGIT (c))
-	{
-	  error ("non hex digit '%c' in universal-character-name", c);
-	  p--;
-	  break;
-	}
-
-      code <<= 4;
-      if (c >= 'a' && c <= 'f')
-	code += c - 'a' + 10;
-      if (c >= 'A' && c <= 'F')
-	code += c - 'A' + 10;
-      if (c >= '0' && c <= '9')
-	code += c - '0';
-    }
-
-#ifdef TARGET_EBCDIC
-  sorry ("universal-character-name on EBCDIC target");
-  *cptr = 0x3f;  /* EBCDIC invalid character */
-  return p;
-#endif
-
-  if (code > 0x9f && !(code & 0x80000000))
-    /* True extended character, OK.  */;
-  else if (code >= 0x20 && code < 0x7f)
-    {
-      /* ASCII printable character.  The C character set consists of all of
-	 these except $, @ and `.  We use hex escapes so that this also
-	 works with EBCDIC hosts.  */
-      if (code != 0x24 && code != 0x40 && code != 0x60)
-	error ("universal-character-name used for '%c'", code);
-    }
-  else
-    error ("invalid universal-character-name");
-
-  *cptr = code;
-  return p;
-}
-
-/* Read an escape sequence and write its character equivalent into *CPTR.
-   P is the input pointer, which is just after the backslash.  LIMIT
-   is how much text we have.
-   Returns the updated input pointer.  */
-
-static const char *
-readescape (p, limit, cptr)
-     const char *p;
-     const char *limit;
-     unsigned int *cptr;
-{
-  unsigned int c, code, count;
-  unsigned firstdig = 0;
-  int nonnull;
-
-  if (p == limit)
-    {
-      /* cpp has already issued an error for this.  */
-      *cptr = 0;
-      return p;
-    }
-
-  c = *p++;
-
-  switch (c)
-    {
-    case 'x':
-      if (warn_traditional && !in_system_header)
-	warning ("the meaning of `\\x' varies with -traditional");
-
-      if (flag_traditional)
-	{
-	  *cptr = 'x';
-	  return p;
-	}
-
-      code = 0;
-      count = 0;
-      nonnull = 0;
-      while (p < limit)
-	{
-	  c = *p++;
-	  if (! ISXDIGIT (c))
-	    {
-	      p--;
-	      break;
-	    }
-	  code *= 16;
-	  if (c >= 'a' && c <= 'f')
-	    code += c - 'a' + 10;
-	  if (c >= 'A' && c <= 'F')
-	    code += c - 'A' + 10;
-	  if (c >= '0' && c <= '9')
-	    code += c - '0';
-	  if (code != 0 || count != 0)
-	    {
-	      if (count == 0)
-		firstdig = code;
-	      count++;
-	    }
-	  nonnull = 1;
-	}
-      if (! nonnull)
-	{
-	  warning ("\\x used with no following hex digits");
-	  *cptr = 'x';
-	  return p;
-	}
-      else if (count == 0)
-	/* Digits are all 0's.  Ok.  */
-	;
-      else if ((count - 1) * 4 >= TYPE_PRECISION (integer_type_node)
-	       || (count > 1
-		   && (((unsigned)1
-			<< (TYPE_PRECISION (integer_type_node)
-			    - (count - 1) * 4))
-		       <= firstdig)))
-	pedwarn ("hex escape out of range");
-      *cptr = code;
-      return p;
-
-    case '0':  case '1':  case '2':  case '3':  case '4':
-    case '5':  case '6':  case '7':
-      code = 0;
-      for (count = 0; count < 3; count++)
-	{
-	  if (c < '0' || c > '7')
-	    {
-	      p--;
-	      break;
-	    }
-	  code = (code * 8) + (c - '0');
-	  if (p == limit)
-	    break;
-	  c = *p++;
-	}
-
-      if (count == 3)
-	p--;
-
-      *cptr = code;
-      return p;
-
-    case '\\': case '\'': case '"': case '?':
-      *cptr = c;
-      return p;
-
-    case 'n': *cptr = TARGET_NEWLINE;	return p;
-    case 't': *cptr = TARGET_TAB;	return p;
-    case 'r': *cptr = TARGET_CR;	return p;
-    case 'f': *cptr = TARGET_FF;	return p;
-    case 'b': *cptr = TARGET_BS;	return p;
-    case 'v': *cptr = TARGET_VT;	return p;
-    case 'a':
-      if (warn_traditional && !in_system_header)
-	warning ("the meaning of '\\a' varies with -traditional");
-      *cptr = flag_traditional ? c : TARGET_BELL;
-      return p;
-
-      /* Warnings and support checks handled by read_ucs().  */
-    case 'u': case 'U':
-      if (c_language != clk_cplusplus && !flag_isoc99)
-	break;
-
-      if (warn_traditional && !in_system_header)
-	warning ("the meaning of '\\%c' varies with -traditional", c);
-
-      return read_ucs (p, limit, cptr, c == 'u' ? 4 : 8);
-      
-    case 'e': case 'E':
-      if (pedantic)
-	pedwarn ("non-ISO-standard escape sequence, '\\%c'", c);
-      *cptr = TARGET_ESC; return p;
-
-      /* '\(', etc, are used at beginning of line to avoid confusing Emacs.
-	 '\%' is used to prevent SCCS from getting confused.  */
-    case '(': case '{': case '[': case '%':
-      if (pedantic)
-	pedwarn ("unknown escape sequence '\\%c'", c);
-      *cptr = c;
-      return p;
-    }
-
-  if (ISGRAPH (c))
-    pedwarn ("unknown escape sequence '\\%c'", c);
-  else
-    pedwarn ("unknown escape sequence: '\\' followed by char 0x%x", c);
-
-  *cptr = c;
-  return p;
 }
 
 #if 0 /* not yet */
@@ -1551,10 +1323,15 @@ lex_string (str, len, wide)
 
       if (c == '\\' && !ignore_escape_flag)
 	{
-	  p = readescape (p, limit, &c);
-	  if (width < HOST_BITS_PER_INT
-	      && (unsigned) c >= ((unsigned)1 << width))
-	    pedwarn ("escape sequence out of range for character");
+	  unsigned int mask;
+
+	  if (width < HOST_BITS_PER_INT)
+	    mask = ((unsigned int) 1 << width) - 1;
+	  else
+	    mask = ~0;
+	  c = cpp_parse_escape (parse_in, (const unsigned char **) &p,
+				(const unsigned char *) limit,
+				mask, flag_traditional);
 	}
 	
       /* Add this single character into the buffer either as a wchar_t

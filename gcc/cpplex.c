@@ -98,11 +98,8 @@ static void save_comment PARAMS ((cpp_reader *, cpp_token *, const U_CHAR *));
 static void lex_percent PARAMS ((cpp_buffer *, cpp_token *));
 static void lex_dot PARAMS ((cpp_reader *, cpp_token *));
 static int name_p PARAMS ((cpp_reader *, const cpp_string *));
-static unsigned int parse_escape PARAMS ((cpp_reader *, const unsigned char **,
-					  const unsigned char *, HOST_WIDE_INT,
-					  int));
-static unsigned int read_ucs PARAMS ((cpp_reader *, const unsigned char **,
-				      const unsigned char *, unsigned int));
+static int maybe_read_ucs PARAMS ((cpp_reader *, const unsigned char **,
+				   const unsigned char *, unsigned int *));
 
 static cpp_chunk *new_chunk PARAMS ((unsigned int));
 static int chunk_suitable PARAMS ((cpp_pool *, cpp_chunk *, unsigned int));
@@ -1670,7 +1667,10 @@ hex_digit_value (c)
   abort ();
 }
 
-/* Parse a '\uNNNN' or '\UNNNNNNNN' sequence (C++ and C99).
+/* Parse a '\uNNNN' or '\UNNNNNNNN' sequence.  Returns 1 to indicate
+   failure if cpplib is not parsing C++ or C99.  Such failure is
+   silent, and no variables are updated.  Otherwise returns 0, and
+   warns if -Wtraditional.
 
    [lex.charset]: The character designated by the universal character
    name \UNNNNNNNN is that character whose character short name in
@@ -1683,19 +1683,31 @@ hex_digit_value (c)
    program is ill-formed.
 
    We assume that wchar_t is Unicode, so we don't need to do any
-   mapping.  Is this ever wrong?  */
+   mapping.  Is this ever wrong?
 
-static unsigned int
-read_ucs (pfile, pstr, limit, length)
+   PC points to the 'u' or 'U', PSTR is points to the byte after PC,
+   LIMIT is the end of the string or charconst.  PSTR is updated to
+   point after the UCS on return, and the UCS is written into PC.  */
+
+static int
+maybe_read_ucs (pfile, pstr, limit, pc)
      cpp_reader *pfile;
      const unsigned char **pstr;
      const unsigned char *limit;
-     unsigned int length;
+     unsigned int *pc;
 {
   const unsigned char *p = *pstr;
-  unsigned int c, code = 0;
+  unsigned int code = 0;
+  unsigned int c = *pc, length;
 
-  for (; length; --length)
+  /* Only attempt to interpret a UCS for C++ and C99.  */
+  if (! (CPP_OPTION (pfile, cplusplus) || CPP_OPTION (pfile, c99)))
+    return 1;
+
+  if (CPP_WTRADITIONAL (pfile))
+    cpp_warning (pfile, "the meaning of '\\%c' varies with -traditional", c);
+  
+  for (length = (c == 'u' ? 4: 8); length; --length)
     {
       if (p >= limit)
 	{
@@ -1737,21 +1749,24 @@ read_ucs (pfile, pstr, limit, length)
 #endif
 
   *pstr = p;
-  return code;
+  *pc = code;
+  return 0;
 }
 
 /* Interpret an escape sequence, and return its value.  PSTR points to
    the input pointer, which is just after the backslash.  LIMIT is how
-   much text we have.  MASK is the precision for the target type (char
-   or wchar_t).  TRADITIONAL, if true, does not interpret escapes that
-   did not exist in traditional C.  */
+   much text we have.  MASK is a bitmask for the precision for the
+   destination type (char or wchar_t).  TRADITIONAL, if true, does not
+   interpret escapes that did not exist in traditional C.
 
-static unsigned int
-parse_escape (pfile, pstr, limit, mask, traditional)
+   Handles all relevant diagnostics.  */
+
+unsigned int
+cpp_parse_escape (pfile, pstr, limit, mask, traditional)
      cpp_reader *pfile;
      const unsigned char **pstr;
      const unsigned char *limit;
-     HOST_WIDE_INT mask;
+     unsigned HOST_WIDE_INT mask;
      int traditional;
 {
   int unknown = 0;
@@ -1787,17 +1802,8 @@ parse_escape (pfile, pstr, limit, mask, traditional)
       c = TARGET_ESC;
       break;
       
-      /* Warnings and support checks handled by read_ucs().  */
     case 'u': case 'U':
-      if (CPP_OPTION (pfile, cplusplus) || CPP_OPTION (pfile, c99))
-	{
-	  if (CPP_WTRADITIONAL (pfile))
-	    cpp_warning (pfile,
-			 "the meaning of '\\%c' varies with -traditional", c);
-	  c = read_ucs (pfile, &str, limit, c == 'u' ? 4 : 8);
-	}
-      else
-	unknown = 1;
+      unknown = maybe_read_ucs (pfile, &str, limit, &c);
       break;
 
     case 'x':
@@ -1869,6 +1875,9 @@ parse_escape (pfile, pstr, limit, mask, traditional)
 	cpp_pedwarn (pfile, "unknown escape sequence: '\\%03o'", c);
     }
 
+  if (c > mask)
+    cpp_pedwarn (pfile, "escape sequence out of range for character");
+
   *pstr = str;
   return c;
 }
@@ -1939,11 +1948,7 @@ cpp_interpret_charconst (pfile, token, warn_multi, traditional, pchars_seen)
 #endif
 
       if (c == '\\')
-	{
-	  c = parse_escape (pfile, &str, limit, mask, traditional);
-	  if (width < HOST_BITS_PER_WIDE_INT && c > mask)
-	    cpp_pedwarn (pfile, "escape sequence out of range for character");
-	}
+	c = cpp_parse_escape (pfile, &str, limit, mask, traditional);
 
 #ifdef MAP_CHARACTER
       if (ISPRINT (c))
