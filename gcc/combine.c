@@ -2355,7 +2355,9 @@ try_combine (i3, i2, i1)
 
 	/* If the reg formerly set in I2 died only once and that was in I3,
 	   zero its use count so it won't make `reload' do any work.  */
-	if (! added_sets_2 && newi2pat == 0 && ! i2dest_in_i2src)
+	if (! added_sets_2
+	    && (newi2pat == 0 || ! reg_mentioned_p (i2dest, newi2pat))
+	    && ! i2dest_in_i2src)
 	  {
 	    regno = REGNO (i2dest);
 	    reg_n_sets[regno]--;
