@@ -40,7 +40,7 @@
 
     // NB: Offsets into ctype<char>::_M_table force a particular size
     // on the mask type. Because of this, we don't use an enum.
-    typedef unsigned char 	mask;
+    typedef unsigned int 	mask;
     static const mask upper    	= _ISUPPER;
     static const mask lower 	= _ISLOWER;
     static const mask alpha 	= _ISALPHA;

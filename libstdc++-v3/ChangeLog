@@ -1,3 +1,7 @@
+2001-03-28  Richard Henderson  <rth@redhat.com>
+
+	* config/os/aix/bits/ctype_base.h (mask): Use unsigned int.
+
 2001-03-28  Alexandre Oliva  <aoliva@redhat.com>
 
 	* libsupc++/Makefile.am (CXXLINK): Add --tag disable-shared after
