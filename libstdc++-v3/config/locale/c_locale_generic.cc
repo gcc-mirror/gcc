@@ -168,10 +168,10 @@ namespace std
           if (__sanity != __s && *__sanity == '\0' && errno == 0)
 	    __v = __ld;
 #else
-	  typedef typename char_traits<_CharT>::int_type int_type;
+	  typedef typename char_traits<char>::int_type int_type;
 	  long double __ld;
 	  int __p = sscanf(__s, "%Lf", &__ld);
-	  if (__p && static_cast<int_type>(__p) != char_traits<_CharT>::eof())
+	  if (__p && static_cast<int_type>(__p) != char_traits<char>::eof())
 	    __v = __ld;
 #endif
 	  else
