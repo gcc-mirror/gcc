@@ -95,8 +95,6 @@ static struct timevar_time_def start_time;
 
 static void get_time
   PARAMS ((struct timevar_time_def *));
-static void timevar_add
-  PARAMS ((struct timevar_time_def *, struct timevar_time_def *));
 static void timevar_accumulate
   PARAMS ((struct timevar_time_def *, struct timevar_time_def *, 
 	   struct timevar_time_def *));
@@ -196,18 +194,6 @@ get_time (now)
 #endif	/* _WIN32 */
 #endif	/* __BEOS__ */
 }  
-
-/* Add ELAPSED to TIMER.  */
-
-static void
-timevar_add (timer, elapsed)
-     struct timevar_time_def *timer;
-     struct timevar_time_def *elapsed;
-{
-  timer->user += elapsed->user;
-  timer->sys += elapsed->sys;
-  timer->wall += elapsed->wall;
-}
 
 /* Add the difference between STOP_TIME and START_TIME to TIMER.  */
 
@@ -387,18 +373,22 @@ timevar_get (timevar, elapsed)
      struct timevar_time_def *elapsed;
 {
   struct timevar_def *tv = &timevars[timevar];
+  struct timevar_time_def now;
 
   *elapsed = tv->elapsed;
-
+  
   /* Is TIMEVAR currently running as a standalone timer?  */
   if (tv->standalone)
-    /* Add the time elapsed since the it was started.  */
-    timevar_add (elapsed, &tv->start_time);
-
-  /* Is TIMEVAR at the top of the timer stack?  */
-  if (stack->timevar == tv)
-    /* Add the elapsed time since it was pushed.  */
-    timevar_add (elapsed, &start_time);
+    {
+      get_time (&now);
+      timevar_accumulate (elapsed, &tv->start_time, &now);
+    }
+  /* Or is TIMEVAR at the top of the timer stack?  */
+  else if (stack->timevar == tv)
+    {
+      get_time (&now);
+      timevar_accumulate (elapsed, &start_time, &now);
+    }
 }
 
 /* Summarize timing variables to FP.  The timing variable TV_TOTAL has
