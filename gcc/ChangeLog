@@ -1,3 +1,8 @@
+2003-12-23  Mark Mitchell  <mark@codesourcery.com>
+
+	* calls.c (expand_call): Recognize calls to "sqrt" and create
+	corresponding notes.
+
 2003-12-23  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* config/mips/mips.c (override_options): Use `inform' instead

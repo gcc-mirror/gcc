@@ -8,11 +8,7 @@
 /* { dg-do link } */
 /* { dg-options "-O2 -ffast-math" } */
 
-
-/* Solaris doesn't have the entire C99 runtime.  */
-#if !defined(sun)
-#define HAVE_C99_RUNTIME
-#endif
+#include "builtins-config.h"
 
 extern void link_error(void);
 

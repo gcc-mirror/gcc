@@ -8,11 +8,7 @@
 /* { dg-do link } */
 /* { dg-options "-O2 -ffast-math" } */
 
-
-/* Solaris doesn't have the entire C99 runtime.  */
-#if !defined(sun)
-#define HAVE_C99_RUNTIME
-#endif
+#include "builtins-config.h"
 
 extern void link_error(void);
 
@@ -29,6 +25,7 @@ main (void)
   double _Complex dc = 3.0 + 4.0i;
   long double _Complex ldc = 3.0L + 4.0iL;
 
+#ifdef HAVE_C99_RUNTIME
   /* Test floats.  */
   if (cabsf (fc) != 5.0F)
     link_error ();
@@ -38,6 +35,7 @@ main (void)
     link_failure ();
   if (__builtin_cabsf (3.0F + 4.0iF) != 5.0F)
     link_failure ();
+#endif
 
   /* Test doubles.  */
   if (cabs (dc) != 5.0)

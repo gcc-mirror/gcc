@@ -1,5 +1,16 @@
 2003-12-23  Mark Mitchell  <mark@codesourcery.com>
 
+	* g++.dg/bprob/bprob.exp: Load target-supports.exp
+	* g77.dg/bprob/bprob.exp: Likewise.
+	* gcc.misc-tests/bprob.exp: Likewise.
+	* gcc.dg/builtins-18.c: Use builtins-config.h.  Do not test float
+	variants on systems where the library does not provide that
+	functionality.
+	* gcc.dg/builtins-20.c: Use builtins-config.h.
+	* gcc.dg/builtins-config.h: New file.
+
+2003-12-23  Mark Mitchell  <mark@codesourcery.com>
+
 	* lib/gcc-dg.exp (dg-require-profiling): New function.
 	* lib/target-supports.exp (check_profiling_available): Likewise.
 	* g++.dg/bprob/bprob.exp: Use check_profiling_available.

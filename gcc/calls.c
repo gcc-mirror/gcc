@@ -3150,22 +3150,33 @@ expand_call (tree exp, rtx target, int ignore)
 		mark_reg_pointer (temp,
 				  TYPE_ALIGN (TREE_TYPE (TREE_TYPE (exp))));
 
-	      /* Construct an "equal form" for the value which mentions all the
-		 arguments in order as well as the function name.  */
-	      for (i = 0; i < num_actuals; i++)
-		note = gen_rtx_EXPR_LIST (VOIDmode,
-					  args[i].initial_value, note);
-	      note = gen_rtx_EXPR_LIST (VOIDmode, funexp, note);
-
 	      end_sequence ();
-
-	      if (flags & ECF_PURE)
-		note = gen_rtx_EXPR_LIST (VOIDmode,
+	      if (flag_unsafe_math_optimizations
+		  && fndecl
+		  && DECL_BUILT_IN (fndecl)
+		  && (DECL_FUNCTION_CODE (fndecl) == BUILT_IN_SQRT
+		      || DECL_FUNCTION_CODE (fndecl) == BUILT_IN_SQRTF
+		      || DECL_FUNCTION_CODE (fndecl) == BUILT_IN_SQRTL))
+		note = gen_rtx_fmt_e (SQRT, 
+				      GET_MODE (temp), 
+				      args[0].initial_value);
+	      else
+		{
+		  /* Construct an "equal form" for the value which
+		     mentions all the arguments in order as well as
+		     the function name.  */
+		  for (i = 0; i < num_actuals; i++)
+		    note = gen_rtx_EXPR_LIST (VOIDmode,
+					      args[i].initial_value, note);
+		  note = gen_rtx_EXPR_LIST (VOIDmode, funexp, note);
+		  
+		  if (flags & ECF_PURE)
+		    note = gen_rtx_EXPR_LIST (VOIDmode,
 			gen_rtx_USE (VOIDmode,
 				     gen_rtx_MEM (BLKmode,
 						  gen_rtx_SCRATCH (VOIDmode))),
 			note);
-
+		}
 	      emit_libcall_block (insns, temp, valreg, note);
 
 	      valreg = temp;
