@@ -1,3 +1,8 @@
+2001-06-29  DJ Delorie  <dj@redhat.com>
+
+	* simplify-rtx.c (simplify_subreg): When simplifying a CONCAT, at
+	least get rid of the CONCAT if we can't simplify further.
+
 Fri Jun 29 12:27:24 2001  Jeffrey A Law  (law@cygnus.com)
 
 	* ssa-dce.c (ssa_eliminate_dead_code): Renamed from
