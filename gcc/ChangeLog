@@ -1,3 +1,7 @@
+Wed Jan 27 11:58:18 1999  Dave Brolley  <brolley@cygnus.com>
+
+	* cpplib.h (cpp_notice): Add prototype.
+
 Wed Jan 27 02:20:48 1999  Jeffrey A Law  (law@cygnus.com)
 
 	* Merge gcc2 snapshot 19980929.
