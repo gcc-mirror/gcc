@@ -1,5 +1,10 @@
 2004-02-05  Kazu Hirata  <kazu@cs.umass.edu>
 
+	* config/pa/pa.c (emit_hpdiv_const): Replace gen_rtx with
+	gen_rtx_PARALLEL.
+
+2004-02-05  Kazu Hirata  <kazu@cs.umass.edu>
+
 	* emit-rtl.c: Update the comment about the file.
 
 2004-02-05  Joseph S. Myers  <jsm@polyomino.org.uk>

@@ -5554,8 +5554,8 @@ emit_hpdiv_const (rtx *operands, int unsignedp)
 
       emit_move_insn (gen_rtx_REG (SImode, 26), operands[1]);
       emit
-	(gen_rtx
-	 (PARALLEL, VOIDmode,
+	(gen_rtx_PARALLEL
+	 (VOIDmode,
 	  gen_rtvec (6, gen_rtx_SET (VOIDmode, gen_rtx_REG (SImode, 29),
 				     gen_rtx_fmt_ee (unsignedp ? UDIV : DIV,
 						     SImode,
