@@ -3246,7 +3246,7 @@ add_pred_succ (pred_bb, succ_bb, s_preds, s_succs, num_preds, num_succs)
 }
 
 /* Compute the predecessors and successors for each block.  */
-int
+void
 compute_preds_succs (s_preds, s_succs, num_preds, num_succs)
      int_list_ptr *s_preds;
      int_list_ptr *s_succs;
