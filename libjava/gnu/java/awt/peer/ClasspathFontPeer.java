@@ -1,5 +1,5 @@
 /* ClasspathFontPeer.java -- Font peer used by GNU Classpath.
-   Copyright (C) 2003 Free Software Foundation, Inc.
+   Copyright (C) 2003, 2004 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -395,6 +395,23 @@ public abstract class ClasspathFontPeer
   }
 
   /** 
+   * Implementation of {@link Font#deriveFont(int, float)}
+   *
+   * @param font the font this peer is being called from. This may be
+   * useful if you are sharing peers between Font objects. Otherwise it may
+   * be ignored.
+   */
+
+  public Font deriveFont (Font font, int style, float size)
+  {
+    Map attrs = new HashMap ();
+    getStandardAttributes (attrs);
+    copyStyleToAttrs (style, attrs);
+    copySizeToAttrs (size, attrs);
+    return tk().getFont (logicalName, attrs);
+  }
+
+  /** 
    * Implementation of {@link Font#deriveFont(float)}
    *
    * @param font the font this peer is being called from. This may be
@@ -439,6 +456,22 @@ public abstract class ClasspathFontPeer
     Map attrs = new HashMap ();
     getStandardAttributes (attrs);
     copyStyleToAttrs (style, attrs);
+    copyTransformToAttrs (t, attrs);
+    return tk().getFont (logicalName, attrs);
+  }
+
+  /** 
+   * Implementation of {@link Font#deriveFont(AffineTransform)}
+   *
+   * @param font the font this peer is being called from. This may be
+   * useful if you are sharing peers between Font objects. Otherwise it may
+   * be ignored.
+   */
+
+  public Font deriveFont (Font font, AffineTransform t)
+  {
+    Map attrs = new HashMap ();
+    getStandardAttributes (attrs);
     copyTransformToAttrs (t, attrs);
     return tk().getFont (logicalName, attrs);
   }

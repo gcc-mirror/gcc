@@ -1,5 +1,5 @@
 /* Font.java -- Font object
-   Copyright (C) 1999, 2002 Free Software Foundation, Inc.
+   Copyright (C) 1999, 2002, 2004 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -650,6 +650,22 @@ private static final long serialVersionUID = -4206021311591459213L;
 
 /**
   * Produces a new {@link Font} based on the current font, adjusted to a
+  * new size and style.
+  *
+  * @param style The style of the newly created font.
+  * @param size The size of the newly created font.
+  *
+  * @return A clone of the current font, with the specified size and style.
+  *
+  * @since 1.2
+  */
+  public Font deriveFont (int style, float size)
+{
+    return peer.deriveFont (this, style, size);
+}
+
+/**
+  * Produces a new {@link Font} based on the current font, adjusted to a
   * new size.
   *
   * @param size The size of the newly created font.
@@ -699,6 +715,27 @@ private static final long serialVersionUID = -4206021311591459213L;
       throw new IllegalArgumentException ("Affine transformation is null");
 
     return peer.deriveFont (this, style, a);
+}
+
+/**
+  * Produces a new {@link Font} based on the current font, subjected
+  * to a new affine transformation.
+  *
+  * @param a The transformation to apply.
+  *
+  * @return A clone of the current font, with the specified transform.
+  *
+  * @throws IllegalArgumentException If transformation is
+  * <code>null</code>.
+  *
+  * @since 1.2
+  */
+  public Font deriveFont (AffineTransform a)
+{
+    if (a == null)
+      throw new IllegalArgumentException ("Affine transformation is null");
+
+    return peer.deriveFont (this, a);
 }
 
 /**
