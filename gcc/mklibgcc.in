@@ -308,8 +308,14 @@ for ml in $MULTILIBS; do
     done
   fi
 
+  # Each of these .a files depends on stmp-dirs.  It would seem that
+  # this dependency is redundant, since each of the object files
+  # itself depends on stmp-dirs.  However, it is possible that there
+  # are in fact no object files.  In that case, the stmp-dirs
+  # dependency is required; the directory containing the archive must
+  # exist before the archive itself can be created.
   echo ""
-  echo "${dir}/libgcc.a: $libgcc_a_objs"
+  echo "${dir}/libgcc.a: stmp-dirs $libgcc_a_objs"
   echo "	-rm -rf ${dir}/libgcc.a"
   echo '	$(AR_CREATE_FOR_TARGET)' ${dir}/libgcc.a $libgcc_a_objs
   echo '	if $(RANLIB_TEST_FOR_TARGET) ; then' \\
@@ -319,7 +325,7 @@ for ml in $MULTILIBS; do
   if [ "$SHLIB_LINK" ]; then
 
     echo ""
-    echo "${dir}/libgcc_eh.a: $libgcc_eh_objs"
+    echo "${dir}/libgcc_eh.a: stmp-dirs $libgcc_eh_objs"
     echo "	-rm -rf ${dir}/libgcc_eh.a"
     echo '	$(AR_CREATE_FOR_TARGET)' ${dir}/libgcc_eh.a $libgcc_eh_objs
     echo '	if $(RANLIB_TEST_FOR_TARGET) ; then' \\
