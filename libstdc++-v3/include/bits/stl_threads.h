@@ -50,56 +50,19 @@
 
 #include <cstddef>
 
-// The only supported threading model is GCC's own gthr.h abstraction layer.
+// The only supported threading model is GCC's own gthr.h abstraction
+// layer.
 #include "bits/gthr.h"
 
-namespace std
+namespace __gnu_cxx
 {
-  // Class _Refcount_Base provides a type, _RC_t, a data member,
-  // _M_ref_count, and member functions _M_incr and _M_decr, which perform
-  // atomic preincrement/predecrement.  The constructor initializes 
-  // _M_ref_count.
-  struct _Refcount_Base
-  {
-    // The type _RC_t
-    typedef size_t _RC_t;
-    
-    // The data member _M_ref_count
-    volatile _RC_t _M_ref_count;
-    
-    // Constructor
-    __gthread_mutex_t _M_ref_count_lock;
-
-    _Refcount_Base(_RC_t __n) : _M_ref_count(__n)
-    {
-#ifdef __GTHREAD_MUTEX_INIT
-      __gthread_mutex_t __tmp = __GTHREAD_MUTEX_INIT;
-      _M_ref_count_lock = __tmp;
-#elif defined(__GTHREAD_MUTEX_INIT_FUNCTION)
-      __GTHREAD_MUTEX_INIT_FUNCTION (&_M_ref_count_lock);
-#else
-#error __GTHREAD_MUTEX_INIT or __GTHREAD_MUTEX_INIT_FUNCTION should be defined by gthr.h abstraction layer, report problem to libstdc++@gcc.gnu.org.
+#if !defined(__GTHREAD_MUTEX_INIT) && defined(__GTHREAD_MUTEX_INIT_FUNCTION)
+  extern __gthread_mutex_t _GLIBCXX_mutex;
+  extern __gthread_mutex_t *_GLIBCXX_mutex_address;
+  extern __gthread_once_t _GLIBCXX_once;
+  extern void _GLIBCXX_mutex_init(void);
+  extern void _GLIBCXX_mutex_address_init(void);
 #endif
-    }
-
-    void 
-    _M_incr() 
-    {
-      __gthread_mutex_lock(&_M_ref_count_lock);
-      ++_M_ref_count;
-      __gthread_mutex_unlock(&_M_ref_count_lock);
-    }
-
-    _RC_t 
-    _M_decr() 
-    {
-      __gthread_mutex_lock(&_M_ref_count_lock);
-      volatile _RC_t __tmp = --_M_ref_count;
-      __gthread_mutex_unlock(&_M_ref_count_lock);
-      return __tmp;
-    }
-  };
-} //namespace std
 
   // Locking class.  Note that this class *does not have a
   // constructor*.  It must be initialized either statically, with
@@ -113,20 +76,6 @@ namespace std
   // 8.5.1 of the C++ standard) can be initialized that way.  That
   // means we must have no constructors, no base classes, no virtual
   // functions, and no private or protected members.
-
-#if !defined(__GTHREAD_MUTEX_INIT) && defined(__GTHREAD_MUTEX_INIT_FUNCTION)
-namespace __gnu_cxx
-{
-  extern __gthread_mutex_t _GLIBCXX_mutex;
-  extern __gthread_mutex_t *_GLIBCXX_mutex_address;
-  extern __gthread_once_t _GLIBCXX_once;
-  extern void _GLIBCXX_mutex_init (void);
-  extern void _GLIBCXX_mutex_address_init (void);
-}
-#endif
-
-namespace std
-{
   struct _STL_mutex_lock
   {
     // The class must be statically initialized with __STL_MUTEX_INITIALIZER.
@@ -143,24 +92,24 @@ namespace std
       // There should be no code in this path given the usage rules above.
 #elif defined(__GTHREAD_MUTEX_INIT_FUNCTION)
       if (_M_init_flag) return;
-      if (__gthread_once (&__gnu_cxx::_GLIBCXX_once,
-			  __gnu_cxx::_GLIBCXX_mutex_init) != 0
-	  && __gthread_active_p ())
+      if (__gthread_once(&__gnu_cxx::_GLIBCXX_once,
+			 __gnu_cxx::_GLIBCXX_mutex_init) != 0
+	  && __gthread_active_p())
 	abort ();
-      __gthread_mutex_lock (&__gnu_cxx::_GLIBCXX_mutex);
+      __gthread_mutex_lock(&__gnu_cxx::_GLIBCXX_mutex);
       if (!_M_init_flag) 
 	{
 	  // Even though we have a global lock, we use __gthread_once to be
 	  // absolutely certain the _M_lock mutex is only initialized once on
 	  // multiprocessor systems.
 	  __gnu_cxx::_GLIBCXX_mutex_address = &_M_lock;
-	  if (__gthread_once (&_M_once,
-			      __gnu_cxx::_GLIBCXX_mutex_address_init) != 0
-	    && __gthread_active_p ())
-	    abort ();
+	  if (__gthread_once(&_M_once,
+			     __gnu_cxx::_GLIBCXX_mutex_address_init) != 0
+	    && __gthread_active_p())
+	    abort();
 	  _M_init_flag = 1;
 	}
-      __gthread_mutex_unlock (&__gnu_cxx::_GLIBCXX_mutex);
+      __gthread_mutex_unlock(&__gnu_cxx::_GLIBCXX_mutex);
 #endif
     }
 
@@ -193,24 +142,6 @@ namespace std
 #define __STL_MUTEX_INITIALIZER = { 0, __GTHREAD_ONCE_INIT }
 #endif
 #endif
-
-  // A locking class that uses _STL_mutex_lock.  The constructor takes a
-  // reference to an _STL_mutex_lock, and acquires a lock.  The
-  // destructor releases the lock.  It's not clear that this is exactly
-  // the right functionality.  It will probably change in the future.
-  struct _STL_auto_lock
-  {
-    _STL_mutex_lock& _M_lock;
-    
-    _STL_auto_lock(_STL_mutex_lock& __lock) : _M_lock(__lock)
-    { _M_lock._M_acquire_lock(); }
-
-    ~_STL_auto_lock() { _M_lock._M_release_lock(); }
-
-  private:
-    void operator=(const _STL_auto_lock&);
-    _STL_auto_lock(const _STL_auto_lock&);
-  } __attribute__ ((__unused__));
-} // namespace std
+} // namespace __gnu_cxx
 
 #endif 
