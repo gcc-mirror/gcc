@@ -86,6 +86,12 @@ Fri May 12 19:03:58 2000  Philippe De Muyter  <phdm@macqel.be>
 2000-05-12  Bruce Korb  <bkorb@gnu.org>
 
 	* fixinc/fixfixes.c(format_write): buglet & relaxed rules
+	* fixinc/check.diff: updated
+	* fixinc/inclhack.def: corrected & added some test_text-s
+	* fixinc/genfixes: removed unneeded options to autogen invocation
+	* fixinc/fixincl.tpl: Specified the output file
+	* fixinc/fixfixes.c: visual appearance
+	* fixinc/fixincl.x: regenerate
 
 2000-05-12  Zack Weinberg <zack@wolery.cumb.org>
 

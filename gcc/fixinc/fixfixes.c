@@ -69,7 +69,7 @@ typedef struct {
   _FT_( "format",           format_fix ) \
   _FT_( "char_macro_use",   char_macro_use_fix ) \
   _FT_( "char_macro_def",   char_macro_def_fix ) \
-  _FT_( "machine_name",	    machine_name_fix )
+  _FT_( "machine_name",     machine_name_fix )
 
 
 #define FIX_PROC_HEAD( fix ) \

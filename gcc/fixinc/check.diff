@@ -88,7 +88,7 @@
 --- 1,7 ----
 + #ifdef __cplusplus
 + #include <stdlib.h>
-+ #endif
++ #endif /* BROKEN_ASSERT_STDLIB_CHECK fix stamp */
 + #include <stdio.h>
   
   
@@ -156,7 +156,7 @@
 *** inc/stdio.h
 --- res/stdio.h
 ***************
-*** 1,7 ****
+*** 1,12 ****
   
   
   #ifndef ALPHA_GETOPT_CHECK
@@ -164,7 +164,12 @@
   #endif  /* ALPHA_GETOPT_CHECK */
   
   
---- 1,9 ----
+  #ifndef ISC_OMITS_WITH_STDC_CHECK
+! #if !defined(__STDC__) && !defined(_POSIX_SOURCE) /* ? ! */
+  int foo;
+  #endif
+  #endif  /* ISC_OMITS_WITH_STDC_CHECK */
+--- 1,14 ----
 + #define __need___va_list
 + #include <stdarg.h>
   
@@ -174,6 +179,11 @@
   #endif  /* ALPHA_GETOPT_CHECK */
   
   
+  #ifndef ISC_OMITS_WITH_STDC_CHECK
+! #if !defined(_POSIX_SOURCE) /* ? ! */
+  int foo;
+  #endif
+  #endif  /* ISC_OMITS_WITH_STDC_CHECK */
 *** inc/stdlib.h
 --- res/stdlib.h
 ***************
@@ -246,6 +256,38 @@
   extern int foo;
   #endif
   #endif  /* ALPHA_PARENS_CHECK */
+*** inc/sys/file.h
+--- res/sys/file.h
+***************
+*** 1,5 ****
+  
+  
+  #ifndef HP_SYSFILE_CHECK
+! extern void foo(...); /* HPUX_SOURCE - bad varargs */
+  #endif  /* HP_SYSFILE_CHECK */
+--- 1,5 ----
+  
+  
+  #ifndef HP_SYSFILE_CHECK
+! extern void foo(struct file *, ...); /* HPUX_SOURCE - bad varargs */
+  #endif  /* HP_SYSFILE_CHECK */
+*** inc/sys/mman.h
+--- res/sys/mman.h
+***************
+*** 1,5 ****
+--- 1,12 ----
++ #ifdef __cplusplus
++ extern "C" {
++ #endif /* CXX_UNREADY_CHECK */
++ 
+  
+  
+  #ifndef CXX_UNREADY_CHECK
+  extern void* malloc( size_t );
+  #endif  /* CXX_UNREADY_CHECK */
++ #ifdef __cplusplus
++ }
++ #endif /* CXX_UNREADY_CHECK */
 *** inc/sys/param.h
 --- res/sys/param.h
 ***************
@@ -290,6 +332,25 @@
   #ifndef AIX_VOLATILE_CHECK
 ! typedef int sig_atomic_t;
   #endif  /* AIX_VOLATILE_CHECK */
+*** inc/sys/spinlock.h
+--- res/sys/spinlock.h
+***************
+*** 1,7 ****
+  
+  
+  #ifndef HP_INLINE_CHECK
+! # include "../machine/inline.h"
+  # include "../machine/dontfix.h"
+! # include "../machine/psl.h"
+  #endif  /* HP_INLINE_CHECK */
+--- 1,7 ----
+  
+  
+  #ifndef HP_INLINE_CHECK
+! # include <machine/inline.h>
+  # include "../machine/dontfix.h"
+! # include <machine/psl.h>
+  #endif  /* HP_INLINE_CHECK */
 *** inc/sys/time.h
 --- res/sys/time.h
 ***************
