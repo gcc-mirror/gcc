@@ -1,5 +1,17 @@
 2003-03-21  Michael Koch  <konqueror@gmx.de>
 
+	* java/io/LineNumberReader.java
+	(LineNumberReader): Merged documentation with classpath.
+	(getLineNumber): Likewise.
+	(setLineNumber): Likewise.
+	(mark): Likewise.
+	(reset): Likewise.
+	(read): Likewise.
+	(readLine): Likewise.
+	(skip): Likewise.
+
+2003-03-21  Michael Koch  <konqueror@gmx.de>
+
 	* java/rmi/RMISecurityManager.java
 	(checkAccept): Removed.
 	(checkAccess): Likewise.
