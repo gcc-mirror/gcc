@@ -1,3 +1,14 @@
+2004-03-09  Giovanni Bajo  <giovannibajo@gcc.gnu.org>
+
+	PR c++/14409
+	* pt.c (determine_specialization): For member templates, match also
+	constness.
+
+	PR c++/14448
+	* parser.c (cp_parser_initializer_clause): Fold initializer if it is
+	non-dependent.
+	* pt.c (tsubst_copy_and_build): Handle NOP_EXPRs.
+
 2004-03-09  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/14230

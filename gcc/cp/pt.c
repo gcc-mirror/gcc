@@ -1249,6 +1249,7 @@ determine_specialization (tree template_id,
       if (TREE_CODE (fn) == TEMPLATE_DECL)
 	{
 	  tree decl_arg_types;
+	  tree fn_arg_types;
 
 	  /* DECL might be a specialization of FN.  */
 
@@ -1265,8 +1266,16 @@ determine_specialization (tree template_id,
 	     The specialization f<int> is invalid but is not caught
 	     by get_bindings below.  */
 
-	  if (list_length (TYPE_ARG_TYPES (TREE_TYPE (fn)))
-	      != list_length (decl_arg_types))
+	  fn_arg_types = TYPE_ARG_TYPES (TREE_TYPE (fn));
+	  if (list_length (fn_arg_types) != list_length (decl_arg_types))
+	    continue;
+
+	  /* For a non-static member function, we need to make sure that
+	     the const qualification is the same. This can be done by
+	     checking the 'this' in the argument list.  */
+	  if (DECL_NONSTATIC_MEMBER_FUNCTION_P (fn)
+	      && !same_type_p (TREE_VALUE (fn_arg_types), 
+			       TREE_VALUE (decl_arg_types)))
 	    continue;
 
 	  /* See whether this function might be a specialization of this
@@ -8165,6 +8174,11 @@ tsubst_copy_and_build (tree t,
 
     case INDIRECT_REF:
       return build_x_indirect_ref (RECUR (TREE_OPERAND (t, 0)), "unary *");
+
+    case NOP_EXPR:
+      return build_nop
+	(tsubst (TREE_TYPE (t), args, complain, in_decl),
+	 RECUR (TREE_OPERAND (t, 0)));
 
     case CAST_EXPR:
       return build_functional_cast

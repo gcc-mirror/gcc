@@ -11439,10 +11439,14 @@ cp_parser_initializer_clause (cp_parser* parser, bool* non_constant_p)
   /* If it is not a `{', then we are looking at an
      assignment-expression.  */
   if (cp_lexer_next_token_is_not (parser->lexer, CPP_OPEN_BRACE))
-    initializer 
-      = cp_parser_constant_expression (parser,
-				       /*allow_non_constant_p=*/true,
-				       non_constant_p);
+    {
+      initializer 
+	= cp_parser_constant_expression (parser,
+					/*allow_non_constant_p=*/true,
+					non_constant_p);
+      if (!*non_constant_p)
+	initializer = fold_non_dependent_expr (initializer);
+    }
   else
     {
       /* Consume the `{' token.  */
