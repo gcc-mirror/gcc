@@ -3624,15 +3624,20 @@ expand_end_case (orig_index)
 	 make a sequence of conditional branches instead of a dispatch.
 	 If the switch-index is a constant, do it this way
 	 because we can optimize it.  */
-      else if (TREE_INT_CST_HIGH (range) != 0
+
+#ifndef CASE_VALUES_THRESHOLD
 #ifdef HAVE_casesi
-	       || (HAVE_casesi ? count < 4 : count < 5)
+#define CASE_VALUES_THRESHOLD (HAVE_casesi ? 4 : 5)
 #else
-	       /* If machine does not have a case insn that compares the
-		  bounds, this means extra overhead for dispatch tables
-		  which raises the threshold for using them.  */
-	       || count < 5
-#endif
+      /* If machine does not have a case insn that compares the
+	 bounds, this means extra overhead for dispatch tables
+	 which raises the threshold for using them.  */
+#define CASE_VALUES_THRESHOLD 5
+#endif /* HAVE_casesi */
+#endif /* CASE_VALUES_THRESHOLD */
+
+      else if (TREE_INT_CST_HIGH (range) != 0
+	       || count < CASE_VALUES_THRESHOLD
 	       || (unsigned) (TREE_INT_CST_LOW (range)) > 10 * count
 	       || TREE_CODE (index_expr) == INTEGER_CST
 	       /* These will reduce to a constant.  */
