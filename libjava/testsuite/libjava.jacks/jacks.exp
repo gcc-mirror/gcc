@@ -28,7 +28,12 @@ proc gcj_jacks_write {filename} {
   puts $fd "set JAVA_CLASSPATH \"$libgcj_jar\""
   puts $fd "set JAVAC_FLAGS [list $rest]"
   puts $fd "set JAVA [list [libjava_find_gij]]"
-  puts $fd "set JAVA_FLAGS \"\""
+
+  # Without an explicit limit on the heap size, tests depending on
+  # an OutOfMemoryError (e.g. "15.9.4-runtime-creation-2") can result
+  # in a lot of unnecessary thrashing.
+  puts $fd "set JAVA_FLAGS \"-mx=64m\""
+
   puts $fd "set JAVAC_ENCODING_FLAG --encoding="
   puts $fd "set tcltest::testConstraints(encoding) 1"
   puts $fd "set tcltest::testConstraints(gcj) 1"

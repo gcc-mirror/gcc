@@ -1,3 +1,8 @@
+2004-04-25  Ranjit Mathew  <rmathew@hotmail.com>
+	
+	* testsuite/libjava.jacks/jacks.exp (gcj_jacks_write): Explicitly
+	limit the maximum heap size to avoid unnecessary thrashing.
+
 2004-04-24  Jerry Quinn  <jlquinn@optonline.net>
 
 	* java/text/CollationElementIterator.java (reset): Reset
