@@ -202,61 +202,84 @@ do {									\
 
 #undef ASM_FILE_END
 
-#undef  ASM_OUTPUT_FUNCTION_PREFIX
-#define ASM_OUTPUT_FUNCTION_PREFIX(FILE,NAME)                   \
-{                                                               \
-  fprintf (FILE, "\n#\tFunction: '..");                         \
-  assemble_name (FILE, NAME);					\
-  fprintf (FILE, "'\n");                                        \
-  fprintf (FILE, "#\tText in section: <%s>\n\n","default");     \
-  fprintf (FILE, "#\tSetup MS Structured-Exception-Handling\n"); \
-  fprintf (FILE, "\t.pdata\n");					\
-  fprintf (FILE, "\t.align 2\n");				\
-  fprintf (FILE, "\t.ualong ..");                               \
-  assemble_name (FILE, NAME);					\
-  fprintf (FILE, ",");                                          \
-  assemble_name (FILE, NAME);					\
-  fprintf (FILE, ".e,0,0,");                                    \
-  assemble_name (FILE, NAME);					\
-  fprintf (FILE, ".b\n\n");                                     \
-  fprintf (FILE, "#\tSwitch to the relocation section\n");      \
-  fprintf (FILE, "\t.reldata\n");                               \
-}
-
-
 #undef	ASM_DECLARE_FUNCTION_NAME
-#define ASM_DECLARE_FUNCTION_NAME(FILE,NAME,DECL)		\
-{                                                               \
-  if (TREE_PUBLIC (DECL))					\
-    {								\
-      fprintf (FILE, "\t.globl ..");				\
-      assemble_name (FILE, NAME);				\
-      fprintf (FILE, "\n");					\
-    }								\
-  assemble_name (FILE, NAME);					\
-  fprintf (FILE, ":\n");					\
-  fprintf (FILE, "\t.ualong ..");				\
-  assemble_name (FILE, NAME);					\
-  fprintf (FILE, ",.toc\n");				        \
-								\
-  if (lookup_attribute ("dllexport",				\
-			TYPE_ATTRIBUTES (TREE_TYPE (DECL))))	\
-    {								\
-      fprintf (FILE, "\t.globl __imp_");			\
-      assemble_name (FILE, NAME);				\
-      fprintf (FILE, "\n__imp_");				\
-      assemble_name (FILE, NAME);				\
-      fprintf (FILE, ":\n\t.ulong ");				\
-      assemble_name (FILE, NAME);				\
-      fprintf (FILE, "\n");					\
-    }								\
-								\
-  fprintf (FILE, "\t.section .text\n\t.align 2\n..");		\
-  assemble_name (FILE, NAME);					\
-  fprintf (FILE, ":\n");					\
-  fprintf (FILE, "\t.function\t..");                            \
-  assemble_name (FILE, NAME);					\
-  fprintf (FILE, "\n");					        \
+#define ASM_DECLARE_FUNCTION_NAME(FILE,NAME,DECL)			\
+{									\
+  tree exception_args;							\
+  int i;								\
+									\
+  if (TREE_PUBLIC (DECL))						\
+    {									\
+      fprintf (FILE, "\t.globl ..");					\
+      assemble_name (FILE, NAME);					\
+      fprintf (FILE, "\n");						\
+    }									\
+  assemble_name (FILE, NAME);						\
+  fprintf (FILE, ":\n");						\
+  fprintf (FILE, "\t.ualong ..");					\
+  assemble_name (FILE, NAME);						\
+  fprintf (FILE, ",.toc\n");						\
+									\
+  fprintf (FILE, "\n#\tFunction: '..");					\
+  assemble_name (FILE, NAME);						\
+  fputs ("'\n", FILE);							\
+  fputs ("#\tText in section: <default>\n\n", FILE);			\
+  fputs ("#\tSetup MS Structured-Exception-Handling\n", FILE);		\
+  fputs ("\t.pdata\n", FILE);						\
+  fputs ("\t.align 2\n", FILE);						\
+  fputs ("\t.ualong ..", FILE);						\
+  assemble_name (FILE, NAME);						\
+  fputs (",", FILE);							\
+  assemble_name (FILE, NAME);						\
+  fputs (".e,", FILE);							\
+  exception_args = lookup_attribute ("exception",			\
+				     TYPE_ATTRIBUTES (TREE_TYPE (DECL))); \
+									\
+  if (exception_args)							\
+    exception_args = TREE_VALUE (exception_args);			\
+									\
+  for (i = 0; i < 2; i++)						\
+    {									\
+      if (!exception_args)						\
+	fputs ("0,", FILE);						\
+      else								\
+	{								\
+	  tree field = TREE_VALUE (exception_args);			\
+	  exception_args = TREE_PURPOSE (exception_args);		\
+	  if (TREE_CODE (field) == STRING_CST)				\
+	    fprintf (FILE, "%.*s,", TREE_STRING_LENGTH (field),		\
+		     TREE_STRING_POINTER (field));			\
+	  else if (TREE_CODE (field) == IDENTIFIER_NODE)		\
+	    fprintf (FILE, "%.*s,", IDENTIFIER_LENGTH (field),		\
+		     IDENTIFIER_POINTER (field));			\
+	  else								\
+	    abort ();							\
+	}								\
+    }									\
+									\
+  assemble_name (FILE, NAME);						\
+  fprintf (FILE, ".b\n\n");						\
+  fprintf (FILE, "#\tSwitch to the relocation section\n");		\
+  fprintf (FILE, "\t.reldata\n");					\
+									\
+  if (lookup_attribute ("dllexport",					\
+			TYPE_ATTRIBUTES (TREE_TYPE (DECL))))		\
+    {									\
+      fprintf (FILE, "\t.globl __imp_");				\
+      assemble_name (FILE, NAME);					\
+      fprintf (FILE, "\n__imp_");					\
+      assemble_name (FILE, NAME);					\
+      fprintf (FILE, ":\n\t.ulong ");					\
+      assemble_name (FILE, NAME);					\
+      fprintf (FILE, "\n");						\
+    }									\
+									\
+  fprintf (FILE, "\t.section .text\n\t.align 2\n..");			\
+  assemble_name (FILE, NAME);						\
+  fprintf (FILE, ":\n");						\
+  fprintf (FILE, "\t.function\t..");					\
+  assemble_name (FILE, NAME);						\
+  fprintf (FILE, "\n");							\
 }
 
 /* This is how to output an assembler line defining a `double' constant.  */
