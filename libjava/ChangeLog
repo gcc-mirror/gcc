@@ -1,3 +1,8 @@
+1999-09-01  Matt Welsh <mdw@cs.berkeley.edu>
+
+	* java/lang/natClass.cc: Fixed notification of threads
+	when class initialization is complete.
+
 1999-09-01  Tom Tromey  <tromey@cygnus.com>
 
 	* java/lang/reflect/Modifier.java (ALL_FLAGS): New constant.

@@ -455,7 +455,7 @@ java::lang::Class::initializeClass (void)
 	  // Caught an exception.
 	  _Jv_MonitorEnter (this);
 	  state = JV_STATE_ERROR;
-	  notify ();
+	  notifyAll ();
 	  _Jv_MonitorExit (this);
 	  JvThrow (except);
 	}
@@ -482,7 +482,7 @@ java::lang::Class::initializeClass (void)
       _Jv_MonitorEnter (this);
       state = JV_STATE_ERROR;
     }
-  notify ();
+  notifyAll ();
   _Jv_MonitorExit (this);
   if (except)
     JvThrow (except);
