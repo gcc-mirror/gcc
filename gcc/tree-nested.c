@@ -133,13 +133,12 @@ create_tmp_var_for (struct nesting_info *info, tree type, const char *prefix)
   tree tmp_var;
 
 #if defined ENABLE_CHECKING
-  /* If the type is an array or a type which must be created by the
+  /* If the type is of variable size or a type which must be created by the
      frontend, something is wrong.  Note that we explicitly allow
      incomplete types here, since we create them ourselves here.  */
-  if (TREE_CODE (type) == ARRAY_TYPE || TREE_ADDRESSABLE (type))
-    abort ();
-  if (TYPE_SIZE_UNIT (type)
-      && TREE_CODE (TYPE_SIZE_UNIT (type)) != INTEGER_CST)
+  if (TREE_ADDRESSABLE (type)
+      || (TYPE_SIZE_UNIT (type)
+	  && TREE_CODE (TYPE_SIZE_UNIT (type)) != INTEGER_CST))
     abort ();
 #endif
 
@@ -797,34 +796,41 @@ convert_nonlocal_reference (tree *tp, int *walk_subtrees, void *data)
 
     case REALPART_EXPR:
     case IMAGPART_EXPR:
-      wi->val_only = false;
-      walk_tree (&TREE_OPERAND (t, 0), convert_nonlocal_reference, wi, NULL);
-      wi->val_only = true;
-      break;
-
     case COMPONENT_REF:
-      wi->val_only = false;
-      walk_tree (&TREE_OPERAND (t, 0), convert_nonlocal_reference, wi, NULL);
-      wi->val_only = true;
-      walk_tree (&TREE_OPERAND (t, 2), convert_nonlocal_reference, wi, NULL);
-      break;
-
     case ARRAY_REF:
     case ARRAY_RANGE_REF:
-      wi->val_only = false;
-      walk_tree (&TREE_OPERAND (t, 0), convert_nonlocal_reference, wi, NULL);
-      wi->val_only = true;
-      walk_tree (&TREE_OPERAND (t, 1), convert_nonlocal_reference, wi, NULL);
-      walk_tree (&TREE_OPERAND (t, 2), convert_nonlocal_reference, wi, NULL);
-      walk_tree (&TREE_OPERAND (t, 3), convert_nonlocal_reference, wi, NULL);
-      break;
-
     case BIT_FIELD_REF:
-      wi->val_only = false;
-      walk_tree (&TREE_OPERAND (t, 0), convert_nonlocal_reference, wi, NULL);
+      /* Go down this entire nest and just look at the final prefix and
+	 anything that describes the references.  Otherwise, we lose track
+	 of whether a NOP_EXPR or VIEW_CONVERT_EXPR needs a simple value.  */
       wi->val_only = true;
-      walk_tree (&TREE_OPERAND (t, 1), convert_nonlocal_reference, wi, NULL);
-      walk_tree (&TREE_OPERAND (t, 2), convert_nonlocal_reference, wi, NULL);
+      for (; handled_component_p (t)
+	   || TREE_CODE (t) == REALPART_EXPR || TREE_CODE (t) == IMAGPART_EXPR;
+	   tp = &TREE_OPERAND (t, 0), t = *tp)
+	{
+	  if (TREE_CODE (t) == COMPONENT_REF)
+	    walk_tree (&TREE_OPERAND (t, 2), convert_nonlocal_reference, wi,
+		       NULL);
+	  else if (TREE_CODE (t) == ARRAY_REF
+		   || TREE_CODE (t) == ARRAY_RANGE_REF)
+	    {
+	      walk_tree (&TREE_OPERAND (t, 1), convert_nonlocal_reference, wi,
+			 NULL);
+	      walk_tree (&TREE_OPERAND (t, 2), convert_nonlocal_reference, wi,
+			 NULL);
+	      walk_tree (&TREE_OPERAND (t, 3), convert_nonlocal_reference, wi,
+			 NULL);
+	    }
+	  else if (TREE_CODE (t) == BIT_FIELD_REF)
+	    {
+	      walk_tree (&TREE_OPERAND (t, 1), convert_nonlocal_reference, wi,
+			 NULL);
+	      walk_tree (&TREE_OPERAND (t, 2), convert_nonlocal_reference, wi,
+			 NULL);
+	    }
+	}
+      wi->val_only = false;
+      walk_tree (tp, convert_nonlocal_reference, wi, NULL);
       break;
 
     default:
@@ -938,34 +944,41 @@ convert_local_reference (tree *tp, int *walk_subtrees, void *data)
 
     case REALPART_EXPR:
     case IMAGPART_EXPR:
-      wi->val_only = false;
-      walk_tree (&TREE_OPERAND (t, 0), convert_local_reference, wi, NULL);
-      wi->val_only = true;
-      break;
-
     case COMPONENT_REF:
-      wi->val_only = false;
-      walk_tree (&TREE_OPERAND (t, 0), convert_local_reference, wi, NULL);
-      wi->val_only = true;
-      walk_tree (&TREE_OPERAND (t, 2), convert_local_reference, wi, NULL);
-      break;
-
     case ARRAY_REF:
     case ARRAY_RANGE_REF:
-      wi->val_only = false;
-      walk_tree (&TREE_OPERAND (t, 0), convert_local_reference, wi, NULL);
-      wi->val_only = true;
-      walk_tree (&TREE_OPERAND (t, 1), convert_local_reference, wi, NULL);
-      walk_tree (&TREE_OPERAND (t, 2), convert_local_reference, wi, NULL);
-      walk_tree (&TREE_OPERAND (t, 3), convert_local_reference, wi, NULL);
-      break;
-
     case BIT_FIELD_REF:
-      wi->val_only = false;
-      walk_tree (&TREE_OPERAND (t, 0), convert_local_reference, wi, NULL);
+      /* Go down this entire nest and just look at the final prefix and
+	 anything that describes the references.  Otherwise, we lose track
+	 of whether a NOP_EXPR or VIEW_CONVERT_EXPR needs a simple value.  */
       wi->val_only = true;
-      walk_tree (&TREE_OPERAND (t, 1), convert_local_reference, wi, NULL);
-      walk_tree (&TREE_OPERAND (t, 2), convert_local_reference, wi, NULL);
+      for (; handled_component_p (t)
+	   || TREE_CODE (t) == REALPART_EXPR || TREE_CODE (t) == IMAGPART_EXPR;
+	   tp = &TREE_OPERAND (t, 0), t = *tp)
+	{
+	  if (TREE_CODE (t) == COMPONENT_REF)
+	    walk_tree (&TREE_OPERAND (t, 2), convert_local_reference, wi,
+		       NULL);
+	  else if (TREE_CODE (t) == ARRAY_REF
+		   || TREE_CODE (t) == ARRAY_RANGE_REF)
+	    {
+	      walk_tree (&TREE_OPERAND (t, 1), convert_local_reference, wi,
+			 NULL);
+	      walk_tree (&TREE_OPERAND (t, 2), convert_local_reference, wi,
+			 NULL);
+	      walk_tree (&TREE_OPERAND (t, 3), convert_local_reference, wi,
+			 NULL);
+	    }
+	  else if (TREE_CODE (t) == BIT_FIELD_REF)
+	    {
+	      walk_tree (&TREE_OPERAND (t, 1), convert_local_reference, wi,
+			 NULL);
+	      walk_tree (&TREE_OPERAND (t, 2), convert_local_reference, wi,
+			 NULL);
+	    }
+	}
+      wi->val_only = false;
+      walk_tree (tp, convert_local_reference, wi, NULL);
       break;
 
     default:
