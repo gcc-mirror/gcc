@@ -1,5 +1,9 @@
 2004-01-05  Mark Mitchell  <mark@codesourcery.com>
 
+	PR c++/12816
+	* class.c (build_vtbl_ref_1): Do not unconditionally mark vtable
+	references as constant.
+
 	PR c++/12132
 	* parser.c (cp_parser_explicit_instantiation): Improve error
 	recovery.
