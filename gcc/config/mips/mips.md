@@ -4748,13 +4748,13 @@ dsrl\t%3,%3,1\n\
   [(set (match_operand 0 "register_operand")
 	(match_operand 1 "const_int_operand"))]
   "TARGET_MIPS16 && reload_completed && INTVAL (operands[1]) < 0"
-  [(set (match_dup 0)
-	(match_dup 2))
-   (set (match_dup 3)
-	(neg:SI (match_dup 3)))]
+  [(set (match_dup 2)
+	(match_dup 3))
+   (set (match_dup 2)
+	(neg:SI (match_dup 2)))]
 {
-  operands[2] = GEN_INT (-INTVAL (operands[1]));
-  operands[3] = gen_lowpart (SImode, operands[0]);
+  operands[2] = gen_lowpart (SImode, operands[0]);
+  operands[3] = GEN_INT (-INTVAL (operands[1]));
 })
 
 ;; The HI and LO registers are not truly independent.  If we move an mthi
