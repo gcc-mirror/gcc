@@ -1,5 +1,5 @@
 /* Subroutines for insn-output.c for Hitachi H8/300.
-   Copyright (C) 1992, 1993, 1994, 1995, 1996 Free Software Foundation, Inc.
+   Copyright (C) 1992, 93, 94, 95, 96, 1997 Free Software Foundation, Inc.
    Contributed by Steve Chamberlain (sac@cygnus.com),
    Jim Wilson (wilson@cygnus.com), and Doug Evans (dje@cygnus.com).
 
@@ -20,8 +20,8 @@ along with GNU CC; see the file COPYING.  If not, write to
 the Free Software Foundation, 59 Temple Place - Suite 330,
 Boston, MA 02111-1307, USA.  */
 
-#include <stdio.h>
 #include "config.h"
+#include <stdio.h>
 #include "rtl.h"
 #include "regs.h"
 #include "hard-reg-set.h"
@@ -52,7 +52,7 @@ int cpu_type;
    (either via #pragma or an attribute specification).  */
 int interrupt_handler;
 
-/* True if the current fucntion is an OS Task
+/* True if the current function is an OS Task
    (via an attribute specification).  */
 int os_task;
 
@@ -1291,6 +1291,15 @@ print_operand (file, x, code)
 	case CONST_INT:
 	  fprintf (file, "#%d", ((INTVAL (x) >> 16) & 0xffff));
 	  break;
+	case CONST_DOUBLE:
+	  {
+	    long val;
+	    REAL_VALUE_TYPE rv;
+	    REAL_VALUE_FROM_CONST_DOUBLE (rv, x);
+	    REAL_VALUE_TO_TARGET_SINGLE (rv, val);
+	    fprintf (file, "#%d", ((val >> 16) & 0xffff));
+	    break;
+	  }
 	default:
 	  abort ();
 	  break;
@@ -1312,6 +1321,15 @@ print_operand (file, x, code)
 	case CONST_INT:
 	  fprintf (file, "#%d", INTVAL (x) & 0xffff);
 	  break;
+	case CONST_DOUBLE:
+	  {
+	    long val;
+	    REAL_VALUE_TYPE rv;
+	    REAL_VALUE_FROM_CONST_DOUBLE (rv, x);
+	    REAL_VALUE_TO_TARGET_SINGLE (rv, val);
+	    fprintf (file, "#%d", (val & 0xffff));
+	    break;
+	  }
 	default:
 	  abort ();
 	}
@@ -1427,6 +1445,15 @@ print_operand (file, x, code)
 	  fprintf (file, "#");
 	  print_operand_address (file, x);
 	  break;
+	case CONST_DOUBLE:
+	  {
+	    long val;
+	    REAL_VALUE_TYPE rv;
+	    REAL_VALUE_FROM_CONST_DOUBLE (rv, x);
+	    REAL_VALUE_TO_TARGET_SINGLE (rv, val);
+	    fprintf (file, "#%d", val);
+	    break;
+	  }
 	}
     }
 }
@@ -2338,7 +2365,7 @@ get_shift_alg (cpu, shift_type, mode, count, assembler_p,
 	  switch (shift_type)
 	    {
 	    case SHIFT_ASHIFT:
-	      *assembler_p = "mov.b\t%y0,%z0n\tmov.b\t%x0,%y0\n\tmov.b\t%w0,%x0\n\tsub.b\t%w0,%w0";
+	      *assembler_p = "mov.b\t%y0,%z0\n\tmov.b\t%x0,%y0\n\tmov.b\t%w0,%x0\n\tsub.b\t%w0,%w0";
 	      *cc_valid_p = 0;
 	      return SHIFT_SPECIAL;
 	    case SHIFT_LSHIFTRT:
