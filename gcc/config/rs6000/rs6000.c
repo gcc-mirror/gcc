@@ -8036,91 +8036,88 @@ rs6000_emit_load_toc_table (fromprolog)
   rtx dest;
   dest = gen_rtx_REG (Pmode, RS6000_PIC_OFFSET_TABLE_REGNUM);
 
-  if (TARGET_ELF && DEFAULT_ABI != ABI_AIX)
+  if (TARGET_ELF && DEFAULT_ABI == ABI_V4 && flag_pic == 1)
     {
-      if (DEFAULT_ABI == ABI_V4 && flag_pic == 1)
+      rtx temp = (fromprolog
+		  ? gen_rtx_REG (Pmode, LINK_REGISTER_REGNUM)
+		  : gen_reg_rtx (Pmode));
+      rs6000_maybe_dead (emit_insn (gen_load_toc_v4_pic_si (temp)));
+      rs6000_maybe_dead (emit_move_insn (dest, temp));
+    }
+  else if (TARGET_ELF && DEFAULT_ABI != ABI_AIX && flag_pic == 2)
+    {
+      char buf[30];
+      rtx tempLR = (fromprolog
+		    ? gen_rtx_REG (Pmode, LINK_REGISTER_REGNUM)
+		    : gen_reg_rtx (Pmode));
+      rtx temp0 = (fromprolog
+		   ? gen_rtx_REG (Pmode, 0)
+		   : gen_reg_rtx (Pmode));
+      rtx symF;
+
+      /* possibly create the toc section */
+      if (! toc_initialized)
 	{
-	  rtx temp = (fromprolog 
-		      ? gen_rtx_REG (Pmode, LINK_REGISTER_REGNUM)
-		      : gen_reg_rtx (Pmode));
-	  rs6000_maybe_dead (emit_insn (gen_load_toc_v4_pic_si (temp)));
-	  rs6000_maybe_dead (emit_move_insn (dest, temp));
+	  toc_section ();
+	  function_section (current_function_decl);
 	}
-      else if (flag_pic == 2)
-        {
-	  char buf[30];
-	  rtx tempLR = (fromprolog 
-			? gen_rtx_REG (Pmode, LINK_REGISTER_REGNUM)
-			: gen_reg_rtx (Pmode));
-	  rtx temp0 = (fromprolog
-			? gen_rtx_REG (Pmode, 0)
-			: gen_reg_rtx (Pmode));
-	  rtx symF;
 
-	  /* possibly create the toc section */
-	  if (! toc_initialized)
-	    {
-	      toc_section ();
-	      function_section (current_function_decl);
-	    }
-  
-	  if (fromprolog)
-	    {
-	      rtx symL;
-	  
-	      ASM_GENERATE_INTERNAL_LABEL (buf, "LCF", rs6000_pic_labelno);
-	      symF = gen_rtx_SYMBOL_REF (Pmode, ggc_strdup (buf));
+      if (fromprolog)
+	{
+	  rtx symL;
 
-	      ASM_GENERATE_INTERNAL_LABEL (buf, "LCL", rs6000_pic_labelno);
-	      symL = gen_rtx_SYMBOL_REF (Pmode, ggc_strdup (buf));
+	  ASM_GENERATE_INTERNAL_LABEL (buf, "LCF", rs6000_pic_labelno);
+	  symF = gen_rtx_SYMBOL_REF (Pmode, ggc_strdup (buf));
 
-	      rs6000_maybe_dead (emit_insn (gen_load_toc_v4_PIC_1 (tempLR, 
-								   symF)));
-	      rs6000_maybe_dead (emit_move_insn (dest, tempLR));
-	      rs6000_maybe_dead (emit_insn (gen_load_toc_v4_PIC_2 (temp0, dest,
-								   symL,
-								   symF)));
-	    }
-	  else
-	    {
-	      rtx tocsym;
-	      static int reload_toc_labelno = 0;
+	  ASM_GENERATE_INTERNAL_LABEL (buf, "LCL", rs6000_pic_labelno);
+	  symL = gen_rtx_SYMBOL_REF (Pmode, ggc_strdup (buf));
 
-	      tocsym = gen_rtx_SYMBOL_REF (Pmode, toc_label_name);
-
-	      ASM_GENERATE_INTERNAL_LABEL (buf, "LCG", reload_toc_labelno++);
-	      symF = gen_rtx_SYMBOL_REF (Pmode, ggc_strdup (buf));
-
-	      rs6000_maybe_dead (emit_insn (gen_load_toc_v4_PIC_1b (tempLR, 
-								    symF, 
-								    tocsym)));
-	      rs6000_maybe_dead (emit_move_insn (dest, tempLR));
-	      rs6000_maybe_dead (emit_move_insn (temp0, 
-						 gen_rtx_MEM (Pmode, dest)));
-	    }
-	  rs6000_maybe_dead (emit_insn (gen_addsi3 (dest, temp0, dest)));
-	}
-      else if (flag_pic == 0 && TARGET_MINIMAL_TOC)
-        {
-	  /* This is for AIX code running in non-PIC ELF.  */
-	  char buf[30];
-	  rtx realsym;
-	  ASM_GENERATE_INTERNAL_LABEL (buf, "LCTOC", 1);
-	  realsym = gen_rtx_SYMBOL_REF (Pmode, ggc_strdup (buf));
-	  
-	  rs6000_maybe_dead (emit_insn (gen_elf_high (dest, realsym)));
-	  rs6000_maybe_dead (emit_insn (gen_elf_low (dest, dest, realsym)));
+	  rs6000_maybe_dead (emit_insn (gen_load_toc_v4_PIC_1 (tempLR,
+							       symF)));
+	  rs6000_maybe_dead (emit_move_insn (dest, tempLR));
+	  rs6000_maybe_dead (emit_insn (gen_load_toc_v4_PIC_2 (temp0, dest,
+							       symL,
+							       symF)));
 	}
       else
-        abort ();
+	{
+	  rtx tocsym;
+	  static int reload_toc_labelno = 0;
+
+	  tocsym = gen_rtx_SYMBOL_REF (Pmode, toc_label_name);
+
+	  ASM_GENERATE_INTERNAL_LABEL (buf, "LCG", reload_toc_labelno++);
+	  symF = gen_rtx_SYMBOL_REF (Pmode, ggc_strdup (buf));
+
+	  rs6000_maybe_dead (emit_insn (gen_load_toc_v4_PIC_1b (tempLR,
+								symF,
+								tocsym)));
+	  rs6000_maybe_dead (emit_move_insn (dest, tempLR));
+	  rs6000_maybe_dead (emit_move_insn (temp0,
+					     gen_rtx_MEM (Pmode, dest)));
+	}
+      rs6000_maybe_dead (emit_insn (gen_addsi3 (dest, temp0, dest)));
     }
-  else
+  else if (TARGET_ELF && !TARGET_AIX && flag_pic == 0 && TARGET_MINIMAL_TOC)
+    {
+      /* This is for AIX code running in non-PIC ELF32.  */
+      char buf[30];
+      rtx realsym;
+      ASM_GENERATE_INTERNAL_LABEL (buf, "LCTOC", 1);
+      realsym = gen_rtx_SYMBOL_REF (Pmode, ggc_strdup (buf));
+
+      rs6000_maybe_dead (emit_insn (gen_elf_high (dest, realsym)));
+      rs6000_maybe_dead (emit_insn (gen_elf_low (dest, dest, realsym)));
+    }
+  else if (DEFAULT_ABI == ABI_AIX)
     {
       if (TARGET_32BIT)
-        rs6000_maybe_dead (emit_insn (gen_load_toc_aix_si (dest)));
+	rs6000_maybe_dead (emit_insn (gen_load_toc_aix_si (dest)));
       else
-        rs6000_maybe_dead (emit_insn (gen_load_toc_aix_di (dest)));
+	rs6000_maybe_dead (emit_insn (gen_load_toc_aix_di (dest)));
     }
+  else
+    abort ();
 }
 
 int   
