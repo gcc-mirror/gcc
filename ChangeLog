@@ -1,3 +1,8 @@
+2000-11-24  Nick Clifton  <nickc@redhat.com>
+
+	* configure.in (xscale-elf): Add target.
+	(xscale-coff): Add target.
+
 2000-11-22  Loren J. Rittle  <ljrittle@acm.org>
 
         * ltcf-cxx.sh: Support creation of C++ shared libraries on
