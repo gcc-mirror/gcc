@@ -1,5 +1,5 @@
 /* Calculate (post)dominators in slightly super-linear time.
-   Copyright (C) 2000 Free Software Foundation, Inc.
+   Copyright (C) 2000, 2003 Free Software Foundation, Inc.
    Contributed by Michael Matz (matz@ifh.de).
 
    This file is part of GCC.
@@ -115,19 +115,16 @@ struct dom_info
   unsigned int nodes;
 };
 
-static void init_dom_info		PARAMS ((struct dom_info *));
-static void free_dom_info		PARAMS ((struct dom_info *));
-static void calc_dfs_tree_nonrec	PARAMS ((struct dom_info *,
-						 basic_block,
-						 enum cdi_direction));
-static void calc_dfs_tree		PARAMS ((struct dom_info *,
-						 enum cdi_direction));
-static void compress			PARAMS ((struct dom_info *, TBB));
-static TBB eval				PARAMS ((struct dom_info *, TBB));
-static void link_roots			PARAMS ((struct dom_info *, TBB, TBB));
-static void calc_idoms			PARAMS ((struct dom_info *,
-						 enum cdi_direction));
-void debug_dominance_info		PARAMS ((dominance_info));
+static void init_dom_info (struct dom_info *);
+static void free_dom_info (struct dom_info *);
+static void calc_dfs_tree_nonrec (struct dom_info *, basic_block,
+				  enum cdi_direction);
+static void calc_dfs_tree (struct dom_info *, enum cdi_direction);
+static void compress (struct dom_info *, TBB);
+static TBB eval (struct dom_info *, TBB);
+static void link_roots (struct dom_info *, TBB, TBB);
+static void calc_idoms (struct dom_info *, enum cdi_direction);
+void debug_dominance_info (dominance_info);
 
 /* Helper macro for allocating and initializing an array,
    for aesthetic reasons.  */
@@ -150,8 +147,7 @@ void debug_dominance_info		PARAMS ((dominance_info));
    This initializes the contents of DI, which already must be allocated.  */
 
 static void
-init_dom_info (di)
-     struct dom_info *di;
+init_dom_info (struct dom_info *di)
 {
   /* We need memory for n_basic_blocks nodes and the ENTRY_BLOCK or
      EXIT_BLOCK.  */
@@ -180,8 +176,7 @@ init_dom_info (di)
 /* Free all allocated memory in DI, but not DI itself.  */
 
 static void
-free_dom_info (di)
-     struct dom_info *di;
+free_dom_info (struct dom_info *di)
 {
   free (di->dfs_parent);
   free (di->path_min);
@@ -203,10 +198,7 @@ free_dom_info (di)
    assigned their dfs number and are linked together to form a tree.  */
 
 static void
-calc_dfs_tree_nonrec (di, bb, reverse)
-     struct dom_info *di;
-     basic_block bb;
-     enum cdi_direction reverse;
+calc_dfs_tree_nonrec (struct dom_info *di, basic_block bb, enum cdi_direction reverse)
 {
   /* We never call this with bb==EXIT_BLOCK_PTR (ENTRY_BLOCK_PTR if REVERSE).  */
   /* We call this _only_ if bb is not already visited.  */
@@ -321,9 +313,7 @@ calc_dfs_tree_nonrec (di, bb, reverse)
    because there may be nodes from which the EXIT_BLOCK is unreachable.  */
 
 static void
-calc_dfs_tree (di, reverse)
-     struct dom_info *di;
-     enum cdi_direction reverse;
+calc_dfs_tree (struct dom_info *di, enum cdi_direction reverse)
 {
   /* The first block is the ENTRY_BLOCK (or EXIT_BLOCK if REVERSE).  */
   basic_block begin = reverse ? EXIT_BLOCK_PTR : ENTRY_BLOCK_PTR;
@@ -364,9 +354,7 @@ calc_dfs_tree (di, reverse)
    from V to that root.  */
 
 static void
-compress (di, v)
-     struct dom_info *di;
-     TBB v;
+compress (struct dom_info *di, TBB v)
 {
   /* Btw. It's not worth to unrecurse compress() as the depth is usually not
      greater than 5 even for huge graphs (I've not seen call depth > 4).
@@ -386,9 +374,7 @@ compress (di, v)
    value on the path from V to the root.  */
 
 static inline TBB
-eval (di, v)
-     struct dom_info *di;
-     TBB v;
+eval (struct dom_info *di, TBB v)
 {
   /* The representant of the set V is in, also called root (as the set
      representation is a tree).  */
@@ -417,9 +403,7 @@ eval (di, v)
    of W.  */
 
 static void
-link_roots (di, v, w)
-     struct dom_info *di;
-     TBB v, w;
+link_roots (struct dom_info *di, TBB v, TBB w)
 {
   TBB s = w;
 
@@ -461,9 +445,7 @@ link_roots (di, v, w)
    On return the immediate dominator to node V is in di->dom[V].  */
 
 static void
-calc_idoms (di, reverse)
-     struct dom_info *di;
-     enum cdi_direction reverse;
+calc_idoms (struct dom_info *di, enum cdi_direction reverse)
 {
   TBB v, w, k, par;
   basic_block en_block;
@@ -557,8 +539,7 @@ calc_idoms (di, reverse)
    immediate resp. all dominators).  */
 
 dominance_info
-calculate_dominance_info (reverse)
-     enum cdi_direction reverse;
+calculate_dominance_info (enum cdi_direction reverse)
 {
   struct dom_info di;
   dominance_info info;
@@ -596,8 +577,7 @@ calculate_dominance_info (reverse)
 
 /* Free dominance information.  */
 void
-free_dominance_info (info)
-     dominance_info info;
+free_dominance_info (dominance_info info)
 {
   basic_block bb;
 
@@ -616,9 +596,7 @@ free_dominance_info (info)
 
 /* Return the immediate dominator of basic block BB.  */
 basic_block
-get_immediate_dominator (dom, bb)
-     dominance_info dom;
-     basic_block bb;
+get_immediate_dominator (dominance_info dom, basic_block bb)
 {
   return et_forest_node_value (dom->forest,
 			       et_forest_parent (dom->forest,
@@ -628,9 +606,7 @@ get_immediate_dominator (dom, bb)
 /* Set the immediate dominator of the block possibly removing
    existing edge.  NULL can be used to remove any edge.  */
 inline void
-set_immediate_dominator (dom, bb, dominated_by)
-     dominance_info dom;
-     basic_block bb, dominated_by;
+set_immediate_dominator (dominance_info dom, basic_block bb, basic_block dominated_by)
 {
   void *aux_bb_node;
   et_forest_node_t bb_node = BB_NODE (dom, bb);
@@ -649,10 +625,7 @@ set_immediate_dominator (dom, bb, dominated_by)
 
 /* Store all basic blocks dominated by BB into BBS and return their number.  */
 int
-get_dominated_by (dom, bb, bbs)
-     dominance_info dom;
-     basic_block bb;
-     basic_block **bbs;
+get_dominated_by (dominance_info dom, basic_block bb, basic_block **bbs)
 {
   int n, i;
 
@@ -665,10 +638,7 @@ get_dominated_by (dom, bb, bbs)
 
 /* Redirect all edges pointing to BB to TO.  */
 void
-redirect_immediate_dominators (dom, bb, to)
-     dominance_info dom;
-     basic_block bb;
-     basic_block to;
+redirect_immediate_dominators (dominance_info dom, basic_block bb, basic_block to)
 {
   et_forest_node_t *bbs = xmalloc (n_basic_blocks * sizeof (basic_block));
   et_forest_node_t node = BB_NODE (dom, bb);
@@ -686,10 +656,7 @@ redirect_immediate_dominators (dom, bb, to)
 
 /* Find first basic block in the tree dominating both BB1 and BB2.  */
 basic_block
-nearest_common_dominator (dom, bb1, bb2)
-     dominance_info dom;
-     basic_block bb1;
-     basic_block bb2;
+nearest_common_dominator (dominance_info dom, basic_block bb1, basic_block bb2)
 {
   if (!bb1)
     return bb2;
@@ -704,18 +671,14 @@ nearest_common_dominator (dom, bb1, bb2)
 
 /* Return TRUE in case BB1 is dominated by BB2.  */
 bool
-dominated_by_p (dom, bb1, bb2)
-     dominance_info dom;
-     basic_block bb1;
-     basic_block bb2;
+dominated_by_p (dominance_info dom, basic_block bb1, basic_block bb2)
 {
   return nearest_common_dominator (dom, bb1, bb2) == bb2;
 }
 
 /* Verify invariants of dominator structure.  */
 void
-verify_dominators (dom)
-     dominance_info dom;
+verify_dominators (dominance_info dom)
 {
   int err = 0;
   basic_block bb;
@@ -738,9 +701,7 @@ verify_dominators (dom)
 
 /* Recount dominator of BB.  */
 basic_block
-recount_dominator (dom, bb)
-     dominance_info dom;
-     basic_block bb;
+recount_dominator (dominance_info dom, basic_block bb)
 {
    basic_block dom_bb = NULL;
    edge e;
@@ -757,10 +718,7 @@ recount_dominator (dom, bb)
 /* Iteratively recount dominators of BBS. The change is supposed to be local
    and not to grow further.  */
 void
-iterate_fix_dominators (dom, bbs, n)
-     dominance_info dom;
-     basic_block *bbs;
-     int n;
+iterate_fix_dominators (dominance_info dom, basic_block *bbs, int n)
 {
   int i, changed = 1;
   basic_block old_dom, new_dom;
@@ -782,9 +740,7 @@ iterate_fix_dominators (dom, bbs, n)
 }
 
 void
-add_to_dominance_info (dom, bb)
-     dominance_info dom;
-     basic_block bb;
+add_to_dominance_info (dominance_info dom, basic_block bb)
 {
   VARRAY_GROW (dom->varray, last_basic_block + 3);
 #ifdef ENABLE_CHECKING
@@ -795,17 +751,14 @@ add_to_dominance_info (dom, bb)
 }
 
 void
-delete_from_dominance_info (dom, bb)
-     dominance_info dom;
-     basic_block bb;
+delete_from_dominance_info (dominance_info dom, basic_block bb)
 {
   et_forest_remove_node (dom->forest, BB_NODE (dom, bb));
   SET_BB_NODE (dom, bb, NULL);
 }
 
 void
-debug_dominance_info (dom)
-  dominance_info dom;
+debug_dominance_info (dominance_info dom)
 {
   basic_block bb, bb2;
   FOR_EACH_BB (bb)

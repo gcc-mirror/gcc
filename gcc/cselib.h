@@ -62,12 +62,12 @@ struct elt_list GTY(())
   cselib_val *elt;
 };
 
-extern cselib_val *cselib_lookup	PARAMS ((rtx, enum machine_mode, int));
-extern void cselib_update_varray_sizes	PARAMS ((void));
-extern void cselib_init			PARAMS ((void));
-extern void cselib_finish		PARAMS ((void));
-extern void cselib_process_insn		PARAMS ((rtx));
-extern enum machine_mode cselib_reg_set_mode PARAMS ((rtx));
-extern int rtx_equal_for_cselib_p	PARAMS ((rtx, rtx));
-extern int references_value_p		PARAMS ((rtx, int));
-extern rtx cselib_subst_to_values	PARAMS ((rtx));
+extern cselib_val *cselib_lookup (rtx, enum machine_mode, int);
+extern void cselib_update_varray_sizes (void);
+extern void cselib_init (void);
+extern void cselib_finish (void);
+extern void cselib_process_insn (rtx);
+extern enum machine_mode cselib_reg_set_mode (rtx);
+extern int rtx_equal_for_cselib_p (rtx, rtx);
+extern int references_value_p (rtx, int);
+extern rtx cselib_subst_to_values (rtx);
