@@ -2837,6 +2837,7 @@ extern int more_specialized_class		PROTO((tree, tree));
 extern void do_pushlevel			PROTO((void));
 extern int is_member_template                   PROTO((tree));
 extern int comp_template_parms                  PROTO((tree, tree));
+extern int decl_template_parm_p			PROTO((tree));
 extern int template_class_depth                 PROTO((tree));
 extern int is_specialization_of                 PROTO((tree, tree));
 extern int comp_template_args                   PROTO((tree, tree));

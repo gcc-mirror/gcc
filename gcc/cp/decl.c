@@ -3669,6 +3669,16 @@ pushdecl (x)
 	      if (warnstring)
 		warning (warnstring, IDENTIFIER_POINTER (name));
 	    }
+	  /* Check to see if decl redeclares a template parameter. */
+ 	  if (oldlocal && (current_class_type || current_function_decl ) 
+ 	      && current_template_parms)
+ 	    {
+ 	      if (decl_template_parm_p (oldlocal))
+ 		{
+ 		  cp_error ("redeclaration of template parameter `%T'", name);
+ 		  cp_error_at (" previously declared here `%#D'", oldlocal);
+ 		}
+ 	    }
 	}
 
       if (TREE_CODE (x) == FUNCTION_DECL)
@@ -11480,11 +11490,12 @@ xref_tag (code_type_node, name, binfo, globalize)
 
   if (! globalize)
     {
-      if (pedantic && t && (TREE_CODE (t) == TEMPLATE_TYPE_PARM 
+      if (t && (TREE_CODE (t) == TEMPLATE_TYPE_PARM 
 			    || TREE_CODE (t) == TEMPLATE_TEMPLATE_PARM))
 	{
-	  cp_pedwarn ("redeclaration of template type-parameter `%T'", name);
-	  cp_pedwarn_at ("  previously declared here", t);
+	  cp_error ("redeclaration of template type-parameter `%T'", name);
+	  cp_error_at ("  previously declared here `%#D'", 
+		       TEMPLATE_TYPE_DECL (t));
 	}
       if (t && TYPE_CONTEXT (t) && got_type)
 	ref = t;
