@@ -132,7 +132,9 @@ extern struct rtx_def *mips_function_value ();
    For stdarg, we do not need to save the current argument, because it
    is a real argument.  */
 #define SETUP_INCOMING_VARARGS(CUM,MODE,TYPE,PRETEND_SIZE,NO_RTL)	\
-{ if (mips_isa >= 3 && (CUM).arg_words < MAX_ARGS_IN_REGISTERS - 1)	\
+{ if (mips_isa >= 3							\
+      && ((CUM).arg_words						\
+	  < (MAX_ARGS_IN_REGISTERS - ! current_function_varargs)))	\
     {									\
       PRETEND_SIZE							\
 	= (MAX_ARGS_IN_REGISTERS - (CUM).arg_words			\
@@ -140,9 +142,7 @@ extern struct rtx_def *mips_function_value ();
 									\
       if (! (NO_RTL))							\
 	{								\
-	  rtx mem = gen_rtx (MEM, BLKmode,				\
-			     plus_constant (virtual_incoming_args_rtx,	\
-					    - PRETEND_SIZE));		\
+	  rtx mem = gen_rtx (MEM, BLKmode, virtual_incoming_args_rtx);	\
 	  /* va_arg is an array access in this case, which causes it to \
 	     get MEM_IN_STRUCT_P set.  We must set it here so that the	\
 	     insn scheduler won't assume that these stores can't 	\
