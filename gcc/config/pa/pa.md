@@ -3975,7 +3975,7 @@
 (define_insn "return"
   [(return)]
   "hppa_can_use_return_insn_p ()"
-  "bv%* 0(%%r2)"
+  "bv%* %%r0(%%r2)"
   [(set_attr "type" "branch")
    (set_attr "length" "4")])
 
@@ -3985,7 +3985,7 @@
   [(use (reg:SI 2))
    (return)]
   ""
-  "bv%* 0(%%r2)"
+  "bv%* %%r0(%%r2)"
   [(set_attr "type" "branch")
    (set_attr "length" "4")])
 
@@ -4079,7 +4079,7 @@
       output_asm_insn (\"bl .+8,%%r1\\n\\taddil L'%l0-%l1,%%r1\", xoperands);
       ASM_OUTPUT_INTERNAL_LABEL (asm_out_file, \"L\",
                                  CODE_LABEL_NUMBER (xoperands[1]));
-      output_asm_insn (\"ldo R'%l0-%l1(%%r1),%%r1\\n\\tbv 0(%%r1)\",
+      output_asm_insn (\"ldo R'%l0-%l1(%%r1),%%r1\\n\\tbv %%r0(%%r1)\",
 		       xoperands);
     }
   else
@@ -4276,7 +4276,7 @@
 
   /* Long millicode call for portable runtime.  */
   if (get_attr_length (insn) == 20)
-    return \"ldil L%%$$dyncall,%%r31\;ldo R%%$$dyncall(%%r31),%%r31\;blr 0,%%r2\;bv,n 0(%%r31)\;nop\";
+    return \"ldil L%%$$dyncall,%%r31\;ldo R%%$$dyncall(%%r31),%%r31\;blr 0,%%r2\;bv,n %%r0(%%r31)\;nop\";
 
   /* If we're generating PIC code.  */
   xoperands[0] = operands[0];
@@ -4287,7 +4287,7 @@
 			     CODE_LABEL_NUMBER (xoperands[1]));
   output_asm_insn (\"ldo R%%$$dyncall-%1(%%r1),%%r1\", xoperands);
   output_asm_insn (\"blr 0,%%r2\", xoperands);
-  output_asm_insn (\"bv,n 0(%%r1)\\n\\tnop\", xoperands);
+  output_asm_insn (\"bv,n %%r0(%%r1)\\n\\tnop\", xoperands);
   return \"\";
 }"
   [(set_attr "type" "dyncall")
@@ -4436,7 +4436,7 @@
 
   /* Long millicode call for portable runtime.  */
   if (get_attr_length (insn) == 20)
-    return \"ldil L%%$$dyncall,%%r31\;ldo R%%$$dyncall(%%r31),%%r31\;blr 0,%%r2\;bv,n 0(%%r31)\;nop\";
+    return \"ldil L%%$$dyncall,%%r31\;ldo R%%$$dyncall(%%r31),%%r31\;blr 0,%%r2\;bv,n %%r0(%%r31)\;nop\";
 
   /* If we're generating PIC code.  */
   xoperands[0] = operands[1];
@@ -4447,7 +4447,7 @@
 			     CODE_LABEL_NUMBER (xoperands[1]));
   output_asm_insn (\"ldo R%%$$dyncall-%1(%%r1),%%r1\", xoperands);
   output_asm_insn (\"blr 0,%%r2\", xoperands);
-  output_asm_insn (\"bv,n 0(%%r1)\\n\\tnop\", xoperands);
+  output_asm_insn (\"bv,n %%r0(%%r1)\\n\\tnop\", xoperands);
   return \"\";
 }"
   [(set_attr "type" "dyncall")
@@ -4548,7 +4548,7 @@
 (define_insn "indirect_jump"
   [(set (pc) (match_operand:SI 0 "register_operand" "r"))]
   ""
-  "bv%* 0(%0)"
+  "bv%* %%r0(%0)"
   [(set_attr "type" "branch")
    (set_attr "length" "4")])
 

@@ -150,7 +150,7 @@ L$0000
 	nop
 L$0001
 	; Return
-	bv,n 0(%r31)
+	bv,n %r0(%r31)
 	.EXIT
 	.PROCEND
 
@@ -255,7 +255,7 @@ L$0004
 	nop
 L$0005
 	; Return and deallocate our frame.
-	bv 0(%r31)
+	bv %r0(%r31)
 	sub %r30,%r21,%r30
 	.EXIT
 	.PROCEND
