@@ -1,3 +1,10 @@
+2004-04-02  Nathan Sidwell  <nathan@codesourcery.com>
+
+	PR c++/14007
+	* pt.c (check_cv_quals_for_unify): Correct logic for disallowed
+	cv-qualifier unification.
+	* tree.c (cp_build_qualified_type_real): Renable DR295 logic.
+
 2004-04-02  Jan Hubicka  <jh@suse.cz>
 
 	* cp-lang. (LANG_HOOKS_UPDATE_DECL_AFTER_SAVING): Define.
