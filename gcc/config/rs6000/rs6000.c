@@ -508,6 +508,9 @@ rs6000_override_options (default_cpu)
 #ifdef SUBTARGET_OVERRIDE_OPTIONS
   SUBTARGET_OVERRIDE_OPTIONS;
 #endif
+#ifdef SUBSUBTARGET_OVERRIDE_OPTIONS
+  SUBSUBTARGET_OVERRIDE_OPTIONS;
+#endif
 
   /* Set TARGET_AIX_STRUCT_RET last, after the ABI is determined.
      If -maix-struct-return or -msvr4-struct-return was explicitly
