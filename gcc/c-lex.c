@@ -1558,6 +1558,8 @@ yylex ()
 		else if (! spec_long_long)
 		  ansi_type = long_unsigned_type_node;
 		else if (! spec_unsigned
+			 /* Verify value does not overflow into sign bit.  */
+			 && TREE_INT_CST_HIGH (yylval.ttype) >= 0
 			 && int_fits_type_p (yylval.ttype,
 					     long_long_integer_type_node))
 		  ansi_type = long_long_integer_type_node;
