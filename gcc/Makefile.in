@@ -1827,7 +1827,7 @@ tradcpp$(exeext): tradcpp.o tradcif.o cppdefault.o $(LIBDEPS)
 	tradcpp.o tradcif.o cppdefault.o version.o intl.o $(LIBS)
 
 tradcpp.o: tradcpp.c $(CONFIG_H) system.h version.h cppdefault.h
-tradcif.o: tradcif.c $(CONFIG_H) system.h
+tradcif.o: $(srcdir)/tradcif.c $(CONFIG_H) system.h
 
 $(srcdir)/tradcif.c: $(srcdir)/tradcif.y
 	cd $(srcdir); $(BISON) $(BISONFLAGS) -o tradcif.c tradcif.y
