@@ -1,7 +1,12 @@
-2004-08-20  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
+2004-08-20  Paolo Carlini  <pcarlini@suse.de>
 
-	* cpu/hppa/atomicity.h (__exchange_and_add, __atomic_add): Add memory
-	barrier to locking asm.
+	PR libstdc++/7219 (continued)
+	* include/bits/ios_base.h (class ios_base): Expose Annex D.6
+	typedefs by default.
+	* testsuite/27_io/types/1.cc: Remove #if _GLIBCXX_DEPRECATED.
+	* testsuite/27_io/ios_base/cons/assign_neg.cc: Tweak dg-error
+	line number.
+	* testsuite/27_io/ios_base/cons/copy_neg.cc: Likewise.
 
 2004-08-20  Paolo Carlini  <pcarlini@suse.de>
 

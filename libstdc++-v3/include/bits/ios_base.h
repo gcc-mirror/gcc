@@ -357,7 +357,6 @@ namespace std
     /// Request a seek relative to the current end of the sequence.
     static const seekdir end =		seekdir(SEEK_END);
 
-#ifdef _GLIBCXX_DEPRECATED
     // Annex D.6
     typedef int io_state;
     typedef int open_mode;
@@ -365,7 +364,6 @@ namespace std
 
     typedef std::streampos streampos;
     typedef std::streamoff streamoff;
-#endif
 
     // Callbacks;
     /**
