@@ -1,5 +1,5 @@
 /* Definitions of target machine for GNU compiler for iq2000.
-   Copyright (C) 2003 Free Software Foundation, Inc.
+   Copyright (C) 2003, 2004 Free Software Foundation, Inc.
 
    This file is part of GCC.
 
@@ -38,7 +38,6 @@ extern int              iq2000_can_use_return_insn (void);
 extern int              function_arg_pass_by_reference (CUMULATIVE_ARGS *, enum machine_mode, tree, int);
 extern int              iq2000_adjust_insn_length (rtx, int);
 extern char *           iq2000_output_conditional_branch (rtx, rtx *, int, int, int, int);
-extern void             iq2000_setup_incoming_varargs (CUMULATIVE_ARGS, int, tree, int*, int);
 extern void             print_operand_address (FILE *, rtx);
 extern void             print_operand (FILE *, rtx, int);
 
