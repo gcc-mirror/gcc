@@ -538,11 +538,24 @@ extern void abort PARAMS ((void));
 
 /* Define IS_DIR_SEPARATOR.  */
 #ifndef DIR_SEPARATOR_2
-# define IS_DIR_SEPARATOR(ch) ((ch) == DIR_SEPARATOR)
+# define IS_DIR_SEPARATOR(CH) ((CH) == DIR_SEPARATOR)
 #else /* DIR_SEPARATOR_2 */
-# define IS_DIR_SEPARATOR(ch) \
-	(((ch) == DIR_SEPARATOR) || ((ch) == DIR_SEPARATOR_2))
+# define IS_DIR_SEPARATOR(CH) \
+	(((CH) == DIR_SEPARATOR) || ((CH) == DIR_SEPARATOR_2))
 #endif /* DIR_SEPARATOR_2 */
+
+/* Say how to test for an absolute pathname.  On Unix systems, this is if
+   it starts with a leading slash or a '$', the latter meaning the value of
+   an environment variable is to be used.  On machien with DOS-based
+   file systems, it is also absolute if it starts with a drive identifier.  */
+#ifdef HAVE_DOS_BASED_FILE_SYSTEM
+#define IS_ABSOLUTE_PATHNAME(STR) \
+  (IS_DIR_SEPARATOR ((STR)[0]) || (STR)[0] == '$' \
+   || ((STR)[0] != '\0' && (STR)[1] == ':' && IS_DIR_SEPARATOR ((STR)[2])))
+#else
+#define IS_ABSOLUTE_PATHNAME(STR) \
+  (IS_DIR_SEPARATOR ((STR)[0]) || (STR)[0] == '$')
+#endif
 
 /* Get libiberty declarations. */
 #include "libiberty.h"

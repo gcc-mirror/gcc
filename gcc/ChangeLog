@@ -1,3 +1,9 @@
+Tue Nov 28 09:53:50 2000  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	* system.h (IS_DIR_SEPARATOR): Use uppercase macro name.
+	(IS_ABSOLUTE_PATHNAME): New macro.
+	* gcc.c (find_a_file, process_command, do_spec_1, main): Use it.
+
 2000-11-28  Jakub Jelinek  <jakub@redhat.com>
 
 	* config/i386/i386.md (truncxfsf2_2): Fix predicate.
