@@ -150,9 +150,7 @@ struct gcc_target targetm = TARGET_INITIALIZER;
 #endif
 
 static void
-ns32k_output_function_prologue (file, size)
-     FILE *file;
-     HOST_WIDE_INT size;
+ns32k_output_function_prologue (FILE *file, HOST_WIDE_INT size)
 {
   register int regno, g_regs_used = 0;
   int used_regs_buf[8], *bufp = used_regs_buf;
@@ -330,9 +328,7 @@ ns32k_output_function_prologue (file, size)
 #if !defined (MERLIN_TARGET) && !defined (UTEK_ASM)
 
 static void
-ns32k_output_function_epilogue (file, size)
-     FILE *file;
-     HOST_WIDE_INT size;
+ns32k_output_function_epilogue (FILE *file, HOST_WIDE_INT size)
 {
   register int regno, g_regs_used = 0, f_regs_used = 0;
   int used_regs_buf[8], *bufp = used_regs_buf;
@@ -472,9 +468,7 @@ ns32k_output_function_epilogue (file, size)
 
 /* Value is 1 if hard register REGNO can hold a value of machine-mode MODE. */ 
 int
-hard_regno_mode_ok (regno, mode)
-     int regno;
-     enum machine_mode mode;
+hard_regno_mode_ok (int regno, enum machine_mode mode)
 {
   int size = GET_MODE_UNIT_SIZE (mode);
 
@@ -498,10 +492,7 @@ hard_regno_mode_ok (regno, mode)
 }
 
 static bool
-ns32k_rtx_costs (x, code, outer_code, total)
-     rtx x;
-     int code, outer_code ATTRIBUTE_UNUSED;
-     int *total;
+ns32k_rtx_costs (rtx x, int code, int outer_code ATTRIBUTE_UNUSED, int *total)
 {
   switch (code)
     {
@@ -529,9 +520,8 @@ ns32k_rtx_costs (x, code, outer_code, total)
     }
 }
 
-int register_move_cost (CLASS1, CLASS2)
-     enum reg_class CLASS1;
-     enum reg_class CLASS2;
+int
+register_move_cost (enum reg_class CLASS1, enum reg_class CLASS2)
 {
   if (CLASS1 == NO_REGS || CLASS2 == NO_REGS)
     return 2;
@@ -550,10 +540,10 @@ int register_move_cost (CLASS1, CLASS2)
 #if 0
 /* We made the insn definitions copy from floating point to general
   registers via the stack. */
-int secondary_memory_needed (CLASS1, CLASS2, M)
-     enum reg_class CLASS1;
-     enum reg_class CLASS2;
-     enum machine_mode M;
+int
+secondary_memory_needed (enum reg_class CLASS1,
+			 enum reg_class CLASS2,
+			 enum machine_mode M)
 {
   int ret = ((SUBSET_P (CLASS1, FP_REGS) && !SUBSET_P (CLASS2, FP_REGS))
    || (!SUBSET_P (CLASS1, FP_REGS) && SUBSET_P (CLASS2, FP_REGS)));
@@ -567,8 +557,7 @@ int secondary_memory_needed (CLASS1, CLASS2, M)
    the default. */
 
 static int
-ns32k_address_cost (operand)
-     rtx operand;
+ns32k_address_cost (rtx operand)
 {
   int cost = 0;
 
@@ -623,10 +612,9 @@ ns32k_address_cost (operand)
    NO_REGS is returned.  */
 
 enum reg_class
-secondary_reload_class (class, mode, in)
-     enum reg_class class;
-     enum machine_mode mode ATTRIBUTE_UNUSED;
-     rtx in;
+secondary_reload_class (enum reg_class class,
+			enum machine_mode mode ATTRIBUTE_UNUSED,
+			rtx in)
 {
   int regno = true_regnum (in);
 
@@ -646,8 +634,7 @@ secondary_reload_class (class, mode, in)
    multiplier (for MULT). */
 
 static rtx
-gen_indexed_expr (base, index, scale)
-     rtx base, index, scale;
+gen_indexed_expr (rtx base, rtx index, rtx scale)
 {
   rtx addr;
 
@@ -669,10 +656,7 @@ gen_indexed_expr (base, index, scale)
    that parallel "operands". */
 
 void
-split_di (operands, num, lo_half, hi_half)
-     rtx operands[];
-     int num;
-     rtx lo_half[], hi_half[];
+split_di (rtx operands[], int num, rtx lo_half[], rtx hi_half[])
 {
   while (num--)
     {
@@ -699,8 +683,7 @@ split_di (operands, num, lo_half, hi_half)
    for moving operands[1] into operands[0] as a fullword.  */
 
 static const char *
-singlemove_string (operands)
-     rtx *operands;
+singlemove_string (rtx *operands)
 {
   if (GET_CODE (operands[1]) == CONST_INT
       && INTVAL (operands[1]) <= 7
@@ -710,8 +693,7 @@ singlemove_string (operands)
 }
 
 const char *
-output_move_double (operands)
-     rtx *operands;
+output_move_double (rtx *operands)
 {
   enum anon1 { REGOP, OFFSOP, PUSHOP, CNSTOP, RNDOP } optype0, optype1;
   rtx latehalf[2];
@@ -849,10 +831,7 @@ output_move_double (operands)
    operands[3] is the alignment.  */
 
 static void
-move_tail (operands, bytes, offset)
-     rtx operands[];
-     int bytes;
-     int offset;
+move_tail (rtx operands[], int bytes, int offset)
 {
   if (bytes & 2)
     {
@@ -866,8 +845,7 @@ move_tail (operands, bytes, offset)
 }
 
 void
-expand_block_move (operands)
-     rtx operands[];
+expand_block_move (rtx operands[])
 {
   rtx bytes_rtx	= operands[2];
   rtx align_rtx = operands[3];
@@ -994,9 +972,7 @@ expand_block_move (operands)
 /* Returns 1 if OP contains a global symbol reference */
 
 int
-global_symbolic_reference_mentioned_p (op, f)
-     rtx op;
-     int f;
+global_symbolic_reference_mentioned_p (rtx op, int f)
 {
   register const char *fmt;
   register int i;
@@ -1034,8 +1010,7 @@ global_symbolic_reference_mentioned_p (op, f)
 /* Returns 1 if OP contains a symbol reference */
 
 int
-symbolic_reference_mentioned_p (op)
-     rtx op;
+symbolic_reference_mentioned_p (rtx op)
 {
   register const char *fmt;
   register int i;
@@ -1077,12 +1052,10 @@ const struct attribute_spec ns32k_attribute_table[] =
 /* Handle an attribute requiring a FUNCTION_TYPE, FIELD_DECL or TYPE_DECL;
    arguments as in struct attribute_spec.handler.  */
 static tree
-ns32k_handle_fntype_attribute (node, name, args, flags, no_add_attrs)
-     tree *node;
-     tree name;
-     tree args ATTRIBUTE_UNUSED;
-     int flags ATTRIBUTE_UNUSED;
-     bool *no_add_attrs;
+ns32k_handle_fntype_attribute (tree *node, tree name,
+			       tree args ATTRIBUTE_UNUSED,
+			       int flags ATTRIBUTE_UNUSED,
+			       bool *no_add_attrs)
 {
   if (TREE_CODE (*node) != FUNCTION_TYPE
       && TREE_CODE (*node) != FIELD_DECL
@@ -1115,10 +1088,7 @@ ns32k_handle_fntype_attribute (node, name, args, flags, no_add_attrs)
    The attribute stdcall is equivalent to RET on a per module basis.  */
 
 int
-ns32k_return_pops_args (fundecl, funtype, size)
-     tree fundecl ATTRIBUTE_UNUSED;
-     tree funtype;
-     int size;
+ns32k_return_pops_args (tree fundecl ATTRIBUTE_UNUSED, tree funtype, int size)
 {
   int rtd = TARGET_RTD;
 
@@ -1149,10 +1119,7 @@ ns32k_return_pops_args (fundecl, funtype, size)
 
 /* XXX time 12% of cpu time is in fprintf for non optimizing */
 void
-print_operand (file, x, code)
-     FILE *file;
-     rtx x;
-     int code;
+print_operand (FILE *file, rtx x, int code)
 {
   if (code == '$')
     PUT_IMMEDIATE_PREFIX (file);
@@ -1240,9 +1207,7 @@ print_operand (file, x, code)
    90-11-25 Tatu Yl|nen <ylo@cs.hut.fi> */
 
 void
-print_operand_address (file, addr)
-     register FILE *file;
-     register rtx addr;
+print_operand_address (register FILE *file, register rtx addr)
 {
   static const char scales[] = { 'b', 'w', 'd', 0, 'q', };
   rtx offset, base, indexexp, tmp;
@@ -1524,8 +1489,7 @@ print_operand_address (file, addr)
    better performance in many common cases by using other
    techniques.  */
 const char *
-output_shift_insn (operands)
-     rtx *operands;
+output_shift_insn (rtx *operands)
 {
   if (GET_CODE (operands[2]) == CONST_INT
       && INTVAL (operands[2]) > 0
@@ -1574,9 +1538,7 @@ output_shift_insn (operands)
 }
 
 const char *
-output_move_dconst (n, s)
-	int n;
-	const char *s;
+output_move_dconst (int n, const char *s)
 {
   static char r[32];
 
