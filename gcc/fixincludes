@@ -32,8 +32,14 @@ if [ ! -d $LIB ]; then
   mkdir $LIB || exit 1
 fi
 
-# Make LIB absolute.
-cd $LIB; LIB=`${PWDCMD}`
+# Make LIB absolute only if needed to avoid problems with the amd.
+case $LIB in
+/*)
+	;;
+*)
+	cd $LIB; LIB=`${PWDCMD}`
+	;;
+esac
 
 # Fail if no arg to specify a directory for the output.
 if [ x$1 = x ]
