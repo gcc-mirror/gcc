@@ -661,6 +661,22 @@ struct costs
   int mem_cost;
 };
 
+/* Structure used to record preferrences of given pseudo.  */
+struct reg_pref
+{
+  /* (enum reg_class) prefclass is the preferred class.  */
+  char prefclass;
+
+  /* altclass is a register class that we should use for allocating
+     pseudo if no register in the preferred class is available.
+     If no register in this class is available, memory is preferred.
+
+     It might appear to be more general to have a bitmask of classes here,
+     but since it is recommended that there be a class corresponding to the
+     union of most major pair of classes, that generality is not required.  */
+  char altclass;
+};
+
 /* Record the cost of each class for each pseudo.  */
 
 static struct costs *costs;
@@ -675,26 +691,14 @@ static struct costs init_cost;
 
 static struct costs op_costs[MAX_RECOG_OPERANDS];
 
-/* (enum reg_class) prefclass[R] is the preferred class for pseudo number R.
+/* Record preferrences of each pseudo.
    This is available after `regclass' is run.  */
 
-static char *prefclass;
+static struct reg_pref *reg_pref;
 
-/* altclass[R] is a register class that we should use for allocating
-   pseudo number R if no register in the preferred class is available.
-   If no register in this class is available, memory is preferred.
+/* Allocated buffers for reg_pref. */
 
-   It might appear to be more general to have a bitmask of classes here,
-   but since it is recommended that there be a class corresponding to the
-   union of most major pair of classes, that generality is not required. 
-
-   This is available after `regclass' is run.  */
-
-static char *altclass;
-
-/* Allocated buffers for prefclass and altclass. */
-static char *prefclass_buffer;
-static char *altclass_buffer;
+static struct reg_pref *reg_pref_buffer;
 
 /* Record the depth of loops that we are in.  */
 
@@ -725,19 +729,19 @@ enum reg_class
 reg_preferred_class (regno)
      int regno;
 {
-  if (prefclass == 0)
+  if (reg_pref == 0)
     return GENERAL_REGS;
-  return (enum reg_class) prefclass[regno];
+  return (enum reg_class) reg_pref[regno].prefclass;
 }
 
 enum reg_class
 reg_alternate_class (regno)
      int regno;
 {
-  if (prefclass == 0)
+  if (reg_pref == 0)
     return ALL_REGS;
 
-  return (enum reg_class) altclass[regno];
+  return (enum reg_class) reg_pref[regno].altclass;
 }
 
 /* Initialize some global data for this pass.  */
@@ -753,7 +757,7 @@ regclass_init ()
 
   /* This prevents dump_flow_info from losing if called
      before regclass is run.  */
-  prefclass = 0;
+  reg_pref = NULL;
 }
 
 /* Dump register costs.  */
@@ -1077,14 +1081,11 @@ regclass (f, nregs, dump)
       
       /* Now for each register look at how desirable each class is
 	 and find which class is preferred.  Store that in
-	 `prefclass[REGNO]'.  Record in `altclass[REGNO]' the largest register
+	 `prefclass'.  Record in `altclass' the largest register
 	 class any of whose registers is better than memory.  */
     
       if (pass == 0)
-	{
-	  prefclass = prefclass_buffer;
-	  altclass = altclass_buffer;
-	}
+	reg_pref = reg_pref_buffer;
 
       for (i = FIRST_PSEUDO_REGISTER; i < nregs; i++)
 	{
@@ -1138,8 +1139,8 @@ regclass (f, nregs, dump)
 	    alt = NO_REGS;
 
 	  /* We cast to (int) because (char) hits bugs in some compilers.  */
-	  prefclass[i] = (int) best;
-	  altclass[i] = (int) alt;
+	  reg_pref[i].prefclass = (int) best;
+	  reg_pref[i].altclass = (int) alt;
 	}
     }
 
@@ -1304,9 +1305,9 @@ record_reg_classes (n_alts, n_ops, ops, modes, subreg_changes_size,
 		     to what we would add if this register were not in the
 		     appropriate class.  */
 
-		  if (prefclass)
+		  if (reg_pref)
 		    alt_cost
-		      += (may_move_in_cost[(unsigned char) prefclass[REGNO (op)]]
+		      += (may_move_in_cost[(unsigned char) reg_pref[REGNO (op)].prefclass]
 			  [(int) classes[i]]);
 
 		  if (REGNO (ops[i]) != REGNO (ops[j])
@@ -1525,9 +1526,9 @@ record_reg_classes (n_alts, n_ops, ops, modes, subreg_changes_size,
 		     to what we would add if this register were not in the
 		     appropriate class.  */
 
-		  if (prefclass)
+		  if (reg_pref)
 		    alt_cost
-		      += (may_move_in_cost[(unsigned char) prefclass[REGNO (op)]]
+		      += (may_move_in_cost[(unsigned char) reg_pref[REGNO (op)].prefclass]
 			  [(int) classes[i]]);
 		}
 	    }
@@ -1599,10 +1600,10 @@ record_reg_classes (n_alts, n_ops, ops, modes, subreg_changes_size,
 	  int class;
 	  int nr;
 
-	  if (regno >= FIRST_PSEUDO_REGISTER && prefclass != 0
-	      && (reg_class_size[(unsigned char) prefclass[regno]]
-		  == CLASS_MAX_NREGS (prefclass[regno], mode)))
-	    op_costs[i].cost[(unsigned char) prefclass[regno]] = -1;
+	  if (regno >= FIRST_PSEUDO_REGISTER && reg_pref != 0
+	      && (reg_class_size[(unsigned char) reg_pref[regno].prefclass]
+		  == CLASS_MAX_NREGS (reg_pref[regno].prefclass, mode)))
+	    op_costs[i].cost[(unsigned char) reg_pref[regno].prefclass] = -1;
 	  else if (regno < FIRST_PSEUDO_REGISTER)
 	    for (class = 0; class < N_REG_CLASSES; class++)
 	      if (TEST_HARD_REG_BIT (reg_class_contents[class], regno)
@@ -1923,8 +1924,8 @@ allocate_reg_info (num_regs, new_p, renumber_p)
 	{
 	  VARRAY_REG_INIT (reg_n_info, regno_allocated, "reg_n_info");
 	  renumber = (short *) xmalloc (size_renumber);
-	  prefclass_buffer = (char *) xmalloc (regno_allocated);
-	  altclass_buffer = (char *) xmalloc (regno_allocated);
+	  reg_pref_buffer = (struct reg_pref *) xmalloc (regno_allocated 
+					      * sizeof (struct reg_pref));
 	}
 
       else
@@ -1934,21 +1935,18 @@ allocate_reg_info (num_regs, new_p, renumber_p)
 	  if (new_p)		/* if we're zapping everything, no need to realloc */
 	    {
 	      free ((char *)renumber);
-	      free ((char *)prefclass_buffer);
-	      free ((char *)altclass_buffer);
+	      free ((char *)reg_pref);
 	      renumber = (short *) xmalloc (size_renumber);
-	      prefclass_buffer = (char *) xmalloc (regno_allocated);
-	      altclass_buffer = (char *) xmalloc (regno_allocated);
+	      reg_pref_buffer = (struct reg_pref *) xmalloc (regno_allocated 
+						  * sizeof (struct reg_pref));
 	    }
 
 	  else
 	    {
 	      renumber = (short *) xrealloc ((char *)renumber, size_renumber);
-	      prefclass_buffer = (char *) xrealloc ((char *)prefclass_buffer,
-						    regno_allocated);
-
-	      altclass_buffer = (char *) xrealloc ((char *)altclass_buffer,
-						   regno_allocated);
+	      reg_pref_buffer = (struct reg_pref *) xrealloc ((char *)reg_pref_buffer,
+						   regno_allocated 
+						   * sizeof (struct reg_pref));
 	    }
 	}
 
@@ -1991,8 +1989,8 @@ allocate_reg_info (num_regs, new_p, renumber_p)
 		  VARRAY_REG (reg_n_info, i) = &reg_data->data[i-min_index];
 		  REG_BASIC_BLOCK (i) = REG_BLOCK_UNKNOWN;
 		  renumber[i] = -1;
-		  prefclass_buffer[i] = (char) NO_REGS;
-		  altclass_buffer[i] = (char) NO_REGS;
+		  reg_pref_buffer[i].prefclass = (char) NO_REGS;
+		  reg_pref_buffer[i].altclass = (char) NO_REGS;
 		}
 	    }
 	}
@@ -2000,11 +1998,8 @@ allocate_reg_info (num_regs, new_p, renumber_p)
 
   /* If {pref,alt}class have already been allocated, update the pointers to
      the newly realloced ones.  */
-  if (prefclass)
-    {
-      prefclass = prefclass_buffer;
-      altclass = altclass_buffer;
-    }
+  if (reg_pref)
+    reg_pref = reg_pref_buffer;
 
   if (renumber_p)
     reg_renumber = renumber;
@@ -2029,10 +2024,8 @@ free_reg_info ()
 	  free ((char *)reg_data);
 	}
 
-      free (prefclass_buffer);
-      free (altclass_buffer);
-      prefclass_buffer = (char *)0;
-      altclass_buffer = (char *)0;
+      free (reg_pref_buffer);
+      reg_pref_buffer = (struct reg_pref *)0;
       reg_info_head = (struct reg_info_data *)0;
       renumber = (short *)0;
     }

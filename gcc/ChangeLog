@@ -1,3 +1,10 @@
+Mon Nov 22 14:42:22 MET 1999  Jan Hubicka  <hubicka@freesoft.cz>
+
+	* regclass.c (reg_pref): New structure and static variable
+	(prefclass): Delete.
+	(altclass): Delete.
+	(all uses of prefclass and altclass): Use reg_pref instead.
+
 1999-11-21  Nick Clifton  <nickc@cygnus.com>
 
 	* invoke.texi (ARM Options): Replace -mshort-load-bytes with
