@@ -1,3 +1,7 @@
+2002-09-06  Alan Modra  <amodra@bigpond.net.au>
+
+	* gcc.c-torture/execute/extzvsi.c: New test.
+
 2002-09-05  Stan Shebs  <shebs@apple.com>
 
 	* gcc.dg/weak-1.c: xfail on Darwin.
