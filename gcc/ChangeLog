@@ -1,3 +1,17 @@
+2005-03-25  Geoffrey Keating  <geoffk@apple.com>
+
+	* config/rs6000/rs6000.md (UNSPEC constants): Add UNSPEC_STFIWX.
+	(fix_truncdfsi2): Allow registers or memory as destination.
+	When TARGET_PPC_GFXOPT, generate simplified pattern.
+	(fix_truncdfsi2_internal): Use define_insn_and_split.
+	(fix_truncdfsi2_internal_gfxopt): New.
+	(fctiwz): Don't confuse register allocation by giving it no choices.
+	(stfiwx): New.
+	* config/rs6000/rs6000.h (EXTRA_CONSTRAINT): Add 'Z'.
+	(EXTRA_MEMORY_CONSTRAINT): Likewise.
+	* config/rs6000/rs6000.c (indexed_or_indirect_operand): New. 
+	* config/rs6000/rs6000-protos.h (indexed_or_indirect_operand): New.
+
 2005-03-25  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* dominance.c (free_dominance_info): Speed up by freeing et

@@ -2297,6 +2297,25 @@ word_offset_memref_operand (rtx op, enum machine_mode mode ATTRIBUTE_UNUSED)
   return (off % 4) == 0;
 }
 
+/* Return true if the operand is an indirect or indexed memory operand.  */
+
+int
+indexed_or_indirect_operand (rtx op, enum machine_mode mode ATTRIBUTE_UNUSED)
+{
+  rtx addr;
+  if (!memory_operand (op, mode))
+    return 0;
+
+  addr = XEXP (op, 0);
+  if (GET_CODE (addr) == REG)
+    return 1;
+  if (GET_CODE (addr) == PLUS
+      && GET_CODE (XEXP (addr, 0)) == REG
+      && GET_CODE (XEXP (addr, 1)) == REG)
+    return 1;
+  return 0;
+}
+
 /* Return true if either operand is a general purpose register.  */
 
 bool
