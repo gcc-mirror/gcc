@@ -5447,7 +5447,7 @@ finish_struct (t, fieldlist, attributes)
   for (x = fieldlist; x; x = TREE_CHAIN (x))
     {
       DECL_CONTEXT (x) = t;
-      DECL_PACKED (x) = TYPE_PACKED (t);
+      DECL_PACKED (x) |= TYPE_PACKED (t);
       DECL_FIELD_SIZE (x) = 0;
 
       /* If any field is const, the structure type is pseudo-const.  */
