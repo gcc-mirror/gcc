@@ -119,12 +119,24 @@ static long right_shift ();
 #define HAVE_VALUE 4
 /*#define UNSIGNEDP 8*/
 
+#ifndef HOST_BITS_PER_WIDE_INT
+
+#if HOST_BITS_PER_LONG > HOST_BITS_PER_INT
+#define HOST_BITS_PER_WIDE_INT HOST_BITS_PER_LONG
+#define HOST_WIDE_INT long
+#else
+#define HOST_BITS_PER_WIDE_INT HOST_BITS_PER_INT
+#define HOST_WIDE_INT int
+#endif
+
+#endif
+
 struct operation {
     short op;
     char rprio; /* Priority of op (relative to it right operand). */
     char flags;
     char unsignedp;    /* true if value should be treated as unsigned */
-    long value;        /* The value logically "right" of op. */
+    HOST_WIDE_INT value;        /* The value logically "right" of op. */
 };
 
 /* Take care of parsing a number (anything that starts with a digit).
@@ -641,7 +653,7 @@ right_shift (pfile, a, unsignedp, b)
 /* Parse and evaluate a C expression, reading from PFILE.
    Returns the value of the expression.  */
 
-long
+HOST_WIDE_INT
 cpp_parse_expr (pfile)
      cpp_reader *pfile;
 {
