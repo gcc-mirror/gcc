@@ -1,5 +1,10 @@
 Sun Nov 14 23:11:05 1999  Jeffrey A Law  (law@cygnus.com)
 
+	* gcse.c (delete_null_pointer_checks_1): Kill unused s_preds
+	argument.  All callers changed.
+	(delete_null_pointer_checks_1): No longer need to compute the
+	pred/succ lists.
+
 	* gcse.c (pre_expr_reaches_here_p): Kill CHECK_PRE_COM argument.
 	All callers changed.
 	(pre_expr_reaches_here_p_work): Likewise.
