@@ -2420,10 +2420,28 @@ mangle_guard_variable (variable)
 {
   start_mangling ();
   write_string ("_ZGV");
-  write_name (variable, /*ignore_local_scope=*/0);
+  if (strncmp (IDENTIFIER_POINTER (DECL_NAME (variable)), "_ZGR", 4) == 0)
+    /* The name of a guard variable for a reference temporary should refer
+       to the reference, not the temporary.  */
+    write_string (IDENTIFIER_POINTER (DECL_NAME (variable)) + 4);
+  else
+    write_name (variable, /*ignore_local_scope=*/0);
   return get_identifier (finish_mangling ());
 }
 
+/* Return an identifier for the name of a temporary variable used to
+   initialize a static reference.  This isn't part of the ABI, but we might
+   as well call them something readable.  */
+
+tree
+mangle_ref_init_variable (variable)
+     tree variable;
+{
+  start_mangling ();
+  write_string ("_ZGR");
+  write_name (variable, /*ignore_local_scope=*/0);
+  return get_identifier (finish_mangling ());
+}
 
 
 /* Foreign language type mangling section.  */

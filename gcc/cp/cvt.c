@@ -37,7 +37,7 @@ Boston, MA 02111-1307, USA.  */
 
 static tree cp_convert_to_pointer PARAMS ((tree, tree, int));
 static tree convert_to_pointer_force PARAMS ((tree, tree));
-static tree build_up_reference PARAMS ((tree, tree, int));
+static tree build_up_reference PARAMS ((tree, tree, int, tree));
 static void warn_ref_binding PARAMS ((tree, tree, tree));
 
 /* Change of width--truncation and extension of integers or reals--
@@ -358,11 +358,12 @@ convert_to_pointer_force (type, expr)
    value we have to begin with is in ARG.
 
    FLAGS controls how we manage access checking.
-   DIRECT_BIND in FLAGS controls how any temporaries are generated.  */
+   DIRECT_BIND in FLAGS controls how any temporaries are generated.
+     If DIRECT_BIND is set, DECL is the reference we're binding to.  */
 
 static tree
-build_up_reference (type, arg, flags)
-     tree type, arg;
+build_up_reference (type, arg, flags, decl)
+     tree type, arg, decl;
      int flags;
 {
   tree rval;
@@ -374,15 +375,28 @@ build_up_reference (type, arg, flags)
 
   if ((flags & DIRECT_BIND) && ! real_lvalue_p (arg))
     {
-      /* Create a new temporary variable.  */
+      /* Create a new temporary variable.  We can't just use a TARGET_EXPR
+	 here because it needs to live as long as DECL.  */
       tree targ = arg;
-      if (toplevel_bindings_p ())
-	arg = get_temp_name (argtype);
+
+      arg = build_decl (VAR_DECL, NULL_TREE, argtype);
+      DECL_ARTIFICIAL (arg) = 1;
+      TREE_USED (arg) = 1;
+      TREE_STATIC (arg) = TREE_STATIC (decl);
+
+      if (TREE_STATIC (decl))
+	{
+	  /* Namespace-scope or local static; give it a mangled name.  */
+	  tree name = mangle_ref_init_variable (decl);
+	  DECL_NAME (arg) = name;
+	  SET_DECL_ASSEMBLER_NAME (arg, name);
+	  arg = pushdecl_top_level (arg);
+	}
       else
 	{
+	  /* automatic; make sure we handle the cleanup properly.  */
 	  maybe_push_cleanup_level (argtype);
-	  arg = pushdecl (build_decl (VAR_DECL, NULL_TREE, argtype));
-	  DECL_ARTIFICIAL (arg) = 1;
+	  arg = pushdecl (arg);
 	}
 
       /* Process the initializer for the declaration.  */
@@ -393,7 +407,7 @@ build_up_reference (type, arg, flags)
   else if (!(flags & DIRECT_BIND) && ! lvalue_p (arg))
     return get_target_expr (arg);
 
-  /* If we had a way to wrap this up, and say, if we ever needed it's
+  /* If we had a way to wrap this up, and say, if we ever needed its
      address, transform all occurrences of the register, into a memory
      reference we could win better.  */
   rval = build_unary_op (ADDR_EXPR, arg, 1);
@@ -531,7 +545,7 @@ convert_to_reference (reftype, expr, convtype, flags, decl)
 			ttr, reftype);
 	}
 
-      return build_up_reference (reftype, expr, flags);
+      return build_up_reference (reftype, expr, flags, decl);
     }
   else if ((convtype & CONV_REINTERPRET) && lvalue_p (expr))
     {
@@ -562,7 +576,7 @@ convert_to_reference (reftype, expr, convtype, flags, decl)
       if (rval == NULL_TREE || rval == error_mark_node)
 	return rval;
       warn_ref_binding (reftype, intype, decl);
-      rval = build_up_reference (reftype, rval, flags);
+      rval = build_up_reference (reftype, rval, flags, decl);
     }
 
   if (rval)

@@ -1,0 +1,17 @@
+Subdirectories:
+
+abi	 Tests for ABI compatibility -- mangling, object layout, etc.
+eh	 Tests for exception handling.
+ext	 Tests for GNU language extensions.
+inherit	 Tests for inheritance -- virtual functions, multiple inheritance, etc.
+init	 Tests for initialization semantics, constructors/destructors, etc.
+lookup	 Tests for lookup semantics, namespaces, etc.
+overload Tests for overload resolution and conversions.
+rtti	 Tests for run-time type identification (typeid, dynamic_cast, etc.)
+template Tests for templates.
+warn	 Tests for compiler warnings.
+
+other	 Tests that don't fit into one of the other categories.
+
+special	 Tests that need custom expect code to run them; see special/ecos.exp
+	 for an example.
