@@ -1519,6 +1519,10 @@ layout_class (this_class)
     }
 
   layout_type (this_class);
+
+  /* Convert the size back to an SI integer value */
+  TYPE_SIZE_UNIT (this_class) = 
+    fold (convert (int_type_node, TYPE_SIZE_UNIT (this_class)));
 }
 
 void
