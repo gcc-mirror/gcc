@@ -5151,8 +5151,8 @@ expand_static_init (tree decl, tree init)
   if (DECL_FUNCTION_SCOPE_P (decl))
     {
       /* Emit code to perform this initialization but once.  */
-      tree if_stmt, inner_if_stmt;
-      tree then_clause, inner_then_clause;
+      tree if_stmt, inner_if_stmt = NULL_TREE;
+      tree then_clause, inner_then_clause = NULL_TREE;
       tree guard, guard_addr, guard_addr_list;
       tree acquire_fn, release_fn, abort_fn;
       tree flag, begin;
