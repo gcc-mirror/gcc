@@ -3253,11 +3253,12 @@ simplify_binary_operation (code, mode, op0, op1)
       value = real_value_truncate (mode, value);
       return immed_real_const_1 (value, mode);
     }
+#endif  /* not REAL_IS_NOT_DOUBLE, or REAL_ARITHMETIC */
 
   /* We can fold some multi-word operations.  */
-  else if (GET_MODE_CLASS (mode) == MODE_INT
-	   && GET_CODE (op0) == CONST_DOUBLE
-	   && (GET_CODE (op1) == CONST_DOUBLE || GET_CODE (op1) == CONST_INT))
+  if (GET_MODE_CLASS (mode) == MODE_INT
+      && GET_CODE (op0) == CONST_DOUBLE
+      && (GET_CODE (op1) == CONST_DOUBLE || GET_CODE (op1) == CONST_INT))
     {
       HOST_WIDE_INT l1, l2, h1, h2, lv, hv;
 
@@ -3370,7 +3371,6 @@ simplify_binary_operation (code, mode, op0, op1)
 
       return immed_double_const (lv, hv, mode);
     }
-#endif  /* not REAL_IS_NOT_DOUBLE, or REAL_ARITHMETIC */
 
   if (GET_CODE (op0) != CONST_INT || GET_CODE (op1) != CONST_INT
       || width > HOST_BITS_PER_WIDE_INT || width == 0)
@@ -4068,6 +4068,8 @@ simplify_relational_operation (code, mode, op0, op1)
 	      || GET_MODE_CLASS (GET_MODE (op0)) != MODE_FLOAT))
 	return (code == EQ || code == GE || code == LE || code == LEU
 		|| code == GEU) ? const_true_rtx : const0_rtx;
+
+#if ! defined (REAL_IS_NOT_DOUBLE) || defined (REAL_ARITHMETIC)
       else if (GET_CODE (op0) == CONST_DOUBLE
 	       && GET_CODE (op1) == CONST_DOUBLE
 	       && GET_MODE_CLASS (GET_MODE (op0)) == MODE_FLOAT)
@@ -4103,7 +4105,60 @@ simplify_relational_operation (code, mode, op0, op1)
 	      return op1lt ? const_true_rtx : const0_rtx;
 	    }
 	}
-      
+#endif  /* not REAL_IS_NOT_DOUBLE, or REAL_ARITHMETIC */
+
+      else if (GET_MODE_CLASS (mode) == MODE_INT
+	       && width > HOST_BITS_PER_WIDE_INT
+	       && (GET_CODE (op0) == CONST_DOUBLE
+		   || GET_CODE (op0) == CONST_INT)
+	       && (GET_CODE (op1) == CONST_DOUBLE
+		   || GET_CODE (op1) == CONST_INT))
+	{
+	  HOST_WIDE_INT h0, l0, h1, l1;
+	  unsigned HOST_WIDE_INT uh0, ul0, uh1, ul1;
+	  int op0lt, op0ltu, equal;
+
+	  if (GET_CODE (op0) == CONST_DOUBLE)
+	    l0 = CONST_DOUBLE_LOW (op0), h0 = CONST_DOUBLE_HIGH (op0);
+	  else
+	    l0 = INTVAL (op0), h0 = l0 < 0 ? -1 : 0;
+	  
+	  if (GET_CODE (op1) == CONST_DOUBLE)
+	    l1 = CONST_DOUBLE_LOW (op1), h1 = CONST_DOUBLE_HIGH (op1);
+	  else
+	    l1 = INTVAL (op1), h1 = l1 < 0 ? -1 : 0;
+
+	  uh0 = h0, ul0 = l0, uh1 = h1, ul1 = l1;
+
+	  equal = (h0 == h1 && l0 == l1);
+	  op0lt = (h0 < h1 || (h0 == h1 && l0 < l1));
+	  op0ltu = (uh0 < uh1 || (uh0 == uh1 && ul0 < ul1));
+
+	  switch (code)
+	    {
+	    case EQ:
+	      return equal ? const_true_rtx : const0_rtx;
+	    case NE:
+	      return !equal ? const_true_rtx : const0_rtx;
+	    case LE:
+	      return equal || op0lt ? const_true_rtx : const0_rtx;
+	    case LT:
+	      return op0lt ? const_true_rtx : const0_rtx;
+	    case GE:
+	      return !op0lt ? const_true_rtx : const0_rtx;
+	    case GT:
+	      return !equal && !op0lt ? const_true_rtx : const0_rtx;
+	    case LEU:
+	      return equal || op0ltu ? const_true_rtx : const0_rtx;
+	    case LTU:
+	      return op0ltu ? const_true_rtx : const0_rtx;
+	    case GEU:
+	      return !op0ltu ? const_true_rtx : const0_rtx;
+	    case GTU:
+	      return !equal && !op0ltu ? const_true_rtx : const0_rtx;
+	    }
+	}
+
       switch (code)
 	{
 	case EQ:
