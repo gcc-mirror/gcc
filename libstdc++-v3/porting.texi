@@ -6,7 +6,7 @@
 %
 % Contents:
 %
-% Copyright (c) 2000 by CodeSourcery, LLC.  All rights reserved. 
+% Copyright (c) 2000 by Free Software Foundation, Inc.
 %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
