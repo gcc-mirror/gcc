@@ -1,3 +1,12 @@
+2003-02-03  Bob Wilson  <bob.wilson@acm.org>
+
+	* config/xtensa/xtensa.c (order_regs_for_local_alloc): Order the
+	coprocessor registers before floating-point registers.
+	* config/xtensa/xtensa.h (REG_ALLOC_ORDER): Adjust register numbers
+	to account for a previously removed register.
+	(SPEC_REG_FIRST, SPEC_REG_LAST, SPEC_REG_NUM, COUNT_REGISTER_REGNUM):
+	Delete unused macros.
+
 Mon Feb  3 21:19:11 CET 2003  Jan Hubicka  <jh@suse.cz>
 
 	* i386.c (ix86_expand_store_builtin):  Always force op1 to register.
