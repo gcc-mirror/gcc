@@ -50,8 +50,8 @@ write_a (fnode * f, const char *source, int len)
     memcpy (p, source, wlen);
   else
     {
-      memcpy (p, source, len);
-      memset (p + len, ' ', wlen - len);
+      memset (p, ' ', wlen - len);
+      memcpy (p + wlen - len, source, len);
     }
 }
 
