@@ -3476,8 +3476,6 @@ sjlj_size_of_call_site_table (void)
 static void
 dw2_output_call_site_table (void)
 {
-  const char *const function_start_lab
-    = IDENTIFIER_POINTER (current_function_func_begin_label);
   int n = cfun->eh->call_site_data_used;
   int i;
 
@@ -3500,21 +3498,25 @@ dw2_output_call_site_table (void)
       /* ??? Perhaps use attr_length to choose data1 or data2 instead of
 	 data4 if the function is small enough.  */
 #ifdef HAVE_AS_LEB128
-      dw2_asm_output_delta_uleb128 (reg_start_lab, function_start_lab,
+      dw2_asm_output_delta_uleb128 (reg_start_lab,
+				    current_function_func_begin_label,
 				    "region %d start", i);
       dw2_asm_output_delta_uleb128 (reg_end_lab, reg_start_lab,
 				    "length");
       if (cs->landing_pad)
-	dw2_asm_output_delta_uleb128 (landing_pad_lab, function_start_lab,
+	dw2_asm_output_delta_uleb128 (landing_pad_lab,
+				      current_function_func_begin_label,
 				      "landing pad");
       else
 	dw2_asm_output_data_uleb128 (0, "landing pad");
 #else
-      dw2_asm_output_delta (4, reg_start_lab, function_start_lab,
+      dw2_asm_output_delta (4, reg_start_lab,
+			    current_function_func_begin_label,
 			    "region %d start", i);
       dw2_asm_output_delta (4, reg_end_lab, reg_start_lab, "length");
       if (cs->landing_pad)
-	dw2_asm_output_delta (4, landing_pad_lab, function_start_lab,
+	dw2_asm_output_delta (4, landing_pad_lab,
+			      current_function_func_begin_label,
 			      "landing pad");
       else
 	dw2_asm_output_data (4, 0, "landing pad");

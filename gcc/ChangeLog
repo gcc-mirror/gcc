@@ -1,5 +1,13 @@
 2004-09-10  Geoffrey Keating  <geoffk@apple.com>
 
+	* dbxout.c (dbxout_block): Update for
+	current_function_func_begin_label a string.
+	* dwarf2out.c (dwarf2out_begin_prologue): Likewise.
+	* except.c (dw2_output_call_site_table): Likewise.
+	* toplev.c (current_function_func_begin_label): Likewise.
+	* tree.h (current_function_func_begin_label): Likewise.
+	* config/rs6000/linux64.h (DBX_OUTPUT_BRAC): Likewise.
+
 	* final.c (output_asm_insn): Use strtoul instead of atoi, save a
 	loop.
 

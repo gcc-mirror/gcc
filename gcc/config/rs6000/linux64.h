@@ -499,10 +499,9 @@ while (0)
       fprintf (FILE, "%s%d,0,0,", ASM_STABN_OP, BRAC);			\
       assemble_name (FILE, NAME);					\
       putc ('-', FILE);							\
-      if (current_function_func_begin_label != NULL_TREE)		\
+      if (current_function_func_begin_label != NULL)			\
 	{								\
-	  s = IDENTIFIER_POINTER (current_function_func_begin_label);	\
-	  assemble_name (FILE, s);					\
+	  assemble_name (FILE, current_function_func_begin_label);	\
 	}								\
       else								\
 	{								\

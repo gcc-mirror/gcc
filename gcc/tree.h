@@ -3350,7 +3350,7 @@ extern int pedantic_lvalues;
 extern GTY(()) tree current_function_decl;
 
 /* Nonzero means a FUNC_BEGIN label was emitted.  */
-extern GTY(()) tree current_function_func_begin_label;
+extern GTY(()) const char * current_function_func_begin_label;
 
 /* In tree.c */
 extern unsigned crc32_string (unsigned, const char *);

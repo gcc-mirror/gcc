@@ -220,9 +220,9 @@ int optimize_size = 0;
    or 0 if between functions.  */
 tree current_function_decl;
 
-/* Set to the FUNC_BEGIN label of the current function, or NULL_TREE
+/* Set to the FUNC_BEGIN label of the current function, or NULL
    if none.  */
-tree current_function_func_begin_label;
+const char * current_function_func_begin_label;
 
 /* Temporarily suppress certain warnings.
    This is set while reading code from a system header file.  */
