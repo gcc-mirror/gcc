@@ -1343,6 +1343,9 @@ tree
 finish_qualified_id_expr (tree qualifying_class, tree expr, bool done,
 			  bool address_p)
 {
+  if (error_operand_p (expr))
+    return error_mark_node;
+
   /* If EXPR occurs as the operand of '&', use special handling that
      permits a pointer-to-member.  */
   if (address_p && done)

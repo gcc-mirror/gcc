@@ -7149,9 +7149,9 @@ tsubst_qualified_id (tree qualified_id, tree args,
     }
   else
     expr = name;
-  if (!BASELINK_P (name)
-      && !DECL_P (expr))
-    expr = lookup_qualified_name (scope, expr, /*is_type_p=*/0);
+  if (!BASELINK_P (name) && !DECL_P (expr))
+    expr = lookup_qualified_name (scope, expr, /*is_type_p=*/0,
+				  (complain & tf_error) != 0);
   if (DECL_P (expr))
     check_accessibility_of_qualified_id (expr, 
 					 /*object_type=*/NULL_TREE,
@@ -7611,7 +7611,8 @@ tsubst_expr (tree t, tree args, tsubst_flags_t complain, tree in_decl)
 	    scope = tsubst_expr (scope, args, complain, in_decl);
 	    do_local_using_decl (lookup_qualified_name (scope,
 							name, 
-							/*is_type_p=*/0));
+							/*is_type_p=*/0,
+							/*complain=*/true));
 	  }
 	else
 	  {
@@ -8285,7 +8286,8 @@ tsubst_copy_and_build (tree t,
 	    args = TREE_OPERAND (TREE_OPERAND (member, 1), 1);
 	    member = lookup_qualified_name (TREE_OPERAND (member, 0),
 					    tmpl, 
-					    /*is_type=*/0);
+					    /*is_type=*/0,
+					    /*complain=*/true);
 	    if (BASELINK_P (member))
 	      BASELINK_FUNCTIONS (member) 
 		= build_nt (TEMPLATE_ID_EXPR, BASELINK_FUNCTIONS (member),

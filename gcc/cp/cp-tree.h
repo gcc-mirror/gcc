@@ -3679,7 +3679,7 @@ extern tree make_typename_type			(tree, tree, tsubst_flags_t);
 extern tree make_unbound_class_template		(tree, tree, tsubst_flags_t);
 extern tree lookup_name_nonclass		(tree);
 extern tree lookup_function_nonclass            (tree, tree);
-extern tree lookup_qualified_name               (tree, tree, bool);
+extern tree lookup_qualified_name               (tree, tree, bool, bool);
 extern tree lookup_name				(tree, int);
 extern tree lookup_name_current_level		(tree);
 extern tree lookup_type_current_level		(tree);
