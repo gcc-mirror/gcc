@@ -986,6 +986,7 @@ java_init_decl_processing (void)
     = builtin_function ("_Jv_IsInstanceOf",
 			build_function_type (boolean_type_node, t),
 			0, NOT_BUILT_IN, NULL, NULL_TREE);
+  DECL_IS_PURE (soft_instanceof_node) = 1;
   t = tree_cons (NULL_TREE, object_ptr_type_node,
 		 tree_cons (NULL_TREE, object_ptr_type_node, endlink));
   soft_checkarraystore_node
@@ -1000,6 +1001,7 @@ java_init_decl_processing (void)
 			build_function_type (ptr_type_node, t),
 			0, NOT_BUILT_IN, NULL, NULL_TREE);
 
+  DECL_IS_PURE (soft_lookupinterfacemethod_node) = 1;
   t = tree_cons (NULL_TREE, object_ptr_type_node,
 		 tree_cons (NULL_TREE, ptr_type_node,
 			    tree_cons (NULL_TREE, ptr_type_node, 
