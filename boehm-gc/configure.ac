@@ -336,7 +336,7 @@ case "$host" in
     machdep="sparc_mach_dep.lo"
     AC_DEFINE(SUNOS53_SHARED_LIB,1,[Avoid Solaris 5.3 dynamic library bug])
     ;;
- sparc-sun-solaris2.*)
+ sparc*-sun-solaris2.*)
     machdep="sparc_mach_dep.lo"
     ;;
  ia64-*-*)
@@ -378,10 +378,10 @@ fi
 
 dnl As of 4.13a2, the collector will not properly work on Solaris when
 dnl built with gcc and -O.  So we remove -O in the appropriate case.
-dnl
+dnl Not needed anymore on Solaris.
 AC_MSG_CHECKING(whether Solaris gcc optimization fix is necessary)
 case "$host" in
- sparc-sun-solaris2*|*aix*)
+ *aix*)
     if test "$GCC" = yes; then
        AC_MSG_RESULT(yes)
        new_CFLAGS=

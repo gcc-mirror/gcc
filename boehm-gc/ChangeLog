@@ -1,5 +1,12 @@
 2004-11-22  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
+	* configure.ac (machdep): Use sparc_mach_dep.lo on
+	sparc64-sun-solaris2.* too.
+	(Solaris gcc optimization fix): Disable on sparc*-sun-solaris2.*.
+	* configure: Regenerate.
+
+2004-11-22  Eric Botcazou  <ebotcazou@libertysurf.fr>
+
 	PR target/18444
 	* configure.ac (threading): Accept 'posix95'.
 	* configure: Regenerate.

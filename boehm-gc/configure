@@ -5768,7 +5768,7 @@ cat >>confdefs.h <<\_ACEOF
 _ACEOF
 
     ;;
- sparc-sun-solaris2.*)
+ sparc*-sun-solaris2.*)
     machdep="sparc_mach_dep.lo"
     ;;
  ia64-*-*)
@@ -6446,7 +6446,7 @@ fi
 echo "$as_me:$LINENO: checking whether Solaris gcc optimization fix is necessary" >&5
 echo $ECHO_N "checking whether Solaris gcc optimization fix is necessary... $ECHO_C" >&6
 case "$host" in
- sparc-sun-solaris2*|*aix*)
+ *aix*)
     if test "$GCC" = yes; then
        echo "$as_me:$LINENO: result: yes" >&5
 echo "${ECHO_T}yes" >&6
