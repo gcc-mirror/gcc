@@ -21,7 +21,7 @@ struct B {
 
 int main(void)
 {
-        B(A());
+        B b = A();
 	if (pass)
 		printf ("PASS\n");
 	else
