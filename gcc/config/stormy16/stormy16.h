@@ -114,7 +114,7 @@ Boston, MA 02111-1307, USA.  */
 
    Defined in svr4.h.  */
 #undef ASM_SPEC
-#define ASM_SPEC "%{g:--gdwarf2}%{-gdwarf-2*:--gdwarf2}"
+#define ASM_SPEC ""
 
 /* A C string constant that tells the GNU CC driver program how to run any
    programs which cleanup after the normal assembler.  Normally, this is not
