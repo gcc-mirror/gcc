@@ -1,5 +1,6 @@
 /* obstack.h - object stack macros
-   Copyright (C) 1988,89,90,91,92,93,94,96,97,98 Free Software Foundation, Inc.
+   Copyright (C) 1988, 1989, 1990, 1991, 1992, 1993, 1994, 1996, 1997, 1998
+   Free Software Foundation, Inc.
 
 
    NOTE: The canonical source of this file is maintained with the GNU C Library.
