@@ -1,6 +1,6 @@
 /* Operating system specific defines to be used when targeting GCC for
    hosting on Windows32, using a Unix style C library and tools.
-   Copyright (C) 1995, 1996, 1997, 1998, 1999, 2000
+   Copyright (C) 1995, 1996, 1997, 1998, 1999, 2000, 2001
    Free Software Foundation, Inc.
 
 This file is part of GNU CC.
@@ -533,14 +533,6 @@ do {									\
      }
 
 /* External function declarations.  */
-
-#ifndef PARAMS
-#if defined (USE_PROTOTYPES) ? USE_PROTOTYPES : defined (__STDC__)
-#define PARAMS(ARGS) ARGS
-#else
-#define PARAMS(ARGS) ()
-#endif
-#endif
 
 extern void i386_pe_record_external_function PARAMS ((char *));
 /* extern void i386_pe_declare_function_type PARAMS ((FILE *, char *, int)); */

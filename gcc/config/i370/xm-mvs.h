@@ -1,5 +1,5 @@
 /* Configuration for GNU C-compiler for System/370.
-   Copyright (C) 1989, 1993, 1997 Free Software Foundation, Inc.
+   Copyright (C) 1989, 1993, 1997, 2001 Free Software Foundation, Inc.
    Contributed by Jan Stein (jan@cd.chalmers.se).
    Modified for OS/390 LanguageEnvironment C by Dave Pitts (dpitts@cozx.com)
 
@@ -36,9 +36,6 @@ Boston, MA 02111-1307, USA.  */
 #define HOST_EBCDIC		1
 
 #define USG
-#ifndef MVS
-#define MVS
-#endif
 
 /* Target machine dependencies.  tm.h is a symbolic link to the actual
    target specific file.  */
@@ -49,6 +46,3 @@ Boston, MA 02111-1307, USA.  */
 
 #define SUCCESS_EXIT_CODE	0
 #define FATAL_EXIT_CODE		12
-
-#define NO_DBX_FORMAT
-

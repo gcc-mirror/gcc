@@ -1,5 +1,6 @@
 /* Configuration for GNU C-compiler for Vax.
-   Copyright (C) 1987, 1994, 1995, 1996, 1997 Free Software Foundation, Inc.
+   Copyright (C) 1987, 1994, 1995, 1996, 1997, 2001
+   Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -64,25 +65,10 @@ Boston, MA 02111-1307, USA.  */
 #define VMS
 #endif
 
-#ifndef __GNUC__
-/* not present, at least in VAX-11 C (VMS) v2.2 */
-#define R_OK 4
-#define W_OK 2
-#define X_OK 1
-#define F_OK 0
-#endif
-
 #define GCC_INCLUDE_DIR "///not used with VMS///"	/* nonsense string for now */
 
 /* and define a local equivalent (sort of) for unlink */
 #define unlink remove
-
-/* Used by the preprocessor to limit size of disk I/O chunks.
-   64K - 1 is the maximum supported by VAXCRTL.  Amounts in excess
-   of 35 blocks will bypass the VMS V6.x VIOC [Virtual I/O Cache],
-   so we'll pick a limit of 16K (32 blocks).  */
-#define MAX_READ_LEN	(32 * 512)
-#define MAX_WRITE_LEN	(32 * 512)
 
 /* Under VMS a directory specification can be enclosed either in square
    brackets or in angle brackets.  Thus we need to check both.  This
@@ -138,7 +124,6 @@ Boston, MA 02111-1307, USA.  */
 /* Customizations/kludges for building with DEC's VAX C compiler
    rather than GCC.  */
 
-#define NO_SYS_PARAMS_H		/* don't have <sys/params.h> */
 #define USE_C_ALLOCA		/* using alloca.c */
 #define QSORT_WORKAROUND	/* do not use VAXCRTL's qsort */
 
@@ -179,7 +164,6 @@ Boston, MA 02111-1307, USA.  */
    after having previously sorted something that was a multiple of 4
    can produce wrong results and result in data corruption.)  We'll
    use our own substitute (in vax.c) instead.  */
-/* #define QSORT_WORKAROUND */
 #ifdef QSORT_WORKAROUND
 #define qsort not_qsort
 #endif

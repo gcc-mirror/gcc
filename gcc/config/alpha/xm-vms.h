@@ -1,5 +1,5 @@
 /* Configuration for GNU C-compiler for openVMS/Alpha.
-   Copyright (C) 1996, 1997 Free Software Foundation, Inc.
+   Copyright (C) 1996, 1997, 2001 Free Software Foundation, Inc.
    Contributed by Klaus Kaempf (kkaempf@progis.de).
 
 This file is part of GNU CC.
@@ -64,13 +64,11 @@ Boston, MA 02111-1307, USA.  */
 /* Define a local equivalent (sort of) for unlink */
 #define unlink remove
 
-#define NEED_ATEXIT
 #define HAVE_VPRINTF
 #define HAVE_PUTENV
 #define HAVE_STRERROR
 #define HAVE_ATOLL
 
-#define NO_SYS_PARAMS_H		/* Don't have <sys/params.h> */
 #define USE_C_ALLOCA		/* Using alloca.c */
 
 #define HAVE_FCNTL_H 1

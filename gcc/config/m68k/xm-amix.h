@@ -1,6 +1,6 @@
 /* Definitions of host machine for GNU compiler.
    Commodore Amiga A3000UX version.
-   Copyright (C) 1991, 1997 Free Software Foundation, Inc.
+   Copyright (C) 1991, 1997, 2001 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -20,14 +20,6 @@ the Free Software Foundation, 59 Temple Place - Suite 330,
 Boston, MA 02111-1307, USA.  */
 
 #include "m68k/xm-m68kv.h"	/* Use the System V flavor of m68k host */
-
-#define rindex strrchr
-#define index strchr
-
-/* Define FULL_PROTOTYPES for protoize.c, to get <unistd.h> included.
-   We need this file for things like R_OK, not necessarily prototypes. */
-
-#define FULL_PROTOTYPES
 
 #if defined (__GNUC__) && __GNUC__ == 1
 #define alloca __builtin_alloca

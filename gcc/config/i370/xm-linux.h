@@ -1,5 +1,5 @@
 /* Configuration for GNU C-compiler for System/370.
-   Copyright (C) 1989, 1993, 1997 Free Software Foundation, Inc.
+   Copyright (C) 1989, 1993, 1997, 2001 Free Software Foundation, Inc.
    Contributed by Jan Stein (jan@cd.chalmers.se).
    Modified for OS/390 OpenEdition by Dave Pitts (dpitts@cozx.com)
    Modified for 390/Linux by Linas Vepstas (linas@linas.org)
@@ -26,9 +26,6 @@ Boston, MA 02111-1307, USA.  */
 #define FALSE 0
 #define TRUE 1
 
-#define USE_STDARGS 1
-#define USE_PROTOTYPES 1
-
 /* This describes the machine the compiler is hosted on.  */
 
 #define HOST_BITS_PER_CHAR	8
@@ -51,8 +48,6 @@ extern char *alloca ();
 #define ONLY_INT_FIELDS
 #endif
 
-// #define USG
-
 /* Target machine dependencies.  tm.h is a symbolic link to the actual
    target specific file.  */
 
@@ -62,6 +57,3 @@ extern char *alloca ();
 
 #define SUCCESS_EXIT_CODE	0
 #define FATAL_EXIT_CODE		12
-
-// #define NO_DBX_FORMAT
-

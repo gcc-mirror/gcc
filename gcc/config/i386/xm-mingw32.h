@@ -1,6 +1,6 @@
 /* Configuration for GNU C-compiler for hosting on Windows32.
    using GNU tools and the Windows32 API Library.
-   Copyright (C) 1997, 1998, 1999 Free Software Foundation, Inc.
+   Copyright (C) 1997, 1998, 1999, 2001 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -25,10 +25,6 @@ Boston, MA 02111-1307, USA. */
 
 #ifndef ONLY_INT_FIELD
 #define ONLY_INT_FIELDS 1
-#endif
-
-#ifndef USE_PROTOTYPES
-#define USE_PROTOTYPES 1
 #endif
 
 #define environ _environ

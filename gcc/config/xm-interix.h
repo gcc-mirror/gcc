@@ -1,5 +1,5 @@
 /* Configuration for GNU compiler for processor running Interix
-   Copyright (C) 1993, 1995, 1999 Free Software Foundation, Inc.
+   Copyright (C) 1993, 1995, 1999, 2001 Free Software Foundation, Inc.
    Donn Terry, Softway Systems, Inc,
    from code
       Contributed by Douglas B. Rupp (drupp@cs.washington.edu)
@@ -29,10 +29,6 @@ Boston, MA 02111-1307, USA.  */
 #ifndef __GNUC__
 #define ONLY_INT_FIELDS 1
 #endif
-#endif
-
-#ifndef USE_PROTOTYPES
-#define USE_PROTOTYPES 1
 #endif
 
 /* If not compiled with GNU C, use the portable alloca.  */

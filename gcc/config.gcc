@@ -1621,7 +1621,6 @@ m68hc12-*-*|m6812-*-*)
         ;;
 m68000-convergent-sysv*)
 	tm_file=m68k/ctix.h
-	xm_file="m68k/xm-3b1.h ${xm_file}"
 	xm_defines=USG
 	use_collect2=yes
 	extra_headers=math-68881.h
@@ -1658,7 +1657,6 @@ m68000-sun-sunos4*)
 	extra_headers=math-68881.h
 	;;
 m68000-att-sysv*)
-	xm_file="m68k/xm-3b1.h ${xm_file}"
 	xm_defines=USG
 	if test x$gas = xyes
 	then
@@ -1730,7 +1728,7 @@ m68k-bull-sysv*)		# Bull DPX/2
 m68k-atari-sysv4*)              # Atari variant of V.4.
 	tm_file=m68k/atari.h
 	xm_file="xm-alloca.h ${xm_file}"
-	xm_defines="USG FULL_PROTOTYPES"
+	xm_defines=USG
 	tmake_file=t-svr4
 	extra_parts="crtbegin.o crtend.o"
 	extra_headers=math-68881.h
@@ -1785,7 +1783,7 @@ m68k-tti-*)
 	extra_headers=math-68881.h
 	;;
 m68k-crds-unos*)
-	xm_file="xm-alloca.h m68k/xm-crds.h ${xm_file}"
+	xm_file="xm-alloca.h ${xm_file}"
 	xm_defines="USG unos"
 	xmake_file=m68k/x-crds
 	tm_file=m68k/crds.h
@@ -1795,7 +1793,7 @@ m68k-crds-unos*)
 m68k-cbm-sysv4*)		# Commodore variant of V.4.
 	tm_file=m68k/amix.h
 	xm_file="xm-alloca.h ${xm_file}"
-	xm_defines="USG FULL_PROTOTYPES"
+	xm_defines=USG
 	xmake_file=m68k/x-amix
 	tmake_file=t-svr4
 	extra_parts="crtbegin.o crtend.o"
@@ -2081,7 +2079,6 @@ m88k-dg-dgux*)
 m88k-dolphin-sysv3*)
 	tm_file=m88k/dolph.h
 	extra_parts="crtbegin.o crtend.o"
-	xm_file="m88k/xm-sysv3.h ${xm_file}"
 	xmake_file=m88k/x-dolph
 	if test x$gas = xyes
 	then
@@ -2091,7 +2088,6 @@ m88k-dolphin-sysv3*)
 m88k-tektronix-sysv3)
 	tm_file=m88k/tekXD88.h
 	extra_parts="crtbegin.o crtend.o"
-	xm_file="m88k/xm-sysv3.h ${xm_file}"
 	xmake_file=m88k/x-tekXD88
 	if test x$gas = xyes
 	then
@@ -2123,7 +2119,6 @@ m88k-*-openbsd*)
 m88k-*-sysv3*)
 	tm_file=m88k/sysv3.h
 	extra_parts="crtbegin.o crtend.o"
-	xm_file="m88k/xm-sysv3.h ${xm_file}"
 	xmake_file=m88k/x-sysv3
 	if test x$gas = xyes
 	then

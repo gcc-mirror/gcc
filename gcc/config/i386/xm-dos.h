@@ -1,5 +1,5 @@
 /* Configuration for GNU C-compiler for Intel 80386 running DOS.
-   Copyright (C) 1998, 1999 Free Software Foundation, Inc.
+   Copyright (C) 1998, 1999, 2001 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -36,5 +36,3 @@ Boston, MA 02111-1307, USA.  */
 /* Tell GCC about DOS's bit bucket. */
 
 #define HOST_BIT_BUCKET "NUL"
-
-#define NO_PRECOMPILES 1

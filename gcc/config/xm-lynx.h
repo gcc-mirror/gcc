@@ -1,5 +1,5 @@
 /* Configuration for GNU C-compiler for Lynx.
-   Copyright (C) 1993, 1995 Free Software Foundation, Inc.
+   Copyright (C) 1993, 1995, 2001 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -29,23 +29,3 @@ Boston, MA 02111-1307, USA.  */
 /* Arguments to use with `exit'.  */
 #define SUCCESS_EXIT_CODE 0
 #define FATAL_EXIT_CODE 33
-
-/* Lynx has no vfork system call.  */
-#define vfork fork
-
-/* Lynx has a non-standard mktemp function.  */
-/* ??? This is simpler than creating YATM: Yet Another Target Macro.  */
-#define mktemp lynx_mktemp
-
-#define lynx_mktemp(template) \
-do {				\
-  int pid = getpid ();		\
-  char *t = template;		\
-  char *p;			\
-  p = t + strlen (t);		\
-  while (*--p == 'X')		\
-    {				\
-      *p = (pid % 10) + '0';	\
-      pid /= 10;		\
-    }				\
-} while (0)

@@ -1,5 +1,5 @@
 /* Configuration for GNU C-compiler for DEC Alpha.
-   Copyright (C) 1990, 1992, 1993, 1994, 1995, 1998
+   Copyright (C) 1990, 1992, 1993, 1994, 1995, 1998, 2001
    Free Software Foundation, Inc.
    Contributed by Richard Kenner (kenner@vlsi1.ultra.nyu.edu).
 
@@ -31,8 +31,6 @@ Boston, MA 02111-1307, USA.  */
 #define	HOST_BITS_PER_INT	32
 #define	HOST_BITS_PER_LONG	64
 #define HOST_BITS_PER_LONGLONG  64
-
-/* #define	HOST_WORDS_BIG_ENDIAN  */
 
 /* target machine dependencies.
    tm.h is a symbolic link to the actual target specific file.   */

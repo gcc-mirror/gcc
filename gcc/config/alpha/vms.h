@@ -1,5 +1,5 @@
 /* Output variables, constants and external declarations, for GNU compiler.
-   Copyright (C) 1996, 1997, 1998, 2000 Free Software Foundation, Inc.
+   Copyright (C) 1996, 1997, 1998, 2000, 2001 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -470,3 +470,6 @@ do {									\
 #define DIR_SEPARATOR ']'
 
 #define PREFIX "GNU_ROOT:"
+
+/* XXX Really? Even with modern CRTL? */
+#define NEED_ATEXIT
