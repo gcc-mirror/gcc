@@ -178,7 +178,7 @@ _Unwind_GetGR (struct _Unwind_Context *context, int index)
 _Unwind_Word
 _Unwind_GetCFA (struct _Unwind_Context *context)
 {
-  return context->cfa;
+  return (_Unwind_Word)context->cfa;
 }
 
 /* Overwrite the saved value for register REG in CONTEXT with VAL.  */
