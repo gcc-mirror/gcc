@@ -1140,8 +1140,11 @@ namespace std
       */
       basic_string&
       erase(size_type __pos = 0, size_type __n = npos)
-      { return _M_replace_safe(_M_check(__pos, "basic_string::erase"),
-			       _M_limit(__pos, __n), NULL, size_type(0)); }
+      { 
+	_M_mutate(_M_check(__pos, "basic_string::erase"),
+		  _M_limit(__pos, __n), size_type(0));
+	return *this;
+      }
 
       /**
        *  @brief  Remove one character.
@@ -1157,7 +1160,7 @@ namespace std
 	_GLIBCXX_DEBUG_PEDASSERT(__position >= _M_ibegin()
 				 && __position < _M_iend());
 	const size_type __pos = __position - _M_ibegin();
-	_M_replace_safe(__pos, size_type(1), NULL, size_type(0));
+	_M_mutate(__pos, size_type(1), size_type(0));
 	_M_rep()->_M_set_leaked();
 	return _M_ibegin() + __pos;
       }
@@ -1177,7 +1180,7 @@ namespace std
 	_GLIBCXX_DEBUG_PEDASSERT(__first >= _M_ibegin() && __first <= __last
 				 && __last <= _M_iend());
         const size_type __pos = __first - _M_ibegin();
-	_M_replace_safe(__pos, __last - __first, NULL, size_type(0));
+	_M_mutate(__pos, __last - __first, size_type(0));
 	_M_rep()->_M_set_leaked();
 	return _M_ibegin() + __pos;
       }
