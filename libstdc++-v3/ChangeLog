@@ -1,3 +1,28 @@
+2001-01-01  Benjamin Kosnik  <bkoz@fillmore.redhat.com>
+	
+	* include/c_std/bits/std_cwchar.h: Same.
+	* testsuite/17_intro/header_cwchar.cc: Same.
+	* include/c_std/bits/std_ctime.h: Same.
+	* testsuite/17_intro/header_ctime.cc: Same.
+	* include/c_std/bits/std_cstdlib.h: Same.
+	Clean up undefs, make consistent with cwchar and cmath, etc.
+	* testsuite/17_intro/header_cstdlib.cc: Same.
+	* include/c_std/bits/std_cstdio.h: Same here.
+	* testsuite/17_intro/header_cstring.cc: Same.
+	* include/c_std/bits/std_cstring.h: Include std_cstddef.h for size_t.
+	* testsuite/17_intro/header_cstring.cc: New file. Check for
+	size_t in namespace std.
+
+	* include/c_std/bits/std_cwchar.h: Explicit checks for mbstate_t.
+	* acconfig.h (HAVE_MBSTATE_T): Add.
+	* config.h.in: Regenerate.
+	* acinclude.m4(GLIBCPP_CHECK_WCHAR_T_SUPPORT): Always test for
+	mbstate_t.
+	* aclocal.m4: Regenerate.
+	* configure: Regenerate.
+	* testsuite/17_intro/headers_c++.cc: New file.
+	* testsuite/17_intro/headers_c.cc: Small changes.
+
 2001-01-01  David Billinghurst <David.Billinghurst@riotinto.com>
 
 	* tests_flags.in: Fix typo in usage.

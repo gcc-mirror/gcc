@@ -1,6 +1,6 @@
 // -*- C++ -*- forwarding header.
 
-// Copyright (C) 1997, 1998, 1999, 2000 Free Software Foundation, Inc.
+// Copyright (C) 1997, 1998, 1999, 2000, 2001 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -37,20 +37,39 @@
 #define _CPP_CWCHAR 1
 
 #include <bits/c++config.h>
+#include <bits/std_cstddef.h>
 #include <bits/std_cstdio.h>
 #include <bits/std_cstdarg.h>
 
-#if _GLIBCPP_USE_WCHAR_T
+#if _GLIBCPP_HAVE_WCHAR_H
 #pragma GCC system_header
 #include <wchar.h>
+#endif
+
+// Need to do a bit of trickery here with mbstate_t as char_traits
+// assumes it is in wchar.h, regardless of wchar_t specializations.
+#ifndef _GLIBCPP_HAVE_MBSTATE_T
+extern "C" 
+{
+  typedef struct 
+  {
+    int __fill[6];
+  } mbstate_t;
+}
+#endif
+
+namespace std 
+{
+  using ::mbstate_t;
+}
 
 // Get rid of those macros defined in <wchar.h> in lieu of real functions.
 #undef getwchar
 
+#if _GLIBCPP_USE_WCHAR_T
 namespace std
 {
   using ::wint_t;
-  using ::mbstate_t;
 
   extern "C" wint_t btowc(int); 
   extern "C" int wctob(wint_t); 
@@ -117,41 +136,6 @@ namespace std
   extern "C" unsigned long long int wcstoull(const wchar_t*, wchar_t**, int); 
 #endif
 }
-
-#else
-extern "C" 
-{
-  typedef struct 
-  {
-    int __fill[6];
-  } mbstate_t;
-}
-
-namespace std 
-{
-  using ::mbstate_t;
-}
 #endif //_GLIBCPP_USE_WCHAR_T
 
-
 #endif 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

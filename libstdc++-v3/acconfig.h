@@ -1,5 +1,11 @@
 // acconfig.h symbols and macros for libstdc++ v3 -*- C++ -*-
 
+// Define if GCC support for __complex__ float is buggy.
+#undef _GLIBCPP_BUGGY_FLOAT_COMPLEX
+
+// Define if GCC support for __complex__ is buggy.
+#undef _GLIBCPP_BUGGY_COMPLEX
+
 // Include support for multiple threads, e.g., in the I/O package.
 #undef _GLIBCPP_USE_THREADS
 
@@ -15,22 +21,25 @@
 // Define if code specialized for wchar_t should be used.
 #undef _GLIBCPP_USE_WCHAR_T
 
+// Define if you have the atan2f function.
+#undef _GLIBCPP_HAVE_ATAN2F 
+
+// Define if you have the atan2l function.
+#undef _GLIBCPP_HAVE_ATAN2L
+
+// Define if you have the copysignf function.
+#undef _GLIBCPP_HAVE_COPYSIGNF
+
 // Define if lldiv_t exists in stdlib.h.
 #undef HAVE_LLDIV_T
 
-/* Define if you have the atan2f function.  */
-#define _GLIBCPP_HAVE_ATAN2F 1
+// Define if mbstate_t exists in wchar.h.  */
+#undef HAVE_MBSTATE_T
 
-/* Define if you have the atan2l function.  */
-#define _GLIBCPP_HAVE_ATAN2L 1
-
-/* Define if you have the copysignf function.  */
-#define _GLIBCPP_HAVE_COPYSIGNF 1
-
-/* Define if you have the modff function.  */
+// Define if you have the modff function.  */
 #undef HAVE_MODFF
 
-/* Define if you have the modfl function.  */
+// Define if you have the modfl function.  */
 #undef HAVE_MODFL
 
 // Define if the compiler/host combination has __builtin_abs
@@ -74,12 +83,6 @@
 
 // Define if the compiler/host combination has __builtin_sqrtl
 #undef HAVE___BUILTIN_SQRTL
-
-// Define if GCC support for __complex__ float is buggy.
-#undef _GLIBCPP_BUGGY_FLOAT_COMPLEX
-
-// Define if GCC support for __complex__ is buggy.
-#undef _GLIBCPP_BUGGY_COMPLEX
 
 // Define if LC_MESSAGES is available in <locale.h>.
 #undef HAVE_LC_MESSAGES

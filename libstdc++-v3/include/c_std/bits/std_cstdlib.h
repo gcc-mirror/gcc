@@ -1,6 +1,6 @@
 // -*- C++ -*- forwarding header.
 
-// Copyright (C) 1997-1999, 2000 Free Software Foundation, Inc.
+// Copyright (C) 1997, 1998, 1999, 2000, 2001 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -37,9 +37,13 @@
 #define _CPP_CSTDLIB 1
 
 #include <bits/c++config.h>
+#include <bits/std_cstddef.h>
 
 #pragma GCC system_header
 #include <stdlib.h>
+
+// Get rid of those macros defined in <stdio.h> in lieu of real functions.
+#undef mblen
 
 namespace std 
 {
@@ -85,9 +89,6 @@ namespace std
   extern "C" long int labs(long int); 
   extern "C" div_t div(int, int); 
   extern "C" ldiv_t ldiv(long int, long int); 
-#ifdef mblen
-#undef mblen
-#endif
   extern "C" int mblen(const char*, size_t); 
   extern "C" int mbtowc(wchar_t*, const char*, size_t); 
   extern "C" int wctomb(char*, wchar_t); 
