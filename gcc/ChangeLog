@@ -1,5 +1,19 @@
 2001-08-23  Richard Henderson  <rth@redhat.com>
 
+	* config/ia64/ia64.c (ia64_register_move_cost): Add mode arguemnt.
+	Reorganize.  Handle ADDL like GR, add GR_AND_BR.  Handle TFmode.
+	(ia64_secondary_reload_class): Need GR between AR/BR and anything.
+	Need GR between FR and not GR_AND_FR.
+	* config/ia64/ia64-protos.h (ia64_register_move_cost): Update.
+	* config/ia64/ia64.h (reg_class): Add GR_AND_BR_REGS, move
+	AR regs before GR regs.
+	(REG_CLASS_NAMES, REG_CLASS_CONTENTS): Update.
+	(PREFERRED_RELOAD_CLASS): Tweak for reordered classes.
+	(REGISTER_MOVE_COST): Update.
+	(MEMORY_MOVE_COST): Add GR_AND_FR_REGS.
+
+2001-08-23  Richard Henderson  <rth@redhat.com>
+
 	* regclass.c (init_reg_sets_1): Don't assume cost 2 within
 	a register class.
 
