@@ -48,7 +48,7 @@ static jmp_buf float_error;
 
 static void encode	PROTO((HOST_WIDE_INT *, HOST_WIDE_INT, HOST_WIDE_INT));
 static void decode	PROTO((HOST_WIDE_INT *, HOST_WIDE_INT *, HOST_WIDE_INT *));
-static int div_and_round_double PROTO((enum tree_code, int, HOST_WIDE_INT,
+int div_and_round_double PROTO((enum tree_code, int, HOST_WIDE_INT,
 				       HOST_WIDE_INT, HOST_WIDE_INT,
 				       HOST_WIDE_INT, HOST_WIDE_INT *,
 				       HOST_WIDE_INT *, HOST_WIDE_INT *,
@@ -470,7 +470,7 @@ rrotate_double (l1, h1, count, prec, lv, hv)
    Return nonzero if the operation overflows.
    UNS nonzero says do unsigned division.  */
 
-static int
+int
 div_and_round_double (code, uns,
 		      lnum_orig, hnum_orig, lden_orig, hden_orig,
 		      lquo, hquo, lrem, hrem)
