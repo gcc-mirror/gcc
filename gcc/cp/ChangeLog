@@ -1,5 +1,9 @@
 1999-08-18  Mark Mitchell  <mark@codesourcery.com>
 
+	* search.c (setup_class_bindings): Robustify.
+	* typeck.c (common_type): Use same_type_p, not pointer equality,
+	to compare types.
+
         * cp-tree.h (build_lang_field_decl): Remove.
 	* class.c (build_vtable): Replace calls to build_lang_field_decl
 	with build_lang_decl.
