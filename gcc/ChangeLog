@@ -1,3 +1,9 @@
+2003-07-31  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* builtin-types.def: Use `LONGDOUBLE' instead of `LONG_DOUBLE'
+	throughout.
+	* builtins.def: Likewise.
+
 2003-07-31  Jason Merrill  <jason@redhat.com>
 
 	* Makefile.in (bubblestrap): Don't require a previous full
