@@ -360,6 +360,49 @@ gnu/gcj/convert/UnicodeToBytes.java
 ## hand.
 special_java_source_files = java/lang/Class.java java/lang/Object.java
 
+awt_java_source_files = \
+java/awt/AWTEvent.java \
+java/awt/BorderLayout.java \
+java/awt/Component.java \
+java/awt/Container.java \
+java/awt/Dimension.java \
+java/awt/Event.java \
+java/awt/Font.java \
+java/awt/Frame.java \
+java/awt/LayoutManager.java \
+java/awt/LayoutManager2.java \
+java/awt/Menu.java \
+java/awt/MenuBar.java \
+java/awt/MenuItem.java \
+java/awt/MenuComponent.java \
+java/awt/MenuContainer.java \
+java/awt/Point.java \
+java/awt/Rectangle.java \
+java/awt/Shape.java \
+java/awt/TextArea.java \
+java/awt/TextComponent.java \
+java/awt/Toolkit.java \
+java/awt/Window.java \
+java/awt/event/ActionEvent.java \
+java/awt/event/ActionListener.java \
+java/awt/event/ComponentEvent.java \
+java/awt/event/InputEvent.java \
+java/awt/event/KeyEvent.java \
+java/awt/event/KeyListener.java \
+java/awt/event/TextEvent.java \
+java/awt/event/TextListener.java \
+java/awt/event/WindowAdapter.java \
+java/awt/event/WindowEvent.java \
+java/awt/event/WindowListener.java \
+java/awt/geom/Point2D.java \
+java/awt/geom/Dimension2D.java \
+java/awt/peer/ComponentPeer.java \
+java/awt/peer/ContainerPeer.java \
+java/awt/peer/FramePeer.java \
+java/awt/peer/WindowPeer.java
+
+# $(awt_java_source_files)
+
 ## List of all .java files to be compiled.  Please keep this list
 ## alphabetical.  Please put files from gnu/gcj/convert into
 ## convert_source_files.  If the .java file has a hand-maintained
@@ -376,6 +419,7 @@ gnu/gcj/protocol/file/Connection.java \
 gnu/gcj/protocol/file/Handler.java \
 gnu/gcj/protocol/http/Connection.java \
 gnu/gcj/protocol/http/Handler.java \
+gnu/gcj/RawData.java \
 java/io/BufferedInputStream.java \
 java/io/BufferedOutputStream.java \
 java/io/BufferedReader.java \
@@ -584,10 +628,12 @@ java/util/zip/CRC32.java \
 java/util/zip/Checksum.java \
 java/util/zip/Deflater.java \
 java/util/zip/DeflaterOutputStream.java	\
+java/util/zip/InflaterInputStream.java	\
 java/util/zip/ZipConstants.java	\
 java/util/zip/ZipEntry.java \
 java/util/zip/ZipException.java	\
 java/util/zip/ZipFile.java \
+java/util/zip/ZipInputStream.java \
 java/util/zip/ZipOutputStream.java
 
 java_source_files = $(ordinary_java_source_files) $(special_java_source_files)
@@ -607,6 +653,8 @@ c_source_files = \
   java/lang/e_scalb.c     java/lang/s_rint.c      java/lang/w_sqrt.c      \
   java/lang/e_sqrt.c      java/lang/s_scalbn.c    java/lang/sf_rint.c     \
   java/lang/k_cos.c       java/lang/s_sin.c
+
+#java/awt/natToolkit.cc
 
 ## This lists all the C++ source files in subdirectories.
 nat_source_files = \

@@ -1,3 +1,24 @@
+1999-05-05  Per Bothner  <bothner@cygnus.com>
+
+	* java/awt/*:  Check a bunch of classes, a few complete, but mostly
+	stub classes.  (This is enough to get Kawa to compile against libgcj.)
+
+	* gnu/gcj/RawData.java:  New class.
+	* doc/cni.sgml:  Document RawData.
+
+	* java/util/zip/InflaterInputStream.java:  New stub class.
+	* java/util/zip/ZipInputStream.java:  New class.  Partly works.
+	* java/util/zip/ZipConstants.java:  Add two (internal) constants.
+	* java/util/zip/ZipEntry.java (timeFromDOS):  New static method.
+	* java/util/zip/ZipFile.java:  Now mostly works (unless compressed).
+	* java/util/zip/ZipOutputStream.java:  Start implementation.
+	
+	* java/lang/natSystem.cc (DEFAULT_FILE_ENCODING):  New macro.
+	(default_file_encoding):  New global, initial value is above macro.
+	(init_properties):  Default file.encoding to default_file_encoding.
+	
+	* Makefile.am:  Add new classes.
+
 1999-05-05  Tom Tromey  <tromey@cygnus.com>
 
 	* Makefile.in: Rebuilt.
