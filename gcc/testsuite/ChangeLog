@@ -1,5 +1,9 @@
 2001-03-02  Nathan Sidwell  <nathan@codesourcery.com>
 
+	* g++.old-deja/g++.other/pod1.C: New test.
+
+2001-03-02  Nathan Sidwell  <nathan@codesourcery.com>
+
 	* g++.old-deja/g++.ext/overload1.C: New test.
 
 2001-03-01  Nathan Sidwell  <nathan@codesourcery.com>
