@@ -2238,7 +2238,7 @@ namespace std
 	    }
 	  else if (__testsign)
 	    {
-	      _Traits::eq((__news[0] = __olds[0]), __plus) ? __plus : __minus;
+	      __news[0] = __olds[0];
 	      ++__mod;
 	      ++__news;
 	      __beg = __pads;
