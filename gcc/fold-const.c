@@ -3100,8 +3100,9 @@ fold (expr)
 
   int wins = 1;
 
-  /* Don't try to process an RTL_EXPR since its operands aren't trees.  */
-  if (code == RTL_EXPR)
+  /* Don't try to process an RTL_EXPR since its operands aren't trees. 
+     Likewise for a SAVE_EXPR that's already been evaluated.  */
+  if (code == RTL_EXPR || (code == SAVE_EXPR && SAVE_EXPR_RTL (t)) != 0)
     return t;
 
   /* Return right away if already constant.  */
