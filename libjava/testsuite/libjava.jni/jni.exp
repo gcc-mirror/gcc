@@ -194,6 +194,9 @@ proc gcj_jni_invocation_compile_c_to_binary {file {options {}}} {
   set filename [file tail $file]
   set name [file rootname $filename]
 
+  # Find the generated header.
+  lappend options "additional_flags=-I. -I.."
+
   # Find jni.h.
   lappend options "additional_flags=-I$srcdir/../include"
 
@@ -235,7 +238,7 @@ proc gcj_jni_invocation_test_one {file} {
   pass "bytecompile $file"
 
   set cfile [file rootname $file].c
-  set cxxflags "-lgcj"
+  set cxxflags "-L../.libs -lgcj"
 
   if {! [gcj_jni_invocation_compile_c_to_binary $cfile $cxxflags]} {
     # FIXME
