@@ -1,3 +1,8 @@
+Wed Apr 12 22:44:11 2000  Hans-Peter Nilsson  <hp@axis.com>
+
+	* reorg.c (fill_slots_from_thread): Check side_effects_p when
+	trying the "opposite arithmetic" approach.
+
 Wed Apr 12 20:51:20 2000  J"orn Rennecke <amylaar@cygnus.co.uk>
 
 	* sh.h (STRUCT_VALUE): Just 0 for TARGET_HITACHI.
