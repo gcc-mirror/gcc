@@ -2,12 +2,12 @@
    adapted for gcc by Paul Bame <bame@debian.org>
    and Alan Modra <alan@linuxcare.com.au>.
 
-   Copyright 2001, 2002 Free Software Foundation, Inc.
+   Copyright 2001, 2002, 2003 Free Software Foundation, Inc.
 
-   This file is part of GNU CC and is released under the terms of
+   This file is part of GCC and is released under the terms of
    of the GNU General Public License as published by the Free Software
    Foundation; either version 2, or (at your option) any later version.
-   See the file COPYING in the top-level GNU CC source directory for a copy
+   See the file COPYING in the top-level GCC source directory for a copy
    of the license.  */
 
 

@@ -1,3 +1,41 @@
+2003-08-22  Jason Eckhardt  <jle@rice.edu>
+
+	* config/pa/pa.c: Replace 'GNU CC' with 'GCC'.
+	Remove all uses of PARAMS macro.
+	Convert all function definitions to ISO C90 syntax.
+	* config/pa/elf.h: Replace 'GNU CC' with 'GCC'.
+	* config/pa/fptr.c: Likewise.
+	* config/pa/lib2funcs.asm: Likewise.
+	* config/pa/long_double.h: Likewise.
+	* config/pa/milli64.S: Likewise.
+	* config/pa/pa-64.h: Likewise.
+	* config/pa/pa-hpux.h: Likewise.
+	* config/pa/pa-hpux10.h: Likewise.
+	* config/pa/pa-hpux11.h: Likewise.
+	* config/pa/pa-linux.h: Likewise.
+	* config/pa/pa-modes.def: Likewise.
+	* config/pa/pa-osf.h: Likewise.
+	* config/pa/pa-pro-end.h: Likewise.
+	* config/pa/pa.md: Likewise.
+	* config/pa/pa32-linux.h: Likewise.
+	* config/pa/pa64-linux.h: Likewise.
+	* config/pa/pa64-hpux.h: Likewise.
+	* config/pa/pa64-regs.h: Likewise.
+	* config/pa/quadlib.c: Likewise.
+	* config/pa/rtems.h: Likewise.
+	* config/pa/pa-protos.h: Replace 'GNU CC' with 'GCC' and remove
+	all uses of the PARAMS macro. 
+	* config/pa/pa.h: Likewise.
+	* config/pa/som.h: Likewise.
+
+        * config/iq2000/iq2000.c: Replace 'GNU CC' with 'GCC'.
+        Remove all uses of PARAMS macro.
+        Convert all function definitions to ISO C90 syntax.
+	* config/iq2000-protos.h: Replace 'GNU CC' with 'GCC'.
+        Remove all uses of PARAMS macro.
+	* config/iq2000.h: Remove all uses of PARAMS macro.
+        * config/iq2000/iq2000.md: Replace 'GNU CC' with 'GCC'.
+
 2003-08-23  Ulrich Weigand  <uweigand@de.ibm.com>
 
 	* config/s390/s390-protos.h (s390_output_pool_entry): Declare.

@@ -1,20 +1,20 @@
 /* Subroutines used for code generation on Vitesse IQ2000 processors
    Copyright (C) 2003 Free Software Foundation, Inc.
 
-This file is part of GNU CC.
+This file is part of GCC.
 
-GNU CC is free software; you can redistribute it and/or modify
+GCC is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
 the Free Software Foundation; either version 2, or (at your option)
 any later version.
 
-GNU CC is distributed in the hope that it will be useful,
+GCC is distributed in the hope that it will be useful,
 but WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 GNU General Public License for more details.
 
 You should have received a copy of the GNU General Public License
-along with GNU CC; see the file COPYING.  If not, write to
+along with GCC; see the file COPYING.  If not, write to
 the Free Software Foundation, 59 Temple Place - Suite 330,
 Boston, MA 02111-1307, USA.  */
 
@@ -66,23 +66,23 @@ enum internal_test {
 
 struct constant;
 
-static void iq2000_count_memory_refs PARAMS ((rtx, int));
-static enum internal_test map_test_to_internal_test PARAMS ((enum rtx_code));
-static rtx iq2000_add_large_offset_to_sp PARAMS ((HOST_WIDE_INT));
-static void iq2000_annotate_frame_insn PARAMS ((rtx, rtx));
-static void iq2000_emit_frame_related_store PARAMS ((rtx, rtx,
-						     HOST_WIDE_INT));
-static struct machine_function * iq2000_init_machine_status PARAMS ((void));
-static void save_restore_insns PARAMS ((int));
-static void abort_with_insn PARAMS ((rtx, const char *))
+static void iq2000_count_memory_refs (rtx, int);
+static enum internal_test map_test_to_internal_test (enum rtx_code);
+static rtx iq2000_add_large_offset_to_sp (HOST_WIDE_INT);
+static void iq2000_annotate_frame_insn (rtx, rtx);
+static void iq2000_emit_frame_related_store (rtx, rtx,
+					     HOST_WIDE_INT);
+static struct machine_function * iq2000_init_machine_status (void);
+static void save_restore_insns (int);
+static void abort_with_insn (rtx, const char *)
      ATTRIBUTE_NORETURN;
-static int symbolic_expression_p PARAMS ((rtx));
-static enum processor_type iq2000_parse_cpu PARAMS ((const char *));
-static void iq2000_select_rtx_section PARAMS ((enum machine_mode, rtx,
-					       unsigned HOST_WIDE_INT));
-static void iq2000_select_section PARAMS ((tree, int, unsigned HOST_WIDE_INT));
-static rtx expand_one_builtin PARAMS ((enum insn_code, rtx, tree, enum rtx_code*,
-				       int));
+static int symbolic_expression_p (rtx);
+static enum processor_type iq2000_parse_cpu (const char *);
+static void iq2000_select_rtx_section (enum machine_mode, rtx,
+				       unsigned HOST_WIDE_INT);
+static void iq2000_select_section (tree, int, unsigned HOST_WIDE_INT);
+static rtx expand_one_builtin (enum insn_code, rtx, tree, enum rtx_code*,
+			       int);
 
 /* Structure to be filled in by compute_frame_size with register
    save masks, and offsets for the current function.  */
@@ -181,9 +181,7 @@ struct gcc_target targetm = TARGET_INITIALIZER;
    integer is needed.  */
 
 int
-uns_arith_operand (op, mode)
-     rtx op;
-     enum machine_mode mode;
+uns_arith_operand (rtx op, enum machine_mode mode)
 {
   if (GET_CODE (op) == CONST_INT && SMALL_INT_UNSIGNED (op))
     return 1;
@@ -194,9 +192,7 @@ uns_arith_operand (op, mode)
 /* Return 1 if OP can be used as an operand where a 16 bit integer is needed. */
 
 int
-arith_operand (op, mode)
-     rtx op;
-     enum machine_mode mode;
+arith_operand (rtx op, enum machine_mode mode)
 {
   if (GET_CODE (op) == CONST_INT && SMALL_INT (op))
     return 1;
@@ -207,9 +203,7 @@ arith_operand (op, mode)
 /* Return 1 if OP is a integer which fits in 16 bits  */
 
 int
-small_int (op, mode)
-     rtx op;
-     enum machine_mode mode ATTRIBUTE_UNUSED;
+small_int (rtx op, enum machine_mode mode ATTRIBUTE_UNUSED)
 {
   return (GET_CODE (op) == CONST_INT && SMALL_INT (op));
 }
@@ -218,9 +212,7 @@ small_int (op, mode)
    instruction.  */
 
 int
-large_int (op, mode)
-     rtx op;
-     enum machine_mode mode ATTRIBUTE_UNUSED;
+large_int (rtx op, enum machine_mode mode ATTRIBUTE_UNUSED)
 {
   HOST_WIDE_INT value;
 
@@ -247,9 +239,7 @@ large_int (op, mode)
 /* Return 1 if OP is a register or the constant 0.  */
 
 int
-reg_or_0_operand (op, mode)
-     rtx op;
-     enum machine_mode mode;
+reg_or_0_operand (rtx op, enum machine_mode mode)
 {
   switch (GET_CODE (op))
     {
@@ -274,9 +264,7 @@ reg_or_0_operand (op, mode)
    (ie, register + small offset).  */
 
 int
-simple_memory_operand (op, mode)
-     rtx op;
-     enum machine_mode mode ATTRIBUTE_UNUSED;
+simple_memory_operand (rtx op, enum machine_mode mode ATTRIBUTE_UNUSED)
 {
   rtx addr, plus0, plus1;
 
@@ -328,9 +316,7 @@ simple_memory_operand (op, mode)
 /* Return nonzero if the code of this rtx pattern is EQ or NE.  */
 
 int
-equality_op (op, mode)
-     rtx op;
-     enum machine_mode mode;
+equality_op (rtx op, enum machine_mode mode)
 {
   if (mode != GET_MODE (op))
     return 0;
@@ -341,9 +327,7 @@ equality_op (op, mode)
 /* Return nonzero if the code is a relational operations (EQ, LE, etc.) */
 
 int
-cmp_op (op, mode)
-     rtx op;
-     enum machine_mode mode;
+cmp_op (rtx op, enum machine_mode mode)
 {
   if (mode != GET_MODE (op))
     return 0;
@@ -354,9 +338,7 @@ cmp_op (op, mode)
 /* Return nonzero if the operand is either the PC or a label_ref.  */
 
 int
-pc_or_label_operand (op, mode)
-     rtx op;
-     enum machine_mode mode ATTRIBUTE_UNUSED;
+pc_or_label_operand (rtx op, enum machine_mode mode ATTRIBUTE_UNUSED)
 {
   if (op == pc_rtx)
     return 1;
@@ -370,9 +352,7 @@ pc_or_label_operand (op, mode)
 /* Return nonzero if OP is a valid operand for a call instruction.  */
 
 int
-call_insn_operand (op, mode)
-     rtx op;
-     enum machine_mode mode ATTRIBUTE_UNUSED;
+call_insn_operand (rtx op, enum machine_mode mode ATTRIBUTE_UNUSED)
 {
   return (CONSTANT_ADDRESS_P (op)
 	  || (GET_CODE (op) == REG && op != arg_pointer_rtx
@@ -383,9 +363,7 @@ call_insn_operand (op, mode)
 /* Return nonzero if OP is valid as a source operand for a move instruction.  */
 
 int
-move_operand (op, mode)
-     rtx op;
-     enum machine_mode mode;
+move_operand (rtx op, enum machine_mode mode)
 {
   /* Accept any general operand after reload has started; doing so
      avoids losing if reload does an in-place replacement of a register
@@ -398,9 +376,7 @@ move_operand (op, mode)
 /* Return nonzero if OP is a constant power of 2.  */
 
 int
-power_of_2_operand (op, mode)
-     rtx op;
-     enum machine_mode mode ATTRIBUTE_UNUSED;
+power_of_2_operand (rtx op, enum machine_mode mode ATTRIBUTE_UNUSED)
 {
   int intval;
 
@@ -415,9 +391,7 @@ power_of_2_operand (op, mode)
 /* Return nonzero if we split the address into high and low parts.  */
 
 int
-iq2000_check_split (address, mode)
-     rtx address;
-     enum machine_mode mode;
+iq2000_check_split (rtx address, enum machine_mode mode)
 {
   /* This is the same check used in simple_memory_operand.
      We use it here because LO_SUM is not offsettable.  */
@@ -436,10 +410,9 @@ iq2000_check_split (address, mode)
 /* Return nonzero if REG is valid for MODE.  */
 
 int
-iq2000_reg_mode_ok_for_base_p (reg, mode, strict)
-     rtx reg;
-     enum machine_mode mode ATTRIBUTE_UNUSED;
-     int strict;
+iq2000_reg_mode_ok_for_base_p (rtx reg,
+			       enum machine_mode mode ATTRIBUTE_UNUSED,
+			       int strict)
 {
   return (strict
 	  ? REGNO_MODE_OK_FOR_BASE_P (REGNO (reg), mode)
@@ -451,10 +424,7 @@ iq2000_reg_mode_ok_for_base_p (reg, mode, strict)
    function is called during reload.  */
 
 int
-iq2000_legitimate_address_p (mode, xinsn, strict)
-     enum machine_mode mode;
-     rtx xinsn;
-     int strict;
+iq2000_legitimate_address_p (enum machine_mode mode, rtx xinsn, int strict)
 {
   if (TARGET_DEBUG_A_MODE)
     {
@@ -531,11 +501,8 @@ iq2000_legitimate_address_p (mode, xinsn, strict)
    it needs.  */
 
 const char *
-iq2000_fill_delay_slot (ret, type, operands, cur_insn)
-     const char *ret;		/* normal string to return */
-     enum delay_type type;	/* type of delay */
-     rtx operands[];		/* operands to use */
-     rtx cur_insn;		/* current insn */
+iq2000_fill_delay_slot (const char *ret, enum delay_type type, rtx operands[],
+			rtx cur_insn)
 {
   register rtx set_reg;
   register enum machine_mode mode;
@@ -596,9 +563,7 @@ iq2000_fill_delay_slot (ret, type, operands, cur_insn)
    appropriate counter for -mstats.  */
 
 static void
-iq2000_count_memory_refs (op, num)
-     rtx op;
-     int num;
+iq2000_count_memory_refs (rtx op, int num)
 {
   int additional = 0;
   int n_words = 0;
@@ -710,10 +675,7 @@ iq2000_count_memory_refs (op, num)
 /* Return the appropriate instructions to move one operand to another.  */
 
 const char *
-iq2000_move_1word (operands, insn, unsignedp)
-     rtx operands[];
-     rtx insn;
-     int unsignedp;
+iq2000_move_1word (rtx operands[], rtx insn, int unsignedp)
 {
   const char *ret = 0;
   rtx op0 = operands[0];
@@ -943,8 +905,7 @@ iq2000_move_1word (operands, insn, unsignedp)
 /* Provide the costs of an addressing mode that contains ADDR.  */
 
 int
-iq2000_address_cost (addr)
-     rtx addr;
+iq2000_address_cost (rtx addr)
 {
   switch (GET_CODE (addr))
     {
@@ -1011,8 +972,7 @@ iq2000_address_cost (addr)
 /* Make normal rtx_code into something we can index from an array.  */
 
 static enum internal_test
-map_test_to_internal_test (test_code)
-     enum rtx_code test_code;
+map_test_to_internal_test (enum rtx_code test_code)
 {
   enum internal_test test = ITEST_MAX;
 
@@ -1037,16 +997,16 @@ map_test_to_internal_test (test_code)
 /* Generate the code to compare two integer values.  The return value is:
    (reg:SI xx)		The pseudo register the comparison is in
    0		       	No register, generate a simple branch.
-*/
+
+   TEST_CODE: relational test (EQ, etc).
+   RESULT: result to store comp. or 0 if branch.
+   CMP0: first operand to compare 
+   CMP1: second operand to compare 
+   *P_INVERT: NULL or ptr to hold whether branch needs to reverse its test.  */
 
 rtx
-gen_int_relational (test_code, result, cmp0, cmp1, p_invert)
-     enum rtx_code test_code;	/* relational test (EQ, etc) */
-     rtx result;		/* result to store comp. or 0 if branch */
-     rtx cmp0;			/* first operand to compare */
-     rtx cmp1;			/* second operand to compare */
-     int *p_invert;		/* NULL or ptr to hold whether branch needs */
-				/* to reverse its test */
+gen_int_relational (enum rtx_code test_code, rtx result, rtx cmp0, rtx cmp1,
+		    int *p_invert)
 {
   struct cmp_info
   {
@@ -1210,9 +1170,7 @@ gen_int_relational (test_code, result, cmp0, cmp1, p_invert)
    The comparison operands are saved away by cmp{si,di,sf,df}.  */
 
 void
-gen_conditional_branch (operands, test_code)
-     rtx operands[];
-     enum rtx_code test_code;
+gen_conditional_branch (rtx operands[], enum rtx_code test_code)
 {
   enum cmp_type type = branch_type;
   rtx cmp0 = branch_cmp[0];
@@ -1284,10 +1242,8 @@ gen_conditional_branch (operands, test_code)
 /* Initialize CUMULATIVE_ARGS for a function.  */
 
 void
-init_cumulative_args (cum, fntype, libname)
-     CUMULATIVE_ARGS *cum;		/* argument info to initialize */
-     tree fntype;			/* tree ptr for function decl */
-     rtx libname ATTRIBUTE_UNUSED;	/* SYMBOL_REF of library name or 0 */
+init_cumulative_args (CUMULATIVE_ARGS *cum, tree fntype,
+		      rtx libname ATTRIBUTE_UNUSED)
 {
   static CUMULATIVE_ARGS zero_cum;
   tree param, next_param;
@@ -1328,11 +1284,8 @@ init_cumulative_args (cum, fntype, libname)
 /* Advance the argument to the next argument position.  */
 
 void
-function_arg_advance (cum, mode, type, named)
-     CUMULATIVE_ARGS *cum;	/* current arg information */
-     enum machine_mode mode;	/* current arg mode */
-     tree type;			/* type of the argument or 0 if lib support */
-     int named;			/* whether or not the argument was named */
+function_arg_advance (CUMULATIVE_ARGS *cum, enum machine_mode mode, tree type,
+		      int named)
 {
   if (TARGET_DEBUG_D_MODE)
     {
@@ -1396,11 +1349,8 @@ function_arg_advance (cum, mode, type, named)
    or 0 if the argument is to be passed on the stack.  */
 
 struct rtx_def *
-function_arg (cum, mode, type, named)
-     CUMULATIVE_ARGS *cum;	/* current arg information */
-     enum machine_mode mode;	/* current arg mode */
-     tree type;			/* type of the argument or 0 if lib support */
-     int named;			/* != 0 for normal args, == 0 for ... args */
+function_arg (CUMULATIVE_ARGS *cum, enum machine_mode mode, tree type,
+	      int named)
 {
   rtx ret;
   int regbase = -1;
@@ -1560,11 +1510,9 @@ function_arg (cum, mode, type, named)
 }
 
 int
-function_arg_partial_nregs (cum, mode, type, named)
-     CUMULATIVE_ARGS *cum;	/* current arg information */
-     enum machine_mode mode;	/* current arg mode */
-     tree type ATTRIBUTE_UNUSED;/* type of the argument or 0 if lib support */
-     int named ATTRIBUTE_UNUSED;/* != 0 for normal args, == 0 for ... args */
+function_arg_partial_nregs (CUMULATIVE_ARGS *cum, enum machine_mode mode,
+			    tree type ATTRIBUTE_UNUSED,
+			    int named ATTRIBUTE_UNUSED)
 {
   if (mode == DImode
 	   && cum->arg_words == MAX_ARGS_IN_REGISTERS - (unsigned)1)
@@ -1581,9 +1529,7 @@ function_arg_partial_nregs (cum, mode, type, named)
 /* Implement va_start.  */
 
 void
-iq2000_va_start (valist, nextarg)
-     tree valist;
-     rtx nextarg;
+iq2000_va_start (tree valist, rtx nextarg)
 {
   int int_arg_words;
 
@@ -1607,8 +1553,7 @@ iq2000_va_start (valist, nextarg)
 /* Implement va_arg.  */
 
 rtx
-iq2000_va_arg (valist, type)
-     tree valist, type;
+iq2000_va_arg (tree valist, tree type)
 {
   HOST_WIDE_INT size, rsize;
   rtx addr_rtx;
@@ -1809,9 +1754,7 @@ iq2000_va_arg (valist, type)
 /* Abort after printing out a specific insn.  */
 
 static void
-abort_with_insn (insn, reason)
-     rtx insn;
-     const char *reason;
+abort_with_insn (rtx insn, const char *reason)
 {
   error (reason);
   debug_rtx (insn);
@@ -1821,7 +1764,7 @@ abort_with_insn (insn, reason)
 /* Detect any conflicts in the switches.  */
 
 void
-override_options ()
+override_options (void)
 {
   register enum processor_type iq2000_cpu;
 
@@ -1901,7 +1844,7 @@ override_options ()
 /* Allocate a chunk of memory for per-function machine-dependent data.  */
 
 static struct machine_function *
-iq2000_init_machine_status ()
+iq2000_init_machine_status (void)
 {
   return ((struct machine_function *)
 	  ggc_alloc_cleared (sizeof (struct machine_function)));
@@ -1912,9 +1855,7 @@ iq2000_init_machine_status ()
    pointer after the initial adjustments.  */
 
 HOST_WIDE_INT
-iq2000_debugger_offset (addr, offset)
-     rtx addr;
-     HOST_WIDE_INT offset;
+iq2000_debugger_offset (rtx addr, HOST_WIDE_INT offset)
 {
   rtx offset2 = const0_rtx;
   rtx reg = eliminate_constant_term (addr, &offset2);
@@ -1949,10 +1890,8 @@ iq2000_debugger_offset (addr, offset)
    of load delays, and also to update the delay slot statistics.  */
 
 void
-final_prescan_insn (insn, opvec, noperands)
-     rtx insn;
-     rtx opvec[] ATTRIBUTE_UNUSED;
-     int noperands ATTRIBUTE_UNUSED;
+final_prescan_insn (rtx insn, rtx opvec[] ATTRIBUTE_UNUSED,
+		    int noperands ATTRIBUTE_UNUSED)
 {
   if (dslots_number_nops > 0)
     {
@@ -2048,8 +1987,7 @@ final_prescan_insn (insn, opvec, noperands)
 */
 
 HOST_WIDE_INT
-compute_frame_size (size)
-     HOST_WIDE_INT size;	/* # of var. bytes allocated */
+compute_frame_size (HOST_WIDE_INT size)
 {
   int regno;
   HOST_WIDE_INT total_size;	/* # bytes that the entire frame takes up */
@@ -2154,9 +2092,7 @@ compute_frame_size (size)
    the stack pointer or hard frame pointer.  */
 
 int
-iq2000_initial_elimination_offset (from, to)
-     int from;
-     int to ATTRIBUTE_UNUSED;
+iq2000_initial_elimination_offset (int from, int to ATTRIBUTE_UNUSED)
 {
   int offset;
 
@@ -2193,8 +2129,7 @@ iq2000_initial_elimination_offset (from, to)
    OFFSET is too large to add in a single instruction.  */
 
 static rtx
-iq2000_add_large_offset_to_sp (offset)
-     HOST_WIDE_INT offset;
+iq2000_add_large_offset_to_sp (HOST_WIDE_INT offset)
 {
   rtx reg = gen_rtx_REG (Pmode, IQ2000_TEMP2_REGNUM);
   rtx offset_rtx = GEN_INT (offset);
@@ -2208,8 +2143,7 @@ iq2000_add_large_offset_to_sp (offset)
    operation DWARF_PATTERN.  */
 
 static void
-iq2000_annotate_frame_insn (insn, dwarf_pattern)
-     rtx insn, dwarf_pattern;
+iq2000_annotate_frame_insn (rtx insn, rtx dwarf_pattern)
 {
   RTX_FRAME_RELATED_P (insn) = 1;
   REG_NOTES (insn) = alloc_EXPR_LIST (REG_FRAME_RELATED_EXPR,
@@ -2221,10 +2155,7 @@ iq2000_annotate_frame_insn (insn, dwarf_pattern)
    frame related and note that it stores REG at (SP + OFFSET).  */
 
 static void
-iq2000_emit_frame_related_store (mem, reg, offset)
-     rtx mem;
-     rtx reg;
-     HOST_WIDE_INT offset;
+iq2000_emit_frame_related_store (rtx mem, rtx reg, HOST_WIDE_INT offset)
 {
   rtx dwarf_address = plus_constant (stack_pointer_rtx, offset);
   rtx dwarf_mem = gen_rtx_MEM (GET_MODE (reg), dwarf_address);
@@ -2234,8 +2165,7 @@ iq2000_emit_frame_related_store (mem, reg, offset)
 }
 
 static void
-save_restore_insns (store_p)
-     int store_p;	/* true if this is prologue */
+save_restore_insns (int store_p)
 {
   long mask = cfun->machine->frame.mask;
   int regno;
@@ -2317,7 +2247,7 @@ save_restore_insns (store_p)
 /* Expand the prologue into a bunch of separate insns.  */
 
 void
-iq2000_expand_prologue ()
+iq2000_expand_prologue (void)
 {
   int regno;
   HOST_WIDE_INT tsize;
@@ -2506,7 +2436,7 @@ iq2000_expand_prologue ()
 /* Expand the epilogue into a bunch of separate insns.  */
 
 void
-iq2000_expand_epilogue ()
+iq2000_expand_epilogue (void)
 {
   HOST_WIDE_INT tsize = cfun->machine->frame.total_size;
   rtx tsize_rtx = GEN_INT (tsize);
@@ -2567,8 +2497,7 @@ iq2000_expand_epilogue ()
 }
 
 void
-iq2000_expand_eh_return (address)
-     rtx address;
+iq2000_expand_eh_return (rtx address)
 {
   HOST_WIDE_INT gp_offset = cfun->machine->frame.gp_sp_offset;
   rtx scratch;
@@ -2582,7 +2511,7 @@ iq2000_expand_eh_return (address)
    was created.  */
 
 int
-iq2000_can_use_return_insn ()
+iq2000_can_use_return_insn (void)
 {
   if (! reload_completed)
     return 0;
@@ -2599,8 +2528,7 @@ iq2000_can_use_return_insn ()
 /* Returns non-zero if X contains a SYMBOL_REF.  */
 
 static int
-symbolic_expression_p (x)
-     rtx x;
+symbolic_expression_p (rtx x)
 {
   if (GET_CODE (x) == SYMBOL_REF)
     return 1;
@@ -2623,10 +2551,8 @@ symbolic_expression_p (x)
    mode MODE.  */
 
 static void
-iq2000_select_rtx_section (mode, x, align)
-     enum machine_mode mode;
-     rtx x ATTRIBUTE_UNUSED;
-     unsigned HOST_WIDE_INT align;
+iq2000_select_rtx_section (enum machine_mode mode, rtx x ATTRIBUTE_UNUSED,
+			   unsigned HOST_WIDE_INT align)
 {
   /* For embedded applications, always put constants in read-only data,
      in order to reduce RAM usage.  */
@@ -2643,10 +2569,8 @@ iq2000_select_rtx_section (mode, x, align)
    are done correctly.  */
 
 static void
-iq2000_select_section (decl, reloc, align)
-     tree decl;
-     int reloc ATTRIBUTE_UNUSED;
-     unsigned HOST_WIDE_INT align ATTRIBUTE_UNUSED;
+iq2000_select_section (tree decl, int reloc ATTRIBUTE_UNUSED,
+		       unsigned HOST_WIDE_INT align ATTRIBUTE_UNUSED)
 {
   if (TARGET_EMBEDDED_DATA)
     {
@@ -2689,9 +2613,7 @@ iq2000_select_section (decl, reloc, align)
    FUNC.  */
 
 rtx
-iq2000_function_value (valtype, func)
-     tree valtype;
-     tree func ATTRIBUTE_UNUSED;
+iq2000_function_value (tree valtype, tree func ATTRIBUTE_UNUSED)
 {
   int reg = GP_RETURN;
   enum machine_mode mode = TYPE_MODE (valtype);
@@ -2708,11 +2630,9 @@ iq2000_function_value (valtype, func)
    nonzero when an argument must be passed by reference.  */
 
 int
-function_arg_pass_by_reference (cum, mode, type, named)
-     CUMULATIVE_ARGS *cum ATTRIBUTE_UNUSED;
-     enum machine_mode mode;
-     tree type;
-     int named ATTRIBUTE_UNUSED;
+function_arg_pass_by_reference (CUMULATIVE_ARGS *cum ATTRIBUTE_UNUSED,
+				enum machine_mode mode, tree type,
+				int named ATTRIBUTE_UNUSED)
 {
   int size;
 
@@ -2742,9 +2662,7 @@ function_arg_pass_by_reference (cum, mode, type, named)
    attributes in the machine-description file.  */
 
 int
-iq2000_adjust_insn_length (insn, length)
-     rtx insn;
-     int length;
+iq2000_adjust_insn_length (rtx insn, int length)
 {
   /* A unconditional jump has an unfilled delay slot if it is not part
      of a sequence.  A conditional jump normally has a delay slot */
@@ -2772,18 +2690,8 @@ iq2000_adjust_insn_length (insn, length)
    reversed conditional branch around a `jr' instruction.  */
 
 char *
-iq2000_output_conditional_branch (insn,
-				operands,
-				two_operands_p,
-				float_p,
-				inverted_p,
-				length)
-     rtx insn;
-     rtx *operands;
-     int two_operands_p;
-     int float_p;
-     int inverted_p;
-     int length;
+iq2000_output_conditional_branch (rtx insn, rtx *operands, int two_operands_p,
+				  int float_p, int inverted_p, int length)
 {
   static char buffer[200];
   /* The kind of comparison we are doing.  */
@@ -2936,8 +2844,7 @@ iq2000_output_conditional_branch (insn,
 }
 
 static enum processor_type
-iq2000_parse_cpu (cpu_string)
-     const char *cpu_string;
+iq2000_parse_cpu (const char *cpu_string)
 {
   const char *p = cpu_string;
   enum processor_type cpu;
@@ -2962,7 +2869,7 @@ iq2000_parse_cpu (cpu_string)
   builtin_function ((NAME), (TYPE), (CODE), BUILT_IN_MD, NULL, NULL_TREE)
 
 void
-iq2000_init_builtins ()
+iq2000_init_builtins (void)
 {
   tree endlink = void_list_node;
   tree void_ftype, void_ftype_int, void_ftype_int_int;
@@ -3095,12 +3002,8 @@ void_ftype_int_int_int
    has an rtx CODE */
 
 static rtx
-expand_one_builtin (icode, target, arglist, code, argcount)
-  enum insn_code icode;
-  rtx target;
-  tree arglist;
-  enum rtx_code *code;
-  int argcount;
+expand_one_builtin (enum insn_code icode, rtx target, tree arglist,
+		    enum rtx_code *code, int argcount)
 {
   rtx pat;
   tree arg [5];
@@ -3177,12 +3080,9 @@ expand_one_builtin (icode, target, arglist, code, argcount)
    IGNORE is nonzero if the value is to be ignored.  */
 
 rtx
-iq2000_expand_builtin (exp, target, subtarget, mode, ignore)
-     tree exp;
-     rtx target;
-     rtx subtarget ATTRIBUTE_UNUSED;
-     enum machine_mode mode ATTRIBUTE_UNUSED;
-     int ignore ATTRIBUTE_UNUSED;
+iq2000_expand_builtin (tree exp, rtx target, rtx subtarget ATTRIBUTE_UNUSED,
+		       enum machine_mode mode ATTRIBUTE_UNUSED,
+		       int ignore ATTRIBUTE_UNUSED)
 {
   tree fndecl = TREE_OPERAND (TREE_OPERAND (exp, 0), 0);
   tree arglist = TREE_OPERAND (exp, 1);
@@ -3362,12 +3262,9 @@ iq2000_expand_builtin (exp, target, subtarget, mode, ignore)
 }
 
 void
-iq2000_setup_incoming_varargs (cum, mode, type, pretend_size, no_rtl) 
-     CUMULATIVE_ARGS cum;
-     int             mode ATTRIBUTE_UNUSED;
-     tree            type ATTRIBUTE_UNUSED;
-     int *           pretend_size;
-     int             no_rtl;
+iq2000_setup_incoming_varargs (CUMULATIVE_ARGS cum, int mode ATTRIBUTE_UNUSED,
+			       tree type ATTRIBUTE_UNUSED, int *pretend_size,
+			       int no_rtl) 
 {
   unsigned int iq2000_off = (! (cum).last_arg_fp); 
   unsigned int iq2000_fp_off = ((cum).last_arg_fp); 
@@ -3410,9 +3307,7 @@ iq2000_setup_incoming_varargs (cum, mode, type, pretend_size, no_rtl)
 */
 
 void
-print_operand_address (file, addr)
-     FILE *file;
-     rtx addr;
+print_operand_address (FILE *file, rtx addr)
 {
   if (!addr)
     error ("PRINT_OPERAND_ADDRESS, null pointer");
@@ -3541,10 +3436,7 @@ print_operand_address (file, addr)
    '+'	Print the name of the gp register (gp or $28).  */
 
 void
-print_operand (file, op, letter)
-     FILE *file;		/* file to write to */
-     rtx op;			/* operand to print */
-     int letter;		/* %<letter> or 0 */
+print_operand (FILE *file, rtx op, int letter)
 {
   register enum rtx_code code;
 
