@@ -432,6 +432,24 @@ make_var_volatile (var)
   MEM_VOLATILE_P (DECL_RTL (var)) = 1;
 }
 
+/* Output alignment directive to align for constant expression EXP.  */
+
+void
+assemble_constant_align (exp)
+     tree exp;
+{
+  int align;
+
+  /* Align the location counter as required by EXP's data type.  */
+  align = TYPE_ALIGN (TREE_TYPE (exp));
+#ifdef CONSTANT_ALIGNMENT
+  align = CONSTANT_ALIGNMENT (exp, align);
+#endif
+
+  if (align > BITS_PER_UNIT)
+    ASM_OUTPUT_ALIGN (asm_out_file, floor_log2 (align / BITS_PER_UNIT));
+}
+
 /* Output a string of literal assembler code
    for an `asm' keyword used between functions.  */
 
