@@ -42,6 +42,9 @@ union  tree_node;
 struct varasm_status;
 struct varray_head_tag;
 
+/* Constants for general use.  */
+extern char *empty_string;
+
 /* Manipulate global roots that are needed between calls to gc.  */
 void ggc_add_root PROTO ((void *base, int nelt, int size, void (*)(void *)));
 void ggc_add_rtx_root PROTO ((struct rtx_def **, int nelt));

@@ -401,6 +401,9 @@ struct stmt_status
 /* Non-zero if we are using EH to handle cleanus.  */
 static int using_eh_for_cleanups_p = 0;
 
+/* Character strings, each containing a single decimal digit.  */
+static char *digit_strings[10];
+
 
 static int n_occurrences		PROTO((int, const char *));
 static void expand_goto_internal	PROTO((tree, rtx, rtx));
@@ -592,7 +595,17 @@ mark_stmt_status (p)
 void
 init_stmt ()
 {
+  int i;
+
   gcc_obstack_init (&stmt_obstack);
+  ggc_add_rtx_root (&last_block_end_note, 1);
+
+  for (i = 0; i < 10; i++)
+    {
+      digit_strings[i] = ggc_alloc_string (NULL, 1);
+      digit_strings[i][0] = '0' + i;
+    }
+  ggc_add_string_root (digit_strings, 10);
 }
 
 void
@@ -1547,9 +1560,9 @@ expand_asm_operands (string, outputs, inputs, clobbers, vol, filename, line)
   argvec = rtvec_alloc (ninputs);
   constraints = rtvec_alloc (ninputs);
 
-  body = gen_rtx_ASM_OPERANDS (VOIDmode,
-			       TREE_STRING_POINTER (string), "", 0, argvec,
-			       constraints, filename, line);
+  body = gen_rtx_ASM_OPERANDS (VOIDmode, TREE_STRING_POINTER (string), 
+			       empty_string, 0, argvec, constraints, 
+			       filename, line);
 
   MEM_VOLATILE_P (body) = vol;
 
@@ -1717,14 +1730,12 @@ expand_asm_operands (string, outputs, inputs, clobbers, vol, filename, line)
   /* For in-out operands, copy output rtx to input rtx. */
   for (i = 0; i < ninout; i++)
     {
-      static char match[9+1][2]
-	= {"0", "1", "2", "3", "4", "5", "6", "7", "8", "9"};
       int j = inout_opnum[i];
 
       XVECEXP (body, 3, ninputs - ninout + i)      /* argvec */
 	= output_rtx[j];
       XVECEXP (body, 4, ninputs - ninout + i)      /* constraints */
-	= gen_rtx_ASM_INPUT (inout_mode[i], match[j]);
+	= gen_rtx_ASM_INPUT (inout_mode[i], digit_strings[j]);
     }
 
   /* Now, for each output, construct an rtx

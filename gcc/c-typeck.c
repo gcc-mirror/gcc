@@ -4494,8 +4494,8 @@ digest_init (type, init, require_constant, constructor_constant)
   enum tree_code code = TREE_CODE (type);
   tree inside_init = init;
 
-  if (init == error_mark_node)
-    return init;
+  if (type == error_mark_node || init == error_mark_node)
+    return error_mark_node;
 
   /* Strip NON_LVALUE_EXPRs since we aren't using as an lvalue.  */
   /* Do not use STRIP_NOPS here.  We do not want an enumerator
