@@ -339,7 +339,7 @@ static int hard_reg_use_compare		PROTO((struct hard_reg_n_uses *,
 					       struct hard_reg_n_uses *));
 static void order_regs_for_reload	PROTO((void));
 static void reload_as_needed		PROTO((rtx, int));
-static void forget_old_reloads_1	PROTO((rtx));
+static void forget_old_reloads_1	PROTO((rtx, rtx));
 static int reload_reg_class_lower	PROTO((short *, short *));
 static void mark_reload_reg_in_use	PROTO((int, int, enum reload_type,
 					       enum machine_mode));
@@ -3674,7 +3674,7 @@ reload_as_needed (first, live_known)
 		    break;
 
 		if (i == n_reloads)
-		  forget_old_reloads_1 (XEXP (x, 0));
+		  forget_old_reloads_1 (XEXP (x, 0), NULL_RTX);
 	      }
 #endif
 	}
@@ -3724,8 +3724,9 @@ reload_as_needed (first, live_known)
    or it may be a pseudo reg that was reloaded from.  */
 
 static void
-forget_old_reloads_1 (x)
+forget_old_reloads_1 (x, ignored)
      rtx x;
+     rtx ignored;
 {
   register int regno;
   int nr;
