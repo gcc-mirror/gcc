@@ -252,7 +252,7 @@ build_base_path (code, expr, binfo, nonnull)
      int nonnull;
 {
   tree v_binfo = NULL_TREE;
-  tree t;
+  tree d_binfo = NULL_TREE;
   tree probe;
   tree offset;
   tree target_type;
@@ -263,11 +263,13 @@ build_base_path (code, expr, binfo, nonnull)
 
   if (expr == error_mark_node || binfo == error_mark_node || !binfo)
     return error_mark_node;
-  
-  for (probe = binfo; probe;
-       t = probe, probe = BINFO_INHERITANCE_CHAIN (probe))
-    if (!v_binfo && TREE_VIA_VIRTUAL (probe))
-      v_binfo = probe;
+
+  for (probe = binfo; probe; probe = BINFO_INHERITANCE_CHAIN (probe))
+    {
+      d_binfo = probe;
+      if (!v_binfo && TREE_VIA_VIRTUAL (probe))
+	v_binfo = probe;
+    }
 
   probe = TYPE_MAIN_VARIANT (TREE_TYPE (expr));
   if (want_pointer)
@@ -276,13 +278,13 @@ build_base_path (code, expr, binfo, nonnull)
   my_friendly_assert (code == MINUS_EXPR
 		      ? same_type_p (BINFO_TYPE (binfo), probe)
 		      : code == PLUS_EXPR
-		      ? same_type_p (BINFO_TYPE (t), probe)
+		      ? same_type_p (BINFO_TYPE (d_binfo), probe)
 		      : false, 20010723);
   
   if (code == MINUS_EXPR && v_binfo)
     {
       error ("cannot convert from base `%T' to derived type `%T' via virtual base `%T'",
-		BINFO_TYPE (binfo), BINFO_TYPE (t), BINFO_TYPE (v_binfo));
+	     BINFO_TYPE (binfo), BINFO_TYPE (d_binfo), BINFO_TYPE (v_binfo));
       return error_mark_node;
     }
 
@@ -303,12 +305,12 @@ build_base_path (code, expr, binfo, nonnull)
   if (v_binfo && !fixed_type_p)
     {
       /* Going via virtual base V_BINFO.  We need the static offset
-         from V_BINFO to BINFO, and the dynamic offset from T to
-         V_BINFO.  That offset is an entry in T's vtable.  */
+         from V_BINFO to BINFO, and the dynamic offset from D_BINFO to
+         V_BINFO.  That offset is an entry in D_BINFO's vtable.  */
       tree v_offset = build_vfield_ref (build_indirect_ref (expr, NULL),
 					TREE_TYPE (TREE_TYPE (expr)));
       
-      v_binfo = binfo_for_vbase (BINFO_TYPE (v_binfo), BINFO_TYPE (t));
+      v_binfo = binfo_for_vbase (BINFO_TYPE (v_binfo), BINFO_TYPE (d_binfo));
       
       v_offset = build (PLUS_EXPR, TREE_TYPE (v_offset),
 			v_offset,  BINFO_VPTR_FIELD (v_binfo));
@@ -326,7 +328,7 @@ build_base_path (code, expr, binfo, nonnull)
 	offset = v_offset;
     }
 
-  target_type = code == PLUS_EXPR ? BINFO_TYPE (binfo) : BINFO_TYPE (t);
+  target_type = code == PLUS_EXPR ? BINFO_TYPE (binfo) : BINFO_TYPE (d_binfo);
   
   target_type = cp_build_qualified_type
     (target_type, cp_type_quals (TREE_TYPE (TREE_TYPE (expr))));
