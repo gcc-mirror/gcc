@@ -4498,7 +4498,12 @@
 (define_insn "return"
   [(return)]
   "hppa_can_use_return_insn_p ()"
-  "bv%* %%r0(%%r2)"
+  "*
+{
+  if (TARGET_PA_20)
+    return \"bve%* (%%r2)\";
+  return \"bv%* %%r0(%%r2)\";
+}"
   [(set_attr "type" "branch")
    (set_attr "length" "4")])
 
@@ -4508,7 +4513,12 @@
   [(use (reg:SI 2))
    (return)]
   ""
-  "bv%* %%r0(%%r2)"
+  "*
+{
+  if (TARGET_PA_20)
+    return \"bve%* (%%r2)\";
+  return \"bv%* %%r0(%%r2)\";
+}"
   [(set_attr "type" "branch")
    (set_attr "length" "4")])
 
