@@ -3908,7 +3908,7 @@ iv_ca_extend (struct ivopts_data *data, struct iv_ca *ivs,
   return cost;
 }
 
-/* Try narowing set IVS by removing CAND.  Return the cost of
+/* Try narrowing set IVS by removing CAND.  Return the cost of
    the new set and store the differences in DELTA.  */
 
 static unsigned
