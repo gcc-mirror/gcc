@@ -1,5 +1,10 @@
 2001-01-01  Michael Hayes  <mhayes@redhat.com>
 
+	* loop.c (LOOP_REG_LIFETIME, LOOP_REG_GLOBAL_P): Define.
+	(scan_loop, record_giv): Use LOOP_REG_LIFETIME and LOOP_REG_GLOBAL_P.
+	
+2001-01-01  Michael Hayes  <mhayes@redhat.com>	
+
 	* loop.h (REGNO_FIRST_LUID, REGNO_LAST_LUID): Define.
 	* loop.c (REGNO_FIRST_LUID, REGNO_LAST_LUID): Use in place of
 	direct access to uid_luid array.
