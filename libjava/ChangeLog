@@ -1,3 +1,13 @@
+2005-02-02  Tom Tromey  <tromey@redhat.com>
+
+	* Makefile.in: Rebuilt.
+	* Makefile.am (classes.stamp): New target, broken out from
+	libgcj.jar target.
+	($(all_java_class_files)): Depend on it.
+	(libgcj-@gcc_version@.jar): Likewise.
+	(all-recursive): Likewise.
+	(CLEANFILES): Include classes.stamp.
+
 2005-02-02  Hans Boehm  <Hans.Boehm@hp.com>
 
 	* link.cc: Include <stdio.h>

@@ -504,39 +504,16 @@ if ONESTEP
 
 # Compile all classfiles in one go.
 
-libgcj-@gcc_version@.jar: $(all_java_source_files)
-	-@rm -f libgcj-@gcc_version@.jar
+classes.stamp: $(all_java_source_files)
 	@echo Compiling Java sourcefiles...
 	@: $(call write_entries_to_file,$?,libgcj.sourcelist)
 	$(JAVAC) $(JCFLAGS) -classpath '' -bootclasspath $(BOOTCLASSPATH) -d $(here) @libgcj.sourcelist
-## Note that we explicitly want to include directory information.
-	(find java gnu javax org -type d -o -type f -name '*.class'; \
-## Ugly code to avoid "echo -C".  Must separate each entry by a newline
-## Gross but easy.
-	for file in $(all_property_files); do \
-	  echo "x-C" | sed -e 's/^.//'; \
-	  echo $(srcdir); \
-	  echo $$file; \
-	done) | \
-	  sed -e '/\/xlib/d' -e '/\/\.libs/d' -e '/\/\.deps/d' | \
-	  $(ZIP) -cfM0E@ $@
-## Now include the classes from external/.
-	for dir in sax w3c_dom; do \
-	  (cd external/$$dir; \
-	  find org -type f -name '*.class' -print | while read file; do \
-	    echo "x-C" | sed -e 's/^.//'; \
-	    echo external/$$dir; \
-	    echo $$file; \
-          done) | \
-	  $(ZIP) -ufM0E@ $@; \
-	done
 
-# This next rule seems backward, but reflects the fact
-# that 1) all classfiles are compiled in one go when the
-# libgcj jarfile is built and 2) anything which depends
-# on a particular .class file must wait until the jarfile
-# is built.
-$(all_java_class_files): libgcj-@gcc_version@.jar
+# This next rule seems backward, but reflects the fact that 1) all
+# classfiles are compiled in one go when classes.stamp is built and 2)
+# anything which depends on a particular .class file must wait until
+# this file is built.
+$(all_java_class_files): classes.stamp
 
 else # !ONESTEP
 
@@ -545,7 +522,12 @@ else # !ONESTEP
 .java.class:
 	$(JAVAC) $(JCFLAGS) -classpath '' -bootclasspath $(BOOTCLASSPATH) -d $(here) $<
 
-libgcj-@gcc_version@.jar: $(all_java_class_files) $(all_property_files)
+classes.stamp: $(all_java_class_files) $(all_property_files)
+	echo > classes.stamp
+
+endif
+
+libgcj-@gcc_version@.jar: classes.stamp
 	-@rm -f libgcj-@gcc_version@.jar
 ## Note that we explicitly want to include directory information.
 	(find java gnu javax org -type d -o -type f -name '*.class'; \
@@ -569,9 +551,7 @@ libgcj-@gcc_version@.jar: $(all_java_class_files) $(all_property_files)
 	  $(ZIP) -ufM0E@ $@; \
 	done
 
-endif
-
-CLEANFILES = libgcj-@gcc_version@.jar
+CLEANFILES = libgcj-@gcc_version@.jar classes.stamp
 
 mostlyclean-local:
 ## Use libtool rm to remove each libtool object
@@ -3761,7 +3741,7 @@ texinfo: TexinfoDoclet.class
 ## the C++ code whenever any .java file is touched.
 ## Also force all the class files to build first. This makes them build in
 ## the right order to improve performance.
-all-recursive: libgcj-@gcc_version@.jar $(nat_headers) $(xlib_nat_headers)
+all-recursive: classes.stamp $(nat_headers) $(xlib_nat_headers)
 
 ## ################################################################
 
