@@ -1,3 +1,27 @@
+2003-07-01  Devang Patel  <dpatel@apple.com>
+
+	* dbxout.c (DBXOUT_DECR_NESTING): Emit pending bincls, if required.
+	(binclstatus): New.
+	(struct dbx_file): New members - bincl_status, pending_bincl_name and 
+	prev.
+	(pending_bincls): New.
+	(dbxout_init): Initialize new dbx_file members.
+	(dbxout_start_source_file): Same.
+	(emit_bincl_stab): New function.
+	(emit_pending_bincls): Same.
+	(emit_pending_bincls_if_required): Same.
+	(dbxout_end_source_file): Emit EINCL stab only if BINCL is  already 
+	processed.
+	(dbxout_begin_block): Emit pending BINCL stabs.
+	(dbxout_end_block): Same.
+	(dbxout_function_decl): Same.
+	(dbxout_continue): Same.
+	(dbxout_type): Same.
+	(dbxout_class_name_qualifiers): Same.
+	(dbxout_symbol): Same.
+	(dbxout_symbol_location): Same.
+	(dbxout_parms): Same.
+	
 2003-07-01  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* c-semantics.c (genrtl_case_label): Fix format specifier bug.

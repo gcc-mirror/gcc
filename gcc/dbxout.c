@@ -96,7 +96,7 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #undef DBXOUT_DECR_NESTING
 #define DBXOUT_DECR_NESTING \
   if (--debug_nesting == 0 && symbol_queue_index > 0) \
-    debug_flush_symbol_queue ()
+    { emit_pending_bincls_if_required (); debug_flush_symbol_queue (); }
 
 #undef DBXOUT_DECR_NESTING_AND_RETURN
 #define DBXOUT_DECR_NESTING_AND_RETURN(x) \
@@ -179,6 +179,8 @@ static GTY(()) int typevec_len;
 
 static GTY(()) int next_type_number;
 
+enum binclstatus {BINCL_NOT_REQUIRED, BINCL_PENDING, BINCL_PROCESSED};
+
 /* When using N_BINCL in dbx output, each type number is actually a
    pair of the file number and the type number within the file.
    This is a stack of input files.  */
@@ -188,7 +190,13 @@ struct dbx_file GTY(())
   struct dbx_file *next;
   int file_number;
   int next_type_number;
+  enum binclstatus bincl_status;      /* Keep track of lazy bincl.  */
+  const char *pending_bincl_name;     /* Name of bincl.  */
+  struct dbx_file *prev;              /* Chain to traverse all pending bincls.  */
 };
+
+/* If zero then there is no pending BINCL.  */
+static int pending_bincls = 0;
 
 /* This is the top of the stack.  */
 
@@ -306,6 +314,10 @@ static int current_sym_nchars;
 #else
 #define CONTIN do { } while (0)
 #endif
+
+static void emit_bincl_stab             (const char *c);
+static void emit_pending_bincls         (void);
+static inline void emit_pending_bincls_if_required (void);
 
 static void dbxout_init (const char *);
 static void dbxout_finish (const char *);
@@ -502,6 +514,9 @@ dbxout_init (const char *input_file_name)
   current_file->file_number = 0;
   current_file->next_type_number = 1;
   next_file_number = 1;
+  current_file->prev = NULL;
+  current_file->bincl_status = BINCL_NOT_REQUIRED;
+  current_file->pending_bincl_name = NULL;
 #endif
 
   /* Make sure that types `int' and `char' have numbers 1 and 2.
@@ -542,6 +557,59 @@ dbxout_typedefs (tree syms)
     }
 }
 
+/* Emit BINCL stab using given name.   */
+static void
+emit_bincl_stab (const char *name)
+{
+  fprintf (asmfile, "%s", ASM_STABS_OP);
+  output_quoted_string (asmfile, name);
+  fprintf (asmfile, ",%d,0,0,0\n", N_BINCL);
+}
+
+/* If there are pending bincls then it is time to emit all of them.  */
+
+static inline void
+emit_pending_bincls_if_required ()
+{
+#ifdef DBX_USE_BINCL
+  if (pending_bincls)
+    emit_pending_bincls ();
+#endif
+}
+
+/* Emit all pending bincls.  */
+
+static void
+emit_pending_bincls ()
+{
+  struct dbx_file *f = current_file;
+
+  /* Find first pending bincl.  */
+  while (f->bincl_status == BINCL_PENDING)
+    f = f->next;
+
+  /* Now emit all bincls.  */
+  f = f->prev;
+
+  while (f)
+    {
+      if (f->bincl_status == BINCL_PENDING)
+        {
+          emit_bincl_stab (f->pending_bincl_name);
+
+	  /* Update file number and status.  */
+          f->file_number = next_file_number++;
+          f->bincl_status = BINCL_PROCESSED;
+        }
+      if (f == current_file)
+        break;
+      f = f->prev;
+    }
+
+  /* All pending bincls have been emitted.  */
+  pending_bincls = 0;
+}
+
 /* Change to reading from a new source file.  Generate a N_BINCL stab.  */
 
 static void
@@ -552,12 +620,16 @@ dbxout_start_source_file (unsigned int line ATTRIBUTE_UNUSED,
   struct dbx_file *n = (struct dbx_file *) ggc_alloc (sizeof *n);
 
   n->next = current_file;
-  n->file_number = next_file_number++;
   n->next_type_number = 1;
+  /* Do not assign file number now. 
+     Delay it until we actually emit BINCL.  */
+  n->file_number = 0;
+  n->prev = NULL;
+  current_file->prev = n;
+  n->bincl_status = BINCL_PENDING;
+  n->pending_bincl_name = filename;
+  pending_bincls = 1;
   current_file = n;
-  fprintf (asmfile, "%s", ASM_STABS_OP);
-  output_quoted_string (asmfile, filename);
-  fprintf (asmfile, ",%d,0,0,0\n", N_BINCL);
 #endif
 }
 
@@ -567,7 +639,10 @@ static void
 dbxout_end_source_file (unsigned int line ATTRIBUTE_UNUSED)
 {
 #ifdef DBX_USE_BINCL
-  fprintf (asmfile, "%s%d,0,0,0\n", ASM_STABN_OP, N_EINCL);
+  /* Emit EINCL stab only if BINCL is not pending.  */
+  if (current_file->bincl_status == BINCL_PROCESSED)
+    fprintf (asmfile, "%s%d,0,0,0\n", ASM_STABN_OP, N_EINCL);
+  current_file->bincl_status = BINCL_NOT_REQUIRED;
   current_file = current_file->next;
 #endif
 }
@@ -652,6 +727,7 @@ dbxout_source_line (unsigned int lineno, const char *filename)
 static void
 dbxout_begin_block (unsigned int line ATTRIBUTE_UNUSED, unsigned int n)
 {
+  emit_pending_bincls_if_required ();
   (*targetm.asm_out.internal_label) (asmfile, "LBB", n);
 }
 
@@ -660,6 +736,7 @@ dbxout_begin_block (unsigned int line ATTRIBUTE_UNUSED, unsigned int n)
 static void
 dbxout_end_block (unsigned int line ATTRIBUTE_UNUSED, unsigned int n)
 {
+  emit_pending_bincls_if_required ();
   (*targetm.asm_out.internal_label) (asmfile, "LBE", n);
 }
 
@@ -672,6 +749,7 @@ dbxout_end_block (unsigned int line ATTRIBUTE_UNUSED, unsigned int n)
 static void
 dbxout_function_decl (tree decl)
 {
+  emit_pending_bincls_if_required ();
 #ifndef DBX_FUNCTION_FIRST
   dbxout_begin_function (decl);
 #endif
@@ -798,6 +876,7 @@ dbxout_type_index (tree type)
 static void
 dbxout_continue (void)
 {
+  emit_pending_bincls_if_required ();
 #ifdef DBX_CONTIN_CHAR
   fprintf (asmfile, "%c", DBX_CONTIN_CHAR);
 #else
@@ -1183,6 +1262,7 @@ dbxout_type (tree type, int full)
 	}
 
 #ifdef DBX_USE_BINCL
+      emit_pending_bincls_if_required ();
       typevec[TYPE_SYMTAB_ADDRESS (type)].file_number
 	= current_file->file_number;
       typevec[TYPE_SYMTAB_ADDRESS (type)].type_number
@@ -1977,6 +2057,8 @@ dbxout_class_name_qualifiers (tree decl)
     {
       tree name = TYPE_NAME (context);
 
+      emit_pending_bincls_if_required ();
+
       if (TREE_CODE (name) == TYPE_DECL)
 	{
 	  dbxout_class_name_qualifiers (name);
@@ -2068,6 +2150,8 @@ dbxout_symbol (tree decl, int local ATTRIBUTE_UNUSED)
 	       && TREE_CODE_CLASS (TREE_CODE (TYPE_NAME (t))) == 'd')
         debug_queue_symbol (TYPE_NAME (t));
     }
+
+  emit_pending_bincls_if_required ();
 
   dbxout_prepare_symbol (decl);
 
@@ -2340,6 +2424,8 @@ dbxout_symbol_location (tree decl, tree type, const char *suffix, rtx home)
 {
   int letter = 0;
   int regno = -1;
+
+  emit_pending_bincls_if_required ();
 
   /* Don't mention a variable at all
      if it was completely optimized into nothingness.
@@ -2653,6 +2739,8 @@ void
 dbxout_parms (tree parms)
 {
   ++debug_nesting;
+
+  emit_pending_bincls_if_required ();
 
   for (; parms; parms = TREE_CHAIN (parms))
     if (DECL_NAME (parms) && TREE_TYPE (parms) != error_mark_node)
