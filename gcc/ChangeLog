@@ -4,6 +4,8 @@ Thu Dec 18 14:51:12 1997  Jason Merrill  <jason@yorick.cygnus.com>
 
 Thu Dec 18 14:57:29 1997  Gavin Koch  <gavin@cygnus.com>
 
+	* calls.c (expand_call): Implement LOAD_ARGS_REVERSED.
+
 	* dwarf2out.c (dwarf2out_frame_debug): Handle adjustments of the
 	frame pointer in the prologue.
 

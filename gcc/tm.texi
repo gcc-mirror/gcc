@@ -2848,6 +2848,14 @@ register in which function arguments are sometimes passed.  This does
 the structure-value address.  On many machines, no registers can be
 used for this purpose since all function arguments are pushed on the
 stack.
+
+@findex LOAD_ARGS_REVERSED
+@item LOAD_ARGS_REVERSED
+If defined, the order in which arguments are loaded into their
+respective argument registers is reversed so that the last 
+argument is loaded first.  This macro only effects arguments
+passed in registers.
+
 @end table
 
 @node Scalar Return
