@@ -284,12 +284,6 @@ namespace std
   {
     locale __old = _M_ios_locale;
     _M_ios_locale = __loc;
-    // Make sure there's a callback for the format caches so they will be
-    // marked dirty.
-    _Format_cache<char>::_S_get(*this);
-#ifdef _GLIBCPP_USE_WCHAR_T
-    _Format_cache<wchar_t>::_S_get(*this);
-#endif
     _M_call_callbacks(imbue_event);
     return __old;
   }

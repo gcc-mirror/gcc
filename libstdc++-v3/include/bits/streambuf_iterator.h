@@ -171,8 +171,7 @@ namespace std
       { 
 	int_type __eof = traits_type::eof();
 	bool __thiseof = !_M_sbuf || _M_sbuf->sgetc() == __eof;
-	bool __beof = !__b._M_sbuf 
-	  	      || __b._M_sbuf->sgetc() == __eof;
+	bool __beof = !__b._M_sbuf || __b._M_sbuf->sgetc() == __eof;
 	return (__thiseof && __beof || (!__thiseof && !__beof));
       }
 
@@ -184,8 +183,7 @@ namespace std
       {
 	int_type __eof = traits_type::eof();
 	bool __thiseof = !_M_sbuf || _M_sbuf->sgetc() == __eof;
-	bool __beof = !__b._M_sbuf 
-	  	      || __b._M_sbuf->sgetc() == __eof;
+	bool __beof = !__b._M_sbuf || __b._M_sbuf->sgetc() == __eof;
 	return (__thiseof && __beof || (!__thiseof && !__beof));
       }
 #endif

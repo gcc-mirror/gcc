@@ -415,415 +415,31 @@ namespace std
   // 22.2.1.5  Template class codecvt
   #include <bits/codecvt.h>
 
-  template<typename _CharT, typename _InIter>
-    class _Numeric_get;  // forward
 
-  // _Format_cache holds the information extracted from the numpunct<>
-  // and moneypunct<> facets in a form optimized for parsing and
-  // formatting.  It is stored via a void* pointer in the pword()
-  // array of an iosbase object passed to the _get and _put facets.
-  // NB: contains no user-serviceable parts.
-  template<typename _CharT>
-    class _Format_cache
-    {
-    public: 
-      // Types:
-      typedef _CharT 				char_type;
-      typedef char_traits<_CharT> 		traits_type;
-      typedef basic_string<_CharT>		string_type;
-      typedef typename string_type::size_type	size_type;
+  class __num_base
+  {
+  public:
+    // String literal of acceptable (narrow) input, for num_get.
+    // "0123456789eEabcdfxABCDFX"
+    static const char _S_atoms[];
 
-      // Forward decls and Friends:
-      friend class locale;
-      template<typename _Char, typename _InIter>
-        friend class _Numeric_get;
-      friend class num_get<_CharT>;
-      friend class num_put<_CharT>;
-      friend class time_get<_CharT>;
-      friend class money_get<_CharT>;
-      friend class time_put<_CharT>;
-      friend class money_put<_CharT>;
-
-      // Data Members:
-
-      // ios_base::pword() reserved cell
-      static int 		_S_pword_ix; 
-
-      // True iff data members are consistent with the current locale,
-      // ie imbue sets this to false.
-      bool 			_M_valid;
-
-      // A list of valid numeric literals: for the standard "C" locale,
-      // this would usually be: "-+xX0123456789abcdef0123456789ABCDEF"
-      static const char 	_S_literals[];
-
-      // NB: Code depends on the order of definitions of the names
-      // these are indices into _S_literals, above.
-      // This string is formatted for putting, not getting. (output, not input)
-      enum 
-      {  
-	_S_minus, 
-	_S_plus, 
-	_S_x, 
-	_S_X, 
-	_S_digits,
-	_S_digits_end = _S_digits + 16,
-	_S_udigits = _S_digits_end,  
-	_S_udigits_end = _S_udigits + 16,
-	_S_ee = _S_digits + 14, // For scientific notation, 'E'
-	_S_Ee = _S_udigits + 14 // For scientific notation, 'e'
-      };
-
-      // The sign used to separate decimal values: for standard US
-      // locales, this would usually be: "."
-      // Abstracted from numpunct::decimal_point().
-      char_type 		_M_decimal_point;
-
-      // The sign used to separate groups of digits into smaller
-      // strings that the eye can parse with less difficulty: for
-      // standard US locales, this would usually be: ","
-      // Abstracted from numpunct::thousands_sep().
-      char_type			_M_thousands_sep;
-
-      // However the US's "false" and "true" are translated.
-      // From numpunct::truename() and numpunct::falsename(), respectively.
-      string_type 		_M_truename;
-      string_type 		_M_falsename;
-
-      // If we are checking groupings. This should be equivalent to 
-      // numpunct::groupings().size() != 0
-      bool 			_M_use_grouping;
-
-      // If we are using numpunct's groupings, this is the current
-      // grouping string in effect (from numpunct::grouping()).
-      string 			_M_grouping;
-
-      _Format_cache();
-
-      ~_Format_cache() throw() { }
-
-      // Given a member of the ios hierarchy as an argument, extract
-      // out all the current formatting information into a
-      // _Format_cache object and return a pointer to it.
-      static _Format_cache<_CharT>* 
-      _S_get(ios_base& __ios);
-
-      void 
-      _M_populate(ios_base&);
-
-      static void 
-      _S_callback(ios_base::event __event, ios_base& __ios, int __ix) throw();
+    enum 
+    {  
+      _M_zero,
+      _M_e = _M_zero + 10,
+      _M_E = _M_zero + 11,
+      _M_size = 23 + 1
     };
 
-  template<typename _CharT>
-    int _Format_cache<_CharT>::_S_pword_ix;
-
-  template<typename _CharT>
-    const char _Format_cache<_CharT>::
-    _S_literals[] = "-+xX0123456789abcdef0123456789ABCDEF";
-
-   template<> _Format_cache<char>::_Format_cache();
-
-#ifdef _GLIBCPP_USE_WCHAR_T
-   template<> _Format_cache<wchar_t>::_Format_cache();
-#endif
-
-  // _Numeric_get is used by num_get, money_get, and time_get to help
-  // in parsing out numbers.
-  template<typename _CharT, typename _InIter>
-    class _Numeric_get
-    {
-    public:
-      // Types:
-      typedef _CharT     char_type;
-      typedef _InIter    iter_type;
-
-      // Forward decls and Friends:
-      template<typename _Char, typename _InIterT>
-      friend class num_get;
-      template<typename _Char, typename _InIterT>
-      friend class time_get;
-      template<typename _Char, typename _InIterT>
-      friend class money_get;
-      template<typename _Char, typename _InIterT>
-      friend class num_put;
-      template<typename _Char, typename _InIterT>
-      friend class time_put;
-      template<typename _Char, typename _InIterT>
-      friend class money_put;
-
-    private:
-      explicit 
-      _Numeric_get() { }
-
-      virtual 
-      ~_Numeric_get() { }
-
-      iter_type 
-      _M_get_digits(iter_type __in, iter_type __end) const;
-    };
-
-  template<typename _CharT, typename _InIter>
-    class num_get : public locale::facet
-    {
-    public:
-      // Types:
-      typedef _CharT   			char_type;
-      typedef _InIter  			iter_type;
-      typedef char_traits<_CharT> 	__traits_type;
-
-      static locale::id 		id;
-
-      explicit 
-      num_get(size_t __refs = 0) : locale::facet(__refs) { }
-
-      iter_type 
-      get(iter_type __in, iter_type __end, ios_base& __io,
-	  ios_base::iostate& __err, bool& __v) const
-      { return do_get(__in, __end, __io, __err, __v); }
-
-#ifdef _GLIBCPP_RESOLVE_LIB_DEFECTS
-      //XXX.  What number?
-      iter_type 
-      get(iter_type __in, iter_type __end, ios_base& __io,
-	  ios_base::iostate& __err, short& __v) const
-      { return do_get(__in, __end, __io, __err, __v); }
-
-      iter_type 
-      get(iter_type __in, iter_type __end, ios_base& __io,
-	  ios_base::iostate& __err, int& __v)   const
-      { return do_get(__in, __end, __io, __err, __v); }
-#endif
-
-      iter_type
-      get(iter_type __in, iter_type __end, ios_base& __io, 
-	  ios_base::iostate& __err, long& __v) const
-      { return do_get(__in, __end, __io, __err, __v); }
-
-#ifdef _GLIBCPP_USE_LONG_LONG
-      iter_type 
-      get(iter_type __in, iter_type __end, ios_base& __io,
-	  ios_base::iostate& __err, long long& __v) const
-      { return do_get(__in, __end, __io, __err, __v); }
-#endif
-
-      iter_type 
-      get(iter_type __in, iter_type __end, ios_base& __io,
-	  ios_base::iostate& __err, unsigned short& __v) const
-      { return do_get(__in, __end, __io, __err, __v); }
-
-      iter_type 
-      get(iter_type __in, iter_type __end, ios_base& __io,
-	  ios_base::iostate& __err, unsigned int& __v)   const
-      { return do_get(__in, __end, __io, __err, __v); }
-
-      iter_type 
-      get(iter_type __in, iter_type __end, ios_base& __io,
-	  ios_base::iostate& __err, unsigned long& __v)  const
-      { return do_get(__in, __end, __io, __err, __v); }
-
-#ifdef _GLIBCPP_USE_LONG_LONG
-      iter_type 
-      get(iter_type __in, iter_type __end, ios_base& __io,
-	  ios_base::iostate& __err, unsigned long long& __v)  const
-      { return do_get(__in, __end, __io, __err, __v); }
-#endif
-
-      iter_type 
-      get(iter_type __in, iter_type __end, ios_base& __io,
-	  ios_base::iostate& __err, float& __v) const
-      { return do_get(__in, __end, __io, __err, __v); }
-
-      iter_type 
-      get(iter_type __in, iter_type __end, ios_base& __io,
-	  ios_base::iostate& __err, double& __v) const
-      { return do_get(__in, __end, __io, __err, __v); }
-
-      iter_type 
-      get(iter_type __in, iter_type __end, ios_base& __io,
-	  ios_base::iostate& __err, long double& __v) const
-      { return do_get(__in, __end, __io, __err, __v); }
-
-      iter_type 
-      get(iter_type __in, iter_type __end, ios_base& __io,
-	  ios_base::iostate& __err, void*& __v) const
-      { return do_get(__in, __end, __io, __err, __v); }      
-
-    protected:
-      virtual ~num_get() { }
-
-      // This consolidates the extraction, storage and
-      // error-processing parts of the do_get(...) overloaded member
-      // functions. 
-      // NB: This is specialized for char.
-      void 
-      _M_extract(iter_type __beg, iter_type __end, ios_base& __io, 
-		 ios_base::iostate& __err, char* __xtrc, 
-		 int& __base, bool __fp = true) const;
-
-      virtual iter_type 
-      do_get(iter_type, iter_type, ios_base&, ios_base::iostate&, bool&) const;
-
-#ifdef _GLIBCPP_RESOLVE_LIB_DEFECTS
-      //XXX.  What number?
-      virtual iter_type 
-      do_get(iter_type, iter_type, ios_base&, ios_base::iostate&, short&) const;
-      virtual iter_type 
-      do_get(iter_type, iter_type, ios_base&, ios_base::iostate&, int&) const;
-#endif
-      virtual iter_type 
-      do_get (iter_type, iter_type, ios_base&, ios_base::iostate&, long&) const;
-#ifdef _GLIBCPP_USE_LONG_LONG 
-      virtual iter_type 
-      do_get(iter_type, iter_type, ios_base&, ios_base::iostate& __err, 
-	     long long&) const;
-#endif
-      virtual iter_type 
-      do_get(iter_type, iter_type, ios_base&, ios_base::iostate& __err, 
-	      unsigned short&) const;
-      virtual iter_type 
-      do_get(iter_type, iter_type, ios_base&,
-	      ios_base::iostate& __err, unsigned int&) const;
-      virtual iter_type 
-      do_get(iter_type, iter_type, ios_base&,
-	      ios_base::iostate& __err, unsigned long&) const;
-#ifdef _GLIBCPP_USE_LONG_LONG 
-      virtual iter_type 
-      do_get(iter_type, iter_type, ios_base&,
-	     ios_base::iostate& __err, unsigned long long&) const;
-#endif
-      virtual iter_type 
-      do_get(iter_type, iter_type, ios_base&, ios_base::iostate& __err, 
-	     float&) const;
-
-      virtual iter_type 
-      do_get(iter_type, iter_type, ios_base&, ios_base::iostate& __err, 
-	     double&) const;
-
-      virtual iter_type 
-      do_get(iter_type, iter_type, ios_base&, 
-	     ios_base::iostate& __err, long double&) const;
-
-      virtual iter_type 
-      do_get(iter_type, iter_type, ios_base&, ios_base::iostate& __err, 
-	     void*&) const;
-    };
-
-  template<typename _CharT, typename _InIter>
-    locale::id num_get<_CharT, _InIter>::id;
-
-  // Declare specialized extraction member function.
-  template<>
-    void
-    num_get<char, istreambuf_iterator<char> >::    
-    _M_extract(istreambuf_iterator<char> __beg, 
-	       istreambuf_iterator<char> __end, ios_base& __io, 
-	       ios_base::iostate& __err, char* __xtrc, 
-	       int& __base, bool __fp) const;
-
-  // _Numeric_put is used by num_put, money_put, and time_put
-  //   to help in formatting out numbers.
-  template<typename _CharT, typename _OutIter>
-    class _Numeric_put
-    {
-    public:
-      typedef _CharT      char_type;
-      typedef _OutIter    iter_type;
-    protected:
-      explicit 
-      _Numeric_put() { }
-
-      virtual 
-      ~_Numeric_put() { }
-    };
-
-  template<typename _CharT, typename _OutIter>
-    class num_put : public locale::facet
-    {
-    public:
-      // Types:
-      typedef _CharT       char_type;
-      typedef _OutIter     iter_type;
-
-      static locale::id		id;
-
-      explicit 
-      num_put(size_t __refs = 0) : locale::facet(__refs) { }
-
-      iter_type 
-      put(iter_type __s, ios_base& __f, char_type __fill, bool __v) const
-      { return do_put(__s, __f, __fill, __v); }
-
-      iter_type 
-      put(iter_type __s, ios_base& __f, char_type __fill, long __v) const
-      { return do_put(__s, __f, __fill, __v); }
-
-      iter_type 
-      put(iter_type __s, ios_base& __f, char_type __fill, 
-	  unsigned long __v) const
-      { return do_put(__s, __f, __fill, __v); }
-
-#ifdef _GLIBCPP_USE_LONG_LONG 
-      iter_type 
-      put(iter_type __s, ios_base& __f, char_type __fill, long long __v) const
-      { return do_put(__s, __f, __fill, __v); }
-
-      iter_type 
-      put(iter_type __s, ios_base& __f, char_type __fill, 
-	  unsigned long long __v) const
-      { return do_put(__s, __f, __fill, __v); }
-#endif
-
-      iter_type 
-      put(iter_type __s, ios_base& __f, char_type __fill, double __v) const
-      { return do_put(__s, __f, __fill, __v); }
-
-      iter_type 
-      put(iter_type __s, ios_base& __f, char_type __fill, 
-	  long double __v) const
-      { return do_put(__s, __f, __fill, __v); }
-
-      iter_type 
-      put(iter_type __s, ios_base& __f, char_type __fill, 
-	  const void* __v) const
-      { return do_put(__s, __f, __fill, __v); }
-
-    protected:
-      virtual 
-      ~num_put() { };
-
-      virtual iter_type 
-      do_put(iter_type, ios_base&, char_type __fill, bool __v) const;
-
-      virtual iter_type 
-      do_put(iter_type, ios_base&, char_type __fill, long __v) const;
-
-#ifdef _GLIBCPP_USE_LONG_LONG 
-      virtual iter_type 
-      do_put(iter_type, ios_base&, char_type __fill, long long __v) const;
-#endif
-
-      virtual iter_type 
-      do_put(iter_type, ios_base&, char_type __fill, unsigned long) const;
-
-#ifdef _GLIBCPP_USE_LONG_LONG
-      virtual iter_type
-      do_put(iter_type, ios_base&, char_type __fill, unsigned long long) const;
-#endif
-
-      virtual iter_type 
-      do_put(iter_type, ios_base&, char_type __fill, double __v) const;
-
-      virtual iter_type 
-      do_put(iter_type, ios_base&, char_type __fill, long double __v) const;
-
-      virtual iter_type 
-      do_put(iter_type, ios_base&, char_type __fill, const void* __v) const;
-    };
-
-  template <typename _CharT, typename _OutIter>
-    locale::id num_put<_CharT, _OutIter>::id;
-
+    // Construct and return valid scanf format for floating point types.
+    static bool
+    _S_format_float(const ios_base& __io, char* __fptr, char __mod, 
+		    streamsize __prec);
+    
+    // Construct and return valid scanf format for integer types.
+    static void
+    _S_format_int(const ios_base& __io, char* __fptr, char __mod, char __modl);
+  };
 
   template<typename _CharT>
     class numpunct : public locale::facet
@@ -919,7 +535,6 @@ namespace std
     numpunct<wchar_t>::_M_initialize_numpunct(__c_locale __cloc);
 #endif
 
-
   template<typename _CharT>
     class numpunct_byname : public numpunct<_CharT>
     {
@@ -943,6 +558,242 @@ namespace std
       ~numpunct_byname() 
       { _S_destroy_c_locale(_M_c_locale_numpunct); }
     };
+
+  template<typename _CharT, typename _InIter>
+    class num_get : public locale::facet, public __num_base
+    {
+    public:
+      // Types:
+      typedef _CharT   			char_type;
+      typedef _InIter  			iter_type;
+
+      static locale::id 		id;
+
+      explicit 
+      num_get(size_t __refs = 0) : locale::facet(__refs) { }
+
+      iter_type 
+      get(iter_type __in, iter_type __end, ios_base& __io,
+	  ios_base::iostate& __err, bool& __v) const
+      { return this->do_get(__in, __end, __io, __err, __v); }
+
+      iter_type
+      get(iter_type __in, iter_type __end, ios_base& __io, 
+	  ios_base::iostate& __err, long& __v) const
+      { return this->do_get(__in, __end, __io, __err, __v); }
+
+      iter_type 
+      get(iter_type __in, iter_type __end, ios_base& __io,
+	  ios_base::iostate& __err, unsigned short& __v) const
+      { return this->do_get(__in, __end, __io, __err, __v); }
+
+      iter_type 
+      get(iter_type __in, iter_type __end, ios_base& __io,
+	  ios_base::iostate& __err, unsigned int& __v)   const
+      { return this->do_get(__in, __end, __io, __err, __v); }
+
+      iter_type 
+      get(iter_type __in, iter_type __end, ios_base& __io,
+	  ios_base::iostate& __err, unsigned long& __v)  const
+      { return this->do_get(__in, __end, __io, __err, __v); }
+
+#ifdef _GLIBCPP_USE_LONG_LONG
+      iter_type 
+      get(iter_type __in, iter_type __end, ios_base& __io,
+	  ios_base::iostate& __err, long long& __v) const
+      { return this->do_get(__in, __end, __io, __err, __v); }
+
+      iter_type 
+      get(iter_type __in, iter_type __end, ios_base& __io,
+	  ios_base::iostate& __err, unsigned long long& __v)  const
+      { return this->do_get(__in, __end, __io, __err, __v); }
+#endif
+
+      iter_type 
+      get(iter_type __in, iter_type __end, ios_base& __io,
+	  ios_base::iostate& __err, float& __v) const
+      { return this->do_get(__in, __end, __io, __err, __v); }
+
+      iter_type 
+      get(iter_type __in, iter_type __end, ios_base& __io,
+	  ios_base::iostate& __err, double& __v) const
+      { return this->do_get(__in, __end, __io, __err, __v); }
+
+      iter_type 
+      get(iter_type __in, iter_type __end, ios_base& __io,
+	  ios_base::iostate& __err, long double& __v) const
+      { return this->do_get(__in, __end, __io, __err, __v); }
+
+      iter_type 
+      get(iter_type __in, iter_type __end, ios_base& __io,
+	  ios_base::iostate& __err, void*& __v) const
+      { return this->do_get(__in, __end, __io, __err, __v); }      
+
+    protected:
+      virtual ~num_get() { }
+
+      void 
+      _M_extract_float(iter_type, iter_type, ios_base&, ios_base::iostate&, 
+		       char* __xtrc) const;
+
+      void 
+      _M_extract_int(iter_type, iter_type, ios_base&, ios_base::iostate&, 
+		     char* __xtrc, int& __base) const;
+
+      virtual iter_type 
+      do_get(iter_type, iter_type, ios_base&, ios_base::iostate&, bool&) const;
+
+      virtual iter_type 
+      do_get(iter_type, iter_type, ios_base&, ios_base::iostate&, long&) const;
+
+      virtual iter_type 
+      do_get(iter_type, iter_type, ios_base&, ios_base::iostate& __err, 
+	      unsigned short&) const;
+
+      virtual iter_type 
+      do_get(iter_type, iter_type, ios_base&, ios_base::iostate& __err, 
+	     unsigned int&) const;
+
+      virtual iter_type 
+      do_get(iter_type, iter_type, ios_base&, ios_base::iostate& __err, 
+	     unsigned long&) const;
+
+#ifdef _GLIBCPP_USE_LONG_LONG 
+      virtual iter_type 
+      do_get(iter_type, iter_type, ios_base&, ios_base::iostate& __err, 
+	     long long&) const;
+
+      virtual iter_type 
+      do_get(iter_type, iter_type, ios_base&, ios_base::iostate& __err, 
+	     unsigned long long&) const;
+#endif
+
+      virtual iter_type 
+      do_get(iter_type, iter_type, ios_base&, ios_base::iostate& __err, 
+	     float&) const;
+
+      virtual iter_type 
+      do_get(iter_type, iter_type, ios_base&, ios_base::iostate& __err, 
+	     double&) const;
+
+      virtual iter_type 
+      do_get(iter_type, iter_type, ios_base&, ios_base::iostate& __err, 
+	     long double&) const;
+
+      virtual iter_type 
+      do_get(iter_type, iter_type, ios_base&, ios_base::iostate& __err, 
+	     void*&) const;
+    };
+
+  template<typename _CharT, typename _InIter>
+    locale::id num_get<_CharT, _InIter>::id;
+
+  template<typename _CharT, typename _OutIter>
+    class num_put : public locale::facet, public __num_base
+    {
+    public:
+      // Types:
+      typedef _CharT       	char_type;
+      typedef _OutIter     	iter_type;
+
+      static locale::id		id;
+
+      explicit 
+      num_put(size_t __refs = 0) : locale::facet(__refs) { }
+
+      iter_type 
+      put(iter_type __s, ios_base& __f, char_type __fill, bool __v) const
+      { return this->do_put(__s, __f, __fill, __v); }
+
+      iter_type 
+      put(iter_type __s, ios_base& __f, char_type __fill, long __v) const
+      { return this->do_put(__s, __f, __fill, __v); }
+
+      iter_type 
+      put(iter_type __s, ios_base& __f, char_type __fill, 
+	  unsigned long __v) const
+      { return this->do_put(__s, __f, __fill, __v); }
+
+#ifdef _GLIBCPP_USE_LONG_LONG 
+      iter_type 
+      put(iter_type __s, ios_base& __f, char_type __fill, long long __v) const
+      { return this->do_put(__s, __f, __fill, __v); }
+
+      iter_type 
+      put(iter_type __s, ios_base& __f, char_type __fill, 
+	  unsigned long long __v) const
+      { return this->do_put(__s, __f, __fill, __v); }
+#endif
+
+      iter_type 
+      put(iter_type __s, ios_base& __f, char_type __fill, double __v) const
+      { return this->do_put(__s, __f, __fill, __v); }
+
+      iter_type 
+      put(iter_type __s, ios_base& __f, char_type __fill, 
+	  long double __v) const
+      { return this->do_put(__s, __f, __fill, __v); }
+
+      iter_type 
+      put(iter_type __s, ios_base& __f, char_type __fill, 
+	  const void* __v) const
+      { return this->do_put(__s, __f, __fill, __v); }
+
+    protected:
+      template<typename _ValueT>
+        iter_type
+        _M_convert_float(iter_type, ios_base& __io, char_type __fill, 
+			 char __mod, _ValueT __v) const;
+
+      template<typename _ValueT>
+        iter_type
+        _M_convert_int(iter_type, ios_base& __io, char_type __fill, 
+		       char __mod, char __modl, _ValueT __v) const;
+
+      iter_type
+      _M_widen_float(iter_type, ios_base& __io, char_type __fill, char* __cs, 
+		     int __len) const;
+
+      iter_type
+      _M_widen_int(iter_type, ios_base& __io, char_type __fill, char* __cs, 
+		   int __len) const;
+
+      iter_type
+      _M_insert(iter_type, ios_base& __io, char_type __fill, 
+		const char_type* __ws, int __len) const;
+
+      virtual 
+      ~num_put() { };
+
+      virtual iter_type 
+      do_put(iter_type, ios_base&, char_type __fill, bool __v) const;
+
+      virtual iter_type 
+      do_put(iter_type, ios_base&, char_type __fill, long __v) const;
+
+      virtual iter_type 
+      do_put(iter_type, ios_base&, char_type __fill, unsigned long) const;
+
+#ifdef _GLIBCPP_USE_LONG_LONG 
+      virtual iter_type 
+      do_put(iter_type, ios_base&, char_type __fill, long long __v) const;
+
+      virtual iter_type
+      do_put(iter_type, ios_base&, char_type __fill, unsigned long long) const;
+#endif
+
+      virtual iter_type 
+      do_put(iter_type, ios_base&, char_type __fill, double __v) const;
+
+      virtual iter_type 
+      do_put(iter_type, ios_base&, char_type __fill, long double __v) const;
+
+      virtual iter_type 
+      do_put(iter_type, ios_base&, char_type __fill, const void* __v) const;
+    };
+
+  template <typename _CharT, typename _OutIter>
+    locale::id num_put<_CharT, _OutIter>::id;
 
 
   template<typename _CharT>
@@ -1466,8 +1317,9 @@ namespace std
     };
 
 
-  struct money_base
+  class money_base
   {
+  public:
     enum part { none, space, symbol, sign, value };
     struct pattern { char field[4]; };
 

@@ -159,21 +159,21 @@ namespace std
 
       inline __istream_type& 
       get(char_type* __s, streamsize __n)
-      { return get(__s, __n, this->widen('\n')); }
+      { return this->get(__s, __n, this->widen('\n')); }
 
       __istream_type&
       get(__streambuf_type& __sb, char_type __delim);
 
       inline __istream_type&
       get(__streambuf_type& __sb)
-      { return get(__sb, this->widen('\n')); }
+      { return this->get(__sb, this->widen('\n')); }
 
       __istream_type& 
       getline(char_type* __s, streamsize __n, char_type __delim);
 
       inline __istream_type& 
       getline(char_type* __s, streamsize __n)
-      { return getline(__s, __n, this->widen('\n')); }
+      { return this->getline(__s, __n, this->widen('\n')); }
 
       __istream_type& 
       ignore(streamsize __n = 1, int_type __delim = traits_type::eof());
@@ -297,4 +297,3 @@ namespace std
 #endif
 
 #endif	/* _CPP_ISTREAM */
-

@@ -1,3 +1,74 @@
+2001-11-27  Benjamin Kosnik  <bkoz@redhat.com>
+
+	Numeric facets cleanup.
+	* include/bits/locale_facets.h (__num_base::_S_atoms): Add, remove
+	+ and - signs.
+	(__num_base::_M_zero): Add
+	(__num_base::_M_e): Add.
+	(__num_base::_M_E): Add.	
+	* include/bits/locale_facets.tcc (num_get::_M_extract): Remove.
+	(num_get::_M_extract_float): New.
+	(num_get::_M_extract_int): New.
+	* src/locale.cc (num_get::_M_extract): Remove.
+	
+	* include/bits/locale_facets.tcc (num_put::_M_insert_float):
+	Simplify, use _M_insert.
+	(num_put::do_put(bool)): Simplify, remove __pad. 
+	(__pad): Remove.
+	(__pad_output): Change to __pad.
+	* include/bits/ostream.tcc: And here.
+	* src/locale-inst: Remove instantiations.
+
+	* include/bits/locale_facets.h: Move helper functions in to class
+	num_put.
+	(num_put::_M_insert_float): Same, for __output_integer.
+	(num_put::_M_insert_int): Same, for __output_float.
+	(num_put::_M_insert): New.
+	(__num_base): Add.
+	(__num_base::_S_format_float): Move
+	__build_float_format into class __num_base.
+	(__num_base::_S_format_int): Move __build_int_format into class
+	__num_base.
+	* include/bits/locale_facets.tcc (__group_digits): Change to
+	(__add_grouping): This.
+	* src/locale-inst.cc: And here. Tweak instantiations.
+	* src/misc-inst.cc: Remove instantiations.
+	
+	* include/bits/ostream.tcc (__pad_char): Rename, adjust inserters
+	for new calling conventions, move to...
+	* include/bits/locale_facets.tcc (__pad_output): Here. Adjust
+	signature to make it useful for both ostream and num_put.
+	(__pad_numeric): Remove.
+	* src/misc-inst.cc: Remove instantiations.
+	* src/locale-inst.cc: Same.
+
+	* include/bits/locale_facets.h (_Numeric_get): Remove.
+ 	(_Numeric_put): Remove.
+	(num_get::get(short)): Remove.
+	(num_get::get(int)): Remove.	
+	(num_get::do_get(short)): Remove.
+	(num_get::do_get(int)): Remove.	
+	* include/bits/istream.tcc (istream::operator>>(short)): Fix as
+	per DR 118.
+	(istream::operator>>(int)): Same.
+
+	* include/bits/locale_facets.h (_Format_cache): Remove.
+	* include/bits/locale_facets.tcc: Same.
+	* src/locale.cc: Same.
+	* src/locale-inst.cc: Same.
+	* include/bits/ostream.tcc: Same.
+	* src/ios.cc (ios_base::imbue): Remove here as well.
+
+	* testsuite/22_locale/num_get.cc: New file.
+	* testsuite/22_locale/num_get_members_char.cc: New file.
+	* testsuite/22_locale/num_get_members_wchar_t.cc: New.
+	* testsuite/22_locale/numpunct_members_wchar_t.cc: New file.
+	* testsuite/22_locale/num_put.cc: New file.
+	* testsuite/22_locale/num_put_members_char.cc: New file.
+	* testsuite/22_locale/num_put_members_wchar_t.cc: New file.
+	* testsuite/27_io/ostream_inserter_arith.cc: Fix.
+	* testsuite/27_io/istream_extractor_arith.cc: Fix.
+	
 2001-11-27  Phil Edwards  <pme@gcc.gnu.org>
 
 	* docs/html/explanations.html:  New section, empty for now.

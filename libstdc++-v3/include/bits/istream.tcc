@@ -134,8 +134,18 @@ namespace std
 	  try 
 	    {
 	      ios_base::iostate __err = ios_base::iostate(ios_base::goodbit);
+	      long __l;
 	      if (_M_check_facet(_M_fnumget))
-		_M_fnumget->get(*this, 0, *this, __err, __n);
+		_M_fnumget->get(*this, 0, *this, __err, __l);
+#ifdef _GLIBCPP_RESOLVE_LIB_DEFECTS
+	      // 118. basic_istream uses nonexistent num_get member functions.
+	      if (!(__err & ios_base::failbit)
+		  && (numeric_limits<short>::min() <= __l 
+		      && __l <= numeric_limits<short>::max()))
+		__n = __l;
+	      else
+                __err |= ios_base::failbit;
+#endif
 	      this->setstate(__err);
 	    }
 	  catch(exception& __fail)
@@ -188,8 +198,18 @@ namespace std
 	  try 
 	    {
 	      ios_base::iostate __err = ios_base::iostate(ios_base::goodbit);
+	      long __l;
 	      if (_M_check_facet(_M_fnumget))
-		_M_fnumget->get(*this, 0, *this, __err, __n);
+		_M_fnumget->get(*this, 0, *this, __err, __l);
+#ifdef _GLIBCPP_RESOLVE_LIB_DEFECTS
+	      // 118. basic_istream uses nonexistent num_get member functions.
+	      if (!(__err & ios_base::failbit)
+		  && (numeric_limits<int>::min() <= __l 
+		      && __l <= numeric_limits<int>::max()))
+		__n = __l;
+	      else
+                __err |= ios_base::failbit;
+#endif
 	      this->setstate(__err);
 	    }
 	  catch(exception& __fail)
@@ -1252,4 +1272,3 @@ namespace std
 // Local Variables:
 // mode:C++
 // End:
-

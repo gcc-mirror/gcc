@@ -63,13 +63,13 @@ static bool F=false;
 static _TestCase testcases[] =
 {
 #if _GLIBCPP_USE_WCHAR_T
-  // standard output (no formatting applied)
+  // standard output (no formatting applied) 1-4
   { 1.2, 6,0,'.',' ', F,F,F,F,F,F,F,F, "1.2",L"1.2" },
   { 54, 6,0,'.',' ', F,F,F,F,F,F,F,F, "54",L"54" },
   { -.012, 6,0,'.',' ', F,F,F,F,F,F,F,F, "-0.012",L"-0.012" },
   { -.00000012, 6,0,'.',' ', F,F,F,F,F,F,F,F, "-1.2e-07",L"-1.2e-07" },
     
-  // fixed formatting
+  // fixed formatting 5-11
   { 10.2345, 0,0,'.',' ', T,F,F,F,F,F,F,F, "10",L"10" },
   { 10.2345, 0,0,'.',' ', T,F,F,T,F,F,F,F, "10.",L"10." },
   { 10.2345, 1,0,'.',' ', T,F,F,F,F,F,F,F, "10.2",L"10.2" },
@@ -78,7 +78,7 @@ static _TestCase testcases[] =
   { -10.2345, 6,0,'.',' ', T,F,F,F,F,F,F,F, "-10.234500",L"-10.234500" },
   { -10.2345, 6,0,',',' ', T,F,F,F,F,F,F,F, "-10,234500",L"-10,234500" },
 
-  // fixed formatting with width
+  // fixed formatting with width 12-22
   { 10.2345, 4,5,'.',' ', T,F,F,F,F,F,F,F, "10.2345",L"10.2345" },
   { 10.2345, 4,6,'.',' ', T,F,F,F,F,F,F,F, "10.2345",L"10.2345" },
   { 10.2345, 4,7,'.',' ', T,F,F,F,F,F,F,F, "10.2345",L"10.2345" },
@@ -91,7 +91,7 @@ static _TestCase testcases[] =
   { -10.2345, 4,10,'.','A', T,F,F,F,F,T,F,F, "-AA10.2345",L"-AA10.2345" },
   { 10.2345, 4,10,'.','#', T,F,T,F,F,T,F,F, "+##10.2345",L"+##10.2345" },
 
-  // scientific formatting
+  // scientific formatting 23-29
   { 1.23e+12, 1,0,'.',' ', F,T,F,F,F,F,F,F, "1.2e+12",L"1.2e+12" },
   { 1.23e+12, 1,0,'.',' ', F,T,F,F,T,F,F,F, "1.2E+12",L"1.2E+12" },
   { 1.23e+12, 2,0,'.',' ', F,T,F,F,F,F,F,F, "1.23e+12",L"1.23e+12" },
@@ -207,7 +207,7 @@ test01()
         apply_formatting(tc, os);
         os << tc.val;
 #ifdef TEST_NUMPUT_VERBOSE
-        cout << "result: " << os.str() << endl;
+        cout << j << "result 1: " << os.str() << endl;
 #endif
         VERIFY( os && os.str() == tc.result );
       }
@@ -220,7 +220,7 @@ test01()
         apply_formatting(tc, os);
         os << (long double)tc.val;
 #ifdef TEST_NUMPUT_VERBOSE
-        cout << "result: " << os.str() << endl;
+        cout << j << "result 2: " << os.str() << endl;
 #endif
         VERIFY( os && os.str() == tc.result );
       }
