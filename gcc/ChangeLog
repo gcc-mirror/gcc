@@ -1,5 +1,6 @@
 2004-01-10  Jan Hubicka  <jh@suse.cz>
 
+	PR opt/11635
 	* expr.c (expand_expr_real):  More curefully expand union casts.
 
 2004-01-10  Kazu Hirata  <kazu@cs.umass.edu>
