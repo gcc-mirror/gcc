@@ -4,6 +4,8 @@
 
 	* gcc.dg/struct-by-value-1.c: New test.
 
+	* gcc.c-torture/compile/20020319-1.c: New test.
+
 2002-03-18  Neil Booth  <neil@daikokuya.demon.co.uk>
 
 	* gcc.dg/cpp/wchar-1.c: Fix test.

@@ -7741,6 +7741,7 @@ expand_expr (exp, target, tmode, modifier)
          expensive divide.  If not, combine will rebuild the original
          computation.  */
       if (flag_unsafe_math_optimizations && optimize && !optimize_size
+	  && TREE_CODE (type) == REAL_TYPE
 	  && !real_onep (TREE_OPERAND (exp, 0)))
         return expand_expr (build (MULT_EXPR, type, TREE_OPERAND (exp, 0),
 				   build (RDIV_EXPR, type,
