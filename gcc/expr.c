@@ -2392,7 +2392,13 @@ clear_storage (object, size, align)
 #endif
   rtx retval = 0;
 
-  if (GET_MODE (object) == BLKmode)
+  /* If OBJECT is not BLKmode and SIZE is the same size as its mode,
+     just move a zero.  Otherwise, do this a piece at a time.  */
+  if (GET_MODE (object) != BLKmode
+      && GET_CODE (size) == CONST_INT
+      && GET_MODE_SIZE (GET_MODE (object)) == INTVAL (size))
+    emit_move_insn (object, CONST0_RTX (GET_MODE (object)));
+  else
     {
       object = protect_from_queue (object, 1);
       size = protect_from_queue (size, 0);
@@ -2544,8 +2550,6 @@ clear_storage (object, size, align)
 #endif
 	}
     }
-  else
-    emit_move_insn (object, CONST0_RTX (GET_MODE (object)));
 
   return retval;
 }
@@ -4263,11 +4267,15 @@ store_constructor (exp, target, align, cleared, size)
 
       /* If the constructor has fewer fields than the structure
 	 or if we are initializing the structure to mostly zeros,
-	 clear the whole structure first.  */
+	 clear the whole structure first.  Don't do this is TARGET is
+	 register whose mode size isn't equal to SIZE since clear_storage
+	 can't handle this case.  */
       else if (size > 0
 	       && ((list_length (CONSTRUCTOR_ELTS (exp))
 		    != fields_length (type))
-		   || mostly_zeros_p (exp)))
+		   || mostly_zeros_p (exp))
+	       && (GET_CODE (target) != REG
+		   || GET_MODE_SIZE (GET_MODE (target)) == size))
 	{
 	  if (! cleared)
 	    clear_storage (target, GEN_INT (size), align);
