@@ -248,6 +248,38 @@ DEFUN(print_name, (stream, jcf, name_index),
 		    JPOOL_UTF_LENGTH (jcf, name_index));
 }
 
+/* Print a character, appropriately mangled for JNI.  */
+
+static void
+jni_print_char (stream, ch)
+     FILE *stream;
+     int ch;
+{
+  if (! flag_jni)
+    jcf_print_char (stream, ch);
+  else if (ch == '(' || ch == ')')
+    {
+      /* Ignore.  */
+    }
+  else if (ch == '_')
+    fputs ("_1", stream);
+  else if (ch == ';')
+    fputs ("_2", stream);
+  else if (ch == '[')
+    fputs ("_3", stream);
+  else if (ch == '/')
+    fputs ("_", stream);
+  else if ((ch >= '0' && ch <= '9')
+	   || (ch >= 'a' && ch <= 'z')
+	   || (ch >= 'A' && ch <= 'Z'))
+    fputc (ch, stream);
+  else
+    {
+      /* "Unicode" character.  */
+      fprintf (stream, "_0%04x", ch);
+    }
+}
+
 /* Print base name of class.  The base name is everything after the
    final separator.  */
 
@@ -888,7 +920,7 @@ decode_signature_piece (stream, signature, limit, need_space)
       break;
     default:
       *need_space = 1;
-      jcf_print_char (stream, *signature++);
+      jni_print_char (stream, *signature++);
       break;
     printit:
       signature++;
@@ -1006,32 +1038,11 @@ DEFUN(print_full_cxx_name, (stream, jcf, name_index, signature_index,
 	  while (signature < limit)
 	    {
 	      int ch = UTF8_GET (signature, limit);
-	      if (ch == '(')
-		{
-		  /* Ignore.  */
-		}
-	      else if (ch == ')')
+	      jni_print_char (stream, ch);
+	      if (ch == ')')
 		{
 		  /* Done.  */
 		  break;
-		}
-	      else if (ch == '_')
-		fputs ("_1", stream);
-	      else if (ch == ';')
-		fputs ("_2", stream);
-	      else if (ch == '[')
-		fputs ("_3", stream);
-	      else if (ch == '/')
-		fputs ("_", stream);
-	      else if ((ch >= '0' && ch <= '9')
-		       || (ch >= 'a' && ch <= 'z')
-		       || (ch >= 'A' && ch <= 'Z'))
-		fputc (ch, stream);
-	      else
-		{
-		  /* "Unicode" character.  FIXME: upper or lower case
-		     letters?  */
-		  fprintf (stream, "_0%04x", ch);
 		}
 	    }
 	}
@@ -1223,7 +1234,7 @@ print_cxx_classname (stream, prefix, jcf, index)
       if (c == '/')
 	fputs (flag_jni ? "_" : "::", stream);
       else
-	jcf_print_char (stream, c);
+	jni_print_char (stream, c);
     }
 
   return 1;
