@@ -259,6 +259,8 @@ static rtx fill_slots_from_thread PROTO((rtx, rtx, rtx, rtx, int, int,
 static void fill_eager_delay_slots PROTO((rtx));
 static void relax_delay_slots	PROTO((rtx));
 static void make_return_insns	PROTO((rtx));
+static int redirect_with_delay_slots_safe_p PROTO ((rtx, rtx, rtx));
+static int redirect_with_delay_list_safe_p PROTO ((rtx, rtx, rtx));
 
 /* Given X, some rtl, and RES, a pointer to a `struct resource', mark
    which resources are references by the insn.  If INCLUDE_CALLED_ROUTINE
@@ -1492,6 +1494,39 @@ redirect_with_delay_slots_safe_p (jump, newlabel, seq)
       break;
 
   return (i == XVECLEN (pat, 0));
+}
+
+/* Return non-zero if redirecting JUMP to NEWLABEL does not invalidate
+   any insns we wish to place in the delay slot of JUMP.  */
+
+static int
+redirect_with_delay_list_safe_p (jump, newlabel, delay_list)
+     rtx jump, newlabel, delay_list;
+{
+  int flags, i;
+  rtx li;
+
+  /* Make sure all the insns in DELAY_LIST would still be
+     valid after threading the jump.  If they are still
+     valid, then return non-zero.  */
+
+  flags = get_jump_flags (jump, newlabel);
+  for (li = delay_list, i = 0; li; li = XEXP (li, 1), i++)
+    if (! (
+#ifdef ANNUL_IFFALSE_SLOTS
+	   (INSN_ANNULLED_BRANCH_P (jump)
+	    && INSN_FROM_TARGET_P (XEXP (li, 0)))
+	   ? eligible_for_annul_false (jump, i - 1, XEXP (li, 0), flags) :
+#endif
+#ifdef ANNUL_IFTRUE_SLOTS
+	   (INSN_ANNULLED_BRANCH_P (jump)
+	    && ! INSN_FROM_TARGET_P (XEXP (li, 0)))
+	   ? eligible_for_annul_true (jump, i - 1, XEXP (li, 0), flags) :
+#endif
+	   eligible_for_delay (jump, i - 1, XEXP (li, 0), flags)))
+      break;
+
+  return (li == NULL);
 }
 
 
@@ -3462,7 +3497,10 @@ fill_slots_from_thread (insn, condition, thread, opposite_thread, likely,
 
       if (new_thread && GET_CODE (new_thread) == JUMP_INSN
 	  && (simplejump_p (new_thread)
-	      || GET_CODE (PATTERN (new_thread)) == RETURN))
+	      || GET_CODE (PATTERN (new_thread)) == RETURN)
+	  && redirect_with_delay_list_safe_p (insn,
+					      JUMP_LABEL (new_thread),
+					      delay_list))
 	new_thread = follow_jumps (JUMP_LABEL (new_thread));
 
       if (new_thread == 0)
