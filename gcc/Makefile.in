@@ -1436,10 +1436,10 @@ ggc-common.o: ggc-common.c $(CONFIG_H) $(RTL_H) $(TREE_H) \
 	flags.h ggc.h varray.h hash.h
 
 ggc-simple.o: ggc-simple.c $(CONFIG_H) $(RTL_H) $(TREE_H) flags.h \
-	ggc.h varray.h hash.h
+	ggc.h varray.h
 
 ggc-page.o: ggc-page.c $(CONFIG_H) $(RTL_H) $(TREE_H) flags.h \
-	ggc.h varray.h hash.h
+	ggc.h varray.h
 
 ggc-none.o: ggc-none.c $(CONFIG_H) $(RTL_H) ggc.h
 
@@ -1543,8 +1543,7 @@ simplify-rtx.o : simplify-rtx.c $(CONFIG_H) system.h $(RTL_H) $(REGS_H) \
    hard-reg-set.h flags.h real.h insn-config.h $(RECOG_H) $(EXPR_H) toplev.h \
    output.h function.h 
 cse.o : cse.c $(CONFIG_H) system.h $(RTL_H) $(REGS_H) hard-reg-set.h flags.h \
-   real.h insn-config.h $(RECOG_H) $(EXPR_H) toplev.h output.h function.h \
-   $(srcdir)/../include/hashtab.h ggc.h
+   real.h insn-config.h $(RECOG_H) $(EXPR_H) toplev.h output.h function.h ggc.h
 gcse.o : gcse.c $(CONFIG_H) system.h $(RTL_H) $(REGS_H) hard-reg-set.h \
    flags.h real.h insn-config.h $(RECOG_H) $(EXPR_H) $(BASIC_BLOCK_H) \
    function.h output.h toplev.h

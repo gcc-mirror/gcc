@@ -36,7 +36,6 @@ Boston, MA 02111-1307, USA.  */
 #include "expr.h"
 #include "toplev.h"
 #include "output.h"
-#include "hashtab.h"
 #include "ggc.h"
 
 /* The basic idea of common subexpression elimination is to go
@@ -697,9 +696,6 @@ static rtx cse_basic_block	PROTO((rtx, rtx, struct branch_path *, int));
 static void count_reg_usage	PROTO((rtx, int *, rtx, int));
 extern void dump_class          PROTO((struct table_elt*));
 static struct cse_reg_info* get_cse_reg_info PROTO((int));
-static unsigned int hash_cse_reg_info PROTO((hash_table_entry_t));
-static int cse_reg_info_equal_p	PROTO((hash_table_entry_t,
-				       hash_table_entry_t));
 
 static void flush_hash_table	PROTO((void));
 

@@ -1,3 +1,13 @@
+1999-12-23  Zack Weinberg  <zack@wolery.cumb.org>
+
+	* Makefile.in (ggc-simple.c, ggc-page.c): Don't depend on
+	hash.h.  (cse.c): Don't depend on hashtab.h.
+
+	* cse.c: Don't include hashtab.h.
+	(hash_cse_reg_info, cse_reg_info_equal_p): Delete prototypes
+	of dead functions.
+	* ggc-simple.c: Don't include hash.h.
+
 1999-12-22  Jason Merrill  <jason@casey.cygnus.com>
 
 	* dwarf2out.c (add_abstract_origin_attribute): Call
