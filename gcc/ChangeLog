@@ -1,3 +1,7 @@
+2004-04-04  Mark Mitchell  <mark@codesourcery.com>
+
+	* doc/invoke.texi (-mabi=o64): Create link to O64 ABI
+	documentation.
 
 2004-04-04  Roger Sayle  <roger@eyesopen.com>
 
