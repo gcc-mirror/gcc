@@ -557,7 +557,10 @@ struct lang_decl		GTY(())
 
 /* Build an expression with void type.  */
 #define build1_v(code, arg) build(code, void_type_node, arg)
-#define build_v(code, args...) build(code, void_type_node, args)
+#define build2_v(code, arg1, arg2) build2(code, void_type_node, \
+                                          arg1, arg2)
+#define build3_v(code, arg1, arg2, arg3) build3(code, void_type_node, \
+                                                arg1, arg2, arg3)
 
 /* flag for alternative return labels.  */
 extern int has_alternate_specifier;  /* for caller */

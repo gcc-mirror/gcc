@@ -156,7 +156,7 @@ gfc_add_modify_expr (stmtblock_t * pblock, tree lhs, tree rhs)
     abort ();
 #endif
 
-  tmp = fold (build_v (MODIFY_EXPR, lhs, rhs));
+  tmp = fold (build2_v (MODIFY_EXPR, lhs, rhs));
   gfc_add_expr_to_block (pblock, tmp);
 }
 
@@ -238,7 +238,7 @@ gfc_finish_block (stmtblock_t * stmtblock)
       if (decl)
 	{
 	  block = poplevel (1, 0, 0);
-	  expr = build_v (BIND_EXPR, decl, expr, block);
+	  expr = build3_v (BIND_EXPR, decl, expr, block);
 	}
       else
 	poplevel (0, 0, 0);
@@ -316,7 +316,7 @@ gfc_build_array_ref (tree base, tree offset)
   if (DECL_P (base))
     TREE_ADDRESSABLE (base) = 1;
 
-  return build (ARRAY_REF, type, base, offset, NULL_TREE, NULL_TREE);
+  return build4 (ARRAY_REF, type, base, offset, NULL_TREE, NULL_TREE);
 }
 
 
@@ -330,7 +330,8 @@ gfc_build_function_call (tree fndecl, tree arglist)
   tree call;
 
   fn = gfc_build_addr_expr (NULL, fndecl);
-  call = build (CALL_EXPR, TREE_TYPE (TREE_TYPE (fndecl)), fn, arglist, NULL);
+  call = build3 (CALL_EXPR, TREE_TYPE (TREE_TYPE (fndecl)), 
+		 fn, arglist, NULL);
   TREE_SIDE_EFFECTS (call) = 1;
 
   return call;
@@ -384,7 +385,7 @@ gfc_trans_runtime_check (tree cond, tree msg, stmtblock_t * pblock)
       tmp = gfc_chainon_list (tmp, integer_zero_node);
       cond = gfc_build_function_call (built_in_decls[BUILT_IN_EXPECT], tmp);
 
-      tmp = build_v (COND_EXPR, cond, body, build_empty_stmt ());
+      tmp = build3_v (COND_EXPR, cond, body, build_empty_stmt ());
       gfc_add_expr_to_block (pblock, tmp);
     }
 }
