@@ -276,6 +276,7 @@ unchecked_make_edge (basic_block src, basic_block dst, int flags)
   e->src = src;
   e->dest = dst;
   e->flags = flags;
+  e->dest_idx = EDGE_COUNT (dst->preds) - 1;
 
   return e;
 }
@@ -355,11 +356,13 @@ remove_edge (edge e)
 {
   edge tmp;
   basic_block src, dest;
+  unsigned int dest_idx;
   bool found = false;
   edge_iterator ei;
 
   src = e->src;
   dest = e->dest;
+  dest_idx = e->dest_idx;
 
   for (ei = ei_start (src->succs); (tmp = ei_safe_edge (ei)); )
     {
@@ -375,20 +378,12 @@ remove_edge (edge e)
 
   gcc_assert (found);
 
-  found = false;
-  for (ei = ei_start (dest->preds); (tmp = ei_safe_edge (ei)); )
-    {
-      if (tmp == e)
-	{
-	  VEC_unordered_remove (edge, dest->preds, ei.index);
-	  found = true;
-	  break;
-	}
-      else
-	ei_next (&ei);
-    }
+  VEC_unordered_remove (edge, dest->preds, dest_idx);
 
-  gcc_assert (found);
+  /* If we removed an edge in the middle of the edge vector, we need
+     to update dest_idx of the edge that moved into the "hole".  */
+  if (dest_idx < EDGE_COUNT (dest->preds))
+    EDGE_PRED (dest, dest_idx)->dest_idx = dest_idx;
 
   free_edge (e);
 }
@@ -398,28 +393,20 @@ remove_edge (edge e)
 void
 redirect_edge_succ (edge e, basic_block new_succ)
 {
-  edge tmp;
-  edge_iterator ei;
-  bool found = false;
+  basic_block dest = e->dest;
+  unsigned int dest_idx = e->dest_idx;
 
-  /* Disconnect the edge from the old successor block.  */
-  for (ei = ei_start (e->dest->preds); (tmp = ei_safe_edge (ei)); )
-    {
-      if (tmp == e)
-	{
-	  VEC_unordered_remove (edge, e->dest->preds, ei.index);
-	  found = true;
-	  break;
-	}
-      else
-	ei_next (&ei);
-    }
+  VEC_unordered_remove (edge, dest->preds, dest_idx);
 
-  gcc_assert (found);
+  /* If we removed an edge in the middle of the edge vector, we need
+     to update dest_idx of the edge that moved into the "hole".  */
+  if (dest_idx < EDGE_COUNT (dest->preds))
+    EDGE_PRED (dest, dest_idx)->dest_idx = dest_idx;
 
   /* Reconnect the edge to the new successor block.  */
   VEC_safe_push (edge, new_succ->preds, e);
   e->dest = new_succ;
+  e->dest_idx = EDGE_COUNT (new_succ->preds) - 1;
 }
 
 /* Like previous but avoid possible duplicate edge.  */

@@ -154,6 +154,10 @@ struct edge_def GTY(())
   int probability;		/* biased by REG_BR_PROB_BASE */
   gcov_type count;		/* Expected number of executions calculated
 				   in profile.c  */
+
+  /* The index number corresponding to this edge in the edge vector
+     dest->preds.  */
+  unsigned int dest_idx;
 };
 
 typedef struct edge_def *edge;
