@@ -1109,7 +1109,6 @@ sdbout_one_type (tree type)
 	int size = int_size_in_bytes (type);
 	int member_scl = 0;
 	tree tem;
-	int i, n_baseclasses = 0;
 
 	/* Record the type tag, but not in its permanent place just yet.  */
 	sdbout_record_type_name (type);
@@ -1149,16 +1148,17 @@ sdbout_one_type (tree type)
 	/* This is only relevant to aggregate types.  TYPE_BINFO is used
 	   for other purposes in an ENUMERAL_TYPE, so we must exclude that
 	   case.  */
-	if (TREE_CODE (type) != ENUMERAL_TYPE)
+	if (TREE_CODE (type) != ENUMERAL_TYPE && TYPE_BINFO (type))
 	  {
-	    if (TYPE_BINFO (type) && BINFO_BASE_BINFOS (TYPE_BINFO (type)))
-	      n_baseclasses = BINFO_N_BASE_BINFOS (TYPE_BINFO (type));
-	    
-	    for (i = 0; i < n_baseclasses; i++)
+	    int i;
+	    tree binfo, child;
+
+	    for (binfo = TYPE_BINFO (type), i = 0;
+		 BINFO_BASE_ITERATE (binfo, i, child); i++)
 	      {
-		tree child = BINFO_BASE_BINFO (TYPE_BINFO (type), i);
 		tree child_type = BINFO_TYPE (child);
 		tree child_type_name;
+		
 		if (TYPE_NAME (child_type) == 0)
 		  continue;
 		if (TREE_CODE (TYPE_NAME (child_type)) == IDENTIFIER_NODE)

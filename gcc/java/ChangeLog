@@ -1,3 +1,22 @@
+2004-07-20  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* class.c (add_interface_do): Remove.
+	(set_super_info, interface_of_p, maybe_add_interface,
+	add_interface, make_class_data, layout_class,
+	add_miranda_methods): Adjust BINFO accessors and addition.
+	* expr.c (can_widen_reference_to, lookup_field): Adjust BINFO
+	accessors.
+	* jcf-write.c (generate_classfile): Likewise.
+	* parse.y (patch_anonymous_class, check_inner_circular_reference,
+	check_circular_reference, java_complete_class,
+	check_abstract_method_definitions,
+	java_check_abstract_method_definitions,
+	check_interface_throws_clauses, java_check_abstract_methods,
+	lookup_java_interface_method2,
+	find_applicable_accessible_methods_list): Adjust BINFO accessors
+	and addition.
+	* typeck.c (find_method_in_interfaces): Adjust BINFO accessors.
+
 2004-07-18  Roger Sayle  <roger@eyesopen.com>
 
 	* builtins.c (max_builtin, min_builtin,

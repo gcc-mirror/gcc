@@ -97,7 +97,7 @@ lookup_base_r (tree binfo, tree base, base_access access,
 	       tree *binfo_ptr)
 {
   int i;
-  tree bases, accesses;
+  tree base_binfo;
   base_kind found = bk_not_base;
   
   if (same_type_p (BINFO_TYPE (binfo), base))
@@ -123,14 +123,8 @@ lookup_base_r (tree binfo, tree base, base_access access,
       return found;
     }
   
-  bases = BINFO_BASE_BINFOS (binfo);
-  accesses = BINFO_BASE_ACCESSES (binfo);
-  if (!bases)
-    return bk_not_base;
-  
-  for (i = TREE_VEC_LENGTH (bases); i--;)
+  for (i = 0; BINFO_BASE_ITERATE (binfo, i, base_binfo); i++)
     {
-      tree base_binfo = TREE_VEC_ELT (bases, i);
       base_kind bk;
 
       bk = lookup_base_r (base_binfo, base,
@@ -290,8 +284,9 @@ static int
 dynamic_cast_base_recurse (tree subtype, tree binfo, bool is_via_virtual,
 			   tree *offset_ptr)
 {
-  tree binfos, accesses;
-  int i, n_baselinks;
+  tree accesses;
+  tree base_binfo;
+  int i;
   int worst = -2;
   
   if (BINFO_TYPE (binfo) == subtype)
@@ -305,12 +300,9 @@ dynamic_cast_base_recurse (tree subtype, tree binfo, bool is_via_virtual,
         }
     }
   
-  binfos = BINFO_BASE_BINFOS (binfo);
   accesses = BINFO_BASE_ACCESSES (binfo);
-  n_baselinks = binfos ? TREE_VEC_LENGTH (binfos) : 0;
-  for (i = 0; i < n_baselinks; i++)
+  for (i = 0; BINFO_BASE_ITERATE (binfo, i, base_binfo); i++)
     {
-      tree base_binfo = TREE_VEC_ELT (binfos, i);
       tree base_access = TREE_VEC_ELT (accesses, i);
       int rval;
       
@@ -630,17 +622,13 @@ dfs_access_in_type (tree binfo, void *data)
       if (!access)
 	{
 	  int i;
-	  int n_baselinks;
-	  tree binfos, accesses;
+	  tree base_binfo, accesses;
 	  
 	  /* Otherwise, scan our baseclasses, and pick the most favorable
 	     access.  */
-	  binfos = BINFO_BASE_BINFOS (binfo);
 	  accesses = BINFO_BASE_ACCESSES (binfo);
-	  n_baselinks = binfos ? TREE_VEC_LENGTH (binfos) : 0;
-	  for (i = 0; i < n_baselinks; ++i)
+	  for (i = 0; BINFO_BASE_ITERATE (binfo, i, base_binfo); i++)
 	    {
-	      tree base_binfo = TREE_VEC_ELT (binfos, i);
 	      tree base_access = TREE_VEC_ELT (accesses, i);
 	      access_kind base_access_now = BINFO_ACCESS (base_binfo);
 
@@ -1601,6 +1589,8 @@ dfs_walk_real (tree binfo,
 	       tree (*qfn) (tree, int, void *),
 	       void *data)
 {
+  int i;
+  tree base_binfo;
   tree rval = NULL_TREE;
 
   /* Call the pre-order walking function.  */
@@ -1612,25 +1602,17 @@ dfs_walk_real (tree binfo,
     }
 
   /* Process the basetypes.  */
-  if (BINFO_BASE_BINFOS (binfo))
+  for (i = 0; BINFO_BASE_ITERATE (binfo, i, base_binfo); i++)
     {
-      int i, n = TREE_VEC_LENGTH (BINFO_BASE_BINFOS (binfo));
-      for (i = 0; i != n; i++)
+      if (qfn)
 	{
-	  tree base_binfo;
-      
-	  if (qfn)
-	    base_binfo = (*qfn) (binfo, i, data);
-	  else
-	    base_binfo = BINFO_BASE_BINFO (binfo, i);
-	  
-	  if (base_binfo)
-	    {
-	      rval = dfs_walk_real (base_binfo, prefn, postfn, qfn, data);
-	      if (rval)
-		return rval;
-	    }
+	  base_binfo = (*qfn) (binfo, i, data);
+	  if (!base_binfo)
+	    continue;
 	}
+      rval = dfs_walk_real (base_binfo, prefn, postfn, qfn, data);
+      if (rval)
+	return rval;
     }
 
   /* Call the post-order walking function.  */
@@ -1761,14 +1743,13 @@ int
 look_for_overrides (tree type, tree fndecl)
 {
   tree binfo = TYPE_BINFO (type);
-  tree basebinfos = BINFO_BASE_BINFOS (binfo);
-  int nbasebinfos = basebinfos ? TREE_VEC_LENGTH (basebinfos) : 0;
+  tree base_binfo;
   int ix;
   int found = 0;
 
-  for (ix = 0; ix != nbasebinfos; ix++)
+  for (ix = 0; BINFO_BASE_ITERATE (binfo, ix, base_binfo); ix++)
     {
-      tree basetype = BINFO_TYPE (TREE_VEC_ELT (basebinfos, ix));
+      tree basetype = BINFO_TYPE (base_binfo);
       
       if (TYPE_POLYMORPHIC_P (basetype))
         found += look_for_overrides_r (basetype, fndecl);
@@ -2161,7 +2142,7 @@ dfs_check_overlap (tree empty_binfo, void *data)
 	  oi->found_overlap = 1;
 	  break;
 	}
-      else if (BINFO_BASE_BINFOS (binfo) == NULL_TREE)
+      else if (!BINFO_N_BASE_BINFOS (binfo))
 	break;
     }
 
@@ -2194,34 +2175,6 @@ types_overlap_p (tree empty_type, tree next_type)
   dfs_walk (TYPE_BINFO (empty_type), dfs_check_overlap,
 	    dfs_no_overlap_yet, &oi);
   return oi.found_overlap;
-}
-
-/* Given a vtable VAR, determine which of the inherited classes the vtable
-   inherits (in a loose sense) functions from.
-
-   FIXME: This does not work with the new ABI.  */
-
-tree
-binfo_for_vtable (tree var)
-{
-  tree main_binfo = TYPE_BINFO (DECL_CONTEXT (var));
-  tree binfos = BINFO_BASE_BINFOS (TYPE_BINFO (BINFO_TYPE (main_binfo)));
-  int n_baseclasses = BINFO_N_BASE_BINFOS (TYPE_BINFO (BINFO_TYPE (main_binfo)));
-  int i;
-
-  for (i = 0; i < n_baseclasses; i++)
-    {
-      tree base_binfo = TREE_VEC_ELT (binfos, i);
-      if (base_binfo != NULL_TREE && BINFO_VTABLE (base_binfo) == var)
-	return base_binfo;
-    }
-
-  /* If no secondary base classes matched, return the primary base, if
-     there is one.  */
-  if (CLASSTYPE_HAS_PRIMARY_BASE_P (BINFO_TYPE (main_binfo)))
-    return get_primary_binfo (main_binfo);
-
-  return main_binfo;
 }
 
 /* Returns the binfo of the first direct or indirect virtual base derived
@@ -2275,22 +2228,17 @@ copied_binfo (tree binfo, tree here)
     }
   else if (BINFO_INHERITANCE_CHAIN (binfo))
     {
-      tree base_binfos;
-      int ix, n;
+      tree cbinfo;
+      tree base_binfo;
+      int ix;
       
-      base_binfos = copied_binfo (BINFO_INHERITANCE_CHAIN (binfo), here);
-      base_binfos = BINFO_BASE_BINFOS (base_binfos);
-      n = TREE_VEC_LENGTH (base_binfos);
-      for (ix = 0; ix != n; ix++)
-	{
-	  tree base = TREE_VEC_ELT (base_binfos, ix);
-	  
-	  if (BINFO_TYPE (base) == BINFO_TYPE (binfo))
-	    {
-	      result = base;
-	      break;
-	    }
-	}
+      cbinfo = copied_binfo (BINFO_INHERITANCE_CHAIN (binfo), here);
+      for (ix = 0; BINFO_BASE_ITERATE (cbinfo, ix, base_binfo); ix++)
+	if (BINFO_TYPE (base_binfo) == BINFO_TYPE (binfo))
+	  {
+	    result = base_binfo;
+	    break;
+	  }
     }
   else
     {
@@ -2339,20 +2287,15 @@ original_binfo (tree binfo, tree here)
       base_binfos = original_binfo (BINFO_INHERITANCE_CHAIN (binfo), here);
       if (base_binfos)
 	{
-	  int ix, n;
+	  int ix;
+	  tree base_binfo;
 	  
-	  base_binfos = BINFO_BASE_BINFOS (base_binfos);
-	  n = TREE_VEC_LENGTH (base_binfos);
-	  for (ix = 0; ix != n; ix++)
-	    {
-	      tree base = TREE_VEC_ELT (base_binfos, ix);
-	      
-	      if (BINFO_TYPE (base) == BINFO_TYPE (binfo))
-		{
-		  result = base;
-		  break;
-		}
-	    }
+	  for (ix = 0; (base_binfo = BINFO_BASE_BINFO (base_binfos, ix)); ix++)
+	    if (BINFO_TYPE (base_binfo) == BINFO_TYPE (binfo))
+	      {
+		result = base_binfo;
+		break;
+	      }
 	}
     }
   

@@ -618,9 +618,10 @@ symbian_export_vtable_and_rtti_p (tree ctype)
   bool inline_ctor_dtor;
   bool dllimport_ctor_dtor;
   bool dllimport_member;
-  tree binfos;
+  tree binfo, base_binfo;
   tree methods;
   tree key;
+  int i;
   int len;
 
   /* Make sure that we are examining a class...  */
@@ -729,20 +730,9 @@ symbian_export_vtable_and_rtti_p (tree ctype)
 #endif
 
   /* Now we must check and possibly export the base classes.  */
-  binfos = BINFO_BASE_BINFOS (TYPE_BINFO (ctype));
-  len = BINFO_N_BASE_BINFOS (TYPE_BINFO (ctype));
-
-  for (; len --;)
-    {
-      tree base_binfo;
-      tree basetype;
-
-      /* Figure out which base we're looking at.  */
-      base_binfo = TREE_VEC_ELT (binfos, len);
-      basetype = TREE_TYPE (base_binfo);
-
-      symbian_possibly_export_base_class (basetype);
-    }
+  for (i = 0, binfo = TYPE_BINFO (ctype);
+       BINFO_BASE_ITERATE (binfo, i, base_binfo); i++)
+    symbian_possibly_export_base_class (BINFO_TYPE (base_binfo));
 
   return true;
 }

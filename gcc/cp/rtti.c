@@ -1032,8 +1032,7 @@ get_pseudo_ti_init (tree type, tree var_desc, bool *non_public_p)
         }
       else if (var_desc == si_class_desc_type_node)
 	{
-          tree base_binfos = BINFO_BASE_BINFOS (TYPE_BINFO (type));
-	  tree base_binfo = TREE_VEC_ELT (base_binfos, 0);
+          tree base_binfo = BINFO_BASE_BINFO (TYPE_BINFO (type), 0);
 	  tree tinfo = get_tinfo_ptr (BINFO_TYPE (base_binfo));
 	  tree base_inits = tree_cons (NULL_TREE, tinfo, NULL_TREE);
 	  
@@ -1044,7 +1043,6 @@ get_pseudo_ti_init (tree type, tree var_desc, bool *non_public_p)
 	  int hint = class_hint_flags (type);
 	  tree binfo = TYPE_BINFO (type);
           int nbases = BINFO_N_BASE_BINFOS (binfo);
-          tree base_binfos = BINFO_BASE_BINFOS (binfo);
 	  tree base_accesses = BINFO_BASE_ACCESSES (binfo);
           tree base_inits = NULL_TREE;
           int ix;
@@ -1052,7 +1050,7 @@ get_pseudo_ti_init (tree type, tree var_desc, bool *non_public_p)
           /* Generate the base information initializer.  */
           for (ix = nbases; ix--;)
             {
-              tree base_binfo = TREE_VEC_ELT (base_binfos, ix);
+              tree base_binfo = BINFO_BASE_BINFO (binfo, ix);
               tree base_init = NULL_TREE;
               int flags = 0;
               tree tinfo;
@@ -1192,10 +1190,9 @@ get_pseudo_ti_desc (tree type)
       else
 	{
 	  tree binfo = TYPE_BINFO (type);
-	  tree base_binfos = BINFO_BASE_BINFOS (binfo);
 	  tree base_accesses = BINFO_BASE_ACCESSES (binfo);
-	  tree base_binfo = TREE_VEC_ELT (base_binfos, 0);
-	  int num_bases = TREE_VEC_LENGTH (base_binfos);
+	  tree base_binfo = BINFO_BASE_BINFO (binfo, 0);
+	  int num_bases = BINFO_N_BASE_BINFOS (binfo);
 	  
 	  if (num_bases == 1
 	      && TREE_VEC_ELT (base_accesses, 0) == access_public_node

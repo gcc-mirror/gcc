@@ -515,12 +515,10 @@ do_build_copy_constructor (tree fndecl)
   else
     {
       tree fields = TYPE_FIELDS (current_class_type);
-      int n_bases = BINFO_N_BASE_BINFOS (TYPE_BINFO (current_class_type));
-      tree binfos = BINFO_BASE_BINFOS (TYPE_BINFO (current_class_type));
       tree member_init_list = NULL_TREE;
       int cvquals = cp_type_quals (TREE_TYPE (parm));
       int i;
-      tree binfo;
+      tree binfo, base_binfo;
       VEC (tree) *vbases;
 
       /* Initialize all the base-classes with the parameter converted
@@ -539,17 +537,17 @@ do_build_copy_constructor (tree fndecl)
 			 member_init_list);
 	}
 
-      for (i = 0; i < n_bases; ++i)
+      for (binfo = TYPE_BINFO (current_class_type), i = 0;
+	   BINFO_BASE_ITERATE (binfo, i, base_binfo); i++)
 	{
-	  tree binfo = TREE_VEC_ELT (binfos, i);
-	  if (BINFO_VIRTUAL_P (binfo))
+	  if (BINFO_VIRTUAL_P (base_binfo))
 	    continue; 
 
 	  member_init_list 
-	    = tree_cons (binfo,
+	    = tree_cons (base_binfo,
 			 build_tree_list (NULL_TREE,
 					  build_base_path (PLUS_EXPR, parm,
-							   binfo, 1)),
+							   base_binfo, 1)),
 			 member_init_list);
 	}
 
@@ -617,26 +615,24 @@ do_build_assign_ref (tree fndecl)
       tree fields;
       int cvquals = cp_type_quals (TREE_TYPE (parm));
       int i;
+      tree binfo, base_binfo;
 
       /* Assign to each of the direct base classes.  */
-      for (i = 0;
-	   i < BINFO_N_BASE_BINFOS (TYPE_BINFO (current_class_type));
-	   ++i)
+      for (binfo = TYPE_BINFO (current_class_type), i = 0;
+	   BINFO_BASE_ITERATE (binfo, i, base_binfo); i++)
 	{
-	  tree binfo;
 	  tree converted_parm;
 
-	  binfo = BINFO_BASE_BINFO (TYPE_BINFO (current_class_type), i);
 	  /* We must convert PARM directly to the base class
 	     explicitly since the base class may be ambiguous.  */
-	  converted_parm = build_base_path (PLUS_EXPR, parm, binfo, 1);
+	  converted_parm = build_base_path (PLUS_EXPR, parm, base_binfo, 1);
 	  /* Call the base class assignment operator.  */
 	  finish_expr_stmt 
 	    (build_special_member_call (current_class_ref, 
 					ansi_assopname (NOP_EXPR),
 					build_tree_list (NULL_TREE, 
 							 converted_parm),
-					binfo,
+					base_binfo,
 					LOOKUP_NORMAL | LOOKUP_NONVIRTUAL));
 	}
 
@@ -783,13 +779,13 @@ synthesize_exception_spec (tree type, tree (*extractor) (tree, void*),
 {
   tree raises = empty_except_spec;
   tree fields = TYPE_FIELDS (type);
-  int i, n_bases = BINFO_N_BASE_BINFOS (TYPE_BINFO (type));
-  tree binfos = BINFO_BASE_BINFOS (TYPE_BINFO (type));
+  tree binfo, base_binfo;
+  int i;
 
-  for (i = 0; i != n_bases; i++)
+  for (binfo = TYPE_BINFO (type), i = 0;
+       BINFO_BASE_ITERATE (binfo, i, base_binfo); i++)
     {
-      tree base = BINFO_TYPE (TREE_VEC_ELT (binfos, i));
-      tree fn = (*extractor) (base, client);
+      tree fn = (*extractor) (BINFO_TYPE (base_binfo), client);
       if (fn)
         {
           tree fn_raises = TYPE_RAISES_EXCEPTIONS (TREE_TYPE (fn));

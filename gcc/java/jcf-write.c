@@ -2963,15 +2963,15 @@ generate_classfile (tree clas, struct jcf_partial *state)
     }
   else
     {
-      tree basetypes = BINFO_BASE_BINFOS (TYPE_BINFO (clas));
-      tree base = BINFO_TYPE (TREE_VEC_ELT (basetypes, 0));
-      int j = find_class_constant (&state->cpool, base);
+      tree binfo = TYPE_BINFO (clas);
+      tree base_binfo = BINFO_BASE_BINFO (binfo, 0);
+      int j = find_class_constant (&state->cpool, BINFO_TYPE (base_binfo));
+      
       PUT2 (j);  /* super_class */
       PUT2 (total_supers - 1);  /* interfaces_count */
-      for (i = 1;  i < total_supers;  i++)
+      for (i = 1; BINFO_BASE_ITERATE (binfo, i, base_binfo); i++)
 	{
-	  base = BINFO_TYPE (TREE_VEC_ELT (basetypes, i));
-	  j = find_class_constant (&state->cpool, base);
+	  j = find_class_constant (&state->cpool, BINFO_TYPE (base_binfo));
 	  PUT2 (j);
 	}
     }

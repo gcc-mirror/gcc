@@ -11891,15 +11891,14 @@ gen_member_die (tree type, dw_die_ref context_die)
      the TREE node representing the appropriate (containing) type.  */
 
   /* First output info about the base classes.  */
-  if (binfo && BINFO_BASE_BINFOS (binfo))
+  if (binfo)
     {
-      tree bases = BINFO_BASE_BINFOS (binfo);
       tree accesses = BINFO_BASE_ACCESSES (binfo);
-      int n_bases = TREE_VEC_LENGTH (bases);
       int i;
+      tree base;
 
-      for (i = 0; i < n_bases; i++)
-	gen_inheritance_die (TREE_VEC_ELT (bases, i),
+      for (i = 0; BINFO_BASE_ITERATE (binfo, i, base); i++)
+	gen_inheritance_die (base,
 			     (accesses ? TREE_VEC_ELT (accesses, i)
 			      : access_public_node), context_die);
     }

@@ -1,3 +1,28 @@
+2004-07-20  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* tree.h: Include vec.h
+	(DEF_VEC_P(tree)): New type.
+	(BINFO_BASE_BINFOS, BINFO_N_BASE_BINFOS, BINFO_BASE_BINFO): Adjust.
+	(BINFO_BASE_APPEND, BINFO_BASE_ITERATE): New.
+	(BINFO_LANG_SLOT): Remove.
+	(BINFO_SUBVTT_INDEX, BINFO_VPTR_INDEX, BINFO_PRIMARY_BASE_OF): New.
+	(struct tree_binfo): Turn base_binfos into a trailing
+	VEC(tree). Add vtt_subvtt, vtt_vptr, primary fields.
+	(binfo_lang_slots): Remove.
+	* tree.c (binfo_lang_slots): Remove.
+	(make_tree_binfo_stat): Take a base binfo count, not a
+	lang slot count.  Adjust.
+	* Makefile.in (TREE_H): Add vec.h
+	* alias.c (record_component_aliases): Adjust BINFO access.
+	* dbxout.c (dbxout_type): Likewise.
+	* dwarf2out.c (gen_member_die): Likewise.
+	* sdbout.c (sdbout_one_type): Likewise.
+	* tree-dump.c (deque_and_dump): Likewise.
+	* config/i386/i386.c (classify_argument,
+	contains_128bit_aligned_vector_p): Likewise.
+	* config/sh/symbian.c (symbian_export_vtable_and_rtti_p): Likewise.
+	* doc/c-tree.texi (Classes): Update BINFO documentation.
+
 2004-07-20  Steven Bosscher  <stevenb@suse.de>
 
 	* c-common.h (check_case_value): Remove prototype.

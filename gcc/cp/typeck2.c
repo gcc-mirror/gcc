@@ -954,7 +954,7 @@ process_init_constructor (tree type, tree init, tree* elts)
 	      return error_mark_node;
 	    }
 
-	  if (TYPE_BINFO (type) && BINFO_BASE_BINFOS (TYPE_BINFO (type)))
+	  if (TYPE_BINFO (type) && BINFO_N_BASE_BINFOS (TYPE_BINFO (type)))
 	    {
 	      sorry ("initializer list for object of class with base classes");
 	      return error_mark_node;

@@ -1,3 +1,33 @@
+2004-07-20  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* cp-tree.h (DEF_VEC_P(tree)): Remove here.
+	(BINFO_SUBVTT_INDEX, BINFO_VPTR_INDEX, BINFO_PRIMARY_BASE_OF):
+	Moved to common.
+	(BINFO_LANG_SLOTS): Remove.
+	* tree.c (copy_binfo): Adjust BINFO creation and accessors.
+	* decl.c (xref_basetypes): Adjust BINFO creation and accessors.
+	* class.c (check_bases): Adjust BINFO accessors.
+	(determine_primary_base, finish_struct_bits,
+	maybe_warn_about_overly_private_class, warn_hidden,
+	walk_subobject_offsets, propagate_binfo_offsets, end_of_class,
+	warn_about_ambiguous_bases, get_vfield_name,
+	dump_class_hierarchy_r, build_vtt_inits, accumulate_vtbl_inits,
+	add_vcall_offset_vtbl_entries_r): Likewise.
+	* dump.c (cp_dump_tree): Likewise.
+	* init.c (sort_mem_initializers, expand_member_init, build_delete,
+	push_base_cleanups): Likewise.
+	* method.c (do_build_copy_constructor, do_build_assign_ref,
+	synthesize_exception_spec): Likewise.
+	name-lookup.c (arg_assoc_class): Likewise.
+	* pt.c (instantiate_class_template,
+	get_template_base_recursive): Likewise.
+	* rtti.c (get_pseudo_ti_init, get_pseudo_ti_desc): Likewise.
+	* typeck2.c (process_init_constructor): Likewise.
+	* search.c (lookup_base_r, dynamic_cast_base_recurse,
+	dfs_access_in_type, dfs_walk_real, look_for_overrides,
+	types_overlap_p, copied_binfo, original_binfo): Likewise.
+	(binfo_for_vtable): Remove
+
 2004-07-20  Steven Bosscher  <stevenb@suse.de>
 
 	* cp-tree.h (struct lang_decl_flags): Unify the template_info and

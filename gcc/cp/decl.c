@@ -9032,7 +9032,7 @@ void
 xref_basetypes (tree ref, tree base_list)
 {
   tree *basep;
-  tree binfo;
+  tree binfo, base_binfo;
   unsigned max_vbases = 0; /* Maxium direct & indirect virtual bases. */
   unsigned max_bases = 0;  /* Maxium direct bases.  */
   int i;
@@ -9079,14 +9079,13 @@ xref_basetypes (tree ref, tree base_list)
   my_friendly_assert (!TYPE_BINFO (ref) || TYPE_SIZE (ref), 20040706);
   my_friendly_assert (TYPE_MAIN_VARIANT (ref) == ref, 20040712);
   
-  binfo = make_tree_binfo (BINFO_LANG_SLOTS);
+  binfo = make_tree_binfo (max_bases);
   TYPE_BINFO (ref) = binfo;
   BINFO_OFFSET (binfo) = size_zero_node;
   BINFO_TYPE (binfo) = ref;
   
   if (max_bases)
     {
-      BINFO_BASE_BINFOS (binfo) = make_tree_vec (max_bases);
       BINFO_BASE_ACCESSES (binfo) = make_tree_vec (max_bases);
       /* An aggregate cannot have baseclasses.  */
       CLASSTYPE_NON_AGGREGATE (ref) = 1;
@@ -9118,13 +9117,11 @@ xref_basetypes (tree ref, tree base_list)
 	error ("Java class '%T' cannot have virtual bases", ref);
     }
 
-  i = 0;
   for (igo_prev = binfo; base_list; base_list = TREE_CHAIN (base_list))
     {
       tree access = TREE_PURPOSE (base_list);
       int via_virtual = TREE_TYPE (base_list) != NULL_TREE;
       tree basetype = TREE_VALUE (base_list);
-      tree base_binfo = NULL_TREE;
       
       if (access == access_default_node)
 	access = default_access;
@@ -9154,6 +9151,7 @@ xref_basetypes (tree ref, tree base_list)
       if (TYPE_FOR_JAVA (basetype) && (current_lang_depth () == 0))
 	TYPE_FOR_JAVA (ref) = 1;
 
+      base_binfo = NULL_TREE;
       if (CLASS_TYPE_P (basetype) && !dependent_type_p (basetype))
 	{
 	  base_binfo = TYPE_BINFO (basetype);
@@ -9178,22 +9176,20 @@ xref_basetypes (tree ref, tree base_list)
       if (!BINFO_INHERITANCE_CHAIN (base_binfo))
 	BINFO_INHERITANCE_CHAIN (base_binfo) = binfo;
 
-      TREE_VEC_ELT (BINFO_BASE_ACCESSES (binfo), i) = access;
-      BINFO_BASE_BINFO (binfo, i) = base_binfo;
-      i++;
+      TREE_VEC_ELT (BINFO_BASE_ACCESSES (binfo),
+		    BINFO_N_BASE_BINFOS (binfo)) = access;
+      BINFO_BASE_APPEND (binfo, base_binfo);
     }
 
   if (max_bases)
-    {
-      /* If any bases were invalid, we will have allocated too many
-	 slots.  */
-      TREE_VEC_LENGTH (BINFO_BASE_ACCESSES (binfo)) = i;
-      TREE_VEC_LENGTH (BINFO_BASE_BINFOS (binfo)) = i;
-    }
+    /* If any bases were invalid, we will have allocated too many
+       slots.  */
+    TREE_VEC_LENGTH (BINFO_BASE_ACCESSES (binfo))
+      = BINFO_N_BASE_BINFOS (binfo);
   
   /* Unmark all the types.  */
-  for (i = 0; i != BINFO_N_BASE_BINFOS (binfo); i++)
-    CLEAR_CLASSTYPE_MARKED (BINFO_TYPE (BINFO_BASE_BINFO (binfo, i)));
+  for (i = 0; BINFO_BASE_ITERATE (binfo, i, base_binfo); i++)
+    CLEAR_CLASSTYPE_MARKED (BINFO_TYPE (base_binfo));
   CLEAR_CLASSTYPE_MARKED (ref);
 }
 
