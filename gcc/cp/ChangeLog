@@ -1,3 +1,8 @@
+2000-11-24  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* semantics.c (finish_id_expr): If type is error_mark, return
+	error_mark.
+
 2000-11-23  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* pt.c (lookup_template_class): Simplify loop exit constructs.
