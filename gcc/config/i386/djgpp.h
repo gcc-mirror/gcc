@@ -81,8 +81,7 @@ Boston, MA 02111-1307, USA.  */
         (((NAME)[0] >= 'A') && ((NAME)[0] <= 'z') && ((NAME)[1] == ':')))
 
 #undef CPP_PREDEFINES
-#define CPP_PREDEFINES "-Dunix -DGO32 -DDJGPP=2 -DMSDOS \
-  -Asystem(unix) -Asystem(msdos)"
+#define CPP_PREDEFINES "-DGO32 -DDJGPP=2 -DMSDOS -Asystem(msdos)"
 
 /* Include <sys/version.h> so __DJGPP__ and __DJGPP_MINOR__ are defined.  */
 #undef CPP_SPEC
