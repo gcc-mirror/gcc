@@ -1024,7 +1024,8 @@ make_edges (label_value_list)
 	 wouldn't have created the sibling call in the first place.  */
 
       if (code == CALL_INSN && SIBLING_CALL_P (insn))
-	make_edge (edge_cache, bb, EXIT_BLOCK_PTR, 0);
+	make_edge (edge_cache, bb, EXIT_BLOCK_PTR,
+		   EDGE_ABNORMAL | EDGE_ABNORMAL_CALL);
       else
 
       /* If this is a CALL_INSN, then mark it as reaching the active EH
