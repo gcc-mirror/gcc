@@ -105,13 +105,8 @@ static void init_floating_libfuncs PROTO((optab, const char *, int));
 #ifdef HAVE_conditional_trap
 static void init_traps PROTO((void));
 #endif
-static int cmp_available_p PROTO((enum machine_mode, int));
 static void emit_cmp_and_jump_insn_1 PROTO((rtx, rtx, enum machine_mode,
 					    enum rtx_code, int, rtx));
-static void prepare_cmp_insn PROTO((rtx *, rtx *, enum rtx_code *, rtx,
-				    enum machine_mode *, int *, int));
-static rtx prepare_operand PROTO((int, rtx, int, enum machine_mode,
-				  enum machine_mode, int));
 static void prepare_float_lib_cmp PROTO((rtx *, rtx *, enum rtx_code *,
 					 enum machine_mode *, int *));
 
@@ -2309,7 +2304,7 @@ expand_abs (mode, op0, target, safe)
 
   /* If this mode is an integer too wide to compare properly,
      compare word by word.  Rely on CSE to optimize constant cases.  */
-  if (GET_MODE_CLASS (mode) == MODE_INT && ! can_compare_p (mode))
+  if (GET_MODE_CLASS (mode) == MODE_INT && ! can_compare_p (mode, ccp_jump))
     do_jump_by_parts_greater_rtx (mode, 0, target, const0_rtx, 
 				  NULL_RTX, op1);
   else
@@ -2823,22 +2818,32 @@ emit_0_to_1_insn (x)
   emit_move_insn (x, const1_rtx);
 }
 
-/* Nonzero if we can perform a comparison of mode MODE for a conditional jump
-   straightforwardly.  */
-
-static int
-cmp_available_p (mode, can_use_tst_p)
+/* Nonzero if we can perform a comparison of mode MODE straightforwardly.
+   If FOR_JUMP is nonzero, we will be generating a jump based on this
+   comparison, otherwise a store-flags operation.  */
+  
+int
+can_compare_p (mode, purpose)
      enum machine_mode mode;
-     int can_use_tst_p;
+     enum can_compare_purpose purpose;
 {
   do
     {
-      if (cmp_optab->handlers[(int)mode].insn_code != CODE_FOR_nothing
-	  || (can_use_tst_p
-	      && tst_optab->handlers[(int)mode].insn_code != CODE_FOR_nothing))
+      if (cmp_optab->handlers[(int)mode].insn_code != CODE_FOR_nothing)
 	return 1;
+      if (purpose == ccp_jump
+	  && cbranch_optab->handlers[(int)mode].insn_code != CODE_FOR_nothing)
+	return 1;
+      if (purpose == ccp_cmov
+	  && cmov_optab->handlers[(int)mode].insn_code != CODE_FOR_nothing)
+	return 1;
+      if (purpose == ccp_store_flag
+	  && cstore_optab->handlers[(int)mode].insn_code != CODE_FOR_nothing)
+	return 1;
+
       mode = GET_MODE_WIDER_MODE (mode);
-    } while (mode != VOIDmode);
+    }
+  while (mode != VOIDmode);
 
   return 0;
 }
@@ -2860,14 +2865,16 @@ cmp_available_p (mode, can_use_tst_p)
    The values which are passed in through pointers can be modified; the caller
    should perform the comparison on the modified values.  */
 
-static void
-prepare_cmp_insn (px, py, pcomparison, size, pmode, punsignedp, align)
+void
+prepare_cmp_insn (px, py, pcomparison, size, pmode, punsignedp, align,
+		  purpose)
      rtx *px, *py;
      enum rtx_code *pcomparison;
      rtx size;
      enum machine_mode *pmode;
      int *punsignedp;
      int align;
+     enum can_compare_purpose purpose;
 {
   enum machine_mode mode = *pmode;
   rtx x = *px, y = *py;
@@ -2988,7 +2995,7 @@ prepare_cmp_insn (px, py, pcomparison, size, pmode, punsignedp, align)
 
   *px = x;
   *py = y;
-  if (cmp_available_p (mode, y == CONST0_RTX (mode)))
+  if (can_compare_p (mode, purpose))
     return;
 
   /* Handle a lib call just for the mode we are using.  */
@@ -3032,7 +3039,7 @@ prepare_cmp_insn (px, py, pcomparison, size, pmode, punsignedp, align)
    to be used for operand OPNUM of the insn, is converted from mode MODE to
    WIDER_MODE (UNSIGNEDP determines whether it is a unsigned conversion), and
    that it is accepted by the operand predicate.  Return the new value.  */
-static rtx
+rtx
 prepare_operand (icode, x, opnum, mode, wider_mode, unsignedp)
      int icode;
      rtx x;
@@ -3073,6 +3080,20 @@ emit_cmp_and_jump_insn_1 (x, y, mode, comparison, unsignedp, label)
     {
       enum insn_code icode;
       PUT_MODE (test, wider_mode);
+
+      if (label)
+	{	  
+	  icode = cbranch_optab->handlers[(int)wider_mode].insn_code;
+	  
+	  if (icode != CODE_FOR_nothing
+	      && (*insn_data[icode].operand[0].predicate) (test, wider_mode))
+	    {
+	      x = prepare_operand (icode, x, 1, mode, wider_mode, unsignedp);
+	      y = prepare_operand (icode, y, 2, mode, wider_mode, unsignedp);
+	      emit_jump_insn (GEN_FCN (icode) (test, x, y, label));
+	      return;
+	    }
+	}
 
       /* Handle some compares against zero.  */
       icode = (int) tst_optab->handlers[(int) wider_mode].insn_code;
@@ -3164,7 +3185,8 @@ emit_cmp_and_jump_insns (x, y, comparison, size, mode, unsignedp, align, label)
   emit_queue ();
   if (unsignedp)
     comparison = unsigned_condition (comparison);
-  prepare_cmp_insn (&op0, &op1, &comparison, size, &mode, &unsignedp, align);
+  prepare_cmp_insn (&op0, &op1, &comparison, size, &mode, &unsignedp, align,
+		    ccp_jump);
   emit_cmp_and_jump_insn_1 (op0, op1, mode, comparison, unsignedp, label);
 }
 
@@ -3179,24 +3201,6 @@ emit_cmp_insn (x, y, comparison, size, mode, unsignedp, align)
      int align;
 {
   emit_cmp_and_jump_insns (x, y, comparison, size, mode, unsignedp, align, 0);
-}
-
-
-/* Nonzero if a compare of mode MODE can be done straightforwardly
-   (without splitting it into pieces).  */
-
-int
-can_compare_p (mode)
-     enum machine_mode mode;
-{
-  do
-    {
-      if (cmp_optab->handlers[(int)mode].insn_code != CODE_FOR_nothing)
-	return 1;
-      mode = GET_MODE_WIDER_MODE (mode);
-    } while (mode != VOIDmode);
-
-  return 0;
 }
 
 /* Emit a library call comparison between floating point X and Y.
@@ -3876,8 +3880,8 @@ expand_float (to, from, unsignedp)
 	      do_pending_stack_adjust ();
 
 	      /* Test whether the sign bit is set.  */
-	      emit_cmp_insn (from, const0_rtx, GE, NULL_RTX, imode, 0, 0);
-	      emit_jump_insn (gen_blt (neglabel));
+	      emit_cmp_and_jump_insns (from, const0_rtx, LT, NULL_RTX, imode,
+				       0, 0, neglabel);
 
 	      /* The sign bit is not set.  Convert as signed.  */
 	      expand_float (target, from, 0);
@@ -4467,6 +4471,9 @@ init_optabs ()
   sin_optab = init_optab (UNKNOWN);
   cos_optab = init_optab (UNKNOWN);
   strlen_optab = init_optab (UNKNOWN);
+  cbranch_optab = init_optab (UNKNOWN);
+  cmov_optab = init_optab (UNKNOWN);
+  cstore_optab = init_optab (UNKNOWN);
 
   for (i = 0; i < NUM_MACHINE_MODES; i++)
     {
