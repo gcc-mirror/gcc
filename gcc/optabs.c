@@ -5113,6 +5113,8 @@ init_optabs ()
     ffs_optab->handlers[(int) TImode].insn_code = CODE_FOR_ffsti2;
 #endif
   init_integral_libfuncs (ffs_optab, "ffs", '2');
+  ffs_optab->handlers[(int) SImode].libfunc
+    = gen_rtx (SYMBOL_REF, Pmode, "ffs");
 
 #ifdef HAVE_movqi
   if (HAVE_movqi)
