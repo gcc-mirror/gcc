@@ -1935,7 +1935,7 @@ purge_dead_edges (bb)
 
 bool
 purge_all_dead_edges (update_life_p)
-     bool update_life_p;
+     int update_life_p;
 {
   int i, purged = false;
   sbitmap blocks;

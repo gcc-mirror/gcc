@@ -1,3 +1,9 @@
+2001-11-15  Andreas Jaeger  <aj@suse.de>
+
+	* cfgrtl.c (purge_all_dead_edges): Use int as argument for
+	portability.
+	* basic-block.h: Adjust prototype.
+
 2001-11-15  Kazu Hirata  <kazu@hxi.com>
 
 	* config/rs6000/aix31.h: Fix comment formatting.
@@ -18,11 +24,11 @@
 
 2001-11-14  Alan Matsuoka  <alanm@redhat.com>
 
-	* rtl.def (INCLUDE) : Define.  
+	* rtl.def (INCLUDE) : Define.
 	* gensupport.c  (init_include_reader, process_include,
 	save_string) :  New functions to implement an include facility
 	in .md files.
-	* gensupport.h : Add prototype for init_md_reader_args.  
+	* gensupport.h : Add prototype for init_md_reader_args.
 	* genattr.c genattrtab.c gencodes.c genconfig.c genemit.c
 	genextract.c genflags.c genopinit.c genoutput.c
 	genpeep.c genrecog.c: Change call to init_md_reader to
@@ -100,7 +106,7 @@ Wed Nov 14 19:46:08 CET 2001  Jan Hubicka  <jh@suse.cz>
 	* cfglayout.c (fixup_fallthru_exit_predecesor): New static function.
 	(cfg_layout_finalize): Use it.
 	* bb-reorder.c (HAVE_epilogue): Remove.
-	(make_reorder_chain): Do not care special placement of 
+	(make_reorder_chain): Do not care special placement of
 	last basic block.
 
 	* predict.c (expected_value_to_br_prob): Delete the note
@@ -460,7 +466,7 @@ Sun Nov 11 05:56:01 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 	(store_bit_field, extract_bit_field): Likewise.
 	* calls.c, expr.c, function.c: Change calls to above functions.
 	* ifcvt.c, stmt.c: Likewise.
-	
+
 	* alias.c (nonoverlapping_memrefs_p): Not overlapping if one base is
 	constant and one is on frame.
 	If know memref offset, adjust size from decl.
@@ -699,7 +705,7 @@ objc:
 	don't pass --gdwarf2 to the assembler if the compiler will also
 	provide debug info.
 
-	* config/stormy16/stormy16.c (xstormy16_expand_casesi): 
+	* config/stormy16/stormy16.c (xstormy16_expand_casesi):
 	Don't change INDEX.
 
 Fri Nov  9 17:51:09 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
@@ -724,7 +730,7 @@ Fri Nov  9 17:51:09 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 Fri Nov  9 11:27:42 2001  Jeffrey A Law  (law@cygnus.com)
 
-	* config/pa/milli64.S: Use %r25 and %r0 instead of arg1 and r0  
+	* config/pa/milli64.S: Use %r25 and %r0 instead of arg1 and r0
 	to work around limitations of certain versions of GAS.
 
 	* pa.md (mulsi3): Remove PA64 hack to work around SUBREG issues.
@@ -774,7 +780,7 @@ Fri Nov  9 11:27:42 2001  Jeffrey A Law  (law@cygnus.com)
 
 	* Makefile.in ($(HOST_PREFIX_1)rtl.o,
 	$(HOST_PREFIX_1)print-rtl.o, $(HOST_PREFIX_1)bitmap.o,
-	$(HOST_PREFIX_1)vfprintf.o, $(HOST_PREFIX_1)doprint.o, 
+	$(HOST_PREFIX_1)vfprintf.o, $(HOST_PREFIX_1)doprint.o,
 	$(HOST_PREFIX_1)strstr.o, $(HOST_PREFIX_1)errors.o,
 	$(HOST_PREFIX_1)ggc-none.o): Update dependencies.
 
@@ -1031,13 +1037,13 @@ Thu Nov  8 18:00:55 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 	(REG_CLASS_NAMES): Same.
 	(REG_CLASS_CONTENTS): Same.
 	(REGNO_REG_CLASS): Same.
-	
+
 	* config/rs6000/sysv4.h (STACK_BOUNDARY): Adjust for altivec.
 	(ABI_STACK_BOUNDARY): Same.
 	(BIGGEST_ALIGNMENT): Same.
 	(ADJUST_FIELD_ALIGN): Remove undef.  Define anew.
 	(ROUND_TYPE_ALIGN): Same.
-	
+
 	* config/rs6000/aix.h (ROUND_TYPE_ALIGN): Change BIGGEST_ALIGNMENT
 	to 64.
 
@@ -1204,7 +1210,7 @@ Thu Nov  8 18:00:55 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 2001-11-07  Daniel Berlin  <dan@cgsoftware.com>
 
         * Makefile.in (df.o): Add fibheap.h to dependencies.
-       
+
         * df.h: Add prototypes for transfer functions, iterative_dataflow
         functions.
         (enum df_flow_dir): New enum.
@@ -1627,7 +1633,7 @@ Sun Nov  4 11:53:31 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 Sat Nov  3 10:37:56 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* cselib.c (cselib_subst_to_values, case CONST_DOUBLE): Remove
- 	reference to CONST_DOUBLE_MEM in comment.
+	reference to CONST_DOUBLE_MEM in comment.
 	* emit-rtl.c (gen_rtx_CONST_DOUBLE): Remove one operand.
 	(gen_rtx, case CONST_DOUBLE): Call it with one less operand.
 	(init_emit_once): Don't clear CONST_DOUBLE_MEM.
