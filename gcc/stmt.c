@@ -106,8 +106,12 @@ typedef struct case_node *case_node_ptr;
 
 /* This must be a signed type, and non-ANSI compilers lack signed char.  */
 static short cost_table_[129];
-static short *cost_table;
 static int use_cost_table;
+static int cost_table_initialized;
+
+/* Special care is needed because we allow -1, but TREE_INT_CST_LOW
+   is unsigned.  */
+#define COST_TABLE(I)  cost_table_[(unsigned HOST_WIDE_INT)((I) + 1)]
 
 /* Stack of control and binding constructs we are currently inside.
 
@@ -5768,27 +5772,27 @@ estimate_case_costs (node)
   /* If we haven't already made the cost table, make it now.  Note that the
      lower bound of the table is -1, not zero.  */
 
-  if (cost_table == NULL)
+  if (! cost_table_initialized)
     {
-      cost_table = cost_table_ + 1;
+      cost_table_initialized = 1;
 
       for (i = 0; i < 128; i++)
 	{
 	  if (ISALNUM (i))
-	    cost_table[i] = 16;
+	    COST_TABLE (i) = 16;
 	  else if (ISPUNCT (i))
-	    cost_table[i] = 8;
+	    COST_TABLE (i) = 8;
 	  else if (ISCNTRL (i))
-	    cost_table[i] = -1;
+	    COST_TABLE (i) = -1;
 	}
 
-      cost_table[' '] = 8;
-      cost_table['\t'] = 4;
-      cost_table['\0'] = 4;
-      cost_table['\n'] = 2;
-      cost_table['\f'] = 1;
-      cost_table['\v'] = 1;
-      cost_table['\b'] = 1;
+      COST_TABLE (' ') = 8;
+      COST_TABLE ('\t') = 4;
+      COST_TABLE ('\0') = 4;
+      COST_TABLE ('\n') = 2;
+      COST_TABLE ('\f') = 1;
+      COST_TABLE ('\v') = 1;
+      COST_TABLE ('\b') = 1;
     }
 
   /* See if all the case expressions look like text.  It is text if the
@@ -5804,7 +5808,7 @@ estimate_case_costs (node)
 
       for (i = (HOST_WIDE_INT) TREE_INT_CST_LOW (n->low);
 	   i <= (HOST_WIDE_INT) TREE_INT_CST_LOW (n->high); i++)
-	if (cost_table[i] < 0)
+	if (COST_TABLE (i) < 0)
 	  return 0;
     }
 
@@ -5895,11 +5899,11 @@ balance_case_nodes (head, parent)
 	    {
 	      ranges++;
 	      if (use_cost_table)
-		cost += cost_table[TREE_INT_CST_LOW (np->high)];
+		cost += COST_TABLE (TREE_INT_CST_LOW (np->high));
 	    }
 
 	  if (use_cost_table)
-	    cost += cost_table[TREE_INT_CST_LOW (np->low)];
+	    cost += COST_TABLE (TREE_INT_CST_LOW (np->low));
 
 	  i++;
 	  np = np->right;
@@ -5920,8 +5924,8 @@ balance_case_nodes (head, parent)
 		{
 		  /* Skip nodes while their cost does not reach that amount.  */
 		  if (!tree_int_cst_equal ((*npp)->low, (*npp)->high))
-		    i -= cost_table[TREE_INT_CST_LOW ((*npp)->high)];
-		  i -= cost_table[TREE_INT_CST_LOW ((*npp)->low)];
+		    i -= COST_TABLE (TREE_INT_CST_LOW ((*npp)->high));
+		  i -= COST_TABLE (TREE_INT_CST_LOW ((*npp)->low));
 		  if (i <= 0)
 		    break;
 		  npp = &(*npp)->right;
@@ -6253,7 +6257,7 @@ emit_case_nodes (index, node, default_label, index_type)
 	     a branch-greater-than will get us to the default
 	     label correctly.  */
 	  if (use_cost_table
-	      && cost_table[TREE_INT_CST_LOW (node->high)] < 12)
+	      && COST_TABLE (TREE_INT_CST_LOW (node->high)) < 12)
 	    ;
 #endif /* 0 */
 	  if (node->left->left || node->left->right
