@@ -1,3 +1,7 @@
+2004-01-14  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* regrename.c (find_oldest_value_reg): Fix a warning.
+
 2004-01-14  Richard Earnshaw  <rearnsha@arm.com>
 
 	PR bootstrap/12527
