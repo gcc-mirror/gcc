@@ -1,5 +1,5 @@
 /* Register Transfer Language (RTL) definitions for GNU C-Compiler
-   Copyright (C) 1987, 91-98, 1999 Free Software Foundation, Inc.
+   Copyright (C) 1987, 91-99, 2000 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 

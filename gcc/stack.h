@@ -1,5 +1,5 @@
 /* stack.h - structed access to object stacks
-   Copyright (C) 1988 Free Software Foundation, Inc.
+   Copyright (C) 1988, 2000 Free Software Foundation, Inc.
    Contributed by Michael Tiemann (tiemann@cygnus.com).
 
 This program is free software; you can redistribute it and/or modify it

@@ -1,5 +1,5 @@
 /* Print RTL for GNU C Compiler.
-   Copyright (C) 1987, 1988, 1992, 1997, 1998, 1999
+   Copyright (C) 1987, 1988, 1992, 1997, 1998, 1999, 2000
    Free Software Foundation, Inc.
 
 This file is part of GNU CC.

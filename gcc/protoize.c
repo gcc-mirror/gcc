@@ -1,5 +1,5 @@
 /* Protoize program - Original version by Ron Guilmette (rfg@segfault.us.com).
-   Copyright (C) 1989, 92-98, 1999 Free Software Foundation, Inc.
+   Copyright (C) 1989, 92-99, 2000 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 

@@ -1,5 +1,5 @@
 /* Generate code from machine description to emit insns as rtl.
-   Copyright (C) 1987, 88, 91, 94, 95, 97, 98, 1999 Free Software Foundation, Inc.
+   Copyright (C) 1987, 88, 91, 94, 95, 97-99, 2000 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
