@@ -1,3 +1,8 @@
+2004-11-25  Bob Wilson  <bob.wilson@acm.org>
+
+	* config/xtensa/xtensa.h (STARTFILE_SPEC): Add crt0.
+	(GCC_DRIVER_HOST_INITIALIZATION): Define.
+
 2004-11-25  Andrew Pinski  <pinskia@physics.uc.edu>
 
 	PR middle-end/17957
