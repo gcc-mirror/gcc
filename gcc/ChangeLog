@@ -1,3 +1,8 @@
+Tue Oct  7 11:00:42 1997  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* regclass.c (init_reg_modes): If we can't find a mode for the 
+	register, use the previous one.
+
 Tue Oct  7 10:55:34 1997  Richard Henderson  <rth@cygnus.com>
 
 	* haifa-sched.c (print_block_visualization): Call fprintf directly,
