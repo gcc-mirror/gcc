@@ -4146,7 +4146,8 @@ emit_library_call_value_1 (int retval, rtx orgfun, rtx value,
 	  if (GET_CODE (valreg) == PARALLEL)
 	    {
 	      temp = gen_reg_rtx (outmode);
-	      emit_group_store (temp, valreg, NULL_TREE, outmode);
+	      emit_group_store (temp, valreg, NULL_TREE, 
+				GET_MODE_SIZE (outmode));
 	      valreg = temp;
 	    }
 
@@ -4189,7 +4190,7 @@ emit_library_call_value_1 (int retval, rtx orgfun, rtx value,
 	{
 	  if (value == 0)
 	    value = gen_reg_rtx (outmode);
-	  emit_group_store (value, valreg, NULL_TREE, outmode);
+	  emit_group_store (value, valreg, NULL_TREE, GET_MODE_SIZE (outmode));
 	}
       else if (value != 0)
 	emit_move_insn (value, valreg);
