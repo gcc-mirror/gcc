@@ -3415,7 +3415,20 @@ tree_int_cst_lt (t1, t2)
   if (t1 == t2)
     return 0;
 
-  if (! TREE_UNSIGNED (TREE_TYPE (t1)))
+  if (TREE_UNSIGNED (TREE_TYPE (t1)) != TREE_UNSIGNED (TREE_TYPE (t2)))
+    {
+      int t1_sgn = tree_int_cst_sgn (t1);
+      int t2_sgn = tree_int_cst_sgn (t2);
+
+      if (t1_sgn < t2_sgn)
+	return 1;
+      else if (t1_sgn > t2_sgn)
+	return 0;
+      /* Otherwise, both are non-negative, so we compare them as
+	 unsigned just in case one of them would overflow a signed
+	 type.  */
+    }
+  else if (! TREE_UNSIGNED (TREE_TYPE (t1)))
     return INT_CST_LT (t1, t2);
 
   return INT_CST_LT_UNSIGNED (t1, t2);
