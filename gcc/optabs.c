@@ -644,20 +644,20 @@ expand_binop (mode, binoptab, op0, op1, target, unsignedp, methods)
 			       GEN_INT (shift_count - BITS_PER_WORD),
 			       into_target, unsignedp, next_methods);
 
-	  if (inter != 0)
+	  if (inter != 0 && inter != into_target)
 	    emit_move_insn (into_target, inter);
 
 	  /* For a signed right shift, we must fill the word we are shifting
 	     out of with copies of the sign bit.  Otherwise it is zeroed.  */
-	  if (binoptab != ashr_optab)
-	    emit_move_insn (outof_target, CONST0_RTX (word_mode));
+	  if (inter != 0 && binoptab != ashr_optab)
+	    inter = CONST0_RTX (word_mode);
 	  else if (inter != 0)
 	    inter = expand_binop (word_mode, binoptab,
 				  outof_input,
 				  GEN_INT (BITS_PER_WORD - 1),
 				  outof_target, unsignedp, next_methods);
 
-	  if (inter != 0)
+	  if (inter != 0 && inter != outof_target)
 	    emit_move_insn (outof_target, inter);
 	}
       else
@@ -688,7 +688,7 @@ expand_binop (mode, binoptab, op0, op1, target, unsignedp, methods)
 	    inter = expand_binop (word_mode, binoptab, outof_input,
 				  op1, outof_target, unsignedp, next_methods);
 	  
-	  if (inter != 0)
+	  if (inter != 0 && inter != outof_target)
 	    emit_move_insn (outof_target, inter);
 
 	  if (inter != 0)
@@ -699,7 +699,7 @@ expand_binop (mode, binoptab, op0, op1, target, unsignedp, methods)
 	    inter = expand_binop (word_mode, ior_optab, carries, inter,
 				  into_target, unsignedp, next_methods);
 
-	  if (inter != 0)
+	  if (inter != 0 && inter != into_target)
 	    emit_move_insn (into_target, inter);
 	}
 
@@ -798,7 +798,7 @@ expand_binop (mode, binoptab, op0, op1, target, unsignedp, methods)
 	  else
 	    inter = 0;
 
-	  if (inter != 0)
+	  if (inter != 0 && inter != into_target)
 	    emit_move_insn (into_target, inter);
 
 	  outof_temp1 = expand_binop (word_mode, unsigned_shift,
@@ -813,7 +813,7 @@ expand_binop (mode, binoptab, op0, op1, target, unsignedp, methods)
 				  outof_temp1, outof_temp2,
 				  outof_target, unsignedp, next_methods);
 
-	  if (inter != 0)
+	  if (inter != 0 && inter != outof_target)
 	    emit_move_insn (outof_target, inter);
 	}
 
