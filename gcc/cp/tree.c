@@ -964,7 +964,7 @@ really_overloaded_fn (x)
   if (BASELINK_P (x))
     x = BASELINK_FUNCTIONS (x);
   return (TREE_CODE (x) == OVERLOAD 
-	  && (TREE_CHAIN (x) != NULL_TREE
+	  && (OVL_CHAIN (x)
 	      || DECL_FUNCTION_TEMPLATE_P (OVL_FUNCTION (x))));
 }
 
@@ -2446,8 +2446,8 @@ cxx_unsave_expr_now (tp)
 }
 
 /* Returns the kind of special function that DECL (a FUNCTION_DECL)
-   is.  Note that this sfk_none is zero, so this function can be used
-   as a predicate to test whether or not DECL is a special function.  */
+   is.  Note that sfk_none is zero, so this function can be used as a
+   predicate to test whether or not DECL is a special function.  */
 
 special_function_kind
 special_function_p (decl)
@@ -2474,6 +2474,22 @@ special_function_p (decl)
     return sfk_conversion;
 
   return sfk_none;
+}
+
+/* Returns true if and only if NODE is a name, i.e., a node created
+   by the parser when processing an id-expression.  */
+
+bool
+name_p (tree node)
+{
+  if (TREE_CODE (node) == TEMPLATE_ID_EXPR)
+    node = TREE_OPERAND (node, 0);
+  return (/* An ordinary unqualified name.  */
+	  TREE_CODE (node) == IDENTIFIER_NODE
+	  /* A destructor name.  */
+	  || TREE_CODE (node) == BIT_NOT_EXPR
+	  /* A qualified name.  */
+	  || TREE_CODE (node) == SCOPE_REF);
 }
 
 /* Returns non-zero if TYPE is a character type, including wchar_t.  */

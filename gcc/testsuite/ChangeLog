@@ -1,3 +1,8 @@
+2002-08-07  Mark Mitchell  <mark@codesourcery.com>
+
+	* g++.dg/abi/offsetof.C: Tweak error messages.
+	* g++.old-deja/g++.mike/p10769a.C: Likewise.
+	
 2002-08-08  Jakub Jelinek  <jakub@redhat.com>
 
 	* gcc.dg/bitfld-3.c: New test.

@@ -10001,6 +10001,10 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, attrlist)
 	    next = 0;
 	    break;
 
+	  case BASELINK:
+	    next = &BASELINK_FUNCTIONS (decl);
+	    break;
+	    
 	  default:
 	    internal_error ("`%D' as declarator", decl);
 	  }
@@ -11131,6 +11135,10 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, attrlist)
 
 	case BIT_NOT_EXPR:
 	  declarator = TREE_OPERAND (declarator, 0);
+	  break;
+
+	case BASELINK:
+	  declarator = BASELINK_FUNCTIONS (declarator);
 	  break;
 
 	case RECORD_TYPE:

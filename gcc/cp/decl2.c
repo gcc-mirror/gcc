@@ -3369,17 +3369,8 @@ build_expr_from_tree (t)
     case COMPONENT_REF:
       {
 	tree object = build_expr_from_tree (TREE_OPERAND (t, 0));
-	tree field = TREE_OPERAND (t, 1);
-	
-	/* We use a COMPONENT_REF to indicate things of the form `x.b'
-	   and `x.A::b'.  We must distinguish between those cases
-	   here.  */
-	if (TREE_CODE (field) == SCOPE_REF)
-	  return build_object_ref (object, 
-				   TREE_OPERAND (field, 0),
-				   TREE_OPERAND (field, 1));
-	else
-	  return build_x_component_ref (object, field, NULL_TREE);
+	return finish_class_member_access_expr (object, 
+						TREE_OPERAND (t, 1));
       }
 
     case THROW_EXPR:
@@ -4283,6 +4274,8 @@ arg_assoc (k, n)
     n = TREE_OPERAND (n, 1);
   while (TREE_CODE (n) == TREE_LIST)
     n = TREE_VALUE (n);
+  if (TREE_CODE (n) == BASELINK)
+    n = BASELINK_FUNCTIONS (n);
 
   if (TREE_CODE (n) == FUNCTION_DECL)
     return arg_assoc_type (k, TREE_TYPE (n));
@@ -4647,6 +4640,13 @@ do_class_using_decl (decl)
     }
   if (TREE_CODE (name) == TYPE_DECL || TREE_CODE (name) == TEMPLATE_DECL)
     name = DECL_NAME (name);
+  else if (BASELINK_P (name))
+    {
+      name = BASELINK_FUNCTIONS (name);
+      if (TREE_CODE (name) == TEMPLATE_ID_EXPR)
+	name = TREE_OPERAND (name, 0);
+      name = DECL_NAME (get_first_fn (name));
+    }
 
   my_friendly_assert (TREE_CODE (name) == IDENTIFIER_NODE, 980716);
 

@@ -358,6 +358,24 @@ build_base_path (code, expr, binfo, nonnull)
   return expr;
 }
 
+/* Convert OBJECT to the base TYPE.  If CHECK_ACCESS is true, an error
+   message is emitted if TYPE is inaccessible.  OBJECT is assumed to
+   be non-NULL.  */
+
+tree
+convert_to_base (tree object, tree type, bool check_access)
+{
+  tree binfo;
+
+  binfo = lookup_base (TREE_TYPE (object), type, 
+		       check_access ? ba_check : ba_ignore, 
+		       NULL);
+  if (!binfo || TREE_CODE (binfo) == error_mark_node)
+    return error_mark_node;
+
+  return build_base_path (PLUS_EXPR, object, binfo, /*nonnull=*/1);
+}
+
 
 /* Virtual function things.  */
 
@@ -4201,7 +4219,7 @@ type_requires_array_cookie (type)
   if (!fns || fns == error_mark_node)
     return false;
   /* Loop through all of the functions.  */
-  for (fns = TREE_VALUE (fns); fns; fns = OVL_NEXT (fns))
+  for (fns = BASELINK_FUNCTIONS (fns); fns; fns = OVL_NEXT (fns))
     {
       tree fn;
       tree second_parm;
@@ -6002,6 +6020,9 @@ instantiate_type (lhstype, rhs, flags)
 		  TREE_TYPE (rhs), lhstype);
       return error_mark_node;
     }
+
+  if (TREE_CODE (rhs) == BASELINK)
+    rhs = BASELINK_FUNCTIONS (rhs);
 
   /* We don't overwrite rhs if it is an overloaded function.
      Copying it would destroy the tree link.  */

@@ -3833,9 +3833,19 @@ lookup_template_function (fns, arglist)
 
   my_friendly_assert (TREE_CODE (fns) == TEMPLATE_DECL
 		      || TREE_CODE (fns) == OVERLOAD
+		      || BASELINK_P (fns)
 		      || TREE_CODE (fns) == IDENTIFIER_NODE
 		      || TREE_CODE (fns) == LOOKUP_EXPR,
 		      20020730);
+
+  if (BASELINK_P (fns))
+    {
+      BASELINK_FUNCTIONS (fns) = build (TEMPLATE_ID_EXPR,
+					unknown_type_node,
+					BASELINK_FUNCTIONS (fns),
+					arglist);
+      return fns;
+    }
 
   type = TREE_TYPE (fns);
   if (TREE_CODE (fns) == OVERLOAD || !type)
@@ -8193,8 +8203,8 @@ resolve_overloaded_unification (tparms, targs, parm, arg, strict,
     arg = TREE_OPERAND (arg, 1);
 
   /* Strip baselink information.  */
-  while (TREE_CODE (arg) == TREE_LIST)
-    arg = TREE_VALUE (arg);
+  if (BASELINK_P (arg))
+    arg = BASELINK_FUNCTIONS (arg);
 
   if (TREE_CODE (arg) == TEMPLATE_ID_EXPR)
     {
