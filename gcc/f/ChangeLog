@@ -1,3 +1,14 @@
+Mon Jul 13 17:33:44 1998  Craig Burley  <burley@gnu.org>
+
+	Cleanups vis-a-vis system.h cutover and g77-0.5.24:
+	* Makefile.in (fini.o): Define USE_HCONFIG macro
+	so source code doesn't have to.
+	* fini.c: Don't define USE_HCONFIG here, since
+	source code usually shouldn't care about this.
+	* ansify.c: Include stddef.h only if we have it.
+	* intdoc.c: Ditto.
+	* proj.h: Ditto.
+
 Mon Jul 13 17:30:29 1998  Nick Clifton  <nickc@cygnus.com>
 
 	* lang-options.h: Format changed to work with --help support added

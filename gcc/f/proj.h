@@ -46,10 +46,15 @@ the Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 /* Include files everyone gets.  <assert.h> is needed for assert().
    <stddef.h> is needed for offsetof, but technically also NULL,
    size_t, ptrdiff_t, and so on.  */
+
 #include "assert.j"
+
+#if HAVE_STDDEF_H
 #include <stddef.h>
+#endif
 
 /* Generally useful definitions. */
+
 typedef enum
   {
 #if !defined(false) || !defined(true)
