@@ -15,11 +15,14 @@ syHandle<Repr>::~syHandle()
 }
 
 typedef char * char_ptr_t;
+
+template <>
 syHandle<char_ptr_t>::syHandle() 
 {
     _repr = 0;
 }
 
+template <>
 syHandle<char_ptr_t>::~syHandle() 
 {
     _repr = 0;

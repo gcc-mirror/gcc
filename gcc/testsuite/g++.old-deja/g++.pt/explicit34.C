@@ -4,7 +4,7 @@ template <class T>
 void foo(T t);
 
 template <>
-void foo(int) {}; // ERROR - redefinition.
+void foo(int) {}; 
 
 template <>
-void foo<int>(int) {} // ERROR - redefinition.
+void foo<int>(int) {} // ERROR - duplicate specialization.

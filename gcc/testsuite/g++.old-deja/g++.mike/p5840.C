@@ -17,17 +17,19 @@ public:
   int value (Foo* a) { return (a->*Id)(); }
 };
 
-template class Bar <Derived, &Signal::Name>;
+/* The following line is illegal under the new rules for non-type
+   template arguments in the standard, so it is commented out.  */
+/* template class Bar <Derived, &Signal::Name>; */
 template class Bar <Signal, &Signal::Name>;
 template class Bar <Derived, &Derived::Name>;
 
 Derived a;
 
-Bar<Derived, &Signal::Name> dispatcher1;
+/* Bar<Derived, &Signal::Name> dispatcher1; */
 Bar<Derived, &Derived::Name> dispatcher2;
 
 main() {
-  int i1 = dispatcher1.value(&a);
+  /* int i1 = dispatcher1.value(&a); */
   int i2 = dispatcher2.value(&a);
-  return i1 != 1 || i2 != 2;
+  return /* i1 != 1 || */ i2 != 2;
 }
