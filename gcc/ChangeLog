@@ -1,3 +1,10 @@
+2000-08-16  Richard Henderson  <rth@cygnus.com>
+
+	* reload.c (push_secondary_reload): Revert last change.
+	If we use a reload_in/out pattern, make the when the same
+	as the primary reload.
+	(find_reloads): Likewise.
+
 2000-08-16  Manfred Hollstein  <manfredh@redhat.com>
 
 	* configure.in (libstdcxx-v3): Fix test.

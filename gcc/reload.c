@@ -375,13 +375,13 @@ push_secondary_reload (in_p, x, opnum, optional, reload_class, reload_mode,
 	 in operand 1.  Outputs should have an initial "=", which we must
 	 skip.  */
 
-      char insn_letter, t_letter;
+      char insn_letter
+	= insn_data[(int) icode].operand[!in_p].constraint[in_p];
+      enum reg_class insn_class
+	= (insn_letter == 'r' ? GENERAL_REGS
+	   : REG_CLASS_FROM_LETTER ((unsigned char) insn_letter));
 
-      insn_letter = insn_data[(int) icode].operand[!in_p].constraint[in_p];
-      class = (insn_letter == 'r' ? GENERAL_REGS
-	       : REG_CLASS_FROM_LETTER ((unsigned char) insn_letter));
-
-      if (class == NO_REGS
+      if (insn_class == NO_REGS
 	  || (in_p
 	      && insn_data[(int) icode].operand[!in_p].constraint[0] != '=')
 	  /* The scratch register's constraint must start with "=&".  */
@@ -389,12 +389,20 @@ push_secondary_reload (in_p, x, opnum, optional, reload_class, reload_mode,
 	  || insn_data[(int) icode].operand[2].constraint[1] != '&')
 	abort ();
 
-      t_letter = insn_data[(int) icode].operand[2].constraint[2];
-      t_mode = insn_data[(int) icode].operand[2].mode;
-      t_class = (t_letter == 'r' ? GENERAL_REGS
-		 : REG_CLASS_FROM_LETTER ((unsigned char) t_letter));
-      t_icode = icode;
-      icode = CODE_FOR_nothing;
+      if (reg_class_subset_p (reload_class, insn_class))
+	mode = insn_data[(int) icode].operand[2].mode;
+      else
+	{
+	  char t_letter = insn_data[(int) icode].operand[2].constraint[2];
+	  class = insn_class;
+	  t_mode = insn_data[(int) icode].operand[2].mode;
+	  t_class = (t_letter == 'r' ? GENERAL_REGS
+		     : REG_CLASS_FROM_LETTER ((unsigned char) t_letter));
+	  t_icode = icode;
+	  icode = CODE_FOR_nothing;
+	}
+
+      secondary_type = in_p ? RELOAD_FOR_INPUT : RELOAD_FOR_OUTPUT;
     }
 
   /* This case isn't valid, so fail.  Reload is allowed to use the same
@@ -404,14 +412,15 @@ push_secondary_reload (in_p, x, opnum, optional, reload_class, reload_mode,
      silently generating incorrect code later.
 
      The convention is that secondary input reloads are valid only if the
-     secondary class is different from the reload class.  If you have such
-     a case, you can not use secondary reloads, you must work around the
-     problem some other way.
+     secondary_class is different from class.  If you have such a case, you
+     can not use secondary reloads, you must work around the problem some
+     other way.
 
-     Allow this when a tertiary reload is used; i.e. assume that the
-     generated code handles this case.  */
+     Allow this when MODE is not reload_mode and assume that the generated
+     code handles this case (it does on the Alpha, which is the only place
+     this currently happens).  */
 
-  if (in_p && class == reload_class && t_class == NO_REGS)
+  if (in_p && class == reload_class && mode == reload_mode)
     abort ();
 
   /* If we need a tertiary reload, see if we have one we can reuse or else
@@ -3909,8 +3918,11 @@ find_reloads (insn, replace, ind_levels, live_known, reload_reg_p)
   for (i = 0; i < n_reloads; i++)
     {
       if (rld[i].secondary_p
-	  && rld[i].when_needed == operand_type[rld[i].opnum])
-	rld[i].when_needed = address_type[rld[i].opnum];
+	  && rld[i].when_needed == operand_type[rld[i].opnum]
+          && (operand_reloadnum[rld[i].opnum] < 0
+	      || (rld[operand_reloadnum[rld[i].opnum]].secondary_in_icode == -1
+		  && rld[operand_reloadnum[rld[i].opnum]].secondary_out_icode == -1)))
+	  rld[i].when_needed = address_type[rld[i].opnum];
 
       if ((rld[i].when_needed == RELOAD_FOR_INPUT_ADDRESS
 	   || rld[i].when_needed == RELOAD_FOR_OUTPUT_ADDRESS
@@ -3929,13 +3941,15 @@ find_reloads (insn, replace, ind_levels, live_known, reload_reg_p)
 	      int secondary_in_reload = rld[i].secondary_in_reload;
 
 	      rld[secondary_in_reload].when_needed
-		= RELOAD_FOR_OPADDR_ADDR;
+		= (rld[i].secondary_in_icode == -1
+		   ? RELOAD_FOR_OPADDR_ADDR
+		   : RELOAD_FOR_OPERAND_ADDRESS);
 
 	      /* If there's a tertiary reload we have to change it also.  */
 	      if (secondary_in_reload > 0
 		  && rld[secondary_in_reload].secondary_in_reload != -1)
 		rld[rld[secondary_in_reload].secondary_in_reload].when_needed
-		  = RELOAD_FOR_OPADDR_ADDR;
+		  = rld[secondary_in_reload].when_needed;
 	    }
 
 	  if ((rld[i].when_needed == RELOAD_FOR_OUTPUT_ADDRESS
@@ -3945,13 +3959,15 @@ find_reloads (insn, replace, ind_levels, live_known, reload_reg_p)
 	      int secondary_out_reload = rld[i].secondary_out_reload;
 
 	      rld[secondary_out_reload].when_needed
-		= RELOAD_FOR_OPADDR_ADDR;
+		= (rld[i].secondary_out_icode == -1
+		   ? RELOAD_FOR_OPADDR_ADDR
+		   : RELOAD_FOR_OPERAND_ADDRESS);
 
 	      /* If there's a tertiary reload we have to change it also.  */
 	      if (secondary_out_reload
 		  && rld[secondary_out_reload].secondary_out_reload != -1)
 		rld[rld[secondary_out_reload].secondary_out_reload].when_needed
-		  = RELOAD_FOR_OPADDR_ADDR;
+		  = rld[secondary_out_reload].when_needed;
 	    }
 
 	  if (rld[i].when_needed == RELOAD_FOR_INPADDR_ADDRESS
