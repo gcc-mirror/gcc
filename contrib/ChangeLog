@@ -1,3 +1,7 @@
+2000-10-14  Joseph S. Myers  <jsm28@cam.ac.uk>
+
+	* gperf-2.7-19981006.pat: Remove.
+
 2000-10-08  Joseph S. Myers  <jsm28@cam.ac.uk>
 
 	* test_installed: Change EGCS references to refer to GCC.
