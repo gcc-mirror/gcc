@@ -1,3 +1,8 @@
+2002-03-27  Anthony Green  <green@redhat.com>
+
+	* lib/libjava.exp: Add the wrapper link options only when we're
+	linking.
+
 2002-03-26  Tom Tromey  <tromey@redhat.com>
 
 	* libjava.mauve/mauve.exp (test_mauve): Use correct stderr
