@@ -1,3 +1,8 @@
+2001-10-24  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-decl.c (finish_decl): Don't add DECL_STMTs for nested function
+	prototypes.
+
 2001-10-23  Stan Shebs  <shebs@apple.com>
 
 	* config/rs6000/x-darwin: Use -no-cpp-precomp instead of
