@@ -1781,6 +1781,7 @@ am__libgcj0_convenience_la_SOURCES_DIST = prims.cc jni.cc exception.cc \
 	javax/swing/ListSelectionModel.java \
 	javax/swing/LookAndFeel.java javax/swing/Scrollable.java \
 	javax/swing/SortingFocusTraversalPolicy.java \
+	javax/swing/SpinnerDateModel.java \
 	javax/swing/SpinnerListModel.java \
 	javax/swing/SpinnerModel.java \
 	javax/swing/SpinnerNumberModel.java javax/swing/Spring.java \
@@ -3309,6 +3310,7 @@ am__objects_11 = gnu/awt/LightweightRedirector.lo \
 	javax/swing/ListSelectionModel.lo javax/swing/LookAndFeel.lo \
 	javax/swing/Scrollable.lo \
 	javax/swing/SortingFocusTraversalPolicy.lo \
+	javax/swing/SpinnerDateModel.lo \
 	javax/swing/SpinnerListModel.lo javax/swing/SpinnerModel.lo \
 	javax/swing/SpinnerNumberModel.lo javax/swing/Spring.lo \
 	javax/swing/SpringLayout.lo javax/swing/SwingConstants.lo \
@@ -5976,6 +5978,7 @@ javax/swing/ListSelectionModel.java \
 javax/swing/LookAndFeel.java \
 javax/swing/Scrollable.java \
 javax/swing/SortingFocusTraversalPolicy.java \
+javax/swing/SpinnerDateModel.java \
 javax/swing/SpinnerListModel.java \
 javax/swing/SpinnerModel.java \
 javax/swing/SpinnerNumberModel.java \
@@ -13429,6 +13432,8 @@ javax/swing/Scrollable.lo: javax/swing/$(am__dirstamp) \
 javax/swing/SortingFocusTraversalPolicy.lo:  \
 	javax/swing/$(am__dirstamp) \
 	javax/swing/$(DEPDIR)/$(am__dirstamp)
+javax/swing/SpinnerDateModel.lo: javax/swing/$(am__dirstamp) \
+	javax/swing/$(DEPDIR)/$(am__dirstamp)
 javax/swing/SpinnerListModel.lo: javax/swing/$(am__dirstamp) \
 	javax/swing/$(DEPDIR)/$(am__dirstamp)
 javax/swing/SpinnerModel.lo: javax/swing/$(am__dirstamp) \
@@ -20828,6 +20833,8 @@ mostlyclean-compile:
 	-rm -f javax/swing/SizeSequence.lo
 	-rm -f javax/swing/SortingFocusTraversalPolicy.$(OBJEXT)
 	-rm -f javax/swing/SortingFocusTraversalPolicy.lo
+	-rm -f javax/swing/SpinnerDateModel.$(OBJEXT)
+	-rm -f javax/swing/SpinnerDateModel.lo
 	-rm -f javax/swing/SpinnerListModel.$(OBJEXT)
 	-rm -f javax/swing/SpinnerListModel.lo
 	-rm -f javax/swing/SpinnerModel.$(OBJEXT)
@@ -24022,6 +24029,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@javax/swing/$(DEPDIR)/SizeRequirements.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@javax/swing/$(DEPDIR)/SizeSequence.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@javax/swing/$(DEPDIR)/SortingFocusTraversalPolicy.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@javax/swing/$(DEPDIR)/SpinnerDateModel.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@javax/swing/$(DEPDIR)/SpinnerListModel.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@javax/swing/$(DEPDIR)/SpinnerModel.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@javax/swing/$(DEPDIR)/SpinnerNumberModel.Plo@am__quote@
