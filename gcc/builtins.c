@@ -4477,6 +4477,7 @@ std_gimplify_va_arg_expr (tree valist, tree type, tree *pre_p, tree *post_p)
 {
   tree addr, t, type_size, rounded_size, valist_tmp;
   unsigned HOST_WIDE_INT align, boundary;
+  bool indirect;
 
 #ifdef ARGS_GROW_DOWNWARD
   /* All of the alignment and movement below is for args-grow-up machines.
@@ -4484,6 +4485,10 @@ std_gimplify_va_arg_expr (tree valist, tree type, tree *pre_p, tree *post_p)
      implement their own specialized gimplify_va_arg_expr routines.  */
   abort ();
 #endif
+
+  indirect = pass_by_reference (NULL, TYPE_MODE (type), type, false);
+  if (indirect)
+    type = build_pointer_type (type);
 
   align = PARM_BOUNDARY / BITS_PER_UNIT;
   boundary = FUNCTION_ARG_BOUNDARY (TYPE_MODE (type), type) / BITS_PER_UNIT;
@@ -4532,18 +4537,11 @@ std_gimplify_va_arg_expr (tree valist, tree type, tree *pre_p, tree *post_p)
   gimplify_and_add (t, pre_p);
 
   addr = fold_convert (build_pointer_type (type), addr);
-  return build_fold_indirect_ref (addr);
-}
 
-/* Like std_gimplify_va_arg_expr, but uses pass-by-reference.  */
- 
-tree
-ind_gimplify_va_arg_expr (tree valist, tree type, tree *pre_p, tree *post_p)
-{
-  tree t;
-  t = build_pointer_type (type);
-  t = std_gimplify_va_arg_expr (valist, t, pre_p, post_p);
-  return build_fold_indirect_ref (t);
+  if (indirect)
+    addr = build_fold_indirect_ref (addr);
+
+  return build_fold_indirect_ref (addr);
 }
 
 /* Return a dummy expression of type TYPE in order to keep going after an

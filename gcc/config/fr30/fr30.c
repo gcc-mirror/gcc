@@ -123,7 +123,6 @@ static struct fr30_frame_info 	zero_frame_info;
 
 static void fr30_setup_incoming_varargs (CUMULATIVE_ARGS *, enum machine_mode,
 					 tree, int *, int);
-static tree fr30_gimplify_va_arg_expr (tree, tree, tree *, tree *);
 static bool fr30_must_pass_in_stack (enum machine_mode, tree);
 
 #define FRAME_POINTER_MASK 	(1 << (FRAME_POINTER_REGNUM))
@@ -157,9 +156,6 @@ static bool fr30_must_pass_in_stack (enum machine_mode, tree);
 #define TARGET_SETUP_INCOMING_VARARGS fr30_setup_incoming_varargs
 #undef  TARGET_MUST_PASS_IN_STACK
 #define TARGET_MUST_PASS_IN_STACK fr30_must_pass_in_stack
-
-#undef  TARGET_GIMPLIFY_VA_ARG_EXPR
-#define TARGET_GIMPLIFY_VA_ARG_EXPR fr30_gimplify_va_arg_expr
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 
@@ -727,17 +723,6 @@ fr30_function_arg_partial_nregs (CUMULATIVE_ARGS cum, enum machine_mode mode,
   
   /* Otherwise return the number of registers that would be used.  */
   return FR30_NUM_ARG_REGS - cum;
-}
-
-/* Implement `va_arg'.  */
-
-static tree
-fr30_gimplify_va_arg_expr (tree valist, tree type, tree *pre_p, tree *post_p)
-{
-  if (FUNCTION_ARG_PASS_BY_REFERENCE (dummy, TYPE_MODE (type), type, dummy))
-    return ind_gimplify_va_arg_expr (valist, type, pre_p, post_p);
-  else
-    return std_gimplify_va_arg_expr (valist, type, pre_p, post_p);
 }
 
 /*}}}*/

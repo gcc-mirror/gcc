@@ -102,7 +102,6 @@ static bool arc_rtx_costs (rtx, int, int, int *);
 static int arc_address_cost (rtx);
 static void arc_external_libcall (rtx);
 static bool arc_return_in_memory (tree, tree);
-static tree arc_gimplify_va_arg_expr (tree, tree, tree *, tree *);
 
 /* Initialize the GCC target structure.  */
 #undef TARGET_ASM_ALIGNED_HI_OP
@@ -142,8 +141,6 @@ static tree arc_gimplify_va_arg_expr (tree, tree, tree *, tree *);
 
 #undef TARGET_SETUP_INCOMING_VARARGS
 #define TARGET_SETUP_INCOMING_VARARGS arc_setup_incoming_varargs
-#undef TARGET_GIMPLIFY_VA_ARG_EXPR
-#define TARGET_GIMPLIFY_VA_ARG_EXPR arc_gimplify_va_arg_expr
 
 #undef TARGET_SCHED_USE_DFA_PIPELINE_INTERFACE
 #define TARGET_SCHED_USE_DFA_PIPELINE_INTERFACE hook_int_void_1
@@ -2293,18 +2290,6 @@ arc_va_start (tree valist, rtx nextarg)
     nextarg = plus_constant (nextarg, UNITS_PER_WORD);
 
   std_expand_builtin_va_start (valist, nextarg);
-}
-
-static tree
-arc_gimplify_va_arg_expr (tree valist, tree type, tree *pre_p, tree *post_p)
-{
-  /* All aggregates are passed by reference.  All scalar types larger
-     than 8 bytes are passed by reference.  */
-
-  if (AGGREGATE_TYPE_P (type) || int_size_in_bytes (type) > 8)
-    return ind_gimplify_va_arg_expr (valist, type, pre_p, post_p);
-
-  return std_gimplify_va_arg_expr (valist, type, pre_p, post_p);
 }
 
 /* This is how to output a definition of an internal numbered label where

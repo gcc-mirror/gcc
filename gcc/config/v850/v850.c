@@ -67,7 +67,6 @@ static void v850_encode_section_info (tree, rtx, int);
 static bool v850_return_in_memory    (tree, tree);
 static void v850_setup_incoming_varargs (CUMULATIVE_ARGS *, enum machine_mode,
 					 tree, int *, int);
-static tree v850_gimplify_va_arg_expr (tree, tree, tree *, tree *);
 
 /* Information about the various small memory areas.  */
 struct small_memory_info small_memory[ (int)SMALL_MEMORY_max ] =
@@ -132,9 +131,6 @@ static int v850_interrupt_p = FALSE;
 
 #undef TARGET_SETUP_INCOMING_VARARGS
 #define TARGET_SETUP_INCOMING_VARARGS v850_setup_incoming_varargs
-
-#undef TARGET_GIMPLIFY_VA_ARG_EXPR
-#define TARGET_GIMPLIFY_VA_ARG_EXPR v850_gimplify_va_arg_expr
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 
@@ -3306,17 +3302,6 @@ construct_prepare_instruction (rtx op)
     }
   
   return buff;
-}
-
-/* Implement `va_arg'.  */
-
-static tree
-v850_gimplify_va_arg_expr (tree valist, tree type, tree *pre_p, tree *post_p)
-{
-  if (FUNCTION_ARG_PASS_BY_REFERENCE (dummy, TYPE_MODE (type), type, 0))
-    return ind_gimplify_va_arg_expr (valist, type, pre_p, post_p);
-  else
-    return std_gimplify_va_arg_expr (valist, type, pre_p, post_p);
 }
 
 /* Return an RTX indicating where the return address to the

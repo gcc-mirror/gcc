@@ -286,7 +286,6 @@ static void frv_output_const_unspec		(FILE *,
 						 const struct frv_unspec *);
 static bool frv_function_ok_for_sibcall		(tree, tree);
 static rtx frv_struct_value_rtx			(tree, int);
-static tree frv_gimplify_va_arg_expr		(tree, tree, tree *, tree *);
 static bool frv_must_pass_in_stack (enum machine_mode mode, tree type);
 
 /* Initialize the GCC target structure.  */
@@ -335,8 +334,6 @@ static bool frv_must_pass_in_stack (enum machine_mode mode, tree type);
 #define TARGET_EXPAND_BUILTIN_SAVEREGS frv_expand_builtin_saveregs
 #undef TARGET_SETUP_INCOMING_VARARGS
 #define TARGET_SETUP_INCOMING_VARARGS frv_setup_incoming_varargs
-#undef TARGET_GIMPLIFY_VA_ARG_EXPR
-#define TARGET_GIMPLIFY_VA_ARG_EXPR frv_gimplify_va_arg_expr
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 
@@ -2082,18 +2079,6 @@ frv_expand_builtin_va_start (tree valist, rtx nextarg)
   TREE_SIDE_EFFECTS (t) = 1;
 
   expand_expr (t, const0_rtx, VOIDmode, EXPAND_NORMAL);
-}
-
-
-/* Expand __builtin_va_arg to do the va_arg macro.  */
-
-static tree
-frv_gimplify_va_arg_expr (tree valist, tree type, tree *pre_p, tree *post_p)
-{
-  if (AGGREGATE_TYPE_P (type))
-    return ind_gimplify_va_arg_expr (valist, type, pre_p, post_p);
-  else
-    return std_gimplify_va_arg_expr (valist, type, pre_p, post_p);
 }
 
 

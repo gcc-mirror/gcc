@@ -139,7 +139,6 @@ static void mmix_file_start (void);
 static void mmix_file_end (void);
 static bool mmix_rtx_costs (rtx, int, int, int *);
 static rtx mmix_struct_value_rtx (tree, int);
-static tree mmix_gimplify_va_arg_expr (tree, tree, tree *, tree *);
 
 
 /* Target structure macros.  Listed by node.  See `Using and Porting GCC'
@@ -205,8 +204,6 @@ static tree mmix_gimplify_va_arg_expr (tree, tree, tree *, tree *);
 
 #undef TARGET_SETUP_INCOMING_VARARGS
 #define TARGET_SETUP_INCOMING_VARARGS mmix_setup_incoming_varargs
-#undef TARGET_GIMPLIFY_VA_ARG_EXPR
-#define TARGET_GIMPLIFY_VA_ARG_EXPR mmix_gimplify_va_arg_expr
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 
@@ -601,11 +598,15 @@ mmix_function_arg_pass_by_reference (const CUMULATIVE_ARGS *argsp,
 {
   /* FIXME: Check: I'm not sure the must_pass_in_stack check is
      necessary.  */
-  return
-    targetm.calls.must_pass_in_stack (mode, type)
-    || (MMIX_FUNCTION_ARG_SIZE (mode, type) > 8
-	&& !TARGET_LIBFUNC
-	&& !argsp->lib);
+  if (targetm.calls.must_pass_in_stack (mode, type))
+    return true;
+
+  if (MMIX_FUNCTION_ARG_SIZE (mode, type) > 8
+      && !TARGET_LIBFUNC
+      && (!argsp || !argsp->lib))
+    return true;
+
+  return false;
 }
 
 /* Return nonzero if regno is a register number where a parameter is
@@ -844,21 +845,6 @@ mmix_setup_incoming_varargs (CUMULATIVE_ARGS *args_so_farp,
      be true until we start messing with multi-reg parameters.  */
   if ((7 + (MMIX_FUNCTION_ARG_SIZE (mode, vartype))) / 8 != 1)
     internal_error ("MMIX Internal: Last named vararg would not fit in a register");
-}
-
-/* Gimplify VA_ARG_EXPR.  All we need to do is figure out if TYPE is
-   pass-by-reference and hand off to standard routines.  */
-
-static tree
-mmix_gimplify_va_arg_expr (tree valist, tree type, tree *pre_p, tree *post_p)
-{
-  CUMULATIVE_ARGS cum;
-  cum.lib = 0;
-
-  if (mmix_function_arg_pass_by_reference (&cum, TYPE_MODE (type), type, 0))
-    return ind_gimplify_va_arg_expr (valist, type, pre_p, post_p);
-  else
-    return std_gimplify_va_arg_expr (valist, type, pre_p, post_p);
 }
 
 /* TRAMPOLINE_SIZE.  */

@@ -99,7 +99,6 @@ static void m32r_setup_incoming_varargs (CUMULATIVE_ARGS *, enum machine_mode,
 					 tree, int *, int);
 static void init_idents (void);
 static bool m32r_rtx_costs (rtx, int, int, int *);
-static tree m32r_gimplify_va_arg_expr (tree, tree, tree *, tree *);
 
 /* Initialize the GCC target structure.  */
 #undef  TARGET_ATTRIBUTE_TABLE
@@ -143,9 +142,6 @@ static tree m32r_gimplify_va_arg_expr (tree, tree, tree *, tree *);
 #define TARGET_SETUP_INCOMING_VARARGS m32r_setup_incoming_varargs
 #undef  TARGET_MUST_PASS_IN_STACK
 #define TARGET_MUST_PASS_IN_STACK must_pass_in_stack_var_size
-
-#undef  TARGET_GIMPLIFY_VA_ARG_EXPR
-#define TARGET_GIMPLIFY_VA_ARG_EXPR m32r_gimplify_va_arg_expr
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 
@@ -1395,17 +1391,6 @@ m32r_setup_incoming_varargs (CUMULATIVE_ARGS *cum, enum machine_mode mode,
     }
 }
 
-
-/* Implement `va_arg'.  */
-
-static tree
-m32r_gimplify_va_arg_expr (tree valist, tree type, tree *pre_p, tree *post_p)
-{
-  if (m32r_pass_by_reference (type))
-    return ind_gimplify_va_arg_expr (valist, type, pre_p, post_p);
-  else
-    return std_gimplify_va_arg_expr (valist, type, pre_p, post_p);
-}
 
 /* Return true if INSN is real instruction bearing insn.  */
 

@@ -5956,18 +5956,10 @@ hppa_va_start (tree valist, rtx nextarg)
 static tree
 hppa_gimplify_va_arg_expr (tree valist, tree type, tree *pre_p, tree *post_p)
 {
-  bool indirect;
-
-  indirect = FUNCTION_ARG_PASS_BY_REFERENCE (dummy, TYPE_MODE (type), type, 0);
-
   if (TARGET_64BIT)
     {
       /* Args grow upward.  We can use the generic routines.  */
-
-      if (indirect)
-	return ind_gimplify_va_arg_expr (valist, type, pre_p, post_p);
-      else
-	return std_gimplify_va_arg_expr (valist, type, pre_p, post_p);
+      return std_gimplify_va_arg_expr (valist, type, pre_p, post_p);
     }
   else /* !TARGET_64BIT */
     {
@@ -5975,7 +5967,9 @@ hppa_gimplify_va_arg_expr (tree valist, tree type, tree *pre_p, tree *post_p)
       tree valist_type;
       tree t, u;
       unsigned int size, ofs;
+      bool indirect;
 
+      indirect = pass_by_reference (NULL, TYPE_MODE (type), type, 0);
       if (indirect)
 	{
 	  type = ptr;
