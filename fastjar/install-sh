@@ -1,8 +1,0 @@
-#! /bin/bash
-
-. install-defs.sh
-
-$CP fastjar ${BINDIR}
-$STRIP ${BINDIR}/fastjar
-$CHMOD 755 ${BINDIR}/fastjar
-

@@ -292,14 +292,15 @@ systems' @command{tar} programs will also work, only try GNU
 
 Necessary when modifying @file{configure.in}, @file{aclocal.m4}, etc.@:
 to regenerate @file{configure} and @file{config.in} files.  Most
-directories require autoconf 2.13 (exactly), but @file{libiberty} and
-@file{libstdc++-v3} require autoconf 2.57 (exactly).
+directories require autoconf 2.13 (exactly), but @file{libiberty},
+@file{fastjar}, and @file{libstdc++-v3} require autoconf 2.57 (exactly).
 
 @item automake versions 1.4-p? and 1.7.?
 
 Necessary when modifying a @file{Makefile.am} file to regenerate its
 associated @file{Makefile.in}.  Most directories require a 1.4 series
-automake; @file{libstdc++-v3} requires a 1.7 series automake.
+automake; @file{libstdc++-v3} and @file{fastjar} requires a 1.7 series
+automake.
 
 @item gettext version 0.12 (or later)
 
