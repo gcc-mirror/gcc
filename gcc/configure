@@ -1,4 +1,4 @@
-#! /bin/sh
+#! /bin/sh 
 
 # Guess values for system-dependent variables and create Makefiles.
 # Generated automatically using autoconf version 2.13 
