@@ -418,16 +418,20 @@ dosize (file, op, size)
 	   amount > 0;
 	   amount /= 2)
 	{
+	  char insn[100];
+
+	  sprintf (insn, "\t%ss\t#%d,%s\n", op, amount,
+		   TARGET_H8300 ? "r7" : "er7");
 	  for (; size >= amount; size -= amount)
-	    fprintf (file, "\t%ss\t#%d,sp\n", op, amount);
+	    fputs (insn, file);
 	}
     }
   else
     {
       if (TARGET_H8300)
-	fprintf (file, "\tmov.w\t#%d,r3\n\t%s.w\tr3,sp\n", size, op);
+	fprintf (file, "\tmov.w\t#%d,r3\n\t%s.w\tr3,r7\n", size, op);
       else
-	fprintf (file, "\t%s.l\t#%d,sp\n", op, size);
+	fprintf (file, "\t%s.l\t#%d,er7\n", op, size);
     }
 }
 
@@ -471,7 +475,10 @@ push (file, rn)
      FILE *file;
      int rn;
 {
-  fprintf (file, "\t%s\t%s\n", h8_push_op, h8_reg_names[rn]);
+  if (TARGET_H8300)
+    fprintf (file, "\t%s\t%s,@-r7\n", h8_mov_op, h8_reg_names[rn]);
+  else
+    fprintf (file, "\t%s\t%s,@-er7\n", h8_mov_op, h8_reg_names[rn]);
 }
 
 /* Output assembly language code to pop register RN.  */
@@ -481,7 +488,10 @@ pop (file, rn)
      FILE *file;
      int rn;
 {
-  fprintf (file, "\t%s\t%s\n", h8_pop_op, h8_reg_names[rn]);
+  if (TARGET_H8300)
+    fprintf (file, "\t%s\t@r7+,%s\n", h8_mov_op, h8_reg_names[rn]);
+  else
+    fprintf (file, "\t%s\t@er7+,%s\n", h8_mov_op, h8_reg_names[rn]);
 }
 
 /* This is what the stack looks like after the prolog of
@@ -604,7 +614,7 @@ h8300_output_function_prologue (file, size)
 	  if (n_regs == 1)
 	    push (file, regno);
 	  else
-	    fprintf (file, "\tstm.l\t%s-%s,@-sp\n",
+	    fprintf (file, "\tstm.l\t%s-%s,@-er7\n",
 		     h8_reg_names[regno],
 		     h8_reg_names[regno + (n_regs - 1)]);
 	}
@@ -670,7 +680,7 @@ h8300_output_function_epilogue (file, size)
 	  if (n_regs == 1)
 	    pop (file, regno);
 	  else
-	    fprintf (file, "\tldm.l\t@sp+,%s-%s\n",
+	    fprintf (file, "\tldm.l\t@er7+,%s-%s\n",
 		     h8_reg_names[regno - (n_regs - 1)],
 		     h8_reg_names[regno]);
 	}
