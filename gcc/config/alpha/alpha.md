@@ -4717,7 +4717,7 @@
    st%, %R1,%0"
   [(set_attr "type" "ilog,iadd,iadd,ild,ist,fcpys,fld,fst")])
 
-(define_insn "*movsf_fix"
+(define_insn "*movsi_fix"
   [(set (match_operand:SI 0 "nonimmediate_operand" "=r,r,r,r,m,*f,*f,m,r,*f")
 	(match_operand:SI 1 "input_operand" "rJ,K,L,m,rJ,*fJ,m,*f,*f,r"))]
   "! TARGET_WINDOWS_NT && ! TARGET_OPEN_VMS && TARGET_FIX
