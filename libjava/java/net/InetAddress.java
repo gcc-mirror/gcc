@@ -145,7 +145,7 @@ public class InetAddress implements Serializable
       return (addr [0] & 0xF0) == 0xE0;
     
     // Mask against high order bits of 11111111
-    if (addr.lenth == 16)
+    if (addr.length == 16)
       return addr [0] == (byte) 0xFF;
     
     return false;
