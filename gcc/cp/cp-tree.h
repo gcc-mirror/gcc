@@ -2352,6 +2352,7 @@ extern tree most_specialized_class		PROTO((tree, tree));
 extern int more_specialized_class		PROTO((tree, tree));
 extern void do_pushlevel			PROTO((void));
 extern int is_member_template                   PROTO((tree));
+extern int processing_specialization;
 
 /* in repo.c */
 extern void repo_template_used			PROTO((tree));
