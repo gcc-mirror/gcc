@@ -28,6 +28,7 @@ Boston, MA 02111-1307, USA.  */
 #include "runtime.h"
 #include "sarray.h"
 #include "encoding.h"
+#include "runtime-info.h"
 
 /* this is how we hack STRUCT_VALUE to be 1 or 0 */
 #define gen_rtx(args...) 1
@@ -76,7 +77,11 @@ __objc_get_forward_imp (SEL sel)
 {
   const char *t = sel->sel_types;
 
-  if (t && (*t == '[' || *t == '(' || *t == '{'))
+  if (t && (*t == '[' || *t == '(' || *t == '{')
+#ifdef OBJC_MAX_STRUCT_BY_VALUE
+    && objc_sizeof_type(t) > OBJC_MAX_STRUCT_BY_VALUE
+#endif
+      )
     return (IMP)__objc_block_forward;
   else if (t && (*t == 'f' || *t == 'd'))
     return (IMP)__objc_double_forward;
