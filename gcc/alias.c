@@ -779,21 +779,45 @@ find_base_value (src)
       {
 	rtx temp, src_0 = XEXP (src, 0), src_1 = XEXP (src, 1);
 
+	/* If either operand is a REG that is a known pointer, then it
+	   is the base.  */
+	if (REG_P (src_0) && REG_POINTER (src_0))
+	  return find_base_value (src_0);
+	if (REG_P (src_1) && REG_POINTER (src_1))
+	  return find_base_value (src_1);
+
 	/* If either operand is a REG, then see if we already have
 	   a known value for it.  */
-	if (GET_CODE (src_0) == REG)
+	if (REG_P (src_0))
 	  {
 	    temp = find_base_value (src_0);
 	    if (temp != 0)
 	      src_0 = temp;
 	  }
 
-	if (GET_CODE (src_1) == REG)
+	if (REG_P (src_1))
 	  {
 	    temp = find_base_value (src_1);
 	    if (temp!= 0)
 	      src_1 = temp;
 	  }
+
+	/* If either base is named object or a special address
+	   (like an argument or stack reference), then use it for the
+	   base term.  */
+	if (src_0 != 0
+	    && (GET_CODE (src_0) == SYMBOL_REF
+		|| GET_CODE (src_0) == LABEL_REF
+		|| (GET_CODE (src_0) == ADDRESS
+		    && GET_MODE (src_0) != VOIDmode)))
+	  return src_0;
+
+	if (src_1 != 0
+	    && (GET_CODE (src_1) == SYMBOL_REF
+		|| GET_CODE (src_1) == LABEL_REF
+		|| (GET_CODE (src_1) == ADDRESS
+		    && GET_MODE (src_1) != VOIDmode)))
+	  return src_1;
 
 	/* Guess which operand is the base address:
 	   If either operand is a symbol, then it is the base.  If
@@ -801,14 +825,6 @@ find_base_value (src)
 	if (GET_CODE (src_1) == CONST_INT || CONSTANT_P (src_0))
 	  return find_base_value (src_0);
 	else if (GET_CODE (src_0) == CONST_INT || CONSTANT_P (src_1))
-	  return find_base_value (src_1);
-
-	/* This might not be necessary anymore:
-	   If either operand is a REG that is a known pointer, then it
-	   is the base.  */
-	else if (GET_CODE (src_0) == REG && REG_POINTER (src_0))
-	  return find_base_value (src_0);
-	else if (GET_CODE (src_1) == REG && REG_POINTER (src_1))
 	  return find_base_value (src_1);
 
 	return 0;

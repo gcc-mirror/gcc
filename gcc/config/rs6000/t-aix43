@@ -64,5 +64,11 @@ SHLIB_MKMAP = $(srcdir)/mkmap-flat.awk
 SHLIB_MAPFILES = $(srcdir)/libgcc-std.ver
 SHLIB_NM_FLAGS = -Bpg
 
-# Both 32-bit and 64-bit objects in archives
-AR_FLAGS_FOR_TARGET=-X32_64
+# Either 32-bit and 64-bit objects in archives.
+AR_FLAGS_FOR_TARGET = -X32_64
+
+# Compile Ada files with minimal-toc.  The primary focus is gnatlib, so
+# that the library does not use nearly the entire TOC of applications
+# until gnatlib is built as a shared library on AIX.  Compiling the
+# compiler with -mminimal-toc does not cause any harm.
+T_ADAFLAGS = -mminimal-toc

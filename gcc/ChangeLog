@@ -1,3 +1,13 @@
+2002-01-05  David Edelsohn  <edelsohn@gnu.org>
+
+	* config/rs6000/rs6000.h (TARGET_POWERPC): For IN_LIBGCC2, define
+	as 1 for __powerpc64__ as well.
+
+	* config/rs6000/t-aix43 (T_ADAFLAGS): Define.
+
+	* alias.c (find_base_value, PLUS/MINUS): If we found a base,
+	return it.
+
 2002-01-05  Daniel Berlin  <dan@dberlin.org>
 
 	* lcm.c: Revert change, due to performance regression it causes on
