@@ -118,7 +118,8 @@ static int avoid_overlap PARAMS ((tree, tree, int *));
 static tree build_base_field PARAMS ((tree, tree, int *, int *, unsigned int *));
 static tree build_base_fields PARAMS ((tree, int *));
 static tree build_vbase_pointer_fields PARAMS ((tree, int *));
-static tree build_vtbl_or_vbase_field PARAMS ((tree, tree, tree, tree, int *));
+static tree build_vtbl_or_vbase_field PARAMS ((tree, tree, tree, tree, tree,
+					       int *));
 static void check_methods PARAMS ((tree));
 static void remove_zero_width_bit_fields PARAMS ((tree));
 static void check_bases PARAMS ((tree, int *, int *, int *));
@@ -225,6 +226,7 @@ build_vbase_pointer_fields (rec, empty_p)
 					    get_identifier (VTABLE_BASE),
 					    build_pointer_type (basetype),
 					    rec,
+					    basetype,
 					    empty_p);
 	  BINFO_VPTR_FIELD (base_binfo) = decl;
 	  TREE_CHAIN (decl) = vbase_decls;
@@ -3970,17 +3972,19 @@ check_field_decls (t, access_decls, empty_p,
 /* Return a FIELD_DECL for a pointer-to-virtual-table or
    pointer-to-virtual-base.  The NAME, ASSEMBLER_NAME, and TYPE of the
    field are as indicated.  The CLASS_TYPE in which this field occurs
-   is also indicated.  *EMPTY_P is set to a non-zero value by this
+   is also indicated.  FCONTEXT is the type that is needed for the debug
+   info output routines.  *EMPTY_P is set to a non-zero value by this
    function to indicate that a class containing this field is
    non-empty.  */
 
 static tree
-build_vtbl_or_vbase_field (name, assembler_name, type, class_type, 
+build_vtbl_or_vbase_field (name, assembler_name, type, class_type, fcontext,
 			   empty_p)
      tree name;
      tree assembler_name;
      tree type;
      tree class_type;
+     tree fcontext;
      int *empty_p;
 {
   tree field;
@@ -3995,7 +3999,7 @@ build_vtbl_or_vbase_field (name, assembler_name, type, class_type,
   DECL_ARTIFICIAL (field) = 1;
   DECL_FIELD_CONTEXT (field) = class_type;
   DECL_CLASS_CONTEXT (field) = class_type;
-  DECL_FCONTEXT (field) = class_type;
+  DECL_FCONTEXT (field) = fcontext;
   DECL_SAVED_INSNS (field) = 0;
   DECL_FIELD_SIZE (field) = 0;
   DECL_ALIGN (field) = TYPE_ALIGN (type);
@@ -4380,6 +4384,7 @@ create_vtable_ptr (t, empty_p, has_virtual_p,
 	= build_vtbl_or_vbase_field (get_vfield_name (t),
 				     get_identifier (VFIELD_BASE),
 				     vtbl_ptr_type_node,
+				     t,
 				     t,
 				     empty_p);
 
