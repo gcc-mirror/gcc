@@ -163,8 +163,12 @@ public final class Method extends AccessibleObject implements Member
       getType ();
 
     StringBuffer b = new StringBuffer ();
-    Modifier.toString(getModifiers(), b);
-    b.append(" ");
+    int mods = getModifiers();
+    if (mods != 0)
+      {
+	Modifier.toString(mods, b);
+	b.append(" ");
+      }
     appendClassName (b, return_type);
     b.append(" ");
     appendClassName (b, declaringClass);

@@ -1,5 +1,10 @@
 2003-10-25  Bryce McKinlay  <bryce@mckinlay.net.nz>
 
+	* java/lang/reflect/Method.java (toString): Avoid extra whitespace
+	on method with no modifiers.
+
+2003-10-25  Bryce McKinlay  <bryce@mckinlay.net.nz>
+
 	PR libgcj/11780:
 	* java/lang/reflect/natMethod.cc (invoke): Look up caller and perform
 	accessibility check only if target is non-public and accessible flag
