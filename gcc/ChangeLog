@@ -1,3 +1,14 @@
+2004-11-23  Diego Novillo  <dnovillo@redhat.com>
+
+	* tree-into-ssa.c (DEF_VEC_MALLOC_P(basic_block)): Declare.
+	(insert_phi_nodes_for): Change third argument to VEC(basic_block).
+	* tree-ssa-dom.c (avail_exprs_stack): Change type to VEC(tree_on_heap).
+	Update all users.
+	(stmts_to_rescan): Likewise.
+	(const_and_copies_stack): Likewise.
+	(nonzero_vars_stack): Likewise.
+	(vrp_variables_stack): Likewise.
+
 2004-11-23  Richard Henderson  <rth@redhat.com>
 
 	* cse.c (record_jump_cond_subreg): New.
