@@ -3387,9 +3387,11 @@ process_command (argc, argv)
 		if (! IS_DIR_SEPARATOR (value [len - 1])
 		    && is_directory (value, "", 0))
 		  {
-		    value = strcpy (xmalloc (len + 2), value);
-		    value[len] = DIR_SEPARATOR;
-		    value[++ len] = 0;
+		    char *tmp = xmalloc (len + 2);
+		    strcpy (tmp, value);
+		    tmp[len] = DIR_SEPARATOR;
+		    tmp[++ len] = 0;
+		    value = tmp;
 		  }
 		
 		/* As a kludge, if the arg is "[foo/]stageN/", just
