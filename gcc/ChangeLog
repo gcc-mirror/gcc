@@ -1,3 +1,8 @@
+2004-12-19  Bernardo Innocenti  <bernie@develer.com>
+
+	* config/m68k/m68kemb.h (TARGET_OS_CPP_BUILTINS): Remove redundant
+	definition of mc68000, already present in TARGET_CPU_CPP_BUILTINS.
+
 2004-12-18  Daniel Berlin  <dberlin@dberlin.org>
 
         * lambda-code.c (can_convert_to_perfect_nest): Make checking
