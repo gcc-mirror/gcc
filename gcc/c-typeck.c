@@ -2645,11 +2645,11 @@ pointer_int_sum (resultcode, ptrop, intop)
       intop = convert (int_type, TREE_OPERAND (intop, 0));
     }
 
-  /* Convert the integer argument to a type the same size as a pointer
+  /* Convert the integer argument to a type the same size as sizetype
      so the multiply won't overflow spuriously.  */
 
-  if (TYPE_PRECISION (TREE_TYPE (intop)) != POINTER_SIZE)
-    intop = convert (type_for_size (POINTER_SIZE, 0), intop);
+  if (TYPE_PRECISION (TREE_TYPE (intop)) != TYPE_PRECISION (sizetype))
+    intop = convert (type_for_size (TYPE_PRECISION (sizetype), 0), intop);
 
   /* Replace the integer argument with a suitable product by the object size.
      Do this multiplication as signed, then convert to the appropriate
