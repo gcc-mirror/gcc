@@ -944,10 +944,7 @@ extern int may_call_alloca;
 /* Add any extra modes needed to represent the condition code.
 
    CCFPmode is used for FPU, but should we use a separate reg? */
-#define EXTRA_CC_MODES CCFPmode
-
-/* the name for the mode above */
-#define EXTRA_CC_NAMES "CCFPmode"
+#define EXTRA_CC_MODES CC(CCFPmode, "CCFP")
 
 /* Give a comparison code (EQ, NE etc) and the first operand of a COMPARE,
    return the mode to be used for the comparison.  For floating-point, CCFPmode

@@ -2566,11 +2566,12 @@ do {                                                                    \
 
    CCXmode and CCX_NOOVmode are only used by v9.  */
 
-#define EXTRA_CC_MODES CCXmode, CC_NOOVmode, CCX_NOOVmode, CCFPmode, CCFPEmode
-
-/* Define the names for the modes specified above.  */
-
-#define EXTRA_CC_NAMES "CCX", "CC_NOOV", "CCX_NOOV", "CCFP", "CCFPE"
+#define EXTRA_CC_MODES			\
+    CC(CCXmode,	     "CCX")		\
+    CC(CC_NOOVmode,  "CC_NOOV")		\
+    CC(CCX_NOOVmode, "CCX_NOOV")	\
+    CC(CCFPmode,     "CCFP")		\
+    CC(CCFPEmode,    "CCFPE")
 
 /* Given a comparison code (EQ, NE, etc.) and the first operand of a COMPARE,
    return the mode to be used for the comparison.  For floating-point,

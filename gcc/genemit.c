@@ -643,40 +643,6 @@ output_add_clobbers ()
   printf ("}\n");
 }
 
-/* Write a function, init_mov_optab, that is called to set up entries
-   in mov_optab for EXTRA_CC_MODES.  */
-
-static void
-output_init_mov_optab ()
-{
-#ifdef EXTRA_CC_NAMES
-  static char *cc_names[] = { EXTRA_CC_NAMES };
-  char *p;
-  size_t i;
-
-  printf ("\nvoid\ninit_mov_optab ()\n{\n");
-
-  for (i = 0; i < sizeof cc_names / sizeof cc_names[0]; i++)
-    {
-      printf ("#ifdef HAVE_mov");
-      for (p = cc_names[i]; *p; p++)
-	printf ("%c", *p >= 'A' && *p <= 'Z' ? *p - 'A' + 'a' : *p);
-      printf ("\n");
-      printf ("  if (HAVE_mov");
-      for (p = cc_names[i]; *p; p++)
-	printf ("%c", *p >= 'A' && *p <= 'Z' ? *p - 'A' + 'a' : *p);
-      printf (")\n");
-      printf ("    mov_optab->handlers[(int) %smode].insn_code = CODE_FOR_mov",
-	      cc_names[i]);
-      for (p = cc_names[i]; *p; p++)
-	printf ("%c", *p >= 'A' && *p <= 'Z' ? *p - 'A' + 'a' : *p);
-      printf (";\n#endif\n");
-    }
-
-  printf ("}\n");
-#endif
-}
-
 PTR
 xmalloc (size)
   size_t size;
@@ -725,8 +691,6 @@ main (argc, argv)
       perror (argv[1]);
       exit (FATAL_EXIT_CODE);
     }
-
-  init_rtl ();
 
   /* Assign sequential codes to all entries in the machine description
      in parallel with the tables in insn-output.c.  */
@@ -789,9 +753,6 @@ from the machine description file `md'.  */\n\n");
 
   /* Write out the routine to add CLOBBERs to a pattern.  */
   output_add_clobbers ();
-
-  /* Write the routine to initialize mov_optab for the EXTRA_CC_MODES.  */
-  output_init_mov_optab ();
 
   fflush (stdout);
   exit (ferror (stdout) != 0 ? FATAL_EXIT_CODE : SUCCESS_EXIT_CODE);

@@ -509,14 +509,15 @@ DEF_RTL_EXPR(TRAP_IF, "trap_if", "ee", 'x')
 /* numeric integer constant */
 DEF_RTL_EXPR(CONST_INT, "const_int", "w", 'o')
 
-/* numeric double constant.
-   Operand 0 is the MEM that stores this constant in memory,
-   or various other things (see comments at immed_double_const in varasm.c).
-   Operand 1 is a chain of all CONST_DOUBLEs in use in the current function.
-   Remaining operands hold the actual value.
-   The number of operands may be more than 2 if cross-compiling;
-   see init_rtl.  */
-DEF_RTL_EXPR(CONST_DOUBLE, "const_double", "e0ww", 'o')
+/* numeric floating point constant.
+   Operand 0 ('e') is the MEM that stores this constant in memory, or
+   various other things (see comments at immed_double_const in
+   varasm.c).
+   Operand 1 ('0') is a chain of all CONST_DOUBLEs in use in the
+   current function.
+   Remaining operands hold the actual value.  They are all 'w' and
+   there may be from 1 to 4; see rtl.c.  */
+DEF_RTL_EXPR(CONST_DOUBLE, "const_double", CONST_DOUBLE_FORMAT, 'o')
 
 /* String constant.  Used only for attributes right now.  */
 DEF_RTL_EXPR(CONST_STRING, "const_string", "s", 'o')

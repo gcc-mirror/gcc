@@ -402,8 +402,6 @@ main (argc, argv)
       exit (FATAL_EXIT_CODE);
     }
 
-  init_rtl ();
-
   /* Assign sequential codes to all entries in the machine description
      in parallel with the tables in insn-output.c.  */
 

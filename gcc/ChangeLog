@@ -1,3 +1,41 @@
+1999-08-27 13:27 -0700  Zack Weinberg  <zack@bitmover.com>
+
+	* rtl.c: Define CONST_DOUBLE_FORMAT to the appropriate format
+	for a CONST_DOUBLE, at compile time.  Initialize rtx_length
+	and class_narrowest_mode at compile time.  Kill init_rtl.
+	Mark rtx_length, mode_class, mode_size, mode_unit_size,
+	mode_wider_mode, mode_mask_array, class_narrowest_mode, and
+	rtx_format as const.  Kill all references to EXTRA_CC_MODES or
+	EXTRA_CC_NAMES.
+	* rtl.def (CONST_DOUBLE): Use CONST_DOUBLE_FORMAT macro for
+	format.
+	* rtl.h: Declare rtx_length and rtx_format as const.
+	* machmode.def: Define CC().  Use CC() to define CCmode.  If
+	EXTRA_CC_MODES is defined, expand it here.
+	* machmode.h: Declare mode_class, mode_size, mode_unit_size,
+	mode_wider_mode, mode_mask_array, and class_narrowest_mode as
+	const.  Kill all references to EXTRA_CC_MODES.
+
+	* toplev.c: Don't prototype or call init_rtl.
+	* optabs.c: Don't call init_mov_optab.
+	* genemit.c: Don't generate init_mov_optab.  Don't call
+	init_rtl.
+	* gengenrtl.c: Duplicate calculation of CONST_DOUBLE_FORMAT
+	here.
+	* genattr.c, genattrtab.c, gencodes.c, genconfig.c,
+	genextract.c, genflags.c, genopinit.c, genoutput.c, genpeep.c,
+	genrecog.c: Don't call init_rtl.
+
+	* arc.h, arm.h, c4x.h, i386.h, i960.h, m88k.h, pa.h, pdp11.h,
+	rs6000.h, sparc.h: Don't define EXTRA_CC_NAMES.  Use CC() in
+	definition of EXTRA_CC_MODES.
+
+	* md.texi: Kill ref to EXTRA_CC_NAMES.
+	* tm.texi: Document new way to define EXTRA_CC_MODES.
+
+	* genrecog.c: Do not look up the name of a define_split.
+	(Unrelated bugfix.)
+
 Fri Aug 27 17:03:42 1999  Nick Clifton  <nickc@cygnus.com>
 
 	* config/v850/v850.md: Fix typo introduced by previous delta.

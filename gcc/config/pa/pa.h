@@ -1710,10 +1710,7 @@ while (0)
 /* Add any extra modes needed to represent the condition code.
 
    HPPA floating comparisons produce condition codes. */
-#define EXTRA_CC_MODES CCFPmode
-
-/* Define the names for the modes specified above.  */
-#define EXTRA_CC_NAMES "CCFP"
+#define EXTRA_CC_MODES CC(CCFPmode, "CCFP")
 
 /* Given a comparison code (EQ, NE, etc.) and the first operand of a COMPARE,
    return the mode to be used for the comparison.  For floating-point, CCFPmode

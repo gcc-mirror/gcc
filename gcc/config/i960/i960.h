@@ -1237,10 +1237,9 @@ extern struct rtx_def *gen_compare_reg ();
 
    Also, signed and unsigned comparisons are distinguished, as
    are operations which are compatible with chkbit insns.  */
-#define EXTRA_CC_MODES CC_UNSmode, CC_CHKmode
-
-/* Define the names for the modes specified above.  */
-#define EXTRA_CC_NAMES "CC_UNS", "CC_CHK"
+#define EXTRA_CC_MODES		\
+    CC(CC_UNSmode, "CC_UNS")	\
+    CC(CC_CHKmode, "CC_CHK")
 
 /* Given a comparison code (EQ, NE, etc.) and the first operand of a COMPARE,
    return the mode to be used for the comparison.  For floating-point, CCFPmode

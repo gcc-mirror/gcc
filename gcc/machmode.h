@@ -42,10 +42,6 @@ Boston, MA 02111-1307, USA.  */
 
 enum machine_mode {
 #include "machmode.def"
-
-#ifdef EXTRA_CC_MODES
-  EXTRA_CC_MODES,
-#endif
 MAX_MACHINE_MODE };
 
 #undef DEF_MACHMODE
@@ -65,7 +61,7 @@ enum mode_class { MODE_RANDOM, MODE_INT, MODE_FLOAT, MODE_PARTIAL_INT, MODE_CC,
 /* Get the general kind of object that mode MODE represents
    (integer, floating, complex, etc.)  */
 
-extern enum mode_class mode_class[];
+extern const enum mode_class mode_class[];
 #define GET_MODE_CLASS(MODE)		(mode_class[(int) (MODE)])
 
 /* Nonzero if MODE is an integral mode.  */
@@ -86,12 +82,12 @@ extern enum mode_class mode_class[];
 
 /* Get the size in bytes of an object of mode MODE.  */
 
-extern int mode_size[];
+extern const int mode_size[];
 #define GET_MODE_SIZE(MODE)		(mode_size[(int) (MODE)])
 
 /* Get the size in bytes of the basic parts of an object of mode MODE.  */
 
-extern int mode_unit_size[];
+extern const int mode_unit_size[];
 #define GET_MODE_UNIT_SIZE(MODE)	(mode_unit_size[(int) (MODE)])
 
 /* Get the number of units in the object.  */
@@ -109,7 +105,7 @@ extern int mode_unit_size[];
 /* Get a bitmask containing 1 for all bits in a word
    that fit within mode MODE.  */
 
-extern unsigned HOST_WIDE_INT mode_mask_array[];
+extern const unsigned HOST_WIDE_INT mode_mask_array[];
 
 #define GET_MODE_MASK(MODE) mode_mask_array[(int) (MODE)]
 
@@ -117,7 +113,7 @@ extern unsigned HOST_WIDE_INT mode_mask_array[];
 
 /* Get the next wider natural mode (eg, QI -> HI -> SI -> DI -> TI).  */
 
-extern unsigned char mode_wider_mode[];
+extern const unsigned char mode_wider_mode[];
 #define GET_MODE_WIDER_MODE(MODE)	((enum machine_mode)mode_wider_mode[(int) (MODE)])
 
 /* Return the mode for data of a given size SIZE and mode class CLASS.
@@ -149,7 +145,7 @@ extern enum machine_mode get_best_mode PROTO((int, int, int, enum machine_mode, 
 
 /* For each class, get the narrowest mode in that class.  */
 
-extern enum machine_mode class_narrowest_mode[];
+extern const enum machine_mode class_narrowest_mode[];
 #define GET_CLASS_NARROWEST_MODE(CLASS) class_narrowest_mode[(int) (CLASS)]
 
 /* Define the integer modes whose sizes are BITS_PER_UNIT and BITS_PER_WORD

@@ -162,10 +162,6 @@ struct data *end_of_insn_data;
 
 int have_constraints;
 
-/* Nonzero if some error has occurred.  We will make all errors fatal, but
-   might as well continue until we see all of them.  */
-
-static int have_error;
 
 static char * name_for_index PROTO((int));
 static void output_prologue PROTO((void));
@@ -950,8 +946,6 @@ main (argc, argv)
       perror (argv[1]);
       exit (FATAL_EXIT_CODE);
     }
-
-  init_rtl ();
 
   output_prologue ();
   next_code_number = 0;

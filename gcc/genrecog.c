@@ -213,7 +213,7 @@ make_insn_sequence (insn, type)
   {
     static const char *last_real_name = "insn";
     static int last_real_code = 0;
-    char *name;
+    char *name = 0;
 
     if (insn_name_ptr_size <= next_insn_code)
       {
@@ -226,7 +226,8 @@ make_insn_sequence (insn, type)
 	insn_name_ptr_size = new_size;
       }
 
-    name = XSTR (insn, 0);
+    if (type == RECOG)
+      name = XSTR (insn, 0);
     if (!name || name[0] == '\0')
       {
 	name = xmalloc (strlen (last_real_name) + 10);
@@ -1733,7 +1734,6 @@ main (argc, argv)
       exit (FATAL_EXIT_CODE);
     }
 
-  init_rtl ();
   next_insn_code = 0;
   next_index = 0;
 
