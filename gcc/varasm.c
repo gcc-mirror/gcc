@@ -216,6 +216,7 @@ struct in_named_entry
 {
   const char *name;
   unsigned int flags;
+  bool declared;
 };
 
 static htab_t in_named_htab;
@@ -339,6 +340,31 @@ get_named_section_flags (section)
 
   return slot ? (*slot)->flags : 0;
 }
+
+/* Returns true if the section has been declared before.   Sets internal
+   flag on this section in in_named_hash so subsequent calls on this 
+   section will return false. */
+
+bool
+named_section_first_declaration (name)
+     const char *name;
+{
+  struct in_named_entry **slot;
+
+  slot = (struct in_named_entry**)
+    htab_find_slot_with_hash (in_named_htab, name, 
+			      htab_hash_string (name), NO_INSERT);
+  if (! (*slot)->declared)
+    {
+      (*slot)->declared = true;
+      return true;
+    }
+  else 
+    {
+      return false;
+    }
+}
+
 
 /* Record FLAGS for SECTION.  If SECTION was previously recorded with a
    different set of flags, return false.  */
@@ -5204,6 +5230,12 @@ default_elf_asm_named_section (name, flags)
 {
   char flagchars[10], *f = flagchars;
   const char *type;
+
+  if (! named_section_first_declaration (name))
+    {
+      fprintf (asm_out_file, "\t.section\t%s\n", name);
+      return;
+    }
 
   if (!(flags & SECTION_DEBUG))
     *f++ = 'a';
