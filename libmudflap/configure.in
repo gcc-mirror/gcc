@@ -63,11 +63,14 @@ AC_TRY_COMPILE([
 enable_shared=no])
 
 AC_CHECK_HEADERS(stdint.h execinfo.h signal.h dlfcn.h \
-  netdb.h sys/ipc.h sys/sem.h sys/wait.h sys/socket.h)
+  netdb.h sys/ipc.h sys/sem.h sys/shm.h sys/wait.h sys/socket.h)
 AC_CHECK_FUNCS(backtrace backtrace_symbols gettimeofday signal)
 
 dnl Check for 64-bit stdio calls related to Large File Support
 AC_CHECK_FUNCS(fopen64 fseeko64 ftello64 stat64)
+
+dnl Check for nonstandard functions
+AC_CHECK_FUNCS(strnlen memrchr strncpy memmem sethostname)
 
 AC_TRY_COMPILE([#include <sys/types.h>
 #include <sys/ipc.h>
@@ -115,7 +118,14 @@ ac_have_pthread_h=yes
 ],[
 ac_have_pthread_h=
 ])
-AM_CONDITIONAL(LIBMUDFLAPTH, [test "$ac_have_pthread_h" != ""])
+AM_CONDITIONAL(LIBMUDFLAPTH, [test "x$ac_have_pthread_h" != "x"])
+if test "x$ac_have_pthread_h" != "x"
+then
+        build_libmudflapth=1
+else
+        build_libmudflapth=0
+fi
+AC_SUBST(build_libmudflapth)
 
 AC_CHECK_LIB(dl, dlsym)
 
@@ -155,7 +165,7 @@ esac
 AC_SUBST(toolexecdir)
 AC_SUBST(toolexeclibdir)
 
-if test "x$enable_shared" = "xyes" && test "x$ac_have_pthread_h" != ""; then
+if test "x$enable_shared" = "xyes" && test "x$ac_have_pthread_h" != "x"; then
   # NB: don't check for -lpthread here, because then it would be
   # added to LIBS.  For the thread-unaware libmudflap.la, we don't
   # want it there.
@@ -166,7 +176,7 @@ if test "x$enable_shared" = "xyes" && test "x$ac_have_pthread_h" != ""; then
   # the nonstandard dlvsym().
   AC_CHECK_FUNCS(dlvsym)
   AC_CHECK_TOOL(NM, nm)
-  if test "x$ac_cv_have_dlvsym" != ""; then
+  if test "x$ac_cv_have_dlvsym" != "x"; then
     # Try compiling a simple pthreads program.  Find the shared libraries it
     # ends up with.  Then use "nm" on those libraries to extract the
     # default symbol versioning suffix ("@@"), if any.  But that's tricky.
@@ -193,10 +203,33 @@ EOF
 fi
 AC_DEFINE_UNQUOTED(PTHREAD_CREATE_VERSION, $pthread_create_version, [pthread_create symbol version])
 
+
+# Figure out whether the compiler supports "-ffunction-sections -fdata-sections",
+# similarly to how libstdc++ does it
+ac_test_CFLAGS="${CFLAGS+set}"
+ac_save_CFLAGS="$CFLAGS"
+
+# Check for -ffunction-sections -fdata-sections
+AC_MSG_CHECKING([for gcc that supports -ffunction-sections -fdata-sections])
+CFLAGS='-Werror -ffunction-sections -fdata-sections'
+AC_TRY_COMPILE(, [int foo;], [ac_fdsections=yes], [ac_fdsections=no])
+if test "$ac_test_CFLAGS" = set; then
+  CFLAGS="$ac_save_CFLAGS"
+else
+  # this is the suspicious part
+  CFLAGS=""
+fi
+if test x"$ac_fdsections" = x"yes"; then
+  SECTION_FLAGS='-ffunction-sections -fdata-sections'
+fi
+AC_MSG_RESULT($ac_fdsections)
+AC_SUBST(SECTION_FLAGS)
+
+
 if test ${multilib} = yes; then
   multilib_arg="--enable-multilib"
 else
   multilib_arg=
 fi
 
-AC_OUTPUT([Makefile testsuite/Makefile mf-runtime.h])
+AC_OUTPUT([Makefile testsuite/Makefile testsuite/mfconfig.exp mf-runtime.h])

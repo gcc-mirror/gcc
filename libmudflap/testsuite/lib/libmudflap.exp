@@ -17,9 +17,9 @@
 # Define libmudflap callbacks for dg.exp.
 # This file is a copy of libstdc++-v3's dejagnu driver, with minor changes.
 
-
 load_lib mfdg.exp
 load_lib libgloss.exp
+
 
 proc libmudflap-init { language } {
     global srcdir
@@ -92,6 +92,10 @@ proc libmudflap-init { language } {
         }
     }
 
+    global mfconfig_libs
+    global add_flags
+    append add_flags " $mfconfig_libs"
+
     verbose -log "ld_library_path=$ld_library_path"
     setenv  LD_LIBRARY_PATH     $ld_library_path
     setenv  SHLIB_PATH          $ld_library_path
@@ -151,6 +155,9 @@ proc libmudflap-dg-test { prog do_what extra_tool_flags } {
     if { $extra_tool_flags != "" } {
 	lappend options "additional_flags=$extra_tool_flags"
     }
+
+    global mfconfig_libs
+    lappend options "libs=$mfconfig_libs"
 
     set comp_output [libmudflap_target_compile "$prog" "$output_file" "$compile_type" $options];
     set comp_output [prune_gcc_output $comp_output ];
@@ -244,14 +251,12 @@ proc libmudflap-list-sourcefiles { } {
 
 
 proc prune_gcc_output { text } {
-
     regsub -all {(^|\n)[^\n]*ld: warning: libgcc_s[^\n]*not found[^\n]*try using[^\n]*} $text "" text
-
     regsub -all {(^|\n)[^\n]*In function.*pthread_create[^\n]*} $text "" text
-
     regsub -all {(^|\n)[^\n]*the use of .pthread.*is deprecated[^\n]*} $text "" text
-
     regsub -all {(^|\n)[^\n]*Dwarf Error:.*FORM value: 14[^\n]*} $text "" text
+    regsub -all {(^|\n)[^\n]*In function[^\n]*} $text "" text
+    regsub -all {(^|\n)[^\n]*Using.*in statically linked applications requires[^\n]*} $text "" text
 
     return $text
 }

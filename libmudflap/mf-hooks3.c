@@ -1,5 +1,5 @@
 /* Mudflap: narrow-pointer bounds-checking by tree rewriting.
-   Copyright (C) 2002, 2003 Free Software Foundation, Inc.
+   Copyright (C) 2002, 2003, 2004 Free Software Foundation, Inc.
    Contributed by Frank Ch. Eigler <fche@redhat.com>
    and Graydon Hoare <graydon@redhat.com>
 
@@ -59,6 +59,7 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include <errno.h>
 #include <limits.h>
 #include <sched.h>
+#include <fcntl.h>
 
 #include "mf-runtime.h"
 #include "mf-impl.h"
@@ -70,8 +71,6 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 
 /* Multithreading support hooks.  */
 
-
-#ifdef WRAP_pthreadstuff
 
 
 #ifndef LIBMUDFLAPTH
@@ -87,9 +86,12 @@ struct pthread_info
   short dead_p;  /* Is this thread dead?  */
   pthread_t self; /* The thread id.  */
 
-  /* If libmudflapth allocated the stack, store its base/size.  */
+  /* If libmudflapth allocated the stack, store its adjusted base/size.  */
   void *stack;
   size_t stack_size;
+  /* The _alloc fields store unadjusted values from the moment of allocation.  */
+  void *stack_alloc;
+  size_t stack_size_alloc;
 
   int *thread_errno;
   enum __mf_state_enum state;
@@ -357,6 +359,8 @@ WRAPPER(int, pthread_create, pthread_t *thr, const pthread_attr_t *attr,
   pthread_attr_t override_attr;
   void *override_stack;
   size_t override_stacksize;
+  void *override_stack_alloc = (void *) 0;
+  size_t override_stacksize_alloc = 0;
   unsigned i;
 
   TRACE ("pthread_create\n");
@@ -381,9 +385,9 @@ WRAPPER(int, pthread_create, pthread_t *thr, const pthread_attr_t *attr,
       if (pi->dead_p >= 10 /* XXX */)
 	{
 	  if (pi->stack)
-	    CALL_REAL (munmap, pi->stack, pi->stack_size);
+	    CALL_REAL (munmap, pi->stack_alloc, pi->stack_size_alloc);
 
-	  VERBOSE_TRACE ("slot %u freed, stack %p\n", i, pi->stack);
+	  VERBOSE_TRACE ("slot %u freed, stack %p\n", i, pi->stack_alloc);
 	  memset (pi, 0, sizeof (*pi));
 
 	  /* One round of garbage collection is enough.  */
@@ -435,14 +439,32 @@ WRAPPER(int, pthread_create, pthread_t *thr, const pthread_attr_t *attr,
 #define MF_MAP_ANON MAP_ANONYMOUS
 #elif defined(MAP_ANON)
 #define MF_MAP_ANON MAP_ANON
-#else
-#error "Cannot mmap anonymous memory."
 #endif
 
+#ifndef MAP_FAILED
+#define MAP_FAILED ((void *) -1)
+#endif
+
+#ifdef MF_MAP_ANON
       override_stack = CALL_REAL (mmap, NULL, override_stacksize, 
 				  PROT_READ|PROT_WRITE, 
 				  MAP_PRIVATE|MF_MAP_ANON,
 				  0, 0);
+#else
+      /* Try mapping /dev/zero instead.  */
+      {
+        static int zerofd = -1;
+        if (zerofd == -1)
+          zerofd = open ("/dev/zero", O_RDWR);
+        if (zerofd == -1)
+          override_stack = MAP_FAILED;
+        else
+          override_stack = CALL_REAL (mmap, NULL, override_stacksize, 
+                                      PROT_READ|PROT_WRITE, 
+                                      MAP_PRIVATE, zerofd, 0);
+      }
+#endif
+
       if (override_stack == 0 || override_stack == MAP_FAILED)
 	{
 	  errno = EAGAIN;
@@ -452,10 +474,15 @@ WRAPPER(int, pthread_create, pthread_t *thr, const pthread_attr_t *attr,
       VERBOSE_TRACE ("thread stack alloc %p size %lu\n", 
 		     override_stack, (unsigned long) override_stacksize);
 
+      /* Save the original allocated values for later deallocation.  */
+      override_stack_alloc = override_stack;
+      override_stacksize_alloc = override_stacksize;
+
       /* The stackaddr pthreads attribute is a candidate stack pointer.
 	 It must point near the top or the bottom of this buffer, depending
 	 on whether stack grows downward or upward, and suitably aligned.
 	 On the x86, it grows down, so we set stackaddr near the top.  */
+      /* XXX: port logic */
       override_stack = (void *)
 	(((uintptr_t) override_stack + override_stacksize - alignment - perturb)
 	 & (~(uintptr_t)(alignment-1)));
@@ -504,6 +531,8 @@ WRAPPER(int, pthread_create, pthread_t *thr, const pthread_attr_t *attr,
     /* Fill in remaining fields in pthread_info. */
     pi->stack = override_stack;
     pi->stack_size = override_stacksize;
+    pi->stack_alloc = override_stack_alloc;
+    pi->stack_size_alloc = override_stacksize_alloc;
     /* XXX: this might be too late for future heuristics that attempt
        to use thread stack bounds.  We may need to put the new thread
        to sleep. */
@@ -563,11 +592,3 @@ WRAPPER(void, pthread_exit, void *rc)
   CALL_REAL (pthread_exit, rc);
   /* NOTREACHED */
 }
-
-
-
-
-
-
-
-#endif /* pthreadstuff */
