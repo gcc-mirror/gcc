@@ -1097,19 +1097,9 @@ abstract_method_declaration:
 /* 19.10 Productions from 10: Arrays  */
 array_initializer:
 	OCB_TK CCB_TK
-		{ 
-		  $$ = build_new_array_init 
-		    ($1.location, 
-		     tree_cons (NULL_TREE, NULL_TREE, NULL_TREE));
-		}
+		{ $$ = build_new_array_init ($1.location, NULL_TREE); }
 |	OCB_TK variable_initializers CCB_TK
 		{ $$ = build_new_array_init ($1.location, $2); }
-|	OCB_TK C_TK CCB_TK
-		{
-		  $$ = build_new_array_init 
-		    ($1.location,
-		     tree_cons (NULL_TREE, NULL_TREE, NULL_TREE));
-		}
 |	OCB_TK variable_initializers C_TK CCB_TK
 		{ $$ = build_new_array_init ($1.location, $2); }
 ;
@@ -1121,7 +1111,9 @@ variable_initializers:
 				  $1, NULL_TREE);
 		}
 |	variable_initializers C_TK variable_initializer
-		{ $$ = tree_cons (maybe_build_array_element_wfl ($3), $3, $1); }
+		{
+		  $$ = tree_cons (maybe_build_array_element_wfl ($3), $3, $1);
+		}
 |	variable_initializers C_TK error
 		{yyerror ("Missing term"); RECOVER;}
 ;
@@ -9147,6 +9139,8 @@ static tree
 patch_string (node)
     tree node;
 {
+  if (node == error_mark_node)
+    return error_mark_node;
   if (TREE_CODE (node) == STRING_CST)
     return patch_string_cst (node);
   else if (IS_CRAFTED_STRING_BUFFER_P (node))
@@ -9752,10 +9746,10 @@ patch_new_array_init (type, node)
      tree type, node;
 {
   TREE_OPERAND (node, 0) =
-      patch_array_constructor (type, TREE_OPERAND (node, 0));
+    patch_array_constructor (type, TREE_OPERAND (node, 0));
 
   if (TREE_OPERAND (node, 0) == error_mark_node)
-      return error_mark_node;
+    return error_mark_node;
 
   TREE_TYPE (node) = TREE_TYPE (TREE_OPERAND (node, 0));
   return node;
@@ -9830,11 +9824,6 @@ array_constructor_check_entry (type, entry)
   new_value = NULL_TREE;
   wfl_value = TREE_VALUE (entry);
 
-  /* NULL_TREE here means that we're creating an array of dimensions 0
-     here. Probably needs a FIXME. */
-  if (!wfl_value)
-    return 0;
-
   /* If we have a TREE_LIST here, it means that we're specifying more
      dimensions that we should. Report errors within the list. */
   if (TREE_CODE (wfl_value) == NEW_ARRAY_INIT)
@@ -9847,13 +9836,15 @@ array_constructor_check_entry (type, entry)
     }
   
   value = java_complete_tree (TREE_VALUE (entry));
+  /* patch_string return error_mark_node if arg is error_mark_node */
   if ((patched = patch_string (value)))
     value = patched;
+  if (value == error_mark_node)
+    return 1;
   
-  /* Check for errors here. FIXME */
   type_value = TREE_TYPE (value);
   
-  /* At anytime, try_builtin_assignconv can report an warning on
+  /* At anytime, try_builtin_assignconv can report a warning on
      constant overflow during narrowing. */
   SET_WFL_OPERATOR (wfl_operator, TREE_PURPOSE (entry), wfl_value);
   new_value = try_builtin_assignconv (wfl_operator, type, value);
