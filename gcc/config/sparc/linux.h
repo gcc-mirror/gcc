@@ -1,5 +1,5 @@
 /* Definitions for SPARC running Linux with ELF
-   Copyright (C) 1996 Free Software Foundation, Inc.
+   Copyright (C) 1996, 1997 Free Software Foundation, Inc.
    Contributed by Eddie C. Dost (ecd@skynet.be)
 
 This file is part of GNU CC.
@@ -56,10 +56,6 @@ Boston, MA 02111-1307, USA.  */
         fprintf (FILE, "\t.version\t\"01.01\"\n");                      \
   } while (0)
 
-#undef  LIBGCC_SPEC
-#define LIBGCC_SPEC \
-  "%{!shared:-lgcc}"
-
 /* Provide a STARTFILE_SPEC appropriate for Linux.  Here we add
    the Linux magical crtbegin.o file (see crtstuff.c) which
    provides part of the support for getting C++ file-scope static
@@ -81,6 +77,15 @@ Boston, MA 02111-1307, USA.  */
 #define ENDFILE_SPEC \
   "%{!shared:crtend.o%s} %{shared:crtendS.o%s} crtn.o%s"
 
+/* This is for -profile to use -lc_p instead of -lc. */
+#undef	CC1_SPEC
+#define	CC1_SPEC "%{profile:-p} \
+%{sun4:} %{target:} \
+%{mcypress:-mcpu=cypress} \
+%{msparclite:-mcpu=sparclite} %{mf930:-mcpu=f930} %{mf934:-mcpu=f934} \
+%{mv8:-mcpu=v8} %{msupersparc:-mcpu=supersparc} \
+"
+
 #undef TARGET_VERSION
 #define TARGET_VERSION fprintf (stderr, " (sparc Linux/ELF)");
 
@@ -100,17 +105,27 @@ Boston, MA 02111-1307, USA.  */
 #define CPP_PREDEFINES "-D__ELF__ -Dunix -Dsparc -Dlinux -Asystem(unix) -Asystem(posix) -Acpu(sparc) -Amachine(sparc)"
 
 #undef CPP_SPEC
+#ifdef USE_GNULIBC_1
 #define CPP_SPEC "%{fPIC:-D__PIC__ -D__pic__} %{fpic:-D__PIC__ -D__pic__} %{msparclite:-D__sparclite__} %{mv8:-D__sparc_v8__} %{msupersparc:-D__supersparc__ -D__sparc_v8__} %{posix:-D_POSIX_SOURCE}"
+#else
+#define CPP_SPEC "%{fPIC:-D__PIC__ -D__pic__} %{fpic:-D__PIC__ -D__pic__} %{msparclite:-D__sparclite__} %{mv8:-D__sparc_v8__} %{msupersparc:-D__supersparc__ -D__sparc_v8__} %{posix:-D_POSIX_SOURCE} %{pthread:-D_REENTRANT}"
+#endif
 
 #undef LIB_SPEC
-#if 1
 /* We no longer link with libc_p.a or libg.a by default. If you
  * want to profile or debug the Linux C library, please add
  * -lc_p or -ggdb to LDFLAGS at the link time, respectively.
  */
+#if 1
+#ifdef USE_GNULIBC_1
 #define LIB_SPEC \
-  "%{!shared: %{mieee-fp:-lieee} %{p:-lgmon} %{pg:-lgmon} \
-     %{!ggdb:-lc} %{ggdb:-lg}}"
+  "%{!shared: %{p:-lgmon} %{pg:-lgmon} %{profile:-lgmon -lc_p} \
+     %{!profile:%{!ggdb:-lc} %{ggdb:-lg}}}"
+#else
+#define LIB_SPEC \
+  "%{!shared: %{mieee-fp:-lieee} %{pthread:-lpthread} \
+     %{profile:-lc_p} %{!profile: -lc}}"
+#endif
 #else
 #define LIB_SPEC \
   "%{!shared: \
@@ -135,6 +150,7 @@ Boston, MA 02111-1307, USA.  */
 /* If ELF is the default format, we should not use /lib/elf. */
 
 #undef  LINK_SPEC
+#ifdef USE_GNULIBC_1
 #ifndef LINUX_DEFAULT_ELF
 #define LINK_SPEC "-m elf32_sparc -Y P,/usr/lib %{shared:-shared} \
   %{!shared: \
@@ -150,6 +166,15 @@ Boston, MA 02111-1307, USA.  */
       %{!static: \
         %{rdynamic:-export-dynamic} \
         %{!dynamic-linker:-dynamic-linker /lib/ld-linux.so.1}} \
+        %{static:-static}}}"
+#endif
+#else
+#define LINK_SPEC "-m elf32_sparc -Y P,/usr/lib %{shared:-shared} \
+  %{!shared: \
+    %{!ibcs: \
+      %{!static: \
+        %{rdynamic:-export-dynamic} \
+        %{!dynamic-linker:-dynamic-linker /lib/ld-linux.so.2}} \
         %{static:-static}}}"
 #endif
 
