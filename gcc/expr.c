@@ -177,6 +177,7 @@ static rtx do_store_flag	PARAMS ((tree, rtx, enum machine_mode, int));
 #ifdef PUSH_ROUNDING
 static void emit_single_push_insn PARAMS ((enum machine_mode, rtx, tree));
 #endif
+static void do_tablejump PARAMS ((rtx, enum machine_mode, rtx, rtx, rtx));
 
 /* Record for each mode whether we can move a register directly to or
    from an object of that mode in memory.  If we can't, we won't try
@@ -10717,11 +10718,112 @@ do_store_flag (exp, target, mode, only_cheap)
   return target;
 }
 
-/* Generate a tablejump instruction (used for switch statements).  */
 
-#ifdef HAVE_tablejump
+/* Stubs in case we haven't got a casesi insn.  */
+#ifndef HAVE_casesi
+# define HAVE_casesi 0
+# define gen_casesi(a, b, c, d, e) (0)
+# define CODE_FOR_casesi CODE_FOR_nothing
+#endif
 
-/* INDEX is the value being switched on, with the lowest value
+/* If the machine does not have a case insn that compares the bounds,
+   this means extra overhead for dispatch tables, which raises the
+   threshold for using them.  */
+#ifndef CASE_VALUES_THRESHOLD
+#define CASE_VALUES_THRESHOLD (HAVE_casesi ? 4 : 5)
+#endif /* CASE_VALUES_THRESHOLD */
+
+unsigned int
+case_values_threshold ()
+{
+  return CASE_VALUES_THRESHOLD;
+}
+
+/* Attempt to generate a casesi instruction.  Returns 1 if successful,
+   0 otherwise (i.e. if there is no casesi instruction).  */
+int
+try_casesi (index_type, index_expr, minval, range,
+	    table_label, default_label)
+     tree index_type, index_expr, minval, range;
+     rtx table_label ATTRIBUTE_UNUSED;
+     rtx default_label;
+{
+  enum machine_mode index_mode = SImode;
+  int index_bits = GET_MODE_BITSIZE (index_mode);
+  rtx op1, op2, index;
+  enum machine_mode op_mode;
+
+  if (! HAVE_casesi)
+    return 0;
+
+  /* Convert the index to SImode.  */
+  if (GET_MODE_BITSIZE (TYPE_MODE (index_type)) > GET_MODE_BITSIZE (index_mode))
+    {
+      enum machine_mode omode = TYPE_MODE (index_type);
+      rtx rangertx = expand_expr (range, NULL_RTX, VOIDmode, 0);
+
+      /* We must handle the endpoints in the original mode.  */
+      index_expr = build (MINUS_EXPR, index_type,
+			  index_expr, minval);
+      minval = integer_zero_node;
+      index = expand_expr (index_expr, NULL_RTX, VOIDmode, 0);
+      emit_cmp_and_jump_insns (rangertx, index, LTU, NULL_RTX,
+			       omode, 1, 0, default_label);
+      /* Now we can safely truncate.  */
+      index = convert_to_mode (index_mode, index, 0);
+    }
+  else
+    {
+      if (TYPE_MODE (index_type) != index_mode)
+	{
+	  index_expr = convert (type_for_size (index_bits, 0),
+				index_expr);
+	  index_type = TREE_TYPE (index_expr);
+	}
+
+      index = expand_expr (index_expr, NULL_RTX, VOIDmode, 0);
+    }
+  emit_queue ();
+  index = protect_from_queue (index, 0);
+  do_pending_stack_adjust ();
+
+  op_mode = insn_data[(int) CODE_FOR_casesi].operand[0].mode;
+  if (! (*insn_data[(int) CODE_FOR_casesi].operand[0].predicate)
+      (index, op_mode))
+    index = copy_to_mode_reg (op_mode, index);
+
+  op1 = expand_expr (minval, NULL_RTX, VOIDmode, 0);
+
+  op_mode = insn_data[(int) CODE_FOR_casesi].operand[1].mode;
+  op1 = convert_modes (op_mode, TYPE_MODE (TREE_TYPE (minval)),
+		       op1, TREE_UNSIGNED (TREE_TYPE (minval)));
+  if (! (*insn_data[(int) CODE_FOR_casesi].operand[1].predicate)
+      (op1, op_mode))
+    op1 = copy_to_mode_reg (op_mode, op1);
+
+  op2 = expand_expr (range, NULL_RTX, VOIDmode, 0);
+
+  op_mode = insn_data[(int) CODE_FOR_casesi].operand[2].mode;
+  op2 = convert_modes (op_mode, TYPE_MODE (TREE_TYPE (range)),
+		       op2, TREE_UNSIGNED (TREE_TYPE (range)));
+  if (! (*insn_data[(int) CODE_FOR_casesi].operand[2].predicate)
+      (op2, op_mode))
+    op2 = copy_to_mode_reg (op_mode, op2);
+
+  emit_jump_insn (gen_casesi (index, op1, op2,
+			      table_label, default_label));
+  return 1;
+}
+
+/* Attempt to generate a tablejump instruction; same concept.  */
+#ifndef HAVE_tablejump
+#define HAVE_tablejump 0
+#define gen_tablejump(x, y) (0)
+#endif
+
+/* Subroutine of the next function.
+
+   INDEX is the value being switched on, with the lowest value
    in the table already subtracted.
    MODE is its expected mode (needed if INDEX is constant).
    RANGE is the length of the jump table.
@@ -10730,7 +10832,7 @@ do_store_flag (exp, target, mode, only_cheap)
    DEFAULT_LABEL is a CODE_LABEL rtx to jump to if the
    index value is out of range.  */
 
-void
+static void
 do_tablejump (index, mode, range, table_label, default_label)
      rtx index, range, table_label, default_label;
      enum machine_mode mode;
@@ -10792,4 +10894,31 @@ do_tablejump (index, mode, range, table_label, default_label)
     emit_barrier ();
 }
 
-#endif /* HAVE_tablejump  */
+int
+try_tablejump (index_type, index_expr, minval, range,
+	       table_label, default_label)
+     tree index_type, index_expr, minval, range;
+     rtx table_label, default_label;
+{
+  rtx index;
+
+  if (! HAVE_tablejump)
+    return 0;
+
+  index_expr = fold (build (MINUS_EXPR, index_type,
+			    convert (index_type, index_expr),
+			    convert (index_type, minval)));
+  index = expand_expr (index_expr, NULL_RTX, VOIDmode, 0);
+  emit_queue ();
+  index = protect_from_queue (index, 0);
+  do_pending_stack_adjust ();
+
+  do_tablejump (index, TYPE_MODE (index_type),
+		convert_modes (TYPE_MODE (index_type),
+			       TYPE_MODE (TREE_TYPE (range)),
+			       expand_expr (range, NULL_RTX,
+					    VOIDmode, 0),
+			       TREE_UNSIGNED (TREE_TYPE (range))),
+		table_label, default_label);
+  return 1;
+}

@@ -1,9 +1,29 @@
+2001-08-21  Zack Weinberg  <zackw@panix.com>
+
+	* stmt.c: Don't include insn-codes.h.
+	(expand_end_case): Machine specific logic moved to expr.c.
+	No need to worry about __builtin_classify_type.
+	(check_for_full_enumeration_handling, emit_case_nodes):
+	Kill #if 0 blocks.
+
+	* builtins.o (expand_builtin_classify_type): Split up so code
+	can be shared with fold_builtin_classify_type.
+	(type_to_class, fold_builtin_classify_type): New functions.
+	(fold_builtins): Handle __builtin_classify_type.
+
+	* expr.c (do_tablejump): Now static.
+	(case_values_threshold, try_casesi, try_tablejump): New;
+	code mostly from stmt.c (expand_end_case).
+	(expr.h): Update prototypes.
+
+	* Makefile.in (stmt.o): Update dependencies.
+
 2001-08-21  Will Cohen  <wcohen@redhat.com>
 
-        * configure/alpha/alpha.h (CONDITIONAL_REGISTER_USAGE): Added local
-        declaration of variable i.
-        * configure/rs6000/rs6000.h (CONDITIONAL_REGISTER_USAGE): Added local
-        declaration of variable i.
+	* configure/alpha/alpha.h (CONDITIONAL_REGISTER_USAGE): Added local
+	declaration of variable i.
+	* configure/rs6000/rs6000.h (CONDITIONAL_REGISTER_USAGE): Added local
+	declaration of variable i.
 
 2001-08-21  Richard Henderson  <rth@redhat.com>
 
