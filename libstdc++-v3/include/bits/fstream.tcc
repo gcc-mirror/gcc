@@ -48,19 +48,14 @@ namespace std
 	{
 	  _M_buf_size = _M_buf_size_opt;
 
-	  if (_M_buf_size != 1)
+	  // Allocate internal buffer.
+	  try { _M_buf = new char_type[_M_buf_size]; }
+	  catch(...) 
 	    {
-	      // Allocate internal buffer.
-	      try { _M_buf = new char_type[_M_buf_size]; }
-	      catch(...) 
-		{
-		  delete [] _M_buf;
-		  __throw_exception_again;
-		}
-	      _M_buf_allocated = true;
+	      delete [] _M_buf;
+	      __throw_exception_again;
 	    }
-	  else
-	    _M_buf = _M_unbuf;
+	  _M_buf_allocated = true;
 	}
     }
 
@@ -78,51 +73,14 @@ namespace std
 	  this->setg(NULL, NULL, NULL);
 	  this->setp(NULL, NULL);
 	}
-      else
-	{
-	  if (_M_buf == _M_unbuf)
-	    {
-	      _M_buf = NULL;
-	      this->setg(NULL, NULL, NULL);
-	      this->setp(NULL, NULL);
-	    }
-	}
     }
 
   template<typename _CharT, typename _Traits>
     basic_filebuf<_CharT, _Traits>::
-    basic_filebuf() 
-    : __streambuf_type(), _M_file(&_M_lock), _M_state_cur(__state_type()), 
-    _M_state_beg(__state_type()), _M_buf_allocated(false), 
-    _M_last_overflowed(false)
+    basic_filebuf() : __streambuf_type(), _M_file(&_M_lock), 
+    _M_state_cur(__state_type()), _M_state_beg(__state_type()), 
+    _M_buf_allocated(false), _M_last_overflowed(false)
     { _M_buf_unified = true; }
-
-  template<typename _CharT, typename _Traits>
-    basic_filebuf<_CharT, _Traits>::
-    basic_filebuf(__c_file* __f, ios_base::openmode __mode, int_type __s)
-    : __streambuf_type(),  _M_file(&_M_lock), _M_state_cur(__state_type()), 
-    _M_state_beg(__state_type()), _M_buf_allocated(false), 
-    _M_last_overflowed(false)
-    {
-      _M_buf_unified = true; 
-      _M_file.sys_open(__f, __mode);
-      if (this->is_open())
-	{
-	  _M_mode = __mode;
-	  if (__s)
-	    {
-	      _M_buf_size_opt = __s;
-	      _M_allocate_internal_buffer();
-	      _M_set_indeterminate();
-	    }
-	}
-    }
-
-  template<typename _CharT, typename _Traits>
-    int
-    basic_filebuf<_CharT, _Traits>::
-    fd()
-    { return _M_file.fd(); }
 
   template<typename _CharT, typename _Traits>
     typename basic_filebuf<_CharT, _Traits>::__filebuf_type* 

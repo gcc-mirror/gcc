@@ -30,6 +30,7 @@
 #include <fcntl.h>
 #include <sys/types.h>
 #include <sys/stat.h>
+#include <ext/stdio_filebuf.h>
 #include <testsuite_hooks.h>
 
 const char name_01[] = "filebuf_members-1.tst";
@@ -89,7 +90,7 @@ void test_02()
   FILE* f2 = fopen(name_01, "r");
   VERIFY( f2 != NULL );
   {
-    std::filebuf fb(f2, std::ios_base::in, 512);
+    __gnu_cxx::stdio_filebuf<char> fb(f2, std::ios_base::in, 512);
   }
   close_num = fclose(f2);
   VERIFY( close_num == 0 );
@@ -115,7 +116,7 @@ void test_03()
   VERIFY( first_fd != -1 );
   FILE* first_file = ::fdopen(first_fd, "r");
   VERIFY( first_file != NULL );
-  std::filebuf fb (first_file, std::ios_base::in);
+  __gnu_cxx::stdio_filebuf<char> fb(first_file, std::ios_base::in);
 
   int second_fd = fb.fd();
 
