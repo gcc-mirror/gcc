@@ -74,6 +74,12 @@ extern int target_flags;
 
 #define TARGET_TRAILING_COLON (target_flags & 64)
 
+/* Emit directives only understood by GAS.  This allows parameter
+   relocations to work for static functions.  There is no way
+   to make them work the HP assembler at this time.  */
+
+#define TARGET_GAS (target_flags & 128)
+
 /* Macro to define tables used to set the flags.
    This is a list in braces of pairs in braces,
    each pair being { "NAME", VALUE }
@@ -97,10 +103,12 @@ extern int target_flags;
    {"no-disable-indexing", -32},\
    {"trailing-colon", 64},	\
    {"no-trailing-colon", -64},	\
+   {"gas", 128},		\
+   {"no-gas", -128},		\
    { "", TARGET_DEFAULT}}
 
 #ifndef TARGET_DEFAULT
-#define TARGET_DEFAULT 0
+#define TARGET_DEFAULT 128		/* TARGET_GAS + TARGET_JUMP_IN_DELAY */
 #endif
 
 #define DBX_DEBUGGING_INFO
@@ -866,10 +874,19 @@ extern enum cmp_type hppa_branch_type;
 	 tree tree_type = TREE_TYPE (DECL);				\
 	 tree parm;							\
 	 int i;								\
-	 if (TREE_PUBLIC (DECL))					\
+	 if (TREE_PUBLIC (DECL) || TARGET_GAS)				\
 	   { extern int current_function_varargs;			\
-	     fputs ("\t.EXPORT ", FILE); assemble_name (FILE, NAME);	\
-	     fputs (",ENTRY,PRIV_LEV=3", FILE);				\
+	     if (TREE_PUBLIC (DECL))					\
+	       {							\
+		 fputs ("\t.EXPORT ", FILE);				\
+		 assemble_name (FILE, NAME);				\
+		 fputs (",ENTRY,PRIV_LEV=3", FILE);			\
+	       }							\
+	     else							\
+	       {							\
+		 fputs ("\t.PARAM ", FILE);				\
+		 assemble_name (FILE, NAME);				\
+	       }							\
 	     for (parm = DECL_ARGUMENTS (DECL), i = 0; parm && i < 4;	\
 		  parm = TREE_CHAIN (parm))				\
 	       {							\
