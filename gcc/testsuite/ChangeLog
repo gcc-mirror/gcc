@@ -1,3 +1,7 @@
+2004-11-23  Eric Botcazou  <ebotcazou@libertysurf.fr>
+
+	* gcc.dg/setjmp-2.c: New test.
+
 2004-11-22  James A. Morrison  <phython@gcc.gnu.org>
 
 	* gcc.target/sparc/align.c, gcc.target/sparc/combined-2.c,
