@@ -1,3 +1,14 @@
+2004-07-23  Thomas Fitzsimmons  <fitzsim@redhat.com>
+
+	* Makefile.am: Replace jar, rmic and rmiregistry references with
+	gjar, grmic and grmiregistry.
+	* configure.in: Likewise.
+	* Makefile.in: Regenerate.
+	* configure: Likewise.
+	* gcj/Makefile.in: Likewise.
+	* include/Makefile.in: Likewise.
+	* testsuite/Makefile.in: Likewise.
+
 2004-07-23  Bryce McKinlay  <mckinlay@redhat.com>
 
 	* gnu/java/net/protocol/http/Connection.java: Use GetPropertyAction

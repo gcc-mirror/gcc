@@ -60,7 +60,7 @@ propdir = $(libdir)
 
 ## For now, only on native systems.  FIXME.
 if NATIVE
-bin_PROGRAMS = jv-convert gij rmic rmiregistry
+bin_PROGRAMS = jv-convert gij grmic grmiregistry
 endif
 
 bin_SCRIPTS = addr2name.awk
@@ -777,29 +777,29 @@ gij_LDADD = -L$(here)/.libs libgcj.la
 ## linking this program.
 gij_DEPENDENCIES = libgcj.la libgcj.spec
 
-rmic_SOURCES =
+grmic_SOURCES =
 ## This is a dummy definition.
-EXTRA_rmic_SOURCES = $(rmi_java_source_files)
-rmic_LDFLAGS = --main=gnu.java.rmi.rmic.RMIC \
+EXTRA_grmic_SOURCES = $(rmi_java_source_files)
+grmic_LDFLAGS = --main=gnu.java.rmi.rmic.RMIC \
 	-rpath $(toolexeclibdir) -shared-libgcc $(THREADLDFLAGS)
-rmic_LINK = $(GCJLINK)
+grmic_LINK = $(GCJLINK)
 ## See jv_convert_LDADD.
-rmic_LDADD = -L$(here)/.libs libgcj.la
+grmic_LDADD = -L$(here)/.libs libgcj.la
 ## Depend on the spec file to make sure it is up to date before
 ## linking this program.
-rmic_DEPENDENCIES = libgcj.la libgcj.spec
+grmic_DEPENDENCIES = libgcj.la libgcj.spec
 
-rmiregistry_SOURCES =
+grmiregistry_SOURCES =
 ## This is a dummy definition.
-EXTRA_rmiregistry_SOURCES = $(rmi_java_source_files)
-rmiregistry_LDFLAGS = --main=gnu.java.rmi.registry.RegistryImpl \
+EXTRA_grmiregistry_SOURCES = $(rmi_java_source_files)
+grmiregistry_LDFLAGS = --main=gnu.java.rmi.registry.RegistryImpl \
 	-rpath $(toolexeclibdir) -shared-libgcc $(THREADLDFLAGS)
-rmiregistry_LINK = $(GCJLINK)
+grmiregistry_LINK = $(GCJLINK)
 ## See jv_convert_LDADD.
-rmiregistry_LDADD = -L$(here)/.libs libgcj.la
+grmiregistry_LDADD = -L$(here)/.libs libgcj.la
 ## Depend on the spec file to make sure it is up to date before
 ## linking this program.
-rmiregistry_DEPENDENCIES = libgcj.la libgcj.spec
+grmiregistry_DEPENDENCIES = libgcj.la libgcj.spec
 
 # The Unicode consortium does not permit re-distributing the file JIS0201.TXT.
 # You can get it from ftp://ftp.unicode.org/Public/MAPPINGS/EASTASIA/JIS/.

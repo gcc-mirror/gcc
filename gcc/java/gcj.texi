@@ -66,9 +66,9 @@ man page gfdl(7).
 * gij: (gcj)Invoking gij.   GNU interpreter for Java bytecode
 * jv-convert: (gcj)Invoking jv-convert.
                             Convert file from one encoding to another
-* rmic: (gcj)Invoking rmic.
+* grmic: (gcj)Invoking grmic.
                             Generate stubs for Remote Method Invocation.
-* rmiregistry: (gcj)Invoking rmiregistry.
+* grmiregistry: (gcj)Invoking grmiregistry.
                             The remote object registry.
 @end direntry
 @end format
@@ -113,8 +113,8 @@ files and object files, and it can read both Java source code and
 * Invoking jcf-dump::   Print information about class files
 * Invoking gij::	Interpreting Java bytecodes
 * Invoking jv-convert:: Converting from one encoding to another
-* Invoking rmic::        Generate stubs for Remote Method Invocation.
-* Invoking rmiregistry:: The remote object registry.
+* Invoking grmic::        Generate stubs for Remote Method Invocation.
+* Invoking grmiregistry:: The remote object registry.
 * About CNI::           Description of the Compiled Native Interface
 * System properties::   Modifying runtime behavior of the libgcj library
 * Resources::		Where to look for more information
@@ -1019,13 +1019,13 @@ Print version information, then exit.
 
 @c man end
 
-@node Invoking rmic
-@chapter Invoking rmic
+@node Invoking grmic
+@chapter Invoking grmic
 
-@c man title rmic Generate stubs for Remote Method Invocation
+@c man title grmic Generate stubs for Remote Method Invocation
 
-@c man begin SYNOPSIS rmic
-@command{rmic} [@option{OPTION}] @dots{} @var{class} @dots{}
+@c man begin SYNOPSIS grmic
+@command{grmic} [@option{OPTION}] @dots{} @var{class} @dots{}
 @ignore
   [@option{-keep}]
   [@option{-keepgenerated}]
@@ -1040,16 +1040,16 @@ Print version information, then exit.
 @end ignore
 @c man end
 
-@c man begin DESCRIPTION rmic
+@c man begin DESCRIPTION grmic
 
-@command{rmic} is a utility included with @code{libgcj} which generates
+@command{grmic} is a utility included with @code{libgcj} which generates
 stubs for remote objects.
 
 @c FIXME: Add real information here.
 @c This really isn't much more than the --help output.
 
 Note that this program isn't yet fully compatible with the JDK
-@command{rmic}.  Some options, such as @option{-classpath}, are
+@command{grmic}.  Some options, such as @option{-classpath}, are
 recognized but currently ignored.  We have left these options
 undocumented for now.
 
@@ -1058,31 +1058,31 @@ instance, @option{--help} is accepted.
 
 @c man end
 
-@c man begin OPTIONS rmic
+@c man begin OPTIONS grmic
 
 @table @gcctabopt
 @item -keep
 @itemx -keepgenerated
-By default, @command{rmic} deletes intermediate files.  Either of these
+By default, @command{grmic} deletes intermediate files.  Either of these
 options causes it not to delete such files.
 
 @item -v1.1
-Cause @command{rmic} to create stubs and skeletons for the 1.1
+Cause @command{grmic} to create stubs and skeletons for the 1.1
 protocol version.
 
 @item -vcompat
-Cause @command{rmic} to create stubs and skeletons compatible with both
+Cause @command{grmic} to create stubs and skeletons compatible with both
 the 1.1 and 1.2 protocol versions.  This is the default.
 
 @item -v1.2
-Cause @command{rmic} to create stubs and skeletons for the 1.2
+Cause @command{grmic} to create stubs and skeletons for the 1.2
 protocol version.
 
 @item -nocompile
 Don't compile the generated files.
 
 @item -verbose
-Print information about what @command{rmic} is doing.
+Print information about what @command{grmic} is doing.
 
 @item -d @var{directory}
 Put output files in @var{directory}.  By default the files are put in
@@ -1098,22 +1098,22 @@ Print version information, then exit.
 @c man end
 
 
-@node Invoking rmiregistry
-@chapter Invoking rmiregistry
+@node Invoking grmiregistry
+@chapter Invoking grmiregistry
 
-@c man title rmiregistry Remote object registry
+@c man title grmiregistry Remote object registry
 
-@c man begin SYNOPSIS rmiregistry
-@command{rmic} [@option{OPTION}] @dots{} [@var{port}]
+@c man begin SYNOPSIS grmiregistry
+@command{grmic} [@option{OPTION}] @dots{} [@var{port}]
 @ignore
   [@option{--help}]
   [@option{--version}]
 @end ignore
 @c man end
 
-@c man begin DESCRIPTION rmiregistry
+@c man begin DESCRIPTION grmiregistry
 
-@command{rmiregistry} starts a remote object registry on the current
+@command{grmiregistry} starts a remote object registry on the current
 host.  If no port number is specified, then port 1099 is used.
 
 @c FIXME: Add real information here.
@@ -1121,7 +1121,7 @@ host.  If no port number is specified, then port 1099 is used.
 
 @c man end
 
-@c man begin OPTIONS rmiregistry
+@c man begin OPTIONS grmiregistry
 
 @table @gcctabopt
 @item --help

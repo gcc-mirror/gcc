@@ -16,7 +16,7 @@
 
 # Process this with automake to create Makefile.in
 
-SOURCES = $(grepjar_SOURCES) $(jar_SOURCES)
+SOURCES = $(fastjar_SOURCES) $(grepjar_SOURCES)
 
 srcdir = @srcdir@
 top_srcdir = @top_srcdir@
@@ -38,7 +38,7 @@ POST_INSTALL = :
 NORMAL_UNINSTALL = :
 PRE_UNINSTALL = :
 POST_UNINSTALL = :
-bin_PROGRAMS = jar$(EXEEXT) grepjar$(EXEEXT)
+bin_PROGRAMS = fastjar$(EXEEXT) grepjar$(EXEEXT)
 subdir = .
 DIST_COMMON = README $(am__configure_deps) $(fastjar_TEXINFOS) \
 	$(srcdir)/../compile $(srcdir)/../install-sh \
@@ -59,15 +59,15 @@ CONFIG_CLEAN_FILES = install-defs.sh
 am__installdirs = "$(DESTDIR)$(bindir)" "$(DESTDIR)$(infodir)" "$(DESTDIR)$(man1dir)"
 binPROGRAMS_INSTALL = $(INSTALL_PROGRAM)
 PROGRAMS = $(bin_PROGRAMS)
+am_fastjar_OBJECTS = fastjar-jartool.$(OBJEXT) \
+	fastjar-dostime.$(OBJEXT) fastjar-compress.$(OBJEXT) \
+	fastjar-pushback.$(OBJEXT) fastjar-shift.$(OBJEXT)
+fastjar_OBJECTS = $(am_fastjar_OBJECTS)
+am__DEPENDENCIES_1 =
+am__DEPENDENCIES_2 = ../libiberty/libiberty.a
 am_grepjar_OBJECTS = jargrep.$(OBJEXT) dostime.$(OBJEXT) \
 	compress.$(OBJEXT) pushback.$(OBJEXT)
 grepjar_OBJECTS = $(am_grepjar_OBJECTS)
-am__DEPENDENCIES_1 =
-am__DEPENDENCIES_2 = ../libiberty/libiberty.a
-am_jar_OBJECTS = jar-jartool.$(OBJEXT) jar-dostime.$(OBJEXT) \
-	jar-compress.$(OBJEXT) jar-pushback.$(OBJEXT) \
-	jar-shift.$(OBJEXT)
-jar_OBJECTS = $(am_jar_OBJECTS)
 DEFAULT_INCLUDES = -I. -I$(srcdir) -I.
 depcomp =
 am__depfiles_maybe =
@@ -75,8 +75,8 @@ COMPILE = $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) \
 	$(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS)
 CCLD = $(CC)
 LINK = $(CCLD) $(AM_CFLAGS) $(CFLAGS) $(AM_LDFLAGS) $(LDFLAGS) -o $@
-SOURCES = $(grepjar_SOURCES) $(jar_SOURCES)
-DIST_SOURCES = $(grepjar_SOURCES) $(jar_SOURCES)
+SOURCES = $(fastjar_SOURCES) $(grepjar_SOURCES)
+DIST_SOURCES = $(fastjar_SOURCES) $(grepjar_SOURCES)
 INFO_DEPS = $(srcdir)/fastjar.info
 am__TEXINFO_TEX_DIR = $(srcdir)/../gcc/doc/include
 DVIS = fastjar.dvi
@@ -229,12 +229,12 @@ AM_MAKEFLAGS = \
 
 AM_CPPFLAGS = -I. -I$(top_srcdir) $(ZINCS) -I$(top_srcdir)/../include
 LIBIBERTY = ../libiberty/libiberty.a
-jar_SOURCES = jartool.c dostime.c compress.c pushback.c shift.c jartool.h \
+fastjar_SOURCES = jartool.c dostime.c compress.c pushback.c shift.c jartool.h \
 zipfile.h dostime.h compress.h pushback.h shift.h
 
-jar_LDADD = $(ZLIBS) $(LIBIBERTY)
-jar_DEPENDENCIES = $(ZDEPS) $(LIBIBERTY)
-jar_CPPFLAGS = $(AM_CPPFLAGS) -DWITH_SHIFT_DOWN
+fastjar_LDADD = $(ZLIBS) $(LIBIBERTY)
+fastjar_DEPENDENCIES = $(ZDEPS) $(LIBIBERTY)
+fastjar_CPPFLAGS = $(AM_CPPFLAGS) -DWITH_SHIFT_DOWN
 grepjar_SOURCES = jargrep.c dostime.c compress.c pushback.c jartool.h \
 zipfile.h dostime.h compress.h pushback.h
 
@@ -248,7 +248,7 @@ fastjar_TEXINFOS = \
 	../gcc/doc/include/gcc-common.texi \
 	../gcc/doc/include/gpl.texi
 
-man_MANS = jar.1 grepjar.1
+man_MANS = fastjar.1 grepjar.1
 EXTRA_DIST = $(man_MANS)
 TEXI2POD = perl $(srcdir)/../contrib/texi2pod.pl
 POD2MAN = pod2man --center="GNU" --release="gcc-@gcc_version@"
@@ -260,7 +260,7 @@ POD2MAN = pod2man --center="GNU" --release="gcc-@gcc_version@"
 # --enable-generated-files-in-srcdir in the configure script.
 @GENINSRC_TRUE@STAMP_GENINSRC = stamp-geninsrc
 CLEANFILES = stamp-geninsrc
-MAINTAINERCLEANFILES = $(srcdir)/jar.1 \
+MAINTAINERCLEANFILES = $(srcdir)/fastjar.1 \
                        $(srcdir)/grepjar.1 \
                        $(srcdir)/fastjar.info
 
@@ -344,12 +344,12 @@ uninstall-binPROGRAMS:
 
 clean-binPROGRAMS:
 	-test -z "$(bin_PROGRAMS)" || rm -f $(bin_PROGRAMS)
+fastjar$(EXEEXT): $(fastjar_OBJECTS) $(fastjar_DEPENDENCIES) 
+	@rm -f fastjar$(EXEEXT)
+	$(LINK) $(fastjar_LDFLAGS) $(fastjar_OBJECTS) $(fastjar_LDADD) $(LIBS)
 grepjar$(EXEEXT): $(grepjar_OBJECTS) $(grepjar_DEPENDENCIES) 
 	@rm -f grepjar$(EXEEXT)
 	$(LINK) $(grepjar_LDFLAGS) $(grepjar_OBJECTS) $(grepjar_LDADD) $(LIBS)
-jar$(EXEEXT): $(jar_OBJECTS) $(jar_DEPENDENCIES) 
-	@rm -f jar$(EXEEXT)
-	$(LINK) $(jar_LDFLAGS) $(jar_OBJECTS) $(jar_LDADD) $(LIBS)
 
 mostlyclean-compile:
 	-rm -f *.$(OBJEXT)
@@ -363,35 +363,35 @@ distclean-compile:
 .c.obj:
 	$(COMPILE) -c `$(CYGPATH_W) '$<'`
 
-jar-jartool.o: jartool.c
-	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(jar_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o jar-jartool.o `test -f 'jartool.c' || echo '$(srcdir)/'`jartool.c
+fastjar-jartool.o: jartool.c
+	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(fastjar_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o fastjar-jartool.o `test -f 'jartool.c' || echo '$(srcdir)/'`jartool.c
 
-jar-jartool.obj: jartool.c
-	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(jar_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o jar-jartool.obj `if test -f 'jartool.c'; then $(CYGPATH_W) 'jartool.c'; else $(CYGPATH_W) '$(srcdir)/jartool.c'; fi`
+fastjar-jartool.obj: jartool.c
+	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(fastjar_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o fastjar-jartool.obj `if test -f 'jartool.c'; then $(CYGPATH_W) 'jartool.c'; else $(CYGPATH_W) '$(srcdir)/jartool.c'; fi`
 
-jar-dostime.o: dostime.c
-	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(jar_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o jar-dostime.o `test -f 'dostime.c' || echo '$(srcdir)/'`dostime.c
+fastjar-dostime.o: dostime.c
+	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(fastjar_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o fastjar-dostime.o `test -f 'dostime.c' || echo '$(srcdir)/'`dostime.c
 
-jar-dostime.obj: dostime.c
-	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(jar_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o jar-dostime.obj `if test -f 'dostime.c'; then $(CYGPATH_W) 'dostime.c'; else $(CYGPATH_W) '$(srcdir)/dostime.c'; fi`
+fastjar-dostime.obj: dostime.c
+	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(fastjar_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o fastjar-dostime.obj `if test -f 'dostime.c'; then $(CYGPATH_W) 'dostime.c'; else $(CYGPATH_W) '$(srcdir)/dostime.c'; fi`
 
-jar-compress.o: compress.c
-	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(jar_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o jar-compress.o `test -f 'compress.c' || echo '$(srcdir)/'`compress.c
+fastjar-compress.o: compress.c
+	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(fastjar_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o fastjar-compress.o `test -f 'compress.c' || echo '$(srcdir)/'`compress.c
 
-jar-compress.obj: compress.c
-	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(jar_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o jar-compress.obj `if test -f 'compress.c'; then $(CYGPATH_W) 'compress.c'; else $(CYGPATH_W) '$(srcdir)/compress.c'; fi`
+fastjar-compress.obj: compress.c
+	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(fastjar_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o fastjar-compress.obj `if test -f 'compress.c'; then $(CYGPATH_W) 'compress.c'; else $(CYGPATH_W) '$(srcdir)/compress.c'; fi`
 
-jar-pushback.o: pushback.c
-	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(jar_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o jar-pushback.o `test -f 'pushback.c' || echo '$(srcdir)/'`pushback.c
+fastjar-pushback.o: pushback.c
+	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(fastjar_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o fastjar-pushback.o `test -f 'pushback.c' || echo '$(srcdir)/'`pushback.c
 
-jar-pushback.obj: pushback.c
-	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(jar_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o jar-pushback.obj `if test -f 'pushback.c'; then $(CYGPATH_W) 'pushback.c'; else $(CYGPATH_W) '$(srcdir)/pushback.c'; fi`
+fastjar-pushback.obj: pushback.c
+	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(fastjar_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o fastjar-pushback.obj `if test -f 'pushback.c'; then $(CYGPATH_W) 'pushback.c'; else $(CYGPATH_W) '$(srcdir)/pushback.c'; fi`
 
-jar-shift.o: shift.c
-	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(jar_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o jar-shift.o `test -f 'shift.c' || echo '$(srcdir)/'`shift.c
+fastjar-shift.o: shift.c
+	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(fastjar_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o fastjar-shift.o `test -f 'shift.c' || echo '$(srcdir)/'`shift.c
 
-jar-shift.obj: shift.c
-	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(jar_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o jar-shift.obj `if test -f 'shift.c'; then $(CYGPATH_W) 'shift.c'; else $(CYGPATH_W) '$(srcdir)/shift.c'; fi`
+fastjar-shift.obj: shift.c
+	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(fastjar_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o fastjar-shift.obj `if test -f 'shift.c'; then $(CYGPATH_W) 'shift.c'; else $(CYGPATH_W) '$(srcdir)/shift.c'; fi`
 
 .texi.info:
 	restore=: && \
@@ -854,18 +854,18 @@ uninstall-man: uninstall-man1
 		mv -f $(@).T$$$$ $@) || \
 		(rm -f $(@).T$$$$ && exit 1)
 
-.INTERMEDIATE: jar.pod grepjar.pod
+.INTERMEDIATE: fastjar.pod grepjar.pod
 
-jar.pod: $(srcdir)/fastjar.texi
-	-$(TEXI2POD) -D jar $< > $@
+fastjar.pod: $(srcdir)/fastjar.texi
+	-$(TEXI2POD) -D fastjar $< > $@
 
 grepjar.pod: $(srcdir)/fastjar.texi
 	-$(TEXI2POD) -D grepjar $< > $@
 
 all-local: $(STAMP_GENINSRC) 
 
-stamp-geninsrc: jar.1 grepjar.1 fastjar.info
-	-cp -p $(top_builddir)/jar.1 $(srcdir)/jar.1
+stamp-geninsrc: fastjar.1 grepjar.1 fastjar.info
+	-cp -p $(top_builddir)/fastjar.1 $(srcdir)/fastjar.1
 	-cp -p $(top_builddir)/grepjar.1 $(srcdir)/grepjar.1
 	-cp -p $(top_builddir)/fastjar.info $(srcdir)/fastjar.info
 	touch $@
