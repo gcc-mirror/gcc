@@ -211,6 +211,10 @@ libgcj_la_DEPENDENCIES = libgcj-@gcc_version@.jar \
 	java/lang/fdlibm.h java/lang/ieeefp.h java/lang/mprec.h \
 	$(LIBLTDL) $(LIBFFI) $(ZLIBS) $(GCLIBS) $(propertyo_files)
 
+## Objects from C++ sources in subdirs.
+nat_files = $(nat_source_files:.cc=.lo)
+xlib_nat_files = $(xlib_nat_source_files:.cc=.lo)
+
 # Include THREADLIBS here to ensure that the correct version of
 # certain linuxthread functions get linked:
 ## The mysterious backslash in the grep pattern is consumed by make.
