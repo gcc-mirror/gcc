@@ -10217,6 +10217,28 @@ mips_output_conditional_branch (insn,
   return 0;
 }
 
+/* Used to output div or ddiv instruction DIVISION, which has the
+   operands given by OPERANDS.  If we need a divide-by-zero check,
+   output the instruction and return an asm string that traps if
+   operand 2 is zero.  Otherwise just return DIVISION itself.  */
+
+const char *
+mips_output_division (division, operands)
+     const char *division;
+     rtx *operands;
+{
+  if (TARGET_CHECK_ZERO_DIV)
+    {
+      output_asm_insn (division, operands);
+
+      if (TARGET_MIPS16)
+	return "bnez\t%2,1f\n\tbreak\t7\n1:";
+      else
+	return "bne\t%2,%.,1f\n\t%#break\t7\n1:";
+    }
+  return division;
+}
+
 /* Return true if GIVEN is the same as CANONICAL, or if it is CANONICAL
    with a final "000" replaced by "k".  Ignore case.
 
