@@ -1245,10 +1245,11 @@ expand_inline_function (fndecl, parms, target, ignore, type, structure_value_add
 	  if (GET_MODE (loc) != TYPE_MODE (TREE_TYPE (arg)))
 	    /* The mode if LOC and ARG can differ if LOC was a variable
 	       that had its mode promoted via PROMOTED_MODE.  */
-	    arg_vals[i] = convert_to_mode (GET_MODE (loc),
-					   expand_expr (arg, NULL_RTX, mode,
-							EXPAND_SUM),
-					   TREE_UNSIGNED (TREE_TYPE (formal)));
+	    arg_vals[i] = convert_modes (GET_MODE (loc),
+					 TYPE_MODE (TREE_TYPE (arg)),
+					 expand_expr (arg, NULL_RTX, mode,
+						      EXPAND_SUM),
+					 TREE_UNSIGNED (TREE_TYPE (formal)));
 	  else
 	    arg_vals[i] = expand_expr (arg, NULL_RTX, mode, EXPAND_SUM);
 	}
