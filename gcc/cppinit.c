@@ -1532,10 +1532,12 @@ cpp_handle_option (pfile, argc, argv)
 	     or environment var dependency generation is used.  */
 	  CPP_OPTION (pfile, print_deps) = 2;
 	  CPP_OPTION (pfile, no_output) = 1;
+	  CPP_OPTION (pfile, inhibit_warnings) = 1;
 	  break;
 	case OPT_MM:
 	  CPP_OPTION (pfile, print_deps) = 1;
 	  CPP_OPTION (pfile, no_output) = 1;
+	  CPP_OPTION (pfile, inhibit_warnings) = 1;
 	  break;
 	case OPT_MF:
 	  CPP_OPTION (pfile, deps_file) = arg;
@@ -1794,14 +1796,13 @@ cpp_post_options (pfile)
   if (CPP_OPTION (pfile, traditional))
     CPP_OPTION (pfile, show_column) = 0;
 
-  /* -dM makes no normal output.  This is set here so that -dM -dD
-     works as expected.  */
+  /* -dM and dependencies suppress normal output; do it here so that
+     the last -d[MDN] switch overrides earlier ones.  */
   if (CPP_OPTION (pfile, dump_macros) == dump_only)
     CPP_OPTION (pfile, no_output) = 1;
 
-  /* Disable -dD, -dN and -dI if we should make no normal output
-     (such as with -M). Allow -M -dM since some software relies on
-     this.  */
+  /* Disable -dD, -dN and -dI if normal output is suppressed.  Allow
+     -dM since at least glibc relies on -M -dM to work.  */
   if (CPP_OPTION (pfile, no_output))
     {
       if (CPP_OPTION (pfile, dump_macros) != dump_only)
@@ -1809,17 +1810,16 @@ cpp_post_options (pfile)
       CPP_OPTION (pfile, dump_includes) = 0;
     }
 
-  /* We need to do this after option processing and before
-     cpp_start_read, as cppmain.c relies on the options->no_output to
-     set its callbacks correctly before calling cpp_start_read.  */
+  /* Intialize, and check environment variables for, dependency
+     output.  */
   init_dependency_output (pfile);
 
-  /* After checking the environment variables, check if -M or -MM has
-     not been specified, but other -M options have.  */
-  if (CPP_OPTION (pfile, print_deps) == 0 &&
-      (CPP_OPTION (pfile, print_deps_missing_files)
-       || CPP_OPTION (pfile, deps_file)
-       || CPP_OPTION (pfile, deps_phony_targets)))
+  /* If we're not outputting dependencies, complain if other -M
+     options have been given.  */
+  if (!CPP_OPTION (pfile, print_deps)
+      && (CPP_OPTION (pfile, print_deps_missing_files)
+	  || CPP_OPTION (pfile, deps_file)
+	  || CPP_OPTION (pfile, deps_phony_targets)))
     cpp_error (pfile, DL_ERROR,
 	       "you must additionally specify either -M or -MM");
 }
