@@ -501,7 +501,7 @@ read_class (tree name)
       java_parser_context_save_global ();
       java_push_parser_context ();
 
-      BUILD_FILENAME_IDENTIFIER_NODE (given_file, filename);
+      given_file = get_identifier (filename);
       real_file = get_identifier (lrealpath (filename));
 
       generate = IS_A_COMMAND_LINE_FILENAME_P (given_file);
@@ -1006,7 +1006,7 @@ java_parse_file (int set_yydebug ATTRIBUTE_UNUSED)
 	    }
 	  else
 	    {
-	      BUILD_FILENAME_IDENTIFIER_NODE (node, value);
+	      node = get_identifier (value);
 	      IS_A_COMMAND_LINE_FILENAME_P (node) = 1;
 	      current_file_list = tree_cons (NULL_TREE, node, 
 					     current_file_list);

@@ -1,3 +1,12 @@
+2004-07-13  Per Bothner  <per@bothner.com>
+
+	* java-tree.h (all_class_filename):  Remove useless macro.
+	(enum java_tree_index):  Remove JTI_ALL_CLASS_FILENAME constant.
+	(BUILD_FILENAME_IDENTIFIER_NODE):  Remove useless macro.
+	* parse.y (java_parser_context_restore_global):  Replace
+	BUILD_FILENAME_IDENTIFIER_NODE by plain get_identifier.
+	* jcf-parse.c (read_class, java_parse_file):  Likewise.
+
 2004-07-12  Bryce McKinlay  <mckinlay@redhat.com>
 
 	PR java/16474
