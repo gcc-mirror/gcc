@@ -794,7 +794,8 @@ fixup_reorder_chain (void)
 	  bb = nb;
 	  
 	  /* Make sure new bb is tagged for correct section (same as
-	     fall-thru source).  */
+	     fall-thru source, since you cannot fall-throu across
+	     section boundaries).  */
 	  BB_COPY_PARTITION (e_fall->src, bb->pred->src);
 	  if (flag_reorder_blocks_and_partition
 	      && targetm.have_named_sections)

@@ -1,3 +1,22 @@
+2004-08-25  Caroline Tice  <ctice@apple.com>
+
+	* bb-reorder.c (partition_hot_cold_basic_blocks):  Add more details
+	to comments at start of function.
+	* cfgbuild.c (make_edges):  Add more details to hot/cold partitioning
+	comment.
+	* cfgcleanup.c (try_simplify_condjump, try_forward_edges, 
+	merge_blocks_move_predecessor_nojumps, 
+	merge_blocks_move_successor_nojumps, merge_blocks_move, 
+	try_crossjump_to_edge, try_crossjump_bb): Likewise.
+	* cfglayout.c (fixup_reorder_chain): Likewise.
+	* cfgrtl.c (rtl_can_merge_blocks, try_redirect_by_replacing_jump,
+	cfg_layout_can_merge_blocks_p):  Likewise.
+	* ifcvt.c (find_if_case_1, find_if_case_2): Likewise.
+	* passes.c (rest_of_compilation): Update comments for calling 
+	optimization that partitions hot/cold basic blocks.
+	* doc/invoke.texi:  Update documentation of 
+	freorder-blocks-and-partition flag.
+	
 2004-08-25  Richard Sandiford  <rsandifo@redhat.com>
 
 	* config/mips/mips.md (reg): Renamed mode attribute from ccreg.
