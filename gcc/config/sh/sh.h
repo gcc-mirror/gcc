@@ -472,6 +472,14 @@ do {									\
      break global alloc, and generates slower code anyway due		\
      to the pressure on R0.  */						\
   flag_schedule_insns = 0;						\
+									\
+  /* Allocation boundary (in *bits*) for the code of a function.	\
+     SH1: 32 bit alignment is faster, because instructions are always	\
+     fetched as a pair from a longword boundary.			\
+     SH2 .. SH5 : align to cache line start.  */			\
+  if (align_functions == 0)						\
+    align_functions							\
+      = TARGET_SMALLCODE ? FUNCTION_BOUNDARY : (1 << CACHE_LOG) * 8;	\
 } while (0)
 
 /* Target machine storage layout.  */
@@ -532,11 +540,9 @@ do {									\
    The SH2/3 have 16 byte cache lines, and the SH4 has a 32 byte cache line */
 #define CACHE_LOG (TARGET_CACHE32 ? 5 : TARGET_SH2 ? 4 : 2)
 
-/* Allocation boundary (in *bits*) for the code of a function.
-   32 bit alignment is faster, because instructions are always fetched as a
-   pair from a longword boundary.  */
-#define FUNCTION_BOUNDARY  \
-  (TARGET_SMALLCODE ? 16 << TARGET_SHMEDIA : (1 << CACHE_LOG) * 8)
+/* ABI given & required minimum allocation boundary (in *bits*) for the
+   code of a function.  */
+#define FUNCTION_BOUNDARY (16 << TARGET_SHMEDIA)
 
 /* On SH5, the lowest bit is used to indicate SHmedia functions, so
    the vbit must go into the delta field of
@@ -2018,7 +2024,7 @@ struct sh_args {
    : 0)
 
 #define SH5_WOULD_BE_PARTIAL_NREGS(CUM, MODE, TYPE, NAMED) \
-  (TARGET_SH5 && (MODE) == BLKmode				\
+  (TARGET_SH5 && ((MODE) == BLKmode || (MODE) == TImode)	\
    && ((CUM).arg_count[(int) SH_ARG_INT]			\
        + (int_size_in_bytes (TYPE) + 7) / 8) > NPARM_REGS (SImode))
 
