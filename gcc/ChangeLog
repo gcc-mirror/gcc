@@ -1,3 +1,9 @@
+Sat Sep 11 23:28:33 1999  Richard Henderson  <rth@cygnus.com>
+
+	* tree.c (save_tree_status): Revert 10 Sep change.
+	(restore_tree_status): Likewise.  Call obstack_free with NULL 
+	before freeing the obstack proper.
+
 Sat Sep 11 23:23:46 1999  Richard Henderson  <rth@cygnus.com>
 
 	* cse.c (cse_main): If gc'ing, collect around cse_basic_block.
