@@ -411,7 +411,7 @@
 		 (eq_attr "sb1_fp_pipes" "two"))))
   "sb1_fp1 | sb1_fp0")
 
-(define_insn_reservation "ir_sb1_divsf_1pipes" 24
+(define_insn_reservation "ir_sb1_divsf_1pipe" 24
   (and (eq_attr "cpu" "sb1")
        (and (eq_attr "type" "fdiv")
 	    (and (eq_attr "mode" "SF")
