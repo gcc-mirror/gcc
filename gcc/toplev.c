@@ -2629,7 +2629,8 @@ rest_of_compilation (decl)
   find_basic_blocks (insns, max_reg_num (), rtl_dump_file);
   if (rtl_dump_file)
     dump_flow_info (rtl_dump_file);
-  cleanup_cfg ((optimize ? CLEANUP_EXPENSIVE : 0) | CLEANUP_PRE_LOOP);
+  cleanup_cfg ((optimize ? CLEANUP_EXPENSIVE : 0) | CLEANUP_PRE_LOOP
+	       | (flag_thread_jumps ? CLEANUP_THREADING : 0));
 
   /* CFG is no longer maintained up-to-date.  */
   free_bb_for_insn ();
@@ -2722,8 +2723,7 @@ rest_of_compilation (decl)
       find_basic_blocks (insns, max_reg_num (), rtl_dump_file);
       if (rtl_dump_file)
 	dump_flow_info (rtl_dump_file);
-      cleanup_cfg (CLEANUP_EXPENSIVE | CLEANUP_PRE_LOOP
- 		   | (flag_thread_jumps ? CLEANUP_THREADING : 0));
+      cleanup_cfg (CLEANUP_EXPENSIVE | CLEANUP_PRE_LOOP);
 
       /* Try to identify useless null pointer tests and delete them.  */
       if (flag_delete_null_pointer_checks)
@@ -2769,24 +2769,18 @@ rest_of_compilation (decl)
 	rebuild_jump_labels (insns);
       purge_all_dead_edges (0);
 
+      delete_trivially_dead_insns (insns, max_reg_num ());
+
       /* If we are not running more CSE passes, then we are no longer
 	 expecting CSE to be run.  But always rerun it in a cheap mode.  */
       cse_not_expected = !flag_rerun_cse_after_loop && !flag_gcse;
 
       if (tem || optimize > 1)
 	cleanup_cfg (CLEANUP_EXPENSIVE | CLEANUP_PRE_LOOP);
-
-      /* Run this after jump optmizations remove all the unreachable code
-	 so that unreachable code will not keep values live.  */
-      delete_trivially_dead_insns (insns, max_reg_num ());
-
       /* Try to identify useless null pointer tests and delete them.  */
       if (flag_delete_null_pointer_checks || flag_thread_jumps)
 	{
 	  timevar_push (TV_JUMP);
-
-	  cleanup_cfg (CLEANUP_EXPENSIVE | CLEANUP_PRE_LOOP
-		       | (flag_thread_jumps ? CLEANUP_THREADING : 0));
 
 	  if (flag_delete_null_pointer_checks)
 	    delete_null_pointer_checks (insns);
@@ -2827,6 +2821,7 @@ rest_of_compilation (decl)
       cleanup_cfg (CLEANUP_EXPENSIVE | CLEANUP_PRE_LOOP);
       tem = gcse_main (insns, rtl_dump_file);
       rebuild_jump_labels (insns);
+      delete_trivially_dead_insns (insns, max_reg_num ());
 
       save_csb = flag_cse_skip_blocks;
       save_cfj = flag_cse_follow_jumps;
@@ -2840,6 +2835,7 @@ rest_of_compilation (decl)
 	  reg_scan (insns, max_reg_num (), 1);
 	  tem2 = cse_main (insns, max_reg_num (), 0, rtl_dump_file);
 	  purge_all_dead_edges (0);
+	  delete_trivially_dead_insns (insns, max_reg_num ());
 	  timevar_pop (TV_CSE);
 	  cse_not_expected = !flag_rerun_cse_after_loop;
 	}
@@ -2851,7 +2847,6 @@ rest_of_compilation (decl)
 	  tem = tem2 = 0;
 	  timevar_push (TV_JUMP);
 	  rebuild_jump_labels (insns);
-	  delete_trivially_dead_insns (insns, max_reg_num ());
 	  cleanup_cfg (CLEANUP_EXPENSIVE | CLEANUP_PRE_LOOP);
 	  timevar_pop (TV_JUMP);
 
@@ -2861,6 +2856,7 @@ rest_of_compilation (decl)
 	      reg_scan (insns, max_reg_num (), 1);
 	      tem2 = cse_main (insns, max_reg_num (), 0, rtl_dump_file);
 	      purge_all_dead_edges (0);
+	      delete_trivially_dead_insns (insns, max_reg_num ());
 	      timevar_pop (TV_CSE);
 	    }
 	}
@@ -2991,6 +2987,7 @@ rest_of_compilation (decl)
 	  reg_scan (insns, max_reg_num (), 0);
 	  tem = cse_main (insns, max_reg_num (), 1, rtl_dump_file);
 	  purge_all_dead_edges (0);
+	  delete_trivially_dead_insns (insns, max_reg_num ());
 
 	  if (tem)
 	    {
@@ -3009,7 +3006,7 @@ rest_of_compilation (decl)
 
   cse_not_expected = 1;
 
-  close_dump_file (DFI_life, print_rtl_with_bb, insns);
+  open_dump_file (DFI_life, decl);
   regclass_init ();
 
   check_function_return_warnings ();
@@ -3277,8 +3274,8 @@ rest_of_compilation (decl)
 
   if (optimize)
     {
-      cleanup_cfg (CLEANUP_EXPENSIVE | CLEANUP_CROSSJUMP);
       life_analysis (insns, rtl_dump_file, PROP_FINAL);
+      cleanup_cfg (CLEANUP_EXPENSIVE | CLEANUP_CROSSJUMP | CLEANUP_UPDATE_LIFE);
 
       /* This is kind of a heuristic.  We need to run combine_stack_adjustments
          even for machines with possibly nonzero RETURN_POPS_ARGS
@@ -3380,8 +3377,9 @@ rest_of_compilation (decl)
       timevar_push (TV_REORDER_BLOCKS);
       open_dump_file (DFI_bbro, decl);
 
-      /* Last attempt to optimize CFG, as life analyzis possibly removed
-	 some instructions.  */
+      /* Last attempt to optimize CFG, as scheduling, peepholing
+	 and insn splitting possibly introduced more crossjumping
+	 oppurtuntities.  */
       cleanup_cfg (CLEANUP_EXPENSIVE | CLEANUP_POST_REGSTACK
 		   | CLEANUP_CROSSJUMP);
       if (flag_reorder_blocks)

@@ -1353,6 +1353,8 @@ try_crossjump_to_edge (mode, e1, e2)
 
   redirect_to->count += src1->count;
   redirect_to->frequency += src1->frequency;
+  /* We may have some registers visible trought the block.  */
+  redirect_to->flags |= BB_DIRTY;
 
   /* Recompute the frequencies and counts of outgoing edges.  */
   for (s = redirect_to->succ; s; s = s->succ_next)

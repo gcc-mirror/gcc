@@ -1,3 +1,11 @@
+Wed Mar  6 20:32:09 CET 2002  Jan Hubicka  <jh@suse.cz>
+
+	* toplev.c (rest_of_compilation): Do jump threading before SSA path;
+	consistently call delete_trivially_dead_insns after CSE and GCSE;
+	fix DFI_life dumping; do jump threading after liveness; do crossjumping
+	after liveness2; update comment in last crossjumping.
+	* cfgcleanup.c (try_crossjump_to_edge): Dirtify block.
+
 Wed Mar  6 12:27:10 2002  Jeffrey A Law  (law@redhat.com)
 
 	* m68k.h (CONST_COSTS): Lower cost of 0.0 when used inside a
