@@ -1,3 +1,8 @@
+2000-05-03  Richard Henderson  <rth@cygnus.com>
+
+	* flow.c (propagate_one_insn): Also don't PROP_REG_INFO for
+	call-clobbered registers of a call.
+
 Wed May  3 12:40:53 2000  Clinton Popetz  <cpopetz@cygnus.com>
 
 	* gensupport.c: New file.

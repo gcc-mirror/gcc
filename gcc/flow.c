@@ -3474,7 +3474,8 @@ propagate_one_insn (pbi, insn)
 	      {
 		/* We do not want REG_UNUSED notes for these registers.  */
 		mark_set_1 (pbi, CLOBBER, gen_rtx_REG (reg_raw_mode[i], i),
-			    cond, insn, pbi->flags & ~PROP_DEATH_NOTES);
+			    cond, insn,
+			    pbi->flags & ~(PROP_DEATH_NOTES | PROP_REG_INFO));
 	      }
 	}
 
