@@ -838,10 +838,6 @@ branch_prob (void)
 	}
     }
 
-#ifdef ENABLE_CHECKING
-  verify_flow_info ();
-#endif
-
   /* Create spanning tree from basic block graph, mark each edge that is
      on the spanning tree.  We insert as many abnormal and critical edges
      as possible to minimize number of edge splits necessary.  */
