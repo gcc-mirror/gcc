@@ -1,3 +1,9 @@
+2003-06-06  Richard Earnshaw  <rearnsha@arm.com>
+
+	PR target/11052
+	* ifcvt.c (noce_process_if_block): Fail if the destination has
+	side-effects.
+
 2003-06-06  Jason Merrill  <jason@redhat.com>
 
 	* stmt.c (resolve_asm_operand_names): Rename from

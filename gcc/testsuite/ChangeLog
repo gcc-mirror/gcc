@@ -1,3 +1,7 @@
+2003-06-06  Richard Earnshaw  <rearnsha@arm.com>
+
+	gcc.c-torture/execute/20030606-1.c: New.
+
 2003-06-06  Roger Sayle  <roger@eyesopen.com>
 
 	* gcc.dg/builtins-2.c: Correct check-in of incorrect version.
