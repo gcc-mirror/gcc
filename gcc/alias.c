@@ -2642,7 +2642,7 @@ nonlocal_set_p (x)
   return for_each_rtx (&x, nonlocal_set_p_1, NULL);
 }
 
-/* Mark the function if it is constant.  */
+/* Mark the function if it is pure or constant.  */
 
 void
 mark_constant_function ()
@@ -2653,7 +2653,6 @@ mark_constant_function ()
   if (TREE_READONLY (current_function_decl)
       || DECL_IS_PURE (current_function_decl)
       || TREE_THIS_VOLATILE (current_function_decl)
-      || TYPE_MODE (TREE_TYPE (current_function_decl)) == VOIDmode
       || current_function_has_nonlocal_goto
       || !(*targetm.binds_local_p) (current_function_decl))
     return;
@@ -2688,9 +2687,15 @@ mark_constant_function ()
   if (insn)
     ;
   else if (nonlocal_memory_referenced)
-    cgraph_rtl_info (current_function_decl)->pure_function = 1;
+    {
+      cgraph_rtl_info (current_function_decl)->pure_function = 1;
+      DECL_IS_PURE (current_function_decl) = 1;
+    }
   else
-    cgraph_rtl_info (current_function_decl)->const_function = 1;
+    {
+      cgraph_rtl_info (current_function_decl)->const_function = 1;
+      TREE_READONLY (current_function_decl) = 1;
+    }
 }
 
 
