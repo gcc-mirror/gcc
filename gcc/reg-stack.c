@@ -2367,10 +2367,66 @@ change_stack (rtx insn, stack old, stack new, enum emit_where where)
 
   /* Pop any registers that are not needed in the new block.  */
 
-  for (reg = old->top; reg >= 0; reg--)
-    if (! TEST_HARD_REG_BIT (new->reg_set, old->reg[reg]))
-      emit_pop_insn (insn, old, FP_MODE_REG (old->reg[reg], DFmode),
-		     EMIT_BEFORE);
+  /* If the destination block's stack already has a specified layout
+     and contains two or more registers, use a more intelligent algorithm
+     to pop registers that minimizes the number number of fxchs below.  */
+  if (new->top > 0)
+    {
+      bool slots[REG_STACK_SIZE];
+      int pops[REG_STACK_SIZE];
+      int next, dest;
+
+      /* First pass to determine the free slots.  */
+      for (reg = 0; reg <= new->top; reg++)
+	slots[reg] = TEST_HARD_REG_BIT (new->reg_set, old->reg[reg]);
+
+      /* Second pass to allocate preferred slots.  */
+      for (reg = old->top; reg > new->top; reg--)
+	if (TEST_HARD_REG_BIT (new->reg_set, old->reg[reg]))
+	  {
+	    dest = -1;
+	    for (next = 0; next <= new->top; next++)
+	      if (!slots[next] && new->reg[next] == old->reg[reg])
+		{
+		  slots[next] = true;
+		  dest = next;
+		  break;
+		}
+	    pops[reg] = dest;
+	  }
+	else
+	  pops[reg] = reg;
+
+      /* Third pass allocates remaining slots and emits pop insns.  */
+      next = 0;
+      for (reg = old->top; reg > new->top; reg--)
+	{
+	  dest = pops[reg];
+	  if (dest == -1)
+	    {
+	      /* Find next free slot.  */
+	      while (slots[next])
+		next++;
+	      dest = next++;
+	    }
+	  emit_pop_insn (insn, old, FP_MODE_REG (old->reg[dest], DFmode),
+			 EMIT_BEFORE);
+	}
+    }
+  else
+    /* The following loop attempts to maximize the number of times we
+       pop the top of the stack, as this permits the use of the faster
+       ffreep instruction on platforms that support it.  */
+    for (reg = 0; reg <= old->top; reg++)
+      if (! TEST_HARD_REG_BIT (new->reg_set, old->reg[reg]))
+	{
+	  while (old->top > reg
+		 && ! TEST_HARD_REG_BIT (new->reg_set, old->reg[old->top]))
+	    emit_pop_insn (insn, old, FP_MODE_REG (old->reg[old->top], DFmode),
+			   EMIT_BEFORE);
+	  emit_pop_insn (insn, old, FP_MODE_REG (old->reg[reg], DFmode),
+			 EMIT_BEFORE);
+	}
 
   if (new->top == -2)
     {
