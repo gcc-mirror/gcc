@@ -2999,7 +2999,7 @@ null_ptr_cst_p (t)
      tree t;
 {
   if (t == null_node
-      || integer_zerop (t) && INTEGRAL_TYPE_P (TREE_TYPE (t)))
+      || integer_zerop (t) && TREE_CODE (TREE_TYPE (t)) == INTEGER_TYPE)
     return 1;
   return 0;
 }
