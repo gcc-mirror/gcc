@@ -56,7 +56,6 @@
 
 namespace __gnu_cxx
 {
-  using std::_STL_mutex_lock;
   using std::__throw_bad_alloc;
 
   /**
@@ -80,11 +79,12 @@ namespace __gnu_cxx
    *  transfers its ownership to the second one.  This may have undesirable
    *  effects on reference locality.
    *
-   *  The second parameter is unused and serves only to allow the creation of
-   *  multiple default_alloc instances.  Note that containers built on different
-   *  allocator instances have different types, limiting the utility of this
-   *  approach.  If you do not wish to share the free lists with the main
-   *  default_alloc instance, instantiate this with a non-zero __inst.
+   *  The second parameter is unused and serves only to allow the
+   *  creation of multiple default_alloc instances.  Note that
+   *  containers built on different allocator instances have different
+   *  types, limiting the utility of this approach.  If you do not
+   *  wish to share the free lists with the main default_alloc
+   *  instance, instantiate this with a non-zero __inst.
    *
    *  @endif
    *  (See @link Allocators allocators info @endlink for more.)

@@ -37,7 +37,7 @@
 
 #include <cstdlib>
 #include <bits/functexcept.h> 
-#include <bits/stl_threads.h>
+#include <bits/gthr.h>
 #include <bits/atomicity.h>
 #include <bits/allocator_traits.h>
 

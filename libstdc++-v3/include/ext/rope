@@ -61,7 +61,7 @@
 # ifdef __GC
 #   define __GC_CONST const
 # else
-#   include <bits/stl_threads.h>
+#   include <bits/gthr.h>
 #   define __GC_CONST   // constant except for deallocation
 # endif
 
@@ -76,7 +76,6 @@ using std::iterator;
 using std::reverse_iterator;
 using std::_Alloc_traits;
 using std::_Destroy;
-using std::_Refcount_Base;
 
 // The _S_eos function is used for those functions that
 // convert to/from C-like strings to detect the end of the string.
@@ -345,6 +344,51 @@ identity_element(_Rope_Concat_fn<_CharT, _Alloc>)
     return rope<_CharT,_Alloc>();
 }
 
+
+  // Class _Refcount_Base provides a type, _RC_t, a data member,
+  // _M_ref_count, and member functions _M_incr and _M_decr, which perform
+  // atomic preincrement/predecrement.  The constructor initializes 
+  // _M_ref_count.
+  struct _Refcount_Base
+  {
+    // The type _RC_t
+    typedef size_t _RC_t;
+    
+    // The data member _M_ref_count
+    volatile _RC_t _M_ref_count;
+    
+    // Constructor
+    __gthread_mutex_t _M_ref_count_lock;
+
+    _Refcount_Base(_RC_t __n) : _M_ref_count(__n)
+    {
+#ifdef __GTHREAD_MUTEX_INIT
+      __gthread_mutex_t __tmp = __GTHREAD_MUTEX_INIT;
+      _M_ref_count_lock = __tmp;
+#elif defined(__GTHREAD_MUTEX_INIT_FUNCTION)
+      __GTHREAD_MUTEX_INIT_FUNCTION (&_M_ref_count_lock);
+#else
+#error __GTHREAD_MUTEX_INIT or __GTHREAD_MUTEX_INIT_FUNCTION should be defined by gthr.h abstraction layer, report problem to libstdc++@gcc.gnu.org.
+#endif
+    }
+
+    void 
+    _M_incr() 
+    {
+      __gthread_mutex_lock(&_M_ref_count_lock);
+      ++_M_ref_count;
+      __gthread_mutex_unlock(&_M_ref_count_lock);
+    }
+
+    _RC_t 
+    _M_decr() 
+    {
+      __gthread_mutex_lock(&_M_ref_count_lock);
+      volatile _RC_t __tmp = --_M_ref_count;
+      __gthread_mutex_unlock(&_M_ref_count_lock);
+      return __tmp;
+    }
+  };
 
 //
 // What follows should really be local to rope.  Unfortunately,
