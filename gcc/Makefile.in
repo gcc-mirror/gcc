@@ -1740,7 +1740,6 @@ extraclean: distclean
 	-rm -f *.tar *.xtar *diff *.diff.* *.tar.* *.xtar.* *diffs
 	-rm -f *lose config/*lose config/*/*lose
 	-rm -f *.s *.s[0-9] *.i install1.texi config/ChangeLog
-	-rm -f djefoo
 
 # Get rid of every file that's generated from some other file.
 # Most of these files ARE PRESENT in the GCC distribution.
