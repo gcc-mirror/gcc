@@ -60,8 +60,8 @@ Boston, MA 02111-1307, USA.  */
 #undef  FRAME_POINTER_REGNUM
 #define FRAME_POINTER_REGNUM 30
 
-#undef  PIC_OFFSET_TABLE_REGNUM
-#define PIC_OFFSET_TABLE_REGNUM 31
+#undef  RS6000_PIC_OFFSET_TABLE_REGNUM
+#define RS6000_PIC_OFFSET_TABLE_REGNUM 31
 
 /* Pad the outgoing args area to 16 bytes instead of the usual 8.  */
 
