@@ -128,10 +128,18 @@ REAL_VALUE_TYPE dconstm1;
    But references that were originally to the frame-pointer can be
    distinguished from the others because they contain frame_pointer_rtx.
 
+   When to use frame_pointer_rtx and hard_frame_pointer_rtx is a little
+   tricky: until register elimination has taken place hard_frame_pointer_rtx
+   should be used if it is being set, and frame_pointer_rtx otherwise.  After 
+   register elimination hard_frame_pointer_rtx should always be used.
+   On machines where the two registers are same (most) then these are the
+   same.
+
    In an inline procedure, the stack and frame pointer rtxs may not be
    used for anything else.  */
 rtx stack_pointer_rtx;		/* (REG:Pmode STACK_POINTER_REGNUM) */
 rtx frame_pointer_rtx;		/* (REG:Pmode FRAME_POINTER_REGNUM) */
+rtx hard_frame_pointer_rtx;	/* (REG:Pmode HARD_FRAME_POINTER_REGNUM) */
 rtx arg_pointer_rtx;		/* (REG:Pmode ARG_POINTER_REGNUM) */
 rtx struct_value_rtx;		/* (REG:Pmode STRUCT_VALUE_REGNUM) */
 rtx struct_value_incoming_rtx;	/* (REG:Pmode STRUCT_VALUE_INCOMING_REGNUM) */
@@ -305,7 +313,12 @@ gen_rtx (va_alist)
       if (frame_pointer_rtx && regno == FRAME_POINTER_REGNUM && mode == Pmode
 	  && ! reload_in_progress)
 	return frame_pointer_rtx;
-#if FRAME_POINTER_REGNUM != ARG_POINTER_REGNUM
+#if FRAME_POINTER_REGNUM != HARD_FRAME_POINTER_REGNUM
+      if (hard_frame_pointer_rtx && regno == HARD_FRAME_POINTER_REGNUM
+	  && mode == Pmode && ! reload_in_progress)
+	return hard_frame_pointer_rtx;
+#endif
+#if FRAME_POINTER_REGNUM != ARG_POINTER_REGNUM && HARD_FRAME_POINTER_REGNUM != ARG_POINTER_REGNUM
       if (arg_pointer_rtx && regno == ARG_POINTER_REGNUM && mode == Pmode
 	  && ! reload_in_progress)
 	return arg_pointer_rtx;
@@ -3152,8 +3165,15 @@ init_emit_once (line_numbers)
   stack_pointer_rtx = gen_rtx (REG, Pmode, STACK_POINTER_REGNUM);
   frame_pointer_rtx = gen_rtx (REG, Pmode, FRAME_POINTER_REGNUM);
 
+  if (HARD_FRAME_POINTER_REGNUM == FRAME_POINTER_REGNUM)
+    hard_frame_pointer_rtx = frame_pointer_rtx;
+  else
+    hard_frame_pointer_rtx = gen_rtx (REG, Pmode, HARD_FRAME_POINTER_REGNUM);
+  
   if (FRAME_POINTER_REGNUM == ARG_POINTER_REGNUM)
     arg_pointer_rtx = frame_pointer_rtx;
+  else if (HARD_FRAME_POINTER_REGNUM == ARG_POINTER_REGNUM)
+    arg_pointer_rtx = hard_frame_pointer_rtx;
   else if (STACK_POINTER_REGNUM == ARG_POINTER_REGNUM)
     arg_pointer_rtx = stack_pointer_rtx;
   else
