@@ -5555,10 +5555,13 @@ expand_expr (exp, target, tmode, modifier)
 	temp = gen_rtx (MEM, mode, op0);
 	/* If address was computed by addition,
 	   mark this as an element of an aggregate.  */
-	if (TREE_CODE (TREE_OPERAND (exp, 0)) == PLUS_EXPR
-	    || (TREE_CODE (TREE_OPERAND (exp, 0)) == SAVE_EXPR
-		&& TREE_CODE (TREE_OPERAND (TREE_OPERAND (exp, 0), 0)) == PLUS_EXPR)
+	if (TREE_CODE (exp1) == PLUS_EXPR
+	    || (TREE_CODE (exp1) == SAVE_EXPR
+		&& TREE_CODE (TREE_OPERAND (exp1, 0)) == PLUS_EXPR)
 	    || AGGREGATE_TYPE_P (TREE_TYPE (exp))
+	    /* If the pointer is actually a REFERENCE_TYPE, this could
+	       be pointing into some aggregate too.  */
+	    || TREE_CODE (TREE_TYPE (exp1)) == REFERENCE_TYPE
 	    || (TREE_CODE (exp1) == ADDR_EXPR
 		&& (exp2 = TREE_OPERAND (exp1, 0))
 		&& AGGREGATE_TYPE_P (TREE_TYPE (exp2))))
