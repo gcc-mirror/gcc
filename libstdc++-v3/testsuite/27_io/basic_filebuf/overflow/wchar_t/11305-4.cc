@@ -31,12 +31,12 @@ void test04()
   locale loc(__gnu_cxx_test::try_named_locale("en_US.UTF-8"));
   fb.pubimbue(loc);
   fb.open("tmp_11405-4", ios_base::out);
-  wint_t n1 = fb.sputc(0x20000000);
-  wint_t n2 = fb.sputc(0x40000000);
+  wfilebuf::int_type n1 = fb.sputc(L'i');
+  wfilebuf::int_type n2 = fb.sputc(L'a');
   wfilebuf* f = fb.close();
   
-  VERIFY( n1 != WEOF );
-  VERIFY( n2 != WEOF );
+  VERIFY( n1 != wfilebuf::traits_type::eof() );
+  VERIFY( n2 != wfilebuf::traits_type::eof() );
   VERIFY( f != NULL );
 }
 

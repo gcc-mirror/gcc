@@ -1,5 +1,16 @@
 2003-06-29  Paolo Carlini  <pcarlini@unitus.it>
 
+	* testsuite/27_io/basic_filebuf/overflow/wchar_t/11305-1.cc:
+	Improve type correctness-wise.
+	* testsuite/27_io/basic_filebuf/overflow/wchar_t/11305-2.cc:
+	Likewise.
+	* testsuite/27_io/basic_filebuf/overflow/wchar_t/11305-3.cc:
+	Likewise.
+	* testsuite/27_io/basic_filebuf/overflow/wchar_t/11305-4.cc:
+	Likewise.
+
+2003-06-29  Paolo Carlini  <pcarlini@unitus.it>
+
 	* include/std/std_streambuf.h (uflow): According to
 	27.5.2.4.3,p16, don't check gptr() < egptr().
 
