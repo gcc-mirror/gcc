@@ -1,5 +1,13 @@
 2004-11-21  Michael Koch  <konqueror@gmx.de>
 
+	* gnu/java/nio/SocketChannelImpl.java
+	(read): Only return 0 when no bytes for reading available in
+	non-blocking mode.
+	* java/nio/channels/SocketChannel.java:
+	Added some missing @return tags.
+
+2004-11-21  Michael Koch  <konqueror@gmx.de>
+
 	* java/beans/PropertyChangeSupport.java
 	(propertyChangeSupportSerializedDataVersion): Made static.
 	* java/beans/VetoableChangeSupport.java

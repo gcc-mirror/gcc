@@ -182,7 +182,7 @@ public final class SocketChannelImpl extends SocketChannel
     // FIXME: Handle blocking/non-blocking mode.
 
     Selector selector = provider().openSelector();
-    register (selector, SelectionKey.OP_CONNECT);
+    register(selector, SelectionKey.OP_CONNECT);
 
     if (isBlocking())
       {
@@ -216,7 +216,7 @@ public final class SocketChannelImpl extends SocketChannel
     return socket;
   }
 
-  public int read (ByteBuffer dst) throws IOException
+  public int read(ByteBuffer dst) throws IOException
   {
     if (!isConnected())
       throw new NotYetConnectedException();
@@ -227,7 +227,7 @@ public final class SocketChannelImpl extends SocketChannel
     int available = input.available();
     int len = dst.capacity() - dst.position();
 	
-    if (available == 0)
+    if (! isBlocking() && available == 0)
       return 0;
     
     if (len > available)
