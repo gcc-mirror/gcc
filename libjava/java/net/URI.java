@@ -164,7 +164,6 @@ public final class URI
    * @exception NullPointerException If str is null
    */
   public static URI create (String str)
-    throws IllegalArgumentException, URISyntaxException
   {
     return null;
   }
