@@ -58,7 +58,7 @@ munge (filename)
 	     preceded by 2N backslashes represents N backslashes at
 	     the end of a file name; and backslashes in other
 	     contexts should not be doubled.  */
-	  for (q = p - 1; q < filename && q[-1] == '\\';  q--)
+	  for (q = p - 1; filename <= q && *q == '\\';  q--)
 	    len++;
 	  len++;
 	  break;
@@ -80,7 +80,7 @@ munge (filename)
 	{
 	case ' ':
 	case '\t':
-	  for (q = p - 1; filename < q && q[-1] == '\\';  q--)
+	  for (q = p - 1; filename <= q && *q == '\\';  q--)
 	    *dst++ = '\\';
 	  *dst++ = '\\';
 	  break;
@@ -135,8 +135,8 @@ deps_init ()
 
   /* Allocate space for the vectors now.  */
 
-  d->targetv = xmalloc (2 * sizeof (const char *));
-  d->depv = xmalloc (8 * sizeof (const char *));
+  d->targetv = (const char **) xmalloc (2 * sizeof (const char *));
+  d->depv = (const char **) xmalloc (8 * sizeof (const char *));
 
   d->ntargets = 0;
   d->targets_size = 2;
@@ -188,7 +188,7 @@ deps_calc_target (d, t)
   char *o, *suffix;
 
   t = base_name (t);
-  o = alloca (strlen (t) + 8);
+  o = (char *) alloca (strlen (t) + 8);
 
   strcpy (o, t);
   suffix = strrchr (o, '.');

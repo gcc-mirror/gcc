@@ -78,9 +78,11 @@ Written by Per Bothner 1994.  */
 
 static void integer_overflow PARAMS ((cpp_reader *));
 static HOST_WIDEST_INT left_shift PARAMS ((cpp_reader *, HOST_WIDEST_INT,
-					   int, unsigned HOST_WIDEST_INT));
+					   unsigned int,
+					   unsigned HOST_WIDEST_INT));
 static HOST_WIDEST_INT right_shift PARAMS ((cpp_reader *, HOST_WIDEST_INT,
-					    int, unsigned HOST_WIDEST_INT));
+					    unsigned int,
+					    unsigned HOST_WIDEST_INT));
 static struct operation parse_number PARAMS ((cpp_reader *, U_CHAR *,
 					      U_CHAR *));
 static struct operation parse_charconst PARAMS ((cpp_reader *, U_CHAR *,
@@ -110,14 +112,13 @@ static struct operation lex PARAMS ((cpp_reader *, int));
 /* SKIP_OPERAND is set for '&&' '||' '?' and ':' when the
    following operand should be short-circuited instead of evaluated.  */
 #define SKIP_OPERAND 8
-/*#define UNSIGNEDP 16*/
 
 struct operation
 {
   short op;
-  char rprio; /* Priority of op (relative to it right operand).  */
-  char flags;
-  char unsignedp;    /* true if value should be treated as unsigned */
+  U_CHAR rprio; /* Priority of op (relative to it right operand).  */
+  U_CHAR flags;
+  U_CHAR unsignedp;    /* true if value should be treated as unsigned */
   HOST_WIDEST_INT value;        /* The value logically "right" of op.  */
 };
 
@@ -610,7 +611,7 @@ static HOST_WIDEST_INT
 left_shift (pfile, a, unsignedp, b)
      cpp_reader *pfile;
      HOST_WIDEST_INT a;
-     int unsignedp;
+     unsigned int unsignedp;
      unsigned HOST_WIDEST_INT b;
 {
   if (b >= HOST_BITS_PER_WIDEST_INT)
@@ -634,7 +635,7 @@ static HOST_WIDEST_INT
 right_shift (pfile, a, unsignedp, b)
      cpp_reader *pfile ATTRIBUTE_UNUSED;
      HOST_WIDEST_INT a;
-     int unsignedp;
+     unsigned int unsignedp;
      unsigned HOST_WIDEST_INT b;
 {
   if (b >= HOST_BITS_PER_WIDEST_INT)
@@ -689,7 +690,7 @@ _cpp_parse_expr (pfile)
   struct operation *stack = init_stack;
   struct operation *limit = stack + INIT_STACK_SIZE;
   register struct operation *top = stack;
-  int lprio, rprio = 0;
+  unsigned int lprio, rprio = 0;
   int skip_evaluation = 0;
 
   top->rprio = 0;
@@ -697,7 +698,7 @@ _cpp_parse_expr (pfile)
   for (;;)
     {
       struct operation op;
-      char flags = 0;
+      U_CHAR flags = 0;
 
       /* Read a token */
       op =  lex (pfile, skip_evaluation);
@@ -780,7 +781,8 @@ _cpp_parse_expr (pfile)
       while (top->rprio > lprio)
 	{
 	  HOST_WIDEST_INT v1 = top[-1].value, v2 = top[0].value;
-	  int unsigned1 = top[-1].unsignedp, unsigned2 = top[0].unsignedp;
+	  unsigned int unsigned1 = top[-1].unsignedp;
+	  unsigned int unsigned2 = top[0].unsignedp;
 	  top--;
 	  if ((top[1].flags & LEFT_OPERAND_REQUIRED)
 	      && ! (top[0].flags & HAVE_VALUE))
