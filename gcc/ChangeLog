@@ -1,3 +1,26 @@
+Mon Aug 20 01:44:50 CEST 2001  Jan Hubicka  <jh@suse.cz>
+
+	* final.c (compute_alignments): New function.
+	(init_insn_lengths): Do not care label_align.
+	(LABEL_ALIGN_AFTER_BARRIER): Default to 1.
+	(LABEL_ALIGN_AFTER_BARRIER_MAX_SKIP): Default to 0.
+	(JUMP_ALIGN, JUMP_ALIGN_MAX_SKIP): New.
+	(shorted_branches): Realloc label_align array; do
+	not call init_insn_lengths; Do not care about loop alignments.
+	* output.h (compute_alignments): Declare.
+	* toplev.c (rest_of_compilation): Call compute_alignments.
+	* tm.texi (JUMP_ALIGN, JUMP_ALIGN_MAX_SKIP): Document.
+
+	* predict.c (block_info_def): Add npredecesors, remove nvisited;
+	change visited to tovisit.
+	(propagate_freq): Use faster traversing algorithm.
+	(estimate_loops_at_level, estimate_bb_frequencies): Change visited
+	to tovisit; reverse meaning.
+
+	* predict.c (struct block_info_def): Remove nvisited.
+	(propagate_freq): Use EDGE_DFS_BACK to detect irreducible regions.
+	(estimate_bb_frequencies): Call mark_dfs_back_edges.
+
 2001-08-19  Geoffrey Keating  <geoffk@redhat.com>
 
 	* doc/invoke.texi (MIPS Options): Document -mfused-madd.

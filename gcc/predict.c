@@ -606,8 +606,11 @@ typedef struct block_info_def
   /* To keep queue of basic blocks to process.  */
   basic_block next;
 
-  /* True if block already converted.  */
-  int visited:1;
+  /* True if block needs to be visited in prop_freqency.  */
+  int tovisit:1;
+
+  /* Number of predecesors we need to visit first.  */
+  int npredecesors;
 } *block_info;
 
 /* Similar information for edges.  */
@@ -634,6 +637,27 @@ propagate_freq (head)
   basic_block last = bb;
   edge e;
   basic_block nextbb;
+  int n;
+
+  /* For each basic block we need to visit count number of his predecesors
+     we need to visit first.  */
+  for (n = 0; n < n_basic_blocks; n++)
+    {
+      basic_block bb = BASIC_BLOCK (n);
+      if (BLOCK_INFO (bb)->tovisit)
+	{
+	  int count = 0;
+	  for (e = bb->pred; e; e = e->pred_next)
+	    if (BLOCK_INFO (e->src)->tovisit && !(e->flags & EDGE_DFS_BACK))
+	      count++;
+	    else if (BLOCK_INFO (e->src)->tovisit
+		     && rtl_dump_file && !EDGE_INFO (e)->back_edge)
+	      fprintf (rtl_dump_file,
+		       "Irreducible region hit, ignoring edge to %i->%i\n",
+		       e->src->index, bb->index);
+	  BLOCK_INFO (bb)->npredecesors = count;
+	}
+    }
 
   BLOCK_INFO (head)->frequency = 1;
   for (; bb; bb = nextbb)
@@ -646,31 +670,16 @@ propagate_freq (head)
       /* Compute frequency of basic block.  */
       if (bb != head)
 	{
+#ifdef ENABLE_CHECKING
 	  for (e = bb->pred; e; e = e->pred_next)
-	    if (!BLOCK_INFO (e->src)->visited && !(e->flags & EDGE_DFS_BACK))
-	      break;
-
-	  /* We haven't proceeded all predecessors of edge e yet.  */
-	  if (e)
-	    {
-	      if (!nextbb)
-		nextbb = e->dest;
-	      else
-		BLOCK_INFO (last)->next = e->dest;
-	      last = e->dest;
-	      continue;
-	    }
-	  if (rtl_dump_file)
-	    for (e = bb->pred; e; e = e->pred_next)
-	      if (!BLOCK_INFO (e->src)->visited && !EDGE_INFO (e)->back_edge)
-		fprintf (rtl_dump_file,
-			 "Irreducible region hit, ignoring edge to %i->%i\n",
-			 e->src->index, bb->index);
+	    if (BLOCK_INFO (e->src)->tovisit && !(e->flags & EDGE_DFS_BACK))
+	      abort ();
+#endif
 
 	  for (e = bb->pred; e; e = e->pred_next)
 	    if (EDGE_INFO (e)->back_edge)
 	      cyclic_probability += EDGE_INFO (e)->back_edge_prob;
-	    else if (BLOCK_INFO (e->src)->visited)
+	    else if (!(e->flags & EDGE_DFS_BACK))
 	      frequency += (e->probability
 			    * BLOCK_INFO (e->src)->frequency /
 			    REG_BR_PROB_BASE);
@@ -681,7 +690,7 @@ propagate_freq (head)
 	  BLOCK_INFO (bb)->frequency = frequency / (1 - cyclic_probability);
 	}
 
-      BLOCK_INFO (bb)->visited = 1;
+      BLOCK_INFO (bb)->tovisit = 0;
 
       /* Compute back edge frequencies.  */
       for (e = bb->succ; e; e = e->succ_next)
@@ -692,16 +701,19 @@ propagate_freq (head)
 
       /* Propagate to successor blocks.  */
       for (e = bb->succ; e; e = e->succ_next)
-	if (!EDGE_INFO (e)->back_edge
-	    && !BLOCK_INFO (e->dest)->visited
-	    && !BLOCK_INFO (e->dest)->next && e->dest != last)
+	if (!(e->flags & EDGE_DFS_BACK)
+	    && BLOCK_INFO (e->dest)->npredecesors)
 	  {
-	    if (!nextbb)
-	      nextbb = e->dest;
-	    else
-	      BLOCK_INFO (last)->next = e->dest;
-	    last = e->dest;
-	  }
+	    BLOCK_INFO (e->dest)->npredecesors--;
+	    if (!BLOCK_INFO (e->dest)->npredecesors)
+	      {
+		if (!nextbb)
+		  nextbb = e->dest;
+		else
+		  BLOCK_INFO (last)->next = e->dest;
+		last = e->dest;
+	      }
+	   }
     }
 }
 
@@ -739,8 +751,8 @@ estimate_loops_at_level (first_loop)
       for (l = loop->shared ? first_loop : loop; l != loop->next; l = l->next)
 	if (loop->header == l->header)
 	  EXECUTE_IF_SET_IN_SBITMAP (l->nodes, 0, n,
-				     BLOCK_INFO (BASIC_BLOCK (n))->visited =
-				     0);
+				     BLOCK_INFO (BASIC_BLOCK (n))->tovisit = 1
+				     );
       propagate_freq (loop->header);
     }
 }
@@ -848,7 +860,7 @@ estimate_bb_frequencies (loops)
       else
 	bb = BASIC_BLOCK (i);
       bb->aux = bi + i + 2;
-      BLOCK_INFO (bb)->visited = 1;
+      BLOCK_INFO (bb)->tovisit = 0;
       for (e = bb->succ; e; e = e->succ_next)
 	{
 	  e->aux = ei + edgenum, edgenum++;
@@ -862,9 +874,9 @@ estimate_bb_frequencies (loops)
 
   /* Now fake loop around whole function to finalize probabilities.  */
   for (i = 0; i < n_basic_blocks; i++)
-    BLOCK_INFO (BASIC_BLOCK (i))->visited = 0;
-  BLOCK_INFO (ENTRY_BLOCK_PTR)->visited = 0;
-  BLOCK_INFO (EXIT_BLOCK_PTR)->visited = 0;
+    BLOCK_INFO (BASIC_BLOCK (i))->tovisit = 1;
+  BLOCK_INFO (ENTRY_BLOCK_PTR)->tovisit = 1;
+  BLOCK_INFO (EXIT_BLOCK_PTR)->tovisit = 1;
   propagate_freq (ENTRY_BLOCK_PTR);
 
   for (i = 0; i < n_basic_blocks; i++)

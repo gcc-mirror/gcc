@@ -3608,6 +3608,7 @@ rest_of_compilation (decl)
       close_dump_file (DFI_bbro, print_rtl_with_bb, insns);
       timevar_pop (TV_REORDER_BLOCKS);
     }
+  compute_alignments ();
 
   /* If a machine dependent reorganization is needed, call it.  */
 #ifdef MACHINE_DEPENDENT_REORG
