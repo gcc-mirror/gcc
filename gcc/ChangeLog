@@ -1,3 +1,9 @@
+2004-11-11  James E. Wilson  <wilson@specifixinc.com>
+
+	* config/ia64/ia64.h (HARD_REGNO_NREGS): Handle XCmode.
+	(HARD_REGNO_MODE_OK, MODES_TIEABLE_P, SECONDARY_MEMORY_NEEDED,
+	CLASS_MAX_NREGS): Likewise.
+
 2004-11-11  Zdenek Dvorak  <dvorakz@suse.cz>
 
 	PR tree-optimization/17742
