@@ -1,5 +1,5 @@
 /* Output sdb-format symbol table information from GNU compiler.
-   Copyright (C) 1988-1990 Free Software Foundation, Inc.
+   Copyright (C) 1988, 1992 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -51,7 +51,7 @@ AT&T C compiler.  From the example below I would conclude the following:
 #include "insn-config.h"
 #include "reload.h"
 
-/* Mips systems use the SDB functions to dump out it's symbols, but
+/* Mips systems use the SDB functions to dump out symbols, but
    do not supply usable syms.h include files.  */
 #if defined(USG) && !defined(MIPS)
 #include <syms.h>
@@ -405,8 +405,9 @@ sdbout_record_type_name (type)
 	{
 	  t = TYPE_NAME (type);
 	}
-#if 0  /* Don't use typedef names.  */
-      else if (TREE_CODE (TYPE_NAME (type)) == TYPE_DECL)
+#if 1  /* As a temprary hack, use typedef names for C++ only.  */
+      else if (TREE_CODE (TYPE_NAME (type)) == TYPE_DECL
+	       && TYPE_LANG_SPECIFIC (type))
 	{
 	  t = DECL_NAME (TYPE_NAME (type));
 	}
@@ -575,7 +576,8 @@ sdbout_syms (syms)
 {
   while (syms)
     {
-      sdbout_symbol (syms, 1);
+      if (TREE_CODE (syms) != LABEL_DECL)
+	sdbout_symbol (syms, 1);
       syms = TREE_CHAIN (syms);
     }
 }
@@ -724,7 +726,8 @@ sdbout_symbol (decl, local)
       else if (GET_CODE (value) == MEM
 	       && (GET_CODE (XEXP (value, 0)) == MEM
 		   || (GET_CODE (XEXP (value, 0)) == REG
-		       && REGNO (XEXP (value, 0)) != FRAME_POINTER_REGNUM)))
+		       && REGNO (XEXP (value, 0)) != FRAME_POINTER_REGNUM
+		       && REGNO (XEXP (value, 0)) != STACK_POINTER_REGNUM)))
 	/* If the value is indirect by memory or by a register
 	   that isn't the frame pointer
 	   then it means the object is variable-sized and address through
@@ -760,6 +763,23 @@ sdbout_symbol (decl, local)
 	  PUT_SDB_DEF (name);
 	  PUT_SDB_INT_VAL (DEBUGGER_AUTO_OFFSET (XEXP (value, 0)));
 	  PUT_SDB_SCL (C_AUTO);
+	}
+      else if (GET_CODE (value) == MEM && GET_CODE (XEXP (value, 0)) == CONST)
+	{
+	  /* Handle an obscure case which can arise when optimizing and
+	     when there are few available registers.  (This is *always*
+	     the case for i386/i486 targets).  The DECL_RTL looks like
+	     (MEM (CONST ...)) even though this variable is a local `auto'
+	     or a local `register' variable.  In effect, what has happened
+	     is that the reload pass has seen that all assignments and
+	     references for one such a local variable can be replaced by
+	     equivalent assignments and references to some static storage
+	     variable, thereby avoiding the need for a register.  In such
+	     cases we're forced to lie to debuggers and tell them that
+	     this variable was itself `static'.  */
+	  PUT_SDB_DEF (name);
+	  PUT_SDB_VAL (XEXP (XEXP (value, 0), 0));
+	  PUT_SDB_SCL (C_STAT);
 	}
       else
 	{
@@ -948,6 +968,7 @@ sdbout_one_type (type)
 	int size = int_size_in_bytes (type);
 	int member_scl;
 	tree tem;
+	int i, n_baseclasses = 0;
 
 	/* Record the type tag, but not in its permanent place just yet.  */
 	sdbout_record_type_name (type);
@@ -977,6 +998,33 @@ sdbout_one_type (type)
 
 	PUT_SDB_SIZE (size);
 	PUT_SDB_ENDEF;
+
+	/* Print out the base class information with fields
+	   named after the types they hold.  */
+	if (TYPE_BINFO (type)
+	    && TYPE_BINFO_BASETYPES (type))
+	  n_baseclasses = TREE_VEC_LENGTH (TYPE_BINFO_BASETYPES (type));
+	for (i = 0; i < n_baseclasses; i++)
+	  {
+	    tree child = TREE_VEC_ELT (BINFO_BASETYPES (TYPE_BINFO (type)), i);
+	    tree child_type = BINFO_TYPE (child);
+	    tree child_type_name;
+	    if (TYPE_NAME (child_type) == 0)
+	      continue;
+	    if (TREE_CODE (TYPE_NAME (child_type)) == IDENTIFIER_NODE)
+	      child_type_name = TYPE_NAME (child_type);
+	    else if (TREE_CODE (TYPE_NAME (child_type)) == TYPE_DECL)
+	      child_type_name = DECL_NAME (TYPE_NAME (child_type));
+	    else
+	      continue;
+
+	    CONTIN;
+	    PUT_SDB_DEF (IDENTIFIER_POINTER (child_type_name));
+	    PUT_SDB_INT_VAL (TREE_INT_CST_LOW (BINFO_OFFSET (child)));
+	    PUT_SDB_SCL (member_scl);
+	    sdbout_type (BINFO_TYPE (child));
+	    PUT_SDB_ENDEF;
+	  }
 
 	/* output the individual fields */
 
