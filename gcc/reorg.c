@@ -3440,6 +3440,19 @@ relax_delay_slots (first)
 	  continue;
 	}
 
+      /* See if this is an unconditional jump around a single insn which is
+	 identical to the one in its delay slot.  In this case, we can just
+	 delete the branch and the insn in its delay slot.  */
+      if (next && GET_CODE (next) == INSN
+	  && prev_label (next_active_insn (next)) == target_label
+	  && simplejump_p (insn)
+	  && XVECLEN (pat, 0) == 2
+	  && rtx_equal_p (PATTERN (next), PATTERN (XVECEXP (pat, 0, 1))))
+	{
+	  delete_insn (insn);
+	  continue;
+	}
+
       /* See if this jump (with its delay slots) branches around another
 	 jump (without delay slots).  If so, invert this jump and point
 	 it to the target of the second jump.  We cannot do this for
