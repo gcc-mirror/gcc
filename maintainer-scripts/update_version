@@ -31,6 +31,7 @@ cppdefine_FILES="gcc/libstdc++-v3/include/bits/c++config"
 RESULT=0
 
 for BRANCH in $BRANCHES; do
+  echo "Working on \"$BRANCH\"."
   # Check out the files on the branch.  HEAD is a special case; if
   # you check out files with -r HEAD, CVS will not let you check 
   # in changes.
@@ -83,4 +84,3 @@ done
 
 /bin/rm -rf /tmp/$$
 exit $RESULT
-
