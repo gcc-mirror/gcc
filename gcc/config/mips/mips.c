@@ -3005,7 +3005,7 @@ mips_arg_info (const CUMULATIVE_ARGS *cum, enum machine_mode mode,
 	 single "void *" va_list type, since register and stack arguments
 	 are passed differently.  (At the time of writing, MIPSpro cannot
 	 handle complex float varargs correctly.)  Second, it's unclear
-	 hat should happen when there is only one register free.
+	 what should happen when there is only one register free.
 
 	 For now, we assume that named complex floats should go into FPRs
 	 if there are two FPRs free, otherwise they should be passed in the
