@@ -43,12 +43,7 @@ Boston, MA 02111-1307, USA.  */
 #include <errno.h>		/* for ENOSYS */
 #include "f2c.h"
 
-#ifdef KR_headers
-int G77_system_clock_0 (count, count_rate, count_max)
-     integer *count, *count_rate, *count_max;
-#else
 int G77_system_clock_0 (integer *count, integer *count_rate, integer *count_max)
-#endif
 {
 #if defined (HAVE_TIMES)
   struct tms buffer;

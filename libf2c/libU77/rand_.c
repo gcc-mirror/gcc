@@ -34,12 +34,7 @@ Boston, MA 02111-1307, USA.  */
 
 /* Note this is per SunOS -- other s may have no arg. */
 
-#ifdef KR_headers
-double G77_rand_0 (flag)
-  integer *flag;
-#else
 double G77_rand_0 (integer *flag)
-#endif
 {
   switch (*flag) {
   case 0:

@@ -37,14 +37,8 @@ Boston, MA 02111-1307, USA.  */
   extern char *getcwd ();
 #endif
 
-#ifdef KR_headers
-extern void s_copy ();
-integer G77_getcwd_0 (str, Lstr)
-     char *str; ftnlen Lstr;
-#else
 extern void s_copy(register char *a, register char *b, ftnlen la, ftnlen lb);
 integer G77_getcwd_0 (char *str, const ftnlen Lstr)
-#endif
 {
     int i;
     char *ret;
@@ -62,14 +56,8 @@ integer G77_getcwd_0 (char *str, const ftnlen Lstr)
 
 #  include <sys/param.h>
   extern char *getwd ();
-#ifdef KR_headers
-extern VOID s_copy ();
-integer G77_getcwd_0 (str, Lstr)
-     char *str; ftnlen Lstr;
-#else
 extern void s_copy(register char *a, register char *b, ftnlen la, ftnlen lb);
 integer G77_getcwd_0 (char *str, const ftnlen Lstr)
-#endif
 {
   char pathname[MAXPATHLEN];
   size_t l;
@@ -84,14 +72,8 @@ integer G77_getcwd_0 (char *str, const ftnlen Lstr)
 
 #else  /* !HAVE_GETWD && !HAVE_GETCWD */
 
-#ifdef KR_headers
-extern VOID s_copy ();
-integer G77_getcwd_0 (str, Lstr)
-     char *str; ftnlen Lstr;
-#else
 extern void s_copy(register char *a, register char *b, ftnlen la, ftnlen lb);
 integer G77_getcwd_0 (char *str, const ftnlen Lstr)
-#endif
 {
   return errno = ENOSYS;
 }

@@ -5,24 +5,15 @@
 #include <sys/types.h>
 #include <unistd.h>
 
-#ifdef KR_headers
-extern char *strcpy();
-extern FILE *tmpfile();
-#else
 #undef abs
 #undef min
 #undef max
 #include <stdlib.h>
 #include <string.h>
-#endif
 
 extern char *f__r_mode[], *f__w_mode[];
 
-#ifdef KR_headers
-integer f_end(a) alist *a;
-#else
 integer f_end(alist *a)
-#endif
 {
 	unit *b;
 	FILE *tf;
@@ -44,11 +35,7 @@ integer f_end(alist *a)
 
 #ifndef HAVE_FTRUNCATE
  static int
-#ifdef KR_headers
-copy(from, len, to) FILE *from, *to; register long len;
-#else
 copy(FILE *from, register long len, FILE *to)
-#endif
 {
 	int len1;
 	char buf[BUFSIZ];
@@ -64,11 +51,7 @@ copy(FILE *from, register long len, FILE *to)
 #endif /* !defined(HAVE_FTRUNCATE) */
 
  int
-#ifdef KR_headers
-t_runc(a) alist *a;
-#else
 t_runc(alist *a)
-#endif
 {
 	off_t loc, len;
 	unit *b;

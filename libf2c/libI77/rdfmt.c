@@ -4,24 +4,16 @@
 #include "fio.h"
 
 extern int f__cursor;
-#ifdef KR_headers
-extern double atof();
-#else
 #undef abs
 #undef min
 #undef max
 #include <stdlib.h>
-#endif
 
 #include "fmt.h"
 #include "fp.h"
 
  static int
-#ifdef KR_headers
-rd_Z(n,w,len) Uint *n; ftnlen len;
-#else
 rd_Z(Uint *n, int w, ftnlen len)
-#endif
 {
 	long x[9];
 	char *s, *s0, *s1, *se, *t;
@@ -95,11 +87,7 @@ rd_Z(Uint *n, int w, ftnlen len)
 	}
 
  static int
-#ifdef KR_headers
-rd_I(n,w,len, base) Uint *n; int w; ftnlen len; register int base;
-#else
 rd_I(Uint *n, int w, ftnlen len, register int base)
-#endif
 {
 	int bad, ch, sign;
 	longint x = 0;
@@ -166,11 +154,7 @@ rd_I(Uint *n, int w, ftnlen len, register int base)
 }
 
  static int
-#ifdef KR_headers
-rd_L(n,w,len) ftnint *n; ftnlen len;
-#else
 rd_L(ftnint *n, int w, ftnlen len)
-#endif
 {	int ch, dot, lv;
 
 	if (w <= 0)
@@ -227,11 +211,7 @@ rd_L(ftnint *n, int w, ftnlen len)
 }
 
  static int
-#ifdef KR_headers
-rd_F(p, w, d, len) ufloat *p; ftnlen len;
-#else
 rd_F(ufloat *p, int w, int d, ftnlen len)
-#endif
 {
 	char s[FMAX+EXPMAXDIGS+4];
 	register int ch;
@@ -394,11 +374,7 @@ zero:
 
 
  static int
-#ifdef KR_headers
-rd_A(p,len) char *p; ftnlen len;
-#else
 rd_A(char *p, ftnlen len)
-#endif
 {	int i,ch;
 	for(i=0;i<len;i++)
 	{	GET(ch);
@@ -407,11 +383,7 @@ rd_A(char *p, ftnlen len)
 	return(0);
 }
  static int
-#ifdef KR_headers
-rd_AW(p,w,len) char *p; ftnlen len;
-#else
 rd_AW(char *p, int w, ftnlen len)
-#endif
 {	int i,ch;
 	if(w>=len)
 	{	for(i=0;i<w-len;i++)
@@ -430,11 +402,7 @@ rd_AW(char *p, int w, ftnlen len)
 	return(0);
 }
  static int
-#ifdef KR_headers
-rd_H(n,s) char *s;
-#else
 rd_H(int n, char *s)
-#endif
 {	int i,ch;
 	for(i=0;i<n;i++)
 		if((ch=(*f__getn)())<0) return(ch);
@@ -442,11 +410,7 @@ rd_H(int n, char *s)
 	return(1);
 }
  static int
-#ifdef KR_headers
-rd_POS(s) char *s;
-#else
 rd_POS(char *s)
-#endif
 {	char quote;
 	int ch;
 	quote= *s++;
@@ -456,11 +420,7 @@ rd_POS(char *s)
 		else *s = ch=='\n'?' ':ch;
 	return(1);
 }
-#ifdef KR_headers
-rd_ed(p,ptr,len) struct syl *p; char *ptr; ftnlen len;
-#else
 rd_ed(struct syl *p, char *ptr, ftnlen len)
-#endif
 {	int ch;
 	for(;f__cursor>0;f__cursor--) if((ch=(*f__getn)())<0) return(ch);
 	if(f__cursor<0)
@@ -519,11 +479,7 @@ rd_ed(struct syl *p, char *ptr, ftnlen len)
 		clearerr(f__cf);
 	return(errno);
 }
-#ifdef KR_headers
-rd_ned(p) struct syl *p;
-#else
 rd_ned(struct syl *p)
-#endif
 {
 	switch(p->op)
 	{

@@ -1,12 +1,7 @@
 #include "f2c.h"
 
-#ifdef KR_headers
-extern VOID sig_die();
-VOID z_div(c, a, b) doublecomplex *a, *b, *c;
-#else
 extern void sig_die(char*, int);
 void z_div(doublecomplex *c, doublecomplex *a, doublecomplex *b)
-#endif
 {
 	double ratio, den;
 	double abr, abi, cr;

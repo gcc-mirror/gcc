@@ -29,16 +29,9 @@ Boston, MA 02111-1307, USA.  */
 #include <errno.h>
 #include "f2c.h"
 
-#ifdef KR_headers
-void g_char ();
-
-integer G77_rename_0 (path1, path2, Lpath1, Lpath2)
-     char *path1, *path2; ftnlen Lpath1, Lpath2;
-#else
 void g_char(const char *a, ftnlen alen, char *b);
 
 integer G77_rename_0 (const char *path1, const char *path2, const ftnlen Lpath1, const ftnlen Lpath2)
-#endif
 {
   char *buff1, *buff2;
   char *bp, *blast;

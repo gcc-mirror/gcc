@@ -26,14 +26,7 @@ Boston, MA 02111-1307, USA.  */
 #include "f2c.h"
 #include "fio.h"
 
-#ifdef KR_headers
-integer G77_fputc_0 (lunit, c, Lc)
-     integer *lunit;
-     ftnlen Lc;			/* should be 1 */
-     char *c;
-#else
 integer G77_fputc_0 (const integer *lunit, const char *c, const ftnlen Lc)
-#endif
 {
   int err;
   FILE *f = f__units[*lunit].ufd;
@@ -51,13 +44,7 @@ integer G77_fputc_0 (const integer *lunit, const char *c, const ftnlen Lc)
     return 0;
 }
 
-#ifdef KR_headers
-integer G77_fput_0 (c, Lc)
-     ftnlen Lc;			/* should be 1 */
-     char *c;
-#else
 integer G77_fput_0 (const char *c, const ftnlen Lc)
-#endif
 {
   integer six = 6;
 

@@ -5,11 +5,7 @@
 #include "lio.h"
 #include "string.h"
 
-#ifdef KR_headers
-integer s_wsle(a) cilist *a;
-#else
 integer s_wsle(cilist *a)
-#endif
 {
 	int n;
 	if(n=c_le(a)) return(n);

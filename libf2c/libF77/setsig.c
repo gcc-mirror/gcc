@@ -9,10 +9,8 @@
 #endif
 #endif
 
-#ifndef KR_headers
 #undef VOID
 #include <stdlib.h>
-#endif
 
 #ifndef VOID
 #define VOID void
@@ -22,13 +20,8 @@
 extern "C" {
 #endif
 
-#ifdef KR_headers
-extern VOID sig_die();
-#define Int /* int */
-#else
 extern void sig_die(char*, int);
 #define Int int
-#endif
 
 static VOID sigfdie(Sigarg)
 {

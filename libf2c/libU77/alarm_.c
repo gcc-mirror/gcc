@@ -29,32 +29,18 @@ Boston, MA 02111-1307, USA.  */
 
 #ifndef RETSIGTYPE
 /* we shouldn't rely on this... */
-#ifdef KR_headers
-#define RETSIGTYPE int
-#else
 #define RETSIGTYPE void
-#endif
 #endif
 typedef RETSIGTYPE (*sig_type)();
 
-#ifdef KR_headers
-extern sig_type signal();
-#else
 #include <signal.h>
 typedef int (*sig_proc)(int);
-#endif
 
 #ifndef SIG_ERR
 #define SIG_ERR ((sig_type) -1)
 #endif
 
-#ifdef KR_headers
-integer G77_alarm_0 (seconds, proc)
-     integer *seconds;
-     sig_type proc;
-#else
 integer G77_alarm_0 (integer *seconds, sig_proc proc)
-#endif
 {
   int status;
 #if defined (HAVE_ALARM) && defined (SIGALRM)

@@ -45,17 +45,9 @@ Boston, MA 02111-1307, USA.  */
 #  define F_OK 0
 #endif
 
-#ifdef KR_headers
-void g_char ();
-
-integer G77_access_0 (name, mode, Lname, Lmode)
-     char *name, *mode;
-     ftnlen Lname, Lmode;
-#else
 void g_char(const char *a, ftnlen alen, char *b);
 
 integer G77_access_0 (const char *name, const char *mode, ftnlen Lname, ftnlen Lmode)
-#endif
 {
   char *buff;
   char *bp, *blast;

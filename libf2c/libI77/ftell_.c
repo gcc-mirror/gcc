@@ -3,11 +3,7 @@
 #include "fio.h"
 
  static FILE *
-#ifdef KR_headers
-unit_chk(Unit, who) integer Unit; char *who;
-#else
 unit_chk(integer Unit, char *who)
-#endif
 {
 	if (Unit >= MXUNIT || Unit < 0)
 		f__fatal(101, who);
@@ -15,22 +11,14 @@ unit_chk(integer Unit, char *who)
 	}
 
  integer
-#ifdef KR_headers
-G77_ftell_0 (Unit) integer *Unit;
-#else
 G77_ftell_0 (integer *Unit)
-#endif
 {
 	FILE *f;
 	return (f = unit_chk(*Unit, "ftell")) ? (integer) FTELL(f) : -1L;
 	}
 
  integer
-#ifdef KR_headers
-G77_fseek_0 (Unit, offset, xwhence) integer *Unit, *offset, *xwhence;
-#else
 G77_fseek_0 (integer *Unit, integer *offset, integer *xwhence)
-#endif
 {
 	FILE *f;
 	int w = (int)*xwhence;

@@ -41,19 +41,10 @@ Boston, MA 02111-1307, USA.  */
 #define CHMOD_PATH "/bin/chmod"
 #endif
 
-#ifdef KR_headers
-extern void s_cat ();
-void g_char ();
-
-integer G77_chmod_0 (name, mode, Lname, Lmode)
-     char *name, *mode;
-     ftnlen Lname, Lmode;
-#else
 extern void s_cat(char *lp, char *rpp[], ftnlen rnp[], ftnlen *np, ftnlen ll);
 void g_char(const char *a, ftnlen alen, char *b);
 
 integer G77_chmod_0 (/* const */ char *name, /* const */ char *mode, const ftnlen Lname, const ftnlen Lmode)
-#endif
 {
   char *buff;
   char *bp, *blast;

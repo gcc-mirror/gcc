@@ -32,14 +32,8 @@ Boston, MA 02111-1307, USA.  */
      extern char *sys_errlist [];
 #    define strerror(i) (sys_errlist[i])
 #endif
-#ifdef KR_headers
-extern void s_copy ();
-/* Subroutine */ int G77_gerror_0 (str, Lstr)
-     char *str; ftnlen Lstr;
-#else
 extern void s_copy(register char *a, register char *b, ftnlen la, ftnlen lb);
 /* Subroutine */ int G77_gerror_0 (char *str, ftnlen Lstr)
-#endif
 {
   char * s;
 

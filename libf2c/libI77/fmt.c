@@ -23,11 +23,7 @@ static struct syl f__syl[SYLMX];
 int f__parenlvl,f__pc,f__revloc;
 
  static
-#ifdef KR_headers
-char *ap_end(s) char *s;
-#else
 char *ap_end(char *s)
-#endif
 {	char quote;
 	quote= *s++;
 	for(;*s;s++)
@@ -42,11 +38,7 @@ char *ap_end(char *s)
 	/*NOTREACHED*/ return 0;
 }
  static
-#ifdef KR_headers
-op_gen(a,b,c,d)
-#else
 op_gen(int a, int b, int c, int d)
-#endif
 {	struct syl *p= &f__syl[f__pc];
 	if(f__pc>=SYLMX)
 	{	fprintf(stderr,"format too complicated:\n");
@@ -58,13 +50,8 @@ op_gen(int a, int b, int c, int d)
 	p->p2.i[1]=d;
 	return(f__pc++);
 }
-#ifdef KR_headers
-static char *f_list();
-static char *gt_num(s,n,n1) char *s; int *n, n1;
-#else
 static char *f_list(char*);
 static char *gt_num(char *s, int *n, int n1)
-#endif
 {	int m=0,f__cnt=0;
 	char c;
 	for(c= *s;;c = *s)
@@ -87,11 +74,7 @@ static char *gt_num(char *s, int *n, int n1)
 }
 
  static
-#ifdef KR_headers
-char *f_s(s,curloc) char *s;
-#else
 char *f_s(char *s, int curloc)
-#endif
 {
 	skip(s);
 	if(*s++!='(')
@@ -108,11 +91,7 @@ char *f_s(char *s, int curloc)
 }
 
  static
-#ifdef KR_headers
-ne_d(s,p) char *s,**p;
-#else
 ne_d(char *s, char **p)
-#endif
 {	int n,x,sign=0;
 	struct syl *sp;
 	switch(*s)
@@ -200,11 +179,7 @@ ne_d(char *s, char **p)
 }
 
  static
-#ifdef KR_headers
-e_d(s,p) char *s,**p;
-#else
 e_d(char *s, char **p)
-#endif
 {	int i,im,n,w,d,e,found=0,x=0;
 	char *sv=s;
 	s=gt_num(s,&n,1);
@@ -319,11 +294,7 @@ e_d(char *s, char **p)
 	return(1);
 }
  static
-#ifdef KR_headers
-char *i_tem(s) char *s;
-#else
 char *i_tem(char *s)
-#endif
 {	char *t;
 	int n,curloc;
 	if(*s==')') return(s);
@@ -335,11 +306,7 @@ char *i_tem(char *s)
 }
 
  static
-#ifdef KR_headers
-char *f_list(s) char *s;
-#else
 char *f_list(char *s)
-#endif
 {
 	for(;*s!=0;)
 	{	skip(s);
@@ -359,11 +326,7 @@ char *f_list(char *s)
 	return(NULL);
 }
 
-#ifdef KR_headers
-pars_f(s) char *s;
-#else
 pars_f(char *s)
-#endif
 {
 	char *e;
 
@@ -405,11 +368,7 @@ int f__cnt[STKSZ],f__ret[STKSZ],f__cp,f__rp;
 flag f__workdone, f__nonl;
 
  static
-#ifdef KR_headers
-type_f(n)
-#else
 type_f(int n)
-#endif
 {
 	switch(n)
 	{
@@ -437,11 +396,7 @@ type_f(int n)
 		return(ED);
 	}
 }
-#ifdef KR_headers
-integer do_fio(number,ptr,len) ftnint *number; ftnlen len; char *ptr;
-#else
 integer do_fio(ftnint *number, char *ptr, ftnlen len)
-#endif
 {	struct syl *p;
 	int n,i;
 	for(i=0;i<*number;i++,ptr+=len)

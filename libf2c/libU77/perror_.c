@@ -28,12 +28,7 @@ Boston, MA 02111-1307, USA.  */
 #endif
 #include "f2c.h"
 
-#ifdef KR_headers
-/* Subroutine */ int G77_perror_0 (str, Lstr)
-     char *str; ftnlen Lstr;
-#else
 /* Subroutine */ int G77_perror_0 (const char *str, const ftnlen Lstr)
-#endif
 {
   char buff[1000];
   char *bp, *blast;

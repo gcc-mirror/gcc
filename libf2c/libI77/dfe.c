@@ -61,11 +61,7 @@ y_newrec(Void)
 	return(1);
 }
 
-#ifdef KR_headers
-c_dfe(a) cilist *a;
-#else
 c_dfe(cilist *a)
-#endif
 {
 	f__sequential=0;
 	f__formatted=f__external=1;
@@ -86,11 +82,7 @@ c_dfe(cilist *a)
 	f__curunit->uend = 0;
 	return(0);
 }
-#ifdef KR_headers
-integer s_rdfe(a) cilist *a;
-#else
 integer s_rdfe(cilist *a)
-#endif
 {
 	int n;
 	if(f__init != 1) f_init();
@@ -109,11 +101,7 @@ integer s_rdfe(cilist *a)
 	fmt_bg();
 	return(0);
 }
-#ifdef KR_headers
-integer s_wdfe(a) cilist *a;
-#else
 integer s_wdfe(cilist *a)
-#endif
 {
 	int n;
 	if(f__init != 1) f_init();

@@ -22,11 +22,7 @@ Boston, MA 02111-1307, USA.  */
 #include <errno.h>
 #include "f2c.h"
 
-#ifdef KR_headers
-integer G77_ierrno_0 ()
-#else
 integer G77_ierrno_0 (void)
-#endif
 {
   return errno;
 }

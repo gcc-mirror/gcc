@@ -10,20 +10,12 @@
 #endif
 #endif
 
-#ifdef KR_headers
-extern char *malloc();
-#ifdef NON_ANSI_STDIO
-extern char *mktemp();
-#endif
-extern integer f_clos();
-#else
 #undef abs
 #undef min
 #undef max
 #include <stdlib.h>
 extern int f__canseek(FILE*);
 extern integer f_clos(cllist*);
-#endif
 
 #ifdef NON_ANSI_RW_MODES
 char *f__r_mode[2] = {"r", "r"};
@@ -37,11 +29,7 @@ char *f__w_mode[4] = {"wb", "w", "r+b", "r+"};
  int f__buflen = (int)sizeof(f__buf0);
 
  static void
-#ifdef KR_headers
-f__bufadj(n, c) int n, c;
-#else
 f__bufadj(int n, int c)
-#endif
 {
 	unsigned int len;
 	char *nbuf, *s, *t, *te;
@@ -64,11 +52,7 @@ f__bufadj(int n, int c)
 	}
 
  int
-#ifdef KR_headers
-f__putbuf(c) int c;
-#else
 f__putbuf(int c)
-#endif
 {
 	char *s, *se;
 	int n;
@@ -94,11 +78,7 @@ f__putbuf(int c)
 	}
 
  void
-#ifdef KR_headers
-x_putc(c)
-#else
 x_putc(int c)
-#endif
 {
 	if (f__recpos >= f__buflen)
 		f__bufadj(f__recpos, f__buflen);
@@ -109,11 +89,7 @@ x_putc(int c)
   do {if(f) {f__init &= ~2; errno= m;} else opn_err(m,s,a); return(m);} while(0)
 
  static void
-#ifdef KR_headers
-opn_err(m, s, a) int m; char *s; olist *a;
-#else
 opn_err(int m, char *s, olist *a)
-#endif
 {
 	if (a->ofnm) {
 		/* supply file name to error message */
@@ -124,11 +100,7 @@ opn_err(int m, char *s, olist *a)
 	f__fatal(m, s);
 	}
 
-#ifdef KR_headers
-integer f_open(a) olist *a;
-#else
 integer f_open(olist *a)
-#endif
 {	unit *b;
 	integer rv;
 	char buf[256], *s, *env;
@@ -284,11 +256,7 @@ integer f_open(olist *a)
 				opnerr(a->oerr,129,"open");
 	return(0);
 }
-#ifdef KR_headers
-fk_open(seq,fmt,n) ftnint n;
-#else
 fk_open(int seq, int fmt, ftnint n)
-#endif
 {	char nbuf[10];
 	olist a;
 	int rtn;

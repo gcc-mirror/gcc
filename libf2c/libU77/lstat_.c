@@ -30,18 +30,9 @@ Boston, MA 02111-1307, USA.  */
 
 /* lstat isn't posix */
 
-#ifdef KR_headers
-void g_char();
-
-integer G77_lstat_0 (name, statb, Lname)
-     char *name;
-     integer statb[13];
-     ftnlen Lname;
-#else
 void g_char(const char *a, ftnlen alen, char *b);
 
 integer G77_lstat_0 (const char *name, integer statb[13], const ftnlen Lname)
-#endif
 {
 #if HAVE_LSTAT
   char *buff;

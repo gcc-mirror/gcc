@@ -51,12 +51,7 @@ Boston, MA 02111-1307, USA.  */
    different to all others. */
 static long clk_tck = 0;
 
-#ifdef KR_headers
-double G77_dtime_0 (tarray)
-     real tarray[2];
-#else
 double G77_dtime_0 (real tarray[2])
-#endif
 {
 #if defined (_WIN32)
   static int win32_platform = -1;

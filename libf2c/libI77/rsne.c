@@ -39,19 +39,6 @@
  extern int f__lcount, nml_read;
  extern t_getc(Void);
 
-#ifdef KR_headers
- extern char *malloc(), *memset();
-
-#ifdef ungetc
- static int
-un_getc(x,f__cf) int x; FILE *f__cf;
-{ return ungetc(x,f__cf); }
-#else
-#define un_getc ungetc
- extern int ungetc();
-#endif
-
-#else
 #undef abs
 #undef min
 #undef max
@@ -66,14 +53,9 @@ un_getc(int x, FILE *f__cf)
 #define un_getc ungetc
 extern int ungetc(int, FILE*);	/* for systems with a buggy stdio.h */
 #endif
-#endif
 
  static Vardesc *
-#ifdef KR_headers
-hash(ht, s) hashtab *ht; register char *s;
-#else
 hash(hashtab *ht, register char *s)
-#endif
 {
 	register int c, x;
 	register hashentry *h;
@@ -88,11 +70,7 @@ hash(hashtab *ht, register char *s)
 	}
 
  hashtab *
-#ifdef KR_headers
-mk_hashtab(nl) Namelist *nl;
-#else
 mk_hashtab(Namelist *nl)
-#endif
 {
 	int nht, nv;
 	hashtab *ht;
@@ -164,11 +142,7 @@ nl_init(Void) {
 #define Ungetc(x,y) (*l_ungetc)(x,y)
 
  static int
-#ifdef KR_headers
-getname(s, slen) register char *s; int slen;
-#else
 getname(register char *s, int slen)
-#endif
 {
 	register char *se = s + slen - 1;
 	register int ch;
@@ -190,11 +164,7 @@ getname(register char *s, int slen)
 	}
 
  static int
-#ifdef KR_headers
-getnum(chp, val) int *chp; ftnlen *val;
-#else
 getnum(int *chp, ftnlen *val)
-#endif
 {
 	register int ch, sign;
 	register ftnlen x;
@@ -224,12 +194,7 @@ getnum(int *chp, ftnlen *val)
 	}
 
  static int
-#ifdef KR_headers
-getdimen(chp, d, delta, extent, x1)
- int *chp; dimen *d; ftnlen delta, extent, *x1;
-#else
 getdimen(int *chp, dimen *d, ftnlen delta, ftnlen extent, ftnlen *x1)
-#endif
 {
 	register int k;
 	ftnlen x2, x3;
@@ -263,11 +228,7 @@ getdimen(int *chp, dimen *d, ftnlen delta, ftnlen extent, ftnlen *x1)
 
 #ifndef No_Namelist_Questions
  static Void
-#ifdef KR_headers
-print_ne(a) cilist *a;
-#else
 print_ne(cilist *a)
-#endif
 {
 	flag intext = f__external;
 	int rpsave = f__recpos;
@@ -289,11 +250,7 @@ print_ne(cilist *a)
 
  static char where0[] = "namelist read start ";
 
-#ifdef KR_headers
-x_rsne(a) cilist *a;
-#else
 x_rsne(cilist *a)
-#endif
 {
 	int ch, got1, k, n, nd, quote, readall;
 	Namelist *nl;
@@ -582,11 +539,7 @@ x_rsne(cilist *a)
 	}
 
  integer
-#ifdef KR_headers
-s_rsne(a) cilist *a;
-#else
 s_rsne(cilist *a)
-#endif
 {
 	extern int l_eof;
 	int n;

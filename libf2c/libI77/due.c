@@ -2,11 +2,7 @@
 #include "f2c.h"
 #include "fio.h"
 
-#ifdef KR_headers
-c_due(a) cilist *a;
-#else
 c_due(cilist *a)
-#endif
 {
 	if(f__init != 1) f_init();
 	f__init = 3;
@@ -29,11 +25,7 @@ c_due(cilist *a)
 	f__curunit->uend = 0;
 	return(0);
 }
-#ifdef KR_headers
-integer s_rdue(a) cilist *a;
-#else
 integer s_rdue(cilist *a)
-#endif
 {
 	int n;
 	f__reading=1;
@@ -42,11 +34,7 @@ integer s_rdue(cilist *a)
 		err(a->cierr,errno,"read start");
 	return(0);
 }
-#ifdef KR_headers
-integer s_wdue(a) cilist *a;
-#else
 integer s_wdue(cilist *a)
-#endif
 {
 	int n;
 	f__reading=0;

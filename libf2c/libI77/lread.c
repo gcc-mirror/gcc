@@ -16,25 +16,17 @@ static longint f__llx;
 static int quad_read;
 #endif
 
-#ifdef KR_headers
-extern double atof();
-extern char *malloc(), *realloc();
-int (*f__lioproc)(), (*l_getc)(), (*l_ungetc)();
-#else
 #undef abs
 #undef min
 #undef max
 #include <stdlib.h>
-#endif
 
 #include "fmt.h"
 #include "lio.h"
 #include "fp.h"
 
-#ifndef KR_headers
 int (*f__lioproc)(ftnint*, char*, ftnlen, ftnint), (*l_getc)(void),
 	(*l_ungetc)(int,FILE*);
-#endif
 
 int l_eof;
 
@@ -64,19 +56,11 @@ char f__ltab[128+1] = {	/* offset one for EOF */
 
 #ifdef ungetc
  static int
-#ifdef KR_headers
-un_getc(x,f__cf) int x; FILE *f__cf;
-#else
 un_getc(int x, FILE *f__cf)
-#endif
 { return ungetc(x,f__cf); }
 #else
 #define un_getc ungetc
-#ifdef KR_headers
- extern int ungetc();
-#else
 extern int ungetc(int, FILE*);	/* for systems with a buggy stdio.h */
-#endif
 #endif
 
 t_getc(Void)
@@ -110,11 +94,7 @@ double f__lx,f__ly;
 #define Ungetc(x,y) (*l_ungetc)(x,y)
 
  static int
-#ifdef KR_headers
-l_R(poststar, reqint) int poststar, reqint;
-#else
 l_R(int poststar, int reqint)
-#endif
 {
 	char s[FMAX+EXPMAXDIGS+4];
 	register int ch;
@@ -261,11 +241,7 @@ bad:
 	}
 
  static int
-#ifdef KR_headers
-rd_count(ch) register int ch;
-#else
 rd_count(register int ch)
-#endif
 {
 	if (ch < '0' || ch > '9')
 		return 1;
@@ -342,11 +318,7 @@ l_C(Void)
 
  static char nmLbuf[256], *nmL_next;
  static int (*nmL_getc_save)(Void);
-#ifdef KR_headers
- static int (*nmL_ungetc_save)(/* int, FILE* */);
-#else
  static int (*nmL_ungetc_save)(int, FILE*);
-#endif
 
  static int
 nmL_getc(Void)
@@ -360,22 +332,14 @@ nmL_getc(Void)
 	}
 
  static int
-#ifdef KR_headers
-nmL_ungetc(x, f) int x; FILE *f;
-#else
 nmL_ungetc(int x, FILE *f)
-#endif
 {
 	f = f;	/* banish non-use warning */
 	return *--nmL_next = x;
 	}
 
  static int
-#ifdef KR_headers
-Lfinish(ch, dot, rvp) int ch, dot, *rvp;
-#else
 Lfinish(int ch, int dot, int *rvp)
-#endif
 {
 	char *s, *se;
 	static char what[] = "namelist input";
@@ -619,11 +583,7 @@ l_CHAR(Void)
 		}
 	}
 }
-#ifdef KR_headers
-c_le(a) cilist *a;
-#else
 c_le(cilist *a)
-#endif
 {
 	if(f__init != 1) f_init();
 	f__init = 3;
@@ -640,11 +600,7 @@ c_le(cilist *a)
 	if(!f__curunit->ufmt) err(a->cierr,103,"lio");
 	return(0);
 }
-#ifdef KR_headers
-l_read(number,ptr,len,type) ftnint *number,type; char *ptr; ftnlen len;
-#else
 l_read(ftnint *number, char *ptr, ftnlen len, ftnint type)
-#endif
 {
 #define Ptr ((flex *)ptr)
 	int i,n,ch;
@@ -771,11 +727,7 @@ l_read(ftnint *number, char *ptr, ftnlen len, ftnint type)
 	return(0);
 #undef Ptr
 }
-#ifdef KR_headers
-integer s_rsle(a) cilist *a;
-#else
 integer s_rsle(cilist *a)
-#endif
 {
 	int n;
 

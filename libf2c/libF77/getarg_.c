@@ -6,11 +6,7 @@
  * variable argument c
 */
 
-#ifdef KR_headers
-VOID G77_getarg_0 (n, s, ls) ftnint *n; register char *s; ftnlen ls;
-#else
 void G77_getarg_0 (ftnint *n, register char *s, ftnlen ls)
-#endif
 {
 extern int f__xargc;
 extern char **f__xargv;

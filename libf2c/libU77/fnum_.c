@@ -22,12 +22,7 @@ Boston, MA 02111-1307, USA.  */
 #include "f2c.h"
 #include "fio.h"
 
-#ifdef KR_headers
-integer G77_fnum_0 (lunit)
-     integer *lunit;
-#else
 integer G77_fnum_0 (integer *lunit)
-#endif
 {
   if (*lunit>=MXUNIT || *lunit<0)
     err(1,101,"fnum");

@@ -1,9 +1,7 @@
 #include "config.h"
 #include "f2c.h"
 #include "fio.h"
-#ifdef KR_headers
-integer f_clos(a) cllist *a;
-#else
+
 #undef abs
 #undef min
 #undef max
@@ -25,7 +23,6 @@ extern int unlink(const char*);
 #endif
 
 integer f_clos(cllist *a)
-#endif
 {	unit *b;
 
 	if (f__init & 2)
@@ -66,11 +63,7 @@ integer f_clos(cllist *a)
 	return(0);
 	}
  void
-#ifdef KR_headers
-f_exit()
-#else
 f_exit(void)
-#endif
 {	int i;
 	static cllist xx;
 	if (! (f__init & 1))
@@ -93,11 +86,7 @@ f_exit(void)
 	}
 }
  int
-#ifdef KR_headers
-G77_flush_0 ()
-#else
 G77_flush_0 (void)
-#endif
 {	int i;
 	for(i=0;i<MXUNIT;i++)
 		if(f__units[i].ufd != NULL && f__units[i].uwrt)

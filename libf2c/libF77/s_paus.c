@@ -3,10 +3,6 @@
 #define PAUSESIG 15
 
 #include "signal1.h"
-#ifdef KR_headers
-#define Void /* void */
-#define Int /* int */
-#else
 #define Void void
 #define Int int
 #undef abs
@@ -17,7 +13,6 @@
 extern "C" {
 #endif
 extern int getpid(void), isatty(int), pause(void);
-#endif
 
 extern VOID f_exit(Void);
 
@@ -28,11 +23,7 @@ waitpause(Sigarg)
 	}
 
  static VOID
-#ifdef KR_headers
-s_1paus(fin) FILE *fin;
-#else
 s_1paus(FILE *fin)
-#endif
 {
 	fprintf(stderr,
 	"To resume execution, type go.  Other input will terminate the job.\n");
@@ -47,11 +38,7 @@ s_1paus(FILE *fin)
 	}
 
  int
-#ifdef KR_headers
-s_paus(s, n) char *s; ftnlen n;
-#else
 s_paus(char *s, ftnlen n)
-#endif
 {
 	fprintf(stderr, "PAUSE ");
 	if(n > 0)

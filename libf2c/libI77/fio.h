@@ -59,16 +59,6 @@ extern int f__init;
 extern cilist *f__elist;	/*active external io list*/
 extern flag f__reading,f__external,f__sequential,f__formatted;
 #undef Void
-#ifdef KR_headers
-#define Void /*void*/
-extern int (*f__getn)();	/* for formatted input */
-extern void (*f__putn)();	/* for formatted output */
-extern void x_putc();
-extern long f__inode();
-extern VOID sig_die();
-extern int (*f__donewrec)(), t_putc(), x_wSL();
-extern int c_sfe(), err__fl(), xrd_SL(), f__putbuf();
-#else
 #define Void void
 #ifdef __cplusplus
 extern "C" {
@@ -93,7 +83,6 @@ extern int xrd_SL(void);
 extern int f__putbuf(int);
 #ifdef __cplusplus
 	}
-#endif
 #endif
 extern int (*f__doend)(Void);
 extern FILE *f__cf;	/*current file*/

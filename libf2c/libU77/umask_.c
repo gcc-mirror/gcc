@@ -23,12 +23,7 @@ Boston, MA 02111-1307, USA.  */
 #include <sys/stat.h>
 #include "f2c.h"
 
-#ifdef KR_headers
-integer G77_umask_0 (mask)
-     integer *mask;
-#else
 integer G77_umask_0 (integer *mask)
-#endif
 {
   return umask ((mode_t) *mask);
 }

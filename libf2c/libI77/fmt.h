@@ -46,21 +46,13 @@ typedef union
 } ufloat;
 typedef union
 {	short is;
-#ifndef KR_headers
 	signed
-#endif
 		char ic;
 	integer il;
 #ifdef Allow_TYQUAD
 	longint ili;
 #endif
 } Uint;
-#ifdef KR_headers
-extern int (*f__doed)(),(*f__doned)();
-extern int (*f__dorevert)();
-extern int rd_ed(),rd_ned();
-extern int w_ed(),w_ned();
-#else
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -75,7 +67,6 @@ extern int wrt_F(ufloat*, int, int, ftnlen);
 extern int wrt_L(Uint*, int, ftnlen);
 #ifdef __cplusplus
 	}
-#endif
 #endif
 extern flag f__cblank,f__cplus,f__workdone, f__nonl;
 extern char *f__fmtbuf;
@@ -94,8 +85,4 @@ extern int f__cursor;
 #define TYQUAD 14
 #endif
 
-#ifdef KR_headers
-extern char *f__icvt();
-#else
 extern char *f__icvt(longint, int*, int*, int);
-#endif

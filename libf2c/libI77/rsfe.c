@@ -44,11 +44,7 @@ x_rev(Void)
 	(void) xrd_SL();
 	return(0);
 }
-#ifdef KR_headers
-integer s_rsfe(a) cilist *a; /* start */
-#else
 integer s_rsfe(cilist *a) /* start */
-#endif
 {	int n;
 	if(f__init != 1) f_init();
 	f__init = 3;

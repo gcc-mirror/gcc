@@ -6,11 +6,7 @@ extern char *f__icptr;
 extern char *f__icend;
 extern icilist *f__svic;
 extern int f__icnum;
-#ifdef KR_headers
-extern void z_putc();
-#else
 extern void z_putc(int);
-#endif
 
  static int
 z_wSL(Void)
@@ -21,11 +17,7 @@ z_wSL(Void)
 	}
 
  static void
-#ifdef KR_headers
-c_liw(a) icilist *a;
-#else
 c_liw(icilist *a)
-#endif
 {
 	f__reading = 0;
 	f__external = 0;
@@ -44,11 +36,7 @@ c_liw(icilist *a)
 	}
 
  integer
-#ifdef KR_headers
-s_wsni(a) icilist *a;
-#else
 s_wsni(icilist *a)
-#endif
 {
 	cilist ca;
 
@@ -62,11 +50,7 @@ s_wsni(icilist *a)
 	}
 
  integer
-#ifdef KR_headers
-s_wsli(a) icilist *a;
-#else
 s_wsli(icilist *a)
-#endif
 {
 	if(f__init != 1) f_init();
 	f__init = 3;

@@ -66,11 +66,7 @@ mv_cur(Void)	/* shouldn't use fseek because it insists on calling fflush */
 }
 
  static int
-#ifdef KR_headers
-wrt_Z(n,w,minlen,len) Uint *n; int w, minlen; ftnlen len;
-#else
 wrt_Z(Uint *n, int w, int minlen, ftnlen len)
-#endif
 {
 	register char *s, *se;
 	register int i, w1;
@@ -121,11 +117,7 @@ wrt_Z(Uint *n, int w, int minlen, ftnlen len)
 	}
 
  static int
-#ifdef KR_headers
-wrt_I(n,w,len, base) Uint *n; ftnlen len; register int base;
-#else
 wrt_I(Uint *n, int w, ftnlen len, register int base)
-#endif
 {	int ndigit,sign,spare,i;
 	longint x;
 	char *ans;
@@ -149,11 +141,7 @@ wrt_I(Uint *n, int w, ftnlen len, register int base)
 	return(0);
 }
  static int
-#ifdef KR_headers
-wrt_IM(n,w,m,len,base) Uint *n; ftnlen len; int base;
-#else
 wrt_IM(Uint *n, int w, int m, ftnlen len, int base)
-#endif
 {	int ndigit,sign,spare,i,xsign;
 	longint x;
 	char *ans;
@@ -186,11 +174,7 @@ wrt_IM(Uint *n, int w, int m, ftnlen len, int base)
 	return(0);
 }
  static int
-#ifdef KR_headers
-wrt_AP(s) char *s;
-#else
 wrt_AP(char *s)
-#endif
 {	char quote;
 	int i;
 
@@ -205,11 +189,7 @@ wrt_AP(char *s)
 	return(1);
 }
  static int
-#ifdef KR_headers
-wrt_H(a,s) char *s;
-#else
 wrt_H(int a, char *s)
-#endif
 {
 	int i;
 
@@ -218,11 +198,7 @@ wrt_H(int a, char *s)
 	while(a--) (*f__putn)(*s++);
 	return(1);
 }
-#ifdef KR_headers
-wrt_L(n,len, sz) Uint *n; ftnlen sz;
-#else
 wrt_L(Uint *n, int len, ftnlen sz)
-#endif
 {	int i;
 	long x;
 	if(sizeof(long)==sz) x=n->il;
@@ -235,21 +211,13 @@ wrt_L(Uint *n, int len, ftnlen sz)
 	return(0);
 }
  static int
-#ifdef KR_headers
-wrt_A(p,len) char *p; ftnlen len;
-#else
 wrt_A(char *p, ftnlen len)
-#endif
 {
 	while(len-- > 0) (*f__putn)(*p++);
 	return(0);
 }
  static int
-#ifdef KR_headers
-wrt_AW(p,w,len) char * p; ftnlen len;
-#else
 wrt_AW(char * p, int w, ftnlen len)
-#endif
 {
 	while(w>len)
 	{	w--;
@@ -261,11 +229,7 @@ wrt_AW(char * p, int w, ftnlen len)
 }
 
  static int
-#ifdef KR_headers
-wrt_G(p,w,d,e,len) ufloat *p; ftnlen len;
-#else
 wrt_G(ufloat *p, int w, int d, int e, ftnlen len)
-#endif
 {	double up = 1,x;
 	int i=0,oldscale,n,j;
 	x = len==sizeof(real)?p->pf:p->pd;
@@ -290,11 +254,7 @@ wrt_G(ufloat *p, int w, int d, int e, ftnlen len)
 	}
 	return(wrt_E(p,w,d,e,len));
 }
-#ifdef KR_headers
-w_ed(p,ptr,len) struct syl *p; char *ptr; ftnlen len;
-#else
 w_ed(struct syl *p, char *ptr, ftnlen len)
-#endif
 {
 	int i;
 
@@ -336,11 +296,7 @@ w_ed(struct syl *p, char *ptr, ftnlen len)
 		return(wrt_Z((Uint *)ptr,p->p1,p->p2.i[0],len));
 	}
 }
-#ifdef KR_headers
-w_ned(p) struct syl *p;
-#else
 w_ned(struct syl *p)
-#endif
 {
 	switch(p->op)
 	{

@@ -7,25 +7,15 @@
 #ifndef NO_OVERWRITE
 #include <stdio.h>
 #undef abs
-#ifdef KR_headers
- extern char *F77_aloc();
- extern void free();
- extern void G77_exit_0 ();
-#else
 #undef min
 #undef max
 #include <stdlib.h>
  extern char *F77_aloc(ftnlen, char*);
-#endif
 #include <string.h>
 #endif /* NO_OVERWRITE */
 
  VOID
-#ifdef KR_headers
-s_cat(lp, rpp, rnp, np, ll) char *lp, *rpp[]; ftnint rnp[], *np; ftnlen ll;
-#else
 s_cat(char *lp, char *rpp[], ftnint rnp[], ftnint *np, ftnlen ll)
-#endif
 {
 	ftnlen i, nc;
 	char *rp;

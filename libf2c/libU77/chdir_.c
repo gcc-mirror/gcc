@@ -32,17 +32,9 @@ Boston, MA 02111-1307, USA.  */
 #include "f2c.h"
 
 
-#ifdef KR_headers
-void g_char ();
-
-integer G77_chdir_0 (name, Lname)
-     char *name;
-     ftnlen Lname;
-#else
 void g_char(const char *a, ftnlen alen, char *b);
 
 integer G77_chdir_0 (const char *name, const ftnlen Lname)
-#endif
 {
   char *buff;
   char *bp, *blast;

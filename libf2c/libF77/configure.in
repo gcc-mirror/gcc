@@ -56,17 +56,6 @@ the G77 runtime system.  If necessary, install gcc now with \`LANGUAGES=c',
 then the target library, then build with \`LANGUAGES=f77'.])])
 
 AC_HEADER_STDC
-dnl We could do this if we didn't know we were using gcc
-dnl AC_MSG_CHECKING(for prototype-savvy compiler)
-dnl AC_CACHE_VAL(g77_cv_sys_proto,                
-dnl   [AC_TRY_LINK(,                             
-dnl dnl looks screwy because TRY_LINK expects a function body
-dnl    [return 0;} int foo (int * bar) {],       
-dnl    g77_cv_sys_proto=yes,                      
-dnl    [g77_cv_sys_proto=no                       
-dnl     AC_DEFINE(KR_headers)])])                
-dnl AC_MSG_RESULT($g77_cv_sys_proto)              
-
 AC_MSG_CHECKING(for posix)
 AC_CACHE_VAL(g77_cv_header_posix,
   AC_EGREP_CPP(yes,
