@@ -1990,7 +1990,8 @@ if_convert (life_data_ok)
 	block_num++;
     }
 
-  sbitmap_vector_free (post_dominators);
+  if (post_dominators)
+    sbitmap_vector_free (post_dominators);
 
   if (rtl_dump_file)
     fflush (rtl_dump_file);
