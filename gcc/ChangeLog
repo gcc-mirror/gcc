@@ -1,5 +1,8 @@
 Mon May 18 01:23:33 1998  Jeffrey A Law  (law@cygnus.com)
 
+	* output.h (find_basic_blocks): Declare.
+	(free_basic_block_vars, set_block_num, life_analysis): Likewise.
+
 	* Makefile.in (BISON): Use bison from the build tree if it exists.
 	(FLEX): Similarly.
 
