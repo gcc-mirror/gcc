@@ -1,4 +1,4 @@
-int i;		// ERROR - XFAIL *-*-*
+int i;		// ERROR - 
 
 namespace i {	// ERROR - 
 }
