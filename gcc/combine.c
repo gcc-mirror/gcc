@@ -1,5 +1,5 @@
 /* Optimize by combining instructions for GNU compiler.
-   Copyright (C) 1987, 1988, 1992 Free Software Foundation, Inc.
+   Copyright (C) 1987, 1988, 1992, 1993 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -6519,8 +6519,8 @@ num_sign_bit_copies (x, mode)
 	 high-order bits are known to be sign bit copies.  */
 
       if (SUBREG_PROMOTED_VAR_P (x) && ! SUBREG_PROMOTED_UNSIGNED_P (x))
-	return (GET_MODE_BITSIZE (mode) - GET_MODE_BITSIZE (GET_MODE (x))
-		+ num_sign_bit_copies (SUBREG_REG (x), GET_MODE (x)));
+	return MAX (bitwidth - GET_MODE_BITSIZE (GET_MODE (x)) + 1,
+		    num_sign_bit_copies (SUBREG_REG (x), mode));
 
       /* For a smaller object, just ignore the high bits. */
       if (bitwidth <= GET_MODE_BITSIZE (GET_MODE (SUBREG_REG (x))))
