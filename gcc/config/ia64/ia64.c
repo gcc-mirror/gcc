@@ -165,6 +165,7 @@ static int ia64_first_cycle_multipass_dfa_lookahead_guard PARAMS ((rtx));
 static int ia64_dfa_new_cycle PARAMS ((FILE *, int, rtx, int, int, int *));
 static rtx gen_tls_get_addr PARAMS ((void));
 static rtx gen_thread_pointer PARAMS ((void));
+static rtx ia64_expand_tls_address PARAMS ((enum tls_model, rtx, rtx));
 static int find_gr_spill PARAMS ((int));
 static int next_scratch_gr_reg PARAMS ((void));
 static void mark_reg_gr_used_mask PARAMS ((rtx, void *));
@@ -564,21 +565,14 @@ setjmp_operand (op, mode)
   return retval;
 }
 
-/* Return 1 if OP is a general operand, but when pic exclude symbolic
-   operands.  */
-
-/* ??? If we drop no-pic support, can delete SYMBOL_REF, CONST, and LABEL_REF
-   from PREDICATE_CODES.  */
+/* Return 1 if OP is a general operand, excluding tls symbolic operands.  */
 
 int
 move_operand (op, mode)
      rtx op;
      enum machine_mode mode;
 {
-  if (! TARGET_NO_PIC && symbolic_operand (op, mode))
-    return 0;
-
-  return general_operand (op, mode);
+  return general_operand (op, mode) && !tls_symbolic_operand (op, mode);
 }
 
 /* Return 1 if OP is a register operand that is (or could be) a GR reg.  */
@@ -1099,40 +1093,37 @@ ia64_depz_field_mask (rop, rshift)
 }
 
 /* Expand a symbolic constant load.  */
-/* ??? Should generalize this, so that we can also support 32 bit pointers.  */
 
 void
-ia64_expand_load_address (dest, src, scratch)
-      rtx dest, src, scratch;
+ia64_expand_load_address (dest, src)
+      rtx dest, src;
 {
-  rtx temp;
-
-  /* The destination could be a MEM during initial rtl generation,
-     which isn't a valid destination for the PIC load address patterns.  */
-  if (! register_operand (dest, DImode))
-    if (! scratch || ! register_operand (scratch, DImode))
-      temp = gen_reg_rtx (DImode);
-    else
-      temp = scratch;
-  else
-    temp = dest;
-
-  if (tls_symbolic_operand (src, Pmode))
+  if (tls_symbolic_operand (src, VOIDmode))
+    abort ();
+  if (GET_CODE (dest) != REG)
     abort ();
 
   if (TARGET_AUTO_PIC)
-    emit_insn (gen_load_gprel64 (temp, src));
-  else if (GET_CODE (src) == SYMBOL_REF && SYMBOL_REF_FLAG (src))
-    emit_insn (gen_load_fptr (temp, src));
-  else if ((GET_MODE (src) == Pmode || GET_MODE (src) == ptr_mode)
-           && sdata_symbolic_operand (src, VOIDmode))
-    emit_insn (gen_load_gprel (temp, src));
-  else if (GET_CODE (src) == CONST
-	   && GET_CODE (XEXP (src, 0)) == PLUS
-	   && GET_CODE (XEXP (XEXP (src, 0), 1)) == CONST_INT
-	   && (INTVAL (XEXP (XEXP (src, 0), 1)) & 0x1fff) != 0)
     {
-      rtx subtarget = no_new_pseudos ? temp : gen_reg_rtx (DImode);
+      emit_insn (gen_load_gprel64 (dest, src));
+      return;
+    }
+  else if (GET_CODE (src) == SYMBOL_REF && SYMBOL_REF_FLAG (src))
+    {
+      emit_insn (gen_load_fptr (dest, src));
+      return;
+    }
+  else if (sdata_symbolic_operand (src, VOIDmode))
+    {
+      emit_insn (gen_load_gprel (dest, src));
+      return;
+    }
+
+  if (GET_CODE (src) == CONST
+      && GET_CODE (XEXP (src, 0)) == PLUS
+      && GET_CODE (XEXP (XEXP (src, 0), 1)) == CONST_INT
+      && (INTVAL (XEXP (XEXP (src, 0), 1)) & 0x1fff) != 0)
+    {
       rtx sym = XEXP (XEXP (src, 0), 0);
       HOST_WIDE_INT ofs, hi, lo;
 
@@ -1142,33 +1133,11 @@ ia64_expand_load_address (dest, src, scratch)
       lo = ((ofs & 0x3fff) ^ 0x2000) - 0x2000;
       hi = ofs - lo;
 
-      if (! scratch)
-	scratch = no_new_pseudos ? subtarget : gen_reg_rtx (DImode);
-
-      emit_insn (gen_load_symptr (subtarget, plus_constant (sym, hi),
-				  scratch));
-      emit_insn (gen_adddi3 (temp, subtarget, GEN_INT (lo)));
+      emit_insn (gen_load_symptr (dest, plus_constant (sym, hi), dest));
+      emit_insn (gen_adddi3 (dest, dest, GEN_INT (lo)));
     }
   else
-    {
-      rtx insn;
-      if (! scratch)
-	scratch = no_new_pseudos ? temp : gen_reg_rtx (DImode);
-
-      insn = emit_insn (gen_load_symptr (temp, src, scratch));
-#ifdef POINTERS_EXTEND_UNSIGNED
-      if (GET_MODE (temp) != GET_MODE (src))
-	src = convert_memory_address (GET_MODE (temp), src);
-#endif
-      REG_NOTES (insn) = gen_rtx_EXPR_LIST (REG_EQUAL, src, REG_NOTES (insn));
-    }
-
-  if (temp != dest)
-    {
-      if (GET_MODE (dest) != GET_MODE (temp))
-	temp = convert_to_mode (GET_MODE (dest), temp, 0);
-      emit_move_insn (dest, temp);
-    }
+    emit_insn (gen_load_symptr (dest, src, dest));
 }
 
 static GTY(()) rtx gen_tls_tga;
@@ -1176,9 +1145,7 @@ static rtx
 gen_tls_get_addr ()
 {
   if (!gen_tls_tga)
-    {
-      gen_tls_tga = init_one_libfunc ("__tls_get_addr");
-     }
+    gen_tls_tga = init_one_libfunc ("__tls_get_addr");
   return gen_tls_tga;
 }
 
@@ -1194,6 +1161,113 @@ gen_thread_pointer ()
   return thread_pointer_rtx;
 }
 
+static rtx
+ia64_expand_tls_address (tls_kind, op0, op1)
+     enum tls_model tls_kind;
+     rtx op0, op1;
+{
+  rtx tga_op1, tga_op2, tga_ret, tga_eqv, tmp, insns;
+
+  switch (tls_kind)
+    {
+    case TLS_MODEL_GLOBAL_DYNAMIC:
+      start_sequence ();
+
+      tga_op1 = gen_reg_rtx (Pmode);
+      emit_insn (gen_load_ltoff_dtpmod (tga_op1, op1));
+      tga_op1 = gen_rtx_MEM (Pmode, tga_op1);
+      RTX_UNCHANGING_P (tga_op1) = 1;
+
+      tga_op2 = gen_reg_rtx (Pmode);
+      emit_insn (gen_load_ltoff_dtprel (tga_op2, op1));
+      tga_op2 = gen_rtx_MEM (Pmode, tga_op2);
+      RTX_UNCHANGING_P (tga_op2) = 1;
+	      
+      tga_ret = emit_library_call_value (gen_tls_get_addr (), NULL_RTX,
+					 LCT_CONST, Pmode, 2, tga_op1,
+					 Pmode, tga_op2, Pmode);
+
+      insns = get_insns ();
+      end_sequence ();
+
+      emit_libcall_block (insns, op0, tga_ret, op1);
+      return NULL_RTX;
+
+    case TLS_MODEL_LOCAL_DYNAMIC:
+      /* ??? This isn't the completely proper way to do local-dynamic
+	 If the call to __tls_get_addr is used only by a single symbol,
+	 then we should (somehow) move the dtprel to the second arg
+	 to avoid the extra add.  */
+      start_sequence ();
+
+      tga_op1 = gen_reg_rtx (Pmode);
+      emit_insn (gen_load_ltoff_dtpmod (tga_op1, op1));
+      tga_op1 = gen_rtx_MEM (Pmode, tga_op1);
+      RTX_UNCHANGING_P (tga_op1) = 1;
+
+      tga_op2 = const0_rtx;
+
+      tga_ret = emit_library_call_value (gen_tls_get_addr (), NULL_RTX,
+					 LCT_CONST, Pmode, 2, tga_op1,
+					 Pmode, tga_op2, Pmode);
+
+      insns = get_insns ();
+      end_sequence ();
+
+      tga_eqv = gen_rtx_UNSPEC (Pmode, gen_rtvec (1, const0_rtx),
+				UNSPEC_LD_BASE);
+      tmp = gen_reg_rtx (Pmode);
+      emit_libcall_block (insns, tmp, tga_ret, tga_eqv);
+
+      if (register_operand (op0, Pmode))
+	tga_ret = op0;
+      else
+	tga_ret = gen_reg_rtx (Pmode);
+      if (TARGET_TLS64)
+	{
+	  emit_insn (gen_load_dtprel (tga_ret, op1));
+	  emit_insn (gen_adddi3 (tga_ret, tmp, tga_ret));
+	}
+      else
+	emit_insn (gen_add_dtprel (tga_ret, tmp, op1));
+
+      return (tga_ret == op0 ? NULL_RTX : tga_ret);
+
+    case TLS_MODEL_INITIAL_EXEC:
+      tmp = gen_reg_rtx (Pmode);
+      emit_insn (gen_load_ltoff_tprel (tmp, op1));
+      tmp = gen_rtx_MEM (Pmode, tmp);
+      RTX_UNCHANGING_P (tmp) = 1;
+      tmp = force_reg (Pmode, tmp);
+
+      if (register_operand (op0, Pmode))
+	op1 = op0;
+      else
+	op1 = gen_reg_rtx (Pmode);
+      emit_insn (gen_adddi3 (op1, tmp, gen_thread_pointer ()));
+
+      return (op1 == op0 ? NULL_RTX : op1);
+
+    case TLS_MODEL_LOCAL_EXEC:
+      if (register_operand (op0, Pmode))
+	tmp = op0;
+      else
+	tmp = gen_reg_rtx (Pmode);
+      if (TARGET_TLS64)
+	{
+	  emit_insn (gen_load_tprel (tmp, op1));
+	  emit_insn (gen_adddi3 (tmp, gen_thread_pointer (), tmp));
+	}
+      else
+	emit_insn (gen_add_tprel (tmp, gen_thread_pointer (), op1));
+
+      return (tmp == op0 ? NULL_RTX : tmp);
+
+    default:
+      abort ();
+    }
+}
+
 rtx
 ia64_expand_move (op0, op1)
      rtx op0, op1;
@@ -1203,154 +1277,36 @@ ia64_expand_move (op0, op1)
   if (!reload_in_progress && !reload_completed && !ia64_move_ok (op0, op1))
     op1 = force_reg (mode, op1);
 
-  if (mode == Pmode || mode == ptr_mode)
+  if ((mode == Pmode || mode == ptr_mode) && symbolic_operand (op1, VOIDmode))
     {
       enum tls_model tls_kind;
-      if ((tls_kind = tls_symbolic_operand (op1, Pmode)))
+      if ((tls_kind = tls_symbolic_operand (op1, VOIDmode)))
+	return ia64_expand_tls_address (tls_kind, op0, op1);
+
+      if (!TARGET_NO_PIC && reload_completed)
 	{
-	  rtx tga_op1, tga_op2, tga_ret, tga_eqv, tmp, insns;
-
-	  switch (tls_kind)
-	    {
-	    case TLS_MODEL_GLOBAL_DYNAMIC:
-	      start_sequence ();
-
-	      tga_op1 = gen_reg_rtx (Pmode);
-	      emit_insn (gen_load_ltoff_dtpmod (tga_op1, op1));
-	      tga_op1 = gen_rtx_MEM (Pmode, tga_op1);
-	      RTX_UNCHANGING_P (tga_op1) = 1;
-
-	      tga_op2 = gen_reg_rtx (Pmode);
-	      emit_insn (gen_load_ltoff_dtprel (tga_op2, op1));
-	      tga_op2 = gen_rtx_MEM (Pmode, tga_op2);
-	      RTX_UNCHANGING_P (tga_op2) = 1;
-	      
-	      tga_ret = emit_library_call_value (gen_tls_get_addr (), NULL_RTX,
-						 LCT_CONST, Pmode, 2, tga_op1,
-						 Pmode, tga_op2, Pmode);
-
-	      insns = get_insns ();
-	      end_sequence ();
-
-	      emit_libcall_block (insns, op0, tga_ret, op1);
-	      return NULL_RTX;
-
-	    case TLS_MODEL_LOCAL_DYNAMIC:
-	      /* ??? This isn't the completely proper way to do local-dynamic
-		 If the call to __tls_get_addr is used only by a single symbol,
-		 then we should (somehow) move the dtprel to the second arg
-		 to avoid the extra add.  */
-	      start_sequence ();
-
-	      tga_op1 = gen_reg_rtx (Pmode);
-	      emit_insn (gen_load_ltoff_dtpmod (tga_op1, op1));
-	      tga_op1 = gen_rtx_MEM (Pmode, tga_op1);
-	      RTX_UNCHANGING_P (tga_op1) = 1;
-
-	      tga_op2 = const0_rtx;
-
-	      tga_ret = emit_library_call_value (gen_tls_get_addr (), NULL_RTX,
-						 LCT_CONST, Pmode, 2, tga_op1,
-						 Pmode, tga_op2, Pmode);
-
-	      insns = get_insns ();
-	      end_sequence ();
-
-	      tga_eqv = gen_rtx_UNSPEC (Pmode, gen_rtvec (1, const0_rtx),
-					UNSPEC_LD_BASE);
-	      tmp = gen_reg_rtx (Pmode);
-	      emit_libcall_block (insns, tmp, tga_ret, tga_eqv);
-
-	      if (register_operand (op0, Pmode))
-		tga_ret = op0;
-	      else
-		tga_ret = gen_reg_rtx (Pmode);
-	      if (TARGET_TLS64)
-		{
-		  emit_insn (gen_load_dtprel (tga_ret, op1));
-		  emit_insn (gen_adddi3 (tga_ret, tmp, tga_ret));
-		}
-	      else
-		emit_insn (gen_add_dtprel (tga_ret, tmp, op1));
-	      if (tga_ret == op0)
-		return NULL_RTX;
-	      op1 = tga_ret;
-	      break;
-
-	    case TLS_MODEL_INITIAL_EXEC:
-	      tmp = gen_reg_rtx (Pmode);
-	      emit_insn (gen_load_ltoff_tprel (tmp, op1));
-	      tmp = gen_rtx_MEM (Pmode, tmp);
-	      RTX_UNCHANGING_P (tmp) = 1;
-	      tmp = force_reg (Pmode, tmp);
-
-	      if (register_operand (op0, Pmode))
-		op1 = op0;
-	      else
-		op1 = gen_reg_rtx (Pmode);
-	      emit_insn (gen_adddi3 (op1, tmp, gen_thread_pointer ()));
-	      if (op1 == op0)
-		return NULL_RTX;
-	      break;
-
-	    case TLS_MODEL_LOCAL_EXEC:
-	      if (register_operand (op0, Pmode))
-		tmp = op0;
-	      else
-		tmp = gen_reg_rtx (Pmode);
-	      if (TARGET_TLS64)
-		{
-		  emit_insn (gen_load_tprel (tmp, op1));
-		  emit_insn (gen_adddi3 (tmp, gen_thread_pointer (), tmp));
-		}
-	      else
-		emit_insn (gen_add_tprel (tmp, gen_thread_pointer (), op1));
-	      if (tmp == op0)
-		return NULL_RTX;
-	      op1 = tmp;
-	      break;
-
-	    default:
-	      abort ();
-	    }
-	}
-      else if (!TARGET_NO_PIC &&
-	       (symbolic_operand (op1, Pmode) ||
-		symbolic_operand (op1, ptr_mode)))
-	{
-	  /* Before optimization starts, delay committing to any particular
-	     type of PIC address load.  If this function gets deferred, we
-	     may acquire information that changes the value of the
-	     sdata_symbolic_operand predicate.
-
-	     But don't delay for function pointers.  Loading a function address
-	     actually loads the address of the descriptor not the function.
-	     If we represent these as SYMBOL_REFs, then they get cse'd with
-	     calls, and we end up with calls to the descriptor address instead
-	     of calls to the function address.  Functions are not candidates
-	     for sdata anyways.
-
-	     Don't delay for LABEL_REF because the splitter loses REG_LABEL
-	     notes.  Don't delay for pool addresses on general principals;
-	     they'll never become non-local behind our back.  */
-
-	  if (rtx_equal_function_value_matters
-	      && GET_CODE (op1) != LABEL_REF
-	      && ! (GET_CODE (op1) == SYMBOL_REF
-		    && (SYMBOL_REF_FLAG (op1)
-			|| CONSTANT_POOL_ADDRESS_P (op1)
-			|| STRING_POOL_ADDRESS_P (op1))))
-	    if (GET_MODE (op1) == DImode)
-	      emit_insn (gen_movdi_symbolic (op0, op1));
-	    else
-	      emit_insn (gen_movsi_symbolic (op0, op1));
-	  else
-	    ia64_expand_load_address (op0, op1, NULL_RTX);
+	  ia64_expand_load_address (op0, op1);
 	  return NULL_RTX;
 	}
     }
 
   return op1;
+}
+
+/* Split a move from OP1 to OP0 conditional on COND.  */
+
+void
+ia64_emit_cond_move (op0, op1, cond)
+     rtx op0, op1, cond;
+{
+  rtx insn, first = get_last_insn ();
+
+  emit_move_insn (op0, op1);
+
+  for (insn = get_last_insn (); insn != first; insn = PREV_INSN (insn))
+    if (INSN_P (insn))
+      PATTERN (insn) = gen_rtx_COND_EXEC (VOIDmode, copy_rtx (cond),
+					  PATTERN (insn));
 }
 
 /* Split a post-reload TImode reference into two DImode components.  */
