@@ -1,3 +1,8 @@
+2003-06-28  Josef Zlomek  <zlomekj@suse.cz>
+
+	* bb-reorder.c (find_traces_1_round): Do not send basic block
+	to next round when we are in the last round.
+
 2003-06-28  Neil Booth  <neil@daikokuya.co.uk>
 
 	* Makefile.in: Update.
