@@ -174,6 +174,8 @@ static void build_vcall_and_vbase_vtbl_entries PARAMS ((tree,
 							vcall_offset_data *));
 static tree dfs_mark_primary_bases PARAMS ((tree, void *));
 static void mark_primary_bases PARAMS ((tree));
+static void clone_constructors_and_destructors PARAMS ((tree));
+static tree build_clone PARAMS ((tree, tree));
 
 /* Variables shared between class.c and call.c.  */
 
@@ -1150,14 +1152,15 @@ add_method (type, fields, method)
       method_vec = CLASSTYPE_METHOD_VEC (type);
       len = TREE_VEC_LENGTH (method_vec);
 
-      if (DECL_NAME (method) == constructor_name (type))
-	/* A new constructor or destructor.  Constructors go in 
-	   slot 0; destructors go in slot 1.  */
-	slot = DESTRUCTOR_NAME_P (DECL_ASSEMBLER_NAME (method)) ? 1 : 0;
+      /* Constructors and destructors go in special slots.  */
+      if (DECL_MAYBE_IN_CHARGE_CONSTRUCTOR_P (method))
+	slot = CLASSTYPE_CONSTRUCTOR_SLOT;
+      else if (DECL_MAYBE_IN_CHARGE_DESTRUCTOR_P (method))
+	slot = CLASSTYPE_DESTRUCTOR_SLOT;
       else
 	{
 	  /* See if we already have an entry with this name.  */
-	  for (slot = 2; slot < len; ++slot)
+	  for (slot = CLASSTYPE_FIRST_CONVERSION_SLOT; slot < len; ++slot)
 	    if (!TREE_VEC_ELT (method_vec, slot)
 		|| (DECL_NAME (OVL_CURRENT (TREE_VEC_ELT (method_vec, 
 							  slot))) 
@@ -3855,6 +3858,151 @@ check_methods (t)
     }
 }
 
+/* FN is a constructor or destructor.  Clone the declaration to create
+   a specialized in-charge or not-in-charge version, as indicated by
+   NAME.  */
+
+static tree
+build_clone (fn, name)
+     tree fn;
+     tree name;
+{
+  tree parms;
+  tree clone;
+
+  /* Copy the function.  */
+  clone = copy_decl (fn);
+  /* Remember where this function came from.  */
+  DECL_CLONED_FUNCTION (clone) = fn;
+  /* Reset the function name.  */
+  DECL_NAME (clone) = name;
+  DECL_ASSEMBLER_NAME (clone) = DECL_NAME (clone);
+  /* There's no pending inline data for this function.  */
+  DECL_PENDING_INLINE_INFO (clone) = NULL;
+  DECL_PENDING_INLINE_P (clone) = 0;
+  /* And it hasn't yet been deferred.  */
+  DECL_DEFERRED_FN (clone) = 0;
+
+  /* If there was an in-charge paramter, drop it from the function
+     type.  */
+  if (DECL_HAS_IN_CHARGE_PARM_P (clone))
+    {
+      tree basetype;
+      tree parmtypes;
+      tree exceptions;
+
+      exceptions = TYPE_RAISES_EXCEPTIONS (TREE_TYPE (clone));
+      basetype = TYPE_METHOD_BASETYPE (TREE_TYPE (clone));
+      parmtypes = TYPE_ARG_TYPES (TREE_TYPE (clone));
+      /* Skip the `this' parameter.  */
+      parmtypes = TREE_CHAIN (parmtypes);
+      /* Skip the in-charge parameter.  */
+      parmtypes = TREE_CHAIN (parmtypes);
+      TREE_TYPE (clone) 
+	= build_cplus_method_type (basetype,
+				   TREE_TYPE (TREE_TYPE (clone)),
+				   parmtypes);
+      if (exceptions)
+	TREE_TYPE (clone) = build_exception_variant (TREE_TYPE (clone),
+						     exceptions);
+    }
+
+  /* Copy the function parameters.  But, DECL_ARGUMENTS aren't
+     function parameters; instead, those are the template parameters.  */
+  if (TREE_CODE (clone) != TEMPLATE_DECL)
+    {
+      DECL_ARGUMENTS (clone) = copy_list (DECL_ARGUMENTS (clone));
+      /* Remove the in-charge parameter.  */
+      if (DECL_HAS_IN_CHARGE_PARM_P (clone))
+	{
+	  TREE_CHAIN (DECL_ARGUMENTS (clone))
+	    = TREE_CHAIN (TREE_CHAIN (DECL_ARGUMENTS (clone)));
+	  DECL_HAS_IN_CHARGE_PARM_P (clone) = 0;
+	}
+      for (parms = DECL_ARGUMENTS (clone); parms; parms = TREE_CHAIN (parms))
+	{
+	  DECL_CONTEXT (parms) = clone;
+	  copy_lang_decl (parms);
+	}
+    }
+
+  /* Mangle the function name.  */
+  set_mangled_name_for_decl (clone);
+
+  /* Create the RTL for this function.  */
+  DECL_RTL (clone) = NULL_RTX;
+  rest_of_decl_compilation (clone, NULL, /*top_level=*/1, at_eof);
+  
+  /* Make it easy to find the CLONE given the FN.  */
+  TREE_CHAIN (clone) = TREE_CHAIN (fn);
+  TREE_CHAIN (fn) = clone;
+
+  /* If this is a template, handle the DECL_TEMPLATE_RESULT as well.  */
+  if (TREE_CODE (clone) == TEMPLATE_DECL)
+    {
+      tree result;
+
+      DECL_TEMPLATE_RESULT (clone) 
+	= build_clone (DECL_TEMPLATE_RESULT (clone), name);
+      result = DECL_TEMPLATE_RESULT (clone);
+      DECL_TEMPLATE_INFO (result) = copy_node (DECL_TEMPLATE_INFO (result));
+      DECL_TI_TEMPLATE (result) = clone;
+    }
+
+  return clone;
+}
+
+/* Produce declarations for all appropriate clones of FN.  If
+   UPDATE_METHOD_VEC_P is non-zero, the clones are added to the
+   CLASTYPE_METHOD_VEC as well.  */
+
+void
+clone_function_decl (fn, update_method_vec_p)
+     tree fn;
+     int update_method_vec_p;
+{
+  tree clone;
+
+  if (DECL_CONSTRUCTOR_P (fn))
+    {
+      clone = build_clone (fn, complete_ctor_identifier);
+      if (update_method_vec_p)
+	add_method (DECL_CONTEXT (clone), NULL, clone);
+      clone = build_clone (fn, base_ctor_identifier);
+      if (update_method_vec_p)
+	add_method (DECL_CONTEXT (clone), NULL, clone);
+    }
+  else
+    /* We don't do destructors yet.  */
+    my_friendly_abort (20000411);
+}
+
+/* For each of the constructors and destructors in T, create an
+   in-charge and not-in-charge variant.  */
+
+static void
+clone_constructors_and_destructors (t)
+     tree t;
+{
+  tree fns;
+
+  /* We only clone constructors and destructors under the new ABI.  */
+  if (!flag_new_abi)
+    return;
+
+  /* If for some reason we don't have a CLASSTYPE_METHOD_VEC, we bail
+     out now.  */
+  if (!CLASSTYPE_METHOD_VEC (t))
+    return;
+
+  /* For each constructor, we need two variants: an in-charge version
+     and a not-in-charge version.  */
+  for (fns = CLASSTYPE_CONSTRUCTORS (t); fns; fns = OVL_NEXT (fns))
+    clone_function_decl (OVL_CURRENT (fns), /*update_method_vec_p=*/1);
+
+  /* For now, we don't do the destructors.  */
+}
+
 /* Remove all zero-width bit-fields from T.  */
 
 static void
@@ -3949,6 +4097,10 @@ check_bases_and_members (t, empty_p)
   add_implicitly_declared_members (t, cant_have_default_ctor,
 				   cant_have_const_ctor,
 				   no_const_asn_ref);
+
+  /* Create the in-charge and not-in-charge variants of constructors
+     and destructors.  */
+  clone_constructors_and_destructors (t);
 
   /* Process the using-declarations.  */
   for (; access_decls; access_decls = TREE_CHAIN (access_decls))

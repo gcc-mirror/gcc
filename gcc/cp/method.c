@@ -1748,7 +1748,7 @@ set_mangled_name_for_decl (decl)
   DECL_ASSEMBLER_NAME (decl)
     = build_decl_overload (DECL_NAME (decl), parm_types, 
 			   DECL_FUNCTION_MEMBER_P (decl)
-			   + DECL_CONSTRUCTOR_P (decl));
+			   + DECL_MAYBE_IN_CHARGE_CONSTRUCTOR_P (decl));
 }
 
 /* Build an overload name for the type expression TYPE.  */
@@ -2358,6 +2358,15 @@ synthesize_method (fndecl)
 
   if (at_eof)
     import_export_decl (fndecl);
+
+  /* If we've been asked to synthesize a clone, just synthesize the
+     cloned function instead.  Doing so will automatically fill in the
+     body for the clone.  */
+  if (DECL_CLONED_FUNCTION_P (fndecl))
+    {
+      synthesize_method (DECL_CLONED_FUNCTION (fndecl));
+      return;
+    }
 
   if (! context)
     push_to_top_level ();

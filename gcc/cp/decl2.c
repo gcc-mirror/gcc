@@ -5228,7 +5228,12 @@ mark_used (decl)
       && ! DECL_INITIAL (decl)
       /* Kludge: don't synthesize for default args.  */
       && current_function_decl)
-    synthesize_method (decl);
+    {
+      synthesize_method (decl);
+      /* If we've already synthesized the method we don't need to
+	 instantiate it, so we can return right away.  */
+      return;
+    }
 
   /* If this is a function or variable that is an instance of some
      template, we now know that we will need to actually do the

@@ -559,6 +559,7 @@ enum cp_tree_index
     CPTI_COMPLETE_CTOR_IDENTIFIER,
     CPTI_BASE_CTOR_IDENTIFIER,
     CPTI_DTOR_IDENTIFIER,
+    CPTI_COMPLETE_DTOR_IDENTIFIER,
     CPTI_BASE_DTOR_IDENTIFIER,
     CPTI_DELETING_DTOR_IDENTIFIER,
     CPTI_DELTA2_IDENTIFIER,
@@ -653,14 +654,18 @@ extern tree cp_global_trees[CPTI_MAX];
    frequently.  */
 
 /* The name of a constructor that takes an in-charge parameter to
-   decide whether or not to call virtual base classes.  */
+   decide whether or not to construct virtual base classes.  */
 #define ctor_identifier                 cp_global_trees[CPTI_CTOR_IDENTIFIER]
 /* The name of a constructor that constructs virtual base classes.  */
 #define complete_ctor_identifier        cp_global_trees[CPTI_COMPLETE_CTOR_IDENTIFIER]
 /* The name of a constructor that does not construct virtual base classes.  */
 #define base_ctor_identifier            cp_global_trees[CPTI_BASE_CTOR_IDENTIFIER]
-/* The name of a destructor that destroys virtual base classes.  */
+/* The name of a destructor that takes an in-charge parameter to
+   decide whether or not to destroy virtual base classes and whether
+   or not to delete the object.  */
 #define dtor_identifier                 cp_global_trees[CPTI_DTOR_IDENTIFIER]
+/* The name of a destructor that destroys virtual base classes.  */
+#define complete_dtor_identifier        cp_global_trees[CPTI_COMPLETE_DTOR_IDENTIFIER]
 /* The name of a destructor that does not destroy virtual base
    classes.  */
 #define base_dtor_identifier            cp_global_trees[CPTI_BASE_DTOR_IDENTIFIER]
@@ -1475,17 +1480,29 @@ struct lang_type
    either a FUNCTION_DECL, a TEMPLATE_DECL, or an OVERLOAD.  All
    functions with the same name end up in the same slot.  The first
    two elements are for constructors, and destructors, respectively.
-   These are followed by ordinary member functions.  There may be
-   empty entries at the end of the vector.  */
+   Any conversion operators are next, followed by ordinary member
+   functions.  There may be empty entries at the end of the vector.  */
 #define CLASSTYPE_METHOD_VEC(NODE) (TYPE_LANG_SPECIFIC(NODE)->methods)
 
-/* The first type conversion operator in the class (the others can be
-   searched with TREE_CHAIN), or the first non-constructor function if
-   there are no type conversion operators.  */
-#define CLASSTYPE_FIRST_CONVERSION(NODE) \
-  TREE_VEC_LENGTH (CLASSTYPE_METHOD_VEC (NODE)) > 2 \
-    ? TREE_VEC_ELT (CLASSTYPE_METHOD_VEC (NODE), 2) \
-    : NULL_TREE;
+/* The slot in the CLASSTYPE_METHOD_VEC where constructors go.  */
+#define CLASSTYPE_CONSTRUCTOR_SLOT 0
+
+/* The slot in the CLASSTYPE_METHOD_VEC where destructors go.  */
+#define CLASSTYPE_DESTRUCTOR_SLOT 1
+
+/* The first slot in the CLASSTYPE_METHOD_VEC where conversion
+   operators can appear.  */
+#define CLASSTYPE_FIRST_CONVERSION_SLOT 2
+
+/* A FUNCTION_DECL or OVERLOAD for the constructors for NODE.  These
+   are the constructors that take an in-charge parameter.  */
+#define CLASSTYPE_CONSTRUCTORS(NODE) \
+  (TREE_VEC_ELT (CLASSTYPE_METHOD_VEC (NODE), CLASSTYPE_CONSTRUCTOR_SLOT))
+
+/* A FUNCTION_DECL for the destructor for NODE.  These are te
+   destructors that take an in-charge parameter.  */
+#define CLASSTYPE_DESTRUCTORS(NODE) \
+  (TREE_VEC_ELT (CLASSTYPE_METHOD_VEC (NODE), CLASSTYPE_DESTRUCTOR_SLOT))
 
 /* Mark bits for depth-first and breath-first searches.  */
 
@@ -1882,6 +1899,9 @@ struct lang_decl
   /* In a FUNCTION_DECL, this is DECL_SAVED_TREE.  */
   tree saved_tree;
 
+  /* In a FUNCTION_DECL, this is DECL_CLONED_FUNCTION.  */
+  tree cloned_function;
+
   union
   {
     tree sorted_fields;
@@ -1909,6 +1929,24 @@ struct lang_decl
 /* For FUNCTION_DECLs: nonzero means that this function is a constructor.  */
 #define DECL_CONSTRUCTOR_P(NODE) (DECL_LANG_SPECIFIC(NODE)->decl_flags.constructor_attr)
 
+/* Nonzero if NODE (a FUNCTION_DECL) is a constructor for a complete
+   object.  */
+#define DECL_COMPLETE_CONSTRUCTOR_P(NODE)		\
+  (DECL_CONSTRUCTOR_P (NODE) 				\
+   && DECL_NAME (NODE) == complete_ctor_identifier)
+
+/* Nonzero if NODE (a FUNCTION_DECL) is a constructor for a base
+   object.  */
+#define DECL_BASE_CONSTRUCTOR_P(NODE)		\
+  (DECL_CONSTRUCTOR_P (NODE)			\
+   && DECL_NAME (NODE) == base_ctor_identifier)
+
+/* Nonzero if NODE (a FUNCTION_DECL) is a constructor, but not either the
+   specialized in-charge constructor or the specialized not-in-charge
+   constructor.  */
+#define DECL_MAYBE_IN_CHARGE_CONSTRUCTOR_P(NODE)		\
+  (DECL_CONSTRUCTOR_P (NODE) && !DECL_CLONED_FUNCTION_P (NODE))
+
 /* Nonzero if NODE (a FUNCTION_DECL) is a copy constructor.  */
 #define DECL_COPY_CONSTRUCTOR_P(NODE) \
   (DECL_CONSTRUCTOR_P (NODE) && copy_args_p (NODE))
@@ -1918,6 +1956,22 @@ struct lang_decl
 #define DECL_DESTRUCTOR_P(NODE)				\
   (DESTRUCTOR_NAME_P (DECL_ASSEMBLER_NAME (NODE))	\
    && DECL_LANGUAGE (NODE) == lang_cplusplus)
+
+/* Nonzero if NODE (a FUNCTION_DECL) is a destructor, but not the
+   specialized in-charge constructor, in-charge deleting constructor,
+   or the the base destructor.  */
+#define DECL_MAYBE_IN_CHARGE_DESTRUCTOR_P(NODE)			\
+  (DECL_DESTRUCTOR_P (NODE) && !DECL_CLONED_FUNCTION_P (NODE))
+
+/* Nonzero if NODE (a FUNCTION_DECL) is a cloned constructor or
+   destructor.  */
+#define DECL_CLONED_FUNCTION_P(NODE) \
+  (DECL_CLONED_FUNCTION (NODE) != NULL_TREE)
+
+/* If DECL_CLONED_FUNCTION_P holds, this is the function that was
+   cloned.  */
+#define DECL_CLONED_FUNCTION(NODE) \
+  (DECL_LANG_SPECIFIC (NODE)->cloned_function)
 
 /* Non-zero if NODE is a user-defined conversion operator.  */
 #define DECL_CONV_FN_P(NODE)						     \
@@ -3723,6 +3777,7 @@ extern tree build_type_conversion		PARAMS ((tree, tree, int));
 extern tree build_expr_type_conversion		PARAMS ((int, tree, int));
 extern tree type_promotes_to			PARAMS ((tree));
 extern tree perform_qualification_conversions   PARAMS ((tree, tree));
+extern void clone_function_decl                 PARAMS ((tree, int));
 
 /* decl.c */
 /* resume_binding_level */
@@ -4093,6 +4148,7 @@ extern tree implicitly_declare_fn               PARAMS ((special_function_kind, 
 /* In optimize.c */
 extern void optimize_function                   PARAMS ((tree));
 extern int calls_setjmp_p                       PARAMS ((tree));
+extern int maybe_clone_body                     PARAMS ((tree));
 
 /* in pt.c */
 extern void init_pt                             PARAMS ((void));
