@@ -8281,7 +8281,7 @@ output_fp_compare (rtx insn, rtx *operands, int eflags_p, int unordered_p)
 	    output_asm_insn ("fucomip\t{%y1, %0|%0, %y1}", operands);
 	  else
 	    output_asm_insn ("fcomip\t{%y1, %0|%0, %y1}", operands);
-	  return "fstp\t%y0";
+	  return TARGET_USE_FFREEP ? "ffreep\t%y0" : "fstp\t%y0";
 	}
       else
 	{
