@@ -3739,11 +3739,8 @@ that were passed to @code{__builtin_saveregs}.
 If this macro is not defined, the compiler will output an ordinary
 call to the library function @samp{__builtin_saveregs}.
 
-@c !!! a bug in texinfo; how to make the entry on the @item line allow
-@c more than one line of text... help...  --mew 10feb93
 @findex SETUP_INCOMING_VARARGS
-@item SETUP_INCOMING_VARARGS (@var{args_so_far}, @var{mode}, @var{type},
-@var{pretend_args_size}, @var{second_time})
+@item SETUP_INCOMING_VARARGS (@var{args_so_far}, @var{mode}, @var{type}, @var{pretend_args_size}, @var{second_time})
 This macro offers an alternative to using @code{__builtin_saveregs} and
 defining the macro @code{EXPAND_BUILTIN_SAVEREGS}.  Use it to store the
 anonymous register arguments into the stack so that all the arguments

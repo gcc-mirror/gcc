@@ -1,3 +1,9 @@
+Sun Mar 21 02:28:21 1999  Andreas Schwab  <schwab@issan.cs.uni-dortmund.de>
+
+	* tm.texi (Varargs): Don't split argument of @item across lines.
+
+	* invoke.texi: Fix use of @item vs @itemx.
+
 Sun Mar 21 09:59:54 1999  Michael Hayes  <m.hayes@elec.canterbury.ac.nz>
 
 	* config/c4x/c4x.h (TARGET_SWITCHES): Add null description to
