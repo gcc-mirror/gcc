@@ -100,11 +100,15 @@ if [ "$SHLIB_LINK" ]; then
   # the command line, and a #define to prevent libgcc2.h etc from
   # overriding that with #pragmas.  The dance with @ is to prevent
   # echo from seeing anything it might take for an option.
+  # echo turns the \$\$\$\$ into $$$$ and when make sees it it
+  # becomes $$ and the shell substitutes the pid. Makes for a
+  # slightly safer temp file.
   echo "vis_hide := \$(strip \$(subst @,-,\\"
   echo "    \$(shell if echo 'void foo(void); void foo(void) {}' | \\"
   echo "          $gcc_compile -fvisibility=hidden -Werror \\"
-  echo "          -c -xc - -o /dev/null 2> /dev/null; \\"
+  echo "          -c -xc - -o vis_temp_file\$\$\$\$.o 2> /dev/null; \\"
   echo "          then echo @fvisibility=hidden @DHIDE_EXPORTS; \\"
+  echo "          rm vis_temp_file\$\$\$\$.o 2> /dev/null; \\"
   echo "          fi)))"
   echo
 
