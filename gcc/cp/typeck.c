@@ -37,6 +37,7 @@ Boston, MA 02111-1307, USA.  */
 #include "flags.h"
 #include "output.h"
 #include "expr.h"
+#include "toplev.h"
 
 extern void compiler_error ();
 

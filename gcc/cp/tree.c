@@ -26,6 +26,8 @@ Boston, MA 02111-1307, USA.  */
 #include "cp-tree.h"
 #include "flags.h"
 #include "rtl.h"
+#include "toplev.h"
+
 #ifdef __STDC__
 #include <stdarg.h>
 #else

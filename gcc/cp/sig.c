@@ -27,6 +27,7 @@ Boston, MA 02111-1307, USA.  */
 #include "cp-tree.h"
 #include "flags.h"
 #include "assert.h"
+#include "toplev.h"
 
 extern struct obstack *current_obstack;
 extern struct obstack permanent_obstack;

@@ -30,6 +30,7 @@
 #include "cp-tree.h"
 #include "except.h"
 #include "lex.h"
+#include "toplev.h"
 
 /* There routines provide a modular interface to perform many parsing
    operations.  They may therefore be used during actual parsing, or
