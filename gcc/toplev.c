@@ -329,7 +329,7 @@ enum graph_dump_types graph_dump_format;
 char *asm_file_name;
 
 /* Value of the -G xx switch, and whether it was passed or not.  */
-int g_switch_value;
+unsigned HOST_WIDE_INT g_switch_value;
 int g_switch_set;
 
 /* Type(s) of debugging information we are producing (if any).

@@ -350,9 +350,6 @@ extern enum m32r_model m32r_model;
 #define SDATA_DEFAULT_SIZE 8
 #endif
 
-extern int g_switch_value;		/* value of the -G xx switch */
-extern int g_switch_set;		/* whether -G xx was passed.  */
-
 enum m32r_sdata { M32R_SDATA_NONE, M32R_SDATA_SDATA, M32R_SDATA_USE };
 
 extern enum m32r_sdata m32r_sdata;
@@ -1690,6 +1687,8 @@ extern char m32r_punct_chars[256];
 #define ASM_OUTPUT_ALIGNED_COMMON(FILE, NAME, SIZE, ALIGN)		\
   do									\
     {									\
+      extern unsigned HOST_WIDE_INT g_switch_value;			\
+									\
       if (! TARGET_SDATA_NONE						\
 	  && (SIZE) > 0 && (SIZE) <= g_switch_value)			\
 	fprintf ((FILE), "%s", SCOMMON_ASM_OP);				\
