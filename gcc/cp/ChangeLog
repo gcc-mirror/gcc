@@ -1,3 +1,9 @@
+2002-04-24  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/6438.
+	* cvt.c (convert_to_void): Don't unconditionally make COND_EXPRs
+	void.
+
 2002-04-24  Neil Booth  <neil@daikokuya.demon.co.uk>
 
 	* cp-lang.c (LANG_HOOKS_COMMON_ATTRIBUTE_TABLE,

@@ -1,3 +1,8 @@
+2002-04-24  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/6438.
+	* g++.dg/parse/stmtexpr2.C: New test.
+
 Wed Apr 24 21:38:36 2002  J"orn Rennecke <joern.rennecke@superh.com>
 
 	* gcc.dg/20020312-2.c: Add SH target.
