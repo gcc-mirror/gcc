@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                            $Revision: 1.291 $
+--                            $Revision$
 --                                                                          --
 --          Copyright (C) 1992-2001 Free Software Foundation, Inc.          --
 --                                                                          --
@@ -448,6 +448,17 @@ package body Sem_Eval is
 
             if not Is_Constrained (Xtyp) then
                return N;
+            end if;
+
+            if Ekind (Xtyp) = E_String_Literal_Subtype then
+               if Attribute_Name (N) = Name_First then
+                  return String_Literal_Low_Bound (Xtyp);
+
+               else         -- Attribute_Name (N) = Name_Last
+                  return Make_Integer_Literal (Sloc (N),
+                    Intval => Intval (String_Literal_Low_Bound (Xtyp))
+                       + String_Literal_Length (Xtyp));
+               end if;
             end if;
 
             --  Find correct index type
