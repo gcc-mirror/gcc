@@ -259,6 +259,16 @@ extern int target_flags;
 /*ax,dx,cx,bx,si,di,bp,sp,st,st1,st2,st3,st4,st5,st6,st7,arg*/ \
 {  1, 1, 1, 0, 0, 0, 0, 1, 1,  1,  1,  1,  1,  1,  1,  1,  1 }
 
+/* Order in which to allocate registers.  First allocate registers
+   for which no insn operand demands that register, next those that are
+   demanded by the least number of insns.  List frame pointer late and fixed 
+   egisters last.  Note that, in general, we want to put nonsaved registers
+   late, but we put bx relatively early since it is not demanded by
+   any insn operand.  */
+#define REG_ALLOC_ORDER \
+/*si,di,bx,cx,dx,ax,bp,sp,st,st1,st2,st3,st4,st5,st6,st7,arg*/ \
+{  4, 5, 3, 2, 1, 0, 6, 7, 8,  9, 10, 11, 12, 13, 14, 15, 16}
+
 /* Macro to conditionally modify fixed_regs/call_used_regs.  */
 #define CONDITIONAL_REGISTER_USAGE			\
   {							\
