@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                            $Revision: 1.13 $
+--                            $Revision$
 --                                                                          --
 --           Copyright (C) 2000-2001 Free Software Foundation, Inc.         --
 --                                                                          --
@@ -191,6 +191,7 @@ package body Impunit is
      "g-cgicoo",    -- GNAT.CGI.Cookie
      "g-cgideb",    -- GNAT.CGI.Debug
      "g-comlin",    -- GNAT.Command_Line
+     "g-crc32 ",    -- GNAT.CRC32
      "g-curexc",    -- GNAT.Current_Exception
      "g-debpoo",    -- GNAT.Debug_Pools
      "g-debuti",    -- GNAT.Debug_Utilities
