@@ -1,3 +1,7 @@
+2004-12-25  David Edelsohn  <edelsohn@gnu.org>
+
+	Revert 2004-12-08 Makefile changes.
+
 2004-12-17  Danny Smith  <dannysmith@users.sourceforge.net>
 
 	* MAINTAINERS: Move myself to OS Port Maintainers for windows,
