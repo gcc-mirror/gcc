@@ -420,6 +420,8 @@ public final class Locale implements Serializable, Cloneable
   {
     if (language.length() == 0 && country.length() == 0)
       return "";
+    else if (country.length() == 0 && variant.length() == 0)
+      return language;
     StringBuffer result = new StringBuffer(language);
     result.append('_').append(country);
     if (variant.length() != 0)

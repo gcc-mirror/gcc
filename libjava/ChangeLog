@@ -1,3 +1,8 @@
+2002-11-27  Julian Dolby  <dolby@us.ibm.com>
+
+	* java/util/Locale.java (toString): Improve efficiency if country
+	and variant are both empty.
+
 2002-11-26  Tom Tromey  <tromey@redhat.com>
 
 	* verify.cc (pop_init_ref): New method.
