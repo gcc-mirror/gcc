@@ -1,5 +1,24 @@
 2002-11-29  Michael Koch <konqueror@gmx.de>
 
+	* java/nio/channels/DatagramChannel.java
+	(open): Added exception documentation.
+	(write): Added exception documentation.
+	(connect): Added exception documentation.
+	(disconnect): Added exception documentation.
+	(isConnected): Added exception documentation.
+	(read): Added exception documentation.
+	(receive): Added exception documentation.
+	(send): Added exception documentation.
+	(validOps): Added exception documentation.
+	* java/nio/channels/SocketChannel.java
+	(open): Added exception documentation.
+	(read): Added exception documentation.
+	(write): Added exception documentation.
+	(connect): Added exception documentation.
+	(finishConnect): Added exception documentation.
+	
+2002-11-29  Michael Koch <konqueror@gmx.de>
+
 	* gnu/java/nio/DatagramChannelImpl:
 	(fd): New member variable to store file descriptor of socket.
 	* gnu/java/nio/SelectionKeyImpl.java:
