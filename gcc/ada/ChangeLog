@@ -1,5 +1,10 @@
 2003-11-10  Arnaud Charlet  <charlet@act-europe.fr>
 
+	* misc.c, lang.opt: Add handling of -nostdlib, now recognized/needed
+	by gnat1.
+
+2003-11-10  Arnaud Charlet  <charlet@act-europe.fr>
+
 	* Makefile.in, Make-lang.in: Remove build of gnat_wrapper and gnatpsta,
 	no longer needed.
 

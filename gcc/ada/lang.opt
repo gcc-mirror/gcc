@@ -53,6 +53,10 @@ nostdinc
 Ada RejectNegative
 ; Don't look for source files
 
+nostdlib
+Ada
+; Don't look for object files
+
 fRTS
 Ada RejectNegative
 
