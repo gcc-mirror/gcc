@@ -1,3 +1,14 @@
+2002-12-10  Mark Wielaard  <mark@klomp.org>
+            Tom Tromey  <tromey@redhat.com>
+
+	* java/net/URLClassLoader.java (getCanonicalFileURL): New method.
+	(JarURLLoader): Use it.
+	(FileURLLoader): Likewise.
+	(JarURLResource.getURL): Use chained exception.
+	(FileResource.getURL): Likewise.
+	(FileURLLoader.getResource): Use canonical file name.
+	(addURL): Indentation fix.
+
 2002-12-10  Tom Tromey  <tromey@redhat.com>
 
 	* include/win32.h: Fixed typo in "DISABLE_JAVA_NET".
