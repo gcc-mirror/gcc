@@ -1,5 +1,8 @@
 Thu Mar 30 06:32:51 2000  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
+	* expr.c (move_by_pieces_ninsns): Fix one more missing align
+	correction.
+
 	* expmed.c (store_fixed_bit_field): STRUCT_ALIGN is in bits.
 
 	* calls.c (expand_call): Pass bit alignment to mark_reg_pointer.
