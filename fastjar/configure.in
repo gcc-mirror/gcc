@@ -31,14 +31,14 @@ AC_TYPE_OFF_T
 AC_STRUCT_TM
 
 dnl Check for type-widths
-AC_CHECK_SIZEOF(char)
-AC_CHECK_SIZEOF(short)
-AC_CHECK_SIZEOF(int)
-AC_CHECK_SIZEOF(long)
-AC_CHECK_SIZEOF(long long)
+gcc_AC_COMPILE_CHECK_SIZEOF(char)
+gcc_AC_COMPILE_CHECK_SIZEOF(short)
+gcc_AC_COMPILE_CHECK_SIZEOF(int)
+gcc_AC_COMPILE_CHECK_SIZEOF(long)
+gcc_AC_COMPILE_CHECK_SIZEOF(long long)
 
 dnl Check byte order
-AC_C_BIGENDIAN
+fastjar_AC_COMPILE_C_BIGENDIAN
 
 AC_ARG_WITH(system-zlib,
 [  --with-system-zlib      use installed libz])

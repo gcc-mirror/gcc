@@ -1,3 +1,11 @@
+2002-06-03  Geoffrey Keating  <geoffk@redhat.com>
+
+	* configure.in: Support cross-compiling.
+	* configure: Regenerate.
+	* aclocal.m4 (gcc_AC_COMPILE_CHECK_SIZEOF): New.
+	(gcc_AC_EXAMINE_OBJECT): New.
+	(fastjar_AC_COMPILE_C_BIGENDIAN): New.
+
 2002-03-18  Bryce McKinlay  <bryce@waitaki.otago.ac.nz>
 
 	* jartool.c (expand_options): Handle tar-style argument list with a
