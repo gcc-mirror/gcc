@@ -24,9 +24,6 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #include "flags.h"
 #include <stdio.h>
 
-#undef NULL
-#define NULL 0
-
 /* Make bindings for __FUNCTION__ and __PRETTY_FUNCTION__.  */
 
 void
