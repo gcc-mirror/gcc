@@ -1,3 +1,7 @@
+2003-11-21  Andreas Schwab  <schwab@suse.de>
+
+	* 55system.ads: Set ZCX_By_Default and GCC_ZCX_Support to True.
+
 2003-11-21  Vasiliy Fofanov  <fofanov@act-europe.fr>
 
 	* 5wsystem.ads: Enable zero cost exception.
