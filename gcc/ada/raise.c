@@ -88,9 +88,19 @@ __gnat_unhandled_terminate ()
 }
 
 /* Below is the code related to the integration of the GCC mechanism for
-   exception handling.  */
+   exception handling. Still work in progress. */
 
 #include "unwind.h"
+
+/* If the underlying GCC scheme for exception handling is SJLJ, the standard
+   propagation routine (_Unwind_RaiseException) is actually renamed using a
+   #define directive (see unwing-sjlj.c). We need a consistently named
+   interface to import from a-except, so stubs are defined here, at the end
+   of this file.  */
+
+_Unwind_Reason_Code
+__gnat_Unwind_RaiseException PARAMS ((struct _Unwind_Exception *));
+
 
 /* Exception Handling personality routine for Ada.
 
@@ -597,10 +607,7 @@ __gnat_eh_personality (version, actions, exception_class, ue_header, context)
 }
 
 
-/* If the underlying GCC scheme for exception handling is SJLJ, the standard
-   propagation routine (_Unwind_RaiseException) is actually renamed using a
-   #define directive (see unwing-sjlj.c). We need a consistently named
-   interface to import from a-except, so stubs are defined here.  */
+/* Stubs for the libgcc unwinding interface, to be imported by a-except.  */ 
 
 #ifdef __USING_SJLJ_EXCEPTIONS__
 
@@ -614,7 +621,7 @@ __gnat_Unwind_RaiseException (e)
 #else
 /* __USING_SJLJ_EXCEPTIONS__ not defined */
 
-void
+_Unwind_Reason_Code
 __gnat_Unwind_RaiseException (e)
      struct _Unwind_Exception *e;
 {

@@ -1,8 +1,14 @@
+2003-03-05  Olivier Hainque  <hainque@gnat.com>
+
+	ada/9961
+        * raise.c (__gnat_Unwind_RaiseException): Add prototype to avoid
+        warning, and fix return type for the IN_RTS && !SJLJ case.
+
 2003-03-04  Tom Tromey  <tromey@redhat.com>
 
 	* Make-lang.in (ada.tags): New target.
 
-2003-03-04  Olivier Hainque <hainque@act-europe.fr>
+2003-03-04  Olivier Hainque  <hainque@act-europe.fr>
 
 	ada/9911
 	* a-except.adb (Unwind_RaiseException): Import a GNAT specific
