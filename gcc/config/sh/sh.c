@@ -2965,14 +2965,14 @@ barrier_align (barrier_or_label)
 	  && JUMP_LABEL (prev))
 	{
 	  rtx x;
-	  if (jump_to_next 
+	  if (jump_to_next
 	      || next_real_insn (JUMP_LABEL (prev)) == next
 	      /* If relax_delay_slots() decides NEXT was redundant
 		 with some previous instruction, it will have
 		 redirected PREV's jump to the following insn.  */
 	      || JUMP_LABEL (prev) == next_nonnote_insn (next)
-	      /* There is no upper bound on redundant instructions that
-		 might have been skipped, but we must not put an
+	      /* There is no upper bound on redundant instructions
+		 that might have been skipped, but we must not put an
 		 alignment where none had been before.  */
 	      || (x = (NEXT_INSN (NEXT_INSN (PREV_INSN (prev)))),	    
 		  (INSN_P (x) 
@@ -2981,11 +2981,11 @@ barrier_align (barrier_or_label)
 	    {
 	      rtx pat = PATTERN (prev);
 	      if (GET_CODE (pat) == PARALLEL)
-	      pat = XVECEXP (pat, 0, 0);
+		pat = XVECEXP (pat, 0, 0);
 	      if (credit - slot >= (GET_CODE (SET_SRC (pat)) == PC ? 2 : 0))
 		return 0;
 	    }
-	}     
+	}
     }
   
   return CACHE_LOG;
