@@ -1,6 +1,6 @@
 // Constructor.java - Represents a constructor for a class.
 
-/* Copyright (C) 1998, 1999  Free Software Foundation
+/* Copyright (C) 1998, 1999, 2000  Free Software Foundation
 
    This file is part of libgcj.
 
@@ -79,7 +79,7 @@ public final class Constructor extends AccessibleObject implements Member
       b.append("(");
       for (int i = 0; i < parameter_types.length; ++i)
 	{
-	  b.append(parameter_types[i].toString());
+	  b.append(parameter_types[i].getName());
 	  if (i < parameter_types.length - 1)
 	    b.append(",");
 	}

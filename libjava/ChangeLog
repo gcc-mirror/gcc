@@ -1,5 +1,10 @@
 2000-09-06  Tom Tromey  <tromey@cygnus.com>
 
+	* java/lang/reflect/Constructor.java (toString): Use `getName' for
+	parameter types.
+	* java/lang/reflect/Method.java (toString): Use `getName' for
+	return type.
+
 	* java/lang/reflect/natMethod.cc (_Jv_CallAnyMethodA): Accept null
 	`args' if method takes no parameters.
 

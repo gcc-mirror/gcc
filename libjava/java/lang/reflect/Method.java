@@ -80,7 +80,7 @@ public final class Method extends AccessibleObject implements Member
       StringBuffer b = new StringBuffer ();
       Modifier.toString(getModifiers(), b);
       b.append(" ");
-      b.append(return_type.toString());
+      b.append(return_type.getName());
       b.append(" ");
       b.append(declaringClass.getName());
       b.append(".");
