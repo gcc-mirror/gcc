@@ -1,5 +1,9 @@
 Mon Nov 23 07:00:57 1998  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
+	* expr.c (store_constructor_{,field}): New parameter ALIGN and
+	use it when making recursive calls and clearing memory.
+	(expand_expr, case CONSTRUCTOR): Call with new parameter.
+
 	* mips/abi64.h (FUNCTION_ARG_PASS_BY_REFERENCE): Remove ABI_EABI test.
 	* mips.c (function_arg_pass_by_reference): Return 1 if would
 	otherwise pass both in registers and on stack.
