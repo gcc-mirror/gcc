@@ -3570,7 +3570,7 @@ lookup_template_class (d1, arglist, in_decl, context, entering_scope)
 	  if (current_class_type != NULL_TREE)
 	    template =
 	      maybe_get_template_decl_from_type_decl
-	      (IDENTIFIER_CLASS_VALUE (d1)));
+	      (IDENTIFIER_CLASS_VALUE (d1));
 	  if (template == NULL_TREE)
 	    template = lookup_name_nonclass (d1);
 	  if (context)
