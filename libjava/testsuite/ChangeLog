@@ -1,3 +1,9 @@
+2003-07-24  Tom Tromey  <tromey@redhat.com>
+
+	For PR libgcj/7482:
+	* libjava.lang/PR7482.java: New file.
+	* libjava.lang/PR7482.out: New file.
+
 2003-07-20  Tom Tromey  <tromey@redhat.com>
 
 	* libjava.mauve/mauve.exp (mauve_find_harness_files): New proc.
