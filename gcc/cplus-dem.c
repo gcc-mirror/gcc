@@ -3611,7 +3611,7 @@ Usage: %s [-_] [-n] [-s {gnu,lucid,arm}] [--strip-underscores]\n\
   exit (status);
 }
 
-#define MBUF_SIZE 512
+#define MBUF_SIZE 32767
 char mbuffer[MBUF_SIZE];
 
 /* Defined in the automatically-generated underscore.c.  */
