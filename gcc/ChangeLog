@@ -1,3 +1,21 @@
+Sun Sep  7 14:19:39 1997  Jeffrey A Law  (law@cygnus.com)
+
+	* version.c: Bump for snapshot.
+
+Sun Sep  7 14:17:36 1997  Torbjorn Granlund  (tege@pdc.kth.se)
+
+	* expmed.c (expand_divmod): Make op1_is_pow2 depend on unsignedp
+	for negative constants.  Promote EXACT_DIV_EXPR to TRUNC_DIV_EXPR
+	when op1_is_pow2.
+
+Sun Sep  7 13:46:46 1997  Jeffrey A Law  (law@cygnus.com)
+
+        * final.c (shorten_branches): During first pass, assume worst
+        possible alignment for ADDR_VEC and ADDR_VEC_DIFF insns.
+
+	* Makefile.in (distclean): Remove various things left around
+	by running the testsuite.
+
 Sun Sep  7 13:16:06 1997  Manfred Hollstein  <manfred@s-direktnet.de>
 
 	* configure.in (out_file): Emit definition to config.status in order

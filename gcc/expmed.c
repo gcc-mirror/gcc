@@ -2718,7 +2718,7 @@ expand_divmod (rem_flag, code, mode, op0, op1, target, unsignedp)
   op1_is_constant = GET_CODE (op1) == CONST_INT;
   op1_is_pow2 = (op1_is_constant
 		 && ((EXACT_POWER_OF_2_OR_ZERO_P (INTVAL (op1))
-		      || EXACT_POWER_OF_2_OR_ZERO_P (-INTVAL (op1)))));
+		      || (! unsignedp && EXACT_POWER_OF_2_OR_ZERO_P (-INTVAL (op1))))));
 
   /*
      This is the structure of expand_divmod:
@@ -2854,6 +2854,8 @@ expand_divmod (rem_flag, code, mode, op0, op1, target, unsignedp)
 	code = TRUNC_DIV_EXPR;
       if (code == FLOOR_MOD_EXPR)
 	code = TRUNC_MOD_EXPR;
+      if (code == EXACT_DIV_EXPR && op1_is_pow2)
+	code = TRUNC_DIV_EXPR;
     }
 
   if (op1 != const0_rtx)

@@ -748,9 +748,11 @@ shorten_branches (first)
 	  insn_lengths[uid] = (XVECLEN (body, GET_CODE (body) == ADDR_DIFF_VEC)
 			       * GET_MODE_SIZE (GET_MODE (body)));
 
-	  /* Account for possible alignment.  */
-	  insn_lengths[uid]
-	    += unitsize - (insn_current_address & (unitsize - 1));
+	  /* We don't know what address the ADDR_VEC/ADDR_DIFF_VEC will end
+	     up at after branch shortening.  As a result, it is impossible
+	     to determine how much padding we need at this point.  Therefore,
+	     assume worst possible alignment.  */
+	  insn_lengths[uid] += unitsize - 1;
 #else
 	  ;
 #endif
