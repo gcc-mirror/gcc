@@ -1,3 +1,7 @@
+2003-08-25  Ulrich Weigand  <uweigand@de.ibm.com>
+
+	* combine.c (distribute_notes): Handle REG_ALWAYS_RETURN.
+
 2003-08-23  Jakub Jelinek  <jakub@redhat.com>
 
 	* c-decl.c (pushdecl): Only put decls which finish_struct will do

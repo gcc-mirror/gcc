@@ -1,3 +1,7 @@
+2003-08-25  Ulrich Weigand  <uweigand@de.ibm.com>
+
+	* gcc.dg/20030702-1.c: New test.
+
 2003-08-23  Jakub Jelinek  <jakub@redhat.com>
 
 	* gcc.dg/20030815-1.c: New test.
