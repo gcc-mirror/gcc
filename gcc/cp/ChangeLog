@@ -1,3 +1,9 @@
+2000-08-23  Gabriel Dos Reis  <gdr@codesourcery.com>
+
+	* decl.c (init_decl_processing): Remove bogus initialization.
+	* error.c (lang_print_error_function): Restore here.
+	(init_error): Initialize print_error_function. 
+	
 2000-08-22  Theodore Papadopoulo  <Theodore.Papadopoulo@sophia.inria.fr>
 
 	* decl2.c (arg_assoc): Revert my 2000-08-11 change.

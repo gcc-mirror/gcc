@@ -6651,7 +6651,6 @@ init_decl_processing ()
   /* Show we use EH for cleanups.  */
   using_eh_for_cleanups ();
 
-  print_error_function = NULL;
   valid_lang_attribute = cp_valid_lang_attribute;
 
   /* Maintain consistency.  Perhaps we should just complain if they
