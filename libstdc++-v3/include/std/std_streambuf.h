@@ -523,7 +523,7 @@ namespace std
       basic_streambuf(const __streambuf_type&) { }; 
 
       __streambuf_type& 
-      operator=(const __streambuf_type&) { };
+      operator=(const __streambuf_type&) { return *this; };
 #endif
     };
 } // namespace std

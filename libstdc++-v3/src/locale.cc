@@ -581,14 +581,4 @@ namespace std
       *__fptr++ = __mod;
     *__fptr = '\0';
   }
-  
-  template<>
-    moneypunct_byname<char, false>::moneypunct_byname(const char*, 
-						      size_t __refs)
-    : moneypunct<char, false>(__refs) { }
-  
-  template<>
-    moneypunct_byname<char, true>::moneypunct_byname(const char*, 
-						     size_t __refs)
-    : moneypunct<char, true>(__refs) { }
 } // namespace std
