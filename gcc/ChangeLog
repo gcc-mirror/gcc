@@ -24,6 +24,7 @@ Tue Feb  2 22:38:19 1999  Theodore Papadopoulo <Theodore.Papadopoulo@sophia.inri
 Fri Jan 29 21:00:56 1999  Bob Manson  <manson@charmed.cygnus.com>
 
 	* resource.c, resource.h: New files.
+	* Makefile.in (OBJS): Add it.
 
 	* haifa-sched.c (regno_use_in): Moved to rtlanal.c.
 	(split_block_insns): Moved to recog.c.
