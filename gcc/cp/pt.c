@@ -7206,6 +7206,11 @@ tsubst_copy (t, args, complain, in_decl)
 	return r;
       }
 
+    case VA_ARG_EXPR:
+      return build_va_arg (tsubst_copy (TREE_OPERAND (t, 0), args, complain,
+					in_decl),
+			   tsubst (TREE_TYPE (t), args, complain, in_decl));
+     
     default:
       return t;
     }

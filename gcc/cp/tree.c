@@ -1656,6 +1656,7 @@ search_tree (t, func)
     case EXIT_EXPR:
     case LOOP_EXPR:
     case BIT_FIELD_REF:
+    case VA_ARG_EXPR:
       TRY (TREE_OPERAND (t, 0));
       break;
 
@@ -1929,6 +1930,7 @@ mapcar (t, func)
     case CLEANUP_POINT_EXPR:
     case THROW_EXPR:
     case STMT_EXPR:
+    case VA_ARG_EXPR:
       t = copy_node (t);
       TREE_TYPE (t) = mapcar (TREE_TYPE (t), func);
       TREE_OPERAND (t, 0) = mapcar (TREE_OPERAND (t, 0), func);
