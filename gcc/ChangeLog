@@ -1,3 +1,8 @@
+2000-06-19  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* configure.in (--enable-checking): Update --help doc to reflect
+	new defaults.  Ensure $ac_save_IFS is set before $IFS is changed.
+
 Sun Jun 18 21:42:15 2000  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* gcse.c (insert_insn_end_bb): Always put after NOTE_INSN_BASIC_BLOCK.
