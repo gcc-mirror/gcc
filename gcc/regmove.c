@@ -2088,7 +2088,7 @@ stable_and_no_regs_but_for_p (x, src, dst)
 struct csa_memlist
 {
   HOST_WIDE_INT sp_offset;
-  rtx insn, mem;
+  rtx insn, *mem;
   struct csa_memlist *next;
 };
 
@@ -2096,7 +2096,7 @@ static int stack_memref_p		PARAMS ((rtx));
 static rtx single_set_for_csa		PARAMS ((rtx));
 static void free_csa_memlist		PARAMS ((struct csa_memlist *));
 static struct csa_memlist *record_one_stack_memref
-  PARAMS ((rtx, rtx, struct csa_memlist *));
+  PARAMS ((rtx, rtx *, struct csa_memlist *));
 static int try_apply_stack_adjustment
   PARAMS ((rtx, struct csa_memlist *, HOST_WIDE_INT, HOST_WIDE_INT));
 static void combine_stack_adjustments_for_block PARAMS ((basic_block));
@@ -2188,17 +2188,17 @@ free_csa_memlist (memlist)
 
 static struct csa_memlist *
 record_one_stack_memref (insn, mem, next_memlist)
-     rtx insn, mem;
+     rtx insn, *mem;
      struct csa_memlist *next_memlist;
 {
   struct csa_memlist *ml;
 
   ml = (struct csa_memlist *) xmalloc (sizeof (*ml));
 
-  if (XEXP (mem, 0) == stack_pointer_rtx)
+  if (XEXP (*mem, 0) == stack_pointer_rtx)
     ml->sp_offset = 0;
   else
-    ml->sp_offset = INTVAL (XEXP (XEXP (mem, 0), 1));
+    ml->sp_offset = INTVAL (XEXP (XEXP (*mem, 0), 1));
 
   ml->insn = insn;
   ml->mem = mem;
@@ -2241,8 +2241,9 @@ try_apply_stack_adjustment (insn, memlist, new_adjust, delta)
 	  return 0;
 	}
 
-      validate_change (ml->insn, &XEXP (ml->mem, 0),
-		       plus_constant (stack_pointer_rtx, c), 1);
+      validate_change (ml->insn, ml->mem,
+		       gen_rtx_MEM (GET_MODE (*ml->mem),
+				    plus_constant (stack_pointer_rtx, c)), 1);
     }
 
   if (apply_change_group ())
@@ -2340,7 +2341,7 @@ combine_stack_adjustments_for_block (bb)
 	  if (last_sp_set && stack_memref_p (src)
 	      && ! reg_mentioned_p (stack_pointer_rtx, dest))
 	    {
-	      memlist = record_one_stack_memref (insn, src, memlist);
+	      memlist = record_one_stack_memref (insn, &SET_SRC (set), memlist);
 	      goto processed;
 	    }
 
@@ -2348,7 +2349,8 @@ combine_stack_adjustments_for_block (bb)
 	  if (last_sp_set && stack_memref_p (dest)
 	      && ! reg_mentioned_p (stack_pointer_rtx, src))
 	    {
-	      memlist = record_one_stack_memref (insn, dest, memlist);
+	      memlist = record_one_stack_memref (insn, &SET_DEST (set),
+						 memlist);
 	      goto processed;
 	    }
 
