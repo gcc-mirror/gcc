@@ -48,15 +48,15 @@
 	(process_next_inline): Adjust prototype.
 	(do_scoped_id): Don't call binding_init.
 	(make_lang_type): Allocate TYPE_LANG_SPECIFIC with xmalloc.
-	(emit_thunk): Adjust call to finish_function.
+	* method.c (emit_thunk): Adjust call to finish_function.
 	(synthesize_method): Likewise.
 	* parse.y (%union): Add a new `pi' variant.
 	(PRE_PARSED_FUNCTION_DECL): Use it.
 	(fn.defpen): Likewise.
 	(fndef): Adjust call to finish_function.
-	(instantiate_decl): Likewise.
-	(rtti.c): Likewise.
-	(semantics.c): Likewise.
+	* pt.c (instantiate_decl): Likewise.
+	* rtti.c (syntheisze_tinfo_fn): Likewise.
+	* semantics.c (expand_body): Likewise.
 	* tree.c: Include ggc.h.
 	(mark_list_hash): New function.
 	(binding_init): Remove.

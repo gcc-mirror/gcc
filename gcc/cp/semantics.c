@@ -2185,13 +2185,8 @@ expand_body (fn)
      tree fn;
 {
   int saved_expanding_p;
-  int nested; 
   tree t;
   tree try_block;
-
-  /* Remember whether we're already processing a function definition
-     so that we can tell finish_function.  */
-  nested = in_function_p ();
 
   /* Let the compiler know that now is the time to really generate
      actualy RTL.  */
@@ -2248,7 +2243,7 @@ expand_body (fn)
       finish_function_handler_sequence (NULL_TREE);
     }
 
-  finish_function (lineno, 0, nested);
+  finish_function (lineno, 0);
 
   /* Restore EXPANDING_P.  */
   expanding_p = saved_expanding_p;
