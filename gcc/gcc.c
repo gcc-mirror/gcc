@@ -5319,8 +5319,8 @@ main (argc, argv)
      This means one element containing 0s, as a terminator.  */
 
   compilers = (struct compiler *) xmalloc (sizeof default_compilers);
-  bcopy ((char *) default_compilers, (char *) compilers,
-	 sizeof default_compilers);
+  memcpy ((char *) compilers, (char *) default_compilers,
+	  sizeof default_compilers);
   n_compilers = n_default_compilers;
 
   /* Read specs from a file if there is one.  */
@@ -5737,7 +5737,7 @@ save_string (s, len)
 {
   register char *result = xmalloc (len + 1);
 
-  bcopy (s, result, len);
+  memcpy (result, s, len);
   result[len] = 0;
   return result;
 }

@@ -1984,7 +1984,7 @@ cp_tree_equal (t1, t2)
 
     case STRING_CST:
       return TREE_STRING_LENGTH (t1) == TREE_STRING_LENGTH (t2)
-	&& !bcmp (TREE_STRING_POINTER (t1), TREE_STRING_POINTER (t2),
+	&& !memcmp (TREE_STRING_POINTER (t1), TREE_STRING_POINTER (t2),
 		  TREE_STRING_LENGTH (t1));
 
     case CONSTRUCTOR:
