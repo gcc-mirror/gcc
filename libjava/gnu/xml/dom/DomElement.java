@@ -42,6 +42,7 @@ import java.util.Set;
 import javax.xml.XMLConstants;
 
 import org.w3c.dom.Attr;
+import org.w3c.dom.DOMException;
 import org.w3c.dom.Element;
 import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
@@ -262,7 +263,7 @@ public class DomElement
     if (("xmlns".equals (aname) || aname.startsWith ("xmlns:"))
         && !XMLConstants.XMLNS_ATTRIBUTE_NS_URI.equals (uri))
       {
-        throw new DomEx(DomEx.NAMESPACE_ERR,
+        throw new DomDOMException(DOMException.NAMESPACE_ERR,
                         "setting xmlns attribute to illegal value", this, 0);
       }
 
@@ -318,9 +319,9 @@ public class DomElement
       {
         attributes.removeNamedItem(name);
       }
-    catch (DomEx e)
+    catch (DomDOMException e)
       {
-        if (e.code != DomEx.NOT_FOUND_ERR)
+        if (e.code != DOMException.NOT_FOUND_ERR)
           {
             throw e;
           }
@@ -340,7 +341,7 @@ public class DomElement
   {
     if (attributes == null)
       {
-        throw new DomEx(DomEx.NOT_FOUND_ERR, null, node, 0);
+        throw new DomDOMException(DOMException.NOT_FOUND_ERR, null, node, 0);
       }
     return (Attr) attributes.removeNamedItem(node.getNodeName());
   }
@@ -358,7 +359,7 @@ public class DomElement
   {
     if (attributes == null)
       {
-        throw new DomEx(DomEx.NOT_FOUND_ERR, localPart, null, 0);
+        throw new DomDOMException(DOMException.NOT_FOUND_ERR, localPart, null, 0);
       }
     attributes.removeNamedItemNS (namespace, localPart);
   }
@@ -487,11 +488,11 @@ public class DomElement
   {
     if (readonly)
       {
-        throw new DomEx(DomEx.NO_MODIFICATION_ALLOWED_ERR);
+        throw new DomDOMException(DOMException.NO_MODIFICATION_ALLOWED_ERR);
       }
     if (attr == null || attr.getOwnerElement() != this)
       {
-        throw new DomEx(DomEx.NOT_FOUND_ERR);
+        throw new DomDOMException(DOMException.NOT_FOUND_ERR);
       }
     if (isId)
       {

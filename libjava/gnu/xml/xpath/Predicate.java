@@ -63,7 +63,7 @@ class Predicate
         // Same as [position() = x]
         return ((Double) ret).intValue() == pos;
       }
-    return expr._boolean(node, expr.evaluate(node, pos, len));
+    return Expr._boolean(node, expr.evaluate(node, pos, len));
   }
 
   public Test clone(Object context)

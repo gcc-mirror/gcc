@@ -207,7 +207,8 @@ public class DomImpl
         root = doc.createElementNS(namespaceURI, rootName);
         if (rootName.startsWith("xmlns:"))
           {
-            throw new DomEx(DomEx.NAMESPACE_ERR, "xmlns is reserved", null, 0);
+            throw new DomDOMException(DOMException.NAMESPACE_ERR,
+                                      "xmlns is reserved", null, 0);
           }
       }
     // Bleech -- L2 seemingly _requires_ omission of xmlns attributes.

@@ -39,6 +39,7 @@ package gnu.xml.dom;
 
 import java.util.HashMap;
 import org.w3c.dom.DocumentType;
+import org.w3c.dom.DOMException;
 import org.w3c.dom.DOMImplementation;
 import org.w3c.dom.Entity;
 import org.w3c.dom.NamedNodeMap;
@@ -194,7 +195,7 @@ public class DomDoctype
       }
     if (isReadonly())
       {
-        throw new DomEx(DomEx.NO_MODIFICATION_ALLOWED_ERR);
+        throw new DomDOMException(DOMException.NO_MODIFICATION_ALLOWED_ERR);
       }
     getEntities();
     
@@ -250,7 +251,7 @@ public class DomDoctype
     
     if (isReadonly())
       {
-        throw new DomEx(DomEx.NO_MODIFICATION_ALLOWED_ERR);
+        throw new DomDOMException(DOMException.NO_MODIFICATION_ALLOWED_ERR);
       }
     getNotations();
     

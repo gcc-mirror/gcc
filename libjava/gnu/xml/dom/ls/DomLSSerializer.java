@@ -58,7 +58,7 @@ import org.w3c.dom.ls.LSOutput;
 import org.w3c.dom.ls.LSSerializer;
 import org.w3c.dom.ls.LSSerializerFilter;
 import org.w3c.dom.traversal.NodeFilter;
-import gnu.xml.dom.DomEx;
+import gnu.xml.dom.DomDOMException;
 import gnu.xml.transform.StreamSerializer;
 
 /**
@@ -147,7 +147,7 @@ public class DomLSSerializer
       }
     catch (IOException e)
       {
-        throw new DomLSEx(LSException.SERIALIZE_ERR, e);
+        throw new DomLSException(LSException.SERIALIZE_ERR, e);
       }
   }
 
@@ -302,7 +302,7 @@ public class DomLSSerializer
       }
     else
       {
-        throw new DomEx(DomEx.NOT_SUPPORTED_ERR);
+        throw new DomDOMException(DOMException.NOT_SUPPORTED_ERR);
       }
   }
 
@@ -319,7 +319,7 @@ public class DomLSSerializer
       }
     else
       {
-        throw new DomEx(DomEx.NOT_SUPPORTED_ERR);
+        throw new DomDOMException(DOMException.NOT_SUPPORTED_ERR);
       }
   }
 

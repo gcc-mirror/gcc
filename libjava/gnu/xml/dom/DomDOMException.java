@@ -1,4 +1,4 @@
-/* DomEx.java -- 
+/* DomDOMException.java -- 
    Copyright (C) 1999,2000,2001,2004 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -50,7 +50,7 @@ import org.w3c.dom.Node;
  *
  * @author David Brownell 
  */
-public class DomEx
+public class DomDOMException
   extends DOMException
 {
 
@@ -67,7 +67,7 @@ public class DomEx
    * Constructs an exception, with the diagnostic message
    * corresponding to the specified code.
    */
-  public DomEx(short code)
+  public DomDOMException(short code)
   {
     super(code, diagnostic(code));
   }
@@ -77,7 +77,7 @@ public class DomEx
    * corresponding to the specified code and additional
    * information as provided.
    */
-  public DomEx(short code, String data, Node node, int value)
+  public DomDOMException(short code, String data, Node node, int value)
   {
     super(code, diagnostic(code));
     this.data = data;

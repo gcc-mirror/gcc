@@ -65,7 +65,7 @@ import org.xml.sax.SAXNotRecognizedException;
 import org.xml.sax.SAXParseException;
 import org.xml.sax.XMLReader;
 import gnu.xml.dom.DomDocument;
-import gnu.xml.dom.DomEx;
+import gnu.xml.dom.DomDOMException;
 
 /**
  * Parser implementation for GNU DOM.
@@ -117,7 +117,7 @@ public class DomLSParser
         async = false;
         break;
       default:
-        throw new DomEx(DOMException.NOT_SUPPORTED_ERR);
+        throw new DomDOMException(DOMException.NOT_SUPPORTED_ERR);
       }
     // TODO schemaType
     this.schemaType = schemaType;
@@ -307,13 +307,13 @@ public class DomLSParser
       {
         reader = null;
         eventSink = null;
-        throw new DomLSEx(LSException.PARSE_ERR, e);
+        throw new DomLSException(LSException.PARSE_ERR, e);
       }
     catch (IOException e)
       {
         reader = null;
         eventSink = null;
-        throw new DomLSEx(LSException.PARSE_ERR, e);
+        throw new DomLSException(LSException.PARSE_ERR, e);
       }
     // return document
     Document ret = eventSink.doc;
@@ -341,11 +341,11 @@ public class DomLSParser
           }
         catch (ParserConfigurationException e)
           {
-            throw new DomLSEx(LSException.PARSE_ERR, e);
+            throw new DomLSException(LSException.PARSE_ERR, e);
           }
         catch (SAXException e)
           {
-            throw new DomLSEx(LSException.PARSE_ERR, e);
+            throw new DomLSException(LSException.PARSE_ERR, e);
           }
       }
     return reader;
@@ -371,11 +371,11 @@ public class DomLSParser
           }
         catch (SAXException e)
           {
-            throw new DomLSEx(LSException.PARSE_ERR, e);
+            throw new DomLSException(LSException.PARSE_ERR, e);
           } 
         catch (IOException e)
           {
-            throw new DomLSEx(LSException.PARSE_ERR, e);
+            throw new DomLSException(LSException.PARSE_ERR, e);
           } 
       }
     if (source == null)
@@ -403,7 +403,7 @@ public class DomLSParser
           }
         catch (IOException e)
           {
-            throw new DomLSEx(LSException.PARSE_ERR, e);
+            throw new DomLSException(LSException.PARSE_ERR, e);
           }
       }
     return source;
@@ -457,7 +457,7 @@ public class DomLSParser
       }
     else
       {
-        throw new DomEx(DomEx.NOT_SUPPORTED_ERR);
+        throw new DomDOMException(DOMException.NOT_SUPPORTED_ERR);
       }
     // invalidate reader, a new one will be created
     reader = null;
@@ -509,7 +509,7 @@ public class DomLSParser
       }
     else
       {
-        throw new DomEx(DomEx.NOT_SUPPORTED_ERR);
+        throw new DomDOMException(DOMException.NOT_SUPPORTED_ERR);
       }
   }
 
