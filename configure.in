@@ -939,6 +939,9 @@ case "${host}" in
     tentative_cc="/usr/cygnus/progressive/bin/gcc"
     host_makefile_frag="config/mh-lynxrs6k"
     ;;
+    powerpc-*-darwin*)
+    host_makefile_frag="config/mh-ppc-darwin"
+    ;;
   *-*-lynxos*)
     # /bin/cc is less than useful for our purposes.  Always use GCC
     tentative_cc="/bin/gcc"
