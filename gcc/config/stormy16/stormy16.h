@@ -594,8 +594,6 @@ do {							\
 
 #define REG_OK_FOR_INDEX_P(X) REG_OK_FOR_BASE_P (X)
 
-#define LEGITIMIZE_ADDRESS(X, OLDX, MODE, WIN)
-
 /* On this chip, this is true if the address is valid with an offset
    of 0 but not of 6, because in that case it cannot be used as an
    address for DImode or DFmode, or if the address is a post-increment
