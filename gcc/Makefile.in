@@ -798,12 +798,17 @@ LIB2FUNCS_ST = _eprintf _bb __gcc_bcmp
 FPBIT_FUNCS = _pack_sf _unpack_sf _addsub_sf _mul_sf _div_sf \
     _fpcmp_parts_sf _compare_sf _eq_sf _ne_sf _gt_sf _ge_sf \
     _lt_sf _le_sf _unord_sf _si_to_sf _sf_to_si _negate_sf _make_sf \
-    _sf_to_df _thenan_sf _sf_to_usi _usi_to_sf
+    _sf_to_df _sf_to_tf _thenan_sf _sf_to_usi _usi_to_sf
 
 DPBIT_FUNCS = _pack_df _unpack_df _addsub_df _mul_df _div_df \
     _fpcmp_parts_df _compare_df _eq_df _ne_df _gt_df _ge_df \
     _lt_df _le_df _unord_df _si_to_df _df_to_si _negate_df _make_df \
-    _df_to_sf _thenan_df _df_to_usi _usi_to_df
+    _df_to_sf _df_to_tf _thenan_df _df_to_usi _usi_to_df
+
+TPBIT_FUNCS = _pack_tf _unpack_tf _addsub_tf _mul_tf _div_tf \
+    _fpcmp_parts_tf _compare_tf _eq_tf _ne_tf _gt_tf _ge_tf \
+    _lt_tf _le_tf _unord_tf _si_to_tf _tf_to_si _negate_tf _make_tf \
+    _tf_to_df _tf_to_sf _thenan_tf _tf_to_usi _usi_to_tf
 
 # These might cause a divide overflow trap and so are compiled with
 # unwinder info.
@@ -1023,6 +1028,8 @@ libgcc.mk: config.status Makefile mklibgcc $(LIB2ADD) $(LIB2ADD_ST) xgcc$(exeext
 	LIB2_DIVMOD_FUNCS='$(LIB2_DIVMOD_FUNCS)' \
 	DPBIT='$(DPBIT)' \
 	DPBIT_FUNCS='$(DPBIT_FUNCS)' \
+	TPBIT='$(TPBIT)' \
+	TPBIT_FUNCS='$(TPBIT_FUNCS)' \
 	MULTILIBS=`$(GCC_FOR_TARGET) --print-multi-lib` \
 	EXTRA_MULTILIB_PARTS='$(EXTRA_MULTILIB_PARTS)' \
 	SHLIB_LINK='$(SHLIB_LINK)' \
@@ -1042,8 +1049,9 @@ libgcc.mk: config.status Makefile mklibgcc $(LIB2ADD) $(LIB2ADD_ST) xgcc$(exeext
 LIBGCC_DEPS = $(GCC_PASSES) $(LANGUAGES) stmp-int-hdrs $(STMP_FIXPROTO) \
 	libgcc.mk $(srcdir)/libgcc2.c $(TCONFIG_H) \
 	$(MACHMODE_H) longlong.h gbl-ctors.h config.status stmp-int-hdrs \
-	tsystem.h $(FPBIT) $(DPBIT) $(LIB2ADD) $(LIB2ADD_ST) $(LIB2ADDEH) \
-	$(LIB2ADDEHDEP) $(EXTRA_PARTS) $(srcdir)/config/$(LIB1ASMSRC)
+	tsystem.h $(FPBIT) $(DPBIT) $(TPBIT) $(LIB2ADD) \
+	$(LIB2ADD_ST) $(LIB2ADDEH) $(LIB2ADDEHDEP) $(EXTRA_PARTS) \
+	$(srcdir)/config/$(LIB1ASMSRC)
 
 libgcc.a: $(LIBGCC_DEPS)
 	$(MAKE) GCC_FOR_TARGET="$(GCC_FOR_TARGET)" \

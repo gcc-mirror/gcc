@@ -1,6 +1,6 @@
 #!/bin/sh
 # Construct makefile for libgcc.
-#   Copyright (C) 2000, 2002 Free Software Foundation, Inc.
+#   Copyright (C) 2000, 2002, 2003 Free Software Foundation, Inc.
 #
 # This file is part of GCC.
 
@@ -21,6 +21,8 @@
 # LIB2_DIVMOD_FUNCS
 # DPBIT
 # DPBIT_FUNCS
+# TPBIT
+# TPBIT_FUNCS
 # LIBGCC
 # MULTILIBS
 # EXTRA_MULTILIB_PARTS
@@ -169,6 +171,21 @@ if [ "$DPBIT" ]; then
       echo $out: $DPBIT $fpbit_c_dep
       echo "	$gcc_compile" -DFINE_GRAINED_LIBRARIES $flags -DL$name \
 	-c $DPBIT -o $out
+    done
+    libgcc2_objs="$libgcc2_objs ${name}${objext}"
+  done
+fi
+
+if [ "$TPBIT" ]; then
+  for name in $TPBIT_FUNCS; do
+    for ml in $MULTILIBS; do
+      dir=`echo ${ml} | sed -e 's/;.*$//' -e 's/=/$(EQ)/g'`
+      flags=`echo ${ml} | sed -e 's/^[^;]*;//' -e 's/@/ -/g'`;
+      out="libgcc/${dir}/${name}${objext}"
+
+      echo $out: $TPBIT $fpbit_c_dep
+      echo "	$gcc_compile" -DFINE_GRAINED_LIBRARIES $flags -DL$name \
+	-c $TPBIT -o $out
     done
     libgcc2_objs="$libgcc2_objs ${name}${objext}"
   done

@@ -1,5 +1,12 @@
 2003-01-26  Alexandre Oliva  <aoliva@redhat.com>
 
+	* Makefile.in (FPBIT_FUNCS): Added _sf_to_tf.
+	(DBBIT_FUNCS): Added _df_to_tf.
+	(TPBIT_FUNCS): New.
+	(libgcc.mk): Pass TPBIT and TPBIT_FUNCS down.
+	(LIBGCC_DEPS): Added TPBIT.
+	* mklibgcc.in: Support TPBIT and TPBIT_FUNCS.
+
 	* optabs.c (expand_binop) <add, sub>: Return xtarget if we haven't
 	been able to move the result to target.
 
