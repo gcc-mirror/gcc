@@ -1397,6 +1397,10 @@ int warn_packed;
 
 int warn_padded;
 
+/* Warn when an optimization pass is disabled.  */
+
+int warn_disabled_optimization;
+
 /* Likewise for -W.  */
 
 lang_independent_options W_options[] =
@@ -1423,7 +1427,9 @@ lang_independent_options W_options[] =
   {"packed", &warn_packed, 1,
    "Warn when the packed attribute has no effect on struct layout"},
   {"padded", &warn_padded, 1,
-   "Warn when padding is required to align struct members"}
+   "Warn when padding is required to align struct members"},
+  {"disabled-optimization", &warn_disabled_optimization, 1,
+   "Warn when an optimization pass is disabled"}
 };
 
 /* Output files for assembler code (real compiler output)

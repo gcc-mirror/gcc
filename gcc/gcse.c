@@ -685,7 +685,12 @@ gcse_main (f, file)
      a couple switch statements.  So we require a relatively large number
      of basic blocks and the ratio of edges to blocks to be high.  */
   if (n_basic_blocks > 1000 && n_edges / n_basic_blocks >= 20)
-    return 0;
+    {
+      if (warn_disabled_optimization)
+      warning ("GCSE disabled: %d > 1000 basic blocks and %d >= 20 edges/basic block",
+               n_basic_blocks, n_edges / n_basic_blocks);
+      return 0;
+    }
 
   /* See what modes support reg/reg copy operations.  */
   if (! can_copy_init_p)

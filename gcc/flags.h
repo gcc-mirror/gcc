@@ -160,6 +160,10 @@ extern int warn_packed;
 
 extern int warn_padded;
 
+/* Warn when an optimization pass is disabled.  */
+
+extern int warn_disabled_optimization;
+
 /* Nonzero if generating code to do profiling.  */
 
 extern int profile_flag;
