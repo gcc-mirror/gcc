@@ -1,3 +1,7 @@
+Tue Sep  7 09:36:01 1999  Michael Hayes  <m.hayes@elec.canterbury.ac.nz>
+
+	* haifa-sched.c: Tidy comments.
+
 Mon Sep  6 14:30:13 1999  Bernd Schmidt  <bernds@cygnus.co.uk>
 
 	* Makefile.in (C_AND_OBJC_OBJS): Remove ggc-callbacks.o.
