@@ -3,11 +3,11 @@
 /* { dg-final { scan-assembler-not "lfd" } } */
 /* { dg-final { scan-assembler-not "sfd" } } */
 /* { dg-final { scan-assembler "lfq" } } */
-/* { dg-final { scan-assembler "sfq" } } */
+/* { dg-final { scan-assembler "stfq" } } */
 
-register double t1 __asm__("fr0");
-register double t2 __asm__("fr1");
-register double t3 __asm__("fr2"), t4 __asm__("fr3");
+register volatile double t1 __asm__("fr0");
+register volatile double t2 __asm__("fr1");
+register volatile double t3 __asm__("fr2"), t4 __asm__("fr3");
 void t(double *a, double *b)
 {
         t1 = a[-1];
