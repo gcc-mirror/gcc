@@ -1,3 +1,7 @@
+2003-04-11  Geoffrey Keating  <geoffk@apple.com>
+
+	* doc/extend.texi (Empty Structures): New.
+
 2003-04-11  Eric Christopher  <echristo@redhat.com>
 
 	* emit-rtl.c (gen_rtx): Fix typos.
