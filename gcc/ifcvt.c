@@ -2769,7 +2769,7 @@ find_if_case_2 (test_bb, then_edge, else_edge)
 	     test_bb->index, else_bb->index);
 
   /* ELSE is small.  */
-  if (count_bb_insns (then_bb) > BRANCH_COST)
+  if (count_bb_insns (else_bb) > BRANCH_COST)
     return FALSE;
 
   /* Registers set are dead, or are predicable.  */
