@@ -47,8 +47,8 @@ void test01()
   bool test __attribute__((unused)) = true;
 
   wistringstream iss1, iss2;
-  iss1.imbue(locale(iss1.getloc(), static_cast<numpunct<wchar_t>*>(new Punct1)));
-  iss2.imbue(locale(iss2.getloc(), static_cast<numpunct<wchar_t>*>(new Punct2)));
+  iss1.imbue(locale(iss1.getloc(), new Punct1));
+  iss2.imbue(locale(iss2.getloc(), new Punct2));
   const num_get<wchar_t>& ng1 = use_facet<num_get<wchar_t> >(iss1.getloc()); 
   const num_get<wchar_t>& ng2 = use_facet<num_get<wchar_t> >(iss2.getloc()); 
 

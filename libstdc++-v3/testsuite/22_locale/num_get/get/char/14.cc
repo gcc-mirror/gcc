@@ -37,7 +37,7 @@ void test01()
   bool test __attribute__((unused)) = true;
 
   istringstream iss;
-  iss.imbue(locale(iss.getloc(), static_cast<numpunct<char>*>(new Punct)));
+  iss.imbue(locale(iss.getloc(), new Punct));
   const num_get<char>& ng = use_facet<num_get<char> >(iss.getloc()); 
 
   ios_base::iostate err = ios_base::goodbit;
