@@ -1,5 +1,10 @@
 2004-12-18  Richard Henderson  <rth@redhat.com>
 
+	* fold-const.c (multiple_of_p): Handle BIT_AND_EXPR when
+	BOTTOM is a power of two.
+
+2004-12-18  Richard Henderson  <rth@redhat.com>
+
 	* tree-nested.c (save_tmp_var): New.
 	(struct walk_stmt_info): Add is_lhs.
 	(walk_stmts) <MODIFY_EXPR>: Be more accurate with setting of
