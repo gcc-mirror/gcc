@@ -1,3 +1,8 @@
+Wed Dec 12 07:37:52 2001  Olivier Hainque <hainque@act-europe.fr>
+
+	* stmt.c (expand_end_case): Do subtraction of lower bound as trees
+	to avoid overflow.
+
 Wed Dec 12 07:35:24 2001  Douglas B. Rupp  <rupp@gnat.com>
 
 	* cppfiles.c (read_include_file): Set buffer size properly when

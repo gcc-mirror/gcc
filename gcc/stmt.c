@@ -5525,18 +5525,20 @@ expand_end_case (orig_index)
 
 	  for (n = thiscase->data.case_stmt.case_list; n; n = n->right)
 	    {
-	      HOST_WIDE_INT i
-		= tree_low_cst (n->low, 0) - tree_low_cst (minval, 0);
+	      /* Compute the low and high bounds relative to the minimum
+		 value since that should fit in a HOST_WIDE_INT while the
+		 actual values may not.  */
+	      HOST_WIDE_INT i_low
+		= tree_low_cst (fold (build (MINUS_EXPR, index_type, 
+                                             n->low, minval)), 1);
+	      HOST_WIDE_INT i_high
+		= tree_low_cst (fold (build (MINUS_EXPR, index_type, 
+                                             n->high, minval)), 1);
+	      HOST_WIDE_INT i;
 
-	      while (1)
-		{
-		  labelvec[i]
-		    = gen_rtx_LABEL_REF (Pmode, label_rtx (n->code_label));
-		  if (i + tree_low_cst (minval, 0)
-		      == tree_low_cst (n->high, 0))
-		    break;
-		  i++;
-		}
+	      for (i = i_low; i <= i_high; i ++)
+		labelvec[i]
+		  = gen_rtx_LABEL_REF (Pmode, label_rtx (n->code_label));
 	    }
 
 	  /* Fill in the gaps with the default.  */
