@@ -1,4 +1,14 @@
-2001-03-22  Joerg Brunsmann <joerg_brunsmann@yahoo.de>
+2001-03-23  Bryce McKinlay  <bryce@albatross.co.nz>
+
+	Fix for PR libgcj/1736. Thanks to Robert Boehne and Alexandre Oliva
+	for libtool hacking.
+	* Makefile.am (libgcj.la): New explicit rule. Echo the list of objects
+	to a temporary file, then invoke libtool with the -objectlist 
+	paramater.
+	(libgcjx.la): Likewise.
+	* Makefile.in: Rebuilt.
+
+2001-03-22  Joerg Brunsmann  <joerg_brunsmann@yahoo.de>
 
 	* javax/naming/Context.java (SECURITY_CREDENTIALS): Fix typo.
 
