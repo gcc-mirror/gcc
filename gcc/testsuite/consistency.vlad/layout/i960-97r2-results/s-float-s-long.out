@@ -1,0 +1,4 @@
++++Struct long inside struct starting with float:
+size=8,align=4
+offset-float=0,offset-sss-long=4,
+align-float=4,align-sss-long=4

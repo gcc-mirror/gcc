@@ -1,3 +1,7 @@
+2001-02-12  Geoffrey Keating  <geoffk@redhat.com>
+
+	* consistency.vlad: New directory, 1665 files.
+
 2001-02-12  Joseph S. Myers  <jsm28@cam.ac.uk>
 
 	* gcc.dg/c99-impl-int-1.c: Use stricter error string for implicit

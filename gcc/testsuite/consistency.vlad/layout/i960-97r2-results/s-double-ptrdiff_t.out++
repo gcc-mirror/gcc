@@ -1,0 +1,3 @@
++++Struct double-ptrdiff_t:
+size=16,align=8,offset-double=0,offset-ptrdiff_t=8,
+align-double=8,align-ptrdiff_t=4

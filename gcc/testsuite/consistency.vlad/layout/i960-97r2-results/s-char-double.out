@@ -1,0 +1,3 @@
++++Struct char-double:
+size=16,align=8,offset-char=0,offset-double=8,
+align-char=1,align-double=8

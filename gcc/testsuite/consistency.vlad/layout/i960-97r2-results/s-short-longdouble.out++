@@ -1,0 +1,3 @@
++++Struct short-longdouble:
+size=32,align=16,offset-short=0,offset-longdouble=16,
+align-short=2,align-longdouble=16

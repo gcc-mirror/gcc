@@ -1,0 +1,5 @@
+++++Array of long in struct starting with longlong:
+size=48,align=8
+offset-longlong=0,offset-arrayof-long=8,
+align-longlong=8,align-arrayof-long=4
+offset-long-a[5]=28,align-long-a[5]=4

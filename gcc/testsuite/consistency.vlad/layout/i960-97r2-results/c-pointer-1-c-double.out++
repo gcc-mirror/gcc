@@ -1,0 +1,4 @@
+++Class with double inhereting class with pointer:
+size=16,align=8
+offset-pointer=0,offset-double=8,
+align-pointer=4,align-double=8

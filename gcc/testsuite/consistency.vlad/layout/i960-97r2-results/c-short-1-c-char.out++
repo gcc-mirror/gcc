@@ -1,0 +1,4 @@
+++Class with char inhereting class with short:
+size=4,align=2
+offset-short=0,offset-char=2,
+align-short=2,align-char=1

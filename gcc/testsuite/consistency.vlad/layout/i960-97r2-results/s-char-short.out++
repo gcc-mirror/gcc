@@ -1,0 +1,3 @@
++++Struct char-short:
+size=4,align=2,offset-char=0,offset-short=2,
+align-char=1,align-short=2

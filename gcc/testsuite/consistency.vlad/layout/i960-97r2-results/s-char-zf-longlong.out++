@@ -1,0 +1,4 @@
++++longlong zerofield inside struct starting with char:
+size=24,align=8
+offset-char=0,offset-last=16,
+align-char=1,align-last=4

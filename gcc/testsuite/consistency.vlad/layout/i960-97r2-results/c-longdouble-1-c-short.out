@@ -1,0 +1,4 @@
+++Class with short inhereting class with longdouble:
+size=36,align=12
+offset-longdouble=0,offset-short=24,
+align-longdouble=16,align-short=2

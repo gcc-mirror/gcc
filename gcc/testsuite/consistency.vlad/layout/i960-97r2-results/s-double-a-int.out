@@ -1,0 +1,5 @@
+++++Array of int in struct starting with double:
+size=48,align=8
+offset-double=0,offset-arrayof-int=8,
+align-double=8,align-arrayof-int=4
+offset-int-a[5]=28,align-int-a[5]=4

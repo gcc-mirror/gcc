@@ -1,3 +1,14 @@
+2001-02-12  Geoffrey Keating  <geoffk@redhat.com>
+
+	* config/rs6000/sysv4.h (SUBTARGET_OVERRIDE_OPTIONS): Handle
+	-mcall-i960.
+	(ASM_SPEC): Likewise.
+	(CC1_ENDIAN_LITTLE_SPEC): Likewise.
+	(CC1_SPEC): Likewise.
+	(LINK_TARGET_SPEC): Likewise.
+	(CPP_ENDIAN_SPEC): Likewise.
+	* Makefile.in (check-consistency): New target.
+
 2001-02-12  Joseph S. Myers  <jsm28@cam.ac.uk>
 
 	* c-decl.c (grokdeclarator): In C99 mode, give the more specific

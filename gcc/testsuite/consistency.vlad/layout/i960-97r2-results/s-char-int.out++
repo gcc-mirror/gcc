@@ -1,0 +1,3 @@
++++Struct char-int:
+size=8,align=4,offset-char=0,offset-int=4,
+align-char=1,align-int=4

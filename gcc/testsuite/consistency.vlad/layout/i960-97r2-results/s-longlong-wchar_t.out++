@@ -1,0 +1,3 @@
++++Struct longlong-wchar_t:
+size=16,align=8,offset-longlong=0,offset-wchar_t=8,
+align-longlong=8,align-wchar_t=4

@@ -1,0 +1,5 @@
+++++Array of short in struct starting with double:
+size=32,align=8
+offset-double=0,offset-arrayof-short=8,
+align-double=8,align-arrayof-short=2
+offset-short-a[5]=18,align-short-a[5]=2
