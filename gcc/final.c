@@ -785,7 +785,7 @@ get_attr_length (insn)
 #endif
 
 #ifndef LABEL_ALIGN_AFTER_BARRIER
-#define LABEL_ALIGN_AFTER_BARRIER(LABEL) 1
+#define LABEL_ALIGN_AFTER_BARRIER(LABEL) 0
 #endif
 
 #ifndef LABEL_ALIGN_AFTER_BARRIER_MAX_SKIP
@@ -2338,12 +2338,16 @@ final_scan_insn (insn, file, optimize, prescan, nopeepholes)
 #else
 	      if (! JUMP_TABLES_IN_TEXT_SECTION)
 		{
+		  int log_align;
+
 		  readonly_data_section ();
-#ifdef READONLY_DATA_SECTION
-		  ASM_OUTPUT_ALIGN (file,
-				    exact_log2 (BIGGEST_ALIGNMENT
-						/ BITS_PER_UNIT));
-#endif /* READONLY_DATA_SECTION */
+
+#ifdef ADDR_VEC_ALIGN
+		  log_align = ADDR_VEC_ALIGN (nextbody);
+#else
+		  log_align = exact_log2 (BIGGEST_ALIGNMENT / BITS_PER_UNIT);
+#endif
+		  ASM_OUTPUT_ALIGN (file, log_align);
 		}
 	      else
 		function_section (current_function_decl);
