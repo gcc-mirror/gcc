@@ -1,3 +1,17 @@
+2003-10-24  Ulrich Weigand  <uweigand@de.ibm.com>
+
+	* config/s390/s390.c (load_multiple_operation): Allow both SImode
+	and DImode if word_mode is DImode.
+	(store_multiple_operation): Likewise.
+	* config/s390/s390.md ("load_multiple", "store_multiple"): Likewise.
+	("*load_multiple_di"): Allow only if word_mode == DImode.
+	("movqi"): Use LLGC whenever TARGET_ZARCH.
+	("fix_truncdfsi2"): Fix incorrect temporary size.
+	("fix_truncsfsi2"): Likewise.
+	("*bras_r", "*brasl_r", "*basr_r"): Remove predicate and constraint
+	string for function return value operand.
+	("*bras_tls", "*brasl_tls", "*basr_tls"): Likewise.
+
 2003-10-24  Joseph S. Myers  <jsm@polyomino.org.uk>
 
 	* c-parse.in (array_declarator): Use expr_no_commas.
