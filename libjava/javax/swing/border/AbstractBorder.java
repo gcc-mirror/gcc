@@ -91,15 +91,16 @@ public abstract class AbstractBorder
 
 
   /**
-   * Determines the insets of this border. The implementation provided
-   * by AbstractButton returns Insets for a zero-width border, whose
-   * <code>left</code>, <code>right</code>, <code>top</code> and
-   * <code>bottom</code> fields are all zero.
+   * Measures the width of this border.
    *
    * @param c the component whose border is to be measured.
    *
-   * @return a newly created Insets object, indicating a zero-width
-   *         border.
+   * @return an Insets object whose <code>left</code>, <code>right</code>,
+   *         <code>top</code> and <code>bottom</code> fields indicate the
+   *         width of the border at the respective edge, which is zero
+   *         for the default implementation provided by AbstractButton.
+   *
+   * @see #getBorderInsets(java.awt.Component, java.awt.Insets)
    */
   public Insets getBorderInsets (Component c)
   {
@@ -113,12 +114,11 @@ public abstract class AbstractBorder
    * <code>top</code> and <code>bottom</code> fields of the passed
    * <code>insets</code> parameter to zero.
    *
-   * @param c the component in the center of this border.
+   * @param c the component whose border is to be measured.
    *
-   * @param insets an Insets object for holding the insets of this
-   *        border.
+   * @return the same object that was passed for <code>insets</code>.
    *
-   * @return the <code>insets</code> object.
+   * @see #getBorderInsets()
    */
   public Insets getBorderInsets (Component c, Insets insets) 
   {

@@ -39,6 +39,8 @@ exception statement from your version. */
 package java.awt;
 
 import java.awt.peer.FontPeer;
+import java.awt.font.FontRenderContext;
+import java.awt.font.LineMetrics;
 import java.io.Serializable;
 import java.util.StringTokenizer;
 
@@ -484,5 +486,28 @@ toString()
          ",size=" + size + ")");
 }
 
+
+  /**
+   * Determines the line metrics for a run of text.
+   *
+   * @param str the text run to be measured.
+   *
+   * @param frc the font rendering parameters that are used for the
+   *        measurement. The exact placement and size of text slightly
+   *        depends on device-specific characteristics, for instance
+   *        the device resolution or anti-aliasing.  For this reason,
+   *        the returned measurement will only be accurate if the
+   *        passed <code>FontRenderContext</code> correctly reflects
+   *        the relevant parameters. Hence, <code>frc</code> should be
+   *        obtained from the same <code>Graphics2D</code> that will
+   *        be used for drawing, and any rendering hints should be set
+   *        to the desired values before obtaining <code>frc</code>.
+   *
+   * @see java.awt.Graphics2D#getFontRenderContext()
+   */
+  public LineMetrics getLineMetrics(String str, FontRenderContext frc)
+  {
+    throw new UnsupportedOperationException(); // FIXME
+  }
 } // class Font 
 

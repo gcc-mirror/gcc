@@ -1,5 +1,60 @@
 2003-06-19  Michael Koch  <konqueror@gmx.de>
 
+	* java/awt/Font.java
+	javax/swing/UIManager.java
+	javax/swing/border/AbstractBorder.java
+	javax/swing/border/BevelBorder.java
+	javax/swing/border/Border.java
+	javax/swing/border/CompoundBorder.java
+	javax/swing/border/EmptyBorder.java
+	javax/swing/border/EtchedBorder.java
+	javax/swing/border/LineBorder.java
+	javax/swing/border/MatteBorder.java
+	javax/swing/border/TitledBorder.java
+	javax/swing/plaf/BorderUIResource.java
+	javax/swing/plaf/basic/BasicBorders.java
+	javax/swing/plaf/basic/BasicButtonUI.java
+	javax/swing/plaf/basic/BasicCheckBoxUI.java
+	javax/swing/plaf/basic/BasicGraphicsUtils.java
+	javax/swing/plaf/basic/BasicLabelUI.java
+	javax/swing/plaf/basic/BasicRadioButtonUI.java
+	javax/swing/plaf/basic/BasicToggleButtonUI.java:
+	New versions from classpath.
+	* javax/swing/border/SoftBevelBorder.java:
+	New file from classpath.
+	* javax/swing/border/doc-files/LineBorder-1.png,
+	javax/swing/border/doc-files/BevelBorder-1.png,
+	javax/swing/border/doc-files/BevelBorder-2.png,
+	javax/swing/border/doc-files/BevelBorder-3.png,
+	javax/swing/border/doc-files/EmptyBorder-1.png,
+	javax/swing/border/doc-files/EtchedBorder-1.png,
+	javax/swing/border/doc-files/EtchedBorder-2.png,
+	javax/swing/border/doc-files/MatteBorder-1.png,
+	javax/swing/border/doc-files/MatteBorder-2.png,
+	javax/swing/border/doc-files/MatteBorder-3.png,
+	javax/swing/border/doc-files/MatteBorder-4.png,
+	javax/swing/border/doc-files/MatteBorder-5.png,
+	javax/swing/border/doc-files/MatteBorder-6.png,
+	javax/swing/border/doc-files/SoftBevelBorder-1.png,
+	javax/swing/border/doc-files/SoftBevelBorder-2.png,
+	javax/swing/border/doc-files/SoftBevelBorder-3.png,
+	javax/swing/plaf/basic/doc-files/BasicBorders.MarginBorder-1.png,
+	javax/swing/plaf/basic/doc-files/BasicBorders.ButtonBorder-1.png,
+	javax/swing/plaf/basic/doc-files/BasicGraphicsUtils-1.png,
+	javax/swing/plaf/basic/doc-files/BasicGraphicsUtils-2.png,
+	javax/swing/plaf/basic/doc-files/BasicGraphicsUtils-3.png,
+	javax/swing/plaf/basic/doc-files/BasicGraphicsUtils-4.png,
+	javax/swing/plaf/basic/doc-files/BasicGraphicsUtils-5.png,
+	javax/swing/plaf/basic/doc-files/BasicGraphicsUtils-6.png,
+	javax/swing/plaf/basic/doc-files/BasicGraphicsUtils-7.png:
+	New binary files from classpath.
+	* Makefile.am
+	(awt_java_source_files): Added
+	javax/swing/border/SoftBevelBorder.java.
+	* Makefile.in: Regenerated.
+
+2003-06-19  Michael Koch  <konqueror@gmx.de>
+
 	* gnu/java/security/x509/X509Certificate.java
 	(writeReplace): Merged from classpath.
 

@@ -58,14 +58,7 @@ public class BasicToggleButtonUI extends BasicButtonUI
     public Dimension getPreferredSize(JComponent c) 
     {
 	AbstractButton b = (AbstractButton)c;
-	Dimension d = BasicGraphicsUtils.getPreferredSize(b, 
-							  gap,
-							  b.getText(),
-							  b.getIcon(),
-							  b.getVerticalAlignment(),
-							  b.getHorizontalAlignment(),
-							  b.getHorizontalTextPosition(),
-							  b.getVerticalTextPosition());
+	Dimension d = BasicGraphicsUtils.getPreferredButtonSize(b, gap);
 							  
 	//System.out.println("^^^^^^^^^^^^^^^^^^^^^^   BASIC-PREF="+d + ",T="+b.text);
 	return d;

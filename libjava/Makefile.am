@@ -1151,6 +1151,7 @@ javax/swing/border/EmptyBorder.java \
 javax/swing/border/EtchedBorder.java \
 javax/swing/border/LineBorder.java \
 javax/swing/border/MatteBorder.java \
+javax/swing/border/SoftBevelBorder.java \
 javax/swing/border/TitledBorder.java \
 javax/swing/GrayFilter.java \
 javax/swing/AbstractAction.java \
