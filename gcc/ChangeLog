@@ -1,3 +1,9 @@
+2003-06-20  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
+
+	* configure.in (gcc_cv_as_gstabs_flag): Disable if assembler warns.
+	* configure: Regenerate.
+	Fixes PR driver/9362.
+
 2003-06-20  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* config/alpha/alpha.c (alpha_file_start): Fix typo.
