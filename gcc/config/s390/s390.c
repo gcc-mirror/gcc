@@ -374,7 +374,7 @@ s390_select_ccmode (enum rtx_code code, rtx op0, rtx op1)
       case EQ:
       case NE:
 	if (GET_CODE (op0) == PLUS && GET_CODE (XEXP (op0, 1)) == CONST_INT
-	    && CONST_OK_FOR_LETTER_P (INTVAL (XEXP (op0, 1)), 'K'))
+	    && CONST_OK_FOR_CONSTRAINT_P (INTVAL (XEXP (op0, 1)), 'K', "K"))
 	  return CCAPmode;
 	if ((GET_CODE (op0) == PLUS || GET_CODE (op0) == MINUS
 	     || GET_CODE (op1) == NEG)
@@ -410,7 +410,7 @@ s390_select_ccmode (enum rtx_code code, rtx op0, rtx op1)
       case GE:
       case GT:
 	  if (GET_CODE (op0) == PLUS && GET_CODE (XEXP (op0, 1)) == CONST_INT
-	      && CONST_OK_FOR_LETTER_P (INTVAL (XEXP (op0, 1)), 'K'))
+	      && CONST_OK_FOR_CONSTRAINT_P (INTVAL (XEXP (op0, 1)), 'K', "K"))
             {
 	      if (INTVAL (XEXP((op0), 1)) < 0)
 	        return CCANmode;
@@ -760,198 +760,68 @@ s390_branch_condition_mnemonic (rtx code, int inv)
   return mnemonic[mask];
 }
 
-/* If OP is an integer constant of mode MODE with exactly one
-   HImode subpart unequal to DEF, return the number of that
-   subpart.  As a special case, all HImode subparts of OP are
-   equal to DEF, return zero.  Otherwise, return -1.  */
+/* Return the part of op which has a value different from def.
+   The size of the part is determined by mode.
+   Use this function only if you already know that op really 
+   contains such a part.  */
 
-int
-s390_single_hi (rtx op, enum machine_mode mode, int def)
+unsigned HOST_WIDE_INT
+s390_extract_part (rtx op, enum machine_mode mode, int def)
 {
-  if (GET_CODE (op) == CONST_INT)
+  unsigned HOST_WIDE_INT value = 0;
+  int max_parts = HOST_BITS_PER_WIDE_INT / GET_MODE_BITSIZE (mode);
+  int part_bits = GET_MODE_BITSIZE (mode);
+  unsigned HOST_WIDE_INT part_mask = (1 << part_bits) - 1;
+  int i;
+  
+  for (i = 0; i < max_parts; i++)
     {
-      unsigned HOST_WIDE_INT value = 0;
-      int n_parts = GET_MODE_SIZE (mode) / 2;
-      int i, part = -1;
-
-      for (i = 0; i < n_parts; i++)
-        {
-          if (i == 0)
-            value = (unsigned HOST_WIDE_INT) INTVAL (op);
-          else
-            value >>= 16;
-
-          if ((value & 0xffff) != (unsigned)(def & 0xffff))
-            {
-              if (part != -1)
-                return -1;
-              else
-                part = i;
-            }
-        }
-
-      return part == -1 ? 0 : (n_parts - 1 - part);
-    }
-
-  else if (GET_CODE (op) == CONST_DOUBLE
-           && GET_MODE (op) == VOIDmode)
-    {
-      unsigned HOST_WIDE_INT value = 0;
-      int n_parts = GET_MODE_SIZE (mode) / 2;
-      int i, part = -1;
-
-      for (i = 0; i < n_parts; i++)
-        {
-          if (i == 0)
-            value = (unsigned HOST_WIDE_INT) CONST_DOUBLE_LOW (op);
-          else if (i == HOST_BITS_PER_WIDE_INT / 16)
-            value = (unsigned HOST_WIDE_INT) CONST_DOUBLE_HIGH (op);
-          else
-            value >>= 16;
-
-          if ((value & 0xffff) != (unsigned)(def & 0xffff))
-            {
-              if (part != -1)
-                return -1;
-              else
-                part = i;
-            }
-        }
-
-      return part == -1 ? 0 : (n_parts - 1 - part);
-    }
-
-  return -1;
-}
-
-/* Extract the HImode part number PART from integer
-   constant OP of mode MODE.  */
-
-int
-s390_extract_hi (rtx op, enum machine_mode mode, int part)
-{
-  int n_parts = GET_MODE_SIZE (mode) / 2;
-  if (part < 0 || part >= n_parts)
-    abort();
-  else
-    part = n_parts - 1 - part;
-
-  if (GET_CODE (op) == CONST_INT)
-    {
-      unsigned HOST_WIDE_INT value = (unsigned HOST_WIDE_INT) INTVAL (op);
-      return ((value >> (16 * part)) & 0xffff);
-    }
-  else if (GET_CODE (op) == CONST_DOUBLE
-           && GET_MODE (op) == VOIDmode)
-    {
-      unsigned HOST_WIDE_INT value;
-      if (part < HOST_BITS_PER_WIDE_INT / 16)
-        value = (unsigned HOST_WIDE_INT) CONST_DOUBLE_LOW (op);
+      if (i == 0)
+	value = (unsigned HOST_WIDE_INT) INTVAL (op);
       else
-        value = (unsigned HOST_WIDE_INT) CONST_DOUBLE_HIGH (op),
-        part -= HOST_BITS_PER_WIDE_INT / 16;
-
-      return ((value >> (16 * part)) & 0xffff);
+	value >>= part_bits;
+      
+      if ((value & part_mask) != (def & part_mask))
+	return value & part_mask;
     }
-
+  
   abort ();
 }
 
 /* If OP is an integer constant of mode MODE with exactly one
-   QImode subpart unequal to DEF, return the number of that
-   subpart.  As a special case, all QImode subparts of OP are
-   equal to DEF, return zero.  Otherwise, return -1.  */
+   part of mode PART_MODE unequal to DEF, return the number of that
+   part. Otherwise, return -1.  */
 
 int
-s390_single_qi (rtx op, enum machine_mode mode, int def)
+s390_single_part (rtx op, 
+		  enum machine_mode mode, 
+		  enum machine_mode part_mode,
+		  int def)
 {
-  if (GET_CODE (op) == CONST_INT)
+  unsigned HOST_WIDE_INT value = 0;
+  int n_parts = GET_MODE_SIZE (mode) / GET_MODE_SIZE (part_mode);
+  unsigned HOST_WIDE_INT part_mask = (1 << GET_MODE_BITSIZE (part_mode)) - 1;
+  int i, part = -1;
+
+  if (GET_CODE (op) != CONST_INT)
+    return -1;
+  
+  for (i = 0; i < n_parts; i++)
     {
-      unsigned HOST_WIDE_INT value = 0;
-      int n_parts = GET_MODE_SIZE (mode);
-      int i, part = -1;
-
-      for (i = 0; i < n_parts; i++)
-        {
-          if (i == 0)
-            value = (unsigned HOST_WIDE_INT) INTVAL (op);
-          else
-            value >>= 8;
-
-          if ((value & 0xff) != (unsigned)(def & 0xff))
-            {
-              if (part != -1)
-                return -1;
-              else
-                part = i;
-            }
-        }
-
-      return part == -1 ? 0 : (n_parts - 1 - part);
-    }
-
-  else if (GET_CODE (op) == CONST_DOUBLE
-           && GET_MODE (op) == VOIDmode)
-    {
-      unsigned HOST_WIDE_INT value = 0;
-      int n_parts = GET_MODE_SIZE (mode);
-      int i, part = -1;
-
-      for (i = 0; i < n_parts; i++)
-        {
-          if (i == 0)
-            value = (unsigned HOST_WIDE_INT) CONST_DOUBLE_LOW (op);
-          else if (i == HOST_BITS_PER_WIDE_INT / 8)
-            value = (unsigned HOST_WIDE_INT) CONST_DOUBLE_HIGH (op);
-          else
-            value >>= 8;
-
-          if ((value & 0xff) != (unsigned)(def & 0xff))
-            {
-              if (part != -1)
-                return -1;
-              else
-                part = i;
-            }
-        }
-
-      return part == -1 ? 0 : (n_parts - 1 - part);
-    }
-
-  return -1;
-}
-
-/* Extract the QImode part number PART from integer
-   constant OP of mode MODE.  */
-
-int
-s390_extract_qi (rtx op, enum machine_mode mode, int part)
-{
-  int n_parts = GET_MODE_SIZE (mode);
-  if (part < 0 || part >= n_parts)
-    abort();
-  else
-    part = n_parts - 1 - part;
-
-  if (GET_CODE (op) == CONST_INT)
-    {
-      unsigned HOST_WIDE_INT value = (unsigned HOST_WIDE_INT) INTVAL (op);
-      return ((value >> (8 * part)) & 0xff);
-    }
-  else if (GET_CODE (op) == CONST_DOUBLE
-           && GET_MODE (op) == VOIDmode)
-    {
-      unsigned HOST_WIDE_INT value;
-      if (part < HOST_BITS_PER_WIDE_INT / 8)
-        value = (unsigned HOST_WIDE_INT) CONST_DOUBLE_LOW (op);
+      if (i == 0)
+	value = (unsigned HOST_WIDE_INT) INTVAL (op);
       else
-        value = (unsigned HOST_WIDE_INT) CONST_DOUBLE_HIGH (op),
-        part -= HOST_BITS_PER_WIDE_INT / 8;
-
-      return ((value >> (8 * part)) & 0xff);
+	value >>= GET_MODE_BITSIZE (part_mode);
+      
+      if ((value & part_mask) != (def & part_mask))
+	{
+	  if (part != -1)
+	    return -1;
+	  else
+	    part = i;
+	}
     }
-
-  abort ();
+  return part == -1 ? -1 : n_parts - 1 - part;
 }
 
 /* Check whether we can (and want to) split a double-word
@@ -1353,9 +1223,12 @@ s390_short_displacement (rtx disp)
 /* Return true if OP is a valid operand for a C constraint.  */
 
 int
-s390_extra_constraint (rtx op, int c)
+s390_extra_constraint_str (rtx op, int c, const char * str)
 {
   struct s390_address addr;
+
+  if (c != str[0])
+    abort ();
 
   switch (c)
     {
@@ -1434,6 +1307,78 @@ s390_extra_constraint (rtx op, int c)
 
     case 'Y':
       return shift_count_operand (op, VOIDmode);
+
+    default:
+      return 0;
+    }
+
+  return 1;
+}
+
+/* Return true if VALUE matches the constraint STR.  */
+
+int
+s390_const_ok_for_constraint_p (HOST_WIDE_INT value,
+				int c,
+				const char * str)
+{
+  enum machine_mode mode, part_mode;
+  int def;
+  unsigned char part;
+
+  if (c != str[0])
+    abort ();
+
+  switch (str[0])
+    {
+    case 'I':
+      return (unsigned int)value < 256;
+
+    case 'J':
+      return (unsigned int)value < 4096;
+
+    case 'K':
+      return value >= -32768 && value < 32768;
+
+    case 'L':
+      return (TARGET_LONG_DISPLACEMENT ? 
+	      (value >= -524288 && value <= 524287) 
+	      : (value >= 0 && value <= 4095));
+    case 'M':
+      return value == 2147483647;
+
+    case 'N':
+      part = str[1] - '0';
+
+      switch (str[2])
+	{
+	case 'H': part_mode = HImode; break;
+	case 'Q': part_mode = QImode; break;
+	default:  return 0;
+	}
+      
+      switch (str[3])
+	{
+	case 'H': mode = HImode; break;
+	case 'S': mode = SImode; break;
+	case 'D': mode = DImode; break;
+	default: return 0;
+	}
+
+      switch (str[4])
+	{
+	case '0': def = 0;  break;
+	case 'F': def = -1; break;
+	default: return 0;
+	}
+
+      if (GET_MODE_SIZE (mode) <= GET_MODE_SIZE (part_mode))
+	return 0;
+
+      if (s390_single_part (GEN_INT (value), mode, part_mode, def) != part)
+	return 0;
+
+      break;
 
     default:
       return 0;
@@ -1866,12 +1811,12 @@ legitimate_reload_constant_p (register rtx op)
 
   /* Accept l(g)hi operands.  */
   if (GET_CODE (op) == CONST_INT
-      && CONST_OK_FOR_LETTER_P (INTVAL (op), 'K'))
+      && CONST_OK_FOR_CONSTRAINT_P (INTVAL (op), 'K', "K"))
     return 1;
 
   /* Accept lliXX operands.  */
   if (TARGET_ZARCH
-      && s390_single_hi (op, DImode, 0) >= 0)
+      && s390_single_part (op, DImode, HImode, 0) >= 0)
   return 1;
 
   /* Accept larl operands.  */
@@ -3493,7 +3438,9 @@ print_operand_address (FILE *file, rtx addr)
 
     'b': print integer X as if it's an unsigned byte.
     'x': print integer X as if it's an unsigned word.
-    'h': print integer X as if it's a signed word.  */
+    'h': print integer X as if it's a signed word.
+    'i': print the first nonzero HImode part of X.
+    'j': print the first HImode part unequal to 0xffff of X.  */
 
 void
 print_operand (FILE *file, rtx x, int code)
@@ -3609,6 +3556,12 @@ print_operand (FILE *file, rtx x, int code)
         fprintf (file, HOST_WIDE_INT_PRINT_DEC, INTVAL (x) & 0xffff);
       else if (code == 'h')
         fprintf (file, HOST_WIDE_INT_PRINT_DEC, ((INTVAL (x) & 0xffff) ^ 0x8000) - 0x8000);
+      else if (code == 'i')
+	fprintf (file, HOST_WIDE_INT_PRINT_DEC, 
+		 s390_extract_part (x, HImode, 0));
+      else if (code == 'j')
+	fprintf (file, HOST_WIDE_INT_PRINT_DEC, 
+		 s390_extract_part (x, HImode, -1));	
       else
         fprintf (file, HOST_WIDE_INT_PRINT_DEC, INTVAL (x));
       break;
@@ -5694,7 +5647,7 @@ s390_emit_prologue (void)
 	}
       else
 	{
-	  if (!CONST_OK_FOR_LETTER_P (INTVAL (frame_off), 'K'))
+	  if (!CONST_OK_FOR_CONSTRAINT_P (INTVAL (frame_off), 'K', "K"))
 	    frame_off = force_const_mem (Pmode, frame_off);
 
           insn = emit_insn (gen_add2_insn (stack_pointer_rtx, frame_off));
@@ -5889,7 +5842,7 @@ s390_emit_epilogue (void)
 	}
       else
 	{
-	  if (!CONST_OK_FOR_LETTER_P (INTVAL (frame_off), 'K'))
+	  if (!CONST_OK_FOR_CONSTRAINT_P (INTVAL (frame_off), 'K', "K"))
 	    frame_off = force_const_mem (Pmode, frame_off);
 
 	  insn = emit_insn (gen_add2_insn (frame_pointer, frame_off));
@@ -6898,9 +6851,9 @@ s390_output_mi_thunk (FILE *file, tree thunk ATTRIBUTE_UNUSED,
     {
       /* Setup literal pool pointer if required.  */
       if ((!DISP_IN_RANGE (delta)
-	   && !CONST_OK_FOR_LETTER_P (delta, 'K'))
+	   && !CONST_OK_FOR_CONSTRAINT_P (delta, 'K', "K"))
 	  || (!DISP_IN_RANGE (vcall_offset)
-	      && !CONST_OK_FOR_LETTER_P (vcall_offset, 'K')))
+	      && !CONST_OK_FOR_CONSTRAINT_P (vcall_offset, 'K', "K")))
 	{
 	  op[5] = gen_label_rtx ();
 	  output_asm_insn ("larl\t%4,%5", op);
@@ -6909,11 +6862,11 @@ s390_output_mi_thunk (FILE *file, tree thunk ATTRIBUTE_UNUSED,
       /* Add DELTA to this pointer.  */
       if (delta)
 	{
-	  if (CONST_OK_FOR_LETTER_P (delta, 'J'))
+	  if (CONST_OK_FOR_CONSTRAINT_P (delta, 'J', "J"))
 	    output_asm_insn ("la\t%1,%2(%1)", op);
 	  else if (DISP_IN_RANGE (delta))
 	    output_asm_insn ("lay\t%1,%2(%1)", op);
-	  else if (CONST_OK_FOR_LETTER_P (delta, 'K'))
+	  else if (CONST_OK_FOR_CONSTRAINT_P (delta, 'K', "K"))
 	    output_asm_insn ("aghi\t%1,%2", op);
 	  else
 	    {
@@ -6930,7 +6883,7 @@ s390_output_mi_thunk (FILE *file, tree thunk ATTRIBUTE_UNUSED,
 	      output_asm_insn ("lg\t%4,0(%1)", op);
 	      output_asm_insn ("ag\t%1,%3(%4)", op);
 	    }
-	  else if (CONST_OK_FOR_LETTER_P (vcall_offset, 'K'))
+	  else if (CONST_OK_FOR_CONSTRAINT_P (vcall_offset, 'K', "K"))
 	    {
 	      output_asm_insn ("lghi\t%4,%3", op);
 	      output_asm_insn ("ag\t%4,0(%1)", op);
@@ -6973,9 +6926,9 @@ s390_output_mi_thunk (FILE *file, tree thunk ATTRIBUTE_UNUSED,
       /* Setup base pointer if required.  */
       if (!vcall_offset
 	  || (!DISP_IN_RANGE (delta)
-              && !CONST_OK_FOR_LETTER_P (delta, 'K'))
+              && !CONST_OK_FOR_CONSTRAINT_P (delta, 'K', "K"))
 	  || (!DISP_IN_RANGE (delta)
-              && !CONST_OK_FOR_LETTER_P (vcall_offset, 'K')))
+              && !CONST_OK_FOR_CONSTRAINT_P (vcall_offset, 'K', "K")))
 	{
 	  op[5] = gen_label_rtx ();
 	  output_asm_insn ("basr\t%4,0", op);
@@ -6986,11 +6939,11 @@ s390_output_mi_thunk (FILE *file, tree thunk ATTRIBUTE_UNUSED,
       /* Add DELTA to this pointer.  */
       if (delta)
 	{
-	  if (CONST_OK_FOR_LETTER_P (delta, 'J'))
+	  if (CONST_OK_FOR_CONSTRAINT_P (delta, 'J', "J"))
 	    output_asm_insn ("la\t%1,%2(%1)", op);
 	  else if (DISP_IN_RANGE (delta))
 	    output_asm_insn ("lay\t%1,%2(%1)", op);
-	  else if (CONST_OK_FOR_LETTER_P (delta, 'K'))
+	  else if (CONST_OK_FOR_CONSTRAINT_P (delta, 'K', "K"))
 	    output_asm_insn ("ahi\t%1,%2", op);
 	  else
 	    {
@@ -7002,7 +6955,7 @@ s390_output_mi_thunk (FILE *file, tree thunk ATTRIBUTE_UNUSED,
       /* Perform vcall adjustment.  */
       if (vcall_offset)
         {
-	  if (CONST_OK_FOR_LETTER_P (vcall_offset, 'J'))
+	  if (CONST_OK_FOR_CONSTRAINT_P (vcall_offset, 'J', "J"))
 	    {
 	      output_asm_insn ("lg\t%4,0(%1)", op);
 	      output_asm_insn ("a\t%1,%3(%4)", op);
@@ -7012,7 +6965,7 @@ s390_output_mi_thunk (FILE *file, tree thunk ATTRIBUTE_UNUSED,
 	      output_asm_insn ("lg\t%4,0(%1)", op);
 	      output_asm_insn ("ay\t%1,%3(%4)", op);
 	    }
-	  else if (CONST_OK_FOR_LETTER_P (vcall_offset, 'K'))
+	  else if (CONST_OK_FOR_CONSTRAINT_P (vcall_offset, 'K', "K"))
 	    {
 	      output_asm_insn ("lhi\t%4,%3", op);
 	      output_asm_insn ("a\t%4,0(%1)", op);
