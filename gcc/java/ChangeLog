@@ -1,3 +1,30 @@
+1999-05-05  Per Bothner  <bothner@cygnus.com>
+
+	* class.c (make_field_value):  DECL_INITIAL may be a string literal;
+	temporarily zero it while calling rest_of_decl_compilation.
+
+	* java-tree.h (string_ptr_type_node):  Add declaration.
+	* decl.c:  Define and initialize string_ptr_type_node.
+	* parse.y (patch_string_cst):  Use string_ptr_type_node.
+
+	* parse.h (LOOP_HAS_LABEL_P, LOOP_HAS_LABEL_SKIP_P):  Removed.
+	* parse.y (for_statement):  Now unconditionally exit_block.
+	(finish_labeled_statement):  No longer exit_block if for-loop.
+	(patch_loop_statement):  Check harder if the loop is already labeled.
+
+	* parse.y (patch_initialized_static_field):  Removed function.
+	(maybe_generate_clinit):  Removed special handling for interfaces.
+	(java_complete_expand_methods):  Do a preliminary java_complete_tree
+	on <clinit> to determine if it can be removed.
+	(java_complete_expand_method):  Remove special handling for <clinit>.
+	(java_complete_lhs):  For BLOCK and EXPR_WITH_FILE_LOCATION
+	optimize if we get back empty_stmt_node.
+	For MODIFY_EXPR, re-do checking of static initializers.
+	(fold_constant_for_init):  Don't return immediate if VAR_DECL.
+	For VAR_DECL, pass correct context.
+
+	* verify.c (verify_jvm_instructions):  Better error messages.
+
 1999-05-03  Tom Tromey  <tromey@cygnus.com>
 
 	* parse-scan.y (interface_declaration): Call
