@@ -1,3 +1,7 @@
+2002-01-22  Tom Tromey  <tromey@redhat.com>
+
+	* java/awt/GridBagConstraints.java: Updated copyright.
+
 2002-01-22  Mark Wielaard <mark@klomp.org>
 
 	* java/awt/Adjustable.java java/awt/CheckboxMenuItem.java 
