@@ -227,6 +227,7 @@ extern void flow_delete_insn_chain	PARAMS ((rtx, rtx));
 extern void make_edge			PARAMS ((sbitmap *, basic_block,
 						 basic_block, int));
 extern void remove_edge			PARAMS ((edge));
+extern void create_basic_block		PARAMS ((int, rtx, rtx, rtx));
 
 
 /* Structure to hold information for each natural loop.  */

@@ -1,3 +1,14 @@
+Thu Mar 16 09:02:19 2000  Jason Eckhardt  <jle@cygnus.com>
+
+	* flow.c: Move all basic block reordering code into its own file.
+	(create_basic_block): Externalize.
+	* bb-reorder.c: New file. Copy all basic block reordering code from
+	flow.c to this file.
+	(reorder_basic_blocks): Fix fencepost error in for-loop.
+	(reorder_basic_blocks): Remove braces from single statement for-loops.
+	* basic-block.h: Add declaration for create_basic_block.
+	* Makefile.in: Add rules for bb-reorder.o.
+
 2000-03-16  Neil Booth  <NeilB@earthling.net>
 
 	* cppinit.c (handle_option):  Implement #unassert directive
