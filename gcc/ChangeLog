@@ -1,3 +1,8 @@
+Tue Sep 14 04:01:46 1999  Loren Rittle  <ljrittle@acm.org>
+
+	* configure.in: Handle --enable-threads on FreeBSD.
+	* configure: Rebuit.
+
 Tue Sep 14 03:58:44 1999  Andreas Jaeger  <aj@arthur.rhein-neckar.de>
 
         * configure.in: Add crtbeginS.o, crtendS.o for mips-linux; add 
