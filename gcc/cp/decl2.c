@@ -2881,9 +2881,6 @@ finish_file ()
 
   at_eof = 1;
 
-  if (flag_detailed_statistics)
-    dump_tree_statistics ();
-
   /* Bad parse errors.  Just forget about it.  */
   if (! global_bindings_p () || current_class_type)
     return;
@@ -3306,7 +3303,10 @@ finish_file ()
   varconst_time += this_time - start_time;
 
   if (flag_detailed_statistics)
-    dump_time_statistics ();
+    {
+      dump_tree_statistics ();
+      dump_time_statistics ();
+    }
 }
 
 /* This is something of the form 'A()()()()()+1' that has turned out to be an

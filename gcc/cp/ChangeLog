@@ -1,3 +1,9 @@
+Mon Oct  6 09:27:29 1997  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* pt.c (instantiate_decl): Look for the original template.
+	(tsubst): Set DECL_IMPLICIT_INSTANTIATION on partial instantiations
+	of member templates.
+
 Wed Oct  1 08:41:38 1997  Jason Merrill  <jason@yorick.cygnus.com>
 
 	* Makefile.in (g++FAQ.*): New rules.

@@ -465,8 +465,7 @@ determine_explicit_specialization (template_id, type, targs_out,
    is an explicit instantiation.  */
 
 int
-check_explicit_specialization(declarator, decl, template_count,
-			      flags)
+check_explicit_specialization (declarator, decl, template_count, flags)
      tree declarator;
      tree decl;
      int template_count;
@@ -2207,7 +2206,8 @@ tsubst (t, args, nargs, in_decl)
 	DECL_INITIAL (new_decl) = DECL_INITIAL (decl);
 	DECL_TI_TEMPLATE (new_decl) = tmpl;
 	TREE_TYPE (tmpl) = TREE_TYPE (new_decl);
-	DECL_TEMPLATE_INSTANTIATIONS(tmpl) = NULL_TREE;
+	DECL_TEMPLATE_INSTANTIATIONS (tmpl) = NULL_TREE;
+	SET_DECL_IMPLICIT_INSTANTIATION (decl);
 
 	/* The template parameters for this new template are all the
 	   template parameters for the old template, except the
@@ -4411,13 +4411,18 @@ instantiate_decl (d)
   tree tmpl = TI_TEMPLATE (ti);
   tree args = TI_ARGS (ti);
   tree td;
-  tree pattern = DECL_TEMPLATE_RESULT (tmpl);
+  tree pattern;
   tree save_ti;
   int nested = in_function_p ();
   int d_defined;
   int pattern_defined;
   int line = lineno;
   char *file = input_filename;
+
+  while (DECL_TEMPLATE_INSTANTIATION (tmpl))
+    tmpl = DECL_TI_TEMPLATE (tmpl);
+
+  pattern = DECL_TEMPLATE_RESULT (tmpl);
 
   if (TREE_CODE (d) == FUNCTION_DECL)
     {
