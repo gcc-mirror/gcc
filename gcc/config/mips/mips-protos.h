@@ -87,6 +87,7 @@ extern void		init_cumulative_args PARAMS ((CUMULATIVE_ARGS *,
 						      tree, rtx));
 extern void		gen_conditional_move PARAMS ((rtx *));
 extern void		mips_gen_conditional_trap PARAMS ((rtx *));
+extern void		mips_emit_fcc_reload PARAMS ((rtx, rtx, rtx));
 extern void		mips_set_return_address PARAMS ((rtx, rtx));
 extern void		machine_dependent_reorg PARAMS ((rtx));
 extern int		mips_address_cost PARAMS ((rtx));
