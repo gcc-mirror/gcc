@@ -1,3 +1,7 @@
+2003-09-06  Gabriel Dos Reis  <gdr@integrable-solutions.net>
+
+	* diagnostic.c (announce_function): Move to toplev.c.
+
 2003-09-06  Zdenek Dvorak  <rakdver@atrey.karlin.mff.cuni.cz>
 
 	* gcse.c (expr_equiv_p): Don't consider anything to be equal to
