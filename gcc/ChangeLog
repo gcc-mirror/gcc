@@ -1,3 +1,7 @@
+2001-06-07  Joseph S. Myers  <jsm28@cam.ac.uk>
+
+	* install.texi: Remove more obsolete documentation.
+
 2001-06-07  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* configure.in (sparc*-*-*): Check assembler R_SPARC_UA32 support.
