@@ -400,33 +400,6 @@ Java_gnu_java_awt_peer_gtk_GtkFramePeer_getMenuBarHeight
   return height;
 }
 
-JNIEXPORT void JNICALL
-Java_gnu_java_awt_peer_gtk_GtkFileDialogPeer_gtkWidgetGetDimensions
-  (JNIEnv *env, jobject obj, jintArray jdims)
-{
-  void *ptr;
-  jint *dims;
-  int top, left, bottom, right;
-  GtkRequisition req;
-  
-  ptr = NSA_GET_PTR (env, obj);
-  dims = (*env)->GetIntArrayElements (env, jdims, 0);
-  dims[0] = dims[1] = 0;
-  
-  gdk_threads_enter ();
-  
-  gtk_widget_size_request (GTK_WIDGET (ptr), &req);
-  
-  window_get_frame_extents (GTK_WIDGET (ptr), &top, &left, &bottom, &right);
-
-  dims[0] = req.width + left + right;
-  dims[1] = req.height + top + bottom;
-  
-  gdk_threads_leave ();
-    
-  (*env)->ReleaseIntArrayElements (env, jdims, dims, 0);
-} 
-
 static void
 window_get_frame_extents (GtkWidget *window,
                           int *top, int *left, int *bottom, int *right)

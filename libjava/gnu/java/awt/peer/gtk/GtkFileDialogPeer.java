@@ -63,7 +63,6 @@ public class GtkFileDialogPeer extends GtkDialogPeer implements FileDialogPeer
   native void connectJObject ();
   native void connectSignals ();
   native void nativeSetFile (String file);
-  native void gtkWidgetGetDimensions (int[] dims);
 
   public void setFile (String fileName)
   {
