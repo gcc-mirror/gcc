@@ -39,6 +39,8 @@ void fancy_abort PROTO((void));
 
 static int insn_code_number;
 
+static void gen_insn PROTO((rtx));
+
 static void
 gen_insn (insn)
      rtx insn;

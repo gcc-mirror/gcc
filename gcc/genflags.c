@@ -46,6 +46,12 @@ static struct obstack call_obstack, normal_obstack;
 /* Max size of names encountered.  */
 static int max_id_len;
 
+static int num_operands PROTO((rtx));
+static void gen_proto PROTO((rtx));
+static void gen_nonproto PROTO((rtx));
+static void gen_insn PROTO((rtx));
+
+
 /* Count the number of match_operand's found.  */
 
 static int

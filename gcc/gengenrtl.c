@@ -48,6 +48,18 @@ struct rtx_definition defs[] =
 
 const char *formats[NUM_RTX_CODE];
 
+static const char *type_from_format PROTO((char));
+static const char *accessor_from_format PROTO((char));
+static int special_format PROTO((const char *));
+static int special_rtx PROTO((int));
+static void find_formats PROTO((void));
+static void gendecl PROTO((FILE *, const char *));
+static void genmacro PROTO((FILE *, int));
+static void gendef PROTO((FILE *, const char *));
+static void genlegend PROTO((FILE *));
+static void genheader PROTO((FILE *));
+static void gencode PROTO((FILE *));
+
 static const char *
 type_from_format (c)
      char c;

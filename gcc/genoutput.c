@@ -169,10 +169,20 @@ int have_constraints;
 
 static int have_error;
 
+static void output_prologue PROTO((void));
+static void output_epilogue PROTO((void));
+static void scan_operands PROTO((rtx, int, int));
+static void process_template PROTO((struct data *, char *));
+static void validate_insn_alternatives PROTO((struct data *));
+static void gen_insn PROTO((rtx));
+static void gen_peephole PROTO((rtx));
+static void gen_expand PROTO((rtx));
+static void gen_split PROTO((rtx));
+static int n_occurrences PROTO((int, char *));
+
 static void
 output_prologue ()
 {
-
   printf ("/* Generated automatically by the program `genoutput'\n\
 from the machine description file `md'.  */\n\n");
 

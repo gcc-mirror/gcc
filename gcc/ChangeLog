@@ -1,3 +1,43 @@
+Wed Apr  8 00:44:18 1998  Bernd Schmidt (crux@pool.informatik.rwth-aachen.de>
+
+	* c-lex.c (is_class_name): Delete declaration.
+	(whitespace_cr): Make static and add prototype.
+	* c-lex.h (make_pointer_declarator, reinit_parse_for_function,
+	yylex, get_directive_line): Turn declarations into prototypes.
+	(position_after_whitespace, check_newline, yyerror,, is_class_name,
+	forget_protocol_qualifiers, remember_protocol_qualifiers): Add
+	prototypes.
+	* genattr.c (extend_range, write_upcase, gen_attr, write_units): Add
+	prototypes.
+	* gencodes.c (gen_insn): Add prototype.
+	* genconfig.c (walk_insn, gen_insn, gen_expand, gen_split,
+	gen_peephole): Add prototypes.
+	* genflags.c (num_operands, gen_proto, gen_nonproto, gen_insn): Add
+	prototypes.
+	* gengenrtl.c (type_from_format, accessor_from_format, special_rtx,
+	special_format, find_formats, gendecl, genmacro, gendef, genlegend,
+	genheader, gencode): Add prototypes.
+	* genopinit.c (gen_insn): Add prototype.
+	* genoutput.c (output_prologue, output_epilogue, scan_operands,
+	process_template, validate_insn_alternatives, gen_insn, gen_peephole,
+	gen_expand, gen_split, n_occurrences): Add prototypes.
+	* genpeep.c (gen_peephole): Add prototype.
+	* loop.c (find_and_verify_loops, mark_loop_jump, prescan_loop,
+	reg_in_basic_block_p, consec_sets_invariant_p, libcall_other_reg,
+	labels_in_range_p, count_loop_regs_set, note_addr_stored,
+	loop_reg_used_before_p, scan_loop, replace_call_address,
+	skip_consec_insns, libcall_benefit, ignore_some_movables,
+	force_movables, combine_movables, rtx_equal_for_loop_p, move_movables,
+	strength_reduce, valid_initial_value_p, find_mem_givs, record_biv,
+	check_final_value, record_giv, update_giv_derive, basic_induction_var,
+	simplify_giv_expr, general_induction_var, consec_sets_giv,
+	check_dbra_loop, express_from, combine_givs_p, combine_givs,
+	product_cheap_p, maybe_eliminate_biv, maybe_eliminate_biv_1,
+	last_use_this_basic_block, record_initial, update_reg_last_use,
+	iteration_info, analyze_loop_iterations, insert_bct,
+	instrument_loop_bct, indirect_jump_in_function_p): Turn declarations
+	into prototypes.
+
 Tue Apr  7 21:48:52 1998  Jeffrey A Law  (law@cygnus.com)
 
 	* pa.h (LEGITIMIZE_RELOAD_ADDRESS): Define.

@@ -50,6 +50,12 @@ char *xmalloc PROTO((unsigned));
 static void fatal ();
 void fancy_abort PROTO((void));
 
+static void walk_insn_part PROTO((rtx, int, int));
+static void gen_insn PROTO((rtx));
+static void gen_expand PROTO((rtx));
+static void gen_split PROTO((rtx));
+static void gen_peephole PROTO((rtx));
+
 /* RECOG_P will be non-zero if this pattern was seen in a context where it will
    be used to recognize, rather than just generate an insn. 
 

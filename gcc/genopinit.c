@@ -124,6 +124,8 @@ char *optabs[] =
 /* Allow linking with print-rtl.c.  */
 char **insn_name_ptr;
 
+static void gen_insn PROTO((rtx));
+
 static void
 gen_insn (insn)
      rtx insn;

@@ -93,8 +93,6 @@ tree lastiddecl;
 
 int doing_objc_thang;
 
-extern tree is_class_name ();
-
 extern int yydebug;
 
 /* File used for outputting assembler code.  */
@@ -129,6 +127,7 @@ static int nextchar = -1;
 #ifdef HANDLE_SYSV_PRAGMA
 static int handle_sysv_pragma		PROTO((int));
 #endif /* HANDLE_SYSV_PRAGMA */
+static int whitespace_cr		PROTO((int));
 static int skip_white_space		PROTO((int));
 static char *extend_token_buffer	PROTO((char *));
 static int readescape			PROTO((int *));
@@ -334,7 +333,7 @@ yyprint (file, yychar, yylval)
 
 /* Iff C is a carriage return, warn about it - if appropriate -
    and return nonzero.  */
-int
+static int
 whitespace_cr (c)
      int c;
 {

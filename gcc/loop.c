@@ -277,67 +277,67 @@ FILE *loop_dump_stream;
 
 /* Forward declarations.  */
 
-static void find_and_verify_loops ();
-static void mark_loop_jump ();
-static void prescan_loop ();
-static int reg_in_basic_block_p ();
-static int consec_sets_invariant_p ();
-static rtx libcall_other_reg ();
-static int labels_in_range_p ();
-static void count_loop_regs_set ();
-static void note_addr_stored ();
-static int loop_reg_used_before_p ();
-static void scan_loop ();
+static void find_and_verify_loops PROTO((rtx));
+static void mark_loop_jump PROTO((rtx, int));
+static void prescan_loop PROTO((rtx, rtx));
+static int reg_in_basic_block_p PROTO((rtx, rtx));
+static int consec_sets_invariant_p PROTO((rtx, int, rtx));
+static rtx libcall_other_reg PROTO((rtx, rtx));
+static int labels_in_range_p PROTO((rtx, int));
+static void count_loop_regs_set PROTO((rtx, rtx, char *, rtx *, int *, int));
+static void note_addr_stored PROTO((rtx));
+static int loop_reg_used_before_p PROTO((rtx, rtx, rtx, rtx, rtx));
+static void scan_loop PROTO((rtx, rtx, int, int));
 #if 0
-static void replace_call_address ();
+static void replace_call_address PROTO(());
 #endif
-static rtx skip_consec_insns ();
-static int libcall_benefit ();
-static void ignore_some_movables ();
-static void force_movables ();
-static void combine_movables ();
-static int rtx_equal_for_loop_p ();
-static void move_movables ();
-static void strength_reduce ();
-static int valid_initial_value_p ();
-static void find_mem_givs ();
-static void record_biv ();
-static void check_final_value ();
-static void record_giv ();
-static void update_giv_derive ();
-static int basic_induction_var ();
-static rtx simplify_giv_expr ();
-static int general_induction_var ();
-static int consec_sets_giv ();
-static int check_dbra_loop ();
-static rtx express_from ();
-static int combine_givs_p ();
-static void combine_givs ();
-static int product_cheap_p ();
-static int maybe_eliminate_biv ();
-static int maybe_eliminate_biv_1 ();
-static int last_use_this_basic_block ();
-static void record_initial ();
-static void update_reg_last_use ();
+static rtx skip_consec_insns PROTO((rtx, int));
+static int libcall_benefit PROTO((rtx));
+static void ignore_some_movables PROTO((struct movable *));
+static void force_movables PROTO((struct movable *));
+static void combine_movables PROTO((struct movable *, int));
+static int rtx_equal_for_loop_p PROTO((rtx, rtx, struct movable *));
+static void move_movables PROTO((struct movable *, int, int, rtx, rtx, int));
+static void strength_reduce PROTO((rtx, rtx, rtx, int, rtx, rtx, int));
+static int valid_initial_value_p PROTO((rtx, rtx, int, rtx));
+static void find_mem_givs PROTO((rtx, rtx, int, rtx, rtx));
+static void record_biv PROTO((struct induction *, rtx, rtx, rtx, rtx, int, int));
+static void check_final_value PROTO((struct induction *, rtx, rtx));
+static void record_giv PROTO((struct induction *, rtx, rtx, rtx, rtx, rtx, int, enum g_types, int, rtx *, rtx, rtx));
+static void update_giv_derive PROTO((rtx));
+static int basic_induction_var PROTO((rtx, enum machine_mode, rtx, rtx, rtx *, rtx *));
+static rtx simplify_giv_expr PROTO((rtx, int *));
+static int general_induction_var PROTO((rtx, rtx *, rtx *, rtx *));
+static int consec_sets_giv PROTO((int, rtx, rtx, rtx, rtx *, rtx *));
+static int check_dbra_loop PROTO((rtx, int, rtx));
+static rtx express_from PROTO((struct induction *, struct induction *));
+static int combine_givs_p PROTO((struct induction *, struct induction *));
+static void combine_givs PROTO((struct iv_class *));
+static int product_cheap_p PROTO((rtx, rtx));
+static int maybe_eliminate_biv PROTO((struct iv_class *, rtx, rtx, int, int, int));
+static int maybe_eliminate_biv_1 PROTO((rtx, rtx, struct iv_class *, int, rtx));
+static int last_use_this_basic_block PROTO((rtx, rtx));
+static void record_initial PROTO((rtx, rtx));
+static void update_reg_last_use PROTO((rtx, rtx));
 
 #ifdef HAIFA
 /* This is extern from unroll.c */
-void iteration_info ();
+extern void iteration_info PROTO((rtx, rtx *, rtx *, rtx, rtx));
 
 /* Two main functions for implementing bct:
    first - to be called before loop unrolling, and the second - after */
 #ifdef HAVE_decrement_and_branch_on_count
-static void analyze_loop_iterations ();
-static void insert_bct ();
+static void analyze_loop_iterations PROTO((rtx, rtx));
+static void insert_bct PROTO((rtx, rtx));
 
 /* Auxiliary function that inserts the bct pattern into the loop */
-static void instrument_loop_bct ();
+static void instrument_loop_bct PROTO((rtx, rtx, rtx));
 #endif /* HAVE_decrement_and_branch_on_count */
 #endif  /* HAIFA */
 
 /* Indirect_jump_in_function is computed once per function.  */
 int indirect_jump_in_function = 0;
-static int indirect_jump_in_function_p ();
+static int indirect_jump_in_function_p PROTO((rtx));
 
 
 /* Relative gain of eliminating various kinds of operations.  */
