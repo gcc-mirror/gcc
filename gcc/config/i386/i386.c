@@ -3063,9 +3063,6 @@ local_symbolic_operand (op, mode)
      rtx op;
      enum machine_mode mode ATTRIBUTE_UNUSED;
 {
-  if (GET_CODE (op) == LABEL_REF)
-    return 1;
-
   if (GET_CODE (op) == CONST
       && GET_CODE (XEXP (op, 0)) == PLUS
       && GET_CODE (XEXP (XEXP (op, 0), 1)) == CONST_INT
@@ -3073,6 +3070,9 @@ local_symbolic_operand (op, mode)
 	  || (INTVAL (XEXP (XEXP (op, 0), 1)) >= -16*1024*1024
 	      && INTVAL (XEXP (XEXP (op, 0), 1)) < 16*1024*1024)))
     op = XEXP (XEXP (op, 0), 0);
+
+  if (GET_CODE (op) == LABEL_REF)
+    return 1;
 
   if (GET_CODE (op) != SYMBOL_REF)
     return 0;
