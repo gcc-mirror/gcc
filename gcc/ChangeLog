@@ -96,6 +96,7 @@
 
 2004-01-20  Denis Chertykov  <denisc@overta.ru>
 
+	PR bootstrap/13735
 	* config/avr/avr.h (BASE_REG_CLASS): Don't permit to use X
 	register as pointer after reload.
 
