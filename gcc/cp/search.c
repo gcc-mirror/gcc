@@ -2197,7 +2197,8 @@ get_matching_virtual (binfo, fndecl, dtorp)
 			{
 			  tree binfo = get_binfo (b, d, 1);
 			  if (binfo != error_mark_node
-			      && ! BINFO_OFFSET_ZEROP (binfo))
+			      && (! BINFO_OFFSET_ZEROP (binfo)
+				  || TREE_VIA_VIRTUAL (binfo)))
 			    sorry ("adjusting pointers for covariant returns");
 			}
 		      if (TYPE_READONLY (d) > TYPE_READONLY (b))
