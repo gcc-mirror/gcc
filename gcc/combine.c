@@ -10364,10 +10364,10 @@ simplify_comparison (code, pop0, pop1)
 	    {
 	      /* We must perform a logical shift, not an arithmetic one,
 		 as we want the top N bits of C to be zero.  */
-	      unsigned HOST_WIDE_INT temp = const_op;
+	      unsigned HOST_WIDE_INT temp = const_op & GET_MODE_MASK (mode);
 	      
 	      temp >>= INTVAL (XEXP (op0, 1));
-	      op1 = GEN_INT (temp);
+	      op1 = GEN_INT (trunc_int_for_mode (temp, mode));
 	      op0 = XEXP (op0, 0);
 	      continue;
 	    }
