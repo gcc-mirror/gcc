@@ -1,3 +1,9 @@
+2004-03-04  Alan Modra  <amodra@bigpond.net.au>
+
+	PR target/14406
+	* config/rs6000/rs6000.md (abstf2, abstf2+1): Delete define_insn.
+	(abstf2, abstf2_internal): New define_expand.
+
 2004-03-04  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
 	PR optimization/14235
