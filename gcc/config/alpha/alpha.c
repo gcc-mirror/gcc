@@ -6700,13 +6700,20 @@ alpha_sa_mask (unsigned long *imaskP, unsigned long *fmaskP)
 
   /* We need to restore these for the handler.  */
   if (current_function_calls_eh_return)
-    for (i = 0; ; ++i)
-      {
-	unsigned regno = EH_RETURN_DATA_REGNO (i);
-	if (regno == INVALID_REGNUM)
-	  break;
-	imask |= 1UL << regno;
-      }
+    {
+      for (i = 0; ; ++i)
+	{
+	  unsigned regno = EH_RETURN_DATA_REGNO (i);
+	  if (regno == INVALID_REGNUM)
+	    break;
+	  imask |= 1UL << regno;
+	}
+
+      /* Glibc likes to use $31 as an unwind stopper for crt0.  To
+	 avoid hackery in unwind-dw2.c, we need to actively store a
+	 zero in the prologue of _Unwind_RaiseException et al.  */
+      imask |= 1UL << 31;
+    }
      
   /* If any register spilled, then spill the return address also.  */
   /* ??? This is required by the Digital stack unwind specification
@@ -7168,7 +7175,7 @@ alpha_expand_prologue (void)
 	}
 
       /* Now save any other registers required to be saved.  */
-      for (i = 0; i < 32; i++)
+      for (i = 0; i < 31; i++)
 	if (imask & (1UL << i))
 	  {
 	    mem = gen_rtx_MEM (DImode, plus_constant (sa_reg, reg_offset));
@@ -7177,7 +7184,25 @@ alpha_expand_prologue (void)
 	    reg_offset += 8;
 	  }
 
-      for (i = 0; i < 32; i++)
+      /* Store a zero if requested for unwinding.  */
+      if (imask & (1UL << 31))
+	{
+	  rtx insn, t;
+
+	  mem = gen_rtx_MEM (DImode, plus_constant (sa_reg, reg_offset));
+	  set_mem_alias_set (mem, alpha_sr_alias_set);
+	  insn = emit_move_insn (mem, const0_rtx);
+
+	  RTX_FRAME_RELATED_P (insn) = 1;
+	  t = gen_rtx_REG (Pmode, 31);
+	  t = gen_rtx_SET (VOIDmode, mem, t);
+	  t = gen_rtx_EXPR_LIST (REG_FRAME_RELATED_EXPR, t, REG_NOTES (insn));
+	  REG_NOTES (insn) = t;
+
+	  reg_offset += 8;
+	}
+
+      for (i = 0; i < 31; i++)
 	if (fmask & (1UL << i))
 	  {
 	    mem = gen_rtx_MEM (DFmode, plus_constant (sa_reg, reg_offset));
@@ -7588,7 +7613,7 @@ alpha_expand_epilogue (void)
       reg_offset += 8;
       imask &= ~(1UL << REG_RA);
 
-      for (i = 0; i < 32; ++i)
+      for (i = 0; i < 31; ++i)
 	if (imask & (1UL << i))
 	  {
 	    if (i == HARD_FRAME_POINTER_REGNUM && fp_is_frame_pointer)
@@ -7602,7 +7627,10 @@ alpha_expand_epilogue (void)
 	    reg_offset += 8;
 	  }
 
-      for (i = 0; i < 32; ++i)
+      if (imask & (1UL << 31))
+	reg_offset += 8;
+
+      for (i = 0; i < 31; ++i)
 	if (fmask & (1UL << i))
 	  {
 	    mem = gen_rtx_MEM (DFmode, plus_constant(sa_reg, reg_offset));

@@ -82,7 +82,7 @@ struct _Unwind_Context
 };
 
 /* Byte size of every register managed by these routines.  */
-static unsigned char dwarf_reg_size_table[DWARF_FRAME_REGISTERS];
+static unsigned char dwarf_reg_size_table[DWARF_FRAME_REGISTERS+1];
 
 
 /* The result of interpreting the frame unwind info for a frame.
@@ -186,6 +186,8 @@ _Unwind_GetGR (struct _Unwind_Context *context, int index)
   void *ptr;
 
   index = DWARF_REG_TO_UNWIND_COLUMN (index);
+  if (index >= sizeof(dwarf_reg_size_table))
+    abort ();
   size = dwarf_reg_size_table[index];
   ptr = context->reg[index];
 
@@ -222,6 +224,8 @@ _Unwind_SetGR (struct _Unwind_Context *context, int index, _Unwind_Word val)
   void *ptr;
 
   index = DWARF_REG_TO_UNWIND_COLUMN (index);
+  if (index >= sizeof(dwarf_reg_size_table))
+    abort ();
   size = dwarf_reg_size_table[index];
   ptr = context->reg[index];
 
@@ -1001,6 +1005,9 @@ uw_frame_state_for (struct _Unwind_Context *context, _Unwind_FrameState *fs)
   memset (fs, 0, sizeof (*fs));
   context->args_size = 0;
   context->lsda = 0;
+
+  if (context->ra == 0)
+    return _URC_END_OF_STACK;
 
   fde = _Unwind_Find_FDE (context->ra - 1, &context->bases);
   if (fde == NULL)

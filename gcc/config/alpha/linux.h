@@ -85,6 +85,8 @@ Boston, MA 02111-1307, USA.  */
     if (pc_[0] != 0x47fe0410		/* mov $30,$16 */		\
         || pc_[2] != 0x00000083		/* callsys */)			\
       break;								\
+    if ((CONTEXT)->cfa == 0)						\
+      break;								\
     if (pc_[1] == 0x201f0067)		/* lda $0,NR_sigreturn */	\
       sc_ = (CONTEXT)->cfa;						\
     else if (pc_[1] == 0x201f015f)	/* lda $0,NR_rt_sigreturn */	\
@@ -113,8 +115,8 @@ Boston, MA 02111-1307, USA.  */
 	(FS)->regs.reg[i_+32].loc.offset				\
 	  = (long)&sc_->sc_fpregs[i_] - new_cfa_;			\
       }									\
-    (FS)->regs.reg[31].how = REG_SAVED_OFFSET;				\
-    (FS)->regs.reg[31].loc.offset = (long)&sc_->sc_pc - new_cfa_;	\
-    (FS)->retaddr_column = 31;						\
+    (FS)->regs.reg[64].how = REG_SAVED_OFFSET;				\
+    (FS)->regs.reg[64].loc.offset = (long)&sc_->sc_pc - new_cfa_;	\
+    (FS)->retaddr_column = 64;						\
     goto SUCCESS;							\
   } while (0)
