@@ -1,5 +1,4 @@
-/* This file contains the definitions and documentation for the
-   builtins used in the GNU compiler.
+/* Definitions for branch prediction routines in the GNU compiler.
    Copyright (C) 2001, 2003 Free Software Foundation, Inc.
 
 This file is part of GCC.
