@@ -1,3 +1,14 @@
+2000-04-25  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+        * acconfig.h (ENABLE_STD_NAMESPACE, ENABLE_CHECKING,
+	ENABLE_TREE_CHECKING, ENABLE_RTL_CHECKING, ENABLE_GC_CHECKING,
+	ENABLE_GC_ALWAYS_COLLECT): Delete entries.
+	        
+        * configure.in (ENABLE_STD_NAMESPACE, ENABLE_CHECKING,
+	ENABLE_TREE_CHECKING, ENABLE_RTL_CHECKING, ENABLE_GC_CHECKING,
+	ENABLE_GC_ALWAYS_COLLECT): Use three argument form of AC_DEFINE
+	for these macros.  Clean up spacing and linewraps.
+
 2000-04-26  Jason Merrill  <jason@casey.cygnus.com>
 
 	* calls.c (expand_call): Use get_callee_fndecl.
