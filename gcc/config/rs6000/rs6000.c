@@ -4192,7 +4192,7 @@ function_arg_boundary (enum machine_mode mode, tree type ATTRIBUTE_UNUSED)
     return 64;
   else if (SPE_VECTOR_MODE (mode))
     return 64;
-  else if (TARGET_ALTIVEC_ABI && ALTIVEC_VECTOR_MODE (mode))
+  else if (ALTIVEC_VECTOR_MODE (mode))
     return 128;
   else
     return PARM_BOUNDARY;
@@ -4218,7 +4218,11 @@ rs6000_arg_size (enum machine_mode mode, tree type)
 
 /* Update the data in CUM to advance over an argument
    of mode MODE and data type TYPE.
-   (TYPE is null for libcalls where that information may not be available.)  */
+   (TYPE is null for libcalls where that information may not be available.)
+
+   Note that for args passed by reference, function_arg will be called
+   with MODE and TYPE set to that of the pointer to the arg, not the arg
+   itself.  */
 
 void
 function_arg_advance (CUMULATIVE_ARGS *cum, enum machine_mode mode, 
@@ -4295,17 +4299,8 @@ function_arg_advance (CUMULATIVE_ARGS *cum, enum machine_mode mode,
 	}
       else
 	{
-	  int n_words;
+	  int n_words = rs6000_arg_size (mode, type);
 	  int gregno = cum->sysv_gregno;
-
-	  /* Aggregates, IEEE quad, and AltiVec vectors get passed by
-	     reference.  */
-	  if ((type && AGGREGATE_TYPE_P (type))
-	      || mode == TFmode
-	      || ALTIVEC_VECTOR_MODE (mode))
-	    n_words = 1;
-	  else 
-	    n_words = rs6000_arg_size (mode, type);
 
 	  /* Long long and SPE vectors are put in (r3,r4), (r5,r6),
 	     (r7,r8) or (r9,r10).  As does any other 2 word item such
@@ -4342,10 +4337,16 @@ function_arg_advance (CUMULATIVE_ARGS *cum, enum machine_mode mode,
     }
   else
     {
-      int align = (TARGET_32BIT && (cum->words & 1) != 0
-		   && function_arg_boundary (mode, type) == 64) ? 1 : 0;
+      int n_words = rs6000_arg_size (mode, type);
+      int align = function_arg_boundary (mode, type) / PARM_BOUNDARY - 1;
 
-      cum->words += align + rs6000_arg_size (mode, type);
+      /* The simple alignment calculation here works because
+	 function_arg_boundary / PARM_BOUNDARY will only be 1 or 2.
+	 If we ever want to handle alignments larger than 8 bytes for
+	 32-bit or 16 bytes for 64-bit, then we'll need to take into
+	 account the offset to the start of the parm save area.  */
+      align &= cum->words;
+      cum->words += align + n_words;
 
       if (GET_MODE_CLASS (mode) == MODE_FLOAT
 	  && TARGET_HARD_FLOAT && TARGET_FPRS)
@@ -4544,7 +4545,11 @@ rs6000_mixed_function_arg (CUMULATIVE_ARGS *cum, enum machine_mode mode,
    both an FP and integer register (or possibly FP reg and stack).  Library
    functions (when CALL_LIBCALL is set) always have the proper types for args,
    so we can pass the FP value just in one register.  emit_library_function
-   doesn't support PARALLEL anyway.  */
+   doesn't support PARALLEL anyway.
+
+   Note that for args passed by reference, function_arg will be called
+   with MODE and TYPE set to that of the pointer to the arg, not the arg
+   itself.  */
 
 struct rtx_def *
 function_arg (CUMULATIVE_ARGS *cum, enum machine_mode mode, 
@@ -4658,17 +4663,8 @@ function_arg (CUMULATIVE_ARGS *cum, enum machine_mode mode,
 	}
       else
 	{
-	  int n_words;
+	  int n_words = rs6000_arg_size (mode, type);
 	  int gregno = cum->sysv_gregno;
-
-	  /* Aggregates, IEEE quad, and AltiVec vectors get passed by
-	     reference.  */
-	  if ((type && AGGREGATE_TYPE_P (type))
-	      || mode == TFmode
-	      || ALTIVEC_VECTOR_MODE (mode))
-	    n_words = 1;
-	  else 
-	    n_words = rs6000_arg_size (mode, type);
 
 	  /* Long long and SPE vectors are put in (r3,r4), (r5,r6),
 	     (r7,r8) or (r9,r10).  As does any other 2 word item such
@@ -4685,16 +4681,8 @@ function_arg (CUMULATIVE_ARGS *cum, enum machine_mode mode,
     }
   else
     {
-      int align = (TARGET_32BIT && (cum->words & 1) != 0
-	           && function_arg_boundary (mode, type) == 64) ? 1 : 0;
-      int align_words = cum->words + align;
-
-      if (type && TREE_CODE (TYPE_SIZE (type)) != INTEGER_CST)
-        return NULL_RTX;
-
-      if (TARGET_32BIT && TARGET_POWERPC64
-	  && (mode == DImode || mode == BLKmode))
-	return rs6000_mixed_function_arg (cum, mode, type, align_words);
+      int align = function_arg_boundary (mode, type) / PARM_BOUNDARY - 1;
+      int align_words = cum->words + (cum->words & align);
 
       if (USE_FP_FOR_ARG_P (cum, mode, type))
 	{
@@ -4763,7 +4751,13 @@ function_arg (CUMULATIVE_ARGS *cum, enum machine_mode mode,
 	  return gen_rtx_PARALLEL (mode, gen_rtvec_v (n, r));
 	}
       else if (align_words < GP_ARG_NUM_REG)
-	return gen_rtx_REG (mode, GP_ARG_MIN_REG + align_words);
+	{
+	  if (TARGET_32BIT && TARGET_POWERPC64
+	      && (mode == DImode || mode == BLKmode))
+	    return rs6000_mixed_function_arg (cum, mode, type, align_words);
+
+	  return gen_rtx_REG (mode, GP_ARG_MIN_REG + align_words);
+	}
       else
 	return NULL_RTX;
     }
@@ -4810,7 +4804,10 @@ function_arg_partial_nregs (CUMULATIVE_ARGS *cum, enum machine_mode mode,
    the argument itself.  The pointer is passed in whatever way is
    appropriate for passing a pointer to that type.
 
-   Under V.4, structures and unions are passed by reference.
+   Under V.4, aggregates and long double are passed by reference.
+
+   As an extension to all 32-bit ABIs, AltiVec vectors are passed by
+   reference unless the AltiVec vector extension ABI is in force.
 
    As an extension to all ABIs, variable sized types are passed by
    reference.  */
@@ -4820,17 +4817,18 @@ function_arg_pass_by_reference (CUMULATIVE_ARGS *cum ATTRIBUTE_UNUSED,
 				enum machine_mode mode ATTRIBUTE_UNUSED, 
 				tree type, int named ATTRIBUTE_UNUSED)
 {
-  if (DEFAULT_ABI == ABI_V4
-      && ((type && AGGREGATE_TYPE_P (type))
-	  || mode == TFmode
-	  || (!TARGET_ALTIVEC_ABI && ALTIVEC_VECTOR_MODE (mode))))
+  if ((DEFAULT_ABI == ABI_V4
+       && ((type && AGGREGATE_TYPE_P (type))
+	   || mode == TFmode))
+      || (TARGET_32BIT && !TARGET_ALTIVEC_ABI && ALTIVEC_VECTOR_MODE (mode))
+      || (type && int_size_in_bytes (type) < 0))
     {
       if (TARGET_DEBUG_ARG)
-	fprintf (stderr, "function_arg_pass_by_reference: aggregate\n");
+	fprintf (stderr, "function_arg_pass_by_reference\n");
 
       return 1;
     }
-  return type && int_size_in_bytes (type) < 0;
+  return 0;
 }
 
 static void
@@ -5081,8 +5079,12 @@ rs6000_va_arg (tree valist, tree type)
 
   if (DEFAULT_ABI != ABI_V4)
     {
-      /* Variable sized types are passed by reference.  */
-      if (int_size_in_bytes (type) < 0)
+      /* Variable sized types are passed by reference, as are AltiVec
+	 vectors when 32-bit and not using the AltiVec ABI extension.  */
+      if (int_size_in_bytes (type) < 0
+	  || (TARGET_32BIT
+	      && !TARGET_ALTIVEC_ABI
+	      && ALTIVEC_VECTOR_MODE (TYPE_MODE (type))))
 	{
 	  u = build_pointer_type (type);
 
