@@ -1,5 +1,10 @@
 2003-10-22  Jan Hubicka  <jh@suse.cz>
 
+	* dwarf2out.c (dwarf2out_abstract_function): Use DW_AT to check presence of DW_AT_inline.
+	(gen_subprogram_die): Likewise; do not abort instead of emitting DW_AT_not_inline
+
+2003-10-22  Jan Hubicka  <jh@suse.cz>
+
 	* cgraph.c (cgraph_function_possibly_inlined_p): Be conservative when
 	global info is not ready.
 
