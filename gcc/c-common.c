@@ -1086,12 +1086,13 @@ finish_fname_decls (void)
 }
 
 /* Return the text name of the current function, suitably prettified
-   by PRETTY_P.  */
+   by PRETTY_P.  Return string must be freed by caller.  */
 
 const char *
 fname_as_string (int pretty_p)
 {
   const char *name = "top level";
+  char *namep;
   int vrb = 2;
 
   if (! pretty_p)
@@ -1103,7 +1104,26 @@ fname_as_string (int pretty_p)
   if (current_function_decl)
     name = lang_hooks.decl_printable_name (current_function_decl, vrb);
 
-  return name;
+  if (c_lex_string_translate)
+    {
+      int len = strlen (name) + 3; /* Two for '"'s.  One for NULL.  */
+      cpp_string cstr = { 0, 0 }, strname;
+
+      namep = xmalloc (len);
+      snprintf (namep, len, "\"%s\"", name);
+      strname.text = (unsigned char *) namep;
+      strname.len = len - 1;
+
+      if (cpp_interpret_string (parse_in, &strname, 1, &cstr, false))
+	return (char *) cstr.text;
+    }
+  else
+    {
+      namep = (char *) xcalloc (strlen (name) + 1, sizeof (char));
+      namep = xstrdup (name);
+    }
+
+  return namep;
 }
 
 /* Return the VAR_DECL for a const char array naming the current
