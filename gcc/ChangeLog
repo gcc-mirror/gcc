@@ -1,3 +1,9 @@
+2003-10-28  Franz Sirl  <Franz.Sirl-kernel@lauterbach.com>
+
+	PR target/11598
+	PR libgcj/10610
+	* config/rs6000/sysv4.h (PREFERRED_STACK_BOUNDARY): New macro.
+
 2003-10-27  Falk Hueffner  <falk@debian.org>
 
 	PR target/12654

@@ -383,6 +383,21 @@ do {									\
 #undef	STACK_BOUNDARY
 #define	STACK_BOUNDARY	(TARGET_ALTIVEC_ABI ? 128 : 64)
 
+/* Define this macro if you wish to preserve a certain alignment for
+   the stack pointer, greater than what the hardware enforces.  The
+   definition is a C expression for the desired alignment (measured
+   in bits).  This macro must evaluate to a value equal to or larger
+   than STACK_BOUNDARY.
+   For the SYSV ABI and variants the alignment of the stack pointer
+   is usually controlled manually in rs6000.c. However, to maintain
+   alignment across alloca () in all circumstances,
+   PREFERRED_STACK_BOUNDARY needs to be set as well.
+   This has the additional advantage of allowing a bigger maximum
+   alignment of user objects on the stack.  */
+
+#undef PREFERRED_STACK_BOUNDARY
+#define PREFERRED_STACK_BOUNDARY 128
+
 /* Real stack boundary as mandated by the appropriate ABI.  */
 #define ABI_STACK_BOUNDARY ((TARGET_EABI && !TARGET_ALTIVEC_ABI) ? 64 : 128)
 
