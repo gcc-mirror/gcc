@@ -17,8 +17,6 @@ details.  */
 #include <string.h>
 #include <sys/stat.h>
 #include <sys/param.h>
-#include <sys/socket.h>
-#include <fcntl.h>
 
 #ifdef HAVE_SYS_IOCTL_H
 #define BSD_COMP /* Get FIONREAD on Solaris2. */
