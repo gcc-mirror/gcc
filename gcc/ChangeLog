@@ -1,3 +1,9 @@
+2000-07-22  Aldy Hernandez  <aldyh@redhat.com>
+
+	* reload.c (find_reloads_toplev): Add new parameter
+	"address_reloaded".
+	(find_reloads): Add new parameter to find_reloads_toplev calls.
+
 2000-07-22  Jeffrey Oldham  <oldham@codesourcery.com>
 
 	* collect2.c (main): Typo fixed.
