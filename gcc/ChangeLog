@@ -1,3 +1,9 @@
+2001-09-05  Richard Sandiford  <rsandifo@redhat.com>
+
+	* config/mips/t-elf (EXTRA_PARTS): Use EXTRA_MULTILIB_PARTS instead.
+	(crti.o): Prefix name of object file with $(T).
+	(crtn.o): Likewise.
+
 2001-09-05  David S. Miller  <davem@redhat.com>
 
 	* config/sparc/linux.h: Set CPLUSPLUS_CPP_SPEC.

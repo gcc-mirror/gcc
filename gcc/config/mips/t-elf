@@ -6,11 +6,11 @@ CRTSTUFF_T_CFLAGS = -G 0
 # Assemble startup files.
 $(T)crti.o: $(srcdir)/config/mips/crti.asm $(GCC_PASSES)
 	$(GCC_FOR_TARGET) $(GCC_CFLAGS) $(MULTILIB_CFLAGS) $(INCLUDES) \
-	-c -o crti.o -x assembler-with-cpp $(srcdir)/config/mips/crti.asm
+	-c -o $(T)crti.o -x assembler-with-cpp $(srcdir)/config/mips/crti.asm
 
 $(T)crtn.o: $(srcdir)/config/mips/crtn.asm $(GCC_PASSES)
 	$(GCC_FOR_TARGET) $(GCC_CFLAGS) $(MULTILIB_CFLAGS) $(INCLUDES) \
-	-c -o crtn.o -x assembler-with-cpp $(srcdir)/config/mips/crtn.asm
+	-c -o $(T)crtn.o -x assembler-with-cpp $(srcdir)/config/mips/crtn.asm
 
 LIB1ASMSRC = mips/mips16.S
 LIB1ASMFUNCS = _m16addsf3 _m16subsf3 _m16mulsf3 _m16divsf3 \
@@ -56,7 +56,7 @@ fp-bit.c: $(srcdir)/config/fp-bit.c
 MULTILIB_OPTIONS = msoft-float/msingle-float EL/EB mips1/mips3
 MULTILIB_DIRNAMES = soft-float single el eb mips1 mips3
 MULTILIB_MATCHES = msingle-float=m4650
-EXTRA_PARTS = crtbegin.o crtend.o crti.o crtn.o
+EXTRA_MULTILIB_PARTS = crtbegin.o crtend.o crti.o crtn.o
 
 LIBGCC = stmp-multilib
 INSTALL_LIBGCC = install-multilib
