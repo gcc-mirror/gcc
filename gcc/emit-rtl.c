@@ -36,6 +36,7 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #include "config.h"
 #include "gvarargs.h"
 #include "rtl.h"
+#include "tree.h"
 #include "flags.h"
 #include "function.h"
 #include "expr.h"
@@ -169,11 +170,17 @@ static rtx const_int_rtx[MAX_SAVED_CONST_INT * 2 + 1];
 /* The ends of the doubly-linked chain of rtl for the current function.
    Both are reset to null at the start of rtl generation for the function.
    
-   start_sequence saves both of these on `sequence_stack' and then
-   starts a new, nested sequence of insns.  */
+   start_sequence saves both of these on `sequence_stack' along with
+   `sequence_rtl_expr' and then starts a new, nested sequence of insns.  */
 
 static rtx first_insn = NULL;
 static rtx last_insn = NULL;
+
+/* RTL_EXPR within which the current sequence will be placed.  Use to
+   prevent reuse of any temporaries within the sequence until after the
+   RTL_EXPR is emitted.  */
+
+tree sequence_rtl_expr = NULL;
 
 /* INSN_UID for next insn emitted.
    Reset to 1 for each function compiled.  */
@@ -1337,6 +1344,7 @@ save_emit_status (p)
   p->first_label_num = first_label_num;
   p->first_insn = first_insn;
   p->last_insn = last_insn;
+  p->sequence_rtl_expr = sequence_rtl_expr;
   p->sequence_stack = sequence_stack;
   p->cur_insn_uid = cur_insn_uid;
   p->last_linenum = last_linenum;
@@ -1360,6 +1368,7 @@ restore_emit_status (p)
   last_label_num = 0;
   first_insn = p->first_insn;
   last_insn = p->last_insn;
+  sequence_rtl_expr = p->sequence_rtl_expr;
   sequence_stack = p->sequence_stack;
   cur_insn_uid = p->cur_insn_uid;
   last_linenum = p->last_linenum;
@@ -2773,6 +2782,18 @@ start_sequence ()
   last_insn = 0;
 }
 
+/* Similarly, but indicate that this sequence will be placed in 
+   T, an RTL_EXPR.  */
+
+void
+start_sequence_for_rtl_expr (t)
+     tree t;
+{
+  start_sequence ();
+
+  sequence_rtl_expr = t;
+}
+
 /* Set up the insn chain starting with FIRST
    as the current sequence, saving the previously current one.  */
 
@@ -3047,6 +3068,7 @@ init_emit ()
 
   first_insn = NULL;
   last_insn = NULL;
+  sequence_rtl_expr = NULL;
   cur_insn_uid = 1;
   reg_rtx_no = LAST_VIRTUAL_REGISTER + 1;
   last_linenum = 0;
