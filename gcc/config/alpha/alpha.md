@@ -2650,8 +2650,13 @@
     abort ();
   operands[0] = XEXP (operands[0], 0);
 
-  if (GET_CODE (operands[0]) != SYMBOL_REF)
-    operands[0] = force_reg (Pmode, operands[0]);
+  if (GET_CODE (operands[1]) != SYMBOL_REF
+      && ! (GET_CODE (operands[1]) == REG && REGNO (operands[1]) == 27))
+    {
+      rtx tem = gen_rtx (REG, DImode, 27);
+      emit_move_insn (tem, operands[1]);
+      operands[1] = tem;
+    }
 }")
 
 (define_expand "call_value"
@@ -2701,8 +2706,13 @@
     abort ();
 
   operands[1] = XEXP (operands[1], 0);
-  if (GET_CODE (operands[1]) != SYMBOL_REF)
-    operands[1] = force_reg (Pmode, operands[1]);
+  if (GET_CODE (operands[1]) != SYMBOL_REF
+      && ! (GET_CODE (operands[1]) == REG && REGNO (operands[1]) == 27))
+    {
+      rtx tem = gen_rtx (REG, DImode, 27);
+      emit_move_insn (tem, operands[1]);
+      operands[1] = tem;
+    }
 }")
 
 (define_insn ""
