@@ -372,7 +372,7 @@ print_node (file, prefix, node, indent)
 	fputs (" inline", file);
 
       if (TREE_CODE (node) == TYPE_DECL && TYPE_DECL_SUPPRESS_DEBUG (node))
-	fputs (" supress-debug", file);
+	fputs (" suppress-debug", file);
 
       if (TREE_CODE (node) == FUNCTION_DECL && DECL_BUILT_IN (node))
 	fputs (" built-in", file);
