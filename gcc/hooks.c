@@ -239,3 +239,10 @@ hook_constcharptr_tree_null (tree t ATTRIBUTE_UNUSED)
 {
   return NULL;
 }
+
+tree
+hook_tree_tree_bool_null (tree t ATTRIBUTE_UNUSED, bool ignore ATTRIBUTE_UNUSED)
+{
+  return NULL;
+}
+  

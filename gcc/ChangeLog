@@ -1,3 +1,11 @@
+2004-09-24  Paolo Bonzini  <bonzini@gnu.org>
+
+	* hooks.c (hook_tree_tree_bool_null): New.
+	* hooks.h (hook_tree_tree_bool_null): Declare it.
+	* target-def.c (TARGET_FOLD_BUILTIN): Point to it.
+	* targhooks.c (default_fold_builtin): Remove.
+	* targhooks.h (default_fold_builtin): Remove.
+
 2004-09-24  Zdenek Dvorak  <rakdver@atrey.karlin.mff.cuni.cz>
 
 	PR rtl-optimization/17625

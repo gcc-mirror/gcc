@@ -64,4 +64,5 @@ extern rtx hook_rtx_rtx_null (rtx);
 extern rtx hook_rtx_tree_int_null (tree, int);
 extern tree hook_tree_tree_identity (tree a);
 extern const char *hook_constcharptr_tree_null (tree);
+extern tree hook_tree_tree_bool_null (tree, bool);
 #endif
