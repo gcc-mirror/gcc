@@ -1,3 +1,7 @@
+2003-12-30  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* gcc.dg/sibcall-4.c: Replace mn10?00 with mn10300.
+
 2003-12-30  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
 
 	PR c++/10079
