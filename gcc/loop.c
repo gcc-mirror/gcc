@@ -2470,7 +2470,6 @@ mark_loop_jump (x, loop_num)
     case PLUS:
     case MINUS:
     case MULT:
-    case LSHIFT:
       mark_loop_jump (XEXP (x, 0), loop_num);
       mark_loop_jump (XEXP (x, 1), loop_num);
       return;
@@ -5165,7 +5164,6 @@ simplify_giv_expr (x, benefit)
 	}
 
     case ASHIFT:
-    case LSHIFT:
       /* Shift by constant is multiply by power of two.  */
       if (GET_CODE (XEXP (x, 1)) != CONST_INT)
 	return 0;

@@ -3431,7 +3431,7 @@ simplify_binary_operation (code, mode, op0, op1)
 	  break;
 
 	case LSHIFTRT:   case ASHIFTRT:
-	case ASHIFT:     case LSHIFT:
+	case ASHIFT:
 	case ROTATE:     case ROTATERT:
 #ifdef SHIFT_COUNT_TRUNCATED
 	  if (SHIFT_COUNT_TRUNCATED)
@@ -3444,9 +3444,8 @@ simplify_binary_operation (code, mode, op0, op1)
 	  if (code == LSHIFTRT || code == ASHIFTRT)
 	    rshift_double (l1, h1, l2, GET_MODE_BITSIZE (mode), &lv, &hv,
 			   code == ASHIFTRT);
-	  else if (code == ASHIFT || code == LSHIFT)
-	    lshift_double (l1, h1, l2, GET_MODE_BITSIZE (mode), &lv, &hv,
-			   code == ASHIFT);
+	  else if (code == ASHIFT)
+	    lshift_double (l1, h1, l2, GET_MODE_BITSIZE (mode), &lv, &hv, 1);
 	  else if (code == ROTATE)
 	    lrotate_double (l1, h1, l2, GET_MODE_BITSIZE (mode), &lv, &hv);
 	  else /* code == ROTATERT */
@@ -3851,7 +3850,6 @@ simplify_binary_operation (code, mode, op0, op1)
 
 	  /* ... fall through ... */
 
-	case LSHIFT:
 	case ASHIFT:
 	case ASHIFTRT:
 	case LSHIFTRT:
@@ -3993,7 +3991,6 @@ simplify_binary_operation (code, mode, op0, op1)
       break;
 
     case ASHIFT:
-    case LSHIFT:
       if (arg1 < 0)
 	return 0;
 
@@ -4816,8 +4813,7 @@ fold_rtx (x, insn)
 		     to compute that in SImode, because a 32-bit shift
 		     in SImode is unpredictable.  We know the value is 0.  */
 		  if (op0 && op1
-		      && (GET_CODE (elt->exp) == ASHIFT
-			  || GET_CODE (elt->exp) == LSHIFT)
+		      && GET_CODE (elt->exp) == ASHIFT
 		      && GET_CODE (op1) == CONST_INT
 		      && INTVAL (op1) >= GET_MODE_BITSIZE (mode))
 		    {
