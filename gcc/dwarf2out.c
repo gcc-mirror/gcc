@@ -107,6 +107,30 @@ dwarf2out_do_frame ()
    unique to each function definition.  */
 unsigned current_funcdef_number = 0;
 
+/* The size of the target's pointer type.  */
+#ifndef PTR_SIZE
+#define PTR_SIZE (POINTER_SIZE / BITS_PER_UNIT)
+#endif
+
+/* Default version of targetm.eh_frame_section.  Note this must appear
+   outside the DWARF2_DEBUGGING_INFO || DWARF2_UNWIND_INFO macro
+   guards.  */
+
+void
+default_eh_frame_section ()
+{
+#ifdef EH_FRAME_SECTION_NAME
+  named_section_flags (EH_FRAME_SECTION_NAME, SECTION_WRITE);
+#else
+  tree label = get_file_function_name ('F');
+
+  data_section ();
+  ASM_OUTPUT_ALIGN (asm_out_file, floor_log2 (PTR_SIZE));
+  ASM_GLOBALIZE_LABEL (asm_out_file, IDENTIFIER_POINTER (label));
+  ASM_OUTPUT_LABEL (asm_out_file, IDENTIFIER_POINTER (label));
+#endif
+}
+
 #if defined (DWARF2_DEBUGGING_INFO) || defined (DWARF2_UNWIND_INFO)
 
 /* How to start an assembler comment.  */
@@ -174,11 +198,6 @@ dw_fde_node;
 
 /* Maximum size (in bytes) of an artificially generated label.  */
 #define MAX_ARTIFICIAL_LABEL_BYTES	30
-
-/* The size of the target's pointer type.  */
-#ifndef PTR_SIZE
-#define PTR_SIZE (POINTER_SIZE / BITS_PER_UNIT)
-#endif
 
 /* The size of addresses as they appear in the Dwarf 2 data.
    Some architectures use word addresses to refer to code locations,
@@ -1966,21 +1985,6 @@ output_call_frame_info (for_eh)
   /* Turn off app to make assembly quicker.  */
   if (flag_debug_asm)
     app_disable ();
-}
-
-void
-default_eh_frame_section ()
-{
-#ifdef EH_FRAME_SECTION_NAME
-  named_section_flags (EH_FRAME_SECTION_NAME, SECTION_WRITE);
-#else
-  tree label = get_file_function_name ('F');
-
-  data_section ();
-  ASM_OUTPUT_ALIGN (asm_out_file, floor_log2 (PTR_SIZE));
-  ASM_GLOBALIZE_LABEL (asm_out_file, IDENTIFIER_POINTER (label));
-  ASM_OUTPUT_LABEL (asm_out_file, IDENTIFIER_POINTER (label));
-#endif
 }
 
 /* Output a marker (i.e. a label) for the beginning of a function, before
@@ -11807,4 +11811,4 @@ dwarf2out_finish (input_filename)
       dw2_asm_output_data (1, DW_MACINFO_end_file, "End file");
     }
 }
-#endif /* DWARF2_DEBUGGING_INFO */
+#endif /* DWARF2_DEBUGGING_INFO || DWARF2_UNWIND_INFO */
