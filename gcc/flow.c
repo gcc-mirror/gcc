@@ -4152,8 +4152,18 @@ mark_set_regs (pbi, x, insn)
      rtx x, insn;
 {
   rtx cond = NULL_RTX;
+  rtx link;
   enum rtx_code code;
 
+  if (insn)
+    for (link = REG_NOTES (insn); link; link = XEXP (link, 1))
+      {
+	if (REG_NOTE_KIND (link) == REG_INC)
+	  mark_set_1 (pbi, SET, XEXP (link, 0),
+		      (GET_CODE (x) == COND_EXEC
+		       ? COND_EXEC_TEST (x) : NULL_RTX),
+		      insn, pbi->flags);
+      }
  retry:
   switch (code = GET_CODE (x))
     {
