@@ -71,12 +71,9 @@ AC_ARG_WITH(gxx-include-dir,
 [  --with-gxx-include-dir=DIR
                           specifies directory to put g++ header files.],
 gxx_include_dir=$with_gxx_include_dir,
-gxx_include_dir='${prefix}/include/g++')
-
-# Default g++ header file directory if it is empty
-if [[ x$gxx_include_dir = x ]]; then
-	gxx_include_dir='${prefix}/include/g++'
-fi
+if test x${enable_version_specific_runtime_libs} = xyes; then
+gxx_include_dir='${libsubdir}/include/g++'
+else gxx_include_dir='${prefix}/include/g++'; fi)
 
 # Enable expensive internal checks
 AC_ARG_ENABLE(checking,

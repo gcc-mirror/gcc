@@ -1244,7 +1244,11 @@ EOF
 	    # Note, if you change the default, make sure to fix both here
 	    # and in the gcc subdirectory.
 	    if test -z "${with_gxx_include_dir}"; then
-		echo gxx_include_dir = '${prefix}/include/g++' >> ${Makefile}
+	        if test x${enable_version_specific_runtime_libs} = xyes; then
+		    echo gxx_include_dir = '${libsubdir}/include/g++' >> ${Makefile}
+		else
+		    echo gxx_include_dir = '${prefix}/include/g++' >> ${Makefile}
+		fi
 	    else
 		echo gxx_include_dir = ${with_gxx_include_dir} >> ${Makefile}
 	    fi
@@ -1254,6 +1258,12 @@ EOF
 	        echo enable_shared = no >> ${Makefile}
 	    else
 	        echo enable_shared = ${enable_shared} >> ${Makefile}
+	    fi
+	    # record if we want to rumtime library stuff installed in libsubdir.
+	    if test -z "${enable_version_specific_runtime_libs}"; then
+	        echo enable_version_specific_runtime_libs = no >> ${Makefile}
+	    else
+	        echo enable_version_specific_runtime_libs = ${enable_version_specific_runtime_libs} >> ${Makefile}
 	    fi
 
 	    # Emit a macro which is used to build the libsubdir macro where

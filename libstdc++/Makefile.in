@@ -48,6 +48,8 @@ LIBIBERTY_DIR = ../libiberty
 LIBIBERTY_OBJS = `cat $(LIBIBERTY_DIR)/needed-list` strerror.o
 
 tooldir = $(exec_prefix)/$(target)
+# This is where the libraries will be installed; note, it will be set
+# at make runtime now. See below at target install.
 INSTALLDIR = $(libdir)
 
 MOSTLYCLEAN_JUNK = *stmp-* tlib*.a *.s *.ii stdlist piclist
@@ -272,24 +274,29 @@ install:
 	else true ; \
 	fi
 	rootme=`pwd`/ ; export rootme ; \
-	rm -f $(INSTALLDIR)$(MULTISUBDIR)/$(SHLINK) ; \
+	if [ x$(libsubdir) = x ] || [ x$(enable_version_specific_runtime_libs) != xyes ]; then \
+	  INSTALLDIR=$(libdir); \
+	else \
+	  INSTALLDIR=$(libsubdir); \
+	fi; \
+	rm -f $${INSTALLDIR}$(MULTISUBDIR)/$(SHLINK) ; \
 	for FILE in $(LIBS) ; do \
-	  rm -f $(INSTALLDIR)$(MULTISUBDIR)/$$FILE ; \
+	  rm -f $${INSTALLDIR}$(MULTISUBDIR)/$$FILE ; \
 	  if [ $$FILE = $(SHLINK) ] ; then \
-	    ln -f -s $(SHLIB) $(INSTALLDIR)$(MULTISUBDIR)/$$FILE ; \
+	    ln -f -s $(SHLIB) $${INSTALLDIR}$(MULTISUBDIR)/$$FILE ; \
 	  elif [ $$FILE = mshlink ]; then \
 	    for FILE in $(MSHLINK) ; do \
-	      rm -f $(INSTALLDIR)$(MULTISUBDIR)/$$FILE ; \
-	      ln -f -s $(SHLIB) $(INSTALLDIR)$(MULTISUBDIR)/$$FILE ; \
+	      rm -f $${INSTALLDIR}$(MULTISUBDIR)/$$FILE ; \
+	      ln -f -s $(SHLIB) $${INSTALLDIR}$(MULTISUBDIR)/$$FILE ; \
 	    done; \
 	  elif [ $$FILE = $(SHLIB) ]; then \
-	    $(INSTALL_PROGRAM) $$FILE $(INSTALLDIR)$(MULTISUBDIR)/$$FILE ; \
+	    $(INSTALL_PROGRAM) $$FILE $${INSTALLDIR}$(MULTISUBDIR)/$$FILE ; \
 	    : On the HP, shared libraries must be mode 555. ;\
-	    chmod 555 $(INSTALLDIR)$(MULTISUBDIR)/$$FILE ; \
+	    chmod 555 $${INSTALLDIR}$(MULTISUBDIR)/$$FILE ; \
 	  else \
-	    $(INSTALL_DATA) $$FILE $(INSTALLDIR)$(MULTISUBDIR)/$$FILE ; \
-	    $(RANLIB) $(INSTALLDIR)$(MULTISUBDIR)/$$FILE ; \
-	    chmod a-x $(INSTALLDIR)$(MULTISUBDIR)/$$FILE ; \
+	    $(INSTALL_DATA) $$FILE $${INSTALLDIR}$(MULTISUBDIR)/$$FILE ; \
+	    $(RANLIB) $${INSTALLDIR}$(MULTISUBDIR)/$$FILE ; \
+	    chmod a-x $${INSTALLDIR}$(MULTISUBDIR)/$$FILE ; \
 	  fi ; \
 	done
 	@rootme=`pwd`/ ; export rootme ; \
