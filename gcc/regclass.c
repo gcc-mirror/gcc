@@ -2189,10 +2189,10 @@ static unsigned int reg_n_max;
 
 /* Allocate enough space to hold NUM_REGS registers for the tables used for
    reg_scan and flow_analysis that are indexed by the register number.  If
-   NEW_P is non zero, initialize all of the registers, otherwise only
+   NEW_P is nonzero, initialize all of the registers, otherwise only
    initialize the new registers allocated.  The same table is kept from
    function to function, only reallocating it when we need more room.  If
-   RENUMBER_P is non zero, allocate the reg_renumber array also.  */
+   RENUMBER_P is nonzero, allocate the reg_renumber array also.  */
 
 void
 allocate_reg_info (num_regs, new_p, renumber_p)

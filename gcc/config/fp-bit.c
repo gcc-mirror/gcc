@@ -373,7 +373,7 @@ unpack_d (FLO_union_type * src, fp_number_type * dst)
 	}
       else
 	{
-	  /* Zero exponent with non zero fraction - it's denormalized,
+	  /* Zero exponent with nonzero fraction - it's denormalized,
 	     so there isn't a leading implicit one - we'll shift it so
 	     it gets one.  */
 	  dst->normal_exp = exp - EXPBIAS + 1;
@@ -400,7 +400,7 @@ unpack_d (FLO_union_type * src, fp_number_type * dst)
 	}
       else
 	{
-	  /* Non zero fraction, means nan */
+	  /* Nonzero fraction, means nan */
 	  if (fraction & QUIET_NAN)
 	    {
 	      dst->class = CLASS_QNAN;
@@ -940,7 +940,7 @@ __fpcmp_parts (fp_number_type * a, fp_number_type * b)
        -------+--------+--------
        -inf(1)| a>b(1) | a==b(0)
        -------+--------+--------
-       So since unordered must be non zero, just line up the columns...
+       So since unordered must be nonzero, just line up the columns...
        */
       return b->sign - a->sign;
     }

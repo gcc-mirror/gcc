@@ -246,7 +246,7 @@ output_load_const_dimode (operands)
    do the move.  Otherwise, return 0 and the caller will emit the move
    normally.
 
-   SCRATCH if non zero can be used as a scratch register for the move
+   SCRATCH if nonzero can be used as a scratch register for the move
    operation.  It is provided by a SECONDARY_RELOAD_* macro if needed.  */
 
 int
@@ -315,7 +315,7 @@ emit_move_sequence (operands, mode, scratch)
 /* Return a legitimate reference for ORIG (either an address or a MEM)
    using the register REG.  If PIC and the address is already
    position-independent, use ORIG.  Newly generated position-independent
-   addresses go into a reg.  This is REG if non zero, otherwise we
+   addresses go into a reg.  This is REG if nonzero, otherwise we
    allocate register(s) as necessary.  If this is called during reload,
    and we need a second temp register, then we use SCRATCH, which is
    provided via the SECONDARY_INPUT_RELOAD_CLASS mechanism.  */

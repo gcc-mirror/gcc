@@ -206,7 +206,7 @@
   "us1_fpm + us1_fp_double + us1_slotany, nothing*3")
 
 ;; This is actually in theory dangerous, because it is possible
-;; for the chip to prematurely dispatch the dependant instruction
+;; for the chip to prematurely dispatch the dependent instruction
 ;; in the G stage, resulting in a 9 cycle stall.  However I have never
 ;; been able to trigger this case myself even with hand written code,
 ;; so it must require some rare complicated pipeline state.

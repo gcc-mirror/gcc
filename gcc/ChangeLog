@@ -1,3 +1,22 @@
+2002-09-14  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* haifa-sched.c: Follow spelling conventions.
+	* regclass.c: Likewise.
+	* regrename.c: Likewise.
+	* config/fp-bit.c: Likewise.
+	* config/frv/frv.h: Likewise.
+	* config/m88k/m88k.c: Likewise.
+	* config/mcore/mcore.c: Likewise.
+	* config/rs6000/darwin.h: Likewise.
+	* config/rs6000/gnu.h: Likewise.
+	* config/rs6000/linux.h: Likewise.
+	* config/rs6000/linux64.h: Likewise.
+	* config/rs6000/rs6000.c: Likewise.
+	* config/rs6000/rs6000.h: Likewise.
+	* config/sh/sh.c: Likewise.
+	* config/sparc/sparc.c: Likewise.
+	* config/sparc/ultra1_2.md: Likewise.
+
 2002-09-14  Stephane Carrez  <stcarrez@nerim.fr>
 
 	* config/m68hc11/m68hc11.md ("movdi_internal"): Allow any offsetable

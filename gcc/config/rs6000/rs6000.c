@@ -8006,7 +8006,7 @@ print_operand_address (file, x)
     abort ();
 }
 
-/* Target hook for assembling integer objects.  The powerpc version has
+/* Target hook for assembling integer objects.  The PowerPC version has
    to handle fixup entries for relocatable code if RELOCATABLE_NEEDS_FIXUP
    is defined.  It also needs to handle DI-mode objects on 64-bit
    targets.  */

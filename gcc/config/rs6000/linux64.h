@@ -1,5 +1,5 @@
 /* Definitions of target machine for GNU compiler,
-   for 64 bit powerpc linux.
+   for 64 bit PowerPC linux.
    Copyright (C) 2000, 2001, 2002 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
