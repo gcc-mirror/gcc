@@ -6586,17 +6586,21 @@ fold (tree expr)
 	  /* Reassociate (plus (plus (mult) (foo)) (mult)) as
 	     (plus (plus (mult) (mult)) (foo)) so that we can
 	     take advantage of the factoring cases below.  */
-	  if ((TREE_CODE (arg0) == PLUS_EXPR
+	  if (((TREE_CODE (arg0) == PLUS_EXPR
+		|| TREE_CODE (arg0) == MINUS_EXPR)
 	       && TREE_CODE (arg1) == MULT_EXPR)
-	      || (TREE_CODE (arg1) == PLUS_EXPR
+	      || ((TREE_CODE (arg1) == PLUS_EXPR
+		   || TREE_CODE (arg1) == MINUS_EXPR)
 		  && TREE_CODE (arg0) == MULT_EXPR))
 	    {
 	      tree parg0, parg1, parg, marg;
+	      enum tree_code pcode;
 
-	      if (TREE_CODE (arg0) == PLUS_EXPR)
+	      if (TREE_CODE (arg1) == MULT_EXPR)
 		parg = arg0, marg = arg1;
 	      else
 		parg = arg1, marg = arg0;
+	      pcode = TREE_CODE (parg);
 	      parg0 = TREE_OPERAND (parg, 0);
 	      parg1 = TREE_OPERAND (parg, 1);
 	      STRIP_NOPS (parg0);
@@ -6604,7 +6608,7 @@ fold (tree expr)
 
 	      if (TREE_CODE (parg0) == MULT_EXPR
 		  && TREE_CODE (parg1) != MULT_EXPR)
-		return fold (build2 (PLUS_EXPR, type,
+		return fold (build2 (pcode, type,
 				     fold (build2 (PLUS_EXPR, type,
 						   fold_convert (type, parg0),
 						   fold_convert (type, marg))),
@@ -6612,10 +6616,11 @@ fold (tree expr)
 	      if (TREE_CODE (parg0) != MULT_EXPR
 		  && TREE_CODE (parg1) == MULT_EXPR)
 		return fold (build2 (PLUS_EXPR, type,
-				     fold (build2 (PLUS_EXPR, type,
-						   fold_convert (type, parg1),
-						   fold_convert (type, marg))),
-				     fold_convert (type, parg0)));
+				     fold_convert (type, parg0),
+				     fold (build2 (pcode, type,
+						   fold_convert (type, marg),
+						   fold_convert (type,
+								 parg1)))));
 	    }
 
 	  if (TREE_CODE (arg0) == MULT_EXPR && TREE_CODE (arg1) == MULT_EXPR)
@@ -6677,7 +6682,8 @@ fold (tree expr)
 	      if (same)
 		return fold (build2 (MULT_EXPR, type,
 				     fold (build2 (PLUS_EXPR, type,
-						   alt0, alt1)),
+						   fold_convert (type, alt0),
+						   fold_convert (type, alt1))),
 				     same));
 	    }
 
@@ -7084,7 +7090,7 @@ fold (tree expr)
 
       if (TREE_CODE (arg0) == MULT_EXPR
 	  && TREE_CODE (arg1) == MULT_EXPR
-	  && (INTEGRAL_TYPE_P (type) || flag_unsafe_math_optimizations))
+	  && (!FLOAT_TYPE_P (type) || flag_unsafe_math_optimizations))
 	{
           /* (A * C) - (B * C) -> (A-B) * C.  */
 	  if (operand_equal_p (TREE_OPERAND (arg0, 1),
