@@ -1,5 +1,8 @@
 2005-02-07  Alexandre Oliva  <aoliva@redhat.com>
 
+	* config/mn10300/linux.h (LIB_SPEC, STARTFILE_SPEC): Remove
+	redundant, incorrect definitions.
+
 	* config/frv/frv.md ("tls_indirect_call"): Turn into libcall-like
 	expand.
 	("*tls_indirect_call"): New, reference hard regs directly.

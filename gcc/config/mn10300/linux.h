@@ -40,20 +40,6 @@
      %{!dynamic-linker:-dynamic-linker /lib/ld.so.1}} \
    %{static:-static}"
 
-#undef  LIB_SPEC
-#define LIB_SPEC \
-  "%{shared: -lc} \
-   %{!shared: %{pthread:-lpthread} \
-     %{profile:-lc_p} %{!profile: -lc}}"
-
-#undef  STARTFILE_SPEC
-#define STARTFILE_SPEC \
-  "%{!shared: \
-     %{pg:gcrt1.o%s} %{!pg:%{p:gcrt1.o%s} \
-		       %{!p:%{profile:gcrt1.o%s} \
-			 %{!profile:crt1.o%s}}}} \
-   crti.o%s %{!shared:crtbegin.o%s} %{shared:crtbeginS.o%s}"
-
 #undef  TARGET_SWITCHES
 #define TARGET_SWITCHES	\
   {{ "am33",		-0x4,	N_("Target the AM33 processor") }, \
