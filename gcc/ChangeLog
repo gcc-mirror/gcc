@@ -1,3 +1,24 @@
+2000-05-03  Greg McGary  <gkm@gnu.org>
+
+	* tree.h (tree_common): Add bounded_flag member.  Remove
+	inaccurate comment about number of remaining bits.
+	(BOUNDED_INDIRECT_TYPE_P, BOUNDED_POINTER_TYPE_P,
+	BOUNDED_REFERENCE_TYPE_P, MAYBE_BOUNDED_INDIRECT_TYPE_P,
+	MAYBE_BOUNDED_POINTER_TYPE_P, MAYBE_BOUNDED_REFERENCE_TYPE_P,
+	TREE_BOUNDED, TYPE_MAIN_VARIANTS_PHYSICALLY_EQUAL_P,
+	TYPE_MAIN_PHYSICAL_VARIANT, TYPE_BOUNDED): New macros.
+	(TYPE_QUAL_BOUNDED): New constant.
+	(TYPE_QUALS): Handle bounded qualifier.
+	(TREE_EXPR_QUALS, TREE_FUNC_QUALS): New macros.
+	(TYPE_BOUNDED_VALUE, TYPE_BOUNDED_BASE, TYPE_BOUNDED_EXTENT,
+	TYPE_BOUNDED_SUBTYPE, TYPE_UNBOUNDED_VARIANT, TYPE_POINTER_DEPTH,
+	TYPE_AMBIENT_BOUNDEDNESS): New macros.
+	(MAX_POINTER_DEPTH, VA_LIST_POINTER_DEPTH): New constants.
+	(tree_type): Add pointer_depth member.  Remove
+	inaccurate comment about number of remaining bits.
+	(DECL_POINTER_DEPTH): Add macro.
+	(tree_decl): Add pointer_depth member.
+
 Wed May  3 22:52:53 2000  Denis Chertykov  <denisc@overta.ru>
 
 	* config/avr/avr-protos.h (test_hard_reg_class): Declared.
