@@ -1,5 +1,8 @@
 2002-07-08  Nathanael Nerode  <neroden@gcc.gnu.org>
 
+	* configure.in: Don't build grez.
+	* Makefile.in: Ditto.
+
 	* Makefile.in: Remove references to bsp, cygmon, libstub.
 	* configure.in: Ditto.
 
