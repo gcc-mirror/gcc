@@ -966,6 +966,7 @@ enum label_kind
    not to use an rtx with this cost under any circumstances.  */
 #define MAX_COST INT_MAX
 
+extern void init_rtlanal (void);
 extern int rtx_cost (rtx, enum rtx_code);
 extern int address_cost (rtx, enum machine_mode);
 extern unsigned int subreg_lsb (rtx);
