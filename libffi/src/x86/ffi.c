@@ -3,8 +3,6 @@
    
    x86 Foreign Function Interface 
 
-   $Id: ffi.c,v 1.3 1999/08/08 13:05:12 green Exp $
-
    Permission is hereby granted, free of charge, to any person obtaining
    a copy of this software and associated documentation files (the
    ``Software''), to deal in the Software without restriction, including

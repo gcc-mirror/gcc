@@ -1,8 +1,6 @@
 /* -----------------------------------------------------------------------
    ffitest.c - Copyright (c) 1996, 1997, 1998  Cygnus Solutions
 
-   $Id: ffitest.c,v 1.1.1.1 1998/11/29 16:48:16 green Exp $
-
    Permission is hereby granted, free of charge, to any person obtaining
    a copy of this software and associated documentation files (the
    ``Software''), to deal in the Software without restriction, including

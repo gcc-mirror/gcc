@@ -1,3 +1,24 @@
+2001-03-02  Nick Clifton  <nickc@redhat.com>
+
+	* include/ffi.h.in: Remove RCS ident string.
+	* include/ffi_mips.h: Remove RCS ident string.
+	* src/debug.c: Remove RCS ident string.
+	* src/ffitest.c: Remove RCS ident string.
+	* src/prep_cif.c: Remove RCS ident string.
+	* src/types.c: Remove RCS ident string.
+	* src/alpha/ffi.c: Remove RCS ident string.
+	* src/alpha/osf.S: Remove RCS ident string.
+	* src/arm/ffi.c: Remove RCS ident string.
+	* src/arm/sysv.S: Remove RCS ident string.
+	* src/mips/ffi.c: Remove RCS ident string.
+	* src/mips/n32.S: Remove RCS ident string.
+	* src/mips/o32.S: Remove RCS ident string.
+	* src/sparc/ffi.c: Remove RCS ident string.
+	* src/sparc/v8.S: Remove RCS ident string.
+	* src/sparc/v9.S: Remove RCS ident string.
+	* src/x86/ffi.c: Remove RCS ident string.
+	* src/x86/sysv.S: Remove RCS ident string.
+
 2001-02-08  Joseph S. Myers  <jsm28@cam.ac.uk>
 
 	* include/ffi.h.in: Change sourceware.cygnus.com references to
