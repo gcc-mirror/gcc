@@ -140,7 +140,10 @@ public class AlgorithmParameterGenerator
         {
           return getInstance(algorithm, p[i]);
         }
-      catch (NoSuchAlgorithmException ignored) {}
+      catch (NoSuchAlgorithmException e)
+	{
+	  // Ignore.
+	}
 
     throw new NoSuchAlgorithmException(algorithm);
   }

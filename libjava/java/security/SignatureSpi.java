@@ -165,7 +165,7 @@ public abstract class SignatureSpi
   protected int engineSign(byte[] outbuf, int offset, int len)
     throws SignatureException
   {
-    byte tmp[] = engineSign();
+    byte[] tmp = engineSign();
     if (tmp.length > len)
       throw new SignatureException("Invalid Length");
 

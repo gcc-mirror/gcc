@@ -43,7 +43,6 @@ import java.security.NoSuchAlgorithmException;
 import java.security.InvalidKeyException;
 import java.security.NoSuchProviderException;
 import java.security.SignatureException;
-import java.io.ObjectInputStream;
 import java.io.ByteArrayInputStream;
 import java.io.InvalidObjectException;
 import java.io.ObjectStreamException;
@@ -116,8 +115,8 @@ public abstract class Certificate implements Serializable
 	if( getEncoded().length != x.getEncoded().length )
 	  return false;
 
-	byte b1[] = getEncoded();
-	byte b2[] = x.getEncoded();
+	byte[] b1 = getEncoded();
+	byte[] b2 = x.getEncoded();
 
 	for( int i = 0; i < b1.length; i++ )
 	  if( b1[i] != b2[i] )

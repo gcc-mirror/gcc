@@ -39,16 +39,12 @@ exception statement from your version. */
 package java.security.cert;
 
 import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 
 import gnu.java.io.ASN1ParsingException;
 import gnu.java.security.OID;
-import gnu.java.security.der.DER;
-import gnu.java.security.der.DEREncodingException;
 import gnu.java.security.der.DERReader;
 import gnu.java.security.der.DERValue;
-import gnu.java.security.der.DERWriter;
 
 /**
  * The PolicyQualifierInfo X.509 certificate extension.

@@ -38,9 +38,6 @@ exception statement from your version. */
 
 package java.security.cert;
 
-import java.io.ByteArrayInputStream;
-import java.io.IOException;
-
 import java.security.PublicKey;
 
 import gnu.java.security.x509.X500DistinguishedName;

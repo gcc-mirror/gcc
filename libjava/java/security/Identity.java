@@ -269,7 +269,7 @@ public abstract class Identity implements Principal, Serializable
    */
   public Certificate[] certificates()
   {
-    Certificate certs[] = new Certificate[certificates.size()];
+    Certificate[] certs = new Certificate[certificates.size()];
     int max = certificates.size();
     for (int i = 0; i < max; i++)
       certs[i] = (Certificate) certificates.elementAt(i);

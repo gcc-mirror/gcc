@@ -138,7 +138,10 @@ public abstract class MessageDigest extends MessageDigestSpi
           {
             return getInstance(algorithm, p[i]);
           }
-        catch (NoSuchAlgorithmException ignored) {}
+        catch (NoSuchAlgorithmException ignored)
+	  {
+	    // Ignore.
+	  }
       }
 
     throw new NoSuchAlgorithmException(algorithm);

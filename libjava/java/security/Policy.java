@@ -191,7 +191,10 @@ public abstract class Policy
             {
               currentPolicy = (Policy) Class.forName(pp).newInstance();
             }
-          catch (Exception ignored) {}
+	  catch (Exception e)
+	    {
+	      // Ignored.
+	    }
 
         if (currentPolicy == null)
           currentPolicy = new gnu.java.security.provider.DefaultPolicy();

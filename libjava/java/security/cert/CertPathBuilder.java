@@ -130,8 +130,9 @@ public class CertPathBuilder
           {
             return getInstance(algorithm, p[i]);
           }
-        catch (NoSuchAlgorithmException ignored)
+        catch (NoSuchAlgorithmException e)
           {
+	    // Ignored.
           }
       }
 

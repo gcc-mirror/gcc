@@ -36,6 +36,7 @@ obligated to do so.  If you do not wish to do so, delete this
 exception statement from your version. */
 
 package java.security;
+
 import java.io.InputStream;
 import java.io.IOException;
 import java.io.OutputStream;
@@ -129,8 +130,9 @@ public class KeyStore
           {
             return getInstance(type, p[i]);
           }
-        catch (KeyStoreException ignore)
+        catch (KeyStoreException e)
           {
+	    // Ignore.
           }
       }
 

@@ -142,8 +142,9 @@ public class CertPathValidator {
           {
             return getInstance(algorithm, p[i]);
           }
-        catch (NoSuchAlgorithmException ignored)
+        catch (NoSuchAlgorithmException e)
           {
+	    // Ignored.
           }
       }
     throw new NoSuchAlgorithmException(algorithm);

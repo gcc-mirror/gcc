@@ -37,6 +37,7 @@ exception statement from your version. */
 
 
 package java.security.cert;
+
 import java.math.BigInteger;
 import java.util.Date;
 
@@ -96,8 +97,8 @@ public abstract class X509CRLEntry implements X509Extension
 	if( getEncoded().length != xe.getEncoded().length )
 	  return false;
 
-	byte b1[] = getEncoded();
-	byte b2[] = xe.getEncoded();
+	byte[] b1 = getEncoded();
+	byte[] b2 = xe.getEncoded();
 
 	for( int i = 0; i < b1.length; i++ )
 	  if( b1[i] != b2[i] )
