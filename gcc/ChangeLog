@@ -1,3 +1,9 @@
+Tue Oct 13 11:49:14 1998  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* mips/iris6.h (ASM_OUTPUT_WEAK_ALIAS): Call ASM_GLOBALIZE_LABEL.
+	* varasm.c (assemble_start_function et al): Don't call
+	ASM_GLOBALIZE_LABEL for weak symbols.
+
 Tue Oct 13 11:37:45 1998  Nick Clifton  <nickc@cygnus.com>
 
 	* cse.c (equiv_constant): Check for NULL return from
