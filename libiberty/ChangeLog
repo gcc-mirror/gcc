@@ -1,3 +1,11 @@
+Fri Nov 13 19:18:05 1998  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* configure.in: Check for calloc.
+
+	* calloc.c: New	file.
+
+	* xmalloc.c (xcalloc): New function.
+
 Fri Nov 13 08:51:46 EST 1998  Andrew MacLeod  <amacleod@cygnus.com>
 
 	*cplus-dem.c (demangle_prefix): Use the last "__"
