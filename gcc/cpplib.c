@@ -2969,17 +2969,25 @@ do_include (pfile, keyword)
       break;
 
   if (fp == CPP_NULL_BUFFER (pfile))
-    fp = NULL;
-  
-  /* For #include_next, skip in the search path
-     past the dir in which the containing file was found.  */
-  if (skip_dirs)
     {
-      if (fp)
+      cpp_fatal (pfile, "cpp internal error: fp == NULL_BUFFER in do_include");
+      return 1;
+    }
+  
+  /* For #include_next, skip in the search path past the dir in which the
+     containing file was found.  Treat files specified using an absolute path
+     as if there are no more directories to search.  Treat the primary source
+     file like any other included source, but generate a warning.  */
+  if (skip_dirs && CPP_PREV_BUFFER(fp) != CPP_NULL_BUFFER (pfile))
+    {
+      if (fp->ihash->foundhere != ABSOLUTE_PATH)
 	search_start = fp->ihash->foundhere->next;
     }
   else
     {
+      if (skip_dirs)
+	cpp_warning (pfile, "#include_next in primary source file");
+      
       if (angle_brackets)
 	search_start = CPP_OPTIONS (pfile)->bracket_include;
       else
@@ -4730,8 +4738,12 @@ cpp_start_read (pfile, fname)
   fp = cpp_push_buffer (pfile, NULL, 0);
   if (!fp)
     return 0;
-  if (opts->in_fname == NULL)
-    opts->in_fname = "";
+  if (opts->in_fname == NULL || *opts->in_fname == 0)
+    {
+      opts->in_fname = fname;
+      if (opts->in_fname == NULL)
+	opts->in_fname = "";
+    }
   fp->nominal_fname = fp->fname = opts->in_fname;
   fp->lineno = 0;
 
