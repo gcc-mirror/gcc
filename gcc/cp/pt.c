@@ -5294,12 +5294,7 @@ static tree
 maybe_fold_nontype_arg (arg)
      tree arg;
 {
-  /* If we're not in a template, ARG is already as simple as it's going to
-     get, and trying to reprocess the trees will break.  */
-  if (! processing_template_decl)
-    return arg;
-
-  if (!TYPE_P (arg) && !uses_template_parms (arg))
+  if (arg && !TYPE_P (arg) && !uses_template_parms (arg))
     {
       /* Sometimes, one of the args was an expression involving a
 	 template constant parameter, like N - 1.  Now that we've
@@ -5309,10 +5304,18 @@ maybe_fold_nontype_arg (arg)
 	 fool build_expr_from_tree() into building an actual
 	 tree.  */
 
-      int saved_processing_template_decl = processing_template_decl; 
-      processing_template_decl = 0;
-      arg = fold (build_expr_from_tree (arg));
-      processing_template_decl = saved_processing_template_decl; 
+      /* If the TREE_TYPE of ARG is not NULL_TREE, ARG is already
+	 as simple as it's going to get, and trying to reprocess
+	 the trees will break.  */
+      if (!TREE_TYPE (arg))
+	{
+	  int saved_processing_template_decl = processing_template_decl; 
+	  processing_template_decl = 0;
+	  arg = build_expr_from_tree (arg);
+	  processing_template_decl = saved_processing_template_decl; 
+	}
+
+      arg = fold (arg);
     }
   return arg;
 }

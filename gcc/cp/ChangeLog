@@ -1,3 +1,9 @@
+2001-08-23  Kriang Lerdsuwanakij  <lerdsuwa@users.sourceforge.net>
+
+	* pt.c (maybe_fold_nontype_arg): Use TREE_TYPE of ARG as the
+	criterion to avoid rebuilding expression tree instead of
+	processing_template_decl.
+
 2001-08-19  Release Manager
 
 	* GCC 3.0.1 Released.
