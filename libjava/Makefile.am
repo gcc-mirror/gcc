@@ -152,8 +152,8 @@ libgcjx_la_LINK = $(LIBLINK)
 install-exec-hook:
 	cd $(DESTDIR)$(libdir) && \
 	if test -f libgcjx.la; then \
-	  rm -f gnu-awt-xlib.so; \
-	  $(LN_S) libgcjx.so gnu-awt-xlib.so; \
+	  rm -f gnu-awt-xlib.la; \
+	  $(LN_S) libgcjx.la gnu-awt-xlib.la; \
 	fi
 
 ## Make the .class files depend on the .zip file.  This seems
