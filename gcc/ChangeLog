@@ -1,3 +1,12 @@
+2001-06-20  Kelley Cook  <kelley.cook@home.com>
+
+	* doc/install.texi (sparc-sun-solaris*): Add in 4.x assembler bug
+	information.   Move rest into ...
+	(*-*-solaris): ... here.  Eliminate redundant information and
+	reword necessary packages section.  Delete 4.x assembler bug info.
+	(sparc-sun-*): Merge into ...
+	(sparc-sun-sunos*): here.
+
 2001-07-19  Mark Mitchell  <mark@codesourcery.com>
 
 	* reorg.c (fill_simple_delay_slots): If an instruction might throw
