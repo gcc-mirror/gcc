@@ -587,13 +587,16 @@ enum languages { lang_c, lang_cplusplus, lang_java };
 #define TYPE_MAIN_DECL(NODE) (TYPE_STUB_DECL (TYPE_MAIN_VARIANT (NODE)))
 
 /* Nonzero if T is a class (or struct or union) type.  Also nonzero
-   for template type parameters and typename types.  Despite its name,
+   for template type parameters, typename types, and instantiated
+   template template parameters.  Despite its name,
    this macro has nothing to do with the definition of aggregate given
    in the standard.  Think of this macro as MAYBE_CLASS_TYPE_P.  */
 #define IS_AGGR_TYPE(t)				\
-  (TREE_CODE (t) == TEMPLATE_TYPE_PARM 		\
-   || TREE_CODE (t) == TYPENAME_TYPE 		\
+  (TREE_CODE (t) == TEMPLATE_TYPE_PARM		\
+   || TREE_CODE (t) == TYPENAME_TYPE		\
    || TREE_CODE (t) == TYPEOF_TYPE		\
+   || (TREE_CODE (t) == TEMPLATE_TEMPLATE_PARM	\
+       && TYPE_TEMPLATE_INFO (t))		\
    || TYPE_LANG_FLAG_5 (t))
 
 /* Set IS_AGGR_TYPE for T to VAL.  T must be a class, struct, or 
@@ -1516,6 +1519,13 @@ struct lang_decl
 /* Nonzero if NODE is an implicit typename.  */
 #define IMPLICIT_TYPENAME_P(NODE) \
   (TREE_CODE (NODE) == TYPENAME_TYPE && TREE_TYPE (NODE))
+
+/* Nonzero if NODE is a TYPE_DECL that should not be visible because
+   it is from a dependent base class.  */
+#define IMPLICIT_TYPENAME_TYPE_DECL_P(NODE) 	\
+  (TREE_CODE (NODE) == TYPE_DECL		\
+   && DECL_ARTIFICIAL (NODE)			\
+   && IMPLICIT_TYPENAME_P (TREE_TYPE (NODE)))
 
 /* Nonzero in INTEGER_CST means that this int is negative by dint of
    using a twos-complement negated operand.  */

@@ -24,5 +24,5 @@ template <class T> struct bar {
 
 template <class T> struct baz {
   typedef bar<T>::foo foo; // ERROR - implicit typename - XFAIL *-*-*
-  void m(foo); // gets bogus error - dependent base class - XFAIL *-*-*
+  void m(foo); 
 };

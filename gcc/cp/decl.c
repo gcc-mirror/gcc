@@ -1256,8 +1256,7 @@ push_class_binding (id, decl)
 	 context for an implicit typename declaration is always
 	 the derived class in which the lookup was done, so the checks
 	 based on the context of DECL below will not trigger.  */
-      if (TREE_CODE (decl) == TYPE_DECL 
-	  && IMPLICIT_TYPENAME_P (TREE_TYPE (decl)))
+      if (IMPLICIT_TYPENAME_TYPE_DECL_P (decl))
 	INHERITED_VALUE_BINDING_P (binding) = 1;
       else
 	{
@@ -5877,15 +5876,13 @@ lookup_name_real (name, prefer_type, nonclass, namespaces_only)
 	binding = NULL_TREE;
 
       if (binding
-	  && (!val || !(TREE_CODE (binding) == TYPE_DECL
-			&& IMPLICIT_TYPENAME_P (TREE_TYPE (binding)))))
+	  && (!val || !IMPLICIT_TYPENAME_TYPE_DECL_P (binding)))
 	{
 	  if (val_is_implicit_typename && !yylex)
 	    warn_about_implicit_typename_lookup (val, binding);
 	  val = binding;
 	  val_is_implicit_typename 
-	    = (TREE_CODE (val) == TYPE_DECL
-	       && IMPLICIT_TYPENAME_P (TREE_TYPE (val)));
+	    = IMPLICIT_TYPENAME_TYPE_DECL_P (val);
 	  if (!val_is_implicit_typename)
 	    break;
 	}

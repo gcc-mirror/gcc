@@ -1,3 +1,11 @@
+1999-07-05  Mark Mitchell  <mark@codesourcery.com>
+
+	* cp-tree.h (IS_AGGR_TYPE): Include instantiated template template
+	parameters.
+	(IMPLICIT_TYPENAME_TYPE_DECL_P): New macro.
+	* decl.c (push_class_binding): Use it.
+	(lookup_name_real): Likewise.
+
 1999-07-02  Gavin Romig-Koch  <gavin@cygnus.com>
 
 	* cp-tree.h (widest_integer_literal_type_node,

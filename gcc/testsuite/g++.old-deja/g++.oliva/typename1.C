@@ -5,8 +5,6 @@
 // by Alexandre Oliva <oliva@dcc.unicamp.br>
 // based on bug report by Nick Rasmussen <nick@jive.org>
 
-// crash test - XFAIL *-*-*
-
 template <class T> struct foo;
 
 template <class T> struct bar {
@@ -14,6 +12,6 @@ template <class T> struct bar {
 };
 
 template <class T> struct baz {
-  typedef bar<T>::foo foo; // ERROR - missing typename
+  typedef bar<T>::foo foo; // ERROR - missing typename - XFAIL *-*-*
   void m(foo);
 };

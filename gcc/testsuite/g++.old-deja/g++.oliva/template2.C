@@ -11,4 +11,4 @@ template <template <typename> class C, typename T> class foo {
 };
 
 template <template <typename> class C, typename T> foo<C,T>::foo(bar)
-{} // gets bogus error - C<T> not a class - XFAIL *-*-*
+{} // gets bogus error - C<T> not a class
