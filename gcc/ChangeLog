@@ -1,3 +1,7 @@
+2001-06-10  Mark Kettenis  <kettenis@gnu.org>
+
+	* config/i386/gnu.h (MD_FALLBACK_FRAME_STATE_FOR): Undefine.
+
 2001-06-10  Stephane Carrez  <Stephane.Carrez@worldnet.fr>
 
 	* m68hc11.md (peepholes): Remove unused and wrong peepholes.
