@@ -1,3 +1,7 @@
+Wed Jul 18 18:28:16 CEST 2001  Jan Hubicka  <jh@suse.cz>
+
+	* gcse.c (pre_insert_copy_insn): Call update_ld_motion_stores.
+
 Wed Jul 18 12:05:29 2001  Nicola Pero  <n.pero@mi.flashnet.it>
 
 	* gthr-posix.h (__gthread_objc_mutex_trylock): Fixed return value
