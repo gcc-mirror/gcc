@@ -1561,6 +1561,11 @@ split_block (bb, insn)
       bb_note = emit_note_after (NOTE_INSN_BASIC_BLOCK,
 				 new_bb->head);
       NOTE_BASIC_BLOCK (bb_note) = new_bb;
+
+      /* If the only thing in this new block was the label, make sure
+	 the block note gets included.  */
+      if (new_bb->head == new_bb->end)
+	new_bb->end = bb_note;
     }
   else
     {
