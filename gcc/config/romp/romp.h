@@ -1,5 +1,5 @@
 /* Definitions of target machine for GNU compiler, for ROMP chip.
-   Copyright (C) 1989, 91, 93, 95, 96, 98, 1999 Free Software Foundation, Inc.
+   Copyright (C) 1989, 91, 93, 95, 96, 98, 99, 2000 Free Software Foundation, Inc.
    Contributed by Richard Kenner (kenner@nyu.edu)
 
 This file is part of GNU CC.
@@ -325,8 +325,8 @@ enum reg_class { NO_REGS, R0_REGS, R15_REGS, BASE_REGS, GENERAL_REGS,
    This is an initializer for a vector of HARD_REG_SET
    of length N_REG_CLASSES.  */
 
-#define REG_CLASS_CONTENTS {0, 0x00001, 0x08000, 0x1fffe, 0x1ffff,  \
-			    0x1fe0000, 0x1ffffff }
+#define REG_CLASS_CONTENTS {{0}, {0x00001}, {0x08000}, {0x1fffe}, {0x1ffff},  \
+			    {0x1fe0000}, {0x1ffffff} }
 
 /* The same information, inverted:
    Return the class number of the smallest class containing
@@ -520,7 +520,7 @@ enum reg_class { NO_REGS, R0_REGS, R15_REGS, BASE_REGS, GENERAL_REGS,
 
 #define FUNCTION_VALUE(VALTYPE, FUNC)					\
   gen_rtx_REG (TYPE_MODE (VALTYPE),					\
-	       (TARGET_FP_REG						\
+	       (TARGET_FP_REGS						\
 		&& GET_MODE_CLASS (TYPE_MODE (VALTYPE)) == MODE_FLOAT)	\
 	       ? 18 : 2)
 
@@ -627,7 +627,7 @@ struct rt_cargs {int gregs, fregs; };
 #define FUNCTION_ARG(CUM, MODE, TYPE, NAMED)				\
   (! (NAMED) ? 0							\
    : ((TYPE) != 0 && TREE_CODE (TYPE_SIZE (TYPE)) != INTEGER_CST) ? 0	\
-   : USE_FP_REG(MODE,CUM) ? gen_rtx_REG ((MODE), (CUM.fregs) + 17)	\
+   : USE_FP_REG(MODE,CUM) ? gen_rtx_REG ((MODE), (CUM).fregs + 17)	\
    : (CUM).gregs < 4 ? gen_rtx_REG ((MODE), 2 + (CUM).gregs) : 0)
 
 /* For an arg passed partly in registers and partly in memory,
@@ -1075,7 +1075,7 @@ struct rt_cargs {int gregs, fregs; };
 	high_int += 1, low_int |= 0xffff0000;			\
       (X) = gen_rtx_PLUS (SImode,				\
 			  force_operand (plus_constant (XEXP (X, 0),  \
-							high_int << 16)),  \
+							high_int << 16), 0), \
 			  GEN_INT (low_int));			\
     }								\
 }
@@ -1200,7 +1200,6 @@ struct rt_cargs {int gregs, fregs; };
 /* A C expression for the integer offset value of an automatic variable
    (N_LSYM) having address X (an RTX). This gets used in .stabs entries
    for the local variables. Compare with the default definition.  */
-extern int romp_debugger_auto_correction();
 #define DEBUGGER_AUTO_OFFSET(X)                        \
   (GET_CODE (X) == PLUS                                \
    ? romp_debugger_auto_correction (INTVAL (XEXP (X, 1)) ) \
@@ -1208,7 +1207,6 @@ extern int romp_debugger_auto_correction();
 
 /* A C expression for the integer offset value of an argument (N_PSYM)
    having address X (an RTX).  The nominal offset is OFFSET.  */
-extern int romp_debugger_arg_correction();
 #define DEBUGGER_ARG_OFFSET(OFFSET, X)             \
   romp_debugger_arg_correction (OFFSET);
 
@@ -1261,8 +1259,8 @@ extern int romp_debugger_arg_correction();
 
 #define CONST_COSTS(RTX,CODE,OUTER_CODE) \
   case CONST_INT:						\
-    if ((OUTER_CODE) == IOR && exact_log2 (INTVAL (RTX)) >= 0	\
-	|| (OUTER_CODE) == AND && exact_log2 (~INTVAL (RTX)) >= 0 \
+    if (((OUTER_CODE) == IOR && exact_log2 (INTVAL (RTX)) >= 0)	\
+	|| ((OUTER_CODE) == AND && exact_log2 (~INTVAL (RTX)) >= 0) \
 	|| (((OUTER_CODE) == PLUS || (OUTER_CODE) == MINUS)	\
 	    && (unsigned int) (INTVAL (RTX) + 15) < 31)		\
 	|| ((OUTER_CODE) == SET && (unsigned int) INTVAL (RTX) < 16))\
@@ -1363,7 +1361,7 @@ extern int romp_debugger_arg_correction();
 
 #define ASM_FILE_START(FILE)				\
 { extern char *version_string;				\
-  char *p;						\
+  const char *p;					\
 							\
   fprintf (FILE, "\t.globl .oVncs\n\t.set .oVncs,0\n") ; \
   fprintf (FILE, "\t.globl .oVgcc");			\
@@ -1628,7 +1626,3 @@ extern int romp_debugger_arg_correction();
   {"float_unary", {NEG, ABS}},					\
   {"float_conversion", {FLOAT_TRUNCATE, FLOAT_EXTEND, FLOAT, FIX}},
 
-/* Define functions defined in aux-output.c and used in templates.  */
-
-extern char *output_in_line_mul ();
-extern char *output_fpop ();
