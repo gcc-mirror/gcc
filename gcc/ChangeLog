@@ -1,3 +1,40 @@
+Fri Jan 30 22:30:39 1998  John Carr  <jfc@mit.edu>
+
+	* sparc.c (sparc_override_options): Make v8plus and ultrasparc set
+	MASK_V8PLUS.
+	(output_function_epilogue): Omit epilogue if nothing drops through.
+	(output_move_double): Supress int ldd usage on ultrasparc and v9.
+	(registers_ok_for_ldd_peep): Likewise.
+	(print_operand): Supress b,a on ultrasparc.  Let Y accept a constant.
+	(ultrasparc_adjust_cost): New function.
+	(sparc_issue_rate): New function.
+	* sparc.h (MASK_VIS, TARGET_VIS): New
+	(MASK_V8PLUS, TARGET_V8PLUS): New.
+	(TARGET_HARD_MUL32, TARGET_HARD_MUL): New.
+	(TARGET_SWITCHES): Add vis and v8plus.
+	(REG_CLASS_FROM_LETTER): Accept d and b for VIS.
+	(REGISTER_MOVE_COST): FP<->INT move cost 12 for ultrasparc.
+	(RTX_COSTS): Use TARGET_HARD_MUL
+	(ADJUST_COST): Call ultrasparc_adjust_cost.
+	(ISSUE_RATE): New.
+	* sparc.md (attr type): Add sload, fpmove, fpcmove.  Adjust users
+	of load & fp appropritely.
+	(supersparc function units): Adjust for Haifa.
+	(ultrasparc function units): Likewise.
+	(get_pc_via_rdpc): All v9, not just arch64.
+	(movdi_v8plus, movdi_v8plus+1): New.
+	(adddi3_sp32+1): New.
+	(subdi3_sp32+1): New.
+	(movsi_insn, movsf_const_insn, movdf_const_insn): Know VIS.
+	(addsi3, subsi3, anddi3_sp32, andsi3, and_not_di_sp32): Likewise.
+	(and_not_si, iordi3_sp32, iorsi3, or_not_di_sp32, or_not_si): Likewise.
+	(xorsi3_sp32, xorsi3, xor_not_di_sp32, xor_not_si): Likewise.
+	(one_cmpldi2_sp32, one_cmplsi2): Likewise.
+	(ldd peepholes): Suppress for v9.
+	(return_adddi): Kill redundant test.  Arg1 may be arith_operand.
+	(return_subsi): Revmove.
+
+
 Fri Jan 30 18:30:03 1998  John F Carr  <jfc@mit.edu>
 
 	* mips.c (save_restore_insns): Set RTX_UNCHANGING_P in register

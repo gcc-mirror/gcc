@@ -209,10 +209,10 @@ sparc_override_options ()
     /* TEMIC sparclet */
     { "tsc701",     PROCESSOR_TSC701, MASK_ISA, MASK_SPARCLET },
     /* "v8plus" is what Sun calls Solaris2.5 running on UltraSPARC's.  */
-    { "v8plus",     PROCESSOR_V8PLUS, MASK_ISA, MASK_V9 },
+    { "v8plus",     PROCESSOR_V8PLUS, MASK_ISA, MASK_V8PLUS },
     { "v9",         PROCESSOR_V9, MASK_ISA, MASK_V9 },
     /* TI ultrasparc */
-    { "ultrasparc", PROCESSOR_ULTRASPARC, MASK_ISA, MASK_V9 },
+    { "ultrasparc", PROCESSOR_ULTRASPARC, MASK_ISA, MASK_V8PLUS },
     { 0 }
   };
   struct cpu_table *cpu;
@@ -379,6 +379,7 @@ v9_regcmp_p (code)
   return (code == EQ || code == NE || code == GE || code == LT
 	  || code == LE || code == GT);
 }
+
 
 /* Operand constraints.  */
 
@@ -1257,7 +1258,7 @@ eligible_for_epilogue_delay (trial, slot)
 
   src = SET_SRC (pat);
 
-  /* This matches "*return_[qhs]".  */
+  /* This matches "*return_[qhs]i".  */
   if (arith_operand (src, GET_MODE (src)))
     return GET_MODE_SIZE (GET_MODE (src)) <= GET_MODE_SIZE (SImode);
     
@@ -2009,13 +2010,26 @@ output_move_double (operands)
 
       /* In v9, ldd can be used for word aligned addresses, so technically
 	 some of this logic is unneeded.  We still avoid ldd if the address
-	 is obviously unaligned though.  */
+	 is obviously unaligned though.
 
-      if (mem_aligned_8 (mem)
+	 Integer ldd/std are deprecated in V9 and are slow on UltraSPARC.
+	 Use them only if the access is volatile or not offsettable.  */
+
+      if ((mem_aligned_8 (mem)
+	   && (REGNO (reg) >= 32
+	       || MEM_VOLATILE_P (mem)
+	       || ! ((optype0 == OFFSOP || optype1 == OFFSOP)
+		     && (sparc_cpu == PROCESSOR_ULTRASPARC
+			 || sparc_cpu == PROCESSOR_V9))))
 	  /* If this is a floating point register higher than %f31,
 	     then we *must* use an aligned load, since `ld' will not accept
 	     the register number.  */
-	  || (TARGET_V9 && REGNO (reg) >= 64))
+	  || (TARGET_V9 && REGNO (reg) >= 64)
+	  /* Even if two instructions would otherwise be better than ldd/std,
+	     if this insn was put in a delay slot because reorg thought it
+	     was only one machine instruction, make sure it is only one
+	     instruction.  */
+	  || dbr_sequence_length () != 0)
 	{
 	  if (FP_REG_P (reg) || ! TARGET_ARCH64)
 	    return (mem == op1 ? "ldd %1,%0" : "std %1,%0");
@@ -3504,6 +3518,16 @@ output_function_epilogue (file, size, leaf_function)
     }
 #endif
 
+  else if (current_function_epilogue_delay_list == 0)
+    {                                                
+      /* If code does not drop into the epilogue, do nothing.  */
+      rtx insn = get_last_insn ();                               
+      if (GET_CODE (insn) == NOTE)                               
+      insn = prev_nonnote_insn (insn);                           
+      if (insn && GET_CODE (insn) == BARRIER)                    
+      return;                                                    
+    }
+
   /* Restore any call saved registers.  */
   if (num_gfregs)
     {
@@ -4631,8 +4655,7 @@ order_regs_for_local_alloc ()
 /* Return 1 if REGNO (reg1) is even and REGNO (reg1) == REGNO (reg2) - 1.
    This makes them candidates for using ldd and std insns. 
 
-   Note reg1 and reg2 *must* be hard registers.  To be sure we will
-   abort if we are passed pseudo registers.  */
+   Note reg1 and reg2 *must* be hard registers.  */
 
 int
 registers_ok_for_ldd_peep (reg1, reg2)
@@ -4644,6 +4667,10 @@ registers_ok_for_ldd_peep (reg1, reg2)
 
   if (REGNO (reg1) % 2 != 0)
     return 0;
+
+  /* Integer ldd is deprecated in SPARC V9 */ 
+  if (TARGET_V9 && REGNO (reg1) < 32)                  
+    return 0;                             
 
   return (REGNO (reg1) == REGNO (reg2) - 1);
 }
@@ -4762,13 +4789,17 @@ print_operand (file, x, code)
 	 are optimizing.  This is always used with '(' below.  */
       /* Sun OS 4.1.1 dbx can't handle an annulled unconditional branch;
 	 this is a dbx bug.  So, we only do this when optimizing.  */
-      if (dbr_sequence_length () == 0 && optimize)
+      /* On UltraSPARC, a branch in a delay slot causes a pipeline flush.
+	 Always emit a nop in case the next instruction is a branch.  */
+      if (dbr_sequence_length () == 0
+	  && (optimize && (int)sparc_cpu < PROCESSOR_V8PLUS))
 	fputs (",a", file);
       return;
     case '(':
       /* Output a 'nop' if there's nothing for the delay slot and we are
 	 not optimizing.  This is always used with '*' above.  */
-      if (dbr_sequence_length () == 0 && ! optimize)
+      if (dbr_sequence_length () == 0
+	  && ! (optimize && (int)sparc_cpu < PROCESSOR_V8PLUS))
 	fputs ("\n\tnop", file);
       return;
     case '_':
@@ -4783,7 +4814,9 @@ print_operand (file, x, code)
       return;
     case 'Y':
       /* Adjust the operand to take into account a RESTORE operation.  */
-      if (GET_CODE (x) != REG)
+      if (GET_CODE (x) == CONST_INT)
+	break;
+      else if (GET_CODE (x) != REG)
 	output_operand_lossage ("Invalid %%Y operand");
       else if (REGNO (x) < 8)
 	fputs (reg_names[REGNO (x)], file);
@@ -6021,4 +6054,151 @@ supersparc_adjust_cost (insn, link, dep_insn, cost)
     }
 	
   return cost;
+}
+
+int
+ultrasparc_adjust_cost (insn, link, dep_insn, cost)
+     rtx insn;                                     
+     rtx link;                                     
+     rtx dep_insn;                                     
+     int cost;                                     
+{
+  enum attr_type insn_type, dep_type;
+  rtx pat = PATTERN(insn);                                                    
+  rtx dep_pat = PATTERN (dep_insn);                                           
+
+  if (recog_memoized (insn) < 0 || recog_memoized (dep_insn) < 0)        
+    return cost;                                     
+
+  insn_type = get_attr_type (insn);                     
+  dep_type = get_attr_type (dep_insn);                  
+
+#define SLOW_FP(dep_type) \
+(dep_type == TYPE_FPSQRT || dep_type == TYPE_FPDIVS || dep_type == TYPE_FPDIVD)   
+  switch (REG_NOTE_KIND (link))
+    {                                              
+    case 0:                                        
+      /* Data dependency; DEP_INSN writes a register that INSN reads some
+	 cycles later.  */                               
+
+      switch (insn_type)
+	{                              
+	  /* UltraSPARC can dual issue a store and an instruction setting       
+	     the value stored, except for divide and square root.  */           
+	case TYPE_FPSTORE:
+	  if (! SLOW_FP (dep_type))        
+	    return 0;                                     
+	  break;
+
+	case TYPE_STORE:                                  
+	  if (GET_CODE (pat) != SET || GET_CODE (dep_pat) != SET)
+	    return cost;     
+
+	  /* The dependency between the two instructions is on the data
+	     that is being stored.  Assume that the address of the store
+	     is not also dependent.  */
+	  if (rtx_equal_p (SET_DEST (dep_pat), SET_SRC (pat)))
+	    return 0;                                
+	  return cost;                                   
+
+	case TYPE_LOAD:   
+	case TYPE_SLOAD:               
+	case TYPE_FPLOAD:                                                       
+	  /* A load does not return data until at least 11 cycles after         
+	     a store to the same location.  3 cycles are accounted for
+	     in the load latency; add the other 8 here.  */
+	  if (dep_type == TYPE_STORE || dep_type == TYPE_FPSTORE)
+	    {   
+	      /* If the addresses are not equal this may be a false
+		 dependency because pointer aliasing could not be
+		 determined.  Add only 2 cycles in that case.  2 is
+		 an arbitrary compromise between 8, which would cause
+		 the scheduler to generate worse code elsewhere to
+		 compensate for a dependency which might not really    
+		 exist, and 0.  */                                      
+	      if (GET_CODE (pat) != SET || GET_CODE (dep_pat) != SET
+		  || GET_CODE (SET_DEST (pat)) != MEM         
+		  || GET_CODE (SET_SRC (dep_pat)) != MEM
+		  || ! rtx_equal_p (XEXP (SET_DEST (pat), 0),
+				    XEXP (SET_SRC (dep_pat), 0)))
+		return cost + 2;
+
+	      return cost + 8;         
+	    }                                                                   
+	  break;                                                                
+
+	case TYPE_BRANCH:                                  
+	  /* Compare to branch latency is 0.  There is no benefit from
+	     separating compare and branch.  */
+	  if (dep_type == TYPE_COMPARE)                            
+	    return 0;                                            
+	  /* Floating point compare to branch latency is less than 
+	     compare to conditional move.  */                        
+	  if (dep_type == TYPE_FPCMP)                             
+	    return cost - 1;                                           
+	  break;                                                        
+
+	case TYPE_FPCMOVE:                                    
+	  /* FMOVR class instructions can not issue in the same cycle
+	     or the cycle after an instruction which writes any
+	     integer register.  Model this as cost 2 for dependent
+	     instructions.  */  
+	  if (GET_CODE (PATTERN (insn)) == SET
+	      && (GET_MODE (SET_DEST (PATTERN (insn))) == SFmode
+	          || GET_MODE (SET_DEST (PATTERN (insn))) == DFmode)            
+	      && cost < 2)                                                      
+	    return 2;
+	  /* Otherwise check as for integer conditional moves. */
+
+	case TYPE_CMOVE:                       
+	  /* Conditional moves involving integer registers wait until
+	     3 cycles after loads return data.  The interlock applies
+	     to all loads, not just dependent loads, but that is hard
+	     to model.  */                        
+	  if (dep_type == TYPE_LOAD || dep_type == TYPE_SLOAD)                  
+	    return cost + 3;                                           
+	  break;                                                        
+	}
+	break;                                                
+
+    case REG_DEP_ANTI:                                       
+      /* Divide and square root lock destination registers for full latency. */
+      if (! SLOW_FP (dep_type))             
+	return 0;                                               
+      break;                                                                  
+    }
+
+  /* Other costs not accounted for:                            
+     - Multiply should be modeled as having no latency because there is
+       nothing the scheduler can do about it.  
+     - Single precision floating point loads lock the other half of  
+       the even/odd register pair.                                   
+     - Several hazards associated with ldd/std are ignored because these
+       instructions are rarely generated for V9.  
+     - A shift following an integer instruction which does not set the
+       condition codes can not issue in the same cycle.
+     - The floating point pipeline can not have both a single and double
+       precision operation active at the same time.  Format conversions
+       and graphics instructions are given honorary double precision status.
+     - call and jmpl are always the first instruction in a group.  */
+
+  return cost;                                                              
+}  
+
+int                                                           
+sparc_issue_rate ()
+{
+  switch (sparc_cpu)
+    {
+    default:                                 
+      return 1;                                                    
+    case PROCESSOR_V8PLUS:                                         
+    case PROCESSOR_V9:                                                
+      /* Assume these generic V9 types are capable of at least dual-issue.  */
+      return 2;
+    case PROCESSOR_SUPERSPARC:                                        
+      return 3;                                                      
+    case PROCESSOR_ULTRASPARC:                                            
+      return 4;                                                    
+    }
 }
