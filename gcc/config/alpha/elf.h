@@ -71,7 +71,7 @@ do {								\
    .ident string is patterned after the ones produced by native svr4
    C compilers.  */
 
-#define IDENT_ASM_OP ".ident"
+#define IDENT_ASM_OP "\t.ident\t"
 
 #ifdef IDENTIFY_WITH_IDENT
 #define ASM_IDENTIFY_GCC(FILE) /* nothing */
@@ -97,7 +97,7 @@ do {				 				\
 /* This is how to allocate empty space in some section.  The .zero
    pseudo-op is used for this on most svr4 assemblers.  */
 
-#define SKIP_ASM_OP	".zero"
+#define SKIP_ASM_OP	"\t.zero\t"
 
 #undef ASM_OUTPUT_SKIP
 #define ASM_OUTPUT_SKIP(FILE,SIZE) \
@@ -111,7 +111,7 @@ do {				 				\
    make sure that the location counter for the .rodata section gets pro-
    perly re-aligned prior to the actual beginning of the jump table.  */
 
-#define ALIGN_ASM_OP ".align"
+#define ALIGN_ASM_OP "\t.align\t"
 
 #ifndef ASM_OUTPUT_BEFORE_CASE_LABEL
 #define ASM_OUTPUT_BEFORE_CASE_LABEL(FILE,PREFIX,NUM,TABLE) \
@@ -137,7 +137,7 @@ do {				 				\
    the linker seems to want the alignment of data objects
    to depend on their types.  We do exactly that here.  */
 
-#define COMMON_ASM_OP	".comm"
+#define COMMON_ASM_OP	"\t.comm\t"
 
 #undef ASM_OUTPUT_ALIGNED_COMMON
 #define ASM_OUTPUT_ALIGNED_COMMON(FILE, NAME, SIZE, ALIGN)		\
@@ -178,7 +178,7 @@ do {									\
 /* This is the pseudo-op used to generate a 64-bit word of data with a
    specific value in some section.  */
 
-#define INT_ASM_OP		".quad"
+#define INT_ASM_OP		"\t.quad\t"
 
 /* Biggest alignment supported by the object file format of this
    machine.  Use this macro to limit the alignment which can be
@@ -197,7 +197,7 @@ do {									\
    AUTOMATICALLY APPENDED.  This is the same for most svr4 assemblers.  */
 
 #undef ASCII_DATA_ASM_OP
-#define ASCII_DATA_ASM_OP	".ascii"
+#define ASCII_DATA_ASM_OP	"\t.ascii\t"
 
 /* Support const sections and the ctors and dtors sections for g++.
    Note that there appears to be two different ways to support const
@@ -209,7 +209,7 @@ do {									\
 
 #define USE_CONST_SECTION	1
 
-#define CONST_SECTION_ASM_OP	".section\t.rodata"
+#define CONST_SECTION_ASM_OP	"\t.section\t.rodata"
 
 /* Define the pseudo-ops used to switch to the .ctors and .dtors sections.
 
@@ -226,13 +226,13 @@ do {									\
    errors unless the .ctors and .dtors sections are marked as writable
    via the SHF_WRITE attribute.)  */
 
-#define CTORS_SECTION_ASM_OP	".section\t.ctors,\"aw\""
-#define DTORS_SECTION_ASM_OP	".section\t.dtors,\"aw\""
+#define CTORS_SECTION_ASM_OP	"\t.section\t.ctors,\"aw\""
+#define DTORS_SECTION_ASM_OP	"\t.section\t.dtors,\"aw\""
 
 /* Handle the small data sections.  */
-#define BSS_SECTION_ASM_OP	".section\t.bss"
-#define SBSS_SECTION_ASM_OP	".section\t.sbss,\"aw\""
-#define SDATA_SECTION_ASM_OP	".section\t.sdata,\"aw\""
+#define BSS_SECTION_ASM_OP	"\t.section\t.bss"
+#define SBSS_SECTION_ASM_OP	"\t.section\t.sbss,\"aw\""
+#define SDATA_SECTION_ASM_OP	"\t.section\t.sdata,\"aw\""
 
 /* On svr4, we *do* have support for the .init and .fini sections, and we
    can put stuff in there to be executed before and after `main'.  We let
@@ -240,8 +240,8 @@ do {									\
    The definitions say how to change sections to the .init and .fini
    sections.  This is the same for all known svr4 assemblers.  */
 
-#define INIT_SECTION_ASM_OP	".section\t.init"
-#define FINI_SECTION_ASM_OP	".section\t.fini"
+#define INIT_SECTION_ASM_OP	"\t.section\t.init"
+#define FINI_SECTION_ASM_OP	"\t.section\t.fini"
 
 /* A default list of other sections which we might be "in" at any given
    time.  For targets that use additional sections (e.g. .tdesc) you
@@ -391,8 +391,8 @@ void FN ()					\
    different pseudo-op names for these, they may be overridden in the
    file which includes this one.  */
 
-#define TYPE_ASM_OP	".type"
-#define SIZE_ASM_OP	".size"
+#define TYPE_ASM_OP	"\t.type\t"
+#define SIZE_ASM_OP	"\t.size\t"
 
 /* This is how we tell the assembler that a symbol is weak.  */
 
@@ -516,7 +516,7 @@ void FN ()					\
    should define this to zero.  */
 
 #define STRING_LIMIT	((unsigned) 256)
-#define STRING_ASM_OP	".string"
+#define STRING_ASM_OP	"\t.string\t"
 
 /* GAS is the only Alpha/ELF assembler.  */
 #undef TARGET_GAS

@@ -1,6 +1,6 @@
 /* Definitions of target machine for GNU compiler.
    For ARM with ELF obj format.
-   Copyright (C) 1995 - 1999 Free Software Foundation, Inc.
+   Copyright (C) 1995 - 2000 Free Software Foundation, Inc.
    Contributed by Philip Blundell <philb@gnu.org> and
    Catherine Moore <clm@cygnus.com>
    
@@ -70,8 +70,8 @@ Boston, MA 02111-1307, USA.  */
    are used to set the corresponding fields of the linker symbol table
    entries in an ELF object file under SVR4.  These macros also output
    the starting labels for the relevant functions/objects.  */
-#define TYPE_ASM_OP     ".type"
-#define SIZE_ASM_OP     ".size"
+#define TYPE_ASM_OP     "\t.type\t"
+#define SIZE_ASM_OP     "\t.size\t"
 
 /* Write the extra assembler code needed to declare a function properly.
    Some svr4 assemblers need to also have something extra said about the
@@ -332,7 +332,7 @@ dtors_section ()						\
 
 /* Support the ctors/dtors sections for g++.  */
 #ifndef INT_ASM_OP
-#define INT_ASM_OP 	".word"
+#define INT_ASM_OP 	"\t.word\t"
 #endif
 
 /* A C statement (sans semicolon) to output an element in the table of

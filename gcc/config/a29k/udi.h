@@ -1,6 +1,6 @@
 /* Definitions of target machine for GNU compiler, for AMD Am29000 CPU
    running over UDI using COFF.
-   Copyright (C) 1994, 1996 Free Software Foundation, Inc.
+   Copyright (C) 1994, 1996, 2000 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -71,7 +71,7 @@ dtors_section ()							\
     }									\
 }
 
-#define INT_ASM_OP ".word"
+#define INT_ASM_OP "\t.word\t"
 
 /* A C statement (sans semicolon) to output an element in the table of
    global constructors.  */
