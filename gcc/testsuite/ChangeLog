@@ -1,3 +1,7 @@
+Fri Dec 11 10:25:57 1998  Jeffrey A Law  (law@cygnus.com)
+
+	* g++.old-deja/g++.benjamin/p12475.C: Expect failure on mips64 targets.
+
 Fri Dec 11 01:12:45 1998  Zack Weinberg <zack@rabi.columbia.edu>
 
 	* gcc.c-torture/compile/981211-1.c: New test.
