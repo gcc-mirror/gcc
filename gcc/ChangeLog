@@ -1,6 +1,7 @@
 2004-01-30  Dara Hazeghi  <dhazeghi@yahoo.com>
 
 	PR bootstrap/9249
+	* doc/install.texi: document --enable-__cxa_atexit option.
 	* configure.ac: Disable __cxa_atexit if not supported.
 	* configure: Regenerate.
 

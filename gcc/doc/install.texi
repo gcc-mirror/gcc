@@ -939,6 +939,14 @@ option will adjust the ABI for AltiVec enhancements, as well as generate
 AltiVec code when appropriate.  This option is only available for
 PowerPC systems.
 
+@item --enable-__cxa_atexit
+Define if you want to use __cxa_atexit, rather than atexit, to
+register C++ destructors for local statics and global objects.
+This is essential for fully standards-compliant handling of
+destructors, but requires __cxa_atexit in libc. This option is currently
+only available on sytems with GNU libc. When enabled, this will cause
+@option{-fuse-cxa-exit} to be passed by default.
+
 @item --enable-target-optspace
 Specify that target
 libraries should be optimized for code space instead of code speed.
