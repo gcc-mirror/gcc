@@ -4467,14 +4467,20 @@ append_random_chars (template)
     {
       struct stat st;
 
-      /* VALUE should be unique for each file and must
-	 not change between compiles since this can cause
-	 bootstrap comparison errors.  */
+      /* VALUE should be unique for each file and must not change between
+	 compiles since this can cause bootstrap comparison errors.  */
 
       if (stat (main_input_filename, &st) < 0)
 	abort ();
 
-      value = st.st_dev ^ st.st_ino ^ st.st_mtime;
+      /* In VMS, ino is an array, so we have to use both values.  We
+	 conditionalize that.  */
+#ifdef VMS
+#define INO_TO_INT(INO) ((int) (INO)[1] << 16 ^ (int) (INO)[2])
+#else
+#define INO_TO_INT(INO) INO
+#endif
+      value = st.st_dev ^ INO_TO_INT (st.st_ino) ^ st.st_mtime;
     }
 
   template += strlen (template);
