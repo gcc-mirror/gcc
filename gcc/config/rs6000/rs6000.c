@@ -11888,6 +11888,8 @@ rs6000_hash_constant (k)
 						  >> CHAR_BIT * i);
 	  }
 	break;
+      case '0':
+	break;
       default:
 	abort ();
       }

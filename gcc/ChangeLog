@@ -1,3 +1,7 @@
+2003-04-12  David Edelsohn  <edelsohn@gnu.org>
+
+	* config/rs6000/rs6000.c (rs6000_hash_constant): Skip '0' fields.
+
 2003-04-12  Alexandre Oliva  <aoliva@redhat.com>
 
 	* mklibgcc.in (libgcc-stage-start): For every multilib  directory
