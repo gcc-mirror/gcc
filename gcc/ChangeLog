@@ -1,5 +1,8 @@
 2003-05-16  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
+	* ns32k.c (ADJSP, ns32k_output_function_prologue): Fix format
+	specifier warnings. 
+
 	* mcore.c (mcore_print_operand_address, mcore_print_operand): Fix
 	format specifier warnings.
 
