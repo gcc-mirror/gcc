@@ -112,7 +112,7 @@ __gnat_gmem_initialize (dumpname)
       fclose (gmemfile);
       return 0;
     }
-  
+
   return 1;
 }
 
@@ -140,16 +140,17 @@ __gnat_gmem_read_next (buf)
 {
   void *addr;
   int size;
-  char c;
+  int j;
 
-  if ((c = fgetc (gmemfile)) == EOF)
+  j = fgetc (gmemfile);
+  if (j == EOF)
     {
       fclose (gmemfile);
       sprintf (buf, "Program exited.");
     }
   else
     {
-      switch (c)
+      switch (j)
         {
           case 'A' :
             fread (&addr, sizeof (char *), 1, gmemfile);

@@ -1,5 +1,9 @@
 2001-10-26  Richard Kenner <kenner@gnat.com>
 
+	* gmem.c (__gnat_gmem_read_next): Properly check for EOF
+
+2001-10-26  Richard Kenner <kenner@gnat.com>
+
 	* decl.c (validate_size): Modify message for bad size to avoid 
 	implication that compiler is modifying the size.
 
