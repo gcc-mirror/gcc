@@ -1,3 +1,8 @@
+Wed Feb 17 16:59:28 1999  J"orn Rennecke <amylaar@cygnus.co.uk>
+
+	* loop.c (strength_reduce): Don't move giv insn for biv turned giv
+	below scan_start.
+
 Wed Feb 17 10:56:24 1999  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* tree.c (tree_node_kind_names, print_obstack_name,

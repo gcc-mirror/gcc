@@ -4053,6 +4053,7 @@ strength_reduce (scan_start, end, loop_top, insn_count,
 	      /* We can get better optimization if we can move the giv setting
 		 before the first giv use.  */
 	      if (dominator
+		  && ! loop_insn_first_p (dominator, scan_start)
 		  && ! reg_set_between_p (bl2->biv->src_reg, loop_start,
 					  dominator)
 		  && ! reg_used_between_p (giv, loop_start, dominator)
