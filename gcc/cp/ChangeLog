@@ -1,3 +1,9 @@
+2003-03-11  Jason Merrill  <jason@redhat.com>
+
+	PR c++/9820
+	* search.c (lookup_member): Fix handling of functions in a class 
+	being defined.
+
 2003-03-11  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/8700

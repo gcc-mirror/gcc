@@ -1212,11 +1212,15 @@ lookup_member (tree xbasetype, tree name, int protect, bool want_type)
 
   const char *errstr = 0;
 
+  /* Sanity check.  */
+  if (TREE_CODE (name) != IDENTIFIER_NODE)
+    abort ();
+
   if (xbasetype == current_class_type && TYPE_BEING_DEFINED (xbasetype)
       && IDENTIFIER_CLASS_VALUE (name))
     {
       tree field = IDENTIFIER_CLASS_VALUE (name);
-      if (TREE_CODE (field) != FUNCTION_DECL
+      if (! is_overloaded_fn (field)
 	  && ! (want_type && TREE_CODE (field) != TYPE_DECL))
 	/* We're in the scope of this class, and the value has already
 	   been looked up.  Just return the cached value.  */
