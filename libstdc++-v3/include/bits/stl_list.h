@@ -63,7 +63,7 @@
 
 #include <bits/concept_check.h>
 
-namespace __gnu_norm
+namespace _GLIBCXX_STD
 {
   // Supporting structures are split into common and templated types; the
   // latter publicly inherits from the former in an effort to reduce code
@@ -1247,7 +1247,7 @@ namespace __gnu_norm
     inline void
     swap(list<_Tp, _Alloc>& __x, list<_Tp, _Alloc>& __y)
     { __x.swap(__y); }
-} // namespace __gnu_norm
+} // namespace std
 
 #endif /* _LIST_H */
 

@@ -1,6 +1,6 @@
 // Debug-mode error formatting implementation -*- C++ -*-
 
-// Copyright (C) 2003
+// Copyright (C) 2003, 2004
 // Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
@@ -36,7 +36,7 @@
 
 namespace __gnu_debug
 {
-  using namespace std;
+  using std::type_info;
 
   /** Determine if the two types are the same. */
   template<typename _Type1, typename _Type2>

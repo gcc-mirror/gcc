@@ -1,6 +1,6 @@
 // Debugging deque implementation -*- C++ -*-
 
-// Copyright (C) 2003
+// Copyright (C) 2003, 2004
 // Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
@@ -39,10 +39,10 @@ namespace __gnu_debug_def
 {
   template<typename _Tp, typename _Allocator = std::allocator<_Tp> >
     class deque
-    : public  __gnu_norm::deque<_Tp, _Allocator>,
-    public __gnu_debug::_Safe_sequence<deque<_Tp, _Allocator> >
+    : public _GLIBCXX_STD::deque<_Tp, _Allocator>,
+      public __gnu_debug::_Safe_sequence<deque<_Tp, _Allocator> >
     {
-      typedef  __gnu_norm::deque<_Tp, _Allocator> _Base;
+      typedef  _GLIBCXX_STD::deque<_Tp, _Allocator> _Base;
       typedef __gnu_debug::_Safe_sequence<deque> _Safe_base;
 
     public:

@@ -61,7 +61,7 @@
 #ifndef _LIST_TCC
 #define _LIST_TCC 1
 
-namespace __gnu_norm
+namespace _GLIBCXX_STD
 {
   template<typename _Tp, typename _Alloc>
     void
@@ -371,7 +371,7 @@ namespace __gnu_norm
 	    swap( *(__fill-1) );
 	  }
       }
-} // namespace __gnu_norm
+} // namespace std
 
 #endif /* _LIST_TCC */
 
