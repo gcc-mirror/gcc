@@ -1,3 +1,8 @@
+2002-10-05  Kriang Lerdsuwanakij  <lerdsuwa@users.sourceforge.net>
+
+	PR c++/7804
+	* g++.dg/other/warning1.C: New test.
+
 2002-10-04  Roger Sayle  <roger@eyesopen.com>
 
 	* gcc.c-torture/execute/20020720-1.x:  XFAIL instead of skipping
