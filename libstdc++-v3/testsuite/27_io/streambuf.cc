@@ -1,6 +1,6 @@
 // 1999-10-11 bkoz
 
-// Copyright (C) 1999, 2000, 2001 Free Software Foundation, Inc.
+// Copyright (C) 1999, 2000, 2001, 2002 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -329,15 +329,12 @@ void test05()
 }
 
 // test06
-// XXX this should work, doesn't due to compiler limitations.
-#if 0
 namespace gnu 
 {
   class something_derived;
 }
 
 class gnu::something_derived : std::streambuf { };
-#endif
 
 // libstdc++/3599
 class testbuf2 : public std::streambuf
@@ -356,11 +353,15 @@ protected:
 void
 test07()
 {
+  bool test = true;
   testbuf2 ob;
   std::ostream out(&ob); 
 
-  VERIFY(out << "gasp");
-  VERIFY(out << std::endl);
+  out << "gasp";
+  VERIFY(out.good());
+
+  out << std::endl;
+  VERIFY(out.good());
 }
 
 int main() 
