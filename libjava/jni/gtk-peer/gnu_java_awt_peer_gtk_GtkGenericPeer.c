@@ -1,5 +1,5 @@
-/* gtkmenuitempeer.c -- Native implementation of GtkMenuItemPeer
-   Copyright (C) 1999 Free Software Foundation, Inc.
+/* gtkgenericpeer.c -- Native implementation of GtkGenericPeer
+   Copyright (C) 1998, 1999, 2002, 2004 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -37,42 +37,23 @@ exception statement from your version. */
 
 
 #include "gtkpeer.h"
-#include "gnu_java_awt_peer_gtk_GtkCheckboxMenuItemPeer.h"
+#include "gnu_java_awt_peer_gtk_GtkGenericPeer.h"
 
-JNIEXPORT void JNICALL
-Java_gnu_java_awt_peer_gtk_GtkCheckboxMenuItemPeer_create
-  (JNIEnv *env, jobject obj, jstring label)
-{
-  GtkWidget *widget;
-  const char *str;
-
-  /* Create global reference and save it for future use */
-  NSA_SET_GLOBAL_REF (env, obj);
-
-  str = (*env)->GetStringUTFChars (env, label, NULL);
-
-  gdk_threads_enter ();
-  
-  widget = gtk_check_menu_item_new_with_label (str);
-  gtk_check_menu_item_set_show_toggle (GTK_CHECK_MENU_ITEM (widget), 1);
-  gtk_widget_show (widget);
-
-  gdk_threads_leave ();
-
-  (*env)->ReleaseStringUTFChars (env, label, str);
-
-  NSA_SET_PTR (env, obj, widget);
-}
-
-JNIEXPORT void JNICALL
-Java_gnu_java_awt_peer_gtk_GtkCheckboxMenuItemPeer_setState
-  (JNIEnv *env, jobject obj, jboolean state)
+JNIEXPORT void JNICALL Java_gnu_java_awt_peer_gtk_GtkGenericPeer_dispose
+  (JNIEnv *env, jobject obj)
 {
   void *ptr;
 
-  ptr = NSA_GET_PTR (env, obj);
-  
+  /* Remove entries from state tables */
+  NSA_DEL_GLOBAL_REF (env, obj);
+  ptr = NSA_DEL_PTR (env, obj);
+
   gdk_threads_enter ();
-  gtk_check_menu_item_set_active (GTK_CHECK_MENU_ITEM (ptr), state);
+
+  /* For now the native state for any object must be a widget.
+     However, a subclass could override dispose() if required.  */
+  gtk_widget_destroy (GTK_WIDGET (ptr));
+
   gdk_threads_leave ();
 }
+

@@ -505,7 +505,3 @@ GThreadFunctions g_thread_jni_functions =
   NULL
 };
 
-/* ??? */
-void gdk_threads_wake () {
-
-}

@@ -284,28 +284,6 @@ Java_gnu_java_awt_peer_gtk_GtkWindowPeer_connectSignals
 }
 
 /*
- * Set a frame's title
- */
-
-JNIEXPORT void JNICALL 
-Java_gnu_java_awt_peer_gtk_GtkWindowPeer_setTitle
-  (JNIEnv *env, jobject obj, jstring title)
-{
-  void *ptr;
-  const char *str;
-
-  ptr = NSA_GET_PTR (env, obj);
-  
-  str = (*env)->GetStringUTFChars (env, title, NULL);
-  
-  gdk_threads_enter ();
-  gtk_window_set_title (GTK_WINDOW (ptr), str);
-  gdk_threads_leave ();
-  
-  (*env)->ReleaseStringUTFChars (env, title, str);
-}
-
-/*
  * Lower the z-level of a window. 
  */
 

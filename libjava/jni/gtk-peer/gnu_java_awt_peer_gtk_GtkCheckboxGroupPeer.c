@@ -1,5 +1,5 @@
-/* gtkmenuitempeer.c -- Native implementation of GtkMenuItemPeer
-   Copyright (C) 1999 Free Software Foundation, Inc.
+/* gtkcheckboxgrouppeer.c -- Native implementation of GtkCheckboxGroupPeer
+   Copyright (C) 2004  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -37,42 +37,39 @@ exception statement from your version. */
 
 
 #include "gtkpeer.h"
-#include "gnu_java_awt_peer_gtk_GtkCheckboxMenuItemPeer.h"
+#include "gnu_java_awt_peer_gtk_GtkCheckboxGroupPeer.h"
 
-JNIEXPORT void JNICALL
-Java_gnu_java_awt_peer_gtk_GtkCheckboxMenuItemPeer_create
-  (JNIEnv *env, jobject obj, jstring label)
+JNIEXPORT void JNICALL Java_gnu_java_awt_peer_gtk_GtkCheckboxGroupPeer_dispose
+  (JNIEnv *env, jobject obj)
 {
-  GtkWidget *widget;
-  const char *str;
-
-  /* Create global reference and save it for future use */
-  NSA_SET_GLOBAL_REF (env, obj);
-
-  str = (*env)->GetStringUTFChars (env, label, NULL);
-
-  gdk_threads_enter ();
-  
-  widget = gtk_check_menu_item_new_with_label (str);
-  gtk_check_menu_item_set_show_toggle (GTK_CHECK_MENU_ITEM (widget), 1);
-  gtk_widget_show (widget);
-
-  gdk_threads_leave ();
-
-  (*env)->ReleaseStringUTFChars (env, label, str);
-
-  NSA_SET_PTR (env, obj, widget);
+  /* The actual underlying widget is owned by a different class.  So
+     we just clean up the hash table here.  */
+  NSA_DEL_PTR (env, obj);
 }
 
-JNIEXPORT void JNICALL
-Java_gnu_java_awt_peer_gtk_GtkCheckboxMenuItemPeer_setState
-  (JNIEnv *env, jobject obj, jboolean state)
+JNIEXPORT void JNICALL Java_gnu_java_awt_peer_gtk_GtkCheckboxGroupPeer_remove
+  (JNIEnv *env, jobject obj, jobject checkbox)
 {
+  GtkRadioButton *button;
   void *ptr;
+  GSList *list;
 
-  ptr = NSA_GET_PTR (env, obj);
-  
+  ptr = NSA_GET_PTR (env, checkbox);
   gdk_threads_enter ();
-  gtk_check_menu_item_set_active (GTK_CHECK_MENU_ITEM (ptr), state);
+  button = GTK_RADIO_BUTTON (ptr);
+
+  /* Update the group to point to some other widget in the group.  We
+     have to do this because Gtk doesn't have a separate object to
+     represent a radio button's group.  */
+  for (list = gtk_radio_button_group (button); list != NULL;
+       list = list->next)
+    {
+      if (list->data != button)
+       break;
+    }
+
   gdk_threads_leave ();
+
+  NSA_SET_PTR (env, obj, list ? list->data : NULL);
 }
+

@@ -1,3 +1,29 @@
+2004-05-06  Michael Koch  <konqueror@gmx.de>
+
+	* jni/gtk-peer/gnu_java_awt_peer_gtk_GtkCheckboxGroupPeer.c,
+	jni/gtk-peer/gnu_java_awt_peer_gtk_GtkGenericPeer.c:
+	New files.
+	* jni/gtk-peer/gnu_java_awt_peer_gtk_GtkCheckboxMenuItemPeer.c:
+	Include gnu_java_awt_peer_gtk_GtkCheckboxMenuItemPeer.h.
+	* jni/gtk-peer/gnu_java_awt_peer_gtk_GtkCheckboxPeer.c:
+	Moved GtkCheckboxGroupPeer_dispose and GtkCheckboxGroupPeer_remove to
+	their own source file.
+	* jni/gtk-peer/gnu_java_awt_peer_gtk_GtkComponentPeer.c:
+	Moved GtkGenericPeer_dispose and GtkComponentPeer_requestFocus to
+	their own source file. Removed GtkComponentPeer_gtkWidgetSetUsize.
+	* jni/gtk-peer/gnu_java_awt_peer_gtk_GtkMenuPeer.c
+	(create): Define variable on top of function.
+	* jni/gtk-peer/gnu_java_awt_peer_gtk_GtkPopupMenuPeer.c
+	(menu_pos): Prototyped.
+	* jni/gtk-peer/gnu_java_awt_peer_gtk_GtkWindowPeer.c
+	(setTitle): Removed.
+	* jni/gtk-peer/gthread-jni.c
+	(gdk_threads_wake): Removed.
+	* Makefile.am (gtk_c_source_files): Added new files
+	jni/gtk-peer/gnu_java_awt_peer_gtk_GtkCheckboxGroupPeer.c and
+	jni/gtk-peer/gnu_java_awt_peer_gtk_GtkGenericPeer.c.
+	* Makefile.in: Regenerated.
+
 2004-05-05  Bryce McKinlay  <mckinlay@redhat.com>
 
 	* testsuite/libjava.jni/pr11951.java: Add missing System.loadLibrary()

@@ -89,7 +89,7 @@ JNIEXPORT void JNICALL Java_gnu_java_awt_peer_gtk_GtkMenuPeer_setupAccelGroup
 JNIEXPORT void JNICALL Java_gnu_java_awt_peer_gtk_GtkMenuPeer_create
   (JNIEnv *env, jobject obj, jstring label)
 {
-  GtkWidget *menu_title, *menu;
+  GtkWidget *menu_title, *menu, *toplevel;
   const char *str;
 
   /* Create global reference and save it for future use */
@@ -109,7 +109,7 @@ JNIEXPORT void JNICALL Java_gnu_java_awt_peer_gtk_GtkMenuPeer_create
   gtk_menu_item_set_submenu (GTK_MENU_ITEM (menu_title), menu);
 
   /* Allow this menu to grab the pointer. */
-  GtkWidget *toplevel = gtk_widget_get_toplevel (menu);
+  toplevel = gtk_widget_get_toplevel (menu);
   if (GTK_IS_WINDOW (toplevel))
     {
       gtk_window_group_add_window (global_gtk_window_group,

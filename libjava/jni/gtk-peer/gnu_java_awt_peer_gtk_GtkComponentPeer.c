@@ -43,23 +43,6 @@ exception statement from your version. */
 static GtkWidget *find_fg_color_widget (GtkWidget *widget);
 static GtkWidget *find_bg_color_widget (GtkWidget *widget);
 
-JNIEXPORT void JNICALL Java_gnu_java_awt_peer_gtk_GtkGenericPeer_dispose
-  (JNIEnv *env, jobject obj)
-{
-  void *ptr;
-
-  /* Remove entries from state tables */
-  NSA_DEL_GLOBAL_REF (env, obj);
-  ptr = NSA_DEL_PTR (env, obj);
-
-  gdk_threads_enter ();
-  
-  /* For now the native state for any object must be a widget.
-     However, a subclass could override dispose() if required.  */
-  gtk_widget_destroy (GTK_WIDGET (ptr));
-
-  gdk_threads_leave ();
-}
 
 JNIEXPORT void JNICALL 
 Java_gnu_java_awt_peer_gtk_GtkComponentPeer_gtkWidgetSetCursor 
@@ -125,18 +108,6 @@ Java_gnu_java_awt_peer_gtk_GtkComponentPeer_gtkWidgetSetCursor
   gdk_window_set_cursor (widget->window, gdk_cursor);
   gdk_cursor_destroy (gdk_cursor);
 
-  gdk_threads_leave ();
-}
-
-JNIEXPORT void JNICALL Java_gnu_java_awt_peer_gtk_GtkComponentPeer_requestFocus
-  (JNIEnv *env, jobject obj)
-{
-  void *ptr;
-
-  ptr = NSA_GET_PTR (env, obj);
-  
-  gdk_threads_enter ();
-  /* XXX gtk_widget_grab_focus (GTK_WIDGET (ptr)); */
   gdk_threads_leave ();
 }
 
@@ -232,19 +203,6 @@ Java_gnu_java_awt_peer_gtk_GtkComponentPeer_gtkWidgetGetPreferredDimensions
   gdk_threads_leave ();
 
   (*env)->ReleaseIntArrayElements (env, jdims, dims, 0);
-}
-
-JNIEXPORT void JNICALL 
-Java_gnu_java_awt_peer_gtk_GtkComponentPeer_gtkWidgetSetUsize (JNIEnv *env, 
-    jobject obj, jint w, jint h)
-{
-  void *ptr;
-
-  ptr = NSA_GET_PTR (env, obj);
-  
-  gdk_threads_enter ();
-  gtk_widget_set_usize (GTK_WIDGET (ptr), w, h);
-  gdk_threads_leave ();
 }
 
 JNIEXPORT void JNICALL Java_gnu_java_awt_peer_gtk_GtkComponentPeer_setNativeBounds
