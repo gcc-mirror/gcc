@@ -1,5 +1,5 @@
 /* SocketPermission.java -- Class modeling permissions for socket operations
-   Copyright (C) 1998, 2000, 2001 Free Software Foundation, Inc.
+   Copyright (C) 1998, 2000, 2001, 2002 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -166,12 +166,11 @@ public final class SocketPermission extends Permission
   public int hashCode()
   {
     int hash = 100;
-
-    // FIXME: Get a real hash function
-    for (int i = 0; i < hostport.length(); i++)
-      hash = hash + (int) hostport.charAt(i) * 7;
-
-    return (hash);
+    if (hostport != null)
+      hash += hostport.hashCode();
+    if (actions != null)
+      hash += actions.hashCode();
+    return hash;
   }
 
   /**
