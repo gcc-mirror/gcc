@@ -1,3 +1,8 @@
+2000-08-21  Nix  <nix@esperi.demon.co.uk>
+
+	* lang-specs.h: Do not process -o or run the assembler if
+	-fsyntax-only.
+
 2000-08-07  Kazu Hirata  <kazu@hxi.com>
 
 	* decl.c: Fix a comment typo.
