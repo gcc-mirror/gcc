@@ -1665,7 +1665,7 @@ assemble_real (d, mode)
 
 static rtx const_double_chain;
 
-/* Return a CONST_DOUBLE for a value specified as a pair of ints.
+/* Return a CONST_DOUBLE or CONST_INT for a value specified as a pair of ints.
    For an integer, I0 is the low-order word and I1 is the high-order word.
    For a real number, I0 is the word with the low address
    and I1 is the word with the high address.  */
