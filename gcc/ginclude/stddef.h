@@ -1,6 +1,7 @@
 #ifndef _STDDEF_H
 #ifndef _STDDEF_H_
 #ifndef _ANSI_STDDEF_H
+#ifndef __STDDEF_H__
 
 /* Any one of these symbols __need_* means that GNU libc
    wants us just to define one data type.  So don't define
@@ -11,6 +12,8 @@
 #define _STDDEF_H_
 /* snaroff@next.com says the NeXT needs this.  */
 #define _ANSI_STDDEF_H
+/* Irix 5.1 needs this.  */
+#define __STDDEF_H__
 #endif
 
 #ifndef __sys_stdtypes_h
@@ -221,6 +224,7 @@ typedef __WCHAR_TYPE__ wchar_t;
 
 #endif /* _STDDEF_H was defined this time */
 
+#endif /* __STDDEF_H__ was not defined before */
 #endif /* _ANSI_STDDEF_H was not defined before */
 #endif /* _STDDEF_H_ was not defined before */
 #endif /* _STDDEF_H was not defined before */
