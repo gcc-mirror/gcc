@@ -2298,7 +2298,25 @@ __unwind_function(void *ptr)
   asm("# br");
   asm("mtctr 3;bctr # b 3");
 }
-#endif
+#endif /* rs6000 */
+
+#if #machine(powerpc)
+__unwind_function(void *ptr)
+{
+  asm("mr 31,1");
+  asm("lwz 1,0(1)");
+  asm("lwz 31,-4(1)");
+  asm("# br");
+
+  asm("mr 31,1");
+  asm("lwz 1,0(1)");
+  /* use 31 as a scratch register to restore the link register. */
+  asm("lwz 31, 8(1);mtlr 31 # l lr,8(1)");
+  asm("lwz 31,-4(1)");
+  asm("# br");
+  asm("mtctr 3;bctr # b 3");
+}
+#endif /* powerpc */
 #endif /* L_eh */
 
 #ifdef L_pure
