@@ -1,3 +1,8 @@
+2001-12-11  Richard Henderson  <rth@redhat.com>
+
+	* combine.c (simplify_and_const_int): Simplify (AND (PLUS X Y) C)
+	if C has only low bits set and doesn't intersect with X or Y.
+
 Tue Dec 11 23:58:39 EST 2001  John Wehle  (john@feith.com)
 
 	* basic-block.h (flow_preorder_transversal_compute): Declare.

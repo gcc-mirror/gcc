@@ -7791,6 +7791,23 @@ simplify_and_const_int (x, mode, varop, constop)
 		      simplify_and_const_int (NULL_RTX, GET_MODE (varop),
 					      XEXP (varop, 1), constop))));
 
+  /* If VAROP is PLUS, and the constant is a mask of low bite, distribute
+     the AND and see if one of the operands simplifies to zero.  If so, we
+     may eliminate it.  */
+
+  if (GET_CODE (varop) == PLUS
+      && exact_log2 (constop + 1) >= 0)
+    {
+      rtx o0, o1;
+
+      o0 = simplify_and_const_int (NULL_RTX, mode, XEXP (varop, 0), constop);
+      o1 = simplify_and_const_int (NULL_RTX, mode, XEXP (varop, 1), constop);
+      if (o0 == const0_rtx)
+	return o1;
+      if (o1 == const0_rtx)
+	return o0;
+    }
+
   /* Get VAROP in MODE.  Try to get a SUBREG if not.  Don't make a new SUBREG
      if we already had one (just check for the simplest cases).  */
   if (x && GET_CODE (XEXP (x, 0)) == SUBREG
