@@ -247,7 +247,7 @@ static const char **sys_siglist;
 static int sys_nsig = NSIG;
 #else
 #ifdef _NSIG
-static int sys_nsig = NSIG;
+static int sys_nsig = _NSIG;
 #endif
 #endif
 extern const char * const sys_siglist[];
