@@ -1,3 +1,7 @@
+2004-11-19  Alan Modra  <amodra@bigpond.net.au>
+
+	* config/rs6000/rs6000.c (function_arg): Don't return BLKmode regs.
+
 2004-11-18  Nicolas Pitre <nico@cam.org>
 
 	* config/arm/arm.c (const_double_needs_minipool): New function to

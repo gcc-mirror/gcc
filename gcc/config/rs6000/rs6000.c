@@ -5525,6 +5525,9 @@ function_arg (CUMULATIVE_ARGS *cum, enum machine_mode mode,
 	  if (TARGET_32BIT && TARGET_POWERPC64)
 	    return rs6000_mixed_function_arg (mode, type, align_words);
 
+	  if (mode == BLKmode)
+	    mode = Pmode;
+
 	  return gen_rtx_REG (mode, GP_ARG_MIN_REG + align_words);
 	}
       else
