@@ -2941,8 +2941,6 @@ extern int alias_sets_conflict_p		PARAMS ((HOST_WIDE_INT,
 extern int readonly_fields_p			PARAMS ((tree));
 extern int objects_must_conflict_p		PARAMS ((tree, tree));
 
-struct obstack;
-
 /* In tree.c */
 extern int really_constant_p		PARAMS ((tree));
 extern int int_fits_type_p		PARAMS ((tree, tree));
@@ -2959,12 +2957,6 @@ extern void type_hash_add		PARAMS ((unsigned int, tree));
 extern unsigned int type_hash_list	PARAMS ((tree));
 extern int simple_cst_list_equal	PARAMS ((tree, tree));
 extern void dump_tree_statistics	PARAMS ((void));
-extern void print_obstack_statistics	PARAMS ((const char *,
-						struct obstack *));
-#ifdef BUFSIZ
-extern void print_obstack_name		PARAMS ((char *, FILE *,
-						 const char *));
-#endif
 extern void expand_function_end		PARAMS ((const char *, int, int));
 extern void expand_function_start	PARAMS ((tree, int));
 extern void expand_pending_sizes        PARAMS ((tree));
@@ -2972,7 +2964,6 @@ extern void expand_pending_sizes        PARAMS ((tree));
 extern int real_onep			PARAMS ((tree));
 extern int real_twop			PARAMS ((tree));
 extern int real_minus_onep		PARAMS ((tree));
-extern void gcc_obstack_init		PARAMS ((struct obstack *));
 extern void init_ttree			PARAMS ((void));
 extern void build_common_tree_nodes	PARAMS ((int));
 extern void build_common_tree_nodes_2	PARAMS ((int));

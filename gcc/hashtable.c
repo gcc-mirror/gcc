@@ -35,28 +35,6 @@ Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 static unsigned int calc_hash PARAMS ((const unsigned char *, unsigned int));
 static void ht_expand PARAMS ((hash_table *));
 
-/* Let particular systems override the size of a chunk.  */
-#ifndef OBSTACK_CHUNK_SIZE
-#define OBSTACK_CHUNK_SIZE 0
-#endif
-  /* Let them override the alloc and free routines too.  */
-#ifndef OBSTACK_CHUNK_ALLOC
-#define OBSTACK_CHUNK_ALLOC xmalloc
-#endif
-#ifndef OBSTACK_CHUNK_FREE
-#define OBSTACK_CHUNK_FREE free
-#endif
-
-/* Initialize an obstack.  */
-void
-gcc_obstack_init (obstack)
-     struct obstack *obstack;
-{
-  _obstack_begin (obstack, OBSTACK_CHUNK_SIZE, 0,
-		  (void *(*) PARAMS ((long))) OBSTACK_CHUNK_ALLOC,
-		  (void (*) PARAMS ((void *))) OBSTACK_CHUNK_FREE);
-}
-
 /* Calculate the hash of the string STR of length LEN.  */
 
 static unsigned int

@@ -39,25 +39,6 @@ static char * do_mangle_classname (const char *string);
 struct obstack  name_obstack;
 struct obstack *mangle_obstack = &name_obstack;
 
-void
-gcc_obstack_init (struct obstack *obstack)
-{
-  /* Let particular systems override the size of a chunk.  */
-#ifndef OBSTACK_CHUNK_SIZE
-#define OBSTACK_CHUNK_SIZE 0
-#endif
-  /* Let them override the alloc and free routines too.  */
-#ifndef OBSTACK_CHUNK_ALLOC
-#define OBSTACK_CHUNK_ALLOC xmalloc
-#endif
-#ifndef OBSTACK_CHUNK_FREE
-#define OBSTACK_CHUNK_FREE free
-#endif
-  _obstack_begin (obstack, OBSTACK_CHUNK_SIZE, 0,
-		  (void *(*) (long)) OBSTACK_CHUNK_ALLOC,
-		  (void (*) (void *)) OBSTACK_CHUNK_FREE);
-}
-
 static void usage (const char *) ATTRIBUTE_NORETURN;
 
 static void

@@ -1932,10 +1932,6 @@ extern int no_new_pseudos;
 
 extern int rtx_to_tree_code	PARAMS ((enum rtx_code));
 
-/* In tree.c */
-struct obstack;
-extern void gcc_obstack_init		PARAMS ((struct obstack *));
-
 /* In cse.c */
 struct cse_basic_block_data;
 

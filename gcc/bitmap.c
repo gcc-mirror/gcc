@@ -125,29 +125,17 @@ bitmap_element_allocate (head)
 	  if (!bitmap_obstack_init)
 	    {
 	      bitmap_obstack_init = TRUE;
-	      
-	      /* Let particular systems override the size of a chunk.  */
-#ifndef OBSTACK_CHUNK_SIZE
-#define OBSTACK_CHUNK_SIZE 0
-#endif
-	      /* Let them override the alloc and free routines too.  */
-#ifndef OBSTACK_CHUNK_ALLOC
-#define OBSTACK_CHUNK_ALLOC xmalloc
-#endif
-#ifndef OBSTACK_CHUNK_FREE
-#define OBSTACK_CHUNK_FREE free
-#endif
-	      
+
 #if !defined(__GNUC__) || (__GNUC__ < 2)
 #define __alignof__(type) 0
 #endif
-	      
+
 	      obstack_specify_allocation (&bitmap_obstack, OBSTACK_CHUNK_SIZE,
 					  __alignof__ (bitmap_element),
-					  (void *(*) PARAMS ((long))) OBSTACK_CHUNK_ALLOC,
-					  (void (*) PARAMS ((void *))) OBSTACK_CHUNK_FREE);
+					  obstack_chunk_alloc,
+					  obstack_chunk_free);
 	    }
-	  
+
 	  element = (bitmap_element *) obstack_alloc (&bitmap_obstack,
 						      sizeof (bitmap_element));
 	}

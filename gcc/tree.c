@@ -4255,29 +4255,6 @@ get_callee_fndecl (call)
   return NULL_TREE;
 }
 
-/* Print debugging information about the obstack O, named STR.  */
-
-void
-print_obstack_statistics (str, o)
-     const char *str;
-     struct obstack *o;
-{
-  struct _obstack_chunk *chunk = o->chunk;
-  int n_chunks = 1;
-  int n_alloc = 0;
-
-  n_alloc += o->next_free - chunk->contents;
-  chunk = chunk->prev;
-  while (chunk)
-    {
-      n_chunks += 1;
-      n_alloc += chunk->limit - &chunk->contents[0];
-      chunk = chunk->prev;
-    }
-  fprintf (stderr, "obstack %s: %u bytes, %d chunks\n",
-	   str, n_alloc, n_chunks);
-}
-
 /* Print debugging information about tree nodes generated during the compile,
    and any language-specific information.  */
 

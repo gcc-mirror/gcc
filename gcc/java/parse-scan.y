@@ -45,9 +45,6 @@ definitions and other extensions.  */
 #include "obstack.h"
 #include "toplev.h"
 
-#define obstack_chunk_alloc xmalloc
-#define obstack_chunk_free free
-
 extern char *input_filename;
 extern FILE *finput, *out;
 
