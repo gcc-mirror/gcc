@@ -344,7 +344,7 @@ mf_varname_tree (tree decl)
       {
         const char *funcname = NULL;
         if (DECL_NAME (current_function_decl))
-          funcname = (*lang_hooks.decl_printable_name) (current_function_decl, 1);
+          funcname = lang_hooks.decl_printable_name (current_function_decl, 1);
         if (funcname == NULL)
           funcname = "anonymous fn";
 
@@ -369,7 +369,7 @@ mf_varname_tree (tree decl)
       }
 
     if (declname == NULL)
-      declname = (*lang_hooks.decl_printable_name) (decl, 3);
+      declname = lang_hooks.decl_printable_name (decl, 3);
 
     if (declname == NULL)
       declname = "<unnamed variable>";
@@ -415,7 +415,7 @@ mf_file_function_line_tree (location_t *locus)
     colon = line = "";
 
   /* Add (FUNCTION).  */
-  name = (*lang_hooks.decl_printable_name) (current_function_decl, 1);
+  name = lang_hooks.decl_printable_name (current_function_decl, 1);
   if (name)
     {
       op = " (";

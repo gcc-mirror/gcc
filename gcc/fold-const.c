@@ -9372,8 +9372,8 @@ fold_relational_hi_lo (enum tree_code *code_p, const tree type, tree *op0_p,
 	  if (code == LE_EXPR || code == GT_EXPR)
 	    {
 	      tree st0, st1, exp, retval;
-	      st0 = (*lang_hooks.types.signed_type) (TREE_TYPE (op0));
-	      st1 = (*lang_hooks.types.signed_type) (TREE_TYPE (op1));
+	      st0 = lang_hooks.types.signed_type (TREE_TYPE (op0));
+	      st1 = lang_hooks.types.signed_type (TREE_TYPE (op1));
 
 	      exp = build (code == LE_EXPR ? GE_EXPR: LT_EXPR,
 			   type,
@@ -10013,7 +10013,7 @@ fold_relational_const (enum tree_code code, tree type, tree op0, tree op1)
 
   TREE_TYPE (tem) = type;
   if (TREE_CODE (type) == BOOLEAN_TYPE)
-    return (*lang_hooks.truthvalue_conversion) (tem);
+    return lang_hooks.truthvalue_conversion (tem);
   return tem;
 }
 

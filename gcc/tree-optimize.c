@@ -386,7 +386,7 @@ execute_one_pass (struct tree_opt_pass *pass)
       if (dump_file)
 	{
 	  const char *dname, *aname;
-	  dname = (*lang_hooks.decl_printable_name) (current_function_decl, 2);
+	  dname = lang_hooks.decl_printable_name (current_function_decl, 2);
 	  aname = (IDENTIFIER_POINTER
 		   (DECL_ASSEMBLER_NAME (current_function_decl)));
 	  fprintf (dump_file, "\n;; Function %s (%s)\n\n", dname, aname);
