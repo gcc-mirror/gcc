@@ -1,5 +1,8 @@
 2000-02-16  Zack Weinberg  <zack@wolery.cumb.org>
 
+	* reg-stack.c (emit_swap_insn): Do not put a new insn before a
+	NOTE_BASIC_BLOCK.
+
 	* flow.c (dump_regset, debug_regset, dump_bb, debug_bb,
 	debug_bb_n): New functions.
 	(dump_flow_info, print_rtl_with_bb): Use dump_regset.
