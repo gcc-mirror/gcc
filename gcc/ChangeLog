@@ -1,3 +1,7 @@
+2001-12-05  Nick Clifton  <nickc@cambridge.redhat.com>
+
+	* config.gcc: Include arm/xscale-coff.h before arm/arm.h.
+
 2001-12-05  William Cohen  <wcohen@redhat.com>
 
 	* config/arm/arm.h (THUMB_FUNCTION_PROFILER): Correct typo in
