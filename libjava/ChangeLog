@@ -1,3 +1,7 @@
+2001-09-17  Andreas Jaeger  <aj@suse.de>
+
+	* jni.cc (array_from_valist): Use promoted types for va_arg.
+
 2001-09-16  Anthony Green  <green@redhat.com>
 
 	* gnu/gcj/convert/IOConverter.java: Add support for iso8859_1.
@@ -12,10 +16,10 @@
 
 2001-09-14  Bryce McKinlay  <bryce@waitaki.otago.ac.nz>
 
-	* java/io/File.java (normalizePath): Use equals() not '==' for string 
+	* java/io/File.java (normalizePath): Use equals() not '==' for string
 	comparison.
 
-	* java/util/Hashtable.java (Enumerator): Ensure that if 
+	* java/util/Hashtable.java (Enumerator): Ensure that if
 	hasMoreElements() returns true, nextElement() will always return
 	something even if the table has been modified.
 
@@ -103,7 +107,7 @@
 
 2001-09-05  Bryce McKinlay  <bryce@waitaki.otago.ac.nz>
 
-        * java/text/MessageFormat.java (setLocale): Don't catch ParseException 
+        * java/text/MessageFormat.java (setLocale): Don't catch ParseException
         here, DecimalFormat.applyPattern() does not throw it.
 
 2001-09-04  Tom Tromey  <tromey@redhat.com>
@@ -344,7 +348,7 @@
 	Re-write it to avoid constructing unneeded temporaries.
 	(<init>(int,int,Random)):  Use new init method to avoid constructing
 	extra temporary BigIntegers.
-	
+
 2001-08-27  Tom Tromey  <tromey@redhat.com>
 
 	* java/rmi/activation/Activatable.java,
@@ -452,11 +456,11 @@
 	* gcj/javaprims.h: Add prototypes for _Jv_ThreadRun and new variant
 	of _Jv_AttachCurrentThread.
 	* gnu/gcj/runtime/FirstThread.java (FirstThread): Now extends Thread.
-	(run): New method. Take care of looking up main class manifest 
+	(run): New method. Take care of looking up main class manifest
 	attribute and calling forName if neccessary. Then call call_main.
 	(call_main): New native method.
-	* gnu/gcj/runtime/natFirstThread.cc (call_main): New function, code 
-	relocated from prims.cc. Look up and call main method. 
+	* gnu/gcj/runtime/natFirstThread.cc (call_main): New function, code
+	relocated from prims.cc. Look up and call main method.
 	* java/lang/Thread.java (run_): Removed.
 	* java/lang/natThread.cc (run_): Renamed to...
 	(_Jv_ThreadRun): this. JVMPI notification code moved to ...
@@ -465,7 +469,7 @@
 	UnsupportedOperationExceptions rather than JvFail'ing.
 	(_Jv_AttachCurrentThread): New variant takes a Thread argument.
 	Existing version wraps new variant.
-	
+
 
 2001-08-23  Tom Tromey  <tromey@redhat.com>
 
@@ -535,7 +539,7 @@
 2001-08-17  Hans-J. Boehm <Hans_Boehm@hp.com>
 
 	* BigInteger.java: fix right shifts by nonzero multiples of 32.
-	
+
 2001-08-15  Tom Tromey  <tromey@redhat.com>
 
 	* jni.cc: Include IdentityHashMap.h, not Hashtable.h.
@@ -612,11 +616,11 @@
 	* include/posix.h (_POSIX_PII_SOCKET): Define.
 	* configure.in (HAVE_SOCKLEN_T): Define.
 	* java/net/natPlainSocketImpl.cc [!HAVE_SOCKLEN_T]: Move socklen_t
-	definition up. 
+	definition up.
 	(_JV_accept): New function, avoids Tru64 UNIX accept macro.
 	(java::net::PlainSocketImpl::accept): Use it.
 	Fixes PRs libgcj/3694, libgcj/3696.
-	
+
 	* configure.in (HAVE_STRUCT_IPV6_MREQ): New test.
 	* acconfig.h (HAVE_STRUCT_IPV6_MREQ): Provide template.
 	* configure, include/config.h.in: Regenerate.
@@ -689,14 +693,14 @@
 
 2001-07-26  Bryce McKinlay  <bryce@waitaki.otago.ac.nz>
 
-	* java/util/Calendar.java (set): Never recompute fields here. They 
+	* java/util/Calendar.java (set): Never recompute fields here. They
 	will already be set if someone set time explicitly, and it can cause
 	problems to do so. Don't invalidate AM_PM setting if HOUR is set.
 	* java/util/GregorianCalendar.java (computeTime): Don't ignore an
-	HOUR setting if AM_PM is set. Don't try to ensure the HOUR value is 
+	HOUR setting if AM_PM is set. Don't try to ensure the HOUR value is
 	sane.
 	* java/text/SimpleDateFormat.java (defaultCentury): New field.
-	(readObject): Call set2DigitYearStart if appropriate so that 
+	(readObject): Call set2DigitYearStart if appropriate so that
 	defaultCentury is calculated.
 	(SimpleDateFormat): Don't bother clearing calendar here. Call
 	computeCenturyStart().
@@ -777,7 +781,7 @@
 
 2001-07-17  Bryce McKinlay  <bryce@waitaki.otago.ac.nz>
 
-	* java/util/LinkedList.java (clone): Clear the copy list with clear(), 
+	* java/util/LinkedList.java (clone): Clear the copy list with clear(),
 	not by setting its size field.
 
 2001-07-13  Alexandre Petit-Bianco  <apbianco@redhat.com>
@@ -787,7 +791,7 @@
 
 2001-07-12  Tom Tromey  <tromey@redhat.com>
 	    David Brownell  <david-b@pacbell.net>
-	
+
 	Fix for PR libgcj/3426:
 	* gnu/gcj/convert/natIconv.cc: Include CharConversionException.h,
 	errno.h.
@@ -853,7 +857,7 @@
 	* java/lang/ThreadLocal.java: Initial import.
 
 2001-07-07  Jeff Sturm  <jsturm@one-point.com>
-	
+
 	* Makefile.am (libgcj.jar): Don't recursively make
 	built_java_source_files.  Avoid long command lines.
 	Don't change to $(srcdir) to invoke javac.
@@ -1024,7 +1028,7 @@
 	* Makefile.in: Rebuild.
 	* Makefile.am: Ditto.
 	* libgcjdata.c: Remove.
-	
+
 2001-06-02  Anthony Green  <green@redhat.com>
 
 	* configure: Rebuild.
@@ -1239,7 +1243,7 @@
 	* Makefile.am (libgcj_la_DEPENDENCIES):  Add $(nat_files).
 	(libgcj_la_LIBADD):  Likewise.
 	(libgcjx_la_DEPENDENCIES, libgcjx_la_LIBADD):  Add $(x_nat_files).
-	
+
 2001-05-21  Per Bothner  <per@bothner.com>
 
 	* gcj/javaprims.h (_Jv_FormatInt):  New declaration.
@@ -1259,7 +1263,7 @@
 
 2001-05-18  Andrew Haley  <aph@cambridge.redhat.com>
 
-	* include/dwarf2-signal.h: New file.	
+	* include/dwarf2-signal.h: New file.
 	* configure.in (SYSDEP_SOURCES): Add dwarf2-signal.h for PPC.
 	* configure.host (EXCEPTIONSPEC): Don't use sjlj on PPC.
         * configure: Rebuilt.
@@ -1293,7 +1297,7 @@
 
 2001-05-17  Martin Kahlert  <martin.kahlert@infineon.com>
 
-	* java/lang/natClass.cc (_Jv_FindIIndex): Fix an off by one error 
+	* java/lang/natClass.cc (_Jv_FindIIndex): Fix an off by one error
 	with length of ioffset table.
 	(_Jv_IsAssignableFrom): Likewise.
 
@@ -1436,15 +1440,15 @@
 2001-04-25  Bryce McKinlay  <bryce@waitaki.otago.ac.nz>
 
 	Fix PR libgcj/2237:
-	* java/io/ObjectStreamClass.java (setClass): Calculate 
+	* java/io/ObjectStreamClass.java (setClass): Calculate
 	serialVersionUID for local class and compare it against the UID
 	from the Object Stream. Throw InvalidClassException upon mismatch.
 	(setUID): Renamed to...
-	(getClassUID): this. Return the calculated class UID rather than 
+	(getClassUID): this. Return the calculated class UID rather than
 	setting uid field directly.
 	(getDefinedSUID): Removed.
-	* java/io/ObjectInputStream.java (resolveClass): Use the 
-	three-argument Class.forName(). 
+	* java/io/ObjectInputStream.java (resolveClass): Use the
+	three-argument Class.forName().
 	* java/io/InvalidClassException (toString): Don't include classname in
 	result if it is null.
 
@@ -1457,9 +1461,9 @@
 
 	java.security merge and ClassLoader compliance fixes.
 
-	* java/lang/Class.h (Class): Include ProtectionDomain.h. 
+	* java/lang/Class.h (Class): Include ProtectionDomain.h.
 	New protectionDomain field.
-	(forName): Add initialize parameter. Fixes declaration to comply with 
+	(forName): Add initialize parameter. Fixes declaration to comply with
 	JDK spec.
 	* java/lang/natClass.cc (forName): Correct declaration of the three-arg
 	variant. Honour	"initialize" flag.
@@ -1501,7 +1505,7 @@
 	* java/net/NetPermission.java: Likewise.
 	* java/net/SocketPermission.java: Likewise.
 	* gnu/java/security/provider/DefaultPolicy.java: Likewise.
-	
+
 	* Makefile.am: Add new classes.
 	* Makefile.in: Rebuilt.
 	* gcj/javaprims.h: CNI namespace rebuild.
@@ -1581,12 +1585,12 @@
 
 2001-04-12  Bryce McKinlay  <bryce@albatross.co.nz>
 
-	* java/io/File.java (normalizePath): New private method. 
+	* java/io/File.java (normalizePath): New private method.
 	(File (String)): Use normalizePath().
 	(File (String, String)): Likewise.
 
 	* Makefile.am (libffi_files): Removed.
-	(libgcj.la): Link libffi as a convenience library instead of 
+	(libgcj.la): Link libffi as a convenience library instead of
 	refering to its object files directly.
 	* Makefile.in: Rebuilt.
 
@@ -3254,20 +3258,20 @@ Sun Nov 26 21:30:25 2000  Anthony Green  <green@redhat.com>
 2000-11-26  Anthony Green  <green@redhat.com>
 
 	* javax/naming/spi/NamingManager.java,
- 	javax/naming/spi/ObjectFactory.java,
- 	javax/naming/spi/InitialContextFactory.java,
- 	javax/naming/spi/InitialContextFactoryBuilder.java,
- 	javax/naming/RefAddr.java, javax/naming/Reference.java,
- 	javax/naming/NamingException.java, javax/naming/Context.java,
- 	javax/naming/Referenceable.java,
- 	javax/naming/directory/InitialDirContext.java,
- 	javax/naming/directory/DirContext.java,
- 	javax/naming/directory/Attributes.java,
- 	javax/naming/directory/Attribute.java,
- 	javax/naming/StringRefAddr.java,
- 	javax/naming/NamingEnumeration.java, javax/naming/Name.java,
- 	javax/naming/InitialContext.java,
- 	javax/naming/NoInitialContextException.java: New files.
+	javax/naming/spi/ObjectFactory.java,
+	javax/naming/spi/InitialContextFactory.java,
+	javax/naming/spi/InitialContextFactoryBuilder.java,
+	javax/naming/RefAddr.java, javax/naming/Reference.java,
+	javax/naming/NamingException.java, javax/naming/Context.java,
+	javax/naming/Referenceable.java,
+	javax/naming/directory/InitialDirContext.java,
+	javax/naming/directory/DirContext.java,
+	javax/naming/directory/Attributes.java,
+	javax/naming/directory/Attribute.java,
+	javax/naming/StringRefAddr.java,
+	javax/naming/NamingEnumeration.java, javax/naming/Name.java,
+	javax/naming/InitialContext.java,
+	javax/naming/NoInitialContextException.java: New files.
 
 2000-11-25  Anthony Green  <green@redhat.com>
 
