@@ -1,6 +1,6 @@
 /* Build expressions with type checking for C++ compiler.
    Copyright (C) 1987, 1988, 1989, 1992, 1993, 1994, 1995, 1996, 1997, 1998,
-   1999, 2000, 2001 Free Software Foundation, Inc.
+   1999, 2000, 2001, 2002 Free Software Foundation, Inc.
    Hacked by Michael Tiemann (tiemann@cygnus.com)
 
 This file is part of GNU CC.
@@ -4286,9 +4286,15 @@ build_x_unary_op (code, xarg)
           
           if (!ptrmem && !flag_ms_extensions
               && TREE_CODE (TREE_TYPE (TREE_OPERAND (xarg, 1))) == METHOD_TYPE)
-            /* A single non-static member, make sure we don't allow a
-               pointer-to-member.  */
-            xarg = ovl_cons (TREE_OPERAND (xarg, 1), NULL_TREE);
+	    {
+	      /* A single non-static member, make sure we don't allow a
+                 pointer-to-member.  */
+	      xarg = build (OFFSET_REF, TREE_TYPE (xarg),
+			    TREE_OPERAND (xarg, 0),
+			    ovl_cons (TREE_OPERAND (xarg, 1), NULL_TREE));
+	      PTRMEM_OK_P (xarg) = ptrmem;
+	    }
+	      
         }
       else if (TREE_CODE (xarg) == TARGET_EXPR)
 	warning ("taking address of temporary");
@@ -4847,6 +4853,22 @@ unary_complex_lvalue (code, arg)
 	      && TREE_CODE (t) != FIELD_DECL)
 	    {
 	      error ("taking address of bound pointer-to-member expression");
+	      return error_mark_node;
+	    }
+	  if (!PTRMEM_OK_P (arg))
+	    {
+	      /* This cannot form a pointer to method, so we must
+	         resolve the offset ref, and take the address of the
+		 result.  For instance,
+		 	&(C::m)	      */
+	      arg = resolve_offset_ref (arg);
+
+	      return build_unary_op (code, arg, 0);
+	    }
+	  
+	  if (TREE_CODE (TREE_TYPE (t)) == REFERENCE_TYPE)
+	    {
+	      error ("cannot create pointer to reference member `%D'", t);
 	      return error_mark_node;
 	    }
 
