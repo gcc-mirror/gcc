@@ -180,6 +180,7 @@ static void sanitize_cpp_opts PARAMS ((void));
   OPT("Wsystem-headers",	CL_ALL,   OPT_Wsystem_headers)		     \
   OPT("Wtraditional",		CL_C,     OPT_Wtraditional)		     \
   OPT("Wtrigraphs",		CL_ALL,   OPT_Wtrigraphs)		     \
+  OPT("Wundeclared-selector",	CL_OBJC,  OPT_Wundeclared_selector)	     \
   OPT("Wundef",			CL_ALL,   OPT_Wundef)			     \
   OPT("Wunknown-pragmas",	CL_ALL,   OPT_Wunknown_pragmas)		     \
   OPT("Wunused-macros",		CL_ALL,   OPT_Wunused_macros)		     \
@@ -945,6 +946,10 @@ c_common_decode_option (argc, argv)
 
     case OPT_Wtrigraphs:
       cpp_opts->warn_trigraphs = on;
+      break;
+
+    case OPT_Wundeclared_selector:
+      warn_undeclared_selector = on;
       break;
 
     case OPT_Wundef:

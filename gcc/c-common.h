@@ -609,9 +609,17 @@ extern int print_struct_values;
 extern const char *constant_string_class_name;
 
 /* Warn if multiple methods are seen for the same selector, but with
-   different argument types.  */
+   different argument types.  Performs the check on the whole selector
+   table at the end of compilation.  */
 
 extern int warn_selector;
+
+/* Warn if a @selector() is found, and no method with that selector
+   has been previously declared.  The check is done on each
+   @selector() as soon as it is found - so it warns about forward
+   declarations.  */
+
+extern int warn_undeclared_selector;
 
 /* Warn if methods required by a protocol are not implemented in the 
    class adopting it.  When turned off, methods inherited to that
