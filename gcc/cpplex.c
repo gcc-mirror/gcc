@@ -1218,7 +1218,8 @@ _cpp_lex_token (pfile)
       else
 	{
 	  /* Backslash newline is ignored. */
-	  CPP_BUMP_LINE (pfile);
+	  if (!ACTIVE_MARK_P (pfile))
+	    CPP_BUMP_LINE (pfile);
 	  goto get_next;
 	}
 

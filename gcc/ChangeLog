@@ -1,3 +1,8 @@
+2000-04-18  Mark Mitchell  <mark@codesourcery.com>
+
+	* cpplex.c (_cpp_lex_token): Don't call CPP_BUMP_LINE when the
+	mark is active.
+
 Tue Apr 18 14:16:47 2000  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* c-decl.c (mark_binding_level): Use 'for' instead of `while'.
