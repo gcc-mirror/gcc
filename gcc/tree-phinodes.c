@@ -1,23 +1,23 @@
 /* Generic routines for manipulating PHIs
    Copyright (C) 2003 Free Software Foundation, Inc.
-                                                                                
+
 This file is part of GCC.
-                                                                                
+
 GCC is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
 the Free Software Foundation; either version 2, or (at your option)
 any later version.
-                                                                                
+
 GCC is distributed in the hope that it will be useful,
 but WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 GNU General Public License for more details.
-                                                                                
+
 You should have received a copy of the GNU General Public License
 along with GCC; see the file COPYING.  If not, write to
 the Free Software Foundation, 59 Temple Place - Suite 330,
 Boston, MA 02111-1307, USA.  */
-                                                                                
+
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
@@ -32,7 +32,7 @@ Boston, MA 02111-1307, USA.  */
 
 /* Rewriting a function into SSA form can create a huge number of PHIs
    many of which may be thrown away shortly after their creation if jumps
-   were threaded through PHI nodes.  
+   were threaded through PHI nodes.
 
    While our garbage collection mechanisms will handle this situation, it
    is extremely wasteful to create nodes and throw them away, especially
@@ -46,12 +46,12 @@ Boston, MA 02111-1307, USA.  */
 
    Right now we maintain our free list on a per-function basis.  It may
    or may not make sense to maintain the free list for the duration of
-   a compilation unit. 
+   a compilation unit.
 
    We could also use a zone allocator for these objects since they have
    a very well defined lifetime.  If someone wants to experiment with that
    this is the place to try it.
-   
+
    PHI nodes have different sizes, so we can't have a single list of all
    the PHI nodes as it would be too expensive to walk down that list to
    find a PHI of a suitable size.
@@ -71,7 +71,7 @@ Boston, MA 02111-1307, USA.  */
    be very expensive if the program has released a bunch of large PHI nodes,
    but keeps asking for even larger PHI nodes.  Experiments have shown that
    walking the elements of the last array entry would result in finding less
-   than .1% additional reusable PHI nodes. 
+   than .1% additional reusable PHI nodes.
 
    Note that we can never have less than two PHI argument slots.  Thus,
    the -2 on all the calculations below.  */
@@ -149,8 +149,8 @@ ideal_phi_node_len (int len)
   /* Round it up to the next power of two.  */
   log2 = ceil_log2 (size);
   new_size = 1 << log2;
-  
-  /* Now compute and return the number of PHI argument slots given an 
+
+  /* Now compute and return the number of PHI argument slots given an
      ideal size allocation.  */
   new_len = len + (new_size - size) / sizeof (struct phi_arg_d);
   return new_len;
@@ -228,7 +228,7 @@ release_phi_node (tree phi)
 
 /* Resize an existing PHI node.  The only way is up.  Return the
    possibly relocated phi.  */
-                                                                                
+
 static void
 resize_phi_node (tree *phi, int len)
 {
@@ -273,7 +273,7 @@ resize_phi_node (tree *phi, int len)
 
   old_len = PHI_ARG_CAPACITY (new_phi);
   PHI_ARG_CAPACITY (new_phi) = len;
-                                                                                
+
   for (i = old_len; i < len; i++)
     {
       SET_PHI_ARG_DEF (new_phi, i, NULL_TREE);
