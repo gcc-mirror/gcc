@@ -1,5 +1,8 @@
 Thu Nov 13 01:52:36 1997  Jason Merrill  <jason@yorick.cygnus.com>
 
+	* call.c (build_new_function_call): Remove unused 'obj' parm.
+	* cp-tree.h, typeck.c: Adjust.
+
 	* init.c (build_new): Make the cleanup last longer.
 	(expand_vec_init): Call do_pending_stack_adjust.
 
