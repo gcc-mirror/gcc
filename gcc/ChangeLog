@@ -7,6 +7,11 @@
 	unshare_all_trees): Make them static.
 	* tree-gimple.h: Remove the corresponding prototypes.
 
+	* diagnostic.h: Remove unused prototype
+	debug_output_buffer.
+	* modulo-sched.c: Remove unused prototype
+	set_row_column_for_ps.
+
 2005-03-07  Per Bothner  <per@bothner.com>
 
 	* tree.h (DECL_IS_BUILTIN): Reverted my patch from earlier today.
