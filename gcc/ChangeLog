@@ -1,3 +1,8 @@
+Mon Aug 23 22:28:16 1999  Mark Mitchell  <mark@codesourcery.com>
+
+	* expr.c (store_expr): Always pass down the target, even when not
+	doing CSE.
+
 1999-08-24  Nick Clifton  <nickc@cygnus.com>
 
 	* configure.in: Define target_cpu_default for v850 targets.
