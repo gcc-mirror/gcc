@@ -48,22 +48,22 @@ extern int target_flags;
    An empty string NAME is used to identify the default VALUE.  */
 
 #define TARGET_SWITCHES           		       		       \
-{ { "hard-float",    1,N_("Use hardware fp")},         		       \
-  { "soft-float",   -1,N_("Don't use hardware fp")},	      	       \
-  { "backchain",     2,N_("Set backchain")},           		       \
-  { "no-backchain", -2,N_("Don't set backchain (faster, but debug harder")}, \
-  { "small-exec",    4,N_("Use bras for execucable < 64k")},           \
-  { "no-small-exec",-4,N_("Don't use bras")},            	       \
-  { "debug",         8,N_("Additional debug prints")},        	       \
-  { "no-debug",     -8,N_("Don't print additional debug prints")},     \
-  { "64",           16,N_("64 bit mode")},         	               \
-  { "31",          -16,N_("31 bit mode")},                             \
-  { "mvcle",        32,N_("mvcle use")},         	               \
-  { "no-mvcle",    -32,N_("mvc&ex")},                                  \
+{ { "hard-float",    1, N_("Use hardware fp")},         		       \
+  { "soft-float",   -1, N_("Don't use hardware fp")},	      	       \
+  { "backchain",     2, N_("Set backchain")},           		       \
+  { "no-backchain", -2, N_("Don't set backchain (faster, but debug harder")}, \
+  { "small-exec",    4, N_("Use bras for execucable < 64k")},           \
+  { "no-small-exec",-4, N_("Don't use bras")},            	       \
+  { "debug",         8, N_("Additional debug prints")},        	       \
+  { "no-debug",     -8, N_("Don't print additional debug prints")},     \
+  { "64",           16, N_("64 bit mode")},         	               \
+  { "31",          -16, N_("31 bit mode")},                             \
+  { "mvcle",        32, N_("mvcle use")},         	               \
+  { "no-mvcle",    -32, N_("mvc&ex")},                                  \
   { "", TARGET_DEFAULT, 0 } }
 
 /* Define this to change the optimizations performed by default.  */
-#define OPTIMIZATION_OPTIONS(LEVEL,SIZE) optimization_options(LEVEL,SIZE)
+#define OPTIMIZATION_OPTIONS(LEVEL, SIZE) optimization_options(LEVEL, SIZE)
 
 /* The current function count for create unique internal labels.  */
 
@@ -213,7 +213,7 @@ if (INTEGRAL_MODE_P (MODE) &&	        	    	\
 
 /* Standard register usage.  */
  
-#define INT_REGNO_P(N)   ( (N) >= 0 && (N) < 16 )
+#define INT_REGNO_P(N)   ( (int)(N) >= 0 && (N) < 16 )
 #ifdef IEEE_FLOAT
 #define FLOAT_REGNO_P(N) ( (N) >= 16 && (N) < 32 )
 #else
@@ -682,14 +682,14 @@ CUMULATIVE_ARGS;
    may not be available.) */
 
 #define FUNCTION_ARG_ADVANCE(CUM, MODE, TYPE, NAMED)                    \
-  s390_function_arg_advance(&CUM, MODE, TYPE, NAMED)
+  s390_function_arg_advance (&CUM, MODE, TYPE, NAMED)
 
 /* Define where to put the arguments to a function.  Value is zero to push
    the argument on the stack, or a hard register in which to store the
    argument.  */
 
 #define FUNCTION_ARG(CUM, MODE, TYPE, NAMED)   \
-  s390_function_arg(&CUM, MODE, TYPE, NAMED)
+  s390_function_arg (&CUM, MODE, TYPE, NAMED)
 
 /* Define where to expect the arguments of a function.  Value is zero, if
    the argument is on the stack, or a hard register in which the argument
@@ -808,7 +808,7 @@ CUMULATIVE_ARGS;
 #define FUNCTION_PROFILER(FILE, LABELNO) 			\
 do {                                     			\
   extern rtx s390_profile[];  					\
-  extern s390_pool_count;     					\
+  extern int s390_pool_count;     				\
   rtx tmp;                                    			\
   static char label[128];                     			\
   fprintf (FILE, "# function profiler \n");   			\
@@ -1101,7 +1101,7 @@ do									           \
       {						                                   \
     	rtx tmp[1];	                                                           \
 	fprintf (FILE, "# block profiler %d block %d \n",                          \
-			 profile_block_flag,BLOCKNO); 	                           \
+			 profile_block_flag, BLOCKNO); 	                           \
 	output_asm_insn ("ipm   14", tmp);              		           \
 	output_asm_insn ("aghi  15,-224", tmp);                           	   \
 	output_asm_insn ("stmg  14,5,160(15)", tmp);             		   \
@@ -1325,7 +1325,7 @@ do {                                                                       \
   ((REGNO) < 16 || (unsigned) reg_renumber[REGNO] < 16)
 
 #define REGNO_OK_FOR_FP_P(REGNO)                                        \
-  FLOAT_REGNO_P(REGNO)
+  FLOAT_REGNO_P (REGNO)
 
 /* Now macros that check whether X is a register and also,
    strictly, whether it is in a specified class.  */
@@ -1531,7 +1531,7 @@ do {                                                                       \
    After generation of rtl, the compiler makes no further distinction
    between pointers and any other objects of this machine mode.  */
 
-#define Pmode (TARGET_64BIT ? DImode : SImode)
+#define Pmode ((enum machine_mode) (TARGET_64BIT ? DImode : SImode))
 
 /* A function address in a call instruction is a byte address (for
    indexing purposes) so give the MEM rtx a byte's mode.  */
@@ -1689,7 +1689,7 @@ do {                                                                       \
 /* Given a comparison code (EQ, NE, etc.) and the first operand of a COMPARE,
    return the mode to be used for the comparison. */
  
-#define SELECT_CC_MODE(OP,X,Y)              \
+#define SELECT_CC_MODE(OP, X, Y)            \
  (   (OP) == EQ  || (OP) == NE  ? CCZmode   \
    : (OP) == LE  || (OP) == LT  ||          \
      (OP) == GE  || (OP) == GT  ? CCSmode   \
@@ -1703,8 +1703,6 @@ do {                                                                       \
    since it hasn't been defined!  */
  
 extern struct rtx_def *s390_compare_op0, *s390_compare_op1;
- 
-extern int s390_match_ccmode PARAMS ((struct rtx_def *, int));
 
 
 /* How to refer to registers in assembler output.  This sequence is
@@ -1809,7 +1807,7 @@ extern int s390_nr_constants;
     /* Mark entries referenced by other entries */			\
     for (pool = first_pool; pool; pool = pool->next)		       	\
       if (pool->mark)							\
-        mark_constants(pool->constant);					\
+        mark_constants (pool->constant);					\
 								       	\
     s390_asm_output_pool_prologue (FILE, FUNNAME, fndecl, size);     	\
 }

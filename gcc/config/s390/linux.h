@@ -154,7 +154,7 @@ do { fprintf ((FILE), "%s\t", ASM_QUAD);          			\
 #undef ASM_OUTPUT_INT
 #define ASM_OUTPUT_INT(FILE, VALUE)             \
 do { fprintf (FILE, "%s\t", ASM_LONG);          \
-  output_addr_const (FILE,(VALUE));             \
+  output_addr_const (FILE, (VALUE));            \
   putc ('\n',FILE);                             \
  } while (0)
 
@@ -163,7 +163,7 @@ do { fprintf (FILE, "%s\t", ASM_LONG);          \
 
 #define ASM_OUTPUT_SHORT(FILE, VALUE)           \
 ( fprintf (FILE, "%s ", ASM_SHORT),             \
-  output_addr_const (FILE,(VALUE)),             \
+  output_addr_const (FILE, (VALUE)),            \
   putc ('\n',FILE))
 
 #define ASM_OUTPUT_CHAR(FILE, VALUE)            \
@@ -284,7 +284,7 @@ do {                                                                    \
 /* This is how to output a command to make the user-level label named NAME
    defined for reference from other files.  */
 
-#define ASM_GLOBALIZE_LABEL(FILE,NAME)  \
+#define ASM_GLOBALIZE_LABEL(FILE, NAME)  \
   (fputs (".globl ", FILE), assemble_name (FILE, NAME), fputs ("\n", FILE))
 
 #define DBX_REGISTER_NUMBER(REGNO) (REGNO)
