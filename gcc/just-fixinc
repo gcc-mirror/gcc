@@ -1,0 +1,7 @@
+#!/bin/sh
+rmdir tmpfoo 2>&1 >/def/null
+mkdir tmpfoo
+mv va-sparc.h varargs.h stdarg.h stddef.h limits.h float.h proto.h tmpfoo
+./fixinc.svr4 /opt/gnu/lib/gcc-lib/sparc-sun-solaris2/gcc-2.4.2/include /include .
+mv tmpfoo/* .
+rmdir tmpfoo
