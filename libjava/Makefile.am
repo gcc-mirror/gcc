@@ -429,7 +429,7 @@ jv_convert_LINK = $(GCJLINK)
 ## system libraries we need (via the specs file).
 ## We need the -L so that gcj can find libgcj with `-lgcj'.
 ## FIXME: should be _libs on some systems.
-jv_convert_LDADD = libgcj.la $(GCLIBS) $(THREADLIBS) $(ZLIBS) -L$(here)/.libs
+jv_convert_LDADD = libgcj.la -L$(here)/.libs
 ## Depend on the spec file to make sure it is up to date before
 ## linking this program.
 jv_convert_DEPENDENCIES = $(convert_source_files:.java=.lo) \
@@ -446,7 +446,7 @@ gij_LINK = $(GCJLINK)
 ## system libraries we need (via the specs file).
 ## We need the -L so that gcj can find libgcj with `-lgcj'.
 ## FIXME: should be _libs on some systems.
-gij_LDADD = libgcj.la $(GCLIBS) $(THREADLIBS) $(ZLIBS) -L$(here)/.libs
+gij_LDADD = libgcj.la -L$(here)/.libs
 ## Depend on the spec file to make sure it is up to date before
 ## linking this program.
 gij_DEPENDENCIES = $(GCDEPS) $(THREADDEPS) $(ZDEPS) libgcj.la libgcj.spec
@@ -462,7 +462,7 @@ rmic_LINK = $(GCJLINK)
 ## system libraries we need (via the specs file).
 ## We need the -L so that gcj can find libgcj with `-lgcj'.
 ## FIXME: should be _libs on some systems.
-rmic_LDADD = libgcj.la $(GCLIBS) $(THREADLIBS) $(ZLIBS) -L$(here)/.libs
+rmic_LDADD = libgcj.la -L$(here)/.libs
 ## Depend on the spec file to make sure it is up to date before
 ## linking this program.
 rmic_DEPENDENCIES = $(GCDEPS) $(THREADDEPS) $(ZDEPS) libgcj.la libgcj.spec
@@ -478,7 +478,7 @@ rmiregistry_LINK = $(GCJLINK)
 ## system libraries we need (via the specs file).
 ## We need the -L so that gcj can find libgcj with `-lgcj'.
 ## FIXME: should be _libs on some systems.
-rmiregistry_LDADD = libgcj.la $(GCLIBS) $(THREADLIBS) $(ZLIBS) -L$(here)/.libs
+rmiregistry_LDADD = libgcj.la -L$(here)/.libs
 ## Depend on the spec file to make sure it is up to date before
 ## linking this program.
 rmiregistry_DEPENDENCIES = $(GCDEPS) $(THREADDEPS) $(ZDEPS) libgcj.la libgcj.spec
