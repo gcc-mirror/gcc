@@ -1371,6 +1371,12 @@ gen_lowpart (mode, x)
     {
       /* The only additional case we can do is MEM.  */
       int offset = 0;
+
+      /* The following exposes the use of "x" to CSE.  */
+      if (GET_MODE_SIZE (GET_MODE (x)) <= UNITS_PER_WORD
+	  && ! no_new_pseudos)
+	return gen_lowpart (mode, force_reg (GET_MODE (x), x));
+
       if (WORDS_BIG_ENDIAN)
 	offset = (MAX (GET_MODE_SIZE (GET_MODE (x)), UNITS_PER_WORD)
 		  - MAX (GET_MODE_SIZE (mode), UNITS_PER_WORD));

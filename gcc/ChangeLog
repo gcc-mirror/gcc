@@ -1,3 +1,9 @@
+2003-03-06  Roger Sayle  <roger@eyesopen.com>
+
+	* emit-rtl.c (gen_lowpart): When requesting the low-part of a
+	MEM, try loading the MEM into a register and taking the low-part
+	of that, to help CSE see the use of the MEM in its true mode.
+
 2002-03-05  Tom Tromey  <tromey@redhat.com>
 
 	* config/stormy16/stormy16.h (DWARF_LINE_MIN_INSTR_LENGTH):
