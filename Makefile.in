@@ -181,6 +181,12 @@ INSTALL_TARGET = installdirs \
 	$(INSTALL_X11_MODULES) \
 	$(INSTALL_DOSREL)
 
+INSTALL_TARGET_CROSS = installdirs \
+	install-gcc-cross \
+	$(INSTALL_MODULES) \
+	$(INSTALL_TARGET_MODULES) \
+	$(INSTALL_X11_MODULES) \
+	$(INSTALL_DOSREL)
 
 CC_FOR_TARGET = ` \
   if [ -f $$r/gcc/xgcc ] ; then \
@@ -947,8 +953,9 @@ check: $(CHECK_MODULES) \
 
 # Installation targets.
 
-.PHONY: install uninstall source-vault binary-vault vault-install
+.PHONY: install install-cross uninstall source-vault binary-vault vault-install
 install: $(INSTALL_TARGET) 
+install-cross: $(INSTALL_TARGET_CROSS) 
 
 uninstall:
 	@echo "the uninstall target is not supported in this tree"
@@ -1333,12 +1340,21 @@ install-gcc:
 	  r=`pwd`; export r; \
 	  s=`cd $(srcdir); pwd`; export s; \
 	  $(SET_LIB_PATH) \
-	  (cd gcc; $(MAKE) $(GCC_FLAGS_TO_PASS) install); \
+	  (cd gcc; $(MAKE) $(GCC_FLAGS_TO_PASS) LANGUAGES="c c++" install); \
 	else \
 	  true; \
 	fi
 
-
+.PHONY: install-gcc-cross
+install-gcc-cross:
+	@if [ -f ./gcc/Makefile ] ; then \
+	  r=`pwd`; export r; \
+	  s=`cd $(srcdir); pwd`; export s; \
+	  $(SET_LIB_PATH) \
+	  (cd gcc; $(MAKE) $(GCC_FLAGS_TO_PASS) install); \
+	else \
+	  true; \
+	fi
 # EXPERIMENTAL STUFF
 # This rule is used to install the modules which use FLAGS_TO_PASS.
 # To build a target install-X means to cd to X and make install.

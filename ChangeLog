@@ -1,3 +1,8 @@
+Tue Dec  2 10:55:34 1997  Jeffrey A Law  (law@cygnus.com)
+
+	* Makefile.in (INSTALL_TARGET_CROSS): Define.
+	(install-cross, install-gcc-cross): New targets.
+
 Thu Nov 27 01:31:30 1997  Jeffrey A Law  (law@cygnus.com)
 
 	* Makefile.in (INSTALL_TARGET): Do install-gcc first.
