@@ -5,8 +5,8 @@ struct foo {
 };
 
 void bar(foo a) {
-  delete a; // should be accepted - XFAIL *-*-*
-  delete[] a; // should be accepted - XFAIL *-*-*
+  delete a; // should be accepted
+  delete[] a; // should be accepted
   char b[1];
   delete b; // ERROR - expecting pointer type
   delete[] b; // ERROR - expecting pointer type
