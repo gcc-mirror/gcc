@@ -81,6 +81,7 @@ Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.  */
 #define iconv_open(x, y) (errno = EINVAL, (iconv_t)-1)
 #define iconv(a,b,c,d,e) (errno = EINVAL, (size_t)-1)
 #define iconv_close(x)   0
+#define ICONV_CONST
 #endif
 
 #if HOST_CHARSET == HOST_CHARSET_ASCII
@@ -210,14 +211,15 @@ convert_cset (iconv_t cd, const uchar *from, size_t flen, struct strbuf *to)
     }
   else
     {
-      char *inbuf, *outbuf;
+      ICONV_CONST char *inbuf;
+      char *outbuf;
       size_t inbytesleft, outbytesleft;
 
       /* Reset conversion descriptor and check that it is valid.  */
       if (iconv (cd, 0, 0, 0, 0) == (size_t)-1)
 	return false;
 
-      inbuf = (char *)from;
+      inbuf = (ICONV_CONST char *)from;
       inbytesleft = flen;
       outbuf = (char *)to->text + to->len;
       outbytesleft = to->asize - to->len;
