@@ -1094,6 +1094,9 @@ combinable_i3pat (i3, loc, i2dest, i1dest, i1_not_in_src, pi3dest_killed)
       if (pi3dest_killed && GET_CODE (dest) == REG
 	  && reg_referenced_p (dest, PATTERN (i3))
 	  && REGNO (dest) != FRAME_POINTER_REGNUM
+#if HARD_FRAME_POINTER_REGNUM != FRAME_POINTER_REGNUM
+	  && REGNO (dest) != HARD_FRAME_POINTER_REGNUM
+#endif
 #if ARG_POINTER_REGNUM != FRAME_POINTER_REGNUM
 	  && (REGNO (dest) != ARG_POINTER_REGNUM
 	      || ! fixed_regs [REGNO (dest)])
@@ -3120,6 +3123,9 @@ subst (x, from, to, in_dest, unique_copy)
       if (GET_CODE (SUBREG_REG (x)) == REG
 	  && REGNO (SUBREG_REG (x)) < FIRST_PSEUDO_REGISTER
 	  && REGNO (SUBREG_REG (x)) != FRAME_POINTER_REGNUM
+#if HARD_FRAME_POINTER_REGNUM != FRAME_POINTER_REGNUM
+	  && REGNO (SUBREG_REG (x)) != HARD_FRAME_POINTER_REGNUM
+#endif
 #if FRAME_POINTER_REGNUM != ARG_POINTER_REGNUM
 	  && REGNO (SUBREG_REG (x)) != ARG_POINTER_REGNUM
 #endif
