@@ -4682,10 +4682,21 @@ strength_reduce (scan_start, end, loop_top, insn_count,
 	    {
 	      int auto_inc_opt = 0;
 
-	      v->new_reg = gen_reg_rtx (v->mode);
+	      /* If the code for derived givs immediately below has already
+		 allocated a new_reg, we must keep it.  */
+	      if (! v->new_reg)
+		v->new_reg = gen_reg_rtx (v->mode);
 
 	      if (v->derived_from)
 		{
+		  struct induction *d = v->derived_from;
+
+		  /* In case d->dest_reg is not replaceable, we have
+		     to replace it in v->insn now.  */
+		  if (! d->new_reg)
+		    d->new_reg = gen_reg_rtx (d->mode);
+		  PATTERN (v->insn)
+		    = replace_rtx (PATTERN (v->insn), d->dest_reg, d->new_reg);
 		  PATTERN (v->insn)
 		    = replace_rtx (PATTERN (v->insn), v->dest_reg, v->new_reg);
 		  if (bl->biv_count != 1)
@@ -7359,11 +7370,9 @@ recombine_givs (bl, loop_start, loop_end, unroll_p)
 		   && GET_CODE (XEXP (sum, 1)) == CONST_INT)
 		  || ! unroll_p)
 	      && validate_change (v->insn, &PATTERN (v->insn),
-				  gen_rtx_SET (GET_MODE (v->dest_reg),
-					       v->dest_reg, sum), 0))
+				  gen_rtx_SET (VOIDmode, v->dest_reg, sum), 0))
 	    {
 	      v->derived_from = last_giv;
-	      v->new_reg = v->dest_reg;
 	      life_end = stats[i].end_luid;
 
 	      if (loop_dump_stream)
@@ -7371,7 +7380,7 @@ recombine_givs (bl, loop_start, loop_end, unroll_p)
 		  fprintf (loop_dump_stream,
 			   "giv at %d derived from %d as ",
 			   INSN_UID (v->insn), INSN_UID (last_giv->insn));
-		  print_rtl (loop_dump_stream, v->new_reg);
+		  print_rtl (loop_dump_stream, sum);
 		  putc ('\n', loop_dump_stream);
 		}
 	    }
