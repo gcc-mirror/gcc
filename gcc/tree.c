@@ -940,7 +940,6 @@ make_node (code)
   register int type = TREE_CODE_CLASS (code);
   register int length = 0;
   register struct obstack *obstack = current_obstack;
-  register int i;
 #ifdef GATHER_STATISTICS
   register tree_node_kind kind;
 #endif
@@ -1134,7 +1133,6 @@ copy_node (node)
   register tree t;
   register enum tree_code code = TREE_CODE (node);
   register int length = 0;
-  register int i;
 
   switch (TREE_CODE_CLASS (code))
     {
@@ -1546,7 +1544,6 @@ make_tree_vec (len)
   register tree t;
   register int length = (len-1) * sizeof (tree) + sizeof (struct tree_vec);
   register struct obstack *obstack = current_obstack;
-  register int i;
 
 #ifdef GATHER_STATISTICS
   tree_node_counts[(int)vec_kind]++;
@@ -3045,7 +3042,7 @@ build1 (code, type, node)
      tree node;
 {
   register struct obstack *obstack = expression_obstack;
-  register int i, length;
+  register int length;
 #ifdef GATHER_STATISTICS
   register tree_node_kind kind;
 #endif
