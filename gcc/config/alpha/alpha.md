@@ -4491,7 +4491,7 @@
    (clobber (reg:DI 25))
    (clobber (reg:DI 0))]
   "TARGET_OPEN_VMS"
-  "lda $0,ots$home_args\;ldq $0,8($0)\;jsr $0,ots$home_args")
+  "lda $0,OTS$HOME_ARGS\;ldq $0,8($0)\;jsr $0,OTS$HOME_ARGS")
 
 ;; Close the trap shadow of preceeding instructions.  This is generated
 ;; by alpha_reorg.

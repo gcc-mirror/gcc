@@ -2,6 +2,12 @@ Mon Oct 20 02:00:18 1997  Klaus Kaempf <kkaempf@progis.de>
 			  Jeff Law <law@cygnus.com>
 			  Richard Kenner <kenner@vlsi1.ultra.nyu.edu>
 
+	* alpha/vms.h (DIVSI3_LIBCALL): OTS$ functions are upper case.
+	(DIVDI3_LIBCALL, UDIVSI3_LIBCALL, UDIVDI3_LIBVALL): Likewise.
+	(MODSI3_LIBCALL, MODDI3_LIBCALL): Likewise.
+	(UMODSI3_LIBCALL, UMODDI3_LIBCALL): Likewise.
+	* alpha/alpha.md (arg_home): Likewise.
+
 	* alpha/alpha.c (vmskrunch): Delete
 	* alpha/vms.h (ENCODE_SECTION_INFO, ASM_DECLARE_FUNCTION_NAME): Delete.
 	* alpha.c (output_prolog, VMS): Use alloca for entry_label and don't
