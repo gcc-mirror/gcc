@@ -1,6 +1,15 @@
 2003-11-07  Carlo Wood  <carlo@alinoe.com>
 
         * include/bits/demangle.h
+        (qualifier_list<Allocator>::decode_qualifiers(string_type&,
+        string_type&, bool member_function_pointer_qualifiers):
+        Always seperate the '[' of an array type with a space from
+        what is left of it, except when that is the closing bracket
+        of another array dimension.
+
+2003-11-07  Carlo Wood  <carlo@alinoe.com>
+
+        * include/bits/demangle.h
 	(qualifier_list<Allocator>::decode_qualifiers(string_type&,
 	string_type&, bool) const): Made const.
 	(qualifier_list<Allocator>::M_printing_suppressed): Added mutable.

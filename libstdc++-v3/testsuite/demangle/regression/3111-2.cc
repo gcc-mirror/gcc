@@ -32,7 +32,7 @@ int main()
   // verify_demangle("_Z1fAszL_ZZNK1N1A1fEvE3foo_0E_i", 
   //       "f(int[sizeof(N::A::f() const::foo())])");
   verify_demangle("_Z1fAszL_ZZNK1N1A1fEvE3foo_0E_i", 
-		  "f(int[sizeof(N::A::f() const::foo)])");
+		  "f(int [sizeof(N::A::f() const::foo)])");
 
   return 0;
 }

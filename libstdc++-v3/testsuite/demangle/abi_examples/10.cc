@@ -34,7 +34,7 @@ int main()
       { static int bar; };
     int Foo<int[4]>::bar;
   */
-  verify_demangle("_ZN3FooIA4_iE3barE", "Foo<int[4]>::bar");
+  verify_demangle("_ZN3FooIA4_iE3barE", "Foo<int [4]>::bar");
 
   return 0;
 }
