@@ -6742,6 +6742,43 @@ fold_builtin_signbit (tree exp)
   return NULL_TREE;
 }
 
+/* Fold a call to builtin isascii.  */
+
+static tree
+fold_builtin_isascii (tree arglist)
+{
+  if (! validate_arglist (arglist, INTEGER_TYPE, VOID_TYPE))
+    return 0;
+  else
+    {
+      /* Transform isascii(c) -> ((c & ~0x7f) == 0).  */
+      tree arg = TREE_VALUE (arglist);
+      
+      return fold (build (EQ_EXPR, integer_type_node,
+			  build (BIT_AND_EXPR, integer_type_node, arg,
+				 build_int_2 (~ (unsigned HOST_WIDE_INT) 0x7f,
+					      ~ (HOST_WIDE_INT) 0)),
+			  integer_zero_node));
+    }
+}
+
+/* Fold a call to builtin toascii.  */
+
+static tree
+fold_builtin_toascii (tree arglist)
+{
+  if (! validate_arglist (arglist, INTEGER_TYPE, VOID_TYPE))
+    return 0;
+  else
+    {
+      /* Transform toascii(c) -> (c & 0x7f).  */
+      tree arg = TREE_VALUE (arglist);
+      
+      return fold (build (BIT_AND_EXPR, integer_type_node, arg,
+			  build_int_2 (0x7f, 0)));
+    }
+}
+
 
 /* Used by constant folding to eliminate some builtin calls early.  EXP is
    the CALL_EXPR of a call to a builtin function.  */
@@ -7235,6 +7272,12 @@ fold_builtin (tree exp)
     case BUILT_IN_SIGNBITF:
     case BUILT_IN_SIGNBITL:
       return fold_builtin_signbit (exp);
+
+    case BUILT_IN_ISASCII:
+      return fold_builtin_isascii (arglist);
+
+    case BUILT_IN_TOASCII:
+      return fold_builtin_toascii (arglist);
 
     default:
       break;
