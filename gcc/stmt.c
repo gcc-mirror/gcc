@@ -1453,13 +1453,12 @@ expand_asm_operands (string, outputs, inputs, clobbers, vol, filename, line)
 #endif
 	    break;
 
-	  case 'p':  case 'g':  case 'r':
-	    /* Whether or not a numeric constraint allows a register is
-	       decided by the matching constraint, and so there is no need
-	       to do anything special with them.  We must handle them in
-	       the default case, so that we don't unnecessarily force
-	       operands to memory.  */
 	  case '0':  case '1':  case '2':  case '3':  case '4':
+	  case '5':  case '6':  case '7':  case '8':  case '9':
+	    error ("matching constraint not valid in output operand");
+	    break;
+
+	  case 'p':  case 'g':  case 'r':
 	  default:
 	    allows_reg = 1;
 	    break;
@@ -1564,13 +1563,20 @@ expand_asm_operands (string, outputs, inputs, clobbers, vol, filename, line)
 #endif
 	    break;
 
-	  case 'p':  case 'g':  case 'r':
 	    /* Whether or not a numeric constraint allows a register is
 	       decided by the matching constraint, and so there is no need
 	       to do anything special with them.  We must handle them in
 	       the default case, so that we don't unnecessarily force
 	       operands to memory.  */
 	  case '0':  case '1':  case '2':  case '3':  case '4':
+	  case '5':  case '6':  case '7':  case '8':  case '9':
+	    if (TREE_STRING_POINTER (TREE_PURPOSE (tail))[j]
+		>= '0' + noutputs)
+	      error ("matching constraint references invalid operand number");
+
+	    /* ... fall through ... */
+
+	  case 'p':  case 'g':  case 'r':
 	  default:
 	    allows_reg = 1;
 	    break;
