@@ -5,7 +5,17 @@
 
 Wed Nov 26 20:28:49 1997  Jason Merrill  <jason@yorick.cygnus.com>
 
+	* rtti.c (build_dynamic_cast): Handle template case here.
+	(build_dynamic_cast_1): Not here.
+
+	* typeck2.c (digest_init): Make copies where appropriate.
+
+	* decl2.c (delete_sanity): resolve_offset_ref.
+
 	* except.c (expand_throw): Call mark_used on the destructor.
+
+	* except.c (expand_start_catch_block): Fix catching a reference
+	to pointer.
 
 Tue Nov 25 11:28:21 1997  Jason Merrill  <jason@yorick.cygnus.com>
 

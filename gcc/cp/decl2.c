@@ -1242,7 +1242,10 @@ delete_sanity (exp, size, doing_vec, use_global_delete)
       return t;
     }
 
-  t = stabilize_reference (convert_from_reference (exp));
+  t = exp;
+  if (TREE_CODE (t) == OFFSET_REF)
+    t = resolve_offset_ref (t);
+  t = stabilize_reference (convert_from_reference (t));
   type = TREE_TYPE (t);
   code = TREE_CODE (type);
 

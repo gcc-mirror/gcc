@@ -613,6 +613,13 @@ expand_start_catch_block (declspecs, declarator)
 	init_type = build_reference_type (init_type);
 
       exp = get_eh_value ();
+
+      /* Since pointers are passed by value, initialize a reference to
+	 pointer catch parm with the address of the value slot.  */
+      if (TREE_CODE (init_type) == REFERENCE_TYPE
+	  && TREE_CODE (TREE_TYPE (init_type)) == POINTER_TYPE)
+	exp = build_unary_op (ADDR_EXPR, exp, 1);
+
       exp = expr_tree_cons (NULL_TREE,
 		       build_eh_type_type (TREE_TYPE (decl)),
 		       expr_tree_cons (NULL_TREE,

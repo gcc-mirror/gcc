@@ -428,15 +428,6 @@ build_dynamic_cast_1 (type, expr)
   enum tree_code ec;
   tree dcast_fn;
 
-  if (type == error_mark_node || expr == error_mark_node)
-    return error_mark_node;
-  
-  if (processing_template_decl)
-    {
-      tree t = build_min (DYNAMIC_CAST_EXPR, type, expr);
-      return t;
-    }
-
   assert (exprtype != NULL_TREE);
   ec = TREE_CODE (exprtype);
 
@@ -647,6 +638,12 @@ tree
 build_dynamic_cast (type, expr)
      tree type, expr;
 {
+  if (type == error_mark_node || expr == error_mark_node)
+    return error_mark_node;
+  
+  if (processing_template_decl)
+    return build_min (DYNAMIC_CAST_EXPR, type, expr);
+
   return convert_from_reference (build_dynamic_cast_1 (type, expr));
 }
 
