@@ -1,3 +1,8 @@
+Thu Oct  7 15:23:28 1999  Michael Meissner  <meissner@cygnus.com>
+
+	* alpha.md (peephole2's): Comment out peephole2's that generate
+	buggy code.
+
 Thu Oct  7 12:00:53 1999  Richard Henderson  <rth@cygnus.com>
 
 	* genrecog.c (add_to_sequence): Disable mode check for

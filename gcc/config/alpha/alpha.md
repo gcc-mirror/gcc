@@ -5407,25 +5407,25 @@
 ;; Optimize sign-extension of SImode loads.  This shows up in the wake of
 ;; reload when converting fp->int.
 
-(define_peephole2
-  [(set (match_operand:SI 0 "register_operand" "=r")
-        (match_operand:SI 1 "memory_operand" "m"))
-   (set (match_operand:DI 2 "register_operand" "=r")
-        (sign_extend:DI (match_dup 0)))]
-  "rtx_equal_p (operands[0], operands[2])
-   || reg_dead_p (insn, operands[0])"
-  [(set (match_dup 2)
-	(sign_extend:DI (match_dup 1)))]
-  "")
-
-(define_peephole2
-  [(set (match_operand:SI 0 "register_operand" "=r")
-        (match_operand:SI 1 "hard_fp_register_operand" "f"))
-   (set (match_operand:DI 2 "register_operand" "=r")
-        (sign_extend:DI (match_dup 0)))]
-  "TARGET_FIX
-   && (rtx_equal_p (operands[0], operands[2])
-       || reg_dead_p (insn, operands[0]))"
-  [(set (match_dup 2)
-	(sign_extend:DI (match_dup 1)))]
-  "")
+;(define_peephole2
+;  [(set (match_operand:SI 0 "register_operand" "=r")
+;        (match_operand:SI 1 "memory_operand" "m"))
+;   (set (match_operand:DI 2 "register_operand" "=r")
+;        (sign_extend:DI (match_dup 0)))]
+;  "rtx_equal_p (operands[0], operands[2])
+;   || reg_dead_p (insn, operands[0])"
+;  [(set (match_dup 2)
+;	(sign_extend:DI (match_dup 1)))]
+;  "")
+;
+;(define_peephole2
+;  [(set (match_operand:SI 0 "register_operand" "=r")
+;        (match_operand:SI 1 "hard_fp_register_operand" "f"))
+;   (set (match_operand:DI 2 "register_operand" "=r")
+;        (sign_extend:DI (match_dup 0)))]
+;  "TARGET_FIX
+;   && (rtx_equal_p (operands[0], operands[2])
+;       || reg_dead_p (insn, operands[0]))"
+;  [(set (match_dup 2)
+;	(sign_extend:DI (match_dup 1)))]
+;  "")
