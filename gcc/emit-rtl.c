@@ -1692,16 +1692,16 @@ set_mem_attributes (ref, t, objectp)
   if (TYPE_SIZE_UNIT (type) && host_integerp (TYPE_SIZE_UNIT (type), 1))
     size = GEN_INT (tree_low_cst (TYPE_SIZE_UNIT (type), 1));
 
-  /* If T is not a type.  Otherwise, we may be able to deduce some more
-     information about the expression.  */
-  if (TYPE_P (t))
+  /* If T is not a type, we may be able to deduce some more information about
+     the expression.  */
+  if (! TYPE_P (t))
     {
       maybe_set_unchanging (ref, t);
       if (TREE_THIS_VOLATILE (t))
 	MEM_VOLATILE_P (ref) = 1;
 
       /* Now remove any NOPs: they don't change what the underlying object is.
-     Likewise for SAVE_EXPR.  */
+	 Likewise for SAVE_EXPR.  */
       while (TREE_CODE (t) == NOP_EXPR || TREE_CODE (t) == CONVERT_EXPR
 	     || TREE_CODE (t) == NON_LVALUE_EXPR || TREE_CODE (t) == SAVE_EXPR)
 	t = TREE_OPERAND (t, 0);
