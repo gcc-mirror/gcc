@@ -691,7 +691,11 @@ extern int x86_prefetch_sse;
 
 /* Width of a word, in units (bytes).  */
 #define UNITS_PER_WORD (TARGET_64BIT ? 8 : 4)
-#define MIN_UNITS_PER_WORD 4
+#ifdef IN_LIBGCC2
+#define MIN_UNITS_PER_WORD	(TARGET_64BIT ? 8 : 4)
+#else
+#define MIN_UNITS_PER_WORD	4
+#endif
 
 /* Allocation boundary (in *bits*) for storing arguments in argument list.  */
 #define PARM_BOUNDARY BITS_PER_WORD
