@@ -2316,7 +2316,10 @@ expand_assignment (to, from, want_value, suggest_reg)
       tree offset;
       int unsignedp;
       int volatilep = 0;
-      tree tem = get_inner_reference (to, &bitsize, &bitpos, &offset,
+      tree tem;
+
+      push_temp_slots ();
+      tem = get_inner_reference (to, &bitsize, &bitpos, &offset,
 				      &mode1, &unsignedp, &volatilep);
 
       /* If we are going to use store_bit_field and extract_bit_field,
@@ -2359,6 +2362,7 @@ expand_assignment (to, from, want_value, suggest_reg)
 			    int_size_in_bytes (TREE_TYPE (tem)));
       preserve_temp_slots (result);
       free_temp_slots ();
+      pop_temp_slots ();
 
       /* If the value is meaningful, convert RESULT to the proper mode.
 	 Otherwise, return nothing.  */
@@ -2376,12 +2380,16 @@ expand_assignment (to, from, want_value, suggest_reg)
      requires loading up part of an address in a separate insn.  */
   if (TREE_CODE (from) == CALL_EXPR && ! aggregate_value_p (from))
     {
-      rtx value = expand_expr (from, NULL_RTX, VOIDmode, 0);
+      rtx value;
+
+      push_temp_slots ();
+      value = expand_expr (from, NULL_RTX, VOIDmode, 0);
       if (to_rtx == 0)
 	to_rtx = expand_expr (to, NULL_RTX, VOIDmode, 0);
       emit_move_insn (to_rtx, value);
       preserve_temp_slots (to_rtx);
       free_temp_slots ();
+      pop_temp_slots ();
       return want_value ? to_rtx : NULL_RTX;
     }
 
@@ -2394,10 +2402,14 @@ expand_assignment (to, from, want_value, suggest_reg)
   /* Don't move directly into a return register.  */
   if (TREE_CODE (to) == RESULT_DECL && GET_CODE (to_rtx) == REG)
     {
-      rtx temp = expand_expr (from, 0, GET_MODE (to_rtx), 0);
+      rtx temp;
+
+      push_temp_slots ();
+      temp = expand_expr (from, 0, GET_MODE (to_rtx), 0);
       emit_move_insn (to_rtx, temp);
       preserve_temp_slots (to_rtx);
       free_temp_slots ();
+      pop_temp_slots ();
       return want_value ? to_rtx : NULL_RTX;
     }
 
@@ -2408,8 +2420,11 @@ expand_assignment (to, from, want_value, suggest_reg)
       && current_function_returns_struct
       && !current_function_returns_pcc_struct)
     {
-      rtx from_rtx = expand_expr (from, NULL_RTX, VOIDmode, 0);
-      rtx size = expr_size (from);
+      rtx from_rtx, size;
+
+      push_temp_slots ();
+      from_rtx = expr_size (from);
+      size = expand_expr (from, NULL_RTX, VOIDmode, 0);
 
 #ifdef TARGET_MEM_FUNCTIONS
       emit_library_call (memcpy_libfunc, 0,
@@ -2429,14 +2444,17 @@ expand_assignment (to, from, want_value, suggest_reg)
 
       preserve_temp_slots (to_rtx);
       free_temp_slots ();
+      pop_temp_slots ();
       return want_value ? to_rtx : NULL_RTX;
     }
 
   /* Compute FROM and store the value in the rtx we got.  */
 
+  push_temp_slots ();
   result = store_expr (from, to_rtx, want_value);
   preserve_temp_slots (result);
   free_temp_slots ();
+  pop_temp_slots ();
   return want_value ? result : NULL_RTX;
 }
 
@@ -3834,9 +3852,11 @@ expand_expr (exp, target, tmode, modifier)
       return const0_rtx;
 
     case LOOP_EXPR:
+      push_temp_slots ();
       expand_start_loop (1);
       expand_expr_stmt (TREE_OPERAND (exp, 0));
       expand_end_loop ();
+      pop_temp_slots ();
 
       return const0_rtx;
 
@@ -8078,8 +8098,10 @@ do_jump (exp, if_false_label, if_true_label)
       break;
 
     case COMPOUND_EXPR:
+      push_temp_slots ();
       expand_expr (TREE_OPERAND (exp, 0), const0_rtx, VOIDmode, 0);
       free_temp_slots ();
+      pop_temp_slots ();
       emit_queue ();
       do_pending_stack_adjust ();
       do_jump (TREE_OPERAND (exp, 1), if_false_label, if_true_label);
@@ -8250,8 +8272,6 @@ do_jump (exp, if_false_label, if_true_label)
     }
   else if (comparison)
     do_jump_for_compare (comparison, if_false_label, if_true_label);
-
-  free_temp_slots ();
 
   if (drop_through_label)
     {
