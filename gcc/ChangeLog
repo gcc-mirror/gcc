@@ -1,3 +1,10 @@
+2004-05-31  Geoffrey Keating  <geoffk@apple.com>
+
+	* gengtype-lex.l: Catch stray GTY markers in the files gengtype
+	looks at.
+	* alias.c (alias_invariant_size): Make alias_invariant_size
+	static, fix GTY marker.
+
 2004-05-31  Kazu Hirata  <kazu@cs.umass.edu>
 
 	PR tree-optimization/15743.

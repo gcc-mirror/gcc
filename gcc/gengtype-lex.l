@@ -333,6 +333,11 @@ ITYPE	{IWORD}({WS}{IWORD})*
 		 "unterminated comment or string; unexpected EOF");
 }
 
+^"#define"{WS}"GTY(" /* do nothing */
+{WS}"GTY"{WS}?"("	{
+  error_at_line (&lexer_line, "stray GTY marker");
+}
+
 %%
 
 void
