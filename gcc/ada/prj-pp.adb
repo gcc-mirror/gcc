@@ -42,7 +42,7 @@ package body Prj.PP is
 
    Column : Natural := 0;
    --  Column number of the last character in the line. Used to avoid
-   --  outputing lines longer than Max_Line_Length.
+   --  outputting lines longer than Max_Line_Length.
 
    procedure Indicate_Tested (Kind : Project_Node_Kind);
    --  Set the corresponding component of array Not_Tested to False.

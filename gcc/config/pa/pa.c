@@ -5791,7 +5791,7 @@ output_lbranch (dest, insn)
 	   the only other use of this location is for copying a
 	   floating point double argument from a floating-point
 	   register to two general registers.  The copy is done
-	   as an "atomic" operation when outputing a call, so it
+	   as an "atomic" operation when outputting a call, so it
 	   won't interfere with our using the location here.  */
 	output_asm_insn ("stw %%r1,-12(%%r30)", xoperands);
     }
