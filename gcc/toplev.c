@@ -201,14 +201,6 @@ void print_switch_values ();
 /* Length of line when printing switch values.  */
 #define MAX_LINE 75
 
-#ifdef NEED_DECLARATION_ABORT
-void abort ();
-#endif
-
-#ifdef NEED_DECLARATION_SBRK
-extern char *sbrk ();
-#endif
-
 /* Name of program invoked, sans directories.  */
 
 char *progname;

@@ -181,12 +181,13 @@ AC_CACHE_VAL(gcc_cv_header_inttypes_h,
 AC_MSG_RESULT($gcc_cv_header_inttypes_h)
 
 AC_CHECK_FUNCS(strtoul bsearch strerror putenv popen vprintf bcopy bzero bcmp \
-	index rindex strchr strrchr kill getrlimit setrlimit atoll atoq sysconf)
+	index rindex strchr strrchr kill getrlimit setrlimit atoll atoq \
+	sysconf isascii)
 
 GCC_FUNC_PRINTF_PTR
 
 GCC_NEED_DECLARATIONS(malloc realloc calloc free bcopy bzero bcmp \
-	index rindex getenv atol sbrk abort)
+	index rindex getenv atol sbrk abort atof)
 
 AC_DECL_SYS_SIGLIST
 

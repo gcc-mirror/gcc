@@ -190,12 +190,24 @@ extern char *rindex ();
 # endif
 #endif
 
+#ifdef NEED_DECLARATION_ATOF
+extern double atof ();
+#endif
+
+#ifdef NEED_DECLARATION_ATOL
+extern long atol();
+#endif
+
 #ifdef NEED_DECLARATION_FREE
 extern void free ();
 #endif
 
 #ifdef NEED_DECLARATION_GETENV
 extern char *getenv ();
+#endif
+
+#ifdef NEED_DECLARATION_SBRK
+extern char *sbrk ();
 #endif
 
 /* Redefine abort to report an internal error w/o coredump, and reporting the
@@ -209,7 +221,11 @@ extern char *getenv ();
 #endif /* !__GNUC__ */
 #endif /* !__STDC__ */
 
-#ifndef USE_SYSTEM_ABORT
+#ifdef USE_SYSTEM_ABORT
+# ifdef NEED_DECLARATION_ABORT
+void abort ();
+# endif
+#else
 #if __GNUC__ < 2 || (__GNUC__ == 2 && __GNUC_MINOR__ < 7)
 #define abort()								\
 (fprintf (stderr,							\
@@ -224,7 +240,7 @@ extern char *getenv ();
  exit (FATAL_EXIT_CODE))
 
 #endif /* recent gcc */
-#endif /* !USE_SYSTEM_ABORT */
+#endif /* USE_SYSTEM_ABORT */
 #endif /* !abort */
 
 #endif /* __GCC_SYSTEM_H__ */
