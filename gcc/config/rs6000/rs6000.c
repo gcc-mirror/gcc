@@ -1358,7 +1358,7 @@ output_epilog (file, size)
     fprintf (file, "\t.long 0\n");
 
     /* Tbtab format type.  Use format type 0.  */
-    fprintf (file, "\t.byte 0\n");
+    fprintf (file, "\t.byte 0,");
 
     /* Language type.  Unfortunately, there doesn't seem to be any official way
        to get this info, so we use language_string.  C is 0.  C++ is 9.
@@ -1370,7 +1370,7 @@ output_epilog (file, size)
       i = 9;
     else
       abort ();
-    fprintf (file, "\t.byte %d\n", i);
+    fprintf (file, "%d,", i);
 
     /* 8 single bit fields: global linkage (not set for C extern linkage,
        apparently a PL/I convention?), out-of-line epilogue/prologue, offset
@@ -1378,24 +1378,24 @@ output_epilog (file, size)
        has controlled storage, function has no toc, function uses fp,
        function logs/aborts fp operations.  */
     /* Assume that fp operations are used if any fp reg must be saved.  */
-    fprintf (file, "\t.byte %d\n", (1 << 5) | ((first_fp_reg != 64) << 1));
+    fprintf (file, "%d,", (1 << 5) | ((first_fp_reg != 64) << 1));
 
     /* 6 bitfields: function is interrupt handler, name present in proc table,
        function calls alloca, on condition directives (controls stack walks,
        3 bits), saves condition reg, saves link reg.  */
     /* The `function calls alloca' bit seems to be set whenever reg 31 is
        set up as a frame pointer, even when there is no alloca call.  */
-    fprintf (file, "\t.byte %d\n",
+    fprintf (file, "%d,",
 	     ((1 << 6) | (frame_pointer_needed << 5)
 	      | (must_save_cr () << 1) | (regs_ever_live[65])));
 
     /* 3 bitfields: saves backchain, spare bit, number of fpr saved
        (6 bits).  */
-    fprintf (file, "\t.byte %d\n",
+    fprintf (file, "%d,",
 	     (must_push << 7) | (64 - first_fp_reg_to_save ()));
 
     /* 2 bitfields: spare bits (2 bits), number of gpr saved (6 bits).  */
-    fprintf (file, "\t.byte %d\n", (32 - first_reg_to_save ()));
+    fprintf (file, "%d,", (32 - first_reg_to_save ()));
 
     {
       /* Compute the parameter info from the function decl argument list.  */
@@ -1446,7 +1446,7 @@ output_epilog (file, size)
     /* Number of fixed point parameters.  */
     /* This is actually the number of words of fixed point parameters; thus
        an 8 byte struct counts as 2; and thus the maximum value is 8.  */
-    fprintf (file, "\t.byte %d\n", fixed_parms);
+    fprintf (file, "%d,", fixed_parms);
 
     /* 2 bitfields: number of floating point parameters (7 bits), parameters
        all on stack.  */
@@ -1455,7 +1455,7 @@ output_epilog (file, size)
     /* Set parameters on stack bit if parameters are not in their original
        registers, irregardless of whether they are on the stack?  Xlc
        seems to set the bit when not optimizing.  */
-    fprintf (file, "\t.byte %d\n", ((float_parms << 1) | (! optimize)));
+    fprintf (file, "%d\n", ((float_parms << 1) | (! optimize)));
 
     /* Optional fields follow.  Some are variable length.  */
 
