@@ -174,7 +174,11 @@ namespace std
             }
 	  else if (__c == __dec && !__found_dec)
 	    {
-	      __found_grouping += static_cast<char>(__sep_pos);
+	      // According to the standard, if no grouping chars are seen,
+	      // no grouping check is applied. Therefore __found_grouping
+	      // must be adjusted only if __dec comes after some __sep.
+	      if (__found_grouping.size())
+		__found_grouping += static_cast<char>(__sep_pos);
 	      ++__pos;
 	      __xtrc += '.';
 	      __c = *(++__beg);

@@ -1,3 +1,14 @@
+2002-03-05  Paolo Carlini  <pcarlini@unitus.it>
+
+	libstdc++/5816
+	* include/bits/locale_facets.tcc
+	(num_get::_M_extract_float): Fix the parsing of __dec, since
+	the standard prescribes that if no grouping characters are
+	seen, no grouping check is applied.
+	* testsuite/22_locale/num_get_members_char.cc: Add test05
+	distilled from the PR.
+	* testsuite/22_locale/num_get_members_wchar_t.cc: Ditto.
+
 2002-03-04  Craig Rodrigues  <rodrigc@gcc.gnu.org>
 
 	* docs/html/17_intro/porting-howto.xml: Refer to 

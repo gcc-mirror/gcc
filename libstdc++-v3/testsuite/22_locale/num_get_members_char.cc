@@ -343,7 +343,7 @@ void test04()
 
   istringstream iss;
 
-  // A locale that expects grouping
+  // A locale that expects grouping  
   locale loc_de("de_DE");
   iss.imbue(loc_de);
 
@@ -390,12 +390,35 @@ void test04()
   VERIFY( ul == 0776 );
 }
 
+// libstdc++/5816
+void test05()
+{
+  using namespace std;
+ 
+  double d = 0.0;
+
+  istringstream iss;
+  locale loc_de("de_DE");
+  iss.imbue(loc_de);
+
+  const num_get<char>& ng = use_facet<num_get<char> >(iss.getloc()); 
+  const ios_base::iostate goodbit = ios_base::goodbit;
+  ios_base::iostate err = ios_base::goodbit;
+
+  iss.str("1234,5 ");
+  err = goodbit;
+  ng.get(iss.rdbuf(), 0, iss, err, d);
+  VERIFY( err == goodbit );
+  VERIFY( d == 1234.5 );
+}
+
 int main()
 {
   test01();
   test02();
   test03();
   test04();
+  test05();
   return 0;
 }
 
