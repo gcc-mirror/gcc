@@ -703,6 +703,8 @@ finish_goto_stmt (destination)
 	   addresses, or some such.  */
 	DECL_UNINLINABLE (current_function_decl) = 1;
 
+      check_goto (destination);
+
       add_tree (build_min_nt (GOTO_STMT, destination));
     }
   else
@@ -965,10 +967,15 @@ begin_compound_stmt (has_no_scope)
      int has_no_scope;
 {
   tree r; 
+  int is_try = 0;
 
   if (building_stmt_tree ())
     {
       r = build_min_nt (COMPOUND_STMT, NULL_TREE);
+      /* Mark that this block is for a try so that we can yell at
+         people trying to jump in.  */
+      if (last_tree && TREE_CODE (last_tree) == TRY_BLOCK)
+	is_try = 1;
       add_tree (r);
       if (has_no_scope)
 	COMPOUND_STMT_NO_SCOPE (r) = 1;
@@ -979,7 +986,11 @@ begin_compound_stmt (has_no_scope)
   last_expr_type = NULL_TREE;
 
   if (!has_no_scope)
-    do_pushlevel ();
+    {
+      do_pushlevel ();
+      if (is_try)
+	note_level_for_eh ();
+    }
   else
     /* Normally, we try hard to keep the BLOCK for a
        statement-expression.  But, if it's a statement-expression with
@@ -2581,8 +2592,7 @@ expand_stmt (t)
 		expand_start_bindings_and_block (2 * SCOPE_NULLIFIED_P (t),
 						 SCOPE_STMT_BLOCK (t));
 	      else if (SCOPE_END_P (t))
-		expand_end_bindings (NULL_TREE, !SCOPE_NULLIFIED_P (t), 
-				     SCOPE_PARTIAL_P (t));
+		expand_end_bindings (NULL_TREE, !SCOPE_NULLIFIED_P (t), 0);
 	    }
 	  else if (!SCOPE_NULLIFIED_P (t))
 	    {
