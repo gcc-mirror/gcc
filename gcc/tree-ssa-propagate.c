@@ -172,14 +172,12 @@ cfg_blocks_empty_p (void)
 
 
 /* Add a basic block to the worklist.  The block must not be already
-   in the worklist.  */
+   in the worklist, and it must not be the ENTRY or EXIT block.  */
 
 static void 
 cfg_blocks_add (basic_block bb)
 {
-  if (bb == ENTRY_BLOCK_PTR || bb == EXIT_BLOCK_PTR)
-    return;
-
+  gcc_assert (bb != ENTRY_BLOCK_PTR && bb != EXIT_BLOCK_PTR);
   gcc_assert (!TEST_BIT (bb_in_list, bb->index));
 
   if (cfg_blocks_empty_p ())
@@ -494,13 +492,7 @@ ssa_prop_init (void)
   /* Seed the algorithm by adding the successors of the entry block to the
      edge worklist.  */
   FOR_EACH_EDGE (e, ei, ENTRY_BLOCK_PTR->succs)
-    {
-      if (e->dest != EXIT_BLOCK_PTR)
-	{
-	  e->flags |= EDGE_EXECUTABLE;
-	  cfg_blocks_add (e->dest);
-	}
-    }
+    add_control_edge (e);
 }
 
 
