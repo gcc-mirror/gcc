@@ -109,6 +109,7 @@ proc check_alias_available { } {
 	# Compile a small test program.  The definition of "g" is
 	# necessary to keep the Solaris assembler from complaining
 	# about the program.
+	puts $f "#ifdef __cplusplus\nextern \"C\"\n#endif\n"
 	puts $f "void g() {} void f() __attribute__((alias(\"g\")));"
 	close $f
 	set lines [${tool}_target_compile "tmp.c" "tmp.o" object ""]
