@@ -118,6 +118,10 @@ extern int *regno_first_uid;
 
 extern int *regno_last_uid;
 
+/* Similar, but includes insns that mention the reg in their notes.  */
+
+extern int *regno_last_note_uid;
+
 /* Vector indexed by regno; contains 1 for a register is considered a pointer.
    Reloading, etc. will use a pointer register rather than a non-pointer
    as the base register in an address, when there is a choice of two regs.  */
