@@ -4333,9 +4333,13 @@ optimize_minmax_comparison (t)
    should be used for the computation if wider than our type.
 
    For example, if we are dividing (X * 8) + (Y + 16) by 4, we can return
-   (X * 2) + (Y + 4).  We also canonicalize (X + 7) * 4 into X * 4 + 28
-   in the hope that either the machine has a multiply-accumulate insn
-   or that this is part of an addressing calculation.
+   (X * 2) + (Y + 4).  We must, however, be assured that either the original
+   expression would not overflow or that overflow is undefined for the type
+   in the language in question.
+
+   We also canonicalize (X + 7) * 4 into X * 4 + 28 in the hope that either
+   the machine has a multiply-accumulate insn or that this is part of an
+   addressing calculation.
 
    If we return a non-null expression, it is an equivalent form of the
    original computation, but need not be in the original type.  */
@@ -4358,7 +4362,7 @@ extract_muldiv (t, c, code, wide_type)
 
   /* Don't deal with constants of zero here; they confuse the code below.  */
   if (integer_zerop (c))
-    return 0;
+    return NULL_TREE;
 
   if (TREE_CODE_CLASS (tcode) == '1')
     op0 = TREE_OPERAND (t, 0);
@@ -4379,7 +4383,6 @@ extract_muldiv (t, c, code, wide_type)
       break;
 
     case CONVERT_EXPR:  case NON_LVALUE_EXPR:  case NOP_EXPR:
-
       /* Pass the constant down and see if we can make a simplification.  If
 	 we can, replace this expression with the inner simplification for
 	 possible later conversion to our or some other type.  */
@@ -4534,16 +4537,18 @@ extract_muldiv (t, c, code, wide_type)
       /* If these operations "cancel" each other, we have the main
 	 optimizations of this pass, which occur when either constant is a
 	 multiple of the other, in which case we replace this with either an
-	 operation or CODE or TCODE.  If we have an unsigned type that is
-	 not a sizetype, we canot do this for division since it will change
-	 the result if the original computation overflowed.  */
-      if ((code == MULT_EXPR && tcode == EXACT_DIV_EXPR
-	   && (! TREE_UNSIGNED (ctype)
-	       || (TREE_CODE (ctype) == INTEGER_TYPE
-		   && TYPE_IS_SIZETYPE (ctype))))
-	  || (tcode == MULT_EXPR
-	      && code != TRUNC_MOD_EXPR && code != CEIL_MOD_EXPR
-	      && code != FLOOR_MOD_EXPR && code != ROUND_MOD_EXPR))
+	 operation or CODE or TCODE. 
+
+	 If we have an unsigned type that is not a sizetype, we canot do
+	 this since it will change the result if the original computation
+	 overflowed.  */
+      if ((! TREE_UNSIGNED (ctype)
+	   || (TREE_CODE (ctype) == INTEGER_TYPE
+	       && TYPE_IS_SIZETYPE (ctype)))
+	  && ((code == MULT_EXPR && tcode == EXACT_DIV_EXPR)
+	      || (tcode == MULT_EXPR
+		  && code != TRUNC_MOD_EXPR && code != CEIL_MOD_EXPR
+		  && code != FLOOR_MOD_EXPR && code != ROUND_MOD_EXPR)))
 	{
 	  if (integer_zerop (const_binop (TRUNC_MOD_EXPR, op1, c, 0)))
 	    return fold (build (tcode, ctype, convert (ctype, op0),
