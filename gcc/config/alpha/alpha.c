@@ -713,7 +713,12 @@ alpha_emit_set_const (target, mode, c, n)
 
       if (c == low || (low == 0 && extra == 0))
 	return copy_to_suggested_reg (GEN_INT (c), target, mode);
-      else if (n >= 2 + (extra != 0))
+      else if (n >= 2 + (extra != 0)
+	       /* We can't do this when SImode if HIGH required adjustment.
+		  This is because the code relies on an implicit overflow
+		  which is invisible to the RTL.  We can thus get incorrect
+		  code if the two ldah instructions are combined.  */
+	       && ! (mode == SImode && extra != 0))
 	{
 	  temp = copy_to_suggested_reg (GEN_INT (low), subtarget, mode);
 
@@ -744,7 +749,14 @@ alpha_emit_set_const (target, mode, c, n)
     if ((new & ((HOST_WIDE_INT) 0xff << i)) == 0)
       new |= (HOST_WIDE_INT) 0xff << i;
 
-  if ((temp = alpha_emit_set_const (subtarget, mode, new, n - 1)) != 0)
+  /* We are only called for SImode and DImode.  If this is SImode, ensure that
+     we are sign extended to a full word.  */
+
+  if (mode == SImode)
+    new = (new & 0xffffffff) - 2 * (new & 0x80000000);
+
+  if (new != c
+      && (temp = alpha_emit_set_const (subtarget, mode, new, n - 1)) != 0)
     return expand_binop (mode, and_optab, temp, GEN_INT (c | ~ new),
 			 target, 0, OPTAB_WIDEN);
 #endif
@@ -781,9 +793,11 @@ alpha_emit_set_const (target, mode, c, n)
 				 target, 0, OPTAB_WIDEN);
 
       /* Now try high-order zero bits.  Here we try the shifted-in bits as
-	 all zero and all ones.  */
+	 all zero and all ones.  Be careful to avoid shifting outside the
+	 mode and to avoid shifting outside the host wide int size.  */
 
-      if ((bits = HOST_BITS_PER_WIDE_INT - floor_log2 (c) - 1) > 0)
+      if ((bits = (MIN (HOST_BITS_PER_WIDE_INT, GET_MODE_SIZE (mode) * 8)
+		   - floor_log2 (c) - 1)) > 0)
 	for (; bits > 0; bits--)
 	  if ((temp = alpha_emit_set_const (subtarget, mode,
 					    c << bits, i)) != 0
@@ -793,12 +807,14 @@ alpha_emit_set_const (target, mode, c, n)
 			    i)))
 		  != 0))
 	    return expand_binop (mode, lshr_optab, temp, GEN_INT (bits),
-				 target, 0, OPTAB_WIDEN);
+				 target, 1, OPTAB_WIDEN);
 
       /* Now try high-order 1 bits.  We get that with a sign-extension.
-	 But one bit isn't enough here.  */
+	 But one bit isn't enough here.  Be careful to avoid shifting outside
+	 the mode and to avoid shifting outside the host wide int size. */
       
-      if ((bits = HOST_BITS_PER_WIDE_INT - floor_log2 (~ c) - 2) > 0)
+      if ((bits = (MIN (HOST_BITS_PER_WIDE_INT, GET_MODE_SIZE (mode) * 8)
+		   - floor_log2 (~ c) - 2)) > 0)
 	for (; bits > 0; bits--)
 	  if ((temp = alpha_emit_set_const (subtarget, mode,
 					    c << bits, i)) != 0
