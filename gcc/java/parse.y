@@ -6485,10 +6485,20 @@ check_interface_throws_clauses (tree check_class_decl, tree class_decl)
 {
   for (; class_decl != NULL_TREE; class_decl = CLASSTYPE_SUPER (class_decl))
     {
-      tree bases = TYPE_BINFO_BASETYPES (class_decl);
-      int iface_len = TREE_VEC_LENGTH (bases) - 1;
+      tree bases;
+      int iface_len;
       int i;
 
+      if (! CLASS_LOADED_P (class_decl))
+	{
+	  if (CLASS_FROM_SOURCE_P (class_decl))
+	    safe_layout_class (class_decl);
+	  else
+	    load_class (class_decl, 1);
+	}
+
+      bases = TYPE_BINFO_BASETYPES (class_decl);
+      iface_len = TREE_VEC_LENGTH (bases) - 1;
       for (i = iface_len; i > 0; --i)
 	{
 	  tree interface = BINFO_TYPE (TREE_VEC_ELT (bases, i));
