@@ -1,3 +1,13 @@
+2003-03-21  Eric Botcazou  <ebotcazou@libertysurf.fr>
+            Richard Henderson  <rth@redhat.com>
+
+	PR optimization/8366
+	* config/sparc/sparc.h: (SYMBOLIC_CONST): New macro.
+	(GO_IF_LEGITIMATE_ADDRESS): Use it. Reject the form
+	PIC+SYMBOLIC_CONST in other modes than Pmode.
+	(GO_IF_MODE_DEPENDENT_ADDRESS): Use it. Mark
+	the form PIC+SYMBOLIC_CONST as mode dependent.
+
 2003-03-21  DJ Delorie  <dj@redhat.com>
 
 	* config/stormy16/stormy16.c (xstormy16_expand_arith): Make
