@@ -798,6 +798,10 @@ gfc_trans_inquire (gfc_code * code)
     set_string (&block, &post_block, ioparm_delim, ioparm_delim_len,
 		p->delim);
 
+  if (p->pad)
+    set_string (&block, &post_block, ioparm_pad, ioparm_pad_len,
+                p->pad); 
+
   if (p->err)
     set_flag (&block, ioparm_err);
 
