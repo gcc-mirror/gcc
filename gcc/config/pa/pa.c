@@ -2012,12 +2012,16 @@ output_function_prologue (file, size)
     ASM_GENERATE_INTERNAL_LABEL (hp_profile_label_name, "LP",
 				 hp_profile_labelno);
 
-  if (insn_addresses)
+  /* If we're using GAS and not using the portable runtime model, then
+     we don't need to accumulate the total number of code bytes.  */
+  if (TARGET_GAS && ! TARGET_PORTABLE_RUNTIME)
+    total_code_bytes = 0;
+  else if (insn_addresses)
     {
       unsigned int old_total = total_code_bytes;
 
       total_code_bytes += insn_addresses[INSN_UID (get_last_insn())];
-      total_code_bytes += FUNCTION_BOUNDARY /BITS_PER_UNIT;
+      total_code_bytes += FUNCTION_BOUNDARY / BITS_PER_UNIT;
 
       /* Be prepared to handle overflows.  */
       total_code_bytes = old_total > total_code_bytes ? -1 : total_code_bytes;
@@ -3032,7 +3036,10 @@ print_operand (file, x, code)
 	}
       return;
     case 'G':
-      output_global_address (file, x);
+      output_global_address (file, x, 0);
+      return;
+    case 'H':
+      output_global_address (file, x, 1);
       return;
     case 0:			/* Don't do anything special */
       break;
@@ -3079,9 +3086,10 @@ print_operand (file, x, code)
 /* output a SYMBOL_REF or a CONST expression involving a SYMBOL_REF. */
 
 void
-output_global_address (file, x)
+output_global_address (file, x, round_constant)
      FILE *file;
      rtx x;
+     int round_constant;
 {
 
   /* Imagine  (high (const (plus ...))).  */
@@ -3119,6 +3127,18 @@ output_global_address (file, x)
 	offset = INTVAL (XEXP (XEXP (x, 0),1));
       else abort ();
 
+      /* How bogus.  The compiler is apparently responsible for
+	 rounding the constant if it uses an LR field selector.
+
+	 The linker and/or assembler seem a better place since
+	 they have to do this kind of thing already.
+
+	 If we fail to do this, HP's optimizing linker may eliminate
+	 an addil, but not update the ldw/stw/ldo instruction that
+	 uses the result of the addil.  */
+      if (round_constant)
+	offset = ((offset + 0x1000) & ~0x1fff);
+
       if (GET_CODE (XEXP (x, 0)) == PLUS)
 	{
 	  if (offset < 0)
@@ -3136,8 +3156,8 @@ output_global_address (file, x)
 
       if (!read_only_operand (base) && !flag_pic)
 	fprintf (file, "-$global$");
-      fprintf (file, "%s", sep);
-      if (offset) fprintf (file,"%d", offset);
+      if (offset)
+	fprintf (file,"%s%d", sep, offset);
     }
   else
     output_addr_const (file, x);
@@ -4756,9 +4776,14 @@ pa_reorg (insns)
 	      || GET_CODE (PATTERN (insn)) != ADDR_VEC)
 	    continue;
 
+	  /* If needed, emit marker for the beginning of the branch table.  */
+	  if (TARGET_GAS)
+	    emit_insn_before (gen_begin_brtab (), insn);
+
 	  pattern = PATTERN (insn);
 	  location = PREV_INSN (insn);
           length = XVECLEN (pattern, 0);
+
 	  for (i = 0; i < length; i++)
 	    {
 	      /* Emit the jump itself.  */
@@ -4779,8 +4804,29 @@ pa_reorg (insns)
 	      emit_label_after (tmp, location);
 	      location = NEXT_INSN (location);
 	    }
+
+	  /* If needed, emit marker for the end of the branch table.  */
+	  if (TARGET_GAS)
+	    emit_insn_before (gen_end_brtab (), location);
 	  /* Delete the ADDR_VEC.  */
 	  delete_insn (insn);
+	}
+    }
+  else if (TARGET_GAS)
+    {
+      /* Sill need an end_brtab insn.  */
+      insns = get_insns ();
+      for (insn = insns; insn; insn = NEXT_INSN (insn))
+	{
+	  /* Find an ADDR_VEC insn.  */
+	  if (GET_CODE (insn) != JUMP_INSN
+	      || GET_CODE (PATTERN (insn)) != ADDR_VEC)
+	    continue;
+
+	  /* Now generate markers for the beginning and end of the
+	     branc table.  */
+	  emit_insn_before (gen_begin_brtab (), insn);
+	  emit_insn_after (gen_end_brtab (), insn);
 	}
     }
 }
