@@ -1450,9 +1450,12 @@ record_equivalences_from_incoming_edge (struct dom_walk_data *walk_data,
 				       &bd->avail_exprs,
 				       bb,
 				       &bd->vrp_variables);
-  /* Similarly when the parent block ended in a SWITCH_EXPR.  */
+  /* Similarly when the parent block ended in a SWITCH_EXPR.
+     We can only know the value of the switch's condition if the dominator
+     parent is also the only predecessor of this block.  */
   else if (parent_block_last_stmt
 	   && bb->pred->pred_next == NULL
+	   && bb->pred->src == parent
 	   && TREE_CODE (parent_block_last_stmt) == SWITCH_EXPR)
     {
       tree switch_cond = SWITCH_COND (parent_block_last_stmt);
@@ -1473,7 +1476,7 @@ record_equivalences_from_incoming_edge (struct dom_walk_data *walk_data,
 	      tree elt = TREE_VEC_ELT (switch_vec, i);
 	      if (label_to_block (CASE_LABEL (elt)) == bb)
 		{
-		  if (++case_count > 1)
+		  if (++case_count > 1 || CASE_HIGH (elt))
 		    break;
 		  match_case = elt;
 		}
@@ -1484,6 +1487,7 @@ record_equivalences_from_incoming_edge (struct dom_walk_data *walk_data,
 	     the exact value of SWITCH_COND which caused us to get to
 	     this block.  Record that equivalence in EQ_EXPR_VALUE.  */
 	  if (case_count == 1
+	      && match_case
 	      && CASE_LOW (match_case)
 	      && !CASE_HIGH (match_case))
 	    {
