@@ -100,6 +100,9 @@ Tue Jun 30 06:31:40 1998  Richard Henderson <rth@dot.cygnus.com>
 
 Tue Jun 30 06:02:07 1998  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
+	* alpha.c (normal_memory_operand): New function.
+	* alpha.h (EXTRA_CONSTRAINT, case 'Q'): Call it.
+
 	* fold-const.c (count_cond): New function.
 	(fold): Don't try to build COND_EXPR from binary op when both sides
 	are COND_EXPR unless not nested too deeply.
