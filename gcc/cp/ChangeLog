@@ -1,3 +1,11 @@
+2000-11-08  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* decl.c (grok_op_properties): Always use coerce_new_type and
+	coerce_delete_type.
+	* decl2.c (coerce_new_type): Use c_size_type_node. Preserve
+	exception specification. Tidy up.
+	(coerce_delete_type): Preserve exception specification. Tidy up.
+
 2000-11-07  Joseph S. Myers  <jsm28@cam.ac.uk>
 
 	* class.c (duplicate_tag_error, build_vtbl_initializer), decl.c
