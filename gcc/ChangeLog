@@ -1,3 +1,9 @@
+Sat Nov  7 11:37:53 1998  Richard Henderson  <rth@cygnus.com>
+
+	* i386.md (call_value_pop): If we're not popping anything,
+	defer to call_value.
+	(call_pop): Likewise defer to call.
+
 Sat Nov  7 02:49:56 1998  Richard Henderson  <rth@cygnus.com>
 
 	* function.c (purge_addressof): Clear purge_addressof_replacements
