@@ -123,6 +123,8 @@ do {									\
   putc ('\n', (FILE));						\
 }
 
+#if 0 /* This should be unnecessary as a result of PIC_CASE_VECTOR_ADDRESS.  */
+
 /* Override these for the sake of an assembler bug: the Amix
    assembler can't handle .LC0@GOT syntax.  This pollutes the final
    table for shared librarys but what's a poor soul to do; sigh... RFH */
@@ -141,3 +143,4 @@ do {									\
   else							\
     asm_fprintf (FILE, "%0L%s%d:\n", PREFIX, NUM)
 
+#endif /* 0 */
