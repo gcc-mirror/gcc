@@ -296,11 +296,12 @@ FIX_PROC_HEAD( char_macro_use_fix )
 #endif
     ;
 
+# define SUB_PAT_CT 1
   char *pz_pat;
 
   static regex_t re;
 
-  regmatch_t rm[2];
+  regmatch_t rm[SUB_PAT_CT+1];
 
   if (p_fixd->patch_args[1] == NULL)
     {
@@ -316,10 +317,10 @@ FIX_PROC_HEAD( char_macro_use_fix )
       exit(3);
     }
 
-  compile_re (pz_pat, &re, 2, "macro pattern", "char_macro_use_fix");
+  compile_re (pz_pat, &re, 1, "macro pattern", "char_macro_use_fix");
   free (pz_pat);
 
-  while (regexec (&re, text, 3, rm, 0) == 0)
+  while (regexec (&re, text, SUB_PAT_CT+1, rm, 0) == 0)
     {
       const char* pz = text + rm[1].rm_so;
 
@@ -334,6 +335,7 @@ FIX_PROC_HEAD( char_macro_use_fix )
     }
 
   fputs (text, stdout);
+# undef SUB_PAT_CT
 }
 
 
@@ -382,8 +384,8 @@ FIX_PROC_HEAD( char_macro_def_fix )
   char *pz_pat;
 
   static regex_t re;
-
-  regmatch_t rm[3];
+# define SUB_PAT_CT 2
+  regmatch_t rm[SUB_PAT_CT+1];
   const char *p;
   int  rerr;
 
@@ -404,7 +406,7 @@ FIX_PROC_HEAD( char_macro_def_fix )
   compile_re (pz_pat, &re, 1, "macro pattern", "char_macro_def_fix");
 
 #ifdef DEBUG
-  if ((rerr = regexec (&re, text, 3, rm, 0)) != 0)
+  if ((rerr = regexec (&re, text, SUB_PAT_CT+1, rm, 0)) != 0)
     {
       fprintf( stderr, "Match error %d:\n%s\n", rerr, pz_pat );
       exit(3);
@@ -413,7 +415,7 @@ FIX_PROC_HEAD( char_macro_def_fix )
 
   free (pz_pat);
   
-  while ((rerr = regexec (&re, text, 3, rm, 0)) == 0)
+  while ((rerr = regexec (&re, text, SUB_PAT_CT+1, rm, 0)) == 0)
     {
       const char* pz = text + rm[2].rm_so;
 
@@ -450,6 +452,7 @@ FIX_PROC_HEAD( char_macro_def_fix )
    *  Emit the rest of the text
    */
   fputs (text, stdout);
+# undef SUB_PAT_CT
 }
 
 /* Fix for machine name #ifdefs that are not in the namespace reserved
