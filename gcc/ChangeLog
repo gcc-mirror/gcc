@@ -1,3 +1,8 @@
+Mon Nov  8 22:20:13 1999  J"orn Rennecke <amylaar@cygnus.co.uk>
+
+	* global.c (EXECUTE_IF_CONFLICT): Don't define.
+	(prune_preferences): Use EXECUTE_IF_SET_IN_ALLOCNO_SET instead.
+	(find_reg): Likewise.
 
 Mon Nov  8 13:16:46 1999  Jason Eckhardt  <jle@cygnus.com>
 
