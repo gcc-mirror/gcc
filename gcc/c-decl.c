@@ -5226,18 +5226,6 @@ finish_struct (t, fieldlist, attributes)
 	    }
 	}
 
-      else if (TREE_TYPE (x) != error_mark_node)
-	{
-	  unsigned int min_align = (DECL_PACKED (x) ? BITS_PER_UNIT
-				    : TYPE_ALIGN (TREE_TYPE (x)));
-
-	  /* Non-bit-fields are aligned for their type, except packed
-	     fields which require only BITS_PER_UNIT alignment.  */
-	  DECL_ALIGN (x) = MAX (DECL_ALIGN (x), min_align);
-	  if (! DECL_PACKED (x))
-	    DECL_USER_ALIGN (x) |= TYPE_USER_ALIGN (TREE_TYPE (x));
-	}
-
       DECL_INITIAL (x) = 0;
 
       /* Detect flexible array member in an invalid context.  */

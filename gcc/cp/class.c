@@ -3090,15 +3090,6 @@ check_field_decl (field, t, cant_have_const_ctor,
 	cp_error_at ("multiple fields in union `%T' initialized");
       *any_default_members = 1;
     }
-
-  /* Non-bit-fields are aligned for their type, except packed fields
-     which require only BITS_PER_UNIT alignment.  */
-  DECL_ALIGN (field) = MAX (DECL_ALIGN (field), 
-			    (DECL_PACKED (field) 
-			     ? BITS_PER_UNIT
-			     : TYPE_ALIGN (TREE_TYPE (field))));
-  if (! DECL_PACKED (field))
-    DECL_USER_ALIGN (field) |= TYPE_USER_ALIGN (TREE_TYPE (field));
 }
 
 /* Check the data members (both static and non-static), class-scoped

@@ -1,3 +1,10 @@
+2003-03-31  Jason Merrill  <jason@redhat.com>
+
+	* stor-layout.c (update_alignment_for_field): Respect
+	DECL_USER_ALIGN for zero-length bitfields, too.
+	* c-decl.c (finish_struct): Don't set DECL_ALIGN for normal
+	fields.
+
 2003-03-30  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	PR other/6955
@@ -40,7 +47,7 @@
 
 2003-03-28  Loren James Rittle  <ljrittle@acm.org>
 
-        * doc/install.texi (*-*-freebsd*): Update with known status.
+	* doc/install.texi (*-*-freebsd*): Update with known status.
 
 2003-03-28  Ulrich Weigand  <uweigand@de.ibm.com>
 

@@ -758,7 +758,7 @@ update_alignment_for_field (rli, field, known_align)
 	 within the structure.  */
       if (! integer_zerop (DECL_SIZE (field)))
 	rli->record_align = MAX (rli->record_align, desired_align);
-      else if (! DECL_PACKED (field))
+      else if (! DECL_PACKED (field) && !user_align)
 	desired_align = TYPE_ALIGN (type);
 
       /* A named bit field of declared type `int'
