@@ -10287,8 +10287,17 @@ arm_print_operand (FILE *stream, rtx x, int code)
     case '?':
       if (arm_ccfsm_state == 3 || arm_ccfsm_state == 4)
 	{
-	  if (TARGET_THUMB || current_insn_predicate != NULL)
-	    abort ();
+	  if (TARGET_THUMB)
+	    {
+	      output_operand_lossage ("predicated Thumb instruction");
+	      break;
+	    }
+	  if (current_insn_predicate != NULL)
+	    {
+	      output_operand_lossage
+		("predicated instruction in conditional sequence");
+	      break;
+	    }
 
 	  fputs (arm_condition_codes[arm_current_cc], stream);
 	}
@@ -10297,7 +10306,10 @@ arm_print_operand (FILE *stream, rtx x, int code)
 	  enum arm_cond_code code;
 
 	  if (TARGET_THUMB)
-	    abort ();
+	    {
+	      output_operand_lossage ("predicated Thumb instruction");
+	      break;
+	    }
 
 	  code = get_arm_condition_code (current_insn_predicate);
 	  fputs (arm_condition_codes[code], stream);
@@ -10389,20 +10401,32 @@ arm_print_operand (FILE *stream, rtx x, int code)
 	 of the memory location is actually held in one of the registers
 	 being overwritten by the load.  */
     case 'Q':
-      if (REGNO (x) > LAST_ARM_REGNUM)
-	abort ();
+      if (GET_CODE (x) != REG || REGNO (x) > LAST_ARM_REGNUM)
+	{
+	  output_operand_lossage ("invalid operand for code '%c'", code);
+	  return;
+	}
+
       asm_fprintf (stream, "%r", REGNO (x) + (WORDS_BIG_ENDIAN ? 1 : 0));
       return;
 
     case 'R':
-      if (REGNO (x) > LAST_ARM_REGNUM)
-	abort ();
+      if (GET_CODE (x) != REG || REGNO (x) > LAST_ARM_REGNUM)
+	{
+	  output_operand_lossage ("invalid operand for code '%c'", code);
+	  return;
+	}
+
       asm_fprintf (stream, "%r", REGNO (x) + (WORDS_BIG_ENDIAN ? 0 : 1));
       return;
 
     case 'H':
-      if (REGNO (x) > LAST_ARM_REGNUM)
-	abort ();
+      if (GET_CODE (x) != REG || REGNO (x) > LAST_ARM_REGNUM)
+	{
+	  output_operand_lossage ("invalid operand for code '%c'", code);
+	  return;
+	}
+
       asm_fprintf (stream, "%r", REGNO (x) + 1);
       return;
 
@@ -10423,6 +10447,12 @@ arm_print_operand (FILE *stream, rtx x, int code)
       if (x == const_true_rtx)
 	return;
 
+      if (!COMPARISON_P (x))
+	{
+	  output_operand_lossage ("invalid operand for code '%c'", code);
+	  return;
+	}
+
       fputs (arm_condition_codes[get_arm_condition_code (x)],
 	     stream);
       return;
@@ -10431,7 +10461,15 @@ arm_print_operand (FILE *stream, rtx x, int code)
       /* CONST_TRUE_RTX means not always -- i.e. never.  We shouldn't ever
 	 want to do that.  */
       if (x == const_true_rtx)
-	abort ();
+	{
+	  output_operand_lossage ("instruction never exectued");
+	  return;
+	}
+      if (!COMPARISON_P (x))
+	{
+	  output_operand_lossage ("invalid operand for code '%c'", code);
+	  return;
+	}
 
       fputs (arm_condition_codes[ARM_INVERSE_CONDITION_CODE
 				 (get_arm_condition_code (x))],
@@ -10463,7 +10501,10 @@ arm_print_operand (FILE *stream, rtx x, int code)
 	int mode = GET_MODE (x);
 
 	if (GET_CODE (x) != REG || REGNO_REG_CLASS (REGNO (x)) != CIRRUS_REGS)
-	  abort ();
+	  {
+	    output_operand_lossage ("invalid operand for code '%c'", code);
+	    return;
+	  }
 
 	fprintf (stream, "mv%s%s",
 		 mode == DFmode ? "d"
@@ -10479,7 +10520,11 @@ arm_print_operand (FILE *stream, rtx x, int code)
 	  || REGNO (x) < FIRST_IWMMXT_GR_REGNUM
 	  || REGNO (x) > LAST_IWMMXT_GR_REGNUM)
 	/* Bad value for wCG register number.  */
-	abort ();
+	{
+	  output_operand_lossage ("invalid operand for code '%c'", code);
+	  return;
+	}
+
       else
 	fprintf (stream, "%d", REGNO (x) - FIRST_IWMMXT_GR_REGNUM);
       return;
@@ -10490,7 +10535,11 @@ arm_print_operand (FILE *stream, rtx x, int code)
 	  || INTVAL (x) < 0
 	  || INTVAL (x) >= 16)
 	/* Bad value for wC register number.  */
-	abort ();
+	{
+	  output_operand_lossage ("invalid operand for code '%c'", code);
+	  return;
+	}
+
       else
 	{
 	  static const char * wc_reg_names [16] =
@@ -10512,15 +10561,24 @@ arm_print_operand (FILE *stream, rtx x, int code)
 	int num;
 
 	if (mode != DImode && mode != DFmode)
-	  abort ();
+	  {
+	    output_operand_lossage ("invalid operand for code '%c'", code);
+	    return;
+	  }
 
 	if (GET_CODE (x) != REG
 	    || !IS_VFP_REGNUM (REGNO (x)))
-	  abort ();
+	  {
+	    output_operand_lossage ("invalid operand for code '%c'", code);
+	    return;
+	  }
 
 	num = REGNO(x) - FIRST_VFP_REGNUM;
 	if (num & 1)
-	  abort ();
+	  {
+	    output_operand_lossage ("invalid operand for code '%c'", code);
+	    return;
+	  }
 
 	fprintf (stream, "d%d", num >> 1);
       }
@@ -10528,7 +10586,10 @@ arm_print_operand (FILE *stream, rtx x, int code)
 
     default:
       if (x == 0)
-	abort ();
+	{
+	  output_operand_lossage ("missing operand");
+	  return;
+	}
 
       if (GET_CODE (x) == REG)
 	asm_fprintf (stream, "%r", REGNO (x));
