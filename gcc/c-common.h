@@ -832,7 +832,7 @@ extern int vector_types_convertible_p (tree t1, tree t2);
 
 extern rtx c_expand_expr (tree, rtx, enum machine_mode, int, rtx *);
 
-extern int c_staticp (tree);
+extern bool c_staticp (tree);
 
 extern int c_common_unsafe_for_reeval (tree);
 

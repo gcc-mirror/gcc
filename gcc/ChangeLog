@@ -1,5 +1,11 @@
 2004-07-25  Bernardo Innocenti  <bernie@develer.com>
 
+	* c-common.h (c_staticp): Change return type from int to bool.
+	* tree.c (staticp): Likewise.
+	* langhooks.h (staticp): Likewise.
+
+2004-07-25  Bernardo Innocenti  <bernie@develer.com>
+
 	* langhooks-def.h (lhd_staticp): Change return type from int to
 	bool in prototype to match definition.
 
