@@ -1,3 +1,13 @@
+2000-12-17  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* c-common.c (c_common_nodes_and_builtins): Create a
+	cstring_endlink, use it.  Rename int_ftype_string_string to
+	int_ftype_cstring_cstring, string_ftype_string_int to
+	string_ftype_cstring_int, and string_ftype_string_string to
+	string_ftype_cstring_cstring.  Prefer sizetype_endlink and
+	int_endlink to manually recreating them.  Fix the prototype
+	set for __builtin_strspn/__builtin_strcspn.
+
 2000-12-12  Marek Michalkiewicz  <marekm@linux.org.pl>
 
 	* config/avr/avr.c (out_set_stack_ptr): Update comment.
