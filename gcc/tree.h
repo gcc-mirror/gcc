@@ -56,7 +56,7 @@ extern const char tree_code_type[];
 
 /* Returns nonzero iff CLASS is not the tree code of a type.  */
 
-#define IS_NON_TYPE_CODE_CLASS(CLASS) (strchr ("xbcdr<12se", (CLASS)) != 0)
+#define IS_NON_TYPE_CODE_CLASS(CLASS) ((CLASS) != 't')
 
 /* Returns nonzero iff CLASS is the tree-code class of an
    expression.  */
@@ -228,8 +228,6 @@ struct tree_common GTY(())
 	   ??? and other expressions?
        TREE_PUBLIC in
            VAR_DECL or FUNCTION_DECL or IDENTIFIER_NODE
-       TREE_VIA_PUBLIC in
-           TREE_LIST or TREE_VEC
        ASM_VOLATILE_P in
            ASM_EXPR
 
