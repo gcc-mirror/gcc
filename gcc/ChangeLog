@@ -1,3 +1,13 @@
+Tue May 18 00:51:46 1999  Krister Walfridsson <cato@df.lth.se>
+
+        * configure.in (arm*-*-netbsd*): Use collect2.
+        (i[34567]86-*-netbsd*): Likewise.
+        (m68k*-*-netbsd*): Likewise.
+        (ns32k-*-netbsd*): Likewise.
+        (sparc-*-netbsd*): Likewise.
+        (vax-*-netbsd*): Likewise.
+	* configure: Rebuilt.
+
 Tue May 18 00:21:34 1999  Zack Weinberg  <zack@rabi.phys.columbia.edu>
 
 	* cppspec.c: Insert -no-gcc into command line unless -gcc was
