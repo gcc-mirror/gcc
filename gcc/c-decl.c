@@ -2056,12 +2056,13 @@ define_label (location_t location, tree name)
   return label;
 }
 
-/* Return the list of declarations of the current scope.  */
+/* Return the list of declarations of the current scope.
+   This hook is optional and not implemented for C.  */
 
 tree
 getdecls (void)
 {
-  return current_scope->names;
+  return 0;
 }
 
 
@@ -6197,7 +6198,7 @@ check_for_loop_decls (void)
         }
     }
 
-  for (t = getdecls (); t; t = TREE_CHAIN (t))
+  for (t = current_scope->names; t; t = TREE_CHAIN (t))
     {
       if (TREE_CODE (t) != VAR_DECL && DECL_NAME (t))
 	error ("%Jdeclaration of non-variable '%D' in 'for' loop "
@@ -6380,11 +6381,14 @@ void
 record_builtin_type (enum rid rid_index, const char *name, tree type)
 {
   tree id;
+  tree tdecl;
   if (name == 0)
     id = ridpointers[(int) rid_index];
   else
     id = get_identifier (name);
-  pushdecl (build_decl (TYPE_DECL, id, type));
+  tdecl = build_decl (TYPE_DECL, id, type);
+  pushdecl (tdecl);
+  debug_hooks->type_decl (tdecl, 0);
 }
 
 /* Build the void_list_node (void_type_node having been created).  */

@@ -179,6 +179,12 @@ static GTY(()) int typevec_len;
 
 static GTY(()) int next_type_number;
 
+/* The C front end may call dbxout_symbol before dbxout_init runs.
+   We save all such decls in this list and output them when we get
+   to dbxout_init.  */
+
+static GTY(()) tree preinit_symbols;
+
 enum binclstatus {BINCL_NOT_REQUIRED, BINCL_PENDING, BINCL_PROCESSED};
 
 /* When using N_BINCL in dbx output, each type number is actually a
@@ -371,6 +377,7 @@ static void dbxout_begin_function (tree);
 static void dbxout_begin_block (unsigned, unsigned);
 static void dbxout_end_block (unsigned, unsigned);
 static void dbxout_function_decl (tree);
+static void dbxout_type_decl (tree, int);
 
 const struct gcc_debug_hooks dbx_debug_hooks =
 {
@@ -396,6 +403,7 @@ const struct gcc_debug_hooks dbx_debug_hooks =
   debug_nothing_int,		         /* end_function */
   dbxout_function_decl,
   dbxout_global_decl,		         /* global_decl */
+  dbxout_type_decl,			 /* type_decl */
   debug_nothing_tree_tree,               /* imported_module_or_decl */
   debug_nothing_tree,		         /* deferred_inline_function */
   debug_nothing_tree,		         /* outlining_inline_function */
@@ -425,6 +433,7 @@ const struct gcc_debug_hooks xcoff_debug_hooks =
   xcoffout_end_function,
   debug_nothing_tree,		         /* function_decl */
   dbxout_global_decl,		         /* global_decl */
+  dbxout_type_decl,			 /* type_decl */
   debug_nothing_tree_tree,               /* imported_module_or_decl */
   debug_nothing_tree,		         /* deferred_inline_function */
   debug_nothing_tree,		         /* outlining_inline_function */
@@ -537,22 +546,20 @@ dbxout_init (const char *input_file_name)
   current_file->pending_bincl_name = NULL;
 #endif
 
-  /* Make sure that types `int' and `char' have numbers 1 and 2.
-     Definitions of other integer types will refer to those numbers.
-     (Actually it should no longer matter what their numbers are.
-     Also, if any types with tags have been defined, dbxout_symbol
-     will output them first, so the numbers won't be 1 and 2.  That
-     happens in C++.  So it's a good thing it should no longer matter).  */
-
-#ifdef DBX_OUTPUT_STANDARD_TYPES
-  DBX_OUTPUT_STANDARD_TYPES (syms);
-#endif
-
   /* Get all permanent types that have typedef names, and output them
      all, except for those already output.  Some language front ends
-     put these declarations in the top-level scope; some do not.  */
-  dbxout_typedefs ((*lang_hooks.decls.builtin_type_decls) ());
+     put these declarations in the top-level scope; some do not;
+     the latter are responsible for calling debug_hooks->type_decl from
+     their record_builtin_type function.  */
   dbxout_typedefs (syms);
+
+  if (preinit_symbols)
+    {
+      tree t;
+      for (t = nreverse (preinit_symbols); t; t = TREE_CHAIN (t))
+	dbxout_symbol (TREE_VALUE (t), 0);
+      preinit_symbols = 0;
+    }
 }
 
 /* Output any typedef names for types described by TYPE_DECLs in SYMS.  */
@@ -803,6 +810,14 @@ dbxout_global_decl (tree decl)
       dbxout_symbol (decl, 0);
       TREE_USED (decl) = saved_tree_used;
     }
+}
+
+/* This is just a function-type adapter; dbxout_symbol does exactly
+   what we want but returns an int.  */
+static void
+dbxout_type_decl (tree decl, int local)
+{
+  dbxout_symbol (decl, local);
 }
 
 /* At the end of compilation, finish writing the symbol table.
@@ -2064,13 +2079,21 @@ dbxout_symbol (tree decl, int local ATTRIBUTE_UNUSED)
      symbol nodees are flagged with TREE_USED.  Ignore any that
      aren't flaged as TREE_USED.  */
 
+  if (flag_debug_only_used_symbols
+      && (!TREE_USED (decl)
+          && (TREE_CODE (decl) != VAR_DECL || !DECL_INITIAL (decl))))
+    DBXOUT_DECR_NESTING_AND_RETURN (0);
+
+  /* If dbxout_init has not yet run, queue this symbol for later.  */
+  if (!typevec)
+    {
+      preinit_symbols = tree_cons (0, decl, preinit_symbols);
+      DBXOUT_DECR_NESTING_AND_RETURN (0);
+    }
+
   if (flag_debug_only_used_symbols)
     {
       tree t;
-
-      if (!TREE_USED (decl)
-          && (TREE_CODE (decl) != VAR_DECL || !DECL_INITIAL (decl)))
-        DBXOUT_DECR_NESTING_AND_RETURN (0);
 
       /* We now have a used symbol.  We need to generate the info for
          the symbol's type in addition to the symbol itself.  These
@@ -2175,6 +2198,20 @@ dbxout_symbol (tree decl, int local ATTRIBUTE_UNUSED)
       if (TREE_ASM_WRITTEN (decl) || TYPE_DECL_SUPPRESS_DEBUG (decl))
 	DBXOUT_DECR_NESTING_AND_RETURN (0);
 
+      /* Don't output typedefs for types with magic type numbers (XCOFF).  */
+#ifdef DBX_ASSIGN_FUNDAMENTAL_TYPE_NUMBER
+      {
+	int fundamental_type_number =
+	  DBX_ASSIGN_FUNDAMENTAL_TYPE_NUMBER (decl);
+
+	if (fundamental_type_number != 0)
+	  {
+	    TREE_ASM_WRITTEN (decl) = 1;
+	    TYPE_SYMTAB_ADDRESS (TREE_TYPE (decl)) = fundamental_type_number;
+	    DBXOUT_DECR_NESTING_AND_RETURN (0);
+	  }
+      }
+#endif
       FORCE_TEXT;
       result = 1;
       {

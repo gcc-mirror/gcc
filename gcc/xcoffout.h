@@ -29,15 +29,8 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 
 /* Use the XCOFF predefined type numbers.  */
 
-/* ??? According to metin, typedef stabx must go in text control section,
-   but he did not make this changes everywhere where such typedef stabx
-   can be emitted, so it is really needed or not?  */
-
-#define DBX_OUTPUT_STANDARD_TYPES(SYMS)		\
-{						\
-  text_section ();				\
-  xcoff_output_standard_types (SYMS);		\
-}
+#define DBX_ASSIGN_FUNDAMENTAL_TYPE_NUMBER(TYPE) \
+  xcoff_assign_fundamental_type_number (TYPE)
 
 /* Any type with a negative type index has already been output.  */
 
@@ -183,23 +176,11 @@ extern const char *xcoff_lastfile;
 /* Prototype functions in xcoffout.c.  */
 
 extern int stab_to_sclass (int);
-#ifdef BUFSIZ
 extern void xcoffout_begin_prologue (unsigned int, const char *);
 extern void xcoffout_begin_block (unsigned, unsigned);
 extern void xcoffout_end_epilogue (unsigned int, const char *);
 extern void xcoffout_end_function (unsigned int);
 extern void xcoffout_end_block (unsigned, unsigned);
-#endif /* BUFSIZ */
-
-#ifdef TREE_CODE
-extern void xcoff_output_standard_types (tree);
-#ifdef BUFSIZ
+extern int xcoff_assign_fundamental_type_number (tree);
 extern void xcoffout_declare_function (FILE *, tree, const char *);
-#endif /* BUFSIZ */
-#endif /* TREE_CODE */
-
-#ifdef RTX_CODE
-#ifdef BUFSIZ
 extern void xcoffout_source_line (unsigned int, const char *);
-#endif /* BUFSIZ */
-#endif /* RTX_CODE */

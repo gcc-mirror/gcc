@@ -1,3 +1,46 @@
+2004-02-12  Zack Weinberg  <zack@codesourcery.com>
+
+	* debug.h (struct gcc_debug_hooks): Add type_decl field.
+	(debug_nothing_tree_int): Prototype.
+	(dwarf_debug_hooks): Delete, unused.
+	* debug.c (do_nothing_debug_hooks): Update.
+	(debug_nothing_tree_int): New function.
+	* langhooks.h (struct lang_hooks_for_decls):
+	Remove builtin_type_decls field.
+	* langhooks-def.h (LANG_HOOKS_BUILTIN_TYPE_DECLS): Delete.
+	(LANG_HOOKS_DECLS): Update.
+	* toplev.c (rest_of_decl_compilation, rest_of_type_compilation):
+	Use debug_hooks->type_decl.
+	* dbxout.c (preinit_symbols): New static.
+	(dbx_debug_hooks, xcoff_debug_hooks): Update.
+	(dbxout_init): Don't call DBX_OUTPUT_STANDARD_TYPES or
+	lang_hooks.decls.builtin_type_decls.  Do scan preinit_symbols
+	for symbols to output.
+	(dbxout_type_decl): New function.
+	(dbxout_symbol): If called before dbxout_init has run, queue
+	the symbol for later.  Apply DBX_ASSIGN_FUNDAMENTAL_TYPE_NUMBER
+	to TYPE_DECLs before emitting them.
+	* xcoffout.c (assign_type_number): Delete.
+	(xcoff_type_numbers): New static table.
+	(xcoff_assign_fundamental_type_number): New function.
+	* xcoffout.h: Define DBX_ASSIGN_FUNDAMENTAL_TYPE_NUMBER, not
+	DBX_OUTPUT_STANDARD_TYPES.  Remove unnecessary #ifdefs.
+	* sdbout.c: Include varray.h.
+	(deferred_global_decls): New static.
+	(sdb_debug_hooks): Update.
+	(sdbout_global_decl): If we can't emit something right now,
+	remember it in deferred_global_decls.
+	(sdbout_finish): Just scan deferred_global_decls; don't call getdecls.
+	(sdbout_init): Initialize deferred_global_decls.
+	* Makefile.in: Update dependencies of sdbout.o.
+	* dwarf2out.c (dwarf2out_type_decl): New function.
+	(dwarf2_debug_hooks): Update.
+	* vmsdbgout.c (vmsdbg_debug_hooks): Update.
+	* c-decl.c (getdecls): Just return 0.
+	(check_for_loop_decls): Don't use getdecls.
+	(record_builtin_type): Call debug_hooks->type_decl on the TYPE_DECL.
+	* c-objc-common.c (c_objc_common_finish_file): Don't use getdecls.
+
 2004-02-12  Ulrich Weigand  <uweigand@de.ibm.com>
 
 	* config/s390/s390.c (s390_sched_reorder2): Remove.

@@ -1,3 +1,10 @@
+2004-02-12  Zack Weinberg  <zack@codesourcery.com>
+
+	* cp-lang.c: Don't define LANG_HOOKS_BUILTIN_TYPE_DECLS.
+	* cp-tree.h: Don't declare cxx_builtin_type_decls.
+	* decl.c (builtin_type_decls, cxx_builtin_type_decls): Delete.
+	(record_builtin_type): Call debug_hooks->type_decl on the TYPE_DECL.
+
 2004-02-10  Mark Mitchell  <mark@codesourcery.com>
 
 	* typeck.c (lookup_destructor): Fix typo in error message.
