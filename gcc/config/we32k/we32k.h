@@ -580,9 +580,13 @@ enum reg_class { NO_REGS, GENERAL_REGS,
 
 #define GO_IF_LEGITIMATE_ADDRESS(MODE, X, LABEL)			\
 { register rtx Addr = X;						\
-  if (REG_P(Addr) && REG_OK_FOR_BASE_P(Addr))				\
-    goto LABEL;								\
+  if ((MODE) == QImode || (MODE) == HImode ||				\
+    (MODE) == PSImode || (MODE) == SImode || (MODE) == SFmode)		\
+    if (GET_CODE(Addr) == MEM)						\
+      Addr = XEXP(Addr, 0);						\
   if (CONSTANT_ADDRESS_P(Addr))						\
+    goto LABEL;								\
+  if (REG_P(Addr) && REG_OK_FOR_BASE_P(Addr))				\
     goto LABEL;								\
   if (GET_CODE(Addr) == PLUS &&						\
     ((REG_P(XEXP(Addr, 0)) && REG_OK_FOR_BASE_P(XEXP(Addr, 0)) &&	\
@@ -672,14 +676,16 @@ enum reg_class { NO_REGS, GENERAL_REGS,
    of a switch statement.  If the code is computed here,
    return it with a return statement.  Otherwise, break from the switch.  */
 
-#define CONST_COSTS(RTX,CODE, OUTER_CODE)			\
-  case CONST_INT:						\
-    if ((unsigned) INTVAL (RTX) < 077) return 1;		\
-  case CONST:							\
-  case LABEL_REF:						\
-  case SYMBOL_REF:						\
-    return 3;							\
-  case CONST_DOUBLE:						\
+#define CONST_COSTS(RTX,CODE, OUTER_CODE)				\
+  case CONST_INT:							\
+    if (INTVAL (RTX) >= -16 && INTVAL (RTX) <= 63) return 0;		\
+    if (INTVAL (RTX) >= -128 && INTVAL (RTX) <= 127) return 1;		\
+    if (INTVAL (RTX) >= -32768 && INTVAL (RTX) <= 32767) return 2;	\
+  case CONST:								\
+  case LABEL_REF:							\
+  case SYMBOL_REF:							\
+    return 3;								\
+  case CONST_DOUBLE:							\
     return 5;
 
 /* Tell final.c how to eliminate redundant test instructions.  */
