@@ -3452,31 +3452,6 @@ builtin:
     }
 }
 
-/* Build up a call to operator new.  This has to be handled differently
-   from other operators in the way lookup is handled; first members are
-   considered, then globals.  CODE is either NEW_EXPR or VEC_NEW_EXPR.
-   TYPE is the type to be created.  ARGS are any new-placement args.
-   FLAGS are the usual overloading flags.  */
-
-tree
-build_op_new_call (code, type, args, flags)
-     enum tree_code code;
-     tree type, args;
-     int flags;
-{
-  tree fnname = ansi_opname[code];
-
-  if (IS_AGGR_TYPE (type) && ! (flags & LOOKUP_GLOBAL)
-      && (TYPE_GETS_NEW (type) & (1 << (code == VEC_NEW_EXPR))))
-    {
-      return build_method_call (build_dummy_object (type),
-				fnname, args, NULL_TREE, flags);
-    }
-  else
-    return build_new_function_call 
-      (lookup_function_nonclass (fnname, args), args);
-}
-
 /* Build a call to operator delete.  This has to be handled very specially,
    because the restrictions on what signatures match are different from all
    other call instances.  For a normal delete, only a delete taking (void *)

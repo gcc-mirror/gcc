@@ -6844,7 +6844,7 @@ start_decl_1 (decl)
   /* If this type of object needs a cleanup, but we're not allowed to
      add any more objects with cleanups to the current scope, create a
      new binding level.  */
-  if (TYPE_NEEDS_DESTRUCTOR (type)
+  if (TYPE_HAS_NONTRIVIAL_DESTRUCTOR (type)
       && current_binding_level->more_cleanups_ok == 0)
     {
       keep_next_level (2);
@@ -7490,7 +7490,7 @@ initialize_local_var (decl, init, flags)
   if (TREE_STATIC (decl))
     {
       if (TYPE_NEEDS_CONSTRUCTING (type) || init != NULL_TREE
-	  || TYPE_NEEDS_DESTRUCTOR (type))
+	  || TYPE_HAS_NONTRIVIAL_DESTRUCTOR (type))
 	expand_static_init (decl, init);
       return;
     }
@@ -7522,7 +7522,7 @@ initialize_local_var (decl, init, flags)
 	 marked used. (see TREE_USED, above.)  */
       if (TYPE_NEEDS_CONSTRUCTING (type)
 	  && ! already_used
-	  && !TYPE_NEEDS_DESTRUCTOR (type)
+	  && TYPE_HAS_TRIVIAL_DESTRUCTOR (type)
 	  && DECL_NAME (decl))
 	TREE_USED (decl) = 0;
       else if (already_used)
@@ -7544,7 +7544,7 @@ destroy_local_var (decl)
     return;
 
   /* And only things with destructors need cleaning up.  */
-  if (!TYPE_NEEDS_DESTRUCTOR (type))
+  if (TYPE_HAS_TRIVIAL_DESTRUCTOR (type))
     return;
 
   if (TREE_CODE (decl) == VAR_DECL &&
@@ -7820,7 +7820,7 @@ cp_finish_decl (decl, init, asmspec_tree, flags)
 	{
 	  /* Cleanups for static variables are handled by `finish_file'.  */
 	  if (TYPE_NEEDS_CONSTRUCTING (type) || init != NULL_TREE
-	      || TYPE_NEEDS_DESTRUCTOR (type))
+	      || TYPE_HAS_NONTRIVIAL_DESTRUCTOR (type))
 	    expand_static_init (decl, init);
 	}
     finish_end0:
@@ -8054,7 +8054,7 @@ register_dtor_fn (decl)
 
   int saved_flag_access_control;
 
-  if (!TYPE_NEEDS_DESTRUCTOR (TREE_TYPE (decl)))
+  if (TYPE_HAS_TRIVIAL_DESTRUCTOR (TREE_TYPE (decl)))
     return;
 
   /* Call build_cleanup before we enter the anonymous function so that
@@ -11856,11 +11856,11 @@ grok_op_properties (decl, virtualp, friendp)
 	       || name == ansi_opname[(int) MEMBER_REF])
 	TYPE_OVERLOADS_ARROW (current_class_type) = 1;
       else if (name == ansi_opname[(int) NEW_EXPR])
-	TYPE_GETS_NEW (current_class_type) |= 1;
+	TYPE_HAS_NEW_OPERATOR (current_class_type) = 1;
       else if (name == ansi_opname[(int) DELETE_EXPR])
 	TYPE_GETS_DELETE (current_class_type) |= 1;
       else if (name == ansi_opname[(int) VEC_NEW_EXPR])
-	TYPE_GETS_NEW (current_class_type) |= 2;
+	TYPE_HAS_ARRAY_NEW_OPERATOR (current_class_type) = 1;
       else if (name == ansi_opname[(int) VEC_DELETE_EXPR])
 	TYPE_GETS_DELETE (current_class_type) |= 2;
     }
@@ -11894,14 +11894,7 @@ grok_op_properties (decl, virtualp, friendp)
 				 hash_tree_chain (ptr_type_node,
 						  void_list_node));
       else
-	{
-	  TREE_TYPE (decl) = coerce_delete_type (TREE_TYPE (decl));
-
-	  if (! friendp && name == ansi_opname[(int) VEC_DELETE_EXPR]
-	      && (TREE_CHAIN (TYPE_ARG_TYPES (TREE_TYPE (decl)))
-		  != void_list_node))
-	    TYPE_VEC_DELETE_TAKES_SIZE (current_class_type) = 1;
-	}
+	TREE_TYPE (decl) = coerce_delete_type (TREE_TYPE (decl));
     }
   else
     {
@@ -12508,7 +12501,10 @@ xref_basetypes (code_type_node, name, ref, binfo)
 
 	  if (CLASS_TYPE_P (basetype))
 	    {
-	      TYPE_GETS_NEW (ref) |= TYPE_GETS_NEW (basetype);
+	      TYPE_HAS_NEW_OPERATOR (ref) 
+		|= TYPE_HAS_NEW_OPERATOR (basetype);
+	      TYPE_HAS_ARRAY_NEW_OPERATOR (ref) 
+		|= TYPE_HAS_ARRAY_NEW_OPERATOR (basetype);
 	      TYPE_GETS_DELETE (ref) |= TYPE_GETS_DELETE (basetype);
 	      /* If the base-class uses multiple inheritance, so do we.  */
 	      TYPE_USES_MULTIPLE_INHERITANCE (ref)
@@ -13387,7 +13383,7 @@ store_parm_decls ()
 		    cleanups = tree_cons (parm, cleanup, cleanups);
 		}
 	      else if (type != error_mark_node
-		       && TYPE_NEEDS_DESTRUCTOR (type))
+		       && TYPE_HAS_NONTRIVIAL_DESTRUCTOR (type))
 		parms_have_cleanups = 1;
 	    }
 	  else
@@ -13603,7 +13599,7 @@ finish_destructor_body ()
 
 	  while (vbases)
 	    {
-	      if (TYPE_NEEDS_DESTRUCTOR (BINFO_TYPE (vbases)))
+	      if (TYPE_HAS_NONTRIVIAL_DESTRUCTOR (BINFO_TYPE (vbases)))
 		{
 		  tree vb = get_vbase
 		    (BINFO_TYPE (vbases),
@@ -14286,7 +14282,7 @@ maybe_build_cleanup_1 (decl, auto_delete)
      tree decl, auto_delete;
 {
   tree type = TREE_TYPE (decl);
-  if (type != error_mark_node && TYPE_NEEDS_DESTRUCTOR (type))
+  if (type != error_mark_node && TYPE_HAS_NONTRIVIAL_DESTRUCTOR (type))
     {
       int flags = LOOKUP_NORMAL|LOOKUP_DESTRUCTOR;
       tree rval;

@@ -3147,7 +3147,7 @@ do_identifier (token, parsing, args)
       else if (!DECL_ERROR_REPORTED (id))
 	{
 	  DECL_ERROR_REPORTED (id) = 1;
-	  if (TYPE_NEEDS_DESTRUCTOR (TREE_TYPE (id)))
+	  if (TYPE_HAS_NONTRIVIAL_DESTRUCTOR (TREE_TYPE (id)))
 	    {
 	      error ("name lookup of `%s' changed for new ISO `for' scoping",
 		     IDENTIFIER_POINTER (token));

@@ -3238,7 +3238,7 @@ do_static_destruction (decl)
   my_friendly_assert (!flag_use_cxa_atexit, 20000121);
 
   /* If we don't need a destructor, there's nothing to do.  */
-  if (!TYPE_NEEDS_DESTRUCTOR (TREE_TYPE (decl)))
+  if (TYPE_HAS_TRIVIAL_DESTRUCTOR (TREE_TYPE (decl)))
     return;
 
   /* Actually do the destruction.  */

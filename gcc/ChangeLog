@@ -1,3 +1,7 @@
+2000-03-02  Mark Mitchell  <mark@codesourcery.com>
+
+	* tree.h (TYPE_ALIGN_UNIT): New macro.
+
 2000-03-02  Clinton Popetz  <cpopetz@cygnus.com>
 
 	* config/i386/i386.c: (constant_call_address_operand): Reject

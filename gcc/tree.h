@@ -880,6 +880,10 @@ struct tree_block
    The value is an int, measured in bits.  */
 #define TYPE_ALIGN(NODE) (TYPE_CHECK (NODE)->type.align)
 
+/* The alignment for NODE, in bytes.  */
+#define TYPE_ALIGN_UNIT(NODE) \
+  (TYPE_ALIGN (NODE) / BITS_PER_UNIT)
+
 #define TYPE_STUB_DECL(NODE) (TREE_CHAIN (NODE))
 
 /* In a RECORD_TYPE, UNION_TYPE or QUAL_UNION_TYPE, it means the type

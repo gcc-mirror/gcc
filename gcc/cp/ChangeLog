@@ -1,3 +1,64 @@
+2000-03-02  Mark Mitchell  <mark@codesourcery.com>
+
+	* cp-tree.h (TYPE_NEEDS_DESTRUCTOR): Rename to ...
+	(TYPE_HAS_NONTRIVIAL_DESTRUCTOR): ... this.
+	(TYPE_HAS_TRIVIAL_DESTRUCTOR): New macro.
+	(lang_type): Split gets_new into has_new and has_array_new.
+	(TYPE_VEC_NEW_USES_COOKIE): Use TYPE_HAS_NONTRIVIAL_DESTRUCTOR.
+	(TYPE_GETS_NEW): Split into ...
+	(TYPE_HAS_NEW_OPERATOR): ... this, and ...
+	(TYPE_HAS_ARRAY_NEW_OPERATOR): ... this.
+	(DECL_ARRAY_DELETE_OPERATOR_P): New macro
+	(build_op_new_call): Don't declare.
+	(build_new_1): Likewise.
+	* call.c (build_op_new_call): Remove.
+	* class.c (check_bases): Use TYPE_HAS_NONTRIVIAL_DESTRUCTOR
+	instead of TYPE_NEEDS_DESTRUCTOR.
+	(finish_struct_bits): Likewise.
+	(add_implicitly_declared_members): Likewise.
+	(check_field_decl): Likewise.
+	(check_methods): Set TYPE_VEC_DELETE_TAKES_SIZE here, and set it
+	correctly under the new ABI.
+	* decl.c (start_decl_1): Use TYPE_HAS_NONTRIVIAL_DESTRUCTOR
+	instead of TYPE_NEEDS_DESTRUCTOR.
+	(initialize_local_var): Likewise.
+	(destroy_local_var): Likewise.
+	(cp_finish_decl): Likewise.
+	(register_dtor_fn): Likewise.
+	(grok_op_properties): Set TYPE_HAS_NEW_OPERATOR and
+	TYPE_HAS_ARRAY_NEW_OPERATOR, not TYPE_HAS_NEW.  Don't set
+	TYPE_VEC_DELETE_TAKES_SIZE here.
+	(xref_basetypes): Set TYPE_HAS_NEW_OPERATOR and
+	TYPE_HAS_ARRAY_NEW_OPERATOR, not TYPE_HAS_NEW.
+	(store_parm_decls):  Use TYPE_HAS_NONTRIVIAL_DESTRUCTOR.
+	(finish_destructor_body): Likewise.
+	(maybe_build_cleanup_1): Likewise.
+	* decl2.c (do_static_destruction): Likewise.
+	* init.c (build_new_1): Make it static.
+	(perform_member_init): Use TYPE_HAS_NONTRIVIAL_DESTRUCTOR.
+	(expand_cleanup_for_base): Likewise.
+	(get_cookie_size): New function.
+	(build_new_1): Handle array-new cookies correctly under the new
+	ABI.
+	(build_vec_delete_1): Likewise.
+	(build_vec_init):  Use TYPE_HAS_NONTRIVIAL_DESTRUCTOR.
+	(build_delete): Likewise.
+	(build_vec_delete): Handle array-new cookies correctly under the new
+	ABI.
+	* lex.c (do_identifier): Use TYPE_HAS_NONTRIVIAL_DESTRUCTOR.
+	* pt.c (instantiate_class_template): Set TYPE_HAS_NEW_OPERATOR and
+	TYPE_HAS_ARRAY_NEW_OPERATOR.
+	* ptree.c (print_lang_type): Check them.
+	* search.c (context_for_name_lookup): Fix typo in comment.
+	(tree_has_any_destructor_p): Use TYPE_HAS_NONTRIVIAL_DESTRUCTOR.
+	* tree.c (break_out_cleanups): Likewise.
+	(build_cplus_array_test_1): Likewise.
+	(cp_build_qualified_type_real): Likewise.
+	* typeck.c (complete_type): Likewise.
+	
+	* g++spec.c (lang_specific_driver): Add -fnew-abi at the start of
+	the command-line, not the end.
+	
 2000-03-01  Jason Merrill  <jason@casey.cygnus.com>
 
 	* pt.c (instantiate_decl): Clear TI_PENDING_TEMPLATE_FLAG.
