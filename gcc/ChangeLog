@@ -1,3 +1,17 @@
+2001-08-29  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* iris6.h (ASM_DECLARE_OBJECT_NAME, ASM_FINISH_DECLARE_OBJECT):
+	Fix format specifier warnings.
+	
+	* irix6-libc-compat.c (inet_ntoa, inet_lnaof, inet_netof,
+	inet_makeaddr, semctl): Prototype.
+
+	* mips.c (compute_frame_size): Fix signed/unsigned warnings.
+	(save_restore_insns): Use base_offset, not gp_offset.
+
+	* mips.h (GP_REG_OR_PSEUDO_STRICT_P): Fix signed/unsigned warning.
+	(ASM_OUTPUT_BYTE): Fix format specifier warning.
+
 2001-08-29  Richard Henderson  <rth@redhat.com>
 
 	* bb-reorder.c (function_tail_eff_head): New.

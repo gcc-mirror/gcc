@@ -67,6 +67,11 @@ Boston, MA 02111-1307, USA.  */
    always 32.  */
 #define SHIFT_BITS	32
 
+extern machreg_t inet_ntoa	PARAMS ((machreg_t));
+extern machreg_t inet_lnaof	PARAMS ((machreg_t));
+extern machreg_t inet_netof	PARAMS ((machreg_t));
+extern machreg_t inet_makeaddr	PARAMS ((machreg_t, machreg_t));
+
 extern machreg_t _inet_ntoa	PARAMS ((machreg_t));
 extern machreg_t _inet_lnaof	PARAMS ((machreg_t));
 extern machreg_t _inet_netof	PARAMS ((machreg_t));
@@ -120,6 +125,7 @@ inet_makeaddr (machreg_t net, machreg_t lna)
 }
 
 #if _MIPS_SIM == _ABIN32
+extern machreg_t semctl		PARAMS ((machreg_t, machreg_t, machreg_t, machreg_t));
 extern machreg_t _semctl	PARAMS ((machreg_t, machreg_t, machreg_t, machreg_t));
 
 /* <sys/sem.h> has

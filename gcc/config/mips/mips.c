@@ -6246,7 +6246,7 @@ HOST_WIDE_INT
 compute_frame_size (size)
      HOST_WIDE_INT size;	/* # of var. bytes allocated */
 {
-  int regno;
+  unsigned int regno;
   HOST_WIDE_INT total_size;	/* # bytes that the entire frame takes up */
   HOST_WIDE_INT var_size;	/* # bytes that variables take up */
   HOST_WIDE_INT args_size;	/* # bytes that outgoing arguments take up */
@@ -6319,7 +6319,7 @@ compute_frame_size (size)
   /* We need to restore these for the handler.  */
   if (current_function_calls_eh_return)
     {
-      int i;
+      unsigned int i;
       for (i = 0; ; ++i)
 	{
 	  regno = EH_RETURN_DATA_REGNO (i);
@@ -6782,7 +6782,7 @@ save_restore_insns (store_p, large_reg, large_offset, file)
 		RTX_UNCHANGING_P (mem_rtx) = 1;
 
 		if (store_p)
-		  mips_emit_frame_related_store (mem_rtx, reg_rtx, gp_offset);
+		  mips_emit_frame_related_store (mem_rtx, reg_rtx, base_offset);
 		else
 		  emit_move_insn (reg_rtx, mem_rtx);
 	      }

@@ -2750,7 +2750,7 @@ typedef struct mips_args {
    : GP_REG_P (regno))
 
 #define GP_REG_OR_PSEUDO_STRICT_P(regno, mode)				    \
-  BASE_REG_P((regno < FIRST_PSEUDO_REGISTER) ? regno : reg_renumber[regno], \
+  BASE_REG_P((regno < FIRST_PSEUDO_REGISTER) ? (int) regno : reg_renumber[regno], \
 	     (mode))
 
 #define GP_REG_OR_PSEUDO_NONSTRICT_P(regno, mode) \
@@ -4325,7 +4325,7 @@ do {									\
 /* This is how to output an assembler line for a numeric constant byte.  */
 
 #define ASM_OUTPUT_BYTE(STREAM,VALUE)					\
-  fprintf (STREAM, "\t.byte\t0x%x\n", (VALUE))
+  fprintf (STREAM, "\t.byte\t0x%x\n", (int)(VALUE))
 
 /* This is how to output an element of a case-vector that is absolute.  */
 
