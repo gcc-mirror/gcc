@@ -1,3 +1,13 @@
+2000-05-25  David Edelsohn  <edelsohn@gnu.org>
+
+	* rs6000.c (expand_block_move): Add 64-bit PowerPC doubleword move
+	to STRING case.  Use doubleword STRING move for TARGET_POWERPC64
+	when unaligned.
+	* rs6000.h (CONST_OK_FOR_LETTER_P, 'J'): unsigned HOST_WIDE_INT.
+	(RETURN_ADDR_RTX): Use COUNT and FRAME, not count and frame.
+	(LEGITIMIZE_RELOAD_ADDRESS): unsigned HOST_WIDE_INT high.
+	* rs6000.md: Name various internal patterns.
+
 2000-05-25  Jan Hubicka  <jh@suse.cz>
 
 	* jump.c (invert_exp_1): Remove first argument, use pc_set

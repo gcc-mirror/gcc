@@ -2369,7 +2369,20 @@ expand_block_move (operands)
 					    GEN_INT (move_bytes),
 					    align_rtx));
 	    }
-	  else if (bytes > 4 && ! TARGET_POWERPC64)
+	  else if (bytes >= 8 && TARGET_POWERPC64
+	      /* 64-bit loads and stores require word-aligned displacements. */
+	      && (align >= 8 || (! STRICT_ALIGNMENT && align >= 4)))
+	    {
+	      move_bytes = 8;
+	      tmp_reg = gen_reg_rtx (DImode);
+	      emit_move_insn (tmp_reg,
+			      expand_block_move_mem (DImode,
+						     src_addr, orig_src));
+	      emit_move_insn (expand_block_move_mem (DImode,
+						     dest_addr, orig_dest),
+			      tmp_reg);
+	    }
+	  else if (bytes > 4)
 	    {			/* move up to 8 bytes at a time */
 	      move_bytes = (bytes > 8) ? 8 : bytes;
 	      emit_insn (gen_movstrsi_2reg (expand_block_move_mem (BLKmode,
@@ -3000,7 +3013,7 @@ addrs_ok_for_quad_peep (addr1, addr2)
       offset1 = 0;
     }
 
-  /* Make sure the second address is a (mem (plus (reg) (const_int).  */
+  /* Make sure the second address is a (mem (plus (reg) (const_int))).  */
   if (GET_CODE (addr2) != PLUS)
     return 0;
 
