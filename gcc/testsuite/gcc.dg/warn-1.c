@@ -14,3 +14,5 @@ static void bar (void)
 
   foo (vp);	/* { dg-warning "" } */
 }
+
+void (*tourist_guide[]) (void) = { &bar };
