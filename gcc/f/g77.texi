@@ -3282,6 +3282,8 @@ arguments.
 @item -fno-globals
 @cindex global names, warning
 @cindex warnings, global names
+@cindex in-line code
+@cindex compilation, in-line
 Disable diagnostics about inter-procedural
 analysis problems, such as disagreements about the
 type of a function or a procedure's argument,
@@ -3298,9 +3300,8 @@ code that would otherwise be diagnosed.
 
 As such, this option might be quite useful when
 compiling existing, ``working'' code that happens
-to have a few bugs that do not generally show
-themselves, but @code{g77} exposes via a
-diagnostic.
+to have a few bugs that do not generally show themselves,
+but which @code{g77} diagnoses.
 
 Use of this option therefore has the effect of
 instructing @code{g77} to behave more like it did
@@ -3314,7 +3315,11 @@ Without this option, @code{g77} defaults to performing
 the potentially inlining procedures as it started doing
 in version 0.5.20, but as of version 0.5.21, it also
 diagnoses disagreements that might cause such inlining
-to crash the compiler.
+to crash the compiler as (fatal) errors,
+and warns about similar disagreements
+that are currently believed to not
+likely to result in the compiler later crashing
+or producing incorrect code.
 @end table
 
 @xref{Code Gen Options,,Options for Code Generation Conventions,
@@ -15208,29 +15213,54 @@ Argument #@var{n} of @var{name} is @dots{}
 @end smallexample
 
 These messages all identify disagreements about the
-global procedure named @var{name} among different program
-units (usually including @var{name} itself).
+global procedure named @var{name} among different program units
+(usually including @var{name} itself).
 
-These disagreements, if not diagnosed, could result in a
-compiler crash if the compiler attempted to inline a reference
-to @var{name} within a calling program unit that disagreed
-with the @var{name} program unit regarding whether the
-procedure is a subroutine or function, the type of the
-return value of the procedure (if it is a function), the
-number of arguments the procedure accepts, or the type
-of each argument.
+Whether a particular disagreement is reported
+as a warning or an error
+can depend on the relative order
+of the disagreeing portions of the source file.
 
-Such disagreements @emph{should} be fixed in the Fortran
-code itself.
-However, if that is not immediately practical, and the code
-has been working for some time, it is possible it will work
-when compiled by @code{g77} with the @samp{-fno-globals} option.
+Disagreements between a procedure invocation
+and the @emph{subsequent} procedure itself
+are, usually, diagnosed as errors
+when the procedure itself @emph{precedes} the invocation.
+Other disagreements are diagnosed via warnings.
 
-The @samp{-fno-globals} option disables these diagnostics, and
-also disables all inlining of references to global procedures
-to avoid compiler crashes.
-The diagnostics are actually produced, but as warnings, unless
-the @samp{-Wno-globals} option also is specified.
+@cindex forward references
+@cindex in-line code
+@cindex compilation, in-line
+This distinction, between warnings and errors,
+is due primarily to the present tendency of the @code{gcc} back end
+to inline only those procedure invocations that are
+@emph{preceded} by the corresponding procedure definitions.
+If the @code{gcc} back end is changed
+to inline ``forward references'',
+in which invocations precede definitions,
+the @code{g77} front end will be changed
+to treat both orderings as errors, accordingly.
+
+The sorts of disagreements that are diagnosed by @code{g77} include
+whether a procedure is a subroutine or function;
+if it is a function, the type of the return value of the procedure;
+the number of arguments the procedure accepts;
+and the type of each argument.
+
+Disagreements regarding global names among program units
+in a Fortran program @emph{should} be fixed in the code itself.
+However, if that is not immediately practical,
+and the code has been working for some time,
+it is possible it will work
+when compiled with the @samp{-fno-globals} option.
+
+The @samp{-fno-globals} option
+causes these diagnostics to all be warnings
+and disables all inlining of references to global procedures
+(to avoid subsequent compiler crashes and bad-code generation).
+Use of the @samp{-Wno-globals} option as well as @samp{-fno-globals}
+suppresses all of these diagnostics.
+(@samp{-Wno-globals} by itself disables only the warnings,
+not the errors.)
 
 After using @samp{-fno-globals} to work around these problems,
 it is wise to stop using that option and address them by fixing
