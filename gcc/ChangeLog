@@ -1,3 +1,9 @@
+2003-01-07  Sylvain Pion <Sylvain.Pion@mpi-sb.mpg.de>
+  
+        * config/i386/i386.c (ix86_init_mmx_sse_builtins):
+        __builtin_ia32_ldmxcsr and __builtin_ia32_stmxcsr are SSE, not MXX.
+        * config/i386/i386.md (ldmxcsr, stmxcsr): SSE, not MMX.
+
 2003-01-07  Benjamin Kosnik  <bkoz@redhat.com>
             Sunil Davasam  <sunil.k.davasam@intel.com>
 
