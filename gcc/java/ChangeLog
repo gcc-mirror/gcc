@@ -1,3 +1,11 @@
+2003-02-28  Tom Tromey  <tromey@redhat.com>
+
+	PR java/9695:
+	* class.c (maybe_layout_super_class): Always pass a WFL to
+	do_resolve_class.
+	* parse.y (do_resolve_class): Updated comment to explain
+	parameters.
+
 2003-02-26  Tom Tromey  <tromey@redhat.com>
 
 	* jcf-write.c (generate_classfile): Check whether class is
