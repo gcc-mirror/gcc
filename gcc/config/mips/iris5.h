@@ -20,9 +20,20 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #define	TARGET_DEFAULT	MASK_ABICALLS
 #define ABICALLS_ASM_OP ".option pic2"
 
-#define OBJECT_FORMAT_ELF
-
 #include "mips/iris4.h"
+
+/* Irix 5 doesn't use COFF, so disable special COFF handling in collect2.c.  */
+#undef OBJECT_FORMAT_COFF
+
+/* ??? This is correct, but not very useful, because there is no file that
+   uses this macro.  */
+/* ??? The best way to handle global constructors under ELF is to use .init
+   and .fini sections.  Unfortunately, there is apparently no way to get
+   the Irix 5.x (x <= 2) assembler to create these sections.  So we instead
+   use collect.  The linker can create these sections via -init and -fini
+   options, but using this would require modifying how crtstuff works, and
+   I will leave that for another time (or someone else).  */
+#define OBJECT_FORMAT_ELF
 
 /* Specify wchar_t types.  */
 #undef	WCHAR_TYPE
@@ -76,8 +87,6 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 /* We do not want to run mips-tfile!  */
 #undef ASM_FINAL_SPEC
 
-#undef OBJECT_FORMAT_COFF
-
 /* We don't support debugging info for now. */
 #undef DBX_DEBUGGING_INFO
 #undef SDB_DEBUGGING_INFO
@@ -85,4 +94,3 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 
 #undef MACHINE_TYPE
 #define MACHINE_TYPE "SGI running IRIX 5.0"
-
