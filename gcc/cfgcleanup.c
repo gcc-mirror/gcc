@@ -329,7 +329,8 @@ merge_blocks_move_predecessor_nojumps (a, b)
      and adjust the block trees appropriately.   Even better would be to have
      a tighter connection between block trees and rtl so that this is not
      necessary.  */
-  squeeze_notes (&a->head, &a->end);
+  if (squeeze_notes (&a->head, &a->end))
+    abort ();
 
   /* Scramble the insn chain.  */
   if (a->end != PREV_INSN (b->head))
@@ -393,7 +394,8 @@ merge_blocks_move_successor_nojumps (a, b)
      and adjust the block trees appropriately.   Even better would be to have
      a tighter connection between block trees and rtl so that this is not
      necessary.  */
-  squeeze_notes (&b->head, &b->end);
+  if (squeeze_notes (&b->head, &b->end))
+    abort ();
 
   /* Scramble the insn chain.  */
   reorder_insns_nobb (b->head, b->end, a->end);

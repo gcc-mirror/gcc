@@ -5598,7 +5598,8 @@ expand_end_case (orig_index)
 
       before_case = NEXT_INSN (before_case);
       end = get_last_insn ();
-      squeeze_notes (&before_case, &end);
+      if (squeeze_notes (&before_case, &end))
+	abort ();
       reorder_insns (before_case, end,
 		     thiscase->data.case_stmt.start);
     }
