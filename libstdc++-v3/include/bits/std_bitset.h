@@ -38,7 +38,8 @@
 #include <bits/std_stdexcept.h>   // for invalid_argument, out_of_range, 
 				  // overflow_error
 
-#include <bits/std_iostream.h>   // for istream, ostream
+#include <bits/std_ostream.h>     // for ostream (operator<<)
+#include <bits/std_istream.h>     // for istream (operator>>)
 
 #define _GLIBCPP_BITSET_BITS_PER_WORD (CHAR_BIT*sizeof(unsigned long))
 #define __BITSET_WORDS(__n) \
