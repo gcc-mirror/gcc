@@ -599,7 +599,7 @@ java_read_unicode_collapsing_terminators (lex, unicode_escape_p)
 	 return a single line terminator.  */
       int dummy;
       c = java_read_unicode (lex, &dummy);
-      if (c != '\n')
+      if (c != '\n' && c != UEOF)
 	lex->unget_value = c;
       /* In either case we must return a newline.  */
       c = '\n';
