@@ -5878,7 +5878,6 @@ cse_insn (insn, in_libcall_block)
      int in_libcall_block;
 {
   register rtx x = PATTERN (insn);
-  rtx tem;
   register int i;
   register int n_sets = 0;
 
