@@ -27,11 +27,13 @@
 // the GNU General Public License.
 
 // Written by Mark Mitchell, CodeSourcery LLC, <mark@codesourcery.com>
+// Thread support written by Jason Merrill, Red Hat Inc. <jason@redhat.com>
 
 #include <cxxabi.h>
 #include <exception>
 #include <bits/c++config.h>
 #include <bits/gthr.h>
+#include <bits/atomicity.h>
 
 // The IA64/generic ABI uses the first byte of the guard variable.
 // The ARM EABI uses the least significant bit.
@@ -84,7 +86,35 @@ namespace
     __gthread_recursive_mutex_unlock (&mutex);
   }
 }
+
+#ifndef _GLIBCXX_GUARD_TEST_AND_ACQUIRE
+inline bool
+__test_and_acquire (__cxxabiv1::__guard *g)
+{
+  bool b = _GLIBCXX_GUARD_TEST (g);
+  _GLIBCXX_READ_MEM_BARRIER;
+  return b;
+}
+#define _GLIBCXX_GUARD_TEST_AND_ACQUIRE(G) __test_and_acquire (G)
 #endif
+
+#ifndef _GLIBCXX_GUARD_SET_AND_RELEASE
+inline void
+__set_and_release (__cxxabiv1::__guard *g)
+{
+  _GLIBCXX_WRITE_MEM_BARRIER;
+  _GLIBCXX_GUARD_SET (g);
+}
+#define _GLIBCXX_GUARD_SET_AND_RELEASE(G) __set_and_release (G)
+#endif
+
+#else /* !__GTHREADS */
+
+#undef _GLIBCXX_GUARD_TEST_AND_ACQUIRE
+#undef _GLIBCXX_GUARD_SET_AND_RELEASE
+#define _GLIBCXX_GUARD_SET_AND_RELEASE(G) _GLIBCXX_GUARD_SET (G)
+
+#endif /* __GTHREADS */
 
 namespace __gnu_cxx
 {
@@ -107,28 +137,46 @@ namespace __gnu_cxx
 
 namespace __cxxabiv1 
 {
+  static inline int
+  recursion_push (__guard* g)
+  {
+    return ((char *)g)[1]++;
+  }
+
+  static inline void
+  recursion_pop (__guard* g)
+  {
+    --((char *)g)[1];
+  }
+
   static int
   acquire_1 (__guard *g)
   {
-    if (_GLIBCXX_GUARD_ACQUIRE (g))
+    if (_GLIBCXX_GUARD_TEST (g))
+      return 0;
+
+    if (recursion_push (g))
       {
-	if (((char *)g)[1]++)
-	  {
 #ifdef __EXCEPTIONS
-	    throw __gnu_cxx::recursive_init();
+	throw __gnu_cxx::recursive_init();
 #else
-	    abort ();
+	// Use __builtin_trap so we don't require abort().
+	__builtin_trap ();
 #endif
-	  }
-	return 1;
       }
-    return 0;
+    return 1;
   }
-  
+
   extern "C"
   int __cxa_guard_acquire (__guard *g) 
   {
 #ifdef __GTHREADS
+    // If the target can reorder loads, we need to insert a read memory
+    // barrier so that accesses to the guarded variable happen after the
+    // guard test.
+    if (_GLIBCXX_GUARD_TEST_AND_ACQUIRE (g))
+      return 0;
+
     if (__gthread_active_p ())
       {
 	// Simple wrapper for exception safety.
@@ -162,7 +210,7 @@ namespace __cxxabiv1
   extern "C"
   void __cxa_guard_abort (__guard *g)
   {
-    ((char *)g)[1]--;
+    recursion_pop (g);
 #ifdef __GTHREADS
     if (__gthread_active_p ())
       static_mutex::unlock ();
@@ -172,8 +220,8 @@ namespace __cxxabiv1
   extern "C"
   void __cxa_guard_release (__guard *g)
   {
-    ((char *)g)[1]--;
-    _GLIBCXX_GUARD_RELEASE (g);
+    recursion_pop (g);
+    _GLIBCXX_GUARD_SET_AND_RELEASE (g);
 #ifdef __GTHREADS
     if (__gthread_active_p ())
       static_mutex::unlock ();

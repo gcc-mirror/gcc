@@ -1004,6 +1004,17 @@ static const char alt_reg_names[][8] =
 #undef TARGET_VECTOR_MODE_SUPPORTED_P
 #define TARGET_VECTOR_MODE_SUPPORTED_P rs6000_vector_mode_supported_p
 
+/* MPC604EUM 3.5.2 Weak Consistency between Multiple Processors
+   The PowerPC architecture requires only weak consistency among
+   processors--that is, memory accesses between processors need not be
+   sequentially consistent and memory accesses among processors can occur
+   in any order. The ability to order memory accesses weakly provides
+   opportunities for more efficient use of the system bus. Unless a
+   dependency exists, the 604e allows read operations to precede store
+   operations.  */
+#undef TARGET_RELAXED_ORDERING
+#define TARGET_RELAXED_ORDERING true
+
 struct gcc_target targetm = TARGET_INITIALIZER;
 
 

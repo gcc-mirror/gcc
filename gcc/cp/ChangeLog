@@ -1,3 +1,8 @@
+2004-12-27  Jason Merrill  <jason@redhat.com>
+
+	* decl.c (expand_static_init): Don't use shortcut if
+	targetm.relaxed_ordering.
+
 2004-12-27  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/19149

@@ -9462,6 +9462,12 @@ alpha_init_libfuncs (void)
 #undef TARGET_BUILD_BUILTIN_VA_LIST
 #define TARGET_BUILD_BUILTIN_VA_LIST alpha_build_builtin_va_list
 
+/* The Alpha architecture does not require sequential consistency.  See
+   http://www.cs.umd.edu/~pugh/java/memoryModel/AlphaReordering.html
+   for an example of how it can be violated in practice.  */
+#undef TARGET_RELAXED_ORDERING
+#define TARGET_RELAXED_ORDERING true
+
 struct gcc_target targetm = TARGET_INITIALIZER;
 
 

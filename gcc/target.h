@@ -598,6 +598,10 @@ struct gcc_target
   /* True if #pragma extern_prefix is to be supported.  */
   bool handle_pragma_extern_prefix;
 
+  /* True if the target is allowed to reorder memory accesses unless
+     synchronization is explicitly requested.  */
+  bool relaxed_ordering;
+
   /* Leave the boolean fields at the end.  */
 };
 

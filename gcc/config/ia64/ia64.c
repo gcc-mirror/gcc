@@ -420,6 +420,11 @@ static const struct attribute_spec ia64_attribute_table[] =
 #undef TARGET_SCALAR_MODE_SUPPORTED_P
 #define TARGET_SCALAR_MODE_SUPPORTED_P ia64_scalar_mode_supported_p
 
+/* ia64 architecture manual 4.4.7: ... reads, writes, and flushes may occur
+   in an order different from the specified program order.  */
+#undef TARGET_RELAXED_ORDERING
+#define TARGET_RELAXED_ORDERING true
+
 struct gcc_target targetm = TARGET_INITIALIZER;
 
 typedef enum

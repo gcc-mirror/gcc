@@ -9574,6 +9574,16 @@ If defined, this macro is the number of entries in
 @code{TARGET_FORMAT_TYPES}.
 @end defmac
 
+@deftypefn {Target Hook} bool TARGET_RELAXED_ORDERING
+If set to @code{true}, means that the target's memory model does not
+guarantee that loads which do not depend on one another will access
+main memory in the order of the instruction stream; if ordering is
+important, an explicit memory barrier must be used.  This is true of
+many recent processors which implement a policy of ``relaxed,''
+``weak,'' or ``release'' memory consistency, such as Alpha, PowerPC,
+and ia64.  The default is @code{false}.
+@end deftypefn
+
 @defmac TARGET_USE_JCR_SECTION
 This macro determines whether to use the JCR section to register Java
 classes. By default, TARGET_USE_JCR_SECTION is defined to 1 if both

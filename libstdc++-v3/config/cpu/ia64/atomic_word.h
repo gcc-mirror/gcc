@@ -1,4 +1,4 @@
-// Control various target specific ABI tweaks.  ARM version.
+// Low-level type for atomic operations -*- C++ -*-
 
 // Copyright (C) 2004 Free Software Foundation, Inc.
 //
@@ -27,47 +27,43 @@
 // invalidate any other reasons why the executable file might be covered by
 // the GNU General Public License.
 
-#ifndef _CXXABI_TWEAKS_H
-#define _CXXABI_TWEAKS_H 1
+#ifndef _GLIBCXX_ATOMIC_WORD_H
+#define _GLIBCXX_ATOMIC_WORD_H	1
 
-#ifdef __cplusplus
-namespace __cxxabiv1
+#include <cxxabi.h>
+
+typedef int _Atomic_word;
+
+namespace __gnu_cxx
 {
-#endif
+  // Test the first byte of __g and ensure that no loads are hoisted across
+  // the test.
+  inline bool
+  __test_and_acquire (__cxxabiv1::__guard *__g)
+  {
+    unsigned char __c;
+    unsigned char *__p = reinterpret_cast<unsigned char *>(__g);
+    // ldN.acq is a load with an implied hoist barrier.
+    // would ld8+mask be faster than just doing an ld1?
+    __asm __volatile ("ld1.acq %0 = %1" : "=r"(__c) : "m"(*__p) : "memory");
+    return __c != 0;
+  }
 
-#ifdef __ARM_EABI__
-  // The ARM EABI uses the least significant bit of a 32-bit
-  // guard variable.  */
-#define _GLIBCXX_GUARD_TEST(x) ((*(x) & 1) != 0)
-#define _GLIBCXX_GUARD_SET(x) *(x) = 1
-  typedef int __guard;
+  // Set the first byte of __g to 1 and ensure that no stores are sunk
+  // across the store.
+  inline void
+  __set_and_release (__cxxabiv1::__guard *__g)
+  {
+    unsigned char *__p = reinterpret_cast<unsigned char *>(__g);
+    // stN.rel is a store with an implied sink barrier.
+    // could load word, set flag, and CAS it back
+    __asm __volatile ("st1.rel %0 = %1" : "=m"(*__p) : "r"(1) : "memory");
+  }
 
-  // We also want the element size in array cookies.
-#define _GLIBCXX_ELTSIZE_IN_COOKIE 1
-  
-  // __cxa_vec_ctor should return a pointer to the array.
-  typedef void * __cxa_vec_ctor_return_type;
-#define _GLIBCXX_CXA_VEC_CTOR_RETURN(x) return x
-  // Constructors and destructors return the "this" pointer.
-  typedef void * __cxa_cdtor_return_type;
+  // We don't define the _BARRIER macros on ia64 because the barriers are
+  // included in the test and set, above.
+#define _GLIBCXX_GUARD_TEST_AND_ACQUIRE(G) __gnu_cxx::__test_and_acquire (G)
+#define _GLIBCXX_GUARD_SET_AND_RELEASE(G) __gnu_cxx::__set_and_release (G)
+}
 
-#else // __ARM_EABI__
-
-  // The generic ABI uses the first byte of a 64-bit guard variable.
-#define _GLIBCXX_GUARD_TEST(x) (*(char *) (x) != 0)
-#define _GLIBCXX_GUARD_SET(x) *(char *) (x) = 1
-  __extension__ typedef int __guard __attribute__((mode (__DI__)));
-
-  // __cxa_vec_ctor has void return type.
-  typedef void __cxa_vec_ctor_return_type;
-#define _GLIBCXX_CXA_VEC_CTOR_RETURN(x) return
-  // Constructors and destructors do not return a value.
-  typedef void __cxa_cdtor_return_type;
-
-#endif //!__ARM_EABI__
-
-#ifdef __cplusplus
-} // namespace __cxxabiv1
-#endif
-
-#endif // __cxxabiv1
+#endif 
