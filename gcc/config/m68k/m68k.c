@@ -2132,7 +2132,12 @@ print_operand (file, op, letter)
       else
 #endif
 	{
-	  fprintf (file, "%s", reg_names[REGNO (op)]);
+	  if (letter == 'R')
+	    /* Print out the second register name of a register pair.
+	       I.e., R (6) => 7.  */
+	    fputs (reg_names[REGNO (op) + 1], file);
+	  else
+	    fputs (reg_names[REGNO (op)], file);
 	}
     }
   else if (GET_CODE (op) == MEM)
