@@ -403,7 +403,7 @@ __gnat_install_handler (void)
 }
 
 void
-__gnat_initialize (void *eh)
+__gnat_initialize (void *eh ATTRIBUTE_UNUSED)
 {
 }
 
@@ -418,7 +418,7 @@ extern void __gnat_install_handler (void);
 /* For RTEMS, each bsp will provide a custom __gnat_install_handler (). */
 
 void
-__gnat_initialize (void *eh)
+__gnat_initialize (void *eh ATTRIBUTE_UNUSED)
 {
    __gnat_install_handler ();
 }
@@ -543,7 +543,7 @@ __gnat_install_handler (void)
 }
 
 void
-__gnat_initialize (void *eh)
+__gnat_initialize (void *eh ATTRIBUTE_UNUSED)
 {
 }
 
@@ -657,7 +657,7 @@ __gnat_install_handler (void)
 }
 
 void
-__gnat_initialize (void *eh)
+__gnat_initialize (void *eh ATTRIBUTE_UNUSED)
 {
 }
 
@@ -823,7 +823,7 @@ __gnat_install_handler (void)
 }
 
 void
-__gnat_initialize (void *eh)
+__gnat_initialize (void *eh ATTRIBUTE_UNUSED)
 {
    /* Initialize floating-point coprocessor. This call is needed because
       the MS libraries default to 64-bit precision instead of 80-bit
@@ -908,7 +908,7 @@ __gnat_install_handler (void)
 }
 
 void
-__gnat_initialize (void *eh)
+__gnat_initialize (void *eh ATTRIBUTE_UNUSED)
 {
    __gnat_init_float ();
 }
@@ -920,7 +920,7 @@ __gnat_initialize (void *eh)
 #elif defined (__Lynx__)
 
 void
-__gnat_initialize (void *eh)
+__gnat_initialize (void *eh ATTRIBUTE_UNUSED)
 {
    __gnat_init_float ();
 }
@@ -942,7 +942,7 @@ __gnat_install_handler (void)
 #elif defined (__EMX__) /* OS/2 dependent initialization */
 
 void
-__gnat_initialize (void *eh)
+__gnat_initialize (void *eh ATTRIBUTE_UNUSED)
 {
 }
 
@@ -1109,7 +1109,7 @@ __gnat_install_handler (void)
 }
 
 void
-__gnat_initialize (void *eh)
+__gnat_initialize (void *eh ATTRIBUTE_UNUSED)
 {
 }
 
@@ -1217,7 +1217,7 @@ __gnat_install_handler (void)
 }
 
 void
-__gnat_initialize (void *eh)
+__gnat_initialize (void *eh ATTRIBUTE_UNUSED)
 {
 }
 
@@ -1449,7 +1449,7 @@ __gnat_install_handler (void)
 }
 
 void
-__gnat_initialize(void *eh)
+__gnat_initialize(void *eh ATTRIBUTE_UNUSED)
 {
 }
 
@@ -1521,7 +1521,7 @@ __gnat_install_handler ()
 }
 
 void
-__gnat_initialize (void *eh)
+__gnat_initialize (void *eh ATTRIBUTE_UNUSED)
 {
    __gnat_install_handler ();
 
@@ -1711,7 +1711,7 @@ __gnat_init_float (void)
 }
 
 void
-__gnat_initialize (void *eh)
+__gnat_initialize (void *eh ATTRIBUTE_UNUSED)
 {
   __gnat_init_float ();
 
@@ -1834,7 +1834,7 @@ __gnat_install_handler(void)
 }
 
 void
-__gnat_initialize (void *eh)
+__gnat_initialize (void *eh ATTRIBUTE_UNUSED)
 {
   __gnat_install_handler ();
   __gnat_init_float ();
@@ -1850,7 +1850,7 @@ __gnat_initialize (void *eh)
 /***************************************/
 
 void
-__gnat_initialize (void *eh)
+__gnat_initialize (void *eh ATTRIBUTE_UNUSED)
 {
 }
 

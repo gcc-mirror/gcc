@@ -1,3 +1,7 @@
+2005-02-10  Andreas Jaeger  <aj@suse.de>
+
+	* init.c (__gnat_initialize): Mark parameter as unused.
+
 2005-02-09  Doug Rupp  <rupp@adacore.com>
 
 	* g-expect-vms.adb (Non_Blocking_Spawn): Separate out.
