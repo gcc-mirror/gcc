@@ -1,3 +1,8 @@
+2001-03-15  Joseph S. Myers  <jsm28@cam.ac.uk>
+
+	* update_web_docs: Use /usr/local/bin/texi2html rather than
+	gccadmin's local copy.
+
 2001-03-10  Joseph S. Myers  <jsm28@cam.ac.uk>
 
 	* crontab, doc_exclude, update_branch_version, update_version,

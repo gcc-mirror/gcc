@@ -26,7 +26,7 @@ mv `find . -name \*.texi -print` .
 
 # Now convert the relavent files from texi to html 
 for file in c-tree cpp chill gcc gcov gxxint g77 iostream objc-features; do 
-  /home/gccadmin/scripts/texi2html -glossary -menu -split_chapter ${file}.texi
+  /usr/local/bin/texi2html -glossary -menu -split_chapter ${file}.texi
 done
 
 # Then build a gzipped copy of each of the resulting .html files
