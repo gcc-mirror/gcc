@@ -181,7 +181,8 @@ char *reg_note_name[] = { "", "REG_DEAD", "REG_INC", "REG_EQUIV", "REG_WAS_0",
 			  "REG_CC_SETTER", "REG_CC_USER", "REG_LABEL",
 			  "REG_DEP_ANTI", "REG_DEP_OUTPUT", "REG_BR_PROB",
 			  "REG_EXEC_COUNT", "REG_NOALIAS", "REG_SAVE_AREA",
-			  "REG_BR_PRED", "REG_EH_CONTEXT" };
+			  "REG_BR_PRED", "REG_EH_CONTEXT",
+			  "REG_FRAME_RELATED_EXPR" };
 
 static void dump_and_abort	PROTO((int, int, FILE *));
 static void read_name		PROTO((char *, FILE *));

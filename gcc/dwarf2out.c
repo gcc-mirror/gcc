@@ -1223,7 +1223,12 @@ dwarf2out_frame_debug (insn)
 
   label = dwarf2out_cfi_label ();
     
-  insn = PATTERN (insn);
+  src = find_reg_note (insn, REG_FRAME_RELATED_EXPR, NULL_RTX);
+  if (src)
+    insn = XEXP (src, 0);
+  else
+    insn = PATTERN (insn);
+
   /* Assume that in a PARALLEL prologue insn, only the first elt is
      significant.  Currently this is true.  */
   if (GET_CODE (insn) == PARALLEL)
@@ -1390,6 +1395,13 @@ dwarf2out_frame_debug (insn)
 	  if (cfa_store_reg != REGNO (XEXP (XEXP (dest, 0), 0)))
 	    abort ();
 	  offset -= cfa_store_offset;
+	  break;
+
+	  /* Without an offset.  */
+	case REG:
+	  if (cfa_store_reg != REGNO (XEXP (dest, 0)))
+	    abort();
+	  offset = -cfa_store_offset;
 	  break;
 
 	default:

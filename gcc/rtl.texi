@@ -2691,6 +2691,12 @@ probability that the branch will be taken.
 These notes are found in JUMP insns after delayed branch scheduling
 has taken place.  They indicate both the direction and the likelyhood
 of the JUMP.  The format is a bitmask of ATTR_FLAG_* values.
+
+@findex REG_FRAME_RELATED_EXPR
+@item REG_FRAME_RELATED_EXPR
+This is used on an RTX_FRAME_RELATED_P insn wherein the attached expression
+is used in place of the actual insn pattern.  This is done in cases where
+the pattern is either complex or misleading.
 @end table
 
 For convenience, the machine mode in an @code{insn_list} or

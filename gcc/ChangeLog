@@ -1,3 +1,11 @@
+Sat Sep  5 22:05:25 1998  Richard Henderson  <rth@cygnus.com>
+
+	* rtl.h (enum reg_note): Add REG_FRAME_RELATED_EXPR.
+	* rtl.c (reg_note_name): Likewise.
+	* rtl.texi (REG_NOTES): Likewise.
+	* dwarf2out.c (dwarf2out_frame_debug): Use it.  Recognize a store
+	without an offset.
+
 Sat Sep  5 14:47:17 1998  Richard Henderson  <rth@cygnus.com>
 
 	* i386.h (PREFERRED_RELOAD_CLASS): Standard fp constants load to TOS.
