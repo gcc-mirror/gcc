@@ -1167,10 +1167,20 @@ lookup_field (typep, name)
     }
   do
     {
-      tree field;
-      for (field = TYPE_FIELDS (*typep);  field;  field = TREE_CHAIN (field))
+      tree field, basetype_vec;
+      int n, i;
+
+      for (field = TYPE_FIELDS (*typep); field; field = TREE_CHAIN (field))
+	if (DECL_NAME (field) == name)
+	  return field;
+
+      /* Process implemented interfaces. */
+      basetype_vec = TYPE_BINFO_BASETYPES (*typep);
+      n = TREE_VEC_LENGTH (basetype_vec);
+      for (i = 0; i < n; i++)
 	{
-	  if (DECL_NAME (field) == name)
+	  tree t = BINFO_TYPE (TREE_VEC_ELT (basetype_vec, i));
+	  if ((field = lookup_field (&t, name)))
 	    return field;
 	}
       *typep = CLASSTYPE_SUPER (*typep);
@@ -1626,7 +1636,8 @@ expand_invoke (opcode, method_ref_index, nargs)
   if (opcode == OPCODE_invokestatic || opcode == OPCODE_invokespecial
       || (opcode == OPCODE_invokevirtual
 	  && (METHOD_PRIVATE (method)
-	      || METHOD_FINAL (method) || CLASS_FINAL (TYPE_NAME (self_type)))))
+	      || METHOD_FINAL (method) 
+	      || CLASS_FINAL (TYPE_NAME (self_type)))))
     func = build_known_method_ref (method, method_type, self_type,
 				   method_signature, arg_list);
   else
@@ -1663,11 +1674,14 @@ expand_java_field_op (is_static, is_putting, field_ref_index)
      int is_putting;
      int field_ref_index;
 {
-  tree self_type = get_class_constant
-    (current_jcf, COMPONENT_REF_CLASS_INDEX (&current_jcf->cpool, field_ref_index));
+  tree self_type = 
+      get_class_constant (current_jcf, 
+			  COMPONENT_REF_CLASS_INDEX (&current_jcf->cpool, 
+						     field_ref_index));
   char *self_name = IDENTIFIER_POINTER (DECL_NAME (TYPE_NAME (self_type)));
   tree field_name = COMPONENT_REF_NAME (&current_jcf->cpool, field_ref_index);
-  tree field_signature = COMPONENT_REF_SIGNATURE (&current_jcf->cpool, field_ref_index);
+  tree field_signature = COMPONENT_REF_SIGNATURE (&current_jcf->cpool, 
+						  field_ref_index);
   tree field_type = get_type_from_signature (field_signature);
   tree new_value = is_putting ? pop_value (field_type) : NULL_TREE;
   tree field_ref;
@@ -1727,15 +1741,15 @@ expand_java_field_op (is_static, is_putting, field_ref_index)
 		     "assignment to final field `%s' not in field's class");
 	  else if (FIELD_STATIC (field_decl))
 	    {
-	      if (DECL_NAME (current_function_decl) != clinit_identifier_node)
+	      if (!IS_CLINIT (current_function_decl))
 		error_with_decl (field_decl, 
              "assignment to final static field `%s' not in class initializer");
 	    }
 	  else
 	    {
 	      if (! DECL_CONSTRUCTOR_P (current_function_decl))
-		error_with_decl (field_decl, 
-                           "assignment to final field `%s' not in constructor");
+		error_with_decl (field_decl, "assignment to final field `%s' "
+				 "not in constructor");
 	    }
 	}
       expand_assignment (field_ref, new_value, 0, 0);
