@@ -1,0 +1,193 @@
+The following patches are needed in order to build GNAT with EGCS.
+
+These patches were tested with egcs-980308 and gnat-3.10p on a mips-sgi-irix6.3
+system.  The gnat build succeeded as per the instructions in the gnat
+README.BUILD file for building one library, except that CFLAGS="-O -g" and
+GNATLIBCFLAGS="-O -g" were substituted for the recommended "-O2" so that the
+build could be debugged.  There was no attempt to run the resulting build
+against any testsuite or validation suite.
+
+--
+
+Developers Notes:
+
+Every use of sizetype in the Ada front end should be checked to see if perhaps
+it should be using bitsizetype instead.  The change to maybe_pad_type is just
+a hack to work around this problem, and may not be desirable in the long term.
+
+There are many places in the Ada front end where it calls operand_equal_p to
+see if two type sizes are the same.  operand_equal_p fails if the two
+arguments have different TYPE_MODEs.  sizetype and bitsizetype can have
+different TYPE_MODEs.  Thus this code can fail if one type size is based
+on sizetype, and the other is based on bitsizetype.  The change to
+maybe_pad_type fixes one very critical place where this happens.  There may
+be others.
+
+--
+
+Mon Mar 16 11:00:25 1998  Jim Wilson  <wilson@cygnus.com>
+
+	* a-gtran3.c (maybe_pad_type): Convert both size and orig_size to
+	sizetype if they have differing modes.
+	* a-misc.c (gnat_tree_code_type): Change from string to char array.
+	(init_lex): Delete realloc calls for tree_code_* globals.  Adjust
+	bcopy call for gnat_tree_code_type change.
+	* a-tree.def: Adjust for tree_code_* type changes.
+
+diff -pr gnat-3.10p-src/src/ada/a-gtran3.c egcs-980308/gcc/ada/a-gtran3.c
+*** gnat-3.10p-src/src/ada/a-gtran3.c	Wed Aug 13 21:02:17 1997
+--- egcs-980308/gcc/ada/a-gtran3.c	Sat Mar 14 18:33:51 1998
+*************** maybe_pad_type (type, size, align, gnat_
+*** 3330,3335 ****
+--- 3330,3342 ----
+       changed.  Then return if we aren't doing anything.  */
+  
+    if (size != 0
++       && TYPE_MODE (TREE_TYPE (size)) != TYPE_MODE (TREE_TYPE (orig_size)))
++     {
++       size = convert (sizetype, size);
++       orig_size = convert (sizetype, orig_size);
++     }
++ 
++   if (size != 0
+        && (operand_equal_p (size, orig_size, 0)
+  	  || (TREE_CODE (orig_size) == INTEGER_CST
+  	      && tree_int_cst_lt (size, orig_size)))
+diff -pr gnat-3.10p-src/src/ada/a-misc.c egcs-980308/gcc/ada/a-misc.c
+*** gnat-3.10p-src/src/ada/a-misc.c	Wed Aug 13 21:02:18 1997
+--- egcs-980308/gcc/ada/a-misc.c	Tue Mar 10 18:39:13 1998
+*************** extern char *main_input_filename;
+*** 70,77 ****
+  
+  #define DEFTREECODE(SYM, NAME, TYPE, LENGTH) TYPE,
+  
+! char *gnat_tree_code_type[] = {
+!   "x",
+  #include "a-tree.def"
+  };
+  #undef DEFTREECODE
+--- 70,77 ----
+  
+  #define DEFTREECODE(SYM, NAME, TYPE, LENGTH) TYPE,
+  
+! char gnat_tree_code_type[] = {
+!   'x',
+  #include "a-tree.def"
+  };
+  #undef DEFTREECODE
+*************** init_lex ()
+*** 607,626 ****
+  {
+    lang_expand_expr = gnat_expand_expr;
+  
+-   tree_code_type
+-     = (char **) realloc (tree_code_type,
+- 			 sizeof (char *) * LAST_GNAT_TREE_CODE);
+-   tree_code_length
+-     = (int *) realloc (tree_code_length,
+- 		       sizeof (int) * LAST_GNAT_TREE_CODE);
+-   tree_code_name
+-     = (char **) realloc (tree_code_name,
+- 			 sizeof (char *) * LAST_GNAT_TREE_CODE);
+- 
+    bcopy ((char *) gnat_tree_code_type,
+  	 (char *) (tree_code_type + (int) LAST_AND_UNUSED_TREE_CODE),
+! 	 ((LAST_GNAT_TREE_CODE - (int) LAST_AND_UNUSED_TREE_CODE)
+! 	  * sizeof (char *)));
+  
+    bcopy ((char *)gnat_tree_code_length,
+  	 (char *) (tree_code_length + (int) LAST_AND_UNUSED_TREE_CODE),
+--- 607,615 ----
+  {
+    lang_expand_expr = gnat_expand_expr;
+  
+    bcopy ((char *) gnat_tree_code_type,
+  	 (char *) (tree_code_type + (int) LAST_AND_UNUSED_TREE_CODE),
+! 	 LAST_GNAT_TREE_CODE - (int) LAST_AND_UNUSED_TREE_CODE);
+  
+    bcopy ((char *)gnat_tree_code_length,
+  	 (char *) (tree_code_length + (int) LAST_AND_UNUSED_TREE_CODE),
+diff -pr gnat-3.10p-src/src/ada/a-tree.def egcs-980308/gcc/ada/a-tree.def
+*** gnat-3.10p-src/src/ada/a-tree.def	Wed Aug 13 21:02:20 1997
+--- egcs-980308/gcc/ada/a-tree.def	Tue Mar 10 18:39:54 1998
+***************
+*** 31,69 ****
+     The only field used if TREE_COMPLEXITY, which contains the GNAT node
+     number.  */
+  
+! DEFTREECODE (TRANSFORM_EXPR, "transform_expr", "e", 0)
+  
+  /* Perform an unchecked conversion between the input and the output. 
+     if TREE_ADDRESSABLE is set, it means this is in an LHS; in that case,
+     we can only use techniques, such as pointer punning, that leave the
+     expression a "name".  */
+  
+! DEFTREECODE (UNCHECKED_CONVERT_EXPR, "unchecked_convert_expr", "1", 1)
+  
+  /* A type that is an unconstrained array itself.  This node is never passed
+     to GCC. TREE_TYPE is the type of the fat pointer and TYPE_OBJECT_RECORD_TYPE
+     is the type of a record containing the template and data.  */
+  
+! DEFTREECODE (UNCONSTRAINED_ARRAY_TYPE, "unconstrained_array_type", "t", 0)
+  
+  /* A reference to an unconstrained array.  This node only exists as an
+     intermediate node during the translation of a GNAT tree to a GCC tree;
+     it is never passed to GCC.  The only field used is operand 0, which
+     is the fat pointer object.  */
+  
+! DEFTREECODE (UNCONSTRAINED_ARRAY_REF, "unconstrained_array_ref", "r", 1)
+  
+  /* An expression that returns an RTL suitable for its type.  Operand 0
+     is an expression to be evaluated for side effects only.  */
+  
+! DEFTREECODE (NULL_EXPR, "null_expr", "e", 1)
+  
+  /* An expression that emits a USE for its single operand.  */
+  
+! DEFTREECODE (USE_EXPR, "use_expr", "e", 1)
+  
+  /* An expression that is treated as a conversion while generating code, but is
+     used to prevent infinite recursion when conversions of biased types are
+     involved.  */
+  
+! DEFTREECODE (GNAT_NOP_EXPR, "gnat_nop_expr", "1", 1)
+--- 31,69 ----
+     The only field used if TREE_COMPLEXITY, which contains the GNAT node
+     number.  */
+  
+! DEFTREECODE (TRANSFORM_EXPR, "transform_expr", 'e', 0)
+  
+  /* Perform an unchecked conversion between the input and the output. 
+     if TREE_ADDRESSABLE is set, it means this is in an LHS; in that case,
+     we can only use techniques, such as pointer punning, that leave the
+     expression a "name".  */
+  
+! DEFTREECODE (UNCHECKED_CONVERT_EXPR, "unchecked_convert_expr", '1', 1)
+  
+  /* A type that is an unconstrained array itself.  This node is never passed
+     to GCC. TREE_TYPE is the type of the fat pointer and TYPE_OBJECT_RECORD_TYPE
+     is the type of a record containing the template and data.  */
+  
+! DEFTREECODE (UNCONSTRAINED_ARRAY_TYPE, "unconstrained_array_type", 't', 0)
+  
+  /* A reference to an unconstrained array.  This node only exists as an
+     intermediate node during the translation of a GNAT tree to a GCC tree;
+     it is never passed to GCC.  The only field used is operand 0, which
+     is the fat pointer object.  */
+  
+! DEFTREECODE (UNCONSTRAINED_ARRAY_REF, "unconstrained_array_ref", 'r', 1)
+  
+  /* An expression that returns an RTL suitable for its type.  Operand 0
+     is an expression to be evaluated for side effects only.  */
+  
+! DEFTREECODE (NULL_EXPR, "null_expr", 'e', 1)
+  
+  /* An expression that emits a USE for its single operand.  */
+  
+! DEFTREECODE (USE_EXPR, "use_expr", 'e', 1)
+  
+  /* An expression that is treated as a conversion while generating code, but is
+     used to prevent infinite recursion when conversions of biased types are
+     involved.  */
+  
+! DEFTREECODE (GNAT_NOP_EXPR, "gnat_nop_expr", '1', 1)
