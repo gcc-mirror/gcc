@@ -389,7 +389,7 @@ set_save_expr_context (tree *tp,
    We do conversion per basic block and preserve/update the tree CFG.
    This implies we have to do some magic as the CFG can simultaneously
    consist of basic blocks containing RTL and GIMPLE trees.  This can
-   confuse the CFG hooks, so be curefull to not manipulate CFG during
+   confuse the CFG hooks, so be careful to not manipulate CFG during
    the expansion.  */
 
 static void

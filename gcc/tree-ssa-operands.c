@@ -741,7 +741,7 @@ get_stmt_operands (tree stmt)
   prev_vops.vuse_ops = VUSE_OPS (ann);
   prev_vops.v_must_def_ops = V_MUST_DEF_OPS (ann);
 
-  /* Dont free the previous values to memory since we're still using them.  */
+  /* Don't free the previous values to memory since we're still using them.  */
   free_v_may_defs (&(ann->v_may_def_ops), false);
   free_vuses (&(ann->vuse_ops), false);
   free_v_must_defs (&(ann->v_must_def_ops), false);

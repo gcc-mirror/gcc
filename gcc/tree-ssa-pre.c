@@ -1151,7 +1151,7 @@ find_or_generate_expression (basic_block block, tree expr, tree stmts)
   /* Depending on the order we process DOM branches in, the value
      may not have propagated to all the dom children yet during
      this iteration.  In this case, the value will always be in
-     the NEW_SETS for us already, having been propogated from our
+     the NEW_SETS for us already, having been propagated from our
      dominator.  */
   if (genop == NULL)
     genop = find_leader (NEW_SETS (block), expr);

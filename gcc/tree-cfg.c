@@ -3924,7 +3924,7 @@ thread_jumps (void)
 	       dest = dest->succ->dest)
 	    {
 	      /* An infinite loop detected.  We redirect the edge anyway, so
-		 that the loop is shrinked into single basic block.  */
+		 that the loop is shrunk into single basic block.  */
 	      if (!bb_ann (dest)->forwardable)
 		break;
 

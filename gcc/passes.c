@@ -758,7 +758,7 @@ rest_of_handle_sched (void)
       close_dump_file (DFI_sms, print_rtl, get_insns ());
 
 
-      /* Update the life information, becuase we add pseudos.  */
+      /* Update the life information, because we add pseudos.  */
       max_regno = max_reg_num ();
       allocate_reg_info (max_regno, FALSE, FALSE);
       update_life_info_in_dirty_blocks (UPDATE_LIFE_GLOBAL_RM_NOTES,

@@ -2348,7 +2348,7 @@ prune_to_subcfg (int list[], unsigned len, bitmap blocks)
   return last;
 }
 
-/* Alternative entry point to the analysis.  Analyse just the part of the cfg
+/* Alternative entry point to the analysis.  Analyze just the part of the cfg
    graph induced by BLOCKS.
    
    TODO I am not quite sure how to avoid code duplication with df_analyze_1

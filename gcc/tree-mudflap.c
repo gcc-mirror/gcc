@@ -819,7 +819,7 @@ mx_register_decls (tree decl, tree *stmt_list)
             {
               /* Oh no ... it's probably a variable-length array (VLA).
                  The size and address cannot be computed by merely
-                 looking at the DECL.  See gimplfiy_decl_stmt for the
+                 looking at the DECL.  See gimplify_decl_stmt for the
                  method by which VLA declarations turn into calls to
                  BUILT_IN_STACK_ALLOC.  We assume that multiple
                  VLAs declared later in the same block get allocation 

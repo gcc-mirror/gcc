@@ -55,7 +55,7 @@ Boston, MA 02111-1307, USA.  */
 
    It may help to think of this as first moving the earlier store to
    the point immediately before the later store.  Again, the single
-   use of the virtual defintion and the post-dominance relationship
+   use of the virtual definition and the post-dominance relationship
    ensure that such movement would be safe.  Clearly if there are 
    back to back stores, then the second is redundant.
 

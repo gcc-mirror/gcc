@@ -649,7 +649,7 @@ tree_ssa_dominator_optimize (void)
   if (dump_file && (dump_flags & TDF_STATS))
     dump_dominator_optimization_stats (dump_file);
 
-  /* We emptyed the hash table earlier, now delete it completely.  */
+  /* We emptied the hash table earlier, now delete it completely.  */
   htab_delete (avail_exprs);
 
   /* It is not necessary to clear CURRDEFS, REDIRECTION_EDGES, VRP_DATA,
@@ -3361,7 +3361,7 @@ avail_expr_eq (const void *p1, const void *p2)
   return false;
 }
 
-/* Given STMT and a pointer to the block local defintions BLOCK_DEFS_P,
+/* Given STMT and a pointer to the block local definitions BLOCK_DEFS_P,
    register register all objects set by this statement into BLOCK_DEFS_P
    and CURRDEFS.  */
 

@@ -2641,7 +2641,7 @@ gimplify_modify_expr (tree *expr_p, tree *pre_p, tree *post_p, bool want_value)
   return ret;
 }
 
-/*  Subroutine of above to do simplications of MODIFY_EXPRs based on
+/*  Subroutine of above to do simplifications of MODIFY_EXPRs based on
     the code of the RHS.  We loop for as long as we can do something.  */
 
 static enum gimplify_status

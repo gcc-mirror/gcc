@@ -1183,7 +1183,7 @@ coalesce_vars (var_map map, tree_live_info_p liveinfo)
    it is replaced with the RHS of the defining expression.  */
 
 
-/* Dependancy list element.  This can contain either a partition index or a
+/* Dependency list element.  This can contain either a partition index or a
    version number, depending on which list it is in.  */
 
 typedef struct value_expr_d 
@@ -1208,7 +1208,7 @@ typedef struct temp_expr_table_d
   value_expr_p pending_dependence;
 } *temp_expr_table_p;
 
-/* Used to indicate a dependancy on V_MAY_DEFs.  */
+/* Used to indicate a dependency on V_MAY_DEFs.  */
 #define VIRTUAL_PARTITION(table)	(table->virtual_partition)
 
 static temp_expr_table_p new_temp_expr_table (var_map);
@@ -1398,8 +1398,8 @@ remove_value_from_list (value_expr_p *list, int value)
 }
 
 
-/* Add a dependancy between the def of ssa VERSION and VAR.  if VAR is 
-   replaceable by an expression, add a dependance each of the elements of the 
+/* Add a dependency between the def of ssa VERSION and VAR.  If VAR is 
+   replaceable by an expression, add a dependence each of the elements of the 
    expression.  These are contained in the pending list.  TAB is the
    expression table.  */
 
@@ -1503,7 +1503,7 @@ check_replaceable (temp_expr_table_p tab, tree stmt)
 
   version = SSA_NAME_VERSION (def);
 
-  /* Add this expression to the dependancy list for each use partition.  */
+  /* Add this expression to the dependency list for each use partition.  */
   for (i = 0; i < num_use_ops; i++)
     {
       var = USE_OP (uses, i);
@@ -1535,7 +1535,7 @@ finish_expr (temp_expr_table_p tab, int version, bool replace)
   value_expr_p info, tmp;
   int partition;
 
-  /* Remove this expression from its dependent lists.  The partition dependance
+  /* Remove this expression from its dependent lists.  The partition dependence
      list is retained and transfered later to whomever uses this version.  */
   for (info = (value_expr_p) tab->version_info[version]; info; info = tmp)
     {
@@ -1551,7 +1551,7 @@ finish_expr (temp_expr_table_p tab, int version, bool replace)
         abort ();
 #endif
       free_value_expr (tab, tmp);
-      /* Only clear the bit when the dependancy list is emptied via 
+      /* Only clear the bit when the dependency list is emptied via 
          a replacement. Otherwise kill_expr will take care of it.  */
       if (!(tab->partition_dep_list[partition]) && replace)
         bitmap_clear_bit (tab->partition_in_use, partition);
@@ -1610,7 +1610,7 @@ kill_expr (temp_expr_table_p tab, int partition, bool clear_bit)
 {
   value_expr_p ptr;
 
-  /* Mark every active expr dependant on this var as not replaceable.  */
+  /* Mark every active expr dependent on this var as not replaceable.  */
   while ((ptr = tab->partition_dep_list[partition]) != NULL)
     finish_expr (tab, ptr->value, false);
 
@@ -1619,7 +1619,7 @@ kill_expr (temp_expr_table_p tab, int partition, bool clear_bit)
 }
 
 
-/* This function kills all expressions in TAB which are dependant on virtual 
+/* This function kills all expressions in TAB which are dependent on virtual 
    DEFs.  CLEAR_BIT determines whether partition_in_use gets cleared.  */
 
 static inline void
@@ -1680,7 +1680,7 @@ find_replaceable_in_bb (temp_expr_table_p tab, basic_block bb)
       if (!ann->has_volatile_ops)
 	check_replaceable (tab, stmt);
 
-      /* Free any unused dependancy lists.  */
+      /* Free any unused dependency lists.  */
       while ((p = tab->pending_dependence))
 	{
 	  tab->pending_dependence = p->next;
