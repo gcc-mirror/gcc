@@ -5,6 +5,9 @@ Tue Jun  9 22:05:34 1998  Richard Henderson  <rth@cygnus.com>
 
 Wed Jun  3 23:41:24 EDT 1998  John Wehle  (john@feith.com)
 
+	* i386.c (notice_update_cc): Clear cc_status.value2 in the
+	case of UNSPEC 5 (bsf).
+
 	* i386.md (movsfcc, movdfcc, movxfcc): The floating point
 	conditional move instructions don't support signed integer
 	comparisons.
