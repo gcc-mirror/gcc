@@ -591,6 +591,11 @@ struct tree_block
 #define TYPE_LANG_FLAG_5(NODE) ((NODE)->type.lang_flag_5)
 #define TYPE_LANG_FLAG_6(NODE) ((NODE)->type.lang_flag_6)
 
+/* If set in an ARRAY_TYPE, indicates a string type (for languages
+   that distinguish string from array of char).
+   If set in a SET_TYPE, indicates a bitstring type. */
+#define TYPE_STRING_FLAG(NODE) ((NODE)->type.string_flag)
+
 struct tree_type
 {
   char common[sizeof (struct tree_common)];
@@ -604,7 +609,7 @@ struct tree_type
   enum machine_mode mode : 8;
 #endif
   unsigned char precision;
-
+  unsigned string_flag : 1;
   unsigned no_force_blk_flag : 1;
   unsigned lang_flag_0 : 1;
   unsigned lang_flag_1 : 1;
@@ -613,6 +618,7 @@ struct tree_type
   unsigned lang_flag_4 : 1;
   unsigned lang_flag_5 : 1;
   unsigned lang_flag_6 : 1;
+  /* room for 7 more bits */
 
   unsigned int align;
   union tree_node *pointer_to;
