@@ -22560,30 +22560,8 @@ configure-target-libiberty: $(TARGET_SUBDIR)/libiberty/multilib.out
 	      *) topdir="../../$(srcdir)" ;; \
 	    esac ;; \
 	esac; \
-	if [ "$(srcdir)" = "." ] ; then \
-	  if [ "$(TARGET_SUBDIR)" != "." ] ; then \
-	    if $(SHELL) $$s/symlink-tree $${topdir}/libiberty "no-such-file" ; then \
-	      if [ -f Makefile ]; then \
-	        if $(MAKE) distclean; then \
-	          true; \
-	        else \
-	          exit 1; \
-	        fi; \
-	      else \
-	        true; \
-	      fi; \
-	    else \
-	      exit 1; \
-	    fi; \
-	  else \
-	    true; \
-	  fi; \
-	  srcdiroption="--srcdir=."; \
-	  libsrcdir="."; \
-	else \
 	  srcdiroption="--srcdir=$${topdir}/libiberty"; \
 	  libsrcdir="$$s/libiberty"; \
-	fi; \
 	rm -f no-such-file || : ; \
 	CONFIG_SITE=no-such-file $(SHELL) $${libsrcdir}/configure \
 	  $(TARGET_CONFIGARGS) $${srcdiroption} \

@@ -1,3 +1,8 @@
+2004-01-23  DJ Delorie  <dj@redhat.com>
+
+	* Makefile.def (target_modules) [libiberty]: Don't stage.
+	* Makefile.in: Rebuilt.
+
 2004-01-20  Caroline Tice  <ctice@apple.com>
 
 	* MAINTAINERS: Add myself to write-after-approval.
