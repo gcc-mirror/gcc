@@ -1,5 +1,5 @@
 /* Definitions of target machine for GNU compiler for Hitachi Super-H.
-   Copyright (C) 1993, 1994, 1995, 1996, 1997 Free Software Foundation, Inc.
+   Copyright (C) 1993-1998 Free Software Foundation, Inc.
    Contributed by Steve Chamberlain (sac@cygnus.com).
    Improved by Jim Wilson (wilson@cygnus.com).
 
@@ -43,7 +43,10 @@ extern int code_for_indirect_jump_scratch;
 %{m2:-D__sh2__} \
 %{m3:-D__sh3__} \
 %{m3e:-D__SH3E__} \
-%{!m1:%{!m2:%{!m3:%{!m3e:-D__sh1__}}}}"
+%{m4-single-only:-D__SH4_SINGLE_ONLY__} \
+%{m4-single:-D__SH4_SINGLE__} \
+%{m4:-D__SH4__} \
+%{!m1:%{!m2:%{!m3:%{!m3e:%{!m4:%{!m4-single:%{!m4-single-only:-D__sh1__}}}}}}}"
 
 #define CPP_PREDEFINES "-D__sh__ -Acpu(sh) -Amachine(sh)"
 
@@ -54,19 +57,28 @@ extern int code_for_indirect_jump_scratch;
 /* We can not debug without a frame pointer.  */
 /* #define CAN_DEBUG_WITHOUT_FP */
 
-#define CONDITIONAL_REGISTER_USAGE				\
-  if (! TARGET_SH3E)						\
-    {								\
-      int regno;						\
-      for (regno = FIRST_FP_REG; regno <= LAST_FP_REG; regno++)	\
-	fixed_regs[regno] = call_used_regs[regno] = 1;		\
-      fixed_regs[FPUL_REG] = call_used_regs[FPUL_REG] = 1;	\
-    }								\
-  /* Hitachi saves and restores mac registers on call.  */	\
-  if (TARGET_HITACHI)						\
-    {								\
-      call_used_regs[MACH_REG] = 0;				\
-      call_used_regs[MACL_REG] = 0;				\
+#define CONDITIONAL_REGISTER_USAGE					\
+  if (! TARGET_SH4 || ! TARGET_FMOVD)					\
+    {									\
+      int regno;							\
+      for (regno = FIRST_XD_REG; regno <= LAST_XD_REG; regno++)		\
+	fixed_regs[regno] = call_used_regs[regno] = 1;			\
+      if (! TARGET_SH4)							\
+	{								\
+	  if (! TARGET_SH3E)						\
+	    {								\
+	      int regno;						\
+	      for (regno = FIRST_FP_REG; regno <= LAST_FP_REG; regno++)	\
+		fixed_regs[regno] = call_used_regs[regno] = 1;		\
+	      fixed_regs[FPUL_REG] = call_used_regs[FPUL_REG] = 1;	\
+	    }								\
+	}								\
+    }									\
+  /* Hitachi saves and restores mac registers on call.  */		\
+  if (TARGET_HITACHI)							\
+    {									\
+      call_used_regs[MACH_REG] = 0;					\
+      call_used_regs[MACL_REG] = 0;					\
     }
 
 /* ??? Need to write documentation for all SH options and add it to the
@@ -81,6 +93,10 @@ extern int target_flags;
 #define SH2_BIT	       	(1<<9)
 #define SH3_BIT	       	(1<<10)
 #define SH3E_BIT	(1<<11)
+#define HARD_SH4_BIT	(1<<5)
+#define FPU_SINGLE_BIT	(1<<7)
+#define SH4_BIT	       	(1<<12)
+#define FMOVD_BIT	(1<<4)
 #define SPACE_BIT 	(1<<13)
 #define BIGTABLE_BIT  	(1<<14)
 #define RELAX_BIT	(1<<15)
@@ -106,6 +122,27 @@ extern int target_flags;
 
 /* Nonzero if we should generate code using type 3E insns.  */
 #define TARGET_SH3E (target_flags & SH3E_BIT)
+
+/* Nonzero if the cache line size is 32. */
+#define TARGET_CACHE32 (target_flags & HARD_SH4_BIT)
+
+/* Nonzero if we schedule for a superscalar implementation. */
+#define TARGET_SUPERSCALAR (target_flags & HARD_SH4_BIT)
+
+/* Nonzero if the target has separate instruction and data caches.  */
+#define TARGET_HARWARD (target_flags & HARD_SH4_BIT)
+
+/* Nonzero if compiling for SH4 hardware (to be used for insn costs etc.)  */
+#define TARGET_HARD_SH4 (target_flags & HARD_SH4_BIT)
+
+/* Nonzero if the default precision of th FPU is single */
+#define TARGET_FPU_SINGLE (target_flags & FPU_SINGLE_BIT)
+
+/* Nonzero if we should generate code using type 4 insns.  */
+#define TARGET_SH4 (target_flags & SH4_BIT)
+
+/* Nonzero if we should generate fmovd.  */
+#define TARGET_FMOVD (target_flags & FMOVD_BIT)
 
 /* Nonzero if we respect NANs.  */
 #define TARGET_IEEE (target_flags & IEEE_BIT)
@@ -137,10 +174,14 @@ extern int target_flags;
 { {"1",	        SH1_BIT},			\
   {"2",	        SH2_BIT},			\
   {"3",	        SH3_BIT|SH2_BIT},		\
-  {"3e",	SH3E_BIT|SH3_BIT|SH2_BIT},	\
+  {"3e",	SH3E_BIT|SH3_BIT|SH2_BIT|FPU_SINGLE_BIT},	\
+  {"4-single-only",	SH3E_BIT|SH3_BIT|SH2_BIT|SH3E_BIT|HARD_SH4_BIT|FPU_SINGLE_BIT},	\
+  {"4-single",	SH4_BIT|SH3E_BIT|SH3_BIT|SH2_BIT|HARD_SH4_BIT|FPU_SINGLE_BIT},\
+  {"4",	        SH4_BIT|SH3E_BIT|SH3_BIT|SH2_BIT|HARD_SH4_BIT},	\
   {"b",		-LITTLE_ENDIAN_BIT},  		\
   {"bigtable", 	BIGTABLE_BIT},			\
   {"dalign",  	DALIGN_BIT},			\
+  {"fmovd",  	FMOVD_BIT},			\
   {"hitachi",	HITACHI_BIT},			\
   {"ieee",  	IEEE_BIT},			\
   {"isize", 	ISIZE_BIT},			\
@@ -160,26 +201,58 @@ extern int target_flags;
 
 #define OPTIMIZATION_OPTIONS(LEVEL,SIZE)				\
 do {									\
+  if (LEVEL)								\
+    flag_omit_frame_pointer = -1;					\
+  if (LEVEL)								\
+    sh_flag_remove_dead_before_cse = 1;					\
   if (SIZE)								\
     target_flags |= SPACE_BIT;						\
 } while (0)
 
-#define ASSEMBLER_DIALECT 0 /* will allow to distinguish b[tf].s and b[tf]/s .  */
-#define OVERRIDE_OPTIONS 					\
-do {								\
-  sh_cpu = CPU_SH1;						\
-  if (TARGET_SH2)						\
-    sh_cpu = CPU_SH2;						\
-  if (TARGET_SH3)						\
-    sh_cpu = CPU_SH3;						\
-  if (TARGET_SH3E)						\
-    sh_cpu = CPU_SH3E;						\
-								\
-  /* Never run scheduling before reload, since that can		\
-     break global alloc, and generates slower code anyway due	\
-     to the pressure on R0.  */					\
-  flag_schedule_insns = 0;					\
-  sh_addr_diff_vec_mode = TARGET_BIGTABLE ? SImode : HImode;	\
+#define ASSEMBLER_DIALECT assembler_dialect
+
+extern int assembler_dialect;
+
+#define OVERRIDE_OPTIONS 						\
+do {									\
+  sh_cpu = CPU_SH1;							\
+  assembler_dialect = 0;						\
+  if (TARGET_SH2)							\
+    sh_cpu = CPU_SH2;							\
+  if (TARGET_SH3)							\
+    sh_cpu = CPU_SH3;							\
+  if (TARGET_SH3E)							\
+    sh_cpu = CPU_SH3E;							\
+  if (TARGET_SH4)							\
+    {									\
+      assembler_dialect = 1;						\
+      sh_cpu = CPU_SH4;							\
+    }									\
+  if (! TARGET_SH4 || ! TARGET_FMOVD)					\
+    {									\
+      /* Prevent usage of explicit register names for variables		\
+	 for registers not present / not addressable in the		\
+	 target architecture.  */					\
+      int regno;							\
+      for (regno = (TARGET_SH3E) ? 17 : 0; 				\
+	   regno <= 24; regno++)					\
+	fp_reg_names[regno][0] = 0;					\
+    }									\
+  if (flag_omit_frame_pointer < 0)					\
+   /* The debugging information is sufficient,				\
+      but gdb doesn't implement this yet */				\
+   if (0)								\
+    flag_omit_frame_pointer						\
+      = (PREFERRED_DEBUGGING_TYPE == DWARF_DEBUG			\
+	 || PREFERRED_DEBUGGING_TYPE == DWARF2_DEBUG);			\
+   else									\
+    flag_omit_frame_pointer = 0;					\
+									\
+  /* Never run scheduling before reload, since that can			\
+     break global alloc, and generates slower code anyway due		\
+     to the pressure on R0.  */						\
+  flag_schedule_insns = 0;						\
+  sh_addr_diff_vec_mode = TARGET_BIGTABLE ? SImode : HImode;		\
 } while (0)
 
 /* Target machine storage layout.  */
@@ -233,7 +306,7 @@ do {								\
 
 /* The log (base 2) of the cache line size, in bytes.  Processors prior to
    SH3 have no actual cache, but they fetch code in chunks of 4 bytes.  */
-#define CACHE_LOG (TARGET_SH3 ? 4 : 2)
+#define CACHE_LOG (TARGET_CACHE32 ? 5 : TARGET_SH3 ? 4 : 2)
 
 /* Allocation boundary (in *bits*) for the code of a function.
    32 bit alignment is faster, because instructions are always fetched as a
@@ -279,7 +352,7 @@ do {								\
   barrier_align (LABEL_AFTER_BARRIER)
 
 #define LOOP_ALIGN(A_LABEL) \
-  ((! optimize || TARGET_SMALLCODE) ? 0 : 2)
+  ((! optimize || TARGET_HARWARD || TARGET_SMALLCODE) ? 0 : 2)
 
 #define LABEL_ALIGN(A_LABEL) \
 (									\
@@ -341,8 +414,11 @@ do {								\
 #define RAP_REG 23
 #define FIRST_FP_REG 24
 #define LAST_FP_REG 39
+#define FIRST_XD_REG 40
+#define LAST_XD_REG 47
+#define FPSCR_REG 48
 
-#define FIRST_PSEUDO_REGISTER 40
+#define FIRST_PSEUDO_REGISTER 49
 
 /* 1 for registers that have pervasive standard uses
    and are not available for the register allocator.
@@ -361,6 +437,9 @@ do {								\
     0,  0,  0,  0,		\
     0,  0,  0,  0,		\
     0,  0,  0,  0,		\
+    0,  0,  0,  0,		\
+    0,  0,  0,  0,		\
+    1,				\
 }
 
 /* 1 for registers not available across function calls.
@@ -381,6 +460,9 @@ do {								\
     1,  1,  1,  1,		\
     1,  1,  1,  1,		\
     0,  0,  0,  0,		\
+    1,  1,  1,  1,		\
+    1,  1,  0,  0,		\
+    1,				\
 }
 
 /* Return number of consecutive hard regs needed starting at reg REGNO
@@ -388,20 +470,39 @@ do {								\
    This is ordinarily the length in words of a value of mode MODE
    but can be less for certain modes in special long registers.
 
-   On the SH regs are UNITS_PER_WORD bits wide.  */
+   On the SH all but the XD regs are UNITS_PER_WORD bits wide.  */
 
 #define HARD_REGNO_NREGS(REGNO, MODE) \
-   (((GET_MODE_SIZE (MODE) + UNITS_PER_WORD - 1) / UNITS_PER_WORD))
+   ((REGNO) >= FIRST_XD_REG && (REGNO) <= LAST_XD_REG \
+    ? (GET_MODE_SIZE (MODE) / (2 * UNITS_PER_WORD)) \
+    : ((GET_MODE_SIZE (MODE) + UNITS_PER_WORD - 1) / UNITS_PER_WORD)) \
 
 /* Value is 1 if hard register REGNO can hold a value of machine-mode MODE.
    We can allow any mode in any general register.  The special registers
    only allow SImode.  Don't allow any mode in the PR.  */
 
+/* We cannot hold DCmode values in the XD registers because alter_reg
+   handles subregs of them incorrectly.  We could work around this by
+   spacing the XD registers like the DR registers, but this would require
+   additional memory in every compilation to hold larger register vectors.
+   We could hold SFmode / SCmode values in XD registers, but that
+   would require a tertiary reload when reloading from / to memory,
+   and a secondary reload to reload from / to general regs; that
+   seems to be a loosing proposition.  */
 #define HARD_REGNO_MODE_OK(REGNO, MODE)		\
   (SPECIAL_REG (REGNO) ? (MODE) == SImode	\
    : (REGNO) == FPUL_REG ? (MODE) == SImode || (MODE) == SFmode	\
-   : (REGNO) >= FIRST_FP_REG && (REGNO) <= LAST_FP_REG ? (MODE) == SFmode \
+   : (REGNO) >= FIRST_FP_REG && (REGNO) <= LAST_FP_REG && (MODE) == SFmode \
+   ? 1 \
+   : (REGNO) >= FIRST_FP_REG && (REGNO) <= LAST_FP_REG \
+   ? ((MODE) == SFmode \
+      || (TARGET_SH3E && (MODE) == SCmode) \
+      || (((TARGET_SH4 && (MODE) == DFmode) || (MODE) == DCmode) \
+	  && (((REGNO) - FIRST_FP_REG) & 1) == 0)) \
+   : (REGNO) >= FIRST_XD_REG && (REGNO) <= LAST_XD_REG \
+   ? (MODE) == DFmode \
    : (REGNO) == PR_REG ? 0			\
+   : (REGNO) == FPSCR_REG ? (MODE) == PSImode \
    : 1)
 
 /* Value is 1 if it is a good idea to tie two pseudo registers
@@ -541,6 +642,8 @@ enum reg_class
   GENERAL_REGS,
   FP0_REGS,
   FP_REGS,
+  DF_REGS,
+  FPSCR_REGS,
   GENERAL_FP_REGS,
   ALL_REGS,
   LIM_REG_CLASSES
@@ -560,6 +663,8 @@ enum reg_class
   "GENERAL_REGS",	\
   "FP0_REGS",		\
   "FP_REGS",		\
+  "DF_REGS",		\
+  "FPSCR_REGS",		\
   "GENERAL_FP_REGS",	\
   "ALL_REGS",		\
 }
@@ -579,8 +684,10 @@ enum reg_class
   { 0x0081FFFF, 0x00000000 }, /* GENERAL_REGS	*/	\
   { 0x01000000, 0x00000000 }, /* FP0_REGS	*/	\
   { 0xFF000000, 0x000000FF }, /* FP_REGS	*/	\
-  { 0xFF81FFFF, 0x000000FF }, /* GENERAL_FP_REGS */	\
-  { 0xFFFFFFFF, 0x000000FF }, /* ALL_REGS	*/	\
+  { 0xFF000000, 0x0000FFFF }, /* DF_REGS	*/	\
+  { 0x00000000, 0x00010000 }, /* FPSCR_REGS	*/	\
+  { 0xFF81FFFF, 0x0000FFFF }, /* GENERAL_FP_REGS */	\
+  { 0xFFFFFFFF, 0x0001FFFF }, /* ALL_REGS	*/	\
 }
 
 /* The same information, inverted:
@@ -603,6 +710,7 @@ extern int regno_reg_class[];
    spilled or used otherwise, we better have the FP_REGS allocated first.  */
 #define REG_ALLOC_ORDER \
   { 25,26,27,28,29,30,31,24,32,33,34,35,36,37,38,39,	\
+    40,41,42,43,44,45,46,47,48,				\
     1,2,3,7,6,5,4,0,8,9,10,11,12,13,14,			\
     22,15,16,17,18,19,20,21,23 }
 
@@ -657,7 +765,8 @@ extern enum reg_class reg_class_from_letter[];
 #define PREFERRED_RELOAD_CLASS(X, CLASS) (CLASS)
 
 #define SECONDARY_OUTPUT_RELOAD_CLASS(CLASS,MODE,X) \
-  ((((((CLASS) == FP_REGS || (CLASS) == FP0_REGS)			\
+  ((((((CLASS) == FP_REGS || (CLASS) == FP0_REGS			\
+	|| (CLASS) == DF_REGS)						\
       && (GET_CODE (X) == REG && REGNO (X) <= AP_REG))			\
      || (((CLASS) == GENERAL_REGS || (CLASS) == R0_REGS)		\
 	 && GET_CODE (X) == REG						\
@@ -666,7 +775,7 @@ extern enum reg_class reg_class_from_letter[];
    ? FPUL_REGS								\
    : ((CLASS) == FPUL_REGS						\
       && (GET_CODE (X) == MEM						\
-	  || GET_CODE (X) == REG && REGNO (X) >= FIRST_PSEUDO_REGISTER))\
+	  || (GET_CODE (X) == REG && REGNO (X) >= FIRST_PSEUDO_REGISTER)))\
    ? GENERAL_REGS							\
    : (((CLASS) == MAC_REGS || (CLASS) == PR_REGS)			\
       && GET_CODE (X) == REG && REGNO (X) > 15				\
@@ -674,10 +783,19 @@ extern enum reg_class reg_class_from_letter[];
    ? GENERAL_REGS : NO_REGS)
 
 #define SECONDARY_INPUT_RELOAD_CLASS(CLASS,MODE,X)  \
-  ((((CLASS) == FP_REGS || (CLASS) == FP0_REGS)				\
+  ((((CLASS) == FP_REGS || (CLASS) == FP0_REGS || (CLASS) == DF_REGS)	\
     && immediate_operand ((X), (MODE))					\
-    && ! (fp_zero_operand (X) || fp_one_operand (X)))			\
-   ? R0_REGS : SECONDARY_OUTPUT_RELOAD_CLASS((CLASS),(MODE),(X)))
+    && ! ((fp_zero_operand (X) || fp_one_operand (X)) && (MODE) == SFmode))\
+   ? R0_REGS								\
+   : CLASS == FPUL_REGS && immediate_operand ((X), (MODE))		\
+   ? (GET_CODE (X) == CONST_INT && CONST_OK_FOR_I (INTVAL (X))		\
+      ? GENERAL_REGS							\
+      : R0_REGS)							\
+   : (CLASS == FPSCR_REGS						\
+      && ((GET_CODE (X) == REG && REGNO (X) >= FIRST_PSEUDO_REGISTER)	\
+	  || GET_CODE (X) == MEM && GET_CODE (XEXP ((X), 0)) == PLUS))	\
+   ? GENERAL_REGS							\
+   : SECONDARY_OUTPUT_RELOAD_CLASS((CLASS),(MODE),(X)))
 
 /* Return the maximum number of consecutive registers
    needed to represent mode MODE in a register of class CLASS.
@@ -685,6 +803,11 @@ extern enum reg_class reg_class_from_letter[];
    On SH this is the size of MODE in words.  */
 #define CLASS_MAX_NREGS(CLASS, MODE) \
      ((GET_MODE_SIZE (MODE) + UNITS_PER_WORD - 1) / UNITS_PER_WORD)
+
+/* If defined, gives a class of registers that cannot be used as the
+   operand of a SUBREG that changes the size of the object.  */
+
+#define CLASS_CANNOT_CHANGE_SIZE	DF_REGS
 
 /* Stack layout; function entry, exit and calling.  */
 
@@ -693,6 +816,9 @@ extern enum reg_class reg_class_from_letter[];
 
 #define NPARM_REGS(MODE) \
   (TARGET_SH3E && (MODE) == SFmode \
+   ? 8 \
+   : TARGET_SH4 && (GET_MODE_CLASS (MODE) == MODE_FLOAT \
+		    || GET_MODE_CLASS (MODE) == MODE_COMPLEX_FLOAT) \
    ? 8 \
    : 4)
 
@@ -752,25 +878,48 @@ extern enum reg_class reg_class_from_letter[];
 #define BASE_RETURN_VALUE_REG(MODE) \
   ((TARGET_SH3E && ((MODE) == SFmode))			\
    ? FIRST_FP_RET_REG					\
+   : TARGET_SH3E && (MODE) == SCmode		\
+   ? FIRST_FP_RET_REG					\
+   : (TARGET_SH4					\
+      && ((MODE) == DFmode || (MODE) == SFmode		\
+	  || (MODE) == DCmode || (MODE) == SCmode ))	\
+   ? FIRST_FP_RET_REG					\
    : FIRST_RET_REG)
 
 #define BASE_ARG_REG(MODE) \
   ((TARGET_SH3E && ((MODE) == SFmode))			\
+   ? FIRST_FP_PARM_REG					\
+   : TARGET_SH4 && (GET_MODE_CLASS (MODE) == MODE_FLOAT	\
+		    || GET_MODE_CLASS (MODE) == MODE_COMPLEX_FLOAT)\
    ? FIRST_FP_PARM_REG					\
    : FIRST_PARM_REG)
 
 /* Define how to find the value returned by a function.
    VALTYPE is the data type of the value (as a tree).
    If the precise function being called is known, FUNC is its FUNCTION_DECL;
-   otherwise, FUNC is 0.  */
+   otherwise, FUNC is 0.
+   For the SH, this is like LIBCALL_VALUE, except that we must change the
+   mode like PROMOTE_MODE does.
+   ??? PROMOTE_MODE is ignored for non-scalar types.  The set of types
+   tested here has to be kept in sync with the one in explow.c:promote_mode.  */
 
-#define FUNCTION_VALUE(VALTYPE, FUNC) \
-  LIBCALL_VALUE (TYPE_MODE (VALTYPE))
+#define FUNCTION_VALUE(VALTYPE, FUNC)					\
+  gen_rtx (REG,								\
+	   ((GET_MODE_CLASS (TYPE_MODE (VALTYPE)) == MODE_INT		\
+	     && GET_MODE_SIZE (TYPE_MODE (VALTYPE)) < UNITS_PER_WORD	\
+	     && (TREE_CODE (VALTYPE) == INTEGER_TYPE			\
+		 || TREE_CODE (VALTYPE) == ENUMERAL_TYPE		\
+		 || TREE_CODE (VALTYPE) == BOOLEAN_TYPE			\
+		 || TREE_CODE (VALTYPE) == CHAR_TYPE			\
+		 || TREE_CODE (VALTYPE) == REAL_TYPE			\
+		 || TREE_CODE (VALTYPE) == OFFSET_TYPE))		\
+	    ? SImode : TYPE_MODE (VALTYPE)),				\
+	   BASE_RETURN_VALUE_REG (TYPE_MODE (VALTYPE)))
      
 /* Define how to find the value returned by a library function
    assuming the value has mode MODE.  */
 #define LIBCALL_VALUE(MODE) \
-  gen_rtx (REG, (MODE), BASE_RETURN_VALUE_REG (MODE));
+  gen_rtx (REG, (MODE), BASE_RETURN_VALUE_REG (MODE))
 
 /* 1 if N is a possible register number for a function value. */
 #define FUNCTION_VALUE_REGNO_P(REGNO) \
@@ -801,7 +950,11 @@ struct sh_args {
 #define CUMULATIVE_ARGS  struct sh_args
 
 #define GET_SH_ARG_CLASS(MODE) \
-  ((TARGET_SH3E && ((MODE) == SFmode)) ? SH_ARG_FLOAT : SH_ARG_INT)
+  ((TARGET_SH3E && (MODE) == SFmode) \
+   ? SH_ARG_FLOAT \
+   : TARGET_SH4 && (GET_MODE_CLASS (MODE) == MODE_FLOAT \
+		    || GET_MODE_CLASS (MODE) == MODE_COMPLEX_FLOAT) \
+   ? SH_ARG_FLOAT : SH_ARG_INT)
 
 #define ROUND_ADVANCE(SIZE) \
   (((SIZE) + UNITS_PER_WORD - 1) / UNITS_PER_WORD)
@@ -813,7 +966,9 @@ struct sh_args {
    round doubles to even regs when asked to explicitly.  */
 
 #define ROUND_REG(CUM, MODE) \
-   ((TARGET_ALIGN_DOUBLE					\
+   (((TARGET_ALIGN_DOUBLE					\
+      || (TARGET_SH4 && ((MODE) == DFmode || (MODE) == DCmode)	\
+	  && (CUM).arg_count[(int) SH_ARG_FLOAT] < NPARM_REGS (MODE)))\
      && GET_MODE_UNIT_SIZE ((MODE)) > UNITS_PER_WORD)		\
     ? ((CUM).arg_count[(int) GET_SH_ARG_CLASS (MODE)]		\
        + ((CUM).arg_count[(int) GET_SH_ARG_CLASS (MODE)] & 1))	\
@@ -838,11 +993,12 @@ struct sh_args {
    available.)  */
 
 #define FUNCTION_ARG_ADVANCE(CUM, MODE, TYPE, NAMED)	\
- ((CUM).arg_count[(int) GET_SH_ARG_CLASS (MODE)] =	\
-	  (ROUND_REG ((CUM), (MODE))			\
-	   + ((MODE) != BLKmode				\
-	      ? ROUND_ADVANCE (GET_MODE_SIZE (MODE))	\
-	      : ROUND_ADVANCE (int_size_in_bytes (TYPE)))))
+ if (! TARGET_SH4 || PASS_IN_REG_P ((CUM), (MODE), (TYPE))) \
+   ((CUM).arg_count[(int) GET_SH_ARG_CLASS (MODE)]	\
+    = (ROUND_REG ((CUM), (MODE))			\
+       + ((MODE) == BLKmode				\
+	  ? ROUND_ADVANCE (int_size_in_bytes (TYPE))	\
+	  : ROUND_ADVANCE (GET_MODE_SIZE (MODE)))))
 
 /* Return boolean indicating arg of mode MODE will be passed in a reg.
    This macro is only used in this file. */
@@ -883,7 +1039,9 @@ extern int current_function_varargs;
   ((PASS_IN_REG_P ((CUM), (MODE), (TYPE))				\
     && ((NAMED) || TARGET_SH3E || ! current_function_varargs))		\
    ? gen_rtx (REG, (MODE),						\
-	      (BASE_ARG_REG (MODE) + ROUND_REG ((CUM), (MODE)))) \
+	      ((BASE_ARG_REG (MODE) + ROUND_REG ((CUM), (MODE))) 	\
+	       ^ ((MODE) == SFmode && TARGET_SH4			\
+		  && TARGET_LITTLE_ENDIAN != 0)))			\
    : 0)
 
 /* For an arg passed partly in registers and partly in memory,
@@ -894,8 +1052,9 @@ extern int current_function_varargs;
 
 #define FUNCTION_ARG_PARTIAL_NREGS(CUM, MODE, TYPE, NAMED) \
   ((PASS_IN_REG_P ((CUM), (MODE), (TYPE))			\
+    && ! TARGET_SH4						\
     && (ROUND_REG ((CUM), (MODE))				\
-	+ (MODE != BLKmode					\
+	+ ((MODE) != BLKmode					\
 	   ? ROUND_ADVANCE (GET_MODE_SIZE (MODE))		\
 	   : ROUND_ADVANCE (int_size_in_bytes (TYPE)))		\
 	- NPARM_REGS (MODE) > 0))				\
@@ -955,7 +1114,7 @@ extern int current_function_anonymous_args;
 
 /* Alignment required for a trampoline in bits .  */
 #define TRAMPOLINE_ALIGNMENT \
-  ((CACHE_LOG < 3 || TARGET_SMALLCODE) ? 32 : 64) \
+  ((CACHE_LOG < 3 || TARGET_SMALLCODE && ! TARGET_HARWARD) ? 32 : 64)
 
 /* Emit RTL insns to initialize the variable parts of a trampoline.
    FNADDR is an RTX for the address of the function's pure code.
@@ -971,6 +1130,8 @@ extern int current_function_anonymous_args;
 		  (CXT));						\
   emit_move_insn (gen_rtx (MEM, SImode, plus_constant ((TRAMP), 12)),	\
 		  (FNADDR));						\
+  if (TARGET_HARWARD)							\
+    emit_insn (gen_ic_invalidate_line (TRAMP));				\
 }
 
 /* A C expression whose value is RTL representing the value of the return
@@ -1086,7 +1247,10 @@ extern struct rtx_def *sh_builtin_saveregs ();
 #define MODE_DISP_OK_4(X,MODE) \
 (GET_MODE_SIZE (MODE) == 4 && (unsigned) INTVAL (X) < 64	\
  && ! (INTVAL (X) & 3) && ! (TARGET_SH3E && (MODE) == SFmode))
-#define MODE_DISP_OK_8(X,MODE) ((GET_MODE_SIZE(MODE)==8) && ((unsigned)INTVAL(X)<60) && (!(INTVAL(X) &3)))
+
+#define MODE_DISP_OK_8(X,MODE) \
+((GET_MODE_SIZE(MODE)==8) && ((unsigned)INTVAL(X)<60)	\
+ && ! (INTVAL(X) & 3) && ! (TARGET_SH4 && (MODE) == DFmode))
 
 #define BASE_REGISTER_RTX_P(X)				\
   ((GET_CODE (X) == REG && REG_OK_FOR_BASE_P (X))	\
@@ -1141,13 +1305,15 @@ extern struct rtx_def *sh_builtin_saveregs ();
   else if ((GET_CODE (X) == POST_INC || GET_CODE (X) == PRE_DEC)	\
 	   && BASE_REGISTER_RTX_P (XEXP ((X), 0)))			\
     goto LABEL;								\
-  else if (GET_CODE (X) == PLUS && MODE != PSImode)			\
+  else if (GET_CODE (X) == PLUS						\
+	   && ((MODE) != PSImode || reload_completed))			\
     {									\
       rtx xop0 = XEXP ((X), 0);						\
       rtx xop1 = XEXP ((X), 1);						\
       if (GET_MODE_SIZE (MODE) <= 8 && BASE_REGISTER_RTX_P (xop0))	\
 	GO_IF_LEGITIMATE_INDEX ((MODE), xop1, LABEL);			\
-      if (GET_MODE_SIZE (MODE) <= 4)					\
+      if (GET_MODE_SIZE (MODE) <= 4					\
+	  || TARGET_SH4 && TARGET_FMOVD && MODE == DFmode)	\
 	{								\
 	  if (BASE_REGISTER_RTX_P (xop1) && INDEX_REGISTER_RTX_P (xop0))\
 	    goto LABEL;							\
@@ -1181,6 +1347,7 @@ extern struct rtx_def *sh_builtin_saveregs ();
 	  || GET_MODE_SIZE (MODE) == 8)				\
       && GET_CODE (XEXP ((X), 1)) == CONST_INT			\
       && BASE_REGISTER_RTX_P (XEXP ((X), 0))			\
+      && ! (TARGET_SH4 && (MODE) == DFmode)			\
       && ! (TARGET_SH3E && (MODE) == SFmode))			\
     {								\
       rtx index_rtx = XEXP ((X), 1);				\
@@ -1228,12 +1395,21 @@ extern struct rtx_def *sh_builtin_saveregs ();
       && (GET_MODE_SIZE (MODE) == 4 || GET_MODE_SIZE (MODE) == 8)	\
       && GET_CODE (XEXP (X, 1)) == CONST_INT				\
       && BASE_REGISTER_RTX_P (XEXP (X, 0))				\
-      && ! (TARGET_SH3E && MODE == SFmode))				\
+      && ! (TARGET_SH4 && (MODE) == DFmode)				\
+      && ! ((MODE) == PSImode && (TYPE) == RELOAD_FOR_INPUT_ADDRESS))	\
     {									\
       rtx index_rtx = XEXP (X, 1);					\
       HOST_WIDE_INT offset = INTVAL (index_rtx), offset_base;		\
       rtx sum;								\
 									\
+      if (TARGET_SH3E && MODE == SFmode)				\
+	{								\
+	  X = copy_rtx (X);						\
+	  push_reload (index_rtx, NULL_RTX, &XEXP (X, 1), NULL_PTR,	\
+		       INDEX_REG_CLASS, Pmode, VOIDmode, 0, 0, (OPNUM),	\
+		       (TYPE));						\
+	  goto WIN;							\
+	}								\
       /* Instead of offset_base 128..131 use 124..127, so that		\
 	 simple add suffices.  */					\
       if (offset > 127)							\
@@ -1315,7 +1491,7 @@ extern struct rtx_def *sh_builtin_saveregs ();
 
 /* Since the SH3e has only `float' support, it is desirable to make all
    floating point types equivalent to `float'.  */
-#define DOUBLE_TYPE_SIZE (TARGET_SH3E ? 32 : 64)
+#define DOUBLE_TYPE_SIZE ((TARGET_SH3E && ! TARGET_SH4) ? 32 : 64)
 
 /* 'char' is signed by default.  */
 #define DEFAULT_SIGNED_CHAR  1
@@ -1407,6 +1583,11 @@ extern struct rtx_def *sh_builtin_saveregs ();
       return 10;
 
 #define RTX_COSTS(X, CODE, OUTER_CODE)			\
+  case PLUS:						\
+    return (COSTS_N_INSNS (1)				\
+	    + rtx_cost (XEXP ((X), 0), PLUS)		\
+	    + (rtx_equal_p (XEXP ((X), 0), XEXP ((X), 1))\
+	       ? 0 : rtx_cost (XEXP ((X), 1), PLUS)));\
   case AND:						\
     return COSTS_N_INSNS (andcosts (X));		\
   case MULT:						\
@@ -1414,7 +1595,13 @@ extern struct rtx_def *sh_builtin_saveregs ();
   case ASHIFT:						\
   case ASHIFTRT:					\
   case LSHIFTRT:					\
-    return COSTS_N_INSNS (shiftcosts (X)) ;		\
+    /* Add one extra unit for the matching constraint.	\
+       Otherwise loop strength reduction would think that\
+       a shift with different sourc and destination is	\
+       as cheap as adding a constant to a register.  */	\
+    return (COSTS_N_INSNS (shiftcosts (X))		\
+	    + rtx_cost (XEXP ((X), 0), (CODE))		\
+	    + 1);					\
   case DIV:						\
   case UDIV:						\
   case MOD:						\
@@ -1462,11 +1649,29 @@ extern struct rtx_def *sh_builtin_saveregs ();
 /* Compute extra cost of moving data between one register class
    and another.  */
 
+/* Regclass always uses 2 for moves in the same register class;
+   If SECONDARY*_RELOAD_CLASS says something about the src/dst pair,
+   it uses this information.  Hence, the general register <-> floating point
+   register information here is not used for SFmode.  */
 #define REGISTER_MOVE_COST(SRCCLASS, DSTCLASS) \
-  ((DSTCLASS) == PR_REG ? 10		\
-   : (((DSTCLASS) == FP_REGS && (SRCCLASS) == GENERAL_REGS)		\
-      || ((DSTCLASS) == GENERAL_REGS && (SRCCLASS) == FP_REGS)) ? 4	\
-   : 1)
+  ((((DSTCLASS) == T_REGS) || ((DSTCLASS) == PR_REG)) ? 10		\
+   : ((((DSTCLASS) == FP0_REGS || (DSTCLASS) == FP_REGS || (DSTCLASS) == DF_REGS) \
+       && ((SRCCLASS) == GENERAL_REGS || (SRCCLASS) == R0_REGS))	\
+      || (((DSTCLASS) == GENERAL_REGS || (DSTCLASS) == R0_REGS)		\
+	  && ((SRCCLASS) == FP0_REGS || (SRCCLASS) == FP_REGS		\
+	      || (SRCCLASS) == DF_REGS)))				\
+   ? TARGET_FMOVD ? 8 : 12						\
+   : (((DSTCLASS) == FPUL_REGS						\
+       && ((SRCCLASS) == GENERAL_REGS || (SRCCLASS) == R0_REGS))	\
+      || (SRCCLASS == FPUL_REGS						\
+	  && ((DSTCLASS) == GENERAL_REGS || (DSTCLASS) == R0_REGS)))	\
+   ? 5									\
+   : (((DSTCLASS) == FPUL_REGS						\
+       && ((SRCCLASS) == PR_REGS || (SRCCLASS) == MAC_REGS))		\
+      || ((SRCCLASS) == FPUL_REGS					\
+	  && ((DSTCLASS) == PR_REGS || (DSTCLASS) == MAC_REGS)))	\
+   ? 7									\
+   : 2)
 
 /* ??? Perhaps make MEMORY_MOVE_COST depend on compiler option?  This
    would be so that people would slow memory systems could generate
@@ -1573,13 +1778,32 @@ dtors_section()							\
    the Real framepointer; it can also be used as a normal general register.
    Note that the name `fp' is horribly misleading since `fp' is in fact only
    the argument-and-return-context pointer.  */
+
+extern char fp_reg_names[][5];
+
 #define REGISTER_NAMES  				\
+{				                   	\
+  "r0", "r1", "r2",  "r3",  "r4",  "r5",  "r6",  "r7", 	\
+  "r8", "r9", "r10", "r11", "r12", "r13", "r14", "r15",	\
+  "ap", "pr", "t",   "gbr", "mach","macl", fp_reg_names[16], "rap", \
+  fp_reg_names[0],  fp_reg_names[1] , fp_reg_names[2],  fp_reg_names[3], \
+  fp_reg_names[4],  fp_reg_names[5],  fp_reg_names[6],  fp_reg_names[7], \
+  fp_reg_names[8],  fp_reg_names[9],  fp_reg_names[10], fp_reg_names[11], \
+  fp_reg_names[12], fp_reg_names[13], fp_reg_names[14], fp_reg_names[15], \
+  fp_reg_names[17], fp_reg_names[18], fp_reg_names[19], fp_reg_names[20], \
+  fp_reg_names[21], fp_reg_names[22], fp_reg_names[23], fp_reg_names[24], \
+  "fpscr", \
+}
+
+#define DEBUG_REGISTER_NAMES  				\
 {				                   	\
   "r0", "r1", "r2",  "r3",  "r4",  "r5",  "r6",  "r7", 	\
   "r8", "r9", "r10", "r11", "r12", "r13", "r14", "r15",	\
   "ap", "pr", "t",  "gbr", "mach","macl", "fpul","rap", \
   "fr0","fr1","fr2", "fr3", "fr4", "fr5", "fr6", "fr7", \
   "fr8","fr9","fr10","fr11","fr12","fr13","fr14","fr15",\
+  "xd0","xd2","xd4", "xd6", "xd8", "xd10","xd12","xd14", \
+  "fpscr", \
 }
 
 /* DBX register number for a given compiler register number.  */
@@ -1773,7 +1997,8 @@ enum processor_type {
   PROCESSOR_SH1,
   PROCESSOR_SH2,
   PROCESSOR_SH3,
-  PROCESSOR_SH3E
+  PROCESSOR_SH3E,
+  PROCESSOR_SH4
 };
 
 #define sh_cpu_attr ((enum attr_cpu)sh_cpu)
@@ -1837,6 +2062,11 @@ extern int sh_valid_machine_decl_attribute ();
 #define VALID_MACHINE_DECL_ATTRIBUTE(DECL, ATTRIBUTES, IDENTIFIER, ARGS) \
 sh_valid_machine_decl_attribute (DECL, ATTRIBUTES, IDENTIFIER, ARGS)
 
+extern int sh_flag_remove_dead_before_cse;
+extern int rtx_equal_function_value_matters;
+extern struct rtx_def *fpscr_rtx;
+extern struct rtx_def *get_fpscr_rtx ();
+
 
 #define MOVE_RATIO (TARGET_SMALLCODE ? 2 : 16)
 
@@ -1860,10 +2090,16 @@ sh_valid_machine_decl_attribute (DECL, ATTRIBUTES, IDENTIFIER, ARGS)
   {"arith_operand", {SUBREG, REG, CONST_INT}},				\
   {"arith_reg_operand", {SUBREG, REG}},					\
   {"arith_reg_or_0_operand", {SUBREG, REG, CONST_INT}},			\
+  {"binary_float_operator", {PLUS, MULT}},				\
   {"braf_label_ref_operand", {LABEL_REF}},				\
+  {"commutative_float_operator", {PLUS, MULT}},				\
+  {"fp_arith_reg_operand", {SUBREG, REG}},				\
+  {"fp_extended_operand", {SUBREG, REG, FLOAT_EXTEND}},			\
+  {"fpscr_operand", {REG}},						\
   {"general_movsrc_operand", {SUBREG, REG, CONST_INT, MEM}},		\
   {"general_movdst_operand", {SUBREG, REG, CONST_INT, MEM}},		\
   {"logical_operand", {SUBREG, REG, CONST_INT}},			\
+  {"noncommutative_float_operator", {MINUS, DIV}},			\
   {"register_operand", {SUBREG, REG}},
 
 /* Define this macro if it is advisable to hold scalars in registers
@@ -1929,7 +2165,7 @@ do {									\
 	 using their arguments pretty quickly.				\
 	 Assume a four cycle delay before they are needed.  */		\
       if (! reg_set_p (reg, dep_insn))					\
-	cost -= 4;							\
+	cost -= TARGET_SUPERSCALAR ? 40 : 4;				\
     }									\
   /* Adjust load_si / pcload_si type insns latency.  Use the known	\
      nominal latency and form of the insn to speed up the check.  */	\
@@ -1939,9 +2175,14 @@ do {									\
 	      it's actually a move insn.  */				\
 	   && general_movsrc_operand (SET_SRC (PATTERN (dep_insn)), SImode))\
     cost = 2;								\
+  else if (cost == 30							\
+	   && GET_CODE (PATTERN (dep_insn)) == SET			\
+	   && GET_MODE (SET_SRC (PATTERN (dep_insn))) == SImode)	\
+    cost = 20;								\
 } while (0)								\
 
 /* For the sake of libgcc2.c, indicate target supports atexit.  */
 #define HAVE_ATEXIT
 
-#define SH_DYNAMIC_SHIFT_COST (TARGET_SH3 ? (TARGET_SMALLCODE ? 1 : 2) : 20)
+#define SH_DYNAMIC_SHIFT_COST \
+  (TARGET_HARD_SH4 ? 1 : TARGET_SH3 ? (TARGET_SMALLCODE ? 1 : 2) : 20)

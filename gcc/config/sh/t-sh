@@ -1,7 +1,7 @@
 CROSS_LIBGCC1 = libgcc1-asm.a
 LIB1ASMSRC = sh/lib1funcs.asm
 LIB1ASMFUNCS = _ashiftrt _ashiftrt_n _ashiftlt _lshiftrt _movstr \
-  _mulsi3 _sdivsi3 _udivsi3 _set_fpscr
+  _movstr_i4 _mulsi3 _sdivsi3 _sdivsi3_i4 _udivsi3 _udivsi3_i4 _set_fpscr
 
 # These are really part of libgcc1, but this will cause them to be
 # built correctly, so...
@@ -21,7 +21,7 @@ fp-bit.c: $(srcdir)/config/fp-bit.c
 	echo '#endif' 		>> fp-bit.c
 	cat $(srcdir)/config/fp-bit.c >> fp-bit.c
 
-MULTILIB_OPTIONS= ml m2/m3e
+MULTILIB_OPTIONS= ml m2/m3e/m4-single-only/m4-single/m4
 MULTILIB_DIRNAMES= 
 MULTILIB_MATCHES = m2=m3
 

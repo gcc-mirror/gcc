@@ -1,3 +1,181 @@
+Mon Nov 23 16:46:46 1998  J"orn Rennecke <amylaar@cygnus.co.uk>
+
+	Add SH4 support:
+
+	* config/sh/lib1funcs.asm (___movstr_i4_even, ___movstr_i4_odd): Define.
+	(___movstrSI12_i4, ___sdivsi3_i4, ___udivsi3_i4): Define.
+	* sh.c (reg_class_from_letter, regno_reg_class): Add DF_REGS.
+	(fp_reg_names, assembler_dialect): New variables.
+	(print_operand_address): Handle SUBREGs.
+	(print_operand): Added 'o' case.
+	Don't use adj_offsettable_operand on PRE_DEC / POST_INC.
+	Name of FP registers depends on mode.
+	(expand_block_move): Emit different code for SH4 hardware.
+	(prepare_scc_operands): Use emit_sf_insn / emit_df_insn as appropriate.
+	(from_compare): Likewise.
+	(add_constant): New argument last_value.  Changed all callers.
+	(find_barrier): Don't try HImode load for FPUL_REG.
+	(machine_dependent_reorg): Likewise.
+	(sfunc_uses_reg): A CLOBBER cannot be the address register use.
+	(gen_far_branch): Emit a barrier after the new jump.
+	(barrier_align): Don't trust instruction lengths before
+	fixing up pcloads.
+	(machine_dependent_reorg): Add support for FIRST_XD_REG .. LAST_XD_REG.
+	Use auto-inc addressing for fp registers if doubles need to
+	be loaded in two steps.
+	Set sh_flag_remove_dead_before_cse.
+	(push): Support for TARGET_FMOVD.  Use gen_push_fpul for fpul.
+	(pop): Support for TARGET_FMOVD.  Use gen_pop_fpul for fpul.
+	(calc_live_regs): Support for TARGET_FMOVD.  Don't save FPSCR.
+	Support for FIRST_XD_REG .. LAST_XD_REG.
+	(sh_expand_prologue): Support for FIRST_XD_REG .. LAST_XD_REG.
+	(sh_expand_epilogue): Likewise.
+	(sh_builtin_saveregs): Use DFmode moves for fp regs on SH4.
+	(initial_elimination_offset): Take TARGET_ALIGN_DOUBLE into account.
+	(arith_reg_operand): FPUL_REG is OK for SH4.
+	(fp_arith_reg_operand, fp_extended_operand) New functions.
+	(tertiary_reload_operand, fpscr_operand): Likewise.
+	(commutative_float_operator, noncommutative_float_operator): Likewise.
+	(binary_float_operator, get_fpscr_rtx, emit_sf_insn): Likewise.
+	(emit_df_insn, expand_sf_unop, expand_sf_binop): Likewise.
+	(expand_df_unop, expand_df_binop, expand_fp_branch): Likewise.
+	(emit_fpscr_use, mark_use, remove_dead_before_cse): Likewise.
+	* sh.h (CPP_SPEC): Add support for -m4, m4-single, m4-single-only.
+	(CONDITIONAL_REGISTER_USAGE): Likewise.
+	(HARD_SH4_BIT, FPU_SINGLE_BIT, SH4_BIT, FMOVD_BIT): Define.
+	(TARGET_CACHE32, TARGET_SUPERSCALAR, TARGET_HARWARD): Define.
+	(TARGET_HARD_SH4, TARGET_FPU_SINGLE, TARGET_SH4, TARGET_FMOVD): Define.
+	(target_flag): Add -m4, m4-single, m4-single-only, -mfmovd.
+	(OPTIMIZATION_OPTIONS): If optimizing, set flag_omit_frame_pointer
+	to -1 and sh_flag_remove_dead_before_cse to 1.
+	(ASSEMBLER_DIALECT): Define to assembler_dialect.
+	(assembler_dialect, fp_reg_names): Declare.
+	(OVERRIDE_OPTIONS): Add code for TARGET_SH4.
+	Hide names of registers that are not accessible.
+	(CACHE_LOG): Take TARGET_CACHE32 into account.
+	(LOOP_ALIGN): Take TARGET_HARWARD into account.
+	(FIRST_XD_REG, LAST_XD_REG, FPSCR_REG): Define.
+	(FIRST_PSEUDO_REGISTER: Now 49.
+	(FIXED_REGISTERS, CALL_USED_REGISTERS): Include values for registers.
+	(HARD_REGNO_NREGS): Special treatment of FIRST_XD_REG .. LAST_XD_REG.
+	(HARD_REGNO_MODE_OK): Update.
+	(enum reg_class): Add DF_REGS and FPSCR_REGS.
+	(REG_CLASS_NAMES, REG_CLASS_CONTENTS, REG_ALLOC_ORDER): Likewise.
+	(SECONDARY_OUTPUT_RELOAD_CLASS, SECONDARY_INPUT_RELOAD_CLASS): Update.
+	(CLASS_CANNOT_CHANGE_SIZE, DEBUG_REGISTER_NAMES): Define.
+	(NPARM_REGS): Eight floating point parameter registers on SH4.
+	(BASE_RETURN_VALUE_REG): SH4 also passes double values
+	in floating point registers.
+	(GET_SH_ARG_CLASS) Likewise.
+	Complex float types are also returned in float registers.
+	(BASE_ARG_REG): Complex float types are also passes in float registers.
+	(FUNCTION_VALUE): Change mode like PROMOTE_MODE does.
+	(LIBCALL_VALUE): Remove trailing semicolon.
+	(ROUND_REG): Round when double precision value is passed in floating
+	point register(s).
+	(FUNCTION_ARG_ADVANCE): No change wanted for SH4 when things are
+	passed on the stack.
+	(FUNCTION_ARG): Little endian adjustment for SH4 SFmode.
+	(FUNCTION_ARG_PARTIAL_NREGS): Zero for SH4.
+	(TRAMPOLINE_ALIGNMENT): Take TARGET_HARWARD into account.
+	(INITIALIZE_TRAMPOLINE): Emit ic_invalidate_line for TARGET_HARWARD.
+	(MODE_DISP_OK_8): Not for SH4 DFmode.
+	(GO_IF_LEGITIMATE_ADDRESS): No base reg + index reg for SH4 DFmode.
+	Allow indexed addressing for PSImode after reload.
+	(LEGITIMIZE_ADDRESS): Not for SH4 DFmode.
+	(LEGITIMIZE_RELOAD_ADDRESS): Handle SH3E SFmode.
+	Don't change SH4 DFmode nor PSImode RELOAD_FOR_INPUT_ADDRESS.
+	(DOUBLE_TYPE_SIZE): 64 for SH4.
+	(RTX_COSTS): Add PLUS case.
+	Increae cost of ASHIFT, ASHIFTRT, LSHIFTRT case.
+	(REGISTER_MOVE_COST): Add handling of R0_REGS, FPUL_REGS, T_REGS,
+	MAC_REGS, PR_REGS, DF_REGS.
+	(REGISTER_NAMES): Use fp_reg_names.
+	(enum processor_type): Add PROCESSOR_SH4.
+	(sh_flag_remove_dead_before_cse): Declare.
+	(rtx_equal_function_value_matters, fpscr_rtx, get_fpscr_rtx): Declare.
+	(PREDICATE_CODES): Add binary_float_operator,
+	commutative_float_operator, fp_arith_reg_operand, fp_extended_operand,
+	fpscr_operand, noncommutative_float_operator.
+	(ADJUST_COST): Use different scale for TARGET_SUPERSCALAR.
+	(SH_DYNAMIC_SHIFT_COST): Cheaper for SH4.
+	* sh.md (attribute cpu): Add value sh4.
+	(attrbutes fmovd, issues): Define.
+	(attribute type): Add values dfp_arith, dfp_cmp, dfp_conv, dfdiv.
+	(function units memory, int, mpy, fp): Make dependent on issue rate.
+	(function units issue, single_issue, load_si, load): Define.
+	(function units load_store, fdiv, gp_fpul): Define.
+	(attribute hit_stack): Provide proper default.
+	(use_sfunc_addr+1, udivsi3): Predicated on ! TARGET_SH4.
+	(udivsi3_i4, udivsi3_i4_single, divsi3_i4, divsi3_i4_single): New insns.
+	(udivsi3, divsi3): Emit special patterns for SH4 hardware,
+	(mulsi3_call): Now uses match_operand for function address.
+	(mulsi3): Also emit code for SH1 case.  Wrap result in REG_LIBCALL /
+	REG_RETVAL notes.
+	(push, pop, push_e, pop_e): Now define_expands.
+	(push_fpul, push_4, pop_fpul, pop_4, ic_invalidate_line): New expanders.
+	(movsi_ie): Added y/i alternative.
+	(ic_invalidate_line_i, movdf_i4): New insns.
+	(movdf_i4+[123], reload_outdf+[12345], movsi_y+[12]): New splitters.
+	(reload_indf, reload_outdf, reload_outsf, reload_insi): New expanders.
+	(movdf): Add special code for SH4.
+	(movsf_ie, movsf_ie+1, reload_insf, calli): Make use of fpscr visible.
+	(call_valuei, calli, call_value): Likewise.
+	(movsf): Emit no-op move.
+	(mov_nop, movsi_y): New insns.
+	(blt, sge): generalize to handle DFmode.
+	(return predicate): Call emit_fpscr_use and remove_dead_before_cse.
+	(block_move_real, block_lump_real): Predicate on ! TARGET_HARD_SH4.
+	(block_move_real_i4, block_lump_real_i4, fpu_switch): New insns.
+	(fpu_switch0, fpu_switch1, movpsi): New expanders.
+	(fpu_switch+[12], fix_truncsfsi2_i4_2+1): New splitters.
+	(toggle_sz): New insn.
+	(addsf3, subsf3, mulsf3, divsf3): Now define_expands.
+	(addsf3_i, subsf3_i, mulsf3_i4, mulsf3_ie, divsf3_i): New insns.
+	(macsf3): Make use of fpscr visible.  Disable for SH4.
+	(floatsisf2): Make use of fpscr visible.
+	(floatsisf2_i4): New insn.
+	(floatsisf2_ie, fixsfsi, cmpgtsf_t, cmpeqsf_t): Disable for SH4.
+	(ieee_ccmpeqsf_t): Likewise.
+	(fix_truncsfsi2): Emit different code for SH4.
+	(fix_truncsfsi2_i4, fix_truncsfsi2_i4_2, cmpgtsf_t_i4): New insns.
+	(cmpeqsf_t_i4, ieee_ccmpeqsf_t_4): New insns.
+	(negsf2, sqrtsf2, abssf2): Now expanders.
+	(adddf3, subdf3i, muldf2, divdf3, floatsidf2): New expanders.
+	(negsf2_i, sqrtsf2_i, abssf2_i, adddf3_i, subdf3_i): New insns.
+	(muldf3_i, divdf3_i, floatsidf2_i, fix_truncdfsi2_i): New insns.
+	(fix_truncdfsi2, cmpdf, negdf2, sqrtdf2, absdf2): New expanders.
+	(fix_truncdfsi2_i4, cmpgtdf_t, cmpeqdf_t, ieee_ccmpeqdf_t): New insns.
+	(fix_truncdfsi2_i4_2+1): New splitters.
+	(negdf2_i, sqrtdf2_i, absdf2_i, extendsfdf2_i4): New insns.
+	(extendsfdf2, truncdfsf2): New expanders.
+	(truncdfsf2_i4): New insn.
+	* t-sh (LIB1ASMFUNCS): Add _movstr_i4, _sdivsi3_i4, _udivsi3_i4.
+	(MULTILIB_OPTIONS): Add m4-single-only/m4-single/m4.
+	* float-sh.h: When testing for __SH3E__, also test for
+	__SH4_SINGLE_ONLY__ .
+	* va-sh.h (__va_freg): Define to float.
+	(__va_greg, __fa_freg, __gnuc_va_list, va_start):
+        Define for __SH4_SINGLE_ONLY__ like for __SH3E__ .
+        (__PASS_AS_FLOAT, __TARGET_SH4_P): Likewise.
+	(__PASS_AS_FLOAT): Use different definition for __SH4__ and
+	 __SH4_SINGLE__.
+	(TARGET_SH4_P): Define.
+	(va_arg): Use it.
+
+	* sh.md (movdf_k, movsf_i): Tweak the condition so that
+	init_expr_once is satisfied about the existence of load / store insns.
+
+	* sh.md (movsi_i, movsi_ie, movsi_i_lowpart, movsf_i, movsf_ie):
+        change m constraint in source operand to mr / mf .
+
+	* va-sh.h (__va_arg_sh1): Use __asm instead of asm.
+
+	* (__VA_REEF): Define.
+	(__va_arg_sh1): Use it.
+
+	* va-sh.h (va_start, va_arg, va_copy): Add parenteses.
+
 Sun Nov 22 21:34:02 1998  Jeffrey A Law  (law@cygnus.com)
 
 	* i386/dgux.c (struct option): Add new "description field".
