@@ -1,3 +1,8 @@
+2003-02-27   Geert Bosch <bosch@gnat.com>
+
+	* toplev.c (print_version): Add indentation for GGC heuristics and
+	output after printing version information.
+
 2003-02-27  James E Wilson  <wilson@tuliptree.org>
 
 	PR bootstrap/9255
