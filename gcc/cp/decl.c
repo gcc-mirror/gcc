@@ -3166,6 +3166,10 @@ duplicate_decls (newdecl, olddecl)
 	  /* Replace the old RTL to avoid problems with inlining.  */
 	  SET_DECL_RTL (olddecl, DECL_RTL (newdecl));
 	}
+      /* Even if the types match, prefer the new declarations type
+	 for anitipated built-ins, for exception lists, etc...  */
+      else if (DECL_ANTICIPATED (olddecl))
+	TREE_TYPE (olddecl) = TREE_TYPE (newdecl);
 
       if (DECL_THIS_STATIC (newdecl) && !DECL_THIS_STATIC (olddecl))
 	{
