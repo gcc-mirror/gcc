@@ -1225,7 +1225,7 @@ build_indirect_ref (ptr, errorstring)
 	  TREE_READONLY (ref) = TYPE_READONLY (t);
 	  TREE_SIDE_EFFECTS (ref)
 	    = TYPE_VOLATILE (t) || TREE_SIDE_EFFECTS (pointer) || flag_volatile;
-	  TREE_THIS_VOLATILE (ref) = TYPE_VOLATILE (t) || flag_volatile;
+	  TREE_THIS_VOLATILE (ref) = TYPE_VOLATILE (t);
 	  return ref;
 	}
     }
