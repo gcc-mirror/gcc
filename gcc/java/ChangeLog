@@ -1,7 +1,13 @@
+Mon May 17 19:20:24 1999  Alexandre Petit-Bianco  <apbianco@cygnus.com>
+
+	* parse.y (constructor_block_end:): New rule, tagged <node>.
+	(constructor_body:): Use `constructor_block_end' instead of
+ 	`block_end'.
+
 Mon May 17 18:01:40 1999  Alexandre Petit-Bianco  <apbianco@cygnus.com>
 
 	* parse.y (statement_nsi:): Pop `for' statement block.
-	(java_complete_lhs): Labelled blocks containing no statement are
+	(java_complete_lhs): Labeled blocks containing no statement are
  	marked as completing normally.
 
 Fri May 14 12:31:08 1999  Alexandre Petit-Bianco  <apbianco@cygnus.com>
