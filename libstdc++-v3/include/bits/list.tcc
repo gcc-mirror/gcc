@@ -66,7 +66,7 @@ namespace __gnu_norm
   template<typename _Tp, typename _Alloc>
     void
     _List_base<_Tp,_Alloc>::
-    __clear()
+    _M_clear()
     {
       typedef _List_node<_Tp>  _Node;
       _Node* __cur = static_cast<_Node*>(this->_M_node._M_next);
@@ -92,7 +92,8 @@ namespace __gnu_norm
           this->_M_node._M_next = __x._M_node._M_next;
           this->_M_node._M_prev = __x._M_node._M_prev;
           
-          this->_M_node._M_next->_M_prev = this->_M_node._M_prev->_M_next = &this->_M_node;
+	  this->_M_node._M_prev->_M_next = &this->_M_node;
+          this->_M_node._M_next->_M_prev = this->_M_node._M_prev->_M_next;
           __x._M_node._M_next = __x._M_node._M_prev = &__x._M_node;
         }
       }
@@ -101,7 +102,8 @@ namespace __gnu_norm
         __x._M_node._M_next = this->_M_node._M_next;
         __x._M_node._M_prev = this->_M_node._M_prev;
         
-        __x._M_node._M_next->_M_prev = __x._M_node._M_prev->_M_next = &__x._M_node;
+	__x._M_node._M_prev->_M_next = &__x._M_node;
+        __x._M_node._M_next->_M_prev = __x._M_node._M_prev->_M_next;
         this->_M_node._M_next = this->_M_node._M_prev = &this->_M_node;
       }
       else
@@ -109,8 +111,10 @@ namespace __gnu_norm
         std::swap(this->_M_node._M_next,__x._M_node._M_next);
         std::swap(this->_M_node._M_prev,__x._M_node._M_prev);
       
-        this->_M_node._M_next->_M_prev = this->_M_node._M_prev->_M_next = &this->_M_node;
-        __x._M_node._M_next->_M_prev = __x._M_node._M_prev->_M_next = &__x._M_node;
+	this->_M_node._M_prev->_M_next = &this->_M_node;
+        this->_M_node._M_next->_M_prev = this->_M_node._M_prev->_M_next;
+	__x._M_node._M_prev->_M_next = &__x._M_node;
+        __x._M_node._M_next->_M_prev = __x._M_node._M_prev->_M_next;
       } 
     }
  
@@ -196,11 +200,13 @@ namespace __gnu_norm
     template <typename _InputIterator>
       void
       list<_Tp,_Alloc>::
-      _M_assign_dispatch(_InputIterator __first2, _InputIterator __last2, __false_type)
+      _M_assign_dispatch(_InputIterator __first2, _InputIterator __last2, 
+			 __false_type)
       {
         iterator __first1 = begin();
         iterator __last1 = end();
-        for (; __first1 != __last1 && __first2 != __last2; ++__first1, ++__first2)
+        for (; __first1 != __last1 && __first2 != __last2; 
+	     ++__first1, ++__first2)
           *__first1 = *__first2;
         if (__first2 == __last2)
           erase(__first1, __last1);
@@ -276,10 +282,12 @@ namespace __gnu_norm
   __List_base_reverse(_List_node_base* __p)
   {
     _List_node_base* __tmp = __p;
-    do {
-      std::swap(__tmp->_M_next, __tmp->_M_prev);
-      __tmp = __tmp->_M_prev;     // Old next node is now prev.
-    } while (__tmp != __p);
+    do 
+      {
+	std::swap(__tmp->_M_next, __tmp->_M_prev);
+	__tmp = __tmp->_M_prev;     // Old next node is now prev.
+      } 
+    while (__tmp != __p);
   }
   
   template<typename _Tp, typename _Alloc>
