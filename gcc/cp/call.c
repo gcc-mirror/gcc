@@ -82,7 +82,6 @@ static struct z_candidate * add_function_candidate
 static tree implicit_conversion PROTO((tree, tree, tree, int));
 static tree standard_conversion PROTO((tree, tree, tree));
 static tree reference_binding PROTO((tree, tree, tree, int));
-static tree strip_top_quals PROTO((tree));
 static tree non_reference PROTO((tree));
 static tree build_conv PROTO((enum tree_code, tree, tree));
 static int is_subseq PROTO((tree, tree));
@@ -96,6 +95,8 @@ static int reference_related_p PROTO ((tree, tree));
 static int reference_compatible_p PROTO ((tree, tree));
 static tree convert_class_to_reference PROTO ((tree, tree, tree));
 static tree direct_reference_binding PROTO ((tree, tree));
+static int promoted_arithmetic_type_p PROTO ((tree));
+static tree conditional_conversion PROTO ((tree, tree));
 
 tree
 build_vfield_ref (datum, type)
@@ -550,8 +551,12 @@ int
 null_ptr_cst_p (t)
      tree t;
 {
+  /* [conv.ptr]
+
+     A null pointer constant is an integral constant expression
+     (_expr.const_) rvalue of integer type that evaluates to zero.  */
   if (t == null_node
-      || (integer_zerop (t) && TREE_CODE (TREE_TYPE (t)) == INTEGER_TYPE))
+      || (CP_INTEGRAL_TYPE_P (TREE_TYPE (t)) && integer_zerop (t)))
     return 1;
   return 0;
 }
@@ -595,7 +600,7 @@ non_reference (t)
   return t;
 }
 
-static tree
+tree
 strip_top_quals (t)
      tree t;
 {
@@ -655,7 +660,7 @@ standard_conversion (to, from, expr)
   else if (fromref || (expr && real_lvalue_p (expr)))
     conv = build_conv (RVALUE_CONV, from, conv);
 
-  if (from == to)
+  if (same_type_p (from, to))
     return conv;
 
   if ((tcode == POINTER_TYPE || TYPE_PTRMEMFUNC_P (to))
@@ -770,7 +775,7 @@ standard_conversion (to, from, expr)
 	ICS_STD_RANK (conv) = PROMO_RANK;
     }
   else if (IS_AGGR_TYPE (to) && IS_AGGR_TYPE (from)
-	   && DERIVED_FROM_P (to, from))
+	   && is_properly_derived_from (from, to))
     {
       if (TREE_CODE (conv) == RVALUE_CONV)
 	conv = TREE_OPERAND (conv, 0);
@@ -1069,6 +1074,11 @@ reference_binding (rto, rfrom, expr, flags)
 	return direct_reference_binding (rto, conv);
     }
 
+  /* From this point on, we conceptually need temporaries, even if we
+     elide them.  Only the cases above are "direct bindings".  */
+  if (flags & LOOKUP_NO_TEMP_BIND)
+    return NULL_TREE;
+
   /* [over.ics.rank]
      
      When a parameter of reference type is not bound directly to an
@@ -1140,6 +1150,9 @@ implicit_conversion (to, from, expr, flags)
 {
   tree conv;
   struct z_candidate *cand;
+
+  complete_type (from);
+  complete_type (to);
 
   if (TREE_CODE (to) == REFERENCE_TYPE)
     conv = reference_binding (to, from, expr, flags);
@@ -1459,6 +1472,24 @@ is_complete (t)
      tree t;
 {
   return TYPE_SIZE (complete_type (t)) != NULL_TREE;
+}
+
+/* Returns non-zero if TYPE is a promoted arithmetic type.  */
+
+static int
+promoted_arithmetic_type_p (type)
+     tree type;
+{
+  /* [over.built]
+
+     In this section, the term promoted integral type is used to refer
+     to those integral types which are preserved by integral promotion
+     (including e.g.  int and long but excluding e.g.  char).
+     Similarly, the term promoted arithmetic type refers to promoted
+     integral types plus floating types.  */
+  return ((INTEGRAL_TYPE_P (type)
+	   && same_type_p (type_promotes_to (type), type))
+	  || TREE_CODE (type) == REAL_TYPE);
 }
 
 /* Create any builtin operator overload candidates for the operator in
@@ -1800,43 +1831,41 @@ add_builtin_candidate (candidates, code, code2, fnname, type1, type2,
       break;
 
     case COND_EXPR:
-      /* Kludge around broken overloading rules whereby
-	 bool ? const char& : enum is ambiguous
-	 (between int and const char&).  */
-      flags |= LOOKUP_NO_TEMP_BIND;
+      /* [over.builtin]
 
-      /* Extension: Support ?: of enumeral type.  Hopefully this will not
-         be an extension for long.  */
-      if (TREE_CODE (type1) == ENUMERAL_TYPE && type1 == type2)
+	 For every pair of promoted arithmetic types L and R, there
+	 exist candidate operator functions of the form 
+
+	 LR operator?(bool, L, R); 
+
+	 where LR is the result of the usual arithmetic conversions
+	 between types L and R.
+
+	 For every type T, where T is a pointer or pointer-to-member
+	 type, there exist candidate operator functions of the form T
+	 operator?(bool, T, T);  */
+
+      if (promoted_arithmetic_type_p (type1)
+	  && promoted_arithmetic_type_p (type2))
+	/* That's OK.  */
 	break;
-      else if (TREE_CODE (type1) == ENUMERAL_TYPE
-	       || TREE_CODE (type2) == ENUMERAL_TYPE)
+
+      /* Otherwise, the types should be pointers.  */
+      if (!(TREE_CODE (type1) == POINTER_TYPE
+	    || TYPE_PTRMEM_P (type1)
+	    || TYPE_PTRMEMFUNC_P (type1))
+	  || !(TREE_CODE (type2) == POINTER_TYPE
+	       || TYPE_PTRMEM_P (type2)
+	       || TYPE_PTRMEMFUNC_P (type2)))
 	return candidates;
-      if (ARITHMETIC_TYPE_P (type1) && ARITHMETIC_TYPE_P (type2))
+      
+      /* We don't check that the two types are the same; the logic
+	 below will actually create two candidates; one in which both
+	 parameter types are TYPE1, and one in which both parameter
+	 types are TYPE2.  */
 	break;
-      if (TREE_CODE (type1) == TREE_CODE (type2)
-	  && (TREE_CODE (type1) == REFERENCE_TYPE
-	      || TREE_CODE (type1) == POINTER_TYPE
-	      || TYPE_PTRMEMFUNC_P (type1)
-	      || IS_AGGR_TYPE (type1)))
-	break;
-      if (TREE_CODE (type1) == REFERENCE_TYPE
-	  || TREE_CODE (type2) == REFERENCE_TYPE)
-	return candidates;
-      if (((TYPE_PTRMEMFUNC_P (type1) || TREE_CODE (type1) == POINTER_TYPE)
-	   && null_ptr_cst_p (args[1]))
-	  || IS_AGGR_TYPE (type1))
-	{
-	  type2 = type1;
-	  break;
-	}
-      if (((TYPE_PTRMEMFUNC_P (type2) || TREE_CODE (type2) == POINTER_TYPE)
-	   && null_ptr_cst_p (args[0]))
-	  || IS_AGGR_TYPE (type2))
-	{
-	  type1 = type2;
-	  break;
-	}
+
+      /* These arguments do not make for a legal overloaded operator.  */
       return candidates;
 
     default:
@@ -1845,7 +1874,7 @@ add_builtin_candidate (candidates, code, code2, fnname, type1, type2,
 
   /* If we're dealing with two pointer types, we need candidates
      for both of them.  */
-  if (type2 && type1 != type2
+  if (type2 && !same_type_p (type1, type2)
       && TREE_CODE (type1) == TREE_CODE (type2)
       && (TREE_CODE (type1) == REFERENCE_TYPE
 	  || (TREE_CODE (type1) == POINTER_TYPE
@@ -1890,7 +1919,12 @@ add_builtin_candidates (candidates, code, code2, fnname, args, flags)
      int flags;
 {
   int ref1, i;
-  tree type, argtypes[3], types[2];
+  tree type, argtypes[3];
+  /* TYPES[i] is the set of possible builtin-operator parameter types
+     we will consider for the Ith argument.  These are represented as
+     a TREE_LIST; the TREE_VALUE of each node is the potential
+     parameter type.  */
+  tree types[2];
 
   for (i = 0; i < 3; ++i)
     {
@@ -2012,6 +2046,8 @@ add_builtin_candidates (candidates, code, code2, fnname, args, flags)
 	}
     }
 
+  /* Run through the possible parameter types of both arguments,
+     creating candidates with those parameter types.  */
   for (; types[0]; types[0] = TREE_CHAIN (types[0]))
     {
       if (types[1])
@@ -2633,6 +2669,374 @@ op_error (code, code2, arg1, arg2, arg3, problem)
       else
 	cp_error ("%s for `%s%T'", problem, opname, error_type (arg1));
     }
+}
+
+/* Return the implicit conversion sequence that could be used to
+   convert E1 to E2 in [expr.cond].  */
+
+static tree
+conditional_conversion (e1, e2)
+     tree e1;
+     tree e2;
+{
+  tree t1 = non_reference (TREE_TYPE (e1));
+  tree t2 = non_reference (TREE_TYPE (e2));
+  tree conv;
+
+  /* [expr.cond]
+
+     If E2 is an lvalue: E1 can be converted to match E2 if E1 can be
+     implicitly converted (clause _conv_) to the type "reference to
+     T2", subject to the constraint that in the conversion the
+     reference must bind directly (_dcl.init.ref_) to E1.  */
+  if (real_lvalue_p (e2))
+    {
+      conv = implicit_conversion (build_reference_type (t2), 
+				  t1,
+				  e1,
+				  LOOKUP_NO_TEMP_BIND);
+      if (conv)
+	return conv;
+    }
+
+  /* [expr.cond]
+
+     If E1 and E2 have class type, and the underlying class types are
+     the same or one is a base class of the other: E1 can be converted
+     to match E2 if the class of T2 is the same type as, or a base
+     class of, the class of T1, and the cv-qualification of T2 is the
+     same cv-qualification as, or a greater cv-qualification than, the
+     cv-qualification of T1.  If the conversion is applied, E1 is
+     changed to an rvalue of type T2 that still refers to the original
+     source class object (or the appropriate subobject thereof).  */
+  if (CLASS_TYPE_P (t1) && CLASS_TYPE_P (t2)
+      && same_or_base_type_p (TYPE_MAIN_VARIANT (t2), 
+			      TYPE_MAIN_VARIANT (t1)))
+    {
+      if (at_least_as_qualified_p (t2, t1))
+	{
+	  conv = build1 (IDENTITY_CONV, t1, e1);
+	  conv = build_conv (BASE_CONV, t2, conv);
+	  return conv;
+	}
+      else
+	return NULL_TREE;
+    }
+
+  /* [expr.cond]
+
+     E1 can be converted to match E2 if E1 can be implicitly converted
+     to the type that expression E2 would have if E2 were converted to
+     an rvalue (or the type it has, if E2 is an rvalue).  */
+  return implicit_conversion (t2, t1, e1, LOOKUP_NORMAL);
+}
+
+/* Implement [expr.cond].  ARG1, ARG2, and ARG3 are the three
+   arguments to the conditional expression.  As an extension, g++
+   allows users to overload the ?: operator.  By the time this
+   function is called, any suitable candidate functions are included
+   in CANDIDATES.  */
+
+tree
+build_conditional_expr (arg1, arg2, arg3)
+     tree arg1;
+     tree arg2;
+     tree arg3;
+{
+  tree arg2_type;
+  tree arg3_type;
+  tree result;
+  tree result_type = NULL_TREE;
+  int lvalue_p = 1;
+  struct z_candidate *candidates = 0;
+  struct z_candidate *cand;
+
+  /* As a G++ extension, the second argument to the conditional can be
+     omitted.  (So that `a ? : c' is roughly equivalent to `a ? a :
+     c'.)  If second operand is omitted, make sure it is calculated
+     only once.  */
+  if (!arg2)
+    {
+      if (pedantic)
+	pedwarn ("ANSI C++ forbids omitting the middle term of a ?: expression");
+      arg1 = arg2 = save_expr (arg1);
+    }
+
+  /* If something has already gone wrong, just pass that fact up the
+     tree.  */
+  if (arg1 == error_mark_node 
+      || arg2 == error_mark_node 
+      || arg3 == error_mark_node 
+      || TREE_TYPE (arg1) == error_mark_node
+      || TREE_TYPE (arg2) == error_mark_node
+      || TREE_TYPE (arg3) == error_mark_node)
+    return error_mark_node;
+
+  /* [expr.cond]
+  
+     The first expr ession is implicitly converted to bool (clause
+     _conv_).  */
+  arg1 = cp_convert (boolean_type_node, arg1);
+
+  /* [expr.cond]
+
+     If either the second or the third operand has type (possibly
+     cv-qualified) void, then the lvalue-to-rvalue (_conv.lval_),
+     array-to-pointer (_conv.array_), and function-to-pointer
+     (_conv.func_) standard conversions are performed on the second
+     and third operands.  */
+  arg2_type = TREE_TYPE (arg2);
+  arg3_type = TREE_TYPE (arg3);
+  if (same_type_p (TYPE_MAIN_VARIANT (arg2_type), void_type_node)
+      || same_type_p (TYPE_MAIN_VARIANT (arg3_type), void_type_node))
+    {
+      int arg2_void_p;
+      int arg3_void_p;
+
+      /* Do the conversions.  We don't these for `void' type arguments
+	 since it can't have any effect and since decay_conversion
+	 does not handle that case gracefully.  */
+      if (!same_type_p (TYPE_MAIN_VARIANT (arg2_type), void_type_node))
+	arg2 = decay_conversion (arg2);
+      if (!same_type_p (TYPE_MAIN_VARIANT (arg3_type), void_type_node))
+	arg3 = decay_conversion (arg3);
+      arg2_type = TREE_TYPE (arg2);
+      arg3_type = TREE_TYPE (arg3);
+
+      arg2_void_p = same_type_p (TYPE_MAIN_VARIANT (arg2_type),
+				 void_type_node);
+      arg3_void_p = same_type_p (TYPE_MAIN_VARIANT (arg3_type),
+				 void_type_node);
+
+      /* [expr.cond]
+
+	 One of the following shall hold:
+
+	 --The second or the third operand (but not both) is a
+	   throw-expression (_except.throw_); the result is of the
+	   type of the other and is an rvalue.
+
+	 --Both the second and the third operands have type void; the
+	   result is of type void and is an rvalue.   */
+      if ((TREE_CODE (arg2) == THROW_EXPR)
+	  ^ (TREE_CODE (arg3) == THROW_EXPR))
+	result_type = ((TREE_CODE (arg2) == THROW_EXPR) 
+		       ? arg2_type : arg3_type);
+      else if (arg2_void_p && arg3_void_p)
+	result_type = void_type_node;
+      else
+	{
+	  cp_error ("`%E' has type `void' and is not a throw-expression",
+		    arg2_void_p ? arg2 : arg3);
+	  return error_mark_node;
+	}
+
+      lvalue_p = 0;
+      goto valid_operands;
+    }
+  /* [expr.cond]
+
+     Otherwise, if the second and third operand have different types,
+     and either has (possibly cv-qualified) class type, an attempt is
+     made to convert each of those operands to the type of the other.  */
+  else if (!same_type_p (arg2_type, arg3_type)
+	   && (CLASS_TYPE_P (arg2_type) || CLASS_TYPE_P (arg3_type)))
+    {
+      tree conv2 = conditional_conversion (arg2, arg3);
+      tree conv3 = conditional_conversion (arg3, arg2);
+      
+      /* [expr.cond]
+
+	 If both can be converted, or one can be converted but the
+	 conversion is ambiguous, the program is ill-formed.  If
+	 neither can be converted, the operands are left unchanged and
+	 further checking is performed as described below.  If exactly
+	 one conversion is possible, that conversion is applied to the
+	 chosen operand and the converted operand is used in place of
+	 the original operand for the remainder of this section.  */
+      if ((conv2 && !ICS_BAD_FLAG (conv2) 
+	   && conv3 && !ICS_BAD_FLAG (conv3))
+	  || (conv2 && TREE_CODE (conv2) == AMBIG_CONV)
+	  || (conv3 && TREE_CODE (conv3) == AMBIG_CONV))
+	{
+	  cp_error ("operands to ?: have different types");
+	  return error_mark_node;
+	}
+      else if (conv2 && !ICS_BAD_FLAG (conv2))
+	{
+	  arg2 = convert_like (conv2, arg2);
+	  arg2_type = TREE_TYPE (arg2);
+	}
+      else if (conv3 && !ICS_BAD_FLAG (conv3))
+	{
+	  arg3 = convert_like (conv3, arg3);
+	  arg3_type = TREE_TYPE (arg3);
+	}
+    }
+
+  /* [expr.cond]
+
+     If the second and third operands are lvalues and have the same
+     type, the result is of that type and is an lvalue.  */
+  arg2_type = non_reference (arg2_type);
+  arg3_type = non_reference (arg3_type);
+  if (real_lvalue_p (arg2) && real_lvalue_p (arg3) && 
+      same_type_p (arg2_type, arg3_type))
+    {
+      result_type = arg2_type;
+      goto valid_operands;
+    }
+
+  /* [expr.cond]
+
+     Otherwise, the result is an rvalue.  If the second and third
+     operand do not have the same type, and either has (possibly
+     cv-qualified) class type, overload resolution is used to
+     determine the conversions (if any) to be applied to the operands
+     (_over.match.oper_, _over.built_).  */
+  lvalue_p = 0;
+  if (!same_type_p (arg2_type, arg3_type)
+      && (CLASS_TYPE_P (arg2_type) || CLASS_TYPE_P (arg3_type)))
+    {
+      tree args[3];
+      tree conv;
+
+      /* Rearrange the arguments so that add_builtin_candidate only has
+	 to know about two args.  In build_builtin_candidates, the
+	 arguments are unscrambled.  */
+      args[0] = arg2;
+      args[1] = arg3;
+      args[2] = arg1;
+      candidates = add_builtin_candidates (candidates, 
+					   COND_EXPR, 
+					   NOP_EXPR,
+					   ansi_opname[COND_EXPR],
+					   args,
+					   LOOKUP_NORMAL);
+
+      /* [expr.cond]
+
+	 If the overload resolution fails, the program is
+	 ill-formed.  */
+      if (!any_viable (candidates))
+	{
+	  op_error (COND_EXPR, NOP_EXPR, arg1, arg2, arg3, "no match");
+	  print_z_candidates (candidates);
+	  return error_mark_node;
+	}
+      candidates = splice_viable (candidates);
+      cand = tourney (candidates);
+      if (!cand)
+	{
+	  op_error (COND_EXPR, NOP_EXPR, arg1, arg2, arg3, "no match");
+	  print_z_candidates (candidates);
+	  return error_mark_node;
+	}
+
+      /* [expr.cond]
+
+	 Otherwise, the conversions thus determined are applied, and
+	 the converted operands are used in place of the original
+	 operands for the remainder of this section.  */
+      conv = TREE_VEC_ELT (cand->convs, 0);
+      arg1 = convert_like (conv, arg1);
+      conv = TREE_VEC_ELT (cand->convs, 1);
+      arg2 = convert_like (conv, arg2);
+      conv = TREE_VEC_ELT (cand->convs, 2);
+      arg3 = convert_like (conv, arg3);
+    }
+
+  /* [expr.cond]
+
+     Lvalue-to-rvalue (_conv.lval_), array-to-pointer (_conv.array_),
+     and function-to-pointer (_conv.func_) standard conversions are
+     performed on the second and third operands.  */
+  arg2 = decay_conversion (arg2);
+  arg2_type = TREE_TYPE (arg2);
+  arg3 = decay_conversion (arg3);
+  arg3_type = TREE_TYPE (arg3);
+
+  /* [expr.cond]
+     
+     After those conversions, one of the following shall hold:
+
+     --The second and third operands have the same type; the result  is  of
+       that type.  */
+  if (same_type_p (arg2_type, arg3_type))
+    result_type = arg2_type;
+  /* [expr.cond]
+
+     --The second and third operands have arithmetic or enumeration
+       type; the usual arithmetic conversions are performed to bring
+       them to a common type, and the result is of that type.  */
+  else if ((ARITHMETIC_TYPE_P (arg2_type) 
+	    || TREE_CODE (arg2_type) == ENUMERAL_TYPE)
+	   && (ARITHMETIC_TYPE_P (arg3_type)
+	       || TREE_CODE (arg3_type) == ENUMERAL_TYPE))
+    {
+      /* In this case, there is always a common type.  */
+      result_type = type_after_usual_arithmetic_conversions (arg2_type, 
+							     arg3_type);
+      arg2 = ncp_convert (result_type, arg2);
+      arg3 = ncp_convert (result_type, arg3);
+    }
+  /* [expr.cond]
+
+     --The second and third operands have pointer type, or one has
+       pointer type and the other is a null pointer constant; pointer
+       conversions (_conv.ptr_) and qualification conversions
+       (_conv.qual_) are performed to bring them to their composite
+       pointer type (_expr.rel_).  The result is of the composite
+       pointer type.
+
+     --The second and third operands have pointer to member type, or
+       one has pointer to member type and the other is a null pointer
+       constant; pointer to member conversions (_conv.mem_) and
+       qualification conversions (_conv.qual_) are performed to bring
+       them to a common type, whose cv-qualification shall match the
+       cv-qualification of either the second or the third operand.
+       The result is of the common type.   */
+  else if ((null_ptr_cst_p (arg2) 
+	    && (TYPE_PTR_P (arg3_type) || TYPE_PTRMEM_P (arg3_type)
+		|| TYPE_PTRMEMFUNC_P (arg3_type)))
+	   || (null_ptr_cst_p (arg3) 
+	       && (TYPE_PTR_P (arg2_type) || TYPE_PTRMEM_P (arg2_type)
+		|| TYPE_PTRMEMFUNC_P (arg2_type)))
+	   || (TYPE_PTR_P (arg2_type) && TYPE_PTR_P (arg3_type))
+	   || (TYPE_PTRMEM_P (arg2_type) && TYPE_PTRMEM_P (arg3_type))
+	   || (TYPE_PTRMEMFUNC_P (arg2_type) 
+	       && TYPE_PTRMEMFUNC_P (arg3_type)))
+    {
+      result_type = composite_pointer_type (arg2_type, arg3_type, arg2,
+					    arg3, "conditional expression");
+      arg2 = ncp_convert (result_type, arg2);
+      arg3 = ncp_convert (result_type, arg3);
+    }
+
+  if (!result_type)
+    {
+      cp_error ("operands to ?: have different types");
+      return error_mark_node;
+    }
+
+ valid_operands:
+  result = fold (build (COND_EXPR, result_type, arg1, arg2, arg3));
+  /* Expand both sides into the same slot, hopefully the target of the
+     ?: expression.  */
+  if (TREE_CODE (arg2) == TARGET_EXPR && TREE_CODE (arg3) == TARGET_EXPR)
+    {
+      tree slot = build (VAR_DECL, result_type);
+      layout_decl (slot, 0);
+      result = build (TARGET_EXPR, result_type,
+		      slot, result, NULL_TREE, NULL_TREE);
+    }
+  
+  /* If this expression is an rvalue, but might be mistaken for an
+     lvalue, we must add a NON_LVALUE_EXPR.  */
+  if (!lvalue_p && real_lvalue_p (result))
+    result = build1 (NON_LVALUE_EXPR, result_type, result);
+
+  return result;
 }
 
 tree
@@ -4660,8 +5064,7 @@ int
 can_convert (to, from)
      tree to, from;
 {
-  tree t = implicit_conversion (to, from, NULL_TREE, LOOKUP_NORMAL);
-  return (t && ! ICS_BAD_FLAG (t));
+  return can_convert_arg (to, from, NULL_TREE);
 }
 
 int
@@ -4670,6 +5073,22 @@ can_convert_arg (to, from, arg)
 {
   tree t = implicit_conversion (to, from, arg, LOOKUP_NORMAL);
   return (t && ! ICS_BAD_FLAG (t));
+}
+
+tree
+ncp_convert (type, expr)
+     tree type;
+     tree expr;
+{
+  tree conv = implicit_conversion (type, TREE_TYPE (expr), expr,
+				   LOOKUP_NORMAL);
+  if (!conv || ICS_BAD_FLAG (conv))
+    {
+      cp_error ("could not convert `%E' to `%T'", expr, type);
+      return error_mark_node;
+    }
+
+  return convert_like (conv, expr);
 }
 
 /* Convert EXPR to the indicated reference TYPE, in a way suitable for

@@ -5,4 +5,4 @@
 // Special g++ Options:
 
 int foo();
-const int (*bar)() = foo; // ERROR - adding const - XFAIL *-*-*
+const int (*bar)() = foo; // ERROR - adding const

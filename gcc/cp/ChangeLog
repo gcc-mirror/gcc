@@ -1,3 +1,52 @@
+1999-07-26  Mark Mitchell  <mark@codesourcery.com>
+
+	* cp-tree.h (CP_INTEGRAL_TYPE_P): New macro.
+	(ARITHMETIC_TYPE_P): Adjust definition for standard conformance.
+	(strip_top_quals): Declare.
+	(ncp_convert): Likewise.
+	(type_after_usual_arithmetic_converions): Likewise.
+	(composite_pointer_type): Likewise.
+	* call.c (strip_top_quals): Don't make it static.
+	(promoted_arithmetic_type_p): New function.
+	(conditional_conversion): Likewise.
+	(null_ptr_cst_p): Allow `false' as a NULL pointer constant.
+	(standard_conversion): Use same_type_p.  Don't build BASE_CONVs
+	for converting a type to itself.
+	(reference_binding): Honor LOOKUP_NO_TEMP_BIND.
+	(implicit_conversion): Make sure the from and to types are
+	complete.
+	(add_builtin_candidate): Correct handling of ?: operator.
+	(add_builtin_candidates): Improve documentation.
+	(build_conditional_expr): New function.
+	(can_convert): Implement in terms of can_convert_arg.
+	(ncp_convert): New function.
+	* typeck.c (type_after_usual_arithmetic_conversions): New
+	function, split out from common_type.
+	(composite_pointer_type): New function, split out from
+	build_conditional_expr.
+	(common_type): Use type_after_usual_arithmetic_conversions.
+	Remove redundant attribute merging.
+	(comptypes): Tidy.  Handle COMPLEX_TYPE.
+	(build_binary_op_nodefault): Use null_ptr_cst_p.
+	(build_conditional_expr): Remove.
+	(convert_for_assignment): Use new conversion functions.
+	
+	* cp-tree.h (abstract_virtuals_error): Change declaration.
+	* typeck2.c (abstract_virtuals_error): Check to see if an error
+	ocurred, and return a boolean value accordingly.
+	(build_functional_cast): Adjust accordingly.
+	* class.c (finish_struct_1): Likewise.
+	* cvt.c (ocp_convert): Likewise.
+	* decl.c (cp_finish_decl): Likewise.
+	(grokparams): Likewise.
+	(grok_op_properties): Likewise.
+	(start_function): Likewise.
+	* init.c (build_new_1): Likewise.
+
+	* pt.c (unify): Don't get confused by pointers-to-member functions.
+
+	* search.c (build_cplus_new): Robustify.
+	
 1999-07-24  Richard Henderson  <rth@cygnus.com>
 
 	* decl.c (ptr_type_node, va_list_type_node): New.

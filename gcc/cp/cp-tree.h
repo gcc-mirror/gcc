@@ -1660,7 +1660,24 @@ extern int flag_new_for_scope;
 
 #define INTEGRAL_CODE_P(CODE) \
   (CODE == INTEGER_TYPE || CODE == ENUMERAL_TYPE || CODE == BOOLEAN_TYPE)
-#define ARITHMETIC_TYPE_P(TYPE) (INTEGRAL_TYPE_P (TYPE) || FLOAT_TYPE_P (TYPE))
+
+/* [basic.fundamental]
+
+   Types  bool, char, wchar_t, and the signed and unsigned integer types
+   are collectively called integral types.  
+
+   Note that INTEGRAL_TYPE_P, as defined in tree.h, allows enumeration
+   types as well, which is incorrect in C++.  */
+#define CP_INTEGRAL_TYPE_P(TYPE) 		\
+  (TREE_CODE ((TYPE)) == BOOLEAN_TYPE 		\
+   || TREE_CODE ((TYPE)) == INTEGER_TYPE)
+
+/* [basic.fundamental]
+
+   Integral and floating types are collectively called arithmetic
+   types.  */
+#define ARITHMETIC_TYPE_P(TYPE) \
+  (CP_INTEGRAL_TYPE_P (TYPE) || TREE_CODE (TYPE) == REAL_TYPE)
 
 /* Mark which labels are explicitly declared.
    These may be shadowed, and may be referenced from nested functions.  */
@@ -2767,6 +2784,8 @@ extern tree convert_default_arg                 PROTO((tree, tree, tree));
 extern tree convert_arg_to_ellipsis             PROTO((tree));
 extern int is_properly_derived_from             PROTO((tree, tree));
 extern tree initialize_reference                PROTO((tree, tree));
+extern tree strip_top_quals                     PROTO((tree));
+extern tree ncp_convert                         PROTO((tree, tree));
 
 /* in class.c */
 extern tree build_vbase_path			PROTO((enum tree_code, tree, tree, tree, int));
@@ -3534,12 +3553,14 @@ extern tree build_ptrmemfunc1                   PROTO((tree, tree, tree, tree, t
 extern void expand_ptrmemfunc_cst               PROTO((tree, tree *, tree *, tree *, tree *));
 extern tree delta2_from_ptrmemfunc              PROTO((tree));
 extern tree pfn_from_ptrmemfunc                 PROTO((tree));
+extern tree type_after_usual_arithmetic_conversions PROTO((tree, tree));
+extern tree composite_pointer_type              PROTO((tree, tree, tree, tree, char*));
 
 /* in typeck2.c */
 extern tree error_not_base_type			PROTO((tree, tree));
 extern tree binfo_or_else			PROTO((tree, tree));
 extern void readonly_error			PROTO((tree, const char *, int));
-extern void abstract_virtuals_error		PROTO((tree, tree));
+extern int abstract_virtuals_error		PROTO((tree, tree));
 extern void signature_error			PROTO((tree, tree));
 extern void incomplete_type_error		PROTO((tree, tree));
 extern void my_friendly_abort			PROTO((int))

@@ -11,11 +11,11 @@ public:
   void f1b() { ok += 5; }
   void f2a() { ok += 7; }	// gets bogus error XFAIL *-*-*
   void f2b() { }
-  const static void (*table[2][2])();
+  static void (*table[2][2])();
   void main();
 } a;
 
-const void (*A::table[2][2])()
+void (*A::table[2][2])()
   = { { PMF2PF(&A::f1a), PMF2PF(&A::f1b) },
       { PMF2PF(&A::f2a), PMF2PF(&A::f1b) },
   };

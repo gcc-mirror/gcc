@@ -8338,10 +8338,6 @@ unify (tparms, targs, parm, arg, strict)
       {
 	int sub_strict;
 
-	if (TREE_CODE (arg) == RECORD_TYPE && TYPE_PTRMEMFUNC_FLAG (arg))
-	  return (unify (tparms, targs, parm, 
-			 TYPE_PTRMEMFUNC_FN_TYPE (arg), strict));
-	
 	if (TREE_CODE (arg) != POINTER_TYPE)
 	  return 1;
 	
@@ -8361,14 +8357,13 @@ unify (tparms, targs, parm, arg, strict)
 	   this is probably OK.  */
 	sub_strict = strict;
 	
-	if (TREE_CODE (TREE_TYPE (arg)) != RECORD_TYPE
-	    || TYPE_PTRMEMFUNC_FLAG (TREE_TYPE (arg)))
+	if (TREE_CODE (TREE_TYPE (arg)) != RECORD_TYPE)
 	  /* The derived-to-base conversion only persists through one
 	     level of pointers.  */
 	  sub_strict &= ~UNIFY_ALLOW_DERIVED;
 
-	return unify (tparms, targs, TREE_TYPE (parm), TREE_TYPE
-		      (arg), sub_strict);
+	return unify (tparms, targs, TREE_TYPE (parm), 
+		      TREE_TYPE (arg), sub_strict);
       }
 
     case REFERENCE_TYPE:
@@ -8448,13 +8443,20 @@ unify (tparms, targs, parm, arg, strict)
 
     case RECORD_TYPE:
     case UNION_TYPE:
-      if (TYPE_PTRMEMFUNC_FLAG (parm))
-	return unify (tparms, targs, TYPE_PTRMEMFUNC_FN_TYPE (parm),
-		      arg, strict);
-
       if (TREE_CODE (arg) != TREE_CODE (parm))
 	return 1;
   
+      if (TYPE_PTRMEMFUNC_P (parm))
+	{
+	  if (!TYPE_PTRMEMFUNC_P (arg))
+	    return 1;
+
+	  return unify (tparms, targs, 
+			TYPE_PTRMEMFUNC_FN_TYPE (parm),
+			TYPE_PTRMEMFUNC_FN_TYPE (arg),
+			strict);
+	}
+
       if (CLASSTYPE_TEMPLATE_INFO (parm))
 	{
 	  tree t = NULL_TREE;
