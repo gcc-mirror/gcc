@@ -435,12 +435,13 @@ scan_out_logical_line (pfile, macro)
   const uchar *cur;
   uchar *out;
   struct fun_macro fmacro;
-  unsigned int c, paren_depth = 0, quote = 0;
+  unsigned int c, paren_depth = 0, quote;
   enum ls lex_state = ls_none;
 
   fmacro.buff = NULL;
 
  start_logical_line:
+  quote = 0;
   CUR (pfile->context) = pfile->buffer->cur;
   RLIMIT (pfile->context) = pfile->buffer->rlimit;
   pfile->out.cur = pfile->out.base;
@@ -502,7 +503,7 @@ scan_out_logical_line (pfile, macro)
 	    quote = '>';
 	  break;
 	case '>':
-	  if (pfile->state.angled_headers && c == quote)
+	  if (c == quote)
 	    {
 	      pfile->state.angled_headers = false;
 	      quote = 0;

@@ -388,10 +388,6 @@ _cpp_handle_directive (pfile, indented)
 		   "style of line directive is a GCC extension");
     }
 
-  pfile->directive = dir;
-  if (CPP_OPTION (pfile, traditional))
-    prepare_directive_trad (pfile);
-
   if (dir)
     {
       /* If we have a directive that is not an opening conditional,
@@ -441,6 +437,10 @@ _cpp_handle_directive (pfile, indented)
 	cpp_error (pfile, DL_ERROR, "invalid preprocessing directive #%s",
 		   cpp_token_as_text (pfile, dname));
     }
+
+  pfile->directive = dir;
+  if (CPP_OPTION (pfile, traditional))
+    prepare_directive_trad (pfile);
 
   if (dir)
     {
