@@ -205,7 +205,7 @@ print_node (file, prefix, node, indent)
       return;
     }
 
-  hash = ((HOST_WIDE_INT) node & ~(1 << (HOST_BITS_PER_INT - 1))) % HASH_SIZE;
+  hash = ((unsigned HOST_WIDE_INT) node) % HASH_SIZE;
 
   /* If node is in the table, just mention its address.  */
   for (b = table[hash]; b; b = b->next)
