@@ -3394,7 +3394,7 @@ extern void push_lang_context			PROTO((tree));
 extern void pop_lang_context			PROTO((void));
 extern tree instantiate_type			PROTO((tree, tree, int));
 extern void print_class_statistics		PROTO((void));
-extern unsigned HOST_WIDE_INT skip_rtti_stuff	PROTO((tree *, tree));
+extern tree skip_rtti_stuff	                PROTO((tree, tree, unsigned HOST_WIDE_INT *));
 extern void build_self_reference		PROTO((void));
 extern void warn_hidden				PROTO((tree));
 extern tree get_enclosing_class			PROTO((tree));

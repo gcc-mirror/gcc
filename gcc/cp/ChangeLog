@@ -1,5 +1,15 @@
 2000-01-01  Mark Mitchell  <mark@codesourcery.com>
 
+	* cp-tree.h (skip_rtti_stuff): Adjust prototype.
+	* class.c (skip_rtti_stuff): Reorganize parameters and return value.
+	(modify_one_vtable): Adjust.
+	(fixup_vtable_deltas1): Likewise.
+	(override_one_vtable): Likewise.
+	* search.c (get_abstract_virtuals_1): Likewise.
+	(get_pure_virtuals): Likewise.
+	(expand_upcast_fixups): Likewise.
+	* tree.c (debug_binfo): Likewise.
+	
 	* class.c (build_vtable): Don't return a value.  Don't rebuild
 	vtables for bases that have already been handled.
 	(prepare_fresh_vtable): Don't rebuild vtables for bases that have

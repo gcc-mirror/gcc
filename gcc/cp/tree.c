@@ -1165,9 +1165,7 @@ debug_binfo (elem)
   else
     fprintf (stderr, "no vtable decl yet\n");
   fprintf (stderr, "virtuals:\n");
-  virtuals = BINFO_VIRTUALS (elem);
-
-  n = skip_rtti_stuff (&virtuals, BINFO_TYPE (elem));
+  virtuals = skip_rtti_stuff (elem, BINFO_TYPE (elem), &n);
 
   while (virtuals)
     {
