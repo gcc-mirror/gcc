@@ -1398,7 +1398,8 @@ pchf_adder (void **slot, void *data)
 	return 1;
 
       d->entries[count].once_only = f->once_only;
-      d->have_once_only |= f->once_only;
+      /* |= is avoided in the next line because of an HP C compiler bug */
+      d->have_once_only = d->have_once_only | f->once_only; 
       if (f->buffer_valid)
 	  md5_buffer ((const char *)f->buffer,
 		      f->st.st_size, d->entries[count].sum);
