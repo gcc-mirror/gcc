@@ -1213,7 +1213,6 @@ verify_jvm_instructions (jcf, byte_ops, length)
 	  else
 	    {
 	      tree ret_map = LABEL_RETURN_TYPE_STATE (current_subr);
-	      tree caller = LABEL_SUBR_CONTEXT (current_subr);
 	      int size = DECL_MAX_LOCALS(current_function_decl)+stack_pointer;
 	      index = wide ? IMMEDIATE_u2 : IMMEDIATE_u1;
 	      wide = 0;

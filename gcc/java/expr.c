@@ -1072,6 +1072,8 @@ build_java_soft_divmod (op, type, op1, op2)
 	case TRUNC_MOD_EXPR:
 	  call = soft_irem_node;
 	  break;
+	default:
+	  break;
 	}
     }
   else if (type == long_type_node)
@@ -1083,6 +1085,8 @@ build_java_soft_divmod (op, type, op1, op2)
 	  break;
 	case TRUNC_MOD_EXPR:
 	  call = soft_lrem_node;
+	  break;
+	default:
 	  break;
 	}
     }
@@ -1873,9 +1877,9 @@ case_identity (t, v)
 struct rtx_def *
 java_lang_expand_expr (exp, target, tmode, modifier)
      register tree exp;
-     rtx target;
-     enum machine_mode tmode;
-     enum expand_modifier modifier;
+     rtx target ATTRIBUTE_UNUSED;
+     enum machine_mode tmode ATTRIBUTE_UNUSED;
+     enum expand_modifier modifier ATTRIBUTE_UNUSED;
 {
   tree current;
 

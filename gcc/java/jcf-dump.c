@@ -78,7 +78,7 @@ int class_access_flags = 0;
 /* Print in format similar to javap.  VERY IMCOMPLETE. */
 int flag_javap_compatible = 0;
 
-static int print_access_flags PROTO ((FILE *, uint16, char));
+static void print_access_flags PROTO ((FILE *, uint16, char));
 static void print_constant_terse PROTO ((FILE*, JCF*, int, int));
 static void print_constant PROTO ((FILE *, JCF *, int, int));
 static void print_constant_ref PROTO ((FILE *, JCF *, int));
@@ -311,7 +311,7 @@ DEFUN(print_constant_ref, (stream, jcf, index),
    The CONTEXT is one of 'c' (class flags), 'f' (field flags),
    or 'm' (method flags). */
 
-static int
+static void
 DEFUN (print_access_flags, (stream, flags, context),
        FILE *stream AND uint16 flags AND char context)
 {

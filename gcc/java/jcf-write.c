@@ -286,7 +286,7 @@ static void define_jcf_label PROTO ((struct jcf_block *,
 static struct jcf_block * get_jcf_label_here PROTO ((struct jcf_partial *));
 static void put_linenumber PROTO ((int, struct jcf_partial *));
 static void localvar_alloc PROTO ((tree, struct jcf_partial *));
-static int localvar_free PROTO ((tree, struct jcf_partial *));
+static void localvar_free PROTO ((tree, struct jcf_partial *));
 static int get_access_flags PROTO ((tree));
 static void write_chunks PROTO ((FILE *, struct chunk *));
 static int adjust_typed_op PROTO ((tree, int));
@@ -567,7 +567,7 @@ localvar_alloc (decl, state)
     }
 }
 
-static int
+static void
 localvar_free (decl, state)
      tree decl;     
      struct jcf_partial *state;
