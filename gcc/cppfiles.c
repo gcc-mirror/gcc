@@ -45,6 +45,9 @@ static long read_and_prescan		PROTO ((cpp_reader *, cpp_buffer *,
 						int, size_t));
 static struct file_name_list *actual_directory PROTO ((cpp_reader *, char *));
 
+static void initialize_input_buffer	PROTO ((cpp_reader *, int,
+						struct stat *));
+
 #if 0
 static void hack_vms_include_specification PROTO ((char *));
 #endif
@@ -648,10 +651,12 @@ finclude (pfile, fd, ihash)
 	}
     }
   else if (S_ISFIFO (st.st_mode) || S_ISSOCK (st.st_mode)
+	   /* Permit any kind of character device: the sensible ones are
+	      ttys and /dev/null, but weeding out the others is too hard.  */
+	   || S_ISCHR (st.st_mode)
 	   /* Some 4.x (x<4) derivatives have a bug that makes fstat() of a
 	      socket or pipe return a stat struct with most fields zeroed.  */
-	   || (st.st_mode == 0 && st.st_nlink == 0 && st.st_size == 0)
-	   || (S_ISCHR (st.st_mode) && isatty (fd)))
+	   || (st.st_mode == 0 && st.st_nlink == 0 && st.st_size == 0))
     {
       /* Cannot get its file size before reading.  4k is a decent
          first guess. */
@@ -662,6 +667,9 @@ finclude (pfile, fd, ihash)
       cpp_error (pfile, "`%s' is not a file, pipe, or tty", ihash->name);
       goto fail;
     }
+
+  if (pfile->input_buffer == NULL)
+    initialize_input_buffer (pfile, fd, &st);
 
   /* Read the file, converting end-of-line characters and trigraphs
      (if enabled). */
@@ -758,8 +766,7 @@ actual_directory (pfile, fname)
   return x;
 }
 
-/* Almost but not quite the same as adjust_position in cpplib.c.
-   Used only by read_and_prescan. */
+/* Determine the current line and column.  Used only by read_and_prescan. */
 static void
 find_position (start, limit, linep, colp)
      U_CHAR *start;
@@ -804,9 +811,14 @@ find_position (start, limit, linep, colp)
    If your file has more than one kind of end-of-line marker, you
    will get messed-up line numbering.  */
 
-#ifndef PIPE_BUF
-#define PIPE_BUF 4096
-#endif
+/* Table of characters that can't be handled in the inner loop.
+   Keep these contiguous to optimize the performance of the code generated
+   for the switch that uses them.  */
+#define SPECCASE_EMPTY     0
+#define SPECCASE_NUL       1
+#define SPECCASE_CR        2
+#define SPECCASE_BACKSLASH 3
+#define SPECCASE_QUESTION  4
 
 static long
 read_and_prescan (pfile, fp, desc, len)
@@ -818,45 +830,24 @@ read_and_prescan (pfile, fp, desc, len)
   U_CHAR *buf = (U_CHAR *) xmalloc (len);
   U_CHAR *ip, *op, *line_base;
   U_CHAR *ibase;
+  U_CHAR *speccase = pfile->input_speccase;
   unsigned long line;
   unsigned int deferred_newlines;
   int count;
   size_t offset;
-  /* PIPE_BUF bytes of buffer proper, 2 to detect running off the end
-     without address arithmetic all the time, and 2 for pushback in
-     the case there's a potential trigraph or end-of-line digraph at
-     the end of a block. */
-  U_CHAR intermed[PIPE_BUF + 2 + 2];
-
-  /* Table of characters that can't be handled in the inner loop.
-     Keep these contiguous to optimize the performance of the code generated
-     for the switch that uses them.  */
-#define SPECCASE_EMPTY     0
-#define SPECCASE_NUL       1
-#define SPECCASE_CR        2
-#define SPECCASE_BACKSLASH 3
-#define SPECCASE_QUESTION  4
-  U_CHAR speccase[256];
 
   offset = 0;
   op = buf;
   line_base = buf;
   line = 1;
-  ibase = intermed + 2;
+  ibase = pfile->input_buffer + 2;
   deferred_newlines = 0;
-
-  memset (speccase, SPECCASE_EMPTY, sizeof (speccase));
-  speccase['\0'] = SPECCASE_NUL;
-  speccase['\r'] = SPECCASE_CR;
-  speccase['\\'] = SPECCASE_BACKSLASH;
-  if (CPP_OPTIONS (pfile)->trigraphs || CPP_OPTIONS (pfile)->warn_trigraphs)
-    speccase['?'] = SPECCASE_QUESTION;
 
   for (;;)
     {
     read_next:
 
-      count = read (desc, intermed + 2, PIPE_BUF);
+      count = read (desc, pfile->input_buffer + 2, pfile->input_buffer_len);
       if (count < 0)
 	goto error;
       else if (count == 0)
@@ -864,7 +855,7 @@ read_and_prescan (pfile, fp, desc, len)
 
       offset += count;
       ip = ibase;
-      ibase = intermed + 2;
+      ibase = pfile->input_buffer + 2;
       ibase[count] = ibase[count+1] = '\0';
 
       if (offset > len)
@@ -924,8 +915,7 @@ read_and_prescan (pfile, fp, desc, len)
 		ip++;
 	      else if (*ip == '\0')
 		{
-		  --ibase;
-		  intermed[1] = '\r';
+		  *--ibase = '\r';
 		  goto read_next;
 		}
 	      else if (ip[-2] == '\n')
@@ -941,8 +931,7 @@ read_and_prescan (pfile, fp, desc, len)
 		 and come back next pass. */
 	      if (*ip == '\0')
 		{
-		  --ibase;
-		  intermed[1] = '\\';
+		  *--ibase = '\\';
 		  goto read_next;
 		}
 	      else if (*ip == '\n')
@@ -965,9 +954,8 @@ read_and_prescan (pfile, fp, desc, len)
 		  if (*ip == '\n') ip++;
 		  else if (*ip == '\0')
 		    {
-		      ibase -= 2;
-		      intermed[0] = '\\';
-		      intermed[1] = '\r';
+		      *--ibase = '\r';
+		      *--ibase = '\\';
 		      goto read_next;
 		    }
 		  else if (*ip == '\r' || *ip == '\t' || *ip == ' ')
@@ -991,8 +979,7 @@ read_and_prescan (pfile, fp, desc, len)
 		d = ip[0];
 		if (d == '\0')
 		  {
-		    --ibase;
-		    intermed[1] = '?';
+		    *--ibase = '?';
 		    goto read_next;
 		  }
 		if (d != '?')
@@ -1003,8 +990,8 @@ read_and_prescan (pfile, fp, desc, len)
 		d = ip[1];
 		if (d == '\0')
 		  {
-		    ibase -= 2;
-		    intermed[0] = intermed[1] = '?';
+		    *--ibase = '?';
+		    *--ibase = '?';
 		    goto read_next;
 		  }
 		if (!trigraph_table[d])
@@ -1047,7 +1034,7 @@ read_and_prescan (pfile, fp, desc, len)
      This may be any of:  ?? ? \ \r \n \\r \\n.
      \r must become \n, \\r or \\n must become \r.
      We know we have space already. */
-  if (ibase == intermed)
+  if (ibase == pfile->input_buffer)
     {
       if (*ibase == '?')
 	{
@@ -1057,7 +1044,7 @@ read_and_prescan (pfile, fp, desc, len)
       else
 	*op++ = '\r';
     }
-  else if (ibase == intermed + 1)
+  else if (ibase == pfile->input_buffer + 1)
     {
       if (*ibase == '\r')
 	*op++ = '\n';
@@ -1093,6 +1080,67 @@ read_and_prescan (pfile, fp, desc, len)
   cpp_error_from_errno (pfile, fp->fname);
   free (buf);
   return -1;
+}
+
+/* Initialize the `input_buffer' and `input_speccase' tables.
+   These are only used by read_and_prescan, but they're large and
+   somewhat expensive to set up, so we want them allocated once for
+   the duration of the cpp run.  */
+
+static void
+initialize_input_buffer (pfile, fd, st)
+     cpp_reader *pfile;
+     int fd;
+     struct stat *st;
+{
+  long pipe_buf;
+  U_CHAR *tmp;
+
+  /* Table of characters that cannot be handled by the
+     read_and_prescan inner loop.  The number of non-EMPTY entries
+     should be as small as humanly possible.  */
+
+  tmp = xmalloc (1 << CHAR_BIT);
+  memset (tmp, SPECCASE_EMPTY, 1 << CHAR_BIT);
+  tmp['\0'] = SPECCASE_NUL;
+  tmp['\r'] = SPECCASE_CR;
+  tmp['\\'] = SPECCASE_BACKSLASH;
+  if (CPP_OPTIONS (pfile)->trigraphs || CPP_OPTIONS (pfile)->warn_trigraphs)
+    tmp['?'] = SPECCASE_QUESTION;
+
+  pfile->input_speccase = tmp;
+
+  /* Determine the appropriate size for the input buffer.  Normal C
+     source files are smaller than eight K.  If we are reading a pipe,
+     we want to make sure the input buffer is bigger than the kernel's
+     pipe buffer.  */
+  pipe_buf = -1;
+
+  if (! S_ISREG (st->st_mode))
+    {
+#ifdef _PC_PIPE_BUF
+      pipe_buf = fpathconf (fd, _PC_PIPE_BUF);
+#endif
+      if (pipe_buf == -1)
+	{
+#ifdef PIPE_BUF
+	  pipe_buf = PIPE_BUF;
+#else
+	  pipe_buf = 8192;
+#endif
+	}
+    }
+
+  if (pipe_buf < 8192)
+    pipe_buf = 8192;
+  /* PIPE_BUF bytes of buffer proper, 2 to detect running off the end
+     without address arithmetic all the time, and 2 for pushback in
+     the case there's a potential trigraph or end-of-line digraph at
+     the end of a block. */
+
+  tmp = xmalloc (pipe_buf + 2 + 2);
+  pfile->input_buffer = tmp;
+  pfile->input_buffer_len = pipe_buf;
 }
 
 /* Add output to `deps_buffer' for the -M switch.
