@@ -1305,7 +1305,7 @@ CUMULATIVE_ARGS;
       if (! TARGET_SMALL)						\
 	{								\
           int i;							\
-      	  X = gen_rtx_LO_SUM (GET_MODE (X),				\
+      	  (X) = gen_rtx_LO_SUM (GET_MODE (X),				\
 			      gen_rtx_HIGH (GET_MODE (X), X), X);	\
           i = push_reload (XEXP (X, 0), NULL_RTX,			\
 			   &XEXP (X, 0), NULL,				\
@@ -1315,6 +1315,12 @@ CUMULATIVE_ARGS;
 	     normally not be used so force it.  */			\
           rld[i].reg_rtx = gen_rtx_REG (Pmode, DP_REGNO); 		\
           rld[i].nocombine = 1; 					\
+        }								\
+      else								\
+        {								\
+          /* make_memloc in reload will substitute invalid memory       \
+             references.  We need to fix them up.  */                   \
+          (X) = gen_rtx_LO_SUM (Pmode, gen_rtx_REG (Pmode, DP_REGNO), (X)); \
         }								\
       goto WIN;								\
    }									\
