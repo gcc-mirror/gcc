@@ -583,7 +583,7 @@ uninstall-am: uninstall-info-am
 	tags uninstall uninstall-am uninstall-info-am
 
 
-all-local: stamp_wchar stamp_thread testsuite_files
+all-local: stamp_wchar stamp_thread
 
 # Enable wchar_t tests if capable.
 @GLIBCXX_TEST_WCHAR_T_TRUE@stamp_wchar:

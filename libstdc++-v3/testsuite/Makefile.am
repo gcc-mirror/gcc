@@ -58,7 +58,7 @@ endif
 abi_check_SOURCES = abi_check.cc
 abi_check_DEPENDENCIES = libv3test.a
 
-all-local: stamp_wchar stamp_thread testsuite_files
+all-local: stamp_wchar stamp_thread
 
 # Enable wchar_t tests if capable.
 if GLIBCXX_TEST_WCHAR_T
