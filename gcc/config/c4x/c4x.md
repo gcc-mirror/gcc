@@ -4859,10 +4859,9 @@
  "ldfu\\t%1,%0"
   [(set_attr "type" "unary")])
 
-; The predicates could be tightened to disallow constants
 (define_insn "*movhf_noclobber"
  [(set (match_operand:HF 0 "src_operand" "=h,m")
-       (match_operand:HF 1 "src_operand" "HQT>,h"))]
+       (match_operand:HF 1 "src_operand" "Hm,h"))]
  "reg_operand (operands[0], HFmode) ^ reg_operand (operands[1], HFmode)"
  "#"
  [(set_attr "type" "multi,multi")])
@@ -5392,7 +5391,7 @@
 ; votes for FP_REGS so we use dr as the constraints.
 (define_insn "*movhi_noclobber"
   [(set (match_operand:HI 0 "src_operand" "=dr,m")
-        (match_operand:HI 1 "src_operand" "drIQT>,r"))]
+        (match_operand:HI 1 "src_operand" "drIm,r"))]
   "reg_operand (operands[0], HImode)
    || reg_operand (operands[1], HImode)"
   "#"

@@ -1,3 +1,8 @@
+Wed Feb 10 15:46:10 1999  Michael Hayes  <m.hayes@elec.canterbury.ac.nz>
+
+	* config/c4x/c4x.md (*movhf_noclobber, *movhi_noclobber): Use
+	m constraint instead of QT.
+
 1999-02-09  Brendan Kehoe  <brendan@cygnus.com>
 
 	* cpplib.c (special_symbol): Move IP to be declared in function
