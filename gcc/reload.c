@@ -1918,7 +1918,7 @@ find_reloads (insn, replace, ind_levels, live_known, reload_reg_p)
 	      {
 		if (this_insn_is_asm)
 		  warning_for_asm (this_insn,
-				   "`%' constraint used with last operand");
+				   "`%%' constraint used with last operand");
 		else
 		  abort ();
 	      }
