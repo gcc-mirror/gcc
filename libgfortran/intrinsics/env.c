@@ -24,6 +24,7 @@ Boston, MA 02111-1307, USA.  */
 #include <sys/types.h>
 #include <stdlib.h>
 #include <string.h>
+#include <alloca.h>
 #include "libgfortran.h"
 
 
@@ -37,13 +38,7 @@ prefix(getenv) (char * name,
 		gfc_charlen_type name_len, 
 		gfc_charlen_type value_len)
 {
-
-  /* Make a null-terminated copy of the name string so that c library
-     functions work correctly.  This is a C99 VLA, which ought to be
-     faster than malloc and free.  */
-
-  char name_nt[name_len+1];
-
+  char *name_nt;
   char *res = NULL;
   int res_len;
 
@@ -55,8 +50,14 @@ prefix(getenv) (char * name,
   else
     memset (value, ' ', value_len); /* Blank the string.  */
 
+  /* Trim trailing spaces from name.  */
+  while (name_len > 0 && name[name_len - 1] == ' ')
+    name_len--;
+
+  /* Make a null terminated copy of the string.  */
+  name_nt = alloca (name_len + 1);
   memcpy (name_nt, name, name_len);
-  memset (&name_nt[name_len], '\0', 1); 
+  name_nt[name_len] = '\0'; 
 
   res = getenv(name_nt);
 
@@ -74,9 +75,7 @@ prefix(getenv) (char * name,
 
 
 /* GET_ENVIRONMENT_VARIABLE (name, [value, length, status, trim_name])
-   is a F2003 intrinsic for getting an environment variable.  Note that as
-   Un*x doesn't consider trailing blanks in environment variables to be
-   significant, the trim_name argument has no meaning.  */
+   is a F2003 intrinsic for getting an environment variable.  */
 
 /* Status codes specifyed by the standard. */
 #define GFC_SUCCESS 0
@@ -103,7 +102,8 @@ prefix(get_environment_variable_i4)
    gfc_charlen_type value_len)
 {
   int stat = GFC_SUCCESS, res_len = 0;
-  char name_nt[name_len+1], *res;
+  char *name_nt;
+  char *res;
 
   if (name == NULL)
     runtime_error ("Name is required for get_environment_variable.");
@@ -124,8 +124,16 @@ prefix(get_environment_variable_i4)
 	memset (value, ' ', value_len); /* Blank the string.  */
     }
 
+  if ((!trim_name) || *trim_name)
+    {
+      /* Trim trailing spaces from name.  */
+      while (name_len > 0 && name[name_len - 1] == ' ')
+	name_len--;
+    }
+  /* Make a null terminated copy of the name.  */
+  name_nt = alloca (name_len + 1);
   memcpy (name_nt, name, name_len);
-  memset (&name_nt[name_len], '\0', 1); 
+  name_nt[name_len] = '\0'; 
   
   res = getenv(name_nt);
 
@@ -169,6 +177,9 @@ prefix(get_environment_variable_i8)
 {
   GFC_INTEGER_4 length4, status4;
   GFC_LOGICAL_4 trim_name4;
+
+  if (trim_name)
+    trim_name4 = *trim_name;
 
   prefix (get_environment_variable_i4) (name, value, &length4, &status4, 
 					&trim_name4, name_len, value_len);

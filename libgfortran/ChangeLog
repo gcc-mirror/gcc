@@ -1,3 +1,9 @@
+2004-09-15  Steven G. Kargl  <kargls@comcast.net>
+	Paul Brook  <paul@codesourcery.com>
+
+	* intrinsics/env.c (getenv, get_environmental_variable): Remove
+	trailing white space.  Uase alloca.  Honour trim_name.
+
 2004-09-13  Bud Davis  <bdavis9659@comcast.net>
 
 	PR fortran/17090
