@@ -1,3 +1,10 @@
+2002-11-15  Tom Tromey  <tromey@redhat.com>
+
+	For PR libgcj/8593:
+	* java/util/zip/GZIPInputStream.java (read): Check file size.
+	Look in inflater for remaining input bytes.
+	(read4): Added buf and offset arguments.
+
 2002-11-12  Eric Blake  <ebb9@email.byu.edu>
 
 	* java/applet/AppletContext.java: Fix typo and remove redundant
