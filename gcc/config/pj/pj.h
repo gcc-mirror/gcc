@@ -923,6 +923,11 @@ struct pj_args
 
 #define LOAD_EXTEND_OP(MODE) SIGN_EXTEND
 
+/* We assume that the store-condition-codes instructions store 0 for false
+   and some other value for true.  This is the value stored for true.  */
+
+#define STORE_FLAG_VALUE 1
+
 /* Define if loading short immediate values into registers sign extends.  */
 
 #define SHORT_IMMEDIATES_SIGN_EXTEND
@@ -1144,14 +1149,21 @@ do { fputs (current_function_varargs || current_function_stdarg         \
 
 /* The prefix to add to user-visible assembler symbols.  */
 
-//#define USER_LABEL_PREFIX ""
+#define USER_LABEL_PREFIX ""
 
 /* The prefix to add to an internally generated label.  */
 
-//#define LOCAL_LABEL_PREFIX ""
+#define LOCAL_LABEL_PREFIX ""
+
+/* Make an internal label into a string.  */
+#define ASM_GENERATE_INTERNAL_LABEL(STRING, PREFIX, NUM) \
+  sprintf ((STRING), "*%s%s%ld", LOCAL_LABEL_PREFIX, (PREFIX), (long)(NUM))
+
+/* Output an internal label definition.  */
+#define ASM_OUTPUT_INTERNAL_LABEL(FILE,PREFIX,NUM) \
+  asm_fprintf ((FILE), "%L%s%d:\n", (PREFIX), (NUM))
 
 /* Construct a private name.  */
-
 #define ASM_FORMAT_PRIVATE_NAME(OUTVAR,NAME,NUMBER)     \
   ((OUTVAR) = (char *) alloca (strlen (NAME) + 10),     \
    sprintf ((OUTVAR), "%s.%d", (NAME), (NUMBER)))
@@ -1198,6 +1210,12 @@ do { char dstr[30];                                     \
 
 #define ASM_OUTPUT_BYTE(STREAM, VALUE)          \
   fprintf ((STREAM), "\t.byte\t%d\n", (VALUE))  
+
+/* This is how to output an assembler line
+   that says to advance the location counter by SIZE bytes.  */
+
+#define ASM_OUTPUT_SKIP(FILE,SIZE) \
+  fprintf ((FILE), "\t.space %d\n", (SIZE))
 
 /* This says how to output an assembler line
    to define a global common symbol.  */
@@ -1322,8 +1340,8 @@ do {                                                                          \
 
 /* Define the codes that are matched by predicates in pj.c.  */
 #define PREDICATE_CODES 						 \
-  {"pj_dest_operand",                 {SUBREG, REG, MEM,}},              \
-  {"pj_signed_comparison_operator",   {EQ, NE, LE, LT, GE, GT}},         \
+  {"pj_dest_operand",                 {SUBREG, REG, MEM}},               \
+  {"pj_signed_comparison_operator",   {EQ, NE, LE, LT, GE,GT}},          \
   {"pj_unsigned_comparison_operator", {LEU, LTU, GEU, GTU}},             \
   {"pj_source_operand",               {CONST_INT, CONST_DOUBLE, CONST,   \
                                        SYMBOL_REF, LABEL_REF, SUBREG,    \
