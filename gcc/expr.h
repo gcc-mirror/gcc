@@ -464,6 +464,9 @@ extern rtx sign_expand_binop ();
 /* Expand a unary arithmetic operation given optab rtx operand.  */
 extern rtx expand_unop ();
 
+/* Expand the complex absolute value operation.  */
+extern rtx expand_complex_abs ();
+
 /* Arguments MODE, RTX: return an rtx for the negation of that value.
    May emit insns.  */
 extern rtx negate_rtx ();
