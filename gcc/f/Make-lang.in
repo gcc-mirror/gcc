@@ -422,7 +422,7 @@ f77.maintainer-clean:
 # The main makefile has already created stage?/f.
 
 G77STAGESTUFF = f/*$(objext) f/fini f/stamp-str f/str-*.h f/str-*.j \
-  lang-f77 g77.o g77spec.o g77version.o
+  lang-f77 g77.c g77.o g77spec.o g77version.o
 
 f77.stage1: stage1-start
 	-if [ -f lang-f77 ]; then \
