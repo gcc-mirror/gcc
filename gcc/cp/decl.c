@@ -2698,9 +2698,12 @@ duplicate_decls (newdecl, olddecl)
 
   if (TREE_CODE (newdecl) == TEMPLATE_DECL)
     {
-      TREE_TYPE (olddecl) = TREE_TYPE (newdecl);
-      DECL_TEMPLATE_RESULT (olddecl) = DECL_TEMPLATE_RESULT (newdecl);
-      DECL_TEMPLATE_PARMS (olddecl) = DECL_TEMPLATE_PARMS (newdecl);
+      if (DECL_INITIAL (DECL_TEMPLATE_RESULT (olddecl)) == NULL_TREE)
+	{
+	  TREE_TYPE (olddecl) = TREE_TYPE (newdecl);
+	  DECL_TEMPLATE_RESULT (olddecl) = DECL_TEMPLATE_RESULT (newdecl);
+	  DECL_TEMPLATE_PARMS (olddecl) = DECL_TEMPLATE_PARMS (newdecl);
+	}
       return 1;
     }
 
