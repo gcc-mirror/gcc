@@ -229,6 +229,14 @@ lvalue_p (ref)
     (lvalue_p_1 (ref, /*class rvalue ok*/ 1, /*cast*/ 1) != clk_none);
 }
 
+int
+non_cast_lvalue_p (ref)
+     tree ref;
+{
+  return 
+    (lvalue_p_1 (ref, /*class rvalue ok*/ 1, /*cast*/ 0) != clk_none);
+}
+
 /* Return nonzero if REF is an lvalue valid for this language;
    otherwise, print an error message and return zero.  */
 
