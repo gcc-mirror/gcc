@@ -2223,6 +2223,27 @@ fill_simple_delay_slots (non_jumps_p)
 	 fill_eager_delay_slots anyways, it was just deleted.  */
 
       if (slots_filled != slots_to_fill
+	  /* If this instruction could throw an exception which is
+	     caught in the same function, then it's not safe to fill
+	     the delay slot with an instruction from beyond this
+	     point.  For example, consider:
+
+               int i = 2;
+
+	       try { 
+                 f();
+	         i = 3;
+               } catch (...) {}
+	       
+               return i;
+
+	     Even though `i' is a local variable, we must be sure not
+	     to put `i = 3' in the delay slot if `f' might throw an
+	     exception.
+
+	     Presumably, we should also check to see if we could get
+	     back to this function via `setjmp'.  */
+	  && !can_throw_internal (insn)
 	  && (GET_CODE (insn) != JUMP_INSN
 	      || ((condjump_p (insn) || condjump_in_parallel_p (insn))
 		  && ! simplejump_p (insn)
