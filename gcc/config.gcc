@@ -264,7 +264,7 @@ case $machine in
 	# On the Hurd, the setup is just about the same on
 	# each different CPU.  The specific machines that we
 	# support are matched above and just set $cpu_type.
-	xm_file="xm-gnu.h ${xm_file}"
+	xm_defines=POSIX
 	tm_file="${cpu_type}/gnu.h"
 	extra_parts="crtbegin.o crtend.o crtbeginS.o crtendS.o"
 	# GNU always uses ELF.
@@ -288,8 +288,7 @@ case $machine in
 *-*-openbsd*)
 	tm_file=${cpu_type}/openbsd.h
 	tmake_file="t-libc-ok t-openbsd"
-	# avoid surprises, always provide an xm-openbsd file 
-	xm_file=${cpu_type}/xm-openbsd.h
+	xm_defines=POSIX
 	# don't depend on processor x-fragments as well
 	xmake_file=none
 	if test x$enable_threads = xyes; then
@@ -371,6 +370,7 @@ alpha-*-interix)
 	#local_prefix='$$INTERIX_ROOT'/usr/contrib
 	;;
 alpha*-*-linux*ecoff*)
+	xm_defines=POSIX
 	tm_file="${tm_file} alpha/linux-ecoff.h alpha/linux.h"
 	target_cpu_default="MASK_GAS"
 	tmake_file="alpha/t-alpha alpha/t-ieee"
@@ -401,6 +401,7 @@ alpha*-*-linux*)
 	fi
 	;;
 alpha*-*-freebsd*)
+	xm_defines=POSIX
 	tm_file="${tm_file} freebsd.h alpha/elf.h alpha/freebsd.h"
 	target_cpu_default="MASK_GAS"
 	tmake_file="t-freebsd alpha/t-crtbe alpha/t-alpha alpha/t-ieee"
@@ -416,6 +417,7 @@ alpha*-*-freebsd*)
 	esac
 	;;
 alpha*-*-netbsd*)
+	xm_defines=POSIX
 	tm_file="${tm_file} alpha/elf.h alpha/netbsd.h alpha/netbsd-elf.h"
 	target_cpu_default="MASK_GAS"
 	tmake_file="alpha/t-crtbe alpha/t-alpha alpha/t-ieee"
@@ -431,6 +433,7 @@ alpha*-*-openbsd*)
 	;;
 	
 alpha*-dec-osf*)
+	xm_defines=POSIX
 	if test x$stabs = xyes
 	then
 		tm_file="${tm_file} dbx.h"
@@ -469,6 +472,7 @@ alpha*-dec-osf*)
 	esac
 	;;
 alpha*-*-vxworks*)
+	xm_defines=POSIX
 	tm_file="${tm_file} dbx.h alpha/vxworks.h"
 	tmake_file="alpha/t-alpha alpha/t-ieee"
 	if [ x$gas != xyes ]
@@ -479,6 +483,7 @@ alpha*-*-vxworks*)
 	thread_file='vxworks'
 	;;
 alpha*-dec-vms*)
+	xm_defines=POSIX
 	tm_file=alpha/vms.h
 	xm_file="${xm_file} alpha/xm-vms.h"
 	tmake_file="alpha/t-alpha alpha/t-vms alpha/t-ieee"
@@ -1417,6 +1422,7 @@ i386-*-vsta)			# Intel 80386's running VSTa kernel
 	xmake_file=i386/x-vsta
 	;;
 i[34567]86-*-win32)
+	xm_defines=POSIX
 	xm_file="${xm_file} i386/xm-cygwin.h"
 	float_format=i386
 	tmake_file=i386/t-cygwin
@@ -1429,6 +1435,7 @@ i[34567]86-*-win32)
 	exeext=.exe
 	;;
 i[34567]86-*-pe | i[34567]86-*-cygwin*)
+	xm_defines=POSIX
 	xm_file="${xm_file} i386/xm-cygwin.h"
 	float_format=i386
 	tmake_file=i386/t-cygwin
@@ -2092,7 +2099,6 @@ m88k-*-luna*)
 m88k-*-openbsd*)
 	tmake_file="${tmake_file} m88k/t-luna-gas"
 	tm_file="m88k/aout-dbx.h aoutos.h m88k/m88k.h openbsd.h ${tm_file}"
-	xm_file='m88k/xm-m88k.h xm-openbsd.h'
 	;;
 m88k-*-sysv3*)
 	xm_defines=USG
@@ -2749,7 +2755,7 @@ powerpc-*-rtems*)
 	;;
 powerpc-*-linux*libc1)
 	tm_file="${tm_file} svr4.h rs6000/sysv4.h rs6000/linux.h"
-	xm_defines=USG
+	xm_defines='USG POSIX'
 	xm_file=rs6000/xm-sysv4.h
 	out_file=rs6000/rs6000.c
 	tmake_file="rs6000/t-ppcos t-linux t-linux-gnulibc1 rs6000/t-ppccomm"
@@ -3284,7 +3290,6 @@ vax-*-netbsd*)
 vax-*-openbsd*)
 	tmake_file="${tmake_file} vax/t-openbsd"
 	tm_file="vax/vax.h vax/openbsd1.h openbsd.h ${tm_file}"
-	xm_file="xm-openbsd.h vax/xm-vax.h"
 	float_format=vax
 	use_collect2=yes
 	;;

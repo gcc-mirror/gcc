@@ -1,3 +1,21 @@
+2001-03-08  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* config/ns32k/xm-pc532-min.h, config/we32k/xm-we32k.h: Delete
+	references to the MAXPATHLEN macro.
+
+	* config/alpha/xm-alpha.h, config/arm/xm-arm.h,
+	config/i386/xm-cygwin.h, config/xm-linux.h: Delete references to
+	the POSIX macro.
+
+	* config/i386/xm-gnu.h, config/xm-gnu.h,
+	config/alpha/xm-openbsd.h, config/i386/xm-openbsd.h,
+	config/m68k/xm-openbsd.h, config/mips/xm-openbsd.h,
+	config/sparc/xm-openbsd.h, config/xm-openbsd.h: Delete empty
+	and/or unused files.
+
+	* config.gcc: Define POSIX in xm_defines as appropriate in lieu of
+	doing so in various xm-*.h files.
+
 Thu Mar  8 06:32:50 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* config/i386/i386.md (clrstrsi): Call ix86_set_move_mem_attrs.

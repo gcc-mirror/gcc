@@ -29,7 +29,3 @@ Boston, MA 02111-1307, USA.  */
 #ifndef __GNUC__
 #define ONLY_INT_FIELDS
 #endif
-
-/* OSF/1 is POSIX.1 compliant.  */
-
-#define POSIX

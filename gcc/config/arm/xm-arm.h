@@ -30,9 +30,3 @@ Boston, MA 02111-1307, USA.  */
 #define HOST_FLOAT_FORMAT IEEE_FLOAT_FORMAT
 
 #define HOST_FLOAT_WORDS_BIG_ENDIAN 1
-
-/* If we have defined POSIX, but are compiling in the BSD environment, then
-   we need to define getcwd in terms of getwd.  */
-#if defined (POSIX) && defined (_BSD_C)
-#define HAVE_GETWD 1
-#endif
