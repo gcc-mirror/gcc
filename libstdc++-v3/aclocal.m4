@@ -655,6 +655,7 @@ AC_DEFUN(GLIBCPP_CHECK_MATH_SUPPORT, [
   GLIBCPP_CHECK_MATH_DECL_AND_LINKAGE_3(sincos)
   GLIBCPP_CHECK_MATH_DECL_AND_LINKAGE_1(fpclass)
   GLIBCPP_CHECK_MATH_DECL_AND_LINKAGE_1(qfpclass)
+  GLIBCPP_CHECK_MATH_DECL_AND_LINKAGE_2(hypot)
 
   dnl Check to see if basic C math functions have float versions.
   GLIBCPP_CHECK_MATH_DECLS_AND_LINKAGES_1(float trig,
@@ -667,9 +668,11 @@ AC_DEFUN(GLIBCPP_CHECK_MATH_SUPPORT, [
                                           ceilf floorf)
   GLIBCPP_CHECK_MATH_DECL_AND_LINKAGE_1(isnanf)
   GLIBCPP_CHECK_MATH_DECL_AND_LINKAGE_1(isinff)
+  GLIBCPP_CHECK_MATH_DECL_AND_LINKAGE_2(atan2f)
   GLIBCPP_CHECK_MATH_DECL_AND_LINKAGE_1(fabsf)
   GLIBCPP_CHECK_MATH_DECL_AND_LINKAGE_2(fmodf)
   GLIBCPP_CHECK_MATH_DECL_AND_LINKAGE_2(frexpf)
+  GLIBCPP_CHECK_MATH_DECL_AND_LINKAGE_2(hypotf)
   GLIBCPP_CHECK_MATH_DECL_AND_LINKAGE_2(ldexpf)
   GLIBCPP_CHECK_MATH_DECL_AND_LINKAGE_1(logf)
   GLIBCPP_CHECK_MATH_DECL_AND_LINKAGE_1(log10f)
@@ -696,6 +699,7 @@ AC_DEFUN(GLIBCPP_CHECK_MATH_SUPPORT, [
   GLIBCPP_CHECK_MATH_DECL_AND_LINKAGE_1(fabsl)
   GLIBCPP_CHECK_MATH_DECL_AND_LINKAGE_2(fmodl)
   GLIBCPP_CHECK_MATH_DECL_AND_LINKAGE_2(frexpl)
+  GLIBCPP_CHECK_MATH_DECL_AND_LINKAGE_2(hypotl)
   GLIBCPP_CHECK_MATH_DECL_AND_LINKAGE_2(ldexpl)
   GLIBCPP_CHECK_MATH_DECL_AND_LINKAGE_1(logl)
   GLIBCPP_CHECK_MATH_DECL_AND_LINKAGE_1(log10l)
@@ -740,23 +744,22 @@ dnl Check to see if there is native support for complex
 dnl
 dnl Don't compile bits in math/* if native support exits.
 dnl
-dnl Define USE_COMPLEX_LONG_DOUBLE etc if "atan2l/copysignl" is found.
+dnl Define USE_COMPLEX_LONG_DOUBLE etc if "copysignl" is found.
 dnl
 dnl GLIBCPP_CHECK_COMPLEX_MATH_SUPPORT
 AC_DEFUN(GLIBCPP_CHECK_COMPLEX_MATH_SUPPORT, [
   dnl Check for complex versions of math functions of platform.
   AC_CHECK_LIB(m, main)
-  AC_REPLACE_MATHFUNCS(nan hypot hypotf copysignf)
+  AC_REPLACE_MATHFUNCS(nan copysignf)
 
   dnl Compile the long double complex functions only if the function 
   dnl provides the non-complex long double functions that are needed.
-  dnl Currently this includes copysignl and atan2l, which should be
+  dnl Currently this includes copysignl, which should be
   dnl cached from the GLIBCPP_CHECK_MATH_SUPPORT macro, above.
   USE_COMPLEX_LONG_DOUBLE=no
-  if test x$ac_cv_func_atan2l = x"yes" &&
-     test x$ac_cv_func_copysignl = x"yes"; then
+  if test x$ac_cv_func_copysignl = x"yes"; then
     USE_COMPLEX_LONG_DOUBLE=yes
-    AC_REPLACE_MATHFUNCS(hypotl signbitl)
+    AC_REPLACE_MATHFUNCS(signbitl)
   fi
 
   AC_SUBST(USE_COMPLEX_LONG_DOUBLE)

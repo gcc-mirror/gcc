@@ -1,3 +1,19 @@
+2001-07-25  Gabriel Dos Reis  <gdr@merlin.codesourcery.com>
+
+	* acinclude.m4: CHECK_MATH_DECL_AND_LINKAGE for hypot, hypotf,
+	hypotl, atan2f, atan2l.  Remove from REPLACE_MATHFUNCS list.
+	* aclocal.m4: Regenerate.
+	* config.h.in: Likewise.
+	* configure: Likewise.
+	* libmath/Makefile.am (EXTRA_LONG_DOUBLE_yes): Remove hypotl.c
+	(EXTRA_DIST): Remove hypot.c hypotf.c.
+	* libmath/Makefile.am: Regenerate.
+	* libmath/hypotf.c: Remove.
+	* libmath/hypot.c: Likewise.
+	* libmath/hypotl.c: Likewise.
+	* libmath/stubs.c: The macros seen here are HAVE_xxx, not
+	_GLIBCPP_HAVE_xxx.  Add long double versions.
+
 2001-07-23  David Edelsohn  <edelsohn@gnu.org>
 
 	* include/bits/limits_generic.h (int): Set digits and digits10

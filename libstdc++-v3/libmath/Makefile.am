@@ -27,12 +27,9 @@ mkinstalldirs = $(SHELL) $(toplevel_srcdir)/mkinstalldirs
 
 noinst_LTLIBRARIES = libmath.la
 
-EXTRA_LONG_DOUBLE_yes = \
-	hypotl.c signbitl.c
+EXTRA_LONG_DOUBLE_yes = signbitl.c
 
-EXTRA_DIST = \
-	hypot.c hypotf.c \
-	$(EXTRA_LONG_DOUBLE_yes) 
+EXTRA_DIST = $(EXTRA_LONG_DOUBLE_yes) 
 
 libmath_la_LIBADD = \
 	@LIBMATHOBJS@ \

@@ -87,6 +87,9 @@
 /* Define if you have the _asinl function.  */
 #undef HAVE__ASINL
 
+/* Define if you have the _atan2f function.  */
+#undef HAVE__ATAN2F
+
 /* Define if you have the _atan2l function.  */
 #undef HAVE__ATAN2L
 
@@ -158,6 +161,15 @@
 
 /* Define if you have the _frexpl function.  */
 #undef HAVE__FREXPL
+
+/* Define if you have the _hypot function.  */
+#undef HAVE__HYPOT
+
+/* Define if you have the _hypotf function.  */
+#undef HAVE__HYPOTF
+
+/* Define if you have the _hypotl function.  */
+#undef HAVE__HYPOTL
 
 /* Define if you have the _isinf function.  */
 #undef HAVE__ISINF
@@ -260,6 +272,9 @@
 
 /* Define if you have the asinl function.  */
 #undef HAVE_ASINL
+
+/* Define if you have the atan2f function.  */
+#undef HAVE_ATAN2F
 
 /* Define if you have the atan2l function.  */
 #undef HAVE_ATAN2L
