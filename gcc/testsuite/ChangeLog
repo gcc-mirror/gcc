@@ -1,5 +1,10 @@
-2004-02-02 Eric Christopher  <echristo@redhat.com>
-           Zack Weinberg  <zack@codesourcery.com>
+2004-02-02  Andrew Pinski  <pinskia@physics.uc.edu>
+
+	PR c++/10858
+	* g++.dg/template/sizeof7.C: New test.
+
+2004-02-02  Eric Christopher  <echristo@redhat.com>
+            Zack Weinberg  <zack@codesourcery.com>
 
         * gcc.c-torture/execute/wchar_t-1.c: Add -finput-charset.
 
