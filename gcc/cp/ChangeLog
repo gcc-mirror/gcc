@@ -1,5 +1,7 @@
 2004-08-18  Mark Mitchell  <mark@codesourcery.com>
 
+	* pt.c (dependent_template_p): Fix typo in commment.
+
 	PR c++/17068
 	* pt.c (dependent_template_p): Treat IDENTIFIER_NODEs as
 	dependent.
