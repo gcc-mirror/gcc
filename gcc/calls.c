@@ -176,6 +176,8 @@ static int calls_function_1	PARAMS ((tree, int));
 #define ECF_SP_DEPRESSED	1024
 /* Nonzero if this call is known to always return.  */
 #define ECF_ALWAYS_RETURN	2048
+/* Create libcall block around the call.  */
+#define ECF_LIBCALL_BLOCK	4096
 
 static void emit_call_1		PARAMS ((rtx, tree, tree, HOST_WIDE_INT,
 					 HOST_WIDE_INT, HOST_WIDE_INT, rtx,
@@ -808,14 +810,14 @@ flags_from_decl_or_type (exp)
 
       /* The function exp may have the `pure' attribute.  */
       if (DECL_P (exp) && DECL_IS_PURE (exp))
-	flags |= ECF_PURE;
+	flags |= ECF_PURE | ECF_LIBCALL_BLOCK;
 
       if (TREE_NOTHROW (exp))
 	flags |= ECF_NOTHROW;
     }
 
   if (TREE_READONLY (exp) && ! TREE_THIS_VOLATILE (exp))
-    flags |= ECF_CONST;
+    flags |= ECF_CONST | ECF_LIBCALL_BLOCK;
 
   if (TREE_THIS_VOLATILE (exp))
     flags |= ECF_NORETURN;
@@ -825,7 +827,7 @@ flags_from_decl_or_type (exp)
   if (TREE_CODE (type) == FUNCTION_TYPE && TYPE_RETURNS_STACK_DEPRESSED (type))
     {
       flags |= ECF_SP_DEPRESSED;
-      flags &= ~(ECF_PURE | ECF_CONST);
+      flags &= ~(ECF_PURE | ECF_CONST | ECF_LIBCALL_BLOCK);
     }
 
   return flags;
@@ -1264,7 +1266,7 @@ initialize_argument_information (num_actuals, args, args_size, n_named_args,
 		copy = assign_temp (type, 0, 1, 0);
 
 	      store_expr (args[i].tree_value, copy, 0);
-	      *ecf_flags &= ~(ECF_CONST | ECF_PURE);
+	      *ecf_flags &= ~(ECF_CONST | ECF_PURE | ECF_LIBCALL_BLOCK);
 
 	      args[i].tree_value = build1 (ADDR_EXPR,
 					   build_pointer_type (type),
@@ -1323,7 +1325,7 @@ initialize_argument_information (num_actuals, args, args_size, n_named_args,
       /* If this is an addressable type, we cannot pre-evaluate it.  Thus,
 	 we cannot consider this function call constant.  */
       if (TREE_ADDRESSABLE (type))
-	*ecf_flags &= ~(ECF_CONST | ECF_PURE);
+	*ecf_flags &= ~ECF_LIBCALL_BLOCK;
 
       /* Compute the stack-size of this argument.  */
       if (args[i].reg == 0 || args[i].partial != 0
@@ -1494,7 +1496,7 @@ precompute_arguments (flags, num_actuals, args)
      worse code)  */
 
   for (i = 0; i < num_actuals; i++)
-    if ((flags & (ECF_CONST | ECF_PURE))
+    if ((flags & ECF_LIBCALL_BLOCK)
 	|| calls_function (args[i].tree_value, !ACCUMULATE_OUTGOING_ARGS))
       {
 	enum machine_mode mode;
@@ -2240,7 +2242,7 @@ expand_call (exp, target, ignore)
   if (aggregate_value_p (exp))
     {
       /* This call returns a big structure.  */
-      flags &= ~(ECF_CONST | ECF_PURE);
+      flags &= ~(ECF_CONST | ECF_PURE | ECF_LIBCALL_BLOCK);
 
 #ifdef PCC_STATIC_STRUCT_RETURN
       {
@@ -2387,7 +2389,7 @@ expand_call (exp, target, ignore)
 	 do this eventually, but it is too complicated to keep track of
 	 what insns go in the cse'able block and which don't.  */
 
-      flags &= ~(ECF_CONST | ECF_PURE);
+      flags &= ~ECF_LIBCALL_BLOCK;
       must_preallocate = 1;
     }
 
@@ -2670,7 +2672,7 @@ expand_call (exp, target, ignore)
 
       /* When calling a const function, we must pop the stack args right away,
 	 so that the pop is deleted or moved with the call.  */
-      if (flags & (ECF_CONST | ECF_PURE))
+      if (pass && (flags & ECF_LIBCALL_BLOCK))
 	NO_DEFER_POP;
 
       /* Push the temporary stack slot level so that we can free any
@@ -2687,7 +2689,7 @@ expand_call (exp, target, ignore)
 
       /* Now we are about to start emitting insns that can be deleted
 	 if a libcall is deleted.  */
-      if (flags & (ECF_CONST | ECF_PURE | ECF_MALLOC))
+      if (pass && (flags & (ECF_LIBCALL_BLOCK | ECF_MALLOC)))
 	start_sequence ();
 
       adjusted_args_size = args_size;
@@ -2903,7 +2905,7 @@ expand_call (exp, target, ignore)
 	  /* When the stack adjustment is pending, we get better code
 	     by combining the adjustments.  */
 	  if (pending_stack_adjust
-	      && ! (flags & (ECF_CONST | ECF_PURE))
+	      && ! (flags & ECF_LIBCALL_BLOCK)
 	      && ! inhibit_defer_pop)
 	    {
 	      pending_stack_adjust
@@ -2934,6 +2936,9 @@ expand_call (exp, target, ignore)
 	  else
 	    valreg = hard_function_value (TREE_TYPE (exp), fndecl, (pass == 0));
 	}
+
+      if (valreg == 0 || GET_CODE (valreg) == PARALLEL)
+        flags &= ~ECF_LIBCALL_BLOCK;
 
       /* Precompute all register parameters.  It isn't safe to compute anything
 	 once we have started filling any specific hard regs.  */
@@ -3064,9 +3069,7 @@ expand_call (exp, target, ignore)
 	 Test valreg so we don't crash; may safely ignore `const'
 	 if return type is void.  Disable for PARALLEL return values, because
 	 we have no way to move such values into a pseudo register.  */
-      if (pass
-	  && (flags & (ECF_CONST | ECF_PURE))
-	  && valreg != 0 && GET_CODE (valreg) != PARALLEL)
+      if (pass && (flags & ECF_LIBCALL_BLOCK))
 	{
 	  rtx note = 0;
 	  rtx temp = gen_reg_rtx (GET_MODE (valreg));
@@ -3095,15 +3098,7 @@ expand_call (exp, target, ignore)
 
 	  valreg = temp;
 	}
-      else if (flags & (ECF_CONST | ECF_PURE))
-	{
-	  /* Otherwise, just write out the sequence without a note.  */
-	  rtx insns = get_insns ();
-
-	  end_sequence ();
-	  emit_insns (insns);
-	}
-      else if (flags & ECF_MALLOC)
+      else if (pass && (flags & ECF_MALLOC))
 	{
 	  rtx temp = gen_reg_rtx (GET_MODE (valreg));
 	  rtx last, insns;
@@ -3502,15 +3497,18 @@ emit_library_call_value_1 (retval, orgfun, value, fn_type, outmode, nargs, p)
   switch (fn_type)
     {
     case LCT_NORMAL:
-    case LCT_CONST:
-    case LCT_PURE:
-      /* Nothing to do here.  */
       break;
-    case LCT_CONST_MAKE_BLOCK:
+    case LCT_CONST:
       flags |= ECF_CONST;
       break;
-    case LCT_PURE_MAKE_BLOCK:
+    case LCT_PURE:
       flags |= ECF_PURE;
+      break;
+    case LCT_CONST_MAKE_BLOCK:
+      flags |= ECF_CONST | ECF_LIBCALL_BLOCK;
+      break;
+    case LCT_PURE_MAKE_BLOCK:
+      flags |= ECF_PURE | ECF_LIBCALL_BLOCK;
       break;
     case LCT_NORETURN:
       flags |= ECF_NORETURN;
@@ -3553,7 +3551,7 @@ emit_library_call_value_1 (retval, orgfun, value, fn_type, outmode, nargs, p)
 #endif
 
       /* This call returns a big structure.  */
-      flags &= ~(ECF_CONST | ECF_PURE);
+      flags &= ~(ECF_CONST | ECF_PURE | ECF_LIBCALL_BLOCK);
     }
 
   /* ??? Unfinished: must pass the memory address as an argument.  */
@@ -3581,7 +3579,7 @@ emit_library_call_value_1 (retval, orgfun, value, fn_type, outmode, nargs, p)
 
   /* Now we are about to start emitting insns that can be deleted
      if a libcall is deleted.  */
-  if (flags & (ECF_CONST | ECF_PURE))
+  if (flags & ECF_LIBCALL_BLOCK)
     start_sequence ();
 
   push_temp_slots ();
@@ -4023,6 +4021,8 @@ emit_library_call_value_1 (retval, orgfun, value, fn_type, outmode, nargs, p)
   NO_DEFER_POP;
   valreg = (mem_value == 0 && outmode != VOIDmode
 	    ? hard_libcall_value (outmode) : NULL_RTX);
+  if (valreg == 0 || GET_CODE (valreg) == PARALLEL)
+    flags &= ~ECF_LIBCALL_BLOCK;
 
   /* Stack must be properly aligned now.  */
   if (stack_pointer_delta & (PREFERRED_STACK_BOUNDARY / BITS_PER_UNIT - 1))
@@ -4076,8 +4076,7 @@ emit_library_call_value_1 (retval, orgfun, value, fn_type, outmode, nargs, p)
      Test valreg so we don't crash; may safely ignore `const'
      if return type is void.  Disable for PARALLEL return values, because
      we have no way to move such values into a pseudo register.  */
-  if ((flags & (ECF_CONST | ECF_PURE))
-      && valreg != 0 && GET_CODE (valreg) != PARALLEL)
+  if (flags & ECF_LIBCALL_BLOCK)
     {
       rtx note = 0;
       rtx temp = gen_reg_rtx (GET_MODE (valreg));
@@ -4102,14 +4101,6 @@ emit_library_call_value_1 (retval, orgfun, value, fn_type, outmode, nargs, p)
       emit_libcall_block (insns, temp, valreg, note);
 
       valreg = temp;
-    }
-  else if (flags & (ECF_CONST | ECF_PURE))
-    {
-      /* Otherwise, just write out the sequence without a note.  */
-      rtx insns = get_insns ();
-
-      end_sequence ();
-      emit_insns (insns);
     }
   pop_temp_slots ();
 

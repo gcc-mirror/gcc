@@ -1,3 +1,11 @@
+Sun Dec 23 00:49:37 CET 2001  Jan Hubicka  <jh@suse.cz>
+
+	* calls.c (ECF_LIBCALL_BLOCK): New constant.
+	(emit_call_1, initialize_argument_information,
+	precompute_arguments, expand_call,
+	emit_library_call_value_1): Use ECF_LIBCALL_BLOCK
+	instead of ECF_PURE | ECF_CONST. Honnor LCT_CONST/LCT_PURE.
+
 2001-12-22  Joseph S. Myers  <jsm28@cam.ac.uk>
 
 	* config.gcc (extra_headers): Move settings to math-68881.h and
