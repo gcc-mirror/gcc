@@ -1,3 +1,10 @@
+2003-12-18  Kriang Lerdsuwanakij  <lerdsuwa@users.sourceforge.net>
+
+	PR c++/13262
+	* pt.c (instantiate_decl): Wrap push_nested_class and
+	pop_nested_class around cp_finish_decl call for static member
+	variable.
+
 2003-12-18  Giovanni Bajo  <giovannibajo@gcc.gnu.org>
 
 	PR c++/9154

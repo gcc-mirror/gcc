@@ -1,3 +1,8 @@
+2003-12-18  Kriang Lerdsuwanakij  <lerdsuwa@users.sourceforge.net>
+
+	PR c++/13262
+	* g++.dg/template/access13.C: New test.
+
 2003-12-18  Ulrich Weigand  <uweigand@de.ibm.com>
 
 	* gcc.dg/20031216-1.c: New test.

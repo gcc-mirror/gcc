@@ -11115,10 +11115,20 @@ instantiate_decl (tree d, int defer_ok)
 	  /* Mark D as instantiated so that recursive calls to
 	     instantiate_decl do not try to instantiate it again.  */
 	  DECL_TEMPLATE_INSTANTIATED (d) = 1;
+	  /* This is done in analogous to `start_decl'.  It is
+	     required for correct access checking.  */
+	  push_nested_class (DECL_CONTEXT (d));
 	  cp_finish_decl (d, 
 			  (!DECL_INITIALIZED_IN_CLASS_P (d) 
 			   ? DECL_INITIAL (d) : NULL_TREE),
 			  NULL_TREE, 0);
+	  /* Normally, pop_nested_class is called by cp_finish_decl
+	     above.  But when instantiate_decl is triggered during
+	     instantiate_class_template processing, its DECL_CONTEXT
+	     is still not completed yet, and pop_nested_class isn't
+	     called.  */
+	  if (!COMPLETE_TYPE_P (DECL_CONTEXT (d)))
+	    pop_nested_class ();
 	}
     }
   else if (TREE_CODE (d) == FUNCTION_DECL)
