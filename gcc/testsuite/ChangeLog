@@ -1,3 +1,7 @@
+2000-12-13  Neil Booth  <neil@daikokuya.demon.co.uk>
+
+	* gcc.dg/cpp/trad-direct.c: Update.
+
 2000-12-11  Neil Booth  <neilb@earthling.net>
 
 	* gcc.dg/cpp/defined_trad.c

@@ -3,9 +3,9 @@
 /* { dg-do preprocess } */
 /* { dg-options -traditional } */
 
-/* There is no #error directive.  */
+/* There is a #error directive.  */
 
-#error bad	/* { dg-bogus "bad" } */
+#error bad	/* { dg-error "bad" } */
 
 /* Directives with their #s indented are not recognized.  */
  #if 0	/* { dg-bogus "unterminated" } */
