@@ -1,5 +1,5 @@
 /* Definitions of target machine for GNU compiler.  MIPS version.
-   Copyright (C) 1989, 90-97, 1998 Free Software Foundation, Inc.
+   Copyright (C) 1989, 90-98, 1999 Free Software Foundation, Inc.
    Contributed by A. Lichnewsky (lich@inria.inria.fr).
    Changed by Michael Meissner	(meissner@osf.org).
    64 bit r4000 support by Ian Lance Taylor (ian@cygnus.com) and
@@ -1443,8 +1443,13 @@ do {							\
 /* Define if loading in MODE, an integral mode narrower than BITS_PER_WORD
    will either zero-extend or sign-extend.  The value of this macro should
    be the code that says which one of the two operations is implicitly
-   done, NIL if none.  */
-#define LOAD_EXTEND_OP(MODE) ZERO_EXTEND
+   done, NIL if none. 
+
+   When in 64 bit mode, mips_move_1word will sign extend SImode and CCmode
+   moves.  All other referces are zero extended.  */
+#define LOAD_EXTEND_OP(MODE) \
+  (TARGET_64BIT && ((MODE) == SImode || (MODE) == CCmode) \
+   ? SIGN_EXTEND : ZERO_EXTEND)
 
 /* Define this macro if it is advisable to hold scalars in registers
    in a wider mode than that declared by the program.  In such cases, 
