@@ -62,7 +62,6 @@ static void pedantic_whitespace	PARAMS ((cpp_reader *, U_CHAR *,
 
 #ifdef NEW_LEXER
 
-static void expand_comment_space PARAMS ((cpp_toklist *));
 void init_trigraph_map PARAMS ((void));
 static unsigned char* trigraph_replace PARAMS ((cpp_reader *, unsigned char *,
 						unsigned char *));
@@ -76,7 +75,8 @@ static void parse_number PARAMS ((cpp_reader *, cpp_toklist *, cpp_name *));
 static void parse_string2 PARAMS ((cpp_reader *, cpp_toklist *, cpp_name *,
 				  unsigned int, int));
 static int trigraph_ok PARAMS ((cpp_reader *, const unsigned char *));
-static void save_comment PARAMS ((cpp_toklist *, cpp_token *, unsigned char *,
+static void save_comment PARAMS ((cpp_toklist *, cpp_token *,
+				  const unsigned char *,
 				  unsigned int, unsigned int));
 void _cpp_lex_line PARAMS ((cpp_reader *, cpp_toklist *));
 
@@ -120,8 +120,8 @@ typedef unsigned int (* speller) PARAMS ((unsigned char *, cpp_toklist *,
 
 /* An upper bound on the number of bytes needed to spell a token,
    including preceding whitespace.  */
-#define TOKEN_LEN(token) (5 + (token_spellings[token->type].type > \
-		               SPELL_NONE ? token->val.name.len: 0))
+#define TOKEN_LEN(token) (5 + (token_spellings[(token)->type].type > \
+		               SPELL_NONE ? (token)->val.name.len: 0))
 
 #endif
 
@@ -2866,9 +2866,10 @@ save_comment (list, token, from, len, type)
 
 /*
  *  The tokenizer's main loop.  Returns a token list, representing a
- *  logical line in the input file, terminated with a CPP_VSPACE
- *  token.  On EOF, a token list containing the single CPP_EOF token
- *  is returned.
+ *  logical line in the input file.  On EOF after some tokens have
+ *  been processed, we return immediately.  Then in next call, or if
+ *  EOF occurred at the beginning of a logical line, a single CPP_EOF
+ *  token is placed in the list.
  *
  *  Implementation relies almost entirely on lookback, rather than
  *  looking forwards.  This means that tokenization requires just
@@ -2891,6 +2892,7 @@ _cpp_lex_line (pfile, list)
   unsigned char flags = 0;
   unsigned int first_token = list->tokens_used;
 
+  list->line = CPP_BUF_LINE (buffer);
   pfile->col_adjust = 0;
  expanded:
   token_limit = list->tokens + list->tokens_cap;
@@ -3122,8 +3124,12 @@ _cpp_lex_line (pfile, list)
 	      buffer->cur = cur;
 	      cpp_warning (pfile, "backslash and newline separated by space");
 	    }
-	  PUSH_TOKEN (CPP_VSPACE);
-	  goto out;
+	  /* Skip vertical space until we have at least one token to
+             return.  */
+	  if (cur_token != &list->tokens[first_token])
+	    goto out;
+	  list->line = CPP_BUF_LINE (buffer);
+	  break;
 
 	case '-':
 	  if (IMMED_TOKEN () && PREV_TOKEN_TYPE == CPP_MINUS)
@@ -3327,35 +3333,19 @@ _cpp_lex_line (pfile, list)
       goto expanded;
     }
 
-  cur_token->type = CPP_EOF;
   cur_token->flags = flags;
-
-  if (cur_token != &list->tokens[first_token])
+  if (cur_token == &list->tokens[first_token])
     {
-      /* Next call back will get just a CPP_EOF.  */
-      buffer->cur = cur;
-      cpp_warning (pfile, "no newline at end of file");
-      PUSH_TOKEN (CPP_VSPACE);
+      /* FIXME: move this warning to callers who care.  */
+      if (cur > buffer->buf && !IS_NEWLINE (cur[-1]))
+	cpp_warning (pfile, "no newline at end of file");
+      cur_token++->type = CPP_EOF;
     }
 
  out:
+  list->tokens[first_token].flags |= BOL;
   buffer->cur = cur;
-
   list->tokens_used = cur_token - list->tokens;
-
-  /* FIXME:  take this check out and put it in the caller.
-     list->directive == 0 indicates an unknown directive (but null
-     directive is OK).  This is the first time we can be sure the
-     directive is invalid, and thus warn about it, because it might
-     have been split by escaped newlines.  Also, don't complain about
-     invalid directives in assembly source, we don't know where the
-     comments are, and # may introduce assembler pseudo-ops.  */
-
-  if (IS_DIRECTIVE (list) && list->dirno == -1
-      && list->tokens[1].type != CPP_VSPACE
-      && !CPP_OPTION (pfile, lang_asm))
-    cpp_error_with_line (pfile, list->line, list->tokens[1].col,
-			 "invalid preprocessing directive");
 }
 
 /* Write the spelling of a token TOKEN to BUFFER.  The buffer must
@@ -3460,15 +3450,13 @@ _cpp_output_list (pfile, list)
      cpp_reader *pfile;
      cpp_toklist *list;
 {
-  cpp_token *token;
+  unsigned int i;
 
-  token = &list->tokens[0];
-  do
+  for (i = 0; i < list->tokens_used; i++)
     {
-      CPP_RESERVE (pfile, TOKEN_LEN (token));
-      pfile->limit = spell_token (pfile, token, pfile->limit, 1);
+      CPP_RESERVE (pfile, TOKEN_LEN (&list->tokens[i]));
+      pfile->limit = spell_token (pfile, &list->tokens[i], pfile->limit, 1);
     }
-  while (token++->type != CPP_VSPACE);
 }
 
 #endif

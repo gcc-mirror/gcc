@@ -121,11 +121,11 @@ typedef struct cpp_name cpp_name;
   I(CPP_COMMENT,	0)	/* Only if output comments.  */ \
   N(CPP_MACRO_ARG,      0)	/* Macro argument.  */          \
   N(CPP_SUBLIST,        0)	/* Sublist.  */                 \
-  T(CPP_VSPACE,		"\n")	/* End of line.  */		\
   N(CPP_EOF,		0)	/* End of file.  */		\
   N(CPP_HEADER_NAME,	0)	/* <stdio.h> in #include */	\
 \
   /* Obsolete - will be removed when no code uses them still.  */	\
+  T(CPP_VSPACE,		"\n")	/* End of line.  */		\
   N(CPP_HSPACE,		0)	/* Horizontal white space.  */	\
   N(CPP_DIRECTIVE,	0)	/* #define and the like */	\
   N(CPP_MACRO,		0)	/* Like a NAME, but expanded.  */
@@ -168,8 +168,9 @@ struct cpp_name
 
 /* Flags for the cpp_token structure.  */
 #define PREV_WHITESPACE     1	/* If whitespace before this token.  */
-#define DIGRAPH             2	/* If it was a digraph.  */
-#define UNSIGNED_INT        4   /* If int preprocessing token unsigned.  */
+#define BOL		    2   /* Beginning of line.  */
+#define DIGRAPH             4	/* If it was a digraph.  */
+#define UNSIGNED_INT        8   /* If int preprocessing token unsigned.  */
 
 /* A preprocessing token.  This has been carefully packed and should
    occupy 16 bytes on both 32- and 64-bit hosts.  */

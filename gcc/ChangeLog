@@ -1,5 +1,13 @@
 2000-05-28  Neil Booth  <NeilB@earthling.net>
 
+	* cpplex.c (_cpp_lex_line): Merge vertical space.  Flag
+	first token of a line BOL.  Update EOF code for this.
+	Remove illegal directive check - it appears in the (not
+	yet committed) caller.
+	* cpplib.h (BOL): New flag.
+
+2000-05-28  Neil Booth  <NeilB@earthling.net>
+
         * cpplex.c (_cpp_init_toklist): No comment space to initialise.
 	(_cpp_free_toklist): No comment space to free.
 	(expand_comment_space): Remove.
