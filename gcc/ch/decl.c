@@ -85,7 +85,7 @@ Boston, MA 02111-1307, USA.  */
    This must be done before we can Layout a.
    The reason this is an issue is that we do *not* have a lookup
    (or hash) table per scope (or module).  Instead we have a single
-   global table we we keep adding and removing bindings from.
+   global table we keep adding and removing bindings from.
    (This is both for speed, and because of gcc history.)
 
    Note that a SEIZE generates a declaration in the current scope,

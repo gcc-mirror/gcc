@@ -1,3 +1,7 @@
+2000-08-07  Kazu Hirata  <kazu@hxi.com>
+
+	* decl.c: Fix a comment typo.
+
 2000-08-04  Zack Weinberg  <zack@wolery.cumb.org>
 
 	* Make-lang.in (cc1chill): Depend on $(BACKEND), not stamp-objlist.
