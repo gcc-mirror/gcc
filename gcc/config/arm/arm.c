@@ -1626,34 +1626,37 @@ arm_gen_constant (code, mode, val, target, source, subtargets, generate)
 
 	    if (generate)
 	      {
-		rtx new_src;
+		rtx new_src, temp1_rtx;
+
+		if (code == SET || code == MINUS)
+		  {
+		    new_src = (subtargets ? gen_reg_rtx (mode) : target);
+		    if (can_invert)
+		      temp1 = ~temp1;
+		  }
+		else
+		  {
+		    if (remainder || !subtargets)
+		      new_src = target;
+		    else
+		      new_src = gen_reg_rtx (mode);
+		    if (can_invert)
+		      temp1 = ~temp1;
+		    else if (can_negate)
+		      temp1 = -temp1;
+		  }
+
+		temp1 = trunc_int_for_mode (temp1, mode);
+		temp1_rtx = GEN_INT (temp1);
 
 		if (code == SET)
-		  emit_insn (gen_rtx_SET (VOIDmode,
-					  new_src = (subtargets
-						     ? gen_reg_rtx (mode)
-						     : target),
-					  GEN_INT (can_invert
-						   ? ~temp1 : temp1)));
+		  ;
 		else if (code == MINUS)
-		  emit_insn (gen_rtx_SET (VOIDmode,
-					  new_src = (subtargets
-						     ? gen_reg_rtx (mode)
-						     : target),
-					  gen_rtx (code, mode, GEN_INT (temp1),
-						   source)));
+		  temp1_rtx = gen_rtx_MINUS (mode, temp1_rtx, source);
 		else
-		  emit_insn (gen_rtx_SET (VOIDmode,
-					  new_src = (remainder
-						     ? (subtargets
-							? gen_reg_rtx (mode)
-							: target)
-						     : target),
-					  gen_rtx (code, mode, source,
-						   GEN_INT (can_invert ? ~temp1
-							    : (can_negate
-							       ? -temp1
-							       : temp1)))));
+		  temp1_rtx = gen_rtx_fmt_ee (code, mode, source, temp1_rtx);
+
+		emit_insn (gen_rtx_SET (VOIDmode, new_src, temp1_rtx));
 		source = new_src;
 	      }
 
