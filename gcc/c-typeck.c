@@ -3547,13 +3547,15 @@ build_conditional_expr (ifexp, op1, op2)
 	{
 	  if (pedantic && TREE_CODE (TREE_TYPE (type2)) == FUNCTION_TYPE)
 	    pedwarn ("ISO C forbids conditional expr between `void *' and function pointer");
-	  result_type = qualify_type (type1, type2);
+	  result_type = build_pointer_type (qualify_type (TREE_TYPE (type1),
+							  TREE_TYPE (type2)));
 	}
       else if (VOID_TYPE_P (TREE_TYPE (type2)))
 	{
 	  if (pedantic && TREE_CODE (TREE_TYPE (type1)) == FUNCTION_TYPE)
 	    pedwarn ("ISO C forbids conditional expr between `void *' and function pointer");
-	  result_type = qualify_type (type2, type1);
+	  result_type = build_pointer_type (qualify_type (TREE_TYPE (type2),
+							  TREE_TYPE (type1)));
 	}
       else
 	{
@@ -3568,10 +3570,6 @@ build_conditional_expr (ifexp, op1, op2)
       else
 	{
 	  op2 = null_pointer_node;
-#if 0  /* The spec seems to say this is permitted.  */
-	  if (pedantic && TREE_CODE (type1) == FUNCTION_TYPE)
-	    pedwarn ("ANSI C forbids conditional expr between 0 and function pointer");
-#endif
 	}
       result_type = type1;
     }
@@ -3582,10 +3580,6 @@ build_conditional_expr (ifexp, op1, op2)
       else
 	{
 	  op1 = null_pointer_node;
-#if 0  /* The spec seems to say this is permitted.  */
-	  if (pedantic && TREE_CODE (type2) == FUNCTION_TYPE)
-	    pedwarn ("ANSI C forbids conditional expr between 0 and function pointer");
-#endif
 	}
       result_type = type2;
     }
