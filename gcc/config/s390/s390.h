@@ -77,6 +77,17 @@ extern int target_flags;
    been parsed.  */
 #define OVERRIDE_OPTIONS override_options ()
 
+/* Target CPU builtins.  */
+#define TARGET_CPU_CPP_BUILTINS()			\
+  do							\
+    {							\
+      builtin_assert ("cpu=s390");			\
+      builtin_assert ("machine=s390");			\
+      builtin_define ("__s390__");			\
+      if (TARGET_64BIT)					\
+        builtin_define ("__s390x__");			\
+    }							\
+  while (0)
 
 /* Defines for real.c.  */
 #define IEEE_FLOAT 1

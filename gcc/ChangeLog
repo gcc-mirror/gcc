@@ -1,3 +1,10 @@
+2002-06-13  Ulrich Weigand  <uweigand@de.ibm.com>
+
+	* config/s390/s390.h (TARGET_CPU_CPP_BUILTINS): New macro.
+	* config/s390/linux.h (TARGET_OS_CPP_BUILTINS): New macro.
+	(CPP_PREDEFINES, CPP_SPEC, CPP_ARCH31_SPEC, CPP_ARCH64_SPEC): Remove.
+	(EXTRA_SPECS): Remove cpp_arch31 and cpp_arch64.
+
 2002-06-13  Gabriel Dos Reis  <gdr@codesourcery.com>
 
 	* tree-inline.c (expand_call_inline): Don' mess with _DECL
@@ -292,8 +299,6 @@ Wed Jun 12 01:50:28 CEST 2002  Jan Hubicka  <jh@suse.cz>
 2002-06-11  Bob Wilson  <bob.wilson@acm.org>
 
 	* config/xtensa/t-xtensa (LIBGCC1_TEST, CROSS_LIBGCC1): Delete.
-
-2002-06-11  Ulrich Weigand  <uweigand@de.ibm.com>
 
 	* config/s390/s390.c (emit_prologue): gen_store_multiple
 	returns an insn now, not a pattern.
