@@ -1,6 +1,6 @@
 //Build don't link:
 struct X{
-  void i();     // ERROR -
-  void i(int);
+  void i();
+  void i(int);  // ERROR - 
   int i;        // ERROR - conflict
 };

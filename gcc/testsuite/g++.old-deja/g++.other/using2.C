@@ -5,6 +5,6 @@ struct X{
 
 struct Y:X{
   void f(int);
-  void f();
-  using X::f;       // ERROR - conflict
-};                  // ERROR -
+  void f();         // ERROR - conflict
+  using X::f;
+};                  // ERROR - 
