@@ -78,7 +78,7 @@ case $machine in
 	i[34567]86-moss-msdos* | i[34567]86-*-moss* | \
 	i[34567]86-*-osf1* | \
 	i[34567]86-*-win32 | \
-	i[34567]86-*-pe | i[34567]86-*-cygwin32 | \
+	i[34567]86-*-pe | i[34567]86-*-cygwin* | \
 	i[34567]86-*-mingw32* | \
 	mips-sgi-irix5cross64 | \
 	powerpc-*-eabiaix* | \
@@ -88,7 +88,7 @@ case $machine in
 	powerpcle-*-eabisim* | \
 	powerpcle-*-eabi*  | \
         powerpcle-*-winnt* | \
-	powerpcle-*-pe | powerpcle-*-cygwin32 | \
+	powerpcle-*-pe | powerpcle-*-cygwin* | \
 	thumb-*-coff* | thumbel-*-coff* )
 		fixincludes=
 		;;
