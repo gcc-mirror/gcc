@@ -4062,47 +4062,6 @@ finish_struct (t, list_of_fieldlists, warn_anon)
   TYPE_BEING_DEFINED (t) = 0;
   hack_incomplete_structures (t);
 
-  if (flag_rtti && TYPE_VIRTUAL_P (t) && CLASSTYPE_VTABLE_NEEDS_WRITING (t))
-    {
-      tree variants;
-      tree tdecl, td;
-
-      /* Now instantiate its type descriptors.  */
-      td = build_t_desc (t, 1);
-      if (td == NULL_TREE)
-	{
-	  cp_error ("failed to build type descriptor node of '%T', maybe typeinfo.h not included", t);
-	  tdecl = NULL_TREE;
-	}
-      else
-        tdecl = TREE_OPERAND (td, 0);
-
-#if 0
-      /* I see no need for building the following TD */
-      variants = TYPE_POINTER_TO (t);
-      build_type_variant (variants, 1, 0);
-      while (variants)
-	{
-	  build_t_desc (variants, 1);
-	  variants = TYPE_NEXT_VARIANT (variants);
-	}
-#endif
-      variants = build_reference_type (t);
-      build_type_variant (variants, 1, 0);
-      while (variants)
-	{
-	  build_t_desc (variants, 1);
-	  variants = TYPE_NEXT_VARIANT (variants);
-	}
-      if (tdecl != NULL_TREE)
-        DECL_CONTEXT (tdecl) = t;
-    }
-#if 0
-  /* Still need to instantiate this C struct's type descriptor.  */
-  else if (flag_rtti && ! CLASSTYPE_RTTI (t))
-    build_t_desc (t, 1);
-#endif
-
 #if 0
   if (TYPE_NAME (t) && TYPE_IDENTIFIER (t))
     undo_template_name_overload (TYPE_IDENTIFIER (t), 1);

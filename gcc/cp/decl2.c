@@ -351,6 +351,11 @@ int flag_access_control = 1;
 
 int flag_operator_names;
 
+/* Nonzero if we want to check the return value of new and avoid calling
+   constructors if it is a null pointer.  */
+
+int flag_check_new;
+
 /* Table of language-dependent -f options.
    STRING is the option name.  VARIABLE is the address of the variable.
    ON_VALUE is the value to store in VARIABLE
@@ -395,7 +400,8 @@ static struct { char *string; int *variable; int on_value;} lang_f_options[] =
   {"access-control", &flag_access_control, 1},
   {"nonansi-builtins", &flag_no_nonansi_builtin, 0},
   {"gnu-keywords", &flag_no_gnu_keywords, 0},
-  {"operator-names", &flag_operator_names, 1}
+  {"operator-names", &flag_operator_names, 1},
+  {"check-new", &flag_check_new, 1}
 };
 
 /* Decode the string P as a language-specific option.
@@ -1154,7 +1160,8 @@ check_classfn (ctype, cname, function)
       end = TREE_VEC_END (method_vec);
 
       /* First suss out ctors and dtors.  */
-      if (*methods && fn_name == cname)
+      if (*methods
+	  && (fn_name == cname || fn_name == DECL_NAME (*methods)))
 	goto got_it;
 
       while (++methods != end)
@@ -2430,7 +2437,7 @@ mark_vtable_entries (decl)
     }
 }
 
-/* Set TREE_PUBLIC and/or TREE_EXTERN on the vtable DECL,
+/* Set TREE_PUBLIC and/or DECL_EXTERN on the vtable DECL,
    based on TYPE and other static flags.
 
    Note that anything public is tagged TREE_PUBLIC, whether
@@ -2472,14 +2479,14 @@ import_export_template (type)
 }
     
 static void
-finish_vtable_vardecl (prev, vars)
+finish_prevtable_vardecl (prev, vars)
      tree prev, vars;
 {
   tree ctype = DECL_CONTEXT (vars);
   import_export_template (ctype);
   import_export_vtable (vars, ctype);
 
-  if (flag_vtable_thunks && !CLASSTYPE_INTERFACE_KNOWN (ctype))
+  if (CLASSTYPE_INTERFACE_UNKNOWN (ctype))
     {
       tree method;
       for (method = CLASSTYPE_METHODS (ctype); method != NULL_TREE;
@@ -2489,6 +2496,7 @@ finish_vtable_vardecl (prev, vars)
 	      && !DECL_ABSTRACT_VIRTUAL_P (method))
 	    {
 	      SET_CLASSTYPE_INTERFACE_KNOWN (ctype);
+	      CLASSTYPE_VTABLE_NEEDS_WRITING (ctype) = ! DECL_EXTERNAL (method);
 	      CLASSTYPE_INTERFACE_ONLY (ctype) = DECL_EXTERNAL (method);
 	      TREE_PUBLIC (vars) = 1;
 	      DECL_EXTERNAL (vars) = DECL_EXTERNAL (method);
@@ -2502,20 +2510,50 @@ finish_vtable_vardecl (prev, vars)
     {
       extern tree the_null_vtable_entry;
 
-      /* Stuff this virtual function table's size into
-	 `pfn' slot of `the_null_vtable_entry'.  */
-#if 0
-      /* we do not put size as first entry any more */
-      tree nelts = array_type_nelts (TREE_TYPE (vars));
-      if (flag_vtable_thunks)
-	TREE_VALUE (CONSTRUCTOR_ELTS (DECL_INITIAL (vars))) = nelts;
-      else
-	SET_FNADDR_FROM_VTABLE_ENTRY (the_null_vtable_entry, nelts);
-#endif
-
       /* Kick out the type descriptor before writing out the vtable.  */
       if (flag_rtti)
-	rest_of_decl_compilation (TREE_OPERAND (FNADDR_FROM_VTABLE_ENTRY (TREE_VALUE (CONSTRUCTOR_ELTS (DECL_INITIAL (vars)))), 0), 0, 1, 1);
+	{
+	  build_t_desc (ctype, 1);
+	}
+
+      /* Write it out.  */
+      mark_vtable_entries (vars);
+    }
+}
+    
+static void
+finish_vtable_vardecl (prev, vars)
+     tree prev, vars;
+{
+  tree ctype = DECL_CONTEXT (vars);
+  import_export_template (ctype);
+  import_export_vtable (vars, ctype);
+
+  if (CLASSTYPE_INTERFACE_UNKNOWN (ctype))
+    {
+      tree method;
+      for (method = CLASSTYPE_METHODS (ctype); method != NULL_TREE;
+	   method = DECL_NEXT_METHOD (method))
+	{
+	  if (DECL_VINDEX (method) != NULL_TREE && !DECL_SAVED_INSNS (method)
+	      && !DECL_ABSTRACT_VIRTUAL_P (method))
+	    {
+	      SET_CLASSTYPE_INTERFACE_KNOWN (ctype);
+	      CLASSTYPE_VTABLE_NEEDS_WRITING (ctype) = ! DECL_EXTERNAL (method);
+	      CLASSTYPE_INTERFACE_ONLY (ctype) = DECL_EXTERNAL (method);
+	      TREE_PUBLIC (vars) = 1;
+	      DECL_EXTERNAL (vars) = DECL_EXTERNAL (method);
+	      if (flag_rtti)
+		cp_warning ("compiler error: rtti entry for `%T' decided too late", ctype);
+	      break;
+	    }
+	}
+    }
+
+  if (write_virtuals >= 0
+      && ! DECL_EXTERNAL (vars) && (TREE_PUBLIC (vars) || TREE_USED (vars)))
+    {
+      extern tree the_null_vtable_entry;
 
       /* Write it out.  */
       mark_vtable_entries (vars);
@@ -2714,12 +2752,30 @@ finish_file ()
 	needs_messing_up |= TYPE_NEEDS_CONSTRUCTING (type);
       vars = TREE_CHAIN (vars);
     }
-  if (needs_cleaning == 0)
-    goto mess_up;
 
   /* Otherwise, GDB can get confused, because in only knows
      about source for LINENO-1 lines.  */
   lineno -= 1;
+
+  interface_unknown = 1;
+  interface_only = 0;
+
+  /* Walk to mark the inline functions we need, then output them so
+     that we can pick up any other tdecls that those routines need. */
+  walk_vtables ((void (*)())0, finish_prevtable_vardecl);
+  for (vars = saved_inlines; vars; vars = TREE_CHAIN (vars))
+    {
+      tree decl = TREE_VALUE (vars);
+
+      if (DECL_ARTIFICIAL (decl)
+	  && ! DECL_INITIAL (decl)
+	  && (TREE_USED (decl) || ! DECL_EXTERNAL (decl)))
+	synthesize_method (decl);
+    }
+  walk_vtables ((void (*)())0, finish_prevtable_vardecl);
+
+  if (needs_cleaning == 0)
+    goto mess_up;
 
   fnname = get_file_function_name ('D');
   start_function (void_list_node, build_parse_node (CALL_EXPR, fnname, void_list_node, NULL_TREE), 0, 0);
@@ -2949,19 +3005,6 @@ finish_file ()
   SET_DECL_ARTIFICIAL (vars);
   pushdecl (vars);
 #endif
-
-  interface_unknown = 1;
-  interface_only = 0;
-
-  for (vars = saved_inlines; vars; vars = TREE_CHAIN (vars))
-    {
-      tree decl = TREE_VALUE (vars);
-
-      if (DECL_ARTIFICIAL (decl)
-	  && ! DECL_INITIAL (decl)
-	  && (TREE_USED (decl) || ! DECL_EXTERNAL (decl)))
-	synthesize_method (decl);
-    }
 
   walk_vtables ((void (*)())0, finish_vtable_vardecl);
   if (flag_handle_signatures)

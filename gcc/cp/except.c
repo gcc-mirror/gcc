@@ -1528,7 +1528,6 @@ expand_throw (exp)
      exception, so that the matching routine knows to search out.  */
   label = gen_label_rtx ();
   emit_label (label);
-  emit_move_insn (saved_pc, gen_rtx (LABEL_REF, Pmode, label));
 
   if (exp)
     {
@@ -1543,7 +1542,6 @@ expand_throw (exp)
 	rtx throw_type_rtx = expand_expr (throw_type, NULL_RTX, VOIDmode, 0);
 	rtx throw_value_rtx;
 
-	emit_move_insn (saved_throw_type, throw_type_rtx);
 	exp = convert_to_reference (build_reference_type (build_type_variant (TREE_TYPE (exp), 1, 0)), exp, CONV_STATIC, LOOKUP_COMPLAIN, error_mark_node);
 
 	/* Make a copy of the thrown object.  WP 15.1.5  */
@@ -1553,6 +1551,7 @@ expand_throw (exp)
 	  error ("  in thrown expression");
 	throw_value_rtx = expand_expr (exp, NULL_RTX, VOIDmode, 0);
 	emit_move_insn (saved_throw_value, throw_value_rtx);
+	emit_move_insn (saved_throw_type, throw_type_rtx);
       }
     }
   else
@@ -1561,6 +1560,7 @@ expand_throw (exp)
       /* This part is easy, as we dont' have to do anything else.  */
     }
 
+  emit_move_insn (saved_pc, gen_rtx (LABEL_REF, Pmode, label));
   make_first_label(throw_label);
   emit_jump (throw_label);
 }

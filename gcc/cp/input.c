@@ -128,8 +128,8 @@ feed_input (str, len, delete)
 struct pending_input *to_be_restored; /* XXX */
 extern int end_of_file;
 
-int
-getch ()
+static inline int
+sub_getch ()
 {
   if (putback_char != -1)
     {
@@ -172,8 +172,25 @@ void
 put_back (ch)
      int ch;
 {
-  my_friendly_assert (putback_char == -1, 224);
-  putback_char = ch;
+  if (ch != EOF)
+    {
+      my_friendly_assert (putback_char == -1, 224);
+      putback_char = ch;
+    }
+}
+
+extern int linemode;
+
+int
+getch ()
+{
+  int ch = sub_getch ();
+  if (linemode && ch == '\n')
+    {
+      put_back (ch);
+      ch = EOF;
+    }
+  return ch;
 }
 
 inline

@@ -1220,10 +1220,11 @@ build_opfncall (code, flags, xarg1, xarg2, arg3)
 	   fnname, tree_cons (NULL_TREE, xarg1,
 			       build_tree_list (NULL_TREE, xarg2)),
 	   NULL_TREE, flags);
-	/* This happens when the user mis-declares `operator delete'.
-	   Should now be impossible.  */
+#if 0
+	/* This can happen when operator delete is protected.  */
 	my_friendly_assert (rval != error_mark_node, 250);
 	TREE_TYPE (rval) = void_type_node;
+#endif
 	return rval;
       }
       break;

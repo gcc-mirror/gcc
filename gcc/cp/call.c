@@ -309,9 +309,16 @@ convert_harshness (type, parmtype, parm)
 
   if (codel == BOOLEAN_TYPE)
     {
-      if (INTEGRAL_CODE_P (coder) || coder == REAL_TYPE
-	  || coder == POINTER_TYPE || coder == OFFSET_TYPE)
+      if (INTEGRAL_CODE_P (coder) || coder == REAL_TYPE)
 	return STD_RETURN (h);
+      else if (coder == POINTER_TYPE || coder == OFFSET_TYPE)
+	{
+	  /* Make this worse than any conversion to another pointer.
+	     FIXME this is how I think the language should work, but it may not
+	     end up being how the language is standardized (jason 1/30/95).  */
+	  h.distance = 32767;
+	  return STD_RETURN (h);
+	}
       return EVIL_RETURN (h);
     }
 
@@ -1547,8 +1554,8 @@ build_method_call (instance, name, parms, basetype_path, flags)
       result = build_method_call (instance, name, parms, basetype_path,
 				  (LOOKUP_SPECULATIVELY|flags)
 				  &~LOOKUP_COMPLAIN);
-      /* If it works, return it. */
-      if (result && result != error_mark_node)
+      /* If it finds a match, return it. */
+      if (result)
 	return build_method_call (instance, name, parms, basetype_path, flags);
       /* If it doesn't work, two argument delete must work */
       TREE_CHAIN (parms) = save_last;
@@ -1896,9 +1903,9 @@ build_method_call (instance, name, parms, basetype_path, flags)
 	{
 	  constp = 0;
 	  volatilep = 0;
-	  parms = tree_cons (NULL_TREE,
-			     build1 (NOP_EXPR, TYPE_POINTER_TO (basetype),
-				     integer_zero_node), parms);
+	  instance_ptr = build_int_2 (0, 0);
+	  TREE_TYPE (instance_ptr) = TYPE_POINTER_TO (basetype);
+	  parms = tree_cons (NULL_TREE, instance_ptr, parms);
 	}
       else
 	{

@@ -277,6 +277,9 @@ empty_parms ()
 
 %type <strtype> .pushlevel
 
+/* Used in lex.c for parsing pragmas.  */
+%token END_OF_LINE
+
 /* spew.c depends on this being the last token.  Define
    any new tokens before this one!  */
 %token END_OF_SAVED_INPUT

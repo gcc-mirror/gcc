@@ -1424,7 +1424,7 @@ build_functional_cast (exp, parms)
     {
       /* this must build a C cast */
       if (parms == NULL_TREE)
-	return build1 (NOP_EXPR, type, integer_zero_node);
+	parms = integer_zero_node;
       else if (TREE_CHAIN (parms) != NULL_TREE)
 	{
 	  pedwarn ("initializer list being treated as compound expression");
