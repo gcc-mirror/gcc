@@ -234,3 +234,21 @@ Boston, MA 02111-1307, USA.  */
     }									\
   } while (0)
 #endif
+
+#if defined(__PIC__) && defined (USE_GNULIBC_1)
+/* This is a kludge. The i386 GNU/Linux dynamic linker needs ___brk_addr,
+   __environ and atexit (). We have to make sure they are in the .dynsym
+   section. We accomplish it by making a dummy call here. This
+   code is never reached.  */
+         
+#define CRT_END_INIT_DUMMY		\
+  do					\
+    {					\
+      extern void *___brk_addr;		\
+      extern char **__environ;		\
+					\
+      ___brk_addr = __environ;		\
+      atexit (0);			\
+    }					\
+  while (0)
+#endif

@@ -1,3 +1,10 @@
+2001-04-03  Bernd Schmidt  <bernds@redhat.com>
+
+	2001-03-16  Jakub Jelinek  <jakub@redhat.com>
+	* crtstuff.c (init_dummy): Use CRT_END_INIT_DUMMY if defined.
+	Remove ia32 linux PIC kludge and move it...
+	* config/i386/linux.h (CRT_END_INIT_DUMMY): ...here.
+
 2001-03-30  Bernd Schmidt  <bernds@redhat.com>
 
 	* jump.c (delete_barrier_successors): Fix error in last change.
