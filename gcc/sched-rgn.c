@@ -351,12 +351,11 @@ is_cfg_nonregular ()
 	code = GET_CODE (insn);
 	if (GET_RTX_CLASS (code) == 'i' && code != JUMP_INSN)
 	  {
-	    rtx note = find_reg_note (REG_NOTES (insn), REG_LABEL, NULL_RTX);
+	    rtx note = find_reg_note (insn, REG_LABEL, NULL_RTX);
 
 	    if (note
 		&& ! (GET_CODE (NEXT_INSN (insn)) == JUMP_INSN
-		      && find_reg_note (REG_NOTES (NEXT_INSN (insn)),
-					REG_LABEL,
+		      && find_reg_note (NEXT_INSN (insn), REG_LABEL,
 					XEXP (note, 0))))
 	      return 1;
 	  }
