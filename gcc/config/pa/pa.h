@@ -106,13 +106,9 @@ extern int target_flags;
 #define MASK_DISABLE_FPREGS 2
 #define TARGET_DISABLE_FPREGS (target_flags & MASK_DISABLE_FPREGS)
 
-/* Generate code which assumes that calls through function pointers will
-   never cross a space boundary.  Such assumptions are generally safe for
-   building kernels and statically linked executables.  Code compiled with
-   this option will fail miserably if the executable is dynamically linked
-   or uses nested functions!
-
-   This is also used to trigger aggressive unscaled index addressing.  */
+/* Generate code which assumes that all space register are equivalent.
+   Triggers aggressive unscaled index addressing and faster
+   builtin_return_address.  */
 #define MASK_NO_SPACE_REGS 4
 #define TARGET_NO_SPACE_REGS (target_flags & MASK_NO_SPACE_REGS)
 
@@ -148,7 +144,12 @@ extern int target_flags;
 #define MASK_LONG_LOAD_STORE 512
 #define TARGET_LONG_LOAD_STORE (target_flags & MASK_LONG_LOAD_STORE)
 
-/* Use a faster sequence for indirect calls.  */
+/* Use a faster sequence for indirect calls.  This assumes that calls
+   through function pointers will never cross a space boundary, and
+   that the executable is not dynamically linked.  Such assumptions
+   are generally safe for building kernels and statically linked
+   executables.  Code compiled with this option will fail miserably if
+   the executable is dynamically linked or uses nested functions!  */
 #define MASK_FAST_INDIRECT_CALLS 1024
 #define TARGET_FAST_INDIRECT_CALLS (target_flags & MASK_FAST_INDIRECT_CALLS)
 

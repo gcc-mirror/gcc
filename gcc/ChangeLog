@@ -1,3 +1,17 @@
+2001-04-03  Alan Modra  <alan@linuxcare.com.au>
+
+	* pa.h: Revise comments for TARGET_NO_SPACE_REGS and
+	TARGET_FAST_INDIRECT_CALLS.
+	* pa.c (override_options): TARGET_NO_SPACE_REGS is now OK with
+	-fPIC.  Don't warn.
+	(return_addr_rtx): Short circuit export stub matching when
+	TARGET_NO_SPACE_REGS.
+	(output_millicode_call): For out of range calls, make -fPIC
+	take precedence, then TARGET_PORTABLE_RUNTIME, then ble.  Don't
+	return before delay slot checks when TARGET_PORTABLE_RUNTIME.
+	* pa.md: Modify length attr calculation of all millicode insns to
+	match above.
+
 2001-04-02  Geoffrey Keating  <geoffk@redhat.com>
 
 	* configure.in (gcc_cv_as_leb128): Correct name of cache variable.
@@ -7,7 +21,7 @@
 
 2001-04-03  Alan Modra  <alan@linuxcare.com.au>
 
-	* config/pa/pa.c (override_options): Remove PIC profiling warning.
+	* pa.c (override_options): Remove PIC profiling warning.
 	(hp_profile_labelno): Delete.
 	(hp_profile_label_rtx): Delete.
 	(hp_profile_label_name): Delete.
@@ -20,15 +34,15 @@
 	(hppa_init_pic_save): Emit before tail_recursion_reentry, and
 	cater for PROFILE_HOOK.
 	(hppa_profile_hook): New function.
-	* config/pa/pa.h (FUNCTION_PROFILER): Now does nothing.
+	* pa.h (FUNCTION_PROFILER): Now does nothing.
 	(PROFILE_HOOK): Define.
 	(hppa_profile_hook): Declare.
 	(PROFILE_BEFORE_PROLOGUE): Delete.
 	(ASM_OUTPUT_REG_PUSH): Delete.
 	(ASM_OUTPUT_REG_POP): Delete.
-	* config/pa/pa.md (call_profiler): Turn it into a call insn, and
-	don't `use' r24.  Accept function name operand, and use this and a
-	locally generated label to calculate pc-rel offset to func start.
+	* pa.md (call_profiler): Turn it into a call insn, and don't `use'
+	r24.  Accept function name operand, and use this and a locally
+	generated label to calculate pc-rel offset to func start.
 
 2001-04-02  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
@@ -4476,8 +4490,6 @@ Thu Feb  1 07:22:41 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 2001-01-31  Alan Modra <alan@linuxcare.com.au>
 
-	* (hppa_init_pic_save): Emit the pic offset table
-	reg save after last_parm_insn.
 	* pa.c (hppa_init_pic_save): New function.
 	* pa.h (hppa_init_pic_save): Declare.
 	* pa.md (call, call_value, sibcall, sibcall_value): Use

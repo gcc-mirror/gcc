@@ -162,7 +162,7 @@ override_options ()
       warning ("PIC code generation is not supported in the portable runtime model\n");
     }
 
-  if (flag_pic && (TARGET_NO_SPACE_REGS || TARGET_FAST_INDIRECT_CALLS))
+  if (flag_pic && TARGET_FAST_INDIRECT_CALLS)
    {
       warning ("PIC code generation is not compatible with fast indirect calls\n");
    }
@@ -3402,15 +3402,17 @@ return_addr_rtx (count, frameaddr)
   rtx saved_rp;
   rtx ins;
 
-  saved_rp = gen_reg_rtx (Pmode);
+  if (TARGET_64BIT)
+    return gen_rtx_MEM (Pmode, plus_constant (frameaddr, -16));
+
+  if (TARGET_NO_SPACE_REGS)
+    return gen_rtx_MEM (Pmode, plus_constant (frameaddr, -20));
 
   /* First, we start off with the normal return address pointer from
      -20[frameaddr].  */
 
-  if (TARGET_64BIT)
-    return gen_rtx_MEM (Pmode, plus_constant (frameaddr, -16));
-  else
-    emit_move_insn (saved_rp, plus_constant (frameaddr, -5 * UNITS_PER_WORD));
+  saved_rp = gen_reg_rtx (Pmode);
+  emit_move_insn (saved_rp, plus_constant (frameaddr, -20));
 
   /* Get pointer to the instruction stream.  We have to mask out the
      privilege level from the two low order bits of the return address
@@ -3461,7 +3463,7 @@ return_addr_rtx (count, frameaddr)
      but rather the return address that leads back into user code.
      That return address is stored at -24[frameaddr].  */
 
-  emit_move_insn (saved_rp, plus_constant (frameaddr, -6 * UNITS_PER_WORD));
+  emit_move_insn (saved_rp, plus_constant (frameaddr, -24));
 
   emit_label (label);
   return gen_rtx_MEM (Pmode, memory_address (Pmode, saved_rp));
@@ -5559,9 +5561,7 @@ output_millicode_call (insn, call_dest)
   rtx xoperands[4];
   rtx seq_insn;
 
-  xoperands[3] = gen_rtx_REG (SImode, 31);
-  if (TARGET_64BIT)
-    xoperands[3] = gen_rtx_REG (SImode, 2);
+  xoperands[3] = gen_rtx_REG (Pmode, TARGET_64BIT ? 2 : 31);
 
   /* Handle common case -- empty delay slot or no jump in the delay slot,
      and we're sure that the branch will reach the beginning of the $CODE$
@@ -5597,38 +5597,8 @@ output_millicode_call (insn, call_dest)
 	  delay_insn_deleted = 1;
 	}
 
-      /* If we're allowed to use be/ble instructions, then this is the
-	 best sequence to use for a long millicode call.  */
-      if (TARGET_NO_SPACE_REGS || TARGET_FAST_INDIRECT_CALLS
-	  || ! (flag_pic  || TARGET_PORTABLE_RUNTIME))
-	{
-	  xoperands[0] = call_dest;
-	  output_asm_insn ("ldil L%%%0,%3", xoperands);
-	  output_asm_insn ("{ble|be,l} R%%%0(%%sr4,%3)", xoperands);
-	  output_asm_insn ("nop", xoperands);
-	}
-      /* Pure portable runtime doesn't allow be/ble; we also don't have
-	 PIC support int he assembler/linker, so this sequence is needed.  */
-      else if (TARGET_PORTABLE_RUNTIME)
-	{
-	  xoperands[0] = call_dest;
-	  /* Get the address of our target into %r29. */
-	  output_asm_insn ("ldil L%%%0,%%r29", xoperands);
-	  output_asm_insn ("ldo R%%%0(%%r29),%%r29", xoperands);
-
-	  /* Get our return address into %r31.  */
-	  output_asm_insn ("blr %%r0,%3", xoperands);
-
-	  /* Jump to our target address in %r29.  */
-	  output_asm_insn ("bv,n %%r0(%%r29)", xoperands);
-
-	  /* Empty delay slot.  Note this insn gets fetched twice and
-	     executed once.  To be safe we use a nop.  */
-	  output_asm_insn ("nop", xoperands);
-	  return "";
-	}
       /* PIC long millicode call sequence.  */
-      else
+      if (flag_pic)
 	{
 	  xoperands[0] = call_dest;
 	  xoperands[1] = gen_label_rtx ();
@@ -5649,6 +5619,34 @@ output_millicode_call (insn, call_dest)
 
 	  /* Empty delay slot.  Note this insn gets fetched twice and
 	     executed once.  To be safe we use a nop.  */
+	  output_asm_insn ("nop", xoperands);
+	}
+      /* Pure portable runtime doesn't allow be/ble; we also don't have
+	 PIC support in the assembler/linker, so this sequence is needed.  */
+      else if (TARGET_PORTABLE_RUNTIME)
+	{
+	  xoperands[0] = call_dest;
+	  /* Get the address of our target into %r29. */
+	  output_asm_insn ("ldil L%%%0,%%r29", xoperands);
+	  output_asm_insn ("ldo R%%%0(%%r29),%%r29", xoperands);
+
+	  /* Get our return address into %r31.  */
+	  output_asm_insn ("blr %%r0,%3", xoperands);
+
+	  /* Jump to our target address in %r29.  */
+	  output_asm_insn ("bv,n %%r0(%%r29)", xoperands);
+
+	  /* Empty delay slot.  Note this insn gets fetched twice and
+	     executed once.  To be safe we use a nop.  */
+	  output_asm_insn ("nop", xoperands);
+	}
+      /* If we're allowed to use be/ble instructions, then this is the
+	 best sequence to use for a long millicode call.  */
+      else
+	{
+	  xoperands[0] = call_dest;
+	  output_asm_insn ("ldil L%%%0,%3", xoperands);
+	  output_asm_insn ("{ble|be,l} R%%%0(%%sr4,%3)", xoperands);
 	  output_asm_insn ("nop", xoperands);
 	}
 
