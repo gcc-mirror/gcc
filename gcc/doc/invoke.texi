@@ -901,8 +901,8 @@ from declaring certain functions or defining certain macros that the
 ISO standard doesn't call for; this is to avoid interfering with any
 programs that might use these names for other things.
 
-Functions which would normally be builtin but do not have semantics
-defined by ISO C (such as @code{alloca} and @code{ffs}) are not builtin
+Functions which would normally be built in but do not have semantics
+defined by ISO C (such as @code{alloca} and @code{ffs}) are not built-in
 functions with @option{-ansi} is used.  @xref{Other Builtins,,Other
 built-in functions provided by GNU CC}, for details of the functions
 affected.
@@ -991,15 +991,15 @@ switch only affects the @code{asm} and @code{typeof} keywords, since
 
 @item -fno-builtin
 @opindex fno-builtin
-@cindex builtin functions
-Don't recognize builtin functions that do not begin with
+@cindex built-in functions
+Don't recognize built-in functions that do not begin with
 @samp{__builtin_} as prefix.  @xref{Other Builtins,,Other built-in
 functions provided by GNU CC}, for details of the functions affected,
-including those which are not builtin functions when @option{-ansi} or
+including those which are not built-in functions when @option{-ansi} or
 @option{-std} options for strict ISO C conformance are used because they
 do not have an ISO standard meaning.
 
-GCC normally generates special code to handle certain builtin functions
+GCC normally generates special code to handle certain built-in functions
 more efficiently; for instance, calls to @code{alloca} may become single
 instructions that adjust the stack directly, and calls to @code{memcpy}
 may become inline copy loops.  The resulting code is often both smaller
@@ -1009,9 +1009,9 @@ of the functions by linking with a different library.
 
 In C++, @option{-fno-builtin} is always in effect.  The @option{-fbuiltin}
 option has no effect.  Therefore, in C++, the only way to get the
-optimization benefits of builtin functions is to call the function
+optimization benefits of built-in functions is to call the function
 using the @samp{__builtin_} prefix.  The GNU C++ Standard Library uses
-builtin functions to implement many functions (like
+built-in functions to implement many functions (like
 @code{std::strchr}), so that you automatically get efficient code.
 
 @item -fhosted
@@ -1098,7 +1098,7 @@ representation of a character, and @samp{\a} produces a bell.
 @end itemize
 
 You may wish to use @option{-fno-builtin} as well as @option{-traditional}
-if your program uses names that are normally GNU C builtin functions for
+if your program uses names that are normally GNU C built-in functions for
 other purposes of its own.
 
 You cannot use @option{-traditional} if you include any header files that
@@ -1192,12 +1192,12 @@ the negative form of @option{-funsigned-char}.  Likewise, the option
 @opindex funsigned-bitfields
 @opindex fno-signed-bitfields
 @opindex fno-unsigned-bitfields
-These options control whether a bitfield is signed or unsigned, when the
+These options control whether a bit-field is signed or unsigned, when the
 declaration does not use either @code{signed} or @code{unsigned}.  By
-default, such a bitfield is signed, because this is consistent: the
+default, such a bit-field is signed, because this is consistent: the
 basic integer types such as @code{int} are signed types.
 
-However, when @option{-traditional} is used, bitfields are all unsigned
+However, when @option{-traditional} is used, bit-fields are all unsigned
 no matter what.
 
 @item -fwritable-strings
@@ -1393,7 +1393,7 @@ int and getting a pointer to member function via non-standard syntax.
 
 @item -fno-nonansi-builtins
 @opindex fno-nonansi-builtins
-Disable builtin declarations of functions that are not mandated by
+Disable built-in declarations of functions that are not mandated by
 ANSI/ISO C.  These include @code{ffs}, @code{alloca}, @code{_exit},
 @code{index}, @code{bzero}, @code{conjf}, and other related functions.
 
@@ -1537,7 +1537,7 @@ Do not warn about usage of deprecated features. @xref{Deprecated Features}.
 @opindex Wno-non-template-friend
 Disable warnings when non-templatized friend functions are declared
 within a template. With the advent of explicit template specification
-support in g++, if the name of the friend is an unqualified-id (ie,
+support in g++, if the name of the friend is an unqualified-id (i.e.,
 @samp{friend foo(int)}), the C++ language specification demands that the
 friend declare or define an ordinary, nontemplate function. (Section
 14.5.3). Before g++ implemented explicit specification, unqualified-ids
@@ -2302,10 +2302,10 @@ A function-like macro that appears without arguments.
 The unary plus operator.
 
 @item
-The `U' integer constant suffix, or the `F' or `L' floating point
-constant suffixes.  (Traditonal C does support the `L' suffix on integer
+The @samp{U} integer constant suffix, or the @samp{F} or @samp{L} floating point
+constant suffixes.  (Traditional C does support the @samp{L} suffix on integer
 constants.)  Note, these suffixes appear in macros defined in the system
-headers of most modern systems, e.g. the _MIN/_MAX macros in limits.h.
+headers of most modern systems, e.g. the @samp{_MIN}/@samp{_MAX} macros in @code{<limits.h>}.
 Use of these macros in user code might normally lead to spurious
 warnings, however gcc's integrated preprocessor has enough context to
 avoid warning in these cases.
@@ -2730,7 +2730,7 @@ You can examine different profiling aspects without recompilation.  Your
 executable will read a list of function names from file @file{bb.in}.
 Profiling starts when a function on the list is entered and stops when
 that invocation is exited.  To exclude a function from profiling, prefix
-its name with `-'.  If a function name is not unique, you can
+its name with @samp{-}.  If a function name is not unique, you can
 disambiguate it by writing it in the form
 @samp{/path/filename.d:functionname}.  Your executable will write the
 available paths and filenames in file @file{bb.out}.
@@ -3742,7 +3742,7 @@ implicitly converting it to double precision constant.
 
 @item -frename-registers
 @opindex frename-registers
-Attempt to avoid false dependancies in scheduled code by making use
+Attempt to avoid false dependencies in scheduled code by making use
 of registers left over after register allocation.  This optimization
 will most benefit processors with lots of registers.  It can, however,
 make debugging impossible, since variables will no longer stay in
@@ -4725,7 +4725,7 @@ contain startup files.  If the target supports multilibs then the
 current multilib directory will be prepended to each of these paths.
 
 @item %M
-Output the multilib directory with directory seperators replaced with
+Output the multilib directory with directory separators replaced with
 @samp{_}.  If multilib directories are not set, or the multilib directory is
 @file{.} then this option emits nothing.
 
@@ -6697,11 +6697,11 @@ hardware floating is used.
 @opindex mno-bit-align
 @opindex mbit-align
 On System V.4 and embedded PowerPC systems do not (do) force structures
-and unions that contain bit fields to be aligned to the base type of the
-bit field.
+and unions that contain bit-fields to be aligned to the base type of the
+bit-field.
 
 For example, by default a structure containing nothing but 8
-@code{unsigned} bitfields of length 1 would be aligned to a 4 byte
+@code{unsigned} bit-fields of length 1 would be aligned to a 4 byte
 boundary and have a size of 4 bytes.  By using @option{-mno-bit-align},
 the structure would be aligned to a 1 byte boundary and be one byte in
 size.
@@ -6950,7 +6950,7 @@ be allocated dynamically.
 @opindex mfp-arg-in-fpregs
 Use a calling sequence incompatible with the IBM calling convention in
 which floating point arguments are passed in floating point registers.
-Note that @code{varargs.h} and @code{stdargs.h} will not work with
+Note that @code{varargs.h} and @code{stdarg.h} will not work with
 floating point operands if this option is specified.
 
 @item -mfp-arg-in-gregs
@@ -7395,7 +7395,7 @@ expense of more memory.
 @opindex m128bit-long-double
 Control the size of @code{long double} type. i386 application binary interface
 specify the size to be 12 bytes, while modern architectures (Pentium and newer)
-preffer @code{long double} aligned to 8 or 16 byte boundary.  This is
+prefer @code{long double} aligned to 8 or 16 byte boundary.  This is
 impossible to reach with 12 byte long doubles in the array accesses.
 
 @strong{Warning:} if you use the @option{-m128bit-long-double} switch, the
@@ -8113,7 +8113,7 @@ Generate code for the SH4 without a floating-point unit.
 @item -m4-single-only
 @opindex m4-single-only
 Generate code for the SH4 with a floating-point unit that only
-supports single-precision arithmentic.
+supports single-precision arithmetic.
 
 @item -m4-single
 @opindex m4-single
@@ -8719,7 +8719,7 @@ Allow arbitrary sized immediates in bit operations.
 @opindex mwide-bitfields
 @opindex mwide-bitfields
 @opindex mno-wide-bitfields
-Always treat bitfields as int-sized.
+Always treat bit-fields as int-sized.
 
 @item -m4byte-functions
 @itemx -m4byte-functions
