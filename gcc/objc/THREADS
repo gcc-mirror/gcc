@@ -14,12 +14,6 @@ GCC bug account or to:
 
 	Scott Christley <scottc@ocbi.com>
 
-******************************************************************************
-* Simple test program:
-
-A simple test program can be found in the thread-test directory.
-
-******************************************************************************
 * Sarray Threading:
 
 The most critical component of the Objective-C runtime is the sparse array
