@@ -1,3 +1,15 @@
+1999-08-22  Mark Mitchell  <mark@codesourcery.com>
+
+	* cp-tree.def (STMT_EXPR): Fix typo in node name.
+
+	* dump.c (dump_next_stmt): New function.
+	(dequeue_and_dump): Use it.
+	
+	* pt.c (tsubst_copy): Make sure to initialize return value for a
+	STMT_EXPR, even when processing_template_decl.
+	* semantics.c (finish_stmt_expr): A statement-expression whose
+	last statement is not an expression-statement has type `void'.	
+	
 1999-08-20  Mark Mitchell  <mark@codesourcery.com>
 
 	* semantics.c (finish_stmt_expr): Fix typo in comment.

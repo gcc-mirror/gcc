@@ -7085,9 +7085,10 @@ tsubst_copy (t, args, complain, in_decl)
 	  tree rtl_expr = begin_stmt_expr ();
 	  tree block = tsubst_expr (STMT_EXPR_STMT (t), args,
 				    complain, in_decl);
-	  r = finish_stmt_expr (rtl_expr, block);
+	  return finish_stmt_expr (rtl_expr, block);
 	}
-      return r;
+      
+      return t;
 
     case COND_EXPR:
     case MODOP_EXPR:

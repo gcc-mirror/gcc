@@ -19,9 +19,6 @@ along with GNU CC; see the file COPYING.  If not, write to
 the Free Software Foundation, 59 Temple Place - Suite 330,
 Boston, MA 02111-1307, USA.  */
 
-/* TODO: Class types.
-         Binfos.  */
-
 #include "config.h"
 #include "system.h"
 #include "tree.h"
@@ -90,6 +87,7 @@ static void dump_string PROTO ((dump_info_p, const char *));
 static void dump_string_field PROTO ((dump_info_p, const char *, const char *));
 static void dump_node PROTO ((tree, FILE *));
 static void dump_stmt PROTO ((dump_info_p, tree));
+static void dump_next_stmt PROTO ((dump_info_p, tree));
 
 /* Add T to the end of the queue of nodes to dump.  If DUMP_CHILDREN_P
    is non-zero, then its children should be dumped as well.  Returns
@@ -276,6 +274,16 @@ dump_stmt (di, t)
 /* Dump the CHILD and its children.  */
 #define dump_child(field, child) \
   queue_and_dump_index (di, field, child, DUMP_CHILDREN)
+
+/* Dump the next statement after STMT.  */
+
+static void
+dump_next_stmt (di, t)
+     dump_info_p di;
+     tree t;
+{
+  dump_child ("next", TREE_CHAIN (t));
+}
 
 /* Dump the next node in the queue.  */
 
@@ -642,11 +650,13 @@ dequeue_and_dump (di)
 	  dump_child ("ins", ASM_INPUTS (t));
 	  dump_child ("clbr", ASM_CLOBBERS (t));
 	}
+      dump_next_stmt (di, t);
       break;
 
     case BREAK_STMT:
     case CONTINUE_STMT:
       dump_stmt (di, t);
+      dump_next_stmt (di, t);
       break;
 
     case CASE_LABEL:
@@ -657,18 +667,21 @@ dequeue_and_dump (di)
 	  dump_child ("low", CASE_LOW (t));
 	  dump_child ("high", CASE_HIGH (t));
 	}
+      dump_next_stmt (di, t);
       break;
 
     case COMPOUND_STMT:
       dump_stmt (di, t);
       if (dump_children_p)
 	dump_child ("body", COMPOUND_BODY (t));
+      dump_next_stmt (di, t);
       break;
 
     case DECL_STMT:
       dump_stmt (di, t);
       if (dump_children_p)
 	dump_child ("decl", DECL_STMT_DECL (t));
+      dump_next_stmt (di, t);
       break;
       
     case DO_STMT:
@@ -678,12 +691,14 @@ dequeue_and_dump (di)
 	  dump_child ("body", DO_BODY (t));
 	  dump_child ("cond", DO_COND (t));
 	}
+      dump_next_stmt (di, t);
       break;
 
     case EXPR_STMT:
       dump_stmt (di, t);
       if (dump_children_p)
 	dump_child ("expr", EXPR_STMT_EXPR (t));
+      dump_next_stmt (di, t);
       break;
 
     case FOR_STMT:
@@ -695,12 +710,14 @@ dequeue_and_dump (di)
 	  dump_child ("expr", FOR_EXPR (t));
 	  dump_child ("body", FOR_BODY (t));
 	}
+      dump_next_stmt (di, t);
       break;
 
     case GOTO_STMT:
       dump_stmt (di, t);
       if (dump_children_p)
 	dump_child ("dest", GOTO_DESTINATION (t));
+      dump_next_stmt (di, t);
       break;
 
     case IF_STMT:
@@ -711,12 +728,14 @@ dequeue_and_dump (di)
 	  dump_child ("then", THEN_CLAUSE (t));
 	  dump_child ("else", ELSE_CLAUSE (t));
 	}
+      dump_next_stmt (di, t);
       break;
 
     case RETURN_STMT:
       dump_stmt (di, t);
       if (dump_children_p)
 	dump_child ("expr", RETURN_EXPR (t));
+      dump_next_stmt (di, t);
       break;
 
     case SWITCH_STMT:
@@ -726,6 +745,7 @@ dequeue_and_dump (di)
 	  dump_child ("cond", SWITCH_COND (t));
 	  dump_child ("body", SWITCH_BODY (t));
 	}
+      dump_next_stmt (di, t);
       break;
 
     case TRY_BLOCK:
@@ -735,6 +755,7 @@ dequeue_and_dump (di)
 	  dump_child ("body", TRY_STMTS (t));
 	  dump_child ("hdlr", TRY_HANDLERS (t));
 	}
+      dump_next_stmt (di, t);
       break;
 
     case WHILE_STMT:
@@ -744,6 +765,7 @@ dequeue_and_dump (di)
 	  dump_child ("cond", WHILE_COND (t));
 	  dump_child ("body", WHILE_BODY (t));
 	}
+      dump_next_stmt (di, t);
       break;
 
     case INTEGER_CST:
@@ -799,6 +821,11 @@ dequeue_and_dump (di)
     case CONSTRUCTOR:
       if (dump_children_p)
 	dump_child ("elts", TREE_OPERAND (t, 1));
+      break;
+
+    case STMT_EXPR:
+      if (dump_children_p)
+	dump_child ("stmt", STMT_EXPR_STMT (t));
       break;
 
     default:
