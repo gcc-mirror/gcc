@@ -1,5 +1,9 @@
 2000-12-19  John David Anglin  <dave@hiauly1.hia.nrc.ca>
 
+	* system.h (getopt): Update prototype to match include/getopt.h.
+
+2000-12-19  John David Anglin  <dave@hiauly1.hia.nrc.ca>
+
 	From Jeff Law.
 	* pa.c (basereg_operand): Simplify.
 

@@ -278,7 +278,7 @@ extern char *getenv PARAMS ((const char *));
 #endif
 
 #if defined (HAVE_DECL_GETOPT) && !HAVE_DECL_GETOPT
-extern int getopt PARAMS ((int, char **, char *));
+extern int getopt PARAMS ((int, char * const *, char *));
 #endif
 
 #if defined (HAVE_DECL_GETWD) && !HAVE_DECL_GETWD
