@@ -106,6 +106,9 @@ struct arg_data
      word-sized pseudos we made.  */
   rtx *aligned_regs;
   int n_aligned_regs;
+  /* The amount that the stack pointer needs to be adjusted to
+     force alignment for the next argument.  */
+  struct args_size alignment_pad;
 };
 
 #ifdef ACCUMULATE_OUTGOING_ARGS
@@ -898,6 +901,7 @@ initialize_argument_information (num_actuals, args, args_size, n_named_args,
   /* Count arg position in order args appear.  */
   int argpos;
 
+  struct args_size alignment_pad;
   int i;
   tree p;
   
@@ -1093,11 +1097,13 @@ initialize_argument_information (num_actuals, args, args_size, n_named_args,
 			     args[i].reg != 0,
 #endif
 			     fndecl, args_size, &args[i].offset,
-			     &args[i].size);
+			     &args[i].size, &alignment_pad);
 
 #ifndef ARGS_GROW_DOWNWARD
       args[i].slot_offset = *args_size;
 #endif
+
+      args[i].alignment_pad = alignment_pad;
 
       /* If a part of the arg was put into registers,
 	 don't include that part in the amount pushed.  */
@@ -2688,7 +2694,7 @@ emit_library_call VPROTO((rtx orgfun, int no_queue, enum machine_mode outmode,
       locate_and_pad_parm (mode, NULL_TREE,
 			   argvec[count].reg && argvec[count].partial == 0,
 			   NULL_TREE, &args_size, &argvec[count].offset,
-			   &argvec[count].size);
+			   &argvec[count].size, &alignment_pad);
 
       if (argvec[count].size.var)
 	abort ();
@@ -2917,7 +2923,7 @@ emit_library_call VPROTO((rtx orgfun, int no_queue, enum machine_mode outmode,
 #endif
 	  emit_push_insn (val, mode, NULL_TREE, NULL_RTX, 0, partial, reg, 0,
 			  argblock, GEN_INT (argvec[argnum].offset.constant),
-			  reg_parm_stack_space);
+			  reg_parm_stack_space, ARGS_SIZE_RTX (alignment_pad));
 
 #ifdef ACCUMULATE_OUTGOING_ARGS
 	  /* Now mark the segment we just used.  */
@@ -3072,6 +3078,7 @@ emit_library_call_value VPROTO((rtx orgfun, rtx value, int no_queue,
   rtx fun;
   int inc;
   int count;
+  struct args_size alignment_pad;
   rtx argblock = 0;
   CUMULATIVE_ARGS args_so_far;
   struct arg { rtx value; enum machine_mode mode; rtx reg; int partial;
@@ -3192,7 +3199,7 @@ emit_library_call_value VPROTO((rtx orgfun, rtx value, int no_queue,
       locate_and_pad_parm (Pmode, NULL_TREE,
 			   argvec[count].reg && argvec[count].partial == 0,
 			   NULL_TREE, &args_size, &argvec[count].offset,
-			   &argvec[count].size);
+			   &argvec[count].size, &alignment_pad);
 
 
       if (argvec[count].reg == 0 || argvec[count].partial != 0
@@ -3258,7 +3265,7 @@ emit_library_call_value VPROTO((rtx orgfun, rtx value, int no_queue,
       locate_and_pad_parm (mode, NULL_TREE,
 			   argvec[count].reg && argvec[count].partial == 0,
 			   NULL_TREE, &args_size, &argvec[count].offset,
-			   &argvec[count].size);
+			   &argvec[count].size, &alignment_pad);
 
       if (argvec[count].size.var)
 	abort ();
@@ -3486,7 +3493,7 @@ emit_library_call_value VPROTO((rtx orgfun, rtx value, int no_queue,
 #endif
 	  emit_push_insn (val, mode, NULL_TREE, NULL_RTX, 0, partial, reg, 0,
 			  argblock, GEN_INT (argvec[argnum].offset.constant),
-			  reg_parm_stack_space);
+			  reg_parm_stack_space, ARGS_SIZE_RTX (alignment_pad));
 
 #ifdef ACCUMULATE_OUTGOING_ARGS
 	  /* Now mark the segment we just used.  */
@@ -3636,6 +3643,7 @@ emit_library_call_value VPROTO((rtx orgfun, rtx value, int no_queue,
   highest_outgoing_arg_in_use = initial_highest_arg_in_use;
   stack_usage_map = initial_stack_usage_map;
 #endif
+  struct args_size alignment_pad;
 
   return value;
 }
@@ -3899,7 +3907,9 @@ store_one_arg (arg, argblock, may_be_alloca, variable_size,
 	 This can either be done with push or copy insns.  */
       emit_push_insn (arg->value, arg->mode, TREE_TYPE (pval), NULL_RTX, 0,
 		      partial, reg, used - size, argblock,
-		      ARGS_SIZE_RTX (arg->offset), reg_parm_stack_space);
+		      ARGS_SIZE_RTX (arg->offset), reg_parm_stack_space,
+		      ARGS_SIZE_RTX (arg->alignment_pad));
+
     }
   else
     {
@@ -3932,7 +3942,8 @@ store_one_arg (arg, argblock, may_be_alloca, variable_size,
       emit_push_insn (arg->value, arg->mode, TREE_TYPE (pval), size_rtx,
 		      TYPE_ALIGN (TREE_TYPE (pval)) / BITS_PER_UNIT, partial,
 		      reg, excess, argblock, ARGS_SIZE_RTX (arg->offset),
-		      reg_parm_stack_space);
+		      reg_parm_stack_space,
+		      ARGS_SIZE_RTX (arg->alignment_pad));
     }
 
 
