@@ -1,11 +1,14 @@
+#include <stdio.h>
+
 int acker(int, int);
 
-void main()
+int
+main(void)
 {
-    acker(3,6);
-    /* */
-    exit(0);
-    /* */
+    int n = acker(3,6);
+    if (n != 509)
+	printf("acker(3,6) = %d != 509\n", n);
+    return(0);
 }
 
 int

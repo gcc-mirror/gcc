@@ -35,12 +35,12 @@ int i,j,k;
                 {
                         if (c[i][j] != BOUND)
                         {
-                                /*printf("ERROR\n");*/
+                                puts("ERROR");
                                 return 0;
                         }
                 }
         }
 	i=5;
 
-	exit (0);
+	return 0;
 }

@@ -1,3 +1,19 @@
+2000-06-28  Zack Weinberg  <zack@wolery.cumb.org>
+
+	* gcc.misc-tests/acker1.c: Report failure.  Use return from main,
+	not exit. Include stdio.h.
+	* gcc.misc-tests/dg-11.c: Remove anchors from regexp.
+	* gcc.misc-tests/dg-12.c: Likewise.
+	* gcc.misc-tests/dg-5.c: Likewise.
+	* gcc.misc-tests/dg-6.c: Likewise.
+	* gcc.misc-tests/dg-7.c: Prototype abort.
+	* gcc.misc-tests/dg-9.c: Adjust error-message regexps.
+	* gcc.misc-tests/dhry.h: Include stdlib.h and string.h.
+	* gcc.misc-tests/matrix1.c: Report failure.  Use return from main,
+	not exit.
+	* gcc.misc-tests/sieve.c: Use return from main, not exit.
+	* gcc.misc-tests/sort2.c: Use return from main, not exit.
+
 2000-06-28  Jakub Jelinek  <jakub@redhat.com>
 
 	* gcc.dg/cpp/20000628-1.c: New test.
