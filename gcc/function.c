@@ -3981,6 +3981,8 @@ assign_parms (fndecl, second_time)
 	 to indicate there is no preallocated stack slot for the parm.  */
 
       if (entry_parm == stack_parm
+          || (GET_CODE (entry_parm) == PARALLEL
+              && XEXP (XVECEXP (entry_parm, 0, 0), 0) == NULL_RTX)
 #if defined (REG_PARM_STACK_SPACE) && ! defined (MAYBE_REG_PARM_STACK_SPACE)
 	  /* On some machines, even if a parm value arrives in a register
 	     there is still an (uninitialized) stack slot allocated for it.
