@@ -1626,7 +1626,42 @@ propagate_one_insn (pbi, insn)
       if (libcall_is_dead)
 	prev = propagate_block_delete_libcall ( insn, note);
       else
-	propagate_block_delete_insn (pbi->bb, insn);
+	{
+
+	  /* If INSN contains a RETVAL note and is dead, but the libcall
+	     as a whole is not dead, then we want to remove INSN, but
+	     not the whole libcall sequence.
+
+	     However, we need to also remove the dangling REG_LIBCALL
+	     note so that we do not have mis-matched LIBCALL/RETVAL
+	     notes.  In theory we could find a new location for the
+	     REG_RETVAL note, but it hardly seems worth the effort.
+
+	     NOTE at this point will be the RETVAL note if it exists.  */
+	  if (note)
+	    {
+	      rtx libcall_note;
+
+	      libcall_note
+		= find_reg_note (XEXP (note, 0), REG_LIBCALL, NULL_RTX);
+	      remove_note (XEXP (note, 0), libcall_note);
+	    }
+
+	  /* Similarly if INSN contains a LIBCALL note, remove the
+	     dangling REG_RETVAL note.  */
+	  note = find_reg_note (insn, REG_LIBCALL, NULL_RTX);
+	  if (note)
+	    {
+	      rtx retval_note;
+
+	      retval_note
+		= find_reg_note (XEXP (note, 0), REG_RETVAL, NULL_RTX);
+	      remove_note (XEXP (note, 0), retval_note);
+	    }
+
+	  /* Now delete INSN.  */
+	  propagate_block_delete_insn (pbi->bb, insn);
+	}
 
       return prev;
     }

@@ -1,3 +1,46 @@
+2002-06-24  Jeff Law <law@redhat.com>
+
+	* flow.c (propagate_one_insn): When removing an insn
+	with a REG_LIBCALL note but not the entire libcall sequence,
+	delete the associated REG_RETVAL note.
+
+2002-06-04  Jeff Law <law@redhat.com.
+	    David Edelsohn <edelsohn@gnu.org>
+	    Michael Matz <matz@kde.org>
+
+	* sched-int.h (struct deps): New field libcall_block_tail_insn.
+	* sched_deps.c (init_deps): Initialize libcall_block_tail_insn.
+	* sched_deps.c (sched_analyze_insn): If libcall_block_tail_insn
+	is set, then mark the current insn as being part of a libcall
+	scheduling group.
+	(sched_analyze): Set and clear libcall_block_tail_insn appropriately.
+
+	* haifa-sched.c (schedule_block): Do not count USE or CLOBBER
+	insns against the issue rate.
+
+2002-05-30  Jeff Law <law@redhat.com>
+
+	* flow.c (propagate_one_insn): Revise yesterday's patch.  Delete
+	a dead insn with a REG_RETVAL note when the entire libcall is not
+	dead and remove the associated REG_LIBCALL note at the same time.
+
+2002-05-29  Jeff Law <law@redhat.com>
+
+	* flow.c (propagate_one_insn): Do not remove a dead insn if it
+	contains a REG_RETVAL note.
+
+	* haifa-sched (sched_analyze): Remove another useless clearing
+	of SCHED_GROUP_P I missed yesterday.
+
+2002-05-28  David Edelsohn  <edelsohn@gnu.org>
+	    Jeff Law <law@redhat.com>
+
+	* optabs.c (expand_binop): Fix nwords sign warnings.
+	generate pseudo for add_optab.
+
+	* sched-deps.c (sched_analyze): Do not clear SCHED_GROUP_P.
+	* haifa-sched.c (move_insn): Clear SCHED_GROUP_P after it is used.
+
 2002-08-18  Neil Booth  <neil@daikokuya.co.uk>
 
 	PR preprocessor/7602
