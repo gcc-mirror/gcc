@@ -1,3 +1,7 @@
+2003-03-31  Richard Sandiford  <rsandifo@redhat.com>
+
+	* gcc.c-torture/execute/ieee/20030331-1.c: New test.
+
 2003-03-30  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/7647
