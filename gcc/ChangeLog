@@ -1,5 +1,10 @@
 Tue Apr 21 12:05:32 1998  Jeffrey A Law  (law@cygnus.com)
 
+	* c-common.c (type_for_mode): Handle TI types.
+	* c-decl.c (intTI_type_node, unsigned_int_TI_type_node): Define.
+	(init_decl_processing): Handle TI types.
+	* c-tree.h (intTI_type_node, unsigned_int_TI_type_node): Declare.
+
 	* mips.c (block_move_loop): Test Pmode == DImode instead of
 	TARGET_MIPS64.
 	(expand_block_move, save_restore_insns): Likewise.
