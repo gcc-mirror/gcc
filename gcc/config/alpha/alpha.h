@@ -884,10 +884,10 @@ enum reg_class {
    reduce the impact of not being able to allocate a pseudo to a
    hard register.  */
 
-#define REGISTER_MOVE_COST(MODE, CLASS1, CLASS2)	\
-  (((CLASS1) == FLOAT_REGS) == ((CLASS2) == FLOAT_REGS)	\
-   ? 2							\
-   : TARGET_FIX ? 3 : 4+2*alpha_memory_latency)
+#define REGISTER_MOVE_COST(MODE, CLASS1, CLASS2)		\
+  (((CLASS1) == FLOAT_REGS) == ((CLASS2) == FLOAT_REGS)	? 2	\
+   : TARGET_FIX ? ((CLASS1) == FLOAT_REGS ? 6 : 8)		\
+   : 4+2*alpha_memory_latency)
 
 /* A C expressions returning the cost of moving data of MODE from a register to
    or from memory.
@@ -1213,9 +1213,7 @@ do {						\
 /* Include all constant integers and constant doubles, but not
    floating-point, except for floating-point zero.  */
 
-#define LEGITIMATE_CONSTANT_P(X)  		\
-  (GET_MODE_CLASS (GET_MODE (X)) != MODE_FLOAT	\
-   || (X) == CONST0_RTX (GET_MODE (X)))
+#define LEGITIMATE_CONSTANT_P  alpha_legitimate_constant_p
 
 /* The macros REG_OK_FOR..._P assume that the arg is a REG rtx
    and check its validity for a certain class.
