@@ -1793,8 +1793,7 @@ resolve_offset_ref (exp)
 	 pointer with a real value of 0 is distinguishable from an
 	 offset of the first member of a structure.  */
       member = build_binary_op (MINUS_EXPR, member,
-				cp_convert (ptrdiff_type_node, integer_one_node),
-				0);
+				cp_convert (ptrdiff_type_node, integer_one_node));
 
       return build1 (INDIRECT_REF, type,
 		     build (PLUS_EXPR, build_pointer_type (type),
@@ -1945,7 +1944,7 @@ build_new (placement, decl, init, use_global_new)
 		      nelts = integer_zero_node;
 		    }
 		  else
-		    nelts = build_binary_op (MULT_EXPR, nelts, this_nelts, 1);
+		    nelts = build_binary_op (MULT_EXPR, nelts, this_nelts);
 		}
 	    }
 	  else
@@ -2134,7 +2133,7 @@ build_new_1 (exp)
   while (TREE_CODE (true_type) == ARRAY_TYPE)
     {
       tree this_nelts = array_type_nelts_top (true_type);
-      nelts = build_binary_op (MULT_EXPR, nelts, this_nelts, 1);
+      nelts = build_binary_op (MULT_EXPR, nelts, this_nelts);
       true_type = TREE_TYPE (true_type);
     }
 
@@ -2143,7 +2142,7 @@ build_new_1 (exp)
 
   if (has_array)
     size = fold (build_binary_op (MULT_EXPR, size_in_bytes (true_type),
-				  nelts, 1));
+				  nelts));
   else
     size = size_in_bytes (type);
 
@@ -2285,7 +2284,7 @@ build_new_1 (exp)
       tree extra = BI_header_size;
       tree cookie, exp1;
       rval = convert (string_type_node, rval); /* for ptr arithmetic */
-      rval = save_expr (build_binary_op (PLUS_EXPR, rval, extra, 1));
+      rval = save_expr (build_binary_op (PLUS_EXPR, rval, extra));
       /* Store header info.  */
       cookie = build_indirect_ref (build (MINUS_EXPR,
 					  build_pointer_type (BI_header_type),
@@ -2471,7 +2470,7 @@ build_new_1 (exp)
     {
       /* Did we modify the storage?  */
       tree ifexp = build_binary_op (NE_EXPR, alloc_node,
-				    integer_zero_node, 1);
+				    integer_zero_node);
       rval = build_conditional_expr (ifexp, rval, alloc_node);
     }
 
@@ -2541,8 +2540,7 @@ build_vec_delete_1 (base, maxindex, type, auto_delete_vec, auto_delete,
       tree base_tbd = cp_convert (ptype,
 				  build_binary_op (MINUS_EXPR,
 						   cp_convert (ptr_type_node, base),
-						   BI_header_size,
-						   1));
+						   BI_header_size));
       /* This is the real size */
       virtual_size = size_binop (PLUS_EXPR, virtual_size, BI_header_size);
       body = build_expr_list (NULL_TREE,
@@ -2597,8 +2595,7 @@ build_vec_delete_1 (base, maxindex, type, auto_delete_vec, auto_delete,
 	  base_tbd = cp_convert (ptype,
 				 build_binary_op (MINUS_EXPR,
 						  cp_convert (string_type_node, base),
-						  BI_header_size,
-						  1));
+						  BI_header_size));
 	  /* True size with header.  */
 	  virtual_size = size_binop (PLUS_EXPR, virtual_size, BI_header_size);
 	}
@@ -2697,7 +2694,7 @@ expand_vec_init_catch_clause (rval, type, maxindex, iterator)
     
   e = build_vec_delete_1 (rval,
 			  build_binary_op (MINUS_EXPR, maxindex, 
-					   iterator, 1),
+					   iterator),
 			  type,
 			  /*auto_delete_vec=*/integer_zero_node,
 			  /*auto_delete=*/integer_zero_node,
@@ -3091,7 +3088,7 @@ build_delete (type, addr, auto_delete, flags, use_global_delete)
 	ifexp = integer_one_node;
       else
 	/* Handle deleting a null pointer.  */
-	ifexp = fold (build_binary_op (NE_EXPR, addr, integer_zero_node, 1));
+	ifexp = fold (build_binary_op (NE_EXPR, addr, integer_zero_node));
 
       if (ifexp != integer_one_node)
 	expr = build (COND_EXPR, void_type_node,

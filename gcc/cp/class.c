@@ -489,7 +489,7 @@ build_vtable_entry_ref (basetype, vtbl, idx)
   i = build_c_cast (ptrdiff_type_node, build_unary_op (ADDR_EXPR, i, 0));
   i2 = build_array_ref (vtbl, build_int_2(0,0));
   i2 = build_c_cast (ptrdiff_type_node, build_unary_op (ADDR_EXPR, i2, 0));
-  i = build_binary_op (MINUS_EXPR, i, i2, 0);
+  i = build_binary_op (MINUS_EXPR, i, i2);
   i = build_tree_list (build_string (1, "i"), i);
 
   expand_asm_operands (build_string (sizeof(asm_stmt)-1, asm_stmt),

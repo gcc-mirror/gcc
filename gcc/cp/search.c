@@ -2527,7 +2527,7 @@ expand_upcast_fixups (binfo, addr, orig_addr, vbase, vbase_addr, t,
 	  /* This is a upcast, so we have to add the offset for the
 	     virtual base.  */
 	  old_delta = build_binary_op (PLUS_EXPR, old_delta,
-				       TREE_VALUE (delta), 0);
+				       TREE_VALUE (delta));
 	  if (vc)
 	    {
 	      /* If this is set, we need to subtract out the delta
@@ -2548,7 +2548,7 @@ expand_upcast_fixups (binfo, addr, orig_addr, vbase, vbase_addr, t,
    
 	      /* This is a downcast, so we have to subtract the offset
 		 for the virtual base.  */
-	      old_delta = build_binary_op (MINUS_EXPR, old_delta, vc_delta, 0);
+	      old_delta = build_binary_op (MINUS_EXPR, old_delta, vc_delta);
 	    }
 
 	  TREE_READONLY (new_delta) = 0;
@@ -2690,7 +2690,7 @@ expand_indirect_vtbls_init (binfo, true_exp, decl_ptr)
 	      warning ("recoverable internal compiler error, nobody's in charge!");
 	      in_charge_node = integer_zero_node;
 	    }
-	  in_charge_node = build_binary_op (EQ_EXPR, in_charge_node, integer_zero_node, 1);
+	  in_charge_node = build_binary_op (EQ_EXPR, in_charge_node, integer_zero_node);
 	  expand_start_cond (in_charge_node, 0);
 	  emit_insns (fixup_insns);
 	  expand_end_cond ();

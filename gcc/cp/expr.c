@@ -219,7 +219,7 @@ cplus_expand_expr (exp, target, tmode, modifier)
 	(expand_vec_init
 	 (NULL_TREE, TREE_OPERAND (exp, 0),
 	  build_binary_op (MINUS_EXPR, TREE_OPERAND (exp, 2),
-			   integer_one_node, 1),
+			   integer_one_node),
 	  TREE_OPERAND (exp, 1), 0), target, tmode, modifier);
 
     case NEW_EXPR:

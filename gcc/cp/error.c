@@ -579,7 +579,7 @@ dump_type_suffix (t, v, canonical_name)
 	  else
 	    dump_expr (fold (build_binary_op
 			     (PLUS_EXPR, TYPE_MAX_VALUE (TYPE_DOMAIN (t)),
-			      integer_one_node, 1)), 0);
+			      integer_one_node)), 0);
 	}
       OB_PUTC (']');
       dump_type_suffix (TREE_TYPE (t), v, canonical_name);

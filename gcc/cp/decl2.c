@@ -1176,7 +1176,7 @@ delete_sanity (exp, size, doing_vec, use_global_delete)
 
   if (doing_vec == 2)
     {
-      maxindex = build_binary_op (MINUS_EXPR, size, integer_one_node, 1);
+      maxindex = build_binary_op (MINUS_EXPR, size, integer_one_node);
       pedwarn ("anachronistic use of array size in vector delete");
     }
 
@@ -3176,7 +3176,7 @@ do_dtors (start)
 	    {
 	      tree sentry = get_sentry (DECL_ASSEMBLER_NAME (decl));
 	      sentry = build_unary_op (PREDECREMENT_EXPR, sentry, 0);
-	      sentry = build_binary_op (EQ_EXPR, sentry, integer_zero_node, 1);
+	      sentry = build_binary_op (EQ_EXPR, sentry, integer_zero_node);
 	      expand_start_cond (sentry, 0);
 	    }
 
@@ -3255,7 +3255,7 @@ do_ctors (start)
 	      tree sentry = get_sentry (DECL_ASSEMBLER_NAME (decl));
 	      sentry = build_unary_op (PREINCREMENT_EXPR, sentry, 0);
 	      sentry = build_binary_op
-		(EQ_EXPR, sentry, integer_one_node, 1);
+		(EQ_EXPR, sentry, integer_one_node);
 	      expand_start_cond (sentry, 0);
 	    }
 

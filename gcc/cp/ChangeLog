@@ -1,3 +1,36 @@
+1999-04-20  Mark Mitchell  <mark@codesourcery.com>
+
+	* cp-tree.h (build_binary_op): Remove unneeded parameter.
+	* class.c (build_vrable_entry_ref): Adjust call to
+	build_binary_op.
+	* decl.c (expand_static_init): Likewise.
+	(grokdeclarator): Likewise.
+	(finish_function): Likewise.
+	* decl2.c (delete_sanity): Likewise.
+	(do_dtors): Likewise.
+	(do_ctors): Likewise.
+	* error.c (dump_type_suffix): Likewise.
+	* expr.c (cplus_expand_expr): Likewise.
+	* init.c (resolve_offset_ref): Likewise.
+	(build_new): Likewise.
+	(build_new_1): Likewise.
+	(build_vec_delete_1): Likewise.
+	(expand_vec_init_catch_clause): Likewise.
+	(build_delete): Likewise.
+	* pt.c (tsubst): Likewise.
+	* rtti.c (synthesize_tinfo_fn): Likewise.
+	* search.c (expand_upcast_fixups): Likewise.
+	(expand_direct_vtbls_init): Likewise.
+	* typeck.c (get_member_function_from_ptrfunc): Likewise.
+	(build_binary_op_nodefault): Likewise.
+	(point_int_sum): Likewise.
+	(pointer_diff): Likewise.
+	(build_unary_op): Likewise.
+	(build_modify_expr): Likewise.
+	(get_delta_difference): Likewise.
+	(build_ptrmemfunc): Likewise.
+	(expand_ptrmemfunc_cst): Likewise.
+	
 1999-04-20  Jason Merrill  <jason@yorick.cygnus.com>
 
 	* decl.c (grokfndecl): Always call cplus_decl_attributes.
