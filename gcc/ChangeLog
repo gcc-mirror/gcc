@@ -1,3 +1,8 @@
+2003-03-19  Alan Modra  <amodra@bigpond.net.au>
+
+	PR target/10073
+	* combine.c (force_to_mode <NOT>): Use gen_int_mode.
+
 2003-03-18  Jakub Jelinek  <jakub@redhat.com>
 
 	* config/s390/s390.c (s390_output_dwarf_dtprel): New.
