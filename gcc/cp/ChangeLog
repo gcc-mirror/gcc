@@ -16,6 +16,28 @@
 
 1999-09-08  Mark Mitchell  <mark@codesourcery.com>
 
+	* cp-tree.h (scratch_tree_cons): Remove.
+	* call.c: Replace all uses of expr_tree_cons, saveable_tree_cons,
+	and perm_tree_cons with plain tree_cons.
+	* class.c: Likewise.
+	* decl.c: Likewise.
+	* decl2.c: Likewise.
+	* except.c: Likewise.
+	* expr.c: Likewise.
+	* init.c: Likewise.
+	* lex.c: Likewise.
+	* method.c: Likewise.
+	* parse.y: Likewise.
+	* pt.c: Likewise.
+	* repo.c: Likewise.
+	* rtti.c: Likewise.
+	* search.c: Likewise.
+	* typeck.c: Likewise.
+	* parse.c: Regenerated.
+	* tree.c (build_srcloc): Simplify.
+	
+1999-09-08  Mark Mitchell  <mark@codesourcery.com>
+
 	* cp-tree.h (lang_decl_flags): Remove permanent_attr.
 	Remove next.
 	(LANG_DECL_PERMANENT): Remove.
