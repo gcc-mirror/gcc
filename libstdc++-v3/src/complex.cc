@@ -86,20 +86,20 @@ namespace std
   cosh(const complex<FLT>& __x)
   { return complex<FLT>(ccosh(__x._M_value)); }
 
-  template<>
-  complex<FLT>
-  exp(const complex<FLT>& __x)
-  { return complex<FLT>(cexp(__x._M_value)); }
+//    template<>
+//    complex<FLT>
+//    exp(const complex<FLT>& __x)
+//    { return complex<FLT>(cexp(__x._M_value)); }
 
-  template<>
-  complex<FLT>
-  log(const complex<FLT>& __x)
-  { return complex<FLT>(c_log(__x._M_value)); }
+//    template<>
+//    complex<FLT>
+//    log(const complex<FLT>& __x)
+//    { return complex<FLT>(c_log(__x._M_value)); }
 
-  template<>
-  complex<FLT>
-  log10(const complex<FLT>& __x)
-  { return complex<FLT>(clog10(__x._M_value)); }
+//    template<>
+//    complex<FLT>
+//    log10(const complex<FLT>& __x)
+//    { return complex<FLT>(clog10(__x._M_value)); }
   
   template<>
   complex<FLT>
