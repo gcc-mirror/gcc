@@ -168,18 +168,18 @@ static rtx loop_continue;
    Therefore, at all times, == 0 indicates an invariant register;
    < 0 a conditionally invariant one.  */
 
-static int *n_times_set;
+static varray_type n_times_set;
 
 /* Original value of n_times_set; same except that this value
    is not set negative for a reg whose sets have been made candidates
    and not set to 0 for a reg that is moved.  */
 
-static int *n_times_used;
+static varray_type n_times_used;
 
 /* Index by register number, 1 indicates that the register
    cannot be moved or strength reduced.  */
 
-static char *may_not_optimize;
+static varray_type may_not_optimize;
 
 /* Nonzero means reg N has already been moved out of one loop.
    This reduces the desire to move it out of another.  */
@@ -306,7 +306,8 @@ static int reg_in_basic_block_p PROTO((rtx, rtx));
 static int consec_sets_invariant_p PROTO((rtx, int, rtx));
 static rtx libcall_other_reg PROTO((rtx, rtx));
 static int labels_in_range_p PROTO((rtx, int));
-static void count_loop_regs_set PROTO((rtx, rtx, char *, rtx *, int *, int));
+static void count_loop_regs_set PROTO((rtx, rtx, varray_type, varray_type,
+				       int *, int)); 
 static void note_addr_stored PROTO((rtx, rtx));
 static int loop_reg_used_before_p PROTO((rtx, rtx, rtx, rtx, rtx));
 static void scan_loop PROTO((rtx, rtx, int));
@@ -324,7 +325,7 @@ static void add_label_notes PROTO((rtx, rtx));
 static void move_movables PROTO((struct movable *, int, int, rtx, rtx, int));
 static int count_nonfixed_reads PROTO((rtx));
 static void strength_reduce PROTO((rtx, rtx, rtx, int, rtx, rtx, int));
-static void find_single_use_in_loop PROTO((rtx, rtx, rtx *));
+static void find_single_use_in_loop PROTO((rtx, rtx, varray_type));
 static int valid_initial_value_p PROTO((rtx, rtx, int, rtx));
 static void find_mem_givs PROTO((rtx, rtx, int, rtx, rtx));
 static void record_biv PROTO((struct induction *, rtx, rtx, rtx, rtx, int, int));
@@ -348,7 +349,8 @@ static void record_initial PROTO((rtx, rtx));
 static void update_reg_last_use PROTO((rtx, rtx));
 static rtx next_insn_in_loop PROTO((rtx, rtx, rtx, rtx));
 static void load_mems_and_recount_loop_regs_set PROTO((rtx, rtx, rtx,
-						       rtx, rtx *, int *));
+						       rtx, varray_type, 
+						       int *));
 static void load_mems PROTO((rtx, rtx, rtx, rtx));
 static int insert_loop_mem PROTO((rtx *, void *));
 static int replace_loop_mem PROTO((rtx *, void *));
@@ -678,7 +680,7 @@ scan_loop (loop_start, end, unroll_p)
   /* If we have calls, contains the insn in which a register was used
      if it was used exactly once; contains const0_rtx if it was used more
      than once.  */
-  rtx *reg_single_usage = 0;
+  varray_type reg_single_usage = 0;
   /* Nonzero if we are scanning instructions in a sub-loop.  */
   int loop_depth = 0;
   int nregs;
@@ -757,40 +759,42 @@ scan_loop (loop_start, end, unroll_p)
     }
 
   /* Count number of times each reg is set during this loop.
-     Set may_not_optimize[I] if it is not safe to move out
+     Set VARRAY_CHAR (may_not_optimize, I) if it is not safe to move out
      the setting of register I.  If this loop has calls, set
-     reg_single_usage[I].  */
+     VARRAY_RTX (reg_single_usage, I).  */
   
   /* Allocate extra space for REGS that might be created by
-     load_mems and move_movables.  */
-  nregs = max_reg_num () + loop_mems_idx + 100;
-  n_times_set = (int *) alloca (nregs * sizeof (int));
-  n_times_used = (int *) alloca (nregs * sizeof (int));
-  may_not_optimize = (char *) alloca (nregs);
-  bzero ((char *) n_times_set, nregs * sizeof (int));
-  bzero (may_not_optimize, nregs);
+     load_mems.  We allocate a little extra slop as well, in the hopes
+     that even after the moving of movables creates some new registers
+     we won't have to reallocate these arrays.  However, we do grow
+     the arrays, if necessary, in load_mems_recount_loop_regs_set.  */
+  nregs = max_reg_num () + loop_mems_idx + 16;
+  VARRAY_INT_INIT (n_times_set, nregs, "n_times_set");
+  VARRAY_INT_INIT (n_times_used, nregs, "n_times_used");
+  VARRAY_CHAR_INIT (may_not_optimize, nregs, "may_not_optimize");
 
   if (loop_has_call)
-    {
-      reg_single_usage = (rtx *) alloca (nregs * sizeof (rtx));
-      bzero ((char *) reg_single_usage, nregs * sizeof (rtx));
-    }
+    VARRAY_RTX_INIT (reg_single_usage, nregs, "reg_single_usage");
 
   count_loop_regs_set (loop_top ? loop_top : loop_start, end,
 		       may_not_optimize, reg_single_usage, &insn_count, nregs);
 
   for (i = 0; i < FIRST_PSEUDO_REGISTER; i++)
-    may_not_optimize[i] = 1, n_times_set[i] = 1;
+    {
+      VARRAY_CHAR (may_not_optimize, i) = 1;
+      VARRAY_INT (n_times_set, i) = 1;
+    }
 
 #ifdef AVOID_CCMODE_COPIES
   /* Don't try to move insns which set CC registers if we should not
      create CCmode register copies.  */
-  for (i = FIRST_PSEUDO_REGISTER; i < nregs - loop_mems_idx; i++)
+  for (i = FIRST_PSEUDO_REGISTER; i < max_reg_num (); i++)
     if (GET_MODE_CLASS (GET_MODE (regno_reg_rtx[i])) == MODE_CC)
-      may_not_optimize[i] = 1;
+      VARRAY_CHAR (may_not_optimize, i) = 1;
 #endif
 
-  bcopy ((char *) n_times_set, (char *) n_times_used, nregs * sizeof (int));
+  bcopy ((char *) &n_times_set->data, 
+	 (char *) &n_times_used->data, nregs * sizeof (int));
 
   if (loop_dump_stream)
     {
@@ -828,7 +832,7 @@ scan_loop (loop_start, end, unroll_p)
       if (GET_CODE (p) == INSN
 	  && (set = single_set (p))
 	  && GET_CODE (SET_DEST (set)) == REG
-	  && ! may_not_optimize[REGNO (SET_DEST (set))])
+	  && ! VARRAY_CHAR (may_not_optimize, REGNO (SET_DEST (set))))
 	{
 	  int tem1 = 0;
 	  int tem2 = 0;
@@ -884,11 +888,13 @@ scan_loop (loop_start, end, unroll_p)
 	  else if ((tem = invariant_p (src))
 		   && (dependencies == 0
 		       || (tem2 = invariant_p (dependencies)) != 0)
-		   && (n_times_set[REGNO (SET_DEST (set))] == 1
+		   && (VARRAY_INT (n_times_set, 
+				   REGNO (SET_DEST (set))) == 1
 		       || (tem1
-			   = consec_sets_invariant_p (SET_DEST (set),
-						      n_times_set[REGNO (SET_DEST (set))],
-						      p)))
+			   = consec_sets_invariant_p 
+			   (SET_DEST (set),
+			    VARRAY_INT (n_times_set, REGNO (SET_DEST (set))),
+			    p)))
 		   /* If the insn can cause a trap (such as divide by zero),
 		      can't move it unless it's guaranteed to be executed
 		      once loop is entered.  Even a function call might
@@ -914,12 +920,12 @@ scan_loop (loop_start, end, unroll_p)
 		 Don't do this if P has a REG_RETVAL note or if we have
 		 SMALL_REGISTER_CLASSES and SET_SRC is a hard register.  */
 
-	      if (reg_single_usage && reg_single_usage[regno] != 0
-		  && reg_single_usage[regno] != const0_rtx
+	      if (reg_single_usage && VARRAY_RTX (reg_single_usage, regno) != 0
+		  && VARRAY_RTX (reg_single_usage, regno) != const0_rtx
 		  && REGNO_FIRST_UID (regno) == INSN_UID (p)
 		  && (REGNO_LAST_UID (regno)
-		      == INSN_UID (reg_single_usage[regno]))
-		  && n_times_set[REGNO (SET_DEST (set))] == 1
+		      == INSN_UID (VARRAY_RTX (reg_single_usage, regno)))
+		  && VARRAY_INT (n_times_set, regno) == 1
 		  && ! side_effects_p (SET_SRC (set))
 		  && ! find_reg_note (p, REG_RETVAL, NULL_RTX)
 		  && (! SMALL_REGISTER_CLASSES
@@ -929,22 +935,25 @@ scan_loop (loop_start, end, unroll_p)
 		     a call-clobbered register and the life of REGNO
 		     might span a call.  */
 		  && ! modified_between_p (SET_SRC (set), p,
-					   reg_single_usage[regno])
-		  && no_labels_between_p (p, reg_single_usage[regno])
+					   VARRAY_RTX
+					   (reg_single_usage, regno)) 
+		  && no_labels_between_p (p, VARRAY_RTX (reg_single_usage, regno))
 		  && validate_replace_rtx (SET_DEST (set), SET_SRC (set),
-					   reg_single_usage[regno]))
+					   VARRAY_RTX
+					   (reg_single_usage, regno))) 
 		{
 		  /* Replace any usage in a REG_EQUAL note.  Must copy the
 		     new source, so that we don't get rtx sharing between the
 		     SET_SOURCE and REG_NOTES of insn p.  */
-		  REG_NOTES (reg_single_usage[regno])
-		    = replace_rtx (REG_NOTES (reg_single_usage[regno]),
+		  REG_NOTES (VARRAY_RTX (reg_single_usage, regno))
+		    = replace_rtx (REG_NOTES (VARRAY_RTX
+					      (reg_single_usage, regno)), 
 				   SET_DEST (set), copy_rtx (SET_SRC (set)));
 				   
 		  PUT_CODE (p, NOTE);
 		  NOTE_LINE_NUMBER (p) = NOTE_INSN_DELETED;
 		  NOTE_SOURCE_FILE (p) = 0;
-		  n_times_set[regno] = 0;
+		  VARRAY_INT (n_times_set, regno) = 0;
 		  continue;
 		}
 
@@ -955,7 +964,8 @@ scan_loop (loop_start, end, unroll_p)
 	      m->dependencies = dependencies;
 	      m->set_dest = SET_DEST (set);
 	      m->force = 0;
-	      m->consec = n_times_set[REGNO (SET_DEST (set))] - 1;
+	      m->consec = VARRAY_INT (n_times_set, 
+				      REGNO (SET_DEST (set))) - 1;
 	      m->done = 0;
 	      m->forces = 0;
 	      m->partial = 0;
@@ -972,10 +982,10 @@ scan_loop (loop_start, end, unroll_p)
 	      m->match = 0;
 	      m->lifetime = (uid_luid[REGNO_LAST_UID (regno)]
 			     - uid_luid[REGNO_FIRST_UID (regno)]);
-	      m->savings = n_times_used[regno];
+	      m->savings = VARRAY_INT (n_times_used, regno);
 	      if (find_reg_note (p, REG_RETVAL, NULL_RTX))
 		m->savings += libcall_benefit (p);
-	      n_times_set[regno] = move_insn ? -2 : -1;
+	      VARRAY_INT (n_times_set, regno) = move_insn ? -2 : -1;
 	      /* Add M to the end of the chain MOVABLES.  */
 	      if (movables == 0)
 		movables = m;
@@ -1034,7 +1044,7 @@ scan_loop (loop_start, end, unroll_p)
 		   && !reg_mentioned_p (SET_DEST (set), SET_SRC (set1)))
 	    {
 	      register int regno = REGNO (SET_DEST (set));
-	      if (n_times_set[regno] == 2)
+	      if (VARRAY_INT (n_times_set, regno) == 2)
 		{
 		  register struct movable *m;
 		  m = (struct movable *) alloca (sizeof (struct movable));
@@ -1084,7 +1094,7 @@ scan_loop (loop_start, end, unroll_p)
 		  m->lifetime = (uid_luid[REGNO_LAST_UID (regno)]
 				 - uid_luid[REGNO_FIRST_UID (regno)]);
 		  m->savings = 1;
-		  n_times_set[regno] = -1;
+		  VARRAY_INT (n_times_set, regno) = -1;
 		  /* Add M to the end of the chain MOVABLES.  */
 		  if (movables == 0)
 		    movables = m;
@@ -1161,8 +1171,8 @@ scan_loop (loop_start, end, unroll_p)
   /* Now candidates that still are negative are those not moved.
      Change n_times_set to indicate that those are not actually invariant.  */
   for (i = 0; i < nregs; i++)
-    if (n_times_set[i] < 0)
-      n_times_set[i] = n_times_used[i];
+    if (VARRAY_INT (n_times_set, i) < 0)
+      VARRAY_INT (n_times_set, i) = VARRAY_INT (n_times_used, i);
 
   /* Now that we've moved some things out of the loop, we able to
      hoist even more memory references.  There's no need to pass
@@ -1177,6 +1187,11 @@ scan_loop (loop_start, end, unroll_p)
       strength_reduce (scan_start, end, loop_top,
 		       insn_count, loop_start, end, unroll_p);
     }
+
+  VARRAY_FREE (n_times_set);
+  VARRAY_FREE (n_times_used);
+  VARRAY_FREE (may_not_optimize);
+  VARRAY_FREE (reg_single_usage);
 }
 
 /* Add elements to *OUTPUT to record all the pseudo-regs
@@ -1450,7 +1465,7 @@ combine_movables (movables, nregs)
   /* Perhaps testing m->consec_sets would be more appropriate here?  */
 
   for (m = movables; m; m = m->next)
-    if (m->match == 0 && n_times_used[m->regno] == 1 && !m->partial)
+    if (m->match == 0 && VARRAY_INT (n_times_used, m->regno) == 1 && !m->partial)
       {
 	register struct movable *m1;
 	int regno = m->regno;
@@ -1461,7 +1476,7 @@ combine_movables (movables, nregs)
 	/* We want later insns to match the first one.  Don't make the first
 	   one match any later ones.  So start this loop at m->next.  */
 	for (m1 = m->next; m1; m1 = m1->next)
-	  if (m != m1 && m1->match == 0 && n_times_used[m1->regno] == 1
+	  if (m != m1 && m1->match == 0 && VARRAY_INT (n_times_used, m1->regno) == 1
 	      /* A reg used outside the loop mustn't be eliminated.  */
 	      && !m1->global
 	      /* A reg used for zero-extending mustn't be eliminated.  */
@@ -1598,7 +1613,7 @@ rtx_equal_for_loop_p (x, y, movables)
 
   /* If we have a register and a constant, they may sometimes be
      equal.  */
-  if (GET_CODE (x) == REG && n_times_set[REGNO (x)] == -2
+  if (GET_CODE (x) == REG && VARRAY_INT (n_times_set, REGNO (x)) == -2
       && CONSTANT_P (y))
     {
       for (m = movables; m; m = m->next)
@@ -1606,7 +1621,7 @@ rtx_equal_for_loop_p (x, y, movables)
 	    && rtx_equal_p (m->set_src, y))
 	  return 1;
     }
-  else if (GET_CODE (y) == REG && n_times_set[REGNO (y)] == -2
+  else if (GET_CODE (y) == REG && VARRAY_INT (n_times_set, REGNO (y)) == -2
 	   && CONSTANT_P (x))
     {
       for (m = movables; m; m = m->next)
@@ -1837,7 +1852,7 @@ move_movables (movables, threshold, insn_count, loop_start, end, nregs)
 	      || flag_move_all_movables
 	      || (threshold * savings * m->lifetime) >= insn_count
 	      || (m->forces && m->forces->done
-		  && n_times_used[m->forces->regno] == 1))
+		  && VARRAY_INT (n_times_used, m->forces->regno) == 1))
 	    {
 	      int count;
 	      register struct movable *m1;
@@ -2128,7 +2143,7 @@ move_movables (movables, threshold, insn_count, loop_start, end, nregs)
 
 	      /* The reg set here is now invariant.  */
 	      if (! m->partial)
-		n_times_set[regno] = 0;
+		VARRAY_INT (n_times_set, regno) = 0;
 
 	      m->done = 1;
 
@@ -2185,7 +2200,7 @@ move_movables (movables, threshold, insn_count, loop_start, end, nregs)
 		      /* The reg merged here is now invariant,
 			 if the reg it matches is invariant.  */
 		      if (! m->partial)
-			n_times_set[m1->regno] = 0;
+			VARRAY_INT (n_times_set, m1->regno) = 0;
 		    }
 	    }
 	  else if (loop_dump_stream)
@@ -3087,10 +3102,10 @@ invariant_p (x)
 	  && REGNO (x) < FIRST_PSEUDO_REGISTER && call_used_regs[REGNO (x)])
 	return 0;
 
-      if (n_times_set[REGNO (x)] < 0)
+      if (VARRAY_INT (n_times_set, REGNO (x)) < 0)
 	return 2;
 
-      return n_times_set[REGNO (x)] == 0;
+      return VARRAY_INT (n_times_set, REGNO (x)) == 0;
 
     case MEM:
       /* Volatile memory references must be rejected.  Do this before
@@ -3178,7 +3193,7 @@ consec_sets_invariant_p (reg, n_sets, insn)
   rtx temp;
   /* Number of sets we have to insist on finding after INSN.  */
   int count = n_sets - 1;
-  int old = n_times_set[regno];
+  int old = VARRAY_INT (n_times_set, regno);
   int value = 0;
   int this;
 
@@ -3186,7 +3201,7 @@ consec_sets_invariant_p (reg, n_sets, insn)
   if (n_sets == 127)
     return 0;
 
-  n_times_set[regno] = 0;
+  VARRAY_INT (n_times_set, regno) = 0;
 
   while (count > 0)
     {
@@ -3225,12 +3240,12 @@ consec_sets_invariant_p (reg, n_sets, insn)
 	count--;
       else if (code != NOTE)
 	{
-	  n_times_set[regno] = old;
+	  VARRAY_INT (n_times_set, regno) = old;
 	  return 0;
 	}
     }
 
-  n_times_set[regno] = old;
+  VARRAY_INT (n_times_set, regno) = old;
   /* If invariant_p ever returned 2, we return 2.  */
   return 1 + (value & 2);
 }
@@ -3276,15 +3291,16 @@ static void
 find_single_use_in_loop (insn, x, usage)
      rtx insn;
      rtx x;
-     rtx *usage;
+     varray_type usage;
 {
   enum rtx_code code = GET_CODE (x);
   char *fmt = GET_RTX_FORMAT (code);
   int i, j;
 
   if (code == REG)
-    usage[REGNO (x)]
-      = (usage[REGNO (x)] != 0 && usage[REGNO (x)] != insn)
+    VARRAY_RTX (usage, REGNO (x))
+      = (VARRAY_RTX (usage, REGNO (x)) != 0 
+	 && VARRAY_RTX (usage, REGNO (x)) != insn)
 	? const0_rtx : insn;
 
   else if (code == SET)
@@ -3327,8 +3343,8 @@ find_single_use_in_loop (insn, x, usage)
 static void
 count_loop_regs_set (from, to, may_not_move, single_usage, count_ptr, nregs)
      register rtx from, to;
-     char *may_not_move;
-     rtx *single_usage;
+     varray_type may_not_move;
+     varray_type single_usage;
      int *count_ptr;
      int nregs;
 {
@@ -3358,7 +3374,7 @@ count_loop_regs_set (from, to, may_not_move, single_usage, count_ptr, nregs)
 	      && GET_CODE (XEXP (PATTERN (insn), 0)) == REG)
 	    /* Don't move a reg that has an explicit clobber.
 	       We might do so sometimes, but it's not worth the pain.  */
-	    may_not_move[REGNO (XEXP (PATTERN (insn), 0))] = 1;
+	    VARRAY_CHAR (may_not_move, REGNO (XEXP (PATTERN (insn), 0))) = 1;
 
 	  if (GET_CODE (PATTERN (insn)) == SET
 	      || GET_CODE (PATTERN (insn)) == CLOBBER)
@@ -3376,16 +3392,17 @@ count_loop_regs_set (from, to, may_not_move, single_usage, count_ptr, nregs)
 		     in current basic block, and it was set before,
 		     it must be set in two basic blocks, so it cannot
 		     be moved out of the loop.  */
-		  if (n_times_set[regno] > 0 && last_set[regno] == 0)
-		    may_not_move[regno] = 1;
+		  if (VARRAY_INT (n_times_set, regno) > 0
+		      && last_set[regno] == 0)
+		    VARRAY_CHAR (may_not_move, regno) = 1;
 		  /* If this is not first setting in current basic block,
 		     see if reg was used in between previous one and this.
 		     If so, neither one can be moved.  */
 		  if (last_set[regno] != 0
 		      && reg_used_between_p (dest, last_set[regno], insn))
-		    may_not_move[regno] = 1;
-		  if (n_times_set[regno] < 127)
-		    ++n_times_set[regno];
+		    VARRAY_CHAR (may_not_move, regno) = 1;
+		  if (VARRAY_INT (n_times_set, regno) < 127)
+		    ++VARRAY_INT (n_times_set, regno);
 		  last_set[regno] = insn;
 		}
 	    }
@@ -3398,7 +3415,7 @@ count_loop_regs_set (from, to, may_not_move, single_usage, count_ptr, nregs)
 		  if (GET_CODE (x) == CLOBBER && GET_CODE (XEXP (x, 0)) == REG)
 		    /* Don't move a reg that has an explicit clobber.
 		       It's not worth the pain to try to do it correctly.  */
-		    may_not_move[REGNO (XEXP (x, 0))] = 1;
+		    VARRAY_CHAR (may_not_move, REGNO (XEXP (x, 0))) = 1;
 
 		  if (GET_CODE (x) == SET || GET_CODE (x) == CLOBBER)
 		    {
@@ -3411,13 +3428,14 @@ count_loop_regs_set (from, to, may_not_move, single_usage, count_ptr, nregs)
 		      if (GET_CODE (dest) == REG)
 			{
 			  register int regno = REGNO (dest);
-			  if (n_times_set[regno] > 0 && last_set[regno] == 0)
-			    may_not_move[regno] = 1;
+			  if (VARRAY_INT (n_times_set, regno) > 0 
+			      && last_set[regno] == 0)
+			    VARRAY_CHAR (may_not_move, regno) = 1;
 			  if (last_set[regno] != 0
 			      && reg_used_between_p (dest, last_set[regno], insn))
-			    may_not_move[regno] = 1;
-			  if (n_times_set[regno] < 127)
-			    ++n_times_set[regno];
+			    VARRAY_CHAR (may_not_move, regno) = 1;
+			  if (VARRAY_INT (n_times_set, regno) < 127)
+			    ++VARRAY_INT (n_times_set, regno);
 			  last_set[regno] = insn;
 			}
 		    }
@@ -3745,7 +3763,7 @@ strength_reduce (scan_start, end, loop_top, insn_count,
       if (reg_iv_type[bl->regno] != BASIC_INDUCT
 	  /* Above happens if register modified by subreg, etc.  */
 	  /* Make sure it is not recognized as a basic induction var: */
-	  || n_times_set[bl->regno] != bl->biv_count
+	  || VARRAY_INT (n_times_set, bl->regno) != bl->biv_count
 	  /* If never incremented, it is invariant that we decided not to
 	     move.  So leave it alone.  */
 	  || ! bl->incremented)
@@ -3906,7 +3924,7 @@ strength_reduce (scan_start, end, loop_top, insn_count,
       if (GET_CODE (p) == INSN
 	  && (set = single_set (p))
 	  && GET_CODE (SET_DEST (set)) == REG
-	  && ! may_not_optimize[REGNO (SET_DEST (set))])
+	  && ! VARRAY_CHAR (may_not_optimize, REGNO (SET_DEST (set))))
 	{
 	  rtx src_reg;
 	  rtx add_val;
@@ -3932,7 +3950,7 @@ strength_reduce (scan_start, end, loop_top, insn_count,
 	      /* Don't recognize a BASIC_INDUCT_VAR here.  */
 	      && dest_reg != src_reg
 	      /* This must be the only place where the register is set.  */
-	      && (n_times_set[REGNO (dest_reg)] == 1
+	      && (VARRAY_INT (n_times_set, REGNO (dest_reg)) == 1
 		  /* or all sets must be consecutive and make a giv.  */
 		  || (benefit = consec_sets_giv (benefit, p,
 						 src_reg, dest_reg,
@@ -3948,7 +3966,7 @@ strength_reduce (scan_start, end, loop_top, insn_count,
 		benefit += libcall_benefit (p);
 
 	      /* Skip the consecutive insns, if there are any.  */
-	      for (count = n_times_set[REGNO (dest_reg)] - 1;
+	      for (count = VARRAY_INT (n_times_set, REGNO (dest_reg)) - 1;
 		   count > 0; count--)
 		{
 		  /* If first insn of libcall sequence, skip to end.
@@ -4890,7 +4908,7 @@ record_giv (v, insn, src_reg, dest_reg, mult_val, add_val, benefit,
       v->lifetime = (uid_luid[REGNO_LAST_UID (REGNO (dest_reg))]
 		     - uid_luid[REGNO_FIRST_UID (REGNO (dest_reg))]);
 
-      v->times_used = n_times_used[REGNO (dest_reg)];
+      v->times_used = VARRAY_INT (n_times_used, REGNO (dest_reg));
 
       /* If the lifetime is zero, it means that this register is
 	 really a dead store.  So mark this as a giv that can be
@@ -6050,7 +6068,7 @@ consec_sets_giv (first_benefit, p, src_reg, dest_reg,
   reg_iv_type[REGNO (dest_reg)] = GENERAL_INDUCT;
   reg_iv_info[REGNO (dest_reg)] = v;
 
-  count = n_times_set[REGNO (dest_reg)] - 1;
+  count = VARRAY_INT (n_times_set, REGNO (dest_reg)) - 1;
 
   while (count > 0)
     {
@@ -6322,12 +6340,12 @@ combine_givs_used_once (g1, g2)
      struct induction *g1, *g2;
 {
   if (g1->giv_type == DEST_REG
-      && n_times_used[REGNO (g1->dest_reg)] == 1
+      && VARRAY_INT (n_times_used, REGNO (g1->dest_reg)) == 1
       && reg_mentioned_p (g1->dest_reg, PATTERN (g2->insn)))
     return -1;
 
   if (g2->giv_type == DEST_REG
-      && n_times_used[REGNO (g2->dest_reg)] == 1
+      && VARRAY_INT (n_times_used, REGNO (g2->dest_reg)) == 1
       && reg_mentioned_p (g2->dest_reg, PATTERN (g1->insn)))
     return 1;
 
@@ -8398,6 +8416,8 @@ insert_loop_mem (mem, data)
   loop_mems[loop_mems_idx].optimize = (GET_MODE (m) != BLKmode);
   loop_mems[loop_mems_idx].reg = NULL_RTX;
   ++loop_mems_idx;
+
+  return 0;
 }
 
 /* Like load_mems, but also ensures that N_TIMES_SET,
@@ -8411,7 +8431,7 @@ load_mems_and_recount_loop_regs_set (scan_start, end, loop_top, start,
      rtx end;
      rtx loop_top;
      rtx start;
-     rtx *reg_single_usage;
+     varray_type reg_single_usage;
      int *insn_count;
 {
   int nregs = max_reg_num ();
@@ -8428,32 +8448,42 @@ load_mems_and_recount_loop_regs_set (scan_start, end, loop_top, start,
       old_nregs = nregs;
       nregs = max_reg_num ();
 
-      /* Note that we assume here that enough room was allocated in
-	 the various arrays to accomodate the extra registers created
-	 by load_mems.  */
-      bzero ((char *) n_times_set, nregs * sizeof (int));
-      bzero (may_not_optimize, nregs);
-      if (loop_has_call && reg_single_usage)
-	bzero ((char *) reg_single_usage, nregs * sizeof (rtx));
+      if (nregs > n_times_set->num_elements)
+	{
+	  /* Grow all the arrays.  */
+	  VARRAY_GROW (n_times_set, nregs);
+	  VARRAY_GROW (n_times_used, nregs);
+	  VARRAY_GROW (may_not_optimize, nregs);
+	  if (reg_single_usage)
+	    VARRAY_GROW (reg_single_usage, nregs);
+	}
+      /* Clear the arrays */
+      bzero ((char *) &n_times_set->data, nregs * sizeof (int));
+      bzero ((char *) &may_not_optimize->data, nregs * sizeof (char));
+      if (reg_single_usage)
+	bzero ((char *) &reg_single_usage->data, nregs * sizeof (rtx));
 
       count_loop_regs_set (loop_top ? loop_top : start, end,
 			   may_not_optimize, reg_single_usage,
 			   insn_count, nregs); 
 
       for (i = 0; i < FIRST_PSEUDO_REGISTER; i++)
-	may_not_optimize[i] = 1, n_times_set[i] = 1;
+	{
+	  VARRAY_CHAR (may_not_optimize, i) = 1;
+	  VARRAY_INT (n_times_set, i) = 1;
+	}
       
 #ifdef AVOID_CCMODE_COPIES
       /* Don't try to move insns which set CC registers if we should not
 	 create CCmode register copies.  */
-      for (i = FIRST_PSEUDO_REGISTER; i < nregs - loop_mems_idx; i++)
+      for (i = FIRST_PSEUDO_REGISTER; i < max_reg_num (); i++)
 	if (GET_MODE_CLASS (GET_MODE (regno_reg_rtx[i])) == MODE_CC)
-	  may_not_optimize[i] = 1;
+	  VARRAY_CHAR (may_not_optimize, i) = 1;
 #endif
 
       /* Set n_times_used for the new registers.  */
-      bcopy ((char *) (n_times_set + old_nregs),
-	     (char *) (n_times_used + old_nregs),
+      bcopy ((char *) (&n_times_set->data.i[0] + old_nregs),
+	     (char *) (&n_times_used->data.i[0] + old_nregs),
 	     (nregs - old_nregs) * sizeof (int));
     }
 }
