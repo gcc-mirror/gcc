@@ -1,3 +1,7 @@
+Mon Apr 27 22:52:31 1998  Richard Henderson  <rth@cygnus.com>
+
+	* libU77/ltime_.c: Bounce the ftnint argument through a local time_t.
+
 Sun Apr 26 18:07:56 1998  Richard Henderson  <rth@cygnus.com>
 
 	* configure.in: Adjust include paths in F2C_INTEGER and F2C_LONGINT

@@ -33,14 +33,15 @@ Boston, MA 02111-1307, USA.  */
 #include "f2c.h"
 
 #ifdef KR_headers
-/* Subroutine */ int G77_ltime_0 (stime, tarray)
-     integer *stime, tarray[9];
+/* Subroutine */ int G77_ltime_0 (xstime, tarray)
+     integer *xstime, tarray[9];
 #else
-/* Subroutine */ int G77_ltime_0 (const integer * stime, integer tarray[9])
+/* Subroutine */ int G77_ltime_0 (const integer * xstime, integer tarray[9])
 #endif
 {
   struct tm *lt;
-  lt = localtime ((time_t *) stime);
+  time_t stime = *xstime;
+  lt = localtime (&stime);
   tarray[0] = lt->tm_sec;
   tarray[1] = lt->tm_min;
   tarray[2] = lt->tm_hour;
