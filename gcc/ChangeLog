@@ -1,3 +1,9 @@
+2004-01-30  Dara Hazeghi  <dhazeghi@yahoo.com>
+
+	PR bootstrap/9249
+	* configure.ac: Disable __cxa_atexit if not supported.
+	* configure: Regenerate.
+
 2004-01-30  Herman A.J. ten Brugge <hermantenbrugge@home.nl>
 
 	PR target/12978

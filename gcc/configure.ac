@@ -1136,11 +1136,13 @@ fi
 
 if test x$enable___cxa_atexit = xyes || \
    test x$enable___cxa_atexit = x -a x$default_use_cxa_atexit = xyes; then
-  AC_DEFINE(DEFAULT_USE_CXA_ATEXIT, 1,
-  [Define if you want to use __cxa_atexit, rather than atexit, to
-   register C++ destructors for local statics and global objects.
-   This is essential for fully standards-compliant handling of
-   destructors, but requires __cxa_atexit in libc.])
+   AC_CHECK_FUNC(__cxa_atexit,
+	[AC_DEFINE(DEFAULT_USE_CXA_ATEXIT, 1,
+   	[Define if you want to use __cxa_atexit, rather than atexit, to
+   	register C++ destructors for local statics and global objects.
+   	This is essential for fully standards-compliant handling of
+   	destructors, but requires __cxa_atexit in libc.])],
+	echo "__cxa_atexit can't be enabled on this target")
 fi
 
 # Look for a file containing extra machine modes.
