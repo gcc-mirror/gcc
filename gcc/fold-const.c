@@ -4515,17 +4515,22 @@ extract_muldiv (t, c, code, wide_type)
       break;
 
     case CONVERT_EXPR:  case NON_LVALUE_EXPR:  case NOP_EXPR:
-      /* If op0 is an expression, and is unsigned, and the type is
-	 smaller than ctype, then we cannot widen the expression.  */
+      /* If op0 is an expression... */
       if ((TREE_CODE_CLASS (TREE_CODE (op0)) == '<'
 	   || TREE_CODE_CLASS (TREE_CODE (op0)) == '1'
 	   || TREE_CODE_CLASS (TREE_CODE (op0)) == '2'
 	   || TREE_CODE_CLASS (TREE_CODE (op0)) == 'e')
-	  && TREE_UNSIGNED (TREE_TYPE (op0))
-	  && ! (TREE_CODE (TREE_TYPE (op0)) == INTEGER_TYPE
-		&& TYPE_IS_SIZETYPE (TREE_TYPE (op0)))
-	  && (GET_MODE_SIZE (TYPE_MODE (ctype))
-              > GET_MODE_SIZE (TYPE_MODE (TREE_TYPE (op0)))))
+	  /* ...and is unsigned, and its type is smaller than ctype,
+	     then we cannot pass through this widening.  */
+	  && ((TREE_UNSIGNED (TREE_TYPE (op0))
+	       && ! (TREE_CODE (TREE_TYPE (op0)) == INTEGER_TYPE
+		     && TYPE_IS_SIZETYPE (TREE_TYPE (op0)))
+	       && (GET_MODE_SIZE (TYPE_MODE (ctype))
+		   > GET_MODE_SIZE (TYPE_MODE (TREE_TYPE (op0)))))
+	      /* ...and its type is larger than ctype,
+		 then we cannot pass through this truncation.  */
+	      || (GET_MODE_SIZE (TYPE_MODE (ctype))
+		  < GET_MODE_SIZE (TYPE_MODE (TREE_TYPE (op0))))))
 	break;
 
       /* Pass the constant down and see if we can make a simplification.  If

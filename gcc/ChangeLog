@@ -1,3 +1,12 @@
+2002-06-14  Eric Botcazou  <ebotcazou@multimania.com>
+
+	PR c/6677
+	* convert.c (convert_to_integer) [LSHIFT_EXPR]: Don't pass
+	the truncation down when the target type is signed.
+	[trunc1]: Use unsigned arithmetic for LSHIFT_EXPR.
+	* fold-const.c (extract_muldiv) [NOP_EXPR]: Don't pass through
+	the conversion if the target type is a smaller type.
+
 Thu Jun 13 18:27:05 CEST 2002  Jan Hubicka  <jh@suse.cz>
 	
 	* i386.c (ix86_expand_movstr):  Fix pasto.

@@ -227,9 +227,11 @@ convert_to_integer (type, expr)
 
 	case LSHIFT_EXPR:
 	  /* We can pass truncation down through left shifting
-	     when the shift count is a nonnegative constant.  */
+	     when the shift count is a nonnegative constant and
+	     the target type is unsigned.  */
 	  if (TREE_CODE (TREE_OPERAND (expr, 1)) == INTEGER_CST
 	      && tree_int_cst_sgn (TREE_OPERAND (expr, 1)) >= 0
+	      && TREE_UNSIGNED (type)
 	      && TREE_CODE (TYPE_SIZE (type)) == INTEGER_CST)
 	    {
 	      /* If shift count is less than the width of the truncated type,
@@ -311,12 +313,15 @@ convert_to_integer (type, expr)
 		    /* Don't do unsigned arithmetic where signed was wanted,
 		       or vice versa.
 		       Exception: if both of the original operands were
-		       unsigned then can safely do the work as unsigned.
+		       unsigned then we can safely do the work as unsigned;
+		       if we are distributing through a LSHIFT_EXPR, we must
+		       do the work as unsigned to avoid a signed overflow.
 		       And we may need to do it as unsigned
 		       if we truncate to the original size.  */
 		    typex = ((TREE_UNSIGNED (TREE_TYPE (expr))
 			      || (TREE_UNSIGNED (TREE_TYPE (arg0))
-				  && TREE_UNSIGNED (TREE_TYPE (arg1))))
+				  && TREE_UNSIGNED (TREE_TYPE (arg1)))
+			      || ex_form == LSHIFT_EXPR)
 			     ? unsigned_type (typex) : signed_type (typex));
 		    return convert (type,
 				    fold (build (ex_form, typex,
