@@ -1,3 +1,8 @@
+2001-05-11  Alexandre Oliva  <aoliva@redhat.com>
+
+	* config/mn10300/t-mn10300 (dp-bit.c, fp-bit.c): Don't define
+	FLOAT_BIT_ORDER_MISMATCH.
+
 2001-05-10  David Edelsohn  <edelsohn@gnu.org>
 
 	* expr.c (emit_push_insn): Convert PUSH_ROUNDING argument to
