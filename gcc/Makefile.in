@@ -2843,7 +2843,8 @@ gen-protos$(build_exeext): $(GEN_PROTOS_OBJS)
 	${CC_FOR_BUILD} $(BUILD_CFLAGS) $(BUILD_LDFLAGS) -o $@ \
 	  $(GEN_PROTOS_OBJS) $(BUILD_LIBS)
 
-gen-protos.o: gen-protos.c scan.h $(BCONFIG_H) $(SYSTEM_H) coretypes.h $(GTM_H)
+gen-protos.o: gen-protos.c scan.h $(BCONFIG_H) $(SYSTEM_H) coretypes.h \
+	      $(GTM_H) errors.h
 
 scan.o: scan.c scan.h $(BCONFIG_H) $(SYSTEM_H) coretypes.h $(GTM_H)
 
