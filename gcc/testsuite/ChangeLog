@@ -1,5 +1,7 @@
 2002-09-20  Hans-Peter Nilsson  <hp@bitrange.com>
 
+	* gcc.c-torture/execute/ieee/mzero3.c: New test.
+
 	* lib/scanasm.exp (scan-assembler-dem, scan-assembler-dem-not):
 	Adjust for c++filt moved to binutils.  Remove spurious duplicate
 	setting of cxxfilt.
