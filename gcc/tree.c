@@ -2263,6 +2263,8 @@ contains_placeholder_p (exp)
      in it since it is supplying a value for it.  */
   if (code == WITH_RECORD_EXPR)
     return 0;
+  else if (code == PLACEHOLDER_EXPR)
+    return 1;
 
   switch (TREE_CODE_CLASS (code))
     {
