@@ -811,7 +811,7 @@ static void retry_incomplete_types	PARAMS ((void));
 
 /************************ general utility functions **************************/
 
-inline static int
+static inline int
 is_pseudo_reg (rtl)
      register rtx rtl;
 {
@@ -820,7 +820,7 @@ is_pseudo_reg (rtl)
 	      && (REGNO (XEXP (rtl, 0)) >= FIRST_PSEUDO_REGISTER)));
 }
 
-inline static tree
+static inline tree
 type_main_variant (type)
      register tree type;
 {
@@ -842,7 +842,7 @@ type_main_variant (type)
 
 /* Return non-zero if the given type node represents a tagged type.  */
 
-inline static int
+static inline int
 is_tagged_type (type)
      register tree type;
 {
@@ -4660,7 +4660,7 @@ output_decls_for_scope (stmt, depth)
 
 /* Is this a typedef we can avoid emitting?  */
 
-inline static int
+static inline int
 is_redundant_typedef (decl)
      register tree decl;
 {
