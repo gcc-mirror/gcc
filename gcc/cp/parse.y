@@ -290,8 +290,12 @@ static tree current_declspecs;
    a declspec list have been updated.  */
 static tree prefix_attributes;
 
-/* When defining an aggregate, this is the most recent one being defined.  */
+/* When defining an aggregate, this is the kind of the most recent one
+   being defined.  (For example, this might be class_type_node.)  */
 static tree current_aggr;
+
+/* When defining an enumeration, this is the type of the enumeration.  */
+static tree current_enum_type;
 
 /* Tell yyparse how to print a token's value, if yydebug is set.  */
 
@@ -1373,7 +1377,8 @@ primary:
 	| '(' error ')'
 		{ $$ = error_mark_node; }
 	| '('
-		{ if (current_function_decl == 0)
+		{ tree scope = current_scope ();
+		  if (!scope || TREE_CODE (scope) != FUNCTION_DECL)
 		    {
 		      error ("braced-group within expression allowed only inside a function");
 		      YYERROR;
@@ -2058,26 +2063,30 @@ pending_defargs:
 structsp:
 	  ENUM identifier '{'
 		{ $<itype>3 = suspend_momentary ();
-		  $<ttype>$ = start_enum ($2); }
+		  $<ttype>$ = current_enum_type;
+		  current_enum_type = start_enum ($2); }
 	  enumlist maybecomma_warn '}'
-		{ TYPE_VALUES ($<ttype>4) = $5;
-		  $$.t = finish_enum ($<ttype>4);
+		{ TYPE_VALUES (current_enum_type) = $5;
+		  $$.t = finish_enum (current_enum_type);
 		  $$.new_type_flag = 1;
+		  current_enum_type = $<ttype>4;
 		  resume_momentary ((int) $<itype>3);
-		  check_for_missing_semicolon ($<ttype>4); }
+		  check_for_missing_semicolon ($$.t); }
 	| ENUM identifier '{' '}'
 		{ $$.t = finish_enum (start_enum ($2));
 		  $$.new_type_flag = 1;
 		  check_for_missing_semicolon ($$.t); }
 	| ENUM '{'
 		{ $<itype>2 = suspend_momentary ();
-		  $<ttype>$ = start_enum (make_anon_name ()); }
+		  $<ttype>$ = current_enum_type;
+		  current_enum_type = start_enum (make_anon_name ()); }
 	  enumlist maybecomma_warn '}'
-                { TYPE_VALUES ($<ttype>3) = $4;
-		  $$.t = finish_enum ($<ttype>3);
+                { TYPE_VALUES (current_enum_type) = $4;
+		  $$.t = finish_enum (current_enum_type);
+		  $$.new_type_flag = 1;
+		  current_enum_type = $<ttype>4;
 		  resume_momentary ((int) $<itype>1);
-		  check_for_missing_semicolon ($<ttype>3);
-		  $$.new_type_flag = 1; }
+		  check_for_missing_semicolon ($$.t); }
 	| ENUM '{' '}'
 		{ $$.t = finish_enum (start_enum (make_anon_name()));
 		  $$.new_type_flag = 1;
@@ -2585,9 +2594,9 @@ enumlist:
 
 enumerator:
 	  identifier
-		{ $$ = build_enumerator ($$, NULL_TREE); }
+		{ $$ = build_enumerator ($$, NULL_TREE, current_enum_type); }
 	| identifier '=' expr_no_commas
-		{ $$ = build_enumerator ($$, $3); }
+		{ $$ = build_enumerator ($$, $3, current_enum_type); }
 	;
 
 /* ANSI new-type-id (5.3.4) */

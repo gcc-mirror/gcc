@@ -1,5 +1,24 @@
 1998-08-28  Mark Mitchell  <mark@markmitchell.com>
 
+	* cp-tree.h (build_enumerator): Take the enumeration type as a
+	paramter. 
+	* decl.c (finish_enum): Don't set the TREE_TYPE for the
+	enumeration constant values if we're processing_template_decls.
+	Don't set the type for the CONST_DECLs either; that's done in
+	build_enumerator. (
+	(build_enumerator): Take the enumeration type as a
+	paramter. 
+	* lex.c (do_identifier): Don't resolve enumeration constants while
+	processing template declarations, even if they happen to be
+	TEMPLATE_PARM_INDEXs. 
+	* parse.y (current_enum_type): New variable.
+	(primary): Don't allow statement-expression in local classes just
+	as we don't in global classes.
+	(structsp): Use current_enum_type.
+	(enum_list): Likewise.
+	* pt.c (tsubst_enum): Don't check for NOP_EXPRs introduced by
+	finish_enum; they no longer occur.
+	
 	* cp-tree.h (finish_base_specifier): New function.
 	* parse.y (base_class): Use it.
 	* semantics.c (finish_base_specifier): Define it.

@@ -11883,34 +11883,32 @@ finish_enum (enumtype)
 	     constant.  */
 	  decl = TREE_VALUE (pair);
 
-	  /* The type of the CONST_DECL is the type of the enumeration,
-	     not an INTEGER_TYPE.  */
-	  TREE_TYPE (decl) = enumtype;
-
 	  /* The DECL_INITIAL will be NULL if we are processing a
 	     template declaration and this enumeration constant had no
 	     explicit initializer.  */
 	  value = DECL_INITIAL (decl);
-	  if (value)
+	  if (value && !processing_template_decl)
 	    {
-	      /* Set the TREE_TYPE for the VALUE as well.  When
-		 processing a template, however, we might have a
-		 TEMPLATE_PARM_INDEX, and we should not change the
-		 type of such a thing.  */
-	      if (TREE_CODE (value) == TEMPLATE_PARM_INDEX)
-		DECL_INITIAL (decl) = value 
-		  = build1 (NOP_EXPR, enumtype, value);
+	      /* Set the TREE_TYPE for the VALUE as well.  That's so
+		 that when we call decl_constant_value we get an
+		 entity of the right type (but with the constant
+		 value).  Since we shouldn't ever call
+		 decl_constant_value on a template type, there's no
+		 reason to do that when processing_template_decl.
+		 And, if the expression is something like a
+		 TEMPLATE_PARM_INDEX or a CAST_EXPR doing so will
+		 wreak havoc on the intended type of the expression.  
+
+	         Of course, there's also no point in trying to compute
+		 minimum or maximum values if we're in a template.  */
 	      TREE_TYPE (value) = enumtype;
 
-	      if (!processing_template_decl)
-		{
-		  if (!minnode)
-		    minnode = maxnode = value;
-		  else if (tree_int_cst_lt (maxnode, value))
-		    maxnode = value;
-		  else if (tree_int_cst_lt (value, minnode))
-		    minnode = value;
-		}
+	      if (!minnode)
+		minnode = maxnode = value;
+	      else if (tree_int_cst_lt (maxnode, value))
+		maxnode = value;
+	      else if (tree_int_cst_lt (value, minnode))
+		minnode = value;
 	    }
 
 	  /* In the list we're building up, we want the enumeration
@@ -11985,14 +11983,15 @@ finish_enum (enumtype)
   return enumtype;
 }
 
-/* Build and install a CONST_DECL for one value of the
-   current enumeration type (one that was begun with start_enum).
-   Return a tree-list containing the name and its value.
+/* Build and install a CONST_DECL for an enumeration constant of the
+   enumeration type TYPE whose NAME and VALUE (if any) are provided.
    Assignment of sequential values by default is handled here.  */
 
 tree
-build_enumerator (name, value)
-     tree name, value;
+build_enumerator (name, value, type)
+     tree name;
+     tree value;
+     tree type;
 {
   tree decl, result;
   tree context;
@@ -12038,8 +12037,9 @@ build_enumerator (name, value)
 #endif
    }
 
- /* We have to always copy here; not all INTEGER_CSTs are unshared,
-    and there's no wedding ring. Look at size_int()...*/
+ /* We always have to copy here; not all INTEGER_CSTs are unshared.
+    Even in other cases, we will later (in finish_enum) be setting the
+    type of VALUE.  */
  if (value != NULL_TREE)
    value = copy_node (value);
 
@@ -12048,11 +12048,11 @@ build_enumerator (name, value)
  context = current_scope ();
  if (context && context == current_class_type)
    /* This enum declaration is local to the class.  */
-   decl = build_lang_field_decl (CONST_DECL, name, integer_type_node);
+   decl = build_lang_field_decl (CONST_DECL, name, type);
  else
    /* It's a global enum, or it's local to a function.  (Note local to
       a function could mean local to a class method.  */
-   decl = build_decl (CONST_DECL, name, integer_type_node);
+   decl = build_decl (CONST_DECL, name, type);
 
  DECL_CONTEXT (decl) = FROB_CONTEXT (context);
  DECL_INITIAL (decl) = value;
