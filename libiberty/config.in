@@ -114,6 +114,12 @@
 /* Define if you have the psignal function.  */
 #undef HAVE_PSIGNAL
 
+/* Define if you have the pstat_getdynamic function.  */
+#undef HAVE_PSTAT_GETDYNAMIC
+
+/* Define if you have the pstat_getstatic function.  */
+#undef HAVE_PSTAT_GETSTATIC
+
 /* Define if you have the putenv function.  */
 #undef HAVE_PUTENV
 
