@@ -1012,9 +1012,10 @@ really_overloaded_fn (x)
     x = TREE_OPERAND (x, 1);
   if (BASELINK_P (x))
     x = BASELINK_FUNCTIONS (x);
-  return (TREE_CODE (x) == OVERLOAD 
-	  && (OVL_CHAIN (x)
-	      || DECL_FUNCTION_TEMPLATE_P (OVL_FUNCTION (x))));
+  
+  return ((TREE_CODE (x) == OVERLOAD && OVL_CHAIN (x))
+	  || DECL_FUNCTION_TEMPLATE_P (OVL_CURRENT (x))
+	  || TREE_CODE (x) == TEMPLATE_ID_EXPR);
 }
 
 /* Return the OVERLOAD or FUNCTION_DECL inside FNS.  FNS can be an
