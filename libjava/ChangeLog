@@ -1,3 +1,9 @@
+1999-07-31  Alexandre Oliva  <oliva@dcc.unicamp.br>
+
+	* java/lang/natSystem.cc (arraycopy): Use bcopy if memmove is not
+	available.  Don't cast memmove args to (void*).
+	* configure.in: Do not abort if memmove is not available.
+
 1999-07-22  Bryce McKinlay  <bryce@albatross.co.nz>
 
 	* java/lang/natString.cc (substring): optimize where substring is
