@@ -177,7 +177,7 @@ case $basic_machine in
 	      | hppa-* | hppa1.0-* | hppa1.1-* | alpha-* | we32k-* | cydra-* | ns16k-* \
 	      | pn-* | np1-* | xps100-* | clipper-* | orion-* | sparclite-* \
 	      | pdp11-* | sh-* | powerpc-* | powerpcle-* | sparc64-* | mips64-* | mipsel-* \
-	      | mips64el-* | mips64orion-* | mips64orionel-*)
+	      | mips64el-* | mips64orion-* | mips64orionel-* | f301-*)
 		;;
 	# Recognize the various machine names and aliases which stand
 	# for a CPU type and a company and sometimes even an OS.
@@ -577,6 +577,9 @@ case $basic_machine in
 		basic_machine=vax-dec
 		os=-vms
 		;;
+       vpp*|vx|vx-*)
+               basic_machine=f301-fujitsu
+               ;;
 	vxworks960)
 		basic_machine=i960-wrs
 		os=-vxworks
@@ -686,7 +689,7 @@ case $os in
 	      | -ptx* | -coff* | -ecoff* | -winnt* | -domain* | -vsta* \
 	      | -udi* | -eabi* | -lites* | -ieee* | -go32* | -aux* \
 	      | -cygwin32* | -pe* | -psos* | -moss* | -proelf* | -rtems* \
-	      | -linux-gnu*)
+	      | -linux-gnu* | -uxpv*)
 	# Remember, each alternative MUST END IN *, to match a version number.
 		;;
 	-linux*)
@@ -861,6 +864,9 @@ case $basic_machine in
 		;;
 	*-masscomp)
 		os=-rtu
+		;;
+	f301-fujitsu)
+		os=-uxpv
 		;;
 	*)
 		os=-none

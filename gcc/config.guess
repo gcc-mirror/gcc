@@ -366,6 +366,9 @@ EOF
         FUJITSU_REL=`echo ${UNAME_RELEASE} | sed -e 's/ /_/'`
         echo "f300-fujitsu-${FUJITSU_SYS}${FUJITSU_REL}"
         exit 0 ;;
+    F301:UNIX_System_V:*:*)
+       echo f301-fujitsu-uxpv`echo $UNAME_RELEASE | sed 's/ .*//'`
+       exit 0 ;;
     hp3[0-9][05]:NetBSD:*:*)
 	echo m68k-hp-netbsd${UNAME_RELEASE}
 	exit 0 ;;
