@@ -1,14 +1,22 @@
+2003-10-10  Zack Weinberg  <zack@codesourcery.com>
+
+	* gengenrtl.c (find_formats, genheader): Make i an unsigned
+	int, remove cast of NUM_RTX_CODE.
+	* machmode.h: Make the HAVE_MACHINE_MODES #ifdef encompass the
+	entire file.  Remove the #ifs on GET_MODE_MASK etc and
+	GET_MODE_WIDER_MODE etc.
+
 2003-10-10  Eric Christopher  <echristo@redhat.com>
 
-        * lcm.c (optimize_mode_switching): Change NORMAL_MODE
-        to MODE_ENTRY and MODE_EXIT. Add MODE_AFTER for insns
-        that set mode.
-        * config/sh/sh.h (MODE_ENTRY): New macro.
-        (MODE_EXIT): Ditto.
-        (MODE_AFTER): Ditto.
-        * config/sh/sh.md: Change for MODE_AFTER. Add
-        fp_set attribute.
-        * doc/tm.texi: Document MODE_AFTER, MODE_ENTRY, and MODE_EXIT.
+	* lcm.c (optimize_mode_switching): Change NORMAL_MODE
+	to MODE_ENTRY and MODE_EXIT. Add MODE_AFTER for insns
+	that set mode.
+	* config/sh/sh.h (MODE_ENTRY): New macro.
+	(MODE_EXIT): Ditto.
+	(MODE_AFTER): Ditto.
+	* config/sh/sh.md: Change for MODE_AFTER. Add
+	fp_set attribute.
+	* doc/tm.texi: Document MODE_AFTER, MODE_ENTRY, and MODE_EXIT.
 
 2003-10-10  Zack Weinberg  <zack@codesourcery.com>
 
@@ -54,7 +62,7 @@
 	as global.
 	* config/ia64/ia64.h (ASM_APP_ON, ASM_APP_OFF): Add vers for not GAS.
 	(ASM_OUTPUT_DEBUG_LABEL): Likewise.
-	
+
 	* stor-layout.c (compute_record_mode): Don't force BLKmode if
 	field is zero-length BLKmode.
 	* expr.c (expand_expr, case COMPONENT_REF): Handle case of BLKmode

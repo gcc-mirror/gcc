@@ -97,10 +97,6 @@ extern const unsigned char mode_unit_size[NUM_MACHINE_MODES];
 extern const unsigned short mode_bitsize[NUM_MACHINE_MODES];
 #define GET_MODE_BITSIZE(MODE)  mode_bitsize[MODE]
 
-#endif /* not HAVE_MACHINE_MODES */
-
-#if defined HOST_WIDE_INT && ! defined GET_MODE_MASK
-
 /* Get a bitmask containing 1 for all bits in a word
    that fit within mode MODE.  */
 
@@ -113,11 +109,6 @@ extern const unsigned char mode_inner[NUM_MACHINE_MODES];
 /* Return the mode of the inner elements in a vector.  */
 
 #define GET_MODE_INNER(MODE) mode_inner[MODE]
-
-#endif /* defined (HOST_WIDE_INT) && ! defined GET_MODE_MASK */
-
-#if ! defined GET_MODE_WIDER_MODE || ! defined GET_MODE_ALIGNMENT \
-    || ! defined GET_CLASS_NARROWEST_MODE
 
 /* Get the next wider natural mode (eg, QI -> HI -> SI -> DI -> TI).  */
 
@@ -166,5 +157,4 @@ extern enum machine_mode byte_mode;
 extern enum machine_mode word_mode;
 extern enum machine_mode ptr_mode;
 
-#endif /* ! defined GET_MODE_WIDER_MODE || ! defined GET_MODE_ALIGNMENT
-	  || ! defined GET_CLASS_NARROWEST_MODE */
+#endif /* not HAVE_MACHINE_MODES */
