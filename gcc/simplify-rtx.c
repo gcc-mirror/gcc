@@ -2186,6 +2186,200 @@ simplify_ternary_operation (code, mode, op0_mode, op0, op1, op2)
   return 0;
 }
 
+/* Simplify SUBREG:OUTERMODE(OP:INNERMODE, BYTE)
+   Return 0 if no simplifications is possible.  */
+rtx
+simplify_subreg (outermode, op, innermode, byte)
+     rtx op;
+     unsigned int byte;
+     enum machine_mode outermode, innermode;
+{
+  /* Little bit of sanity checking.  */
+  if (innermode == VOIDmode || outermode == VOIDmode
+      || innermode == BLKmode || outermode == BLKmode)
+    abort ();
+
+  if (GET_MODE (op) != innermode
+      && GET_MODE (op) != VOIDmode)
+    abort ();
+
+  if (byte % GET_MODE_SIZE (outermode)
+      || byte >= GET_MODE_SIZE (innermode))
+    abort ();
+
+  /* Attempt to simplify constant to non-SUBREG expression.  */
+  if (CONSTANT_P (op))
+    {
+      int offset, part;
+      unsigned HOST_WIDE_INT val;
+
+      /* ??? This code is partly redundant with code bellow, but can handle
+	 the subregs of floats and similar corner cases.
+	 Later it we should move all simplification code here and rewrite
+	 GEN_LOWPART_IF_POSSIBLE, GEN_HIGHPART, OPERAND_SUBWORD and friends
+	 using SIMPLIFY_SUBREG.  */
+      if (subreg_lowpart_parts_p (outermode, innermode, byte))
+	{
+	  rtx new = gen_lowpart_if_possible (outermode, op);
+	  if (new)
+	    return new;
+	}
+
+      /* Similar comment as above apply here.  */
+      if (GET_MODE_SIZE (outermode) == UNITS_PER_WORD
+	  && GET_MODE_SIZE (innermode) > UNITS_PER_WORD
+	  && GET_MODE_CLASS (outermode) == MODE_INT)
+	{
+	  rtx new = operand_subword (op,
+				     (byte / UNITS_PER_WORD),
+				     0, innermode);
+	  if (new)
+	    return new;
+	}
+
+      offset = byte * BITS_PER_UNIT;
+      switch (GET_CODE (op))
+	{
+	case CONST_DOUBLE:
+	  if (GET_MODE (op) != VOIDmode)
+	    break;
+
+	  /* We can't handle this case yet.  */
+	  if (GET_MODE_BITSIZE (outermode) >= HOST_BITS_PER_WIDE_INT)
+	    return NULL;
+
+	  part = offset >= HOST_BITS_PER_WIDE_INT;
+	  if ((BITS_PER_WORD > HOST_BITS_PER_WIDE_INT
+	       && BYTES_BIG_ENDIAN)
+	      || (BITS_PER_WORD <= HOST_BITS_PER_WIDE_INT
+		  && WORDS_BIG_ENDIAN))
+	    part = !part;
+	  val = part ? CONST_DOUBLE_HIGH (op) : CONST_DOUBLE_LOW (op);
+	  offset %= HOST_BITS_PER_WIDE_INT;
+
+	  /* We've already picked the word we want from a double, so 
+	     pretend this is actually an integer.  */
+	  innermode = mode_for_size (HOST_BITS_PER_WIDE_INT, MODE_INT, 0);
+
+	  /* FALLTHROUGH */
+	case CONST_INT:
+	  if (GET_CODE (op) == CONST_INT)
+	    val = INTVAL (op);
+
+	  /* We don't handle synthetizing of non-integral constants yet.  */
+	  if (GET_MODE_CLASS (outermode) != MODE_INT)
+	    return NULL;
+
+	  if (BYTES_BIG_ENDIAN || WORDS_BIG_ENDIAN)
+	    {
+	      if (WORDS_BIG_ENDIAN)
+		offset = (GET_MODE_BITSIZE (innermode)
+			  - GET_MODE_BITSIZE (outermode) - offset);
+	      if (BYTES_BIG_ENDIAN != WORDS_BIG_ENDIAN
+		  && GET_MODE_SIZE (outermode) < UNITS_PER_WORD)
+		offset = (offset + BITS_PER_WORD - GET_MODE_BITSIZE (outermode)
+			  - 2 * (offset % BITS_PER_WORD));
+	    }
+
+	  if (offset >= HOST_BITS_PER_WIDE_INT)
+	    return ((HOST_WIDE_INT) val < 0) ? constm1_rtx : const0_rtx;
+	  else
+	    {
+	      val >>= offset;
+	      if (GET_MODE_BITSIZE (outermode) < HOST_BITS_PER_WIDE_INT)
+		val = trunc_int_for_mode (val, outermode);
+	      return GEN_INT (val);
+	    }
+	default:
+	  break;
+	}
+    }
+
+  /* Changing mode twice with SUBREG => just change it once,
+     or not at all if changing back op starting mode.  */
+  if (GET_CODE (op) == SUBREG)
+    {
+      enum machine_mode innermostmode = GET_MODE (SUBREG_REG (op));
+      unsigned int final_offset = byte + SUBREG_BYTE (op);
+      rtx new;
+
+      if (outermode == innermostmode
+	  && byte == 0 && SUBREG_BYTE (op) == 0)
+	return SUBREG_REG (op);
+
+      if ((WORDS_BIG_ENDIAN || BYTES_BIG_ENDIAN)
+	  && GET_MODE_SIZE (innermode) > GET_MODE_SIZE (outermode)
+	  && GET_MODE_SIZE (innermode) > GET_MODE_SIZE (innermostmode))
+	{
+	  /* Inner SUBREG is paradoxical, outer is not.  On big endian
+	     we have to special case this.  */
+	  if (SUBREG_BYTE (op))
+	    abort(); /* Can a paradoxical subreg have nonzero offset? */
+	  if (WORDS_BIG_ENDIAN && BYTES_BIG_ENDIAN)
+	    final_offset = (byte - GET_MODE_SIZE (innermode)
+			    + GET_MODE_SIZE (innermostmode));
+	  else if (WORDS_BIG_ENDIAN)
+	    final_offset = ((final_offset % UNITS_PER_WORD)
+			    + ((byte - GET_MODE_SIZE (innermode)
+			        + GET_MODE_SIZE (innermostmode))
+			       * UNITS_PER_WORD) / UNITS_PER_WORD);
+	  else
+	    final_offset = (((final_offset * UNITS_PER_WORD)
+			     / UNITS_PER_WORD)
+			    + ((byte - GET_MODE_SIZE (innermode)
+			        + GET_MODE_SIZE (innermostmode))
+			       % UNITS_PER_WORD));
+	}
+
+      /* Recurse for futher possible simplifications.  */
+      new = simplify_subreg (outermode, op, GET_MODE (op),
+			     final_offset);
+      if (new)
+	return new;
+      return gen_rtx_SUBREG (outermode, op, final_offset);
+    }
+
+  /* SUBREG of a hard register => just change the register number
+     and/or mode.  If the hard register is not valid in that mode,
+     suppress this simplification.  If the hard register is the stack,
+     frame, or argument pointer, leave this as a SUBREG.  */
+
+  if (REG_P (op) == REG
+      && REGNO (op) < FIRST_PSEUDO_REGISTER
+      && REGNO (op) != FRAME_POINTER_REGNUM
+#if HARD_FRAME_POINTER_REGNUM != FRAME_POINTER_REGNUM
+      && REGNO (op) != HARD_FRAME_POINTER_REGNUM
+#endif
+#if FRAME_POINTER_REGNUM != ARG_POINTER_REGNUM
+      && REGNO (op) != ARG_POINTER_REGNUM
+#endif
+      && REGNO (op) != STACK_POINTER_REGNUM)
+    {
+      int final_regno = subreg_hard_regno (gen_rtx_SUBREG (outermode, op, byte),
+					   0);
+
+      if (HARD_REGNO_MODE_OK (final_regno, outermode))
+	return gen_rtx_REG (outermode, final_regno);
+    }
+
+  /* If we have a SUBREG of a register that we are replacing and we are
+     replacing it with a MEM, make a new MEM and try replacing the
+     SUBREG with it.  Don't do this if the MEM has a mode-dependent address
+     or if we would be widening it.  */
+
+  if (GET_CODE (op) == MEM
+      && ! mode_dependent_address_p (XEXP (op, 0))
+      && ! MEM_VOLATILE_P (op)
+      && GET_MODE_SIZE (outermode) <= GET_MODE_SIZE (GET_MODE (op)))
+    {
+      rtx new;
+
+      new = gen_rtx_MEM (outermode, plus_constant (XEXP (op, 0), byte));
+      MEM_COPY_ATTRIBUTES (new, op);
+      return new;
+    }
+  return NULL_RTX;
+}
 /* Simplify X, an rtx expression.
 
    Return the simplified expression or NULL if no simplifications

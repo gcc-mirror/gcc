@@ -1278,6 +1278,27 @@ gen_highpart (mode, x)
   else
     abort ();
 }
+/* Return 1 iff (SUBREG:outermode (OP:innermode) byte)
+   refers to the least significant part of its containing reg.  */
+
+int
+subreg_lowpart_parts_p (outermode, innermode, byte)
+     enum machine_mode outermode, innermode;
+     unsigned int byte;
+{
+  unsigned int offset = 0;
+  int difference = (GET_MODE_SIZE (innermode) - GET_MODE_SIZE (outermode));
+
+  if (difference > 0)
+    {
+      if (WORDS_BIG_ENDIAN)
+	offset += (difference / UNITS_PER_WORD) * UNITS_PER_WORD;
+      if (BYTES_BIG_ENDIAN)
+	offset += difference % UNITS_PER_WORD;
+    }
+
+  return byte == offset;
+}
 
 /* Return 1 iff X, assumed to be a SUBREG,
    refers to the least significant part of its containing reg.
@@ -1296,15 +1317,8 @@ subreg_lowpart_p (x)
   else if (GET_MODE (SUBREG_REG (x)) == VOIDmode)
     return 0;
 
-  if (difference > 0)
-    {
-      if (WORDS_BIG_ENDIAN)
-	offset += (difference / UNITS_PER_WORD) * UNITS_PER_WORD;
-      if (BYTES_BIG_ENDIAN)
-	offset += difference % UNITS_PER_WORD;
-    }
-
-  return SUBREG_BYTE (x) == offset;
+  return subreg_lowpart_parts_p (GET_MODE (x), GET_MODE (SUBREG_REG (x)),
+		 		 SUBREG_BYTE (x));
 }
 
 
