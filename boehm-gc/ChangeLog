@@ -1,3 +1,8 @@
+2002-06-28  Hans Boehm <Hans_Boehm@hp.com>
+            Jonathan Clark
+
+        * win32_threads.c (GC_push_all_stacks): Tolerate bad sp.
+
 2002-06-09  H.J. Lu  (hjl@gnu.org)
 
 	* include/private/gc_locks.h (GC_test_and_set): Support
