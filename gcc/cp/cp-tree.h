@@ -385,10 +385,25 @@ struct tree_overload GTY(())
   (TREE_CODE (NODE) == TREE_LIST && TREE_LANG_FLAG_1 (NODE))
 #define SET_BASELINK_P(NODE) \
   (TREE_LANG_FLAG_1 (NODE) = 1)
+/* The BINFO indicated the base from which the BASELINK_FUNCTIONS came.  */
+#define BASELINK_BINFO(NODE) \
+  (TREE_PURPOSE (NODE))
 /* The functions referred to by the BASELINK; either a FUNCTION_DECL
    or an OVERLOAD.  */
 #define BASELINK_FUNCTIONS(NODE) \
   (TREE_VALUE (NODE))
+/* The BINFO in which the search for the functions indicated by this baselink 
+   began.  This base is used to determine the accessibility of functions 
+   selected by overload resolution.  */
+#define BASELINK_ACCESS_BINFO(NODE) \
+  (TREE_TYPE (NODE))
+/* For a type-conversion operator, the BASELINK_OPTYPE indicates the type
+   to which the conversion should occur.  This value is important if
+   the BASELINK_FUNCTIONS include a template conversion operator --
+   the BASELINK_OPTYPE can be used to determine what type the user
+   requested.  */
+#define BASELINK_OPTYPE(NODE) \
+  (TREE_CHAIN (NODE))
 
 #define WRAPPER_ZC(NODE) (((struct tree_wrapper*)WRAPPER_CHECK (NODE))->z_c)
 
@@ -3676,6 +3691,8 @@ extern int sufficient_parms_p                   PARAMS ((tree));
 extern tree type_decays_to			PARAMS ((tree));
 extern tree build_user_type_conversion		PARAMS ((tree, tree, int));
 extern tree build_new_function_call		PARAMS ((tree, tree));
+extern tree build_new_method_call               (tree, tree, tree, tree, int);
+extern tree build_special_member_call           (tree, tree, tree, tree, int);
 extern tree build_new_op			PARAMS ((enum tree_code, int, tree, tree, tree));
 extern tree build_op_delete_call		PARAMS ((enum tree_code, tree, tree, int, tree));
 extern int can_convert				PARAMS ((tree, tree));
@@ -3950,6 +3967,8 @@ extern void finish_file				PARAMS ((void));
 extern tree reparse_absdcl_as_expr		PARAMS ((tree, tree));
 extern tree reparse_absdcl_as_casts		PARAMS ((tree, tree));
 extern tree build_expr_from_tree		PARAMS ((tree));
+extern tree build_offset_ref_call_from_tree     (tree, tree);
+extern tree build_call_from_tree                (tree, tree, bool);
 extern tree reparse_decl_as_expr		PARAMS ((tree, tree));
 extern tree finish_decl_parsing			PARAMS ((tree));
 extern void set_decl_namespace                  PARAMS ((tree, tree, int));
@@ -4229,6 +4248,7 @@ extern tree unmarked_vtable_pathp               PARAMS ((tree, void *));
 extern tree find_vbase_instance                 PARAMS ((tree, tree));
 extern tree binfo_for_vbase                     PARAMS ((tree, tree));
 extern tree binfo_via_virtual                   PARAMS ((tree, tree));
+extern tree build_baselink                      (tree, tree, tree, tree);
 
 /* in semantics.c */
 extern void init_cp_semantics                   PARAMS ((void));
@@ -4281,13 +4301,12 @@ extern void finish_subobject                    PARAMS ((tree));
 extern tree finish_parenthesized_expr           PARAMS ((tree));
 extern tree begin_stmt_expr                     PARAMS ((void));
 extern tree finish_stmt_expr                    PARAMS ((tree));
-extern tree finish_call_expr                    PARAMS ((tree, tree, int));
+extern tree finish_call_expr                    (tree, tree, bool);
 extern tree finish_increment_expr               PARAMS ((tree, enum tree_code));
 extern tree finish_this_expr                    PARAMS ((void));
 extern tree finish_object_call_expr             PARAMS ((tree, tree, tree));
 extern tree finish_qualified_object_call_expr   PARAMS ((tree, tree, tree));
 extern tree finish_pseudo_destructor_call_expr  PARAMS ((tree, tree, tree));
-extern tree finish_qualified_call_expr          PARAMS ((tree, tree));
 extern tree finish_unary_op_expr                PARAMS ((enum tree_code, tree));
 extern tree finish_id_expr                      PARAMS ((tree));
 extern tree finish_fname                        (tree);
@@ -4454,7 +4473,6 @@ extern tree build_x_component_ref		PARAMS ((tree, tree, tree));
 extern tree build_x_indirect_ref		PARAMS ((tree, const char *));
 extern tree build_indirect_ref			PARAMS ((tree, const char *));
 extern tree build_array_ref			PARAMS ((tree, tree));
-extern tree build_x_function_call		PARAMS ((tree, tree, tree));
 extern tree get_member_function_from_ptrfunc	PARAMS ((tree *, tree));
 extern tree build_function_call_real		PARAMS ((tree, tree, int, int));
 extern tree build_function_call_maybe		PARAMS ((tree, tree));

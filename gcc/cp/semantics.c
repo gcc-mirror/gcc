@@ -1242,32 +1242,86 @@ finish_stmt_expr (rtl_expr)
   return result;
 }
 
-/* Finish a call to FN with ARGS.  Returns a representation of the
-   call.  */
+/* Generate an expression for `FN (ARGS)'.
+
+   If DISALLOW_VIRTUAL is true, the call to FN will be not generated
+   as a virtual call, even if FN is virtual.  (This flag is set when
+   encountering an expression where the function name is explicitly
+   qualified.  For example a call to `X::f' never generates a virtual
+   call.)
+
+   Returns code for the call.  */
 
 tree 
-finish_call_expr (fn, args, koenig)
-     tree fn;
-     tree args;
-     int koenig;
+finish_call_expr (tree fn, tree args, bool disallow_virtual)
 {
-  tree result;
+  if (fn == error_mark_node || args == error_mark_node)
+    return error_mark_node;
 
-  if (koenig)
+  if (processing_template_decl)
+    return build_nt (CALL_EXPR, fn, args, NULL_TREE);
+
+  /* ARGS should be a list of arguments.  */
+  my_friendly_assert (!args || TREE_CODE (args) == TREE_LIST,
+		      20020712);
+
+  if (BASELINK_P (fn))
     {
-      if (TREE_CODE (fn) == BIT_NOT_EXPR)
-	fn = build_x_unary_op (BIT_NOT_EXPR, TREE_OPERAND (fn, 0));
-      else if (TREE_CODE (fn) != TEMPLATE_ID_EXPR)
-	fn = do_identifier (fn, 2, args);
+      tree object;
+
+      /* A call to a member function.  From [over.call.func]:
+
+	   If the keyword this is in scope and refers to the class of
+	   that member function, or a derived class thereof, then the
+	   function call is transformed into a qualified function call
+	   using (*this) as the postfix-expression to the left of the
+	   . operator.... [Otherwise] a contrived object of type T
+	   becomes the implied object argument.  
+
+        This paragraph is unclear about this situation:
+
+	  struct A { void f(); };
+	  struct B : public A {};
+	  struct C : public A { void g() { B::f(); }};
+
+	In particular, for `B::f', this paragraph does not make clear
+	whether "the class of that member function" refers to `A' or 
+	to `B'.  We believe it refers to `B'.  */
+      if (current_class_type 
+	  && DERIVED_FROM_P (BINFO_TYPE (BASELINK_ACCESS_BINFO (fn)),
+			     current_class_type)
+	  && current_class_ref)
+	object = current_class_ref;
+      else
+	{
+	  tree representative_fn;
+
+	  representative_fn = BASELINK_FUNCTIONS (fn);
+	  if (TREE_CODE (representative_fn) == TEMPLATE_ID_EXPR)
+	    representative_fn = TREE_OPERAND (representative_fn, 0);
+	  representative_fn = get_first_fn (representative_fn);
+	  object = build_dummy_object (DECL_CONTEXT (representative_fn));
+	}
+
+      return build_new_method_call (object, fn, args, NULL_TREE,
+				    (disallow_virtual 
+				     ? LOOKUP_NONVIRTUAL : 0));
     }
-  result = build_x_function_call (fn, args, current_class_ref);
+  else if (is_overloaded_fn (fn))
+    /* A call to a namespace-scope function.  */
+    return build_new_function_call (fn, args);
+  else if (CLASS_TYPE_P (TREE_TYPE (fn)))
+    {
+      /* If the "function" is really an object of class type, it might
+	 have an overloaded `operator ()'.  */
+      tree result;
+      result = build_opfncall (CALL_EXPR, LOOKUP_NORMAL, fn, args, NULL_TREE);
+      if (result)
+	return result;
+    }
 
-  if (TREE_CODE (result) == CALL_EXPR
-      && (! TREE_TYPE (result)
-          || TREE_CODE (TREE_TYPE (result)) != VOID_TYPE))
-    result = require_complete_type (result);
-
-  return result;
+  /* A call where the function is unknown.  */
+  return build_function_call (fn, args);
 }
 
 /* Finish a call to a postfix increment or decrement or EXPR.  (Which
@@ -1327,14 +1381,6 @@ finish_object_call_expr (fn, object, args)
      tree object;
      tree args;
 {
-#if 0
-  /* This is a future direction of this code, but because
-     build_x_function_call cannot always undo what is done in
-     build_component_ref entirely yet, we cannot do this.  */
-
-  tree real_fn = build_component_ref (object, fn, NULL_TREE, 1);
-  return finish_call_expr (real_fn, args);
-#else
   if (DECL_DECLARES_TYPE_P (fn))
     {
       if (processing_template_decl)
@@ -1353,9 +1399,8 @@ finish_object_call_expr (fn, object, args)
 	  return error_mark_node;
 	}
     }
-
+  
   return build_method_call (object, fn, args, NULL_TREE, LOOKUP_NORMAL);
-#endif
 }
 
 /* Finish a qualified member function call using OBJECT and ARGS as
@@ -1394,22 +1439,6 @@ finish_pseudo_destructor_call_expr (object, scope, destructor)
     error ("`%E' is not of type `%T'", object, destructor);
 
   return cp_convert (void_type_node, object);
-}
-
-/* Finish a call to a globally qualified member function FN using
-   ARGS.  Returns an expression for the call.  */
-
-tree 
-finish_qualified_call_expr (fn, args)
-     tree fn;
-     tree args;
-{
-  if (processing_template_decl)
-    return build_min_nt (CALL_EXPR, fn, args, NULL_TREE);
-  else
-    return build_member_call (TREE_OPERAND (fn, 0),
-			      TREE_OPERAND (fn, 1),
-			      args);
 }
 
 /* Finish an expression of the form CODE EXPR.  */

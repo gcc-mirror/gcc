@@ -1,6 +1,6 @@
 // { dg-do compile }
 
-// Copyright (C) 2001 Free Software Foundation, Inc.
+// Copyright (C) 2001, 2002 Free Software Foundation, Inc.
 // Contributed by Nathan Sidwell 29 Dec 2001 <nathan@codesourcery.com>
 
 // PR 4361. Template conversion operators were not overloaded.
@@ -21,7 +21,7 @@ struct D
 {
   int Foo ()
   {
-    return operator int (); // { dg-error "no matching function" "" }
+    return operator int (); // { dg-error "not defined" "" }
   }
 };
 

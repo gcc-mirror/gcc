@@ -1,5 +1,5 @@
 // PR c++/525
-// Bug: With -pedantic, we weren't converting this to D1* for the call.
+// Bug: With -pedantic, we weren't converting this to B1* for the call.
 
 struct A
 {
