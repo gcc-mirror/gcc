@@ -1,4 +1,4 @@
-g// Test to make sure static initializers are called
+// Test to make sure static initializers are called
 
 class bar
 {
