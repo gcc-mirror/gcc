@@ -1,3 +1,8 @@
+2003-12-23  David Edelsohn  <edelsohn@gnu.org>
+
+	* function.c (assign_parms): Update max_parm_reg and
+	parm_reg_stack_loc when adding new parm reg.
+
 2003-12-23  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* config/ns32k/ns32k.c: Convert to ISO-C.

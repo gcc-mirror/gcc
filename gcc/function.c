@@ -4740,9 +4740,28 @@ assign_parms (tree fndecl)
 
 	  if (REG_P (parmreg))
 	    {
+	      unsigned int regno = REGNO (parmreg);
+
 	      emit_group_store (parmreg, entry_parm, TREE_TYPE (parm),
 				int_size_in_bytes (TREE_TYPE (parm)));
 	      SET_DECL_RTL (parm, parmreg);
+
+	      if (regno >= max_parm_reg)
+		{
+		  rtx *new;
+		  int old_max_parm_reg = max_parm_reg;
+
+		  /* It's slow to expand this one register at a time,
+		     but it's also rare and we need max_parm_reg to be
+		     precisely correct.  */
+		  max_parm_reg = regno + 1;
+		  new = ggc_realloc (parm_reg_stack_loc,
+				     max_parm_reg * sizeof (rtx));
+		  memset (new + old_max_parm_reg, 0,
+			  (max_parm_reg - old_max_parm_reg) * sizeof (rtx));
+		  parm_reg_stack_loc = new;
+		  parm_reg_stack_loc[regno] = stack_parm;
+		}
 	    }
 	}
 
