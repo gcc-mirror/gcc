@@ -1,5 +1,9 @@
 2004-06-29  Zack Weinberg  <zack@codesourcery.com>
 
+	* config/ia64/hpux.h: Target does too support thread-local storage.
+
+2004-06-29  Zack Weinberg  <zack@codesourcery.com>
+
 	* combine.c (distribute_notes): Don't look at global_regs for
 	pseudos.
 
