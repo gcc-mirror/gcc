@@ -1,3 +1,9 @@
+Sun Aug  2 22:39:08 1998  Hans-Peter Nilsson  <hp@axis.se>
+
+	* invoke.texi (Environment Variables): Typo: Change "ascpects"
+	into "aspects".
+	(Running Protoize): Typo: Change "ther" into "other".
+
 Sun Aug  2 00:42:50 1998  Jeffrey A Law  (law@cygnus.com)
 
 	* i386/netbsd.h: Undo previous change to DWARF2_UNWIND_INFO.
