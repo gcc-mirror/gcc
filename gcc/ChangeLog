@@ -1,3 +1,8 @@
+2003-10-01  Steven Bosscher  <steven@gcc.gnu.org>
+
+	* config/cris/cris-protos.h, config/cris/cris.c: Convert to ISO
+	C90 function declarations and definitions.
+
 2003-10-01  Nathanael Nerode  <neroden@gcc.gnu.org>
 
 	* config.gcc (cris-*-linux*): Revert mistaken commit.
