@@ -530,7 +530,7 @@ public:                         // Erase
     iterator next = pos;
     ++next;
     difference_type index = pos - start;
-    if (index < size() >> 1) {
+    if (index < (size() >> 1)) {
       copy_backward(start, pos, next);
       pop_front();
     }

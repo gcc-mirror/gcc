@@ -1,3 +1,8 @@
+Thu Nov  6 11:19:09 1997  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* stl_algo.h, stl_algobase.h, stl_bvector.h,
+ 	stl_deque.h: Update to October 28 SGI release.
+
 Sun Nov  2 12:14:56 1997  Jason Merrill  <jason@yorick.cygnus.com>
 
 	* algo.h, algobase.h, alloc.h, bvector.h, defalloc.h, deque.h,

@@ -2592,7 +2592,7 @@ bool __is_heap(RandomAccessIterator first, RandomAccessIterator last,
   for (Distance child = 1; child < n; ++child) {
     if (first[parent] < first[child]) 
       return false;
-    if (child & 1 == 0)
+    if ((child & 1) == 0)
       ++parent;
   }
   return true;
@@ -2616,7 +2616,7 @@ bool __is_heap(RandomAccessIterator first, RandomAccessIterator last,
   for (Distance child = 1; child < n; ++child) {
     if (comp(first[parent], first[child]))
       return false;
-    if (child & 1 == 0)
+    if ((child & 1) == 0)
       ++parent;
   }
   return true;
