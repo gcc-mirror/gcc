@@ -1,3 +1,8 @@
+2000-11-14  Mark Mitchell  <mark@codesourcery.com>
+
+	* class.c (build_vtbl_initializer): Fix typo in comment.
+	* typeck.c (expr_sizeof): Don't crash on errors.
+
 2000-11-14  Jim Wilson  <wilson@redhat.com>
 
 	* lang-specs.h: Add %2 after %(cc1_options).

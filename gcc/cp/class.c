@@ -7251,7 +7251,7 @@ build_vtbl_initializer (binfo, orig_binfo, t, rtti_binfo, non_fn_entries_p)
   build_vcall_and_vbase_vtbl_entries (binfo, &vid);
   /* Clean up.  */
   VARRAY_FREE (vid.fns);
-  /* Clear BINFO_VTABLE_PAATH_MARKED; it's set by
+  /* Clear BINFO_VTABLE_PATH_MARKED; it's set by
      build_vbase_offset_vtbl_entries.  */
   for (vbase = CLASSTYPE_VBASECLASSES (t); 
        vbase; 
