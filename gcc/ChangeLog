@@ -1,5 +1,7 @@
 2003-05-18  Nathanael Nerode  <neroden@gcc.gnu.org>
 
+	* config.gcc: Clear xm_file, md_file at the beginning of each pass.
+
 	* config/stormy16/stormy16.h: Remove about 3000 lines of 
 	target-independent comments.  Update copyright notice.
 
