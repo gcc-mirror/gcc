@@ -1,3 +1,7 @@
+Tue Nov 20 06:41:38 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	* emit-rtl.c (get_mem_attrs): Fix typo.
+
 2001-11-20  Jakub Jelinek  <jakub@redhat.com>
 
 	* c-lang.c (finish_file): Backout 2001-11-16
