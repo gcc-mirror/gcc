@@ -364,6 +364,8 @@ reg_referenced_p (x, body)
     case TRAP_IF:
       return reg_overlap_mentioned_p (x, TRAP_CONDITION (body));
 
+    case UNSPEC:
+    case UNSPEC_VOLATILE:
     case PARALLEL:
       for (i = XVECLEN (body, 0) - 1; i >= 0; i--)
 	if (reg_referenced_p (x, XVECEXP (body, 0, i)))
@@ -1171,7 +1173,7 @@ remove_note (insn, note)
 }
 
 /* Nonzero if X contains any volatile memory references
-   or volatile ASM_OPERANDS expressions.  */
+   UNSPEC_VOLATILE operations or volatile ASM_OPERANDS expressions.  */
 
 int
 volatile_refs_p (x)
@@ -1198,6 +1200,7 @@ volatile_refs_p (x)
       return 0;
 
     case CALL:
+    case UNSPEC_VOLATILE:
  /* case TRAP_IF: This isn't clear yet.  */
       return 1;
 
@@ -1269,6 +1272,7 @@ side_effects_p (x)
     case POST_INC:
     case POST_DEC:
     case CALL:
+    case UNSPEC_VOLATILE:
  /* case TRAP_IF: This isn't clear yet.  */
       return 1;
 
@@ -1331,6 +1335,7 @@ may_trap_p (x)
       return 0;
 
       /* Conditional trap can trap!  */
+    case UNSPEC_VOLATILE:
     case TRAP_IF:
       return 1;
 
