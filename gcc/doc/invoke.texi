@@ -9239,7 +9239,7 @@ Enable the use of the instruction @code{fmovd}.
 
 @item -mhitachi
 @opindex mhitachi
-Comply with the calling conventions defined by Hitachi.
+Comply with the calling conventions defined by Renesas.
 
 @item -mnomacsave
 @opindex mnomacsave

@@ -1,3 +1,9 @@
+2003-06-17  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* doc/contrib.texi: Replace Hitachi with Renesas.
+	* doc/install.texi: Likewise.
+	* doc/invoke.texi: Likewise.
+
 2003-06-17  J"orn Rennecke <joern.rennecke@superh.com>
 
 	* sh.h (CONST_OK_FOR_J16): Fix HOST_BITS_PER_WIDE_INT >= 64
