@@ -1028,14 +1028,14 @@ do_pragma_poison (pfile)
 	}
 
       p = pfile->token_buffer + written;
-      len = strlen (p);
+      len = CPP_PWRITTEN (pfile) - p;
       slot = _cpp_lookup_slot (pfile, p, len, INSERT, &hash);
       if (*slot)
 	{
 	  HASHNODE *hp = *slot;
 	  if (hp->type != T_POISON)
 	    {
-	      cpp_warning (pfile, "poisoning existing macro `%s'", p);
+	      cpp_warning (pfile, "poisoning existing macro `%s'", hp->name);
 	      if (hp->type == T_MACRO)
 		_cpp_free_definition (hp->value.defn);
 	      hp->value.defn = 0;
