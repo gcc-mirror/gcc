@@ -1350,8 +1350,7 @@ fancy_abort (file, line, function)
      int line;
      const char *function;
 {
-  internal_error ("Internal compiler error in %s, at %s:%d",
-		  function, trim_filename (file), line);
+  internal_error ("in %s, at %s:%d", function, trim_filename (file), line);
 }
 
 void
