@@ -1,5 +1,13 @@
 1999-04-16  Mark Mitchell  <mark@codesourcery.com>
 
+	* class.c (finish_struct): Remove unused variable.
+	(pushclass): Likewise.
+	(invalidate_class_lookup_cache): Likewise.
+	* cp-tree.def (TYPENAME_TYPE): Improve documentation.
+	* decl.c (build_typename_type): Make sure TYPENAME_TYPE_FULLNAME
+	doesn't get obliterated.
+	(make_typename_type): Handle template classes correctly.
+
 	* cp-tree.h (TREE_NONLOCAL_FLAG): Remove.
 	(storetags): Declare.
 	* class.c (finish_struct): Don't use TREE_NONLOCAL_FLAG.

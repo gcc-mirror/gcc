@@ -5302,6 +5302,11 @@ build_typename_type (context, name, fullname, base_type)
 			   &typename_compare))
     fatal ("virtual memory exhausted");
 
+  /* The FULLNAME needs to exist for the life of the hash table, i.e.,
+     for the entire compilation.  */
+  if (!TREE_PERMANENT (fullname))
+    fullname = copy_to_permanent (fullname);
+
   /* Build the TYPENAME_TYPE.  */
   t = make_lang_type (TYPENAME_TYPE);
   TYPE_CONTEXT (t) = FROB_CONTEXT (context);
@@ -5341,7 +5346,17 @@ make_typename_type (context, name)
   tree fullname;
 
   if (TREE_CODE_CLASS (TREE_CODE (name)) == 't')
-    name = TYPE_IDENTIFIER (name);
+    {
+      if (!(TYPE_LANG_SPECIFIC (name) 
+	    && (CLASSTYPE_IS_TEMPLATE (name) 
+		|| CLASSTYPE_USE_TEMPLATE (name))))
+	name = TYPE_IDENTIFIER (name);
+      else
+	/* Create a TEMPLATE_ID_EXPR for the type.  */
+	name = build_nt (TEMPLATE_ID_EXPR,
+			 CLASSTYPE_TI_TEMPLATE (name),
+			 CLASSTYPE_TI_ARGS (name));
+    }
   else if (TREE_CODE (name) == TYPE_DECL)
     name = DECL_NAME (name);
 
