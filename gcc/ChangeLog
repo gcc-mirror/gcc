@@ -1,3 +1,8 @@
+2002-01-02  Jason Merrill  <jason@redhat.com>
+
+	* c-decl.c (c_expand_body): Call outlining_inline_function when
+	emitting an inline function out of line.
+
 2002-01-02  Richard Henderson  <rth@redhat.com>
 
 	* dwarf2out.c (limbo_die_node): Add created_for member.

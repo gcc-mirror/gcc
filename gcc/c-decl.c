@@ -1,6 +1,6 @@
 /* Process declarations and variables for C compiler.
    Copyright (C) 1988, 1992, 1993, 1994, 1995, 1996, 1997, 1998, 1999, 2000,
-   2001 Free Software Foundation, Inc.
+   2001, 2002 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -6946,6 +6946,11 @@ c_expand_body (fndecl, nested_p, can_defer_p)
     }
 
   timevar_push (TV_EXPAND);
+
+  if (DECL_INLINE (fndecl))
+    /* Do any preparation such as emitting abstract debug info for the
+       inline before it gets mangled by optimization.  */
+    (*debug_hooks->outlining_inline_function) (fndecl);
 
   if (nested_p)
     {
