@@ -1,3 +1,114 @@
+Fri Oct 16 20:40:50 1998  J"orn Rennecke <amylaar@cygnus.co.uk>
+
+	Fix consistency problems with reg_equiv_{mem,address};
+	Improve reload inheritance;
+
+	* reload.c (reload_out_reg): New variable.
+	(loc_mentioned_in_p, remove_address_replacements): New functions.
+	(remove_replacements): Deleted.
+	(push_reload): Set reload_out_reg[i].
+	When merging, also set reload_{in,out}_reg[i], and remove
+	duplicate address reloads.
+	(combine_reloads): Copy reload_out_reg[i].
+	(find_reloads): Do make_memloc substitution also when
+	reg_equiv_memory_loc[regno] and num_not_at_initial_offset
+	are both nonzero.
+	Include *recog_operand_loc in commutativity operand changes.
+	Generate optional output reloads.
+	Delete reference to n_memlocs.  Don't set *recog_operand_loc before
+	processing operands.  Call make_memloc in reg_equiv_address code.
+	Set *recog_operand_loc only after processing operands, and only
+	if replace is true.  Return a value.
+	When changing address reload types for operands that didn't get
+	reloaded, use RELOAD_FOR_OPADDR_ADDRESS for
+	RELOAD_FOR_INPADDR_ADDRESS / RELOAD_FOR_OUTADDR_ADDRESS reloads.
+	Don't emit USEs for pseudo SUBREGs when not replacing.
+	(find_reloads_address): Do make_memloc substitution also when
+	reg_equiv_memory_loc[regno] and num_not_at_initial_offset
+	are both nonzero.
+	(find_reloads_toplev): Likewise.
+	Call make_memloc in reg_equiv_address code.
+	(debug_reload_to_stream): Add code to output reload_out_reg.
+	(make_memloc): Delete local variable i, ifdefed out code, and
+	references to memlocs and n_memlocs.
+	(memlocs, n_memlocs): Delete.
+	(push_secondary_reload): Clear reload_out_reg.
+	(find_reloads_address_1): Provide memrefloc argument to all calls
+	to find_reloads_address.
+	In AUTO_INC code, handle non-directly addressable equivalences properly.
+	* reload.h (reload_out_reg, num_not_at_initial_offset): Declare.
+	(find_reloads): Add return type.
+	(remove_address_replacements, deallocate_reload_reg): Declare.
+	* reload1.c (num_not_at_initial_offset): No longer static.
+	(delete_address_reloads, delete_address_reloads_1): Likewise.
+	(deallocate_reload_reg): New function.
+	(spill_reg_stored_to): New array.
+	(eliminate_regs): Don't substitute from reg_equiv_memory_loc.
+	(eliminate_regs_in_insn): Move assignments of previous_offset and
+	max_offset fields, and recalculation of num_not_at_initial_offset
+	into new static function:
+	(update_eliminable_offsets) .
+	(reload_as_needed): Call update_eliminable_offsetss after calling
+	find_reloads.
+	Call forget_old_reloads_1 with contents of reloaded auto_inc
+	expressions if the actual addressing can't be changed to match the
+	auto_inc.
+	(choose_reload_regs): For inheritance, replace
+	reload_reg_free_before_p test with reload_reg_used_at_all test, and
+	remove stand-alone reload_reg_used_at_all test.
+	Use reload_out_reg to determine which reload regs have output reloads.
+	Treat reload_override_in more similar to inherited reloads.
+	Handle (subreg (reg... for inheritance.
+	For flag_expensive_optimizations, add an extra pass to remove
+	unnecessary reloads from known working inheritance.
+	Delete obsolete code for pseudos replaced with MEMs.
+	Handle inheritance from auto_inc expressions.
+	(emit_reload_insns): If reload_in is a MEM, set OLD to 
+	reload_in_reg[j].
+	Don't reload directly from oldequiv; if it's a pseudo with a
+	stack slot, use reload_in[j].
+	Check that reload_in_reg[j] is a MEM before replacing reload_in
+	from reg_reloaded_contents.
+	Include non-spill registers in reload inheritance processing.
+	Also try to use reload_out_reg to set spill_reg_store /
+	reg_last_reload_reg.
+	In code to set new_spill_reg_store, use single_set to find out if
+	there is a single set.
+	Add code that allows to delete optional output reloads.
+	Add code to allow deletion of output reloads that use no spill reg.
+	At the end, set reload_override_in to oldequiv.
+	Also call delete_output_reload if reload_out_reg is equal to old
+	in oldequiv code.
+	Add code to call delete_output_reload for stores with no matching load.
+	Set / use spill_reg_stored_to.
+        Handle case where secondary output reload uses a temporary, but
+	actual store isn't found.
+	When looking for a store of a value not loaded in order to call
+	delete_output_reload, count_occurences should return 0 for no
+	loads; but discount inherited input reloadill_reg_stored_to.
+	Do checks for extra uses of REG.  Changed all
+	callers.
+	Use delete_address_reloads.
+	(reload): Take return value of find_reloads into account.
+	If a no-op set needs more than one reload, delete it.
+	(reload_reg_free_before_p): RELOAD_FOR_INPUT
+	can ignore RELOAD_FOR_INPUT_ADDRESS / RELOAD_FOR_INPADDR_ADDRESS
+	for the same operand.
+	(clear_reload_reg_in_use): Check for other reloads that keep a
+	register in use.
+	(reload_reg_free_for_value_p): handle RELOAD_FOR_OPERAND_ADDRESS /
+	RELOAD_FOR_OPADDR_ADDR.
+	Take into account when an address address reload is only needed
+	for the address reload we are considering.
+	(count_occurrences): Use rtx_equal_p for MEMs.
+	(inc_for_reload): Return instruction that stores into RELOADREG.
+	New argument two, IN, and rtx.  Changed all callers.
+	(calculate_needs_all_insns, reload_as_needed):
+	Don't clear after_call for a CLOBBER.
+	Keep track of how many hard registers need to be copied from
+	after_call, and don't clear after_call before we have seen
+	that much copies, or we see a different instruction.
+
 Fri Oct 16 10:58:23 1998  Jeffrey A Law  (law@cygnus.com)
 
 	* flow.c (find_basic_blocks_1): Do not delete unreachable blocks
