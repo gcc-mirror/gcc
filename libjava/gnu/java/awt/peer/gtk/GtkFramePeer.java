@@ -133,6 +133,7 @@ public class GtkFramePeer extends GtkWindowPeer
     // Create a normal decorated window.
     create (GDK_WINDOW_TYPE_HINT_NORMAL, true);
     setMenuBar(((Frame) awtComponent).getMenuBar());
+    awtComponent.setForeground(java.awt.SystemColor.windowText);
   }
 
   public void getArgs (Component component, GtkArgList args)
