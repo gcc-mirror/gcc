@@ -795,7 +795,7 @@ remove_local_expressions_from_table (void)
    state, stopping when there are LIMIT entries left in LOCALs.  */
 
 static void
-restore_nonzero_vars_to_original_value ()
+restore_nonzero_vars_to_original_value (void)
 {
   while (VARRAY_ACTIVE_SIZE (nonzero_vars_stack) > 0)
     {
