@@ -4420,6 +4420,7 @@ cp_parser_parenthesized_expression_list (cp_parser* parser,
 					 bool *non_constant_p)
 {
   tree expression_list = NULL_TREE;
+  bool fold_expr_p = is_attribute_list;
   tree identifier = NULL_TREE;
 
   /* Assume all the expressions will be constant.  */
@@ -4461,6 +4462,9 @@ cp_parser_parenthesized_expression_list (cp_parser* parser,
 	      }
 	    else
 	      expr = cp_parser_assignment_expression (parser);
+
+	    if (fold_expr_p)
+	      expr = fold_non_dependent_expr (expr);
 
 	     /* Add it to the list.  We add error_mark_node
 		expressions to the list, so that we can still tell if
