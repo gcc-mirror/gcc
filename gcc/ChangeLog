@@ -1,3 +1,8 @@
+2000-02-26  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* fix-header.c (recognized_function): Also fix prototypes for
+	functions taking "void".
+
 2000-02-26  Geoff Keating  <geoffk@cygnus.com>
 
 	* reload1.c (do_output_reload): Check reg_reloaded_valid before
