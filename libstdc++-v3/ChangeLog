@@ -1,3 +1,9 @@
+2004-06-28  David Asher  <david.asher@cavium.com>
+
+	PR libstdc++/11352
+	* include/bits/locale_facets.tcc (__pad<>::_S_pad): Don't
+	access __olds beyond __oldlen.
+
 2004-05-31  Release Manager
 
 	* GCC 3.3.4 Released.

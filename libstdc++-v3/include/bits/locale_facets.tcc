@@ -2193,9 +2193,11 @@ namespace std
 	  const bool __testsign = _Traits::eq(__olds[0], __minus)
 	                          || _Traits::eq(__olds[0], __plus);
 
-	  const bool __testhex = _Traits::eq(__ctype.widen('0'), __olds[0]) 
-	                         && (_Traits::eq(__ctype.widen('x'), __olds[1]) 
-				     || _Traits::eq(__ctype.widen('X'), __olds[1]));
+	  const bool __testhex = (_Traits::eq(__ctype.widen('0'), __olds[0])
+				  && __oldlen > 1
+				  && (_Traits::eq(__ctype.widen('x'), __olds[1]) 
+				      || _Traits::eq(__ctype.widen('X'),
+						     __olds[1])));
 	  if (__testhex)
 	    {
 	      __news[0] = __olds[0]; 
