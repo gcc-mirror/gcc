@@ -1032,6 +1032,9 @@ rtx_equal_for_memref_p (x, y)
   /* Some RTL can be compared without a recursive examination.  */
   switch (code)
     {
+    case VALUE:
+      return CSELIB_VAL_PTR (x) == CSELIB_VAL_PTR (y);
+
     case REG:
       return REGNO (x) == REGNO (y);
 
