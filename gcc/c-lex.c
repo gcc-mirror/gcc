@@ -398,15 +398,33 @@ check_newline ()
 	      && getc (finput) == 'a'
 	      && ((c = getc (finput)) == ' ' || c == '\t' || c == '\n'))
 	    {
+	      while (c == ' ' || c == '\t')
+		c = getc (finput);
+	      if (c == '\n')
+		return c;
 #ifdef HANDLE_SYSV_PRAGMA
-	      return handle_sysv_pragma (finput, c);
+	      token = yylex ();
+	      if (token != IDENTIFIER)
+		goto skipline;
+	      if (handle_sysv_pragma (finput, token))
+		{
+		  c = getc (finput);
+		  return c;
+		}
 #else /* !HANDLE_SYSV_PRAGMA */
 #ifdef HANDLE_PRAGMA
-	      return HANDLE_PRAGMA (finput, c);
+	      token = yylex ();
+	      if (token != IDENTIFIER)
+		goto skipline;
+	      if (HANDLE_PRAGMA (finput, yylval.ttype))
+		{
+		  c = getc (finput);
+		  return c;
+		}
 #endif /* HANDLE_PRAGMA */
-	      goto skipline;
 #endif /* !HANDLE_SYSV_PRAGMA */
 	    }
+	  goto skipline;
 	}
 
       else if (c == 'd')
@@ -684,28 +702,22 @@ linenum:
 #ifdef HANDLE_SYSV_PRAGMA
 
 /* Handle a #pragma directive.  INPUT is the current input stream,
-   and C is a character to reread.  Processes the entire input line
-   and returns a character for the caller to reread: either \n or EOF.  */
+   and TOKEN is the token we read after `#pragma'.  Processes the entire input
+   line and returns a character for the caller to reread: either \n or EOF.  */
 
 /* This function has to be in this file, in order to get at
    the token types.  */
 
 int
-handle_sysv_pragma (input, c)
+handle_sysv_pragma (input, token)
      FILE *input;
-     int c;
+     register int token;
 {
+  register int c;
+
   for (;;)
     {
-      while (c == ' ' || c == '\t')
-	c = getc (input);
-      if (c == '\n' || c == EOF)
-	{
-	  handle_pragma_token (0, 0);
-	  return c;
-	}
-      ungetc (c, input);
-      switch (yylex ())
+      switch (token)
 	{
 	case IDENTIFIER:
 	case TYPENAME:
@@ -716,10 +728,21 @@ handle_sysv_pragma (input, c)
 	default:
 	  handle_pragma_token (token_buffer, 0);
 	}
+
       if (nextchar >= 0)
 	c = nextchar, nextchar = -1;
       else
 	c = getc (input);
+
+      while (c == ' ' || c == '\t')
+	c = getc (input);
+      if (c == '\n' || c == EOF)
+	{
+	  handle_pragma_token (0, 0);
+	  return c;
+	}
+      ungetc (c, input);
+      token = yylex ();
     }
 }
 
