@@ -1,3 +1,24 @@
+2004-11-27  Kriang Lerdsuwanakij  <lerdsuwa@users.sourceforge.net>
+
+	Friend class name lookup 4/n
+	* class.c (pushclass): Don't call cxx_remember_type_decls.
+	* cp-tree.h (clear_anon_tags): Remove declaration.
+	* decl.c (grokdeclarator): Don't call lookup_tag_reverse.
+	* name-lookup.c (binding_entry_free, binding_table_free): Comment
+	out functions.
+	(binding_table_find_anon_type, binding_table_reverse_maybe_remap,
+	binding_table_remove_anonymous_types, cxx_remember_type_decls,
+	bt_print_entry, clear_anon_tags, follow_tag_typedef, lookup_tag,
+	lookup_tag_reverse): Remove
+	(begin_scope, leave_scope, kept_level_p, print_binding_level):
+	Don't use type_decls field in cp_binding_level.
+	(maybe_process_template_type_declaration, pushtag): Set
+	CLASSTYPE_NESTED_UTDS directly.
+	* name-lookup.h (binding_table_remove_anonymous_types,
+	cxx_remember_type_decls, lookup_tag, lookup_tag_reverse): Remove
+	declaration.
+	(cp_binding_level): Remove type_decls field.
+
 2004-11-26  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* typeck.c: Fix a comment typo.

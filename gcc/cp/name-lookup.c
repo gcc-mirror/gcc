@@ -95,7 +95,7 @@ binding_entry_make (tree name, tree type)
 }
 
 /* Put ENTRY back on the free list.  */
-
+#if 0
 static inline void
 binding_entry_free (binding_entry entry)
 {
@@ -104,6 +104,7 @@ binding_entry_free (binding_entry entry)
   entry->chain = free_binding_entry;
   free_binding_entry = entry;
 }
+#endif
 
 /* The datatype used to implement the mapping from names to types at
    a given scope.  */
@@ -131,7 +132,7 @@ binding_table_construct (binding_table table, size_t chain_count)
 }
 
 /* Make TABLE's entries ready for reuse.  */
-
+#if 0
 static void
 binding_table_free (binding_table table)
 {
@@ -154,6 +155,7 @@ binding_table_free (binding_table table)
     }
   table->entry_count = 0;
 }
+#endif
 
 /* Allocate a table with CHAIN_COUNT, assumed to be a power of two.  */
 
@@ -223,82 +225,6 @@ binding_table_find (binding_table table, tree name)
     entry = entry->chain;
 
   return entry;
-}
-
-/* Return the binding_entry, if any, that maps NAME to an anonymous type.  */
-
-static tree
-binding_table_find_anon_type (binding_table table, tree name)
-{
-  const unsigned int hash = IDENTIFIER_HASH_VALUE (name);
-  binding_entry entry = table->chain[ENTRY_INDEX (hash, table->chain_count)];
-
-  while (entry != NULL && TYPE_IDENTIFIER (entry->type) != name)
-    entry = entry->chain;
-
-  return entry ? entry->type : NULL;
-}
-
-/* Return the binding_entry, if any, that has TYPE as target.  If NAME
-   is non-null, then set the domain and rehash that entry.  */
-
-static binding_entry
-binding_table_reverse_maybe_remap (binding_table table, tree type, tree name)
-{
-  const size_t chain_count = table->chain_count;
-  binding_entry entry = NULL;
-  binding_entry *p = NULL;
-  size_t i;
-
-  for (i = 0; i < chain_count && entry == NULL; ++i)
-    {
-      p = &table->chain[i];
-      while (*p != NULL && entry == NULL)
-        if ((*p)->type == type)
-          entry = *p;
-        else
-          p = &(*p)->chain;
-    }
-
-  if (entry != NULL && name != NULL && entry->name != name)
-    {
-      /* Remove the bucket from the previous chain.  */
-      *p = (*p)->chain;
-
-      /* Remap the name type to type.  */
-      i = ENTRY_INDEX (IDENTIFIER_HASH_VALUE (name), chain_count);
-      entry->chain = table->chain[i];
-      entry->name = name;
-      table->chain[i] = entry;
-    }
-
-  return entry;
-}
-
-/* Remove from TABLE all entries that map to anonymous enums or
-   class-types.  */
-
-void
-binding_table_remove_anonymous_types (binding_table table)
-{
-  const size_t chain_count = table->chain_count;
-  size_t i;
-
-  for (i = 0; i < chain_count; ++i)
-    {
-      binding_entry *p = &table->chain[i];
-
-      while (*p != NULL)
-        if (ANON_AGGRNAME_P ((*p)->name))
-          {
-            binding_entry e = *p;
-            *p = (*p)->chain;
-            --table->entry_count;
-            binding_entry_free (e);
-          }
-        else
-          p = &(*p)->chain;
-    }
 }
 
 /* Apply PROC -- with DATA -- to all entries in TABLE.  */
@@ -1337,7 +1263,6 @@ begin_scope (scope_kind kind, tree entity)
       break;
 
     case sk_namespace:
-      scope->type_decls = binding_table_new (namespace_scope_ht_size (entity));
       NAMESPACE_LEVEL (entity) = scope;
       VARRAY_TREE_INIT (scope->static_decls,
                         DECL_NAME (entity) == std_identifier
@@ -1397,10 +1322,6 @@ leave_scope (void)
       && scope->kind != sk_class)
     {
       scope->level_chain = free_binding_level;
-      if (scope->kind == sk_class)
-        scope->type_decls = NULL;
-      else
-        binding_table_free (scope->type_decls);
       gcc_assert (!ENABLE_SCOPE_CHECKING
 		  || scope->binding_depth == binding_depth);
       free_binding_level = scope;
@@ -1508,8 +1429,7 @@ kept_level_p (void)
   return (current_binding_level->blocks != NULL_TREE
 	  || current_binding_level->keep
           || current_binding_level->kind == sk_cleanup
-	  || current_binding_level->names != NULL_TREE
-	  || current_binding_level->type_decls != NULL);
+	  || current_binding_level->names != NULL_TREE);
 }
 
 /* Returns the kind of the innermost scope.  */
@@ -1549,57 +1469,9 @@ getdecls (void)
   return current_binding_level->names;
 }
 
-/* Set the current binding TABLE for type declarations..  This is a
-   temporary workaround of the fact that the data structure classtypes
-   does not currently carry its allocated cxx_scope structure.  */
-void
-cxx_remember_type_decls (binding_table table)
-{
-  current_binding_level->type_decls = table;
-}
-
 /* For debugging.  */
 static int no_print_functions = 0;
 static int no_print_builtins = 0;
-
-/* Called from print_binding_level through binding_table_foreach to
-   print the content of binding ENTRY.  DATA is a pointer to line offset
-   marker.  */
-static void
-bt_print_entry (binding_entry entry, void *data)
-{
-  int *p = (int *) data;
-  int len;
-
-  if (entry->name == NULL)
-    len = 3;
-  else if (entry->name == TYPE_IDENTIFIER (entry->type))
-    len = 2;
-  else
-    len = 4;
-    len = 4;
-
-  *p += len;
-
-  if (*p > 5)
-    {
-      fprintf (stderr, "\n\t");
-      *p = len;
-    }
-  if (entry->name == NULL)
-    {
-      print_node_brief (stderr, "<unnamed-typedef", entry->type, 0);
-      fprintf (stderr, ">");
-    }
-  else if (entry->name == TYPE_IDENTIFIER (entry->type))
-    print_node_brief (stderr, "", entry->type, 0);
-  else
-    {
-      print_node_brief (stderr, "<typedef", entry->name, 0);
-      print_node_brief (stderr, "", entry->type, 0);
-      fprintf (stderr, ">");
-    }
-}
 
 void
 print_binding_level (struct cp_binding_level* lvl)
@@ -1642,14 +1514,6 @@ print_binding_level (struct cp_binding_level* lvl)
 	}
       if (i)
         fprintf (stderr, "\n");
-    }
-  if (lvl->type_decls)
-    {
-      fprintf (stderr, " tags:\t");
-      i = 0;
-      binding_table_foreach (lvl->type_decls, bt_print_entry, &i);
-      if (i)
-	fprintf (stderr, "\n");
     }
   if (VEC_length (cp_class_binding, lvl->class_shadowed))
     {
@@ -1845,27 +1709,6 @@ make_anon_name (void)
   return get_identifier (buf);
 }
 
-/* Clear the TREE_PURPOSE slot of UTDs which have anonymous typenames.
-   This keeps dbxout from getting confused.  */
-
-void
-clear_anon_tags (void)
-{
-  struct cp_binding_level *b;
-  static int last_cnt = 0;
-
-  /* Fast out if no new anon names were declared.  */
-  if (last_cnt == anon_cnt)
-    return;
-
-  b = current_binding_level;
-  while (b->kind == sk_cleanup)
-    b = b->level_chain;
-  if (b->type_decls != NULL)
-    binding_table_remove_anonymous_types (b->type_decls);
-  last_cnt = anon_cnt;
-}
-
 /* Return (from the stack of) the BINDING, if any, established at SCOPE.  */ 
 
 static inline cxx_binding *
@@ -2327,188 +2170,6 @@ do_local_using_decl (tree decl, tree scope, tree name)
   /* Emit debug info.  */
   if (!processing_template_decl)
     cp_emit_debug_info_for_using (orig_decl, current_scope());
-}
-
-/* Return the type that should be used when TYPE's name is preceded
-   by a tag such as 'struct' or 'union', or null if the name cannot
-   be used in this way.
-
-   For example, when processing the third line of:
-
-	struct A;
-	typedef struct A A;
-	struct A;
-
-   lookup of A will find the typedef.  Given A's typedef, this function
-   will return the type associated with "struct A".  For the tag to be
-   anything other than TYPE, TYPE must be a typedef whose original type
-   has the same name and context as TYPE itself.
-
-   It is not valid for a typedef of an anonymous type to be used with
-   an explicit tag:
-
-       typedef struct { ... } B;
-       struct B;
-
-   Return null for this case.  */
-
-static tree
-follow_tag_typedef (tree type)
-{
-  tree original;
-
-  original = original_type (type);
-  if (! TYPE_NAME (original))
-    return NULL_TREE;
-  if (TYPE_IDENTIFIER (original) == TYPE_IDENTIFIER (type)
-      && (CP_DECL_CONTEXT (TYPE_NAME (original))
-	  == CP_DECL_CONTEXT (TYPE_NAME (type)))
-      && !(CLASS_TYPE_P (original) && TYPE_WAS_ANONYMOUS (original)))
-    return original;
-  else
-    return NULL_TREE;
-}
-
-/* Given NAME, an IDENTIFIER_NODE,
-   return the structure (or union or enum) definition for that name.
-   Searches binding levels from its SCOPE up to the global level.
-   If THISLEVEL_ONLY is nonzero, searches only the specified context
-   (but skips any sk_cleanup contexts to find one that is
-   meaningful for tags).
-   FORM says which kind of type the caller wants;
-   it is RECORD_TYPE or UNION_TYPE or ENUMERAL_TYPE.
-   If the wrong kind of type is found, and it's not a template, an error is
-   reported.  */
-
-tree
-lookup_tag (enum tree_code form, tree name,
-            cxx_scope *binding_level, int thislevel_only)
-{
-  struct cp_binding_level *level;
-  /* Nonzero if, we should look past a template parameter level, even
-     if THISLEVEL_ONLY.  */
-  int allow_template_parms_p = 1;
-  bool type_is_anonymous = ANON_AGGRNAME_P (name);
-
-  timevar_push (TV_NAME_LOOKUP);
-  for (level = binding_level; level; level = level->level_chain)
-    {
-      tree tail;
-      if (type_is_anonymous && level->type_decls != NULL)
-        {
-          tree type = binding_table_find_anon_type (level->type_decls, name);
-          /* There is no need for error checking here, because
-           anon names are unique throughout the compilation.  */
-          if (type != NULL)
-            POP_TIMEVAR_AND_RETURN (TV_NAME_LOOKUP, type);
-        }
-      else if (level->kind == sk_namespace)
-	/* Do namespace lookup.  */
-	for (tail = current_namespace; 1; tail = CP_DECL_CONTEXT (tail))
-	  {
-            cxx_binding *binding =
-              cxx_scope_find_binding_for_name (NAMESPACE_LEVEL (tail), name);
-
-	    if (binding && (binding->type
-			    || (binding->value 
-				&& DECL_DECLARES_TYPE_P (binding->value))))
-	      {
-		tree old;
-		
-		/* If we just skipped past a template parameter level,
-		   even though THISLEVEL_ONLY, and we find a template
-		   class declaration, then we use the _TYPE node for the
-		   template.  See the example below.  */
-		if (thislevel_only && !allow_template_parms_p
-		    && binding->value
-		    && DECL_CLASS_TEMPLATE_P (binding->value))
-		  old = binding->value;
-		else
-		  old = binding->type ? binding->type : binding->value;
-
-		/* We've found something at this binding level.  If it is
-		   a typedef, extract the tag it refers to.  Lookup fails
-		   if the typedef doesn't refer to a taggable type.  */
-		old = TREE_TYPE (old);
-		old = follow_tag_typedef (old);
-		if (!old)
-		  POP_TIMEVAR_AND_RETURN (TV_NAME_LOOKUP, NULL_TREE);
-		if (TREE_CODE (old) != form
-		    && (form == ENUMERAL_TYPE
-			|| TREE_CODE (old) == ENUMERAL_TYPE))
-		  {
-		    error ("%q#D redeclared as %C", old, form);
-		    POP_TIMEVAR_AND_RETURN (TV_NAME_LOOKUP, NULL_TREE);
-		  }
-		POP_TIMEVAR_AND_RETURN (TV_NAME_LOOKUP, old);
-	      }
-	    if (thislevel_only || tail == global_namespace)
-	      POP_TIMEVAR_AND_RETURN (TV_NAME_LOOKUP, NULL_TREE);
-	  }
-      else if (level->type_decls != NULL)
-        {
-          binding_entry entry = binding_table_find (level->type_decls, name);
-          if (entry != NULL)
-            {
-              enum tree_code code = TREE_CODE (entry->type);
-		
-              if (code != form
-                  && (form == ENUMERAL_TYPE || code == ENUMERAL_TYPE))
-                {
-                  /* Definition isn't the kind we were looking for.  */
-                  error ("%q#D redeclared as %C", entry->type, form);
-                  POP_TIMEVAR_AND_RETURN (TV_NAME_LOOKUP, NULL_TREE);
-                }
-              POP_TIMEVAR_AND_RETURN (TV_NAME_LOOKUP, entry->type);
-            }
-	  }
-      if (thislevel_only && level->kind != sk_cleanup)
-	{
-	  if (level->kind == sk_template_parms && allow_template_parms_p)
-	    {
-	      /* We must deal with cases like this:
-
-	           template <class T> struct S;
-		   template <class T> struct S {};
-
-		 When looking up `S', for the second declaration, we
-		 would like to find the first declaration.  But, we
-		 are in the pseudo-global level created for the
-		 template parameters, rather than the (surrounding)
-		 namespace level.  Thus, we keep going one more level,
-		 even though THISLEVEL_ONLY is nonzero.  */
-	      allow_template_parms_p = 0;
-	      continue;
-	    }
-	  else
-	    POP_TIMEVAR_AND_RETURN (TV_NAME_LOOKUP, NULL_TREE);
-	}
-    }
-  POP_TIMEVAR_AND_RETURN (TV_NAME_LOOKUP, NULL_TREE);
-}
-
-/* Given a type, find the tag that was defined for it and return the tag name.
-   Otherwise return 0.  However, the value can never be 0
-   in the cases in which this is used.
-
-   C++: If NAME is nonzero, this is the new name to install.  This is
-   done when replacing anonymous tags with real tag names.  */
-
-tree
-lookup_tag_reverse (tree type, tree name)
-{
-  struct cp_binding_level *level;
-
-  timevar_push (TV_NAME_LOOKUP);
-  for (level = current_binding_level; level; level = level->level_chain)
-    {
-      binding_entry entry = level->type_decls == NULL
-        ? NULL
-        : binding_table_reverse_maybe_remap (level->type_decls, type, name);
-      if (entry)
-        POP_TIMEVAR_AND_RETURN (TV_NAME_LOOKUP, entry->name);
-    }
-  POP_TIMEVAR_AND_RETURN (TV_NAME_LOOKUP, NULL_TREE);
 }
 
 /* Returns true if ROOT (a namespace, class, or function) encloses
@@ -4882,19 +4543,18 @@ maybe_process_template_type_declaration (tree type, int globalize,
 	      && b->level_chain->kind == sk_class)
 	    {
 	      finish_member_declaration (CLASSTYPE_TI_TEMPLATE (type));
-	      /* Put this UDT in the table of UDTs for the class, since
-		 that won't happen below because B is not the class
-		 binding level, but is instead the pseudo-global level.  */
-              if (b->level_chain->type_decls == NULL)
-                b->level_chain->type_decls =
-                  binding_table_new (SCOPE_DEFAULT_HT_SIZE);
-              binding_table_insert (b->level_chain->type_decls, name, type);
+
 	      if (!COMPLETE_TYPE_P (current_class_type))
 		{
 		  maybe_add_class_template_decl_list (current_class_type,
 						      type, /*friend_p=*/0);
-		  CLASSTYPE_NESTED_UTDS (current_class_type) =
-                    b->level_chain->type_decls;
+		  /* Put this UDT in the table of UDTs for the class.  */
+		  if (CLASSTYPE_NESTED_UTDS (current_class_type) == NULL)
+		    CLASSTYPE_NESTED_UTDS (current_class_type) =
+		      binding_table_new (SCOPE_DEFAULT_HT_SIZE);
+
+		  binding_table_insert
+		    (CLASSTYPE_NESTED_UTDS (current_class_type), name, type);
 		}
 	    }
 	}
@@ -4933,10 +4593,6 @@ pushtag (tree name, tree type, int globalize)
 		    type punning via an anonymous union.  */
 		 || COMPLETE_TYPE_P (b->this_entity))))
     b = b->level_chain;
-
-  if (b->type_decls == NULL)
-    b->type_decls = binding_table_new (SCOPE_DEFAULT_HT_SIZE);
-  binding_table_insert (b->type_decls, name, type);
 
   if (name)
     {
@@ -5013,7 +4669,13 @@ pushtag (tree name, tree type, int globalize)
 	{
 	  maybe_add_class_template_decl_list (current_class_type,
 					      type, /*friend_p=*/0);
-	  CLASSTYPE_NESTED_UTDS (current_class_type) = b->type_decls;
+
+	  if (CLASSTYPE_NESTED_UTDS (current_class_type) == NULL)
+	    CLASSTYPE_NESTED_UTDS (current_class_type)
+	      = binding_table_new (SCOPE_DEFAULT_HT_SIZE);
+
+	  binding_table_insert
+	    (CLASSTYPE_NESTED_UTDS (current_class_type), name, type);
 	}
     }
 

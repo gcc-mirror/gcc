@@ -46,10 +46,8 @@ struct binding_entry_s GTY(())
 #define NAMESPACE_STD_HT_SIZE                        (1 << 8)
 #define GLOBAL_SCOPE_HT_SIZE                         (1 << 8)
 
-extern void binding_table_remove_anonymous_types (binding_table);
 extern void binding_table_foreach (binding_table, bt_foreach_proc, void *);
 extern binding_entry binding_table_find (binding_table, tree);
-extern void cxx_remember_type_decls (binding_table);
 
 /* Datatype that represents binding established by a declaration between
    a name and a C++ entity.  */
@@ -194,9 +192,6 @@ struct cp_binding_level GTY(())
     /* A chain of VTABLE_DECL nodes.  */
     tree vtables; 
 
-    /* A dictionary for looking up user-defined-types.  */
-    binding_table type_decls;
-
     /* A list of USING_DECL nodes.  */
     tree usings;
 
@@ -317,8 +312,6 @@ extern void pop_nested_namespace (tree);
 extern void pushlevel_class (void);
 extern void poplevel_class (void);
 extern tree pushdecl_with_scope (tree, cxx_scope *);
-extern tree lookup_tag (enum tree_code, tree, cxx_scope *, int);
-extern tree lookup_tag_reverse (tree, tree);
 extern tree lookup_name	(tree, int);
 extern tree lookup_name_real (tree, int, int, bool, int, int);
 extern tree lookup_type_scope (tree, tag_scope);

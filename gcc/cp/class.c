@@ -5376,8 +5376,6 @@ pushclass (tree type)
     pushlevel_class ();
   else
     restore_class_cache ();
-  
-  cxx_remember_type_decls (CLASSTYPE_NESTED_UTDS (type));
 }
 
 /* When we exit a toplevel class scope, we save its binding level so
