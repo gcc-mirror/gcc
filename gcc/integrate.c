@@ -2116,7 +2116,7 @@ copy_rtx_and_substitute (orig, map)
 	return gen_rtx (SUBREG, GET_MODE (orig), SUBREG_REG (copy),
 			SUBREG_WORD (orig) + SUBREG_WORD (copy));
       else if (GET_CODE (copy) == CONCAT)
-	return (subreg_lowpart_p (orig) ? XEXP (copy, 0) : XEXP (copy, 1));
+	return (subreg_realpart_p (orig) ? XEXP (copy, 0) : XEXP (copy, 1));
       else
 	return gen_rtx (SUBREG, GET_MODE (orig), copy,
 			SUBREG_WORD (orig));
