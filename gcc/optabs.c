@@ -2820,23 +2820,36 @@ emit_libcall_block (insns, target, result, equiv)
      into a MEM later.  Protect the libcall block from this change.  */
   if (! REG_P (target) || REG_USERVAR_P (target))
     target = gen_reg_rtx (GET_MODE (target));
-
+  
+  /* If we're using non-call exceptions, a libcall corresponding to an
+     operation that may trap may also trap.  */
+  if (flag_non_call_exceptions && may_trap_p (equiv))
+    {
+      for (insn = insns; insn; insn = NEXT_INSN (insn))
+	if (GET_CODE (insn) == CALL_INSN)
+	  {
+	    rtx note = find_reg_note (insn, REG_EH_REGION, NULL_RTX);
+	    
+	    if (note != 0 && INTVAL (XEXP (note, 0)) <= 0)
+	      remove_note (insn, note);
+	  }
+    }
+  else
   /* look for any CALL_INSNs in this sequence, and attach a REG_EH_REGION
      reg note to indicate that this call cannot throw or execute a nonlocal
      goto (unless there is already a REG_EH_REGION note, in which case
      we update it).  */
-
-  for (insn = insns; insn; insn = NEXT_INSN (insn))
-    if (GET_CODE (insn) == CALL_INSN)
-      {
-	rtx note = find_reg_note (insn, REG_EH_REGION, NULL_RTX);
-
-	if (note != 0)
-	  XEXP (note, 0) = GEN_INT (-1);
-	else
-	  REG_NOTES (insn) = gen_rtx_EXPR_LIST (REG_EH_REGION, GEN_INT (-1),
-						REG_NOTES (insn));
-      }
+    for (insn = insns; insn; insn = NEXT_INSN (insn))
+      if (GET_CODE (insn) == CALL_INSN)
+	{
+	  rtx note = find_reg_note (insn, REG_EH_REGION, NULL_RTX);
+	
+	  if (note != 0)
+	    XEXP (note, 0) = GEN_INT (-1);
+	  else
+	    REG_NOTES (insn) = gen_rtx_EXPR_LIST (REG_EH_REGION, GEN_INT (-1),
+						  REG_NOTES (insn));
+	}
 
   /* First emit all insns that set pseudos.  Remove them from the list as
      we go.  Avoid insns that set pseudos which were referenced in previous
