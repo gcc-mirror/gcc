@@ -1,3 +1,12 @@
+2003-12-27  Giovanni Bajo  <giovannibajo@gcc.gnu.org>
+
+	Backport from mainline:
+	2003-12-16  Giovanni Bajo  <giovannibajo@gcc.gnu.org>
+
+	PR c++/2294
+	* decl.c (push_overloaded_decl): always	construct an OVERLOAD
+	if the declaration comes from an using declaration.
+
 2003-12-26  Gabriel Dos Reis  <gdr@integrable-solutions.net>
 
 	Backport from mainline:
