@@ -1,3 +1,8 @@
+Fri Apr 17 00:45:12 1998  Mark Mitchell  <mmitchell@usa.net>
+
+	* typeck2.c (process_init_constructor): Don't strip cv-qualifiers
+	when doing initializations.
+
 Fri Apr 17 00:24:22 1998  Jason Merrill  <jason@yorick.cygnus.com>
 
 	* decl.c (duplicate_decls): Fix check for when it's safe to free
