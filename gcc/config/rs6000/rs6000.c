@@ -75,7 +75,7 @@ int rs6000_pic_labelno;
 int rs6000_sysv_varargs_p;
 
 /* Temporary memory used to convert integer -> float */
-struct rtx_def *float_conv_temp;
+static rtx stack_temps[NUM_MACHINE_MODES];
 
 
 /* Print the options used in the assembly file.  */
@@ -486,21 +486,15 @@ easy_fp_constant (op, mode)
 	  || (low != 0 && input_operand (low, word_mode)));
 }
 
-/* Return 1 if the operand is an offsettable memory operand.  */
+/* Return 1 if the operand is an offsettable memory address.  */
 
 int
-offsettable_mem_operand (op, mode)
+offsettable_addr_operand (op, mode)
      register rtx op;
      enum machine_mode mode;
 {
-  if (GET_CODE (op) != MEM)
-    return 0;
-
-  if (mode != GET_MODE (op))
-    return 0;
-
   return offsettable_address_p (reload_completed | reload_in_progress,
-				mode, XEXP (op, 0));
+				mode, op);
 }
 
 /* Return 1 if the operand is either a floating-point register, a pseudo
@@ -1131,6 +1125,53 @@ expand_builtin_saveregs (args)
 }
 
 
+/* Allocate a stack temp.  Only allocate one stack temp per type for a
+   function.  */
+
+struct rtx_def *
+rs6000_stack_temp (mode, size)
+     enum machine_mode mode;
+     int size;
+{
+  rtx temp = stack_temps[ (int)mode ];
+  rtx addr;
+
+  if (temp == NULL_RTX)
+    {
+      temp = assign_stack_local (mode, size, 0);
+      addr = XEXP (temp, 0);
+
+      if ((size > 4 && !offsettable_address_p (0, mode, addr))
+	  || (size <= 4 && !memory_address_p (mode, addr)))
+	{
+	  XEXP (temp, 0) = copy_addr_to_reg (addr);
+	}
+
+      stack_temps[ (int)mode ] = temp;
+    }
+
+  return temp;
+}
+
+
+/* Generate a memory reference for expand_block_move, copying volatile,
+   and other bits from an original memory reference.  */
+
+static rtx
+expand_block_move_mem (mode, addr, orig_mem)
+     enum machine_mode mode;
+     rtx addr;
+     rtx orig_mem;
+{
+  rtx mem = gen_rtx (MEM, mode, addr);
+  MEM_VOLATILE_P (mem) = MEM_VOLATILE_P (orig_mem);
+  MEM_IN_STRUCT_P (mem) = MEM_IN_STRUCT_P (orig_mem);
+  /* CYGNUS LOCAL unaligned-pointers */
+  MEM_UNALIGNED_P (mem) = MEM_UNALIGNED_P (orig_mem);
+  /* END CYGNUS LOCAL unaligned-pointers */
+  return mem;
+}
+
 /* Expand a block move operation, and return 1 if successful.  Return 0
    if we should let the compiler generate normal code.
 
@@ -2753,9 +2794,11 @@ output_epilog (file, size)
   rs6000_stack_t *info = rs6000_stack_info ();
   char *load_reg = (TARGET_64BIT) ? "\tld %s,%d(%s)" : "\t{l|lwz} %s,%d(%s)\n";
   rtx insn = get_last_insn ();
+  int i;
 
-  /* Forget about the float conversion temporary used.  */
-  float_conv_temp = NULL_RTX;
+  /* Forget about any temporaries created */
+  for (i = 0; i < NUM_MACHINE_MODES; i++)
+    stack_temps[i] = NULL_RTX;
 
   /* If the last insn was a BARRIER, we don't have to write anything except
      the trace table.  */
