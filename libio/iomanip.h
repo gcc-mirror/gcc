@@ -50,6 +50,11 @@ public:
       { return smanip<TP>(_f, a); }
 };
 
+template<class TP>
+inline istream& operator>>(istream& i, const smanip<TP>& m);
+template<class TP>
+inline ostream& operator<<(ostream& o, const smanip<TP>& m);
+
 template <class TP> class smanip {
     ios& (*_f)(ios&, TP);
     TP _a;
@@ -57,9 +62,9 @@ public:
     smanip(ios& (*f)(ios&, TP), TP a) : _f(f), _a(a) {}
     //
     friend 
-      istream& operator>>(istream& i, const smanip<TP>& m);
+      istream& operator>> <>(istream& i, const smanip<TP>& m);
     friend
-      ostream& operator<<(ostream& o, const smanip<TP>& m);
+      ostream& operator<< <>(ostream& o, const smanip<TP>& m);
 };
 
 #ifdef __GNUG__

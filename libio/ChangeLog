@@ -1,3 +1,7 @@
+Sun Sep 28 12:09:04 1997  Mark Mitchell  <mmitchell@usa.net>
+
+        * iomanip.h: Use new friend <> syntax.
+
 Sun Sep 28 12:04:21 1997  Jason Merrill  <jason@yorick.cygnus.com>
 
 	* libio.h: Don't use _IO_LOCK_T if it's not defined.
