@@ -4699,22 +4699,8 @@ vec_vsubuhs (vector unsigned short a1, vector signed short a2)
   return (vector unsigned short) __builtin_altivec_vsubuhs ((vector signed short) a1, (vector signed short) a2);
 }
 
-/* vec_vsubuhs */
-
 inline vector unsigned short
-vec_vsubsuhs (vector signed short a1, vector unsigned short a2)
-{
-  return (vector unsigned short) __builtin_altivec_vsubuhs ((vector signed short) a1, (vector signed short) a2);
-}
-
-inline vector unsigned short
-vec_vsubsuhs (vector unsigned short a1, vector signed short a2)
-{
-  return (vector unsigned short) __builtin_altivec_vsubuhs ((vector signed short) a1, (vector signed short) a2);
-}
-
-inline vector unsigned short
-vec_vsubsuhs (vector unsigned short a1, vector unsigned short a2)
+vec_vsubuhs (vector unsigned short a1, vector unsigned short a2)
 {
   return (vector unsigned short) __builtin_altivec_vsubuhs ((vector signed short) a1, (vector signed short) a2);
 }
@@ -4730,19 +4716,19 @@ vec_vsubsbs (vector signed char a1, vector signed char a2)
 /* vec_vsububs */
 
 inline vector unsigned char
-vec_vsubsubs (vector signed char a1, vector unsigned char a2)
+vec_vsububs (vector signed char a1, vector unsigned char a2)
 {
   return (vector unsigned char) __builtin_altivec_vsububs ((vector signed char) a1, (vector signed char) a2);
 }
 
 inline vector unsigned char
-vec_vsubsubs (vector unsigned char a1, vector signed char a2)
+vec_vsububs (vector unsigned char a1, vector signed char a2)
 {
   return (vector unsigned char) __builtin_altivec_vsububs ((vector signed char) a1, (vector signed char) a2);
 }
 
 inline vector unsigned char
-vec_vsubsubs (vector unsigned char a1, vector unsigned char a2)
+vec_vsububs (vector unsigned char a1, vector unsigned char a2)
 {
   return (vector unsigned char) __builtin_altivec_vsububs ((vector signed char) a1, (vector signed char) a2);
 }

@@ -1,3 +1,10 @@
+2004-04-30  Paolo Bonzini  <bonzini@gnu.org>
+
+	* config/altivec/altivec.h [__cplusplus] (vec_subsubs): Rename
+ 	to vec_sububs.
+	[__cplusplus] (vec_subsuhs): Rename to vec_subuhs,
+	eliminating duplicates.
+
 2004-04-29  Richard Sandiford  <rsandifo@redhat.com>
 
 	PR target/15189
