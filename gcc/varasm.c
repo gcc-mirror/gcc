@@ -1358,10 +1358,9 @@ contains_pointers_p (type)
     }
 }
 
-/* Output text storage for constructor CONSTR.  Returns rtx of
-   storage. */
+/* Output text storage for constructor CONSTR. */
 
-rtx
+void
 bc_output_constructor (constr)
   tree constr;
 {
