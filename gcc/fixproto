@@ -251,8 +251,12 @@ for code in ALL STD ; do
 	    setjmp.h)
 	      required_list="longjmp setjmp siglongjmp sigsetjmp" ;;
 	    signal.h)
-	      required_list="kill raise sigaction sigaddset sigdelset sigemptyset sigfillset sigismember sigpending sigprocmask sigsuspend" ;;
 	      # Left out signal() - its prototype is too complex for us!
+	      # Also left out "sigaction sigaddset sigdelset sigemptyset
+	      # sigfillset sigismember sigpending sigprocmask sigsuspend"
+	      # because these need sigset_t or struct sigaction.
+	      # Most systems that provide them will also declare them.
+	      required_list="kill raise" ;;
 	    stdio.h)
 	      required_list="clearerr fclose feof ferror fflush fgetc fgetpos fgets fopen fprintf fputc fputs fread freopen fscanf fseek fsetpos ftell fwrite getc getchar gets perror printf putc putchar puts remove rename rewind scanf setbuf setvbuf sprintf sscanf tmpfile tmpnam ungetc vfprintf vprintf vsprintf"
 	      if grep _flsbuf <$abs_source_file >/dev/null ; then
@@ -271,8 +275,6 @@ for code in ALL STD ; do
 	    sys/times.h)
 	      required_list="times" ;;
 # "sys/types.h" add types (not in old g++-include)
-	    sys/resource.h)
-	      required_list="getrusage getrlimit setrlimit getpriority setpriority" ;;
 	    sys/utsname.h)
 	      required_list="uname" ;;
 	    sys/wait.h)
