@@ -2,12 +2,12 @@
 //Based on a report by Bill Currie <bcurrie@tssc.co.nz>
 struct foo {
   protected:
-    int x;
+    int x;        // ERROR - candidate
 };
 
 struct bar {
   public:
-    int x();
+    int x();      // ERROR - candidate
 };
 
 struct foobar: public foo, public bar {

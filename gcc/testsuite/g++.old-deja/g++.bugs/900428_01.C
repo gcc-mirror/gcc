@@ -17,35 +17,35 @@ int i;
 
 void *pv;
 volatile void *pvv;
-struct s;
-extern struct s es, *ps;
-extern volatile struct s evs, *pvs;
+struct s;               // ERROR - forward declaration
+extern struct s es, *ps;  // ERROR - defined here
+extern volatile struct s evs, *pvs; // ERROR - defined here
 
 void pv_test ()
 {
-  *pv;			// ERROR - , XFAIL *-*-*
-  (i ? *pv : *pv);	// ERROR - , XFAIL *-*-*
-  *pv, *pv;		// ERROR - , XFAIL *-*-*
+  *pv;			// ERROR - invalid void
+  (i ? *pv : *pv);	// ERROR - invalid void
+  *pv, *pv;		// ERROR - invalid void
 
-  *pvv;			// ERROR - , XFAIL *-*-*
-  (i ? *pvv : *pvv);	// ERROR - , XFAIL *-*-*
-  *pvv, *pvv;		// ERROR - , XFAIL *-*-*
+  *pvv;			// ERROR - invalid void
+  (i ? *pvv : *pvv);	// ERROR - invalid void
+  *pvv, *pvv;		// ERROR - invalid void
 
-  es;			// ERROR - , XFAIL *-*-*
-  (i ? es : es);	// ERROR - , XFAIL *-*-*
-  es, es;		// ERROR - , XFAIL *-*-*
+  es;			// ERROR - incomplete
+  (i ? es : es);	// ERROR - undefined type
+  es, es;		// ERROR - incomplete
 
-  evs;			// ERROR - , XFAIL *-*-*
-  (i ? evs : evs);	// ERROR - , XFAIL *-*-*
-  evs, evs;		// ERROR - , XFAIL *-*-*
+  evs;			// ERROR - incomplete
+  (i ? evs : evs);	// ERROR - undefined type
+  evs, evs;		// ERROR - incomplete
 
-  *ps;			// ERROR - , XFAIL *-*-*
-  (i ? *ps : *ps);	// ERROR - , XFAIL *-*-*
-  *ps, *ps;		// ERROR - , XFAIL *-*-*
+  *ps;			// ERROR - undefined type
+  (i ? *ps : *ps);	// ERROR - undefined type
+  *ps, *ps;		// ERROR - undefined type
 
-  *pvs;			// ERROR - , XFAIL *-*-*
-  (i ? *pvs : *pvs);	// ERROR - , XFAIL *-*-*
-  *pvs, *pvs;		// ERROR - , XFAIL *-*-*
+  *pvs;			// ERROR - undefined type
+  (i ? *pvs : *pvs);	// ERROR - undefined type
+  *pvs, *pvs;		// ERROR - undefined type
 }
 
 int main () { return 0; }

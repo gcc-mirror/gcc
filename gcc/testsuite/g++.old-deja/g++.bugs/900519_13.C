@@ -11,15 +11,15 @@
 // keywords: inheritance, ambiguity resolution, members
 
 struct base_0 {
-  enum { base_member };
+  enum { base_member }; // ERROR - candidate (26, 30)
 };
 
 struct base_1 {
-  int base_member;
+  int base_member;      // ERROR - candidate (26, 34)
 };
 
 struct base_2 {
-  int base_member ();
+  int base_member ();   // ERROR - candidate (30, 34)
 };
 
 struct derived_0 : public base_0, public base_1 {
