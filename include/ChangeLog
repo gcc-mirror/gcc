@@ -1,3 +1,8 @@
+2001-07-10  Jeff Johnston  <jjohnstn@redhat.com>
+
+	* xregex.h: New file to support libiberty regex.
+	* xregex2.h: Ditto.
+
 2001-05-16  Matt Kraai  <kraai@alumni.carnegiemellon.edu>
 
 	* partition.h: Fix misspelling of `implementation'.
