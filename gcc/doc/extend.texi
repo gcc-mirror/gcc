@@ -2367,9 +2367,6 @@ On the Intel 386, the @code{stdcall} attribute causes the compiler to
 assume that the called function will pop off the stack space used to
 pass arguments, unless it takes a variable number of arguments.
 
-The PowerPC compiler for Windows NT currently ignores the @code{stdcall}
-attribute.
-
 @item fastcall
 @cindex functions that pop the argument stack on the 386
 On the Intel 386, the @code{fastcall} attribute causes the compiler to
@@ -2385,9 +2382,6 @@ On the Intel 386, the @code{cdecl} attribute causes the compiler to
 assume that the calling function will pop off the stack space used to
 pass arguments.  This is
 useful to override the effects of the @option{-mrtd} switch.
-
-The PowerPC compiler for Windows NT currently ignores the @code{cdecl}
-attribute.
 
 @item longcall/shortcall
 @cindex functions called via pointer on the RS/6000 and PowerPC
@@ -2411,31 +2405,6 @@ function by first loading its address into a register and then using the
 contents of that register.   The @code{short_call} attribute always places
 the offset to the function from the call site into the @samp{BL}
 instruction directly.
-
-@item dllimport
-@cindex functions which are imported from a dll on PowerPC Windows NT
-On the PowerPC running Windows NT, the @code{dllimport} attribute causes
-the compiler to call the function via a global pointer to the function
-pointer that is set up by the Windows NT dll library.  The pointer name
-is formed by combining @code{__imp_} and the function name.
-
-@item dllexport
-@cindex functions which are exported from a dll on PowerPC Windows NT
-On the PowerPC running Windows NT, the @code{dllexport} attribute causes
-the compiler to provide a global pointer to the function pointer, so
-that it can be called with the @code{dllimport} attribute.  The pointer
-name is formed by combining @code{__imp_} and the function name.
-
-@item exception (@var{except-func} [, @var{except-arg}])
-@cindex functions which specify exception handling on PowerPC Windows NT
-On the PowerPC running Windows NT, the @code{exception} attribute causes
-the compiler to modify the structured exception table entry it emits for
-the declared function.  The string or identifier @var{except-func} is
-placed in the third entry of the structured exception table.  It
-represents a function, which is called by the exception handling
-mechanism if an exception occurs.  If it was specified, the string or
-identifier @var{except-arg} is placed in the fourth entry of the
-structured exception table.
 
 @item function_vector
 @cindex calling functions through the function vector on the H8/300 processors
