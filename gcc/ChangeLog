@@ -1,3 +1,9 @@
+2000-01-06  Richard Henderson  <rth@cygnus.com>
+
+	* alpha.md (adddi_2+1): Limit offset such that it will be
+	loadable with a single ldah+lda pair.
+	(adddi_2+2): Explicitly fail split if we can't make it work.
+
 2000-01-06  Mumit Khan  <khan@xraylith.wisc.edu>
 
 	* protoize.c: Conditionally include unistd.h.

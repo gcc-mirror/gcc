@@ -593,7 +593,19 @@
   [(set (match_operand:DI 0 "register_operand" "=r")
         (plus:DI (match_operand:DI 1 "reg_no_subreg_operand" "r")
 		 (match_operand:DI 2 "const_int_operand" "n")))]
-  "REG_OK_FP_BASE_P (operands[1])"
+  "REG_OK_FP_BASE_P (operands[1])
+   && INTVAL (operands[2]) >= 0
+   /* This is the largest constant an lda+ldah pair can add, minus
+      an upper bound on the displacement between SP and AP during
+      register elimination.  See INITIAL_ELIMINATION_OFFSET.  */
+   && INTVAL (operands[2])
+	< (0x7fff8000
+	   - FIRST_PSEUDO_REGISTER * UNITS_PER_WORD
+	   - ALPHA_ROUND(current_function_outgoing_args_size)
+	   - (ALPHA_ROUND (get_frame_size ()
+			   + max_reg_num () * UNITS_PER_WORD
+			   + current_function_pretend_args_size)
+	      - current_function_pretend_args_size))"
   "#")
 
 ;; Don't do this if we are adjusting SP since we don't want to do it
@@ -614,8 +626,18 @@
   HOST_WIDE_INT low = (val & 0xffff) - 2 * (val & 0x8000);
   HOST_WIDE_INT rest = val - low;
 
-  operands[3] = GEN_INT (rest);
   operands[4] = GEN_INT (low);
+  if (CONST_OK_FOR_LETTER_P (rest, 'L'))
+    operands[3] = GEN_INT (rest);
+  else if (! no_new_pseudos)
+    {
+      operands[3] = gen_reg_rtx (DImode);
+      emit_move_insn (operands[3], operands[2]);
+      emit_insn (gen_adddi3 (operands[0], operands[1], operands[3]));
+      DONE;
+    }
+  else
+    FAIL;
 }")
 
 (define_insn ""
