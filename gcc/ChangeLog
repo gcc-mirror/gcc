@@ -1,3 +1,7 @@
+2003-04-26  Stephane Carrez  <stcarrez@nerim.fr>
+
+	* doc/install.texi (Binaries): Mention binaries for HC11/HC12.
+
 2003-04-26  Neil Booth  <neil@daikokuya.co.uk>
 
 	* _cpp_lex_direct: Remove pointless code.

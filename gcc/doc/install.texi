@@ -1546,6 +1546,10 @@ HP-UX:
 @end itemize
 
 @item
+Motorola 68HC11/68HC12---@uref{http://www.gnu-m68hc11.org,,GNU
+Development Tools for the Motorola 68HC11/68HC12}.
+
+@item
 @uref{http://www.sco.com/skunkware/devtools/index.html#gcc,,SCO
 OpenServer/Unixware}.
 
