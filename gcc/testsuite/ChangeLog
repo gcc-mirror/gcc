@@ -1,3 +1,7 @@
+2000-07-31  Joseph S. Myers  <jsm28@cam.ac.uk>
+
+	* gcc.dg/noncompile/voidparam-1.c: New test.
+
 2000-07-30  Richard Henderson  <rth@cygnus.com>
 
 	* gcc.dg/c90-digraph-1.c: Don't xfail.
