@@ -5397,8 +5397,12 @@ void
 check_max_integer_computation_mode (exp)
     tree exp;
 {
-  enum tree_code code = TREE_CODE (exp);
+  enum tree_code code;
   enum machine_mode mode;
+
+  /* Strip any NOPs that don't change the mode.  */
+  STRIP_NOPS (exp);
+  code = TREE_CODE (exp);
 
   /* We must allow conversions of constants to MAX_INTEGER_COMPUTATION_MODE.  */
   if (code == NOP_EXPR
@@ -5578,7 +5582,12 @@ expand_expr (exp, target, tmode, modifier)
     }
 
 #ifdef MAX_INTEGER_COMPUTATION_MODE
+  /* Only check stuff here if the mode we want is different from the mode
+     of the expression; if it's the same, check_max_integer_computiation_mode
+     will handle it.  Do we really need to check this stuff at all?  */
+
   if (target
+      && GET_MODE (target) != mode
       && TREE_CODE (exp) != INTEGER_CST
       && TREE_CODE (exp) != PARM_DECL
       && TREE_CODE (exp) != ARRAY_REF
@@ -5595,7 +5604,8 @@ expand_expr (exp, target, tmode, modifier)
 	fatal ("unsupported wide integer operation");
     }
 
-  if (TREE_CODE (exp) != INTEGER_CST
+  if (tmode != mode
+      && TREE_CODE (exp) != INTEGER_CST
       && TREE_CODE (exp) != PARM_DECL
       && TREE_CODE (exp) != ARRAY_REF
       && TREE_CODE (exp) != COMPONENT_REF
