@@ -1,6 +1,3 @@
-20010617 Release Manager
-
-        * GCC  Released.
 2001-06-12  Tom Tromey  <tromey@redhat.com>
 
 	* aclocal.m4, configure: Rebuilt.
