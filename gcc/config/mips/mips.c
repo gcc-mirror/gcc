@@ -3470,7 +3470,7 @@ override_options ()
     target_flags &= ~ (MASK_FLOAT64|MASK_64BIT);
 
   /* In the EABI in 64 bit mode, longs and pointers are 64 bits.  */
-  if (mips_abi == ABI_EABI && MASK_64BIT)
+  if (mips_abi == ABI_EABI && TARGET_64BIT)
     target_flags |= MASK_LONG64;
 
   /* ??? This doesn't work yet, so don't let people try to use it.  */
