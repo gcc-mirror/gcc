@@ -915,7 +915,8 @@ objc_check_decl (decl)
   if (TREE_CODE (type) == RECORD_TYPE
       && TREE_STATIC_TEMPLATE (type)
       && type != constant_string_type)
-    error_with_decl (decl, "`%s' cannot be statically allocated");
+    error ("%H'%D' cannot be statically allocated",
+           &DECL_SOURCE_LOCATION (decl), decl);
 }
 
 /* Implement static typing.  At this point, we know we have an interface.  */
@@ -2370,7 +2371,8 @@ objc_declare_class (ident_list)
 	{
 	  error ("`%s' redeclared as different kind of symbol",
 		  IDENTIFIER_POINTER (ident));
-	  error_with_decl (decl, "previous declaration of `%s'");
+	  error ("%Hprevious declaration of '%D'",
+                 &DECL_SOURCE_LOCATION (decl), decl);
 	}
 
       if (! is_class_name (ident))
@@ -6116,7 +6118,8 @@ start_class (code, class_name, super_name, protocol_list)
     {
       error ("`%s' redeclared as different kind of symbol",
 	     IDENTIFIER_POINTER (class_name));
-      error_with_decl (decl, "previous declaration of `%s'");
+      error ("%Hprevious declaration of '%D'",
+             &DECL_SOURCE_LOCATION (decl), decl);
     }
 
   if (code == CLASS_IMPLEMENTATION_TYPE)

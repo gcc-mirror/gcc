@@ -1,3 +1,15 @@
+2003-07-25  Gabriel Dos Reis  <gdr@integrable-solutions.net>
+
+	* expr.c (expand_java_field_op): Don't use xxx_with_decl
+	(expand_java_field_op): Likewise.
+	* class.c (layout_class_method): Likewise
+	(emit_register_classes): Likewise.
+	* decl.c (pushdecl): Likewise.
+	(poplevel): Likewise.
+	(force_poplevels): Likewise.
+	(give_name_to_locals): Likewise.
+	* check-init.c (check_for_initialization): Likewise.
+
 2003-07-24  Jason Merrill  <jason@redhat.com>
 
 	* java-tree.h: Move boolean_type_node et al to the back end.

@@ -1,5 +1,13 @@
 2003-07-25  Gabriel Dos Reis  <gdr@integrable-solutions.net>
 
+	* objc/objc-act.c (objc_check_decl): Don't use xxx_with_decl.
+	(objc_declare_class): Likewise.
+	(error_with_ivar): Likewise.
+	(start_class): Likewise.
+	(warn_with_method): Likewise.
+
+2003-07-25  Gabriel Dos Reis  <gdr@integrable-solutions.net>
+
 	Remove pedwarn_with_decl, warning_with_decl and error_with_decl
 	from GCC. 
 	* calls.c (try_to_integrate): Don't use xxx_with_decl.
