@@ -232,7 +232,7 @@ static rtx
   (FP_mode_reg[(regno)-FIRST_STACK_REG][(int) (mode)])
 
 /* Used to initialize uninitialized registers.  */
-static rtx nan;
+static rtx not_a_num;
 
 /* Forward declarations */
 
@@ -472,11 +472,11 @@ reg_to_stack (FILE *file)
      on zero, which we can get from `ldz'.  */
 
   if (flag_pic)
-    nan = CONST0_RTX (SFmode);
+    not_a_num = CONST0_RTX (SFmode);
   else
     {
-      nan = gen_lowpart (SFmode, GEN_INT (0x7fc00000));
-      nan = force_const_mem (SFmode, nan);
+      not_a_num = gen_lowpart (SFmode, GEN_INT (0x7fc00000));
+      not_a_num = force_const_mem (SFmode, not_a_num);
     }
 
   /* Allocate a cache for stack_regs_mentioned.  */
@@ -1499,7 +1499,7 @@ subst_stack_regs_pat (rtx insn, stack regstack, rtx pat)
 		  {
 		    pat = gen_rtx_SET (VOIDmode,
 				       FP_MODE_REG (REGNO (*dest), SFmode),
-				       nan);
+				       not_a_num);
 		    PATTERN (insn) = pat;
 		    control_flow_insn_deleted |= move_for_stack_reg (insn, regstack, pat);
 		  }
@@ -1508,7 +1508,7 @@ subst_stack_regs_pat (rtx insn, stack regstack, rtx pat)
 		  {
 		    pat = gen_rtx_SET (VOIDmode,
 				       FP_MODE_REG (REGNO (*dest) + 1, SFmode),
-				       nan);
+				       not_a_num);
 		    PATTERN (insn) = pat;
 		    control_flow_insn_deleted |= move_for_stack_reg (insn, regstack, pat);
 		  }
@@ -2597,7 +2597,7 @@ convert_regs_entry (void)
 
 	    init = gen_rtx_SET (VOIDmode,
 				FP_MODE_REG (FIRST_STACK_REG, SFmode),
-				nan);
+				not_a_num);
 	    insert_insn_on_edge (init, e);
 	    inserted = 1;
 	  }
@@ -2915,7 +2915,7 @@ convert_regs_1 (FILE *file, basic_block block)
 	    }
 
 	  set = gen_rtx_SET (VOIDmode, FP_MODE_REG (reg, SFmode),
-			     nan);
+			     not_a_num);
 	  insn = emit_insn_after (set, insn);
 	  control_flow_insn_deleted |= subst_stack_regs (insn, &regstack);
 	}
