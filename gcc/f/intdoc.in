@@ -1,4 +1,4 @@
-/* Copyright (C) 1997 Free Software Foundation, Inc.
+/* Copyright (C) 1997, 1999 Free Software Foundation, Inc.
  * This is part of the G77 manual.
  * For copying conditions, see the file g77.texi. */
 
@@ -285,7 +285,7 @@ be zero.
 
 @xref{Exp Intrinsic}, for the inverse of this function.
 
-@xref{Log10 Intrinsic}, for the base-10 logarithm function.
+@xref{Log10 Intrinsic}, for the `common' (base-10) logarithm function.
 ")
 
 DEFDOC (ALOG, "Natural logarithm (archaic).", ARCHAIC (LOG, Log))
@@ -296,18 +296,18 @@ DEFDOC (DLOG, "Natural logarithm (archaic).", ARCHAIC (LOG, Log))
 
 DEFDOC (CDLOG, "Natural logarithm (archaic).", ARCHAIC (LOG, Log))
 
-DEFDOC (LOG10, "Base-10 logarithm.", "\
-Returns the base-10 logarithm of @var{@1@}, which must
-be greater than zero.
+DEFDOC (LOG10, "Common logarithm.", "\
+Returns the common logarithm (base 10) of @var{@1@}, which must
+be greater than zero or.
 
 The inverse of this function is @samp{10. ** LOG10(@var{@1@})}.
 
 @xref{Log Intrinsic}, for the natural logarithm function.
 ")
 
-DEFDOC (ALOG10, "Natural logarithm (archaic).", ARCHAIC (LOG10, Log10))
+DEFDOC (ALOG10, "Common logarithm (archaic).", ARCHAIC (LOG10, Log10))
 
-DEFDOC (DLOG10, "Natural logarithm (archaic).", ARCHAIC (LOG10, Log10))
+DEFDOC (DLOG10, "Common logarithm (archaic).", ARCHAIC (LOG10, Log10))
 
 DEFDOC (MAX, "Maximum value.", "\
 Returns the argument with the largest value.
