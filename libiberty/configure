@@ -1774,10 +1774,15 @@ if test -z "${setobjs}"; then
     # provides from our shell variables, so that they appear to be
     # missing.
 
-    funcs="`echo $funcs | sed -e 's/random//'`"
-    LIBOBJS="$LIBOBJS random.o"
-    vars="`echo $vars | sed -e 's/sys_siglist//'`"
-    checkfuncs="`echo $checkfuncs | sed -e 's/strsignal//' -e 's/psignal//'`"
+    # DJ - only if we're *building* cygwin, not just building *with* cygwin
+  
+    if test -n "${with_target_subdir}"
+    then
+      funcs="`echo $funcs | sed -e 's/random//'`"
+      LIBOBJS="$LIBOBJS random.o"
+      vars="`echo $vars | sed -e 's/sys_siglist//'`"
+      checkfuncs="`echo $checkfuncs | sed -e 's/strsignal//' -e 's/psignal//'`"
+    fi
     ;;
 
   *-*-mingw32*)
