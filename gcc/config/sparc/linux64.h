@@ -1,5 +1,5 @@
 /* Definitions for 64-bit SPARC running Linux-based GNU systems with ELF.
-   Copyright 1996, 1997, 1998, 2000, 2002 Free Software Foundation, Inc.
+   Copyright 1996, 1997, 1998, 2000, 2002, 2003 Free Software Foundation, Inc.
    Contributed by David S. Miller (davem@caip.rutgers.edu)
 
 This file is part of GCC.
@@ -330,6 +330,9 @@ do {									\
 #undef DTORS_SECTION_ASM_OP
 
 #define TARGET_ASM_FILE_END file_end_indicate_exec_stack
+
+#define LINK_GCC_C_SEQUENCE_SPEC \
+  "%{static:--start-group} %G %L %{static:--end-group}%{!static:%G}"
 
 /* Do code reading to identify a signal frame, and set the frame
    state data appropriately.  See unwind-dw2.c for the structs.  */
