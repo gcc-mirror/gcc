@@ -1056,10 +1056,23 @@ alpha_builtin_saveregs (arglist)
 		    != void_type_node));
 
   /* Compute the current position into the args, taking into account
-     both registers and memory.  */
+     both registers and memory.  Both of these are already included in
+     current_function_args_info.  */
 
-  argsize = plus_constant (current_function_arg_offset_rtx,
-			   current_function_args_info * UNITS_PER_WORD);
+  argsize = GEN_INT (current_function_args_info * UNITS_PER_WORD);
+
+  /* SETUP_INCOMING_VARARGS moves the starting address base up by 48,
+     storing fp arg registers in the first 48 bytes, and the integer arg
+     registers in the next 48 bytes.  This is only done, however, if any
+     integer registers need to be stored.
+
+     If no integer registers need be stored, then we must subtract 48 in
+     order to account for the integer arg registers which are counted in
+     argsize above, but which are not actually stored on the stack.  */
+
+  addr = (current_function_args_info < 6
+	  ? plus_constant (virtual_incoming_args_rtx, 6 * UNITS_PER_WORD)
+	  : plus_constant (virtual_incoming_args_rtx, - (6 * UNITS_PER_WORD)));
 
   /* Allocate the va_list constructor */
   block = assign_stack_local (BLKmode, 2 * UNITS_PER_WORD, BITS_PER_WORD);
@@ -1067,12 +1080,9 @@ alpha_builtin_saveregs (arglist)
   RTX_UNCHANGING_P (XEXP (block, 0)) = 1;
 
   /* Store the address of the first integer register in the
-     __va_base member.   */
-
-  emit_move_insn (change_address (block, DImode, XEXP (block, 0)),
-		  force_operand (plus_constant (virtual_incoming_args_rtx,
-						6 * UNITS_PER_WORD),
-				 NULL_RTX));
+     __va_base member.  */
+  emit_move_insn (change_address (block, Pmode, XEXP (block, 0)),
+		  force_operand (addr, NULL_RTX));
 
   /* Store the argsize as the __va_offset member.  */
   emit_move_insn (change_address (block, Pmode,
