@@ -2680,7 +2680,16 @@ build_overload_call_real (fnname, parms, flags, final_cp, buildxxx)
   else
     parmtypes = void_list_node;
 
-  functions = lookup_name_nonclass (fnname);
+  if (is_overloaded_fn (fnname))
+    {
+      functions = fnname;
+      if (TREE_CODE (fnname) == TREE_LIST)
+	fnname = TREE_PURPOSE (functions);
+      else if (TREE_CODE (fnname) == FUNCTION_DECL)
+	fnname = DECL_NAME (functions);
+    }
+  else 
+    functions = lookup_name_nonclass (fnname);
 
   if (functions == NULL_TREE)
     {
