@@ -3,6 +3,8 @@
 	* config/sh/sh.h (CPP_SPEC): For -m4-nofpu, define __SH4_NOFPU__.
 	* config/sh/lib1funcs.asm (movstr_i4): Also compile if __SH4_NOFPU__
 	is defined.
+	* config/mips/mips.c (mips_va_arg): Args passed by reference have a
+	rsize of UNITS_PER_WORD.
 
 Fri 15-Sep-2000 06:49:07 BST  Neil Booth  <NeilB@earthling.net>
 

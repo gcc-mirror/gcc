@@ -4456,7 +4456,10 @@ mips_va_arg (valist, type)
       indirect
 	= function_arg_pass_by_reference (NULL, TYPE_MODE (type), type, 0);
       if (indirect)
-	size = rsize = POINTER_SIZE / BITS_PER_UNIT;
+	{
+	  size = POINTER_SIZE / BITS_PER_UNIT;
+	  rsize = UNITS_PER_WORD;
+	}
 
       addr_rtx = gen_reg_rtx (Pmode);
 
