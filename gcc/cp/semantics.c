@@ -747,7 +747,9 @@ finish_asm_stmt (cv_qualifier, string, output_operands,
 	}
       else
 	{
-	  if (cv_qualifier != NULL_TREE)
+	  /* Don't warn about redundant specification of 'volatile' here.  */
+	  if (cv_qualifier != NULL_TREE
+	      && cv_qualifier != ridpointers[(int) RID_VOLATILE])
 	    cp_warning ("%s qualifier ignored on asm",
 			IDENTIFIER_POINTER (cv_qualifier));
 	  expand_asm (string);

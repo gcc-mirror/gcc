@@ -1,3 +1,11 @@
+1999-01-14  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* semantics.c (finish_asm_stmt): Don't warn about redundant volatile.
+
+	* decl2.c (import_export_class): MULTIPLE_SYMBOL_SPACES only means
+	that we don't suppress the other copies.
+	* lex.c (handle_cp_pragma): Likewise.
+
 1999-01-13  Mark Mitchell  <mark@markmitchell.com>
 
 	* decl.c (grokdeclarator): Undo 1998-12-14 change.

@@ -1,5 +1,5 @@
 /* Separate lexical analyzer for GNU C++.
-   Copyright (C) 1987, 89, 92-97, 1998, 1999 Free Software Foundation, Inc.
+   Copyright (C) 1987, 89, 92-98, 1999 Free Software Foundation, Inc.
    Hacked by Michael Tiemann (tiemann@cygnus.com)
 
 This file is part of GNU CC.
@@ -4854,7 +4854,6 @@ handle_cp_pragma (pname)
       if (token != END_OF_LINE)
 	warning ("garbage after `#pragma interface' ignored");
 
-#ifndef MULTIPLE_SYMBOL_SPACES
       write_virtuals = 3;
 
       if (impl_file_chain == 0)
@@ -4878,10 +4877,14 @@ handle_cp_pragma (pname)
 	}
 
       interface_only = interface_strcmp (main_filename);
+#ifdef MULTIPLE_SYMBOL_SPACES
+      if (! interface_only)
+	interface_unknown = 0;
+#else /* MULTIPLE_SYMBOL_SPACES */
       interface_unknown = 0;
+#endif /* MULTIPLE_SYMBOL_SPACES */
       TREE_INT_CST_LOW (fileinfo) = interface_only;
       TREE_INT_CST_HIGH (fileinfo) = interface_unknown;
-#endif /* MULTIPLE_SYMBOL_SPACES */
 
       return 1;
     }
@@ -4908,7 +4911,6 @@ handle_cp_pragma (pname)
       if (token != END_OF_LINE)
 	warning ("garbage after `#pragma implementation' ignored");
 
-#ifndef MULTIPLE_SYMBOL_SPACES
       if (write_virtuals == 3)
 	{
 	  struct impl_files *ifiles = impl_file_chain;
@@ -4953,7 +4955,6 @@ handle_cp_pragma (pname)
 #endif
       TREE_INT_CST_LOW (fileinfo) = interface_only;
       TREE_INT_CST_HIGH (fileinfo) = interface_unknown;
-#endif /* MULTIPLE_SYMBOL_SPACES */
 
       return 1;
     }

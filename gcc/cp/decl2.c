@@ -1,5 +1,5 @@
 /* Process declarations and variables for C compiler.
-   Copyright (C) 1988, 92-97, 1998 Free Software Foundation, Inc.
+   Copyright (C) 1988, 92-98, 1999 Free Software Foundation, Inc.
    Hacked by Michael Tiemann (tiemann@cygnus.com)
 
 This file is part of GNU CC.
@@ -2482,7 +2482,6 @@ import_export_vtable (decl, type, final)
 
       int found = CLASSTYPE_TEMPLATE_INSTANTIATION (type);
 
-#ifndef MULTIPLE_SYMBOL_SPACES
       if (! found && ! final)
 	{
 	  tree method;
@@ -2496,7 +2495,6 @@ import_export_vtable (decl, type, final)
 		break;
 	      }
 	}
-#endif
 
       if (final || ! found)
 	{
@@ -2539,7 +2537,6 @@ import_export_class (ctype)
       && ! flag_implicit_templates)
     import_export = -1;
 
-#ifndef MULTIPLE_SYMBOL_SPACES
   /* Base our import/export status on that of the first non-inline,
      non-abstract virtual function, if any.  */
   if (import_export == 0
@@ -2559,6 +2556,10 @@ import_export_class (ctype)
 	    }
 	}
     }
+
+#ifdef MULTIPLE_SYMBOL_SPACES
+  if (import_export == -1)
+    import_export = 0;
 #endif
 
   if (import_export)
