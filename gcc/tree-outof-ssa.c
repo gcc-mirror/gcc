@@ -1706,11 +1706,13 @@ find_replaceable_exprs (var_map map)
   table = new_temp_expr_table (map);
   FOR_EACH_BB (bb)
     {
+      bitmap_iterator bi;
+
       find_replaceable_in_bb (table, bb);
-      EXECUTE_IF_SET_IN_BITMAP ((table->partition_in_use), 0, i,
+      EXECUTE_IF_SET_IN_BITMAP ((table->partition_in_use), 0, i, bi)
         {
 	  kill_expr (table, i, false);
-	});
+	}
     }
 
   ret = free_temp_expr_table (table);

@@ -313,28 +313,29 @@ build_inter_loop_deps (ddg_ptr g, struct df *df)
 {
   int rd_num, u_num;
   struct bb_info *bb_info;
+  bitmap_iterator bi;
 
   bb_info = DF_BB_INFO (df, g->bb);
 
   /* Find inter-loop output and true deps by connecting downward exposed defs
      to the first def of the BB and to upwards exposed uses.  */
-  EXECUTE_IF_SET_IN_BITMAP (bb_info->rd_gen, 0, rd_num,
+  EXECUTE_IF_SET_IN_BITMAP (bb_info->rd_gen, 0, rd_num, bi)
     {
       struct ref *rd = df->defs[rd_num];
 
       add_deps_for_def (g, df, rd);
-    });
+    }
 
   /* Find inter-loop anti deps.  We are interested in uses of the block that
      appear below all defs; this implies that these uses are killed.  */
-  EXECUTE_IF_SET_IN_BITMAP (bb_info->ru_kill, 0, u_num,
+  EXECUTE_IF_SET_IN_BITMAP (bb_info->ru_kill, 0, u_num, bi)
     {
       struct ref *use = df->uses[u_num];
 
       /* We are interested in uses of this BB.  */
       if (BLOCK_FOR_INSN (use->insn) == g->bb)
       	add_deps_for_use (g, df,use);
-    });
+    }
 }
 
 /* Given two nodes, analyze their RTL insns and add inter-loop mem deps

@@ -3140,6 +3140,7 @@ dead_or_predicable (basic_block test_bb, basic_block merge_bb,
       regset merge_set, tmp, test_live, test_set;
       struct propagate_block_info *pbi;
       int i, fail = 0;
+      bitmap_iterator bi;
 
       /* Check for no calls or trapping operations.  */
       for (insn = head; ; insn = NEXT_INSN (insn))
@@ -3191,14 +3192,13 @@ dead_or_predicable (basic_block test_bb, basic_block merge_bb,
 	 hard registers before reload.  */
       if (SMALL_REGISTER_CLASSES && ! reload_completed)
 	{
-          EXECUTE_IF_SET_IN_BITMAP
-	    (merge_set, 0, i,
-	     {
-	       if (i < FIRST_PSEUDO_REGISTER
-		   && ! fixed_regs[i]
-		   && ! global_regs[i])
+          EXECUTE_IF_SET_IN_BITMAP (merge_set, 0, i, bi)
+	    {
+	      if (i < FIRST_PSEUDO_REGISTER
+		  && ! fixed_regs[i]
+		  && ! global_regs[i])
 		fail = 1;
-	     });
+	    }
 	}
 
       /* For TEST, we're interested in a range of insns, not a whole block.
@@ -3225,11 +3225,13 @@ dead_or_predicable (basic_block test_bb, basic_block merge_bb,
 
       bitmap_operation (tmp, test_set, test_live, BITMAP_IOR);
       bitmap_operation (tmp, tmp, merge_set, BITMAP_AND);
-      EXECUTE_IF_SET_IN_BITMAP(tmp, 0, i, fail = 1);
+      if (bitmap_first_set_bit (tmp) >= 0)
+	fail = 1;
 
       bitmap_operation (tmp, test_set, merge_bb->global_live_at_start,
 			BITMAP_AND);
-      EXECUTE_IF_SET_IN_BITMAP(tmp, 0, i, fail = 1);
+      if (bitmap_first_set_bit (tmp) >= 0)
+	fail = 1;
 
       FREE_REG_SET (tmp);
       FREE_REG_SET (merge_set);

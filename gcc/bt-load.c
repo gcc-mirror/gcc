@@ -822,20 +822,20 @@ static void
 clear_btr_from_live_range (btr_def def)
 {
   int bb;
+  bitmap_iterator bi;
 
-  EXECUTE_IF_SET_IN_BITMAP
-    (def->live_range, 0, bb,
-     {
-       if ((!def->other_btr_uses_before_def
-	     && !def->other_btr_uses_after_use)
-	   || !block_at_edge_of_live_range_p (bb, def))
-	 {
-	   CLEAR_HARD_REG_BIT (btrs_live[bb], def->btr);
-	   CLEAR_HARD_REG_BIT (btrs_live_at_end[bb], def->btr);
-	   if (dump_file)
-	     dump_btrs_live (bb);
-	 }
-     });
+  EXECUTE_IF_SET_IN_BITMAP (def->live_range, 0, bb, bi)
+    {
+      if ((!def->other_btr_uses_before_def
+	   && !def->other_btr_uses_after_use)
+	  || !block_at_edge_of_live_range_p (bb, def))
+	{
+	  CLEAR_HARD_REG_BIT (btrs_live[bb], def->btr);
+	  CLEAR_HARD_REG_BIT (btrs_live_at_end[bb], def->btr);
+	  if (dump_file)
+	    dump_btrs_live (bb);
+	}
+    }
 }
 
 
@@ -846,14 +846,15 @@ static void
 add_btr_to_live_range (btr_def def)
 {
   int bb;
-  EXECUTE_IF_SET_IN_BITMAP
-    (def->live_range, 0, bb,
-     {
-       SET_HARD_REG_BIT (btrs_live[bb], def->btr);
-       SET_HARD_REG_BIT (btrs_live_at_end[bb], def->btr);
-       if (dump_file)
-	 dump_btrs_live (bb);
-     });
+  bitmap_iterator bi;
+
+  EXECUTE_IF_SET_IN_BITMAP (def->live_range, 0, bb, bi)
+    {
+      SET_HARD_REG_BIT (btrs_live[bb], def->btr);
+      SET_HARD_REG_BIT (btrs_live_at_end[bb], def->btr);
+      if (dump_file)
+	dump_btrs_live (bb);
+    }
 }
 
 /* Update a live range to contain the basic block NEW_BLOCK, and all
@@ -990,22 +991,25 @@ btr_def_live_range (btr_def def, HARD_REG_SET *btrs_live_in_range)
       */
       int bb;
       int def_bb = def->bb->index;
+      bitmap_iterator bi;
 
       CLEAR_HARD_REG_SET (*btrs_live_in_range);
       if (flag_btr_bb_exclusive)
-	EXECUTE_IF_SET_IN_BITMAP
-	  (def->live_range, 0, bb,
-	   {
-	     IOR_HARD_REG_SET (*btrs_live_in_range, btrs_live[bb]);
-	   });
+	{
+	  EXECUTE_IF_SET_IN_BITMAP (def->live_range, 0, bb, bi)
+	    {
+	      IOR_HARD_REG_SET (*btrs_live_in_range, btrs_live[bb]);
+	    }
+	}
       else
-	EXECUTE_IF_SET_IN_BITMAP
-	  (def->live_range, 0, bb,
-	   {
-	     IOR_HARD_REG_SET (*btrs_live_in_range,
-			       (def_bb == bb
-				? btrs_live_at_end : btrs_live) [bb]);
-	   });
+	{
+	  EXECUTE_IF_SET_IN_BITMAP (def->live_range, 0, bb, bi)
+	    {
+	      IOR_HARD_REG_SET (*btrs_live_in_range,
+				(def_bb == bb
+				 ? btrs_live_at_end : btrs_live) [bb]);
+	    }
+	}
     }
   if (!def->other_btr_uses_before_def &&
       !def->other_btr_uses_after_use)

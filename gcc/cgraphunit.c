@@ -352,18 +352,20 @@ static void
 convert_UIDs_in_bitmap (bitmap in_ann, bitmap in_decl) 
 {
   int index;
-  EXECUTE_IF_SET_IN_BITMAP(in_decl, 0, index,
-      {
-	splay_tree_node n = 
-	  splay_tree_lookup (static_vars_to_consider_by_uid, index);
-	if (n != NULL) 
-	  {
-	    tree t = (tree)n->value;
-	    var_ann_t va = var_ann (t);
-	    if (va) 
-	      bitmap_set_bit(in_ann, va->uid);
-	  }
-      });
+  bitmap_iterator bi;
+
+  EXECUTE_IF_SET_IN_BITMAP(in_decl, 0, index, bi)
+    {
+      splay_tree_node n = 
+	      splay_tree_lookup (static_vars_to_consider_by_uid, index);
+      if (n != NULL) 
+	{
+	  tree t = (tree)n->value;
+	  var_ann_t va = var_ann (t);
+	  if (va) 
+	    bitmap_set_bit(in_ann, va->uid);
+	}
+    }
 }
 
 /* FIXME -- PROFILE-RESTRUCTURE: Delete all stmts initing *_decl_uid
@@ -2456,8 +2458,12 @@ cgraph_characterize_statics (void)
      (i.e. have there address taken).  */
   {
     int index;
-    EXECUTE_IF_SET_IN_BITMAP (module_statics_escape,
-			      0, index, clear_static_vars_maps (index));
+    bitmap_iterator bi;
+
+    EXECUTE_IF_SET_IN_BITMAP (module_statics_escape, 0, index, bi)
+      {
+	clear_static_vars_maps (index);
+      }
     bitmap_operation (all_module_statics, all_module_statics,
 		      module_statics_escape, BITMAP_AND_COMPL);
 
@@ -2484,6 +2490,8 @@ cgraph_characterize_statics (void)
 	{
 	  int index;
 	  local_static_vars_info_t l;
+	  bitmap_iterator bi;
+
 	  node = order[i];
 	  l = node->static_vars_info->local;
 	  fprintf (cgraph_dump_file, 
@@ -2491,14 +2499,18 @@ cgraph_characterize_statics (void)
 		   cgraph_node_name (node), node->uid);
 	  fprintf (cgraph_dump_file, "\n  locals read: ");
 	  EXECUTE_IF_SET_IN_BITMAP (l->statics_read_by_decl_uid,
-				    0, index,
-				    fprintf (cgraph_dump_file, "%s ",
-					     cgraph_get_static_name_by_uid (index)));
+				    0, index, bi)
+	    {
+	      fprintf (cgraph_dump_file, "%s ",
+		       cgraph_get_static_name_by_uid (index));
+	    }
 	  fprintf (cgraph_dump_file, "\n  locals written: ");
 	  EXECUTE_IF_SET_IN_BITMAP (l->statics_written_by_decl_uid,
-				    0, index,
-				    fprintf(cgraph_dump_file, "%s ",
-					   cgraph_get_static_name_by_uid (index)));
+				    0, index, bi)
+	    {
+	      fprintf(cgraph_dump_file, "%s ",
+		      cgraph_get_static_name_by_uid (index));
+	    }
 	}
     }
 
@@ -2597,6 +2609,8 @@ cgraph_characterize_statics (void)
 	  static_vars_info_t node_info;
 	  global_static_vars_info_t node_g;
 	  int index;
+	  bitmap_iterator bi;
+
 	  node = order[i];
 	  node_info = node->static_vars_info;
 	  node_g = node_info->global;
@@ -2612,14 +2626,18 @@ cgraph_characterize_statics (void)
 	    }
 	  fprintf (cgraph_dump_file, "\n  globals read: ");
 	  EXECUTE_IF_SET_IN_BITMAP (node_g->statics_read_by_decl_uid,
-				    0, index,
-				    fprintf (cgraph_dump_file, "%s ",
-					     cgraph_get_static_name_by_uid (index)));
+				    0, index, bi)
+	    {
+	      fprintf (cgraph_dump_file, "%s ",
+		       cgraph_get_static_name_by_uid (index));
+	    }
 	  fprintf (cgraph_dump_file, "\n  globals written: ");
 	  EXECUTE_IF_SET_IN_BITMAP (node_g->statics_written_by_decl_uid,
-				    0, index,
-				    fprintf (cgraph_dump_file, "%s ",
-					     cgraph_get_static_name_by_uid (index)));
+				    0, index, bi)
+	    {
+	      fprintf (cgraph_dump_file, "%s ",
+		       cgraph_get_static_name_by_uid (index));
+	    }
 	}
     }
 

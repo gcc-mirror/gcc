@@ -1816,17 +1816,17 @@ build_insn_chain (rtx first)
       if (first == BB_HEAD (b))
 	{
 	  int i;
+	  bitmap_iterator bi;
 
 	  CLEAR_REG_SET (live_relevant_regs);
 
-	  EXECUTE_IF_SET_IN_BITMAP
-	    (b->global_live_at_start, 0, i,
-	     {
-	       if (i < FIRST_PSEUDO_REGISTER
-		   ? ! TEST_HARD_REG_BIT (eliminable_regset, i)
-		   : reg_renumber[i] >= 0)
-		 SET_REGNO_REG_SET (live_relevant_regs, i);
-	     });
+	  EXECUTE_IF_SET_IN_BITMAP (b->global_live_at_start, 0, i, bi)
+	    {
+	      if (i < FIRST_PSEUDO_REGISTER
+		  ? ! TEST_HARD_REG_BIT (eliminable_regset, i)
+		  : reg_renumber[i] >= 0)
+		SET_REGNO_REG_SET (live_relevant_regs, i);
+	    }
 	}
 
       if (!NOTE_P (first) && !BARRIER_P (first))

@@ -95,7 +95,14 @@ bitmap *control_dependence_map;
 /* Execute CODE for each edge (given number EDGE_NUMBER within the CODE)
    for which the block with index N is control dependent.  */
 #define EXECUTE_IF_CONTROL_DEPENDENT(N, EDGE_NUMBER, CODE)		      \
-  EXECUTE_IF_SET_IN_BITMAP (control_dependence_map[N], 0, EDGE_NUMBER, CODE)
+  {									      \
+    bitmap_iterator bi;							      \
+									      \
+    EXECUTE_IF_SET_IN_BITMAP (control_dependence_map[N], 0, EDGE_NUMBER, bi)  \
+      {									      \
+	CODE;								      \
+      }									      \
+  }
 
 /* Local function prototypes.  */
 static inline void set_control_dependence_map_bit (basic_block, int);

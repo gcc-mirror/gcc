@@ -153,6 +153,7 @@ add_exit_phis_var (tree var, bitmap livein, bitmap exits)
   bitmap def;
   int index;
   basic_block def_bb = bb_for_stmt (SSA_NAME_DEF_STMT (var));
+  bitmap_iterator bi;
 
   bitmap_clear_bit (livein, def_bb->index);
 
@@ -161,8 +162,10 @@ add_exit_phis_var (tree var, bitmap livein, bitmap exits)
   compute_global_livein (livein, def);
   BITMAP_XFREE (def);
 
-  EXECUTE_IF_AND_IN_BITMAP (exits, livein, 0, index,
-			    add_exit_phis_edge (BASIC_BLOCK (index), var));
+  EXECUTE_IF_AND_IN_BITMAP (exits, livein, 0, index, bi)
+    {
+      add_exit_phis_edge (BASIC_BLOCK (index), var);
+    }
 }
 
 /* Add exit phis for the names marked in NAMES_TO_RENAME.
@@ -173,11 +176,12 @@ static void
 add_exit_phis (bitmap names_to_rename, bitmap *use_blocks, bitmap loop_exits)
 {
   unsigned i;
+  bitmap_iterator bi;
 
-  EXECUTE_IF_SET_IN_BITMAP (names_to_rename, 0, i,
+  EXECUTE_IF_SET_IN_BITMAP (names_to_rename, 0, i, bi)
     {
       add_exit_phis_var (ssa_name (i), use_blocks[i], loop_exits);
-    });
+    }
 }
 
 /* Returns a bitmap of all loop exit edge targets.  */

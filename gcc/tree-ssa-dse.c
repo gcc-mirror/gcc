@@ -368,10 +368,14 @@ dse_finalize_block (struct dom_walk_data *walk_data,
   struct dse_global_data *dse_gd = walk_data->global_data;
   bitmap stores = dse_gd->stores;
   unsigned int i;
+  bitmap_iterator bi;
 
   /* Unwind the stores noted in this basic block.  */
   if (bd->stores)
-    EXECUTE_IF_SET_IN_BITMAP (bd->stores, 0, i, bitmap_clear_bit (stores, i););
+    EXECUTE_IF_SET_IN_BITMAP (bd->stores, 0, i, bi)
+      {
+	bitmap_clear_bit (stores, i);
+      }
 }
 
 static void

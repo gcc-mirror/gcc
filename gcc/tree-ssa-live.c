@@ -488,15 +488,16 @@ live_worklist (tree_live_info_p live, varray_type stack, int i)
   basic_block def_bb = NULL;
   edge e;
   var_map map = live->map;
+  bitmap_iterator bi;
 
   var = partition_to_var (map, i);
   if (SSA_NAME_DEF_STMT (var))
     def_bb = bb_for_stmt (SSA_NAME_DEF_STMT (var));
 
-  EXECUTE_IF_SET_IN_BITMAP (live->livein[i], 0, b,
+  EXECUTE_IF_SET_IN_BITMAP (live->livein[i], 0, b, bi)
     {
       VARRAY_PUSH_INT (stack, b);
-    });
+    }
 
   while (VARRAY_ACTIVE_SIZE (stack) > 0)
     {
@@ -565,6 +566,7 @@ calculate_live_on_entry (var_map map)
   block_stmt_iterator bsi;
   stmt_ann_t ann;
   ssa_op_iter iter;
+  bitmap_iterator bi;
 #ifdef ENABLE_CHECKING
   int num;
 #endif
@@ -628,10 +630,10 @@ calculate_live_on_entry (var_map map)
     }
 
   VARRAY_INT_INIT (stack, last_basic_block, "stack");
-  EXECUTE_IF_SET_IN_BITMAP (live->global, 0, i,
+  EXECUTE_IF_SET_IN_BITMAP (live->global, 0, i, bi)
     {
       live_worklist (live, stack, i);
-    });
+    }
 
 #ifdef ENABLE_CHECKING
    /* Check for live on entry partitions and report those with a DEF in
@@ -758,13 +760,15 @@ calculate_live_on_exit (tree_live_info_p liveinfo)
   /* Set live on exit for all predecessors of live on entry's.  */
   for (i = 0; i < num_var_partitions (map); i++)
     {
+      bitmap_iterator bi;
+
       on_entry = live_entry_blocks (liveinfo, i);
-      EXECUTE_IF_SET_IN_BITMAP (on_entry, 0, b,
+      EXECUTE_IF_SET_IN_BITMAP (on_entry, 0, b, bi)
         {
 	  for (e = BASIC_BLOCK(b)->pred; e; e = e->pred_next)
 	    if (e->src != ENTRY_BLOCK_PTR)
 	      bitmap_set_bit (on_exit[e->src->index], i);
-	});
+	}
     }
 
   liveinfo->liveout = on_exit;
@@ -1295,6 +1299,7 @@ build_tree_conflict_graph (tree_live_info_p liveinfo, tpa_p tpa,
   varray_type partition_link, tpa_to_clear, tpa_nodes;
   unsigned l;
   ssa_op_iter iter;
+  bitmap_iterator bi;
 
   map = live_var_map (liveinfo);
   graph = conflict_graph_new (num_var_partitions (map));
@@ -1411,7 +1416,7 @@ build_tree_conflict_graph (tree_live_info_p liveinfo, tpa_p tpa,
 	 tpa_clear contains all the tpa_roots processed, and these are the only
 	 entries which need to be zero'd out for a clean restart.  */
 
-      EXECUTE_IF_SET_IN_BITMAP (live, 0, x,
+      EXECUTE_IF_SET_IN_BITMAP (live, 0, x, bi)
         {
 	  i = tpa_find_tree (tpa, x);
 	  if (i != TPA_NONE)
@@ -1428,7 +1433,7 @@ build_tree_conflict_graph (tree_live_info_p liveinfo, tpa_p tpa,
 	      VARRAY_INT (tpa_nodes, i) = x + 1;
 	      VARRAY_INT (partition_link, x + 1) = start;
 	    }
-	});
+	}
 
 	/* Now clear the used tpa root references.  */
 	for (l = 0; l < VARRAY_ACTIVE_SIZE (tpa_to_clear); l++)
@@ -1745,6 +1750,7 @@ dump_live_info (FILE *f, tree_live_info_p live, int flag)
   basic_block bb;
   int i;
   var_map map = live->map;
+  bitmap_iterator bi;
 
   if ((flag & LIVEDUMP_ENTRY) && live->livein)
     {
@@ -1768,11 +1774,11 @@ dump_live_info (FILE *f, tree_live_info_p live, int flag)
       FOR_EACH_BB (bb)
 	{
 	  fprintf (f, "\nLive on exit from BB%d : ", bb->index);
-	  EXECUTE_IF_SET_IN_BITMAP (live->liveout[bb->index], 0, i,
+	  EXECUTE_IF_SET_IN_BITMAP (live->liveout[bb->index], 0, i, bi)
 	    {
 	      print_generic_expr (f, partition_to_var (map, i), TDF_SLIM);
 	      fprintf (f, "  ");
-	    });
+	    }
 	  fprintf (f, "\n");
 	}
     }

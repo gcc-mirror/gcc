@@ -4386,11 +4386,12 @@ allocate_ssa_names (bitmap definitions, htab_t *map)
   struct ssa_name_map_entry *entry;
   PTR *slot;
   unsigned ver;
+  bitmap_iterator bi;
 
   if (!*map)
     *map = htab_create (10, ssa_name_map_entry_hash,
 			ssa_name_map_entry_eq, free);
-  EXECUTE_IF_SET_IN_BITMAP (definitions, 0, ver,
+  EXECUTE_IF_SET_IN_BITMAP (definitions, 0, ver, bi)
     {
       name = ssa_name (ver);
       slot = htab_find_slot_with_hash (*map, name, SSA_NAME_VERSION (name),
@@ -4404,7 +4405,7 @@ allocate_ssa_names (bitmap definitions, htab_t *map)
 	  *slot = entry;
 	}
       entry->to_name = duplicate_ssa_name (name, SSA_NAME_DEF_STMT (name));
-    });
+    }
 }
 
 /* Rewrite the definition DEF in statement STMT to new ssa name as specified
@@ -4555,6 +4556,7 @@ tree_duplicate_sese_region (edge entry, edge exit,
   basic_block *doms;
   htab_t ssa_name_map = NULL;
   edge redirected;
+  bitmap_iterator bi;
 
   if (!can_copy_bbs_p (region, n_region))
     return false;
@@ -4639,7 +4641,7 @@ tree_duplicate_sese_region (edge entry, edge exit,
   /* Add phi nodes for definitions at exit.  TODO -- once we have immediate
      uses, it should be possible to emit phi nodes just for definitions that
      are used outside region.  */
-  EXECUTE_IF_SET_IN_BITMAP (definitions, 0, ver,
+  EXECUTE_IF_SET_IN_BITMAP (definitions, 0, ver, bi)
     {
       tree name = ssa_name (ver);
 
@@ -4648,7 +4650,7 @@ tree_duplicate_sese_region (edge entry, edge exit,
       add_phi_arg (&phi, name, exit_copy);
 
       SSA_NAME_DEF_STMT (name) = phi;
-    });
+    }
 
   /* And create new definitions inside region and its copy.  TODO -- once we
      have immediate uses, it might be better to leave definitions in region
@@ -5070,9 +5072,12 @@ tree_purge_all_dead_eh_edges (bitmap blocks)
 {
   bool changed = false;
   size_t i;
+  bitmap_iterator bi;
 
-  EXECUTE_IF_SET_IN_BITMAP (blocks, 0, i,
-    { changed |= tree_purge_dead_eh_edges (BASIC_BLOCK (i)); });
+  EXECUTE_IF_SET_IN_BITMAP (blocks, 0, i, bi)
+    {
+      changed |= tree_purge_dead_eh_edges (BASIC_BLOCK (i));
+    }
 
   return changed;
 }

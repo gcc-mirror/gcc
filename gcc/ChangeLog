@@ -1,3 +1,60 @@
+2004-09-26  Zdenek Dvorak  <rakdver@atrey.karlin.mff.cuni.cz>
+
+	* bitmap.h (EXECUTE_IF_SET_IN_BITMAP, EXECUTE_IF_AND_COMPL_IN_BITMAP,
+	EXECUTE_IF_AND_IN_BITMAP): Changed to iterator style.
+	(bitmap_iterator): New type.
+	(bmp_iter_common_next_1, bmp_iter_single_next_1, bmp_iter_single_init,
+	bmp_iter_end_p, bmp_iter_single_next, bmp_iter_and_not_next_1,
+	bmp_iter_and_not_init, bmp_iter_and_not_next, bmp_iter_and_next_1,
+	bmp_iter_and_init, bmp_iter_and_next): New functions.
+	* basic-block.h (EXECUTE_IF_SET_IN_REG_SET,
+	EXECUTE_IF_AND_COMPL_IN_REG_SET, EXECUTE_IF_AND_IN_REG_SET): Changed to
+	use iterator-style EXECUTE_IF_IN_BITMAP macros.
+	* bitmap.c (bitmap_print): Ditto.
+	* bt-load.c (clear_btr_from_live_range, add_btr_to_live_range,
+	btr_def_live_range): Ditto.
+	* cfganal.c (compute_dominance_frontiers_1) Ditto.
+	* cgraphunit.c (convert_UIDs_in_bitmap, cgraph_characterize_statics):
+	Ditto.
+	* ddg.c (build_inter_loop_deps): Ditto.
+	* df.c (FOR_EACH_BB_IN_BITMAP, df_bb_reg_info_compute, df_refs_update):
+	Ditto.
+	* except.c (remove_eh_handler): Ditto.
+	* flow.c (reg_set_to_hard_reg_set): Ditto.
+	* gcse.c (clear_modify_mem_tables): Ditto.
+	* global.c (build_insn_chain): Ditto.
+	* ifcvt.c (dead_or_predicable): Ditto.
+	* loop-invariant.c (get_inv_cost, set_move_mark, move_invariant_reg):
+	Ditto.
+	* ra-build.c (livethrough_conflicts_bb, conflicts_between_webs): Ditto.
+	* ra-rewrite.c (reloads_to_loads, rewrite_program2,
+	detect_web_parts_to_rebuild, delete_useless_defs, actual_spill): Ditto.
+	* tree-cfg.c (allocate_ssa_names, tree_duplicate_sese_region,
+	tree_purge_all_dead_eh_edges): Ditto.
+	* tree-into-ssa.c (compute_global_livein, insert_phi_nodes,
+	insert_phi_nodes_for, debug_def_blocks_r, invalidate_name_tags,
+	rewrite_ssa_into_ssa): Ditto.
+	* tree-outof-ssa.c (find_replaceable_exprs): Ditto.
+	* tree-sra.c (scan_function, decide_instantiations, scalarize_parms):
+	Ditto.
+	* tree-ssa-alias.c (init_alias_info, compute_points_to_and_addr_escape,
+	compute_flow_sensitive_aliasing, maybe_create_global_var,
+	dump_points_to_info_for): Ditto.
+	* tree-ssa-dce.c (EXECUTE_IF_CONTROL_DEPENDENT): Ditto.
+	* tree-ssa-dse.c (dse_finalize_block): Ditto.
+	* tree-ssa-live.c (live_worklist, calculate_live_on_entry,
+	calculate_live_on_exit, build_tree_conflict_graph, dump_live_info):
+	Ditto.
+	* tree-ssa-loop-ivopts.c (find_induction_variables,
+	find_interesting_uses, add_old_ivs_candidates, alloc_use_cost_map,
+	determine_use_iv_costs, determine_set_costs, find_best_candidate,
+	set_cost_up_to, create_new_ivs, remove_unused_ivs, free_loop_data):
+	Ditto.
+	* tree-ssa-loop-manip.c (add_exit_phis_var, add_exit_phis): Ditto.
+	* tree-ssa-operands.c (get_asm_expr_operands, add_call_clobber_ops,
+	add_call_read_ops): Ditto.
+	* tree-ssa-pre.c (bitmap_print_value_set, insert_aux): Ditto.
+
 2004-09-26  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
 	* pa.c (print_operand): Use non-trapping completers for UNLE, UNLT,

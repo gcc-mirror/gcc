@@ -2274,8 +2274,12 @@ remove_eh_handler (struct eh_region *region)
   if (region->aka)
     {
       int i;
-      EXECUTE_IF_SET_IN_BITMAP (region->aka, 0, i,
-	{ cfun->eh->region_array[i] = outer; });
+      bitmap_iterator bi;
+
+      EXECUTE_IF_SET_IN_BITMAP (region->aka, 0, i, bi)
+	{
+	  cfun->eh->region_array[i] = outer;
+	}
     }
 
   if (outer)
