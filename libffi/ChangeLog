@@ -1,3 +1,7 @@
+2003-04-22  Release Manager
+
+	* GCC 3.2.3 Released.
+
 2003-02-08  Andreas Tobler <a.tobler@schweiz.ch>
 	     
 	* libffi/src/powerpc/darwin_closure.S:

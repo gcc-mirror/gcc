@@ -1,3 +1,7 @@
+2003-04-22  Release Manager
+
+	* GCC 3.2.3 Released.
+
 2003-03-31   Geert Bosch <bosch@gnat.com>
 
 	* link.c : Fix misspelled "const" keyword

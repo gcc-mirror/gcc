@@ -1,3 +1,7 @@
+2003-04-22  Release Manager
+
+	* GCC 3.2.3 Released.
+
 2003-04-14  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* configure.in (HAVE_UINTPTR_T): Always define.
