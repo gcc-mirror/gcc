@@ -1,4 +1,12 @@
-2004-08-10  Caroline Tice  <ctice@apple.com
+2004-08-10  David Edelsohn  <edelsohn@gnu.org>
+
+	* config/rs6000/rs6000-protos.h (expand_block_clear): Declare.
+	* config/rs6000/rs6000.md (clrmemsi): New pattern.
+	* config/rs6000/rs6000.c (expand_block_clear): New function.
+	(expand_block_move): Convert alignment to bits.  Use SImode and
+	HImode for unaligned addresses if not STRICT_ALIGNMENT.
+
+2004-08-10  Caroline Tice  <ctice@apple.com>
 
 	* varasm.c (unlikely_section_label): New global variable.
 	(unlikely_text_section_name): New global variable.
