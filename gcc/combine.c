@@ -3539,11 +3539,12 @@ subst (x, from, to, in_dest, unique_copy)
 
 	      if (GET_CODE (new) == CONST_INT && GET_CODE (x) == SUBREG)
 		{
-		  x = simplify_subreg (GET_MODE (x), new,
+		  enum machine_mode mode = GET_MODE (x);
+		  x = simplify_subreg (mode, new,
 				       GET_MODE (SUBREG_REG (x)),
 				       SUBREG_BYTE (x));
 		  if (! x)
-		    abort ();
+		    x = gen_rtx_CLOBBER (mode, const0_rtx);
 		}
 	      else if (GET_CODE (new) == CONST_INT
 		       && GET_CODE (x) == ZERO_EXTEND)
@@ -9845,6 +9846,12 @@ gen_lowpart_for_combine (mode, x)
     {
       int offset = 0;
       rtx res;
+
+      /* We can't handle VOIDmodes.  We can get here when generating vector
+	 modes since these, unlike integral and floating point modes are not
+	 handled earlier.  */
+      if (GET_MODE (x) == VOIDmode)
+	return gen_rtx_CLOBBER (GET_MODE (x), const0_rtx);
 
       offset = subreg_lowpart_offset (mode, GET_MODE (x));
       res = simplify_gen_subreg (mode, x, GET_MODE (x), offset);

@@ -1,3 +1,10 @@
+Thu Jun 20 16:41:40 CEST 2002  Jan Hubicka  <jh@suse.cz>
+
+	* combine.c (gen_lowpart_for_combine): Avoid calling of
+	simplify_gen_subreg on VOIDmode.
+
+	* combine.c (subst): Be prepared for simplify_subreg to return VOIDmode.
+
 2002-06-20  Richard Henderson  <rth@redhat.com>
 
 	* c-common.c (c_common_get_alias_set): Correctly handle characters.
