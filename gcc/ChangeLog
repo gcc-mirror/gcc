@@ -1,3 +1,8 @@
+2001-08-01  Gerald Pfeifer  <pfeifer@dbai.tuwien.ac.at>
+
+	* params.def (PARAM_MAX_INLINE_INSNS): Change default to 600.
+	Correct comment that had been missed in the previous change.
+
 2001-08-01  Robert Lipe  <robertl@caldera.com>
 
 	* dwarfout.c: Remove reference to README.DWARF.

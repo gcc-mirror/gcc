@@ -39,12 +39,12 @@ Boston, MA 02111-1307, USA.
    function.  Increasing values mean more agressive inlining.
    This affects currently only functions explicitly marked as
    inline (or methods defined within the class definition for C++).
-   The default value of 10000 is arbitrary but high to match the
-   previously unlimited gcc capabilities.  */
+   The original default value of 10000 was arbitrary and caused
+   significant compile-time performance regressions.  */
 DEFPARAM (PARAM_MAX_INLINE_INSNS,
 	  "max-inline-insns",
 	  "The maximum number of instructions in a function that is eligible for inlining",
-	  100)
+	  600)
 
 /* The maximum number of instructions to consider when looking for an
    instruction to fill a delay slot.  If more than this arbitrary
