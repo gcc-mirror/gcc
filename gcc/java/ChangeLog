@@ -2,6 +2,10 @@
 
 	* decl.c (finish_method): Give methods once-only linkage.
 
+2005-03-07  Ranjit Mathew  <rmathew@hotmail.com>
+
+        * lang.c (flag_new_verifier): Enable by default, regardless of ABI.
+
 2005-03-07  Bryce McKinlay  <mckinlay@redhat.com>
 
 	* verify-glue.c (vfy_is_assignable_from): Perform static check using
