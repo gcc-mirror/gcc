@@ -1916,7 +1916,9 @@ fixup_var_refs_1 (var, promoted_mode, loc, insn, replacements)
 		  /* That failed.  Fall back on force_operand and hope.  */
 
 		  start_sequence ();
-		  force_operand (sub, y);
+		  sub = force_operand (sub, y);
+		  if (sub != y)
+		    emit_insn (gen_move_insn (y, sub));
 		  seq = gen_sequence ();
 		  end_sequence ();
 		}
