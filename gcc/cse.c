@@ -4338,7 +4338,7 @@ fold_rtx (x, insn)
 	{
 	  if (const_arg0)
 	    return const1_rtx;
-	  if (!flag_gcse)
+	  if (optimize == 0 || !flag_gcse)
 	    return const0_rtx;
 	}
       break;

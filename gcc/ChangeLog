@@ -1,3 +1,10 @@
+2002-01-25  Roger Sayle  <roger@eyesopen.com>
+
+	* cse.c (fold_rtx): Instantiate CONSTANT_P_RTX to 0 when not
+	optimizing, even if flag_gcse is true.
+	* toplev.c (rest_of_compilation): purge_builtin_constant_p
+	only needs to be called when "optimize > 0 && flag_gcse".
+
 2003-01-25  Roger Sayle  <roger@eyesopen.com>
 
 	* stmt.c (emit_case_bit_tests): New routine to implement suitable
