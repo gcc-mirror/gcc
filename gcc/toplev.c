@@ -138,6 +138,10 @@ static const char **save_argv;
 
 const char *main_input_filename;
 
+/* Used to enable -fvar-tracking, -fweb and -frename-registers according
+   to optimize and default_debug_hooks in process_options ().  */
+#define AUTODETECT_FLAG_VAR_TRACKING 2
+
 /* Current position in real source file.  */
 
 location_t input_location;
@@ -176,6 +180,10 @@ int target_flags_explicit;
 /* Debug hooks - dependent upon command line options.  */
 
 const struct gcc_debug_hooks *debug_hooks;
+
+/* Debug hooks - target default.  */
+
+static const struct gcc_debug_hooks *default_debug_hooks;
 
 /* Other flags saying which kinds of debugging dump have been requested.  */
 
@@ -258,9 +266,10 @@ int flag_reorder_blocks_and_partition = 0;
 
 int flag_reorder_functions = 0;
 
-/* Nonzero if registers should be renamed.  */
-
-int flag_rename_registers = 0;
+/* Nonzero if registers should be renamed.  When
+   flag_rename_registers == AUTODETECT_FLAG_VAR_TRACKING it will be set
+   according to optimize and default_debug_hooks in process_options ().  */
+int flag_rename_registers = AUTODETECT_FLAG_VAR_TRACKING;
 int flag_cprop_registers = 0;
 
 /* Nonzero for -pedantic switch: warn about anything
@@ -485,9 +494,11 @@ int flag_complex_divide_method = 0;
 
 int flag_syntax_only = 0;
 
-/* Nonzero means performs web construction pass.  */
+/* Nonzero means performs web construction pass.  When flag_web ==
+   AUTODETECT_FLAG_VAR_TRACKING it will be set according to optimize
+   and default_debug_hooks in process_options ().  */
 
-int flag_web;
+int flag_web = AUTODETECT_FLAG_VAR_TRACKING;
 
 /* Nonzero means perform loop optimizer.  */
 
@@ -800,8 +811,6 @@ int flag_unit_at_a_time = 0;
 /* Nonzero if we should track variables.  When
    flag_var_tracking == AUTODETECT_FLAG_VAR_TRACKING it will be set according
    to optimize, debug_info_level and debug_hooks in process_options ().  */
- 
-#define AUTODETECT_FLAG_VAR_TRACKING 2
 int flag_var_tracking = AUTODETECT_FLAG_VAR_TRACKING;
 
 /* Values of the -falign-* flags: how much to align labels in code.
@@ -2335,6 +2344,30 @@ process_options (void)
 
   /* Now we know write_symbols, set up the debug hooks based on it.
      By default we do nothing for debug output.  */
+  if (PREFERRED_DEBUGGING_TYPE == NO_DEBUG)
+    default_debug_hooks = &do_nothing_debug_hooks;
+#if defined(DBX_DEBUGGING_INFO)
+  else if (PREFERRED_DEBUGGING_TYPE == DBX_DEBUG)
+    default_debug_hooks = &dbx_debug_hooks;
+#endif
+#if defined(XCOFF_DEBUGGING_INFO)
+  else if (PREFERRED_DEBUGGING_TYPE == XCOFF_DEBUG)
+    default_debug_hooks = &xcoff_debug_hooks;
+#endif
+#ifdef SDB_DEBUGGING_INFO
+  else if (PREFERRED_DEBUGGING_TYPE == SDB_DEBUG)
+    default_debug_hooks = &sdb_debug_hooks;
+#endif
+#ifdef DWARF2_DEBUGGING_INFO
+  else if (PREFERRED_DEBUGGING_TYPE == DWARF2_DEBUG)
+    default_debug_hooks = &dwarf2_debug_hooks;
+#endif
+#ifdef VMS_DEBUGGING_INFO
+  else if (PREFERRED_DEBUGGING_TYPE == VMS_DEBUG
+	   || PREFERRED_DEBUGGING_TYPE == VMS_AND_DWARF2_DEBUG)
+    default_debug_hooks = &vmsdbg_debug_hooks;
+#endif
+
   if (write_symbols == NO_DEBUG)
     debug_hooks = &do_nothing_debug_hooks;
 #if defined(DBX_DEBUGGING_INFO)
@@ -2362,14 +2395,33 @@ process_options (void)
 	   debug_type_names[write_symbols]);
 
   /* Now we know which debug output will be used so we can set
-     flag_var_tracking if user has not specified it.  */
-  if (flag_var_tracking == AUTODETECT_FLAG_VAR_TRACKING)
+     flag_var_tracking, flag_rename_registers and flag_web if the user has
+     not specified them.  */
+  if (debug_info_level < DINFO_LEVEL_NORMAL
+      || debug_hooks->var_location == do_nothing_debug_hooks.var_location)
     {
-      /* User has not specified -f(no-)var-tracking so autodetect it.  */
-      flag_var_tracking
-	= (optimize >= 1 && debug_info_level >= DINFO_LEVEL_NORMAL
-	   && debug_hooks->var_location != do_nothing_debug_hooks.var_location);
+      if (flag_var_tracking == 1)
+        {
+	  if (debug_info_level < DINFO_LEVEL_NORMAL)
+	    warning ("variable tracking requested, but useless unless "
+		     "producing debug info");
+	  else
+	    warning ("variable tracking requested, but not supported "
+		     "by this debug format");
+	}
+      flag_var_tracking = 0;
     }
+
+  if (flag_rename_registers == AUTODETECT_FLAG_VAR_TRACKING)
+    flag_rename_registers = default_debug_hooks->var_location
+	    		    != do_nothing_debug_hooks.var_location;
+
+  if (flag_web == AUTODETECT_FLAG_VAR_TRACKING)
+    flag_web = optimize >= 2 && (default_debug_hooks->var_location
+	    		         != do_nothing_debug_hooks.var_location);
+
+  if (flag_var_tracking == AUTODETECT_FLAG_VAR_TRACKING)
+    flag_var_tracking = optimize >= 1;
 
   /* If auxiliary info generation is desired, open the output file.
      This goes in the same directory as the source file--unlike
