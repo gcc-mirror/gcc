@@ -3,6 +3,8 @@
    
    Alpha/OSF Foreign Function Interface 
 
+   $Id: osf.S,v 1.1.1.1 1998/11/29 16:48:16 green Exp $
+
    Permission is hereby granted, free of charge, to any person obtaining
    a copy of this software and associated documentation files (the
    ``Software''), to deal in the Software without restriction, including
@@ -285,6 +287,7 @@ $load_table:
 #error "osf.S out of sync with ffi.h"
 #endif
 
+#ifdef __ELF__
 	.section	.eh_frame,"aw",@progbits
 __FRAME_BEGIN__:
 	.4byte	$LECIE1-$LSCIE1	 # Length of Common Information Entry
@@ -344,3 +347,4 @@ $LASFDE3:
 	.byte	0x12	 # uleb128 0x12
 	.align 3
 $LEFDE3:
+#endif
