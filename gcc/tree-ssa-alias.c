@@ -2201,7 +2201,7 @@ static void
 create_global_var (void)
 {
   global_var = build_decl (VAR_DECL, get_identifier (".GLOBAL_VAR"),
-                           size_type_node);
+                           void_type_node);
   DECL_ARTIFICIAL (global_var) = 1;
   TREE_READONLY (global_var) = 0;
   DECL_EXTERNAL (global_var) = 1;
