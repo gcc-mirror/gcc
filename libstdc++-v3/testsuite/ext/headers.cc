@@ -26,6 +26,7 @@
 #include <ext/algorithm>
 #include <ext/hash_map>
 #include <ext/hash_set>
+#include <ext/iterator>
 #include <ext/rope>
 #include <ext/slist>
 
