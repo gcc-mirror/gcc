@@ -55,8 +55,6 @@ Boston, MA 02111-1307, USA.  */
       ICS_ELLIPSIS_FLAG (in _CONV)
       STMT_IS_FULL_EXPR_P (in _STMT)
    2: IDENTIFIER_OPNAME_P.
-      BINFO_VBASE_MARKED.
-      BINFO_FIELDS_MARKED.
       TYPE_POLYMORHPIC_P (in _TYPE)
       ICS_THIS_FLAG (in _CONV)
       STMT_LINENO_FOR_FN_P (in _STMT)
@@ -129,6 +127,13 @@ Boston, MA 02111-1307, USA.  */
      The BV_OVERRIDING_BASE is the binfo for the final overrider for
      this function.  (This binfo's BINFO_TYPE will always be the same
      as the DECL_CLASS_CONTEXT for the function.)
+
+   BINFO_VTABLE
+     Sometimes this is a VAR_DECL.  Under the new ABI, it is instead
+     an expression with POINTER_TYPE pointing that gives the value
+     to which the vptr should be initialized.  Use get_vtbl_decl_for_binfo
+     to extract the VAR_DECL for the complete vtable; that macro works
+     in both ABIs.
 
    DECL_ARGUMENTS
      For a VAR_DECL this is DECL_ANON_UNION_ELEMS.  
@@ -1356,24 +1361,17 @@ struct lang_type
   int vsize;
   int vfield_parent;
 
-  union tree_node *vfields;
-  union tree_node *vbases;
-
-  union tree_node *tags;
-
-  union tree_node *search_slot;
-
-  union tree_node *size;
-  union tree_node *size_unit;
-
-  union tree_node *pure_virtuals;
-  union tree_node *friend_classes;
-
-  union tree_node *rtti;
-
-  union tree_node *methods;
-
-  union tree_node *template_info;
+  tree vfields;
+  tree vbases;
+  tree tags;
+  tree search_slot;
+  tree size;
+  tree size_unit;
+  tree pure_virtuals;
+  tree friend_classes;
+  tree rtti;
+  tree methods;
+  tree template_info;
   tree befriending_classes;
 };
 
@@ -1538,21 +1536,29 @@ struct lang_type
 #define CLASSTYPE_PRIMARY_BINFO(NODE) \
   (BINFO_PRIMARY_BINFO (TYPE_BINFO (NODE)))
 
-/* If non-NULL, this is the binfo for the primary base of BINFO.  */
+/* If non-NULL, this is the binfo for the primary base of BINFO.  Note
+   that in a complex hierarchy the resulting BINFO may not actually
+   *be* primary.  In particular if the resulting BINFO is a virtual
+   base, and it occurs elsewhere in the hierarchy, then this
+   occurrence may not actually be a primary base in the complete
+   object.  Check BINFO_PRIMARY_MARKED_P to be sure.  */
 #define BINFO_PRIMARY_BINFO(NODE)					\
   (CLASSTYPE_HAS_PRIMARY_BASE_P (BINFO_TYPE (NODE))			\
    ? BINFO_BASETYPE (NODE, 						\
 		     CLASSTYPE_VFIELD_PARENT (BINFO_TYPE (NODE)))	\
    : NULL_TREE)
 
-/* The number of virtual functions present in this classes virtual
+/* The number of virtual functions present in this class' virtual
    function table.  */
 #define CLASSTYPE_VSIZE(NODE) (TYPE_LANG_SPECIFIC(NODE)->vsize)
 
 /* A chain of BINFOs for the direct and indirect virtual base classes
-   that this type uses in depth-first left-to-right order.  These
-   BINFOs are distinct from those in the TYPE_BINFO hierarchy.  So,
-   given: 
+   that this type uses in a post-order depth-first left-to-right
+   order.  (In other words, these bases appear in the order that they
+   should be initialized.)
+
+   These BINFOs are distinct from those in the TYPE_BINFO hierarchy.
+   So, given:
 
      struct A {};
      struct B : public A {};
@@ -1683,9 +1689,7 @@ struct lang_type
 
    We use TREE_VIA_PROTECTED and TREE_VIA_PUBLIC, but private
    inheritance is indicated by the absence of the other two flags, not
-   by TREE_VIA_PRIVATE, which is unused.
-
-   The TREE_CHAIN is for scratch space in search.c.  */
+   by TREE_VIA_PRIVATE, which is unused.  */
 
 /* Nonzero means marked by DFS or BFS search, including searches
    by `get_binfo' and `get_base_distance'.  */
@@ -1694,18 +1698,6 @@ struct lang_type
    expressions to be lvalues.  Grr!  */
 #define SET_BINFO_MARKED(NODE) (TREE_VIA_VIRTUAL(NODE)?SET_CLASSTYPE_MARKED(BINFO_TYPE(NODE)):(TREE_LANG_FLAG_0(NODE)=1))
 #define CLEAR_BINFO_MARKED(NODE) (TREE_VIA_VIRTUAL(NODE)?CLEAR_CLASSTYPE_MARKED(BINFO_TYPE(NODE)):(TREE_LANG_FLAG_0(NODE)=0))
-
-/* Nonzero means marked in search through virtual inheritance hierarchy.  */
-#define BINFO_VBASE_MARKED(NODE) CLASSTYPE_MARKED2 (BINFO_TYPE (NODE))
-/* Modifier macros */
-#define SET_BINFO_VBASE_MARKED(NODE) SET_CLASSTYPE_MARKED2 (BINFO_TYPE (NODE))
-#define CLEAR_BINFO_VBASE_MARKED(NODE) CLEAR_CLASSTYPE_MARKED2 (BINFO_TYPE (NODE))
-
-/* Nonzero means marked in search for members or member functions.  */
-#define BINFO_FIELDS_MARKED(NODE) \
-  (TREE_VIA_VIRTUAL(NODE)?CLASSTYPE_MARKED2 (BINFO_TYPE (NODE)):TREE_LANG_FLAG_2(NODE))
-#define SET_BINFO_FIELDS_MARKED(NODE) (TREE_VIA_VIRTUAL(NODE)?SET_CLASSTYPE_MARKED2(BINFO_TYPE(NODE)):(TREE_LANG_FLAG_2(NODE)=1))
-#define CLEAR_BINFO_FIELDS_MARKED(NODE) (TREE_VIA_VIRTUAL(NODE)?CLEAR_CLASSTYPE_MARKED2(BINFO_TYPE(NODE)):(TREE_LANG_FLAG_2(NODE)=0))
 
 /* Nonzero means that this class is on a path leading to a new vtable.  */
 #define BINFO_VTABLE_PATH_MARKED(NODE) \
@@ -3081,6 +3073,17 @@ typedef enum tmpl_spec_kind {
   tsk_expl_inst            /* An explicit instantiation.  */
 } tmpl_spec_kind;
 
+/* The various kinds of access.  BINFO_ACCESS depends on these being
+   two bit quantities.  The numerical values are important; they are
+   used to initialize RTTI data structures, so chaning them changes
+   the ABI.  */
+typedef enum access_kind {
+  ak_none = 0,             /* Inaccessible.  */
+  ak_public = 1,           /* Accessible, as a `public' thing.  */
+  ak_protected = 2,        /* Accessible, as a `protected' thing.  */
+  ak_private = 3           /* Accessible, as a `private' thing.  */
+} access_kind;
+
 /* Zero means prototype weakly, as in ANSI C (no args means nothing).
    Each language context defines how this variable should be set.  */
 extern int strict_prototype;
@@ -3694,8 +3697,7 @@ extern void unreverse_member_declarations       PARAMS ((tree));
 extern void invalidate_class_lookup_cache       PARAMS ((void));
 extern void maybe_note_name_used_in_class       PARAMS ((tree, tree));
 extern void note_name_declared_in_class         PARAMS ((tree, tree));
-extern tree num_extra_vtbl_entries              PARAMS ((tree));
-extern tree size_extra_vtbl_entries             PARAMS ((tree));
+extern tree get_vtbl_decl_for_binfo           PARAMS ((tree));
 
 /* in cvt.c */
 extern tree convert_to_reference		PARAMS ((tree, tree, int, int, tree));
@@ -4203,7 +4205,6 @@ extern tree dfs_walk_real                      PARAMS ((tree,
 						       tree (*) (tree, void *),
 						       void *));
 extern tree dfs_unmark                          PARAMS ((tree, void *));
-extern tree dfs_vbase_unmark                    PARAMS ((tree, void *));
 extern tree dfs_vtable_path_unmark              PARAMS ((tree, void *));
 extern tree markedp                             PARAMS ((tree, void *));
 extern tree unmarkedp                           PARAMS ((tree, void *));
@@ -4214,7 +4215,6 @@ extern tree dfs_marked_real_bases_queue_p       PARAMS ((tree, void *));
 extern tree dfs_skip_vbases                     PARAMS ((tree, void *));
 extern tree marked_vtable_pathp                 PARAMS ((tree, void *));
 extern tree unmarked_vtable_pathp               PARAMS ((tree, void *));
-extern void mark_primary_bases                  PARAMS ((tree));
 extern tree convert_pointer_to_vbase            PARAMS ((tree, tree));
 extern tree find_vbase_instance                 PARAMS ((tree, tree));
 

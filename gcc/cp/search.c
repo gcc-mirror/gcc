@@ -143,7 +143,7 @@ static int  dependent_base_p PARAMS ((tree));
 static tree dfs_accessible_queue_p PARAMS ((tree, void *));
 static tree dfs_accessible_p PARAMS ((tree, void *));
 static tree dfs_access_in_type PARAMS ((tree, void *));
-static tree access_in_type PARAMS ((tree, tree));
+static access_kind access_in_type PARAMS ((tree, tree));
 static tree dfs_canonical_queue PARAMS ((tree, void *));
 static tree dfs_assert_unmarked_p PARAMS ((tree, void *));
 static void assert_canonical_unmarked PARAMS ((tree));
@@ -152,7 +152,6 @@ static int friend_accessible_p PARAMS ((tree, tree, tree));
 static void setup_class_bindings PARAMS ((tree, int));
 static int template_self_reference_p PARAMS ((tree, tree));
 static void fixup_all_virtual_upcast_offsets PARAMS ((tree, tree));
-static tree dfs_mark_primary_bases PARAMS ((tree, void *));
 static tree get_shared_vbase_if_not_primary PARAMS ((tree, void *));
 static tree dfs_find_vbase_instance PARAMS ((tree, void *));
 static tree dfs_get_pure_virtuals PARAMS ((tree, void *));
@@ -811,6 +810,18 @@ shared_unmarked_p (binfo, data)
   return unmarkedp (binfo, data);
 }
 
+/* The accessibility routines use BINFO_ACCESS for scratch space
+   during the computation of the accssibility of some declaration.  */
+
+#define BINFO_ACCESS(NODE) \
+  ((access_kind) ((TREE_LANG_FLAG_1 (NODE) << 1) | TREE_LANG_FLAG_6 (NODE)))
+
+/* Set the access associated with NODE to ACCESS.  */
+
+#define SET_BINFO_ACCESS(NODE, ACCESS)			\
+  ((TREE_LANG_FLAG_1 (NODE) = (ACCESS & 2) != 0),	\
+   (TREE_LANG_FLAG_6 (NODE) = (ACCESS & 1) != 0))
+
 /* Called from access_in_type via dfs_walk.  Calculate the access to
    DATA (which is really a DECL) in BINFO.  */
 
@@ -821,18 +832,18 @@ dfs_access_in_type (binfo, data)
 {
   tree decl = (tree) data;
   tree type = BINFO_TYPE (binfo);
-  tree access = NULL_TREE;
+  access_kind access = ak_none;
 
   if (context_for_name_lookup (decl) == type)
     {
       /* If we have desceneded to the scope of DECL, just note the
 	 appropriate access.  */
       if (TREE_PRIVATE (decl))
-	access = access_private_node;
+	access = ak_private;
       else if (TREE_PROTECTED (decl))
-	access = access_protected_node;
+	access = ak_protected;
       else
-	access = access_public_node;
+	access = ak_public;
     }
   else 
     {
@@ -842,9 +853,10 @@ dfs_access_in_type (binfo, data)
 	 DECL_ACCESS.  */
       if (DECL_LANG_SPECIFIC (decl))
 	{
-	  access = purpose_member (type, DECL_ACCESS (decl));
-	  if (access)
-	    access = TREE_VALUE (access);
+	  tree decl_access = purpose_member (type, DECL_ACCESS (decl));
+	  if (decl_access)
+	    access = ((access_kind) 
+		      TREE_INT_CST_LOW (TREE_VALUE (decl_access)));
 	}
 
       if (!access)
@@ -860,35 +872,36 @@ dfs_access_in_type (binfo, data)
 	  for (i = 0; i < n_baselinks; ++i)
 	    {
 	      tree base_binfo = TREE_VEC_ELT (binfos, i);
-	      tree base_access = TREE_CHAIN (canonical_binfo (base_binfo));
+	      access_kind base_access 
+		= BINFO_ACCESS (canonical_binfo (base_binfo));
 
-	      if (!base_access || base_access == access_private_node)
+	      if (base_access == ak_none || base_access == ak_private)
 		/* If it was not accessible in the base, or only
 		   accessible as a private member, we can't access it
 		   all.  */
-		base_access = NULL_TREE;
+		base_access = ak_none;
 	      else if (TREE_VIA_PROTECTED (base_binfo))
 		/* Public and protected members in the base are
 		   protected here.  */
-		base_access = access_protected_node;
+		base_access = ak_protected;
 	      else if (!TREE_VIA_PUBLIC (base_binfo))
 		/* Public and protected members in the base are
 		   private here.  */
-		base_access = access_private_node;
+		base_access = ak_private;
 
 	      /* See if the new access, via this base, gives more
 		 access than our previous best access.  */
-	      if (base_access &&
-		  (base_access == access_public_node
-		   || (base_access == access_protected_node
-		       && access != access_public_node)
-		   || (base_access == access_private_node
-		       && !access)))
+	      if (base_access != ak_none
+		  && (base_access == ak_public
+		      || (base_access == ak_protected
+			  && access != ak_public)
+		      || (base_access == ak_private 
+			  && access == ak_none)))
 		{
 		  access = base_access;
 
 		  /* If the new access is public, we can't do better.  */
-		  if (access == access_public_node)
+		  if (access == ak_public)
 		    break;
 		}
 	    }
@@ -896,7 +909,7 @@ dfs_access_in_type (binfo, data)
     }
 
   /* Note the access to DECL in TYPE.  */
-  TREE_CHAIN (binfo) = access;
+  SET_BINFO_ACCESS (binfo, access);
 
   /* Mark TYPE as visited so that if we reach it again we do not
      duplicate our efforts here.  */
@@ -907,7 +920,7 @@ dfs_access_in_type (binfo, data)
 
 /* Return the access to DECL in TYPE.  */
 
-static tree 
+static access_kind
 access_in_type (type, decl)
      tree type;
      tree decl;
@@ -929,7 +942,7 @@ access_in_type (type, decl)
   dfs_walk (binfo, dfs_unmark, shared_marked_p,  0);
   assert_canonical_unmarked (binfo);
 
-  return TREE_CHAIN (binfo);
+  return BINFO_ACCESS (binfo);
 }
 
 /* Called from dfs_accessible_p via dfs_walk.  */
@@ -960,17 +973,14 @@ dfs_accessible_p (binfo, data)
      void *data;
 {
   int protected_ok = data != 0;
-  tree access;
+  access_kind access;
 
-  /* We marked the binfos while computing the access in each type.
-     So, we unmark as we go now.  */
   SET_BINFO_MARKED (binfo);
-
-  access = TREE_CHAIN (binfo);
-  if (access == access_public_node
-      || (access == access_protected_node && protected_ok))
+  access = BINFO_ACCESS (binfo);
+  if (access == ak_public || (access == ak_protected && protected_ok))
     return binfo;
-  else if (access && is_friend (BINFO_TYPE (binfo), current_scope ()))
+  else if (access != ak_none
+	   && is_friend (BINFO_TYPE (binfo), current_scope ()))
     return binfo;
 
   return NULL_TREE;
@@ -985,7 +995,7 @@ protected_accessible_p (decl, derived, binfo)
      tree derived;
      tree binfo;
 {
-  tree access;
+  access_kind access;
 
   /* We're checking this clause from [class.access.base]
 
@@ -1010,7 +1020,7 @@ protected_accessible_p (decl, derived, binfo)
   access = access_in_type (derived, decl);
 
   /* If m is inaccessible in DERIVED, then it's not a P.  */
-  if (access == NULL_TREE)
+  if (access == ak_none)
     return 0;
   
   /* [class.protected]
@@ -1752,12 +1762,11 @@ lookup_fnfields_1 (type, name)
    If it ever returns a non-NULL value, that value is immediately
    returned and the walk is terminated.  At each node FN, is passed a
    BINFO indicating the path from the curently visited base-class to
-   TYPE.  The TREE_CHAINs of the BINFOs may be used for scratch space;
-   they are otherwise unused.  Before each base-class is walked QFN is
-   called.  If the value returned is non-zero, the base-class is
-   walked; otherwise it is not.  If QFN is NULL, it is treated as a
-   function which always returns 1.  Both FN and QFN are passed the
-   DATA whenever they are called.  */
+   TYPE.  Before each base-class is walked QFN is called.  If the
+   value returned is non-zero, the base-class is walked; otherwise it
+   is not.  If QFN is NULL, it is treated as a function which always
+   returns 1.  Both FN and QFN are passed the DATA whenever they are
+   called.  */
 
 static tree
 bfs_walk (binfo, fn, qfn, data)
@@ -2194,97 +2203,6 @@ dfs_skip_nonprimary_vbases_markedp (binfo, data)
   return markedp (binfo, NULL);
 }
 
-/* Called via dfs_walk from mark_primary_bases.  */
-
-static tree
-dfs_mark_primary_bases (binfo, data)
-     tree binfo;
-     void *data;
-{
-  int i;
-  tree base_binfo;
-
-  if (!CLASSTYPE_HAS_PRIMARY_BASE_P (BINFO_TYPE (binfo)))
-    return NULL_TREE;
-
-  i = CLASSTYPE_VFIELD_PARENT (BINFO_TYPE (binfo));
-  base_binfo = BINFO_BASETYPE (binfo, i);
-
-  if (!TREE_VIA_VIRTUAL (base_binfo))
-    /* Non-virtual base classes are easy.  */
-    BINFO_PRIMARY_MARKED_P (base_binfo) = 1;
-  else
-    {
-      tree shared_binfo;
-
-      shared_binfo 
-	= BINFO_FOR_VBASE (BINFO_TYPE (base_binfo), (tree) data);
-
-      /* If this virtual base is not already primary somewhere else in
-	 the hiearchy, then we'll be using this copy.  */
-      if (!BINFO_VBASE_PRIMARY_P (shared_binfo)
-	  && !BINFO_VBASE_MARKED (shared_binfo))
-	{
-	  BINFO_VBASE_PRIMARY_P (shared_binfo) = 1;
-	  BINFO_PRIMARY_MARKED_P (base_binfo) = 1;
-	}
-    }
-
-  return NULL_TREE;
-}
-
-/* Set BINFO_PRIMARY_MARKED_P for all binfos in the hierarchy
-   dominated by BINFO that are primary bases.  */
-
-void
-mark_primary_bases (type)
-     tree type;
-{
-  tree vbase;
-
-  /* Mark the TYPE_BINFO hierarchy.  We need to mark primary bases in
-     pre-order to deal with primary virtual bases.  (The virtual base
-     would be skipped if it were not marked as primary, and that
-     requires getting to dfs_mark_primary_bases before
-     dfs_skip_nonprimary_vbases_unmarkedp has a chance to skip the
-     virtual base.)  */
-  dfs_walk_real (TYPE_BINFO (type), dfs_mark_primary_bases, NULL,
-		 dfs_skip_nonprimary_vbases_unmarkedp, type);
-
-  /* Now go through the virtual base classes.  Any that are not
-     already primary will need to be allocated in TYPE, and so we need
-     to mark their primary bases.  */
-  for (vbase = CLASSTYPE_VBASECLASSES (type); 
-       vbase; 
-       vbase = TREE_CHAIN (vbase))
-    {
-      if (BINFO_VBASE_PRIMARY_P (vbase))
-	/* This virtual base was already included in the hierarchy, so
-	   there's nothing to do here.  */
-	continue;
-
-      /* Temporarily pretend that VBASE is primary so that its bases
-	 will be walked; this is the real copy of VBASE.  */
-      BINFO_PRIMARY_MARKED_P (vbase) = 1;
-
-      /* Now, walk its bases.  */
-      dfs_walk (vbase, dfs_mark_primary_bases,
-		dfs_skip_nonprimary_vbases_unmarkedp, type);
-
-      /* VBASE wasn't really primary.  */
-      BINFO_PRIMARY_MARKED_P (vbase) = 0;
-      /* And we don't want to allow it to *become* primary if it is a
-	 base of some subsequent base class.  */
-      SET_BINFO_VBASE_MARKED (vbase);
-    }
-
-  /* Clear the VBASE_MARKED bits we set above.  */
-  for (vbase = CLASSTYPE_VBASECLASSES (type); 
-       vbase; 
-       vbase = TREE_CHAIN (vbase))
-    CLEAR_BINFO_VBASE_MARKED (vbase);
-}
-
 /* If BINFO is a non-primary virtual baseclass (in the hierarchy
    dominated by TYPE), and no primary copy appears anywhere in the
    hierarchy, return the shared copy.  If a primary copy appears
@@ -2577,17 +2495,6 @@ dfs_unmark (binfo, data)
   return NULL_TREE;
 }
 
-/* Clear both BINFO_MARKED and BINFO_VBASE_MARKED.  */
-
-tree
-dfs_vbase_unmark (binfo, data)
-     tree binfo;
-     void *data ATTRIBUTE_UNUSED;
-{
-  CLEAR_BINFO_VBASE_MARKED (binfo);
-  return dfs_unmark (binfo, data);
-}
-
 /* Clear BINFO_VTABLE_PATH_MARKED.  */
 
 tree
@@ -2781,7 +2688,7 @@ virtual_context (fndecl, t, vbase)
   while (path)
     {
       if (TREE_VIA_VIRTUAL (path))
-	return binfo_member (BINFO_TYPE (path), CLASSTYPE_VBASECLASSES (t));
+	return BINFO_FOR_VBASE (BINFO_TYPE (path), t);
       path = BINFO_INHERITANCE_CHAIN (path);
     }
   return 0;
@@ -3072,7 +2979,7 @@ dfs_get_vbase_types (binfo, data)
 {
   tree type = (tree) data;
 
-  if (TREE_VIA_VIRTUAL (binfo) && ! BINFO_VBASE_MARKED (binfo))
+  if (TREE_VIA_VIRTUAL (binfo))
     {
       tree new_vbase = make_binfo (size_zero_node, 
 				   BINFO_TYPE (binfo),
@@ -3083,8 +2990,24 @@ dfs_get_vbase_types (binfo, data)
       BINFO_INHERITANCE_CHAIN (new_vbase) = TYPE_BINFO (type);
       TREE_CHAIN (new_vbase) = CLASSTYPE_VBASECLASSES (type);
       CLASSTYPE_VBASECLASSES (type) = new_vbase;
-      SET_BINFO_VBASE_MARKED (binfo);
     }
+  SET_BINFO_MARKED (binfo);
+  return NULL_TREE;
+}
+
+/* Called via dfs_walk from mark_primary_bases.  Builds the
+   inheritance graph order list of BINFOs.  */
+
+static tree
+dfs_build_inheritance_graph_order (binfo, data)
+     tree binfo;
+     void *data;
+{
+  tree *last_binfo = (tree *) data;
+
+  if (*last_binfo)
+    TREE_CHAIN (*last_binfo) = binfo;
+  *last_binfo = binfo;
   SET_BINFO_MARKED (binfo);
   return NULL_TREE;
 }
@@ -3095,12 +3018,22 @@ void
 get_vbase_types (type)
      tree type;
 {
+  tree last_binfo;
+
   CLASSTYPE_VBASECLASSES (type) = NULL_TREE;
   dfs_walk (TYPE_BINFO (type), dfs_get_vbase_types, unmarkedp, type);
   /* Rely upon the reverse dfs ordering from dfs_get_vbase_types, and now
      reverse it so that we get normal dfs ordering.  */
   CLASSTYPE_VBASECLASSES (type) = nreverse (CLASSTYPE_VBASECLASSES (type));
-  dfs_walk (TYPE_BINFO (type), dfs_vbase_unmark, markedp, 0);
+  dfs_walk (TYPE_BINFO (type), dfs_unmark, markedp, 0);
+  /* Thread the BINFOs in inheritance-graph order.  */
+  last_binfo = NULL;
+  dfs_walk_real (TYPE_BINFO (type),
+		 dfs_build_inheritance_graph_order,
+		 NULL,
+		 unmarkedp,
+		 &last_binfo);
+  dfs_walk (TYPE_BINFO (type), dfs_unmark, markedp, NULL);
 }
 
 /* Called from find_vbase_instance via dfs_walk.  */

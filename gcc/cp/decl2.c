@@ -2544,7 +2544,7 @@ output_vtable_inherit (vars)
     op[1] = const0_rtx;
   else if (parent)
     {
-      parent = TYPE_BINFO_VTABLE (BINFO_TYPE (parent));
+      parent = get_vtbl_decl_for_binfo (TYPE_BINFO (BINFO_TYPE (parent)));
       op[1] = XEXP (DECL_RTL (parent), 0);  /* strip the mem ref  */
     }
   else

@@ -103,7 +103,7 @@ repo_get_id (t)
       if (!COMPLETE_TYPE_P (t) || TYPE_BEING_DEFINED (t))
 	my_friendly_abort (981113);
 
-      t = TYPE_BINFO_VTABLE (t);
+      t = get_vtbl_decl_for_binfo (TYPE_BINFO (t));
       if (t == NULL_TREE)
 	return t;
     }

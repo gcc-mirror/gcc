@@ -1,3 +1,90 @@
+2000-04-04  Mark Mitchell  <mark@codesourcery.com>
+
+	Correct many new ABI issues regarding vbase and vcall offset
+	layout.
+	* cp-tree.h (BINFO_VTABLE): Document.
+	(struct lang_type): Tweak formatting.
+	(BINFO_PRIMARY_BINFO): Add to documentation.
+	(CLASSTYPE_VSIZE): Fix typo in comment.
+	(CLASSTYPE_VBASECLASSES): Update documentation.
+	(BINFO_VBASE_MARKED): Remove.
+	(SET_BINFO_VBASE_MARKED): Likewise.
+	(CLEAR_BINFO_VBASE_MARKED): Likewise.
+	(BINFO_FIELDS_MARKED): Remove.
+	(SET_BINFO_FIELDS_MARKED): Likewise.
+	(CLEAR_BINFO_FIELDS_MARKED): Likewise.
+	(enum access_kind): New enumeration.
+	(num_extra_vtbl_entries): Remove declaration.
+	(size_extra_vtbl_entries): Likewise.
+	(get_vtbl_decl_for_binfo): New function.
+	(dfs_vbase_unmark): Remove declaration.
+	(mark_primary_bases): Likewise.
+	* class.c (SAME_FN): Remove.
+	(struct vcall_offset_data_s): Move definition.
+	(build_vbase_pointer): Use `build', not `build_binary_op', to
+	access the vbase pointer under the new ABI.
+	(build_vtable_entry_ref): Use get_vtbl_decl_for_binfo.
+	(build_primary_vtable): Likewise.
+	(dfs_mark_primary_bases): Move here from search.c.
+	(mark_primary_bases): Likewise.
+	(determine_primary_bases): Under the new ABI, don't make a base
+	class a primary base just because we don't yet have any virtual
+	functions.
+	(layout_vtable_decl): Use get_vtbl_decl_for_binfo.
+	(num_vfun_entries): Remove.
+	(dfs_count_virtuals): Likewise.
+	(num_extra_vtbl_entries): Likewise.
+	(size_extra_vtbl_entries): Likewise.
+	(layout_virtual_bases): Iterate in inheritance graph order under
+	the new ABI.
+	(finish_struct_1): Use TYPE_VFIELD, not CLASSTYPE_VSIZE, to
+	indicate that a vfield is present.
+	(init_class_processing): Initialize access_public_node, etc., from
+	ak_public, etc.
+	(get_vtbl_decl_for_binfo): New function.
+	(dump_class_hierarchy_r): Likewise.
+	(dump_class_hierarchy): Use it.
+	(finish_vtbls): Build the vtbls in inheritance graph order.
+	(dfs_finish_vtbls): Adjust call to build_vtbl_initializer.
+	(initialize_vtable): Use get_vtbl_decl_for_binfo.
+	(accumulate_vtbl_inits): Add comments explaining why a pre-order
+	walk is required.
+	(dfs_accumulate_vtbl_inits): Set BINFO_VTABLE to the location
+	where the vptr points, even for primary vtables.
+	(build_vtbl_initializer): Adjust handling of vbase and vcall
+	offsets.
+	(build_vcall_and_vbase_vtable_entries): New function.
+	(dfs_build_vbase_offset_vtbl_entries): Remove.
+	(build_vbase_offset_vtbl_entries): Reimplement.
+	(dfs_build_vcall_offset_vtbl_entries): Don't include virtuals that
+	were already handled in a primary base class vtable.
+	(build_vcall_offset_vtbl_entries): Adjust.
+	(build_rtti_vtbl_entries): Adjust.
+	* decl2.c (output_vtable_inherit): Use get_vtbl_decl_for_binfo.
+	* init.c (expand_virtual_init): Simplify.
+	* repo.c (repo_get_id): Use get_vtbl_decl_for_binfo.
+	* rtti.c (create_pseudo_type_info): Adjust calculation of vptr.
+	* search.c (BINFO_ACCESS): New macro.
+	(SET_BINFO_ACCESS): Likewise.
+	(dfs_access_in_type): Manipulate access_kinds, not access nodes.
+	(access_in_type): Likewise.
+	(dfs_accessible_p): Likewise.
+	(protected_accessible_p): Likewise.
+	(lookup_fnfields_1): Adjust documentation.
+	(dfs_mark_primary_bases): Move to class.c
+	(mark_primary_bases): Likewise.
+	(dfs_vbase_unmark): Remove.
+	(virtual_context): Use BINFO_FOR_VBASE.
+	(dfs_get_vbase_types): Simplify.
+	(dfs_build_inheritance_graph_order): New function.
+	(get_vbase_types): Use it.
+	* tree.c (debug_binfo): Use get_vtbl_decl_for_binfo.
+
+	* tinfo.cc (get_vbase_offset): New function.
+	(__vmi_class_type_info::do_find_public_src): Use it.
+	(__vmi_class_type_info::do_dyncast): Likewise.
+	(__vmi_class_type_info::do_upcast): Likewise.
+	
 2000-04-03  Zack Weinberg  <zack@wolery.cumb.org>
 
 	* lang-specs.h: Pass -fno-show-column to the preprocessor.
