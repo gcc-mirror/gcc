@@ -1,3 +1,10 @@
+Sat Mar 24 21:13:28 CET 2001  Jan Hubicka  <jh@suse.cz>
+
+	* i386-protos.h (ix86_split_long_move): Return void.
+	* i386.c (ix86_split_to_parts): Handle 64bit target.
+	(ix86_split_long_move): Likewise.
+	* i386.md (all calls to ix86_split_long_move): Update.
+
 2001-03-23  Richard Henderson  <rth@redhat.com>
 
 	* config/mips/iris4.h (ASM_OUTPUT_ASCII): Rename local variables
