@@ -5405,29 +5405,19 @@ fold (expr)
 				REAL_VALUE_NEGATE (TREE_REAL_CST (arg0)));
 	    }
 	}
-      else if (TREE_CODE (arg0) == ABS_EXPR || TREE_CODE (arg0) == NEGATE_EXPR)
-	return build1 (ABS_EXPR, type, TREE_OPERAND (arg0, 0));
+      else if (TREE_CODE (arg0) == NEGATE_EXPR)
+	return fold (build1 (ABS_EXPR, type, TREE_OPERAND (arg0, 0)));
       /* Convert fabs((double)float) into (double)fabsf(float).  */
       else if (TREE_CODE (arg0) == NOP_EXPR
 	       && TREE_CODE (type) == REAL_TYPE)
 	{
 	  tree targ0 = strip_float_extensions (arg0);
 	  if (targ0 != arg0)
-	    return convert (type, build1 (ABS_EXPR, TREE_TYPE (targ0), targ0));
-			   
+	    return convert (type, fold (build1 (ABS_EXPR, TREE_TYPE (targ0),
+						targ0)));
 	}
-      else
-	{
-	  /* fabs(sqrt(x)) = sqrt(x) and fabs(exp(x)) = exp(x).  */
-	  enum built_in_function fcode = builtin_mathfn_code (arg0);
-	  if (fcode == BUILT_IN_SQRT
-	      || fcode == BUILT_IN_SQRTF
-	      || fcode == BUILT_IN_SQRTL
-	      || fcode == BUILT_IN_EXP
-	      || fcode == BUILT_IN_EXPF
-	      || fcode == BUILT_IN_EXPL)
-	    t = arg0;
-	}
+      else if (tree_expr_nonnegative_p (arg0))
+	return arg0;
       return t;
 
     case CONJ_EXPR:
@@ -7927,6 +7917,47 @@ tree_expr_nonnegative_p (t)
       return tree_expr_nonnegative_p (TREE_OPERAND (t, 0));
     case RTL_EXPR:
       return rtl_expr_nonnegative_p (RTL_EXPR_RTL (t));
+
+    case CALL_EXPR:
+      if (TREE_CODE (TREE_OPERAND (t, 0)) == ADDR_EXPR)
+	{
+	  tree fndecl = TREE_OPERAND (TREE_OPERAND (t, 0), 0);
+	  tree arglist = TREE_OPERAND (t, 1);
+	  if (TREE_CODE (fndecl) == FUNCTION_DECL
+	      && DECL_BUILT_IN (fndecl)
+	      && DECL_BUILT_IN_CLASS (fndecl) != BUILT_IN_MD)
+	    switch (DECL_FUNCTION_CODE (fndecl))
+	      {
+	      case BUILT_IN_CABS:
+	      case BUILT_IN_CABSL:
+	      case BUILT_IN_CABSF:
+	      case BUILT_IN_EXP:
+	      case BUILT_IN_EXPF:
+	      case BUILT_IN_EXPL:
+	      case BUILT_IN_FABS:
+	      case BUILT_IN_FABSF:
+	      case BUILT_IN_FABSL:
+	      case BUILT_IN_SQRT:
+	      case BUILT_IN_SQRTF:
+	      case BUILT_IN_SQRTL:
+		return 1;
+
+	      case BUILT_IN_ATAN:
+	      case BUILT_IN_ATANF:
+	      case BUILT_IN_ATANL:
+		return tree_expr_nonnegative_p (TREE_VALUE (arglist));
+
+	      case BUILT_IN_POW:
+	      case BUILT_IN_POWF:
+	      case BUILT_IN_POWL:
+		return tree_expr_nonnegative_p (TREE_VALUE (arglist));
+
+	      default:
+		break;
+	      }
+	}
+
+      /* ... fall through ... */
 
     default:
       if (truth_value_p (TREE_CODE (t)))

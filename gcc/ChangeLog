@@ -1,3 +1,21 @@
+2003-06-06  Roger Sayle  <roger@eyesopen.com>
+
+	* fold-const.c (fold <ABS_EXPR>):  Re-fold the result of folding
+	fabs(-x) into fabs(x).  Use tree_expr_nonnegative_p to determine
+	when the ABS_EXPR (fabs or abs) is not required.
+  	(tree_expr_nonnegative_p): Move the logic that sqrt and exp are
+	always nonnegative from fold to here.  Additionally, cabs and fabs
+	are always non-negative, and pow and atan are non-negative if
+	their first argument is non-negative.
+
+	* builtins.c (fold_builtin_cabs): New function to fold cabs{,f,l}.
+	Evaluate cabs of a constant at compile-time.  Convert cabs of a
+	non-complex argument into fabs.  Convert cabs(z) into
+	sqrt(z.r*z.r + z.i*z.i) at the tree-level with -ffast-math or
+	-funsafe-math-optimizations or -ffast-math.
+	(fold_builtin): Convert BUILT_IN_FABS{,F,L} into an ABS_EXPR.
+	Fold BUILT_IN_CABS{,F,L} using fold_builtin_cabs.
+
 Thu Jun  5 20:51:09 CEST 2003  Jan Hubicka  <jh@suse.cz>
 
 	* sourcebuild.texi (Front End Directory): Document new hooks.
@@ -5,7 +23,8 @@ Thu Jun  5 20:51:09 CEST 2003  Jan Hubicka  <jh@suse.cz>
 Fri Jun  6 11:02:35 CEST 2003  Jan Hubicka  <jh@suse.cz>
 
 	* function.c (FLOOR_ROUND, CEIL_ROUND): Fix.
-	* i386.md (gen_pro_epilogue_adjust_stack): Deal with gigantic stack frames.
+	* i386.md (gen_pro_epilogue_adjust_stack): Deal with gigantic
+	stack frames.
 	(pro_epilogue_adjust_stack_rex64_2): New pattern
 
 Fri Jun  6 11:03:14 CEST 2003  Jan Hubicka  <jh@suse.cz>

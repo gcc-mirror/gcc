@@ -58,6 +58,21 @@ double test10(double x)
   return tan(atan(x));
 }
 
+double test11(double x)
+{
+  return fabs(fabs(x));
+}
+
+double test12(double x)
+{
+  return fabs(atan(x));
+}
+
+double test13(double x)
+{
+  return fabs(pow(2.0,x));
+}
+
 float test1f(float x)
 {
   return logf(expf(x));
@@ -108,6 +123,21 @@ float test10f(float x)
   return tanf(atanf(x));
 }
 
+floatf test11f(float x)
+{
+  return fabsf(fabsf(x));
+}
+
+floatf test12f(float x)
+{
+  return fabsf(atanf(x));
+}
+
+float test13f(float x)
+{
+  return fabsf(powf(2.0f,x));
+}
+
 long double test1l(long double x)
 {
   return logl(expl(x));
@@ -156,5 +186,20 @@ long double test9l(long double x)
 long double test10l(long double x)
 {
   return tanl(atanl(x));
+}
+
+long double test11l(long double x)
+{
+  return fabsl(fabsl(x));
+}
+
+long double test12l(long double x)
+{
+  return fabsl(atanl(x));
+}
+
+long double test13l(long double x)
+{
+  return fabsl(powl(2.0l,x));
 }
 

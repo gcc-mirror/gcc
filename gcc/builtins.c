@@ -177,6 +177,7 @@ static bool readonly_data_expr		PARAMS ((tree));
 static rtx expand_builtin_fabs		PARAMS ((tree, rtx, rtx));
 static rtx expand_builtin_cabs		PARAMS ((tree, rtx));
 static void init_builtin_dconsts	PARAMS ((void));
+static tree fold_builtin_cabs		PARAMS ((tree, tree, tree));
 
 /* Initialize mathematical constants for constant folding builtins.
    These constants need to be given to atleast 160 bits precision.  */
@@ -5135,6 +5136,92 @@ fold_trunc_transparent_mathfn (exp)
   return 0;
 }
 
+/* Fold function call to builtin cabs, cabsf or cabsl.  FNDECL is the
+   function's DECL, ARGLIST is the argument list and TYPE is the return
+   type.  Return NULL_TREE if no simplification can be made.  */
+
+static tree
+fold_builtin_cabs (fndecl, arglist, type)
+     tree fndecl, arglist, type;
+{
+  tree arg;
+
+  if (!arglist || TREE_CHAIN (arglist))
+    return NULL_TREE;
+
+  arg = TREE_VALUE (arglist);
+  if (TREE_CODE (TREE_TYPE (arg)) != COMPLEX_TYPE
+      || TREE_CODE (TREE_TYPE (TREE_TYPE (arg))) != REAL_TYPE)
+    return NULL_TREE;
+
+  /* Evaluate cabs of a constant at compile-time.  */
+  if (flag_unsafe_math_optimizations
+      && TREE_CODE (arg) == COMPLEX_CST
+      && TREE_CODE (TREE_REALPART (arg)) == REAL_CST
+      && TREE_CODE (TREE_IMAGPART (arg)) == REAL_CST
+      && ! TREE_CONSTANT_OVERFLOW (TREE_REALPART (arg))
+      && ! TREE_CONSTANT_OVERFLOW (TREE_IMAGPART (arg)))
+    {
+      REAL_VALUE_TYPE r, i;
+
+      r = TREE_REAL_CST (TREE_REALPART (arg));
+      i = TREE_REAL_CST (TREE_IMAGPART (arg));
+
+      real_arithmetic (&r, MULT_EXPR, &r, &r);
+      real_arithmetic (&i, MULT_EXPR, &i, &i);
+      real_arithmetic (&r, PLUS_EXPR, &r, &i);
+      if (real_sqrt (&r, TYPE_MODE (type), &r)
+	  || ! flag_trapping_math)
+	return build_real (type, r);
+    }
+
+  /* If either part is zero, cabs is fabs of the other.  */
+  if (TREE_CODE (arg) == COMPLEX_EXPR
+      && real_zerop (TREE_OPERAND (arg, 0)))
+    return fold (build1 (ABS_EXPR, type, TREE_OPERAND (arg, 1)));
+  if (TREE_CODE (arg) == COMPLEX_EXPR
+      && real_zerop (TREE_OPERAND (arg, 1)))
+    return fold (build1 (ABS_EXPR, type, TREE_OPERAND (arg, 0)));
+
+  if (flag_unsafe_math_optimizations)
+    {
+      enum built_in_function fcode;
+      tree sqrtfn;
+
+      fcode = DECL_FUNCTION_CODE (fndecl);
+      if (fcode == BUILT_IN_CABS)
+	sqrtfn = implicit_built_in_decls[BUILT_IN_SQRT];
+      else if (fcode == BUILT_IN_CABSF)
+	sqrtfn = implicit_built_in_decls[BUILT_IN_SQRTF];
+      else if (fcode == BUILT_IN_CABSL)
+	sqrtfn = implicit_built_in_decls[BUILT_IN_SQRTL];
+      else
+	sqrtfn = NULL_TREE;
+
+      if (sqrtfn != NULL_TREE)
+	{
+	  tree rpart, ipart, result, arglist;
+
+	  rpart = fold (build1 (REALPART_EXPR, type, arg));
+	  ipart = fold (build1 (IMAGPART_EXPR, type, arg));
+
+	  rpart = save_expr (rpart);
+	  ipart = save_expr (ipart);
+
+	  result = fold (build (PLUS_EXPR, type,
+				fold (build (MULT_EXPR, type,
+					     rpart, rpart)),
+				fold (build (MULT_EXPR, type,
+					     ipart, ipart))));
+
+	  arglist = build_tree_list (NULL_TREE, result);
+	  return build_function_call_expr (sqrtfn, arglist);
+	}
+    }
+
+  return NULL_TREE;
+}
+
 /* Used by constant folding to eliminate some builtin calls early.  EXP is
    the CALL_EXPR of a call to a builtin function.  */
 
@@ -5170,6 +5257,18 @@ fold_builtin (exp)
 	    }
 	}
       break;
+
+    case BUILT_IN_FABS:
+    case BUILT_IN_FABSF:
+    case BUILT_IN_FABSL:
+      if (validate_arglist (arglist, REAL_TYPE, VOID_TYPE))
+	return fold (build1 (ABS_EXPR, type, TREE_VALUE (arglist)));
+      break;
+
+    case BUILT_IN_CABS:
+    case BUILT_IN_CABSF:
+    case BUILT_IN_CABSL:
+      return fold_builtin_cabs (fndecl, arglist, type);
 
     case BUILT_IN_SQRT:
     case BUILT_IN_SQRTF:
