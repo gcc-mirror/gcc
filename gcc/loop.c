@@ -3313,6 +3313,51 @@ find_single_use_in_loop (insn, x, usage)
       }
 }
 
+/* Count and record any set in X which is contained in INSN.  Update
+   MAY_NOT_MOVE and LAST_SET for any register set in X.  */
+
+static void
+count_one_set (insn, x, may_not_move, last_set)
+     rtx insn, x;
+     varray_type may_not_move;
+     rtx *last_set;
+{
+  if (GET_CODE (x) == CLOBBER && GET_CODE (XEXP (x, 0)) == REG)
+    /* Don't move a reg that has an explicit clobber.
+       It's not worth the pain to try to do it correctly.  */
+    VARRAY_CHAR (may_not_move, REGNO (XEXP (x, 0))) = 1;
+
+  if (GET_CODE (x) == SET || GET_CODE (x) == CLOBBER)
+    {
+      rtx dest = SET_DEST (x);
+      while (GET_CODE (dest) == SUBREG
+	     || GET_CODE (dest) == ZERO_EXTRACT
+	     || GET_CODE (dest) == SIGN_EXTRACT
+	     || GET_CODE (dest) == STRICT_LOW_PART)
+	dest = XEXP (dest, 0);
+      if (GET_CODE (dest) == REG)
+	{
+	  register int regno = REGNO (dest);
+	  /* If this is the first setting of this reg
+	     in current basic block, and it was set before,
+	     it must be set in two basic blocks, so it cannot
+	     be moved out of the loop.  */
+	  if (VARRAY_INT (n_times_set, regno) > 0 
+	      && last_set[regno] == 0)
+	    VARRAY_CHAR (may_not_move, regno) = 1;
+	  /* If this is not first setting in current basic block,
+	     see if reg was used in between previous one and this.
+	     If so, neither one can be moved.  */
+	  if (last_set[regno] != 0
+	      && reg_used_between_p (dest, last_set[regno], insn))
+	    VARRAY_CHAR (may_not_move, regno) = 1;
+	  if (VARRAY_INT (n_times_set, regno) < 127)
+	    ++VARRAY_INT (n_times_set, regno);
+	  last_set[regno] = insn;
+	}
+    }
+}
+
 /* Increment N_TIMES_SET at the index of each register
    that is modified by an insn between FROM and TO.
    If the value of an element of N_TIMES_SET becomes 127 or more,
@@ -3359,76 +3404,15 @@ count_loop_regs_set (from, to, may_not_move, single_usage, count_ptr, nregs)
 		find_single_use_in_loop (insn, REG_NOTES (insn), single_usage);
 	    }
 
-	  if (GET_CODE (PATTERN (insn)) == CLOBBER
-	      && GET_CODE (XEXP (PATTERN (insn), 0)) == REG)
-	    /* Don't move a reg that has an explicit clobber.
-	       We might do so sometimes, but it's not worth the pain.  */
-	    VARRAY_CHAR (may_not_move, REGNO (XEXP (PATTERN (insn), 0))) = 1;
-
 	  if (GET_CODE (PATTERN (insn)) == SET
 	      || GET_CODE (PATTERN (insn)) == CLOBBER)
-	    {
-	      dest = SET_DEST (PATTERN (insn));
-	      while (GET_CODE (dest) == SUBREG
-		     || GET_CODE (dest) == ZERO_EXTRACT
-		     || GET_CODE (dest) == SIGN_EXTRACT
-		     || GET_CODE (dest) == STRICT_LOW_PART)
-		dest = XEXP (dest, 0);
-	      if (GET_CODE (dest) == REG)
-		{
-		  register int regno = REGNO (dest);
-		  /* If this is the first setting of this reg
-		     in current basic block, and it was set before,
-		     it must be set in two basic blocks, so it cannot
-		     be moved out of the loop.  */
-		  if (VARRAY_INT (n_times_set, regno) > 0
-		      && last_set[regno] == 0)
-		    VARRAY_CHAR (may_not_move, regno) = 1;
-		  /* If this is not first setting in current basic block,
-		     see if reg was used in between previous one and this.
-		     If so, neither one can be moved.  */
-		  if (last_set[regno] != 0
-		      && reg_used_between_p (dest, last_set[regno], insn))
-		    VARRAY_CHAR (may_not_move, regno) = 1;
-		  if (VARRAY_INT (n_times_set, regno) < 127)
-		    ++VARRAY_INT (n_times_set, regno);
-		  last_set[regno] = insn;
-		}
-	    }
+	    count_one_set (insn, PATTERN (insn), may_not_move, last_set);
 	  else if (GET_CODE (PATTERN (insn)) == PARALLEL)
 	    {
 	      register int i;
 	      for (i = XVECLEN (PATTERN (insn), 0) - 1; i >= 0; i--)
-		{
-		  register rtx x = XVECEXP (PATTERN (insn), 0, i);
-		  if (GET_CODE (x) == CLOBBER && GET_CODE (XEXP (x, 0)) == REG)
-		    /* Don't move a reg that has an explicit clobber.
-		       It's not worth the pain to try to do it correctly.  */
-		    VARRAY_CHAR (may_not_move, REGNO (XEXP (x, 0))) = 1;
-
-		  if (GET_CODE (x) == SET || GET_CODE (x) == CLOBBER)
-		    {
-		      dest = SET_DEST (x);
-		      while (GET_CODE (dest) == SUBREG
-			     || GET_CODE (dest) == ZERO_EXTRACT
-			     || GET_CODE (dest) == SIGN_EXTRACT
-			     || GET_CODE (dest) == STRICT_LOW_PART)
-			dest = XEXP (dest, 0);
-		      if (GET_CODE (dest) == REG)
-			{
-			  register int regno = REGNO (dest);
-			  if (VARRAY_INT (n_times_set, regno) > 0 
-			      && last_set[regno] == 0)
-			    VARRAY_CHAR (may_not_move, regno) = 1;
-			  if (last_set[regno] != 0
-			      && reg_used_between_p (dest, last_set[regno], insn))
-			    VARRAY_CHAR (may_not_move, regno) = 1;
-			  if (VARRAY_INT (n_times_set, regno) < 127)
-			    ++VARRAY_INT (n_times_set, regno);
-			  last_set[regno] = insn;
-			}
-		    }
-		}
+		count_one_set (insn, XVECEXP (PATTERN (insn), 0, i),
+			       may_not_move, last_set);
 	    }
 	}
 

@@ -59,25 +59,31 @@ extern struct obstack *function_maybepermanent_obstack;
    : (8 * (8 + list_length (DECL_ARGUMENTS (DECL)))))
 #endif
 
-static rtx initialize_for_inline PROTO((tree, int, int, int, int));
-static void finish_inline	PROTO((tree, rtx));
-static void adjust_copied_decl_tree PROTO((tree));
-static tree copy_decl_list	PROTO((tree));
-static tree copy_decl_tree	PROTO((tree));
-static void copy_decl_rtls	PROTO((tree));
-static void save_constants	PROTO((rtx *));
-static void note_modified_parmregs PROTO((rtx, rtx));
-static rtx copy_for_inline	PROTO((rtx));
-static void integrate_parm_decls PROTO((tree, struct inline_remap *, rtvec));
-static void integrate_decl_tree	PROTO((tree, int, struct inline_remap *));
+static rtx initialize_for_inline	PROTO((tree, int, int, int, int));
+static void finish_inline		PROTO((tree, rtx));
+static void adjust_copied_decl_tree	PROTO((tree));
+static tree copy_decl_list		PROTO((tree));
+static tree copy_decl_tree		PROTO((tree));
+static void copy_decl_rtls		PROTO((tree));
+static void save_constants		PROTO((rtx *));
+static void note_modified_parmregs	PROTO((rtx, rtx));
+static rtx copy_for_inline		PROTO((rtx));
+static void integrate_parm_decls	PROTO((tree, struct inline_remap *,
+					       rtvec));
+static void integrate_decl_tree		PROTO((tree, int,
+					       struct inline_remap *));
 static void save_constants_in_decl_trees PROTO ((tree));
-static void subst_constants	PROTO((rtx *, rtx, struct inline_remap *));
-static void restore_constants	PROTO((rtx *));
-static void set_block_origin_self PROTO((tree));
-static void set_decl_origin_self PROTO((tree));
-static void set_block_abstract_flags PROTO((tree, int));
+static void subst_constants		PROTO((rtx *, rtx,
+					       struct inline_remap *));
+static void restore_constants		PROTO((rtx *));
+static void set_block_origin_self	PROTO((tree));
+static void set_decl_origin_self	PROTO((tree));
+static void set_block_abstract_flags	PROTO((tree, int));
+static void process_reg_param		PROTO((struct inline_remap *, rtx,
+					       rtx));
 
-void set_decl_abstract_flags	PROTO((tree, int));
+
+void set_decl_abstract_flags		PROTO((tree, int));
 static tree copy_and_set_decl_abstract_origin PROTO((tree));
 
 /* Returns the Ith entry in the label_map contained in MAP.  If the
@@ -1300,6 +1306,38 @@ int global_const_equiv_map_size;
    && REGNO (XEXP (X, 0)) >= FIRST_VIRTUAL_REGISTER		\
    && REGNO (XEXP (X, 0)) <= LAST_VIRTUAL_REGISTER)
 
+/* Called to set up a mapping for the case where a parameter is in a
+   register.  If it is read-only and our argument is a constant, set up the
+   constant equivalence.
+
+   If LOC is REG_USERVAR_P, the usual case, COPY must also have that flag set
+   if it is a register.
+
+   Also, don't allow hard registers here; they might not be valid when
+   substituted into insns.  */
+static void
+process_reg_param (map, loc, copy)
+     struct inline_remap *map;
+     rtx loc, copy;
+{
+  if ((GET_CODE (copy) != REG && GET_CODE (copy) != SUBREG)
+      || (GET_CODE (copy) == REG && REG_USERVAR_P (loc)
+	  && ! REG_USERVAR_P (copy))
+      || (GET_CODE (copy) == REG
+	  && REGNO (copy) < FIRST_PSEUDO_REGISTER))
+    {
+      rtx temp = copy_to_mode_reg (GET_MODE (loc), copy);
+      REG_USERVAR_P (temp) = REG_USERVAR_P (loc);
+      if ((CONSTANT_P (copy) || FIXED_BASE_PLUS_P (copy))
+	  && REGNO (temp) < map->const_equiv_map_size)
+	{
+	  map->const_equiv_map[REGNO (temp)] = copy;
+	  map->const_age_map[REGNO (temp)] = CONST_AGE_PARM;
+	}
+      copy = temp;
+    }
+  map->reg_map[REGNO (loc)] = copy;
+}
 /* Integrate the procedure defined by FNDECL.  Note that this function
    may wind up calling itself.  Since the static variables are not
    reentrant, we do not assign them until after the possibility
@@ -1610,87 +1648,16 @@ expand_inline_function (fndecl, parms, target, ignore, type,
 	  ;
 	}
       else if (GET_CODE (loc) == REG)
-	{
-	  /* This is the good case where the parameter is in a register.
-	     If it is read-only and our argument is a constant, set up the
-	     constant equivalence.
-
-	     If LOC is REG_USERVAR_P, the usual case, COPY must also have
-	     that flag set if it is a register.
-
-	     Also, don't allow hard registers here; they might not be valid
-	     when substituted into insns.  */
-
-	  if ((GET_CODE (copy) != REG && GET_CODE (copy) != SUBREG)
-	      || (GET_CODE (copy) == REG && REG_USERVAR_P (loc)
-		  && ! REG_USERVAR_P (copy))
-	      || (GET_CODE (copy) == REG
-		  && REGNO (copy) < FIRST_PSEUDO_REGISTER))
-	    {
-	      temp = copy_to_mode_reg (GET_MODE (loc), copy);
-	      REG_USERVAR_P (temp) = REG_USERVAR_P (loc);
-	      if ((CONSTANT_P (copy) || FIXED_BASE_PLUS_P (copy))
-		  && REGNO (temp) < map->const_equiv_map_size)
-		{
-		  map->const_equiv_map[REGNO (temp)] = copy;
-		  map->const_age_map[REGNO (temp)] = CONST_AGE_PARM;
-		}
-	      copy = temp;
-	    }
-	  map->reg_map[REGNO (loc)] = copy;
-	}
+	process_reg_param (map, loc, copy);
       else if (GET_CODE (loc) == CONCAT)
 	{
-	  /* This is the good case where the parameter is in a
-	     pair of separate pseudos.
-	     If it is read-only and our argument is a constant, set up the
-	     constant equivalence.
-
-	     If LOC is REG_USERVAR_P, the usual case, COPY must also have
-	     that flag set if it is a register.
-
-	     Also, don't allow hard registers here; they might not be valid
-	     when substituted into insns.  */
 	  rtx locreal = gen_realpart (GET_MODE (XEXP (loc, 0)), loc);
 	  rtx locimag = gen_imagpart (GET_MODE (XEXP (loc, 0)), loc);
 	  rtx copyreal = gen_realpart (GET_MODE (locreal), copy);
 	  rtx copyimag = gen_imagpart (GET_MODE (locimag), copy);
 
-	  if ((GET_CODE (copyreal) != REG && GET_CODE (copyreal) != SUBREG)
-	      || (GET_CODE (copyreal) == REG && REG_USERVAR_P (locreal)
-		  && ! REG_USERVAR_P (copyreal))
-	      || (GET_CODE (copyreal) == REG
-		  && REGNO (copyreal) < FIRST_PSEUDO_REGISTER))
-	    {
-	      temp = copy_to_mode_reg (GET_MODE (locreal), copyreal);
-	      REG_USERVAR_P (temp) = REG_USERVAR_P (locreal);
-	      if ((CONSTANT_P (copyreal) || FIXED_BASE_PLUS_P (copyreal))
-		  && REGNO (temp) < map->const_equiv_map_size)
-		{
-		  map->const_equiv_map[REGNO (temp)] = copyreal;
-		  map->const_age_map[REGNO (temp)] = CONST_AGE_PARM;
-		}
-	      copyreal = temp;
-	    }
-	  map->reg_map[REGNO (locreal)] = copyreal;
-
-	  if ((GET_CODE (copyimag) != REG && GET_CODE (copyimag) != SUBREG)
-	      || (GET_CODE (copyimag) == REG && REG_USERVAR_P (locimag)
-		  && ! REG_USERVAR_P (copyimag))
-	      || (GET_CODE (copyimag) == REG
-		  && REGNO (copyimag) < FIRST_PSEUDO_REGISTER))
-	    {
-	      temp = copy_to_mode_reg (GET_MODE (locimag), copyimag);
-	      REG_USERVAR_P (temp) = REG_USERVAR_P (locimag);
-	      if ((CONSTANT_P (copyimag) || FIXED_BASE_PLUS_P (copyimag))
-		  && REGNO (temp) < map->const_equiv_map_size)
-		{
-		  map->const_equiv_map[REGNO (temp)] = copyimag;
-		  map->const_age_map[REGNO (temp)] = CONST_AGE_PARM;
-		}
-	      copyimag = temp;
-	    }
-	  map->reg_map[REGNO (locimag)] = copyimag;
+	  process_reg_param (map, locreal, copyreal);
+	  process_reg_param (map, locimag, copyimag);
 	}
       else
 	abort ();

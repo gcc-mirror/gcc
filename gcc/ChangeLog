@@ -23,6 +23,18 @@ Tue Oct  6 17:00:42 1998  J"orn Rennecke <amylaar@cygnus.co.uk>
 
 Tue Oct  6 01:36:00 1998  Bernd Schmidt <crux@Pool.Informatik.RWTH-Aachen.DE>
 
+	* loop.c (count_one_set): New static function, broken out of
+	count_loop_regs_set
+	(count_loop_regs_set): Call it.
+	* global.c (mark_reg_store): Handle clobbers here by not calling
+	set_preference.
+	(mark_reg_clobber): Just call mark_reg_store after ensuring SETTER
+	is in fact a clobber.
+	* integrate.c (process_reg_param): New function, broken out of
+	expand_inline_function.
+	(expand_inline_function): Call it.
+
+
 	* i386.md (addsidi3_1): Delete unused variable temp.
 	(addsidi3_2): Likewise.
 	(clstrstrsi): Delete unused variable addr1.
