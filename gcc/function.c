@@ -2643,8 +2643,6 @@ aggregate_value_p (exp)
 {
   int i, regno, nregs;
   rtx reg;
-  if (TYPE_MODE (TREE_TYPE (exp)) == BLKmode)
-    return 1;
   if (RETURN_IN_MEMORY (TREE_TYPE (exp)))
     return 1;
   if (flag_pcc_struct_return
