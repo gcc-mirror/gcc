@@ -740,12 +740,12 @@ print_operand (file, x, code)
     case 'A':
       /* If X is a constant integer whose low-order 5 bits are zero,
 	 write 'l'.  Otherwise, write 'r'.  This is a kludge to fix a bug
-	 in the RS/6000 assembler where "sri" with a zero shift count
+	 in the AIX assembler where "sri" with a zero shift count
 	 write a trash instruction.  */
       if (GET_CODE (x) == CONST_INT && (INTVAL (x) & 31) == 0)
-	fprintf (file, "l");
+	putc ('l', file);
       else
-	fprintf (file, "r");
+	putc ('r', file);
       return;
 
     case 'b':
@@ -824,9 +824,9 @@ print_operand (file, x, code)
       if (GET_CODE (x) != CONST_INT)
 	output_operand_lossage ("invalid %%G value");
       else if (INTVAL (x) >= 0)
-	fprintf (file, "z");
+	putc ('z', file);
       else
-	fprintf (file, "m");
+	putc ('m', file);
       return;
 	
     case 'h':
@@ -849,7 +849,7 @@ print_operand (file, x, code)
     case 'I':
       /* Print `i' if this is a constant, else nothing.  */
       if (INT_P (x))
-	fprintf (file, "i");
+	putc ('i', file);
       return;
 
     case 'j':
@@ -945,7 +945,7 @@ print_operand (file, x, code)
 	 the right.  */
       if ((val & 1) && val >= 0)
 	{
-	  fprintf (file, "31");
+	  fputs ("31", file);
 	  return;
 	}
       else if ((val & 1) == 0)
@@ -1040,9 +1040,9 @@ print_operand (file, x, code)
 	       || GET_CODE (x) == EQ
 	       || GET_CODE (x) == LT || GET_CODE (x) == GT
 	       || GET_CODE (x) == LTU || GET_CODE (x) == GTU)
-	fprintf (file, "12");
+	fputs ("12", file);
       else
-	fprintf (file, "4");
+	putc ('4', file);
       return;
       
     case 'T':
@@ -1056,9 +1056,9 @@ print_operand (file, x, code)
 	       || GET_CODE (x) == EQ
 	       || GET_CODE (x) == LT || GET_CODE (x) == GT
 	       || GET_CODE (x) == LTU || GET_CODE (x) == GTU)
-	fprintf (file, "4");
+	putc ('4', file);
       else
-	fprintf (file, "12");
+	fputs ("12", file);
       return;
       
     case 'u':
@@ -1066,7 +1066,7 @@ print_operand (file, x, code)
       if (! INT_P (x))
 	output_operand_lossage ("invalid %%u value");
 
-      fprintf (file, "%d", (INT_LOWPART (x) >> 16) & 0xffff);
+      fprintf (file, "0x%x", (INT_LOWPART (x) >> 16) & 0xffff);
       return;
 
     case 'U':
@@ -1074,7 +1074,7 @@ print_operand (file, x, code)
       if (GET_CODE (x) == MEM
 	  && (GET_CODE (XEXP (x, 0)) == PRE_INC
 	      || GET_CODE (XEXP (x, 0)) == PRE_DEC))
-	fprintf (file, "u");
+	putc ('u', file);
       return;
 
     case 'w':
@@ -1099,7 +1099,7 @@ print_operand (file, x, code)
     case 'X':
       if (GET_CODE (x) == MEM
 	  && LEGITIMATE_INDEXED_ADDRESS_P (XEXP (x, 0)))
-	fprintf (file, "x");
+	putc ('x', file);
       return;
 
     case 'Y':
@@ -1123,7 +1123,7 @@ print_operand (file, x, code)
       if (GET_CODE (x) != SYMBOL_REF)
 	abort ();
 
-      fprintf (file, ".");
+      putc ('.', file);
       RS6000_OUTPUT_BASENAME (file, XSTR (x, 0));
       return;
 
