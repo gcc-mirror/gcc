@@ -3224,13 +3224,13 @@ extern int flag_expensive_optimizations;
 extern int frame_pointer_needed;
 
 /* Declare functions in rs6000.c */
-extern int offsettable_mem_operand ();
 extern void optimization_options ();
 extern void output_options ();
 extern void rs6000_override_options ();
 extern void rs6000_file_start ();
 extern struct rtx_def *rs6000_float_const ();
 extern struct rtx_def *rs6000_got_register ();
+extern struct rtx_def *find_addr_reg();
 extern int direct_return ();
 extern int get_issue_rate ();
 extern int any_operand ();
@@ -3249,7 +3249,7 @@ extern int got_no_const_operand ();
 extern int num_insns_constant ();
 extern int easy_fp_constant ();
 extern int volatile_mem_operand ();
-extern int offsettable_addr_operand ();
+extern int offsettable_mem_operand ();
 extern int mem_or_easy_const_operand ();
 extern int add_operand ();
 extern int non_add_cint_operand ();
