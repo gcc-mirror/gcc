@@ -81,6 +81,20 @@ reg_or_0_operand (op, mode)
   return op == const0_rtx || register_operand (op, mode);
 }
 
+/* Return 1 if OP is a constant in the range of 0-63 (for a shift) or
+   any register.  */
+
+int
+reg_or_6bit_operand (op, mode)
+     register rtx op;
+     enum machine_mode mode;
+{
+  return ((GET_CODE (op) == CONST_INT
+	   && (unsigned HOST_WIDE_INT) INTVAL (op) < 64)
+	  || register_operand (op, mode));
+}
+
+
 /* Return 1 if OP is an 8-bit constant or any register.  */
 
 int
