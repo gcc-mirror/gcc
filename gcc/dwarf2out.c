@@ -3733,7 +3733,7 @@ output_call_frame_info ()
 		   ASM_COMMENT_START);
 	}
       fputc ('\n', asm_out_file);
-      ASM_OUTPUT_DWARF_DATA4 (asm_out_file, 0);
+      ASM_OUTPUT_DWARF_ADDR (asm_out_file, stripattributes (FRAME_SECTION));
       if (flag_verbose_asm)
 	{
 	  fprintf (asm_out_file, "\t%s FDE CIE offset",
@@ -6085,22 +6085,22 @@ gen_subprogram_die (decl, context_die)
   register tree outer_scope;
   register tree label;
 
-  if (TREE_PUBLIC (decl) || DECL_EXTERNAL (decl))
-    {
-      add_AT_flag (subr_die, DW_AT_external, 1);
-    }
   if (origin != NULL)
     {
       add_abstract_origin_attribute (subr_die, origin);
     }
   else
     {
-      type = TREE_TYPE (decl);
+      if (TREE_PUBLIC (decl) || DECL_EXTERNAL (decl))
+	{
+	  add_AT_flag (subr_die, DW_AT_external, 1);
+	}
       add_name_and_src_coords_attributes (subr_die, decl);
       if (DECL_INLINE (decl))
 	{
 	  add_AT_unsigned (subr_die, DW_AT_inline, DW_INL_inlined);
 	}
+      type = TREE_TYPE (decl);
       add_prototyped_attribute (subr_die, type);
       add_member_attribute (subr_die, DECL_CONTEXT (decl));
       add_type_attribute (subr_die, TREE_TYPE (type), 0, 0, context_die);
@@ -6112,7 +6112,8 @@ gen_subprogram_die (decl, context_die)
     }
   else if (!DECL_EXTERNAL (decl))
     {
-      equate_decl_number_to_die (decl, subr_die);
+      if (origin == NULL)
+	equate_decl_number_to_die (decl, subr_die);
       add_AT_lbl_id (subr_die, DW_AT_low_pc, function_start_label (decl));
       sprintf (label_id, FUNC_END_LABEL_FMT, current_funcdef_number);
       add_AT_lbl_id (subr_die, DW_AT_high_pc, label_id);
@@ -7381,7 +7382,7 @@ dwarfout_begin_function ()
   if (current_frame_info.mask & (1 << 30))
     {
       offset = (current_frame_info.gp_save_offset
-	         - (((current_frame_info.mask >> 31) & 1) * 4))
+	         - (((current_frame_info.mask >> 31) & 1) * UNITS_PER_WORD))
                / DWARF_CIE_DATA_ALIGNMENT;
       assert (offset >= 0);
       cfi = new_cfi ();
