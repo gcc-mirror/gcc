@@ -1,6 +1,6 @@
 // -*- C++ -*- header wrapper.
 
-// Copyright (C) 1997-1999 Free Software Foundation, Inc.
+// Copyright (C) 2000 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -28,17 +28,39 @@
 // the GNU General Public License.
 
 
-#ifndef  _INCLUDED_CPP_UNISTD_H_
+#ifndef  _INCLUDED_CPP_ICONV_H_
+# define _INCLUDED_CPP_ICONV_H_ 1
 
-# undef _SHADOW_NAME
-# define _SHADOW_NAME <bits/wrap_unistd.h>
-# include <bits/generic_shadow.h>
-# undef _SHADOW_NAME
-
-# ifndef _IN_C_LEGACY_
-  // using ::std::stuff
-
-# define _INCLUDED_CPP_UNISTD_H_ 1
+# ifdef _IN_C_LEGACY_  /* sub-included by a C header */
+      // get out of the "legacy"
+    } // close extern "C"
+  }   // close namespace _C_legacy::
+#  undef _IN_C_LEGACY_
+#  define _ICONV_NEED_C_LEGACY_
 # endif
 
-#endif /* _INCLUDED_CPP_UNISTD_H_ */
+# include <bits/wrap_iconv.h>
+
+  // Expose global C names, including non-standard ones, but shadow
+  // some names and types with the std:: C++ version.
+
+  // NB: Cannot use typedefs here to inject the names as the "C" headers
+  // often include typedefs that include the keyword 'struct'
+  using _C_legacy::iconv_t;
+
+  using _C_legacy::iconv_open;
+  using _C_legacy::iconv;
+  using _C_legacy::iconv_close;
+
+# ifdef _ICONV_NEED_C_LEGACY_
+  // dive back into the "swamp"
+  namespace _C_legacy {
+    extern "C" {
+#  define _IN_C_LEGACY_
+#  undef _ICONV_NEED_C_LEGACY_
+# endif /* _ICONV_NEED_C_LEGACY_ */
+#endif /* _INCLUDED_CPP_ICONV_H_ */
+
+
+
+
