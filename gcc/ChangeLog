@@ -1,3 +1,7 @@
+2002-03-21  Tom Tromey  <tromey@redhat.com>
+
+	* config/i386/sol2.h (ASM_QUAD): Undef.  Fixes PR bootstrap/5948.
+
 2002-03-21  Gerald Pfeifer  <pfeifer@dbai.tuwien.ac.at>
 
 	* doc/contrib.texi (Contributors): Use GNU/Linux instead of Linux
