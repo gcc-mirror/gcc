@@ -1,5 +1,11 @@
 Fri Oct 20 13:33:16 2000  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
+	* stor-layout.c (compute_record_mode): Use tree_low_cst.
+	Don't use mode of field for record unless sizes are the same.
+	(layout_type, case ARRAY_TYPE): Remove special bounds handling
+	previously added for Ada; also change to using host_integerp
+	and tree_low_cst.
+
 	* loop.c (strength_reduce): Show when new register made for
 	giv is known to be a pointer and its aligment if so and known.
 	(loop_dump_aux): Show VERBOSE parameter unused.
