@@ -3,7 +3,7 @@
 #   Copyright (C) 1992, 1993, 1994, 1995, 1996, 1997, 1998, 1999,
 #   2000, 2001, 2002, 2003 Free Software Foundation, Inc.
 
-timestamp='2003-01-03'
+timestamp='2003-01-28'
 
 # This file is (in principle) common to ALL GNU software.
 # The presence of a machine in this file suggests that SOME GNU software
@@ -257,7 +257,7 @@ case $basic_machine in
 	| pdp10 | pdp11 | pj | pjl \
 	| powerpc | powerpc64 | powerpc64le | powerpcle | ppcbe \
 	| pyramid \
-	| sh | sh[1234] | sh3e | sh[34]eb | shbe | shle | sh[1234]le | sh3ele \
+	| sh | sh[1234] | sh[23]e | sh[34]eb | shbe | shle | sh[1234]le | sh3ele \
 	| sh64 | sh64le \
 	| sparc | sparc64 | sparc86x | sparclet | sparclite | sparcv9 | sparcv9b \
 	| strongarm \
@@ -329,7 +329,7 @@ case $basic_machine in
 	| powerpc-* | powerpc64-* | powerpc64le-* | powerpcle-* | ppcbe-* \
 	| pyramid-* \
 	| romp-* | rs6000-* \
-	| sh-* | sh[1234]-* | sh3e-* | sh[34]eb-* | shbe-* \
+	| sh-* | sh[1234]-* | sh[23]e-* | sh[34]eb-* | shbe-* \
 	| shle-* | sh[1234]le-* | sh3ele-* | sh64-* | sh64le-* \
 	| sparc-* | sparc64-* | sparc86x-* | sparclet-* | sparclite-* \
 	| sparcv9-* | sparcv9b-* | strongarm-* | sv1-* | sx?-* \
@@ -1027,7 +1027,7 @@ case $basic_machine in
 	we32k)
 		basic_machine=we32k-att
 		;;
-	sh3 | sh4 | sh3eb | sh4eb | sh[1234]le | sh3ele)
+	sh3 | sh4 | sh[34]eb | sh[1234]le | sh[23]ele)
 		basic_machine=sh-unknown
 		;;
 	sh64)
@@ -1226,6 +1226,9 @@ case $os in
 		;;
 	-*mint | -mint[0-9]* | -*MiNT | -MiNT[0-9]*)
 		os=-mint
+		;;
+	-aros*)
+		os=-aros
 		;;
 	-none)
 		;;
