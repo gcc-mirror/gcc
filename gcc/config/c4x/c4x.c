@@ -4391,6 +4391,16 @@ c4x_operand_subword (op, i, validate_address, mode)
    -1 for a malformed pragma.  */
 #define BAD(msgid, arg) do { warning (msgid, arg); return -1; } while (0)
 
+static int (*c_lex_func) (tree *);
+
+void
+c4x_init_pragma (get_token)
+  int (*get_token) PARAMS ((tree *));
+{
+  c_lex_func = get_token;
+}
+
+
 static int
 c4x_parse_pragma (name, func, sect)
      const char *name;
@@ -4399,25 +4409,25 @@ c4x_parse_pragma (name, func, sect)
 {
   tree f, s, x;
 
-  if (c_lex (&x) != CPP_OPEN_PAREN)
+  if (c_lex_func (&x) != CPP_OPEN_PAREN)
     BAD ("missing '(' after '#pragma %s' - ignored", name);
 
-  if (c_lex (&f) != CPP_NAME)
+  if (c_lex_func (&f) != CPP_NAME)
     BAD ("missing function name in '#pragma %s' - ignored", name);
 
   if (sect)
     {
-      if (c_lex (&x) != CPP_COMMA)
+      if (c_lex_func (&x) != CPP_COMMA)
 	BAD ("malformed '#pragma %s' - ignored", name);
-      if (c_lex (&s) != CPP_STRING)
+      if (c_lex_func (&s) != CPP_STRING)
 	BAD ("missing section name in '#pragma %s' - ignored", name);
       *sect = s;
     }
 
-  if (c_lex (&x) != CPP_CLOSE_PAREN)
+  if (c_lex_func (&x) != CPP_CLOSE_PAREN)
     BAD ("missing ')' for '#pragma %s' - ignored", name);
 
-  if (c_lex (&x) != CPP_EOF)
+  if (c_lex_func (&x) != CPP_EOF)
     warning ("junk at end of '#pragma %s'", name);
 
   *func = f;

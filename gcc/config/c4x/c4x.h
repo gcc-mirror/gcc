@@ -2385,6 +2385,7 @@ asm_fprintf (FILE, "%s%d:\n", PREFIX, NUM)
   cpp_register_pragma (PFILE, 0, "FUNC_NO_GLOBAL_ASG", c4x_pr_ignored);	\
   cpp_register_pragma (PFILE, 0, "FUNC_NO_IND_ASG", c4x_pr_ignored);	\
   cpp_register_pragma (PFILE, 0, "INTERRUPT", c4x_pr_INTERRUPT);	\
+  c4x_init_pragma (&c_lex);						\
 } while (0)
 
 #define SET_DEFAULT_DECL_ATTRIBUTES(DECL, ATTRIBUTES) \
