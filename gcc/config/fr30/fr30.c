@@ -24,10 +24,8 @@ Boston, MA 02111-1307, USA.  */
 /*}}}*/
 /*{{{  Includes */ 
 
-#include <stdio.h>
-#include <ctype.h>
-#include <sys/param.h> /* so that MIn and MAX are defined before machmode.h */
 #include "config.h"
+#include "system.h"
 #include "rtl.h"
 #include "regs.h"
 #include "hard-reg-set.h"
@@ -44,7 +42,7 @@ Boston, MA 02111-1307, USA.  */
 #include "obstack.h"
 #include "except.h"
 #include "function.h"
-#include "fr30-protos.h"
+#include "tm_p.h"
 
 /*}}}*/
 /*{{{  Function Prologues & Epilogues */ 
@@ -839,8 +837,7 @@ low_register_operand (operand, mode)
 {
   return
     (GET_CODE (operand) == REG
-     && REGNO (operand) <= 7
-     && REGNO (operand) >= 0);
+     && REGNO (operand) <= 7);
 }
 
 /* Returns true if OPERAND is suitable for use in a CALL insn.  */
@@ -854,6 +851,56 @@ call_operand (operand, mode)
 	      || GET_CODE (XEXP (operand, 0)) == REG));
 }
 
+/* Returns TRUE if OP is a valid operand of a DImode operation.  */
+int
+di_operand (op, mode)
+     rtx op;
+     Mmode mode;
+{
+  if (register_operand (op, mode))
+    return TRUE;
+
+  if (mode != VOIDmode && GET_MODE (op) != VOIDmode && GET_MODE (op) != DImode)
+    return FALSE;
+
+  if (GET_CODE (op) == SUBREG)
+    op = SUBREG_REG (op);
+
+  switch (GET_CODE (op))
+    {
+    case CONST_DOUBLE:
+    case CONST_INT:
+      return TRUE;
+
+    case MEM:
+      return memory_address_p (DImode, XEXP (op, 0));
+
+    default:
+      return FALSE;
+    }
+}
+
+/* Returns TRUE if OP is a DImode register or MEM.  */
+int
+nonimmediate_di_operand (op, mode)
+     rtx op;
+     Mmode mode;
+{
+  if (register_operand (op, mode))
+    return TRUE;
+
+  if (mode != VOIDmode && GET_MODE (op) != VOIDmode && GET_MODE (op) != DImode)
+    return FALSE;
+
+  if (GET_CODE (op) == SUBREG)
+    op = SUBREG_REG (op);
+
+  if (GET_CODE (op) == MEM)
+    return memory_address_p (DImode, XEXP (op, 0));
+
+  return FALSE;
+}
+
 /* Returns true iff all the registers in the operands array
    are in descending or ascending order.  */
 int
@@ -864,9 +911,9 @@ fr30_check_multiple_regs (operands, num_operands, descending)
 {
   if (descending)
     {
-      int prev_regno = -1;
+      unsigned int prev_regno = 0;
       
-      while (num_operands--)
+      while (num_operands --)
 	{
 	  if (GET_CODE (operands [num_operands]) != REG)
 	    return 0;
@@ -879,9 +926,9 @@ fr30_check_multiple_regs (operands, num_operands, descending)
     }
   else
     {
-      int prev_regno = CONDITION_CODE_REGNUM;
+      unsigned int prev_regno = CONDITION_CODE_REGNUM;
       
-      while (num_operands--)
+      while (num_operands --)
 	{
 	  if (GET_CODE (operands [num_operands]) != REG)
 	    return 0;
@@ -894,6 +941,146 @@ fr30_check_multiple_regs (operands, num_operands, descending)
     }
 
   return 1;
+}
+
+/*}}}*/
+/*{{{  Instruction Output Routines  */
+
+/* Output a double word move.
+   It must be REG<-REG, REG<-MEM, MEM<-REG or REG<-CONST.
+   On the FR30 we are contrained by the fact that it does not
+   support offsetable addresses, and so we have to load the
+   address of the secnd word into the second destination register
+   before we can use it.  */
+
+rtx
+fr30_move_double (operands)
+     rtx * operands;
+{
+  rtx src  = operands[1];
+  rtx dest = operands[0];
+  enum rtx_code src_code = GET_CODE (src);
+  enum rtx_code dest_code = GET_CODE (dest);
+  enum machine_mode mode = GET_MODE (dest);
+  rtx val;
+
+  start_sequence ();
+
+  if (dest_code == REG)
+    {
+      if (src_code == REG)
+	{
+	  int reverse = (REGNO (dest) == REGNO (src) + 1);
+	  
+	  /* We normally copy the low-numbered register first.  However, if
+	     the first register of operand 0 is the same as the second register
+	     of operand 1, we must copy in the opposite order.  */
+	  emit_insn (gen_rtx_SET (VOIDmode,
+				  operand_subword (dest, reverse, TRUE, mode),
+				  operand_subword (src,  reverse, TRUE, mode)));
+	  
+	  emit_insn (gen_rtx_SET (VOIDmode,
+			      operand_subword (dest, !reverse, TRUE, mode),
+			      operand_subword (src,  !reverse, TRUE, mode)));
+	}
+      else if (src_code == MEM)
+	{
+	  rtx addr = XEXP (src, 0);
+	  int dregno = REGNO (dest);
+	  rtx dest0;
+	  rtx dest1;
+	  rtx new_mem;
+	  
+	  /* If the high-address word is used in the address, we
+	     must load it last.  Otherwise, load it first.  */
+	  int reverse = (refers_to_regno_p (dregno, dregno + 1, addr, 0) != 0);
+
+	  if (GET_CODE (addr) != REG)
+	    abort ();
+	  
+	  dest0 = operand_subword (dest, reverse, TRUE, mode);
+	  dest1 = operand_subword (dest, !reverse, TRUE, mode);
+
+	  if (reverse)
+	    {
+	      emit_insn (gen_rtx_SET (VOIDmode, dest1, change_address (src, SImode, addr)));
+	      emit_insn (gen_rtx_SET (SImode, dest0, gen_rtx_REG (SImode, REGNO (addr))));
+	      emit_insn (gen_rtx_SET (SImode, dest0, plus_constant (dest0, UNITS_PER_WORD)));
+
+	      new_mem = gen_rtx_MEM (SImode, dest0);
+	      MEM_COPY_ATTRIBUTES (new_mem, src);
+	      
+	      emit_insn (gen_rtx_SET (VOIDmode, dest0, new_mem));
+	    }
+	  else
+	    {
+	      emit_insn (gen_rtx_SET (VOIDmode, dest0, change_address (src, SImode, addr)));
+	      emit_insn (gen_rtx_SET (SImode, dest1, gen_rtx_REG (SImode, REGNO (addr))));
+	      emit_insn (gen_rtx_SET (SImode, dest1, plus_constant (dest1, UNITS_PER_WORD)));
+
+	      new_mem = gen_rtx_MEM (SImode, dest1);
+	      MEM_COPY_ATTRIBUTES (new_mem, src);
+	      
+	      emit_insn (gen_rtx_SET (VOIDmode, dest1, new_mem));
+	    }
+	}
+      else if (src_code == CONST_INT || src_code == CONST_DOUBLE)
+	{
+	  rtx words[2];
+	  split_double (src, &words[0], &words[1]);
+	  emit_insn (gen_rtx_SET (VOIDmode,
+				  operand_subword (dest, 0, TRUE, mode),
+				  words[0]));
+      
+	  emit_insn (gen_rtx_SET (VOIDmode,
+				  operand_subword (dest, 1, TRUE, mode),
+				  words[1]));
+	}
+    }
+  else if (src_code == REG && dest_code == MEM)
+    {
+      rtx addr = XEXP (dest, 0);
+      rtx src0;
+      rtx src1;
+
+      if (GET_CODE (addr) != REG)
+	abort ();
+      
+      src0 = operand_subword (src, 0, TRUE, mode);
+      src1 = operand_subword (src, 1, TRUE, mode);
+      
+      emit_insn (gen_rtx_SET (VOIDmode, change_address (dest, SImode, addr), src0));
+
+      if (REGNO (addr) == STACK_POINTER_REGNUM)
+	emit_insn (gen_rtx_SET (VOIDmode, change_address (dest, SImode, plus_constant (stack_pointer_rtx, UNITS_PER_WORD)), src1));
+      else if (REGNO (addr) == FRAME_POINTER_REGNUM)
+	emit_insn (gen_rtx_SET (VOIDmode, change_address (dest, SImode, plus_constant (frame_pointer_rtx, UNITS_PER_WORD)), src1));
+      else
+	{
+	  rtx new_mem;
+	  
+	  /* We need a scratch register to hold the value of 'address + 4'.
+	     We ought to allow gcc to find one for us, but for now, just
+	     push one of the source registers.  */
+	  emit_insn (gen_movsi_push (src0));
+	  emit_insn (gen_movsi_internal (src0, addr));
+	  emit_insn (gen_addsi_small_int (src0, src0, GEN_INT (UNITS_PER_WORD)));
+	  
+	  new_mem = gen_rtx_MEM (SImode, src0);
+	  MEM_COPY_ATTRIBUTES (new_mem, dest);
+	  
+	  emit_insn (gen_rtx_SET (VOIDmode, new_mem, src1));
+	  emit_insn (gen_movsi_pop (src0));
+	}
+    }
+  else
+    /* This should have been prevented by the contraints on movdi_insn.  */
+    abort ();
+  
+  val = gen_sequence ();
+  end_sequence ();
+
+  return val;
 }
 
 /*}}}*/

@@ -84,7 +84,7 @@ extern int target_flags;
   { "small-model",      TARGET_SMALL_MODEL_MASK, "Assume small address space" }, \
   { "no-small-model", - TARGET_SMALL_MODEL_MASK, "" },			 	 \
   { "no-lsim",          0, "" },					 	 \
-  { "",                 TARGET_DEFAULT }					 \
+  { "",                 TARGET_DEFAULT, "" }					 \
 }
 
 #define TARGET_VERSION fprintf (stderr, " (fr30)");
@@ -889,9 +889,10 @@ enum reg_class
      into the stack)
    - if the type is a structure or union. */
 
-#define MUST_PASS_IN_STACK(MODE,TYPE)				\
+#define MUST_PASS_IN_STACK(MODE, TYPE)				\
    (((MODE) == BLKmode)						\
-    || ((TYPE) != 0						\
+    || ((TYPE) != NULL						\
+         && TYPE_SIZE (TYPE) != NULL				\
          && (TREE_CODE (TYPE_SIZE (TYPE)) != INTEGER_CST	\
 	     || TREE_CODE (TYPE) == RECORD_TYPE			\
 	     || TREE_CODE (TYPE) == UNION_TYPE			\
@@ -1763,6 +1764,8 @@ extern struct rtx_def * fr30_compare_op1;
   { "call_operand",		{ MEM }},		\
   { "fp_displacement_operand",	{ CONST_INT }},		\
   { "sp_displacement_operand",	{ CONST_INT }},		\
+  { "di_operand",		{ CONST_INT, CONST_DOUBLE, REG, MEM }},	\
+  { "nonimmediate_di_operand",	{ REG, MEM }},		\
   { "add_immediate_operand",	{ REG, CONST_INT }},
 
 /*}}}*/ 
