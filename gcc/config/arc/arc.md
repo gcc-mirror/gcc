@@ -1,5 +1,5 @@
 ;; Machine description of the Argonaut ARC cpu for GNU C compiler
-;; Copyright (C) 1994, 1997 Free Software Foundation, Inc.
+;; Copyright (C) 1994, 1997, 1999 Free Software Foundation, Inc.
 
 ;; This file is part of GNU CC.
 
@@ -1039,7 +1039,7 @@
   [(set_attr "type" "unary")])
 
 (define_insn "*one_cmplsi2_set_cc_insn"
-  [(set (reg:CCZN 61) (compare:CC
+  [(set (reg:CCZN 61) (compare:CCZN
 		       (not:SI (match_operand:SI 1 "register_operand" "r"))
 		       (const_int 0)))
    (set (match_operand:SI 0 "register_operand" "=r")

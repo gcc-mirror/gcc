@@ -1204,7 +1204,7 @@ allocate_dynamic_stack_space (size, target, known_align)
 	/* Our optimization works based upon being able to perform a simple
 	   transformation of this RTL into a (set REG REG) so make sure things
 	   did in fact end up in a REG.  */
-	if (!arith_operand (setjmpless_size, Pmode))
+	if (!register_operand (setjmpless_size, Pmode))
 	  setjmpless_size = force_reg (Pmode, setjmpless_size);
       }
 

@@ -530,7 +530,7 @@ a29k_set_memflags (insn, ref)
   /* Note that it is always safe to get these flags, though they won't
      be what we think if REF is not a MEM.  */
   int in_struct_p = MEM_IN_STRUCT_P (ref);
-  int scalar_p = MEM_IN_SCALAR_P (ref);
+  int scalar_p = MEM_SCALAR_P (ref);
   int volatile_p = MEM_VOLATILE_P (ref);
   int unchanging_p = RTX_UNCHANGING_P (ref);
 

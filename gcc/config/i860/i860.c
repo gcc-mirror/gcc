@@ -1,5 +1,5 @@
 /* Subroutines for insn-output.c for Intel 860
-   Copyright (C) 1989, 1991, 1997, 1998 Free Software Foundation, Inc.
+   Copyright (C) 1989, 91, 97, 98, 1999 Free Software Foundation, Inc.
    Derived from sparc.c.
 
    Written by Richard Stallman (rms@ai.mit.edu).
@@ -1447,7 +1447,7 @@ output_delayed_branch (template, operands, insn)
 	}
 
       insn_extract (delay_insn);
-      if (! constrain_operands (insn_code_number, 1))
+      if (! constrain_operands (1))
 	fatal_insn_not_found (delay_insn);
 
       template = insn_template[insn_code_number];
@@ -1490,7 +1490,7 @@ output_delay_insn (delay_insn)
     }
 
 #ifdef REGISTER_CONSTRAINTS
-  if (! constrain_operands (insn_code_number, 1))
+  if (! constrain_operands (1))
     abort ();
 #endif
 
