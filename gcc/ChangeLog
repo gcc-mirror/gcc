@@ -1,3 +1,7 @@
+Wed Mar 17 22:46:13 1999  Mark Elbrecht  <snowball3@usa.net.
+
+	* gcc.c (process_command): Dump link_command_spec too.
+
 Wed Mar 17 20:38:08 1999  Jerry Quinn <jquinn@nortelnetworks.com>
 			  Jeff Law <law@cygnus.com>
 
@@ -4043,7 +4047,7 @@ Wed Jan  6 09:44:51 1999  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 	* toplev.h: In addition to checking _JBLEN, also check if `setjmp'
  	is a macro when deciding if we can use `jmp_buf' in prototypes.
 
-Wed Jan  6 03:18:53 1999  Mark Elbrecht  <snowball3@usa.net.
+Wed Jan  6 03:18:53 1999  Mark Elbrecht  <snowball3@usa.net>
 
 	* configure.in (pc-msdosdjgpp): Set x_make to x-go32.
 	* configure: Rebuilt.
