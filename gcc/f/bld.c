@@ -1333,7 +1333,7 @@ ffebld_constant_new_real2_val (ffetargetReal2 val)
      nc = malloc_new_kp (ffebld_constant_pool(),
                          "FFEBLD_constREAL2",
                          sizeof (*nc));
-     nc->consttype = FFEBLD_constREAL1;
+     nc->consttype = FFEBLD_constREAL2;
      nc->u.real2 = val;
      nc->hook = FFECOM_constantNULL;
      nc->llink = NULL;

@@ -1,3 +1,8 @@
+2004-09-21  Bud Davis  <bdavis9659@comcast.net>
+ 
+        PR fortran/17541
+	* g77.f-torture/execute/pr17541.f: New test.
+ 
 2004-09-20  Richard Sandiford  <rsandifo@redhat.com>
 
 	* gcc.dg/mips-asm-1.c: New test.
