@@ -1,3 +1,8 @@
+2004-09-29  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* tree.c (make_node_stat): Fix uninitialized warning.  Replace
+	cascaded if ... else if with a switch.
+
 2004-09-29  Aaron W. LaFramboise  <aaronavay62@aaronwl.com>
 
 	* read-rtl.c (apply_macro_to_string): Replace index with strchr.

@@ -291,21 +291,40 @@ make_node_stat (enum tree_code code MEM_STAT_DECL)
       break;
 
     case tcc_exceptional:  /* something random, like an identifier.  */
-      if (code == IDENTIFIER_NODE)
-	kind = id_kind;
-      else if (code == TREE_VEC)
-	kind = vec_kind;
-      else if (code == TREE_BINFO)
-	kind = binfo_kind;
-      else if (code == PHI_NODE)
-	kind = phi_kind;
-      else if (code == SSA_NAME)
-	kind = ssa_name_kind;
-      else if (code == BLOCK)
-	kind = b_kind;
-      else
-	kind = x_kind;
+      switch (code)
+	{
+	case IDENTIFIER_NODE:
+	  kind = id_kind;
+	  break;
+
+	case TREE_VEC:;
+	  kind = vec_kind;
+	  break;
+
+	case TREE_BINFO:
+	  kind = binfo_kind;
+	  break;
+
+	case PHI_NODE:
+	  kind = phi_kind;
+	  break;
+
+	case SSA_NAME:
+	  kind = ssa_name_kind;
+	  break;
+
+	case BLOCK:
+	  kind = b_kind;
+	  break;
+
+	default:
+	  kind = x_kind;
+	  break;
+	}
       break;
+      
+    default:
+      gcc_unreachable ();
     }
 
   tree_node_counts[(int) kind]++;
