@@ -2002,6 +2002,30 @@ fix = {
 
 
 /*
+ * In pwd.h, PTX 1.x needs stdio.h included since FILE * was added in a
+ * prototype later on in the file.  (It's not clear that this is
+ * still true, and even if it is, FILE * may be added after this fix runs by
+ * fixproto.)
+ */
+#ifdef PTX
+fix = {
+    hackname  = ptx_pwd_h;
+    files     = pwd.h;
+    select    = 'FILE \*';
+    bypass    = 'stdio.h';
+    sed       = "/#include <sys\\/types\\.h/a\\\n"
+                "\\\n"
+                "#if defined(__STDC__) || defined(__cplusplus)\\\n"
+                "#include <stdio.h>\\\n"
+                "#endif  /*  __STDC__ */\\\n"
+                "\n";
+    test_text = "#include <sys/types.h>\n"
+                "void foo (FILE *)";
+};
+#endif
+
+
+/*
  * On DYNIX/ptx, sys/mc_param.h has an embedded asm for the cpuid instruction
  * on the P5. This is not used by anything else so we ifdef it out.
  * Current GCC doesn't seem to complain about the asm, though.
