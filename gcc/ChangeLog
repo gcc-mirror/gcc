@@ -1,3 +1,7 @@
+2001-05-30  Richard Henderson  <rth@redhat.com>
+
+	* dwarf2out.c (dwarf2out_finish): Don't emit DW_AT_stmt_list at -g1.
+
 2001-05-30  Tom Tromey  <tromey@redhat.com>
 
 	* gcc.c (do_spec_1): In `%O' case, if we computed saved_suffix,
