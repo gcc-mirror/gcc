@@ -42,6 +42,9 @@ struct loop_desc
   int postincr;		/* 1 if increment/decrement is done after loop exit condition.  */
   rtx stride;		/* Value added to VAR in each iteration.  */
   rtx var;		/* Loop control variable.  */
+  enum machine_mode inner_mode;
+			/* The mode from that it is extended.  */
+  enum rtx_code extend;	/* With this extend.  */
   rtx var_alts;		/* List of definitions of its initial value.  */
   rtx lim;		/* Expression var is compared with.  */
   rtx lim_alts;		/* List of definitions of its initial value.  */

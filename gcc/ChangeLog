@@ -1,3 +1,15 @@
+2003-11-05  Zdenek Dvorak  <rakdver@atrey.karlin.mff.cuni.cz>
+
+	* cfgloopanal.c (variable_initial_value, variable_initial_values,
+	simple_loop_exit_p): Record the fact that initial value is extended
+	from inner mode.
+	(count_strange_loop_iterations, count_loop_iterations): Handle
+	ivs that iterate in a narrower mode. Fix handling of overflows.
+	Improve handling of NE conditions.
+	(inverse, fits_in_mode_p): New static functions.
+	(simple_increment): Detect variables that iterate in a narrower mode.
+	* cfgloop.h (struct loop_desc): Fields inner_mode and extend added.
+
 2003-11-05  Geoffrey Keating  <geoffk@apple.com>
 
 	* config/rs6000/darwin.h (SUBTARGET_OVERRIDE_OPTIONS): Darwin
