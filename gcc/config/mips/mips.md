@@ -5667,6 +5667,7 @@ move\\t%0,%z4\\n\\
 {
   rtx source;
   rtx fp1, fp2;
+  int regno;
 
   /* This is called when are copying some value into a condition code
      register.  Operand 0 is the condition code register.  Operand 1
@@ -5685,8 +5686,12 @@ move\\t%0,%z4\\n\\
   else
     source = operands[1];
 
-  fp1 = gen_rtx_REG (SFmode, REGNO (operands[2]));
-  fp2 = gen_rtx_REG (SFmode, REGNO (operands[2]) + 1);
+  /* FP1 and FP2 are the two halves of the TFmode scratch operand.  They
+     will be single registers in 64-bit mode and register pairs in 32-bit
+     mode.  SOURCE is loaded into FP1 and zero is loaded into FP2.  */
+  regno = REGNO (operands[2]);
+  fp1 = gen_rtx_REG (SFmode, regno);
+  fp2 = gen_rtx_REG (SFmode, regno + HARD_REGNO_NREGS (regno, DFmode));
 
   emit_insn (gen_move_insn (fp1, source));
   emit_insn (gen_move_insn (fp2, gen_rtx_REG (SFmode, 0)));
