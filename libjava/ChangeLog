@@ -1,3 +1,8 @@
+2005-03-10  Tom Tromey  <tromey@redhat.com>
+
+	* Makefile.in: Rebuilt.
+	* Makefile.am (ordinary_java_source_files): Added MethodRef.java.
+
 2005-03-10  Chris Burdess  <dog@bluezoo.org>
 
 	* gnu/xml/dom/ls/SAXEventSink.java: Ignore element declarations if

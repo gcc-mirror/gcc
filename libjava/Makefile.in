@@ -554,7 +554,7 @@ am__libgcj0_convenience_la_SOURCES_DIST = prims.cc jni.cc exception.cc \
 	gnu/gcj/io/MimeTypes.java gnu/gcj/io/SimpleSHSStream.java \
 	gnu/gcj/runtime/FileDeleter.java \
 	gnu/gcj/runtime/FinalizerThread.java \
-	gnu/gcj/runtime/JNIWeakRef.java \
+	gnu/gcj/runtime/JNIWeakRef.java gnu/gcj/runtime/MethodRef.java \
 	gnu/gcj/runtime/NameFinder.java \
 	gnu/gcj/runtime/PersistentByteMap.java \
 	gnu/gcj/runtime/SharedLibHelper.java \
@@ -3992,7 +3992,8 @@ am__objects_15 = $(am__objects_9) gnu/classpath/ServiceFactory.lo \
 	gnu/gcj/io/DefaultMimeTypes.lo gnu/gcj/io/MimeTypes.lo \
 	gnu/gcj/io/SimpleSHSStream.lo gnu/gcj/runtime/FileDeleter.lo \
 	gnu/gcj/runtime/FinalizerThread.lo \
-	gnu/gcj/runtime/JNIWeakRef.lo gnu/gcj/runtime/NameFinder.lo \
+	gnu/gcj/runtime/JNIWeakRef.lo gnu/gcj/runtime/MethodRef.lo \
+	gnu/gcj/runtime/NameFinder.lo \
 	gnu/gcj/runtime/PersistentByteMap.lo \
 	gnu/gcj/runtime/SharedLibHelper.lo \
 	gnu/gcj/runtime/SharedLibLoader.lo \
@@ -7301,6 +7302,7 @@ gnu/gcj/io/SimpleSHSStream.java	\
 gnu/gcj/runtime/FileDeleter.java \
 gnu/gcj/runtime/FinalizerThread.java \
 gnu/gcj/runtime/JNIWeakRef.java \
+gnu/gcj/runtime/MethodRef.java \
 gnu/gcj/runtime/NameFinder.java \
 gnu/gcj/runtime/PersistentByteMap.java \
 gnu/gcj/runtime/SharedLibHelper.java \
@@ -9601,6 +9603,8 @@ gnu/gcj/runtime/FileDeleter.lo: gnu/gcj/runtime/$(am__dirstamp) \
 gnu/gcj/runtime/FinalizerThread.lo: gnu/gcj/runtime/$(am__dirstamp) \
 	gnu/gcj/runtime/$(DEPDIR)/$(am__dirstamp)
 gnu/gcj/runtime/JNIWeakRef.lo: gnu/gcj/runtime/$(am__dirstamp) \
+	gnu/gcj/runtime/$(DEPDIR)/$(am__dirstamp)
+gnu/gcj/runtime/MethodRef.lo: gnu/gcj/runtime/$(am__dirstamp) \
 	gnu/gcj/runtime/$(DEPDIR)/$(am__dirstamp)
 gnu/gcj/runtime/NameFinder.lo: gnu/gcj/runtime/$(am__dirstamp) \
 	gnu/gcj/runtime/$(DEPDIR)/$(am__dirstamp)
@@ -16349,6 +16353,8 @@ mostlyclean-compile:
 	-rm -f gnu/gcj/runtime/FinalizerThread.lo
 	-rm -f gnu/gcj/runtime/JNIWeakRef.$(OBJEXT)
 	-rm -f gnu/gcj/runtime/JNIWeakRef.lo
+	-rm -f gnu/gcj/runtime/MethodRef.$(OBJEXT)
+	-rm -f gnu/gcj/runtime/MethodRef.lo
 	-rm -f gnu/gcj/runtime/NameFinder.$(OBJEXT)
 	-rm -f gnu/gcj/runtime/NameFinder.lo
 	-rm -f gnu/gcj/runtime/PersistentByteMap.$(OBJEXT)
@@ -21973,6 +21979,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@gnu/gcj/runtime/$(DEPDIR)/FileDeleter.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@gnu/gcj/runtime/$(DEPDIR)/FinalizerThread.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@gnu/gcj/runtime/$(DEPDIR)/JNIWeakRef.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@gnu/gcj/runtime/$(DEPDIR)/MethodRef.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@gnu/gcj/runtime/$(DEPDIR)/NameFinder.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@gnu/gcj/runtime/$(DEPDIR)/PersistentByteMap.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@gnu/gcj/runtime/$(DEPDIR)/SharedLibHelper.Plo@am__quote@
