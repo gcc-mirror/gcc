@@ -3,6 +3,13 @@
 	Changes below marked "here" add TABs on either or both sides,
 	covering start of line, up to any operand for all noted .*ASM.*_OP
 	definitions.  All callers changed.
+	* tm.texi: Make documented *_ASM.*_OP:s include spacing
+	(TEXT_SECTION_ASM_OP, DATA_SECTION_ASM_OP, SHARED_SECTION_ASM_OP,
+	BSS_SECTION_ASM_OP, SHARED_BSS_SECTION_ASM_OP, INIT_SECTION_ASM_OP,
+	ASM_BYTE_OP, FINI_SECTION_ASM_OP, EH_FRAME_SECTION_ASM_OP,
+	ASM_STABS_OP, ASM_STABD_OP, ASM_STABN_OP).
+	Fix typos in description for LONG_LONG_TYPE_SIZE and
+	FINI_SECTION_ASM_OP.
 	* crtstuff.c (CTORS_SECTION_ASM_OP, DTORS_SECTION_ASM_OP): Explain
 	why these defaults don't have leading spacing.
 	* dbxout.c (ASM_STABS_OP, ASM_STABN_OP): Here.
