@@ -1,3 +1,10 @@
+2003-05-27  Steve Ellcey  <sje@cup.hp.com>
+
+	* config/os/hpux/os_defines.h: Define _LIBUNWIND_STD_ABI if we are
+	on IA64 HP-UX.
+	* libsupc++/eh_throw.cc: Don't call _Unwind_Resume_or_Rethrow if
+	_LIBUNWIND_STD_ABI is set.
+
 2003-05-26  Brendan Kehoe  <brendan@zen.org>
 
 	* include/bits/locale_facets.tcc (do_get): Honor $22.2.6.3.3/8 and
