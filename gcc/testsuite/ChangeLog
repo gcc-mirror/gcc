@@ -2,6 +2,8 @@
 
 	* gcc.c-torture/execute/20020206-1.c: New test.
 
+	* gcc.c-torture/execute/20020206-2.c: New test.
+
 	PR optimization/5429:
 	* gcc.c-torture/compile/20020206-1.c: New test.
 
