@@ -1,5 +1,9 @@
 2004-04-18  Mark Mitchell  <mark@codesourcery.com>
 
+	PR other/14918
+	* doc/invoke.texi (-fprofile-generate): Document requirement to
+	use -fprofile-generate when linking.
+
 	PR bootstrap/14992
 	* gcc.c (init_gcc_specs): Only honor HAVE_LD_AS_NEEDED on
 	GNU/Linux.

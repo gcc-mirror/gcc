@@ -4352,10 +4352,13 @@ Disabled at levels @option{-O}, @option{-O2}, @option{-O3}, @option{-Os}.
 
 @item -fprofile-generate
 @opindex fprofile-generate
-Enable options usually used for instrumenting application to produce profile usefull
-for later recompilation profile feedback based optimization.
 
-The following options are enabled: @code{-fprofile-arcs}, @code{-fprofile-values}, @code{-fvpt}
+Enable options usually used for instrumenting application to produce
+profile useful for later recompilation with profile feedback based
+optimization.  You must use @code{-fprofile-generate} both when
+compiling and when linking your program.
+
+The following options are enabled: @code{-fprofile-arcs}, @code{-fprofile-values}, @code{-fvpt}.
 
 @item -fprofile-use
 @opindex fprofile-use
