@@ -1,3 +1,12 @@
+2003-04-25  Ranjit Mathew  <rmathew@hotmail.com>
+            Phil Edwards  <pme@gcc.gnu.org>
+	
+	* testsuite_flags.in: Guard against the possibility
+	of having "xgcc" as a part of a folder name in the
+	path to the GCC build folder.
+	* testsuite/Makefile.am: Likewise.
+	* testsuite/Makefile.in: Regenerated.
+
 2003-04-24  Richard Sandiford  <rsandifo@redhat.com>
 
 	* src/localename.cc (__gnu_cxx::facet_vec): Correct types.
