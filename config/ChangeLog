@@ -1,3 +1,7 @@
+2003-03-04  Nathanael Nerode  <neroden@gcc.gnu.org>
+
+	* mh-dgux: Delete.
+
 2002-12-28  Alexandre Oliva  <aoliva@redhat.com>
 
 	* acx.m4: Name cache variables properly.

@@ -1,3 +1,9 @@
+2003-03-04  Nathanael Nerode  <neroden@gcc.gnu.org>
+
+	* configure.in: Replace ${libstdcxx_version} by its value.
+	Remove reference to mh-dgux.
+	* configure: Regenerate.
+
 2003-03-03  Kevin Buettner  <kevinb@redhat.com>
 
 	* MAINTAINERS (Write After Approval): Add myself.

@@ -137,8 +137,6 @@ fi
 #
 host_libs="intl mmalloc libiberty opcodes bfd readline tcl tk itcl tix libgui zlib"
 
-libstdcxx_version="target-libstdc++-v3"
-
 # these tools are built for the host environment
 # Note, the powerpc-eabi build depends on sim occurring before gdb in order to
 # know that we are building the simulator.
@@ -159,7 +157,7 @@ libgcj="target-libffi \
 target_libs="target-libiberty \
 		target-libgloss \
 		target-newlib \
-		${libstdcxx_version} \
+		target-libstdc++-v3 \
 		target-libf2c \
 		${libgcj} \
 		target-libobjc"
@@ -357,7 +355,7 @@ case "${target}" in
     ;;
   *-*-kaos*)
     # Remove unsupported stuff on all kaOS configurations.
-    skipdirs="target-libiberty ${libgcj} ${libstdcxx_version} target-libf2c target-librx"
+    skipdirs="target-libiberty ${libgcj} target-libstdc++-v3 target-libf2c target-librx"
     skipdirs="$skipdirs target-libobjc target-examples target-groff target-gperf"
     skipdirs="$skipdirs zlib fastjar target-libjava target-boehm-gc target-zlib"
     noconfigdirs="$noconfigdirs target-libgloss"
@@ -375,7 +373,7 @@ case "${target}" in
     esac
     ;;
   *-*-netware)
-    noconfigdirs="$noconfigdirs ${libstdcxx_version} target-newlib target-libiberty target-libgloss ${libgcj}"
+    noconfigdirs="$noconfigdirs target-libstdc++-v3 target-newlib target-libiberty target-libgloss ${libgcj}"
     ;;
   *-*-rtems*)
     noconfigdirs="$noconfigdirs target-libgloss ${libgcj}"
@@ -419,7 +417,7 @@ case "${target}" in
     noconfigdirs="$noconfigdirs tcl tix tk itcl libgui sim"
     noconfigdirs="$noconfigdirs expect dejagnu"
     # the C++ libraries don't build on top of CE's C libraries
-    noconfigdirs="$noconfigdirs ${libstdcxx_version}"
+    noconfigdirs="$noconfigdirs target-libstdc++-v3"
     noconfigdirs="$noconfigdirs target-newlib"
     case "${host}" in
       *-*-cygwin*) ;; # keep gdb and readline
@@ -458,19 +456,19 @@ case "${target}" in
     noconfigdirs="$noconfigdirs ld target-libgloss ${libgcj}"
     ;;
   avr-*-*)
-    noconfigdirs="$noconfigdirs target-libiberty ${libstdcxx_version} ${libgcj}"
+    noconfigdirs="$noconfigdirs target-libiberty target-libstdc++-v3 ${libgcj}"
     ;;
   c4x-*-* | tic4x-*-*)
-    noconfigdirs="$noconfigdirs ${libstdcxx_version} target-libgloss ${libgcj}"
+    noconfigdirs="$noconfigdirs target-libstdc++-v3 target-libgloss ${libgcj}"
     ;;
   c54x*-*-* | tic54x-*-*)
-    noconfigdirs="$noconfigdirs ${libstdcxx_version} target-libgloss ${libgcj} gcc gdb newlib"
+    noconfigdirs="$noconfigdirs target-libstdc++-v3 target-libgloss ${libgcj} gcc gdb newlib"
     ;;
   cris-*-*)
     noconfigdirs="$noconfigdirs ${libgcj}"
     ;;
   d10v-*-*)
-    noconfigdirs="$noconfigdirs ${libstdcxx_version} target-libgloss ${libgcj}"
+    noconfigdirs="$noconfigdirs target-libstdc++-v3 target-libgloss ${libgcj}"
     ;;
   d30v-*-*)
     noconfigdirs="$noconfigdirs ${libgcj}"
@@ -485,7 +483,7 @@ case "${target}" in
     noconfigdirs="$noconfigdirs target-libgloss"
     ;;
   h8500-*-*)
-    noconfigdirs="$noconfigdirs ${libstdcxx_version} target-libgloss ${libgcj} target-libf2c"
+    noconfigdirs="$noconfigdirs target-libstdc++-v3 target-libgloss ${libgcj} target-libf2c"
     ;;
   hppa*64*-*-linux* | parisc*64*-*-linux*)
     # In this case, it's because the hppa64-linux target is for
@@ -564,7 +562,7 @@ case "${target}" in
     esac
     ;;    
   i[[3456]]86-*-pe)
-    noconfigdirs="$noconfigdirs ${libstdcxx_version} target-libgloss ${libgcj}"
+    noconfigdirs="$noconfigdirs target-libstdc++-v3 target-libgloss ${libgcj}"
     ;;
   i[[3456]]86-*-sco3.2v5*)
     # The linker does not yet know about weak symbols in COFF,
@@ -584,7 +582,7 @@ case "${target}" in
      noconfigdirs="$noconfigdirs gdb target-newlib target-libgloss ${libgcj}"
      ;;
   m68hc11-*-*|m6811-*-*|m68hc12-*-*|m6812-*-*)
-    noconfigdirs="$noconfigdirs target-libiberty ${libstdcxx_version} ${libgcj}"
+    noconfigdirs="$noconfigdirs target-libiberty target-libstdc++-v3 ${libgcj}"
     ;;
   m68k-*-elf*)
     noconfigdirs="$noconfigdirs ${libgcj}"
@@ -704,7 +702,7 @@ case "${target}" in
   sparc-*-solaris* | sparc64-*-solaris* | sparcv9-*-solaris*)
     ;;
   v810-*-*)
-    noconfigdirs="$noconfigdirs bfd binutils gas gcc gdb ld ${libstdcxx_version} opcodes target-libgloss ${libgcj}"
+    noconfigdirs="$noconfigdirs bfd binutils gas gcc gdb ld target-libstdc++-v3 opcodes target-libgloss ${libgcj}"
     ;;
   v850-*-*)
     noconfigdirs="$noconfigdirs target-libgloss ${libgcj}"
@@ -722,7 +720,7 @@ case "${target}" in
     noconfigdirs="$noconfigdirs target-newlib target-libgloss ${libgcj}"
     ;;
   ip2k-*-*)
-    noconfigdirs="$noconfigdirs target-libiberty ${libstdcxx_version} ${libgcj}"
+    noconfigdirs="$noconfigdirs target-libiberty target-libstdc++-v3 ${libgcj}"
     ;;
   *-*-linux*)
     noconfigdirs="$noconfigdirs target-newlib target-libgloss"
@@ -1031,7 +1029,6 @@ case "${host}" in
     ;;
   m88k-dg-dgux*)
     tentative_cc="gcc -Wall -ansi -D__using_DGUX"
-    host_makefile_frag="config/mh-dgux"
     ;;
   m88k-harris-cxux*)
     # Under CX/UX, we want to tell the compiler to use ANSI mode.
