@@ -192,6 +192,9 @@ static rtx rs6000_expand_ternop_builtin PARAMS ((enum insn_code, tree, rtx));
 static rtx rs6000_expand_builtin PARAMS ((tree, rtx, rtx, enum machine_mode, int));
 static void altivec_init_builtins PARAMS ((void));
 static rtx altivec_expand_builtin PARAMS ((tree, rtx, bool *));
+static rtx altivec_expand_ld_builtin PARAMS ((tree, rtx, bool *));
+static rtx altivec_expand_st_builtin PARAMS ((tree, rtx, bool *));
+static rtx altivec_expand_dst_builtin PARAMS ((tree, rtx, bool *));
 static rtx altivec_expand_abs_builtin PARAMS ((enum insn_code, tree, rtx));
 static rtx altivec_expand_predicate_builtin PARAMS ((enum insn_code, const char *, tree, rtx));
 static rtx altivec_expand_stv_builtin PARAMS ((enum insn_code, tree));
@@ -3888,6 +3891,178 @@ rs6000_expand_ternop_builtin (icode, arglist, target)
   return target;
 }
 
+/* Expand the lvx builtins.  */
+static rtx
+altivec_expand_ld_builtin (exp, target, expandedp)
+     tree exp;
+     rtx target;
+     bool *expandedp;
+{
+  tree fndecl = TREE_OPERAND (TREE_OPERAND (exp, 0), 0);
+  tree arglist = TREE_OPERAND (exp, 1);
+  unsigned int fcode = DECL_FUNCTION_CODE (fndecl);
+  tree arg0;
+  enum machine_mode tmode, mode0;
+  rtx pat, target, op0;
+  enum insn_code icode;
+
+  switch (fcode)
+    {
+    case ALTIVEC_BUILTIN_LD_INTERNAL_16qi:
+      icode = CODE_FOR_altivec_lvx_16qi;
+      break;
+    case ALTIVEC_BUILTIN_LD_INTERNAL_8hi:
+      icode = CODE_FOR_altivec_lvx_8hi;
+      break;
+    case ALTIVEC_BUILTIN_LD_INTERNAL_4si:
+      icode = CODE_FOR_altivec_lvx_4si;
+      break;
+    case ALTIVEC_BUILTIN_LD_INTERNAL_4sf:
+      icode = CODE_FOR_altivec_lvx_4sf;
+      break;
+    default:
+      *expandedp = false;
+      return NULL_RTX;
+    }
+
+  *expandedp = true;
+
+  arg0 = TREE_VALUE (arglist);
+  op0 = expand_expr (arg0, NULL_RTX, VOIDmode, 0);
+  tmode = insn_data[icode].operand[0].mode;
+  mode0 = insn_data[icode].operand[1].mode;
+
+  if (target == 0
+      || GET_MODE (target) != tmode
+      || ! (*insn_data[icode].operand[0].predicate) (target, tmode))
+    target = gen_reg_rtx (tmode);
+
+  if (! (*insn_data[icode].operand[1].predicate) (op0, mode0))
+    op0 = gen_rtx_MEM (mode0, copy_to_mode_reg (Pmode, op0));
+
+  pat = GEN_FCN (icode) (target, op0);
+  if (! pat)
+    return 0;
+  emit_insn (pat);
+  return target;
+}
+
+/* Expand the stvx builtins.  */
+static rtx
+altivec_expand_st_builtin (exp, target, expandedp)
+     tree exp;
+     rtx target;
+     bool *expandedp;
+{
+  tree fndecl = TREE_OPERAND (TREE_OPERAND (exp, 0), 0);
+  tree arglist = TREE_OPERAND (exp, 1);
+  unsigned int fcode = DECL_FUNCTION_CODE (fndecl);
+  tree arg0, arg1;
+  enum machine_mode mode0, mode1;
+  rtx pat, target, op0, op1;
+  enum insn_code icode;
+
+  switch (fcode)
+    {
+    case ALTIVEC_BUILTIN_ST_INTERNAL_16qi:
+      icode = CODE_FOR_altivec_stvx_16qi;
+      break;
+    case ALTIVEC_BUILTIN_ST_INTERNAL_8hi:
+      icode = CODE_FOR_altivec_stvx_8hi;
+      break;
+    case ALTIVEC_BUILTIN_ST_INTERNAL_4si:
+      icode = CODE_FOR_altivec_stvx_4si;
+      break;
+    case ALTIVEC_BUILTIN_ST_INTERNAL_4sf:
+      icode = CODE_FOR_altivec_stvx_4sf;
+      break;
+    default:
+      *expandedp = false;
+      return NULL_RTX;
+    }
+
+  arg0 = TREE_VALUE (arglist);
+  arg1 = TREE_VALUE (TREE_CHAIN (arglist));
+  op0 = expand_expr (arg0, NULL_RTX, VOIDmode, 0);
+  op1 = expand_expr (arg1, NULL_RTX, VOIDmode, 0);
+  mode0 = insn_data[icode].operand[0].mode;
+  mode1 = insn_data[icode].operand[1].mode;
+
+  if (! (*insn_data[icode].operand[0].predicate) (op0, mode0))
+    op0 = gen_rtx_MEM (mode0, copy_to_mode_reg (Pmode, op0));
+  if (! (*insn_data[icode].operand[1].predicate) (op1, mode1))
+    op1 = copy_to_mode_reg (mode1, op1);
+
+  pat = GEN_FCN (icode) (op0, op1);
+  if (pat)
+    emit_insn (pat);
+
+  *expandedp = true;
+  return NULL_RTX;
+}
+
+/* Expand the dst builtins.  */
+static rtx
+altivec_expand_dst_builtin (exp, target, expandedp)
+     tree exp;
+     rtx target;
+     bool *expandedp;
+{
+  tree fndecl = TREE_OPERAND (TREE_OPERAND (exp, 0), 0);
+  tree arglist = TREE_OPERAND (exp, 1);
+  unsigned int fcode = DECL_FUNCTION_CODE (fndecl);
+  tree arg0, arg1, arg2;
+  enum machine_mode mode0, mode1, mode2;
+  rtx pat, target, op0, op1, op2;
+  struct builtin_description *d;
+  int i;
+
+  *expandedp = false;
+
+  /* Handle DST variants.  */
+  d = (struct builtin_description *) bdesc_dst;
+  for (i = 0; i < ARRAY_SIZE (bdesc_dst); i++, d++)
+    if (d->code == fcode)
+      {
+	arg0 = TREE_VALUE (arglist);
+	arg1 = TREE_VALUE (TREE_CHAIN (arglist));
+	arg2 = TREE_VALUE (TREE_CHAIN (TREE_CHAIN (arglist)));
+	op0 = expand_expr (arg0, NULL_RTX, VOIDmode, 0);
+	op1 = expand_expr (arg1, NULL_RTX, VOIDmode, 0);
+	op2 = expand_expr (arg2, NULL_RTX, VOIDmode, 0);
+	mode0 = insn_data[d->icode].operand[0].mode;
+	mode1 = insn_data[d->icode].operand[1].mode;
+	mode2 = insn_data[d->icode].operand[2].mode;
+
+	/* Invalid arguments, bail out before generating bad rtl.  */
+	if (arg0 == error_mark_node
+	    || arg1 == error_mark_node
+	    || arg2 == error_mark_node)
+	  return const0_rtx;
+
+	if (TREE_CODE (arg2) != INTEGER_CST
+	    || TREE_INT_CST_LOW (arg2) & ~0x3)
+	  {
+	    error ("argument to `%s' must be a 2-bit unsigned literal", d->name);
+	    return const0_rtx;
+	  }
+
+	if (! (*insn_data[d->icode].operand[0].predicate) (op0, mode0))
+	  op0 = copy_to_mode_reg (mode0, op0);
+	if (! (*insn_data[d->icode].operand[1].predicate) (op1, mode1))
+	  op1 = copy_to_mode_reg (mode1, op1);
+
+	pat = GEN_FCN (d->icode) (op0, op1, op2);
+	if (pat != 0)
+	  emit_insn (pat);
+
+	*expandedp = true;
+	return NULL_RTX;
+      }
+
+  return NULL_RTX;
+}
+
 /* Expand the builtin in EXP and store the result in TARGET.  Store
    true in *EXPANDEDP if we found a builtin to expand.  */
 static rtx
@@ -3907,170 +4082,22 @@ altivec_expand_builtin (exp, target, expandedp)
   enum machine_mode tmode, mode0, mode1, mode2;
   unsigned int fcode = DECL_FUNCTION_CODE (fndecl);
 
+  target = altivec_expand_ld_builtin (exp, target, expandedp);
+  if (*expandedp)
+    return target;
+
+  target = altivec_expand_st_builtin (exp, target, expandedp);
+  if (*expandedp)
+    return target;
+
+  target = altivec_expand_dst_builtin (exp, target, expandedp);
+  if (*expandedp)
+    return target;
+
   *expandedp = true;
 
   switch (fcode)
     {
-    case ALTIVEC_BUILTIN_LD_INTERNAL_16qi:
-      icode = CODE_FOR_altivec_lvx_16qi;
-      arg0 = TREE_VALUE (arglist);
-      op0 = expand_expr (arg0, NULL_RTX, VOIDmode, 0);
-      tmode = insn_data[icode].operand[0].mode;
-      mode0 = insn_data[icode].operand[1].mode;
-
-      if (target == 0
-	  || GET_MODE (target) != tmode
-	  || ! (*insn_data[icode].operand[0].predicate) (target, tmode))
-	target = gen_reg_rtx (tmode);
-
-      if (! (*insn_data[icode].operand[1].predicate) (op0, mode0))
-	op0 = gen_rtx_MEM (mode0, copy_to_mode_reg (Pmode, op0));
-
-      pat = GEN_FCN (icode) (target, op0);
-      if (! pat)
-	return 0;
-      emit_insn (pat);
-      return target;
-
-    case ALTIVEC_BUILTIN_LD_INTERNAL_8hi:
-      icode = CODE_FOR_altivec_lvx_8hi;
-      arg0 = TREE_VALUE (arglist);
-      op0 = expand_expr (arg0, NULL_RTX, VOIDmode, 0);
-      tmode = insn_data[icode].operand[0].mode;
-      mode0 = insn_data[icode].operand[1].mode;
-
-      if (target == 0
-	  || GET_MODE (target) != tmode
-	  || ! (*insn_data[icode].operand[0].predicate) (target, tmode))
-	target = gen_reg_rtx (tmode);
-
-      if (! (*insn_data[icode].operand[1].predicate) (op0, mode0))
-	op0 = gen_rtx_MEM (mode0, copy_to_mode_reg (Pmode, op0));
-
-      pat = GEN_FCN (icode) (target, op0);
-      if (! pat)
-	return 0;
-      emit_insn (pat);
-      return target;
-
-    case ALTIVEC_BUILTIN_LD_INTERNAL_4si:
-      icode = CODE_FOR_altivec_lvx_4si;
-      arg0 = TREE_VALUE (arglist);
-      op0 = expand_expr (arg0, NULL_RTX, VOIDmode, 0);
-      tmode = insn_data[icode].operand[0].mode;
-      mode0 = insn_data[icode].operand[1].mode;
-
-      if (target == 0
-	  || GET_MODE (target) != tmode
-	  || ! (*insn_data[icode].operand[0].predicate) (target, tmode))
-	target = gen_reg_rtx (tmode);
-
-      if (! (*insn_data[icode].operand[1].predicate) (op0, mode0))
-	op0 = gen_rtx_MEM (mode0, copy_to_mode_reg (Pmode, op0));
-
-      pat = GEN_FCN (icode) (target, op0);
-      if (! pat)
-	return 0;
-      emit_insn (pat);
-      return target;
-
-    case ALTIVEC_BUILTIN_LD_INTERNAL_4sf:
-      icode = CODE_FOR_altivec_lvx_4sf;
-      arg0 = TREE_VALUE (arglist);
-      op0 = expand_expr (arg0, NULL_RTX, VOIDmode, 0);
-      tmode = insn_data[icode].operand[0].mode;
-      mode0 = insn_data[icode].operand[1].mode;
-
-      if (target == 0
-	  || GET_MODE (target) != tmode
-	  || ! (*insn_data[icode].operand[0].predicate) (target, tmode))
-	target = gen_reg_rtx (tmode);
-
-      if (! (*insn_data[icode].operand[1].predicate) (op0, mode0))
-	op0 = gen_rtx_MEM (mode0, copy_to_mode_reg (Pmode, op0));
-
-      pat = GEN_FCN (icode) (target, op0);
-      if (! pat)
-	return 0;
-      emit_insn (pat);
-      return target;
-
-    case ALTIVEC_BUILTIN_ST_INTERNAL_16qi:
-      icode = CODE_FOR_altivec_stvx_16qi;
-      arg0 = TREE_VALUE (arglist);
-      arg1 = TREE_VALUE (TREE_CHAIN (arglist));
-      op0 = expand_expr (arg0, NULL_RTX, VOIDmode, 0);
-      op1 = expand_expr (arg1, NULL_RTX, VOIDmode, 0);
-      mode0 = insn_data[icode].operand[0].mode;
-      mode1 = insn_data[icode].operand[1].mode;
-
-      if (! (*insn_data[icode].operand[0].predicate) (op0, mode0))
-	op0 = gen_rtx_MEM (mode0, copy_to_mode_reg (Pmode, op0));
-      if (! (*insn_data[icode].operand[1].predicate) (op1, mode1))
-	op1 = copy_to_mode_reg (mode1, op1);
-
-      pat = GEN_FCN (icode) (op0, op1);
-      if (pat)
-	emit_insn (pat);
-      return NULL_RTX;
-
-    case ALTIVEC_BUILTIN_ST_INTERNAL_8hi:
-      icode = CODE_FOR_altivec_stvx_8hi;
-      arg0 = TREE_VALUE (arglist);
-      arg1 = TREE_VALUE (TREE_CHAIN (arglist));
-      op0 = expand_expr (arg0, NULL_RTX, VOIDmode, 0);
-      op1 = expand_expr (arg1, NULL_RTX, VOIDmode, 0);
-      mode0 = insn_data[icode].operand[0].mode;
-      mode1 = insn_data[icode].operand[1].mode;
-
-      if (! (*insn_data[icode].operand[0].predicate) (op0, mode0))
-	op0 = gen_rtx_MEM (mode0, copy_to_mode_reg (Pmode, op0));
-      if (! (*insn_data[icode].operand[1].predicate) (op1, mode1))
-	op1 = copy_to_mode_reg (mode1, op1);
-
-      pat = GEN_FCN (icode) (op0, op1);
-      if (pat)
-	emit_insn (pat);
-      return NULL_RTX;
-
-    case ALTIVEC_BUILTIN_ST_INTERNAL_4si:
-      icode = CODE_FOR_altivec_stvx_4si;
-      arg0 = TREE_VALUE (arglist);
-      arg1 = TREE_VALUE (TREE_CHAIN (arglist));
-      op0 = expand_expr (arg0, NULL_RTX, VOIDmode, 0);
-      op1 = expand_expr (arg1, NULL_RTX, VOIDmode, 0);
-      mode0 = insn_data[icode].operand[0].mode;
-      mode1 = insn_data[icode].operand[1].mode;
-
-      if (! (*insn_data[icode].operand[0].predicate) (op0, mode0))
-	op0 = gen_rtx_MEM (mode0, copy_to_mode_reg (Pmode, op0));
-      if (! (*insn_data[icode].operand[1].predicate) (op1, mode1))
-	op1 = copy_to_mode_reg (mode1, op1);
-
-      pat = GEN_FCN (icode) (op0, op1);
-      if (pat)
-	emit_insn (pat);
-      return NULL_RTX;
-
-    case ALTIVEC_BUILTIN_ST_INTERNAL_4sf:
-      icode = CODE_FOR_altivec_stvx_4sf;
-      arg0 = TREE_VALUE (arglist);
-      arg1 = TREE_VALUE (TREE_CHAIN (arglist));
-      op0 = expand_expr (arg0, NULL_RTX, VOIDmode, 0);
-      op1 = expand_expr (arg1, NULL_RTX, VOIDmode, 0);
-      mode0 = insn_data[icode].operand[0].mode;
-      mode1 = insn_data[icode].operand[1].mode;
-
-      if (! (*insn_data[icode].operand[0].predicate) (op0, mode0))
-	op0 = gen_rtx_MEM (mode0, copy_to_mode_reg (Pmode, op0));
-      if (! (*insn_data[icode].operand[1].predicate) (op1, mode1))
-	op1 = copy_to_mode_reg (mode1, op1);
-
-      pat = GEN_FCN (icode) (op0, op1);
-      if (pat)
-	emit_insn (pat);
-      return NULL_RTX;
-
     case ALTIVEC_BUILTIN_STVX:
       return altivec_expand_stv_builtin (CODE_FOR_altivec_stvx, arglist);
     case ALTIVEC_BUILTIN_STVEBX:
@@ -4081,7 +4108,7 @@ altivec_expand_builtin (exp, target, expandedp)
       return altivec_expand_stv_builtin (CODE_FOR_altivec_stvewx, arglist);
     case ALTIVEC_BUILTIN_STVXL:
       return altivec_expand_stv_builtin (CODE_FOR_altivec_stvxl, arglist);
-  
+
     case ALTIVEC_BUILTIN_MFVSCR:
       icode = CODE_FOR_altivec_mfvscr;
       tmode = insn_data[icode].operand[0].mode;
@@ -4114,7 +4141,7 @@ altivec_expand_builtin (exp, target, expandedp)
       if (pat)
 	emit_insn (pat);
       return NULL_RTX;
-      
+
     case ALTIVEC_BUILTIN_DSSALL:
       emit_insn (gen_altivec_dssall ());
       return NULL_RTX;
@@ -4142,46 +4169,6 @@ altivec_expand_builtin (exp, target, expandedp)
       emit_insn (gen_altivec_dss (op0));
       return NULL_RTX;
     }
-
-  /* Handle DST variants.  */
-  d = (struct builtin_description *) bdesc_dst;
-  for (i = 0; i < ARRAY_SIZE (bdesc_dst); i++, d++)
-    if (d->code == fcode)
-      {
-	arg0 = TREE_VALUE (arglist);
-	arg1 = TREE_VALUE (TREE_CHAIN (arglist));
-	arg2 = TREE_VALUE (TREE_CHAIN (TREE_CHAIN (arglist)));
-	op0 = expand_expr (arg0, NULL_RTX, VOIDmode, 0);
-	op1 = expand_expr (arg1, NULL_RTX, VOIDmode, 0);
-	op2 = expand_expr (arg2, NULL_RTX, VOIDmode, 0);
-	mode0 = insn_data[d->icode].operand[0].mode;
-	mode1 = insn_data[d->icode].operand[1].mode;
-	mode2 = insn_data[d->icode].operand[2].mode;
-
-	/* Invalid arguments, bail out before generating bad rtl.  */
-	if (arg0 == error_mark_node
-	    || arg1 == error_mark_node
-	    || arg2 == error_mark_node)
-	  return const0_rtx;
-
-      if (TREE_CODE (arg2) != INTEGER_CST
-	  || TREE_INT_CST_LOW (arg2) & ~0x3)
-	{
-	  error ("argument to `%s' must be a 2-bit unsigned literal", d->name);
-	  return const0_rtx;
-	}
-
-	if (! (*insn_data[d->icode].operand[0].predicate) (op0, mode0))
-	  op0 = copy_to_mode_reg (mode0, op0);
-	if (! (*insn_data[d->icode].operand[1].predicate) (op1, mode1))
-	  op1 = copy_to_mode_reg (mode1, op1);
-
-	pat = GEN_FCN (d->icode) (op0, op1, op2);
-	if (pat != 0)
-	  emit_insn (pat);
-
-	return NULL_RTX;
-      }
 
   /* Expand abs* operations.  */
   d = (struct builtin_description *) bdesc_abs;
