@@ -1794,12 +1794,18 @@ check_format (info, params)
   
 	  this = IDENTIFIER_POINTER (DECL_NAME (TYPE_NAME (wanted_type)));
 	  that = 0;
-	  if (TYPE_NAME (cur_type) != 0
+	  if (TREE_CODE (cur_type) != ERROR_MARK
+	      && TYPE_NAME (cur_type) != 0
 	      && TREE_CODE (cur_type) != INTEGER_TYPE
 	      && !(TREE_CODE (cur_type) == POINTER_TYPE
-		   && TREE_CODE (TREE_TYPE (cur_type)) == INTEGER_TYPE)
-	      && DECL_NAME (TYPE_NAME (cur_type)) != 0)
-	    that = IDENTIFIER_POINTER (DECL_NAME (TYPE_NAME (cur_type)));
+		   && TREE_CODE (TREE_TYPE (cur_type)) == INTEGER_TYPE))
+	    {
+	      if (TREE_CODE (TYPE_NAME (cur_type)) == TYPE_DECL
+		  && DECL_NAME (TYPE_NAME (cur_type)) != 0)
+		that = IDENTIFIER_POINTER (DECL_NAME (TYPE_NAME (cur_type)));
+	      else
+		that = IDENTIFIER_POINTER (TYPE_NAME (cur_type));
+	    }
 
 	  /* A nameless type can't possibly match what the format wants.
 	     So there will be a warning for it.
