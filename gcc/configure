@@ -1330,7 +1330,7 @@ else
 fi
 echo "$ac_t""$CPP" 1>&6
 
-for ac_hdr in stddef.h string.h strings.h stdlib.h time.h unistd.h
+for ac_hdr in stddef.h string.h strings.h stdlib.h time.h unistd.h varargs.h sys/varargs.h
 do
 ac_safe=`echo "$ac_hdr" | sed 'y%./+-%__p_%'`
 echo $ac_n "checking for $ac_hdr""... $ac_c" 1>&6
