@@ -135,6 +135,9 @@ extern int compiling_from_source;
 #define all_class_list \
   java_global_trees[JTI_ALL_CLASS_LIST]
 
+/* List of all class filenames seen so far.  */
+#define all_class_filename java_global_trees [JTI_ALL_CLASS_FILENAME]
+
 extern int flag_emit_class_files;
 
 extern int flag_filelist_file;
@@ -349,6 +352,7 @@ enum java_tree_index
   JTI_MAIN_CLASS,
   JTI_CURRENT_CLASS,
   JTI_ALL_CLASS_LIST,
+  JTI_ALL_CLASS_FILENAME,
 
   JTI_MAX
 };
@@ -1452,14 +1456,14 @@ extern tree *type_map;
    scope of TYPE_DECL.  */
 #define DECL_INNER_CLASS_LIST(NODE) DECL_INITIAL (NODE)
 
-/* Build a IDENTIFIER_POINTER for a file name we're considering. We
-   need to register the root, but we're trying to register it only
-   once.  */
-#define BUILD_FILENAME_IDENTIFIER_NODE(F, S)	\
-  if (!((F) = maybe_get_identifier ((S))))	\
-    {						\
-      (F) = get_identifier ((S));		\
-      ggc_add_tree_root (&(F), 1);		\
+/* Build a IDENTIFIER_NODE for a file name we're considering. Since
+   all_class_filename is a registered root, putting this identifier
+   in a TREE_LIST it holds keeps this node alive.  */
+#define BUILD_FILENAME_IDENTIFIER_NODE(F, S)		\
+  if (!((F) = maybe_get_identifier ((S))))		\
+    {							\
+      (F) = get_identifier ((S));			\
+      tree_cons ((F), NULL_TREE, all_class_filename);	\
     }
 
 /* Add a FIELD_DECL to RECORD_TYPE RTYPE.
