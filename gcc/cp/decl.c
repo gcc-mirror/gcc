@@ -1920,7 +1920,8 @@ redeclaration_error_message (tree newdecl, tree olddecl)
       /* If both functions come from different namespaces, this is not
 	 a redeclaration - this is a conflict with a used function.  */
       if (DECL_NAMESPACE_SCOPE_P (olddecl)
-	  && DECL_CONTEXT (olddecl) != DECL_CONTEXT (newdecl))
+	  && DECL_CONTEXT (olddecl) != DECL_CONTEXT (newdecl)
+	  && ! decls_match (olddecl, newdecl))
 	return "%qD conflicts with used function";
 
       /* We'll complain about linkage mismatches in

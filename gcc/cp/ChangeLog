@@ -1,3 +1,9 @@
+2005-03-02  Alexandre Oliva  <aoliva@redhat.com>
+
+	* name-lookup.c (push_overloaded_decl): Don't error if the new
+	decl matches the old one.
+	* decl.c (redeclaration_error_message): Likewise.
+
 2005-03-01  Nathan Sidwell  <nathan@codesourcery.com>
 
 	PR c++/20232
