@@ -1,3 +1,7 @@
+Thu Nov 26 08:38:06 1998  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* cppfiles.c (simplify_pathname): Un-ANSI-fy function definition.
+
 Thu Nov 26 23:45:37 1998  Michael Hayes  <m.hayes@elec.canterbury.ac.nz>
 
 	* README.C4X: Updated URLs.
