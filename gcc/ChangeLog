@@ -1,5 +1,18 @@
 2004-06-30  Zdenek Dvorak  <rakdver@atrey.karlin.mff.cuni.cz>
 
+	* common.opt (ftree-loop-optimize): New flag.
+	* tree-flow.h (kill_redundant_phi_nodes): Declare.
+	* tree-optimize.c (init_tree_optimization_passes): Add pass_loop.
+	* tree-pass.h (pass_loop_init, pass_loop_done): Declare.
+	* tree-ssa-loop.c (current_loops): New variable.
+	(tree_loop_optimizer_init, gate_loop, tree_ssa_loop_init,
+	tree_ssa_loop_done): New functions.
+	(pass_loop, pass_loop_init, pass_loop_done): New passes.
+	* tree-ssa.c (kill_redundant_phi_nodes): Export.
+	* doc/invoke.texi (-ftree-loop-optimize): Document.
+
+2004-06-30  Zdenek Dvorak  <rakdver@atrey.karlin.mff.cuni.cz>
+
 	* tree-ssa-loop-ch.c: New file.
 	* Makefile.in (tree-ssa-loop-ch.o): Add.
 	(tree-into-ssa.o): Add GGC_H dependency.
