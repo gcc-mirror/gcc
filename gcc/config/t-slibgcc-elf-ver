@@ -19,11 +19,11 @@ SHLIB_LINK = $(GCC_FOR_TARGET) $(LIBGCC2_CFLAGS) -shared -nodefaultlibs \
 # $(slibdir) double quoted to protect it from expansion while building
 # libgcc.mk.  We want this delayed until actual install time.
 SHLIB_INSTALL = \
-	$$(SHELL) $$(srcdir)/mkinstalldirs $$(slibdir)$(SHLIB_SLIBDIR_QUAL); \
+	$$(SHELL) $$(srcdir)/mkinstalldirs $$(DESTDIR)$$(slibdir)$(SHLIB_SLIBDIR_QUAL); \
 	$(INSTALL_DATA) $(SHLIB_NAME) \
-	  $$(slibdir)$(SHLIB_SLIBDIR_QUAL)/$(SHLIB_SONAME); \
-	rm -f $$(slibdir)$(SHLIB_SLIBDIR_QUAL)/$(SHLIB_SOLINK); \
+	  $$(DESTDIR)$$(slibdir)$(SHLIB_SLIBDIR_QUAL)/$(SHLIB_SONAME); \
+	rm -f $$(DESTDIR)$$(slibdir)$(SHLIB_SLIBDIR_QUAL)/$(SHLIB_SOLINK); \
 	$(LN_S) $(SHLIB_SONAME) \
-	  $$(slibdir)$(SHLIB_SLIBDIR_QUAL)/$(SHLIB_SOLINK)
+	  $$(DESTDIR)$$(slibdir)$(SHLIB_SLIBDIR_QUAL)/$(SHLIB_SOLINK)
 SHLIB_MKMAP = $(srcdir)/mkmap-symver.awk
 SHLIB_MAPFILES = $(srcdir)/libgcc-std.ver
