@@ -2384,7 +2384,8 @@ reset_used_decls (blk)
 }
 
 /* Similar to `copy_rtx' except that if MAY_SHARE is present, it is
-   placed in the result directly, rather than being copied.  */
+   placed in the result directly, rather than being copied.  MAY_SHARE is
+   either a MEM of an EXPR_LIST of MEMs.  */
 
 rtx
 copy_most_rtx (orig, may_share)
@@ -2396,7 +2397,9 @@ copy_most_rtx (orig, may_share)
   RTX_CODE code;
   const char *format_ptr;
 
-  if (orig == may_share)
+  if (orig == may_share
+      || (GET_CODE (may_share) == EXPR_LIST
+	  && in_expr_list_p (may_share, orig)))
     return orig;
 
   code = GET_CODE (orig);
