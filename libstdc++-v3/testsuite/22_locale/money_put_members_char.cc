@@ -226,7 +226,7 @@ void test02()
   oss.setf(ios_base::showbase);
 
   oss.str(empty);
- iterator_type os_it03 = mon_put.put(oss.rdbuf(), true, oss, ' ', digits1);
+  iterator_type os_it03 = mon_put.put(oss.rdbuf(), true, oss, ' ', digits1);
   string result3 = oss.str();
   VERIFY( result3 == "7.200.000.000,00 DEM ");
 
@@ -341,6 +341,33 @@ void test05()
   VERIFY( fmt.str() == "*(1,234.56)" );
 }
 
+struct My_money_io_2 : public std::moneypunct<char,false>
+{
+  char_type do_thousands_sep() const { return ','; }
+  std::string do_grouping() const { return "\001"; }
+};
+
+// Make sure we can output a very big amount of money (with grouping too).
+void test06()
+{
+  using namespace std;
+  typedef ostreambuf_iterator<char> OutIt;
+
+  locale loc(locale::classic(), new My_money_io_2);
+
+  bool intl = false;
+
+  long double val = 1e50L;
+  const money_put<char,OutIt>& mp  =
+    use_facet<money_put<char, OutIt> >(loc);
+
+  ostringstream fmt;
+  fmt.imbue(loc);
+  OutIt out(fmt);
+  mp.put(out,intl,fmt,'*',val);
+  VERIFY( fmt );
+}
+
 int main()
 {
   test01();
@@ -348,5 +375,6 @@ int main()
   test03();
   test04();
   test05();
+  test06();
   return 0;
 }
