@@ -19,6 +19,7 @@
 	* cpplib.h (cppchar_signed_t): New.
 	struct cpp_options): New precision members.
 	(cpp_interpret_charconst, cpp_parse_escape): Update prototypes.
+	* cppexp.c (eval_token): Update.
 
 2002-05-03  David S. Miller  <davem@redhat.com>
 
