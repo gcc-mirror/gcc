@@ -1,3 +1,9 @@
+2002-09-15  Nathan Sidwell  <nathan@codesourcery.com>
+
+	PR c++/7919
+	* call.c (build_over_call): Convert this pointer for fns found by
+	using decls.
+
 2002-09-15  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* ChangeLog: Follow spelling conventions.

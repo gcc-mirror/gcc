@@ -4336,7 +4336,8 @@ build_over_call (cand, args, flags)
       tree parmtype = TREE_VALUE (parm);
       tree argtype = TREE_TYPE (TREE_VALUE (arg));
       tree converted_arg;
-
+      tree base_binfo;
+      
       if (ICS_BAD_FLAG (TREE_VEC_ELT (convs, i)))
 	pedwarn ("passing `%T' as `this' argument of `%#D' discards qualifiers",
 		    TREE_TYPE (argtype), fn);
@@ -4354,6 +4355,15 @@ build_over_call (cand, args, flags)
 				       TREE_VALUE (arg),
 				       cand->conversion_path,
 				       1);
+      /* If fn was found by a using declaration, the conversion path
+         will be to the derived class, not the base declaring fn. We
+         must convert from derived to base.  */
+      base_binfo = lookup_base (TREE_TYPE (TREE_TYPE (converted_arg)),
+				TREE_TYPE (parmtype), ba_ignore, NULL);
+      
+      converted_arg = build_base_path (PLUS_EXPR, converted_arg,
+				       base_binfo, 1);
+      
       converted_args = tree_cons (NULL_TREE, converted_arg, converted_args);
       parm = TREE_CHAIN (parm);
       arg = TREE_CHAIN (arg);
