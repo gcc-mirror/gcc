@@ -2534,8 +2534,8 @@ generate_bytecode_insns (exp, target, state)
 	  NOTE_POP (1);  /* Pop implicit this. */
 	if (TREE_CODE (f) == FUNCTION_DECL && DECL_CONTEXT (f) != NULL_TREE)
 	  {
-	    int index = find_methodref_index (&state->cpool, f);
-	    int interface = 0;
+	    tree saved_context;
+	    int index, interface = 0;
 	    RESERVE (5);
 	    if (METHOD_STATIC (f))
 	      OP1 (OPCODE_invokestatic);
@@ -2549,6 +2549,15 @@ generate_bytecode_insns (exp, target, state)
 	      }
 	    else
 	      OP1 (OPCODE_invokevirtual);
+	    if (interface)
+	      {
+		saved_context = DECL_CONTEXT (f);
+		DECL_CONTEXT (f) = 
+		  TREE_TYPE (TREE_TYPE (TREE_VALUE (TREE_OPERAND (exp, 1))));
+	      }
+	    index = find_methodref_index (&state->cpool, f);
+	    if (interface)
+	      DECL_CONTEXT (f) = saved_context;
 	    OP2 (index);
 	    f = TREE_TYPE (TREE_TYPE (f));
 	    if (TREE_CODE (f) != VOID_TYPE)
