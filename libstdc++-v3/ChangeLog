@@ -1,5 +1,11 @@
 2001-07-09  Phil Edwards  <pme@sources.redhat.com>
 
+	* docs/html/configopts.html:  Fix thinko.
+	* docs/html/27_io/howto.html:  Fix thinko and HTML markup.
+	* include/bits/stl_iterator.h:  Fix typo.
+
+2001-07-09  Phil Edwards  <pme@sources.redhat.com>
+
 	* docs/html/explanations.html:  New file.
 	* docs/html/configopts.html:  Link to it to provide more notes
 	on cstdio.  Minor markup and spacing fixes.
