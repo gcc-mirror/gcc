@@ -776,8 +776,8 @@ DEFTREECODE (CONJ_EXPR, "conj_expr", '1', 1)
 
 /* Used only on an operand of complex type, these return
    a value of the corresponding component type.  */
-DEFTREECODE (REALPART_EXPR, "realpart_expr", '1', 1)
-DEFTREECODE (IMAGPART_EXPR, "imagpart_expr", '1', 1)
+DEFTREECODE (REALPART_EXPR, "realpart_expr", 'r', 1)
+DEFTREECODE (IMAGPART_EXPR, "imagpart_expr", 'r', 1)
 
 /* Nodes for ++ and -- in C.
    The second arg is how much to increment or decrement by.

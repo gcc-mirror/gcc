@@ -1220,8 +1220,6 @@ estimate_num_insns_1 (tree *tp, int *walk_subtrees, void *data)
     case ADDR_EXPR:
     case REFERENCE_EXPR:
     case COMPLEX_EXPR:
-    case REALPART_EXPR:
-    case IMAGPART_EXPR:
     case EXIT_BLOCK_EXPR:
     case CASE_LABEL_EXPR:
     case SSA_NAME:

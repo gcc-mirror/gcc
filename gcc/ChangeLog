@@ -1,3 +1,14 @@
+2004-06-28  Richard Henderson  <rth@redhat.com>
+
+	* tree.def (REALPART_EXPR, IMAGPART_EXPR): Change class to 'r'.
+	* fold-const.c (operand_equal_p <case 'r'>): Add REALPART_EXPR,
+	IMAGPART_EXPR.
+	* tree-dump.c (dequeue_and_dump): Handle REALPART_EXPR and
+	IMAGPART_EXPR explicitly.
+	* tree-inline.c (estimate_num_insns_1): Don't handle REALPART_EXPR
+	and IMAGPART_EXPR specially.
+	* tree.c (build1_stat): Copy TREE_THIS_VOLATILE into class 'r'.
+
 2004-06-28  J"orn Rennecke <joern.rennecke@superh.com>
 
 	* config.gcc (sh*-*elf*): Remove dead assignment of sh_multilibs.
