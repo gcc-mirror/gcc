@@ -26,15 +26,15 @@ fp-bit.c: $(srcdir)/config/fp-bit.c
 
 # .init/.fini section routines
 
-x-crtinit.o: $(srcdir)/config/arc/initfini.c $(GCC_PASSES) $(CONFIG_H)
+crtinit.o: $(srcdir)/config/arc/initfini.c $(GCC_PASSES) $(CONFIG_H)
 	$(GCC_FOR_TARGET) $(GCC_CFLAGS) $(INCLUDES) $(CRTSTUFF_T_CFLAGS) \
 	  -DCRT_INIT -finhibit-size-directive -fno-inline-functions \
-	  -g0 -c $(srcdir)/config/arc/initfini.c -o $(dir)/crtinit.o
+	  -g0 -c $(srcdir)/config/arc/initfini.c -o crtinit.o
 
-x-crtfini.o: $(srcdir)/config/arc/initfini.c $(GCC_PASSES) $(CONFIG_H)
+crtfini.o: $(srcdir)/config/arc/initfini.c $(GCC_PASSES) $(CONFIG_H)
 	$(GCC_FOR_TARGET) $(GCC_CFLAGS) $(INCLUDES) $(CRTSTUFF_T_CFLAGS) \
 	  -DCRT_FINI -finhibit-size-directive -fno-inline-functions \
-	  -g0 -c $(srcdir)/config/arc/initfini.c -o $(dir)/crtfini.o
+	  -g0 -c $(srcdir)/config/arc/initfini.c -o crtfini.o
 
 MULTILIB_OPTIONS = EB
 MULTILIB_DIRNAMES = be
@@ -54,7 +54,7 @@ stmp-multilib-arc: stmp-multilib
 	    BUILD_PREFIX="$(BUILD_PREFIX)" BUILD_PREFIX_1="$(BUILD_PREFIX_1)" \
 	    GCC_CFLAGS="$(GCC_CFLAGS) $${flags}" \
 	    INCLUDES="$(INCLUDES)" CRTSTUFF_T_CFLAGS=$(CRTSTUFF_T_CFLAGS) \
-	    dir="$${dir}" x-crtinit.o x-crtfini.o; \
+	    dir="$${dir}" crtinit.o crtfini.o; \
 	  if [ $$? -eq 0 ] ; then true; else exit 1; fi; \
 	done
 	touch stmp-multilib-arc
