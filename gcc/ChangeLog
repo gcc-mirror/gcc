@@ -1,3 +1,53 @@
+2001-07-11  Neil Booth  <neil@daikokuya.demon.co.uk>
+
+	* Makefile.in (c-lex.o): Wrap long lines.  Depend on debug.h.
+	* c-lex.c (cb_file_change, cb_define, cb_undef): Use debug
+	hooks directly.
+	* dbxout.c (dbx_debug_hooks): Add new hooks.
+	(dbxout_start_new_source_file): Rename dbxout_start_source_file,
+	make static.
+	(dbxout_resume_previous_source_file): Rename dbxout_end_source_file,
+	make static.
+	* dbxout.h (dbxout_start_new_source_file,
+	dbxout_resume_previous_source_file): Delete.
+	* debug.c (do_nothing_debug_hooks): Add new hooks.
+	(debug_nothing_init_finish): Rename debug_nothing_file_charstar.
+	(debug_nothing_int_charstar, debug_nothing_int): New.
+	* debug.h (gcc_debug_hooks): New hooks define, undef,
+	start_source_file and end_source_file.
+	(debug_nothing_init_finish): Rename debug_nothing_file_charstar.
+	(debug_nothing_int_charstar, debug_nothing_int): New.
+	* dwarf2out.c (dwarf2_debug_hooks): Add new hooks.  Move into
+	the conditionally compiled section.
+	(dwarf2out_start_source_file, dwarf2out_end_source_file,
+	dwarf2out_define, dwarf2out_undef): Make static.
+	* dwarf2out.h (dwarf2out_start_source_file, dwarf2out_end_source_file,
+	dwarf2out_define, dwarf2out_undef): Remove.
+	* dwarfout.c (dwarf_debug_hooks): Add new hooks.
+	(dwarfout_start_source_file, dwarfout_end_source_file,
+	dwarfout_define, dwarfout_undef): Make static.
+	(dwarfout_start_source_file_check,
+	dwarfout_end_source_file_check): New.
+	(dwarfout_define, dwarfout_finish): Update.
+	* dwarfout.h (dwarfout_start_new_source_file,
+	dwarfout_resume_previous_source_file, dwarfout_define,
+	dwarfout_undef): Remove.
+	* sdbout.c (sdb_debug_hooks): Add new hooks.
+	(sdbout_start_new_source_file): Rename sdbout_start_source_file,
+	make static.
+	(sdbout_resume_previous_source_file): Rename sdbout_end_source_file,
+	make static, take an arg.
+	* sdbout.h (sdbout_start_new_source_file,
+	sdbout_resume_previous_source_file): Delete.
+	* toplev.c (debug_start_source_file, debug_end_source_file,
+	debug_define, debug_undef): Delete.
+	* toplev.h (debug_start_source_file, debug_end_source_file,
+	debug_define, debug_undef): Delete.
+
+	* java/jcf-parse.c: Include debug.h.
+	(parse_class_file): Update to use debug hooks directly.
+	* java/Make-lang.in (jcf-parse.o): Depend on debug.h.
+
 Wed Jul 11 10:07:18 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* alias.c (set_mem_alias_set): New function.

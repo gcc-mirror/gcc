@@ -35,6 +35,7 @@ The Free Software Foundation is independent of Sun Microsystems, Inc.  */
 #include "toplev.h"
 #include "parse.h"
 #include "ggc.h"
+#include "debug.h"
 
 #ifdef HAVE_LOCALE_H
 #include <locale.h>
@@ -774,7 +775,7 @@ parse_class_file ()
 
   input_filename = DECL_SOURCE_FILE (TYPE_NAME (current_class));
   lineno = 0;
-  debug_start_source_file (lineno, input_filename);
+  (*debug_hooks->start_source_file) (lineno, input_filename);
   init_outgoing_cpool ();
 
   /* Currently we always have to emit calls to _Jv_InitClass when
@@ -860,7 +861,7 @@ parse_class_file ()
 
   finish_class ();
 
-  debug_end_source_file (save_lineno);
+  (*debug_hooks->end_source_file) (save_lineno);
   input_filename = save_input_filename;
   lineno = save_lineno;
 }

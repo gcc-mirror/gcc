@@ -286,6 +286,8 @@ static int current_sym_nchars;
 
 static void dbxout_init			PARAMS ((FILE *, const char *));
 static void dbxout_finish		PARAMS ((FILE *, const char *));
+static void dbxout_start_source_file	PARAMS ((unsigned, const char *));
+static void dbxout_end_source_file	PARAMS ((unsigned));
 #if defined(ASM_OUTPUT_SECTION_NAME)
 static void dbxout_function_end		PARAMS ((void));
 #endif
@@ -309,11 +311,15 @@ static void dbxout_finish_symbol	PARAMS ((tree));
 static void dbxout_block		PARAMS ((tree, int, tree));
 static void dbxout_really_begin_function PARAMS ((tree));
 
-/* The target debug structure.  */
+/* The debug hooks structure.  */
 struct gcc_debug_hooks dbx_debug_hooks =
 {
   dbxout_init,
-  dbxout_finish
+  dbxout_finish,
+  debug_nothing_int_charstar,
+  debug_nothing_int_charstar,
+  dbxout_start_source_file,
+  dbxout_end_source_file
 };
 
 #if defined(ASM_OUTPUT_SECTION_NAME)
@@ -460,8 +466,9 @@ dbxout_typedefs (syms)
 
 /* Change to reading from a new source file.  Generate a N_BINCL stab.  */
 
-void
-dbxout_start_new_source_file (filename)
+static void
+dbxout_start_source_file (line, filename)
+     unsigned int line ATTRIBUTE_UNUSED;
      const char *filename ATTRIBUTE_UNUSED;
 {
 #ifdef DBX_USE_BINCL
@@ -479,8 +486,9 @@ dbxout_start_new_source_file (filename)
 
 /* Revert to reading a previous source file.  Generate a N_EINCL stab.  */
 
-void
-dbxout_resume_previous_source_file ()
+static void
+dbxout_end_source_file (line)
+     unsigned int line ATTRIBUTE_UNUSED;
 {
 #ifdef DBX_USE_BINCL
   struct dbx_file *next;

@@ -31,7 +31,5 @@ extern void sdbout_types		PARAMS ((tree));
 
 extern void sdbout_end_epilogue		PARAMS ((void));
 
-extern void sdbout_start_new_source_file 	PARAMS ((const char *));
-extern void sdbout_resume_previous_source_file	PARAMS ((void));
 extern void sdbout_mark_begin_function	PARAMS ((void));
 

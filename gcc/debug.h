@@ -29,14 +29,33 @@ struct gcc_debug_hooks
 
   /* Output debug symbols to FILE.  */
   void (* finish) PARAMS ((FILE * file, const char *main_filename));
+
+  /* Macro defined on line LINE with name and expansion TEXT.  */
+  void (* define) PARAMS ((unsigned int line, const char *text));
+
+  /* MACRO undefined on line LINE.  */
+  void (* undef) PARAMS ((unsigned int line, const char *macro));
+
+  /* Record the beginning of a new source file FILE from LINE number
+     in the previous one.  */
+  void (* start_source_file) PARAMS ((unsigned int line, const char *file));
+
+  /* Record the resumption of a source file.  LINE is the line number
+     in the source file we are returning to.  */
+  void (* end_source_file) PARAMS ((unsigned int line));
 };
 
 extern struct gcc_debug_hooks *debug_hooks;
 
 /* The do-nothing hooks.  */
-extern void debug_nothing_init_finish
+extern void debug_nothing_file_charstar
   PARAMS ((FILE *, const char *));
+extern void debug_nothing_int_charstar
+  PARAMS ((unsigned int, const char *));
+extern void debug_nothing_int
+  PARAMS ((unsigned int));
 
+/* Hooks for various debug formats.  */
 extern struct gcc_debug_hooks do_nothing_debug_hooks;
 extern struct gcc_debug_hooks dbx_debug_hooks;
 extern struct gcc_debug_hooks sdb_debug_hooks;

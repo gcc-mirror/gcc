@@ -93,6 +93,8 @@ extern tree current_function_decl;
 #include "sdbout.h"
 
 static void sdbout_init			PARAMS ((FILE *, const char *));
+static void sdbout_start_source_file	PARAMS ((unsigned, const char *));
+static void sdbout_end_source_file	PARAMS ((unsigned));
 static char *gen_fake_label		PARAMS ((void));
 static int plain_type			PARAMS ((tree));
 static int template_name_p		PARAMS ((tree));
@@ -289,11 +291,15 @@ static struct sdb_file *current_file;
 
 #endif /* MIPS_DEBUGGING_INFO */
 
-/* The target debug structure.  */
+/* The debug hooks structure.  */
 struct gcc_debug_hooks sdb_debug_hooks =
 {
   sdbout_init,
-  debug_nothing_init_finish
+  debug_nothing_file_charstar,
+  debug_nothing_int_charstar,
+  debug_nothing_int_charstar,
+  sdbout_start_source_file,
+  sdbout_end_source_file
 };
 
 #if 0
@@ -1584,8 +1590,9 @@ sdbout_label (insn)
 
 /* Change to reading from a new source file.  */
 
-void
-sdbout_start_new_source_file (filename)
+static void
+sdbout_start_source_file (line, filename)
+     unsigned int line ATTRIBUTE_UNUSED;
      const char *filename ATTRIBUTE_UNUSED;
 {
 #ifdef MIPS_DEBUGGING_INFO
@@ -1600,8 +1607,9 @@ sdbout_start_new_source_file (filename)
 
 /* Revert to reading a previous source file.  */
 
-void
-sdbout_resume_previous_source_file ()
+static void
+sdbout_end_source_file (line)
+     unsigned int line ATTRIBUTE_UNUSED;
 {
 #ifdef MIPS_DEBUGGING_INFO
   struct sdb_file *next;
