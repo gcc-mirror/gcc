@@ -1,3 +1,7 @@
+2004-11-28  Richard Henderson  <rth@redhat.com>
+
+	* gcc.c-torture/execute/20020227-1.x: Remove XFAIL.
+
 2004-11-28  Joseph S. Myers  <joseph@codesourcery.com>
 
 	* gcc.dg/builtin-choose-expr-2.c, gcc.dg/cast-1.c,
