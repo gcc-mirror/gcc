@@ -44,8 +44,8 @@ import java.io.ObjectOutputStream;
  * TreeSet is a part of the JDK1.2 Collections API.
  *
  * @author      Jon Zeppieri
- * @version     $Revision: 1.7 $
- * @modified    $Id: TreeSet.java,v 1.7 2000/10/26 10:19:01 bryce Exp $
+ * @version     $Revision: 1.1 $
+ * @modified    $Id: TreeSet.java,v 1.1 2001/02/14 04:44:21 bryce Exp $
  */
 
 public class TreeSet extends AbstractSet
@@ -158,14 +158,7 @@ public class TreeSet extends AbstractSet
   public Object clone()
   {
     TreeSet copy = new TreeSet();
-    try
-      {
-	copy.map = (TreeMap) map.clone();
-      }
-    catch (CloneNotSupportedException ex)
-      {
-      }
-
+    copy.map = (SortedMap) ((TreeMap) map).clone();
     return copy;
   }
 
