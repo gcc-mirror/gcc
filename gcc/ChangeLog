@@ -1,5 +1,8 @@
 2000-08-26  Alexandre Oliva  <aoliva@redhat.com>
 
+	* tm.texi (FINI_SECTION_ASM_OP, CRT_CALL_STATIC_FUNCTION):
+	Document.
+
 	* config/mn10300/mn10300.h (DBX_REGISTER_NUMBER): Remap register
 	numbers to the ranges used by GDB.
 

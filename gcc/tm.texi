@@ -5075,6 +5075,23 @@ assembler operation to identify the following data as initialization
 code.  If not defined, GCC will assume such a section does not
 exist.
 
+@findex FINI_SECTION_ASM_OP
+@item FINI_SECTION_ASM_OP
+If defined, a C expression whose value is a string containing the
+assembler opration to identify the following data as finalization
+code.  If not defined, GCC will assume such a section does not exist.
+
+@findex CRT_CALL_STATIC_FUNCTION
+@item CRT_CALL_STATIC_FUNCTION
+If defined, a C statement that calls the function named as the sole
+argument of this macro.  This is used in @file{crtstuff.c} if
+@code{INIT_SECTION_ASM_OP} or @code{FINI_SECTION_ASM_OP} to calls to
+initialization and finalization functions from the init and fini
+sections. By default, this macro is a simple function call.  Some
+ports need hand-crafted assembly code to avoid dependencies on
+registers initialized in the function prologue or to ensure that
+constant pools don't end up too far way in the text section.
+
 @findex EXTRA_SECTIONS
 @findex in_text
 @findex in_data
