@@ -1,3 +1,9 @@
+2000-12-06  Alexandre Oliva  <aoliva@redhat.com>
+
+	* lang-specs.h (c++): When invoking the stand-alone preprocessor
+	for -save-temps, pass all relevant -Defines to it, and then don't
+	pass them to cc1plus.
+
 2000-12-05  Will Cohen  <wcohen@redhat.com>
 
 	* decl.c (finish_case_label): Cleared
