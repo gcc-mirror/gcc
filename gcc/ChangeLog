@@ -1,3 +1,7 @@
+2000-10-16  J. David Anglin  <dave@hiauly1.hia.nrc.ca>
+
+	* pa.md (return_internal): Move `use' after `return'.
+
 2000-10-16 Theodore Papadopoulo <Theodore.Papadopoulo@sophia.inria.fr>
 
 	* machmode.def: Correct comment.
