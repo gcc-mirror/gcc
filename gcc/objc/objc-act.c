@@ -1133,7 +1133,7 @@ build_selector_translation_table ()
 
 #ifndef OBJC_NONUNIQUE_SELECTORS
       sprintf (buf, "_OBJC_SELECTOR_REFERENCES_%d", idx);
-      sc_spec = build_tree_list (NULLT, ridpointers[RID_STATIC]);
+      sc_spec = build_tree_list (NULLT, ridpointers[(int) RID_STATIC]);
 
 #ifdef OBJC_INT_SELECTORS
       /* static unsigned int _OBJC_SELECTOR_REFERENCES_n = ...; */
