@@ -1,3 +1,8 @@
+2000-04-15  David Edelsohn  <edelsohn@gnu.org>
+
+	* toplev.c (display_help): Prefix "f" to "sched-verbose=".
+	* haifa-sched.c: Update -fsched-verbose comments to use "=".
+
 Sat Apr 15 10:59:19 2000  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* Makefile.in (ggc-page.o): Now includes toplev.h.
