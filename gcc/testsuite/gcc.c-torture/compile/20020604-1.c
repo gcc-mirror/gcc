@@ -1,5 +1,6 @@
 /* The array is too big. */
-/* { dg-do assemble { xfail h8300-*-* m6811-*-* m6812-*-* } } */
+/* { dg-xfail-if "The array too big" { "h8300-*-*" } { "-mno-h" } { "" } } */
+/* { dg-do assemble { xfail m6811-*-* m6812-*-* } } */
 
 /* PR c/6957
    This testcase ICEd at -O2 on IA-32, because

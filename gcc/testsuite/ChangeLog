@@ -1,3 +1,9 @@
+2003-06-17  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* gcc.c-torture/compile/20020604-1.c: Use dg-xfail-if for h8300.
+	* gcc.c-torture/compile/961203-1.c: Likewise.
+	* gcc.c-torture/compile/980506-1.c: Likewise.
+
 2003-06-17  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/10712
