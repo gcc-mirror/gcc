@@ -5713,6 +5713,7 @@ emit_reload_insns (insn)
     {
       register rtx old;
       rtx oldequiv_reg = 0;
+      rtx this_reload_insn = 0;
 
       if (reload_spill_index[j] >= 0)
 	new_spill_reg_store[reload_spill_index[j]] = 0;
@@ -6135,6 +6136,7 @@ emit_reload_insns (insn)
 #endif
 	    }
 
+	  this_reload_insn = get_last_insn ();
 	  /* End this sequence.  */
 	  *where = get_insns ();
 	  end_sequence ();
