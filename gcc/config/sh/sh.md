@@ -3335,6 +3335,32 @@
   "TARGET_SH1 && ! TARGET_SH5"
   "")
 
+(define_expand "push_fpscr"
+  [(const_int 0)]
+  "TARGET_SH3E"
+  "
+{
+  rtx insn = emit_insn (gen_fpu_switch (gen_rtx (MEM, PSImode,
+						 gen_rtx (PRE_DEC, Pmode,
+							  stack_pointer_rtx)),
+					get_fpscr_rtx ()));
+  REG_NOTES (insn) = gen_rtx (EXPR_LIST, REG_INC, stack_pointer_rtx, NULL_RTX);
+  DONE;
+}")
+
+(define_expand "pop_fpscr"
+  [(const_int 0)]
+  "TARGET_SH3E"
+  "
+{
+  rtx insn = emit_insn (gen_fpu_switch (get_fpscr_rtx (),
+					gen_rtx (MEM, PSImode,
+						 gen_rtx (POST_INC, Pmode,
+							  stack_pointer_rtx))));
+  REG_NOTES (insn) = gen_rtx (EXPR_LIST, REG_INC, stack_pointer_rtx, NULL_RTX);
+  DONE;
+}")
+
 ;; These two patterns can happen as the result of optimization, when
 ;; comparisons get simplified to a move of zero or 1 into the T reg.
 ;; They don't disappear completely, because the T reg is a fixed hard reg.
@@ -7853,9 +7879,9 @@
 ;; The mac_gp type for r/!c might look a bit odd, but it actually schedules
 ;; like a mac -> gpr move.
 (define_insn "fpu_switch"
-  [(set (match_operand:PSI 0 "register_operand" "=c,c,r,c,c,r,m,r")
-	(match_operand:PSI 1 "general_movsrc_operand" "c,>,m,m,r,r,r,!c"))]
-  "TARGET_SH4
+  [(set (match_operand:PSI 0 "general_movdst_operand" "=c,c,r,c,c,r,m,r,<")
+	(match_operand:PSI 1 "general_movsrc_operand" "c,>,m,m,r,r,r,!c,c"))]
+  "TARGET_SH3E
    && (! reload_completed
        || true_regnum (operands[0]) != FPSCR_REG
        || GET_CODE (operands[1]) != MEM
@@ -7868,9 +7894,10 @@
 	lds	%1,fpscr
 	mov	%1,%0
 	mov.l	%1,%0
-	sts	fpscr,%0"
-  [(set_attr "length" "0,2,2,4,2,2,2,2")
-   (set_attr "type" "nil,mem_fpscr,load,mem_fpscr,gp_fpscr,move,store,mac_gp")])
+	sts	fpscr,%0
+	sts.l	fpscr,%0"
+  [(set_attr "length" "0,2,2,4,2,2,2,2,2")
+   (set_attr "type" "nil,mem_fpscr,load,mem_fpscr,gp_fpscr,move,store,mac_gp,store")])
 
 (define_split
   [(set (reg:PSI FPSCR_REG)

@@ -4305,6 +4305,8 @@ push (rn)
   rtx x;
   if (rn == FPUL_REG)
     x = gen_push_fpul ();
+  else if (rn == FPSCR_REG)
+    x = gen_push_fpscr ();
   else if (TARGET_SH4 && TARGET_FMOVD && ! TARGET_FPU_SINGLE
 	   && FP_OR_XD_REGISTER_P (rn))
     {
@@ -4333,6 +4335,8 @@ pop (rn)
   rtx x;
   if (rn == FPUL_REG)
     x = gen_pop_fpul ();
+  else if (rn == FPSCR_REG)
+    x = gen_pop_fpscr ();
   else if (TARGET_SH4 && TARGET_FMOVD && ! TARGET_FPU_SINGLE
 	   && FP_OR_XD_REGISTER_P (rn))
     {
@@ -4431,7 +4435,9 @@ calc_live_regs (count_ptr, live_regs_mask)
 		  && pr_live))
 	     && reg != STACK_POINTER_REGNUM && reg != ARG_POINTER_REGNUM
 	     && reg != RETURN_ADDRESS_POINTER_REGNUM
-	     && reg != T_REG && reg != GBR_REG)
+	     && reg != T_REG && reg != GBR_REG
+	     /* Push fpscr only on targets which have FPU */
+	     && (reg != FPSCR_REG || TARGET_FPU_ANY))
 	  : (/* Only push those regs which are used and need to be saved.  */
 	     (TARGET_SHCOMPACT
 	      && flag_pic
