@@ -3556,63 +3556,61 @@ initializer_constant_valid_p (tree value, tree endtype)
 
     case CONVERT_EXPR:
     case NOP_EXPR:
-      /* Allow conversions between pointer types.  */
-      if (POINTER_TYPE_P (TREE_TYPE (value))
-	  && POINTER_TYPE_P (TREE_TYPE (TREE_OPERAND (value, 0))))
-	return initializer_constant_valid_p (TREE_OPERAND (value, 0), endtype);
+      {
+	tree src;
+	tree src_type;
+	tree dest_type;
 
-      /* Allow conversions between real types.  */
-      if (FLOAT_TYPE_P (TREE_TYPE (value))
-	  && FLOAT_TYPE_P (TREE_TYPE (TREE_OPERAND (value, 0))))
-	return initializer_constant_valid_p (TREE_OPERAND (value, 0), endtype);
+	src = TREE_OPERAND (value, 0);
+	src_type = TREE_TYPE (src);
+	dest_type = TREE_TYPE (value);
 
-      /* Allow length-preserving conversions between integer types.  */
-      if (INTEGRAL_TYPE_P (TREE_TYPE (value))
-	  && INTEGRAL_TYPE_P (TREE_TYPE (TREE_OPERAND (value, 0)))
-	  && (TYPE_PRECISION (TREE_TYPE (value))
-	      == TYPE_PRECISION (TREE_TYPE (TREE_OPERAND (value, 0)))))
-	return initializer_constant_valid_p (TREE_OPERAND (value, 0), endtype);
+	/* Allow conversions between pointer types, floating-point
+	   types, and offset types.  */
+	if ((POINTER_TYPE_P (dest_type) && POINTER_TYPE_P (src_type))
+	    || (FLOAT_TYPE_P (dest_type) && FLOAT_TYPE_P (src_type))
+	    || (TREE_CODE (dest_type) == OFFSET_TYPE
+		&& TREE_CODE (src_type) == OFFSET_TYPE))
+	  return initializer_constant_valid_p (src, endtype);
 
-      /* Allow conversions between other integer types only if
-	 explicit value.  */
-      if (INTEGRAL_TYPE_P (TREE_TYPE (value))
-	  && INTEGRAL_TYPE_P (TREE_TYPE (TREE_OPERAND (value, 0))))
-	{
-	  tree inner = initializer_constant_valid_p (TREE_OPERAND (value, 0),
-						     endtype);
-	  if (inner == null_pointer_node)
-	    return null_pointer_node;
-	  break;
-	}
+	/* Allow length-preserving conversions between integer types.  */
+	if (INTEGRAL_TYPE_P (dest_type) && INTEGRAL_TYPE_P (src_type)
+	    && (TYPE_PRECISION (dest_type) == TYPE_PRECISION (src_type)))
+	  return initializer_constant_valid_p (src, endtype);
 
-      /* Allow (int) &foo provided int is as wide as a pointer.  */
-      if (INTEGRAL_TYPE_P (TREE_TYPE (value))
-	  && POINTER_TYPE_P (TREE_TYPE (TREE_OPERAND (value, 0)))
-	  && (TYPE_PRECISION (TREE_TYPE (value))
-	      >= TYPE_PRECISION (TREE_TYPE (TREE_OPERAND (value, 0)))))
-	return initializer_constant_valid_p (TREE_OPERAND (value, 0),
-					     endtype);
+	/* Allow conversions between other integer types only if
+	   explicit value.  */
+	if (INTEGRAL_TYPE_P (dest_type) && INTEGRAL_TYPE_P (src_type))
+	  {
+	    tree inner = initializer_constant_valid_p (src, endtype);
+	    if (inner == null_pointer_node)
+	      return null_pointer_node;
+	    break;
+	  }
 
-      /* Likewise conversions from int to pointers, but also allow
-	 conversions from 0.  */
-      if ((POINTER_TYPE_P (TREE_TYPE (value))
-	   || TREE_CODE (TREE_TYPE (value)) == OFFSET_TYPE)
-	  && INTEGRAL_TYPE_P (TREE_TYPE (TREE_OPERAND (value, 0))))
-	{
-	  if (integer_zerop (TREE_OPERAND (value, 0)))
-	    return null_pointer_node;
-	  else if (TYPE_PRECISION (TREE_TYPE (value))
-		   <= TYPE_PRECISION (TREE_TYPE (TREE_OPERAND (value, 0))))
-	    return initializer_constant_valid_p (TREE_OPERAND (value, 0),
-						 endtype);
-	}
+	/* Allow (int) &foo provided int is as wide as a pointer.  */
+	if (INTEGRAL_TYPE_P (dest_type) && POINTER_TYPE_P (src_type)
+	    && (TYPE_PRECISION (dest_type) >= TYPE_PRECISION (src_type)))
+	  return initializer_constant_valid_p (src, endtype);
 
-      /* Allow conversions to struct or union types if the value
-	 inside is okay.  */
-      if (TREE_CODE (TREE_TYPE (value)) == RECORD_TYPE
-	  || TREE_CODE (TREE_TYPE (value)) == UNION_TYPE)
-	return initializer_constant_valid_p (TREE_OPERAND (value, 0),
-					     endtype);
+	/* Likewise conversions from int to pointers, but also allow
+	   conversions from 0.  */
+	if ((POINTER_TYPE_P (dest_type)
+	     || TREE_CODE (dest_type) == OFFSET_TYPE)
+	    && INTEGRAL_TYPE_P (src_type))
+	  {
+	    if (integer_zerop (src))
+	      return null_pointer_node;
+	    else if (TYPE_PRECISION (dest_type) <= TYPE_PRECISION (src_type))
+	      return initializer_constant_valid_p (src, endtype);
+	  }
+
+	/* Allow conversions to struct or union types if the value
+	   inside is okay.  */
+	if (TREE_CODE (dest_type) == RECORD_TYPE
+	    || TREE_CODE (dest_type) == UNION_TYPE)
+	  return initializer_constant_valid_p (src, endtype);
+      }
       break;
 
     case PLUS_EXPR:

@@ -1,3 +1,9 @@
+2005-03-02  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/19916
+	* varasm.c (initializer_constant_valid_p): Allow conversions
+	between OFFSET_TYPEs.  Tidy.
+
 2005-02-28  John David Anglin  <dave.anglin#nrc-cnrc.gc.ca>
 
 	PR target/19819
