@@ -208,7 +208,7 @@ may_unswitch_on (basic_block bb, struct loop *loop, rtx *cinsn)
 	continue;
 
       insn = iv_get_reaching_def (at, op[i]);
-      if (!iv_analyse (insn, op[i], &iv))
+      if (!iv_analyze (insn, op[i], &iv))
 	return NULL_RTX;
       if (iv.step != const0_rtx
 	  || iv.first_special)

@@ -41,7 +41,7 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 
    iv_analysis_loop_init (loop);
    insn = iv_get_reaching_def (where, reg);
-   if (iv_analyse (insn, reg, &iv))
+   if (iv_analyze (insn, reg, &iv))
      {
        ...
      }
@@ -781,7 +781,7 @@ get_biv_step (rtx reg, rtx *inner_step, enum machine_mode *inner_mode,
    to *IV.  */
 
 static bool
-iv_analyse_biv (rtx def, struct rtx_iv *iv)
+iv_analyze_biv (rtx def, struct rtx_iv *iv)
 {
   unsigned regno;
   rtx inner_step, outer_step;
@@ -865,7 +865,7 @@ end:
 /* Analyses operand OP of INSN and stores the result to *IV.  */
 
 static bool
-iv_analyse_op (rtx insn, rtx op, struct rtx_iv *iv)
+iv_analyze_op (rtx insn, rtx op, struct rtx_iv *iv)
 {
   rtx def_insn;
   unsigned regno;
@@ -884,7 +884,7 @@ iv_analyse_op (rtx insn, rtx op, struct rtx_iv *iv)
       if (!subreg_lowpart_p (op))
 	return false;
 
-      if (!iv_analyse_op (insn, SUBREG_REG (op), iv))
+      if (!iv_analyze_op (insn, SUBREG_REG (op), iv))
 	return false;
 
       return iv_subreg (iv, GET_MODE (op));
@@ -924,13 +924,13 @@ iv_analyse_op (rtx insn, rtx op, struct rtx_iv *iv)
       return false;
     }
 
-  return iv_analyse (def_insn, op, iv);
+  return iv_analyze (def_insn, op, iv);
 }
 
 /* Analyses iv DEF defined in INSN and stores the result to *IV.  */
 
 bool
-iv_analyse (rtx insn, rtx def, struct rtx_iv *iv)
+iv_analyze (rtx insn, rtx def, struct rtx_iv *iv)
 {
   unsigned uid;
   rtx set, rhs, mby = NULL_RTX, tmp;
@@ -947,14 +947,14 @@ iv_analyse (rtx insn, rtx def, struct rtx_iv *iv)
       if (!subreg_lowpart_p (def))
 	return false;
 
-      if (!iv_analyse (insn, SUBREG_REG (def), iv))
+      if (!iv_analyze (insn, SUBREG_REG (def), iv))
 	return false;
 
       return iv_subreg (iv, GET_MODE (def));
     }
 
   if (!insn)
-    return iv_analyse_biv (def, iv);
+    return iv_analyze_biv (def, iv);
 
   if (rtl_dump_file)
     {
@@ -1036,7 +1036,7 @@ iv_analyse (rtx insn, rtx def, struct rtx_iv *iv)
 
   if (op0)
     {
-      if (!iv_analyse_op (insn, op0, &iv0))
+      if (!iv_analyze_op (insn, op0, &iv0))
 	goto end;
 	
       if (iv0.mode == VOIDmode)
@@ -1048,7 +1048,7 @@ iv_analyse (rtx insn, rtx def, struct rtx_iv *iv)
 
   if (op1)
     {
-      if (!iv_analyse_op (insn, op1, &iv1))
+      if (!iv_analyze_op (insn, op1, &iv1))
 	goto end;
 
       if (iv1.mode == VOIDmode)
@@ -1911,14 +1911,14 @@ iv_number_of_iterations (struct loop *loop, rtx insn, rtx condition,
 
   op0 = XEXP (condition, 0);
   def_insn = iv_get_reaching_def (insn, op0);
-  if (!iv_analyse (def_insn, op0, &iv0))
+  if (!iv_analyze (def_insn, op0, &iv0))
     goto fail;
   if (iv0.extend_mode == VOIDmode)
     iv0.mode = iv0.extend_mode = mode;
   
   op1 = XEXP (condition, 1);
   def_insn = iv_get_reaching_def (insn, op1);
-  if (!iv_analyse (def_insn, op1, &iv1))
+  if (!iv_analyze (def_insn, op1, &iv1))
     goto fail;
   if (iv1.extend_mode == VOIDmode)
     iv1.mode = iv1.extend_mode = mode;
