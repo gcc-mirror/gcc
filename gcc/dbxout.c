@@ -2157,12 +2157,12 @@ dbxout_parms (parms)
 		best_rtl = DECL_RTL (parms);
 		parm_type = TREE_TYPE (parms);
 	      }
-	    /* If the parm lives nowhere,
-	       use the register where it was passed.  */
+	    /* If the parm lives nowhere, use the register where it was
+	       passed.  It is also better to use the declared type here.  */
 	    else
 	      {
 		best_rtl = DECL_INCOMING_RTL (parms);
-		parm_type = DECL_ARG_TYPE (parms);
+		parm_type = TREE_TYPE (parms);
 	      }
 	    current_sym_value = DBX_REGISTER_NUMBER (REGNO (best_rtl));
 
