@@ -1,6 +1,6 @@
 // -*- C++ -*- C forwarding header.
 
-// Copyright (C) 1997, 1998, 1999, 2000, 2001, 2002, 2003
+// Copyright (C) 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2005
 // Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
@@ -510,80 +510,62 @@ namespace __gnu_cxx
 #undef islessequal
 #undef islessgreater
 #undef isunordered
-#endif /* _GLIBCXX_USE_C99_FP_MACROS_DYNAMIC */
-#endif
 
-#if _GLIBCXX_USE_C99_MATH
-#if !_GLIBCXX_USE_C99_FP_MACROS_DYNAMIC
-namespace __gnu_cxx
+namespace std
 {
   template<typename _Tp>
     int
-    fpclassify(_Tp __f) { return __capture_fpclassify(__f); }
+    fpclassify(_Tp __f) { return __gnu_cxx::__capture_fpclassify(__f); }
 
   template<typename _Tp>
     int
-    isfinite(_Tp __f) { return __capture_isfinite(__f); }
+    isfinite(_Tp __f) { return __gnu_cxx::__capture_isfinite(__f); }
 
   template<typename _Tp>
     int
-    isinf(_Tp __f) { return __capture_isinf(__f); }
+    isinf(_Tp __f) { return __gnu_cxx::__capture_isinf(__f); }
 
   template<typename _Tp>
     int
-    isnan(_Tp __f) { return __capture_isnan(__f); }
+    isnan(_Tp __f) { return __gnu_cxx::__capture_isnan(__f); }
 
   template<typename _Tp>
     int
-    isnormal(_Tp __f) { return __capture_isnormal(__f); }
+    isnormal(_Tp __f) { return __gnu_cxx::__capture_isnormal(__f); }
 
   template<typename _Tp>
     int
-    signbit(_Tp __f) { return __capture_signbit(__f); }
+    signbit(_Tp __f) { return __gnu_cxx::__capture_signbit(__f); }
 
   template<typename _Tp>
     int
-    isgreater(_Tp __f1, _Tp __f2) { return __capture_isgreater(__f1, __f2); }
+    isgreater(_Tp __f1, _Tp __f2)
+    { return __gnu_cxx::__capture_isgreater(__f1, __f2); }
 
   template<typename _Tp>
     int
     isgreaterequal(_Tp __f1, _Tp __f2)
-    { return __capture_isgreaterequal(__f1, __f2); }
+    { return __gnu_cxx::__capture_isgreaterequal(__f1, __f2); }
 
   template<typename _Tp>
     int
-    isless(_Tp __f1, _Tp __f2) { return __capture_isless(__f1, __f2); }
+    isless(_Tp __f1, _Tp __f2)
+    { return __gnu_cxx::__capture_isless(__f1, __f2); }
 
   template<typename _Tp>
     int
     islessequal(_Tp __f1, _Tp __f2)
-    { return __capture_islessequal(__f1, __f2); }
+    { return __gnu_cxx::__capture_islessequal(__f1, __f2); }
 
   template<typename _Tp>
     int
     islessgreater(_Tp __f1, _Tp __f2)
-    { return __capture_islessgreater(__f1, __f2); }
+    { return __gnu_cxx::__capture_islessgreater(__f1, __f2); }
 
   template<typename _Tp>
     int
     isunordered(_Tp __f1, _Tp __f2)
-    { return __capture_isunordered(__f1, __f2); }
-}
-
-namespace std
-{
-  using __gnu_cxx::fpclassify;
-  using __gnu_cxx::isfinite;
-  using __gnu_cxx::isinf;
-  using __gnu_cxx::isnan;
-  using __gnu_cxx::isnormal;
-  using __gnu_cxx::signbit;
-  using __gnu_cxx::isgreater;
-  using __gnu_cxx::isgreaterequal;
-  using __gnu_cxx::isless;
-  using __gnu_cxx::islessequal;
-  using __gnu_cxx::islessgreater;
-  using __gnu_cxx::isunordered;
+    { return __gnu_cxx::__capture_isunordered(__f1, __f2); }
 }
 #endif /* _GLIBCXX_USE_C99_FP_MACROS_DYNAMIC */
 #endif
