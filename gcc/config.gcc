@@ -270,6 +270,13 @@ if test -f ${srcdir}/config/${cpu_type}/${cpu_type}-protos.h
 then
 	tm_p_file=${cpu_type}/${cpu_type}-protos.h
 fi
+
+case $machine in
+x86_64-*-*)
+	tm_file="i386/biarch64.h ${tm_file}"
+	;;
+esac
+
 # On a.out targets, we need to use collect2.
 case $machine in
 *-*-*aout*)
@@ -1127,7 +1134,10 @@ i[34567]86-*-freebsd[12] | i[34567]86-*-freebsd[12].* | i[34567]86-*-freebsd*aou
 	tmake_file=t-freebsd
 	;;
 i[34567]86-*-freebsd*)
-	tm_file="${tm_file} i386/att.h dbxelf.h elfos.h svr4.h ${fbsd_tm_file} i386/freebsd.h"
+	tm_file="${tm_file} i386/att.h dbxelf.h elfos.h ${fbsd_tm_file} i386/freebsd.h"
+	;;
+x86_64-*-freebsd*)
+	tm_file="${tm_file} i386/att.h dbxelf.h elfos.h ${fbsd_tm_file} i386/x86-64.h i386/freebsd.h i386/freebsd64.h"
 	;;
 i[34567]86-*-netbsdelf*)
 	tm_file="${tm_file} i386/att.h dbxelf.h elfos.h netbsd.h netbsd-elf.h i386/netbsd-elf.h"
@@ -1139,7 +1149,7 @@ i[34567]86-*-netbsd*)
 	use_collect2=yes
 	;;
 x86_64-*-netbsd*)
-	tm_file="i386/biarch64.h i386/i386.h i386/att.h dbxelf.h elfos.h netbsd.h netbsd-elf.h i386/x86-64.h i386/netbsd64.h"
+	tm_file="${tm_file} i386/att.h dbxelf.h elfos.h netbsd.h netbsd-elf.h i386/x86-64.h i386/netbsd64.h"
 	float_format=i386
 	;;
 i[34567]86-*-openbsd*)
@@ -1205,7 +1215,7 @@ i[34567]86-*-linux*)	# Intel 80386's running GNU/Linux
 	fi
 	;;
 x86_64-*-linux*)
-	tm_file="i386/biarch64.h i386/i386.h i386/att.h dbxelf.h elfos.h svr4.h linux.h \
+	tm_file="${tm_file} i386/att.h dbxelf.h elfos.h svr4.h linux.h \
 		 i386/x86-64.h i386/linux64.h"
 	tmake_file="t-slibgcc-elf-ver t-linux i386/t-crtstuff"
 	extra_parts="crtbegin.o crtbeginS.o crtbeginT.o crtend.o crtendS.o"
