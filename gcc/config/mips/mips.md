@@ -1945,11 +1945,6 @@ move\\t%0,%z4\\n\\
    (set_attr "mode"	"SF")
    (set_attr "length"	"1")])
 
-;; ??? This should be a define expand.
-;; See the zero_extendsidi2 pattern.
-;; ??? We tried define expands, but they did not work.  Too many shift
-;; instructions were optimized away.  Perhaps add combiner patterns to
-;; recognize cases where shifts and truncates can be combined.
 (define_insn "truncdisi2"
   [(set (match_operand:SI 0 "register_operand" "=d")
 	(truncate:SI (match_operand:DI 1 "register_operand" "d")))]
@@ -1976,6 +1971,78 @@ move\\t%0,%z4\\n\\
   [(set_attr "type"	"darith")
    (set_attr "mode"	"QI")
    (set_attr "length"	"1")])
+
+;; Combiner patterns to optimize shift/truncate combinations.
+(define_insn ""
+  [(set (match_operand:SI 0 "register_operand" "=d")
+	(truncate:SI (ashiftrt:DI (match_operand:DI 1 "register_operand" "d")
+				  (match_operand:DI 2 "small_int" "I"))))]
+  "TARGET_64BIT"
+  "*
+{
+  int shift_amt = INTVAL (operands[2]) & 0x3f;
+
+  if (shift_amt < 32)
+    {
+      operands[2] = GEN_INT (32 - shift_amt);
+      return \"dsll\\t%0,%1,%2\;dsra\\t%0,%0,32\";
+    }
+  else
+    {
+      operands[2] = GEN_INT (shift_amt);
+      return \"dsra\\t%0,%1,%2\";
+    }
+}"
+  [(set_attr "type"	"darith")
+   (set_attr "mode"	"SI")
+   (set_attr "length"	"2")])
+	
+(define_insn ""
+  [(set (match_operand:SI 0 "register_operand" "=d")
+	(truncate:SI (lshiftrt:DI (match_operand:DI 1 "register_operand" "d")
+				  (match_operand:DI 2 "small_int" "I"))))]
+  "TARGET_64BIT"
+  "*
+{
+  int shift_amt = INTVAL (operands[2]) & 0x3f;
+
+  if (shift_amt < 32)
+    {
+      operands[2] = GEN_INT (32 - shift_amt);
+      return \"dsll\\t%0,%1,%2\;dsra\\t%0,%0,32\";
+    }
+  else if (shift_amt == 32)
+    return \"dsra\\t%0,%1,32\";
+  else
+    {
+      operands[2] = GEN_INT (shift_amt);
+      return \"dsrl\\t%0,%1,%2\";
+    }
+}"
+  [(set_attr "type"	"darith")
+   (set_attr "mode"	"SI")
+   (set_attr "length"	"2")])
+
+(define_insn ""
+  [(set (match_operand:SI 0 "register_operand" "=d")
+	(truncate:SI (ashift:DI (match_operand:DI 1 "register_operand" "d")
+				(match_operand:DI 2 "small_int" "I"))))]
+  "TARGET_64BIT"
+  "*
+{
+  int shift_amt = INTVAL (operands[2]) & 0x3f;
+
+  if (shift_amt < 32)
+    {
+      operands[2] = GEN_INT (32 + shift_amt);
+      return \"dsll\\t%0,%1,%2\;dsra\\t%0,%0,32\";
+    }
+  else
+    return \"move\\t%0,%.\";
+}"
+  [(set_attr "type"	"darith")
+   (set_attr "mode"	"SI")
+   (set_attr "length"	"2")])
 
 ;;
 ;;  ....................
