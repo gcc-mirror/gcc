@@ -3150,8 +3150,6 @@ Predefined Macros,cpp.info,The C Preprocessor}).
 @menu
 * Naming Results::      Giving a name to C++ function return values.
 * Min and Max::		C++ Minimum and maximum operators.
-* Destructors and Goto:: Goto is safe to use in C++ even when destructors
-                           are needed.
 * C++ Interface::       You can use a single C++ header file for both
                          declarations and definitions.
 * Template Instantiation:: Methods for ensuring that exactly one copy of
@@ -3317,19 +3315,6 @@ write @w{@samp{int min = i <? j;}} instead.
 Since @code{<?} and @code{>?} are built into the compiler, they properly
 handle expressions with side-effects;  @w{@samp{int min = i++ <? j++;}}
 works correctly.
-
-@node Destructors and Goto
-@section @code{goto} and Destructors in GNU C++
-
-@cindex @code{goto} in C++
-@cindex destructors vs @code{goto}
-In C++ programs, you can safely use the @code{goto} statement.  When you
-use it to exit a block which contains aggregates requiring destructors,
-the destructors will run before the @code{goto} transfers control.
-
-@cindex constructors vs @code{goto}
-The compiler still forbids using @code{goto} to @emph{enter} a scope
-that requires constructors.
 
 @node C++ Interface
 @section Declarations and Definitions in One Header
