@@ -2396,6 +2396,38 @@ pop_namespace ()
   suspend_binding_level ();
 }
 
+/* Push into the scope of the namespace NS, even if it is deeply
+   nested within another namespace.  */
+
+void
+push_nested_namespace (ns)
+     tree ns;
+{
+  if (ns == global_namespace)
+    push_to_top_level ();
+  else
+    {
+      push_nested_namespace (CP_DECL_CONTEXT (ns));
+      push_namespace (DECL_NAME (ns));
+    }
+}
+
+/* Pop back from the scope of the namespace NS, which was previously
+   entered with push_nested_namespace.  */
+     
+void
+pop_nested_namespace (ns)
+     tree ns;
+{
+  while (ns != global_namespace)
+    {
+      pop_namespace ();
+      ns = CP_DECL_CONTEXT (ns);
+    }
+
+  pop_from_top_level ();
+}
+
 
 /* Subroutines for reverting temporarily to top-level for instantiation
    of templates and such.  We actually need to clear out the class- and

@@ -2781,6 +2781,8 @@ extern void print_binding_stack			PROTO((void));
 extern void print_binding_level			PROTO((struct binding_level *));
 extern void push_namespace			PROTO((tree));
 extern void pop_namespace			PROTO((void));
+extern void push_nested_namespace		PROTO((tree));
+extern void pop_nested_namespace		PROTO((tree));
 extern void maybe_push_to_top_level		PROTO((int));
 extern void push_to_top_level			PROTO((void));
 extern void pop_from_top_level			PROTO((void));
