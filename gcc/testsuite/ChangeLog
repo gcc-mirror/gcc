@@ -1,5 +1,30 @@
 2003-06-11  Janis Johnson  <janis187@us.ibm.com>
 
+	* gcc.dg/compat/struct-by-value-11_main.c: New file.
+	* gcc.dg/compat/struct-by-value-11_x.c: New file.
+	* gcc.dg/compat/struct-by-value-11_y.c: New file.
+	* gcc.dg/compat/struct-by-value-12_main.c: New file.
+	* gcc.dg/compat/struct-by-value-12_x.c: New file.
+	* gcc.dg/compat/struct-by-value-12_y.c: New file.
+	* gcc.dg/compat/struct-by-value-13_main.c: New file.
+	* gcc.dg/compat/struct-by-value-13_x.c: New file.
+	* gcc.dg/compat/struct-by-value-13_y.c: New file.
+	* gcc.dg/compat/struct-by-value-14_main.c: New file.
+	* gcc.dg/compat/struct-by-value-14_x.c: New file.
+	* gcc.dg/compat/struct-by-value-14_y.c: New file.
+	* gcc.dg/compat/struct-by-value-15_main.c: New file.
+	* gcc.dg/compat/struct-by-value-15_x.c: New file.
+	* gcc.dg/compat/struct-by-value-15_y.c: New file.
+	* gcc.dg/compat/struct-by-value-16_main.c: New file.
+	* gcc.dg/compat/struct-by-value-16_x.c: New file.
+	* gcc.dg/compat/struct-by-value-16_y.c: New file.
+	* gcc.dg/compat/struct-by-value-17_main.c: New file.
+	* gcc.dg/compat/struct-by-value-17_x.c: New file.
+	* gcc.dg/compat/struct-by-value-17_y.c: New file.
+	* gcc.dg/compat/struct-by-value-18_main.c: New file.
+	* gcc.dg/compat/struct-by-value-18_x.c: New file.
+	* gcc.dg/compat/struct-by-value-18_y.c: New file.
+
 	* gcc.dg/compat/scalar-by-value-3_main.c: New file.
 	* gcc.dg/compat/scalar-by-value-3_x.c: New file.
 	* gcc.dg/compat/scalar-by-value-3_y.c: New file.
