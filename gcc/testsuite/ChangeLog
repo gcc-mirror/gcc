@@ -1,3 +1,7 @@
+2003-01-10  Josef Zlomek  <zlomekj@suse.cz>
+
+	* gcc.c-torture/compile/20030110-1.c: New test.
+
 2003-01-09  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
 	* gcc.dg/old-style-asm-1.c: New test.
