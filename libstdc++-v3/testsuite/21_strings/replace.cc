@@ -52,7 +52,6 @@ bool test01(void)
   // template<typename InputIter>
   //   string& replace(iterator it1, iterator it2, InputIter j1, InputIter j2)
 
-#if 1
   // with mods, from tstring.cc, from jason merrill, et. al.
   std::string X = "Hello";
   std::string x = X;
@@ -75,7 +74,6 @@ bool test01(void)
 	    std::find(x.rbegin(), x.rend(), 'l').base(), ar, 
 	    ar + sizeof(ar) / sizeof(ar[0]));
   VERIFY( x == "jeHelloo" );
-#endif
 
 #ifdef DEBUG_ASSERT
   assert(test);
@@ -83,8 +81,24 @@ bool test01(void)
   return test;
 }
 
+void
+test02()
+{
+  const char* strlit = "../the long pier/Hanalei Bay/Kauai/Hawaii";
+  std::string aux = strlit;
+  aux.replace(aux.begin()+5, aux.begin()+20,
+	      aux.begin()+10, aux.begin()+15);
+  VERIFY(aux == "../thg piealei Bay/Kauai/Hawaii");
+  
+  aux = strlit;
+  aux.replace(aux.begin() + 10, aux.begin() + 15,
+	      aux.begin() + 5, aux.begin() + 20);
+  VERIFY(aux == "../the lone long pier/Hanr/Hanalei Bay/Kauai/Hawaii");
+}
+
 int main()
 { 
   test01();
+  test02();
   return 0;
 }

@@ -130,7 +130,7 @@ namespace std
   template<typename _CharT, typename _Traits, typename _Alloc>
     template <class _InIter>
       _CharT*
-      basic_string<_CharT,_Traits,_Alloc>::
+      basic_string<_CharT, _Traits, _Alloc>::
       _S_construct(_InIter __beg, _InIter __end, const _Alloc& __a, 
 		   forward_iterator_tag)
       {
@@ -156,7 +156,7 @@ namespace std
 
   template<typename _CharT, typename _Traits, typename _Alloc>
     _CharT*
-    basic_string<_CharT,_Traits, _Alloc>::
+    basic_string<_CharT, _Traits, _Alloc>::
     _S_construct(size_type __n, _CharT __c, const _Alloc& __a)
     {
       if (__n == 0 && __a == _Alloc())
@@ -446,18 +446,24 @@ namespace std
       _M_replace(iterator __i1, iterator __i2, _ForwardIter __k1, 
 		 _ForwardIter __k2, forward_iterator_tag)
       {
+	size_type __dnew = static_cast<size_type>(distance(__k1, __k2));
 	size_type __dold = __i2 - __i1;
 	size_type __dmax = this->max_size();
-	size_type __dnew = static_cast<size_type>(distance(__k1, __k2));
 
 	if (__dmax <= __dnew)
 	  __throw_length_error("basic_string::_M_replace");
 	size_type __off = __i1 - _M_ibegin();
+
+	// Save concerned source string data in a temporary.
+	basic_string __temp(__k1, __k2);
 	_M_mutate(__off, __dold, __dnew);
-	// Invalidated __i1, __i2
-	if (__dnew)
-	  _S_copy_chars(_M_data() + __off, __k1, __k2);
 	
+	// Invalidated __i1, __i2 (and clobbered original source string
+	// data when destination string == source string and the string
+	// is unshared).
+        if (__dnew)
+	  _S_copy_chars(_M_data() + __off, __temp.begin(), __temp.end());
+
 	return *this;
       }
 
@@ -473,8 +479,8 @@ namespace std
     }
 
   template<typename _CharT, typename _Traits, typename _Alloc>
-    basic_string<_CharT,_Traits,_Alloc>&
-    basic_string<_CharT,_Traits,_Alloc>::
+    basic_string<_CharT, _Traits, _Alloc>&
+    basic_string<_CharT, _Traits, _Alloc>::
     append(const basic_string& __str)
     {
       // Iff appending itself, string needs to pre-reserve the
@@ -489,8 +495,8 @@ namespace std
     }
 
   template<typename _CharT, typename _Traits, typename _Alloc>
-    basic_string<_CharT,_Traits,_Alloc>&
-    basic_string<_CharT,_Traits,_Alloc>::
+    basic_string<_CharT, _Traits, _Alloc>&
+    basic_string<_CharT, _Traits, _Alloc>::
     append(const basic_string& __str, size_type __pos, size_type __n)
     {
       // Iff appending itself, string needs to pre-reserve the
@@ -504,8 +510,8 @@ namespace std
     }
 
   template<typename _CharT, typename _Traits, typename _Alloc>
-    basic_string<_CharT,_Traits,_Alloc>&
-    basic_string<_CharT,_Traits,_Alloc>::
+    basic_string<_CharT, _Traits, _Alloc>&
+    basic_string<_CharT, _Traits, _Alloc>::
     append(const _CharT* __s, size_type __n)
     {
       size_type __len = __n + this->size();
@@ -515,8 +521,8 @@ namespace std
     }
 
   template<typename _CharT, typename _Traits, typename _Alloc>
-    basic_string<_CharT,_Traits,_Alloc>&
-    basic_string<_CharT,_Traits,_Alloc>::
+    basic_string<_CharT, _Traits, _Alloc>&
+    basic_string<_CharT, _Traits, _Alloc>::
     append(size_type __n, _CharT __c)
     {
       size_type __len = __n + this->size();
@@ -526,11 +532,11 @@ namespace std
     }
 
   template<typename _CharT, typename _Traits, typename _Alloc>
-    basic_string<_CharT,_Traits,_Alloc>
+    basic_string<_CharT, _Traits, _Alloc>
     operator+(const _CharT* __lhs,
-             const basic_string<_CharT,_Traits,_Alloc>& __rhs)
+	      const basic_string<_CharT, _Traits, _Alloc>& __rhs)
     {
-      typedef basic_string<_CharT,_Traits,_Alloc> __string_type;
+      typedef basic_string<_CharT, _Traits, _Alloc> __string_type;
       typedef typename __string_type::size_type	  __size_type;
       __size_type __len = _Traits::length(__lhs);
       __string_type __str;
@@ -541,10 +547,10 @@ namespace std
     }
 
   template<typename _CharT, typename _Traits, typename _Alloc>
-    basic_string<_CharT,_Traits,_Alloc>
-    operator+(_CharT __lhs, const basic_string<_CharT,_Traits,_Alloc>& __rhs)
+    basic_string<_CharT, _Traits, _Alloc>
+    operator+(_CharT __lhs, const basic_string<_CharT, _Traits, _Alloc>& __rhs)
     {
-      typedef basic_string<_CharT,_Traits,_Alloc> __string_type;
+      typedef basic_string<_CharT, _Traits, _Alloc> __string_type;
       typedef typename __string_type::size_type	  __size_type;
       __string_type __str;
       __size_type __len = __rhs.size();
@@ -627,7 +633,7 @@ namespace std
       size_type __size = this->size();
       if (__n <= __size)
 	{
-	  __pos = std::min(__size - __n ,__pos);
+	  __pos = std::min(__size - __n, __pos);
 	  const _CharT* __data = _M_data();
 	  do 
 	    {
@@ -811,7 +817,7 @@ namespace std
 
   template<typename _CharT, typename _Traits, typename _Alloc>
     int
-    basic_string <_CharT,_Traits,_Alloc>::
+    basic_string <_CharT, _Traits, _Alloc>::
     compare(size_type __pos, size_type __n1, const _CharT* __s) const
     {
       size_type __size = this->size();
@@ -829,7 +835,7 @@ namespace std
 
   template<typename _CharT, typename _Traits, typename _Alloc>
     int
-    basic_string <_CharT,_Traits,_Alloc>::
+    basic_string <_CharT, _Traits, _Alloc>::
     compare(size_type __pos, size_type __n1, const _CharT* __s, 
 	    size_type __n2) const
     {

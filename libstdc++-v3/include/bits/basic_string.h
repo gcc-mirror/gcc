@@ -40,7 +40,6 @@
 
 namespace std
 {
-
   // Documentation?  What's that? 
   // Nathan Myers <ncm@cantrip.org>.
   //
@@ -284,7 +283,7 @@ namespace std
         _S_copy_chars(_CharT* __p, _Iterator __k1, _Iterator __k2)
         { 
 	  for (; __k1 != __k2; ++__k1, ++__p) 
-	    traits_type::assign(*__p, *__k1); //these types are off
+	    traits_type::assign(*__p, *__k1); // These types are off.
 	}
 
       static void
@@ -337,7 +336,7 @@ namespace std
       basic_string(size_type __n, _CharT __c, const _Alloc& __a = _Alloc());
 
       template<class _InputIterator>
-        basic_string(_InputIterator __begin, _InputIterator __end,
+        basic_string(_InputIterator __beg, _InputIterator __end,
 		     const _Alloc& __a = _Alloc());
 
       ~basic_string() 
