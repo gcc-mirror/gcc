@@ -129,6 +129,9 @@ Boston, MA 02111-1307, USA.  */
 
 #undef MACHINE_TYPE
 #define MACHINE_TYPE "SGI running IRIX 5.x"
+
+ /* Dollar signs are OK in Irix5 but not in Irix3.  */
+#undef DOLLARS_IN_IDENTIFIERS
 #undef NO_DOLLAR_IN_LABEL
 
 /* -G is incompatible with -KPIC which is the default, so only allow objects
