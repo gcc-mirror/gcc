@@ -1,3 +1,8 @@
+2003-07-31  Vladimir Makarov  <vmakarov@redhat.com>
+
+        * sched-deps.c (sched_analyze_2): Prevent interblock move of CC0
+        setter.
+
 2003-07-30  Roger Sayle  <roger@eyesopen.com>
 
 	* builtins.def: Alphabetize.

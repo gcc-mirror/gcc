@@ -625,6 +625,9 @@ sched_analyze_2 (struct deps *deps, rtx x, rtx insn)
     case CC0:
       /* User of CC0 depends on immediately preceding insn.  */
       set_sched_group_p (insn);
+       /* Don't move CC0 setter to another block (it can set up the
+        same flag for previous CC0 users which is safe).  */
+      CANT_MOVE (prev_nonnote_insn (insn)) = 1;
       return;
 #endif
 
