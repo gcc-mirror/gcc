@@ -1794,6 +1794,135 @@
   "
 { operands[1] = gen_compare_reg (LEU, sparc_compare_op0, sparc_compare_op1);
 }")
+
+(define_expand "bunordered"
+  [(set (pc)
+	(if_then_else (unordered (match_dup 1) (const_int 0))
+		      (label_ref (match_operand 0 "" ""))
+		      (pc)))]
+  ""
+  "
+{
+  if (GET_MODE (sparc_compare_op0) == TFmode
+      && TARGET_ARCH64 && ! TARGET_HARD_QUAD)
+    {
+      sparc_emit_float_lib_cmp (sparc_compare_op0, sparc_compare_op1,
+				UNORDERED);
+      emit_jump_insn (gen_bne (operands[0]));
+      DONE;
+    }
+  operands[1] = gen_compare_reg (UNORDERED, sparc_compare_op0,
+				 sparc_compare_op1);
+}")
+
+(define_expand "bordered"
+  [(set (pc)
+	(if_then_else (ordered (match_dup 1) (const_int 0))
+		      (label_ref (match_operand 0 "" ""))
+		      (pc)))]
+  ""
+  "
+{
+  if (GET_MODE (sparc_compare_op0) == TFmode
+      && TARGET_ARCH64 && ! TARGET_HARD_QUAD)
+    {
+      sparc_emit_float_lib_cmp (sparc_compare_op0, sparc_compare_op1, ORDERED);
+      emit_jump_insn (gen_bne (operands[0]));
+      DONE;
+    }
+  operands[1] = gen_compare_reg (ORDERED, sparc_compare_op0,
+				 sparc_compare_op1);
+}")
+
+(define_expand "bungt"
+  [(set (pc)
+	(if_then_else (ungt (match_dup 1) (const_int 0))
+		      (label_ref (match_operand 0 "" ""))
+		      (pc)))]
+  ""
+  "
+{
+  if (GET_MODE (sparc_compare_op0) == TFmode
+      && TARGET_ARCH64 && ! TARGET_HARD_QUAD)
+    {
+      sparc_emit_float_lib_cmp (sparc_compare_op0, sparc_compare_op1, UNGT);
+      emit_jump_insn (gen_bne (operands[0]));
+      DONE;
+    }
+  operands[1] = gen_compare_reg (UNGT, sparc_compare_op0, sparc_compare_op1);
+}")
+
+(define_expand "bunlt"
+  [(set (pc)
+	(if_then_else (unlt (match_dup 1) (const_int 0))
+		      (label_ref (match_operand 0 "" ""))
+		      (pc)))]
+  ""
+  "
+{
+  if (GET_MODE (sparc_compare_op0) == TFmode
+      && TARGET_ARCH64 && ! TARGET_HARD_QUAD)
+    {
+      sparc_emit_float_lib_cmp (sparc_compare_op0, sparc_compare_op1, UNLT);
+      emit_jump_insn (gen_bne (operands[0]));
+      DONE;
+    }
+  operands[1] = gen_compare_reg (UNLT, sparc_compare_op0, sparc_compare_op1);
+}")
+
+(define_expand "buneq"
+  [(set (pc)
+	(if_then_else (uneq (match_dup 1) (const_int 0))
+		      (label_ref (match_operand 0 "" ""))
+		      (pc)))]
+  ""
+  "
+{
+  if (GET_MODE (sparc_compare_op0) == TFmode
+      && TARGET_ARCH64 && ! TARGET_HARD_QUAD)
+    {
+      sparc_emit_float_lib_cmp (sparc_compare_op0, sparc_compare_op1, UNEQ);
+      emit_jump_insn (gen_bne (operands[0]));
+      DONE;
+    }
+  operands[1] = gen_compare_reg (UNEQ, sparc_compare_op0, sparc_compare_op1);
+}")
+
+(define_expand "bunge"
+  [(set (pc)
+	(if_then_else (unge (match_dup 1) (const_int 0))
+		      (label_ref (match_operand 0 "" ""))
+		      (pc)))]
+  ""
+  "
+{
+  if (GET_MODE (sparc_compare_op0) == TFmode
+      && TARGET_ARCH64 && ! TARGET_HARD_QUAD)
+    {
+      sparc_emit_float_lib_cmp (sparc_compare_op0, sparc_compare_op1, UNGE);
+      emit_jump_insn (gen_bne (operands[0]));
+      DONE;
+    }
+  operands[1] = gen_compare_reg (UNGE, sparc_compare_op0, sparc_compare_op1);
+}")
+
+(define_expand "bunle"
+  [(set (pc)
+	(if_then_else (unle (match_dup 1) (const_int 0))
+		      (label_ref (match_operand 0 "" ""))
+		      (pc)))]
+  ""
+  "
+{
+  if (GET_MODE (sparc_compare_op0) == TFmode
+      && TARGET_ARCH64 && ! TARGET_HARD_QUAD)
+    {
+      sparc_emit_float_lib_cmp (sparc_compare_op0, sparc_compare_op1, UNLE);
+      emit_jump_insn (gen_bne (operands[0]));
+      DONE;
+    }
+  operands[1] = gen_compare_reg (UNLE, sparc_compare_op0, sparc_compare_op1);
+}")
 
 ;; Now match both normal and inverted jump.
 
