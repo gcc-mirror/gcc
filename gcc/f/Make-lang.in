@@ -22,7 +22,6 @@
 # Each language makefile fragment must provide the following targets:
 #
 # foo.all.build, foo.all.cross, foo.start.encap, foo.rest.encap,
-# foo.info, foo.dvi,
 # foo.install-normal, foo.install-common, foo.install-info, foo.install-man,
 # foo.uninstall,
 # foo.mostlyclean, foo.clean, foo.distclean, foo.extraclean,
@@ -149,9 +148,9 @@ f77.rest.encap:
 f77.tags: force
 	cd $(srcdir)/f; etags *.c *.h
 
-f77.info: $(srcdir)/f/g77.info
-f77.dvi: f/g77.dvi
-f77.generated-manpages: $(srcdir)/f/g77.1
+info:: $(srcdir)/f/g77.info
+dvi:: f/g77.dvi
+generated-manpages:: $(srcdir)/f/g77.1
 
 # g77 documentation.
 $(srcdir)/f/g77.info: $(srcdir)/f/g77.texi $(srcdir)/f/bugs.texi \

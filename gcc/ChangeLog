@@ -1,3 +1,18 @@
+2003-10-06  Mark Mitchell  <mark@codesourcery.com>
+
+	PR bootstrap/12512
+	* Makefile.in (info): Use double-colon rules.
+	(dvi): Likewise.
+	(generated-manpages): Likewise.
+	* configure.in: Do not create lang.info, lang.dvi, or
+	lang.generated-manpages hooks.
+	* configure: Regenerated.
+	* objc/Make-lang.in (objc.info): Remove.
+	(objc.dvi): Remove.
+	(objc.generated-manpages): Remove.
+	* doc/sourcebuild.texi: Update description of info, dvi, and
+	generated-manpages hooks.
+
 2003-10-06  Richard Sandiford  <rsandifo@redhat.com>
 
 	* config/mips/mips.md: Merge mips16 lw/srl pattern with its splitter.
@@ -57,6 +72,7 @@
 	* config/mn10300/mn10300.md: Likewise.
 	* config/sh/sh.h: Likewise.
 
+>>>>>>> 2.1294
 2003-10-05  Richard Henderson  <rth@redhat.com>
 
 	* tree-inline.c (remap_type): New.

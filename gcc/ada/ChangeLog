@@ -1,3 +1,10 @@
+2003-10-06  Mark Mitchell  <mark@codesourcery.com>
+
+	* Make-lang.in (ada.info): Replace with ...
+	(info): ... this.
+	(ada.dvi): Replace with ...
+	(dvi): ... this.
+
 2003-09-29  Zack Weinberg  <zack@codesourcery.com>
 
 	* trans.c (gigi): Use REAL_ARITHMETIC, not REAL_VALUE_ATOF, to

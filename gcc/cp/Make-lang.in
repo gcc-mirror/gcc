@@ -23,7 +23,6 @@
 # Each language makefile fragment must provide the following targets:
 #
 # foo.all.build, foo.all.cross, foo.start.encap, foo.rest.encap,
-# foo.info, foo.dvi,
 # foo.install-normal, foo.install-common, foo.install-info, foo.install-man,
 # foo.uninstall,
 # foo.mostlyclean, foo.clean, foo.distclean, foo.extraclean,
@@ -117,9 +116,7 @@ c++.rest.encap:
 c++.tags: force
 	cd $(srcdir)/cp; etags *.c *.h
 
-c++.info: 
-c++.dvi:
-c++.generated-manpages: cp/g++.1
+generated-manpages:: cp/g++.1
 
 #
 # Install hooks:
