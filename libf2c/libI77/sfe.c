@@ -35,5 +35,6 @@ integer e_wsfe(Void)
 
 integer e_wdfe(Void)
 {
+	f__init = 1;
 	return en_fio();
 }
