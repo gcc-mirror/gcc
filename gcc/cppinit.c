@@ -370,85 +370,51 @@ merge_include_chains (pfile)
 
 /* Sets internal flags correctly for a given language, and defines
    macros if necessary.  */
+
+struct lang_flags
+{
+  char c99;
+  char objc;
+  char cplusplus;
+  char extended_numbers;
+  char trigraphs;
+  char dollars_in_ident;
+  char cplusplus_comments;
+  char digraphs;
+};
+
+/* ??? Enable $ in identifiers in assembly? */
+static const struct lang_flags lang_defaults[] =
+{ /*              c99 objc c++ xnum trig dollar c++comm digr  */
+  /* GNUC89 */  { 0,  0,   0,  1,   0,   1,     1,      1     },
+  /* GNUC99 */  { 1,  0,   0,  1,   0,   1,     1,      1     },
+  /* STDC89 */  { 0,  0,   0,  0,   1,   0,     0,      0     },
+  /* STDC94 */  { 0,  0,   0,  0,   1,   0,     0,      1     },
+  /* STDC99 */  { 1,  0,   0,  1,   1,   0,     1,      1     },
+  /* GNUCXX */  { 0,  0,   1,  1,   0,   1,     1,      1     },
+  /* CXX98  */  { 0,  0,   1,  1,   1,   0,     1,      1     },
+  /* OBJC   */  { 0,  1,   0,  1,   0,   1,     1,      1     },
+  /* OBJCXX */  { 0,  1,   1,  1,   0,   1,     1,      1     },
+  /* ASM    */  { 0,  0,   0,  1,   0,   0,     1,      0     }
+};
+
 static void
 set_lang (pfile, lang)
      cpp_reader *pfile;
      enum c_lang lang;
 {
-  /* Defaults.  */
+  const struct lang_flags *l = &lang_defaults[(int) lang];
+  
   CPP_OPTION (pfile, lang) = lang;
-  CPP_OPTION (pfile, objc) = 0;
-  CPP_OPTION (pfile, cplusplus) = 0;
-  CPP_OPTION (pfile, extended_numbers) = 1; /* Allowed in GNU C and C99.  */
 
-  switch (lang)
-    {
-      /* GNU C.  */
-    case CLK_GNUC99:
-      CPP_OPTION (pfile, trigraphs) = 0;
-      CPP_OPTION (pfile, dollars_in_ident) = 1;
-      CPP_OPTION (pfile, cplusplus_comments) = 1;
-      CPP_OPTION (pfile, digraphs) = 1;
-      CPP_OPTION (pfile, c99) = 1;
-      break;
-    case CLK_GNUC89:
-      CPP_OPTION (pfile, trigraphs) = 0;
-      CPP_OPTION (pfile, dollars_in_ident) = 1;
-      CPP_OPTION (pfile, cplusplus_comments) = 1;
-      CPP_OPTION (pfile, digraphs) = 1;
-      CPP_OPTION (pfile, c99) = 0;
-      break;
-
-      /* ISO C.  */
-    case CLK_STDC94:
-    case CLK_STDC89:
-      CPP_OPTION (pfile, trigraphs) = 1;
-      CPP_OPTION (pfile, dollars_in_ident) = 0;
-      CPP_OPTION (pfile, cplusplus_comments) = 0;
-      CPP_OPTION (pfile, digraphs) = lang == CLK_STDC94;
-      CPP_OPTION (pfile, c99) = 0;
-      CPP_OPTION (pfile, extended_numbers) = 0;
-      break;
-    case CLK_STDC99:
-      CPP_OPTION (pfile, trigraphs) = 1;
-      CPP_OPTION (pfile, dollars_in_ident) = 0;
-      CPP_OPTION (pfile, cplusplus_comments) = 1;
-      CPP_OPTION (pfile, digraphs) = 1;
-      CPP_OPTION (pfile, c99) = 1;
-      break;
-
-      /* Objective C.  */
-    case CLK_OBJCXX:
-      CPP_OPTION (pfile, cplusplus) = 1;
-    case CLK_OBJC:
-      CPP_OPTION (pfile, trigraphs) = 0;
-      CPP_OPTION (pfile, dollars_in_ident) = 1;
-      CPP_OPTION (pfile, cplusplus_comments) = 1;
-      CPP_OPTION (pfile, digraphs) = 1;
-      CPP_OPTION (pfile, c99) = 0;
-      CPP_OPTION (pfile, objc) = 1;
-      break;
-
-      /* C++.  */
-    case CLK_GNUCXX:
-    case CLK_CXX98:
-      CPP_OPTION (pfile, cplusplus) = 1;
-      CPP_OPTION (pfile, trigraphs) = lang == CLK_CXX98;
-      CPP_OPTION (pfile, dollars_in_ident) = lang == CLK_GNUCXX;
-      CPP_OPTION (pfile, cplusplus_comments) = 1;
-      CPP_OPTION (pfile, digraphs) = 1;
-      CPP_OPTION (pfile, c99) = 0;
-      break;
-
-      /* Assembler.  */
-    case CLK_ASM:
-      CPP_OPTION (pfile, trigraphs) = 0;
-      CPP_OPTION (pfile, dollars_in_ident) = 0;	/* Maybe not?  */
-      CPP_OPTION (pfile, cplusplus_comments) = 1;
-      CPP_OPTION (pfile, digraphs) = 0; 
-      CPP_OPTION (pfile, c99) = 0;
-      break;
-    }
+  CPP_OPTION (pfile, c99)		 = l->c99;
+  CPP_OPTION (pfile, objc)		 = l->objc;
+  CPP_OPTION (pfile, cplusplus)		 = l->cplusplus;
+  CPP_OPTION (pfile, extended_numbers)	 = l->extended_numbers;
+  CPP_OPTION (pfile, trigraphs)		 = l->trigraphs;
+  CPP_OPTION (pfile, dollars_in_ident)	 = l->dollars_in_ident;
+  CPP_OPTION (pfile, cplusplus_comments) = l->cplusplus_comments;
+  CPP_OPTION (pfile, digraphs)		 = l->digraphs;
 }
 
 #ifdef HOST_EBCDIC

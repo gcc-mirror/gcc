@@ -1,5 +1,11 @@
 2001-07-02  Zack Weinberg  <zackw@stanford.edu>
 
+	* cppinit.c (lang_defaults): New table.
+	(set_lang): Just read from lang_defaults into the live options
+	structure.
+
+2001-07-02  Zack Weinberg  <zackw@stanford.edu>
+
 	* Makefile.in (doc): Depend on $(GENERATED_MANPAGES).
 	* doc/.cvsignore: Add gcc.1, cpp.1, gcov.1.
 	* doc/gcc.1, doc/cpp.1, doc/gcov.1: Removed.
