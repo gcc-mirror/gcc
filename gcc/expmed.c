@@ -461,7 +461,9 @@ store_bit_field (rtx str_rtx, unsigned HOST_WIDE_INT bitsize,
 	 VOIDmode, because that is what store_field uses to indicate that this
 	 is a bit field, but passing VOIDmode to operand_subword_force will
 	 result in an abort.  */
-      fieldmode = smallest_mode_for_size (nwords * BITS_PER_WORD, MODE_INT);
+      fieldmode = GET_MODE (value);
+      if (fieldmode == VOIDmode)
+	fieldmode = smallest_mode_for_size (nwords * BITS_PER_WORD, MODE_INT);
 
       for (i = 0; i < nwords; i++)
 	{
@@ -477,10 +479,7 @@ store_bit_field (rtx str_rtx, unsigned HOST_WIDE_INT bitsize,
 	  store_bit_field (op0, MIN (BITS_PER_WORD,
 				     bitsize - i * BITS_PER_WORD),
 			   bitnum + bit_offset, word_mode,
-			   operand_subword_force (value, wordnum,
-						  (GET_MODE (value) == VOIDmode
-						   ? fieldmode
-						   : GET_MODE (value))),
+			   operand_subword_force (value, wordnum, fieldmode),
 			   total_size);
 	}
       return value;

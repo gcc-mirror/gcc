@@ -1,5 +1,10 @@
 2003-09-26  Richard Sandiford  <rsandifo@redhat.com>
 
+	* expmed.c (store_bit_field): Don't search for an integer mode
+	unless we need the result.
+
+2003-09-26  Richard Sandiford  <rsandifo@redhat.com>
+
 	* expr.c (emit_move_insn_1): If there is no move pattern for the
 	original mode, try using a pattern for the corresponding integer mode.
 
