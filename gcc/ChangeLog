@@ -1,3 +1,7 @@
+2003-01-24  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
+
+	* doc/passes.texi: Fix typo.
+
 2003-01-24  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
 	* pa.md (call_internal_reg, call_value_internal_reg): If TARGET_GAS and
