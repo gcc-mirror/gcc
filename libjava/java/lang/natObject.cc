@@ -1127,7 +1127,7 @@ retry:
   else
     {
       heavy_lock* hl = find_heavy(addr, he);
-      not_mine = hl ? (hl->si.mutex.owner != self) : true;
+      not_mine = hl ? _Jv_MutexCheckMonitor(&hl->si.mutex) : true;
     }
 
   release_set(&(he -> address), address);	// unlock hash entry
