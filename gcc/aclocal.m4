@@ -143,6 +143,7 @@ fi
 dnl We do special magic for INSTALL instead of AC_SUBST, to get
 dnl relative paths right.
 AC_MSG_RESULT($INSTALL)
+AC_SUBST(INSTALL)dnl
 
 # Use test -z because SunOS4 sh mishandles braces in ${var-val}.
 # It thinks the first close brace ends the variable substitution.
