@@ -607,20 +607,98 @@ gen_const_mem (enum machine_mode mode, rtx addr)
   return mem;
 }
 
+/* We want to create (subreg:OMODE (obj:IMODE) OFFSET).  Return true if
+   this construct would be valid, and false otherwise.  */
+
+bool
+validate_subreg (enum machine_mode omode, enum machine_mode imode,
+		 rtx reg, unsigned int offset)
+{
+  unsigned int isize = GET_MODE_SIZE (imode);
+  unsigned int osize = GET_MODE_SIZE (omode);
+
+  /* All subregs must be aligned.  */
+  if (offset % osize != 0)
+    return false;
+
+  /* The subreg offset cannot be outside the inner object.  */
+  if (offset >= isize)
+    return false;
+
+  /* ??? This should not be here.  Temporarily continue to allow word_mode
+     subregs of anything.  The most common offender is (subreg:SI (reg:DF)).
+     Generally, backends are doing something sketchy but it'll take time to
+     fix them all.  */
+  if (omode == word_mode)
+    ;
+  /* ??? Similarly, e.g. with (subreg:DF (reg:TI)).  Though store_bit_field
+     is the culprit here, and not the backends.  */
+  else if (osize >= UNITS_PER_WORD && isize >= osize)
+    ;
+  /* Allow component subregs of complex and vector.  Though given the below
+     extraction rules, it's not always clear what that means.  */
+  else if ((COMPLEX_MODE_P (imode) || VECTOR_MODE_P (imode))
+	   && GET_MODE_INNER (imode) == omode)
+    ;
+  /* ??? x86 sse code makes heavy use of *paradoxical* vector subregs,
+     i.e. (subreg:V4SF (reg:SF) 0).  This surely isn't the cleanest way to
+     represent this.  It's questionable if this ought to be represented at
+     all -- why can't this all be hidden in post-reload splitters that make
+     arbitrarily mode changes to the registers themselves.  */
+  else if (VECTOR_MODE_P (omode) && GET_MODE_INNER (omode) == imode)
+    ;
+  /* Subregs involving floating point modes are not allowed to
+     change size.  Therefore (subreg:DI (reg:DF) 0) is fine, but
+     (subreg:SI (reg:DF) 0) isn't.  */
+  else if (FLOAT_MODE_P (imode) || FLOAT_MODE_P (omode))
+    {
+      if (isize != osize)
+	return false;
+    }
+
+  /* Paradoxical subregs must have offset zero.  */
+  if (osize > isize)
+    return offset == 0;
+
+  /* This is a normal subreg.  Verify that the offset is representable.  */
+
+  /* For hard registers, we already have most of these rules collected in
+     subreg_offset_representable_p.  */
+  if (reg && REG_P (reg) && HARD_REGISTER_P (reg))
+    {
+      unsigned int regno = REGNO (reg);
+
+#ifdef CANNOT_CHANGE_MODE_CLASS
+      if ((COMPLEX_MODE_P (imode) || VECTOR_MODE_P (imode))
+	  && GET_MODE_INNER (imode) == omode)
+	;
+      else if (REG_CANNOT_CHANGE_MODE_P (regno, imode, omode))
+	return false;
+#endif
+
+      return subreg_offset_representable_p (regno, imode, offset, omode);
+    }
+
+  /* For pseudo registers, we want most of the same checks.  Namely:
+     If the register no larger than a word, the subreg must be lowpart.
+     If the register is larger than a word, the subreg must be the lowpart
+     of a subword.  A subreg does *not* perform arbitrary bit extraction.
+     Given that we've already checked mode/offset alignment, we only have
+     to check subword subregs here.  */
+  if (osize < UNITS_PER_WORD)
+    {
+      enum machine_mode wmode = isize > UNITS_PER_WORD ? word_mode : imode;
+      unsigned int low_off = subreg_lowpart_offset (omode, wmode);
+      if (offset % UNITS_PER_WORD != low_off)
+	return false;
+    }
+  return true;
+}
+
 rtx
 gen_rtx_SUBREG (enum machine_mode mode, rtx reg, int offset)
 {
-  /* This is the most common failure type.
-     Catch it early so we can see who does it.  */
-  gcc_assert (!(offset % GET_MODE_SIZE (mode)));
-
-  /* This check isn't usable right now because combine will
-     throw arbitrary crap like a CALL into a SUBREG in
-     gen_lowpart_for_combine so we must just eat it.  */
-#if 0
-  /* Check for this too.  */
-  gcc_assert (offset < GET_MODE_SIZE (GET_MODE (reg)));
-#endif
+  gcc_assert (validate_subreg (mode, GET_MODE (reg), reg, offset));
   return gen_rtx_raw_SUBREG (mode, reg, offset);
 }
 

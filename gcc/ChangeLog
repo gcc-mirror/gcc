@@ -1,5 +1,16 @@
 2004-11-23  Richard Henderson  <rth@redhat.com>
 
+	* rtl.h (validate_subreg): Declare.
+	* emit-rtl.c (validate_subreg): New.
+	(gen_rtx_SUBREG): Use it.
+	* simplify-rtx.c (simplify_subreg): Likewise.
+	(simplify_gen_subreg): Likewise.  Remove duplicate asserts.
+	* expr.c (emit_move_insn_1): Tidy complex move code.  Use memory
+	fallback whenever gen_realpart/gen_imagpart would not be able to
+	create SUBREGs.
+
+2004-11-23  Richard Henderson  <rth@redhat.com>
+
 	* expmed.c (extract_bit_field): Use simplify_gen_subreg instead of
 	hard-coding avoiding calls to gen_rtx_SUBREG.  Split complex return
 	modes to CONCAT.
