@@ -318,8 +318,8 @@ cpp_interpret_integer (pfile, token, type)
 
   result.low = 0;
   result.high = 0;
-  result.unsignedp = type & CPP_N_UNSIGNED;
-  result.overflow = 0;
+  result.unsignedp = !!(type & CPP_N_UNSIGNED);
+  result.overflow = false;
 
   p = token->val.str.text;
   end = p + token->val.str.len;
@@ -387,7 +387,7 @@ cpp_interpret_integer (pfile, token, type)
 	  if (base == 10)
 	    cpp_error (pfile, DL_WARNING,
 		       "integer constant is so large that it is unsigned");
-	  result.unsignedp = 1;
+	  result.unsignedp = true;
 	}
     }
 
@@ -409,7 +409,7 @@ append_digit (num, digit, base, precision)
 
   /* Multiply by 8 or 16.  Catching this overflow here means we don't
      need to worry about add_high overflowing.  */
-  overflow = num.high >> (PART_PRECISION - shift);
+  overflow = !!(num.high >> (PART_PRECISION - shift));
   result.high = num.high << shift;
   result.low = num.low << shift;
   result.high |= num.low >> (PART_PRECISION - shift);
@@ -507,9 +507,9 @@ parse_defined (pfile)
 
   pfile->state.prevent_expansion--;
 
-  result.unsignedp = 0;
+  result.unsignedp = false;
   result.high = 0;
-  result.overflow = 0;
+  result.overflow = false;
   result.low = node && node->type == NT_MACRO;
   return result;
 }
@@ -604,8 +604,8 @@ eval_token (pfile, token)
       result.low = temp;
     }
 
-  result.unsignedp = unsignedp;
-  result.overflow = 0;
+  result.unsignedp = !!unsignedp;
+  result.overflow = false;
   return result;
 }
 
