@@ -6566,23 +6566,6 @@ tsubst (tree t, tree args, tsubst_flags_t complain, tree in_decl)
 	if (!processing_template_decl)
 	  max = decl_constant_value (max);
 
-	if (processing_template_decl 
-	    /* When providing explicit arguments to a template
-	       function, but leaving some arguments for subsequent
-	       deduction, MAX may be template-dependent even if we're
-	       not PROCESSING_TEMPLATE_DECL.  We still need to check for
-	       template parms, though; MAX won't be an INTEGER_CST for
-	       dynamic arrays, either.  */
-	    || (TREE_CODE (max) != INTEGER_CST
-		&& uses_template_parms (max)))
-	  {
-	    tree itype = make_node (INTEGER_TYPE);
-	    TYPE_MIN_VALUE (itype) = size_zero_node;
-	    TYPE_MAX_VALUE (itype) = build_min (MINUS_EXPR, sizetype, max,
-						integer_one_node);
-	    return itype;
-	  }
-
 	if (integer_zerop (omax))
 	  {
 	    /* Still allow an explicit array of size zero.  */
