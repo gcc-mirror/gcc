@@ -4245,7 +4245,7 @@ type_passed_as (tree type)
   /* Pass classes with copy ctors by invisible reference.  */
   if (TREE_ADDRESSABLE (type))
     type = build_reference_type (type);
-  else if (PROMOTE_PROTOTYPES
+  else if (targetm.calls.promote_prototypes (type)
 	   && INTEGRAL_TYPE_P (type)
 	   && COMPLETE_TYPE_P (type)
 	   && INT_CST_LT_UNSIGNED (TYPE_SIZE (type),
@@ -4265,7 +4265,7 @@ convert_for_arg_passing (tree type, tree val)
   /* Pass classes with copy ctors by invisible reference.  */
   else if (TREE_ADDRESSABLE (type))
     val = build1 (ADDR_EXPR, build_reference_type (type), val);
-  else if (PROMOTE_PROTOTYPES
+  else if (targetm.calls.promote_prototypes (type)
 	   && INTEGRAL_TYPE_P (type)
 	   && COMPLETE_TYPE_P (type)
 	   && INT_CST_LT_UNSIGNED (TYPE_SIZE (type),

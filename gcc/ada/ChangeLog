@@ -1,3 +1,8 @@
+2004-02-05  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* ada/utils.c (create_param_decl): Replace PROMOTE_PROTOTYPES
+	with targetm.calls.promote_prototypes.
+
 2004-02-04  Robert Dewar  <dewar@gnat.com>
 
 	* 5gtasinf.adb, 5gtasinf.ads, 5gtaprop.adb, ali.adb,

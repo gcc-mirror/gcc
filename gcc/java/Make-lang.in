@@ -292,14 +292,15 @@ java/constants.o: java/constants.c $(CONFIG_H) $(JAVA_TREE_H) java/jcf.h \
   toplev.h $(SYSTEM_H) coretypes.h $(TM_H) $(GGC_H) gt-java-constants.h
 java/decl.o: java/decl.c $(CONFIG_H) $(JAVA_TREE_H) $(RTL_H) java/jcf.h \
   toplev.h flags.h $(SYSTEM_H) coretypes.h $(TM_H) function.h expr.h \
-  libfuncs.h except.h java/java-except.h $(GGC_H) real.h gt-java-decl.h
+  libfuncs.h except.h java/java-except.h $(GGC_H) real.h gt-java-decl.h \
+  target.h
 java/except.o: java/except.c $(CONFIG_H) $(JAVA_TREE_H) java/jcf.h real.h \
   $(RTL_H) java/javaop.h java/java-opcodes.h except.h java/java-except.h \
   toplev.h $(SYSTEM_H) coretypes.h $(TM_H) function.h 
 java/expr.o: java/expr.c $(CONFIG_H) $(JAVA_TREE_H) java/jcf.h real.h \
   $(RTL_H) $(EXPR_H) java/javaop.h java/java-opcodes.h except.h \
   java/java-except.h java/java-except.h java/parse.h toplev.h \
-  $(SYSTEM_H) coretypes.h $(TM_H) $(GGC_H) gt-java-expr.h
+  $(SYSTEM_H) coretypes.h $(TM_H) $(GGC_H) gt-java-expr.h target.h
 java/jcf-depend.o: java/jcf-depend.c $(CONFIG_H) $(SYSTEM_H) coretypes.h \
   $(TM_H) java/jcf.h
 java/jcf-parse.o: java/jcf-parse.c $(CONFIG_H) $(JAVA_TREE_H) flags.h \
@@ -336,7 +337,7 @@ java/parse-scan.o: java/parse-scan.c $(CONFIG_H) $(SYSTEM_H) \
   coretypes.h $(TM_H) toplev.h $(JAVA_LEX_C) java/parse.h java/lex.h input.h
 java/parse.o: java/parse.c java/jcf-reader.c $(CONFIG_H) $(SYSTEM_H) \
   coretypes.h $(TM_H) function.h $(JAVA_TREE_H) $(JAVA_LEX_C) java/parse.h \
-  java/lex.h input.h $(GGC_H) debug.h gt-java-parse.h gtype-java.h
+  java/lex.h input.h $(GGC_H) debug.h gt-java-parse.h gtype-java.h target.h
 
 # jcf-io.o needs $(ZLIBINC) added to cflags.
 java/jcf-io.o: java/jcf-io.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) \

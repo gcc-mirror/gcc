@@ -45,6 +45,7 @@ The Free Software Foundation is independent of Sun Microsystems, Inc.  */
 #include "ggc.h"
 #include "timevar.h"
 #include "tree-inline.h"
+#include "target.h"
 
 #if defined (DEBUG_JAVA_BINDING_LEVELS)
 extern void indent (void);
@@ -1758,7 +1759,7 @@ start_java_method (tree fndecl)
 
       parm_decl = build_decl (PARM_DECL, parm_name, parm_type);
       DECL_CONTEXT (parm_decl) = fndecl;
-      if (PROMOTE_PROTOTYPES
+      if (targetm.calls.promote_prototypes (parm_type)
 	  && TYPE_PRECISION (parm_type) < TYPE_PRECISION (integer_type_node)
 	  && INTEGRAL_TYPE_P (parm_type))
 	parm_type = integer_type_node;

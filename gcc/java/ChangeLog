@@ -1,3 +1,17 @@
+2004-02-05  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* Make-lang.in (java/decl.o, java/expr.o, java/parse.o):
+	Depend on target.h.
+	* decl.c: Include target.h.
+	(start_java_method): Replace PROMOTE_PROTOTYPES with
+	targetm.calls.promote_prototypes.
+	* expr.c: Include target.h.
+	(pop_arguments): Replace PROMOTE_PROTOTYPES with
+	targetm.calls.promote_prototypes.
+	* parse.y: Include target.h.
+	(start_complete_expand_method): Replace PROMOTE_PROTOTYPES
+	with targetm.calls.promote_prototypes.
+
 2004-02-04  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* typeck.c: Update copyright.
