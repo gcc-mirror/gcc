@@ -1,3 +1,15 @@
+2001-01-13  Joseph S. Myers  <jsm28@cam.ac.uk>
+
+	* Makefile.in (generated-manpages): Add gcc.1
+	($(srcdir)/gcc.1): New target.
+	(maintainer-clean): Delete $(srcdir)/gcc.1.
+	* gcc.texi: Add macros @gccoptlist and @gol.
+	* invoke.texi: Include option summary in manpage.  Mark up option
+	summary with @gccoptlist and @gol.  Use @r in one place where
+	appropriate.
+	* texinfo.tex: Update to version 2000-12-11.07 from ftp.gnu.org.
+	* gcc.1: Generate from invoke.texi.
+
 2001-01-13  Richard Henderson  <rth@redhat.com>
 
 	* ggc-page.c (USING_MALLOC_PAGE_GROUPS): New; set if not using mmap.

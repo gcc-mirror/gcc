@@ -46,6 +46,21 @@
 @macro gcctabopt{body}
 @code{\body\}
 @end macro
+@macro gccoptlist{body}
+@smallexample
+\body\
+@end smallexample
+@end macro
+@c Makeinfo handles the above macro OK, TeX needs manual line breaks;
+@c they get lost at some point in handling the macro.  But if @macro is
+@c used here rather than @alias, it produces double line breaks.
+@iftex
+@alias gol = *
+@end iftex
+@ifnottex
+@macro gol
+@end macro
+@end ifnottex
 
 @ifset INTERNALS
 @ifset USING
@@ -151,7 +166,7 @@ instead of in the original English.
 @sp 2
 @center Richard M. Stallman
 @sp 3
-@center Last updated 12 January 2001
+@center Last updated 13 January 2001
 @sp 1
 @c The version number appears five times more in this file.
 

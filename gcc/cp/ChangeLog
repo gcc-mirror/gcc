@@ -1,5 +1,9 @@
 2001-01-13  Joseph S. Myers  <jsm28@cam.ac.uk>
 
+	* g++.1: Change to be ".so man1/gcc.1".
+
+2001-01-13  Joseph S. Myers  <jsm28@cam.ac.uk>
+
 	* Make-lang.in (c++.info, c++.install-info): Build and install g++
 	internals info.
 	(c++.uninstall, c++.maintainer-clean): Remove g++ internals info.
