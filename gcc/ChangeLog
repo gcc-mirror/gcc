@@ -1,5 +1,11 @@
 2003-06-27  Kazu Hirata  <kazu@cs.umass.edu>
 
+	* combine.c (force_to_mode): Replace the equality comparison
+	of INTVALs with a pointer equality comparison.
+	(simplify_comparison): Likewise.
+
+2003-06-27  Kazu Hirata  <kazu@cs.umass.edu>
+
 	* jump.c (rtx_renumbered_equal_p): Replace an expression that
 	is known to be 0 with 0.
 
