@@ -1,3 +1,8 @@
+2003-11-18  Gerald Pfeifer  <gerald@pfeifer.com>
+
+	Fix links in online manuals.
+	* doc/invoke.texi (H8/300 Options): @xref to ld, not ld.info.
+
 2003-11-17  Gerald Pfeifer  <gerald@pfeifer.com>
 
 	* doc/invoke.texi (Warning Options): Simplify and clarify the

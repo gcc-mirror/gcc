@@ -8841,7 +8841,7 @@ These @samp{-m} options are defined for the H8/300 implementations:
 @opindex mrelax
 Shorten some address references at link time, when possible; uses the
 linker option @option{-relax}.  @xref{H8/300,, @code{ld} and the H8/300,
-ld.info, Using ld}, for a fuller description.
+ld, Using ld}, for a fuller description.
 
 @item -mh
 @opindex mh
