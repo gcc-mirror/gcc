@@ -1,3 +1,10 @@
+2000-11-19  Mark Mitchell  <mark@codesourcery.com>
+
+	* decl.c (init_decl_processing): Correct name of pure virtual
+	function under the new ABI.
+	* rtti.c (throw_bad_cast): Likewise, for bad cast function.
+	(throw_bad_typeid): Likewise for bad typeid function.
+
 2000-11-18  Mark Mitchell  <mark@codesourcery.com>
 
 	* decl.c (grokparms): Don't even function types of `void' type,

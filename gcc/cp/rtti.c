@@ -182,7 +182,9 @@ build_headof (exp)
 static tree
 throw_bad_cast ()
 {
-  tree fn = get_identifier ("__throw_bad_cast");
+  tree fn = get_identifier (flag_new_abi 
+			    ? "__cxa_bad_cast" : 
+			    "__throw_bad_cast");
   if (IDENTIFIER_GLOBAL_VALUE (fn))
     fn = IDENTIFIER_GLOBAL_VALUE (fn);
   else
@@ -195,7 +197,9 @@ throw_bad_cast ()
 static tree
 throw_bad_typeid ()
 {
-  tree fn = get_identifier ("__throw_bad_typeid");
+  tree fn = get_identifier (flag_new_abi 
+			    ? "__cxa_bad_typeid"
+			    : "__throw_bad_typeid");
   if (IDENTIFIER_GLOBAL_VALUE (fn))
     fn = IDENTIFIER_GLOBAL_VALUE (fn);
   else
