@@ -1,3 +1,13 @@
+Wed Oct 15 18:16:05 1997  Richard Henderson  <rth@cygnus.com>
+
+	Tune Haifa scheduler for Alpha:
+	* alpha.h (ISSUE_RATE): Define.
+	* alpha.c (alpha_adjust_cost): Handle EV5 mult delay; don't apply
+	EV4 adjustments to EV5.
+	* alpha.md: Remove all scaling from function unit delays.  Rework
+	EV5 function units to match the CPU.
+	(umuldi3_highpart): EV5 added the IMULH insn class.
+
 Wed Oct 15 17:42:41 1997  Jeffrey A Law  (law@cygnus.com)
 
 	* pa.c (following_call): Fail if the CALL_INSN is an indirect

@@ -33,7 +33,7 @@
 ;; separately.
 
 (define_attr "type"
-  "ld,st,ibr,fbr,jsr,iadd,ilog,shift,cmov,icmp,imull,imulq,fadd,fmul,fcpys,fdivs,fdivt,ldsym,isubr"
+  "ld,st,ibr,fbr,jsr,iadd,ilog,shift,cmov,icmp,imull,imulq,imulh,fadd,fmul,fcpys,fdivs,fdivt,ldsym,isubr,misc"
   (const_string "iadd"))
 
 ;; The TRAP_TYPE attribute marks instructions that may generate traps
@@ -41,35 +41,30 @@
 ;; is desired).
 (define_attr "trap" "yes,no" (const_string "no"))
 
-;; For the EV4 we include four function units: ABOX, which computes the address,
-;; BBOX, used for branches, EBOX, used for integer operations, and FBOX,
-;; used for FP operations.
-;;
-;; We assume that we have been successful in getting double issues and
-;; hence multiply all costs by two insns per cycle.  The minimum time in
-;; a function unit is 2 cycle, which will tend to produce the double
-;; issues.
+;; For the EV4 we include four function units: ABOX, which computes
+;; the address, BBOX, used for branches, EBOX, used for integer
+;; operations, and FBOX, used for FP operations.
 
 ;; Memory delivers its result in three cycles.
 (define_function_unit "ev4_abox" 1 0
   (and (eq_attr "cpu" "ev4")
-       (eq_attr "type" "ld,st"))
-  6 2)
+       (eq_attr "type" "ld,ldsym,st"))
+  3 1)
 
 ;; Branches have no delay cost, but do tie up the unit for two cycles.
 (define_function_unit "ev4_bbox" 1 1
   (and (eq_attr "cpu" "ev4")
        (eq_attr "type" "ibr,fbr,jsr"))
-  4 4)
+  2 2)
 
-;; Arithmetic insns are normally have their results available after two
-;; cycles.  There are a number of exceptions.  They are encoded in
+;; Arithmetic insns are normally have their results available after
+;; two cycles.  There are a number of exceptions.  They are encoded in
 ;; ADJUST_COST.  Some of the other insns have similar exceptions.
 
 (define_function_unit "ev4_ebox" 1 0
   (and (eq_attr "cpu" "ev4")
-       (eq_attr "type" "iadd,ilog,ldsym,shift,cmov,icmp"))
-  4 2)
+       (eq_attr "type" "iadd,ilog,shift,cmov,icmp"))
+  2 1)
 
 ;; These really don't take up the integer pipeline, but they do occupy
 ;; IBOX1; we approximate here.
@@ -77,135 +72,145 @@
 (define_function_unit "ev4_ebox" 1 0
   (and (eq_attr "cpu" "ev4")
        (eq_attr "type" "imull"))
-  42 2)
+  21 1)
 
 (define_function_unit "ev4_ebox" 1 0
   (and (eq_attr "cpu" "ev4")
-       (eq_attr "type" "imulq"))
-  46 2)
+       (eq_attr "type" "imulq,imulh"))
+  23 1)
 
 (define_function_unit "ev4_imult" 1 0
   (and (eq_attr "cpu" "ev4")
        (eq_attr "type" "imull"))
-  42 38)
+  21 19)
 
 (define_function_unit "ev4_imult" 1 0
   (and (eq_attr "cpu" "ev4")
-       (eq_attr "type" "imulq"))
-  46 42)
+       (eq_attr "type" "imulq,imulh"))
+  23 21)
 
 (define_function_unit "ev4_fbox" 1 0
   (and (eq_attr "cpu" "ev4")
        (eq_attr "type" "fadd,fmul,fcpys"))
-  12 2)
+  6 1)
 
 (define_function_unit "ev4_fbox" 1 0
   (and (eq_attr "cpu" "ev4")
        (eq_attr "type" "fdivs"))
-  68 0)
+  34 0)
 
 (define_function_unit "ev4_fbox" 1 0
   (and (eq_attr "cpu" "ev4")
        (eq_attr "type" "fdivt"))
-  126 0)
+  63 0)
 
 (define_function_unit "ev4_divider" 1 0
   (and (eq_attr "cpu" "ev4")
        (eq_attr "type" "fdivs"))
-  68 60)
+  34 30)
 
 (define_function_unit "ev4_divider" 1 0
   (and (eq_attr "cpu" "ev4")
        (eq_attr "type" "fdivt"))
-  126 118)
+  64 59)
 
 ;; EV5 scheduling.  EV5 can issue 4 insns per clock.
-;; Multiply all costs by 4.
 
-;; EV5 has two integer units.
+;; EV5 has two asymetric integer units.  Model this with ebox,e0,e1.
+;; Everything uses ebox, and those that require particular pipes grab
+;; those as well.
+
 (define_function_unit "ev5_ebox" 2 0
   (and (eq_attr "cpu" "ev5")
-       (eq_attr "type" "iadd,ilog,icmp,ldsym"))
-  4 4)
+       (eq_attr "type" "iadd,ilog,icmp,st,shift,imull,imulq,imulh"))
+  1 1)
 
-;; Memory takes at least 2 clocks.
+;; Memory takes at least 2 clocks, and load cannot dual issue with stores.
+(define_function_unit "ev5_ebox" 2 0
+  (and (eq_attr "cpu" "ev5")
+       (eq_attr "type" "ld,ldsym"))
+  2 1)
+
+(define_function_unit "ev5_e0" 1 0
+  (and (eq_attr "cpu" "ev5")
+       (eq_attr "type" "ld,ldsym"))
+  0 1
+  [(eq_attr "type" "st")])
+
 ;; Conditional moves always take 2 ticks.
 (define_function_unit "ev5_ebox" 2 0
   (and (eq_attr "cpu" "ev5")
-       (eq_attr "type" "ld,cmov"))
-  8 4)
+       (eq_attr "type" "cmov"))
+  2 1)
 
-;; Loads can dual issue.  Store cannot; nor can loads + stores.
-;; Model this with a mythical load/store unit.
-(define_function_unit "ev5_ldst" 1 0
-  (and (eq_attr "cpu" "ev5")
-       (eq_attr "type" "ld"))
-  8 4 [(eq_attr "type" "st")])
-
-(define_function_unit "ev5_ldst" 1 0
+;; Stores, shifts, and multiplies can only issue to E0
+(define_function_unit "ev5_e0" 1 0
   (and (eq_attr "cpu" "ev5")
        (eq_attr "type" "st"))
-  4 4)
+  1 1)
 
-(define_function_unit "ev5_ebox" 2 0
+;; But shifts and multiplies don't conflict with loads.
+(define_function_unit "ev5_e0" 1 0
   (and (eq_attr "cpu" "ev5")
-       (eq_attr "type" "imull"))
-  32 4)
+       (eq_attr "type" "shift,imull,imulq,imulh"))
+  1 1
+  [(eq_attr "type" "st,shift,imull,imulq,imulh")])
 
-(define_function_unit "ev5_ebox" 2 0
+;; Branches can only issue to E1
+(define_function_unit "ev5_e1" 1 0
   (and (eq_attr "cpu" "ev5")
-       (eq_attr "type" "imulq"))
-  48 4)
+       (eq_attr "type" "ibr,jsr"))
+  1 1)
 
 ;; Multiplies also use the integer multiplier.
 (define_function_unit "ev5_imult" 1 0
   (and (eq_attr "cpu" "ev5")
        (eq_attr "type" "imull"))
-  16 8)
+  8 4)
 
 (define_function_unit "ev5_imult" 1 0
   (and (eq_attr "cpu" "ev5")
        (eq_attr "type" "imulq"))
-  48 32)
+  12 8)
 
-;; There is only 1 shifter/zapper.
-(define_function_unit "ev5_shift" 1 0
+(define_function_unit "ev5_imult" 1 0
   (and (eq_attr "cpu" "ev5")
-       (eq_attr "type" "shift"))
-  4 4)
+       (eq_attr "type" "imulh"))
+  14 8)
 
-;; We pretend EV5 has symmetrical 2 fpus,
-;; even though cpys is the only insn that can issue on either unit.
+;; Similarly for the FPU we have two asymetric units.  But fcpys can issue
+;; on either so we have to play the game again.
+
 (define_function_unit "ev5_fpu" 2 0
   (and (eq_attr "cpu" "ev5")
-       (eq_attr "type" "fadd,fmul,fcpys"))
-  16 4)
+       (eq_attr "type" "fadd,fmul,fcpys,fbr,fdivs,fdivt"))
+  4 1)
   
 ;; Multiplies (resp. adds) also use the fmul (resp. fadd) units.
-(define_function_unit "ev5_fpmul" 1 0
+(define_function_unit "ev5_fm" 1 0
   (and (eq_attr "cpu" "ev5")
        (eq_attr "type" "fmul"))
-  16 4)
+  4 1)
 
-(define_function_unit "ev5_fpadd" 1 0
+(define_function_unit "ev5_fa" 1 0
   (and (eq_attr "cpu" "ev5")
        (eq_attr "type" "fadd"))
-  16 4)
+  4 1)
 
-(define_function_unit "ev5_fpadd" 1 0
+(define_function_unit "ev5_fa" 1 0
   (and (eq_attr "cpu" "ev5")
        (eq_attr "type" "fbr"))
-  4 4)
+  1 1)
 
-(define_function_unit "ev5_fpadd" 1 0
+(define_function_unit "ev5_fa" 1 0
   (and (eq_attr "cpu" "ev5")
        (eq_attr "type" "fdivs"))
-  60 4)
+  15 1)
 
-(define_function_unit "ev5_fpadd" 1 0
+(define_function_unit "ev5_fa" 1 0
   (and (eq_attr "cpu" "ev5")
        (eq_attr "type" "fdivt"))
-  88 4)
+  22 1)
 
 ;; First define the arithmetic insns.  Note that the 32-bit forms also
 ;; sign-extend.
@@ -607,7 +612,7 @@
 	  (const_int 64))))]
   ""
   "umulh %1,%2,%0"
-  [(set_attr "type" "imulq")])
+  [(set_attr "type" "imulh")])
 
 (define_insn ""
   [(set (match_operand:DI 0 "register_operand" "=r")
@@ -618,7 +623,7 @@
 	  (const_int 64))))]
   ""
   "umulh %1,%2,%0"
-  [(set_attr "type" "imulq")])
+  [(set_attr "type" "imulh")])
 
 ;; The divide and remainder operations always take their inputs from
 ;; r24 and r25, put their output in r27, and clobber r23 and r28.

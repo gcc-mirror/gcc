@@ -1595,6 +1595,9 @@ extern void final_prescan_insn ();
    our own exit function.  */
 #define HAVE_ATEXIT
 
+/* The EV4 is dual issue; EV5 is quad issue.  */
+#define ISSUE_RATE  (alpha_cpu == PROCESSOR_EV4 ? 2 : 4)
+
 /* Compute the cost of computing a constant rtl expression RTX
    whose rtx-code is CODE.  The body of this macro is a portion
    of a switch statement.  If the code is computed here,
