@@ -532,13 +532,14 @@ merge_moves (u, v)
      struct web *u, *v;
 {
   regset seen;
-  struct move_list *ml;
+  struct move_list *ml, *ml_next;
 
   seen = BITMAP_XMALLOC ();
   for (ml = u->moves; ml; ml = ml->next)
     bitmap_set_bit (seen, INSN_UID (ml->move->insn));
-  for (ml = v->moves; ml; ml = ml->next)
+  for (ml = v->moves; ml; ml = ml_next)
     {
+      ml_next = ml->next;
       if (! bitmap_bit_p (seen, INSN_UID (ml->move->insn)))
         {
 	  ml->next = u->moves;
