@@ -77,10 +77,10 @@ run_benchmark2(int how_much)
 // libstdc++/4960
 int main()
 {
-  run_benchmark1(10000);
-  run_benchmark2(10000);
   run_benchmark1(100000);
   run_benchmark2(100000);
   run_benchmark1(1000000);
   run_benchmark2(1000000);
+  run_benchmark1(10000000);
+  run_benchmark2(10000000);
 }
