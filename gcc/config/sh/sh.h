@@ -1164,7 +1164,13 @@ extern struct rtx_def *sh_builtin_saveregs ();
 }
 
 /* Go to LABEL if ADDR (a legitimate address expression)
-   has an effect that depends on the machine mode it is used for.  */
+   has an effect that depends on the machine mode it is used for.
+
+   ??? Strictly speaking, we should also include all indexed addressing,
+   because the index scale factor is the length of the operand.
+   However, the impact of GO_IF_MODE_DEPENDENT_ADDRESS would be to
+   high if we did that.  So we rely on reload to fix things up.  */
+
 #define GO_IF_MODE_DEPENDENT_ADDRESS(ADDR,LABEL)			\
 {									\
   if (GET_CODE(ADDR) == PRE_DEC || GET_CODE(ADDR) == POST_INC)		\
