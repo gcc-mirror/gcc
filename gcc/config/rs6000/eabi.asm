@@ -1,8 +1,9 @@
 /*
- * special support for eabi
+ * Special support for eabi and SVR4
  *
- *   Copyright (C) 1995, 1996, 1998, 2000 Free Software Foundation, Inc.
+ *   Copyright (C) 1995, 1996, 1998, 2000, 2001 Free Software Foundation, Inc.
  *   Written By Michael Meissner
+ *   64-bit support written by David Edelsohn
  * 
  * This file is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -39,6 +40,8 @@
 	.file	"eabi.asm"
 	.section ".text"
 	#include "ppc-asm.h"
+
+#ifndef __powerpc64__
 
 	 .section ".got2","aw"
 	.align	2
@@ -554,3 +557,106 @@ FUNC_END(_restgpr_17_x)
 FUNC_END(_restgpr_16_x)
 FUNC_END(_restgpr_15_x)
 FUNC_END(_restgpr_14_x)
+
+#else /* __powerpc64__ */
+
+	.section ".text"
+	.align 2
+
+/* Routines for saving floating point registers, called by the compiler. */
+
+.fsav:
+FUNC_START(_savef14)	stfd	14,-144(1)	/* save fp registers */
+FUNC_START(_savef15)	stfd	15,-136(1)
+FUNC_START(_savef16)	stfd	16,-128(1)
+FUNC_START(_savef17)	stfd	17,-120(1)
+FUNC_START(_savef18)	stfd	18,-112(1)
+FUNC_START(_savef19)	stfd	19,-104(1)
+FUNC_START(_savef20)	stfd	20,-96(1)
+FUNC_START(_savef21)	stfd	21,-88(1)
+FUNC_START(_savef22)	stfd	22,-80(1)
+FUNC_START(_savef23)	stfd	23,-72(1)
+FUNC_START(_savef24)	stfd	24,-64(1)
+FUNC_START(_savef25)	stfd	25,-56(1)
+FUNC_START(_savef26)	stfd	26,-48(1)
+FUNC_START(_savef27)	stfd	27,-40(1)
+FUNC_START(_savef28)	stfd	28,-32(1)
+FUNC_START(_savef29)	stfd	29,-24(1)
+FUNC_START(_savef30)	stfd	30,-16(1)
+FUNC_START(_savef31)	stfd	31,-8(1)
+			blr
+.LTfsav:
+			.long 0
+			.byte 0,12,0,0,0,0,0,0
+			.long 0
+			.long .LTfsav-.fsav
+			.short 4
+			.ascii "fsav"
+FUNC_END(_savef31)
+FUNC_END(_savef30)
+FUNC_END(_savef29)
+FUNC_END(_savef28)
+FUNC_END(_savef27)
+FUNC_END(_savef26)
+FUNC_END(_savef25)
+FUNC_END(_savef24)
+FUNC_END(_savef23)
+FUNC_END(_savef22)
+FUNC_END(_savef21)
+FUNC_END(_savef20)
+FUNC_END(_savef19)
+FUNC_END(_savef18)
+FUNC_END(_savef17)
+FUNC_END(_savef16)
+FUNC_END(_savef15)
+FUNC_END(_savef14)
+
+/* Routines for restoring floating point registers, called by the compiler. */
+
+.fres:
+FUNC_START(_restf14)	lfd	14,-144(1)	/* restore fp registers */
+FUNC_START(_restf15)	lfd	15,-136(1)
+FUNC_START(_restf16)	lfd	16,-128(1)
+FUNC_START(_restf17)	lfd	17,-120(1)
+FUNC_START(_restf18)	lfd	18,-112(1)
+FUNC_START(_restf19)	lfd	19,-104(1)
+FUNC_START(_restf20)	lfd	20,-96(1)
+FUNC_START(_restf21)	lfd	21,-88(1)
+FUNC_START(_restf22)	lfd	22,-80(1)
+FUNC_START(_restf23)	lfd	23,-72(1)
+FUNC_START(_restf24)	lfd	24,-64(1)
+FUNC_START(_restf25)	lfd	25,-56(1)
+FUNC_START(_restf26)	lfd	26,-48(1)
+FUNC_START(_restf27)	lfd	27,-40(1)
+FUNC_START(_restf28)	lfd	28,-32(1)
+FUNC_START(_restf29)	lfd	29,-24(1)
+FUNC_START(_restf30)	lfd	30,-16(1)
+FUNC_START(_restf31)	lfd	31,-8(1)
+			blr
+.LTfres:
+			.long 0
+			.byte 0,12,0,0,0,0,0,0
+			.long 0
+			.long .LTfres-.fres
+			.short 4
+			.ascii "fres"
+FUNC_END(_restf31)
+FUNC_END(_restf30)
+FUNC_END(_restf29)
+FUNC_END(_restf28)
+FUNC_END(_restf27)
+FUNC_END(_restf26)
+FUNC_END(_restf25)
+FUNC_END(_restf24)
+FUNC_END(_restf23)
+FUNC_END(_restf22)
+FUNC_END(_restf21)
+FUNC_END(_restf20)
+FUNC_END(_restf19)
+FUNC_END(_restf18)
+FUNC_END(_restf17)
+FUNC_END(_restf16)
+FUNC_END(_restf15)
+FUNC_END(_restf14)
+
+#endif

@@ -156,6 +156,24 @@ GLUE(..,name):
 GLUE(.L,name): \
 	.size GLUE(..,name),GLUE(.L,name)-GLUE(..,name)
 
+#elif defined (__powerpc64__)
+#define FUNC_NAME(name) GLUE(.,name)
+#define FUNC_START(name) \
+	.section ".opd","aw"; \
+name: \
+	.quad GLUE(.,name); \
+	.quad .TOC.@tocbase; \
+	.quad 0; \
+	.previous; \
+	.type GLUE(.,name),@function; \
+	.globl name; \
+	.globl GLUE(.,name); \
+GLUE(.,name):
+
+#define FUNC_END(name) \
+GLUE(.L,name): \
+	.size GLUE(.,name),GLUE(.L,name)-GLUE(.,name)
+
 #else
 #define FUNC_NAME(name) GLUE(__USER_LABEL_PREFIX__,name)
 #define FUNC_START(name) \
