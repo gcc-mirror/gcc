@@ -3051,7 +3051,7 @@ AC_OUTPUT(Makefile,
 . $srcdir/configure.lang
 case x$CONFIG_HEADERS in
 xconfig.h:config.in)
-echo > stamp-h ;;
+echo > cstamp-h ;;
 esac
 ],
 [
