@@ -1405,14 +1405,15 @@ do									\
       else if (BASE_REGISTER_RTX_P (xop1))				\
 	GO_IF_LEGITIMATE_INDEX (MODE, REGNO (xop1), xop0, LABEL);	\
     }									\
-  else if (GET_CODE (X) == MINUS)					\
+  /* Reload currently can't handle MINUS, so disable this for now */	\
+  /* else if (GET_CODE (X) == MINUS)					\
     {									\
       rtx xop0 = XEXP (X,0);						\
       rtx xop1 = XEXP (X,1);						\
 									\
       if (BASE_REGISTER_RTX_P (xop0))					\
 	GO_IF_LEGITIMATE_INDEX (MODE, -1, xop1, LABEL);			\
-    }									\
+    } */								\
   else if (GET_MODE_CLASS (MODE) != MODE_FLOAT				\
 	   && GET_CODE (X) == SYMBOL_REF				\
 	   && CONSTANT_POOL_ADDRESS_P (X))				\
