@@ -131,6 +131,7 @@ void yyerror ();
 %token SIZEOF ENUM STRUCT UNION IF ELSE WHILE DO FOR SWITCH CASE DEFAULT
 %token BREAK CONTINUE RETURN GOTO ASM_KEYWORD TYPEOF ALIGNOF ALIGN
 %token ATTRIBUTE EXTENSION LABEL
+%token REALPART IMAGPART
 
 /* Add precedence rules to solve dangling else s/r conflict */
 %nonassoc IF
@@ -439,6 +440,14 @@ unary_expr:
 		{ $$ = c_alignof_expr ($2); }
 	| ALIGNOF '(' typename ')'  %prec HYPERUNARY
 		{ $$ = c_alignof (groktypename ($3)); }
+	| REALPART unary_expr %prec UNARY
+		{ $$ = build_unary_op (REALPART_EXPR, $2, 0); }
+	| IMAGPART unary_expr %prec UNARY
+		{ $$ = build_unary_op (IMAGPART_EXPR, $2, 0); }
+	| REALPART '(' unary_expr ')' %prec HYPERUNARY
+		{ $$ = build_unary_op (REALPART_EXPR, $3, 0); }
+	| IMAGPART '(' unary_expr ')' %prec HYPERUNARY
+		{ $$ = build_unary_op (IMAGPART_EXPR, $3, 0); }
 	;
 
 cast_expr:
