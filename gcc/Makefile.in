@@ -1493,7 +1493,7 @@ install-common-headers: install-dir $(USER_H) gvarargs.h gstdarg.h gstddef.h
 	else \
 	  rm -f $(includedir)/assert.h; \
 	  $(INSTALL_DATA) $(srcdir)/assert.h $(includedir)/assert.h; \
-	  chmod a-x $(libsubdir)/include/assert.h; \
+	  chmod a-x $(includedir)/include/assert.h; \
 	fi
 	-rm -f $(libsubdir)/include/varargs.h
 	$(INSTALL_DATA) $(srcdir)/gvarargs.h $(libsubdir)/include/varargs.h
