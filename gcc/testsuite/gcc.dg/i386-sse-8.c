@@ -3,7 +3,7 @@
 
 /* { dg-do compile } */
 /* { dg-options "" } */
-/* { dg-options "-march=pentium3" { target i?86-*-* x86_64-*-* } } */
+/* { dg-options "-march=pentium3" { target i?86-*-* } } */
 
 int main() 
 { 
