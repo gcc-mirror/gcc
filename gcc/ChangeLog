@@ -1,3 +1,12 @@
+Sun May 30 14:18:40 1999  Jeffrey A Law  (law@cygnus.com)
+
+	* function.h (cleanup_label, frame_offset): Declare.
+	(tail_recursion_label, tail_recursion_reentry): Likewise.
+	(arg_pointer_save_area, rtl_expr_chain): Likewise.
+	* stmt.c (cleanup_label, frame_offset): Delete extern declarations.
+	(tail_recursion_label, tail_recursion_reentry): Likewise.
+	(arg_pointer_save_area, rtl_expr_chain): Likewise.
+
 Fri May 28 03:47:03 1999  Eric Raskin (ehr@listworks.com)
 
 	* i386/t-dgux (EXTRA_PARTS): Add crti.o.
