@@ -1,3 +1,8 @@
+2004-05-31  Roger Sayle  <roger@eyesopen.com>
+
+	PR middle-end/15069
+	* g++.dg/opt/fold3.C: New test case.
+
 2004-05-31  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/15701
