@@ -1,3 +1,10 @@
+Sun Aug 30 20:19:43 1998  Hans-Peter Nilsson  <hp@axis.se>
+
+	* expr.c (expand_expr): Change ">" to ">=" making MOVE_RATIO use
+	consistent.
+	* tm.texi (Costs): Say MOVE_RATIO is number of mem-mem move
+	*sequences* *below* which scalar moves will be used.
+
 Sun Aug 30 17:18:43 1998  Jeffrey A Law  (law@cygnus.com)
 
 	* collect2.c (mktemp): Delete unused declaration.
