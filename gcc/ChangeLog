@@ -1,3 +1,7 @@
+2002-02-09  Kazu Hirata  <kazu@hxi.com>
+
+	* config/h8300/h8300.md (iorhi3): Tighten the predicates.
+
 2002-02-09  Alexandre Oliva  <aoliva@redhat.com>
 
 	* config/sh/sh.h (REGISTER_NATURAL_MODE): Save part-clobbered
