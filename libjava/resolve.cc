@@ -27,6 +27,7 @@ details.  */
 #include <java/lang/AbstractMethodError.h>
 #include <java/lang/ClassNotFoundException.h>
 #include <java/lang/IncompatibleClassChangeError.h>
+#include <java/lang/reflect/Modifier.h>
 
 #ifdef INTERPRETER
 
@@ -54,19 +55,6 @@ _Jv_BuildResolvedMethod (_Jv_Method*,
 			 jint);
 
 
-static const int PUBLIC       = 0x001;
-static const int PRIVATE      = 0x002;
-static const int PROTECTED    = 0x004;
-static const int STATIC       = 0x008;
-static const int FINAL        = 0x010;
-static const int SYNCHRONIZED = 0x020;
-static const int VOLATILE     = 0x040;
-static const int TRANSIENT    = 0x080;
-static const int NATIVE       = 0x100;
-static const int INTERFACE    = 0x200;
-static const int ABSTRACT     = 0x400;
-static const int ALL_FLAGS    = 0x7FF; 
-
 // We need to know the name of a constructor.
 static _Jv_Utf8Const *init_name = _Jv_makeUtf8Const ("<init>", 6);
 
@@ -78,6 +66,8 @@ static void throw_incompatible_class_change_error (jstring msg)
 _Jv_word
 _Jv_ResolvePoolEntry (jclass klass, int index)
 {
+  using namespace java::lang::reflect;
+
   _Jv_Constants *pool = &klass->constants;
 
   if ((pool->tags[index] & JV_CONSTANT_ResolvedFlag) != 0)
@@ -101,7 +91,7 @@ _Jv_ResolvePoolEntry (jclass klass, int index)
 	  JvThrow (new java::lang::ClassNotFoundException (str));
 	}
 
-      if ((found->accflags & PUBLIC) == PUBLIC
+      if ((found->accflags & Modifier::PUBLIC) == Modifier::PUBLIC
 	  || (_Jv_ClassNameSamePackage (found->name,
 					klass->name)))
 	{
@@ -171,10 +161,10 @@ _Jv_ResolvePoolEntry (jclass klass, int index)
 	      // now, check field access. 
 
 	      if (   (cls == klass)
-		  || ((field->flags & PUBLIC) != 0)
-		  || (((field->flags & PROTECTED) != 0)
+		  || ((field->flags & Modifier::PUBLIC) != 0)
+		  || (((field->flags & Modifier::PROTECTED) != 0)
 		      && cls->isAssignableFrom (klass))
-		  || (((field->flags & PRIVATE) == 0)
+		  || (((field->flags & Modifier::PRIVATE) == 0)
 		      && _Jv_ClassNameSamePackage (cls->name,
 						   klass->name)))
 		{
@@ -255,10 +245,10 @@ _Jv_ResolvePoolEntry (jclass klass, int index)
 		continue;
 
 	      if (cls == klass 
-		  || ((method->accflags & PUBLIC) != 0)
-		  || (((method->accflags & PROTECTED) != 0)
+		  || ((method->accflags & Modifier::PUBLIC) != 0)
+		  || (((method->accflags & Modifier::PROTECTED) != 0)
 		      && cls->isAssignableFrom (klass))
-		  || (((method->accflags & PRIVATE) == 0)
+		  || (((method->accflags & Modifier::PRIVATE) == 0)
 		      && _Jv_ClassNameSamePackage (cls->name,
 						   klass->name)))
 		{
@@ -306,7 +296,7 @@ _Jv_ResolvePoolEntry (jclass klass, int index)
       pool->data[index].rmethod = 
 	_Jv_BuildResolvedMethod(the_method,
 				found_class,
-				((the_method->accflags & STATIC) != 0),
+				(the_method->accflags & Modifier::STATIC) != 0,
 				vtable_index);
       pool->tags[index] |= JV_CONSTANT_ResolvedFlag;
     }
@@ -357,6 +347,8 @@ _Jv_DetermineVTableIndex (jclass klass,
 			  _Jv_Utf8Const *name,
 			  _Jv_Utf8Const *signature)
 {
+  using namespace java::lang::reflect;
+
   jclass super_class = klass->getSuperclass ();
 
   if (super_class != NULL)
@@ -390,8 +382,10 @@ _Jv_DetermineVTableIndex (jclass klass,
    * 3) it is the method <init>
    */
 
-  if (   (meth->accflags & (STATIC|PRIVATE|FINAL)) != 0
-      || (klass->accflags & FINAL) != 0
+  if ((meth->accflags & (Modifier::STATIC
+			 | Modifier::PRIVATE
+			 | Modifier::FINAL)) != 0
+      || (klass->accflags & Modifier::FINAL) != 0
       || _Jv_equalUtf8Consts (name, init_name))
     return -1;
 
@@ -422,7 +416,7 @@ _Jv_DetermineVTableIndex (jclass klass,
       /* fist some checks for things that surely do not go in the
        * vtable */
 
-      if ((m->accflags & (STATIC|PRIVATE)) != 0)
+      if ((m->accflags & (Modifier::STATIC | Modifier::PRIVATE)) != 0)
 	continue;
       if (_Jv_equalUtf8Consts (m->name, init_name))
 	continue;
@@ -439,7 +433,7 @@ _Jv_DetermineVTableIndex (jclass klass,
 
       /* but if it is final, and not declared in the super class,
        * then we also skip it */
-      if ((m->accflags & FINAL) != 0)
+      if ((m->accflags & Modifier::FINAL) != 0)
 	continue;
 
       /* finally, we can assign the index of this method */
@@ -460,6 +454,8 @@ _Jv_abstractMethodError ()
 void 
 _Jv_PrepareClass(jclass klass)
 {
+  using namespace java::lang::reflect;
+
  /*
   * The job of this function is to: 1) assign storage to fields, and 2)
   * build the vtable.  static fields are assigned real memory, instance
@@ -527,7 +523,7 @@ _Jv_PrepareClass(jclass klass)
       field->bsize = field_size;
 #endif
 
-      if (field->flags & STATIC)
+      if (field->flags & Modifier::STATIC)
 	{
 	  /* this computes an offset into a region we'll allocate 
 	     shortly, and then add this offset to the start address */
@@ -558,7 +554,7 @@ _Jv_PrepareClass(jclass klass)
 	{
 	  _Jv_Field *field = &clz->fields[i];
 
-	  if ((field->flags & STATIC) != 0)
+	  if ((field->flags & Modifier::STATIC) != 0)
 	    {
 	      field->u.addr  = static_data + field->u.boffset;
 			    
@@ -590,7 +586,7 @@ _Jv_PrepareClass(jclass klass)
 	}
       else
 	{
-	  if ((clz->methods[i].accflags & NATIVE) != 0)
+	  if ((clz->methods[i].accflags & Modifier::NATIVE) != 0)
 	    {
 	      JvThrow
 		(new java::lang::VirtualMachineError
@@ -600,7 +596,7 @@ _Jv_PrepareClass(jclass klass)
 	}
     }
 
-  if (clz->accflags & INTERFACE)
+  if (clz->accflags & Modifier::INTERFACE)
     {
       clz->state = JV_STATE_PREPARED;
       clz->notifyAll ();
@@ -627,7 +623,7 @@ _Jv_PrepareClass(jclass klass)
     {
       _Jv_Method *this_meth = &clz->methods[i];
 
-      if ((this_meth->accflags & (STATIC|PRIVATE)) != 0
+      if ((this_meth->accflags & (Modifier::STATIC | Modifier::PRIVATE)) != 0
 	  || _Jv_equalUtf8Consts (this_meth->name, init_name))
 	{
 	  /* skip this, it doesn't go in the vtable */
@@ -641,17 +637,19 @@ _Jv_PrepareClass(jclass klass)
       if (orig_meth == 0)
 	{
 	  // new methods that are final, also don't go in the vtable
-	  if ((this_meth->accflags & FINAL) != 0)
+	  if ((this_meth->accflags & Modifier::FINAL) != 0)
 	    continue;
 
 	  new_method_count += 1;
 	  continue;
 	}
 
-      if ((orig_meth->accflags & (STATIC|PRIVATE|FINAL)) != 0
-	  || ((orig_meth->accflags & ABSTRACT) == 0
-	      && (this_meth->accflags & ABSTRACT) != 0
-	      && (klass->accflags & ABSTRACT) == 0))
+      if ((orig_meth->accflags & (Modifier::STATIC
+				  | Modifier::PRIVATE
+				  | Modifier::FINAL)) != 0
+	  || ((orig_meth->accflags & Modifier::ABSTRACT) == 0
+	      && (this_meth->accflags & Modifier::ABSTRACT) != 0
+	      && (klass->accflags & Modifier::ABSTRACT) == 0))
 	{
 	  clz->state = JV_STATE_ERROR;
 	  clz->notifyAll ();
@@ -715,6 +713,8 @@ _Jv_PrepareClass(jclass klass)
 void
 _Jv_InitField (jobject obj, jclass klass, int index)
 {
+  using namespace java::lang::reflect;
+
   if (obj != 0 && klass == 0)
     klass = obj->getClass ();
 
@@ -738,12 +738,12 @@ _Jv_InitField (jobject obj, jclass klass, int index)
   if (! field->isResolved ())
     throw_internal_error ("initializing unresolved field");
 
-  if (obj==0 && ((field->flags & STATIC) == 0))
+  if (obj==0 && ((field->flags & Modifier::STATIC) == 0))
     throw_internal_error ("initializing non-static field with no object");
 
   void *addr = 0;
 
-  if ((field->flags & STATIC) != 0)
+  if ((field->flags & Modifier::STATIC) != 0)
     addr = (void*) field->u.addr;
   else
     addr = (void*) (((char*)obj) + field->u.boffset);
@@ -1002,12 +1002,15 @@ typedef struct {
 
 typedef void (*ffi_closure_fun) (ffi_cif*,void*,ffi_raw*,void*);
 
-void* _Jv_InterpMethod::ncode ()
+void *
+_Jv_InterpMethod::ncode ()
 {
+  using namespace java::lang::reflect;
+
   if (self->ncode != 0)
     return self->ncode;
 
-  jboolean staticp = (self->accflags & STATIC) != 0;
+  jboolean staticp = (self->accflags & Modifier::STATIC) != 0;
   int arg_count = count_arguments (self->signature, staticp);
 
   ncode_closure *closure =
@@ -1024,7 +1027,7 @@ void* _Jv_InterpMethod::ncode ()
 
   args_raw_size = ffi_raw_size (&closure->cif);
 
-  if ((self->accflags & SYNCHRONIZED) != 0)
+  if ((self->accflags & Modifier::SYNCHRONIZED) != 0)
     {
       if (staticp)
 	fun = (ffi_closure_fun)&_Jv_InterpMethod::run_synch_class;
@@ -1098,4 +1101,4 @@ throw_internal_error (char *msg)
 }
 
 
-#endif
+#endif /* INTERPRETER */

@@ -35,6 +35,9 @@ public class Modifier
   public static final int INTERFACE = 0x200;
   public static final int ABSTRACT  = 0x400;
 
+  // This is only used by the C++ code, so it is not public.
+  static final int ALL_FLAGS = 0x7ff;
+
   public static boolean isAbstract (int mod)
   {
     return (mod & ABSTRACT) != 0;

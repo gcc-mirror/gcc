@@ -36,6 +36,7 @@ details.  */
 #include <java/lang/ClassCircularityError.h>
 #include <java/lang/ClassNotFoundException.h>
 #include <java/lang/IncompatibleClassChangeError.h>
+#include <java/lang/reflect/Modifier.h>
 
 #define ClassClass _CL_Q34java4lang5Class
 extern java::lang::Class ClassClass;
@@ -246,20 +247,6 @@ struct _Jv_ClassReader {
    * could be implemented in prims.cc (_Jv_makeUtf8Const), since it
    * computes the hash value anyway.
    */
-
-  static const int PUBLIC       = 0x001;
-  static const int PRIVATE      = 0x002;
-  static const int PROTECTED    = 0x004;
-  static const int STATIC       = 0x008;
-  static const int FINAL        = 0x010;
-  static const int SYNCHRONIZED = 0x020;
-  static const int VOLATILE     = 0x040;
-  static const int TRANSIENT    = 0x080;
-  static const int NATIVE       = 0x100;
-  static const int INTERFACE    = 0x200;
-  static const int ABSTRACT     = 0x400;
-  static const int ALL_FLAGS    = 0x7FF; 
-
 };
 
 /* This is used for the isJavaIdentifierStart & isJavaIdentifierPart
@@ -825,6 +812,8 @@ void
 _Jv_ClassReader::handleClassBegin
   (int access_flags, int this_class, int super_class)
 {
+  using namespace java::lang::reflect;
+
   unsigned char *pool_tags = (unsigned char*) def->constants.tags;
   _Jv_word      *pool_data = def->constants.data;
 
@@ -870,7 +859,7 @@ _Jv_ClassReader::handleClassBegin
   if (super_class == 0)
     {
       // interfaces have java.lang.Object as super.
-      if (access_flags & INTERFACE)
+      if (access_flags & Modifier::INTERFACE)
 	{
 	  def->superclass = (jclass)&ClassObject;
 	}
@@ -919,14 +908,16 @@ _Jv_ClassReader::handleClassBegin
 void
 _Jv_ClassReader::checkExtends (jclass sub, jclass super)
 {
+  using namespace java::lang::reflect;
+
   // having an interface or a final class as a superclass is no good
-  if ((super->accflags & (INTERFACE | FINAL)) != 0)
+  if ((super->accflags & (Modifier::INTERFACE | Modifier::FINAL)) != 0)
     {
       throw_incompatible_class_change_error (sub->getName ());
     }
 
   // if the super class is not public, we need to check some more
-  if ((super->accflags & PUBLIC) == 0)
+  if ((super->accflags & Modifier::PUBLIC) == 0)
     {
       // With package scope, the classes must have the same
       // class loader.
@@ -986,15 +977,17 @@ void _Jv_ClassReader::handleInterface (int if_number, int offset)
 void
 _Jv_ClassReader::checkImplements (jclass sub, jclass super)
 {
+  using namespace java::lang::reflect;
+
   // well, it *must* be an interface
-  if ((super->accflags & INTERFACE) == 0)
+  if ((super->accflags & Modifier::INTERFACE) == 0)
     {
       throw_incompatible_class_change_error (sub->getName ());
     }
 
   // if it has package scope, it must also be defined by the 
   // same loader.
-  if ((super->accflags & PUBLIC) == 0)
+  if ((super->accflags & Modifier::PUBLIC) == 0)
     {
       if (    sub->loader != super->loader
 	  || !_Jv_ClassNameSamePackage (sub->name, super->name))
@@ -1026,6 +1019,8 @@ void _Jv_ClassReader::handleField (int field_no,
 				   int name,
 				   int desc)
 {
+  using namespace java::lang::reflect;
+
   _Jv_word *pool_data = def->constants.data;
 
   _Jv_Field *field = &def->fields[field_no];
@@ -1041,16 +1036,19 @@ void _Jv_ClassReader::handleField (int field_no,
     _Jv_VerifyIdentifier (field_name);
 
   // ignore flags we don't know about.  
-  field->flags = flags & ALL_FLAGS;
+  field->flags = flags & Modifier::ALL_FLAGS;
 
   if (verify)
     {
-      if (field->flags & (SYNCHRONIZED|NATIVE|INTERFACE|ABSTRACT))
+      if (field->flags & (Modifier::SYNCHRONIZED
+			  | Modifier::NATIVE
+			  | Modifier::INTERFACE
+			  | Modifier::ABSTRACT))
 	throw_class_format_error ("erroneous field access flags");
       
-      if (1 < ( ((field->flags & PUBLIC) ? 1 : 0)
-		+((field->flags & PRIVATE) ? 1 : 0)
-		+((field->flags & PROTECTED) ? 1 : 0)))
+      if (1 < ( ((field->flags & Modifier::PUBLIC) ? 1 : 0)
+		+((field->flags & Modifier::PRIVATE) ? 1 : 0)
+		+((field->flags & Modifier::PROTECTED) ? 1 : 0)))
 	throw_class_format_error ("erroneous field access flags");
     }
 
@@ -1070,9 +1068,13 @@ void _Jv_ClassReader::handleField (int field_no,
 void _Jv_ClassReader::handleConstantValueAttribute (int field_index, 
 						    int value)
 {
+  using namespace java::lang::reflect;
+
   _Jv_Field *field = &def->fields[field_index];
 
-  if ((field->flags & (STATIC|FINAL|PRIVATE)) == 0)
+  if ((field->flags & (Modifier::STATIC
+		       | Modifier::FINAL
+		       | Modifier::PRIVATE)) == 0)
     {
       // Ignore, as per vmspec #4.7.2
       return;
@@ -1095,6 +1097,8 @@ void _Jv_ClassReader::handleConstantValueAttribute (int field_index,
 
 void _Jv_ClassReader::handleFieldsEnd ()
 {
+  using namespace java::lang::reflect;
+
   // We need to reorganize the fields so that the static ones are first,
   // to conform to GCJ class layout.
 
@@ -1107,11 +1111,11 @@ void _Jv_ClassReader::handleFieldsEnd ()
   while (low < high)
     {
       // go forward on low, while it's a static
-      while (low < high && (fields[low].flags & STATIC) != 0)
+      while (low < high && (fields[low].flags & Modifier::STATIC) != 0)
 	low++;
       
       // go backwards on high, while it's a non-static
-      while (low < high && (fields[high].flags & STATIC) == 0)
+      while (low < high && (fields[high].flags & Modifier::STATIC) == 0)
 	high--;
 
       if (low==high)
@@ -1130,7 +1134,7 @@ void _Jv_ClassReader::handleFieldsEnd ()
       low  += 1;
     }
   
-  if ((fields[low].flags & STATIC) != 0) 
+  if ((fields[low].flags & Modifier::STATIC) != 0) 
     low += 1;
 
   def->static_field_count = low;
@@ -1156,6 +1160,8 @@ void _Jv_ClassReader::handleMethodsBegin (int count)
 void _Jv_ClassReader::handleMethod 
     (int mth_index, int accflags, int name, int desc)
 { 
+  using namespace java::lang::reflect;
+
   _Jv_word *pool_data = def->constants.data;
   _Jv_Method *method = &def->methods[mth_index];
 
@@ -1168,7 +1174,7 @@ void _Jv_ClassReader::handleMethod
   method->signature = pool_data[desc].utf8;
 
   // ignore unknown flags
-  method->accflags = accflags & ALL_FLAGS;
+  method->accflags = accflags & Modifier::ALL_FLAGS;
 
   // intialize...
   method->ncode = 0;
@@ -1183,12 +1189,14 @@ void _Jv_ClassReader::handleMethod
 
       _Jv_VerifyMethodSignature (method->signature);
 
-      if (method->accflags & (VOLATILE|TRANSIENT|INTERFACE))
+      if (method->accflags & (Modifier::VOLATILE
+			      | Modifier::TRANSIENT
+			      | Modifier::INTERFACE))
 	throw_class_format_error ("erroneous method access flags");
       
-      if (1 < ( ((method->accflags & PUBLIC) ? 1 : 0)
-		+((method->accflags & PRIVATE) ? 1 : 0)
-		+((method->accflags & PROTECTED) ? 1 : 0)))
+      if (1 < ( ((method->accflags & Modifier::PUBLIC) ? 1 : 0)
+		+((method->accflags & Modifier::PRIVATE) ? 1 : 0)
+		+((method->accflags & Modifier::PROTECTED) ? 1 : 0)))
 	throw_class_format_error ("erroneous method access flags");
     }
 }
@@ -1233,10 +1241,12 @@ void _Jv_ClassReader::handleExceptionTableEntry
 
 void _Jv_ClassReader::handleMethodsEnd ()
 {
+  using namespace java::lang::reflect;
+
   for (int i = 0; i < def->method_count; i++)
     {
       _Jv_Method *method = &def->methods[i];
-      if (method->accflags & (NATIVE|ABSTRACT))
+      if (method->accflags & (Modifier::NATIVE | Modifier::ABSTRACT))
 	{
 	  if (def->interpreted_methods[i] != 0)
 	    throw_class_format_error ("code provided "
