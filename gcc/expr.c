@@ -5393,8 +5393,7 @@ force_operand (value, target)
   rtx subtarget = get_subtarget (target);
 
   /* Check for a PIC address load.  */
-  if (flag_pic
-      && (GET_CODE (value) == PLUS || GET_CODE (value) == MINUS)
+  if ((GET_CODE (value) == PLUS || GET_CODE (value) == MINUS)
       && XEXP (value, 0) == pic_offset_table_rtx
       && (GET_CODE (XEXP (value, 1)) == SYMBOL_REF
 	  || GET_CODE (XEXP (value, 1)) == LABEL_REF

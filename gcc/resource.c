@@ -1023,21 +1023,8 @@ mark_target_live_regs (insns, target, res)
 	      /* CALL clobbers all call-used regs that aren't fixed except
 		 sp, ap, and fp.  Do this before setting the result of the
 		 call live.  */
-	      for (i = 0; i < FIRST_PSEUDO_REGISTER; i++)
-		if (call_used_regs[i]
-		    && i != STACK_POINTER_REGNUM && i != FRAME_POINTER_REGNUM
-		    && i != ARG_POINTER_REGNUM
-#if HARD_FRAME_POINTER_REGNUM != FRAME_POINTER_REGNUM
-		    && i != HARD_FRAME_POINTER_REGNUM
-#endif
-#if ARG_POINTER_REGNUM != FRAME_POINTER_REGNUM
-		    && ! (i == ARG_POINTER_REGNUM && fixed_regs[i])
-#endif
-#if !defined (PIC_OFFSET_TABLE_REG_CALL_CLOBBERED)
-		    && ! (i == PIC_OFFSET_TABLE_REGNUM && flag_pic)
-#endif
-		    )
-		  CLEAR_HARD_REG_BIT (current_live_regs, i);
+	      AND_COMPL_HARD_REG_SET (current_live_regs,
+				      regs_invalidated_by_call);
 
 	      /* A CALL_INSN sets any global register live, since it may
 		 have been modified by the call.  */
