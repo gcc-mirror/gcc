@@ -962,6 +962,20 @@ this size or smaller can be used for structures and unions with the
 appropriate sizes.  If this macro is undefined, @code{GET_MODE_BITSIZE
 (DImode)} is assumed.
 
+@findex STACK_SAVEAREA_MODE
+@item STACK_SAVEAREA_MODE (@var{mode}, @var{save_level})
+If specified, an expression of type @code{enum machine_mode} that overrides
+the mode specified by operand 0 of a @code{save_stack_@var{level}} named
+pattern (@pxref{Standard Names}).  @var{mode} is the mode previously
+chosen from that pattern and @var{save_leve} is one of @code{SAVE_BLOCK},
+@code{SAVE_FUNCTION}, or @code{SAVE_NONLOCAL} and selects which of the
+three named patterns are having their mode overrided.
+
+You need not define this macro if it always returns @var{mode}.  You would
+most commonly define this macro if the @code{save_stack_@var{level}}
+patterns need to support both a 32- and a 64-bit mode, in which case
+taking the mode from operand 0 is inconvenient.
+
 @findex CHECK_FLOAT_VALUE
 @item CHECK_FLOAT_VALUE (@var{mode}, @var{value}, @var{overflow})
 A C statement to validate the value @var{value} (of type
