@@ -55,7 +55,8 @@ Boston, MA 02111-1307, USA.  */
    TARGET_CM_MEDMID: 64 bit address space.
                      The executable must be in the low 16 TB of memory.
                      This corresponds to the low 44 bits, and the %[hml]44
-                     relocs are used.
+                     relocs are used.  The text segment has a maximum size
+                     of 31 bits.
 
    TARGET_CM_MEDANY: 64 bit address space.
                      The text and data segments have a maximum size of 31
@@ -2469,7 +2470,10 @@ extern struct rtx_def *legitimize_pic_address ();
 
 /* Specify the machine mode that this machine uses
    for the index in the tablejump instruction.  */
-#define CASE_VECTOR_MODE Pmode
+/* If we ever implement any of the full models (such as CM_FULLANY),
+   this has to be DImode in that case */
+#define CASE_VECTOR_MODE \
+(! TARGET_PTR64 ? SImode : flag_pic ? SImode : TARGET_CM_MEDLOW ? SImode : DImode)
 
 /* Define as C expression which evaluates to nonzero if the tablejump
    instruction expects the table to contain offsets from the address of the
@@ -2967,7 +2971,7 @@ extern int ultrasparc_variable_issue ();
 do {									\
   char label[30];							\
   ASM_GENERATE_INTERNAL_LABEL (label, "L", VALUE);			\
-  if (Pmode == SImode)							\
+  if (CASE_VECTOR_MODE == SImode)					\
     fprintf (FILE, "\t.word\t");					\
   else									\
     fprintf (FILE, "\t.xword\t");					\
@@ -2982,7 +2986,7 @@ do {									\
 do {									\
   char label[30];							\
   ASM_GENERATE_INTERNAL_LABEL (label, "L", (VALUE));			\
-  if (Pmode == SImode)							\
+  if (CASE_VECTOR_MODE == SImode)					\
     fprintf (FILE, "\t.word\t");					\
   else									\
     fprintf (FILE, "\t.xword\t");					\

@@ -7109,7 +7109,7 @@
   ""
   "
 {
-  if (GET_MODE (operands[0]) != Pmode)
+  if (GET_MODE (operands[0]) != CASE_VECTOR_MODE)
     abort ();
 
   /* In pic mode, our address differences are against the base of the
@@ -7117,9 +7117,12 @@
      the two address loads.  */
   if (flag_pic)
     {
-      rtx tmp;
+      rtx tmp, tmp2;
       tmp = gen_rtx_LABEL_REF (Pmode, operands[1]);
-      tmp = gen_rtx_PLUS (Pmode, operands[0], tmp);
+      tmp2 = operands[0];
+      if (CASE_VECTOR_MODE != Pmode)
+        tmp2 = gen_rtx_SIGN_EXTEND (Pmode, tmp2);
+      tmp = gen_rtx_PLUS (Pmode, tmp2, tmp);
       operands[0] = memory_address (Pmode, tmp);
     }
 }")
