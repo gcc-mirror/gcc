@@ -26,6 +26,7 @@ Boston, MA 02111-1307, USA. */
 #define SDB_DEBUGGING_INFO 
 #define PREFERRED_DEBUGGING_TYPE DBX_DEBUG
 
+#include <stdio.h>
 #include "i386/gas.h"
 #include "dbxcoff.h"
 
@@ -227,6 +228,7 @@ ctor_section ()							\
       in_section = in_ctor;					\
     }								\
 }
+void ctor_section PARAMS ((void));
 
 #define DTOR_SECTION_FUNCTION					\
 void								\
@@ -238,6 +240,7 @@ dtor_section ()							\
       in_section = in_dtor;					\
     }								\
 }
+void dtor_section PARAMS ((void));
 
 #define DRECTVE_SECTION_FUNCTION \
 void									\
@@ -249,6 +252,7 @@ drectve_section ()							\
       in_section = in_drectve;						\
     }									\
 }
+void drectve_section PARAMS ((void));
 
 /* Switch to SECTION (an `enum in_section').
 
@@ -257,6 +261,7 @@ drectve_section ()							\
    ASM_DECLARE_OBJECT_NAME and then switch back to the original section
    afterwards.  */
 #define SWITCH_TO_SECTION_FUNCTION 				\
+void switch_to_section PARAMS ((enum in_section, tree));        \
 void 								\
 switch_to_section (section, decl) 				\
      enum in_section section; 					\
@@ -536,10 +541,12 @@ do {									\
 
 /* External function declarations.  */
 
-extern void i386_pe_record_external_function PARAMS ((char *));
-/* extern void i386_pe_declare_function_type PARAMS ((FILE *, char *, int)); */
-extern void i386_pe_record_exported_symbol PARAMS ((char *, int));
-/* extern void i386_pe_asm_file_end PARAMS ((FILE *)); */
+extern void i386_pe_record_external_function PARAMS ((const char *));
+extern void i386_pe_declare_function_type PARAMS ((FILE *, const char *, int));
+extern void i386_pe_record_exported_symbol PARAMS ((const char *, int));
+extern void i386_pe_asm_file_end PARAMS ((FILE *));
+extern int i386_pe_dllexport_name_p PARAMS ((const char *));
+extern int i386_pe_dllimport_name_p PARAMS ((const char *));
 
 /* For Win32 ABI compatibility */
 #undef DEFAULT_PCC_STRUCT_RETURN

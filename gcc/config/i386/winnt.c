@@ -27,6 +27,8 @@ Boston, MA 02111-1307, USA.  */
 #include "output.h"
 #include "tree.h"
 #include "flags.h"
+#include "tm_p.h"
+#include "toplev.h"
 
 /* i386/PE specific attribute support.
 
@@ -38,6 +40,13 @@ Boston, MA 02111-1307, USA.  */
    them with spaces.  We do NOT support this.  Instead, use __declspec
    multiple times.
 */
+
+static tree associated_type PARAMS ((tree));
+const char * gen_stdcall_suffix PARAMS ((tree));
+int i386_pe_dllexport_p PARAMS ((tree));
+int i386_pe_dllimport_p PARAMS ((tree));
+void i386_pe_mark_dllexport PARAMS ((tree));
+void i386_pe_mark_dllimport PARAMS ((tree));
 
 /* Return nonzero if ATTR is a valid attribute for DECL.
    ATTRIBUTES are any existing attributes and ARGS are the arguments
@@ -226,7 +235,7 @@ i386_pe_dllimport_p (decl)
 
 int
 i386_pe_dllexport_name_p (symbol)
-     char *symbol;
+     const char *symbol;
 {
   return symbol[0] == '@' && symbol[1] == 'e' && symbol[2] == '.';
 }
@@ -235,7 +244,7 @@ i386_pe_dllexport_name_p (symbol)
 
 int
 i386_pe_dllimport_name_p (symbol)
-     char *symbol;
+     const char *symbol;
 {
   return symbol[0] == '@' && symbol[1] == 'i' && symbol[2] == '.';
 }
@@ -247,7 +256,8 @@ void
 i386_pe_mark_dllexport (decl)
      tree decl;
 {
-  char *oldname, *newname;
+  const char *oldname;
+  char  *newname;
   rtx rtlname;
   tree idp;
 
@@ -283,7 +293,8 @@ void
 i386_pe_mark_dllimport (decl)
      tree decl;
 {
-  char *oldname, *newname;
+  const char *oldname;
+  char  *newname;
   tree idp;
   rtx rtlname, newrtl;
 
@@ -370,14 +381,14 @@ i386_pe_mark_dllimport (decl)
    suffix consisting of an atsign (@) followed by the number of bytes of 
    arguments */
 
-char *
+const char *
 gen_stdcall_suffix (decl)
   tree decl;
 {
   int total = 0;
   /* ??? This probably should use XSTR (XEXP (DECL_RTL (decl), 0), 0) instead
      of DECL_ASSEMBLER_NAME.  */
-  char *asmname = IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (decl));
+  const char *asmname = IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (decl));
   char *newsym;
 
   if (TYPE_ARG_TYPES (TREE_TYPE (decl)))
@@ -444,7 +455,7 @@ i386_pe_encode_section_info (decl)
 	   && GET_CODE (XEXP (XEXP (DECL_RTL (decl), 0), 0)) == SYMBOL_REF
 	   && i386_pe_dllimport_name_p (XSTR (XEXP (XEXP (DECL_RTL (decl), 0), 0), 0)))
     {
-      char *oldname = XSTR (XEXP (XEXP (DECL_RTL (decl), 0), 0), 0);
+      const char *oldname = XSTR (XEXP (XEXP (DECL_RTL (decl), 0), 0), 0);
       tree idp = get_identifier (oldname + 9);
       rtx newrtl = gen_rtx (SYMBOL_REF, Pmode, IDENTIFIER_POINTER (idp));
 
@@ -465,8 +476,8 @@ i386_pe_unique_section (decl, reloc)
      int reloc;
 {
   int len;
-  const char *name;
-  char *string,*prefix;
+  const char *name, *prefix;
+  char *string;
 
   name = IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (decl));
   /* Strip off any encoding in fnname.  */
@@ -513,7 +524,7 @@ i386_pe_unique_section (decl, reloc)
 void
 i386_pe_declare_function_type (file, name, public)
      FILE *file;
-     char *name;
+     const char *name;
      int public;
 {
   fprintf (file, "\t.def\t");
@@ -528,7 +539,7 @@ i386_pe_declare_function_type (file, name, public)
 struct extern_list
 {
   struct extern_list *next;
-  char *name;
+  const char *name;
 };
 
 static struct extern_list *extern_head;
@@ -541,7 +552,7 @@ static struct extern_list *extern_head;
 
 void
 i386_pe_record_external_function (name)
-     char *name;
+     const char *name;
 {
   struct extern_list *p;
 
@@ -556,7 +567,7 @@ i386_pe_record_external_function (name)
 struct export_list
 {
   struct export_list *next;
-  char *name;
+  const char *name;
   int is_data;		/* used to type tag exported symbols. */
 };
 
@@ -570,7 +581,7 @@ static struct export_list *export_head;
 
 void
 i386_pe_record_exported_symbol (name, is_data)
-     char *name;
+     const char *name;
      int is_data;
 {
   struct export_list *p;
