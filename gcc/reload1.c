@@ -5204,6 +5204,13 @@ reload_reg_free_for_value_p (regno, opnum, type, value, out, reloadnum,
   int i;
   int copy = 0;
 
+  /* ??? reload_reg_used is abused to hold the registers that are not
+     available as spill registers, including hard registers that are
+     earlyclobbered in asms.  As a temporary measure, reject anything
+     in reload_reg_used.  */
+  if (TEST_HARD_REG_BIT (reload_reg_used, regno))
+    return 0;
+
   if (out == const0_rtx)
     {
       copy = 1;
@@ -6330,6 +6337,7 @@ choose_reload_regs (chain)
 	  clear_reload_reg_in_use (regno, reload_opnum[j],
 				   reload_when_needed[j], reload_mode[j]);
 	reload_reg_rtx[j] = 0;
+	reload_spill_index[j] = -1;
       }
 
   /* Record which pseudos and which spill regs have output reloads.  */

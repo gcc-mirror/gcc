@@ -1,5 +1,13 @@
 Tue Mar  7 21:41:17 2000  Jeffrey A Law  (law@cygnus.com)
 
+	2000-01-05  Bernd Schmidt  <bernds@cygnus.co.uk>
+	* reload1.c (choose_reload_regs): When disabling a reload, also
+	set reload_spill_index to -1.
+
+	Thu Nov  4 15:52:35 1999  Andrew Haley  <aph@cygnus.com>
+	* reload1.c (reload_reg_free_for_value_p): Don't use a register
+	that is in reload_reg_used.
+
 	2000-01-18  Clinton Popetz  <cpopetz@cygnus.com>
 	* loop.c (check_dbra_loop): When checking a loop for
 	reversability, check the source of any stores to ensure they 
