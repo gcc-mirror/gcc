@@ -66,7 +66,7 @@ about previous `g77' versions up-to-date.
 the mainline, development version of `g77' within `egcs') is available
 at `http://egcs.cygnus.com/onlinedocs/g77_news.html'.
 
-   The following information was last updated on 1999-03-13:
+   The following information was last updated on 1999-03-17:
 
 In `egcs' 1.2 (versus 1.1.2):
 =============================
@@ -105,9 +105,9 @@ In `egcs' 1.2 (versus 1.1.2):
 In 0.5.24 and `egcs' 1.1.2 (versus 0.5.23 and 1.1.1):
 =====================================================
 
-   * Fix the `IDate' Intrinsic (VXT) so the returned year is in the
-     documented, non-Y2K-compliant range of 0-99, instead of being
-     returned as 100 in the year 2000.
+   * Fix the `IDate' intrinsic (VXT) (in `libg2c') so the returned year
+     is in the documented, non-Y2K-compliant range of 0-99, instead of
+     being returned as 100 in the year 2000.
 
    * Fix the `Date_and_Time' intrinsic (in `libg2c') to return the
      milliseconds value properly in VALUES(8).
