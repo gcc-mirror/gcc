@@ -1,4 +1,5 @@
 /* { dg-do run { target powerpc*-*-* } } */
+/* { dg-xfail-if "" { "powerpc-*-eabispe*" } { "-maltivec" } { "" } } */
 /* { dg-options "-maltivec -mabi=altivec -fno-inline" } */
 
 #include <stdarg.h>

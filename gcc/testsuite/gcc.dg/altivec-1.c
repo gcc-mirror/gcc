@@ -1,4 +1,5 @@
 /* { dg-do run { target powerpc*-*-* } } */
+/* { dg-xfail-if "" { "powerpc-*-eabispe*" } { "-maltivec" } { "" } } */
 /* { dg-options "-maltivec" } */
 
 /* Program to test PowerPC AltiVec instructions.  */

@@ -1,5 +1,11 @@
 2004-04-21  Aldy Hernandez  <aldyh@redhat.com>
 
+	* gcc.dg/altivec-1.c: XFAIL for powerpc-eabispe.
+	* gcc.dg/altivec-3.c: Same.
+	* gcc.dg/altivec-varargs-1.c: Same.
+
+2004-04-21  Aldy Hernandez  <aldyh@redhat.com>
+
 	* lib/target-supports.exp (check_profiling_available): Assume
 	profiling is not available on powerpc-eabi targets.
 
