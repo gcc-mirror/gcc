@@ -1,3 +1,8 @@
+2003-10-08  Nathanael Nerode  <neroden@gcc.gnu.org>
+
+	* doc/install.texi: Remove reference to removed 'pthreads' thread
+	option.
+
 2003-10-08  Aldy Hernandez  <aldyh@redhat.com>
 
 	* config/rs6000/rs6000.md ("abssi2_isel"): Add early clobber to
