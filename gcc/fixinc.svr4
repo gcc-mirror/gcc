@@ -185,8 +185,9 @@ while [ $# != 0 ]; do
 	  /#[a-z]*if.*[	 (]ns32000/	s/\([^_]\)ns32000/\1__ns32000__/g
 	  /#[a-z]*if.*[	 (]pyr/		s/\([^_]\)pyr/\1__pyr__/g
 	  /#[a-z]*if.*[	 (]is68k/	s/\([^_]\)is68k/\1__is68k__/g
-	  s/__STDC__ == 0/!defined (__STRICT_ANSI__)/g
-	  s/__STDC__ != 0/defined (__STRICT_ANSI__)/g
+	  s/__STDC__[ 	][ 	]*==[ 	][ 	]*0/!defined (__STRICT_ANSI__)/g
+	  s/__STDC__[ 	][ 	]*==[ 	][ 	]*1/defined (__STRICT_ANSI__)/g
+	  s/__STDC__[ 	][ 	]*!=[ 	][ 	]*0/defined (__STRICT_ANSI__)/g
 	  s/__STDC__ - 0 == 0/!defined (__STRICT_ANSI__)/g
 	' $2/$file > $2/$file.sed
 	mv $2/$file.sed $2/$file
