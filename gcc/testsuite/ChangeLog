@@ -1,3 +1,7 @@
+2001-03-28  Loren J. Rittle  <ljrittle@acm.org>
+
+	* g++.dg/special/ecos.exp (conpr-1.C): Do not write in $srcdir.
+
 2001-03-28  Philip Blundell  <philb@gnu.org>
 
 	* gcc.c-torture/compile/20010328-1.c: New test.
