@@ -333,6 +333,9 @@ make_decl_rtl (decl, asmspec, top_level)
 	error ("function declared `register'");
       else if (DECL_REGISTER (decl) && TYPE_MODE (TREE_TYPE (decl)) == BLKmode)
 	error_with_decl (decl, "data type of `%s' isn't suitable for a register");
+      else if (DECL_REGISTER (decl)
+	       && ! HARD_REGNO_MODE_OK (reg_number, TYPE_MODE (TREE_TYPE (decl))))
+	error_with_decl (decl, "register number for `%s' isn't suitable for the data type");
       /* Now handle properly declared static register variables.  */
       else if (DECL_REGISTER (decl))
 	{
