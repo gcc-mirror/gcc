@@ -381,7 +381,7 @@ lang_specific_driver (in_argc, in_argv, in_added_libraries)
 	case OPTION_version:
 	  printf ("\
 GNU Fortran %s\n\
-Copyright (C) 2000 Free Software Foundation, Inc.\n\
+Copyright (C) 2001 Free Software Foundation, Inc.\n\
 For more version information on components of the GNU Fortran\n\
 compilation system, especially useful when reporting bugs,\n\
 type the command `g77 --verbose'.\n\

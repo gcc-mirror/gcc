@@ -1,3 +1,8 @@
+2001-01-12  Joseph S. Myers  <jsm28@cam.ac.uk>
+
+	* gjavah.c (version), jcf-dump.c (version): Update copyright year
+	to 2001.
+
 2001-01-11  Bryce McKinlay  <bryce@albatross.co.nz>
 
 	* parse.y (resolve_expression_name): Permit instance variables from
