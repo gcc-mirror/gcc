@@ -766,8 +766,6 @@ condjump_p (rtx insn)
 		|| (GET_CODE (XEXP (x, 1)) == PC
 		    && (GET_CODE (XEXP (x, 2)) == LABEL_REF
 			|| GET_CODE (XEXP (x, 2)) == RETURN))));
-
-  return 0;
 }
 
 /* Return nonzero if INSN is a (possibly) conditional jump inside a
