@@ -1,3 +1,7 @@
+2003-04-05  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* c-decl.c (set_save_expr_context): Prototype.
+
 2003-04-05  David Edelsohn  <edelsohn@gnu.org>
 
 	* config/rs6000/rs6000.h (RTX_COSTS): Halve Power multiply costs.
