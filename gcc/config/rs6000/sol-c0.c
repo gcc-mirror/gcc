@@ -48,8 +48,10 @@ _start(int argc, char *argv[], char *envp[], void *auxp, void (*termfunc)())
   if (termfunc)
     atexit (termfunc);
 
+#if 0
   /* Call any global constructors and destructors.  */
   __do_global_ctors ();
+#endif
 
   /* Call the main program now */
   ret = main (argc, argv, envp, auxp);
