@@ -2,7 +2,7 @@
    hosting on Windows NT 3.x, using a Unix style C library and tools,
    as distinct from winnt.h, which is used to build GCC for use with a
    windows style library and tool set and uses the Microsoft tools.
-   Copyright (C) 1995, 1996 Free Software Foundation, Inc.
+   Copyright (C) 1995, 1996, 1997 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -49,6 +49,8 @@ Boston, MA 02111-1307, USA. */
 
 #undef LIB_SPEC
 #define LIB_SPEC "-lcygwin %{mwindows:-luser32 -lgdi32 -lcomdlg32} -lkernel32"
+
+#define LINK_SPEC "%{mwindows:--subsystem windows}"
 
 /* Normally, -lgcc is not needed since everything in it is in the DLL, but we
    want to allow things to be added to it when installing new versions of
