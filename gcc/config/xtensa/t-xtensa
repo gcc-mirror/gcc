@@ -18,6 +18,7 @@ STMP_FIXPROTO =
 
 # Build crtbegin and crtend with the "longcalls" option
 CRTSTUFF_T_CFLAGS += -mlongcalls
+CRTSTUFF_T_CFLAGS_S += -mlongcalls
 
 CROSS_LIBGCC1 = libgcc1-asm.a
 LIB1ASMSRC = xtensa/lib1funcs.asm
