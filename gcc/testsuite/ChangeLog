@@ -1,3 +1,8 @@
+2004-10-06  Paul Brook  <paul@codesourcery.com>
+
+	PR libfortran/17709
+	* gfortran.dg/empty_format_1.f90: New test.
+
 2004-10-06  Tobias Schlueter  <tobias.schlueter@physik.uni-muenchen.de>
 
 	PR fortran/17568
