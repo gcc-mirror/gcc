@@ -1,5 +1,9 @@
 2004-09-25  Kazu Hirata  <kazu@cs.umass.edu>
 
+	* tree-ssa-loop-unswitch.c: Fix a comment typo.
+
+2004-09-25  Kazu Hirata  <kazu@cs.umass.edu>
+
 	* doc/passes.texi: Fix a typo.
 
 2004-09-25  Zdenek Dvorak  <rakdver@atrey.karlin.mff.cuni.cz>
