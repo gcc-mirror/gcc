@@ -3702,14 +3702,62 @@ static int
 try_replace_reg (from, to, insn)
      rtx from, to, insn;
 {
+  rtx note;
+  rtx src;
+  int success;
+  rtx set;
+
+  note = find_reg_note (insn, REG_EQUAL, NULL_RTX);
+
+  if (!note)
+    note = find_reg_note (insn, REG_EQUIV, NULL_RTX);
+
   /* If this fails we could try to simplify the result of the
      replacement and attempt to recognize the simplified insn.
 
      But we need a general simplify_rtx that doesn't have pass
      specific state variables.  I'm not aware of one at the moment.  */
-  return validate_replace_src (from, to, insn);
-}
 
+
+  success = validate_replace_src (from, to, insn);
+  set = single_set (insn);
+
+  /* We've failed to do replacement. Try to add REG_EQUAL note to not loose
+     information.  */
+  if (!success && !note)
+    {
+      if (!set)
+	return 0;
+      note = REG_NOTES (insn) = gen_rtx_EXPR_LIST (REG_EQUAL,
+						   copy_rtx (SET_SRC (set)),
+						   REG_NOTES (insn));
+    }
+
+  /* Always do the replacement in REQ_EQUAL and REG_EQUIV notes.  Also
+     try to simplify them.  */
+  if (note)
+    {
+      rtx simplified;
+      src = XEXP (note, 0);
+      replace_rtx (src, from, to);
+
+      /* Try to simplify resulting note. */
+      simplified = simplify_rtx (src);
+      if (simplified)
+	{
+	  src = simplified;
+	  XEXP (note, 0) = src;
+	}
+
+      /* REG_EQUAL may get simplified into register.
+         We don't allow that. Remove that note. This code ought
+         not to hapen, because previous code ought to syntetize
+         reg-reg move, but be on the safe side.  */
+      else if (REG_P (src))
+	remove_note (insn, note);
+    }
+  return success;
+}
 /* Find a set of REGNO that is available on entry to INSN's block.
    Returns NULL if not found.  */
 
@@ -3897,6 +3945,7 @@ cprop_insn (insn, alter_jumps)
 {
   struct reg_use *reg_used;
   int changed = 0;
+  rtx note;
 
   /* Only propagate into SETs.  Note that a conditional jump is a
      SET with pc_rtx as the destination.  */
@@ -3907,6 +3956,14 @@ cprop_insn (insn, alter_jumps)
 
   reg_use_count = 0;
   find_used_regs (PATTERN (insn));
+  
+  note = find_reg_note (insn, REG_EQUIV, NULL_RTX);
+  if (!note)
+    note = find_reg_note (insn, REG_EQUAL, NULL_RTX);
+
+  /* We may win even when propagating constants into notes. */
+  if (note)
+    find_used_regs (XEXP (note, 0));
 
   reg_used = &reg_use_table[0];
   for ( ; reg_use_count > 0; reg_used++, reg_use_count--)
