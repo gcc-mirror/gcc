@@ -78,7 +78,7 @@ namespace std
   /// Takes a new handler function as an argument, returns the old function.
   terminate_handler set_terminate(terminate_handler) throw();
   /** The runtime will call this function if %exception handling must be
-   *  abandoned for any reason.  */
+   *  abandoned for any reason.  It can also be called by the user.  */
   void terminate() __attribute__ ((__noreturn__));
 
   /// Takes a new handler function as an argument, returns the old function.
@@ -109,6 +109,8 @@ namespace __gnu_cxx
       @endcode
       to use.  For more info, see
       http://gcc.gnu.org/onlinedocs/libstdc++/19_diagnostics/howto.html#4
+
+      In 3.4 and later, this is on by default.
   */
   void __verbose_terminate_handler ();
 } // namespace __gnu_cxx

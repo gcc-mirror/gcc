@@ -1,5 +1,9 @@
 2002-12-26  Phil Edwards  <pme@gcc.gnu.org>
 
+	* libsupc++/exception:  Add comment (mistakenly skipped).
+
+2002-12-26  Phil Edwards  <pme@gcc.gnu.org>
+
 	* include/std/std_bitset.h (_Base_bitset::_M_do_left_shift,
 	_Base_bitset::_M_do_right_shift): Expect a non-zero shift.
 	(bitset::operator<<=, bitset::operator>>=):  When shifting more bits
