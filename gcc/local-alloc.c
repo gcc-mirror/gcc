@@ -1,6 +1,6 @@
 /* Allocate registers within a basic block, for GNU compiler.
    Copyright (C) 1987, 1988, 1991, 1993, 1994, 1995, 1996, 1997, 1998,
-   1999, 2000, 2001 Free Software Foundation, Inc.
+   1999, 2000, 2001, 2002 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -779,6 +779,12 @@ memref_used_between_p (memref, start, end)
 }
 
 /* Return nonzero if the rtx X is invariant over the current function.  */
+/* ??? Actually, the places this is used in reload expect exactly what
+   is tested here, and not everything that is function invariant.  In
+   particular, the frame pointer and arg pointer are special cased;
+   pic_offset_table_rtx is not, and this will cause aborts when we
+   go to spill these things to memory.  */
+
 int
 function_invariant_p (x)
      rtx x;

@@ -1,3 +1,7 @@
+2002-01-03  Richard Henderson  <rth@redhat.com>
+
+	* local-alloc.c (function_invariant_p): Update commentary.
+
 2002-01-04  H.J. Lu <hjl@gnu.org>
 
 	* toplev.c (rest_of_compilation): Fix a typo when calling
