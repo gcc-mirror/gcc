@@ -75,7 +75,7 @@ msg() {
   if [ "x${DATE_IN_MSG}" = "x" ]; then
     echo "${2}"
   else
-    echo "`date`  ${2}"
+    echo "`${DATE}`  ${2}"
   fi
 }
 
@@ -96,7 +96,7 @@ error() {
 # control tools and report to the user.
 
 make_date() {
-  MADE_DATE="`date -u +\"%Y-%m-%d %H:%M %Z\" --date \"1970-01-01 00:00:${1}\"`" \
+  MADE_DATE="`${DATE} -u +\"%Y-%m-%d %H:%M %Z\" --date \"1970-01-01 00:00:${1}\"`" \
     || error "make_date: date command failed"
 }
 
@@ -105,15 +105,15 @@ make_date() {
 # testing; the first one needs it, the others can ignore it if they want.
 
 process_date() {
-  DATE="${1}"
+  TEST_DATE="${1}"
 
-  ${REG_UPDATE} "${DATE}" || error "source update failed for ${DATE}"
+  ${REG_UPDATE} "${TEST_DATE}" || error "source update failed for ${TEST_DATE}"
 
   # If we're already in a valid range, skip this date if there are no
   # differences from either end of the range and adjust LATER.
 
   if [ ${VALID_RANGE} = 1 ]; then
-    ${HAS_CHANGES} "${DATE}" "${LATER_THAN}" "${EARLIER_THAN}"
+    ${HAS_CHANGES} "${TEST_DATE}" "${LATER_THAN}" "${EARLIER_THAN}"
     RET=$?
     case ${RET} in
     0) ;;
@@ -123,8 +123,8 @@ process_date() {
     esac
   fi
 
-  ${REG_BUILD} "${DATE}"  || error "build failed for ${DATE}"
-  ${REG_TEST} "${DATE}"
+  ${REG_BUILD} "${TEST_DATE}"  || error "build failed for ${TEST_DATE}"
+  ${REG_TEST} "${TEST_DATE}"
   LATER=$?
 }
 
@@ -149,21 +149,21 @@ search_dates() {
 
   while [ ${DIFF} -ge ${DELTA} ]; do
     make_date ${MID}
-    DATE="${MADE_DATE}"
+    TEST_DATE="${MADE_DATE}"
 
     # Test it.
 
-    process_date "${DATE}"
+    process_date "${TEST_DATE}"
 
     # Narrow the search based on the outcome of testing DATE.
 
     if [ ${LATER} -eq 1 ]; then
-      msg 1 "search dates later than \"${DATE}\""
-      LATER_THAN="${DATE}"
+      msg 1 "search dates later than \"${TEST_DATE}\""
+      LATER_THAN="${TEST_DATE}"
       let LOW=MID
     else
-      msg 1 "search dates earlier than \"${DATE}\""
-      EARLIER_THAN="${DATE}"
+      msg 1 "search dates earlier than \"${TEST_DATE}\""
+      EARLIER_THAN="${TEST_DATE}"
       let HIGH=MID
     fi
 
@@ -175,6 +175,13 @@ search_dates() {
 ########################################################################
 # Main program (so to speak)
 ########################################################################
+
+# If DATE isn't defined, use the default date command; the configuration
+# file can override this.
+
+if [ "x${DATE}" = "x" ]; then
+  DATE=date
+fi
 
 # The error function uses this.
 
@@ -228,15 +235,15 @@ test ${DELTA} -lt 120 && \
 # Change the dates into seconds since the epoch.  This uses an extension
 # in GNU date.
 
-LOW_DATE=`date +%s --date "${LOW_DATE}"` || \
+LOW_DATE=`${DATE} +%s --date "${LOW_DATE}"` || \
   error "date command failed for \"${LOW_DATE}\""
-HIGH_DATE=`date +%s --date "${HIGH_DATE}"` || \
+HIGH_DATE=`${DATE} +%s --date "${HIGH_DATE}"` || \
   error "date command failed for \"${LOW_DATE}\""
 
 # If FIRST_MID was defined, convert it and make sure it's in the range.
 
 if [ "x${FIRST_MID}" != "x" ]; then
-  FIRST_MID=`date +%s --date "${FIRST_MID}"` || \
+  FIRST_MID=`${DATE} +%s --date "${FIRST_MID}"` || \
     error "date command failed for \"${FIRST_MID}\""
   test ${FIRST_MID} -le ${LOW_DATE}  && \
     error "FIRST_MID date is earlier than LOW_DATE"

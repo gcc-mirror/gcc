@@ -55,7 +55,7 @@ msg() {
   if [ "x${DATE_IN_MSG}" = "x" ]; then
     echo "${2}"
   else
-    echo "`date`  ${2}"
+    echo "`${DATE}`  ${2}"
   fi
 }
 
@@ -70,7 +70,7 @@ error() {
 # control tools and report to the user.
 
 make_date() {
-  MADE_DATE="`date -u +\"%Y-%m-%d %H:%M %Z\" --date \"1970-01-01 00:00:${1}\"`" \
+  MADE_DATE="`${DATE} -u +\"%Y-%m-%d %H:%M %Z\" --date \"1970-01-01 00:00:${1}\"`" \
     || error "make_date: date command failed"
 }
 
@@ -79,24 +79,31 @@ make_date() {
 # testing; the first one needs it, the others can ignore it if they want.
 
 process_date() {
-  DATE="${1}"
+  TEST_DATE="${1}"
 
-  ${REG_UPDATE} "${DATE}"
+  ${REG_UPDATE} "${TEST_DATE}"
   if [ $? -ne 0 ]; then
-    msg 0 "source update failed for ${DATE}"
+    msg 0 "source update failed for ${TEST_DATE}"
     return
   fi
-  ${REG_BUILD} "${DATE}"
+  ${REG_BUILD} "${TEST_DATE}"
   if [ $? -ne 0 ]; then
-    msg 0 "build failed for ${DATE}"
+    msg 0 "build failed for ${TEST_DATE}"
     return
   fi
-  ${REG_TEST} "${DATE}"
+  ${REG_TEST} "${TEST_DATE}"
 }
  
 ########################################################################
 # Main program (so to speak)
 ########################################################################
+
+# If DATE isn't defined, use the default date command; the configuration
+# file can override this.
+
+if [ "x${DATE}" = "x" ]; then
+  DATE=date
+fi
 
 # Process the configuration file.
 
@@ -135,9 +142,9 @@ msg 2 "VERBOSITY  = ${VERBOSITY}"
 # Change the dates into seconds since the epoch.  This uses an extension
 # in GNU date.
 
-LOW_DATE=`date +%s --date "${LOW_DATE}"` || \
+LOW_DATE=`${DATE} +%s --date "${LOW_DATE}"` || \
   error "date command failed for \"${LOW_DATE}\""
-HIGH_DATE=`date +%s --date "${HIGH_DATE}"` || \
+HIGH_DATE=`${DATE} +%s --date "${HIGH_DATE}"` || \
   error "date command failed for \"${LOW_DATE}\""
 
 # Process each date in the range.
