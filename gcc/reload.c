@@ -2026,7 +2026,7 @@ find_reloads (insn, replace, ind_levels, live_known, reload_reg_p)
 	      RTX_UNCHANGING_P (recog_operand[i])
 		= RTX_UNCHANGING_P (regno_reg_rtx[regno]);
 	      find_reloads_address (GET_MODE (recog_operand[i]),
-	      /* This is no longer a pseudo register.  To prevent later code
+				    recog_operand_loc[i],
 				    XEXP (recog_operand[i], 0),
 				    &XEXP (recog_operand[i], 0),
 				    recog_operand[i], ind_levels);
