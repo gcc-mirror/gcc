@@ -1,3 +1,7 @@
+2000-02-11  Rodney Brown  <RodneyBrown@pmsc.com>
+	
+	* pa-protos.h: Wrap function_arg_padding in TREE_CODE #ifdef.
+
 Fri Feb 11 02:59:05 2000  Jeffrey A Law  (law@cygnus.com)
 
 	* pa.c, pa.h: Remove trigraph sequences within comments.

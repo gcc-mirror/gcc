@@ -115,7 +115,9 @@ extern int lhs_lshift_operand PARAMS ((rtx, enum machine_mode));
 extern int pc_or_label_operand PARAMS ((rtx, enum machine_mode));
 #ifdef ARGS_SIZE_RTX
 /* expr.h defines ARGS_SIZE_RTX and `enum direction' */
+#ifdef TREE_CODE
 extern enum direction function_arg_padding PARAMS ((enum machine_mode, tree));
+#endif
 #endif /* ARGS_SIZE_RTX */
 extern int non_hard_reg_operand PARAMS ((rtx, enum machine_mode));
 extern int eq_neq_comparison_operator PARAMS ((rtx, enum machine_mode));
