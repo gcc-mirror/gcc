@@ -1,3 +1,8 @@
+2005-02-02  Zdenek Dvorak  <dvorakz@suse.cz>
+
+	* tree.c (build_int_cst_type): Take sign of the value into account
+	when deciding whether sign extend the value.
+
 2005-02-02  Joseph S. Myers  <joseph@codesourcery.com>
 
 	PR c/18502

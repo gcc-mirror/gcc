@@ -497,39 +497,62 @@ build_int_cstu (tree type, unsigned HOST_WIDE_INT low)
   return build_int_cst_wide (type, low, 0);
 }
 
-/* Create an INT_CST node with a LOW value zero or sign extended depending
-   on the type.  */
+/* Create an INT_CST node with a LOW value in TYPE.  The value is sign extended
+   if it is negative.  This function is similar to build_int_cst, but
+   the extra bits outside of the type precision are cleared.  Constants
+   with these extra bits may confuse the fold so that it detects overflows
+   even in cases when they do not occur, and in general should be avoided.
+   We cannot however make this a default behavior of build_int_cst without
+   more intrusive changes, since there are parts of gcc that rely on the extra
+   precision of the integer constants.  */
 
 tree
 build_int_cst_type (tree type, HOST_WIDE_INT low)
 {
   unsigned HOST_WIDE_INT val = (unsigned HOST_WIDE_INT) low;
+  unsigned HOST_WIDE_INT hi;
   unsigned bits;
   bool signed_p;
   bool negative;
-  tree ret;
 
   if (!type)
     type = integer_type_node;
 
   bits = TYPE_PRECISION (type);
   signed_p = !TYPE_UNSIGNED (type);
-  negative = ((val >> (bits - 1)) & 1) != 0;
 
-  if (signed_p && negative)
-    {
-      if (bits < HOST_BITS_PER_WIDE_INT)
-	val = val | ((~(unsigned HOST_WIDE_INT) 0) << bits);
-      ret = build_int_cst_wide (type, val, ~(unsigned HOST_WIDE_INT) 0);
-    }
+  if (bits >= HOST_BITS_PER_WIDE_INT)
+    negative = (low < 0);
   else
     {
-      if (bits < HOST_BITS_PER_WIDE_INT)
+      /* If the sign bit is inside precision of LOW, use it to determine
+	 the sign of the constant.  */
+      negative = ((val >> (bits - 1)) & 1) != 0;
+
+      /* Mask out the bits outside of the precision of the constant.  */
+      if (signed_p && negative)
+	val = val | ((~(unsigned HOST_WIDE_INT) 0) << bits);
+      else
 	val = val & ~((~(unsigned HOST_WIDE_INT) 0) << bits);
-      ret = build_int_cst_wide (type, val, 0);
     }
 
-  return ret;
+  /* Determine the high bits.  */
+  hi = (negative ? ~(unsigned HOST_WIDE_INT) 0 : 0);
+
+  /* For unsigned type we need to mask out the bits outside of the type
+     precision.  */
+  if (!signed_p)
+    {
+      if (bits <= HOST_BITS_PER_WIDE_INT)
+	hi = 0;
+      else
+	{
+	  bits -= HOST_BITS_PER_WIDE_INT;
+	  hi = hi & ~((~(unsigned HOST_WIDE_INT) 0) << bits);
+	}
+    }
+
+  return build_int_cst_wide (type, val, hi);
 }
 
 /* These are the hash table functions for the hash table of INTEGER_CST
