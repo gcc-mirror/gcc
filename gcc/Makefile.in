@@ -76,11 +76,10 @@ program_transform_cross_name = @program_transform_name@
 srcdir = @srcdir@
 
 # These directories contain files that are provided as part of a FSF tarball,
-# but not provided in CVS.  Some GCC integrators like to use the CVS sources
-# but keep them read-only during a build, and so change these variables
-# from these defaults.
-parsedir = $(srcdir)
-docobjdir = $(srcdir)/doc
+# but not provided in CVS.  Unless --enable-generated-files-in-srcdir is
+# specified these files will be put in the object directory.
+parsedir = @parsedir@
+docobjdir = @docobjdir@
 docdir = $(srcdir)/doc
 
 # Top build directory, relative to here.

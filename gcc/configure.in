@@ -148,6 +148,20 @@ elif test x$withval != xno; then
   cpp_install_dir=$withval
 fi])
 
+# We would like to our source tree to be readonly.  However when releases or
+# pre-releases are generated, the flex/bison generated files as well as the 
+# various formats of manuals need to be included along with the rest of the
+# sources.  Therefore we have --enable-generated-files-in-srcdir to do 
+# just that.
+
+AC_ARG_ENABLE(generated-files-in-srcdir, 
+[  --enable-generated-files-in-srcdir  Put generated files in source dir],
+[case ${enableval} in
+  no)    parsedir='$(objdir)'; docobjdir='$(objdir)/doc';;
+  yes,*) parsedir='$(srcdir)'; docobjdir='$(srcdir)/doc';;
+esac],
+[parsedir='$(objdir)'; docobjdir='$(objdir)/doc';])
+
 # -------------------
 # Find default linker
 # -------------------
@@ -2922,6 +2936,8 @@ AC_SUBST(objdir)
 # Substitute configuration variables
 AC_SUBST(subdirs)
 AC_SUBST(srcdir)
+AC_SUBST(docobjdir)
+AC_SUBST(parsedir)
 AC_SUBST(all_boot_languages)
 AC_SUBST(all_compilers)
 AC_SUBST(all_gtfiles)
