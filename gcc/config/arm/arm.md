@@ -2286,12 +2286,10 @@
   rtx addr = copy_to_mode_reg (SImode, XEXP (operands[1], 0));
 
   mem1 = gen_rtx (MEM, QImode, addr);
-  MEM_VOLATILE_P (mem1) = MEM_VOLATILE_P (operands[1]);
-  MEM_IN_STRUCT_P (mem1) = MEM_IN_STRUCT_P (operands[1]);
+  MEM_COPY_ATTRIBUTES (mem1, operands[1]);
   RTX_UNCHANGING_P (mem1) = RTX_UNCHANGING_P (operands[1]);
   mem2 = gen_rtx (MEM, QImode, plus_constant (addr, 1));
-  MEM_VOLATILE_P (mem2) = MEM_VOLATILE_P (operands[1]);
-  MEM_IN_STRUCT_P (mem2) = MEM_IN_STRUCT_P (operands[1]);
+  MEM_COPY_ATTRIBUTES (mem2, operands[1]);
   RTX_UNCHANGING_P (mem2) = RTX_UNCHANGING_P (operands[1]);
   operands[0] = gen_lowpart (SImode, operands[0]);
   operands[1] = mem1;
@@ -2400,8 +2398,7 @@
 
     operands[3] = gen_rtx (REG, SImode, REGNO (operands[0]));
     operands[2] = gen_rtx (MEM, QImode, operands[3]);
-    MEM_VOLATILE_P (operands[2]) = MEM_VOLATILE_P (operands[1]);
-    MEM_IN_STRUCT_P (operands[2]) = MEM_IN_STRUCT_P (operands[1]);
+    MEM_COPY_ATTRIBUTES (operands[2], operands[1]);
     RTX_UNCHANGING_P (operands[2]) = RTX_UNCHANGING_P (operands[1]);
     operands[1] = XEXP (operands[1], 0);
     if (GET_CODE (operands[1]) == PLUS
@@ -2471,8 +2468,7 @@
     HOST_WIDE_INT offset;
 
     operands[2] = gen_rtx (MEM, QImode, operands[0]);
-    MEM_VOLATILE_P (operands[2]) = MEM_VOLATILE_P (operands[1]);
-    MEM_IN_STRUCT_P (operands[2]) = MEM_IN_STRUCT_P (operands[1]);
+    MEM_COPY_ATTRIBUTES (operands[2], operands[1]);
     RTX_UNCHANGING_P (operands[2]) = RTX_UNCHANGING_P (operands[1]);
     operands[1] = XEXP (operands[1], 0);
     if (GET_CODE (operands[1]) == PLUS
@@ -2892,8 +2888,7 @@
 
 		      new = gen_rtx (MEM, SImode,
 				     plus_constant (base, new_offset));
-		      MEM_VOLATILE_P (new) = MEM_VOLATILE_P (operands[1]);
-		      MEM_IN_STRUCT_P (new) = MEM_IN_STRUCT_P (operands[1]);
+	              MEM_COPY_ATTRIBUTES (new, operands[1]);
 		      RTX_UNCHANGING_P (new) = RTX_UNCHANGING_P (operands[1]);
 		      emit_insn (gen_movsi (reg, new));
 		      if (((INTVAL (offset) & 2) != 0)
@@ -2929,16 +2924,14 @@
 			  HOST_WIDE_INT new_offset = INTVAL (offset) ^ 2;
 			  new = gen_rtx (MEM, SImode,
 					 plus_constant (base, new_offset));
-			  MEM_VOLATILE_P (new) = MEM_VOLATILE_P (operands[1]);
-			  MEM_IN_STRUCT_P (new) = MEM_IN_STRUCT_P (operands[1]);
+                          MEM_COPY_ATTRIBUTES (new, operands[1]);
 			  RTX_UNCHANGING_P (new) = RTX_UNCHANGING_P (operands[1]);
 			  emit_insn (gen_movsi (reg, new));
 			}
 		      else
 			{
 			  new = gen_rtx (MEM, SImode, XEXP (operands[1], 0));
-			  MEM_VOLATILE_P (new) = MEM_VOLATILE_P (operands[1]);
-			  MEM_IN_STRUCT_P (new) = MEM_IN_STRUCT_P (operands[1]);
+	                  MEM_COPY_ATTRIBUTES (new, operands[1]);
 			  RTX_UNCHANGING_P (new) = RTX_UNCHANGING_P (operands[1]);
 			  emit_insn (gen_rotated_loadsi (reg, new));
 			}
@@ -3000,12 +2993,10 @@
   rtx addr = copy_to_mode_reg (SImode, XEXP (operands[1], 0));
 
   mem1 = gen_rtx (MEM, QImode, addr);
-  MEM_VOLATILE_P (mem1) = MEM_VOLATILE_P (operands[1]);
-  MEM_IN_STRUCT_P (mem1) = MEM_IN_STRUCT_P (operands[1]);
+  MEM_COPY_ATTRIBUTES (mem1, operands[1]);
   RTX_UNCHANGING_P (mem1) = RTX_UNCHANGING_P (operands[1]);
   mem2 = gen_rtx (MEM, QImode, plus_constant (addr, 1));
-  MEM_VOLATILE_P (mem2) = MEM_VOLATILE_P (operands[1]);
-  MEM_IN_STRUCT_P (mem2) = MEM_IN_STRUCT_P (operands[1]);
+  MEM_COPY_ATTRIBUTES (mem2, operands[1]);
   RTX_UNCHANGING_P (mem2) = RTX_UNCHANGING_P (operands[1]);
   operands[0] = gen_lowpart (SImode, operands[0]);
   operands[1] = mem1;
@@ -3347,7 +3338,8 @@
     = arm_gen_load_multiple (REGNO (operands[0]), INTVAL (operands[2]),
 			     force_reg (SImode, XEXP (operands[1], 0)),
 			     TRUE, FALSE, RTX_UNCHANGING_P(operands[1]),
-			     MEM_IN_STRUCT_P(operands[1]));
+			     MEM_IN_STRUCT_P(operands[1]),
+	                     MEM_SCALAR_P (operands[1]));
 ")
 
 ;; Load multiple with write-back
@@ -3417,7 +3409,8 @@
     = arm_gen_store_multiple (REGNO (operands[1]), INTVAL (operands[2]),
 			      force_reg (SImode, XEXP (operands[0], 0)),
 			      TRUE, FALSE, RTX_UNCHANGING_P (operands[0]),
-			      MEM_IN_STRUCT_P(operands[0]));
+			      MEM_IN_STRUCT_P(operands[0]), 
+	                      MEM_SCALAR_P (operands[0]));
 ")
 
 ;; Store multiple with write-back
