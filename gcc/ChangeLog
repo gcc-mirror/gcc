@@ -1,3 +1,9 @@
+Thu May 20 10:38:43 1999  Mark Mitchell  <mark@codesourcery.com>
+
+	* expr.h (lang_expand_constant): Declare.
+	* toplev.c (lang_expand_constant): Define it.
+	* varasm.c (output_constant): Use it.
+
 Thu May 20 08:15:00 1999  Bruce Korb <ddsinc09@ix.netcom.com>
 
 	* fixinc/fixincl.c(main): we must not ignore SIGCLD now.
