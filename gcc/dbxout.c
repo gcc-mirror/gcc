@@ -68,7 +68,6 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 
 /* Include these first, because they may define MIN and MAX.  */
 #include <stdio.h>
-#include <sys/param.h>
 #include <errno.h>
 
 #include "config.h"
@@ -83,12 +82,32 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 extern int errno;
 #endif
 
+#ifdef XCOFF_DEBUGGING_INFO
+#include "xcoff.h"
+#endif
+
 #ifndef ASM_STABS_OP
 #define ASM_STABS_OP ".stabs"
 #endif
 
 #ifndef ASM_STABN_OP
 #define ASM_STABN_OP ".stabn"
+#endif
+
+#ifndef DBX_DECL_STABS_CODE
+#define DBX_DECL_STABS_CODE N_LSYM
+#endif
+
+#ifndef DBX_STATIC_CONST_VAR_CODE
+#define DBX_STATIC_CONST_VAR_CODE N_FUN
+#endif
+
+#ifndef DBX_REGPARM_STABS_CODE
+#define DBX_REGPARM_STABS_CODE N_RSYM
+#endif
+
+#ifndef DBX_REGPARM_STABS_LETTER
+#define DBX_REGPARM_STABS_LETTER 'P'
 #endif
 
 /* Nonzero means if the type has methods, only output debugging
@@ -103,24 +122,12 @@ static int flag_minimal_debug = 1;
 
 static int have_used_extensions = 0;
 
-/* Virtually every UN*X system now in common use (except for pre-4.3-tahoe
-   BSD systems) now provides getcwd as called for by POSIX.  Allow for
-   the few exceptions to the general rule here.  */
-
-#if !(defined (USG) || defined (VMS))
-extern char *getwd ();
-#define getcwd(buf,len) getwd(buf)
-#define GUESSPATHLEN (MAXPATHLEN + 1)
-#else /* (defined (USG) || defined (VMS)) */
-extern char *getcwd ();
-/* We actually use this as a starting point, not a limit.  */
-#define GUESSPATHLEN 100
-#endif /* (defined (USG) || defined (VMS)) */
+char *getpwd ();
 
 /* Typical USG systems don't have stab.h, and they also have
    no use for DBX-format debugging info.  */
 
-#ifdef DBX_DEBUGGING_INFO
+#if defined (DBX_DEBUGGING_INFO) || defined (XCOFF_DEBUGGING_INFO)
 
 #ifdef DEBUG_SYMS_TEXT
 #define FORCE_TEXT text_section ();
@@ -128,7 +135,7 @@ extern char *getcwd ();
 #define FORCE_TEXT
 #endif
 
-#ifdef USG
+#if defined (USG) || defined (MIPS)
 #include "gstab.h"  /* If doing DBX on sysV, use our own stab.h.  */
 #else
 #include <stab.h>  /* On BSD, use the system's stab.h.  */
@@ -174,7 +181,6 @@ static char *lastfile;
 /* Current working directory.  */
 
 static char *cwd;
-static enum {not_gotten, gotten, error_getting} cwd_status = not_gotten;
 
 enum typestatus {TYPE_UNSEEN, TYPE_XREF, TYPE_DEFINED};
 
@@ -280,7 +286,7 @@ abspath (rel_filename)
   char *outp, *inp;
   char *value;
 
-  /* Copy the  filename (possibly preceeded by the current working
+  /* Copy the filename (possibly preceded by the current working
      directory name) into the absolutization buffer.  */
 
   {
@@ -298,7 +304,6 @@ abspath (rel_filename)
       continue;
     if (endp[-1] == '/')
       *endp = '\0';
-  }
 
   /* Now make a copy of abs_buffer into abs_buffer, shortening the
      filename (by taking out slashes and dots) as we go.  */
@@ -385,41 +390,21 @@ dbxout_init (asm_file, input_file_name, syms)
   ASM_GENERATE_INTERNAL_LABEL (ltext_label_name, "Ltext", 0);
 
   /* Put the current working directory in an N_SO symbol.  */
-  {
-    int size;
-
-    if (cwd_status == not_gotten)
-      {
-	char *value;
-
-	/* Read the working directory, avoiding arbitrary limit.  */
-	size = GUESSPATHLEN;
-	while (1)
-	  {
-	    cwd = (char *) xmalloc (size);
-	    value = getcwd (cwd, size);
-	    if (value != 0 || errno != ERANGE)
-	      break;
-	    free (cwd);
-	    size *= 2;
-	  }
-
-	if (value != 0)
-	  cwd_status = gotten;
-	else
-	  cwd_status = error_getting;
-      }
-
-    if (cwd_status == gotten)
-      {
+#ifndef DBX_WORKING_DIRECTORY /* Only some versions of DBX want this,
+				 but GDB always does.  */
+  if (use_gdb_dbx_extensions)
+#endif
+    {
+      if (cwd || (cwd = getpwd ()))
+	{
 #ifdef DBX_OUTPUT_MAIN_SOURCE_DIRECTORY
-	DBX_OUTPUT_MAIN_SOURCE_DIRECTORY (asmfile, cwd);
+	  DBX_OUTPUT_MAIN_SOURCE_DIRECTORY (asmfile, cwd);
 #else /* no DBX_OUTPUT_MAIN_SOURCE_DIRECTORY */
-	fprintf (asmfile, "%s \"%s/\",%d,0,0,%s\n", ASM_STABS_OP,
-		 cwd, N_SO, &ltext_label_name[1]);
+	  fprintf (asmfile, "%s \"%s/\",%d,0,0,%s\n", ASM_STABS_OP,
+		   cwd, N_SO, &ltext_label_name[1]);
 #endif /* no DBX_OUTPUT_MAIN_SOURCE_DIRECTORY */
-      }
-  }
+	}
+    }
 
 #ifdef DBX_OUTPUT_MAIN_SOURCE_FILENAME
   /* This should NOT be DBX_OUTPUT_SOURCE_FILENAME. That
@@ -879,6 +864,11 @@ dbxout_type (type, full)
   fprintf (asmfile, "%d", TYPE_SYMTAB_ADDRESS (type));
   CHARS (3);
 
+#ifdef DBX_TYPE_DEFINED
+  if (DBX_TYPE_DEFINED (type))
+    return;
+#endif
+
   /* If this type's definition has been output or is now being output,
      that is all.  */
 
@@ -996,7 +986,10 @@ dbxout_type (type, full)
 	  n_baseclasses = TREE_VEC_LENGTH (TYPE_BINFO_BASETYPES (type));
 
 	/* Output a structure type.  */
-	if ((TYPE_NAME (type) != 0 && !full)
+	if ((TYPE_NAME (type) != 0
+	     && ! (TREE_CODE (TYPE_NAME (type)) == TYPE_DECL
+		   && DECL_IGNORED_P (TYPE_NAME (type)))
+	     && !full)
 	    || TYPE_SIZE (type) == 0)
 	  {
 	    /* If the type is just a cross reference, output one
@@ -1076,7 +1069,7 @@ dbxout_type (type, full)
 
       /* Write out the field declarations.  */
       dbxout_type_fields (type);
-      if (use_gdb_dbx_extensions)
+      if (use_gdb_dbx_extensions && TYPE_METHODS (type) != NULL_TREE)
 	{
 	  have_used_extensions = 1;
 	  dbxout_type_methods (type);
@@ -1384,12 +1377,12 @@ dbxout_symbol (decl, local)
 	      && (TREE_CODE (type) == RECORD_TYPE
 		  || TREE_CODE (type) == UNION_TYPE)
 	      && (TYPE_NAME (type) == decl))
-		{
-		  putc ('T', asmfile);
-		  TREE_ASM_WRITTEN (TYPE_NAME (type)) = 1;
-	        }
+	    {
+	      putc ('T', asmfile);
+	      TREE_ASM_WRITTEN (TYPE_NAME (type)) = 1;
+	    }
 	  putc ('t', asmfile);
-	  current_sym_code = N_LSYM;
+	  current_sym_code = DBX_DECL_STABS_CODE;
 
 	  dbxout_type (type, 1);
 	  dbxout_finish_symbol (decl);
@@ -1404,7 +1397,7 @@ dbxout_symbol (decl, local)
 	  if (TREE_CODE (name) == TYPE_DECL)
 	    name = DECL_NAME (name);
 
-	  current_sym_code = N_LSYM;
+	  current_sym_code = DBX_DECL_STABS_CODE;
 	  current_sym_value = 0;
 	  current_sym_addr = 0;
 	  current_sym_nchars = 2 + IDENTIFIER_LENGTH (name);
@@ -1538,7 +1531,7 @@ dbxout_symbol (decl, local)
 	      else if (TREE_READONLY (decl) && ! TREE_THIS_VOLATILE (decl))
 		/* This is not quite right, but it's the closest
 		   of all the codes that Unix defines.  */
-		current_sym_code = N_FUN;
+		current_sym_code = DBX_STATIC_CONST_VAR_CODE;
 	      else
 		{
 /* Ultrix `as' seems to need this.  */
@@ -1616,6 +1609,24 @@ dbxout_symbol (decl, local)
 	     We want the value of that CONST_INT.  */
 	  current_sym_value = DEBUGGER_AUTO_OFFSET (XEXP (DECL_RTL (decl), 0));
 	}
+      else if (GET_CODE (DECL_RTL (decl)) == MEM
+	       && GET_CODE (XEXP (DECL_RTL (decl), 0)) == CONST)
+	{
+	  /* Handle an obscure case which can arise when optimizing and
+	     when there are few available registers.  (This is *always*
+	     the case for i386/i486 targets).  The DECL_RTL looks like
+	     (MEM (CONST ...)) even though this variable is a local `auto'
+	     or a local `register' variable.  In effect, what has happened
+	     is that the reload pass has seen that all assignments and
+	     references for one such a local variable can be replaced by
+	     equivalent assignments and references to some static storage
+	     variable, thereby avoiding the need for a register.  In such
+	     cases we're forced to lie to debuggers and tell them that
+	     this variable was itself `static'.  */
+	  current_sym_code = N_LCSYM;
+	  letter = 'V';
+	  current_sym_addr = XEXP (XEXP (DECL_RTL (decl), 0), 0);
+	}
       else
 	/* Address might be a MEM, when DECL is a variable-sized object.
 	   Or it might be const0_rtx, meaning previous passes
@@ -1624,6 +1635,11 @@ dbxout_symbol (decl, local)
 
       /* Ok, start a symtab entry and output the variable name.  */
       FORCE_TEXT;
+
+#ifdef DBX_STATIC_BLOCK_START
+      DBX_STATIC_BLOCK_START (asmfile, current_sym_code);
+#endif
+
       /* One slight hitch: if this is a VAR_DECL which is a static
 	 class member, we must put out the mangled name instead of the
 	 DECL_NAME.  */
@@ -1635,10 +1651,12 @@ dbxout_symbol (decl, local)
 	  {
 	    name = IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (decl));
 
+#if 0 /* Tiemann says get rid of this.  */
 	    /* Adding 1 here only works on systems
 	       which flush an initial underscore.  */
 	    if (name[0] == '_')
 	      name += 1;
+#endif
 	  }
 	else
 	  name = IDENTIFIER_POINTER (DECL_NAME (decl));
@@ -1647,6 +1665,10 @@ dbxout_symbol (decl, local)
       if (letter) putc (letter, asmfile);
       dbxout_type (type, 0);
       dbxout_finish_symbol (decl);
+
+#ifdef DBX_STATIC_BLOCK_END
+      DBX_STATIC_BLOCK_END (asmfile, current_sym_code);
+#endif
       break;
     }
 }
@@ -1666,22 +1688,27 @@ static void
 dbxout_finish_symbol (sym)
      tree sym;
 {
+#ifdef DBX_FINISH_SYMBOL
+  DBX_FINISH_SYMBOL (sym);
+#else
   int line = 0;
 #ifdef WINNING_GDB
   if (sym != 0)
     line = DECL_SOURCE_LINE (sym);
 #endif
+
   fprintf (asmfile, "\",%d,0,%d,", current_sym_code, line);
   if (current_sym_addr)
     output_addr_const (asmfile, current_sym_addr);
   else
     fprintf (asmfile, "%d", current_sym_value);
   putc ('\n', asmfile);
+#endif
 }
 
 /* Output definitions of all the decls in a chain.  */
 
-static void
+void
 dbxout_syms (syms)
      tree syms;
 {
@@ -1704,7 +1731,7 @@ dbxout_syms (syms)
 /* Output definitions, referring to storage in the parmlist,
    of all the parms in PARMS, which is a chain of PARM_DECL nodes.  */
 
-static void
+void
 dbxout_parms (parms)
      tree parms;
 {
@@ -1794,9 +1821,11 @@ dbxout_parms (parms)
 	else if (GET_CODE (DECL_RTL (parms)) == REG)
 	  {
 	    rtx best_rtl;
+	    char regparm_letter;
 	    /* Parm passed in registers and lives in registers or nowhere.  */
 
-	    current_sym_code = N_RSYM;
+	    current_sym_code = DBX_REGPARM_STABS_CODE;
+	    regparm_letter = DBX_REGPARM_STABS_LETTER;
 	    current_sym_addr = 0;
 
 	    /* If parm lives in a register, use that register;
@@ -1816,13 +1845,15 @@ dbxout_parms (parms)
 	    if (DECL_NAME (parms))
 	      {
 		current_sym_nchars = 2 + IDENTIFIER_LENGTH (DECL_NAME (parms));
-		fprintf (asmfile, "%s \"%s:P", ASM_STABS_OP,
-			 IDENTIFIER_POINTER (DECL_NAME (parms)));
+		fprintf (asmfile, "%s \"%s:%c", ASM_STABS_OP,
+			 IDENTIFIER_POINTER (DECL_NAME (parms)),
+			 regparm_letter);
 	      }
 	    else
 	      {
 		current_sym_nchars = 8;
-		fprintf (asmfile, "%s \"(anon):P", ASM_STABS_OP);
+		fprintf (asmfile, "%s \"(anon):%c", ASM_STABS_OP,
+			 regparm_letter);
 	      }
 
 	    dbxout_type (DECL_ARG_TYPE (parms), 0);
@@ -1879,7 +1910,7 @@ dbxout_parms (parms)
 
    PARMS is a chain of PARM_DECL nodes.  */
 
-static void
+void
 dbxout_reg_parms (parms)
      tree parms;
 {
@@ -2045,8 +2076,7 @@ dbxout_block (block, depth, args)
 #ifdef DBX_OUTPUT_CATCH
 		      DBX_OUTPUT_CATCH (asmfile, decl, buf);
 #else
-		      fprintf (asmfile, "%s \"%s:C1\",%d,0,0,",
-			       ASM_STABS_OP,
+		      fprintf (asmfile, "%s \"%s:C1\",%d,0,0,", ASM_STABS_OP,
 			       IDENTIFIER_POINTER (DECL_NAME (decl)), N_CATCH);
 		      assemble_name (asmfile, buf);
 		      fprintf (asmfile, "\n");
@@ -2132,29 +2162,4 @@ dbxout_function (decl)
   DBX_OUTPUT_FUNCTION_END (asmfile, decl);
 #endif
 }
-
-#else /* not DBX_DEBUGGING_INFO */
-
-void
-dbxout_init (asm_file, input_file_name)
-     FILE *asm_file;
-     char *input_file_name;
-{}
-
-void
-dbxout_symbol (decl, local)
-     tree decl;
-     int local;
-{}
-
-void
-dbxout_types (types)
-     register tree types;
-{}
-
-void
-dbxout_function (decl)
-     tree decl;
-{}
-
 #endif /* DBX_DEBUGGING_INFO */
