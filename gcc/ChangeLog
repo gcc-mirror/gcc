@@ -3,6 +3,7 @@
 	* config/i386/i386-interix.h (EH_FRAME_IN_DATA_SECTION): Define.
 	(TARGET_ASM_NAMED_SECTION, RETURN_IN_MEMORY) Define.
 	(DEFAULT_PCC_STRUCT_RETURN): Define as 0.
+	(CPP_PREDEFINES): Handle __declspec.
 	* config/i386/t-interix (USER_H): Remove.
 
 2002-04-12  DJ Delorie  <dj@redhat.com>
