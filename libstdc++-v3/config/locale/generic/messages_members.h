@@ -1,6 +1,6 @@
 // std::messages implementation details, generic version -*- C++ -*-
 
-// Copyright (C) 2001 Free Software Foundation, Inc.
+// Copyright (C) 2001, 2003 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -35,12 +35,26 @@
 
   // Non-virtual member functions.
   template<typename _CharT>
+     messages<_CharT>::messages(size_t __refs)
+     : locale::facet(__refs)
+     { _M_c_locale_messages = _S_c_locale; }
+
+  template<typename _CharT>
+     messages<_CharT>::messages(__c_locale __cloc, const char*, size_t __refs) 
+     : locale::facet(__refs)
+     { _M_c_locale_messages = _S_c_locale; }
+
+  template<typename _CharT>
     typename messages<_CharT>::catalog 
     messages<_CharT>::open(const basic_string<char>& __s, const locale& __loc, 
 			   const char*) const
     { return this->do_open(__s, __loc); }
 
   // Virtual member functions.
+  template<typename _CharT>
+    messages<_CharT>::~messages()
+    { _S_destroy_c_locale(_M_c_locale_messages); }
+
   template<typename _CharT>
     typename messages<_CharT>::catalog 
     messages<_CharT>::do_open(const basic_string<char>&, const locale&) const
@@ -56,3 +70,12 @@
     void    
     messages<_CharT>::do_close(catalog) const 
     { }
+
+   // messages_byname
+   template<typename _CharT>
+     messages_byname<_CharT>::messages_byname(const char* __s, size_t __refs)
+     : messages<_CharT>(__refs) 
+     { 
+       _S_destroy_c_locale(_M_c_locale_messages);
+       _S_create_c_locale(_M_c_locale_messages, __s); 
+     }
