@@ -1,5 +1,9 @@
 2003-09-18  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
 
+	* ChangeLog: Fix recent commit.
+
+2003-09-18  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
+
 	* ChangeLog: Add PR number to patch for PR c++/12316.
 
 2003-09-18  Gabriel Dos Reis <gdr@integrable-solutions.net>
@@ -10,7 +14,6 @@
 
 2003-09-17  Richard Henderson  <rth@redhat.com>
 
-	PR c++/12316
 	* semantics.c (expand_body): Don't save/restore input_location.
 
 2003-09-17  Mark Mitchell  <mark@codesourcery.com>
@@ -31,6 +34,7 @@
 
 2003-09-17  Richard Henderson  <rth@redhat.com>
 
+	PR c++/12316
         * semantics.c (expand_or_defer_fn): Inc/dec function_depth.
 
 2003-09-16  Kriang Lerdsuwanakij  <lerdsuwa@users.sourceforge.net>
