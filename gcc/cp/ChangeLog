@@ -1,3 +1,7 @@
+Sun Jul 12 01:20:57 1998  Jeffrey A Law  (law@cygnus.com)
+
+	* g++.1 (-traditional): Remove duplicated documentation.
+
 1998-07-11  Mark Mitchell  <mark@markmitchell.com>
 
 	* method.c (flush_repeats): Add nrepeats parameter.
