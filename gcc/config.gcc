@@ -223,6 +223,7 @@ case $machine in
  | mn10200-*-*      \
  | ns32k-*-openbsd* \
  | romp-*-openbsd*  \
+ | vax-*-vms* \
  )
     if test "x$enable_obsolete" != xyes; then
       echo "*** Configuration $machine is obsolete." >&2
