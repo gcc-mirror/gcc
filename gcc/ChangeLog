@@ -1,3 +1,11 @@
+Sun Oct 17 15:22:50 1999  Jeffrey A Law  (law@cygnus.com)
+
+	* haifa-sched.c (add_dependence): Only check/update the cache
+	if it exists.
+	(remove_dependence): Likewise.
+	(schedule_insns): Only create the true_dependency_cache if the
+	average number of instructions in a basic block is very large.
+
 Sun Oct 17 11:02:52 1999  Mark Mitchell  <mark@codesourcery.com>
 
 	* Makefile.in (ggc-common.o): Depend on genrtl.h.

@@ -248,8 +248,14 @@ static int *insn_luid;
 #define INSN_LUID(INSN) (insn_luid[INSN_UID (INSN)])
 
 /* To speed up the test for duplicate dependency links we keep a record
-   of true dependencies created by add_dependence.
+   of true dependencies created by add_dependence when the average number
+   of instructions in a basic block is very large.
 
+   Studies have shown that there is typically around 5 instructions between
+   branches for typical C code.  So we can make a guess that the average
+   basic block is approximately 5 instructions long; we will choose 100X
+   the average size as a very large basic block.
+  
    Each insn has an associated bitmap for its dependencies.  Each bitmap
    has enough entries to represent a dependency on any other insn in the
    insn chain.  */
@@ -794,7 +800,8 @@ add_dependence (insn, elem, dep_type)
   /* If we already have a true dependency for ELEM, then we do not
      need to do anything.  Avoiding the list walk below can cut
      compile times dramatically for some code.  */
-  if (TEST_BIT (true_dependency_cache[INSN_LUID (insn)], INSN_LUID (elem)))
+  if (true_dependency_cache
+      && TEST_BIT (true_dependency_cache[INSN_LUID (insn)], INSN_LUID (elem)))
     return;
 
   /* Check that we don't already have this dependence.  */
@@ -808,7 +815,7 @@ add_dependence (insn, elem, dep_type)
 
 	/* If we are adding a true dependency to INSN's LOG_LINKs, then
 	   note that in the bitmap cache of true dependency information.  */
-	if ((int)dep_type == 0)
+	if ((int)dep_type == 0 && true_dependency_cache)
 	  SET_BIT (true_dependency_cache[INSN_LUID (insn)], INSN_LUID (elem));
 	return;
       }
@@ -844,7 +851,7 @@ remove_dependence (insn, elem)
 
 	  /* If we are removing a true dependency from the LOG_LINKS list,
 	     make sure to remove it from the cache too.  */
-	  if (REG_NOTE_KIND (link) == 0)
+	  if (REG_NOTE_KIND (link) == 0 && true_dependency_cache)
 	    RESET_BIT (true_dependency_cache[INSN_LUID (insn)],
 		       INSN_LUID (elem));
 
@@ -6876,9 +6883,15 @@ schedule_insns (dump_file)
   
   /* ?!? We could save some memory by computing a per-region luid mapping
      which could reduce both the number of vectors in the cache and the size
-     of each vector.  */
-  true_dependency_cache = sbitmap_vector_alloc (luid, luid);
-  sbitmap_vector_zero (true_dependency_cache, luid);
+     of each vector.  Instead we just avoid the cache entirely unless the
+     average number of instructions in a basic block is very high.  See
+     the comment before the declaration of true_dependency_cache for
+     what we consider "very high".  */
+  if (luid / n_basic_blocks > 100 * 5)
+    {
+      true_dependency_cache = sbitmap_vector_alloc (luid, luid);
+      sbitmap_vector_zero (true_dependency_cache, luid);
+    }
 
   nr_regions = 0;
   rgn_table = (region *) alloca ((n_basic_blocks) * sizeof (region));
@@ -7047,7 +7060,11 @@ schedule_insns (dump_file)
       fprintf (dump, "\n\n");
     }
 
-  free (true_dependency_cache);
+  if (true_dependency_cache)
+    {
+      free (true_dependency_cache);
+      true_depdency_cache = NULL;
+    }
   free (cant_move);
   free (fed_by_spec_load);
   free (is_load_insn);
