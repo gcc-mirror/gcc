@@ -309,6 +309,7 @@ flow_analysis (f, nregs, file)
 {
   register rtx insn;
   register int i;
+  rtx nonlocal_label_list = nonlocal_label_rtx_list ();
 
 #ifdef ELIMINABLE_REGS
   static struct {int from, to; } eliminables[] = ELIMINABLE_REGS;
@@ -340,9 +341,11 @@ flow_analysis (f, nregs, file)
 	if (INSN_UID (insn) > max_uid_for_flow)
 	  max_uid_for_flow = INSN_UID (insn);
 	if (code == CODE_LABEL
-	    || (prev_code != INSN && prev_code != CALL_INSN
-		&& prev_code != CODE_LABEL
-		&& GET_RTX_CLASS (code) == 'i'))
+	    || (GET_RTX_CLASS (code) == 'i'
+		&& (prev_code == JUMP_INSN
+		    || (prev_code == CALL_INSN
+			&& nonlocal_label_list != 0)
+		    || prev_code == BARRIER)))
 	  i++;
 	if (code != NOTE)
 	  prev_code = code;
@@ -368,7 +371,7 @@ flow_analysis (f, nregs, file)
   uid_volatile = (char *) alloca (max_uid_for_flow + 1);
   bzero (uid_volatile, max_uid_for_flow + 1);
 
-  find_basic_blocks (f);
+  find_basic_blocks (f, nonlocal_label_list);
   life_analysis (f, nregs);
   if (file)
     dump_flow_info (file);
@@ -381,11 +384,13 @@ flow_analysis (f, nregs, file)
 /* Find all basic blocks of the function whose first insn is F.
    Store the correct data in the tables that describe the basic blocks,
    set up the chains of references for each CODE_LABEL, and
-   delete any entire basic blocks that cannot be reached.  */
+   delete any entire basic blocks that cannot be reached.
+
+   NONLOCAL_LABEL_LIST is the same local variable from flow_analysis.  */
 
 static void
-find_basic_blocks (f)
-     rtx f;
+find_basic_blocks (f, nonlocal_label_list)
+     rtx f, nonlocal_label_list;
 {
   register rtx insn;
   register int i;
@@ -424,10 +429,13 @@ find_basic_blocks (f)
 	    else if (NOTE_LINE_NUMBER (insn) == NOTE_INSN_LOOP_END)
 	      depth--;
 	  }
+	/* A basic block starts at label, or after something that can jump.  */
 	else if (code == CODE_LABEL
-		 || (prev_code != INSN && prev_code != CALL_INSN
-		     && prev_code != CODE_LABEL
-		     && GET_RTX_CLASS (code) == 'i'))
+		 || (GET_RTX_CLASS (code) == 'i'
+		     && (prev_code == JUMP_INSN
+			 || (prev_code == CALL_INSN
+			     && nonlocal_label_list != 0)
+			 || prev_code == BARRIER)))
 	  {
 	    basic_block_head[++i] = insn;
 	    basic_block_end[i] = insn;
@@ -457,11 +465,25 @@ find_basic_blocks (f)
 	  }
 
 	BLOCK_NUM (insn) = i;
-	if (code != NOTE)
+
+	/* Don't separare a CALL_INSN from following CLOBBER insns.  This is
+	   a kludge that will go away when each CALL_INSN records its
+	   USE and CLOBBERs.  */
+
+	if (code != NOTE
+	    && ! (prev_code == CALL_INSN && code == INSN
+		  && GET_CODE (PATTERN (insn)) == CLOBBER))
 	  prev_code = code;
       }
     if (i + 1 != n_basic_blocks)
       abort ();
+  }
+
+  /* Don't delete the labels that are referenced by non-jump instructions.  */
+  {
+    register rtx x;
+    for (x = label_value_list; x; x = XEXP (x, 1))
+      block_live[BLOCK_NUM (XEXP (x, 0))] = 1;
   }
 
   /* Record which basic blocks control can drop in to.  */
@@ -506,6 +528,27 @@ find_basic_blocks (f)
 	    for (x = forced_labels; x; x = XEXP (x, 1))
 	      mark_label_ref (gen_rtx (LABEL_REF, VOIDmode, XEXP (x, 0)),
 			      insn, 0);
+	  }
+
+      /* Find all call insns and mark them as possibly jumping
+	 to all the nonlocal goto handler labels.  */
+
+      for (insn = f; insn; insn = NEXT_INSN (insn))
+	if (GET_CODE (insn) == CALL_INSN)
+	  {
+	    rtx x;
+	    for (x = nonlocal_label_list; x; x = XEXP (x, 1))
+	      mark_label_ref (gen_rtx (LABEL_REF, VOIDmode, XEXP (x, 0)),
+			      insn, 0);
+	    /* ??? This could be made smarter:
+	       in some cases it's possible to tell that certain
+	       calls will not do a nonlocal goto.
+
+	       For example, if the nested functions that do the
+	       nonlocal gotos do not have their addresses taken, then
+	       only calls to those functions or to other nested
+	       functions that use them could possibly do nonlocal
+	       gotos.  */
 	  }
 
       /* Pass over all blocks, marking each block that is reachable
@@ -1472,8 +1515,12 @@ insn_dead_p (x, needed, call_ok)
 	  if ((regno < FIRST_PSEUDO_REGISTER && global_regs[regno])
 	      /* Make sure insns to set frame pointer aren't deleted.  */
 	      || regno == FRAME_POINTER_REGNUM
-	      /* Make sure insns to set arg pointer are never deleted.  */
-	      || regno == ARG_POINTER_REGNUM
+#if FRAME_POINTER_REGNUM != ARG_POINTER_REGNUM
+	      /* Make sure insns to set arg pointer are never deleted
+		 (if the arg pointer isn't fixed, there will be a USE for
+		 it, so we can treat it normally). */
+	      || (regno == ARG_POINTER_REGNUM && fixed_regs[regno])
+#endif
 	      || (needed[offset] & bit) != 0)
 	    return 0;
 
@@ -1692,7 +1739,9 @@ mark_set_1 (needed, dead, x, insn, significant)
 
   if (GET_CODE (reg) == REG
       && (regno = REGNO (reg), regno != FRAME_POINTER_REGNUM)
-      && regno != ARG_POINTER_REGNUM
+#if FRAME_POINTER_REGNUM != ARG_POINTER_REGNUM
+      && ! (regno == ARG_POINTER_REGNUM && fixed_regs[regno])
+#endif
       && ! (regno < FIRST_PSEUDO_REGISTER && global_regs[regno]))
     /* && regno != STACK_POINTER_REGNUM) -- let's try without this.  */
     {
@@ -2077,10 +2126,12 @@ mark_used_regs (needed, live, x, final, insn)
 	  {
 	    int n;
 
-	    /* For stack ptr or arg pointer,
+	    /* For stack ptr or fixed arg pointer,
 	       nothing below can be necessary, so waste no more time.  */
 	    if (regno == STACK_POINTER_REGNUM
-		|| regno == ARG_POINTER_REGNUM
+#if FRAME_POINTER_REGNUM != ARG_POINTER_REGNUM
+		|| (regno == ARG_POINTER_REGNUM && fixed_regs[regno])
+#endif
 		|| regno == FRAME_POINTER_REGNUM)
 	      {
 		/* If this is a register we are going to try to eliminate,
@@ -2235,7 +2286,9 @@ mark_used_regs (needed, live, x, final, insn)
 
 	if (GET_CODE (testreg) == REG
 	    && (regno = REGNO (testreg), regno != FRAME_POINTER_REGNUM)
-	    && regno != ARG_POINTER_REGNUM
+#if FRAME_POINTER_REGNUM != ARG_POINTER_REGNUM
+	    && ! (regno == ARG_POINTER_REGNUM && fixed_regs[regno])
+#endif
 	    && ! (regno < FIRST_PSEUDO_REGISTER && global_regs[regno]))
 	  {
 	    mark_used_regs (needed, live, SET_SRC (x), final, insn);
