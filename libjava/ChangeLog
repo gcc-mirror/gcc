@@ -1,3 +1,28 @@
+2002-07-14  Mark Wielaard  <mark@klomp.org>
+
+	* gnu/java/security/der/DEREncodingException.java,
+	gnu/java/security/provider/DERReader.java,
+	gnu/java/security/provider/DERWriter.java,
+	gnu/java/security/provider/DSAKeyPairGenerator.java,
+	gnu/java/security/provider/DSAParameterGenerator.java,
+	gnu/java/security/provider/DSAParameters.java,
+	gnu/java/security/provider/DSASignature.java,
+	gnu/java/security/provider/GnuDSAPrivateKey.java,
+	gnu/java/security/provider/GnuDSAPublicKey.java,
+	gnu/java/security/provider/MD5.java,
+	gnu/java/security/util/Prime.java: New files from Classpath.
+	* Makefile.am (ordinary_java_source_files): Add new files.
+	* Makefile.in: Regenerate.
+
+2002-07-14  C. Brian Jones <cbj@gnu.org>
+
+	* gnu/java/security/provider/DefaultPolicy.java
+	(getPermissions): do not maintain static class variable of
+	Permissions
+	* gnu/java/security/provider/SHA.java 
+	(engineUpdate): algorithm change
+	(engineDigest): algorithm change
+
 2002-07-12  Jesse Rosenstock  <jmr@fulcrummicro.com>
 
 	For PR libgcj/7292:

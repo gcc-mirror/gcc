@@ -1,5 +1,5 @@
-/* DefaultPolicy.java 
-   Copyright (C) 2001, 2002 Free Software Foundation, Inc.
+/* DEREncodingException.java --- DER Encoding Exception
+   Copyright (C) 1999 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -35,29 +35,19 @@ this exception to your version of the library, but you are not
 obligated to do so.  If you do not wish to do so, delete this
 exception statement from your version. */
 
-package gnu.java.security.provider;
 
-import java.security.*;
+package gnu.java.security.der;
 
-/** 
-  * This is just a stub policy implementation which grants all permissions
-  * to any code source. FIXME: This should be replaced with a real
-  * implementation that reads the policy configuration from a file, like
-  * $JAVA_HOME/jre/lib/security/java.security.
-  */
-public class DefaultPolicy extends Policy
+public class DEREncodingException extends Exception
 {
-  static Permission allPermission = new AllPermission();
 
-  public PermissionCollection getPermissions(CodeSource codesource)
+  public DEREncodingException()
   {
-    Permissions perms = new Permissions();
-    perms.add(allPermission);
-    return perms;
+    super ();
   }
   
-  public void refresh()
+  public DEREncodingException (String msg)
   {
-    // Nothing.
+    super (msg);
   }
 }
