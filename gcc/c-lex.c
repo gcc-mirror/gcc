@@ -110,9 +110,9 @@ static int end_of_file;
 static int nextchar = -1;
 #endif
 
-#ifdef HANDLE_SYSV_PRAGMA
-static int handle_sysv_pragma		PROTO((int));
-#endif /* HANDLE_SYSV_PRAGMA */
+#ifdef HANDLE_GENERIC_PRAGMAS
+static int handle_generic_pragma	PROTO((int));
+#endif /* HANDLE_GENERIC_PRAGMAS */
 static int whitespace_cr		PROTO((int));
 static int skip_white_space		PROTO((int));
 static int skip_white_space_on_line	PROTO((void));
@@ -543,34 +543,37 @@ check_newline ()
 	      if (c == '\n')
 		return c;
 
-#if defined HANDLE_PRAGMA || defined HANDLE_SYSV_PRAGMA	      
+#if defined HANDLE_PRAGMA || defined HANDLE_GENERIC_PRAGMAS
 	      UNGETC (c);
 	      token = yylex ();
 	      if (token != IDENTIFIER)
 		goto skipline;
+#endif /* HANDLE_PRAGMA || HANDLE_GENERIC_PRAGMAS */
 	      
 #ifdef HANDLE_PRAGMA
-	      /* We invoke HANDLE_PRAGMA before HANDLE_SYSV_PRAGMA
-		 (if both are defined), in order to give the back
-		 end a chance to override the interpretation of
-		 SYSV style pragmas.  */
+	      /* We invoke HANDLE_PRAGMA before HANDLE_GENERIC_PRAGMAS (if
+		 both are defined), in order to give the back end a chance to
+		 override the interpretation of generic style pragmas.  */
 #if !USE_CPPLIB
 	      if (nextchar >= 0)
 		{
 		  c = nextchar, nextchar = -1;
 		  UNGETC (c);
 		}
-#endif
+#endif /* !USE_CPPLIB */
+	      
+	      if (TREE_CODE (yylval.ttype) != IDENTIFIER_NODE)
+		goto skipline;
+
 	      if (HANDLE_PRAGMA (pragma_getc, pragma_ungetc,
 				 IDENTIFIER_POINTER (yylval.ttype)))
 		return GETC ();
 #endif /* HANDLE_PRAGMA */
 	      
-#ifdef HANDLE_SYSV_PRAGMA
-	      if (handle_sysv_pragma (token))
+#ifdef HANDLE_GENERIC_PRAGMAS
+	      if (handle_generic_pragma (token))
 		return GETC ();
-#endif /* !HANDLE_SYSV_PRAGMA */
-#endif /* HANDLE_PRAGMA || HANDLE_SYSV_PRAGMA */
+#endif /* HANDLE_GENERIC_PRAGMAS */
 	      
 	      /* Issue a warning message if we have been asked to do so.
 		 Ignoring unknown pragmas in system header file unless
@@ -837,17 +840,17 @@ linenum:
   return c;
 }
 
-#ifdef HANDLE_SYSV_PRAGMA
+#ifdef HANDLE_GENERIC_PRAGMAS
 
 /* Handle a #pragma directive.
    TOKEN is the token we read after `#pragma'.  Processes the entire input
-   line and returns a character for the caller to reread: either \n or EOF.  */
+   line and return non-zero iff the pragma has been successfully parsed.  */
 
 /* This function has to be in this file, in order to get at
    the token types.  */
 
 static int
-handle_sysv_pragma (token)
+handle_generic_pragma (token)
      register int token;
 {
   register int c;
@@ -883,7 +886,7 @@ handle_sysv_pragma (token)
     }
 }
 
-#endif /* HANDLE_SYSV_PRAGMA */
+#endif /* HANDLE_GENERIC_PRAGMAS */
 
 #define ENDFILE -1  /* token that represents end-of-file */
 
