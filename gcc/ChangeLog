@@ -1,3 +1,7 @@
+1999-11-24  Gavin Romig-Koch  <gavin@cygnus.com>
+
+	* config/mips/mips.md (call_value_multiple_interanal1): New.
+
 1999-11-24  Jason Merrill  <jason@casey.cygnus.com>
 
 	* dwarf2out.c (free_AT, free_die): New fns.
