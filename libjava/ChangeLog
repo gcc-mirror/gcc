@@ -1,5 +1,43 @@
 2003-05-10  Michael Koch  <konqueror@gmx.de>
 
+	* javax/swing/plaf/ButtonUI.java,
+	javax/swing/plaf/ColorUIResource.java,
+	javax/swing/plaf/ComponentUI.java,
+	javax/swing/plaf/DimensionUIResource.java,
+	javax/swing/plaf/FontUIResource.java,
+	javax/swing/plaf/IconUIResource.java,
+	javax/swing/plaf/InsetsUIResource.java,
+	javax/swing/plaf/LabelUI.java,
+	javax/swing/plaf/ListUI.java,
+	javax/swing/plaf/OptionPaneUI.java,
+	javax/swing/plaf/PanelUI.java,
+	javax/swing/plaf/TabbedPaneUI.java,
+	javax/swing/plaf/TextUI.java,
+	javax/swing/plaf/TreeUI.java,
+	javax/swing/plaf/ViewportUI.java,
+	javax/swing/plaf/basic/BasicBorders.java,
+	javax/swing/plaf/basic/BasicButtonUI.java,
+	javax/swing/plaf/basic/BasicCheckBoxUI.java,
+	javax/swing/plaf/basic/BasicDefaults.java,
+	javax/swing/plaf/basic/BasicGraphicsUtils.java,
+	javax/swing/plaf/basic/BasicIconFactory.java,
+	javax/swing/plaf/basic/BasicLabelUI.java,
+	javax/swing/plaf/basic/BasicListUI.java,
+	javax/swing/plaf/basic/BasicOptionPaneUI.java,
+	javax/swing/plaf/basic/BasicPanelUI.java,
+	javax/swing/plaf/basic/BasicRadioButtonUI.java,
+	javax/swing/plaf/basic/BasicScrollPaneUI.java,
+	javax/swing/plaf/basic/BasicTabbedPaneUI.java,
+	javax/swing/plaf/basic/BasicTextUI.java,
+	javax/swing/plaf/basic/BasicToggleButtonUI.java,
+	javax/swing/plaf/basic/BasicTreeUI.java,
+	javax/swing/plaf/basic/BasicViewportUI.java,
+	javax/swing/plaf/metal/MetalLookAndFeel.java:
+	New versions from classpath. This adds copyrights to all files and
+	some serialVersionUIDs.
+
+2003-05-10  Michael Koch  <konqueror@gmx.de>
+
 	* java/nio/CharBuffer.java
 	(offset): Make it package-private.
 	(backing_buffer): Likewise.
