@@ -147,6 +147,11 @@ c now try to get times to change enough to see in etime/dtime
       call dumdum(r1)
       call second(r1)
       write (6,*) 'CALL SECOND returns: ', r1
+*     compiler crash fixed by 1998-10-01 com.c change
+      if (rand(0).lt.0.0 .or. rand(0).gt.1.0) then
+        write (6,*) '*** rand(0) error'
+        call abort()
+      end if
       i = getcwd(wd)
       if (i.ne.0) then
         call perror ('*** getcwd')
