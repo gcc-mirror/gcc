@@ -1,3 +1,17 @@
+2004-07-01  Benjamin Kosnik  <bkoz@redhat.com>
+            Per Bothner  <per@bothner.com >
+	    Mohan Embar  <gnustuff@thisiscool.com>
+
+	PR libstdc++/16248
+	* include/bits/concurrence.h (__glibcxx_mutex_type): New.
+	(__glibcxx_mutex): Encapsulate mutex init function into type for
+	threaded configurations without __GTHREAD_MUTEX_INIT.
+	(lock::lock): Make device member a reference.
+	(lock::~lock): Same.
+	* include/ext/pool_allocator.h (__pool_base::_M_get_mutex): Change
+	to mutex_type.
+	* src/allocator.cc: Same.
+	
 2004-06-30  Brad Spencer  <spencer@infointeractive.com>
 
 	* include/ext/mt_allocator.h: Handle allocations at static
