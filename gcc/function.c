@@ -4726,7 +4726,22 @@ assign_parms (fndecl)
 		 Pmode above.  We must use the actual mode of the parm.  */
 	      parmreg = gen_reg_rtx (TYPE_MODE (TREE_TYPE (parm)));
 	      mark_user_reg (parmreg);
-	      emit_move_insn (parmreg, DECL_RTL (parm));
+	      if (GET_MODE (parmreg) != GET_MODE (DECL_RTL (parm)))
+		{
+		  rtx tempreg = gen_reg_rtx (GET_MODE (DECL_RTL (parm)));
+
+		  push_to_sequence (conversion_insns);
+		  emit_move_insn (tempreg, DECL_RTL (parm));
+		  DECL_RTL (parm)
+		    = convert_to_mode (GET_MODE (parmreg), tempreg,
+				       TREE_UNSIGNED (TREE_TYPE (parm)));
+		  emit_move_insn (parmreg, DECL_RTL (parm));
+		  conversion_insns = get_insns();
+		  did_conversion = 1;
+		  end_sequence ();
+		}
+	      else
+		emit_move_insn (parmreg, DECL_RTL (parm));
 	      DECL_RTL (parm) = parmreg;
 	      /* STACK_PARM is the pointer, not the parm, and PARMREG is
 		 now the parm.  */
