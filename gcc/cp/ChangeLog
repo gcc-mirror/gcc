@@ -1,3 +1,11 @@
+2004-01-11  Gabriel Dos Reis <gdr@integrable-solutions.net>
+
+	PR c++/13544
+	* decl.c (build_enumerator): Set DECL_CONTEXT after the enumerator
+	has been pushed.
+	(pushdecl): Don't use DECL_NAMESPACE_SCOPE_P to test whether a
+	decl has a namespace-scope; that isn't really what it means.
+
 2004-01-02  Matthias Klose  <doko@debian.org>
 
 	Backport from mainline:

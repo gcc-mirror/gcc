@@ -4142,8 +4142,9 @@ pushdecl (x)
 
       /* In case this decl was explicitly namespace-qualified, look it
 	 up in its namespace context.  */
-      if (DECL_NAMESPACE_SCOPE_P (x) && namespace_bindings_p ())
-	t = namespace_binding (name, DECL_CONTEXT (x));
+      if ((DECL_CONTEXT (x) && TREE_CODE (DECL_CONTEXT (x)) == NAMESPACE_DECL)
+          && namespace_bindings_p ())
+        t = namespace_binding (name, DECL_CONTEXT (x));
       else
 	t = lookup_name_current_level (name);
 
@@ -14185,7 +14186,6 @@ build_enumerator (name, value, enumtype)
       a function could mean local to a class method.  */
     decl = build_decl (CONST_DECL, name, type);
 
-  DECL_CONTEXT (decl) = FROB_CONTEXT (context);
   DECL_INITIAL (decl) = value;
   TREE_READONLY (decl) = 1;
 
@@ -14195,7 +14195,14 @@ build_enumerator (name, value, enumtype)
       things like `S::i' later.)  */
     finish_member_declaration (decl);
   else
-    pushdecl (decl);
+    {
+      pushdecl (decl);
+      /* Contrary to finish_member_declaration, pushdecl does not properly
+         set the DECL_CONTEXT.  Do that now here.  Doing that before calling
+         pushdecl will confuse the logic used in that function.  Hopefully,
+         future versions will implement a more straight logic.  */
+      DECL_CONTEXT (decl) = FROB_CONTEXT (context);
+    }
 
   /* Add this enumeration constant to the list for this type.  */
   TYPE_VALUES (enumtype) = tree_cons (name, decl, TYPE_VALUES (enumtype));
