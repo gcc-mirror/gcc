@@ -490,24 +490,48 @@
   [(set_attr "type" "binary,binary")
    (set_attr "length" "2,3")])
 
-;;; Experimental conditional move
+;;; Experimental conditional move patterns
 
-(define_insn "cmov"
-  [(set (match_operand:SI 0 "register_operand" "=r,r,r,r")
+; We need the first constraint alternative in order to avoid
+; earlyclobbers on all other alternatives.
+(define_insn ""
+  [(set (match_operand:SI 0 "register_operand" "=r,r,r,r,r")
 	(if_then_else:SI
 	 (match_operator 5 "comparison_operator"
-			 [(match_operand:SI 3 "register_operand" "r,r,r,r")
-			  (match_operand:SI 4 "arith5_operand" "rL,rL,rL,rL")])
-	 (match_operand:SI 1 "arith11_operand" "0,0,r,I")
-	 (match_operand:SI 2 "arith11_operand" "r,I,0,0")))]
+	    [(match_operand:SI 3 "register_operand" "r,r,r,r,r")
+	     (match_operand:SI 4 "arith11_operand" "rI,rI,rI,rI,rI")])
+	 (match_operand:SI 1 "reg_or_cint_move_operand" "0,r,J,N,K")
+	 (const_int 0)))]
+  ""
+  "@
+   com%I4clr,%S5 %4,%3,0\;ldi 0,%0
+   com%I4clr,%B5 %4,%3,%0\;copy %1,%0
+   com%I4clr,%B5 %4,%3,%0\;ldi %1,%0
+   com%I4clr,%B5 %4,%3,%0\;ldil L'%1,%0
+   com%I4clr,%B5 %4,%3,%0\;zdepi %Z1,%0"
+  [(set_attr "type" "multi,multi,multi,multi,multi")
+   (set_attr "length" "2,2,2,2,2")])
+
+(define_insn ""
+  [(set (match_operand:SI 0 "register_operand" "=r,r,r,r,r,r,r,r")
+	(if_then_else:SI
+	 (match_operator 5 "comparison_operator"
+	    [(match_operand:SI 3 "register_operand" "r,r,r,r,r,r,r,r")
+	     (match_operand:SI 4 "arith11_operand" "rI,rI,rI,rI,rI,rI,rI,rI")])
+	 (match_operand:SI 1 "reg_or_cint_move_operand" "0,0,0,0,r,J,N,K")
+	 (match_operand:SI 2 "reg_or_cint_move_operand" "r,J,N,K,0,0,0,0")))]
   ""
   "@
    com%I4clr,%S5 %4,%3,0\;copy %2,%0
    com%I4clr,%S5 %4,%3,0\;ldi %2,%0
-   com%I4clr,%S5 %4,%3,0\;copy %1,%0
-   com%I4clr,%S5 %4,%3,0\;ldi %1,%0"
-  [(set_attr "type" "multi,multi,multi,multi")
-   (set_attr "length" "2,2,2,2")])
+   com%I4clr,%S5 %4,%3,0\;ldil L'%2,%0
+   com%I4clr,%S5 %4,%3,0\;zdepi %Z2,%0
+   com%I4clr,%B5 %4,%3,0\;copy %1,%0
+   com%I4clr,%B5 %4,%3,0\;ldi %1,%0
+   com%I4clr,%B5 %4,%3,0\;ldil L'%1,%0
+   com%I4clr,%B5 %4,%3,0\;zdepi %Z1,%0"
+  [(set_attr "type" "multi,multi,multi,multi,multi,multi,multi,multi")
+   (set_attr "length" "2,2,2,2,2,2,2,2")])
 
 ;; Conditional Branches
 
