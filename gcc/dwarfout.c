@@ -312,9 +312,6 @@ static unsigned lookup_filename ();
 #ifndef VERSION_ASM_OP
 #define VERSION_ASM_OP		".version"
 #endif
-#ifndef SECTION_ASM_OP
-#define SECTION_ASM_OP		".section"
-#endif
 #ifndef UNALIGNED_SHORT_ASM_OP
 #define UNALIGNED_SHORT_ASM_OP	".2byte"
 #endif
@@ -324,10 +321,72 @@ static unsigned lookup_filename ();
 #ifndef DEF_ASM_OP
 #define DEF_ASM_OP		".set"
 #endif
-
-/* This macro is already used elsewhere and has a published default.  */
 #ifndef ASM_BYTE_OP
 #define ASM_BYTE_OP		"\t.byte"
+#endif
+
+/* Pseudo-ops for pushing the current section onto the section stack (and
+   simultaneously changing to a new section) and for poping back to the
+   section we were in immediately before this one.  Note that most svr4
+   assemblers only maintain a one level stack... you can push all the
+   sections you want, but you can only pop out one level.  (The sparc
+   svr4 assembler might be an exception to this general rule.)  That's
+   OK because we only use at most one level of the section stack herein.  */
+
+#ifndef PUSHSECTION_ASM_OP
+#define PUSHSECTION_ASM_OP	"\t.section"
+#endif
+#ifndef POPSECTION_ASM_OP
+#define POPSECTION_ASM_OP	"\t.previous"
+#endif
+
+/* The default format used by the ASM_OUTPUT_PUSH_SECTION macro (see below)
+   to print the PUSHSECTION_ASM_OP and the section name.  The default here
+   works for almost all svr4 assemblers, except for the sparc, where the
+   section name must be enclosed in double quotes.  (See sparcv4.h.)  */
+
+#ifndef PUSHSECTION_FORMAT
+#define PUSHSECTION_FORMAT	"%s\t%s\n"
+#endif
+
+#ifndef DEBUG_SECTION
+#define DEBUG_SECTION		".debug"
+#endif
+#ifndef LINE_SECTION
+#define LINE_SECTION		".line"
+#endif
+#ifndef SFNAMES_SECTION
+#define SFNAMES_SECTION		".debug_sfnames"
+#endif
+#ifndef SRCINFO_SECTION
+#define SRCINFO_SECTION		".debug_srcinfo"
+#endif
+#ifndef MACINFO_SECTION
+#define MACINFO_SECTION		".debug_macinfo"
+#endif
+#ifndef PUBNAMES_SECTION
+#define PUBNAMES_SECTION	".debug_pubnames"
+#endif
+#ifndef ARANGES_SECTION
+#define ARANGES_SECTION		".debug_aranges"
+#endif
+#ifndef TEXT_SECTION
+#define TEXT_SECTION		".text"
+#endif
+#ifndef DATA_SECTION
+#define DATA_SECTION		".data"
+#endif
+#ifndef DATA1_SECTION
+#define DATA1_SECTION		".data1"
+#endif
+#ifndef RODATA_SECTION
+#define RODATA_SECTION		".rodata"
+#endif
+#ifndef RODATA1_SECTION
+#define RODATA1_SECTION		".rodata1"
+#endif
+#ifndef BSS_SECTION
+#define BSS_SECTION		".bss"
 #endif
 
 /* Definitions of defaults for formats and names of various special
@@ -482,7 +541,20 @@ static unsigned lookup_filename ();
    output operations.
 
    If necessary, these may be overridden from within your tm.h file,
-   but typically, you should never need to override these.  */
+   but typically, you shouldn't need to override these.  Two known
+   exceptions are the ASM_OUTPUT_PUSH_SECTION and ASM_OUTPUT_POP_SECTION
+   definitions, which need to be somewhat special for a sparc running svr4.
+*/
+
+#ifndef ASM_OUTPUT_PUSH_SECTION
+#define ASM_OUTPUT_PUSH_SECTION(FILE, SECTION) \
+  fprintf ((FILE), PUSHSECTION_FORMAT, PUSHSECTION_ASM_OP, SECTION)
+#endif
+
+#ifndef ASM_OUTPUT_POP_SECTION
+#define ASM_OUTPUT_POP_SECTION(FILE) \
+  fprintf ((FILE), "%s\n", POPSECTION_ASM_OP)
+#endif
 
 #ifndef ASM_OUTPUT_SOURCE_FILENAME
 #define ASM_OUTPUT_SOURCE_FILENAME(FILE,NAME) \
@@ -497,76 +569,6 @@ static unsigned lookup_filename ();
 	assemble_name (FILE, LABEL2);					\
 	fprintf (FILE, "\n");						\
   } while (0)
-#endif
-
-#ifndef ASM_DWARF_DEBUG_SECTION
-#define ASM_DWARF_DEBUG_SECTION(FILE) \
-  fprintf ((FILE), "%s\t.debug\n", SECTION_ASM_OP)
-#endif
-
-#ifndef ASM_DWARF_LINE_SECTION
-#define ASM_DWARF_LINE_SECTION(FILE) \
-  fprintf ((FILE), "%s\t.line\n", SECTION_ASM_OP)
-#endif
-
-#ifndef ASM_DWARF_SFNAMES_SECTION
-#define ASM_DWARF_SFNAMES_SECTION(FILE) \
-  fprintf ((FILE), "%s\t.debug_sfnames\n", SECTION_ASM_OP)
-#endif
-
-#ifndef ASM_DWARF_SRCINFO_SECTION
-#define ASM_DWARF_SRCINFO_SECTION(FILE) \
-  fprintf ((FILE), "%s\t.debug_srcinfo\n", SECTION_ASM_OP)
-#endif
-
-#ifndef ASM_DWARF_MACINFO_SECTION
-#define ASM_DWARF_MACINFO_SECTION(FILE) \
-  fprintf ((FILE), "%s\t.debug_macinfo\n", SECTION_ASM_OP)
-#endif
-
-#ifndef ASM_DWARF_PUBNAMES_SECTION
-#define ASM_DWARF_PUBNAMES_SECTION(FILE) \
-  fprintf ((FILE), "%s\t.debug_pubnames\n", SECTION_ASM_OP)
-#endif
-
-#ifndef ASM_DWARF_ARANGES_SECTION
-#define ASM_DWARF_ARANGES_SECTION(FILE) \
-  fprintf ((FILE), "%s\t.debug_aranges\n", SECTION_ASM_OP)
-#endif
-
-#ifndef ASM_DWARF_TEXT_SECTION
-#define ASM_DWARF_TEXT_SECTION(FILE) \
-  fprintf ((FILE), "%s\t.text\n", SECTION_ASM_OP)
-#endif
-
-#ifndef ASM_DWARF_DATA_SECTION
-#define ASM_DWARF_DATA_SECTION(FILE) \
-  fprintf ((FILE), "%s\t.data\n", SECTION_ASM_OP)
-#endif
-
-#ifndef ASM_DWARF_DATA1_SECTION
-#define ASM_DWARF_DATA1_SECTION(FILE) \
-  fprintf ((FILE), "%s\t.data1\n", SECTION_ASM_OP)
-#endif
-
-#ifndef ASM_DWARF_RODATA_SECTION
-#define ASM_DWARF_RODATA_SECTION(FILE) \
-  fprintf ((FILE), "%s\t.rodata\n", SECTION_ASM_OP)
-#endif
-
-#ifndef ASM_DWARF_RODATA1_SECTION
-#define ASM_DWARF_RODATA1_SECTION(FILE) \
-  fprintf ((FILE), "%s\t.rodata1\n", SECTION_ASM_OP)
-#endif
-
-#ifndef ASM_DWARF_BSS_SECTION
-#define ASM_DWARF_BSS_SECTION(FILE) \
-  fprintf ((FILE), "%s\t.bss\n", SECTION_ASM_OP)
-#endif
-
-#ifndef ASM_DWARF_POP_SECTION
-#define ASM_DWARF_POP_SECTION(FILE) \
-  fprintf ((FILE), "\t.previous\n")
 #endif
 
 #ifndef ASM_OUTPUT_DWARF_DELTA2
@@ -3698,12 +3700,12 @@ dwarfout_file_scope_decl (decl, set_finalizing)
 	     defined in this compilation unit.  */
 
 	  fputc ('\n', asm_out_file);
-	  ASM_DWARF_PUBNAMES_SECTION (asm_out_file);
+	  ASM_OUTPUT_PUSH_SECTION (asm_out_file, PUBNAMES_SECTION);
 	  sprintf (label, PUB_DIE_LABEL_FMT, next_pubname_number);
 	  ASM_OUTPUT_DWARF_ADDR (asm_out_file, label);
 	  ASM_OUTPUT_DWARF_STRING (asm_out_file,
 				   IDENTIFIER_POINTER (DECL_NAME (decl)));
-	  ASM_DWARF_POP_SECTION (asm_out_file);
+	  ASM_OUTPUT_POP_SECTION (asm_out_file);
 	}
 
       break;
@@ -3733,12 +3735,12 @@ dwarfout_file_scope_decl (decl, set_finalizing)
 	         defined in this compilation unit.  */
 
 	      fputc ('\n', asm_out_file);
-	      ASM_DWARF_PUBNAMES_SECTION (asm_out_file);
+	      ASM_OUTPUT_PUSH_SECTION (asm_out_file, PUBNAMES_SECTION);
 	      sprintf (label, PUB_DIE_LABEL_FMT, next_pubname_number);
 	      ASM_OUTPUT_DWARF_ADDR (asm_out_file, label);
 	      ASM_OUTPUT_DWARF_STRING (asm_out_file,
 				       IDENTIFIER_POINTER (DECL_NAME (decl)));
-	      ASM_DWARF_POP_SECTION (asm_out_file);
+	      ASM_OUTPUT_POP_SECTION (asm_out_file);
 	    }
 
 	  if (DECL_INITIAL (decl) == NULL)
@@ -3747,12 +3749,12 @@ dwarfout_file_scope_decl (decl, set_finalizing)
 		 which is tenatively defined in this compilation unit.  */
 
 	      fputc ('\n', asm_out_file);
-	      ASM_DWARF_ARANGES_SECTION (asm_out_file);
+	      ASM_OUTPUT_PUSH_SECTION (asm_out_file, ARANGES_SECTION);
 	      ASM_OUTPUT_DWARF_ADDR (asm_out_file,
 				     IDENTIFIER_POINTER (DECL_NAME (decl)));
 	      ASM_OUTPUT_DWARF_DATA4 (asm_out_file, 
 			(unsigned) int_size_in_bytes (TREE_TYPE (decl)));
-	      ASM_DWARF_POP_SECTION (asm_out_file);
+	      ASM_OUTPUT_POP_SECTION (asm_out_file);
 	    }
 	}
 
@@ -3788,7 +3790,7 @@ dwarfout_file_scope_decl (decl, set_finalizing)
     }
 
   fputc ('\n', asm_out_file);
-  ASM_DWARF_DEBUG_SECTION (asm_out_file);
+  ASM_OUTPUT_PUSH_SECTION (asm_out_file, DEBUG_SECTION);
   finalizing = set_finalizing;
   output_decl (decl, NULL);
 
@@ -3809,7 +3811,7 @@ dwarfout_file_scope_decl (decl, set_finalizing)
 
   assert (pending_types == 0);
 
-  ASM_DWARF_POP_SECTION (asm_out_file);
+  ASM_OUTPUT_POP_SECTION (asm_out_file);
 
   if (TREE_CODE (decl) == FUNCTION_DECL && DECL_INITIAL (decl) != NULL)
     current_funcdef_number++;
@@ -3909,14 +3911,14 @@ generate_new_sfname_entry ()
   char label[MAX_ARTIFICIAL_LABEL_BYTES];
 
   fputc ('\n', asm_out_file);
-  ASM_DWARF_SFNAMES_SECTION (asm_out_file);
+  ASM_OUTPUT_PUSH_SECTION (asm_out_file, SFNAMES_SECTION);
   sprintf (label, SFNAMES_ENTRY_LABEL_FMT, filename_table[0].number);
   ASM_OUTPUT_LABEL (asm_out_file, label);
   ASM_OUTPUT_DWARF_STRING (asm_out_file,
     			   filename_table[0].name
 			     ? filename_table[0].name
 			     : "");
-  ASM_DWARF_POP_SECTION (asm_out_file);
+  ASM_OUTPUT_POP_SECTION (asm_out_file);
 }
 
 /* Lookup a filename (in the list of filenames that we know about here in
@@ -4010,12 +4012,12 @@ generate_srcinfo_entry (line_entry_num, files_entry_num)
   char label[MAX_ARTIFICIAL_LABEL_BYTES];
 
   fputc ('\n', asm_out_file);
-  ASM_DWARF_SRCINFO_SECTION (asm_out_file);
+  ASM_OUTPUT_PUSH_SECTION (asm_out_file, SRCINFO_SECTION);
   sprintf (label, LINE_ENTRY_LABEL_FMT, line_entry_num);
   ASM_OUTPUT_DWARF_DELTA4 (asm_out_file, label, LINE_BEGIN_LABEL);
   sprintf (label, SFNAMES_ENTRY_LABEL_FMT, files_entry_num);
   ASM_OUTPUT_DWARF_DELTA4 (asm_out_file, label, SFNAMES_BEGIN_LABEL);
-  ASM_DWARF_POP_SECTION (asm_out_file);
+  ASM_OUTPUT_POP_SECTION (asm_out_file);
 }
 
 void
@@ -4035,7 +4037,7 @@ dwarfout_line (filename, line)
       ASM_OUTPUT_LABEL (asm_out_file, label);
 
       fputc ('\n', asm_out_file);
-      ASM_DWARF_LINE_SECTION (asm_out_file);
+      ASM_OUTPUT_PUSH_SECTION (asm_out_file, LINE_SECTION);
 
       if (this_file_entry_num != prev_file_entry_num)
         {
@@ -4057,7 +4059,7 @@ dwarfout_line (filename, line)
 	       filename, line);
       ASM_OUTPUT_DWARF_DATA2 (asm_out_file, 0xffff);
       ASM_OUTPUT_DWARF_DELTA4 (asm_out_file, label, TEXT_BEGIN_LABEL);
-      ASM_DWARF_POP_SECTION (asm_out_file);
+      ASM_OUTPUT_POP_SECTION (asm_out_file);
 
       if (this_file_entry_num != prev_file_entry_num)
         generate_srcinfo_entry (last_line_entry_num, this_file_entry_num);
@@ -4073,10 +4075,10 @@ generate_macinfo_entry (type_and_offset, string)
      register char *string;
 {
   fputc ('\n', asm_out_file);
-  ASM_DWARF_MACINFO_SECTION (asm_out_file);
+  ASM_OUTPUT_PUSH_SECTION (asm_out_file, MACINFO_SECTION);
   fprintf (asm_out_file, "\t%s\t%s\n", UNALIGNED_INT_ASM_OP, type_and_offset);
   ASM_OUTPUT_DWARF_STRING (asm_out_file, string);
-  ASM_DWARF_POP_SECTION (asm_out_file);
+  ASM_OUTPUT_POP_SECTION (asm_out_file);
 }
 
 void
@@ -4186,44 +4188,44 @@ dwarfout_init (asm_out_file, main_input_filename)
   /* Output a starting label for the .text section.  */
 
   fputc ('\n', asm_out_file);
-  ASM_DWARF_TEXT_SECTION (asm_out_file);
+  ASM_OUTPUT_PUSH_SECTION (asm_out_file, TEXT_SECTION);
   ASM_OUTPUT_LABEL (asm_out_file, TEXT_BEGIN_LABEL);
-  ASM_DWARF_POP_SECTION (asm_out_file);
+  ASM_OUTPUT_POP_SECTION (asm_out_file);
 
   /* Output a starting label for the .data section.  */
 
   fputc ('\n', asm_out_file);
-  ASM_DWARF_DATA_SECTION (asm_out_file);
+  ASM_OUTPUT_PUSH_SECTION (asm_out_file, DATA_SECTION);
   ASM_OUTPUT_LABEL (asm_out_file, DATA_BEGIN_LABEL);
-  ASM_DWARF_POP_SECTION (asm_out_file);
+  ASM_OUTPUT_POP_SECTION (asm_out_file);
 
   /* Output a starting label for the .data1 section.  */
 
   fputc ('\n', asm_out_file);
-  ASM_DWARF_DATA1_SECTION (asm_out_file);
+  ASM_OUTPUT_PUSH_SECTION (asm_out_file, DATA1_SECTION);
   ASM_OUTPUT_LABEL (asm_out_file, DATA1_BEGIN_LABEL);
-  ASM_DWARF_POP_SECTION (asm_out_file);
+  ASM_OUTPUT_POP_SECTION (asm_out_file);
 
   /* Output a starting label for the .rodata section.  */
 
   fputc ('\n', asm_out_file);
-  ASM_DWARF_RODATA_SECTION (asm_out_file);
+  ASM_OUTPUT_PUSH_SECTION (asm_out_file, RODATA_SECTION);
   ASM_OUTPUT_LABEL (asm_out_file, RODATA_BEGIN_LABEL);
-  ASM_DWARF_POP_SECTION (asm_out_file);
+  ASM_OUTPUT_POP_SECTION (asm_out_file);
 
   /* Output a starting label for the .rodata1 section.  */
 
   fputc ('\n', asm_out_file);
-  ASM_DWARF_RODATA1_SECTION (asm_out_file);
+  ASM_OUTPUT_PUSH_SECTION (asm_out_file, RODATA1_SECTION);
   ASM_OUTPUT_LABEL (asm_out_file, RODATA1_BEGIN_LABEL);
-  ASM_DWARF_POP_SECTION (asm_out_file);
+  ASM_OUTPUT_POP_SECTION (asm_out_file);
 
   /* Output a starting label for the .bss section.  */
 
   fputc ('\n', asm_out_file);
-  ASM_DWARF_BSS_SECTION (asm_out_file);
+  ASM_OUTPUT_PUSH_SECTION (asm_out_file, BSS_SECTION);
   ASM_OUTPUT_LABEL (asm_out_file, BSS_BEGIN_LABEL);
-  ASM_DWARF_POP_SECTION (asm_out_file);
+  ASM_OUTPUT_POP_SECTION (asm_out_file);
 
   if (debug_info_level >= DINFO_LEVEL_NORMAL)
     {
@@ -4232,7 +4234,7 @@ dwarfout_init (asm_out_file, main_input_filename)
 	 referenced by the initial entry in the .debug_srcinfo section.  */
     
       fputc ('\n', asm_out_file);
-      ASM_DWARF_SFNAMES_SECTION (asm_out_file);
+      ASM_OUTPUT_PUSH_SECTION (asm_out_file, SFNAMES_SECTION);
       ASM_OUTPUT_LABEL (asm_out_file, SFNAMES_BEGIN_LABEL);
       {
 	register char *pwd = getpwd ();
@@ -4244,7 +4246,7 @@ dwarfout_init (asm_out_file, main_input_filename)
         ASM_OUTPUT_DWARF_STRING (asm_out_file, dirname);
         free (dirname);
       }
-      ASM_DWARF_POP_SECTION (asm_out_file);
+      ASM_OUTPUT_POP_SECTION (asm_out_file);
     
       if (debug_info_level >= DINFO_LEVEL_VERBOSE)
 	{
@@ -4253,24 +4255,24 @@ dwarfout_init (asm_out_file, main_input_filename)
 	     TAG_compile_unit DIE.  */
         
           fputc ('\n', asm_out_file);
-          ASM_DWARF_MACINFO_SECTION (asm_out_file);
+          ASM_OUTPUT_PUSH_SECTION (asm_out_file, MACINFO_SECTION);
           ASM_OUTPUT_LABEL (asm_out_file, MACINFO_BEGIN_LABEL);
-          ASM_DWARF_POP_SECTION (asm_out_file);
+          ASM_OUTPUT_POP_SECTION (asm_out_file);
 	}
 
       /* Generate the initial entry for the .line section.  */
     
       fputc ('\n', asm_out_file);
-      ASM_DWARF_LINE_SECTION (asm_out_file);
+      ASM_OUTPUT_PUSH_SECTION (asm_out_file, LINE_SECTION);
       ASM_OUTPUT_LABEL (asm_out_file, LINE_BEGIN_LABEL);
       ASM_OUTPUT_DWARF_DELTA4 (asm_out_file, LINE_END_LABEL, LINE_BEGIN_LABEL);
       ASM_OUTPUT_DWARF_ADDR (asm_out_file, TEXT_BEGIN_LABEL);
-      ASM_DWARF_POP_SECTION (asm_out_file);
+      ASM_OUTPUT_POP_SECTION (asm_out_file);
     
       /* Generate the initial entry for the .debug_srcinfo section.  */
     
       fputc ('\n', asm_out_file);
-      ASM_DWARF_SRCINFO_SECTION (asm_out_file);
+      ASM_OUTPUT_PUSH_SECTION (asm_out_file, SRCINFO_SECTION);
       ASM_OUTPUT_LABEL (asm_out_file, SRCINFO_BEGIN_LABEL);
       ASM_OUTPUT_DWARF_ADDR (asm_out_file, LINE_BEGIN_LABEL);
       ASM_OUTPUT_DWARF_ADDR (asm_out_file, SFNAMES_BEGIN_LABEL);
@@ -4281,21 +4283,21 @@ dwarfout_init (asm_out_file, main_input_filename)
 #else
       ASM_OUTPUT_DWARF_DATA4 (asm_out_file, -1);
 #endif
-      ASM_DWARF_POP_SECTION (asm_out_file);
+      ASM_OUTPUT_POP_SECTION (asm_out_file);
     
       /* Generate the initial entry for the .debug_pubnames section.  */
     
       fputc ('\n', asm_out_file);
-      ASM_DWARF_PUBNAMES_SECTION (asm_out_file);
+      ASM_OUTPUT_PUSH_SECTION (asm_out_file, PUBNAMES_SECTION);
       ASM_OUTPUT_DWARF_ADDR (asm_out_file, DEBUG_BEGIN_LABEL);
-      ASM_DWARF_POP_SECTION (asm_out_file);
+      ASM_OUTPUT_POP_SECTION (asm_out_file);
     
       /* Generate the initial entry for the .debug_aranges section.  */
     
       fputc ('\n', asm_out_file);
-      ASM_DWARF_ARANGES_SECTION (asm_out_file);
+      ASM_OUTPUT_PUSH_SECTION (asm_out_file, ARANGES_SECTION);
       ASM_OUTPUT_DWARF_ADDR (asm_out_file, DEBUG_BEGIN_LABEL);
-      ASM_DWARF_POP_SECTION (asm_out_file);
+      ASM_OUTPUT_POP_SECTION (asm_out_file);
     }
 
   /* Setup first DIE number == 1.  */
@@ -4308,10 +4310,10 @@ dwarfout_init (asm_out_file, main_input_filename)
      compiler was invoked when the given (base) source file was compiled.  */
 
   fputc ('\n', asm_out_file);
-  ASM_DWARF_DEBUG_SECTION (asm_out_file);
+  ASM_OUTPUT_PUSH_SECTION (asm_out_file, DEBUG_SECTION);
   ASM_OUTPUT_LABEL (asm_out_file, DEBUG_BEGIN_LABEL);
   output_die (output_compile_unit_die, main_input_filename);
-  ASM_DWARF_POP_SECTION (asm_out_file);
+  ASM_OUTPUT_POP_SECTION (asm_out_file);
 
   fputc ('\n', asm_out_file);
 }
@@ -4324,7 +4326,7 @@ dwarfout_finish ()
   char label[MAX_ARTIFICIAL_LABEL_BYTES];
 
   fputc ('\n', asm_out_file);
-  ASM_DWARF_DEBUG_SECTION (asm_out_file);
+  ASM_OUTPUT_PUSH_SECTION (asm_out_file, DEBUG_SECTION);
 
   /* Mark the end of the chain of siblings which represent all file-scope
      declarations in this compilation unit.  */
@@ -4358,71 +4360,71 @@ dwarfout_finish ()
 
   sprintf (label, DIE_BEGIN_LABEL_FMT, NEXT_DIE_NUM);
   ASM_OUTPUT_LABEL (asm_out_file, label);	/* should be ..D2 */
-  ASM_DWARF_POP_SECTION (asm_out_file);
+  ASM_OUTPUT_POP_SECTION (asm_out_file);
 
   /* Output a terminator label for the .text section.  */
 
   fputc ('\n', asm_out_file);
-  ASM_DWARF_TEXT_SECTION (asm_out_file);
+  ASM_OUTPUT_PUSH_SECTION (asm_out_file, TEXT_SECTION);
   ASM_OUTPUT_LABEL (asm_out_file, TEXT_END_LABEL);
-  ASM_DWARF_POP_SECTION (asm_out_file);
+  ASM_OUTPUT_POP_SECTION (asm_out_file);
 
   /* Output a terminator label for the .data section.  */
 
   fputc ('\n', asm_out_file);
-  ASM_DWARF_DATA_SECTION (asm_out_file);
+  ASM_OUTPUT_PUSH_SECTION (asm_out_file, DATA_SECTION);
   ASM_OUTPUT_LABEL (asm_out_file, DATA_END_LABEL);
-  ASM_DWARF_POP_SECTION (asm_out_file);
+  ASM_OUTPUT_POP_SECTION (asm_out_file);
 
   /* Output a terminator label for the .data1 section.  */
 
   fputc ('\n', asm_out_file);
-  ASM_DWARF_DATA1_SECTION (asm_out_file);
+  ASM_OUTPUT_PUSH_SECTION (asm_out_file, DATA1_SECTION);
   ASM_OUTPUT_LABEL (asm_out_file, DATA1_END_LABEL);
-  ASM_DWARF_POP_SECTION (asm_out_file);
+  ASM_OUTPUT_POP_SECTION (asm_out_file);
 
   /* Output a terminator label for the .rodata section.  */
 
   fputc ('\n', asm_out_file);
-  ASM_DWARF_RODATA_SECTION (asm_out_file);
+  ASM_OUTPUT_PUSH_SECTION (asm_out_file, RODATA_SECTION);
   ASM_OUTPUT_LABEL (asm_out_file, RODATA_END_LABEL);
-  ASM_DWARF_POP_SECTION (asm_out_file);
+  ASM_OUTPUT_POP_SECTION (asm_out_file);
 
   /* Output a terminator label for the .rodata1 section.  */
 
   fputc ('\n', asm_out_file);
-  ASM_DWARF_RODATA1_SECTION (asm_out_file);
+  ASM_OUTPUT_PUSH_SECTION (asm_out_file, RODATA1_SECTION);
   ASM_OUTPUT_LABEL (asm_out_file, RODATA1_END_LABEL);
-  ASM_DWARF_POP_SECTION (asm_out_file);
+  ASM_OUTPUT_POP_SECTION (asm_out_file);
 
   /* Output a terminator label for the .bss section.  */
 
   fputc ('\n', asm_out_file);
-  ASM_DWARF_BSS_SECTION (asm_out_file);
+  ASM_OUTPUT_PUSH_SECTION (asm_out_file, BSS_SECTION);
   ASM_OUTPUT_LABEL (asm_out_file, BSS_END_LABEL);
-  ASM_DWARF_POP_SECTION (asm_out_file);
+  ASM_OUTPUT_POP_SECTION (asm_out_file);
 
   if (debug_info_level >= DINFO_LEVEL_NORMAL)
     {
       /* Output a terminating entry for the .line section.  */
     
       fputc ('\n', asm_out_file);
-      ASM_DWARF_LINE_SECTION (asm_out_file);
+      ASM_OUTPUT_PUSH_SECTION (asm_out_file, LINE_SECTION);
       ASM_OUTPUT_LABEL (asm_out_file, LINE_LAST_ENTRY_LABEL);
       ASM_OUTPUT_DWARF_DATA4 (asm_out_file, 0);
       ASM_OUTPUT_DWARF_DATA2 (asm_out_file, 0xffff);
       ASM_OUTPUT_DWARF_DELTA4 (asm_out_file, TEXT_END_LABEL, TEXT_BEGIN_LABEL);
       ASM_OUTPUT_LABEL (asm_out_file, LINE_END_LABEL);
-      ASM_DWARF_POP_SECTION (asm_out_file);
+      ASM_OUTPUT_POP_SECTION (asm_out_file);
     
       /* Output a terminating entry for the .debug_srcinfo section.  */
     
       fputc ('\n', asm_out_file);
-      ASM_DWARF_SRCINFO_SECTION (asm_out_file);
+      ASM_OUTPUT_PUSH_SECTION (asm_out_file, SRCINFO_SECTION);
       ASM_OUTPUT_DWARF_DELTA4 (asm_out_file,
 			       LINE_LAST_ENTRY_LABEL, LINE_BEGIN_LABEL);
       ASM_OUTPUT_DWARF_DATA4 (asm_out_file, -1);
-      ASM_DWARF_POP_SECTION (asm_out_file);
+      ASM_OUTPUT_POP_SECTION (asm_out_file);
 
       if (debug_info_level >= DINFO_LEVEL_VERBOSE)
 	{
@@ -4431,19 +4433,19 @@ dwarfout_finish ()
 	  dwarfout_resume_previous_source_file (0);
 
 	  fputc ('\n', asm_out_file);
-	  ASM_DWARF_MACINFO_SECTION (asm_out_file);
+	  ASM_OUTPUT_PUSH_SECTION (asm_out_file, MACINFO_SECTION);
 	  ASM_OUTPUT_DWARF_DATA4 (asm_out_file, 0);
 	  ASM_OUTPUT_DWARF_STRING (asm_out_file, "");
-	  ASM_DWARF_POP_SECTION (asm_out_file);
+	  ASM_OUTPUT_POP_SECTION (asm_out_file);
 	}
     
       /* Generate the terminating entry for the .debug_pubnames section.  */
     
       fputc ('\n', asm_out_file);
-      ASM_DWARF_PUBNAMES_SECTION (asm_out_file);
+      ASM_OUTPUT_PUSH_SECTION (asm_out_file, PUBNAMES_SECTION);
       ASM_OUTPUT_DWARF_DATA4 (asm_out_file, 0);
       ASM_OUTPUT_DWARF_STRING (asm_out_file, "");
-      ASM_DWARF_POP_SECTION (asm_out_file);
+      ASM_OUTPUT_POP_SECTION (asm_out_file);
     
       /* Generate the terminating entries for the .debug_aranges section.
 
@@ -4460,7 +4462,7 @@ dwarfout_finish ()
       */
     
       fputc ('\n', asm_out_file);
-      ASM_DWARF_ARANGES_SECTION (asm_out_file);
+      ASM_OUTPUT_PUSH_SECTION (asm_out_file, ARANGES_SECTION);
 
       ASM_OUTPUT_DWARF_ADDR (asm_out_file, TEXT_BEGIN_LABEL);
       ASM_OUTPUT_DWARF_DELTA4 (asm_out_file, TEXT_END_LABEL, TEXT_BEGIN_LABEL);
@@ -4486,7 +4488,7 @@ dwarfout_finish ()
       ASM_OUTPUT_DWARF_DATA4 (asm_out_file, 0);
       ASM_OUTPUT_DWARF_DATA4 (asm_out_file, 0);
 
-      ASM_DWARF_POP_SECTION (asm_out_file);
+      ASM_OUTPUT_POP_SECTION (asm_out_file);
     }
 }
 
