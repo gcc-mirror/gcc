@@ -1,3 +1,8 @@
+2001-07-20  Diego Novillo  <dnovillo@redhat.com>
+
+	* combine.c (combine_simplify_rtx): Generate a new shift operation
+	when simplifying the first operand of a (neg (ashift)) expression.
+
 2001-07-20  Roman Lechtchinsky  <rl@cs.tu-berlin.de>
 
 	* regclass.c (N_REG_INTS): Use only 32 bits per element.

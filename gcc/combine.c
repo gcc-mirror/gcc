@@ -3921,10 +3921,7 @@ combine_simplify_rtx (x, op0_mode, last, in_dest)
 	  temp = simplify_unary_operation (NEG, mode,
 					   XEXP (XEXP (x, 0), 0), mode);
 	  if (temp)
-	    {
-	      SUBST (XEXP (XEXP (x, 0), 0), temp);
-	      return XEXP (x, 0);
-	    }
+	    return gen_binary (ASHIFT, mode, temp, XEXP (XEXP (x, 0), 1));
 	}
 
       temp = expand_compound_operation (XEXP (x, 0));
