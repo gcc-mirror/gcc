@@ -1,3 +1,7 @@
+2004-06-03  Tobias Schlueter  <tobias.schlueter@physik.uni-muenchen.de>
+
+	* trans-array.c: Fix spelling in comments.
+
 2004-06-02  Tobias Schlueter  <tobias.schlueter@physik.uni-muenchen.de>
 
 	PR fortran/15557
