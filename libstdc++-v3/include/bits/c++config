@@ -33,6 +33,11 @@
 // Pick up any OS-specific definitions.
 #include <bits/os_defines.h>
 
+// Tell Glibc not to try to provide its own inline versions of
+// some math functions.  Those cause assembly-time clashes with
+// our definitions.
+#define __NO_MATH_INLINES
+
 // The current version of the C++ library in compressed ISO date format.
 #define __GLIBCPP__ 20010517
 
