@@ -44,7 +44,6 @@ static tree build_eh_type_type (tree);
 static tree do_begin_catch (void);
 static int dtor_nothrow (tree);
 static tree do_end_catch (tree);
-static void push_eh_cleanup (tree);
 static bool decl_is_java_type (tree decl, int err);
 static void initialize_handler_parm (tree, tree);
 static tree do_allocate_exception (tree);
