@@ -1,3 +1,8 @@
+2003-12-18  Geoffrey Keating  <geoffk@apple.com>
+
+	* fixinc/inclhack.def (darwin_macho_dyldh): New.
+	* fixinc/fixincl.x: Regenerate.
+
 2003-12-18  Dara Hazeghi  <dhazeghi@yahoo.com>
 
 	* version.c (version_string): Renumber as 3.4.0
