@@ -13,16 +13,6 @@ donewrec(Void)
 		(*f__donewrec)();
 	}
 
-#ifdef KR_headers
-t_putc(c)
-#else
-t_putc(int c)
-#endif
-{
-	f__recpos++;
-	putc(c,f__cf);
-	return(0);
-}
  static VOID
 #ifdef KR_headers
 lwrt_I(n) longint n;
@@ -184,10 +174,12 @@ l_put(register char *s)
 #endif
 {
 #ifdef KR_headers
-	register int c, (*pn)() = f__putn;
+	register void (*pn)() = f__putn;
 #else
-	register int c, (*pn)(int) = f__putn;
+	register void (*pn)(int) = f__putn;
 #endif
+	register int c;
+
 	while(c = *s++)
 		(*pn)(c);
 	}

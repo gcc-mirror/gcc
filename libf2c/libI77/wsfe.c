@@ -4,49 +4,38 @@
 #include "fmt.h"
 extern int f__hiwater;
 
-#ifdef KR_headers
-x_putc(c)
-#else
-x_putc(int c)
-#endif
-{
-	/* this uses \n as an indicator of record-end */
-	if(c == '\n' && f__recpos < f__hiwater) {	/* fseek calls fflush, a loss */
-#if ! defined (NON_UNIX_STDIO) && ! defined (MISSING_FILE_ELEMS)
-		if(f__cf->_ptr + f__hiwater - f__recpos < buf_end(f__cf))
-			f__cf->_ptr += f__hiwater - f__recpos;
-		else
-#endif
-			(void) fseek(f__cf, (long)(f__hiwater - f__recpos), SEEK_CUR);
-	}
-#ifdef OMIT_BLANK_CC
-	if (!f__recpos++ && c == ' ')
-		return c;
-#else
-	f__recpos++;
-#endif
-	return putc(c,f__cf);
-}
 x_wSL(Void)
 {
-	(*f__putn)('\n');
-	f__recpos=0;
-	f__cursor = 0;
-	f__hiwater = 0;
-	return(1);
+	int n = f__putbuf('\n');
+	f__hiwater = f__recpos = f__cursor = 0;
+	return(n == 0);
 }
+
+ static int
 xw_end(Void)
 {
-	if(f__nonl == 0)
-		(*f__putn)('\n');
+	int n;
+
+	if(f__nonl) {
+		f__putbuf(n = 0);
+		fflush(f__cf);
+		}
+	else
+		n = f__putbuf('\n');
 	f__hiwater = f__recpos = f__cursor = 0;
-	return(0);
+	return n;
 }
+
+ static int
 xw_rev(Void)
 {
-	if(f__workdone) (*f__putn)('\n');
+	int n = 0;
+	if(f__workdone) {
+		n = f__putbuf('\n');
+		f__workdone = 0;
+		}
 	f__hiwater = f__recpos = f__cursor = 0;
-	return(f__workdone=0);
+	return n;
 }
 
 #ifdef KR_headers

@@ -37,7 +37,7 @@ typedef struct
 	int url;	/*0=sequential*/
 	flag useek;	/*true=can backspace, use dir, ...*/
 	flag ufmt;
-	flag uprnt;
+	flag urw;	/* (1 for can read) | (2 for can write) */
 	flag ublnk;
 	flag uend;
 	flag uwrt;	/*last io was write*/
@@ -50,17 +50,21 @@ extern flag f__reading,f__external,f__sequential,f__formatted;
 #undef Void
 #ifdef KR_headers
 #define Void /*void*/
-extern int (*f__getn)(),(*f__putn)();	/*for formatted io*/
+extern int (*f__getn)();	/* for formatted input */
+extern void (*f__putn)();	/* for formatted output */
+extern void x_putc();
 extern long f__inode();
 extern VOID sig_die();
 extern int (*f__donewrec)(), t_putc(), x_wSL();
-extern int c_sfe(), err__fl(), xrd_SL();
+extern int c_sfe(), err__fl(), xrd_SL(), f__putbuf();
 #else
 #define Void void
 #ifdef __cplusplus
 extern "C" {
 #endif
-extern int (*f__getn)(void),(*f__putn)(int);	/*for formatted io*/
+extern int (*f__getn)(void);	/* for formatted input */
+extern void (*f__putn)(int);	/* for formatted output */
+extern void x_putc(int);
 extern long f__inode(char*,int*);
 extern void sig_die(char*,int);
 extern void f__fatal(int,char*);
@@ -75,6 +79,7 @@ extern int c_sfe(cilist*), z_rnew(void);
 extern int isatty(int);
 extern int err__fl(int,int,char*);
 extern int xrd_SL(void);
+extern int f__putbuf(int);
 #ifdef __cplusplus
 	}
 #endif

@@ -2,6 +2,7 @@
 #include "f2c.h"
 #define PAUSESIG 15
 
+#include "signal1.h"
 #ifdef KR_headers
 #define Void /* void */
 #define Int /* int */
@@ -12,7 +13,6 @@
 #undef min
 #undef max
 #include <stdlib.h>
-#include "signal1.h"
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -22,8 +22,8 @@ extern int getpid(void), isatty(int), pause(void);
 extern VOID f_exit(Void);
 
  static VOID
-waitpause(Int n)
-{	n = n; /* shut up compiler warning */
+waitpause(Sigarg)
+{	Use_Sigarg;
 	return;
 	}
 

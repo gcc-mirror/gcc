@@ -1,3 +1,17 @@
+Fri May  1 11:57:45 1998  Craig Burley  <burley@gnu.org>
+
+	Update to Netlib version of 1998-04-20:
+	* libF77/dtime_.c, libF77/etime_.c, libF77/h_dnnt.c,
+	libF77/h_nint.c, libF77/i_dnnt.c, libF77/i_nint.c,
+	libF77/main.c, libF77/s_paus.c, libF77/signal1.h0,
+	libI77/backspace.c, libI77/close.c, libI77/dfe.c,
+	libI77/endfile.c, libI77/err.c, libI77/fio.h,
+	libI77/iio.c, libI77/ilnw.c, libI77/lread.c,
+	libI77/lwrite.c, libI77/open.c, libI77/rawio.h,
+	libI77/sfe.c, libI77/util.c, libI77/wrtfmt.c,
+	libI77/wsfe.c, libI77/wsle.c, libI77/wsne.c:
+	See changes.netlib for info.
+
 Sun Apr 26 09:13:41 1998  Craig Burley  <burley@gnu.org>
 
 	* libU77/hostnm_.c (G77_hostnm_0): Fix off-by-one error

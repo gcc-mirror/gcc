@@ -16,7 +16,7 @@ s_wsne(cilist *a)
 	f__reading=0;
 	f__external=1;
 	f__formatted=1;
-	f__putn = t_putc;
+	f__putn = x_putc;
 	L_len = LINE;
 	f__donewrec = x_wSL;
 	if(f__curunit->uwrt != 1 && f__nowwriting(f__curunit))

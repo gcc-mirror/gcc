@@ -40,43 +40,23 @@ mv_cur(Void)	/* shouldn't use fseek because it insists on calling fflush */
 		}
 		return(0);
 	}
-	if(cursor > 0) {
+	if (cursor > 0) {
 		if(f__hiwater <= f__recpos)
 			for(;cursor>0;cursor--) (*f__putn)(' ');
 		else if(f__hiwater <= f__recpos + cursor) {
-#if ! defined (NON_UNIX_STDIO) && ! defined (MISSING_FILE_ELEMS)
-			if(f__cf->_ptr + f__hiwater - f__recpos < buf_end(f__cf))
-				f__cf->_ptr += f__hiwater - f__recpos;
-			else
-#endif
-				(void) fseek(f__cf, (long) (f__hiwater - f__recpos), SEEK_CUR);
 			cursor -= f__hiwater - f__recpos;
 			f__recpos = f__hiwater;
 			for(; cursor > 0; cursor--)
 				(*f__putn)(' ');
 		}
 		else {
-#if ! defined (NON_UNIX_STDIO) && ! defined (MISSING_FILE_ELEMS)
-			if(f__cf->_ptr + cursor < buf_end(f__cf))
-				f__cf->_ptr += cursor;
-			else
-#endif
-				(void) fseek(f__cf, (long)cursor, SEEK_CUR);
 			f__recpos += cursor;
 		}
 	}
-	if(cursor<0)
+	else if (cursor < 0)
 	{
-		if(cursor+f__recpos<0) err(f__elist->cierr,110,"left off");
-#if ! defined (NON_UNIX_STDIO) && ! defined (MISSING_FILE_ELEMS)
-		if(f__cf->_ptr + cursor >= f__cf->_base)
-			f__cf->_ptr += cursor;
-		else
-#endif
-		if(f__curunit && f__curunit->useek)
-			(void) fseek(f__cf,(long)cursor,SEEK_CUR);
-		else
-			err(f__elist->cierr,106,"fmt");
+		if(cursor + f__recpos < 0)
+			err(f__elist->cierr,110,"left off");
 		if(f__hiwater < f__recpos)
 			f__hiwater = f__recpos;
 		f__recpos += cursor;
