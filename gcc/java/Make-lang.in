@@ -129,7 +129,7 @@ gcjh$(exeext): $(GCJH_SOURCES)
 JV_SCAN_SOURCES = $(srcdir)/java/parse-scan.y $(srcdir)/java/lex.c \
        $(srcdir)/java/parse.h $(srcdir)/java/lex.h $(srcdir)/java/jv-scan.c
 
-jv-scan$(exeext): $(JV_SCAN_SOURCES)
+jv-scan$(exeext): $(JV_SCAN_SOURCES) stamp-objlist
 	cd java && $(MAKE) $(FLAGS_TO_PASS) $(JAVA_FLAGS_TO_PASS) ../jv-scan$(exeext)
 
 # This must be kept in sync with dependencies in Makefile.in.
