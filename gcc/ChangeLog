@@ -1,3 +1,7 @@
+Fri Feb  5 17:08:01 1999  Dave Brolley  <brolley@cygnus.com>
+
+        * function.c (fixup_var_refs): Scan catch_clauses too.
+
 Fri Feb  5 11:49:49 1999  Benjamin Kosnik  <bkoz@loony.cygnus.com>
 
 	* c-common.c (decl_attributes): Fix reserved space for init_priority.

@@ -1638,6 +1638,11 @@ fixup_var_refs (var, promoted_mode, unsignedp)
 	  end_sequence ();
 	}
     }
+
+  /* Scan the catch clauses for exception handling too.  */
+  push_to_sequence (catch_clauses);
+  fixup_var_refs_insns (var, promoted_mode, unsignedp, catch_clauses, 0);
+  end_sequence ();
 }
 
 /* REPLACEMENTS is a pointer to a list of the struct fixup_replacement and X is
