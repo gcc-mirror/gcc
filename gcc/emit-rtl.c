@@ -2064,7 +2064,7 @@ emit_jump_insn_before (pattern, before)
     insn = emit_insn_before (pattern, before);
   else
     {
-      insn = make_jump_insn_raw (pattern, NULL_RTVEC);
+      insn = make_jump_insn_raw (pattern);
       add_insn_after (insn, PREV_INSN (before));
     }
 
@@ -2180,7 +2180,7 @@ emit_jump_insn_after (pattern, after)
     insn = emit_insn_after (pattern, after);
   else
     {
-      insn = make_jump_insn_raw (pattern, NULL_RTVEC);
+      insn = make_jump_insn_raw (pattern);
       add_insn_after (insn, after);
     }
 
@@ -2378,7 +2378,7 @@ emit_jump_insn (pattern)
     return emit_insn (pattern);
   else
     {
-      register rtx insn = make_jump_insn_raw (pattern, NULL_RTVEC);
+      register rtx insn = make_jump_insn_raw (pattern);
       add_insn (insn);
       return insn;
     }
