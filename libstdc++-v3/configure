@@ -95434,14 +95434,19 @@ _ACEOF
 
        ;;
     esac
-    cat >>confdefs.h <<\_ACEOF
+    case "$target" in
+      *-*-solaris2.10)
+      # These two C99 functions are present only in Solaris >= 10
+      cat >>confdefs.h <<\_ACEOF
 #define HAVE_STRTOF 1
 _ACEOF
 
-    cat >>confdefs.h <<\_ACEOF
+      cat >>confdefs.h <<\_ACEOF
 #define HAVE_STRTOLD 1
 _ACEOF
 
+     ;;
+    esac
     cat >>confdefs.h <<\_ACEOF
 #define HAVE_MMAP 1
 _ACEOF
