@@ -1,3 +1,9 @@
+2004-10-21  Aldy Hernandez  <aldyh@redhat.com>
+
+	PR 18004.
+	* expmed.c (store_bit_field): Pass original 'value' before
+	recursing.
+
 2004-10-21  Nicolas Pitre <nico@cam.org>
 
 	* config/arm/ieee754-sf.S: Large speed improvements. Fix NAN handling.
