@@ -1,3 +1,12 @@
+Wed Jun  2 00:49:00 EDT 1999  John Wehle  (john@feith.com)
+
+	* flow.c (mark_regs_live_at_end, insn_dead_p,
+	mark_set_1, mark_used_regs): Only give FRAME_POINTER_REGNUM
+	and HARD_FRAME_POINTER_REGNUM special treatment if reload
+	hasn't run or the frame pointer is needed.
+	* haifa-sched.c (attach_deaths): Likewise.
+	* sched.c (attach_deaths): Likewise.
+
 Thu May 27 22:06:52 1999  Mark Mitchell  <mark@codesourcery.com>
 
 	* cccp.c (handle_directive): Handle backslash-newlines in quoted

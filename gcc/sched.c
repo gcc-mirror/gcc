@@ -2309,12 +2309,15 @@ attach_deaths (x, insn, set_p)
 
 	if (regno >= FIRST_PSEUDO_REGISTER || ! global_regs[regno])
 	  {
-	    /* Never add REG_DEAD notes for the FRAME_POINTER_REGNUM or the
-	       STACK_POINTER_REGNUM, since these are always considered to be
-	       live.  Similarly for ARG_POINTER_REGNUM if it is fixed.  */
-	    if (regno != FRAME_POINTER_REGNUM
+	    /* Never add REG_DEAD notes for STACK_POINTER_REGNUM
+	       since it's always considered to be live.  Similarly
+	       for FRAME_POINTER_REGNUM if a frame pointer is needed
+	       and for ARG_POINTER_REGNUM if it is fixed.  */
+	    if (! (regno == FRAME_POINTER_REGNUM
+		   && (! reload_completed || frame_pointer_needed))
 #if HARD_FRAME_POINTER_REGNUM != FRAME_POINTER_REGNUM
-		&& ! (regno == HARD_FRAME_POINTER_REGNUM)
+		&& ! (regno == HARD_FRAME_POINTER_REGNUM
+		      && (! reload_completed || frame_pointer_needed))
 #endif
 #if ARG_POINTER_REGNUM != FRAME_POINTER_REGNUM
 		&& ! (regno == ARG_POINTER_REGNUM && fixed_regs[regno])
