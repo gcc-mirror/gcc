@@ -25,9 +25,8 @@
 -- It is now maintained by Ada Core Technologies Inc (http://www.gnat.com). --
 --                                                                          --
 ------------------------------------------------------------------------------
---
---  This package defines allowed packages and attributes in GNAT project
---  files.
+
+--  This package defines allowed packages and attributes in GNAT project files
 
 with Types; use Types;
 with Table;
@@ -35,6 +34,8 @@ with Table;
 package Prj.Attr is
 
    --  Define the allowed attributes
+
+   --  All these declarations are uncommented, they all need comments ???
 
    Attributes_Initial   : constant := 50;
    Attributes_Increment : constant := 50;
@@ -45,11 +46,11 @@ package Prj.Attr is
    type Attribute_Node_Id is
      range Attribute_Node_Low_Bound .. Attribute_Node_High_Bound;
 
-   First_Attribute_Node_Id : constant Attribute_Node_Id
-     := Attribute_Node_Low_Bound;
+   First_Attribute_Node_Id : constant Attribute_Node_Id :=
+                               Attribute_Node_Low_Bound;
 
-   Empty_Attribute : constant Attribute_Node_Id
-     := Attribute_Node_Low_Bound;
+   Empty_Attribute : constant Attribute_Node_Id :=
+                       Attribute_Node_Low_Bound;
 
    type Attribute_Kind is
      (Single,
@@ -84,8 +85,8 @@ package Prj.Attr is
    type Package_Node_Id is
      range Package_Node_Low_Bound .. Package_Node_High_Bound;
 
-   First_Package_Node_Id : constant Package_Node_Id
-     := Package_Node_Low_Bound;
+   First_Package_Node_Id : constant Package_Node_Id :=
+                             Package_Node_Low_Bound;
 
    Empty_Package : constant Package_Node_Id := Package_Node_Low_Bound;
 

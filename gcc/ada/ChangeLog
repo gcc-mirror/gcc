@@ -1,3 +1,8 @@
+2001-10-26  Robert Dewar <dewar@gnat.com>
+
+	* prj-attr.ads: Minor reformatting
+	Add ??? comment (this whole spec has almost no comments)
+
 2001-10-26  Vincent Celier <celier@gnat.com>
 
 	* g-os_lib.adb (Normalize_Pathname): Preserve the double slash 
