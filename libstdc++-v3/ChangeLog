@@ -1,3 +1,10 @@
+2003-10-07  Paolo Carlini  <pcarlini@unitus.it>
+
+	PR libstdc++/11740
+	* config/locale/gnu/ctype_members.cc (ctype<wchar_t>::do_is):
+	Fix to actually return (M & m) != 0 as per 22.2.1.1.2.
+	* config/locale/generic/ctype_members.cc: Same.
+
 2003-10-02  Harald Boehme  <boehme@informatik.hu-berlin.de>
 
 	PR libstdc++/12451

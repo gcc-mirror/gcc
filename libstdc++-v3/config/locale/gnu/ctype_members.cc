@@ -133,20 +133,16 @@ namespace std
   { 
     // Highest bitmask in ctype_base == 10, but extra in "C"
     // library for blank.
-    bool __ret = true;
-    bool __match_any = false;
+    bool __ret = false;
     const size_t __bitmasksize = 11; 
     for (size_t __bitcur = 0; __bitcur <= __bitmasksize; ++__bitcur)
       {
-	mask __bit = static_cast<mask>(_ISbit(__bitcur));
+	const mask __bit = static_cast<mask>(_ISbit(__bitcur));
 	if (__m & __bit)
-	  {
-	    __match_any = true;
-	    __ret &= __iswctype_l(__c, _M_convert_to_wmask(__bit), 
-				  _M_c_locale_ctype); 
-	  }
+	  __ret |= __iswctype_l(__c, _M_convert_to_wmask(__bit), 
+				_M_c_locale_ctype); 
       }
-    return __ret & __match_any;    
+    return __ret;    
   }
   
   const wchar_t* 
@@ -161,7 +157,7 @@ namespace std
 	mask __m = 0;
 	for (size_t __bitcur = 0; __bitcur <= __bitmasksize; ++__bitcur)
 	  { 
-	    mask __bit = static_cast<mask>(_ISbit(__bitcur));
+	    const mask __bit = static_cast<mask>(_ISbit(__bitcur));
 	    if (__iswctype_l(*__lo, _M_convert_to_wmask(__bit), 
 			     _M_c_locale_ctype))
 	      __m |= __bit;
