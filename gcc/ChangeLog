@@ -1,3 +1,8 @@
+2000-01-31  Jason Merrill  <jason@casey.cygnus.com>
+
+	* jump.c (redirect_jump): Move a NOTE_INSN_FUNCTION_END to the
+	new label.
+
 2000-01-31  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* gansidecl.h (PROTO, VPROTO, PVPROTO): Delete macros.
