@@ -3768,7 +3768,7 @@ tSCC zSolaris_Mutex_Init_1List[] =
  *  content selection pattern - do fix if pattern found
  */
 tSCC zSolaris_Mutex_Init_1Select0[] =
-       "@\\(#\\)pthread.h[ \t]+1.1[0-9][ \t]+97/[0-9/]+ SMI";
+       "@\\(#\\)pthread.h[ \t]+1.1[0-9][ \t]+9[567]/[0-9/]+ SMI";
 
 #define    SOLARIS_MUTEX_INIT_1_TEST_CT  1
 static tTestDesc aSolaris_Mutex_Init_1Tests[] = {

@@ -27,6 +27,11 @@
 	TARGET_HARD_FLOAT.  Reformat.
 	(FUNCTION_ARG_REGNO_P): Likewise, and remove unneeded casts.
 
+2003-03-28  Albert Chin-A-Young  <china@thewrittenword.com>
+
+	* gcc/fixinc/inclhack.def: Update solaris_mutex_init_1 to
+	work on Solaris 2.5.1.
+
 2003-03-28  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* config/h8300/h8300.md (*addsi3_and_r_1): Put under plus:SI
