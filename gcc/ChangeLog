@@ -1,5 +1,9 @@
 2001-01-07  Neil Booth  <neil@daikokuya.demon.co.uk>
 
+        * fix-header.c (read_scan_file): s/pfile/scan_in/.
+
+2001-01-07  Neil Booth  <neil@daikokuya.demon.co.uk>
+
         * c-lang.c (c_post_options): Call cpp_post_options.
 	* objc/objc-act.c (objc_post_options): Similarly.
 	* cppmain.c (main): Similarly.
