@@ -1,3 +1,10 @@
+Wed Nov 12 09:37:01 1997  Jeffrey A Law  (law@cygnus.com)
+
+	* flow.c (find_basic_blocks): Refine further to get a more correct
+	cfg, especially in the presense of exception handling, computed
+	gotos, and other non-trivial cases.  Call abort if an inaccuracy
+	is detected in the cfg.
+
 Tue Nov 11 21:47:27 1997  J"orn Rennecke <amylaar@cygnus.co.uk>
 
 	* glimits.h (SHRT_MIN): Define in a way suitable for 16 bit hosts.
