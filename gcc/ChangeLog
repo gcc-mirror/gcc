@@ -1,3 +1,10 @@
+2003-05-02  Nick Clifton  <nickc@redhat.com>
+
+	* configure.in: Add xstormy16 to list of targets that has a nop
+	instruction and hence which can be tested to see if the
+	assembler supports the --gdwarf2 switch.
+	* configure: Regenerate.
+
 2003-05-01  Falk Hueffner  <falk.hueffner@student.uni-tuebingen.de>
  
         PR target/8257
