@@ -490,6 +490,9 @@ int c89;
 
 static int no_output;
 
+/* Nonzero means we should look for header.gcc files that remap file names.  */
+static int remap;
+
 /* Nonzero means this file was included with a -imacros or -include
    command line and should not be recorded as an include file.  */
 
@@ -1773,6 +1776,11 @@ main (argc, argv)
 	  no_standard_cplusplus_includes = 1;
 	else if (!strcmp (argv[i], "-noprecomp"))
 	  no_precomp = 1;
+	break;
+
+      case 'r':
+	if (!strcmp (argv[i], "-remap"))
+	  remap = 1;
 	break;
 
       case 'u':
@@ -4921,7 +4929,7 @@ open_include_file (filename, searchptr, importing, pinc)
      U_CHAR *importing;
      struct include_file **pinc;
 {
-  char *fname = remap_include_file (filename, searchptr);
+  char *fname = remap ? remap_include_file (filename, searchptr) : filename;
   int fd = -2;
 
   /* Look up FNAME in include_hashtab.  */
