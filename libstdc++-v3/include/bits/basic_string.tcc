@@ -698,7 +698,7 @@ namespace std
     find_first_not_of(const _CharT* __s, size_type __pos, size_type __n) const
     {
       size_t __xpos = __pos;
-      for (; __n && __xpos < this->size(); ++__xpos)
+      for (; __xpos < this->size(); ++__xpos)
 	if (!traits_type::find(__s, __n, _M_data()[__xpos]))
 	  return __xpos;
       return npos;
@@ -722,7 +722,7 @@ namespace std
     find_last_not_of(const _CharT* __s, size_type __pos, size_type __n) const
     {
       size_type __size = this->size();
-      if (__size && __n)
+      if (__size)
 	{ 
 	  if (--__size > __pos) 
 	    __size = __pos;

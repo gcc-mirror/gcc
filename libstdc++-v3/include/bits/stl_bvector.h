@@ -485,7 +485,7 @@ template <typename _Alloc>
   
     void _M_range_check(size_type __n) const {
       if (__n >= this->size())
-        __throw_range_error("vector<bool>");
+        __throw_out_of_range("vector<bool>");
     }
   
     reference at(size_type __n)

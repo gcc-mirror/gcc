@@ -990,7 +990,7 @@ namespace std
       _M_compare_helper(const _CharT*, const _CharT*) const;
 
       size_t
-      _M_transform_helper(_CharT*, const _CharT*, size_t) const;;
+      _M_transform_helper(_CharT*, const _CharT*, size_t) const;
 
   protected:
       virtual
