@@ -555,11 +555,9 @@ This node is used to represent a type the knowledge of which is
 insufficient for a sound processing.
 
 @item OFFSET_TYPE
-This node is used to represent a data member; for example a
-pointer-to-data-member is represented by a @code{POINTER_TYPE} whose
-@code{TREE_TYPE} is an @code{OFFSET_TYPE}.  For a data member @code{X::m}
-the @code{TYPE_OFFSET_BASETYPE} is @code{X} and the @code{TREE_TYPE} is
-the type of @code{m}.
+This node is used to represent a pointer-to-data member.  For a data
+member @code{X::m} the @code{TYPE_OFFSET_BASETYPE} is @code{X} and the
+@code{TREE_TYPE} is the type of @code{m}.
 
 @item TYPENAME_TYPE
 Used to represent a construct of the form @code{typename T::A}.  The
