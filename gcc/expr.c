@@ -7543,6 +7543,13 @@ expand_expr (exp, target, tmode, modifier)
 	return temp;
       }
 
+    case RETURN_EXPR:
+      if (!TREE_OPERAND (exp, 0))
+	expand_null_return ();
+      else
+	expand_return (TREE_OPERAND (exp, 0));
+      return const0_rtx;
+
     case PREINCREMENT_EXPR:
     case PREDECREMENT_EXPR:
       return expand_increment (exp, 0, ignore);
