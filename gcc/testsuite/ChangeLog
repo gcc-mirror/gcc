@@ -1,3 +1,7 @@
+2000-04-08  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* gcc.dg/compare2.c: New test.
+
 2000-04-08  Neil Booth  <NeilB@earthling.net>
 	
 	* gcc.dg/cpp-nullchar.c: New test.
