@@ -1,4 +1,4 @@
-/* Copyright (C) 1998, 1999, 2000, 2001  Free Software Foundation
+/* Copyright (C) 1998, 1999, 2000, 2001, 2003  Free Software Foundation
 
    This file is part of libgcj.
 
@@ -28,7 +28,10 @@ public class OutputStreamWriter extends Writer
   private char[] work;
   private int wcount;
 
-  public String getEncoding() { return converter.getName(); }
+  public String getEncoding()
+  {
+    return out != null ? converter.getName() : null;
+  }
 
   private OutputStreamWriter(OutputStream out, UnicodeToBytes encoder)
   {
