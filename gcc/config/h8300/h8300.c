@@ -317,7 +317,7 @@ h8300_init_once ()
   
   if (TARGET_H8300 && TARGET_NORMAL_MODE)
     {
-      error ("-mn used without -mh or -ms");
+      error ("-mn is used without -mh or -ms");
       target_flags ^= MASK_NORMAL_MODE;
     }
 
