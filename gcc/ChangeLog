@@ -1,5 +1,14 @@
 2003-07-02  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
 
+	* fixinc/inclhack.def (irix_stdio_va_list): Apply to IRIX 6.5
+	<internal/stdio_core.h> too.
+	(stdio_va_list): Apply to IRIX 6.5 <internal/stdio_core.h> and
+	<internal/wchar_core.h> too.
+	Substitute va_list uses in inline definition.
+	* fixinc/fixincl.x: Regenerate.
+
+2003-07-02  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
+
 	* config/mips/iris5.h (SET_FILE_NUMBER): Moved here from iris3.h.
 	Undef before redefinition.
 	(LABEL_AFTER_LOC): Likewise.
