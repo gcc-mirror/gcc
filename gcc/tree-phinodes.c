@@ -360,10 +360,10 @@ add_phi_arg (tree phi, tree def, edge e)
   PHI_ARG_NONZERO (phi, e->dest_idx) = false;
 }
 
-/* Remove the Ith argument from PHI's argument list.  This routine assumes
-   ordering of alternatives in the vector is not important and implements
-   removal by swapping the last alternative with the alternative we want to
-   delete, then shrinking the vector.  */
+/* Remove the Ith argument from PHI's argument list.  This routine
+   implements removal by swapping the last alternative with the
+   alternative we want to delete and then shrinking the vector, which
+   is consistent with how we remove an edge from the edge vector.  */
 
 static void
 remove_phi_arg_num (tree phi, int i)
