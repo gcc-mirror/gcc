@@ -1,3 +1,8 @@
+2004-11-06  Noa Resare  <noa@resare.com>
+
+	* java/net/Socket.java (getPort): Return 0 instead of -1 on
+	unconnected sockets.
+
 2004-11-06  Michael Koch  <konqueror@gmx.de>
 
 	* java/lang/StringBuffer.java,
