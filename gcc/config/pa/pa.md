@@ -217,8 +217,8 @@
 (define_insn ""
  [(set (reg:CCFP 0)
        (match_operator:CCFP 2 "comparison_operator"
-			    [(match_operand:SF 0 "register_operand" "fxy")
-			     (match_operand:SF 1 "register_operand" "fxy")]))]
+			    [(match_operand:SF 0 "register_operand" "fx")
+			     (match_operand:SF 1 "register_operand" "fx")]))]
  ""
  "fcmp,sgl,%Y2 %0,%1"
  [(set_attr "type" "fpcc")])
@@ -226,8 +226,8 @@
 (define_insn ""
  [(set (reg:CCFP 0)
        (match_operator:CCFP 2 "comparison_operator"
-			    [(match_operand:DF 0 "register_operand" "fxy")
-			     (match_operand:DF 1 "register_operand" "fxy")]))]
+			    [(match_operand:DF 0 "register_operand" "fx")
+			     (match_operand:DF 1 "register_operand" "fx")]))]
  ""
  "fcmp,dbl,%Y2 %0,%1"
  [(set_attr "type" "fpcc")])
@@ -709,8 +709,8 @@
 
 (define_insn ""
   [(set (match_operand:SI 0 "reg_or_nonsymb_mem_operand"
-			  "=r,r,Q,!r,!*f*x*y,!*f*x*y")
-	(match_operand:SI 1 "move_operand" "rM,Q,rM,!*f*x*y,!r,!*f*x*y"))]
+			  "=r,r,Q,!r,!*f*x,!*f*x")
+	(match_operand:SI 1 "move_operand" "rM,Q,rM,!*f*x*y,!r,!*f*x"))]
   ""
   "@
    copy %r1,%0
@@ -762,13 +762,24 @@
    (set_attr "length" "1")])
 
 (define_insn ""
-  [(set (match_operand:SI 0 "register_operand" "=a")
-	(plus:SI (match_operand:SI 1 "register_operand" "r")
+  [(set (match_operand:SI 0 "register_operand" "=a,?*r")
+	(plus:SI (match_operand:SI 1 "register_operand" "r,r")
 		 (high:SI (match_operand 2 "" ""))))]
   ""
-  "addil L'%G2,%1"
+  "@
+   addil L'%G2,%1
+   ldil L'%G2,%0\;add %0,%1,%0"
   [(set_attr "type" "binary")
-   (set_attr "length" "1")])
+   (set_attr "length" "1,2")])
+
+(define_split
+  [(set (match_operand:SI 0 "register_operand" "")
+	(plus:SI (match_operand:SI 1 "register_operand" "")
+		 (high:SI (match_operand 2 "" ""))))]
+  "reload_completed && REGNO (operands[0]) != 1"
+  [(set (match_dup 0) (high:SI (match_dup 2)))
+   (set (match_dup 0) (plus:SI (match_dup 0) (match_dup 1)))]
+  "")
 
 (define_insn ""
   [(set (match_operand:SI 0 "register_operand" "=r")
@@ -799,7 +810,7 @@
 ;;; Experimental
 
 (define_insn ""
-  [(set (match_operand:SI 0 "fp_reg_operand" "*f*x*y")
+  [(set (match_operand:SI 0 "fp_reg_operand" "*f*x")
 	(match_operand:SI 1 "short_memory_operand" "T"))]
   ""
   "fldws%F1 %1,%0"
@@ -808,7 +819,7 @@
 
 (define_insn ""
   [(set (match_operand:SI 0 "short_memory_operand" "T")
-	(match_operand:SI 1 "fp_reg_operand" "*f*x*y"))]
+	(match_operand:SI 1 "fp_reg_operand" "*f*x"))]
   ""
   "fstws%F0 %1,%0"
   [(set_attr "type" "fpstore")
@@ -949,7 +960,7 @@
 ;; to be reloaded by putting the constant into memory.
 ;; It must come before the more general movdf pattern.
 (define_insn ""
-  [(set (match_operand:DF 0 "general_operand" "=?r,r,f")
+  [(set (match_operand:DF 0 "general_operand" "=?r,r,fx")
 	(match_operand:DF 1 "" "?E,G,m"))]
   "GET_CODE (operands[1]) == CONST_DOUBLE"
   "*
@@ -979,9 +990,9 @@
 
 (define_insn ""
   [(set (match_operand:DF 0 "reg_or_nonsymb_mem_operand"
-			  "=fxy,r,Q,Q,fxy,&r,?fxy,?r")
+			  "=fx,r,Q,Q,fx,&r,?fx,?r")
 	(match_operand:DF 1 "reg_or_nonsymb_mem_operand"
-			  "fxy,r,fxy,r,Q,Q,r,fxy"))]
+			  "fx,r,fx,r,Q,Q,r,fx"))]
   ""
   "*
 {
@@ -1003,10 +1014,46 @@
 }")
 
 (define_insn ""
+  [(set (match_operand:DI 0 "register_operand" "=r")
+	(high:DI (match_operand 1 "" "")))]
+  "check_pic (1)"
+  "*
+{
+  rtx op0 = operands[0];
+  rtx op1 = operands[1];
+
+  if (GET_CODE (op1) == CONST_INT)
+    {
+      operands[0] = operand_subword (op0, 1, 0, DImode);
+      output_asm_insn (\"ldil L'%1,%0\", operands);
+
+      operands[0] = operand_subword (op0, 0, 0, DImode);
+      if (INTVAL (op1) < 0)
+	output_asm_insn (\"ldo -1(0),%0\", operands);
+      else
+	output_asm_insn (\"ldo 0(0),%0\", operands);
+    }
+  else if (GET_CODE (op1) == CONST_DOUBLE)
+    {
+      operands[0] = operand_subword (op0, 1, 0, DImode);
+      operands[1] = gen_rtx (CONST_INT, VOIDmode, CONST_DOUBLE_LOW (op1));
+      output_asm_insn (\"ldil L'%1,%0\", operands);
+
+      operands[0] = operand_subword (op0, 0, 0, DImode);
+      operands[1] = gen_rtx (CONST_INT, VOIDmode, CONST_DOUBLE_HIGH (op1));
+      output_asm_insn (singlemove_string (operands), operands);
+    }
+  else
+    abort ();
+}"
+  [(set_attr "type" "move")
+   (set_attr "length" "2")])
+
+(define_insn ""
   [(set (match_operand:DI 0 "reg_or_nonsymb_mem_operand"
-			  "=r,Q,&r,&r,*f*x*y,*f*x*y,*f*x*y,r,Q")
+			  "=r,Q,&r,&r,*f*x,*f*x,*f*x,r,Q")
 	(match_operand:DI 1 "general_operand"
-			  "r,r,Q,i,r,*f*x*y,Q,*f*x*y,*f*x*y"))]
+			  "r,r,Q,i,r,*f*x,Q,*f*x,*f*x"))]
   ""
   "*
 {
@@ -1016,6 +1063,25 @@
 }"
   [(set_attr "type" "move,store,load,misc,multi,fpalu,fpload,multi,fpstore")
    (set_attr "length" "2,3,3,3,3,2,3,3,3")])
+
+(define_insn ""
+  [(set (match_operand:DI 0 "register_operand" "=r,r")
+	(lo_sum:DI (match_operand:DI 1 "register_operand" "0,r")
+		   (match_operand:DI 2 "immediate_operand" "in,in")))]
+  ""
+  "*
+{
+  /* Don't output a 64 bit constant, since we can't trust the assembler to
+     handle it correctly.  */
+  if (GET_CODE (operands[2]) == CONST_DOUBLE)
+    operands[2] = gen_rtx (CONST_INT, VOIDmode, CONST_DOUBLE_LOW (operands[2]));
+  if (which_alternative == 1)
+    output_asm_insn (\"copy %1,%0\", operands);
+  return \"ldo R'%G2(%R1),%R0\";
+}"
+  ;; Need to set length for this arith insn because operand2
+  ;; is not an "arith_operand".
+  [(set_attr "length" "1,2")])
 
 (define_expand "movsf"
   [(set (match_operand:SF 0 "general_operand" "")
@@ -1029,9 +1095,9 @@
 
 (define_insn ""
   [(set (match_operand:SF 0 "reg_or_nonsymb_mem_operand"
-			  "=fxy,r,r,fxy,fxy,r,Q,Q")
+			  "=fx,r,r,fx,fx,r,Q,Q")
 	(match_operand:SF 1 "reg_or_nonsymb_mem_operand"
-			  "fxy,r,!fxy,!r,Q,Q,fxy,r"))]
+			  "fx,r,!fx,!r,Q,Q,fx,r"))]
   ""
   "@
    fcpy %1,%0
@@ -1168,17 +1234,17 @@
 ;; Conversions between float and double.
 
 (define_insn "extendsfdf2"
-  [(set (match_operand:DF 0 "register_operand" "=fxy")
+  [(set (match_operand:DF 0 "register_operand" "=fx")
 	(float_extend:DF
-	 (match_operand:SF 1 "register_operand" "fxy")))]
+	 (match_operand:SF 1 "register_operand" "fx")))]
   ""
   "fcnvff,sgl,dbl %1,%0"
   [(set_attr "type" "fpalu")])
 
 (define_insn "truncdfsf2"
-  [(set (match_operand:SF 0 "register_operand" "=fxy")
+  [(set (match_operand:SF 0 "register_operand" "=fx")
 	(float_truncate:SF
-	 (match_operand:DF 1 "register_operand" "fxy")))]
+	 (match_operand:DF 1 "register_operand" "fx")))]
   ""
   "fcnvff,dbl,sgl %1,%0"
   [(set_attr "type" "fpalu")])
@@ -1195,7 +1261,7 @@
 ;; to be reloaded by putting the constant into memory.
 ;; It must come before the more general floatsisf2 pattern.
 (define_insn ""
-  [(set (match_operand:SF 0 "general_operand" "=fxy")
+  [(set (match_operand:SF 0 "general_operand" "=fx")
 	(float:SF (match_operand:SI 1 "const_int_operand" "m")))]
   ""
   "* return output_floatsisf2 (operands);"
@@ -1203,8 +1269,8 @@
    (set_attr "length" "3")])
 
 (define_insn "floatsisf2"
-  [(set (match_operand:SF 0 "general_operand" "=fxy")
-	(float:SF (match_operand:SI 1 "register_operand" "fxyr")))]
+  [(set (match_operand:SF 0 "general_operand" "=fx")
+	(float:SF (match_operand:SI 1 "register_operand" "fxr")))]
   ""
   "* return output_floatsisf2 (operands);"
   [(set_attr "type" "fpalu")
@@ -1214,7 +1280,7 @@
 ;; to be reloaded by putting the constant into memory.
 ;; It must come before the more general floatsidf2 pattern.
 (define_insn ""
-  [(set (match_operand:DF 0 "general_operand" "=fxy")
+  [(set (match_operand:DF 0 "general_operand" "=fx")
 	(float:DF (match_operand:SI 1 "const_int_operand" "m")))]
   ""
   "* return output_floatsidf2 (operands);"
@@ -1222,8 +1288,8 @@
    (set_attr "length" "3")])
 
 (define_insn "floatsidf2"
-  [(set (match_operand:DF 0 "general_operand" "=fxy")
-	(float:DF (match_operand:SI 1 "register_operand" "fxyr")))]
+  [(set (match_operand:DF 0 "general_operand" "=fx")
+	(float:DF (match_operand:SI 1 "register_operand" "fxr")))]
   ""
   "* return output_floatsidf2 (operands);"
   [(set_attr "type" "fpalu")
@@ -1233,9 +1299,9 @@
 ;; Truncation is performed as part of the conversion.
 
 (define_insn "fix_truncsfsi2"
-  [(set (match_operand:SI 0 "register_operand" "=r,fxy")
-	(fix:SI (fix:SF (match_operand:SF 1 "register_operand" "fxy,fxy"))))
-   (clobber (match_scratch:SI 2 "=&fxy,X"))]
+  [(set (match_operand:SI 0 "register_operand" "=r,fx")
+	(fix:SI (fix:SF (match_operand:SF 1 "register_operand" "fx,fx"))))
+   (clobber (match_scratch:SI 2 "=&fx,X"))]
   ""
   "@
    fcnvfxt,sgl,sgl %1,%2\;fstws %2,-16(30)\;ldw -16(30),%0
@@ -1244,9 +1310,9 @@
    (set_attr "length" "3,1")])
 
 (define_insn "fix_truncdfsi2"
-  [(set (match_operand:SI 0 "register_operand" "=r,fxy")
-	(fix:SI (fix:DF (match_operand:DF 1 "register_operand" "fxy,fxy"))))
-   (clobber (match_scratch:SI 2 "=&fxy,X"))]
+  [(set (match_operand:SI 0 "register_operand" "=r,fx")
+	(fix:SI (fix:DF (match_operand:DF 1 "register_operand" "fx,fx"))))
+   (clobber (match_scratch:SI 2 "=&fx,X"))]
   ""
   "@
    fcnvfxt,dbl,sgl %1,%2\;fstws %2,-16(30)\;ldw -16(30),%0
@@ -1282,16 +1348,6 @@
   ""
   "sub %R1,%R2,%R0\;subb %1,%2,%0"
   [(set_attr "length" "2")])
-
-;(define_insn "subsi3"
-;  [(set (match_operand:SI 0 "register_operand" "=r,r,r")
-;	(minus:SI (match_operand:SI 1 "arith11_operand" "r,I,r")
-;		  (match_operand:SI 2 "arith_operand" "r,r,J")))]
-;  ""
-;  "@
-;   sub %1,%2,%0
-;   subi %1,%2,%0
-;   ldo %n2(%1),%0")
 
 (define_insn "subsi3"
   [(set (match_operand:SI 0 "register_operand" "=r,r")
@@ -1644,107 +1700,107 @@
 ;; Floating point arithmetic instructions.
 
 (define_insn "adddf3"
-  [(set (match_operand:DF 0 "register_operand" "=fxy")
-	(plus:DF (match_operand:DF 1 "register_operand" "fxy")
-		 (match_operand:DF 2 "register_operand" "fxy")))]
+  [(set (match_operand:DF 0 "register_operand" "=fx")
+	(plus:DF (match_operand:DF 1 "register_operand" "fx")
+		 (match_operand:DF 2 "register_operand" "fx")))]
   ""
   "fadd,dbl %1,%2,%0"
   [(set_attr "type" "fpalu")])
 
 (define_insn "addsf3"
-  [(set (match_operand:SF 0 "register_operand" "=fxy")
-	(plus:SF (match_operand:SF 1 "register_operand" "fxy")
-		 (match_operand:SF 2 "register_operand" "fxy")))]
+  [(set (match_operand:SF 0 "register_operand" "=fx")
+	(plus:SF (match_operand:SF 1 "register_operand" "fx")
+		 (match_operand:SF 2 "register_operand" "fx")))]
   ""
   "fadd,sgl %1,%2,%0"
   [(set_attr "type" "fpalu")])
 
 (define_insn "subdf3"
-  [(set (match_operand:DF 0 "register_operand" "=fxy")
-	(minus:DF (match_operand:DF 1 "register_operand" "fxy")
-		  (match_operand:DF 2 "register_operand" "fxy")))]
+  [(set (match_operand:DF 0 "register_operand" "=fx")
+	(minus:DF (match_operand:DF 1 "register_operand" "fx")
+		  (match_operand:DF 2 "register_operand" "fx")))]
   ""
   "fsub,dbl %1,%2,%0"
   [(set_attr "type" "fpalu")])
 
 (define_insn "subsf3"
-  [(set (match_operand:SF 0 "register_operand" "=fxy")
-	(minus:SF (match_operand:SF 1 "register_operand" "fxy")
-		  (match_operand:SF 2 "register_operand" "fxy")))]
+  [(set (match_operand:SF 0 "register_operand" "=fx")
+	(minus:SF (match_operand:SF 1 "register_operand" "fx")
+		  (match_operand:SF 2 "register_operand" "fx")))]
   ""
   "fsub,sgl %1,%2,%0"
   [(set_attr "type" "fpalu")])
 
 (define_insn "muldf3"
-  [(set (match_operand:DF 0 "register_operand" "=fxy")
-	(mult:DF (match_operand:DF 1 "register_operand" "fxy")
-		 (match_operand:DF 2 "register_operand" "fxy")))]
+  [(set (match_operand:DF 0 "register_operand" "=fx")
+	(mult:DF (match_operand:DF 1 "register_operand" "fx")
+		 (match_operand:DF 2 "register_operand" "fx")))]
   ""
   "fmpy,dbl %1,%2,%0"
   [(set_attr "type" "fpmul")])
 
 (define_insn "mulsf3"
-  [(set (match_operand:SF 0 "register_operand" "=fxy")
-	(mult:SF (match_operand:SF 1 "register_operand" "fxy")
-		 (match_operand:SF 2 "register_operand" "fxy")))]
+  [(set (match_operand:SF 0 "register_operand" "=fx")
+	(mult:SF (match_operand:SF 1 "register_operand" "fx")
+		 (match_operand:SF 2 "register_operand" "fx")))]
   ""
   "fmpy,sgl %1,%2,%0"
   [(set_attr "type" "fpmul")])
 
 (define_insn "divdf3"
-  [(set (match_operand:DF 0 "register_operand" "=fxy")
-	(div:DF (match_operand:DF 1 "register_operand" "fxy")
-		(match_operand:DF 2 "register_operand" "fxy")))]
+  [(set (match_operand:DF 0 "register_operand" "=fx")
+	(div:DF (match_operand:DF 1 "register_operand" "fx")
+		(match_operand:DF 2 "register_operand" "fx")))]
   ""
   "fdiv,dbl %1,%2,%0"
   [(set_attr "type" "fpdivdbl")])
 
 (define_insn "divsf3"
-  [(set (match_operand:SF 0 "register_operand" "=fxy")
-	(div:SF (match_operand:SF 1 "register_operand" "fxy")
-		(match_operand:SF 2 "register_operand" "fxy")))]
+  [(set (match_operand:SF 0 "register_operand" "=fx")
+	(div:SF (match_operand:SF 1 "register_operand" "fx")
+		(match_operand:SF 2 "register_operand" "fx")))]
   ""
   "fdiv,sgl %1,%2,%0"
   [(set_attr "type" "fpdivsgl")])
 
 (define_insn "negdf2"
-  [(set (match_operand:DF 0 "register_operand" "=fxy")
-	(neg:DF (match_operand:DF 1 "register_operand" "fxy")))]
+  [(set (match_operand:DF 0 "register_operand" "=fx")
+	(neg:DF (match_operand:DF 1 "register_operand" "fx")))]
   ""
   "fsub,dbl 0,%1,%0"
   [(set_attr "type" "fpalu")])
 
 (define_insn "negsf2"
-  [(set (match_operand:SF 0 "register_operand" "=fxy")
-	(neg:SF (match_operand:SF 1 "register_operand" "fxy")))]
+  [(set (match_operand:SF 0 "register_operand" "=fx")
+	(neg:SF (match_operand:SF 1 "register_operand" "fx")))]
   ""
   "fsub,sgl 0, %1,%0"
   [(set_attr "type" "fpalu")])
 
 (define_insn "absdf2"
-  [(set (match_operand:DF 0 "register_operand" "=fxy")
-	(abs:DF (match_operand:DF 1 "register_operand" "fxy")))]
+  [(set (match_operand:DF 0 "register_operand" "=fx")
+	(abs:DF (match_operand:DF 1 "register_operand" "fx")))]
   ""
   "fabs,dbl %0,%0"
   [(set_attr "type" "fpalu")])
 
 (define_insn "abssf2"
-  [(set (match_operand:SF 0 "register_operand" "=fxy")
-	(abs:SF (match_operand:SF 1 "register_operand" "fxy")))]
+  [(set (match_operand:SF 0 "register_operand" "=fx")
+	(abs:SF (match_operand:SF 1 "register_operand" "fx")))]
   ""
   "fabs,sgl %1,%0"
   [(set_attr "type" "fpalu")])
 
 (define_insn "sqrtdf2"
-  [(set (match_operand:DF 0 "register_operand" "=fxy")
-	(sqrt:DF (match_operand:DF 1 "register_operand" "fxy")))]
+  [(set (match_operand:DF 0 "register_operand" "=fx")
+	(sqrt:DF (match_operand:DF 1 "register_operand" "fx")))]
   ""
   "fsqrt,dbl %1,%0"
   [(set_attr "type" "fpsqrtdbl")])
 
 (define_insn "sqrtsf2"
-  [(set (match_operand:SF 0 "register_operand" "=f")
-	(sqrt:SF (match_operand:SF 1 "register_operand" "f")))]
+  [(set (match_operand:SF 0 "register_operand" "=fx")
+	(sqrt:SF (match_operand:SF 1 "register_operand" "fx")))]
   ""
   "fsqrt,sgl %1,%0"
   [(set_attr "type" "fpsqrtsgl")])
@@ -2109,6 +2165,69 @@
 	(match_operand:SI 3 "register_operand" "r"))]
   ""
   "dep %3,%2+%1-1,%1,%0")
+
+;; This insn is used for some loop tests, typically loops reversed when
+;; strength reduction is used.  It is actually created when the instruction
+;; combination phase combines the special loop test.  Since this insn
+;; is both a jump insn and has an output, it must deal with it's own
+;; reloads, hence the `m' constraints.  The `!' constraints direct reload
+;; to not choose the register alternatives in the event a reload is needed.
+
+(define_insn "decrement_and_branch_until_zero"
+  [(set (pc)
+	(if_then_else
+	  (ge (plus:SI (match_operand:SI 0 "register_operand" "+!r,m")
+		       (const_int -1))
+	      (const_int 0))
+	  (label_ref (match_operand 1 "" ""))
+	  (pc)))
+   (set (match_dup 0)
+	(plus:SI (match_dup 0)
+		 (const_int -1)))
+   (clobber (match_scratch:SI 2 "=X,r"))]
+  "find_reg_note (insn, REG_NONNEG, 0)"
+"*
+{
+  if (which_alternative == 0)
+    if (get_attr_length (insn) == 1)
+      return \"addib,>= -1,%0,%1%#\";
+    else
+      return \"addi,< -1,%0,%0\;bl %1,0%#\";
+  else
+    {
+      output_asm_insn (\"ldw %0,%2\;ldo -1(%2),%2\;stw %2,%0\", operands);
+      if (get_attr_length (insn) == 4)
+	return \"comb,> 0,%2,%1%#\";
+      else
+	return \"comclr,<= 0,%2,0\;bl %1,0%#\";
+    }
+}"
+[(set_attr "type" "cbranch")
+ (set (attr "length")
+      (if_then_else (eq (symbol_ref "which_alternative") (const_int 0))
+		    (if_then_else (lt (abs (minus (match_dup 1)
+						  (plus (pc) (const_int 2))))
+				      (const_int 1023))
+				  (const_int 1)
+				  (const_int 2))
+		    (if_then_else (lt (match_dup 1)
+				      (pc))
+				  (if_then_else
+				   (lt (abs (minus (match_dup 1)
+						   (plus (pc)
+							 (const_int 5))))
+				       (const_int 1023))
+				   (const_int 4)
+				   (const_int 5))
+				  (if_then_else
+				   (lt (abs (minus (match_dup 1)
+						   (plus (pc)
+							 (const_int 2))))
+				       (const_int 1023))
+				   (const_int 4)
+				   (const_int 5)))))])
+
+
 
 ;;- Local variables:
 ;;- mode:emacs-lisp
