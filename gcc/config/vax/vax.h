@@ -566,7 +566,9 @@ gen_rtx (PLUS, Pmode, frame, gen_rtx (CONST_INT, VOIDmode, 12))
    can ignore COUNT.  */
 
 #define RETURN_ADDR_RTX(COUNT, FRAME)	\
-  gen_rtx (MEM, Pmode, plus_constant (FRAME, RETURN_ADDRESS_OFFSET))
+  ((COUNT == 0)				\
+   ? gen_rtx (MEM, Pmode, plus_constant (FRAME, RETURN_ADDRESS_OFFSET)) \
+   : (rtx) 0)
 
 
 /* Addressing modes, and classification of registers for them.  */
