@@ -1,5 +1,8 @@
 Sun Nov 18 07:40:07 2001  Douglas B. Rupp  <rupp@gnat.com>
 
+	* config/alpha/alpha.c (alpha_start_function, VMS): Cast shift
+	arg to HOST_WIDE_INT, not long.
+
 	* config/alpha/vms.h (DIR_SEPARATOR, PREFIX). Don't define.
 	(HAS_INIT_SECTION): Define.
 	(REAL_ARITHMETIC): Don't undefine.

@@ -6334,7 +6334,7 @@ alpha_start_function (file, fnname, decl)
     {
       fprintf (file, "\t.frame $%d,", vms_unwind_regno);
       fprintf (file, HOST_WIDE_INT_PRINT_DEC,
-	       frame_size >= (1l << 31) ? 0 : frame_size);
+	       frame_size >= ((HOST_WIDE_INT) 1 << 31) ? 0 : frame_size);
       fputs (",$26,", file);
       fprintf (file, HOST_WIDE_INT_PRINT_DEC, reg_offset);
       fputs ("\n", file);
