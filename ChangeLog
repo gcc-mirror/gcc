@@ -1,3 +1,7 @@
+2000-05-01  Benjamin Kosnik  <bkoz@cygnus.com>
+
+	* config.if: Tweak.
+
 2000-04-16  Dave Pitts  <dpitts@cozx.com>
 
         * config.sub (case $basic_machine): Change default for "ibm-*"
