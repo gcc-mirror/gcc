@@ -1,3 +1,8 @@
+2004-01-12  Zack Weinberg  <zack@codesourcery.com>
+
+	* g++.dg/ext/lvalue1.C: No longer expected to fail.
+	* g++.dg/warn/Wunused-2.C: Likewise.
+
 2004-01-12  Kriang Lerdsuwanakij  <lerdsuwa@users.sourceforge.net>
 
 	PR c++/13289
