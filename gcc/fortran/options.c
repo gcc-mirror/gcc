@@ -56,6 +56,7 @@ gfc_init_options (unsigned int argc ATTRIBUTE_UNUSED,
   gfc_option.warn_conversion = 0;
   gfc_option.warn_implicit_interface = 0;
   gfc_option.warn_line_truncation = 0;
+  gfc_option.warn_underflow = 1;
   gfc_option.warn_surprising = 0;
   gfc_option.warn_unused_labels = 0;
 
@@ -123,6 +124,7 @@ set_Wall (void)
 
   gfc_option.warn_aliasing = 1;
   gfc_option.warn_line_truncation = 1;
+  gfc_option.warn_underflow = 1;
   gfc_option.warn_surprising = 1;
   gfc_option.warn_unused_labels = 1;
 
@@ -196,6 +198,10 @@ gfc_handle_option (size_t scode, const char *arg, int value)
 
     case OPT_Wline_truncation:
       gfc_option.warn_line_truncation = value;
+      break;
+
+    case OPT_Wunderflow:
+      gfc_option.warn_underflow = value;
       break;
 
     case OPT_Wsurprising:

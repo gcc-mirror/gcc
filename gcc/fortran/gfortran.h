@@ -1215,6 +1215,7 @@ typedef struct
   int warn_conversion;
   int warn_implicit_interface;
   int warn_line_truncation;
+  int warn_underflow;
   int warn_surprising;
   int warn_unused_labels;
 
