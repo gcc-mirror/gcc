@@ -1,5 +1,11 @@
 2002-04-12  Mark Mitchell  <mark@codesourcery.com>
 
+	PR c++/5189.
+	* call.c (add_template_candidate_real): Do not treat member
+	templates as copy constructors.
+
+2002-04-12  Mark Mitchell  <mark@codesourcery.com>
+
 	* decl.c (duplicate_decls): Do not copy the RTL for a variable
 	declaration if the old variable had an incomplete type and the new
 	variable does not.
