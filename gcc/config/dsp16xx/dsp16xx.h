@@ -130,7 +130,7 @@ extern GTY(()) rtx dsp16xx_lshrhi3_libcall;
 /* Include path is determined from the environment variable */
 #define INCLUDE_DEFAULTS     \
 {                            \
-  { 0, 0, 0 }                \
+  { 0, 0, 0, 0, 0 }          \
 }
 
 /* Names to predefine in the preprocessor for this target machine.  */

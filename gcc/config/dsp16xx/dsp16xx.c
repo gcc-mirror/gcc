@@ -1938,7 +1938,7 @@ print_operand_address(file, addr)
       
     default:
       if (FITS_5_BITS (addr))
-	fprintf (file, "*(0x%x)", (INTVAL (addr) & 0x20));
+	fprintf (file, "*(0x%x)", (int)(INTVAL (addr) & 0x20));
       else
 	output_addr_const (file, addr);
     }
