@@ -2368,14 +2368,23 @@ Appears following each call to @code{setjmp} or a related function.
 These codes are printed symbolically when they appear in debugging dumps.
 @end table
 
+@cindex @code{TImode}, in @code{insn}
 @cindex @code{HImode}, in @code{insn}
 @cindex @code{QImode}, in @code{insn}
 The machine mode of an insn is normally @code{VOIDmode}, but some
 phases use the mode for various purposes; for example, the reload pass
 sets it to @code{HImode} if the insn needs reloading but not register
-elimination and @code{QImode} if both are required.  The common
-subexpression elimination pass sets the mode of an insn to @code{QImode}
-when it is the first insn in a block that has already been processed.
+elimination and @code{QImode} if both are required. 
+
+The common subexpression elimination pass sets the mode of an insn to
+@code{QImode} when it is the first insn in a block that has already
+been processed.
+
+The second Haifa scheduling pass, for targets that can multiple issue,
+sets the mode of an insn to @code{TImode} when it is believed that the
+instruction begins an issue group.  That is, when the instruction 
+cannot issue simultaneously with the previous.  This may be relied on
+by later passes, in particular machine-dependant reorg.
 
 Here is a table of the extra fields of @code{insn}, @code{jump_insn}
 and @code{call_insn} insns:
