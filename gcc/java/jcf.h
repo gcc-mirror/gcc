@@ -1,6 +1,6 @@
 /* Utility macros to read Java(TM) .class files and byte codes.
 
-   Copyright (C) 1996, 1998 Free Software Foundation, Inc.
+   Copyright (C) 1996, 97-98, 1999 Free Software Foundation, Inc.
 
 This program is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -35,7 +35,6 @@ The Free Software Foundation is independent of Sun Microsystems, Inc.  */
 #define PTR             char *
 #define AND             ;
 #define DEFUN(name, arglist, args)      name arglist args;
-#define inline static
 #endif
 #endif /* !DEFUN */
 

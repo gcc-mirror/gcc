@@ -42,9 +42,6 @@ Addison Wesley 1996" (http://java.sun.com/docs/books/jls/html/3.doc.html)  */
 #include <ctype.h>
 #endif
 
-#ifdef inline			/* javaop.h redefines inline as static */
-#undef inline
-#endif
 #include "keyword.h"
 
 #ifndef SEEK_SET

@@ -24,16 +24,11 @@ The Free Software Foundation is independent of Sun Microsystems, Inc.  */
 
 /* Written by Per Bothner <bothner@cygnus.com>, February 1996. */
 
-#include <stdio.h>
+#include "config.h"
+#include "system.h"
 #include "jcf.h"
-#ifdef __STDC__
-#include <stdlib.h>
-#endif
-#include <math.h>
-
-#include <string.h>
-
 #include "java-opcodes.h"
+#include <math.h>
 
 /* The output file.  */
 FILE *out = NULL;
