@@ -1,5 +1,5 @@
 /* Dummy data flow analysis for GNU compiler in nonoptimizing mode.
-   Copyright (C) 1987, 1991, 1994, 1995 Free Software Foundation, Inc.
+   Copyright (C) 1987, 1991, 1994, 1995, 1996 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -308,8 +308,8 @@ stupid_reg_compare (r1p, r2p)
 /* Find a block of SIZE words of hard registers in reg_class CLASS
    that can hold a value of machine-mode MODE
      (but actually we test only the first of the block for holding MODE)
-   currently free from after insn whose suid is BIRTH
-   through the insn whose suid is DEATH,
+   currently free from after insn whose suid is BORN_INSN
+   through the insn whose suid is DEAD_INSN,
    and return the number of the first of them.
    Return -1 if such a block cannot be found.
 
@@ -336,6 +336,13 @@ stupid_find_reg (call_preserved, class, mode,
 #ifdef ELIMINABLE_REGS
   static struct {int from, to; } eliminables[] = ELIMINABLE_REGS;
 #endif
+
+  /* If this register's life is more than 5,000 insns, we probably
+     can't allocate it, so don't waste the time trying.  This avoid
+     quadratic behavior on programs that have regularly-occurring
+     SAVE_EXPRs.  */
+  if (dead_insn > born_insn + 5000)
+    return -1;
 
   COPY_HARD_REG_SET (used,
 		     call_preserved ? call_used_reg_set : fixed_reg_set);
