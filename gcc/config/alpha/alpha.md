@@ -4567,7 +4567,7 @@ fadd,fmul,fcpys,fdiv,fsqrt,misc,mvi,ftoi,itof,multi,none"
   "TARGET_EXPLICIT_RELOCS && TARGET_ABI_OSF"
   "@
    jsr $26,(%0),0\;ldah $29,0($26)\t\t!gpdisp!%*\;lda $29,0($29)\t\t!gpdisp!%*
-   bsr $26,$%0..ng
+   bsr $26,%0\t\t!samegp
    ldq $27,%0($29)\t\t!literal!%#\;jsr $26,($27),%0\t\t!lituse_jsr!%#\;ldah $29,0($26)\t\t!gpdisp!%*\;lda $29,0($29)\t\t!gpdisp!%*"
   [(set_attr "type" "jsr")
    (set_attr "length" "12,*,16")])
@@ -4580,7 +4580,7 @@ fadd,fmul,fcpys,fdiv,fsqrt,misc,mvi,ftoi,itof,multi,none"
 	      (use (reg:DI 29))
 	      (clobber (reg:DI 26))])]
   "TARGET_EXPLICIT_RELOCS && TARGET_ABI_OSF && reload_completed
-   && ! current_file_function_operand (operands[0], Pmode)
+   && ! samegp_function_operand (operands[0], Pmode)
    && peep2_regno_dead_p (1, 29)"
   [(parallel [(call (mem:DI (match_dup 2))
 		    (match_dup 1))
@@ -4610,7 +4610,7 @@ fadd,fmul,fcpys,fdiv,fsqrt,misc,mvi,ftoi,itof,multi,none"
 	      (use (reg:DI 29))
 	      (clobber (reg:DI 26))])]
   "TARGET_EXPLICIT_RELOCS && TARGET_ABI_OSF && reload_completed
-   && ! current_file_function_operand (operands[0], Pmode)
+   && ! samegp_function_operand (operands[0], Pmode)
    && ! peep2_regno_dead_p (1, 29)"
   [(parallel [(call (mem:DI (match_dup 2))
 		    (match_dup 1))
@@ -4688,7 +4688,7 @@ fadd,fmul,fcpys,fdiv,fsqrt,misc,mvi,ftoi,itof,multi,none"
    (unspec [(reg:DI 29)] UNSPEC_SIBCALL)]
   "TARGET_EXPLICIT_RELOCS && TARGET_ABI_OSF"
   "@
-   br $31,$%0..ng
+   br $31,%0\t\t!samegp
    ldq $27,%0($29)\t\t!literal!%#\;jmp $31,($27),%0\t\t!lituse_jsr!%#"
   [(set_attr "type" "jsr")
    (set_attr "length" "*,8")])
@@ -7779,7 +7779,7 @@ fadd,fmul,fcpys,fdiv,fsqrt,misc,mvi,ftoi,itof,multi,none"
   "TARGET_EXPLICIT_RELOCS && TARGET_ABI_OSF"
   "@
    jsr $26,(%1),0\;ldah $29,0($26)\t\t!gpdisp!%*\;lda $29,0($29)\t\t!gpdisp!%*
-   bsr $26,$%1..ng
+   bsr $26,%1\t\t!samegp
    ldq $27,%1($29)\t\t!literal!%#\;jsr $26,($27),0\t\t!lituse_jsr!%#\;ldah $29,0($26)\t\t!gpdisp!%*\;lda $29,0($29)\t\t!gpdisp!%*"
   [(set_attr "type" "jsr")
    (set_attr "length" "12,*,16")])
@@ -7793,7 +7793,7 @@ fadd,fmul,fcpys,fdiv,fsqrt,misc,mvi,ftoi,itof,multi,none"
 	      (use (reg:DI 29))
 	      (clobber (reg:DI 26))])]
   "TARGET_EXPLICIT_RELOCS && TARGET_ABI_OSF && reload_completed
-   && ! current_file_function_operand (operands[1], Pmode)
+   && ! samegp_function_operand (operands[1], Pmode)
    && peep2_regno_dead_p (1, 29)"
   [(parallel [(set (match_dup 0)
 		   (call (mem:DI (match_dup 3))
@@ -7825,7 +7825,7 @@ fadd,fmul,fcpys,fdiv,fsqrt,misc,mvi,ftoi,itof,multi,none"
 	      (use (reg:DI 29))
 	      (clobber (reg:DI 26))])]
   "TARGET_EXPLICIT_RELOCS && TARGET_ABI_OSF && reload_completed
-   && ! current_file_function_operand (operands[1], Pmode)
+   && ! samegp_function_operand (operands[1], Pmode)
    && ! peep2_regno_dead_p (1, 29)"
   [(parallel [(set (match_dup 0)
 		   (call (mem:DI (match_dup 3))
@@ -7970,7 +7970,7 @@ fadd,fmul,fcpys,fdiv,fsqrt,misc,mvi,ftoi,itof,multi,none"
    (unspec [(reg:DI 29)] UNSPEC_SIBCALL)]
   "TARGET_EXPLICIT_RELOCS && TARGET_ABI_OSF"
   "@
-   br $31,$%1..ng
+   br $31,%1\t\t!samegp
    ldq $27,%1($29)\t\t!literal!%#\;jmp $31,($27),%1\t\t!lituse_jsr!%#"
   [(set_attr "type" "jsr")
    (set_attr "length" "*,8")])

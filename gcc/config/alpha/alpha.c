@@ -128,6 +128,8 @@ static enum tls_model tls_symbolic_operand_type
   PARAMS ((rtx));
 static bool decl_in_text_section
   PARAMS ((tree));
+static bool decl_has_samegp
+  PARAMS ((tree));
 static bool alpha_in_small_data_p
   PARAMS ((tree));
 static void alpha_encode_section_info
@@ -971,7 +973,7 @@ input_operand (op, mode)
    file, and in the same section as the current function.  */
 
 int
-current_file_function_operand (op, mode)
+samegp_function_operand (op, mode)
      rtx op;
      enum machine_mode mode ATTRIBUTE_UNUSED;
 {
@@ -982,14 +984,9 @@ current_file_function_operand (op, mode)
   if (op == XEXP (DECL_RTL (current_function_decl), 0))
     return 1;
 
-  /* Otherwise, we need the DECL for the SYMBOL_REF, which we can't get.
-     So SYMBOL_REF_FLAG has been declared to imply that the function is
-     in the default text section.  So we must also check that the current
-     function is also in the text section.  */
-  if (SYMBOL_REF_FLAG (op) && decl_in_text_section (current_function_decl))
-    return 1;
-
-  return 0;
+  /* Otherwise, encode_section_info recorded whether we are to treat
+     this symbol as having the same GP.  */
+  return SYMBOL_REF_FLAG (op);
 }
 
 /* Return 1 if OP is a SYMBOL_REF for which we can make a call via bsr.  */
@@ -999,20 +996,28 @@ direct_call_operand (op, mode)
      rtx op;
      enum machine_mode mode;
 {
-  /* Must be defined in this file.  */
-  if (! current_file_function_operand (op, mode))
+  /* Must share the same GP.  */
+  if (!samegp_function_operand (op, mode))
     return 0;
 
   /* If profiling is implemented via linker tricks, we can't jump
-     to the nogp alternate entry point.  */
+     to the nogp alternate entry point.  Note that current_function_profile
+     would not be correct, since that doesn't indicate if the target
+     function uses profiling.  */
   /* ??? TARGET_PROFILING_NEEDS_GP isn't really the right test,
      but is approximately correct for the OSF ABIs.  Don't know
      what to do for VMS, NT, or UMK.  */
-  if (! TARGET_PROFILING_NEEDS_GP
-      && ! current_function_profile)
+  if (!TARGET_PROFILING_NEEDS_GP && profile_flag)
     return 0;
 
-  return 1;
+  /* Must be "near" so that the branch is assumed to reach.  With
+     -msmall-text, this is true of all local symbols.  */
+  if (TARGET_SMALL_TEXT)
+    return op->jump;
+
+  /* Otherwise, a decl is "near" if it is defined in the same section.
+     See alpha_encode_section_info for commentary.  */
+  return op->jump && decl_in_text_section (cfun->decl);
 }
 
 /* Return true if OP is a LABEL_REF, or SYMBOL_REF or CONST referencing
@@ -1182,7 +1187,6 @@ tls_symbolic_operand_1 (op, mode, size, unspec)
      int size, unspec;
 {
   const char *str;
-  int letter;
 
   if (mode != VOIDmode && GET_MODE (op) != VOIDmode && mode != GET_MODE (op))
     return 0;
@@ -1212,9 +1216,17 @@ tls_symbolic_operand_1 (op, mode, size, unspec)
   else
     return 0;
 
-  letter = (unspec == UNSPEC_DTPREL ? 'D' : 'T');
-
-  return str[1] == letter;
+  switch (str[1])
+    {
+    case 'D':
+      return unspec == UNSPEC_DTPREL;
+    case 'T':
+      return unspec == UNSPEC_TPREL && size == 64;
+    case 't':
+      return unspec == UNSPEC_TPREL && size < 64;
+    default:
+      abort ();
+    }
 }
 
 /* Return true if OP is valid for 16-bit DTP relative relocations.  */
@@ -1784,14 +1796,9 @@ tls_symbolic_operand_type (symbol)
 	    return TLS_MODEL_GLOBAL_DYNAMIC;
 	}
       if (str[1] == 'T')
-	{
-	  /* 64-bit local exec is the same as initial exec except without
-	     the dynamic relocation.  In either case we use a got entry.  */
-	  if (alpha_tls_size == 64)
-	    return TLS_MODEL_INITIAL_EXEC;
-	  else
-	    return TLS_MODEL_LOCAL_EXEC;
-	}
+	return TLS_MODEL_INITIAL_EXEC;
+      if (str[1] == 't')
+	return TLS_MODEL_LOCAL_EXEC;
     }
 
   return 0;
@@ -1812,6 +1819,29 @@ decl_in_text_section (decl)
 	  && ! (flag_function_sections
 	        || (targetm.have_named_sections
 		    && DECL_ONE_ONLY (decl))));
+}
+
+/* Return true if the function DECL will share the same GP as any
+   function in the current unit of translation.  */
+
+static bool
+decl_has_samegp (decl)
+     tree decl;
+{
+  /* Functions that are not local can be overridden, and thus may
+     not share the same gp.  */
+  if (!(*targetm.binds_local_p) (decl))
+    return false;
+
+  /* If -msmall-data is in effect, assume that there is only one GP
+     for the module, and so any local symbol has this property.  We
+     need explicit relocations to be able to enforce this for symbols
+     not defined in this unit of translation, however.  */
+  if (TARGET_EXPLICIT_RELOCS && TARGET_SMALL_DATA)
+    return true;
+
+  /* Functions that are not external are defined in this UoT.  */
+  return !DECL_EXTERNAL (decl);
 }
 
 /* Return true if EXP should be placed in the small data section.  */
@@ -1870,20 +1900,38 @@ alpha_encode_section_info (decl, first)
   symbol = XEXP (rtl, 0);
   if (GET_CODE (symbol) != SYMBOL_REF)
     return;
+
+  /* A variable is considered "local" if it is defined in this module.  */
+  is_local = (*targetm.binds_local_p) (decl);
     
   if (TREE_CODE (decl) == FUNCTION_DECL)
     {
-      /* We mark public functions once they are emitted; otherwise we
-	 don't know that they exist in this unit of translation.  */
-      if (TREE_PUBLIC (decl))
-	return;
+      /* Mark whether the decl is "near" in distance.  If -msmall-text is
+	 in effect, this is trivially true of all local symbols.  */
+      if (TARGET_SMALL_TEXT)
+	{
+	  if (is_local)
+	    symbol->jump = 1;
+	}
+      else
+	{
+	  /* Otherwise, a decl is "near" if it is defined in this same
+	     section.  What we really need is to be able to access the
+	     target decl of a call from the call_insn pattern, so that
+	     we can determine if the call is from the same section.  We
+	     can't do that at present, so handle the common case and
+	     match up .text with .text.
 
-      /* Do not mark functions that are not in .text; otherwise we
-	 don't know that they are near enough for a direct branch.  */
-      if (! decl_in_text_section (decl))
-	return;
+	     Delay marking public functions until they are emitted; otherwise
+	     we don't know that they exist in this unit of translation.  */
+	  if (!TREE_PUBLIC (decl) && decl_in_text_section (decl))
+            symbol->jump = 1;
+	}
 
-      SYMBOL_REF_FLAG (symbol) = 1;
+      /* Indicate whether the target function shares the same GP as any
+	 function emitted in this unit of translation.  */
+      if (decl_has_samegp (decl))
+	SYMBOL_REF_FLAG (symbol) = 1;
       return;
     }
 
@@ -1892,9 +1940,6 @@ alpha_encode_section_info (decl, first)
     return;
 
   symbol_str = XSTR (symbol, 0);
-
-  /* A variable is considered "local" if it is defined in this module.  */
-  is_local = (*targetm.binds_local_p) (decl);
 
   /* Care for TLS variables.  */
   if (TREE_CODE (decl) == VAR_DECL && DECL_THREAD_LOCAL (decl))
@@ -1908,8 +1953,10 @@ alpha_encode_section_info (decl, first)
 	  encoding = 'D';
 	  break;
 	case TLS_MODEL_INITIAL_EXEC:
-	case TLS_MODEL_LOCAL_EXEC:
 	  encoding = 'T';
+	  break;
+	case TLS_MODEL_LOCAL_EXEC:
+	  encoding = (alpha_tls_size == 64 ? 'T' : 't');
 	  break;
 	}
     }
@@ -2282,16 +2329,22 @@ alpha_legitimize_address (x, scratch, mode)
 }
 
 /* We do not allow indirect calls to be optimized into sibling calls, nor
-   can we allow a call to a function in a different compilation unit to
-   be optimized into a sibcall.  */
+   can we allow a call to a function with a different GP to be optimized
+   into a sibcall.  */
+
 static bool
 alpha_function_ok_for_sibcall (decl, exp)
      tree decl;
      tree exp ATTRIBUTE_UNUSED;
 {
-  return (decl
-	  && (! TREE_PUBLIC (decl)
-	      || (TREE_ASM_WRITTEN (decl) && (*targetm.binds_local_p) (decl))));
+  /* Can't do indirect tail calls, since we don't know if the target
+     uses the same GP.  */
+  if (!decl)
+    return false;
+
+  /* Otherwise, we can make a tail call if the target function shares
+     the same GP.  */
+  return decl_has_samegp (decl);
 }
 
 /* For TARGET_EXPLICIT_RELOCS, we don't obfuscate a SYMBOL_REF to a
@@ -7853,15 +7906,21 @@ alpha_end_function (file, fnname, decl)
 #endif
 
   /* Show that we know this function if it is called again.
+     This is only meaningful for symbols that bind locally.  */
+  if ((*targetm.binds_local_p) (decl))
+    {
+      rtx symbol = XEXP (DECL_RTL (decl), 0);
 
-     Do this only for functions whose symbols bind locally.
+      /* Mark whether the decl is "near".  See the commentary in 
+	 alpha_encode_section_info wrt the .text section.  */
+      if (decl_in_text_section (decl))
+	symbol->jump = 1;
 
-     Don't do this for functions not defined in the .text section, as
-     otherwise it's not unlikely that the destination is out of range
-     for a direct branch.  */
-
-  if ((*targetm.binds_local_p) (decl) && decl_in_text_section (decl))
-    SYMBOL_REF_FLAG (XEXP (DECL_RTL (decl), 0)) = 1;
+      /* Mark whether the decl shares a GP with other functions
+	 in this unit of translation.  This is trivially true of
+	 local symbols.  */
+      SYMBOL_REF_FLAG (symbol) = 1;
+    }
 
   /* Output jump tables and the static subroutine information block.  */
   if (TARGET_ABI_UNICOSMK)

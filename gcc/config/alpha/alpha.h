@@ -222,6 +222,10 @@ extern int alpha_tls_size;
 #define MASK_TLS_KERNEL	(1 << 14)
 #define TARGET_TLS_KERNEL (target_flags & MASK_TLS_KERNEL)
 
+/* This means use direct branches to local functions.  */
+#define MASK_SMALL_TEXT (1 << 15)
+#define TARGET_SMALL_TEXT (target_flags & MASK_SMALL_TEXT)
+
 /* This means that the processor is an EV5, EV56, or PCA56.
    Unlike alpha_cpu this is not affected by -mtune= setting.  */
 #define MASK_CPU_EV5	(1 << 28)
@@ -310,6 +314,9 @@ extern int alpha_tls_size;
      N_("Emit 16-bit relocations to the small data areas")},		\
     {"large-data", -MASK_SMALL_DATA,					\
      N_("Emit 32-bit relocations to the small data areas")},		\
+    {"small-text", MASK_SMALL_TEXT,					\
+     N_("Emit direct branches to local functions")},			\
+    {"large-text", -MASK_SMALL_TEXT, ""},				\
     {"tls-kernel", MASK_TLS_KERNEL,					\
      N_("Emit rdval instead of rduniq for thread pointer")},		\
     {"", TARGET_DEFAULT | TARGET_CPU_DEFAULT				\
@@ -1914,7 +1921,7 @@ do {						\
   {"alpha_fp_comparison_operator", {EQ, LE, LT, UNORDERED}},		\
   {"divmod_operator", {DIV, MOD, UDIV, UMOD}},				\
   {"const0_operand", {CONST_INT, CONST_DOUBLE, CONST_VECTOR}},		\
-  {"current_file_function_operand", {SYMBOL_REF}},			\
+  {"samegp_function_operand", {SYMBOL_REF}},				\
   {"direct_call_operand", {SYMBOL_REF}},				\
   {"local_symbolic_operand", {SYMBOL_REF, CONST, LABEL_REF}},		\
   {"small_symbolic_operand", {SYMBOL_REF, CONST}},			\

@@ -559,7 +559,7 @@ in the following sections.
 -mcpu=@var{cpu-type}  -mtune=@var{cpu-type} @gol
 -mbwx  -mmax  -mfix  -mcix @gol
 -mfloat-vax  -mfloat-ieee @gol
--mexplicit-relocs  -msmall-data  -mlarge-data @gol
+-mexplicit-relocs  -msmall-data  -mlarge-data -msmall-text -mlarge-text @gol
 -mmemory-latency=@var{time}}
 
 @emph{DEC Alpha/VMS Options}
@@ -8748,6 +8748,19 @@ heap instead of in the program's data segment.
 
 When generating code for shared libraries, @option{-fpic} implies
 @option{-msmall-data} and @option{-fPIC} implies @option{-mlarge-data}.
+
+@item -msmall-text
+@itemx -mlarge-text
+@opindex msmall-text
+@opindex mlarge-text
+When @option{-msmall-text} is used, the compiler assumes that the
+code of the entire program (or shared library) fits in 4MB, and is
+thus reachable with a branch instruction.  When @option{-msmall-data}
+is used, the compiler can assume that all local symbols share the
+same @code{$gp} value, and thus reduce the number of instructions
+required for a function call from 4 to 1.
+
+The default is @option{-mlarge-text}.
 
 @item -mcpu=@var{cpu_type}
 @opindex mcpu
