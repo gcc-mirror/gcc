@@ -168,10 +168,10 @@ namespace std {
       { return ::floor(static_cast<double>(__x)); }
 #endif
 
-#if _GLIBCPP_HAVE_BUILTIN_FMODFF
+#if _GLIBCPP_HAVE_BUILTIN_FMODF
     inline float fmod(float __x, float __y)
       { return __builtin_fmodf(__x, __y); }
-#elif _GLIBCPP_HAVE_FMODFF
+#elif _GLIBCPP_HAVE_FMODF
     inline float fmod(float __x, float __y)
       { return ::fmodf(__x, __y); }
 #else
@@ -223,17 +223,17 @@ namespace std {
       { return ::log10(static_cast<double>(__x)); }
 #endif
 
-#if _GLIBCPP_HAVE_BUILTIN_MODF
+#if _GLIBCPP_HAVE_BUILTIN_MODFF
     inline float modf(float __x, float* __iptr)
       { return __builtin_modff(__x, __iptr); }
-#elif _GLIBCPP_HAVE_MODF
+#elif _GLIBCPP_HAVE_MODFF
     inline float modf(float __x, float* __iptr)
       { return ::modff(__x, __iptr); }
 #else
     inline float modf(float __x, float* __iptr)
     {
        double __tmp;
-       double __res = _C_legacy::modf(static_cast<double>(__x), &__tmp);
+       double __res = ::modf(static_cast<double>(__x), &__tmp);
        *__iptr = static_cast<float> (__tmp);
        return __res;
     }
