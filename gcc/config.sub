@@ -65,7 +65,7 @@ case $os in
 	-dec* | -mips* | -sequent* | -encore* | -pc532* | -sgi* | -sony* | \
 	-att* | -7300* | -3300* | -delta* | -motorola* | -sun[234]* | \
 	-unicom* | -ibm* | -next* | -hp | -isi* | -apollo | -altos* | \
-	-convergent* | -ncr* | -news | -32* | -3600* | -3100* | -hitachi \
+	-convergent* | -ncr* | -news | -32* | -3600* | -3100* | -hitachi | \
 	-c[123]* | -convex* | -sun | -crds | -omron* | -dg | -ultra | -tti* | \
 	-harris | -dolphin | -highlevel | -gould | -cbm | -ns | -masscomp )
 		os=
