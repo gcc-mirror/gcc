@@ -5822,7 +5822,14 @@ reg_overlap_mentioned_for_reload_p (x, in)
 {
   int regno, endregno;
 
-  if (GET_CODE (x) == SUBREG)
+  /* Overly conservative.  */
+  if (GET_CODE (x) == STRICT_LOW_PART)
+    x = XEXP (x, 0);
+
+  /* If either argument is a constant, then modifying X can not affect IN.  */
+  if (CONSTANT_P (x) || CONSTANT_P (in))
+    return 0;
+  else if (GET_CODE (x) == SUBREG)
     {
       regno = REGNO (SUBREG_REG (x));
       if (regno < FIRST_PSEUDO_REGISTER)
@@ -5844,8 +5851,6 @@ reg_overlap_mentioned_for_reload_p (x, in)
 	  abort ();
 	}
     }
-  else if (CONSTANT_P (x))
-    return 0;
   else if (GET_CODE (x) == MEM)
     return refers_to_mem_for_reload_p (in);
   else if (GET_CODE (x) == SCRATCH || GET_CODE (x) == PC
