@@ -540,6 +540,9 @@ struct file_name_list
     /* If the following is nonzero, it is a macro name.
        Don't include the file again if that macro is defined.  */
     U_CHAR *control_macro;
+    /* If the following is nonzero, it is a C-language system include
+       directory.  */
+    int c_system_include_path;
   };
 
 /* #include "file" looks in source file dir, then stack. */
@@ -1121,6 +1124,7 @@ main (argc, argv)
 	    xmalloc (sizeof (struct file_name_list));
 	  dirtmp->next = 0;	/* New one goes on the end */
 	  dirtmp->control_macro = 0;
+	  dirtmp->c_system_include_path = 0;
 	  if (i + 1 == argc)
 	    fatal ("Directory name missing after `-iwithprefix' option");
 
@@ -1154,6 +1158,7 @@ main (argc, argv)
 	    xmalloc (sizeof (struct file_name_list));
 	  dirtmp->next = 0;	/* New one goes on the end */
 	  dirtmp->control_macro = 0;
+	  dirtmp->c_system_include_path = 0;
 	  if (i + 1 == argc)
 	    fatal ("Directory name missing after `-iwithprefixbefore' option");
 
@@ -1172,6 +1177,7 @@ main (argc, argv)
 	    xmalloc (sizeof (struct file_name_list));
 	  dirtmp->next = 0;	/* New one goes on the end */
 	  dirtmp->control_macro = 0;
+	  dirtmp->c_system_include_path = 0;
 	  if (i + 1 == argc)
 	    fatal ("Directory name missing after `-idirafter' option");
 	  else
@@ -1421,6 +1427,7 @@ main (argc, argv)
 	      xmalloc (sizeof (struct file_name_list));
 	    dirtmp->next = 0;		/* New one goes on the end */
 	    dirtmp->control_macro = 0;
+	    dirtmp->c_system_include_path = 0;
 	    if (argv[i][2] != 0)
 	      dirtmp->fname = argv[i] + 2;
 	    else if (i + 1 == argc)
@@ -1684,6 +1691,7 @@ main (argc, argv)
 	    strcat (str, p->fname + default_len);
 	    new->fname = str;
 	    new->control_macro = 0;
+	    new->c_system_include_path = !p->cplusplus;
 	    append_include_chain (new, new);
 	    if (first_system_include == 0)
 	      first_system_include = new;
@@ -1697,6 +1705,7 @@ main (argc, argv)
 	struct file_name_list *new
 	  = (struct file_name_list *) xmalloc (sizeof (struct file_name_list));
 	new->control_macro = 0;
+	new->c_system_include_path = !p->cplusplus;
 	new->fname = p->fname;
 	append_include_chain (new, new);
 	if (first_system_include == 0)
@@ -2015,6 +2024,7 @@ path_include (path)
 	xmalloc (sizeof (struct file_name_list));
       dirtmp->next = 0;		/* New one goes on the end */
       dirtmp->control_macro = 0;
+      dirtmp->c_system_include_path = 0;
       dirtmp->fname = name;
       append_include_chain (dirtmp, dirtmp);
 
@@ -4094,6 +4104,7 @@ get_filename:
 
       ptr = (struct file_name_list *) xmalloc (sizeof (struct file_name_list));
       ptr->control_macro = 0;
+      ptr->c_system_include_path = 0;
       ptr->next = all_include_files;
       all_include_files = ptr;
       ptr->fname = savestring (fname);
@@ -4203,7 +4214,12 @@ is_system_include (filename)
       register unsigned length = strlen (sys_dir);
 
       if (! strncmp (sys_dir, filename, length) && filename[length] == '/')
-	return 1;
+	{
+	  if (searchptr->c_system_include_path)
+	    return 2;
+	  else
+	    return 1;
+	}
     }
   return 0;
 }
@@ -6099,6 +6115,7 @@ do_once ()
     dont_repeat_files = new;
     new->fname = savestring (ip->fname);
     new->control_macro = 0;
+    new->c_system_include_path = 0;
   }
   return 0;
 }
@@ -7087,6 +7104,11 @@ output_line_command (ip, op, conditional, file_change)
   if (ip->system_header_p) {
     *line_end++ = ' ';
     *line_end++ = '3';
+  }
+  /* Tell cc1plus if following text should be treated as C.  */
+  if (ip->system_header_p == 2) {
+    *line_end++ = ' ';
+    *line_end++ = '4';
   }
   *line_end++ = '\n';
   len = line_end - line_cmd_buf;
