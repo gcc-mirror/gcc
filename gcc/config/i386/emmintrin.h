@@ -195,19 +195,16 @@ _mm_storer_pd (double *__P, __m128d __A)
 static __inline int
 _mm_cvtsi128_si32 (__m128i __A)
 {
-  int __tmp;
-  __builtin_ia32_stored (&__tmp, (__v4si)__A);
-  return __tmp;
+  return __builtin_ia32_vec_ext_v4si ((__v4si)__A, 0);
 }
 
 #ifdef __x86_64__
 static __inline long long
 _mm_cvtsi128_si64x (__m128i __A)
 {
-  return __builtin_ia32_movdq2q ((__v2di)__A);
+  return __builtin_ia32_vec_ext_v2di ((__v2di)__A, 0);
 }
 #endif
-
 
 static __inline __m128d
 _mm_add_pd (__m128d __A, __m128d __B)
@@ -1377,14 +1374,14 @@ _mm_mfence (void)
 static __inline __m128i
 _mm_cvtsi32_si128 (int __A)
 {
-  return (__m128i) __builtin_ia32_loadd (&__A);
+  return _mm_set_epi32 (0, 0, 0, __A);
 }
 
 #ifdef __x86_64__
 static __inline __m128i
 _mm_cvtsi64x_si128 (long long __A)
 {
-  return (__m128i) __builtin_ia32_movq2dq (__A);
+  return _mm_set_epi64x (0, __A);
 }
 #endif
 

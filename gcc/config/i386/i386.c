@@ -12265,9 +12265,6 @@ enum ix86_builtins
 
   IX86_BUILTIN_LOADDQU,
   IX86_BUILTIN_STOREDQU,
-  IX86_BUILTIN_MOVQ,
-  IX86_BUILTIN_LOADD,
-  IX86_BUILTIN_STORED,
 
   IX86_BUILTIN_PACKSSWB,
   IX86_BUILTIN_PACKSSDW,
@@ -12498,8 +12495,6 @@ enum ix86_builtins
   IX86_BUILTIN_MASKMOVDQU,
   IX86_BUILTIN_MOVMSKPD,
   IX86_BUILTIN_PMOVMSKB128,
-  IX86_BUILTIN_MOVQ2DQ,
-  IX86_BUILTIN_MOVDQ2Q,
 
   IX86_BUILTIN_PACKSSWB128,
   IX86_BUILTIN_PACKSSDW128,
@@ -12607,6 +12602,7 @@ enum ix86_builtins
   IX86_BUILTIN_VEC_EXT_V2DF,
   IX86_BUILTIN_VEC_EXT_V2DI,
   IX86_BUILTIN_VEC_EXT_V4SF,
+  IX86_BUILTIN_VEC_EXT_V4SI,
   IX86_BUILTIN_VEC_EXT_V8HI,
   IX86_BUILTIN_VEC_EXT_V4HI,
   IX86_BUILTIN_VEC_SET_V8HI,
@@ -13154,8 +13150,6 @@ ix86_init_mmx_sse_builtins (void)
     = build_function_type_list (V2SI_type_node,
 				V2SF_type_node, V2SF_type_node, NULL_TREE);
   tree pint_type_node    = build_pointer_type (integer_type_node);
-  tree pcint_type_node = build_pointer_type (
-			     build_type_variant (integer_type_node, 1, 0));
   tree pdouble_type_node = build_pointer_type (double_type_node);
   tree pcdouble_type_node = build_pointer_type (
 				build_type_variant (double_type_node, 1, 0));
@@ -13168,12 +13162,6 @@ ix86_init_mmx_sse_builtins (void)
 				intTI_type_node, intTI_type_node, NULL_TREE);
   tree void_ftype_pcvoid
     = build_function_type_list (void_type_node, const_ptr_type_node, NULL_TREE);
-  tree v2di_ftype_di
-    = build_function_type_list (V2DI_type_node,
-				long_long_unsigned_type_node, NULL_TREE);
-  tree di_ftype_v2di
-    = build_function_type_list (long_long_unsigned_type_node,
-				V2DI_type_node, NULL_TREE);
   tree v4sf_ftype_v4si
     = build_function_type_list (V4SF_type_node, V4SI_type_node, NULL_TREE);
   tree v4si_ftype_v4sf
@@ -13285,13 +13273,6 @@ ix86_init_mmx_sse_builtins (void)
   tree void_ftype_pchar_v16qi
     = build_function_type_list (void_type_node,
 			        pchar_type_node, V16QI_type_node, NULL_TREE);
-  tree v4si_ftype_pcint
-    = build_function_type_list (V4SI_type_node, pcint_type_node, NULL_TREE);
-  tree void_ftype_pcint_v4si
-    = build_function_type_list (void_type_node,
-			        pcint_type_node, V4SI_type_node, NULL_TREE);
-  tree v2di_ftype_v2di
-    = build_function_type_list (V2DI_type_node, V2DI_type_node, NULL_TREE);
 
   tree float80_type;
   tree float128_type;
@@ -13479,8 +13460,6 @@ ix86_init_mmx_sse_builtins (void)
 
   /* SSE2 */
   def_builtin (MASK_SSE2, "__builtin_ia32_maskmovdqu", void_ftype_v16qi_v16qi_pchar, IX86_BUILTIN_MASKMOVDQU);
-  def_builtin (MASK_SSE2, "__builtin_ia32_movq2dq", v2di_ftype_di, IX86_BUILTIN_MOVQ2DQ);
-  def_builtin (MASK_SSE2, "__builtin_ia32_movdq2q", di_ftype_v2di, IX86_BUILTIN_MOVDQ2Q);
 
   def_builtin (MASK_SSE2, "__builtin_ia32_loadupd", v2df_ftype_pcdouble, IX86_BUILTIN_LOADUPD);
   def_builtin (MASK_SSE2, "__builtin_ia32_storeupd", void_ftype_pdouble_v2df, IX86_BUILTIN_STOREUPD);
@@ -13534,10 +13513,7 @@ ix86_init_mmx_sse_builtins (void)
   def_builtin (MASK_SSE2, "__builtin_ia32_mfence", void_ftype_void, IX86_BUILTIN_MFENCE);
 
   def_builtin (MASK_SSE2, "__builtin_ia32_loaddqu", v16qi_ftype_pcchar, IX86_BUILTIN_LOADDQU);
-  def_builtin (MASK_SSE2, "__builtin_ia32_loadd", v4si_ftype_pcint, IX86_BUILTIN_LOADD);
   def_builtin (MASK_SSE2, "__builtin_ia32_storedqu", void_ftype_pchar_v16qi, IX86_BUILTIN_STOREDQU);
-  def_builtin (MASK_SSE2, "__builtin_ia32_stored", void_ftype_pcint_v4si, IX86_BUILTIN_STORED);
-  def_builtin (MASK_SSE2, "__builtin_ia32_movq", v2di_ftype_v2di, IX86_BUILTIN_MOVQ);
 
   def_builtin (MASK_SSE2, "__builtin_ia32_pmuludq", di_ftype_v2si_v2si, IX86_BUILTIN_PMULUDQ);
   def_builtin (MASK_SSE2, "__builtin_ia32_pmuludq128", v2di_ftype_v4si_v4si, IX86_BUILTIN_PMULUDQ128);
@@ -13621,6 +13597,11 @@ ix86_init_mmx_sse_builtins (void)
 				    integer_type_node, NULL_TREE);
   def_builtin (MASK_SSE, "__builtin_ia32_vec_ext_v4sf",
 	       ftype, IX86_BUILTIN_VEC_EXT_V4SF);
+
+  ftype = build_function_type_list (intSI_type_node, V4SI_type_node,
+				    integer_type_node, NULL_TREE);
+  def_builtin (MASK_SSE, "__builtin_ia32_vec_ext_v4si",
+	       ftype, IX86_BUILTIN_VEC_EXT_V4SI);
 
   ftype = build_function_type_list (intHI_type_node, V8HI_type_node,
 				    integer_type_node, NULL_TREE);
@@ -14399,13 +14380,8 @@ ix86_expand_builtin (tree exp, rtx target, rtx subtarget ATTRIBUTE_UNUSED,
 
     case IX86_BUILTIN_LOADDQU:
       return ix86_expand_unop_builtin (CODE_FOR_sse2_movdqu, arglist, target, 1);
-    case IX86_BUILTIN_LOADD:
-      return ix86_expand_unop_builtin (CODE_FOR_sse2_loadd, arglist, target, 1);
-
     case IX86_BUILTIN_STOREDQU:
       return ix86_expand_store_builtin (CODE_FOR_sse2_movdqu, arglist);
-    case IX86_BUILTIN_STORED:
-      return ix86_expand_store_builtin (CODE_FOR_sse2_stored, arglist);
 
     case IX86_BUILTIN_MONITOR:
       arg0 = TREE_VALUE (arglist);
@@ -14447,6 +14423,7 @@ ix86_expand_builtin (tree exp, rtx target, rtx subtarget ATTRIBUTE_UNUSED,
     case IX86_BUILTIN_VEC_EXT_V2DF:
     case IX86_BUILTIN_VEC_EXT_V2DI:
     case IX86_BUILTIN_VEC_EXT_V4SF:
+    case IX86_BUILTIN_VEC_EXT_V4SI:
     case IX86_BUILTIN_VEC_EXT_V8HI:
     case IX86_BUILTIN_VEC_EXT_V4HI:
       return ix86_expand_vec_ext_builtin (arglist, target);
@@ -14480,8 +14457,7 @@ ix86_expand_builtin (tree exp, rtx target, rtx subtarget ATTRIBUTE_UNUSED,
     if (d->code == fcode)
       return ix86_expand_sse_comi (d, arglist, target);
 
-  /* @@@ Should really do something sensible here.  */
-  return 0;
+  gcc_unreachable ();
 }
 
 /* Store OPERAND to the memory after reload is completed.  This means
@@ -16402,6 +16378,7 @@ ix86_expand_vector_extract (bool mmx_ok, rtx target, rtx vec, int elt)
 	}
       vec = tmp;
       use_vec_extr = true;
+      elt = 0;
       break;
 
     case V4SImode:
@@ -16431,6 +16408,7 @@ ix86_expand_vector_extract (bool mmx_ok, rtx target, rtx vec, int elt)
 	    }
 	  vec = tmp;
 	  use_vec_extr = true;
+	  elt = 0;
 	}
       else
 	{

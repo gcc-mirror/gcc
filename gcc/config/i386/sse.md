@@ -1067,16 +1067,18 @@
 ;; nonimmediate_operand for operand 2 and *not* allowing memory for the SSE
 ;; alternatives pretty much forces the MMX alternative to be chosen.
 (define_insn "*sse_concatv2sf"
-  [(set (match_operand:V2SF 0 "register_operand" "=x,*y")
+  [(set (match_operand:V2SF 0 "register_operand"     "=x,x,*y,*y")
 	(vec_concat:V2SF
-	  (match_operand:SF 1 "register_operand" " 0, 0")
-	  (match_operand:SF 2 "register_operand" " x,*y")))]
+	  (match_operand:SF 1 "nonimmediate_operand" " 0,m, 0, m")
+	  (match_operand:SF 2 "vector_move_operand"  " x,C,*y, C")))]
   "TARGET_SSE"
   "@
    unpcklps\t{%2, %0|%0, %2}
-   punpckldq\t{%2, %0|%0, %2}"
-  [(set_attr "type" "sselog,mmxcvt")
-   (set_attr "mode" "V4SF,DI")])
+   movss\t{%1, %0|%0, %1}
+   punpckldq\t{%2, %0|%0, %2}
+   movd\t{%1, %0|%0, %1}"
+  [(set_attr "type" "sselog,ssemov,mmxcvt,mmxmov")
+   (set_attr "mode" "V4SF,SF,DI,DI")])
 
 (define_insn "*sse_concatv4sf"
   [(set (match_operand:V4SF 0 "register_operand"   "=x,x")
@@ -2671,7 +2673,7 @@
 	(zero_extend:SI
 	  (vec_select:HI
 	    (match_operand:V8HI 1 "register_operand" "x")
-	    (parallel [(match_operand:SI 2 "const_0_to_7_operand" "0")]))))]
+	    (parallel [(match_operand:SI 2 "const_0_to_7_operand" "n")]))))]
   "TARGET_SSE2"
   "pextrw\t{%2, %1, %0|%0, %1, %2}"
   [(set_attr "type" "sselog")
@@ -2864,48 +2866,6 @@
 {
   operands[1] = gen_rtx_REG (DImode, REGNO (operands[1]));
 })
-
-(define_expand "sse2_loadq"
-  [(set (match_operand:V2DI 0 "register_operand" "")
-	(vec_merge:V2DI
-	  (vec_duplicate:V2DI
-	    (match_operand:DI 1 "nonimmediate_operand" ""))
-	  (match_dup 2)
-	  (const_int 1)))]	  
-  "TARGET_SSE"
-  "operands[2] = CONST0_RTX (V2DImode);")
-
-(define_insn "*sse2_loadq"
-  [(set (match_operand:V2DI 0 "register_operand"       "=Y,?Y,Y,x")
-	(vec_merge:V2DI
-	  (vec_duplicate:V2DI
-	    (match_operand:DI 1 "nonimmediate_operand" " m,*y,Y,0"))
-	  (match_operand:V2DI 2 "vector_move_operand"  " C, C,0,x")
-	  (const_int 1)))]
-  "TARGET_SSE && !TARGET_64BIT"
-  "@
-   movq\t{%1, %0|%0, %1}
-   movq2dq\t{%1, %0|%0, %1}
-   movq\t{%1, %0|%0, %1}
-   shufps\t{$0xe4, %1, %0|%0, %1, 0xe4}"
-  [(set_attr "type" "ssemov,ssemov,ssemov,sselog")
-   (set_attr "mode" "TI,TI,TI,V4SF")])
-
-(define_insn "*sse2_loadq_rex64"
-  [(set (match_operand:V2DI 0 "register_operand"       "=x,?x,?x,x")
-	(vec_merge:V2DI
-	  (vec_duplicate:V2DI
-	    (match_operand:DI 1 "nonimmediate_operand" " m,*y, r,x"))
-	  (match_operand:V2DI 2 "vector_move_operand"  " C, C, C,0")
-	  (const_int 1)))]
-  "TARGET_SSE2 && TARGET_64BIT"
-  "@
-   movq\t{%1, %0|%0, %1}
-   movq2dq\t{%1, %0|%0, %1}
-   movd\t{%1, %0|%0, %1}
-   movq\t{%1, %0|%0, %1}"
-  [(set_attr "type" "ssemov")
-   (set_attr "mode" "TI")])
 
 (define_insn "*vec_dupv4si"
   [(set (match_operand:V4SI 0 "register_operand" "=Y,x")

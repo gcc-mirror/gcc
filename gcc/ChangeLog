@@ -1,3 +1,19 @@
+2005-01-13  Richard Henderson  <rth@redhat.com>
+
+	* config/i386/i386.c (IX86_BUILTIN_MOVQ, IX86_BUILTIN_LOADD,
+	IX86_BUILTIN_STORED, IX86_BUILTIN_MOVQ2DQ,
+	IX86_BUILTIN_MOVDQ2Q): Remove.
+	(IX86_BUILTIN_VEC_EXT_V4SI): New.
+	(ix86_init_mmx_sse_builtins, ix86_expand_builtin): Update to match.
+	(ix86_expand_vector_extract): For V4S[FI], extract element 0 after 
+	shuffling.
+	* config/i386/sse.md (sse_concatv2sf): Accept zero operand 2.
+	(sse2_pextrw): Fix immediate constraint.
+	(sse2_loadq, sse2_loadq_rex64): Remove.
+	* config/i386/emmintrin.h (_mm_cvtsi128_si32, _mm_cvtsi128_si64x):
+	Use __builtin_ia32_vec_ext_<size>.
+	(_mm_cvtsi32_si128, _mm_cvtsi64x_si128): Use _mm_set_epi<size>.
+
 2005-01-13  Aldy Hernandez  <aldyh@redhat.com>
 
 	* function.c (assign_parm_setup_block): Look inside original
