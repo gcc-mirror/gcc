@@ -1,3 +1,10 @@
+2002-05-02  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/6540
+	* config.gcc (sparc*-*-solaris2*): Set float_format to i128.
+	* config/float-sparc.h: Assume 128-bit long double if
+	__LONG_DOUBLE_128__ is defined.
+
 2002-05-02  Vladimir Makarov  <vmakarov@redhat.com>
 
 	* genattrtab.c (write_function_unit_info): Add a dummy element
