@@ -1,5 +1,10 @@
 2003-11-11  Eric Christopher  <echristo@redhat.com>
 
+	* reload1.c (reload): Verify that addresses for
+	reg_equiv_* are valid for the architecture.
+
+2003-11-11  Eric Christopher  <echristo@redhat.com>
+
 	* function.c (purge_addressof_1): Add libcall check.
 	Remove test for cached replacements on fallback case.
 	Simplify mode comparisons. Add libcall test for
