@@ -462,6 +462,27 @@ extern int target_flags;
 /* Place in which caller passes the structure value address.
    0 means push the value on the stack like an argument.  */
 #define STRUCT_VALUE 0
+
+/* A C expression which can inhibit the returning of certain function
+   values in registers, based on the type of value.  A nonzero value
+   says to return the function value in memory, just as large
+   structures are always returned.  Here TYPE will be a C expression
+   of type `tree', representing the data type of the value.
+
+   Note that values of mode `BLKmode' must be explicitly handled by
+   this macro.  Also, the option `-fpcc-struct-return' takes effect
+   regardless of this macro.  On most systems, it is possible to
+   leave the macro undefined; this causes a default definition to be
+   used, whose value is the constant 1 for `BLKmode' values, and 0
+   otherwise.
+
+   Do not use this macro to indicate that structures and unions
+   should always be returned in memory.  You should instead use
+   `DEFAULT_PCC_STRUCT_RETURN' to indicate this.  */
+
+#define RETURN_IN_MEMORY(TYPE) \
+  ((TYPE_MODE (TYPE) == BLKmode) || int_size_in_bytes (TYPE) > 12)
+
 
 /* Define the classes of registers for register constraints in the
    machine description.  Also define ranges of constants.
