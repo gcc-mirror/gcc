@@ -3,8 +3,6 @@
 #include <stdlib.h>
 
 inline void *operator new(size_t, void *place) { return place; }
-void*     malloc(size_t);
-void      free(void*);
 
 main()
 {
