@@ -29,11 +29,11 @@ template<typename T>
 
 template<typename T>
   bool
-  operator==(const A<T>& a, const A<T>& b) { }
+  operator==(const A<T>& a, const A<T>& b) { return true; }
 
 template<typename T>
   bool
-  operator<(const A<T>& a, const A<T>& b) { }
+  operator<(const A<T>& a, const A<T>& b) { return true; }
 
 struct B { };
 
@@ -188,6 +188,14 @@ bool test02()
   return test;
 }
 
+// Explicitly instantiate for systems with no COMDAT or weak support.
+template 
+  std::basic_string< A<B> >::size_type 
+  std::basic_string< A<B> >::_Rep::_S_max_size;
+
+template 
+  A<B>
+  std::basic_string< A<B> >::_Rep::_S_terminal;
 
 int main()
 {
@@ -196,3 +204,7 @@ int main()
 
   return 0;
 }
+
+
+
+

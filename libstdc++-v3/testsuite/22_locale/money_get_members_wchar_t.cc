@@ -354,13 +354,13 @@ struct My_money_io : public std::moneypunct<wchar_t,false>
 
   pattern do_pos_format() const
   {
-    static pattern pat = { { symbol, none, sign, value } };
+    pattern pat = { { symbol, none, sign, value } };
     return pat;
   }
 
   pattern do_neg_format() const
   {
-    static pattern pat = { { symbol, none, sign, value } };
+    pattern pat = { { symbol, none, sign, value } };
     return pat;
   }
 };
@@ -369,6 +369,7 @@ struct My_money_io : public std::moneypunct<wchar_t,false>
 void test05()
 {
   using namespace std;
+  bool test = true;
   typedef istreambuf_iterator<wchar_t> InIt;
 
   locale loc(locale::classic(), new My_money_io);
@@ -418,6 +419,7 @@ void test05()
 void test06()
 {
   using namespace std;
+  bool test = true;
 
   typedef istreambuf_iterator<wchar_t> InIt;
   InIt iend1, iend2, iend3;
@@ -463,7 +465,7 @@ struct My_money_io_a : public std::moneypunct<wchar_t,false>
 
   pattern do_pos_format() const
   {
-    static pattern pat = { { sign, value, space, symbol } };
+    pattern pat = { { sign, value, space, symbol } };
     return pat;
   }
 };
@@ -480,7 +482,7 @@ struct My_money_io_b : public std::moneypunct<wchar_t,false>
 
   pattern do_pos_format() const
   {
-    static pattern pat = { { sign, value, symbol, none } };
+    pattern pat = { { sign, value, symbol, none } };
     return pat;
   }
 };
@@ -492,6 +494,7 @@ struct My_money_io_b : public std::moneypunct<wchar_t,false>
 void test07()
 {
   using namespace std;
+  bool test = true;
   typedef istreambuf_iterator<wchar_t> InIt;
 
   bool intl = false;

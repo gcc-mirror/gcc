@@ -57,16 +57,16 @@ namespace std
     return __x; 
   }
 
-  template <class _CharT, class _Traits>
-    basic_istream<_CharT,_Traits>& 
+  template<typename _CharT, typename _Traits>
+    inline basic_istream<_CharT,_Traits>& 
     operator>>(basic_istream<_CharT,_Traits>& __is, _Resetiosflags __f)
     { 
       __is.setf(ios_base::fmtflags(0), __f._M_mask); 
       return __is; 
     }
 
-  template <class _CharT, class _Traits>
-    basic_ostream<_CharT,_Traits>& 
+  template<typename _CharT, typename _Traits>
+    inline basic_ostream<_CharT,_Traits>& 
     operator<<(basic_ostream<_CharT,_Traits>& __os, _Resetiosflags __f)
     { 
       __os.setf(ios_base::fmtflags(0), __f._M_mask); 
@@ -84,16 +84,16 @@ namespace std
     return __x; 
   }
 
-  template <class _CharT, class _Traits>
-    basic_istream<_CharT,_Traits>& 
+  template<typename _CharT, typename _Traits>
+    inline basic_istream<_CharT,_Traits>& 
     operator>>(basic_istream<_CharT,_Traits>& __is, _Setiosflags __f)
     { 
       __is.setf(__f._M_mask); 
       return __is; 
     }
 
-  template <class _CharT, class _Traits>
-    basic_ostream<_CharT,_Traits>& 
+  template<typename _CharT, typename _Traits>
+    inline basic_ostream<_CharT,_Traits>& 
     operator<<(basic_ostream<_CharT,_Traits>& __os, _Setiosflags __f)
     { 
       __os.setf(__f._M_mask); 
@@ -111,8 +111,8 @@ namespace std
     return __x; 
   }
 
-  template <class _CharT, class _Traits>
-    basic_istream<_CharT,_Traits>& 
+  template<typename _CharT, typename _Traits>
+    inline basic_istream<_CharT,_Traits>& 
     operator>>(basic_istream<_CharT,_Traits>& __is, _Setbase __f)
     {
       __is.setf(__f._M_base ==  8 ? ios_base::oct : 
@@ -122,8 +122,8 @@ namespace std
       return __is; 
     }
   
-  template <class _CharT, class _Traits>
-    basic_ostream<_CharT,_Traits>& 
+  template<typename _CharT, typename _Traits>
+    inline basic_ostream<_CharT,_Traits>& 
     operator<<(basic_ostream<_CharT,_Traits>& __os, _Setbase __f)
     {
       __os.setf(__f._M_base ==  8 ? ios_base::oct : 
@@ -134,11 +134,11 @@ namespace std
     }
   
 
-  template<class _CharT> 
+  template<typename _CharT> 
     struct _Setfill { _CharT _M_c; };
 
-  template<class _CharT> 
-    _Setfill<_CharT> 
+  template<typename _CharT> 
+    inline _Setfill<_CharT> 
     setfill(_CharT __c)
     { 
       _Setfill<_CharT> __x; 
@@ -146,16 +146,16 @@ namespace std
       return __x; 
     }
 
-  template <class _CharT, class _Traits>
-    basic_istream<_CharT,_Traits>& 
+  template<typename _CharT, typename _Traits>
+    inline basic_istream<_CharT,_Traits>& 
     operator>>(basic_istream<_CharT,_Traits>& __is, _Setfill<_CharT> __f)
     { 
       __is.fill(__f._M_c); 
       return __is; 
     }
 
-  template <class _CharT, class _Traits>
-    basic_ostream<_CharT,_Traits>& 
+  template<typename _CharT, typename _Traits>
+    inline basic_ostream<_CharT,_Traits>& 
     operator<<(basic_ostream<_CharT,_Traits>& __os, _Setfill<_CharT> __f)
     { 
       __os.fill(__f._M_c); 
@@ -173,16 +173,16 @@ namespace std
     return __x; 
   }
 
-  template <class _CharT, class _Traits>
-    basic_istream<_CharT,_Traits>& 
+  template<typename _CharT, typename _Traits>
+    inline basic_istream<_CharT,_Traits>& 
     operator>>(basic_istream<_CharT,_Traits>& __is, _Setprecision __f)
     { 
       __is.precision(__f._M_n); 
       return __is; 
     }
 
-  template <class _CharT, class _Traits>
-    basic_ostream<_CharT,_Traits>& 
+  template<typename _CharT, typename _Traits>
+    inline basic_ostream<_CharT,_Traits>& 
     operator<<(basic_ostream<_CharT,_Traits>& __os, _Setprecision __f)
     { 
       __os.precision(__f._M_n); 
@@ -200,16 +200,16 @@ namespace std
     return __x; 
   }
 
-  template <class _CharT, class _Traits>
-    basic_istream<_CharT,_Traits>& 
+  template<typename _CharT, typename _Traits>
+    inline basic_istream<_CharT,_Traits>& 
     operator>>(basic_istream<_CharT,_Traits>& __is, _Setw __f)
     { 
       __is.width(__f._M_n); 
       return __is; 
     }
 
-  template <class _CharT, class _Traits>
-    basic_ostream<_CharT,_Traits>& 
+  template<typename _CharT, typename _Traits>
+    inline basic_ostream<_CharT,_Traits>& 
     operator<<(basic_ostream<_CharT,_Traits>& __os, _Setw __f)
     { 
       __os.width(__f._M_n); 

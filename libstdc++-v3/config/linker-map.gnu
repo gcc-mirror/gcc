@@ -25,8 +25,8 @@ GLIBCPP_3.1 {
 
   global:
 
-    ## Names inside the 'extern' block are demangled names.
-    ## All but the last are terminated with a semicolon.
+    # Names inside the 'extern' block are demangled names.
+    # All but the last are terminated with a semicolon.
     extern "C++"
     {
       std::[A-Za-z]*;
@@ -36,17 +36,17 @@ GLIBCPP_3.1 {
       std::__timepunct*
     };
 
-    ## Names not in an 'extern' block are mangled names.
-    ## operator new(unsigned)
+    # Names not in an 'extern' block are mangled names.
+    # operator new(unsigned)
     _Znwj;
 
-    ## operator delete(void*)
+    # operator delete(void*)
     _ZdlPv;
 
-    ## operator new[](unsigned)
+    # operator new[](unsigned)
     _Znaj;
 
-    ## operator delete[](void*)
+    # operator delete[](void*)
     _ZdaPv;
 
     # vtable	
@@ -65,40 +65,25 @@ GLIBCPP_3.1 {
     _ZTv*;
     _ZTc*;
 
-    # XXX
+    # libsupc++
     __cxa_*;
     __gxx_personality_v0;
     __dynamic_cast;
 
-    ## std::_S_rb_tree_red
+    # std::_S_rb_tree_red
     _ZSt14_S_rb_tree_red;
 
-    ## std::_S_rb_tree_black
+    # std::_S_rb_tree_black
     _ZSt16_S_rb_tree_black;
 
-    ## std::__stl_threshold
+    # std::__stl_threshold
     _ZSt15__stl_threshold;
 
-    ## std::__stl_chunk_size
+    # std::__stl_chunk_size
     _ZSt16__stl_chunk_size;
 
-    # this is a function, "void std::__convert_to_v(stuff)", and as such
-    # doesn't work well in the demangled section above
+    # std::__convert_to_v
     _ZSt14__convert_to_v*;
-
-    # likewise for "std::_Setfill<char> std::setfill<char>(char)"
-    _ZSt7setfillIcESt8_SetfillIT_ES1_;
-
-    # likewise for "bool std::has_facet<std::ctype<char> >(std::locale const&)"
-    _ZSt9has_facetISt5ctypeIcEEbRKSt6locale;
-
-    # likewise for "bool
-    # std::has_facet<std::num_put<char, std::ostreambuf_iterator<char,
-    #                       std::char_traits<char> > > >(std::locale const&)"
-    _ZSt9has_facetISt7num_putIcSt19ostreambuf_iteratorIcSt11char_traitsIcEEEEbRKSt6locale;
-
-    # ditto for istreambuf_iterator
-    _ZSt9has_facetISt7num_getIcSt19istreambuf_iteratorIcSt11char_traitsIcEEEEbRKSt6locale;
 
   local:
     *;
