@@ -743,7 +743,7 @@ safe_read (desc, ptr, len)
 {
   int left = len;
   while (left > 0) {
-    int nchars = read (fileno (stdout), ptr, left);
+    int nchars = read (desc, ptr, left);
     if (nchars < 0)
       return nchars;
     if (nchars == 0)
@@ -765,7 +765,7 @@ safe_write (desc, ptr, len, out_fname)
      char *out_fname;
 {
   while (len > 0) {
-    int written = write (fileno (stdout), ptr, len);
+    int written = write (desc, ptr, len);
     if (written < 0)
       fprintf (stderr, "%s: error writing file `%s': %s\n",
 	       pname, shortpath (NULL, out_fname), sys_errlist[errno]);
