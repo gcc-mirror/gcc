@@ -1,3 +1,8 @@
+2004-01-08  Kazuhiro Inaoka  <inaoka.kazuhiro@renesas.com>
+
+	* config/m32r/m32r.h (ASM_OUTPUT_ALIGNED_BSS): Actually emit
+	variables in the appropriate bss section.
+
 2004-01-09  Alan Modra  <amodra@bigpond.net.au>
 
 	* config/rs6000/linux64.h (SUBSUBTARGET_OVERRIDE_OPTIONS): Ensure
