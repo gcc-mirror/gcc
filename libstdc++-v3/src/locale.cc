@@ -221,21 +221,21 @@ namespace std
 		// Scan the categories looking for the first one
 		// different from LANG.
 		size_t __i = 0;
-		if (std::strcmp(__res.c_str(), "C") == 0)
+		if (__res == "C")
 		  for (; __i < _S_categories_size; ++__i)
 		    {
 		      __env = std::getenv(_S_categories[__i]);
 		      if (__env && std::strcmp(__env, "") != 0 
 			  && std::strcmp(__env, "C") != 0 
-			  && std::strcmp(__env, "POSIX") != 0) 
+			  && std::strcmp(__env, "POSIX") != 0)
 			break;
 		    }
 		else
 		  for (; __i < _S_categories_size; ++__i)
 		    {
 		      __env = std::getenv(_S_categories[__i]);
-		      if (__env && std::strcmp(__env, "") != 0 
-			  && std::strcmp(__env, __res.c_str()) != 0) 
+		      if (__env && std::strcmp(__env, "") != 0
+			  && __res != __env)
 			break;
 		    }
 	
