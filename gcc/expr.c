@@ -2020,6 +2020,14 @@ emit_group_load (dst, orig_src, ssize, align)
 	  else if (bytepos == (HOST_WIDE_INT) GET_MODE_SIZE (GET_MODE (XEXP (src, 0)))
 		   && bytelen == GET_MODE_SIZE (GET_MODE (XEXP (src, 1))))
 	    tmps[i] = XEXP (src, 1);
+	  else if (bytepos == 0)
+	    {
+	      rtx mem;
+	      mem = assign_stack_temp (GET_MODE (src),
+				       GET_MODE_SIZE (GET_MODE (src)), 0);
+	      emit_move_insn (mem, src);
+	      tmps[i] = change_address (mem, mode, XEXP (mem, 0));
+	    }
 	  else
 	    abort ();
 	}

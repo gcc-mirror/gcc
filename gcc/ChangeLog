@@ -1,3 +1,8 @@
+Sun Oct 28 17:05:36 CET 2001  Jan Hubicka  <jh@suse.cz>
+
+	* expr.c (emit_group_load): Support CONCATs by storing them to memory
+	and reloading.
+
 Sun Oct 28 09:59:54 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* expr.c (store_constructor_field): Only call adjust_address on MEM.
