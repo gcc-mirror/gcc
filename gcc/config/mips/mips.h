@@ -94,15 +94,6 @@ enum mips_abicalls_type {
 /* Recast the abicalls class to be the abicalls attribute.  */
 #define mips_abicalls_attr ((enum attr_abicalls)mips_abicalls)
 
-/* Which type of block move to do (whether or not the last store is
-   split out so it can fill a branch delay slot).  */
-
-enum block_move_type {
-  BLOCK_MOVE_NORMAL,			/* generate complete block move */
-  BLOCK_MOVE_NOT_LAST,			/* generate all but last store */
-  BLOCK_MOVE_LAST			/* generate just the last store */
-};
-
 /* Information about one recognized processor.  Defined here for the
    benefit of TARGET_CPU_CPP_BUILTINS.  */
 struct mips_cpu_info {

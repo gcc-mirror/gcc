@@ -220,11 +220,12 @@ static void mips_legitimize_const_move		PARAMS ((enum machine_mode,
 							 rtx, rtx));
 static int m16_check_op				PARAMS ((rtx, int, int, int));
 static bool mips_function_ok_for_sibcall	PARAMS ((tree, tree));
-static void block_move_loop			PARAMS ((rtx, rtx,
-							 unsigned int,
-							 int,
-							 rtx, rtx));
-static void block_move_call			PARAMS ((rtx, rtx, rtx));
+static void mips_block_move_straight		PARAMS ((rtx, rtx,
+							 HOST_WIDE_INT));
+static void mips_adjust_block_mem		PARAMS ((rtx, HOST_WIDE_INT,
+							 rtx *, rtx *));
+static void mips_block_move_loop		PARAMS ((rtx, rtx,
+							 HOST_WIDE_INT));
 static void mips_arg_info		PARAMS ((const CUMULATIVE_ARGS *,
 						 enum machine_mode,
 						 tree, int,
@@ -3676,569 +3677,166 @@ mips_set_return_address (address, scratch)
   emit_move_insn (gen_rtx_MEM (GET_MODE (address), scratch), address);
 }
 
-/* Write a loop to move a constant number of bytes.
-   Generate load/stores as follows:
+/* Emit straight-line code to move LENGTH bytes from SRC to DEST.
+   Assume that the areas do not overlap.  */
 
-   do {
-     temp1 = src[0];
-     temp2 = src[1];
-     ...
-     temp<last> = src[MAX_MOVE_REGS-1];
-     dest[0] = temp1;
-     dest[1] = temp2;
-     ...
-     dest[MAX_MOVE_REGS-1] = temp<last>;
-     src += MAX_MOVE_REGS;
-     dest += MAX_MOVE_REGS;
-   } while (src != final);
+static void
+mips_block_move_straight (dest, src, length)
+     rtx dest, src;
+     HOST_WIDE_INT length;
+{
+  HOST_WIDE_INT offset, delta;
+  unsigned HOST_WIDE_INT bits;
+  int i;
+  enum machine_mode mode;
+  rtx *regs;
 
-   This way, no NOP's are needed, and only MAX_MOVE_REGS+3 temp
-   registers are needed.
+  /* Work out how many bits to move at a time.  If both operands have
+     half-word alignment, it is usually better to move in half words.
+     For instance, lh/lh/sh/sh is usually better than lwl/lwr/swl/swr
+     and lw/lw/sw/sw is usually better than ldl/ldr/sdl/sdr.
+     Otherwise move word-sized chunks.  */
+  if (MEM_ALIGN (src) == BITS_PER_WORD / 2
+      && MEM_ALIGN (dest) == BITS_PER_WORD / 2)
+    bits = BITS_PER_WORD / 2;
+  else
+    bits = BITS_PER_WORD;
 
-   Aligned moves move MAX_MOVE_REGS*4 bytes every (2*MAX_MOVE_REGS)+3
-   cycles, unaligned moves move MAX_MOVE_REGS*4 bytes every
-   (4*MAX_MOVE_REGS)+3 cycles, assuming no cache misses.  */
+  mode = mode_for_size (bits, MODE_INT, 0);
+  delta = bits / BITS_PER_UNIT;
 
+  /* Allocate a buffer for the temporary registers.  */
+  regs = alloca (sizeof (rtx) * length / delta);
+
+  /* Load as many BITS-sized chunks as possible.  Use a normal load if
+     the source has enough alignment, otherwise use left/right pairs.  */
+  for (offset = 0, i = 0; offset + delta <= length; offset += delta, i++)
+    {
+      rtx part;
+
+      regs[i] = gen_reg_rtx (mode);
+      part = adjust_address (src, mode, offset);
+      if (MEM_ALIGN (part) >= bits)
+	emit_move_insn (regs[i], part);
+      else if (!mips_expand_unaligned_load (regs[i], part, bits, 0))
+	abort ();
+    }
+
+  /* Copy the chunks to the destination.  */
+  for (offset = 0, i = 0; offset + delta <= length; offset += delta, i++)
+    {
+      rtx part;
+
+      part = adjust_address (dest, mode, offset);
+      if (MEM_ALIGN (part) >= bits)
+	emit_move_insn (part, regs[i]);
+      else if (!mips_expand_unaligned_store (part, regs[i], bits, 0))
+	abort ();
+    }
+
+  /* Mop up any left-over bytes.  */
+  if (offset < length)
+    {
+      src = adjust_address (src, mode, offset);
+      dest = adjust_address (dest, mode, offset);
+      move_by_pieces (dest, src, length - offset,
+		      MIN (MEM_ALIGN (src), MEM_ALIGN (dest)), 0);
+    }
+}
+
 #define MAX_MOVE_REGS 4
 #define MAX_MOVE_BYTES (MAX_MOVE_REGS * UNITS_PER_WORD)
 
+
+/* Helper function for doing a loop-based block operation on memory
+   reference MEM.  Each iteration of the loop will operate on LENGTH
+   bytes of MEM.
+
+   Create a new base register for use within the loop and point it to
+   the start of MEM.  Create a new memory reference that uses this
+   register.  Store them in *LOOP_REG and *LOOP_MEM respectively.  */
+
 static void
-block_move_loop (dest_reg, src_reg, bytes, align, orig_dest, orig_src)
-     rtx dest_reg;		/* register holding destination address */
-     rtx src_reg;		/* register holding source address */
-     unsigned int bytes;	/* # bytes to move */
-     int align;			/* alignment */
-     rtx orig_dest;		/* original dest */
-     rtx orig_src;		/* original source for making a reg note */
+mips_adjust_block_mem (mem, length, loop_reg, loop_mem)
+     rtx mem, *loop_reg, *loop_mem;
+     HOST_WIDE_INT length;
 {
-  rtx dest_mem = replace_equiv_address (orig_dest, dest_reg);
-  rtx src_mem = replace_equiv_address (orig_src, src_reg);
-  rtx align_rtx = GEN_INT (align);
-  rtx label;
-  rtx final_src;
-  rtx bytes_rtx;
-  int leftover;
+  *loop_reg = copy_addr_to_reg (XEXP (mem, 0));
 
-  if (bytes < (unsigned)2 * MAX_MOVE_BYTES)
-    abort ();
+  /* Although the new mem does not refer to a known location,
+     it does keep up to LENGTH bytes of alignment.  */
+  *loop_mem = change_address (mem, BLKmode, *loop_reg);
+  set_mem_align (*loop_mem, MIN (MEM_ALIGN (mem), length * BITS_PER_UNIT));
+}
 
-  leftover = bytes % MAX_MOVE_BYTES;
-  bytes -= leftover;
 
+/* Move LENGTH bytes from SRC to DEST using a loop that moves MAX_MOVE_BYTES
+   per iteration.  LENGTH must be at least MAX_MOVE_BYTES.  Assume that the
+   memory regions do not overlap.  */
+
+static void
+mips_block_move_loop (dest, src, length)
+     rtx dest, src;
+     HOST_WIDE_INT length;
+{
+  rtx label, src_reg, dest_reg, final_src;
+  HOST_WIDE_INT leftover;
+
+  leftover = length % MAX_MOVE_BYTES;
+  length -= leftover;
+
+  /* Create registers and memory references for use within the loop.  */
+  mips_adjust_block_mem (src, MAX_MOVE_BYTES, &src_reg, &src);
+  mips_adjust_block_mem (dest, MAX_MOVE_BYTES, &dest_reg, &dest);
+
+  /* Calculate the value that SRC_REG should have after the last iteration
+     of the loop.  */
+  final_src = expand_simple_binop (Pmode, PLUS, src_reg, GEN_INT (length),
+				   0, 0, OPTAB_WIDEN);
+
+  /* Emit the start of the loop.  */
   label = gen_label_rtx ();
-  final_src = gen_reg_rtx (Pmode);
-  bytes_rtx = GEN_INT (bytes);
-
-  if (bytes > 0x7fff)
-    {
-      if (Pmode == DImode)
-	{
-	  emit_insn (gen_movdi (final_src, bytes_rtx));
-	  emit_insn (gen_adddi3 (final_src, final_src, src_reg));
-	}
-      else
-	{
-	  emit_insn (gen_movsi (final_src, bytes_rtx));
-	  emit_insn (gen_addsi3 (final_src, final_src, src_reg));
-	}
-    }
-  else
-    {
-      if (Pmode == DImode)
-	emit_insn (gen_adddi3 (final_src, src_reg, bytes_rtx));
-      else
-	emit_insn (gen_addsi3 (final_src, src_reg, bytes_rtx));
-    }
-
   emit_label (label);
 
-  bytes_rtx = GEN_INT (MAX_MOVE_BYTES);
-  emit_insn (gen_movstrsi_internal (dest_mem, src_mem, bytes_rtx, align_rtx));
+  /* Emit the loop body.  */
+  mips_block_move_straight (dest, src, MAX_MOVE_BYTES);
 
+  /* Move on to the next block.  */
+  emit_move_insn (src_reg, plus_constant (src_reg, MAX_MOVE_BYTES));
+  emit_move_insn (dest_reg, plus_constant (dest_reg, MAX_MOVE_BYTES));
+
+  /* Emit the loop condition.  */
   if (Pmode == DImode)
-    {
-      emit_insn (gen_adddi3 (src_reg, src_reg, bytes_rtx));
-      emit_insn (gen_adddi3 (dest_reg, dest_reg, bytes_rtx));
-      emit_insn (gen_cmpdi (src_reg, final_src));
-    }
+    emit_insn (gen_cmpdi (src_reg, final_src));
   else
-    {
-      emit_insn (gen_addsi3 (src_reg, src_reg, bytes_rtx));
-      emit_insn (gen_addsi3 (dest_reg, dest_reg, bytes_rtx));
-      emit_insn (gen_cmpsi (src_reg, final_src));
-    }
-
+    emit_insn (gen_cmpsi (src_reg, final_src));
   emit_jump_insn (gen_bne (label));
 
+  /* Mop up any left-over bytes.  */
   if (leftover)
-    emit_insn (gen_movstrsi_internal (dest_mem, src_mem, GEN_INT (leftover),
-				      align_rtx));
+    mips_block_move_straight (dest, src, leftover);
 }
 
-/* Use a library function to move some bytes.  */
+/* Expand a movstrsi instruction.  */
 
-static void
-block_move_call (dest_reg, src_reg, bytes_rtx)
-     rtx dest_reg;
-     rtx src_reg;
-     rtx bytes_rtx;
+bool
+mips_expand_block_move (dest, src, length)
+     rtx dest, src, length;
 {
-  /* We want to pass the size as Pmode, which will normally be SImode
-     but will be DImode if we are using 64 bit longs and pointers.  */
-  if (GET_MODE (bytes_rtx) != VOIDmode
-      && GET_MODE (bytes_rtx) != (unsigned) Pmode)
-    bytes_rtx = convert_to_mode (Pmode, bytes_rtx, 1);
-
-#ifdef TARGET_MEM_FUNCTIONS
-  emit_library_call (gen_rtx_SYMBOL_REF (Pmode, "memcpy"), 0,
-		     VOIDmode, 3, dest_reg, Pmode, src_reg, Pmode,
-		     convert_to_mode (TYPE_MODE (sizetype), bytes_rtx,
-				      TREE_UNSIGNED (sizetype)),
-		     TYPE_MODE (sizetype));
-#else
-  emit_library_call (gen_rtx_SYMBOL_REF (Pmode, "bcopy"), 0,
-		     VOIDmode, 3, src_reg, Pmode, dest_reg, Pmode,
-		     convert_to_mode (TYPE_MODE (integer_type_node), bytes_rtx,
-				      TREE_UNSIGNED (integer_type_node)),
-		     TYPE_MODE (integer_type_node));
-#endif
-}
-
-/* Expand string/block move operations.
-
-   operands[0] is the pointer to the destination.
-   operands[1] is the pointer to the source.
-   operands[2] is the number of bytes to move.
-   operands[3] is the alignment.  */
-
-void
-expand_block_move (operands)
-     rtx operands[];
-{
-  rtx bytes_rtx	= operands[2];
-  rtx align_rtx = operands[3];
-  int constp = GET_CODE (bytes_rtx) == CONST_INT;
-  unsigned HOST_WIDE_INT bytes = constp ? INTVAL (bytes_rtx) : 0;
-  unsigned int align = INTVAL (align_rtx);
-  rtx orig_src	= operands[1];
-  rtx orig_dest	= operands[0];
-  rtx src_reg;
-  rtx dest_reg;
-
-  if (constp && bytes == 0)
-    return;
-
-  if (align > (unsigned) UNITS_PER_WORD)
-    align = UNITS_PER_WORD;
-
-  /* Move the address into scratch registers.  */
-  dest_reg = copy_addr_to_reg (XEXP (orig_dest, 0));
-  src_reg  = copy_addr_to_reg (XEXP (orig_src, 0));
-
-  if (TARGET_MEMCPY)
-    block_move_call (dest_reg, src_reg, bytes_rtx);
-
-  else if (constp && bytes <= (unsigned)2 * MAX_MOVE_BYTES
-	   && align == (unsigned) UNITS_PER_WORD)
-    move_by_pieces (orig_dest, orig_src, bytes, align * BITS_PER_WORD, 0);
-
-  else if (constp && bytes <= (unsigned)2 * MAX_MOVE_BYTES)
-    emit_insn (gen_movstrsi_internal (replace_equiv_address (orig_dest,
-							     dest_reg),
-				      replace_equiv_address (orig_src,
-							     src_reg),
-				      bytes_rtx, align_rtx));
-
-  else if (constp && align >= (unsigned) UNITS_PER_WORD && optimize)
-    block_move_loop (dest_reg, src_reg, bytes, align, orig_dest, orig_src);
-
-  else if (constp && optimize)
+  if (GET_CODE (length) == CONST_INT)
     {
-      /* If the alignment is not word aligned, generate a test at
-	 runtime, to see whether things wound up aligned, and we
-	 can use the faster lw/sw instead ulw/usw.  */
-
-      rtx temp = gen_reg_rtx (Pmode);
-      rtx aligned_label = gen_label_rtx ();
-      rtx join_label = gen_label_rtx ();
-      int leftover = bytes % MAX_MOVE_BYTES;
-
-      bytes -= leftover;
-
-      if (Pmode == DImode)
+      if (INTVAL (length) <= 2 * MAX_MOVE_BYTES)
 	{
-	  emit_insn (gen_iordi3 (temp, src_reg, dest_reg));
-	  emit_insn (gen_anddi3 (temp, temp, GEN_INT (UNITS_PER_WORD - 1)));
-	  emit_insn (gen_cmpdi (temp, const0_rtx));
+	  mips_block_move_straight (dest, src, INTVAL (length));
+	  return true;
 	}
-      else
+      else if (optimize)
 	{
-	  emit_insn (gen_iorsi3 (temp, src_reg, dest_reg));
-	  emit_insn (gen_andsi3 (temp, temp, GEN_INT (UNITS_PER_WORD - 1)));
-	  emit_insn (gen_cmpsi (temp, const0_rtx));
-	}
-
-      emit_jump_insn (gen_beq (aligned_label));
-
-      /* Unaligned loop.  */
-      block_move_loop (dest_reg, src_reg, bytes, 1, orig_dest, orig_src);
-      emit_jump_insn (gen_jump (join_label));
-      emit_barrier ();
-
-      /* Aligned loop.  */
-      emit_label (aligned_label);
-      block_move_loop (dest_reg, src_reg, bytes, UNITS_PER_WORD, orig_dest,
-		       orig_src);
-      emit_label (join_label);
-
-      /* Bytes at the end of the loop.  */
-      if (leftover)
-	emit_insn (gen_movstrsi_internal (replace_equiv_address (orig_dest,
-								 dest_reg),
-					  replace_equiv_address (orig_src,
-								 src_reg),
-					  GEN_INT (leftover),
-					  GEN_INT (align)));
-    }
-
-  else
-    block_move_call (dest_reg, src_reg, bytes_rtx);
-}
-
-/* Emit load/stores for a small constant block_move.
-
-   operands[0] is the memory address of the destination.
-   operands[1] is the memory address of the source.
-   operands[2] is the number of bytes to move.
-   operands[3] is the alignment.
-   operands[4] is a temp register.
-   operands[5] is a temp register.
-   ...
-   operands[3+num_regs] is the last temp register.
-
-   The block move type can be one of the following:
-	BLOCK_MOVE_NORMAL	Do all of the block move.
-	BLOCK_MOVE_NOT_LAST	Do all but the last store.
-	BLOCK_MOVE_LAST		Do just the last store.  */
-
-const char *
-output_block_move (insn, operands, num_regs, move_type)
-     rtx insn;
-     rtx operands[];
-     int num_regs;
-     enum block_move_type move_type;
-{
-  rtx dest_reg = XEXP (operands[0], 0);
-  rtx src_reg = XEXP (operands[1], 0);
-  HOST_WIDE_INT bytes = INTVAL (operands[2]);
-  int align = INTVAL (operands[3]);
-  int num = 0;
-  int offset = 0;
-  int use_lwl_lwr = 0;
-  int last_operand = num_regs + 4;
-  int safe_regs = 4;
-  int i;
-  rtx xoperands[10];
-
-  struct {
-    const char *load;		/* load insn without nop */
-    const char *load_nop;	/* load insn with trailing nop */
-    const char *store;		/* store insn */
-    const char *final;		/* if last_store used: NULL or swr */
-    const char *last_store;	/* last store instruction */
-    int offset;			/* current offset */
-    enum machine_mode mode;	/* mode to use on (MEM) */
-  } load_store[4];
-
-  /* ??? Detect a bug in GCC, where it can give us a register
-     the same as one of the addressing registers and reduce
-     the number of registers available.  */
-  for (i = 4; i < last_operand && safe_regs < (int) ARRAY_SIZE (xoperands); i++)
-    if (! reg_mentioned_p (operands[i], operands[0])
-	&& ! reg_mentioned_p (operands[i], operands[1]))
-      xoperands[safe_regs++] = operands[i];
-
-  if (safe_regs < last_operand)
-    {
-      xoperands[0] = operands[0];
-      xoperands[1] = operands[1];
-      xoperands[2] = operands[2];
-      xoperands[3] = operands[3];
-      return output_block_move (insn, xoperands, safe_regs - 4, move_type);
-    }
-
-  /* If we are given global or static addresses, and we would be
-     emitting a few instructions, try to save time by using a
-     temporary register for the pointer.  */
-  /* ??? The SGI Irix6 assembler fails when a SYMBOL_REF is used in
-     an ldl/ldr instruction pair.  We play it safe, and always move
-     constant addresses into registers when generating N32/N64 code, just
-     in case we might emit an unaligned load instruction.  */
-  if (num_regs > 2 && (bytes > 2 * align || move_type != BLOCK_MOVE_NORMAL
-		       || mips_abi == ABI_N32
-		       || mips_abi == ABI_64))
-    {
-      if (CONSTANT_P (src_reg))
-	{
-	  src_reg = operands[3 + num_regs--];
-	  if (move_type != BLOCK_MOVE_LAST)
-	    {
-	      xoperands[1] = operands[1];
-	      xoperands[0] = src_reg;
-	      if (Pmode == DImode)
-		output_asm_insn ("dla\t%0,%1", xoperands);
-	      else
-		output_asm_insn ("la\t%0,%1", xoperands);
-	    }
-	}
-
-      if (CONSTANT_P (dest_reg))
-	{
-	  dest_reg = operands[3 + num_regs--];
-	  if (move_type != BLOCK_MOVE_LAST)
-	    {
-	      xoperands[1] = operands[0];
-	      xoperands[0] = dest_reg;
-	      if (Pmode == DImode)
-		output_asm_insn ("dla\t%0,%1", xoperands);
-	      else
-		output_asm_insn ("la\t%0,%1", xoperands);
-	    }
+	  mips_block_move_loop (dest, src, INTVAL (length));
+	  return true;
 	}
     }
-
-  /* ??? We really shouldn't get any LO_SUM addresses here, because they
-     are not offsettable, however, offsettable_address_p says they are
-     offsettable. I think this is a bug in offsettable_address_p.
-     For expediency, we fix this by just loading the address into a register
-     if we happen to get one.  */
-
-  if (GET_CODE (src_reg) == LO_SUM)
-    {
-      src_reg = operands[3 + num_regs--];
-      if (move_type != BLOCK_MOVE_LAST)
-	{
-	  xoperands[2] = XEXP (XEXP (operands[1], 0), 1);
-	  xoperands[1] = XEXP (XEXP (operands[1], 0), 0);
-	  xoperands[0] = src_reg;
-	  if (Pmode == DImode)
-	    output_asm_insn ("daddiu\t%0,%1,%%lo(%2)", xoperands);
-	  else
-	    output_asm_insn ("addiu\t%0,%1,%%lo(%2)", xoperands);
-	}
-    }
-
-  if (GET_CODE (dest_reg) == LO_SUM)
-    {
-      dest_reg = operands[3 + num_regs--];
-      if (move_type != BLOCK_MOVE_LAST)
-	{
-	  xoperands[2] = XEXP (XEXP (operands[0], 0), 1);
-	  xoperands[1] = XEXP (XEXP (operands[0], 0), 0);
-	  xoperands[0] = dest_reg;
-	  if (Pmode == DImode)
-	    output_asm_insn ("daddiu\t%0,%1,%%lo(%2)", xoperands);
-	  else
-	    output_asm_insn ("addiu\t%0,%1,%%lo(%2)", xoperands);
-	}
-    }
-
-  if (num_regs > (int) ARRAY_SIZE (load_store))
-    num_regs = ARRAY_SIZE (load_store);
-
-  else if (num_regs < 1)
-    abort_with_insn (insn,
-		     "cannot do block move, not enough scratch registers");
-
-  while (bytes > 0)
-    {
-      load_store[num].offset = offset;
-
-      if (TARGET_64BIT && bytes >= 8 && align >= 8)
-	{
-	  load_store[num].load = "ld\t%0,%1";
-	  load_store[num].load_nop = "ld\t%0,%1%#";
-	  load_store[num].store = "sd\t%0,%1";
-	  load_store[num].last_store = "sd\t%0,%1";
-	  load_store[num].final = 0;
-	  load_store[num].mode = DImode;
-	  offset += 8;
-	  bytes -= 8;
-	}
-
-      /* ??? Fails because of a MIPS assembler bug?  */
-      else if (TARGET_64BIT && bytes >= 8
-	       && ! TARGET_SR71K
-	       && ! TARGET_MIPS16)
-	{
-	  if (BYTES_BIG_ENDIAN)
-	    {
-	      load_store[num].load = "ldl\t%0,%1\n\tldr\t%0,%2";
-	      load_store[num].load_nop = "ldl\t%0,%1\n\tldr\t%0,%2%#";
-	      load_store[num].store = "sdl\t%0,%1\n\tsdr\t%0,%2";
-	      load_store[num].last_store = "sdr\t%0,%2";
-	      load_store[num].final = "sdl\t%0,%1";
-	    }
-	  else
-	    {
-	      load_store[num].load = "ldl\t%0,%2\n\tldr\t%0,%1";
-	      load_store[num].load_nop = "ldl\t%0,%2\n\tldr\t%0,%1%#";
-	      load_store[num].store = "sdl\t%0,%2\n\tsdr\t%0,%1";
-	      load_store[num].last_store = "sdr\t%0,%1";
-	      load_store[num].final = "sdl\t%0,%2";
-	    }
-
-	  load_store[num].mode = DImode;
-	  offset += 8;
-	  bytes -= 8;
-	  use_lwl_lwr = 1;
-	}
-
-      else if (bytes >= 4 && align >= 4)
-	{
-	  load_store[num].load = "lw\t%0,%1";
-	  load_store[num].load_nop = "lw\t%0,%1%#";
-	  load_store[num].store = "sw\t%0,%1";
-	  load_store[num].last_store = "sw\t%0,%1";
-	  load_store[num].final = 0;
-	  load_store[num].mode = SImode;
-	  offset += 4;
-	  bytes -= 4;
-	}
-
-      else if (bytes >= 4
-	       && ! TARGET_SR71K
-	       && ! TARGET_MIPS16)
-	{
-	  if (BYTES_BIG_ENDIAN)
-	    {
-	      load_store[num].load = "lwl\t%0,%1\n\tlwr\t%0,%2";
-	      load_store[num].load_nop = "lwl\t%0,%1\n\tlwr\t%0,%2%#";
-	      load_store[num].store = "swl\t%0,%1\n\tswr\t%0,%2";
-	      load_store[num].last_store = "swr\t%0,%2";
-	      load_store[num].final = "swl\t%0,%1";
-	    }
-	  else
-	    {
-	      load_store[num].load = "lwl\t%0,%2\n\tlwr\t%0,%1";
-	      load_store[num].load_nop = "lwl\t%0,%2\n\tlwr\t%0,%1%#";
-	      load_store[num].store = "swl\t%0,%2\n\tswr\t%0,%1";
-	      load_store[num].last_store = "swr\t%0,%1";
-	      load_store[num].final = "swl\t%0,%2";
-	    }
-
-	  load_store[num].mode = SImode;
-	  offset += 4;
-	  bytes -= 4;
-	  use_lwl_lwr = 1;
-	}
-
-      else if (bytes >= 2 && align >= 2)
-	{
-	  load_store[num].load = "lh\t%0,%1";
-	  load_store[num].load_nop = "lh\t%0,%1%#";
-	  load_store[num].store = "sh\t%0,%1";
-	  load_store[num].last_store = "sh\t%0,%1";
-	  load_store[num].final = 0;
-	  load_store[num].mode = HImode;
-	  offset += 2;
-	  bytes -= 2;
-	}
-      else
-	{
-	  load_store[num].load = "lb\t%0,%1";
-	  load_store[num].load_nop = "lb\t%0,%1%#";
-	  load_store[num].store = "sb\t%0,%1";
-	  load_store[num].last_store = "sb\t%0,%1";
-	  load_store[num].final = 0;
-	  load_store[num].mode = QImode;
-	  offset++;
-	  bytes--;
-	}
-
-      /* Emit load/stores now if we have run out of registers or are
-	 at the end of the move.  */
-
-      if (++num == num_regs || bytes == 0)
-	{
-	  /* If only load/store, we need a NOP after the load.  */
-	  if (num == 1)
-	    load_store[0].load = load_store[0].load_nop;
-
-	  if (move_type != BLOCK_MOVE_LAST)
-	    {
-	      for (i = 0; i < num; i++)
-		{
-		  int offset;
-
-		  if (!operands[i + 4])
-		    abort ();
-
-		  if (GET_MODE (operands[i + 4]) != load_store[i].mode)
-		    operands[i + 4] = gen_rtx_REG (load_store[i].mode,
-						   REGNO (operands[i + 4]));
-
-		  offset = load_store[i].offset;
-		  xoperands[0] = operands[i + 4];
-		  xoperands[1] = gen_rtx_MEM (load_store[i].mode,
-					      plus_constant (src_reg, offset));
-
-		  if (use_lwl_lwr)
-		    {
-		      int extra_offset
-			= GET_MODE_SIZE (load_store[i].mode) - 1;
-
-		      xoperands[2] = gen_rtx_MEM (load_store[i].mode,
-						  plus_constant (src_reg,
-								 extra_offset
-								 + offset));
-		    }
-
-		  output_asm_insn (load_store[i].load, xoperands);
-		}
-	    }
-
-	  for (i = 0; i < num; i++)
-	    {
-	      int last_p = (i == num-1 && bytes == 0);
-	      int offset = load_store[i].offset;
-
-	      xoperands[0] = operands[i + 4];
-	      xoperands[1] = gen_rtx_MEM (load_store[i].mode,
-					  plus_constant (dest_reg, offset));
-
-
-	      if (use_lwl_lwr)
-		{
-		  int extra_offset = GET_MODE_SIZE (load_store[i].mode) - 1;
-		  xoperands[2] = gen_rtx_MEM (load_store[i].mode,
-					      plus_constant (dest_reg,
-							     extra_offset
-							     + offset));
-		}
-
-	      if (move_type == BLOCK_MOVE_NORMAL)
-		output_asm_insn (load_store[i].store, xoperands);
-
-	      else if (move_type == BLOCK_MOVE_NOT_LAST)
-		{
-		  if (!last_p)
-		    output_asm_insn (load_store[i].store, xoperands);
-
-		  else if (load_store[i].final != 0)
-		    output_asm_insn (load_store[i].final, xoperands);
-		}
-
-	      else if (last_p)
-		output_asm_insn (load_store[i].last_store, xoperands);
-	    }
-
-	  num = 0;		/* reset load_store */
-	  use_lwl_lwr = 0;
-	}
-    }
-
-  return "";
+  return false;
 }
 
 /* Argument support functions.  */

@@ -78,7 +78,7 @@ extern tree		mips_build_va_list PARAMS ((void));
 extern void		mips_va_start PARAMS ((tree, rtx));
 extern struct rtx_def  *mips_va_arg PARAMS ((tree, tree));
 
-extern void		expand_block_move PARAMS ((rtx *));
+extern bool		mips_expand_block_move PARAMS ((rtx, rtx, rtx));
 extern bool		mips_expand_unaligned_load PARAMS ((rtx, rtx,
 							    unsigned int,
 							    int));
@@ -98,8 +98,6 @@ extern void		mips_split_64bit_move PARAMS ((rtx, rtx));
 extern const char      *mips_output_move PARAMS ((rtx, rtx));
 extern const char      *mips_emit_prefetch PARAMS ((rtx *));
 extern const char      *mips_restore_gp PARAMS ((rtx *));
-extern const char      *output_block_move PARAMS ((rtx, rtx *, int,
-						   enum block_move_type));
 extern void		override_options PARAMS ((void));
 extern void		mips_conditional_register_usage PARAMS ((void));
 extern void		print_operand_address PARAMS ((FILE *, rtx));

@@ -1,3 +1,16 @@
+2003-06-17  Richard Sandiford  <rsandifo@redhat.com>
+
+	* config/mips/mips-protos.h (mips_expand_block_move): Declare.
+	(expand_block_move, output_block_move): Remove.
+	* config/mips/mips.h (enum block_move_type): Remove.
+	* config/mips/mips.c (block_move_call, output_block_move): Remove.
+	(mips_block_move_straight, mips_adjust_block_mem): New function.
+	(mips_block_move_loop): Renamed and reworked from block_move_loop.
+	(mips_expand_block_move): Likewise expand_block_move.  Return false
+	to fall back on the target-independent code.
+	* config/mips/mips.md (movstrsi): Use mips_expand_block_move.
+	(movstrsi_internal*): Remove.
+
 2003-06-16  Zack Weinberg  <zack@codesourcery.com>
 
 	* cpplib.h, cpphash.h, cppcharset.c, cpperror.c, cppexp.c
