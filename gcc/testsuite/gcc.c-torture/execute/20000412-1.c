@@ -1,12 +1,10 @@
-enum { TOTAL_KEYWORDS = 207 };
-
 short int i = -1;
-const char * const wordlist[TOTAL_KEYWORDS];
+const char * const wordlist[207];
 
 const char * const *
 foo(void)
 {
-  register const char * const *wordptr = &wordlist[TOTAL_KEYWORDS + i];
+  register const char * const *wordptr = &wordlist[207u + i];
   return wordptr;
 }
 

@@ -1,5 +1,7 @@
 2000-04-10  Richard Henderson  <rth@cygnus.com>
 
+	* gcc.c-torture/execute/20000412-1.c: Reduce some more.
+
 	* gcc.c-torture/execute/20000412-1.c: New test.
 
 2000-04-10  Nathan Sidwell  <nathan@codesourcery.com>
