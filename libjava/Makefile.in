@@ -878,7 +878,6 @@ gnu/gcj/text/LocaleData_en.java	\
 gnu/gcj/text/LocaleData_en_US.java \
 gnu/gcj/text/SentenceBreakIterator.java	\
 gnu/gcj/text/WordBreakIterator.java \
-gnu/gcj/util/EnumerationChain.java \
 gnu/java/io/ClassLoaderObjectInputStream.java \
 gnu/java/io/NullOutputStream.java \
 gnu/java/io/ObjectIdentityWrapper.java \
@@ -893,6 +892,7 @@ gnu/java/security/provider/DefaultPolicy.java \
 gnu/java/security/provider/Gnu.java \
 gnu/java/security/provider/SHA.java \
 gnu/java/security/provider/SHA1PRNG.java \
+gnu/java/util/DoubleEnumeration.java \
 java/lang/ref/PhantomReference.java \
 java/lang/ref/Reference.java \
 java/lang/ref/ReferenceQueue.java \
@@ -1241,6 +1241,7 @@ java/net/natInetAddress.cc \
 java/net/natPlainDatagramSocketImpl.cc \
 java/net/natPlainSocketImpl.cc \
 java/text/natCollator.cc \
+java/util/natResourceBundle.cc \
 java/util/zip/natDeflater.cc \
 java/util/zip/natInflater.cc
 
@@ -1388,7 +1389,8 @@ java/lang/reflect/natArray.lo java/lang/reflect/natConstructor.lo \
 java/lang/reflect/natField.lo java/lang/reflect/natMethod.lo \
 java/net/natInetAddress.lo java/net/natPlainDatagramSocketImpl.lo \
 java/net/natPlainSocketImpl.lo java/text/natCollator.lo \
-java/util/zip/natDeflater.lo java/util/zip/natInflater.lo
+java/util/natResourceBundle.lo java/util/zip/natDeflater.lo \
+java/util/zip/natInflater.lo
 libgcjx_la_OBJECTS =  gnu/gcj/xlib/natClip.lo \
 gnu/gcj/xlib/natColormap.lo gnu/gcj/xlib/natDisplay.lo \
 gnu/gcj/xlib/natDrawable.lo gnu/gcj/xlib/natFont.lo \
@@ -1493,8 +1495,7 @@ DEP_FILES =  .deps/$(srcdir)/$(CONVERT_DIR)/gen-from-JIS.P \
 .deps/gnu/gcj/text/LocaleData_en.P \
 .deps/gnu/gcj/text/LocaleData_en_US.P \
 .deps/gnu/gcj/text/SentenceBreakIterator.P \
-.deps/gnu/gcj/text/WordBreakIterator.P \
-.deps/gnu/gcj/util/EnumerationChain.P .deps/gnu/gcj/xlib/Clip.P \
+.deps/gnu/gcj/text/WordBreakIterator.P .deps/gnu/gcj/xlib/Clip.P \
 .deps/gnu/gcj/xlib/Colormap.P .deps/gnu/gcj/xlib/Display.P \
 .deps/gnu/gcj/xlib/Drawable.P .deps/gnu/gcj/xlib/Font.P \
 .deps/gnu/gcj/xlib/GC.P .deps/gnu/gcj/xlib/Pixmap.P \
@@ -1560,7 +1561,8 @@ DEP_FILES =  .deps/$(srcdir)/$(CONVERT_DIR)/gen-from-JIS.P \
 .deps/gnu/java/security/provider/DefaultPolicy.P \
 .deps/gnu/java/security/provider/Gnu.P \
 .deps/gnu/java/security/provider/SHA.P \
-.deps/gnu/java/security/provider/SHA1PRNG.P .deps/interpret.P \
+.deps/gnu/java/security/provider/SHA1PRNG.P \
+.deps/gnu/java/util/DoubleEnumeration.P .deps/interpret.P \
 .deps/java/applet/Applet.P .deps/java/applet/AppletContext.P \
 .deps/java/applet/AppletStub.P .deps/java/applet/AudioClip.P \
 .deps/java/awt/AWTError.P .deps/java/awt/AWTEvent.P \
@@ -2062,8 +2064,8 @@ DEP_FILES =  .deps/$(srcdir)/$(CONVERT_DIR)/gen-from-JIS.P \
 .deps/java/util/jar/JarEntry.P .deps/java/util/jar/JarException.P \
 .deps/java/util/jar/JarFile.P .deps/java/util/jar/JarInputStream.P \
 .deps/java/util/jar/JarOutputStream.P .deps/java/util/jar/Manifest.P \
-.deps/java/util/zip/Adler32.P .deps/java/util/zip/CRC32.P \
-.deps/java/util/zip/CheckedInputStream.P \
+.deps/java/util/natResourceBundle.P .deps/java/util/zip/Adler32.P \
+.deps/java/util/zip/CRC32.P .deps/java/util/zip/CheckedInputStream.P \
 .deps/java/util/zip/CheckedOutputStream.P \
 .deps/java/util/zip/Checksum.P \
 .deps/java/util/zip/DataFormatException.P \

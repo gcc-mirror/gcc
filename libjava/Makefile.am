@@ -1128,7 +1128,6 @@ gnu/gcj/text/LocaleData_en.java	\
 gnu/gcj/text/LocaleData_en_US.java \
 gnu/gcj/text/SentenceBreakIterator.java	\
 gnu/gcj/text/WordBreakIterator.java \
-gnu/gcj/util/EnumerationChain.java \
 gnu/java/io/ClassLoaderObjectInputStream.java \
 gnu/java/io/NullOutputStream.java \
 gnu/java/io/ObjectIdentityWrapper.java \
@@ -1143,6 +1142,7 @@ gnu/java/security/provider/DefaultPolicy.java \
 gnu/java/security/provider/Gnu.java \
 gnu/java/security/provider/SHA.java \
 gnu/java/security/provider/SHA1PRNG.java \
+gnu/java/util/DoubleEnumeration.java \
 java/lang/ref/PhantomReference.java \
 java/lang/ref/Reference.java \
 java/lang/ref/ReferenceQueue.java \
@@ -1492,6 +1492,7 @@ java/net/natInetAddress.cc \
 java/net/natPlainDatagramSocketImpl.cc \
 java/net/natPlainSocketImpl.cc \
 java/text/natCollator.cc \
+java/util/natResourceBundle.cc \
 java/util/zip/natDeflater.cc \
 java/util/zip/natInflater.cc
 
