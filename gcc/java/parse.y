@@ -104,7 +104,7 @@ static void find_in_imports PARAMS ((tree, tree));
 static void check_inner_class_access PARAMS ((tree, tree, tree));
 static int check_pkg_class_access PARAMS ((tree, tree, bool));
 static void register_package PARAMS ((tree));
-static tree resolve_package PARAMS ((tree, tree *));
+static tree resolve_package PARAMS ((tree, tree *, tree *));
 static tree lookup_package_type PARAMS ((const char *, int));
 static tree resolve_class PARAMS ((tree, tree, tree, tree));
 static void declare_local_variables PARAMS ((int, tree, tree));
@@ -7031,49 +7031,31 @@ register_package (name)
 }
 
 static tree
-resolve_package (pkg, next)
-     tree pkg, *next;
+resolve_package (pkg, next, type_name)
+     tree pkg, *next, *type_name;
 {
-  tree current, acc;
-  tree type_name = NULL_TREE;
-  const char *name = IDENTIFIER_POINTER (EXPR_WFL_NODE (pkg));
+  tree current, decl;
+  *type_name = NULL_TREE;
 
   /* The trick is to determine when the package name stops and were
      the name of something contained in the package starts. Then we
      return a fully qualified name of what we want to get. */
 
-  /* Do a quick search on well known package names */
-  if (!strncmp (name, "java.lang.reflect", 17))
-    {
-      *next = 
-	TREE_CHAIN (TREE_CHAIN (TREE_CHAIN (EXPR_WFL_QUALIFICATION (pkg))));
-      type_name = lookup_package_type (name, 17);
-    }
-  else if (!strncmp (name, "java.lang", 9))
-    {
-      *next = TREE_CHAIN (TREE_CHAIN (EXPR_WFL_QUALIFICATION (pkg)));
-      type_name = lookup_package_type (name, 9);
-    }
-
-  /* If we found something here, return */
-  if (type_name)
-    return type_name; 
-
   *next = EXPR_WFL_QUALIFICATION (pkg);
 
   /* Try to progressively construct a type name */
   if (TREE_CODE (pkg) == EXPR_WITH_FILE_LOCATION)
-    for (acc = NULL_TREE, current = EXPR_WFL_QUALIFICATION (pkg); 
+    for (current = EXPR_WFL_QUALIFICATION (pkg); 
 	 current; current = TREE_CHAIN (current))
       {
 	/* If we don't have what we're expecting, exit now. TYPE_NAME
 	   will be null and the error caught later. */
 	if (TREE_CODE (QUAL_WFL (current)) != EXPR_WITH_FILE_LOCATION)
 	  break;
-	acc = merge_qualified_name (acc, EXPR_WFL_NODE (QUAL_WFL (current)));
-	if ((type_name = resolve_no_layout (acc, NULL_TREE)))
+	*type_name = 
+	  merge_qualified_name (*type_name, EXPR_WFL_NODE (QUAL_WFL (current)));
+	if ((decl = resolve_no_layout (*type_name, NULL_TREE)))
 	  {
-	    type_name = acc;
 	    /* resolve_package should be used in a loop, hence we
 	       point at this one to naturally process the next one at
 	       the next iteration. */
@@ -7081,7 +7063,7 @@ resolve_package (pkg, next)
 	    break;
 	  }
       }
-  return type_name;
+  return decl;
 }
 
 static tree
@@ -9677,11 +9659,12 @@ resolve_qualified_expression_name (wfl, found_decl, where_found, type_found)
 	 assume a variable/class name was meant. */
       if (RESOLVE_PACKAGE_NAME_P (qual_wfl))
 	{
-	  tree name = resolve_package (wfl, &q);
-	  if (name)
+	  tree name;
+	  if ((decl = resolve_package (wfl, &q, &name)))
 	    {
 	      tree list;
-	      *where_found = decl = resolve_no_layout (name, qual_wfl);
+	      *where_found = decl;
+
 	      /* We want to be absolutely sure that the class is laid
                  out. We're going to search something inside it. */
 	      *type_found = type = TREE_TYPE (decl);
@@ -9711,7 +9694,7 @@ resolve_qualified_expression_name (wfl, found_decl, where_found, type_found)
 	      else
 		parse_error_context
 		  (qual_wfl, "Undefined variable or class name: `%s'",
-		   IDENTIFIER_POINTER (EXPR_WFL_NODE (qual_wfl)));
+		   IDENTIFIER_POINTER (name));
 	      return 1;
 	    }
 	}
