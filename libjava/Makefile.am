@@ -381,6 +381,15 @@ header-check: libgcj.jar $(nat_headers)
 	done; \
 	$(CXXCOMPILE) -fsyntax-only htest.cc
 
+## This rule can be used to see if all the .class files verify
+## correctly.
+class-check: libgcj.jar
+	@ok=0; find . -name '*.class' -print | fgrep -v testsuite | \
+	while read f; do \
+	  echo "$(GCJ_WITH_FLAGS) --syntax-only $$f"; \
+	  if $(GCJ_WITH_FLAGS) --syntax-only $$f; then \
+	  :; else ok=1; fi; \
+	done; exit $$ok
 
 ## ################################################################
 
