@@ -1,3 +1,7 @@
+Tue Jul 21 22:40:09 PDT 1998 Jeff Law  (law@cygnus.com)
+
+	* version.c: Bump for snapshot.
+
 Tue Jul 21 23:28:35 1998  Klaus Kaempf <kkaempf@rmi.de> 
 
 	* cccp.c (do_include): Fix vax c style include handling.
