@@ -4120,7 +4120,8 @@ print_version (file, indent)
 }
 
 /* Print an option value and return the adjusted position in the line.
-   ??? We don't handle error returns from fprintf (disk full).  */
+   ??? We don't handle error returns from fprintf (disk full); presumably
+   other code will catch a disk full though.  */
 
 int
 print_single_switch (file, pos, max, indent, sep, term, type, name)
@@ -4128,17 +4129,23 @@ print_single_switch (file, pos, max, indent, sep, term, type, name)
      int pos, max;
      char *indent, *sep, *term, *type, *name;
 {
+  /* The ultrix fprintf returns 0 on success, so compute the result we want
+     here since we need it for the following test.  */
+  int len = strlen (sep) + strlen (type) + strlen (name);
+
   if (pos != 0
-      && pos + strlen (sep) + strlen (type) + strlen (name) > max)
+      && pos + len > max)
     {
       fprintf (file, "%s", term);
       pos = 0;
     }
   if (pos == 0)
     {
-      pos = fprintf (file, "%s", indent);
+      fprintf (file, "%s", indent);
+      pos = strlen (indent);
     }
-  pos += fprintf (file, "%s%s%s", sep, type, name);
+  fprintf (file, "%s%s%s", sep, type, name);
+  pos += len;
   return pos;
 }
      
