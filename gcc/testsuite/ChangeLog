@@ -1,3 +1,7 @@
+2004-02-04  Ian Lance Taylor  <ian@wasabisystems.com>
+
+	* gcc.dg/arm-mmx-1.c: Don't look for ldmfd if -mthumb.
+
 2004-02-04  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* objc.dg/encode-2.m, objc.dg/encode-3.m, objc.dg/encode-4.m: Fix
