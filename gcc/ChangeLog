@@ -1,3 +1,16 @@
+2000-07-13  Bruce Korb  <bkorb@gnu.org>
+
+	* fixinc/fixfixes.c: move EXIT_BROKEN to header, add sub-expr max count
+	(emit_gnu_type): utility procedure for gnu_type_fix
+	(gnu_type_fix): implement various pre-processor guards around
+	standard types so these types can be defined over and over
+	* fixinc/fixincl.tpl: add a "gnu_type_map" that forces the standard
+	types alluded to above will have GNU-compliant base types
+	* fixinc/fixlib.h: add EXIT_BROKEN define and the gnu_type_map struct
+	* fixinc/inclhack.def: add test_text entries and utilize the new
+	"gnu_types" fix for the ptrdiff_t, size_t and wchar_t types.
+	* fixinc/fixincl.x: regenerate
+
 2000-07-12  Gabriel Dos Reis  <gdr@merlin.codesourcery.com>
 
 	* diagnostic.c (vline_wrapper_message_with_location,
