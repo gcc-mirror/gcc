@@ -3994,53 +3994,6 @@ fold (expr)
 	    }
 	}
 
-      /* Note that this transformation might sometimes cause division-by-zero
-	 to pass unnoticed.  For example when C=2 and y=31.  If that is unacceptable,
-	 we could restrict the optimization to the case when log == 0.  */
-
-      if ((code == FLOOR_DIV_EXPR || code == TRUNC_DIV_EXPR)
-	  && TREE_CODE (arg1) == LSHIFT_EXPR)
-	{
-	  int log;
-	  if (TREE_CODE (TREE_OPERAND (arg1, 0)) == INTEGER_CST
-	      && (log = exact_log2 (TREE_INT_CST_LOW (TREE_OPERAND (arg1, 0)))) >= 0
-	      && TREE_INT_CST_HIGH (TREE_OPERAND (arg1, 0)) == 0)
-	    {
-	      tree cnt;
-	      cnt = log == 0 ? TREE_OPERAND (arg1, 1)
-		: fold (build (PLUS_EXPR, TREE_TYPE (TREE_OPERAND (arg1, 1)),
-			       TREE_OPERAND (arg1, 1),
-			       build_int_2 (log, 0)));
-
-	      if (TREE_UNSIGNED (type) || code == FLOOR_DIV_EXPR)
-		{
-		  /* (x / (C << y)) where C = 1 << log  =>  x >> (y + log)  */
-		  /* BUG: First TYPE here should always be unsigned to get logical
-		     shift.  How do we do that?  */
-		  return fold (build (RSHIFT_EXPR, type, arg0, cnt));
-		}
-
-	      /* (x / (C << y)) when C = 1 << log  =>
-		  => (ashiftrt (plus x (and (ashiftrt x 31)
-					    (not (lshift -1 cnt)))) cnt),
-		    where cnt is y + log  */
-	      /* BUG: Several TYPE arguments here might be wrong.  */
-	      return
-		fold (build (RSHIFT_EXPR, type,
-			     fold (build (PLUS_EXPR, type,
-					  arg0,
-					  fold (build (BIT_AND_EXPR, type,
-						       fold (build (RSHIFT_EXPR, type,
-								    arg0,
-								    build_int_2 (TYPE_PRECISION (type) - 1, 0))),
-						       fold (build1 (BIT_NOT_EXPR, type,
-								     fold (build (LSHIFT_EXPR, type,
-										  build_int_2 (~0, ~0),
-										  cnt)))))))),
-			     cnt));
-	    }
-	}
-
       goto binary;
 
     case CEIL_MOD_EXPR:
