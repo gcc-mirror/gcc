@@ -9015,6 +9015,7 @@ java_expand_classes ()
   for (cur_ctxp = ctxp_for_generation; cur_ctxp; cur_ctxp = cur_ctxp->next)
     {
       tree current;
+      ctxp = cur_ctxp;
       for (current = ctxp->class_list; current; current = TREE_CHAIN (current))
 	{
 	  tree class = TREE_TYPE (current);
