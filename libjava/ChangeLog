@@ -1,3 +1,70 @@
+2004-01-22  Tom Tromey  <tromey@redhat.com>
+
+	PR libgcj/13107:
+	* testsuite/libjava.lang/pr13107_2.xfail: New file.
+	* testsuite/libjava.lang/pr13107_3.xfail: New file.
+	* testsuite/libjava.lang/pr13107_3.java: New file.
+	* testsuite/libjava.lang/pr13107_3.out: New file.
+	* testsuite/libjava.lang/pr13107_2.java: New file.
+	* testsuite/libjava.lang/pr13107_2.out: New file.
+	* testsuite/libjava.lang/pr13107.java: New file.
+	* testsuite/libjava.lang/pr13107.out: New file.
+	* verify.cc (jsr_ptrs): Removed.
+	(entry_points): Likewise.
+	(struct subr_info): Likewise.
+	(struct subr_entry_info): Likewise.
+	(type_val::unused_by_subroutine_type): Likewise.
+	(type::merge): Don't handle unused_by_subroutine_type.
+	(type::print): Likewise.
+	(state::flags): Removed.
+	(state::subroutine): Likewise.
+	(state::seen_subrs): Likewise.
+	(state::NO_STACK): Likewise.
+	(state::FLAG_CHANGED, state::FLAG_UNUSED): Likewise.
+	(state): Updated all methods.
+	(state::clean_subrs): Removed.
+	(state::state): Removed `ret_semantics' flag.
+	(state::copy): Likewise.
+	(state::add_subr): Removed.
+	(state::enter_subroutine): Likewise.
+	(type::set_return_address): New method.
+	(handle_jsr_insn): Set return address on the type.  Always
+	invalidate PC after call.
+	(check_nonrecursive_call): Removed.
+	(~_Jv_BytecodeVerifier): Updated.
+	(branch_prepass): Removed special handling of jsr.
+	(note_branch_target): Likewise.
+	(get_subroutine): Removed.
+	(state::merge): Don't merge subroutines and don't handle
+	NO_STACK.  Removed ret_semantics and jsr_semantics arguments.
+	(state::note_variable): Removed.
+	(state::is_unmerged_ret_state): Likewise.
+	(state::print): Updated.
+	(set_variable): Likewise.
+	(merge_into): Renamed from push_jump_merge.  Removed ret_semantics
+	and jsr_semantics arguments.  Updated for new reverification
+	list.
+	(pop_jump): Rewrote.
+	(construct_primitive_array_type): Updated.
+	(state::next): Removed.
+	(INVALID_STATE): New define.
+	(state::INVALID): Removed.
+	(state::NO_NEXT): New value.
+	(state::pc, state::next): New fields.
+	(state::get_pc): New method.
+	(next_verify_pc): Removed.
+	(next_verify_state): New field.
+	(verify_instructions_0): Always check for falling off end.
+	(linked): New type.
+	(linked_utf8): Removed.
+	(states): Changed type.
+	(type::state_mergeable_p): New method.
+	(state::state_mergeable_p): Likewise.
+	(handle_ret_insn): Removed most code.
+	(state::reverify): New method.
+	(add_new_state): Likewise.
+	(state::set_pc): Likewise.
+
 2004-01-22  Jeff Sturm  <jsturm@one-point.com>
 
 	PR java/13733
