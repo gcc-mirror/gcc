@@ -2153,7 +2153,8 @@ struct algorithm
    multiplicand should be added to the result.  */
 enum mult_variant {basic_variant, negate_variant, add_variant};
 
-static void synth_mult (struct algorithm *, unsigned HOST_WIDE_INT, int);
+static void synth_mult (struct algorithm *, unsigned HOST_WIDE_INT,
+			int, enum machine_mode mode);
 static bool choose_mult_variant (enum machine_mode, HOST_WIDE_INT,
 				 struct algorithm *, enum mult_variant *, int);
 static rtx expand_mult_const (enum machine_mode, rtx, HOST_WIDE_INT, rtx,
@@ -2168,11 +2169,12 @@ static rtx expand_mult_highpart_optab (enum machine_mode, rtx, rtx, rtx,
 /* Compute and return the best algorithm for multiplying by T.
    The algorithm must cost less than cost_limit
    If retval.cost >= COST_LIMIT, no algorithm was found and all
-   other field of the returned struct are undefined.  */
+   other field of the returned struct are undefined.
+   MODE is the machine mode of the multiplication.  */
 
 static void
 synth_mult (struct algorithm *alg_out, unsigned HOST_WIDE_INT t,
-	    int cost_limit)
+	    int cost_limit, enum machine_mode mode)
 {
   int m;
   struct algorithm *alg_in, *best_alg;
@@ -2225,7 +2227,7 @@ synth_mult (struct algorithm *alg_out, unsigned HOST_WIDE_INT t,
 	{
 	  q = t >> m;
 	  cost = shift_cost[m];
-	  synth_mult (alg_in, q, cost_limit - cost);
+	  synth_mult (alg_in, q, cost_limit - cost, mode);
 
 	  cost += alg_in->cost;
 	  if (cost < cost_limit)
@@ -2259,8 +2261,8 @@ synth_mult (struct algorithm *alg_out, unsigned HOST_WIDE_INT t,
 	{
 	  /* T ends with ...111.  Multiply by (T + 1) and subtract 1.  */
 
-	  cost = add_cost[word_mode];
-	  synth_mult (alg_in, t + 1, cost_limit - cost);
+	  cost = add_cost[mode];
+	  synth_mult (alg_in, t + 1, cost_limit - cost, mode);
 
 	  cost += alg_in->cost;
 	  if (cost < cost_limit)
@@ -2276,8 +2278,8 @@ synth_mult (struct algorithm *alg_out, unsigned HOST_WIDE_INT t,
 	{
 	  /* T ends with ...01 or ...011.  Multiply by (T - 1) and add 1.  */
 
-	  cost = add_cost[word_mode];
-	  synth_mult (alg_in, t - 1, cost_limit - cost);
+	  cost = add_cost[mode];
+	  synth_mult (alg_in, t - 1, cost_limit - cost, mode);
 
 	  cost += alg_in->cost;
 	  if (cost < cost_limit)
@@ -2308,10 +2310,10 @@ synth_mult (struct algorithm *alg_out, unsigned HOST_WIDE_INT t,
       d = ((unsigned HOST_WIDE_INT) 1 << m) + 1;
       if (t % d == 0 && t > d && m < BITS_PER_WORD)
 	{
-	  cost = add_cost[word_mode] + shift_cost[m];
+	  cost = add_cost[mode] + shift_cost[m];
 	  if (shiftadd_cost[m] < cost)
 	    cost = shiftadd_cost[m];
-	  synth_mult (alg_in, t / d, cost_limit - cost);
+	  synth_mult (alg_in, t / d, cost_limit - cost, mode);
 
 	  cost += alg_in->cost;
 	  if (cost < cost_limit)
@@ -2329,10 +2331,10 @@ synth_mult (struct algorithm *alg_out, unsigned HOST_WIDE_INT t,
       d = ((unsigned HOST_WIDE_INT) 1 << m) - 1;
       if (t % d == 0 && t > d && m < BITS_PER_WORD)
 	{
-	  cost = add_cost[word_mode] + shift_cost[m];
+	  cost = add_cost[mode] + shift_cost[m];
 	  if (shiftsub_cost[m] < cost)
 	    cost = shiftsub_cost[m];
-	  synth_mult (alg_in, t / d, cost_limit - cost);
+	  synth_mult (alg_in, t / d, cost_limit - cost, mode);
 
 	  cost += alg_in->cost;
 	  if (cost < cost_limit)
@@ -2357,7 +2359,7 @@ synth_mult (struct algorithm *alg_out, unsigned HOST_WIDE_INT t,
       if (m >= 0 && m < BITS_PER_WORD)
 	{
 	  cost = shiftadd_cost[m];
-	  synth_mult (alg_in, (t - 1) >> m, cost_limit - cost);
+	  synth_mult (alg_in, (t - 1) >> m, cost_limit - cost, mode);
 
 	  cost += alg_in->cost;
 	  if (cost < cost_limit)
@@ -2376,7 +2378,7 @@ synth_mult (struct algorithm *alg_out, unsigned HOST_WIDE_INT t,
       if (m >= 0 && m < BITS_PER_WORD)
 	{
 	  cost = shiftsub_cost[m];
-	  synth_mult (alg_in, (t + 1) >> m, cost_limit - cost);
+	  synth_mult (alg_in, (t + 1) >> m, cost_limit - cost, mode);
 
 	  cost += alg_in->cost;
 	  if (cost < cost_limit)
@@ -2429,22 +2431,22 @@ choose_mult_variant (enum machine_mode mode, HOST_WIDE_INT val,
   struct algorithm alg2;
 
   *variant = basic_variant;
-  synth_mult (alg, val, mult_cost);
+  synth_mult (alg, val, mult_cost, mode);
 
   /* This works only if the inverted value actually fits in an
      `unsigned int' */
   if (HOST_BITS_PER_INT >= GET_MODE_BITSIZE (mode))
     {
-      synth_mult (&alg2, -val, MIN (alg->cost, mult_cost)
-			       - neg_cost[mode]);
+      synth_mult (&alg2, -val, MIN (alg->cost, mult_cost) - neg_cost[mode],
+		  mode);
       alg2.cost += neg_cost[mode];
       if (alg2.cost < alg->cost)
 	*alg = alg2, *variant = negate_variant;
     }
 
   /* This proves very useful for division-by-constant.  */
-  synth_mult (&alg2, val - 1, MIN (alg->cost, mult_cost)
-			      - add_cost[mode]);
+  synth_mult (&alg2, val - 1, MIN (alg->cost, mult_cost) - add_cost[mode],
+	      mode);
   alg2.cost += add_cost[mode];
   if (alg2.cost < alg->cost)
     *alg = alg2, *variant = add_variant;
