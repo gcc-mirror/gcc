@@ -9274,6 +9274,12 @@ make_definition (str, op)
   }
   while (is_idchar[*++p])
     ;
+  if (*p == '(') {
+    while (is_idchar[*++p] || *p == ',' || is_hor_space[*p])
+      ;
+    if (*p++ != ')')
+      p = str;			/* Error */
+  }
   if (*p == 0) {
     buf = (U_CHAR *) alloca (p - buf + 4);
     strcpy ((char *)buf, str);
