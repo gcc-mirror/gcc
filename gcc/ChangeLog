@@ -1,3 +1,7 @@
+2001-11-30  Richard Henderson  <rth@redhat.com>
+
+	* c-decl.c (duplicate_decls): Copy DECL_SAVED_TREE.
+
 2001-11-30  Aldy Hernandez  <aldyh@redhat.com>
 
         * config/rs6000/rs6000.h (CALL_REALLY_USED_REGISTERS): New.
