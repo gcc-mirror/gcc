@@ -1,3 +1,7 @@
+2000-03-15  Jason Merrill  <jason@casey.cygnus.com>
+
+	* cpphash.c (dump_hash_helper): Take the slot, not the element.
+
 Wed Mar 15 14:28:54 2000  Jason Eckhardt  <jle@cygnus.com>
 
 	* flow.c (verify_flow_info): Check for unconditional return.
@@ -37,11 +41,13 @@ Wed Mar 15 13:07:05 MET 2000  Jan Hubicka  <jh@suse.cz>
 	QUAL_UNION_TYPE handling.
 
 Wed Feb 23 13:00:06 CET 2000  Jan Hubicka  <jh@suse.cz>
+
         * flow.c (fixup_reorder_chain): Avoid double labels in the basic block;
         end of basic block is jump_insn, not barrier; use create_basic_block
         instead of creating basic block by hand.
 
 2000-03-14  Jason Eckhardt  <jle@cygnus.com>
+
 	* flow.c (reorder_basic_blocks): Account for barriers when writing
 	over NEXT_INSN (last_bb->end).
 	(verify_flow_info): Add check for missing barriers.

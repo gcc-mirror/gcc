@@ -33,7 +33,7 @@ Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 static unsigned int hash_HASHNODE PARAMS ((const void *));
 static int eq_HASHNODE		  PARAMS ((const void *, const void *));
 static void del_HASHNODE	  PARAMS ((void *));
-static int dump_hash_helper	  PARAMS ((void *, void *));
+static int dump_hash_helper	  PARAMS ((void **, void *));
 
 static int comp_def_part	 PARAMS ((int, U_CHAR *, int, U_CHAR *,
 					  int, int));
@@ -1722,10 +1722,10 @@ _cpp_dump_definition (pfile, sym, len, defn)
 /* Dump out the hash table.  */
 static int
 dump_hash_helper (h, p)
-     void *h;
+     void **h;
      void *p;
 {
-  HASHNODE *hp = (HASHNODE *)h;
+  HASHNODE *hp = (HASHNODE *)*h;
   cpp_reader *pfile = (cpp_reader *)p;
 
   if (hp->type == T_MACRO)
