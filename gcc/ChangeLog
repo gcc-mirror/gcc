@@ -1,3 +1,10 @@
+Mon Jul  9 21:36:00 CEST 2001  Jan Hubicka  <jh@suse.cz>
+
+	* emit-rtl.c (gen_highpart_mode): New.
+	* rtl.h (gen_highpart_mode): Declare.
+	* sparc.md (insn splitters): Use gen_highpart_mode, whenever the
+	operand can be VOIDmode constant.
+
 Mon Jul  9 17:23:10 CEST 2001  Jan Hubicka  <jh@suse.cz>
 
 	* flow.c (redirect_edge_and_branch_force): New.

@@ -1190,6 +1190,8 @@ extern rtx gen_lowpart_if_possible	PARAMS ((enum machine_mode, rtx));
 
 /* In emit-rtl.c */
 extern rtx gen_highpart			PARAMS ((enum machine_mode, rtx));
+extern rtx gen_highpart_mode		PARAMS ((enum machine_mode,
+						 enum machine_mode, rtx));
 extern rtx gen_realpart			PARAMS ((enum machine_mode, rtx));
 extern rtx gen_imagpart			PARAMS ((enum machine_mode, rtx));
 extern rtx operand_subword		PARAMS ((rtx, unsigned int, int,

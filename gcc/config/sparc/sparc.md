@@ -5633,7 +5633,7 @@
   operands[4] = gen_lowpart (SImode, operands[1]);
   operands[5] = gen_lowpart (SImode, operands[2]);
   operands[6] = gen_highpart (SImode, operands[0]);
-  operands[7] = gen_highpart (SImode, operands[1]);
+  operands[7] = gen_highpart_mode (SImode, DImode, operands[1]);
 #if HOST_BITS_PER_WIDE_INT == 32
   if (GET_CODE (operands[2]) == CONST_INT)
     {
@@ -5644,7 +5644,7 @@
     }
   else
 #endif
-    operands[8] = gen_highpart (SImode, operands[2]);
+    operands[8] = gen_highpart_mode (SImode, DImode, operands[2]);
 }")
 
 (define_split
@@ -5680,7 +5680,7 @@
     }
   else
 #endif
-    operands[8] = gen_highpart (SImode, operands[2]);
+    operands[8] = gen_highpart_mode (SImode, DImode, operands[2]);
 }")
 
 ;; LTU here means "carry set"
@@ -5714,7 +5714,7 @@
                                (ltu:SI (reg:CC_NOOV 100) (const_int 0))))
    (set (match_dup 4) (const_int 0))]
   "operands[3] = gen_lowpart (SImode, operands[0]);
-   operands[4] = gen_highpart (SImode, operands[1]);")
+   operands[4] = gen_highpart_mode (SImode, DImode, operands[1]);")
 
 (define_insn "*addx_extend_sp64"
   [(set (match_operand:DI 0 "register_operand" "=r")
@@ -5929,7 +5929,7 @@
 {
   rtx highp, lowp;
 
-  highp = gen_highpart (SImode, operands[2]);
+  highp = gen_highpart_mode (SImode, DImode, operands[2]);
   lowp = gen_lowpart (SImode, operands[2]);
   if ((lowp == const0_rtx)
       && (operands[0] == operands[1]))
@@ -5937,7 +5937,8 @@
       emit_insn (gen_rtx_SET (VOIDmode,
                               gen_highpart (SImode, operands[0]),
                               gen_rtx_MINUS (SImode,
-                                             gen_highpart (SImode, operands[1]),
+                                             gen_highpart_mode (SImode, DImode,
+								operands[1]),
                                              highp)));
     }
   else
@@ -5946,7 +5947,7 @@
                                        gen_lowpart (SImode, operands[1]),
                                        lowp));
       emit_insn (gen_subx (gen_highpart (SImode, operands[0]),
-                           gen_highpart (SImode, operands[1]),
+                           gen_highpart_mode (SImode, DImode, operands[1]),
                            highp));
     }
   DONE;
@@ -6800,7 +6801,7 @@
     }
   else
 #endif
-    operands[8] = gen_highpart (SImode, operands[3]);
+    operands[8] = gen_highpart_mode (SImode, DImode, operands[3]);
   operands[9] = gen_lowpart (SImode, operands[3]);
 }")
 
