@@ -1,5 +1,9 @@
 2002-02-21  Diego Novillo  <dnovillo@redhat.com>
 
+	* Makefile.in (langhooks.o): Update dependencies.
+
+2002-02-21  Diego Novillo  <dnovillo@redhat.com>
+
 	* langhooks.c: Include flags.h.
 
 2002-02-21  Aldy Hernandez  <aldyh@redhat.com>
