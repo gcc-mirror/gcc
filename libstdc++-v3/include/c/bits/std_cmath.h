@@ -263,13 +263,6 @@ namespace std
 #endif
 
 
-#if _GLIBCPP_HAVE___BUILTIN_FABS
-  inline double 
-  abs(double __x) { return __builtin_fabs(__x); }
-#else
-  extern "C" double abs(double __x);
-#endif
-
   extern "C" double acos(double __x);
 
   extern "C" double asin(double __x);
@@ -296,6 +289,14 @@ namespace std
   fabs(double __x) { return __builtin_fabs(__x); }
 #else
   extern "C" double fabs(double __x);
+#endif
+
+#if _GLIBCPP_HAVE___BUILTIN_FABS
+  inline double 
+  abs(double __x) { return __builtin_fabs(__x); }
+#else
+  inline double
+  abs(double __x) { return fabs (__x); }
 #endif
 
   extern "C" double floor(double __x);
