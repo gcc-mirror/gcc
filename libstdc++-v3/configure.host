@@ -97,8 +97,11 @@ case "${host_cpu}" in
   sparc* | ultrasparc)
     try_cpu=sparc
     ;;
+  arm* | xscale | ep9312)
+    try_cpu=arm
+    ;;
   *)
-    if test -f ${glibcxx_srcdir}/config/cpu/${host_cpu}/atomicity.h; then
+    if test -d ${glibcxx_srcdir}/config/cpu/${host_cpu}; then
       try_cpu=${host_cpu}
     else
       try_cpu=generic
@@ -121,9 +124,19 @@ esac
 # default choices for those if they haven't been explicitly set
 # already.  
 cpu_include_dir="cpu/${try_cpu}"
-atomicity_dir=$cpu_include_dir
 abi_baseline_pair=${try_cpu}-${host_os}
 
+if test -f ${glibcxx_srcdir}/config/${cpu_include_dir}/atomicity.h ; then
+  atomicity_dir=$cpu_include_dir
+else
+  atomicity_dir="cpu/generic"
+fi
+
+if test -f ${glibcxx_srcdir}/config/${cpu_include_dir}/cxxabi_tweaks.h ; then
+  abi_tweaks_dir=$cpu_include_dir
+else
+  abi_tweaks_dir="cpu/generic"
+fi
 
 # Set any OS-dependent bits.
 # Set the os_include_dir.

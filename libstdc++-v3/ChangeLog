@@ -1,3 +1,17 @@
+2004-07-03  Paul Brook  <paul@codesourcery.com>
+
+	* configure.ac: Set ABI_TWEAKS_SRCDIR.
+	* configure.host: Set abi_tweaks_dir.  Check for atomicity.h when
+	setting atomicity_dir.  Override type_cpu for arm based targets.
+	* include/Makefile.am (host_headers): Add cxxabi_tweaks.h.
+	* libsupc++/cxxabi.h: Include bits/cxxabi.h. Don't declare __guard.
+	* libsupc++/guard.cc: Use definitions from cxxabi_tweaks.h.
+	* libsupc++/vec.cc: Ditto.
+	* config/cpu/arm/cxxabi_tweaks.h: New file.
+	* config/cpu/generic/cxxabi_tweaks.h: New file.
+	* */Makefile.in: Regenerate.
+	* configure: Regenerate.
+
 2004-07-02  Paolo Carlini  <pcarlini@suse.de>
 
 	* include/bits/type_traits.h (_Is_normal_iterator): Move...

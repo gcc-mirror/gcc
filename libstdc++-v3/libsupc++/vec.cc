@@ -96,8 +96,7 @@ namespace __cxxabiv1
       {
 	base += padding_size;
 	reinterpret_cast <std::size_t *> (base)[-1] = element_count;
-#ifdef __ARM_EABI__
-	// ARM EABI array cookies also contain the element size.
+#ifdef _GLIBCXX_ELTSIZE_IN_COOKIE
 	reinterpret_cast <std::size_t *> (base)[-2] = element_size;
 #endif
       }
@@ -135,8 +134,7 @@ namespace __cxxabiv1
       {
 	base += padding_size;
 	reinterpret_cast<std::size_t *>(base)[-1] = element_count;
-#ifdef __ARM_EABI__
-	// ARM EABI array cookies also contain the element size.
+#ifdef _GLIBCXX_ELTSIZE_IN_COOKIE
 	reinterpret_cast <std::size_t *> (base)[-2] = element_size;
 #endif
       }

@@ -54,6 +54,7 @@ am__depfiles_maybe =
 SOURCES =
 DIST_SOURCES =
 DISTFILES = $(DIST_COMMON) $(DIST_SOURCES) $(TEXINFOS) $(EXTRA_DIST)
+ABI_TWEAKS_SRCDIR = @ABI_TWEAKS_SRCDIR@
 ACLOCAL = @ACLOCAL@
 ALLOCATOR_H = @ALLOCATOR_H@
 ALLOCATOR_NAME = @ALLOCATOR_NAME@
@@ -549,7 +550,8 @@ host_headers = \
 	${host_srcdir}/ctype_inline.h \
 	${host_srcdir}/ctype_noninline.h \
 	${host_srcdir}/os_defines.h \
-	${glibcxx_srcdir}/$(ATOMIC_WORD_SRCDIR)/atomic_word.h 
+	${glibcxx_srcdir}/$(ATOMIC_WORD_SRCDIR)/atomic_word.h \
+	${glibcxx_srcdir}/$(ABI_TWEAKS_SRCDIR)/cxxabi_tweaks.h
 
 
 # Non-installed host_header files.

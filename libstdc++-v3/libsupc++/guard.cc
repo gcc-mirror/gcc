@@ -38,21 +38,13 @@ namespace __cxxabiv1
   extern "C"
   int __cxa_guard_acquire (__guard *g) 
   {
-#ifdef __ARM_EABI__
-    return !(*g & 1);
-#else
-    return !*(char *)(g);
-#endif
+    return _GLIBCXX_GUARD_ACQUIRE (g);
   }
 
   extern "C"
   void __cxa_guard_release (__guard *g)
   {
-#ifdef __ARM_EABI__
-    *g = 1;
-#else
-    *(char *)g = 1;
-#endif
+    _GLIBCXX_GUARD_RELEASE (g);
   }
 
   extern "C"
