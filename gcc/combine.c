@@ -12335,16 +12335,10 @@ distribute_notes (notes, from_insn, i3, i2, elim_i2, elim_i1)
 		 is still a REG_DEAD note, but we have hit the beginning
 		 of the block.  If the existing life info says the reg
 		 was dead, there's nothing left to do.  Otherwise, we'll
-		 need to do a global life update after combine.  
-	       
-		 Similary we need to update in case insn is an dead set
-		 we are about to remove soon.
-	       */
-	      if (REG_NOTE_KIND (note) == REG_DEAD
-		  && ((place && noop_move_p (place))
-		      || (place == 0
-			  && REGNO_REG_SET_P (bb->global_live_at_start,
-					       REGNO (XEXP (note, 0))))))
+		 need to do a global life update after combine.  */
+	      if (REG_NOTE_KIND (note) == REG_DEAD && place == 0
+		  && REGNO_REG_SET_P (bb->global_live_at_start,
+				      REGNO (XEXP (note, 0))))
 		{
 		  SET_BIT (refresh_blocks, this_basic_block);
 		  need_refresh = 1;
@@ -12360,6 +12354,15 @@ distribute_notes (notes, from_insn, i3, i2, elim_i2, elim_i1)
 	  if (place && REG_NOTE_KIND (note) == REG_DEAD)
 	    {
 	      unsigned int regno = REGNO (XEXP (note, 0));
+
+	      /* Similarly, if the instruction on which we want to place
+		 the note is a noop, we'll need do a global live update
+		 after we remove them in delete_noop_moves.  */
+	      if (noop_move_p (place))
+		{
+		  SET_BIT (refresh_blocks, this_basic_block);
+		  need_refresh = 1;
+		}
 
 	      if (dead_or_set_p (place, XEXP (note, 0))
 		  || reg_bitfield_target_p (XEXP (note, 0), PATTERN (place)))
