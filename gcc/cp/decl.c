@@ -208,10 +208,12 @@ tree error_mark_list;
 #if 0
 	tree __tp_desc_type_node;
 #endif
-	tree __access_mode_type_node;
-	tree __bltn_desc_type_node, __user_desc_type_node, __class_desc_type_node;
-	tree __ptr_desc_type_node, __attr_desc_type_node, __func_desc_type_node;
-	tree __ptmf_desc_type_node, __ptmd_desc_type_node;
+        tree ti_desc_type_node;
+	tree bltn_desc_type_node, ptr_desc_type_node, ref_desc_type_node;
+	tree ary_desc_type_node, func_desc_type_node, enum_desc_type_node;
+	tree class_desc_type_node, si_class_desc_type_node, vmi_class_desc_type_node;
+	tree ptmd_desc_type_node;
+	tree base_desc_type_node;
 #if 0
    Not needed yet?  May be needed one day?
 	tree __bltn_desc_array_type, __user_desc_array_type, __class_desc_array_type;
@@ -243,7 +245,8 @@ tree error_mark_list;
 	tree global_delete_fndecl;
 
    Used by RTTI
-	tree type_info_type_node, tinfo_fn_id, tinfo_fn_type;
+	tree type_info_type_node, tinfo_decl_id, tinfo_decl_type;
+	tree tinfo_var_id;
 
 */
 

@@ -167,7 +167,7 @@ public:
 
 // type_info for a general class.
 
-#ifdef __GXX_ABI_VERSION
+#if defined(__GXX_ABI_VERSION) && __GXX_ABI_VERSION >= 100
 typedef int USItype __attribute__ ((mode (SI)));
 #else
 typedef unsigned int USItype	__attribute__ ((mode (SI)));

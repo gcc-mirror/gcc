@@ -44,7 +44,7 @@ convert_to_base (void *addr, bool is_virtual, USItype offset)
   if (!is_virtual)
     return (char *) addr + offset;
 
-#ifdef __GXX_ABI_VERSION
+#if defined(__GXX_ABI_VERSION) && __GXX_ABI_VERSION >= 100
   // Under the new ABI, the offset gives us an index into the vtable,
   // which contains an offset to the virtual base.  The vptr is always
   // the first thing in the object.

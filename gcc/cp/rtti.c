@@ -40,6 +40,8 @@ static tree build_headof_sub PROTO((tree));
 static tree build_headof PROTO((tree));
 static tree get_tinfo_var PROTO((tree));
 static tree ifnonnull PROTO((tree, tree));
+static tree tinfo_name PROTO((tree));
+static tree get_base_offset PROTO((tree, tree));
 static tree build_dynamic_cast_1 PROTO((tree, tree));
 static void expand_si_desc PROTO((tree, tree));
 static void expand_class_desc PROTO((tree, tree));
@@ -60,11 +62,14 @@ init_rtti_processing ()
     (class_type_node, get_identifier ("type_info"), 1);
   if (flag_honor_std)
     pop_namespace ();
-  tinfo_fn_id = get_identifier ("__tf");
-  tinfo_fn_type = build_function_type
-    (build_reference_type (build_qualified_type (type_info_type_node, 
-						 TYPE_QUAL_CONST)),
-     void_list_node);
+
+  tinfo_decl_id = get_identifier ("__tf");
+  tinfo_decl_type = build_function_type
+        (build_reference_type
+          (build_qualified_type
+            (type_info_type_node, TYPE_QUAL_CONST)),
+         void_list_node);
+  tinfo_var_id = get_identifier ("__ti");
 }
 
 /* Given a pointer to an object with at least one virtual table
@@ -224,7 +229,7 @@ get_tinfo_decl_dynamic (exp)
 	t = build_vfn_ref ((tree *) 0, exp, integer_one_node);
       else
 	t = build_vfn_ref ((tree *) 0, exp, integer_zero_node);
-      TREE_TYPE (t) = build_pointer_type (tinfo_fn_type);
+      TREE_TYPE (t) = build_pointer_type (tinfo_decl_type);
       return t;
     }
 
@@ -238,7 +243,6 @@ build_typeid (exp)
      tree exp;
 {
   tree cond = NULL_TREE;
-  tree type;
   int nonnull = 0;
 
   if (! flag_rtti)
@@ -287,7 +291,7 @@ static tree
 get_tinfo_var (type)
      tree type;
 {
-  tree tname = build_overload_with_type (get_identifier ("__ti"), type);
+  tree tname = build_overload_with_type (tinfo_var_id, type);
   tree arrtype;
   int size;
 
@@ -325,11 +329,21 @@ get_tinfo_var (type)
   return declare_global_var (tname, arrtype);
 }
 
+/* Generate the NTBS name of a type.  */
+static tree
+tinfo_name (type)
+     tree type;
+{
+  const char *name = build_overload_name (type, 1, 1);
+  tree name_string = combine_strings (build_string (strlen (name) + 1, name));
+  return name_string;
+}
+
 /* Returns a decl for a function or variable which can be used to obtain a
    type_info object for TYPE.  The old-abi uses functions, the new-abi will
    use the type_info object directly.  You can take the address of the
-   returned decl, to save the decl.  To use the generator call
-   tinfo_from_generator.  You must arrange that the decl is mark_used, if
+   returned decl, to save the decl.  To use the decl call
+   tinfo_from_decl.  You must arrange that the decl is mark_used, if
    actually use it --- decls in vtables are only used if the vtable is
    output.  */
 
@@ -346,12 +360,12 @@ get_tinfo_decl (type)
     type = build_function_type (TREE_TYPE (type),
 				TREE_CHAIN (TYPE_ARG_TYPES (type)));
 
-  name = build_overload_with_type (tinfo_fn_id, type);
+  name = build_overload_with_type (tinfo_decl_id, type);
 
   if (IDENTIFIER_GLOBAL_VALUE (name))
     return IDENTIFIER_GLOBAL_VALUE (name);
 
-  d = build_lang_decl (FUNCTION_DECL, name, tinfo_fn_type);
+  d = build_lang_decl (FUNCTION_DECL, name, tinfo_decl_type);
   DECL_EXTERNAL (d) = 1;
   TREE_PUBLIC (d) = 1;
   DECL_ARTIFICIAL (d) = 1;
@@ -373,7 +387,7 @@ static tree
 tinfo_from_decl (expr)
      tree expr;
 {
-  tree t = build_call (expr, TREE_TYPE (tinfo_fn_type), NULL_TREE);
+  tree t = build_call (expr, TREE_TYPE (tinfo_decl_type), NULL_TREE);
   
   return t;
 }
@@ -437,6 +451,42 @@ ifnonnull (test, result)
 		build (EQ_EXPR, boolean_type_node, test, integer_zero_node),
 		cp_convert (TREE_TYPE (result), integer_zero_node),
 		result);
+}
+
+/* Generate the constant expression describing where direct base BINFO
+   appears within the PARENT. How to interpret this expression depends on
+   details of the ABI, which the runtime must be aware of.  */
+
+static tree
+get_base_offset (binfo, parent)
+     tree binfo;
+     tree parent;
+{
+  tree offset;
+  
+  if (!TREE_VIA_VIRTUAL (binfo))
+    offset = BINFO_OFFSET (binfo);
+  else if (!vbase_offsets_in_vtable_p ())
+    {
+      tree t = BINFO_TYPE (binfo);
+      const char *name;
+      tree field;
+    
+      FORMAT_VBASE_NAME (name, t);
+      field = lookup_field (parent, get_identifier (name), 0, 0);
+      offset = size_binop (FLOOR_DIV_EXPR, 
+    		           DECL_FIELD_BITPOS (field), 
+    		           size_int (BITS_PER_UNIT));
+      offset = convert (sizetype, offset);
+    }
+  else
+    {
+      /* Under the new ABI, we store the vtable offset at which
+         the virtual base offset can be found.  */
+      tree vbase = BINFO_FOR_VBASE (BINFO_TYPE (binfo), parent);
+      offset = convert (sizetype, BINFO_VPTR_FIELD (vbase));
+    }
+  return offset;
 }
 
 /* Execute a dynamic cast, as described in section 5.2.6 of the 9/93 working
@@ -710,8 +760,7 @@ expand_si_desc (tdecl, type)
      tree type;
 {
   tree t, elems, fn;
-  const char *name = build_overload_name (type, 1, 1);
-  tree name_string = combine_strings (build_string (strlen (name)+1, name));
+  tree name_string = tinfo_name (type);
 
   type = BINFO_TYPE (TREE_VEC_ELT (TYPE_BINFO_BASETYPES (type), 0));
   finish_expr_stmt (get_typeid_1 (type));
@@ -756,7 +805,6 @@ expand_class_desc (tdecl, type)
 {
   tree name_string;
   tree fn, tmp;
-  const char *name;
 
   int i = CLASSTYPE_N_BASECLASSES (type);
   int base_cnt = 0;
@@ -768,15 +816,14 @@ expand_class_desc (tdecl, type)
 #endif
   tree base, elems, access, offset, isvir;
   tree elt, elts = NULL_TREE;
-  static tree base_info_type_node;
 
-  if (base_info_type_node == NULL_TREE)
+  if (base_desc_type_node == NULL_TREE)
     {
       tree fields [4];
 
       /* A reasonably close approximation of __class_type_info::base_info */
 
-      base_info_type_node = make_aggr_type (RECORD_TYPE);
+      base_desc_type_node = make_aggr_type (RECORD_TYPE);
 
       /* Actually const __user_type_info * */
       fields [0] = build_lang_decl
@@ -801,7 +848,7 @@ expand_class_desc (tdecl, type)
       DECL_BIT_FIELD (fields[3]) = 1;
       DECL_FIELD_SIZE (fields[3]) = 2;
 
-      finish_builtin_type (base_info_type_node, "__base_info", fields,
+      finish_builtin_type (base_desc_type_node, "__base_info", fields,
 			   3, ptr_type_node);
     }
 
@@ -811,33 +858,8 @@ expand_class_desc (tdecl, type)
 
       finish_expr_stmt (get_typeid_1 (BINFO_TYPE (binfo)));
       base = decay_conversion (get_tinfo_var (BINFO_TYPE (binfo)));
-
-      if (TREE_VIA_VIRTUAL (binfo))
-	{
-	  if (!vbase_offsets_in_vtable_p ())
-	    {
-	      tree t = BINFO_TYPE (binfo);
-	      const char *name;
-	      tree field;
-
-	      FORMAT_VBASE_NAME (name, t);
-	      field = lookup_field (type, get_identifier (name), 0, 0);
-	      offset = size_binop (FLOOR_DIV_EXPR, 
-				   DECL_FIELD_BITPOS (field), 
-				   size_int (BITS_PER_UNIT));
-	      offset = convert (sizetype, offset);
-	    }
-	  else
-	    {
-	      /* Under the new ABI, we store the vtable offset at which
-		 the virtual base offset can be found.  */
-	      tree vbase = BINFO_FOR_VBASE (BINFO_TYPE (binfo), type);
-	      offset = convert (sizetype, BINFO_VPTR_FIELD (vbase));
-	    }
-	}
-      else
-	offset = BINFO_OFFSET (binfo);
-
+      offset = get_base_offset (binfo, type);
+      
       if (TREE_VIA_PUBLIC (binfo))
         access = access_public_node;
       else if (TREE_VIA_PROTECTED (binfo))
@@ -850,7 +872,7 @@ expand_class_desc (tdecl, type)
 	isvir = boolean_false_node;
 
       elt = build
-	(CONSTRUCTOR, base_info_type_node, NULL_TREE, tree_cons
+	(CONSTRUCTOR, base_desc_type_node, NULL_TREE, tree_cons
 	 (NULL_TREE, base, tree_cons
 	  (NULL_TREE, offset, tree_cons
 	   (NULL_TREE, isvir, tree_cons
@@ -893,11 +915,10 @@ expand_class_desc (tdecl, type)
     }
 #endif
 
-  name = build_overload_name (type, 1, 1);
-  name_string = combine_strings (build_string (strlen (name)+1, name));
+  name_string = tinfo_name (type);
 
   {
-    tree arrtype = build_array_type (base_info_type_node, NULL_TREE);
+    tree arrtype = build_array_type (base_desc_type_node, NULL_TREE);
     elts = build (CONSTRUCTOR, arrtype, NULL_TREE, elts);
     TREE_HAS_CONSTRUCTOR (elts) = TREE_CONSTANT (elts)
       = TREE_STATIC (elts) = 1;
@@ -919,7 +940,7 @@ expand_class_desc (tdecl, type)
       tmp = tree_cons
 	(NULL_TREE, ptr_type_node, tree_cons
 	 (NULL_TREE, const_string_type_node, tree_cons
-	  (NULL_TREE, build_pointer_type (base_info_type_node), tree_cons
+	  (NULL_TREE, build_pointer_type (base_desc_type_node), tree_cons
 	   (NULL_TREE, sizetype, void_list_node))));
       tmp = build_function_type	(void_type_node, tmp);
   
@@ -944,8 +965,7 @@ expand_ptr_desc (tdecl, type)
      tree type;
 {
   tree t, elems, fn;
-  const char *name = build_overload_name (type, 1, 1);
-  tree name_string = combine_strings (build_string (strlen (name)+1, name));
+  tree name_string = tinfo_name (type);
 
   type = TREE_TYPE (type);
   finish_expr_stmt (get_typeid_1 (type));
@@ -989,8 +1009,7 @@ expand_attr_desc (tdecl, type)
      tree type;
 {
   tree elems, t, fn;
-  const char *name = build_overload_name (type, 1, 1);
-  tree name_string = combine_strings (build_string (strlen (name)+1, name));
+  tree name_string = tinfo_name (type);
   tree attrval = build_int_2 (TYPE_QUALS (type), 0);
 
   finish_expr_stmt (get_typeid_1 (TYPE_MAIN_VARIANT (type)));
@@ -1035,8 +1054,7 @@ expand_generic_desc (tdecl, type, fnname)
      tree type;
      const char *fnname;
 {
-  const char *name = build_overload_name (type, 1, 1);
-  tree name_string = combine_strings (build_string (strlen (name)+1, name));
+  tree name_string = tinfo_name (type);
   tree elems = tree_cons
     (NULL_TREE, decay_conversion (tdecl), tree_cons
      (NULL_TREE, decay_conversion (name_string), NULL_TREE));
