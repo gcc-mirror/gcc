@@ -1,3 +1,10 @@
+2000-04-24  Nick Clifton  <nickc@cygnus.com>
+
+	* config/fr30/fr30.md (addsi3): Do not use small add instruction if
+	the source register is the frame pointer or arg pointer.
+	(addsi3_small_int): Disallow if source register is the frame
+	pointer or arg pointer.
+
 2000-04-24  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* configure.in (ENUM_BITFIELDS_ARE_UNSIGNED): Delete redundant
