@@ -157,6 +157,7 @@ static tree tsubst_call_declarator_parms PARAMS ((tree, tree, int, tree));
 static tree get_template_base_recursive PARAMS ((tree, tree,
 					       tree, tree, tree, int)); 
 static tree get_template_base PARAMS ((tree, tree, tree, tree));
+static int verify_class_unification PARAMS ((tree, tree, tree));
 static tree try_class_unification PARAMS ((tree, tree, tree, tree));
 static int coerce_template_template_parms PARAMS ((tree, tree, int,
 						 tree, tree));
@@ -3464,13 +3465,14 @@ template_args_equal (ot, nt)
 {
   if (nt == ot)
     return 1;
-  if (TREE_CODE (nt) != TREE_CODE (ot))
-    return 0;
+
   if (TREE_CODE (nt) == TREE_VEC)
     /* For member templates */
-    return comp_template_args (ot, nt);
-  else if (TYPE_P (ot))
-    return same_type_p (ot, nt);
+    return TREE_CODE (ot) == TREE_VEC && comp_template_args (ot, nt);
+  else if (TYPE_P (nt))
+    return TYPE_P (ot) && same_type_p (ot, nt);
+  else if (TREE_CODE (ot) == TREE_VEC || TYPE_P (ot))
+    return 0;
   else
     return (cp_tree_equal (ot, nt) > 0);
 }
@@ -8039,6 +8041,52 @@ try_one_overload (tparms, orig_targs, targs, parm, arg, strict,
   return 1;
 }
 
+/* Verify that nondeduce template argument agrees with the type
+   obtained from argument deduction.  Return nonzero if the
+   verification fails.
+
+   For example:
+
+     struct A { typedef int X; };
+     template <class T, class U> struct C {};
+     template <class T> struct C<T, typename T::X> {};
+
+   Then with the instantiation `C<A, int>', we can deduce that
+   `T' is `A' but unify () does not check whether `typename T::X'
+   is `int'.  This function ensure that they agree.
+
+   TARGS, PARMS are the same as the arguments of unify.
+   ARGS contains template arguments from all levels.  */
+
+static int
+verify_class_unification (targs, parms, args)
+     tree targs, parms, args;
+{
+  int i;
+  int nparms = TREE_VEC_LENGTH (parms);
+  tree new_parms = tsubst (parms, add_outermost_template_args (args, targs),
+  			   /*complain=*/0, NULL_TREE);
+  if (new_parms == error_mark_node)
+    return 1;
+
+  args = INNERMOST_TEMPLATE_ARGS (args);
+
+  for (i = 0; i < nparms; i++)
+    {
+      tree parm = TREE_VEC_ELT (new_parms, i);
+      tree arg = TREE_VEC_ELT (args, i);
+
+      /* In case we are deducing from a function argument of a function
+	 templates, some parameters may not be deduced yet.  So we
+	 make sure that only fully substituted elements of PARM are
+	 compared below.  */
+
+      if (!uses_template_parms (parm) && !template_args_equal (parm, arg))
+	return 1;
+    }
+  return 0;
+}
+
 /* PARM is a template class (perhaps with unbound template
    parameters).  ARG is a fully instantiated type.  If ARG can be
    bound to PARM, return ARG, otherwise return NULL_TREE.  TPARMS and
@@ -8051,7 +8099,6 @@ try_class_unification (tparms, targs, parm, arg)
      tree parm;
      tree arg;
 {
-  int i;
   tree copy_of_targs;
 
   if (!CLASSTYPE_TEMPLATE_INFO (arg)
@@ -8089,14 +8136,13 @@ try_class_unification (tparms, targs, parm, arg)
      with S<I, I, I>.  If we kept the already deduced knowledge, we
      would reject the possibility I=1.  */
   copy_of_targs = make_tree_vec (TREE_VEC_LENGTH (targs));
-  i = unify (tparms, copy_of_targs, CLASSTYPE_TI_ARGS (parm),
-	     CLASSTYPE_TI_ARGS (arg), UNIFY_ALLOW_NONE);
   
   /* If unification failed, we're done.  */
-  if (i != 0)
+  if (unify (tparms, copy_of_targs, CLASSTYPE_TI_ARGS (parm),
+	     CLASSTYPE_TI_ARGS (arg), UNIFY_ALLOW_NONE))
     return NULL_TREE;
-  else
-    return arg;
+
+  return arg;
 }
 
 /* Subroutine of get_template_base.  RVAL, if non-NULL, is a base we
@@ -8699,25 +8745,33 @@ unify (tparms, targs, parm, arg, strict)
 
     default:
       if (IS_EXPR_CODE_CLASS (TREE_CODE_CLASS (TREE_CODE (parm))))
-	/* We're looking at an expression.  This can happen with
-	   something like: 
+	{
+
+	  /* We're looking at an expression.  This can happen with
+	     something like: 
 	   
-	     template <int I>
-	     void foo(S<I>, S<I + 2>);
+	       template <int I>
+	       void foo(S<I>, S<I + 2>);
 
-	   This is a "nondeduced context":
+	     This is a "nondeduced context":
 
-	     [deduct.type]
+	       [deduct.type]
 	   
-	     The nondeduced contexts are:
+	       The nondeduced contexts are:
 
-	     --A type that is a template-id in which one or more of
-	       the template-arguments is an expression that references
-	       a template-parameter.  
+	       --A type that is a template-id in which one or more of
+	         the template-arguments is an expression that references
+	         a template-parameter.  
 
-	   In these cases, we assume deduction succeeded, but don't
-	   actually infer any unifications.  */
-	return 0;
+	     In these cases, we assume deduction succeeded, but don't
+	     actually infer any unifications.  */
+
+	  if (!uses_template_parms (parm)
+	      && !template_args_equal (parm, arg))
+	    return 1;
+	  else
+	    return 0;
+	}
       else
 	sorry ("use of `%s' in template type unification",
 	       tree_code_name [(int) TREE_CODE (parm)]);
@@ -8923,14 +8977,16 @@ get_class_bindings (tparms, parms, args)
   int i, ntparms = TREE_VEC_LENGTH (tparms);
   tree vec = make_tree_vec (ntparms);
 
-  args = INNERMOST_TEMPLATE_ARGS (args);
-
-  if (unify (tparms, vec, parms, args, UNIFY_ALLOW_NONE))
+  if (unify (tparms, vec, parms, INNERMOST_TEMPLATE_ARGS (args),
+  	     UNIFY_ALLOW_NONE))
     return NULL_TREE;
 
   for (i =  0; i < ntparms; ++i)
     if (! TREE_VEC_ELT (vec, i))
       return NULL_TREE;
+
+  if (verify_class_unification (vec, parms, args))
+    return NULL_TREE;
 
   return vec;
 }

@@ -1,3 +1,12 @@
+2000-12-06  Kriang Lerdsuwanakij  <lerdsuwa@users.sourceforge.net>
+
+	* pt.c (verify_class_unification): New function.
+	(get_class_bindings): Use it.
+	(try_class_unification): Tidy.
+	(unify): Handle when argument of a template-id is not
+	template parameter dependent.
+	(template_args_equal): Handle when TREE_CODE's do not match.
+
 2000-12-06  Alexandre Oliva  <aoliva@redhat.com>
 
 	* lang-specs.h (c++): When invoking the stand-alone preprocessor
