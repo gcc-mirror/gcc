@@ -3,7 +3,7 @@
 // { dg-do compile }
 // { dg-options "-fvolatile" }
 
-typedef unsigned int size_t;
+typedef __SIZE_TYPE__ size_t;
 
 class bar {
     int i;
