@@ -1,5 +1,9 @@
 Sat Jan 23 01:37:36 1999  Jeffrey A Law  (law@cygnus.com)
 
+	* configure.in (gcc_tooldir): Handle case where exec_prefix has
+	not been explicitly set.
+	* configure: Rebuilt.
+
 	* fold-const.c (lshift_double): Mark 'prec' arguments as possibly
 	unused.
 
@@ -7,6 +11,7 @@ Sat Jan 23 01:37:36 1999  Jeffrey A Law  (law@cygnus.com)
 
 	* configure.in (gcc_tooldir): When not making a relative gcc_tooldir,
 	use $exec_prefix/$target_alias for gcc_tooldir.
+	* configure: Rebuilt.
 
 Fri Jan 22 11:48:56 1999  Richard Henderson  <rth@cygnus.com>
 
