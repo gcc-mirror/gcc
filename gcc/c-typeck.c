@@ -3584,9 +3584,6 @@ build_conditional_expr (ifexp, op1, op2)
     = build_type_variant (result_type,
 			  TREE_READONLY (op1) || TREE_READONLY (op2),
 			  TREE_THIS_VOLATILE (op1) || TREE_THIS_VOLATILE (op2));
-    
-  if (TREE_CODE (ifexp) == INTEGER_CST)
-    return convert_and_check (result_type, integer_zerop (ifexp) ? op2 : op1);
 
   if (result_type != TREE_TYPE (op1))
     op1 = convert_and_check (result_type, op1);
@@ -3629,6 +3626,9 @@ build_conditional_expr (ifexp, op1, op2)
 	}
     }
 #endif /* 0 */
+    
+  if (TREE_CODE (ifexp) == INTEGER_CST)
+    return integer_zerop (ifexp) ? op2 : op1;
 
   return fold (build (COND_EXPR, result_type, ifexp, op1, op2));
 }
