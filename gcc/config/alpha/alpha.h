@@ -879,7 +879,8 @@ enum reg_class {
    location unless the FIX extension is available.  */
 
 #define SECONDARY_MEMORY_NEEDED(CLASS1,CLASS2,MODE) \
- (! TARGET_FIX && (CLASS1) != (CLASS2))
+ (! TARGET_FIX && (((CLASS1) == FLOAT_REGS && (CLASS2) != FLOAT_REGS) \
+                   || ((CLASS2) == FLOAT_REGS && (CLASS1) != FLOAT_REGS)))
 
 /* Specify the mode to be used for memory when a secondary memory
    location is needed.  If MODE is floating-point, use it.  Otherwise,
