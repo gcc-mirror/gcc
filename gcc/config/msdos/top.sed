@@ -26,6 +26,7 @@ s/CC = cc/CC = gcc/
 s/:\$/: \$/g
 s/^	\ *\.\//	/
 s/<\ *\$(srcdir)\//< $(srcdir)\\/g
+s/^	\$(SHELL) \$(srcdir)\/move-if-change/	update/
 s/^	\$(srcdir)\/move-if-change/	update/
 s/^USE_/# USE_/
 s/`echo \$(srcdir)\///g

@@ -19,6 +19,7 @@ s/^SHELL =.*/SHELL =/
 s/CFLAGS = -g/CFLAGS =/
 s/:\$/: \$/g
 s/<\ *\$(srcdir)\//< $(srcdir)\\/g
+s/^	\$(SHELL) \$(srcdir)\/move-if-change/	copy/
 s/^	\$(srcdir)\/move-if-change/	copy/
 s/^USE_/# USE_/
 s/`echo \$(srcdir)\///g
@@ -79,8 +80,8 @@ s/\${SYSTEM_HEADER_DIR}/\$(SYSTEM_HEADER_DIR)/g
 s/\${HOST_CC}/\$(HOST_CC)/g
 s/ \${srcdir}\// /g
 s/\${mainversion}/\$(mainversion)/g
-s/\ $(srcdir)\/move-if-change$//
 s/\$(srcdir)\/move-if-change/copy/g
+s/\$(SHELL) \$(srcdir)\/move-if-change/copy/g
 /^# USE_HOST_OBSTACK/ i\
 USE_HOST_OBSTACK=obstack.obj
 /^# USE_ALLOCA/ i\
