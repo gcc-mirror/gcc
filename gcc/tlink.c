@@ -638,6 +638,11 @@ scan_linker_output (fname)
 	  else if (p = index (oldq, '"'), p)
 	    p++, q = index (p, '"');
 
+	  /* Don't let the strstr's below see the demangled name; we
+	     might get spurious matches.  */
+	  if (p)
+	    p[-1] = '\0';
+
 	  /* We need to check for certain error keywords here, or we would
 	     mistakenly use GNU ld's "In function `foo':" message.  */
 	  if (q && (strstr (oldq, "ndefined")

@@ -4448,9 +4448,8 @@ output_type (type, containing_scope)
 
 	if (TYPE_SIZE (type) == 0
 	    && (TYPE_CONTEXT (type) == NULL
-		|| (TREE_CODE_CLASS (TREE_CODE (TYPE_CONTEXT (type))) == 't'
-		    && TREE_CODE (TYPE_CONTEXT (type)) != FUNCTION_TYPE
-		    && TREE_CODE (TYPE_CONTEXT (type)) != METHOD_TYPE))
+		|| AGGREGATE_TYPE_P (TYPE_CONTEXT (type))
+		|| TREE_CODE (TYPE_CONTEXT (type)) == NAMESPACE_DECL)
 	    && !finalizing)
 	  {
 	    /* We can't do this for function-local types, and we don't need
