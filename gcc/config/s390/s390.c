@@ -204,6 +204,7 @@ static int s390_branch_condition_mask PARAMS ((rtx));
 static const char *s390_branch_condition_mnemonic PARAMS ((rtx, int));
 static int check_mode PARAMS ((rtx, enum machine_mode *));
 static int general_s_operand PARAMS ((rtx, enum machine_mode, int));
+static int s390_short_displacement PARAMS ((rtx));
 static int s390_decompose_address PARAMS ((rtx, struct s390_address *));
 static rtx get_thread_pointer PARAMS ((void));
 static rtx legitimize_tls_address PARAMS ((rtx, rtx));
@@ -228,6 +229,11 @@ static rtx restore_gprs PARAMS ((rtx, int, int, int));
 static int s390_function_arg_size PARAMS ((enum machine_mode, tree));
 static bool s390_function_arg_float PARAMS ((enum machine_mode, tree));
 static struct machine_function * s390_init_machine_status PARAMS ((void));
+
+/* Check whether integer displacement is in range.  */
+#define DISP_IN_RANGE(d) \
+  (TARGET_LONG_DISPLACEMENT? ((d) >= -524288 && (d) <= 524287) \
+                           : ((d) >= 0 && (d) <= 4095))
  
 /* Return true if SET either doesn't set the CC register, or else
    the source and destination have matching CC modes and that 
@@ -1103,12 +1109,17 @@ larl_operand (op, mode)
     return 0;
   op = XEXP (op, 0);
 
-  /* Allow adding *even* constants.  */
+  /* Allow adding *even* in-range constants.  */
   if (GET_CODE (op) == PLUS)
     {
       if (GET_CODE (XEXP (op, 1)) != CONST_INT
           || (INTVAL (XEXP (op, 1)) & 1) != 0)
         return 0;
+#if HOST_BITS_PER_WIDE_INT > 32
+      if (INTVAL (XEXP (op, 1)) >= (HOST_WIDE_INT)1 << 32
+	  || INTVAL (XEXP (op, 1)) < -((HOST_WIDE_INT)1 << 32))
+        return 0;
+#endif	
       op = XEXP (op, 0);
     }
 
@@ -1221,24 +1232,121 @@ s_imm_operand (op, mode)
   return general_s_operand (op, mode, 1);
 }
 
-/* Return true if OP is a valid operand for a 'Q' constraint.
-   This differs from s_operand in that only memory operands
-   without index register are accepted, nothing else.  */
+/* Return true if DISP is a valid short displacement.  */
+
+static int
+s390_short_displacement (disp)
+     rtx disp;
+{
+  /* No displacement is OK.  */
+  if (!disp)
+    return 1;
+
+  /* Integer displacement in range.  */
+  if (GET_CODE (disp) == CONST_INT)
+    return INTVAL (disp) >= 0 && INTVAL (disp) < 4096;
+
+  /* GOT offset is not OK, the GOT can be large.  */
+  if (GET_CODE (disp) == CONST
+      && GET_CODE (XEXP (disp, 0)) == UNSPEC
+      && XINT (XEXP (disp, 0), 1) == 110)
+    return 0;
+
+  /* All other symbolic constants are literal pool references,
+     which are OK as the literal pool must be small.  */
+  if (GET_CODE (disp) == CONST)
+    return 1;
+
+  return 0;
+}
+
+/* Return true if OP is a valid operand for a C constraint.  */
 
 int
-q_constraint (op)
-     register rtx op;
+s390_extra_constraint (op, c)
+     rtx op;
+     int c;
 {
   struct s390_address addr;
 
-  if (GET_CODE (op) != MEM)
-    return 0;
+  switch (c)
+    {
+    case 'Q':
+      if (GET_CODE (op) != MEM)
+	return 0;
+      if (!s390_decompose_address (XEXP (op, 0), &addr))
+	return 0;
+      if (addr.indx)
+	return 0;
 
-  if (!s390_decompose_address (XEXP (op, 0), &addr))
-    return 0;
+      if (TARGET_LONG_DISPLACEMENT)
+	{
+	  if (!s390_short_displacement (addr.disp))
+	    return 0;
+	}
+      break;
 
-  if (addr.indx)
-    return 0;
+    case 'R':
+      if (GET_CODE (op) != MEM)
+	return 0;
+
+      if (TARGET_LONG_DISPLACEMENT)
+	{
+	  if (!s390_decompose_address (XEXP (op, 0), &addr))
+	    return 0;
+	  if (!s390_short_displacement (addr.disp))
+	    return 0;
+	}
+      break;
+
+    case 'S':
+      if (!TARGET_LONG_DISPLACEMENT)
+	return 0;
+      if (GET_CODE (op) != MEM)
+	return 0;
+      if (!s390_decompose_address (XEXP (op, 0), &addr))
+	return 0;
+      if (addr.indx)
+	return 0;
+      if (s390_short_displacement (addr.disp))
+	return 0;
+      break;
+
+    case 'T':
+      if (!TARGET_LONG_DISPLACEMENT)
+	return 0;
+      if (GET_CODE (op) != MEM)
+	return 0;
+      /* Any invalid address here will be fixed up by reload,
+	 so accept it for the most generic constraint.  */
+      if (s390_decompose_address (XEXP (op, 0), &addr)
+	  && s390_short_displacement (addr.disp))
+	return 0;
+      break;
+
+    case 'U':
+      if (TARGET_LONG_DISPLACEMENT)
+	{
+	  if (!s390_decompose_address (op, &addr))
+	    return 0;
+	  if (!s390_short_displacement (addr.disp))
+	    return 0;
+	}
+      break;
+
+    case 'W':
+      if (!TARGET_LONG_DISPLACEMENT)
+	return 0;
+      /* Any invalid address here will be fixed up by reload,
+	 so accept it for the most generic constraint.  */
+      if (s390_decompose_address (op, &addr)
+	  && s390_short_displacement (addr.disp))
+	return 0;
+      break;
+
+    default:
+      return 0;
+    }
 
   return 1;
 }
@@ -1673,6 +1781,11 @@ int
 legitimate_reload_constant_p (op)
      register rtx op;
 {
+  /* Accept la(y) operands.  */
+  if (GET_CODE (op) == CONST_INT 
+      && DISP_IN_RANGE (INTVAL (op)))
+    return 1;
+
   /* Accept l(g)hi operands.  */
   if (GET_CODE (op) == CONST_INT
       && CONST_OK_FOR_LETTER_P (INTVAL (op), 'K'))
@@ -2016,7 +2129,7 @@ s390_decompose_address (addr, out)
 	     this is fixed up by reload in any case.  */
 	  if (base != arg_pointer_rtx && indx != arg_pointer_rtx)
 	    {
-	      if (INTVAL (disp) < 0 || INTVAL (disp) >= 4096)
+	      if (!DISP_IN_RANGE (INTVAL (disp)))
 	        return FALSE;
 	    }
         }
@@ -2395,7 +2508,7 @@ legitimize_pic_address (orig, reg)
                          pair of LARL and LA.  */
                       rtx temp = reg? reg : gen_reg_rtx (Pmode);
 
-                      if (INTVAL (op1) < 0 || INTVAL (op1) >= 4096)
+                      if (!DISP_IN_RANGE (INTVAL (op1)))
                         {
                           int even = INTVAL (op1) - 1;
                           op0 = gen_rtx_PLUS (Pmode, op0, GEN_INT (even));
@@ -2766,8 +2879,8 @@ legitimize_address (x, oldx, mode)
      change later anyway.  */
 
   if (GET_CODE (constant_term) == CONST_INT
-      && (INTVAL (constant_term) < 0
-          || INTVAL (constant_term) >= 4096)
+      && !TARGET_LONG_DISPLACEMENT
+      && !DISP_IN_RANGE (INTVAL (constant_term))
       && !(REG_P (x) && REGNO_PTR_FRAME_P (REGNO (x))))
     {
       HOST_WIDE_INT lower = INTVAL (constant_term) & 0xfff;
@@ -5050,7 +5163,7 @@ s390_fixup_clobbered_return_reg (return_reg)
 	reg = stack_pointer_rtx;
 
       off = GEN_INT (cfun->machine->frame_size + REGNO (return_reg) * UNITS_PER_WORD);
-      if (INTVAL (off) >= 4096)
+      if (!DISP_IN_RANGE (INTVAL (off)))
 	{
 	  off = force_const_mem (Pmode, off);
 	  new_insn = gen_rtx_SET (Pmode, return_reg, off);
@@ -5534,11 +5647,21 @@ s390_emit_prologue ()
       
       /* Substract frame size from stack pointer.  */
 
-      frame_off = GEN_INT (-cfun->machine->frame_size);
-      if (!CONST_OK_FOR_LETTER_P (-cfun->machine->frame_size, 'K'))
-	frame_off = force_const_mem (Pmode, frame_off);
+      if (DISP_IN_RANGE (INTVAL (frame_off)))
+	{
+	  insn = gen_rtx_SET (VOIDmode, stack_pointer_rtx, 
+			      gen_rtx_PLUS (Pmode, stack_pointer_rtx, 
+				      	    frame_off));
+	  insn = emit_insn (insn);
+	}
+      else
+	{
+	  if (!CONST_OK_FOR_LETTER_P (INTVAL (frame_off), 'K'))
+	    frame_off = force_const_mem (Pmode, frame_off);
 
-      insn = emit_insn (gen_add2_insn (stack_pointer_rtx, frame_off));
+          insn = emit_insn (gen_add2_insn (stack_pointer_rtx, frame_off));
+	}
+
       RTX_FRAME_RELATED_P (insn) = 1;
       REG_NOTES (insn) = 
 	gen_rtx_EXPR_LIST (REG_FRAME_RELATED_EXPR,
@@ -5697,8 +5820,8 @@ s390_emit_epilogue ()
     {
       /* Nothing to restore.  */
     }
-  else if (cfun->machine->frame_size + area_bottom >= 0
-           && cfun->machine->frame_size + area_top <= 4096)
+  else if (DISP_IN_RANGE (cfun->machine->frame_size + area_bottom)
+           && DISP_IN_RANGE (cfun->machine->frame_size + area_top-1))
     {
       /* Area is in range.  */
       offset = cfun->machine->frame_size;
@@ -5710,10 +5833,19 @@ s390_emit_epilogue ()
       offset = area_bottom < 0 ? -area_bottom : 0; 
       frame_off = GEN_INT (cfun->machine->frame_size - offset);
 
-      if (!CONST_OK_FOR_LETTER_P (INTVAL (frame_off), 'K'))
-	frame_off = force_const_mem (Pmode, frame_off);
+      if (DISP_IN_RANGE (INTVAL (frame_off)))
+	{
+	  insn = gen_rtx_SET (VOIDmode, frame_pointer, 
+			      gen_rtx_PLUS (Pmode, frame_pointer, frame_off));
+	  insn = emit_insn (insn);
+	}
+      else
+	{
+	  if (!CONST_OK_FOR_LETTER_P (INTVAL (frame_off), 'K'))
+	    frame_off = force_const_mem (Pmode, frame_off);
 
-      insn = emit_insn (gen_add2_insn (frame_pointer, frame_off));
+	  insn = emit_insn (gen_add2_insn (frame_pointer, frame_off));
+	}
     }
 
   /* Restore call saved fprs.  */
@@ -6649,8 +6781,10 @@ s390_output_mi_thunk (file, thunk, delta, vcall_offset, function)
   if (TARGET_64BIT)
     {
       /* Setup literal pool pointer if required.  */
-      if (!CONST_OK_FOR_LETTER_P (delta, 'K')
-	  || !CONST_OK_FOR_LETTER_P (vcall_offset, 'K'))
+      if ((!DISP_IN_RANGE (delta) 
+	   && !CONST_OK_FOR_LETTER_P (delta, 'K'))
+	  || (!DISP_IN_RANGE (vcall_offset) 
+	      && !CONST_OK_FOR_LETTER_P (vcall_offset, 'K')))
 	{
 	  op[5] = gen_label_rtx ();
 	  output_asm_insn ("larl\t%4,%5", op);
@@ -6661,6 +6795,8 @@ s390_output_mi_thunk (file, thunk, delta, vcall_offset, function)
 	{
 	  if (CONST_OK_FOR_LETTER_P (delta, 'J'))
 	    output_asm_insn ("la\t%1,%2(%1)", op);
+	  else if (DISP_IN_RANGE (delta))
+	    output_asm_insn ("lay\t%1,%2(%1)", op);
 	  else if (CONST_OK_FOR_LETTER_P (delta, 'K'))
 	    output_asm_insn ("aghi\t%1,%2", op);
 	  else
@@ -6673,7 +6809,7 @@ s390_output_mi_thunk (file, thunk, delta, vcall_offset, function)
       /* Perform vcall adjustment.  */
       if (vcall_offset)
 	{
-	  if (CONST_OK_FOR_LETTER_P (vcall_offset, 'J'))
+	  if (DISP_IN_RANGE (vcall_offset))
 	    {
 	      output_asm_insn ("lg\t%4,0(%1)", op);
 	      output_asm_insn ("ag\t%1,%3(%4)", op);
@@ -6720,8 +6856,10 @@ s390_output_mi_thunk (file, thunk, delta, vcall_offset, function)
     {
       /* Setup base pointer if required.  */
       if (!vcall_offset
-	  || !CONST_OK_FOR_LETTER_P (delta, 'K')
-	  || !CONST_OK_FOR_LETTER_P (vcall_offset, 'K'))
+	  || (!DISP_IN_RANGE (delta)
+              && !CONST_OK_FOR_LETTER_P (delta, 'K'))
+	  || (!DISP_IN_RANGE (delta)
+              && !CONST_OK_FOR_LETTER_P (vcall_offset, 'K')))
 	{
 	  op[5] = gen_label_rtx ();
 	  output_asm_insn ("basr\t%4,0", op);
@@ -6734,6 +6872,8 @@ s390_output_mi_thunk (file, thunk, delta, vcall_offset, function)
 	{
 	  if (CONST_OK_FOR_LETTER_P (delta, 'J'))
 	    output_asm_insn ("la\t%1,%2(%1)", op);
+	  else if (DISP_IN_RANGE (delta))
+	    output_asm_insn ("lay\t%1,%2(%1)", op);
 	  else if (CONST_OK_FOR_LETTER_P (delta, 'K'))
 	    output_asm_insn ("ahi\t%1,%2", op);
 	  else
@@ -6750,6 +6890,11 @@ s390_output_mi_thunk (file, thunk, delta, vcall_offset, function)
 	    {
 	      output_asm_insn ("lg\t%4,0(%1)", op);
 	      output_asm_insn ("a\t%1,%3(%4)", op);
+	    }
+	  else if (DISP_IN_RANGE (vcall_offset))
+	    {
+	      output_asm_insn ("lg\t%4,0(%1)", op);
+	      output_asm_insn ("ay\t%1,%3(%4)", op);
 	    }
 	  else if (CONST_OK_FOR_LETTER_P (vcall_offset, 'K'))
 	    {

@@ -530,10 +530,11 @@ extern const enum reg_class regclass_map[FIRST_PSEUDO_REGISTER];
 #define CONST_DOUBLE_OK_FOR_LETTER_P(VALUE, C)  1
 
 #define EXTRA_CONSTRAINT(OP, C)                               	\
-     ((C) == 'Q' ?  q_constraint (OP) : 			\
-      (C) == 'S' ?  larl_operand (OP, GET_MODE (OP)) : 0)
-
-#define EXTRA_MEMORY_CONSTRAINT(C,STR) ((C) == 'Q')
+  s390_extra_constraint ((OP), (C))
+#define EXTRA_MEMORY_CONSTRAINT(C, STR)				\
+  ((C) == 'Q' || (C) == 'R' || (C) == 'S' || (C) == 'T')
+#define EXTRA_ADDRESS_CONSTRAINT(C, STR)			\
+  ((C) == 'U' || (C) == 'W')
 
 
 /* Stack layout and calling conventions.  */
