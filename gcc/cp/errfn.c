@@ -158,7 +158,7 @@ cp_thing (errfn, atarg1, format, ap)
 	  if (len > buflen)
 	    {
 	      buflen = len;
-	      buf = xmalloc (len);
+	      buf = xrealloc (buf, len);
 	    }
 	  sprintf (buf + offset, "%d", va_arg (ap, int));
 	  nargs++;
