@@ -1001,7 +1001,11 @@ public abstract class Component
   {
     if (font != null)
       return font;
-    return parent == null ? null : parent.getFont();
+
+    if (parent != null)
+      return parent.getFont ();
+    else
+      return new Font ("Fixed", Font.PLAIN, 12);
   }
 
   /**

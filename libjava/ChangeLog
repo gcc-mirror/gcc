@@ -1,5 +1,8 @@
 2004-02-05  Thomas Fitzsimmons  <fitzsim@redhat.com>
 
+	* java/awt/Component.java (getFont): Return a default font
+	instead of null.
+
 	* java/awt/Scrollbar.java (next_scrollbar_number): New field.
 	(Scrollbar (int, int, int, int, int)): Make default page
 	increment 10.
