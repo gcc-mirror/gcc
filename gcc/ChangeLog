@@ -1,3 +1,14 @@
+2000-09-08  Zack Weinberg  <zack@wolery.cumb.org>
+
+	* c-pragma.c: Don't elide entire file if !HANDLE_GENERIC_PRAGMAS.
+	(init_pragma): Avoid warning if pfile happens to be unused.
+	* c-pragma.h: Never define HANDLE_GENERIC_PRAGMAS.  Never
+	define init_pragma to nothing.  Always prototype
+	init_pragma.  Prototype dispatch_pragma if !USE_CPPLIB.
+
+	* c-lex.c (process_directive): Always call dispatch_pragma.
+	Initialize entering_c_header to 0.
+
 2000-09-08  Stephane Carrez  <Stephane.Carrez@worldnet.fr>
 
 	* config/m68hc11/m68hc11.md: New file, machine description for

@@ -32,8 +32,6 @@ Boston, MA 02111-1307, USA.  */
 #include "c-lex.h"
 #include "tm_p.h"
 
-#ifdef HANDLE_GENERIC_PRAGMAS
-
 #if USE_CPPLIB
 extern cpp_reader parse_in;
 #else
@@ -438,10 +436,11 @@ dispatch_pragma ()
 void
 init_pragma ()
 {
+  cpp_reader *pfile ATTRIBUTE_UNUSED;
 #if !USE_CPPLIB
-  cpp_reader *pfile = 0;
+  pfile = 0;
 #else
-  cpp_reader *pfile = &parse_in;
+  pfile = &parse_in;
 #endif
 
 #ifdef HANDLE_PRAGMA_PACK
@@ -450,7 +449,6 @@ init_pragma ()
 #ifdef HANDLE_PRAGMA_WEAK
   cpp_register_pragma (pfile, 0, "weak", handle_pragma_weak);
 #endif
-
 #ifdef REGISTER_TARGET_PRAGMAS
   REGISTER_TARGET_PRAGMAS (pfile);
 #endif
@@ -460,5 +458,3 @@ init_pragma ()
 		mark_align_stack);
 #endif
 }
-
-#endif /* HANDLE_GENERIC_PRAGMAS */
