@@ -1,5 +1,11 @@
 2002-02-24  Adam Megacz  <adam@xwt.org>
 
+	* win32-threads.cc (_Jv_ThreadInitData): _Jv_Malloc instead of new
+	* win32-threads.cc (_Jv_ThreadDestroyData): _Jv_Free instead of
+	delete
+
+2002-02-24  Adam Megacz  <adam@xwt.org>
+
 	* java/lang/Win32Process.java: Created a dummy class to allow
 	build process to run to completion.
 
