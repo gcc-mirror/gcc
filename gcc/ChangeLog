@@ -1,3 +1,8 @@
+Wed Feb 14 23:35:57 CET 2001  Jan Hubicka  <jh@suse.cz>
+
+	* regclass.c (init_reg_sets_1): Reinstall the optimization
+	together with Matt Kraai's fix.
+
 2001-02-14  Jeffrey Oldham  <oldham@codesourcery.com>
 
 	* gcc.c (do_spec_1): Fix off-by-one error for '%M' case.
