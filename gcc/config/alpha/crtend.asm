@@ -50,6 +50,9 @@ __CTOR_END__:
 __DTOR_END__:
 	.quad   0
 
+.section .eh_frame,"aw"
+__FRAME_END__:
+	.quad	0
 
  #
  # Fragment of the ELF _init routine that invokes our ctor startup

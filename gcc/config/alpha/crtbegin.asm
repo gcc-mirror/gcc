@@ -50,6 +50,8 @@ __CTOR_LIST__:
 __DTOR_LIST__:
 	.quad -1
 
+.section .eh_frame,"aw"
+__EH_FRAME_BEGIN__:
 
  #
  # Fragment of the ELF _fini routine that invokes our dtor cleanup.
@@ -67,9 +69,24 @@ __DTOR_LIST__:
 1:	ldgp    $29,0($29)
 	jsr     $26,__do_global_dtors_aux
 
+	# Ideally this call would go in crtend.o, except that we can't
+	# get hold of __EH_FRAME_BEGIN__ there.
+
+	jsr	$26,__do_frame_takedown
+
 	# Must match the alignment we got from crti.o else we get
 	# zero-filled holes in our _fini function and then SIGILL.
 	.align 3
+
+ #
+ # Fragment of the ELF _init routine that sets up the frame info.
+ #
+
+.section .init,"ax"
+       br      $29,1f
+1:     ldgp    $29,0($29)
+       jsr     $26,__do_frame_setup
+       .align 3
 
  #
  # Invoke our destructors in order.
@@ -78,7 +95,7 @@ __DTOR_LIST__:
 .data
 
  # Support recursive calls to exit.
-9:	.quad	__DTOR_LIST__
+$ptr:	.quad	__DTOR_LIST__
 
 .text
 
@@ -86,15 +103,14 @@ __DTOR_LIST__:
 	.ent __do_global_dtors_aux
 
 __do_global_dtors_aux:
-	ldgp	$29,0($27)
 	lda     $30,-16($30)
 	.frame  $30,16,$26,0
 	stq	$9,8($30)
 	stq     $26,0($30)
 	.mask   0x4000200,-16
-	.prologue 1
+	.prologue 0
 
-	lda     $9,9b
+	lda     $9,$ptr
 	br      1f
 0:	stq	$1,0($9)
 	jsr     $26,($27)
@@ -109,3 +125,68 @@ __do_global_dtors_aux:
 	ret
 
 	.end __do_global_dtors_aux
+
+ #
+ # Install our frame info.
+ #
+
+ # ??? How can we rationally keep this size correct?
+
+.section .bss
+	.type $object,@object
+	.align 3
+$object:
+	.zero 48
+	.size $object, 48
+
+.text 
+
+	.align 3
+	.ent __do_frame_setup
+
+__do_frame_setup:
+	ldgp	$29,0($27)
+	lda     $30,-16($30)
+	.frame  $30,16,$26,0
+	stq     $26,0($30)
+	.mask   0x4000000,-16
+	.prologue 1
+
+	lda	$1,__register_frame_info
+	beq	$1,0f
+	lda	$16,__EH_FRAME_BEGIN__
+	lda	$17,$object
+	jsr	$26,__register_frame_info
+	ldq     $26,0($30)
+0:	lda     $30,16($30)
+	ret
+
+	.end __do_frame_setup
+
+ #
+ # Remove our frame info.
+ #
+
+	.align 3
+	.ent __do_frame_takedown
+
+__do_frame_takedown:
+	ldgp	$29,0($27)
+	lda     $30,-16($30)
+	.frame  $30,16,$26,0
+	stq     $26,0($30)
+	.mask   0x4000000,-16
+	.prologue 1
+
+	lda	$1,__deregister_frame_info
+	beq	$1,0f
+	lda	$16,__EH_FRAME_BEGIN__
+	jsr	$26,__deregister_frame_info
+	ldq     $26,0($30)
+0:	lda     $30,16($30)
+	ret
+
+	.end __do_frame_takedown
+
+.weak __register_frame_info
+.weak __deregister_frame_info

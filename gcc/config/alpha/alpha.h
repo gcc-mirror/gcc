@@ -1301,6 +1301,9 @@ extern void alpha_initialize_trampoline ();
 #define RETURN_ADDR_RTX  alpha_return_addr
 extern struct rtx_def *alpha_return_addr ();
 
+/* Before the prologue, RA lives in $26. */
+#define INCOMING_RETURN_ADDR_RTX  gen_rtx_REG (Pmode, 26)
+
 /* Initialize data used by insn expanders.  This is called from insn_emit,
    once for every function before code is generated.  */
 

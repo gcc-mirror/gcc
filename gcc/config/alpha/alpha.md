@@ -39,6 +39,7 @@
 ;;	4	trapb
 ;;	5	prologue_stack_probe_loop
 ;;	6	realign
+;;	7	exception_receiver
 
 ;; Processor type -- this attribute must exactly match the processor_type
 ;; enumeration in alpha.h.
@@ -5177,7 +5178,14 @@
 (define_insn ""
   [(unspec_volatile [(match_operand 0 "" "")] 2)]
   "! TARGET_OPEN_VMS && ! TARGET_WINDOWS_NT"
-  "br $27,$LSJ%=\\n$LSJ%=:\;ldgp $29,0($27)"
+  "br $29,$LSJ%=\\n$LSJ%=:\;ldgp $29,0($29)"
+  [(set_attr "length" "12")
+   (set_attr "type" "multi")])
+
+(define_insn "exception_receiver"
+  [(unspec_volatile [(const_int 0)] 7)]
+  "! TARGET_OPEN_VMS && ! TARGET_WINDOWS_NT"
+  "br $29,$LSJ%=\\n$LSJ%=:\;ldgp $29,0($29)"
   [(set_attr "length" "12")
    (set_attr "type" "multi")])
 

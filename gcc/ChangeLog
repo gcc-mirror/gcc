@@ -1,5 +1,20 @@
 Sat Sep  5 22:05:25 1998  Richard Henderson  <rth@cygnus.com>
 
+	* alpha.c (alpha_ra_ever_killed): Inspect the topmost sequence,
+	not whatever we're generating now.
+
+	* alpha.c (set_frame_related_p, FRP): New.
+	(alpha_expand_prologue): Mark frame related insns.
+	(alpha_expand_epilogue): Likewise, but with a null FRP.
+	* alpha.h (INCOMING_RETURN_ADDR_RTX): New.
+	* alpha.md (exception_receiver): New.
+	* alpha/crtbegin.asm (.eh_frame): New beginning.
+	(__do_frame_setup, __do_frame_takedown): New.
+	* alpha/crtend.asm (.eh_frame): New ending.
+	* alpha/elf.h (DWARF2_DEBUGGING_INFO): Define.
+	(ASM_SPEC): Don't emit both dwarf2 and mdebug.
+	(ASM_FILE_START): Don't emit .file for dwarf2.
+
 	* rtl.h (enum reg_note): Add REG_FRAME_RELATED_EXPR.
 	* rtl.c (reg_note_name): Likewise.
 	* rtl.texi (REG_NOTES): Likewise.

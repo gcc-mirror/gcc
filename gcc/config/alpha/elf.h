@@ -24,6 +24,7 @@ Boston, MA 02111-1307, USA.    */
 #define OBJECT_FORMAT_ELF
 
 #define DBX_DEBUGGING_INFO
+#define DWARF2_DEBUGGING_INFO
 
 #undef PREFERRED_DEBUGGING_TYPE
 #define PREFERRED_DEBUGGING_TYPE DBX_DEBUG
@@ -34,7 +35,7 @@ Boston, MA 02111-1307, USA.    */
 #define CC1_SPEC  "%{G*}"
 
 #undef ASM_SPEC
-#define ASM_SPEC  "%{G*} %{relax:-relax}"
+#define ASM_SPEC  "%{G*} %{relax:-relax} %{gdwarf*:-no-mdebug}"
 
 #undef LINK_SPEC
 #define LINK_SPEC "-m elf64alpha %{G*} %{relax:-relax}		\
@@ -49,18 +50,21 @@ Boston, MA 02111-1307, USA.    */
 /* Output at beginning of assembler file.  */
 #undef ASM_FILE_START
 #define ASM_FILE_START(FILE)					\
-{								\
-  alpha_write_verstamp (FILE);					\
-  output_file_directive (FILE, main_input_filename);		\
+do {								\
+  if (write_symbols != DWARF2_DEBUG)				\
+    {								\
+      alpha_write_verstamp (FILE);				\
+      output_file_directive (FILE, main_input_filename);	\
+    }								\
   fprintf (FILE, "\t.set noat\n");				\
-  fprintf (FILE, "\t.set noreorder\n");                         \
+  fprintf (FILE, "\t.set noreorder\n");				\
   if (TARGET_BWX | TARGET_MAX | TARGET_CIX)			\
     {								\
       fprintf (FILE, "\t.arch %s\n",				\
                (alpha_cpu == PROCESSOR_EV6 ? "ev6"		\
                 : TARGET_MAX ? "pca56" : "ev56"));		\
     }								\
-}
+} while (0)
 
 extern void output_file_directive ();
 
