@@ -68,7 +68,7 @@ Build time improvements for targets which support lots of sched parameters
 (alpha and mips primarily).
 
 Compile time for certain programs using large constant initializers has been
-improved (effects glibc significantly).
+improved (affects glibc significantly).
 
 Plus an incredible number of infrastructure changes, warning fixes, bugfixes
 and local optimizations.

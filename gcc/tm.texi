@@ -2981,7 +2981,7 @@ stack.
 @item LOAD_ARGS_REVERSED
 If defined, the order in which arguments are loaded into their
 respective argument registers is reversed so that the last 
-argument is loaded first.  This macro only effects arguments
+argument is loaded first.  This macro only affects arguments
 passed in registers.
 
 @end table
