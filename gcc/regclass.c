@@ -1160,6 +1160,7 @@ record_reg_classes (n_alts, n_ops, ops, modes, subreg_changes_size,
       int alt_fail = 0;
       int alt_cost = 0;
       enum reg_class classes[MAX_RECOG_OPERANDS];
+      int allows_mem[MAX_RECOG_OPERANDS];
       int class;
 
       for (i = 0; i < n_ops; i++)
@@ -1168,12 +1169,12 @@ record_reg_classes (n_alts, n_ops, ops, modes, subreg_changes_size,
 	  rtx op = ops[i];
 	  enum machine_mode mode = modes[i];
 	  int allows_addr = 0;
-	  int allows_mem = 0;
 	  int win = 0;
 	  unsigned char c;
 
 	  /* Initially show we know nothing about the register class.  */
 	  classes[i] = NO_REGS;
+	  allows_mem[i] = 0;
 
 	  /* If this operand has no constraints at all, we can conclude 
 	     nothing about it since anything is valid.  */
@@ -1196,8 +1197,12 @@ record_reg_classes (n_alts, n_ops, ops, modes, subreg_changes_size,
 
 	  if (p[0] >= '0' && p[0] <= '0' + i && (p[1] == ',' || p[1] == 0))
 	    {
+	      /* Copy class and whether memory is allowed from the matching
+		 alternative.  Then perform any needed cost computations
+		 and/or adjustments.  */
 	      j = p[0] - '0';
 	      classes[i] = classes[j];
+	      allows_mem[i] = allows_mem[j];
 
 	      if (GET_CODE (op) != REG || REGNO (op) < FIRST_PSEUDO_REGISTER)
 		{
@@ -1233,12 +1238,38 @@ record_reg_classes (n_alts, n_ops, ops, modes, subreg_changes_size,
 		}
 	      else
 		{
-		  /* The costs of this operand are the same as that of the
-		     other operand.  However, if we cannot tie them, this
-		     alternative needs to do a copy, which is one
-		     instruction.  */
+		  /* The costs of this operand are not the same as the other
+		     operand since move costs are not symmetric.  Moreover,
+		     if we cannot tie them, this alternative needs to do a
+		     copy, which is one instruction.  */
 
-		  this_op_costs[i] = this_op_costs[j];
+		  struct costs *pp = &this_op_costs[i];
+
+		  for (class = 0; class < N_REG_CLASSES; class++)
+		    pp->cost[class]
+		      = (recog_data.operand_type[i] == OP_IN
+			 ? may_move_cost[class][(int) classes[i]]
+			 : move_cost[(int) classes[i]][class]);
+		  
+		  /* If the alternative actually allows memory, make things
+		     a bit cheaper since we won't need an extra insn to
+		     load it.  */
+
+		  pp->mem_cost
+		    = (MEMORY_MOVE_COST (mode, classes[i], 
+					 recog_data.operand_type[i] == OP_IN)
+		       - allows_mem[i]);
+
+		  /* If we have assigned a class to this register in our
+		     first pass, add a cost to this alternative corresponding
+		     to what we would add if this register were not in the
+		     appropriate class.  */
+
+		  if (prefclass)
+		    alt_cost
+		      += (may_move_cost[(unsigned char) prefclass[REGNO (op)]]
+			  [(int) classes[i]]);
+
 		  if (REGNO (ops[i]) != REGNO (ops[j])
 		      && ! find_reg_note (insn, REG_DEAD, op))
 		    alt_cost += 2;
@@ -1287,7 +1318,7 @@ record_reg_classes (n_alts, n_ops, ops, modes, subreg_changes_size,
 	      case 'm':  case 'o':  case 'V':
 		/* It doesn't seem worth distinguishing between offsettable
 		   and non-offsettable addresses here.  */
-		allows_mem = 1;
+		allows_mem[i] = 1;
 		if (GET_CODE (op) == MEM)
 		  win = 1;
 		break;
@@ -1388,7 +1419,7 @@ record_reg_classes (n_alts, n_ops, ops, modes, subreg_changes_size,
 #endif
 			))
 		  win = 1;
-		allows_mem = 1;
+		allows_mem[i] = 1;
 	      case 'r':
 		classes[i]
 		  = reg_class_subunion[(int) classes[i]][(int) GENERAL_REGS];
@@ -1448,7 +1479,7 @@ record_reg_classes (n_alts, n_ops, ops, modes, subreg_changes_size,
 		  pp->mem_cost
 		    = (MEMORY_MOVE_COST (mode, classes[i], 
 					 recog_data.operand_type[i] == OP_IN)
-		       - allows_mem);
+		       - allows_mem[i]);
 
 		  /* If we have assigned a class to this register in our
 		     first pass, add a cost to this alternative corresponding
@@ -1486,7 +1517,7 @@ record_reg_classes (n_alts, n_ops, ops, modes, subreg_changes_size,
 	  /* The only other way this alternative can be used is if this is a
 	     constant that could be placed into memory.  */
 
-	  else if (CONSTANT_P (op) && (allows_addr || allows_mem))
+	  else if (CONSTANT_P (op) && (allows_addr || allows_mem[i]))
 	    alt_cost += MEMORY_MOVE_COST (mode, classes[i], 1);
 	  else
 	    alt_fail = 1;
@@ -1530,9 +1561,9 @@ record_reg_classes (n_alts, n_ops, ops, modes, subreg_changes_size,
 	  int nr;
 
 	  if (regno >= FIRST_PSEUDO_REGISTER && prefclass != 0
-	      && (reg_class_size[(unsigned char)prefclass[regno]]
+	      && (reg_class_size[(unsigned char) prefclass[regno]]
 		  == CLASS_MAX_NREGS (prefclass[regno], mode)))
-	    op_costs[i].cost[(unsigned char)prefclass[regno]] = -1;
+	    op_costs[i].cost[(unsigned char) prefclass[regno]] = -1;
 	  else if (regno < FIRST_PSEUDO_REGISTER)
 	    for (class = 0; class < N_REG_CLASSES; class++)
 	      if (TEST_HARD_REG_BIT (reg_class_contents[class], regno)
