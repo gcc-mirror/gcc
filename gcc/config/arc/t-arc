@@ -26,46 +26,16 @@ fp-bit.c: $(srcdir)/config/fp-bit.c
 
 # .init/.fini section routines
 
-crtinit.o: $(srcdir)/config/arc/initfini.c $(GCC_PASSES) $(CONFIG_H)
+$(T)crtinit.o: $(srcdir)/config/arc/initfini.c $(GCC_PASSES) $(CONFIG_H)
 	$(GCC_FOR_TARGET) $(GCC_CFLAGS) $(INCLUDES) $(CRTSTUFF_T_CFLAGS) \
-	  -DCRT_INIT -finhibit-size-directive -fno-inline-functions \
-	  -g0 -c $(srcdir)/config/arc/initfini.c -o crtinit.o
+	 $(MULTILIB_CFLAGS) -DCRT_INIT -finhibit-size-directive -fno-inline-functions \
+	 -g0 -c $(srcdir)/config/arc/initfini.c -o $(T)crtinit.o
 
-crtfini.o: $(srcdir)/config/arc/initfini.c $(GCC_PASSES) $(CONFIG_H)
+$(T)crtfini.o: $(srcdir)/config/arc/initfini.c $(GCC_PASSES) $(CONFIG_H)
 	$(GCC_FOR_TARGET) $(GCC_CFLAGS) $(INCLUDES) $(CRTSTUFF_T_CFLAGS) \
-	  -DCRT_FINI -finhibit-size-directive -fno-inline-functions \
-	  -g0 -c $(srcdir)/config/arc/initfini.c -o crtfini.o
+	 -DCRT_FINI $(MULTILIB_CFLAGS) -finhibit-size-directive -fno-inline-functions \
+	 -g0 -c $(srcdir)/config/arc/initfini.c -o $(T)crtfini.o
 
 MULTILIB_OPTIONS = EB
 MULTILIB_DIRNAMES = be
-
-# We need our own versions to build multiple copies of crt*.o.
-# ??? Use new support in Makefile.
-
-LIBGCC = stmp-multilib-arc
-INSTALL_LIBGCC = install-multilib-arc
-
-stmp-multilib-arc: stmp-multilib
-	for i in `$(GCC_FOR_TARGET) --print-multi-lib`; do \
-	  dir=`echo $$i | sed -e 's/;.*$$//'`; \
-	  flags=`echo $$i | sed -e 's/^[^;]*;//' -e 's/@/ -/g'`; \
-	  $(MAKE) GCC_FOR_TARGET="$(GCC_FOR_TARGET)" \
-	    CC="$(CC)" CFLAGS="$(CFLAGS)" \
-	    BUILD_PREFIX="$(BUILD_PREFIX)" BUILD_PREFIX_1="$(BUILD_PREFIX_1)" \
-	    GCC_CFLAGS="$(GCC_CFLAGS) $${flags}" \
-	    INCLUDES="$(INCLUDES)" CRTSTUFF_T_CFLAGS=$(CRTSTUFF_T_CFLAGS) \
-	    dir="$${dir}" crtinit.o crtfini.o; \
-	  if [ $$? -eq 0 ] ; then true; else exit 1; fi; \
-	done
-	touch stmp-multilib-arc
-
-install-multilib-arc: install-multilib
-	for i in `$(GCC_FOR_TARGET) --print-multi-lib`; do \
-	  dir=`echo $$i | sed -e 's/;.*$$//'`; \
-	  rm -f $(DESTDIR)$(libsubdir)/$${dir}/crtinit.o; \
-	  $(INSTALL_DATA) $${dir}/crtinit.o $(DESTDIR)$(libsubdir)/$${dir}/crtinit.o; \
-	  chmod a-x $(DESTDIR)$(libsubdir)/$${dir}/crtinit.o; \
-	  rm -f $(DESTDIR)$(libsubdir)/$${dir}/crtfini.o; \
-	  $(INSTALL_DATA) $${dir}/crtfini.o $(DESTDIR)$(libsubdir)/$${dir}/crtfini.o; \
-	  chmod a-x $(DESTDIR)$(libsubdir)/$${dir}/crtfini.o; \
-	done
+EXTRA_MULTILIB_PARTS = crtinit.o crtfini.o
