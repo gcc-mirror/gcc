@@ -1,5 +1,5 @@
 /* PlainDatagramSocketImpl.java -- Default DatagramSocket implementation
-   Copyright (C) 1998, 1999, 2001, 2003 Free Software Foundation, Inc.
+   Copyright (C) 1998, 1999, 2001, 2003, 2004  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -60,8 +60,8 @@ import gnu.classpath.Configuration;
  * It makes native calls to C routines that implement BSD style
  * SOCK_DGRAM sockets in the AF_INET family.
  *
- * @author Aaron M. Renn <arenn@urbanophile.com>
- * @author Warren Levy <warrenl@cygnus.com>
+ * @author Aaron M. Renn (arenn@urbanophile.com)
+ * @author Warren Levy (warrenl@cygnus.com)
  */
 public final class PlainDatagramSocketImpl extends DatagramSocketImpl
 {
@@ -95,6 +95,16 @@ public final class PlainDatagramSocketImpl extends DatagramSocketImpl
    * This is the actual underlying file descriptor
    */
   int native_fd = -1;
+  
+  /**
+   * Lock object to serialize threads wanting to receive 
+   */
+  private final Object RECEIVE_LOCK = new Object();
+  
+  /**
+   * Lock object to serialize threads wanting to send 
+   */
+  private final Object SEND_LOCK = new Object();
 
   // FIXME: Is this necessary?  Could it help w/ DatagramSocket.getLocalAddress?
   // InetAddress address;
@@ -179,7 +189,7 @@ public final class PlainDatagramSocketImpl extends DatagramSocketImpl
    *
    * @exception IOException If an error occurs
    */
-  protected native void send(DatagramPacket p) throws IOException;
+  protected native void send(DatagramPacket packet) throws IOException;
 
   /**
    * Receives a UDP packet from the network

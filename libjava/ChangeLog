@@ -1,5 +1,19 @@
 2004-03-17  Michael Koch  <konqueror@gmx.de>
 
+	* gnu/java/net/PlainDatagramSocketImpl.java
+	(RECEIVE_LOCK): New member field.
+	(SEND_LOCK): New member field.
+	(send0): New method.
+	(send): Synchronize on SEND_LOCK.
+	(receive0): New method.
+	(receive): Synchronize on RECEIVE_LOCK.
+	* gnu/java/net/natPlainDatagramSocketImplNoNet.cc,
+	gnu/java/net/natPlainDatagramSocketImplPosix.cc,
+	gnu/java/net/natPlainDatagramSocketImplWin32.cc
+	(send0): Renamed from send.
+	(receive0): Renamed from receive.
+2004-03-17  Michael Koch  <konqueror@gmx.de>
+
 	* gnu/java/net/natPlainSocketImplPosix.cc
 	(write): Just call write(jbyteArray, offset, len).
 	(read): Just call read(jbyteArray, offset, len).

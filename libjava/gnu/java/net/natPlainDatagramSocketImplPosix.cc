@@ -286,6 +286,8 @@ gnu::java::net::PlainDatagramSocketImpl::close ()
 void
 gnu::java::net::PlainDatagramSocketImpl::send (::java::net::DatagramPacket *p)
 {
+  JvSynchronize lock (SEND_LOCK);
+  
   // FIXME: Deal with Multicast and if the socket is connected.
   jint rport = p->getPort();
   union SockAddr u;
@@ -327,6 +329,8 @@ gnu::java::net::PlainDatagramSocketImpl::send (::java::net::DatagramPacket *p)
 void
 gnu::java::net::PlainDatagramSocketImpl::receive (::java::net::DatagramPacket *p)
 {
+  JvSynchronize lock (RECEIVE_LOCK);
+
   // FIXME: Deal with Multicast and if the socket is connected.
   union SockAddr u;
   socklen_t addrlen = sizeof(u);
