@@ -1,3 +1,10 @@
+2004-03-09  Roger Sayle  <roger@eyesopen.com>
+	    Andrew Pinski  <pinskia@physics.uc.edu>
+
+	* ifcvt.c (noce_try_sign_mask): New function to transform
+	"x = (y < 0) ? z : 0" into the equivalent "x = (y >> C) & z".
+	(noce_process_if_block): Call noce_try_sign_mask.
+
 2004-03-09  Andrew Pinski  <apinski@apple.com>
 
 	* c-typeck.c (tagged_types_tu_compatible_p):
