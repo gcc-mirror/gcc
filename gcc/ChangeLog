@@ -1,3 +1,10 @@
+2002-10-29  Hans-Peter Nilsson  <hp@bitrange.com>
+
+	* toplev.c (rest_of_type_compilation): Return early in case of
+	errors.
+	(check_global_declarations): Don't call debug_hooks->global_decl
+	in case of errors.
+
 2002-10-28  Andreas Bauer  <baueran@in.tum.de>
 
 	* doc/c-tree.texi (Tree overview): Fix typos.
