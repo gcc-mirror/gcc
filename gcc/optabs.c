@@ -1047,7 +1047,8 @@ expand_binop (mode, binoptab, op0, op1, target, unsignedp, methods)
 
       /* If the target is the same as one of the inputs, don't use it.  This
 	 prevents problems with the REG_EQUAL note.  */
-      if (target == op0 || target == op1 || GET_CODE (target) != REG)
+      if (target == op0 || target == op1
+	  || (target != 0 && GET_CODE (target) != REG))
 	target = 0;
 
       /* Multiply the two lower words to get a double-word product.
