@@ -1,3 +1,7 @@
+2002-12-11  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* doc/invoke.texi: Correct dump file names.
+
 2002-12-09  Steve Ellcey  <sje@cup.hp.com>
 
 	* config/ia64/ia64.c (ia64_hpux_asm_file_end): Don't send stripped

@@ -3088,19 +3088,19 @@ meanings:
 Annotate the assembler output with miscellaneous debugging information.
 @item b
 @opindex db
-Dump after computing branch probabilities, to @file{@var{file}.15.bp}.
+Dump after computing branch probabilities, to @file{@var{file}.14.bp}.
 @item B
 @opindex dB
-Dump after block reordering, to @file{@var{file}.30.bbro}.
+Dump after block reordering, to @file{@var{file}.32.bbro}.
 @item c
 @opindex dc
-Dump after instruction combination, to the file @file{@var{file}.17.combine}.
+Dump after instruction combination, to the file @file{@var{file}.19.combine}.
 @item C
 @opindex dC
-Dump after the first if conversion, to the file @file{@var{file}.18.ce}.
+Dump after the first if conversion, to the file @file{@var{file}.15.ce1}.
 @item d
 @opindex dd
-Dump after delayed branch scheduling, to @file{@var{file}.32.dbr}.
+Dump after delayed branch scheduling, to @file{@var{file}.34.dbr}.
 @item D
 @opindex dD
 Dump all macro definitions, at the end of preprocessing, in addition to
@@ -3111,25 +3111,25 @@ Dump after SSA optimizations, to @file{@var{file}.04.ssa} and
 @file{@var{file}.07.ussa}.
 @item E
 @opindex dE
-Dump after the second if conversion, to @file{@var{file}.27.ce2}.
+Dump after the second if conversion, to @file{@var{file}.29.ce3}.
 @item f
 @opindex df
-Dump after life analysis, to @file{@var{file}.16.life}.
+Dump after life analysis, to @file{@var{file}.18.life}.
 @item F
 @opindex dF
 Dump after purging @code{ADDRESSOF} codes, to @file{@var{file}.10.addressof}.
 @item g
 @opindex dg
-Dump after global register allocation, to @file{@var{file}.22.greg}.
+Dump after global register allocation, to @file{@var{file}.24.greg}.
 @item h
 @opindex dh
 Dump after finalization of EH handling code, to @file{@var{file}.02.eh}.
 @item k
 @opindex dk
-Dump after reg-to-stack conversion, to @file{@var{file}.29.stack}.
+Dump after reg-to-stack conversion, to @file{@var{file}.31.stack}.
 @item o
 @opindex do
-Dump after post-reload optimizations, to @file{@var{file}.23.postreload}.
+Dump after post-reload optimizations, to @file{@var{file}.25.postreload}.
 @item G
 @opindex dG
 Dump after GCSE, to @file{@var{file}.11.gcse}.
@@ -3141,52 +3141,52 @@ Dump after sibling call optimizations, to @file{@var{file}.01.sibling}.
 Dump after the first jump optimization, to @file{@var{file}.03.jump}.
 @item k
 @opindex dk
-Dump after conversion from registers to stack, to @file{@var{file}.33.stack}.
+Dump after conversion from registers to stack, to @file{@var{file}.31.stack}.
 @item l
 @opindex dl
-Dump after local register allocation, to @file{@var{file}.21.lreg}.
+Dump after local register allocation, to @file{@var{file}.23.lreg}.
 @item L
 @opindex dL
 Dump after loop optimization, to @file{@var{file}.12.loop}.
 @item M
 @opindex dM
 Dump after performing the machine dependent reorganisation pass, to
-@file{@var{file}.31.mach}.
+@file{@var{file}.33.mach}.
 @item n
 @opindex dn
-Dump after register renumbering, to @file{@var{file}.26.rnreg}.
+Dump after register renumbering, to @file{@var{file}.28.rnreg}.
 @item N
 @opindex dN
-Dump after the register move pass, to @file{@var{file}.19.regmove}.
+Dump after the register move pass, to @file{@var{file}.21.regmove}.
 @item r
 @opindex dr
 Dump after RTL generation, to @file{@var{file}.00.rtl}.
 @item R
 @opindex dR
-Dump after the second scheduling pass, to @file{@var{file}.28.sched2}.
+Dump after the second scheduling pass, to @file{@var{file}.30.sched2}.
 @item s
 @opindex ds
 Dump after CSE (including the jump optimization that sometimes follows
 CSE), to @file{@var{file}.09.cse}.
 @item S
 @opindex dS
-Dump after the first scheduling pass, to @file{@var{file}.20.sched}.
+Dump after the first scheduling pass, to @file{@var{file}.22.sched}.
 @item t
 @opindex dt
 Dump after the second CSE pass (including the jump optimization that
-sometimes follows CSE), to @file{@var{file}.13.cse2}.
+sometimes follows CSE), to @file{@var{file}.17.cse2}.
 @item u
 @opindex du
 Dump after null pointer ellimination pass ti @file{@var{file}.08.null}.
 @item w
 @opindex dw
-Dump after the second flow pass, to @file{@var{file}.24.flow2}.
+Dump after the second flow pass, to @file{@var{file}.26.flow2}.
 @item X
 @opindex dX
 Dump after SSA dead code elimination, to @file{@var{file}.06.ssadce}.
 @item z
 @opindex dz
-Dump after the peephole pass, to @file{@var{file}.25.peephole2}.
+Dump after the peephole pass, to @file{@var{file}.27.peephole2}.
 @item a
 @opindex da
 Produce all the dumps listed above.
