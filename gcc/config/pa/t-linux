@@ -1,13 +1,9 @@
 #Plug millicode routines into libgcc.a  We want these on both native and
-#cross compiles.
+#cross compiles.  We use the "64-bit" routines because the "32-bit" code
+#is broken for certain corner cases.
 
-LIB1ASMFUNCS =  _divI _divU _remI _remU _multiply \
-	_divI_15 _divI_14 _divI_12 _divI_10 _divI_9 \
-	_divI_7 _divI_6 _divI_5 _divI_3 \
-	_divU_15 _divU_14 _divU_12 _divU_10 _divU_9 \
-	_divU_7 _divU_6 _divU_5 _divU_3 _dyncall
-
-LIB1ASMSRC = pa/milli32.S
+LIB1ASMFUNCS = _divI _divU _remI _remU _div_const _mulI _dyncall
+LIB1ASMSRC = pa/milli64.S
 
 # Compile crtbeginS.o and crtendS.o as PIC.
 CRTSTUFF_T_CFLAGS_S = -fPIC
