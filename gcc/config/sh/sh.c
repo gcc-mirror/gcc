@@ -5558,6 +5558,7 @@ sh_expand_prologue (void)
 	  enum machine_mode mode = entry->mode;
 	  int reg = entry->reg;
 	  rtx reg_rtx, mem_rtx, pre_dec = NULL_RTX;
+	  rtx orig_reg_rtx;
 
 	  offset = entry->offset;
 
@@ -5647,6 +5648,7 @@ sh_expand_prologue (void)
 	    abort ();
 
 	addr_ok:
+	  orig_reg_rtx = reg_rtx;
 	  if (TARGET_REGISTER_P (reg)
 	      || ((reg == PR_REG || SPECIAL_REGISTER_P (reg))
 		  && mem_rtx != pre_dec))
@@ -5674,6 +5676,22 @@ sh_expand_prologue (void)
 	    /* Mark as interesting for dwarf cfi generator */
 	    insn = emit_move_insn (mem_rtx, reg_rtx);
 	    RTX_FRAME_RELATED_P (insn) = 1;
+	    /* If we use an intermediate register for the save, we can't
+	       describe this exactly in cfi as a copy of the to-be-saved
+	       register into the temporary register and then the temporary
+	       register on the stack, because the temporary register can
+	       have a different natural size than the to-be-saved register.
+	       Thus, we gloss over the intermediate copy and pretend we do
+	       a direct save from the to-be-saved register.  */
+	    if (REGNO (reg_rtx) != reg)
+	      {
+		rtx set, note_rtx;
+
+		set = gen_rtx_SET (VOIDmode, mem_rtx, orig_reg_rtx);
+		note_rtx = gen_rtx_EXPR_LIST (REG_FRAME_RELATED_EXPR, set,
+					      REG_NOTES (insn));
+		REG_NOTES (insn) = note_rtx;
+	      }
 
 	    if (TARGET_SHCOMPACT && (offset_in_r0 != -1))
 	      {
