@@ -1,3 +1,9 @@
+*** Changes in GCC 3.0.1:
+
+* -fhonor-std and -fno-honor-std have been removed. -fno-honor-std was
+  a workaround to allow std compliant code to work with the non-std
+  compliant libstdc++-v2. libstdc++-v3 is std compliant.
+
 *** Changes in GCC 3.0:
 
 * Support for guiding declarations has been removed.
