@@ -1,3 +1,8 @@
+2003-04-10  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
+
+	* basic_file_stdio.cc (__basic_file<char>::close): Don't flush stream
+	twice.  Always set _M_cfile to 0 when stream was open.
+
 2003-04-04  Jerry Quinn  <jlquinn@optonline.net>
 
 	PR libstdc++/10276
