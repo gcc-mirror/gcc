@@ -1,3 +1,7 @@
+2004-06-24  Richard Henderson  <rth@redhat.com>
+
+	* gimplify.c (gimplify_body): Watch for body vanishing.
+
 2004-06-24  Jeff Law  <law@redhat.com>
 
 	* tree-ssa-dom.c (record_dominating_conditions): New function.

@@ -4142,7 +4142,9 @@ gimplify_body (tree *body_p, tree fndecl)
   /* Unshare again, in case gimplification was sloppy.  */
   unshare_all_trees (body);
 
-  if (TREE_CODE (body) == STATEMENT_LIST)
+  if (!body)
+    body = alloc_stmt_list ();
+  else if (TREE_CODE (body) == STATEMENT_LIST)
     {
       tree t = expr_only (*body_p);
       if (t)
