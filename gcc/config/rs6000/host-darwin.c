@@ -187,10 +187,10 @@ darwin_rs6000_gt_pch_use_address (void *addr, size_t sz, int fd, size_t off)
 			  fd, off);
 
       /* The file might not be mmap-able.  */
-      ret = mmap_result == (void *) MAP_FAILED;
+      ret = mmap_result != (void *) MAP_FAILED;
 
       /* Sanity check for broken MAP_FIXED.  */
-      if (!ret && mmap_result != addr)
+      if (ret && mmap_result != addr)
 	abort ();
     }
 
