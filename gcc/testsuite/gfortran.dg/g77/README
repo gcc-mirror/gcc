@@ -140,7 +140,7 @@ g77.f-torture/execute
 6177.f				Y
 6367.f & 6367.x
 947.f				Y
-970625-2.f			- Compile warnings
+970625-2.f			Y Add dg-warnings and declare variables
 970816-3.f			Y
 971102-1.f			Y
 980520-1.f			Y
