@@ -633,7 +633,7 @@ java::lang::Class::isAssignableFrom (jclass klass)
 jboolean
 java::lang::Class::isInstance (jobject obj)
 {
-  if (__builtin_expect (! obj || isPrimitive (), false))
+  if (! obj)
     return false;
   _Jv_InitClass (this);
   return _Jv_IsAssignableFrom (this, JV_CLASS (obj));
@@ -938,19 +938,29 @@ _Jv_IsAssignableFrom (jclass target, jclass source)
       if (cl_iindex < if_idt->iface.ioffsets[0])
         {
 	  jshort offset = if_idt->iface.ioffsets[cl_iindex];
-	  if (offset < cl_idt->cls.itable_length
+	  if (offset != -1 && offset < cl_idt->cls.itable_length
 	      && cl_idt->cls.itable[offset] == target)
 	    return true;
 	}
       return false;
     }
      
-  if ((target == &ObjectClass && !source->isPrimitive())
-      || (source->ancestors != NULL 
-	  && source->ancestors[source->depth - target->depth] == target))
+  // Primitive TYPE classes are only assignable to themselves.
+  if (__builtin_expect (target->isPrimitive(), false))
+    return false;
+    
+  if (target == &ObjectClass)
+    {
+      if (source->isPrimitive())
+        return false;
+      return true;
+    }
+  else if (source->ancestors != NULL 
+           && source->depth >= target->depth
+	   && source->ancestors[source->depth - target->depth] == target)
     return true;
       
- return false;
+  return false;
 }
 
 // Interface type checking, the slow way. Returns TRUE if IFACE is a 
