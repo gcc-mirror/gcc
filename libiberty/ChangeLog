@@ -1,3 +1,9 @@
+2001-03-10  Neil Booth  <neil@daikokuya.demon.co.uk>
+	    John David Anglin  <dave@hiauly1.hia.nrc.ca>
+
+	* libiberty/lbasename.c: New file.
+	* libiberty/Makefile.in: Update for lbasename.
+
 2001-03-06  Zack Weinberg  <zackw@stanford.edu>
 
 	* aclocal.m4 (libiberty_AC_FUNC_C_ALLOCA): New.
