@@ -93,13 +93,13 @@ tree build_encode_expr				PROTO((tree));
 #define CLASS_CLS_METHODS(CLASS) ((CLASS)->type.maxval)
 #define CLASS_STATIC_TEMPLATE(CLASS) TREE_VEC_ELT (TYPE_BINFO (CLASS), 2)
 #define CLASS_CATEGORY_LIST(CLASS) TREE_VEC_ELT (TYPE_BINFO (CLASS), 3)
-#define CLASS_PROTOCOL_LIST(CLASS) ((CLASS)->type.noncopied_parts)
+#define CLASS_PROTOCOL_LIST(CLASS) TREE_VEC_ELT (TYPE_BINFO (CLASS), 4)
 #define PROTOCOL_NAME(CLASS) ((CLASS)->type.name)
-#define PROTOCOL_LIST(CLASS) ((CLASS)->type.binfo)
+#define PROTOCOL_LIST(CLASS) TREE_VEC_ELT (TYPE_BINFO (CLASS), 0)
 #define PROTOCOL_NST_METHODS(CLASS) ((CLASS)->type.minval)
 #define PROTOCOL_CLS_METHODS(CLASS) ((CLASS)->type.maxval)
-#define PROTOCOL_FORWARD_DECL(CLASS) ((CLASS)->type.context)
-#define TYPE_PROTOCOL_LIST(TYPE) ((TYPE)->type.noncopied_parts)
+#define PROTOCOL_FORWARD_DECL(CLASS) TREE_VEC_ELT (TYPE_BINFO (CLASS), 1)
+#define TYPE_PROTOCOL_LIST(TYPE) ((TYPE)->type.context)
 
 /* Define the Objective-C or Objective-C++ language-specific tree codes.  */
 
