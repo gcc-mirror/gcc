@@ -1,3 +1,8 @@
+1999-03-24  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* decl.c (lookup_name_real): Do nested field lookup regardless of
+	TYPE_BEING_DEFINED.
+
 1999-03-24  Mark Mitchell  <mark@codesourcery.com>
 
 	* cp-tree.h (lang_type): Remove has_assignment and
