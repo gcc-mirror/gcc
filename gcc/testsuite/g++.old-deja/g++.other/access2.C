@@ -3,7 +3,7 @@
 
 class Outer {
   typedef int T;
-  class Inner {
+  struct Inner {
     T i; // ERROR - not accessible - XFAIL *-*-*
     void f() {
       T j; // ERROR - not accessible - XFAIL *-*-*
