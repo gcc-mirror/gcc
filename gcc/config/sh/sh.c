@@ -4092,8 +4092,10 @@ sh_reorg (void)
 		  if (GET_CODE (dst) == REG && FP_ANY_REGISTER_P (REGNO (dst)))
 		    {
 		      /* This must be an insn that clobbers r0.  */
-		      rtx clobber = XVECEXP (PATTERN (scan), 0,
-					     XVECLEN (PATTERN (scan), 0) - 1);
+		      rtx *clobberp = &XVECEXP (PATTERN (scan), 0,
+						XVECLEN (PATTERN (scan), 0)
+						- 1);
+		      rtx clobber = *clobberp;
 
 		      if (GET_CODE (clobber) != CLOBBER
 			  || ! rtx_equal_p (XEXP (clobber, 0), r0_rtx))
@@ -4137,7 +4139,8 @@ sh_reorg (void)
 		      last_float_addr = &XEXP (newsrc, 0);
 
 		      /* Remove the clobber of r0.  */
-		      XEXP (clobber, 0) = gen_rtx_SCRATCH (Pmode);
+		      *clobberp = gen_rtx_CLOBBER (GET_MODE (clobber),
+						   gen_rtx_SCRATCH (Pmode));
 		      RTX_UNCHANGING_P (newsrc) = 1;
 		    }
 		  /* This is a mova needing a label.  Create it.  */
@@ -6775,7 +6778,7 @@ sh_handle_sp_switch_attribute (tree *node, tree name, tree args,
     }
   else
     {
-      char *s = ggc_strdup (TREE_STRING_POINTER (TREE_VALUE (args)));
+      const char *s = ggc_strdup (TREE_STRING_POINTER (TREE_VALUE (args)));
       sp_switch = gen_rtx_SYMBOL_REF (VOIDmode, s);
     }
 
