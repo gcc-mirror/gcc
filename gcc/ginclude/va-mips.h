@@ -219,9 +219,11 @@ void va_end (__gnuc_va_list);		/* Defined in libgcc.a */
       : *(__type *) (void *) __va_next_addr (__AP, __type)))
 #else
 #define va_arg(__AP, __type)						\
-  (__builtin_classify_type (* (__type *) 0) >= __record_type_class	\
-   ? **(__type **) (void *) __va_next_addr (__AP, __type)		\
-   : *(__type *) (void *) __va_next_addr (__AP, __type))
+  ((__va_rounded_size (__type) <= __va_reg_size)			\
+   ? *(__type *) (void *) __va_next_addr (__AP, __type)		\
+   : (__builtin_classify_type (* (__type *) 0) >= __record_type_class	\
+      ? **(__type **) (void *) __va_next_addr (__AP, __type)		\
+      : *(__type *) (void *) __va_next_addr (__AP, __type)))
 #endif
 
 #else /* ! defined (__mips_eabi) */
