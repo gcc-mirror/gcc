@@ -16,6 +16,7 @@ details.  */
 #include <gcj/cni.h>
 
 #include <java/lang/Class.h>
+#include <java/lang/reflect/Modifier.h>
 #include <java-interp.h>
 
 // More nastiness: the GC wants to define TRUE and FALSE.  We don't
@@ -102,14 +103,6 @@ _Jv_MarkObj (void *addr, void *msp, void *msl, void * /*env*/)
     {
       jclass c = (jclass) addr;
 
-#if 0
-      // The next field should probably not be marked, since this is
-      // only used in the class hash table.  Marking this field
-      // basically prohibits class unloading. --Kresten
-      p = (ptr_t) c->next;
-      MAYBE_MARK (p, mark_stack_ptr, mark_stack_limit, c, c2label);
-#endif
-
       p = (ptr_t) c->name;
       MAYBE_MARK (p, mark_stack_ptr, mark_stack_limit, c, c3label);
       p = (ptr_t) c->superclass;
@@ -182,7 +175,7 @@ _Jv_MarkObj (void *addr, void *msp, void *msl, void * /*env*/)
 
 	  // For the interpreter, we also need to mark the memory
 	  // containing static members
-	  if (field->flags & 0x0008)
+	  if ((field->flags & java::lang::reflect::Modifier::STATIC))
 	    {
 	      p = (ptr_t) field->u.addr;
 	      MAYBE_MARK (p, mark_stack_ptr, mark_stack_limit, c, c8clabel);

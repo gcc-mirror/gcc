@@ -1,3 +1,11 @@
+2000-05-04  Tom Tromey  <tromey@cygnus.com>
+
+	* gcj/field.h (JvFieldIsRef): Return false for gnu.gcj.RawData
+	field.
+	* boehm.cc (_Jv_MarkObj): Removed dead code.  Use `STATIC', not
+	`0x0008'.
+	Include Modifier.h.
+
 2000-05-05  Bryce McKinlay  <bryce@albatross.co.nz>
 
 	* java/lang/natClass.cc (isInstance): Use __builtin_expect.

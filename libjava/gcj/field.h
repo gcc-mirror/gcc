@@ -175,7 +175,9 @@ JvNumStaticFields (jclass klass)
 extern inline jboolean
 JvFieldIsRef (jfieldID field)
 {
-  return field->isRef ();
+  // gnu.gcj.RawData.class is  _CL_Q33gnu3gcj7RawData
+  extern java::lang::Class _CL_Q33gnu3gcj7RawData;
+  return field->isRef () && field->type != &_CL_Q33gnu3gcj7RawData;
 }
 
 extern inline jobject
