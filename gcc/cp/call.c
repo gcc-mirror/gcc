@@ -6005,14 +6005,18 @@ make_temporary_var_for_ref_to_temp (tree decl, tree type)
 }
 
 /* Convert EXPR to the indicated reference TYPE, in a way suitable for
-   initializing a variable of that TYPE.   If DECL is non-NULL, it is
+   initializing a variable of that TYPE.  If DECL is non-NULL, it is
    the VAR_DECL being initialized with the EXPR.  (In that case, the
-   type of DECL will be TYPE.)
+   type of DECL will be TYPE.)  If DECL is non-NULL, then CLEANUP must
+   also be non-NULL, and with *CLEANUP initialized to NULL.  Upon
+   return, if *CLEANUP is no longer NULL, it will be a CLEANUP_STMT
+   that should be inserted after the returned expression is used to
+   initialize DECL.
 
    Return the converted expression.  */
 
 tree
-initialize_reference (tree type, tree expr, tree decl)
+initialize_reference (tree type, tree expr, tree decl, tree *cleanup)
 {
   tree conv;
 
@@ -6094,14 +6098,33 @@ initialize_reference (tree type, tree expr, tree decl)
 	  type = TREE_TYPE (expr);
 	  var = make_temporary_var_for_ref_to_temp (decl, type);
 	  layout_decl (var, 0);
+	  /* Create the INIT_EXPR that will initialize the temporary
+	     variable.  */
+	  init = build (INIT_EXPR, type, var, expr);
 	  if (at_function_scope_p ())
 	    {
-	      tree cleanup;
-
 	      add_decl_stmt (var);
-	      cleanup = cxx_maybe_build_cleanup (var);
-	      if (cleanup)
-		finish_decl_cleanup (var, cleanup);
+	      *cleanup = cxx_maybe_build_cleanup (var);
+	      if (*cleanup)
+		/* We must be careful to destroy the temporary only
+		   after its initialization has taken place.  If the
+		   initialization throws an exception, then the
+		   destructor should not be run.  We cannot simply
+		   transform INIT into something like:
+	     
+		     (INIT, ({ CLEANUP_STMT; }))
+
+		   because emit_local_var always treats the
+		   initializer as a full-expression.  Thus, the
+		   destructor would run too early; it would run at the
+		   end of initializing the reference variable, rather
+		   than at the end of the block enclosing the
+		   reference variable.
+
+		   The solution is to pass back a CLEANUP_STMT which
+		   the caller is responsible for attaching to the
+		   statement tree.  */
+		*cleanup = build_stmt (CLEANUP_STMT, var, *cleanup);
 	    }
 	  else
 	    {
@@ -6110,7 +6133,6 @@ initialize_reference (tree type, tree expr, tree decl)
 		static_aggregates = tree_cons (NULL_TREE, var,
 					       static_aggregates);
 	    }
-	  init = build (INIT_EXPR, type, var, expr);
 	  /* Use its address to initialize the reference variable.  */
 	  expr = build_address (var);
 	  expr = build (COMPOUND_EXPR, TREE_TYPE (expr), init, expr);

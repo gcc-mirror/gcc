@@ -1,3 +1,11 @@
+2003-09-01  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/12114
+	* g++.dg/init/ref9.C: New test.
+
+	PR c++/11972
+	* g++.dg/template/nested4.C: New test.
+
 2003-08-29  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/12093
