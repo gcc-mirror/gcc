@@ -1,7 +1,7 @@
 /* -----------------------------------------------------------------*-C-*-
    libffi @VERSION@ - Copyright (c) 1996-1999  Cygnus Solutions
 
-   $Id: ffi.h.in,v 1.1 1999/08/08 22:58:30 green Exp $
+   $Id: ffi.h.in,v 1.2 1999/08/09 02:52:58 green Exp $
 
    Permission is hereby granted, free of charge, to any person obtaining
    a copy of this software and associated documentation files (the
@@ -36,26 +36,7 @@ extern "C" {
 
 /* ---- System configuration information --------------------------------- */
 
-#ifdef PACKAGE
-#define OLD_PACKAGE PACKAGE
-#undef PACKAGE
-#endif
-#ifdef VERSION
-#define OLD_VERSION VERSION
-#undef VERSION
-#endif
-
 #include <fficonfig.h>
-
-#undef PACKAGE
-#undef VERSION
-
-#ifdef OLD_PACKAGE
-#define PACKAGE OLD_PACKAGE
-#endif
-#ifdef OLD_VERSION
-#define VERSION OLD_VERSION
-#endif
 
 #if !defined(LIBFFI_ASM)
 #include <stddef.h>

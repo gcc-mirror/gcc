@@ -10,9 +10,3 @@
 
 /* Define this is you do not want support for the raw API.  */
 #undef FFI_NO_RAW_API
-
-/* This is the package name */
-#undef PACKAGE
-
-/* This is the package version */
-#undef VERSION
