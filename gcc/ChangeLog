@@ -1,3 +1,7 @@
+Sun Nov  2 19:44:00 1997  Robert Lipe (robertl@dgii.com)
+
+	* i386/sco5.h: enable -gstabs once again.
+
 Sun Nov  2 19:27:21 1997  Jeffrey A Law  (law@cygnus.com)
 
 	* arm.c (output_move_double): Allocate 3 entries in otherops array.
