@@ -1,3 +1,12 @@
+2004-10-18  Paolo Carlini  <pcarlini@suse.de>
+
+	* include/bits/basic_string.tcc (_M_mutate): Do not reallocate
+	unnecessarily when _M_rep() == &_S_empty_rep() and __new_size
+	== capacity() (== 0): is ok to just leave everything unchanged.
+
+	* include/bits/basic_string.h: Minor formatting fixes.
+	* include/bits/basic_string.tcc: Likewise.
+
 2004-10-17  Benjamin Kosnik  <bkoz@redhat.com>
 
 	* include/ext/mt_allocator.h (__pool::_M_get_align): New.
