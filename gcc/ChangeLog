@@ -1,6 +1,7 @@
 2000-05-31  Bruce Korb  <bkorb@gnu.org>
 
 	* check.tpl: rework to use test result tree
+	* check.diff: No longer needed
 	* fixincl.x: regenerate
 	* inclhack.def:  add new tests
 	* tests/base/arch/i960/archI960.h:  New test result
