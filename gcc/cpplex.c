@@ -857,7 +857,8 @@ _cpp_lex_token (pfile, result)
  done_directive:
   buffer = pfile->buffer;
   pfile->state.next_bol = 0;
-  result->flags = 0;
+  result->flags = buffer->saved_flags;
+  buffer->saved_flags = 0;
  next_char:
   pfile->lexer_pos.line = buffer->lineno;
  next_char2:
@@ -899,7 +900,7 @@ _cpp_lex_token (pfile, result)
 	  /* This is a new line, so clear any white space flag.
 	     Newlines in arguments are white space (6.10.3.10);
 	     parse_arg takes care of that.  */
-	  result->flags &= ~PREV_WHITE;
+	  result->flags &= ~(PREV_WHITE | AVOID_LPASTE);
 	  goto next_char;
 	}
 
@@ -1196,7 +1197,7 @@ _cpp_lex_token (pfile, result)
 
 	      /* Get whitespace right - newline_in_args sets it.  */
 	      if (pfile->lexer_pos.col == 1)
-		result->flags &= ~PREV_WHITE;
+		result->flags &= ~(PREV_WHITE | AVOID_LPASTE);
 	    }
 	  else
 	    {

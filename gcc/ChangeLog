@@ -1,3 +1,16 @@
+2001-02-01  Neil Booth  <neil@daikokuya.demon.co.uk>
+
+        * cpphash.h (struct cpp_buffer): Move saved_flags from cpp_reader.
+        * cpplex.c (_cpp_lex_token): New token picks up the saved flags,
+        and AVOID_LPASTE is cleared on meeting an unescaped newline.
+        * cppmacro.c (builtin_macro): Set builtin flags here.
+        (paste_all_tokens): Preserve AVOID_LPASTE on pasted token.
+        (replace_args): Clarify intent.
+        (cpp_get_token): Macro expansion tokens get the saved flags.
+        Update.
+        * cppmain.c (scan_buffer): Remove now-redundant print.printed
+        check.
+
 2001-02-01  Jeffrey Oldham  <oldham@codesourcery.com>
 
 	* config/mips/iris6.h (SUPPORTS_INIT_PRIORITY): Reverse change of

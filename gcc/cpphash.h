@@ -194,6 +194,9 @@ struct cpp_buffer
   /* Line number at line_base (above). */
   unsigned int lineno;
 
+  /* Contains PREV_WHITE and/or AVOID_LPASTE.  */
+  unsigned char saved_flags;
+
   /* Because of the way the lexer works, -Wtrigraphs can sometimes
      warn twice for the same trigraph.  This helps prevent that.  */
   const unsigned char *last_Wtrigraphs;
@@ -330,9 +333,6 @@ struct cpp_reader
 
   /* We're printed a warning recommending against using #import.  */
   unsigned char import_warning;
-
-  /* Used to flag the token after a paste AVOID_LPASTE.  */
-  unsigned char saved_flags;
 
   /* True after cpp_start_read completes.  Used to inhibit some
      warnings while parsing the command line.  */
