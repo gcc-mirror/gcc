@@ -427,19 +427,22 @@
   ""
   "
 {
-  rtx op1 = gen_lowpart (DImode, operands[1]);
-  rtx op2 = gen_lowpart (DImode, operands[2]);
-
-  if (! cse_not_expected)
+  if (optimize)
     {
-      rtx tmp = gen_reg_rtx (DImode);
-      emit_insn (gen_adddi3 (tmp, op1, op2));
-      emit_move_insn (operands[0], gen_lowpart (SImode, tmp));
+      rtx op1 = gen_lowpart (DImode, operands[1]);
+      rtx op2 = gen_lowpart (DImode, operands[2]);
+
+      if (! cse_not_expected)
+        {
+          rtx tmp = gen_reg_rtx (DImode);
+          emit_insn (gen_adddi3 (tmp, op1, op2));
+          emit_move_insn (gen_lowpart (DImode, operands[0]), tmp);
+        }
+      else
+        emit_insn (gen_adddi3 (gen_lowpart (DImode, operands[0]), op1, op2));
+      DONE;
     }
-  else
-    emit_insn (gen_adddi3 (gen_lowpart (DImode, operands[0]), op1, op2));
-  DONE;
-} ")
+}")
 
 (define_insn ""
   [(set (match_operand:SI 0 "register_operand" "=r,r,r,r")
@@ -719,18 +722,21 @@
   ""
   "
 {
-  rtx op1 = gen_lowpart (DImode, operands[1]);
-  rtx op2 = gen_lowpart (DImode, operands[2]);
-
-  if (! cse_not_expected)
+  if (optimize)
     {
-      rtx tmp = gen_reg_rtx (DImode);
-      emit_insn (gen_subdi3 (tmp, op1, op2));
-      emit_move_insn (operands[0], gen_lowpart (SImode, tmp));
+      rtx op1 = gen_lowpart (DImode, operands[1]);
+      rtx op2 = gen_lowpart (DImode, operands[2]);
+
+      if (! cse_not_expected)
+        {
+          rtx tmp = gen_reg_rtx (DImode);
+          emit_insn (gen_subdi3 (tmp, op1, op2));
+          emit_move_insn (gen_lowpart (DImode, operands[0]), tmp);
+        }
+      else
+        emit_insn (gen_subdi3 (gen_lowpart (DImode, operands[0]), op1, op2));
+      DONE;
     }
-  else
-    emit_insn (gen_subdi3 (gen_lowpart (DImode, operands[0]), op1, op2));
-  DONE;
 } ")
 
 (define_insn ""
