@@ -219,17 +219,7 @@ typedef struct { unsigned :16, :16, :16; } vms_ino_t;
    define.  Here are the definitions, which in the C front end are
    found in the file c-decl.c.  */
 
-tree integer_zero_node;
-tree integer_one_node;
-tree null_pointer_node;
-tree error_mark_node;
-tree void_type_node;
-tree integer_type_node;
-tree unsigned_type_node;
-tree char_type_node;
 tree current_function_decl;
-tree ptr_type_node;
-tree va_list_type_node;
 
 /* ~~gcc/tree.h *should* declare this, because toplev.c and dwarfout.c
    reference it.  */
@@ -245,25 +235,6 @@ FILE *finput;
    to build some of them that are.  The ones that are global (i.e. not
    "static") are those that ste.c and such might use (directly
    or by using com macros that reference them in their definitions).  */
-
-static tree short_integer_type_node;
-tree long_integer_type_node;
-static tree long_long_integer_type_node;
-
-static tree short_unsigned_type_node;
-static tree long_unsigned_type_node;
-static tree long_long_unsigned_type_node;
-
-static tree unsigned_char_type_node;
-static tree signed_char_type_node;
-
-static tree float_type_node;
-static tree double_type_node;
-static tree complex_float_type_node;
-tree complex_double_type_node;
-static tree long_double_type_node;
-static tree complex_integer_type_node;
-static tree complex_long_double_type_node;
 
 tree string_type_node;
 
@@ -11699,41 +11670,25 @@ ffecom_init_0 ()
   global_binding_level = current_binding_level;
   current_binding_level->prep_state = 2;
 
-  /* Define `int' and `char' first so that dbx will output them first.  */
+  build_common_tree_nodes (1);
 
-  integer_type_node = make_signed_type (INT_TYPE_SIZE);
+  /* Define `int' and `char' first so that dbx will output them first.  */
   pushdecl (build_decl (TYPE_DECL, get_identifier ("int"),
 			integer_type_node));
-
-  char_type_node = make_unsigned_type (CHAR_TYPE_SIZE);
   pushdecl (build_decl (TYPE_DECL, get_identifier ("char"),
 			char_type_node));
-
-  long_integer_type_node = make_signed_type (LONG_TYPE_SIZE);
   pushdecl (build_decl (TYPE_DECL, get_identifier ("long int"),
 			long_integer_type_node));
-
-  unsigned_type_node = make_unsigned_type (INT_TYPE_SIZE);
   pushdecl (build_decl (TYPE_DECL, get_identifier ("unsigned int"),
 			unsigned_type_node));
-
-  long_unsigned_type_node = make_unsigned_type (LONG_TYPE_SIZE);
   pushdecl (build_decl (TYPE_DECL, get_identifier ("long unsigned int"),
 			long_unsigned_type_node));
-
-  long_long_integer_type_node = make_signed_type (LONG_LONG_TYPE_SIZE);
   pushdecl (build_decl (TYPE_DECL, get_identifier ("long long int"),
 			long_long_integer_type_node));
-
-  long_long_unsigned_type_node = make_unsigned_type (LONG_LONG_TYPE_SIZE);
   pushdecl (build_decl (TYPE_DECL, get_identifier ("long long unsigned int"),
 			long_long_unsigned_type_node));
-
-  short_integer_type_node = make_signed_type (SHORT_TYPE_SIZE);
   pushdecl (build_decl (TYPE_DECL, get_identifier ("short int"),
 			short_integer_type_node));
-
-  short_unsigned_type_node = make_unsigned_type (SHORT_TYPE_SIZE);
   pushdecl (build_decl (TYPE_DECL, get_identifier ("short unsigned int"),
 			short_unsigned_type_node));
 
@@ -11745,75 +11700,43 @@ ffecom_init_0 ()
   ffecom_typesize_pointer_
     = TREE_INT_CST_LOW (TYPE_SIZE (sizetype)) / BITS_PER_UNIT;
 
-  error_mark_node = make_node (ERROR_MARK);
-  TREE_TYPE (error_mark_node) = error_mark_node;
+  build_common_tree_nodes_2 (0);
 
   /* Define both `signed char' and `unsigned char'.  */
-  signed_char_type_node = make_signed_type (CHAR_TYPE_SIZE);
   pushdecl (build_decl (TYPE_DECL, get_identifier ("signed char"),
 			signed_char_type_node));
 
-  unsigned_char_type_node = make_unsigned_type (CHAR_TYPE_SIZE);
   pushdecl (build_decl (TYPE_DECL, get_identifier ("unsigned char"),
 			unsigned_char_type_node));
 
-  float_type_node = make_node (REAL_TYPE);
-  TYPE_PRECISION (float_type_node) = FLOAT_TYPE_SIZE;
-  layout_type (float_type_node);
   pushdecl (build_decl (TYPE_DECL, get_identifier ("float"),
 			float_type_node));
-
-  double_type_node = make_node (REAL_TYPE);
-  TYPE_PRECISION (double_type_node) = DOUBLE_TYPE_SIZE;
-  layout_type (double_type_node);
   pushdecl (build_decl (TYPE_DECL, get_identifier ("double"),
 			double_type_node));
-
-  long_double_type_node = make_node (REAL_TYPE);
-  TYPE_PRECISION (long_double_type_node) = LONG_DOUBLE_TYPE_SIZE;
-  layout_type (long_double_type_node);
   pushdecl (build_decl (TYPE_DECL, get_identifier ("long double"),
 			long_double_type_node));
 
+  /* For now, override what build_common_tree_nodes has done.  */
   complex_integer_type_node = ffecom_make_complex_type_ (integer_type_node);
+  complex_float_type_node = ffecom_make_complex_type_ (float_type_node);
+  complex_double_type_node = ffecom_make_complex_type_ (double_type_node);
+  complex_long_double_type_node
+    = ffecom_make_complex_type_ (long_double_type_node);
+
   pushdecl (build_decl (TYPE_DECL, get_identifier ("complex int"),
 			complex_integer_type_node));
-
-  complex_float_type_node = ffecom_make_complex_type_ (float_type_node);
   pushdecl (build_decl (TYPE_DECL, get_identifier ("complex float"),
 			complex_float_type_node));
-
-  complex_double_type_node = ffecom_make_complex_type_ (double_type_node);
   pushdecl (build_decl (TYPE_DECL, get_identifier ("complex double"),
 			complex_double_type_node));
-
-  complex_long_double_type_node = ffecom_make_complex_type_ (long_double_type_node);
   pushdecl (build_decl (TYPE_DECL, get_identifier ("complex long double"),
 			complex_long_double_type_node));
 
-  integer_zero_node = build_int_2 (0, 0);
-  TREE_TYPE (integer_zero_node) = integer_type_node;
-  integer_one_node = build_int_2 (1, 0);
-  TREE_TYPE (integer_one_node) = integer_type_node;
-
-  size_zero_node = build_int_2 (0, 0);
-  TREE_TYPE (size_zero_node) = sizetype;
-  size_one_node = build_int_2 (1, 0);
-  TREE_TYPE (size_one_node) = sizetype;
-
-  void_type_node = make_node (VOID_TYPE);
   pushdecl (build_decl (TYPE_DECL, get_identifier ("void"),
 			void_type_node));
-  layout_type (void_type_node);	/* Uses integer_zero_node */
   /* We are not going to have real types in C with less than byte alignment,
      so we might as well not have any types that claim to have it.  */
   TYPE_ALIGN (void_type_node) = BITS_PER_UNIT;
-
-  ptr_type_node = build_pointer_type (void_type_node);
-
-  null_pointer_node = build_int_2 (0, 0);
-  TREE_TYPE (null_pointer_node) = ptr_type_node;
-  layout_type (TREE_TYPE (null_pointer_node));
 
   string_type_node = build_pointer_type (char_type_node);
 

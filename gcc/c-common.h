@@ -22,49 +22,17 @@ Boston, MA 02111-1307, USA.  */
 
 enum c_tree_index
 {
-    CTI_INTQI_TYPE,
-    CTI_INTHI_TYPE,
-    CTI_INTSI_TYPE,
-    CTI_INTDI_TYPE,
-    CTI_INTTI_TYPE,
-
-    CTI_UINTQI_TYPE,
-    CTI_UINTHI_TYPE,
-    CTI_UINTSI_TYPE,
-    CTI_UINTDI_TYPE,
-    CTI_UINTTI_TYPE,
-    
-    CTI_SIGNED_CHAR_TYPE,
-    CTI_UNSIGNED_CHAR_TYPE,
     CTI_WCHAR_TYPE,
     CTI_SIGNED_WCHAR_TYPE,
     CTI_UNSIGNED_WCHAR_TYPE,
-    CTI_SHORT_INTEGER_TYPE,
-    CTI_SHORT_UNSIGNED_TYPE,
-    CTI_LONG_INTEGER_TYPE,
-    CTI_LONG_UNSIGNED_TYPE,
-    CTI_LONG_LONG_INTEGER_TYPE,
-    CTI_LONG_LONG_UNSIGNED_TYPE,
     CTI_WIDEST_INT_LIT_TYPE,
     CTI_WIDEST_UINT_LIT_TYPE,
-
-    CTI_COMPLEX_INTEGER_TYPE,
-    CTI_COMPLEX_FLOAT_TYPE,
-    CTI_COMPLEX_DOUBLE_TYPE,
-    CTI_COMPLEX_LONG_DOUBLE_TYPE,
-
-    CTI_FLOAT_TYPE,
-    CTI_DOUBLE_TYPE,
-    CTI_LONG_DOUBLE_TYPE,
 
     CTI_CHAR_ARRAY_TYPE,
     CTI_WCHAR_ARRAY_TYPE,
     CTI_INT_ARRAY_TYPE,
     CTI_STRING_TYPE,
     CTI_CONST_STRING_TYPE,
-
-    CTI_CONST_PTR_TYPE,
-    CTI_PTRDIFF_TYPE,
 
     CTI_BOOLEAN_TYPE,
     CTI_BOOLEAN_TRUE,
@@ -82,51 +50,15 @@ enum c_tree_index
 
 extern tree c_global_trees[CTI_MAX];
 
-#define intQI_type_node			c_global_trees[CTI_INTQI_TYPE]
-#define intHI_type_node			c_global_trees[CTI_INTHI_TYPE]
-#define intSI_type_node			c_global_trees[CTI_INTSI_TYPE]
-#define intDI_type_node			c_global_trees[CTI_INTDI_TYPE]
-#if HOST_BITS_PER_WIDE_INT >= 64
-#define intTI_type_node			c_global_trees[CTI_INTTI_TYPE]
-#endif
-
-#define unsigned_intQI_type_node	c_global_trees[CTI_UINTQI_TYPE]
-#define unsigned_intHI_type_node	c_global_trees[CTI_UINTHI_TYPE]
-#define unsigned_intSI_type_node	c_global_trees[CTI_UINTSI_TYPE]
-#define unsigned_intDI_type_node	c_global_trees[CTI_UINTDI_TYPE]
-#if HOST_BITS_PER_WIDE_INT >= 64
-#define unsigned_intTI_type_node	c_global_trees[CTI_UINTTI_TYPE]
-#endif
-
-#define signed_char_type_node		c_global_trees[CTI_SIGNED_CHAR_TYPE]
-#define unsigned_char_type_node		c_global_trees[CTI_UNSIGNED_CHAR_TYPE]
 #define wchar_type_node			c_global_trees[CTI_WCHAR_TYPE]
 #define signed_wchar_type_node		c_global_trees[CTI_SIGNED_WCHAR_TYPE]
 #define unsigned_wchar_type_node	c_global_trees[CTI_UNSIGNED_WCHAR_TYPE]
-#define short_integer_type_node		c_global_trees[CTI_SHORT_INTEGER_TYPE]
-#define short_unsigned_type_node	c_global_trees[CTI_SHORT_UNSIGNED_TYPE]
-#define long_integer_type_node		c_global_trees[CTI_LONG_INTEGER_TYPE]
-#define long_unsigned_type_node		c_global_trees[CTI_LONG_UNSIGNED_TYPE]
-#define long_long_integer_type_node	c_global_trees[CTI_LONG_LONG_INTEGER_TYPE]
-#define long_long_unsigned_type_node	c_global_trees[CTI_LONG_LONG_UNSIGNED_TYPE]
 #define widest_integer_literal_type_node c_global_trees[CTI_WIDEST_INT_LIT_TYPE]
 #define widest_unsigned_literal_type_node c_global_trees[CTI_WIDEST_UINT_LIT_TYPE]
-
-#define float_type_node			c_global_trees[CTI_FLOAT_TYPE]
-#define double_type_node		c_global_trees[CTI_DOUBLE_TYPE]
-#define long_double_type_node		c_global_trees[CTI_LONG_DOUBLE_TYPE]
-
-#define complex_integer_type_node	c_global_trees[CTI_COMPLEX_INTEGER_TYPE]
-#define complex_float_type_node		c_global_trees[CTI_COMPLEX_FLOAT_TYPE]
-#define complex_double_type_node	c_global_trees[CTI_COMPLEX_DOUBLE_TYPE]
-#define complex_long_double_type_node	c_global_trees[CTI_COMPLEX_LONG_DOUBLE_TYPE]
 
 #define boolean_type_node		c_global_trees[CTI_BOOLEAN_TYPE]
 #define boolean_true_node		c_global_trees[CTI_BOOLEAN_TRUE]
 #define boolean_false_node		c_global_trees[CTI_BOOLEAN_FALSE]
-
-#define const_ptr_type_node		c_global_trees[CTI_CONST_PTR_TYPE]
-#define ptrdiff_type_node		c_global_trees[CTI_PTRDIFF_TYPE]
 
 #define char_array_type_node		c_global_trees[CTI_CHAR_ARRAY_TYPE]
 #define wchar_array_type_node		c_global_trees[CTI_WCHAR_ARRAY_TYPE]

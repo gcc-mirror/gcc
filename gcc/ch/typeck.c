@@ -38,22 +38,6 @@ Boston, MA 02111-1307, USA.  */
 #include "lex.h"
 #include "toplev.h"
 
-extern tree intQI_type_node;
-extern tree intHI_type_node;
-extern tree intSI_type_node;
-extern tree intDI_type_node;
-#if HOST_BITS_PER_WIDE_INT >= 64
-extern tree intTI_type_node;
-#endif
-
-extern tree unsigned_intQI_type_node;
-extern tree unsigned_intHI_type_node;
-extern tree unsigned_intSI_type_node;
-extern tree unsigned_intDI_type_node;
-#if HOST_BITS_PER_WIDE_INT >= 64
-extern tree unsigned_intTI_type_node;
-#endif
-
 /* forward declarations */
 static int chill_l_equivalent PROTO((tree, tree, struct mode_chain*));
 static tree extract_constant_from_buffer PROTO((tree, const unsigned char *, int));

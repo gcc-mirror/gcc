@@ -1,3 +1,9 @@
+Fri Sep 10 10:32:32 1999  Bernd Schmidt  <bernds@cygnus.co.uk>
+
+	* java-tree.h: Delete declarations for all tree nodes now moved to
+	global_trees.
+	* decl.c: Delete their definitions.
+
 1999-09-04  Mark Mitchell  <mark@codesourcery.com>
 
 	* Make-lang.in (jc1): Depend on ggc-callbacks.o.

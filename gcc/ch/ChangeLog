@@ -1,3 +1,14 @@
+Fri Sep 10 10:32:32 1999  Bernd Schmidt  <bernds@cygnus.co.uk>
+
+	* ch-tree.h: Delete declarations for all tree nodes now moved to
+	global_trees.
+	* expr.c: Likewise.
+	* typeck.c: Likewise.
+	* decl.c: Delete their definitions.
+	(init_decl_processing): Call build_common_tree_nodes and
+	build_common_tree_nodes_2 instead of building their nodes here.
+	Use set_sizetype instead of assigning sizetype.
+
 Tue Sep  7 15:59:56 1999  Dave Brolley  <brolley@cygnus.com>
 
 	* parse.h: Undefine DELAY if it's defined.

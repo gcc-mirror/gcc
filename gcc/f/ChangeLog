@@ -1,3 +1,12 @@
+Fri Sep 10 10:32:32 1999  Bernd Schmidt  <bernds@cygnus.co.uk>
+
+	* com.h: Delete declarations for all tree nodes now moved to
+	global_trees.
+	* com.c: Delete their definitions.
+	(ffecom_init_0): Call build_common_tree_nodes and
+	build_common_tree_nodes_2 instead of building their nodes here.
+	Override their decisions for complex nodes.
+
 Sat Sep  4 13:46:27 1999  Mark Mitchell  <mark@codesourcery.com>
 
 	* Make-lang.in (f771): Depend on ggc-callbacks.o.

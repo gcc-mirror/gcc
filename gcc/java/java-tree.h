@@ -196,9 +196,6 @@ extern tree unsigned_int_type_node;
 extern tree unsigned_long_type_node;
 
 extern tree boolean_type_node;
-extern tree char_type_node;
-extern tree float_type_node;
-extern tree double_type_node;
 
 extern tree object_type_node;
 extern tree unqualified_object_id_node;
@@ -233,8 +230,6 @@ extern tree this_identifier_node;  /* "this" */
 extern tree super_identifier_node;  /* "super" */
 extern tree continue_identifier_node;  /* "continue" */
 extern tree one_elt_array_domain_type;
-extern tree void_type_node;
-extern tree ptr_type_node;
 /* The type of the return address of a subroutine. */
 extern tree return_address_type_node;
 

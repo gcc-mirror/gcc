@@ -34,7 +34,6 @@ Boston, MA 02111-1307, USA.  */
 
 extern char **boolean_code_name;
 extern int  flag_old_strings;
-extern tree long_unsigned_type_node;
 extern int  ignore_case;
 extern int  special_UC;
 

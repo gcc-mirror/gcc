@@ -474,9 +474,6 @@ extern tree signed_boolean_type_node;
 extern tree string_one_type_node;
 extern tree bitstring_one_type_node, bit_zero_node, bit_one_node;
 
-extern tree float_type_node, double_type_node;
-extern tree void_type_node, ptr_type_node, const_ptr_type_node;
-
 /* a VOID_TYPE node, packaged in a TREE_LIST.  */
 
 extern tree void_list_node;
@@ -636,15 +633,7 @@ extern char *get_directive_line                 PROTO((FILE *));
 extern tree shorten_compare                     PROTO((tree *, tree *, tree *, enum tree_code *));
 
 /* in c-decl.c */
-extern tree short_integer_type_node, integer_type_node;
-extern tree long_integer_type_node, long_long_integer_type_node;
-extern tree short_unsigned_type_node, unsigned_type_node;
-extern tree long_unsigned_type_node, long_long_unsigned_type_node;
-extern tree ptrdiff_type_node;
-extern tree unsigned_char_type_node, signed_char_type_node, char_type_node;
 extern tree wchar_type_node, signed_wchar_type_node, unsigned_wchar_type_node;
-extern tree float_type_node, double_type_node, long_double_type_node;
-extern tree void_type_node, ptr_type_node, const_ptr_type_node;
 extern tree default_function_type;
 extern tree double_ftype_double, double_ftype_double_double;
 extern tree int_ftype_int, long_ftype_long;

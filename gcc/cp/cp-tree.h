@@ -743,7 +743,6 @@ extern tree global_namespace;
 extern tree ridpointers[];
 extern tree ansi_opname[];
 extern tree ansi_assopname[];
-extern tree null_pointer_node;
 
 /* Nonzero means `$' can be in an identifier.  */
 

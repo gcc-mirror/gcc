@@ -1418,6 +1418,109 @@ union tree_node
   struct tree_block block;
  };
 
+/* Standard named or nameless data types of the C compiler.  */
+
+enum tree_index
+{
+  TI_ERROR_MARK,
+  TI_INTQI_TYPE,
+  TI_INTHI_TYPE,
+  TI_INTSI_TYPE,
+  TI_INTDI_TYPE,
+  TI_INTTI_TYPE,
+
+  TI_UINTQI_TYPE,
+  TI_UINTHI_TYPE,
+  TI_UINTSI_TYPE,
+  TI_UINTDI_TYPE,
+  TI_UINTTI_TYPE,
+    
+  TI_CHAR_TYPE,
+  TI_SIGNED_CHAR_TYPE,
+  TI_UNSIGNED_CHAR_TYPE,
+  TI_INTEGER_TYPE,
+  TI_UNSIGNED_TYPE,
+  TI_SHORT_INTEGER_TYPE,
+  TI_SHORT_UNSIGNED_TYPE,
+  TI_LONG_INTEGER_TYPE,
+  TI_LONG_UNSIGNED_TYPE,
+  TI_LONG_LONG_INTEGER_TYPE,
+  TI_LONG_LONG_UNSIGNED_TYPE,
+
+  TI_INTEGER_ZERO,
+  TI_INTEGER_ONE,
+  TI_NULL_POINTER,
+
+  TI_SIZE_ZERO,
+  TI_SIZE_ONE,
+    
+  TI_COMPLEX_INTEGER_TYPE,
+  TI_COMPLEX_FLOAT_TYPE,
+  TI_COMPLEX_DOUBLE_TYPE,
+  TI_COMPLEX_LONG_DOUBLE_TYPE,
+
+  TI_FLOAT_TYPE,
+  TI_DOUBLE_TYPE,
+  TI_LONG_DOUBLE_TYPE,
+
+  TI_VOID_TYPE,
+  TI_PTR_TYPE,
+  TI_CONST_PTR_TYPE,
+  TI_PTRDIFF_TYPE,
+  TI_VA_LIST_TYPE,
+
+  TI_MAX
+};
+
+extern tree global_trees[TI_MAX];
+
+#define error_mark_node			global_trees[TI_ERROR_MARK]
+ 
+#define intQI_type_node			global_trees[TI_INTQI_TYPE]
+#define intHI_type_node			global_trees[TI_INTHI_TYPE]
+#define intSI_type_node			global_trees[TI_INTSI_TYPE]
+#define intDI_type_node			global_trees[TI_INTDI_TYPE]
+#define intTI_type_node			global_trees[TI_INTTI_TYPE]
+
+#define unsigned_intQI_type_node	global_trees[TI_UINTQI_TYPE]
+#define unsigned_intHI_type_node	global_trees[TI_UINTHI_TYPE]
+#define unsigned_intSI_type_node	global_trees[TI_UINTSI_TYPE]
+#define unsigned_intDI_type_node	global_trees[TI_UINTDI_TYPE]
+#define unsigned_intTI_type_node	global_trees[TI_UINTTI_TYPE]
+
+#define char_type_node			global_trees[TI_CHAR_TYPE]
+#define signed_char_type_node		global_trees[TI_SIGNED_CHAR_TYPE]
+#define unsigned_char_type_node		global_trees[TI_UNSIGNED_CHAR_TYPE]
+#define short_integer_type_node		global_trees[TI_SHORT_INTEGER_TYPE]
+#define short_unsigned_type_node	global_trees[TI_SHORT_UNSIGNED_TYPE]
+#define integer_type_node		global_trees[TI_INTEGER_TYPE]
+#define unsigned_type_node		global_trees[TI_UNSIGNED_TYPE]
+#define long_integer_type_node		global_trees[TI_LONG_INTEGER_TYPE]
+#define long_unsigned_type_node		global_trees[TI_LONG_UNSIGNED_TYPE]
+#define long_long_integer_type_node	global_trees[TI_LONG_LONG_INTEGER_TYPE]
+#define long_long_unsigned_type_node	global_trees[TI_LONG_LONG_UNSIGNED_TYPE]
+
+#define integer_zero_node		global_trees[TI_INTEGER_ZERO]
+#define integer_one_node		global_trees[TI_INTEGER_ONE]
+#define size_zero_node			global_trees[TI_SIZE_ZERO]
+#define size_one_node			global_trees[TI_SIZE_ONE]
+#define null_pointer_node		global_trees[TI_NULL_POINTER]
+
+#define float_type_node			global_trees[TI_FLOAT_TYPE]
+#define double_type_node		global_trees[TI_DOUBLE_TYPE]
+#define long_double_type_node		global_trees[TI_LONG_DOUBLE_TYPE]
+
+#define complex_integer_type_node	global_trees[TI_COMPLEX_INTEGER_TYPE]
+#define complex_float_type_node		global_trees[TI_COMPLEX_FLOAT_TYPE]
+#define complex_double_type_node	global_trees[TI_COMPLEX_DOUBLE_TYPE]
+#define complex_long_double_type_node	global_trees[TI_COMPLEX_LONG_DOUBLE_TYPE]
+
+#define void_type_node			global_trees[TI_VOID_TYPE]
+#define ptr_type_node			global_trees[TI_PTR_TYPE]
+#define const_ptr_type_node		global_trees[TI_CONST_PTR_TYPE]
+#define ptrdiff_type_node		global_trees[TI_PTRDIFF_TYPE]
+#define va_list_type_node		global_trees[TI_VA_LIST_TYPE]
+
 #define NULL_TREE (tree) NULL
 
 /* The following functions accept a wide integer argument.  Rather than
@@ -1858,41 +1961,6 @@ extern const char *function_cannot_inline_p 	PROTO((tree));
 extern int real_zerop PROTO((tree));
 
 /* Declare commonly used variables for tree structure.  */
-
-/* An integer constant with value 0 */
-extern tree integer_zero_node;
-
-/* An integer constant with value 1 */
-extern tree integer_one_node;
-
-/* An integer constant with value 0 whose type is sizetype.  */
-extern tree size_zero_node;
-
-/* An integer constant with value 1 whose type is sizetype.  */
-extern tree size_one_node;
-
-/* A constant of type pointer-to-int and value 0 */
-extern tree null_pointer_node;
-
-/* A node of type ERROR_MARK.  */
-extern tree error_mark_node;
-
-/* The type node for the void type.  */
-extern tree void_type_node;
-
-/* The type node for the ordinary (signed) integer type.  */
-extern tree integer_type_node;
-
-/* The type node for the unsigned integer type.  */
-extern tree unsigned_type_node;
-
-/* The type node for the ordinary character type.  */
-extern tree char_type_node;
-
-extern tree ptr_type_node;
-
-/* Type `va_list'.  Used by va_start, va_arg, etc.  */
-extern tree va_list_type_node;
 
 /* Points to the name of the input file from which the current input
    being parsed originally came (before it went into cpp).  */

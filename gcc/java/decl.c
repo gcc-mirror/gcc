@@ -252,9 +252,6 @@ static int keep_next_if_subblocks;
    or 0 if between functions.  */
 tree current_function_decl;
 
-/* The type node for the ordinary character type.  */
-tree char_type_node;
-
 tree object_type_node;
 tree unqualified_object_id_node;
 tree object_ptr_type_node;
@@ -268,16 +265,7 @@ int  predef_filenames_size;
 
 tree boolean_type_node;
 
-tree float_type_node;
-tree double_type_node;
-
-/* a VOID_TYPE node.  */
-
-tree void_type_node;
-tree ptr_type_node;
 tree return_address_type_node;
-
-tree integer_type_node;
 
 tree byte_type_node;
 tree short_type_node;
@@ -319,19 +307,8 @@ tree one_elt_array_domain_type;
 tree access_flags_type_node;
 tree class_dtable_decl;
 
-/* a node which has tree code ERROR_MARK, and whose type is itself.
-   All erroneous expressions are replaced with this node.  All functions
-   that accept nodes as arguments should avoid generating error messages
-   if this node is one of the arguments, since it is undesirable to get
-   multiple error messages from one error in the input.  */
-
-tree error_mark_node;
-
-/* Two expressions that are constants with value zero.
-   The first is of type `int', the second of type `void *'.
-   Other of type `long', `float' and `double' follow.  */
-tree integer_zero_node;
-tree null_pointer_node;
+/* Expressions that are constants with value zero, of types
+   `long', `float' and `double'.  */
 tree long_zero_node;
 tree float_zero_node;
 tree double_zero_node;
@@ -374,9 +351,6 @@ tree soft_irem_node;
 tree soft_ldiv_node;
 tree soft_lrem_node;
 
-/* __builtin_va_list; unused by java, but referenced by target files.  */
-tree va_list_type_node;
-
 /* Build (and pushdecl) a "promoted type" for all standard
    types shorter than int.  */
 
@@ -406,7 +380,7 @@ push_promoted_type (name, actual_type)
 }
 
 /* Nodes for integer constants.  */
-tree integer_one_node, integer_two_node, integer_four_node;
+tree integer_two_node, integer_four_node;
 tree integer_negative_one_node;
 
 /* Return a definition for a builtin function named NAME and whose data type

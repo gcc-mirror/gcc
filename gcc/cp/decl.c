@@ -69,40 +69,12 @@ int ggc_p = 1;
 struct obstack decl_obstack;
 static struct stack_level *decl_stack;
 
-#ifndef CHAR_TYPE_SIZE
-#define CHAR_TYPE_SIZE BITS_PER_UNIT
-#endif
-
-#ifndef SHORT_TYPE_SIZE
-#define SHORT_TYPE_SIZE (BITS_PER_UNIT * MIN ((UNITS_PER_WORD + 1) / 2, 2))
-#endif
-
-#ifndef INT_TYPE_SIZE
-#define INT_TYPE_SIZE BITS_PER_WORD
-#endif
-
-#ifndef LONG_TYPE_SIZE
-#define LONG_TYPE_SIZE BITS_PER_WORD
-#endif
-
-#ifndef LONG_LONG_TYPE_SIZE
-#define LONG_LONG_TYPE_SIZE (BITS_PER_WORD * 2)
-#endif
-
 #ifndef WCHAR_UNSIGNED
 #define WCHAR_UNSIGNED 0
 #endif
 
-#ifndef FLOAT_TYPE_SIZE
-#define FLOAT_TYPE_SIZE BITS_PER_WORD
-#endif
-
-#ifndef DOUBLE_TYPE_SIZE
-#define DOUBLE_TYPE_SIZE (BITS_PER_WORD * 2)
-#endif
-
-#ifndef LONG_DOUBLE_TYPE_SIZE
-#define LONG_DOUBLE_TYPE_SIZE (BITS_PER_WORD * 2)
+#ifndef CHAR_TYPE_SIZE
+#define CHAR_TYPE_SIZE BITS_PER_UNIT
 #endif
 
 #ifndef BOOL_TYPE_SIZE
@@ -212,14 +184,6 @@ static void destroy_local_static PROTO((tree));
 static void indent PROTO((void));
 #endif
 
-/* A node which has tree code ERROR_MARK, and whose type is itself.
-   All erroneous expressions are replaced with this node.  All functions
-   that accept nodes as arguments should avoid generating error messages
-   if this node is one of the arguments, since it is undesirable to get
-   multiple error messages from one error in the input.  */
-
-tree error_mark_node;
-
 /* Erroneous argument lists can use this *IFF* they do not modify it.  */
 tree error_mark_list;
 
@@ -283,21 +247,6 @@ tree error_mark_list;
 
 tree cp_global_trees[CPTI_MAX];
 
-/* These can't be part of the above array, since they are declared
-   individually in tree.h, and used by the debug output routines.  */
-
-tree void_type_node;
-tree char_type_node;
-tree integer_type_node;
-tree unsigned_type_node;
-
-/* These can't be part of the above array, since they are declared
-   individially in tree.h and used by the target routines.  */
-
-tree ptr_type_node;
-tree va_list_type_node;
-tree null_pointer_node;
-
 /* Indicates that there is a type value in some namespace, although
    that is not necessarily in scope at the moment.  */
 
@@ -351,13 +300,9 @@ tree static_aggregates;
 
 /* -- end of C++ */
 
-/* An expression of type `int' for the constant zero.  */
+/* A node for the integer constants 2, and 3.  */
 
-tree integer_zero_node;
-
-/* A node for the integer constants 1, 2, and 3.  */
-
-tree integer_one_node, integer_two_node, integer_three_node;
+tree integer_two_node, integer_three_node;
 
 /* While defining an enum type, this is 1 plus the last enumerator
    constant value.  */
@@ -6091,10 +6036,9 @@ init_decl_processing ()
 
   gcc_obstack_init (&decl_obstack);
 
-  /* Must lay these out before anything else gets laid out.  */
-  error_mark_node = make_node (ERROR_MARK);
+  build_common_tree_nodes (flag_signed_char);
+
   TREE_PERMANENT (error_mark_node) = 1;
-  TREE_TYPE (error_mark_node) = error_mark_node;
   error_mark_list = build_tree_list (error_mark_node, error_mark_node);
   TREE_TYPE (error_mark_list) = error_mark_node;
 
@@ -6116,61 +6060,36 @@ init_decl_processing ()
   pfn_or_delta2_identifier = get_identifier ("__pfn_or_delta2");
 
   /* Define `int' and `char' first so that dbx will output them first.  */
-
-  integer_type_node = make_signed_type (INT_TYPE_SIZE);
   record_builtin_type (RID_INT, NULL_PTR, integer_type_node);
-
-  /* Define `char', which is like either `signed char' or `unsigned char'
-     but not the same as either.  */
-
-  char_type_node
-    = (flag_signed_char
-       ? make_signed_type (CHAR_TYPE_SIZE)
-       : make_unsigned_type (CHAR_TYPE_SIZE));
   record_builtin_type (RID_CHAR, "char", char_type_node);
 
   /* `signed' is the same as `int' */
   record_builtin_type (RID_SIGNED, NULL_PTR, integer_type_node);
-  
-  long_integer_type_node = make_signed_type (LONG_TYPE_SIZE);
   record_builtin_type (RID_LONG, "long int", long_integer_type_node);
-
-  unsigned_type_node = make_unsigned_type (INT_TYPE_SIZE);
   record_builtin_type (RID_UNSIGNED, "unsigned int", unsigned_type_node);
-
-  long_unsigned_type_node = make_unsigned_type (LONG_TYPE_SIZE);
   record_builtin_type (RID_MAX, "long unsigned int", long_unsigned_type_node);
   record_builtin_type (RID_MAX, "unsigned long", long_unsigned_type_node);
-
-  long_long_integer_type_node = make_signed_type (LONG_LONG_TYPE_SIZE);
   record_builtin_type (RID_MAX, "long long int", long_long_integer_type_node);
-
-  long_long_unsigned_type_node = make_unsigned_type (LONG_LONG_TYPE_SIZE);
   record_builtin_type (RID_MAX, "long long unsigned int",
 		       long_long_unsigned_type_node);
   record_builtin_type (RID_MAX, "long long unsigned",
 		       long_long_unsigned_type_node);
-
-  short_integer_type_node = make_signed_type (SHORT_TYPE_SIZE);
   record_builtin_type (RID_SHORT, "short int", short_integer_type_node);
-  short_unsigned_type_node = make_unsigned_type (SHORT_TYPE_SIZE);
   record_builtin_type (RID_MAX, "short unsigned int", short_unsigned_type_node);
   record_builtin_type (RID_MAX, "unsigned short", short_unsigned_type_node);
+
+  ptrdiff_type_node
+    = TREE_TYPE (IDENTIFIER_GLOBAL_VALUE (get_identifier (PTRDIFF_TYPE)));
+
+  /* Define both `signed char' and `unsigned char'.  */
+  record_builtin_type (RID_MAX, "signed char", signed_char_type_node);
+  record_builtin_type (RID_MAX, "unsigned char", unsigned_char_type_node);
 
   /* `unsigned long' is the standard type for sizeof.
      Note that stddef.h uses `unsigned long',
      and this must agree, even if long and int are the same size.  */
   set_sizetype
     (TREE_TYPE (IDENTIFIER_GLOBAL_VALUE (get_identifier (SIZE_TYPE))));
-
-  ptrdiff_type_node
-    = TREE_TYPE (IDENTIFIER_GLOBAL_VALUE (get_identifier (PTRDIFF_TYPE)));
-
-  /* Define both `signed char' and `unsigned char'.  */
-  signed_char_type_node = make_signed_type (CHAR_TYPE_SIZE);
-  record_builtin_type (RID_MAX, "signed char", signed_char_type_node);
-  unsigned_char_type_node = make_unsigned_type (CHAR_TYPE_SIZE);
-  record_builtin_type (RID_MAX, "unsigned char", unsigned_char_type_node);
 
   /* Create the widest literal types. */
   widest_integer_literal_type_node = make_signed_type (HOST_BITS_PER_WIDE_INT * 2);
@@ -6182,72 +6101,22 @@ init_decl_processing ()
 			widest_unsigned_literal_type_node));
 
   /* These are types that type_for_size and type_for_mode use.  */
-  intQI_type_node = make_signed_type (GET_MODE_BITSIZE (QImode));
   pushdecl (build_decl (TYPE_DECL, NULL_TREE, intQI_type_node));
-  intHI_type_node = make_signed_type (GET_MODE_BITSIZE (HImode));
   pushdecl (build_decl (TYPE_DECL, NULL_TREE, intHI_type_node));
-  intSI_type_node = make_signed_type (GET_MODE_BITSIZE (SImode));
   pushdecl (build_decl (TYPE_DECL, NULL_TREE, intSI_type_node));
-  intDI_type_node = make_signed_type (GET_MODE_BITSIZE (DImode));
   pushdecl (build_decl (TYPE_DECL, NULL_TREE, intDI_type_node));
 #if HOST_BITS_PER_WIDE_INT >= 64
-  intTI_type_node = make_signed_type (GET_MODE_BITSIZE (TImode));
   pushdecl (build_decl (TYPE_DECL, get_identifier ("__int128_t"), intTI_type_node));
 #endif
-  unsigned_intQI_type_node = make_unsigned_type (GET_MODE_BITSIZE (QImode));
   pushdecl (build_decl (TYPE_DECL, NULL_TREE, unsigned_intQI_type_node));
-  unsigned_intHI_type_node = make_unsigned_type (GET_MODE_BITSIZE (HImode));
   pushdecl (build_decl (TYPE_DECL, NULL_TREE, unsigned_intHI_type_node));
-  unsigned_intSI_type_node = make_unsigned_type (GET_MODE_BITSIZE (SImode));
   pushdecl (build_decl (TYPE_DECL, NULL_TREE, unsigned_intSI_type_node));
-  unsigned_intDI_type_node = make_unsigned_type (GET_MODE_BITSIZE (DImode));
   pushdecl (build_decl (TYPE_DECL, NULL_TREE, unsigned_intDI_type_node));
 #if HOST_BITS_PER_WIDE_INT >= 64
-  unsigned_intTI_type_node = make_unsigned_type (GET_MODE_BITSIZE (TImode));
   pushdecl (build_decl (TYPE_DECL, get_identifier ("__uint128_t"), unsigned_intTI_type_node));
 #endif
 
-  float_type_node = make_node (REAL_TYPE);
-  TYPE_PRECISION (float_type_node) = FLOAT_TYPE_SIZE;
-  record_builtin_type (RID_FLOAT, NULL_PTR, float_type_node);
-  layout_type (float_type_node);
-
-  double_type_node = make_node (REAL_TYPE);
-  if (flag_short_double)
-    TYPE_PRECISION (double_type_node) = FLOAT_TYPE_SIZE;
-  else
-    TYPE_PRECISION (double_type_node) = DOUBLE_TYPE_SIZE;
-  record_builtin_type (RID_DOUBLE, NULL_PTR, double_type_node);
-  layout_type (double_type_node);
-
-  long_double_type_node = make_node (REAL_TYPE);
-  TYPE_PRECISION (long_double_type_node) = LONG_DOUBLE_TYPE_SIZE;
-  record_builtin_type (RID_MAX, "long double", long_double_type_node);
-  layout_type (long_double_type_node);
-
-  complex_integer_type_node = make_node (COMPLEX_TYPE);
-  pushdecl (build_decl (TYPE_DECL, get_identifier ("complex int"),
-			complex_integer_type_node));
-  TREE_TYPE (complex_integer_type_node) = integer_type_node;
-  layout_type (complex_integer_type_node);
-
-  complex_float_type_node = make_node (COMPLEX_TYPE);
-  pushdecl (build_decl (TYPE_DECL, get_identifier ("complex float"),
-			complex_float_type_node));
-  TREE_TYPE (complex_float_type_node) = float_type_node;
-  layout_type (complex_float_type_node);
-
-  complex_double_type_node = make_node (COMPLEX_TYPE);
-  pushdecl (build_decl (TYPE_DECL, get_identifier ("complex double"),
-			complex_double_type_node));
-  TREE_TYPE (complex_double_type_node) = double_type_node;
-  layout_type (complex_double_type_node);
-
-  complex_long_double_type_node = make_node (COMPLEX_TYPE);
-  pushdecl (build_decl (TYPE_DECL, get_identifier ("complex long double"),
-			complex_long_double_type_node));
-  TREE_TYPE (complex_long_double_type_node) = long_double_type_node;
-  layout_type (complex_long_double_type_node);
+  build_common_tree_nodes_2 (flag_short_double);
 
   java_byte_type_node = record_builtin_java_type ("__java_byte", 8);
   java_short_type_node = record_builtin_java_type ("__java_short", 16);
@@ -6258,10 +6127,6 @@ init_decl_processing ()
   java_char_type_node = record_builtin_java_type ("__java_char", -16);
   java_boolean_type_node = record_builtin_java_type ("__java_boolean", -1);
 
-  integer_zero_node = build_int_2 (0, 0);
-  TREE_TYPE (integer_zero_node) = integer_type_node;
-  integer_one_node = build_int_2 (1, 0);
-  TREE_TYPE (integer_one_node) = integer_type_node;
   integer_two_node = build_int_2 (2, 0);
   TREE_TYPE (integer_two_node) = integer_type_node;
   integer_three_node = build_int_2 (3, 0);
@@ -6278,23 +6143,25 @@ init_decl_processing ()
   boolean_true_node = build_int_2 (1, 0);
   TREE_TYPE (boolean_true_node) = boolean_type_node;
 
-  /* These are needed by stor-layout.c.  */
-  size_zero_node = size_int (0);
-  size_one_node = size_int (1);
+  signed_size_zero_node = build_int_2 (0, 0);  record_builtin_type (RID_FLOAT, NULL_PTR, float_type_node);
+  record_builtin_type (RID_DOUBLE, NULL_PTR, double_type_node);
+  record_builtin_type (RID_MAX, "long double", long_double_type_node);
 
-  signed_size_zero_node = build_int_2 (0, 0);
+  pushdecl (build_decl (TYPE_DECL, get_identifier ("complex int"),
+			complex_integer_type_node));
+  pushdecl (build_decl (TYPE_DECL, get_identifier ("complex float"),
+			complex_float_type_node));
+  pushdecl (build_decl (TYPE_DECL, get_identifier ("complex double"),
+			complex_double_type_node));
+  pushdecl (build_decl (TYPE_DECL, get_identifier ("complex long double"),
+			complex_long_double_type_node));
+
   TREE_TYPE (signed_size_zero_node) = make_signed_type (TYPE_PRECISION (sizetype));
 
-  void_type_node = make_node (VOID_TYPE);
   record_builtin_type (RID_VOID, NULL_PTR, void_type_node);
-  layout_type (void_type_node); /* Uses integer_zero_node.  */
   void_list_node = build_tree_list (NULL_TREE, void_type_node);
   TREE_PARMLIST (void_list_node) = 1;
 
-  null_pointer_node = build_int_2 (0, 0);
-  TREE_TYPE (null_pointer_node) = build_pointer_type (void_type_node);
-  layout_type (TREE_TYPE (null_pointer_node));
-     
   /* Used for expressions that do nothing, but are not errors.  */
   void_zero_node = build_int_2 (0, 0);
   TREE_TYPE (void_zero_node) = void_type_node;
@@ -6497,21 +6364,11 @@ init_decl_processing ()
   /* Add GC roots for all of our global variables.  */
   ggc_add_tree_root (c_global_trees, sizeof c_global_trees / sizeof(tree));
   ggc_add_tree_root (cp_global_trees, sizeof cp_global_trees / sizeof(tree));
-  ggc_add_tree_root (&char_type_node, 1);
-  ggc_add_tree_root (&error_mark_node, 1);
-  ggc_add_tree_root (&integer_type_node, 1);
   ggc_add_tree_root (&integer_three_node, 1);
   ggc_add_tree_root (&integer_two_node, 1);
-  ggc_add_tree_root (&integer_one_node, 1);
-  ggc_add_tree_root (&integer_zero_node, 1);
   ggc_add_tree_root (&signed_size_zero_node, 1);
   ggc_add_tree_root (&size_one_node, 1);
   ggc_add_tree_root (&size_zero_node, 1);
-  ggc_add_tree_root (&unsigned_type_node, 1);
-  ggc_add_tree_root (&ptr_type_node, 1);
-  ggc_add_tree_root (&null_pointer_node, 1);
-  ggc_add_tree_root (&va_list_type_node, 1);
-  ggc_add_tree_root (&void_type_node, 1);
   ggc_add_root (&global_binding_level, 1, sizeof global_binding_level,
 		mark_binding_level);
   ggc_add_root (&scope_chain, 1, sizeof scope_chain, &mark_saved_scope);
