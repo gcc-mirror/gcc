@@ -5838,7 +5838,10 @@ do_pragma (buf, limit)
   while (*buf == ' ' || *buf == '\t')
     buf++;
   if (!strncmp (buf, "once", 4)) {
-    warning ("`#pragma once' is obsolete");
+    /* Allow #pragma once in system headers, since that's not the user's
+       fault.  */
+    if (!instack[indepth].system_header_p)
+      warning ("`#pragma once' is obsolete");
     do_once ();
   }
   return 0;
