@@ -5348,67 +5348,65 @@ round_trampoline_addr (tramp)
    The arguments are BLOCK, the chain of top-level blocks of the function,
    and INSNS, the insn chain of the function.  */
 
-tree *
+void
 identify_blocks (block, insns)
      tree block;
      rtx insns;
 {
   int n_blocks;
   tree *block_vector;
-  int *block_stack;
+  tree *block_stack;
   int depth = 0;
-  int next_block_number = 1;
   int current_block_number = 1;
   rtx insn;
 
   if (block == 0)
-    return 0;
+    return;
 
+  /* Fill the BLOCK_VECTOR with all of the BLOCKs in this function, in
+     depth-first order.  */
   n_blocks = all_blocks (block, 0);
   block_vector = (tree *) xmalloc (n_blocks * sizeof (tree));
-  block_stack = (int *) alloca (n_blocks * sizeof (int));
-
   all_blocks (block, block_vector);
+
+  block_stack = (tree *) alloca (n_blocks * sizeof (tree));
 
   for (insn = insns; insn; insn = NEXT_INSN (insn))
     if (GET_CODE (insn) == NOTE)
       {
 	if (NOTE_LINE_NUMBER (insn) == NOTE_INSN_BLOCK_BEG)
 	  {
-	    block_stack[depth++] = current_block_number;
-	    current_block_number = next_block_number;
-	    NOTE_BLOCK_NUMBER (insn) =  next_block_number++;
+	    tree block;
+
+	    block = block_vector[current_block_number++];
+	    NOTE_BLOCK (insn) = block;
+	    block_stack[depth++] = block;
 	  }
 	if (NOTE_LINE_NUMBER (insn) == NOTE_INSN_BLOCK_END)
-	  {
-	    NOTE_BLOCK_NUMBER (insn) = current_block_number;
-	    current_block_number = block_stack[--depth];
-	  }
+	  NOTE_BLOCK (insn) = block_stack[--depth];
       }
 
-  if (n_blocks != next_block_number)
+  if (n_blocks != current_block_number)
     abort ();
 
-  return block_vector;
+  free (block_vector);
 }
 
-/* Given BLOCK_VECTOR which was returned by identify_blocks,
-   and a revised instruction chain, rebuild the tree structure
-   of BLOCK nodes to correspond to the new order of RTL.
-   The new block tree is inserted below TOP_BLOCK.
-   Returns the current top-level block.  */
+/* Given a revised instruction chain, rebuild the tree structure of
+   BLOCK nodes to correspond to the new order of RTL.  The new block
+   tree is inserted below TOP_BLOCK.  Returns the current top-level
+   block.  */
 
 tree
-reorder_blocks (block_vector, block, insns)
-     tree *block_vector;
+reorder_blocks (block, insns)
      tree block;
      rtx insns;
 {
   tree current_block = block;
   rtx insn;
 
-  if (block_vector == 0)
-    return block;
+  if (block == NULL_TREE)
+    return NULL_TREE;
 
   /* Prune the old trees away, so that it doesn't get in the way.  */
   BLOCK_SUBBLOCKS (current_block) = 0;
@@ -5419,7 +5417,7 @@ reorder_blocks (block_vector, block, insns)
       {
 	if (NOTE_LINE_NUMBER (insn) == NOTE_INSN_BLOCK_BEG)
 	  {
-	    tree block = block_vector[NOTE_BLOCK_NUMBER (insn)];
+	    tree block = NOTE_BLOCK (insn);
 	    /* If we have seen this block before, copy it.  */
 	    if (TREE_ASM_WRITTEN (block))
 	      block = copy_node (block);

@@ -523,7 +523,7 @@ extern struct function *outer_function_chain;
 /* Put all this function's BLOCK nodes into a vector and return it.
    Also store in each NOTE for the beginning or end of a block
    the index of that block in the vector.  */
-extern tree *identify_blocks PROTO((tree, rtx));
+extern void identify_blocks PROTO((tree, rtx));
 
 /* Return size needed for stack frame based on slots so far allocated.
    This size counts from zero.  It is not rounded to STACK_BOUNDARY;

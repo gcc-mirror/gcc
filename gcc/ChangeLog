@@ -1,3 +1,26 @@
+Wed Sep 15 15:51:52 1999  Mark Mitchell  <mark@codesourcery.com>
+
+	* rtl.h (NOTE_BLOCK_NUMBER): Replace with ...
+	(NOTE_BLOCK): New macro.
+	(NOTE_BLOCK_LIVE_RANGE_BLOCK): Remove.
+	* function.h (identify_blocks): CHange prototype.
+	* function.c (identify_blocks): Simplify.
+	(reorder_blocks): Likewise.
+	* ggc-common.c (ggc_mark_rtx): Mark the BLOCK associated with a 
+	NOTE_INSN_BLOCK_{BEG,END}.
+	* haifa-sched.c (sched_analyze): Don't put NOTE_BLOCK_NUMBER on
+	the list of saved notes if the note isn't a
+	NOTE_INSN_BLOCK_{BEG,END}.
+	(move_insn1): Use NOTE_EH_HANDLER in comment, rather than
+	NOTE_BLOCK_NUMBER.
+	(reemit_notes): Adjust recreation of notes to reflect new saved
+	note structure.
+	* print-rtl.c (print_rtx): Print the address of the BLOCK when
+	printing a block note.
+	* stmt.c (block_vector): Remove.
+	(find_loop_tree_blocks): Simplify.
+	(unroll_block_trees): Likewise.
+	
 Wed Sep 15 14:39:35 1999  Jason Merrill  <jason@yorick.cygnus.com>
 
 	* gbl-ctors.h: Lose HAVE_ATEXIT.  Don't define ON_EXIT.

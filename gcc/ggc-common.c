@@ -208,6 +208,11 @@ ggc_mark_rtx (r)
 	  ggc_mark_rtx (NOTE_RANGE_INFO (r));
 	  break;
 
+	case NOTE_INSN_BLOCK_BEG:
+	case NOTE_INSN_BLOCK_END:
+	  ggc_mark_tree (NOTE_BLOCK (r));
+	  break;
+
 	default:
 	  if (NOTE_LINE_NUMBER (r) >= 0)
 	    ggc_mark_string (NOTE_SOURCE_FILE (r));
