@@ -899,7 +899,12 @@ check_format_info (info, params)
 	       && TREE_CODE (cur_type) == INTEGER_TYPE
 	       && (TREE_UNSIGNED (wanted_type)
 		   ? wanted_type == unsigned_type (cur_type)
-		   : wanted_type == signed_type (cur_type))))
+		   : wanted_type == signed_type (cur_type)))
+	  /* Likewise, "signed char", "unsigned char" and "char" are
+	     equivalent but the above test won't consider them equivalent.  */
+	  && ! (wanted_type == char_type_node
+		&& (cur_type == signed_char_type_node
+		    || cur_type == unsigned_char_type_node)))
 	{
 	  register char *this;
 	  register char *that;
