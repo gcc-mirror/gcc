@@ -588,7 +588,7 @@ extern char *note_insn_name[];
 #define MEM_COPY_ATTRIBUTES(LHS, RHS)			\
   (MEM_VOLATILE_P (LHS) = MEM_VOLATILE_P (RHS),		\
    MEM_IN_STRUCT_P (LHS) = MEM_IN_STRUCT_P (RHS),	\
-   MEM_SCALAR_P (LHS) = MEM_SCALAR_P (RHS))		\
+   MEM_SCALAR_P (LHS) = MEM_SCALAR_P (RHS))
 
 /* If VAL is non-zero, set MEM_IN_STRUCT_P and clear MEM_SCALAR_P in
    RTX.  Otherwise, vice versa.  Use this macro only when you are
