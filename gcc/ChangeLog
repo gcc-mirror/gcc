@@ -1,3 +1,8 @@
+2000-07-05  Jim Wilson  <wilson@cygnus.com>
+
+	* config/ia64/ia64.h (HARD_REGNO_MODE_OK): If FR_REGNO_P, disallow
+	CCmode.
+
 2000-07-05  Rodney Brown  <RodneyBrown@pmsc.com>
 
 	* invoke.texi: Fix minor typos
