@@ -1,5 +1,8 @@
 1999-06-19  Mark Mitchell  <mark@codesourcery.com>
 
+        * semantics.c (finish_asm_statement): Apply decay conversions to
+        input operands.
+
 	* decl.c (expand_static_init): When building an anonymous function
 	for use with atexit, compute its body before and after entering
 	the function.

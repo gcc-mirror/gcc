@@ -741,11 +741,16 @@ finish_asm_stmt (cv_qualifier, string, output_operands,
       if (output_operands != NULL_TREE || input_operands != NULL_TREE
 	    || clobbers != NULL_TREE)
 	{
+	  tree t;
+
 	  if (cv_qualifier != NULL_TREE
 	      && cv_qualifier != ridpointers[(int) RID_VOLATILE])
 	    cp_warning ("%s qualifier ignored on asm",
 			IDENTIFIER_POINTER (cv_qualifier));
-	  
+
+	  for (t = input_operands; t; t = TREE_CHAIN (t))
+	    TREE_VALUE (t) = decay_conversion (TREE_VALUE (t));
+
 	  c_expand_asm_operands (string, output_operands,
 				 input_operands, 
 				 clobbers,
