@@ -114,9 +114,9 @@ extern int target_flags;
 #define TARGET_IEEE_FLOAT          1
 
 #ifdef DEFAULT_TARGET_64BIT
-#define TARGET_DEFAULT             0x33
+#define TARGET_DEFAULT             0x31
 #else
-#define TARGET_DEFAULT             0x3
+#define TARGET_DEFAULT             0x1
 #endif
 
 #define TARGET_SWITCHES                                                  \
