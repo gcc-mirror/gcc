@@ -1,3 +1,9 @@
+2004-02-03  Alan Modra  <amodra@bigpond.net.au>
+
+	PR target/13914
+	* config/rs6000/linux64.h (MD_FALLBACK_FRAME_STATE_FOR): Use ap
+	for retaddr_column.
+
 2004-02-02  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* genemit.c (gen_exp): Generate gen_rtx_fmt_e* instead of
