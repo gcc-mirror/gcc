@@ -29,30 +29,23 @@ Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 #include "cpphash.h"
 #include "intl.h"
 
-static void print_containing_files	PARAMS ((cpp_reader *, cpp_buffer *));
-static void print_file_and_line		PARAMS ((const char *, unsigned int,
-						 unsigned int));
-
+static void print_containing_files	PARAMS ((cpp_buffer *));
+static void print_location		PARAMS ((cpp_reader *,
+						 const char *,
+						 const cpp_lexer_pos *));
 #define v_message(msgid, ap) \
 do { vfprintf (stderr, _(msgid), ap); putc ('\n', stderr); } while (0)
 
 /* Print the file names and line numbers of the #include
    commands which led to the current file.  */
-
 static void
-print_containing_files (pfile, ip)
-     cpp_reader *pfile;
+print_containing_files (ip)
      cpp_buffer *ip;
 {
   int first = 1;
 
-  /* If stack of files hasn't changed since we last printed
-     this info, don't repeat it.  */
-  if (pfile->input_stack_listing_current)
-    return;
-
   /* Find the other, outer source files.  */
-  for (ip = CPP_PREV_BUFFER (ip); ip != NULL; ip = CPP_PREV_BUFFER (ip))
+  for (ip = ip->prev; ip; ip = ip->prev)
     {
       if (first)
 	{
@@ -78,27 +71,69 @@ print_containing_files (pfile, ip)
 	fprintf (stderr, _(",\n                 from %s:%u"),
 		 ip->nominal_fname, CPP_BUF_LINE (ip) - 1);
     }
-  if (first == 0)
-    fputs (":\n", stderr);
-
-  /* Record we have printed the status as of this time.  */
-  pfile->input_stack_listing_current = 1;
+  fputs (":\n", stderr);
 }
 
 static void
-print_file_and_line (filename, line, col)
+print_location (pfile, filename, pos)
+     cpp_reader *pfile;
      const char *filename;
-     unsigned int line, col;
+     const cpp_lexer_pos *pos;
 {
-  if (filename == 0 || *filename == '\0')
-    filename = "<stdin>";
+  cpp_buffer *buffer = pfile->buffer;
 
-  if (line == 0)
-    fprintf (stderr, "%s: ", filename);
-  else if (col == 0)
-    fprintf (stderr, "%s:%u: ", filename, line);
+  if (!buffer)
+    fprintf (stderr, "%s: ", progname);
   else
-    fprintf (stderr, "%s:%u:%u: ", filename, line, col);
+    {
+      unsigned int line, col;
+      enum cpp_buffer_type type = buffer->type;
+
+      /* For _Pragma buffers, we want to print the location as
+	 "foo.c:5:8: _Pragma:", where foo.c is the containing buffer.
+	 For diagnostics relating to command line options, we want to
+	 print "<command line>:" with no line number.  */
+      if (type == BUF_CL_OPTION || type == BUF_BUILTIN)
+	line = 0;
+      else
+	{
+	  if (type == BUF_PRAGMA)
+	    {
+	      buffer = buffer->prev;
+	      line = CPP_BUF_LINE (buffer);
+	      col = CPP_BUF_COL (buffer);
+	    }
+	  else
+	    {
+	      if (pos == 0)
+		pos = cpp_get_line (pfile);
+	      line = pos->line;
+	      col = pos->col;
+	    }
+
+	  /* Don't repeat the include stack unnecessarily.  */
+	  if (buffer->prev && ! buffer->include_stack_listed)
+	    {
+	      buffer->include_stack_listed = 1;
+	      print_containing_files (buffer);
+	    }
+	}
+
+      if (filename == 0)
+	filename = buffer->nominal_fname;
+      if (*filename == '\0')
+	filename = _("<stdin>");
+
+      if (line == 0)
+	fprintf (stderr, "%s: ", filename);
+      else if (CPP_OPTION (pfile, show_column) == 0)
+	fprintf (stderr, "%s:%u: ", filename, line);
+      else
+	fprintf (stderr, "%s:%u:%u: ", filename, line, col);
+
+      if (type == BUF_PRAGMA)
+	fprintf (stderr, "_Pragma: ");
+    }
 }
 
 /* Set up for an error message: print the file and line, bump the error
@@ -112,7 +147,6 @@ _cpp_begin_message (pfile, code, file, pos)
      const char *file;
      const cpp_lexer_pos *pos;
 {
-  cpp_buffer *ip = CPP_BUFFER (pfile);
   int is_warning = 0;
 
   switch (code)
@@ -171,19 +205,7 @@ _cpp_begin_message (pfile, code, file, pos)
       break;
     }
 
-  if (ip)
-    {
-      if (file == NULL)
-	file = ip->nominal_fname;
-      if (pos == 0)
-	pos = cpp_get_line (pfile);
-      print_containing_files (pfile, ip);
-      print_file_and_line (file, pos->line,
-			   CPP_OPTION (pfile, show_column) ? pos->col : 0);
-    }
-  else
-    fprintf (stderr, "%s: ", progname);
-
+  print_location (pfile, file, pos);
   if (is_warning)
     fputs (_("warning: "), stderr);
 

@@ -122,6 +122,13 @@ struct cpp_buffer
 
   /* 1 = system header file, 2 = C system header file used for C++.  */
   unsigned char sysp;
+
+  /* Nonzero means we have printed (while error reporting) a list of
+     containing files that matches the current status.  */
+  unsigned char include_stack_listed;
+
+  /* Buffer type.  */
+  ENUM_BITFIELD (cpp_buffer_type) type : 8;
 };
 
 /* Character classes.  Based on the more primitive macros in safe-ctype.h.
