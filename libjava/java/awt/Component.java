@@ -4080,7 +4080,7 @@ p   * <li>the set of backward traversal keys
   }
 
   /**
-   * Tells wether or not an event type is enabled.
+   * Tells whether or not an event type is enabled.
    */
   boolean eventTypeEnabled (int type)
   {
