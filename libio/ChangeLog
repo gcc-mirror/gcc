@@ -1,3 +1,8 @@
+Fri Feb 13 00:57:20 1998  Krister Walfridsson (cato@df.lth.se)
+
+	* fileops.c: #include <unistd.h>.
+	* ioprims.c: Likewise.
+
 1998-02-10  Mark Mitchell  <mmitchell@usa.net>
 
 	* iostream.cc (ostream::operator<<(long double)): Don't use
