@@ -1,3 +1,13 @@
+2002-06-13  Jessica Han  <jessica@cup.hp.com>
+
+	* defaults.h (TARGET_VTABLE_ENTRY_ALIGN): New.
+	(TARGET_VTABLE_DATA_ENTRY_DISTANCE): New.
+	* doc/tm.texi: Document them.
+	* config/ia64/ia64.h (TARGET_VTABLE_ENTRY_ALIGN): New.
+	(TARGET_VTABLE_DATA_ENTRY_DISTANCE): New.
+	(TARGET_VTABLE_USES_DESCRIPTORS): 4 word descriptors for 32-bit mode.
+	(ASM_OUTPUT_FDESC): Likewise.
+
 2002-06-13  Eric Christopher  <echristo@redhat.com>
 
 	* diagnostic.c (output_format): Fix thinko.

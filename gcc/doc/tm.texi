@@ -1695,6 +1695,20 @@ pointer to which the function's data is relative.
 
 If vtables are used, the value of this macro should be the number
 of words that the function descriptor occupies.
+
+@findex TARGET_VTABLE_ENTRY_ALIGN
+@item TARGET_VTABLE_ENTRY_ALIGN
+By default, the vtable entries are void pointers, the so the alignment
+is the same as pointer alignment.  The value of this macro specifies
+the alignment of the vtable entry in bits.  It should be defined only
+when special alignment is necessary. */
+
+@findex TARGET_VTABLE_DATA_ENTRY_DISTANCE
+@item TARGET_VTABLE_DATA_ENTRY_DISTANCE
+There are a few non-descriptor entries in the vtable at offsets below
+zero.  If these entries must be padded (say, to preserve the alignment
+specified by @code{TARGET_VTABLE_ENTRY_ALIGN}), set this to the number
+of words in each data entry.
 @end table
 
 @node Escape Sequences

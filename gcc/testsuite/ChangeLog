@@ -1,3 +1,8 @@
+2002-06-13  Richard Henderson  <rth@redhat.com>
+
+	* g++.old-deja/g++.abi/vtable2.C (INC_VDATA): New.  Define for
+	ia64 ilp32.
+
 2002-06-12  Kriang Lerdsuwanakij  <lerdsuwa@users.sourceforge.net>
 
 	* g++.dg/template/typename2.C: Update error message.

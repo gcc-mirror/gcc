@@ -380,6 +380,22 @@ do { ASM_OUTPUT_LABEL(FILE,LABEL_ALTERNATE_NAME (INSN)); } while (0)
 #define TARGET_VTABLE_USES_DESCRIPTORS 0
 #endif
 
+/* By default, the vtable entries are void pointers, the so the alignment
+   is the same as pointer alignment.  The value of this macro specifies
+   the alignment of the vtable entry in bits.  It should be defined only
+   when special alignment is necessary. */
+#ifndef TARGET_VTABLE_ENTRY_ALIGN
+#define TARGET_VTABLE_ENTRY_ALIGN POINTER_SIZE
+#endif
+
+/* There are a few non-descriptor entries in the vtable at offsets below
+   zero.  If these entries must be padded (say, to preserve the alignment
+   specified by TARGET_VTABLE_ENTRY_ALIGN), set this to the number of
+   words in each data entry.  */
+#ifndef TARGET_VTABLE_DATA_ENTRY_DISTANCE
+#define TARGET_VTABLE_DATA_ENTRY_DISTANCE 1
+#endif
+
 /* Select a format to encode pointers in exception handling data.  We
    prefer those that result in fewer dynamic relocations.  Assume no
    special support here and encode direct references.  */
