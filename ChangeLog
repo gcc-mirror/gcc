@@ -1,3 +1,9 @@
+Wed Apr 25 18:35:30 2001  Alexandre Oliva  <aoliva@redhat.com>
+
+	* configure.in (libgcj_saved): Copy from $libgcj.
+	(libgcj): Zero out if --enable-libgcj; add to noconfigdirs is
+	--disable-libgcj.
+
 Mon Apr 23 09:15:03 2001  Anthony Green  <green@redhat.com>
 
 	* configure.in: Move *-chorusos target case to the proper switch.
