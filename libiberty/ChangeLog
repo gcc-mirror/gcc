@@ -1,3 +1,9 @@
+2003-10-20  J. Brobecker  <brobecker@gnat.com>
+
+	* cplus-dem.c (demangle_template): Register a new Btype only
+	when needed.
+	* testsuite/demangle-expected: Add a new test.
+
 2003-10-16  H.J. Lu  <hongjiu.lu@intel.com>
 
 	* testsuite/demangle-expected: Update the expected output of

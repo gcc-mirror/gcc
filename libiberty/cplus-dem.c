@@ -2043,13 +2043,10 @@ demangle_template (work, mangled, tname, trawname, is_type, remember)
   const char *start;
   int is_java_array = 0;
   string temp;
-  int bindex = 0;
 
   (*mangled)++;
   if (is_type)
     {
-      if (remember)
-	bindex = register_Btype (work);
       start = *mangled;
       /* get template name */
       if (**mangled == 'z')
@@ -2226,7 +2223,10 @@ demangle_template (work, mangled, tname, trawname, is_type, remember)
     }
 
   if (is_type && remember)
-    remember_Btype (work, tname->b, LEN_STRING (tname), bindex);
+    {
+      const int bindex = register_Btype (work);
+      remember_Btype (work, tname->b, LEN_STRING (tname), bindex);
+    }
 
   /*
     if (work -> static_type)
