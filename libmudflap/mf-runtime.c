@@ -1,5 +1,5 @@
 /* Mudflap: narrow-pointer bounds-checking by tree rewriting.
-   Copyright (C) 2002, 2003 Free Software Foundation, Inc.
+   Copyright (C) 2002, 2003, 2004 Free Software Foundation, Inc.
    Contributed by Frank Ch. Eigler <fche@redhat.com>
    and Graydon Hoare <graydon@redhat.com>
 
@@ -2244,7 +2244,8 @@ __mf_violation (void *ptr, size_t sz, uintptr_t pc,
       abort ();
       break;
     case viol_gdb:
-      snprintf (buf, 128, "gdb --pid=%d", getpid ());
+
+      snprintf (buf, 128, "gdb --pid=%u", (unsigned) getpid ());
       system (buf);
       /* XXX: should probably fork() && sleep(GDB_WAIT_PARAMETER)
       instead, and let the forked child execlp() gdb.  That way, this

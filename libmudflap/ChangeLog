@@ -1,3 +1,27 @@
+2004-06-04  Frank Ch. Eigler  <fche@redhat.com>
+
+	Portability improvements, e.g., libmudflap/15293.
+	* configure.in: Look for glibc extension functions.  Look for
+	support of -f{function,data}-sections.  Look for more headers.
+	Create testsuite/mfconfig.exp.  Correct more "test x.." thinkos.
+	* Makefile.am: Use $(SECTION_FLAGS).  Collapse piecemeal-compiled
+	mf-hooks* into usual single object per source.
+	* mf-hooks*.c: Remove all #if WRAP_foo conditionals.
+	* mf-hooks2.c: #include a bunch more system headers.  Define strnlen
+	if system doesn't provide one.
+	* mf-hooks3.c (struct pthread_info): Add stack_*_alloc fields.
+	(pthread_create): Use it to properly GC dead thread stacks.
+	* mf-runtime.c (__mf_violation): Correct snprintf type warning.
+	* testsuite/Makefile.am: Stop generating site.exp.
+	* testsuite/mfconfig.exp.in: New file.
+	* testsuite/config/default.exp: Load new mfconfig.exp.
+	* testsuite/lib/libmudflap.exp (libmudflap-init): Add extra libraries.
+	(prune_gcc_output): Add glibc static linking warnings.
+	* testsuite/libmudflap.*/*frags.exp: Enumerate needed -lmudflap* libs.
+	* testsuite/libmudflap.c/pass46-frag.c: Ditto.
+	* configure, Makefile, aclocal.m4, config.h.in, testsuite/Makefile.in:
+	Regenerated with autoconf 2.57 and automake 1.7.
+	
 2004-06-04  Per Bothner  <per@bothner.com>
 
 	* configure.in (LIBMUDFLAPTH):  Fix thinko.
@@ -13,7 +37,7 @@
 	* configure.in: Handle multilibs, support
 	--enable-version-specific-runtime-libs.
 	* Makefile.am (lib_LTLIBRARIES): Rename to ...
-        (toolexeclib_LTLIBRARIES): this for multilib support.
+	(toolexeclib_LTLIBRARIES): this for multilib support.
 	* Makefile.in: Regenerated.
 	* configure: Regenerated.
 	* aclocal.m4: Regenerated.

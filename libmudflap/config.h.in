@@ -33,14 +33,23 @@
 /* Define to 1 if you have the `dl' library (-ldl). */
 #undef HAVE_LIBDL
 
+/* Define to 1 if you have the `memmem' function. */
+#undef HAVE_MEMMEM
+
 /* Define to 1 if you have the <memory.h> header file. */
 #undef HAVE_MEMORY_H
+
+/* Define to 1 if you have the `memrchr' function. */
+#undef HAVE_MEMRCHR
 
 /* Define to 1 if you have the <netdb.h> header file. */
 #undef HAVE_NETDB_H
 
 /* define if you have <pthread.h> */
 #undef HAVE_PTHREAD_H
+
+/* Define to 1 if you have the `sethostname' function. */
+#undef HAVE_SETHOSTNAME
 
 /* Define to 1 if you have the `signal' function. */
 #undef HAVE_SIGNAL
@@ -66,11 +75,20 @@
 /* Define to 1 if you have the <string.h> header file. */
 #undef HAVE_STRING_H
 
+/* Define to 1 if you have the `strncpy' function. */
+#undef HAVE_STRNCPY
+
+/* Define to 1 if you have the `strnlen' function. */
+#undef HAVE_STRNLEN
+
 /* Define to 1 if you have the <sys/ipc.h> header file. */
 #undef HAVE_SYS_IPC_H
 
 /* Define to 1 if you have the <sys/sem.h> header file. */
 #undef HAVE_SYS_SEM_H
+
+/* Define to 1 if you have the <sys/shm.h> header file. */
+#undef HAVE_SYS_SHM_H
 
 /* Define to 1 if you have the <sys/socket.h> header file. */
 #undef HAVE_SYS_SOCKET_H
