@@ -530,6 +530,7 @@ while (0)
 #define TYPE_ASM_OP	".type"
 #define SIZE_ASM_OP	".size"
 #define WEAK_ASM_OP	".weak"
+#define SET_ASM_OP	".set"
 
 /* The following macro defines the format used to output the second
    operand of the .type assembler directive.  Different svr4 assemblers
