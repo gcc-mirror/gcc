@@ -1,3 +1,8 @@
+Thu May 21 19:50:13 1998  J"orn Rennecke <amylaar@cygnus.co.uk>
+
+	* reload1.c (reload_reg_free_for_value_p): Fix RELOAD_FOR_INPUT
+	end of lifetime and RELOAD_FOR_OUTPUT start of lifetime.
+
 Thu May 21 19:32:27 1998  J"orn Rennecke <amylaar@cygnus.co.uk>
 
 	* combine.c (nonzero_bits): For paradoxical subregs, take
