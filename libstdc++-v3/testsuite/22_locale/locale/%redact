@@ -1,4 +1,0 @@
-keep	cons
-keep	global_locale_objects
-keep	operations
-
