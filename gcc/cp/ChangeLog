@@ -1,5 +1,9 @@
 1999-09-09  Mark Mitchell  <mark@codesourcery.com>
 
+	* dump.c (dequeue_and_dump): Dump types for constants.
+	Describe DECL_ARG_TYPE more intuitively.
+	Handle ARRAY_REF.
+
 	* decl.c (lang_mark_tree): Mark TYPE_LANG_SPECIFIC.
 	(lang_cleanup_tree): Remove.
 	* lex.c (make_lang_type): Use ggc_alloc to allocate
