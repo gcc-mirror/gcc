@@ -1,3 +1,7 @@
+2003-02-21  Glen Nakamura  <glen@imodulo.com>
+
+	* gcc.c-torture/execute/20030221-1.c: New test.
+
 2003-02-20  Randolph Chung  <tausq@debian.org>
 
 	* gcc.c-torture/compile/20030220-1.c: New test.
