@@ -672,7 +672,7 @@ verify_ssa (void)
 	{
 	  tree stmt = bsi_stmt (bsi);
 
-	  FOR_EACH_SSA_TREE_OPERAND (op, stmt, iter, SSA_OP_VIRTUAL_USES)
+	  FOR_EACH_SSA_TREE_OPERAND (op, stmt, iter, SSA_OP_VIRTUAL_USES | SSA_OP_VIRTUAL_KILLS)
 	    {
 	      if (verify_use (bb, definition_block[SSA_NAME_VERSION (op)],
 			      op, stmt, false, true,
@@ -1082,7 +1082,8 @@ replace_immediate_uses (tree var, tree repl)
 	}
       else
 	{
-	  FOR_EACH_SSA_USE_OPERAND (use_p, stmt, iter, SSA_OP_VIRTUAL_USES)
+	  FOR_EACH_SSA_USE_OPERAND (use_p, stmt, iter, 
+				    SSA_OP_VIRTUAL_USES | SSA_OP_VIRTUAL_KILLS)
 	    if (USE_FROM_PTR (use_p) == var)
 	      propagate_value (use_p, repl);
 	}
@@ -1464,3 +1465,4 @@ struct tree_opt_pass pass_late_warn_uninitialized =
   0,                                    /* todo_flags_finish */
   0				        /* letter */
 };
+	  

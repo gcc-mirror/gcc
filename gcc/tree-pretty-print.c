@@ -2131,9 +2131,10 @@ newline_and_indent (pretty_printer *buffer, int spc)
 static void
 dump_vops (pretty_printer *buffer, tree stmt, int spc, int flags)
 {
-  tree use, def;
+  tree use;
   use_operand_p use_p;
   def_operand_p def_p;
+  use_operand_p kill_p;
   ssa_op_iter iter;
 
   FOR_EACH_SSA_MAYDEF_OPERAND (def_p, use_p, stmt, iter)
@@ -2148,10 +2149,14 @@ dump_vops (pretty_printer *buffer, tree stmt, int spc, int flags)
       newline_and_indent (buffer, spc);
     }
 
-  FOR_EACH_SSA_TREE_OPERAND (def, stmt, iter, SSA_OP_VMUSTDEF)
+  FOR_EACH_SSA_MUSTDEF_OPERAND (def_p, kill_p, stmt, iter)
     {
-      pp_string (buffer, "#   V_MUST_DEF <");
-      dump_generic_node (buffer, def, spc + 2, flags, false);
+      pp_string (buffer, "#   ");
+      dump_generic_node (buffer, DEF_FROM_PTR (def_p),
+                         spc + 2, flags, false);
+      pp_string (buffer, " = V_MUST_DEF <");
+      dump_generic_node (buffer, USE_FROM_PTR (kill_p),
+                         spc + 2, flags, false);
       pp_string (buffer, ">;");
       newline_and_indent (buffer, spc);
     }

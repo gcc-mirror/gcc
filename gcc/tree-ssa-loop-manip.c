@@ -254,7 +254,7 @@ find_uses_to_rename_stmt (tree stmt, bitmap *use_blocks)
 
   get_stmt_operands (stmt);
 
-  FOR_EACH_SSA_TREE_OPERAND (var, stmt, iter, SSA_OP_ALL_USES)
+  FOR_EACH_SSA_TREE_OPERAND (var, stmt, iter, SSA_OP_ALL_USES | SSA_OP_ALL_KILLS)
     find_uses_to_rename_use (bb, var, use_blocks);
 }
 

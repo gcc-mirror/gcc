@@ -436,7 +436,7 @@ determine_max_movement (tree stmt, bool must_preserve_exec)
     if (!add_dependency (val, lim_data, loop, true))
       return false;
 
-  FOR_EACH_SSA_TREE_OPERAND (val, stmt, iter, SSA_OP_VIRTUAL_USES)
+  FOR_EACH_SSA_TREE_OPERAND (val, stmt, iter, SSA_OP_VIRTUAL_USES | SSA_OP_VIRTUAL_KILLS)
     if (!add_dependency (val, lim_data, loop, false))
       return false;
 
@@ -1034,8 +1034,7 @@ rewrite_mem_refs (tree tmp_var, struct mem_ref *mem_refs)
 
   for (; mem_refs; mem_refs = mem_refs->next)
     {
-      FOR_EACH_SSA_TREE_OPERAND (var, mem_refs->stmt, iter,
-				 (SSA_OP_VIRTUAL_DEFS | SSA_OP_VUSE))
+      FOR_EACH_SSA_TREE_OPERAND (var, mem_refs->stmt, iter, SSA_OP_ALL_VIRTUALS)
 	{
 	  var = SSA_NAME_VAR (var);
 	  bitmap_set_bit (vars_to_rename, var_ann (var)->uid);

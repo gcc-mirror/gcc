@@ -1041,7 +1041,7 @@ visit_assignment (tree stmt, tree *output_p)
     {
       /* If we make it here, then stmt only has one definition:
          a V_MUST_DEF.  */
-      lhs = V_MUST_DEF_OP (v_must_defs, 0);
+      lhs = V_MUST_DEF_RESULT (v_must_defs, 0);
     }
 
   if (TREE_CODE (rhs) == SSA_NAME)
