@@ -1,5 +1,5 @@
 /* Register to Stack convert for GNU compiler.
-   Copyright (C) 1992, 93, 94, 95, 96, 1997 Free Software Foundation, Inc.
+   Copyright (C) 1992, 93, 94, 95, 96, 97, 1998 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -2000,11 +2000,13 @@ compare_for_stack_reg (insn, regstack, pat)
   src2 = get_true_reg (&XEXP (SET_SRC (pat), 1));
   cc0_user = next_cc0_user (insn);
 
-  /* If the insn that uses cc0 is a conditional move, then the destination
+  /* If the insn that uses cc0 is an FP-conditional move, then the destination
      must be the top of stack */
   if (GET_CODE (PATTERN (cc0_user)) == SET
       && SET_DEST (PATTERN (cc0_user)) != pc_rtx
-      && GET_CODE (SET_SRC (PATTERN (cc0_user))) == IF_THEN_ELSE)
+      && GET_CODE (SET_SRC (PATTERN (cc0_user))) == IF_THEN_ELSE
+      && (GET_MODE_CLASS (GET_MODE (SET_DEST (PATTERN (cc0_user))))
+	  == MODE_FLOAT))
     {
       rtx *dest, src_note;
       
