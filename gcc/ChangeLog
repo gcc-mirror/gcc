@@ -1,3 +1,17 @@
+2004-07-07  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* collect2.c (dump_file): Don't call cplus_demangle if
+	HAVE_LD_DEMANGLE is defined.
+	(main): Pass "--demangle" to ld if no_demangle is not 0 and
+	HAVE_LD_DEMANGLE is defined. Don't set current_demangling_style
+	if HAVE_LD_DEMANGLE is defined.
+
+	* configure.ac (--with-demangler-in-ld): Added
+	(HAVE_LD_DEMANGLE): Define if ld supports --demangle when
+	--with-demangler-in-ld is used.
+	* config.in: Regenerated.
+	* configure: Likewise.
+
 2004-07-07  Roger Sayle  <roger@eyesopen.com>
 
 	* config/rs6000/rs6000.c (struct processor_costs): Add new fields

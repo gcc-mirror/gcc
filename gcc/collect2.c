@@ -491,10 +491,14 @@ dump_file (const char *name)
 	  if (!strncmp (p, USER_LABEL_PREFIX, strlen (USER_LABEL_PREFIX)))
 	    p += strlen (USER_LABEL_PREFIX);
 
+#ifdef HAVE_LD_DEMANGLE
+	  result = 0;
+#else
 	  if (no_demangle)
 	    result = 0;
 	  else
 	    result = cplus_demangle (p, DMGL_PARAMS | DMGL_ANSI | DMGL_VERBOSE);
+#endif
 
 	  if (result)
 	    {
@@ -841,8 +845,8 @@ main (int argc, char **argv)
   /* Do not invoke xcalloc before this point, since locale needs to be
      set first, in case a diagnostic is issued.  */
 
-  ld1 = (const char **)(ld1_argv = xcalloc(sizeof (char *), argc+3));
-  ld2 = (const char **)(ld2_argv = xcalloc(sizeof (char *), argc+10));
+  ld1 = (const char **)(ld1_argv = xcalloc(sizeof (char *), argc+4));
+  ld2 = (const char **)(ld2_argv = xcalloc(sizeof (char *), argc+11));
   object = (const char **)(object_lst = xcalloc(sizeof (char *), argc));
 
 #ifdef DEBUG
@@ -873,7 +877,9 @@ main (int argc, char **argv)
   obstack_begin (&temporary_obstack, 0);
   temporary_firstobj = obstack_alloc (&temporary_obstack, 0);
 
+#ifndef HAVE_LD_DEMANGLE
   current_demangling_style = auto_demangling;
+#endif
   p = getenv ("COLLECT_GCC_OPTIONS");
   while (p && *p)
     {
@@ -1063,6 +1069,10 @@ main (int argc, char **argv)
   /* After the first file, put in the c++ rt0.  */
 
   first_file = 1;
+#ifdef HAVE_LD_DEMANGLE
+  if (!no_demangle)
+    *ld1++ = *ld2++ = "--demangle";
+#endif
   while ((arg = *++argv) != (char *) 0)
     {
       *ld1++ = *ld2++ = arg;
