@@ -41,7 +41,6 @@
 	decrease __nmatches and increase __i3 at once, only either of
 	the two; tidy.
 
->>>>>>> 1.2516
 2004-06-13  Paolo Carlini  <pcarlini@suse.de>
 
 	* include/bits/locale_facets.tcc (time_get<>::do_get_time,
