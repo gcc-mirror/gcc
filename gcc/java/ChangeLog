@@ -1,5 +1,9 @@
 2000-11-03  Tom Tromey  <tromey@cygnus.com>
 
+	* class.c (cxx_keyword_p): Accept keywords with trailing `$'s.
+	* gjavah.c (cxx_keyword_subst): Handle any number of trailing
+	`$'.
+
 	* lex.h (_JAVA_IDENTIFIER_IGNORABLE): New macro.
 	(JAVA_ID_CHAR_P): Also try java_ignorable_control_p.
 	* lex.c (java_read_unicode): Removed `term_context' argument.

@@ -440,16 +440,32 @@ cxx_keyword_subst (str, length)
        mid != old;
        old = mid, mid = (last + first) / 2)
     {
-      int r = utf8_cmp (str, length, cxx_keywords[mid]);
+      int kwl = strlen (cxx_keywords[mid]);
+      int min_length = kwl > length ? length : kwl;
+      int r = utf8_cmp (str, min_length, cxx_keywords[mid]);
 
       if (r == 0)
 	{
-	  char *str = xmalloc (2 + strlen (cxx_keywords[mid]));
-	  strcpy (str, cxx_keywords[mid]);
-	  strcat (str, "$");
-	  return str;
+	  int i;
+
+	  /* Skip all trailing `$'.  */
+	  for (i = min_length; i < length && str[i] == '$'; ++i)
+	    ;
+	  /* We've only found a match if all the remaining characters
+	     are `$'.  */
+	  if (i == length)
+	    {
+	      char *dup = xmalloc (2 + length - min_length + kwl);
+	      strcpy (dup, cxx_keywords[mid]);
+	      for (i = kwl; i < length + 1; ++i)
+		dup[i] = '$';
+	      dup[i] = '\0';
+	      return dup;
+	    }
+	  r = 1;
 	}
-      else if (r < 0)
+	
+      if (r < 0)
 	last = mid;
       else
 	first = mid;
