@@ -37,5 +37,8 @@ fp-bit32.c: $(srcdir)/config/fp-bit.c
 mklibgcc: bispecs
 
 bispecs: specs
-	sed -e '/cc1_options/{ n; s/$$/ %{!m32:-mlong-double-128}/; }' < specs > $@
-
+	if [ x`$(GCC_FOR_TARGET) -print-multi-os-directory` = x../lib ]; then \
+	  sed -e '/cc1_options/{ n; s/$$/ %{m64:-mlong-double-128}/; }' < specs > $@; \
+	else \
+	  sed -e '/cc1_options/{ n; s/$$/ %{!m32:-mlong-double-128}/; }' < specs > $@; \
+	fi
