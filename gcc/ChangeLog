@@ -1,3 +1,7 @@
+Mon Aug  3 00:06:42 1998  Robert Lipe  <robertl@dgii.com> 
+
+	* config.sub: Fix typo.
+
 Sun Aug  2 22:39:08 1998  Hans-Peter Nilsson  <hp@axis.se>
 
 	* invoke.texi (Environment Variables): Typo: Change "ascpects"
