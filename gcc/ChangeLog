@@ -1,3 +1,10 @@
+2004-06-28  Roger Sayle  <roger@eyesopen.com>
+
+	* expmed.c (expand_smod_pow2): New function to expand signed
+	remainder by a constant power of 2, such as "x % 16".
+	(expand_divmod): Call new expand_smod_pow2 when appropriate.
+	Minor corrections to comments, e.g. wrapping long lines.
+
 2004-06-28  Ulrich Weigand  <uweigand@de.ibm.com>
 
 	* Makefile.in (vec.o): Fix dependencies.

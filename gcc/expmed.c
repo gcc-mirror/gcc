@@ -51,6 +51,7 @@ static rtx lshift_value (enum machine_mode, rtx, int, int);
 static rtx extract_split_bit_field (rtx, unsigned HOST_WIDE_INT,
 				    unsigned HOST_WIDE_INT, int);
 static void do_cmp_and_jump (rtx, rtx, enum rtx_code, enum machine_mode, rtx);
+static rtx expand_smod_pow2 (enum machine_mode, rtx, HOST_WIDE_INT);
 
 /* Nonzero means divides or modulus operations are relatively cheap for
    powers of two, so don't use branches; emit the operation instead.
@@ -3055,6 +3056,72 @@ expand_mult_highpart (enum machine_mode mode, rtx op0,
   return expand_mult_highpart_optab (mode, op0, op1, target,
 				     unsignedp, max_cost);
 }
+
+
+/* Expand signed modulus of OP0 by a power of two D in mode MODE.  */
+
+static rtx
+expand_smod_pow2 (enum machine_mode mode, rtx op0, HOST_WIDE_INT d)
+{
+  unsigned HOST_WIDE_INT mask;
+  rtx result, temp, label;
+  int logd;
+
+  logd = floor_log2 (d);
+  result = gen_reg_rtx (mode);
+
+  /* Avoid conditional branches when they're expensive.  */
+  if (BRANCH_COST >= 2
+      && !optimize_size)
+    {
+      rtx signmask = emit_store_flag (result, LT, op0, const0_rtx,
+				      mode, 0, -1);
+      if (signmask)
+	{
+	  signmask = force_reg (mode, signmask);
+	  temp = expand_binop (mode, xor_optab, op0, signmask,
+			       NULL_RTX, 1, OPTAB_LIB_WIDEN);
+	  temp = expand_binop (mode, sub_optab, temp, signmask,
+			       NULL_RTX, 0, OPTAB_LIB_WIDEN);
+	  mask = ((HOST_WIDE_INT) 1 << logd) - 1;
+	  temp = expand_binop (mode, and_optab, temp, GEN_INT (mask),
+			       NULL_RTX, 1, OPTAB_LIB_WIDEN);
+	  temp = expand_binop (mode, xor_optab, temp, signmask,
+			       NULL_RTX, 1, OPTAB_LIB_WIDEN);
+	  temp = expand_binop (mode, sub_optab, temp, signmask,
+			       NULL_RTX, 1, OPTAB_LIB_WIDEN);
+	  return temp;
+	}
+    }
+
+  /* Mask contains the mode's signbit and the significant bits of the
+     modulus.  By including the signbit in the operation, many targets
+     can avoid an explicit compare operation in the following comparison
+     against zero.  */
+
+  mask = (HOST_WIDE_INT) 1 << (GET_MODE_BITSIZE (mode) - 1)
+	 | (((HOST_WIDE_INT) 1 << logd) - 1);
+
+  temp = expand_binop (mode, and_optab, op0, GEN_INT (mask), result,
+		       1, OPTAB_LIB_WIDEN);
+  if (temp != result)
+    emit_move_insn (result, temp);
+
+  label = gen_label_rtx ();
+  do_cmp_and_jump (result, const0_rtx, GE, mode, label);
+
+  temp = expand_binop (mode, sub_optab, result, const1_rtx, result,
+		       0, OPTAB_LIB_WIDEN);
+  mask = (HOST_WIDE_INT) -1 << logd;
+  temp = expand_binop (mode, ior_optab, temp, GEN_INT (mask), result,
+		       1, OPTAB_LIB_WIDEN);
+  temp = expand_binop (mode, add_optab, temp, const1_rtx, result,
+		       0, OPTAB_LIB_WIDEN);
+  if (temp != result)
+    emit_move_insn (result, temp);
+  emit_label (label);
+  return result;
+}
 
 /* Emit the code to divide OP0 by OP1, putting the result in TARGET
    if that is convenient, and returning where the result is.
@@ -3451,10 +3518,8 @@ expand_divmod (int rem_flag, enum tree_code code, enum machine_mode mode,
 		else if (EXACT_POWER_OF_2_OR_ZERO_P (d)
 			 && (rem_flag ? smod_pow2_cheap[compute_mode]
 				      : sdiv_pow2_cheap[compute_mode])
-			 /* ??? The cheap metric is computed only for
-			    word_mode.  If this operation is wider, this may
-			    not be so.  Assume true if the optab has an
-			    expander for this mode.  */
+			 /* We assume that cheap metric is true if the
+			    optab has an expander for this mode.  */
 			 && (((rem_flag ? smod_optab : sdiv_optab)
 			      ->handlers[compute_mode].insn_code
 			      != CODE_FOR_nothing)
@@ -3463,6 +3528,12 @@ expand_divmod (int rem_flag, enum tree_code code, enum machine_mode mode,
 		  ;
 		else if (EXACT_POWER_OF_2_OR_ZERO_P (abs_d))
 		  {
+		    if (rem_flag)
+		      {
+			remainder = expand_smod_pow2 (compute_mode, op0, d);
+			if (remainder)
+			  return gen_lowpart (mode, remainder);
+		      }
 		    lgup = floor_log2 (abs_d);
 		    if (BRANCH_COST < 1 || (abs_d != 2 && BRANCH_COST < 3))
 		      {
@@ -3496,8 +3567,8 @@ expand_divmod (int rem_flag, enum tree_code code, enum machine_mode mode,
 						 tquotient, 0);
 		      }
 
-		    /* We have computed OP0 / abs(OP1).  If OP1 is negative, negate
-		       the quotient.  */
+		    /* We have computed OP0 / abs(OP1).  If OP1 is negative,
+		       negate the quotient.  */
 		    if (d < 0)
 		      {
 			insn = get_last_insn ();
