@@ -1,3 +1,10 @@
+2002-10-29  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/8287
+	* decl.c (finish_destructor_body): Create the label to jump to
+	when returning from a destructor here.
+	(finish_function_body): Rather than here.
+
 2002-10-25  Zack Weinberg  <zack@codesourcery.com>
 
 	PR c++/7266
