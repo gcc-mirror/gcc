@@ -1,3 +1,30 @@
+Mon Jun  4 20:03:05 CEST 2001  Jan Hubicka  <jh@suse.cz>
+
+	* rtlanal.c (operand_preference): Fix preference for objects.
+
+Mon Jun  4 20:00:40 CEST 2001  Jan Hubicka  <jh@suse.cz>
+
+	* gcse.c (handle_avail_expr): Be prepared to handle single_set
+	parallels.
+
+Mon Jun  4 19:59:46 CEST 2001  Jan Hubicka  <jh@suse.cz>
+
+	* combine.c (if_then_else_cond): Use simplify_subreg instead
+	of operand_subword.
+	* integreate.c (sub_constants): Likewise.
+
+Mon Jun  4 19:59:12 CEST 2001  Jan Hubicka  <jh@suse.cz>
+	
+	* emit-rtl.c (constant_subword): Deprecate; remove most of code
+	and use simplify_gen_subreg.
+
+Mon Jun  4 19:55:23 CEST 2001  Lars Brinkhoff  <lars@nocrew.org>
+
+	* sibcall.c (skip_copy_to_return_value): recognize the situation
+	when the called function's return value is copied into an
+	intermediate pseudo, and then into the calling functions return
+	value register.
+
 Mon Jun  4 16:50:33 CEST 2001  Jan Hubicka  <jh@suse.cz>
 
 	* simplify_rtx.c (simplify_subreg): Keep subregs on return values,

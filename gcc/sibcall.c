@@ -169,6 +169,30 @@ skip_copy_to_return_value (orig_insn)
       && SET_SRC (set) == softret)
     return insn;
 
+  /* Recognize the situation when the called function's return value
+     is copied in two steps: first into an intermediate pseudo, then
+     the into the calling functions return value register.  */
+
+  if (REG_P (SET_DEST (set))
+      && SET_SRC (set) == softret)
+    {
+      rtx x = SET_DEST (set);
+
+      insn = next_nonnote_insn (insn);
+      if (! insn)
+	return orig_insn;
+
+      set = single_set (insn);
+      if (! set)
+	return orig_insn;
+
+      if (SET_DEST (set) == current_function_return_rtx
+	  && REG_P (SET_DEST (set))
+	  && OUTGOING_REGNO (REGNO (SET_DEST (set))) == REGNO (hardret)
+	  && SET_SRC (set) == x)
+	return insn;
+    }
+
   /* It did not look like a copy of the return value, so return the
      same insn we were passed.  */
   return orig_insn;

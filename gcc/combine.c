@@ -7293,29 +7293,16 @@ if_then_else_cond (x, ptrue, pfalse)
 	return cond0;
     }
 
-  /* If X is a normal SUBREG with both inner and outer modes integral,
-     we can narrow both the true and false values of the inner expression,
-     if there is a condition.  */
-  else if (code == SUBREG && GET_MODE_CLASS (mode) == MODE_INT
-	   && GET_MODE_CLASS (GET_MODE (SUBREG_REG (x))) == MODE_INT
-	   && GET_MODE_SIZE (mode) <= GET_MODE_SIZE (GET_MODE (SUBREG_REG (x)))
+  /* If X is a SUBREG, we can narrow both the true and false values
+     if the inner expression, if there is a condition.  */
+  else if (code == SUBREG
 	   && 0 != (cond0 = if_then_else_cond (SUBREG_REG (x),
 					       &true0, &false0)))
     {
-      if ((GET_CODE (SUBREG_REG (x)) == REG
-	   || GET_CODE (SUBREG_REG (x)) == MEM
-	   || CONSTANT_P (SUBREG_REG (x)))
-	  && GET_MODE_SIZE (GET_MODE (SUBREG_REG (x))) > UNITS_PER_WORD
-	  && (WORDS_BIG_ENDIAN || SUBREG_BYTE (x) >= UNITS_PER_WORD))
-	{
-	  true0 = operand_subword (true0, SUBREG_BYTE (x) / UNITS_PER_WORD, 0,
-				   GET_MODE (SUBREG_REG (x)));
-	  false0 = operand_subword (false0, SUBREG_BYTE (x) / UNITS_PER_WORD, 0,
-				    GET_MODE (SUBREG_REG (x)));
-	}
-      *ptrue = force_to_mode (true0, mode, ~(HOST_WIDE_INT) 0, NULL_RTX, 0);
-      *pfalse
-	= force_to_mode (false0, mode, ~(HOST_WIDE_INT) 0, NULL_RTX, 0);
+      *ptrue = simplify_gen_subreg (mode, true0,
+				    GET_MODE (SUBREG_REG (x)), SUBREG_BYTE (x));
+      *pfalse = simplify_gen_subreg (mode, false0,
+				     GET_MODE (SUBREG_REG (x)), SUBREG_BYTE (x));
 
       return cond0;
     }

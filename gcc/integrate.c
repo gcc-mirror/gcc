@@ -2411,19 +2411,14 @@ subst_constants (loc, insn, map, memonly)
 	     valid.  We handle two cases: extracting a full word in an
 	     integral mode and extracting the low part.  */
 	  subst_constants (&inner, NULL_RTX, map, 0);
-
-	  if (GET_MODE_CLASS (GET_MODE (x)) == MODE_INT
-	      && GET_MODE_SIZE (GET_MODE (x)) == UNITS_PER_WORD
-	      && GET_MODE (SUBREG_REG (x)) != VOIDmode)
-	    new = operand_subword (inner, SUBREG_BYTE (x) / UNITS_PER_WORD,
-				   0, GET_MODE (SUBREG_REG (x)));
-
-	  cancel_changes (num_changes);
-	  if (new == 0 && subreg_lowpart_p (x))
-	    new = gen_lowpart_common (GET_MODE (x), inner);
+	  new = simplify_gen_subreg (GET_MODE (x), inner,
+			 	     GET_MODE (SUBREG_REG (x)),
+				     SUBREG_BYTE (x));
 
 	  if (new)
 	    validate_change (insn, loc, new, 1);
+	  else
+	    cancel_changes (num_changes);
 
 	  return;
 	}

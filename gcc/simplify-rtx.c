@@ -2227,9 +2227,9 @@ simplify_subreg (outermode, op, innermode, byte)
 	  && GET_MODE_SIZE (innermode) > UNITS_PER_WORD
 	  && GET_MODE_CLASS (outermode) == MODE_INT)
 	{
-	  rtx new = operand_subword (op,
-				     (byte / UNITS_PER_WORD),
-				     0, innermode);
+	  rtx new = constant_subword (op,
+				      (byte / UNITS_PER_WORD),
+				      innermode);
 	  if (new)
 	    return new;
 	}

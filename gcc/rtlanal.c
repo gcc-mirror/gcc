@@ -2515,16 +2515,16 @@ operand_preference (op)
 {
   /* Constants always come the second operand.  Prefer "nice" constants.  */
   if (GET_CODE (op) == CONST_INT)
-    return -4;
+    return -5;
   if (GET_CODE (op) == CONST_DOUBLE)
-    return -3;
+    return -4;
   if (CONSTANT_P (op))
-    return -2;
+    return -3;
 
   /* SUBREGs of objects should come second.  */
   if (GET_CODE (op) == SUBREG
       && GET_RTX_CLASS (GET_CODE (SUBREG_REG (op))) == 'o')
-    return -1;
+    return -2;
 
   /* If only one operand is a `neg', `not',
     `mult', `plus', or `minus' expression, it will be the first
@@ -2534,9 +2534,10 @@ operand_preference (op)
       || GET_CODE (op) == MINUS)
     return 2;
 
-  /* Complex expressions should be the first.  */
+  /* Complex expressions should be the first, so decrease priority
+     of objects.  */
   if (GET_RTX_CLASS (GET_CODE (op)) == 'o')
-    return 1;
+    return -1;
   return 0;
 }
 
