@@ -1,3 +1,16 @@
+2001-04-17  Benjamin Kosnik  <bkoz@redhat.com>
+
+	* testsuite/23_containers/map_operators.cc: Add dg-excess-errors.
+	* testsuite/23_containers/set_operators.cc: Same.
+
+	* include/bits/c++config: Add _GLIBCPP_CONCEPT_CHECKS. Disable by
+	default.
+	(__GLIBCPP__): Bump from value of last release.
+	* include/bits/concept_check.h: Default to off, edit comments.
+	* src/stl-inst.cc: Use _GLIBCPP_CONCEPT_CHECKS.
+	* src/Makefile.am (AM_CXXFLAGS): Remove _GLIBCPP_NO_CONCEPT_CHECKS. 
+	* src/Makefile.in: Regenerate.
+	
 2001-04-14  Martin Reinecke <martin@MPA-Garching.MPG.DE>
 
 	* include/bits/boost_concept_check.h(_Mutable_ContainerConcept):

@@ -50,7 +50,7 @@ namespace std
     vector<unsigned int>::
     _M_insert_aux(vector<unsigned int>::iterator, unsigned int const &);
 
-#ifdef __STL_USE_CONCEPT_CHECKS
+#ifdef _GLIBCPP_CONCEPT_CHECKS
   template
     void __sink_unused_warning<unsigned int>(unsigned int);
 

@@ -198,7 +198,7 @@ c_incdir = @C_INCLUDE_DIR@
 # The no-implicit-templates flag will generate unresolved references to
 # the concept-checking symbols.  So we must disable the checks while
 # actually building the library.
-AM_CXXFLAGS =  	-fno-implicit-templates -D_GLIBCPP_NO_CONCEPT_CHECKS 	$(LIBSUPCXX_CXXFLAGS) 	$(WARN_CXXFLAGS) 	$(OPTIMIZE_CXXFLAGS) 	$(CONFIG_CXXFLAGS) 
+AM_CXXFLAGS =  	-fno-implicit-templates 	$(LIBSUPCXX_CXXFLAGS) 	$(WARN_CXXFLAGS) 	$(OPTIMIZE_CXXFLAGS) 	$(CONFIG_CXXFLAGS) 
 
 
 # libstdc++ libtool notes
