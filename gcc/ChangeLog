@@ -1,5 +1,45 @@
 2000-03-13  Zack Weinberg  <zack@wolery.cumb.org>
 
+	* cppfiles.c: Include mkdeps.h.
+	(find_include_file, read_include_file): Remove _cpp_ prefix
+	from name, make static.
+	(_cpp_execute_include): New function, broken out of
+	do_include.
+
+	* cpplib.c: Don't include mkdeps.h.
+	(struct directive): Remove type field. Reorder entries.  The
+	function takes only one argument.
+	(struct if_stack): Make type field an int.
+	(directive_table): Rename to dtable.  Generate it, the
+	prototypes of the directive handlers, and the enum for the
+	directive numbers, from a template macro.
+	(do_ifndef, do_include_next, do_import): New functions.
+	(do_define, do_include, do_endif, do_ifdef, do_if, do_else,
+	do_undef, do_line, do_elif, do_error, do_pragma, do_warning,
+	do_ident, do_assert, do_unassert, do_sccs): Take only one
+	argument.
+	(do_sccs): Define always, but alter behavior based on
+	SCCS_DIRECTIVE.
+	(_cpp_handle_directive, consider_directive_while_skipping):
+	Restructure for new directive table layout.
+
+	(pass_thru_directive): Take a directive number, not a pointer
+	to a struct directive.
+	(parse_include): New function, broken out of do_include.
+	(do_include, do_import, do_include_next): Use parse_include
+	and _cpp_execute_include.
+	(do_elif, do_else): Test for T_ELSE specifically when checking
+	for #elif/#else after #else.
+	(parse_ifdef): New function, broken out of do_ifdef.
+	(validate_else): Expect a name arg without a leading #.
+	(if_directive_name): Delete.
+	(cpp_define, cpp_assert, cpp_undef, cpp_unassert): Call
+	directive handlers with only one argument.
+
+	* cpphash.h: Update prototypes.
+	(enum node_type): Remove entries for directives.
+	* Makefile.in: Update dependencies.
+
 	* cpphash.c (dump_hash_helper): Only dump nodes of type
 	T_MACRO.  Emit a newline after each definition.
 

@@ -83,28 +83,9 @@ struct definition
    It does not contain control words like "#define", which are recognized
    by a separate piece of code. */
 
-/* different flavors of hash nodes --- also used in keyword table */
+/* different flavors of hash nodes */
 enum node_type
 {
-  T_DEFINE = 1,	   /* `#define' */
-  T_INCLUDE,	   /* `#include' */
-  T_INCLUDE_NEXT,  /* `#include_next' */
-  T_IMPORT,        /* `#import' */
-  T_IFDEF,	   /* `#ifdef' */
-  T_IFNDEF,	   /* `#ifndef' */
-  T_IF,		   /* `#if' */
-  T_ELSE,	   /* `#else' */
-  T_PRAGMA,	   /* `#pragma' */
-  T_ELIF,	   /* `#elif' */
-  T_UNDEF,	   /* `#undef' */
-  T_LINE,	   /* `#line' */
-  T_ERROR,	   /* `#error' */
-  T_WARNING,	   /* `#warning' */
-  T_ENDIF,	   /* `#endif' */
-  T_SCCS,	   /* `#sccs' */
-  T_IDENT,	   /* `#ident' */
-  T_ASSERT,	   /* `#assert' */
-  T_UNASSERT,	   /* `#unassert', */
   T_SPECLINE,	   /* `__LINE__' */
   T_DATE,	   /* `__DATE__' */
   T_FILE,	   /* `__FILE__' */
@@ -292,10 +273,9 @@ extern void _cpp_dump_macro_hash	PARAMS ((cpp_reader *));
 
 /* In cppfiles.c */
 extern void _cpp_simplify_pathname	PARAMS ((char *));
-extern int _cpp_find_include_file	PARAMS ((cpp_reader *, const char *,
-						struct file_name_list *,
-						IHASH **, int *));
-extern int _cpp_read_include_file	PARAMS ((cpp_reader *, int, IHASH *));
+extern void _cpp_execute_include	PARAMS ((cpp_reader *, char *,
+						 unsigned int, int,
+						 struct file_name_list *));
 extern void _cpp_init_include_hash	PARAMS ((cpp_reader *));
 
 /* In cppexp.c */
