@@ -142,8 +142,18 @@ unmangle_classname (name, name_length)
      const char *name;  int name_length;
 {
   tree to_return = ident_subst (name, name_length, "", '/', '.', "");
-  if (to_return != get_identifier ((char *)name))
-    QUALIFIED_P (to_return) = 1;
+  /* It's not sufficient to compare to_return and get_identifier
+     (name) to determine whether to_return is qualified. There are
+     cases in signature analysis where name will be stripped of a
+     trailing ';'. */
+  name = IDENTIFIER_POINTER (to_return);
+  while (*name)
+    if (*name++ == '.') 
+      {
+	QUALIFIED_P (to_return) = 1;
+	break;
+      }
+  
   return to_return;
 }
 

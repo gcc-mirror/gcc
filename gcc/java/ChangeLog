@@ -1,3 +1,14 @@
+1999-03-19  Alexandre Petit-Bianco  <apbianco@cygnus.com>
+
+	* parse.y (find_applicable_accessible_methods_list): Extend the
+	search to superinterfaces when relevant.
+	(search_applicable_methods_list): New function.
+
+1999-03-18  Alexandre Petit-Bianco  <apbianco@cygnus.com>
+
+	* class.c (unmangle_classname): Implemented stricter testing
+	before setting the QUALIFIED_P flag on an identifier.
+
 Tue Mar 16 15:15:41 1999  Per Bothner  <bothner@cygnus.com>
 
 	* parse.y (java_complete_lhs):  Call force_evaluation_order

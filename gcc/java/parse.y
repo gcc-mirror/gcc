@@ -118,6 +118,8 @@ static tree resolve_no_layout PROTO ((tree, tree));
 static int invocation_mode PROTO ((tree, int));
 static tree find_applicable_accessible_methods_list PROTO ((int, tree, 
 							    tree, tree));
+static void search_applicable_methods_list PROTO ((int, tree, tree, tree, 
+						   tree *, tree *));
 static tree find_most_specific_methods_list PROTO ((tree));
 static int argument_types_convertible PROTO ((tree, tree));
 static tree patch_invoke PROTO ((tree, tree, tree));
@@ -7164,39 +7166,71 @@ find_applicable_accessible_methods_list (lc, class, name, arglist)
      int lc;
      tree class, name, arglist;
 {
-  tree method;
   tree list = NULL_TREE, all_list = NULL_TREE;
 
-  while (class != NULL_TREE)
+  /* Search interfaces */
+  if (CLASS_INTERFACE (TYPE_NAME (class)))
     {
-      for (method = TYPE_METHODS (class);
-	   method != NULL_TREE;  method = TREE_CHAIN (method))
+      int i, n;
+      tree basetype_vec = TYPE_BINFO_BASETYPES (class);
+
+      search_applicable_methods_list 
+	(lc, TYPE_METHODS (class), name, arglist, &list, &all_list);
+
+      n = TREE_VEC_LENGTH (basetype_vec);
+      for (i = 0; i < n; i++)
 	{
-	  if (lc && !DECL_CONSTRUCTOR_P (method))
-	    continue;
-	  else if (!lc && (DECL_CONSTRUCTOR_P (method)
-			   || (GET_METHOD_NAME (method) != name)))
-	    continue;
-	  
-	  if (argument_types_convertible (method, arglist))
-	    {
-	      /* Retain accessible methods only */
-	      if (!not_accessible_p (DECL_CONTEXT (current_function_decl), 
-				     method, 0))
-		list = tree_cons (NULL_TREE, method, list);
-	      else
-	      /* Also retain all selected method here */
-		all_list = tree_cons (NULL_TREE, method, list);
-	    }
+	  tree rlist = 
+	    find_applicable_accessible_methods_list 
+	      (lc,  BINFO_TYPE (TREE_VEC_ELT (basetype_vec, i)), 
+	       name, arglist);
+	  all_list = chainon (rlist, (list ? list : all_list)); 
 	}
-      /* When dealing with constructor, stop here, otherwise search
-         other classes */
-      class = (lc ? NULL_TREE : CLASSTYPE_SUPER (class));
     }
+  /* Search classes */
+  else
+    while (class != NULL_TREE)
+      {
+	search_applicable_methods_list 
+	  (lc, TYPE_METHODS (class), name, arglist, &list, &all_list);
+	class = (lc ? NULL_TREE : CLASSTYPE_SUPER (class));
+      }
+
   /* Either return the list obtained or all selected (but
      inaccessible) methods for better error report. */
   return (!list ? all_list : list);
 }
+
+/* Effectively search for the approriate method in method */
+
+static void 
+search_applicable_methods_list(lc, method, name, arglist, list, all_list)
+     int lc;
+     tree method, name, arglist;
+     tree *list, *all_list;
+{
+  for (; method; method = TREE_CHAIN (method))
+    {
+      /* When dealing with constructor, stop here, otherwise search
+         other classes */
+      if (lc && !DECL_CONSTRUCTOR_P (method))
+	continue;
+      else if (!lc && (DECL_CONSTRUCTOR_P (method) 
+		       || (GET_METHOD_NAME (method) != name)))
+	continue;
+	  
+      if (argument_types_convertible (method, arglist))
+	{
+	  /* Retain accessible methods only */
+	  if (!not_accessible_p (DECL_CONTEXT (current_function_decl), 
+				 method, 0))
+	    *list = tree_cons (NULL_TREE, method, *list);
+	  else
+	    /* Also retain all selected method here */
+	    *all_list = tree_cons (NULL_TREE, method, *list);
+	}
+    }
+}    
 
 /* 15.11.2.2 Choose the Most Specific Method */
 
