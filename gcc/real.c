@@ -1536,6 +1536,7 @@ emovo (a, b)
 {
   register unsigned EMUSHORT *p, *q;
   unsigned EMUSHORT i;
+  int j;
 
   p = a;
   q = b + (NE - 1);		/* point to output exponent */
@@ -1562,7 +1563,7 @@ emovo (a, b)
   /* skip over guard word */
   ++p;
   /* move the significand */
-  for (i = 0; i < NE - 1; i++)
+  for (j = 0; j < NE - 1; j++)
     *q-- = *p++;
 }
 
