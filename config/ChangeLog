@@ -1,3 +1,9 @@
+2004-08-13  Nathanael Nerode  <neroden@gcc.gnu.org>
+
+	* Add ACX_{TARGET,HOST,BUILD}_NONCANONICAL,
+	which do an automatic AC_SUBST on _GCC_TOPLEV_*_NONCANONICAL.
+	The intention is that we will migrate to these bit by bit.
+
 2004-08-01  Robert Millan  <robertmh@gnu.org>
 
 	* mt-linux: Rename to ...

@@ -38,6 +38,30 @@ esac
 ]) []dnl # _GCC_TOPLEV_NONCANONICAL_TARGET
 
 dnl ####
+dnl # ACX_NONCANONICAL_BUILD
+dnl # Like underscored version, but AC_SUBST's.
+AC_DEFUN([ACX_NONCANONICAL_BUILD],
+[AC_REQUIRE([_GCC_TOPLEV_NONCANONICAL_BUILD]) []dnl
+AC_SUBST(build_noncanonical)
+]) []dnl # ACX_NONCANONICAL_BUILD
+
+dnl ####
+dnl # ACX_NONCANONICAL_HOST
+dnl # Like underscored version, but AC_SUBST's.
+AC_DEFUN([ACX_NONCANONICAL_HOST],
+[AC_REQUIRE([_GCC_TOPLEV_NONCANONICAL_HOST]) []dnl
+AC_SUBST(host_noncanonical)
+]) []dnl # ACX_NONCANONICAL_HOST
+
+dnl ####
+dnl # ACX_NONCANONICAL_TARGET
+dnl # Like underscored version, but AC_SUBST's.
+AC_DEFUN([ACX_NONCANONICAL_TARGET],
+[AC_REQUIRE([_GCC_TOPLEV_NONCANONICAL_TARGET]) []dnl
+AC_SUBST(target_noncanonical)
+]) []dnl # ACX_NONCANONICAL_TARGET
+
+dnl ####
 dnl # GCC_TOPLEV_SUBDIRS
 dnl # GCC & friends build 'build', 'host', and 'target' tools.  These must
 dnl # be separated into three well-known subdirectories of the build directory:
