@@ -14,6 +14,14 @@
 /* This avoids lossage on SunOS but only if stdtypes.h comes first.
    There's no way to win with the other order!  Sun lossage.  */
 
+/*  In 4.3bsd-net2, machine/ansi.h defines these symbols for some other
+    purpose.  Undef them to prevent them from confusing this file.  */
+#ifdef _ANSI_H_
+#undef _PTRDIFF_T_
+#undef _SIZE_T_
+#undef _WCHAR_T_
+#endif
+
 /* In case nobody has defined these types, but we aren't running under
    GCC 2.00, make sure that __PTRDIFF_TYPE__, __SIZE__TYPE__, and
    __WCHAR_TYPE__ have reasonable values.  This can happen if the
