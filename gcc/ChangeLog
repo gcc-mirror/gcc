@@ -1,3 +1,8 @@
+2001-08-27  Fred Fish  <fnf@be.com>
+
+	* ginclude/stddef.h: Fix typo, __SIZE__TYPE__ should be
+	__SIZE_TYPE__.
+
 2001-08-27  Geoffrey Keating  <geoffk@redhat.com>
 
 	* reload.c (find_reloads_toplev): Back out this change:
