@@ -708,6 +708,7 @@ java_init_decl_processing ()
   PUSH_FIELD (class_type_node, field, "idt", ptr_type_node);  
   PUSH_FIELD (class_type_node, field, "arrayclass", ptr_type_node);  
   PUSH_FIELD (class_type_node, field, "protectionDomain", ptr_type_node);
+  PUSH_FIELD (class_type_node, field, "chain", ptr_type_node);
   for (t = TYPE_FIELDS (class_type_node);  t != NULL_TREE;  t = TREE_CHAIN (t))
     FIELD_PRIVATE (t) = 1;
   push_super_field (class_type_node, object_type_node);

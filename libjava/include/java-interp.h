@@ -21,6 +21,7 @@ details.  */
 
 #include <java/lang/Class.h>
 #include <java/lang/ClassLoader.h>
+#include <gnu/gcj/runtime/StackTrace.h>
 
 extern "C" {
 #include <ffi.h>
@@ -140,6 +141,7 @@ class _Jv_InterpMethod : public _Jv_MethodBase
   friend class _Jv_ClassReader;
   friend class _Jv_BytecodeVerifier;
   friend class gnu::gcj::runtime::NameFinder;
+  friend class gnu::gcj::runtime::StackTrace;
 
   friend void _Jv_PrepareClass(jclass);
 };

@@ -38,9 +38,10 @@ exception statement from your version. */
 package java.lang;
 
 import gnu.gcj.runtime.NameFinder;
+import gnu.gcj.runtime.StackTrace;
 
 /**
- * VM dependant state and support methods Throwabele.
+ * VM dependent state and support methods Throwable.
  * It is deliberately package local and final and should only be accessed
  * by the Throwable class.
  * <p>
@@ -50,8 +51,7 @@ import gnu.gcj.runtime.NameFinder;
  */
 final class VMThrowable
 {
-  private gnu.gcj.RawData stackTraceAddrs;
-  private int length;
+  private gnu.gcj.runtime.StackTrace trace;
 
   /**
    * Private contructor, create VMThrowables with fillInStackTrace();
@@ -67,7 +67,20 @@ final class VMThrowable
    * @return a new VMThrowable containing the current execution stack trace.
    * @see Throwable#fillInStackTrace()
    */
-  static native VMThrowable fillInStackTrace(Throwable t);
+  static VMThrowable fillInStackTrace(Throwable t)
+  {
+    VMThrowable state = null;
+    
+    /* FIXME: size of the stack trace is limited to 128 elements.
+       It's undoubtedly sensible to limit the stack trace, but 128 is
+       rather arbitrary.  It may be better to configure this.  */
+    if (trace_enabled)
+      {
+	state = new VMThrowable ();
+	state.trace = new gnu.gcj.runtime.StackTrace(128);
+      }
+    return state;
+  }
 
   /**
    * Returns an <code>StackTraceElement</code> array based on the execution
@@ -80,10 +93,11 @@ final class VMThrowable
   StackTraceElement[] getStackTrace(Throwable t)
   {
     StackTraceElement[] result;
-    if (stackTraceAddrs != null)
+    if (trace != null)
       {
 	NameFinder nameFinder = new NameFinder();
-	result = nameFinder.lookup(t, stackTraceAddrs, length);
+	result = nameFinder.lookup(t, trace.stackTraceAddrs(), 
+				   trace.length());
 	nameFinder.close();
       }
     else

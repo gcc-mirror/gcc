@@ -36,6 +36,7 @@ details.  */
 #include <java/lang/IllegalAccessError.h>
 #include <java/lang/IllegalArgumentException.h>
 #include <java/lang/IncompatibleClassChangeError.h>
+#include <java/lang/ArrayIndexOutOfBoundsException.h>
 #include <java/lang/InstantiationException.h>
 #include <java/lang/NoClassDefFoundError.h>
 #include <java/lang/NoSuchFieldException.h>
@@ -47,7 +48,10 @@ details.  */
 #include <java/lang/System.h>
 #include <java/lang/SecurityManager.h>
 #include <java/lang/StringBuffer.h>
+#include <gnu/gcj/runtime/StackTrace.h>
 #include <gcj/method.h>
+#include <gnu/gcj/runtime/MethodRef.h>
+#include <gnu/gcj/RawData.h>
 
 #include <java-cpool.h>
 
@@ -71,7 +75,6 @@ java::lang::Class::forName (jstring className, jboolean initialize,
   if (! _Jv_VerifyClassName (name))
     throw new java::lang::ClassNotFoundException (className);
 
-  // FIXME: should use bootstrap class loader if loader is null.
   jclass klass = (buffer[0] == '[' 
 		  ? _Jv_FindClassFromSignature (name->data, loader)
 		  : _Jv_FindClass (name, loader));
@@ -88,8 +91,23 @@ java::lang::Class::forName (jstring className, jboolean initialize,
 jclass
 java::lang::Class::forName (jstring className)
 {
-  // FIXME: should use class loader from calling method.
-  return forName (className, true, NULL);
+  java::lang::ClassLoader *loader = NULL;
+  gnu::gcj::runtime::StackTrace *t 
+    = new gnu::gcj::runtime::StackTrace(4);
+  java::lang::Class *klass = NULL;
+  try
+    {
+      for (int i=1; !klass; i++)
+	{
+	  klass = t->classAt (i);
+	}
+      loader = klass->getClassLoader();
+    }
+  catch (::java::lang::ArrayIndexOutOfBoundsException *e)
+    {
+    }
+
+  return forName (className, true, loader);
 }
 
 java::lang::ClassLoader *
@@ -1040,6 +1058,8 @@ _Jv_CheckArrayStore (jobject arr, jobject obj)
     {
       JvAssert (arr != NULL);
       jclass elt_class = (JV_CLASS (arr))->getComponentType();
+      if (elt_class == &java::lang::Object::class$)
+	return;
       jclass obj_class = JV_CLASS (obj);
       if (__builtin_expect 
           (! _Jv_IsAssignableFrom (elt_class, obj_class), false))

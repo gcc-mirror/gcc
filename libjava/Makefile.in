@@ -1470,8 +1470,10 @@ gnu/gcj/runtime/FileDeleter.java \
 gnu/gcj/runtime/FinalizerThread.java \
 gnu/gcj/runtime/FirstThread.java \
 gnu/gcj/runtime/JNIWeakRef.java \
+gnu/gcj/runtime/MethodRef.java \
 gnu/gcj/runtime/NameFinder.java \
 gnu/gcj/runtime/SharedLibLoader.java \
+gnu/gcj/runtime/StackTrace.java \
 gnu/gcj/runtime/StringBuffer.java \
 gnu/gcj/runtime/VMClassLoader.java \
 gnu/java/io/ClassLoaderObjectInputStream.java \
@@ -2065,6 +2067,7 @@ gnu/gcj/runtime/natFinalizerThread.cc \
 gnu/gcj/runtime/natFirstThread.cc \
 gnu/gcj/runtime/natNameFinder.cc \
 gnu/gcj/runtime/natSharedLibLoader.cc \
+gnu/gcj/runtime/natStackTrace.cc \
 gnu/gcj/runtime/natStringBuffer.cc \
 java/io/natFile.cc \
 java/io/natFileDescriptor.cc \
@@ -2083,7 +2086,6 @@ java/lang/natString.cc \
 java/lang/natStringBuffer.cc \
 java/lang/natSystem.cc \
 java/lang/natThread.cc \
-java/lang/natVMThrowable.cc \
 java/lang/ref/natReference.cc \
 java/lang/reflect/natArray.cc \
 java/lang/reflect/natConstructor.cc \
@@ -2234,22 +2236,22 @@ gnu/gcj/convert/natOutput_SJIS.lo gnu/gcj/io/natSimpleSHSStream.lo \
 gnu/gcj/io/shs.lo gnu/gcj/protocol/core/natCoreInputStream.lo \
 gnu/gcj/runtime/natFinalizerThread.lo gnu/gcj/runtime/natFirstThread.lo \
 gnu/gcj/runtime/natNameFinder.lo gnu/gcj/runtime/natSharedLibLoader.lo \
-gnu/gcj/runtime/natStringBuffer.lo java/io/natFile.lo \
-java/io/natFileDescriptor.lo java/io/natObjectInputStream.lo \
-java/io/natObjectOutputStream.lo java/lang/natCharacter.lo \
-java/lang/natClass.lo java/lang/natClassLoader.lo \
-java/lang/natConcreteProcess.lo java/lang/natDouble.lo \
-java/lang/natFloat.lo java/lang/natMath.lo java/lang/natObject.lo \
-java/lang/natRuntime.lo java/lang/natString.lo \
+gnu/gcj/runtime/natStackTrace.lo gnu/gcj/runtime/natStringBuffer.lo \
+java/io/natFile.lo java/io/natFileDescriptor.lo \
+java/io/natObjectInputStream.lo java/io/natObjectOutputStream.lo \
+java/lang/natCharacter.lo java/lang/natClass.lo \
+java/lang/natClassLoader.lo java/lang/natConcreteProcess.lo \
+java/lang/natDouble.lo java/lang/natFloat.lo java/lang/natMath.lo \
+java/lang/natObject.lo java/lang/natRuntime.lo java/lang/natString.lo \
 java/lang/natStringBuffer.lo java/lang/natSystem.lo \
-java/lang/natThread.lo java/lang/natVMThrowable.lo \
-java/lang/ref/natReference.lo java/lang/reflect/natArray.lo \
-java/lang/reflect/natConstructor.lo java/lang/reflect/natField.lo \
-java/lang/reflect/natMethod.lo java/lang/reflect/natProxy.lo \
-java/net/natNetworkInterface.lo java/net/natInetAddress.lo \
-java/net/natPlainDatagramSocketImpl.lo java/net/natPlainSocketImpl.lo \
-java/text/natCollator.lo java/util/natTimeZone.lo \
-java/util/zip/natDeflater.lo java/util/zip/natInflater.lo
+java/lang/natThread.lo java/lang/ref/natReference.lo \
+java/lang/reflect/natArray.lo java/lang/reflect/natConstructor.lo \
+java/lang/reflect/natField.lo java/lang/reflect/natMethod.lo \
+java/lang/reflect/natProxy.lo java/net/natNetworkInterface.lo \
+java/net/natInetAddress.lo java/net/natPlainDatagramSocketImpl.lo \
+java/net/natPlainSocketImpl.lo java/text/natCollator.lo \
+java/util/natTimeZone.lo java/util/zip/natDeflater.lo \
+java/util/zip/natInflater.lo
 libgcjx_la_OBJECTS =  gnu/gcj/xlib/natClip.lo \
 gnu/gcj/xlib/natColormap.lo gnu/gcj/xlib/natDisplay.lo \
 gnu/gcj/xlib/natDrawable.lo gnu/gcj/xlib/natFont.lo \
@@ -2349,14 +2351,15 @@ DEP_FILES =  .deps/$(srcdir)/$(CONVERT_DIR)/gen-from-JIS.P \
 .deps/gnu/gcj/runtime/FileDeleter.P \
 .deps/gnu/gcj/runtime/FinalizerThread.P \
 .deps/gnu/gcj/runtime/FirstThread.P .deps/gnu/gcj/runtime/JNIWeakRef.P \
-.deps/gnu/gcj/runtime/NameFinder.P \
+.deps/gnu/gcj/runtime/MethodRef.P .deps/gnu/gcj/runtime/NameFinder.P \
 .deps/gnu/gcj/runtime/SharedLibLoader.P \
-.deps/gnu/gcj/runtime/StringBuffer.P \
+.deps/gnu/gcj/runtime/StackTrace.P .deps/gnu/gcj/runtime/StringBuffer.P \
 .deps/gnu/gcj/runtime/VMClassLoader.P \
 .deps/gnu/gcj/runtime/natFinalizerThread.P \
 .deps/gnu/gcj/runtime/natFirstThread.P \
 .deps/gnu/gcj/runtime/natNameFinder.P \
 .deps/gnu/gcj/runtime/natSharedLibLoader.P \
+.deps/gnu/gcj/runtime/natStackTrace.P \
 .deps/gnu/gcj/runtime/natStringBuffer.P .deps/gnu/gcj/xlib/Clip.P \
 .deps/gnu/gcj/xlib/Colormap.P .deps/gnu/gcj/xlib/Display.P \
 .deps/gnu/gcj/xlib/Drawable.P .deps/gnu/gcj/xlib/Font.P \
@@ -2956,9 +2959,8 @@ DEP_FILES =  .deps/$(srcdir)/$(CONVERT_DIR)/gen-from-JIS.P \
 .deps/java/lang/natMath.P .deps/java/lang/natObject.P \
 .deps/java/lang/natRuntime.P .deps/java/lang/natString.P \
 .deps/java/lang/natStringBuffer.P .deps/java/lang/natSystem.P \
-.deps/java/lang/natThread.P .deps/java/lang/natVMThrowable.P \
-.deps/java/lang/ref/PhantomReference.P .deps/java/lang/ref/Reference.P \
-.deps/java/lang/ref/ReferenceQueue.P \
+.deps/java/lang/natThread.P .deps/java/lang/ref/PhantomReference.P \
+.deps/java/lang/ref/Reference.P .deps/java/lang/ref/ReferenceQueue.P \
 .deps/java/lang/ref/SoftReference.P .deps/java/lang/ref/WeakReference.P \
 .deps/java/lang/ref/natReference.P \
 .deps/java/lang/reflect/AccessibleObject.P \

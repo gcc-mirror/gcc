@@ -1665,6 +1665,7 @@ make_class_data (type)
   PUSH_FIELD_VALUE (cons, "idt", null_pointer_node);
   PUSH_FIELD_VALUE (cons, "arrayclass", null_pointer_node);
   PUSH_FIELD_VALUE (cons, "protectionDomain", null_pointer_node);
+  PUSH_FIELD_VALUE (cons, "chain", null_pointer_node);
 
   FINISH_RECORD_CONSTRUCTOR (cons);
 
