@@ -3852,6 +3852,13 @@ create_interface (int flags, tree id, tree super)
   /* Create a new decl if DECL is NULL, otherwise fix it */
   decl = maybe_create_class_interface_decl (decl, raw_name, q_name, id);
 
+  /* Interfaces are always abstract. */
+  flags |= ACC_ABSTRACT;
+
+  /* Inner interfaces are always static.  */
+  if (INNER_CLASS_DECL_P (decl))
+    flags |= ACC_STATIC;
+
   /* Set super info and mark the class a complete */
   set_super_info (ACC_INTERFACE | flags, TREE_TYPE (decl),
 		  object_type_node, ctxp->interface_number);
@@ -5187,12 +5194,9 @@ register_incomplete_type (int kind, tree wfl, tree decl, tree ptr)
   JDEP_MISC (new) = NULL_TREE;
   /* For some dependencies, set the enclosing class of the current
      class to be the enclosing context */
-  if ((kind == JDEP_INTERFACE  || kind == JDEP_ANONYMOUS)
+  if ((kind == JDEP_INTERFACE || kind == JDEP_ANONYMOUS || kind == JDEP_SUPER)
       && GET_ENCLOSING_CPC ())
     JDEP_ENCLOSING (new) = TREE_VALUE (GET_ENCLOSING_CPC ());
-  else if (kind == JDEP_SUPER)
-    JDEP_ENCLOSING (new) = (GET_ENCLOSING_CPC () ?
-			    TREE_VALUE (GET_ENCLOSING_CPC ()) : NULL_TREE);
   else
     JDEP_ENCLOSING (new) = GET_CPC ();
   JDEP_GET_PATCH (new) = (tree *)NULL;
@@ -5512,7 +5516,7 @@ jdep_resolve_class (jdep *dep)
 
   if (!decl)
     complete_class_report_errors (dep);
-  else if (PURE_INNER_CLASS_DECL_P (decl))
+  else if (INNER_CLASS_DECL_P (decl))
     {
       tree inner = TREE_TYPE (decl);
       if (! CLASS_LOADED_P (inner))

@@ -304,6 +304,7 @@ static void perform_relocations (struct jcf_partial *);
 static void init_jcf_state (struct jcf_partial *, struct obstack *);
 static void init_jcf_method (struct jcf_partial *, tree);
 static void release_jcf_state (struct jcf_partial *);
+static int get_classfile_modifiers (tree class);
 static struct chunk * generate_classfile (tree, struct jcf_partial *);
 static struct jcf_handler *alloc_handler (struct jcf_block *,
 					  struct jcf_block *,
@@ -2886,6 +2887,32 @@ release_jcf_state (struct jcf_partial *state)
   obstack_free (state->chunk_obstack, state->first);
 }
 
+/* Get the access flags (modifiers) of a class (TYPE_DECL) to be used in the
+   access_flags field of the class file header.  */
+
+static int get_classfile_modifiers (tree class)
+{
+  /* These are the flags which are valid class file modifiers. 
+     See JVMS2 S4.1.  */
+  int valid_toplevel_class_flags = ACC_PUBLIC | ACC_FINAL | ACC_SUPER | 
+				   ACC_INTERFACE | ACC_ABSTRACT;
+  int flags = get_access_flags (class);
+
+  /* ACC_SUPER should always be set, except for interfaces.  */
+  if (! (flags & ACC_INTERFACE))
+    flags |= ACC_SUPER;
+   
+  /* A protected member class becomes public at the top level. */
+  if (flags & ACC_PROTECTED)
+    flags |= ACC_PUBLIC;
+ 
+  /* Filter out flags that are not valid for a class or interface in the 
+     top-level access_flags field.  */
+  flags &= valid_toplevel_class_flags;
+
+  return flags;
+}
+
 /* Generate and return a list of chunks containing the class CLAS
    in the .class file representation.  The list can be written to a
    .class file using write_chunks.  Allocate chunks from obstack WORK. */
@@ -2921,9 +2948,7 @@ generate_classfile (tree clas, struct jcf_partial *state)
   else
     i = 8 + 2 * total_supers;
   ptr = append_chunk (NULL, i, state);
-  i = get_access_flags (TYPE_NAME (clas));
-  if (! (i & ACC_INTERFACE))
-    i |= ACC_SUPER;
+  i = get_classfile_modifiers (TYPE_NAME (clas));  
   PUT2 (i); /* access_flags */
   i = find_class_constant (&state->cpool, clas);  PUT2 (i);  /* this_class */
   if (clas == object_type_node)
