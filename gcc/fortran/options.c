@@ -78,9 +78,11 @@ gfc_init_options (unsigned int argc ATTRIBUTE_UNUSED,
   flag_argument_noalias = 2;
 
   gfc_option.allow_std = GFC_STD_F95_OBS | GFC_STD_F95_DEL
-    | GFC_STD_F2003_OBS | GFC_STD_F2003_DEL | GFC_STD_F2003 | GFC_STD_GNU;
+    | GFC_STD_F2003 | GFC_STD_F95 | GFC_STD_F77 | GFC_STD_GNU;
   gfc_option.warn_std = GFC_STD_F95_OBS | GFC_STD_F95_DEL
     | GFC_STD_F2003;
+
+  gfc_option.warn_nonstd_intrinsics = 0;
 
   return CL_F95;
 }
@@ -131,6 +133,7 @@ set_Wall (void)
   gfc_option.warn_underflow = 1;
   gfc_option.warn_surprising = 1;
   gfc_option.warn_unused_labels = 1;
+  gfc_option.warn_nonstd_intrinsics = 1;
 
   set_Wunused (1);
   warn_return_type = 1;
@@ -309,24 +312,27 @@ gfc_handle_option (size_t scode, const char *arg, int value)
       break;
     
     case OPT_std_f95:
-      gfc_option.allow_std = GFC_STD_F95_OBS | GFC_STD_F2003_OBS
-	| GFC_STD_F2003_DEL;
+      gfc_option.allow_std = GFC_STD_F95_OBS | GFC_STD_F95 | GFC_STD_F77;
       gfc_option.warn_std = GFC_STD_F95_OBS;
       gfc_option.max_identifier_length = 31;
       break;
 
     case OPT_std_f2003:
-      gfc_option.allow_std = GFC_STD_F95_OBS | GFC_STD_F2003_OBS
-	| GFC_STD_F2003;
-      gfc_option.warn_std = GFC_STD_F95_OBS | GFC_STD_F2003_OBS;
+      gfc_option.allow_std = GFC_STD_F95_OBS | GFC_STD_F77 
+	| GFC_STD_F2003 | GFC_STD_F95;
+      gfc_option.warn_std = GFC_STD_F95_OBS;
       gfc_option.max_identifier_length = 63;
       break;
 
     case OPT_std_gnu:
       gfc_option.allow_std = GFC_STD_F95_OBS | GFC_STD_F95_DEL
-	| GFC_STD_F2003_OBS | GFC_STD_F2003_DEL | GFC_STD_F2003 | GFC_STD_GNU;
-      gfc_option.warn_std = GFC_STD_F95_OBS | GFC_STD_F95_DEL
-	| GFC_STD_F2003_OBS | GFC_STD_F2003_DEL;
+	| GFC_STD_F77 | GFC_STD_F95 | GFC_STD_F2003
+	| GFC_STD_GNU;
+      gfc_option.warn_std = GFC_STD_F95_OBS | GFC_STD_F95_DEL;
+      break;
+
+    case OPT_Wnonstd_intrinsics:
+      gfc_option.warn_nonstd_intrinsics = 1;
       break;
     }
 
