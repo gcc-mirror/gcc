@@ -1,3 +1,8 @@
+Tue Jan  4 23:59:26 2000  Denis Chertykov <denisc@overta.ru>
+
+	* final.c (shorten_branches): Correctly compute length of
+	asms without operands.
+ 
 Tue Jan  4 22:55:41 2000  Steve Chamberlain <sac@pobox.com>
 
 	* configure.in: Add pj target.
