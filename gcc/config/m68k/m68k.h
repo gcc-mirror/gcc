@@ -2211,6 +2211,9 @@ extern char *output_move_const_double ();
 extern char *output_btst ();
 extern char *output_scc_di ();
 extern char *output_addsi3 ();
+extern char *output_andsi3 ();
+extern char *output_iorsi3 ();
+extern char *output_xorsi3 ();
 
 /* Variables in m68k.c */
 extern char *m68k_align_loops_string;
