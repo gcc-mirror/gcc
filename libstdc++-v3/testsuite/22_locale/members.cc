@@ -86,46 +86,47 @@ test02()
   VERIFY( loc_2 != loc_c );
 
   // extract facet
-  const numpunct<char>&	f_nump_1 = use_facet<numpunct<char> >(loc_1); 
-  const numpunct<char>&	f_nump_2 = use_facet<numpunct<char> >(loc_2); 
-  const numpunct<char>&	f_nump_c = use_facet<numpunct<char> >(loc_c); 
-  const numpunct<char>&	f_nump_fr = use_facet<numpunct<char> >(loc_fr); 
+  const numpunct<char>&	nump_1 = use_facet<numpunct<char> >(loc_1); 
+  const numpunct<char>&	nump_2 = use_facet<numpunct<char> >(loc_2); 
+  const numpunct<char>&	nump_c = use_facet<numpunct<char> >(loc_c); 
+  const numpunct<char>&	nump_fr = use_facet<numpunct<char> >(loc_fr); 
 
   // sanity check the data is correct.
-  char dp1 = f_nump_c.decimal_point();
-  char th1 = f_nump_c.thousands_sep();
-  string g1 = f_nump_c.grouping();
-  string t1 = f_nump_c.truename();
-  string f1 = f_nump_c.falsename();
+  char dp1 = nump_c.decimal_point();
+  char th1 = nump_c.thousands_sep();
+  string g1 = nump_c.grouping();
+  string t1 = nump_c.truename();
+  string f1 = nump_c.falsename();
 
-  char dp2 = f_nump_1.decimal_point();
-  char th2 = f_nump_1.thousands_sep();
-  string g2 = f_nump_1.grouping();
-  string t2 = f_nump_1.truename();
-  string f2 = f_nump_1.falsename();
+  char dp2 = nump_1.decimal_point();
+  char th2 = nump_1.thousands_sep();
+  string g2 = nump_1.grouping();
+  string t2 = nump_1.truename();
+  string f2 = nump_1.falsename();
 
-  char dp3 = f_nump_2.decimal_point();
-  char th3 = f_nump_2.thousands_sep();
-  string g3 = f_nump_2.grouping();
-  string t3 = f_nump_2.truename();
-  string f3 = f_nump_2.falsename();
+  char dp3 = nump_2.decimal_point();
+  char th3 = nump_2.thousands_sep();
+  string g3 = nump_2.grouping();
+  string t3 = nump_2.truename();
+  string f3 = nump_2.falsename();
 
-  char dp4 = f_nump_fr.decimal_point();
-  char th4 = f_nump_fr.thousands_sep();
-  string g4 = f_nump_fr.grouping();
-  string t4 = f_nump_fr.truename();
-  string f4 = f_nump_fr.falsename();
-
-#if 0
-  // XXX these should not be the same if named locales are working correctly.
+  char dp4 = nump_fr.decimal_point();
+  char th4 = nump_fr.thousands_sep();
+  string g4 = nump_fr.grouping();
+  string t4 = nump_fr.truename();
+  string f4 = nump_fr.falsename();
   VERIFY( dp1 != dp2 );
   VERIFY( th1 != th2 );
-#endif
 
   VERIFY( dp1 == dp3 );
   VERIFY( th1 == th3 );
   VERIFY( t1 == t3 );
   VERIFY( f1 == f3 );
+
+  VERIFY( dp2 == dp4 );
+  VERIFY( th2 == th4 );
+  VERIFY( t2 == t4 );
+  VERIFY( f2 == f4 );
 }
 
 

@@ -42,16 +42,15 @@
 #include <typeinfo> 		// For bad_cast
 #include <bits/std_vector.h>	
 
-
 namespace std
 {
   template<typename _Facet>
     locale
     locale::combine(const locale& __other)
     {
-      locale __copy(*this);
-      __copy._M_impl->_M_replace_facet(__other._M_impl, &_Facet::id);
-      return __copy;
+      _Impl* __tmp = new _Impl(*_M_impl, 1);
+      __tmp->_M_replace_facet(__other._M_impl, &_Facet::id);
+      return locale(__tmp);
     }
 
   template<typename _CharT, typename _Traits, typename _Alloc>

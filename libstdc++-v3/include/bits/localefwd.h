@@ -326,7 +326,7 @@ namespace std
     inline void 
     _M_remove_reference() throw()
     {
-      if (_M_references-- == 0)  // XXX MT
+      if (--_M_references == 0)  // XXX MT
 	{
 	  try 
 	    { delete this; } 

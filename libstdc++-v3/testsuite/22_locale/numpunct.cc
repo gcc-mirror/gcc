@@ -22,13 +22,27 @@
 
 #include <locale>
 
+void test01()
+{
+  // Check for required base class.
+  typedef std::numpunct<char> test_type;
+  typedef std::locale::facet base_type;
+  const test_type& obj = std::use_facet<test_type>(std::locale()); 
+  const base_type* base = &obj;
+}
+
 // Should be able to instantiate this for other types besides char, wchar_t
 class gnu_numpunct: public std::numpunct<unsigned char> 
 { };
 
-
-int main() 
+void test02()
 { 
   gnu_numpunct facet01;
+}
+
+int main()
+{
+  test01();
+  test02();
   return 0;
 }
