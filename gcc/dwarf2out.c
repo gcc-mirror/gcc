@@ -9480,7 +9480,8 @@ rtl_for_decl_location (tree decl)
 	  if (dmode == pmode)
 	    rtl = DECL_INCOMING_RTL (decl);
 	  else if (SCALAR_INT_MODE_P (dmode)
-		   && GET_MODE_SIZE (dmode) <= GET_MODE_SIZE (pmode))
+		   && GET_MODE_SIZE (dmode) <= GET_MODE_SIZE (pmode)
+		   && DECL_INCOMING_RTL (decl))
 	    {
 	      rtx inc = DECL_INCOMING_RTL (decl);
 	      if (REG_P (inc))
