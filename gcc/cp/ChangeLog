@@ -1,3 +1,12 @@
+Tue Mar 24 12:21:55 1998  Benjamin Kosnik  <bkoz@lisa.cygnus.com>
+
+	* decl.c (init_decl_processing): Set TYPE_PRECISON for bools to 1.
+
+Tue Mar 24 12:21:48 1998  Jim Wilson  <wilson@cygnus.com>
+
+        * decl.c (init_decl_processing): Initialize TYPE_MAX_VALUE for
+        boolean_type_node to 1.
+
 Tue Mar 24 10:23:47 1998  Mark Mitchell  <mmitchell@usa.net>
 
 	* error.c (dump_expr): Remove unused variable `l'.
