@@ -2013,11 +2013,13 @@ numerical limits work correctly.  You should not use
 this macro directly; instead, include the appropriate headers.
 
 @item __SCHAR_MAX__
+@itemx __WCHAR_MAX__
 @itemx __SHRT_MAX__
 @itemx __INT_MAX__
 @itemx __LONG_MAX__
 @itemx __LONG_LONG_MAX__
-Defined to the maximum value of the @code{signed char}, @code{signed short},
+Defined to the maximum value of the @code{signed char}, @code{wchar_t}, 
+@code{signed short},
 @code{signed int}, @code{signed long}, and @code{signed long long} types
 respectively.  They exist to make the standard header given numerical limits
 work correctly.  You should not use these macros directly; instead, include
