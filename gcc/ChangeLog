@@ -4,6 +4,10 @@
 
 Wed Oct 28 00:10:35 1998  Jeffrey A Law  (law@cygnus.com)
 
+	* toplev.c (compile_file): Call allocate_reg_info to free register
+	table memory.
+	* rtl.h (allocate_reg_info): Declare.
+
 	* PROJECTS: Remove entry for local spilling.
 
 	* final.c (cleanup_subreg_operands): New function.
