@@ -1,3 +1,10 @@
+2001-11-15  Nathan Sidwell  <nathan@codesourcery.com>
+
+	PR g++/3154
+	* init.c (sort_base_init): Remove unreachable code.
+	(expand_member_init): Adjust comment to reflect reality. Simplify
+	and remove unreachable code.
+
 2001-11-15  Neil Booth  <neil@daikokuya.demon.co.uk>
 
 	* cp-tree.h (init_reswords, cxx_init_decl_processing): New.
