@@ -1,5 +1,11 @@
 2000-09-05  Richard Henderson  <rth@cygnus.com>
 
+	* config/ia64/lib1func.asm (__divtf3): Rebundle for Itanium.
+	Eliminate final copy from non-trapping case.
+	(__divdf3, __divsf3): Likewise.
+
+2000-09-05  Richard Henderson  <rth@cygnus.com>
+
 	* config/ia64/ia64.md (mulhi3): Fix typo last change.
 	* config/ia64/lib1func.asm (__divdi3, __udivdi3, __umodsi3): Likewise.
 
