@@ -1000,6 +1000,10 @@ extern int rs6000_default_long_calls;
         = call_really_used_regs[i] = 1;					\
   if (DEFAULT_ABI == ABI_V4						\
       && PIC_OFFSET_TABLE_REGNUM != INVALID_REGNUM			\
+      && flag_pic == 2)							\
+    fixed_regs[RS6000_PIC_OFFSET_TABLE_REGNUM] = 1;			\
+  if (DEFAULT_ABI == ABI_V4						\
+      && PIC_OFFSET_TABLE_REGNUM != INVALID_REGNUM			\
       && flag_pic == 1)							\
     fixed_regs[RS6000_PIC_OFFSET_TABLE_REGNUM]				\
       = call_used_regs[RS6000_PIC_OFFSET_TABLE_REGNUM]			\
