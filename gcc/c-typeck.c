@@ -4903,7 +4903,7 @@ digest_init (type, init, tail, require_constant, constructor_constant, ofwhat)
   /* Handle scalar types, including conversions.  */
 
   if (code == INTEGER_TYPE || code == REAL_TYPE || code == POINTER_TYPE
-      || code == ENUMERAL_TYPE || code == COMPEX_TYPE)
+      || code == ENUMERAL_TYPE || code == COMPLEX_TYPE)
     {
       if (raw_constructor)
 	{
