@@ -592,15 +592,15 @@ _Jv_NewMultiArray (jclass array_type, jint dimensions, ...)
   _Jv_ArrayVTable _Jv_##NAME##VTable;		\
   java::lang::Class _Jv_##NAME##Class __attribute__ ((aligned (8)));
 
-DECLARE_PRIM_TYPE(byte);
-DECLARE_PRIM_TYPE(short);
-DECLARE_PRIM_TYPE(int);
-DECLARE_PRIM_TYPE(long);
-DECLARE_PRIM_TYPE(boolean);
-DECLARE_PRIM_TYPE(char);
-DECLARE_PRIM_TYPE(float);
-DECLARE_PRIM_TYPE(double);
-DECLARE_PRIM_TYPE(void);
+DECLARE_PRIM_TYPE(byte)
+DECLARE_PRIM_TYPE(short)
+DECLARE_PRIM_TYPE(int)
+DECLARE_PRIM_TYPE(long)
+DECLARE_PRIM_TYPE(boolean)
+DECLARE_PRIM_TYPE(char)
+DECLARE_PRIM_TYPE(float)
+DECLARE_PRIM_TYPE(double)
+DECLARE_PRIM_TYPE(void)
 
 void
 _Jv_InitPrimClass (jclass cl, char *cname, char sig, int len, 

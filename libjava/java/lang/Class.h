@@ -333,6 +333,9 @@ private:
   inline friend jclass
   _Jv_GetArrayClass (jclass klass, java::lang::ClassLoader *loader)
   {
+    extern void _Jv_NewArrayClass (jclass element,
+				   java::lang::ClassLoader *loader,
+				   _Jv_VTable *array_vtable = 0);
     if (__builtin_expect (!klass->arrayclass, false))
       _Jv_NewArrayClass (klass, loader);
     return klass->arrayclass;

@@ -211,7 +211,7 @@ extern JNIIMPEXP jint JNICALL JNI_CreateJavaVM (JavaVM **, void **, void *);
 extern JNIIMPEXP jint JNICALL JNI_GetCreatedJavaVMs(JavaVM **, jsize, jsize *);
 
 #ifdef __cplusplus
-};
+}
 #endif /* __cplusplus */
 
 typedef union jvalue

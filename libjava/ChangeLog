@@ -1,3 +1,18 @@
+2002-12-27  Mark Mitchell  <mark@codesourcery.com>
+
+	* boehm.cc: Remove stray semicolon.
+	* interpret.cc: Likewise.
+	* prims.cc: Likewise.
+	* verify.cc (_Jv_BytecodeVerifier::verify_fail): Move definition
+	earlier to ensure default arguments are processed.
+	* gcj/array.h (JArray): Add forward declaration.
+	(elements): Likewise.
+	* gcj/javaprim.h: Remove stray semicolons.
+	* include/bohm-gc.h: Likewise.
+	* include/jni.h: Likewise.
+	* include/jvm.h: Likewise.
+	* java/lang/Class.h (_Jv_GetArrayClass): Declare _Jv_NewArrayClass.
+	
 2002-12-23  Jeff Sturm  <jsturm@one-point.com>
 
 	* exception.cc (PERSONALITY_FUNCTION): Clear least-significant-bit

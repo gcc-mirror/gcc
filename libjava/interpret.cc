@@ -91,7 +91,7 @@ static inline void dupx (_Jv_word *sp, int n, int x)
       sp[top-(n+x)-i] = sp[top-i];
     }
   
-};
+}
 
 // Used to convert from floating types to integral types.
 template<typename TO, typename FROM>

@@ -1,7 +1,7 @@
 // -*- c++ -*-
 // boehm-gc.h - Defines for Boehm collector.
 
-/* Copyright (C) 1998, 1999  Free Software Foundation
+/* Copyright (C) 1998, 1999, 2002  Free Software Foundation
 
    This file is part of libgcj.
 
@@ -19,7 +19,7 @@ extern "C"
 {
   JV_MARKOBJ_DECL;
   JV_MARKARRAY_DECL;
-};
+}
 
 // Enough stuff to inline _Jv_AllocObj.  Ugly.
 #include <gcj/javaprims.h>
