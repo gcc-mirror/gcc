@@ -1047,6 +1047,10 @@ typedef struct m68hc11_args
 #define FUNCTION_ARG_PADDING(MODE, TYPE) \
   m68hc11_function_arg_padding ((MODE), (TYPE))
 
+#undef PAD_VARARGS_DOWN
+#define PAD_VARARGS_DOWN \
+  (m68hc11_function_arg_padding (TYPE_MODE (type), type) == downward)
+
 /* A C expression that indicates when it is the called function's
    responsibility to make a copy of arguments passed by invisible
    reference.  Normally, the caller makes a copy and passes the
@@ -1092,10 +1096,6 @@ typedef struct m68hc11_args
    it forbids all spill registers at that point.  Enabling
    caller saving results in spill failure.  */
 #define CALLER_SAVE_PROFITABLE(REFS,CALLS) 0
-
-/* Implement `va_arg'.  */
-#define EXPAND_BUILTIN_VA_ARG(valist, type) \
-  m68hc11_va_arg (valist, type)
 
 /* For an arg passed partly in registers and partly in memory,
    this is the number of registers used.
