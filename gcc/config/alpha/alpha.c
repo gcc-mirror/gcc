@@ -1961,17 +1961,24 @@ alpha_expand_block_move (operands)
       enum machine_mode mode;
       tmp = XEXP (XEXP (orig_src, 0), 0);
 
+      /* Don't use the existing register if we're reading more than
+	 is held in the register.  Nor if there is not a mode that
+	 handles the exact size.  */
       mode = mode_for_size (bytes * BITS_PER_UNIT, MODE_INT, 1);
       if (mode != BLKmode
-	  && GET_MODE_SIZE (GET_MODE (tmp)) <= bytes)
+	  && GET_MODE_SIZE (GET_MODE (tmp)) >= bytes)
 	{
-	  /* Whee!  Optimize the load to use the existing register.  */
-	  data_regs[nregs++] = gen_lowpart (mode, tmp);
+	  if (mode == TImode)
+	    {
+	      data_regs[nregs] = gen_lowpart (DImode, tmp);
+	      data_regs[nregs+1] = gen_highpart (DImode, tmp);
+	      nregs += 2;
+	    }
+	  else
+	    data_regs[nregs++] = gen_lowpart (mode, tmp);
 	  goto src_done;
 	}
 
-      /* ??? We could potentially be copying 3 bytes or whatnot from
-	 a wider reg.  Probably not worth worrying about.  */
       /* No appropriate mode; fall back on memory.  */
       orig_src = change_address (orig_src, GET_MODE (orig_src),
 				 copy_addr_to_reg (XEXP (orig_src, 0)));
@@ -1988,9 +1995,9 @@ alpha_expand_block_move (operands)
       for (i = 0; i < words; ++i)
 	{
 	  emit_move_insn (data_regs[nregs+i],
-			  change_address(orig_src, DImode,
-					 plus_constant (XEXP (orig_src, 0),
-							ofs + i*8)));
+			  change_address (orig_src, DImode,
+					  plus_constant (XEXP (orig_src, 0),
+							 ofs + i*8)));
 	}
 
       nregs += words;
@@ -2007,9 +2014,9 @@ alpha_expand_block_move (operands)
       for (i = 0; i < words; ++i)
 	{
 	  emit_move_insn (data_regs[nregs+i],
-			  change_address(orig_src, SImode,
-					 plus_constant (XEXP (orig_src, 0),
-							ofs + i*4)));
+			  change_address (orig_src, SImode,
+					  plus_constant (XEXP (orig_src, 0),
+							 ofs + i*4)));
 	}
 
       nregs += words;
@@ -2023,7 +2030,8 @@ alpha_expand_block_move (operands)
       for (i = 0; i < words+1; ++i)
 	data_regs[nregs+i] = gen_reg_rtx(DImode);
 
-      alpha_expand_unaligned_load_words(data_regs+nregs, orig_src, words, ofs);
+      alpha_expand_unaligned_load_words (data_regs + nregs, orig_src,
+					 words, ofs);
 
       nregs += words;
       bytes -= words * 8;
@@ -2092,11 +2100,40 @@ alpha_expand_block_move (operands)
       tmp = XEXP (XEXP (orig_dst, 0), 0);
 
       mode = mode_for_size (orig_bytes * BITS_PER_UNIT, MODE_INT, 1);
-      if (GET_MODE (tmp) == mode && nregs == 1)
+      if (GET_MODE (tmp) == mode)
 	{
-	  emit_move_insn (tmp, data_regs[0]);
-	  i = 1;
-	  goto dst_done;
+	  if (nregs == 1)
+	    {
+	      emit_move_insn (tmp, data_regs[0]);
+	      i = 1;
+	      goto dst_done;
+	    }
+	  else if (nregs == 2 && mode == TImode)
+	    {
+	      /* Undo the subregging done above when copying between
+		 two TImode registers.  */
+	      if (GET_CODE (data_regs[0]) == SUBREG
+		  && GET_MODE (SUBREG_REG (data_regs[0])) == TImode)
+		{
+		  emit_move_insn (tmp, SUBREG_REG (data_regs[0]));
+		}
+	      else
+		{
+		  rtx seq;
+
+		  start_sequence ();
+		  emit_move_insn (gen_lowpart (DImode, tmp), data_regs[0]);
+		  emit_move_insn (gen_highpart (DImode, tmp), data_regs[1]);
+		  seq = gen_sequence ();
+		  end_sequence ();
+
+		  emit_no_conflict_block (seq, tmp, data_regs[0],
+					  data_regs[1], NULL_RTX);
+		}
+
+	      i = 2;
+	      goto dst_done;
+	    }
 	}
 
       /* ??? If nregs > 1, consider reconstructing the word in regs.  */
@@ -2114,9 +2151,9 @@ alpha_expand_block_move (operands)
     {
       while (i < nregs && GET_MODE (data_regs[i]) == DImode)
 	{
-	  emit_move_insn (change_address(orig_dst, DImode,
-					 plus_constant (XEXP (orig_dst, 0),
-							ofs)),
+	  emit_move_insn (change_address (orig_dst, DImode,
+					  plus_constant (XEXP (orig_dst, 0),
+							 ofs)),
 			  data_regs[i]);
 	  ofs += 8;
 	  i++;
@@ -2131,13 +2168,13 @@ alpha_expand_block_move (operands)
 	  tmp = expand_binop (DImode, lshr_optab, data_regs[i], GEN_INT (32),
 			      NULL_RTX, 1, OPTAB_WIDEN);
 
-	  emit_move_insn (change_address(orig_dst, SImode,
-					 plus_constant (XEXP (orig_dst, 0),
-							ofs)),
+	  emit_move_insn (change_address (orig_dst, SImode,
+					  plus_constant (XEXP (orig_dst, 0),
+							 ofs)),
 			  gen_lowpart (SImode, data_regs[i]));
-	  emit_move_insn (change_address(orig_dst, SImode,
-					 plus_constant (XEXP (orig_dst, 0),
-							ofs+4)),
+	  emit_move_insn (change_address (orig_dst, SImode,
+					  plus_constant (XEXP (orig_dst, 0),
+							 ofs+4)),
 			  gen_lowpart (SImode, tmp));
 	  ofs += 8;
 	  i++;
@@ -2256,6 +2293,22 @@ alpha_expand_block_clear (operands)
 	    align = 2;
 	}
     }
+  else if (GET_CODE (tmp) == ADDRESSOF)
+    {
+      enum machine_mode mode;
+
+      mode = mode_for_size (bytes * BITS_PER_UNIT, MODE_INT, 1);
+      if (GET_MODE (XEXP (tmp, 0)) == mode)
+	{
+	  emit_move_insn (XEXP (tmp, 0), const0_rtx);
+	  return 1;
+	}
+
+      /* No appropriate mode; fall back on memory.  */
+      orig_dst = change_address (orig_dst, GET_MODE (orig_dst),
+				 copy_addr_to_reg (tmp));
+      align = GET_MODE_SIZE (GET_MODE (XEXP (tmp, 0)));
+    }
 
   /* Handle a block of contiguous words first.  */
 
@@ -2280,9 +2333,9 @@ alpha_expand_block_clear (operands)
 
       for (i = 0; i < words; ++i)
 	{
-	  emit_move_insn (change_address(orig_dst, SImode,
-					 plus_constant (XEXP (orig_dst, 0),
-							ofs + i*4)),
+	  emit_move_insn (change_address (orig_dst, SImode,
+					  plus_constant (XEXP (orig_dst, 0),
+							 ofs + i*4)),
 			  const0_rtx);
 	}
 

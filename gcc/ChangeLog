@@ -1,3 +1,9 @@
+Tue May 11 20:46:37 1999  Richard Henderson  <rth@cygnus.com>
+
+	* alpha.c (alpha_expand_block_move): Handle TImode registers
+	used with ADDRESSOF.
+	(alpha_expand_block_clear): Handle ADDRESSOF specially.
+
 1999-05-11  Ulrich Drepper  <drepper@cygnus.com>
 
 	* fixinc/fixinc.x86-linux-gnu (FD_ZERO): Remove unneccessary
