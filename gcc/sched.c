@@ -3833,11 +3833,7 @@ split_hard_reg_notes (note, first, last, orig_insn)
 
   n_regs = HARD_REGNO_NREGS (REGNO (reg), GET_MODE (reg));
 
-  /* ??? Could add check here to see whether, the hard register is referenced
-     in the same mode as in the original insn.  If so, then it has not been
-     split, and the rest of the code below is unnecessary.  */
-
-  for (i = 1; i < n_regs; i++)
+  for (i = 0; i < n_regs; i++)
     {
       new_reg = REGNO (reg) + i;
 
@@ -3853,6 +3849,10 @@ split_hard_reg_notes (note, first, last, orig_insn)
 	      XEXP (link, 0) = temp;
 	      XEXP (link, 1) = REG_NOTES (insn);
 	      REG_NOTES (insn) = link;
+
+	      /* If killed multiple registers here, then add in the excess.  */
+	      i += HARD_REGNO_NREGS (REGNO (temp), GET_MODE (temp)) - 1;
+
 	      break;
 	    }
 	  /* It isn't mentioned anywhere, so no new reg note is needed for
@@ -4033,8 +4033,20 @@ update_flow_info (notes, first, last, orig_insn)
 	      if (GET_RTX_CLASS (GET_CODE (insn)) == 'i'
 		  && reg_mentioned_p (XEXP (note, 0), PATTERN (insn)))
 		{
-		  XEXP (note, 1) = REG_NOTES (insn);
-		  REG_NOTES (insn) = note;
+		  /* If this note refers to a multiple word hard register, it
+		     may have been split into several smaller hard register
+		     references, so handle it specially.  */
+		  temp = XEXP (note, 0);
+		  if (REG_NOTE_KIND (note) == REG_DEAD
+		      && GET_CODE (temp) == REG
+		      && REGNO (temp) < FIRST_PSEUDO_REGISTER
+		      && HARD_REGNO_NREGS (REGNO (temp), GET_MODE (temp)) > 1)
+		    split_hard_reg_notes (note, first, last, orig_insn);
+		  else
+		    {
+		      XEXP (note, 1) = REG_NOTES (insn);
+		      REG_NOTES (insn) = note;
+		    }
 
 		  /* Sometimes need to convert REG_UNUSED notes to REG_DEAD
 		     notes.  */
@@ -4061,17 +4073,6 @@ update_flow_info (notes, first, last, orig_insn)
 		  break;
 		}
 	    }
-
-	  /* If this note refers to a multiple word hard register, it may
-	     have been split into several smaller hard register references.
-	     Check to see if there are any new register references that
-	     need REG_NOTES added for them.  */
-	  temp = XEXP (note, 0);
-	  if (REG_NOTE_KIND (note) == REG_DEAD
-	      && GET_CODE (temp) == REG
-	      && REGNO (temp) < FIRST_PSEUDO_REGISTER
-	      && HARD_REGNO_NREGS (REGNO (temp), GET_MODE (temp)))
-	    split_hard_reg_notes (note, first, last, orig_insn);
 	  break;
 
 	case REG_WAS_0:
