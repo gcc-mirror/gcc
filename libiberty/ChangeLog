@@ -1,3 +1,9 @@
+2002-06-05  Geoffrey Keating  <geoffk@redhat.com>
+
+	* hashtab.c (htab_create): New stub function for backward
+	compatibility.
+	(htab_try_create): Likewise.
+
 2002-06-03  Geoffrey Keating  <geoffk@redhat.com>
 
 	* hashtab.c (htab_create): Delete.
