@@ -701,7 +701,7 @@ endif
 INTERNAL_CFLAGS = -DIN_GCC @CROSS@
 
 # This is the variable actually used when we compile. If you change this,
-# you probably want to update BUILD_CFLAGS in configure.in
+# you probably want to update BUILD_CFLAGS in configure.ac
 ALL_CFLAGS = $(X_CFLAGS) $(T_CFLAGS) \
   $(CFLAGS) $(INTERNAL_CFLAGS) $(COVERAGE_FLAGS) $(WARN_CFLAGS) $(XCFLAGS) @DEFS@
 
@@ -994,12 +994,12 @@ cs-tm_p.h: Makefile
 	HEADERS="$(tm_p_include_list)" DEFINES="" \
 	$(SHELL) $(srcdir)/mkconfig.sh tm_p.h
 
-# Don't automatically run autoconf, since configure.in might be accidentally
+# Don't automatically run autoconf, since configure.ac might be accidentally
 # newer than configure.  Also, this writes into the source directory which
 # might be on a read-only file system.  If configured for maintainer mode
 # then do allow autoconf to be run.
 
-$(srcdir)/configure: @MAINT@ $(srcdir)/configure.in
+$(srcdir)/configure: @MAINT@ $(srcdir)/configure.ac
 	(cd $(srcdir) && autoconf)
 
 gccbug:	$(srcdir)/gccbug.in
@@ -1024,7 +1024,7 @@ mkheaders: $(srcdir)/mkheaders.in
 # Don't run autoheader automatically either.
 # Only run it if maintainer mode is enabled.
 @MAINT@ $(srcdir)/config.in: $(srcdir)/cstamp-h.in
-@MAINT@ $(srcdir)/cstamp-h.in: $(srcdir)/configure.in
+@MAINT@ $(srcdir)/cstamp-h.in: $(srcdir)/configure.ac
 @MAINT@	(cd $(srcdir) && autoheader)
 @MAINT@	@rm -f $(srcdir)/cstamp-h.in
 @MAINT@	echo timestamp > $(srcdir)/cstamp-h.in
