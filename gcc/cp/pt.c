@@ -6277,7 +6277,7 @@ tsubst_decl (tree t, tree args, tree type, tsubst_flags_t complain)
   return r;
 }
 
-/* Substitue into the ARG_TYPES of a function type.  */
+/* Substitute into the ARG_TYPES of a function type.  */
 
 static tree
 tsubst_arg_types (tree arg_types, 
@@ -6357,7 +6357,7 @@ tsubst_function_type (tree t,
   if (return_type == error_mark_node)
     return error_mark_node;
 
-  /* Substitue the argument types.  */
+  /* Substitute the argument types.  */
   arg_types = tsubst_arg_types (TYPE_ARG_TYPES (t), args,
 				complain, in_decl); 
   if (arg_types == error_mark_node)
@@ -6868,7 +6868,7 @@ tsubst (tree t, tree args, tsubst_flags_t complain, tree in_decl)
 	if (fntype == error_mark_node)
 	  return error_mark_node;
 
-	/* Substitue the exception specification.  */
+	/* Substitute the exception specification.  */
 	raises = TYPE_RAISES_EXCEPTIONS (t);
 	if (raises)
 	  {
@@ -8318,7 +8318,7 @@ tsubst_copy_and_build (tree t,
 
 /* Verify that the instantiated ARGS are valid. For type arguments,
    make sure that the type's linkage is ok. For non-type arguments,
-   make sure they are constants if they are integral or enumarations.
+   make sure they are constants if they are integral or enumerations.
    Emit an error under control of COMPLAIN, and return TRUE on error. */
 
 static bool
@@ -10869,7 +10869,7 @@ instantiate_decl (tree d, int defer_ok)
 	     (1) D is a template static data member, for which a
 	         definition is available.
 
-	     (2) An implicit or explicit instantiation has occured.
+	     (2) An implicit or explicit instantiation has occurred.
 
 	     (3) We are not going to emit a definition of the static
 	         data member at this time.

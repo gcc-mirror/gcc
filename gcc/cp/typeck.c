@@ -729,9 +729,9 @@ common_type (t1, t2)
    derived and !exact).
  
    [except.spec] "If a class X ... objects of class X or any class publicly
-   and unambigously derrived from X. Similarly, if a pointer type Y * ...
+   and unambiguously derived from X. Similarly, if a pointer type Y * ...
    exceptions of type Y * or that are pointers to any type publicly and
-   unambigously derrived from Y. Otherwise a function only allows exceptions
+   unambiguously derived from Y. Otherwise a function only allows exceptions
    that have the same type ..."
    This does not mention cv qualifiers and is different to what throw
    [except.throw] and catch [except.catch] will do. They will ignore the
@@ -3001,7 +3001,7 @@ build_template_expr (enum tree_code code, tree op0, tree op1, tree op2)
 	      type = boolean_type_node;
 	      break;
 	    case COND_EXPR:
-	      /* FIXME: Handle special rules for conditioanl
+	      /* FIXME: Handle special rules for conditional
 		 expressions.  */
 	      break;
 	    case COMPOUND_EXPR:
@@ -6181,7 +6181,7 @@ c_expand_asm_operands (tree string, tree outputs, tree inputs, tree clobbers,
 }
 
 /* If RETVAL is the address of, or a reference to, a local variable or
-   temporary give an appropraite warning.  */
+   temporary give an appropriate warning.  */
 
 static void
 maybe_warn_about_returning_address_of_local (tree retval)

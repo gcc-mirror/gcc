@@ -2289,7 +2289,7 @@ expand_body (tree fn)
 
   /* Save the current file name and line number.  When we expand the
      body of the function, we'll set INPUT_LOCATION so that
-     error-mesages come out in the right places.  */
+     error-messages come out in the right places.  */
   saved_loc = input_location;
   saved_function = current_function_decl;
   input_location = DECL_SOURCE_LOCATION (fn);

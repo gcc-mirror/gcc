@@ -1873,7 +1873,7 @@ struct lang_decl GTY(())
   (DECL_LANG_SPECIFIC (NODE)->u.f.operator_code = (CODE))
 
 /* If NODE is an overloaded operator, then this returns the TREE_CODE
-   associcated with the overloaded operator.
+   associated with the overloaded operator.
    DECL_ASSIGNMENT_OPERATOR_P must also be checked to determine
    whether or not NODE is an assignment operator.  If NODE is not an
    overloaded operator, ERROR_MARK is returned.  Since the numerical
@@ -2637,7 +2637,7 @@ struct lang_decl GTY(())
    TREE_LIST, whose TREE_VALUE is a PARM_DECL (if the parameter is a
    non-type parameter), or a TYPE_DECL (if the parameter is a type
    parameter).  The TREE_PURPOSE is the default value, if any.  The
-   TEMPLATE_PARM_INDEX for the parameter is avilable as the
+   TEMPLATE_PARM_INDEX for the parameter is available as the
    DECL_INITIAL (for a PARM_DECL) or as the TREE_TYPE (for a
    TYPE_DECL).  */
 #define DECL_TEMPLATE_PARMS(NODE)       DECL_ARGUMENTS (NODE)
@@ -2857,7 +2857,7 @@ struct lang_decl GTY(())
    class, and hence adds the offsets. A result pointer adjusting thunk
    converts from a derived class to a base, and hence subtracts the
    offsets.  If both operations are performed, then the constant
-   adjument is performed first for this pointer adjustment and last
+   adjustment is performed first for this pointer adjustment and last
    for the result pointer adjustment.
 
    The constant adjustment is given by THUNK_FIXED_OFFSET.  If the
@@ -3380,7 +3380,7 @@ enum overload_flags { NO_SPECIAL = 0, DTOR_FLAG, OP_FLAG, TYPENAME_FLAG };
 				   derived from the first.  */
 #define COMPARE_DERIVED       2 /* Like COMPARE_BASE, but in
 				   reverse.  */
-#define COMPARE_REDECLARATION 4 /* The comparsion is being done when
+#define COMPARE_REDECLARATION 4 /* The comparison is being done when
 				   another declaration of an existing
 				   entity is seen.  */
 

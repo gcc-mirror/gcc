@@ -1169,7 +1169,7 @@ reference_binding (tree rto, tree rfrom, tree expr, int flags)
 	 -- is an lvalue (but not an lvalue for a bit-field), and "cv1 T1"
 	    is reference-compatible with "cv2 T2,"
 	 
-	 the reference is bound directly to the initializer exprssion
+	 the reference is bound directly to the initializer expression
 	 lvalue.  */
       conv = build1 (IDENTITY_CONV, from, expr);
       conv = direct_reference_binding (rto, conv);
@@ -1193,7 +1193,7 @@ reference_binding (tree rto, tree rfrom, tree expr, int flags)
     {
       /* [dcl.init.ref]
 
-	 If the initializer exprsesion
+	 If the initializer expression
 
 	 -- has a class type (i.e., T2 is a class type) can be
 	    implicitly converted to an lvalue of type "cv3 T3," where
@@ -2915,7 +2915,7 @@ build_new_function_call (tree fn, tree args)
    the arguments provided.  *SIZE points to the total number of bytes
    required by the allocation, and is updated if that is changed here.
    *COOKIE_SIZE is non-NULL if a cookie should be used.  If this
-   function determins that no cookie should be used, after all,
+   function determines that no cookie should be used, after all,
    *COOKIE_SIZE is set to NULL_TREE. */
 
 tree
@@ -5254,7 +5254,7 @@ maybe_handle_implicit_object (tree *ics)
       tree reference_type;
 
       /* The `this' parameter is a pointer to a class type.  Make the
-	 implict conversion talk about a reference to that same class
+	 implicit conversion talk about a reference to that same class
 	 type.  */
       reference_type = TREE_TYPE (TREE_TYPE (*ics));
       reference_type = build_reference_type (reference_type);

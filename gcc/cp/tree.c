@@ -547,7 +547,7 @@ build_cplus_array_type (tree elt_type, tree index_type)
    via a typedef or template type argument. [dcl.ref] No such
    dispensation is provided for qualifying a function type.  [dcl.fct]
    DR 295 queries this and the proposed resolution brings it into line
-   with qualifiying a reference.  We implement the DR.  We also behave
+   with qualifying a reference.  We implement the DR.  We also behave
    in a similar manner for restricting non-pointer types.  */
  
 tree

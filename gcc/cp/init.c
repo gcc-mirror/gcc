@@ -2067,7 +2067,7 @@ build_new_1 (tree exp)
   bool placement_allocation_fn_p;
   tree args = NULL_TREE;
   /* True if the storage must be initialized, either by a constructor
-     or due to an explicit new-intiailizer.  */
+     or due to an explicit new-initializer.  */
   bool is_initialized;
   /* The address of the thing allocated, not including any cookie.  In
      particular, if an array cookie is in use, DATA_ADDR is the
