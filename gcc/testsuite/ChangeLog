@@ -1,3 +1,7 @@
+2000-10-17  Joseph S. Myers  <jsm28@cam.ac.uk>
+
+	* gcc.dg/format-miss-1.c: New test.
+
 2000-10-16  Jakub Jelinek  <jakub@redhat.com>
 
 	* gcc.c-torture/execute/20001013-1.c: New test.

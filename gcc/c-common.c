@@ -1926,7 +1926,9 @@ record_international_format (name, assembler_name, format_num)
    NAME is the function identifier.
    ASSEMBLER_NAME is the function's assembler identifier.
    (Either NAME or ASSEMBLER_NAME, but not both, may be NULL_TREE.)
-   PARAMS is the list of argument values.  */
+   PARAMS is the list of argument values.  Also, if -Wmissing-format-attribute,
+   warn for calls to vprintf or vscanf in functions with no such format
+   attribute themselves.  */
 
 void
 check_function_format (status, name, assembler_name, params)
@@ -1946,6 +1948,20 @@ check_function_format (status, name, assembler_name, params)
 	{
 	  /* Yup; check it.  */
 	  check_format_info (status, info, params);
+	  if (warn_missing_format_attribute && info->first_arg_num == 0
+	      && (format_types[info->format_type].flags & FMT_FLAG_ARG_CONVERT))
+	    {
+	      function_format_info *info2;
+	      for (info2 = function_format_list; info2; info2 = info2->next)
+		if ((info2->assembler_name
+		     ? (info2->assembler_name == DECL_ASSEMBLER_NAME (current_function_decl))
+		     : (info2->name == DECL_NAME (current_function_decl)))
+		    && info2->format_type == info->format_type)
+		  break;
+	      if (info2 == NULL)
+		warning ("function might be possible candidate for `%s' format attribute",
+			 format_types[info->format_type].name);
+	    }
 	  break;
 	}
     }

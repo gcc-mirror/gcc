@@ -1,3 +1,8 @@
+2000-10-17  Joseph S. Myers  <jsm28@cam.ac.uk>
+
+	* decl2.c (warn_missing_format_attribute): New variable.
+	(lang_decode_option): Decode -Wmissing-format-attribute.
+
 2000-10-16  Mark Mitchell  <mark@codesourcery.com>
 
 	* typeck.c (qualify_type): Remove.

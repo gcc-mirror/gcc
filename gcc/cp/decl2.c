@@ -290,6 +290,10 @@ int warn_float_equal = 0;
 
 int warn_format;
 
+/* Warn about functions which might be candidates for format attributes.  */
+
+int warn_missing_format_attribute;
+
 /* Warn about a subscript that has type char.  */
 
 int warn_char_subscripts;
@@ -751,6 +755,8 @@ lang_decode_option (argc, argv)
 	warn_float_equal = setting;
       else if (!strcmp (p, "format"))
 	warn_format = setting;
+      else if (!strcmp (p, "missing-format-attribute"))
+	warn_missing_format_attribute = setting;
       else if (!strcmp (p, "conversion"))
 	warn_conversion = setting;
       else if (!strcmp (p, "parentheses"))
