@@ -1,3 +1,7 @@
+1998-10-29 Herman A.J. ten Brugge <Haj.Ten.Brugge@net.HCC.nl>
+
+	* emit-rtl.c (try_split): Do not try to split a BARRIER.
+
 Thu Oct 29 01:33:54 1998  Jan Hubicka <hubicka@freesoft.cz>
 			  Jeffrey A Law  (law@cygnus.com)
 
