@@ -783,7 +783,7 @@ wrapup_global_declarations (tree *vec, int len)
 	      if (needed)
 		{
 		  reconsider = 1;
-		  rest_of_decl_compilation (decl, NULL, 1, 1);
+		  rest_of_decl_compilation (decl, 1, 1);
 		}
 	    }
 	}

@@ -547,7 +547,7 @@ gfc_get_intrinsic_lib_fndecl (gfc_intrinsic_map_t * m, gfc_expr * expr)
   /* Mark it __attribute__((const)), if possible.  */
   TREE_READONLY (fndecl) = m->is_constant;
 
-  rest_of_decl_compilation (fndecl, NULL, 1, 0);
+  rest_of_decl_compilation (fndecl, 1, 0);
 
   (*pdecl) = fndecl;
   return fndecl;

@@ -3832,7 +3832,7 @@ build_clone (tree fn, tree name)
 
   /* Create the RTL for this function.  */
   SET_DECL_RTL (clone, NULL_RTX);
-  rest_of_decl_compilation (clone, NULL, /*top_level=*/1, at_eof);
+  rest_of_decl_compilation (clone, /*top_level=*/1, at_eof);
   
   /* Make it easy to find the CLONE given the FN.  */
   TREE_CHAIN (clone) = TREE_CHAIN (fn);

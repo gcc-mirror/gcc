@@ -347,7 +347,7 @@ tree_code_create_function_prototype (unsigned char* chars,
     }
 
   /* Process declaration of function defined elsewhere.  */
-  rest_of_decl_compilation (fn_decl, NULL, 1, 0);
+  rest_of_decl_compilation (fn_decl, 1, 0);
 
   return fn_decl;
 }
@@ -439,7 +439,7 @@ tree_code_create_function_initial (tree prev_saved,
   /* Output the decl rtl (not the rtl for the function code).  ???.
      If the function is not defined in this file, when should you
      execute this?  */
-  make_decl_rtl (fn_decl, NULL);
+  make_decl_rtl (fn_decl);
 
   init_function_start (fn_decl);
 
@@ -616,7 +616,7 @@ tree_code_create_variable (unsigned int storage_class,
   /* Expand declaration and initial value if any.  */
 
   if (TREE_STATIC (var_decl))
-    rest_of_decl_compilation (var_decl, 0, 0, 0);
+    rest_of_decl_compilation (var_decl, 0, 0);
   else
     {
       expand_decl (var_decl);
@@ -1358,7 +1358,7 @@ builtin_function (const char *name, tree type, int function_code,
   TREE_PUBLIC (decl) = 1;
   if (library_name)
     SET_DECL_ASSEMBLER_NAME (decl, get_identifier (library_name));
-  make_decl_rtl (decl, NULL);
+  make_decl_rtl (decl);
   pushdecl (decl);
   DECL_BUILT_IN_CLASS (decl) = class;
   DECL_FUNCTION_CODE (decl) = function_code;

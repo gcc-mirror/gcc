@@ -386,7 +386,7 @@ expand_catch_class (void **entry, void *x ATTRIBUTE_UNUSED)
   tree decl;
   STRIP_NOPS (addr);
   decl = TREE_OPERAND (addr, 0);
-  rest_of_decl_compilation (decl, (char*) 0, global_bindings_p (), 0);
+  rest_of_decl_compilation (decl, global_bindings_p (), 0);
   return true;
 }
   

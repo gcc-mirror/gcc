@@ -770,8 +770,6 @@ c_expand_decl (tree decl)
         expand_anon_union_decl (decl, NULL_TREE,
                                 DECL_ANON_UNION_ELEMS (decl));
     }
-  else if (TREE_CODE (decl) == VAR_DECL && TREE_STATIC (decl))
-    make_rtl_for_local_static (decl);
   else
     return 0;
 

@@ -920,9 +920,9 @@ build_utf8_ref (tree name)
   TREE_CHAIN (decl) = utf8_decl_list;
   layout_decl (decl, 0);
   pushdecl (decl);
-  rest_of_decl_compilation (decl, (char*) 0, global_bindings_p (), 0);
+  rest_of_decl_compilation (decl, global_bindings_p (), 0);
   utf8_decl_list = decl;
-  make_decl_rtl (decl, (char*) 0);
+  make_decl_rtl (decl);
   ref = build1 (ADDR_EXPR, utf8const_ptr_type, decl);
   IDENTIFIER_UTF8_REF (name) = ref;
   return ref;
@@ -985,7 +985,7 @@ build_class_ref (tree type)
 	      SET_DECL_ASSEMBLER_NAME (decl, 
 				       java_mangle_class_field
 				       (&temporary_obstack, type));
-	      make_decl_rtl (decl, NULL);
+	      make_decl_rtl (decl);
 	      pushdecl_top_level (decl);
 	    }
 	}
@@ -1037,7 +1037,7 @@ build_class_ref (tree type)
 	      TREE_STATIC (decl) = 1;
 	      TREE_PUBLIC (decl) = 1;
 	      DECL_EXTERNAL (decl) = 1;
-	      make_decl_rtl (decl, NULL);
+	      make_decl_rtl (decl);
 	      pushdecl_top_level (decl);
 	    }
 	}
@@ -1073,7 +1073,7 @@ build_static_field_ref (tree fdecl)
 	{
 	  if (is_compiled == 1)
 	    DECL_EXTERNAL (fdecl) = 1;
-	  make_decl_rtl (fdecl, NULL);
+	  make_decl_rtl (fdecl);
 	}
       return fdecl;
     }
@@ -1311,7 +1311,7 @@ make_method_value (tree mdecl)
 	TREE_STATIC (array) = 1;
 	DECL_ARTIFICIAL (array) = 1;
 	DECL_IGNORED_P (array) = 1;
-	rest_of_decl_compilation (array, (char*) 0, 1, 0);
+	rest_of_decl_compilation (array, 1, 0);
 
 	table = build1 (ADDR_EXPR, ptr_type_node, array);
       }
@@ -1385,7 +1385,7 @@ get_dispatch_table (tree type, tree this_class_addr)
       else
 	{
 	  if (!DECL_RTL_SET_P (method))
-	    make_decl_rtl (method, NULL);
+	    make_decl_rtl (method);
 
 	  if (TARGET_VTABLE_USES_DESCRIPTORS)
 	    for (j = 0; j < TARGET_VTABLE_USES_DESCRIPTORS; ++j)
@@ -1528,7 +1528,7 @@ make_class_data (tree type)
 	      if (initial != NULL_TREE
 		  && TREE_TYPE (initial) == string_ptr_type_node)
 		DECL_INITIAL (field) = NULL_TREE;
-	      rest_of_decl_compilation (field, (char*) 0, 1, 1);
+	      rest_of_decl_compilation (field, 1, 1);
 	      DECL_INITIAL (field) = initial;
 	    }
 	  else
@@ -1552,7 +1552,7 @@ make_class_data (tree type)
       TREE_STATIC (fields_decl) = 1;
       DECL_ARTIFICIAL (fields_decl) = 1;
       DECL_IGNORED_P (fields_decl) = 1;
-      rest_of_decl_compilation (fields_decl, (char*) 0, 1, 0);
+      rest_of_decl_compilation (fields_decl, 1, 0);
     }
   else
     fields_decl = NULL_TREE;
@@ -1578,7 +1578,7 @@ make_class_data (tree type)
   TREE_STATIC (methods_decl) = 1;
   DECL_ARTIFICIAL (methods_decl) = 1;
   DECL_IGNORED_P (methods_decl) = 1;
-  rest_of_decl_compilation (methods_decl, (char*) 0, 1, 0);
+  rest_of_decl_compilation (methods_decl, 1, 0);
 
   if (supers_all_compiled (type) && ! CLASS_INTERFACE (type_decl)
       && !flag_indirect_dispatch)
@@ -1590,7 +1590,7 @@ make_class_data (tree type)
       DECL_ARTIFICIAL (dtable_decl) = 1;
       DECL_IGNORED_P (dtable_decl) = 1;
       TREE_PUBLIC (dtable_decl) = 1;
-      rest_of_decl_compilation (dtable_decl, (char*) 0, 1, 0);
+      rest_of_decl_compilation (dtable_decl, 1, 0);
       if (type == class_type_node)
 	class_dtable_decl = dtable_decl;
     }
@@ -1603,7 +1603,7 @@ make_class_data (tree type)
       DECL_IGNORED_P (class_dtable_decl) = 1;
       if (is_compiled_class (class_type_node) != 2)
 	DECL_EXTERNAL (class_dtable_decl) = 1;
-      rest_of_decl_compilation (class_dtable_decl, (char*) 0, 1, 0);
+      rest_of_decl_compilation (class_dtable_decl, 1, 0);
     }
 
   super = CLASSTYPE_SUPER (type);
@@ -1658,7 +1658,7 @@ make_class_data (tree type)
       DECL_ARTIFICIAL (idecl) = 1;
       DECL_IGNORED_P (idecl) = 1;
       interfaces = build1 (ADDR_EXPR, ptr_type_node, idecl);
-      rest_of_decl_compilation (idecl,  (char*) 0, 1, 0);
+      rest_of_decl_compilation (idecl, 1, 0);
     }
 
   constant_pool_constructor = build_constants_constructor ();
@@ -1781,7 +1781,7 @@ make_class_data (tree type)
   if (flag_hash_synchronization && POINTER_SIZE < 64)
     DECL_ALIGN (decl) = 64; 
   
-  rest_of_decl_compilation (decl, (char*) 0, 1, 0);
+  rest_of_decl_compilation (decl, 1, 0);
 }
 
 void
@@ -1792,7 +1792,7 @@ finish_class (void)
   current_function_decl = NULL_TREE;
   make_class_data (current_class);
   register_class ();
-  rest_of_decl_compilation (TYPE_NAME (current_class), (char*) 0, 1, 0);
+  rest_of_decl_compilation (TYPE_NAME (current_class), 1, 0);
 }
 
 /* Return 2 if CLASS is compiled by this compilation job;
@@ -2189,7 +2189,7 @@ layout_class_method (tree this_class, tree super_class,
   if (! METHOD_ABSTRACT (method_decl) 
       || (CLASS_INTERFACE (TYPE_NAME (this_class)) 
 	  && (DECL_CLINIT_P (method_decl))))
-    make_decl_rtl (method_decl, NULL);
+    make_decl_rtl (method_decl);
 
   if (ID_INIT_P (method_name))
     {
@@ -2388,7 +2388,7 @@ emit_symbol_table (tree name, tree the_table, tree decl_list,
   DECL_INITIAL (the_syms_decl) = table;
   DECL_ARTIFICIAL (the_syms_decl) = 1;
   DECL_IGNORED_P (the_syms_decl) = 1;
-  rest_of_decl_compilation (the_syms_decl, NULL, 1, 0);
+  rest_of_decl_compilation (the_syms_decl, 1, 0);
   
   /* Now that its size is known, redefine the table as an
      uninitialized static array of INDEX + 1 elements. The extra entry
@@ -2399,7 +2399,7 @@ emit_symbol_table (tree name, tree the_table, tree decl_list,
   the_table = build_decl (VAR_DECL, name, the_array_type);
   TREE_STATIC (the_table) = 1;
   TREE_READONLY (the_table) = 1;  
-  rest_of_decl_compilation (the_table, NULL, 1, 0);
+  rest_of_decl_compilation (the_table, 1, 0);
 
   return the_table;
 }
@@ -2446,7 +2446,7 @@ emit_catch_table (tree this_class)
   TREE_STATIC (table) = 1;
   TREE_READONLY (table) = 1;  
   DECL_IGNORED_P (table) = 1;
-  rest_of_decl_compilation (table, NULL, 1, 0);
+  rest_of_decl_compilation (table, 1, 0);
   return table;
 }
  

@@ -668,6 +668,19 @@ strip_reg_name (const char *name)
   return name;
 }
 
+/* The user has asked for a DECL to have a particular name.  Set (or
+   change) it in such a way that we don't prefix an underscore to
+   it.  */
+void
+set_user_assembler_name (tree decl, const char *name)
+{
+  char *starred = alloca (strlen (name) + 2);
+  starred[0] = '*';
+  strcpy (starred + 1, name);
+  change_decl_assembler_name (decl, get_identifier (starred));
+  SET_DECL_RTL (decl, NULL_RTX);
+}
+
 /* Decode an `asm' spec for a declaration as a register name.
    Return the register number, or -1 if nothing specified,
    or -2 if the ASMSPEC is not `cc' or `memory' and is not recognized,
@@ -734,13 +747,10 @@ decode_reg_name (const char *asmspec)
    There is, however, one exception: this function handles variables
    explicitly placed in a particular register by the user.
 
-   ASMSPEC, if not 0, is the string which the user specified as the
-   assembler symbol name.
-
    This is never called for PARM_DECL nodes.  */
 
 void
-make_decl_rtl (tree decl, const char *asmspec)
+make_decl_rtl (tree decl)
 {
   const char *name = 0;
   int reg_number;
@@ -770,6 +780,9 @@ make_decl_rtl (tree decl, const char *asmspec)
 	SET_DECL_RTL (decl, adjust_address_nv (DECL_RTL (decl),
 					       DECL_MODE (decl), 0));
 
+      if (TREE_CODE (decl) != FUNCTION_DECL && DECL_REGISTER (decl))
+	return;
+
       /* ??? Another way to do this would be to maintain a hashed
 	 table of such critters.  Instead of adding stuff to a DECL
 	 to give certain attributes to it, we could use an external
@@ -787,18 +800,9 @@ make_decl_rtl (tree decl, const char *asmspec)
       return;
     }
 
-  reg_number = decode_reg_name (asmspec);
-  if (reg_number == -2)
-    {
-      /* ASMSPEC is given, and not the name of a register.  Mark the
-	 name with a star so assemble_name won't munge it.  */
-      char *starred = alloca (strlen (asmspec) + 2);
-      starred[0] = '*';
-      strcpy (starred + 1, asmspec);
-      change_decl_assembler_name (decl, get_identifier (starred));
-    }
-
   name = IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (decl));
+
+  reg_number = decode_reg_name (name);
 
   if (TREE_CODE (decl) != FUNCTION_DECL && DECL_REGISTER (decl))
     {
@@ -855,7 +859,7 @@ make_decl_rtl (tree decl, const char *asmspec)
   /* Now handle ordinary static variables and functions (in memory).
      Also handle vars declared register invalidly.  */
 
-  if (reg_number >= 0 || reg_number == -3)
+  if (name[0] == '*' && (reg_number >= 0 || reg_number == -3))
     error ("%Jregister name given for non-register variable '%D'", decl, decl);
 
   /* Specifying a section attribute on a variable forces it into a
@@ -4191,7 +4195,7 @@ assemble_alias (tree decl, tree target ATTRIBUTE_UNUSED)
 
   /* We must force creation of DECL_RTL for debug info generation, even though
      we don't use it here.  */
-  make_decl_rtl (decl, NULL);
+  make_decl_rtl (decl);
 
   name = IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (decl));
 

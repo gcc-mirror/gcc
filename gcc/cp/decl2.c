@@ -975,12 +975,7 @@ grokfield (const cp_declarator *declarator,
   if (TREE_CODE (value) == FUNCTION_DECL)
     {
       if (asmspec)
-	{
-	  /* This must override the asm specifier which was placed
-	     by grokclassfn.  Lay this out fresh.  */
-	  SET_DECL_RTL (value, NULL_RTX);
-	  change_decl_assembler_name (value, get_identifier (asmspec));
-	}
+	set_user_assembler_name (value, asmspec);
       if (!DECL_FRIEND_P (value))
 	grok_special_member_properties (value);
       
@@ -1229,7 +1224,7 @@ finish_anon_union (tree anon_union_decl)
       && at_function_scope_p ())
     add_decl_expr (anon_union_decl);
   else if (!processing_template_decl)
-    rest_of_decl_compilation (anon_union_decl, NULL,
+    rest_of_decl_compilation (anon_union_decl,
 			      toplevel_bindings_p (), at_eof);
 }
 
@@ -1601,7 +1596,7 @@ maybe_emit_vtables (tree ctype)
 
       /* Write it out.  */
       DECL_EXTERNAL (vtbl) = 0;
-      rest_of_decl_compilation (vtbl, NULL, 1, 1);
+      rest_of_decl_compilation (vtbl, 1, 1);
 
       /* Because we're only doing syntax-checking, we'll never end up
 	 actually marking the variable as written.  */
@@ -2548,7 +2543,7 @@ write_out_vars (tree vars)
       if (!var_finalized_p (var))
 	{
 	  import_export_decl (var);
-	  rest_of_decl_compilation (var, 0, 1, 1);
+	  rest_of_decl_compilation (var, 1, 1);
 	}
     }
 }

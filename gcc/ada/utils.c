@@ -1270,7 +1270,7 @@ create_type_decl (tree type_name, tree type, struct attrib *attr_list,
   else if (code != ENUMERAL_TYPE && code != RECORD_TYPE
       && !((code == POINTER_TYPE || code == REFERENCE_TYPE)
 	   && TYPE_IS_DUMMY_P (TREE_TYPE (type))))
-    rest_of_decl_compilation (type_decl, NULL, global_bindings_p (), 0);
+    rest_of_decl_compilation (type_decl, global_bindings_p (), 0);
 
   if (!TYPE_IS_DUMMY_P (type))
     gnat_pushdecl (type_decl, gnat_node);
@@ -1354,7 +1354,7 @@ create_var_decl (tree var_name, tree asm_name, tree type, tree var_init,
     TREE_ADDRESSABLE (var_decl) = 1;
 
   if (TREE_CODE (var_decl) != CONST_DECL)
-    rest_of_decl_compilation (var_decl, 0, global_bindings_p (), 0);
+    rest_of_decl_compilation (var_decl, global_bindings_p (), 0);
 
   return var_decl;
 }
@@ -1707,7 +1707,7 @@ create_subprog_decl (tree subprog_name, tree asm_name,
   gnat_pushdecl (subprog_decl, gnat_node);
 
   /* Output the assembler code and/or RTL for the declaration.  */
-  rest_of_decl_compilation (subprog_decl, 0, global_bindings_p (), 0);
+  rest_of_decl_compilation (subprog_decl, global_bindings_p (), 0);
 
   return subprog_decl;
 }
@@ -2542,7 +2542,7 @@ update_pointer_to (tree old_type, tree new_type)
 	    if (TYPE_NAME (ptr1)
 		&& TREE_CODE (TYPE_NAME (ptr1)) == TYPE_DECL
 		&& TREE_CODE (new_type) != ENUMERAL_TYPE)
-	      rest_of_decl_compilation (TYPE_NAME (ptr1), NULL,
+	      rest_of_decl_compilation (TYPE_NAME (ptr1),
 					global_bindings_p (), 0);
 	  }
 
@@ -2555,7 +2555,7 @@ update_pointer_to (tree old_type, tree new_type)
 	    if (TYPE_NAME (ref1)
 		&& TREE_CODE (TYPE_NAME (ref1)) == TYPE_DECL
 		&& TREE_CODE (new_type) != ENUMERAL_TYPE)
-	      rest_of_decl_compilation (TYPE_NAME (ref1), NULL,
+	      rest_of_decl_compilation (TYPE_NAME (ref1),
 					global_bindings_p (), 0);
 	  }
     }

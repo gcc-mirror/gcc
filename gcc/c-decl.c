@@ -1714,7 +1714,7 @@ merge_decls (tree newdecl, tree olddecl, tree newtype, tree oldtype)
       && (TREE_CODE (olddecl) == FUNCTION_DECL
 	  || (TREE_CODE (olddecl) == VAR_DECL
 	      && TREE_STATIC (olddecl))))
-    make_decl_rtl (olddecl, NULL);
+    make_decl_rtl (olddecl);
 }
 
 /* Handle when a new declaration NEWDECL has the same name as an old
@@ -2117,7 +2117,7 @@ implicitly_declare (tree functionid)
   decl = pushdecl (decl);
 
   /* No need to call objc_check_decl here - it's a function type.  */
-  rest_of_decl_compilation (decl, NULL, 0, 0);
+  rest_of_decl_compilation (decl, 0, 0);
 
   /* Write a record describing this implicit function declaration
      to the prototypes file (if requested).  */
@@ -2552,12 +2552,10 @@ shadow_tag (tree declspecs)
   shadow_tag_warned (declspecs, 0);
 }
 
+/* WARNED is 1 if we have done a pedwarn, 2 if we have done a warning,
+   but no pedwarn.  */
 void
 shadow_tag_warned (tree declspecs, int warned)
-
-
-     /* 1 => we have done a pedwarn.  2 => we have done a warning, but
-	no pedwarn.  */
 {
   int found_tag = 0;
   tree link;
@@ -2895,8 +2893,8 @@ finish_decl (tree decl, tree init, tree asmspec_tree)
     store_init_value (decl, init);
 
   if (c_dialect_objc () && (TREE_CODE (decl) == VAR_DECL
-		    || TREE_CODE (decl) == FUNCTION_DECL
-		    || TREE_CODE (decl) == FIELD_DECL))
+			    || TREE_CODE (decl) == FUNCTION_DECL
+			    || TREE_CODE (decl) == FIELD_DECL))
     objc_check_decl (decl);
 
   /* Deduce size of array from initialization, if not already known.  */
@@ -2937,7 +2935,7 @@ finish_decl (tree decl, tree init, tree asmspec_tree)
 	 in the array, because we start counting at zero.  Therefore,
 	 warn only if the value is less than zero.  */
       else if (pedantic && TYPE_DOMAIN (type) != 0
-	      && tree_int_cst_sgn (TYPE_MAX_VALUE (TYPE_DOMAIN (type))) < 0)
+	       && tree_int_cst_sgn (TYPE_MAX_VALUE (TYPE_DOMAIN (type))) < 0)
 	error ("%Jzero or negative size array '%D'", decl, decl);
 
       layout_decl (decl, 0);
@@ -2953,22 +2951,20 @@ finish_decl (tree decl, tree init, tree asmspec_tree)
 	  /* Don't give an error if we already gave one earlier.  */
 	  && TREE_TYPE (decl) != error_mark_node
 	  && (TREE_STATIC (decl)
-	      ?
-		/* A static variable with an incomplete type
-		   is an error if it is initialized.
-		   Also if it is not file scope.
-		   Otherwise, let it through, but if it is not `extern'
-		   then it may cause an error message later.  */
-		(DECL_INITIAL (decl) != 0
+	      /* A static variable with an incomplete type
+		 is an error if it is initialized.
+		 Also if it is not file scope.
+		 Otherwise, let it through, but if it is not `extern'
+		 then it may cause an error message later.  */
+	      ? (DECL_INITIAL (decl) != 0
 		 || !DECL_FILE_SCOPE_P (decl))
-	      :
-		/* An automatic variable with an incomplete type
-		   is an error.  */
-		!DECL_EXTERNAL (decl)))
-	{
-	  error ("%Jstorage size of '%D' isn't known", decl, decl);
-	  TREE_TYPE (decl) = error_mark_node;
-	}
+	      /* An automatic variable with an incomplete type
+		 is an error.  */
+	      : !DECL_EXTERNAL (decl)))
+	 {
+	   error ("%Jstorage size of '%D' isn't known", decl, decl);
+	   TREE_TYPE (decl) = error_mark_node;
+	 }
 
       if ((DECL_EXTERNAL (decl) || TREE_STATIC (decl))
 	  && DECL_SIZE (decl) != 0)
@@ -2988,24 +2984,16 @@ finish_decl (tree decl, tree init, tree asmspec_tree)
      was a normal built-in.  */
   if (TREE_CODE (decl) == FUNCTION_DECL && asmspec)
     {
-      /* ASMSPEC is given, and not the name of a register.  Mark the
-      name with a star so assemble_name won't munge it.  */
-      char *starred = (char *) alloca (strlen (asmspec) + 2);
-      starred[0] = '*';
-      strcpy (starred + 1, asmspec);
-
       if (DECL_BUILT_IN_CLASS (decl) == BUILT_IN_NORMAL)
 	{
 	  tree builtin = built_in_decls [DECL_FUNCTION_CODE (decl)];
-	  SET_DECL_RTL (builtin, NULL_RTX);
-	  change_decl_assembler_name (builtin, get_identifier (starred));
-	  if (DECL_FUNCTION_CODE (decl) == BUILT_IN_MEMCPY)
-	    init_block_move_fn (starred);
-	  else if (DECL_FUNCTION_CODE (decl) == BUILT_IN_MEMSET)
-	    init_block_clear_fn (starred);
-	}
-      SET_DECL_RTL (decl, NULL_RTX);
-      change_decl_assembler_name (decl, get_identifier (starred));
+	  set_user_assembler_name (builtin, asmspec);
+	   if (DECL_FUNCTION_CODE (decl) == BUILT_IN_MEMCPY)
+	     init_block_move_fn (asmspec);
+	   else if (DECL_FUNCTION_CODE (decl) == BUILT_IN_MEMSET)
+	     init_block_clear_fn (asmspec);
+	 }
+      set_user_assembler_name (decl, asmspec);
     }
 
   /* If #pragma weak was used, mark the decl weak now.  */
@@ -3022,6 +3010,25 @@ finish_decl (tree decl, tree init, tree asmspec_tree)
       if (c_dialect_objc ())
 	objc_check_decl (decl);
 
+      if (asmspec) 
+	{
+	  /* If this is not a static variable, issue a warning.
+	     It doesn't make any sense to give an ASMSPEC for an
+	     ordinary, non-register local variable.  Historically,
+	     GCC has accepted -- but ignored -- the ASMSPEC in
+	     this case.  */
+	  if (! DECL_FILE_SCOPE_P (decl)
+	      && TREE_CODE (decl) == VAR_DECL
+	      && !C_DECL_REGISTER (decl)
+	      && !TREE_STATIC (decl))
+	    warning ("%Jignoring asm-specifier for non-static local "
+		     "variable '%D'", decl, decl);
+	  else if (C_DECL_REGISTER (decl))
+	    change_decl_assembler_name (decl, get_identifier (asmspec));
+	  else
+	    set_user_assembler_name (decl, asmspec);
+	}
+      
       if (DECL_FILE_SCOPE_P (decl))
 	{
 	  if (DECL_INITIAL (decl) == NULL_TREE
@@ -3030,44 +3037,27 @@ finish_decl (tree decl, tree init, tree asmspec_tree)
 	       when a tentative file-scope definition is seen.
 	       But at end of compilation, do output code for them.  */
 	    DECL_DEFER_OUTPUT (decl) = 1;
-	  rest_of_decl_compilation (decl, asmspec, true, 0);
+	  rest_of_decl_compilation (decl, true, 0);
 	}
       else
 	{
-	  /* This is a local variable.  If there is an ASMSPEC, the
-	     user has requested that we handle it specially.  */
-	  if (asmspec)
+	  /* In conjunction with an ASMSPEC, the `register'
+	     keyword indicates that we should place the variable
+	     in a particular register.  */
+	  if (asmspec && C_DECL_REGISTER (decl))
 	    {
-	      /* In conjunction with an ASMSPEC, the `register'
-		 keyword indicates that we should place the variable
-		 in a particular register.  */
-	      if (C_DECL_REGISTER (decl))
-		{
-		  DECL_HARD_REGISTER (decl) = 1;
-		  /* This cannot be done for a structure with volatile
-		     fields, on which DECL_REGISTER will have been
-		     reset.  */
-		  if (!DECL_REGISTER (decl))
-		    error ("cannot put object with volatile field into register");
-		}
-
-	      /* If this is not a static variable, issue a warning.
-		 It doesn't make any sense to give an ASMSPEC for an
-		 ordinary, non-register local variable.  Historically,
-		 GCC has accepted -- but ignored -- the ASMSPEC in
-		 this case.  */
-	      if (TREE_CODE (decl) == VAR_DECL
-		  && !C_DECL_REGISTER (decl)
-		  && !TREE_STATIC (decl))
-		warning ("%Jignoring asm-specifier for non-static local "
-                         "variable '%D'", decl, decl);
-	      else
-		change_decl_assembler_name (decl, get_identifier (asmspec));
+	      DECL_HARD_REGISTER (decl) = 1;
+	      /* This cannot be done for a structure with volatile
+		 fields, on which DECL_REGISTER will have been
+		 reset.  */
+	      if (!DECL_REGISTER (decl))
+		error ("cannot put object with volatile field into register");
 	    }
 
 	  if (TREE_CODE (decl) != FUNCTION_DECL)
 	    add_stmt (build_stmt (DECL_EXPR, decl));
 	}
+  
 
       if (!DECL_FILE_SCOPE_P (decl))
 	{
@@ -3095,7 +3085,7 @@ finish_decl (tree decl, tree init, tree asmspec_tree)
 	  && variably_modified_type_p (TREE_TYPE (decl), NULL_TREE))
 	add_stmt (build_stmt (DECL_EXPR, decl));
 
-      rest_of_decl_compilation (decl, NULL, DECL_FILE_SCOPE_P (decl), 0);
+      rest_of_decl_compilation (decl, DECL_FILE_SCOPE_P (decl), 0);
     }
 
   /* At the end of a declaration, throw away any variable type sizes
@@ -3232,7 +3222,7 @@ build_compound_literal (tree type, tree init)
       DECL_COMDAT (decl) = 1;
       DECL_ARTIFICIAL (decl) = 1;
       pushdecl (decl);
-      rest_of_decl_compilation (decl, NULL, 1, 0);
+      rest_of_decl_compilation (decl, 1, 0);
     }
 
   return complit;
@@ -5408,7 +5398,7 @@ finish_struct (tree t, tree fieldlist, tree attributes)
 	  layout_decl (decl, 0);
 	  if (c_dialect_objc ())
 	    objc_check_decl (decl);
-	  rest_of_decl_compilation (decl, NULL, toplevel, 0);
+	  rest_of_decl_compilation (decl, toplevel, 0);
 	  if (! toplevel)
 	    expand_decl (decl);
 	}

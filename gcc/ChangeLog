@@ -1,3 +1,23 @@
+2004-08-04  Geoffrey Keating  <geoffk@apple.com>
+
+	PR 14516
+	* c-common.c (c_expand_decl): Don't special-case static VAR_DECLs.
+	* c-common.h (make_rtl_for_local_static): Delete.
+	* c-decl.c (shadow_tag_warned): Clean up comment.
+	(finish_decl): Clean up spacing.  Use set_user_assembler_name when
+	appropriate.  Don't pass asmspec to rest_of_decl_compilation.
+	* c-semantics.c (make_rtl_for_local_static): Delete.
+	* expr.c (init_block_move_fn): Use set_user_assembler_name.
+	(init_block_clear_fn): Likewise.
+	* passes.c (rest_of_decl_compilation): Remove asmspec parameter,
+	expect it to be in DECL_ASSEMBLER_NAME.  Update callers in many files.
+	* toplev.h (rest_of_decl_compilation): Remove asmspec parameter.
+	* tree.h (make_decl_rtl): Remove second parameter.
+	(set_user_assembler_name): New.
+	* varasm.c (set_user_assembler_name): New.
+	(make_decl_rtl): Remove second parameter.  Update callers in many
+	files.
+
 2004-08-05  Adam Nemet  <anemet@lnxw.com>
 
 	* config.gcc (case i[34567]86-*-lynxos*): Update to LynxOS 4.0.

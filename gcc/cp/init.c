@@ -1728,7 +1728,7 @@ build_java_class_ref (tree type)
       DECL_ARTIFICIAL (class_decl) = 1;
       DECL_IGNORED_P (class_decl) = 1;
       pushdecl_top_level (class_decl);
-      make_decl_rtl (class_decl, NULL);
+      make_decl_rtl (class_decl);
     }
   return class_decl;
 }
