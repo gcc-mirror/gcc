@@ -9453,8 +9453,7 @@
 	      (clobber (reg:SI 15))])
    (set (pc) (label_ref (match_operand 3 "" "")))]
   "short_branch (INSN_UID (insn), INSN_UID (operands[3]))
-   && in_same_eh_region (insn, operands[3])
-   && in_same_eh_region (insn, ins1)"
+   && (USING_SJLJ_EXCEPTIONS || ! can_throw_internal (insn))"
   "call\\t%a1, %2\\n\\tadd\\t%%o7, (%l3-.-4), %%o7")
 
 (define_peephole
@@ -9463,8 +9462,7 @@
 	      (clobber (reg:SI 15))])
    (set (pc) (label_ref (match_operand 2 "" "")))]
   "short_branch (INSN_UID (insn), INSN_UID (operands[2]))
-   && in_same_eh_region (insn, operands[2])
-   && in_same_eh_region (insn, ins1)"
+   && (USING_SJLJ_EXCEPTIONS || ! can_throw_internal (insn))"
   "call\\t%a0, %1\\n\\tadd\\t%%o7, (%l2-.-4), %%o7")
 
 (define_peephole
@@ -9475,8 +9473,7 @@
    (set (pc) (label_ref (match_operand 3 "" "")))]
   "TARGET_ARCH64
    && short_branch (INSN_UID (insn), INSN_UID (operands[3]))
-   && in_same_eh_region (insn, operands[3])
-   && in_same_eh_region (insn, ins1)"
+   && (USING_SJLJ_EXCEPTIONS || ! can_throw_internal (insn))"
   "call\\t%a1, %2\\n\\tadd\\t%%o7, (%l3-.-4), %%o7")
 
 (define_peephole
@@ -9486,8 +9483,7 @@
    (set (pc) (label_ref (match_operand 2 "" "")))]
   "TARGET_ARCH64
    && short_branch (INSN_UID (insn), INSN_UID (operands[2]))
-   && in_same_eh_region (insn, operands[2])
-   && in_same_eh_region (insn, ins1)"
+   && (USING_SJLJ_EXCEPTIONS || ! can_throw_internal (insn))"
   "call\\t%a0, %1\\n\\tadd\\t%%o7, (%l2-.-4), %%o7")
 
 (define_expand "prologue"
