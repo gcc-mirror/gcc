@@ -514,10 +514,6 @@ store_fixed_bit_field (op0, offset, bitsize, bitpos, value, struct_align)
   int all_zero = 0;
   int all_one = 0;
 
-  /* Add OFFSET to OP0's address (if it is in memory)
-     and if a single byte contains the whole bit field
-     change OP0 to a byte.  */
-
   /* There is a case not handled here:
      a structure with a known alignment of just a halfword
      and a field split across two aligned halfwords within the structure.
@@ -532,7 +528,8 @@ store_fixed_bit_field (op0, offset, bitsize, bitpos, value, struct_align)
       /* Special treatment for a bit field split across two registers.  */
       if (bitsize + bitpos > BITS_PER_WORD)
 	{
-	  store_split_bit_field (op0, bitsize, bitpos, value, BITS_PER_WORD);
+	  store_split_bit_field (op0, bitsize, bitpos,
+				 value, BITS_PER_WORD);
 	  return;
 	}
     }
@@ -550,7 +547,8 @@ store_fixed_bit_field (op0, offset, bitsize, bitpos, value, struct_align)
 	{
 	  /* The only way this should occur is if the field spans word
 	     boundaries.  */
-	  store_split_bit_field (op0, bitsize, bitpos + offset * BITS_PER_UNIT,
+	  store_split_bit_field (op0,
+				 bitsize, bitpos + offset * BITS_PER_UNIT,
 				 value, struct_align);
 	  return;
 	}
@@ -662,12 +660,16 @@ store_fixed_bit_field (op0, offset, bitsize, bitpos, value, struct_align)
     emit_move_insn (op0, temp);
 }
 
-/* Store a bit field that is split across two words.
+/* Store a bit field that is split across multiple accessible memory objects.
 
-   OP0 is the REG, SUBREG or MEM rtx for the first of the two words.
+   OP0 is the REG, SUBREG or MEM rtx for the first of the objects.
    BITSIZE is the field width; BITPOS the position of its first bit
    (within the word).
-   VALUE is the value to store.  */
+   VALUE is the value to store.
+   ALIGN is the known alignment of OP0, measured in bytes.
+   This is also the size of the memory objects to be used.
+
+   This does not yet handle fields wider than BITS_PER_WORD.  */
 
 static void
 store_split_bit_field (op0, bitsize, bitpos, value, align)
@@ -676,94 +678,67 @@ store_split_bit_field (op0, bitsize, bitpos, value, align)
      rtx value;
      int align;
 {
-  /* BITSIZE_1 is size of the part in the first word.  */
-  int bitsize_1 = BITS_PER_WORD - bitpos % BITS_PER_WORD;
-  /* BITSIZE_2 is size of the rest (in the following word).  */
-  int bitsize_2 = bitsize - bitsize_1;
-  rtx part1, part2;
-  int unit = GET_CODE (op0) == MEM ? BITS_PER_UNIT : BITS_PER_WORD;
-  int offset = bitpos / unit;
+  int unit = align * BITS_PER_UNIT;
   rtx word;
-
-  /* The field must span exactly one word boundary.  */
-  if (bitpos / BITS_PER_WORD != (bitpos + bitsize - 1) / BITS_PER_WORD - 1)
-    abort ();
-
-  if (GET_MODE (value) != VOIDmode)
-    value = convert_to_mode (word_mode, value, 1);
+  int bitsdone = 0;
 
   if (GET_CODE (value) == CONST_DOUBLE
-      && (part1 = gen_lowpart_common (word_mode, value)) != 0)
-    value = part1;
+      && (word = gen_lowpart_common (word_mode, value)) != 0)
+    value = word;
 
   if (CONSTANT_P (value) && GET_CODE (value) != CONST_INT)
     value = copy_to_mode_reg (word_mode, value);
 
-  /* Split the value into two parts:
-     PART1 gets that which goes in the first word; PART2 the other.  */
+  while (bitsdone < bitsize)
+    {
+      int thissize;
+      rtx part, word;
+      int thispos;
+      int offset;
+
+      offset = (bitpos + bitsdone) / unit;
+      thispos = (bitpos + bitsdone) % unit;
+
+      thissize = unit - offset * BITS_PER_UNIT % unit;
+
 #if BYTES_BIG_ENDIAN
-  /* PART1 gets the more significant part.  */
-  if (GET_CODE (value) == CONST_INT)
-    {
-      part1 = GEN_INT ((unsigned HOST_WIDE_INT) (INTVAL (value)) >> bitsize_2);
-      part2 = GEN_INT ((unsigned HOST_WIDE_INT) (INTVAL (value))
-		       & (((HOST_WIDE_INT) 1 << bitsize_2) - 1));
-    }
-  else
-    {
-      part1 = extract_fixed_bit_field (word_mode, value, 0, bitsize_1,
-				       BITS_PER_WORD - bitsize, NULL_RTX, 1,
-				       BITS_PER_WORD);
-      part2 = extract_fixed_bit_field (word_mode, value, 0, bitsize_2,
-				       BITS_PER_WORD - bitsize_2, NULL_RTX, 1,
-				       BITS_PER_WORD);
-    }
+      /* Fetch successively less significant portions.  */
+      if (GET_CODE (value) == CONST_INT)
+	part = GEN_INT (((unsigned HOST_WIDE_INT) (INTVAL (value))
+			 >> (bitsize - bitsdone - thissize))
+			& (((HOST_WIDE_INT) 1 << thissize) - 1));
+      else
+	/* The args are chosen so that the last part
+	   includes the lsb.  */
+	part = extract_fixed_bit_field (word_mode, value, 0, thissize,
+					BITS_PER_WORD - bitsize + bitsdone,
+					NULL_RTX, 1, align);
 #else
-  /* PART1 gets the less significant part.  */
-  if (GET_CODE (value) == CONST_INT)
-    {
-      part1 = GEN_INT ((unsigned HOST_WIDE_INT) (INTVAL (value))
-		       & (((HOST_WIDE_INT) 1 << bitsize_1) - 1));
-      part2 = GEN_INT ((unsigned HOST_WIDE_INT) (INTVAL (value)) >> bitsize_1);
-    }
-  else
-    {
-      part1 = extract_fixed_bit_field (word_mode, value, 0, bitsize_1, 0,
-				       NULL_RTX, 1, BITS_PER_WORD);
-      part2 = extract_fixed_bit_field (word_mode, value, 0, bitsize_2,
-				       bitsize_1, NULL_RTX, 1, BITS_PER_WORD);
-    }
+      /* Fetch successively more significant portions.  */
+      if (GET_CODE (value) == CONST_INT)
+	part = GEN_INT (((unsigned HOST_WIDE_INT) (INTVAL (value)) >> bitsdone)
+			& (((HOST_WIDE_INT) 1 << thissize) - 1));
+      else
+	part = extract_fixed_bit_field (word_mode, value, 0, thissize,
+					bitsdone, NULL_RTX, 1, align);
 #endif
 
-  /* Store PART1 into the first word.  If OP0 is a MEM, pass OP0 and the
-     offset computed above.  Otherwise, get the proper word and pass an
-     offset of zero.  */
-  word = (GET_CODE (op0) == MEM ? op0
-	  : operand_subword (op0, offset, 1, GET_MODE (op0)));
-  if (word == 0)
-    abort ();
+      /* If OP0 is a register, then handle OFFSET here.
+	 In the register case, UNIT must be a whole word.  */
+      if (GET_CODE (op0) == SUBREG || GET_CODE (op0) == REG)
+	{
+	  word = operand_subword (op0, offset, 1, GET_MODE (op0));
+	  offset = 0;
+	}
+      else
+	word = op0;
 
-  store_fixed_bit_field (word, GET_CODE (op0) == MEM ? offset : 0,
-			 bitsize_1, bitpos % unit, part1, align);
+      if (word == 0)
+	abort ();
 
-  /* Offset op0 by 1 word to get to the following one.  */
-  if (GET_CODE (op0) == SUBREG)
-    word = operand_subword (SUBREG_REG (op0), SUBREG_WORD (op0) + offset + 1,
-			    1, VOIDmode);
-  else if (GET_CODE (op0) == MEM)
-    word = op0;
-  else
-    word = operand_subword (op0, offset + 1, 1, GET_MODE (op0));
-
-  if (word == 0)
-    abort ();
-
-  /* Store PART2 into the second word.  */
-  store_fixed_bit_field (word,
-			 (GET_CODE (op0) == MEM
-			  ? CEIL (offset + 1, UNITS_PER_WORD) * UNITS_PER_WORD
-			  : 0),
-			 bitsize_2, 0, part2, align);
+      store_fixed_bit_field (word, offset, thissize, thispos, part, align);
+      bitsdone += thissize;
+    }
 }
 
 /* Generate code to extract a byte-field from STR_RTX
@@ -1449,65 +1424,73 @@ lshift_value (mode, value, bitpos, bitsize)
 
    OP0 is the REG, SUBREG or MEM rtx for the first of the two words.
    BITSIZE is the field width; BITPOS, position of its first bit, in the word.
-   UNSIGNEDP is 1 if should zero-extend the contents; else sign-extend.  */
+   UNSIGNEDP is 1 if should zero-extend the contents; else sign-extend.
+
+   ALIGN is the known alignment of OP0, measured in bytes.
+   This is also the size of the memory objects to be used.  */
 
 static rtx
 extract_split_bit_field (op0, bitsize, bitpos, unsignedp, align)
      rtx op0;
      int bitsize, bitpos, unsignedp, align;
 {
-  /* BITSIZE_1 is size of the part in the first word.  */
-  int bitsize_1 = BITS_PER_WORD - bitpos % BITS_PER_WORD;
-  /* BITSIZE_2 is size of the rest (in the following word).  */
-  int bitsize_2 = bitsize - bitsize_1;
-  rtx part1, part2, result;
-  int unit = GET_CODE (op0) == MEM ? BITS_PER_UNIT : BITS_PER_WORD;
-  int offset = bitpos / unit;
-  rtx word;
- 
-  /* The field must span exactly one word boundary.  */
-  if (bitpos / BITS_PER_WORD != (bitpos + bitsize - 1) / BITS_PER_WORD - 1)
-    abort ();
+  int unit = align * BITS_PER_UNIT;
+  int bitsdone = 0;
+  rtx result;
+  int first = 1;
 
-  /* Get the part of the bit field from the first word.  If OP0 is a MEM,
-     pass OP0 and the offset computed above.  Otherwise, get the proper
-     word and pass an offset of zero.  */
-  word = (GET_CODE (op0) == MEM ? op0
-	  : operand_subword_force (op0, offset, GET_MODE (op0)));
-  part1 = extract_fixed_bit_field (word_mode, word,
-				   GET_CODE (op0) == MEM ? offset : 0,
-				   bitsize_1, bitpos % unit, NULL_RTX,
-				   1, align);
+  while (bitsdone < bitsize)
+    {
+      int thissize;
+      rtx part, word;
+      int thispos;
+      int offset;
 
-  /* Offset op0 by 1 word to get to the following one.  */
-  if (GET_CODE (op0) == SUBREG)
-    word = operand_subword_force (SUBREG_REG (op0),
-				  SUBREG_WORD (op0) + offset + 1, VOIDmode);
-  else if (GET_CODE (op0) == MEM)
-    word = op0;
-  else
-    word = operand_subword_force (op0, offset + 1, GET_MODE (op0));
+      offset = (bitpos + bitsdone) / unit;
+      thispos = (bitpos + bitsdone) % unit;
 
-  /* Get the part of the bit field from the second word.  */
-  part2 = extract_fixed_bit_field (word_mode, word,
-				   (GET_CODE (op0) == MEM
-				    ? CEIL (offset + 1, UNITS_PER_WORD) * UNITS_PER_WORD
-				    : 0),
-				   bitsize_2, 0, NULL_RTX, 1, align);
+      thissize = unit - offset * BITS_PER_UNIT % unit;
 
-  /* Shift the more significant part up to fit above the other part.  */
+      /* If OP0 is a register, then handle OFFSET here.
+	 In the register case, UNIT must be a whole word.  */
+      if (GET_CODE (op0) == SUBREG || GET_CODE (op0) == REG)
+	{
+	  word = operand_subword_force (op0, offset, GET_MODE (op0));
+	  offset = 0;
+	}
+      else
+	word = op0;
+
+      if (word == 0)
+	abort ();
+
+      /* Extract the parts in bit-counting order,
+	 whose meaning is determined by BYTES_PER_UNIT.  */
+      part = extract_fixed_bit_field (word_mode, word, offset,
+				      thissize, thispos, 0, 1, align);
+      bitsdone += thissize;
+
+      /* Shift this part into place for the result.  */
 #if BYTES_BIG_ENDIAN
-  part1 = expand_shift (LSHIFT_EXPR, word_mode, part1,
-			build_int_2 (bitsize_2, 0), 0, 1);
+      if (bitsize != bitsdone)
+	part = expand_shift (LSHIFT_EXPR, word_mode, part,
+			     build_int_2 (bitsize - bitsdone, 0), 0, 1);
 #else
-  part2 = expand_shift (LSHIFT_EXPR, word_mode, part2,
-			build_int_2 (bitsize_1, 0), 0, 1);
+      if (bitsdone != 0)
+	part = expand_shift (LSHIFT_EXPR, word_mode, part,
+			     build_int_2 (bitsdone, 0), 0, 1);
 #endif
 
-  /* Combine the two parts with bitwise or.  This works
-     because we extracted both parts as unsigned bit fields.  */
-  result = expand_binop (word_mode, ior_optab, part1, part2, NULL_RTX, 1,
-			 OPTAB_LIB_WIDEN);
+      if (first)
+	result = part;
+      else
+	/* Combine the parts with bitwise or.  This works
+	   because we extracted each part as an unsigned bit field.  */
+	result = expand_binop (word_mode, ior_optab, part, result, NULL_RTX, 1,
+			       OPTAB_LIB_WIDEN);
+
+      first = 0;
+    }
 
   /* Unsigned bit field: we are done.  */
   if (unsignedp)
