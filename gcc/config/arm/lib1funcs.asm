@@ -171,19 +171,19 @@ Loop1:
 	@ division loop.  Continue shifting until the divisor is 
 	@ larger than the dividend.
 	cmp	divisor, #0x10000000
-	cmpLO	divisor, dividend
-	movLO	divisor, divisor, lsl #4
-	movLO	curbit,  curbit,  lsl #4
-	bLO	Loop1
+	cmplo	divisor, dividend
+	movlo	divisor, divisor, lsl #4
+	movlo	curbit,  curbit,  lsl #4
+	blo	Loop1
 
 Lbignum:
 	@ For very big divisors, we must shift it a bit at a time, or
 	@ we will be in danger of overflowing.
 	cmp	divisor, #0x80000000
-	cmpLO	divisor, dividend
-	movLO	divisor, divisor, lsl #1
-	movLO	curbit,  curbit,  lsl #1
-	bLO	Lbignum
+	cmplo	divisor, dividend
+	movlo	divisor, divisor, lsl #1
+	movlo	curbit,  curbit,  lsl #1
+	blo	Lbignum
 
 Loop3:
 	@ Test for possible subtractions.  On the final pass, this may 
@@ -194,38 +194,38 @@ Loop3:
 	@ We can fix them up afterwards.
 	mov	overdone, #0
 	cmp	dividend, divisor
-	subHS	dividend, dividend, divisor
+	subhs	dividend, dividend, divisor
 	cmp	dividend, divisor,  lsr #1
-	subHS	dividend, dividend, divisor, lsr #1
-	orrHS	overdone, overdone, curbit,  ror #1
+	subhs	dividend, dividend, divisor, lsr #1
+	orrhs	overdone, overdone, curbit,  ror #1
 	cmp	dividend, divisor,  lsr #2
-	subHS	dividend, dividend, divisor, lsr #2
-	orrHS	overdone, overdone, curbit,  ror #2
+	subhs	dividend, dividend, divisor, lsr #2
+	orrhs	overdone, overdone, curbit,  ror #2
 	cmp	dividend, divisor,  lsr #3
-	subHS	dividend, dividend, divisor, lsr #3
-	orrHS	overdone, overdone, curbit,  ror #3
+	subhs	dividend, dividend, divisor, lsr #3
+	orrhs	overdone, overdone, curbit,  ror #3
 	mov	ip,       curbit
   .else
 	@ ... so keep track of which subtractions are done in RESULT.
 	@ The result will be ok, since the "bit" will have been 
 	@ shifted out at the bottom.
 	cmp	dividend, divisor
-	subHS	dividend, dividend, divisor
-	orrHS	result,   result,   curbit
+	subhs	dividend, dividend, divisor
+	orrhs	result,   result,   curbit
 	cmp	dividend, divisor,  lsr #1
-	subHS	dividend, dividend, divisor, lsr #1
-	orrHS	result,   result,   curbit,  lsr #1
+	subhs	dividend, dividend, divisor, lsr #1
+	orrhs	result,   result,   curbit,  lsr #1
 	cmp	dividend, divisor,  lsr #2
-	subHS	dividend, dividend, divisor, lsr #2
-	orrHS	result,   result,   curbit,  lsr #2
+	subhs	dividend, dividend, divisor, lsr #2
+	orrhs	result,   result,   curbit,  lsr #2
 	cmp	dividend, divisor,  lsr #3
-	subHS	dividend, dividend, divisor, lsr #3
-	orrHS	result,   result,   curbit,  lsr #3
+	subhs	dividend, dividend, divisor, lsr #3
+	orrhs	result,   result,   curbit,  lsr #3
   .endif
 
 	cmp	dividend, #0			@ Early termination?
-	movNEs	curbit,   curbit,  lsr #4	@ No, any more bits to do?
-	movNE	divisor,  divisor, lsr #4
+	movnes	curbit,   curbit,  lsr #4	@ No, any more bits to do?
+	movne	divisor,  divisor, lsr #4
 	bNE	Loop3
 
   .if \modulo
@@ -240,14 +240,14 @@ Lfixup_dividend:
 	@ (rather relying upon the TSTs to prevent the additions) since
 	@ the bit in ip could be in the top two bits which might then match
 	@ with one of the smaller RORs.
-	tstNE	ip, #0x7
-	bEQ	Lgot_result
+	tstne	ip, #0x7
+	beq	Lgot_result
 	tst	overdone, ip, ror #3
-	addNE	dividend, dividend, divisor, lsr #3
+	addne	dividend, dividend, divisor, lsr #3
 	tst	overdone, ip, ror #2
-	addNE	dividend, dividend, divisor, lsr #2
+	addne	dividend, dividend, divisor, lsr #2
 	tst	overdone, ip, ror #1
-	addNE	dividend, dividend, divisor, lsr #1
+	addne	dividend, dividend, divisor, lsr #1
   .endif
 
 Lgot_result:
@@ -263,9 +263,9 @@ Loop1:
 	@ division loop.  Continue shifting until the divisor is 
 	@ larger than the dividend.
 	cmp	divisor, work
-	bHS	Lbignum
+	bhs	Lbignum
 	cmp	divisor, dividend
-	bHS	Lbignum
+	bhs	Lbignum
 	lsl	divisor, #4
 	lsl	curbit,  #4
 	b	Loop1
@@ -276,9 +276,9 @@ Loop2:
 	@ For very big divisors, we must shift it a bit at a time, or
 	@ we will be in danger of overflowing.
 	cmp	divisor, work
-	bHS	Loop3
+	bhs	Loop3
 	cmp	divisor, dividend
-	bHS	Loop3
+	bhs	Loop3
 	lsl	divisor, #1
 	lsl	curbit,  #1
 	b	Loop2
@@ -290,12 +290,12 @@ Loop3:
 	@ afterwards.
 	mov	overdone, #0
 	cmp	dividend, divisor
-	bLO	Lover1
+	blo	Lover1
 	sub	dividend, dividend, divisor
 Lover1:
 	lsr	work, divisor, #1
 	cmp	dividend, work
-	bLO	Lover2
+	blo	Lover2
 	sub	dividend, dividend, work
 	mov	ip, curbit
 	mov	work, #1
@@ -305,7 +305,7 @@ Lover1:
 Lover2:
 	lsr	work, divisor, #2
 	cmp	dividend, work
-	bLO	Lover3
+	blo	Lover3
 	sub	dividend, dividend, work
 	mov	ip, curbit
 	mov	work, #2
@@ -315,7 +315,7 @@ Lover2:
 Lover3:
 	lsr	work, divisor, #3
 	cmp	dividend, work
-	bLO	Lover4
+	blo	Lover4
 	sub	dividend, dividend, work
 	mov	ip, curbit
 	mov	work, #3
@@ -329,27 +329,27 @@ Lover4:
 	@ this may subtract too much from the dividend, but the result will be ok,
 	@ since the "bit" will have been shifted out at the bottom.
 	cmp	dividend, divisor
-	bLO	Lover1
+	blo	Lover1
 	sub	dividend, dividend, divisor
 	orr	result, result, curbit
 Lover1:
 	lsr	work, divisor, #1
 	cmp	dividend, work
-	bLO	Lover2
+	blo	Lover2
 	sub	dividend, dividend, work
 	lsr	work, curbit, #1
 	orr	result, work
 Lover2:
 	lsr	work, divisor, #2
 	cmp	dividend, work
-	bLO	Lover3
+	blo	Lover3
 	sub	dividend, dividend, work
 	lsr	work, curbit, #2
 	orr	result, work
 Lover3:
 	lsr	work, divisor, #3
 	cmp	dividend, work
-	bLO	Lover4
+	blo	Lover4
 	sub	dividend, dividend, work
 	lsr	work, curbit, #3
 	orr	result, work
@@ -357,9 +357,9 @@ Lover4:
   .endif
 	
 	cmp	dividend, #0			@ Early termination?
-	bEQ	Lover5
+	beq	Lover5
 	lsr	curbit,  #4			@ No, any more bits to do?
-	bEQ	Lover5
+	beq	Lover5
 	lsr	divisor, #4
 	b	Loop3
 Lover5:
@@ -370,7 +370,7 @@ Lover5:
 	mov	work, #0xe
 	lsl	work, #28
 	and	overdone, work
-	bEQ	Lgot_result
+	beq	Lgot_result
 	
 	@ If we terminated early, because dividend became zero, then the 
 	@ bit in ip will not be in the bottom nibble, and we should not
@@ -381,13 +381,13 @@ Lover5:
 	mov	curbit, ip
 	mov	work, #0x7
 	tst	curbit, work
-	bEQ	Lgot_result
+	beq	Lgot_result
 	
 	mov	curbit, ip
 	mov	work, #3
 	ror	curbit, work
 	tst	overdone, curbit
-	bEQ	Lover6
+	beq	Lover6
 	lsr	work, divisor, #3
 	add	dividend, work
 Lover6:
@@ -395,7 +395,7 @@ Lover6:
 	mov	work, #2
 	ror	curbit, work
 	tst	overdone, curbit
-	bEQ	Lover7
+	beq	Lover7
 	lsr	work, divisor, #2
 	add	dividend, work
 Lover7:
@@ -403,7 +403,7 @@ Lover7:
 	mov	work, #1
 	ror	curbit, work
 	tst	overdone, curbit
-	bEQ	Lgot_result
+	beq	Lgot_result
 	lsr	work, divisor, #1
 	add	dividend, work
   .endif
@@ -419,13 +419,13 @@ Lgot_result:
 #ifdef __thumb__
 
 	cmp	divisor, #0
-	bEQ	Ldiv0
+	beq	Ldiv0
 	mov	curbit, #1
 	mov	result, #0
 	
 	push	{ work }
 	cmp	dividend, divisor
-	bLO	Lgot_result
+	blo	Lgot_result
 
 	THUMB_DIV_MOD_BODY 0
 	
@@ -436,11 +436,11 @@ Lgot_result:
 #else /* ARM version.  */
 	
 	cmp	divisor, #0
-	bEQ	Ldiv0
+	beq	Ldiv0
 	mov	curbit, #1
 	mov	result, #0
 	cmp	dividend, divisor
-	bLO	Lgot_result
+	blo	Lgot_result
 	
 	ARM_DIV_MOD_BODY 0
 	
@@ -460,10 +460,10 @@ Lgot_result:
 #ifdef __thumb__
 
 	cmp	divisor, #0
-	bEQ	Ldiv0
+	beq	Ldiv0
 	mov	curbit, #1
 	cmp	dividend, divisor
-	bHS	Lover10
+	bhs	Lover10
 	RET	
 
 Lover10:
@@ -477,11 +477,11 @@ Lover10:
 #else  /* ARM version.  */
 	
 	cmp	divisor, #0
-	bEQ	Ldiv0
+	beq	Ldiv0
 	cmp     divisor, #1
-	cmpNE	dividend, divisor
-	movEQ   dividend, #0
-	RETc(LO)
+	cmpne	dividend, divisor
+	moveq   dividend, #0
+	RETc(lo)
 	mov	curbit, #1
 
 	ARM_DIV_MOD_BODY 1
@@ -500,7 +500,7 @@ Lover10:
 
 #ifdef __thumb__
 	cmp	divisor, #0
-	bEQ	Ldiv0
+	beq	Ldiv0
 	
 	push	{ work }
 	mov	work, dividend
@@ -509,22 +509,22 @@ Lover10:
 	mov	curbit, #1
 	mov	result, #0
 	cmp	divisor, #0
-	bPL	Lover10
+	bpl	Lover10
 	neg	divisor, divisor	@ Loops below use unsigned.
 Lover10:
 	cmp	dividend, #0
-	bPL	Lover11
+	bpl	Lover11
 	neg	dividend, dividend
 Lover11:
 	cmp	dividend, divisor
-	bLO	Lgot_result
+	blo	Lgot_result
 
 	THUMB_DIV_MOD_BODY 0
 	
 	mov	r0, result
 	mov	work, ip
 	cmp	work, #0
-	bPL	Lover12
+	bpl	Lover12
 	neg	r0, r0
 Lover12:
 	pop	{ work }
@@ -536,18 +536,18 @@ Lover12:
 	mov	curbit, #1
 	mov	result, #0
 	cmp	divisor, #0
-	rsbMI	divisor, divisor, #0		@ Loops below use unsigned.
-	bEQ	Ldiv0
+	rsbmi	divisor, divisor, #0		@ Loops below use unsigned.
+	beq	Ldiv0
 	cmp	dividend, #0
-	rsbMI	dividend, dividend, #0
+	rsbmi	dividend, dividend, #0
 	cmp	dividend, divisor
-	bLO	Lgot_result
+	blo	Lgot_result
 
 	ARM_DIV_MOD_BODY 0
 	
 	mov	r0, result
 	cmp	ip, #0
-	rsbMI	r0, r0, #0
+	rsbmi	r0, r0, #0
 	RET	
 
 #endif /* ARM version */
@@ -564,8 +564,8 @@ Lover12:
 
 	mov	curbit, #1
 	cmp	divisor, #0
-	bEQ	Ldiv0
-	bPL	Lover10
+	beq	Ldiv0
+	bpl	Lover10
 	neg	divisor, divisor		@ Loops below use unsigned.
 Lover10:
 	push	{ work }
@@ -574,17 +574,17 @@ Lover10:
 	@ the work register, because we will pop this value off first.
 	push	{ dividend }
 	cmp	dividend, #0
-	bPL	Lover11
+	bpl	Lover11
 	neg	dividend, dividend
 Lover11:
 	cmp	dividend, divisor
-	bLO	Lgot_result
+	blo	Lgot_result
 
 	THUMB_DIV_MOD_BODY 1
 		
 	pop	{ work }
 	cmp	work, #0
-	bPL	Lover12
+	bpl	Lover12
 	neg	dividend, dividend
 Lover12:
 	pop	{ work }
@@ -593,22 +593,22 @@ Lover12:
 #else /* ARM version.  */
 	
 	cmp	divisor, #0
-	rsbMI	divisor, divisor, #0		@ Loops below use unsigned.
-	bEQ	Ldiv0
+	rsbmi	divisor, divisor, #0		@ Loops below use unsigned.
+	beq	Ldiv0
 	@ Need to save the sign of the dividend, unfortunately, we need
 	@ ip later on; this is faster than pushing lr and using that.
 	str	dividend, [sp, #-4]!
 	cmp	dividend, #0			@ Test dividend against zero
-	rsbMI	dividend, dividend, #0		@ If negative make positive
+	rsbmi	dividend, dividend, #0		@ If negative make positive
 	cmp	dividend, divisor		@ else if zero return zero
-	bLO	Lgot_result			@ if smaller return dividend
+	blo	Lgot_result			@ if smaller return dividend
 	mov	curbit, #1
 
 	ARM_DIV_MOD_BODY 1
 
 	ldr	ip, [sp], #4
 	cmp	ip, #0
-	rsbMI	dividend, dividend, #0
+	rsbmi	dividend, dividend, #0
 	RET	
 
 #endif /* ARM version */
