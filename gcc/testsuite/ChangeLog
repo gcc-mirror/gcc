@@ -3,6 +3,26 @@
 	PR c++/11687
 	* g++.dg/expr/static_cast5.C: New test.
 
+2003-09-06  Andrew Pinski  <pinskia@physics.uc.edu>
+
+	PR c++/11507
+	* g++.dg/lookup/scoped7.C: New test.
+ 
+	PR c++/9574
+	* g++.dg/other/static1.C: New test.
+
+	PR c++/11490
+	* g++.dg/warn/template-1.C: New test.
+
+	PR c++/11432
+	* g++.dg/template/crash10.C: New test.
+ 
+	PR c++/2478
+	* g++.dg/overload/VLA.C: New test.
+ 
+	PR c++/10804
+	* g++.dg/template/call1.C: New test.
+
 2003-09-06  Nathan Sidwell  <nathan@codesourcery.com>
 
 	PR c++/11794
