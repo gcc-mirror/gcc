@@ -1,3 +1,12 @@
+2004-01-20  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* config/s390/s390.c (TARGET_PROMOTE_FUNCTION_ARGS): Define.
+	(TARGET_PROMOTE_FUNCTION_RETURN): Likewise.
+	(TARGET_STRUCT_VALUE_RTX): Likewise.
+	* config/s390/s390.h (PROMOTE_FUNCTION_ARGS): Remove.
+	(PROMOTE_FUNCTION_RETURN): Remove.
+	(STRUCT_VALUE): Remove.
+
 2004-01-20  Denis Chertykov  <denisc@overta.ru>
 
 	* config/avr/avr.h (BASE_REG_CLASS): Don't permit to use X

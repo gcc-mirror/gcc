@@ -207,8 +207,6 @@ extern int target_flags;
 #define MAX_BITS_PER_WORD 64
 
 /* Function arguments and return values are promoted to word size.  */
-#define PROMOTE_FUNCTION_ARGS
-#define PROMOTE_FUNCTION_RETURN
 #define PROMOTE_FOR_CALL_ONLY
 
 #define PROMOTE_MODE(MODE, UNSIGNEDP, TYPE)		\
@@ -714,9 +712,6 @@ CUMULATIVE_ARGS;
 
 /* Only gpr 2 and fpr 0 are ever used as return registers.  */
 #define FUNCTION_VALUE_REGNO_P(N) ((N) == 2 || (N) == 16)
-
-/* Structure value address is passed as invisible first argument (gpr 2).  */
-#define STRUCT_VALUE 0
 
 
 /* Function entry and exit.  */
