@@ -1,5 +1,12 @@
 2002-11-25  Mark Mitchell  <mark@codesourcery.com>
 
+	* tree.c (cp_build_qualified_type_real): Correct handling of
+	array types.
+	* class.c (walk_subobject_offsets): Fix thinko.
+	(build_base_field): Record offsets of empty bases in primary
+	virtual bases.
+	(layout_class_type): Record offsets of empty bases in fields.
+	
 	* search.c (is_subobject_of_p_1): Fix thinko.
 	(lookup_field_queue_p): Likewise.
 
