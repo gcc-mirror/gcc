@@ -698,6 +698,28 @@ fix = {
     sed      = "s/^extern struct sigevent;/struct sigevent;/";
 };
 
+/* 
+ * In inttypes.h on HPUX 11, the use of __CONCAT__ in the definition 
+ * of UINT32_C has undefined behavior according to ISO/ANSI:
+ * the arguments to __CONCAT__ are not macro expanded before the
+ * concatination happens so the trailing ')' in the first argument
+ * is concatinated with the 'l' in the second argument creating an
+ * invalid pp token.  The behavior of invalid pp tokens is undefined.
+ * GCC does not handle these invalid tokens the way the HP compiler does.
+ * This problem will potentially occur anytime macros are used in the
+ * arguments to __CONCAT__.  A general solution to this problem would be to 
+ * insert another layer of macro between __CONCAT__ and its use
+ * in UINT32_C.  An example of this solution can be found in the C standard.
+ * A more specific solution, the one used here, is to change the UINT32_C
+ * macro to not used macros in the arguments to __CONCAT__.
+ */
+
+fix = {
+    hackname = hpux11_uint32_c;
+    files    = inttypes.h;
+    select   = "^#define UINT32_C\\(__c\\)[ \t]*__CONCAT__\\(__CONCAT_U__\\(__c\\),l\\)";
+    sed      = "s/^#define UINT32_C(__c)\\([ \t]*\\)__CONCAT__(__CONCAT_U__(__c),l)/#define UINT32_C(__c)\\1__CONCAT__(__c,ul)/";
+};
 
 /*
  *  Determine if we're on Interactive Unix 2.2 or later, in which case we
