@@ -1,3 +1,11 @@
+2003-04-07  James A. Morrison <ja2morri@uwaterloo.ca>
+
+	* doc/invoke.texi: Eliminate extra white-space caused by
+	@gccoptlist{ on its own line.
+	* doc/invoke.texi: Ensured there are two spaces between each option.
+	* doc/invoke.texi: Re-wrapped option lines that were too wide.
+	Added @gol to options that didn't have them.
+
 2003-04-07  James A Morrison <ja2morri@student.math.uwaterloo.ca>
 
 	* doc/extend.texi (Darwin Pragmas): Fix spelling of Mac OS.
