@@ -127,6 +127,10 @@ do {									\
    yylval contains an IDENTIFIER_NODE which indicates which one.  */
 %token TYPE_QUAL
 
+/* Objective-C protocol qualifiers.  These acquire their magic powers
+   only in certain contexts.  */
+%token OBJC_TYPE_QUAL
+
 /* Character or numeric constants.
    yylval is the node for the constant.  */
 %token CONSTANT
