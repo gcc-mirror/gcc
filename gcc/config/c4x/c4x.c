@@ -4396,19 +4396,122 @@ c4x_handle_pragma (p_getc, p_ungetc, pname)
 }
 
 
+struct name_list
+{
+  struct name_list *next;
+  char *name;
+};
+
+static struct name_list *global_head;
+static struct name_list *extern_head;
+
+
+/* Add NAME to list of global symbols and remove from external list if
+   present on external list.  */
+
+void
+c4x_global_label (name)
+     char *name;
+{
+  struct name_list *p, *last;
+
+  /* Do not insert duplicate names, so linearly search through list of
+     existing names.  */
+  p = global_head;
+  while (p)
+    {
+      if (strcmp (p->name, name) == 0)
+	return;
+      p = p->next;
+    }
+  p = (struct name_list *) permalloc (sizeof *p);
+  p->next = global_head;
+  p->name = name;
+  global_head = p;
+
+  /* Remove this name from ref list if present.  */
+  last = NULL;
+  p = extern_head;
+  while (p)
+    {
+      if (strcmp (p->name, name) == 0)
+	{
+	  if (last)
+	    last->next = p->next;
+	  else
+	    extern_head = p->next;
+	  break;
+	}
+      last = p;
+      p = p->next;
+    }
+}
+
+
+/* Add NAME to list of external symbols.  */
+
+void
+c4x_external_ref (name)
+     char *name;
+{
+  struct name_list *p;
+
+  /* Do not insert duplicate names.  */
+  p = extern_head;
+  while (p)
+    {
+      if (strcmp (p->name, name) == 0)
+	return;
+      p = p->next;
+    }
+  
+  /* Do not insert ref if global found.  */
+  p = global_head;
+  while (p)
+    {
+      if (strcmp (p->name, name) == 0)
+	return;
+      p = p->next;
+    }
+  p = (struct name_list *) permalloc (sizeof *p);
+  p->next = extern_head;
+  p->name = name;
+  extern_head = p;
+}
+
+
+void
+c4x_file_end (fp)
+     FILE *fp;
+{
+  struct name_list *p;
+  
+  /* Output all external names that are not global.  */
+  p = extern_head;
+  while (p)
+    {
+      fprintf (fp, "\t.ref\t");
+      assemble_name (fp, p->name);
+      fprintf (fp, "\n");
+      p = p->next;
+    }
+  fprintf (fp, "\t.end\n");
+}
+
+
 static void
-c4x_check_attribute(attrib, list, decl, attributes)
+c4x_check_attribute (attrib, list, decl, attributes)
      char *attrib;
      tree list, decl, *attributes;
 {
   while (list != NULL_TREE
          && IDENTIFIER_POINTER (TREE_PURPOSE (list))
 	 != IDENTIFIER_POINTER (DECL_NAME (decl)))
-    list = TREE_CHAIN(list);
+    list = TREE_CHAIN (list);
   if (list)
     *attributes = chainon (*attributes,
 			   build_tree_list (get_identifier (attrib),
-					    TREE_VALUE(list)));
+					    TREE_VALUE (list)));
 }
 
 

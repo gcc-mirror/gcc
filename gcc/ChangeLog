@@ -1,3 +1,15 @@
+2000-02-11  Michael Hayes  <m.hayes@elec.canterbury.ac.nz>
+
+	* config/c4x/c4x.h (ASM_GLOBALIZE_LABEL): Use c4x_global_label.
+	(ASM_OUTPUT_EXTERNAL): Use c4x_external_ref.
+	(ASM_OUTPUT_EXTERNAL_LIBCALL): Likewise.
+	(ASM_FILE_END): Use c4x_file_end.
+	* config/c4x/c4x.c (c4x_global_label): New function.
+ 	(c4x_external_ref, c4x_file_end): Likewise.
+	* config/c4x/c4x-protos.h (c4x_global_label): Add prototype.
+ 	(c4x_external_ref, c4x_end_file): Likewise.
+	
+
 2000-02-10  Zack Weinberg  <zack@wolery.cumb.org>
 
 	* cppexp.c: Don't include cpphash.h.
