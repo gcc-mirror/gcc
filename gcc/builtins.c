@@ -2252,6 +2252,7 @@ expand_builtin_memcmp (exp, arglist, target, mode)
      enum machine_mode mode;
 {
   tree arg1, arg2, len;
+  const char *p1, *p2;
 
   if (!validate_arglist (arglist,
 		      POINTER_TYPE, POINTER_TYPE, INTEGER_TYPE, VOID_TYPE))
@@ -2269,6 +2270,19 @@ expand_builtin_memcmp (exp, arglist, target, mode)
       expand_expr (arg1, const0_rtx, VOIDmode, EXPAND_NORMAL);
       expand_expr (arg2, const0_rtx, VOIDmode, EXPAND_NORMAL);
       return const0_rtx;
+    }
+
+  p1 = c_getstr (arg1);
+  p2 = c_getstr (arg2);
+
+  /* If all arguments are constant, and the value of len is not greater
+     than the lengths of arg1 and arg2, evaluate at compile-time.  */
+  if (host_integerp (len, 1) && p1 && p2
+      && compare_tree_int (len, strlen (p1)+1) <= 0
+      && compare_tree_int (len, strlen (p2)+1) <= 0)
+    {
+      const int r = memcmp (p1, p2, tree_low_cst (len, 1));
+      return (r < 0 ? constm1_rtx : (r > 0 ? const1_rtx : const0_rtx));
     }
 
   /* If len parameter is one, return an expression corresponding to
