@@ -550,7 +550,7 @@ static void record_one_set            PROTO ((int, rtx));
 static void record_set_info           PROTO ((rtx, rtx));
 static void compute_sets              PROTO ((rtx));
 
-static void hash_scan_insn            PROTO ((rtx, int));
+static void hash_scan_insn            PROTO ((rtx, int, int));
 static void hash_scan_set             PROTO ((rtx, rtx, int));
 static void hash_scan_clobber         PROTO ((rtx, rtx));
 static void hash_scan_call            PROTO ((rtx, rtx));
@@ -1849,10 +1849,12 @@ hash_scan_call (x, insn)
    are also in the PARALLEL.  Later.
 
    If SET_P is non-zero, this is for the assignment hash table,
-   otherwise it is for the expression hash table.  */
+   otherwise it is for the expression hash table.
+   If IN_LIBCALL_BLOCK nonzero, we are in a libcall block, and should
+   not record any expressions.  */
 
 static void
-hash_scan_insn (insn, set_p)
+hash_scan_insn (insn, set_p, in_libcall_block)
      rtx insn;
      int set_p;
 {
@@ -1861,7 +1863,7 @@ hash_scan_insn (insn, set_p)
   /* Pick out the sets of INSN and for other forms of instructions record
      what's been modified.  */
 
-  if (GET_CODE (pat) == SET)
+  if (GET_CODE (pat) == SET && ! in_libcall_block)
     hash_scan_set (pat, insn, set_p);
   else if (GET_CODE (pat) == PARALLEL)
     {
@@ -2037,6 +2039,7 @@ compute_hash_table (f, set_p)
     {
       rtx insn;
       int regno;
+      int in_libcall_block;
 
       /* First pass over the instructions records information used to
 	 determine when registers and memory are first and last set.
@@ -2080,12 +2083,18 @@ compute_hash_table (f, set_p)
 
       /* The next pass builds the hash table.  */
 
-      for (insn = basic_block_head[bb];
+      for (insn = basic_block_head[bb], in_libcall_block = 0;
 	   insn && insn != NEXT_INSN (basic_block_end[bb]);
 	   insn = NEXT_INSN (insn))
 	{
 	  if (GET_RTX_CLASS (GET_CODE (insn)) == 'i')
-	    hash_scan_insn (insn, set_p);
+	    {
+	      if (find_reg_note (insn, REG_LIBCALL, NULL_RTX))
+		in_libcall_block = 1;
+	      else if (find_reg_note (insn, REG_RETVAL, NULL_RTX))
+		in_libcall_block = 0;
+	      hash_scan_insn (insn, set_p, in_libcall_block);
+	    }
 	}
     }
 
