@@ -1705,7 +1705,7 @@ cpp_define (pfile, str)
   if (p)
     {
       count = strlen (str) + 2;
-      buf = alloca (count);
+      buf = (char *) alloca (count);
       memcpy (buf, str, count - 2);
       buf[p - str] = ' ';
       buf[count - 2] = '\n';
@@ -1714,7 +1714,7 @@ cpp_define (pfile, str)
   else
     {
       count = strlen (str) + 4;
-      buf = alloca (count);
+      buf = (char *) alloca (count);
       memcpy (buf, str, count - 4);
       strcpy (&buf[count-4], " 1\n");
     }
@@ -1734,7 +1734,7 @@ cpp_undef (pfile, macro)
 {
   /* Copy the string so we can append a newline.  */
   size_t len = strlen (macro);
-  char *buf = alloca (len + 2);
+  char *buf = (char *) alloca (len + 2);
   memcpy (buf, macro, len);
   buf[len]     = '\n';
   buf[len + 1] = '\0';

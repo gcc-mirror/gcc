@@ -1114,10 +1114,13 @@ initialize_random_junk ()
    * refer to them.
    */
   for (i = 'a'; i <= 'z'; i++) {
-    ++is_idchar[TOUPPER(i)];
-    ++is_idchar[i];
-    ++is_idstart[TOUPPER(i)];
-    ++is_idstart[i];
+    /* SKIP EBCIDIC holes, char must be a valid low case char */
+    if (ISLOWER(i)) {
+      ++is_idchar[TOUPPER(i)];
+      ++is_idchar[i];
+      ++is_idstart[TOUPPER(i)];
+      ++is_idstart[i];
+    }
   }
   for (i = '0'; i <= '9'; i++)
     ++is_idchar[i];

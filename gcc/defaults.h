@@ -80,7 +80,7 @@ do { ASM_OUTPUT_LABEL(FILE,LABEL_ALTERNATE_NAME (INSN)); } while (0)
 	  register int c = p[i];					      \
 	  if (c == '\"' || c == '\\')					      \
 	    putc ('\\', asm_out_file);					      \
-	  if (c >= ' ' && c < 0177)					      \
+	  if (ISPRINT(c))						      \
 	    putc (c, asm_out_file);					      \
 	  else								      \
 	    {								      \

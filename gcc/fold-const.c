@@ -106,6 +106,14 @@ static int count_cond		PARAMS ((tree, int));
 #define BRANCH_COST 1
 #endif
 
+#if defined(HOST_EBCDIC)
+/* bit 8 is significant in EBCDIC */
+#define CHARMASK 0xff
+#else
+#define CHARMASK 0x7f
+#endif
+
+
 /* We know that A1 + B1 = SUM1, using 2's complement arithmetic and ignoring
    overflow.  Suppose A, B and SUM have the same respective signs as A1, B1,
    and SUM1.  Then this yields nonzero if overflow occurred during the
@@ -1091,8 +1099,8 @@ real_hex_to_f (s, mode)
        if ((c >= '0' && c <= '9') || (c >= 'A' && c <= 'F')
 	   || (c >= 'a' && c <= 'f'))
 	 {
-	   k = c & 0x7f;
-	   if (k >= 'a')
+	   k = c & CHARMASK;
+	   if (k >= 'a' && k <= 'f')
 	     k = k - 'a' + 10;
 	   else if (k >= 'A')
 	     k = k - 'A' + 10;
@@ -1137,7 +1145,7 @@ real_hex_to_f (s, mode)
 	      The exponent field is a decimal integer.  */
 	   while (ISDIGIT(*p))
 	     {
-	       k = (*p++ & 0x7f) - '0';
+	       k = (*p++ & CHARMASK) - '0';
 	       expon = 10 * expon + k;
 	     }
 
