@@ -159,4 +159,5 @@ tdesc_section ()							\
 }
 
 /* Enable the `const' section that svr3.h defines how to use.  */
+#undef USE_CONST_SECTION
 #define USE_CONST_SECTION	1
