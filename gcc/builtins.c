@@ -162,7 +162,7 @@ static tree fold_builtin_floor (tree);
 static tree fold_builtin_ceil (tree);
 static tree fold_builtin_round (tree);
 static tree fold_builtin_bitop (tree, tree);
-static tree fold_builtin_memcpy (tree);
+static tree fold_builtin_memcpy (tree, tree);
 static tree fold_builtin_mempcpy (tree, tree, int);
 static tree fold_builtin_memmove (tree, tree);
 static tree fold_builtin_strchr (tree, tree);
@@ -2623,6 +2623,7 @@ builtin_memcpy_read_str (void *data, HOST_WIDE_INT offset,
 static rtx
 expand_builtin_memcpy (tree exp, rtx target, enum machine_mode mode)
 {
+  tree fndecl = get_callee_fndecl (exp);
   tree arglist = TREE_OPERAND (exp, 1);
   if (!validate_arglist (arglist,
 			 POINTER_TYPE, POINTER_TYPE, INTEGER_TYPE, VOID_TYPE))
@@ -2637,7 +2638,7 @@ expand_builtin_memcpy (tree exp, rtx target, enum machine_mode mode)
       unsigned int dest_align
 	= get_pointer_alignment (dest, BIGGEST_ALIGNMENT);
       rtx dest_mem, src_mem, dest_addr, len_rtx;
-      tree result = fold_builtin_memcpy (exp);
+      tree result = fold_builtin_memcpy (fndecl, arglist);
 
       if (result)
 	return expand_expr (result, target, mode, EXPAND_NORMAL);
@@ -7162,10 +7163,8 @@ fold_builtin_exponent (tree fndecl, tree arglist,
    NULL_TREE if no simplification can be made.  */
 
 static tree
-fold_builtin_memcpy (tree exp)
+fold_builtin_memcpy (tree fndecl, tree arglist)
 {
-  tree fndecl = get_callee_fndecl (exp);
-  tree arglist = TREE_OPERAND (exp, 1);
   tree dest, src, len;
 
   if (!validate_arglist (arglist,
@@ -8235,7 +8234,7 @@ fold_builtin_1 (tree exp, bool ignore)
       return fold_builtin_bitop (fndecl, arglist);
 
     case BUILT_IN_MEMCPY:
-      return fold_builtin_memcpy (exp);
+      return fold_builtin_memcpy (fndecl, arglist);
 
     case BUILT_IN_MEMPCPY:
       return fold_builtin_mempcpy (arglist, type, /*endp=*/1);

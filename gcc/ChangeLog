@@ -1,3 +1,10 @@
+2005-03-19  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* builtins.c (fold_builtin_memcpy): Take decomposed arguments
+	of CALL_EXPR.
+	(expand_builtin_memcpy, fold_builtin_1): Update calls to
+	fold_builtin_memcpy.
+
 2005-03-19  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
 	PR middle-end/20493
