@@ -34,6 +34,10 @@ java::lang::reflect::Constructor::getType ()
 			     declaringClass,
 			     &parameter_types,
 			     NULL);
+
+  // FIXME: for now we have no way to get exception information.
+  exception_types = 
+    (JArray<jclass> *) JvNewObjectArray (0, &java::lang::Class::class$, NULL);
 }
 
 jobject
