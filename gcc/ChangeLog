@@ -1,5 +1,13 @@
 2004-02-25  Richard Henderson  <rth@redhat.com>
 
+	* explow.c (force_reg): Call mark_reg_pointer as appropriate.
+	* config/alpha/alpha.c (alpha_emit_conditional_branch): Don't
+	use (op0-op1) == 0 if op0 is a pointer.
+	* config/alpha/alpha.md (cmpdi): Use some_operand.
+	(three comparison combine splits): Remove.
+
+2004-02-25  Richard Henderson  <rth@redhat.com>
+
 	PR c/12794
 	* c-common.c (handle_alias_attribute): Reject the attribute if
 	current_function_decl is set.
