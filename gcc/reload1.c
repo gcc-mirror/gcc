@@ -3118,6 +3118,7 @@ eliminate_regs_in_insn (insn, replace)
      int replace;
 {
   rtx old_body = PATTERN (insn);
+  rtx old_set = single_set (insn);
   rtx new_body;
   int val = 0;
   struct elim_table *ep;
@@ -3125,12 +3126,12 @@ eliminate_regs_in_insn (insn, replace)
   if (! replace)
     push_obstacks (&reload_obstack, &reload_obstack);
 
-  if (GET_CODE (old_body) == SET && GET_CODE (SET_DEST (old_body)) == REG
-      && REGNO (SET_DEST (old_body)) < FIRST_PSEUDO_REGISTER)
+  if (old_set != 0 && GET_CODE (SET_DEST (old_set)) == REG
+      && REGNO (SET_DEST (old_set)) < FIRST_PSEUDO_REGISTER)
     {
       /* Check for setting an eliminable register.  */
       for (ep = reg_eliminate; ep < &reg_eliminate[NUM_ELIMINABLE_REGS]; ep++)
-	if (ep->from_rtx == SET_DEST (old_body) && ep->can_eliminate)
+	if (ep->from_rtx == SET_DEST (old_set) && ep->can_eliminate)
 	  {
 	    /* In this case this insn isn't serving a useful purpose.  We
 	       will delete it in reload_as_needed once we know that this
@@ -3151,22 +3152,25 @@ eliminate_regs_in_insn (insn, replace)
 	 We have to do this here, rather than in eliminate_regs, do that we can
 	 change the insn code.  */
 
-      if (GET_CODE (SET_SRC (old_body)) == PLUS
-	  && GET_CODE (XEXP (SET_SRC (old_body), 0)) == REG
-	  && GET_CODE (XEXP (SET_SRC (old_body), 1)) == CONST_INT)
+      if (GET_CODE (SET_SRC (old_set)) == PLUS
+	  && GET_CODE (XEXP (SET_SRC (old_set), 0)) == REG
+	  && GET_CODE (XEXP (SET_SRC (old_set), 1)) == CONST_INT)
 	for (ep = reg_eliminate; ep < &reg_eliminate[NUM_ELIMINABLE_REGS];
 	     ep++)
-	  if (ep->from_rtx == XEXP (SET_SRC (old_body), 0)
+	  if (ep->from_rtx == XEXP (SET_SRC (old_set), 0)
 	      && ep->can_eliminate)
 	    {
 	      /* We must stop at the first elimination that will be used.
 		 If this one would replace the PLUS with a REG, do it
 		 now.  Otherwise, quit the loop and let eliminate_regs
 		 do its normal replacement.  */
-	      if (ep->offset == - INTVAL (XEXP (SET_SRC (old_body), 1)))
+	      if (ep->offset == - INTVAL (XEXP (SET_SRC (old_set), 1)))
 		{
+		  /* We assume here that we don't need a PARALLEL of
+		     any CLOBBERs for this assignment.  There's not
+		     much we can do if we do need it.  */
 		  PATTERN (insn) = gen_rtx (SET, VOIDmode,
-					    SET_DEST (old_body), ep->to_rtx);
+					    SET_DEST (old_set), ep->to_rtx);
 		  INSN_CODE (insn) = -1;
 		  val = 1;
 		  goto done;
@@ -3199,22 +3203,25 @@ eliminate_regs_in_insn (insn, replace)
       if (! replace && asm_noperands (old_body) < 0)
 	new_body = copy_rtx (new_body);
 
-      /* If we had a move insn but now we don't, rerecognize it.  */
-      if ((GET_CODE (old_body) == SET && GET_CODE (SET_SRC (old_body)) == REG
-	   && (GET_CODE (new_body) != SET
-	       || GET_CODE (SET_SRC (new_body)) != REG))
-	  /* If this was a load from or store to memory, compare
-	     the MEM in recog_operand to the one in the insn.  If they
-	     are not equal, then rerecognize the insn.  */
-	  || (GET_CODE (old_body) == SET
-	      && ((GET_CODE (SET_SRC (old_body)) == MEM
-		   && SET_SRC (old_body) != recog_operand[1])
-		  || (GET_CODE (SET_DEST (old_body)) == MEM
-		      && SET_DEST (old_body) != recog_operand[0])))
-	  /* If this was an add insn before, rerecognize.  */
-	  ||
-	  (GET_CODE (old_body) == SET
-	   && GET_CODE (SET_SRC (old_body)) == PLUS))
+      /* If we had a move insn but now we don't, rerecognize it.  This will
+	 cause spurious re-recognition if the old move had a PARALLEL since
+	 the new one still will, but we can't call single_set without
+	 having put NEW_BODY into the insn and the re-recognition won't
+	 hurt in this rare case.  */
+      if (old_set != 0
+	  && ((GET_CODE (SET_SRC (old_set)) == REG
+	       && (GET_CODE (new_body) != SET
+		   || GET_CODE (SET_SRC (new_body)) != REG))
+	      /* If this was a load from or store to memory, compare
+		 the MEM in recog_operand to the one in the insn.  If they
+		 are not equal, then rerecognize the insn.  */
+	      || (old_set != 0
+		  && ((GET_CODE (SET_SRC (old_set)) == MEM
+		       && SET_SRC (old_set) != recog_operand[1])
+		      || (GET_CODE (SET_DEST (old_set)) == MEM
+			  && SET_DEST (old_set) != recog_operand[0])))
+	      /* If this was an add insn before, rerecognize.  */
+	      || GET_CODE (SET_SRC (old_set)) == PLUS))
 	{
 	  if (! validate_change (insn, &PATTERN (insn), new_body, 0))
 	    /* If recognition fails, store the new body anyway.
