@@ -1,5 +1,9 @@
 2003-02-21  Mark Mitchell  <mark@codesourcery.com>
 
+	PR c++/9727
+	* decl2.c (push_scope): Don't pushclass for non-class types.
+	(pop_scope): Don't popclass either.
+
 	PR c++/8906
 	* decl.c (lookup_name_real): Use IMPLICIT_TYPENAME_P.
 	* decl2.c (handle_class_head): Check it.
