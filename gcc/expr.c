@@ -6756,7 +6756,17 @@ expand_expr (exp, target, tmode, modifier)
 			&& SLOW_UNALIGNED_ACCESS (mode1, alignment)
 			&& ((TYPE_ALIGN (TREE_TYPE (tem))
 			     < (unsigned int) GET_MODE_ALIGNMENT (mode))
-			    || (bitpos % GET_MODE_ALIGNMENT (mode) != 0)))))
+			    || (bitpos % GET_MODE_ALIGNMENT (mode) != 0)))
+		    /* If the type and the field are a constant size and the
+		       size of the type isn't the same size as the bitfield,
+		       we must use bitfield operations.  */
+		    || ((bitsize >= 0
+			 && (TREE_CODE (TYPE_SIZE (TREE_TYPE (exp)))
+			     == INTEGER_CST)
+			 && ((TREE_INT_CST_HIGH (TYPE_SIZE (TREE_TYPE (exp)))
+			      != 0)
+			     || (TREE_INT_CST_LOW (TYPE_SIZE (TREE_TYPE (exp)))
+				 != bitsize))))))
 	    || (modifier != EXPAND_CONST_ADDRESS
 		&& modifier != EXPAND_INITIALIZER
 		&& mode == BLKmode
