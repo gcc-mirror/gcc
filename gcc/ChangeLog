@@ -1,3 +1,9 @@
+2000-01-25  Richard Henderson  <rth@cygnus.com>
+
+	* alpha.c (secondary_reload_class): Don't allocate a secondary
+	for integral mode memories into FLOAT_REGS.  Rearrange the more
+	complicated memory expression inward.
+
 2000-01-25  Zack Weinberg  <zack@wolery.cumb.org>
 
 	* inclhack.def: Fixes to play nicer with FreeBSD, and
