@@ -1,3 +1,12 @@
+1999-04-20  Jim Blandy  <jimb@zwingli.cygnus.com>
+
+	Fix from Dale Hawkins:
+	* cplus-dem.c (mop_up): Set typevec_size to zero, so it'll be 
+	reallocated properly if we use it again.
+
+	* cplus-dem.c (demangle_fund_type): Check for buffer overrun.  Be
+	stricter about syntax.  Always null-terminate string.
+
 Thu Apr 15 23:00:55 1999  Mumit Khan  <khan@xraylith.wisc.edu>
 
 	* configure.in (checkfuncs): Check for sbrk.
