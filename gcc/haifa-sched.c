@@ -7063,7 +7063,7 @@ schedule_insns (dump_file)
   if (true_dependency_cache)
     {
       free (true_dependency_cache);
-      true_depdency_cache = NULL;
+      true_dependency_cache = NULL;
     }
   free (cant_move);
   free (fed_by_spec_load);
