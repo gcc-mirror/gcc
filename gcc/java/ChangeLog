@@ -1,5 +1,11 @@
 1998-12-14  Tom Tromey  <tromey@cygnus.com>
 
+	* gjavah.c (print_field_info): If value to print is the smallest
+	value of its size, then print as hex to avoid later warnings from
+	C++ compiler.
+
+1998-12-14  Tom Tromey  <tromey@cygnus.com>
+
 	* gjavah.c (decompile_method): Decompile `return null'.
 	(process_file): Generate `#pragma interface'.
 	(method_declared): New global.

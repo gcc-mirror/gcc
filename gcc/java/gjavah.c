@@ -299,27 +299,48 @@ DEFUN(print_field_info, (stream, jcf, name_index, sig_index, flags),
     {
       if (current_field_value > 0)
 	{
-	  jlong num;
 	  char buffer[25];
 
 	  generate_access (stream, flags);
 	  switch (JPOOL_TAG (jcf, current_field_value))
 	    {
 	    case CONSTANT_Integer:
-	      fputs ("  static const jint ", out);
-	      print_name (out, jcf, name_index);
-	      fputs (" = ", out);
-	      num = JPOOL_INT (jcf, current_field_value);
-	      format_int (buffer, num, 10);
-	      fprintf (out, "%sL;\n", buffer);
+	      {
+		jint num;
+		fputs ("  static const jint ", out);
+		print_name (out, jcf, name_index);
+		fputs (" = ", out);
+		num = JPOOL_INT (jcf, current_field_value);
+		/* We single out the most negative number to print in
+		   hex.  That avoids later warnings from g++.  */
+		if (num == 0x80000000)
+		  {
+		    strcpy (buffer, "0x");
+		    format_uint (buffer + 2, (jlong) (uint32) num, 16);
+		  }
+		else
+		  format_int (buffer, (jlong) num, 10);
+		fprintf (out, "%sL;\n", buffer);
+	      }
 	      break;
 	    case CONSTANT_Long:
-	      fputs ("  static const jlong ", out);
-	      print_name (out, jcf, name_index);
-	      fputs (" = ", out);
-	      num = JPOOL_LONG (jcf, current_field_value);
-	      format_int (buffer, num, 10);
-	      fprintf (out, "%sLL;\n", buffer);
+	      {
+		jlong num;
+		fputs ("  static const jlong ", out);
+		print_name (out, jcf, name_index);
+		fputs (" = ", out);
+		num = JPOOL_LONG (jcf, current_field_value);
+		/* We single out the most negative number to print in
+		   hex.  That avoids later warnings from g++.  */
+		if (num == 0x8000000000000000LL)
+		  {
+		    strcpy (buffer, "0x");
+		    format_uint (buffer + 2, num, 16);
+		  }
+		else
+		  format_int (buffer, num, 10);
+		fprintf (out, "%sLL;\n", buffer);
+	      }
 	      break;
 	    case CONSTANT_Float:
 	      {
