@@ -1,3 +1,7 @@
+2002-05-20  Duraid Madina   <duraid@fl.net.au>   
+
+	* tradcpp.c (fixup_newlines): Use old-style function header.
+
 2002-05-20  Krister Walfridsson  <cato@df.lth.se>
 
 	* reload1.c (reload_cse_simplify): Fix typo in rtx code check.

@@ -2593,7 +2593,8 @@ process_include (stackp, fbeg, flen, system_header_p, op)
 /* Replace all CR NL, NL CR and CR sequences with NL.  */
 
 static void
-fixup_newlines (FILE_BUF *fp)
+fixup_newlines (fp)
+     FILE_BUF *fp;
 {
   U_CHAR *p, *q, *end;
 
