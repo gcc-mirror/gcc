@@ -6781,9 +6781,10 @@ c_expand_body (fndecl, nested_p)
 	static_ctors = tree_cons (NULL_TREE, fndecl, static_ctors);
       else
 #endif
-	assemble_constructor (IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (fndecl)));
-
+	assemble_constructor (XEXP (DECL_RTL (fndecl), 0),
+			      DEFAULT_INIT_PRIORITY);
     }
+
   if (DECL_STATIC_DESTRUCTOR (fndecl))
     {
 #ifndef ASM_OUTPUT_DESTRUCTOR
@@ -6791,7 +6792,8 @@ c_expand_body (fndecl, nested_p)
 	static_dtors = tree_cons (NULL_TREE, fndecl, static_dtors);
       else
 #endif
-	assemble_destructor (IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (fndecl)));
+	assemble_destructor (XEXP (DECL_RTL (fndecl), 0),
+			     DEFAULT_INIT_PRIORITY);
     }
 
   if (nested_p)

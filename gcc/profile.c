@@ -1147,5 +1147,5 @@ output_func_start_profiler ()
     fflush (asm_out_file);
   current_function_decl = NULL_TREE;
 
-  assemble_constructor (IDENTIFIER_POINTER (DECL_NAME (fndecl)));
+  assemble_constructor (XEXP (DECL_RTL (fndecl), 0), DEFAULT_INIT_PRIORITY);
 }

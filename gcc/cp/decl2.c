@@ -2839,8 +2839,8 @@ finish_objects (method_type, initp, body)
      int method_type, initp;
      tree body;
 {
-  const char *fnname;
   tree fn;
+  rtx fnsym;
 
   /* Finish up.  */
   finish_compound_stmt (/*has_no_scope=*/0, body);
@@ -2853,31 +2853,11 @@ finish_objects (method_type, initp, body)
   if (flag_syntax_only)
     return;
 
-  fnname = XSTR (XEXP (DECL_RTL (fn), 0), 0);
-  if (initp == DEFAULT_INIT_PRIORITY)
-    {
-      if (method_type == 'I')
-	assemble_constructor (fnname);
-      else
-	assemble_destructor (fnname);
-    }
-#if defined (ASM_OUTPUT_CONSTRUCTOR)
-  /* If we're using init priority we can't use assemble_*tor, but on ELF
-     targets we can stick the references into named sections for GNU ld
-     to collect.  */
-  else if (targetm.have_named_sections)
-    {
-      char buf[15];
-      sprintf (buf, ".%ctors.%.5u", method_type == 'I' ? 'c' : 'd',
-	       /* invert the numbering so the linker puts us in the proper
-		  order; constructors are run from right to left, and the
-		  linker sorts in increasing order.  */
-	       MAX_INIT_PRIORITY - initp);
-      named_section (NULL_TREE, buf, 0);
-      assemble_integer (XEXP (DECL_RTL (fn), 0),
-			POINTER_SIZE / BITS_PER_UNIT, 1);
-    }
-#endif
+  fnsym = XEXP (DECL_RTL (fn), 0);
+  if (method_type == 'I')
+    assemble_constructor (fnsym, initp);
+  else
+    assemble_destructor (fnsym, initp);
 }
 
 /* The names of the parameters to the function created to handle
