@@ -1971,6 +1971,7 @@ main (argc, argv)
 #endif
 
       deps_output (p, ':');
+      deps_output (in_fname, ' ');
     }
   }
 
