@@ -24,6 +24,10 @@ Mon Sep 20 14:43:37 1999  Nick Clifton  <nickc@cygnus.com>
 
 Mon Sep 20 05:41:36 1999  Jeffrey A Law  (law@cygnus.com)
 
+	Revert this change.  Gavin's patch to operand_equal_p is a better fix.
+	 * fold-const.c (fold_range_test): Do not try to fold the range
+	 test if the rhs or lhs has side effects.
+
 	* basic-block.h (compute_flow_dominators): Declare.
 
 	* gcse.c (alloc_code_hoist_mem): New function.
