@@ -1,5 +1,9 @@
 2004-11-06  Richard Sandiford  <rsandifo@redhat.com>
 
+	* config/mips/t-iris6 (tp-bit.c): Fix target filename.
+
+2004-11-06  Richard Sandiford  <rsandifo@redhat.com>
+
 	PR target/16830
 	* config/mips/mips.h (TARGET_CPU_CPP_BUILTINS): Don't define the
 	R3000 and R4000 macros on IRIX.
