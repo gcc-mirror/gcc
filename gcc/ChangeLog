@@ -1,3 +1,7 @@
+Tue Jun 16 17:36:35 1998  Dave Brolley  <brolley@cygnus.com>
+
+	* toplev.c (lang_options): Add -trigraphs option for cpplib.
+
 Tue Jun 16 23:33:24 1998  J"orn Rennecke <amylaar@cygnus.co.uk>
 
 	* reload1.c (reload_reg_free_before_p): RELOAD_FOR_OUTADDR_ADDRESS
