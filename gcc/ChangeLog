@@ -20,6 +20,9 @@
 	* except.h (flag_non_call_exceptions): Move ...
 	* flags.h: ... here.
 
+	* combine.c (distribute_notes) [REG_EH_REGION]: If non-call
+	exceptions, put the note on the trapping instruction.
+
 2001-03-27  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* configure.in: Don't check for bcopy.
