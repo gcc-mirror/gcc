@@ -1,3 +1,7 @@
+2001-11-29  Joseph S. Myers  <jsm28@cam.ac.uk>
+
+	* Make-lang.in (c++.generated-manpages): New dummy target.
+
 Tue Nov 27 09:03:47 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* Make-lang.in (cp-lang.o): Depends on c-common.h.

@@ -134,6 +134,7 @@ c++.rest.encap: $(DEMANGLER_PROG)
 
 c++.info: 
 c++.dvi:
+c++.generated-manpages:
 
 #
 # Install hooks:

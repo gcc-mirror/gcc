@@ -1,3 +1,11 @@
+2001-11-29  Joseph S. Myers  <jsm28@cam.ac.uk>
+
+	* configure.in (target_list): Add generated-manpages.
+	* configure: Regenerate.
+	* Makefile.in (generated-manpages): Depend on
+	lang.generated-manpages.
+	* objc/Make-lang.in (objc.generated-manpages): New dummy target.
+
 2001-11-29  Nick Clifton  <nickc@cambridge.redhat.com>
 
 	* config/arm/crti.asm (_init): Add .thumb_func if compiled

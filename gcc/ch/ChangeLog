@@ -1,3 +1,7 @@
+2001-11-29  Joseph S. Myers  <jsm28@cam.ac.uk>
+
+	* Make-lang.in (CHILL.generated-manpages): New dummy target.
+
 2001-10-31  Joseph S. Myers  <jsm28@cam.ac.uk>
 
 	* ChangeLog, actions.c, ch-tree.def, decl.c, except.c, inout.c,

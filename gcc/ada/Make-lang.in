@@ -250,6 +250,7 @@ ada.start.encap:
 ada.rest.encap: 
 ada.info:
 ada.dvi:
+ada.generated-manpages:
 
 # Install hooks:
 # gnat1 is installed elsewhere as part of $(COMPILERS).

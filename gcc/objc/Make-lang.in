@@ -95,6 +95,7 @@ objc.rest.encap:
 
 objc.info:
 objc.dvi:
+objc.generated-manpages:
 
 #
 # Install hooks:

@@ -107,6 +107,7 @@ CHILL.all.cross: chill-cross
 CHILL.start.encap: chill
 CHILL.rest.encap:
 CHILL.dvi: ch/chill.dvi
+CHILL.generated-manpages:
 
 CHILL.info: $(srcdir)/ch/chill.info
 
