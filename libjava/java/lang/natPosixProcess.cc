@@ -284,7 +284,7 @@ java::lang::ConcreteProcess::startProcess (jstringArray progarray,
   myclose (msgp[0]);
   cleanup (args, env);
 
-  fcntl (outp[1], F_SETFD, 1);
-  fcntl (inp[0], F_SETFD, 1);
-  fcntl (errp[0], F_SETFD, 1);
+  fcntl (outp[1], F_SETFD, FD_CLOEXEC);
+  fcntl (inp[0], F_SETFD, FD_CLOEXEC);
+  fcntl (errp[0], F_SETFD, FD_CLOEXEC);
 }
