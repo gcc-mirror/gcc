@@ -1444,7 +1444,7 @@ size_int_type_wide (number, type)
      HOST_WIDE_INT number;
      tree type;
 {
-  PTR *slot;
+  void **slot;
 
   if (size_htab == 0)
     {
@@ -1466,7 +1466,7 @@ size_int_type_wide (number, type)
     {
       tree t = new_const;
 
-      *slot = (PTR) new_const;
+      *slot = new_const;
       new_const = make_node (INTEGER_CST);
       return t;
     }

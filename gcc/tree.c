@@ -47,7 +47,7 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include "langhooks.h"
 
 /* obstack.[ch] explicitly declined to prototype this.  */
-extern int _obstack_allocated_p PARAMS ((struct obstack *h, PTR obj));
+extern int _obstack_allocated_p PARAMS ((struct obstack *h, void *obj));
 
 #ifdef GATHER_STATISTICS
 /* Statistics-gathering stuff.  */
@@ -293,7 +293,7 @@ make_node (code)
 
   t = ggc_alloc_tree (length);
 
-  memset ((PTR) t, 0, length);
+  memset (t, 0, length);
 
   TREE_SET_CODE (t, code);
 
@@ -609,7 +609,7 @@ make_tree_vec (len)
 
   t = ggc_alloc_tree (length);
 
-  memset ((PTR) t, 0, length);
+  memset (t, 0, length);
   TREE_SET_CODE (t, TREE_VEC);
   TREE_VEC_LENGTH (t) = len;
 
@@ -2514,7 +2514,7 @@ build1 (code, type, node)
 
   t = ggc_alloc_tree (length);
 
-  memset ((PTR) t, 0, sizeof (struct tree_common));
+  memset (t, 0, sizeof (struct tree_common));
 
   TREE_SET_CODE (t, code);
 

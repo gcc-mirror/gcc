@@ -930,8 +930,8 @@ init_md_reader (const char *filename)
 				 hash_c_test, cmp_c_test, NULL);
 
   for (i = 0; i < n_insn_conditions; i++)
-    *(htab_find_slot (condition_table, (PTR) &insn_conditions[i], INSERT))
-      = (PTR) &insn_conditions[i];
+    *(htab_find_slot (condition_table, &insn_conditions[i], INSERT))
+      = (void *) &insn_conditions[i];
 
   obstack_init (rtl_obstack);
   errors = 0;

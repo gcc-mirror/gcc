@@ -241,7 +241,7 @@ struct insn_operand_data
 struct insn_data
 {
   const char *const name;
-  const PTR output;
+  const void *output;
   const insn_gen_fn genfun;
   const struct insn_operand_data *const operand;
 

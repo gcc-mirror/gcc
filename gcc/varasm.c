@@ -166,8 +166,8 @@ static void output_constructor		PARAMS ((tree, unsigned HOST_WIDE_INT,
 						 unsigned int));
 static void globalize_decl		PARAMS ((tree));
 static void maybe_assemble_visibility	PARAMS ((tree));
-static int in_named_entry_eq		PARAMS ((const PTR, const PTR));
-static hashval_t in_named_entry_hash	PARAMS ((const PTR));
+static int in_named_entry_eq		PARAMS ((const void *, const void *));
+static hashval_t in_named_entry_hash	PARAMS ((const void *));
 #ifdef ASM_OUTPUT_BSS
 static void asm_output_bss		PARAMS ((FILE *, tree, const char *,
 						unsigned HOST_WIDE_INT,
@@ -310,8 +310,8 @@ in_data_section ()
 
 static int
 in_named_entry_eq (p1, p2)
-     const PTR p1;
-     const PTR p2;
+     const void *p1;
+     const void *p2;
 {
   const struct in_named_entry *old = p1;
   const char *new = p2;
@@ -321,7 +321,7 @@ in_named_entry_eq (p1, p2)
 
 static hashval_t
 in_named_entry_hash (p)
-     const PTR p;
+     const void *p;
 {
   const struct in_named_entry *old = p;
   return htab_hash_string (old->name);

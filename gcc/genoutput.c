@@ -389,7 +389,7 @@ output_insn_data (void)
 	  break;
 	case INSN_OUTPUT_FORMAT_MULTI:
 	case INSN_OUTPUT_FORMAT_FUNCTION:
-	  printf ("    (const PTR) output_%d,\n", d->code_number);
+	  printf ("    (const void *) output_%d,\n", d->code_number);
 	  break;
 	default:
 	  abort ();

@@ -1759,7 +1759,7 @@ set_spec (name, spec)
 
   /* Free the old spec.  */
   if (old_spec && sl->alloc_p)
-    free ((PTR) old_spec);
+    free ((void *) old_spec);
 
   sl->alloc_p = 1;
 }
@@ -2058,7 +2058,7 @@ read_specs (filename, main_p)
 
 	      set_spec (p2, *(sl->ptr_spec));
 	      if (sl->alloc_p)
-		free ((PTR) *(sl->ptr_spec));
+		free ((void *) *(sl->ptr_spec));
 
 	      *(sl->ptr_spec) = "";
 	      sl->alloc_p = 0;
@@ -2784,7 +2784,7 @@ execute ()
 	pfatal_pexecute (errmsg_fmt, errmsg_arg);
 
       if (string != commands[i].prog)
-	free ((PTR) string);
+	free ((void *) string);
     }
 
   execution_count++;

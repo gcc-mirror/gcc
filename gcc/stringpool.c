@@ -50,7 +50,7 @@ struct ht *ident_hash;
 static struct obstack string_stack;
 
 static hashnode alloc_node PARAMS ((hash_table *));
-static int mark_ident PARAMS ((struct cpp_reader *, hashnode, const PTR));
+static int mark_ident PARAMS ((struct cpp_reader *, hashnode, const void *));
 static int ht_copy_and_clear PARAMS ((struct cpp_reader *, hashnode, const void *));
 
 /* Initialize the string pool.  */
@@ -158,7 +158,7 @@ static int
 mark_ident (pfile, h, v)
      struct cpp_reader *pfile ATTRIBUTE_UNUSED;
      hashnode h;
-     const PTR v ATTRIBUTE_UNUSED;
+     const void *v ATTRIBUTE_UNUSED;
 {
   gt_ggc_m_9tree_node (HT_IDENT_TO_GCC_IDENT (h));
   return 1;

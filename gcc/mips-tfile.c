@@ -4060,7 +4060,7 @@ write_varray (vp, offset, str)
   if (debug)
     {
       fputs ("\twarray\tvp = ", stderr);
-      fprintf (stderr, HOST_PTR_PRINTF, (PTR) vp);
+      fprintf (stderr, HOST_PTR_PRINTF, (void *) vp);
       fprintf (stderr, ", offset = %7lu, size = %7lu, %s\n",
 	       (unsigned long) offset, vp->num_allocated * vp->object_size, str);
     }
@@ -4075,7 +4075,7 @@ write_varray (vp, offset, str)
 	? vp->objects_last_page * vp->object_size
 	: vp->objects_per_page  * vp->object_size;
 
-      sys_write = fwrite ((PTR) ptr->datum, 1, num_write, object_stream);
+      sys_write = fwrite (ptr->datum, 1, num_write, object_stream);
       if (sys_write <= 0)
 	pfatal_with_name (object_name);
 
@@ -4102,12 +4102,12 @@ write_object ()
   if (debug)
     {
       fputs ("\n\twrite\tvp = ", stderr);
-      fprintf (stderr, HOST_PTR_PRINTF, (PTR) &symbolic_header);
+      fprintf (stderr, HOST_PTR_PRINTF, (void *) &symbolic_header);
       fprintf (stderr, ", offset = %7u, size = %7lu, %s\n",
 	       0, (unsigned long) sizeof (symbolic_header), "symbolic header");
     }
 
-  sys_write = fwrite ((PTR) &symbolic_header,
+  sys_write = fwrite (&symbolic_header,
 		      1,
 		      sizeof (symbolic_header),
 		      object_stream);
@@ -4135,13 +4135,13 @@ write_object ()
       if (debug)
 	{
 	  fputs ("\twrite\tvp = ", stderr);
-	  fprintf (stderr, HOST_PTR_PRINTF, (PTR) &orig_linenum);
+	  fprintf (stderr, HOST_PTR_PRINTF, (void *) &orig_linenum);
 	  fprintf (stderr, ", offset = %7lu, size = %7lu, %s\n",
 		   (long) symbolic_header.cbLineOffset,
 		   (long) symbolic_header.cbLine, "Line numbers");
 	}
 
-      sys_write = fwrite ((PTR) orig_linenum,
+      sys_write = fwrite (orig_linenum,
 			  1,
 			  symbolic_header.cbLine,
 			  object_stream);
@@ -4170,13 +4170,13 @@ write_object ()
       if (debug)
 	{
 	  fputs ("\twrite\tvp = ", stderr);
-	  fprintf (stderr, HOST_PTR_PRINTF, (PTR) &orig_opt_syms);
+	  fprintf (stderr, HOST_PTR_PRINTF, (void *) &orig_opt_syms);
 	  fprintf (stderr, ", offset = %7lu, size = %7lu, %s\n",
 		   (long) symbolic_header.cbOptOffset,
 		   num_write, "Optimizer symbols");
 	}
 
-      sys_write = fwrite ((PTR) orig_opt_syms,
+      sys_write = fwrite (orig_opt_syms,
 			  1,
 			  num_write,
 			  object_stream);
@@ -4262,7 +4262,7 @@ write_object ()
 	  if (debug)
 	    {
 	      fputs ("\twrite\tvp = ", stderr);
-	      fprintf (stderr, HOST_PTR_PRINTF, (PTR) &file_ptr->fdr);
+	      fprintf (stderr, HOST_PTR_PRINTF, (void *) &file_ptr->fdr);
 	      fprintf (stderr, ", offset = %7lu, size = %7lu, %s\n",
 		       file_offset, (unsigned long) sizeof (FDR),
 		       "File header");
@@ -4298,7 +4298,7 @@ write_object ()
       if (debug)
 	{
 	  fputs ("\twrite\tvp = ", stderr);
-	  fprintf (stderr, HOST_PTR_PRINTF, (PTR) &orig_rfds);
+	  fprintf (stderr, HOST_PTR_PRINTF, (void *) &orig_rfds);
 	  fprintf (stderr, ", offset = %7lu, size = %7lu, %s\n",
 		   (long) symbolic_header.cbRfdOffset,
 		   num_write, "Relative file descriptors");
@@ -4378,7 +4378,7 @@ read_seek (size, offset, str)
 	pfatal_with_name (obj_in_name);
     }
 
-  sys_read = fread ((PTR) ptr, 1, size, obj_in_stream);
+  sys_read = fread (ptr, 1, size, obj_in_stream);
   if (sys_read <= 0)
     pfatal_with_name (obj_in_name);
 
@@ -4421,7 +4421,7 @@ copy_object ()
       || fseek (obj_in_stream, 0L, SEEK_SET) != 0)
     pfatal_with_name (obj_in_name);
 
-  sys_read = fread ((PTR) &orig_file_header,
+  sys_read = fread (&orig_file_header,
 		    1,
 		    sizeof (struct filehdr),
 		    obj_in_stream);
@@ -4448,7 +4448,7 @@ copy_object ()
   if (fseek (obj_in_stream, (long) orig_file_header.f_symptr, SEEK_SET) != 0)
     pfatal_with_name (input_name);
 
-  sys_read = fread ((PTR) &orig_sym_hdr,
+  sys_read = fread (&orig_sym_hdr,
 		    1,
 		    sizeof (orig_sym_hdr),
 		    obj_in_stream);
@@ -4746,7 +4746,7 @@ copy_object ()
       num_write
 	= (remaining <= (int) sizeof (buffer))
 	  ? remaining : (int) sizeof (buffer);
-      sys_read = fread ((PTR) buffer, 1, num_write, obj_in_stream);
+      sys_read = fread (buffer, 1, num_write, obj_in_stream);
       if (sys_read <= 0)
 	pfatal_with_name (obj_in_name);
 
@@ -5104,7 +5104,7 @@ allocate_cluster (npages)
     {
       fprintf (stderr, "\talloc\tnpages = %lu, value = ",
 	       (unsigned long) npages);
-      fprintf (stderr, HOST_PTR_PRINTF, (PTR) ptr);
+      fprintf (stderr, HOST_PTR_PRINTF, (void *) ptr);
       fputs ("\n", stderr);
     }
 
@@ -5175,7 +5175,7 @@ free_multiple_pages (page_ptr, npages)
      the free pages is done right after an allocate.  */
 
 #else	/* MALLOC_CHECK */
-  free ((char *) page_ptr);
+  free (page_ptr);
 
 #endif	/* MALLOC_CHECK */
 }
@@ -5255,7 +5255,7 @@ free_scope (ptr)
   alloc_counts[ (int) alloc_type_scope ].free_list.f_scope = ptr;
 
 #else
-  free ((PTR) ptr);
+  free (ptr);
 #endif
 
 }
@@ -5412,7 +5412,7 @@ free_tag (ptr)
   alloc_counts[ (int) alloc_type_tag ].free_list.f_tag = ptr;
 
 #else
-  free ((PTR) ptr);
+  free (ptr);
 #endif
 
 }
@@ -5470,7 +5470,7 @@ free_forward (ptr)
   alloc_counts[ (int) alloc_type_forward ].free_list.f_forward = ptr;
 
 #else
-  free ((PTR) ptr);
+  free (ptr);
 #endif
 
 }
@@ -5528,7 +5528,7 @@ free_thead (ptr)
   alloc_counts[ (int) alloc_type_thead ].free_list.f_thead = ptr;
 
 #else
-  free ((PTR) ptr);
+  free (ptr);
 #endif
 
 }

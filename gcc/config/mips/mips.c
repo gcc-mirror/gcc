@@ -272,8 +272,8 @@ static void iris6_asm_named_section_1		PARAMS ((const char *,
 							 unsigned int));
 static void iris6_asm_named_section		PARAMS ((const char *,
 							 unsigned int));
-static int iris_section_align_entry_eq		PARAMS ((const PTR, const PTR));
-static hashval_t iris_section_align_entry_hash	PARAMS ((const PTR));
+static int iris_section_align_entry_eq		PARAMS ((const void *, const void *));
+static hashval_t iris_section_align_entry_hash	PARAMS ((const void *));
 static int iris6_section_align_1		PARAMS ((void **, void *));
 static void iris6_file_end			PARAMS ((void));
 #endif
@@ -10684,8 +10684,8 @@ static FILE *iris_orig_asm_out_file;
 
 static int
 iris_section_align_entry_eq (p1, p2)
-     const PTR p1;
-     const PTR p2;
+     const void *p1;
+     const void *p2;
 {
   const struct iris_section_align_entry *old = p1;
   const char *new = p2;
@@ -10695,7 +10695,7 @@ iris_section_align_entry_eq (p1, p2)
 
 static hashval_t
 iris_section_align_entry_hash (p)
-     const PTR p;
+     const void *p;
 {
   const struct iris_section_align_entry *old = p;
   return htab_hash_string (old->name);

@@ -255,9 +255,9 @@ struct eh_status GTY(())
 };
 
 
-static int t2r_eq				PARAMS ((const PTR,
-							 const PTR));
-static hashval_t t2r_hash			PARAMS ((const PTR));
+static int t2r_eq				PARAMS ((const void *,
+							 const void *));
+static hashval_t t2r_hash			PARAMS ((const void *));
 static void add_type_for_runtime		PARAMS ((tree));
 static tree lookup_type_for_runtime		PARAMS ((tree));
 
@@ -275,12 +275,12 @@ static struct eh_region *duplicate_eh_region_1	PARAMS ((struct eh_region *,
 						     struct inline_remap *));
 static void duplicate_eh_region_2		PARAMS ((struct eh_region *,
 							 struct eh_region **));
-static int ttypes_filter_eq			PARAMS ((const PTR,
-							 const PTR));
-static hashval_t ttypes_filter_hash		PARAMS ((const PTR));
-static int ehspec_filter_eq			PARAMS ((const PTR,
-							 const PTR));
-static hashval_t ehspec_filter_hash		PARAMS ((const PTR));
+static int ttypes_filter_eq			PARAMS ((const void *,
+							 const void *));
+static hashval_t ttypes_filter_hash		PARAMS ((const void *));
+static int ehspec_filter_eq			PARAMS ((const void *,
+							 const void *));
+static hashval_t ehspec_filter_hash		PARAMS ((const void *));
 static int add_ttypes_entry			PARAMS ((htab_t, tree));
 static int add_ehspec_entry			PARAMS ((htab_t, htab_t,
 							 tree));
@@ -302,14 +302,14 @@ static void sjlj_emit_dispatch_table
      PARAMS ((rtx, struct sjlj_lp_info *));
 static void sjlj_build_landing_pads		PARAMS ((void));
 
-static hashval_t ehl_hash			PARAMS ((const PTR));
-static int ehl_eq				PARAMS ((const PTR,
-							 const PTR));
+static hashval_t ehl_hash			PARAMS ((const void *));
+static int ehl_eq				PARAMS ((const void *,
+							 const void *));
 static void add_ehl_entry			PARAMS ((rtx,
 							 struct eh_region *));
 static void remove_exception_handler_label	PARAMS ((rtx));
 static void remove_eh_handler			PARAMS ((struct eh_region *));
-static int for_each_eh_label_1			PARAMS ((PTR *, PTR));
+static int for_each_eh_label_1			PARAMS ((void **, void *));
 
 struct reachable_info;
 
@@ -333,9 +333,9 @@ static void add_reachable_handler
 static enum reachable_code reachable_next_level
      PARAMS ((struct eh_region *, tree, struct reachable_info *));
 
-static int action_record_eq			PARAMS ((const PTR,
-							 const PTR));
-static hashval_t action_record_hash		PARAMS ((const PTR));
+static int action_record_eq			PARAMS ((const void *,
+							 const void *));
+static hashval_t action_record_hash		PARAMS ((const void *));
 static int add_action_record			PARAMS ((htab_t, int, int));
 static int collect_one_action_chain		PARAMS ((htab_t,
 							 struct eh_region *));
@@ -1418,8 +1418,8 @@ duplicate_eh_regions (ifun, map)
 
 static int
 t2r_eq (pentry, pdata)
-     const PTR pentry;
-     const PTR pdata;
+     const void *pentry;
+     const void *pdata;
 {
   tree entry = (tree) pentry;
   tree data = (tree) pdata;
@@ -1429,7 +1429,7 @@ t2r_eq (pentry, pdata)
 
 static hashval_t
 t2r_hash (pentry)
-     const PTR pentry;
+     const void *pentry;
 {
   tree entry = (tree) pentry;
   return TYPE_HASH (TREE_PURPOSE (entry));
@@ -1477,8 +1477,8 @@ struct ttypes_filter GTY(())
 
 static int
 ttypes_filter_eq (pentry, pdata)
-     const PTR pentry;
-     const PTR pdata;
+     const void *pentry;
+     const void *pdata;
 {
   const struct ttypes_filter *entry = (const struct ttypes_filter *) pentry;
   tree data = (tree) pdata;
@@ -1488,7 +1488,7 @@ ttypes_filter_eq (pentry, pdata)
 
 static hashval_t
 ttypes_filter_hash (pentry)
-     const PTR pentry;
+     const void *pentry;
 {
   const struct ttypes_filter *entry = (const struct ttypes_filter *) pentry;
   return TYPE_HASH (entry->t);
@@ -1501,8 +1501,8 @@ ttypes_filter_hash (pentry)
 
 static int
 ehspec_filter_eq (pentry, pdata)
-     const PTR pentry;
-     const PTR pdata;
+     const void *pentry;
+     const void *pdata;
 {
   const struct ttypes_filter *entry = (const struct ttypes_filter *) pentry;
   const struct ttypes_filter *data = (const struct ttypes_filter *) pdata;
@@ -1514,7 +1514,7 @@ ehspec_filter_eq (pentry, pdata)
 
 static hashval_t
 ehspec_filter_hash (pentry)
-     const PTR pentry;
+     const void *pentry;
 {
   const struct ttypes_filter *entry = (const struct ttypes_filter *) pentry;
   hashval_t h = 0;
@@ -2314,7 +2314,7 @@ finish_eh_generation ()
 
 static hashval_t
 ehl_hash (pentry)
-     const PTR pentry;
+     const void *pentry;
 {
   struct ehl_map_entry *entry = (struct ehl_map_entry *) pentry;
 
@@ -2325,8 +2325,8 @@ ehl_hash (pentry)
 
 static int
 ehl_eq (pentry, pdata)
-     const PTR pentry;
-     const PTR pdata;
+     const void *pentry;
+     const void *pdata;
 {
   struct ehl_map_entry *entry = (struct ehl_map_entry *) pentry;
   struct ehl_map_entry *data = (struct ehl_map_entry *) pdata;
@@ -2499,8 +2499,8 @@ for_each_eh_label (callback)
 
 static int
 for_each_eh_label_1 (pentry, data)
-     PTR *pentry;
-     PTR data;
+     void **pentry;
+     void *data;
 {
   struct ehl_map_entry *entry = *(struct ehl_map_entry **)pentry;
   void (*callback) PARAMS ((rtx)) = (void (*) PARAMS ((rtx))) data;
@@ -3166,8 +3166,8 @@ struct action_record
 
 static int
 action_record_eq (pentry, pdata)
-     const PTR pentry;
-     const PTR pdata;
+     const void *pentry;
+     const void *pdata;
 {
   const struct action_record *entry = (const struct action_record *) pentry;
   const struct action_record *data = (const struct action_record *) pdata;
@@ -3176,7 +3176,7 @@ action_record_eq (pentry, pdata)
 
 static hashval_t
 action_record_hash (pentry)
-     const PTR pentry;
+     const void *pentry;
 {
   const struct action_record *entry = (const struct action_record *) pentry;
   return entry->next * 1009 + entry->filter;

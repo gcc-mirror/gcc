@@ -84,8 +84,8 @@ static void notice PARAMS ((const char *, ...)) ATTRIBUTE_PRINTF_1;
 static char *savestring PARAMS ((const char *, unsigned int));
 static char *dupnstr PARAMS ((const char *, size_t));
 static const char *substr PARAMS ((const char *, const char * const));
-static int safe_read PARAMS ((int, PTR, int));
-static void safe_write PARAMS ((int, PTR, int, const char *));
+static int safe_read PARAMS ((int, void *, int));
+static void safe_write PARAMS ((int, void *, int, const char *));
 static void save_pointers PARAMS ((void));
 static void restore_pointers PARAMS ((void));
 static int is_id_char PARAMS ((int));
@@ -590,7 +590,7 @@ outer:
 static int
 safe_read (desc, ptr, len)
      int desc;
-     PTR ptr;
+     void *ptr;
      int len;
 {
   int left = len;
@@ -619,7 +619,7 @@ safe_read (desc, ptr, len)
 static void
 safe_write (desc, ptr, len, out_fname)
      int desc;
-     PTR ptr;
+     void *ptr;
      int len;
      const char *out_fname;
 {
@@ -1020,7 +1020,7 @@ static void
 free_def_dec (p)
      def_dec_info *p;
 {
-  free ((NONCONST PTR) p->ansi_decl);
+  free ((NONCONST void *) p->ansi_decl);
 
 #ifndef UNPROTOIZE
   {
@@ -1030,7 +1030,7 @@ free_def_dec (p)
     for (curr = p->f_list_chain; curr; curr = next)
       {
 	next = curr->chain_next;
-	free ((NONCONST PTR) curr);
+	free ((NONCONST void *) curr);
       }
   }
 #endif /* !defined (UNPROTOIZE) */

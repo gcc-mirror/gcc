@@ -127,7 +127,7 @@ ht_lookup (table, str, len, insert)
 	  if (insert == HT_ALLOCED)
 	    /* The string we search for was placed at the end of the
 	       obstack.  Release it.  */
-	    obstack_free (&table->stack, (PTR) str);
+	    obstack_free (&table->stack, (void *) str);
 	  return node;
 	}
 
@@ -203,7 +203,7 @@ void
 ht_forall (table, cb, v)
      hash_table *table;
      ht_cb cb;
-     const PTR v;
+     const void *v;
 {
   hashnode *p, *limit;
 

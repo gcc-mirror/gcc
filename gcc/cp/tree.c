@@ -852,7 +852,7 @@ tree
 hash_tree_cons (tree purpose, tree value, tree chain)
 {
   int hashcode = 0;
-  PTR* slot;
+  void **slot;
   struct list_proxy proxy;
 
   /* Hash the list node.  */
@@ -867,7 +867,7 @@ hash_tree_cons (tree purpose, tree value, tree chain)
 				   INSERT);
   /* If not, create a new node.  */
   if (!*slot)
-    *slot = (PTR) tree_cons (purpose, value, chain);
+    *slot = tree_cons (purpose, value, chain);
   return *slot;
 }
 

@@ -125,8 +125,8 @@ struct store_by_pieces
   int explicit_inc_to;
   unsigned HOST_WIDE_INT len;
   HOST_WIDE_INT offset;
-  rtx (*constfun) PARAMS ((PTR, HOST_WIDE_INT, enum machine_mode));
-  PTR constfundata;
+  rtx (*constfun) PARAMS ((void *, HOST_WIDE_INT, enum machine_mode));
+  void *constfundata;
   int reverse;
 };
 
@@ -141,7 +141,7 @@ static bool emit_block_move_via_movstr PARAMS ((rtx, rtx, rtx, unsigned));
 static rtx emit_block_move_via_libcall PARAMS ((rtx, rtx, rtx));
 static tree emit_block_move_libcall_fn PARAMS ((int));
 static void emit_block_move_via_loop PARAMS ((rtx, rtx, rtx, unsigned));
-static rtx clear_by_pieces_1	PARAMS ((PTR, HOST_WIDE_INT,
+static rtx clear_by_pieces_1	PARAMS ((void *, HOST_WIDE_INT,
 					 enum machine_mode));
 static void clear_by_pieces	PARAMS ((rtx, unsigned HOST_WIDE_INT,
 					 unsigned int));
@@ -2718,8 +2718,8 @@ use_group_regs (call_fusage, regs)
 int
 can_store_by_pieces (len, constfun, constfundata, align)
      unsigned HOST_WIDE_INT len;
-     rtx (*constfun) PARAMS ((PTR, HOST_WIDE_INT, enum machine_mode));
-     PTR constfundata;
+     rtx (*constfun) PARAMS ((void *, HOST_WIDE_INT, enum machine_mode));
+     void *constfundata;
      unsigned int align;
 {
   unsigned HOST_WIDE_INT max_size, l;
@@ -2801,8 +2801,8 @@ rtx
 store_by_pieces (to, len, constfun, constfundata, align, endp)
      rtx to;
      unsigned HOST_WIDE_INT len;
-     rtx (*constfun) PARAMS ((PTR, HOST_WIDE_INT, enum machine_mode));
-     PTR constfundata;
+     rtx (*constfun) PARAMS ((void *, HOST_WIDE_INT, enum machine_mode));
+     void *constfundata;
      unsigned int align;
      int endp;
 {
@@ -2871,7 +2871,7 @@ clear_by_pieces (to, len, align)
 
 static rtx
 clear_by_pieces_1 (data, offset, mode)
-     PTR data ATTRIBUTE_UNUSED;
+     void *data ATTRIBUTE_UNUSED;
      HOST_WIDE_INT offset ATTRIBUTE_UNUSED;
      enum machine_mode mode ATTRIBUTE_UNUSED;
 {

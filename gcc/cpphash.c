@@ -42,7 +42,7 @@ alloc_node (table)
 
   node = (cpp_hashnode *) obstack_alloc (&table->pfile->hash_ob,
 					 sizeof (cpp_hashnode));
-  memset ((PTR) node, 0, sizeof (cpp_hashnode));
+  memset (node, 0, sizeof (cpp_hashnode));
   return node;
 }
 
@@ -123,7 +123,7 @@ void
 cpp_forall_identifiers (pfile, cb, v)
      cpp_reader *pfile;
      cpp_cb cb;
-     PTR v;
+     void *v;
 {
   /* We don't need a proxy since the hash table's identifier comes
      first in cpp_hashnode.  */

@@ -314,7 +314,7 @@ static int consec_sets_giv PARAMS ((const struct loop *, int, rtx,
 static int check_dbra_loop PARAMS ((struct loop *, int));
 static rtx express_from_1 PARAMS ((rtx, rtx, rtx));
 static rtx combine_givs_p PARAMS ((struct induction *, struct induction *));
-static int cmp_combine_givs_stats PARAMS ((const PTR, const PTR));
+static int cmp_combine_givs_stats PARAMS ((const void *, const void *));
 static void combine_givs PARAMS ((struct loop_regs *, struct iv_class *));
 static int product_cheap_p PARAMS ((rtx, rtx));
 static int maybe_eliminate_biv PARAMS ((const struct loop *, struct iv_class *,
@@ -7645,8 +7645,8 @@ struct combine_givs_stats
 
 static int
 cmp_combine_givs_stats (xp, yp)
-     const PTR xp;
-     const PTR yp;
+     const void *xp;
+     const void *yp;
 {
   const struct combine_givs_stats * const x =
     (const struct combine_givs_stats *) xp;
