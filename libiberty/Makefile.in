@@ -140,7 +140,7 @@ CFILES = alloca.c argv.c asprintf.c atexit.c				\
 	lrealpath.c							\
 	make-relative-prefix.c						\
 	make-temp-file.c md5.c memchr.c memcmp.c memcpy.c memmove.c	\
-	 memset.c mkstemps.c						\
+	 mempcpy.c memset.c mkstemps.c					\
 	objalloc.c obstack.c						\
 	partition.c							\
 	 pex-djgpp.c pex-mpw.c pex-msdos.c pex-os2.c			\
@@ -148,9 +148,9 @@ CFILES = alloca.c argv.c asprintf.c atexit.c				\
          physmem.c putenv.c						\
 	random.c regex.c rename.c rindex.c				\
 	safe-ctype.c setenv.c sigsetmask.c sort.c spaces.c		\
-	 splay-tree.c strcasecmp.c strchr.c strdup.c strerror.c		\
-	 strncasecmp.c strncmp.c strrchr.c strsignal.c strstr.c		\
-	 strtod.c strtol.c strtoul.c					\
+	 splay-tree.c stpcpy.c stpncpy.c strcasecmp.c strchr.c strdup.c	\
+	 strerror.c strncasecmp.c strncmp.c strrchr.c strsignal.c	\
+	 strstr.c strtod.c strtol.c strtoul.c				\
 	ternary.c tmpnam.c						\
 	vasprintf.c vfork.c vfprintf.c vprintf.c vsprintf.c		\
 	waitpid.c							\
@@ -186,14 +186,14 @@ CONFIGURED_OFILES = asprintf.o atexit.o					\
 	ffs.o								\
 	getcwd.o getpagesize.o						\
 	index.o insque.o						\
-	memchr.o memcmp.o memcpy.o memmove.o memset.o mkstemps.o	\
+	memchr.o memcmp.o memcpy.o memmove.o mempcpy.o memset.o mkstemps.o \
 	pex-djgpp.o pex-mpw.o pex-msdos.o pex-os2.o			\
 	 pex-unix.o pex-win32.o						\
 	 putenv.o							\
 	random.o rename.o rindex.o					\
-	setenv.o sigsetmask.o strcasecmp.o strchr.o strdup.o		\
-	 strncasecmp.o strncmp.o strrchr.o strstr.o strtod.o strtol.o	\
-	 strtoul.o							\
+	setenv.o sigsetmask.o stpcpy.o stpncpy.o strcasecmp.o strchr.o	\
+	 strdup.o strncasecmp.o strncmp.o strrchr.o strstr.o strtod.o	\
+	 strtol.o strtoul.o						\
 	tmpnam.o							\
 	vasprintf.o vfork.o vfprintf.o vprintf.o vsprintf.o		\
 	waitpid.o
@@ -459,6 +459,7 @@ memchr.o: $(INCDIR)/ansidecl.h
 memcmp.o: $(INCDIR)/ansidecl.h
 memcpy.o: $(INCDIR)/ansidecl.h
 memmove.o: $(INCDIR)/ansidecl.h
+mempcpy.o: $(INCDIR)/ansidecl.h
 memset.o: $(INCDIR)/ansidecl.h
 mkstemps.o: config.h $(INCDIR)/ansidecl.h
 objalloc.o: config.h $(INCDIR)/ansidecl.h $(INCDIR)/objalloc.h
@@ -490,6 +491,8 @@ sort.o: config.h $(INCDIR)/ansidecl.h $(INCDIR)/libiberty.h \
 spaces.o: $(INCDIR)/ansidecl.h $(INCDIR)/libiberty.h
 splay-tree.o: config.h $(INCDIR)/ansidecl.h $(INCDIR)/libiberty.h \
 	$(INCDIR)/splay-tree.h
+stpcpy.o: $(INCDIR)/ansidecl.h
+stpncpy.o: $(INCDIR)/ansidecl.h
 strcasecmp.o: $(INCDIR)/ansidecl.h
 strchr.o: $(INCDIR)/ansidecl.h
 strdup.o: $(INCDIR)/ansidecl.h
