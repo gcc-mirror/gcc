@@ -1,3 +1,8 @@
+2002-03-20  Bob Wilson  <bob.wilson@acm.org>
+
+	* config/xtensa/xtensa.md: Remove unused type attributes.
+	(adddi_carry, subddi_carry): Change type attribute to "multi".
+
 2002-03-19 Dale Johannesen  <dalej@apple.com>
 
 	PR optimization/5999, middle-end/5731

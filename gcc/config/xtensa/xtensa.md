@@ -46,7 +46,7 @@
 ;;
 
 (define_attr "type"
-  "unknown,branch,jump,call,load,store,move,arith,multi,nop,misc,farith,fmadd,fdiv,fsqrt,fconv,fload,fstore,mul16,mul32,div32,mac16,rsr,wsr,udef_move,udef_loadi,udef_storei,udef_loadiu,udef_storeiu,udef_conv,udef_conv_loadiu,udef_conv_storeiu" 
+  "unknown,jump,call,load,store,move,arith,multi,nop,farith,fmadd,fdiv,fsqrt,fconv,fload,fstore,mul16,mul32,div32,mac16,rsr,wsr"
   (const_string "unknown"))
 
 (define_attr "mode"
@@ -122,7 +122,7 @@
 		 (match_dup 0)))]
   ""
   "bgeu\\t%1, %2, 0f\;addi\\t%0, %0, 1\;0:"
-  [(set_attr "type"	"arith")
+  [(set_attr "type"	"multi")
    (set_attr "mode"	"SI")
    (set_attr "length"	"6")])
 
@@ -221,7 +221,7 @@
 			  (match_operand:SI 2 "register_operand" "r"))))]
   ""
   "bgeu\\t%1, %2, 0f\;addi\\t%0, %0, -1\;0:"
-  [(set_attr "type"	"arith")
+  [(set_attr "type"	"multi")
    (set_attr "mode"	"SI")
    (set_attr "length"	"6")])
 
