@@ -1,3 +1,15 @@
+Thu Sep  4 15:01:49 1997  Michael Meissner  <meissner@cygnus.com>
+
+	* toplev.c (rest_of_compilation): For passes starting with
+	flow_analysis, use print_rtl_with_bb instead of print_rtl.
+
+	* print-rtl.c (print_rtl_single): Print a single rtl value to a
+	file.
+
+	* flow.c (print_rtl_with_bb): Print which insns start and end
+	basic blocks.  For the start of a basic block, also print the live
+	information.
+
 Thu Sep  4 11:51:43 1997  Jim Wilson  <wilson@cygnus.com>
 
 	* toplev.c (main): Change #elif to #else/#ifdef

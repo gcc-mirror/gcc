@@ -2933,3 +2933,82 @@ dump_flow_info (file)
     }
   fprintf (file, "\n");
 }
+
+
+/* Like print_rtl, but also print out live information for the start of each
+   basic block.  */
+
+void
+print_rtl_with_bb (outf, rtx_first)
+     FILE *outf;
+     rtx rtx_first;
+{
+  register rtx tmp_rtx;
+
+  if (rtx_first == 0)
+    fprintf (outf, "(nil)\n");
+
+  else
+    {
+      int i, bb;
+      enum bb_state { NOT_IN_BB, IN_ONE_BB, IN_MULTIPLE_BB };
+      int max_uid = get_max_uid ();
+      int *start = alloca (max_uid * sizeof (int));
+      int *end = alloca (max_uid * sizeof (int));
+      char *in_bb_p = alloca (max_uid * sizeof (enum bb_state));
+
+      for (i = 0; i < max_uid; i++)
+	{
+	  start[i] = end[i] = -1;
+	  in_bb_p[i] = NOT_IN_BB;
+	}
+
+      for (i = n_basic_blocks-1; i >= 0; i--)
+	{
+	  rtx x;
+	  start[INSN_UID (basic_block_head[i])] = i;
+	  end[INSN_UID (basic_block_end[i])] = i;
+	  for (x = basic_block_head[i]; x != NULL_RTX; x = NEXT_INSN (x))
+	    {
+	      in_bb_p[ INSN_UID(x)] =
+		((in_bb_p[ INSN_UID(x)] == NOT_IN_BB)
+		 ? IN_ONE_BB
+		 : IN_MULTIPLE_BB);
+	      if (x == basic_block_end[i])
+		break;
+	    }
+	}
+
+      for (tmp_rtx = rtx_first; NULL != tmp_rtx; tmp_rtx = NEXT_INSN (tmp_rtx))
+	{
+	  if ((bb = start[INSN_UID (tmp_rtx)]) >= 0)
+	    {
+	      fprintf (outf, ";; Start of basic block %d, registers live:",
+		       bb);
+
+	      EXECUTE_IF_SET_IN_REG_SET (basic_block_live_at_start[bb], 0, i,
+					 {
+					   fprintf (outf, " %d", i);
+					   if (i < FIRST_PSEUDO_REGISTER)
+					     fprintf (outf, " [%s]",
+						      reg_names[i]);
+					 });
+	      putc ('\n', outf);
+	    }
+
+	  if (in_bb_p[ INSN_UID(tmp_rtx)] == NOT_IN_BB
+	      && GET_CODE (tmp_rtx) != NOTE
+	      && GET_CODE (tmp_rtx) != BARRIER)
+	    fprintf (outf, ";; Insn is not within a basic block\n");
+	  else if (in_bb_p[ INSN_UID(tmp_rtx)] == IN_MULTIPLE_BB)
+	    fprintf (outf, ";; Insn is in multiple basic blocks\n");
+
+	  print_rtl_single (outf, tmp_rtx);
+
+	  if ((bb = end[INSN_UID (tmp_rtx)]) >= 0)
+	    fprintf (outf, ";; End of basic block %d\n", bb);
+
+	  putc ('\n', outf);
+	}
+    }
+}
