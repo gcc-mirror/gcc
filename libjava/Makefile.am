@@ -203,8 +203,12 @@ AM_CPPFLAGS = -I$(top_srcdir) -Iinclude -I$(top_srcdir)/include \
 ##
 
 libgij_la_SOURCES = gij.cc
-libgij_la_LIBADD = libgcj.la
 libgij_la_DEPENDENCIES = libgcj.la libgcj.spec
+## See jv_convert_LDADD.
+libgij_la_LIBADD = -L$(here)/.libs libgcj.la
+## The mysterious backslash in the grep pattern is consumed by make.
+libgij_la_LDFLAGS = -rpath $(toolexeclibdir) \
+        -version-info `grep -v '^\#' $(srcdir)/libtool-version` $(LIBGCJ_LD_SYMBOLIC)
 
 libgcj_la_SOURCES = prims.cc jni.cc exception.cc \
 	link.cc defineclass.cc interpret.cc verify.cc \

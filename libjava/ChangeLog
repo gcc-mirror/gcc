@@ -1,3 +1,9 @@
+2005-01-24  Jakub Jelinek  <jakub@redhat.com>
+
+	* Makefile.am (libgij_la_LIBADD): Add -L$(here)/.libs.
+	(libgij_la_LDFLAGS): Add.
+	* Makefile.in: Rebuilt.
+
 2005-01-24  Roger Sayle  <roger@eyesopen.com>
 
 	PR java/19295
