@@ -1,3 +1,9 @@
+1998-05-20  Martin von Loewis  <loewis@informatik.hu-berlin.de>
+
+	* decl.c (record_unknown_type): New function.
+	(init_decl_processing): Call it for the unknown and global type
+	nodes.
+
 1998-05-20  Mark Mitchell  <mmitchell@usa.net>
 
 	* decl2.c (find_representative_member): New function.
