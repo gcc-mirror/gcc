@@ -697,6 +697,11 @@ dump_decl (t, v)
       break;
 
     case NAMESPACE_DECL:
+      if (DECL_NAMESPACE (t) != global_namespace)
+	{
+	  dump_decl (DECL_NAMESPACE (t), v);
+	  OB_PUTC2 (':',':');
+	}
       OB_PUTID (DECL_NAME (t));
       break;
 

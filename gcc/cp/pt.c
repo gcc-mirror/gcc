@@ -788,7 +788,7 @@ check_explicit_specialization (declarator, decl, template_count, flags)
 	  my_friendly_assert (TREE_CODE (declarator) == IDENTIFIER_NODE, 
 			      0);
 	  if (!ctype)
-	    fns = IDENTIFIER_GLOBAL_VALUE (dname);
+	    fns = IDENTIFIER_NAMESPACE_VALUE (dname);
 	  else
 	    fns = dname;
 
@@ -1465,7 +1465,7 @@ push_template_decl (decl)
 	}
     }
   /* Get the innermost set of template arguments. */
-  args = TREE_VEC_ELT (args, TREE_VEC_LENGTH (args) - 1);
+  args = innermost_args (args, 0);
 
   DECL_TEMPLATE_RESULT (tmpl) = decl;
   TREE_TYPE (tmpl) = TREE_TYPE (decl);
@@ -2359,7 +2359,7 @@ lookup_template_class (d1, arglist, in_decl, context)
 	template = IDENTIFIER_LOCAL_VALUE (d1);
       else
 	{
-	  template = IDENTIFIER_GLOBAL_VALUE (d1); /* XXX */
+	  template = IDENTIFIER_NAMESPACE_VALUE (d1); /* XXX */
 	  if (! template)
 	    template = IDENTIFIER_CLASS_VALUE (d1);
 	}

@@ -58,13 +58,28 @@ typedef struct
   tree decl;
 } template_parm_index;
 
+#define BINDING_SCOPE(NODE)    (((struct tree_binding*)NODE)->scope)
+#define BINDING_VALUE(NODE)   (((struct tree_binding*)NODE)->value)
+#define NAMESPACE_BINDING(ID,NS) BINDING_VALUE (binding_for_name (ID, NS))
+#define IDENTIFIER_GLOBAL_VALUE(NODE) \
+  NAMESPACE_BINDING (NODE, global_namespace)
+#define IDENTIFIER_NAMESPACE_VALUE(NODE) \
+  NAMESPACE_BINDING (NODE, current_namespace)
+
+struct tree_binding
+{
+  char common[sizeof (struct tree_common)];
+  tree scope;
+  tree value;
+};
+
 /* To identify to the debug emitters if it should pay attention to the
    flag `-Wtemplate-debugging'.  */
 #define HAVE_TEMPLATES 1
 
 /* Macros for access to language-specific slots in an identifier.  */
 
-#define IDENTIFIER_GLOBAL_VALUE(NODE)	\
+#define IDENTIFIER_NAMESPACE_BINDINGS(NODE)	\
   (((struct lang_identifier *)(NODE))->global_value)
 #define IDENTIFIER_CLASS_VALUE(NODE)	\
   (((struct lang_identifier *)(NODE))->class_value)
@@ -160,6 +175,9 @@ extern tree intDI_type_node, unsigned_intDI_type_node;
 extern int current_function_returns_value;
 extern int current_function_returns_null;
 extern tree current_function_return_value;
+
+extern tree current_namespace;
+extern tree global_namespace;
 
 extern tree ridpointers[];
 extern tree ansi_opname[];
@@ -967,6 +985,7 @@ struct lang_decl_flags
   tree memfunc_pointer_to;
   tree template_info;
   struct binding_level *level;
+  tree in_namespace;
 };
 
 struct lang_decl
@@ -1071,7 +1090,7 @@ struct lang_decl
 
 /* The _TYPE context in which this _DECL appears.  This field holds the
    class where a virtual function instance is actually defined, and the
-   lexical scope of a friend function defined in a class body.  */
+   lexical scope of a friend function defined in a class body. */
 #define DECL_CLASS_CONTEXT(NODE) (DECL_LANG_SPECIFIC(NODE)->decl_flags.context)
 #define DECL_REAL_CONTEXT(NODE) \
   ((TREE_CODE (NODE) == FUNCTION_DECL && DECL_FUNCTION_MEMBER_P (NODE)) \
@@ -1079,12 +1098,24 @@ struct lang_decl
 
 /* For a FUNCTION_DECL: the chain through which the next method
    with the same name is found.  We now use TREE_CHAIN to
-   walk through the methods in order of declaration.  */
+   walk through the methods in order of declaration.  
+   For a NAMESPACE_DECL: the list of using namespace directives
+   The PURPOSE is the used namespace, the value is the namespace
+   that is the common ancestor */
 #if 1
 #define DECL_CHAIN(NODE) (DECL_LANG_SPECIFIC(NODE)->chain)
 #else
 #define DECL_CHAIN(NODE) (TREE_CHAIN (NODE))
 #endif
+#define DECL_NAMESPACE_USING(NODE) (DECL_LANG_SPECIFIC(NODE)->chain)
+
+/* In a NAMESPACE_DECL, the DECL_INITIAL is used to record all users
+   of a namespace, to record the transitive closure of using namespace */
+#define DECL_NAMESPACE_USERS(NODE) DECL_INITIAL (NODE)
+
+/* In a TREE_LIST concatenating using directives, indicate indirekt
+   directives  */
+#define TREE_INDIRECT_USING(NODE) ((NODE)->common.lang_flag_0)
 
 /* In a VAR_DECL for a variable declared in a for statement,
    this is the shadowed (local) variable.  */
@@ -1472,6 +1503,12 @@ extern int flag_new_for_scope;
 
 #define DECL_REALLY_EXTERN(NODE) \
   (DECL_EXTERNAL (NODE) && ! DECL_NOT_REALLY_EXTERN (NODE))
+
+/* Records the namespace we are in */
+#define DECL_NAMESPACE(NODE) \
+     (DECL_LANG_SPECIFIC (NODE) ? DECL_LANG_SPECIFIC (NODE)->decl_flags.in_namespace : 0)
+#define SET_DECL_NAMESPACE(NODE, val) \
+     DECL_LANG_SPECIFIC (NODE)->decl_flags.in_namespace = val
 
 /* Used to tell cp_finish_decl that it should approximate comdat linkage
    as best it can for this decl.  */
@@ -2122,11 +2159,14 @@ extern tree gettags				PROTO((void));
 #if 0
 extern void set_current_level_tags_transparency	PROTO((int));
 #endif
+extern tree binding_for_name                    PROTO((tree, tree));
 extern tree lookup_namespace_name		PROTO((tree, tree));
 extern tree make_typename_type			PROTO((tree, tree));
 extern tree lookup_name_nonclass		PROTO((tree));
 extern tree lookup_name				PROTO((tree, int));
 extern tree lookup_name_current_level		PROTO((tree));
+extern tree lookup_using_namespace              PROTO((tree,tree,tree,tree));
+extern tree qualified_lookup_using_namespace    PROTO((tree,tree));
 extern tree auto_function			PROTO((tree, tree, enum built_in_function));
 extern void init_decl_processing		PROTO((void));
 extern int init_type_desc			PROTO((void));
@@ -2375,6 +2415,7 @@ extern void synthesize_method			PROTO((tree));
 extern tree get_id_2				PROTO((char *, tree));
 
 /* in pt.c */
+extern tree innermost_args			PROTO ((tree, int));
 extern tree tsubst				PROTO ((tree, tree, tree));
 extern tree tsubst_expr				PROTO ((tree, tree, tree));
 extern tree tsubst_copy				PROTO ((tree, tree, tree));

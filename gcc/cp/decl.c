@@ -63,6 +63,9 @@ extern tree static_ctors, static_dtors;
 
 extern int static_labelno;
 
+extern tree current_namespace;
+extern tree global_namespace;
+
 /* Stack of places to restore the search obstack back to.  */
    
 /* Obstack used for remembering local class declarations (like
@@ -1664,6 +1667,34 @@ print_binding_stack ()
   print_binding_level (global_binding_level);
 }
 
+/* Return the tree_binding for the name in the given scope
+   If there are no bindings for the name in the scope, make a new
+   bindings node. This bindings list of this node will be empty, though.  */
+
+tree
+binding_for_name (name, scope)
+     tree name;
+     tree scope;
+{
+  tree iter;
+  for (iter = IDENTIFIER_NAMESPACE_BINDINGS (name); iter;
+       iter = TREE_CHAIN (iter))
+    {
+      my_friendly_assert (TREE_CODE (iter) == CPLUS_BINDING, 374);
+      if (BINDING_SCOPE (iter) == scope)
+	return iter;
+    }
+  /* not found, make a new permanent one */
+  push_obstacks (&permanent_obstack, &permanent_obstack);
+  iter = make_node (CPLUS_BINDING);
+  TREE_CHAIN (iter) = IDENTIFIER_NAMESPACE_BINDINGS (name);
+  IDENTIFIER_NAMESPACE_BINDINGS (name) = iter;
+  BINDING_SCOPE (iter) = scope;
+  BINDING_VALUE (iter) = NULL_TREE;
+  pop_obstacks ();
+  return iter;
+}
+
 extern char * first_global_object_name;
 
 /* Get a unique name for each call to this routine for unnamed namespaces.
@@ -1692,7 +1723,7 @@ get_unique_name ()
   /* Don't need to pull weird characters out of global names.  */
   if (p != first_global_object_name)
     {
-      for (p = buf+11; *p; p++)
+      for (p = buf+2; *p; p++)
 	if (! ((*p >= '0' && *p <= '9')
 #ifndef NO_DOLLAR_IN_LABEL	/* this for `$'; unlikely, but... -- kr */
 	       || *p == '$'
@@ -1716,13 +1747,42 @@ push_namespace (name)
      tree name;
 {
 #if 1
-  static int warned;
-  if (! warned)
-    sorry ("namespace");
+  tree d;
+  int need_new = 1;
+  int implicit_use = 0;
+  int nodecl = 0;
+  if (!global_namespace)
+    {
+      /* this must be :: */
+      my_friendly_assert (name == get_identifier ("::"), 377);
+      nodecl = 1;
+    }
+  else if (!name)
+    {
+      name = get_unique_name ();
+      implicit_use = 1;
+    } 
+  else
+    {
+      /* check whether this is an extended namespace definition */
+      d = IDENTIFIER_NAMESPACE_VALUE (name);
+      if (d != NULL_TREE && TREE_CODE (d) == NAMESPACE_DECL)
+	need_new = 0;
+    }
   
-  warned = 1;
+  if (need_new)
+    {
+      /* make a new namespace, binding the name to it */
+      d = build_lang_decl (NAMESPACE_DECL, name, void_type_node);
+      if (!nodecl)
+	d = pushdecl (d);
+    }
+  if (implicit_use)
+    do_using_directive (d);
+  /* enter the name space */
+  current_namespace = d;
+
 #else
-  extern tree current_namespace;
   tree old_id = get_namespace_id ();
   char *buf;
   tree d;
@@ -1766,8 +1826,9 @@ push_namespace (name)
 void
 pop_namespace ()
 {
-#if 0
-  extern tree current_namespace;
+#if 1
+  current_namespace = DECL_NAMESPACE (current_namespace);
+#else
   tree decls, link;
   current_namespace = TREE_CHAIN (current_namespace);
 
@@ -3242,11 +3303,12 @@ pushdecl (x)
       if (TREE_PUBLIC (x) && TREE_CODE (x) != FUNCTION_DECL)
 	{
 	  tree decl;
+	  tree bindings = binding_for_name (name, current_namespace);
 
-	  if (IDENTIFIER_GLOBAL_VALUE (name) != NULL_TREE
-	      && (DECL_EXTERNAL (IDENTIFIER_GLOBAL_VALUE (name))
-		  || TREE_PUBLIC (IDENTIFIER_GLOBAL_VALUE (name))))
-	    decl = IDENTIFIER_GLOBAL_VALUE (name);
+	  if (BINDING_VALUE (bindings) != NULL_TREE
+	      && (DECL_EXTERNAL (BINDING_VALUE (bindings))
+		  || TREE_PUBLIC (BINDING_VALUE (bindings))))
+	    decl = BINDING_VALUE (bindings);
 	  else
 	    decl = NULL_TREE;
 
@@ -3265,10 +3327,11 @@ pushdecl (x)
       if (b == global_binding_level)
 	{
 	  /* Install a global value.  */
+	  tree bindings = binding_for_name (name, current_namespace);
 
 	  /* If the first global decl has external linkage,
 	     warn if we later see static one.  */
-	  if (IDENTIFIER_GLOBAL_VALUE (name) == NULL_TREE && TREE_PUBLIC (x))
+	  if (BINDING_VALUE (bindings) == NULL_TREE && TREE_PUBLIC (x))
 	    TREE_PUBLIC (name) = 1;
 
 	  /* Don't install an artificial TYPE_DECL if we already have
@@ -3276,7 +3339,12 @@ pushdecl (x)
 	  if (TREE_CODE (x) != TYPE_DECL
 	      || t == NULL_TREE
 	      || ! DECL_ARTIFICIAL (x))
-	    IDENTIFIER_GLOBAL_VALUE (name) = x;
+	    {
+	      if (TREE_CODE (x) == FUNCTION_DECL)
+		my_friendly_assert ((BINDING_VALUE (bindings) == NULL_TREE)
+		                    || BINDING_VALUE (bindings) == x, 378);
+	      BINDING_VALUE (bindings) = x;
+	    }
 
 	  /* Don't forget if the function was used via an implicit decl.  */
 	  if (IDENTIFIER_IMPLICIT_DECL (name)
@@ -3305,7 +3373,7 @@ pushdecl (x)
 	{
 	  /* Here to install a non-global value.  */
 	  tree oldlocal = IDENTIFIER_LOCAL_VALUE (name);
-	  tree oldglobal = IDENTIFIER_GLOBAL_VALUE (name);
+	  tree oldglobal = binding_for_name (name, current_namespace);
 
 	  /* Don't install an artificial TYPE_DECL if we already have
 	     another _DECL with that name.  */
@@ -3331,24 +3399,24 @@ pushdecl (x)
 	     have a global definition or declaration for the function.  */
 	  if (oldlocal == NULL_TREE
 	      && DECL_EXTERNAL (x)
-	      && oldglobal != NULL_TREE
+	      && BINDING_VALUE (oldglobal) != NULL_TREE
 	      && TREE_CODE (x) == FUNCTION_DECL
-	      && TREE_CODE (oldglobal) == FUNCTION_DECL)
+	      && TREE_CODE (BINDING_VALUE (oldglobal)) == FUNCTION_DECL)
 	    {
 	      /* We have one.  Their types must agree.  */
-	      if (decls_match (x, oldglobal))
+	      if (decls_match (x, BINDING_VALUE (oldglobal)))
 		/* OK */;
 	      else
 		{
 		  cp_warning ("extern declaration of `%#D' doesn't match", x);
-		  cp_warning_at ("global declaration `%#D'", oldglobal);
+		  cp_warning_at ("global declaration `%#D'", BINDING_VALUE (oldglobal));
 		}
 	    }
 	  /* If we have a local external declaration,
 	     and no file-scope declaration has yet been seen,
 	     then if we later have a file-scope decl it must not be static.  */
 	  if (oldlocal == NULL_TREE
-	      && oldglobal == NULL_TREE
+	      && BINDING_VALUE (oldglobal) == NULL_TREE
 	      && DECL_EXTERNAL (x)
 	      && TREE_PUBLIC (x))
 	    {
@@ -3398,7 +3466,8 @@ pushdecl (x)
 		warnstring = "declaration of `%s' shadows a member of `this'";
 	      else if (oldlocal != NULL_TREE)
 		warnstring = "declaration of `%s' shadows previous local";
-	      else if (oldglobal != NULL_TREE)
+	      else if (BINDING_VALUE (oldglobal) != NULL_TREE)
+		/* XXX shadow warnings in outer-more namespaces */
 		warnstring = "declaration of `%s' shadows global declaration";
 
 	      if (warnstring)
@@ -3641,7 +3710,7 @@ push_overloaded_decl (decl, forgettable)
 
   if (doing_global)
     {
-      old = IDENTIFIER_GLOBAL_VALUE (orig_name);
+      old =  IDENTIFIER_NAMESPACE_VALUE (orig_name);
       if (old && TREE_CODE (old) == FUNCTION_DECL
 	  && DECL_ARTIFICIAL (old)
 	  && (DECL_BUILT_IN (old) || DECL_BUILT_IN_NONANSI (old)))
@@ -3704,7 +3773,7 @@ push_overloaded_decl (decl, forgettable)
     old = decl;
 
   if (doing_global)
-    IDENTIFIER_GLOBAL_VALUE (orig_name) = old;
+    IDENTIFIER_NAMESPACE_VALUE (orig_name) = old;
   else
     IDENTIFIER_LOCAL_VALUE (orig_name) = old;
 
@@ -4207,7 +4276,8 @@ lookup_tag (form, name, binding_level, thislevel_only)
 	{
 	  if (level->pseudo_global)
 	    {
-	      tree t = IDENTIFIER_GLOBAL_VALUE (name);
+	      /* XXX MvL */
+	      tree t = IDENTIFIER_NAMESPACE_VALUE (name);
 	      if (t && TREE_CODE (t) == TEMPLATE_DECL
 		  && TREE_CODE (DECL_TEMPLATE_RESULT (t)) == TYPE_DECL)
 		return TREE_TYPE (t);
@@ -4358,9 +4428,19 @@ tree
 lookup_namespace_name (namespace, name)
      tree namespace, name;
 {
+#if 1
+  tree val;
+  my_friendly_assert (TREE_CODE (namespace) == NAMESPACE_DECL, 370);
+  my_friendly_assert (TREE_CODE (name) == IDENTIFIER_NODE, 373);
+  
+  val = qualified_lookup_using_namespace (name, namespace);
+  if (val)
+    return val;
+  cp_error ("`%D' undeclared in namespace `%D'", name, namespace);
+  return error_mark_node;
+#else
   struct binding_level *b = (struct binding_level *)NAMESPACE_LEVEL (namespace);
   tree x = NULL_TREE;
-
 #if 1
   /* This searches just one level.  */
   if (b)
@@ -4379,6 +4459,7 @@ lookup_namespace_name (namespace, name)
     }
 #endif
   return x;
+#endif
 }
 
 tree
@@ -4518,7 +4599,7 @@ lookup_name_real (name, prefer_type, nonclass)
 	    val = IDENTIFIER_GLOBAL_VALUE (name);
 	  else if (TREE_CODE (type) == NAMESPACE_DECL)
 	    {
-	      val = lookup_namespace_name (type, name);
+	      val = NAMESPACE_BINDING (name, type);
 	    }
 	  else if (! IS_AGGR_TYPE (type)
 		   || TREE_CODE (type) == TEMPLATE_TYPE_PARM
@@ -4635,7 +4716,22 @@ lookup_name_real (name, prefer_type, nonclass)
   else if (classval)
     val = classval;
   else
-    val = IDENTIFIER_GLOBAL_VALUE (name);
+    {
+      /* unscoped lookup of a global, iterate over namespaces,
+         considering using namespace statements */
+      tree binding;
+      tree scope = current_namespace;
+      do
+	{
+	  binding = binding_for_name (name, scope);
+	  val = BINDING_VALUE (binding);
+	  val = lookup_using_namespace (name, val, current_namespace, scope);
+	  if (scope == global_namespace)
+	    break;
+	  scope = DECL_NAMESPACE (scope);
+	}
+      while (!val);
+    }
 
  done:
   if (val)
@@ -4695,7 +4791,7 @@ lookup_name_current_level (name)
 
   if (current_binding_level == global_binding_level)
     {
-      t = IDENTIFIER_GLOBAL_VALUE (name);
+      t =  IDENTIFIER_NAMESPACE_VALUE (name);
 
       /* extern "C" function() */
       if (t != NULL_TREE && TREE_CODE (t) == TREE_LIST)
@@ -4782,6 +4878,7 @@ record_builtin_type (rid_index, name, type)
       tdecl = pushdecl (build_decl (TYPE_DECL, tname, type));
       set_identifier_type_value (tname, NULL_TREE);
       if ((int) rid_index < (int) RID_MAX)
+	/* builtin types live in the global namespace */
 	IDENTIFIER_GLOBAL_VALUE (tname) = tdecl;
     }
   if (rname != NULL_TREE)
@@ -4850,6 +4947,14 @@ init_decl_processing ()
   /* Have to make these distinct before we try using them.  */
   lang_name_cplusplus = get_identifier ("C++");
   lang_name_c = get_identifier ("C");
+
+  /* enter the global namespace */
+  my_friendly_assert (global_namespace == NULL_TREE, 375);
+  my_friendly_assert (current_lang_name == NULL_TREE, 375);
+  current_lang_name = lang_name_cplusplus;
+  push_namespace (get_identifier ("::"));
+  global_namespace = current_namespace;
+  current_lang_name = NULL_TREE;
 
   if (flag_strict_prototype == 2)
     {
@@ -7484,6 +7589,7 @@ grokfndecl (ctype, type, declarator, orig_declarator, virtualp, flags, quals,
 
       if (check == 0 && ! current_function_decl)
 	{
+	  /* assembler names live in the global namespace */
 	  tmp = IDENTIFIER_GLOBAL_VALUE (DECL_ASSEMBLER_NAME (decl));
 	  if (tmp == NULL_TREE)
 	    IDENTIFIER_GLOBAL_VALUE (DECL_ASSEMBLER_NAME (decl)) = decl;
@@ -7611,9 +7717,12 @@ grokvardecl (type, declarator, specbits_in, initialized, constp)
       DECL_ASSEMBLER_NAME (decl) = build_static_name (basetype, declarator);
     }
   else
-    decl = build_decl (VAR_DECL, declarator, complete_type (type));
-
-  DECL_ASSEMBLER_NAME (decl) = current_namespace_id (DECL_ASSEMBLER_NAME (decl));
+    {
+      decl = build_decl (VAR_DECL, declarator, complete_type (type));
+      if (current_namespace != global_namespace)
+	DECL_ASSEMBLER_NAME (decl) =  build_static_name (current_namespace,
+							 declarator);
+    }
 
   if (RIDBIT_SETP (RID_EXTERN, specbits))
     {
@@ -9928,7 +10037,12 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, attrlist)
 	if (ctype == NULL_TREE && DECL_LANGUAGE (decl) != lang_c
 	    && (! DECL_USE_TEMPLATE (decl) ||
 		name_mangling_version < 1)) 
+#if 0
+	/* XXX is support for the old __ns_ mangling really needed? MvL */
 	  DECL_ASSEMBLER_NAME (decl) = current_namespace_id (declarator);
+#else
+	  DECL_ASSEMBLER_NAME (decl) = declarator;
+#endif	
 	
 	if (staticp == 1)
 	  {
@@ -10931,10 +11045,16 @@ xref_tag (code_type_node, name, binfo, globalize)
   else
     {
       /* If it no longer looks like a nested type, make sure it's
-	 in global scope.  */
+	 in global scope.  
+         If it is not an IDENTIFIER, this is not a declaration */
       if (b == global_binding_level && !class_binding_level
-	  && IDENTIFIER_GLOBAL_VALUE (name) == NULL_TREE)
-	IDENTIFIER_GLOBAL_VALUE (name) = TYPE_NAME (ref);
+	  && TREE_CODE (name) == IDENTIFIER_NODE)
+	{
+	  tree binding;
+	  binding = binding_for_name (name, current_namespace);
+	  if (BINDING_VALUE (binding) == NULL_TREE)
+	    BINDING_VALUE (binding) = TYPE_NAME (ref);
+	}
     }
 
   if (binfo)
@@ -11465,11 +11585,13 @@ start_function (declspecs, declarator, attrs, pre_parsed_p)
 	  && TYPE_IDENTIFIER (DECL_CONTEXT (decl1))
 	  && IDENTIFIER_TEMPLATE (TYPE_IDENTIFIER (DECL_CONTEXT (decl1))))
 	{
+	  tree binding = binding_for_name (DECL_NAME (decl1), 
+					   current_namespace);
 	  cp_error ("redeclaration of `%#D'", decl1);
 	  if (IDENTIFIER_CLASS_VALUE (DECL_NAME (decl1)))
 	    cp_error_at ("previous declaration here", IDENTIFIER_CLASS_VALUE (DECL_NAME (decl1)));
-	  else if (IDENTIFIER_GLOBAL_VALUE (DECL_NAME (decl1)))
-	    cp_error_at ("previous declaration here", IDENTIFIER_GLOBAL_VALUE (DECL_NAME (decl1)));
+	  else if (BINDING_VALUE (binding))
+	    cp_error_at ("previous declaration here", BINDING_VALUE (binding));
 	}
 
       fntype = TREE_TYPE (decl1);

@@ -169,6 +169,10 @@ DEFTREECODE (DEFAULT_ARG, "default_arg", 'c', 2)
    the template will will be an IDENTIFIER_NODE.  */
 DEFTREECODE (TEMPLATE_ID_EXPR, "template_id_expr", 'e', 2)
 
+/* has two fields: scope and value */
+/* XXX: could recycle some of the common fields */
+DEFTREECODE (CPLUS_BINDING, "binding", 'x', 2)
+
 /* A whole bunch of tree codes for the initial, superficial parsing of
    templates.  */
 DEFTREECODE (LOOKUP_EXPR, "lookup_expr", 'e', 2)

@@ -90,6 +90,12 @@ int at_eof;
 /* Functions called along with real static constructors and destructors.  */
 
 tree static_ctors, static_dtors;
+
+/* The current open namespace, and :: */
+
+tree current_namespace;
+tree global_namespace;
+
 
 /* C (and C++) language-specific option variables.  */
 
@@ -2880,6 +2886,9 @@ get_sentry (base)
      tree base;
 {
   tree sname = get_id_2 ("__sn", base);
+  /* for struct X foo __attribute__((weak)), there is a counter
+     __snfoo. Since base is already an assembler name, sname should
+     be globally unique */
   tree sentry = IDENTIFIER_GLOBAL_VALUE (sname);
   if (! sentry)
     {
@@ -3756,8 +3765,179 @@ check_cp_case_value (value)
   return value;
 }
 
-tree current_namespace;
+/* return 1 if root encloses child */
+static int
+is_namespace_ancestor (root, child)
+     tree root, child;
+{
+  if (root == child)
+    return 1;
+  if (root == global_namespace)
+    return 1;
+  if (child == global_namespace)
+    return 0;
+  return is_namespace_ancestor (root, DECL_NAMESPACE (child));
+}
+  
 
+/* return the namespace that is the common ancestor 
+   of two given namespaces */
+static tree
+namespace_ancestor (ns1, ns2)
+     tree ns1, ns2;
+{
+  if (is_namespace_ancestor (ns1, ns2))
+    return ns1;
+  return namespace_ancestor (DECL_NAMESPACE (ns1), ns2);
+}
+
+/* Insert used into the using list of user. Set indirect_flag if this
+   directive is not directly from the source. Also find the common
+   ancestor and let our users know about the new namespace */
+static void 
+add_using_namespace (user, used, indirect)
+     tree user;
+     tree used;
+     int indirect;
+{
+  tree iter;
+  /* using oneself is a no-op */
+  if (user == used)
+    return;
+  my_friendly_assert (TREE_CODE (user) == NAMESPACE_DECL, 380);
+  my_friendly_assert (TREE_CODE (used) == NAMESPACE_DECL, 380);
+  /* check if we already have this */
+  if (purpose_member (used, DECL_NAMESPACE_USING (user)) != NULL_TREE)
+    return;
+
+  /* add used to the user's using list */
+  DECL_NAMESPACE_USING (user) 
+    = perm_tree_cons (used, namespace_ancestor (user, used), 
+		      DECL_NAMESPACE_USING (user));
+
+  TREE_INDIRECT_USING (DECL_NAMESPACE_USING (user)) = indirect;
+
+  /* add user to the used's users list */
+  DECL_NAMESPACE_USERS (used)
+    = perm_tree_cons (user, 0, DECL_NAMESPACE_USERS (used));
+		      
+  for (iter = DECL_NAMESPACE_USERS (user); iter; iter = TREE_CHAIN (iter))
+    /* indirect usage */
+    add_using_namespace (TREE_PURPOSE (iter), used, 1);
+}
+
+/* This should return an error not all definitions define functions.
+   It is not an error if we find two functions with exactly the
+   same signature, only if these are selected in overload resolution.
+   XXX Do we want to give *all* candidates in case of ambiguity?
+   XXX In what way should I treat extern declarations?
+   XXX I don't want to repeat the entire duplicate_decls here */
+static tree
+ambiguous_decl (name, val1, val2)
+     tree val1, val2;
+{
+  my_friendly_assert (val1 != val2, 376);
+  if (is_overloaded_fn (val1) && is_overloaded_fn (val1))
+    {
+      /* now built a joint list of all overloaded declarations */
+      /* XXX if I chain'em together, they will be always considered
+	 as overloaded */
+      sorry ("overloaded functions used from different namespaces");
+    }
+  cp_error ("ambiguous definition `%D' used", name);
+  cp_error_at ("first definition here", val1);
+  cp_error_at ("other definition here", val2);
+  return error_mark_node;
+}
+
+/* add the bindings of name in used namespaces to val 
+   the using list is defined by current, and the lookup goes to scope */
+tree
+lookup_using_namespace (name, val, current, scope)
+     tree name, val, current, scope;
+{
+  tree iter;
+  tree val1;
+  /* iterate over all namespaces from current to scope */
+  while (1)
+    {
+      /* iterate over all used namespaces in current, searching for
+	 using directives of scope */
+      for (iter = DECL_NAMESPACE_USING (current); 
+	   iter; iter = TREE_CHAIN (iter))
+	if (TREE_VALUE (iter) == scope)
+	  {
+	    val1 = NAMESPACE_BINDING (name, TREE_PURPOSE (iter));
+	    /* name not found in this space */
+	    if (!val1) 
+	      continue;
+	    /* first definition ever */
+	    if (!val)
+	      {
+		val = val1;
+		continue;
+	      }
+	    /* Hmmm. Ambiguity. As long as both are overloaded functions,
+	       this is fine */
+	    val = ambiguous_decl (name, val, val1);
+	    if (val == error_mark_node)
+	      break;
+	  }
+      if (current == scope)
+	break;
+      current = DECL_NAMESPACE (current);
+    }
+  return val;
+}
+
+/* [namespace.qual] */
+tree
+qualified_lookup_using_namespace (name, scope)
+     tree name;
+     tree scope;
+{
+  tree val = NULL_TREE;
+  tree val1;
+  /* maintain a list of namespaces visited */
+  tree seen = NULL_TREE;
+  /* and a list of namespace yet to see */
+  tree todo = NULL_TREE;
+  tree usings;
+  while (scope)
+    {
+      seen = temp_tree_cons (scope, NULL_TREE, seen);
+      val1 = NAMESPACE_BINDING (name, scope);
+      if (val1)
+	{
+	  if (val)
+	    {
+	      val = ambiguous_decl (name, val, val1);
+	      break;
+	    }
+	  else
+	    val = val1;
+	}
+      else
+	/* consider using directives */
+	for (usings = DECL_NAMESPACE_USING (scope); usings;
+	     usings = TREE_CHAIN (usings))
+	  /* if this was a real directive, and we have not seen it */
+	  if (!TREE_INDIRECT_USING (usings)
+	      && !purpose_member (seen, TREE_PURPOSE (usings)))
+	    todo = temp_tree_cons (TREE_PURPOSE (usings), NULL_TREE, todo);
+      if (todo)
+	{
+	  scope = TREE_PURPOSE (todo);
+	  todo = TREE_CHAIN (todo);
+	}
+      else
+	scope = NULL_TREE; /* if there never was a todo list */
+    }
+  return val;
+}
+
+#if 0
+/* this is broken and should not be called anymore */
 /* Get the inner part of a namespace id.  It doesn't have any prefix, nor
    postfix.  Returns 0 if in global namespace.  */
 
@@ -3789,12 +3969,35 @@ current_namespace_id (name)
 	   IDENTIFIER_POINTER (name));
   return get_identifier (buf);
 }
+#endif
 
 void
 do_namespace_alias (alias, namespace)
      tree alias, namespace;
 {
-  sorry ("namespace alias");
+  tree binding;
+  tree ns;
+  if (TREE_CODE (namespace) == IDENTIFIER_NODE)
+    ns = lookup_name (namespace, 1);
+  else
+    ns = namespace;
+  if (TREE_CODE (ns) != NAMESPACE_DECL)
+    {
+      cp_error ("`%D' is not a namespace", namespace);
+      return;
+    }
+  binding = binding_for_name (alias, current_namespace);
+  if (BINDING_VALUE (binding) && BINDING_VALUE (binding) != namespace)
+    {
+      cp_error ("invalid namespace alias `%D'", alias);
+      cp_error_at ("`%D' previously declared here", alias);
+    }
+  else
+    {
+      /* XXX the alias is not exactly identical to the name space,
+	 it must not be used in a using directive or namespace alias */
+      BINDING_VALUE (binding) = ns;
+    }
 }
 
 void
@@ -3856,7 +4059,11 @@ do_using_directive (namespace)
 {
   if (namespace == std_node)
     return;
-  sorry ("using directive");
+  /* using A::B::C; */
+  if (TREE_CODE (namespace) == SCOPE_REF)
+      namespace = TREE_OPERAND (namespace, 1);
+  /* direct usage */
+  add_using_namespace (current_namespace, namespace, 0);
 }
 
 void
