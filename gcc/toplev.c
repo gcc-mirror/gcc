@@ -1360,6 +1360,36 @@ set_float_handler (handler)
     bcopy (handler, float_handler, sizeof (float_handler));
 }
 
+/* Specify, in HANDLER, where to longjmp to when a floating arithmetic
+   error happens, pushing the previous specification into OLD_HANDLER.
+   Return an indication of whether there was a previous handler in effect.  */
+
+int
+push_float_handler (handler, old_handler)
+     jmp_buf handler;
+{
+  int was_handled = float_handled;
+
+  float_handled = 1;
+  if (was_handled)
+    bcopy (float_handler, old_handler, sizeof (float_handler));
+  bcopy (handler, float_handler, sizeof (float_handler));
+  return was_handled;
+}
+
+/* Restore the previous specification of whether and where to longjmp to
+   when a floating arithmetic error happens.  */
+
+void
+pop_float_handler (handled, handler)
+     int handled;
+     jmp_buf handler;
+{
+  float_handled = handled;
+  if (handled)
+    bcopy (handler, float_handler, sizeof (float_handler));
+}
+
 /* Signals actually come here.  */
 
 static void
