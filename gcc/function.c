@@ -1,6 +1,7 @@
 /* Expands front end tree to back end RTL for GCC.
    Copyright (C) 1987, 1988, 1989, 1991, 1992, 1993, 1994, 1995, 1996, 1997,
-   1998, 1999, 2000, 2001, 2002, 2003, 2004 Free Software Foundation, Inc.
+   1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005
+   Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -2405,22 +2406,21 @@ assign_parm_find_stack_rtl (tree parm, struct assign_parm_data_one *data)
 
   set_mem_attributes (stack_parm, parm, 1);
 
-  boundary = FUNCTION_ARG_BOUNDARY (data->promoted_mode, data->passed_type);
-  align = 0;
+  boundary = data->locate.boundary;
+  align = BITS_PER_UNIT;
 
   /* If we're padding upward, we know that the alignment of the slot
      is FUNCTION_ARG_BOUNDARY.  If we're using slot_offset, we're
      intentionally forcing upward padding.  Otherwise we have to come
      up with a guess at the alignment based on OFFSET_RTX.  */
-  if (data->locate.where_pad == upward || data->entry_parm)
+  if (data->locate.where_pad != downward || data->entry_parm)
     align = boundary;
   else if (GET_CODE (offset_rtx) == CONST_INT)
     {
       align = INTVAL (offset_rtx) * BITS_PER_UNIT | boundary;
       align = align & -align;
     }
-  if (align > 0)
-    set_mem_align (stack_parm, align);
+  set_mem_align (stack_parm, align);
 
   if (data->entry_parm)
     set_reg_attrs_for_parm (data->entry_parm, stack_parm);
@@ -2492,7 +2492,6 @@ assign_parm_adjust_entry_rtl (struct assign_parm_data_one *data)
 /* A subroutine of assign_parms.  Adjust DATA->STACK_RTL such that it's
    always valid and properly aligned.  */
 
-
 static void
 assign_parm_adjust_stack_rtl (struct assign_parm_data_one *data)
 {
@@ -2501,8 +2500,12 @@ assign_parm_adjust_stack_rtl (struct assign_parm_data_one *data)
   /* If we can't trust the parm stack slot to be aligned enough for its
      ultimate type, don't use that slot after entry.  We'll make another
      stack slot, if we need one.  */
-  if (STRICT_ALIGNMENT && stack_parm
-      && GET_MODE_ALIGNMENT (data->nominal_mode) > MEM_ALIGN (stack_parm))
+  if (stack_parm
+      && ((STRICT_ALIGNMENT
+	   && GET_MODE_ALIGNMENT (data->nominal_mode) > MEM_ALIGN (stack_parm))
+	  || (data->nominal_type
+	      && TYPE_ALIGN (data->nominal_type) > MEM_ALIGN (stack_parm)
+	      && MEM_ALIGN (stack_parm) < PREFERRED_STACK_BOUNDARY)))
     stack_parm = NULL;
 
   /* If parm was passed in memory, and we need to convert it on entry,
@@ -2548,6 +2551,8 @@ assign_parm_setup_block (struct assign_parm_data_all *all,
 {
   rtx entry_parm = data->entry_parm;
   rtx stack_parm = data->stack_parm;
+  HOST_WIDE_INT size;
+  HOST_WIDE_INT size_stored;
 
   if (GET_CODE (entry_parm) == PARALLEL)
     entry_parm = emit_group_move_into_temps (entry_parm);
@@ -2593,30 +2598,34 @@ assign_parm_setup_block (struct assign_parm_data_all *all,
       return;
     }
 
+  size = int_size_in_bytes (data->passed_type);
+  size_stored = CEIL_ROUND (size, UNITS_PER_WORD);
+  if (stack_parm == 0)
+    {
+      stack_parm = assign_stack_local (BLKmode, size_stored,
+				       TYPE_ALIGN (data->passed_type));
+      if (GET_MODE_SIZE (GET_MODE (entry_parm)) == size)
+	PUT_MODE (stack_parm, GET_MODE (entry_parm));
+      set_mem_attributes (stack_parm, parm, 1);
+    }
+
   /* If a BLKmode arrives in registers, copy it to a stack slot.  Handle
      calls that pass values in multiple non-contiguous locations.  */
   if (REG_P (entry_parm) || GET_CODE (entry_parm) == PARALLEL)
     {
-      HOST_WIDE_INT size = int_size_in_bytes (data->passed_type);
-      HOST_WIDE_INT size_stored = CEIL_ROUND (size, UNITS_PER_WORD);
       rtx mem;
 
       /* Note that we will be storing an integral number of words.
 	 So we have to be careful to ensure that we allocate an
-	 integral number of words.  We do this below in the
+	 integral number of words.  We do this above when we call
 	 assign_stack_local if space was not allocated in the argument
 	 list.  If it was, this will not work if PARM_BOUNDARY is not
 	 a multiple of BITS_PER_WORD.  It isn't clear how to fix this
 	 if it becomes a problem.  Exception is when BLKmode arrives
 	 with arguments not conforming to word_mode.  */
 
-      if (stack_parm == 0)
-	{
-	  stack_parm = assign_stack_local (BLKmode, size_stored, 0);
-	  data->stack_parm = stack_parm;
-	  PUT_MODE (stack_parm, GET_MODE (entry_parm));
-	  set_mem_attributes (stack_parm, parm, 1);
-	}
+      if (data->stack_parm == 0)
+	;
       else if (GET_CODE (entry_parm) == PARALLEL)
 	;
       else
@@ -2686,7 +2695,16 @@ assign_parm_setup_block (struct assign_parm_data_all *all,
 	move_block_from_reg (REGNO (entry_parm), mem,
 			     size_stored / UNITS_PER_WORD);
     }
+  else if (data->stack_parm == 0)
+    {
+      push_to_sequence (all->conversion_insns);
+      emit_block_move (stack_parm, data->entry_parm, GEN_INT (size),
+		       BLOCK_OP_NORMAL);
+      all->conversion_insns = get_insns ();
+      end_sequence ();
+    }
 
+  data->stack_parm = stack_parm;
   SET_DECL_RTL (parm, stack_parm);
 }
 
@@ -2887,6 +2905,7 @@ assign_parm_setup_stack (struct assign_parm_data_all *all, tree parm,
 {
   /* Value must be stored in the stack slot STACK_PARM during function
      execution.  */
+  bool to_conversion = false;
 
   if (data->promoted_mode != data->nominal_mode)
     {
@@ -2896,6 +2915,8 @@ assign_parm_setup_stack (struct assign_parm_data_all *all, tree parm,
       emit_move_insn (tempreg, validize_mem (data->entry_parm));
 
       push_to_sequence (all->conversion_insns);
+      to_conversion = true;
+
       data->entry_parm = convert_to_mode (data->nominal_mode, tempreg,
 					  TYPE_UNSIGNED (TREE_TYPE (parm)));
 
@@ -2903,33 +2924,43 @@ assign_parm_setup_stack (struct assign_parm_data_all *all, tree parm,
 	/* ??? This may need a big-endian conversion on sparc64.  */
 	data->stack_parm
 	  = adjust_address (data->stack_parm, data->nominal_mode, 0);
-
-      all->conversion_insns = get_insns ();
-      end_sequence ();
     }
 
   if (data->entry_parm != data->stack_parm)
     {
+      rtx src, dest;
+
       if (data->stack_parm == 0)
 	{
 	  data->stack_parm
 	    = assign_stack_local (GET_MODE (data->entry_parm),
 				  GET_MODE_SIZE (GET_MODE (data->entry_parm)),
-				  0);
+				  TYPE_ALIGN (data->passed_type));
 	  set_mem_attributes (data->stack_parm, parm, 1);
 	}
 
-      if (data->promoted_mode != data->nominal_mode)
+      dest = validize_mem (data->stack_parm);
+      src = validize_mem (data->entry_parm);
+
+      if (MEM_P (src))
 	{
-	  push_to_sequence (all->conversion_insns);
-	  emit_move_insn (validize_mem (data->stack_parm),
-			  validize_mem (data->entry_parm));
-	  all->conversion_insns = get_insns ();
-	  end_sequence ();
+	  /* Use a block move to handle potentially misaligned entry_parm.  */
+	  if (!to_conversion)
+	    push_to_sequence (all->conversion_insns);
+	  to_conversion = true;
+
+	  emit_block_move (dest, src,
+			   GEN_INT (int_size_in_bytes (data->passed_type)),
+			   BLOCK_OP_NORMAL);
 	}
       else
-	emit_move_insn (validize_mem (data->stack_parm),
-			validize_mem (data->entry_parm));
+	emit_move_insn (dest, src);
+    }
+
+  if (to_conversion)
+    {
+      all->conversion_insns = get_insns ();
+      end_sequence ();
     }
 
   SET_DECL_RTL (parm, data->stack_parm);
@@ -2967,7 +2998,8 @@ assign_parms_unsplit_complex (struct assign_parm_data_all *all, tree fnargs)
 
 	      /* split_complex_arg put the real and imag parts in
 		 pseudos.  Move them to memory.  */
-	      tmp = assign_stack_local (DECL_MODE (parm), size, 0);
+	      tmp = assign_stack_local (DECL_MODE (parm), size,
+					TYPE_ALIGN (TREE_TYPE (parm)));
 	      set_mem_attributes (tmp, parm, 1);
 	      rmem = adjust_address_nv (tmp, inner, 0);
 	      imem = adjust_address_nv (tmp, inner, GET_MODE_SIZE (inner));
@@ -3411,6 +3443,7 @@ locate_and_pad_parm (enum machine_mode passed_mode, tree type, int in_regs,
   where_pad = FUNCTION_ARG_PADDING (passed_mode, type);
   boundary = FUNCTION_ARG_BOUNDARY (passed_mode, type);
   locate->where_pad = where_pad;
+  locate->boundary = boundary;
 
 #ifdef ARGS_GROW_DOWNWARD
   locate->slot_offset.constant = -initial_offset_ptr->constant;

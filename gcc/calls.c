@@ -1,6 +1,7 @@
 /* Convert function calls to rtl insns, for GNU C compiler.
    Copyright (C) 1989, 1992, 1993, 1994, 1995, 1996, 1997, 1998,
-   1999, 2000, 2001, 2002, 2003, 2004 Free Software Foundation, Inc.
+   1999, 2000, 2001, 2002, 2003, 2004, 2005
+   Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -1357,6 +1358,7 @@ compute_argument_addresses (struct arg_data *args, rtx argblock, int num_actuals
 	  rtx offset = ARGS_SIZE_RTX (args[i].locate.offset);
 	  rtx slot_offset = ARGS_SIZE_RTX (args[i].locate.slot_offset);
 	  rtx addr;
+	  unsigned int align, boundary;
 
 	  /* Skip this parm if it will not be passed on the stack.  */
 	  if (! args[i].pass_on_stack && args[i].reg != 0)
@@ -1369,9 +1371,18 @@ compute_argument_addresses (struct arg_data *args, rtx argblock, int num_actuals
 
 	  addr = plus_constant (addr, arg_offset);
 	  args[i].stack = gen_rtx_MEM (args[i].mode, addr);
-	  set_mem_align (args[i].stack, PARM_BOUNDARY);
 	  set_mem_attributes (args[i].stack,
 			      TREE_TYPE (args[i].tree_value), 1);
+	  align = BITS_PER_UNIT;
+	  boundary = args[i].locate.boundary;
+	  if (args[i].locate.where_pad != downward)
+	    align = boundary;
+	  else if (GET_CODE (offset) == CONST_INT)
+	    {
+	      align = INTVAL (offset) * BITS_PER_UNIT | boundary;
+	      align = align & -align;
+	    }
+	  set_mem_align (args[i].stack, align);
 
 	  if (GET_CODE (slot_offset) == CONST_INT)
 	    addr = plus_constant (arg_reg, INTVAL (slot_offset));
@@ -1380,9 +1391,9 @@ compute_argument_addresses (struct arg_data *args, rtx argblock, int num_actuals
 
 	  addr = plus_constant (addr, arg_offset);
 	  args[i].stack_slot = gen_rtx_MEM (args[i].mode, addr);
-	  set_mem_align (args[i].stack_slot, PARM_BOUNDARY);
 	  set_mem_attributes (args[i].stack_slot,
 			      TREE_TYPE (args[i].tree_value), 1);
+	  set_mem_align (args[i].stack_slot, args[i].locate.boundary);
 
 	  /* Function incoming arguments may overlap with sibling call
 	     outgoing arguments and we cannot allow reordering of reads
@@ -4119,9 +4130,7 @@ store_one_arg (struct arg_data *arg, rtx argblock, int flags,
 				  NULL_RTX, TYPE_MODE (sizetype), 0);
 	}
 
-      /* Some types will require stricter alignment, which will be
-	 provided for elsewhere in argument layout.  */
-      parm_align = MAX (PARM_BOUNDARY, TYPE_ALIGN (TREE_TYPE (pval)));
+      parm_align = arg->locate.boundary;
 
       /* When an argument is padded down, the block is aligned to
 	 PARM_BOUNDARY, but the actual argument isn't.  */

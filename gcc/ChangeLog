@@ -1,4 +1,28 @@
+2005-01-11  Alan Modra  <amodra@bigpond.net.au>
+
+	PR target/18916
+	* builtins.c (std_gimplify_va_arg_expr): Adjust alignment of *ap.
+	* expr.h (struct locate_and_pad_arg_data): Add "boundary".
+	* function.c (locate_and_pad_parm): Set new field.
+	(assign_parm_find_stack_rtl): Use it instead of FUNCTION_ARG_BOUNDARY.
+	Tweak where_pad test to include "none".  Always set mem align for
+	stack_parm.
+	(assign_parm_adjust_stack_rtl): Discard stack_parm if alignment
+	not sufficient for type.
+	(assign_parm_setup_block): If stack_parm is zero on entry, always
+	make a new stack local.  Block move old stack parm if necessary
+	to new aligned stack local.
+	(assign_parm_setup_stack): Use a block move to handle
+	potentially misaligned entry_parm.
+	(assign_parms_unsplit_complex): Specify required alignment when
+	creating stack local.
+	* calls.c (compute_argument_addresses): Override alignment of stack
+	arg calculated from its type with the alignment given by
+	FUNCTION_ARG_BOUNDARY.
+	(store_one_arg): Likewise.
+
 2005-01-11  Jan Beulich  <jbeulich@novell.com>
+
 	* config/ia64/ia64.md (zero_extendsidi2): Replace zxt4 by addp4.
 	Change respective itanium_class attribute to ialu.
 	(shladdp4_internal): New.
