@@ -1,3 +1,8 @@
+2002-07-08  Kriang Lerdsuwanakij  <lerdsuwa@users.sourceforge.net>
+
+	* pt.c (can_complete_type_without_circularity): Add static to
+	function definition.
+
 2002-07-08  Mark Mitchell  <mark@codesourcery.com>
 
 	* cp-tree.h (have_extern_spec): Declare it
