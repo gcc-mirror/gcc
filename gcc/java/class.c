@@ -1,5 +1,5 @@
 /* Functions related to building classes and their related objects.
-   Copyright (C) 1996, 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004
+   Copyright (C) 1996, 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005
    Free Software Foundation, Inc.
 
 This file is part of GCC.
@@ -1741,7 +1741,7 @@ make_class_data (tree type)
   FINISH_RECORD_CONSTRUCTOR (temp);
   START_RECORD_CONSTRUCTOR (cons, class_type_node);
   PUSH_SUPER_VALUE (cons, temp);
-  PUSH_FIELD_VALUE (cons, "next", null_pointer_node);
+  PUSH_FIELD_VALUE (cons, "next_or_version", gcj_abi_version);
   PUSH_FIELD_VALUE (cons, "name", build_utf8_ref (DECL_NAME (type_decl)));
   PUSH_FIELD_VALUE (cons, "accflags",
 		    build_int_cst (NULL_TREE,

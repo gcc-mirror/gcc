@@ -1,3 +1,14 @@
+2005-01-24  Tom Tromey  <tromey@redhat.com>
+
+	* java-tree.h (gcj_abi_version): Declare.
+	* class.c (make_class_data): Push gcj_abi_version into "next"
+	field.  Renamed field.
+	* decl.c (gcj_abi_version): New global.
+	(parse_version): New function.
+	(java_init_decl_processing): Call it.  Renamed 'next' field.
+	Include version.h.
+	(GCJ_BINARYCOMPAT_ADDITION): New define.
+
 2005-01-24  Roger Sayle  <roger@eyesopen.com>
 
 	PR java/19295
