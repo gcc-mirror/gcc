@@ -261,9 +261,15 @@ build_x_typeid (exp)
      tree exp;
 {
   tree cond = NULL_TREE;
-  tree type = TREE_TYPE (tinfo_fn_type);
+  tree type;
   int nonnull;
 
+  if (! flag_rtti)
+    {
+      error ("cannot use typeid with -fno-rtti");
+      return error_mark_node;
+    }
+  
   if (TYPE_SIZE (type_info_type_node) == NULL_TREE)
     {
       error ("must #include <typeinfo> before using typeid");
@@ -288,6 +294,7 @@ build_x_typeid (exp)
   if (exp == error_mark_node)
     return error_mark_node;
 
+  type = TREE_TYPE (tinfo_fn_type);
   exp = build_call (exp, type, NULL_TREE);
 
   if (cond)
