@@ -103,6 +103,14 @@ a register with any other reload.  */
 #ifndef REGISTER_MOVE_COST
 #define REGISTER_MOVE_COST(x, y) 2
 #endif
+
+#ifndef REGNO_MODE_OK_FOR_BASE_P
+#define REGNO_MODE_OK_FOR_BASE_P(REGNO, MODE) REGNO_OK_FOR_BASE_P (REGNO)
+#endif
+
+#ifndef REG_MODE_OK_FOR_BASE_P
+#define REG_MODE_OK_FOR_BASE_P(REGNO, MODE) REG_OK_FOR_BASE_P (REGNO)
+#endif
 
 /* The variables set up by `find_reloads' are:
 
@@ -311,8 +319,8 @@ static int find_reloads_address	PROTO((enum machine_mode, rtx *, rtx, rtx *,
 				       int, enum reload_type, int));
 static rtx subst_reg_equivs	PROTO((rtx));
 static rtx subst_indexed_address PROTO((rtx));
-static int find_reloads_address_1 PROTO((rtx, int, rtx *, int,
-					 enum reload_type,int));
+static int find_reloads_address_1 PROTO((enum machine_mode, rtx, int, rtx *,
+					 int, enum reload_type,int));
 static void find_reloads_address_part PROTO((rtx, rtx *, enum reg_class,
 					     enum machine_mode, int,
 					     enum reload_type, int));
@@ -4233,7 +4241,8 @@ find_reloads_address (mode, memrefloc, ad, loc, opnum, type, ind_levels)
 	 hard register that is valid as a base register and which is not the
 	 subject of a CLOBBER in this insn.  */
 
-      else if (regno < FIRST_PSEUDO_REGISTER && REGNO_OK_FOR_BASE_P (regno)
+      else if (regno < FIRST_PSEUDO_REGISTER
+	       && REGNO_MODE_OK_FOR_BASE_P (regno, mode)
 	       && ! regno_clobbered_p (regno, this_insn))
 	return 0;
 
@@ -4324,7 +4333,7 @@ find_reloads_address (mode, memrefloc, ad, loc, opnum, type, ind_levels)
   else if (GET_CODE (ad) == PLUS
 	   && GET_CODE (XEXP (ad, 0)) == REG
 	   && REGNO (XEXP (ad, 0)) < FIRST_PSEUDO_REGISTER
-	   && REG_OK_FOR_BASE_P (XEXP (ad, 0))
+	   && REG_MODE_OK_FOR_BASE_P (XEXP (ad, 0), mode)
 	   && GET_CODE (XEXP (ad, 1)) == CONST_INT)
     {
       /* Unshare the MEM rtx so we can safely alter it.  */
@@ -4401,7 +4410,8 @@ find_reloads_address (mode, memrefloc, ad, loc, opnum, type, ind_levels)
 			   XEXP (XEXP (ad, 0), 1));
       find_reloads_address_part (XEXP (ad, 0), &XEXP (ad, 0), BASE_REG_CLASS,
 				 GET_MODE (ad), opnum, type, ind_levels);
-      find_reloads_address_1 (XEXP (ad, 1), 1, &XEXP (ad, 1), opnum, type, 0);
+      find_reloads_address_1 (mode, XEXP (ad, 1), 1, &XEXP (ad, 1), opnum,
+			      type, 0);
 
       return 1;
     }
@@ -4424,7 +4434,8 @@ find_reloads_address (mode, memrefloc, ad, loc, opnum, type, ind_levels)
 					  INTVAL (XEXP (ad, 1))));
       find_reloads_address_part (XEXP (ad, 1), &XEXP (ad, 1), BASE_REG_CLASS,
 				 GET_MODE (ad), opnum, type, ind_levels);
-      find_reloads_address_1 (XEXP (ad, 0), 1, &XEXP (ad, 0), opnum, type, 0);
+      find_reloads_address_1 (mode, XEXP (ad, 0), 1, &XEXP (ad, 0), opnum,
+			      type, 0);
 
       return 1;
     }
@@ -4470,7 +4481,7 @@ find_reloads_address (mode, memrefloc, ad, loc, opnum, type, ind_levels)
       return 1;
     }
 
-  return find_reloads_address_1 (ad, 0, loc, opnum, type, ind_levels);
+  return find_reloads_address_1 (mode, ad, 0, loc, opnum, type, ind_levels);
 }
 
 /* Find all pseudo regs appearing in AD
@@ -4633,9 +4644,11 @@ subst_indexed_address (addr)
   return addr;
 }
 
-/* Record the pseudo registers we must reload into hard registers
-   in a subexpression of a would-be memory address, X.
-   (This function is not called if the address we find is strictly valid.)
+/* Record the pseudo registers we must reload into hard registers in a
+   subexpression of a would-be memory address, X referring to a value
+   in mode MODE.  (This function is not called if the address we find
+   is strictly valid.)
+
    CONTEXT = 1 means we are considering regs as index regs,
    = 0 means we are considering them as base regs.
 
@@ -4653,7 +4666,8 @@ subst_indexed_address (addr)
    could have addressing modes that this does not handle right.  */
 
 static int
-find_reloads_address_1 (x, context, loc, opnum, type, ind_levels)
+find_reloads_address_1 (mode, x, context, loc, opnum, type, ind_levels)
+     enum machine_mode mode;
      rtx x;
      int context;
      rtx *loc;
@@ -4695,74 +4709,74 @@ find_reloads_address_1 (x, context, loc, opnum, type, ind_levels)
 	if (code0 == MULT || code0 == SIGN_EXTEND || code0 == TRUNCATE 
 	    || code0 == ZERO_EXTEND || code1 == MEM)
 	  {
-	    find_reloads_address_1 (orig_op0, 1, &XEXP (x, 0), opnum, type,
-				    ind_levels);
-	    find_reloads_address_1 (orig_op1, 0, &XEXP (x, 1), opnum, type,
-				    ind_levels);
+	    find_reloads_address_1 (mode, orig_op0, 1, &XEXP (x, 0), opnum,
+				    type, ind_levels);
+	    find_reloads_address_1 (mode, orig_op1, 0, &XEXP (x, 1), opnum,
+				    type, ind_levels);
 	  }
 
 	else if (code1 == MULT || code1 == SIGN_EXTEND || code1 == TRUNCATE
 		 || code1 == ZERO_EXTEND || code0 == MEM)
 	  {
-	    find_reloads_address_1 (orig_op0, 0, &XEXP (x, 0), opnum, type,
-				    ind_levels);
-	    find_reloads_address_1 (orig_op1, 1, &XEXP (x, 1), opnum, type,
-				    ind_levels);
+	    find_reloads_address_1 (mode, orig_op0, 0, &XEXP (x, 0), opnum,
+				    type, ind_levels);
+	    find_reloads_address_1 (mode, orig_op1, 1, &XEXP (x, 1), opnum,
+				    type, ind_levels);
 	  }
 
 	else if (code0 == CONST_INT || code0 == CONST
 		 || code0 == SYMBOL_REF || code0 == LABEL_REF)
-	  find_reloads_address_1 (orig_op1, 0, &XEXP (x, 1), opnum, type,
-				  ind_levels);
+	  find_reloads_address_1 (mode, orig_op1, 0, &XEXP (x, 1), opnum,
+				  type, ind_levels);
 
 	else if (code1 == CONST_INT || code1 == CONST
 		 || code1 == SYMBOL_REF || code1 == LABEL_REF)
-	  find_reloads_address_1 (orig_op0, 0, &XEXP (x, 0), opnum, type,
-				  ind_levels);
+	  find_reloads_address_1 (mode, orig_op0, 0, &XEXP (x, 0), opnum,
+				  type, ind_levels);
 
 	else if (code0 == REG && code1 == REG)
 	  {
 	    if (REG_OK_FOR_INDEX_P (op0)
-		&& REG_OK_FOR_BASE_P (op1))
+		&& REG_MODE_OK_FOR_BASE_P (op1, mode))
 	      return 0;
 	    else if (REG_OK_FOR_INDEX_P (op1)
-		     && REG_OK_FOR_BASE_P (op0))
+		     && REG_MODE_OK_FOR_BASE_P (op0, mode))
 	      return 0;
-	    else if (REG_OK_FOR_BASE_P (op1))
-	      find_reloads_address_1 (orig_op0, 1, &XEXP (x, 0), opnum, type, 
-				      ind_levels);
-	    else if (REG_OK_FOR_BASE_P (op0))
-	      find_reloads_address_1 (orig_op1, 1, &XEXP (x, 1), opnum, type,
-				      ind_levels);
+	    else if (REG_MODE_OK_FOR_BASE_P (op1, mode))
+	      find_reloads_address_1 (mode, orig_op0, 1, &XEXP (x, 0), opnum,
+				      type, ind_levels);
+	    else if (REG_MODE_OK_FOR_BASE_P (op0, mode))
+	      find_reloads_address_1 (mode, orig_op1, 1, &XEXP (x, 1), opnum,
+				      type, ind_levels);
 	    else if (REG_OK_FOR_INDEX_P (op1))
-	      find_reloads_address_1 (orig_op0, 0, &XEXP (x, 0), opnum, type,
-				      ind_levels);
+	      find_reloads_address_1 (mode, orig_op0, 0, &XEXP (x, 0), opnum,
+				      type, ind_levels);
 	    else if (REG_OK_FOR_INDEX_P (op0))
-	    find_reloads_address_1 (orig_op1, 0, &XEXP (x, 1), opnum, type,
-				    ind_levels);
+	      find_reloads_address_1 (mode, orig_op1, 0, &XEXP (x, 1), opnum,
+				      type, ind_levels);
 	    else
 	      {
-		find_reloads_address_1 (orig_op0, 1, &XEXP (x, 0), opnum, type,
-					ind_levels);
-		find_reloads_address_1 (orig_op1, 0, &XEXP (x, 1), opnum, type,
-					ind_levels);
+		find_reloads_address_1 (mode, orig_op0, 1, &XEXP (x, 0), opnum,
+					type, ind_levels);
+		find_reloads_address_1 (mode, orig_op1, 0, &XEXP (x, 1), opnum,
+					type, ind_levels);
 	      }
 	  }
 
 	else if (code0 == REG)
 	  {
-	    find_reloads_address_1 (orig_op0, 1, &XEXP (x, 0), opnum, type,
-				    ind_levels);
-	    find_reloads_address_1 (orig_op1, 0, &XEXP (x, 1), opnum, type,
-				    ind_levels);
+	    find_reloads_address_1 (mode, orig_op0, 1, &XEXP (x, 0), opnum,
+				    type, ind_levels);
+	    find_reloads_address_1 (mode, orig_op1, 0, &XEXP (x, 1), opnum,
+				    type, ind_levels);
 	  }
 
 	else if (code1 == REG)
 	  {
-	    find_reloads_address_1 (orig_op1, 1, &XEXP (x, 1), opnum, type,
-				    ind_levels);
-	    find_reloads_address_1 (orig_op0, 0, &XEXP (x, 0), opnum, type,
-				    ind_levels);
+	    find_reloads_address_1 (mode, orig_op1, 1, &XEXP (x, 1), opnum,
+				    type, ind_levels);
+	    find_reloads_address_1 (mode, orig_op0, 0, &XEXP (x, 0), opnum,
+				    type, ind_levels);
 	  }
       }
 
@@ -4811,7 +4825,7 @@ find_reloads_address_1 (x, context, loc, opnum, type, ind_levels)
 	    regno = reg_renumber[regno];
 	  if ((regno >= FIRST_PSEUDO_REGISTER
 	       || !(context ? REGNO_OK_FOR_INDEX_P (regno)
-		    : REGNO_OK_FOR_BASE_P (regno))))
+		    : REGNO_MODE_OK_FOR_BASE_P (regno, mode))))
 	    {
 	      register rtx link;
 
@@ -4928,7 +4942,7 @@ find_reloads_address_1 (x, context, loc, opnum, type, ind_levels)
 
 	if ((regno >= FIRST_PSEUDO_REGISTER
 	     || !(context ? REGNO_OK_FOR_INDEX_P (regno)
-		  : REGNO_OK_FOR_BASE_P (regno))))
+		  : REGNO_MODE_OK_FOR_BASE_P (regno, mode))))
 	  {
 	    push_reload (x, NULL_RTX, loc, NULL_PTR,
 			 context ? INDEX_REG_CLASS : BASE_REG_CLASS,
@@ -4961,7 +4975,7 @@ find_reloads_address_1 (x, context, loc, opnum, type, ind_levels)
 	      int regno = REGNO (SUBREG_REG (x)) + SUBREG_WORD (x);
 
 	      if (! (context ? REGNO_OK_FOR_INDEX_P (regno)
-		     : REGNO_OK_FOR_BASE_P (regno)))
+		     : REGNO_MODE_OK_FOR_BASE_P (regno, mode)))
 		{
 		  push_reload (x, NULL_RTX, loc, NULL_PTR,
 			       context ? INDEX_REG_CLASS : BASE_REG_CLASS,
@@ -4994,7 +5008,7 @@ find_reloads_address_1 (x, context, loc, opnum, type, ind_levels)
     for (i = GET_RTX_LENGTH (code) - 1; i >= 0; i--)
       {
 	if (fmt[i] == 'e')
-	  find_reloads_address_1 (XEXP (x, i), context, &XEXP (x, i),
+	  find_reloads_address_1 (mode, XEXP (x, i), context, &XEXP (x, i),
 				  opnum, type, ind_levels);
       }
   }
