@@ -35,21 +35,14 @@ Boston, MA 02111-1307, USA.    */
 
 #undef ASM_FINAL_SPEC
 
+#undef  CPP_SUBTARGET_SPEC
+#define CPP_SUBTARGET_SPEC "-D__ELF__"
+
 #undef  CC1_SPEC
 #define CC1_SPEC  "%{G*}"
 
 #undef  ASM_SPEC
 #define ASM_SPEC  "%{G*} %{relax:-relax} %{!gstabs*:-no-mdebug}%{gstabs*:-mdebug}"
-
-#undef  LINK_SPEC
-#define LINK_SPEC "-m elf64alpha %{G*} %{relax:-relax}		\
-  %{O*:-O3} %{!O*:-O1}						\
-  %{shared:-shared}						\
-  %{!shared:							\
-    %{!static:							\
-      %{rdynamic:-export-dynamic}				\
-      %{!dynamic-linker:-dynamic-linker %(elf_dynamic_linker)}}	\
-    %{static:-static}}"
 
 /* Output at beginning of assembler file.  */
 #undef  ASM_FILE_START

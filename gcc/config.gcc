@@ -461,13 +461,6 @@ alpha-*-interix)
 	#prefix='$$INTERIX_ROOT'/usr/contrib
 	#local_prefix='$$INTERIX_ROOT'/usr/contrib
 	;;
-alpha*-*-linux*ecoff*)
-	tm_file="${tm_file} alpha/linux-ecoff.h alpha/linux.h"
-	target_cpu_default="MASK_GAS"
-	tmake_file="alpha/t-alpha alpha/t-ieee"
-	gas=no
-	gas=yes gnu_ld=yes
-	;;
 alpha*-*-linux*libc1*)
 	tm_file="${tm_file} alpha/elf.h alpha/linux.h alpha/linux-elf.h"
 	target_cpu_default="MASK_GAS"
@@ -502,6 +495,7 @@ alpha*-*-netbsd*)
 	;;
 
 alpha*-*-openbsd*)
+	tm_file="${cpu_type}/${cpu_type}.h ${tm_file}"
 	# default x-alpha is only appropriate for dec-osf.
 	target_cpu_default="MASK_GAS"
 	tmake_file="alpha/t-alpha alpha/t-ieee"
@@ -559,7 +553,7 @@ alpha*-*-vxworks*)
 	;;
 alpha64-dec-*vms*)
 	xm_defines=POSIX
-	tm_file="alpha/vms.h alpha/vms64.h"
+	tm_file="${tm_file} alpha/vms.h alpha/vms64.h"
 	xm_file="alpha/xm-vms.h alpha/xm-vms64.h"
 	tmake_file="alpha/t-alpha alpha/t-vms alpha/t-vms64 alpha/t-ieee"
 	xmake_file=alpha/x-vms
@@ -577,7 +571,7 @@ alpha64-dec-*vms*)
 	;;
 alpha*-dec-*vms*)
 	xm_defines=POSIX
-	tm_file=alpha/vms.h
+	tm_file="${tm_file} alpha/vms.h"
 	xm_file=alpha/xm-vms.h
 	tmake_file="alpha/t-alpha alpha/t-vms alpha/t-ieee"
 	xmake_file=alpha/x-vms

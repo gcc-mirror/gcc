@@ -1,3 +1,27 @@
+2002-04-11  David O'Brien  <obrien@FreeBSD.org>
+
+	* config.gcc (alpha*-*-openbsd, alpha64-dec-*vms,alpha*-dec-*vms):
+	Include {cpu}/{cpu}.h thru tm_file.
+	(alpha*-*-linux*ecoff): Remove target.
+	* config/alpha/elf.h (CPP_SUBTARGET_SPEC): Define __ELF__.
+	(LINK_SPEC): Remove, is not OS independent.
+	* config/alpha/freebsd.h (CPP_SPEC): Do not define __ELF__.
+	(LINK_SPEC): Do not need to #undef any longer.
+	* config/alpha/linux-ecoff.h (LINK_SPEC): Do not need to #undef
+	any longer.
+	* config/alpha/linux-elf.h (SUB_CPP_PREDEFINES): Do not define
+	__ELF__.
+	(LINK_SPEC): Moved here from alpha/elf.h.
+	* config/alpha/linux.h (CPP_PREDEFINES): No longer consumer of
+	SUB_CPP_PREDEFINES.
+	* config/alpha/linux-ecoff.h: Remove.
+	* config/alpha/netbsd.h (CPP_PREDEFINES): Do not define __ELF__.
+	(CPP_SPEC): Define _POSIX_SOURCE as needed.
+	(CPP_SUBTARGET_SPEC): Do not define.
+	(LINK_SPEC): Do not need to #undef any longer.
+	* config/alpha/openbsd.h: Do not directly include alpha/alpha.h.
+	* config/alpha/vms.h: Likewise.
+
 2002-04-11  Richard Sandiford  <rsand
 
 	* doc/extend.texi: Remove old claim that typedefs cannot have

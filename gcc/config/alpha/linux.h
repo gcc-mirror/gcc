@@ -25,8 +25,7 @@ Boston, MA 02111-1307, USA.  */
 
 #undef CPP_PREDEFINES
 #define CPP_PREDEFINES \
-"-Dlinux -Dunix -Asystem=linux -D_LONGLONG -D__alpha__ " \
-SUB_CPP_PREDEFINES
+  "-Dlinux -Dunix -Asystem=linux -D_LONGLONG -D__alpha__"
 
 /* The GNU C++ standard library requires that these macros be defined.  */
 #undef CPLUSPLUS_CPP_SPEC
