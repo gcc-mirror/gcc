@@ -4,6 +4,9 @@
 
 2003-05-05  Geoffrey Keating  <geoffk@apple.com>
 
+	* gcc.c-torture/execute/ieee/fp-cmp-8.c: New test.
+	* gcc.dg/ppc-fsel-2.c: New test.
+
 	* gcc.dg/unused-5.c: New test.
 
 2003-05-05  Kriang Lerdsuwanakij  <lerdsuwa@users.sourceforge.net>

@@ -7191,9 +7191,8 @@ validate_condition_mode (code, mode)
     abort ();
   
   /* These should never be generated except for 
-     flag_unsafe_math_optimizations and flag_finite_math_only.  */
+     flag_finite_math_only.  */
   if (mode == CCFPmode
-      && ! flag_unsafe_math_optimizations
       && ! flag_finite_math_only
       && (code == LE || code == GE
 	  || code == UNEQ || code == LTGT
@@ -8637,7 +8636,10 @@ rs6000_reverse_condition (mode, code)
 {
   /* Reversal of FP compares takes care -- an ordered compare
      becomes an unordered compare and vice versa.  */
-  if (mode == CCFPmode && !flag_unsafe_math_optimizations)
+  if (mode == CCFPmode 
+      && (!flag_finite_math_only
+	  || code == UNLT || code == UNLE || code == UNGT || code == UNGE
+	  || code == UNEQ || code == LTGT))
     return reverse_condition_maybe_unordered (code);
   else
     return reverse_condition (code);
@@ -8676,7 +8678,7 @@ rs6000_generate_compare (code)
 	case UNEQ:
 	case NE:
 	case LTGT:
-	  cmp = flag_unsafe_math_optimizations
+	  cmp = flag_finite_math_only
 	    ? gen_tstsfeq_gpr (compare_result, rs6000_compare_op0,
 			       rs6000_compare_op1)
 	    : gen_cmpsfeq_gpr (compare_result, rs6000_compare_op0,
@@ -8688,7 +8690,7 @@ rs6000_generate_compare (code)
 	case UNGE:
 	case GE:
 	case GEU:
-	  cmp = flag_unsafe_math_optimizations
+	  cmp = flag_finite_math_only
 	    ? gen_tstsfgt_gpr (compare_result, rs6000_compare_op0,
 			       rs6000_compare_op1)
 	    : gen_cmpsfgt_gpr (compare_result, rs6000_compare_op0,
@@ -8700,7 +8702,7 @@ rs6000_generate_compare (code)
 	case UNLE:
 	case LE:
 	case LEU:
-	  cmp = flag_unsafe_math_optimizations
+	  cmp = flag_finite_math_only
 	    ? gen_tstsflt_gpr (compare_result, rs6000_compare_op0,
 			       rs6000_compare_op1)
 	    : gen_cmpsflt_gpr (compare_result, rs6000_compare_op0,
@@ -8732,7 +8734,7 @@ rs6000_generate_compare (code)
 	  compare_result2 = gen_reg_rtx (CCFPmode);
 
 	  /* Do the EQ.  */
-	  cmp = flag_unsafe_math_optimizations
+	  cmp = flag_finite_math_only
 	    ? gen_tstsfeq_gpr (compare_result2, rs6000_compare_op0,
 			       rs6000_compare_op1)
 	    : gen_cmpsfeq_gpr (compare_result2, rs6000_compare_op0,
@@ -8788,9 +8790,9 @@ rs6000_generate_compare (code)
 					     rs6000_compare_op1)));
   
   /* Some kinds of FP comparisons need an OR operation;
-     except for flag_unsafe_math_optimizations we don't bother.  */
+     under flag_finite_math_only we don't bother.  */
   if (rs6000_compare_fp_p
-      && ! flag_unsafe_math_optimizations
+      && ! flag_finite_math_only
       && ! (TARGET_HARD_FLOAT && TARGET_E500 && !TARGET_FPRS)
       && (code == LE || code == GE
 	  || code == UNEQ || code == LTGT
@@ -9069,7 +9071,7 @@ rs6000_emit_cmove (dest, op, true_cond, false_cond)
   /* Eliminate half of the comparisons by switching operands, this
      makes the remaining code simpler.  */
   if (code == UNLT || code == UNGT || code == UNORDERED || code == NE
-      || code == LTGT || code == LT)
+      || code == LTGT || code == LT || code == UNLE)
     {
       code = reverse_condition_maybe_unordered (code);
       temp = true_cond;
@@ -9079,7 +9081,7 @@ rs6000_emit_cmove (dest, op, true_cond, false_cond)
 
   /* UNEQ and LTGT take four instructions for a comparison with zero,
      it'll probably be faster to use a branch here too.  */
-  if (code == UNEQ)
+  if (code == UNEQ && HONOR_NANS (compare_mode))
     return 0;
   
   if (GET_CODE (op1) == CONST_DOUBLE)
@@ -9090,7 +9092,7 @@ rs6000_emit_cmove (dest, op, true_cond, false_cond)
      Inf - Inf is NaN which is not zero, and so if we don't
      know that the operand is finite and the comparison
      would treat EQ different to UNORDERED, we can't do it.  */
-  if (! flag_unsafe_math_optimizations
+  if (HONOR_INFINITIES (compare_mode)
       && code != GT && code != UNGE
       && (GET_CODE (op1) != CONST_DOUBLE || real_isinf (&c1))
       /* Constructs of the form (a OP b ? a : b) are safe.  */
@@ -9109,7 +9111,7 @@ rs6000_emit_cmove (dest, op, true_cond, false_cond)
 
   /* If we don't care about NaNs we can reduce some of the comparisons
      down to faster ones.  */
-  if (flag_unsafe_math_optimizations)
+  if (! HONOR_NANS (compare_mode))
     switch (code)
       {
       case GT:
@@ -9155,14 +9157,15 @@ rs6000_emit_cmove (dest, op, true_cond, false_cond)
       break;
 
     case UNGE:
+      /* a UNGE 0 <-> (a GE 0 || -a UNLT 0) */
       temp = gen_reg_rtx (result_mode);
       emit_insn (gen_rtx_SET (VOIDmode, temp,
 			      gen_rtx_IF_THEN_ELSE (result_mode,
 						    gen_rtx_GE (VOIDmode,
 								op0, op1),
 						    true_cond, false_cond)));
-      false_cond = temp;
-      true_cond = false_cond;
+      false_cond = true_cond;
+      true_cond = temp;
 
       temp = gen_reg_rtx (compare_mode);
       emit_insn (gen_rtx_SET (VOIDmode, temp, gen_rtx_NEG (compare_mode, op0)));
@@ -9170,14 +9173,15 @@ rs6000_emit_cmove (dest, op, true_cond, false_cond)
       break;
 
     case GT:
+      /* a GT 0 <-> (a GE 0 && -a UNLT 0) */
       temp = gen_reg_rtx (result_mode);
       emit_insn (gen_rtx_SET (VOIDmode, temp,
 			      gen_rtx_IF_THEN_ELSE (result_mode, 
 						    gen_rtx_GE (VOIDmode,
 								op0, op1),
 						    true_cond, false_cond)));
-      true_cond = temp;
-      false_cond = true_cond;
+      true_cond = false_cond;
+      false_cond = temp;
 
       temp = gen_reg_rtx (compare_mode);
       emit_insn (gen_rtx_SET (VOIDmode, temp, gen_rtx_NEG (compare_mode, op0)));

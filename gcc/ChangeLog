@@ -22,6 +22,15 @@
 
 2003-05-05  Geoffrey Keating  <geoffk@apple.com>
 
+	* config/rs6000/rs6000.c (validate_condition_mode): Use
+	flag_finite_math_only.
+	(rs6000_reverse_condition): Never return UNKNOWN; use
+	flag_finite_math_only.
+	(rs6000_generate_compare): Use flag_finite_math_only.
+	(rs6000_emit_cmove): Handle UNLE.  Support UNEQ under -ffast-math.
+	Use HONOR_* rather than flag_unsafe_math_optimizations.  Correct
+	UNGE and GT cases.  Handle UNEQ and LTGT when ! HONOR_NANS.  
+
 	* toplev.c (check_global_declarations): Suppress not-used warning
 	for volatile variables.
 
