@@ -1,3 +1,13 @@
+2003-03-17  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* dwarf2asm.h: Delete obsolete comment.
+	(dw2_asm_output_data, dw2_asm_output_delta, dw2_asm_output_offset,
+	dw2_asm_output_pcrel, dw2_asm_output_addr,
+	dw2_asm_output_addr_rtx, dw2_asm_output_encoded_addr_rtx,
+	dw2_asm_output_nstring, dw2_asm_output_data_uleb128,
+	dw2_asm_output_data_sleb128, dw2_asm_output_delta_uleb128,
+	dw2_asm_output_delta_sleb128): Add ATTRIBUTE_NULL_PRINTF.
+
 2003-03-17  Steve Ellcey  <sje@cup.hp.com>
 
 	* stmt.c (tail_recursion_args): Call promote_mode to set
