@@ -2007,8 +2007,15 @@ duplicate_decls (newdecl, olddecl, different_binding_level)
   if (different_binding_level)
     {
       /* Don't output a duplicate symbol or debugging information for this
-	 declaration.  */
-      TREE_ASM_WRITTEN (newdecl) = DECL_IGNORED_P (newdecl) = 1;
+	 declaration.
+
+	 Do not set TREE_ASM_WRITTEN for a FUNCTION_DECL since we may actually
+	 just have two declarations without a definition.  VAR_DECLs may need
+	 the same treatment, I'm not sure.  */
+      if (TREE_CODE (newdecl) == FUNCTION_DECL)
+	DECL_IGNORED_P (newdecl) = 1;
+      else
+	TREE_ASM_WRITTEN (newdecl) = DECL_IGNORED_P (newdecl) = 1;
       return 0;
     }
 
