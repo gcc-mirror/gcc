@@ -47,45 +47,45 @@ namespace __gnu_cxx
   extern std::ctype<char>			ctype_c;
   extern std::collate<char> 			collate_c;
   extern std::numpunct<char> 			numpunct_c;
-  extern std::num_get<char> 				num_get_c;
-  extern std::num_put<char> 				num_put_c;  
-  extern std::codecvt<char, char, mbstate_t>		codecvt_c;
+  extern std::num_get<char> 			num_get_c;
+  extern std::num_put<char> 			num_put_c;  
+  extern std::codecvt<char, char, mbstate_t>	codecvt_c;
   extern std::moneypunct<char, false> 		moneypunct_cf;
   extern std::moneypunct<char, true> 		moneypunct_ct;
   extern std::money_get<char> 			money_get_c;
   extern std::money_put<char> 			money_put_c;
-  extern std::__timepunct<char> 			timepunct_c;
+  extern std::__timepunct<char> 		timepunct_c;
   extern std::time_get<char> 			time_get_c;
   extern std::time_put<char> 			time_put_c;
   extern std::messages<char> 			messages_c;
 #ifdef  _GLIBCXX_USE_WCHAR_T
   extern std::ctype<wchar_t>			ctype_w;
   extern std::collate<wchar_t> 			collate_w;
-  extern std::numpunct<wchar_t> 			numpunct_w;
+  extern std::numpunct<wchar_t> 		numpunct_w;
   extern std::num_get<wchar_t> 			num_get_w;
   extern std::num_put<wchar_t> 			num_put_w;
   extern std::codecvt<wchar_t, char, mbstate_t>	codecvt_w;
-  extern std::moneypunct<wchar_t, false> 		moneypunct_wf;
-  extern std::moneypunct<wchar_t, true> 		moneypunct_wt;
-  extern std::money_get<wchar_t> 			money_get_w;
-  extern std::money_put<wchar_t> 			money_put_w;
-  extern std::__timepunct<wchar_t> 			timepunct_w;
-  extern std::time_get<wchar_t> 			time_get_w;
-  extern std::time_put<wchar_t> 			time_put_w;
+  extern std::moneypunct<wchar_t, false> 	moneypunct_wf;
+  extern std::moneypunct<wchar_t, true> 	moneypunct_wt;
+  extern std::money_get<wchar_t> 		money_get_w;
+  extern std::money_put<wchar_t> 		money_put_w;
+  extern std::__timepunct<wchar_t> 		timepunct_w;
+  extern std::time_get<wchar_t> 		time_get_w;
+  extern std::time_put<wchar_t> 		time_put_w;
   extern std::messages<wchar_t> 		messages_w;
 #endif
 
   // And the caches....
   extern std::locale::facet* cache_vec[_GLIBCXX_NUM_FACETS];
-  extern std::__numpunct_cache<char>			numpunct_cache_c;
+  extern std::__numpunct_cache<char>		numpunct_cache_c;
   extern std::__moneypunct_cache<char>		moneypunct_cache_cf;
   extern std::__moneypunct_cache<char>		moneypunct_cache_ct;
   extern std::__timepunct_cache<char>		timepunct_cache_c;
 #ifdef  _GLIBCXX_USE_WCHAR_T
   extern std::__numpunct_cache<wchar_t>		numpunct_cache_w;
-  extern std::__moneypunct_cache<wchar_t>		moneypunct_cache_wf;
-  extern std::__moneypunct_cache<wchar_t>		moneypunct_cache_wt;
-  extern std::__timepunct_cache<wchar_t>		timepunct_cache_w;
+  extern std::__moneypunct_cache<wchar_t>	moneypunct_cache_wf;
+  extern std::__moneypunct_cache<wchar_t>	moneypunct_cache_wt;
+  extern std::__timepunct_cache<wchar_t>	timepunct_cache_w;
 #endif
 } // namespace __gnu_cxx
 

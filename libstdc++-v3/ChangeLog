@@ -1,3 +1,7 @@
+2003-11-24  Paolo Carlini  <pcarlini@suse.de>
+
+	* src/locale_init.cc: Cosmetic reformatting.
+
 2003-11-23  Paolo Carlini  <pcarlini@suse.de>
 
 	* include/bits/locale_facets.tcc (__add_grouping):
