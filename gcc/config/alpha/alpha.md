@@ -3071,10 +3071,10 @@
     ;
   else if (GET_CODE (operands[1]) == CONST_INT)
     {
-      if (alpha_emit_set_const (operands[0], INTVAL (operands[1]), 3))
+      operands[1]
+	= alpha_emit_set_const (operands[0], SImode, INTVAL (operands[1]), 3);
+      if (rtx_equal_p (operands[0], operands[1]))
 	DONE;
-      else
-	abort ();
     }
 }")
 
@@ -3088,7 +3088,10 @@
   [(set (match_dup 0) (match_dup 2))
    (set (match_dup 0) (plus:SI (match_dup 0) (match_dup 3)))]
   "
-{ if (alpha_emit_set_const (operands[0], INTVAL (operands[1]), 2))
+{ rtx tem
+    = alpha_emit_set_const (operands[0], SImode, INTVAL (operands[1]), 2);
+
+  if (tem == operands[0])
     DONE;
   else
     FAIL;
@@ -3123,6 +3126,8 @@
   ""
   "
 {
+  rtx tem;
+
   if (GET_CODE (operands[0]) == MEM
       && ! reg_or_0_operand (operands[1], DImode))
     operands[1] = force_reg (DImode, operands[1]);
@@ -3130,8 +3135,14 @@
   if (! CONSTANT_P (operands[1]) || input_operand (operands[1], DImode))
     ;
   else if (GET_CODE (operands[1]) == CONST_INT
-	   && alpha_emit_set_const (operands[0], INTVAL (operands[1]), 3))
-    DONE;
+	   && (tem = alpha_emit_set_const (operands[0], DImode,
+					   INTVAL (operands[1]), 3)) != 0)
+    {
+      if (rtx_equal_p (tem, operands[0]))
+	DONE;
+      else
+	operands[1] = tem;
+    }
   else if (CONSTANT_P (operands[1]))
     {
       operands[1] = force_const_mem (DImode, operands[1]);
@@ -3157,7 +3168,10 @@
   [(set (match_dup 0) (match_dup 2))
    (set (match_dup 0) (plus:DI (match_dup 0) (match_dup 3)))]
   "
-{ if (alpha_emit_set_const (operands[0], INTVAL (operands[1]), 2))
+{ rtx tem
+    = alpha_emit_set_const (operands[0], DImode, INTVAL (operands[1]), 2);
+
+  if (tem == operands[0])
     DONE;
   else
     FAIL;
