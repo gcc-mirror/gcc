@@ -316,10 +316,8 @@ do_define (pfile)
      cpp_reader *pfile;
 {
   HASHNODE **slot;
-  DEFINITION *def = 0;
   unsigned long hash;
   int len;
-  int funlike = 0, empty = 0;
   U_CHAR *sym;
   cpp_toklist *list = &pfile->directbuf;
 
@@ -350,90 +348,26 @@ do_define (pfile)
       goto out;
     }
 
-
-  if (list->tokens_used == 2 && list->tokens[1].type == CPP_VSPACE)
-    empty = 1;  /* Empty definition of object-like macro.  */
-
-  /* If the next character, with no intervening whitespace, is '(',
-     then this is a function-like macro.  Otherwise it is an object-
-     like macro, and C99 requires whitespace after the name
-     (6.10.3 para 3).  */
-  else if (!(list->tokens[1].flags & HSPACE_BEFORE))
-    {
-      if (list->tokens[1].type == CPP_OPEN_PAREN)
-	funlike = 1;
-      else
-	cpp_pedwarn (pfile,
-		     "The C standard requires whitespace after #define %.*s",
-		     len, sym);
-    }
-
-  if (! empty)
-    {
-      def = _cpp_create_definition (pfile, list, funlike);
-      if (def == 0)
-	goto out;
-    }
-
   slot = _cpp_lookup_slot (pfile, sym, len, INSERT, &hash);
   if (*slot)
     {
-      int ok;
-      HASHNODE *hp = *slot;
-
-      /* Redefining a macro is ok if the definitions are the same.  */
-      if (hp->type == T_MACRO)
-	ok = ! empty && ! _cpp_compare_defs (pfile, def, hp->value.defn);
-      else if (hp->type == T_EMPTY)
-	ok = empty;
-      /* Redefining a constant is ok with -D.  */
-      else if (hp->type == T_CONST || hp->type == T_STDC)
-        ok = ! pfile->done_initializing;
-      /* Otherwise it's not ok.  */
-      else
-	ok = 0;
-      /* Print the warning or error if it's not ok.  */
-      if (! ok)
+      /* Check for poisoned identifiers now.  All other checks
+	 are done in cpphash.c.  */
+      if ((*slot)->type == T_POISON)
 	{
-	  if (hp->type == T_POISON)
-	    cpp_error (pfile, "redefining poisoned `%.*s'", len, sym);
-	  else
-	    cpp_pedwarn (pfile, "`%.*s' redefined", len, sym);
-	  if (hp->type == T_MACRO && pfile->done_initializing)
-	    {
-	      DEFINITION *d = hp->value.defn;
-	      cpp_pedwarn_with_file_and_line (pfile, d->file, d->line, d->col,
-			"this is the location of the previous definition");
-	    }
-	}
-      if (hp->type != T_POISON)
-	{
-	  /* Replace the old definition.  */
-	  if (hp->type == T_MACRO)
-	    _cpp_free_definition (hp->value.defn);
-	  if (empty)
-	    {
-	      hp->type = T_EMPTY;
-	      hp->value.defn = 0;
-	    }
-	  else
-	    {
-	      hp->type = T_MACRO;
-	      hp->value.defn = def;
-	    }
+	  cpp_error (pfile, "redefining poisoned `%.*s'", len, sym);
+	  goto out;
 	}
     }
   else
-    {
-      HASHNODE *hp = _cpp_make_hashnode (sym, len, empty ? T_EMPTY : T_MACRO,
-					 hash);
-      hp->value.defn = def;
-      *slot = hp;
-    }
+    *slot = _cpp_make_hashnode (sym, len, T_VOID, hash);
+    
+  if (_cpp_create_definition (pfile, list, *slot) == 0)
+    goto out;
 
   if (CPP_OPTION (pfile, debug_output)
       || CPP_OPTION (pfile, dump_macros) == dump_definitions)
-    _cpp_dump_definition (pfile, sym, len, def);
+    _cpp_dump_definition (pfile, *slot);
   else if (CPP_OPTION (pfile, dump_macros) == dump_names)
     pass_thru_directive (sym, len, pfile, T_DEFINE);
 
@@ -769,7 +703,9 @@ do_undef (pfile)
 	  if (CPP_OPTION (pfile, debug_output))
 	    pass_thru_directive (hp->name, len, pfile, T_UNDEF);
 
-	  if (hp->type != T_MACRO && hp->type != T_EMPTY)
+	  if (hp->type != T_MACRO && hp->type != T_FMACRO
+	      && hp->type != T_MCONST
+	      && hp->type != T_EMPTY && hp->type != T_IDENTITY)
 	    cpp_warning (pfile, "undefining `%s'", hp->name);
 
 	  htab_clear_slot (pfile->hashtab, (void **)slot);

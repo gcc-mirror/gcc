@@ -64,9 +64,6 @@ struct definition
   int nargs;
   int length;			/* length of expansion string */
   U_CHAR *expansion;
-  int line;			/* Line number of definition */
-  int col;
-  const char *file;		/* File of definition */
   char rest_args;		/* Nonzero if last arg. absorbs the rest */
   struct reflist *pattern;
 
@@ -86,6 +83,7 @@ struct definition
 /* different flavors of hash nodes */
 enum node_type
 {
+  T_VOID = 0,	   /* no definition yet */
   T_SPECLINE,	   /* `__LINE__' */
   T_DATE,	   /* `__DATE__' */
   T_FILE,	   /* `__FILE__' */
@@ -94,10 +92,12 @@ enum node_type
   T_TIME,	   /* `__TIME__' */
   T_STDC,	   /* `__STDC__' */
   T_CONST,	   /* Constant string, used by `__SIZE_TYPE__' etc */
-  T_MCONST,	   /* Ditto, but the string is malloced memory */
-  T_MACRO,	   /* macro defined by `#define' */
-  T_DISABLED,	   /* macro temporarily turned off for rescan */
-  T_POISON,	   /* macro defined with `#pragma poison' */
+  T_XCONST,	   /* Ditto, but the string is malloced memory */
+  T_POISON,	   /* poisoned identifier */
+  T_MCONST,	   /* object-like macro defined to a single identifier */
+  T_MACRO,	   /* general object-like macro */
+  T_FMACRO,	   /* general function-like macro */
+  T_IDENTITY,	   /* macro defined to itself */
   T_EMPTY	   /* macro defined to nothing */
 };
 
@@ -118,6 +118,11 @@ struct hashnode
   unsigned long hash;		/* cached hash value */
   union hashval value;		/* pointer to expansion, or whatever */
   enum node_type type;		/* type of special token */
+  int disabled;			/* macro turned off for rescan?  */
+
+  const char *file;		/* File, line, column of definition; */
+  int line;
+  int col;
 };
 
 /* List of directories to look for include files in. */
@@ -272,12 +277,9 @@ extern HASHNODE **_cpp_lookup_slot	PARAMS ((cpp_reader *,
 						 enum insert_option,
 						 unsigned long *));
 extern void _cpp_free_definition	PARAMS ((DEFINITION *));
-extern DEFINITION *_cpp_create_definition PARAMS ((cpp_reader *,
-						   cpp_toklist *, int));
-extern void _cpp_dump_definition	PARAMS ((cpp_reader *, const U_CHAR *,
-						 long, DEFINITION *));
-extern int _cpp_compare_defs		PARAMS ((cpp_reader *, DEFINITION *,
-						 DEFINITION *));
+extern int _cpp_create_definition	PARAMS ((cpp_reader *,
+						 cpp_toklist *, HASHNODE *));
+extern void _cpp_dump_definition	PARAMS ((cpp_reader *, HASHNODE *));
 extern void _cpp_quote_string		PARAMS ((cpp_reader *, const char *));
 extern void _cpp_macroexpand		PARAMS ((cpp_reader *, HASHNODE *));
 extern void _cpp_init_macro_hash	PARAMS ((cpp_reader *));
