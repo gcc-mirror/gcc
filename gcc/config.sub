@@ -118,7 +118,8 @@ case $basic_machine in
 	tahoe | i[345]86 | i860 | m68k | m68000 | m88k | ns32k | arm | pyramid \
 		| tron | a29k | 580 | i960 | h8300 | hppa1.0 | hppa1.1 \
 		| alpha | we32k | ns16k | clipper | sparclite | i370 | sh \
-		| powerpc | sparc64 | 1750a | dsp16xx)
+		| powerpc | sparc64 | 1750a | dsp16xx | mips64 | mipsel \
+		| mips64el | mips64orion | mips64orionel )
 		basic_machine=$basic_machine-unknown
 		;;
 	# Object if more than one company name word.
@@ -133,7 +134,8 @@ case $basic_machine in
 	      | none-* | 580-* | cray2-* | h8300-* | i960-* | xmp-* | ymp-* \
 	      | hppa1.0-* | hppa1.1-* | alpha-* | we32k-* | cydra-* | ns16k-* \
 	      | pn-* | np1-* | xps100-* | clipper-* | orion-* | sparclite-* \
-	      | sh-* | powerpc-* | sparc64-*)
+	      | sh-* | powerpc-* | sparc64-* | mips64-* | mipsel-* \
+	      | mips64el-* | mips64orion-* | mips64orionel-* )
 		;;
 	# Recognize the various machine names and aliases which stand
 	# for a CPU type and a company and sometimes even an OS.
@@ -333,6 +335,12 @@ case $basic_machine in
 		;;
 	miniframe)
 		basic_machine=m68000-convergent
+		;;
+	mips3*-*)
+		basic_machine=`echo $basic_machine | sed -e 's/mips3/mips64/'`
+		;;
+	mips3*)
+		basic_machine=`echo $basic_machine | sed -e 's/mips3/mips64/'`-unknown
 		;;
 	ncr3000)
 		basic_machine=i486-ncr
