@@ -3772,6 +3772,11 @@ print_operand_address (file, addr)
   switch (GET_CODE (addr))
     {
     case REG:
+      /* ESI addressing makes instruction vector decoded on the K6.  We can
+	 avoid this by ESI+0 addressing.  */
+      if (REGNO_REG_CLASS (REGNO (addr)) == SIREG
+	  && ix86_cpu == PROCESSOR_K6 && !optimize_size)
+	output_addr_const (file, const0_rtx);
       ADDR_BEG (file);
       fprintf (file, "%se", RP);
       fputs (hi_reg_name[REGNO (addr)], file);
@@ -3887,8 +3892,16 @@ print_operand_address (file, addr)
 	    ireg = XEXP (addr, 0);
 	  }
 
-	output_addr_const (file, const0_rtx);
-	PRINT_B_I_S (NULL_RTX, ireg, scale, file);
+	/* (reg,reg,) is shorter than (,reg,2).  */
+	if(scale == 2)
+	  {
+	    PRINT_B_I_S (ireg, ireg, 1, file);
+	  } 
+	else 
+	  {
+	    output_addr_const (file, const0_rtx);
+	    PRINT_B_I_S (NULL_RTX, ireg, scale, file);
+	  }
       }
       break;
 

@@ -1,3 +1,11 @@
+Fri Apr  2 11:36:12 1999  Jan Hubicka  (hubicka@paru.cas.cz)
+
+	* i386.c (print_operand_address, case REG): Do not use ESI addressing
+	mode for the K6.
+
+	* i386.c (print_operand_address, case MULT): Use more efficient
+	encoding (mult (reg) (const_int 2)).
+
 Thu Apr  1 17:01:50 1999  Richard Henderson  <rth@cygnus.com>
 
 	Move over patch from Bernd Schmidt from GC branch:
