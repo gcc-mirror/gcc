@@ -197,6 +197,7 @@ on ELF systems).</p>
     <li>gcc-3.3.2: libstdc++.so.5.0.5</li>
     <li>gcc-3.3.3: libstdc++.so.5.0.5</li>
     <li>gcc-3.4.0: libstdc++.so.6.0.0</li>
+    <li>gcc-3.4.1: libstdc++.so.6.0.1</li>
     </ul>
     <p></p>
     </li>
@@ -256,6 +257,7 @@ on ELF systems).</p>
     <li>gcc-3.3.2: GLIBCPP_3.2.3, CXXABI_1.2.1</li>
     <li>gcc-3.3.3: GLIBCPP_3.2.3, CXXABI_1.2.1</li>
     <li>gcc-3.4.0: GLIBCXX_3.4, CXXABI_1.3</li>
+    <li>gcc-3.4.1: GLIBCXX_3.4.1, CXXABI_1.3</li>
     </ul>
     <p></p>
     </li>
@@ -284,7 +286,7 @@ on ELF systems).</p>
     <li>gcc-3.2.x: 102</li>
     <li>gcc-3.3.x: 102</li>
     <li>gcc-3.4.x: 102 (when n=1)</li>
-    <li>gcc-3.4.x: 1000+n (when n&gt;1)</li>
+    <li>gcc-3.4.x: 1000 + n (when n&gt;1)</li>
     <li>gcc-3.4.x: 999999 (when n=0)</li>
     </ul>
     <p></p>
@@ -341,6 +343,7 @@ on ELF systems).</p>
     <li>gcc-3.3.2: 20031016</li>
     <li>gcc-3.3.3: 20040214</li>
     <li>gcc-3.4.0: 20040419</li>
+    <li>gcc-3.4.1: 20040701</li>
     </ul>
     <p></p>
     </li>
@@ -382,6 +385,7 @@ on ELF systems).</p>
     <li>gcc-3.3.2: "3.3.2"</li>
     <li>gcc-3.3.3: "3.3.3"</li>
     <li>gcc-3.4.0: "version-unused"</li>
+    <li>gcc-3.4.1: "version-unused"</li>
     </ul>
     <p></p>
     </li>
@@ -419,6 +423,7 @@ on ELF systems).</p>
     <li>gcc-3.3.2: include/c++/3.3.2</li>
     <li>gcc-3.3.3: include/c++/3.3.3</li>
     <li>gcc-3.4.0: include/c++/3.4.0</li>
+    <li>gcc-3.4.1: include/c++/3.4.1</li>
     </ul>
     <p></p>
     </li>
@@ -575,11 +580,20 @@ number to increase, say from "libstdc++.so.3.0.4" to
   include all the required locale facets, as well as things like
   std::basic_streambuf, et al.
 </li>
+
+<li> adding a non-private explicit copy constructor or destructor to a
+class that would otherwise have implicit versions. This will change
+the way the compiler deals with this class in by-value return
+statements or parameters: instead of being passing instances of this
+class in registers, the compiler will be forced to use memory. See <a
+href="http://www.codesourcery.com/cxx-abi/abi.html#calls"> this part</a>
+ of the C++ ABI documentation for further details. 
+ </li>
+
 </ul>
 
 <h3 class="left">
-  <a name="implementation">Library implementation strategy</a>
-</h3>
+  <a name="implementation">Library implementation strategy</a> </h3>
 
 <ul>
  <li>Separation of interface and implementation
