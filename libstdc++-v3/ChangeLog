@@ -1,3 +1,17 @@
+2001-01-25  Mark Mitchell  <mark@codesourcery.com>
+
+	* src/Makefile.am (sources): Add globals.cc.
+	* src/Makefile.in: Regenerated.
+	* src/globals.cc: New file.
+	* src/ios.cc (cin): Don't define here, just declare extern.
+	(cout): Likewise.
+	(cerr): Likewise.
+	(clog): Likewise.
+	(wcin): Likewise.
+	(wcout): Likewise.
+	(wcerr): Likewise.
+	(wclog): Likewise.
+
 2001-01-25  Phil Edwards  <pme@sources.redhat.com>
 
 	* include/bits/std_iterator.h:  Do not include stl_relops.h.
