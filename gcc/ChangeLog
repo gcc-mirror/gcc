@@ -1,5 +1,7 @@
 Wed Sep 10 21:37:30 1997  Jeffrey A Law  (law@cygnus.com)
 
+	* version.c: Bump for snapshot.
+
 	* Makefile.in (compare): Exit with nonzero status if there
 	are comparison failures.  Note which files failed the
 	comparison test in .bad_compare.
