@@ -1,5 +1,14 @@
 2001-10-29  Joseph S. Myers  <jsm28@cam.ac.uk>
 
+	* loop.h (struct induction): Rename ext_dependant to
+	ext_dependent.
+	* loop.c: Change all uses.
+	(check_ext_dependant_givs): Rename to check_ext_dependent_givs.
+	All callers changed.
+	* timevar.c (DEFTIMEVAR): Fix spelling of identifier__ parameter.
+
+2001-10-29  Joseph S. Myers  <jsm28@cam.ac.uk>
+
 	* c-parse.in (expr_no_commas, primary), c-typeck.c
 	(parser_build_binary_op): Use IS_EXPR_CODE_CLASS.
 
