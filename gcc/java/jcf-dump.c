@@ -65,7 +65,7 @@ The Free Software Foundation is independent of Sun Microsystems, Inc.  */
 #include <getopt.h>
 #include <math.h>
 
-/* Outout file. */
+/* Output file. */
 FILE *out;
 /* Name of output file, if NULL if stdout. */
 char *output_file = NULL;
@@ -320,8 +320,12 @@ utf8_equal_string (JCF *jcf, int index, const char * value)
       if (flag_print_class_info)					    \
 	{								    \
 	  fprintf (out, "\n  inner: ");					    \
-	  print_constant_terse_with_index (out, jcf,			    \
-				inner_class_info_index, CONSTANT_Class);    \
+	  if (inner_class_info_index == 0)				    \
+	    fprintf (out, " (no inner info index)");			    \
+	  else								    \
+	    print_constant_terse_with_index (out, jcf,			    \
+					     inner_class_info_index,	    \
+					     CONSTANT_Class);		    \
 	  if (inner_name_index == 0)					    \
 	    fprintf (out, " (anonymous)");				    \
 	  else if (verbose || flag_print_constant_pool)			    \
@@ -334,12 +338,16 @@ utf8_equal_string (JCF *jcf, int index, const char * value)
 	  fprintf (out, ", access flags: 0x%x", inner_class_access_flags);  \
 	  print_access_flags (out, inner_class_access_flags, 'c');	    \
 	  fprintf (out, ", outer class: ");				    \
-	  print_constant_terse_with_index (out, jcf,			    \
-				outer_class_info_index, CONSTANT_Class);    \
+	  if (outer_class_info_index == 0)				    \
+	    fprintf (out, "(not a member)");				    \
+	  else								    \
+	    print_constant_terse_with_index (out, jcf,			    \
+					     outer_class_info_index,	    \
+					     CONSTANT_Class);		    \
 	}								    \
     }									    \
-      if (flag_print_class_info)					    \
-	fputc ('\n', out);						    \
+  if (flag_print_class_info)						    \
+    fputc ('\n', out);							    \
 }
 
 #define HANDLE_SOURCEDEBUGEXTENSION_ATTRIBUTE(LENGTH) \
