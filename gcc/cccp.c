@@ -316,10 +316,13 @@ static void dump_single_macro ();
 
 static char *progname;
 
-/* Nonzero means handle C++ comment syntax and use
-   extra default include directories for C++.  */
+/* Nonzero means use extra default include directories for C++.  */
 
 static int cplusplus;
+
+/* Nonzero means handle cplusplus style comments */
+
+static int cplusplus_comments;
 
 /* Nonzero means handle #import, for objective C.  */
 
@@ -1003,6 +1006,7 @@ main (argc, argv)
   dump_macros = dump_none;
   no_output = 0;
   cplusplus = 0;
+  cplusplus_comments = 0;
 
   bzero (pend_files, argc * sizeof (char *));
   bzero (pend_defs, argc * sizeof (char *));
@@ -1103,13 +1107,13 @@ main (argc, argv)
 
       case 'l':
 	if (! strcmp (argv[i], "-lang-c"))
-	  cplusplus = 0, objc = 0;
+	  cplusplus = 0, cplusplus_comments = 0, objc = 0;
 	if (! strcmp (argv[i], "-lang-c++"))
-	  cplusplus = 1, objc = 0;
+	  cplusplus = 1, cplusplus_comments = 1, objc = 0;
 	if (! strcmp (argv[i], "-lang-objc"))
-	  objc = 1, cplusplus = 0;
+	  objc = 1, cplusplus = 0, cplusplus_comments = 1;
 	if (! strcmp (argv[i], "-lang-objc++"))
-	  objc = 1, cplusplus = 1;
+	  objc = 1, cplusplus = 1, cplusplus_comments = 1;
  	if (! strcmp (argv[i], "-lang-asm"))
  	  lang_asm = 1;
  	if (! strcmp (argv[i], "-lint"))
@@ -1117,7 +1121,7 @@ main (argc, argv)
 	break;
 
       case '+':
-	cplusplus = 1;
+	cplusplus = 1, cplusplus_comments = 1;
 	break;
 
       case 'w':
@@ -2287,7 +2291,7 @@ do { ip = &instack[indepth];		\
 		bp++;
 	      bp += 2;
 	    }
-	    else if ((cplusplus || objc) && *bp == '/' && bp[1] == '/') {
+	    else if (cplusplus_comments && *bp == '/' && bp[1] == '/') {
 	      bp += 2;
 	      while (*bp++ != '\n') ;
 	    }
@@ -2419,7 +2423,7 @@ do { ip = &instack[indepth];		\
 	newline_fix (ibp);
 
       if (*ibp != '*'
-	  && !((cplusplus || objc) && *ibp == '/'))
+	  && !(cplusplus_comments && *ibp == '/'))
 	goto randomchar;
       if (ip->macro != 0)
 	goto randomchar;
@@ -3220,7 +3224,7 @@ handle_directive (ip, op)
 	  if (*bp == '\\' && bp[1] == '\n')
 	    newline_fix (bp);
 	  if (*bp == '*'
-	      || ((cplusplus || objc) && *bp == '/')) {
+	      || (cplusplus_comments && *bp == '/')) {
 	    U_CHAR *obp = bp - 1;
 	    ip->bufp = bp + 1;
 	    skip_to_end_of_comment (ip, &ip->lineno, 0);
@@ -3356,7 +3360,7 @@ handle_directive (ip, op)
 
 	  case '/':
 	    if (*xp == '*'
-		|| ((cplusplus || objc) && *xp == '/')) {
+		|| (cplusplus_comments && *xp == '/')) {
 	      ip->bufp = xp + 1;
 	      /* If we already copied the command through,
 		 already_output != 0 prevents outputting comment now.  */
@@ -6210,7 +6214,7 @@ skip_if_group (ip, any)
       if (*bp == '\\' && bp[1] == '\n')
 	newline_fix (bp);
       if (*bp == '*'
-	  || ((cplusplus || objc) && *bp == '/')) {
+	  || (cplusplus_comments && *bp == '/')) {
 	ip->bufp = ++bp;
 	bp = skip_to_end_of_comment (ip, &ip->lineno, 0);
       }
@@ -6252,7 +6256,7 @@ skip_if_group (ip, any)
 	  while (!(*bp == '*' && bp[1] == '/'))
 	    bp++;
 	  bp += 2;
-	} else if ((cplusplus || objc) && *bp == '/' && bp[1] == '/') {
+	} else if (cplusplus_comments && *bp == '/' && bp[1] == '/') {
 	  bp += 2;
 	  while (*bp++ != '\n') ;
         }
@@ -6279,7 +6283,7 @@ skip_if_group (ip, any)
 	    bp++;
 	  }
 	  bp += 2;
-	} else if ((cplusplus || objc) && *bp == '/' && bp[1] == '/') {
+	} else if (cplusplus_comments && *bp == '/' && bp[1] == '/') {
 	  bp += 2;
 	  while (*bp++ != '\n') ;
         }
@@ -6541,7 +6545,7 @@ validate_else (p)
 	  p++;
 	}
       }
-      else if ((cplusplus || objc) && p[1] == '/') {
+      else if (cplusplus_comments && p[1] == '/') {
 	p += 2;
 	while (*p && *p++ != '\n') ;
       }
@@ -6579,7 +6583,7 @@ skip_to_end_of_comment (ip, line_counter, nowarn)
     *op->bufp++ = '/';
     *op->bufp++ = '*';
   }
-  if ((cplusplus || objc) && bp[-1] == '/') {
+  if (cplusplus_comments && bp[-1] == '/') {
     if (output) {
       while (bp < limit)
 	if ((*op->bufp++ = *bp++) == '\n') {
@@ -7371,7 +7375,7 @@ macarg1 (start, limit, depthptr, newlines, comments, rest_args)
     case '/':
       if (bp[1] == '\\' && bp[2] == '\n')
 	newline_fix (bp + 1);
-      if ((cplusplus || objc) && bp[1] == '/') {
+      if (cplusplus_comments && bp[1] == '/') {
 	*comments = 1;
 	bp += 2;
 	while (bp < limit && *bp++ != '\n') ;
@@ -7482,7 +7486,7 @@ discard_comments (start, length, newlines)
       if (*ibp == '\\' && ibp[1] == '\n')
 	newline_fix (ibp);
       /* Delete any comment.  */
-      if ((cplusplus || objc) && ibp[0] == '/') {
+      if (cplusplus_comments && ibp[0] == '/') {
 	obp--;
 	ibp++;
 	while (ibp < limit && *ibp++ != '\n') ;
