@@ -1,3 +1,13 @@
+1998-11-25 07:51 -0500  Zack Weinberg  <zack@rabi.phys.columbia.edu>
+
+	* gcc.c: Split out Objective-C specs to...
+	* objc/lang-specs.h: here. (New file.) Make the specs cpplib
+	aware.
+
+	* c-lex.c (init_parse): Always initialize the filename global.
+	* objc/objc-act.c (lang_init): Always call check_newline at
+	beginning of file.
+
 Wed Nov 25 00:48:29 1998  Graham  <grahams@rcp.co.uk>
 
 	* reload1.c (reload): Remove unused variable.

@@ -189,20 +189,21 @@ init_parse (filename)
 #ifdef IO_BUFFER_SIZE
   setvbuf (finput, (char *) xmalloc (IO_BUFFER_SIZE), _IOFBF, IO_BUFFER_SIZE);
 #endif
-#endif /* !USE_CPPLIB */
-
-  init_lex ();
-
-#if USE_CPPLIB
+#else /* !USE_CPPLIB */
   parse_in.show_column = 1;
   if (! cpp_start_read (&parse_in, filename))
     abort ();
+
+  if (filename == 0 || !strcmp (filename, "-"))
+    filename = "stdin";
 
   /* cpp_start_read always puts at least one line directive into the
      token buffer.  We must arrange to read it out here. */
   yy_cur = parse_in.token_buffer;
   yy_lim = CPP_PWRITTEN (&parse_in);
 #endif
+
+  init_lex ();
 
   return filename;
 }
