@@ -1,3 +1,8 @@
+2001-10-16  Loren J. Rittle  <ljrittle@acm.org>
+
+	* Makefile.am (test.o): Find tests/test.c in $(srcdir).
+	* Makefile.in: Rebuilt.
+
 2001-10-16  Bryce McKinlay  <bryce@waitaki.otago.ac.nz>
 
 	* Makefile.am, acinclude.m4, configure.in: Imported GC 6.1 Alpha 1 and

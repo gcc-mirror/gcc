@@ -51,7 +51,7 @@ check_PROGRAMS = gctest
 # The following hack produces a warning from automake, but we need it in order 
 # to build a file from a subdirectory. FIXME.
 test.o:	tests/test.c
-	$(COMPILE) -c tests/test.c
+	$(COMPILE) -c $(srcdir)/tests/test.c
 # 	Using $< in the above seems to fail with the HP/UX on Itanium make.
 
 gctest_OBJECTS = test.o
