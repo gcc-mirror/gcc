@@ -180,6 +180,7 @@ output_prologue ()
 from the machine description file `md'.  */\n\n");
 
   printf ("#include \"config.h\"\n");
+  printf ("#include <stdio.h>\n");
   printf ("#include \"rtl.h\"\n");
   printf ("#include \"regs.h\"\n");
   printf ("#include \"hard-reg-set.h\"\n");
@@ -191,7 +192,6 @@ from the machine description file `md'.  */\n\n");
   printf ("#include \"insn-codes.h\"\n\n");
   printf ("#include \"recog.h\"\n\n");
 
-  printf ("#include <stdio.h>\n");
   printf ("#include \"output.h\"\n");
 }
 
