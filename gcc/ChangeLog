@@ -1,3 +1,22 @@
+2000-03-18  Mark Mitchell  <mark@codesourcery.com>
+
+	* tree.h (tree_index): Remove enumerals for integer types.
+	(integer_type_kind): New type.
+	(integer_types): New variable.
+	(char_type_node): Adjust.
+	(signed_char_type_node): Likewise.
+	(unsigned_char_type_node): Likewise.
+	(short_integer_type_node): Likewise.
+	(short_unsigned_type_node): Likewise.
+	(integer_type_node): Likewise.
+	(unsigned_type_node): Likewise.
+	(long_integer_type_node): Likewise.
+	(long_unsigned_type_node): Likewise.
+	(long_long_integer_type_node): Likewise.
+	(long_long_unsigned_type_node): Likewise.
+	* tree.c (integer_types): New variable.
+	(init_obstacks): Register it as a root.
+
 Sat Mar 18 14:38:00 2000  Jason Eckhardt  <jle@cygnus.com>
 
 	* bb-reorder.c (reorder_basic_blocks): Update PREV_INSN as well as
