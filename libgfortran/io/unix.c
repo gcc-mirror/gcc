@@ -1394,6 +1394,12 @@ is_seekable (stream * s)
   return ((unix_stream *) s)->mmaped;
 }
 
+try
+flush (stream *s)
+{
+  return fd_flush( (unix_stream *) s);
+}
+
 
 /* How files are stored:  This is an operating-system specific issue,
    and therefore belongs here.  There are three cases to consider.
