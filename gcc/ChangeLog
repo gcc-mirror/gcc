@@ -1,3 +1,7 @@
+2001-07-20  Daniel Berlin  <dan@cgsoftware.com>
+
+	* params.def: Change default max inline insns to 100.
+
 2001-07-20  Diego Novillo  <dnovillo@redhat.com>
 
 	* combine.c (combine_simplify_rtx): Generate a new shift operation
