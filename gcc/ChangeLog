@@ -1,3 +1,13 @@
+2002-03-27  Danny Smith  <dannysmith@users.sourceforge.net>
+
+	* config/i386/cygwin.h (TARGET_DLL, TARGET_WIN32,
+	TARGET_CYGWIN, TARGET_WINDOWS): Remove unused switches.
+	(MASK_DLL, MASK_WIN32, MASK_CYGWIN, MASK_WINDOWS):
+	Remove unnecessary masks.
+	(MASK_NOP_FUN_DLLIMPORT): Use an unused an bit.
+	(SUBTARGET_SWITCHES): Use empty masks for -mwin32, -mcygwin,
+	-mwindows, -mdll switches and their negations.
+
 2002-03-27  Neil Booth  <neil@daikokuya.demon.co.uk>
 
 	* gcc-common.c (lang_mark_false_label_stack): Remove.
