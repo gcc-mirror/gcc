@@ -826,12 +826,23 @@ extern rtx const_tiny_rtx[3][(int) MAX_MACHINE_MODE];
    go through these unique rtx objects.  */
 extern rtx stack_pointer_rtx;
 extern rtx frame_pointer_rtx;
+extern rtx hard_frame_pointer_rtx;
 extern rtx arg_pointer_rtx;
 extern rtx pic_offset_table_rtx;
 extern rtx struct_value_rtx;
 extern rtx struct_value_incoming_rtx;
 extern rtx static_chain_rtx;
 extern rtx static_chain_incoming_rtx;
+
+/* If HARD_FRAME_POINTER_REGNUM is defined, then a special dummy reg
+   is used to represent the frame pointer.  This is because the
+   hard frame pointer and the automatic variables are separated by an amount
+   that cannot be determined until after register allocation.  We can assume
+   that in this case ELIMINABLE_REGS will be defined, one action of which
+   will be to eliminate FRAME_POINTER_REGNUM into HARD_FRAME_POINTER_REGNUM. */
+#ifndef HARD_FRAME_POINTER_REGNUM
+#define HARD_FRAME_POINTER_REGNUM FRAME_POINTER_REGNUM
+#endif
 
 /* Virtual registers are used during RTL generation to refer to locations into
    the stack frame when the actual location isn't known until RTL generation
