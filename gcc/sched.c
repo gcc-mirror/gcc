@@ -267,6 +267,9 @@ static rtx dead_notes;
    time has passed.  INSN_QUEUE_SIZE is a power of two larger than
    MAX_BLOCKAGE and MAX_READY_COST computed by genattr.c.  This is the
    longest time an isnsn may be queued.  */
+#ifndef INSN_QUEUE_SIZE
+#define INSN_QUEUE_SIZE 10
+#endif
 static rtx insn_queue[INSN_QUEUE_SIZE];
 static int q_ptr = 0;
 static int q_size = 0;
