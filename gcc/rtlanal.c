@@ -2204,26 +2204,6 @@ for_each_rtx (x, f, data)
   return 0;
 }
 
-/* INSN and REFERENCE are instructions in the same insn chain.
-   Return non-zero if INSN is first.  */
-int
-insn_first_p (insn, reference)
-     rtx insn, reference;
-{
-  rtx p, q;
-
-  for (p = insn, q = reference; ; p = NEXT_INSN (p), q = NEXT_INSN (q))
-    {
-      /* Start with test for not first so that INSN == REFERENCE yields not
-	 first.  */
-      if (q == insn || ! p)
-	return 0;
-      if (p == reference || ! q)
-	return 1;
-    }
-}
-
-
 /* Searches X for any reference to REGNO, returning the rtx of the
    reference found if any.  Otherwise, returns NULL_RTX.  */
 

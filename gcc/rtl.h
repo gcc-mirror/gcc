@@ -1036,7 +1036,6 @@ extern rtx replace_regs			PROTO((rtx, rtx *, int, int));
 extern int computed_jump_p		PROTO((rtx));
 typedef int (*rtx_function)             PROTO((rtx *, void *));
 extern int for_each_rtx                 PROTO((rtx *, rtx_function, void *));
-extern int insn_first_p			PROTO((rtx, rtx));
 extern rtx regno_use_in			PROTO((int, rtx));
 
 /* flow.c */
