@@ -1,6 +1,6 @@
 // Components for manipulating sequences of characters -*- C++ -*-
 
-// Copyright (C) 2000, 1999, 1998, 1997 Free Software Foundation, Inc.
+// Copyright (C) 1997, 1998, 1999, 2000, 2001 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -35,128 +35,31 @@
 // in ANSI X3J16/94-0013R2.  Rewritten by Nathan Myers.
 
 #include <bits/std_string.h>
-#include <bits/std_algorithm.h>
 
 // Instantiation configuration.
 #ifndef C
 # define C char
-# define _GLIBCPP_INSTANTIATING_CHAR 1
 #endif
 
 namespace std 
 {
   typedef basic_string<C> S;
 
-  template C S::_Rep::_S_terminal;
-  template const S::size_type S::npos;
-  template S::size_type S::_Rep::_S_max_size;
-  template S::size_type S::_S_empty_rep_storage[];
-  template S::_Rep* S::_Rep::_S_create(size_t, S::allocator_type const&);
-  template void S::_Rep::_M_destroy(const S::allocator_type&) throw();
-  template void __destroy_aux(S*, S*, __false_type);
+  template class basic_string<C>;
 
-  template S::basic_string(S const&);
+  template S operator+(const C*, const S&);
+  template S operator+(C, const S&);
+  template bool operator==(const S::iterator&, const S::iterator&);
+  template bool operator==(const S::const_iterator&, const S::const_iterator&);
 
-  template 
-    S::basic_string(S::size_type, C, const S::allocator_type&);
-
-  template 
-    S::basic_string(const S::allocator_type&);
-
-  template 
-    S::basic_string(const S&, S::size_type, S::size_type);
-
-  template 
-    S::basic_string(const S&, S::size_type, S::size_type, 
-		    const S::allocator_type&);
-
-  template 
-    S::basic_string(C const*, S::size_type, const S::allocator_type&);
-
-  template 
-    S::basic_string(C const*, S::allocator_type const&);
-
-  template 
-    S::basic_string(C*, C*, const allocator<C>&);
-
-  template 
-    S::basic_string(S::iterator, S::iterator, const allocator<C>&);
-
-  template
-    void S::_M_leak_hard();
-
-  template
-    void S::_M_mutate(S::size_type, S::size_type, S::size_type);
-
-  template
-    C* S::_Rep::_M_clone(S::allocator_type const&, S::size_type);
-
-  template
-    void S::reserve(S::size_type);
-
-  template
-    void S::swap(S&);
-
-# ifdef _GLIBCPP_ALLOC_CONTROL
-    template
-      bool (* S::_Rep::_S_excess_slop)(size_t, size_t); 
-
-    template
-      bool S::_Rep::_S_default_excess(size_t, size_t); 
-# endif
-
-  template
-    void S::resize(S::size_type, C);
-
-  template
-    S& S::append(S const&);
-
-  template
-    S& S::append(S const&, S::size_type, S::size_type);
-
-  template
-    S& S::append(C const*, S::size_type);
-
-  template
-    S& S::append(S::size_type, C);
-
-  template 
-    S& 
-    S::append<S::iterator>(S::iterator, S::iterator);
-
-  template
-    S& 
-    S::assign(S const&);
-
-  template 
-    S& 
-    S::assign<S::iterator>(S::iterator, S::iterator);
-
-  template 
-    void
-    S::insert<S::iterator> //c*
-    (S::iterator, S::iterator, S::iterator); //it, c+, c+ and temptype = char*
-
-  template
-    S& S::replace(S::size_type, S::size_type, S const&, 
-		  S::size_type, S::size_type);
-
-  template 
-    S& S::replace(S::iterator, S::iterator, S::size_type, C);
-
-  template 
-    S&
-    S::replace<S::iterator> // c*
-    (S::iterator, S::iterator, S::iterator, S::iterator); //it, it, c+, c+ 
-
+  // Only one template keyword allowed here. 
+  // See core issue #46 (NAD)
+  // http://anubis.dkuug.dk/jtc1/sc22/wg21/docs/cwg_closed.html#46
   template 
     S& 
     S::_M_replace<S::iterator>
     (S::iterator, S::iterator, S::iterator, S::iterator, forward_iterator_tag);
 
-  // Only one template keyword allowed here. 
-  // See core issue #46 (NAD)
-  // http://anubis.dkuug.dk/jtc1/sc22/wg21/docs/cwg_closed.html#46
   template 
     S& 
     S::_M_replace<S::const_iterator>
@@ -164,88 +67,13 @@ namespace std
      S::const_iterator, S::const_iterator, forward_iterator_tag);
 
   template 
-    S& 
-    S::_M_replace<C*>
-    (S::iterator, S::iterator, C*, C*, forward_iterator_tag);
+    C* 
+    S::_S_construct<S::iterator>
+    (S::iterator, S::iterator, const allocator<C>&, forward_iterator_tag);
 
   template 
-    S& 
-    S::_M_replace<const C*>
-    (S::iterator, S::iterator, const C*, const C*, forward_iterator_tag);
-
-  template
-    S::size_type S::copy(C*, S::size_type, S::size_type) const;
-
-  template 
-    C* S::_S_construct<S::iterator>(S::iterator, S::iterator, 
-				    const allocator<C>&);
-
-  template 
-    C* S::_S_construct<S::iterator>(S::iterator, S::iterator, 
-				    const allocator<C>&, forward_iterator_tag);
-
-  template 
-    C* S::_S_construct<C*>(C*, C*, const allocator<C>&, forward_iterator_tag);
-
-  template 
-    C* S::_S_construct<const C*>(const C*, const C*, const allocator<C>&, 
-				 forward_iterator_tag);
-
-  template 
-    C* S::_S_construct(S::size_type, C, S::allocator_type const&);
-
-  template
-    const C* S::_S_find(const C* __beg, const C* __end, C __c);
-
-  template
-    S::size_type S::find(C, S::size_type) const;
-
-  template
-    S::size_type S::rfind(C const*, S::size_type, S::size_type) const;
-
-  template
-    S::size_type S::rfind(C, S::size_type) const;
-
-  template
-    S::size_type S::find_first_of(C const*, S::size_type, S::size_type) const;
-
-  template
-    S::size_type S::find_last_of(C const*, S::size_type, S::size_type) const;
-
-  template
-    S::size_type 
-    S::find_first_not_of(C const*, S::size_type, S::size_type) const;
-
-  template
-    S::size_type 
-    S::find_last_not_of(C const*, S::size_type, S::size_type) const;
-
-  template
-    S::size_type S::find_last_not_of(C, S::size_type) const;
-
-  template
-    int S::compare(S::size_type, S::size_type, S const&) const;
-
-  template
-    int S::compare(S::size_type, S::size_type, S const&, S::size_type, 
-		   S::size_type) const;
-
-  template
-    int S::compare(C const*) const;
-
-  template
-    int S::compare(S::size_type, S::size_type, C const*, S::size_type) const;
-
-  template S operator+(const C*, const S&);
-
-  template S operator+(C, const S&);
-
-  template bool operator==(const S::iterator&, const S::iterator&);
-  template bool operator==(const S::const_iterator&, const S::const_iterator&);
-
-  template void _S_string_copy(const S&, C*, allocator<C>::size_type);
-
-} // std
+    S::basic_string(S::iterator, S::iterator, const allocator<C>&);
+} // namespace std
 
 
 

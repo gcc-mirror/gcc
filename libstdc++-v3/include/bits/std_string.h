@@ -1,6 +1,6 @@
 // Components for manipulating sequences of characters -*- C++ -*-
 
-// Copyright (C) 1997-1999 Free Software Foundation, Inc.
+// Copyright (C) 1997, 1998, 1999, 2000, 2001 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -44,7 +44,7 @@
 
 #ifdef _GLIBCPP_NO_TEMPLATE_EXPORT
 # include <bits/std_algorithm.h> // for find_if
-# include <bits/string.tcc> 
+# include <bits/basic_string.tcc> 
 #endif
 
 #endif /* _CPP_STRING */
