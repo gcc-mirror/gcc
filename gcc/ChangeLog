@@ -1,3 +1,14 @@
+2003-12-05  Hans-Peter Nilsson  <hp@axis.com>
+
+	PR target/13256
+	* resource.h (enum mark_resource_type): Remove member MARK_DEST.
+	The only user changed as follows:
+	* resource.c (mark_set_resources) <case SET>: Always recurse for
+	SET_SRC (x).
+	<case SIGN_EXTRACT, case ZERO_EXTRACT>: Always recurse on
+	operands.
+	<case STRICT_LOW_PART>: Delete, deferring to default code.
+
 2003-12-05  Waldek Hebisch <hebisch@math.uni.wroc.pl>
 
 	* stmt.c (expand_nl_goto_receiver): Copy hard register clobbers
