@@ -419,7 +419,8 @@ aligned_memory_operand (op, mode)
     op = XEXP (op, 0);
 
   return (GET_CODE (op) == REG
-	  && (REGNO (op) == STACK_POINTER_REGNUM || op == frame_pointer_rtx
+	  && (REGNO (op) == STACK_POINTER_REGNUM
+	      || op == hard_frame_pointer_rtx
 	      || (REGNO (op) >= FIRST_VIRTUAL_REGISTER
 		  && REGNO (op) <= LAST_VIRTUAL_REGISTER)));
 }
@@ -455,7 +456,8 @@ unaligned_memory_operand (op, mode)
     op = XEXP (op, 0);
 
   return (GET_CODE (op) != REG
-	  || (REGNO (op) != STACK_POINTER_REGNUM && op != frame_pointer_rtx
+	  || (REGNO (op) != STACK_POINTER_REGNUM
+	      && op != hard_frame_pointer_rtx
 	      && (REGNO (op) < FIRST_VIRTUAL_REGISTER
 		  || REGNO (op) > LAST_VIRTUAL_REGISTER)));
 }
