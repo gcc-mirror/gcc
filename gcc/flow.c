@@ -372,11 +372,10 @@ int flow_loop_outside_edge_p		PARAMS ((const struct loop *, edge));
    numbers in use.  */
 
 void
-find_basic_blocks (f, nregs, file, do_cleanup)
+find_basic_blocks (f, nregs, file)
      rtx f;
      int nregs ATTRIBUTE_UNUSED;
      FILE *file ATTRIBUTE_UNUSED;
-     int do_cleanup;
 {
   int max_uid;
 
@@ -425,23 +424,8 @@ find_basic_blocks (f, nregs, file, do_cleanup)
   compute_bb_for_insn (max_uid);
 
   /* Discover the edges of our cfg.  */
-
   record_active_eh_regions (f);
   make_edges (label_value_list);
-
-  /* Delete unreachable blocks, then merge blocks when possible.  */
-
-  if (do_cleanup)
-    {
-      delete_unreachable_blocks ();
-      move_stray_eh_region_notes ();
-      record_active_eh_regions (f);
-      if (optimize)
-	try_merge_blocks ();
-    }
-
-  /* Mark critical edges.  */
-
   mark_critical_edges ();
 
   /* Kill the data we won't maintain.  */
@@ -738,6 +722,19 @@ find_basic_blocks_1 (f)
     abort ();
 
   return label_value_list;
+}
+
+/* Tidy the CFG by deleting unreachable code and whatnot.  */
+
+void
+cleanup_cfg (f)
+     rtx f;
+{
+  delete_unreachable_blocks ();
+  move_stray_eh_region_notes ();
+  record_active_eh_regions (f);
+  try_merge_blocks ();
+  mark_critical_edges ();
 }
 
 /* Create a new basic block consisting of the instructions between
@@ -1552,8 +1549,12 @@ static void
 commit_one_edge_insertion (e)
      edge e;
 {
-  rtx before = NULL_RTX, after = NULL_RTX, tmp;
+  rtx before = NULL_RTX, after = NULL_RTX, insns, tmp;
   basic_block bb;
+
+  /* Pull the insns off the edge now since the edge might go away.  */
+  insns = e->insns;
+  e->insns = NULL_RTX;
 
   /* Figure out where to put these things.  If the destination has
      one predecessor, insert there.  Except for the exit block.  */
@@ -1611,28 +1612,50 @@ commit_one_edge_insertion (e)
     }
 
   /* Now that we've found the spot, do the insertion.  */
-  tmp = e->insns;
-  e->insns = NULL_RTX;
 
   /* Set the new block number for these insns, if structure is allocated.  */
   if (basic_block_for_insn)
     {
       rtx i;
-      for (i = tmp; i != NULL_RTX; i = NEXT_INSN (i))
+      for (i = insns; i != NULL_RTX; i = NEXT_INSN (i))
 	set_block_for_insn (i, bb);
     }
 
   if (before)
     {
-      emit_insns_before (tmp, before);
+      emit_insns_before (insns, before);
       if (before == bb->head)
-	bb->head = tmp;
+	bb->head = insns;
     }
   else
     {
-      tmp = emit_insns_after (tmp, after);
+      rtx last = emit_insns_after (insns, after);
       if (after == bb->end)
-	bb->end = tmp;
+	{
+	  bb->end = last;
+
+	  if (GET_CODE (last) == JUMP_INSN)
+	    {
+	      if (returnjump_p (last))
+		{
+		  /* ??? Remove all outgoing edges from BB and add one
+		     for EXIT.  This is not currently a problem because
+		     this only happens for the (single) epilogue, which
+		     already has a fallthru edge to EXIT.  */
+
+		  e = bb->succ;
+		  if (e->dest != EXIT_BLOCK_PTR
+		      || e->succ_next != NULL
+		      || (e->flags & EDGE_FALLTHRU) == 0)
+		    abort ();
+		  e->flags &= ~EDGE_FALLTHRU;
+
+		  emit_barrier_after (last);
+		}
+	      else
+		abort ();
+	    }
+	}
     }
 }
 
@@ -1644,6 +1667,10 @@ commit_edge_insertions ()
   int i;
   basic_block bb;
 
+#ifdef ENABLE_CHECKING
+  verify_flow_info ();
+#endif
+ 
   i = -1;
   bb = ENTRY_BLOCK_PTR;
   while (1)

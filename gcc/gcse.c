@@ -673,7 +673,8 @@ gcse_main (f, file)
   /* Identify the basic block information for this function, including
      successors and predecessors.  */
   max_gcse_regno = max_reg_num ();
-  find_basic_blocks (f, max_gcse_regno, file, 1);
+  find_basic_blocks (f, max_gcse_regno, file);
+  cleanup_cfg (f);
 
   if (file)
     dump_flow_info (file);
@@ -5201,7 +5202,8 @@ delete_null_pointer_checks (f)
   struct null_pointer_info npi;
 
   /* First break the program into basic blocks.  */
-  find_basic_blocks (f, max_reg_num (), NULL, 1);
+  find_basic_blocks (f, max_reg_num (), NULL);
+  cleanup_cfg (f);
 
   /* If we have only a single block, then there's nothing to do.  */
   if (n_basic_blocks <= 1)

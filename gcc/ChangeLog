@@ -1,5 +1,25 @@
 2000-01-28  Richard Henderson  <rth@cygnus.com>
 
+	* flow.c (find_basic_blocks): Remove do_cleanup argument.
+	Break out that code ...
+	(cleanup_cfg): ... here.
+	(commit_one_edge_insertion): Detect a return instruction being
+	emitted to an edge.  Emit a barrier following; clear fallthru.
+	(commit_edge_insertions): Verify CFG consistency.
+	* function.c (expand_function_start): Kill unused variable.
+	(expand_function_end): Likewise.
+	(thread_prologue_and_epilogue_insns): Use insert_insn_on_edge
+	to insert the epilogue.
+
+	* gcse.c (gcse_main): Adjust for find_basic_blocks change.
+	(delete_null_pointer_checks): Likewise.
+	* output.h: Likewise.
+	* reg-stack.c (reg_to_stack): Likewise.
+	* toplev.c (rest_of_compilation): Likewise.  Run
+	thread_prologue_and_epilogue_insns after rebuilding the CFG.
+
+2000-01-28  Richard Henderson  <rth@cygnus.com>
+
 	* Makefile.in (flow.o): Revert 24 Jan change.
 	* flow.c (mark_regs_live_at_end): Likewise.  Force BLKmode
 	FUNCTION_VALUE result to DECL_RESULT's mode.

@@ -430,7 +430,7 @@ reg_to_stack (first, file)
 
   /* Ok, floating point instructions exist.  If not optimizing, 
      build the CFG and run life analysis.  */
-  find_basic_blocks (first, max_reg_num (), file, 0);
+  find_basic_blocks (first, max_reg_num (), file);
   count_or_remove_death_notes (NULL, 1);
   life_analysis (first, max_reg_num (), file, 0);
 

@@ -3216,7 +3216,8 @@ rest_of_compilation (decl)
   TIMEVAR
     (flow_time,
      {
-       find_basic_blocks (insns, max_reg_num (), rtl_dump_file, 1);
+       find_basic_blocks (insns, max_reg_num (), rtl_dump_file);
+       cleanup_cfg (insns);
        if (optimize)
 	 calculate_loop_depth (rtl_dump_file);
        life_analysis (insns, max_reg_num (), rtl_dump_file, 1);
@@ -3384,13 +3385,6 @@ rest_of_compilation (decl)
   if (rebuild_label_notes_after_reload)
     TIMEVAR (jump_time, rebuild_jump_labels (insns));
 
-  /* On some machines, the prologue and epilogue code, or parts thereof,
-     can be represented as RTL.  Doing so lets us schedule insns between
-     it and the rest of the code and also allows delayed branch
-     scheduling to operate in the epilogue.  */
-
-  thread_prologue_and_epilogue_insns (insns);
-
   /* If optimizing and we are performing instruction scheduling after
      reload, then go ahead and split insns now since we are about to
      recompute flow information anyway.
@@ -3412,12 +3406,23 @@ rest_of_compilation (decl)
   if (flow2_dump)
     open_dump_file (".14.flow2", decl_printable_name (decl, 2));
   
+  TIMEVAR (flow2_time,
+	   {
+	     find_basic_blocks (insns, max_reg_num (), rtl_dump_file);
+	   });
+
+  /* On some machines, the prologue and epilogue code, or parts thereof,
+     can be represented as RTL.  Doing so lets us schedule insns between
+     it and the rest of the code and also allows delayed branch
+     scheduling to operate in the epilogue.  */
+  thread_prologue_and_epilogue_insns (insns);
+
   if (optimize)
     {
       TIMEVAR
 	(flow2_time,
 	 {
-	   find_basic_blocks (insns, max_reg_num (), rtl_dump_file, 1);
+	   cleanup_cfg (insns);
 	   life_analysis (insns, max_reg_num (), rtl_dump_file, 1);
 	 });
 

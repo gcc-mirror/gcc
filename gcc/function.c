@@ -5867,7 +5867,6 @@ expand_function_start (subr, parms_have_cleanups)
      tree subr;
      int parms_have_cleanups;
 {
-  register int i;
   tree tem;
   rtx last_ptr = NULL_RTX;
 
@@ -6171,7 +6170,6 @@ expand_function_end (filename, line, end_bindings)
      int line;
      int end_bindings;
 {
-  register int i;
   tree link;
 
 #ifdef TRAMPOLINE_TEMPLATE
@@ -6546,12 +6544,12 @@ thread_prologue_and_epilogue_insns (f)
      rtx f ATTRIBUTE_UNUSED;
 {
   int insertted = 0;
+  edge e;
+  rtx seq;
 
 #ifdef HAVE_prologue
   if (HAVE_prologue)
     {
-      rtx seq;
-
       start_sequence ();
       seq = gen_prologue();
       emit_insn (seq);
@@ -6581,129 +6579,47 @@ thread_prologue_and_epilogue_insns (f)
     }
 #endif
 
+  /* If the exit block has no non-fake predecessors, we don't need
+     an epilogue.  */
+  for (e = EXIT_BLOCK_PTR->pred; e ; e = e->pred_next)
+    if ((e->flags & EDGE_FAKE) == 0)
+      break;
+  if (e == NULL)
+    goto epilogue_done;
+
 #ifdef HAVE_epilogue
   if (HAVE_epilogue)
     {
-      edge e;
-      basic_block bb = 0;
-      rtx tail = get_last_insn ();
+      /* Find the edge that falls through to EXIT.  Other edges may exist
+	 due to RETURN instructions, but those don't need epilogues.
+	 There really shouldn't be a mixture -- either all should have
+	 been converted or none, however...  */
 
-      /* ??? This is gastly.  If function returns were not done via uses,
-	 but via mark_regs_live_at_end, we could use insert_insn_on_edge
-	 and all of this uglyness would go away.  */
+      for (e = EXIT_BLOCK_PTR->pred; e ; e = e->pred_next)
+	if (e->flags & EDGE_FALLTHRU)
+	  break;
+      if (e == NULL)
+	goto epilogue_done;
 
-      switch (optimize)
-	{
-	default:
-	  /* If the exit block has no non-fake predecessors, we don't
-	     need an epilogue.  Furthermore, only pay attention to the
-	     fallthru predecessors; if (conditional) return insns were
-	     generated, by definition we do not need to emit epilogue
-	     insns.  */
+      start_sequence ();
+      emit_note (NULL, NOTE_INSN_EPILOGUE_BEG);
 
-	  for (e = EXIT_BLOCK_PTR->pred; e ; e = e->pred_next)
-	    if ((e->flags & EDGE_FAKE) == 0
-		&& (e->flags & EDGE_FALLTHRU) != 0)
-	      break;
-	  if (e == NULL)
-	    break;
+      seq = gen_epilogue ();
+      emit_jump_insn (seq);
 
-	  /* We can't handle multiple epilogues -- if one is needed,
-	     we won't be able to place it multiple times.
+      /* Retain a map of the epilogue insns.  */
+      if (GET_CODE (seq) != SEQUENCE)
+	seq = get_insns ();
+      epilogue = record_insns (seq);
 
-	     ??? Fix epilogue expanders to not assume they are the
-	     last thing done compiling the function.  Either that
-	     or copy_rtx each insn.
+      seq = gen_sequence ();
+      end_sequence();
 
-	     ??? Blah, it's not a simple expression to assert that
-	     we've exactly one fallthru exit edge.  */
-
-	  bb = e->src;
-	  tail = bb->end;
-
-	  /* ??? If the last insn of the basic block is a jump, then we
-	     are creating a new basic block.  Wimp out and leave these
-	     insns outside any block.  */
-	  if (GET_CODE (tail) == JUMP_INSN)
-	    bb = 0;
-
-	  /* FALLTHRU */
-	case 0:
-	  {
-	    rtx prev, seq, first_use;
-
-	    /* Move the USE insns at the end of a function onto a list.  */
-	    prev = tail;
-	    if (GET_CODE (prev) == BARRIER
-		|| GET_CODE (prev) == NOTE)
-	      prev = prev_nonnote_insn (prev);
-
-	    first_use = 0;
-	    if (prev
-		&& GET_CODE (prev) == INSN
-		&& GET_CODE (PATTERN (prev)) == USE)
-	      {
-		/* If the end of the block is the use, grab hold of something
-		   else so that we emit barriers etc in the right place.  */
-		if (prev == tail)
-		  {
-		    do 
-		      tail = PREV_INSN (tail);
-		    while (GET_CODE (tail) == INSN
-			   && GET_CODE (PATTERN (tail)) == USE);
-		  }
-
-		do
-		  {
-		    rtx use = prev;
-		    prev = prev_nonnote_insn (prev);
-
-		    remove_insn (use);
-		    if (first_use)
-		      {
-			NEXT_INSN (use) = first_use;
-			PREV_INSN (first_use) = use;
-		      }
-		    else
-		      NEXT_INSN (use) = NULL_RTX;
-		    first_use = use;
-		  }
-		while (prev
-		       && GET_CODE (prev) == INSN
-		       && GET_CODE (PATTERN (prev)) == USE);
-	      }
-
-	    /* The last basic block ends with a NOTE_INSN_EPILOGUE_BEG, the
-	       epilogue insns, the USE insns at the end of a function,
-	       the jump insn that returns, and then a BARRIER.  */
-
-	    if (GET_CODE (tail) != BARRIER)
-	      {
-		prev = next_nonnote_insn (tail);
-		if (!prev || GET_CODE (prev) != BARRIER)
-		  emit_barrier_after (tail);
-	      }
-
-	    seq = gen_epilogue ();
-	    prev = tail;
-	    tail = emit_jump_insn_after (seq, tail);
-
-	    /* Insert the USE insns immediately before the return insn, which
-	       must be the last instruction emitted in the sequence.  */
-	    if (first_use)
-	      emit_insns_before (first_use, tail);
-	    emit_note_after (NOTE_INSN_EPILOGUE_BEG, prev);
-
-	    /* Update the tail of the basic block.  */
-	    if (bb)
-	      bb->end = tail;
-
-	    /* Retain a map of the epilogue insns.  */
-	    epilogue = record_insns (GET_CODE (seq) == SEQUENCE ? seq : tail);
-	  }
-	}
+      insert_insn_on_edge (seq, e);
+      insertted = 1;
     }
 #endif
+epilogue_done:
 
   if (insertted)
     commit_edge_insertions ();
