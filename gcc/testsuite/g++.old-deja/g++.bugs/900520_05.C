@@ -8,7 +8,7 @@ struct struct_0 {
 };
 
 char *cp;
-struct_0 *sp;
+static struct_0 *sp;
 
 void test0 ()
 {
