@@ -1,3 +1,14 @@
+2000-08-10  Chris Demetriou  <cgd@sibyte.com>
+
+	* mips/elf.h (CTOR_SECTION_NAME, DTOR_SECTION_NAME): New
+	macros define the name of CTOR and DTOR sections.
+	(CTOR_LIST_BEGIN, CTOR_LIST_END, DTOR_LIST_BEGIN,
+	DTOR_LIST_END): Change to use attributes to specify
+	sections.
+	* mips/elf64.h (CTOR_SECTION_NAME, DTOR_SECTION_NAME,
+	(CTOR_LIST_BEGIN, CTOR_LIST_END, DTOR_LIST_BEGIN,
+	DTOR_LIST_END): Same as in mips/elf.h.
+
 2000-08-10  Drew Moseley  <dmoseley@redhat.com>
 
 	* config/mn10300/mn10300.h: Added no-crt0 option for explicitly
