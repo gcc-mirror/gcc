@@ -7,7 +7,8 @@
 	sequence.
 	(build_user_type_conversion_1): Use merge_conversion_sequences.
 	* cp-tree.def: Add comments for CONV nodes.
-
+	* rtti.c (get_tinfo_decl): Use build_address/build_nop.
+	
 2003-03-07  Gabriel Dos Reis  <gdr@integrable-solutions.net>
 
 	* error.c (init_error): Use C90 prototype style.
