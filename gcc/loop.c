@@ -194,6 +194,7 @@ static void loop_givs_dead_check PARAMS((struct loop *, struct iv_class *));
 static void loop_givs_reduce PARAMS((struct loop *, struct iv_class *));
 static void loop_givs_rescan PARAMS((struct loop *, struct iv_class *,
 				     rtx *, rtx));
+static void loop_ivs_free PARAMS((struct loop *));
 static void strength_reduce PARAMS ((struct loop *, int, int));
 static void find_single_use_in_loop PARAMS ((rtx, rtx, varray_type));
 static int valid_initial_value_p PARAMS ((rtx, rtx, int, rtx));
@@ -4250,6 +4251,40 @@ loop_giv_reduce_benefit (loop, bl, v, test_reg)
 }
 
 
+/* Free IV structures for LOOP.  */
+
+static void
+loop_ivs_free (loop)
+     struct loop *loop;
+{
+  struct loop_ivs *ivs = LOOP_IVS (loop);
+  struct iv_class *iv = ivs->list;
+  
+  free (ivs->regs);
+
+  while (iv)
+    {
+      struct iv_class *next = iv->next;
+      struct induction *induction;
+      struct induction *next_induction;
+      
+      for (induction = iv->biv; induction; induction = next_induction)
+	{
+	  next_induction = induction->next_iv;
+	  free (induction);
+	}
+      for (induction = iv->giv; induction; induction = next_induction)
+	{
+	  next_induction = induction->next_iv;
+	  free (induction);
+	}
+      
+      free (iv);
+      iv = next;
+    }
+}
+
+
 /* Perform strength reduction and induction variable elimination.
 
    Pseudo registers created during this function will be beyond the
@@ -4312,7 +4347,8 @@ strength_reduce (loop, insn_count, flags)
       if (flags & LOOP_UNROLL)
 	unroll_loop (loop, insn_count, end_insert_before, 0);
 
-      goto egress;
+      loop_ivs_free (loop);
+      return;
     }
 
   /* Determine how BIVS are initialised by looking through pre-header
@@ -4571,31 +4607,7 @@ strength_reduce (loop, insn_count, flags)
   if (loop_dump_stream)
     fprintf (loop_dump_stream, "\n");
 
-egress:
-  free (ivs->regs);
-  {
-    struct iv_class *iv = ivs->list;
-
-    while (iv) {
-      struct iv_class *next = iv->next;
-      struct induction *induction;
-      struct induction *next_induction;
-
-      for (induction = iv->biv; induction; induction = next_induction)
-	{
-	  next_induction = induction->next_iv;
-	  free (induction);
-	}
-      for (induction = iv->giv; induction; induction = next_induction)
-	{
-	  next_induction = induction->next_iv;
-	  free (induction);
-	}
-
-      free (iv);
-      iv = next;
-    }
-  }
+  loop_ivs_free (loop);
   if (reg_map)
     free (reg_map);
 }
