@@ -5302,7 +5302,7 @@
              (clobber (reg:SI 14))])
    (set (pc)
         (label_ref (match_operand 2 "" "")))]
-  "GET_CODE (operands[0]) == SYMBOL_REF 
+  "0 && GET_CODE (operands[0]) == SYMBOL_REF 
    && short_branch (INSN_UID (insn), INSN_UID (operands[2]))
    && arm_insn_not_targeted (insn)"
   "*
@@ -5348,7 +5348,7 @@
              (clobber (reg:SI 14))])
    (set (pc)
         (label_ref (match_operand 3 "" "")))]
-  "GET_CODE (operands[0]) == SYMBOL_REF
+  "0 && GET_CODE (operands[0]) == SYMBOL_REF
    && short_branch (INSN_UID (insn), INSN_UID (operands[3]))
    && arm_insn_not_targeted (insn)"
   "*
