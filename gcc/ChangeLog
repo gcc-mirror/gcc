@@ -1,3 +1,7 @@
+2004-01-22  James A. Mmorrison  <ja2morri@uwaterloo.ca>
+
+	* config/pa/fptr.c: Fix old-style definition.
+
 2004-01-22  Paolo Bonzini  <bonzini@gnu.org>
 
 	PR optimization/13724

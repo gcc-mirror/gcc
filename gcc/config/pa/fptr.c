@@ -57,8 +57,7 @@ unsigned int __canonicalize_funcptr_for_compare (fptr_t)
       __attribute__ ((visibility ("hidden")));
 
 unsigned int
-__canonicalize_funcptr_for_compare (fptr)
-     fptr_t fptr;
+__canonicalize_funcptr_for_compare (fptr_t fptr)
 {
   static unsigned int fixup_plabel[2];
   static fixup_t fixup;
