@@ -246,6 +246,22 @@ proc libjava_find_spec {} {
     return "$objdir/../"
 }
 
+# Find `gij'.
+proc libjava_find_gij {} {
+    global base_dir
+    set gp [get_multilibs]
+    if {$gp != ""} {
+	set file $gp/libjava/gij
+    } else {
+	set file $base_dir/../gij
+    }
+
+    if {[file exists $file]} {
+	return $file
+    }
+    return gij
+}
+
 # Remove a bunch of files.
 proc gcj_cleanup {args} {
     foreach file $args {
@@ -420,6 +436,73 @@ proc gcj_link {program main files {options {}}} {
     return 1
 }
 
+# Invoke a program and check its output.  EXECUTABLE is the program;
+# ARGS are the arguments to the program.  Returns 1 if tests passed
+# (or things were left untested), 0 otherwise.
+proc libjava_invoke {errname testName optName executable inpfile resultfile args} {
+    upvar $optName opts
+
+    if {[info exists opts(no-exec)]} {
+	if {[info exists opts(need-threads)]} {
+	    # This means we wanted to try to run it but we couldn't
+	    # because threads aren't supported.  So we have to
+	    # generate an `untested'.
+	    untested "$errname execution - $testName"
+	    untested "$errname output - $testName"
+	}
+	return 1
+    }
+
+    set result [libjava_load $executable $args "$inpfile"]
+    set status [lindex $result 0]
+    set output [lindex $result 1]
+    if {[info exists opts(xfail-exec)]} then {
+	setup_xfail *-*-*
+    }
+    $status "$errname execution - $testName"
+    if { $status != "pass" } {
+	untested "$errname output - $testName"
+	return 0
+    }
+
+    verbose "resultfile is $resultfile"
+    set id [open $resultfile r]
+    set expected ""
+    append expected [read $id]
+    regsub -all "\r" "$output" "" output
+    regsub "\n*$" $expected "" expected
+    regsub "\n*$" $output "" output
+    regsub "^\n*" $expected "" expected
+    regsub "^\n*" $output "" output
+    regsub -all "\[ \t\]\[ \t\]*" $expected " " expected
+    regsub -all "\[ \t\]*\n\n*" $expected "\n" expected
+    regsub -all "\[ \t\]\[ \t\]*" $output " " output
+    regsub -all "\[ \t\]*\n\n*" $output "\n" output
+    verbose "expected is $expected"
+    verbose "actual is $output"
+    set passed 0
+    if {[info exists opts(regexp_match)]} {
+	if [regexp $expected $output] {
+	    set passed 1
+	}
+    } else {
+	if { $expected == $output } {
+	    set passed 1
+	}
+    }
+    if {[info exists opts(xfail-output)]} {
+	setup_xfail *-*-*
+    }
+    if { $passed == 1 } {
+	pass "$errname output - $testName"
+    } else {
+	fail "$errname output - $testName"
+    }
+    close $id
+
+    return $passed
+}
+
 #
 # Run the test specified by srcfile and resultfile. compile_args and
 # exec_args are options telling this proc how to work.
@@ -516,72 +599,15 @@ proc test_libjava_from_source { options srcfile compile_args inpfile resultfile 
     }
     pass "$errname compilation from source"
 
-    if {[info exists opts(no-exec)]} {
-	if {[info exists opts(need-threads)]} {
-	    # This means we wanted to try to run it but we couldn't
-	    # because threads aren't supported.  So we have to
-	    # generate an `untested'.
-	    untested "$errname execution from source compiled test"
-	    untested "$errname output from source compiled test"
-	}
-	eval gcj_cleanup $removeList
-	return
-    }
-    if {[info exists opts(no-link)]} {
-	eval gcj_cleanup $removeList
-	return
-    }
-
-    set result [libjava_load $executable "" "$inpfile"];
-    set status [lindex $result 0];
-    set output [lindex $result 1];
-    if {[info exists opts(xfail-exec)]} then {
-	setup_xfail *-*-*
-    }
-    $status "$errname execution from source compiled test"
-    if { $status != "pass" } {
-	untested "$errname output from source compiled test"
-	return;
-    }
-
-    verbose "resultfile is $resultfile"
-    set id [open $resultfile r];
-    set expected ""
-    append expected [read $id];
-    regsub -all "\r" "$output" "" output;
-    regsub "\n*$" $expected "" expected
-    regsub "\n*$" $output "" output
-    regsub "^\n*" $expected "" expected
-    regsub "^\n*" $output "" output
-    regsub -all "\[ \t\]\[ \t\]*" $expected " " expected
-    regsub -all "\[ \t\]*\n\n*" $expected "\n" expected
-    regsub -all "\[ \t\]\[ \t\]*" $output " " output
-    regsub -all "\[ \t\]*\n\n*" $output "\n" output
-    verbose "expected is $expected"
-    verbose "actual is $output"
-    set passed 0;
-    if {$options == "regexp_match"} {
-	if [regexp $expected $output] {
-	    set passed 1;
-	}
-    } else {
-	if { $expected == $output } {
-	    set passed 1;
-	}
-    }
-    if {[info exists opts(xfail-output)]} {
-	setup_xfail *-*-*
-    }
+    # Set up the options the way they are expected by libjava_invoke.
     if {[info exists opts(xfail-source-output)]} {
-	setup_xfail *-*-*
+	set opts(xfail-output) x
     }
-    if { $passed == 1 } {
-	pass "$errname output from source compiled test"
+    if {[libjava_invoke $errname "source compiled test" opts $executable \
+	   $inpfile $resultfile]} {
+	# Everything ok, so clean up.
 	eval gcj_cleanup $removeList
-    } else {
-	fail "$errname output from source compiled test"
     }
-    close $id;
 }
 
 #
@@ -597,6 +623,7 @@ proc test_libjava_from_javac { options srcfile compile_args inpfile resultfile e
     global GCJ_UNDER_TEST
     global tmpdir
     global runtests
+    global INTERPRETER
 
     # Make opts into an array.
     set opts(_) x
@@ -710,6 +737,16 @@ proc test_libjava_from_javac { options srcfile compile_args inpfile resultfile e
 	set mode link
     }
 
+    # We purposely ignore errors here; we still want to run the other
+    # appropriate tests.
+    set gij [libjava_find_gij]
+    # libjava_find_gij will return `gij' if it couldn't find the
+    # program; in this case we want to skip the test.
+    if {$INTERPRETER == "yes" && $gij != "gij"} {
+	libjava_invoke $errname "gij test" opts $gij \
+	  $inpfile $resultfile $main_name
+    }
+
     # Initial arguments.
     set args [libjava_arguments $mode]
     eval lappend args $largs
@@ -763,65 +800,15 @@ proc test_libjava_from_javac { options srcfile compile_args inpfile resultfile e
     }
     pass "$errname compilation from bytecode"
 
-    if {[info exists opts(no-exec)]} {
-	if {[info exists opts(need-threads)]} {
-	    untested "$errname execution from bytecode->native test"
-	    untested "$errname output from bytecode->native test"
-	}
-	eval gcj_cleanup $removeList
-	return
-    }
-
-    set result [libjava_load $executable "" "$inpfile"];
-    set status [lindex $result 0];
-    set output [lindex $result 1];
-    if {[info exists opts(xfail-exec)]} {
-	setup_xfail *-*-*
-    }
-    $status "$errname execution from bytecode->native test"
-    if { $status != "pass" } {
-	untested "$errname output from bytecode->native test"
-	return
-    }
-
-    verbose "resultfile is $resultfile"
-    set id [open $resultfile r];
-    set expected ""
-    append expected [read $id];
-    regsub -all "\r" "$output" "" output;
-    regsub "\n*$" $expected "" expected
-    regsub "\n*$" $output "" output
-    regsub "^\n*" $expected "" expected
-    regsub "^\n*" $output "" output
-    regsub -all "\[ \t\]\[ \t\]*" $expected " " expected
-    regsub -all "\[ \t\]*\n\n*" $expected "\n" expected
-    regsub -all "\[ \t\]\[ \t\]*" $output " " output
-    regsub -all "\[ \t\]*\n\n*" $output "\n" output
-    verbose "expected is $expected"
-    verbose "actual is $output"
-    set passed 0;
-    if {[info exists opts(xfail-output)]} {
-	setup_xfail *-*-*
-    }
+    # Set up the options the way they are expected by libjava_invoke.
     if {[info exists opts(xfail-byte-output)]} {
-	setup_xfail *-*-*
+	set opts(xfail-output) x
     }
-    if {$options == "regexp_match"} {
-	if [regexp $expected $output] {
-	    set passed 1;
-	}
-    } else {
-	if { $expected == $output } {
-	    set passed 1;
-	}
-    }
-    if { $passed == 1 } {
-	pass "$errname output from bytecode->native test"
+    if {[libjava_invoke $errname "bytecode->native test" opts $executable \
+	   $inpfile $resultfile]} {
+	# Everything ok, so clean up.
 	eval gcj_cleanup $removeList
-    } else {
-	fail "$errname output from bytecode->native test"
     }
-    close $id;
 }
 
 #
