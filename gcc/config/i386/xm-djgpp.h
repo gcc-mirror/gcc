@@ -1,4 +1,4 @@
-/* Configuration for GNU C-compiler for Intel 80386 running GO32.
+/* Configuration for GNU C-compiler for Intel 80386 running DJGPP.
    Copyright (C) 1988, 1996, 1998, 1999 Free Software Foundation, Inc.
 
 This file is part of GNU CC.

@@ -1,4 +1,4 @@
-/* Configuration for an i386 running MS-DOS with djgpp/go32.  */
+/* Configuration for an i386 running MS-DOS with DJGPP.  */
    Copyright (C) 1997, 1998, 1999 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
@@ -44,7 +44,7 @@ Boston, MA 02111-1307, USA.  */
 #ifdef CPP_PREDEFINES
 #undef CPP_PREDEFINES
 #endif
-#define CPP_PREDEFINES "-Dunix -Di386 -DGO32 -DMSDOS \
+#define CPP_PREDEFINES "-Dunix -Di386 -DGO32 -DDJGPP=2 -DMSDOS \
   -Asystem(unix) -Asystem(msdos) -Acpu(i386) -Amachine(i386)"
 
 /* We need to override link_command_spec in gcc.c so support -Tdjgpp.djl.
