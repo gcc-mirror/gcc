@@ -285,10 +285,14 @@ package body Exp_Ch3 is
    --  Freeze entities of all predefined primitive operations. This is needed
    --  because the bodies of these operations do not normally do any freezeing.
 
-   function Stream_Operations_OK (Typ : Entity_Id) return Boolean;
-   --  Check whether stream operations must be emitted for a given type.
-   --  Various restrictions prevent the generation of these operations, as
-   --  a useful optimization or for certification purposes.
+   function Stream_Operation_OK
+     (Typ       : Entity_Id;
+      Operation : TSS_Name_Type) return Boolean;
+   --  Check whether the named stream operation must be emitted for a given
+   --  type. The rules for inheritance of stream attributes by type extensions
+   --  are enforced by this function. Furthermore, various restrictions prevent
+   --  the generation of these operations, as a useful optimization or for
+   --  certification purposes.
 
    --------------------------
    -- Adjust_Discriminants --
@@ -3012,23 +3016,32 @@ package body Exp_Ch3 is
       Par_Read  : constant Boolean   := Present (TSS (Par, TSS_Stream_Read));
       Par_Write : constant Boolean   := Present (TSS (Par, TSS_Stream_Write));
 
+      procedure Check_Attr (Nam : Name_Id; TSS_Nam : TSS_Name_Type);
+      --  Check that Comp has a user-specified Nam stream attribute
+
+      procedure Check_Attr (Nam : Name_Id; TSS_Nam : TSS_Name_Type) is
+      begin
+         if No (TSS (Base_Type (Etype (Comp)), TSS_Nam)) then
+            Error_Msg_Name_1 := Nam;
+            Error_Msg_N
+              ("|component& in limited extension must have% attribute", Comp);
+         end if;
+      end Check_Attr;
+
    begin
       if Par_Read or else Par_Write then
          Comp := First_Component (Typ);
          while Present (Comp) loop
             if Comes_From_Source (Comp)
-              and then  Original_Record_Component (Comp) = Comp
+              and then Original_Record_Component (Comp) = Comp
               and then Is_Limited_Type (Etype (Comp))
             then
-               if (Par_Read and then
-                     No (TSS (Base_Type (Etype (Comp)), TSS_Stream_Read)))
-                 or else
-                  (Par_Write and then
-                     No (TSS (Base_Type (Etype (Comp)), TSS_Stream_Write)))
-               then
-                  Error_Msg_N
-                    ("|component must have Stream attribute",
-                       Parent (Comp));
+               if Par_Read then
+                  Check_Attr (Name_Read, TSS_Stream_Read);
+               end if;
+
+               if Par_Write then
+                  Check_Attr (Name_Write, TSS_Stream_Write);
                end if;
             end if;
 
@@ -5543,22 +5556,24 @@ package body Exp_Ch3 is
 
         Ret_Type => Standard_Integer));
 
-      --  Specs for dispatching stream attributes. We skip these for limited
-      --  types, since there is no question of dispatching in the limited case.
+      --  Specs for dispatching stream attributes.
 
-      --  We also skip these operations if dispatching is not available
-      --  or if streams are not available (since what's the point?)
-
-      if Stream_Operations_OK (Tag_Typ) then
-         Append_To (Res,
-           Predef_Stream_Attr_Spec (Loc, Tag_Typ, TSS_Stream_Read));
-         Append_To (Res,
-           Predef_Stream_Attr_Spec (Loc, Tag_Typ, TSS_Stream_Write));
-         Append_To (Res,
-           Predef_Stream_Attr_Spec (Loc, Tag_Typ, TSS_Stream_Input));
-         Append_To (Res,
-           Predef_Stream_Attr_Spec (Loc, Tag_Typ, TSS_Stream_Output));
-      end if;
+      declare
+         Stream_Op_TSS_Names :
+           constant array (Integer range <>) of TSS_Name_Type :=
+             (TSS_Stream_Read,
+              TSS_Stream_Write,
+              TSS_Stream_Input,
+              TSS_Stream_Output);
+      begin
+         for Op in Stream_Op_TSS_Names'Range loop
+            if Stream_Operation_OK (Tag_Typ, Stream_Op_TSS_Names (Op)) then
+               Append_To (Res,
+                  Predef_Stream_Attr_Spec (Loc, Tag_Typ,
+                    Stream_Op_TSS_Names (Op)));
+            end if;
+         end loop;
+      end;
 
       --  Spec of "=" if expanded if the type is not limited and if a
       --  user defined "=" was not already declared for the non-full
@@ -6004,32 +6019,38 @@ package body Exp_Ch3 is
       --  non-limited types (in the limited case there is no dispatching).
       --  We also skip them if dispatching or finalization are not available.
 
-      if Stream_Operations_OK (Tag_Typ) then
-         if No (TSS (Tag_Typ, TSS_Stream_Read)) then
-            Build_Record_Read_Procedure (Loc, Tag_Typ, Decl, Ent);
+      if Stream_Operation_OK (Tag_Typ, TSS_Stream_Read)
+        and then No (TSS (Tag_Typ, TSS_Stream_Read))
+      then
+         Build_Record_Read_Procedure (Loc, Tag_Typ, Decl, Ent);
+         Append_To (Res, Decl);
+      end if;
+
+      if Stream_Operation_OK (Tag_Typ, TSS_Stream_Write)
+        and then No (TSS (Tag_Typ, TSS_Stream_Write))
+      then
+         Build_Record_Write_Procedure (Loc, Tag_Typ, Decl, Ent);
+         Append_To (Res, Decl);
+      end if;
+
+      --  Skip bodies of _Input and _Output for the abstract case, since
+      --  the corresponding specs are abstract (see Predef_Spec_Or_Body)
+
+      if not Is_Abstract (Tag_Typ) then
+         if Stream_Operation_OK (Tag_Typ, TSS_Stream_Input)
+           and then No (TSS (Tag_Typ, TSS_Stream_Input))
+         then
+            Build_Record_Or_Elementary_Input_Function
+              (Loc, Tag_Typ, Decl, Ent);
             Append_To (Res, Decl);
          end if;
 
-         if No (TSS (Tag_Typ, TSS_Stream_Write)) then
-            Build_Record_Write_Procedure (Loc, Tag_Typ, Decl, Ent);
+         if Stream_Operation_OK (Tag_Typ, TSS_Stream_Output)
+           and then No (TSS (Tag_Typ, TSS_Stream_Output))
+         then
+            Build_Record_Or_Elementary_Output_Procedure
+              (Loc, Tag_Typ, Decl, Ent);
             Append_To (Res, Decl);
-         end if;
-
-         --  Skip bodies of _Input and _Output for the abstract case, since
-         --  the corresponding specs are abstract (see Predef_Spec_Or_Body)
-
-         if not Is_Abstract (Tag_Typ) then
-            if No (TSS (Tag_Typ, TSS_Stream_Input)) then
-               Build_Record_Or_Elementary_Input_Function
-                 (Loc, Tag_Typ, Decl, Ent);
-               Append_To (Res, Decl);
-            end if;
-
-            if No (TSS (Tag_Typ, TSS_Stream_Output)) then
-               Build_Record_Or_Elementary_Output_Procedure
-                 (Loc, Tag_Typ, Decl, Ent);
-               Append_To (Res, Decl);
-            end if;
          end if;
       end if;
 
@@ -6216,17 +6237,35 @@ package body Exp_Ch3 is
       return Res;
    end Predefined_Primitive_Freeze;
 
-   --------------------------
-   -- Stream_Operations_OK --
-   --------------------------
+   -------------------------
+   -- Stream_Operation_OK --
+   -------------------------
 
-   function Stream_Operations_OK (Typ : Entity_Id) return Boolean is
+   function Stream_Operation_OK
+     (Typ       : Entity_Id;
+      Operation : TSS_Name_Type) return Boolean
+   is
+      Has_Inheritable_Stream_Attribute : Boolean := False;
+
    begin
+      if Is_Limited_Type (Typ)
+        and then Is_Tagged_Type (Typ)
+        and then Is_Derived_Type (Typ)
+      then
+         --  Special case of a limited type extension: a default implementation
+         --  of the stream attributes Read and Write exists if the attribute
+         --  has been specified for an ancestor type.
+
+         Has_Inheritable_Stream_Attribute :=
+           Present (Find_Inherited_TSS (Base_Type (Etype (Typ)), Operation));
+      end if;
+
       return
-        not Is_Limited_Type (Typ)
+        not (Is_Limited_Type (Typ)
+               and then not Has_Inheritable_Stream_Attribute)
           and then RTE_Available (RE_Tag)
           and then RTE_Available (RE_Root_Stream_Type)
           and then not Restriction_Active (No_Dispatch)
           and then not Restriction_Active (No_Streams);
-   end Stream_Operations_OK;
+   end Stream_Operation_OK;
 end Exp_Ch3;
