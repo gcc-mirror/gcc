@@ -60,7 +60,7 @@ test_01()
 
   // read (standard)
   FILE* f = fopen(name_01, "r");
-  test &= !f;
+  test &= f != NULL;
 
   {
     std::ifstream ifstream1(name_01);

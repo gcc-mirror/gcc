@@ -39,9 +39,10 @@ namespace std {
   
   __basic_file::__basic_file(__c_lock* __lock)
   {
-    this->_lock = __lock;
-    _IO_init(this, 0);
+    _lock = __lock;
+    _IO_init(this, 0);     
     _IO_file_init(this); 
+    _IO_file_attach(this, -1);
   }
 
   int 
@@ -50,14 +51,13 @@ namespace std {
  
   __basic_file::~__basic_file()
   {
-    if (_IO_file_is_open(this))
+    if (this->is_open())
       {
 	_IO_do_flush(this);
-	if (!(_IO_file_flags & _IO_DELETE_DONT_CLOSE))
+	if (!(_flags & _IO_DELETE_DONT_CLOSE))
 	  _IO_SYSCLOSE(this);
       }
-    else
-      _IO_un_link(this);
+    _IO_default_finish(this, 0);
   }
       
   __basic_file*
@@ -89,13 +89,12 @@ namespace std {
 
     if (__fd >= 0)
       {
-	__retval = this;
 	_fileno = __fd;
+	int __mask = _IO_NO_READS + _IO_NO_WRITES + _IO_IS_APPENDING;
+	_flags = (_flags & ~__mask) | (__rw_mode & __mask);
+	_IO_link_in(this); 
+	__retval = this;
       }
-
-    int __mask = _IO_NO_READS + _IO_NO_WRITES + _IO_IS_APPENDING;
-    _IO_file_flags = (_IO_file_flags & ~__mask) | (__rw_mode & __mask);
-    _IO_link_in(this); 
     return __retval;
   }
 
@@ -148,22 +147,22 @@ namespace std {
     if (__testb)
       __p_mode |= O_BINARY;
 #endif	   
-    if ( !_IO_file_is_open(this))
+    if (!_IO_file_is_open(this))
       {
 #if _G_HAVE_IO_FILE_OPEN
 	__c_file_type* __f;
 	__f = _IO_file_open(this, __name, __p_mode, __prot, __rw_mode, 0);
 	__retval = __f ? this: NULL;
 #else
-	int __i = ::open(__name, __p_mode, __prot);
-	if (__i >= 0)
+	int __fd = ::open(__name, __p_mode, __prot);
+	if (__fd >= 0)
 	  {
+	    _fileno = __fd;	   
+	    int __mask = _IO_NO_READS + _IO_NO_WRITES + _IO_IS_APPENDING;
+	    _flags = (_flags & ~__mask) | (__rw_mode & __mask);
+	    _IO_link_in(this);
 	    __retval = this;
-	      _fileno = __i;
 	  }
-	int __mask = _IO_NO_READS + _IO_NO_WRITES + _IO_IS_APPENDING;
-	_IO_file_flags = (_IO_file_flags & ~__mask) | (__rw_mode & __mask);
-	_IO_link_in(this);
 #endif      
       }
     return __retval;
@@ -174,10 +173,7 @@ namespace std {
   
   __basic_file* 
   __basic_file::close()
-  {
-    bool __testopen = _IO_file_close_it(this);
-    return __testopen ? static_cast<__basic_file*>(NULL) : this;
-  }
+  { return _IO_file_close_it(this) ? static_cast<__basic_file*>(NULL) : this; }
 
   // NB: Unused.
   int 

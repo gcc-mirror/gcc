@@ -56,9 +56,8 @@ namespace std
     basic_filebuf<_CharT, _Traits>::
     basic_filebuf() 
     : __streambuf_type(), _M_file(NULL), _M_state_cur(), _M_state_beg(), 
-    _M_last_overflowed(false), _M_fileno_based(false)
+    _M_last_overflowed(false)
     { _M_fcvt = &use_facet<__codecvt_type>(this->getloc()); }
-
 
   template<typename _CharT, typename _Traits>
     basic_filebuf<_CharT, _Traits>::
@@ -68,7 +67,6 @@ namespace std
     {
       _M_fcvt = &use_facet<__codecvt_type>(this->getloc());
       _M_init_filebuf();
-      _M_fileno_based = true;
       _M_file->sys_open(__fd, __mode);
       if (this->is_open() && _M_buf_size)
 	{
@@ -144,14 +142,10 @@ namespace std
 	    }
 #endif
 
-	  bool __testclosed;
-	  if (_M_fileno_based)
-	    __testclosed = _M_file->sys_close();
-	  else
-	    __testclosed = _M_file->close();
-
-	  if (__testclosed)
+	  if (_M_file)
 	    {
+	      delete _M_file;
+	      _M_file = NULL;
 	      _M_mode = ios_base::openmode(0);
 	      if (_M_buf_size)
 		delete [] _M_buf;
