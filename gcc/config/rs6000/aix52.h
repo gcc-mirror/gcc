@@ -83,21 +83,14 @@ do {									\
 #define ASM_DEFAULT_SPEC "-mppc"
 
 #undef TARGET_OS_CPP_BUILTINS
-#define TARGET_OS_CPP_BUILTINS()      \
-  do                                  \
-    {                                 \
-      builtin_define ("_IBMR2");      \
-      builtin_define ("_POWER");      \
-      builtin_define ("_LONG_LONG");  \
-      builtin_define ("_AIX");        \
-      builtin_define ("_AIX32");      \
-      builtin_define ("_AIX41");      \
-      builtin_define ("_AIX43");      \
-      builtin_define ("_AIX51");      \
-      builtin_define ("_AIX52");      \
-      builtin_assert ("system=unix"); \
-      builtin_assert ("system=aix");  \
-    }                                 \
+#define TARGET_OS_CPP_BUILTINS()     \
+  do                                 \
+    {                                \
+      builtin_define ("_AIX43");     \
+      builtin_define ("_AIX51");     \
+      builtin_define ("_AIX52");     \
+      TARGET_OS_AIX_CPP_BUILTINS (); \
+    }                                \
   while (0)
 
 #undef CPP_SPEC
