@@ -1,3 +1,8 @@
+2003-03-20  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* config/h8300/h8300.md (*insv_si_1_n_lshiftrt): Restrict the
+	source operand to those that can be extracted with bld.
+
 2003-03-20  Richard Earnshaw  <rearnsha@arm.com>
 
 	PR 10066
