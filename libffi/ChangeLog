@@ -1,3 +1,16 @@
+2004-10-13  Kazuhiro Inaoka  <inaoka.kazuhiro@renesas.com>
+
+	* Makefile.am: Add m32r support.
+	* configure.ac: Likewise.
+	* Makefile.in: Regenerate.
+	* confiugre: Regenerate.
+	* src/types.c: Add m32r port to FFI_INTERNAL_TYPEDEF
+	(uint64, sint64, double, longdouble)
+	* src/m32r: New directory.
+	* src/m32r/ffi.c: New file.
+	* src/m32r/sysv.S: Likewise.
+	* src/m32r/ffitarget.h: Likewise.
+
 2004-10-02  Kaz Kojima  <kkojima@gcc.gnu.org>
 
 	* testsuite/libffi.call/negint.c: New test case.
