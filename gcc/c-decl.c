@@ -1589,7 +1589,9 @@ duplicate_decls (newdecl, olddecl)
       /* Dont warn about a function declaration
 	 followed by a definition.  */
       && !(TREE_CODE (newdecl) == FUNCTION_DECL && DECL_INITIAL (newdecl) != 0
-	   && DECL_INITIAL (olddecl) == 0))
+	   && DECL_INITIAL (olddecl) == 0)
+      /* Don't warn about extern decl followed by (tentative) definition.  */
+      && !(DECL_EXTERNAL (olddecl) && ! DECL_EXTERNAL (newdecl)))
     {
       warning_with_decl (newdecl, "redundant redeclaration of `%s' in same scope");
       warning_with_decl (olddecl, "previous declaration of `%s'");
