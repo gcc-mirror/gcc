@@ -76,7 +76,7 @@ void test01()
   tim_get.get_year(is_it02, end, iss, errorstate, &time02);
   VERIFY( time02.tm_year == time_bday.tm_year );
   VERIFY( errorstate == good );
-  VERIFY( *is_it02 == ' ');
+  VERIFY( *is_it02 == L' ' );
 
   iss.str(L"197d1 ");
   iterator_type is_it03(iss);
@@ -86,7 +86,7 @@ void test01()
   tim_get.get_year(is_it03, end, iss, errorstate, &time03);
   VERIFY( time03.tm_year == 3 );
   VERIFY( errorstate == ios_base::failbit );
-  VERIFY( *is_it03 == 'd');
+  VERIFY( *is_it03 == L'd' );
 
   iss.str(L"71d71");
   iterator_type is_it04(iss);
@@ -95,7 +95,7 @@ void test01()
   tim_get.get_year(is_it04, end, iss, errorstate, &time04);
   VERIFY( time04.tm_year == time_bday.tm_year );
   VERIFY( errorstate == good );
-  VERIFY( *is_it03 == 'd');
+  VERIFY( *is_it03 == L'd' );
 
   iss.str(L"71");
   iterator_type is_it05(iss);

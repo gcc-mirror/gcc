@@ -80,7 +80,7 @@ void test01()
   VERIFY( time02.tm_mon == time_bday.tm_mon );
   VERIFY( time02.tm_mday == time_bday.tm_mday );
   VERIFY( errorstate == good );
-  VERIFY( *is_it02 == ' ');
+  VERIFY( *is_it02 == L' ' );
 
   iss.str(L"04/04d/71 ");
   iterator_type is_it03(iss);
@@ -92,7 +92,7 @@ void test01()
   VERIFY( time03.tm_mon == time_bday.tm_mon );
   VERIFY( time03.tm_mday == time_bday.tm_mday );
   VERIFY( errorstate == ios_base::failbit );
-  VERIFY( *is_it03 == 'd');
+  VERIFY( *is_it03 == L'd' );
 }
 
 int main()

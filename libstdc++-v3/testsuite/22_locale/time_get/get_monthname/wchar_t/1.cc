@@ -81,7 +81,7 @@ void test01()
   tim_get.get_monthname(is_it03, end, iss, errorstate, &time03);
   VERIFY( time03.tm_mon == time_bday.tm_mon );
   VERIFY( errorstate == good );
-  VERIFY( *is_it03 == ' ');
+  VERIFY( *is_it03 == L' ' );
 
   iss.str(L"Aar");
   iterator_type is_it04(iss);
@@ -90,7 +90,7 @@ void test01()
   errorstate = good;
   tim_get.get_monthname(is_it04, end, iss, errorstate, &time04);
   VERIFY( time04.tm_mon == 5 );
-  VERIFY( *is_it04 == 'a');
+  VERIFY( *is_it04 == L'a' );
   VERIFY( errorstate == ios_base::failbit );
 
   iss.str(L"December ");
@@ -100,7 +100,7 @@ void test01()
   tim_get.get_monthname(is_it05, end, iss, errorstate, &time05);
   VERIFY( time05.tm_mon == 11 );
   VERIFY( errorstate == good );
-  VERIFY( *is_it05 == ' ');
+  VERIFY( *is_it05 == L' ' );
 
   iss.str(L"Decelember "); 
   iterator_type is_it06(iss);
@@ -110,7 +110,7 @@ void test01()
   tim_get.get_monthname(is_it06, end, iss, errorstate, &time06);
   VERIFY( time06.tm_mon == 4 );
   VERIFY( errorstate == ios_base::failbit );
-  VERIFY( *is_it05 == 'l');
+  VERIFY( *is_it05 == L'l' );
 }
 
 int main()

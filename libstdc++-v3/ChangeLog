@@ -1,3 +1,23 @@
+2003-12-03  Paolo Carlini  <pcarlini@suse.de>
+
+	PR libstdc++/12791
+	* include/bits/locale_facets.tcc (time_get::_M_extract_num):
+	Rewrite, stop the parsing as soon as a digit cannot possibly
+	lead to a final number within the bounds; otherwise, simplify,
+	avoiding __ctype.is() and atoi().
+	* testsuite/22_locale/time_get/get_date/char/12791.cc: New.
+	* testsuite/22_locale/time_get/get_date/wchar_t/12791.cc: New.
+
+	* include/bits/locale_facets.tcc (time_get::_M_extract_via_format):
+	Minor tweak: a 4-digit integer cannot be bigger than 9999.
+
+	* testsuite/22_locale/time_get/get_date/wchar_t/1.cc: Use
+	type-correct wchar_t string literals.
+	* testsuite/22_locale/time_get/get_monthname/wchar_t/1.cc: Ditto.
+	* testsuite/22_locale/time_get/get_time/wchar_t/1.cc: Ditto.
+	* testsuite/22_locale/time_get/get_weekday/wchar_t/1.cc: Ditto.
+	* testsuite/22_locale/time_get/get_year/wchar_t/1.cc: Ditto.
+
 2003-12-02  Paolo Carlini  <pcarlini@suse.de>
 
 	* include/bits/locale_facets.tcc (time_get::do_get_year):
