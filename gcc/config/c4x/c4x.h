@@ -281,7 +281,11 @@ extern int target_flags;
 
 /* Define some options to control code generation.  */
 #define TARGET_LOAD_ADDRESS	(1 || (! TARGET_C3X && ! TARGET_SMALL))
+/* Nonzero to convert direct memory references into HIGH/LO_SUM pairs
+   during RTL generation.  */
 #define TARGET_EXPOSE_LDP	0
+/* Nonzero to force loading of direct memory references into a register.  */
+#define TARGET_LOAD_DIRECT_MEMS	0
 
 /* -mrpts            allows the use of the RPTS instruction irregardless.
    -mrpts=max-cycles will use RPTS if the number of cycles is constant
