@@ -102,6 +102,22 @@ OLDAR = ar
 # install-headers-tar or install-headers-cpio.
 INSTALL_HEADERS_DIR = install-headers-tar
 
+# Header files that are made available under the same name
+# to programs compiled with GCC.
+USER_H = $(srcdir)/ginclude/stdarg.h $(srcdir)/ginclude/stddef.h \
+    $(srcdir)/ginclude/varargs.h $(srcdir)/ginclude/va-alpha.h \
+    $(srcdir)/ginclude/va-h8300.h $(srcdir)/ginclude/va-i860.h \
+    $(srcdir)/ginclude/va-i960.h $(srcdir)/ginclude/va-mips.h \
+    $(srcdir)/ginclude/va-m88k.h $(srcdir)/ginclude/va-pa.h \
+    $(srcdir)/ginclude/va-pyr.h $(srcdir)/ginclude/va-sparc.h \
+    $(srcdir)/ginclude/va-clipper.h $(srcdir)/ginclude/va-spur.h \
+    $(srcdir)/ginclude/iso646.h $(srcdir)/ginclude/va-ppc.h \
+    $(srcdir)/ginclude/proto.h $(EXTRA_HEADERS)
+
+# Target to use whe installing assert.h.  Some systems may
+# want to set this empty.
+INSTALL_ASSERT_H = install-assert-h
+
 # The GCC to use for compiling libgcc2.a, enquire, and libgcc1-test.
 # Usually the one we just built.
 # Don't use this as a dependency--use $(GCC_PASSES) or $(GCC_PARTS).
@@ -556,18 +572,6 @@ LIB2FUNCS = _muldi3 _divdi3 _moddi3 _udivdi3 _umoddi3 _negdi2 \
     __gcc_bcmp _varargs _eprintf _op_new _op_vnew _new_handler _op_delete \
     _op_vdel _bb _shtab _clear_cache _trampoline __main _exit _ctors _eh \
     _pure
-
-# Header files that are made available under the same name
-# to programs compiled with GCC.
-USER_H = $(srcdir)/ginclude/stdarg.h $(srcdir)/ginclude/stddef.h \
-    $(srcdir)/ginclude/varargs.h $(srcdir)/ginclude/va-alpha.h \
-    $(srcdir)/ginclude/va-h8300.h $(srcdir)/ginclude/va-i860.h \
-    $(srcdir)/ginclude/va-i960.h $(srcdir)/ginclude/va-mips.h \
-    $(srcdir)/ginclude/va-m88k.h $(srcdir)/ginclude/va-pa.h \
-    $(srcdir)/ginclude/va-pyr.h $(srcdir)/ginclude/va-sparc.h \
-    $(srcdir)/ginclude/va-clipper.h $(srcdir)/ginclude/va-spur.h \
-    $(srcdir)/ginclude/iso646.h $(srcdir)/ginclude/va-ppc.h \
-    $(srcdir)/ginclude/proto.h $(EXTRA_HEADERS)
 
 # The files that "belong" in CONFIG_H are deliberately omitted
 # because having them there would not be useful in actual practice.
@@ -1731,11 +1735,13 @@ stmp-int-hdrs: stmp-fixinc $(USER_H) xlimits.h objc-headers
 # Using basename would be simpler, but some systems don't have it.
 	objdir=`pwd`; \
 	cd $(srcdir); \
-	for file in $(USER_H); do \
-	  realfile=`echo $$file | sed -e 's|.*/\([^/]*\)$$|\1|'`; \
-	  rm -f $$objdir/include/$$realfile; \
-	  cp ginclude/$$realfile $$objdir/include; \
-	  chmod a+r $$objdir/include/$$realfile; \
+	for file in .. $(USER_H); do \
+	  if [ X$$file != X.. ]; then \
+	    realfile=`echo $$file | sed -e 's|.*/\([^/]*\)$$|\1|'`; \
+	    rm -f $$objdir/include/$$realfile; \
+	    cp ginclude/$$realfile $$objdir/include; \
+	    chmod a+r $$objdir/include/$$realfile; \
+	  fi; \
 	done
 	rm -f include/limits.h
 	cp xlimits.h include/limits.h
@@ -2173,7 +2179,7 @@ install-libobjc: install-dir
 	else true; fi
 
 # Install all the header files built in the include subdirectory.
-install-headers: install-include-dir $(INSTALL_HEADERS_DIR) install-assert-h
+install-headers: install-include-dir $(INSTALL_HEADERS_DIR) $(INSTALL_ASSERT_H)
 # Fix symlinks to absolute paths in the installed include directory to
 # point to the installed directory, not the build directory.
 	-files=`cd $(libsubdir)/include; find . -type l -print 2>/dev/null`; \
