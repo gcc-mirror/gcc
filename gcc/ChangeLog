@@ -1,3 +1,8 @@
+Wed Apr  8 23:13:50 1998  Gavin Koch  <gavin@cygnus.com>
+
+	* config/mips/r3900.h (ASM_OUTPUT_DEF,SUPPORTS_WEAK,
+	ASM_WEAKEN_LABEL): Add.
+
 Wed Apr  8 18:21:30 1998  Richard Henderson  <rth@cygnus.com>
 
 	* alpha/crtbegin.asm, alpha/crtend.asm, alpha/t-crtb: New files.
