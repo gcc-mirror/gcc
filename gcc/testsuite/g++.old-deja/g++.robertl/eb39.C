@@ -6,6 +6,8 @@
 #include <strstream.h>
 #include <string.h>
 
+using namespace std;
+
 extern bool foo2 (ostream &out, istream &in);
 
 bool
