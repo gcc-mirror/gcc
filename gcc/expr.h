@@ -298,6 +298,9 @@ extern void emit_cmp_and_jump_insns (rtx, rtx, enum rtx_code, rtx,
 /* Generate code to indirectly jump to a location given in the rtx LOC.  */
 extern void emit_indirect_jump (rtx);
 
+/* Generate a conditional trap instruction.  */
+extern rtx gen_cond_trap (enum rtx_code, rtx, rtx, rtx);
+
 #include "insn-config.h"
 
 #ifdef HAVE_conditional_move
@@ -329,19 +332,6 @@ extern rtx emit_store_flag (rtx, enum rtx_code, rtx, rtx, enum machine_mode,
 /* Like emit_store_flag, but always succeeds.  */
 extern rtx emit_store_flag_force (rtx, enum rtx_code, rtx, rtx,
 				  enum machine_mode, int, int);
-
-/* Functions from loop.c:  */
-
-/* Given an insn and condition, return a canonical description of
-   the test being made.  */
-extern rtx canonicalize_condition (rtx, rtx, int, rtx *, rtx, int, int);
-
-/* Given a JUMP_INSN, return a canonical description of the test
-   being made.  */
-extern rtx get_condition (rtx, rtx *, int, int);
-
-/* Generate a conditional trap instruction.  */
-extern rtx gen_cond_trap (enum rtx_code, rtx, rtx, rtx);
 
 /* Functions from builtins.c:  */
 extern rtx expand_builtin (tree, rtx, rtx, enum machine_mode, int);

@@ -1657,6 +1657,15 @@ extern bool keep_with_call_p (rtx);
 extern bool label_is_jump_target_p (rtx, rtx);
 extern int insn_rtx_cost (rtx);
 
+/* Given an insn and condition, return a canonical description of
+   the test being made.  */
+extern rtx canonicalize_condition (rtx, rtx, int, rtx *, rtx, int, int);
+
+/* Given a JUMP_INSN, return a canonical description of the test
+   being made.  */
+extern rtx get_condition (rtx, rtx *, int, int);
+
+
 /* flow.c */
 
 extern rtx find_use_as_address (rtx, rtx, HOST_WIDE_INT);
@@ -2017,6 +2026,8 @@ extern void print_inline_rtx (FILE *, rtx, int);
 /* In loop.c */
 extern void init_loop (void);
 extern void loop_optimize (rtx, FILE *, int);
+
+/* In bt-load.c */
 extern void branch_target_load_optimize (bool);
 
 /* In function.c */

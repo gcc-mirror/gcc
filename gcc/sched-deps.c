@@ -101,7 +101,7 @@ static void sched_analyze_1 (struct deps *, rtx, rtx);
 static void sched_analyze_2 (struct deps *, rtx, rtx);
 static void sched_analyze_insn (struct deps *, rtx, rtx, rtx);
 
-static rtx get_condition (rtx);
+static rtx sched_get_condition (rtx);
 static int conditions_mutex_p (rtx, rtx);
 
 /* Return nonzero if a load of the memory reference MEM can cause a trap.  */
@@ -138,7 +138,7 @@ find_insn_list (rtx insn, rtx list)
 /* Find the condition under which INSN is executed.  */
 
 static rtx
-get_condition (rtx insn)
+sched_get_condition (rtx insn)
 {
   rtx pat = PATTERN (insn);
   rtx src;
@@ -218,8 +218,8 @@ add_dependence (rtx insn, rtx elem, enum reg_note dep_type)
      be dependent.  */
   if (!CALL_P (insn) && !CALL_P (elem))
     {
-      cond1 = get_condition (insn);
-      cond2 = get_condition (elem);
+      cond1 = sched_get_condition (insn);
+      cond2 = sched_get_condition (elem);
       if (cond1 && cond2
 	  && conditions_mutex_p (cond1, cond2)
 	  /* Make sure first instruction doesn't affect condition of second

@@ -6775,11 +6775,7 @@ cse_main (rtx f, int nregs, FILE *file)
 
 /* Process a single basic block.  FROM and TO and the limits of the basic
    block.  NEXT_BRANCH points to the branch path when following jumps or
-   a null path when not following jumps.
-
-   AROUND_LOOP is nonzero if we are to try to cse around to the start of a
-   loop.  This is true when we are being called for the last time on a
-   block and this CSE pass is before loop.c.  */
+   a null path when not following jumps.  */
 
 static rtx
 cse_basic_block (rtx from, rtx to, struct branch_path *next_branch)

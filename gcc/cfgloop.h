@@ -144,7 +144,7 @@ struct loop
   void *aux;
 
   /* The following are currently used by loop.c but they are likely to
-     disappear as loop.c is converted to use the CFG.  */
+     disappear when loop.c is replaced and removed.  */
 
   /* The NOTE_INSN_LOOP_BEG.  */
   rtx start;
