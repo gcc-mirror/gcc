@@ -784,7 +784,7 @@ enum reg_class
 	(OFFSET) = -offset;						\
       else								\
 	{								\
-	   if (! regs_ever_live[HARD_FRAME_POINTER_REGNUM])		\
+	   if (! frame_pointer_needed)					\
 	     offset -= 16;						\
 	   if (! volatile_func && (regs_ever_live[14] || saved_hard_reg)) \
 	     offset += 4;						\
