@@ -1,3 +1,8 @@
+2004-03-08  Joel Sherrill  <joel@oarcorp.com>
+
+	PR target/14480
+	* config.gcc (powerpc*-*-rtems*): Use rs6000/t-rtems.
+
 2004-03-10  Roman Zippel  <zippel@linux-m68k.org>
 
 	PR bootstrap/12371
