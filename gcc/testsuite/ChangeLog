@@ -1,3 +1,7 @@
+2001-04-04  Diego Novillo  <dnovillo@redhat.com>
+
+	* testsuite/gcc.c-torture/compile/20010404-1.c: New test.
+
 2001-04-03  Alexandre Oliva  <aoliva@redhat.com>
 
 	* g++.old-deja/g++.ext/instantiate1.C: Adjust to accommodate
