@@ -1,3 +1,7 @@
+2000-10-22  Mark Mitchell  <mark@codesourcery.com>
+
+	* tree.h (TYPE_IS_SIZETYPE): Add more documentation.
+
 2000-10-21  Joseph S. Myers  <jsm28@cam.ac.uk>
 
 	* diagnostic.c: Remove EGCS reference in comment.
