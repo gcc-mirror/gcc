@@ -1,3 +1,7 @@
+Fri Sep 19 11:52:25 1997  Jim Wilson  <wilson@cygnus.com>
+
+	* Makefile.in (LIBIO_OBJECTS): Depend on _G_CONFIG_H.
+
 1997-09-17 04:08  Ulrich Drepper  <drepper@cygnus.com>
 
 	* iostream.cc: Add forward declaration for __cvt_double.
