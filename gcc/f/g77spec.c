@@ -451,11 +451,7 @@ or type the command `info -f g77 Copying'.\n\
 	saw_library = 0;	/* -xfoo currently active. */
       else
 	{			/* -lfoo or filename. */
-	  if (strcmp (argv[i], MATH_LIBRARY) == 0
-#ifdef ALT_LIBM
-	      || strcmp (argv[i], ALT_LIBM) == 0
-#endif
-	      )
+	  if (strcmp (argv[i], MATH_LIBRARY) == 0)
 	    {
 	      if (saw_library == 1)
 		saw_library = 2;	/* -l<library> -lm. */
