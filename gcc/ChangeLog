@@ -1,5 +1,8 @@
 Sun Oct 25 06:12:33 1998  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
+	* explow.c (allocate_dynamic_stack_space): If operand 1 has VOIDmode,
+	use Pmode.
+
 	* configure.in (AC_CHECK_HEADERS): Fix typo with sys/stat.h.
 
 	* Makefile.in (config.status): Use $(srcdir) for configure.
