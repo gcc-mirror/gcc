@@ -353,6 +353,7 @@ current_file_function_operand (op, mode)
      enum machine_mode mode;
 {
   return (GET_CODE (op) == SYMBOL_REF
+	  && ! profile_flag && ! profile_block_flag
 	  && (SYMBOL_REF_FLAG (op)
 	      || op == XEXP (DECL_RTL (current_function_decl), 0)));
 }
