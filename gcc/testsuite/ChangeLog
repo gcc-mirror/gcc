@@ -1,3 +1,8 @@
+2001-01-22  Franz Sirl  <Franz.Sirl-kernel@lauterbach.com>
+
+	* gcc.c-torture/execute/20010122-1.c: New test, exercise
+	__builtin_return_address.
+
 2001-01-22  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* g++.old-deja/g++.martin/sts_partial.C: Remove XFAIL.
