@@ -234,7 +234,7 @@ do {								\
 #define EXTRA_SECTION_FUNCTIONS						\
 extern void readonly_data (void);					\
 void									\
-readonly_data ()							\
+readonly_data (void)							\
 {									\
   if (in_section != in_readonly_data)					\
     {									\
