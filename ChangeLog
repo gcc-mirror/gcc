@@ -1,3 +1,8 @@
+2004-05-27  Daniel Jacobowitz  <dan@debian.org>
+
+	* configure.in: Fix sed invocation for GFORTRAN_FOR_TARGET.
+	* configure: Regenerate.
+
 2004-05-25  Daniel Jacobowitz  <drow@false.org>
 
 	* Makefile.tpl (BUILD_EXPORTS, HOST_EXPORTS, GCC_HOST_EXPORTS)
