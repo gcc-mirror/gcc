@@ -1264,7 +1264,7 @@ extern int may_call_alloca;
 
    `S' is the constant 31.
 
-   `T' is for fp loads and stores.  */
+   `T' is for floating-point loads and stores.  */
 #define EXTRA_CONSTRAINT(OP, C)				\
   ((C) == 'Q' ?						\
    (IS_RELOADING_PSEUDO_P (OP)				\
@@ -1283,22 +1283,24 @@ extern int may_call_alloca;
       && (move_operand (OP, GET_MODE (OP))		\
 	  || memory_address_p (GET_MODE (OP), XEXP (OP, 0))\
 	  || reload_in_progress))			\
-   : ((C) == 'T' ? 					\
-      (GET_CODE (OP) == MEM				\
-       /* Using DFmode forces only short displacements	\
-	  to be recognized as valid in reg+d addresses. \
-	  However, this is not necessary for PA2.0 since\
-	  it has long FP loads/stores.			\
-							\
-	  FIXME: the ELF32 linker clobbers the LSB of	\
-	  the FP register number in {fldw,fstw} insns.	\
-	  Thus, we only allow long FP loads/stores on	\
-	  TARGET_64BIT.  */				\
-       && memory_address_p ((TARGET_PA_20		\
-			     && !TARGET_ELF32		\
-			     ? GET_MODE (OP)		\
-			     : DFmode),			\
-			    XEXP (OP, 0))		\
+   : ((C) == 'T' ?							\
+      (GET_CODE (OP) == MEM						\
+       /* Floating-point loads and stores are used to load		\
+	  integer values as well as floating-point values.		\
+	  They don't have the same set of REG+D address modes		\
+	  as integer loads and stores.  PA 1.x supports only		\
+	  short displacements.  PA 2.0 supports long displacements	\
+	  but the base register needs to be aligned.			\
+									\
+	  The checks in GO_IF_LEGITIMATE_ADDRESS for SFmode and		\
+	  DFmode test the validity of an address for use in a           \
+	  floating point load or store.  So, we use SFmode/DFmode       \
+	  to see if the address is valid for a floating-point           \
+	  load/store operation.  */                                     \
+       && memory_address_p ((GET_MODE_SIZE (GET_MODE (OP)) == 4		\
+			     ? SFmode					\
+			     : DFmode),					\
+			    XEXP (OP, 0))				\
        && !(GET_CODE (XEXP (OP, 0)) == LO_SUM		\
 	    && GET_CODE (XEXP (XEXP (OP, 0), 0)) == REG \
 	    && REG_OK_FOR_BASE_P (XEXP (XEXP (OP, 0), 0))\
@@ -1398,17 +1400,36 @@ extern int may_call_alloca;
 	       && REG_OK_FOR_BASE_P (XEXP (X, 1)))	\
 	base = XEXP (X, 1), index = XEXP (X, 0);	\
       if (base != 0)					\
-	if (GET_CODE (index) == CONST_INT		\
-	    && ((INT_14_BITS (index)			\
-		 && (TARGET_SOFT_FLOAT			\
-		     || (TARGET_PA_20			\
-			 && ((MODE == SFmode		\
-			      && (INTVAL (index) % 4) == 0)\
-			     || (MODE == DFmode		\
-				 && (INTVAL (index) % 8) == 0)))\
-		     || ((MODE) != SFmode && (MODE) != DFmode))) \
-		|| INT_5_BITS (index)))			\
-	  goto ADDR;					\
+	if (GET_CODE (index) == CONST_INT				\
+	    && ((INT_14_BITS (index)					\
+		 && (((MODE) != DImode					\
+		      && (MODE) != SFmode				\
+		      && (MODE) != DFmode)				\
+		     /* The base register for DImode loads and stores	\
+			with long displacements must be aligned because	\
+			the lower three bits in the displacement are	\
+			assumed to be zero.  */				\
+		     || ((MODE) == DImode				\
+			 && (!TARGET_64BIT				\
+			     || (INTVAL (index) % 8) == 0))		\
+		     /* Similarly, the base register for SFmode/DFmode	\
+			loads and stores with long displacements must	\
+			be aligned.					\
+									\
+			FIXME: the ELF32 linker clobbers the LSB of	\
+			the FP register number in PA 2.0 floating-point	\
+			insns with long displacements.  This is because	\
+			R_PARISC_DPREL14WR and other relocations like	\
+			it are not supported.  For now, we reject long	\
+			displacements on this target.  */		\
+		     || (((MODE) == SFmode || (MODE) == DFmode)		\
+			 && (TARGET_SOFT_FLOAT				\
+			     || (TARGET_PA_20				\
+				 && !TARGET_ELF32			\
+				 && (INTVAL (index)			\
+				     % GET_MODE_SIZE (MODE)) == 0)))))	\
+		|| INT_5_BITS (index)))					\
+	  goto ADDR;							\
       if (! TARGET_SOFT_FLOAT				\
 	  && ! TARGET_DISABLE_INDEXING			\
 	  && base					\
@@ -1510,6 +1531,11 @@ do { 									\
 	newoffset = (offset & ~mask) + mask + 1;			\
       else								\
 	newoffset = offset & ~mask;					\
+									\
+      /* Ensure that long displacements are aligned.  */		\
+      if (!VAL_5_BITS_P (newoffset)					\
+	  && GET_MODE_CLASS (MODE) == MODE_FLOAT)			\
+	newoffset &= ~(GET_MODE_SIZE (MODE) -1);			\
 									\
       if (newoffset != 0						\
 	  && VAL_14_BITS_P (newoffset))					\
