@@ -1,3 +1,9 @@
+1999-06-09  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* fixinc/inclhack.def (sun_catmacro): Escape parens in the select
+	pattern.
+	* fixinc/fixincl.x, fixinc/inclhack.sh: Rebuilt.
+
 Wed Jun  9 03:10:34 1999  Mumit Khan  <khan@xraylith.wisc.edu>
 
 	* c-pragma.c (handle_pragma_token): Handle `#pragma pack()'
