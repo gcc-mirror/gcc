@@ -1491,6 +1491,35 @@ record_const_or_copy_1 (tree x, tree y, tree prev_x)
   VARRAY_PUSH_TREE (const_and_copies_stack, x);
 }
 
+
+/* Return the loop depth of the basic block of the defining statement of X.
+   This number should not be treated as absolutely correct because the loop
+   information may not be completely up-to-date when dom runs.  However, it
+   will be relatively correct, and as more passes are taught to keep loop info
+   up to date, the result will become more and more accurate.  */
+
+static int
+loop_depth_of_name (tree x)
+{
+  tree defstmt;
+  basic_block defbb;
+
+  /* If it's not an SSA_NAME, we have no clue where the definition is.  */
+  if (TREE_CODE (x) != SSA_NAME)
+    return 0;
+
+  /* Otherwise return the loop depth of the defining statement's bb.
+     Note that there may not actually be a bb for this statement, if the
+     ssa_name is live on entry.  */
+  defstmt = SSA_NAME_DEF_STMT (x);
+  defbb = bb_for_stmt (defstmt);
+  if (!defbb)
+    return 0;
+
+  return defbb->loop_depth;
+}
+
+
 /* Record that X is equal to Y in const_and_copies.  Record undo
    information in the block-local varray.  */
 
@@ -1522,12 +1551,13 @@ record_equality (tree x, tree y)
   if (TREE_CODE (y) == SSA_NAME)
     prev_y = SSA_NAME_VALUE (y);
 
-  /* If one of the previous values is invariant, then use that.
+  /* If one of the previous values is invariant, or invariant in more loops
+     (by depth), then use that.
      Otherwise it doesn't matter which value we choose, just so
      long as we canonicalize on one value.  */
   if (TREE_INVARIANT (y))
     ;
-  else if (TREE_INVARIANT (x))
+  else if (TREE_INVARIANT (x) || (loop_depth_of_name (x) <= loop_depth_of_name (y)))
     prev_x = x, x = y, y = prev_x, prev_x = prev_y;
   else if (prev_x && TREE_INVARIANT (prev_x))
     x = y, y = prev_x, prev_x = prev_y;
