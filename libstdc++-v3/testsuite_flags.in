@@ -36,7 +36,8 @@ case ${query} in
       INCLUDES="-nostdinc++ -I${BUILD_DIR}/include -I${SRC_DIR}/include
                 -I${SRC_DIR}/include/std  -I${SRC_DIR}/include/$C_DIR
 	        -I${SRC_DIR}/libsupc++ -I${SRC_DIR}/libio 
-		-I${SRC_DIR}/testsuite"
+		-I${SRC_DIR}/testsuite
+		-I${SRC_DIR}/include/backwards -I${SRC_DIR}/include/ext"
       echo ${INCLUDES}
       ;;
     --install-cxx)
