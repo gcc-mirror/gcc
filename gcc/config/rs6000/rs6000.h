@@ -1954,6 +1954,16 @@ typedef struct rs6000_args
 
 /* #define LEGITIMATE_PIC_OPERAND_P (X) */
 
+/* In rare cases, correct code generation requires extra machine
+   dependent processing between the second jump optimization pass and
+   delayed branch scheduling.  On those machines, define this macro
+   as a C statement to act on the code starting at INSN.
+
+   On the RS/6000, we use it to make sure the GOT_TOC register marker
+   that FINALIZE_PIC is supposed to remove actually got removed.  */
+
+#define MACHINE_DEPENDENT_REORG(INSN) rs6000_reorg (INSN)
+
 
 /* Define this if some processing needs to be done immediately before
    emitting code for an insn.  */
@@ -3081,6 +3091,7 @@ extern int addrs_ok_for_quad_peep ();
 extern enum reg_class secondary_reload_class ();
 extern int ccr_bit ();
 extern void rs6000_finalize_pic ();
+extern void rs6000_reorg ();
 extern void rs6000_save_machine_status ();
 extern void rs6000_restore_machine_status ();
 extern void rs6000_init_expanders ();
