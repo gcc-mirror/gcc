@@ -268,7 +268,11 @@ initialize_for_inline (fndecl, min_labelno, max_labelno, max_reg, copy)
 	  rtx new = copy_rtx (p);
 
 	  /* Don't leave the old copy anywhere in this decl.  */
-	  if (DECL_RTL (parms) == DECL_INCOMING_RTL (parms))
+	  if (DECL_RTL (parms) == DECL_INCOMING_RTL (parms)
+	      || (GET_CODE (DECL_RTL (parms)) == MEM
+		  && GET_CODE (DECL_INCOMING_RTL (parms)) == MEM
+		  && (XEXP (DECL_RTL (parms), 0)
+		      == XEXP (DECL_INCOMING_RTL (parms), 0))))
 	    DECL_INCOMING_RTL (parms) = new;
 	  DECL_RTL (parms) = new;
 	}
