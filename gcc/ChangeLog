@@ -1,3 +1,14 @@
+2000-04-01  Zack Weinberg  <zack@wolery.cumb.org>
+
+	* cpplex.c: Copy ISTABLE macros from cppinit.c, and adapt them
+	to initialize speccase[] and trigraph_map[].  Delete all
+	references to pfile->input_speccase.  Always treat '?' as a
+	special character.  Remove table-initialization code from
+	_cpp_init_input_buffer.
+
+	* cpplib.h (struct cpp_reader): Remove input_speccase field.
+	* cppinit.c (cpp_cleanup): Don't free input_speccase.
+
 2000-04-01  Richard Henderson  <rth@cygnus.com>
 
 	* Makefile.in (STAGESTUFF): Wildcard all debugging dumps at once.

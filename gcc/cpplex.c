@@ -1268,6 +1268,62 @@ find_position (start, limit, linep)
   return lbase;
 }
 
+/* These are tables used by _cpp_read_and_prescan.  If we have
+   designated initializers, they can be constant data; otherwise, they
+   are set up at runtime by _cpp_init_input_buffer.  */
+
+#ifndef UCHAR_MAX
+#define UCHAR_MAX 255	/* assume 8-bit bytes */
+#endif
+
+#if (GCC_VERSION >= 2007) || (__STDC_VERSION__ >= 199901L)
+#define CHARTAB(name) static const unsigned char name[UCHAR_MAX + 1]
+#define init_speccase()  /* nothing */
+#define init_trigraph_map() /* nothing */
+#define SPECCASE CHARTAB(speccase) = {
+#define TRIGRAPH_MAP CHARTAB(trigraph_map) = {
+#define END };
+#define s(p, v) [p] = v,
+#else
+#define CHARTAB(name) static unsigned char name[UCHAR_MAX + 1]
+#define SPECCASE CHARTAB(speccase) = { 0 }; \
+ static void init_speccase PARAMS ((void)) { \
+ unsigned char *x = speccase;
+#define TRIGRAPH_MAP CHARTAB(trigraph_map) = { 0 }; \
+ static void init_trigraph_map PARAMS ((void)) { \
+ unsigned char *x = trigraph_map;
+#define END }
+#define s(p, v) x[p] = v;
+#endif
+
+/* Table of characters that can't be handled in the inner loop.
+   Keep these contiguous to optimize the performance of the code generated
+   for the switch that uses them.  */
+#define SPECCASE_EMPTY     0
+#define SPECCASE_CR        1
+#define SPECCASE_BACKSLASH 2
+#define SPECCASE_QUESTION  3
+ 
+SPECCASE
+  s('\r', SPECCASE_CR)
+  s('\\', SPECCASE_BACKSLASH)
+  s('?',  SPECCASE_QUESTION)
+END
+
+/* Map of trigraph third characters to their replacements.  */
+  
+TRIGRAPH_MAP
+  s('=', '#')	s(')', ']')	s('!', '|')
+  s('(', '[')	s('\'', '^')	s('>', '}')
+  s('/', '\\')	s('<', '{')	s('-', '~')
+END
+
+#undef CHARTAB
+#undef SPECCASE
+#undef TRIGRAPH_MAP
+#undef END
+#undef s
+
 /* Read the entire contents of file DESC into buffer BUF.  LEN is how
    much memory to allocate initially; more will be allocated if
    necessary.  Convert end-of-line markers (\n, \r, \r\n, \n\r) to
@@ -1303,18 +1359,7 @@ find_position (start, limit, linep)
    The end of the buffer is marked by a '\\', which, being a special
    character, guarantees we will exit the fast-scan loops and perform
    a refill. */
-
-/* Table of characters that can't be handled in the inner loop.
-   Keep these contiguous to optimize the performance of the code generated
-   for the switch that uses them.  */
-#define SPECCASE_EMPTY     0
-#define SPECCASE_CR        1
-#define SPECCASE_BACKSLASH 2
-#define SPECCASE_QUESTION  3
-
-/* Maps trigraph characters to their replacements */
-static unsigned int trigraph_map   [1 << CHAR_BIT] = {0};
-
+ 
 long
 _cpp_read_and_prescan (pfile, fp, desc, len)
      cpp_reader *pfile;
@@ -1325,7 +1370,6 @@ _cpp_read_and_prescan (pfile, fp, desc, len)
   U_CHAR *buf = (U_CHAR *) xmalloc (len);
   U_CHAR *ip, *op, *line_base;
   U_CHAR *ibase;
-  U_CHAR *speccase = pfile->input_speccase;
   unsigned long line;
   unsigned int deferred_newlines;
   size_t offset;
@@ -1534,39 +1578,17 @@ _cpp_read_and_prescan (pfile, fp, desc, len)
   return -1;
 }
 
-/* Initialize the `input_buffer' 'trigraph_map' and `input_speccase'
-   tables.  These are only used by read_and_prescan, but they're large
-   and somewhat expensive to set up, so we want them allocated once
-   for the duration of the cpp run.  */
-
+/* Allocate pfile->input_buffer, and initialize speccase[] and
+   trigraph_map[] if it hasn't happened already.  */
+ 
 void
 _cpp_init_input_buffer (pfile)
      cpp_reader *pfile;
 {
   U_CHAR *tmp;
 
-  /* Table of characters that cannot be handled by the
-     read_and_prescan inner loop.  The number of non-EMPTY entries
-     should be as small as humanly possible.  */
-
-  tmp = (U_CHAR *) xmalloc (1 << CHAR_BIT);
-  memset (tmp, SPECCASE_EMPTY, 1 << CHAR_BIT);
-  tmp['\r'] = SPECCASE_CR;
-  tmp['\\'] = SPECCASE_BACKSLASH;
-  if (CPP_OPTION (pfile, trigraphs) || CPP_OPTION (pfile, warn_trigraphs))
-    tmp['?'] = SPECCASE_QUESTION;
-  pfile->input_speccase = tmp;
-
-  /* Trigraph mappings */
-  trigraph_map['='] = '#';
-  trigraph_map[')'] = ']';
-  trigraph_map['!'] = '|';
-  trigraph_map['('] = '[';
-  trigraph_map['\''] = '^';
-  trigraph_map['>'] = '}';
-  trigraph_map['/'] = '\\';
-  trigraph_map['<'] = '{';
-  trigraph_map['-'] = '~';
+  init_speccase ();
+  init_trigraph_map ();
 
   /* Determine the appropriate size for the input buffer.  Normal C
      source files are smaller than eight K.  */
