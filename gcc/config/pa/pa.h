@@ -1728,10 +1728,19 @@ do { fprintf (FILE, "\t.SPACE $PRIVATE$\n\
 
 #define EXTRA_SECTIONS in_bss, in_readonly_data
 
-/* FIXME: GAS doesn't grok expressions involving two symbols in different
-   segments (aka subspaces).  Two avoid creating such expressions, we place
-   readonly data into the $CODE$ subspace when generating PIC code.  If
-   GAS ever handles such expressions, this hack can disappear.  */
+/* FIXME: HPUX ld generates incorrect GOT entries for "T" fixups
+   which reference data within the $TEXT$ space (for example constant
+   strings in the $LIT$ subspace).
+
+   The assemblers (GAS and HP as) both have problems with handling
+   the difference of two symbols which is the other correct way to
+   reference constant data during PIC code generation.
+
+   So, there's no way to reference constant data which is in the
+   $TEXT$ space during PIC generation.  Instead place all constant
+   data into the $PRIVATE$ subspace (this reduces sharing, but it
+   works correctly).  */
+
 #define EXTRA_SECTION_FUNCTIONS						\
 void									\
 bss_section ()								\
@@ -1748,7 +1757,7 @@ readonly_data ()							\
   if (in_section != in_readonly_data)					\
     {									\
       if (flag_pic)							\
-	fprintf (asm_out_file, "%s\n", TEXT_SECTION_ASM_OP);		\
+	fprintf (asm_out_file, "%s\n", DATA_SECTION_ASM_OP);		\
       else								\
 	fprintf (asm_out_file, "%s\n", READONLY_DATA_ASM_OP);		\
       in_section = in_readonly_data;					\

@@ -235,14 +235,9 @@ pic_label_operand (op, mode)
     {
     case LABEL_REF:
       return 1;
-    case SYMBOL_REF:
-      return (read_only_operand (op) && !FUNCTION_NAME_P (XSTR (op, 0)));
     case CONST:
       op = XEXP (op, 0);
-      return (((GET_CODE (XEXP (op, 0)) == SYMBOL_REF
-		&& read_only_operand (XEXP (op, 0))
-		&& !FUNCTION_NAME_P (XSTR (XEXP (op, 0), 0)))
-	       || GET_CODE (XEXP (op, 0)) == LABEL_REF)
+      return (GET_CODE (XEXP (op, 0)) == LABEL_REF
 	      && GET_CODE (XEXP (op, 1)) == CONST_INT);
     default:
       return 0;
@@ -477,7 +472,7 @@ legitimize_pic_address (orig, mode, reg)
 {
   rtx pic_ref = orig;
 
-  /* Lables and read-only data need special handling.  */
+  /* Lables need special handling.  */
   if (pic_label_operand (orig))
     {
       emit_insn (gen_pic_load_label (reg, orig));
