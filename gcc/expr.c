@@ -11008,7 +11008,8 @@ do_jump_for_compare (comparison, if_false_label, if_true_label)
   if (if_true_label)
     {
       if (bcc_gen_fctn[(int) GET_CODE (comparison)] != 0)
-	emit_jump_insn ((*bcc_gen_fctn[(int) GET_CODE (comparison)]) (if_true_label));
+	emit_jump_insn ((*bcc_gen_fctn[(int) GET_CODE (comparison)])
+			  (if_true_label));
       else
 	abort ();
 
@@ -11017,52 +11018,80 @@ do_jump_for_compare (comparison, if_false_label, if_true_label)
     }
   else if (if_false_label)
     {
-      rtx insn;
-      rtx prev = get_last_insn ();
-      rtx branch = 0;
+      rtx first = get_last_insn (), insn, branch;
+      int br_count;
 
       /* Output the branch with the opposite condition.  Then try to invert
 	 what is generated.  If more than one insn is a branch, or if the
 	 branch is not the last insn written, abort. If we can't invert
 	 the branch, emit make a true label, redirect this jump to that,
 	 emit a jump to the false label and define the true label.  */
+      /* ??? Note that we wouldn't have to do any of this nonsense if
+	 we passed both labels into a combined compare-and-branch. 
+	 Ah well, jump threading does a good job of repairing the damage.  */
 
       if (bcc_gen_fctn[(int) GET_CODE (comparison)] != 0)
-	emit_jump_insn ((*bcc_gen_fctn[(int) GET_CODE (comparison)])(if_false_label));
+	emit_jump_insn ((*bcc_gen_fctn[(int) GET_CODE (comparison)])
+			  (if_false_label));
       else
 	abort ();
 
-      /* Here we get the first insn that was just emitted.  It used to be  the
+      /* Here we get the first insn that was just emitted.  It used to be the
 	 case that, on some machines, emitting the branch would discard
 	 the previous compare insn and emit a replacement.  This isn't
 	 done anymore, but abort if we see that PREV is deleted.  */
 
-      if (prev == 0)
-	insn = get_insns ();
-      else if (INSN_DELETED_P (prev))
+      if (first == 0)
+	first = get_insns ();
+      else if (INSN_DELETED_P (first))
 	abort ();
       else
-	insn = NEXT_INSN (prev);
+	first = NEXT_INSN (first);
 
-      for (; insn; insn = NEXT_INSN (insn))
+      /* Look for multiple branches in this sequence, as might be generated
+	 for a multi-word integer comparison.  */
+
+      br_count = 0;
+      branch = NULL_RTX;
+      for (insn = first; insn ; insn = NEXT_INSN (insn))
 	if (GET_CODE (insn) == JUMP_INSN)
 	  {
-	    if (branch)
-	      abort ();
 	    branch = insn;
+	    br_count += 1;
 	  }
 
-      if (branch != get_last_insn ())
-	abort ();
+      /* If we've got one branch at the end of the sequence,
+	 we can try to reverse it.  */
 
-      JUMP_LABEL (branch) = if_false_label;
-      if (! invert_jump (branch, if_false_label))
+      if (br_count == 1 && NEXT_INSN (branch) == NULL_RTX)
 	{
-	  if_true_label = gen_label_rtx ();
-	  redirect_jump (branch, if_true_label);
-	  emit_jump (if_false_label);
-	  emit_label (if_true_label);
+	  rtx insn_label;
+	  insn_label = XEXP (condjump_label (branch), 0);
+	  JUMP_LABEL (branch) = insn_label;
+
+	  if (insn_label != if_false_label)
+	    abort ();
+
+	  if (invert_jump (branch, if_false_label))
+	    return;
 	}
+
+      /* Multiple branches, or reversion failed.  Convert to branches
+	 around an unconditional jump.  */
+
+      if_true_label = gen_label_rtx ();
+      for (insn = first; insn; insn = NEXT_INSN (insn))
+	if (GET_CODE (insn) == JUMP_INSN)
+	  {
+	    rtx insn_label;
+	    insn_label = XEXP (condjump_label (insn), 0);
+	    JUMP_LABEL (insn) = insn_label;
+
+	    if (insn_label == if_false_label)
+	      redirect_jump (insn, if_true_label);
+	  }
+	emit_jump (if_false_label);
+	emit_label (if_true_label);
     }
 }
 
