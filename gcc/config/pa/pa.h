@@ -227,6 +227,11 @@ extern int target_flags;
 
 #define LINK_SPEC "%{!shared:-u main} %{shared:-b}"
 
+/* We don't want -lg.  */
+#ifndef LIB_SPEC
+#define LIB_SPEC "%{!p:%{!pg:-lc}}%{p:-lc_p}%{pg:-lc_p}"
+#endif
+
 /* Allow $ in identifiers.  */
 #define DOLLARS_IN_IDENTIFIERS 2
 
