@@ -1956,9 +1956,11 @@ chainon (op1, op2)
       for (t1 = op1; TREE_CHAIN (t1); t1 = TREE_CHAIN (t1))
 	;
       TREE_CHAIN (t1) = op2;
+#ifdef ENABLE_CHECKING
       for (t2 = op2; t2; t2 = TREE_CHAIN (t2))
         if (t2 == t1)
           abort ();  /* Circularity created.  */
+#endif
       return op1;
     }
   else return op2;

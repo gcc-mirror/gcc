@@ -1,3 +1,8 @@
+Sat Apr 17 14:36:19 1999  Craig Burley  <craig@jcb-sc.com>
+
+	* tree.c (chainon): Check for circularity only if
+	ENABLE_CHECKING is defined.
+
 1999-04-17 10:15 -0400  Zack Weinberg  <zack@rabi.columbia.edu>
 
 	* cccp.c: Make fatal non-static.
