@@ -1869,7 +1869,7 @@ Similar widening-multiplication instructions that do unsigned
 multiplication.
 
 @cindex @code{smul@var{m}3_highpart} instruction pattern
-@item @samp{mul@var{m}3_highpart}
+@item @samp{smul@var{m}3_highpart}
 Perform a signed multiplication of operands 1 and 2, which have mode
 @var{m}, and store the most significant half of the product in operand 0.
 The least significant half of the product is discarded.
