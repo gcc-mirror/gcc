@@ -1,3 +1,9 @@
+2003-06-15  Nathanael Nerode  <neroden@gcc.gnu.org>
+
+	* config/aoutos.h: Remove.
+	* config.gcc: Remove reference to aoutos.h.
+	* config/m68k/m68k-aout.h: Remove reference to aoutos.h.
+
 2003-06-14  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* doc/install.texi: Follow spelling conventions.
