@@ -1,6 +1,6 @@
 // std::moneypunct implementation details, GNU version -*- C++ -*-
 
-// Copyright (C) 2001, 2002 Free Software Foundation, Inc.
+// Copyright (C) 2001, 2002, 2003 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -220,43 +220,52 @@ namespace std
     moneypunct<char, true>::_M_initialize_moneypunct(__c_locale __cloc, 
 						     const char*)
     {
+      if (!_M_data)
+	_M_data = new __moneypunct_cache<char>;
+
       if (!__cloc)
 	{
 	  // "C" locale
-	  _M_decimal_point = '.';
-	  _M_thousands_sep = ',';
-	  _M_grouping = "";
-	  _M_curr_symbol = "";
-	  _M_positive_sign = "";
-	  _M_negative_sign = "";
-	  _M_frac_digits = 0;
-	  _M_pos_format = money_base::_S_default_pattern;
-	  _M_neg_format = money_base::_S_default_pattern;
+	  _M_data->_M_decimal_point = '.';
+	  _M_data->_M_thousands_sep = ',';
+	  _M_data->_M_grouping = "";
+	  _M_data->_M_curr_symbol = "";
+	  _M_data->_M_positive_sign = "";
+	  _M_data->_M_negative_sign = "";
+	  _M_data->_M_frac_digits = 0;
+	  _M_data->_M_pos_format = money_base::_S_default_pattern;
+	  _M_data->_M_neg_format = money_base::_S_default_pattern;
 	}
       else
 	{
 	  // Named locale.
-	  _M_decimal_point = *(__nl_langinfo_l(__MON_DECIMAL_POINT, __cloc));
-	  _M_thousands_sep = *(__nl_langinfo_l(__MON_THOUSANDS_SEP, __cloc));
-	  _M_grouping = __nl_langinfo_l(__MON_GROUPING, __cloc);
-	  _M_positive_sign = __nl_langinfo_l(__POSITIVE_SIGN, __cloc);
+	  _M_data->_M_decimal_point = *(__nl_langinfo_l(__MON_DECIMAL_POINT, 
+							__cloc));
+	  _M_data->_M_thousands_sep = *(__nl_langinfo_l(__MON_THOUSANDS_SEP, 
+							__cloc));
+	  _M_data->_M_grouping = __nl_langinfo_l(__MON_GROUPING, __cloc);
+	  _M_data->_M_positive_sign = __nl_langinfo_l(__POSITIVE_SIGN, __cloc);
 
 	  char __nposn = *(__nl_langinfo_l(__INT_N_SIGN_POSN, __cloc));
 	  if (!__nposn)
-	    _M_negative_sign = "()";
+	    _M_data->_M_negative_sign = "()";
 	  else
-	    _M_negative_sign = __nl_langinfo_l(__NEGATIVE_SIGN, __cloc);
+	    _M_data->_M_negative_sign = __nl_langinfo_l(__NEGATIVE_SIGN, 
+							__cloc);
 
 	  // _Intl == true
-	  _M_curr_symbol = __nl_langinfo_l(__INT_CURR_SYMBOL, __cloc);
-	  _M_frac_digits = *(__nl_langinfo_l(__INT_FRAC_DIGITS, __cloc));
+	  _M_data->_M_curr_symbol = __nl_langinfo_l(__INT_CURR_SYMBOL, __cloc);
+	  _M_data->_M_frac_digits = *(__nl_langinfo_l(__INT_FRAC_DIGITS, 
+						      __cloc));
 	  char __pprecedes = *(__nl_langinfo_l(__INT_P_CS_PRECEDES, __cloc));
 	  char __pspace = *(__nl_langinfo_l(__INT_P_SEP_BY_SPACE, __cloc));
 	  char __pposn = *(__nl_langinfo_l(__INT_P_SIGN_POSN, __cloc));
-	  _M_pos_format = _S_construct_pattern(__pprecedes, __pspace, __pposn);
+	  _M_data->_M_pos_format = _S_construct_pattern(__pprecedes, __pspace, 
+							__pposn);
 	  char __nprecedes = *(__nl_langinfo_l(__INT_N_CS_PRECEDES, __cloc));
 	  char __nspace = *(__nl_langinfo_l(__INT_N_SEP_BY_SPACE, __cloc));
-	  _M_neg_format = _S_construct_pattern(__nprecedes, __nspace, __nposn);
+	  _M_data->_M_neg_format = _S_construct_pattern(__nprecedes, __nspace, 
+							__nposn);
 	}
     }
 
@@ -265,53 +274,61 @@ namespace std
     moneypunct<char, false>::_M_initialize_moneypunct(__c_locale __cloc, 
 						      const char*)
     {
+      if (!_M_data)
+	_M_data = new __moneypunct_cache<char>;
+
       if (!__cloc)
 	{
 	  // "C" locale
-	  _M_decimal_point = '.';
-	  _M_thousands_sep = ',';
-	  _M_grouping = "";
-	  _M_curr_symbol = "";
-	  _M_positive_sign = "";
-	  _M_negative_sign = "";
-	  _M_frac_digits = 0;
-	  _M_pos_format = money_base::_S_default_pattern;
-	  _M_neg_format = money_base::_S_default_pattern;
+	  _M_data->_M_decimal_point = '.';
+	  _M_data->_M_thousands_sep = ',';
+	  _M_data->_M_grouping = "";
+	  _M_data->_M_curr_symbol = "";
+	  _M_data->_M_positive_sign = "";
+	  _M_data->_M_negative_sign = "";
+	  _M_data->_M_frac_digits = 0;
+	  _M_data->_M_pos_format = money_base::_S_default_pattern;
+	  _M_data->_M_neg_format = money_base::_S_default_pattern;
 	}
       else
 	{
 	  // Named locale.
-	  _M_decimal_point = *(__nl_langinfo_l(__MON_DECIMAL_POINT, __cloc));
-	  _M_thousands_sep = *(__nl_langinfo_l(__MON_THOUSANDS_SEP, __cloc));
-	  _M_grouping = __nl_langinfo_l(__MON_GROUPING, __cloc);
-	  _M_positive_sign = __nl_langinfo_l(__POSITIVE_SIGN, __cloc);
+	  _M_data->_M_decimal_point = *(__nl_langinfo_l(__MON_DECIMAL_POINT, 
+							__cloc));
+	  _M_data->_M_thousands_sep = *(__nl_langinfo_l(__MON_THOUSANDS_SEP, 
+							__cloc));
+	  _M_data->_M_grouping = __nl_langinfo_l(__MON_GROUPING, __cloc);
+	  _M_data->_M_positive_sign = __nl_langinfo_l(__POSITIVE_SIGN, __cloc);
 
 	  char __nposn = *(__nl_langinfo_l(__N_SIGN_POSN, __cloc));
 	  if (!__nposn)
-	    _M_negative_sign = "()";
+	    _M_data->_M_negative_sign = "()";
 	  else
-	    _M_negative_sign = __nl_langinfo_l(__NEGATIVE_SIGN, __cloc);
+	    _M_data->_M_negative_sign = __nl_langinfo_l(__NEGATIVE_SIGN, 
+							__cloc);
 
 	  // _Intl == false
-	  _M_curr_symbol = __nl_langinfo_l(__CURRENCY_SYMBOL, __cloc);
-	  _M_frac_digits = *(__nl_langinfo_l(__FRAC_DIGITS, __cloc));
+	  _M_data->_M_curr_symbol = __nl_langinfo_l(__CURRENCY_SYMBOL, __cloc);
+	  _M_data->_M_frac_digits = *(__nl_langinfo_l(__FRAC_DIGITS, __cloc));
 	  char __pprecedes = *(__nl_langinfo_l(__P_CS_PRECEDES, __cloc));
 	  char __pspace = *(__nl_langinfo_l(__P_SEP_BY_SPACE, __cloc));
 	  char __pposn = *(__nl_langinfo_l(__P_SIGN_POSN, __cloc));
-	  _M_pos_format = _S_construct_pattern(__pprecedes, __pspace, __pposn);
+	  _M_data->_M_pos_format = _S_construct_pattern(__pprecedes, __pspace, 
+							__pposn);
 	  char __nprecedes = *(__nl_langinfo_l(__N_CS_PRECEDES, __cloc));
 	  char __nspace = *(__nl_langinfo_l(__N_SEP_BY_SPACE, __cloc));
-	  _M_neg_format = _S_construct_pattern(__nprecedes, __nspace, __nposn);
+	  _M_data->_M_neg_format = _S_construct_pattern(__nprecedes, __nspace, 
+							__nposn);
 	}
     }
 
   template<> 
     moneypunct<char, true>::~moneypunct()
-    { }
+    { delete _M_data; }
 
   template<> 
     moneypunct<char, false>::~moneypunct()
-    { }
+    { delete _M_data; }
 
 #ifdef _GLIBCXX_USE_WCHAR_T
   template<> 
@@ -323,18 +340,21 @@ namespace std
 							const char* __name)
 #endif
     {
+      if (!_M_data)
+	_M_data = new __moneypunct_cache<wchar_t>;
+
       if (!__cloc)
 	{
 	  // "C" locale
-	  _M_decimal_point = L'.';
-	  _M_thousands_sep = L',';
-	  _M_grouping = "";
-	  _M_curr_symbol = L"";
-	  _M_positive_sign = L"";
-	  _M_negative_sign = L"";
-	  _M_frac_digits = 0;
-	  _M_pos_format = money_base::_S_default_pattern;
-	  _M_neg_format = money_base::_S_default_pattern;
+	  _M_data->_M_decimal_point = L'.';
+	  _M_data->_M_thousands_sep = L',';
+	  _M_data->_M_grouping = "";
+	  _M_data->_M_curr_symbol = L"";
+	  _M_data->_M_positive_sign = L"";
+	  _M_data->_M_negative_sign = L"";
+	  _M_data->_M_frac_digits = 0;
+	  _M_data->_M_pos_format = money_base::_S_default_pattern;
+	  _M_data->_M_neg_format = money_base::_S_default_pattern;
 	}
       else
 	{
@@ -349,11 +369,11 @@ namespace std
 
 	  union __s_and_w { const char *__s; unsigned int __w; } __u;
 	  __u.__s = __nl_langinfo_l(_NL_NUMERIC_DECIMAL_POINT_WC, __cloc);
-	  _M_decimal_point = static_cast<wchar_t>(__u.__w);
+	  _M_data->_M_decimal_point = static_cast<wchar_t>(__u.__w);
 
 	  __u.__s = __nl_langinfo_l(_NL_NUMERIC_THOUSANDS_SEP_WC, __cloc);
-	  _M_thousands_sep = static_cast<wchar_t>(__u.__w);
-	  _M_grouping = __nl_langinfo_l(GROUPING, __cloc);
+	  _M_data->_M_thousands_sep = static_cast<wchar_t>(__u.__w);
+	  _M_data->_M_grouping = __nl_langinfo_l(GROUPING, __cloc);
 
 	  const char* __cpossign = __nl_langinfo_l(__POSITIVE_SIGN, __cloc);
 	  const char* __cnegsign = __nl_langinfo_l(__NEGATIVE_SIGN, __cloc);
@@ -367,25 +387,25 @@ namespace std
 	      memset(&__state, 0, sizeof(mbstate_t));
 	      wchar_t* __wcs = new wchar_t[__len];
 	      mbsrtowcs(__wcs, &__cpossign, __len, &__state);
-	      _M_positive_sign = __wcs;
+	      _M_data->_M_positive_sign = __wcs;
 	    }
 	  else
-	    _M_positive_sign = L"";
+	    _M_data->_M_positive_sign = L"";
 
 	  char __nposn = *(__nl_langinfo_l(__INT_N_SIGN_POSN, __cloc));
 	  __len = strlen(__cnegsign);
 	  if (!__nposn)
-	    _M_negative_sign = L"()";
+	    _M_data->_M_negative_sign = L"()";
 	  else if (__len)
 	    { 
 	      ++__len;
 	      memset(&__state, 0, sizeof(mbstate_t));
 	      wchar_t* __wcs = new wchar_t[__len];
 	      mbsrtowcs(__wcs, &__cnegsign, __len, &__state);
-	      _M_negative_sign = __wcs;
+	      _M_data->_M_negative_sign = __wcs;
 	    }
 	  else
-	    _M_negative_sign = L"";
+	    _M_data->_M_negative_sign = L"";
 
 	  // _Intl == true.
 	  __len = strlen(__ccurr);
@@ -395,19 +415,22 @@ namespace std
 	      memset(&__state, 0, sizeof(mbstate_t));
 	      wchar_t* __wcs = new wchar_t[__len];
 	      mbsrtowcs(__wcs, &__ccurr, __len, &__state);
-	      _M_curr_symbol = __wcs;
+	      _M_data->_M_curr_symbol = __wcs;
 	    }
 	  else
-	    _M_curr_symbol = L"";
+	    _M_data->_M_curr_symbol = L"";
 
-	  _M_frac_digits = *(__nl_langinfo_l(__INT_FRAC_DIGITS, __cloc));
+	  _M_data->_M_frac_digits = *(__nl_langinfo_l(__INT_FRAC_DIGITS, 
+						      __cloc));
 	  char __pprecedes = *(__nl_langinfo_l(__INT_P_CS_PRECEDES, __cloc));
 	  char __pspace = *(__nl_langinfo_l(__INT_P_SEP_BY_SPACE, __cloc));
 	  char __pposn = *(__nl_langinfo_l(__INT_P_SIGN_POSN, __cloc));
-	  _M_pos_format = _S_construct_pattern(__pprecedes, __pspace, __pposn);
+	  _M_data->_M_pos_format = _S_construct_pattern(__pprecedes, __pspace, 
+							__pposn);
 	  char __nprecedes = *(__nl_langinfo_l(__INT_N_CS_PRECEDES, __cloc));
 	  char __nspace = *(__nl_langinfo_l(__INT_N_SEP_BY_SPACE, __cloc));
-	  _M_neg_format = _S_construct_pattern(__nprecedes, __nspace, __nposn);
+	  _M_data->_M_neg_format = _S_construct_pattern(__nprecedes, __nspace, 
+							__nposn);
 
 #if __GLIBC__ > 2 || (__GLIBC__ == 2 && __GLIBC_MINOR__ > 2)
 	  __uselocale(__old);
@@ -427,18 +450,21 @@ namespace std
 							 const char* __name)
 #endif
     {
+      if (!_M_data)
+	_M_data = new __moneypunct_cache<wchar_t>;
+
       if (!__cloc)
 	{
 	  // "C" locale
-	  _M_decimal_point = L'.';
-	  _M_thousands_sep = L',';
-	  _M_grouping = "";
-	  _M_curr_symbol = L"";
-	  _M_positive_sign = L"";
-	  _M_negative_sign = L"";
-	  _M_frac_digits = 0;
-	  _M_pos_format = money_base::_S_default_pattern;
-	  _M_neg_format = money_base::_S_default_pattern;
+	  _M_data->_M_decimal_point = L'.';
+	  _M_data->_M_thousands_sep = L',';
+	  _M_data->_M_grouping = "";
+	  _M_data->_M_curr_symbol = L"";
+	  _M_data->_M_positive_sign = L"";
+	  _M_data->_M_negative_sign = L"";
+	  _M_data->_M_frac_digits = 0;
+	  _M_data->_M_pos_format = money_base::_S_default_pattern;
+	  _M_data->_M_neg_format = money_base::_S_default_pattern;
 	}
       else
 	{
@@ -453,11 +479,11 @@ namespace std
 
 	  union __s_and_w { const char *__s; unsigned int __w; } __u;
 	  __u.__s = __nl_langinfo_l(_NL_NUMERIC_DECIMAL_POINT_WC, __cloc);
-	  _M_decimal_point = static_cast<wchar_t>(__u.__w);
+	  _M_data->_M_decimal_point = static_cast<wchar_t>(__u.__w);
 
 	  __u.__s = __nl_langinfo_l(_NL_NUMERIC_THOUSANDS_SEP_WC, __cloc);
-	  _M_thousands_sep = static_cast<wchar_t>(__u.__w);
-	  _M_grouping = __nl_langinfo_l(GROUPING, __cloc);
+	  _M_data->_M_thousands_sep = static_cast<wchar_t>(__u.__w);
+	  _M_data->_M_grouping = __nl_langinfo_l(GROUPING, __cloc);
 
 	  const char* __cpossign = __nl_langinfo_l(__POSITIVE_SIGN, __cloc);
 	  const char* __cnegsign = __nl_langinfo_l(__NEGATIVE_SIGN, __cloc);
@@ -472,25 +498,25 @@ namespace std
 	      memset(&__state, 0, sizeof(mbstate_t));
 	      wchar_t* __wcs = new wchar_t[__len];
 	      mbsrtowcs(__wcs, &__cpossign, __len, &__state);
-	      _M_positive_sign = __wcs;
+	      _M_data->_M_positive_sign = __wcs;
 	    }
 	  else
-	    _M_positive_sign = L"";
+	    _M_data->_M_positive_sign = L"";
 
 	  char __nposn = *(__nl_langinfo_l(__N_SIGN_POSN, __cloc));
 	  __len = strlen(__cnegsign);
 	  if (!__nposn)
-	    _M_negative_sign = L"()";
+	    _M_data->_M_negative_sign = L"()";
 	  else if (__len)
 	    { 
 	      ++__len;
 	      memset(&__state, 0, sizeof(mbstate_t));
 	      wchar_t* __wcs = new wchar_t[__len];
 	      mbsrtowcs(__wcs, &__cnegsign, __len, &__state);
-	      _M_negative_sign = __wcs;
+	      _M_data->_M_negative_sign = __wcs;
 	    }
 	  else
-	    _M_negative_sign = L"";
+	    _M_data->_M_negative_sign = L"";
 
 	  // _Intl == true.
 	  __len = strlen(__ccurr);
@@ -500,19 +526,21 @@ namespace std
 	      memset(&__state, 0, sizeof(mbstate_t));
 	      wchar_t* __wcs = new wchar_t[__len];
 	      mbsrtowcs(__wcs, &__ccurr, __len, &__state);
-	      _M_curr_symbol = __wcs;
+	      _M_data->_M_curr_symbol = __wcs;
 	    }
 	  else
-	    _M_curr_symbol = L"";
+	    _M_data->_M_curr_symbol = L"";
 
-	  _M_frac_digits = *(__nl_langinfo_l(__FRAC_DIGITS, __cloc));
+	  _M_data->_M_frac_digits = *(__nl_langinfo_l(__FRAC_DIGITS, __cloc));
 	  char __pprecedes = *(__nl_langinfo_l(__P_CS_PRECEDES, __cloc));
 	  char __pspace = *(__nl_langinfo_l(__P_SEP_BY_SPACE, __cloc));
 	  char __pposn = *(__nl_langinfo_l(__P_SIGN_POSN, __cloc));
-	  _M_pos_format = _S_construct_pattern(__pprecedes, __pspace, __pposn);
+	  _M_data->_M_pos_format = _S_construct_pattern(__pprecedes, __pspace, 
+	                                                __pposn);
 	  char __nprecedes = *(__nl_langinfo_l(__N_CS_PRECEDES, __cloc));
 	  char __nspace = *(__nl_langinfo_l(__N_SEP_BY_SPACE, __cloc));
-	  _M_neg_format = _S_construct_pattern(__nprecedes, __nspace, __nposn);
+	  _M_data->_M_neg_format = _S_construct_pattern(__nprecedes, __nspace, 
+	                                                __nposn);
 
 #if __GLIBC__ > 2 || (__GLIBC__ == 2 && __GLIBC_MINOR__ > 2)
 	  __uselocale(__old);
@@ -526,23 +554,27 @@ namespace std
   template<> 
     moneypunct<wchar_t, true>::~moneypunct()
     {
-      if (wcslen(_M_positive_sign))
-	delete [] _M_positive_sign;
-      if (wcslen(_M_negative_sign) && (wcscmp(_M_negative_sign, L"()") != 0))
-	delete [] _M_negative_sign;
-      if (wcslen(_M_curr_symbol))
-	delete [] _M_curr_symbol;
+      if (wcslen(_M_data->_M_positive_sign))
+	delete [] _M_data->_M_positive_sign;
+      if (wcslen(_M_data->_M_negative_sign) 
+	&& (wcscmp(_M_data->_M_negative_sign, L"()") != 0))
+	delete [] _M_data->_M_negative_sign;
+      if (wcslen(_M_data->_M_curr_symbol))
+	delete [] _M_data->_M_curr_symbol;
+      delete _M_data;
     }
 
   template<> 
     moneypunct<wchar_t, false>::~moneypunct()
     {
-      if (wcslen(_M_positive_sign))
-	delete [] _M_positive_sign;
-      if (wcslen(_M_negative_sign) && (wcscmp(_M_negative_sign, L"()") != 0))
-	delete [] _M_negative_sign;
-      if (wcslen(_M_curr_symbol))
-	delete [] _M_curr_symbol;
+      if (wcslen(_M_data->_M_positive_sign))
+	delete [] _M_data->_M_positive_sign;
+      if (wcslen(_M_data->_M_negative_sign) 
+	&& (wcscmp(_M_data->_M_negative_sign, L"()") != 0))
+	delete [] _M_data->_M_negative_sign;
+      if (wcslen(_M_data->_M_curr_symbol))
+	delete [] _M_data->_M_curr_symbol;
+      delete _M_data;
     }
 #endif
 }

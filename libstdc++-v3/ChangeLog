@@ -1,3 +1,32 @@
+2003-07-17  Benjamin Kosnik  <bkoz@redhat.com>
+	
+	* config/linker-map.gnu: Add __moneypunct_cache, __timepunct_cache.
+	* config/locale/generic/messages_members.h: Tweaks.
+	* config/locale/generic/monetary_members.cc
+	(moneypunct::_M_initialize_moneypunct): Use cache.
+	(moneypunct::~moneypunct): Delete cache.
+	* config/locale/generic/time_members.cc:
+	(__timepunct::_M_initialize_timepunct): Use cache.
+	* config/locale/generic/time_members.h:
+	(__timepunct::~__timepunct): Delete cache.
+	(__timepunct::__timepunct): Set cache.
+	* config/locale/gnu/messages_members.h: Tweaks.
+	* config/locale/gnu/monetary_members.cc:
+	(moneypunct::_M_initialize_moneypunct): Use cache.
+	(moneypunct::~moneypunct): Delete cache.
+	* config/locale/gnu/time_members.cc:
+	(__timepunct::_M_initialize_timepunct): Use cache.
+	* config/locale/gnu/time_members.h:
+	(__timepunct::~__timepunct): Delete cache.
+	(__timepunct::__timepunct): Set cache.
+	* include/bits/locale_facets.h (__timepunct_cache): New.
+	(__moneypunct_cache): New.
+	* include/bits/locale_facets.tcc: Tweak.
+	* src/locale.cc (__timepunct::_S_timezones): Adjust for cache.
+	* src/locale-inst.cc: Instantiate caches.
+	* src/globals.cc: Add "C" caches.
+	* src/localename.cc: Use external "C" caches.
+
 2003-07-17  Phil Edwards  <pme@gcc.gnu.org>
 
 	* docs/doxygen/guide.html:  Fix typo.
