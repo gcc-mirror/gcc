@@ -795,7 +795,7 @@ ggc_alloc_rtvec (nelt)
      int nelt;
 {
   return (struct rtvec_def *)
-    alloc_obj (sizeof (struct rtvec_def) + (nelt - 1) * sizeof (rtunion), 1);
+    alloc_obj (sizeof (struct rtvec_def) + (nelt - 1) * sizeof (rtx), 1);
 }
 
 
