@@ -12447,27 +12447,14 @@ grok_op_properties (decl, virtualp, friendp)
       if (methodp)
 	revert_static_member_fn (decl);
 
-      /* Take care of function decl if we had syntax errors.  */
-      if (argtypes == NULL_TREE)
-	TREE_TYPE (decl)
-	  = build_function_type (ptr_type_node,
-				 hash_tree_chain (integer_type_node,
-						  void_list_node));
-      else
-	TREE_TYPE (decl) = coerce_new_type (TREE_TYPE (decl));
+      TREE_TYPE (decl) = coerce_new_type (TREE_TYPE (decl));
     }
   else if (operator_code == DELETE_EXPR || operator_code == VEC_DELETE_EXPR)
     {
       if (methodp)
 	revert_static_member_fn (decl);
 
-      if (argtypes == NULL_TREE)
-	TREE_TYPE (decl)
-	  = build_function_type (void_type_node,
-				 hash_tree_chain (ptr_type_node,
-						  void_list_node));
-      else
-	TREE_TYPE (decl) = coerce_delete_type (TREE_TYPE (decl));
+      TREE_TYPE (decl) = coerce_delete_type (TREE_TYPE (decl));
     }
   else
     {

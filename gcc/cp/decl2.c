@@ -2301,23 +2301,34 @@ tree
 coerce_new_type (type)
      tree type;
 {
-  int e1 = 0, e2 = 0;
+  int e = 0;
+  tree args = TYPE_ARG_TYPES (type);
 
-  if (TREE_CODE (type) == METHOD_TYPE)
-    type = build_function_type (TREE_TYPE (type), TREE_CHAIN (TYPE_ARG_TYPES (type)));
-  if (! same_type_p (TREE_TYPE (type), ptr_type_node))
-    e1 = 1, error ("`operator new' must return type `void *'");
+  my_friendly_assert (TREE_CODE (type) == FUNCTION_TYPE, 20001107);
+  
+  if (!same_type_p (TREE_TYPE (type), ptr_type_node))
+    e = 1, cp_error ("`operator new' must return type `%T'", ptr_type_node);
 
-  /* Technically the type must be `size_t', but we may not know
-     what that is.  */
-  if (TYPE_ARG_TYPES (type) == NULL_TREE)
-    e1 = 1, error ("`operator new' takes type `size_t' parameter");
-  else if (! same_type_p (TREE_VALUE (TYPE_ARG_TYPES (type)), sizetype))
-    e2 = 1, error ("`operator new' takes type `size_t' as first parameter");
-  if (e2)
-    type = build_function_type (ptr_type_node, tree_cons (NULL_TREE, sizetype, TREE_CHAIN (TYPE_ARG_TYPES (type))));
-  else if (e1)
-    type = build_function_type (ptr_type_node, TYPE_ARG_TYPES (type));
+  if (!args || args == void_list_node
+      || !same_type_p (TREE_VALUE (args), c_size_type_node))
+    {
+      e = 2;
+      if (args && args != void_list_node)
+        args = TREE_CHAIN (args);
+      cp_error ("`operator new' takes type `size_t' (`%T') as first parameter", c_size_type_node);
+    }
+  switch (e)
+  {
+    case 2:
+      args = tree_cons (NULL_TREE, c_size_type_node, args);
+      /* FALLTHROUGH */
+    case 1:
+      type = build_exception_variant
+              (build_function_type (ptr_type_node, args),
+               TYPE_RAISES_EXCEPTIONS (type));
+      /* FALLTHROUGH */
+    default:;
+  }
   return type;
 }
 
@@ -2325,63 +2336,34 @@ tree
 coerce_delete_type (type)
      tree type;
 {
-  int e1 = 0, e2 = 0;
-#if 0
-  e3 = 0;
-#endif
-  tree arg_types = TYPE_ARG_TYPES (type);
+  int e = 0;
+  tree args = TYPE_ARG_TYPES (type);
+  
+  my_friendly_assert (TREE_CODE (type) == FUNCTION_TYPE, 20001107);
 
-  if (TREE_CODE (type) == METHOD_TYPE)
+  if (!same_type_p (TREE_TYPE (type), void_type_node))
+    e = 1, cp_error ("`operator delete' must return type `%T'", void_type_node);
+
+  if (!args || args == void_list_node
+      || !same_type_p (TREE_VALUE (args), ptr_type_node))
     {
-      type = build_function_type (TREE_TYPE (type), TREE_CHAIN (arg_types));
-      arg_types = TREE_CHAIN (arg_types);
+      e = 2;
+      if (args && args != void_list_node)
+        args = TREE_CHAIN (args);
+      cp_error ("`operator delete' takes type `%T' as first parameter", ptr_type_node);
     }
-
-  if (TREE_TYPE (type) != void_type_node)
-    e1 = 1, error ("`operator delete' must return type `void'");
-
-  if (arg_types == NULL_TREE
-      || ! same_type_p (TREE_VALUE (arg_types), ptr_type_node))
-    e2 = 1, error ("`operator delete' takes type `void *' as first parameter");
-
-#if 0
-  if (arg_types
-      && TREE_CHAIN (arg_types)
-      && TREE_CHAIN (arg_types) != void_list_node)
-    {
-      /* Again, technically this argument must be `size_t', but again
-	 we may not know what that is.  */
-      tree t2 = TREE_VALUE (TREE_CHAIN (arg_types));
-      if (! same_type_p (t2, sizetype))
-	e3 = 1, error ("second argument to `operator delete' must be of type `size_t'");
-      else if (TREE_CHAIN (TREE_CHAIN (arg_types)) != void_list_node)
-	{
-	  e3 = 1;
-	  if (TREE_CHAIN (TREE_CHAIN (arg_types)))
-	    error ("too many arguments in declaration of `operator delete'");
-	  else
-	    error ("`...' invalid in specification of `operator delete'");
-	}
-    }
-
-  if (e3)
-    arg_types = tree_cons (NULL_TREE, ptr_type_node,
-			   build_tree_list (NULL_TREE, sizetype));
-  else if (e3 |= e2)
-    {
-      if (arg_types == NULL_TREE)
-	arg_types = tree_cons (NULL_TREE, ptr_type_node, void_list_node);
-      else
-	arg_types = tree_cons (NULL_TREE, ptr_type_node, TREE_CHAIN (arg_types));
-    }
-  else e3 |= e1;
-#endif
-
-  if (e2)
-    arg_types = tree_cons (NULL_TREE, ptr_type_node,
-			   arg_types ? TREE_CHAIN (arg_types): NULL_TREE);
-  if (e2 || e1)
-    type = build_function_type (void_type_node, arg_types);
+  switch (e)
+  {
+    case 2:
+      args = tree_cons (NULL_TREE, ptr_type_node, args);
+      /* FALLTHROUGH */
+    case 1:
+      type = build_exception_variant
+              (build_function_type (void_type_node, args),
+               TYPE_RAISES_EXCEPTIONS (type));
+      /* FALLTHROUGH */
+    default:;
+  }
 
   return type;
 }
