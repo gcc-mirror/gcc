@@ -161,7 +161,8 @@ namespace std
       typedef _Rb_tree_node_base::_Base_ptr _Base_ptr;
       typedef _Rb_tree_node<_Tp>*           _Link_type;
 
-      _Rb_tree_iterator() { }
+      _Rb_tree_iterator()
+      : _M_node() { }
 
       _Rb_tree_iterator(_Link_type __x)
       : _M_node(__x) { }
@@ -231,7 +232,8 @@ namespace std
       typedef _Rb_tree_node_base::_Const_Base_ptr _Base_ptr;
       typedef const _Rb_tree_node<_Tp>*           _Link_type;
 
-      _Rb_tree_const_iterator() { }
+      _Rb_tree_const_iterator()
+      : _M_node() { }
 
       _Rb_tree_const_iterator(_Link_type __x)
       : _M_node(__x) { }

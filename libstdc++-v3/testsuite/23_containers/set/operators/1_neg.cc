@@ -39,5 +39,5 @@ void test01()
   test &= itr == setByName.end(); // { dg-error "no" } 
 }
 
-// { dg-error "candidates are" "" { target *-*-* } 281 } 
-// { dg-error "candidates are" "" { target *-*-* } 285 }
+// { dg-error "candidates are" "" { target *-*-* } 283 }
+// { dg-error "candidates are" "" { target *-*-* } 287 }
