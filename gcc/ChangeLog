@@ -1,5 +1,10 @@
 2001-06-05  David O'Brien  <obrien@FreeBSD.org>
 
+	* config.gcc, config/i386/bsd386.h:  Do not directly include
+	i386/386bsd.h.  Instead do it via tm_file.
+
+2001-06-05  David O'Brien  <obrien@FreeBSD.org>
+
 	* elfos.h (USING_ELFOS_H):  Identify the use of elfos.h in the same
 	way svr4.h does.
 
