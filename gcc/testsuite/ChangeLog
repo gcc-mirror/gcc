@@ -1,3 +1,7 @@
+2004-04-09  Chris Demetriou  <cgd@broadcom.com>
+
+	* g++.dg/other/packed1.C: Mark xfail for mips*- not mips-.
+
 2004-04-09  Zack Weinberg  <zack@codesourcery.com>
 
 	* lib/target-supports.exp (check_named_sections_available): New.
