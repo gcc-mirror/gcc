@@ -753,7 +753,7 @@ STAGESTUFF = *$(objext) insn-flags.h insn-config.h insn-codes.h \
  insn-output.c insn-recog.c insn-emit.c insn-extract.c insn-peep.c \
  insn-attr.h insn-attrtab.c insn-opinit.c insn-constants.h tm-preds.h \
  tree-check.h \
- s-flags s-config s-codes s-mlib s-under s-genrtl \
+ s-flags s-config s-codes s-mlib s-under s-genrtl s-gtype \
  s-output s-recog s-emit s-extract s-peep s-check \
  s-attr s-attrtab s-opinit s-preds s-constants s-crt0 \
  genemit$(build_exeext) genoutput$(build_exeext) genrecog$(build_exeext) \
@@ -762,7 +762,7 @@ STAGESTUFF = *$(objext) insn-flags.h insn-config.h insn-codes.h \
  genattr$(build_exeext) genopinit$(build_exeext) gengenrtl$(build_exeext) \
  gencheck$(build_exeext) genpreds$(build_exeext) genconstants$(build_exeext) \
  gengtype$(build_exeext) \
- genrtl.c genrtl.h \
+ genrtl.c genrtl.h gt-*.h gtype-*.h gtype-desc.c \
  xgcc$(exeext) cpp$(exeext) cc1$(exeext) $(EXTRA_PASSES) \
  $(EXTRA_PARTS) $(EXTRA_PROGRAMS) gcc-cross$(exeext) cc1obj$(exeext) \
  enquire$(exeext) protoize$(exeext) unprotoize$(exeext) \
@@ -2517,6 +2517,7 @@ mostlyclean: $(INTL_MOSTLYCLEAN) lang.mostlyclean
 	-rm -f xlimits.h
 # Delete other built files.
 	-rm -f t-float.h-cross xsys-protos.hT
+	-rm -f specs.h options.h gencheck.h
 # Delete the stamp and temporary files.
 	-rm -f s-* tmp-* stamp-* stmp-*
 	-rm -f */stamp-* */tmp-*
@@ -2572,21 +2573,23 @@ distclean: clean $(INTL_DISTCLEAN) lang.distclean
 	-rm -f cstamp-h
 	-rm -f config.status config.run config.cache config.bak
 	-rm -f Make-lang Make-hooks Make-host Make-target
-	-rm -f Makefile specs.h options.h gencheck.h *.oaux
+	-rm -f Makefile *.oaux
 	-rm -f gthr-default.h
 	-rm -f */stage1 */stage2 */stage3 */stage4 */include
 	-rm -f c-parse.output
 	-rm -f *.asm
 	-rm -f float.h
 	-rm -f site.exp site.bak testsuite/site.exp testsuite/site.bak
-	-rm -f testsuite/{gcc,g++}.{log,sum}
+	-rm -f testsuite/*.log testsuite/*.sum
 	-rm -rf ${QMTEST_DIR} stamp-qmtest
 	-rm -f intl/libintl.h libintl.h
 	-rm -f cxxmain.c
-	-rm -f mklibgcc gccbug .gdbinit configargs.h
+	-rm -f mklibgcc mkheaders gccbug .gdbinit configargs.h
 	-rm -f gcov.pod
 	-rm -f fixinc/Makefile
-	-rmdir ada cp f java objc fixinc intl po 2>/dev/null
+# Delete po/*.gmo only if we are not building in the source directory.
+	-if [ ! -f po/exgettext ]; then rm -f po/*.gmo; fi
+	-rmdir ada cp f java objc fixinc intl po testsuite 2>/dev/null
 
 # Delete anything likely to be found in the source directory
 # that shouldn't be in the distribution.
