@@ -1,5 +1,10 @@
 2003-03-02  Stephane Carrez  <stcarrez@nerim.fr>
 
+	* config/m68hc11/m68hc11.c (m68hc11_override_options): Don't enable
+	min/max instructions by default as may result in reload errors.
+
+2003-03-02  Stephane Carrez  <stcarrez@nerim.fr>
+
 	* config/m68hc11/m68hc11.md ("mulqi3"): Allow address register to
 	avoid reload problems; define split for it.
 
