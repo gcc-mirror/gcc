@@ -75,6 +75,7 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
    with something from a system header file, so effectively nullify that.  */
 #define getopt getopt_loser
 #include "getopt.h"
+#undef getopt
 
 extern int errno;
 extern char *sys_errlist[];
