@@ -1,3 +1,8 @@
+Fri Apr 21 18:26:17 2000  Alexandre Oliva  <aoliva@cygnus.com>
+
+	* config/mn10300/mn10300.h (REG_CLASS_CONTENTS): Added register 16
+	to all EXTENDED bitmaps.
+
 Fri Apr 21 18:17:12 2000  Alexandre Oliva  <aoliva@cygnus.com>
 
 	* config/mn10300/mn10300-protos.h (mn10300_address_cost): Declare.
