@@ -1281,7 +1281,6 @@ check_explicit_specialization (declarator, decl, template_count, flags)
 
   if (specialization || member_specialization || explicit_instantiation)
     {
-      tree gen_tmpl;
       tree tmpl = NULL_TREE;
       tree targs = NULL_TREE;
 
@@ -1435,13 +1434,34 @@ check_explicit_specialization (declarator, decl, template_count, flags)
 	return error_mark_node;
       else
 	{
-	  gen_tmpl = most_general_template (tmpl);
+	  tree gen_tmpl = most_general_template (tmpl);
 
 	  if (explicit_instantiation)
 	    {
 	      /* We don't set DECL_EXPLICIT_INSTANTIATION here; that
-		 is done by do_decl_instantiation later.  */
-	      decl = instantiate_template (tmpl, innermost_args (targs));
+		 is done by do_decl_instantiation later.  */ 
+
+	      int arg_depth = TMPL_ARGS_DEPTH (targs);
+	      int parm_depth = TMPL_PARMS_DEPTH (DECL_TEMPLATE_PARMS (tmpl));
+
+	      if (arg_depth > parm_depth)
+		{
+		  /* If TMPL is not the most general template (for
+		     example, if TMPL is a friend template that is
+		     injected into namespace scope), then there will
+		     be too many levels fo TARGS.  Remove some of them
+		     here.  */
+		  int i;
+		  tree new_targs;
+
+		  new_targs = make_temp_vec (parm_depth);
+		  for (i = arg_depth - parm_depth; i < arg_depth; ++i)
+		    TREE_VEC_ELT (new_targs, i - (arg_depth - parm_depth))
+		      = TREE_VEC_ELT (targs, i);
+		  targs = new_targs;
+		}
+		  
+	      decl = instantiate_template (tmpl, targs);
 	      return decl;
 	    }
 	  
@@ -4583,11 +4603,29 @@ tsubst_friend_class (friend_tmpl, args)
      tree args;
 {
   tree friend_type;
-  tree tmpl = lookup_name (DECL_NAME (friend_tmpl), 1); 
+  tree tmpl;
 
-  tmpl = maybe_get_template_decl_from_type_decl (tmpl);
+  /* First, we look for a class template.  */
+  tmpl = lookup_name (DECL_NAME (friend_tmpl), /*prefer_type=*/0); 
+  
+  /* But, if we don't find one, it might be because we're in a
+     situation like this:
 
-  if (tmpl != NULL_TREE && DECL_CLASS_TEMPLATE_P (tmpl))
+       template <class T>
+       struct S {
+         template <class U>
+	 friend struct S;
+       };
+
+     Here, in the scope of (say) S<int>, `S' is bound to a TYPE_DECL
+     for `S<int>', not the TEMPLATE_DECL.  */
+  if (!DECL_CLASS_TEMPLATE_P (tmpl))
+    {
+      tmpl = lookup_name (DECL_NAME (friend_tmpl), /*prefer_type=*/1);
+      tmpl = maybe_get_template_decl_from_type_decl (tmpl);
+    }
+
+  if (tmpl && DECL_CLASS_TEMPLATE_P (tmpl))
     {
       /* The friend template has already been declared.  Just
 	 check to see that the declarations match, and install any new

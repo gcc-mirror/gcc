@@ -12323,6 +12323,7 @@ xref_tag (code_type_node, name, globalize)
   struct binding_level *b = current_binding_level;
   int got_type = 0;
   tree attributes = NULL_TREE;
+  tree context = NULL_TREE;
 
   /* If we are called from the parser, code_type_node will sometimes be a
      TREE_LIST.  This indicates that the user wrote
@@ -12375,72 +12376,87 @@ xref_tag (code_type_node, name, globalize)
     }
   else
     {
-      if (current_class_type 
-	  && template_class_depth (current_class_type) 
-	  && PROCESSING_REAL_TEMPLATE_DECL_P ())
-      /* Since GLOBALIZE is non-zero, we are not looking at a
-	 definition of this tag.  Since, in addition, we are currently
-	 processing a (member) template declaration of a template
-	 class, we don't want to do any lookup at all; consider:
-
-	   template <class X>
-	   struct S1
-
-	   template <class U>
-	   struct S2
-	   { template <class V>
-	     friend struct S1; };
-	   
-	 Here, the S2::S1 declaration should not be confused with the
-	 outer declaration.  In particular, the inner version should
-	 have a template parameter of level 2, not level 1.  This
-	 would be particularly important if the member declaration
-	 were instead:
-
-	   template <class V = U> friend struct S1;
-
-	 say, when we should tsubst into `U' when instantiating S2.  */
-	ref = NULL_TREE;
-      else 
+      if (t)
 	{
-	  if (t)
-	    {
-	      /* [dcl.type.elab] If the identifier resolves to a
-		 typedef-name or a template type-parameter, the
-		 elaborated-type-specifier is ill-formed.  */
-	      if (t != TYPE_MAIN_VARIANT (t)
-		  || (CLASS_TYPE_P (t) && TYPE_WAS_ANONYMOUS (t)))
-		cp_pedwarn ("using typedef-name `%D' after `%s'",
-			    TYPE_NAME (t), tag_name (tag_code));
-	      else if (TREE_CODE (t) == TEMPLATE_TYPE_PARM)
-		cp_error ("using template type parameter `%T' after `%s'",
-			  t, tag_name (tag_code));
+	  /* [dcl.type.elab] If the identifier resolves to a
+	     typedef-name or a template type-parameter, the
+	     elaborated-type-specifier is ill-formed.  */
+	  if (t != TYPE_MAIN_VARIANT (t)
+	      || (CLASS_TYPE_P (t) && TYPE_WAS_ANONYMOUS (t)))
+	    cp_pedwarn ("using typedef-name `%D' after `%s'",
+			TYPE_NAME (t), tag_name (tag_code));
+	  else if (TREE_CODE (t) == TEMPLATE_TYPE_PARM)
+	    cp_error ("using template type parameter `%T' after `%s'",
+		      t, tag_name (tag_code));
 
-	      ref = t;
-	    }
-	  else
-	    ref = lookup_tag (code, name, b, 0);
+	  ref = t;
+	}
+      else
+	ref = lookup_tag (code, name, b, 0);
 	  
-	  if (! ref)
-	    {
-	      /* Try finding it as a type declaration.  If that wins,
-		 use it.  */ 
-	      ref = lookup_name (name, 1);
+      if (! ref)
+	{
+	  /* Try finding it as a type declaration.  If that wins,
+	     use it.  */ 
+	  ref = lookup_name (name, 1);
 
-	      if (ref != NULL_TREE
-		  && processing_template_decl
-		  && DECL_CLASS_TEMPLATE_P (ref)
-		  && template_class_depth (current_class_type) == 0)
-		/* Since GLOBALIZE is true, we're declaring a global
+	  if (ref != NULL_TREE
+	      && processing_template_decl
+	      && DECL_CLASS_TEMPLATE_P (ref)
+	      && template_class_depth (current_class_type) == 0)
+	    /* Since GLOBALIZE is true, we're declaring a global
 	       template, so we want this type.  */
-		ref = DECL_RESULT (ref);
+	    ref = DECL_RESULT (ref);
 
-	      if (ref && TREE_CODE (ref) == TYPE_DECL
-		  && TREE_CODE (TREE_TYPE (ref)) == code)
-		ref = TREE_TYPE (ref);
-	      else
-		ref = NULL_TREE;
-	    }
+	  if (ref && TREE_CODE (ref) == TYPE_DECL
+	      && TREE_CODE (TREE_TYPE (ref)) == code)
+	    ref = TREE_TYPE (ref);
+	  else
+	    ref = NULL_TREE;
+	}
+
+      if (ref && current_class_type 
+	  && template_class_depth (current_class_type) 
+	  && PROCESSING_REAL_TEMPLATE_DECL_P ()) 
+	{
+	  /* Since GLOBALIZE is non-zero, we are not looking at a
+	     definition of this tag.  Since, in addition, we are currently
+	     processing a (member) template declaration of a template
+	     class, we must be very careful; consider:
+
+	       template <class X>
+	       struct S1
+
+	       template <class U>
+	       struct S2
+	       { template <class V>
+	       friend struct S1; };
+
+	     Here, the S2::S1 declaration should not be confused with the
+	     outer declaration.  In particular, the inner version should
+	     have a template parameter of level 2, not level 1.  This
+	     would be particularly important if the member declaration
+	     were instead:
+
+	       template <class V = U> friend struct S1;
+
+	     say, when we should tsubst into `U' when instantiating
+	     S2.  On the other hand, when presented with:
+
+	         template <class T>
+	         struct S1 {
+		   template <class U>
+	           struct S2 {};
+		   template <class U>
+		   friend struct S2;
+		 };
+
+              we must find the inner binding eventually.  We
+	      accomplish this by making sure that the new type we
+	      create to represent this declaration has the right
+	      TYPE_CONTEXT.  */
+	  context = TYPE_CONTEXT (ref);
+	  ref = NULL_TREE;
 	}
     }
 
@@ -12487,6 +12503,7 @@ xref_tag (code_type_node, name, globalize)
 	  struct binding_level *old_b = class_binding_level;
 
 	  ref = make_lang_type (code);
+	  TYPE_CONTEXT (ref) = context;
 
 	  if (tag_code == signature_type)
 	    {
