@@ -1,3 +1,8 @@
+2002-04-09  Jason Merrill  <jason@redhat.com>
+
+	* init.c (build_member_call): For now, don't convert to
+	intermediate base if it would cause an error.
+
 2002-04-08  Paolo Carlini  <pcarlini@unitus.it>
 
 	* parse.y (namespace_qualifier, maybe_identifier,
@@ -276,8 +281,8 @@
 
 2002-03-22  Jeff Knaggs  <jknaggs@redhat.com>
 
-	* typeck.c (expand_ptrmemfunc_cst): Scale idx down to an index
-	into the vtable_entry array regardless of
+	* typeck.c (get_member_function_from_ptrfunc): Scale idx down to
+	an index into the vtable_entry array regardless of
 	TARGET_PTRMEMFUNC_VBIT_LOCATION.
 
 2002-03-21  Aldy Hernandez  <aldyh@redhat.com>

@@ -1497,7 +1497,11 @@ build_member_call (type, name, parmlist)
 
   /* Convert 'this' to the specified type to disambiguate conversion
      to the function's context.  */
-  if (decl == current_class_ref)
+  if (decl == current_class_ref
+      /* ??? this is wrong, but if this conversion is invalid we need to
+	 defer it until we know whether we are calling a static or
+	 non-static member function.  Be conservative for now.  */
+      && ACCESSIBLY_UNIQUELY_DERIVED_P (type, current_class_type))
     {
       basetype_path = NULL_TREE;
       decl = build_scoped_ref (decl, type, &basetype_path);
