@@ -1,5 +1,11 @@
 2004-01-27  Paolo Carlini  <pcarlini@suse.de>
 
+	PR libstdc++/12967
+	* include/bits/list.tcc (merge): Implement resolution of
+	DR 300 [WP].
+
+2004-01-27  Paolo Carlini  <pcarlini@suse.de>
+
 	PR libstdc++/13884
 	* include/bits/sstream.tcc: Guard use of extern template.
 
