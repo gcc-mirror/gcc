@@ -19,6 +19,11 @@ extern int getopt(int, char *const[], const char *);
 #endif  /* ALPHA_GETOPT_CHECK */
 
 
+#if defined( HPUX11_VSNPRINTF_CHECK )
+extern int vsnprintf(char *, __size_t, const char *, __gnuc_va_list);
+#endif  /* HPUX11_VSNPRINTF_CHECK */
+
+
 #if defined( IRIX_STDIO_DUMMY_VA_LIST_CHECK )
 extern int printf( const char *, __gnuc_va_list );
 #endif  /* IRIX_STDIO_DUMMY_VA_LIST_CHECK */

@@ -20,7 +20,17 @@ extern int __page_size;
 #endif  /* PTHREAD_PAGE_SIZE_CHECK */
 
 
-#if defined( SOLARIS27_MUTEX_INIT_CHECK )
+#if defined( SOLARIS_MUTEX_INIT_CHECK )
 #ident "@(#)pthread.h  1.26  98/04/12 SMI"
-#define PTHREAD_MUTEX_INITIALIZER {{{0},0}, {{{0}}}, {0}}
-#endif  /* SOLARIS27_MUTEX_INIT_CHECK */
+#if __STDC__ - 0 == 0 && !defined(_NO_LONGLONG)
+#define PTHREAD_MUTEX_INITIALIZER	{{{0},0}, {{{0}}}, 0}
+#else
+#define PTHREAD_MUTEX_INITIALIZER	{{{0},0}, {{{0}}}, {0}}
+#endif
+#if __STDC__ - 0 == 0 && !defined(_NO_LONGLONG)
+#define PTHREAD_COND_INITIALIZER	{{{0}, 0}, 0}	/* DEFAULTCV */
+#else
+#define PTHREAD_COND_INITIALIZER	{{{0}, 0}, {0}}	/* DEFAULTCV */
+#endif
+#define PTHREAD_RWLOCK_INITIALIZER	{0, 0, 0, {0, 0, 0}, {0, 0}, {0, 0}}
+#endif  /* SOLARIS_MUTEX_INIT_CHECK */

@@ -47,3 +47,9 @@ extern void *	realloc(void*,size_t);
 extern void *	bsearch(void*,size_t,size_t);
 
 #endif  /* SYSZ_STDLIB_FOR_SUN_CHECK */
+
+
+#if defined( ULTRIX_ATEXIT_PARAM_CHECK )
+int atexit( void (*__func)( void ) );
+
+#endif  /* ULTRIX_ATEXIT_PARAM_CHECK */
