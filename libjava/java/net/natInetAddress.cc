@@ -71,6 +71,9 @@ java::net::InetAddress::aton (jstring host)
       blen = 4;
     }
 #elif defined(HAVE_INET_ADDR)
+#if ! HAVE_IN_ADDR_T
+  typedef jint in_addr_t;
+#endif
   in_addr_t laddr = inet_addr (hostname);
   if (laddr != (in_addr_t)(-1))
     {

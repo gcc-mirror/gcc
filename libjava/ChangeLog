@@ -1,5 +1,15 @@
 1999-08-21  Alexandre Oliva  <oliva@dcc.unicamp.br>
 
+	* configure.in: Check for in_addr_t in netinet/in.h too.  Check
+	for ip_mreq too.
+	* acconfig.h: Define HAVE_IN_ADDR_T instead of in_addr_t.
+	(HAVE_STRUCT_IP_MREQ): Added.
+	* configure, include/config.h.in: Rebuilt.
+	* java/net/natInetAddress.cc (aton): Typedef in_addr_t to jint
+	if needed.
+	* java/net/natPlainDatagramSocketImpl.cc (McastReq, mcastGrp):
+	Disable if ip_mreq is not available.
+	
 	* configure.in: Check types ssize_t and in_addr_t.
 	* acconfig.h: Undefine them.
 	* configure, include/config.h.in: Rebuilt.

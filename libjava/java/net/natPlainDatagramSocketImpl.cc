@@ -61,7 +61,9 @@ union SockAddr
 
 union McastReq
 {
+#if HAVE_STRUCT_IP_MREQ
   struct ip_mreq mreq;
+#endif
 #ifdef HAVE_INET6
   struct ipv6_mreq mreq6;
 #endif
@@ -323,7 +325,10 @@ java::net::PlainDatagramSocketImpl::mcastGrp (java::net::InetAddress *inetaddr,
   int len = haddress->length;
   int level, opname;
   const char *ptr;
-  if (len == 4)
+  if (0)
+    ;
+#if HAVE_STRUCT_IP_MREQ
+  else if (len == 4)
     {
       level = IPPROTO_IP;
       opname = join ? IP_ADD_MEMBERSHIP : IP_DROP_MEMBERSHIP;
@@ -334,6 +339,7 @@ java::net::PlainDatagramSocketImpl::mcastGrp (java::net::InetAddress *inetaddr,
       len = sizeof (struct ip_mreq);
       ptr = (const char *) &u.mreq;
     }
+#endif
 #ifdef HAVE_INET6
   else if (len == 16)
     {

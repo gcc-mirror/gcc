@@ -58,11 +58,15 @@
 /* Define to `int' if `ssize_t' is not defined.  */
 #undef ssize_t
 
-/* Define to `jint' if `in_addr_t' is not defined.  */
-#undef in_addr_t
+/* Define to 1 if `in_addr_t' is defined in sys/types.h or
+   netinet/in.h.  */
+#undef HAVE_IN_ADDR_T
 
 /* Define if inet6 structures are defined in netinet/in.h.  */
 #undef HAVE_INET6
+
+/* Define if struct ip_mreq is defined in netinet/in.h.  */
+#undef HAVE_STRUCT_IP_MREQ
 
 /* Define it socklen_t typedef is in sys/socket.h.  */
 #undef HAVE_SOCKLEN_T
