@@ -1,3 +1,7 @@
+2001-06-22  Jan van Male  <jan.vanmale@fenk.wau.nl>
+
+	* zipfile.h: Use GCC_JCF_H instead of JCF_H.
+
 2001-06-20  Alexandre Petit-Bianco  <apbianco@redhat.com>
 
 	* class.c (java_hash_tree_node): Fixed indentation in leading comment.
