@@ -1100,6 +1100,8 @@ documented_lang_options[] =
   { "-Wno-redundant-decls", "" },
   { "-Wsign-compare", "Warn about signed/unsigned comparisons" },
   { "-Wno-sign-compare", "" },
+  { "-Wfloat-equal", "Warn about testing equality of floating point numbers" },
+  { "-Wno-float-equal", "" },
   { "-Wunknown-pragmas", "Warn about unrecognised pragmas" },
   { "-Wno-unknown-pragmas", "" },
   { "-Wstrict-prototypes", "Warn about non-prototyped function decls" },

@@ -2099,6 +2099,8 @@ build_binary_op (code, orig_op0, orig_op1, convert_p)
 
     case EQ_EXPR:
     case NE_EXPR:
+      if (warn_float_equal && (code0 == REAL_TYPE || code1 == REAL_TYPE))
+	warning ("comparing floating point with == or != is unsafe");
       /* Result of comparison is always int,
 	 but don't convert the args to int!  */
       build_type = integer_type_node;

@@ -1,3 +1,12 @@
+Thu Sep 30 00:13:27 1999  Dirk Zoller  <duz@rtsffm.com>
+
+	* c-tree.h (warn_float_equal): Declare.
+	* c-decl.c (warn_float_equal): Define.
+	(c_decode_option): Recognize -W[no-]float-equal.
+	* c-typeck.c (build_binary_op): Conditionally warn
+	about equality tests of floating point types.
+	* toplev.c (documented_lan_options): Add -W[no-]float-equal.
+
 Wed Sep 29 23:43:39 1999  Jeffrey A Law  (law@cygnus.com)
 
 	* cse.c (struct set): Delete inner_dest_loc field. 
