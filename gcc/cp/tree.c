@@ -129,6 +129,10 @@ lvalue_p_1 (tree ref,
       gcc_unreachable ();
     case MAX_EXPR:
     case MIN_EXPR:
+      /* Disallow <? and >? as lvalues if either argument side-effects.  */
+      if (TREE_SIDE_EFFECTS (TREE_OPERAND (ref, 0))
+	  || TREE_SIDE_EFFECTS (TREE_OPERAND (ref, 1)))
+	return clk_none;
       op1_lvalue_kind = lvalue_p_1 (TREE_OPERAND (ref, 0),
 				    treat_class_rvalues_as_lvalues);
       op2_lvalue_kind = lvalue_p_1 (TREE_OPERAND (ref, 1),

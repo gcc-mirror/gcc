@@ -1524,6 +1524,9 @@ rationalize_conditional_expr (enum tree_code code, tree t)
      are equal, so we know what conditional expression this used to be.  */
   if (TREE_CODE (t) == MIN_EXPR || TREE_CODE (t) == MAX_EXPR)
     {
+      /* The following code is incorrect if either operand side-effects.  */
+      gcc_assert (!TREE_SIDE_EFFECTS (TREE_OPERAND (t, 0))
+		  && !TREE_SIDE_EFFECTS (TREE_OPERAND (t, 1)));
       return
 	build_conditional_expr (build_x_binary_op ((TREE_CODE (t) == MIN_EXPR
 						    ? LE_EXPR : GE_EXPR),
@@ -5037,6 +5040,25 @@ build_modify_expr (tree lhs, enum tree_code modifycode, tree rhs)
       if (newrhs == error_mark_node)
 	return error_mark_node;
       return build2 (COMPOUND_EXPR, lhstype, lhs, newrhs);
+
+    case MIN_EXPR:
+    case MAX_EXPR:
+      /* MIN_EXPR and MAX_EXPR are currently only permitted as lvalues,
+	 when neither operand has side-effects.  */
+      if (!lvalue_or_else (lhs, "assignment"))
+	return error_mark_node;
+
+      gcc_assert (!TREE_SIDE_EFFECTS (TREE_OPERAND (lhs, 0))
+		  && !TREE_SIDE_EFFECTS (TREE_OPERAND (lhs, 1)));
+
+      lhs = build3 (COND_EXPR, TREE_TYPE (lhs),
+		    build2 (TREE_CODE (lhs) == MIN_EXPR ? LE_EXPR : GE_EXPR,
+			    boolean_type_node,
+			    TREE_OPERAND (lhs, 0),
+			    TREE_OPERAND (lhs, 1)),
+		    TREE_OPERAND (lhs, 0),
+		    TREE_OPERAND (lhs, 1));
+      /* Fall through.  */
 
       /* Handle (a ? b : c) used as an "lvalue".  */
     case COND_EXPR:
