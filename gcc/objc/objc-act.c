@@ -1492,47 +1492,8 @@ build_module_descriptor ()
   {
     tree parms, function_decl, decelerator, void_list_node;
     tree function_type;
-    char *buf;
-    char *global_object_name = 0;
-    tree t;
-
-    /* Use a global object (which is already required to be unique over
-       the program) rather than the file name (which imposes extra
-       constraints).  -- Raeburn@MIT.EDU, 10 Jan 1990.  */
-
-    /* Find the name of some global object defined in this file.  */
-    for (t = getdecls (); t; t = TREE_CHAIN (t))
-      if (TREE_PUBLIC (t) && !DECL_EXTERNAL (t) && DECL_INITIAL (t) != 0)
-	{
-	  global_object_name = IDENTIFIER_POINTER (DECL_NAME (t));
-	  break;
-	}
-
-    /* If none, use the name of the file.  */
-    if (!global_object_name)
-      {
-	char *p, *q;
-	global_object_name
-	  = (char *) alloca (strlen (main_input_filename) + 1);
-
-	p = main_input_filename;
-	q = global_object_name;
-
-	/* Replace any weird characters in the file name.  */
-	for (; *p; p++)
-	  if (! ((*p >= '0' && *p <= '9')
-		 || (*p >= 'A' && *p <= 'Z')
-		 || (*p >= 'a' && *p <= 'z')))
-	    *q++ = '_';
-	  else
-	    *q++ = *p;
-	*q = 0;
-      }
-
-    /* Make the constructor name from the name we have found.  */
-    buf = (char *) xmalloc (sizeof (CONSTRUCTOR_NAME_FORMAT)
-			    + strlen (global_object_name));
-    sprintf (buf, CONSTRUCTOR_NAME_FORMAT, global_object_name);
+    extern tree get_file_function_name ();
+    tree init_function_name = get_file_function_name ('I');
 
     /* Declare void __objc_execClass (void*); */
 
@@ -1557,7 +1518,7 @@ build_module_descriptor ()
     /* void _GLOBAL_$I$<gnyf> () {objc_execClass (&L_OBJC_MODULES);}  */
 
     start_function (void_list_node,
-		    build_parse_node (CALL_EXPR, get_identifier (buf),
+		    build_parse_node (CALL_EXPR, init_function_name,
 				      /* This has the format of the output
 					 of get_parm_info.  */
 				      tree_cons (NULL_TREE, NULL_TREE,
@@ -1579,7 +1540,7 @@ build_module_descriptor ()
     finish_function (0);
 
     /* Return the name of the constructor function.  */
-    return buf;
+    return IDENTIFIER_POINTER (init_function_name);
   }
 }
 
