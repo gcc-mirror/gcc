@@ -7,7 +7,7 @@ GNU Classpath is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
 the Free Software Foundation; either version 2, or (at your option)
 any later version.
- 
+
 GNU Classpath is distributed in the hope that it will be useful, but
 WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
@@ -43,12 +43,12 @@ import gnu.java.security.OID;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
+
 import java.math.BigInteger;
-import java.nio.ByteBuffer;
-import java.nio.CharBuffer;
-import java.nio.charset.Charset;
-import java.nio.charset.CharsetEncoder;
+
 import java.text.SimpleDateFormat;
+
+import java.util.BitSet;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
@@ -66,7 +66,7 @@ import java.util.TimeZone;
  * <p>This class only defines static methods; there are no instance
  * variables needed.
  *
- * @author Casey Marshall (rsdio@metastatic.org)
+ * @author Casey Marshall (csm@gnu.org)
  */
 public class DERWriter implements DER
 {
@@ -82,7 +82,7 @@ public class DERWriter implements DER
   // Class methods.
   // ------------------------------------------------------------------------
 
-  public static int write(OutputStream out, DERValue object) 
+  public static int write(OutputStream out, DERValue object)
     throws IOException
   {
     out.write(object.getExternalTag());
@@ -226,7 +226,6 @@ public class DERWriter implements DER
   private static int writeString(OutputStream out, int tag, String str)
     throws IOException
   {
-    Charset charset = null;
     byte[] b = null;
     switch (tag & 0x1F)
       {
@@ -238,33 +237,65 @@ public class DERWriter implements DER
         case GRAPHIC_STRING:
         case ISO646_STRING:
         case GENERAL_STRING:
-          charset = Charset.forName("ISO-8859-1");
+          b = toIso88591(str);
           break;
+
         case UNIVERSAL_STRING:
         case BMP_STRING:
-          charset = Charset.forName("UTF-16BE");
+          b = toUtf16Be(str);
           break;
+
         case UTF8_STRING:
         default:
-          charset = Charset.forName("UTF-8");
+          b = toUtf8(str);
           break;
-      }
-    if (charset == null)
-      throw new DEREncodingException("no charset");
-    CharsetEncoder encoder = charset.newEncoder();
-    ByteBuffer result = encoder.encode(CharBuffer.wrap(str));
-    if (result.hasArray())
-      {
-        b = result.array();
-      }
-    else
-      {
-        b = new byte[result.remaining()];
-        result.get(b);
       }
     writeLength(out, b.length);
     out.write(b);
     return b.length;
+  }
+
+  private static byte[] toIso88591(String string)
+  {
+    byte[] result = new byte[string.length()];
+    for (int i = 0; i < string.length(); i++)
+      result[i] = (byte) string.charAt(i);
+    return result;
+  }
+
+  private static byte[] toUtf16Be(String string)
+  {
+    byte[] result = new byte[string.length() * 2];
+    for (int i = 0; i < string.length(); i++)
+      {
+        result[i*2  ] = (byte) ((string.charAt(i) >>> 8) & 0xFF);
+        result[i*2+1] = (byte)  (string.charAt(i) & 0xFF);
+      }
+    return result;
+  }
+
+  private static byte[] toUtf8(String string)
+  {
+    ByteArrayOutputStream buf =
+      new ByteArrayOutputStream((int)(string.length() * 1.5));
+    for (int i = 0; i < string.length(); i++)
+      {
+        char c = string.charAt(i);
+        if (c < 0x0080)
+          buf.write(c & 0xFF);
+        else if (c < 0x0800)
+          {
+            buf.write(0xC0 | ((c >>> 6) & 0x3F));
+            buf.write(0x80 |  (c & 0x3F));
+          }
+        else
+          {
+            buf.write(0xE0 | ((c >>> 12) & 0x0F));
+            buf.write(0x80 | ((c >>>  6) & 0x3F));
+            buf.write(0x80 |  (c & 0x3F));
+          }
+      }
+    return buf.toByteArray();
   }
 
   private static int writeDate(OutputStream out, int tag, Date date)

@@ -7,7 +7,7 @@ GNU Classpath is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
 the Free Software Foundation; either version 2, or (at your option)
 any later version.
- 
+
 GNU Classpath is distributed in the hope that it will be useful, but
 WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
@@ -47,11 +47,6 @@ import java.io.IOException;
 
 import java.math.BigInteger;
 
-import java.nio.ByteBuffer;
-import java.nio.CharBuffer;
-import java.nio.charset.Charset;
-import java.nio.charset.CharsetDecoder;
-
 import java.util.Calendar;
 import java.util.Date;
 import java.util.TimeZone;
@@ -65,17 +60,17 @@ import gnu.java.security.OID;
  * to the calling application to determine if the data are structured
  * properly by inspecting the {@link DERValue} that is returned.
  *
- * @author Casey Marshall (rsdio@metastatic.org)
+ * @author Casey Marshall (csm@gnu.org)
  */
-public class DERReader implements DER
+public final class DERReader implements DER
 {
 
   // Fields.
   // ------------------------------------------------------------------------
 
-  protected InputStream in;
+  private InputStream in;
 
-  protected final ByteArrayOutputStream encBuf;
+  private final ByteArrayOutputStream encBuf;
 
   // Constructor.
   // ------------------------------------------------------------------------
@@ -88,6 +83,11 @@ public class DERReader implements DER
   public DERReader(byte[] in)
   {
     this(new ByteArrayInputStream(in));
+  }
+
+  public DERReader (byte[] in, int off, int len)
+  {
+    this (new ByteArrayInputStream (in, off, len));
   }
 
   /**
@@ -122,6 +122,11 @@ public class DERReader implements DER
 
   // Instance methods.
   // ------------------------------------------------------------------------
+
+  public void skip (int bytes) throws IOException
+  {
+    in.skip (bytes);
+  }
 
   /**
    * Decode a single value from the input stream, returning it in a new
@@ -251,10 +256,9 @@ public class DERReader implements DER
     throw new DEREncodingException();
   }
 
-  private String makeString(int tag, byte[] value)
+  private static String makeString(int tag, byte[] value)
     throws IOException
   {
-    Charset charset = null;
     switch (tag & 0x1F)
       {
         case NUMERIC_STRING:
@@ -265,28 +269,81 @@ public class DERReader implements DER
         case GRAPHIC_STRING:
         case ISO646_STRING:
         case GENERAL_STRING:
-          charset = Charset.forName("ISO-8859-1");
-          break;
+          return fromIso88591(value);
+
         case UNIVERSAL_STRING:
           // XXX The docs say UniversalString is encoded in four bytes
           // per character, but Java has no support (yet) for UTF-32.
           //return new String(buf, "UTF-32");
         case BMP_STRING:
-          charset = Charset.forName("UTF-16BE");
-          break;
+          return fromUtf16Be(value);
+
         case UTF8_STRING:
-          charset = Charset.forName("UTF-8");
-          break;
+          return fromUtf8(value);
+
         default:
           throw new DEREncodingException("unknown string tag");
       }
-    if (charset == null)
-      throw new DEREncodingException("no decoder");
-    CharsetDecoder decoder = charset.newDecoder();
-    CharBuffer result = decoder.decode(ByteBuffer.wrap(value));
-    char[] buf = new char[result.remaining()];
-    result.get(buf);
-    return new String(buf);
+  }
+
+  private static String fromIso88591(byte[] bytes)
+  {
+    StringBuffer str = new StringBuffer(bytes.length);
+    for (int i = 0; i < bytes.length; i++)
+      str.append((char) (bytes[i] & 0xFF));
+    return str.toString();
+  }
+
+  private static String fromUtf16Be(byte[] bytes) throws IOException
+  {
+    if ((bytes.length & 0x01) != 0)
+      throw new IOException("UTF-16 bytes are odd in length");
+    StringBuffer str = new StringBuffer(bytes.length / 2);
+    for (int i = 0; i < bytes.length; i += 2)
+      {
+        char c = (char) ((bytes[i] << 8) & 0xFF);
+        c |= (char) (bytes[i+1] & 0xFF);
+        str.append(c);
+      }
+    return str.toString();
+  }
+
+  private static String fromUtf8(byte[] bytes) throws IOException
+  {
+    StringBuffer str = new StringBuffer((int)(bytes.length / 1.5));
+    for (int i = 0; i < bytes.length; )
+      {
+        char c = 0;
+        if ((bytes[i] & 0xE0) == 0xE0)
+          {
+            if ((i + 2) >= bytes.length)
+              throw new IOException("short UTF-8 input");
+            c = (char) ((bytes[i++] & 0x0F) << 12);
+            if ((bytes[i] & 0x80) != 0x80)
+              throw new IOException("malformed UTF-8 input");
+            c |= (char) ((bytes[i++] & 0x3F) << 6);
+            if ((bytes[i] & 0x80) != 0x80)
+              throw new IOException("malformed UTF-8 input");
+            c |= (char) (bytes[i++] & 0x3F);
+          }
+        else if ((bytes[i] & 0xC0) == 0xC0)
+          {
+            if ((i + 1) >= bytes.length)
+              throw new IOException("short input");
+            c = (char) ((bytes[i++] & 0x1F) << 6);
+            if ((bytes[i] & 0x80) != 0x80)
+              throw new IOException("malformed UTF-8 input");
+            c |= (char) (bytes[i++] & 0x3F);
+          }
+        else if ((bytes[i] & 0xFF) < 0x80)
+          {
+            c = (char) (bytes[i++] & 0xFF);
+          }
+        else
+          throw new IOException("badly formed UTF-8 sequence");
+        str.append(c);
+      }
+    return str.toString();
   }
 
   private Date makeTime(int tag, byte[] value) throws IOException

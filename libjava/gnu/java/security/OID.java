@@ -7,7 +7,7 @@ GNU Classpath is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
 the Free Software Foundation; either version 2, or (at your option)
 any later version.
- 
+
 GNU Classpath is distributed in the hope that it will be useful, but
 WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
@@ -65,7 +65,7 @@ import gnu.java.security.der.DEREncodingException;
  * <p>OIDs may be relative, in which case the first two elements of the
  * OID are omitted.
  *
- * @author Casey Marshall (rsdio@metastatic.org)
+ * @author Casey Marshall (csm@gnu.org)
  */
 public class OID implements Cloneable, Comparable, java.io.Serializable
 {
@@ -336,7 +336,7 @@ public class OID implements Cloneable, Comparable, java.io.Serializable
 
   /* Nice idea, but possibly too expensive for whatever benefit it
    * provides.
-   
+
   public String getShortName()
   {
     return OIDTable.getShortName(this);
@@ -391,8 +391,8 @@ public class OID implements Cloneable, Comparable, java.io.Serializable
    */
   public boolean equals(Object o)
   {
-    if (this == o)
-      return true;
+    if (!(o instanceof OID))
+      return false;
     return java.util.Arrays.equals(components, ((OID) o).components);
   }
 
@@ -411,7 +411,7 @@ public class OID implements Cloneable, Comparable, java.io.Serializable
    */
   public int compareTo(Object o)
   {
-    if (o == this)
+    if (equals(o))
       return 0;
     int[] components2 = ((OID) o).components;
     int len = Math.min(components.length, components2.length);
