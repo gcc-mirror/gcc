@@ -1,5 +1,18 @@
 2004-04-25  Paolo Carlini  <pcarlini@suse.de>
 
+	PR libstdc++/15002 (continued again)
+	* include/bits/istream.tcc (getline(basic_istream<>&,
+	basic_string<>&, _CharT)): Use a temporary buffer, thus
+	avoiding reallocation for common case.
+
+	* include/bits/basic_string.tcc (_S_construct(_InIterator,
+	_InIterator, const _Alloc&, input_iterator_tag)): Tweak size
+	of temporary buffer to a power of two.
+
+	* testsuite/27_io/basic_istream/getline/char/4.cc: Add comment.
+
+2004-04-25  Paolo Carlini  <pcarlini@suse.de>
+
 	* testsuite/21_strings/basic_string/inserters_extractors/char/10.cc:
 	New.
 	* testsuite/21_strings/basic_string/inserters_extractors/wchar_t/10.cc:

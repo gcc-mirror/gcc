@@ -1102,7 +1102,10 @@ namespace std
 	{
 	  try
 	    {
+	      // Avoid reallocation for common case.	      
 	      __str.erase();
+	      _CharT __buf[128];
+	      __size_type __len = 0;
 	      const __int_type __idelim = _Traits::to_int_type(__delim);
 	      const __int_type __eof = _Traits::eof();
 	      __streambuf_type* __sb = __in.rdbuf();
@@ -1112,10 +1115,17 @@ namespace std
 		     && !_Traits::eq_int_type(__c, __eof)
 		     && !_Traits::eq_int_type(__c, __idelim))
 		{
-		  __str += _Traits::to_char_type(__c);
-		  __c = __sb->snextc();
+		  if (__len == sizeof(__buf) / sizeof(_CharT))
+		    {
+		      __str.append(__buf, sizeof(__buf) / sizeof(_CharT));
+		      __len = 0;
+		    }
+		  __buf[__len++] = _Traits::to_char_type(__c);
 		  ++__extracted;
+		  __c = __sb->snextc();
 		}
+	      __str.append(__buf, __len);
+
 	      if (_Traits::eq_int_type(__c, __eof))
 		__err |= ios_base::eofbit;
 	      else if (_Traits::eq_int_type(__c, __idelim))

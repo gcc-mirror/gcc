@@ -25,6 +25,8 @@
 // invalidate any other reasons why the executable file might be covered by
 // the GNU General Public License.
 
+// 27.6.1.3 unformatted input functions
+
 #include <cstring> // for strlen
 #include <istream>
 #include <testsuite_hooks.h>
