@@ -1,5 +1,8 @@
 2001-08-22  Jason Merrill  <jason_merrill@redhat.com>
 
+	* explow.c (set_mem_attributes): Avoid returning a bogus alias set
+	from a new MEM.
+
 	* jump.c (squeeze_notes): Take parms by reference.  Handle END being
 	a squeezable note.
 	* rtl.h: Adjust.
