@@ -1,3 +1,7 @@
+2005-01-19  Neil Booth  <neil@daikokuya.co.uk>
+
+	* MAINTAINERS: Remove self as cpplib maintainer.
+
 2005-01-17  Kelley Cook  <kcook@gcc.gnu.org>
 
 	* install-sh, config.sub: Import from upstream.
