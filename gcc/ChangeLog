@@ -4,6 +4,9 @@
 	* flow.c (mark_regs_live_at_end): Likewise.  Force BLKmode
 	FUNCTION_VALUE result to DECL_RESULT's mode.
 
+	* haifa-sched.c (schedule_insns): Don't recompute reg info
+	after reload.
+
 2000-01-28  Zack Weinberg  <zack@wolery.cumb.org>
 
 	* configure.in: Make --enable-cpplib the default.
