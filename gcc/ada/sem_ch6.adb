@@ -255,7 +255,6 @@ package body Sem_Ch6 is
 
       if Present (L) then
          Actual := First (L);
-
          while Present (Actual) loop
             Analyze (Actual);
             Check_Parameterless_Call (Actual);
@@ -1511,7 +1510,6 @@ package body Sem_Ch6 is
       then
          Check_Overriding_Operation (N, Designator);
       end if;
-
    end Analyze_Subprogram_Declaration;
 
    --------------------------------------
@@ -2311,7 +2309,6 @@ package body Sem_Ch6 is
          Conformance_Error ("too many parameters!", New_Formal);
          return;
       end if;
-
    end Check_Conformance;
 
    ------------------------------
@@ -2552,7 +2549,6 @@ package body Sem_Ch6 is
       Err_Loc : Node_Id := Empty)
    is
       Result : Boolean;
-
    begin
       Check_Conformance
         (New_Id, Old_Id, Fully_Conformant, True, Result, Err_Loc);
@@ -3285,7 +3281,6 @@ package body Sem_Ch6 is
       else
          return False;
       end if;
-
    end Conforming_Types;
 
    --------------------------
@@ -3642,7 +3637,6 @@ package body Sem_Ch6 is
 
    function Fully_Conformant (New_Id, Old_Id : Entity_Id) return Boolean is
       Result : Boolean;
-
    begin
       Check_Conformance (New_Id, Old_Id, Fully_Conformant, False, Result);
       return Result;
@@ -4374,25 +4368,31 @@ package body Sem_Ch6 is
               Subtype_Mark => New_Reference_To (Standard_Boolean, Loc)));
 
       --  Insert inequality right after equality if it is explicit or after
-      --  the derived type when implicit. These entities are created only
-      --  for visibility purposes, and eventually replaced in the course of
+      --  the derived type when implicit. These entities are created only for
+      --  visibility purposes, and eventually replaced in the course of
       --  expansion, so they do not need to be attached to the tree and seen
       --  by the back-end. Keeping them internal also avoids spurious freezing
-      --  problems. The parent field is set simply to make analysis safe.
+      --  problems. The declaration is inserted in the tree for analysis, and
+      --  removed afterwards. If the equality operator comes from an explicit
+      --  declaration, attach the inequality immediately after. Else the
+      --  equality is inherited from a derived type declaration, so insert
+      --  inequality after that declaration.
 
       if No (Alias (S)) then
-         Set_Parent (Decl, Parent (Unit_Declaration_Node (S)));
+         Insert_After (Unit_Declaration_Node (S), Decl);
+      elsif Is_List_Member (Parent (S)) then
+         Insert_After (Parent (S), Decl);
       else
-         Set_Parent (Decl, Parent (Parent (Etype (First_Formal (S)))));
+         Insert_After (Parent (Etype (First_Formal (S))), Decl);
       end if;
 
       Mark_Rewrite_Insertion (Decl);
       Set_Is_Intrinsic_Subprogram (Op_Name);
       Analyze (Decl);
+      Remove (Decl);
       Set_Has_Completion (Op_Name);
       Set_Corresponding_Equality (Op_Name, S);
       Set_Is_Abstract (Op_Name, Is_Abstract (S));
-
    end Make_Inequality_Operator;
 
    ----------------------
@@ -4472,7 +4472,9 @@ package body Sem_Ch6 is
                 Specification (Unit_Declaration_Node (Current_Scope)));
 
             return In_Package_Body (Current_Scope)
-              or else List_Containing (Decl) = Priv_Decls
+              or else
+                (Is_List_Member (Decl)
+                   and then List_Containing (Decl) = Priv_Decls)
               or else (Nkind (Parent (Decl)) = N_Package_Specification
                          and then not Is_Compilation_Unit (
                            Defining_Entity (Parent (Decl)))
@@ -4858,7 +4860,7 @@ package body Sem_Ch6 is
 
                         --  If the private operation is dispatching, we achieve
                         --  the overriding by keeping the implicit operation
-                        --  but setting its alias to be the overring one. In
+                        --  but setting its alias to be the overriding one. In
                         --  this fashion the proper body is executed in all
                         --  cases, but the original signature is used outside
                         --  of the package.
@@ -5511,7 +5513,6 @@ package body Sem_Ch6 is
 
    function Subtype_Conformant (New_Id, Old_Id : Entity_Id) return Boolean is
       Result : Boolean;
-
    begin
       Check_Conformance (New_Id, Old_Id, Subtype_Conformant, False, Result);
       return Result;
