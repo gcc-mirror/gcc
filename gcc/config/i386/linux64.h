@@ -19,8 +19,6 @@ along with GNU CC; see the file COPYING.  If not, write to
 the Free Software Foundation, 59 Temple Place - Suite 330,
 Boston, MA 02111-1307, USA.  */
 
-#define LINUX_DEFAULT_ELF
-
 #define TARGET_VERSION fprintf (stderr, " (x86-64 Linux/ELF)");
 
 #define TARGET_OS_CPP_BUILTINS()				\
