@@ -37,17 +37,10 @@ void test01()
   cout.imbue(locale("en_US"));
   cerr.imbue(locale("en_US"));
   clog.imbue(locale("de_DE"));
-  wcin.imbue(locale("en_US"));
-  wcout.imbue(locale("en_US"));
-  wcerr.imbue(locale("en_US"));
-  wclog.imbue(locale("de_DE"));
   
   cout << 'f' << endl;
   cerr << 'r' << endl;
   clog << 'A' << endl;
-  wcout << L's' << endl;
-  wcerr << L'i' << endl;
-  wclog << L'L' << endl;
 }
 
 int main()
