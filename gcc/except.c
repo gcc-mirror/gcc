@@ -2347,7 +2347,7 @@ finish_eh_generation ()
      connect many of the handlers, and then type information will not
      be effective.  Still, this is a win over previous implementations.  */
 
-  jump_optimize_minimal (get_insns ());
+  rebuild_jump_labels (get_insns ());
   find_basic_blocks (get_insns (), max_reg_num (), 0);
   cleanup_cfg (0);
 
@@ -2370,7 +2370,7 @@ finish_eh_generation ()
 
   /* We've totally changed the CFG.  Start over.  */
   find_exception_handler_labels ();
-  jump_optimize_minimal (get_insns ());
+  rebuild_jump_labels (get_insns ());
   find_basic_blocks (get_insns (), max_reg_num (), 0);
   cleanup_cfg (0);
 }

@@ -565,11 +565,11 @@ optimize_sibling_and_tail_recursive_calls ()
      ahead and find all the EH labels.  */
   find_exception_handler_labels ();
 
-  jump_optimize_minimal (insns);
+  rebuild_jump_labels (insns);
   /* We need cfg information to determine which blocks are succeeded
      only by the epilogue.  */
   find_basic_blocks (insns, max_reg_num (), 0);
-  cleanup_cfg (0);
+  cleanup_cfg (CLEANUP_PRE_SIBCALL);
 
   /* If there are no basic blocks, then there is nothing to do.  */
   if (n_basic_blocks == 0)

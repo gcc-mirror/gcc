@@ -1,3 +1,34 @@
+Mon Jul 16 22:48:00 CEST 2001  Jan Hubicka  <jh@suse.cz>
+
+	* basic-block.h (CLEANUP_PRE_SIBCALL): New constant.
+	* except.c (finish_eh_generation): Update call of cleanup_cfg;
+	do rebuild_jump_labels instead of jump_optimize
+	* sibcall.c (optimize_sibling_and_tail_recursive_call): Likewise.
+	* toplev.c (rest_of_compulation): Likewise for -Wreturn_type.
+	* flow.c (try_optimize_cfg): Remove unneeded code_labels.
+
+	* flow.c: Include timevar.h
+	(find_basic_block): Push/pop timevar;
+	(cleanup_cfg): Likewise.
+	* timevar.def (TV_CFG, TV_CLEANUP_CFG): New.
+	* Makefile: Add dependencies on timevar.h
+
+	* integrate.c (save_for_inline): Kill all BASIC_BLOCK notes.
+	(copy_insn_list): Avoid killing of BASIC_BLOCK notes.
+
+	* rtl.h (delete_trivially_dead_insns): Add new parameter.
+	* toplev.c (rest_of_compilation): Update calls.
+	* cse.c (set_live_p, insn_live_p, dead_libcall_p): Break out from ...
+	(delete_trivially_dead_insns): ... here; accept new argument
+	preserve_basic_blocks; preserve basic blocks if set.
+
+	* reg-stack.c (stack_regs_mentioned): Return 0 if
+	stack_regs_mentioned_data is not initialized.
+	(reg_to_stack): Make stack_regs_mentioned survive after the
+	reg-stack is completted; do not call cleanup_cfg.
+	* toplev.c (rest_of_compilation): Do cleanup_cfg before bb-reorder;
+	make cleanup_cfg after bb-reorder to output to debug file.
+
 2001-07-16  Richard Henderson  <rth@redhat.com>
 
 	* regclass.c (init_reg_sets): Use only 32 bits per initializer
