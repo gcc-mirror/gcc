@@ -270,17 +270,20 @@ static void record_biv PARAMS ((struct induction *, rtx, rtx, rtx, rtx, rtx *,
 static void check_final_value PARAMS ((const struct loop *,
 				       struct induction *));
 static void record_giv PARAMS ((const struct loop *, struct induction *,
-				rtx, rtx, rtx, rtx, rtx, int, enum g_types,
-				int, int, rtx *));
+				rtx, rtx, rtx, rtx, rtx, rtx, int,
+				enum g_types, int, int, rtx *));
 static void update_giv_derive PARAMS ((const struct loop *, rtx));
+static void check_ext_dependant_givs PARAMS ((struct iv_class *,
+					      struct loop_info *));
 static int basic_induction_var PARAMS ((const struct loop *, rtx,
 					enum machine_mode, rtx, rtx,
 					rtx *, rtx *, rtx **));
-static rtx simplify_giv_expr PARAMS ((const struct loop *, rtx, int *));
+static rtx simplify_giv_expr PARAMS ((const struct loop *, rtx, rtx *, int *));
 static int general_induction_var PARAMS ((const struct loop *loop, rtx, rtx *,
-					  rtx *, rtx *, int, int *, enum machine_mode));
+					  rtx *, rtx *, rtx *, int, int *,
+					  enum machine_mode));
 static int consec_sets_giv PARAMS ((const struct loop *, int, rtx,
-				    rtx, rtx, rtx *, rtx *, rtx *));
+				    rtx, rtx, rtx *, rtx *, rtx *, rtx *));
 static int check_dbra_loop PARAMS ((struct loop *, int));
 static rtx express_from_1 PARAMS ((rtx, rtx, rtx));
 static rtx combine_givs_p PARAMS ((struct induction *, struct induction *));
@@ -4412,6 +4415,10 @@ strength_reduce (loop, insn_count, flags)
 	    }
 	}
 
+      /* Check each extension dependant giv in this class to see if its
+	 root biv is safe from wrapping in the interior mode.  */
+      check_ext_dependant_givs (bl, loop_info);
+
       /* Combine all giv's for this iv_class.  */
       combine_givs (bl);
 
@@ -4733,8 +4740,9 @@ strength_reduce (loop, insn_count, flags)
 
 	      /* Add code at loop start to initialize giv's reduced reg.  */
 
-	      emit_iv_add_mult (bl->initial_value, v->mult_val,
-				v->add_val, v->new_reg, loop_start);
+	      emit_iv_add_mult (extend_value_for_giv (v, bl->initial_value),
+				v->mult_val, v->add_val, v->new_reg,
+				loop_start);
 	    }
 	}
 
@@ -4799,8 +4807,9 @@ strength_reduce (loop, insn_count, flags)
 	     not replaceable.  The correct final value is the same as the
 	     value that the giv starts the reversed loop with.  */
 	  if (bl->reversed && ! v->replaceable)
-	    emit_iv_add_mult (bl->initial_value, v->mult_val,
-			      v->add_val, v->dest_reg, end_insert_before);
+	    emit_iv_add_mult (extend_value_for_giv (v, bl->initial_value),
+			      v->mult_val, v->add_val, v->dest_reg,
+			      end_insert_before);
 	  else if (v->final_value)
 	    {
 	      rtx insert_before;
@@ -5057,6 +5066,7 @@ check_insn_for_givs (loop, p, not_every_iteration, maybe_multiple)
       rtx dest_reg;
       rtx add_val;
       rtx mult_val;
+      rtx ext_val;
       int benefit;
       rtx regnote = 0;
       rtx last_consec_insn;
@@ -5067,11 +5077,11 @@ check_insn_for_givs (loop, p, not_every_iteration, maybe_multiple)
 
       if (/* SET_SRC is a giv.  */
 	  (general_induction_var (loop, SET_SRC (set), &src_reg, &add_val,
-				  &mult_val, 0, &benefit, VOIDmode)
+				  &mult_val, &ext_val, 0, &benefit, VOIDmode)
 	   /* Equivalent expression is a giv.  */
 	   || ((regnote = find_reg_note (p, REG_EQUAL, NULL_RTX))
 	       && general_induction_var (loop, XEXP (regnote, 0), &src_reg,
-					 &add_val, &mult_val, 0,
+					 &add_val, &mult_val, &ext_val, 0,
 					 &benefit, VOIDmode)))
 	  /* Don't try to handle any regs made by loop optimization.
 	     We have nothing on them in regno_first_uid, etc.  */
@@ -5083,7 +5093,7 @@ check_insn_for_givs (loop, p, not_every_iteration, maybe_multiple)
 	      /* or all sets must be consecutive and make a giv.  */
 	      || (benefit = consec_sets_giv (loop, benefit, p,
 					     src_reg, dest_reg,
-					     &add_val, &mult_val,
+					     &add_val, &mult_val, &ext_val,
 					     &last_consec_insn))))
 	{
 	  struct induction *v
@@ -5098,7 +5108,7 @@ check_insn_for_givs (loop, p, not_every_iteration, maybe_multiple)
 	    p = last_consec_insn;
 
 	  record_giv (loop, v, p, src_reg, dest_reg, mult_val, add_val,
-		      benefit, DEST_REG, not_every_iteration,
+		      ext_val, benefit, DEST_REG, not_every_iteration,
 		      maybe_multiple, NULL_PTR);
 
 	}
@@ -5202,6 +5212,7 @@ find_mem_givs (loop, x, insn, not_every_iteration, maybe_multiple)
 	rtx src_reg;
 	rtx add_val;
 	rtx mult_val;
+	rtx ext_val;
 	int benefit;
 
 	/* This code used to disable creating GIVs with mult_val == 1 and
@@ -5210,15 +5221,16 @@ find_mem_givs (loop, x, insn, not_every_iteration, maybe_multiple)
 	   this one would not be seen.   */
 
 	if (general_induction_var (loop, XEXP (x, 0), &src_reg, &add_val,
-				   &mult_val, 1, &benefit, GET_MODE (x)))
+				   &mult_val, &ext_val, 1, &benefit,
+				   GET_MODE (x)))
 	  {
 	    /* Found one; record it.  */
 	    struct induction *v
 	      = (struct induction *) oballoc (sizeof (struct induction));
 
 	    record_giv (loop, v, insn, src_reg, addr_placeholder, mult_val,
-			add_val, benefit, DEST_ADDR, not_every_iteration,
-			maybe_multiple, &XEXP (x, 0));
+			add_val, ext_val, benefit, DEST_ADDR,
+			not_every_iteration, maybe_multiple, &XEXP (x, 0));
 
 	    v->mem_mode = GET_MODE (x);
 	  }
@@ -5277,6 +5289,7 @@ record_biv (v, insn, dest_reg, inc_val, mult_val, location,
   v->dest_reg = dest_reg;
   v->mult_val = mult_val;
   v->add_val = inc_val;
+  v->ext_dependant = NULL_RTX;
   v->location = location;
   v->mode = GET_MODE (dest_reg);
   v->always_computable = ! not_every_iteration;
@@ -5360,14 +5373,14 @@ record_biv (v, insn, dest_reg, inc_val, mult_val, location,
    LOCATION points to the place where this giv's value appears in INSN.  */
 
 static void
-record_giv (loop, v, insn, src_reg, dest_reg, mult_val, add_val, benefit,
-	    type, not_every_iteration, maybe_multiple, location)
+record_giv (loop, v, insn, src_reg, dest_reg, mult_val, add_val, ext_val,
+	    benefit, type, not_every_iteration, maybe_multiple, location)
      const struct loop *loop;
      struct induction *v;
      rtx insn;
      rtx src_reg;
      rtx dest_reg;
-     rtx mult_val, add_val;
+     rtx mult_val, add_val, ext_val;
      int benefit;
      enum g_types type;
      int not_every_iteration, maybe_multiple;
@@ -5389,6 +5402,7 @@ record_giv (loop, v, insn, src_reg, dest_reg, mult_val, add_val, benefit,
   v->dest_reg = dest_reg;
   v->mult_val = mult_val;
   v->add_val = add_val;
+  v->ext_dependant = ext_val;
   v->benefit = benefit;
   v->location = location;
   v->cant_derive = 0;
@@ -5576,6 +5590,24 @@ record_giv (loop, v, insn, src_reg, dest_reg, mult_val, add_val, benefit,
 
       if (v->no_const_addval)
 	fprintf (loop_dump_stream, " ncav");
+
+      if (v->ext_dependant)
+	{
+	  switch (GET_CODE (v->ext_dependant))
+	    {
+	    case SIGN_EXTEND:
+	      fprintf (loop_dump_stream, " ext se");
+	      break;
+	    case ZERO_EXTEND:
+	      fprintf (loop_dump_stream, " ext ze");
+	      break;
+	    case TRUNCATE:
+	      fprintf (loop_dump_stream, " ext tr");
+	      break;
+	    default:
+	      abort ();
+	    }
+	}
 
       if (GET_CODE (mult_val) == CONST_INT)
 	{
@@ -5825,20 +5857,21 @@ update_giv_derive (loop, p)
 		 be able to compute a compensation.  */
 	      else if (biv->insn == p)
 		{
-		  tem = 0;
+		  rtx ext_val_dummy;
 
+		  tem = 0;
 		  if (biv->mult_val == const1_rtx)
 		    tem = simplify_giv_expr (loop,
 					     gen_rtx_MULT (giv->mode,
 							   biv->add_val,
 							   giv->mult_val),
-					     &dummy);
+					     &ext_val_dummy, &dummy);
 
 		  if (tem && giv->derive_adjustment)
 		    tem = simplify_giv_expr
 		      (loop,
 		       gen_rtx_PLUS (giv->mode, tem, giv->derive_adjustment),
-		       &dummy);
+		       &ext_val_dummy, &dummy);
 
 		  if (tem)
 		    giv->derive_adjustment = tem;
@@ -6058,13 +6091,14 @@ basic_induction_var (loop, x, mode, dest_reg, p, inc_val, mult_val, location)
      such that the value of X is biv * mult + add;  */
 
 static int
-general_induction_var (loop, x, src_reg, add_val, mult_val, is_addr,
-		       pbenefit, addr_mode)
+general_induction_var (loop, x, src_reg, add_val, mult_val, ext_val,
+		       is_addr, pbenefit, addr_mode)
      const struct loop *loop;
      rtx x;
      rtx *src_reg;
      rtx *add_val;
      rtx *mult_val;
+     rtx *ext_val;
      int is_addr;
      int *pbenefit;
      enum machine_mode addr_mode;
@@ -6080,7 +6114,8 @@ general_induction_var (loop, x, src_reg, add_val, mult_val, is_addr,
      Mark our place on the obstack in case we don't find a giv.  */
   storage = (char *) oballoc (0);
   *pbenefit = 0;
-  x = simplify_giv_expr (loop, x, pbenefit);
+  *ext_val = NULL_RTX;
+  x = simplify_giv_expr (loop, x, ext_val, pbenefit);
   if (x == 0)
     {
       obfree (storage);
@@ -6177,9 +6212,10 @@ static int cmp_combine_givs_stats PARAMS ((const PTR, const PTR));
 static int cmp_recombine_givs_stats PARAMS ((const PTR, const PTR));
 
 static rtx
-simplify_giv_expr (loop, x, benefit)
+simplify_giv_expr (loop, x, ext_val, benefit)
      const struct loop *loop;
      rtx x;
+     rtx *ext_val;
      int *benefit;
 {
   enum machine_mode mode = GET_MODE (x);
@@ -6196,8 +6232,8 @@ simplify_giv_expr (loop, x, benefit)
   switch (GET_CODE (x))
     {
     case PLUS:
-      arg0 = simplify_giv_expr (loop, XEXP (x, 0), benefit);
-      arg1 = simplify_giv_expr (loop, XEXP (x, 1), benefit);
+      arg0 = simplify_giv_expr (loop, XEXP (x, 0), ext_val, benefit);
+      arg1 = simplify_giv_expr (loop, XEXP (x, 1), ext_val, benefit);
       if (arg0 == 0 || arg1 == 0)
 	return NULL_RTX;
 
@@ -6249,7 +6285,7 @@ simplify_giv_expr (loop, x, benefit)
 					       gen_rtx_PLUS (mode,
 							     XEXP (arg0, 1),
 							     arg1)),
-				 benefit);
+				 ext_val, benefit);
 
 	  default:
 	    abort ();
@@ -6275,7 +6311,7 @@ simplify_giv_expr (loop, x, benefit)
 					     gen_rtx_PLUS (mode, arg0,
 							   XEXP (arg1, 0)),
 					     XEXP (arg1, 1)),
-			       benefit);
+			       ext_val, benefit);
 
       /* Now must have MULT + MULT.  Distribute if same biv, else not giv.  */
       if (GET_CODE (arg0) != MULT || GET_CODE (arg1) != MULT)
@@ -6290,7 +6326,7 @@ simplify_giv_expr (loop, x, benefit)
 					      gen_rtx_PLUS (mode,
 							    XEXP (arg0, 1),
 							    XEXP (arg1, 1))),
-				benefit);
+				ext_val, benefit);
 
     case MINUS:
       /* Handle "a - b" as "a + b * (-1)".  */
@@ -6300,11 +6336,11 @@ simplify_giv_expr (loop, x, benefit)
 					      gen_rtx_MULT (mode,
 							    XEXP (x, 1),
 							    constm1_rtx)),
-				benefit);
+				ext_val, benefit);
 
     case MULT:
-      arg0 = simplify_giv_expr (loop, XEXP (x, 0), benefit);
-      arg1 = simplify_giv_expr (loop, XEXP (x, 1), benefit);
+      arg0 = simplify_giv_expr (loop, XEXP (x, 0), ext_val, benefit);
+      arg1 = simplify_giv_expr (loop, XEXP (x, 1), ext_val, benefit);
       if (arg0 == 0 || arg1 == 0)
 	return NULL_RTX;
 
@@ -6350,7 +6386,7 @@ simplify_giv_expr (loop, x, benefit)
 								    XEXP (arg0,
 									  1),
 								    arg1)),
-					benefit);
+					ext_val, benefit);
 	    }
 	  /* Porpagate the MULT expressions to the intermost nodes.  */
 	  else if (GET_CODE (arg0) == PLUS)
@@ -6366,7 +6402,7 @@ simplify_giv_expr (loop, x, benefit)
 								    XEXP (arg0,
 									  1),
 								    arg1)),
-					benefit);
+					ext_val, benefit);
 	    }
 	  return gen_rtx_USE (mode, gen_rtx_MULT (mode, arg0, arg1));
 
@@ -6378,7 +6414,7 @@ simplify_giv_expr (loop, x, benefit)
 						  gen_rtx_MULT (mode,
 								XEXP (arg0, 1),
 								arg1)),
-				    benefit);
+				    ext_val, benefit);
 
 	case PLUS:
 	  /* (a + invar_1) * invar_2.  Distribute.  */
@@ -6390,7 +6426,7 @@ simplify_giv_expr (loop, x, benefit)
 						  gen_rtx_MULT (mode,
 								XEXP (arg0, 1),
 								arg1)),
-				    benefit);
+				    ext_val, benefit);
 
 	default:
 	  abort ();
@@ -6407,13 +6443,13 @@ simplify_giv_expr (loop, x, benefit)
 					 XEXP (x, 0),
 					 GEN_INT ((HOST_WIDE_INT) 1
 						  << INTVAL (XEXP (x, 1)))),
-			   benefit);
+			   ext_val, benefit);
 
     case NEG:
       /* "-a" is "a * (-1)" */
       return simplify_giv_expr (loop,
 				gen_rtx_MULT (mode, XEXP (x, 0), constm1_rtx),
-				benefit);
+				ext_val, benefit);
 
     case NOT:
       /* "~a" is "-a - 1". Silly, but easy.  */
@@ -6421,13 +6457,30 @@ simplify_giv_expr (loop, x, benefit)
 				gen_rtx_MINUS (mode,
 					       gen_rtx_NEG (mode, XEXP (x, 0)),
 					       const1_rtx),
-				benefit);
+				ext_val, benefit);
 
     case USE:
       /* Already in proper form for invariant.  */
       return x;
 
-    case REG:
+    case SIGN_EXTEND:
+    case ZERO_EXTEND:
+    case TRUNCATE:
+      /* Conditionally recognize extensions of simple IVs.  After we've
+	 computed loop traversal counts and verified the range of the 
+	 source IV, we'll reevaluate this as a GIV.  */
+      if (*ext_val == NULL_RTX)
+	{
+	  arg0 = simplify_giv_expr (loop, XEXP (x, 0), ext_val, benefit);
+	  if (arg0 && *ext_val == NULL_RTX && GET_CODE (arg0) == REG)
+	    {
+	      *ext_val = gen_rtx_fmt_e (GET_CODE (x), mode, arg0);
+	      return arg0;
+	    }
+	}
+      goto do_default;
+
+  case REG:
       /* If this is a new register, we can't deal with it.  */
       if (REGNO (x) >= max_reg_before_loop)
 	return 0;
@@ -6466,10 +6519,22 @@ simplify_giv_expr (loop, x, benefit)
 
 	    if (v->derive_adjustment)
 	      tem = gen_rtx_MINUS (mode, tem, v->derive_adjustment);
-	    return simplify_giv_expr (loop, tem, benefit);
+	    arg0 = simplify_giv_expr (loop, tem, ext_val, benefit);
+	    if (*ext_val)
+	      {
+		if (!v->ext_dependant)
+		  return arg0;
+	      }
+	    else
+	      {
+		*ext_val = v->ext_dependant;
+		return arg0;
+	      }
+	    return 0;
 	  }
 
 	default:
+	do_default:
 	  /* If it isn't an induction variable, and it is invariant, we
 	     may be able to simplify things further by looking through
 	     the bits we just moved outside the loop.  */
@@ -6486,7 +6551,7 @@ simplify_giv_expr (loop, x, benefit)
 		       this one is going away.  */
 		    if (m->match)
 		      return simplify_giv_expr (loop, m->match->set_dest,
-						benefit);
+						ext_val, benefit);
 
 		    /* If consec is non-zero, this is a member of a group of
 		       instructions that were moved together.  We handle this
@@ -6520,7 +6585,8 @@ simplify_giv_expr (loop, x, benefit)
 			    || GET_CODE (tem) == CONST_INT
 			    || GET_CODE (tem) == SYMBOL_REF)
 			  {
-			    tem = simplify_giv_expr (loop, tem, benefit);
+			    tem = simplify_giv_expr (loop, tem, ext_val,
+						     benefit);
 			    if (tem)
 			      return tem;
 			  }
@@ -6530,7 +6596,7 @@ simplify_giv_expr (loop, x, benefit)
 			    && GET_CODE (XEXP (XEXP (tem, 0), 1)) == CONST_INT)
 			  {
 			    tem = simplify_giv_expr (loop, XEXP (tem, 0),
-						     benefit);
+						     ext_val, benefit);
 			    if (tem)
 			      return tem;
 			  }
@@ -6635,7 +6701,7 @@ sge_plus (mode, x, y)
 
 static int
 consec_sets_giv (loop, first_benefit, p, src_reg, dest_reg,
-		 add_val, mult_val, last_consec_insn)
+		 add_val, mult_val, ext_val, last_consec_insn)
      const struct loop *loop;
      int first_benefit;
      rtx p;
@@ -6643,6 +6709,7 @@ consec_sets_giv (loop, first_benefit, p, src_reg, dest_reg,
      rtx dest_reg;
      rtx *add_val;
      rtx *mult_val;
+     rtx *ext_val;
      rtx *last_consec_insn;
 {
   int count;
@@ -6666,6 +6733,7 @@ consec_sets_giv (loop, first_benefit, p, src_reg, dest_reg,
   v->benefit = first_benefit;
   v->cant_derive = 0;
   v->derive_adjustment = 0;
+  v->ext_dependant = NULL_RTX;
 
   REG_IV_TYPE (REGNO (dest_reg)) = GENERAL_INDUCT;
   REG_IV_INFO (REGNO (dest_reg)) = v;
@@ -6686,12 +6754,13 @@ consec_sets_giv (loop, first_benefit, p, src_reg, dest_reg,
 	  && GET_CODE (SET_DEST (set)) == REG
 	  && SET_DEST (set) == dest_reg
 	  && (general_induction_var (loop, SET_SRC (set), &src_reg,
-				     add_val, mult_val, 0, &benefit, VOIDmode)
+				     add_val, mult_val, ext_val, 0,
+				     &benefit, VOIDmode)
 	      /* Giv created by equivalent expression.  */
 	      || ((temp = find_reg_note (p, REG_EQUAL, NULL_RTX))
 		  && general_induction_var (loop, XEXP (temp, 0), &src_reg,
-					    add_val, mult_val, 0, &benefit,
-					    VOIDmode)))
+					    add_val, mult_val, ext_val, 0,
+					    &benefit, VOIDmode)))
 	  && src_reg == v->src_reg)
 	{
 	  if (find_reg_note (p, REG_RETVAL, NULL_RTX))
@@ -6921,25 +6990,36 @@ static rtx
 combine_givs_p (g1, g2)
      struct induction *g1, *g2;
 {
-  rtx tem = express_from (g1, g2);
+  rtx comb, ret;
+
+  /* With the introduction of ext dependant givs, we must care for modes.
+     G2 must not use a wider mode than G1.  */
+  if (GET_MODE_SIZE (g1->mode) < GET_MODE_SIZE (g2->mode))
+    return NULL_RTX;
+
+  ret = comb = express_from (g1, g2);
+  if (comb == NULL_RTX)
+    return NULL_RTX;
+  if (g1->mode != g2->mode)
+    ret = gen_lowpart (g2->mode, comb);
 
   /* If these givs are identical, they can be combined.  We use the results
      of express_from because the addends are not in a canonical form, so
      rtx_equal_p is a weaker test.  */
   /* But don't combine a DEST_REG giv with a DEST_ADDR giv; we want the
      combination to be the other way round.  */
-  if (tem == g1->dest_reg
+  if (comb == g1->dest_reg
       && (g1->giv_type == DEST_REG || g2->giv_type == DEST_ADDR))
     {
-      return g1->dest_reg;
+      return ret;
     }
 
   /* If G2 can be expressed as a function of G1 and that function is valid
      as an address and no more expensive than using a register for G2,
      the expression of G2 in terms of G1 can be used.  */
-  if (tem != NULL_RTX
+  if (ret != NULL_RTX
       && g2->giv_type == DEST_ADDR
-      && memory_address_p (g2->mem_mode, tem)
+      && memory_address_p (g2->mem_mode, ret)
       /* ??? Looses, especially with -fforce-addr, where *g2->location
 	 will always be a register, and so anything more complicated
 	 gets discarded.  */
@@ -6952,10 +7032,195 @@ combine_givs_p (g1, g2)
 #endif
       )
     {
-      return tem;
+      return ret;
     }
 
   return NULL_RTX;
+}
+
+/* Check each extension dependant giv in this class to see if its
+   root biv is safe from wrapping in the interior mode, which would
+   make the giv illegal.  */
+
+static void
+check_ext_dependant_givs (bl, loop_info)
+     struct iv_class *bl;
+     struct loop_info *loop_info;
+{
+  int ze_ok = 0, se_ok = 0, info_ok = 0;
+  enum machine_mode biv_mode = GET_MODE (bl->biv->src_reg);
+  HOST_WIDE_INT start_val;
+  unsigned HOST_WIDE_INT u_end_val, u_start_val;
+  rtx incr = pc_rtx;
+  struct induction *v;
+
+  /* Make sure the iteration data is available.  We must have
+     constants in order to be certain of no overflow.  */
+  /* ??? An unknown iteration count with an increment of +-1
+     combined with friendly exit tests of against an invariant
+     value is also ameanable to optimization.  Not implemented.  */
+  if (loop_info->n_iterations > 0
+      && bl->initial_value
+      && GET_CODE (bl->initial_value) == CONST_INT
+      && (incr = biv_total_increment (bl))
+      && GET_CODE (incr) == CONST_INT
+      /* Make sure the host can represent the arithmetic.  */
+      && HOST_BITS_PER_WIDE_INT >= GET_MODE_BITSIZE (biv_mode))
+    {
+      unsigned HOST_WIDE_INT abs_incr, total_incr;
+      HOST_WIDE_INT s_end_val;
+      int neg_incr;
+
+      info_ok = 1;
+      start_val = INTVAL (bl->initial_value);
+      u_start_val = start_val;
+	   
+      neg_incr = 0, abs_incr = INTVAL (incr);
+      if (INTVAL (incr) < 0)
+	neg_incr = 1, abs_incr = -abs_incr;
+      total_incr = abs_incr * loop_info->n_iterations;
+
+      /* Check for host arithmatic overflow.  */
+      if (total_incr / loop_info->n_iterations == abs_incr)
+	{
+	  unsigned HOST_WIDE_INT u_max;
+	  HOST_WIDE_INT s_max;
+
+	  u_end_val = start_val + (neg_incr ? -total_incr : total_incr);
+	  s_end_val = u_end_val;
+	  u_max = GET_MODE_MASK (biv_mode);
+	  s_max = u_max >> 1;
+		  
+	  /* Check zero extension of biv ok.  */
+	  if (start_val >= 0
+	      /* Check for host arithmatic overflow.  */
+	      && (neg_incr
+		  ? u_end_val < u_start_val
+		  : u_end_val > u_start_val)
+	      /* Check for target arithmetic overflow.  */
+	      && (neg_incr
+		  ? 1 /* taken care of with host overflow */
+		  : u_end_val <= u_max))
+	    {
+	      ze_ok = 1;
+	    }
+		  
+	  /* Check sign extension of biv ok.  */
+	  /* ??? While it is true that overflow with signed and pointer
+	     arithmetic is undefined, I fear too many programmers don't
+	     keep this fact in mind -- myself included on occasion.
+	     So leave alone with the signed overflow optimizations.  */
+	  if (start_val >= -s_max - 1
+	      /* Check for host arithmatic overflow.  */
+	      && (neg_incr
+		  ? s_end_val < start_val
+		  : s_end_val > start_val)
+	      /* Check for target arithmetic overflow.  */
+	      && (neg_incr
+		  ? s_end_val >= -s_max - 1
+		  : s_end_val <= s_max))
+	    {
+	      se_ok = 1;
+	    }
+	}
+    }
+
+  /* Invalidate givs that fail the tests.  */
+  for (v = bl->giv; v; v = v->next_iv)
+    if (v->ext_dependant)
+      {
+	enum rtx_code code = GET_CODE (v->ext_dependant);
+	int ok = 0;
+
+	switch (code)
+	  {
+	  case SIGN_EXTEND:
+	    ok = se_ok;
+	    break;
+	  case ZERO_EXTEND:
+	    ok = ze_ok;
+	    break;
+
+	  case TRUNCATE:
+	    /* We don't know whether this value is being used as either
+	       signed or unsigned, so to safely truncate we must satisfy
+	       both.  The initial check here verifies the BIV itself; 
+	       once that is successful we may check its range wrt the
+	       derived GIV.  */
+	    if (se_ok && ze_ok)
+	      {
+		enum machine_mode outer_mode = GET_MODE (v->ext_dependant);
+		unsigned HOST_WIDE_INT max = GET_MODE_MASK (outer_mode) >> 1;
+
+		/* We know from the above that both endpoints are nonnegative,
+		   and that there is no wrapping.  Verify that both endpoints
+		   are within the (signed) range of the outer mode.  */
+		if (u_start_val <= max && u_end_val <= max)
+		  ok = 1;
+	      }
+	    break;
+
+	  default:
+	    abort ();
+	  }
+
+	if (ok)
+	  {
+	    if (loop_dump_stream)
+	      {
+		fprintf(loop_dump_stream,
+			"Verified ext dependant giv at %d of reg %d\n",
+			INSN_UID (v->insn), bl->regno);
+	      }
+	  }
+	else
+	  {
+	    if (loop_dump_stream)
+	      {
+		const char *why;
+
+		if (info_ok)
+		  why = "biv iteration values overflowed";
+		else
+		  {
+		    if (incr == pc_rtx)
+		      incr = biv_total_increment (bl);
+		    if (incr == const1_rtx)
+		      why = "biv iteration info incomplete; incr by 1";
+		    else
+		      why = "biv iteration info incomplete";
+		  }
+
+		fprintf(loop_dump_stream,
+			"Failed ext dependant giv at %d, %s\n",
+			INSN_UID (v->insn), why);
+	      }
+	    v->ignore = 1;
+	  }
+      }
+}
+
+/* Generate a version of VALUE in a mode appropriate for initializing V.  */
+
+rtx
+extend_value_for_giv (v, value)
+     struct induction *v;
+     rtx value;
+{
+  rtx ext_dep = v->ext_dependant;
+
+  if (! ext_dep)
+    return value;
+
+  /* Recall that check_ext_dependant_givs verified that the known bounds
+     of a biv did not overflow or wrap with respect to the extension for
+     the giv.  Therefore, constants need no additional adjustment.  */
+  if (CONSTANT_P (value) && GET_MODE (value) == VOIDmode)
+    return value;
+
+  /* Otherwise, we must adjust the value to compensate for the
+     differing modes of the biv and the giv.  */
+  return gen_rtx_fmt_e (GET_CODE (ext_dep), GET_MODE (ext_dep), value);
 }
 
 struct combine_givs_stats

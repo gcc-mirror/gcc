@@ -1,3 +1,21 @@
+2000-09-07  Richard Henderson  <rth@cygnus.com>
+
+	* loop.c (strength_reduce): Call check_ext_dependant_givs.
+	Properly extend the biv initial value for the giv.
+	(record_biv): Zero ext_dependant.
+	(record_giv): New argument ext_val.  Update all callers.
+	(general_induction_var): Likewise.
+	(consec_sets_giv): Likewise.
+	(simplify_giv_expr): Likewise.  Fill in ext_val if we find
+	a sign-extend, zero-extend, or truncate.
+	(combine_givs_p): Make sure modes are compatible.
+	(check_ext_dependant_givs): New.
+	(extend_value_for_giv): New.
+	* loop.h (struct induction): Add ext_dependant.
+	* unroll.c (iteration_info): Extend the biv initial value for the giv.
+	(find_splittable_givs): Likewise.
+	(final_giv_value): Likewise.
+
 2000-09-07  Zack Weinberg  <zack@wolery.cumb.org>
 
 	* c-pragma.h: Define HANDLE_GENERIC_PRAGMAS if
@@ -64,9 +82,9 @@ Thu 07-Sep-2000 21:29:00 BST  Neil Booth  <NeilB@earthling.net>
 
 2000-09-07  Catherine Moore  <clm@redhat.com>
 
-        * unroll.c (unroll_loop): Check for unconditional jumps
-        to loop continuation.  Delete if n_iterations is 1.
-        (ujump_to_loop_cont): New routine.
+	* unroll.c (unroll_loop): Check for unconditional jumps
+	to loop continuation.  Delete if n_iterations is 1.
+	(ujump_to_loop_cont): New routine.
 
 2000-09-07  Bernd Schmidt  <bernds@redhat.co.uk>
 
@@ -151,7 +169,7 @@ Thu 07-Sep-2000 21:29:00 BST  Neil Booth  <NeilB@earthling.net>
 
 2000-09-06 Herman A.J. ten Brugge <Haj.Ten.Brugge@net.HCC.nl>
 
-        * flow.c (insn_dead_p): Detect dead memory stores with auto increments.
+	* flow.c (insn_dead_p): Detect dead memory stores with auto increments.
 
 2000-09-06  Kazu Hirata  <kazu@hxi.com>
 
@@ -159,7 +177,7 @@ Thu 07-Sep-2000 21:29:00 BST  Neil Booth  <NeilB@earthling.net>
 
 2000-09-06  Graham Stott  <grahams@cygnus.co.uk>
 
-        * config/i386/i386.h (ADDRESS_COST): Fix typo.
+	* config/i386/i386.h (ADDRESS_COST): Fix typo.
 
 2000-09-06  Zack Weinberg  <zack@wolery.cumb.org>
 
