@@ -55,14 +55,18 @@ Boston, MA 02111-1307, USA.  */
 	abort ();						\
     } while (0)
 
+#define LOSE_AND_RETURN(msg, x)			\
+  do						\
+    {						\
+      cris_operand_lossage (msg, x);		\
+      return;					\
+    } while (0)
+
 /* Per-function machine data.  */
 struct machine_function
  {
    int needs_return_address_on_stack;
  };
-
-/* Fix for reg_overlap_mentioned_p.  */
-static int cris_reg_overlap_mentioned_p PARAMS ((rtx, rtx));
 
 /* This little fix suppresses the 'u' or 's' when '%e' in assembly
    pattern.  */
@@ -74,28 +78,30 @@ static char cris_output_insn_is_bound = 0;
    just the "sym:GOTOFF" part.  */
 static int cris_pic_sympart_only = 0;
 
-static void
-cris_print_base PARAMS ((rtx, FILE *));
+/* Fix for reg_overlap_mentioned_p.  */
+static int cris_reg_overlap_mentioned_p PARAMS ((rtx, rtx));
 
-static void
-cris_print_index PARAMS ((rtx, FILE *));
+static void cris_print_base PARAMS ((rtx, FILE *));
 
-static void
-cris_init_machine_status PARAMS ((struct function *));
+static void cris_print_index PARAMS ((rtx, FILE *));
 
-static int
-cris_initial_frame_pointer_offset PARAMS ((void));
+static void cris_init_machine_status PARAMS ((struct function *));
 
-static int
-saved_regs_mentioned PARAMS ((rtx));
+static int cris_initial_frame_pointer_offset PARAMS ((void));
+
+static int saved_regs_mentioned PARAMS ((rtx));
 
 static void cris_target_asm_function_prologue
   PARAMS ((FILE *, HOST_WIDE_INT));
+
 static void cris_target_asm_function_epilogue
   PARAMS ((FILE *, HOST_WIDE_INT));
 
+static void cris_operand_lossage PARAMS ((const char *, rtx));
+
 /* The function cris_target_asm_function_epilogue puts the last insn to
-   output here.  Used in delay_slots_for_epilogue and function_epilogue.  */
+   output here.  It always fits; there won't be a symbol operand.  Used in
+   delay_slots_for_epilogue and function_epilogue.  */
 static char save_last[80];
 
 /* This is the argument from the "-max-stack-stackframe=" option.  */
@@ -476,6 +482,20 @@ cris_op_str (x)
   }
 }
 
+/* Emit an error message when we're in an asm, and a fatal error for
+   "normal" insns.  Formatted output isn't easily implemented, since we
+   use output_operand_lossage to output the actual message and handle the
+   categorization of the error.  */
+
+static void
+cris_operand_lossage (msg, op)
+     const char *msg;
+     rtx op;
+{
+  debug_rtx (op);
+  output_operand_lossage (msg);
+}
+
 /* Print an index part of an address to file.  */
 
 static void
@@ -527,7 +547,8 @@ cris_print_index (index, file)
 	fprintf (file, "[$%s].d", reg_names[REGNO (inner)]);
     }
   else
-    fatal_insn ("Unexpected index-type in cris_print_index", index);
+    cris_operand_lossage ("unexpected index-type in cris_print_index", 
+			  index);
 }
 
 /* Print a base rtx of an address to file.  */
@@ -542,7 +563,8 @@ cris_print_base (base, file)
   else if (GET_CODE (base) == POST_INC)
     fprintf (file, "$%s+", reg_names[REGNO (XEXP (base, 0))]);
   else
-    fatal_insn ("Unexpected base-type in cris_print_base", base);
+    cris_operand_lossage ("unexpected base-type in cris_print_base", 
+			  base);
 }
 
 /* Usable as a guard in expressions.  */
@@ -1238,7 +1260,7 @@ cris_print_operand (file, x, code)
 	 and < 0, i.e print 255 or 65535 as -1, 254, 65534 as -2, etc.  */
       if (GET_CODE (x) != CONST_INT
 	  || ! CONST_OK_FOR_LETTER_P (INTVAL (x), 'O'))
-	fatal_insn ("Internal: Invalid operand with 'b'", x);
+	LOSE_AND_RETURN ("invalid operand for 'b' modifier", x);
       fprintf (file, "%d", INTVAL (x)| (INTVAL (x) <= 255 ? ~255 : ~65535));
       return;
 
@@ -1249,8 +1271,8 @@ cris_print_operand (file, x, code)
 
     case 'v':
       /* Print the operand without the PIC register.  */
-      if (! flag_pic || ! cris_gotless_symbol (x))
-	fatal_insn ("Internal: Invalid operand with 'v'", x);
+      if (! flag_pic || ! CONSTANT_P (x) || ! cris_gotless_symbol (x))
+	LOSE_AND_RETURN ("invalid operand for 'v' modifier", x);
       cris_pic_sympart_only++;
       cris_output_addr_const (file, x);
       cris_pic_sympart_only--;
@@ -1259,15 +1281,15 @@ cris_print_operand (file, x, code)
     case 'P':
       /* Print the PIC register.  Applied to a GOT-less PIC symbol for
          sanity.  */
-      if (! flag_pic || ! cris_gotless_symbol (x))
-	fatal_insn ("Internal: Invalid operand with 'P'", x);
+      if (! flag_pic || ! CONSTANT_P (x) || ! cris_gotless_symbol (x))
+	LOSE_AND_RETURN ("invalid operand for 'P' modifier", x);
       fprintf (file, "$%s", reg_names [PIC_OFFSET_TABLE_REGNUM]);
       return;
 
     case 'p':
       /* Adjust a power of two to its log2.  */
       if (GET_CODE (x) != CONST_INT || exact_log2 (INTVAL (x)) < 0 )
-	fatal_insn ("Internal: Invalid operand with 'p'", x);
+	LOSE_AND_RETURN ("invalid operand for 'p' modifier", x);
       fprintf (file, "%d", exact_log2 (INTVAL (x)));
       return;
 
@@ -1306,7 +1328,7 @@ cris_print_operand (file, x, code)
 	 w for -32768 <= x <= 65535, else abort.  */
       if (GET_CODE (x) != CONST_INT
 	  || INTVAL (x) < -32768 || INTVAL (x) > 65535)
-	fatal_insn ("Internal: Invalid operand with 'z'", x);
+	LOSE_AND_RETURN ("invalid operand for 'z' modifier", x);
       putc (INTVAL (x) >= -128 && INTVAL (x) <= 255 ? 'b' : 'w', file);
       return;
 
@@ -1334,13 +1356,13 @@ cris_print_operand (file, x, code)
 	      return;
 	    }
 	  else
-	    fatal_insn ("Internal: Invalid operand with 'H'", x);
+	    LOSE_AND_RETURN ("invalid operand for 'H' modifier", x);
 
 	case REG:
 	  /* Print reg + 1.  Check that there's not an attempt to print
 	     high-parts of registers like stack-pointer or higher.  */
 	  if (REGNO (operand) > STACK_POINTER_REGNUM - 2)
-	    internal_error ("Internal: Bad register: %d", REGNO (operand));
+	    LOSE_AND_RETURN ("bad register", operand);
 	  fprintf (file, "$%s", reg_names[REGNO (operand) + 1]);
 	  return;
 
@@ -1364,7 +1386,7 @@ cris_print_operand (file, x, code)
 	  }
 
 	default:
-	  fatal_insn ("Internal: Invalid operand for 'H'", x);
+	  LOSE_AND_RETURN ("invalid operand for 'H' modifier", x);
 	}
 
     case 'L':
@@ -1378,7 +1400,7 @@ cris_print_operand (file, x, code)
       if (GET_CODE (operand) != SIGN_EXTEND
 	  && GET_CODE (operand) != ZERO_EXTEND
 	  && GET_CODE (operand) != CONST_INT)
-	fatal_insn ("Internal: Invalid operand with 'e'", x);
+	LOSE_AND_RETURN ("invalid operand for 'e' modifier", x);
 
       if (cris_output_insn_is_bound)
 	{
@@ -1395,7 +1417,7 @@ cris_print_operand (file, x, code)
       /* Print the size letter of the inner element.  We can do it by
 	 calling ourselves with the 's' modifier.  */
       if (GET_CODE (operand) != SIGN_EXTEND && GET_CODE (operand) != ZERO_EXTEND)
-	fatal_insn ("Internal: Invalid operand with 'm'", x);
+	LOSE_AND_RETURN ("invalid operand for 'm' modifier", x);
       cris_print_operand (file, XEXP (operand, 0), 's');
       return;
 
@@ -1414,7 +1436,7 @@ cris_print_operand (file, x, code)
       /* When emitting an add for the high part of a DImode constant, we
 	 want to use addq for 0 and adds.w for -1.  */
       if (GET_CODE (operand) != CONST_INT)
-	fatal_insn ("Internal: Invalid operand with 'A' output modifier", x);
+	LOSE_AND_RETURN ("invalid operand for 'A' modifier", x);
       fprintf (file, INTVAL (operand) < 0 ? "adds.w" : "addq");
       return;
 
@@ -1422,7 +1444,7 @@ cris_print_operand (file, x, code)
       /* When emitting an sub for the high part of a DImode constant, we
 	 want to use subq for 0 and subs.w for -1.  */
       if (GET_CODE (operand) != CONST_INT)
-	fatal_insn ("Internal: Invalid operand with 'D' output modifier", x);
+	LOSE_AND_RETURN ("invalid operand for 'D' modifier", x);
       fprintf (file, INTVAL (operand) < 0 ? "subs.w" : "subq");
       return;
 
@@ -1436,8 +1458,7 @@ cris_print_operand (file, x, code)
       /* Print the size letter for an operand to a MULT, which must be a
 	 const_int with a suitable value.  */
       if (GET_CODE (operand) != CONST_INT || INTVAL (operand) > 4)
-	fatal_insn ("Internal: Invalid operand with 'T'", x);
-
+	LOSE_AND_RETURN ("invalid operand for 'T' modifier", x);
       fprintf (file, "%s", mults[INTVAL (operand)]);
       return;
 
@@ -1446,12 +1467,7 @@ cris_print_operand (file, x, code)
       break;
 
     default:
-      {
-#define BADFORMAT "Internal: Invalid operand for '%c'"
-	char s[sizeof BADFORMAT];
-	sprintf (s, BADFORMAT, code);
-	fatal_insn (s, x);
-      }
+      LOSE_AND_RETURN ("invalid operand modifier letter", x);
     }
 
   /* Print an operand as without a modifier letter.  */
@@ -1507,7 +1523,7 @@ cris_print_operand (file, x, code)
 	if (GET_CODE (reg) != REG
 	    || (GET_CODE (XEXP (operand, 0)) != CONST_INT
 		&& GET_CODE (XEXP (operand, 1)) != CONST_INT))
-	  fatal_insn ("Can't print operand", x);
+	  LOSE_AND_RETURN ("unexpected multiplicative operand", x);
 
 	cris_print_base (reg, file);
 	fprintf (file, ".%c",
@@ -1527,7 +1543,7 @@ cris_print_operand (file, x, code)
 	  return;
 	}
 
-      fatal_insn ("Internal: Cannot decode operand", x);
+      LOSE_AND_RETURN ("unexpected operand", x);
     }
 }
 
@@ -1562,7 +1578,7 @@ cris_print_operand_address (file, x)
 	  cris_print_index (x1, file);
 	}
       else
-	fatal_insn ("Internal: This is not a recognized address", x);
+	LOSE_AND_RETURN ("unrecognized address", x);
     }
   else if (GET_CODE (x) == MEM)
     {
@@ -1572,7 +1588,7 @@ cris_print_operand_address (file, x)
       putc (']', file);
     }
   else
-    fatal_insn ("Internal: This is not a recognized address", x);
+    LOSE_AND_RETURN ("unrecognized address", x);
 
   putc (']', file);
 }
@@ -2612,13 +2628,11 @@ cris_split_movdx (operands)
   rtx src  = operands[1];
   rtx val;
 
-  /* We might have (SUBREG (MEM)) here, so just get rid of the
-     subregs to make this code simpler.  It is safe to call
-     alter_subreg any time after reload.  */
-  if (GET_CODE (dest) == SUBREG)
-    dest = alter_subreg (dest);
-  if (GET_CODE (src) == SUBREG)
-    src = alter_subreg (src);
+  /* We used to have to handle (SUBREG (MEM)) here, but that should no
+     longer happen; after reload there are no SUBREGs any more, and we're
+     only called after reload.  */
+  if (GET_CODE (dest) == SUBREG || GET_CODE (src) == SUBREG)
+    abort ();
 
   start_sequence ();
   if (GET_CODE (dest) == REG)
@@ -2831,11 +2845,11 @@ restart:
 		fprintf (file, ":GOT]");
 	    }
 	  else
-	    fatal_insn ("Unexpected PIC symbol", x);
+	    LOSE_AND_RETURN ("unexpected PIC symbol", x);
 
 	  /* Sanity check.  */
 	  if (! current_function_uses_pic_offset_table)
-	    internal_error ("Emitting PIC operand, but PIC register isn't set up");
+	    output_operand_lossage ("PIC register isn't set up");
 	}
       else
 	assemble_name (file, XSTR (x, 0));
@@ -2931,7 +2945,7 @@ restart:
       break;
 
     default:
-      fatal_insn ("Unexpected address expression", x);
+      LOSE_AND_RETURN ("unexpected address expression", x);
     }
 }
 
