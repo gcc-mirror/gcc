@@ -616,7 +616,6 @@
 ;; shift left
 
 
-
 (define_insn "ashlsi3_k"
   [(set (match_operand:SI 0 "arith_reg_operand" "=r,r")
 	(ashift:SI (match_operand:SI 1 "arith_reg_operand" "0,0")
@@ -681,21 +680,33 @@
 
 (define_insn "ashrsi2_16"
   [(set (match_operand:SI 0 "register_operand" "=r")
-			  (ashiftrt:SI (match_operand:SI 1 "register_operand" "0")
-				       (const_int 16)))
-	     (clobber (reg:SI 18))]
+        (ashiftrt:SI (match_operand:SI 1 "register_operand" "r")
+                     (const_int 16)))]
   ""
-  "shlr16	%0\;exts.w	%0,%0"
+  "swap.w	%1,%0\;exts.w	%0,%0"
   [(set_attr "length" "4")])
-
 
 (define_insn "ashrsi2_31"
-  [(set (match_operand:SI 0 "register_operand" "=r")
-	(ashiftrt:SI (match_operand:SI 1 "register_operand" "0")
-		     (const_int 31)))]
+  [(set (match_operand:SI 0 "register_operand" "=r,r")
+        (ashiftrt:SI (match_operand:SI 1 "register_operand" "0,!r")
+                     (const_int 31)))
+   (clobber (reg:SI 18))]
   ""
-  "shal	%0\;subc	%0,%0"
-  [(set_attr "length" "4")])
+  "*
+{
+  if (which_alternative == 1)
+    {
+      if (dead_or_set_p (insn, operands[1]))
+        return \"shll	%1\;subc	%0,%0\";
+      else
+        return \"mov	%1,%0\;shll	%0\;subc	%0,%0\";
+    }
+  return \"shll	%0\;subc	%0,%0\";
+}"
+  [(set_attr "length" "4,6")])
+
+
+
 
 
 (define_insn "ashrsi3_n"
@@ -1942,6 +1953,7 @@
   "TARGET_SH2"
   "dt	%0")
   
+	
 	
 	
 	
