@@ -1,3 +1,10 @@
+2000-11-12  Brent Verner  <brent@rcfile.org>
+
+        * include/c_std/bits/wrap_langinfo.h: New file.
+        * include/c_std/langinfo.h: New file.
+        * include/bits/codecvt.h (__enc_trants::__enc_traits()): Bring in
+	CODESET from _C_legacy::CODESET if using shadow headers.
+
 2000-11-12  Mark Mitchell  <mark@codesourcery.com>
 
 	* include/c/bits/std_cmath.h (abs): Change extern "C" declaration
@@ -7,7 +14,7 @@
 	* config/os/solaris/solaris2.7/bits/os_defines.h: Define
 	__EXTENSIONS__.
 
-Sat Nov 11 20:25:49 2000  Mark P Mitchell  <mark@codesourcery.com>
+2000-11-11  Mark P Mitchell  <mark@codesourcery.com>
 
 	* include/bits/basic_file.h (__basic_file): Don't use __c_wfile_type
 	when _GLIBCPP_USE_WCHAR_T is not defined.
