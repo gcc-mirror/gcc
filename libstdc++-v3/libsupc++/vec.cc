@@ -1,6 +1,6 @@
 // New abi Support -*- C++ -*-
 
-// Copyright (C) 2000, 2001 Free Software Foundation, Inc.
+// Copyright (C) 2000, 2001, 2003 Free Software Foundation, Inc.
 //  
 // This file is part of GCC.
 //
@@ -83,7 +83,9 @@ namespace __cxxabiv1
   {
     std::size_t size = element_count * element_size + padding_size;
     char *base = static_cast <char *> (alloc (size));
-    
+    if (!base)
+      return base;
+
     if (padding_size)
       {
 	base += padding_size;
@@ -116,6 +118,8 @@ namespace __cxxabiv1
   {
     std::size_t size = element_count * element_size + padding_size;
     char *base = static_cast<char *>(alloc (size));
+    if (!base)
+      return base;
     
     if (padding_size)
       {

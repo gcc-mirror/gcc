@@ -1,3 +1,9 @@
+2003-09-10  Jeffrey D. Oldham  <oldham@codesourcery.com>
+
+	* libsupc++/vec.cc (__cxa_vec_new2): If the allocator returns
+	NULL, return NULL.  This reflects a C++ ABI change 2003 Sep 05.
+	(__cxa_vec_new3): Likewise.
+
 2003-09-10  Petur Runolfsson  <peturr02@ru.is>
 
 	* include/bits/fstream.tcc (basic_filebuf::seekoff):
