@@ -64,6 +64,8 @@ import java.util.Vector;
  */
 public abstract class Identity implements Principal, Serializable
 {
+  static final long serialVersionUID = 3609922007826600659L;
+
   private String name;
   private IdentityScope scope;
   private PublicKey publicKey;

@@ -1,3 +1,25 @@
+2002-10-04  C. Scott Ananian <cananian@lesser-magoo.lcs.mit.edu>
+	
+	* java/lang/ProtectionDomain.java (linesep): Remove field.
+	(toString): Use System.getProperty("line.separator").
+
+2002-10-04  Michael Koch  <konqueror@gmx.de>
+
+	* java/security/Identity.java: Added serialVersionUID.
+	* java/security/KeyPair.java: Added serialVersionUID.
+	* java/security/Provider.java: Added serialVersionUID.
+	* java/security/SecureRandom.java: Added serialVersionUID.
+	* java/security/SecureRandomSpi.java: Added serialVersionUID.
+	* java/security/SignedObject.java: Added serialVersionUID.
+	* java/security/cert/Certificate.java: Added serialVersionUID.
+
+2002-10-04  Mark Wielaard <mark@klomp.org>
+
+	* java/security/Security.java: Use java.home or gnu.classpath.home
+	to load providers.
+	(loadProviders): Extra dir argument.
+	(getProvider): Return null when not found.
+
 2002-10-04  Mark Wielaard  <mark@klomp.org>
 
 	* java/lang/Throwable.java: Remerge with Classpath.

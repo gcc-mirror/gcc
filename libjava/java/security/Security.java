@@ -59,8 +59,9 @@ public final class Security extends Object
 
   static
   {
-    loadProviders(System.getProperty("java.vm.name"));
-    loadProviders("classpath");
+    loadProviders(System.getProperty("java.home"),
+		  System.getProperty("java.vm.name"));
+    loadProviders(System.getProperty("gnu.classpath.home"), "classpath");
   }
 
   // This class can't be instantiated.
@@ -68,13 +69,13 @@ public final class Security extends Object
   {
   }
 
-  private static void loadProviders(String vendor)
+  private static void loadProviders(String dir, String vendor)
   {
-    if (vendor == null)
+    if (dir == null || vendor == null)
       return;
 
     String separator = System.getProperty("file.separator");
-    String secfilestr = (System.getProperty("java.home") +
+    String secfilestr = (dir +
 			 separator + "lib" +
 			 separator + "security" +
 			 separator + vendor + ".security");
@@ -263,15 +264,15 @@ public final class Security extends Object
    */
   public static Provider getProvider(String name)
   {
-    Provider p = null;
+    Provider p;
     int max = providers.size ();
     for (int i = 0; i < max; i++)
       {
 	p = (Provider) providers.elementAt(i);
 	if (p.getName() == name)
-	  break;
+	  return p;
       }
-    return p;
+    return null;
   }
 
   /**
