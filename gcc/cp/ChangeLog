@@ -1,5 +1,11 @@
 1998-06-13  Mark Mitchell  <mark@markmitchell.com>
 
+	* class.c (alter_access): Accept a BINFO explaining how to get
+	from the entity whose accessed is being altered to the type doing
+	the altering.
+	(handle_using_decl): New function containing code split out from ...
+	(finish_struct_1): Here.
+
 	* cp-tree.h (complete_type_or_else): Declare.
 	* init.c (build_new_1, build_delete): Use it.
 	* typeck.c (require_complete_type): Use complete_type, rather than

@@ -2,7 +2,7 @@ class D2;
 
 class B {
 private:
-  int a;
+  int a; // ERROR - B::a is private
 protected:
   int b;
 
@@ -13,7 +13,7 @@ class D : public B {
 public:
   using B::a;
   using B::b;
-};
+}; // ERROR - within this context
 
 class D2 : public B {
 public:
