@@ -1,3 +1,8 @@
+2000-07-17  Chandrakala Chavva   <cchavva@cygnus.com>
+
+	* loop.c (check_dbra_loop) : Return if more than one condition is 
+	present to control the loop.
+
 Mon Jul 17 08:26:35 2000  Clinton Popetz  <cpopetz@cygnus.com>
 
 	* mips.c (mips_expand_prologue): Don't calculate the last               
