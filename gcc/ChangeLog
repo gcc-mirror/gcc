@@ -1,3 +1,7 @@
+Sat Jan 17 21:16:19 1998  Jeffrey A Law  (law@cygnus.com)
+
+	* i386/x-sco5 (CC): Remove trailing whitespace.
+
 Sat Jan 17 21:09:46 1998  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
  
 	* gengenrtl.c (type_from_format): De-ANSIfy function signature.
