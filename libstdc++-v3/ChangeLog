@@ -1,3 +1,8 @@
+2003-12-16  Jerry Quinn  <jlquinn@optonline.net>
+
+	* include/bits/locale_facets.h (widen, narrow):  Uncomment the
+	intended code.
+
 2003-12-15  Jerry Quinn  <jlquinn@optonline.net>
 
         * config/os/aix/ctype_noninline.h,

@@ -373,29 +373,29 @@ namespace std
       char_type 
       widen(char __c) const
       { 
-// 	if (_M_widen_ok) return _M_widen[__c];
-// 	this->_M_widen_init();
+	if (_M_widen_ok) return _M_widen[__c];
+	this->_M_widen_init();
 	return this->do_widen(__c);
       }
 
       const char*
       widen(const char* __lo, const char* __hi, char_type* __to) const
       {
-// 	if (_M_widen_ok == 1)
-// 	  {
-// 	    memcpy(__to, __lo, __hi - __lo);
-// 	    return __hi;
-// 	  }
-// 	if (!_M_widen_ok) _M_widen_init();
+	if (_M_widen_ok == 1)
+	  {
+	    memcpy(__to, __lo, __hi - __lo);
+	    return __hi;
+	  }
+	if (!_M_widen_ok) _M_widen_init();
 	return this->do_widen(__lo, __hi, __to);
       }
 
       char 
       narrow(char_type __c, char __dfault) const
       {
-// 	if (_M_narrow[__c]) return _M_narrow[__c];
+	if (_M_narrow[__c]) return _M_narrow[__c];
 	char __t = do_narrow(__c, __dfault);
-// 	if (__t != __dfault) _M_narrow[__c] = __t;
+	if (__t != __dfault) _M_narrow[__c] = __t;
 	return __t;
       }
 
@@ -403,13 +403,13 @@ namespace std
       narrow(const char_type* __lo, const char_type* __hi,
 	      char __dfault, char *__to) const
       {
-// 	if (__builtin_expect(_M_narrow_ok==1,true))
-// 	  {
-// 	    memcpy(__to, __lo, __hi - __lo);
-// 	    return __hi;
-// 	  }
-// 	if (!_M_narrow_ok)
-// 	  _M_narrow_init();
+	if (__builtin_expect(_M_narrow_ok==1,true))
+	  {
+	    memcpy(__to, __lo, __hi - __lo);
+	    return __hi;
+	  }
+	if (!_M_narrow_ok)
+	  _M_narrow_init();
 	return this->do_narrow(__lo, __hi, __dfault, __to);
       }
 
@@ -484,8 +484,8 @@ namespace std
       void _M_narrow_init() const
       {
 	char __tmp[sizeof(_M_narrow)];
-	for (unsigned i = 0; i < sizeof(_M_narrow); ++i)
-	  __tmp[i] = i;
+	for (unsigned __i = 0; __i < sizeof(_M_narrow); ++__i)
+	  __tmp[__i] = __i;
 	do_narrow(__tmp, __tmp + sizeof(__tmp), 0, _M_narrow);
 
 	// Check if any default values were created.  Do this by
