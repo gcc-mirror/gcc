@@ -1,3 +1,8 @@
+2003-04-22  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* vsnprintf.c (vsnprintf): Don't pad string with extra nulls.
+	(main): Test that we don't write too much data.
+
 2003-04-16  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* configure.in (funcs, AC_CHECK_FUNCS): Add snprintf and
