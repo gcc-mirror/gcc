@@ -1,3 +1,10 @@
+2004-07-16  Sebastian Pop  <pop@cri.ensmp.fr>
+
+	* Makefile.in (tree-pretty-print.o): Depend on tree-chrec.h.
+	* tree-pretty-print.c: Include tree-chrec.h.
+	(dump_generic_node): Pretty print SCEV_KNOWN, SCEV_NOT_KNOWN 
+	and POLYNOMIAL_CHREC nodes.
+
 2004-07-16  Steve Ellcey  <sje@cup.hp.com>
 
 	* builtins.c (expand_builtin_stpcpy): Do not create temporary
