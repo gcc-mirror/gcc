@@ -85,7 +85,7 @@ proc g++_init { args } {
 	    if [is_remote host] {
 		set GXX_UNDER_TEST [transform c++]
 	    } else {
-		set GXX_UNDER_TEST [findfile $base_dir/../xgcc "$base_dir/../xgcc -B$base_dir/../" [transform c++]]
+		set GXX_UNDER_TEST [findfile $base_dir/../xgcc "$base_dir/../xgcc -B$base_dir/../" [findfile $base_dir/xgcc "$base_dir/xgcc -B$base_dir/" [transform c++]]]
 	    }
 	}
     }
