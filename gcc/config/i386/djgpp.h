@@ -33,6 +33,11 @@ Boston, MA 02111-1307, USA.  */
 
 #include "i386/gas.h"
 
+/* Enable alias attribute support.  */
+#ifndef SET_ASM_OP
+#define SET_ASM_OP "\t.set"
+#endif
+
 /* Search for as.exe and ld.exe in DJGPP's binary directory. */ 
 #define MD_EXEC_PREFIX "$DJDIR/bin/"
 
