@@ -926,6 +926,16 @@ for machine in $build $host $target; do
 		objc_thread_file=${enable_objcthreads-win32}
 		exeext=.exe
 		;;
+	i[[3456]]86-*-mingw32)
+		tm_file=i386/mingw32.h
+		xm_file="${xm_file} i386/xm-mingw32.h"
+		tmake_file=i386/t-cygwin32
+		extra_objs=winnt.o
+		xmake_file=i386/x-cygwin32
+		fixincludes=Makefile.in
+		objc_thread_file=${enable_objcthreads-win32}
+		exeext=.exe
+		;;
 	i[[3456]]86-*-winnt3*)
 		tm_file=i386/win-nt.h
 		out_file=i386/i386.c
