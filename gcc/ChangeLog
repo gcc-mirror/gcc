@@ -1,3 +1,11 @@
+Tue Apr  4 00:41:53 2000  Jeffrey A Law  (law@cygnus.com)
+
+	* pa/pa-64.h: New file.
+	* pa/pa64-regs.h: New file.
+	* pa/pa64-start.h: New file.
+	* pa/t-pa64: New file.
+	* pa/xm-pa64hpux.h: New file.
+
 2000-04-03  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* sparc.c (output_restore_regs): Prototype.
