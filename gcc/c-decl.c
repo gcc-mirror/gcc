@@ -6240,13 +6240,8 @@ finish_function (void)
 	}
       else
 	{
-#ifdef DEFAULT_MAIN_RETURN
-	  /* Make it so that `main' always returns success by default.  */
-	  DEFAULT_MAIN_RETURN;
-#else
 	  if (flag_isoc99)
 	    c_finish_return (integer_zero_node);
-#endif
 	}
     }
 

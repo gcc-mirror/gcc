@@ -8956,16 +8956,6 @@ have names that use @samp{.}.  If this macro is defined, these names
 are rewritten to avoid @samp{.}.
 @end defmac
 
-@defmac DEFAULT_MAIN_RETURN
-Define this macro if the target system expects every program's @code{main}
-function to return a standard ``success'' value by default (if no other
-value is explicitly returned).
-
-The definition should be a C statement (sans semicolon) to generate the
-appropriate rtl instructions.  It is used only when compiling the end of
-@code{main}.
-@end defmac
-
 @defmac INSN_SETS_ARE_DELAYED (@var{insn})
 Define this macro as a C expression that is nonzero if it is safe for the
 delay slot scheduler to place instructions in the delay slot of @var{insn},
