@@ -29,6 +29,11 @@ The Free Software Foundation is independent of Sun Microsystems, Inc.  */
 #include <sys/stat.h>
 #include <sys/wait.h>
 
+/* This is true if the user specified a `.java' file on the command
+   line.  Otherwise it is 0.  FIXME: this is temporary, until our
+   .java parser is fully working.  */
+int saw_java_source = 0;
+
 /* DOS brain-damage */
 #ifndef O_BINARY
 #define O_BINARY 0 /* MS-DOS brain-damage */
@@ -350,7 +355,6 @@ DEFUN(find_class, (classname, classname_length, jcf, do_class_file),
 	   java_entry = jcf_path_next (java_entry))
 	{
 	  int m, l;
-	  extern int saw_java_source; /* FIXME: temporary.   */
 
 	  if (jcf_path_is_zipfile (java_entry))
 	    continue;

@@ -1,5 +1,31 @@
 1998-10-22  Tom Tromey  <tromey@cygnus.com>
 
+	* config-lang.in (stagestuff): Added jcf-dump and jv-scan.
+
+Sun Oct 11 10:31:52 1998  Anthony Green  <green@cygnus.com>
+
+	* Make-lang.in (java): Depend on jcf-dump and jv-scan.
+	(JV_SCAN_SOURCES): New macro.
+	(JCF_DUMP_SOURCES): Likewise.
+	(jcf-dump$(exeext)): New target.
+	(jv-scan$(exeext)): New target.
+
+1998-10-22  Tom Tromey  <tromey@cygnus.com>
+
+	* Makefile.in (LEX): Removed.
+	(LEXFLAGS): Likewise.
+	(SET_BISON): New macro.
+	(BISON): Removed.
+	($(PARSE_C)): Use SET_BISON.  Run bison from srcdir to avoid
+	spurious diffs in parse.c.
+	($(PARSE_SCAN_C)): Likewise.
+	(PARSE_DIR): New macro.
+	(PARSE_C): Use it.
+	(PARSE_SCAN_C): Likewise.
+	(PARSE_RELDIR): New macro.
+
+	* jcf-io.c (saw_java_source): Define here, not in jcf-parse.c.
+
 	* jcf-io.c (find_class): Use saw_java_source to determine when to
 	look for `.java' file.
 	* jcf-parse.c (saw_java_source): New global.
