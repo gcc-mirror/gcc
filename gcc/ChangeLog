@@ -1,3 +1,8 @@
+2004-09-01  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	* doc/c-tree.texi: Document new operands for ARRAY_REF and
+	COMPONENT_REF.
+
 2004-09-01  Zdenek Dvorak  <rakdver@atrey.karlin.mff.cuni.cz>
 
 	* Makefile.in (rtl-profile.o, value-prof.o): Add GCC_H dependency.
