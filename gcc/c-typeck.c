@@ -960,8 +960,7 @@ default_conversion (exp)
 	return convert (unsigned_type_node, exp);
       return convert (integer_type_node, exp);
     }
-  if (flag_traditional && !flag_allow_single_precision
-      && TYPE_MAIN_VARIANT (type) == float_type_node)
+  if (flag_traditional && TYPE_MAIN_VARIANT (type) == float_type_node)
     return convert (double_type_node, exp);
   if (code == VOID_TYPE)
     {
@@ -1034,16 +1033,11 @@ default_conversion (exp)
   return exp;
 }
 
-/* Look up component name in the structure type definition.
-
-   If this component name is found indirectly within an anonymous union,
-   store in *INDIRECT the component which directly contains
-   that anonymous union.  Otherwise, set *INDIRECT to 0.  */
+/* Look up component name in the structure type definition.  */
      
 static tree
-lookup_field (type, component, indirect)
+lookup_field (type, component)
      tree type, component;
-     tree *indirect;
 {
   tree field;
 
@@ -1072,15 +1066,11 @@ lookup_field (type, component, indirect)
 	      /* Step through all anon unions in linear fashion.  */
 	      while (DECL_NAME (field_array[bot]) == NULL_TREE)
 		{
-		  tree anon, junk;
-
+		  tree anon;
 		  field = field_array[bot++];
-		  anon = lookup_field (TREE_TYPE (field), component, &junk);
+		  anon = lookup_field (TREE_TYPE (field), component);
 		  if (anon != NULL_TREE)
-		    {
-		      *indirect = field;
-		      return anon;
-		    }
+		    return anon;
 		}
 
 	      /* Entire record is only anon unions.  */
@@ -1111,13 +1101,9 @@ lookup_field (type, component, indirect)
 	{
 	  if (DECL_NAME (field) == NULL_TREE)
 	    {
-	      tree junk;
-	      tree anon = lookup_field (TREE_TYPE (field), component, &junk);
+	      tree anon = lookup_field (TREE_TYPE (field), component);
 	      if (anon != NULL_TREE)
-		{
-		  *indirect = field;
-		  return anon;
-		}
+		return anon;
 	    }
 
 	  if (DECL_NAME (field) == component)
@@ -1125,7 +1111,6 @@ lookup_field (type, component, indirect)
 	}
     }
 
-  *indirect = NULL_TREE;
   return field;
 }
 
@@ -1162,15 +1147,13 @@ build_component_ref (datum, component)
 
   if (code == RECORD_TYPE || code == UNION_TYPE)
     {
-      tree indirect = 0;
-
       if (TYPE_SIZE (type) == 0)
 	{
 	  incomplete_type_error (NULL_TREE, type);
 	  return error_mark_node;
 	}
 
-      field = lookup_field (type, component, &indirect);
+      field = lookup_field (type, component);
 
       if (!field)
 	{
@@ -1182,19 +1165,6 @@ build_component_ref (datum, component)
 	}
       if (TREE_TYPE (field) == error_mark_node)
 	return error_mark_node;
-
-      /* If FIELD was found buried within an anonymous union,
-	 make one COMPONENT_REF to get that anonymous union,
-	 then fall thru to make a second COMPONENT_REF to get FIELD.  */
-      if (indirect != 0)
-	{
-	  ref = build (COMPONENT_REF, TREE_TYPE (indirect), datum, indirect);
-	  if (TREE_READONLY (datum) || TREE_READONLY (indirect))
-	    TREE_READONLY (ref) = 1;
-	  if (TREE_THIS_VOLATILE (datum) || TREE_THIS_VOLATILE (indirect))
-	    TREE_THIS_VOLATILE (ref) = 1;
-	  datum = ref;
-	}
 
       ref = build (COMPONENT_REF, TREE_TYPE (field), datum, field);
 
@@ -1403,6 +1373,541 @@ build_array_ref (array, index)
   }
 }
 
+/* Check a printf/fprintf/sprintf/scanf/fscanf/sscanf format against PARAMS.  */
+
+#define ISDIGIT(c)	((c) >= '0' && (c) <= '9')
+
+#define T_I	&integer_type_node
+#define T_L	&long_integer_type_node
+#define T_S	&short_integer_type_node
+#define T_UI	&unsigned_type_node
+#define T_UL	&long_unsigned_type_node
+#define T_US	&short_unsigned_type_node
+#define T_F	&float_type_node
+#define T_D	&double_type_node
+#define T_LD	&long_double_type_node
+#define T_C	&char_type_node
+#define T_V	&void_type_node
+#define T_W	&wchar_type_node
+
+typedef struct
+{
+  char *format_chars;
+  int pointer_count;
+  /* Type of argument if no length modifier is used.  */
+  tree *nolen;
+  /* Type of argument if length modifier for shortening is used.
+     If NULL, then this modifier is not allowed.  */
+  tree *hlen;
+  /* Type of argument if length modifier `l' is used.
+     If NULL, then this modifier is not allowed.  */
+  tree *llen;
+  /* Type of argument if length modifier `L' is used.
+     If NULL, then this modifier is not allowed.  */
+  tree *bigllen;
+  /* List of other modifier characters allowed with these options.  */
+  char *flag_chars;
+} format_char_info;
+
+static format_char_info print_table[]
+  = {
+      { "di",		0,	T_I,	T_I,	T_L,	NULL,	"-wp0 +" },
+      { "oxX",		0,	T_UI,	T_UI,	T_UL,	NULL,	"-wp0#" },
+      { "u",		0,	T_UI,	T_UI,	T_UL,	NULL,	"-wp0" },
+      { "feEgG",	0,	T_D,	NULL,	NULL,	T_LD,	"-wp0 +#" },
+      { "c",		0,	T_I,	NULL,	T_W,	NULL,	"-w" },
+      { "C",		0,	T_W,	NULL,	NULL,	NULL,	"-w" },
+      { "s",		1,	T_C,	NULL,	T_W,	NULL,	"-wp" },
+      { "S",		1,	T_W,	NULL,	NULL,	NULL,	"-wp" },
+      { "p",		1,	T_V,	NULL,	NULL,	NULL,	"-w" },
+      { "n",		1,	T_I,	T_S,	T_L,	NULL,	"" },
+      { NULL }
+    };
+
+static format_char_info scan_table[]
+  = {
+      { "di",		1,	T_I,	T_S,	T_L,	NULL,	"*" },
+      { "ouxX",		1,	T_UI,	T_US,	T_UL,	NULL,	"*" },	
+      { "efgEG",	1,	T_F,	NULL,	T_D,	T_LD,	"*" },
+      { "sc",		1,	T_C,	NULL,	T_W,	NULL,	"*" },
+      { "[",		1,	T_C,	NULL,	NULL,	NULL,	"*" },
+      { "C",		1,	T_W,	NULL,	NULL,	NULL,	"*" },
+      { "S",		1,	T_W,	NULL,	NULL,	NULL,	"*" },
+      { "p",		2,	T_V,	NULL,	NULL,	NULL,	"*" },
+      { "n",		1,	T_I,	T_S,	T_L,	NULL,	"" },
+      { NULL }
+    };
+
+typedef struct
+{
+  tree function_ident;		/* identifier such as "printf" */
+  int is_scan;			/* TRUE if *scanf */
+  int format_num;		/* number of format argument */
+  int first_arg_num;		/* number of first arg (zero for varargs) */
+} function_info;
+
+static unsigned int function_info_entries = 0;
+static function_info *function_info_table = NULL;
+
+/* Record information for argument format checking.  FUNCTION_IDENT is
+   the identifier node for the name of the function to check (its decl
+   need not exist yet).  IS_SCAN is true for scanf-type format checking;
+   false indicates printf-style format checking.  FORMAT_NUM is the number
+   of the argument which is the format control string (starting from 1).
+   FIRST_ARG_NUM is the number of the first actual argument to check
+   against teh format string, or zero if no checking is not be done
+   (e.g. for varargs such as vfprintf).  */
+
+void
+record_format_info (function_ident, is_scan, format_num, first_arg_num)
+      tree function_ident;
+      int is_scan;
+      int format_num;
+      int first_arg_num;
+{
+  function_info *info;
+  
+  function_info_entries++;
+  if (function_info_table)
+    function_info_table
+      = (function_info *) xrealloc (function_info_table,
+				    function_info_entries * sizeof (function_info));
+  else
+    function_info_table = (function_info *) xmalloc (sizeof (function_info));
+
+  info = &function_info_table[function_info_entries - 1];
+  
+  info->function_ident = function_ident;
+  info->is_scan = is_scan;
+  info->format_num = format_num;
+  info->first_arg_num = first_arg_num;
+}
+
+/* Initialize the table of functions to perform format checking on.
+   The ANSI functions are always checked (whether <stdio.h> is
+   included or not), since it is common to call printf without
+   including <stdio.h>.  There shouldn't be a problem with this,
+   since ANSI reserves these function names whether you include the
+   header file or not.  In any case, the checking is harmless.  */
+
+void
+init_format_info_table ()
+{
+  record_format_info (get_identifier ("printf"), 0, 1, 2);
+  record_format_info (get_identifier ("fprintf"), 0, 2, 3);
+  record_format_info (get_identifier ("sprintf"), 0, 2, 3);
+  record_format_info (get_identifier ("scanf"), 1, 1, 2);
+  record_format_info (get_identifier ("fscanf"), 1, 2, 3);
+  record_format_info (get_identifier ("sscanf"), 1, 2, 3);
+  record_format_info (get_identifier ("vprintf"), 0, 1, 0);
+  record_format_info (get_identifier ("vfprintf"), 0, 2, 0);
+  record_format_info (get_identifier ("vsprintf"), 0, 2, 0);
+}
+
+static char	tfaff[] = "too few arguments for format";
+
+/* Check the argument list of a call to printf, scanf, etc.
+   INFO points to the element of function_info_table.
+   PARAMS is the list of argument values.  */
+
+static void
+check_format (info, params)
+     function_info *info;
+     tree params;
+{
+  int i;
+  int arg_num;
+  int suppressed, wide, precise;
+  int length_char;
+  int format_char;
+  int format_length;
+  tree format_tree;
+  tree cur_param;
+  tree cur_type;
+  tree wanted_type;
+  char *format_chars;
+  format_char_info *fci;
+  static char message[132];
+  char flag_chars[8];
+
+  /* Skip to format argument.  If the argument isn't available, there's
+     no work for us to do; prototype checking will catch the problem.  */
+  for (arg_num = 1; ; ++arg_num)
+    {
+      if (params == 0)
+	return;
+      if (arg_num == info->format_num)
+	break;
+      params = TREE_CHAIN (params);
+    }
+  format_tree = TREE_VALUE (params);
+  params = TREE_CHAIN (params);
+  if (format_tree == 0)
+    return;
+  /* We can only check the format if it's a string constant.  */
+  while (TREE_CODE (format_tree) == NOP_EXPR)
+    format_tree = TREE_OPERAND (format_tree, 0); /* strip coercion */
+  if (format_tree == null_pointer_node)
+    {
+      warning ("null format string");
+      return;
+    }
+  if (TREE_CODE (format_tree) != ADDR_EXPR)
+    return;
+  format_tree = TREE_OPERAND (format_tree, 0);
+  if (TREE_CODE (format_tree) != STRING_CST)
+    return;
+  format_chars = TREE_STRING_POINTER (format_tree);
+  format_length = TREE_STRING_LENGTH (format_tree);
+  if (format_length <= 1)
+    warning ("zero-length format string");
+  if (format_chars[--format_length] != 0)
+    {
+      warning ("unterminated format string");
+      return;
+    }
+  /* Skip to first argument to check.  */
+  while (arg_num + 1 < info->first_arg_num)
+    {
+      if (params == 0)
+	return;
+      params = TREE_CHAIN (params);
+      ++arg_num;
+    }
+  while (1)
+    {
+      if (*format_chars == 0)
+	{
+	  if (format_chars - TREE_STRING_POINTER (format_tree) != format_length)
+	    warning ("embedded `\\0' in format");
+	  if (info->first_arg_num != 0 && params != 0)
+	    warning ("too many arguments for format");
+	  return;
+	}
+      if (*format_chars++ != '%')
+	continue;
+      if (*format_chars == 0)
+	{
+	  warning ("spurious trailing `%%' in format");
+	  continue;
+	}
+      if (*format_chars == '%')
+	{
+	  ++format_chars;
+	  continue;
+	}
+      flag_chars[0] = 0;
+      suppressed = wide = precise = FALSE;
+      if (info->is_scan)
+	{
+	  suppressed = *format_chars == '*';
+	  if (suppressed)
+	    ++format_chars;
+	  while (ISDIGIT (*format_chars))
+	    ++format_chars;
+	}
+      else
+	{
+	  while (*format_chars != 0 && index (" +#0-", *format_chars) != 0)
+	    {
+	      if (index (flag_chars, *format_chars) != 0)
+		{
+		  sprintf (message, "repeated `%c' flag in format",
+			   *format_chars);
+		  warning (message);
+		}
+	      i = strlen (flag_chars);
+	      flag_chars[i++] = *format_chars++;
+	      flag_chars[i] = 0;
+	    }
+	  /* "If the space and + flags both appear, 
+	     the space flag will be ignored."  */
+	  if (index (flag_chars, ' ') != 0
+	      && index (flag_chars, '+') != 0)
+	    warning ("use of both ` ' and `+' flags in format");
+	  /* "If the 0 and - flags both appear,
+	     the 0 flag will be ignored."  */
+	  if (index (flag_chars, '0') != 0
+	      && index (flag_chars, '-') != 0)
+	    warning ("use of both `0' and `-' flags in format");
+	  if (*format_chars == '*')
+	    {
+	      wide = TRUE;
+	      /* "...a field width...may be indicated by an asterisk.
+		 In this case, an int argument supplies the field width..."  */
+	      ++format_chars;
+	      if (params == 0)
+		{
+		  warning (tfaff);
+		  return;
+		}
+	      if (info->first_arg_num != 0)
+		{
+		  cur_param = TREE_VALUE (params);
+		  params = TREE_CHAIN (params);
+		  ++arg_num;
+		  /* size_t is generally not valid here.
+		     It will work on most machines, because size_t and int
+		     have the same mode.  But might as well warn anyway,
+		     since it will fail on other machines.  */
+		  if (TYPE_MAIN_VARIANT (TREE_TYPE (cur_param))
+		      != integer_type_node)
+		    {
+		      sprintf (message,
+			       "field width is not type int (arg %d)",
+			       arg_num);
+		      warning (message);
+		    }
+		}
+	    }
+	  else
+	    {
+	      while (ISDIGIT (*format_chars))
+		{
+		  wide = TRUE;
+		  ++format_chars;
+		}
+	    }
+	  if (*format_chars == '.')
+	    {
+	      precise = TRUE;
+	      ++format_chars;
+	      if (*format_chars != '*' && !ISDIGIT (*format_chars))
+		warning ("`.' not followed by `*' or digit in format");
+	      /* "...a...precision...may be indicated by an asterisk.
+		 In this case, an int argument supplies the...precision."  */
+	      if (*format_chars == '*')
+		{
+		  if (info->first_arg_num != 0)
+		    {
+		      ++format_chars;
+		      if (params == 0)
+		        {
+			  warning (tfaff);
+			  return;
+			}
+		      cur_param = TREE_VALUE (params);
+		      params = TREE_CHAIN (params);
+		      ++arg_num;
+		      if (TYPE_MAIN_VARIANT (TREE_TYPE (cur_param))
+			  != integer_type_node)
+		        {
+		          sprintf (message,
+				   "field width is not type int (arg %d)",
+				   arg_num);
+		          warning (message);
+		        }
+		    }
+		}
+	      else
+		{
+		  while (ISDIGIT (*format_chars))
+		    ++format_chars;
+		}
+	    }
+	}
+      if (*format_chars == 'h' || *format_chars == 'l' || *format_chars == 'L')
+	length_char = *format_chars++;
+      else
+	length_char = 0;
+      if (suppressed && length_char != 0)
+	{
+	  sprintf (message,
+		   "use of `*' and `%c' together in format",
+		   length_char);
+	  warning (message);
+	}
+      format_char = *format_chars;
+      if (format_char == 0)
+	{
+	  warning ("conversion lacks type at end of format");
+	  continue;
+	}
+      format_chars++;
+      fci = info->is_scan ? scan_table : print_table;
+      while (1)
+	{
+	  if (fci->format_chars == 0
+	      || index (fci->format_chars, format_char) != 0)
+	    break;
+	  ++fci;
+	}
+      if (fci->format_chars == 0)
+	{
+	  if (format_char >= 040 && format_char < 0177)
+	    sprintf (message,
+		     "unknown conversion type character `%c' in format",
+		     format_char);
+	  else
+	    sprintf (message,
+		     "unknown conversion type character 0x%x in format",
+		     format_char);
+	  warning (message);
+	  continue;
+	}
+      if (wide && index (fci->flag_chars, 'w') == 0)
+	{
+	  sprintf (message, "width used with `%c' format",
+		   format_char);
+	  warning (message);
+	}
+      if (precise && index (fci->flag_chars, 'p') == 0)
+	{
+	  sprintf (message, "precision used with `%c' format",
+		   format_char);
+	  warning (message);
+	}
+      if (info->is_scan && format_char == '[')
+	{
+	  /* Skip over scan set, in case it happens to have '%' in it.  */
+	  if (*format_chars == '^')
+	    ++format_chars;
+	  /* Find closing bracket; if one is hit immediately, then
+	     it's part of the scan set rather than a terminator.  */
+	  if (*format_chars == ']')
+	    ++format_chars;
+	  while (*format_chars && *format_chars != ']')
+	    ++format_chars;
+	  if (*format_chars != ']')
+	      /* The end of the format string was reached.  */
+	      warning ("no closing `]' for `%%[' format");
+	}
+      if (suppressed)
+	{
+	  if (index (fci->flag_chars, '*') == 0)
+	    {
+	      sprintf (message,
+		       "suppression of `%c' conversion in format",
+		       format_char);
+	      warning (message);
+	    }
+	  continue;
+	}
+      for (i = 0; flag_chars[i] != 0; ++i)
+	{
+	  if (index (fci->flag_chars, flag_chars[i]) == 0)
+	    {
+	      sprintf (message, "flag `%c' used with type `%c'",
+		       flag_chars[i], format_char);
+	      warning (message);
+	    }
+	}
+      if (precise && index (flag_chars, '0') != 0
+	  && (format_char == 'd' || format_char == 'i'
+	      || format_char == 'o' || format_char == 'u'
+	      || format_char == 'x' || format_char == 'x'))
+	{
+	  sprintf (message,
+		   "precision and `0' flag not both allowed with `%c' format",
+		   format_char);
+	  warning (message);
+	}
+      switch (length_char)
+	{
+	default: wanted_type = fci->nolen ? *(fci->nolen) : 0; break;
+	case 'h': wanted_type = fci->hlen ? *(fci->hlen) : 0; break;
+	case 'l': wanted_type = fci->llen ? *(fci->llen) : 0; break;
+	case 'L': wanted_type = fci->bigllen ? *(fci->bigllen) : 0; break;
+	}
+      if (wanted_type == 0)
+	{
+	  sprintf (message,
+		   "use of `%c' length character with `%c' type character",
+		   length_char, format_char);
+	  warning (message);
+	}
+
+      /*
+       ** XXX -- should kvetch about stuff such as
+       **	{
+       **		const int	i;
+       **
+       **		scanf ("%d", &i);
+       **	}
+       */
+
+      /* Finally. . .check type of argument against desired type!  */
+      if (info->first_arg_num == 0)
+	continue;
+      if (params == 0)
+	{
+	  warning (tfaff);
+	  return;
+	}
+      cur_param = TREE_VALUE (params);
+      params = TREE_CHAIN (params);
+      ++arg_num;
+      cur_type = TREE_TYPE (cur_param);
+
+      /* Check the types of any additional pointer arguments
+	 that precede the "real" argument.  */
+      for (i = 0; i < fci->pointer_count; ++i)
+	{
+	  if (TREE_CODE (cur_type) == POINTER_TYPE)
+	    {
+	      cur_type = TREE_TYPE (cur_type);
+	      continue;
+	    }
+	  sprintf (message,
+		   "format argument is not a %s (arg %d)",
+		   ((fci->pointer_count == 1) ? "pointer" : "pointer to a pointer"),
+		   arg_num);
+	  warning (message);
+	  break;
+	}
+
+      /* Check the type of the "real" argument, if there's a type we want.  */
+      if (i == fci->pointer_count && wanted_type != 0
+	  && wanted_type != TYPE_MAIN_VARIANT (cur_type)
+	  /* If we want `void *', allow any pointer type.
+	     (Anything else would already have got a warning.)  */
+	  && ! (wanted_type == void_type_node
+		&& fci->pointer_count > 0)
+	  /* Don't warn about differences merely in signedness.  */
+	  && !(TREE_CODE (wanted_type) == INTEGER_TYPE
+	       && TREE_CODE (cur_type) == INTEGER_TYPE
+	       && (wanted_type == (TREE_UNSIGNED (wanted_type)
+				   ? unsigned_type : signed_type) (cur_type))))
+	{
+	  register char *this;
+	  register char *that;
+  
+	  this = IDENTIFIER_POINTER (DECL_NAME (TYPE_NAME (wanted_type)));
+	  that = 0;
+	  if (TREE_CODE (cur_type) != ERROR_MARK
+	      && TYPE_NAME (cur_type) != 0
+	      && TREE_CODE (cur_type) != INTEGER_TYPE
+	      && !(TREE_CODE (cur_type) == POINTER_TYPE
+		   && TREE_CODE (TREE_TYPE (cur_type)) == INTEGER_TYPE))
+	    {
+	      if (TREE_CODE (TYPE_NAME (cur_type)) == TYPE_DECL
+		  && DECL_NAME (TYPE_NAME (cur_type)) != 0)
+		that = IDENTIFIER_POINTER (DECL_NAME (TYPE_NAME (cur_type)));
+	      else
+		that = IDENTIFIER_POINTER (TYPE_NAME (cur_type));
+	    }
+
+	  /* A nameless type can't possibly match what the format wants.
+	     So there will be a warning for it.
+	     Make up a string to describe vaguely what it is.  */
+	  if (that == 0)
+	    {
+	      if (TREE_CODE (cur_type) == POINTER_TYPE)
+		that = "pointer";
+	      else
+		that = "different type";
+	    }
+
+	  if (strcmp (this, that) != 0)
+	    {
+	      sprintf (message, "%s format, %s arg (arg %d)",
+			this, that, arg_num);
+	      warning (message);
+	    }
+	}
+    }
+}
+
 /* Build a function call to function FUNCTION with parameters PARAMS.
    PARAMS is a list--a chain of TREE_LIST nodes--in which the
    TREE_VALUE of each node is a parameter-expression.
@@ -1414,7 +1919,7 @@ build_function_call (function, params)
 {
   register tree fntype, fundecl;
   register tree coerced_params;
-  tree name = NULL_TREE, assembler_name = NULL_TREE;
+  tree name = NULL_TREE;
 
   /* Strip NON_LVALUE_EXPRs, etc., since we aren't using as an lvalue.  */
   STRIP_TYPE_NOPS (function);
@@ -1423,8 +1928,6 @@ build_function_call (function, params)
   if (TREE_CODE (function) == FUNCTION_DECL)
     {
       name = DECL_NAME (function);
-      assembler_name = DECL_ASSEMBLER_NAME (function);
-
       /* Differs from default_conversion by not setting TREE_ADDRESSABLE
 	 (because calling an inline function does not mean the function
 	 needs to be separately compiled).  */
@@ -1459,9 +1962,21 @@ build_function_call (function, params)
     = convert_arguments (TYPE_ARG_TYPES (fntype), params, name, fundecl);
 
   /* Check for errors in format strings.  */
+  if (warn_format && name != 0)
+    {
+      unsigned int i;
 
-  if (warn_format && (name || assembler_name))
-    check_function_format (name, assembler_name, coerced_params);
+      /* See if this function is a format function.  */
+      for (i = 0; i < function_info_entries; i++)
+	if (function_info_table[i].function_ident == name)
+	  {
+	    register char *message;
+
+	    /* If so, check it.  */
+	    check_format (&function_info_table[i], coerced_params);
+	    break;
+	  }
+    }
 
   /* Recognize certain built-in functions so we can make tree-codes
      other than CALL_EXPR.  We do this when it enables fold-const.c
@@ -3472,8 +3987,8 @@ build_c_cast (type, expr)
 	    }
 	  else
 	    name = "";
-	  return digest_init (type, build (CONSTRUCTOR, type, NULL_TREE,
-					   build_tree_list (field, value)),
+	  return digest_init (type, build_nt (CONSTRUCTOR, NULL_TREE,
+					      build_tree_list (field, value)),
 			      0, 0);
 	}
       error ("cast to union type from type not present in union");
@@ -3597,13 +4112,11 @@ build_modify_expr (lhs, modifycode, rhs)
       /* Handle (a, b) used as an "lvalue".  */
     case COMPOUND_EXPR:
       pedantic_lvalue_warning (COMPOUND_EXPR);
-      newrhs = build_modify_expr (TREE_OPERAND (lhs, 1),
-				  modifycode, rhs);
-      if (TREE_CODE (newrhs) == ERROR_MARK)
-	return error_mark_node;
       return build (COMPOUND_EXPR, lhstype,
-		    TREE_OPERAND (lhs, 0), newrhs);
- 
+		    TREE_OPERAND (lhs, 0),
+		    build_modify_expr (TREE_OPERAND (lhs, 1),
+				       modifycode, rhs));
+
       /* Handle (a ? b : c) used as an "lvalue".  */
     case COND_EXPR:
       pedantic_lvalue_warning (COND_EXPR);
@@ -3618,8 +4131,6 @@ build_modify_expr (lhs, modifycode, rhs)
 						       modifycode, rhs),
 				    build_modify_expr (TREE_OPERAND (lhs, 2),
 						       modifycode, rhs));
-	if (TREE_CODE (cond) == ERROR_MARK)
-	  return cond;
 	/* Make sure the code to compute the rhs comes out
 	   before the split.  */
 	return build (COMPOUND_EXPR, TREE_TYPE (lhs),
@@ -3662,8 +4173,6 @@ build_modify_expr (lhs, modifycode, rhs)
 	result = build_modify_expr (inner_lhs, NOP_EXPR,
 				    convert (TREE_TYPE (inner_lhs),
 					     convert (lhstype, newrhs)));
-	if (TREE_CODE (result) == ERROR_MARK)
-	  return result;
 	pedantic_lvalue_warning (CONVERT_EXPR);
 	return convert (TREE_TYPE (lhs), result);
       }
@@ -4271,12 +4780,9 @@ push_string (string)
 /* Push a member name on the stack.  Printed as '.' STRING.  */
 
 static void
-push_member_name (decl)
-     tree decl;
-     
+push_member_name (string)
+     char *string;
 {
-  char *string
-    = DECL_NAME (decl) ? IDENTIFIER_POINTER (DECL_NAME (decl)) : "<anonymous>";
   PUSH_SPELLING (SPELLING_MEMBER, string, u.s);
 }
 
@@ -5013,7 +5519,7 @@ push_init_level (implicit)
       else
 	{
 	  constructor_type = TREE_TYPE (constructor_fields);
-	  push_member_name (constructor_fields);
+	  push_member_name (IDENTIFIER_POINTER (DECL_NAME (constructor_fields)));
 	}
     }
   else if (TREE_CODE (constructor_type) == ARRAY_TYPE)
@@ -5173,28 +5679,6 @@ pop_init_level (implicit)
     }
   else if (constructor_type == 0)
     ;
-  else if (TREE_CODE (constructor_type) != RECORD_TYPE
-	   && TREE_CODE (constructor_type) != UNION_TYPE
-	   && TREE_CODE (constructor_type) != ARRAY_TYPE
-	   && ! constructor_incremental)
-    {
-      /* A nonincremental scalar initializer--just return
-	 the element, after verifying there is just one.  */
-      if (constructor_elements == 0)
-	{
-	  error_init ("empty scalar initializer%s",
-		      " for `%s'", NULL);
-	  constructor = error_mark_node;
-	}
-      else if (TREE_CHAIN (constructor_elements) != 0)
-	{
-	  error_init ("extra elements in scalar initializer%s",
-		      " for `%s'", NULL);
-	  constructor = TREE_VALUE (constructor_elements);
-	}
-      else
-	constructor = TREE_VALUE (constructor_elements);
-    }
   else if (! constructor_incremental)
     {
       if (constructor_erroneous)
@@ -5209,7 +5693,6 @@ pop_init_level (implicit)
 	    TREE_CONSTANT (constructor) = 1;
 	  if (constructor_constant && constructor_simple)
 	    TREE_STATIC (constructor) = 1;
-
 	  resume_momentary (momentary);
 	}
     }
@@ -5309,20 +5792,6 @@ void
 set_init_index (first, last)
      tree first, last;
 {
-  while ((TREE_CODE (first) == NOP_EXPR
-	  || TREE_CODE (first) == CONVERT_EXPR
-	  || TREE_CODE (first) == NON_LVALUE_EXPR)
-	 && (TYPE_MODE (TREE_TYPE (first))
-	     == TYPE_MODE (TREE_TYPE (TREE_OPERAND (first, 0)))))
-    (first) = TREE_OPERAND (first, 0);
-  if (last)
-    while ((TREE_CODE (last) == NOP_EXPR
-	    || TREE_CODE (last) == CONVERT_EXPR
-	    || TREE_CODE (last) == NON_LVALUE_EXPR)
-	   && (TYPE_MODE (TREE_TYPE (last))
-	       == TYPE_MODE (TREE_TYPE (TREE_OPERAND (last, 0)))))
-      (last) = TREE_OPERAND (last, 0);
-
   if (TREE_CODE (first) != INTEGER_CST)
     error_init ("nonconstant array index in initializer%s", " for `%s'", NULL);
   else if (last != 0 && TREE_CODE (last) != INTEGER_CST)
@@ -5491,7 +5960,7 @@ output_init_element (value, type, field, pending)
 	{
 	  if (! constructor_incremental)
 	    {
-	      if (field && TREE_CODE (field) == INTEGER_CST)
+	      if (TREE_CODE (field) == INTEGER_CST)
 		field = copy_node (field);
 	      constructor_elements
 		= tree_cons (field, digest_init (type, value, 0, 0),
@@ -5789,7 +6258,7 @@ process_init_element (value)
 
 	  if (value)
 	    {
-	      push_member_name (constructor_fields);
+	      push_member_name (IDENTIFIER_POINTER (DECL_NAME (constructor_fields)));
 	      output_init_element (value, fieldtype, constructor_fields, 1);
 	      RESTORE_SPELLING_DEPTH (constructor_depth);
 	    }
@@ -5846,7 +6315,7 @@ process_init_element (value)
 
 	  if (value)
 	    {
-	      push_member_name (constructor_fields);
+	      push_member_name (IDENTIFIER_POINTER (DECL_NAME (constructor_fields)));
 	      output_init_element (value, fieldtype, constructor_fields, 1);
 	      RESTORE_SPELLING_DEPTH (constructor_depth);
 	    }
