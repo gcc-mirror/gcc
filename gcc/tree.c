@@ -1556,7 +1556,6 @@ save_expr (expr)
   while (TREE_CODE (t) == NON_LVALUE_EXPR)
     t = TREE_OPERAND (t, 0);
 
-
   /* If we have simple operations applied to a SAVE_EXPR or to a SAVE_EXPR and
      a constant, it will be more efficient to not make another SAVE_EXPR since
      it will allow better simplification and GCSE will be able to merge the
