@@ -102,6 +102,23 @@ expl(long double x)
 #endif
 
 
+#ifndef HAVE_SQRTF
+float
+sqrtf(float x)
+{
+  return (float) sqrt(x);
+}
+#endif
+
+#ifndef HAVE_SQRTL
+long double
+sqrtl(long double x)
+{
+  return  sqrt((double) x);
+}
+#endif
+
+
 /* Compute the hypothenuse of a right triangle with side x and y.  */
 #ifndef HAVE_HYPOTF
 float
@@ -222,23 +239,6 @@ long double
 sinhl(long double x)
 {
   return sinh((double) x);
-}
-#endif
-
-
-#ifndef HAVE_SQRTF
-float
-sqrtf(float x)
-{
-  return (float) sqrt(x);
-}
-#endif
-
-#ifndef HAVE_SQRTL
-long double
-sqrtl(long double x)
-{
-  return  sqrt((double) x);
 }
 #endif
 
