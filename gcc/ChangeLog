@@ -1,5 +1,13 @@
 2002-05-03  Jakub Jelinek  <jakub@redhat.com>
 
+	PR target/6542
+	* config/sparc/sparc.h (leaf_reg_remap): Remove const.
+	(CONDITIONAL_REGISTER_USAGE): For TARGET_FLAT make
+	fill leaf_reg_remap with identity.
+	* config/sparc/sparc.c (leaf_reg_remap): Remove const.
+
+2002-05-03  Jakub Jelinek  <jakub@redhat.com>
+
 	PR target/6522
 	* dwarf2out.c (simple_decl_align_in_bits): Renamed to...
 	(simple_field_decl_align_in_bits): this.  Apply

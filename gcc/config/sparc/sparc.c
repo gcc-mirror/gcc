@@ -85,7 +85,7 @@ bool sparc_emitting_epilogue;
 /* Vector to say how input registers are mapped to output registers.
    HARD_FRAME_POINTER_REGNUM cannot be remapped by this function to
    eliminate it.  You must use -fomit-frame-pointer to get that.  */
-const char leaf_reg_remap[] =
+char leaf_reg_remap[] =
 { 0, 1, 2, 3, 4, 5, 6, 7,
   -1, -1, -1, -1, -1, -1, 14, -1,
   -1, -1, -1, -1, -1, -1, -1, -1,
