@@ -3133,7 +3133,6 @@ ia64_print_operand_address (stream, address)
 }
 
 /* Print an operand to a assembler instruction.
-   B    Work arounds for hardware bugs.
    C	Swap and print a comparison operator.
    D	Print an FP comparison operator.
    E    Print 32 - constant, for SImode shifts as extract.
@@ -3166,11 +3165,6 @@ ia64_print_operand (file, x, code)
     case 0:
       /* Handled below.  */
       break;
-
-    case 'B':
-      if (TARGET_A_STEP)
-	fputs (" ;; nop 0 ;; nop 0 ;;", file);
-      return;
 
     case 'C':
       {
@@ -4684,7 +4678,7 @@ fixup_errata ()
 	  group_idx = (group_idx + 1) % 3;
 	  memset (last_group + group_idx, 0, sizeof last_group[group_idx]);
 	}
-      if ((TARGET_B_STEP || TARGET_A_STEP) && INSN_P (insn))
+      if (TARGET_B_STEP && INSN_P (insn))
 	errata_emit_nops (insn);
     }
 }
