@@ -1437,6 +1437,20 @@ finish_id_expr (expr)
   return expr;
 }
 
+/* Return the declaration for the function-name variable indicated by
+   ID.  */
+
+tree
+finish_fname (tree id)
+{
+  tree decl;
+  
+  decl = fname_decl (C_RID_CODE (id), id);
+  if (processing_template_decl)
+    decl = build_min_nt (LOOKUP_EXPR, DECL_NAME (decl));
+  return decl;
+}
+
 static tree current_type_lookups;
 
 /* Perform deferred access control for types used in the type of a
@@ -2025,9 +2039,7 @@ check_multiple_declarators ()
      We don't just use PROCESSING_TEMPLATE_DECL for the first
      condition since that would disallow the perfectly legal code, 
      like `template <class T> struct S { int i, j; };'.  */
-  tree scope = current_scope ();
-
-  if (scope && TREE_CODE (scope) == FUNCTION_DECL)
+  if (at_function_scope_p ())
     /* It's OK to write `template <class T> void f() { int i, j;}'.  */
     return;
      

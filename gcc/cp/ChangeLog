@@ -1,3 +1,20 @@
+2002-06-24  Mark Mitchell  <mark@codesourcery.com>
+
+	* cp-tree.h (SCALAR_TYPE_P): New macro.
+	(check_for_out_of_scope_variable): New function.
+	(at_class_scope_p): Likewise.
+	(finish_fname): Likewise.
+	* class.c (finish_struct): Use at_function_scope_p.
+	* decl.c (check_for_out_of_scope_variable): New function, split
+	out from do_identifier.
+	(finish_enum): Use at_function_scope_p.
+	* lex.c (do_identifier): Use check_for_out_of_scope_variable.
+	* parse.y (VAR_FUNC_NAME): Give it <ttype>.  Use finish_fname.
+	(primary): Use at_function_scope_p.
+	* search.c (at_class_scope_p): New function.
+	* semantics.c (finish_fname): Likewise.
+	(check_multiple_declarators): Use at_function_scope_p.
+	
 2002-06-23  Mark Mitchell  <mark@codesourcery.com>
 
 	* parse.y (parse_scoped_id): New function.

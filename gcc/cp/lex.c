@@ -1208,45 +1208,8 @@ do_identifier (token, parsing, args)
 	}
     }
 
-  if (TREE_CODE (id) == VAR_DECL && DECL_DEAD_FOR_LOCAL (id))
-    {
-      tree shadowed = DECL_SHADOWED_FOR_VAR (id);
-      while (shadowed != NULL_TREE && TREE_CODE (shadowed) == VAR_DECL
-	     && DECL_DEAD_FOR_LOCAL (shadowed))
-	shadowed = DECL_SHADOWED_FOR_VAR (shadowed);
-      if (!shadowed)
-	shadowed = IDENTIFIER_NAMESPACE_VALUE (DECL_NAME (id));
-      if (shadowed)
-	{
-	  if (!DECL_ERROR_REPORTED (id))
-	    {
-	      warning ("name lookup of `%s' changed",
-		       IDENTIFIER_POINTER (token));
-	      cp_warning_at ("  matches this `%D' under ISO standard rules",
-			     shadowed);
-	      cp_warning_at ("  matches this `%D' under old rules", id);
-	      DECL_ERROR_REPORTED (id) = 1;
-	    }
-	  id = shadowed;
-	}
-      else if (!DECL_ERROR_REPORTED (id))
-	{
-	  DECL_ERROR_REPORTED (id) = 1;
-	  if (TYPE_HAS_NONTRIVIAL_DESTRUCTOR (TREE_TYPE (id)))
-	    {
-	      error ("name lookup of `%s' changed for new ISO `for' scoping",
-		     IDENTIFIER_POINTER (token));
-	      cp_error_at ("  cannot use obsolete binding at `%D' because it has a destructor", id);
-	      id = error_mark_node;
-	    }
-	  else
-	    {
-	      pedwarn ("name lookup of `%s' changed for new ISO `for' scoping",
-		       IDENTIFIER_POINTER (token));
-	      cp_pedwarn_at ("  using obsolete binding at `%D'", id);
-	    }
-	}
-    }
+  id = check_for_out_of_scope_variable (id);
+
   /* TREE_USED is set in `hack_identifier'.  */
   if (TREE_CODE (id) == CONST_DECL)
     {
