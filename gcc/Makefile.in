@@ -103,7 +103,6 @@ LEX = `if [ -f $(objdir)/../flex/flex ] ; then echo $(objdir)/../flex/flex ; els
 LEXFLAGS =
 AR = ar
 AR_FLAGS = rc
-LN = @symbolic_link@
 DLLTOOL = dlltool
 SHELL = /bin/sh
 # on sysV, define this as cp.
