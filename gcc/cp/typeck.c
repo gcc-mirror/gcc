@@ -57,6 +57,7 @@ static void casts_away_constness_r (tree *, tree *);
 static bool casts_away_constness (tree, tree);
 static void maybe_warn_about_returning_address_of_local (tree);
 static tree lookup_destructor (tree, tree, tree);
+static tree convert_arguments (tree, tree, tree, int);
 
 /* Return the target type of TYPE, which means return T for:
    T*, T&, T[], T (...), and otherwise, just T.  */
@@ -174,7 +175,7 @@ type_unknown_p (tree exp)
    As an optimization, free the space we allocate if the parameter
    lists are already common.  */
 
-tree
+static tree
 commonparms (tree p1, tree p2)
 {
   tree oldargs = p1, newargs, n;
@@ -2325,7 +2326,7 @@ get_member_function_from_ptrfunc (tree *instance_ptrptr, tree function)
 	function = save_expr (function);
 
       /* Start by extracting all the information from the PMF itself.  */
-      e3 = PFN_FROM_PTRMEMFUNC (function);
+      e3 = pfn_from_ptrmemfunc (function);
       delta = build_ptrmemfunc_access_expr (function, delta_identifier);
       idx = build1 (NOP_EXPR, vtable_index_type, e3);
       switch (TARGET_PTRMEMFUNC_VBIT_LOCATION)
@@ -2493,7 +2494,7 @@ build_function_call (tree function, tree params)
    In C++, unspecified trailing parameters can be filled in with their
    default arguments, if such were specified.  Do so here.  */
 
-tree
+static tree
 convert_arguments (tree typelist, tree values, tree fndecl, int flags)
 {
   tree typetail, valtail;

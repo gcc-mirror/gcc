@@ -2535,8 +2535,6 @@ struct lang_decl GTY(())
       }									\
     TYPE_LANG_SPECIFIC (NODE)->u.ptrmem.record = (VALUE);		\
   } while (0)
-/* Returns the pfn field from a TYPE_PTRMEMFUNC_P.  */
-#define PFN_FROM_PTRMEMFUNC(NODE) pfn_from_ptrmemfunc ((NODE))
 
 /* For a pointer-to-member type of the form `T X::*', this is `X'.
    For a type like `void (X::*)() const', this type is `X', not `const
@@ -4267,7 +4265,6 @@ extern tree complete_type			(tree);
 extern tree complete_type_or_diagnostic         (tree, tree, int);
 #define complete_type_or_else(T,V) (complete_type_or_diagnostic ((T), (V), 0))
 extern int type_unknown_p			(tree);
-extern tree commonparms				(tree, tree);
 extern tree original_type			(tree);
 extern bool comp_except_specs			(tree, tree, bool);
 extern bool comptypes				(tree, tree, int);
@@ -4286,7 +4283,6 @@ extern tree build_x_indirect_ref		(tree, const char *);
 extern tree build_indirect_ref			(tree, const char *);
 extern tree build_array_ref			(tree, tree);
 extern tree get_member_function_from_ptrfunc	(tree *, tree);
-extern tree convert_arguments			(tree, tree, tree, int);
 extern tree build_x_binary_op			(enum tree_code, tree, tree,
 						 bool *);
 extern tree build_x_unary_op			(enum tree_code, tree);

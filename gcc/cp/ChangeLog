@@ -1,3 +1,12 @@
+2005-02-02  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
+
+	* cp-tree.h (commonparms): Remove prototype.
+	(convert_arguments): Likewise.
+	(PFN_FROM_PTRMEMFUNC): Remove.
+	* typeck.c (commonparms): Make static.
+	(convert_arguments): Add prototype. Make static.
+	(PFN_FROM_PTRMEMFUNC): Replace by pfn_from_ptrmemfunc.
+
 2005-01-31  Mark Mitchell  <mark@codesourcery.com>
 
 	* parser.c (cp_parser_primary_expression): Don't complain about
