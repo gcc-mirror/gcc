@@ -770,6 +770,38 @@ do {									\
   ASM_OUTPUT_ALIGNED_LOCAL (FILE, NAME, SIZE, ALIGN);			\
 } while (0)
 
+/* This is how to output code to push a register on the stack.
+   It need not be very fast code.
+
+   On the rs6000, we must keep the backchain up to date.  In order
+   to simplify things, always allocate 16 bytes for a push (System V
+   wants to keep stack aligned to a 16 byte boundary).  */
+
+#define	ASM_OUTPUT_REG_PUSH(FILE, REGNO)				\
+do {									\
+  if (DEFAULT_ABI == ABI_V4)						\
+    asm_fprintf (FILE,							\
+		 (TARGET_32BIT						\
+		  ? "\t{stu|stwu} %s,-16(%s)\n\t{st|stw} %s,12(%s)\n"	\
+		  : "\tstdu %s,-32(%s)\n\tstd %s,24(%s)\n"),		\
+		 reg_names[1], reg_names[1], reg_names[REGNO],		\
+		 reg_names[1]);						\
+} while (0)
+
+/* This is how to output an insn to pop a register from the stack.
+   It need not be very fast code.  */
+
+#define	ASM_OUTPUT_REG_POP(FILE, REGNO)					\
+do {									\
+  if (DEFAULT_ABI == ABI_V4)						\
+    asm_fprintf (FILE,							\
+		 (TARGET_32BIT						\
+		  ? "\t{l|lwz} %s,12(%s)\n\t{ai|addic} %s,%s,16\n"	\
+		  : "\tld %s,24(%s)\n\t{ai|addic} %s,%s,32\n"),		\
+		 reg_names[REGNO], reg_names[1], reg_names[1],		\
+		 reg_names[1]);						\
+} while (0)
+
 /* Switch  Recognition by gcc.c.  Add -G xx support.  */
 
 /* Override svr4.h definition.  */

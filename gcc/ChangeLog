@@ -7,6 +7,18 @@
 	addze and similar (plus (comparison r1 r2) r3) insns.  Add
 	missing scratch reg in one case.  Formatting fixes.
 
+	2002-07-18  Alan Modra  <amodra@bigpond.net.au>
+	PR other/7114, target/5967
+	* config/rs6000/rs6000.c (first_reg_to_save): Remove bogus
+	adjustments to first_reg for profiling case.
+	(output_function_profiler): Correct lr save slot for ABI_AIX_NODESC.
+	Disable profiling for 64 bit code on both ABI_V4 and ABI_AIX_NODESC.
+	Save static chain reg to sp + 12 on ABI_AIX_NODESC.
+	* config/rs6000/sysv4.h (ASM_OUTPUT_REG_PUSH): Define.
+	(ASM_OUTPUT_REG_POP): Define.
+	* config/rs6000/linux64.h (ASM_OUTPUT_REG_PUSH): Undef.
+	(ASM_OUTPUT_REG_POP): Undef.
+
 2002-09-13  Alan Modra  <amodra@bigpond.net.au>
 
 	* config/rs6000/rs6000.c (rs6000_emit_load_toc_table): Remove "if"
