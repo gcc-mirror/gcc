@@ -599,10 +599,10 @@ do {									\
    in the wrong place.
    If we wanted to implement this exactly, we'd need a STRUCT_VALUE of 0,
    an extra field in CUMULATIVE_ARGS, initialize it in INIT_CUMULATIVE_ARGS,
-   and hack FUNCTION_VALUE / FUNCTION_ARG_ADVANCE to look directly at
-   DECL_RESULT of the current function in conjunction with CUM to determine
-   if the argument in question it is a struct value pointer, and if it is,
-   pass it in memory.  */
+   and hack FUNCTION_ARG (actually PASS_IN_REG_P) / FUNCTION_ARG_ADVANCE
+   to look directly at DECL_RESULT of the current function in conjunction
+   with CUM to determine if the argument in question it is a struct value
+   pointer, and if it is, pass it in memory.  */
 #define STRUCT_VALUE \
   (TARGET_HITACHI \
    ? gen_rtx_MEM (Pmode, arg_pointer_rtx) \
