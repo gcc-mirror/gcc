@@ -1,3 +1,9 @@
+2003-06-05  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
+
+	PR middle-end/9986
+	* pa.c (pa_init_builtins): Also set implicit_built_in_decls for
+	BUILT_IN_FPUTC_UNLOCKED to NULL_TREE.
+
 Thu Jun  5 18:32:46 CEST 2003  Jan Hubicka  <jh@suse.cz>
 
 	* install.tex: Document profiledbootstrap.
