@@ -1,3 +1,29 @@
+Fri Jul 17 14:18:14 1998  Richard Henderson  <rth@cygnus.com>
+
+	* loop.h (struct induction): Add no_const_addval.
+	* loop.c (the_movables, reg_address_cost): New variables.
+	(init_loop): Init reg_address_cost.
+	(loop_optimize): Call end_alias_analysis.
+	(scan_loop): Init the_movables.
+	(record_giv): Init induction->no_const_addval.
+	(basic_induction_var) [PLUS]: Use rtx_equal_p instead of ==.
+	[REG]: Rearrange loop search test to catch more cases.
+	(general_induction_var): Return success not benefit; take an extra
+	argument for that.  Change all callers.
+	(simplify_giv_expr) [PLUS]: Always combine invariants.  Use sge_plus.
+	[MULT]: Use rtx_equal_p instead of ==.  Combine simple invariants.
+	[default]: Search the_movables for additional combinations.
+	(sge_plus_constant, sge_plus): New functions.
+	(express_from_1): New function.
+	(express_from): Always define.  Rewrite using express_from_1.
+	(combine_givs_p): Handle more cases.  Ignore address cost.
+	(cmp_combine_givs_stats): New function.
+	(combine_givs_used_once, combine_givs_benefit_from): New functions.
+	(combine_givs): Rewrite to do best-fit combination.
+
+	* fold-const.c (operand_equal_p): Handle RTL_EXPR.
+	(fold): Do a complete (A*C)+(B*C) association check.
+
 Fri Jul 17 11:21:55 1998  Jim Wilson  <wilson@cygnus.com>
 
 	* function.c (fixup_var_refs_insns): Handle CLOBBER of a CONCAT.
