@@ -1595,8 +1595,6 @@ _Jv_JNI_UnregisterNatives (JNIEnv *, jclass)
 
 
 
-#ifdef INTERPRETER
-
 // Add a character to the buffer, encoding properly.
 static void
 add_char (char *buf, jchar c, int *here)
@@ -1622,8 +1620,8 @@ add_char (char *buf, jchar c, int *here)
   else if (c == '/' || c == '.')
     buf[(*here)++] = '_';
   else if ((c >= '0' && c <= '9')
-      || (c >= 'a' && c <= 'z')
-      || (c >= 'A' && c <= 'Z'))
+	   || (c >= 'a' && c <= 'z')
+	   || (c >= 'A' && c <= 'Z'))
     buf[(*here)++] = (char) c;
   else
     {
@@ -1633,7 +1631,7 @@ add_char (char *buf, jchar c, int *here)
       for (int i = 0; i < 4; ++i)
 	{
 	  int val = c & 0x0f;
-	  buf[(*here) + 4 - i] = (val > 10) ? ('a' + val - 10) : ('0' + val);
+	  buf[(*here) + 3 - i] = (val > 10) ? ('a' + val - 10) : ('0' + val);
 	  c >>= 4;
 	}
       *here += 4;
@@ -1752,6 +1750,8 @@ _Jv_LookupJNIMethod (jclass klass, _Jv_Utf8Const *name,
 
   return function;
 }
+
+#ifdef INTERPRETER
 
 // This function is the stub which is used to turn an ordinary (CNI)
 // method call into a JNI call.

@@ -1,3 +1,11 @@
+2001-03-30  Tom Tromey  <tromey@redhat.com>
+
+	* jni.cc (add_char): Correctly encode non-ascii characters.
+	(add_char): Define even when INTERPRETER not defined.
+	(mangled_name): Likewise.
+	(_Jv_GetJNIEnvNewFrame): Likewise.
+	(_Jv_LookupJNIMethod): Likewise.
+
 2001-03-23  Kevin B Hendricks  <khendricks@ivey.uwo.ca>
 
 	* configure.host: Enable interpreter for PPC.
