@@ -1207,15 +1207,15 @@ _Jv_InterpMethod::run (void *retp, ffi_raw *args)
 	    switch (rtype)
 	      {
 	      case FFI_TYPE_SINT8:
-		PUSHI (rvalue.byte_value);
+		PUSHI ((jbyte)(rvalue.int_value & 0xff));
 		break;
 
 	      case FFI_TYPE_SINT16:
-		PUSHI (rvalue.short_value);
+		PUSHI ((jshort)(rvalue.int_value & 0xffff));
 		break;
 
 	      case FFI_TYPE_UINT16:
-		PUSHI (rvalue.char_value);
+		PUSHI (rvalue.int_value & 0xffff);
 		break;
 
 	      case FFI_TYPE_FLOAT:
