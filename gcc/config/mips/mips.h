@@ -1113,7 +1113,7 @@ do {                                                  \
 #define FUNCTION_BOUNDARY 32
 
 /* Alignment of field after `int : 0' in a structure.  */
-#define EMPTY_FIELD_BOUNDARY (TARGET_LONG64 ? 64 : 32)
+#define EMPTY_FIELD_BOUNDARY 32
 
 /* Every structure's size must be a multiple of this.  */
 /* 8 is observed right on a DECstation and on riscos 4.02.  */
