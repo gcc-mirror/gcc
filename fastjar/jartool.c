@@ -1,6 +1,6 @@
 /*
   jartool.c - main functions for fastjar utility
-  Copyright (C) 1999  Bryan Burns
+  Copyright (C) 1999, 2000  Bryan Burns
   
   This program is free software; you can redistribute it and/or
   modify it under the terms of the GNU General Public License
@@ -17,9 +17,14 @@
   Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 */
 
-/* $Id: jartool.c,v 1.5 2000/08/24 15:01:27 cory Exp $
+/* $Id: jartool.c,v 1.1 2000/12/09 03:08:23 apbianco Exp $
 
    $Log: jartool.c,v $
+   Revision 1.1  2000/12/09 03:08:23  apbianco
+   2000-12-08  Alexandre Petit-Bianco  <apbianco@cygnus.com>
+
+           * fastjar: Imported.
+
    Revision 1.5  2000/08/24 15:01:27  cory
    Made certain that fastjar opened the jar file before trying to update it
    with the -u option.
@@ -164,7 +169,7 @@
 #endif
 
 static char version_string[] = VERSION;
-static char rcsid[] = "$Id: jartool.c,v 1.5 2000/08/24 15:01:27 cory Exp $";
+static char rcsid[] = "$Id: jartool.c,v 1.1 2000/12/09 03:08:23 apbianco Exp $";
 
 extern int errno;
 
@@ -1266,7 +1271,7 @@ int extract_jar(int fd, char **files, int file_num){
     /* OK, there is some directory information in the file.  Nothing to do
        but ensure the directory(s) exist, and create them if they don't.
        What a pain! */
-    if(index(filename, '/') != NULL && handle){
+    if(strchr(filename, '/') != NULL && handle){
       /* Loop through all the directories in the path, (everything w/ a '/') */
       ub1 *start = filename;
       char *tmp_buff;
@@ -1275,7 +1280,7 @@ int extract_jar(int fd, char **files, int file_num){
       tmp_buff = malloc(sizeof(char) * strlen(filename));
 
       for(;;){
-        ub1 *idx = index(start, '/');
+        ub1 *idx = strchr(start, '/');
 
         if(idx == NULL)
           break;
