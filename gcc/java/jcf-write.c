@@ -347,7 +347,7 @@ struct localvar_info
 #define localvar_max \
   ((struct localvar_info**) state->localvars.ptr - localvar_buffer)
 
-int
+void
 localvar_alloc (decl, state)
      tree decl;
      struct jcf_partial *state;
@@ -403,7 +403,6 @@ localvar_free (decl, state)
   register struct localvar_info **ptr = &localvar_buffer [index];
   register struct localvar_info *info = *ptr;
   int wide = TYPE_IS_WIDE (TREE_TYPE (decl));
-  int i;
 
   info->end_label = end_label;
 

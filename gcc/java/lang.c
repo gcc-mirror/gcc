@@ -33,6 +33,10 @@ The Free Software Foundation is independent of Sun Microsystems, Inc.  */
 #include "toplev.h"
 #include "flags.h"
 
+#ifndef OBJECT_SUFFIX
+# define OBJECT_SUFFIX ".o"
+#endif
+
 /* Table indexed by tree code giving a string containing a character
    classifying the tree code.  Possibilities are
    t, d, s, c, r, <, 1 and 2.  See java/java-tree.def for details.  */
@@ -179,6 +183,26 @@ lang_decode_option (argc, argv)
       return 1;
     }
 
+#define CLARG "-fclasspath="
+  if (strncmp (p, CLARG, sizeof (CLARG) - 1) == 0)
+    {
+      jcf_path_classpath_arg (p + sizeof (CLARG));
+      return 1;
+    }
+#undef CLARG
+#define CLARG "-fCLASSPATH="
+  else if (strncmp (p, CLARG, sizeof (CLARG) - 1) == 0)
+    {
+      jcf_path_CLASSPATH_arg (p + sizeof (CLARG));
+      return 1;
+    }
+#undef CLARG
+  else if (strncmp (p, "-I", 2) == 0)
+    {
+      jcf_path_include_arg (p + 2);
+      return 1;
+    }
+
   return 0;
 }
 
@@ -207,7 +231,8 @@ init_parse (filename)
 	    error ("couldn't determine target name for dependency tracking");
 	  else
 	    {
-	      char *buf = (char *) xmalloc (dot - filename + 3);
+	      char *buf = (char *) xmalloc (dot - filename +
+					    3 + sizeof (OBJECT_SUFFIX));
 	      strncpy (buf, filename, dot - filename);
 
 	      /* If emitting class files, we might have multiple
@@ -218,7 +243,7 @@ init_parse (filename)
 		jcf_dependency_set_target (NULL);
 	      else
 		{
-		  strcpy (buf + (dot - filename), ".o");
+		  strcpy (buf + (dot - filename), OBJECT_SUFFIX);
 		  jcf_dependency_set_target (buf);
 		}
 
@@ -420,6 +445,9 @@ lang_init ()
   extern int flag_minimal_debug;
   flag_minimal_debug = 0;
 #endif
+
+  jcf_path_init ();
+  jcf_path_seal ();
 
   decl_printable_name = lang_printable_name;
   print_error_function = lang_print_error;

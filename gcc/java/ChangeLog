@@ -1,3 +1,51 @@
+1998-10-22  Tom Tromey  <tromey@cygnus.com>
+
+	* jcf-io.c (find_class): Use saw_java_source to determine when to
+	look for `.java' file.
+	* jcf-parse.c (saw_java_source): New global.
+	(yyparse): Set it if `.java' file seen.
+
+	* Make-lang.in (JAVA_SRCS): Added jcf-path.c.
+	(GCJH_SOURCES): Likewise.
+	* Makefile.in (datadir): New macro.
+	(libjava_zip): Likewise.
+	(JAVA_OBJS): Added jcf-path.o.
+	(../jcf-dump$(exeext)): Depend on and link with jcf-depend.o.
+	(../gcjh$(exeext)): Likewise.
+	(jcf-path.o): New target.
+	* java-tree.h (fix_classpath): Removed decl.
+	* jcf-parse.c (fix_classpath): Removed.
+	(load_class): Don't call fix_classpath.
+	* parse.y (read_import_dir): Don't call fix_classpath.
+	* lex.h: Don't mention classpath.
+	* lex.c (java_init_lex): Don't initialize classpath.
+	* jcf-io.c (classpath): Removed global.
+	(find_class): Use jcf_path iteration functions.  Correctly search
+	class path for .java file.
+	(open_in_zip): New argument `is_system'.
+	* jcf-dump.c (main): Call jcf_path_init.  Recognize all new
+	classpath-related options.
+	* lang.c (lang_decode_option): Handle -fclasspath, -fCLASSPATH,
+	and -I.
+	(lang_init): Call jcf_path_init.
+	* lang-options.h: Mention -I, -fclasspath, and -fCLASSPATH.
+	* lang-specs.h: Handle -I.  Minor cleanup to -M options.
+	Correctly put braces around second string in each entry.
+	* gjavah.c (main): Call jcf_path_init.  Recognize all the new
+	classpath-related options.
+	(help): Updated for new options.
+	* jcf.h: Declare functions from jcf-path.c.  Don't mention
+	`classpath' global.
+	* jcf-path.c: New file.
+
+	* jcf-depend.c: Include jcf.h.
+
+	* jcf-write.c (localvar_alloc): Returns `void'.
+	(localvar_free): Removed unused variable.
+
+	* lang.c (OBJECT_SUFFIX): Define if not already defined.
+	(init_parse): Use OBJECT_SUFFIX, not ".o".
+
 Wed Oct 21 07:54:11 1998  Alexandre Petit-Bianco  <apbianco@cygnus.com>
 
 	* class.c (emit_register_classes): Renamed from

@@ -24,16 +24,17 @@ The Free Software Foundation is independent of Sun Microsystems, Inc.  */
 /* This is the contribution to the `default_compilers' array in gcc.c for
    Java.  */
 
-  {".java",   "@java" },
-  {".class",  "@java" },
+  {".java",   {"@java"} },
+  {".class",  {"@java"} },
   {"@java",
-   "%{!E:jc1 %i %1 %2 %{!Q:-quiet} %{d*} %{m*} %{a}\
+   {"%{!E:jc1 %i %1 %2 %{!Q:-quiet} %{d*} %{m*} %{a}\
 		    %{g*} %{O*} %{W*} %{w} %{pedantic*} %{ansi}\
 		    %{traditional} %{v:-version} %{pg:-p} %{p}\
 		    %{f*} %{+e*} %{aux-info*}\
-		    %{MD:-MD} %{MMD:-MMD} %{M:-M} %{MM:-MM}\
+                    %{I*}\
+		    %{MD} %{MMD} %{M} %{MM}\
 		    %{pg:%{fomit-frame-pointer:%e-pg and -fomit-frame-pointer are incompatible}}\
 		    %{S:%W{o*}%{!o*:-o %b.s}}%{!S:-o %{|!pipe:%g.s}} |\n\
             %{!S:as %a %Y\
 		    %{c:%W{o*}%{!o*:-o %w%b%O}}%{!c:-o %d%w%u%O}\
-		    %{!pipe:%g.s} %A\n }}"},
+		    %{!pipe:%g.s} %A\n }}"}},

@@ -2068,7 +2068,7 @@ static const short yycheck[] = {     3,
 #define YYPURE 1
 
 /* -*-C-*-  Note some compilers choke on comments on `#line' lines.  */
-#line 3 "bison.simple"
+#line 3 "/x1/java-install/share/bison.simple"
 
 /* Skeleton output parser for bison,
    Copyright (C) 1984, 1989, 1990 Free Software Foundation, Inc.
@@ -2261,7 +2261,7 @@ __yy_memcpy (char *to, char *from, int count)
 #endif
 #endif
 
-#line 196 "bison.simple"
+#line 196 "/x1/java-install/share/bison.simple"
 
 /* The user can define YYPARSE_PARAM as the name of an argument to be passed
    into yyparse.  The argument should have type void *.
@@ -4462,7 +4462,7 @@ case 492:
     break;}
 }
    /* the action file gets copied in in place of this dollarsign */
-#line 498 "bison.simple"
+#line 498 "/x1/java-install/share/bison.simple"
 
   yyvsp -= yylen;
   yyssp -= yylen;
@@ -6928,8 +6928,6 @@ read_import_dir (wfl)
   char *founddirname, *d_name;
 
   jcf = &jcfr;
-  if (!classpath)
-    fix_classpath ();
   if (!(founddirname = find_class (name, name_len, jcf, 0)))
     fatal ("Can't import `%s'", name);
   if (jcf->outofsynch)

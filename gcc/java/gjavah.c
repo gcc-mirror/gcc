@@ -31,6 +31,8 @@ The Free Software Foundation is independent of Sun Microsystems, Inc.  */
 #endif
 #include <math.h>
 
+#include <string.h>
+
 /* The output file.  */
 FILE *out = NULL;
 
@@ -877,6 +879,8 @@ help ()
   printf ("Usage: gcjh [OPTION]... CLASS...\n\n");
   printf ("Generate C++ header files from .class files\n\n");
   printf ("  --classpath PATH        Set path to find .class files\n");
+  printf ("  --CLASSPATH PATH        Set path to find .class files\n");
+  printf ("  -IDIR                   Append directory to class path\n");
   printf ("  -d DIRECTORY            Set output directory name\n");
   printf ("  --help                  Print this help, then exit\n");
   printf ("  -o FILE                 Set output file name\n");
@@ -917,6 +921,8 @@ DEFUN(main, (argc, argv),
 
   if (argc <= 1)
     usage ();
+
+  jcf_path_init ();
 
   for (argi = 1; argi < argc; argi++)
     {
@@ -997,10 +1003,19 @@ DEFUN(main, (argc, argv),
       else if (strcmp (arg, "-classpath") == 0)
 	{
 	  if (argi + 1 < argc)
-	    classpath = argv[++argi];
+	    jcf_path_classpath_arg (argv[++argi]);
 	  else
 	    java_no_argument (argv[argi]);
 	}
+      else if (strcmp (arg, "-CLASSPATH") == 0)
+	{
+	  if (argi + 1 < argc)
+	    jcf_path_CLASSPATH_arg (argv[++argi]);
+	  else
+	    java_no_argument (argv[argi]);
+	}
+      else if (strncmp (arg, "-I", 2) == 0)
+	jcf_path_include_arg (arg + 2);
       else if (strcmp (arg, "-verbose") == 0 || strcmp (arg, "-v") == 0)
 	verbose++;
       else if (strcmp (arg, "-stubs") == 0)
@@ -1046,17 +1061,12 @@ DEFUN(main, (argc, argv),
   if (argi == argc)
     usage ();
 
+  jcf_path_seal ();
+
   if (output_file && emit_dependencies)
     {
       fprintf (stderr, "gcjh: can't specify both -o and -MD\n");
       exit (1);
-    }
-
-  if (classpath == NULL)
-    {
-      classpath = (char *) getenv ("CLASSPATH");
-      if (classpath == NULL)
-	classpath = "";
     }
 
   for (; argi < argc; argi++)
