@@ -1850,8 +1850,45 @@ replace_regs (x, reg_map, nregs, replace_dest)
 #endif
 	    }
 	}
-}
+      break;
 
+    case SET:
+      if (replace_dest)
+	SET_DEST (x) = replace_regs (SET_DEST (x), reg_map, nregs, 0);
+
+      else if (GET_CODE (SET_DEST (x)) == MEM
+	       || GET_CODE (SET_DEST (x)) == STRICT_LOW_PART)
+	/* Even if we are not to replace destinations, replace register if it
+	   is CONTAINED in destination (destination is memory or
+	   STRICT_LOW_PART).  */
+	XEXP (SET_DEST (x), 0) = replace_regs (XEXP (SET_DEST (x), 0),
+					       reg_map, nregs, 0);
+      else if (GET_CODE (SET_DEST (x)) == ZERO_EXTRACT)
+	/* Similarly, for ZERO_EXTRACT we replace all operands.  */
+	break;
+
+      SET_SRC (x) = replace_regs (SET_SRC (x), reg_map, nregs, 0);
+      return x;
+      
+    default:
+      break;
+    }
+
+  fmt = GET_RTX_FORMAT (code);
+  for (i = GET_RTX_LENGTH (code) - 1; i >= 0; i--)
+    {
+      if (fmt[i] == 'e')
+	XEXP (x, i) = replace_regs (XEXP (x, i), reg_map, nregs, replace_dest);
+      if (fmt[i] == 'E')
+	{
+	  register int j;
+	  for (j = 0; j < XVECLEN (x, i); j++)
+	    XVECEXP (x, i, j) = replace_regs (XVECEXP (x, i, j), reg_map,
+					      nregs, replace_dest);
+	}
+    }
+  return x;
+}
 
 /* Return 1 if X, the SRC_SRC of  SET of (pc) contain a REG or MEM that is
    not in the constant pool and not in the condition of an IF_THEN_ELSE.  */
@@ -1942,42 +1979,4 @@ computed_jump_p (insn)
 	return 1;
     }
   return 0;
-      break;
-
-    case SET:
-      if (replace_dest)
-	SET_DEST (x) = replace_regs (SET_DEST (x), reg_map, nregs, 0);
-
-      else if (GET_CODE (SET_DEST (x)) == MEM
-	       || GET_CODE (SET_DEST (x)) == STRICT_LOW_PART)
-	/* Even if we are not to replace destinations, replace register if it
-	   is CONTAINED in destination (destination is memory or
-	   STRICT_LOW_PART).  */
-	XEXP (SET_DEST (x), 0) = replace_regs (XEXP (SET_DEST (x), 0),
-					       reg_map, nregs, 0);
-      else if (GET_CODE (SET_DEST (x)) == ZERO_EXTRACT)
-	/* Similarly, for ZERO_EXTRACT we replace all operands.  */
-	break;
-
-      SET_SRC (x) = replace_regs (SET_SRC (x), reg_map, nregs, 0);
-      return x;
-      
-    default:
-      break;
-    }
-
-  fmt = GET_RTX_FORMAT (code);
-  for (i = GET_RTX_LENGTH (code) - 1; i >= 0; i--)
-    {
-      if (fmt[i] == 'e')
-	XEXP (x, i) = replace_regs (XEXP (x, i), reg_map, nregs, replace_dest);
-      if (fmt[i] == 'E')
-	{
-	  register int j;
-	  for (j = 0; j < XVECLEN (x, i); j++)
-	    XVECEXP (x, i, j) = replace_regs (XVECEXP (x, i, j), reg_map,
-					      nregs, replace_dest);
-	}
-    }
-  return x;
 }
