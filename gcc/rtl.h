@@ -1441,7 +1441,7 @@ extern void recompute_reg_usage		PROTO ((rtx, int));
 #ifdef BUFSIZ
 extern void dump_flow_info		PROTO ((FILE *));
 #endif
-extern void free_bb_memory		PROTO ((void));
+extern void free_bb_mem			PROTO ((void));
 
 /* In expmed.c */
 extern void init_expmed			PROTO ((void));
