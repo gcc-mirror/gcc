@@ -1,3 +1,10 @@
+2000-09-30  Bryce McKinlay  <bryce@albatross.co.nz>
+
+	* configure.in: Define GC_GCJ_SUPPORT. Define NO_DEBUGGING in 
+	cross-compile configuration only.
+	* Makefile.am: Build gcj_mlc.c.
+	* configure, Makefile.in: Rebuilt.
+
 2000-09-10  Alexandre Oliva  <aoliva@redhat.com>
 
 	* acinclude.m4: Include libtool macros from the top level.
