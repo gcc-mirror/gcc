@@ -1,3 +1,8 @@
+2000-12-03  Kaveh R. Ghazi  <ghazi@teal.rutgers.edu>
+
+	* builtins.c (expand_builtin_strspn, expand_builtin_strcspn):
+	Handle another transformation.
+
 2000-12-03  Nick Clifton  <nickc@redhat.com>
 
 	* config.gcc: Add support for StrongARM targets.

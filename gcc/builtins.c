@@ -2594,12 +2594,13 @@ expand_builtin_strspn (arglist, target, mode)
 	  return expand_expr (size_int (r), target, mode, EXPAND_NORMAL);
 	}
       
-      /* If the second argument is "", return 0.  */
-      if (p2 && *p2 == '\0')
+      /* If either argument is "", return 0.  */
+      if ((p1 && *p1 == '\0') || (p2 && *p2 == '\0'))
         {
-	  /* Evaluate and ignore argument s1 in case it has
+	  /* Evaluate and ignore both arguments in case either one has
 	     side-effects.  */
 	  expand_expr (s1, const0_rtx, VOIDmode, EXPAND_NORMAL);
+	  expand_expr (s2, const0_rtx, VOIDmode, EXPAND_NORMAL);
 	  return const0_rtx;
 	}
       return 0;
@@ -2638,6 +2639,15 @@ expand_builtin_strcspn (arglist, target, mode)
 	  return expand_expr (size_int (r), target, mode, EXPAND_NORMAL);
 	}
       
+      /* If the first argument is "", return 0.  */
+      if (p1 && *p1 == '\0')
+        {
+	  /* Evaluate and ignore argument s2 in case it has
+	     side-effects.  */
+	  expand_expr (s2, const0_rtx, VOIDmode, EXPAND_NORMAL);
+	  return const0_rtx;
+	}
+
       /* If the second argument is "", return __builtin_strlen(s1).  */
       if (p2 && *p2 == '\0')
         {
