@@ -5387,15 +5387,15 @@ main (argc, argv)
 	 only be decoded in a language independent way if the were not
 	 decoded in a langauge specific way, which is why 'lang_processed'
 	 is passed in.  */
-      indep_processed = independent_decode_option (argc - i, argv + i, lang_processed);
+      indep_processed = independent_decode_option (argc - i, argv + i,
+						   lang_processed);
 
       if (lang_processed || indep_processed)
-	i += lang_processed > indep_processed ? lang_processed : indep_processed;
+	i += (lang_processed > indep_processed
+	      ? lang_processed : indep_processed);
       else
-	{
-	  error ("Invalid option `%s'", argv[i]);
-	  i++;
-	}
+	/* This option applies to some other language; ignore it.  *
+	i++;
     }
 
   /* Checker uses the frame pointer.  */

@@ -1,3 +1,7 @@
+Thu Oct 14 13:54:25 1999  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* toplev.c (main): Don't complain about options for other languages.
+
 Thu Oct 14 10:51:49 1999  Richard Henderson  <rth@cygnus.com>
 
 	* m68k.md (zero_extendsidi2): Add missing output reload constraint.
