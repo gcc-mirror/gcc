@@ -1,3 +1,7 @@
+2000-05-15  David Edelsohn  <edelsohn@gnu.org>
+
+	* config.shared: Change "pic" to depend on $(PICFLAG), not
+	on $(enable_shared).
 
 2000-05-11  Robert Lipe <robertlipe@usa.net>
 

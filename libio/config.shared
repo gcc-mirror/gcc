@@ -267,23 +267,26 @@ echo >&2 '.SUFFIXES: .o .C .cc .c'
 echo >&2 'COMPILE.c = $(CC) -c $(XCFLAGS) $(CINCLUDES) $(MT_CFLAGS)'
 echo >&2 '.c.o:'
 if [ "${LIBDIR}" = "yes" ]; then
-echo >&2 '	test x"$(enable_shared)" != xyes ||\'
-echo >&2 '	  $(COMPILE.c) $(PICFLAG) $< -o pic/$@'
+echo >&2 '	if [ x"$(PICFLAG)" != x ]; then \'
+echo >&2 '	  $(COMPILE.c) $(PICFLAG) $< -o pic/$@; \'
+echo >&2 '	else true; fi'
 fi
 echo >&2 '	$(COMPILE.c) $<'
 [ "${TOUCH_ON_COMPILE}" = "yes" ] && echo >&2 '	@touch stamp'
 echo >&2 'COMPILE.cc = $(CXX) -c $(XCXXFLAGS) $(CXXINCLUDES) $(MT_CFLAGS)'
 echo >&2 '.C.o:'
 if [ "${LIBDIR}" = "yes" ]; then
-echo >&2 '	test x"$(enable_shared)" != xyes ||\'
-echo >&2 '	  $(COMPILE.cc) $(PICFLAG) $< -o pic/$@'
+echo >&2 '	if [ x"$(PICFLAG)" != x ]; then \'
+echo >&2 '	  $(COMPILE.cc) $(PICFLAG) $< -o pic/$@; \'
+echo >&2 '	else true; fi'
 fi
 echo >&2 '	$(COMPILE.cc) $<'
 [ "${TOUCH_ON_COMPILE}" = "yes" ] && echo >&2 '	@touch stamp'
 echo >&2 '.cc.o:'
 if [ "${LIBDIR}" = "yes" ]; then
-echo >&2 '	test x"$(enable_shared)" != xyes || \'
-echo >&2 '	  $(COMPILE.cc) $(PICFLAG) $< -o pic/$@'
+echo >&2 '	if [ x"$(PICFLAG)" != x ]; then \'
+echo >&2 '	  $(COMPILE.cc) $(PICFLAG) $< -o pic/$@; \'
+echo >&2 '	else true; fi'
 fi
 echo >&2 '	$(COMPILE.cc) $<'
 [ "${TOUCH_ON_COMPILE}" = "yes" ] && echo >&2 '	@touch stamp'
@@ -299,7 +302,7 @@ fi
 if [ "${LIBDIR}" = "yes" ]; then
   echo >&2 ''
   echo >&2 'stamp-picdir:'
-  echo >&2 '	if [ x"$(enable_shared)" = xyes ] && [ ! -d pic ]; then \'
+  echo >&2 '	if [ x"$(PICFLAG)" != x ] && [ ! -d pic ]; then \'
   echo >&2 '	  mkdir pic; \'
   echo >&2 '	else true; fi'
   echo >&2 '	touch stamp-picdir'
