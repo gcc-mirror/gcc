@@ -1,3 +1,8 @@
+Fri Apr 10 22:28:32 1998  Jeffrey A Law  (law@cygnus.com)
+
+	Reinstall this patch from Jason.
+	* function.c (push_function_context_to): Don't call init_emit.
+
 Fri Apr 10 13:40:20 1998  Nick Clifton  <nickc@cygnus.com>
 
 	* rtl.c (read_skip_spaces): Prevent infinite loops upon
