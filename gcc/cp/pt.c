@@ -3371,9 +3371,8 @@ coerce_template_template_parms (tree parm_parms,
 	    tree parmparm = DECL_INNERMOST_TEMPLATE_PARMS (parm);
 	    tree argparm = DECL_INNERMOST_TEMPLATE_PARMS (arg);
 
-	    if (!coerce_template_template_parms (parmparm, argparm, 
-					         complain, in_decl,
-						 outer_args))
+	    if (!coerce_template_template_parms
+		(parmparm, argparm, complain, in_decl, outer_args))
 	      return 0;
 	  }
 	  break;
@@ -3382,9 +3381,9 @@ coerce_template_template_parms (tree parm_parms,
 	  /* The tsubst call is used to handle cases such as
 	       template <class T, template <T> class TT> class D;  
 	     i.e. the parameter list of TT depends on earlier parameters.  */
-	  if (!same_type_p (tsubst (TREE_TYPE (parm), outer_args, 
-				    complain, in_decl),
-			    TREE_TYPE (arg)))
+	  if (!same_type_p
+	      (tsubst (TREE_TYPE (parm), outer_args, complain, in_decl),
+	       TREE_TYPE (arg)))
 	    return 0;
 	  break;
 	  
@@ -4135,9 +4134,9 @@ lookup_template_class (tree d1,
 	       i > 0 && t != NULL_TREE;
 	       --i, t = TREE_CHAIN (t))
 	    {
-	      tree a = coerce_template_parms (TREE_VALUE (t),
-					      arglist, template,
-	                                      complain, /*require_all_args=*/1);
+	      tree a = coerce_template_parms (TREE_VALUE (t), arglist,
+					      template, complain,
+					      /*require_all_args=*/1);
 
 	      /* Don't process further if one of the levels fails.  */
 	      if (a == error_mark_node)
@@ -5061,7 +5060,8 @@ can_complete_type_without_circularity (tree type)
     return 1;
   else if (TREE_CODE (type) == ARRAY_TYPE && TYPE_DOMAIN (type))
     return can_complete_type_without_circularity (TREE_TYPE (type));
-  else if (CLASS_TYPE_P (type) && TYPE_BEING_DEFINED (TYPE_MAIN_VARIANT (type)))
+  else if (CLASS_TYPE_P (type)
+	   && TYPE_BEING_DEFINED (TYPE_MAIN_VARIANT (type)))
     return 0;
   else
     return 1;
@@ -5100,8 +5100,7 @@ instantiate_class_template (tree type)
       for (t = DECL_TEMPLATE_SPECIALIZATIONS (template); t; 
 	   t = TREE_CHAIN (t))
 	{
-	  if (get_class_bindings (TREE_VALUE (t), TREE_PURPOSE (t),
-				  args))
+	  if (get_class_bindings (TREE_VALUE (t), TREE_PURPOSE (t), args))
 	    {
 	      cp_error_at ("%s %+#T", str, TREE_TYPE (t));
 	      str = "               ";
@@ -5255,7 +5254,8 @@ instantiate_class_template (tree type)
   pushclass (type, true);
 
   /* Now members are processed in the order of declaration.  */
-  for (member = CLASSTYPE_DECL_LIST (pattern); member; member = TREE_CHAIN (member))
+  for (member = CLASSTYPE_DECL_LIST (pattern);
+       member; member = TREE_CHAIN (member))
     {
       tree t = TREE_VALUE (member);
 
@@ -5329,9 +5329,8 @@ instantiate_class_template (tree type)
 		      else
 			init = NULL_TREE;
 
-		      finish_static_data_member_decl (r, init,
-						      /*asmspec_tree=*/NULL_TREE, 
-						      /*flags=*/0);
+		      finish_static_data_member_decl
+			(r, init, /*asmspec_tree=*/NULL_TREE, /*flags=*/0);
 
 		      if (DECL_INITIALIZED_IN_CLASS_P (r))
 			check_static_variable_definition (r, TREE_TYPE (r));
@@ -5853,14 +5852,10 @@ tsubst_decl (tree t, tree args, tree type, tsubst_flags_t complain)
 	if (PRIMARY_TEMPLATE_P (t))
 	  DECL_PRIMARY_TEMPLATE (r) = r;
 
-	/* We don't partially instantiate partial specializations.  */
-	if (TREE_CODE (decl) == TYPE_DECL)
-	  break;
-
-	/* Record this partial instantiation.  */
-	register_specialization (r, t, 
-				 DECL_TI_ARGS (DECL_TEMPLATE_RESULT (r)));
-
+	if (TREE_CODE (decl) != TYPE_DECL)
+	  /* Record this non-type partial instantiation.  */
+	  register_specialization (r, t, 
+				   DECL_TI_ARGS (DECL_TEMPLATE_RESULT (r)));
       }
       break;
 
@@ -5971,8 +5966,7 @@ tsubst_decl (tree t, tree args, tree type, tsubst_flags_t complain)
 	    else
 	      member = 1;
 	    ctx = tsubst_aggr_type (DECL_CONTEXT (t), args, 
-				    complain, t, 
-				    /*entering_scope=*/1);
+				    complain, t, /*entering_scope=*/1);
 	  }
 	else
 	  {
@@ -9482,8 +9476,8 @@ unify (tree tparms, tree targs, tree parm, tree arg, int strict)
 	       template <class T, class Allocator = allocator> 
 	       class vector.  */
 
-	    if (coerce_template_parms (argtmplvec, parmvec, parmtmpl, 0, 1)
-	        == error_mark_node)
+	    if (coerce_template_parms (argtmplvec, parmvec, parmtmpl,
+				       tf_none, 1) == error_mark_node)
 	      return 1;
 	  
 	    /* Deduce arguments T, i from TT<T> or TT<i>.  
