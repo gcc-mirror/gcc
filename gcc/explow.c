@@ -1,5 +1,5 @@
 /* Subroutines for manipulating rtx's in semantically interesting ways.
-   Copyright (C) 1987, 1991 Free Software Foundation, Inc.
+   Copyright (C) 1987, 1991, 1994 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -338,76 +338,85 @@ memory_address (mode, x)
      enum machine_mode mode;
      register rtx x;
 {
-  register rtx oldx;
+  register rtx oldx = x;
 
   /* By passing constant addresses thru registers
      we get a chance to cse them.  */
   if (! cse_not_expected && CONSTANT_P (x) && CONSTANT_ADDRESS_P (x))
-    return force_reg (Pmode, x);
+    x = force_reg (Pmode, x);
 
   /* Accept a QUEUED that refers to a REG
      even though that isn't a valid address.
      On attempting to put this in an insn we will call protect_from_queue
      which will turn it into a REG, which is valid.  */
-  if (GET_CODE (x) == QUEUED
+  else if (GET_CODE (x) == QUEUED
       && GET_CODE (QUEUED_VAR (x)) == REG)
-    return x;
+    ;
 
   /* We get better cse by rejecting indirect addressing at this stage.
      Let the combiner create indirect addresses where appropriate.
      For now, generate the code so that the subexpressions useful to share
      are visible.  But not if cse won't be done!  */
-  oldx = x;
-  if (! cse_not_expected && GET_CODE (x) != REG)
-    x = break_out_memory_refs (x);
-
-  /* At this point, any valid address is accepted.  */
-  GO_IF_LEGITIMATE_ADDRESS (mode, x, win);
-
-  /* If it was valid before but breaking out memory refs invalidated it,
-     use it the old way.  */
-  if (memory_address_p (mode, oldx))
-    goto win2;
-
-  /* Perform machine-dependent transformations on X
-     in certain cases.  This is not necessary since the code
-     below can handle all possible cases, but machine-dependent
-     transformations can make better code.  */
-  LEGITIMIZE_ADDRESS (x, oldx, mode, win);
-
-  /* PLUS and MULT can appear in special ways
-     as the result of attempts to make an address usable for indexing.
-     Usually they are dealt with by calling force_operand, below.
-     But a sum containing constant terms is special
-     if removing them makes the sum a valid address:
-     then we generate that address in a register
-     and index off of it.  We do this because it often makes
-     shorter code, and because the addresses thus generated
-     in registers often become common subexpressions.  */
-  if (GET_CODE (x) == PLUS)
+  else
     {
-      rtx constant_term = const0_rtx;
-      rtx y = eliminate_constant_term (x, &constant_term);
-      if (constant_term == const0_rtx
-	  || ! memory_address_p (mode, y))
-	return force_operand (x, NULL_RTX);
+      if (! cse_not_expected && GET_CODE (x) != REG)
+	x = break_out_memory_refs (x);
 
-      y = gen_rtx (PLUS, GET_MODE (x), copy_to_reg (y), constant_term);
-      if (! memory_address_p (mode, y))
-	return force_operand (x, NULL_RTX);
-      return y;
+      /* At this point, any valid address is accepted.  */
+      GO_IF_LEGITIMATE_ADDRESS (mode, x, win);
+
+      /* If it was valid before but breaking out memory refs invalidated it,
+	 use it the old way.  */
+      if (memory_address_p (mode, oldx))
+	goto win2;
+
+      /* Perform machine-dependent transformations on X
+	 in certain cases.  This is not necessary since the code
+	 below can handle all possible cases, but machine-dependent
+	 transformations can make better code.  */
+      LEGITIMIZE_ADDRESS (x, oldx, mode, win);
+
+      /* PLUS and MULT can appear in special ways
+	 as the result of attempts to make an address usable for indexing.
+	 Usually they are dealt with by calling force_operand, below.
+	 But a sum containing constant terms is special
+	 if removing them makes the sum a valid address:
+	 then we generate that address in a register
+	 and index off of it.  We do this because it often makes
+	 shorter code, and because the addresses thus generated
+	 in registers often become common subexpressions.  */
+      if (GET_CODE (x) == PLUS)
+	{
+	  rtx constant_term = const0_rtx;
+	  rtx y = eliminate_constant_term (x, &constant_term);
+	  if (constant_term == const0_rtx
+	      || ! memory_address_p (mode, y))
+	    x = force_operand (x, NULL_RTX);
+	  else
+	    {
+	      y = gen_rtx (PLUS, GET_MODE (x), copy_to_reg (y), constant_term);
+	      if (! memory_address_p (mode, y))
+		x = force_operand (x, NULL_RTX);
+	      else
+		x = y;
+	    }
+	}
+
+      if (GET_CODE (x) == MULT || GET_CODE (x) == MINUS)
+	x = force_operand (x, NULL_RTX);
+
+      /* If we have a register that's an invalid address,
+	 it must be a hard reg of the wrong class.  Copy it to a pseudo.  */
+      else if (GET_CODE (x) == REG)
+	x = copy_to_reg (x);
+
+      /* Last resort: copy the value to a register, since
+	 the register is a valid address.  */
+      else
+	x = force_reg (Pmode, x);
+
+      goto done;
     }
-  if (GET_CODE (x) == MULT || GET_CODE (x) == MINUS)
-    return force_operand (x, NULL_RTX);
-
-  /* If we have a register that's an invalid address,
-     it must be a hard reg of the wrong class.  Copy it to a pseudo.  */
-  if (GET_CODE (x) == REG)
-    return copy_to_reg (x);
-
-  /* Last resort: copy the value to a register, since
-     the register is a valid address.  */
-  return force_reg (Pmode, x);
 
  win2:
   x = oldx;
@@ -419,10 +428,17 @@ memory_address (mode, x)
 		|| XEXP (x, 0) == virtual_incoming_args_rtx)))
     {
       if (general_operand (x, Pmode))
-	return force_reg (Pmode, x);
+	x = force_reg (Pmode, x);
       else
-	return force_operand (x, NULL_RTX);
+	x = force_operand (x, NULL_RTX);
     }
+
+ done:
+
+  /* OLDX may have been the address on a temporary.  Update the address
+     to indicate that X is now used.  */
+  update_temp_slot_address (oldx, x);
+
   return x;
 }
 
