@@ -1510,7 +1510,7 @@ install-fixincludes: install-headers
 	done; \
 	rm -rf *
 # Install fixed copies of system files.
-	$(srcdir)/$(FIXINCLUDES) $(libsubdir)/include
+	$(srcdir)/$(FIXINCLUDES) $(libsubdir)/include /usr/include $(srcdir)
 # Bring back gcc's header files.
 	cd $(libsubdir)/include; mv ../tmp/* .; rmdir ../tmp
 # Install the README
