@@ -1,6 +1,6 @@
 # Top level makefile fragment for the GNU compiler for the Java(TM)
 # language.
-#   Copyright (C) 1996, 1998, 1999 Free Software Foundation, Inc.
+#   Copyright (C) 1996, 1998, 1999, 2000 Free Software Foundation, Inc.
 
 #This file is part of GNU CC.
 
@@ -176,6 +176,7 @@ java.install-info:
 
 java.mostlyclean:
 	-rm -f java/*$(objext) $(DEMANGLER_PROG)
+	-rm -f jc1$(exeext) $(GCJ)$(exeext) jvgenmain$(exeext) gcjh$(exeext) jv-scan$(exeext) jcf-dump$(exeext)
 java.clean:
 java.distclean:
 	-rm -f java/config.status java/Makefile
