@@ -1,3 +1,13 @@
+2002-10-29  Jason Thorpe  <thorpej@wasabisystems.com>
+
+	* gthr-posix.h: Include <unistd.h> for feature tests.
+	(sched_get_priority_max, sched_get_priority_min)
+	(pthread_getschedparam, pthread_setschedparam): Only use
+	if _POSIX_THREAD_PRIORITY_SCHEDULING is defined.
+	(__gthread_objc_thread_set_priority): Don't treat all non-zero
+	returns from sched_get_priority_max and sched_get_priority_min
+	as an error.
+
 2002-10-29  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* config/h8300/h8300.h (TARGET_DEFAULT): Make it
