@@ -1,3 +1,8 @@
+2005-04-04  Alan Modra  <amodra@bigpond.net.au>
+
+	* passes.c (rest_of_handle_final): NULL unlikely_text_section_name
+	after freeing.
+
 2005-04-04  Richard Earnshaw  <richard.earnshaw@arm.com>
 
 	PR target/14812
