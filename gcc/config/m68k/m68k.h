@@ -461,6 +461,8 @@ extern int target_flags;
        if (TEST_HARD_REG_BIT (x, i)) 		\
 	fixed_regs[i] = call_used_regs[i] = 1; 	\
     } 						\
+  if (flag_pic)					\
+    fixed_regs[PIC_OFFSET_TABLE_REGNUM] = 1	\
 }
 
 #endif /* defined SUPPORT_SUN_FPA */
@@ -811,10 +813,7 @@ extern enum reg_class regno_reg_class[];
    in some cases it is preferable to use a more restrictive class.
    On the 68000 series, use a data reg if possible when the
    value is a constant in the range where moveq could be used
-   and we ensure that QImodes are reloaded into data regs.
-   Also, if a floating constant needs reloading, put it in memory.
-   Don't do this for !G constants, since all patterns in the md file
-   expect them to be loaded into a register via fpmovecr.  See above.  */
+   and we ensure that QImodes are reloaded into data regs.  */
 
 #define PREFERRED_RELOAD_CLASS(X,CLASS)  \
   ((GET_CODE (X) == CONST_INT			\
@@ -823,11 +822,10 @@ extern enum reg_class regno_reg_class[];
    ? DATA_REGS					\
    : (GET_MODE (X) == QImode && (CLASS) != ADDR_REGS) \
    ? DATA_REGS					\
-   : (GET_CODE (X) == CONST_DOUBLE		\
-      && GET_MODE_CLASS (GET_MODE (X)) == MODE_FLOAT) \
-   ? (! CONST_DOUBLE_OK_FOR_LETTER_P (X, 'G')	\
-      && (CLASS == FP_REGS || CLASS == DATA_OR_FP_REGS) \
-      ? FP_REGS : NO_REGS)			\
+   : (GET_CODE (X) == CONST_DOUBLE					\
+      && GET_MODE_CLASS (GET_MODE (X)) == MODE_FLOAT)			\
+   ? (TARGET_68881 && (CLASS == FP_REGS || CLASS == DATA_OR_FP_REGS)	\
+      ? FP_REGS : NO_REGS)						\
    : (TARGET_PCREL				\
       && (GET_CODE (X) == SYMBOL_REF || GET_CODE (X) == CONST \
 	  || GET_CODE (X) == LABEL_REF))	\
