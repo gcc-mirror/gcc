@@ -1,3 +1,7 @@
+2001-12-23  Richard Henderson  <rth@redhat.com>
+
+	* gcc.c-torture/execute/20011219-1.c (main): Make "i" a long.
+
 2001-12-23  Joseph S. Myers  <jsm28@cam.ac.uk>
 
 	* gcc.c-torture/execute/20011223-1.c: New test.
