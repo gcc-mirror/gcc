@@ -3544,7 +3544,7 @@ if eval "test \"`echo '$ac_cv_lib_'$ac_lib_var`\" = yes"; then
 EOF
 
        THREADLIBS="$THREADLIBS -lrt"
-       THREADSPECS="$THREADSPECS -lrt"
+       THREADSPEC="$THREADSPEC -lrt"
 else
   echo "$ac_t""no" 1>&6
 
@@ -3589,7 +3589,7 @@ if eval "test \"`echo '$ac_cv_lib_'$ac_lib_var`\" = yes"; then
 EOF
 
 	 THREADLIBS="$THREADLIBS -lposix4"
-         THREADSPECS="$THREADSPECS -lposix4"
+         THREADSPEC="$THREADSPEC -lposix4"
 else
   echo "$ac_t""no" 1>&6
 fi

@@ -376,11 +376,11 @@ else
      AC_CHECK_LIB(rt, sched_yield, [
        AC_DEFINE(HAVE_SCHED_YIELD)
        THREADLIBS="$THREADLIBS -lrt"
-       THREADSPECS="$THREADSPECS -lrt"], [
+       THREADSPEC="$THREADSPEC -lrt"], [
        AC_CHECK_LIB(posix4, sched_yield, [
          AC_DEFINE(HAVE_SCHED_YIELD)
 	 THREADLIBS="$THREADLIBS -lposix4"
-         THREADSPECS="$THREADSPECS -lposix4"])])])
+         THREADSPEC="$THREADSPEC -lposix4"])])])
    LIBS="$save_LIBS"
 
    # We require a way to get the time.

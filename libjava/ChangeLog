@@ -1,3 +1,9 @@
+1999-09-09  Tom Tromey  <tromey@cygnus.com>
+
+	* configure: Rebuilt.
+	* configure.in: Fixed typo; variable is THREADSPEC and not
+	THREADSPECS.
+
 1999-08-21  Alexandre Oliva  <oliva@dcc.unicamp.br>
 
 	* configure.in: Check for in_addr_t in netinet/in.h too.  Check
