@@ -1464,7 +1464,7 @@ determine_primary_base (tree t)
 static void
 finish_struct_bits (tree t)
 {
-  int i, n_baseclasses = BINFO_N_BASE_BINFOS (TYPE_BINFO (t));
+  int n_baseclasses = BINFO_N_BASE_BINFOS (TYPE_BINFO (t));
 
   /* Fix up variants (if any).  */
   tree variants = TYPE_NEXT_VARIANT (t);
@@ -1497,34 +1497,19 @@ finish_struct_bits (tree t)
 
   if (n_baseclasses && TYPE_POLYMORPHIC_P (t))
     /* For a class w/o baseclasses, `finish_struct' has set
-       CLASS_TYPE_ABSTRACT_VIRTUALS correctly (by
-       definition). Similarly for a class whose base classes do not
-       have vtables. When neither of these is true, we might have
-       removed abstract virtuals (by providing a definition), added
-       some (by declaring new ones), or redeclared ones from a base
-       class. We need to recalculate what's really an abstract virtual
-       at this point (by looking in the vtables).  */
-      get_pure_virtuals (t);
+       CLASS_TYPE_ABSTRACT_VIRTUALS correctly (by definition).
+       Similarly for a class whose base classes do not have vtables.
+       When neither of these is true, we might have removed abstract
+       virtuals (by providing a definition), added some (by declaring
+       new ones), or redeclared ones from a base class.  We need to
+       recalculate what's really an abstract virtual at this point (by
+       looking in the vtables).  */
+    get_pure_virtuals (t);
 
-  if (n_baseclasses)
-    {
-      /* Notice whether this class has type conversion functions defined.  */
-      tree binfo = TYPE_BINFO (t);
-      tree binfos = BINFO_BASE_BINFOS (binfo);
-      tree basetype;
-
-      for (i = n_baseclasses-1; i >= 0; i--)
-	{
-	  basetype = BINFO_TYPE (TREE_VEC_ELT (binfos, i));
-
-	  TYPE_HAS_CONVERSION (t) |= TYPE_HAS_CONVERSION (basetype);
-	}
-    }
-
-  /* If this type has a copy constructor or a destructor, force its mode to
-     be BLKmode, and force its TREE_ADDRESSABLE bit to be nonzero.  This
-     will cause it to be passed by invisible reference and prevent it from
-     being returned in a register.  */
+  /* If this type has a copy constructor or a destructor, force its
+     mode to be BLKmode, and force its TREE_ADDRESSABLE bit to be
+     nonzero.  This will cause it to be passed by invisible reference
+     and prevent it from being returned in a register.  */
   if (! TYPE_HAS_TRIVIAL_INIT_REF (t) || TYPE_HAS_NONTRIVIAL_DESTRUCTOR (t))
     {
       tree variants;

@@ -1,5 +1,8 @@
 2004-07-15  Nathan Sidwell  <nathan@codesourcery.com>
 
+	* class.c(finish_struct_bits): Don't set TYPE_HAS_CONVERSION here.
+	* decl.c (xref_basetypes): Set it here.
+
 	* class.c (check_bases): Don't set CLASSTYPE_NON_AGGREGATE here.
 	Don't check for incomplete base.
 	(get_vfield_name): Simplify while loop.

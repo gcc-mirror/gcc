@@ -9170,6 +9170,7 @@ xref_basetypes (tree ref, tree base_list)
 	     	 base as well.  */
 	      TYPE_BASE_CONVS_MAY_REQUIRE_CODE_P (ref)
 		|= TYPE_BASE_CONVS_MAY_REQUIRE_CODE_P (basetype);
+	      TYPE_HAS_CONVERSION (ref) |= TYPE_HAS_CONVERSION (basetype);
 	      max_vbases += VEC_length
 		(tree, CLASSTYPE_VBASECLASSES (basetype));
 	    }
