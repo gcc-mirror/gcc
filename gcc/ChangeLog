@@ -1,3 +1,7 @@
+Mon Jun 28 04:07:27 1999  David Edelsohn  <edelsohn@gnu.org>
+
+	* expmed.c (expand_divmod): Ensure unsigned value fits in reg_note.
+
 Sun Jun 27 02:39:08 1999  Richard Henderson  <rth@cygnus.com>
 
 	* jump.c (jump_optimize_1): Validate the cmov copy to a temporary.

@@ -3246,7 +3246,9 @@ expand_divmod (rem_flag, code, mode, op0, op1, target, unsignedp)
 			insn = get_last_insn ();
 			if (insn != last
 			    && (set = single_set (insn)) != 0
-			    && SET_DEST (set) == quotient)
+			    && SET_DEST (set) == quotient
+			    && abs_d < ((unsigned HOST_WIDE_INT) 1
+					<< (HOST_BITS_PER_WIDE_INT - 1)))
 			  set_unique_reg_note (insn, 
 			  		       REG_EQUAL,
 					       gen_rtx_DIV (compute_mode,
