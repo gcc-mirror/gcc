@@ -1,3 +1,9 @@
+2001-10-08  Geert Bosch  (bosch@gnat.com)
+
+	* ceinfo.adb: Add utility for consistency checking of einfo.ad[bs].
+
+	* csinfo.adb: Add utility for consistency checking of sinfo.ad[bs].
+
 2001-10-07  Joseph S. Myers  <jsm28@cam.ac.uk>
 
 	* 5oosinte.adb: Fix spelling error of "separate" as "seperate".
