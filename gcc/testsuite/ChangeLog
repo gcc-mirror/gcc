@@ -1,5 +1,8 @@
 2004-09-15  Jakub Jelinek  <jakub@redhat.com>
 
+	* gcc.c-torture/execute/builtins/strlen-3.c: New test.
+	* gcc.c-torture/execute/builtins/strlen-3-lib.c: New.
+
 	* gcc.c-torture/execute/builtins/memmove.c (main_test): Formatting.
 	* gcc.c-torture/execute/builtins/memmove-2.c: New test.
 	* gcc.c-torture/execute/builtins/memmove-2-lib.c: New.
