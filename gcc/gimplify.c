@@ -286,7 +286,7 @@ create_artificial_label (void)
 
 static GTY(()) unsigned int tmp_var_id_num;
 
-static tree
+tree
 create_tmp_var_name (const char *prefix)
 {
   char *tmp_name;

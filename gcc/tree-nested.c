@@ -306,15 +306,16 @@ get_chain_decl (struct nesting_info *info)
 
       /* Note that this variable is *not* entered into any BIND_EXPR;
 	 the construction of this variable is handled specially in
-	 expand_function_start and initialize_inlined_parameters.  */
-      decl = create_tmp_var_raw (type, "CHAIN");
+	 expand_function_start and initialize_inlined_parameters.
+	 Note also that it's represented as a parameter.  This is more
+	 close to the truth, since the initial value does come from 
+	 the caller.  */
+      decl = build_decl (PARM_DECL, create_tmp_var_name ("CHAIN"), type);
+      DECL_ARTIFICIAL (decl) = 1;
+      DECL_IGNORED_P (decl) = 1;
+      TREE_USED (decl) = 1;
       DECL_CONTEXT (decl) = info->context;
-      decl->decl.seen_in_bind_expr = 1;
-
-      /* The initialization of CHAIN is not visible to the tree-ssa
-	 analyzers and optimizers.  Thus we do not want to issue
-	 warnings for CHAIN.  */
-      TREE_NO_WARNING (decl) = 1;
+      DECL_ARG_TYPE (decl) = type;
 
       /* Tell tree-inline.c that we never write to this variable, so
 	 it can copy-prop the replacement value immediately.  */
