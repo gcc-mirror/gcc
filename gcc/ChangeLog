@@ -1,15 +1,15 @@
 2001-12-16  Aldy Hernandez  <aldyh@redhat.com>
 
-      * config/rs6000/rs6000.c (rs6000_legitimize_address): Force both
-      PLUS operands into registers for altivec mode.
+	* config/rs6000/rs6000.c (rs6000_legitimize_address): Force both
+	PLUS operands into registers for altivec mode.
 
 2001-12-16  Aldy Hernandez  <aldyh@redhat.com>
 
-      * builtins.c (apply_args_size): Change regno to unsigned.
+	* builtins.c (apply_args_size): Change regno to unsigned.
 
 2001-12-16  Aldy Hernandez  <aldyh@redhat.com>
 
-        * config/rs6000/rs6000.h (FUNCTION_ARG_REGNO_P): Change 
+	* config/rs6000/rs6000.h (FUNCTION_ARG_REGNO_P): Change
 	ALTIVEC_ARG_MAX_REG to ALTIVEC_ARG_NUM_REG.
 
 2001-12-16  Zack Weinberg  <zack@codesourcery.com>
