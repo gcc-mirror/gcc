@@ -3795,7 +3795,7 @@ function_arg (const CUMULATIVE_ARGS *cum, enum machine_mode mode,
 
   if (type != 0
       && TREE_CODE (type) == RECORD_TYPE
-      && (mips_abi == ABI_N32 || mips_abi == ABI_64)
+      && TARGET_NEWABI
       && TYPE_SIZE_UNIT (type)
       && host_integerp (TYPE_SIZE_UNIT (type), 1)
       && named)
@@ -4002,7 +4002,7 @@ mips_setup_incoming_varargs (CUMULATIVE_ARGS *cum, enum machine_mode mode,
 	    }
 	}
     }
-  if (mips_abi == ABI_32 || mips_abi == ABI_O64)
+  if (TARGET_OLDABI)
     {
       /* No need for pretend arguments: the register parameter area was
 	 allocated by the caller.  */
@@ -4392,8 +4392,7 @@ mips_va_arg (tree valist, tree type)
 	 that alignments <= UNITS_PER_WORD are preserved by the va_arg
 	 increment mechanism.  */
 
-      if ((mips_abi == ABI_N32 || mips_abi == ABI_64)
-	  && TYPE_ALIGN (type) > 64)
+      if (TARGET_NEWABI && TYPE_ALIGN (type) > 64)
 	align = 16;
       else if (TARGET_64BIT)
 	align = 8;
@@ -4742,7 +4741,7 @@ override_options (void)
 	}
     }
 
-  if (mips_abi != ABI_32 && mips_abi != ABI_O64)
+  if (!TARGET_OLDABI)
     flag_pcc_struct_return = 0;
 
 #if defined(USE_COLLECT2)
@@ -6425,7 +6424,7 @@ compute_frame_size (HOST_WIDE_INT size)
 
   /* Add in space reserved on the stack by the callee for storing arguments
      passed in registers.  */
-  if (mips_abi != ABI_32 && mips_abi != ABI_O64)
+  if (!TARGET_OLDABI)
     total_size += MIPS_STACK_ALIGN (current_function_pretend_args_size);
 
   /* Save other computed information.  */
@@ -6496,7 +6495,7 @@ mips_initial_elimination_offset (int from, int to)
 
     case ARG_POINTER_REGNUM:
       offset = cfun->machine->frame.total_size;
-      if (mips_abi == ABI_N32 || mips_abi == ABI_64)
+      if (TARGET_NEWABI)
 	offset -= current_function_pretend_args_size;
       break;
 
@@ -7854,7 +7853,7 @@ mips16_fp_args (FILE *file, int fp_code, int from_fp_p)
   unsigned int f;
 
   /* This code only works for the original 32 bit ABI and the O64 ABI.  */
-  if (mips_abi != ABI_32 && mips_abi != ABI_O64)
+  if (!TARGET_OLDABI)
     abort ();
 
   if (from_fp_p)
@@ -8051,7 +8050,7 @@ build_mips16_call_stub (rtx retval, rtx fn, rtx arg_size, int fp_code)
 
   /* This code will only work for o32 and o64 abis.  The other ABI's
      require more sophisticated support.  */
-  if (mips_abi != ABI_32 && mips_abi != ABI_O64)
+  if (!TARGET_OLDABI)
     abort ();
 
   /* We can only handle SFmode and DFmode floating point return
@@ -9357,7 +9356,7 @@ mips_hard_regno_nregs (int regno, enum machine_mode mode)
 static bool
 mips_return_in_memory (tree type, tree fndecl ATTRIBUTE_UNUSED)
 {
-  if (mips_abi == ABI_32 || mips_abi == ABI_O64)
+  if (TARGET_OLDABI)
     return (TYPE_MODE (type) == BLKmode);
   else
     return ((int_size_in_bytes (type) > (2 * UNITS_PER_WORD))
@@ -9367,7 +9366,7 @@ mips_return_in_memory (tree type, tree fndecl ATTRIBUTE_UNUSED)
 static bool
 mips_strict_argument_naming (CUMULATIVE_ARGS *ca ATTRIBUTE_UNUSED)
 {
-  return (mips_abi != ABI_32 && mips_abi != ABI_O64);
+  return !TARGET_OLDABI;
 }
 
 static int
