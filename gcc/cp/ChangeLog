@@ -1,3 +1,9 @@
+2004-02-14  Kriang Lerdsuwanakij  <lerdsuwa@users.sourceforge.net>
+
+	PR c++/13635
+	* pt.c (push_template_decl_real): Make sure DECL_TI_ARGS of DECL
+	has full set of arguments.
+
 2004-02-13  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/14122
