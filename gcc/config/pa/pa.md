@@ -3362,10 +3362,22 @@
 ;; This is used by the trampoline code for nested functions.
 ;; So long as the trampoline itself is less than 32 bytes this
 ;; is sufficient.
-(define_insn "cacheflush"
+
+(define_insn "dcacheflush"
   [(unspec_volatile [(const_int 1)] 0)
    (use (mem:SI (match_operand:SI 0 "register_operand" "r")))
    (use (mem:SI (match_operand:SI 1 "register_operand" "r")))]
   ""
-  "fdc 0(0,%0)\;sync\;fic 0(0,%0)\;sync\;fdc 0(0,%1)\;sync\;fic 0(0,%1)\;sync\;nop\;nop\;nop\;nop\;nop\;nop\;nop"
-  [(set_attr "length" "60")])
+  "fdc 0(0,%0)\;fdc 0(0,%1)\;sync"
+  [(set_attr "length" "12")])
+
+(define_insn "icacheflush"
+  [(unspec_volatile [(const_int 2)] 0)
+   (use (mem:SI (match_operand:SI 0 "register_operand" "r")))
+   (use (mem:SI (match_operand:SI 1 "register_operand" "r")))
+   (use (match_operand:SI 2 "register_operand" "r"))
+   (clobber (match_operand:SI 3 "register_operand" "=&r"))
+   (clobber (match_operand:SI 4 "register_operand" "=&r"))]
+  ""
+  "mfsp %%sr0,%4\;ldsid (0,%2),%3\;mtsp %3,%%sr0\;fic 0(%%sr0,%0)\;fic 0(%%sr0,%1)\;sync\;mtsp %4,%%sr0\;nop\;nop\;nop\;nop\;nop\;nop"
+  [(set_attr "length" "52")])
