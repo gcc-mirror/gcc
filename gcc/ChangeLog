@@ -1,3 +1,10 @@
+2000-06-08  James E. Wilson  <wilson@bletchleypark.cygnus.com>
+
+	* dwarf2out.c (size_of_die, case dw_val_class_const): Use
+	size_of_sleb128.
+	(value_format, case dw_val_class_const): Use sdata format.
+	(output_die): Call output_sleb128.
+
 2000-06-08  Mark Mitchell  <mark@codesourcery.com>
 
 	* invoke.texi: Remove documentation for -fsquangle and

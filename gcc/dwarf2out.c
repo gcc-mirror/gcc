@@ -4644,7 +4644,7 @@ size_of_die (die)
 	  }
 	  break;
 	case dw_val_class_const:
-	  size += 4;
+	  size += size_of_sleb128 (AT_int (a));
 	  break;
 	case dw_val_class_unsigned_const:
 	  size += constant_size (AT_unsigned (a));
@@ -4801,7 +4801,7 @@ value_format (a)
 	  abort ();
 	}
     case dw_val_class_const:
-      return DW_FORM_data4;
+      return DW_FORM_sdata;
     case dw_val_class_unsigned_const:
       switch (constant_size (AT_unsigned (a)))
 	{
@@ -5089,7 +5089,10 @@ output_die (die)
 	  break;
 
 	case dw_val_class_const:
-	  ASM_OUTPUT_DWARF_DATA4 (asm_out_file, AT_int (a));
+	  /* ??? It would be slightly more efficient to use a scheme like is
+	     used for unsigned constants below, but gdb 4.x does not sign
+	     extend.  Gdb 5.x does sign extend.  */
+	  output_sleb128 (AT_int (a));
 	  break;
 
 	case dw_val_class_unsigned_const:
