@@ -495,17 +495,62 @@ public abstract class HttpURLConnection extends URLConnection
    */
   public Permission getPermission() throws IOException
   {
-    return new SocketPermission (url.getHost (), "connect");
+    URL url = getURL();
+    String host = url.getHost();
+    int port = url.getPort();
+    if (port == -1)
+      port = 80;
+    
+    host = host + ":" + port;
+    
+    return new SocketPermission(host, "connect");
   }
 
   /**
-   * Returns the error stream if the connection failed but the server sent
-   * useful data nonetheless
+   * This method allows the caller to retrieve any data that might have
+   * been sent despite the fact that an error occurred.  For example, the
+   * HTML page sent along with a 404 File Not Found error.  If the socket
+   * is not connected, or if no error occurred or no data was returned,
+   * this method returns <code>null</code>.
+   *
+   * @return An <code>InputStream</code> for reading error data.
    */
   public InputStream getErrorStream ()
   {
-    // FIXME: implement this
-    return null;
+    if (!connected)
+      return(null);
+    
+    int code;
+    try 
+      {
+	code = getResponseCode();
+      }
+    catch(IOException e)
+      {
+	code = -1;
+      }
+    
+    if (code == -1)
+      return(null);
+    
+    if (((code/100) != 4) || ((code/100) != 5))
+      return(null); 
+    
+    try
+      {
+	PushbackInputStream pbis = new PushbackInputStream(getInputStream());
+	
+	int i = pbis.read();
+	if (i == -1)
+	  return(null);
+	
+	pbis.unread(i);
+	return(pbis);
+      }
+    catch(IOException e)
+      {
+	return(null);
+      }
   }
 
   /**
