@@ -1,5 +1,5 @@
 /* Definitions of target machine for GNU compiler.  NS32000 version.
-   Copyright (C) 1988, 1993 Free Software Foundation, Inc.
+   Copyright (C) 1988, 1993, 1994 Free Software Foundation, Inc.
    Contributed by Michael Tiemann (tiemann@mcc.com)
 
 This file is part of GNU CC.
@@ -103,6 +103,15 @@ extern int target_flags;
     { "nosb", 32},				\
     { "", TARGET_DEFAULT}}
 /* TARGET_DEFAULT is defined in encore.h, pc532.h, etc.  */
+
+/* When we are generating PIC, the sb is used as a pointer
+   to the GOT.  */
+
+#define OVERRIDE_OPTIONS		\
+{					\
+  if (flag_pic) target_flags |= 32;	\
+}
+
 
 /* target machine storage layout */
 
@@ -524,12 +533,20 @@ enum reg_class { NO_REGS, GENERAL_REGS, FLOAT_REGS, GEN_AND_FP_REGS,
  *  .
  *  .
  */
+#if defined(IMMEDIATE_PREFIX) && IMMEDIATE_PREFIX
+#define ADJSP(FILE, n) \
+        fprintf (FILE, "\tadjspd %c%d\n", IMMEDIATE_PREFIX, (n))
+#else
+#define ADJSP(FILE, n) \
+        fprintf (FILE, "\tadjspd %d\n", (n))
+#endif
 
 #define FUNCTION_PROLOGUE(FILE, SIZE)     \
 { register int regno, g_regs_used = 0;				\
   int used_regs_buf[8], *bufp = used_regs_buf;			\
   int used_fregs_buf[8], *fbufp = used_fregs_buf;		\
   extern char call_used_regs[];					\
+  extern int current_function_uses_pic_offset_table, flag_pic;	\
   MAIN_FUNCTION_PROLOGUE;					\
   for (regno = 0; regno < 8; regno++)				\
     if (regs_ever_live[regno]					\
@@ -550,7 +567,7 @@ enum reg_class { NO_REGS, GENERAL_REGS, FLOAT_REGS, GEN_AND_FP_REGS,
   else								\
     {								\
       if (SIZE)							\
-        fprintf (FILE, "\tadjspd %$%d\n", SIZE + 4);		\
+        ADJSP (FILE, SIZE + 4);					\
       if (g_regs_used && g_regs_used > 4)			\
         fprintf (FILE, "\tsave [");				\
       else							\
@@ -580,6 +597,12 @@ enum reg_class { NO_REGS, GENERAL_REGS, FLOAT_REGS, GEN_AND_FP_REGS,
 	  fprintf (FILE, "\tmovl f%d,tos\n", fbufp[0] - 8);	\
 	  fbufp += 2;						\
 	}							\
+    }								\
+  if (flag_pic && current_function_uses_pic_offset_table)	\
+    {								\
+      fprintf (FILE, "\tsprd sb,tos\n");			\
+      fprintf (FILE, "\taddr _GLOBAL_OFFSET_TABLE_(pc),tos\n");	\
+      fprintf (FILE, "\tlprd sb,tos\n");			\
     }								\
 }
 
@@ -639,6 +662,9 @@ enum reg_class { NO_REGS, GENERAL_REGS, FLOAT_REGS, GEN_AND_FP_REGS,
   int used_regs_buf[8], *bufp = used_regs_buf;			\
   int used_fregs_buf[8], *fbufp = used_fregs_buf;		\
   extern char call_used_regs[];					\
+  extern int current_function_uses_pic_offset_table, flag_pic;	\
+  if (flag_pic && current_function_uses_pic_offset_table)	\
+    fprintf (FILE, "\tlprd sb,tos\n");				\
   *fbufp++ = -2;						\
   for (regno = 8; regno < 16; regno++)				\
     if (regs_ever_live[regno] && !call_used_regs[regno])	\
@@ -683,7 +709,7 @@ enum reg_class { NO_REGS, GENERAL_REGS, FLOAT_REGS, GEN_AND_FP_REGS,
   if (g_regs_used || frame_pointer_needed)			\
     fprintf (FILE, "]\n");					\
   if (SIZE && !frame_pointer_needed)				\
-    fprintf (FILE, "\tadjspd %$%d\n", -(SIZE + 4));		\
+    ADJSP (FILE, -(SIZE + 4));					\
   if (current_function_pops_args)				\
     fprintf (FILE, "\tret %d\n", current_function_pops_args);	\
   else fprintf (FILE, "\tret 0\n"); }
@@ -697,9 +723,12 @@ enum reg_class { NO_REGS, GENERAL_REGS, FLOAT_REGS, GEN_AND_FP_REGS,
 {								\
   int regno;							\
   int offset = -4;						\
+  extern int current_function_uses_pic_offset_table, flag_pic;	\
   for (regno = 0; regno < 16; regno++)				\
     if (regs_ever_live[regno] && ! call_used_regs[regno])	\
       offset += 4;						\
+  if (flag_pic && current_function_uses_pic_offset_table)	\
+    offset += 4;						\
   (DEPTH) = (offset + get_frame_size ()				\
 	     + (get_frame_size () == 0 ? 0 : 4));		\
 }
@@ -814,7 +843,12 @@ __transfer_from_trampoline ()		\
 /* Nonzero if the constant value X is a legitimate general operand.
    It is given that X satisfies CONSTANT_P or is a CONST_DOUBLE.  */
 
-#define LEGITIMATE_CONSTANT_P(X) 1
+extern int current_function_uses_pic_offset_table, flag_pic;
+#define LEGITIMATE_CONSTANT_P(X) \
+  (((flag_pic && ! current_function_uses_pic_offset_table	\
+     && global_symbolic_reference_mentioned_p (X))?		\
+      (current_function_uses_pic_offset_table = 1):0		\
+   ), 1)
 
 /* The macros REG_OK_FOR..._P assume that the arg is a REG rtx
    and check its validity for a certain class.
@@ -944,10 +978,14 @@ __transfer_from_trampoline ()		\
    ((xfoo2 < 4 && xfoo2 != 2) || xfoo2 == 7))
 
 /* Note that xfoo0, xfoo1, xfoo2 are used in some of the submacros above.  */
-#define GO_IF_LEGITIMATE_ADDRESS(MODE, X, ADDR)  \
+#define GO_IF_LEGITIMATE_ADDRESS(MODE, X, ADDR) \
 { register rtx xfooy, xfoo0, xfoo1;					\
   unsigned xfoo2;							\
+  extern int current_function_uses_pic_offset_table, flag_pic;		\
   xfooy = X;								\
+  if (flag_pic && ! current_function_uses_pic_offset_table		\
+      && global_symbolic_reference_mentioned_p (X))			\
+    current_function_uses_pic_offset_table = 1;				\
   GO_IF_NONINDEXED_ADDRESS (xfooy, ADDR);				\
   if (GET_CODE (xfooy) == PLUS)						\
     {									\
@@ -982,6 +1020,30 @@ __transfer_from_trampoline ()		\
    For the ns32k, we do nothing */
 
 #define LEGITIMIZE_ADDRESS(X,OLDX,MODE,WIN)   {}
+
+/* Define this macro if references to a symbol must be treated
+   differently depending on something about the variable or
+   function named by the symbol (such as what section it is in).
+
+   On the ns32k, if using PIC, mark a SYMBOL_REF for a non-global
+   symbol or a code symbol. These symbols are referenced via pc
+   and not via sb. */
+
+#define ENCODE_SECTION_INFO(DECL) \
+do									\
+  {									\
+    extern int flag_pic;						\
+    if (flag_pic)							\
+      {									\
+	rtx rtl = (TREE_CODE_CLASS (TREE_CODE (DECL)) != 'd'		\
+		   ? TREE_CST_RTL (DECL) : DECL_RTL (DECL));		\
+	SYMBOL_REF_FLAG (XEXP (rtl, 0))					\
+	  = (TREE_CODE_CLASS (TREE_CODE (DECL)) != 'd'			\
+	     || TREE_CODE (DECL) == FUNCTION_DECL			\
+	     || ! TREE_PUBLIC (DECL));					\
+      }									\
+  }									\
+while (0)
 
 /* Go to LABEL if ADDR (a legitimate address expression)
    has an effect that depends on the machine mode it is used for.
@@ -1380,6 +1442,7 @@ do {									\
 
 extern char *output_move_double ();
 extern char *output_shift_insn ();
+extern char *output_move_dconst ();
 
 /*
 Local variables:
