@@ -237,7 +237,7 @@ objalloc.o: $(INCDIR)/objalloc.h
 obstack.o: config.h $(INCDIR)/obstack.h
 pexecute.o: config.h $(INCDIR)/libiberty.h
 spaces.o: $(INCDIR)/libiberty.h
-splay-tree.o: $(INCDIR)/libiberty.h $(INCDIR)/splay-tree.h $(INCDIR)/ansidecl.h
+splay-tree.o: config.h $(INCDIR)/libiberty.h $(INCDIR)/splay-tree.h $(INCDIR)/ansidecl.h
 strerror.o: config.h $(INCDIR)/libiberty.h
 strsignal.o: config.h $(INCDIR)/libiberty.h
 xatexit.o: $(INCDIR)/libiberty.h
