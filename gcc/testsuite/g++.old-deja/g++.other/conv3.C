@@ -9,5 +9,5 @@ aci var = { 2, 3, 5, 7, 11, 13 };
 void
 f()
 {
-	int * ip = var;	// ERROR - requires const_cast - XFAIL *-*-*
+	int * ip = var;	// ERROR - requires const_cast
 }
