@@ -343,7 +343,7 @@ byte_reg (rtx x, int b)
 /* REGNO must be saved/restored across calls if this macro is true.  */
 
 #define WORD_REG_USED(regno)						\
-  (regno < 7								\
+  (regno < SP_REG							\
    /* No need to save registers if this function will not return.  */	\
    && ! TREE_THIS_VOLATILE (current_function_decl)			\
    && (pragma_saveall							\

@@ -1,3 +1,10 @@
+2003-10-12  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* config/h8300/h8300.c (WORD_REG_USED): Use SP_REG instead of
+	a literal.
+	* config/h8300/h8300.h (REGNO_OK_FOR_BASE_P): Use MAC_REG
+	instead of a literal.
+
 2003-10-12  Nathanael Nerode  <neroden@gcc.gnu.org>
 
 	* config.gcc (*-*-freebsd*): Use tm_defines instead of tiny
