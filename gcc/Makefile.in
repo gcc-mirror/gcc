@@ -347,7 +347,7 @@ COMPILERS = cc1$(exeext) cc1obj$(exeext)
 
 # List of things which should already be built whenever we try to use xgcc
 # to compile anything (without linking).
-GCC_PASSES=xgcc$(exeext) $(COMPILERS) cpp$(exeext) $(EXTRA_PASSES)
+GCC_PASSES=xgcc$(exeext) cc1$(exeext) cpp$(exeext) $(EXTRA_PASSES)
 
 # List of things which should already be built whenever we try to use xgcc
 # to link anything.
