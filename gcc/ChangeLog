@@ -1,3 +1,10 @@
+2000-08-24  Jason Merrill  <jason@redhat.com>
+
+	* dwarf2out.c (AT_flag, AT_int, AT_unsigned, AT_string, AT_ref,
+	AT_loc, AT_addr, AT_lbl): Abort on unsuitable input.
+	(get_AT_low_pc, get_AT_hi_pc, get_AT_string, get_AT_flag, 
+	get_AT_unsigned, get_AT_ref): Don't call them if get_AT fails.
+
 2000-08-24  Greg McGary  <greg@mcgary.org>
 
 	* optabs.c (init_optabs): Initialize fixtab, fixtrunctab, floattab,

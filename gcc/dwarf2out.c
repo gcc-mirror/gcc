@@ -4125,7 +4125,7 @@ AT_flag (a)
   if (a && AT_class (a) == dw_val_class_flag)
     return a->dw_attr_val.v.val_flag;
 
-  return 0;
+  abort ();
 }
 
 /* Add a signed integer attribute value to a DIE.  */
@@ -4153,7 +4153,7 @@ AT_int (a)
   if (a && AT_class (a) == dw_val_class_const)
     return a->dw_attr_val.v.val_int;
 
-  return 0;
+  abort ();
 }
 
 /* Add an unsigned integer attribute value to a DIE.  */
@@ -4181,7 +4181,7 @@ AT_unsigned (a)
   if (a && AT_class (a) == dw_val_class_unsigned_const)
     return a->dw_attr_val.v.val_unsigned;
 
-  return 0;
+  abort ();
 }
 
 /* Add an unsigned double integer attribute value to a DIE.  */
@@ -4247,7 +4247,7 @@ AT_string (a)
   if (a && AT_class (a) == dw_val_class_str)
     return a->dw_attr_val.v.val_str;
 
-  return NULL;
+  abort ();
 }
 
 /* Add a DIE reference attribute value to a DIE.  */
@@ -4275,7 +4275,7 @@ AT_ref (a)
   if (a && AT_class (a) == dw_val_class_die_ref)
     return a->dw_attr_val.v.val_die_ref;
 
-  return NULL;
+  abort ();
 }
 
 /* Add an FDE reference attribute value to a DIE.  */
@@ -4320,7 +4320,7 @@ AT_loc (a)
   if (a && AT_class (a) == dw_val_class_loc)
     return a->dw_attr_val.v.val_loc;
 
-  return NULL;
+  abort ();
 }
 
 /* Add an address constant attribute value to a DIE.  */
@@ -4348,7 +4348,7 @@ AT_addr (a)
   if (a && AT_class (a) == dw_val_class_addr)
     return a->dw_attr_val.v.val_addr;
 
-  return NULL;
+  abort ();
 }
 
 /* Add a label identifier attribute value to a DIE.  */
@@ -4394,7 +4394,7 @@ AT_lbl (a)
 	    || AT_class (a) == dw_val_class_lbl_offset))
     return a->dw_attr_val.v.val_lbl_id;
 
-  return NULL;
+  abort ();
 }
 
 /* Get the attribute of type attr_kind.  */
@@ -4436,7 +4436,7 @@ get_AT_low_pc (die)
      register dw_die_ref die;
 {
   register dw_attr_ref a = get_AT (die, DW_AT_low_pc);
-  return AT_lbl (a);
+  return a ? AT_lbl (a) : NULL;
 }
 
 /* Return the "high pc" attribute value, typically associated with
@@ -4449,7 +4449,7 @@ get_AT_hi_pc (die)
      register dw_die_ref die;
 {
   register dw_attr_ref a = get_AT (die, DW_AT_high_pc);
-  return AT_lbl (a);
+  return a ? AT_lbl (a) : NULL;
 }
 
 /* Return the value of the string attribute designated by ATTR_KIND, or
@@ -4461,7 +4461,7 @@ get_AT_string (die, attr_kind)
      register enum dwarf_attribute attr_kind;
 {
   register dw_attr_ref a = get_AT (die, attr_kind);
-  return AT_string (a);
+  return a ? AT_string (a) : NULL;
 }
 
 /* Return the value of the flag attribute designated by ATTR_KIND, or -1
@@ -4473,7 +4473,7 @@ get_AT_flag (die, attr_kind)
      register enum dwarf_attribute attr_kind;
 {
   register dw_attr_ref a = get_AT (die, attr_kind);
-  return AT_flag (a);
+  return a ? AT_flag (a) : 0;
 }
 
 /* Return the value of the unsigned attribute designated by ATTR_KIND, or 0
@@ -4485,7 +4485,7 @@ get_AT_unsigned (die, attr_kind)
      register enum dwarf_attribute attr_kind;
 {
   register dw_attr_ref a = get_AT (die, attr_kind);
-  return AT_unsigned (a);
+  return a ? AT_unsigned (a) : 0;
 }
 
 static inline dw_die_ref
@@ -4494,7 +4494,7 @@ get_AT_ref (die, attr_kind)
      register enum dwarf_attribute attr_kind;
 {
   register dw_attr_ref a = get_AT (die, attr_kind);
-  return AT_ref (a);
+  return a ? AT_ref (a) : NULL;
 }
 
 static inline int
