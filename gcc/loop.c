@@ -1476,10 +1476,21 @@ add_label_notes (x, insns)
 
   if (code == LABEL_REF && !LABEL_REF_NONLOCAL_P (x))
     {
-      for (insn = insns; insn; insn = NEXT_INSN (insn))
-	if (reg_mentioned_p (XEXP (x, 0), insn))
-	  REG_NOTES (insn) = gen_rtx (EXPR_LIST, REG_LABEL, XEXP (x, 0),
-				      REG_NOTES (insn));
+      rtx next = next_real_insn (XEXP (x, 0));
+
+      /* Don't record labels that refer to dispatch tables.
+	 This is not necessary, since the tablejump references the same label.
+	 And if we did record them, flow.c would make worse code.  */
+      if (next == 0
+	  || ! (GET_CODE (next) == JUMP_INSN
+		&& (GET_CODE (PATTERN (next)) == ADDR_VEC
+		    || GET_CODE (PATTERN (next)) == ADDR_DIFF_VEC)))
+	{
+	  for (insn = insns; insn; insn = NEXT_INSN (insn))
+	    if (reg_mentioned_p (XEXP (x, 0), insn))
+	      REG_NOTES (insn) = gen_rtx (EXPR_LIST, REG_LABEL, XEXP (x, 0),
+					  REG_NOTES (insn));
+	}
       return;
     }
 
@@ -2167,7 +2178,7 @@ static void
 find_and_verify_loops (f)
      rtx f;
 {
-  rtx insn;
+  rtx insn, label;
   int current_loop = -1;
   int next_loop = -1;
   int loop;
@@ -2222,8 +2233,24 @@ find_and_verify_loops (f)
       uid_loop_num[INSN_UID (insn)] = current_loop;
     }
 
-  /* Now scan all JUMP_INSN's in the function.  If any branches into a loop
-     that it is not contained within, that loop is marked invalid.
+  /* Any loop containing a label used in an initializer must be invalidated,
+     because it can be jumped into from anywhere.  */
+
+  for (label = forced_labels; label; label = XEXP (label, 1))
+    {
+      int loop_num;
+
+      for (loop_num = uid_loop_num[INSN_UID (XEXP (label, 0))];
+	   loop_num != -1;
+	   loop_num = loop_outer_loop[loop_num])
+	loop_invalid[loop_num] = 1;
+    }
+
+  /* Now scan all insn's in the function.  If any JUMP_INSN branches into a
+     loop that it is not contained within, that loop is marked invalid.
+     If any INSN or CALL_INSN uses a label's address, then the loop containing
+     that label is marked invalid, because it could be jumped into from
+     anywhere.
 
      Also look for blocks of code ending in an unconditional branch that
      exits the loop.  If such a block is surrounded by a conditional 
@@ -2233,9 +2260,26 @@ find_and_verify_loops (f)
      possible second cse pass.  */
 
   for (insn = f; insn; insn = NEXT_INSN (insn))
-    if (GET_CODE (insn) == JUMP_INSN)
+    if (GET_RTX_CLASS (GET_CODE (insn)) == 'i')
       {
 	int this_loop_num = uid_loop_num[INSN_UID (insn)];
+
+	if (GET_CODE (insn) == INSN || GET_CODE (insn) == CALL_INSN)
+	  {
+	    rtx note = find_reg_note (insn, REG_LABEL, NULL_RTX);
+	    if (note)
+	      {
+		int loop_num;
+
+		for (loop_num = uid_loop_num[INSN_UID (XEXP (note, 0))];
+		     loop_num != -1;
+		     loop_num = loop_outer_loop[loop_num])
+		  loop_invalid[loop_num] = 1;
+	      }
+	  }
+
+	if (GET_CODE (insn) != JUMP_INSN)
+	  continue;
 
 	mark_loop_jump (PATTERN (insn), this_loop_num);
 
