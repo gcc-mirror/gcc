@@ -138,10 +138,23 @@ calls_alloca (exp)
       break;
 
     case BLOCK:
-      /* Must not look at BLOCK_SUPERCONTEXT since it will point back to
-	 us.  */
-      length = 3;
-      break;
+      {
+	register tree local;
+
+	for (local = BLOCK_VARS (exp); local; local = TREE_CHAIN (local))
+	  if (calls_alloca (DECL_INITIAL (local)))
+	    return 1;
+      }
+      {
+	register tree subblock;
+
+	for (subblock = BLOCK_SUBBLOCKS (exp);
+	     subblock;
+	     subblock = TREE_CHAIN (subblock))
+	  if (calls_alloca (subblock))
+	    return 1;
+      }
+      return 0;
 
     case METHOD_CALL_EXPR:
       length = 3;
