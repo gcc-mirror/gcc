@@ -557,7 +557,7 @@ vax_rtx_costs_1 (register rtx x, enum rtx_code code, enum rtx_code outer_code)
         return 1;
       if (outer_code == PLUS && (unsigned HOST_WIDE_INT) -INTVAL (x) <= 077)
         return 1;
-      /* FALLTHRU */
+      /* Fall through.  */
 
     case CONST:
     case LABEL_REF:

@@ -1084,7 +1084,7 @@ pdp11_rtx_costs (rtx x, int code, int outer_code ATTRIBUTE_UNUSED, int *total)
 	  *total = 0;
 	  return true;
 	}
-      /* FALLTHRU */
+      /* Fall through.  */
 
     case CONST:
     case LABEL_REF:

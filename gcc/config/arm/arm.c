@@ -3596,7 +3596,7 @@ arm_rtx_costs_1 (rtx x, enum rtx_code code, enum rtx_code outer)
     }
 }
 
-/* RTX costs for cores with a slow MUL implimentation.  */
+/* RTX costs for cores with a slow MUL implementation.  */
 
 static bool
 arm_slowmul_rtx_costs (rtx x, int code, int outer_code, int *total)
@@ -4424,7 +4424,7 @@ vfp_mem_operand (rtx op)
 	  || reg_mentioned_p (virtual_stack_vars_rtx, op)))
     return FALSE;
 
-  /* Constants are converted into offets from labels.  */
+  /* Constants are converted into offsets from labels.  */
   if (GET_CODE (op) == MEM)
     {
       rtx ind;
@@ -9186,7 +9186,7 @@ arm_output_epilogue (rtx sibling)
 	     not have base+offset addressing modes, so we use IP to
 	     hold the address.  Each block requires nregs*2+1 words.  */
 	  start_reg = FIRST_VFP_REGNUM;
-	  /* Cound how many blocks of registers need saving.  */
+	  /* Count how many blocks of registers need saving.  */
 	  for (reg = FIRST_VFP_REGNUM; reg < LAST_VFP_REGNUM; reg += 2)
 	    {
 	      if ((!regs_ever_live[reg] || call_used_regs[reg])
@@ -12449,7 +12449,7 @@ thumb_exit (FILE *f, int reg_containing_return_addr, rtx eh_ofs)
 
 /* Emit code to push or pop registers to or from the stack.  F is the
    assembly file.  MASK is the registers to push or pop.  PUSH is
-   non-zero if we should push, and zero if we should pop.  For debugging
+   nonzero if we should push, and zero if we should pop.  For debugging
    output, if pushing, adjust CFA_OFFSET by the amount of space added
    to the stack.  REAL_REGS should have the same number of bits set as
    MASK, and will be used instead (in the same order) to describe which
@@ -14132,7 +14132,7 @@ arm_setup_incoming_varargs (CUMULATIVE_ARGS *cum,
     *pretend_size = (NUM_ARG_REGS - cum->nregs) * UNITS_PER_WORD;
 }
 
-/* Return non-zero if the CONSUMER instruction (a store) does not need
+/* Return nonzero if the CONSUMER instruction (a store) does not need
    PRODUCER's value to calculate the address.  */
 
 int
@@ -14155,7 +14155,7 @@ arm_no_early_store_addr_dep (rtx producer, rtx consumer)
   return !reg_overlap_mentioned_p (value, addr);
 }
 
-/* Return non-zero if the CONSUMER instruction (an ALU op) does not
+/* Return nonzero if the CONSUMER instruction (an ALU op) does not
    have an early register shift value or amount dependency on the
    result of PRODUCER.  */
 
@@ -14187,7 +14187,7 @@ arm_no_early_alu_shift_dep (rtx producer, rtx consumer)
   return !reg_overlap_mentioned_p (value, early_op);
 }
 
-/* Return non-zero if the CONSUMER instruction (an ALU op) does not
+/* Return nonzero if the CONSUMER instruction (an ALU op) does not
    have an early register shift value dependency on the result of
    PRODUCER.  */
 
@@ -14220,7 +14220,7 @@ arm_no_early_alu_shift_value_dep (rtx producer, rtx consumer)
   return !reg_overlap_mentioned_p (value, early_op);
 }
 
-/* Return non-zero if the CONSUMER (a mul or mac op) does not
+/* Return nonzero if the CONSUMER (a mul or mac op) does not
    have an early register mult dependency on the result of
    PRODUCER.  */
 

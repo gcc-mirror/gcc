@@ -3475,7 +3475,7 @@ c4x_S_address_parse (rtx op, int *base, int *incdec, int *index, int *disp)
 	    return;
 	  }
       }
-      /* Fallthrough.  */
+      /* Fall through.  */
 
     default:
       fatal_insn ("invalid indirect (S) memory address", op);
@@ -3992,7 +3992,7 @@ legitimize_operands (enum rtx_code code, rtx *operands, enum machine_mode mode)
   /* When the shift count is greater than 32 then the result 
      can be implementation dependent.  We truncate the result to
      fit in 5 bits so that we do not emit invalid code when
-     optimising---such as trying to generate lhu2 with 20021124-1.c.  */
+     optimizing---such as trying to generate lhu2 with 20021124-1.c.  */
   if (((code == ASHIFTRT || code == LSHIFTRT || code == ASHIFT)
       && (GET_CODE (operands[2]) == CONST_INT))
       && INTVAL (operands[2]) > (GET_MODE_BITSIZE (mode) - 1))

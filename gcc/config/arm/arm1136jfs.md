@@ -56,7 +56,7 @@
 ;;
 ;; - A 4-stage LSU pipeline.  It has address generation, data cache (1),
 ;;   data cache (2), and writeback stages.  (Note that this pipeline,
-;;   including the writeback stage, is independant from the ALU & LSU pipes.)  
+;;   including the writeback stage, is independent from the ALU & LSU pipes.)  
 
 (define_cpu_unit "e_1,e_2,e_3,e_wb" "arm1136jfs")     ; ALU and MAC
 ; e_1 = Sh/Mac1, e_2 = ALU/Mac2, e_3 = SAT/Mac3
@@ -336,7 +336,7 @@
 	       "arm_no_early_store_addr_dep")
 
 ;; An alu op can start sooner after a load, if that alu op does not
-;; have an early register dependancy on the load
+;; have an early register dependency on the load
 (define_bypass 2 "11_load1"
 	       "11_alu_op")
 (define_bypass 2 "11_load1"

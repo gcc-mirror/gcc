@@ -1437,7 +1437,7 @@ enum reg_class
    : (C) == 'Y' ? (word_offset_memref_operand (OP, GET_MODE (OP)))      \
    : 0)
 
-/* Defining, which contraints are memory contraints. Tells reload,
+/* Define which constraints are memory constraints.  Tell reload
    that any memory address can be reloaded by copying the 
    memory address into a base register if required.  */
 

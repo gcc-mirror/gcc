@@ -27,7 +27,7 @@
    rather than a string constant.  The FLAGS are the bitwise-or of the
    traits that apply to that core.
 
-   If you update this table, you must update the "tune" attribue in
+   If you update this table, you must update the "tune" attribute in
    arm.md.  */
 
 ARM_CORE(arm2,		FL_CO_PROC | FL_MODE26, slowmul)

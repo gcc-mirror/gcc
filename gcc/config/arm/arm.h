@@ -136,7 +136,7 @@ extern GTY(()) rtx arm_target_insn;
 extern int target_flags;
 /* The floating point mode.  */
 extern const char *target_fpu_name;
-/* For backwards compatability.  */
+/* For backwards compatibility.  */
 extern const char *target_fpe_name;
 /* Whether to use floating point hardware.  */
 extern const char *target_float_abi_name;
@@ -672,7 +672,7 @@ extern enum float_abi_type arm_float_abi;
 
 /* Default floating point architecture.  Override in sub-target if
    necessary.
-   FIXME: Is this still neccessary/desirable?  Do we want VFP chips to
+   FIXME: Is this still necessary/desirable?  Do we want VFP chips to
    default to VFP unless overridden by a subtarget?  If so it would be best
    to remove these definitions.  It also assumes there is only one cpu model
    with a Maverick fpu.  */
@@ -1379,7 +1379,7 @@ enum reg_class
 #define REGNO_REG_CLASS(REGNO)  arm_regno_class (REGNO)
 
 /* FPA registers can't do subreg as all values are reformatted to internal
-   precision.  VFP registers may only be accesed in the mode they
+   precision.  VFP registers may only be accessed in the mode they
    were set.  */
 #define CANNOT_CHANGE_MODE_CLASS(FROM, TO, CLASS)	\
   (GET_MODE_SIZE (FROM) != GET_MODE_SIZE (TO)		\

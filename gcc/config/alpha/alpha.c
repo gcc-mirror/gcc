@@ -2112,7 +2112,7 @@ alpha_rtx_costs (rtx x, int code, int outer_code, int *total)
 	  *total = 0;
 	  return true;
 	}
-      /* FALLTHRU */
+      /* Fall through.  */
 
     case CONST_DOUBLE:
       if (x == CONST0_RTX (mode))
@@ -2170,7 +2170,7 @@ alpha_rtx_costs (rtx x, int code, int outer_code, int *total)
 	  *total = COSTS_N_INSNS (1);
 	  return false;
 	}
-      /* FALLTHRU */
+      /* Fall through.  */
 
     case ASHIFTRT:
     case LSHIFTRT:
@@ -2206,7 +2206,7 @@ alpha_rtx_costs (rtx x, int code, int outer_code, int *total)
 	  *total = COSTS_N_INSNS (1);
 	  return false;
 	}
-      /* FALLTHRU */
+      /* Fall through.  */
 
     case ABS:
       if (! float_mode_p)
@@ -2214,7 +2214,7 @@ alpha_rtx_costs (rtx x, int code, int outer_code, int *total)
 	  *total = COSTS_N_INSNS (1) + alpha_rtx_cost_data[alpha_cpu].int_cmov;
 	  return false;
 	}
-      /* FALLTHRU */
+      /* Fall through.  */
 
     case FLOAT:
     case UNSIGNED_FLOAT:
@@ -3275,7 +3275,7 @@ alpha_emit_setcc (enum rtx_code code)
     case NE:
       if (!fp_p && op1 == const0_rtx)
 	break;
-      /* FALLTHRU */
+      /* Fall through.  */
 
     case ORDERED:
       cmp_code = reverse_condition (code);
@@ -3708,7 +3708,7 @@ alpha_emit_xfloating_libcall (const char *func, rtx target, rtx operands[],
 	case VOIDmode:
 	  if (GET_CODE (operands[i]) != CONST_INT)
 	    abort ();
-	  /* FALLTHRU */
+	  /* Fall through.  */
 	case DImode:
 	  reg = gen_rtx_REG (DImode, regno);
 	  regno += 1;
@@ -6081,7 +6081,7 @@ function_value (tree valtype, tree func ATTRIBUTE_UNUSED,
     case MODE_INT:
       /* Do the same thing as PROMOTE_MODE.  */
       mode = DImode;
-      /* FALLTHRU */
+      /* Fall through.  */
 
     case MODE_COMPLEX_INT:
     case MODE_VECTOR_INT:

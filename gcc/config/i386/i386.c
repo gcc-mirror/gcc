@@ -2573,7 +2573,7 @@ function_arg (CUMULATIVE_ARGS *cum,	/* current arg information */
       case BLKmode:
 	if (bytes < 0)
 	  break;
-	/* FALLTHRU */
+	/* Fall through.  */
       case DImode:
       case SImode:
       case HImode:
@@ -5836,7 +5836,7 @@ legitimate_pic_operand_p (rtx x)
 	  default:
 	    return false;
 	  }
-      /* FALLTHRU */
+      /* Fall through.  */
 
     case SYMBOL_REF:
     case LABEL_REF:
@@ -6712,7 +6712,7 @@ output_pic_addr_const (FILE *file, rtx x, int code)
 
     case LABEL_REF:
       x = XEXP (x, 0);
-      /* FALLTHRU */
+      /* Fall through.  */
     case CODE_LABEL:
       ASM_GENERATE_INTERNAL_LABEL (buf, "L", CODE_LABEL_NUMBER (x));
       assemble_name (asm_out_file, buf);
@@ -7100,13 +7100,13 @@ print_reg (rtx x, int code, FILE *file)
 	  fputs ("st(0)", file);
 	  break;
 	}
-      /* FALLTHRU */
+      /* Fall through.  */
     case 8:
     case 4:
     case 12:
       if (! ANY_FP_REG_P (x))
 	putc (code == 8 && TARGET_64BIT ? 'r' : 'e', file);
-      /* FALLTHRU */
+      /* Fall through.  */
     case 16:
     case 2:
     normal:
@@ -8630,15 +8630,15 @@ ix86_match_ccmode (rtx insn, enum machine_mode req_mode)
     case CCmode:
       if (req_mode == CCGCmode)
 	return 0;
-      /* FALLTHRU */
+      /* Fall through.  */
     case CCGCmode:
       if (req_mode == CCGOCmode || req_mode == CCNOmode)
 	return 0;
-      /* FALLTHRU */
+      /* Fall through.  */
     case CCGOCmode:
       if (req_mode == CCZmode)
 	return 0;
-      /* FALLTHRU */
+      /* Fall through.  */
     case CCZmode:
       break;
 
@@ -14653,7 +14653,7 @@ ix86_force_to_memory (enum machine_mode mode, rtx operand)
 	case HImode:
 	case SImode:
 	  operand = gen_lowpart (DImode, operand);
-	  /* FALLTHRU */
+	  /* Fall through.  */
 	case DImode:
 	  emit_insn (
 		      gen_rtx_SET (VOIDmode,
@@ -14693,7 +14693,7 @@ ix86_force_to_memory (enum machine_mode mode, rtx operand)
 	  /* It is better to store HImodes as SImodes.  */
 	  if (!TARGET_PARTIAL_REG_STALL)
 	    operand = gen_lowpart (SImode, operand);
-	  /* FALLTHRU */
+	  /* Fall through.  */
 	case SImode:
 	  emit_insn (
 		      gen_rtx_SET (VOIDmode,
@@ -15058,7 +15058,7 @@ ix86_rtx_costs (rtx x, int code, int outer_code, int *total)
 	      return false;
 	    }
 	}
-      /* FALLTHRU */
+      /* Fall through.  */
 
     case ROTATE:
     case ASHIFTRT:
@@ -15166,7 +15166,7 @@ ix86_rtx_costs (rtx x, int code, int outer_code, int *total)
 	      return true;
 	    }
 	}
-      /* FALLTHRU */
+      /* Fall through.  */
 
     case MINUS:
       if (FLOAT_MODE_P (mode))
@@ -15174,7 +15174,7 @@ ix86_rtx_costs (rtx x, int code, int outer_code, int *total)
 	  *total = COSTS_N_INSNS (ix86_cost->fadd);
 	  return false;
 	}
-      /* FALLTHRU */
+      /* Fall through.  */
 
     case AND:
     case IOR:
@@ -15188,7 +15188,7 @@ ix86_rtx_costs (rtx x, int code, int outer_code, int *total)
 	               << (GET_MODE (XEXP (x, 1)) != DImode)));
 	  return true;
 	}
-      /* FALLTHRU */
+      /* Fall through.  */
 
     case NEG:
       if (FLOAT_MODE_P (mode))
@@ -15196,7 +15196,7 @@ ix86_rtx_costs (rtx x, int code, int outer_code, int *total)
 	  *total = COSTS_N_INSNS (ix86_cost->fchs);
 	  return false;
 	}
-      /* FALLTHRU */
+      /* Fall through.  */
 
     case NOT:
       if (!TARGET_64BIT && mode == DImode)
