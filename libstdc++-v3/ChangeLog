@@ -1,3 +1,11 @@
+2004-11-19  Jonathan Wakely  <redi@gcc.gnu.org>
+
+	* include/bits/basic_string.h, include/bits/locale_classes.h,
+	include/bits/valarray_after.h, include/bits/valarray_before.h,
+	include/ext/stdio_sync_filebuf.h, include/std/std_algorithm.h,
+	include/std/std_functional.h, include/std/std_memory.h,
+	include/std/std_numeric.h: Doxygen fixes.
+
 2004-11-19  Paolo Carlini  <pcarlini@suse.de>
 
 	* testsuite/22_locale/time_get/get_date/char/1.cc: In the checks

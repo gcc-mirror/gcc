@@ -41,7 +41,7 @@
  *
  */
 
-/** @file memory
+/** @file
  *  This is a Standard C++ Library header.  You should @c #include this header
  *  in your programs, rather than any of the "st[dl]_*.h" implementation files.
  */
@@ -255,7 +255,7 @@ namespace std
        *  specification here, but omitting it is standard conforming.  Its
        *  presence can be detected only if _Tp::~_Tp() throws, but this is
        *  prohibited.  [17.4.3.6]/2
-       *  @end maint
+       *  @endif
        */
       ~auto_ptr() { delete _M_ptr; }
       

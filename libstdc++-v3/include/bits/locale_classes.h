@@ -32,7 +32,7 @@
 // ISO C++ 14882: 22.1  Locales
 //
 
-/** @file localefwd.h
+/** @file locale_classes.h
  *  This is an internal header file, included by other library headers.
  *  You should not attempt to use it directly.
  */
