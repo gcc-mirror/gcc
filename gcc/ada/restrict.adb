@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                            $Revision: 1.37 $
+--                            $Revision$
 --                                                                          --
 --          Copyright (C) 1992-2001 Free Software Foundation, Inc.          --
 --                                                                          --
@@ -37,6 +37,7 @@ with Namet;    use Namet;
 with Nmake;    use Nmake;
 with Opt;      use Opt;
 with Stand;    use Stand;
+with Targparm; use Targparm;
 with Uname;    use Uname;
 
 package body Restrict is
@@ -266,8 +267,13 @@ package body Restrict is
    procedure Disallow_In_No_Run_Time_Mode (Enode : Node_Id) is
    begin
       if No_Run_Time then
-         Error_Msg_N
-           ("this construct not allowed in No_Run_Time mode", Enode);
+         if High_Integrity_Mode_On_Target then
+            Error_Msg_N
+              ("this construct not allowed in high integrity mode", Enode);
+         else
+            Error_Msg_N
+              ("this construct not allowed in No_Run_Time mode", Enode);
+         end if;
       end if;
    end Disallow_In_No_Run_Time_Mode;
 

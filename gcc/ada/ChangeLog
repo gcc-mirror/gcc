@@ -1,3 +1,28 @@
+2001-10-11  Robert Dewar <dewar@gnat.com>
+
+	* restrict.adb (Disallow in No_Run_Time_Mode): Properly specialize 
+	the error message for high integrity mode.
+	
+	* rtsfind.adb (RTE): Give message if we try to find an entity that 
+	is not available in high integrity mode.
+	
+	* rtsfind.ads:
+	(OK_To_Use_In_HIE_Mode): New array.
+	(RTE): May return Empty in high integrity mode.
+	
+	* rtsfind.ads (OK_To_Use_In_No_Run_Time_Mode): New name for 
+	OK_To_Use_In_HIE_Mode, now includes System_FAT_xxx. 
+	
+	* sem_ch6.adb (Analyze_Subprogram_Body): Kill body in predefined 
+	unit if not inlined always and in no runtime mode. Fixes problem 
+	caused by new Rtsfind changes.
+	
+	* sem_ch6.adb (Analyze_Subrogram_Body): Do not Check_References if 
+	body is deleted.
+	
+	* rtsfind.adb (RTE): Make sure we do not try to load unit after 
+	giving message for entity not available in high integrity mode.
+
 2001-10-11  Pascal Obry <obry@gnat.com>
 	
 	* impunit.adb: Add GNAT.CRC32.
