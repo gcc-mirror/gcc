@@ -1,3 +1,7 @@
+2003-09-19  Andrew Pinski  <pinskia@physics.uc.edu>
+	* g++.dg/init/array11.C: Change unsigned to __SIZE_TYPE__
+	so that it will not complain on LP64 targets.
+
 2003-09-19  Kriang Lerdsuwanakij  <lerdsuwa@users.sourceforge.net>
 
 	PR c++/495
