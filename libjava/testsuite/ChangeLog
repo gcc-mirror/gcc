@@ -1,3 +1,7 @@
+2001-07-12  Tom Tromey  <tromey@redhat.com>
+
+	* libjava.lang/N19990310_4.xfail: Removed.
+
 2001-07-10  Alexandre Petit-Bianco  <apbianco@readhat.com>
 
 	* libjava.lang/TLtest.java: New file.
