@@ -37,7 +37,7 @@ extern "C"
   // These aren't declared in any Boehm GC header.
   void GC_finalize_all (void);
   ptr_t GC_debug_generic_malloc (size_t size, int k, GC_EXTRA_PARAMS);
-};
+}
 
 #define MAYBE_MARK(Obj, Top, Limit, Source, Exit)  \
 	Top=GC_MARK_AND_PUSH((GC_PTR)Obj, Top, Limit, (GC_PTR *)Source)

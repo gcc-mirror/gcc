@@ -1,6 +1,6 @@
 // array.h - Header file for CNI arrays.  -*- c++ -*-
 
-/* Copyright (C) 1998, 1999, 2000, 2001  Free Software Foundation
+/* Copyright (C) 1998, 1999, 2000, 2001, 2002  Free Software Foundation
 
    This file is part of libgcj.
 
@@ -30,6 +30,14 @@ public:
 };
 
 template<class T>
+class JArray;
+
+template<class T>
+inline T* elements(JArray<T>& x);
+template<class T>
+inline T* elements(JArray<T>* x);
+
+template<class T>
 class JArray : public __JArray
 {
   T data[0];
@@ -45,7 +53,7 @@ inline T* elements(JArray<T>& x) { return x.data; }
 template<class T>
 inline T* elements(JArray<T>* x) { return x->data; }
 
-}; // end extern "Java"
+} // end extern "Java"
 
 /* These typesdefs match those in JNI. */
 typedef __JArray *jarray;

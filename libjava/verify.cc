@@ -128,6 +128,34 @@ private:
     return r;
   }
 
+  __attribute__ ((__noreturn__)) void verify_fail (char *s, jint pc = -1)
+  {
+    using namespace java::lang;
+    StringBuffer *buf = new StringBuffer ();
+
+    buf->append (JvNewStringLatin1 ("verification failed"));
+    if (pc == -1)
+      pc = start_PC;
+    if (pc != -1)
+      {
+	buf->append (JvNewStringLatin1 (" at PC "));
+	buf->append (pc);
+      }
+
+    _Jv_InterpMethod *method = current_method;
+    buf->append (JvNewStringLatin1 (" in "));
+    buf->append (current_class->getName());
+    buf->append ((jchar) ':');
+    buf->append (JvNewStringUTF (method->get_method()->name->data));
+    buf->append ((jchar) '(');
+    buf->append (JvNewStringUTF (method->get_method()->signature->data));
+    buf->append ((jchar) ')');
+
+    buf->append (JvNewStringLatin1 (": "));
+    buf->append (JvNewStringLatin1 (s));
+    throw new java::lang::VerifyError (buf->toString ());
+  }
+
   // This enum holds a list of tags for all the different types we
   // need to handle.  Reference types are treated specially by the
   // type class.
@@ -3062,34 +3090,6 @@ private:
 			 start_PC);
 	  }
       }
-  }
-
-  __attribute__ ((__noreturn__)) void verify_fail (char *s, jint pc = -1)
-  {
-    using namespace java::lang;
-    StringBuffer *buf = new StringBuffer ();
-
-    buf->append (JvNewStringLatin1 ("verification failed"));
-    if (pc == -1)
-      pc = start_PC;
-    if (pc != -1)
-      {
-	buf->append (JvNewStringLatin1 (" at PC "));
-	buf->append (pc);
-      }
-
-    _Jv_InterpMethod *method = current_method;
-    buf->append (JvNewStringLatin1 (" in "));
-    buf->append (current_class->getName());
-    buf->append ((jchar) ':');
-    buf->append (JvNewStringUTF (method->get_method()->name->data));
-    buf->append ((jchar) '(');
-    buf->append (JvNewStringUTF (method->get_method()->signature->data));
-    buf->append ((jchar) ')');
-
-    buf->append (JvNewStringLatin1 (": "));
-    buf->append (JvNewStringLatin1 (s));
-    throw new java::lang::VerifyError (buf->toString ());
   }
 
 public:

@@ -162,7 +162,7 @@ namespace gcj
   
   /* Set to true by _Jv_CreateJavaVM. */
   extern bool runtimeInitialized;
-};
+}
 
 /* Type of pointer used as finalizer.  */
 typedef void _Jv_FinalizerFunc (jobject);

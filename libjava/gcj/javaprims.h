@@ -123,7 +123,7 @@ extern "Java"
       class ValidatorAndPriority;
       class WriteAbortedException;
       class Writer;
-    };
+    }
 
     namespace lang
     {
@@ -222,7 +222,7 @@ extern "Java"
         class ReferenceQueue;
         class SoftReference;
         class WeakReference;
-      };
+      }
 
       namespace reflect
       {
@@ -240,8 +240,8 @@ extern "Java"
 	class Proxy$ProxyType;
         class ReflectPermission;
 	class UndeclaredThrowableException;
-      };
-    };
+      }
+    }
 
     namespace util
     {
@@ -369,7 +369,7 @@ extern "Java"
         class JarInputStream;
         class JarOutputStream;
         class Manifest;
-      };
+      }
 
       namespace zip
       {
@@ -393,10 +393,10 @@ extern "Java"
         class ZipFile$ZipEntryEnumeration;
         class ZipInputStream;
         class ZipOutputStream;
-      };
-    };
-  };
-};
+      }
+    }
+  }
+}
   
 typedef struct java::lang::Object* jobject;
 typedef class java::lang::Class* jclass;
