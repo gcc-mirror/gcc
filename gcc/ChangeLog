@@ -1,3 +1,26 @@
+2001-01-09  Nick Clifton  <nickc@redhat.com>
+
+	* config/rs6000/rs6000.c (rs6000_sysv_varargs_p): Delete.
+	(setup_incoming_varargs): Use sysv_varargs_p field of the
+	cfun->machine structure.
+	(struct machine_function): Move to rs6000.h
+	(rs6000_save_machine_status): Delete.
+	(rs6000_restore_machine_status): Delete.
+	(rs6000_init_machine_status): New Function.
+	(rs6000_free_machine_status): New Function.
+	(rs6000_init_expanders): Use new functions.
+
+	* config/rs6000/rs6000.h (rs6000_sysv_varargs_p): Delete
+	export.
+	(struct machine_function): Move here.
+
+	* config/rs6000/sysv4.h (RS6000_VARARGS_AREA): Use
+	sysv_varargs_p field of the cfun->machine structure.
+
+	* config/rs6000/rs6000-protos.h (rs6000_save_machine_status):
+	Remove prototype.
+	(rs6000_restore_machine_status): Remove prototype.
+
 2001-01-09  Richard Henderson  <rth@redhat.com>
 
 	* sched-int.h (struct deps): Add max_reg, reg_last_in_use; merge

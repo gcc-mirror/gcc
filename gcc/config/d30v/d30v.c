@@ -52,15 +52,8 @@ static void d30v_add_gc_roots PARAMS ((void));
 struct rtx_def *d30v_compare_op0;
 struct rtx_def *d30v_compare_op1;
 
-/* Define the information needed to modify the epilogue for EH.  */
-
-rtx d30v_eh_epilogue_sp_ofs;
-
 /* Cached value of d30v_stack_info */
 static d30v_stack_t *d30v_stack_cache = (d30v_stack_t *)0;
-
-/* Cache for __builtin_return_addr */
-static rtx d30v_return_addr_rtx;
 
 /* Values of the -mbranch-cost=n string.  */
 int d30v_branch_cost = D30V_DEFAULT_BRANCH_COST;
@@ -2594,7 +2587,7 @@ d30v_expand_epilogue ()
   for (i = GPR_FIRST; i <= GPR_LAST; i++)
     if (info->save_p[i] == 1)
       {
-	if (d30v_eh_epilogue_sp_ofs && i == GPR_LINK)
+	if (cfun->machine->eh_epilogue_sp_ofs && i == GPR_LINK)
 	  extra_stack = 4;
 	else
 	  {
@@ -2615,15 +2608,15 @@ d30v_expand_epilogue ()
 
   if (extra_stack)
     {
-      if (d30v_eh_epilogue_sp_ofs)
-	emit_insn (gen_addsi3 (d30v_eh_epilogue_sp_ofs,
-			       d30v_eh_epilogue_sp_ofs,
+      if (cfun->machine->eh_epilogue_sp_ofs)
+	emit_insn (gen_addsi3 (cfun->machine->eh_epilogue_sp_ofs,
+			       cfun->machine->eh_epilogue_sp_ofs,
 			       GEN_INT (extra_stack)));
       else
         emit_insn (gen_addsi3 (sp, sp, GEN_INT (extra_stack)));
     }
-  if (d30v_eh_epilogue_sp_ofs)
-    emit_insn (gen_addsi3 (sp, sp, d30v_eh_epilogue_sp_ofs));
+  if (cfun->machine->eh_epilogue_sp_ofs)
+    emit_insn (gen_addsi3 (sp, sp, cfun->machine->eh_epilogue_sp_ofs));
 
   /* Now emit the return instruction.  */
   emit_jump_insn (gen_rtx_RETURN (VOIDmode));
@@ -3595,34 +3588,39 @@ d30v_adjust_cost (insn, link, dep_insn, cost)
 }
 
 
-/* Functions to save and restore d30v_return_addr_rtx.  */
-
-struct machine_function
-{
-  rtx ra_rtx;
-};
+/* Routine to allocate, mark and free a per-function,
+   machine specific structure.  */
 
 static void
-d30v_save_machine_status (p)
+d30v_init_machine_status (p)
      struct function *p;
 {
-  struct machine_function *machine =
+  p->machine =
     (struct machine_function *) xmalloc (sizeof (struct machine_function));
-
-  p->machine = machine;
-  machine->ra_rtx = d30v_return_addr_rtx;
 }
 
 static void
-d30v_restore_machine_status (p)
+d30v_mark_machine_status (p)
+     struct function * p;
+{
+  if (p->machine == NULL)
+    return;
+  
+  ggc_mark_rtx (p->machine->ra_rtx);
+  ggc_mark_rtx (p->machine->eh_epilogue_sp_ofs);
+}
+
+static void
+d30v_free_machine_status (p)
      struct function *p;
 {
   struct machine_function *machine = p->machine;
 
-  d30v_return_addr_rtx = machine->ra_rtx;
+  if (machine == NULL)
+    return;
 
   free (machine);
-  p->machine = (struct machine_function *)0;
+  p->machine = NULL;
 }
 
 /* Do anything needed before RTL is emitted for each function.  */
@@ -3630,12 +3628,10 @@ d30v_restore_machine_status (p)
 void
 d30v_init_expanders ()
 {
-  d30v_return_addr_rtx = NULL_RTX;
-  d30v_eh_epilogue_sp_ofs = NULL_RTX;
-
   /* Arrange to save and restore machine status around nested functions.  */
-  save_machine_status = d30v_save_machine_status;
-  restore_machine_status = d30v_restore_machine_status;
+  init_machine_status = d30v_init_machine_status;
+  mark_machine_status = d30v_mark_machine_status;
+  free_machine_status = d30v_free_machine_status;
 }
 
 /* Find the current function's return address.
@@ -3650,11 +3646,13 @@ d30v_return_addr ()
 {
   rtx ret;
 
-  if ((ret = d30v_return_addr_rtx) == NULL)
+  ret = cfun->machine->ra_rtx;
+  
+  if (ret == NULL)
     {
       rtx init;
 
-      d30v_return_addr_rtx = ret = gen_reg_rtx (Pmode);
+      cfun->machine->ra_rtx = ret = gen_reg_rtx (Pmode);
 
       init = gen_rtx (SET, VOIDmode, ret, gen_rtx (REG, Pmode, GPR_LINK));
       push_topmost_sequence ();
@@ -3673,6 +3671,4 @@ d30v_add_gc_roots ()
 {
   ggc_add_rtx_root (&d30v_compare_op0, 1);
   ggc_add_rtx_root (&d30v_compare_op1, 1);
-  ggc_add_rtx_root (&d30v_eh_epilogue_sp_ofs, 1);
-  ggc_add_rtx_root (&d30v_return_addr_rtx, 1);
 }
