@@ -1,3 +1,8 @@
+2000-08-14  Ulrich Weigand  <uweigand@de.ibm.com>
+ 
+	* target.h (FFETARGET_32bit_longs): Don't define
+	for 64-bit S/390.                                                                                              
+
 2001-07-19  Jakub Jelinek  <jakub@redhat.com>
 
 	* top.c (ffe_decode_option): Disallow lang-independent processing
