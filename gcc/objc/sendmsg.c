@@ -161,7 +161,7 @@ void __objc_init_dispatch_tables()
 
 static void __objc_init_install_dtable(id receiver, SEL op)
 {
-  __label__ allready_initialized;
+  __label__ already_initialized;
   IMP imp;
   void* args;
   void* result;
@@ -169,7 +169,7 @@ static void __objc_init_install_dtable(id receiver, SEL op)
   /* This may happen, if the programmer has taken the address of a 
      method before the dtable was initialized... too bad for him! */
   if(receiver->class_pointer->dtable != __objc_uninstalled_dtable)
-    goto allready_initialized;
+    goto already_initialized;
 
   if(CLS_ISCLASS(receiver->class_pointer))
     {
@@ -198,7 +198,7 @@ static void __objc_init_install_dtable(id receiver, SEL op)
 	CLS_SETINITIALIZED((Class)receiver);
     }
 
-allready_initialized:
+already_initialized:
   
   /* Get real method for this in newly installed dtable */
   imp = get_imp(receiver->class_pointer, op);
