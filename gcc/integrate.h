@@ -126,8 +126,7 @@ extern void mark_stores PROTO((rtx, rtx));
 extern rtx get_label_from_map PROTO((struct inline_remap *, int));
 
 /* Set the label indicated.  */
-#define set_label_in_map(map, i, x) \
-  ((map)->label_map[i] = (x))
+#define set_label_in_map(MAP, I, X) ((MAP)->label_map[I] = (X))
 
 /* Unfortunately, we need a global copy of const_equiv map for communication
    with a function called from note_stores.  Be *very* careful that this
