@@ -1,3 +1,8 @@
+2005-02-10  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
+
+	* pa/linux-unwind.h (pa32_fallback_frame_state): Handle misaligned
+	signal trampolines.
+
 2005-02-10  David Daney  <ddaney@avtrex.com>
 
 	* config/alpha/linux-unwind.h: Add exception clause to copyright.
