@@ -148,7 +148,7 @@ EGCS_PROG_INSTALL
 
 AC_HEADER_STDC
 AC_HEADER_TIME
-AC_CHECK_HEADERS(limits.h stddef.h string.h strings.h stdlib.h time.h fcntl.h unistd.h sys/file.h sys/time.h sys/resource.h sys/param.h sys/times.h varargs.h sys/varargs.h wait.h sys/wait.h)
+AC_CHECK_HEADERS(limits.h stddef.h string.h strings.h stdlib.h time.h fcntl.h unistd.h stab.h sys/file.h sys/time.h sys/resource.h sys/param.h sys/times.h varargs.h sys/varargs.h wait.h sys/wait.h)
 
 # Check for thread headers.
 AC_CHECK_HEADER(thread.h, [have_thread_h=yes], [have_thread_h=])
@@ -355,7 +355,7 @@ for machine in $build $host $target; do
  		fi
 		;;
 	alpha*-*-linux-gnu*)
-		tm_file="${tm_file} alpha/elf.h alpha/linux-elf.h alpha/linux.h"
+		tm_file="${tm_file} alpha/linux.h alpha/elf.h"
 		xm_defines=USE_BFD
 		target_cpu_default="MASK_GAS"
 		tmake_file="t-linux alpha/t-linux alpha/t-crtbe"
@@ -941,6 +941,11 @@ for machine in $build $host $target; do
 		tm_file=i386/go32-rtems.h
 		tmake_file="i386/t-go32 t-rtems"
 		;;
+	i[[34567]]86-*-rtemself*)
+		cpu_type=i386
+		tm_file=i386/rtemself.h
+		tmake_file="i386/t-i386bare t-rtems"
+		;;
 	i[[34567]]86-*-rtems*)
 		cpu_type=i386
 		tm_file=i386/rtems.h
@@ -1037,6 +1042,21 @@ for machine in $build $host $target; do
 		xmake_file=x-svr4
 		extra_parts="crtbegin.o crtend.o"
 		;;
+	i[[34567]]86-*-osf1*)		# Intel 80386's running OSF/1 1.3+
+		cpu_type=i386
+		xm_file="${xm_file} xm-svr4.h i386/xm-sysv4.h i386/xm-osf1elf.h"
+		xm_defines="USE_C_ALLOCA SMALL_ARG_MAX"
+		fixincludes=Makefile.in #Don't do it on OSF/1
+		if [[ x$stabs = xyes ]]
+		then
+			tm_file=i386/osf1elfgdb.h
+		else
+			tm_file=i386/osf1elf.h
+		fi
+		tmake_file=i386/t-osf1elf
+		xmake_file=i386/x-osf1elf
+		extra_parts="crti.o crtn.o crtbegin.o crtend.o"
+		;;
 	i[[34567]]86-*-sysv*)		# Intel 80386's running system V
 		xm_defines="USG SVR3"
 		xmake_file=i386/x-sysv3
@@ -1059,7 +1079,7 @@ for machine in $build $host $target; do
 		fi
 		;;
 	i386-*-vsta)			# Intel 80386's running VSTa kernel
-		xm_file=i386/xm-vsta.h
+		xm_file="${xm_file} i386/xm-vsta.h"
 		tm_file=i386/vsta.h
 		tmake_file=i386/t-vsta
 		xmake_file=i386/x-vsta
@@ -2548,7 +2568,8 @@ for machine in $build $host $target; do
 		extra_parts="crtbegin.o crtend.o"
 		;;
 	sparc-*-vxsim*)
-		xm_file="sparc/xm-sysv4.h sparc/xm-sol2.h"
+		xm_file="xm-siglist.h sparc/xm-sysv4.h sparc/xm-sol2.h"
+		xm_defines="USG POSIX"
 		tm_file=sparc/vxsim.h
 		tmake_file=sparc/t-vxsparc
 		xmake_file=sparc/x-sysv4

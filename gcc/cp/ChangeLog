@@ -255,6 +255,10 @@ Wed Apr 15 13:20:06 1998  John Carr  <jfc@mit.edu>
 	* errfn.c: Rework to avoid problems when HOST_WIDE_INT is longer
 	than a pointer.
 
+Sun Apr 12 22:31:19 1998  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	* cvt.c (cp_convert_to_pointer): Use TYPE_PRECISION.
+
 Fri Apr 10 12:16:49 1998  Benjamin Kosnik  <bkoz@loony.cygnus.com>
 
 	* decl.c (duplicate_decls): Don't warn for redundant decls if

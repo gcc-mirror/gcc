@@ -119,7 +119,8 @@ in the following sections.
 -Wcast-align  -Wcast-qual  -Wchar-subscript  -Wcomment
 -Wconversion  -Werror  -Wformat
 -Wid-clash-@var{len}  -Wimplicit -Wimplicit-int 
--Wimplicit-function-declarations -Wimport  -Winline
+-Wimplicit-function-declaration  -Wimport
+-Werror-implicit-function-declaration  -Winline
 -Wlarger-than-@var{len}  -Wmain  -Wmissing-declarations
 -Wmissing-prototypes  -Wnested-externs  -Wno-import  
 -Wold-style-cast  -Woverloaded-virtual  -Wparentheses
@@ -1269,8 +1270,10 @@ specified.
 @item -Wimplicit-int
 Warn when a declaration does not specify a type.
 
-@item -Wimplicit-function-declarations
-Warn whenever a function is used before being declared.
+@item -Wimplicit-function-declaration
+@itemx -Werror-implicit-function-declaration
+Give a warning (or error) whenever a function is used before being
+declared.
 
 @item -Wimplicit
 Same as @samp{-Wimplicit-int} and @samp{-Wimplicit-function-}@*
@@ -1963,6 +1966,21 @@ Dump after instruction combination, to the file @file{@var{file}.combine}.
 @item d
 Dump after delayed branch scheduling, to @file{@var{file}.dbr}.
 @item D
+Dump all macro definitions, at the end of preprocessing, in addition to
+normal output.
+@item y
+Dump debugging information during parsing, to standard error.
+@item r
+Dump after RTL generation, to @file{@var{file}.rtl}.
+@item x
+Just generate RTL for a function instead of compiling it.  Usually used
+with @samp{r}.
+@item j
+Dump after first jump optimization, to @file{@var{file}.jump}.
+@item s
+Dump after CSE (including the jump optimization that sometimes
+follows CSE), to @file{@var{file}.cse}.
+@item F
 Dump after purging ADDRESSOF, to @file{@var{file}.addressof}.
 @item f
 Dump after flow analysis, to @file{@var{file}.flow}.

@@ -3888,14 +3888,12 @@ main (argc, argv, envp)
 		    mach_dep_reorg_dump = 1;
 #endif
 		    break;
+		  case 'A':
+		    flag_debug_asm = 1;
+		    break;
 		  case 'b':
 		    branch_prob_dump = 1;
 		    break;
-#ifdef STACK_REGS		    
-		  case 'k':
-		    stack_reg_dump = 1;
-		    break;
-#endif
 		  case 'c':
 		    combine_dump = 1;
 		    break;
@@ -3907,18 +3905,23 @@ main (argc, argv, envp)
 		  case 'f':
 		    flow_dump = 1;
 		    break;
+		  case 'F':
+		    addressof_dump = 1;
+		    break;
 		  case 'g':
 		    global_reg_dump = 1;
 		    break;
 		  case 'j':
 		    jump_opt_dump = 1;
 		    break;
-		  case 'D':
-		    addressof_dump = 1;
-		    break;
 		  case 'J':
 		    jump2_opt_dump = 1;
 		    break;
+#ifdef STACK_REGS		    
+		  case 'k':
+		    stack_reg_dump = 1;
+		    break;
+#endif
 		  case 'l':
 		    local_reg_dump = 1;
 		    break;
@@ -3939,8 +3942,14 @@ main (argc, argv, envp)
 		  case 'r':
 		    rtl_dump = 1;
 		    break;
+		  case 'R':
+		    sched2_dump = 1;
+		    break;
 		  case 's':
 		    cse_dump = 1;
+		    break;
+		  case 'S':
+		    sched_dump = 1;
 		    break;
 		  case 't':
 		    cse2_dump = 1;
@@ -3948,20 +3957,11 @@ main (argc, argv, envp)
 		  case 'N':
 		    regmove_dump = 1;
 		    break;
-		  case 'S':
-		    sched_dump = 1;
-		    break;
-		  case 'R':
-		    sched2_dump = 1;
-		    break;
 		  case 'y':
 		    set_yydebug (1);
 		    break;
 		  case 'x':
 		    rtl_dump_and_exit = 1;
-		    break;
-		  case 'A':
-		    flag_debug_asm = 1;
 		    break;
 		  default:
 		    warning ("unrecognised gcc debugging option: %c", p[-1]);

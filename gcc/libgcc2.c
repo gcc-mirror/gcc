@@ -3682,7 +3682,6 @@ label:
 #endif /* DWARF2_UNWIND_INFO */
 
 #endif /* L_eh */
-
 
 #ifdef L_pure
 #ifndef inhibit_libc

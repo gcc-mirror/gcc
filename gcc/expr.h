@@ -131,6 +131,10 @@ extern int pending_stack_adjust;
    until no longer needed.  CLEANUP_POINT_EXPRs define the lifetime
    of TARGET_EXPRs.  */
 extern int target_temp_slot_level;
+
+/* Current level for normal temporaries.  */
+
+extern int temp_slot_level;
 
 #ifdef TREE_CODE /* Don't lose if tree.h not included.  */
 /* Structure to record the size of a sequence of arguments

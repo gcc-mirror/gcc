@@ -933,6 +933,7 @@ static int ignore_srcdir;
 
 static int safe_read PROTO((int, char *, int));
 static void safe_write PROTO((int, char *, int));
+static void eprint_string PROTO((char *, size_t));
 
 int main PROTO((int, char **));
 
@@ -1146,6 +1147,34 @@ safe_write (desc, ptr, len)
     len -= written;
   }
 }
+
+/* Print a string to stderr, with extra handling in case it contains
+   embedded NUL characters.  Any present are written as is.
+
+   Using fwrite for this purpose produces undesireable results on VMS
+   when stderr happens to be a record oriented file, such as a batch log
+   file, rather than a stream oriented one.  */
+
+static void
+eprint_string (string, length)
+     char *string;
+     size_t length;
+{
+  size_t segment_length;
+
+  do {
+    fprintf(stderr, "%s", string);
+    length -= (segment_length = strlen(string));
+    if (length > 0)
+      {
+	fputc('\0', stderr);
+	length -= 1;
+	/* Advance past the portion which has already been printed.  */
+	string += segment_length + 1;
+      }
+  } while (length > 0);
+}
+
 
 int
 main (argc, argv)
@@ -6804,6 +6833,10 @@ do_warning (buf, limit, op, keyword)
   bcopy ((char *) buf, (char *) copy, length);
   copy[length] = 0;
   SKIP_WHITE_SPACE (copy);
+
+  if (pedantic && !instack[indepth].system_header_p)
+    pedwarn ("ANSI C does not allow `#warning'");
+
   /* Use `pedwarn' not `warning', because #warning isn't in the C Standard;
      if -pedantic-errors is given, #warning should cause an error.  */
   pedwarn ("#warning %s", copy);
@@ -6990,8 +7023,7 @@ do_elif (buf, limit, op, keyword)
 	     && !bcmp (if_stack->fname, ip->nominal_fname,
 		       if_stack->fname_len))) {
 	fprintf (stderr, ", file ");
-	fwrite (if_stack->fname, sizeof if_stack->fname[0],
-		if_stack->fname_len, stderr);
+	eprint_string (if_stack->fname, if_stack->fname_len);
       }
       fprintf (stderr, ")\n");
     }
@@ -7533,8 +7565,7 @@ do_else (buf, limit, op, keyword)
 	     && !bcmp (if_stack->fname, ip->nominal_fname,
 		       if_stack->fname_len))) {
 	fprintf (stderr, ", file ");
-	fwrite (if_stack->fname, sizeof if_stack->fname[0],
-		if_stack->fname_len, stderr);
+	eprint_string (if_stack->fname, if_stack->fname_len);
       }
       fprintf (stderr, ")\n");
     }
@@ -8879,8 +8910,7 @@ verror (msg, args)
     }
 
   if (ip != NULL) {
-    fwrite (ip->nominal_fname, sizeof ip->nominal_fname[0],
-	    ip->nominal_fname_len, stderr);
+    eprint_string (ip->nominal_fname, ip->nominal_fname_len);
     fprintf (stderr, ":%d: ", ip->lineno);
   }
   vfprintf (stderr, msg, args);
@@ -8907,8 +8937,7 @@ error_from_errno (name)
     }
 
   if (ip != NULL) {
-    fwrite (ip->nominal_fname, sizeof ip->nominal_fname[0],
-	    ip->nominal_fname_len, stderr);
+    eprint_string (ip->nominal_fname, ip->nominal_fname_len);
     fprintf (stderr, ":%d: ", ip->lineno);
   }
 
@@ -8953,8 +8982,7 @@ vwarning (msg, args)
     }
 
   if (ip != NULL) {
-    fwrite (ip->nominal_fname, sizeof ip->nominal_fname[0],
-	    ip->nominal_fname_len, stderr);
+    eprint_string (ip->nominal_fname, ip->nominal_fname_len);
     fprintf (stderr, ":%d: ", ip->lineno);
   }
   fprintf (stderr, "warning: ");
@@ -8996,8 +9024,7 @@ verror_with_line (line, msg, args)
     }
 
   if (ip != NULL) {
-    fwrite (ip->nominal_fname, sizeof ip->nominal_fname[0],
-	    ip->nominal_fname_len, stderr);
+    eprint_string (ip->nominal_fname, ip->nominal_fname_len);
     fprintf (stderr, ":%d: ", line);
   }
   vfprintf (stderr, msg, args);
@@ -9045,8 +9072,7 @@ vwarning_with_line (line, msg, args)
     }
 
   if (ip != NULL) {
-    fwrite (ip->nominal_fname, sizeof ip->nominal_fname[0],
-	    ip->nominal_fname_len, stderr);
+    eprint_string (ip->nominal_fname, ip->nominal_fname_len);
     fprintf (stderr, line ? ":%d: " : ": ", line);
   }
   fprintf (stderr, "warning: ");
@@ -9109,7 +9135,7 @@ pedwarn_with_file_and_line (file, file_len, line, PRINTF_ALIST (msg))
   if (!pedantic_errors && inhibit_warnings)
     return;
   if (file) {
-    fwrite (file, sizeof file[0], file_len, stderr);
+    eprint_string (file, file_len);
     fprintf (stderr, ":%d: ", line);
   }
   if (pedantic_errors)
@@ -9159,8 +9185,7 @@ print_containing_files ()
       }
 
       fprintf (stderr, " from ");
-      fwrite (ip->nominal_fname, sizeof ip->nominal_fname[0],
-	      ip->nominal_fname_len, stderr);
+      eprint_string (ip->nominal_fname, ip->nominal_fname_len);
       fprintf (stderr, ":%d", ip->lineno);
     }
   if (! first)

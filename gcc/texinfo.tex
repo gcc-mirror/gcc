@@ -25,8 +25,12 @@
 %
 % Please try the latest version of texinfo.tex before submitting bug
 % reports; you can get the latest version from:
-% ftp://ftp.cs.umb.edu/pub/tex/texinfo.tex
 % /home/gd/gnu/doc/texinfo.tex on the GNU machines.
+% ftp://ftp.gnu.org/pub/gnu/texinfo.tex
+% (and all GNU mirrors)
+% ftp://tug.org/tex/texinfo.tex
+% ftp://ctan.org/macros/texinfo/texinfo.tex
+% (and all CTAN mirrors, finger ctan@tug.org for a list).
 % 
 % Send bug reports to bug-texinfo@gnu.org.
 % Please include a precise test case in each bug report,
@@ -35,6 +39,18 @@
 % Texinfo macros (with @macro) are *not* supported by texinfo.tex.  You
 % have to run makeinfo -E to expand macros first; the texi2dvi script
 % does this.
+% 
+% To process a Texinfo manual with TeX, it's most reliable to use the
+% texi2dvi shell script that comes with the distribution.  For simple
+% manuals, you can get away with:
+%   tex foo.texi
+%   texindex foo.??
+%   tex foo.texi
+%   tex foo.texi
+%   dvips foo.dvi -o # or whatever, to process the dvi file.
+% The extra runs of TeX get the cross-reference information correct.
+% Sometimes one run after texindex suffices, and sometimes you need more
+% than two; texi2dvi does it as many times as necessary.
 
 
 % Make it possible to create a .fmt file just by loading this file:
@@ -70,17 +86,9 @@
 \let\ptexstar=\*
 \let\ptext=\t
 
-% Be sure we're in horizontal mode when doing a tie, since we make space
-% equivalent to this in @example-like environments. Otherwise, a space
-% at the beginning of a line will start with \penalty -- and
-% since \penalty is valid in vertical mode, we'd end up putting the
-% penalty on the vertical list instead of in the new paragraph.
-{\catcode`@ = 11
- % Avoid using \@M directly, because that causes trouble
- % if the definition is written into an index file.
- \global\let\tiepenalty = \@M
- \gdef\tie{\leavevmode\penalty\tiepenalty\ }
-}
+% We never want plain's outer \+ definition in Texinfo.
+% For @tex, we can use \tabalign.
+\let\+ = \relax
 
 
 \message{Basics,}
@@ -90,18 +98,20 @@
 % starts a new line in the output.
 \newlinechar = `^^J
 
-% Set up fixed words for English.
-\ifx\putwordChapter\undefined{\gdef\putwordChapter{Chapter}}\fi%
-\def\putwordInfo{Info}%
-\ifx\putwordSee\undefined{\gdef\putwordSee{See}}\fi%
-\ifx\putwordsee\undefined{\gdef\putwordsee{see}}\fi%
-\ifx\putwordfile\undefined{\gdef\putwordfile{file}}\fi%
-\ifx\putwordpage\undefined{\gdef\putwordpage{page}}\fi%
-\ifx\putwordsection\undefined{\gdef\putwordsection{section}}\fi%
-\ifx\putwordSection\undefined{\gdef\putwordSection{Section}}\fi%
-\ifx\putwordTableofContents\undefined{\gdef\putwordTableofContents{Table of Contents}}\fi%
-\ifx\putwordShortContents\undefined{\gdef\putwordShortContents{Short Contents}}\fi%
-\ifx\putwordAppendix\undefined{\gdef\putwordAppendix{Appendix}}\fi%
+% Set up fixed words for English if not already set.
+\ifx\putwordAppendix\undefined \gdef\putwordAppendix{Appendix}\fi
+\ifx\putwordChapter\undefined  \gdef\putwordChapter{Chapter}\fi
+\ifx\putwordfile\undefined     \gdef\putwordfile{file}\fi
+\ifx\putwordInfo\undefined     \gdef\putwordfile{Info}\fi
+\ifx\putwordMethodon\undefined \gdef\putwordMethodon{Method on}\fi
+\ifx\putwordon\undefined       \gdef\putwordon{on}\fi
+\ifx\putwordpage\undefined     \gdef\putwordpage{page}\fi
+\ifx\putwordsection\undefined  \gdef\putwordsection{section}\fi
+\ifx\putwordSection\undefined  \gdef\putwordSection{Section}\fi
+\ifx\putwordsee\undefined      \gdef\putwordsee{see}\fi
+\ifx\putwordSee\undefined      \gdef\putwordSee{See}\fi
+\ifx\putwordShortContents\undefined  \gdef\putwordShortContents{Short Contents}\fi
+\ifx\putwordTableofContents\undefined\gdef\putwordTableofContents{Table of Contents}\fi
 
 % Ignore a token.
 %
@@ -393,7 +403,7 @@
 
 % @@ prints an @
 % Kludge this until the fonts are right (grr).
-\def\@{{\tt \char '100}}
+\def\@{{\tt\char64}}
 
 % This is turned off because it was never documented
 % and you can use @w{...} around a quote to suppress ligatures.
@@ -403,8 +413,8 @@
 %\def\'{{'}}
 
 % Used to generate quoted braces.
-\def\mylbrace {{\tt \char '173}}
-\def\myrbrace {{\tt \char '175}}
+\def\mylbrace {{\tt\char123}}
+\def\myrbrace {{\tt\char125}}
 \let\{=\mylbrace
 \let\}=\myrbrace
 \begingroup
@@ -439,6 +449,18 @@
   \else\ifx\temp\jmacro \j
   \else \errmessage{@dotless can be used only with i or j}%
   \fi\fi
+}
+
+% Be sure we're in horizontal mode when doing a tie, since we make space
+% equivalent to this in @example-like environments. Otherwise, a space
+% at the beginning of a line will start with \penalty -- and
+% since \penalty is valid in vertical mode, we'd end up putting the
+% penalty on the vertical list instead of in the new paragraph.
+{\catcode`@ = 11
+ % Avoid using \@M directly, because that causes trouble
+ % if the definition is written into an index file.
+ \global\let\tiepenalty = \@M
+ \gdef\tie{\leavevmode\penalty\tiepenalty\ }
 }
 
 % @: forces normal size whitespace following.
@@ -772,6 +794,7 @@ where each line of input produces a line of output.}
 % Also ignore @macro ... @end macro.  The user must run texi2dvi,
 % which runs makeinfo to do macro expansion.  Ignore @unmacro, too.
 \def\macro{\doignore{macro}}
+\def\macrocsname{macro}
 \let\unmacro = \comment
 
 
@@ -786,7 +809,9 @@ where each line of input produces a line of output.}
   \ignoresections
   %
   % Define a command to swallow text until we reach `@end #1'.
-  \long\def\doignoretext##1\end #1{\enddoignore}%
+  % This @ is a catcode 12 token (that is the normal catcode of @ in
+  % this texinfo.tex file).  We change the catcode of @ below to match.
+  \long\def\doignoretext##1@end #1{\enddoignore}%
   %
   % Make sure that spaces turn into tokens that match what \doignoretext wants.
   \catcode32 = 10
@@ -794,6 +819,22 @@ where each line of input produces a line of output.}
   % Ignore braces, too, so mismatched braces don't cause trouble.
   \catcode`\{ = 9
   \catcode`\} = 9
+  %
+  % We must not have @c interpreted as a control sequence.
+  \catcode`\@ = 12
+  %
+  % Make the letter c a comment character so that the rest of the line
+  % will be ignored. This way, the document can have (for example)
+  %   @c @end ifinfo
+  % and the @end ifinfo will be properly ignored.
+  % (We've just changed @ to catcode 12.)
+  % 
+  % But we can't do this if #1 is `macro', since that actually contains a c.
+  % Happily, none of the other conditionals have the letter `c' in their names!
+  \def\temp{#1}%
+  \ifx\temp\macrocsname \else
+    \catcode`\c = 14
+  \fi
   %
   % And now expand that command.
   \doignoretext
@@ -1702,18 +1743,6 @@ July\or August\or September\or October\or November\or December\fi
 
 
 \message{tables,}
-
-% @tabs -- simple alignment
-
-% These don't work.  For one thing, \+ is defined as outer.
-% So these macros cannot even be defined.
-
-%\def\tabs{\parsearg\tabszzz}
-%\def\tabszzz #1{\settabs\+#1\cr}
-%\def\tabline{\parsearg\tablinezzz}
-%\def\tablinezzz #1{\+#1\cr}
-%\def\&{&}
-
 % Tables -- @table, @ftable, @vtable, @item(x), @kitem(x), @xitem(x).
 
 % default indentation of table text
@@ -2260,20 +2289,24 @@ width0pt\relax} \fi
 
 % @synindex foo bar    makes index foo feed into index bar.
 % Do this instead of @defindex foo if you don't want it as a separate index.
-\def\synindex #1 #2 {%
-\expandafter\let\expandafter\synindexfoo\expandafter=\csname#2indfile\endcsname
-\expandafter\let\csname#1indfile\endcsname=\synindexfoo
-\expandafter\xdef\csname#1index\endcsname{%     % Define \xxxindex
-\noexpand\doindex {#2}}%
+% The \closeout helps reduce unnecessary open files; the limit on the
+% Acorn RISC OS is a mere 16 files.
+\def\synindex#1 #2 {%
+  \expandafter\let\expandafter\synindexfoo\expandafter=\csname#2indfile\endcsname
+  \expandafter\closeout\csname#1indfile\endcsname
+  \expandafter\let\csname#1indfile\endcsname=\synindexfoo
+  \expandafter\xdef\csname#1index\endcsname{% define \xxxindex
+    \noexpand\doindex{#2}}%
 }
 
 % @syncodeindex foo bar   similar, but put all entries made for index foo
 % inside @code.
-\def\syncodeindex #1 #2 {%
-\expandafter\let\expandafter\synindexfoo\expandafter=\csname#2indfile\endcsname
-\expandafter\let\csname#1indfile\endcsname=\synindexfoo
-\expandafter\xdef\csname#1index\endcsname{%     % Define \xxxindex
-\noexpand\docodeindex {#2}}%
+\def\syncodeindex#1 #2 {%
+  \expandafter\let\expandafter\synindexfoo\expandafter=\csname#2indfile\endcsname
+  \expandafter\closeout\csname#1indfile\endcsname
+  \expandafter\let\csname#1indfile\endcsname=\synindexfoo
+  \expandafter\xdef\csname#1index\endcsname{% define \xxxindex
+    \noexpand\docodeindex{#2}}%
 }
 
 % Define \doindex, the driver for all \fooindex macros.
@@ -2294,6 +2327,7 @@ width0pt\relax} \fi
 \def\singlecodeindexer #1{\doind{\indexname}{\code{#1}}}
 
 \def\indexdummies{%
+\def\ { }%
 % Take care of the plain tex accent commands.
 \def\"{\realbackslash "}%
 \def\`{\realbackslash `}%
@@ -3553,6 +3587,7 @@ width0pt\relax} \fi
   \let\!=\ptexexclam
   \let\i=\ptexi
   \let\{=\ptexlbrace
+  \let\+=\tabalign
   \let\}=\ptexrbrace
   \let\*=\ptexstar
   \let\t=\ptext
@@ -3604,8 +3639,8 @@ width0pt\relax} \fi
 % \nonarrowing is a flag.  If "set", @lisp etc don't narrow margins.
 \let\nonarrowing=\relax
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% \cartouche: draw rectangle w/rounded corners around argument
+% @cartouche ... @end cartouche: draw rectangle w/rounded corners around
+% environment contents.
 \font\circle=lcircle10
 \newdimen\circthick
 \newdimen\cartouter\newdimen\cartinner
@@ -3632,9 +3667,9 @@ width0pt\relax} \fi
         \cartinner=\hsize \advance\cartinner by-\lskip
                           \advance\cartinner by-\rskip
         \cartouter=\hsize
-        \advance\cartouter by 18pt % allow for 3pt kerns on either
+        \advance\cartouter by 18.4pt % allow for 3pt kerns on either
 %                                    side, and for 6pt waste from
-%                                    each corner char
+%                                    each corner char, and rule thickness
         \normbskip=\baselineskip \normpskip=\parskip \normlskip=\lineskip
         % Flag to tell @lisp, etc., not to narrow margin.
         \let\nonarrowing=\comment
@@ -3892,7 +3927,12 @@ width0pt\relax} \fi
 \catcode 61=\active % 61 is `='
 \obeylines\activeparens\spacesplit#3}
 
-\def\defmethparsebody #1#2#3#4 {\begingroup\inENV %
+% #1 is the \E... control sequence to end the definition (which we define).
+% #2 is the \...x control sequence for consecutive fns (which we define).
+% #3 is the control sequence to call to resume processing.
+% #4, delimited by the space, is the class name.
+% 
+\def\defmethparsebody#1#2#3#4 {\begingroup\inENV %
 \medbreak %
 % Define the end token that this defining construct specifies
 % so that it will exit this group.
@@ -3902,6 +3942,19 @@ width0pt\relax} \fi
 \advance\leftskip by \defbodyindent \advance \rightskip by \defbodyindent
 \exdentamount=\defbodyindent
 \begingroup\obeylines\activeparens\spacesplit{#3{#4}}}
+
+% @deftypemethod has an extra argument that nothing else does.  Sigh.
+% 
+\def\deftypemethparsebody#1#2#3#4 #5 {\begingroup\inENV %
+\medbreak %
+% Define the end token that this defining construct specifies
+% so that it will exit this group.
+\def#1{\endgraf\endgroup\medbreak}%
+\def#2##1 {\begingroup\obeylines\activeparens\spacesplit{#3{##1}}}%
+\parindent=0in
+\advance\leftskip by \defbodyindent \advance \rightskip by \defbodyindent
+\exdentamount=\defbodyindent
+\begingroup\obeylines\activeparens\spacesplit{#3{#4}{#5}}}
 
 \def\defopparsebody #1#2#3#4#5 {\begingroup\inENV %
 \medbreak %
@@ -4124,35 +4177,42 @@ width0pt\relax} \fi
 
 % @defmethod, and so on
 
-% @defop {Funny Method} foo-class frobnicate argument
+% @defop CATEGORY CLASS OPERATION ARG...
 
 \def\defop #1 {\def\defoptype{#1}%
 \defopparsebody\Edefop\defopx\defopheader\defoptype}
 
 \def\defopheader #1#2#3{%
-\dosubind {fn}{\code{#2}}{on #1}% Make entry in function index
+\dosubind {fn}{\code{#2}}{\putwordon\ #1}% Make entry in function index
 \begingroup\defname {#2}{\defoptype{} on #1}%
 \defunargs {#3}\endgroup %
 }
 
-% @deftypemethod foo-class return-type foo-method args
+% @deftypemethod CLASS RETURN-TYPE METHOD ARG...
 %
 \def\deftypemethod{%
-  \defmethparsebody\Edeftypemethod\deftypemethodx\deftypemethodheader}
+  \deftypemethparsebody\Edeftypemethod\deftypemethodx\deftypemethodheader}
 %
 % #1 is the class name, #2 the data type, #3 the method name, #4 the args.
 \def\deftypemethodheader#1#2#3#4{%
-  \deftypefnheaderx{Method on #1}{#2}#3 #4\relax
+  \dosubind{fn}{\code{#3}}{\putwordon\ \code{#1}}% entry in function index
+  \begingroup
+    \defname{\defheaderxcond#2\relax$$$#3}{\putwordMethodon\ \code{#1}}%
+    \deftypefunargs{#4}%
+  \endgroup
 }
 
 % @defmethod == @defop Method
-
+%
 \def\defmethod{\defmethparsebody\Edefmethod\defmethodx\defmethodheader}
-
-\def\defmethodheader #1#2#3{%
-\dosubind {fn}{\code{#2}}{on #1}% entry in function index
-\begingroup\defname {#2}{Method on #1}%
-\defunargs {#3}\endgroup %
+%
+% #1 is the class name, #2 the method name, #3 the args.
+\def\defmethodheader#1#2#3{%
+  \dosubind{fn}{\code{#2}}{\putwordon\ \code{#1}}% entry in function index
+  \begingroup
+    \defname{#2}{\putwordMethodon\ \code{#1}}%
+    \defunargs{#3}%
+  \endgroup
 }
 
 % @defcv {Class Option} foo-class foo-flag
@@ -4270,18 +4330,17 @@ width0pt\relax} \fi
 
 
 \message{cross reference,}
-% Define cross-reference macros
-\newwrite \auxfile
+\newwrite\auxfile
 
-\newif\ifhavexrefs  % True if xref values are known.
+\newif\ifhavexrefs    % True if xref values are known.
 \newif\ifwarnedxrefs  % True if we warned once that they aren't known.
 
-% @inforef is simple.
+% @inforef is relatively simple.
 \def\inforef #1{\inforefzzz #1,,,,**}
 \def\inforefzzz #1,#2,#3,#4**{\putwordSee{} \putwordInfo{} \putwordfile{} \file{\ignorespaces #3{}},
   node \samp{\ignorespaces#1{}}}
 
-% \setref{foo} defines a cross-reference point named foo.
+% @setref{foo} defines a cross-reference point named foo.
 
 \def\setref#1{%
 \dosetq{#1-title}{Ytitle}%
@@ -4349,7 +4408,7 @@ width0pt\relax} \fi
     % into the usual \leavevmode...\vrule stuff for purposes of
     % printing. So we \turnoffactive for the \refx-snt, back on for the
     % printing, back off for the \refx-pg.
-    {\turnoffactive \refx{#1-snt}{}}%
+    {\normalturnoffactive \refx{#1-snt}{}}%
     \space [\printednodename],\space
     \turnoffactive \putwordpage\tie\refx{#1-pg}{}%
   \fi
@@ -4357,11 +4416,15 @@ width0pt\relax} \fi
 
 % \dosetq is the interface for calls from other macros
 
-% Use \turnoffactive so that punctuation chars such as underscore
-% work in node names.
-\def\dosetq #1#2{{\let\folio=0 \turnoffactive
-\edef\next{\write\auxfile{\internalsetq {#1}{#2}}}%
-\next}}
+% Use \normalturnoffactive so that punctuation chars such as underscore
+% and backslash work in node names.  (\turnoffactive doesn't do \.)
+\def\dosetq#1#2{%
+  {\let\folio=0
+   \normalturnoffactive
+   \edef\next{\write\auxfile{\internalsetq{#1}{#2}}}%
+   \next
+  }%
+}
 
 % \internalsetq {foo}{page} expands into
 % CHARACTERS 'xrdef {foo}{...expansion of \Ypage...}
@@ -4492,8 +4555,7 @@ width0pt\relax} \fi
   \catcode`\$=\other
   \catcode`\#=\other
   \catcode`\&=\other
-  % `\+ does not work, so use 43.
-  \catcode43=\other
+  \catcode`+=\other % avoid \+ for paranoia even though we've turned it off
   % Make the characters 128-255 be printing characters
   {%
     \count 1=128
@@ -4864,10 +4926,10 @@ width0pt\relax} \fi
 % use math or other variants that look better in normal text.
 
 \catcode`\"=\active
-\def\activedoublequote{{\tt \char '042}}
+\def\activedoublequote{{\tt\char34}}
 \let"=\activedoublequote
 \catcode`\~=\active
-\def~{{\tt \char '176}}
+\def~{{\tt\char126}}
 \chardef\hat=`\^
 \catcode`\^=\active
 \def^{{\tt \hat}}
@@ -4878,7 +4940,7 @@ width0pt\relax} \fi
 \def\_{\leavevmode \kern.06em \vbox{\hrule width.3em height.1ex}}
 
 \catcode`\|=\active
-\def|{{\tt \char '174}}
+\def|{{\tt\char124}}
 \chardef \less=`\<
 \catcode`\<=\active
 \def<{{\tt \less}}
@@ -4965,8 +5027,8 @@ width0pt\relax} \fi
 @gdef@fixbackslash{@ifx\@eatinput @let\ = @normalbackslash @fi
   @catcode`+=@active @catcode`@_=@active}
 
-%% These look ok in all fonts, so just make them not special.  The @rm below
-%% makes sure that the current font starts out as the newly loaded cmr10
+% These look ok in all fonts, so just make them not special.  The @rm below
+% makes sure that the current font starts out as the newly loaded cmr10
 @catcode`@$=@other @catcode`@%=@other @catcode`@&=@other @catcode`@#=@other
 
 @textfonts
