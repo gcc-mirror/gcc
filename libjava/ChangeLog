@@ -1,3 +1,10 @@
+2004-06-01  Michael Koch  <konqueror@gmx.de>
+
+	* java/util/zip/InflaterInputStream.java: Merged more with Classpath
+	version.
+	* java/util/zip/ZipOutputStream.java (): Renamed enum to e to removed
+	Java 1.5 keyword usage.
+
 2004-05-31  Olga Rodimina  <rodimina@redhat.com>
 
 	* javax/swing/plaf/basic/BasicMenuUI.java:
