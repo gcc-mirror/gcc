@@ -6,6 +6,11 @@ Fri Sep  8 20:40:27 1995  Brendan Kehoe  <brendan@lisa.cygnus.com>
 
 	* lex.c (handle_sysv_pragma): Deal with getting a comma from yylex.
 
+Fri Sep  8 14:40:48 1995  Per Bothner  <bothner@kalessin.cygnus.com>
+
+	* lex.c (do_identifier):  Use global binding in preference of
+	dead for local variable.
+
 Tue Aug 22 17:20:07 1995  Per Bothner  <bothner@kalessin.cygnus.com>
 
 	* decl2.c (flag_new_for_scope):  Add a new mode that follows ANSI
