@@ -6435,17 +6435,6 @@ srl\t%M0,%M1,%2\n\
   DONE;
 })
 
-(define_expand "tstsi"
-  [(set (cc0)
-	(match_operand:SI 0 "register_operand" ""))]
-  ""
-{
-  branch_cmp[0] = operands[0];
-  branch_cmp[1] = const0_rtx;
-  branch_type = CMP_SI;
-  DONE;
-})
-
 (define_expand "cmpdi"
   [(set (cc0)
 	(compare:CC (match_operand:DI 0 "register_operand" "")
@@ -6454,17 +6443,6 @@ srl\t%M0,%M1,%2\n\
 {
   branch_cmp[0] = operands[0];
   branch_cmp[1] = operands[1];
-  branch_type = CMP_DI;
-  DONE;
-})
-
-(define_expand "tstdi"
-  [(set (cc0)
-	(match_operand:DI 0 "register_operand" ""))]
-  "TARGET_64BIT"
-{
-  branch_cmp[0] = operands[0];
-  branch_cmp[1] = const0_rtx;
   branch_type = CMP_DI;
   DONE;
 })
