@@ -1,3 +1,8 @@
+2002-04-03  David S. Miller  <davem@redhat.com>
+
+	* config/sparc/crtfastmath.c (FPRS_NS): Delete bogus little-endian
+	handling.
+
 2002-04-03  John David Anglin  <dave@hiauly1.hia.nrc.ca>
 
 	* pa-linux.h (INCOMING_RETURN_ADDR_RTX): Move.
