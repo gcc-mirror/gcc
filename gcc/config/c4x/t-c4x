@@ -21,9 +21,6 @@ INSTALL_LIBGCC = install-multilib
 # Don't make libgcc1-test since require crt0.o
 LIBGCC1_TEST =
 
-# Don't make objective C because we can't compile the libraries.
-LANGUAGES = c proto  c++
-
 # C[34]x has its own float and limits.h
 TARGET_FLOAT_H=config/c4x/c4x-float.h
 TARGET_LIMITS_H=config/c4x/c4x-limits.h

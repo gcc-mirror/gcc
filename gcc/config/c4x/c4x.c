@@ -87,7 +87,7 @@ enum reg_class c4x_regclass_map[FIRST_PSEUDO_REGISTER] =
   NO_REGS,			/* IIF/IOF                      No  */
   INT_REGS,			/* RS           QI              No  */
   INT_REGS,			/* RE           QI              No  */
-  INT_REGS,			/* RC           QI              No  */
+  RC_REG,			/* RC           QI              No  */
   EXT_REGS,			/* R8           QI, QF, HF      QI  */
   EXT_REGS,			/* R9           QI, QF, HF      No  */
   EXT_REGS,			/* R10          QI, QF, HF      No  */
@@ -246,6 +246,15 @@ c4x_override_options ()
 
 }
 
+void
+c4x_optimization_options (level, size)
+     int level;
+     int size ATTRIBUTE_UNUSED;
+{
+  /* When optimizing, enable use of RPTB instruction.  */
+  if (level >= 1)
+      flag_branch_on_count_reg = 1;
+}
 
 /* Write an ASCII string.  */
 
@@ -591,7 +600,7 @@ c4x_function_arg (cum, mode, type, named)
       fprintf (stderr, ")\n");
     }
   if (reg)
-    return gen_rtx (REG, mode, reg);
+    return gen_rtx_REG (mode, reg);
   else
     return NULL_RTX;
 }
@@ -1042,7 +1051,7 @@ c4x_null_epilogue_p ()
 
 void
 c4x_emit_libcall (name, code, dmode, smode, noperands, operands)
-     const char *name;
+     char *name;
      enum rtx_code code;
      enum machine_mode dmode;
      enum machine_mode smode;
@@ -1055,7 +1064,7 @@ c4x_emit_libcall (name, code, dmode, smode, noperands, operands)
   rtx equiv;
 
   start_sequence ();
-  libcall = gen_rtx (SYMBOL_REF, Pmode, name);
+  libcall = gen_rtx_SYMBOL_REF (Pmode, name);
   switch (noperands)
     {
     case 2:
@@ -1092,7 +1101,7 @@ c4x_emit_libcall3 (name, code, mode, operands)
 
 void
 c4x_emit_libcall_mulhi (name, code, mode, operands)
-     const char *name;
+     char *name;
      enum rtx_code code;
      enum machine_mode mode;
      rtx *operands;
@@ -1103,15 +1112,15 @@ c4x_emit_libcall_mulhi (name, code, mode, operands)
   rtx equiv;
 
   start_sequence ();
-  libcall = gen_rtx (SYMBOL_REF, Pmode, name);
+  libcall = gen_rtx_SYMBOL_REF (Pmode, name);
   ret = emit_library_call_value (libcall, NULL_RTX, 1, mode, 2,
                                  operands[1], mode, operands[2], mode);
-  equiv = gen_rtx (TRUNCATE, mode,
-                   gen_rtx (LSHIFTRT, HImode,
-                            gen_rtx (MULT, HImode,
+  equiv = gen_rtx_TRUNCATE (mode,
+                   gen_rtx_LSHIFTRT (HImode,
+                            gen_rtx_MULT (HImode,
                                      gen_rtx (code, HImode, operands[1]),
                                      gen_rtx (code, HImode, operands[2])),
-                            gen_rtx (CONST_INT, VOIDmode, 32)));
+                                     gen_rtx_CONST_INT (VOIDmode, 32)));
   insns = get_insns ();
   end_sequence ();
   emit_libcall_block (insns, operands[0], ret, equiv);
@@ -1144,7 +1153,7 @@ c4x_preferred_reload_class (x, class)
 
 enum reg_class
 c4x_limit_reload_class (mode, class)
-     enum machine_mode mode;
+     enum machine_mode mode ATTRIBUTE_UNUSED;
      enum reg_class class;
 {
   return class;
@@ -1153,9 +1162,9 @@ c4x_limit_reload_class (mode, class)
 
 enum reg_class
 c4x_secondary_memory_needed (class1, class2, mode)
-     enum reg_class class1;
-     enum reg_class class2;
-     enum machine_mode mode;
+     enum reg_class class1 ATTRIBUTE_UNUSED;
+     enum reg_class class2 ATTRIBUTE_UNUSED;
+     enum machine_mode mode ATTRIBUTE_UNUSED;
 {
   return 0;
 }
@@ -1349,8 +1358,8 @@ c4x_check_legit_addr (mode, addr, strict)
 
 rtx
 c4x_legitimize_address (orig, mode)
-     rtx orig;
-     enum machine_mode mode;
+     rtx orig ATTRIBUTE_UNUSED;
+     enum machine_mode mode ATTRIBUTE_UNUSED;
 {
   return NULL_RTX;
 }
@@ -1443,9 +1452,9 @@ c4x_gen_compare_reg (code, x, y)
       && (code == LE || code == GE || code == LT || code == GT))
     return NULL_RTX;
 
-  cc_reg = gen_rtx (REG, mode, ST_REGNO);
-  emit_insn (gen_rtx (SET, VOIDmode, cc_reg,
-		      gen_rtx (COMPARE, mode, x, y)));
+  cc_reg = gen_rtx_REG (mode, ST_REGNO);
+  emit_insn (gen_rtx_SET (VOIDmode, cc_reg,
+			  gen_rtx_COMPARE (mode, x, y)));
   return cc_reg;
 }
 
@@ -1901,9 +1910,9 @@ c4x_scan_for_ldp (newop, insn, operand0)
 	      addr = XEXP (addr, 0);
 	      if (GET_CODE (addr) == CONST_INT)
 		{
-		  op1 = gen_rtx (CONST_INT, VOIDmode, INTVAL (addr) & ~0xffff);
+		  op1 = gen_rtx_CONST_INT (VOIDmode, INTVAL (addr) & ~0xffff);
 		  emit_insn_before (gen_movqi (operand0, op1), insn);
-		  op1 = gen_rtx (CONST_INT, VOIDmode, INTVAL (addr) & 0xffff);
+		  op1 = gen_rtx_CONST_INT (VOIDmode, INTVAL (addr) & 0xffff);
 		  emit_insn_before (gen_iorqi3_noclobber (operand0,
 						      operand0, op1), insn);
 		  delete_insn (insn);
@@ -1932,13 +1941,14 @@ c4x_scan_for_ldp (newop, insn, operand0)
 		}
 	    }
 	  if (!TARGET_SMALL)
-	    emit_insn_before (gen_set_ldp (gen_rtx (REG, Pmode, DP_REGNO),
+	    emit_insn_before (gen_set_ldp (gen_rtx_REG (Pmode, DP_REGNO),
 					   operand), insn);
 
 	  /* Replace old memory reference with direct reference.  */
-	  *newop = gen_rtx (MEM, GET_MODE (operand),
-			    gen_rtx (PLUS, Pmode,
-				     gen_rtx (REG, Pmode, DP_REGNO), op0));
+	  *newop = gen_rtx_MEM (GET_MODE (operand),
+				gen_rtx_PLUS (Pmode,
+					      gen_rtx_REG (Pmode, DP_REGNO),
+					      op0));
 
 	  /* Use change_address?  */
 	  MEM_VOLATILE_P (*newop) = MEM_VOLATILE_P (operand);
@@ -1977,15 +1987,15 @@ c4x_scan_for_ldp (newop, insn, operand0)
 	break;
 
       op0 = XEXP (force_const_mem (Pmode, operand), 0);
-      *newop = gen_rtx (MEM, GET_MODE (operand),
-			gen_rtx (PLUS, Pmode,
-				 gen_rtx (PLUS, Pmode,
-					  gen_rtx (USE, VOIDmode, operand),
-					  gen_rtx (REG, Pmode, DP_REGNO)),
-				 op0));
-
+      *newop = gen_rtx_MEM (GET_MODE (operand),
+			    gen_rtx_PLUS (Pmode,
+					  gen_rtx_PLUS (Pmode,
+					      gen_rtx_USE (VOIDmode, operand),
+					      gen_rtx_REG (Pmode, DP_REGNO)),
+					  op0));
+      
       if (!TARGET_SMALL)
-	emit_insn_before (gen_set_ldp_use (gen_rtx (REG, Pmode, DP_REGNO),
+	emit_insn_before (gen_set_ldp_use (gen_rtx_REG (Pmode, DP_REGNO),
 					   *newop, operand), insn);
       return 0;
 
@@ -2021,13 +2031,19 @@ c4x_scan_for_ldp (newop, insn, operand0)
 
    Note that we cannot have a call insn, since we don't generate
    repeat loops with calls in them (although I suppose we could, but
-   there's no benefit.)  */
+   there's no benefit.)  
+
+   !!! FIXME.  The rptb_top insn may be sucked into a SEQUENCE.  */
 
 int
 c4x_rptb_nop_p (insn)
      rtx insn;
 {
+  rtx start_label;
   int i;
+
+  /* Extract the start label from the jump pattern (rptb_end).  */
+  start_label = XEXP (XEXP (SET_SRC (XVECEXP (PATTERN (insn), 0, 0)), 1), 0);
 
   /* If there is a label at the end of the loop we must insert
      a NOP.  */
@@ -2040,20 +2056,47 @@ c4x_rptb_nop_p (insn)
       /* Search back for prev non-note and non-label insn.  */
       while (GET_CODE (insn) == NOTE || GET_CODE (insn) == CODE_LABEL
 	     || GET_CODE (insn) == USE || GET_CODE (insn) == CLOBBER)
-	insn = PREV_INSN (insn);
+	{
+	  if (insn == start_label)
+	    return i == 0;
 
-      /* I we have a jump instruction we should insert a NOP. If we
+	  insn = PREV_INSN (insn);
+	};
+
+      /* If we have a jump instruction we should insert a NOP. If we
 	 hit repeat block top we should only insert a NOP if the loop
 	 is empty. */
       if (GET_CODE (insn) == JUMP_INSN)
 	return 1;
-      else if (recog_memoized (insn) == CODE_FOR_rptb_top)
-	return i == 0;
       insn = PREV_INSN (insn);
     }
   return 0;
 }
 
+
+void
+c4x_rptb_insert (insn)
+     rtx insn;
+{
+  rtx end_label;
+  rtx start_label;
+  
+  /* Extract the start label from the jump pattern (rptb_end).  */
+  start_label = XEXP (XEXP (SET_SRC (XVECEXP (PATTERN (insn), 0, 0)), 1), 0);
+
+  /* We'll have to update the basic blocks.  */
+  end_label = gen_label_rtx ();
+  emit_label_after (end_label, insn);
+
+  for (; insn; insn = PREV_INSN (insn))
+    if (insn == start_label)
+      break;
+  if (!insn)
+    fatal_insn ("c4x_rptb_insert: Cannot find start label", start_label);
+
+  /* We'll have to update the basic blocks.  */
+  emit_insn_before (gen_rptb_top (start_label, end_label), insn);
+}
 
 /* This function is a C4x special. It scans through all the insn
    operands looking for places where the DP register needs to be
@@ -2067,7 +2110,6 @@ void
 c4x_process_after_reload (first)
      rtx first;
 {
-  rtx operand0;
   rtx insn;
   int i;
 
@@ -2076,13 +2118,17 @@ c4x_process_after_reload (first)
       /* Look for insn.  */
       if (GET_RTX_CLASS (GET_CODE (insn)) == 'i')
 	{
-	  int noperands;
 	  int insn_code_number;
 
 	  insn_code_number = recog_memoized (insn);
 
 	  if (insn_code_number < 0)
 	    continue;
+
+	  /* Insert the RTX for RPTB at the top of the loop
+	     and a label at the end of the loop. */
+	  if (insn_code_number == CODE_FOR_rptb_end)
+	    c4x_rptb_insert(insn);
 
 	  /* We split all insns here if they have a # for the output
 	     template if we are using the big memory model since there
@@ -2109,7 +2155,7 @@ c4x_process_after_reload (first)
 		  /* Do we have to update the basic block info here? 
 		     Maybe reorg wants it sorted out... */
 
-		  /* Continue with the first of the new insns gnerated
+		  /* Continue with the first of the new insns generated
                      by the split. */
 		  insn = new;
 
@@ -2121,20 +2167,13 @@ c4x_process_after_reload (first)
 	    }
 
 	  /* Ignore jumps and calls.  */
-	  if (GET_CODE (insn) == CALL_INSN
-	      || GET_CODE (insn) == JUMP_INSN)
-	    {
-	      continue;		/* Hopefully we are not hosed here.  */
-	    }
-
-	  noperands = insn_n_operands[insn_code_number];
+	  if (GET_CODE (insn) == CALL_INSN || GET_CODE (insn) == JUMP_INSN)
+	      continue;	
 
 	  insn_extract (insn);
-
-	  operand0 = recog_operand[0];
-
-	  for (i = 0; i < noperands; i++)
-	    if (c4x_scan_for_ldp (recog_operand_loc[i], insn, operand0))
+	  for (i = 0; i < insn_n_operands[insn_code_number]; i++)
+	    if (c4x_scan_for_ldp (recog_operand_loc[i], insn, 
+				  recog_operand[0]))
 	      break;
 	}
     }
@@ -2555,7 +2594,7 @@ c4x_T_constraint (op)
 int
 c4x_autoinc_operand (op, mode)
      rtx op;
-     enum machine_mode mode;
+     enum machine_mode mode ATTRIBUTE_UNUSED;
 {
   if (GET_CODE (op) == MEM)
     {
@@ -2578,8 +2617,8 @@ c4x_autoinc_operand (op, mode)
 
 int
 any_operand (op, mode)
-     register rtx op;
-     enum machine_mode mode;
+     register rtx op ATTRIBUTE_UNUSED;
+     enum machine_mode mode ATTRIBUTE_UNUSED;
 {
   return 1;
 }
@@ -2637,7 +2676,7 @@ const_operand (op, mode)
 int
 stik_const_operand (op, mode)
      rtx op;
-     enum machine_mode mode;
+     enum machine_mode mode ATTRIBUTE_UNUSED;
 {
   return c4x_K_constant (op);
 }
@@ -2646,7 +2685,7 @@ stik_const_operand (op, mode)
 int
 not_const_operand (op, mode)
      rtx op;
-     enum machine_mode mode;
+     enum machine_mode mode ATTRIBUTE_UNUSED;
 {
   return c4x_N_constant (op);
 }
@@ -2663,7 +2702,7 @@ reg_operand (op, mode)
 int
 reg_imm_operand (op, mode)
      rtx op;
-     enum machine_mode mode;
+     enum machine_mode mode ATTRIBUTE_UNUSED;
 {
   if (REG_P (op) || CONSTANT_P (op))
     return 1;
@@ -2673,7 +2712,7 @@ reg_imm_operand (op, mode)
 int
 not_modify_reg (op, mode)
      rtx op;
-     enum machine_mode mode;
+     enum machine_mode mode ATTRIBUTE_UNUSED;
 {
   if (REG_P (op) || CONSTANT_P (op))
     return 1;
@@ -2709,7 +2748,7 @@ not_modify_reg (op, mode)
 int
 not_rc_reg (op, mode)
      rtx op;
-     enum machine_mode mode;
+     enum machine_mode mode ATTRIBUTE_UNUSED;
 {
   if (REG_P (op) && REGNO (op) == RC_REGNO)
     return 0;
@@ -2826,7 +2865,7 @@ index_reg_operand (op, mode)
 int
 dp_reg_operand (op, mode)
      rtx op;
-     enum machine_mode mode;
+     enum machine_mode mode ATTRIBUTE_UNUSED;
 {
   return REG_P (op) && IS_DP_OR_PSEUDO_REGNO (op);
 }
@@ -2837,7 +2876,7 @@ dp_reg_operand (op, mode)
 int
 sp_reg_operand (op, mode)
      rtx op;
-     enum machine_mode mode;
+     enum machine_mode mode ATTRIBUTE_UNUSED;
 {
   return REG_P (op) && IS_SP_OR_PSEUDO_REGNO (op);
 }
@@ -2848,16 +2887,27 @@ sp_reg_operand (op, mode)
 int
 st_reg_operand (op, mode)
      register rtx op;
-     enum machine_mode mode;
+     enum machine_mode mode ATTRIBUTE_UNUSED;
 {
   return REG_P (op) && IS_ST_OR_PSEUDO_REGNO (op);
+}
+
+
+/* RC register.  */
+
+int
+rc_reg_operand (op, mode)
+     register rtx op;
+     enum machine_mode mode ATTRIBUTE_UNUSED;
+{
+  return REG_P (op) && IS_RC_OR_PSEUDO_REGNO (op);
 }
 
 
 int
 call_operand (op, mode)
      rtx op;
-     enum machine_mode mode;
+     enum machine_mode mode ATTRIBUTE_UNUSED;
 {
   if (GET_CODE (op) != MEM)
     return 0;
@@ -3197,7 +3247,7 @@ c4x_label_conflict (insn, jump, db)
 int
 valid_parallel_operands_4 (operands, mode)
      rtx *operands;
-     enum machine_mode mode;
+     enum machine_mode mode ATTRIBUTE_UNUSED;
 {
   rtx op0 = operands[0];
   rtx op1 = operands[1];
@@ -3246,7 +3296,7 @@ valid_parallel_operands_4 (operands, mode)
 int
 valid_parallel_operands_5 (operands, mode)
      rtx *operands;
-     enum machine_mode mode;
+     enum machine_mode mode ATTRIBUTE_UNUSED;
 {
   int regs = 0;
   rtx op0 = operands[1];
@@ -3272,7 +3322,7 @@ valid_parallel_operands_5 (operands, mode)
 int
 valid_parallel_operands_6 (operands, mode)
      rtx *operands;
-     enum machine_mode mode;
+     enum machine_mode mode ATTRIBUTE_UNUSED;
 {
   int regs = 0;
   rtx op0 = operands[1];
@@ -3544,7 +3594,7 @@ legitimize_operands (code, operands, mode)
      a positive count, so we emit a NEG.  */
   if ((code == ASHIFTRT || code == LSHIFTRT)
       && (GET_CODE (operands[2]) != CONST_INT))
-    operands[2] = gen_rtx (NEG, mode, negate_rtx (mode, operands[2]));
+    operands[2] = gen_rtx_NEG (mode, negate_rtx (mode, operands[2]));
   
   return 1;
 }
@@ -3882,7 +3932,7 @@ c4x_operand_subword (op, i, validate_address, mode)
 	    mode = QImode;
 	  else if (mode == HFmode)
 	    mode = QFmode;
-	  return gen_rtx (MEM, mode, XEXP (op, 0));
+	  return gen_rtx_MEM (mode, XEXP (op, 0));
 	  
 	case POST_DEC:
 	case PRE_DEC:
@@ -3921,7 +3971,7 @@ c4x_operand_subword (op, i, validate_address, mode)
 int
 c4x_handle_pragma (p_getc, p_ungetc, pname)
      int (*  p_getc) PROTO ((void));
-     void (* p_ungetc) PROTO ((int));
+     void (* p_ungetc) PROTO ((int)) ATTRIBUTE_UNUSED;
      char *pname;
 {
   int i;
@@ -3987,7 +4037,6 @@ c4x_handle_pragma (p_getc, p_ungetc, pname)
         }
       name[i] = 0;
       sect = build_string (i, name);
-      TREE_TYPE (sect) = char_array_type_node;
       free (name);
       sect = build_tree_list (NULL_TREE, sect);
       
@@ -4083,9 +4132,9 @@ c4x_set_default_attributes(decl, attributes)
 int
 c4x_valid_type_attribute_p (type, attributes, identifier, args)
      tree type;
-     tree attributes;
+     tree attributes ATTRIBUTE_UNUSED;
      tree identifier;
-     tree args;
+     tree args ATTRIBUTE_UNUSED;
 {
   if (TREE_CODE (type) != FUNCTION_TYPE)
     return 0;
@@ -4295,7 +4344,7 @@ c4x_parallel_pack (insn1, insn2, depend)
 	return 0;
     }
 
-  pack = gen_rtx (PARALLEL, VOIDmode, gen_rtvec (2, set1, set2));
+  pack = gen_rtx_PARALLEL (VOIDmode, gen_rtvec (2, set1, set2));
   num_clobbers = 0;
   if ((insn_code_number = recog (pack, pack, &num_clobbers)) < 0)
     return 0;
@@ -4305,8 +4354,8 @@ c4x_parallel_pack (insn1, insn2, depend)
       rtx newpack;
       int i;
 
-      newpack = gen_rtx (PARALLEL, VOIDmode,
-			 gen_rtvec (GET_CODE (pack) == PARALLEL
+      newpack = gen_rtx_PARALLEL (VOIDmode,
+				  gen_rtvec (GET_CODE (pack) == PARALLEL
 				    ? XVECLEN (pack, 0) + num_clobbers
 				    : num_clobbers + 1));
 
@@ -4471,10 +4520,10 @@ c4x_copy_insn_after(insn, prev, bb)
 
   /* Copy the REG_NOTES from insn to the new insn.  */
   for (note = REG_NOTES (insn); note; note = XEXP (note, 1))
-    REG_NOTES (new) = gen_rtx (GET_CODE (note), 
-				 REG_NOTE_KIND (note),
-				 XEXP (note, 0),
-				 REG_NOTES (new));
+    REG_NOTES (new) = gen_rtx (GET_CODE (note),
+			       REG_NOTE_KIND (note),
+			       XEXP (note, 0),
+			       REG_NOTES (new));
 
   /* Handle all the registers within insn and update the reg info.  */
   c4x_update_info_regs (PATTERN (insn), bb);
@@ -4529,7 +4578,7 @@ c4x_merge_notes(insn, insn2)
 	  remove_note (insn, note);
     }
   for (note = REG_NOTES (insn2); note; note = XEXP (note, 1))
-    REG_NOTES (insn) = gen_rtx (GET_CODE (note), 
+    REG_NOTES (insn) = gen_rtx (GET_CODE (note),
 				REG_NOTE_KIND (note),
 				XEXP (note, 0),
 				REG_NOTES (insn));
@@ -4736,25 +4785,25 @@ c4x_parallel_process (loop_start, loop_end)
 		{
 		  /* The loop count must be more than 1 surely?  */
 		  SET_SRC (loop_count_set) 
-		    = gen_rtx (CONST_INT, VOIDmode,
-			       INTVAL (SET_SRC (loop_count_set)) -1);
+		    = gen_rtx_CONST_INT (VOIDmode,
+					 INTVAL (SET_SRC (loop_count_set)) -1);
 		}
 	      else if (GET_CODE (SET_SRC (loop_count_set)) == PLUS
 		       && GET_CODE (XEXP (SET_SRC (loop_count_set), 1))
 		       == CONST_INT)
 		{
 		  XEXP (SET_SRC (loop_count_set), 1)
-		    = gen_rtx (CONST_INT, VOIDmode,
-			       INTVAL (XEXP (SET_SRC (loop_count_set), 1))
-			       - 1);
+		    = gen_rtx_CONST_INT (VOIDmode,
+				    INTVAL (XEXP (SET_SRC (loop_count_set), 1))
+					 - 1);
 		}
 	      else
 		{
 		  start_sequence ();
 		  expand_binop (QImode, sub_optab,
-				gen_rtx (REG, QImode, RC_REGNO),
-				gen_rtx (CONST_INT, VOIDmode, 1),
-				gen_rtx (REG, QImode, RC_REGNO),
+				gen_rtx_REG (QImode, RC_REGNO),
+				gen_rtx_CONST_INT (VOIDmode, 1),
+				gen_rtx_REG (QImode, RC_REGNO),
 				1, OPTAB_DIRECT);
 		  seq_start = get_insns ();
 		  end_sequence ();
@@ -4763,13 +4812,13 @@ c4x_parallel_process (loop_start, loop_end)
 		  /* Check this.  What if we emit more than one insn?
 		     Can we emit more than one insn? */
 		  REG_NOTES (seq_start)
-		    = gen_rtx (EXPR_LIST, REG_UNUSED,
-			       gen_rtx (REG, QImode, RC_REGNO),
+		    = gen_rtx_EXPR_LIST (REG_UNUSED,
+			       gen_rtx_REG (QImode, RC_REGNO),
 			       REG_NOTES (seq_start));
 		}
 
 	      start_sequence ();
-	      emit_cmp_insn (gen_rtx (REG, QImode, RC_REGNO),
+	      emit_cmp_insn (gen_rtx_REG (QImode, RC_REGNO),
 			     const0_rtx, LT, NULL_RTX, QImode, 0, 0);
 	      emit_jump_insn (gen_blt (end_label));
 	      seq_start = get_insns ();
@@ -4778,8 +4827,8 @@ c4x_parallel_process (loop_start, loop_end)
 	      
 	      /* This is a bit of a hack... */
 	      REG_NOTES (NEXT_INSN (seq_start))
-		= gen_rtx (EXPR_LIST, REG_DEAD,
-			   gen_rtx (REG, QImode, RC_REGNO),
+		= gen_rtx_EXPR_LIST (REG_DEAD,
+			   gen_rtx_REG (QImode, RC_REGNO),
 			   REG_NOTES (NEXT_INSN (seq_start)));
 
 	      if (TARGET_DEVEL)
@@ -4804,7 +4853,7 @@ c4x_parallel_process (loop_start, loop_end)
 
 static void
 c4x_combine_parallel_independent (insns)
-     rtx insns;
+     rtx insns ATTRIBUTE_UNUSED;
 {
   /* Combine independent insns like
      (set (mem (reg 0)) (reg 1))
@@ -5182,7 +5231,7 @@ c4x_rptb_loop_info_get (loop_start, loop_end, loop_info)
     }
 
   loop_info->off_by_one = (cc == LT || cc == LTU || cc == GT || cc == GTU);
-  loop_info->unsigned_p |= (cc == LTU || cc == LEU || cc == GTU || cc == GEU);
+
 
   /* We have a switch to allow an unsigned loop counter.
      We'll normally disallow this case since the the repeat
@@ -5209,7 +5258,7 @@ c4x_rptb_emit_init (loop_info)
 
   /* If have a known constant loop count, things are easy...  */
   if (loop_info->loop_count > 0)
-    return gen_rtx (CONST_INT, VOIDmode, loop_info->loop_count - 1);
+    return gen_rtx_CONST_INT (VOIDmode, loop_info->loop_count - 1);
 
   if (loop_info->shift < 0)
     abort ();
@@ -5239,14 +5288,14 @@ c4x_rptb_emit_init (loop_info)
       /* (end_value - start_value + adjust) >> shift */
       result = expand_binop (QImode, loop_info->unsigned_p ?
 			     lshr_optab : ashr_optab, result,
-			     gen_rtx (CONST_INT, VOIDmode,
+			     gen_rtx_CONST_INT (VOIDmode,
 				      loop_info->shift),
 			     0, loop_info->unsigned_p, OPTAB_DIRECT);
     }
 
   /* ((end_value - start_value + adjust) >> shift) - 1 */
   result = expand_binop (QImode, sub_optab,
-			 result, gen_rtx (CONST_INT, VOIDmode, 1),
+			 result, gen_rtx_CONST_INT (VOIDmode, 1),
 			 0, loop_info->unsigned_p, OPTAB_DIRECT);
 
   seq_start = get_insns ();
@@ -5326,9 +5375,9 @@ c4x_rptb_process (loop_start, loop_end)
 
       bypass_label = NEXT_INSN (loop_end);
 #if 0
-      forced_labels = gen_rtx (EXPR_LIST, VOIDmode,
+      forced_labels = gen_rtx_EXPR_LIST (VOIDmode,
 			       end_label, forced_labels);
-      forced_labels = gen_rtx (EXPR_LIST, VOIDmode,
+      forced_labels = gen_rtx_EXPR_LIST (VOIDmode,
 			       bypass_label, forced_labels);
 #endif
       emit_insn_after (gen_repeat_block_filler (), end_label);
@@ -5363,6 +5412,7 @@ c4x_rptb_process (loop_start, loop_end)
 }
 
 
+/* !!! FIXME to emit RPTS correctly.  */
 int
 c4x_rptb_rpts_p (insn, op)
      rtx insn, op;

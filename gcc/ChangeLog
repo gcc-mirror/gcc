@@ -1,3 +1,23 @@
+Tue Oct 13 21:38:35 1998  Michael Hayes  <m.hayes@elec.canterbury.ac.nz>
+
+	* config/c4x/c4x.c:  Convert to gen_rtx_FOO.
+	Added ATTRIBUTE_UNUSED to unused function arguments.
+	(rc_reg_operand): New predicate.
+	(c4x_rptb_insert): New function.
+	(c4x_rptb_nop_p): Recognize modified rptb_top pattern.
+	(c4x_optimization_options): New function.
+
+	* config/c4x/c4x.md: Convert to gen_rtx_FOO.
+	 (decrement_and_branch_on_count): New pattern.
+	 (rptb_top): Modified pattern to work with BCT optimization.
+	
+	* config/c4x/c4x.h (RC_REG): New register class.
+	(rc_reg_operand): Define prototype.
+	(IS_RC_REG): New macro.
+	(IS_RC_OR_PSEUDO_REG): New macro.
+	(IS_RC_OR_PSEUDO_REGNO): New macro.
+	(OPTIMIZATION_OPTIONS): Define.
+
 Mon Oct 12 19:57:34 1998  Jason Merrill  <jason@yorick.cygnus.com>
 
 	* collect2.c (extract_init_priority): No priority is 65535.

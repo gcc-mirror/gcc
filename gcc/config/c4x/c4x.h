@@ -300,6 +300,9 @@ extern char *c4x_rpts_cycles_string, *c4x_cpu_version_string;
 extern void c4x_override_options ();
 #define OVERRIDE_OPTIONS c4x_override_options ()
 
+/* Define this to change the optimizations performed by default.  */
+extern void c4x_optimization_options ();
+#define OPTIMIZATION_OPTIONS(LEVEL,SIZE) c4x_optimization_options(LEVEL,SIZE)
 
 /* Run Time Target Specification  */
 
@@ -431,6 +434,7 @@ extern void c4x_override_options ();
 /* Misc registers */
 
 #define IS_ST_REG(r)     ((r) == ST_REGNO)
+#define IS_RC_REG(r)     ((r) == RC_REGNO)
 #define IS_REPEAT_REG(r) (((r) >= RS_REGNO) && ((r) <= RC_REGNO))
 
 /* Composite register sets */
@@ -455,6 +459,7 @@ extern void c4x_override_options ();
 #define IS_DP_OR_PSEUDO_REG(r)      (IS_DP_REG(r) || IS_PSEUDO_REG(r))
 #define IS_SP_OR_PSEUDO_REG(r)      (IS_SP_REG(r) || IS_PSEUDO_REG(r))
 #define IS_ST_OR_PSEUDO_REG(r)      (IS_ST_REG(r) || IS_PSEUDO_REG(r))
+#define IS_RC_OR_PSEUDO_REG(r)      (IS_RC_REG(r) || IS_PSEUDO_REG(r))
 
 #define IS_PSEUDO_REGNO(op)          (IS_PSEUDO_REG(REGNO(op)))
 #define IS_ADDR_REGNO(op)            (IS_ADDR_REG(REGNO(op)))
@@ -473,6 +478,7 @@ extern void c4x_override_options ();
 #define IS_DP_OR_PSEUDO_REGNO(op)    (IS_DP_OR_PSEUDO_REG(REGNO(op)))
 #define IS_SP_OR_PSEUDO_REGNO(op)    (IS_SP_OR_PSEUDO_REG(REGNO(op)))
 #define IS_ST_OR_PSEUDO_REGNO(op)    (IS_ST_OR_PSEUDO_REG(REGNO(op)))
+#define IS_RC_OR_PSEUDO_REGNO(op)    (IS_RC_OR_PSEUDO_REG(REGNO(op)))
 
 /* 1 for registers that have pervasive standard uses
    and are not available for the register allocator. */
@@ -628,8 +634,9 @@ enum reg_class
     EXT_REGS,			/* 'f' */
     ADDR_REGS,			/* 'a' */
     INDEX_REGS,			/* 'x' */
-    SP_REG,			/* 'b' */
     BK_REG,			/* 'k' */
+    SP_REG,			/* 'b' */
+    RC_REG,			/* 'v' */
     INT_REGS,			/* 'c' */
     GENERAL_REGS,		/* 'r' */
     DP_REG,			/* 'z' */
@@ -649,14 +656,15 @@ enum reg_class
    "EXT_REGS",		\
    "ADDR_REGS",		\
    "INDEX_REGS",	\
-   "SP_REG",		\
    "BK_REG",		\
+   "SP_REG",		\
+   "RC_REG",		\
    "INT_REGS",		\
    "GENERAL_REGS",	\
    "DP_REG",		\
    "ST_REG",		\
    "ALL_REGS"		\
-};
+}
 
 /* Define which registers fit in which classes.
    This is an initializer for a vector of HARD_REG_SET
@@ -672,8 +680,9 @@ enum reg_class
  0xf00000ff, /* 'f' R0-R11       */		\
  0x0000ff00, /* 'a' AR0-AR7 */			\
  0x00060000, /* 'x' IR0-IR1 */			\
- 0x00100000, /* 'b' SP */			\
  0x00080000, /* 'k' BK */			\
+ 0x00100000, /* 'b' SP */			\
+ 0x08000000, /* 'v' RC */			\
  0x0e1eff00, /* 'c' AR0-AR7, IR0-IR1, RC, RS, RE, BK, SP */	\
  0xfe1effff, /* 'r' R0-R11, AR0-AR7, IR0-IR1, RC, RS, RE, BK, SP */\
  0x00010000, /* 'z' DP */			\
@@ -723,6 +732,7 @@ spill registers.  */
   q - r0-r7
   t - r0-r1
   u - r2-r3
+  v - repeat count (rc)
   x - index register (ir0-ir1)
   y - status register (st)
   z - dp reg (dp) 
@@ -756,6 +766,7 @@ spill registers.  */
      : ((CC) == 'q') ? EXT_LOW_REGS				\
      : ((CC) == 't') ? R0R1_REGS				\
      : ((CC) == 'u') ? R2R3_REGS				\
+     : ((CC) == 'v') ? RC_REG					\
      : ((CC) == 'x') ? INDEX_REGS				\
      : ((CC) == 'y') ? ST_REG					\
      : ((CC) == 'z') ? DP_REG					\
@@ -1604,8 +1615,8 @@ extern struct rtx_def *c4x_legitimize_address ();
    LABEL_REF, SYMBOL_REF, CONST, and HIGH codes.  */
 
 #define LEGITIMATE_CONSTANT_P(X)				\
-  (GET_CODE (X) == CONST_DOUBLE && c4x_H_constant (X)		\
-  || GET_CODE (X) == CONST_INT && c4x_I_constant (X))
+  ((GET_CODE (X) == CONST_DOUBLE && c4x_H_constant (X))		\
+  || (GET_CODE (X) == CONST_INT && c4x_I_constant (X)))
 
 
 #define LEGITIMATE_DISPLACEMENT_P(X) IS_DISP8_CONST (INTVAL (X))
@@ -1774,7 +1785,7 @@ do {								\
 } while (0)
 
 /* The TI tooling uses atexit. */
-#define	ON_EXIT(FUNC,ARG)	atexit (FUNC)
+#define	HAVE_ATEXIT
 
 #undef EXTRA_SECTIONS
 #define EXTRA_SECTIONS in_const, in_init, in_fini, in_ctors, in_dtors
@@ -2475,6 +2486,7 @@ extern void c4x_rptb_process ();
   {"dp_reg_operand", {REG}},					\
   {"sp_reg_operand", {REG}},					\
   {"st_reg_operand", {REG}},					\
+  {"rc_reg_operand", {REG}},					\
   {"call_operand", {REG, SYMBOL_REF}},				\
   {"src_operand", {SUBREG, REG, MEM, CONST_INT, CONST_DOUBLE}}, \
   {"src_hi_operand", {SUBREG, REG, MEM, CONST_DOUBLE}}, 	\
@@ -2535,6 +2547,10 @@ extern int stik_const_operand ();
 
 extern int not_const_operand ();
 
+extern int parallel_operand ();
+
+extern int reg_or_const_operand ();
+
 extern int reg_operand ();
 
 extern int reg_imm_operand ();
@@ -2550,6 +2566,8 @@ extern int ext_reg_operand ();
 extern int std_reg_operand ();
 
 extern int src_operand ();
+
+extern int src_hi_operand ();
 
 extern int lsrc_operand ();
 
