@@ -1,5 +1,5 @@
 /* Subroutines for insn-output.c for MIL-STD-1750.
-   Copyright (C) 1994, 1995, 1996, 1997 Free Software Foundation, Inc.
+   Copyright (C) 1994, 1995, 1996, 1997, 1998 Free Software Foundation, Inc.
    Contributed by O.M.Kellogg, DASA (kellogg@space.otn.dasa.de)
 
 This file is part of GNU CC.
@@ -222,7 +222,7 @@ memop_valid (op)
      rtx op;
 {
   static int recurred = 0;
-  int valid;
+  int valid_operand;
 
   if (GET_MODE (op) != Pmode && GET_MODE (op) != VOIDmode
       && GET_MODE (op) != QImode)
@@ -238,11 +238,11 @@ memop_valid (op)
       return 0;
     case PLUS:
       recurred = 1;
-      valid = memop_valid (XEXP (op, 0));
-      if (valid)
-	valid = memop_valid (XEXP (op, 1));
+      valid_operand = memop_valid (XEXP (op, 0));
+      if (valid_operand)
+	valid_operand = memop_valid (XEXP (op, 1));
        recurred = 0;
-       return valid;
+       return valid_operand;
     case REG:
       if (REGNO (op) > 0)
 	return 1;
