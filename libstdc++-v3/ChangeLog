@@ -1,3 +1,14 @@
+2004-12-01  Paolo Carlini  <pcarlini@suse.de>
+
+	* testsuite/27_io/basic_istream/get/wchar_t/1.cc: New.
+	* testsuite/27_io/basic_istream/get/wchar_t/2.cc: Likewise.
+	* testsuite/27_io/basic_istream/get/wchar_t/3.cc: Likewise.
+	* testsuite/27_io/basic_istream/ignore/wchar_t/1.cc: Likewise.
+	* testsuite/27_io/basic_istream/ignore/wchar_t/2.cc: Likewise.
+	* testsuite/27_io/basic_istream/ignore/wchar_t/3.cc: Likewise.
+	* testsuite/27_io/basic_istream/ignore/wchar_t/6360.cc: Likewise.
+	* testsuite/27_io/basic_istream/ignore/wchar_t/7220.cc: Likewise.
+
 2004-11-29  Paolo Carlini  <pcarlini@suse.de>
 
 	* testsuite/21_strings/basic_string/capacity/char/18654.cc: Use
