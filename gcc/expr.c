@@ -7951,7 +7951,15 @@ expand_increment (exp, post)
     SUBREG_REG (op0) = copy_to_reg (SUBREG_REG (op0));
   else if (GET_CODE (op0) == SUBREG
 	   && GET_MODE_BITSIZE (GET_MODE (op0)) < BITS_PER_WORD)
-    bad_subreg = 1;
+    {
+      /* We cannot increment this SUBREG in place.  If we are
+	 post-incrementing, get a copy of the old value.  Otherwise,
+	 just mark that we cannot increment in place.  */
+      if (post)
+	op0 = copy_to_reg (op0);
+      else
+	bad_subreg = 1;
+    }
 
   op0_is_copy = ((GET_CODE (op0) == SUBREG || GET_CODE (op0) == REG)
 		 && temp != get_last_insn ());
