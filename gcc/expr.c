@@ -3070,7 +3070,8 @@ store_constructor (exp, target)
 
 	  if (TREE_READONLY (field))
 	    {
-	      to_rtx = copy_rtx (to_rtx);
+	      to_rtx = change_address (to_rtx, GET_MODE (to_rtx),
+				       XEXP (to_rtx, 0));
 	      RTX_UNCHANGING_P (to_rtx) = 1;
 	    }
 
@@ -4540,7 +4541,8 @@ expand_expr (exp, target, tmode, modifier)
 
 	  if (TREE_READONLY (exp))
 	    {
-	      target = copy_rtx (target);
+	      target = change_address (target, GET_MODE (target),
+				       XEXP (target, 0));
 	      RTX_UNCHANGING_P (target) = 1;
 	    }
 
