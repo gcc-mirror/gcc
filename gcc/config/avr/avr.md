@@ -28,6 +28,17 @@
 (define_attr "type" "branch,branch1,arith"
   (const_string "arith"))
 
+(define_attr "mcu_enhanced" "yes,no"
+  (const (if_then_else (symbol_ref "AVR_ENHANCED")
+		       (const_string "yes")
+		       (const_string "no"))))
+
+(define_attr "mcu_mega" "yes,no"
+  (const (if_then_else (symbol_ref "AVR_MEGA")
+		       (const_string "yes")
+		       (const_string "no"))))
+  
+
 ;; The size of instructions in bytes.
 ;; XXX may depend from "cc"
 
@@ -1086,15 +1097,11 @@
   "@
 	clr %C0\;sbrc %B0,7\;com %C0\;mov %D0,%C0
 	{mov %A0,%A1\;mov %B0,%B1|movw %A0,%A1}\;clr %C0\;sbrc %B0,7\;com %C0\;mov %D0,%C0"
-  [(set (attr "length")
-	(if_then_else
-	 (eq (symbol_ref "AVR_ENHANCED") (const_int 0))
-	 (if_then_else (eq (symbol_ref "which_alternative") (const_int 0))
-		       (const_int 4)
-		       (const_int 6))
-	 (if_then_else (eq (symbol_ref "which_alternative") (const_int 0))
-		       (const_int 4)
-		       (const_int 5))))
+  [(set_attr_alternative "length"
+			 [(const_int 4)
+			  (if_then_else (eq_attr "mcu_enhanced" "yes")
+					(const_int 5)
+					(const_int 6))])
    (set_attr "cc" "clobber,clobber")])
 
 ;; xx<---x xx<---x xx<---x xx<---x xx<---x xx<---x xx<---x xx<---x xx<---x
@@ -1127,15 +1134,11 @@
   "@
 	clr %C0\;clr %D0
 	{mov %A0,%A1\;mov %B0,%B1|movw %A0,%B0}\;clr %C0\;clr %D0"
-  [(set (attr "length")
-	(if_then_else
-	 (eq (symbol_ref "AVR_ENHANCED") (const_int 0))
-	 (if_then_else (eq (symbol_ref "which_alternative") (const_int 0))
-		       (const_int 2)
-		       (const_int 4))
-	 (if_then_else (eq (symbol_ref "which_alternative") (const_int 0))
-		       (const_int 2)
-		       (const_int 3))))
+  [(set_attr_alternative "length"
+			 [(const_int 2)
+			  (if_then_else (eq_attr "mcu_enhanced" "yes")
+					(const_int 3)
+					(const_int 4))])
    (set_attr "cc" "set_n,set_n")])
 
 ;;<=><=><=><=><=><=><=><=><=><=><=><=><=><=><=><=><=><=><=><=><=><=><=><=><=>
@@ -1438,15 +1441,13 @@
        return (AS1 (rjmp,_PC_+4) CR_TAB
                AS1 (jmp,%3));
      }"
-  [(set (attr "length") (if_then_else (and (ge (minus (pc) (match_dup 3))
-					       (const_int -2046))
-					   (le (minus (pc) (match_dup 3))
-					       (const_int 2046)))
-				      (const_int 2)
-				      (if_then_else (eq (symbol_ref "AVR_MEGA")
-							(const_int 0))
-						    (const_int 2)
-						    (const_int 4))))
+  [(set (attr "length")
+	(if_then_else (and (ge (minus (pc) (match_dup 3)) (const_int -2046))
+			   (le (minus (pc) (match_dup 3)) (const_int 2046)))
+		      (const_int 2)
+		      (if_then_else (eq_attr "mcu_mega" "no")
+				    (const_int 2)
+				    (const_int 4))))
    (set_attr "cc" "clobber")])
 
 (define_insn "*sbrx_and_branchsi"
@@ -1477,15 +1478,13 @@
        return (AS1 (rjmp,_PC_+4) CR_TAB
                AS1 (jmp,%3));
      }"
-  [(set (attr "length") (if_then_else (and (ge (minus (pc) (match_dup 3))
-					       (const_int -2046))
-					   (le (minus (pc) (match_dup 3))
-					       (const_int 2046)))
-				      (const_int 2)
-				      (if_then_else (eq (symbol_ref "AVR_MEGA")
-							(const_int 0))
-						    (const_int 2)
-						    (const_int 4))))
+  [(set (attr "length")
+	(if_then_else (and (ge (minus (pc) (match_dup 3)) (const_int -2046))
+			   (le (minus (pc) (match_dup 3)) (const_int 2046)))
+		      (const_int 2)
+		      (if_then_else (eq_attr "mcu_mega" "no")
+				    (const_int 2)
+				    (const_int 4))))
    (set_attr "cc" "clobber")])
 
 (define_insn "*sbrx_and_branchhi"
@@ -1516,15 +1515,13 @@
        return (AS1 (rjmp,_PC_+4) CR_TAB
                AS1 (jmp,%3));
      }"
-  [(set (attr "length") (if_then_else (and (ge (minus (pc) (match_dup 3))
-					       (const_int -2046))
-					   (le (minus (pc) (match_dup 3))
-					       (const_int 2046)))
-				      (const_int 2)
-				      (if_then_else (eq (symbol_ref "AVR_MEGA")
-							(const_int 0))
-						    (const_int 2)
-						    (const_int 4))))
+  [(set (attr "length")
+	(if_then_else (and (ge (minus (pc) (match_dup 3)) (const_int -2046))
+			   (le (minus (pc) (match_dup 3)) (const_int 2046)))
+		      (const_int 2)
+		      (if_then_else (eq_attr "mcu_mega" "no")
+				    (const_int 2)
+				    (const_int 4))))
    (set_attr "cc" "clobber")])
 
 ;; ************************************************************************
@@ -1601,15 +1598,14 @@
   ""
   "*{
   if (AVR_MEGA && get_attr_length (insn) != 1)
-    return \"jmp %0\";
-  return \"rjmp %0\";
+    return AS1 (jmp,%0);
+  return AS1 (rjmp,%0);
 }"
-  [(set (attr "length") (if_then_else (and (ge (minus (pc) (match_dup 0))
-					       (const_int -2047))
-					   (le (minus (pc) (match_dup 0))
-					       (const_int 2047)))
-				      (const_int 1)
-				      (const_int 2)))
+  [(set (attr "length")
+	(if_then_else (and (ge (minus (pc) (match_dup 0)) (const_int -2047))
+			   (le (minus (pc) (match_dup 0)) (const_int 2047)))
+		      (const_int 1)
+		      (const_int 2)))
    (set_attr "cc" "none")])
 
 ;; call
@@ -1655,18 +1651,14 @@
   return AS1(call,%c0);
 }"
   [(set_attr "cc" "clobber,clobber,clobber")
-   (set (attr "length")
-	(cond [(eq (symbol_ref "which_alternative") (const_int 0))
-	       (const_int 1)
-	       (eq (symbol_ref "(which_alternative == 1 && AVR_ENHANCED)")
-                   (const_int 1))
-	       (const_int 2)
-	       (eq (symbol_ref "(which_alternative == 1 && !AVR_ENHANCED)")
-                   (const_int 1))
-	       (const_int 3)
-	       (eq (symbol_ref "!AVR_MEGA") (const_int 0))
-	       (const_int 2)]
-	(const_int 1)))])
+   (set_attr_alternative "length"
+			 [(const_int 1)
+			  (if_then_else (eq_attr "mcu_enhanced" "yes")
+					(const_int 2)
+					(const_int 3))
+			  (if_then_else (eq_attr "mcu_mega" "yes")
+					(const_int 2)
+					(const_int 1))])])
 
 (define_insn "call_value_insn"
   [(set (match_operand 0 "register_operand" "=r,r,r")
@@ -1694,19 +1686,14 @@
   return AS1(call,%c1);
 }"
   [(set_attr "cc" "clobber,clobber,clobber")
-   (set (attr "length")
-	(cond [(eq (symbol_ref "which_alternative") (const_int 0))
-	       (const_int 1)
-	       (eq (symbol_ref "(which_alternative == 1 && AVR_ENHANCED)")
-                   (const_int 1))
-	       (const_int 2)
-	       (eq (symbol_ref "(which_alternative == 1 && !AVR_ENHANCED)")
-                   (const_int 1))
-	       (const_int 3)
-	       (eq (symbol_ref "!AVR_MEGA")
-		   (const_int 0))
-	       (const_int 2)]
-	      (const_int 1)))])
+   (set_attr_alternative "length"
+			 [(const_int 1)
+			  (if_then_else (eq_attr "mcu_enhanced" "yes")
+					(const_int 2)
+					(const_int 3))
+			  (if_then_else (eq_attr "mcu_mega" "yes")
+					(const_int 2)
+					(const_int 1))])])
 
 (define_insn "nop"
   [(const_int 0)]
@@ -1746,11 +1733,9 @@
           : AS1 (rjmp,__tablejump__));
   }"
   [(set_attr "cc" "clobber")
-   (set (attr "length")
-	(if_then_else (eq (symbol_ref "AVR_MEGA")
-			  (const_int 0))
-		      (const_int 3)
-		      (const_int 4)))])
+   (set (attr "length") (if_then_else (eq_attr "mcu_mega" "no")
+				      (const_int 3)
+				      (const_int 4)))])
 
 
 (define_insn "*tablejump_enh"
