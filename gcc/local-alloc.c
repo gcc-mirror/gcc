@@ -1729,7 +1729,8 @@ reg_is_born (reg, birth)
 
 /* Record the death of REG in the current insn.  If OUTPUT_P is non-zero,
    REG is an output that is dying (i.e., it is never used), otherwise it
-   is an input (the normal case).  */
+   is an input (the normal case).
+   If OUTPUT_P is 1, then we extend the life past the end of this insn.  */
 
 static void
 wipe_dead_reg (reg, output_p)
@@ -1737,6 +1738,25 @@ wipe_dead_reg (reg, output_p)
      int output_p;
 {
   register int regno = REGNO (reg);
+
+  /* If this insn has multiple results,
+     and the dead reg is used in one of the results,
+     extend its life to after this insn,
+     so it won't get allocated together with any other result of this insn.  */
+  if (GET_CODE (PATTERN (this_insn)) == PARALLEL
+      && !single_set (this_insn))
+    {
+      int i;
+      for (i = XVECLEN (PATTERN (this_insn), 0) - 1; i >= 0; i--)
+	{
+	  rtx set = XVECEXP (PATTERN (this_insn), 0, i);
+	  if (GET_CODE (set) == SET
+	      && GET_CODE (SET_DEST (set)) != REG
+	      && !rtx_equal_p (reg, SET_DEST (set))
+	      && reg_overlap_mentioned_p (reg, SET_DEST (set)))
+	    output_p = 1;
+	}
+    }
 
   if (regno < FIRST_PSEUDO_REGISTER)
     {

@@ -248,6 +248,7 @@ static HARD_REG_SET eliminable_regset;
 static int allocno_compare ();
 static void mark_reg_store ();
 static void mark_reg_clobber ();
+static void mark_reg_conflicts ();
 static void mark_reg_live_nc ();
 static void mark_reg_death ();
 static void dump_conflicts ();
@@ -697,6 +698,31 @@ global_conflicts ()
 		if (REG_NOTE_KIND (link) == REG_INC)
 		  mark_reg_store (XEXP (link, 0), 0);
 #endif
+
+	      /* If INSN has multiple outputs, then any reg that dies here
+		 and is used inside of an output
+		 must conflict with the other outputs.  */
+
+	      if (GET_CODE (PATTERN (insn)) == PARALLEL && !single_set (insn))
+		for (link = REG_NOTES (insn); link; link = XEXP (link, 1))
+		  if (REG_NOTE_KIND (link) == REG_DEAD)
+		    {
+		      int used_in_output = 0;
+		      int i;
+		      rtx reg = XEXP (link, 0);
+
+		      for (i = XVECLEN (PATTERN (insn), 0) - 1; i >= 0; i--)
+			{
+			  rtx set = XVECEXP (PATTERN (insn), 0, i);
+			  if (GET_CODE (set) == SET
+			      && GET_CODE (SET_DEST (set)) != REG
+			      && !rtx_equal_p (reg, SET_DEST (set))
+			      && reg_overlap_mentioned_p (reg, SET_DEST (set)))
+			    used_in_output = 1;
+			}
+		      if (used_in_output)
+			mark_reg_conflicts (reg);
+		    }
 
 	      /* Mark any registers set in INSN and then never used.  */
 
@@ -1330,6 +1356,45 @@ mark_reg_clobber (reg, setter)
 	{
 	  record_one_conflict (regno);
 	  SET_HARD_REG_BIT (hard_regs_live, regno);
+	  regno++;
+	}
+    }
+}
+
+/* Record that REG has conflicts with all the regs currently live.
+   Do not mark REG itself as live.  */
+
+static void
+mark_reg_conflicts (reg)
+     rtx reg;
+{
+  register int regno;
+
+  if (GET_CODE (reg) == SUBREG)
+    reg = SUBREG_REG (reg);
+
+  if (GET_CODE (reg) != REG)
+    return;
+
+  regno = REGNO (reg);
+
+  if (reg_renumber[regno] >= 0)
+    regno = reg_renumber[regno];
+
+  /* Either this is one of the max_allocno pseudo regs not allocated,
+     or it is or has a hardware reg.  First handle the pseudo-regs.  */
+  if (regno >= FIRST_PSEUDO_REGISTER)
+    {
+      if (reg_allocno[regno] >= 0)
+	record_one_conflict (regno);
+    }
+  /* Handle hardware regs (and pseudos allocated to hard regs).  */
+  else if (! fixed_regs[regno])
+    {
+      register int last = regno + HARD_REGNO_NREGS (regno, GET_MODE (reg));
+      while (regno < last)
+	{
+	  record_one_conflict (regno);
 	  regno++;
 	}
     }
