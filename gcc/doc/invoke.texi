@@ -6882,7 +6882,7 @@ or 2.
 @item -mbranch-cost=@var{number}
 @opindex mbranch-cost=@var{number}
 @var{number} can only be 1 or 2.  If it is 1 then branches will be
-prefered over conditional code, if it is 2, then the opposite will
+preferred over conditional code, if it is 2, then the opposite will
 apply.
 
 @item -mflush-trap=@var{number}
@@ -7326,7 +7326,7 @@ following values:
 according to the scheduler's grouping.
 @var{regroup_exact}: Insert nops to force costly dependent insns into
 separate groups.  Insert exactly as many nops as needed to force an insn
-to a new group, according to the estimatied processor grouping.
+to a new group, according to the estimated processor grouping.
 @var{number}: Insert nops to force costly dependent insns into 
 separate groups.  Insert @var{number} nops to force an insn to a new group.
 
