@@ -1772,7 +1772,6 @@ extern void output_arg_descriptor ();
 extern void output_global_address ();
 extern struct rtx_def *legitimize_pic_address ();
 extern struct rtx_def *gen_cmp_fp ();
-extern struct rtx_def *gen_scond_fp ();
 extern void hppa_encode_label ();
 
 extern struct rtx_def *hppa_save_pic_table_rtx;
