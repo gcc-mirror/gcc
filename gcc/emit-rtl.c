@@ -97,8 +97,6 @@ rtx global_rtl[GR_MAX];
    at the beginning of each function.  */
 static GTY(()) rtx static_regno_reg_rtx[FIRST_PSEUDO_REGISTER];
 
-rtx (*gen_lowpart) (enum machine_mode mode, rtx x) = gen_lowpart_general;
-
 /* We record floating-point CONST_DOUBLEs in each floating-point mode for
    the values of 0, 1, and 2.  For the integer entries and VOIDmode, we
    record a copy of const[012]_rtx.  */
@@ -1124,62 +1122,6 @@ gen_imagpart (enum machine_mode mode, rtx x)
     return gen_highpart (mode, x);
 }
 
-/* Assuming that X is an rtx (e.g., MEM, REG or SUBREG) for a value,
-   return an rtx (MEM, SUBREG, or CONST_INT) that refers to the
-   least-significant part of X.
-   MODE specifies how big a part of X to return;
-   it usually should not be larger than a word.
-   If X is a MEM whose address is a QUEUED, the value may be so also.  */
-
-rtx
-gen_lowpart_general (enum machine_mode mode, rtx x)
-{
-  rtx result = gen_lowpart_common (mode, x);
-
-  if (result)
-    return result;
-  else if (GET_CODE (x) == REG)
-    {
-      /* Must be a hard reg that's not valid in MODE.  */
-      result = gen_lowpart_common (mode, copy_to_reg (x));
-      if (result == 0)
-	abort ();
-      return result;
-    }
-  else if (GET_CODE (x) == MEM)
-    {
-      /* The only additional case we can do is MEM.  */
-      int offset = 0;
-
-      /* The following exposes the use of "x" to CSE.  */
-      if (GET_MODE_SIZE (GET_MODE (x)) <= UNITS_PER_WORD
-	  && SCALAR_INT_MODE_P (GET_MODE (x))
-	  && TRULY_NOOP_TRUNCATION (GET_MODE_BITSIZE (mode),
-				    GET_MODE_BITSIZE (GET_MODE (x)))
-	  && ! no_new_pseudos)
-	return gen_lowpart (mode, force_reg (GET_MODE (x), x));
-
-      if (WORDS_BIG_ENDIAN)
-	offset = (MAX (GET_MODE_SIZE (GET_MODE (x)), UNITS_PER_WORD)
-		  - MAX (GET_MODE_SIZE (mode), UNITS_PER_WORD));
-
-      if (BYTES_BIG_ENDIAN)
-	/* Adjust the address so that the address-after-the-data
-	   is unchanged.  */
-	offset -= (MIN (UNITS_PER_WORD, GET_MODE_SIZE (mode))
-		   - MIN (UNITS_PER_WORD, GET_MODE_SIZE (GET_MODE (x))));
-
-      return adjust_address (x, mode, offset);
-    }
-  else if (GET_CODE (x) == ADDRESSOF)
-    return gen_lowpart (mode, force_reg (GET_MODE (x), x));
-  else
-    abort ();
-}
-
-/* Like `gen_lowpart', but refer to the most significant part.
-   This is used to access the imaginary part of a complex number.  */
-
 rtx
 gen_highpart (enum machine_mode mode, rtx x)
 {

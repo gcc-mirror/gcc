@@ -43,6 +43,7 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include "except.h"
 #include "target.h"
 #include "params.h"
+#include "rtlhooks-def.h"
 
 /* The basic idea of common subexpression elimination is to go
    through the code, keeping a record of expressions that would
@@ -663,6 +664,12 @@ static bool dead_libcall_p (rtx, int *);
 static int cse_change_cc_mode (rtx *, void *);
 static void cse_change_cc_mode_insns (rtx, rtx, rtx);
 static enum machine_mode cse_cc_succs (basic_block, rtx, rtx, bool);
+
+
+#undef RTL_HOOKS_GEN_LOWPART
+#define RTL_HOOKS_GEN_LOWPART		gen_lowpart_if_possible
+
+static const struct rtl_hooks cse_rtl_hooks = RTL_HOOKS_INITIALIZER;
 
 /* Nonzero if X has the form (PLUS frame-pointer integer).  We check for
    virtual regs here because the simplify_*_operation routines are called
@@ -6881,7 +6888,7 @@ cse_main (rtx f, int nregs, int after_loop, FILE *file)
   constant_pool_entries_cost = 0;
   constant_pool_entries_regcost = 0;
   val.path_size = 0;
-  gen_lowpart = gen_lowpart_if_possible;
+  rtl_hooks = cse_rtl_hooks;
 
   init_recog ();
   init_alias_analysis ();
@@ -7001,7 +7008,7 @@ cse_main (rtx f, int nregs, int after_loop, FILE *file)
   free (uid_cuid);
   free (reg_eqv_table);
   free (val.path);
-  gen_lowpart = gen_lowpart_general;
+  rtl_hooks = general_rtl_hooks;
 
   return cse_jumps_altered || recorded_label_ref;
 }
