@@ -1,5 +1,9 @@
 Wed Mar 21 14:27:11 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
+	* cse.c (find_comparison_args): Remove previous change.
+	* ifcvt.c (noce_process_if_block): When moving an insn, remove any
+	REG_EQUAL notes.
+
 	* config/i386/i386.md (conditional_trap): Remove warning.
 
 	* recog.c (push_operand): Fix error in last change that caused

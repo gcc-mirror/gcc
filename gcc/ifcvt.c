@@ -1563,9 +1563,17 @@ noce_process_if_block (test_bb, then_bb, else_bb, join_bb)
 	 that case don't do anything and let the code below delete INSN_A.  */
       if (insn_b && else_bb)
 	{
+	  rtx note;
+
 	  if (else_bb && insn_b == else_bb->end)
 	    else_bb->end = PREV_INSN (insn_b);
 	  reorder_insns (insn_b, insn_b, PREV_INSN (if_info.cond_earliest));
+
+	  /* If there was a REG_EQUAL note, delete it since it may have been
+	     true due to this insn being after a jump.  */
+	  if ((note = find_reg_note (insn_b, REG_EQUAL, NULL_RTX)) != 0)
+	    remove_note (insn_b, note);
+
 	  insn_b = NULL_RTX;
 	}
       /* If we have "x = b; if (...) x = a;", and x has side-effects, then
