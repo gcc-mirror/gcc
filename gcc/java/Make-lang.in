@@ -146,6 +146,7 @@ java.start.encap: $(GCJ)$(exeext)
 java.rest.encap:
 
 java.info:
+java.dvi:
 
 # Install hooks:
 # jc1, gcj, jvgenmain, and gcjh are installed elsewhere as part

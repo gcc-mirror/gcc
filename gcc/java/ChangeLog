@@ -1,5 +1,8 @@
 2000-11-03  Tom Tromey  <tromey@cygnus.com>
 
+	* Make-lang.in (java.dvi): New target.
+	Partial fix for PR other/567.
+
 	* lang-options.h: Mention -Wout-of-date.
 	* jcf-dump.c (flag_newer): New global.
 	* gjavah.c (flag_newer): New global.
