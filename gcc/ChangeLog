@@ -1,3 +1,11 @@
+Thu Sep  2 00:43:59 1999  Finn Hakansson  <finn@axis.com>
+
+	* combine.c (simplify_shift_const): Remove extra semicolon.
+	* dwarf2out.c (remove_AT): Likewise.
+	* expmed.c (expand_mult): Likewise.
+	* gcov.c (create_program_flow_graph): Likewise.
+	* reorg.c (mostly_true_jump): Likewise.
+
 Thu Sep  2 00:06:43 1999  Jeffrey A Law  (law@cygnus.com)
 
 	* varasm.c (mark_constant_pool): When marking indirect references,

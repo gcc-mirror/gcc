@@ -4088,7 +4088,7 @@ remove_AT (die, attr_kind)
      register enum dwarf_attribute attr_kind;
 {
   register dw_attr_ref a;
-  register dw_attr_ref removed = NULL;;
+  register dw_attr_ref removed = NULL;
 
   if (die != NULL)
     {

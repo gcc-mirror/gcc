@@ -569,7 +569,7 @@ create_program_flow_graph (bptr)
     for (arcptr = bb_graph[i].succ; arcptr; arcptr = arcptr->succ_next)
       if (! arcptr->on_tree)
 	{
-	  long tmp_count = 0;;
+	  long tmp_count = 0;
 	  if (da_file && __read_long (&tmp_count, da_file, 8))
 	    abort();
 

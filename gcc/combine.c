@@ -8556,7 +8556,7 @@ simplify_shift_const (x, code, result_mode, varop, count)
 	      && exact_log2 (INTVAL (XEXP (varop, 1))) >= 0)
 	    {
 	      varop = gen_binary (ASHIFT, GET_MODE (varop), XEXP (varop, 0),
-				  GEN_INT (exact_log2 (INTVAL (XEXP (varop, 1)))));;
+				  GEN_INT (exact_log2 (INTVAL (XEXP (varop, 1)))));
 	      continue;
 	    }
 	  break;
