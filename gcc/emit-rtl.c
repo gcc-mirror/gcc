@@ -3149,6 +3149,24 @@ force_next_line_note ()
 {
   last_linenum = -1;
 }
+
+/* Place a note of KIND on insn INSN with DATUM as the datum. If a
+   note of this type already exists, remove it first. */
+
+void 
+set_unique_reg_note (insn, kind, datum)
+     rtx insn;
+     enum reg_note kind;
+     rtx datum;
+{
+  rtx note = find_reg_note (insn, kind, NULL_RTX);
+
+  /* First remove the note if there already is one.  */
+  if (note) 
+    remove_note (insn, note);
+
+  REG_NOTES (insn) = gen_rtx_EXPR_LIST (kind, datum, REG_NOTES (insn));
+}
 
 /* Return an indication of which type of insn should have X as a body.
    The value is CODE_LABEL, INSN, CALL_INSN or JUMP_INSN.  */
