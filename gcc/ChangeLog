@@ -1,3 +1,7 @@
+2001-12-08  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* rtlanal.c (get_jump_table_offset): Delete unused variable.
+
 2001-12-08  Richard Earnshaw  <rearnsha@arm.com>
 
 	* arm.md (VUNSPEC_PREFETCH): Delete constant definition.
