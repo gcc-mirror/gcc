@@ -6126,7 +6126,8 @@ init_decl_processing ()
   boolean_true_node = build_int_2 (1, 0);
   TREE_TYPE (boolean_true_node) = boolean_type_node;
 
-  signed_size_zero_node = build_int_2 (0, 0);  record_builtin_type (RID_FLOAT, NULL_PTR, float_type_node);
+  signed_size_zero_node = build_int_2 (0, 0);
+  record_builtin_type (RID_FLOAT, NULL_PTR, float_type_node);
   record_builtin_type (RID_DOUBLE, NULL_PTR, double_type_node);
   record_builtin_type (RID_MAX, "long double", long_double_type_node);
 
