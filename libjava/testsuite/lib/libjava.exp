@@ -307,9 +307,6 @@ proc gcj_cleanup {args} {
 proc libjava_arguments {{mode compile}} {
     global base_dir
     global LIBJAVA
-    global LIBGC
-    global LIBQTHREADS
-    global LIBZ
     global srcdir subdir objdir
     global TOOL_OPTIONS
     global GCJ_UNDER_TEST
@@ -326,35 +323,14 @@ proc libjava_arguments {{mode compile}} {
 	set libjava [libjava_find_lib libjava gcj]
     }
 
-    if [info exists LIBGC] {
-	set libgc $LIBGC;
-    } else {
-	set libgc [libjava_find_lib boehm-gc gcjgc]
-    }
-
-    if [info exists LIBQTHREADS] {
-	set libqthreads $LIBQTHREADS
-    } else {
-	set libqthreads [libjava_find_lib qthreads gcjcoop]
-    }
-
-    if [info exists LIBZ] {
-	set libz $LIBZ
-    } else {
-	set libz [libjava_find_lib zlib zgcj]
-    }
-
     verbose "using LIBJAVA = $libjava" 2
-    verbose "using LIBGC = $libgc" 2
-    verbose "using LIBQTHREADS = $libqthreads" 2
-    verbose "using LIBZ = $libz" 2
     set args ""
 
     # Basically we want to build up a colon separated path list from
     # the value of $libjava.
 
     set lpath {}
-    foreach dir [list $libjava $libgc $libz] {
+    foreach dir [list $libjava] {
 	foreach item [split $dir " "] {
 	    switch -glob -- $item {
 		"-L*" {
@@ -572,8 +548,6 @@ proc libjava_invoke {errname testName optName executable inpfile resultfile args
 #
 proc test_libjava_from_source { options srcfile compile_args inpfile resultfile exec_args } {
     global base_dir
-    global LIBJAVA
-    global LIBGC
     global srcdir subdir objdir
     global TOOL_OPTIONS
     global GCJ_UNDER_TEST
@@ -679,8 +653,6 @@ proc test_libjava_from_source { options srcfile compile_args inpfile resultfile 
 #
 proc test_libjava_from_javac { options srcfile compile_args inpfile resultfile exec_args } {
     global base_dir
-    global LIBJAVA
-    global LIBGC
     global srcdir subdir objdir
     global TOOL_OPTIONS
     global GCJ_UNDER_TEST
