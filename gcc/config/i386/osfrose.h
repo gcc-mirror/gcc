@@ -65,16 +65,41 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 %{.cxx:	-D__LANGUAGE_C_PLUS_PLUS} \
 %{.C:	-D__LANGUAGE_C_PLUS_PLUS} \
 %{.m:	-D__LANGUAGE_OBJECTIVE_C} \
-%{!.S:	-D__LANGUAGE_C %{!ansi:-DLANGUAGE_C}}"
+%{!.S:	-D__LANGUAGE_C %{!ansi:-DLANGUAGE_C}} \
+%{!fbuiltin: %{!fno-builtin: %{O*: \
+	-Dmemcpy=__builtin_memcpy \
+	-Dmemcmp=__builtin_memcmp \
+	-Dstrcpy=__builtin_strcpy \
+	-Dstrcmp=__builtin_strcmp \
+	-Dstrlen=__builtin_strlen }}}"
 
 #ifdef  CC1_SPEC
 #undef  CC1_SPEC
 #endif
-#define CC1_SPEC                 \
-  "%{pic-none:    -mno-half-pic} \
-   %{pic-lib:     -mhalf-pic}    \
-   %{pic-extern:  -mhalf-pic}    \
-   %{pic-calls:   -mhalf-pic}"
+
+#ifdef HAVE_HALF_PIC
+/* Turn on -mpic-extern and -fno-builtin by default.  */
+#define CC1_SPEC "\
+%{O*: %{!mno-gpOPT:%{!mno-gpopt: -mgpopt}}} \
+%{gline:%{!g:%{!g0:%{!g1:%{!g2: -g1}}}}} \
+%{G*} \
+%{pic-none:   -mno-half-pic} \
+%{pic-lib:    -mhalf-pic} \
+%{pic-extern: -mhalf-pic} \
+%{pic-calls:  -mhalf-pic} \
+%{!pic-*:     -mhalf-pic} \
+%{!fbuiltin: %{!fno-builtin: -fno-builtin}} \
+%{save-temps: }"
+
+#else
+/* Turn on -fno-builtin by default.  */
+#define CC1_SPEC "\
+%{O*: %{!mno-gpOPT:%{!mno-gpopt: -mgpopt}}} \
+%{gline:%{!g:%{!g0:%{!g1:%{!g2: -g1}}}}} \
+%{G*} \
+%{!fbuiltin: %{!fno-builtin: -fno-builtin}} \
+%{save-temps: }"
+#endif
 
 #ifdef ASM_SPEC
 #undef ASM_SPEC
