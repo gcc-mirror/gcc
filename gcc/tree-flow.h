@@ -552,8 +552,6 @@ extern tree make_rename_temp (tree, const char *);
 #define TDFA_USE_VOPS		(1 << 1)
 
 /* In gimple-low.c  */
-struct lower_data;
-extern void lower_stmt_body (tree, struct lower_data *);
 extern void record_vars (tree);
 extern bool block_may_fallthru (tree block);
 
