@@ -1970,7 +1970,7 @@ computed_jump_p (insn)
 	    for (i = len - 1; i >= 0; i--)
 	      if (GET_CODE (XVECEXP (pat, 0, i)) == SET
 		  && SET_DEST (XVECEXP (pat, 0, i)) == pc_rtx
-		  && jmp_uses_reg_or_mem (SET_SRC (XVECEXP (pat, 0, 1))))
+		  && jmp_uses_reg_or_mem (SET_SRC (XVECEXP (pat, 0, i))))
 		return 1;
 	}
       else if (GET_CODE (pat) == SET
