@@ -6,18 +6,18 @@ CROSS_LIBGCC1 =
 LIBGCC1_TEST =
 
 # gmon build rule:
-gmon.o:	$(srcdir)/config/sparc/gmon-sol2.c $(GCC_PASSES) $(CONFIG_H)
+gmon.o:	$(srcdir)/config/sparc/gmon-sol2.c $(GCC_PASSES) $(CONFIG_H) stmp-int-hdrs
 	$(GCC_FOR_TARGET) $(GCC_CFLAGS) $(INCLUDES) \
 		-c $(srcdir)/config/sparc/gmon-sol2.c -o gmon.o
 
 # Assemble startup files.
-crt1.o: $(srcdir)/config/sparc/sol2-c1.asm
+crt1.o: $(srcdir)/config/sparc/sol2-c1.asm $(GCC_PASSES)
 	$(GCC_FOR_TARGET) -c -o crt1.o -x assembler $(srcdir)/config/sparc/sol2-c1.asm
-crti.o: $(srcdir)/config/sparc/sol2-ci.asm
+crti.o: $(srcdir)/config/sparc/sol2-ci.asm $(GCC_PASSES)
 	$(GCC_FOR_TARGET) -c -o crti.o -x assembler $(srcdir)/config/sparc/sol2-ci.asm
-crtn.o: $(srcdir)/config/sparc/sol2-cn.asm
+crtn.o: $(srcdir)/config/sparc/sol2-cn.asm $(GCC_PASSES)
 	$(GCC_FOR_TARGET) -c -o crtn.o -x assembler $(srcdir)/config/sparc/sol2-cn.asm
-gcrt1.o: $(srcdir)/config/sparc/sol2-g1.asm
+gcrt1.o: $(srcdir)/config/sparc/sol2-g1.asm $(GCC_PASSES)
 	$(GCC_FOR_TARGET) -c -o gcrt1.o -x assembler $(srcdir)/config/sparc/sol2-g1.asm
 
 # We need to use -fPIC when we are using gcc to compile the routines in
