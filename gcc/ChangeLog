@@ -1,3 +1,7 @@
+2001-08-04  Richard Henderson  <rth@redhat.com>
+
+	* i386.c: Revert 07-30 ix86_output_main_function_alignment_hack.
+
 2001-08-04  Neil Booth  <neil@daikokuya.demon.co.uk>
 
 	* cpphash.h (struct cpp_reader): New member directive_line.
