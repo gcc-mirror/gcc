@@ -1,3 +1,7 @@
+2003-06-09  J"orn Rennecke <joern.rennecke@superh.com>
+
+	* g++.dg/other/offsetof3.C: Adjust linenumber of last expected warning.
+
 2003-06-09  Mark Mitchell  <mark@codesourcery.com>
 
 	* lib/gcc-dg.exp (dg-require-weak): Fix typo.
