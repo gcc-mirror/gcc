@@ -3742,18 +3742,18 @@ handler:
 		{
 		  if (processing_template_decl)
 		    {
-		      TREE_OPERAND ($<ttype>3, 0) = TREE_CHAIN ($<ttype>3);
-		      TREE_CHAIN ($<ttype>3) = NULL_TREE;
-		      last_tree = $<ttype>3;
+		      TREE_OPERAND ($<ttype>2, 0) = TREE_CHAIN ($<ttype>2);
+		      TREE_CHAIN ($<ttype>2) = NULL_TREE;
+		      last_tree = $<ttype>2;
 		    }
 		}	  
 	  compstmt
 		{
 		  if (processing_template_decl)
 		    {
-		      TREE_OPERAND ($<ttype>3, 1) = TREE_CHAIN ($<ttype>3);
-		      TREE_CHAIN ($<ttype>3) = NULL_TREE;
-		      last_tree = $<ttype>3;
+		      TREE_OPERAND ($<ttype>2, 1) = TREE_CHAIN ($<ttype>2);
+		      TREE_CHAIN ($<ttype>2) = NULL_TREE;
+		      last_tree = $<ttype>2;
 		    }
 		  else
 		    expand_end_catch_block ();

@@ -272,6 +272,8 @@ cp_convert_to_pointer (type, expr)
 
   if (integer_zerop (expr))
     {
+      if (TREE_CODE (TREE_TYPE (type)) == METHOD_TYPE)
+	return build_ptrmemfunc (type, expr, 0);
       expr = build_int_2 (0, 0);
       TREE_TYPE (expr) = type;
       return expr;
