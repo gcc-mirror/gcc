@@ -1,3 +1,7 @@
+Sun May 14 10:26:22 1995  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	* lang-options.h, lang-specs.h: New files.
+
 Thu May 11 00:31:48 1995  Jason Merrill  <jason@phydeaux.cygnus.com>
 
 	* typeck.c (default_conversion): Don't check for BLKmode before
