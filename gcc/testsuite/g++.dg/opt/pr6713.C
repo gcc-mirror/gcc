@@ -93,6 +93,7 @@ _M_leak_hard()
 
 typedef basic_string<char> string;
 
+template int basic_string<char>::count;
 
 int isspa(int ch)
 {
