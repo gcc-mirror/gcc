@@ -1,5 +1,9 @@
 2003-06-05  Richard Henderson  <rth@redhat.com>
 
+	* recog.c (peephole2_optimize): Revert last change.
+
+2003-06-05  Richard Henderson  <rth@redhat.com>
+
 	* recog.c (peephole2_optimize): Don't split block unless
 	can_throw_internal.
 
