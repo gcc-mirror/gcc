@@ -486,7 +486,7 @@ _Jv_PrepareClass(jclass klass)
   // the super class, so we use the Java method resolveClass, which will
   // unlock it properly, should an exception happen.
 
-  java::lang::ClassLoader::resolveClass (klass->superclass);
+  java::lang::ClassLoader::resolveClass0 (klass->superclass);
 
   _Jv_InterpClass *clz = (_Jv_InterpClass*)klass;
 
