@@ -1,3 +1,7 @@
+Sat Jan 17 21:24:16 1998  David T. McWherter <dtm@waterw.com>
+
+	* objc-parse.c: Recognize protocol qualifiers in class definitions.
+
 Sat Jan 17 21:16:19 1998  Jeffrey A Law  (law@cygnus.com)
 
 	* jump.c (jump_optimize): Remove Dec 17, 1997 chance in
