@@ -319,8 +319,9 @@ namespace std
              traits_type::copy(__p, __s + __n, __n);
            else
              {
-               traits_type::copy(__p, __s, __p - __s);
-               traits_type::copy(__p + (__p-__s), __p + __n, __n - (__p-__s));
+	       const size_type __nleft = __p - __s;
+               traits_type::copy(__p, __s, __nleft);
+               traits_type::copy(__p + __nleft, __p + __n, __n - __nleft);
              }
            return *this;
          }
@@ -337,12 +338,27 @@ namespace std
        __n1 = _M_limit(__pos, __n1);
        if (this->max_size() - (this->size() - __n1) < __n2)
          __throw_length_error("basic_string::replace");
+       bool __left;
        if (_M_rep()->_M_is_shared() || less<const _CharT*>()(__s, _M_data())
 	   || less<const _CharT*>()(_M_data() + this->size(), __s))
          return _M_replace_safe(__pos, __n1, __s, __n2);
+       else if ((__left = __s + __n2 <= _M_data() + __pos)
+		|| _M_data() + __pos + __n1 <= __s)
+	 {
+	   // Work in-place: non-overlapping case.
+	   const size_type __off = __s - _M_data();
+	   _M_mutate(__pos, __n1, __n2);
+	   if (__left)
+	     traits_type::copy(_M_data() + __pos,
+			       _M_data() + __off, __n2);
+	   else
+	     traits_type::copy(_M_data() + __pos,
+			       _M_data() + __off + __n2 - __n1, __n2);
+	   return *this;
+	 }
        else
 	 {
-	   // Todo: optimized in-place replace.	   
+	   // Todo: overlapping case.
 	   const basic_string __tmp(__s, __n2);
 	   return _M_replace_safe(__pos, __n1, __tmp._M_data(), __n2);
 	 }
