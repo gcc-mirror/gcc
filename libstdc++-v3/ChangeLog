@@ -9,7 +9,7 @@
 	* testsuite/26_numerics/cmath/overloads.C: Rename to overloads.cc.
 	* testsuite/26_numerics/complex/pow.C: Rename to pow.cc and fix.
 
-2004-03-11  Steven Bosscher  <s.bosscher@student.tudelft.nl>
+2004-03-11  Steven Bosscher  <stevenb@suse.de>
 
 	PR libstdc++/11706
 	* include/c_std/cmath.tcc (__cmath_power): Define inline.
