@@ -4794,9 +4794,7 @@ lang_get_alias_set (t)
 	 can dereference IPP and CIPP.  So, we ignore cv-qualifiers on
 	 the pointed-to types.  This issue has been reported to the
 	 C++ committee.  */
-      t1 = TYPE_MAIN_VARIANT (TREE_TYPE (t));
-      t1 = ((TREE_CODE (t) == POINTER_TYPE)
-	   ? build_pointer_type (t1) : build_reference_type (t1));
+      t1 = build_type_no_quals (t);
       if (t1 != t)
 	return get_alias_set (t1);
     }

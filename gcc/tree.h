@@ -1923,6 +1923,7 @@ extern tree signed_or_unsigned_type 	PARAMS ((int, tree));
 extern void fixup_unsigned_type		PARAMS ((tree));
 extern tree build_pointer_type		PARAMS ((tree));
 extern tree build_reference_type 	PARAMS ((tree));
+extern tree build_type_no_quals 	PARAMS ((tree));
 extern tree build_index_type		PARAMS ((tree));
 extern tree build_index_2_type		PARAMS ((tree, tree));
 extern tree build_array_type		PARAMS ((tree, tree));
