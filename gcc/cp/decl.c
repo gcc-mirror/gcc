@@ -7654,12 +7654,9 @@ maybe_deduce_size_from_array_init (decl, init)
       && TYPE_DOMAIN (type) == NULL_TREE
       && TREE_CODE (decl) != TYPE_DECL)
     {
-      int do_default
-	= (TREE_STATIC (decl)
-	   /* Even if pedantic, an external linkage array
-	      may have incomplete type at first.  */
-	   ? pedantic && ! DECL_EXTERNAL (decl)
-	   : !DECL_EXTERNAL (decl));
+      /* do_default is really a C-ism to deal with tentative definitions.
+	 But let's leave it here to ease the eventual merge.  */
+      int do_default = !DECL_EXTERNAL (decl);
       tree initializer = init ? init : DECL_INITIAL (decl);
       int failure = complete_array_type (type, initializer, do_default);
 
@@ -11381,12 +11378,23 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, attrlist)
 	      cp_error ("`inline' specified for friend class declaration");
 	      inlinep = 0;
 	    }
-	  if (!current_aggr && TREE_CODE (type) != TYPENAME_TYPE)
+
+	  /* Until core issue 180 is resolved, allow 'friend typename A::B'.
+	     But don't allow implicit typenames.  */
+	  if (!current_aggr && (TREE_CODE (type) != TYPENAME_TYPE
+				|| IMPLICIT_TYPENAME_P (type)))
 	    {
 	      if (TREE_CODE (type) == TEMPLATE_TYPE_PARM)
-	        cp_error ("template parameters cannot be friends");
+	        cp_pedwarn ("template parameters cannot be friends");
+	      else if (TREE_CODE (type) == TYPENAME_TYPE)
+	        cp_pedwarn ("\
+friend declaration requires class-key, i.e. `friend class %T::%T'",
+			    constructor_name (current_class_type),
+			    TYPE_IDENTIFIER (type));
 	      else
-	        cp_error ("friend declaration requires `%#T'", type);
+	        cp_pedwarn ("\
+friend declaration requires class-key, i.e. `friend %#T'",
+			    type);
 	    }
 
 	  /* Only try to do this stuff if we didn't already give up.  */
@@ -12895,6 +12903,22 @@ xref_tag (code_type_node, name, globalize)
     }
   else
     t = IDENTIFIER_TYPE_VALUE (name);
+
+  /* Warn about 'friend struct Inherited;' doing the wrong thing.  */
+  if (t && globalize && TREE_CODE (t) == TYPENAME_TYPE)
+    {
+      static int explained;
+
+      cp_warning ("`%s %T' declares a new type at namespace scope;\n\
+to refer to the inherited type, say `%s %T::%T'%s",
+		  tag_name (tag_code), name, tag_name (tag_code),
+		  constructor_name (current_class_type), TYPE_IDENTIFIER (t),
+		  (!explained ? "\n\
+(names from dependent base classes are not visible to unqualified name lookup)"
+		   : ""));
+
+      explained = 1;
+    }
 
   if (t && TREE_CODE (t) != code && TREE_CODE (t) != TEMPLATE_TYPE_PARM
       && TREE_CODE (t) != BOUND_TEMPLATE_TEMPLATE_PARM)

@@ -1,3 +1,14 @@
+2000-09-12  Jason Merrill  <jason@redhat.com>
+
+	* decl.c (maybe_deduce_size_from_array_init): Set do_default for
+	all non-extern arrays.
+
+	* decl.c (grokdeclarator): Complain about 'friend T' for implicit
+	typenames, too.  Downgrade complaint to pedwarn.
+	(xref_tag): Warn about surprising behavior of 'friend struct T'.
+	* decl2.c (handle_class_head): Generate a TYPENAME_TYPE for
+	'class This::Inherited'.
+
 2000-09-12  Mark Mitchell  <mark@codesourcery.com>
 
 	* decl.c (finish_case_label): Given the LABEL_DECL a
