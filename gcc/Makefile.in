@@ -219,13 +219,6 @@ GCC_PASSES=xgcc cc1 cpp $(EXTRA_PASSES)
 # to link anything.
 GCC_PARTS=$(GCC_PASSES) libgcc.a $(EXTRA_PROGRAMS) $(USE_COLLECT2) $(EXTRA_PARTS)
 
-# Change this to empty to prevent installing limits.h.
-# Actually, this currently has no effect,
-# and if that causes no problems, it can be deleted.
-# Otherwise, it must be replaced so as to control
-# the actions of install-limits-h.
-LIMITS_H = limits.h
-
 # Directory to link to, when using the target `maketest'.
 DIR = ../gcc
 
@@ -1446,12 +1439,12 @@ install-float-h: float.h install-dir
 	chmod a-x $(libsubdir)/include/float.h
 
 # Install limits.h, optionally inheriting from the standard system version.
-install-limits-h: limits.h limitx.h install-dir
+install-limits-h: glimits.h limitx.h install-dir
 	-rm -f $(libsubdir)/include/limits.h tmp-limits.h
 	if [ -f /usr/include/limits.h ] ; then \
-	  cat $(srcdir)/limitx.h $(srcdir)/limits.h $(srcdir)/limity.h > tmp-limits.h; \
+	  cat $(srcdir)/limitx.h $(srcdir)/glimits.h $(srcdir)/limity.h > tmp-limits.h; \
 	else \
-	  cat $(srcdir)/limits.h > tmp-limits.h; \
+	  cat $(srcdir)/glimits.h > tmp-limits.h; \
 	fi
 	$(INSTALL_DATA) tmp-limits.h $(libsubdir)/include/limits.h
 	chmod a-x $(libsubdir)/include/limits.h
