@@ -1,3 +1,10 @@
+2003-02-06  Eric Botcazou <ebotcazou@libertysurf.fr>
+            Richard Henderson <rth@redhat.com>
+    
+	PR c/9530
+	* config/i386/i386.h (FUNCTION_OK_FOR_SIBCALL): Forbid sibcalls
+	from functions that return a float to functions that don't.
+
 2003-02-03  Bob Wilson  <bob.wilson@acm.org>
 
 	* config/xtensa/xtensa.c (order_regs_for_local_alloc): Order the
