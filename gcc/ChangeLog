@@ -1,3 +1,7 @@
+2001-01-19  Neil Booth  <neil@daikokuya.demon.co.uk>
+
+        * cppinternals.texi: Update.
+
 2001-01-19  Richard Earnshaw  <rearnsha@arm.com>
 
 	* arm.c (arm_init_builtins): Re-enable builtins.
