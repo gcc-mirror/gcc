@@ -31,3 +31,4 @@
 @end ifset
 
 @set email-burley craig@@jcb-sc.com
+@set www-burley http://world.std.com/%7Eburley
