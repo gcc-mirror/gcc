@@ -1,3 +1,8 @@
+1998-06-10  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* call.c (build_scoped_method_call): Fix thinko.
+	(build_method_call): Likewise.
+
 1998-06-10  Dave Brolley  <brolley@cygnus.com>
 
 	* decl2.c (lang_decode_option): New argc/argv interface.

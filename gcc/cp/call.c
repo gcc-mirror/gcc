@@ -397,7 +397,7 @@ build_scoped_method_call (exp, basetype, name, parms)
 	/* OK */;
       else if (TREE_CODE (tmp) == IDENTIFIER_NODE)
 	{
-	  if (IS_AGGR_TYPE (basetype) && tmp == constructor_name (basetype))
+	  if (IS_AGGR_TYPE (basetype) && name == constructor_name (basetype))
 	    tmp = basetype;
 	  else
 	    tmp = get_type_value (tmp);
@@ -662,7 +662,7 @@ build_method_call (instance, name, parms, basetype_path, flags)
 	tmp = name;
       else if (TREE_CODE (name) == IDENTIFIER_NODE)
 	{
-	  if (IS_AGGR_TYPE (basetype) && tmp == constructor_name (basetype))
+	  if (IS_AGGR_TYPE (basetype) && name == constructor_name (basetype))
 	    tmp = basetype;
 	  else
 	    tmp = get_type_value (tmp);
