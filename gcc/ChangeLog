@@ -1,3 +1,7 @@
+2001-08-08  Mark Mitchell  <mark@codesourcery.com>
+
+	* except.c (remove_fixup_regions): Fix typo.
+
 2001-08-07  Daniel Jacobowitz  <drow@mvista.com>
 
         * config.gcc: Quote target_cpu_default2 correctly for

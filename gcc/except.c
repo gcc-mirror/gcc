@@ -1133,7 +1133,7 @@ remove_fixup_regions ()
 	&& fixup->type == ERT_FIXUP)
       {
 	if (fixup->u.fixup.real_region)
-	  XEXP (note, 1) = GEN_INT (fixup->u.fixup.real_region->region_number);
+	  XEXP (note, 0) = GEN_INT (fixup->u.fixup.real_region->region_number);
 	else
 	  remove_note (insn, note);
       }
