@@ -1,3 +1,8 @@
+2004-08-29  Mark Mitchell  <mark@codesourcery.com>
+
+	PR rtl-optimization/16590
+	* g++.dg/opt/loop1.C: New test.
+
 2004-08-25  Roger Sayle  <roger@eyesopen.com>
 
 	PR middle-end/16693
