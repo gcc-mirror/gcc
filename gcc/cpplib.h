@@ -128,6 +128,182 @@ struct htab;
    efficiency, and partly to limit runaway recursion.  */
 #define CPP_STACK_MAX 200
 
+/* Values for opts.dump_macros.
+  dump_only means inhibit output of the preprocessed text
+             and instead output the definitions of all user-defined
+             macros in a form suitable for use as input to cccp.
+   dump_names means pass #define and the macro name through to output.
+   dump_definitions means pass the whole definition (plus #define) through
+*/
+enum { dump_none = 0, dump_only, dump_names, dump_definitions };
+
+/* This structure is nested inside struct cpp_reader, and
+   carries all the options visible to the command line.  */
+struct cpp_options
+{
+  /* Name of input and output files.  */
+  const char *in_fname;
+  const char *out_fname;
+
+  /* Pending options - -D, -U, -A, -I, -ixxx. */
+  struct cpp_pending *pending;
+
+  /* File name which deps are being written to.  This is 0 if deps are
+     being written to stdout.  */
+  const char *deps_file;
+
+  /* Target-name to write with the dependency information.  */
+  char *deps_target;
+
+  /* Search paths for include files.  */
+  struct file_name_list *quote_include;	 /* First dir to search for "file" */
+  struct file_name_list *bracket_include;/* First dir to search for <file> */
+
+  /* Map between header names and file names, used only on DOS where
+     file names are limited in length.  */
+  struct file_name_map_list *map_list;
+
+  /* Directory prefix that should replace `/usr/lib/gcc-lib/TARGET/VERSION'
+     in the standard include file directories.  */
+  const char *include_prefix;
+  unsigned int include_prefix_len;
+
+  /* Non-0 means -v, so print the full set of include dirs.  */
+  unsigned char verbose;
+
+  /* Nonzero means use extra default include directories for C++.  */
+  unsigned char cplusplus;
+
+  /* Nonzero means handle cplusplus style comments */
+  unsigned char cplusplus_comments;
+
+  /* Nonzero means handle #import, for objective C.  */
+  unsigned char objc;
+
+  /* Nonzero means this is an assembly file, so ignore unrecognized
+     directives and the "# 33" form of #line, both of which are
+     probably comments.  Also, permit unbalanced ' strings (again,
+     likely to be in comments).  */
+  unsigned char lang_asm;
+
+  /* Nonzero means this is Fortran, and we don't know where the
+     comments are, so permit unbalanced ' strings.  Unlike lang_asm,
+     this does not ignore unrecognized directives.  */
+  unsigned char lang_fortran;
+
+  /* Nonzero means handle CHILL comment syntax and output CHILL string
+     delimiters for __DATE__ etc. */
+  unsigned char chill;
+
+  /* Nonzero means don't copy comments into the output file.  */
+  unsigned char discard_comments;
+
+  /* Nonzero means process the ANSI trigraph sequences.  */
+  unsigned char trigraphs;
+
+  /* Nonzero means print the names of included files rather than the
+     preprocessed output.  1 means just the #include "...", 2 means
+     #include <...> as well.  */
+  unsigned char print_deps;
+
+  /* Nonzero if missing .h files in -M output are assumed to be
+     generated files and not errors.  */
+  unsigned char print_deps_missing_files;
+
+  /* If true, fopen (deps_file, "a") else fopen (deps_file, "w"). */
+  unsigned char print_deps_append;
+
+  /* Nonzero means print names of header files (-H).  */
+  unsigned char print_include_names;
+
+  /* Nonzero means cpp_pedwarn causes a hard error.  */
+  unsigned char pedantic_errors;
+
+  /* Nonzero means don't print warning messages.  */
+  unsigned char inhibit_warnings;
+
+  /* Nonzero means don't print error messages.  Has no option to
+     select it, but can be set by a user of cpplib (e.g. fix-header).  */
+  unsigned char inhibit_errors;
+
+  /* Nonzero means warn if slash-star appears in a comment.  */
+  unsigned char warn_comments;
+
+  /* Nonzero means warn if there are any trigraphs.  */
+  unsigned char warn_trigraphs;
+
+  /* Nonzero means warn if #import is used.  */
+  unsigned char warn_import;
+
+  /* Nonzero means warn if a macro argument is (or would be)
+     stringified with -traditional.  */
+  unsigned char warn_stringify;
+
+  /* Nonzero means turn warnings into errors.  */
+  unsigned char warnings_are_errors;
+
+  /* Nonzero causes output not to be done, but directives such as
+     #define that have side effects are still obeyed.  */
+  unsigned char no_output;
+
+  /* Nonzero means we should look for header.gcc files that remap file
+     names.  */
+  unsigned char remap;
+
+  /* Nonzero means don't output line number information.  */
+  unsigned char no_line_commands;
+
+  /* Nonzero means -I- has been seen, so don't look for #include "foo"
+     the source-file directory.  */
+  unsigned char ignore_srcdir;
+
+  /* Zero means dollar signs are punctuation. */
+  unsigned char dollars_in_ident;
+
+  /* Nonzero means try to imitate old fashioned non-ANSI preprocessor.  */
+  unsigned char traditional;
+
+  /* Nonzero means warn if undefined identifiers are evaluated in an #if.  */
+  unsigned char warn_undef;
+
+  /* Nonzero for the 1989 C Standard, including corrigenda and amendments.  */
+  unsigned char c89;
+
+  /* Nonzero for the 1999 C Standard, including corrigenda and amendments.  */
+  unsigned char c99;
+
+  /* Nonzero means give all the error messages the ANSI standard requires.  */
+  unsigned char pedantic;
+
+  /* Nonzero means we're looking at already preprocessed code, so don't
+     bother trying to do macro expansion and whatnot.  */
+  unsigned char preprocessed;
+
+  /* Nonzero disables all the standard directories for headers.  */
+  unsigned char no_standard_includes;
+
+  /* Nonzero disables the C++-specific standard directories for headers.  */
+  unsigned char no_standard_cplusplus_includes;
+
+  /* Nonzero means dump macros in some fashion - see above.  */
+  unsigned char dump_macros;
+
+  /* Nonzero means pass all #define and #undef directives which we
+     actually process through to the output stream.  This feature is
+     used primarily to allow cc1 to record the #defines and #undefs
+     for the sake of debuggers which understand about preprocessor
+     macros, but it may also be useful with -E to figure out how
+     symbols are defined, and where they are defined.  */
+  unsigned char debug_output;
+
+  /* Nonzero means pass #include lines through to the output.  */
+  unsigned char dump_includes;
+
+  /* Print column number in error messages.  */
+  unsigned char show_column;
+};
+
+
 /* A cpp_reader encapsulates the "state" of a pre-processor run.
    Applying cpp_get_token repeatedly yields a stream of pre-processor
    tokens.  Usually, there is only one cpp_reader object active. */
@@ -135,7 +311,6 @@ struct htab;
 struct cpp_reader
 {
   cpp_buffer *buffer;
-  cpp_options *opts;
 
   /* A buffer used for both for cpp_get_token's output, and also internally. */
   unsigned char *token_buffer;
@@ -172,41 +347,6 @@ struct cpp_reader
 
   struct if_stack *if_stack;
 
-  /* Nonzero means we have printed (while error reporting) a list of
-     containing files that matches the current status.  */
-  char input_stack_listing_current;
-
-  /* If non-zero, macros are not expanded.  */
-  char no_macro_expand;
-
-  /* If non-zero, directives cause a hard error.  Used when parsing
-     macro arguments.  */
-  char no_directives;
-
-  /* Print column number in error messages.  */
-  char show_column;
-
-  /* We're printed a warning recommending against using #import.  */
-  char import_warning;
-
-  /* If true, character between '<' and '>' are a single (string) token.  */
-  char parsing_include_directive;
-
-  /* If true, # introduces an assertion (see do_assert) */
-  char parsing_if_directive;
-
-  /* If true, # and ## are the STRINGIZE and TOKPASTE operators */
-  char parsing_define_directive;
-
-  /* True if escape sequences (as described for has_escapes in
-     parse_buffer) should be emitted.  */
-  char output_escapes;
-
-  /* 0: Have seen non-white-space on this line.
-     1: Only seen white space so far on this line.
-     2: Only seen white space so far in this file.  */
-  char only_seen_white;
-
   long lineno;
 
   struct tm *timebuf;
@@ -220,6 +360,45 @@ struct cpp_reader
   unsigned char *input_buffer;
   unsigned char *input_speccase;
   size_t input_buffer_len;
+
+  /* User visible options.  */
+  struct cpp_options opts;
+
+  /* Nonzero means we have printed (while error reporting) a list of
+     containing files that matches the current status.  */
+  unsigned char input_stack_listing_current;
+
+  /* If non-zero, macros are not expanded.  */
+  unsigned char no_macro_expand;
+
+  /* If non-zero, directives cause a hard error.  Used when parsing
+     macro arguments.  */
+  unsigned char no_directives;
+
+  /* We're printed a warning recommending against using #import.  */
+  unsigned char import_warning;
+
+  /* If true, characters between '<' and '>' are a single (string) token.  */
+  unsigned char parsing_include_directive;
+
+  /* If true, # introduces an assertion (see do_assert) */
+  unsigned char parsing_if_directive;
+
+  /* If true, # and ## are the STRINGIZE and TOKPASTE operators */
+  unsigned char parsing_define_directive;
+
+  /* True if escape sequences (as described for has_escapes in
+     parse_buffer) should be emitted.  */
+  unsigned char output_escapes;
+
+  /* 0: Have seen non-white-space on this line.
+     1: Only seen white space so far on this line.
+     2: Only seen white space so far in this file.  */
+  unsigned char only_seen_white;
+
+  /* True after cpp_start_read completes.  Used to inhibit some
+     warnings while parsing the command line.  */
+  unsigned char done_initializing;
 };
 
 #define CPP_FATAL_LIMIT 1000
@@ -234,199 +413,8 @@ struct cpp_reader
 #define CPP_ADJUST_WRITTEN(PFILE,DELTA) ((PFILE)->limit += (DELTA))
 #define CPP_SET_WRITTEN(PFILE,N) ((PFILE)->limit = (PFILE)->token_buffer + (N))
 
-#define CPP_OPTIONS(PFILE) ((PFILE)->opts)
+#define CPP_OPTION(PFILE, OPTION) ((PFILE)->opts.OPTION)
 #define CPP_BUFFER(PFILE) ((PFILE)->buffer)
-
-/* Pointed to by cpp_reader.opts. */
-struct cpp_options
-{
-  const char *in_fname;
-
-  /* Name of output file, for error messages.  */
-  const char *out_fname;
-
-  struct file_name_map_list *map_list;
-
-  /* Non-0 means -v, so print the full set of include dirs.  */
-  char verbose;
-
-  /* Nonzero means use extra default include directories for C++.  */
-
-  char cplusplus;
-
-  /* Nonzero means handle cplusplus style comments */
-
-  char cplusplus_comments;
-
-  /* Nonzero means handle #import, for objective C.  */
-
-  char objc;
-
-  /* Nonzero means this is an assembly file, so ignore unrecognized
-     directives and the "# 33" form of #line, both of which are
-     probably comments.  Also, permit unbalanced ' strings (again,
-     likely to be in comments).  */
-
-  char lang_asm;
-
-  /* Nonzero means this is Fortran, and we don't know where the
-     comments are, so permit unbalanced ' strings.  Unlike lang_asm,
-     this does not ignore unrecognized directives.  */
-
-  char lang_fortran;
-
-  /* Nonzero means handle CHILL comment syntax
-     and output CHILL string delimiter for __DATE___ etc. */
-
-  char chill;
-
-  /* Nonzero means don't copy comments into the output file.  */
-
-  char discard_comments;
-
-  /* Nonzero means process the ANSI trigraph sequences.  */
-
-  char trigraphs;
-
-  /* Nonzero means print the names of included files rather than
-     the preprocessed output.  1 means just the #include "...",
-     2 means #include <...> as well.  */
-
-  char print_deps;
-
-  /* Nonzero if missing .h files in -M output are assumed to be generated
-     files and not errors.  */
-
-  char print_deps_missing_files;
-
-  /* If true, fopen (deps_file, "a") else fopen (deps_file, "w"). */
-  char print_deps_append;
-
-  /* Nonzero means print names of header files (-H).  */
-
-  char print_include_names;
-
-  /* Nonzero means try to make failure to fit ANSI C an error.  */
-
-  char pedantic_errors;
-
-  /* Nonzero means don't print warning messages.  */
-
-  char inhibit_warnings;
-
-  /* Nonzero means don't print error messages.  Has no option to select it,
-     but can be set by a user of cpplib (e.g. fix-header).  */
-
-  char inhibit_errors;
-
-  /* Nonzero means warn if slash-star appears in a comment.  */
-
-  char warn_comments;
-
-  /* Nonzero means warn if there are any trigraphs.  */
-
-  char warn_trigraphs;
-
-  /* Nonzero means warn if #import is used.  */
-
-  char warn_import;
-
-  /* Nonzero means warn if a macro argument is (or would be)
-     stringified with -traditional.  */
-
-  char warn_stringify;
-
-  /* Nonzero means turn warnings into errors.  */
-
-  char warnings_are_errors;
-
-  /* Nonzero causes output not to be done,
-     but directives such as #define that have side effects
-     are still obeyed.  */
-
-  char no_output;
-
-  /* Nonzero means we should look for header.gcc files that remap file
-     names.  */
-  char remap;
-
-  /* Nonzero means don't output line number information.  */
-  char no_line_commands;
-
-  /* Nonzero means -I- has been seen,
-     so don't look for #include "foo" the source-file directory.  */
-  char ignore_srcdir;
-
-  /* Zero means dollar signs are punctuation.
-     This used to be needed for conformance to the C Standard,
-     before the C Standard was corrected.  */
-  char dollars_in_ident;
-
-  /* Nonzero means try to imitate old fashioned non-ANSI preprocessor.  */
-  char traditional;
-
-  /* Nonzero means warn if undefined identifiers are evaluated in an #if.  */
-  char warn_undef;
-
-  /* Nonzero for the 1989 C Standard, including corrigenda and amendments.  */
-  char c89;
-
-  /* Nonzero for the 1999 C Standard, including corrigenda and amendments.  */
-  char c99;
-
-  /* Nonzero means give all the error messages the ANSI standard requires.  */
-  char pedantic;
-
-  /* Nonzero means we're looking at already preprocessed code, so don't
-     bother trying to do macro expansion and whatnot.  */
-  char preprocessed;
-
-  char done_initializing;
-
-  /* Search paths for include files.  */
-  struct file_name_list *quote_include;	 /* First dir to search for "file" */
-  struct file_name_list *bracket_include;/* First dir to search for <file> */
-
-  /* Directory prefix that should replace `/usr/lib/gcc-lib/TARGET/VERSION'
-     in the standard include file directories.  */
-  const char *include_prefix;
-  int include_prefix_len;
-
-  char no_standard_includes;
-  char no_standard_cplusplus_includes;
-
-/* dump_only means inhibit output of the preprocessed text
-             and instead output the definitions of all user-defined
-             macros in a form suitable for use as input to cccp.
-   dump_names means pass #define and the macro name through to output.
-   dump_definitions means pass the whole definition (plus #define) through
-*/
-
-  enum {dump_none = 0, dump_only, dump_names, dump_definitions}
-     dump_macros;
-
-/* Nonzero means pass all #define and #undef directives which we actually
-   process through to the output stream.  This feature is used primarily
-   to allow cc1 to record the #defines and #undefs for the sake of
-   debuggers which understand about preprocessor macros, but it may
-   also be useful with -E to figure out how symbols are defined, and
-   where they are defined.  */
-  int debug_output;
-
-  /* Nonzero means pass #include lines through to the output,
-     even if they are ifdefed out.  */
-  int dump_includes;
-
-  /* Pending options - -D, -U, -A, -I, -ixxx. */
-  struct cpp_pending *pending;
-
-  /* File name which deps are being written to.
-     This is 0 if deps are being written to stdout.  */
-  const char *deps_file;
-
-  /* Target-name to write with the dependency information.  */
-  char *deps_target;
-};
 
 /* Name under which this program was invoked.  */
 extern const char *progname;
@@ -436,7 +424,6 @@ extern enum cpp_token cpp_get_token PARAMS ((cpp_reader *));
 extern enum cpp_token cpp_get_non_space_token PARAMS ((cpp_reader *));
 
 extern void cpp_reader_init PARAMS ((cpp_reader *));
-extern void cpp_options_init PARAMS ((cpp_options *));
 extern int cpp_start_read PARAMS ((cpp_reader *, const char *));
 extern void cpp_finish PARAMS ((cpp_reader *));
 extern void cpp_cleanup PARAMS ((cpp_reader *PFILE));

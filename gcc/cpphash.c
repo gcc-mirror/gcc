@@ -406,7 +406,7 @@ collect_expansion (pfile, arglist)
 	  if (last_token == STRIZE)
 	    cpp_error (pfile, "`#' is not followed by a macro argument name");
 
-	  if (CPP_TRADITIONAL (pfile) || CPP_OPTIONS (pfile)->warn_stringify)
+	  if (CPP_TRADITIONAL (pfile) || CPP_OPTION (pfile, warn_stringify))
 	    goto maybe_trad_stringify;
 	  else
 	    goto norm;
@@ -480,7 +480,7 @@ collect_expansion (pfile, arglist)
 			     (int) argv[i].len, argv[i].name);
 		continue;
 	      }
-	    if (CPP_OPTIONS (pfile)->warn_stringify)
+	    if (CPP_OPTION (pfile, warn_stringify))
 	      cpp_warning (pfile, "macro argument `%.*s' is stringified",
 			     (int) argv[i].len, argv[i].name);
 
@@ -614,7 +614,7 @@ collect_formal_parameters (pfile)
 	      cpp_error (pfile, "duplicate macro argument name `%s'", tok);
 	      continue;
 	    }
-	  if (CPP_PEDANTIC (pfile) && CPP_OPTIONS (pfile)->c99
+	  if (CPP_PEDANTIC (pfile) && CPP_OPTION (pfile, c99)
 	      && len == sizeof "__VA_ARGS__" - 1
 	      && !strncmp (tok, "__VA_ARGS__", len))
 	    cpp_pedwarn (pfile,
@@ -661,7 +661,7 @@ collect_formal_parameters (pfile)
      those elsewhere.  */
   if (argv[argc].len == 0)
     {
-      if (CPP_PEDANTIC (pfile) && ! CPP_OPTIONS (pfile)->c99)
+      if (CPP_PEDANTIC (pfile) && ! CPP_OPTION (pfile, c99))
 	cpp_pedwarn (pfile, "C89 does not permit varargs macros");
 
       len = sizeof "__VA_ARGS__" - 1;
@@ -740,8 +740,8 @@ _cpp_create_definition (pfile, funlike)
 
   pfile->no_macro_expand++;
   pfile->parsing_define_directive++;
-  CPP_OPTIONS (pfile)->discard_comments++;
-  CPP_OPTIONS (pfile)->no_line_commands++;
+  CPP_OPTION (pfile, discard_comments)++;
+  CPP_OPTION (pfile, no_line_commands)++;
   
   if (funlike)
     {
@@ -760,15 +760,15 @@ _cpp_create_definition (pfile, funlike)
 
   pfile->no_macro_expand--;
   pfile->parsing_define_directive--;
-  CPP_OPTIONS (pfile)->discard_comments--;
-  CPP_OPTIONS (pfile)->no_line_commands--;
+  CPP_OPTION (pfile, discard_comments)--;
+  CPP_OPTION (pfile, no_line_commands)--;
   return defn;
 
  err:
   pfile->no_macro_expand--;
   pfile->parsing_define_directive--;
-  CPP_OPTIONS (pfile)->discard_comments--;
-  CPP_OPTIONS (pfile)->no_line_commands--;
+  CPP_OPTION (pfile, discard_comments)--;
+  CPP_OPTION (pfile, no_line_commands)--;
   return 0;
 }
 
@@ -1069,8 +1069,8 @@ _cpp_macroexpand (pfile, hp)
       rest_args = 0;
 
       /* Skip over the opening parenthesis.  */
-      CPP_OPTIONS (pfile)->discard_comments++;
-      CPP_OPTIONS (pfile)->no_line_commands++;
+      CPP_OPTION (pfile, discard_comments)++;
+      CPP_OPTION (pfile, no_line_commands)++;
       pfile->no_macro_expand++;
       pfile->no_directives++;
 
@@ -1102,8 +1102,8 @@ _cpp_macroexpand (pfile, hp)
 	  i++;
 	}
       while (token == CPP_COMMA);
-      CPP_OPTIONS (pfile)->discard_comments--;
-      CPP_OPTIONS (pfile)->no_line_commands--;
+      CPP_OPTION (pfile, discard_comments)--;
+      CPP_OPTION (pfile, no_line_commands)--;
       pfile->no_macro_expand--;
       pfile->no_directives--;
       if (token != CPP_RPAREN)
@@ -1457,7 +1457,7 @@ unsafe_chars (pfile, c1, c2)
       goto letter;
 
     case '$':
-      if (CPP_OPTIONS (pfile)->dollars_in_ident)
+      if (CPP_OPTION (pfile, dollars_in_ident))
 	goto letter;
       return 0;
 

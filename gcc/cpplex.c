@@ -119,7 +119,7 @@ cpp_scan_buffer (pfile)
 {
   cpp_buffer *buffer = CPP_BUFFER (pfile);
   enum cpp_token token;
-  if (CPP_OPTIONS (pfile)->no_output)
+  if (CPP_OPTION (pfile, no_output))
     {
       long old_written = CPP_WRITTEN (pfile);
       /* In no-output mode, we can ignore everything but directives.  */
@@ -193,12 +193,12 @@ cpp_expand_to_buffer (pfile, buf, length)
   ip->has_escapes = 1;
 
   /* Scan the input, create the output.  */
-  save_no_output = CPP_OPTIONS (pfile)->no_output;
-  CPP_OPTIONS (pfile)->no_output = 0;
-  CPP_OPTIONS (pfile)->no_line_commands++;
+  save_no_output = CPP_OPTION (pfile, no_output);
+  CPP_OPTION (pfile, no_output) = 0;
+  CPP_OPTION (pfile, no_line_commands)++;
   cpp_scan_buffer (pfile);
-  CPP_OPTIONS (pfile)->no_line_commands--;
-  CPP_OPTIONS (pfile)->no_output = save_no_output;
+  CPP_OPTION (pfile, no_line_commands)--;
+  CPP_OPTION (pfile, no_output) = save_no_output;
 
   CPP_NUL_TERMINATE (pfile);
 }
@@ -264,7 +264,7 @@ skip_block_comment (pfile)
       else if (c == '/' && prev_c == '*')
 	return;
       else if (c == '*' && prev_c == '/'
-	       && CPP_OPTIONS (pfile)->warn_comments)
+	       && CPP_OPTION (pfile, warn_comments))
 	cpp_warning (pfile, "`/*' within comment");
 
       prev_c = c;
@@ -294,7 +294,7 @@ skip_line_comment (pfile)
 	  /* \r cannot be a macro escape marker here. */
 	  if (!ACTIVE_MARK_P (pfile))
 	    CPP_BUMP_LINE (pfile);
-	  if (CPP_OPTIONS (pfile)->warn_comments)
+	  if (CPP_OPTION (pfile, warn_comments))
 	    cpp_warning (pfile, "backslash-newline within line comment");
 	}
     }
@@ -325,9 +325,9 @@ skip_comment (pfile, m)
 	  skip_line_comment (pfile);
 	  return ' ';
 	}
-      else if (CPP_OPTIONS (pfile)->cplusplus_comments)
+      else if (CPP_OPTION (pfile, cplusplus_comments))
 	{
-	  if (CPP_OPTIONS (pfile)->c89
+	  if (CPP_OPTION (pfile, c89)
 	      && CPP_PEDANTIC (pfile)
 	      && ! CPP_BUFFER (pfile)->warned_cplusplus_comments)
 	    {
@@ -344,7 +344,7 @@ skip_comment (pfile, m)
 	return m;
     }
   else if (m == '-' && PEEKC() == '-'
-	   && CPP_OPTIONS (pfile)->chill)
+	   && CPP_OPTION (pfile, chill))
     {
       skip_line_comment (pfile);
       return ' ';
@@ -524,8 +524,8 @@ skip_string (pfile, c)
 	     strings of either variety at end of line.  This is a
 	     kludge around not knowing where comments are in these
 	     languages.  */
-	  if (CPP_OPTIONS (pfile)->lang_fortran
-	      || CPP_OPTIONS (pfile)->lang_asm)
+	  if (CPP_OPTION (pfile, lang_fortran)
+	      || CPP_OPTION (pfile, lang_asm))
 	    {
 	      FORWARD(-1);
 	      return;
@@ -675,7 +675,6 @@ _cpp_lex_token (pfile)
 {
   register int c, c2, c3;
   enum cpp_token token;
-  struct cpp_options *opts = CPP_OPTIONS (pfile);
 
  get_next:
   c = GETC();
@@ -689,7 +688,7 @@ _cpp_lex_token (pfile)
 	goto op2;
 
     comment:
-      if (opts->discard_comments)
+      if (CPP_OPTION (pfile, discard_comments))
 	c = skip_comment (pfile, c);
       else
 	c = copy_comment (pfile, c);
@@ -698,7 +697,7 @@ _cpp_lex_token (pfile)
 	  
       /* Comments are equivalent to spaces.
 	 For -traditional, a comment is equivalent to nothing.  */
-      if (opts->traditional || !opts->discard_comments)
+      if (CPP_TRADITIONAL (pfile) || !CPP_OPTION (pfile, discard_comments))
 	return CPP_COMMENT;
       else
 	{
@@ -745,12 +744,12 @@ _cpp_lex_token (pfile)
       return c == '\'' ? CPP_CHAR : CPP_STRING;
 
     case '$':
-      if (!opts->dollars_in_ident)
+      if (!CPP_OPTION (pfile, dollars_in_ident))
 	goto randomchar;
       goto letter;
 
     case ':':
-      if (opts->cplusplus && PEEKC () == ':')
+      if (CPP_OPTION (pfile, cplusplus) && PEEKC () == ':')
 	goto op2;
       goto randomchar;
 
@@ -775,7 +774,7 @@ _cpp_lex_token (pfile)
       c2 = PEEKC ();
       if (c2 == '-')
 	{
-	  if (opts->chill)
+	  if (CPP_OPTION (pfile, chill))
 	    goto comment;  /* Chill style comment */
 	  else
 	    goto op2;
@@ -784,7 +783,7 @@ _cpp_lex_token (pfile)
 	goto op2;
       else if (c2 == '>')
 	{
-	  if (opts->cplusplus && PEEKN (1) == '*')
+	  if (CPP_OPTION (pfile, cplusplus) && PEEKN (1) == '*')
 	    {
 	      /* In C++, there's a ->* operator.  */
 	      token = CPP_OTHER;
@@ -842,7 +841,7 @@ _cpp_lex_token (pfile)
       if (c2 == '=')
 	goto op2;
       /* GNU C++ supports MIN and MAX operators <? and >?.  */
-      if (c2 != c && (!opts->cplusplus || c2 != '?'))
+      if (c2 != c && (!CPP_OPTION (pfile, cplusplus) || c2 != '?'))
 	goto randomchar;
       FORWARD(1);
       CPP_RESERVE (pfile, 4);
@@ -866,7 +865,7 @@ _cpp_lex_token (pfile)
 	}
 
       /* In C++ there's a .* operator.  */
-      if (opts->cplusplus && c2 == '*')
+      if (CPP_OPTION (pfile, cplusplus) && c2 == '*')
 	goto op2;
 
       if (c2 == '.' && PEEKN(1) == '.')
@@ -917,7 +916,7 @@ _cpp_lex_token (pfile)
 	if (!is_numchar(c) && c != '.'
 	    && ((c2 != 'e' && c2 != 'E'
 		 && ((c2 != 'p' && c2 != 'P')
-		     || CPP_OPTIONS (pfile)->c89))
+		     || CPP_OPTION (pfile, c89)))
 		|| (c != '+' && c != '-')))
 	  break;
 	FORWARD(1);
@@ -928,7 +927,7 @@ _cpp_lex_token (pfile)
     return CPP_NUMBER;
     case 'b': case 'c': case 'd': case 'h': case 'o':
     case 'B': case 'C': case 'D': case 'H': case 'O':
-      if (opts->chill && PEEKC () == '\'')
+      if (CPP_OPTION (pfile, chill) && PEEKC () == '\'')
 	{
 	  pfile->only_seen_white = 0;
 	  CPP_RESERVE (pfile, 2);
@@ -1023,7 +1022,7 @@ _cpp_lex_token (pfile)
       if (pfile->only_seen_white == 0)
 	pfile->only_seen_white = 1;
       CPP_BUMP_LINE (pfile);
-      if (! CPP_OPTIONS (pfile)->no_line_commands)
+      if (! CPP_OPTION (pfile, no_line_commands))
 	{
 	  pfile->lineno++;
 	  if (CPP_BUFFER (pfile)->lineno != pfile->lineno)
@@ -1466,12 +1465,12 @@ _cpp_read_and_prescan (pfile, fp, desc, len)
 		if (t == 0)
 		  break;
 
-		if (CPP_OPTIONS (pfile)->warn_trigraphs)
+		if (CPP_OPTION (pfile, warn_trigraphs))
 		  {
 		    unsigned long col;
 		    line_base = find_position (line_base, op, &line);
 		    col = op - line_base + 1;
-		    if (CPP_OPTIONS (pfile)->trigraphs)
+		    if (CPP_OPTION (pfile, trigraphs))
 		      cpp_warning_with_line (pfile, line, col,
 					     "trigraph ??%c converted to %c", d, t);
 		    else
@@ -1480,7 +1479,7 @@ _cpp_read_and_prescan (pfile, fp, desc, len)
 		  }
 
 		ip += 2;
-		if (CPP_OPTIONS (pfile)->trigraphs)
+		if (CPP_OPTION (pfile, trigraphs))
 		  {
 		    op[-1] = t;	    /* Overwrite '?' */
 		    if (t == '\\')
@@ -1554,7 +1553,7 @@ _cpp_init_input_buffer (pfile)
   memset (tmp, SPECCASE_EMPTY, 1 << CHAR_BIT);
   tmp['\r'] = SPECCASE_CR;
   tmp['\\'] = SPECCASE_BACKSLASH;
-  if (CPP_OPTIONS (pfile)->trigraphs || CPP_OPTIONS (pfile)->warn_trigraphs)
+  if (CPP_OPTION (pfile, trigraphs) || CPP_OPTION (pfile, warn_trigraphs))
     tmp['?'] = SPECCASE_QUESTION;
   pfile->input_speccase = tmp;
 

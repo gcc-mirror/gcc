@@ -243,7 +243,7 @@ find_include_file (pfile, fname, search_start, ihash, before)
 	  name[path->nlen] = '/';
 	  strcpy (&name[path->nlen+1], fname);
 	  _cpp_simplify_pathname (name);
-	  if (CPP_OPTIONS (pfile)->remap)
+	  if (CPP_OPTION (pfile, remap))
 	    name = remap_filename (pfile, name, path);
 
 	  f = open_include_file (pfile, name);
@@ -369,7 +369,7 @@ read_name_map (pfile, dirname)
   char *name;
   FILE *f;
 
-  for (map_list_ptr = CPP_OPTIONS (pfile)->map_list; map_list_ptr;
+  for (map_list_ptr = CPP_OPTION (pfile, map_list); map_list_ptr;
        map_list_ptr = map_list_ptr->map_list_next)
     if (! strcmp (map_list_ptr->map_list_name, dirname))
       return map_list_ptr->map_list_map;
@@ -429,8 +429,8 @@ read_name_map (pfile, dirname)
       fclose (f);
     }
   
-  map_list_ptr->map_list_next = CPP_OPTIONS (pfile)->map_list;
-  CPP_OPTIONS (pfile)->map_list = map_list_ptr;
+  map_list_ptr->map_list_next = CPP_OPTION (pfile, map_list);
+  CPP_OPTION (pfile, map_list) = map_list_ptr;
 
   return map_list_ptr->map_list_map;
 }  
@@ -511,9 +511,9 @@ _cpp_execute_include (pfile, fname, len, no_reinclude, search_start)
   if (!search_start)
     {
       if (angle_brackets)
-	search_start = CPP_OPTIONS (pfile)->bracket_include;
-      else if (CPP_OPTIONS (pfile)->ignore_srcdir)
-	search_start = CPP_OPTIONS (pfile)->quote_include;
+	search_start = CPP_OPTION (pfile, bracket_include);
+      else if (CPP_OPTION (pfile, ignore_srcdir))
+	search_start = CPP_OPTION (pfile, quote_include);
       else
 	search_start = CPP_BUFFER (pfile)->actual_dir;
     }
@@ -536,7 +536,7 @@ _cpp_execute_include (pfile, fname, len, no_reinclude, search_start)
   
   if (fd == -1)
     {
-      if (CPP_OPTIONS (pfile)->print_deps_missing_files
+      if (CPP_OPTION (pfile, print_deps_missing_files)
 	  && CPP_PRINT_DEPS (pfile) > (angle_brackets ||
 				       (pfile->system_include_depth > 0)))
         {
@@ -548,10 +548,10 @@ _cpp_execute_include (pfile, fname, len, no_reinclude, search_start)
 	      struct file_name_list *ptr;
 	      /* If requested as a system header, assume it belongs in
 		 the first system header directory. */
-	      if (CPP_OPTIONS (pfile)->bracket_include)
-	        ptr = CPP_OPTIONS (pfile)->bracket_include;
+	      if (CPP_OPTION (pfile, bracket_include))
+	        ptr = CPP_OPTION (pfile, bracket_include);
 	      else
-	        ptr = CPP_OPTIONS (pfile)->quote_include;
+	        ptr = CPP_OPTION (pfile, quote_include);
 
 	      p = (char *) alloca (strlen (ptr->name)
 				   + strlen (fname) + 2);
@@ -586,7 +586,7 @@ _cpp_execute_include (pfile, fname, len, no_reinclude, search_start)
     deps_add_dep (pfile->deps, ihash->name);
 
   /* Handle -H option.  */
-  if (CPP_OPTIONS(pfile)->print_include_names)
+  if (CPP_OPTION (pfile, print_include_names))
     {
       cpp_buffer *fp = CPP_BUFFER (pfile);
       while ((fp = CPP_PREV_BUFFER (fp)) != NULL)
@@ -753,7 +753,7 @@ read_include_file (pfile, fd, ihash)
 
   /* The ->actual_dir field is only used when ignore_srcdir is not in effect;
      see do_include */
-  if (!CPP_OPTIONS (pfile)->ignore_srcdir)
+  if (!CPP_OPTION (pfile, ignore_srcdir))
     fp->actual_dir = actual_directory (pfile, ihash->name);
 
   pfile->input_stack_listing_current = 0;
@@ -819,7 +819,7 @@ actual_directory (pfile, fname)
   x = (struct file_name_list *) xmalloc (sizeof (struct file_name_list));
   x->name = dir;
   x->nlen = dlen;
-  x->next = CPP_OPTIONS (pfile)->quote_include;
+  x->next = CPP_OPTION (pfile, quote_include);
   x->alloc = pfile->actual_dirs;
   x->sysp = CPP_BUFFER (pfile)->system_header_p;
   x->name_map = NULL;

@@ -121,7 +121,8 @@ v_message (pfile, is_error, file, line, col, msg, ap)
 	cpp_buf_line_and_col (ip, &line, &col);
 
       print_containing_files (pfile, ip);
-      print_file_and_line (file, line, col);
+      print_file_and_line (file, line,
+			   CPP_OPTION (pfile, show_column) ? col : 0);
     }
   else
     fprintf (stderr, "%s: ", progname);
@@ -217,7 +218,7 @@ cpp_error VPARAMS ((cpp_reader * pfile, const char *msgid, ...))
   msgid = va_arg (ap, const char *);
 #endif
 
-  if (CPP_OPTIONS (pfile)->inhibit_errors)
+  if (CPP_OPTION (pfile, inhibit_errors))
     return;
 
   v_message (pfile, 1, NULL, -1, -1, msgid, ap);
@@ -245,7 +246,7 @@ cpp_error_with_line VPARAMS ((cpp_reader *pfile, int line, int column,
   msgid = va_arg (ap, const char *);
 #endif
 
-  if (CPP_OPTIONS (pfile)->inhibit_errors)
+  if (CPP_OPTION (pfile, inhibit_errors))
     return;
 
   v_message (pfile, 1, NULL, line, column, msgid, ap);
@@ -277,7 +278,7 @@ cpp_warning VPARAMS ((cpp_reader * pfile, const char *msgid, ...))
   msgid = va_arg (ap, const char *);
 #endif
 
-  if (CPP_OPTIONS (pfile)->inhibit_warnings)
+  if (CPP_OPTION (pfile, inhibit_warnings))
     return;
 
   v_message (pfile, 0, NULL, -1, -1, msgid, ap);
@@ -305,7 +306,7 @@ cpp_warning_with_line VPARAMS ((cpp_reader * pfile, int line, int column,
   msgid = va_arg (ap, const char *);
 #endif
 
-  if (CPP_OPTIONS (pfile)->inhibit_warnings)
+  if (CPP_OPTION (pfile, inhibit_warnings))
     return;
 
   v_message (pfile, 0, NULL, line, column, msgid, ap);
@@ -328,12 +329,12 @@ cpp_pedwarn VPARAMS ((cpp_reader * pfile, const char *msgid, ...))
   msgid = va_arg (ap, const char *);
 #endif
 
-  if (CPP_OPTIONS (pfile)->pedantic_errors
-      ? CPP_OPTIONS (pfile)->inhibit_errors
-      : CPP_OPTIONS (pfile)->inhibit_warnings)
+  if (CPP_OPTION (pfile, pedantic_errors)
+      ? CPP_OPTION (pfile, inhibit_errors)
+      : CPP_OPTION (pfile, inhibit_warnings))
     return;
 
-  v_message (pfile, CPP_OPTIONS (pfile)->pedantic_errors,
+  v_message (pfile, CPP_OPTION (pfile, pedantic_errors),
 		 NULL, -1, -1, msgid, ap);
   va_end(ap);
 }
@@ -359,12 +360,12 @@ cpp_pedwarn_with_line VPARAMS ((cpp_reader * pfile, int line, int column,
   msgid = va_arg (ap, const char *);
 #endif
 
-  if (CPP_OPTIONS (pfile)->pedantic_errors
-      ? CPP_OPTIONS (pfile)->inhibit_errors
-      : CPP_OPTIONS (pfile)->inhibit_warnings)
+  if (CPP_OPTION (pfile, pedantic_errors)
+      ? CPP_OPTION (pfile, inhibit_errors)
+      : CPP_OPTION (pfile, inhibit_warnings))
     return;
 
-  v_message (pfile, CPP_OPTIONS (pfile)->pedantic_errors,
+  v_message (pfile, CPP_OPTION (pfile, pedantic_errors),
 		 NULL, line, column, msgid, ap);
   va_end(ap);
 }
@@ -396,12 +397,12 @@ cpp_pedwarn_with_file_and_line VPARAMS ((cpp_reader *pfile,
   msgid = va_arg (ap, const char *);
 #endif
 
-  if (CPP_OPTIONS (pfile)->pedantic_errors
-      ? CPP_OPTIONS (pfile)->inhibit_errors
-      : CPP_OPTIONS (pfile)->inhibit_warnings)
+  if (CPP_OPTION (pfile, pedantic_errors)
+      ? CPP_OPTION (pfile, inhibit_errors)
+      : CPP_OPTION (pfile, inhibit_warnings))
     return;
 
-  v_message (pfile, CPP_OPTIONS (pfile)->pedantic_errors,
+  v_message (pfile, CPP_OPTION (pfile, pedantic_errors),
 		 file, line, col, msgid, ap);
   va_end(ap);
 }
