@@ -225,7 +225,7 @@ half_pic_encode (decl)
 #endif
 
   /* If this is not an external reference, it can't be half-pic.  */
-  if (!TREE_EXTERNAL (decl) && (code != VAR_DECL || !TREE_PUBLIC (decl)))
+  if (!DECL_EXTERNAL (decl) && (code != VAR_DECL || !TREE_PUBLIC (decl)))
     return;
 
   ptr = half_pic_hash (IDENTIFIER_POINTER (asm_name),
