@@ -36,6 +36,8 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 
 #define HOST_FLOAT_FORMAT IEEE_FLOAT_FORMAT
 
+#define HOST_FLOAT_WORDS_BIG_ENDIAN 1
+
 /* If not compiled with GNU C, use C alloca.  */
 #ifndef __GNUC__
 #define USE_C_ALLOCA
