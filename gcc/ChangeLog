@@ -1,3 +1,16 @@
+2004-06-21  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
+
+	PR rtl-optimization/14782
+	* pa.c (emit_move_sequence): Use SFmode for 4-byte modes when doing
+	the address checks for secondary reloads for loads from and stores
+	to floating-point registers.
+	* pa.h (EXTRA_CONSTRAINT, case T): Use SFmode for 4-byte modes
+	in the address check.  Move work around for ELF32 targets to
+	GO_IF_LEGITIMATE_ADDRESS.
+	(GO_IF_LEGITIMATE_ADDRESS): Require constant offsets to be
+	correctly aligned for DImode loads and stores.  Don't allow long
+	SFmode displacements on ELF32.
+
 2004-06-21  Richard Henderson  <rth@redhat.com>
 
         PR rtl-opt/16114
