@@ -3877,8 +3877,6 @@ fold_rtx (rtx x, rtx insn)
 
 	  code = find_comparison_args (code, &folded_arg0, &folded_arg1,
 				       &mode_arg0, &mode_arg1);
-	  const_arg0 = equiv_constant (folded_arg0);
-	  const_arg1 = equiv_constant (folded_arg1);
 
 	  /* If the mode is VOIDmode or a MODE_CC mode, we don't know
 	     what kinds of things are being compared, so we can't do
@@ -3886,6 +3884,9 @@ fold_rtx (rtx x, rtx insn)
 
 	  if (mode_arg0 == VOIDmode || GET_MODE_CLASS (mode_arg0) == MODE_CC)
 	    break;
+
+	  const_arg0 = equiv_constant (folded_arg0);
+	  const_arg1 = equiv_constant (folded_arg1);
 
 	  /* If we do not now have two constants being compared, see
 	     if we can nevertheless deduce some things about the
