@@ -41,16 +41,19 @@
    application's lists.  */
 
 .section .ctors,"aw"
-
 	.align 3
 __CTOR_END__:
 	.quad   0
 
 .section .dtors,"aw"
-
 	.align 3
 __DTOR_END__:
 	.quad   0
+
+.section .jcr,"aw"
+	.align 3
+__JCR_END__:
+	.quad	0
 
 .section .eh_frame,"aw"
 __FRAME_END__:

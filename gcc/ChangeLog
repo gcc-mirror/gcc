@@ -1,23 +1,31 @@
+2001-08-09  Richard Henderson  <rth@redhat.com>
+
+	* config/alpha/crtbegin.asm (__JCR_LIST__): New.
+	(__do_global_dtors_aux): Use gp-relative static data to avoid
+	one dynamic relocation.
+	(__do_frame_setup): Register Java classes.
+	* config/alpha/crtend.asm (__JCR_END__): New.
+
 2001-08-09  Zack Weinberg  <zackw@stanford.edu>
 
-	 * Makefile.in (HOST_CFLAGS): Take out -DGENERATOR_FILE.
-	 (CONFIG_H, TCONFIG_H, TM_P_H): Update.
-	 (GEN, STAGESTUFF): Add new files.
-	 (insn-constants.h, s-constants, tm-preds.h, s-preds,
-	 genconstants, genpreds, genconstants.o, genpreds.o): New rules.
-	 (hashtab.o, safe-ctype.o): Add -DGENERATOR_FILE.
-	 * mkconfig.sh: Include tm-preds.h in tm_p.h; insn-constants.h
-	 as well as insn-codes.h and insn-flags.h in config.h; and no
-	 extra headers in tconfig.h and hconfig.h.
+	* Makefile.in (HOST_CFLAGS): Take out -DGENERATOR_FILE.
+	(CONFIG_H, TCONFIG_H, TM_P_H): Update.
+	(GEN, STAGESTUFF): Add new files.
+	(insn-constants.h, s-constants, tm-preds.h, s-preds,
+	genconstants, genpreds, genconstants.o, genpreds.o): New rules.
+	(hashtab.o, safe-ctype.o): Add -DGENERATOR_FILE.
+	* mkconfig.sh: Include tm-preds.h in tm_p.h; insn-constants.h
+	as well as insn-codes.h and insn-flags.h in config.h; and no
+	extra headers in tconfig.h and hconfig.h.
 
-	 * gencodes.c: Eliminate code to generate predicate declarations
-	 or #defines for md-file constants.
-	 * genconstants.c, genpreds.c: New files.
+	* gencodes.c: Eliminate code to generate predicate declarations
+	or #defines for md-file constants.
+	* genconstants.c, genpreds.c: New files.
 
-	 * i386.md: Re-order guard expressions such that TARGET_64BIT
-	 comes first, when this permits better optimization.  Add
-	 TARGET_64BIT to more x86-64 patterns.  Add comment explaining
-	 why this is desirable.
+	* i386.md: Re-order guard expressions such that TARGET_64BIT
+	comes first, when this permits better optimization.  Add
+	TARGET_64BIT to more x86-64 patterns.  Add comment explaining
+	why this is desirable.
 
 2001-08-09  Jakub Jelinek  <jakub@redhat.com>
 

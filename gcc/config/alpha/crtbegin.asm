@@ -44,16 +44,18 @@
    application's lists.  */
 
 .section .ctors,"aw"
-
 	.align 3
 __CTOR_LIST__:
-	.quad -1
+	.quad	-1
 
 .section .dtors,"aw"
-
 	.align 3
 __DTOR_LIST__:
-	.quad -1
+	.quad	-1
+
+.section .jcr,"aw"
+	.align 3
+__JCR_LIST__:
 
 .section .eh_frame,"aw"
 __EH_FRAME_BEGIN__:
@@ -96,9 +98,9 @@ __EH_FRAME_BEGIN__:
 
 /* Support recursive calls to exit.  */
 	.type dtor_ptr,@object
-	.size dtor_ptr,8
+	.size dtor_ptr,4
 dtor_ptr:
-	.quad	__DTOR_LIST__ + 8
+	.gprel32 __DTOR_LIST__ + 8
 
 /* A globally unique widget for c++ local destructors to hang off.
 
@@ -150,12 +152,13 @@ __do_global_dtors_aux:
 
 0:	lda     $9,dtor_ptr
 	br      2f
-1:	stq	$1,0($9)
+1:	stl	$1,0($9)
 	jsr     $26,($27)
 	ldgp	$29,0($26)
-2:	ldq	$1,0($9)
-	ldq     $27,0($1)
-	addq    $1,8,$1
+2:	ldl	$1,0($9)
+	addq	$1,$29,$2
+	ldq     $27,0($2)
+	addl    $1,8,$1
 	bne     $27,1b
 
 	/* Remove our frame info.  */
@@ -173,10 +176,8 @@ __do_global_dtors_aux:
 	.end __do_global_dtors_aux
 
 /*
- * Install our frame info.
+ * Install our frame info; register java classes, if any.
  */
-
-/* ??? How can we rationally keep this size correct?  */
 
 .section .bss
 	.type frame_object,@object
@@ -205,8 +206,16 @@ __do_frame_setup:
 	jsr	$26,__register_frame_info
 	ldgp	$29,0($26)
 
-	ldq     $26,0($30)
-0:	lda     $30,16($30)
+0:	lda	$1,_Jv_RegisterClasses
+	lda	$16,__JCR_LIST__
+	beq	$1,0f
+	ldq	$2,8($16)
+	beq	$2,0f
+	jsr	$26,_Jv_RegisterClasses
+	ldgp	$29,0($26)
+
+0:	ldq     $26,0($30)
+	lda     $30,16($30)
 	ret
 
 	.end __do_frame_setup
@@ -216,3 +225,4 @@ __do_frame_setup:
 #ifdef SHARED
 .weak __cxa_finalize
 #endif
+.weak _Jv_RegisterClasses
