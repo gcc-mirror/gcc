@@ -3155,7 +3155,6 @@ build_delete (type, addr, auto_delete, flags, use_global_delete)
 {
   tree member;
   tree expr;
-  tree ref;
 
   if (addr == error_mark_node)
     return error_mark_node;
@@ -3184,7 +3183,6 @@ build_delete (type, addr, auto_delete, flags, use_global_delete)
 
       /* throw away const and volatile on target type of addr */
       addr = convert_force (build_pointer_type (type), addr, 0);
-      ref = build_indirect_ref (addr, NULL_PTR);
     }
   else if (TREE_CODE (type) == ARRAY_TYPE)
     {
@@ -3209,8 +3207,6 @@ build_delete (type, addr, auto_delete, flags, use_global_delete)
 	addr = save_expr (addr);
 
       addr = convert_force (build_pointer_type (type), addr, 0);
-
-      ref = build_indirect_ref (addr, NULL_PTR);
     }
 
   my_friendly_assert (IS_AGGR_TYPE (type), 220);
@@ -3239,6 +3235,8 @@ build_delete (type, addr, auto_delete, flags, use_global_delete)
 	 delete'.  */
       if (use_global_delete && auto_delete == sfk_deleting_destructor)
 	{
+	  /* We will use ADDR multiple times so we must save it.  */
+	  addr = save_expr (addr);
 	  /* Delete the object. */
 	  do_delete = build_builtin_delete_call (addr);
 	  /* Otherwise, treat this like a complete object destructor
@@ -3251,7 +3249,9 @@ build_delete (type, addr, auto_delete, flags, use_global_delete)
       else if (!DECL_VIRTUAL_P (CLASSTYPE_DESTRUCTORS (type))
 	       && auto_delete == sfk_deleting_destructor)
 	{
-	  /* Buidl the call.  */
+	  /* We will use ADDR multiple times so we must save it.  */
+	  addr = save_expr (addr);
+	  /* Build the call.  */
 	  do_delete = build_op_delete_call (DELETE_EXPR,
 					    addr,
 					    c_sizeof_nowarn (type),
@@ -3261,7 +3261,8 @@ build_delete (type, addr, auto_delete, flags, use_global_delete)
 	  auto_delete = sfk_complete_destructor;
 	}
 
-      expr = build_dtor_call (ref, auto_delete, flags);
+      expr = build_dtor_call (build_indirect_ref (addr, NULL_PTR),
+			      auto_delete, flags);
       if (do_delete)
 	expr = build (COMPOUND_EXPR, void_type_node, expr, do_delete);
 
@@ -3285,6 +3286,7 @@ build_delete (type, addr, auto_delete, flags, use_global_delete)
       int i, n_baseclasses = CLASSTYPE_N_BASECLASSES (type);
       tree base_binfo = n_baseclasses > 0 ? TREE_VEC_ELT (binfos, 0) : NULL_TREE;
       tree exprstmt = NULL_TREE;
+      tree ref = build_indirect_ref (addr, NULL_PTR);
 
       /* Set this again before we call anything, as we might get called
 	 recursively.  */
