@@ -22,14 +22,9 @@ Haifa scheduler (haifa-sched.c, loop.[ch], unroll.[ch], genattrtab.c):
   opinion that gcc already has too many -foptions, and haifa doesn't help
   that situation.
 
-  * Testing and benchmarking.  Haifa has received little testing inside
-  Cygnus -- it needs to be throughly tested on a wide variety of platforms
-  which benefit from instruction scheduling (sparc, alpha, pa, ppc, mips, x86,
-  i960, m88k, sh, etc).    It needs to be benchmarked -- my tests showed
-  haifa was very much a hit or miss in terms of performance improvements.
-
-  Some benchmarks ran significantly fasters, other significantly slower.
-  We need to work on making haifa generate better overall code.
+  * Testing and benchmarking.    We've converted a few ports to using the
+  Haifa scheduler (hppa, sparc, ppc, alpha).  We need to continue testing
+  and benchmarking the new scheduler on additional targets.
 
   We need to have some kind of docs for how to best describe a machine to
   the haifa scheduler to get good performance.  Some existing ports have
@@ -38,6 +33,26 @@ Haifa scheduler (haifa-sched.c, loop.[ch], unroll.[ch], genattrtab.c):
 
   
 
+Improvements to global cse and partial redundancy elimination:
+
+The current implementation of global cse uses partial redundancy elimination
+as described in Chow's thesis.
+
+Long term we want to use lazy code motion as the basis for partial redundancy
+elimination.  lcm will find as many (or more) redunancies *and* it will
+place the remaining computations at computationally optimal placement points
+within the function.  This reduces the number of redundant operations performed
+as well as reducing register lifetimes.  My experiments have shown that the
+cases were the current PRE code hurts performance are greatly helped by using
+lazy code motion.
+
+lcm also provides the underlying framework for several additional optimizations
+such as shrink wrapping, spill code motion, dead store elimination, and generic
+load/store motion (all the other examples are subcases of load/store motion).
+
+It can probably also be used to improve the reg-stack pass of the compiler.
+
+Contact law@cygnus.com if you're interested in working on lazy code motion.
 
 -------------
 
@@ -56,14 +71,6 @@ Perhaps this would also take care of string constants in dead code.
 The difficulty is in finding a clean way for the RTL which refers
 to the constant (currently, only by an assembler symbol name)
 to point to the constant and cause it to be output.
-
-* More cse
-
-The techniques for doing full global cse are described in the red
-dragon book, or (a different version) in Frederick Chow's thesis from
-Stanford.  It is likely to be slow and use a lot of memory, but it
-might be worth offering as an additional option.  Contact dje@cygnus.com
-before doing any work on CSE.
 
 * Optimize a sequence of if statements whose conditions are exclusive.
 
@@ -207,6 +214,10 @@ the same location; and, in between, there is no reference to anything
 that might be that location (including no reference to a variable
 address).
 
+This can be modeled as a partial redundancy elimination/lazy code motion
+problem.  Contact law@cygnus.com before working on dead store elimination
+optimizations.
+
 * Loop optimization.
 
 Strength reduction and iteration variable elimination could be
@@ -275,8 +286,9 @@ to the order in which to generate code for subexpressions of an expression.
 
 * More code motion.
 
-Consider hoisting common code up past conditional branches or
-tablejumps.
+Consider hoisting common code up past conditional branches or tablejumps.
+
+Contact law@cygnus.com before working on code hoisting.
 
 * Trace scheduling.
 
