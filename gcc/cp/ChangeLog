@@ -1,3 +1,7 @@
+2002-12-05  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* error.c (dump_expr): Fix format specifier warning.
+
 2002-12-04  Geoffrey Keating  <geoffk@apple.com>
 
 	* class.c (finish_struct_1): Correct comment.
