@@ -1,3 +1,11 @@
+2002-10-09  David Edelsohn  <edelsohn@gnu.org>
+
+	* config/rs6000/rs6000.md (movdf splitter): Use gen_int_mode on
+	64-bit hosts.
+	(movtf_internal): Reference correct displacement for second value
+	in memory.
+	(movtf splitter): Correct generation of constants in 64-bit mode.
+
 2002-10-09  Alan Modra  <amodra@bigpond.net.au>
 
 	* libgcc2.c (__floatdisf): Properly cure double rounding.
