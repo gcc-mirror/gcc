@@ -1,3 +1,10 @@
+1999-02-28 17:59 -0500  Zack Weinberg  <zack@rabi.columbia.edu>
+
+	* gcc.c-torture/execute/990119-1.c: Renamed to...
+	* gcc.dg/990119-1.c: this, so it will only be tested once
+	(it's a preprocessor test, it doesn't need to be run at
+	multiple optimization levels).
+
 1999-02-27 13:34 -0500  Zack Weinberg  <zack@rabi.columbia.edu>
 
 	* lib/g++.exp: Don't add incdir=$base_dir/../include to
