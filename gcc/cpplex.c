@@ -159,9 +159,13 @@ trigraph_ok (pfile, from_char)
 			       "trigraph ??%c converted to %c",
 			       (int) from_char,
 			       (int) _cpp_trigraph_map[from_char]);
-      else
-	cpp_warning_with_line (pfile, buffer->lineno, CPP_BUF_COL (buffer) - 2,
-			       "trigraph ??%c ignored", (int) from_char);
+      else if (buffer->cur != buffer->last_Wtrigraphs)
+	{
+	  buffer->last_Wtrigraphs = buffer->cur;
+	  cpp_warning_with_line (pfile, buffer->lineno,
+				 CPP_BUF_COL (buffer) - 2,
+				 "trigraph ??%c ignored", (int) from_char);
+	}
     }
 
   return accept;

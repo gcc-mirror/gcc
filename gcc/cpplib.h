@@ -282,6 +282,10 @@ struct cpp_buffer
   /* Line number at line_base (above). */
   unsigned int lineno;
 
+  /* Because of the way the lexer works, -Wtrigraphs can sometimes
+     warn twice for the same trigraph.  This helps prevent that.  */
+  const unsigned char *last_Wtrigraphs;
+
   /* True if we have already warned about C++ comments in this file.
      The warning happens only for C89 extended mode with -pedantic on,
      or for -Wtraditional, and only once per file (otherwise it would
