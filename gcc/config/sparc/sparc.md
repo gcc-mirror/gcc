@@ -1777,21 +1777,27 @@
 ;; Most of the required support for the various code models is here.
 ;; We can do this because sparcs need the high insn to load the address.  We
 ;; just need to get high to do the right thing for each code model.  Then each
-;; uses the same "%X+%lo(...)" in the load/store insn.
+;; uses the same "%X+%lo(...)" in the load/store insn, though in the case of
+;; the medium/middle code model "%lo" is written "%l44".
 
-;; When TARGET_MEDLOW, assume that the upper 32 bits of symbol addresses are
+;; When TARGET_CM_MEDLOW, assume that the upper 32 bits of symbol addresses are
 ;; always 0.
-;; When TARGET_MEDANY, the text and data segments have a maximum size of 32
-;; bits and may be located anywhere.  MEDANY_BASE_REG contains the start
+;; When TARGET_CM_MEDMID, the executable must be in the low 16 TB of memory.
+;; This corresponds to the low 44 bits, and the %[hml]44 relocs are used.
+;; ??? Not implemented yet.
+;; When TARGET_CM_EMBMEDANY, the text and data segments have a maximum size of
+;; 31 bits and may be located anywhere.  EMBMEDANY_BASE_REG contains the start
 ;; address of the data segment, currently %g4.
-;; When TARGET_FULLANY, symbolic addresses are 64 bits.
+;; When TARGET_CM_MEDANY, the text and data segments have a maximum size of 31
+;; bits and may be located anywhere.  The maximum offset from any instruction
+;; to the label _GLOBAL_OFFSET_TABLE_ is 31 bits.
 
 (define_insn "*sethi_di_medlow"
   [(set (match_operand:DI 0 "register_operand" "=r")
 	(high:DI (match_operand 1 "" "")))
   ;; The clobber is here because emit_move_sequence assumes the worst case.
    (clobber (reg:DI 1))]
-  "TARGET_MEDLOW && check_pic (1)"
+  "TARGET_CM_MEDLOW && check_pic (1)"
   "sethi %%hi(%a1),%0"
   [(set_attr "type" "move")
    (set_attr "length" "1")])
@@ -1799,7 +1805,7 @@
 (define_insn "*sethi_di_medium_pic"
   [(set (match_operand:DI 0 "register_operand" "=r")
 	(high:DI (match_operand 1 "sp64_medium_pic_operand" "")))]
-  "(TARGET_MEDLOW || TARGET_MEDANY) && check_pic (1)"
+  "(TARGET_CM_MEDLOW || TARGET_CM_EMBMEDANY) && check_pic (1)"
   "sethi %%hi(%a1),%0"
   [(set_attr "type" "move")
    (set_attr "length" "1")])
@@ -1807,31 +1813,22 @@
 ;; WARNING: %0 gets %hi(%1)+%g4.
 ;;          You cannot OR in %lo(%1), it must be added in.
 
-(define_insn "*sethi_di_medany_data"
+(define_insn "*sethi_di_embmedany_data"
   [(set (match_operand:DI 0 "register_operand" "=r")
 	(high:DI (match_operand 1 "data_segment_operand" "")))
   ;; The clobber is here because emit_move_sequence assumes the worst case.
    (clobber (reg:DI 1))]
-  "TARGET_MEDANY && check_pic (1)"
-  "sethi %%hi(%a1),%0; add %0,%%g4,%0"
+  "TARGET_CM_EMBMEDANY && check_pic (1)"
+  "sethi %%hi(%a1),%0; add %0,%_,%0"
   [(set_attr "type" "move")
    (set_attr "length" "2")])
 
-(define_insn "*sethi_di_medany_text"
+(define_insn "*sethi_di_embmedany_text"
   [(set (match_operand:DI 0 "register_operand" "=r")
 	(high:DI (match_operand 1 "text_segment_operand" "")))
   ;; The clobber is here because emit_move_sequence assumes the worst case.
    (clobber (reg:DI 1))]
-  "TARGET_MEDANY && check_pic (1)"
-  "sethi %%uhi(%a1),%%g1; or %%g1,%%ulo(%a1),%%g1; sllx %%g1,32,%%g1; sethi %%hi(%a1),%0; or %0,%%g1,%0"
-  [(set_attr "type" "move")
-   (set_attr "length" "5")])
-
-(define_insn "*sethi_di_fullany"
-  [(set (match_operand:DI 0 "register_operand" "=r")
-	(high:DI (match_operand 1 "" "")))
-   (clobber (reg:DI 1))]
-  "TARGET_FULLANY && check_pic (1)"
+  "TARGET_CM_EMBMEDANY && check_pic (1)"
   "sethi %%uhi(%a1),%%g1; or %%g1,%%ulo(%a1),%%g1; sllx %%g1,32,%%g1; sethi %%hi(%a1),%0; or %0,%%g1,%0"
   [(set_attr "type" "move")
    (set_attr "length" "5")])

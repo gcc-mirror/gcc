@@ -1,5 +1,5 @@
 /* Definitions of target machine for GNU compiler, for SPARC64, a.out.
-   Copyright (C) 1994, 1996 Free Software Foundation, Inc.
+   Copyright (C) 1994, 1996, 1997 Free Software Foundation, Inc.
    Contributed by Doug Evans, dje@cygnus.com.
 
 This file is part of GNU CC.
@@ -19,14 +19,6 @@ along with GNU CC; see the file COPYING.  If not, write to
 the Free Software Foundation, 59 Temple Place - Suite 330,
 Boston, MA 02111-1307, USA.  */
 
-/* This is a v9 only compiler.  -mv8 is not expected to work.  If you want
-   a v8/v9 compiler, this isn't the place to do it.
-
-   The only code model supported is Medium/Low.  */
-
-#define SPARC_V9 1	/* See sparc.h.  */
-#define SPARC_ARCH64 1
-
 #include "sparc/sparc.h"
 #include "aoutos.h"
 
@@ -35,5 +27,9 @@ Boston, MA 02111-1307, USA.  */
 
 #undef TARGET_DEFAULT
 #define TARGET_DEFAULT \
-  (MASK_V9 + MASK_ARCH64 + MASK_PTR64 + MASK_HARD_QUAD \
-   + MASK_MEDLOW + MASK_APP_REGS + MASK_EPILOGUE + MASK_FPU)
+  (MASK_V9 + MASK_PTR64 + MASK_64BIT + MASK_HARD_QUAD \
+   + MASK_APP_REGS + MASK_EPILOGUE + MASK_FPU)
+
+/* The only code model supported is Medium/Low.  */
+#undef SPARC_DEFAULT_CMODEL
+#define SPARC_DEFAULT_CMODEL CM_MEDLOW

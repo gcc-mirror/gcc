@@ -105,7 +105,12 @@ static void sparc_init_modes ();
 
 /* Option handling.  */
 
-/* Record options as passed by user.  */
+/* Code model option as passed by user.  */
+char *sparc_cmodel_string;
+/* Parsed value.  */
+enum cmodel sparc_cmodel;
+
+/* Record alignment options as passed by user.  */
 char *sparc_align_loops_string;
 char *sparc_align_jumps_string;
 char *sparc_align_funcs_string;
@@ -133,16 +138,30 @@ enum processor_type sparc_cpu;
 void
 sparc_override_options ()
 {
+  static struct code_model {
+    char *name;
+    int value;
+  } cmodels[] = {
+    { "32", CM_32 },
+    { "medlow", CM_MEDLOW },
+    { "medmid", CM_MEDMID },
+    { "medany", CM_MEDANY },
+    { "embmedany", CM_EMBMEDANY },
+    { 0, 0 }
+  };
+  struct code_model *cmodel;
   /* Map TARGET_CPU_DEFAULT to value for -m{arch,tune}=.  */
   static struct cpu_default {
     int cpu;
     char *name;
   } cpu_default[] = {
+    /* There must be one entry here for each TARGET_CPU value.  */
     { TARGET_CPU_sparc, "cypress" },
-    { TARGET_CPU_v8, "v8" },
-    { TARGET_CPU_supersparc, "supersparc" },
     { TARGET_CPU_sparclet, "tsc701" },
     { TARGET_CPU_sparclite, "f930" },
+    { TARGET_CPU_v8, "v8" },
+    { TARGET_CPU_supersparc, "supersparc" },
+    { TARGET_CPU_v9, "v9" },
     { TARGET_CPU_ultrasparc, "ultrasparc" },
     { 0 }
   };
@@ -167,22 +186,47 @@ sparc_override_options ()
     { "sparclet",   PROCESSOR_SPARCLET, MASK_ISA, MASK_SPARCLET },
     /* TEMIC sparclet */
     { "tsc701",     PROCESSOR_TSC701, MASK_ISA, MASK_SPARCLET },
-    /* "v9" is used to specify a true 64 bit architecture.
-       "v8plus" is what Sun calls Solaris2 running on UltraSPARC's.  */
+    /* "v8plus" is what Sun calls Solaris2.5 running on UltraSPARC's.  */
     { "v8plus",     PROCESSOR_V8PLUS, MASK_ISA, MASK_V9 },
-#if SPARC_ARCH64
     { "v9",         PROCESSOR_V9, MASK_ISA, MASK_V9 },
-#endif
     /* TI ultrasparc */
     { "ultrasparc", PROCESSOR_ULTRASPARC, MASK_ISA, MASK_V9 },
     { 0 }
   };
   struct cpu_table *cpu;
   struct sparc_cpu_select *sel;
+  int fpu;
 
-  int fpu = TARGET_FPU; /* save current -mfpu status */
+#ifndef SPARC_BI_ARCH
+  /* Check for unsupported architecture size.  */
+  if (! TARGET_64BIT != DEFAULT_ARCH32_P)
+    {
+      error ("%s is not supported by this configuration",
+	     DEFAULT_ARCH32_P ? "-m64" : "-m32");
+    }
+#endif
 
-  /* Set the default.  */
+  /* Code model selection.  */
+  sparc_cmodel = SPARC_DEFAULT_CMODEL;
+  if (sparc_cmodel_string != NULL)
+    {
+      if (TARGET_ARCH64)
+	{
+	  for (cmodel = &cmodels[0]; cmodel->name; cmodel++)
+	    if (strcmp (sparc_cmodel_string, cmodel->name) == 0)
+	      break;
+	  if (cmodel->name == NULL)
+	    error ("bad value (%s) for -mcmodel= switch", sparc_cmodel_string);
+	  else
+	    sparc_cmodel = cmodel->value;
+	}
+      else
+	error ("-mcmodel= is not supported on 32 bit systems");
+    }
+
+  fpu = TARGET_FPU; /* save current -mfpu status */
+
+  /* Set the default CPU.  */
   for (def = &cpu_default[0]; def->name; ++def)
     if (def->cpu == TARGET_CPU_DEFAULT)
       break;
@@ -284,7 +328,7 @@ static rtx fpconv_stack_temp;
 /* Called once for each function.  */
 
 void
-sparc64_init_expanders ()
+sparc_init_expanders ()
 {
   fpconv_stack_temp = NULL_RTX;
 }
@@ -295,10 +339,10 @@ rtx
 sparc64_fpconv_stack_temp ()
 {
   if (fpconv_stack_temp == NULL_RTX)
-      fpconv_stack_temp =
-	assign_stack_local (DImode, GET_MODE_SIZE (DImode), 0);
+    fpconv_stack_temp =
+      assign_stack_local (DImode, GET_MODE_SIZE (DImode), 0);
 
-    return fpconv_stack_temp;
+  return fpconv_stack_temp;
 }
 
 /* Miscellaneous utilities.  */
@@ -532,7 +576,7 @@ sp64_medium_pic_operand (op, mode)
 /* Return 1 if the operand is a data segment reference.  This includes
    the readonly data segment, or in other words anything but the text segment.
    This is needed in the medium/anywhere code model on v9.  These values
-   are accessed with MEDANY_BASE_REG.  */
+   are accessed with EMBMEDANY_BASE_REG.  */
 
 int
 data_segment_operand (op, mode)
@@ -4679,8 +4723,8 @@ print_operand (file, x, code)
 	fputs ("\n\tnop", file);
       return;
     case '_':
-      /* Output the Medium/Anywhere code model base register.  */
-      fputs (MEDANY_BASE_REG, file);
+      /* Output the Embedded Medium/Anywhere code model base register.  */
+      fputs (EMBMEDANY_BASE_REG, file);
       return;
     case '@':
       /* Print out what we are using as the frame pointer.  This might
@@ -4944,7 +4988,7 @@ output_double_int (file, value)
 		|| GET_CODE (value) == CODE_LABEL
 		|| GET_CODE (value) == MINUS)))
     {
-      if (!TARGET_V9 || TARGET_MEDLOW)
+      if (!TARGET_V9 || TARGET_CM_MEDLOW)
 	{
 	  ASM_OUTPUT_INT (file, const0_rtx);
 	  ASM_OUTPUT_INT (file, value);
