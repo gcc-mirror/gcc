@@ -386,12 +386,12 @@ GEN= genemit genoutput genrecog genextract genflags gencodes genconfig genpeep
 # Files to be copied away after each stage in building.
 STAGESTUFF = *.o insn-flags.h insn-config.h insn-codes.h \
  insn-output.c insn-recog.c insn-emit.c insn-extract.c insn-peep.c \
- insn-attr.h insn-attrtab.c \
+ insn-attr.h insn-attrtab.c insn-opinit.c \
  stamp-flags stamp-config stamp-codes \
  stamp-output stamp-recog stamp-emit stamp-extract stamp-peep \
- stamp-attr stamp-attrtab stamp-proto \
+ stamp-attr stamp-attrtab stamp-opinit stamp-proto \
  genemit genoutput genrecog genextract genflags gencodes genconfig genpeep \
- genattrtab genattr \
+ genattrtab genattr genopinit \
  $(GCC_PASSES) $(EXTRA_PARTS) $(EXTRA_PROGRAMS) gcc-cross cccp \
  cc1plus cc1obj enquire protoize unprotoize specs collect2 $(USE_COLLECT2)
 
