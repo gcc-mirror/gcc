@@ -3353,13 +3353,6 @@ ac_compiler_gnu=$ac_cv_c_compiler_gnu
 
 
 
-  # For directory versioning (e.g., headers) and other variables.
-  echo "$as_me:$LINENO: checking for GCC version number" >&5
-echo $ECHO_N "checking for GCC version number... $ECHO_C" >&6
-  gcc_version=`$CXX -dumpversion`
-  echo "$as_me:$LINENO: result: $gcc_version" >&5
-echo "${ECHO_T}$gcc_version" >&6
-
   # Will set LN_S to either 'ln -s', 'ln', or 'cp -p' (if linking isn't
   # available).  Uncomment the next line to force a particular method.
   echo "$as_me:$LINENO: checking whether ln -s works" >&5
@@ -4390,7 +4383,7 @@ test x"$pic_mode" = xno && libtool_flags="$libtool_flags --prefer-non-pic"
 case $host in
 *-*-irix6*)
   # Find out which ABI we are using.
-  echo '#line 4393 "configure"' > conftest.$ac_ext
+  echo '#line 4386 "configure"' > conftest.$ac_ext
   if { (eval echo "$as_me:$LINENO: \"$ac_compile\"") >&5
   (eval $ac_compile) 2>&5
   ac_status=$?
@@ -5011,7 +5004,7 @@ fi;
     #
     # Fake what AC_TRY_COMPILE does.  XXX Look at redoing this new-style.
     cat > conftest.$ac_ext << EOF
-#line 5014 "configure"
+#line 5007 "configure"
 struct S { ~S(); };
 void bar();
 void foo()
@@ -99295,7 +99288,7 @@ echo "${ECHO_T}$version_specific_libs" >&6
 
   # Default case for install directory for include files.
   if test $version_specific_libs = no && test $gxx_include_dir = no; then
-    gxx_include_dir='${prefix}'/include/c++/${gcc_version}
+    gxx_include_dir='${prefix}/include/c++/${gcc_version}'
   fi
 
   # Version-specific runtime libs processing.
@@ -99305,10 +99298,10 @@ echo "${ECHO_T}$version_specific_libs" >&6
     # is selected.  FIXME: these variables are misnamed, there are
     # no executables installed in _toolexecdir or _toolexeclibdir.
     if test x"$gxx_include_dir" = x"no"; then
-      gxx_include_dir='${libdir}/gcc/${host_alias}/'$gcc_version/include/c++
+      gxx_include_dir='${libdir}/gcc/${host_alias}/${gcc_version}/include/c++'
     fi
     glibcxx_toolexecdir='${libdir}/gcc/${host_alias}'
-    glibcxx_toolexeclibdir='${toolexecdir}/'$gcc_version'$(MULTISUBDIR)'
+    glibcxx_toolexeclibdir='${toolexecdir}/${gcc_version}$(MULTISUBDIR)'
   fi
 
   # Calculate glibcxx_toolexecdir, glibcxx_toolexeclibdir
