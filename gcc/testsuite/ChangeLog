@@ -1,3 +1,7 @@
+2002-02-12  David Billinghurst <David.Billinghurst@riotinto.com>
+
+	* g++.dg/warn/weak1.C: weak attributes not supported on cygwin
+
 2002-02-13  Stan Shebs  <shebs@apple.com>
 
         * gcc.dg/altivec-3.c: New.
