@@ -1,3 +1,7 @@
+Tue Feb  3 20:13:05 1998  Richard Henderson  <rth@cygnus.com>
+
+	* config-lang.in: Remove references to runtime/.
+
 Sun Feb  1 12:43:49 1998  J"orn Rennecke <amylaar@cygnus.co.uk>
 
 	* com.c (ffecom_tree_canonize_ptr_): Place bitsizetype typed expr
