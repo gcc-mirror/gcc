@@ -1,3 +1,7 @@
+1999-06-28  Richard Henderson  <rth@cygnus.com>
+
+        * decl.c (cp_finish_decl): Fix typo in cp_warning_at call.
+
 1999-06-28  Jason Merrill  <jason@yorick.cygnus.com>
 
 	* error.c (dump_type_real): Handle TREE_LIST again.
