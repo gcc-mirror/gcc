@@ -3930,6 +3930,7 @@ reload_as_needed (live_known)
 	      if (asm_noperands (PATTERN (insn)) >= 0)
 		for (p = NEXT_INSN (prev); p != next; p = NEXT_INSN (p))
 		  if (p != insn && INSN_P (p)
+		      && GET_CODE (PATTERN (p)) != USE
 		      && (recog_memoized (p) < 0
 			  || (extract_insn (p), ! constrain_operands (1))))
 		    {

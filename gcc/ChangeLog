@@ -1,3 +1,9 @@
+2003-03-29  Alan Modra  <amodra@bigpond.net.au>
+
+	* reload1.c (reload_as_needed): Allow a USE in asm reloads.
+
+	* loop.c: (find_mem_in_note_1, find_mem_in_note): Comment.
+
 2003-03-28  Loren James Rittle  <ljrittle@acm.org>
 
         * doc/install.texi (*-*-freebsd*): Update with known status.
