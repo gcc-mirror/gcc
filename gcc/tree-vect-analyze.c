@@ -2312,17 +2312,32 @@ vect_analyze_loop_form (struct loop *loop)
     }
 
   /* Make sure we have a preheader basic block.  */
-  if (!loop->pre_header)
+  if (!loop->pre_header || EDGE_COUNT (loop->pre_header->succs) != 1)
     {
+      edge e = loop_preheader_edge (loop);
+      loop_split_edge_with (e, NULL);
+      if (vect_print_dump_info (REPORT_DETAILS, loop_loc))
+	fprintf (vect_dump, "split preheader edge.");
       rescan = true;
-      loop_split_edge_with (loop_preheader_edge (loop), NULL);
     }
     
   /* Make sure there exists a single-predecessor exit bb:  */
-  if (EDGE_COUNT (loop->exit_edges[0]->dest->preds) != 1)
+  if (EDGE_COUNT (loop->single_exit->dest->preds) != 1)
     {
-      rescan = true;
-      loop_split_edge_with (loop->exit_edges[0], NULL);
+      edge e = loop->single_exit;
+      if (!(e->flags & EDGE_ABNORMAL))
+	{
+	  loop_split_edge_with (e, NULL);
+	  if (vect_print_dump_info (REPORT_DETAILS, loop_loc))
+	    fprintf (vect_dump, "split exit edge.");
+	  rescan = true;
+	}
+      else
+	{
+	  if (vect_print_dump_info (REPORT_BAD_FORM_LOOPS, loop_loc))
+	    fprintf (vect_dump, "not vectorized: abnormal loop exit edge.");
+	  return NULL;
+	}
     }
     
   if (rescan)
