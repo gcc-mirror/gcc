@@ -1,3 +1,7 @@
+2004-08-26  Matthias Klose  <doko@debian.org>
+
+	* doc/invoke.texi: Remove duplicate -fbranch-probabilities entry.
+
 2004-08-14  Roger Sayle  <roger@eyesopen.com>
 
 	* fixinc/tests/base/obstack.h: Backport from mainline.

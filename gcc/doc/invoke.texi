@@ -3901,8 +3901,7 @@ other, a few use both.
 @option{-fpeephole} is enabled by default.
 @option{-fpeephole2} enabled at levels @option{-O2}, @option{-O3}, @option{-Os}.
 
-@item -fbranch-probabilities
-@itemx -fno-guess-branch-probability
+@item -fno-guess-branch-probability
 @opindex fno-guess-branch-probability
 Do not guess branch probabilities using a randomized model.
 
