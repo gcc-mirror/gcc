@@ -1,3 +1,9 @@
+2000-09-01  Jim Wilson  <wilson@cygnus.com>
+
+	* loop.c (check_final_value): Check for biv use before checking for
+	giv use.  Check for both biv and giv uses.  Always set last_giv_use
+	if there is a giv use.
+
 2000-09-01  Richard Henderson  <rth@cygnus.com>
 
 	* config/ia64/ia64.md (mulsi3): Use grfr_register_operand.
