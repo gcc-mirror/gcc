@@ -2187,6 +2187,16 @@ secondary_reload_class (class, mode, in)
   if (regno >= FIRST_PSEUDO_REGISTER)
     regno = -1;
 
+  /* We can not copy a symbolic operand directly into anyting other than
+     BASE_REGS for TARGET_ELF.  So indicate that a register from BASE_REGS
+     is needed as an intermediate register.  */
+  if (TARGET_ELF
+      && class != BASE_REGS
+      && (GET_CODE (in) == SYMBOL_REF
+	  || GET_CODE (in) == LABEL_REF
+	  || GET_CODE (in) == CONST))
+    return BASE_REGS;
+
   /* We can place anything into GENERAL_REGS and can put GENERAL_REGS
      into anything.  */
   if (class == GENERAL_REGS || class == BASE_REGS
