@@ -1,3 +1,11 @@
+2002-01-25  David Edelsohn  <edelsohn@gnu.org>
+
+	* include/gc.h (GC_INIT): Add DATASTART and DATAEND roots on AIX.
+	* include/private/gcconfig.h (RS6000): Add 64-bit AIX support.
+	Define USE_GENERIC_PUSH_REGS.  Use AIX _data and _end symbols for
+	DATASTART and DATAEND roots.
+	* rs6000_mach_dep.s: Add function descriptor and traceback table.
+
 2001-12-16  Jeff Sturm  <jsturm@one-point.com>
 
 	* dyn_load.c: Define ElfW (if needed) for all targets,

@@ -1,4 +1,3 @@
-    .csect
     .set   r0,0
     .set   r1,1
     .set   r2,2
@@ -32,10 +31,18 @@
     .set   r30,30
     .set   r31,31
 
+    .extern .GC_push_one
  # Mark from machine registers that are saved by C compiler
     .globl  .GC_push_regs
+.csect .text[PR]
+    .align 2
+    .globl  GC_push_regs
+    .globl  .GC_push_regs
+.csect GC_push_regs[DS]
+GC_push_regs:
+    .long .GC_push_regs, TOC[tc0], 0
+.csect .text[PR]
 .GC_push_regs:
-    .extern .GC_push_one
     stu	    r1,-64(r1)  # reserve stack frame
     mflr    r0		# save link register
     st      r0,0x48(r1)
@@ -103,3 +110,5 @@
     mtlr    r0
     ai      r1,r1,64
     br
+    .long 0
+    .byte 0,0,0,0,0,0,0,0
