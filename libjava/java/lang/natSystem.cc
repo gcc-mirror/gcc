@@ -243,7 +243,7 @@ java::lang::System::init_properties (void)
 	properties->put(JvNewStringLatin1 (Prop), JvNewStringLatin1 (Val))
   SET ("java.version", VERSION);
   SET ("java.vendor", "Cygnus Solutions");
-  SET ("java.vendor.url", "http://www.cygnus.com/");
+  SET ("java.vendor.url", "http://sourceware.cygnus.com/java/");
   SET ("java.class.version", GCJVERSION);
   // FIXME: how to set these given location-independence?
   // SET ("java.home", "FIXME");

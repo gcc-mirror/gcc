@@ -1,3 +1,8 @@
+1999-05-17  Tom Tromey  <tromey@cygnus.com>
+
+	* java/lang/natSystem.cc (init_properties): URL now points to
+	sourceware.
+
 1999-05-12  Per Bothner  <bothner@cygnus.com>
 
 	* java/util/Calendar.java (set):  First call computeFields if needed.
