@@ -731,7 +731,7 @@ namespace std
       // string::iterator, _CharT*, etc.
       template<class _FwdIter>
         static _CharT*
-        _S_construct(_FwdIter __end, _FwdIter __beg, const _Alloc& __a,
+        _S_construct(_FwdIter __beg, _FwdIter __end, const _Alloc& __a,
 		     forward_iterator_tag);
 
       static _CharT* 
@@ -879,15 +879,14 @@ namespace std
       int 
       compare(const _CharT* __s) const;
 
-#ifdef _GLIBCPP_RESOLVE_LIB_DEFECTS
-// 5. String::compare specification questionable
+      // _GLIBCPP_RESOLVE_LIB_DEFECTS
+      // 5. String::compare specification questionable
       int 
       compare(size_type __pos, size_type __n1, const _CharT* __s) const;
 
       int 
       compare(size_type __pos, size_type __n1, const _CharT* __s, 
 	      size_type __n2) const;
-#endif
   };
 
 

@@ -464,8 +464,8 @@ namespace std
 // 129. Need error indication from seekp() and seekg()
 	  if (__err == pos_type(off_type(-1)))
 	    this->setstate(ios_base::failbit);
-	}
 #endif
+	}
       return *this;
     }
 

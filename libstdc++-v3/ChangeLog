@@ -1,5 +1,27 @@
 2002-03-06  Phil Edwards  <pme@gcc.gnu.org>
 
+	* docs/doxygen/user.cfg.in:  Also document deprecated entries.
+	* docs/html/Makefile:  Example rule to rebuild porting-howto.html.
+	* docs/html/17_intro/howto.html:  "gcc"->"GCC" changes, when
+	referring to the collection as a whole.  New section on which macros
+	can be redefined by the user.
+	* docs/html/19_diagnostics/howto.html:  Update note for concepts.
+	* docs/html/20_util/howto.html:  Update link to SGI.
+	* docs/html/faq/index.html:  Update snapshot versions.  New entry
+	on why g++ (but not gcc) must currently predefine certain macros.
+	* docs/html/faq/index.txt:  Regenerated.
+
+	* include/bits/basic_string.h (basic_string::_S_construct):  Fix
+	names in declaration.
+	(basic_string::compare):  These are no longer optional.
+	* include/bits/ostream.tcc:  Tweak closing brace placement.
+	* include/bits/stl_algo.h:  Lots of initial doxygen comment hooks.
+	* include/std/std_sstream.h:  Fix typo in comment.
+	* include/bits/locale_facets.tcc:  Remove unneeded header inclusion.
+	* src/locale.cc:  Likewise.
+
+2002-03-06  Phil Edwards  <pme@gcc.gnu.org>
+
 	PR libstdc++/5734
 	* include/bits/stl_vector.h (vector::push_back()):  Guard with
 	_GLIBCPP_DEPRECATED.
