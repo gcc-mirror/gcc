@@ -204,7 +204,7 @@ enum dw_cfi_oprnd_type {
 typedef union dw_cfi_oprnd_struct GTY(())
 {
   unsigned long GTY ((tag ("dw_cfi_oprnd_reg_num"))) dw_cfi_reg_num;
-  long int GTY ((tag ("dw_cfi_oprnd_offset"))) dw_cfi_offset;
+  HOST_WIDE_INT GTY ((tag ("dw_cfi_oprnd_offset"))) dw_cfi_offset;
   const char * GTY ((tag ("dw_cfi_oprnd_addr"))) dw_cfi_addr;
   struct dw_loc_descr_struct * GTY ((tag ("dw_cfi_oprnd_loc"))) dw_cfi_loc;
 }
@@ -229,8 +229,8 @@ dw_cfi_node;
 typedef struct cfa_loc GTY(())
 {
   unsigned long reg;
-  long offset;
-  long base_offset;
+  HOST_WIDE_INT offset;
+  HOST_WIDE_INT base_offset;
   int indirect;            /* 1 if CFA is accessed via a dereference.  */
 } dw_cfa_location;
 
@@ -350,13 +350,13 @@ static void add_cfi (dw_cfi_ref *, dw_cfi_ref);
 static void add_fde_cfi (const char *, dw_cfi_ref);
 static void lookup_cfa_1 (dw_cfi_ref, dw_cfa_location *);
 static void lookup_cfa (dw_cfa_location *);
-static void reg_save (const char *, unsigned, unsigned, long);
+static void reg_save (const char *, unsigned, unsigned, HOST_WIDE_INT);
 static void initial_return_save (rtx);
-static long stack_adjust_offset (rtx);
+static HOST_WIDE_INT stack_adjust_offset (rtx);
 static void output_cfi (dw_cfi_ref, dw_fde_ref, int);
 static void output_call_frame_info (int);
 static void dwarf2out_stack_adjust (rtx);
-static void queue_reg_save (const char *, rtx, long);
+static void queue_reg_save (const char *, rtx, HOST_WIDE_INT);
 static void flush_queued_reg_saves (void);
 static bool clobbers_queued_reg_save (rtx);
 static void dwarf2out_frame_debug_expr (rtx, const char *);
@@ -705,17 +705,17 @@ static dw_cfa_location cfa;
 static dw_cfa_location cfa_store;
 
 /* The running total of the size of arguments pushed onto the stack.  */
-static long args_size;
+static HOST_WIDE_INT args_size;
 
 /* The last args_size we actually output.  */
-static long old_args_size;
+static HOST_WIDE_INT old_args_size;
 
 /* Entry point to update the canonical frame address (CFA).
    LABEL is passed to add_fde_cfi.  The value of CFA is now to be
    calculated from REG+OFFSET.  */
 
 void
-dwarf2out_def_cfa (const char *label, unsigned int reg, long int offset)
+dwarf2out_def_cfa (const char *label, unsigned int reg, HOST_WIDE_INT offset)
 {
   dw_cfa_location loc;
   loc.indirect = 0;
@@ -802,7 +802,7 @@ def_cfa_1 (const char *label, dw_cfa_location *loc_p)
    otherwise it is saved in SREG.  */
 
 static void
-reg_save (const char *label, unsigned int reg, unsigned int sreg, long int offset)
+reg_save (const char *label, unsigned int reg, unsigned int sreg, HOST_WIDE_INT offset)
 {
   dw_cfi_ref cfi = new_cfi ();
 
@@ -825,7 +825,7 @@ reg_save (const char *label, unsigned int reg, unsigned int sreg, long int offse
 	   DWARF_CIE_DATA_ALIGNMENT, there is either a bug in the
 	   definition of DWARF_CIE_DATA_ALIGNMENT, or a bug in the machine
 	   description.  */
-	long check_offset = offset / DWARF_CIE_DATA_ALIGNMENT;
+	HOST_WIDE_INT check_offset = offset / DWARF_CIE_DATA_ALIGNMENT;
 
 	if (check_offset * DWARF_CIE_DATA_ALIGNMENT != offset)
 	  abort ();
@@ -869,7 +869,7 @@ dwarf2out_window_save (const char *label)
    pushed onto the stack.  */
 
 void
-dwarf2out_args_size (const char *label, long int size)
+dwarf2out_args_size (const char *label, HOST_WIDE_INT size)
 {
   dw_cfi_ref cfi;
 
@@ -888,7 +888,7 @@ dwarf2out_args_size (const char *label, long int size)
    number.  LABEL and OFFSET are passed to reg_save.  */
 
 void
-dwarf2out_reg_save (const char *label, unsigned int reg, long int offset)
+dwarf2out_reg_save (const char *label, unsigned int reg, HOST_WIDE_INT offset)
 {
   reg_save (label, DWARF_FRAME_REGNUM (reg), -1, offset);
 }
@@ -897,7 +897,7 @@ dwarf2out_reg_save (const char *label, unsigned int reg, long int offset)
    LABEL and OFFSET are passed to reg_save.  */
 
 void
-dwarf2out_return_save (const char *label, long int offset)
+dwarf2out_return_save (const char *label, HOST_WIDE_INT offset)
 {
   reg_save (label, DWARF_FRAME_RETURN_COLUMN, -1, offset);
 }
@@ -975,7 +975,7 @@ initial_return_save (rtx rtl)
 /* Given a SET, calculate the amount of stack adjustment it
    contains.  */
 
-static long
+static HOST_WIDE_INT
 stack_adjust_offset (rtx pattern)
 {
   rtx src = SET_SRC (pattern);
@@ -1131,7 +1131,7 @@ struct queued_reg_save GTY(())
 {
   struct queued_reg_save *next;
   rtx reg;
-  long cfa_offset;
+  HOST_WIDE_INT cfa_offset;
 };
 
 static GTY(()) struct queued_reg_save *queued_reg_saves;
@@ -1140,7 +1140,7 @@ static GTY(()) struct queued_reg_save *queued_reg_saves;
 static const char *last_reg_save_label;
 
 static void
-queue_reg_save (const char *label, rtx reg, long int offset)
+queue_reg_save (const char *label, rtx reg, HOST_WIDE_INT offset)
 {
   struct queued_reg_save *q = ggc_alloc (sizeof (*q));
 
@@ -2365,11 +2365,11 @@ typedef struct dw_val_struct GTY(())
   union dw_val_struct_union
     {
       rtx GTY ((tag ("dw_val_class_addr"))) val_addr;
-      long unsigned GTY ((tag ("dw_val_class_offset"))) val_offset;
+      unsigned HOST_WIDE_INT GTY ((tag ("dw_val_class_offset"))) val_offset;
       dw_loc_list_ref GTY ((tag ("dw_val_class_loc_list"))) val_loc_list;
       dw_loc_descr_ref GTY ((tag ("dw_val_class_loc"))) val_loc;
-      long int GTY ((default (""))) val_int;
-      long unsigned GTY ((tag ("dw_val_class_unsigned_const"))) val_unsigned;
+      HOST_WIDE_INT GTY ((default (""))) val_int;
+      unsigned HOST_WIDE_INT GTY ((tag ("dw_val_class_unsigned_const"))) val_unsigned;
       dw_long_long_const GTY ((tag ("dw_val_class_long_long"))) val_long_long;
       dw_float_const GTY ((tag ("dw_val_class_float"))) val_float;
       struct dw_val_die_union
@@ -2417,7 +2417,7 @@ typedef struct dw_loc_list_struct GTY(())
 
 static const char *dwarf_stack_op_name (unsigned);
 static dw_loc_descr_ref new_loc_descr (enum dwarf_location_atom,
-				       unsigned long, unsigned long);
+				       unsigned HOST_WIDE_INT, unsigned HOST_WIDE_INT);
 static void add_loc_descr (dw_loc_descr_ref *, dw_loc_descr_ref);
 static unsigned long size_of_loc_descr (dw_loc_descr_ref);
 static unsigned long size_of_locs (dw_loc_descr_ref);
@@ -2742,8 +2742,8 @@ dwarf_stack_op_name (unsigned int op)
    together to form more complicated location (address) descriptions.  */
 
 static inline dw_loc_descr_ref
-new_loc_descr (enum dwarf_location_atom op, long unsigned int oprnd1,
-	       long unsigned int oprnd2)
+new_loc_descr (enum dwarf_location_atom op, unsigned HOST_WIDE_INT oprnd1,
+	       unsigned HOST_WIDE_INT oprnd2)
 {
   dw_loc_descr_ref descr = ggc_alloc_cleared (sizeof (dw_loc_descr_node));
 
@@ -3586,10 +3586,10 @@ static void add_dwarf_attr (dw_die_ref, dw_attr_ref);
 static inline enum dw_val_class AT_class (dw_attr_ref);
 static void add_AT_flag (dw_die_ref, enum dwarf_attribute, unsigned);
 static inline unsigned AT_flag (dw_attr_ref);
-static void add_AT_int (dw_die_ref, enum dwarf_attribute, long);
-static inline long int AT_int (dw_attr_ref);
-static void add_AT_unsigned (dw_die_ref, enum dwarf_attribute, unsigned long);
-static inline unsigned long AT_unsigned (dw_attr_ref);
+static void add_AT_int (dw_die_ref, enum dwarf_attribute, HOST_WIDE_INT);
+static inline HOST_WIDE_INT AT_int (dw_attr_ref);
+static void add_AT_unsigned (dw_die_ref, enum dwarf_attribute, unsigned HOST_WIDE_INT);
+static inline unsigned HOST_WIDE_INT AT_unsigned (dw_attr_ref);
 static void add_AT_long_long (dw_die_ref, enum dwarf_attribute, unsigned long,
 			      unsigned long);
 static void add_AT_float (dw_die_ref, enum dwarf_attribute, unsigned, long *);
@@ -3612,7 +3612,8 @@ static void add_AT_addr (dw_die_ref, enum dwarf_attribute, rtx);
 static inline rtx AT_addr (dw_attr_ref);
 static void add_AT_lbl_id (dw_die_ref, enum dwarf_attribute, const char *);
 static void add_AT_lbl_offset (dw_die_ref, enum dwarf_attribute, const char *);
-static void add_AT_offset (dw_die_ref, enum dwarf_attribute, unsigned long);
+static void add_AT_offset (dw_die_ref, enum dwarf_attribute,
+			   unsigned HOST_WIDE_INT);
 static void add_AT_range_list (dw_die_ref, enum dwarf_attribute,
 			       unsigned long);
 static inline const char *AT_lbl (dw_attr_ref);
@@ -3702,7 +3703,7 @@ static dw_loc_descr_ref reg_loc_descriptor (rtx);
 static dw_loc_descr_ref one_reg_loc_descriptor (unsigned int);
 static dw_loc_descr_ref multiple_reg_loc_descriptor (rtx, rtx);
 static dw_loc_descr_ref int_loc_descriptor (HOST_WIDE_INT);
-static dw_loc_descr_ref based_loc_descr (unsigned, long);
+static dw_loc_descr_ref based_loc_descr (unsigned, HOST_WIDE_INT);
 static int is_based_loc (rtx);
 static dw_loc_descr_ref mem_loc_descriptor (rtx, enum machine_mode mode);
 static dw_loc_descr_ref concat_loc_descriptor (rtx, rtx);
@@ -4480,7 +4481,7 @@ AT_flag (dw_attr_ref a)
 /* Add a signed integer attribute value to a DIE.  */
 
 static inline void
-add_AT_int (dw_die_ref die, enum dwarf_attribute attr_kind, long int int_val)
+add_AT_int (dw_die_ref die, enum dwarf_attribute attr_kind, HOST_WIDE_INT int_val)
 {
   dw_attr_ref attr = ggc_alloc (sizeof (dw_attr_node));
 
@@ -4491,7 +4492,7 @@ add_AT_int (dw_die_ref die, enum dwarf_attribute attr_kind, long int int_val)
   add_dwarf_attr (die, attr);
 }
 
-static inline long int
+static inline HOST_WIDE_INT
 AT_int (dw_attr_ref a)
 {
   if (a && AT_class (a) == dw_val_class_const)
@@ -4504,7 +4505,7 @@ AT_int (dw_attr_ref a)
 
 static inline void
 add_AT_unsigned (dw_die_ref die, enum dwarf_attribute attr_kind,
-		 long unsigned int unsigned_val)
+		 unsigned HOST_WIDE_INT unsigned_val)
 {
   dw_attr_ref attr = ggc_alloc (sizeof (dw_attr_node));
 
@@ -4515,7 +4516,7 @@ add_AT_unsigned (dw_die_ref die, enum dwarf_attribute attr_kind,
   add_dwarf_attr (die, attr);
 }
 
-static inline unsigned long
+static inline unsigned HOST_WIDE_INT
 AT_unsigned (dw_attr_ref a)
 {
   if (a && AT_class (a) == dw_val_class_unsigned_const)
@@ -4803,7 +4804,8 @@ add_AT_lbl_offset (dw_die_ref die, enum dwarf_attribute attr_kind, const char *l
 /* Add an offset attribute value to a DIE.  */
 
 static inline void
-add_AT_offset (dw_die_ref die, enum dwarf_attribute attr_kind, long unsigned int offset)
+add_AT_offset (dw_die_ref die, enum dwarf_attribute attr_kind,
+	       unsigned HOST_WIDE_INT offset)
 {
   dw_attr_ref attr = ggc_alloc (sizeof (dw_attr_node));
 
@@ -8106,7 +8108,7 @@ int_loc_descriptor (HOST_WIDE_INT i)
 /* Return a location descriptor that designates a base+offset location.  */
 
 static dw_loc_descr_ref
-based_loc_descr (unsigned int reg, long int offset)
+based_loc_descr (unsigned int reg, HOST_WIDE_INT offset)
 {
   dw_loc_descr_ref loc_result;
   /* For the "frame base", we use the frame pointer or stack pointer
@@ -9000,7 +9002,7 @@ add_AT_location_description (dw_die_ref die, enum dwarf_attribute attr_kind,
 static void
 add_data_member_location_attribute (dw_die_ref die, tree decl)
 {
-  long offset;
+  HOST_WIDE_INT offset;
   dw_loc_descr_ref loc_descr = 0;
 
   if (TREE_CODE (decl) == TREE_VEC)
@@ -9094,20 +9096,10 @@ add_const_value_attribute (dw_die_ref die, rtx rtl)
       {
 	HOST_WIDE_INT val = INTVAL (rtl);
 
-	/* ??? We really should be using HOST_WIDE_INT throughout.  */
-	if (val < 0 && (long) val == val)
-	  add_AT_int (die, DW_AT_const_value, (long) val);
-	else if ((unsigned long) val == (unsigned HOST_WIDE_INT) val)
-	  add_AT_unsigned (die, DW_AT_const_value, (unsigned long) val);
-	else
-	  {
-#if HOST_BITS_PER_LONG * 2 == HOST_BITS_PER_WIDE_INT
-	    add_AT_long_long (die, DW_AT_const_value,
-			      val >> HOST_BITS_PER_LONG, val);
-#else
-	    abort ();
-#endif
-	  }
+	if (val < 0)
+	  add_AT_int (die, DW_AT_const_value, val);
+	else 
+	  add_AT_unsigned (die, DW_AT_const_value, (unsigned HOST_WIDE_INT) val);
       }
       break;
 
