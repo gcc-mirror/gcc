@@ -1,3 +1,7 @@
+2004-12-13  Paolo Carlini  <pcarlini@suse.de>
+
+	* include/tr1/type_traits (extent): Minor tweak (i.e., public).
+
 2004-12-12  Paolo Carlini  <pcarlini@suse.de>
 
 	* include/tr1/type_traits: Minor tweak.
