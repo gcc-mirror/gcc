@@ -1,3 +1,8 @@
+2002-03-19  Phil Edwards  <pme@gcc.gnu.org>
+
+	* docs/html/faq/index.html (#3.6):  Rewrap and close <a href> tags.
+	* docs/html/faq/index.txt:  Regenerate.
+
 2002-03-19  Steve Ellcey  <sje@cup.hp.com>
 
 	* acinclude.m4 (GLIBCPP_ENABLE_LIBUNWIND_EXCEPTIONS): Define
