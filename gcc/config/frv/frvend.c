@@ -64,7 +64,10 @@ FINI_SECTION_ZERO (".dtors", "\"aw\"", "__DTOR_END__");
 
 FINI_SECTION_ZERO (".eh_frame", "\"aw\"", "__FRAME_END__");
 
+#if ! __FRV_FDPIC__
+/* In FDPIC, the linker itself generates this.  */
 /* End of .rofixup section that provides a list of pointers that we
    need to adjust.  */
 
 FINI_SECTION (".rofixup", "\"a\"", "__ROFIXUP_END__");
+#endif /* __FRV_FDPIC__ */

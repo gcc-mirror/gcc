@@ -62,6 +62,32 @@
    Defined in svr4.h.  */
 #undef WORD_SWITCH_TAKES_ARG
 
+/* -fpic and -fPIC used to imply the -mlibrary-pic multilib, but with
+    FDPIC which multilib to use depends on whether FDPIC is in use or
+    not.  The trick we use is to introduce -multilib-library-pic as a
+    pseudo-flag that selects the library-pic multilib, and map fpic
+    and fPIC to it only if fdpic is not selected.  Also, if fdpic is
+    selected and no PIC/PIE options are present, we imply -fPIE.
+    Otherwise, if -fpic or -fPIC are enabled and we're optimizing for
+    speed, or if we have -On with n>=3, enable inlining of PLTs.  As
+    for -mgprel-ro, we want to enable it by default, but not for -fpic or
+    -fpie.  */
+
+#define DRIVER_SELF_SPECS SUBTARGET_DRIVER_SELF_SPECS \
+"%{mno-pack:\
+   %{!mhard-float:-msoft-float}\
+   %{!mmedia:-mno-media}}\
+ %{!mfdpic:%{fpic|fPIC: -multilib-library-pic}}\
+ %{mfdpic:%{!fpic:%{!fpie:%{!fPIC:%{!fPIE:\
+   	    %{!fno-pic:%{!fno-pie:%{!fno-PIC:%{!fno-PIE:-fPIE}}}}}}}} \
+	  %{!mno-inline-plt:%{O*:%{!O0:%{!Os:%{fpic|fPIC:-minline-plt} \
+                    %{!fpic:%{!fPIC:%{!O:%{!O1:%{!O2:-minline-plt}}}}}}}}} \
+	  %{!mno-gprel-ro:%{!fpic:%{!fpie:-mgprel-ro}}}} \
+"
+#ifndef SUBTARGET_DRIVER_SELF_SPECS
+# define SUBTARGET_DRIVER_SELF_SPECS
+#endif
+
 /* A C string constant that tells the GCC driver program options to pass to
    the assembler.  It can also specify how to translate options you give to GNU
    CC into options for GCC to pass to the assembler.  See the file `sun3.h'
@@ -83,6 +109,7 @@
     %{mmedia} %{mno-media} \
     %{mmuladd} %{mno-muladd} \
     %{mpack} %{mno-pack} \
+    %{mfdpic} \
     %{fpic|fpie: -mpic} %{fPIC|fPIE: -mPIC} %{mlibrary-pic}}"
 
 /* Another C string constant used much like `LINK_SPEC'.  The difference
@@ -222,6 +249,7 @@
 #define LINK_SPEC "\
 %{h*} %{v:-V} \
 %{b} %{Wl,*:%*} \
+%{mfdpic:-melf32frvfd -z text} \
 %{static:-dn -Bstatic} \
 %{shared:-Bdynamic} \
 %{symbolic:-Bsymbolic} \
@@ -282,6 +310,9 @@
     {						\
       builtin_define ("__frv__");		\
       builtin_assert ("machine=frv");		\
+						\
+      if (TARGET_FDPIC)				\
+	builtin_define ("__FRV_FDPIC__");	\
     }						\
   while (0)
 
@@ -317,6 +348,7 @@ extern int target_flags;
 #define MASK_LIBPIC	     0x00000100	/* -fpic that can be linked w/o pic */
 #define MASK_ACC_4	     0x00000200	/* Only use four media accumulators */
 #define MASK_PACK	     0x00000400 /* Set to enable packed output */
+#define MASK_LINKED_FP	     0x00002000 /* Follow ABI linkage requirements.  */
 
 			 		/* put debug masks up high */
 #define MASK_DEBUG_ARG	     0x40000000	/* debug argument handling */
@@ -331,6 +363,9 @@ extern int target_flags;
 #define MASK_NO_VLIW_BRANCH  0x00200000	/* disable repacking branches */
 #define MASK_NO_MULTI_CE     0x00100000	/* disable multi-level cond exec */
 #define MASK_NO_NESTED_CE    0x00080000	/* disable nested cond exec */
+#define MASK_FDPIC           0x00040000	/* Follow the new uClinux ABI.  */
+#define MASK_INLINE_PLT      0x00020000 /* Inline FDPIC PLTs.  */
+#define MASK_GPREL_RO	     0x00010000 /* Use GPREL for read-only data.  */
 
 #define MASK_DEFAULT		MASK_DEFAULT_ALLOC_CC
 
@@ -356,7 +391,11 @@ extern int target_flags;
 #define TARGET_NO_VLIW_BRANCH	((target_flags & MASK_NO_VLIW_BRANCH) != 0)
 #define TARGET_NO_MULTI_CE	((target_flags & MASK_NO_MULTI_CE) != 0)
 #define TARGET_NO_NESTED_CE	((target_flags & MASK_NO_NESTED_CE) != 0)
+#define TARGET_FDPIC	        ((target_flags & MASK_FDPIC) != 0)
+#define TARGET_INLINE_PLT	((target_flags & MASK_INLINE_PLT) != 0)
+#define TARGET_GPREL_RO		((target_flags & MASK_GPREL_RO) != 0)
 #define TARGET_PACK		((target_flags & MASK_PACK) != 0)
+#define TARGET_LINKED_FP	((target_flags & MASK_LINKED_FP) != 0)
 
 #define TARGET_GPR_64		(! TARGET_GPR_32)
 #define TARGET_FPR_64		(! TARGET_FPR_32)
@@ -436,6 +475,7 @@ extern int target_flags;
  { "no-media",		 -MASK_MEDIA,		"Do not use media insns" }, \
  { "muladd",		  MASK_MULADD,		"Use multiply add/subtract instructions" }, \
  { "no-muladd",		 -MASK_MULADD,		"Do not use multiply add/subtract insns" }, \
+ { "ultilib-library-pic", 0,			"Link with the library-pic libraries" }, \
  { "library-pic",	  MASK_LIBPIC,		"PIC support for building libraries" }, \
  { "acc-4",		  MASK_ACC_4,		"Use 4 media accumulators" }, \
  { "acc-8",		 -MASK_ACC_4,		"Use 8 media accumulators" }, \
@@ -460,6 +500,14 @@ extern int target_flags;
  { "no-multi-cond-exec",  MASK_NO_MULTI_CE,	"Enable optimizing &&/|| in conditional execution" }, \
  { "nested-cond-exec",	 -MASK_NO_NESTED_CE,	"Enable nested conditional execution optimizations" }, \
  { "no-nested-cond-exec" ,MASK_NO_NESTED_CE,	"Disable nested conditional execution optimizations" }, \
+ { "linked-fp",		  MASK_LINKED_FP,	"Follow the EABI linkage requirements" }, \
+ { "no-linked-fp",	 -MASK_LINKED_FP,	"Don't follow the EABI linkage requirements" }, \
+ { "fdpic",	          MASK_FDPIC,		"Enable file descriptor PIC mode" }, \
+ { "no-fdpic",	         -MASK_FDPIC,		"Disable file descriptor PIC mode" }, \
+ { "inline-plt",	  MASK_INLINE_PLT,	"Enable inlining of PLT in function calls" }, \
+ { "no-inline-plt",	 -MASK_INLINE_PLT,	"Disable inlining of PLT in function calls" }, \
+ { "gprel-ro",		  MASK_GPREL_RO,	"Enable use of GPREL for read-only data in FDPIC" }, \
+ { "no-gprel-ro",	 -MASK_GPREL_RO,	"Disable use of GPREL for read-only data in FDPIC" }, \
  { "tomcat-stats",	  0, 			"Cause gas to print tomcat statistics" }, \
  { "",			  MASK_DEFAULT,		"" }}			    \
 
@@ -764,8 +812,12 @@ extern int target_flags;
 #define GPR_FP          (GPR_FIRST + 2)         /* Frame pointer */
 #define GPR_SP          (GPR_FIRST + 1)         /* Stack pointer */
 						/* small data register */
-#define SDA_BASE_REG    ((unsigned)(flag_pic ? PIC_REGNO : (GPR_FIRST+16)))
-#define PIC_REGNO       (GPR_FIRST + 17)        /* PIC register */
+#define SDA_BASE_REG    ((unsigned)(TARGET_FDPIC ? -1 : flag_pic ? PIC_REGNO : (GPR_FIRST + 16)))
+#define PIC_REGNO       (GPR_FIRST + (TARGET_FDPIC?15:17))        /* PIC register.  */
+#define FDPIC_FPTR_REGNO  (GPR_FIRST + 14)        /* uClinux PIC function pointer register.  */
+#define FDPIC_REGNO   (GPR_FIRST + 15)        /* uClinux PIC register.  */
+
+#define OUR_FDPIC_REG	get_hard_reg_initial_val (SImode, FDPIC_REGNO)
 
 #define FPR_FIRST       64			/* First FP reg */
 #define FPR_LAST        127			/* Last  FP reg */
@@ -1213,6 +1265,9 @@ enum reg_class
   CR_REGS,
   LCR_REG,
   LR_REG,
+  FDPIC_REGS,
+  FDPIC_FPTR_REGS,
+  FDPIC_CALL_REGS,
   SPR_REGS,
   QUAD_ACC_REGS,
   EVEN_ACC_REGS,
@@ -1247,6 +1302,9 @@ enum reg_class
    "CR_REGS",								\
    "LCR_REG",								\
    "LR_REG",								\
+   "FDPIC_REGS",							\
+   "FDPIC_FPTR_REGS",							\
+   "FDPIC_CALL_REGS",							\
    "SPR_REGS",								\
    "QUAD_ACC_REGS",							\
    "EVEN_ACC_REGS",							\
@@ -1282,6 +1340,9 @@ enum reg_class
   { 0x00000000,0x00000000,0x00000000,0x00000000,0x0000ff00,0x0}, /* CR_REGS  */\
   { 0x00000000,0x00000000,0x00000000,0x00000000,0x00000000,0x4}, /* LCR_REGS */\
   { 0x00000000,0x00000000,0x00000000,0x00000000,0x00000000,0x2}, /* LR_REGS  */\
+  { 0x00008000,0x00000000,0x00000000,0x00000000,0x00000000,0x0}, /* FDPIC_REGS */\
+  { 0x00004000,0x00000000,0x00000000,0x00000000,0x00000000,0x0}, /* FDPIC_FPTR_REGS */\
+  { 0x0000c000,0x00000000,0x00000000,0x00000000,0x00000000,0x0}, /* FDPIC_CALL_REGS */\
   { 0x00000000,0x00000000,0x00000000,0x00000000,0x00000000,0x6}, /* SPR_REGS */\
   { 0x00000000,0x00000000,0x00000000,0x00000000,0x00ff0000,0x0}, /* QUAD_ACC */\
   { 0x00000000,0x00000000,0x00000000,0x00000000,0x00ff0000,0x0}, /* EVEN_ACC */\
@@ -1490,9 +1551,9 @@ extern enum reg_class reg_class_from_letter[];
    input and `r' on the output.  The next alternative specifies `m' on the
    input and a register class that does not include r0 on the output.  */
 
-/* Small data references */
+/* 12-bit relocations.  */
 #define EXTRA_CONSTRAINT_FOR_Q(VALUE)					\
-  (small_data_symbolic_operand (VALUE, GET_MODE (VALUE)))
+  (got12_operand (VALUE, GET_MODE (VALUE)))
 
 /* Double word memory ops that take one instruction.  */
 #define EXTRA_CONSTRAINT_FOR_R(VALUE)					\
@@ -2102,7 +2163,7 @@ struct machine_function GTY(())
 
    If you don't define this macro, the value of `BIGGEST_ALIGNMENT' is used for
    aligning trampolines.  */
-#define TRAMPOLINE_ALIGNMENT 32
+#define TRAMPOLINE_ALIGNMENT (TARGET_FDPIC ? 64 : 32)
 
 /* A C statement to initialize the variable parts of a trampoline.  ADDR is an
    RTX for the address of the trampoline; FNADDR is an RTX for the address of
@@ -2129,8 +2190,11 @@ struct machine_function GTY(())
 #define TRAMPOLINE_TEMPLATE_NAME "__trampoline_template"
 #endif
 
+#define Twrite _write
+
+#if ! __FRV_FDPIC__
 #define TRANSFER_FROM_TRAMPOLINE					\
-extern int _write (int, const void *, unsigned);			\
+extern int Twrite (int, const void *, unsigned);			\
 									\
 void									\
 __trampoline_setup (short * addr, int size, int fnaddr, int sc)		\
@@ -2142,7 +2206,7 @@ __trampoline_setup (short * addr, int size, int fnaddr, int sc)		\
 									\
   if (size < 20)							\
     {									\
-      _write (2, "__trampoline_setup bad size\n",			\
+      Twrite (2, "__trampoline_setup bad size\n",			\
 	      sizeof ("__trampoline_setup bad size\n") - 1);		\
       exit (-1);							\
     }									\
@@ -2171,6 +2235,67 @@ __asm__("\n"								\
 	"\tsethi #0, gr6\n"						\
 	"\tsethi #0, gr7\n"						\
 	"\tjmpl @(gr0,gr6)\n");
+#else
+#define TRANSFER_FROM_TRAMPOLINE					\
+extern int Twrite (int, const void *, unsigned);			\
+									\
+void									\
+__trampoline_setup (addr, size, fnaddr, sc)				\
+     short * addr;							\
+     int size;								\
+     int fnaddr;							\
+     int sc;								\
+{									\
+  extern short __trampoline_template[];					\
+  short * from = &__trampoline_template[0];				\
+  int i;								\
+  short **desc = (short **)addr;					\
+  short * to = addr + 4;						\
+									\
+  if (size != 32)							\
+    {									\
+      Twrite (2, "__trampoline_setup bad size\n",			\
+	      sizeof ("__trampoline_setup bad size\n") - 1);		\
+      exit (-1);							\
+    }									\
+									\
+  /* Create a function descriptor with the address of the code below
+     and NULL as the FDPIC value.  We don't need the real GOT value
+     here, since we don't use it, so we use NULL, that is just as
+     good.  */								\
+  desc[0] = to;								\
+  desc[1] = NULL;							\
+  size -= 8;								\
+									\
+  to[0] = from[0];							\
+  to[1] = (short)(fnaddr);						\
+  to[2] = from[2];							\
+  to[3] = (short)(sc);							\
+  to[4] = from[4];							\
+  to[5] = (short)(fnaddr >> 16);					\
+  to[6] = from[6];							\
+  to[7] = (short)(sc >> 16);						\
+  to[8] = from[8];							\
+  to[9] = from[9];							\
+  to[10] = from[10];							\
+  to[11] = from[11];							\
+									\
+  for (i = 0; i < size; i++)						\
+    __asm__ volatile ("dcf @(%0,%1)\n\tici @(%0,%1)" :: "r" (to), "r" (i)); \
+}									\
+									\
+__asm__("\n"								\
+	"\t.globl " TRAMPOLINE_TEMPLATE_NAME "\n"			\
+	"\t.text\n"							\
+	TRAMPOLINE_TEMPLATE_NAME ":\n"					\
+	"\tsetlos #0, gr6\n"	/* Jump register.  */			\
+	"\tsetlos #0, gr7\n"	/* Static chain.  */			\
+	"\tsethi #0, gr6\n"						\
+	"\tsethi #0, gr7\n"						\
+	"\tldd @(gr6,gr0),gr14\n"					\
+	"\tjmpl @(gr14,gr0)\n"						\
+	);
+#endif
 
 
 /* Addressing Modes.  */
@@ -2255,7 +2380,8 @@ __asm__("\n"								\
 #define GO_IF_LEGITIMATE_ADDRESS(MODE, X, LABEL)			\
   do									\
     {									\
-      if (frv_legitimate_address_p (MODE, X, REG_OK_STRICT_P, FALSE))	\
+      if (frv_legitimate_address_p (MODE, X, REG_OK_STRICT_P,		\
+ 				    FALSE, FALSE))			\
 	goto LABEL;							\
     }									\
   while (0)
@@ -2284,40 +2410,9 @@ __asm__("\n"								\
    will reload one or both registers only if neither labeling works.  */
 #define REG_OK_FOR_INDEX_P(X) REG_OK_FOR_BASE_P (X)
 
-/* A C compound statement that attempts to replace X with a valid memory
-   address for an operand of mode MODE.  WIN will be a C statement label
-   elsewhere in the code; the macro definition may use
+#define LEGITIMIZE_ADDRESS(X, OLDX, MODE, WIN)
 
-        GO_IF_LEGITIMATE_ADDRESS (MODE, X, WIN);
-
-   to avoid further processing if the address has become legitimate.
-
-   X will always be the result of a call to `break_out_memory_refs', and OLDX
-   will be the operand that was given to that function to produce X.
-
-   The code generated by this macro should not alter the substructure of X.  If
-   it transforms X into a more legitimate form, it should assign X (which will
-   always be a C variable) a new value.
-
-   It is not necessary for this macro to come up with a legitimate address.
-   The compiler has standard ways of doing so in all cases.  In fact, it is
-   safe for this macro to do nothing.  But often a machine-dependent strategy
-   can generate better code.  */
-
-/* On the FRV, we use it to convert small data and pic references into using
-   the appropriate pointer in the address.  */
-#define LEGITIMIZE_ADDRESS(X, OLDX, MODE, WIN)			\
-  do								\
-    {								\
-      rtx newx = frv_legitimize_address (X, OLDX, MODE);	\
-								\
-      if (newx)							\
-	{							\
-	  (X) = newx;						\
-	  goto WIN;						\
-	}							\
-    }								\
-  while (0)
+#define FIND_BASE_TERM frv_find_base_term
 
 /* A C statement or compound statement with a conditional `goto LABEL;'
    executed if memory address X (an RTX) can have different meanings depending
@@ -2546,6 +2641,7 @@ fixup_section (void)							\
   (   GET_CODE (X) == CONST_INT						\
    || GET_CODE (X) == CONST_DOUBLE					\
    || (GET_CODE (X) == HIGH && GET_CODE (XEXP (X, 0)) == CONST_INT)	\
+   || got12_operand (X, VOIDmode)					\
    || GET_CODE (X) == CONSTANT_P_RTX)
 
 
@@ -2996,10 +3092,11 @@ do {                                                                    \
   { "int12_operand",			{ CONST_INT }},			\
   { "int_2word_operand",		{ CONST_INT, CONST_DOUBLE,	\
 					  SYMBOL_REF, LABEL_REF, CONST }}, \
-  { "pic_register_operand",		{ REG }},			\
-  { "pic_symbolic_operand",		{ SYMBOL_REF, LABEL_REF, CONST }}, \
-  { "small_data_register_operand",	{ REG }},			\
-  { "small_data_symbolic_operand",	{ SYMBOL_REF, CONST }},		\
+  { "fdpic_operand",			{ REG }},			\
+  { "fdpic_fptr_operand",		{ REG }},			\
+  { "ldd_address_operand",		{ REG, SUBREG, PLUS }},		\
+  { "got12_operand",			{ CONST }},			\
+  { "const_unspec_operand",		{ CONST }},			\
   { "icc_operand",			{ REG }},			\
   { "fcc_operand",			{ REG }},			\
   { "cc_operand",			{ REG }},			\
@@ -3301,5 +3398,10 @@ enum frv_builtins
 
 extern GTY(()) rtx frv_compare_op0;			/* operand save for */
 extern GTY(()) rtx frv_compare_op1;			/* comparison generation */
+
+#ifdef __FRV_FDPIC__
+#define CRT_GET_RFIB_DATA(dbase) \
+  ({ extern void *_GLOBAL_OFFSET_TABLE_; (dbase) = &_GLOBAL_OFFSET_TABLE_; })
+#endif
 
 #endif /* __FRV_H__ */

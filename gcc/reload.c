@@ -105,6 +105,7 @@ a register with any other reload.  */
 #include "function.h"
 #include "toplev.h"
 #include "params.h"
+#include "target.h"
 
 #ifndef REGNO_MODE_OK_FOR_BASE_P
 #define REGNO_MODE_OK_FOR_BASE_P(REGNO, MODE) REGNO_OK_FOR_BASE_P (REGNO)
@@ -113,6 +114,12 @@ a register with any other reload.  */
 #ifndef REG_MODE_OK_FOR_BASE_P
 #define REG_MODE_OK_FOR_BASE_P(REGNO, MODE) REG_OK_FOR_BASE_P (REGNO)
 #endif
+
+/* True if X is a constant that can be forced into the constant pool.  */
+#define CONST_POOL_OK_P(X)			\
+  (CONSTANT_P (X)				\
+   && GET_CODE (X) != HIGH			\
+   && !targetm.cannot_force_const_mem (X))
 
 /* All reloads of the current insn are recorded here.  See reload.h for
    comments.  */
@@ -3114,9 +3121,7 @@ find_reloads (rtx insn, int replace, int ind_levels, int live_known,
 			&& REGNO (operand) >= FIRST_PSEUDO_REGISTER
 			&& reg_renumber[REGNO (operand)] < 0))
 		  win = 1;
-		if (CONSTANT_P (operand)
-		    /* force_const_mem does not accept HIGH.  */
-		    && GET_CODE (operand) != HIGH)
+		if (CONST_POOL_OK_P (operand))
 		  badop = 0;
 		constmemok = 1;
 		break;
@@ -3178,8 +3183,7 @@ find_reloads (rtx insn, int replace, int ind_levels, int live_known,
 			     && offsettable_memref_p (reg_equiv_mem[REGNO (operand)]))
 			    || (reg_equiv_address[REGNO (operand)] != 0))))
 		  win = 1;
-		/* force_const_mem does not accept HIGH.  */
-		if ((CONSTANT_P (operand) && GET_CODE (operand) != HIGH)
+		if (CONST_POOL_OK_P (operand)
 		    || GET_CODE (operand) == MEM)
 		  badop = 0;
 		constmemok = 1;
@@ -3299,7 +3303,7 @@ find_reloads (rtx insn, int replace, int ind_levels, int live_known,
 			/* If we didn't already win, we can reload
 			   constants via force_const_mem, and other
 			   MEMs by reloading the address like for 'o'.  */
-			if ((CONSTANT_P (operand) && GET_CODE (operand) != HIGH)
+			if (CONST_POOL_OK_P (operand)
 			    || GET_CODE (operand) == MEM)
 			  badop = 0;
 			constmemok = 1;
@@ -3375,9 +3379,7 @@ find_reloads (rtx insn, int replace, int ind_levels, int live_known,
 		 an early reload pass.  Note that the test here is
 		 precisely the same as in the code below that calls
 		 force_const_mem.  */
-	      if (CONSTANT_P (operand)
-		  /* force_const_mem does not accept HIGH.  */
-		  && GET_CODE (operand) != HIGH
+	      if (CONST_POOL_OK_P (operand)
 		  && ((PREFERRED_RELOAD_CLASS (operand,
 					       (enum reg_class) this_alternative[i])
 		       == NO_REGS)
@@ -3751,9 +3753,7 @@ find_reloads (rtx insn, int replace, int ind_levels, int live_known,
      into registers are here changed into memory references.  */
   for (i = 0; i < noperands; i++)
     if (! goal_alternative_win[i]
-	&& CONSTANT_P (recog_data.operand[i])
-	/* force_const_mem does not accept HIGH.  */
-	&& GET_CODE (recog_data.operand[i]) != HIGH
+	&& CONST_POOL_OK_P (recog_data.operand[i])
 	&& ((PREFERRED_RELOAD_CLASS (recog_data.operand[i],
 				     (enum reg_class) goal_alternative[i])
 	     == NO_REGS)

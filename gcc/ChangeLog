@@ -1,3 +1,415 @@
+2004-02-24  Alexandre Oliva  <aoliva@redhat.com>
+
+	Implement FR-V FDPIC ABI support for frv-uclinux and frv-linux.
+	2004-02-05  Alexandre Oliva  <aoliva@redhat.com>
+	* config/frv/frv.c (frv_emit_movsi): Use GOT relocations for
+	symbols in sections named by the user.
+	2004-01-30  Alexandre Oliva  <aoliva@redhat.com>
+	* config/frv/linux.h (TARGET_OS_CPP_BUILTINS): New.
+	2004-01-27  Alexandre Oliva  <aoliva@redhat.com>
+	* config.gcc (frv-*-*linux*): Handle like *-*-linux*.
+	* config/frv/t-linux (EXTRA_MULTILIB_PARTS): Remove, obviated by
+	the above.
+	2004-01-20  Alexandre Oliva  <aoliva@redhat.com>
+	* config/frv/frv.md (symGOT2reg_hilo, symGOTOFF2reg_hilo): Add
+	one more pseudo to further improve code generation.
+	2004-01-19  Alexandre Oliva  <aoliva@redhat.com>
+	* config/frv/frv.md (movdi_ldd): Introduce explicit indirection
+	inside UNSPEC.
+	2004-01-16  Alexandre Oliva  <aoliva@redhat.com>
+	* config/frv/frv.c (frv_legitimate_address_p): Added
+	allow_double_reg_p argument.  Adjust all callers.  Use it to
+	decide whether to enable double-register indirect addressing.
+	(frv_funcdesc_alias_set): Remove.
+	(frv_expand_fdpic_call): Force non-SYMBOL_REF operand into
+	register.  Emit movdi_ldd.
+	(ldd_address_operand): New.
+	* config/frv/frv-protos.h (frv_legitimate_address_p): Adjust.
+	* config/frv/frv.h (GO_IF_LEGITIMATE_ADDRESS): Likewise.
+	(PREDICATE_CODES): Add ldd_address_operand.
+	* config/frv/frv.md (movdi_ldd): New.
+	(symGOT2reg_hilo, symGOTOFF2reg_hilo): Use separate pseudo for
+	intermediate computations if possible.
+	(symGOTOFF2reg_i): Fix harmless typo.
+	2003-12-18  Alexandre Oliva  <aoliva@redhat.com>
+	* unwind-dw2-fde-glibc.c (_Unwind_IteratePhdrCallback): Cast
+	relocated p_vaddr to vaddr type.
+	* config/frv/frv-protos.h (frv_expand_fdpic_call): Return void.
+	* config/frv/frv.c (frv_get_funcdesc_alias_set): New.
+	(frv_expand_fdpic_call): Propagate incoming MEM's expr to funcdesc
+	MEM, or use a funcdesc alias set.  Use regular move instead of
+	ldd.
+	(dbl_memory_one_insn_operand): Recognize function descriptors by
+	type or by alias set, and don't split them.
+	* config/frv/frv.md (call, call_value): Never use call_internal
+	for fdpic.
+	(call_internal, call_value_internal): Never match for FDPIC.
+	(call_fdpicdi, call_fdpicsi, call_value_fdpicdi,
+	call_value_fdpicsi): Require FDPIC.
+	(ldd): Removed.
+	2003-12-17  Alexandre Oliva  <aoliva@redhat.com>
+	* config/frv/frv.h (CRT_GET_RFIB_DATA): Define for __FRV_FDPIC__.
+	* unwind-dw2-fde-glibc.c: Don't include elf-fdpic.h any more.
+	(_Unwind_IteratePhdrCallback): Adjust type of load_base for FRV
+	FDPIC.  Compute data base address.
+	* config/frv/linux.h (SUBTARGET_DRIVER_SELF_SPECS): Enable -mfdpic
+	before the other self-specs are processed.
+	* config/frv/t-linux (CRTSTUFF_T_CFLAGS, TARGET_LIBGCC2_CFLAGS):
+	Build with -fPIC.
+	2003-12-15  Alexandre Oliva  <aoliva@redhat.com>
+	* unwind-dw2-fde-glibc.c: Don't include bits/elf-fdpic.h if
+	inhibit_libc is defined.
+	2003-12-12  Alexandre Oliva  <aoliva@redhat.com>
+	* unwind-dw2-fde-glibc.c: Include bits/elf-fdpic.h for
+	__FRV_FDPIC__.
+	(__RELOC_POINTER): Define.
+	(_Unwind_IteratePhdrCallback): Use it.
+	* config/frv/frv.h (Twrite): Define.
+	(TRANSFER_FROM_TRAMPOLINE): Use it.
+	* config/frv/linux.h (INVOKE__main): Undefine.
+	(Twrite): Override.
+	2003-12-05  Richard Sandiford  <rsandifo@redhat.com>
+	* doc/invoke.texi (-mlong-calls, -mlinked-fp): Document FRV options.
+	(-mlibrary-pic): Emphasize that this option generates EABI code.
+	(-mcpu): Add fr550.
+	(-mpack): Remove.
+	2003-11-30  Alexandre Oliva  <aoliva@redhat.com>
+	* config/frv/frv.c (int_2word_operand): Reject LABELs, SYMBOL_REFs
+	and CONSTs in FDPIC mode.
+	* gcc/config.gcc (with_cpu): Default to fr400 on frv-*-*linux*.
+	2003-11-29  Richard Sandiford  <rsandifo@redhat.com>
+	* config/frv/frv.c (move_source_operand): Don't accept symbolic
+	constants.
+	* config/frv/frv.md (*movhi_internal, *movsi_internal): Use an 'n'
+	rather than 'i' constraint for the 2-instruction alternative.
+	(*movsi_2word): New, incorporating existing int_2word_operand splitter.
+	2003-11-29  Richard Sandiford  <rsandifo@redhat.com>
+	* config/frv/frv.h (EXTRA_CONSTRAINT_FOR_Q): Renamed from
+	EXTRA_CONSTRAINT_FOR_Y.
+	(EXTRA_CONSTRAINT): Remove handling of 'Y'.
+	* config/frv/frv.md (*movsi_internal): Remove 'Q' constraint.
+	(addsi3): Change 'Y' constraint to 'Q'.
+	2003-11-27  Richard Sandiford  <rsandifo@redhat.com>
+	* reload.c (CONST_POOL_OK_P): New macro.
+	(find_reloads): Use it to decide whether a constant can be forced
+	into memory.
+	* config/frv/frv.h (LEGITIMATE_PIC_OPERAND_P): Return true if the
+	constant satisfies got12_operand.
+	(frv_cannot_force_const_mem): Always return true for TARGET_FDPIC.
+	(frv_legitimate_address_p): Check for valid unspec offsets using
+	got12_operand rather than frv_legitimate_fdpic_operand_p.
+	(frv_legitimate_fdpic_operand_p): Delete.
+	(frv_emit_movsi): Abort if we try to use the FDPIC register during
+	or after reload.
+	(frv_legitimate_constant_p): Return LEGITIMATE_PIC_OPERAND_P if
+	TARGET_FDPIC.
+	* config/frv/frv.md (*movdf_double): Add alternatives for CONST_DOUBLE.
+	2003-11-19  Richard Sandiford  <rsandifo@redhat.com>
+	* config/frv/frv-protos.h (fdpic_operand, fdpic_got12_operand)
+	(frv_fdpic_fptr_operand): Don't declare here.
+	* config/frv/frv.h (EXTRA_CONSTRAINT_FOR_Y): Call got12_operand
+	rather than fdpic_got12_operand.
+	(PREDICATE_CODES): Remove symbolic_operand entry.  Add entries for
+	got12_operand and const_unspec_operand.
+	* config/frv/frv.c (got12_operand): Renamed from fdpic_got12_operand.
+	(gpr_or_int12_operand, dbl_memory_one_insn_operand): Update calls.
+	(symbolic_operand): Remove.
+	(const_unspec_operand): New predicate.
+	* config/frv/frv.md (*movsi_got): Use got12_operand.
+	(*movsi_high_got, *movsi_lo_sum_got): Use const_unspec_operand.
+	2003-11-18  Richard Sandiford  <rsandifo@redhat.com>
+	* config/frv/frv-protos.h (frv_output_addr_const_extra): Remove.
+	* config/frv/frv.h (OUTPUT_ADDR_CONST_EXTRA): Remove definition.
+	* config/frv/frv.c (frv_unspec): New structure.
+	(frv_small_data_reloc_p, frv_const_unspec_p): New functions.
+	(frv_print_operand_memory_reference): Use frv_const_unspec_p to
+	validate CONST indices.  Use frv_output_const_unspec to print them.
+	(frv_print_operand): Update call to unspec_got_name.  Use
+	frv_output_const_unspec to print constant unspecs.
+	(frv_legitimate_fdpic_operand_p): Return true if frv_const_unspec_p.
+	Reject UNSPECs otherwise.
+	(unspec_got_name): Take the relocation number as argument, not an
+	rtx containing it.
+	(frv_output_addr_const_extra): Remove, replacing with...
+	(frv_output_const_unspec): ...this new function.
+	(frv_find_base_term): Use frv_const_unspec_p & frv_small_data_reloc_p.
+	(gpr_or_int12_operand): Use fdpic_got12_operand.
+	(dbl_memory_one_insn_operand): Likewise.
+	(fdpic_got12_operand): Use frv_const_unspec_p.
+	(frv_emit_movsi): Use frv_const_unspec_p to check for CONSTs that
+	are already legitimate.  Use frv_small_data_reloc_p when deciding
+	whether to use HIGH/LO_SUM for R_FRV_GOTOFF12 and R_FRV_GPREL12.
+	2003-11-18  Alexandre Oliva  <aoliva@redhat.com>
+	* config/frv/t-linux (SHLIB_MAPFILES): Override so as to export...
+	* config/frv/libgcc-frv.ver: ... frv-specific symbols.  New file.
+	* config/frv/frv-abi.h (CREATE_DOUBLE_SHIFT): Use branch to local
+	label, for real this time.
+	* config/frv/frv.c (frv_local_funcdesc_p): Update to new
+	representation of visibility.
+	(fdpic_got12_operand, symbolic_operand): Mark unused arguments as
+	such.
+	2003-11-17  Richard Sandiford  <rsandifo@redhat.com>
+	* config/frv/frv.h (MASK_LINKED_FP, TARGET_LINKED_FP): New macros.
+	(TARGET_SWITCHES): Add -mlinked-fp and -mno-linked-fp.
+	* config/frv/frv.c (frv_override_options): Set MASK_LINKED_FP unless
+	it was explicitly disabled.
+	(frv_stack_info): There is no need to save the link register in every
+	frame unless TARGET_LINKED_FP is true.
+	(frv_frame_pointer_required): If !TARGET_LINKED_FP, only require a
+	frame pointer if the stack pointer might change value.
+	(frv_return_addr_rtx): Check and process "count" argument.
+	2003-11-14  Richard Sandiford  <rsandifo@redhat.com>
+	* config/frv/frv-protos.h (frv_legitimize_address): Remove.
+	(frv_find_base_term): Declare.
+	* config/frv/frv.h (LEGITIMIZE_ADDRESS): Do nothing.
+	(FIND_BASE_TERM): Define.
+	(PREDICATE_CODES): Remove pic_register_operand, pic_symbolic_operand,
+	small_data_register_operand, small_data_symbolic_operand.  Add
+	symbolic_operand.
+	* config/frv/frv.c (const_small_data_p, plus_small_data_p): Delete.
+	(frv_print_operand_memory_reference, output_move_single): Remove
+	special handling for unlegitimized sdata addresses.
+	(frv_legitimate_address_p): Don't allow sums of SDA_BASE_REG
+	and symbolic addresses.
+	(frv_legitimize_address, frv_legitimize_fdpic_address): Delete.
+	(frv_find_base_term): New function.
+	(int_2word_operand): Check specifically for symbolic address constants.
+	(pic_register_operand, pic_symbolic_operand): Delete.
+	(small_data_register_operand, small_data_symbolic_operand): Delete.
+	(dbl_memory_one_insn_operand): Don't call plus_small_data_p.
+	Allow UNSPEC_GOT constants if !TARGET_FDPIC.
+	(move_source_operand): Only accept CONSTs if they're a two-insn
+	symbolic constant.
+	(fdpic_got12_operand): Don't require TARGET_FDPIC.
+	(frv_emit_movsi): Legitimize sdata and -mlibrary-pic addresses
+	using gen_symGOTOFF2reg*.
+	(frv_ifcvt_rewrite_mem): Remove (plus gr16 ...) special cases.
+	(frv_rtx_costs): Give all MEM addresses a cost of 0.  Give MEMs
+	themselves a cost of 3 insns.
+	* config/mips/mips.md (*movsi_got): Allow for !TARGET_FDPIC too.
+	Change predicate to symbolic_operand.
+	(*movsi_high_got, *movsi_lo_sum_got): Likewise.
+	(*movsi_lda_sdata): Delete.
+	(*movsi_pic, movsi_high_pic, movsi_lo_sum_pic): Delete.
+	2003-11-05  Alexandre Oliva  <aoliva@redhat.com>
+	* config.gcc: Add t-slibgcc-elf-ver and support --with-cpu for
+	frv-*-*linux*.
+	* config/frv/frv-abi.h (CREATE_DOUBLE_SHIFT): Use branch to local
+	label.
+	* config/frv/frv.h (DRIVER_SELF_SPECS): Add blank before
+	-multilib-library-pic.
+	(LINK_SPEC): Add -z text for -mfdpic.
+	* config/frv/frvbegin.c (__ROFIXUP_LIST__): Don't define on FDPIC.
+	* config/frv/frvend.c (__ROFIXUP_END__): Likewise.
+	* config/frv/linux.h (STARTFILE_SPEC, ENDFILE_SPEC, LINK_SPEC):
+	Override.
+	(OPTION_DEFAULT_SPECS, HAS_INIT_SECTION, INIT_SECTION_ASM_OP,
+	FINI_SECTION_ASM_OP, CRT_CALL_STATIC_FUNCTION): Define.
+	* config/frv/t-linux (EXTRA_MULTILIB_PARTS): Use
+	crtstuff-generated files.
+	2003-10-31  Alexandre Oliva  <aoliva@redhat.com>
+	* config.gcc: Add frv-*-*linux*.
+	* config/frv/linux.h, config/frv/t-linux: New.
+	2003-10-06  Alexandre Oliva  <aoliva@redhat.com>
+	* config/frv/frv.h (LINK_SPEC): Pass -melf32frvfd to the linker
+	when -mfdpic even if a linker script is explicitly listed.
+	2003-10-02  Alexandre Oliva  <aoliva@redhat.com>
+	* config/frv/frv.c (frv_override_options): Clear asm_out
+	unaligned_op for SImode on FDPIC.
+	(frv_emit_movsi): Use compute_reloc_for_constant to compute the
+	argument passed to decl_readonly_section.
+	(frv_assemble_integer): Revert 2003-09-30's change, but make the
+	whole block run with FDPIC even with -fno-PIC.
+	2003-10-02  Alexandre Oliva  <aoliva@redhat.com>
+	* config/frv/frv.c (frv_cannot_force_const_mem): Don't force
+	symbol or label plus offset to memory.
+	(frv_emit_movsi): Emit GPREL only if -mgprel-ro.  Emit 32-bit
+	GOTOFF and GPREL for LABEL_REF.
+	* config/frv/frv.h (DRIVER_SELF_SPECS): Add -mgprel-ro with
+	-mfdpic unless -mno-gprel-ro, -fpic or -fpie.
+	(MASK_GPREL_RO, TARGET_GPREL_RO): New.
+	(TARGET_SWITCHES): Added gprel-ro and no-gprel-ro.
+	* doc/invoke.texi: Document them.
+	2003-09-30  Alexandre Oliva  <aoliva@redhat.com>
+	* config/frv/frv-protos.h (frv_gen_GPsym2reg): Declare.
+	(frv_splittable_got_operand): Removed.
+	* config/frv/frv.c (frv_cannot_force_const_mem): Reject HIGH and
+	LO_SUM.  Add comments.
+	(frv_override_options): Moved enabling of FDPIC to
+	DRIVER_SELF_SPECS.  Don't enable MASK_DWORD.
+	(frv_local_funcdesc_p): Remove unnecessary heck for flag_pie.
+	(frv_legitimize_fdpic_address): Don't duplicate logic in
+	frv_emit_movsi.
+	(frv_gen_GPsym2reg): New.
+	(unspec_got_name): Added gprel.
+	(frv_expand_fdpic_call): Add support for inlining PLTs.
+	(fdpic_fptr_operand): Renamed from frv_fdpic_fptr_operand.
+	(gpr_or_int12_operand): Added GPREL12.
+	(pic_symbolic_operand): Match even if !flag_pic for FDPIC.
+	(small_data_symbolic_operand): Fail if FDPIC.
+	(fdpic_splittable_got_operand): Removed.
+	(fdpic_got12_operand): Added GPREL12.
+	(frv_emit_movsi): Reorganize to avoid duplication.  Emit GPREL
+	when appropriate.  Fix sdata GOTOFF.
+	(frv_legitimate_constant_p): Require legitimate PIC operand for
+	FDPIC with pic, but only a legitimate fdpic operand for non-pic.
+	(frv_assemble_integer): Move FDPIC funcdesc handling out of
+	flag_pic case.
+	(frv_asm_out_constructor, frv_asm_out_destructor): Abort if
+	frv_assemble_integer fails.
+	* config/frv/frv.h (DRIVER_SELF_SPECS): New.
+	(SUBTARGET_DRIVER_SELF_SPECS): New.
+	(ASM_SPEC): Don't pass -mno-fdpic.
+	(LINK_SPEC): Pass -melf32frvfd for FDPIC.
+	(MASK_INLINE_PLT, TARGET_INLINE_PLT): New.
+	(TARGET_SWITCHES): Add -minline-plt, -mno-inline-plt and
+	-multilib-library-pic.
+	(PREDICATE_CODES): Added fdpic_operand, fdpic_fptr_operand,
+	condexec_si_media_operator, condexec_sf_add_operator and
+	condexec_sf_conv_operator.  Removed condexec_sf_binary_operator
+	and condexec_sf_unary_operator.
+	* config/frv/frv.md (R_FRV_GPREL12, R_FRV_GPRELHI, R_FRV_GPRELLO):
+	New.
+	(movsi_got, movsi_high_got, movsi_lo_sum_got): Move before
+	movsi_internal.  Give them internal names.  movsi_got has type
+	int.
+	(fdpic got splitters): Remove.
+	(symGPREL2reg, symGPREL2reg_hilo): New.
+	* config/frv/t-frv (MULTILIB_MATCHES): Don't map -fpic and -fPIC
+	to -mlibrary-pic.  Map -multilib-library-pic to it.
+	* doc/invoke.texi: -mfdpic, -minline-plt, -multilib-library-pic:
+	Document.
+	2003-09-28  Alexandre Oliva  <aoliva@redhat.com>
+	* config/frv/frv.c (frv_function_symbol_referenced_p): Declare.
+	(TARGET_CANNOT_FORCE_CONST_MEM): Define to...
+	(frv_cannot_force_const_mem): New function.
+	(const_small_data_p, plus_small_data_p): Update comments on sdata
+	on FDPIC.
+	(frv_override_options): Set flag_pie for FDPIC too.
+	(frv_conditional_register_usage): Mark gr16 and gr17 as non-fixed,
+	call-saved registers on FDPIC.
+	(frv_stack_info): Don't preserve the PIC register on FDPIC, and
+	don't force LR to be preserved.
+	(frv_expand_prologue): Likewise.
+	(frv_asm_output_mi_thunk): Use 12-bit funcdesc gotoff for -fpic.
+	(frv_frame_pointer_required): Don't force it just because the
+	FDPIC register is used.
+	(frv_legitimate_address_p) <CONST>: Accept a legitimate FDPIC
+	operand only if !condexec_p.
+	(frv_legitimize_address): Return the FDPIC-legitimized address.
+	Don't match small data here on FDPIC.
+	(frv_legitimate_fdpic_operand_p): Don't accept unadorned function
+	symbols.  Use TRUE/FALSE instead of 1/0.
+	(frv_local_funcdesc_p): New.
+	(frv_legitimize_fdpic_address): Rewrite to use GOTOFF and 12-bit
+	immediates when possible.
+	(pic_symbolic_operand): Accept SYMBOL_REFs and CONSTs in FDPIC.
+	(dbl_memory_one_insn_operand): Accept addresses that add a REG and
+	an UNSPEC_GOT.
+	(frv_emit_movsi): Handle FDPIC before small data.  Use GOTOFF and
+	12-bit immediates when possible.
+	(frv_legitimate_constant_p): In FDPIC, reject SImode operands that
+	are not legitimate pic operands.
+	(frv_in_small_data_p): Re-enable for FDPIC.
+	* config/frv/frv.h (SDA_BASE_REG): Remove comment about FDPIC.
+	(FRV_GLOBAL_P): Removed.
+	* config/frv/frv.md: Add modes to CONSTs.
+	(movsi_got): New.
+	(movsi_lo_sum_got): Use separate matches instead of match_dup.
+	(movsi_high_pic, movsi_lo_sum_pic): Match on non-FDPIC only.
+	(fdpic splittable operations): Match on flag_pic != 1.
+	2003-09-22  Alexandre Oliva  <aoliva@redhat.com>
+	* config/frv/frv.c (frv_asm_out_constructor,
+	frv_asm_out_destructor): Pass to frv_assemble_integer the size in
+	bytes, not bits.
+	2003-09-19  Alexandre Oliva  <aoliva@redhat.com>
+	* config/frv/frv.c (frv_assemble_integer): Reject complex
+	expressions referencing function SYMBOL_REFs.
+	* config/frv/frv.c (frv_function_symbol_referenced_p): New.
+	(move_source_operand): Reject CONSTs that reference function
+	SYMBOL_REFs on FDPIC.
+	(frv_emit_movsi): If we get such a CONST, break it up.
+	* config/frv/frv.h (CPP_SPEC): Define __FRV_FDPIC__ for -mfdpic.
+	(TRANSFER_FROM_TRAMPOLINE): Use different definitions for FDPIC.
+	* config/frv/frv.c (frv_print_operand) <I>: Recognize PLUS without
+	MEM.
+	(frv_assemble_integer): Don't use funcdesc for LABEL_REFs.
+	(frv_trampoline_size): Increase for FDPIC.
+	* config/frv/frv.h (TRAMPOLINE_ALIGNMENT): Bump to 64 for FDPIC.
+	(TRANSFER_FROM_TRAMPOLINE): Handle FDPIC trampolines.
+	* config/frv/frv.c (frv_legitimize_fdpic_address, frv_emit_movsi):
+	Disable use of GOTOFF for now.
+	(const_small_data_p, plus_small_data_p, frv_in_small_data_p):
+	Disable use of small data in FDPIC for now.
+	(frv_asm_output_mi_thunk): Implement for FDPIC.
+	* config/frv/frv.h (SDA_BASE_REG): Set to -1 with FDPIC.
+	* config/frv/frv.c (frv_asm_out_constructor): Use
+	frv_assemble_integer for FDPIC pointers.
+	(frv_asm_out_destructor): Likewise.
+	* config/frv/frv.md (ldd): Fix order of operands.  Use
+	address_operand for input.
+	2003-09-18  DJ Delorie  <dj@redhat.com>
+	* config/frv/frv.c (frv_legitimate_fdpic_operand_p): Remove UNSPEC_PIC.
+	(unspec_got_name): Correct typo.
+	(frv_emit_movsi): Pre-expand splittable GOTs.
+	(frv_expand_fdpic_call): Rename gen_lddi to gen_ldd.
+	* config/frv/frv.md (lddi): Fix syntax error, rename to ldd.
+	(symGOT2reg_hilo, symGOTOFF2reg_hilo): New.
+	* config/frv/t-frv: Add -mfdpic multilibs.
+	* config/frv/frv.h (ASM_SPEC): Pass -mfdpic/-mno-fdpic.
+	(TARGET_SWITCHES): Add -mno-fdpic, fix documentation.
+	* config/frv/frv.c (frv_override_options): -mfdpic assumes
+	flag_pic, default to 32-bit pics, require DWORD ops.
+	(frv_override_options): Add W and Z constraints.
+	(frv_expand_prologue): No pic prologue for -mfdpic.
+	(frv_asm_output_mi_thunk): Support -mfdpic (soon).
+	(frv_print_operand_memory_reference): Handle GOT constants.
+	(frv_legitimate_address_p): Allow GOT constants.
+	(frv_legitimize_address): Handle GOT addresses too.
+	(frv_legitimate_fdpic_operand_p): New.
+	(frv_legitimize_fdpic_address): New.
+	(unspec_got_name): New.
+	(frv_output_addr_const_extra): New.
+	(frv_expand_fdpic_call): New.
+	(frv_fdpic_fptr_operand): New.
+	(gpr_or_int12_operand): Handle GOT operands.
+	(int_2word_operand): Handle GOT operands.
+	(fdpic_operand): New.
+	(fdpic_splittable_got_operand): New.
+	(fdpic_got12_operand): New.
+	(frv_emit_movsi): Handle GOT operands.
+	(frv_assemble_integer): -mfdpic doesn't use rofixups.
+	(frv_print_operand): Support 'g' code for GOT operands.
+	* config/frv/frv-protos.h: Add prototypes as needed.
+	* config/frv/frv.md (R_FRV_GOT12, R_FRV_GOTHI, R_FRV_GOTLO,
+	R_FRV_FUNCDESC, R_FRV_FUNCDESC_GOT12, R_FRV_FUNCDESC_GOTHI,
+	R_FRV_FUNCDESC_GOTLO, R_FRV_FUNCDESC_VALUE,
+	R_FRV_FUNCDESC_GOTOFF12, R_FRV_FUNCDESC_GOTOFFHI,
+	R_FRV_FUNCDESC_GOTOFFLO, R_FRV_GOTOFF12, R_FRV_GOTOFFHI,
+	R_FRV_GOTOFFLO): New.
+	(movsi_high_got, movsi_lo_sum_got): New.
+	(*movsi_pic): Don't use this splitter for -mfdpic.
+	(addsi3): Allow GOT references also.
+	(call, call_value): Handle -mfdpic separately.
+	(call_fdpicdi, call_fdpicsi, lddi, call_value_fdpicdi,
+	call_value_fdpicsi): New.
+	(symGOT2reg, symGOT2reg_i, got splitters, symGOTOFF2reg,
+	symGOTOFF2reg_i): New.
+	* config/frv/frv.h (MASK_FDPIC): New.
+	(TARGET_FDPIC): New.
+	(TARGET_SWITCHES): Add -mfdpic.
+	(FDPIC_FPTR_REGNO): New.
+	(FDPIC_REGNO): New.
+	(OUR_FDPIC_REG): New.
+	(enum reg_class): Add FDPIC_REGS, FDPIC_FPTR_REGS, and
+	FDPIC_CALL_REGS.
+	(REG_CLASS_NAMES): Likewise.
+	(REG_CLASS_CONTENTS): Likewise.
+	(EXTRA_CONSTRAINT_FOR_Y): New, for 12-bit GOTs.
+	(EXTRA_CONSTRAINT): Add it here.
+	(FRV_GLOBAL_P): New.
+	(OUTPUT_ADDR_CONST_EXTRA): New.
+
 2004-02-24  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* config/sparc/sparc.h: Remove commented-out definitions of
