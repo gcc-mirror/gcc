@@ -1,3 +1,152 @@
+2002-07-24  Aldy Hernandez  <aldyh@redhat.com>
+
+	* config/rs6000/eabi.h: Define TARGET_SPE_ABI, TARGET_SPE,
+	TARGET_ISEL, and TARGET_FPRS.
+	
+	* doc/invoke.texi (RS/6000 and PowerPC Options): Document
+	-mabi=spe, -mabi=no-spe, and -misel=.
+
+	* config/rs6000/rs6000-protos.h: Add output_isel.
+	Move vrsave_operation prototype here.
+
+	* config/rs6000/rs6000.md (sminsi3): Allow pattern for TARGET_ISEL.
+	(smaxsi3): Same.
+	(uminsi3): Same.
+	(umaxsi3): Same.
+	(abssi2_nopower): Disallow when TARGET_ISEL.
+	(*ne0): Same.
+	(negsf2): Change to expand and rename old pattern to *negsf2.
+	(abssf2): Change to expand and rename old pattern to *abssf2.
+	
+	New expanders: fix_truncsfsi2, floatunssisf2, floatsisf2,
+	fixunssfsi2.
+
+	Change patterns that check for TARGET_HARD_FLOAT or
+	TARGET_SOFT_FLOAT to also check TARGET_FPRS.
+
+	* config/rs6000/rs6000.c: New globals: rs6000_spe_abi,
+	rs6000_isel, rs6000_fprs, rs6000_isel_string.
+	(rs6000_override_options): Add 8540 case to
+	processor_target_table.
+	Set rs6000_isel for the 8540.
+	Call rs6000_parse_isel_option.
+	(enable_mask_for_builtins): New.
+	(rs6000_parse_isel_option): New.
+	(rs6000_parse_abi_options): Add spe and no-spe.
+	(easy_fp_constant): Treat !TARGET_FPRS as soft-float.
+	(rs6000_legitimize_address): Check for TARGET_FPRS when checking
+	for TARGET_HARD_FLOAT.
+	Add case for SPE_VECTOR_MODE.
+	(rs6000_legitimize_reload_address): Handle SPE vector modes.
+	(rs6000_legitimate_address): Disallow PRE_INC/PRE_DEC for SPE
+	vector modes.
+	Check for TARGET_FPRS when checking for TARGET_HARD_FLOAT.
+	(rs6000_emit_move): Check for TARGET_FPRS.
+	Add cases for SPE vector modes.
+	(function_arg_boundary): Return 64 for SPE vector modes.
+	(function_arg_advance): Check for TARGET_FPRS and
+	Handle SPE vectors.
+	(function_arg): Same.
+	(setup_incoming_varargs): Check for TARGET_FPRS.
+	(rs6000_va_arg): Same.
+	(struct builtin_description): Un-constify mask field.  Move up in
+	file.
+	(bdesc_2arg): Un-constify and add SPE builtins.
+	(bdesc_1arg): Same.
+	(bdesc_spe_predicates): New.
+	(bdesc_spe_evsel): New.
+	(rs6000_expand_unop_builtin): Add SPE 5-bit literal builtins.
+	(rs6000_expand_binop_builtin): Same.
+	(bdesc_2arg_spe): New.
+	(spe_expand_builtin): New.
+	(spe_expand_predicate_builtin): New.
+	(spe_expand_evsel_builtin): New.
+	(rs6000_expand_builtin): Call spe_expand_builtin for SPE.
+	(rs6000_init_builtins): Initialize SPE builtins.  Call
+	rs6000_common_init_builtins.
+	(altivec_init_builtins): Move all non-altivec builtin code to...
+	(rs6000_common_init_builtins): ...here.  New function.
+	(branch_positive_comparison_operator): Allow NE code for SPE.
+	(ccr_bit): Return correct ccr bit for SPE fp.
+	(print_operand): Emit crnor in 'D' case for SPE.
+	New case 't'.
+	Add SPE code for 'y' case.
+	(rs6000_generate_compare): Generate rtl for SPE fp.
+	(output_cbranch): Handle SPE hard floats.
+	(rs6000_emit_cmove): Handle isel.
+	(rs6000_emit_int_cmove): New.
+	(output_isel): New.
+	(rs6000_stack_info): Adjust stack frame so GPRs are saved in
+	64-bits for SPE.
+	(debug_stack_info): Add SPE info.
+	(gen_frame_mem_offset): New.
+	(rs6000_emit_prologue): Save GPRs in 64-bits for SPE abi.
+	Change mode of frame pointer, when saving it, to Pmode.
+	(rs6000_emit_epilogue): Restore GPRs in 64-bits for SPE abi.
+	Misc cleanups and use gen_frame_mem_offset when appropriate.
+
+	* config/rs6000/rs6000.h (processor_type): Add PROCESSOR_PPC8540.
+	(TARGET_SPE_ABI): New.
+	(TARGET_SPE): New.
+	(TARGET_ISEL): New.
+	(TARGET_FPRS): New.
+	(FIXED_SCRATCH): New.
+	(RTX_COSTS): Add PROCESSOR_PPC8540.
+	(ASM_CPU_SPEC): Add case for 8540.
+	(TARGET_OPTIONS): Add isel= case.
+	(rs6000_spe_abi): New.
+	(rs6000_isel): New.
+	(rs6000_fprs): New.
+	(rs6000_isel_string): New.
+	(UNITS_PER_SPE_WORD): New.
+	(LOCAL_ALIGNMENT): Adjust for SPE.
+	(HARD_REGNO_MODE_OK): Same.
+	(DATA_ALIGNMENT): Same.
+	(MEMBER_TYPE_FORCES_BLK): New.
+	(FIRST_PSEUDO_REGISTER): Set to 113.
+	(FIXED_REGISTERS): Add SPE registers.
+	(reg_class): Same.
+	(REG_CLASS_NAMES): Same.
+	(REG_CLASS_CONTENTS): Same.
+	(REGNO_REG_CLASS): Same.
+	(REGISTER_NAMES): Same.
+	(DEBUG_REGISTER_NAMES): Same.
+	(ADDITIONAL_REGISTER_NAMES): Same.
+	(CALL_USED_REGISTERS): Same.
+	(CALL_REALLY_USED_REGISTERS): Same.
+	(SPE_ACC_REGNO): New.
+	(SPEFSCR_REGNO): New.
+	(SPE_SIMD_REGNO_P): New.
+	(HARD_REGNO_NREGS): Adjust for SPE.
+	(VECTOR_MODE_SUPPORTED_P): Same.
+	(REGNO_REG_CLASS): Same.
+	(FUNCTION_VALUE): Same.
+	(LIBCALL_VALUE): Same.
+	(LEGITIMATE_OFFSET_ADDRESS_P): Same.
+	(SPE_VECTOR_MODE): New.
+	(CONDITIONAL_REGISTER_USAGE): Disable FPRs when target does FP on
+	the GPRs.  Set FIXED_SCRATCH fixed in SPE case.
+	(rs6000_stack): Add spe_gp_size, spe_padding_size,
+	spe_gp_save_offset.
+	(USE_FP_FOR_ARG_P): Check for TARGET_FPRS.
+	(LEGITIMATE_LO_SUM_ADDRESS_P): Same.
+	(SPE_CONST_OFFSET_OK): New.
+	(rs6000_builtins): Add SPE builtins.
+
+	* testsuite/gcc.dg/ppc-spe.c: New.
+	
+	* config/rs6000/eabispe.h: New.
+
+	* config/rs6000/spe.h: New.
+
+	* config/rs600/spe.md: New.
+
+	* config/rs6000/rs6000-c.c (rs6000_cpu_cpp_builtins): Define
+	__SIMD__ for TARGET_SPE.
+
+	* config.gcc: Add powerpc-*-eabispe* case.
+	Add spe.h to user headers for powerpc.
+
 2002-07-24  Chris Demetriou  <cgd@broadcom.com>
 
 	* config/mips/elf.h (STARTFILE_SPEC): Undo previous change.
