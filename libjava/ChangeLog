@@ -1,3 +1,10 @@
+2004-07-27  Bryce McKinlay  <mckinlay@redhat.com>
+
+	* java/io/File.java (toURI): Throw RuntimeException, not 
+	InternalError.
+	* java/lang/Runtime.java (exit): Qualify static sleep() call with
+	class name, not instance.
+
 2004-07-24  Bryce McKinlay  <mckinlay@redhat.com>
 
 	* Makefile.am: Add gnu/java/security/action/GetPropertyAction.java

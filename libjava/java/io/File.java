@@ -893,8 +893,7 @@ public class File implements Serializable, Comparable
     catch (URISyntaxException use)
       {
         // Can't happen.
-        throw (InternalError) new InternalError("Unconvertible file: "
-						+ this).initCause(use);
+	throw new RuntimeException(use);
       }
   }
 
