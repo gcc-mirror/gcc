@@ -1366,7 +1366,7 @@ mips_legitimate_address_p (mode, xinsn, strict)
 	      /* When assembling for machines with 64 bit registers,
 	         the assembler will not sign-extend the constant "foo"
 		 in "la x, foo(x)" */
-	      && (!TARGET_64BIT || (INTVAL (xplus1) > 0))
+	      && (!TARGET_64BIT || (code1 == CONST_INT && INTVAL (xplus1) > 0))
 	      && !TARGET_MIPS16)
 	    return 1;
 	}
