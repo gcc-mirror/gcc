@@ -2188,9 +2188,16 @@ free_reg_info ()
 
 /* Maximum number of parallel sets and clobbers in any insn in this fn.
    Always at least 3, since the combiner could put that many together
-   and we want this to remain correct for all the remaining passes.  */
+   and we want this to remain correct for all the remaining passes.
+   This corresponds to the maximum number of times note_stores will call
+   a function for any insn.  */
 
 int max_parallel;
+
+/* Used as a temporary to record the largest number of registers in 
+   PARALLEL in a SET_DEST.  This is added to max_parallel.  */
+
+static int max_set_parallel;
 
 void
 reg_scan (f, nregs, repeat)
@@ -2202,6 +2209,7 @@ reg_scan (f, nregs, repeat)
 
   allocate_reg_info (nregs, TRUE, FALSE);
   max_parallel = 3;
+  max_set_parallel = 0;
 
   for (insn = f; insn; insn = NEXT_INSN (insn))
     if (GET_CODE (insn) == INSN
@@ -2216,6 +2224,8 @@ reg_scan (f, nregs, repeat)
 	if (REG_NOTES (insn))
 	  reg_scan_mark_refs (REG_NOTES (insn), insn, 1, 0);
       }
+
+  max_parallel += max_set_parallel;
 }
 
 /* Update 'regscan' information by looking at the insns
@@ -2312,6 +2322,11 @@ reg_scan_mark_refs (x, insn, note_flag, min_regno)
 	   || GET_CODE (dest) == ZERO_EXTEND;
 	   dest = XEXP (dest, 0))
 	;
+
+      /* For a PARALLEL, record the number of things (less the usual one for a
+	 SET) that are set.  */
+      if (GET_CODE (dest) == PARALLEL)
+	max_set_parallel = MAX (max_set_parallel, XVECLEN (dest, 0) - 1);
 
       if (GET_CODE (dest) == REG
 	  && REGNO (dest) >= min_regno)

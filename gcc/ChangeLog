@@ -1,5 +1,9 @@
 Fri Jan 19 13:02:56 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
+	* regclass.c (max_set_parallel): New variable.
+	(reg_scan): Take it into account in computation of max_parallel.
+	(reg_scan_mark_refs, case SET): Compute it.
+
 	* alias.c (rtx_equal_for_memref_p, case ADDRESSOF): Don't assume
 	args are REG.
 	* expr.c (store_constructor): Don't look at MEM_ALIAS_SET unless MEM.
