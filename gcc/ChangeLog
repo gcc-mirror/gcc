@@ -1,3 +1,8 @@
+Mon Jul 27 14:22:36 1998  Dave Brolley  <brolley@cygnus.com>
+
+	* c-lex.c (yylex): Fix boundary conditions in character literal and
+	string literal loops.
+
 Mon Jul 27 11:43:54 1998  Stan Cox  <scox@cygnus.com>
 
 	* longlong.h (count_leading_zeros): Sparclite scan instruction was
