@@ -1,2 +1,2 @@
 # Location of DJGPP's header directory.
-SYSTEM_HEADER_DIR=$(DJDIR)/include
+NATIVE_SYSTEM_HEADER_DIR=$(DJDIR)/include
