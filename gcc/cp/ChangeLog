@@ -1,3 +1,8 @@
+2002-12-18  Mark Mitchell  <mark@codesourcery.com>
+
+	* class.c (build_base_field): Do not set DECL_PACKED on the
+	FIELD_DECL.
+
 2002-12-18  Gabriel Dos Reis  <gdr@integrable-solutions.net>
 
 	* cp-tree.h (struct tree_srcloc): Use location_t.
