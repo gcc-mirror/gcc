@@ -1870,13 +1870,14 @@ gengenrtl.o : gengenrtl.c $(RTL_BASE_H) system.h
 # If we are not cross-building, gen* use the same .o's that cc1 will use,
 # and HOST_PREFIX_1 is `foobar', just to ensure these rules don't conflict
 # with the rules for rtl.o, alloca.o, etc.
-$(HOST_PREFIX_1)rtl.o: $(srcdir)/rtl.c $(CONFIG_H) system.h $(RTL_H) bitmap.h
+$(HOST_PREFIX_1)rtl.o: $(srcdir)/rtl.c $(CONFIG_H) system.h $(RTL_H) \
+  bitmap.h ggc.h toplev.h
 	rm -f $(HOST_PREFIX)rtl.c
 	sed -e 's/config[.]h/hconfig.h/' $(srcdir)/rtl.c > $(HOST_PREFIX)rtl.c
 	$(HOST_CC) -c $(HOST_CFLAGS) $(HOST_CPPFLAGS) $(INCLUDES) $(HOST_PREFIX)rtl.c
 
-$(HOST_PREFIX_1)print-rtl.o: $(srcdir)/print-rtl.c $(CONFIG_H) $(RTL_H) \
-	bitmap.h basic-block.h
+$(HOST_PREFIX_1)print-rtl.o: $(srcdir)/print-rtl.c $(CONFIG_H) system.h \
+  $(RTL_H) bitmap.h basic-block.h
 	rm -f $(HOST_PREFIX)print-rtl.c
 	sed -e 's/config[.]h/hconfig.h/' $(srcdir)/print-rtl.c > $(HOST_PREFIX)print-rtl.c
 	$(HOST_CC) -c $(HOST_CFLAGS) $(HOST_CPPFLAGS) $(INCLUDES) $(HOST_PREFIX)print-rtl.c
@@ -1887,7 +1888,7 @@ $(HOST_PREFIX_1)bitmap.o: $(srcdir)/bitmap.c $(CONFIG_H) system.h $(RTL_H) \
 	sed -e 's/config[.]h/hconfig.h/' $(srcdir)/bitmap.c > $(HOST_PREFIX)bitmap.c
 	$(HOST_CC) -c $(HOST_CFLAGS) $(HOST_CPPFLAGS) $(INCLUDES) $(HOST_PREFIX)bitmap.c
 
-$(HOST_PREFIX_1)rtlanal.o: $(srcdir)/rtlanal.c $(CONFIG_H) $(RTL_H)
+$(HOST_PREFIX_1)rtlanal.o: $(srcdir)/rtlanal.c $(CONFIG_H) system.h $(RTL_H)
 	rm -f $(HOST_PREFIX)rtlanal.c
 	sed -e 's/config[.]h/hconfig.h/' $(srcdir)/rtlanal.c > $(HOST_PREFIX)rtlanal.c
 	$(HOST_CC) -c $(HOST_CFLAGS) $(HOST_CPPFLAGS) $(INCLUDES) $(HOST_PREFIX)rtlanal.c
@@ -1897,7 +1898,7 @@ $(HOST_PREFIX_1)alloca.o: $(srcdir)/../libiberty/alloca.c
 	$(LN_S) $(srcdir)/../libiberty/alloca.c $(HOST_PREFIX)alloca.c
 	$(HOST_CC) -c $(HOST_CFLAGS) $(HOST_CPPFLAGS) $(INCLUDES) $(HOST_PREFIX)alloca.c
 
-$(HOST_PREFIX_1)obstack.o: $(srcdir)/../libiberty/obstack.c
+$(HOST_PREFIX_1)obstack.o: $(srcdir)/../libiberty/obstack.c $(CONFIG_H)
 	rm -f $(HOST_PREFIX)obstack.c
 	sed -e 's/config[.]h/hconfig.h/' $(srcdir)/../libiberty/obstack.c > $(HOST_PREFIX)obstack.c
 	$(HOST_CC) -c $(HOST_CFLAGS) $(HOST_CPPFLAGS) $(INCLUDES) $(HOST_PREFIX)obstack.c
