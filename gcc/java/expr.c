@@ -1674,6 +1674,8 @@ build_primtype_type_ref (self_name)
     typ = long_type_node;
   else if (strncmp(class_name, "Float", 5) == 0)
     typ = float_type_node;
+  else if (strncmp(class_name, "Double", 6) == 0)
+    typ = double_type_node;
   else if (strncmp(class_name, "Boolean", 7) == 0)
     typ = boolean_type_node;
   else if (strncmp(class_name, "Char", 4) == 0)
@@ -1761,7 +1763,8 @@ java_lang_expand_expr (exp, target, tmode, modifier)
       {
 	tree duplicate;
 	if (pushcase (TREE_OPERAND (exp, 0), case_identity,
-		      build_decl (LABEL_DECL, NULL_TREE, NULL_TREE), &duplicate) == 2)
+		      build_decl (LABEL_DECL, NULL_TREE, NULL_TREE), 
+		      &duplicate) == 2)
 	  {
 	    EXPR_WFL_LINECOL (wfl_operator) = EXPR_WFL_LINECOL (exp);
 	    parse_error_context
@@ -1772,7 +1775,8 @@ java_lang_expand_expr (exp, target, tmode, modifier)
       }
 
     case DEFAULT_EXPR:
-      pushcase (NULL_TREE, 0, build_decl (LABEL_DECL, NULL_TREE, NULL_TREE), NULL);
+      pushcase (NULL_TREE, 0, 
+		build_decl (LABEL_DECL, NULL_TREE, NULL_TREE), NULL);
       return const0_rtx;
 
     case SWITCH_EXPR:

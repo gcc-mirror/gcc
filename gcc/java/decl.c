@@ -247,6 +247,7 @@ tree current_function_decl;
 tree char_type_node;
 
 tree object_type_node;
+tree unqualified_object_id_node;
 tree object_ptr_type_node;
 tree string_type_node;
 tree throwable_type_node;
@@ -520,6 +521,7 @@ init_decl_processing ()
                         double_type_node));
   layout_type (double_type_node);
 
+  unqualified_object_id_node = get_identifier ("Object");
   object_type_node = lookup_class (get_identifier ("java.lang.Object"));
   object_ptr_type_node = promote_type (object_type_node);
   string_type_node = lookup_class (get_identifier ("java.lang.String"));
@@ -1595,14 +1597,4 @@ end_java_method ()
 
   current_function_decl = NULL_TREE;
   permanent_allocation (1);
-}
-
-tree 
-build_decl_no_layout (code, name, type)
-     enum tree_code code;
-     tree name, type;
-{
-  tree decl = build_decl (TYPE_DECL, name, type);
-  TREE_SET_CODE (decl, code);
-  return decl;
 }
