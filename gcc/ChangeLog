@@ -1,3 +1,8 @@
+Fri Mar  9 20:05:27 CET 2001  Jan Hubicka  <jh@suse.cz>
+
+	* i386.h (MAX_WCHAR_TYPE_SIZE): New constant to keep tradcpp
+	independent on TARGET_FLAGS.
+
 Fri Mar  9 19:52:52 CET 2001  Jan Hubicka  <jh@suse.cz>
 
 	* i386.h (FIRST_PSEUDO_REGISTER): Set to 53.
