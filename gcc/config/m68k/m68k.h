@@ -92,8 +92,7 @@ extern int target_flags;
    of them must be emulated in software by the OS.  When TARGET_68040 is
    turned on, these instructions won't be used.  This code will still
    run on a 68030 and 68881/2. */
-#define MASK_68040_ALSO (256)
-#define MASK_68040	(256|512)
+#define MASK_68040	256
 #define TARGET_68040 (target_flags & MASK_68040)
 
 /* Use the 68040-only fp instructions (-m68040 or -m68060).  */
@@ -101,7 +100,7 @@ extern int target_flags;
 #define TARGET_68040_ONLY (target_flags & MASK_68040_ONLY)
 
 /* Optimize for 68060, but still allow execution on 68020
-   (-m68060).
+   (-m68020-60 or -m68060).
    The 68060 will execute all 68030 and 68881/2 instructions, but some
    of them must be emulated in software by the OS.  When TARGET_68060 is
    turned on, these instructions won't be used.  This code will still
@@ -131,12 +130,14 @@ extern int target_flags;
    An empty string NAME is used to identify the default VALUE.  */
 
 #define TARGET_SWITCHES  \
-  { { "68020", - (MASK_68060|MASK_68040)},				\
-    { "c68020", - (MASK_68060|MASK_68040)},				\
+  { { "68020", - (MASK_5200|MASK_68060|MASK_68040|MASK_68040_ONLY)},	\
+    { "c68020", - (MASK_5200|MASK_68060|MASK_68040|MASK_68040_ONLY)},	\
     { "68020", (MASK_68020|MASK_BITFIELD)},				\
     { "c68020", (MASK_68020|MASK_BITFIELD)},				\
-    { "68000", - (MASK_68060|MASK_68040|MASK_68020|MASK_BITFIELD)},	\
-    { "c68000", - (MASK_68060|MASK_68040|MASK_68020|MASK_BITFIELD)},	\
+    { "68000", - (MASK_5200|MASK_68060|MASK_68040|MASK_68040_ONLY	\
+		|MASK_68020|MASK_BITFIELD)},				\
+    { "c68000", - (MASK_5200|MASK_68060|MASK_68040|MASK_68040_ONLY	\
+		|MASK_68020|MASK_BITFIELD)},				\
     { "bitfield", MASK_BITFIELD},					\
     { "nobitfield", - MASK_BITFIELD},					\
     { "rtd", MASK_RTD},							\
@@ -152,18 +153,24 @@ extern int target_flags;
     { "68881" - (MASK_FPA|MASK_SKY)},					\
     { "68881", MASK_68881},						\
     { "soft-float", - (MASK_FPA|MASK_SKY|MASK_68040_ONLY|MASK_68881)},	\
-    { "68020-40", (MASK_BITFIELD|MASK_68881|MASK_68020|MASK_68040_ALSO)}, \
-    { "68030", - (MASK_68040|MASK_68060)},				\
+    { "68020-40", -(MASK_5200|MASK_68060)},				\
+    { "68020-40", (MASK_BITFIELD|MASK_68881|MASK_68020|MASK_68040)},	\
+    { "68020-60", -(MASK_5200|MASK_68040)},				\
+    { "68020-60", (MASK_BITFIELD|MASK_68881|MASK_68020|MASK_68060)},	\
+    { "68030", - (MASK_5200|MASK_68060|MASK_68040|MASK_68040_ONLY)},	\
     { "68030", (MASK_68020|MASK_BITFIELD)},				\
-    { "68040", (MASK_68020|MASK_68881|MASK_BITFIELD|MASK_68040_ONLY)},	\
+    { "68040", - (MASK_5200|MASK_68060)},				\
+    { "68040", (MASK_68020|MASK_68881|MASK_BITFIELD			\
+		|MASK_68040_ONLY|MASK_68040)},				\
+    { "68060", - (MASK_5200|MASK_68040)},				\
     { "68060", (MASK_68020|MASK_68881|MASK_BITFIELD			\
 		|MASK_68040_ONLY|MASK_68060)},				\
     { "5200", - (MASK_68060|MASK_68040|MASK_68020|MASK_BITFIELD|MASK_68881)}, \
     { "5200", (MASK_5200)},						\
     { "68851", 0},							\
     { "no-68851", 0},							\
-    { "68302", - (MASK_68060|MASK_68040|MASK_68020|MASK_BITFIELD)},	\
-    { "68332", - (MASK_68060|MASK_68040|MASK_BITFIELD)},		\
+    { "68302", - (MASK_5200|MASK_68060|MASK_68040|MASK_68020|MASK_BITFIELD)}, \
+    { "68332", - (MASK_5200|MASK_68060|MASK_68040|MASK_BITFIELD)},	\
     { "68332", MASK_68020},						\
     { "align-int", MASK_ALIGN_INT },					\
     { "no-align-int", -MASK_ALIGN_INT },				\
