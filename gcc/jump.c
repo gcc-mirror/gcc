@@ -2403,10 +2403,18 @@ duplicate_loop_exit_test (loop_start)
 	     This can be avoided by checking here for NOTE_INSN_LOOP_CONT.  */
 
 	  if (NOTE_LINE_NUMBER (insn) == NOTE_INSN_LOOP_BEG
-	      || NOTE_LINE_NUMBER (insn) == NOTE_INSN_BLOCK_BEG
-	      || NOTE_LINE_NUMBER (insn) == NOTE_INSN_BLOCK_END
 	      || NOTE_LINE_NUMBER (insn) == NOTE_INSN_LOOP_CONT)
 	    return 0;
+
+	  if (optimize < 2
+	      && (NOTE_LINE_NUMBER (insn) == NOTE_INSN_BLOCK_BEG
+		  || NOTE_LINE_NUMBER (insn) == NOTE_INSN_BLOCK_END))
+	    /* If we were to duplicate this code, we would not move
+	       the BLOCK notes, and so debugging the moved code would
+	       be difficult.  Thus, we only move the code with -O2 or
+	       higher.  */
+	    return 0;
+
 	  break;
 	case JUMP_INSN:
 	case INSN:
