@@ -2,6 +2,8 @@
 
 	* gcc.dg/20020104-1.c: New test.
 
+	* gcc.dg/20020104-2.c: New test.
+
 2002-01-04  Hans-Peter Nilsson  <hp@bitrange.com>
 
 	* gcc.dg/20020103-1.c: Fix typo in target selector.
