@@ -611,12 +611,12 @@ dump_generic_node (pretty_printer *buffer, tree node, int spc, int flags,
 	pp_character (buffer, ')');
       pp_string (buffer, str);
       dump_generic_node (buffer, TREE_OPERAND (node, 1), spc, flags, false);
-      if (TREE_OPERAND (node, 2)
-	  && TREE_CODE (TREE_OPERAND (node, 2)) != INTEGER_CST)
+
+      op0 = component_ref_field_offset (node);
+      if (op0 && TREE_CODE (op0) != INTEGER_CST)
 	{
 	  pp_string (buffer, "{off: ");
-	  dump_generic_node (buffer, TREE_OPERAND (node, 2),
-			     spc, flags, false);
+	  dump_generic_node (buffer, op0, spc, flags, false);
 	  pp_character (buffer, '}');
 	}
       break;
@@ -649,17 +649,17 @@ dump_generic_node (pretty_printer *buffer, tree node, int spc, int flags,
 	pp_string (buffer, " ...");
       pp_character (buffer, ']');
 
-      if ((TREE_OPERAND (node, 2)
-	   && TREE_CODE (TREE_OPERAND (node, 2)) != INTEGER_CST)
-	  || (TREE_OPERAND (node, 3)
-	      && TREE_CODE (TREE_OPERAND (node, 3)) != INTEGER_CST))
+      op0 = array_ref_low_bound (node);
+      op1 = array_ref_element_size (node);
+
+      if (!integer_zerop (op0)
+	  || (TYPE_SIZE_UNIT (TREE_TYPE (node))
+	      && !operand_equal_p (op1, TYPE_SIZE_UNIT (TREE_TYPE (node)), 0)))
 	{
 	  pp_string (buffer, "{lb: ");
-	  dump_generic_node (buffer, TREE_OPERAND (node, 2),
-			     spc, flags, false);
+	  dump_generic_node (buffer, op0, spc, flags, false);
 	  pp_string (buffer, " sz: ");
-	  dump_generic_node (buffer, TREE_OPERAND (node, 3),
-			     spc, flags, false);
+	  dump_generic_node (buffer, op1, spc, flags, false);
 	  pp_character (buffer, '}');
 	}
       break;
