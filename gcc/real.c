@@ -768,8 +768,11 @@ int
 target_isnan (x)
      REAL_VALUE_TYPE x;
 {
+  unsigned EMUSHORT e[NE];
+
 #ifdef NANS
-  return (eisnan (&x));
+  GET_REAL (&x, e);
+  return (eisnan (e));
 #else
   return (0);
 #endif
