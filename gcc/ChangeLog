@@ -1,3 +1,9 @@
+2004-07-07  Jason Merrill  <jason@redhat.com>
+
+	PR c++/15815
+	* doc/extend.texi (C++ Interface): Correct information and
+	discourage use.
+
 2004-07-07  Vladimir Makarov  <vmakarov@redhat.com>
 
 	PR target/16130
