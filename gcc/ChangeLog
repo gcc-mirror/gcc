@@ -1035,6 +1035,11 @@ Mon Oct  2 14:50:14 MET DST 2000  Jan Hubicka  <jh@suse.cz>
 	* configure.in (sparc-*-solaris2*): Disable 32-to-64 cross
 	compilation for solaris versions 2.7 and greater.
 
+2000-10-02  Marc Espie <espie@openbsd.org>
+
+	* config/alpha.h (WORD_SWITCH_TAKES_ARG): add -rpath to default,
+	instead of redefining from scratch.
+
 2000-10-02  David O'Brien  <obrien@dragon.nuxi.com>
 
 	* config/i386/freebsd.h (NO_PROFILE_COUNTERS): Define.
