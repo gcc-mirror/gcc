@@ -1299,7 +1299,6 @@ BLOCK_PROFILER_CODE
 
 #undef NULL /* Avoid errors if stdio.h and our stddef.h mismatch.  */
 #include <stdio.h>
-char *ctime PARAMS ((const time_t *));
 
 #include "gbl-ctors.h"
 #include "gcov-io.h"
