@@ -1,3 +1,8 @@
+Tue Aug 10 17:19:02 1999  Jim Wilson  <wilson@cygnus.com>
+
+	* config/sh/sh.c (machine_dependent_reorg): Only call PUT_MODE on
+	note if it is non-NULL.
+
 Tue Aug 10 10:47:42 EDT 1999  Andrew MacLeod  <amacleod@cygnus.com>
 
 	* except.h (eh_nesting_info): Add new structure defintion.
