@@ -1,3 +1,12 @@
+2004-04-05  Paolo Bonzini  <bonzini@gnu.org>
+
+	* combine.c (RTL_HOOKS_GEN_LOWPART_NO_EMIT): Use
+	gen_lowpart_for_combine.
+	* cse.c (gen_lowpart_if_possible): Move...
+	* rtlhooks.c (gen_lowpart_if_possible): ... here.  Also try
+	gen_lowpart_SUBREG.
+	(gen_lowpart_no_emit_general): Use it.
+
 2005-04-05  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
 	* config/sparc/sparc.c (TARGET_ASM_FILE_END): Undefine before

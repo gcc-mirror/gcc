@@ -422,6 +422,10 @@ static bool unmentioned_reg_p (rtx, rtx);
 #undef RTL_HOOKS_GEN_LOWPART
 #define RTL_HOOKS_GEN_LOWPART              gen_lowpart_for_combine
 
+/* Our implementation of gen_lowpart never emits a new pseudo.  */
+#undef RTL_HOOKS_GEN_LOWPART_NO_EMIT
+#define RTL_HOOKS_GEN_LOWPART_NO_EMIT      gen_lowpart_for_combine
+
 #undef RTL_HOOKS_REG_NONZERO_REG_BITS
 #define RTL_HOOKS_REG_NONZERO_REG_BITS     reg_nonzero_bits_for_combine
 

@@ -4361,47 +4361,6 @@ equiv_constant (rtx x)
   return 0;
 }
 
-/* Assuming that X is an rtx (e.g., MEM, REG or SUBREG) for a fixed-point
-   number, return an rtx (MEM, SUBREG, or CONST_INT) that refers to the
-   least-significant part of X.
-   MODE specifies how big a part of X to return.
-
-   If the requested operation cannot be done, 0 is returned.
-
-   This is similar to gen_lowpart_general in emit-rtl.c.  */
-
-rtx
-gen_lowpart_if_possible (enum machine_mode mode, rtx x)
-{
-  rtx result = gen_lowpart_common (mode, x);
-
-  if (result)
-    return result;
-  else if (MEM_P (x))
-    {
-      /* This is the only other case we handle.  */
-      int offset = 0;
-      rtx new;
-
-      if (WORDS_BIG_ENDIAN)
-	offset = (MAX (GET_MODE_SIZE (GET_MODE (x)), UNITS_PER_WORD)
-		  - MAX (GET_MODE_SIZE (mode), UNITS_PER_WORD));
-      if (BYTES_BIG_ENDIAN)
-	/* Adjust the address so that the address-after-the-data is
-	   unchanged.  */
-	offset -= (MIN (UNITS_PER_WORD, GET_MODE_SIZE (mode))
-		   - MIN (UNITS_PER_WORD, GET_MODE_SIZE (GET_MODE (x))));
-
-      new = adjust_address_nv (x, mode, offset);
-      if (! memory_address_p (mode, XEXP (new, 0)))
-	return 0;
-
-      return new;
-    }
-  else
-    return 0;
-}
-
 /* Given INSN, a jump insn, PATH_TAKEN indicates if we are following the "taken"
    branch.  It will be zero if not.
 
