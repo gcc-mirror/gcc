@@ -1,3 +1,13 @@
+2004-10-12  Ben Elliston  <bje@au.ibm.com>
+
+	* basic-block.h (edge_iterator): Keep the address of VEC(edge) *.
+	(ei_container): New; renamed.
+	(ei_start, ei_last): New macros.
+	(ei_start_1, ei_last_1): Renamed from ei_start.
+	(ei_last_1, ei_end_p): Use ei_container() where applicable.
+	(ei_one_before_end_p, ei_next, ei_edge): Likewise.
+	* gcse.c (remove_reachable_equiv_notes): Use ei_container().
+
 2004-10-11  Sebastian Pop  <pop@cri.ensmp.fr>
  
 	* Makefile.in (tree-ssa-loop-niter.o): Depends on tree-data-ref.h.

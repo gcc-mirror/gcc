@@ -563,12 +563,22 @@ struct edge_list
 
 typedef struct {
   unsigned index;
-  VEC(edge) *container;
+  VEC(edge) **container;
 } edge_iterator;
+
+static inline VEC(edge) *
+ei_container (edge_iterator i)
+{
+  gcc_assert (i.container);
+  return *i.container;
+}
+
+#define ei_start(iter) ei_start_1 (&(iter))
+#define ei_last(iter) ei_last_1 (&(iter))
 
 /* Return an iterator pointing to the start of an edge vector.  */
 static inline edge_iterator
-ei_start (VEC(edge) *ev)
+ei_start_1 (VEC(edge) **ev)
 {
   edge_iterator i;
 
@@ -581,11 +591,11 @@ ei_start (VEC(edge) *ev)
 /* Return an iterator pointing to the last element of an edge
    vector. */
 static inline edge_iterator
-ei_last (VEC(edge) *ev)
+ei_last_1 (VEC(edge) **ev)
 {
   edge_iterator i;
 
-  i.index = EDGE_COUNT (ev) - 1;
+  i.index = EDGE_COUNT (*ev) - 1;
   i.container = ev;
 
   return i;
@@ -595,7 +605,7 @@ ei_last (VEC(edge) *ev)
 static inline bool
 ei_end_p (edge_iterator i)
 {
-  return (i.index == EDGE_COUNT (i.container));
+  return (i.index == EDGE_COUNT (ei_container (i)));
 }
 
 /* Is the iterator `i' at one position before the end of the
@@ -603,14 +613,14 @@ ei_end_p (edge_iterator i)
 static inline bool
 ei_one_before_end_p (edge_iterator i)
 {
-  return (i.index + 1 == EDGE_COUNT (i.container));
+  return (i.index + 1 == EDGE_COUNT (ei_container (i)));
 }
 
 /* Advance the iterator to the next element.  */
 static inline void
 ei_next (edge_iterator *i)
 {
-  gcc_assert (i->index < EDGE_COUNT (i->container));
+  gcc_assert (i->index < EDGE_COUNT (ei_container (*i)));
   i->index++;
 }
 
@@ -626,7 +636,7 @@ ei_prev (edge_iterator *i)
 static inline edge
 ei_edge (edge_iterator i)
 {
-  return EDGE_I (i.container, i.index);
+  return EDGE_I (ei_container (i), i.index);
 }
 
 /* Return an edge pointed to by the iterator.  Do it safely so that
