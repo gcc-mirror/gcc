@@ -35,11 +35,15 @@
   
   struct ctype_base
   {
-    typedef unsigned short 	mask;
     // Non-standard typedefs.
+    // XXX
+    typedef unsigned short 	mask;   
+    typedef unsigned short 	__table_type;   
     typedef const int* 		__to_type;
 
-    enum
+    // XXX
+    //    enum mask
+    enum 
     {
       space = _ISspace,
       print = _ISprint,

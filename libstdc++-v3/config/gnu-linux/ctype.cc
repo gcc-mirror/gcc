@@ -32,9 +32,8 @@
 //
   
 // Information as gleaned from /usr/include/ctype.h
-  
-  ctype<char>::ctype(const mask* __table = 0, bool __del = false, 
-	size_t __refs = 0) throw()
+
+  ctype<char>::ctype(const mask* __table, bool __del, size_t __refs)
     : _Ctype_nois<char>(__refs), _M_del(__table != 0 && __del), 
       _M_toupper(__ctype_toupper), _M_tolower(__ctype_tolower),
       _M_ctable(__ctype_b), _M_table(__table == 0 ? _M_ctable: __table) 
@@ -42,14 +41,14 @@
 
   char
   ctype<char>::do_toupper(char __c) const
-  { return _M_toupper[(int) __c]; }
+  { return _M_toupper[static_cast<int>(__c)]; }
 
   const char*
   ctype<char>::do_toupper(char* __low, const char* __high) const
   {
     while (__low < __high)
       {
-	*__low = _M_toupper[(int) *__low];
+	*__low = _M_toupper[static_cast<int>(*__low)];
 	++__low;
       }
     return __high;
@@ -57,16 +56,18 @@
 
   char
   ctype<char>::do_tolower(char __c) const
-  { return _M_tolower[(int) __c]; }
+  { return _M_tolower[static_cast<int>(__c)]; }
 
   const char* 
   ctype<char>::do_tolower(char* __low, const char* __high) const
   {
     while (__low < __high)
       {
-	*__low = _M_tolower[(int) *__low];
+	*__low = _M_tolower[static_cast<int>(*__low)];
 	++__low;
       }
     return __high;
   }
+
+
 

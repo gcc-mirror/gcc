@@ -39,6 +39,7 @@
 #include <bits/std_ctime.h>	// For struct tm
 #include <bits/std_typeinfo.h> 	// For bad_cast, which shouldn't be here.
 #include <bits/std_ios.h>	// For ios_base
+#include <bits/std_cwctype.h>	// For wctype_t
 
 namespace std
 {
@@ -308,7 +309,7 @@ namespace std
 
 
   // 22.2.1.3  ctype specializations
-  // NB: Can use _Ctype_nois to actually implement the is
+  // NB: Can use _Ctype_nois to actually implement the "is"
   // functionality in the non-virtual (thus inline-able) member
   // fuctions.
   template<>
@@ -316,25 +317,23 @@ namespace std
     {
     public:
       // Types:
-      typedef char 					char_type;
-      typedef ctype::mask 				mask;
-      typedef size_t					__table_type;
+      typedef char 	       char_type;
+      typedef ctype::mask      mask;
 
     private:
       // Data Members:
-      bool 			_M_del;
-      __to_type const& 		_M_toupper;
-      __to_type const& 		_M_tolower;
-      const mask* const& 	_M_ctable;
-      const mask* 		_M_table;
+      bool 		       _M_del;
+      __to_type const& 	       _M_toupper;
+      __to_type const& 	       _M_tolower;
+      const mask* const&       _M_ctable;
+      const mask*       _M_table;
       
     public:
-      static locale::id 	id;
-      static const __table_type table_size = 1 +static_cast<unsigned char>(-1);
+      static locale::id        id;
+      static const size_t      table_size = 1 + static_cast<unsigned char>(-1);
 
       explicit 
-      ctype(const mask* __table = 0, bool __del = false, 
-	    size_t __refs = 0) throw();
+      ctype(const mask* __table = 0, bool __del = false, size_t __refs = 0);
 
       inline bool 
       is(mask __m, char __c) const throw();
@@ -352,11 +351,13 @@ namespace std
       virtual 
       ~ctype();
 
-      inline const mask* 
+      // XXX
+      const mask* 
       table() const throw()
       { return _M_table; }
 
-      inline const mask* 
+      // XXX
+      const mask* 
       classic_table() throw()
       { return _M_ctable; }
 
@@ -397,16 +398,63 @@ namespace std
     class ctype<wchar_t> : public _Ctype<wchar_t>
     {
     public:
-     // Types:
-      typedef wchar_t 					char_type;
-      typedef ctype::mask 				mask;
-      
-      static locale::id id;
+      // Types:
+      typedef wchar_t 	       char_type;
+      typedef ctype::mask      mask;
+      typedef wctype_t	       __wmask_type;
+
+      // Data Members:
+      static locale::id        id;
 
       explicit 
-      ctype(size_t /*__refs*/ = 0) throw();
+      ctype(size_t __refs = 0);
 
     protected:
+      __wmask_type
+      _M_convert_to_wmask(const mask __m) const
+      {
+	__wmask_type __ret;
+	switch (__m)
+	  {
+	  case space:
+	    __ret = wctype("space");
+	    break;
+	  case print:
+	    __ret = wctype("print");
+	    break;
+	  case cntrl:
+	    __ret = wctype("cntrl");
+	    break;
+	  case upper:
+	    __ret = wctype("upper");
+	    break;
+	  case lower:
+	    __ret = wctype("lower");
+	    break;
+	  case alpha:
+	    __ret = wctype("alpha");
+	    break;
+	  case digit:
+	    __ret = wctype("digit");
+	    break;
+	  case punct:
+	    __ret = wctype("punct");
+	    break;
+	  case xdigit:
+	    __ret = wctype("xdigit");
+	    break;
+	  case alnum:
+	    __ret = wctype("alnum");
+	    break;
+	  case graph:
+	    __ret = wctype("graph");
+	    break;
+	  default:
+	    __ret = 0;
+	  }
+	return __ret;
+      };
+
       virtual 
       ~ctype();
 

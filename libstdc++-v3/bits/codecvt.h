@@ -63,35 +63,35 @@ namespace std
   protected:
     // Data Members:
     // Max size of charset encoding name
-    static const int 	__max_size = 32;
+    static const int 	_S_max_size = 32;
     // Name of internal character set encoding.
-    char	       	__intc_enc[__max_size];
+    char	       	_M_intc_enc[_S_max_size];
     // Name of external character set encoding.
-    char  	       	__extc_enc[__max_size];
+    char  	       	_M_extc_enc[_S_max_size];
 
     // Conversion descriptor between external encoding to internal encoding.
-    __desc_type		__in_desc;
+    __desc_type		_M_in_desc;
     // Conversion descriptor between internal encoding to external encoding.
-    __desc_type		__out_desc;
+    __desc_type		_M_out_desc;
 
   public:
-    __enc_traits() : __in_desc(0), __out_desc(0)
+    __enc_traits() : _M_in_desc(0), _M_out_desc(0)
     {
       // __intc_end = whatever we are using internally, which is
       // UCS4 (linux) 
       // UCS2 == UNICODE  (microsoft, java, aix, whatever...)
       // XXX Currently don't know how to get this data from target system...
-      strcpy(__intc_enc, "UCS4");
+      strcpy(_M_intc_enc, "UCS4");
 
       // __extc_end = external codeset in current locale
-      strcpy(__extc_enc, nl_langinfo(CODESET));
+      strcpy(_M_extc_enc, nl_langinfo(CODESET));
     }
 
     __enc_traits(const char* __int, const char* __ext)
-    : __in_desc(0), __out_desc(0)
+    : _M_in_desc(0), _M_out_desc(0)
     {
-      strncpy(__intc_enc, __int, __max_size);
-      strncpy(__extc_enc, __ext, __max_size);
+      strncpy(_M_intc_enc, __int, _S_max_size);
+      strncpy(_M_extc_enc, __ext, _S_max_size);
     }
 
     // 21.1.2 traits typedefs
@@ -101,23 +101,23 @@ namespace std
     // CopyConstructible types (20.1.3)
     __enc_traits(const __enc_traits& __obj)
     {
-      strncpy(__intc_enc, __obj.__intc_enc, __max_size);
-      strncpy(__extc_enc, __obj.__extc_enc, __max_size);
+      strncpy(_M_intc_enc, __obj._M_intc_enc, _S_max_size);
+      strncpy(_M_extc_enc, __obj._M_extc_enc, _S_max_size);
     }
 
     ~__enc_traits()
     {
-      iconv_close(__in_desc);
-      iconv_close(__out_desc);
+      iconv_close(_M_in_desc);
+      iconv_close(_M_out_desc);
     } 
 
     // Initializes
     void
     _M_init()
     {
-      __in_desc = iconv_open(__intc_enc, __extc_enc);
-      __out_desc = iconv_open(__extc_enc, __intc_enc);
-      if (__out_desc == iconv_t(-1) || __in_desc == iconv_t(-1))
+      _M_in_desc = iconv_open(_M_intc_enc, _M_extc_enc);
+      _M_out_desc = iconv_open(_M_extc_enc, _M_intc_enc);
+      if (_M_out_desc == iconv_t(-1) || _M_in_desc == iconv_t(-1))
 	{
 	  // XXX Extended error checking.
 	}
@@ -126,25 +126,25 @@ namespace std
     bool
     _M_good()
     { 
-      return __out_desc && __in_desc 
-	     && __out_desc != iconv_t(-1) && __in_desc != iconv_t(-1);
+      return _M_out_desc && _M_in_desc 
+	     && _M_out_desc != iconv_t(-1) && _M_in_desc != iconv_t(-1);
     }
 
     const __desc_type* 
     _M_get_in_descriptor()
-    { return &__in_desc; }
+    { return &_M_in_desc; }
 
     const __desc_type* 
     _M_get_out_descriptor()
-    { return &__out_desc; }
+    { return &_M_out_desc; }
 
    const char* 
     _M_get_internal_enc()
-    { return __intc_enc; }
+    { return _M_intc_enc; }
 
     const char* 
     _M_get_external_enc()
-    { return __extc_enc; }
+    { return _M_extc_enc; }
   };
 #endif //_GLIBCPP_USE_WCHAR_T
 
