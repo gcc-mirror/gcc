@@ -1,5 +1,5 @@
 /* Subroutines used by or related to instruction recognition.
-   Copyright (C) 1987, 88, 91, 92, 93, 1994 Free Software Foundation, Inc.
+   Copyright (C) 1987, 88, 91-5, 1996 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -1651,6 +1651,11 @@ constrain_operands (insn_code_num, strict)
 	  int val;
 
 	  earlyclobber[opno] = 0;
+
+	  /* A unary operator may be accepted by the predicate, but it
+	     is irrelevant for matching contraints.  */
+	  if (GET_RTX_CLASS (GET_CODE (op)) == '1')
+	    op = XEXP (op, 0);
 
 	  if (GET_CODE (op) == SUBREG)
 	    {
