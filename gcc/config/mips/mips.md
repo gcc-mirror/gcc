@@ -1552,7 +1552,6 @@ move\\t%0,%z4\\n\\
 
   if (reg1)			/* turn off complaints about unreached code */
     {
-      extern rtx gen_cmpdf ();
       emit_move_insn (reg1, immed_real_const_1 (offset, DFmode));
       do_pending_stack_adjust ();
 
@@ -1596,7 +1595,6 @@ move\\t%0,%z4\\n\\
 
   if (reg1)			/* turn off complaints about unreached code */
     {
-      extern rtx gen_cmpsf ();
       emit_move_insn (reg1, immed_real_const_1 (offset, SFmode));
       do_pending_stack_adjust ();
 
@@ -1640,9 +1638,6 @@ move\\t%0,%z4\\n\\
   ""
   "
 {
-  extern rtx gen_movsi_ulw ();
-  extern rtx gen_movsi ();
-
   /* Handle loads.  */
   if (GET_CODE (operands[0]) == MEM)
     {
@@ -1675,7 +1670,6 @@ move\\t%0,%z4\\n\\
   ""
   "*
 {
-  extern rtx eliminate_constant_term ();
   enum rtx_code code;
   char *ret;
   rtx offset;
@@ -1726,7 +1720,6 @@ move\\t%0,%z4\\n\\
   ""
   "*
 {
-  extern rtx eliminate_constant_term ();
   rtx offset = const0_rtx;
   rtx addr = XEXP (operands[0], 0);
   rtx mem_addr = eliminate_constant_term (addr, &offset);
@@ -3058,8 +3051,6 @@ move\\t%0,%z4\\n\\
   ""
   "
 {
-  extern rtx force_reg ();
-
   if (branch_type != CMP_SI)
     FAIL;
 
@@ -3123,8 +3114,6 @@ move\\t%0,%z4\\n\\
   ""
   "
 {
-  extern rtx force_reg ();
-
   if (branch_type != CMP_SI)
     FAIL;
 
@@ -3187,8 +3176,6 @@ move\\t%0,%z4\\n\\
   ""
   "
 {
-  extern rtx force_reg ();
-
   if (branch_type != CMP_SI)
     FAIL;
 
@@ -3304,8 +3291,6 @@ move\\t%0,%z4\\n\\
   ""
   "
 {
-  extern rtx force_reg ();
-
   if (branch_type != CMP_SI)
     FAIL;
 
@@ -3369,8 +3354,6 @@ move\\t%0,%z4\\n\\
   ""
   "
 {
-  extern rtx force_reg ();
-
   if (branch_type != CMP_SI)
     FAIL;
 
@@ -3486,8 +3469,6 @@ move\\t%0,%z4\\n\\
   ""
   "
 {
-  extern rtx force_reg ();
-
   if (branch_type != CMP_SI)
     FAIL;
 

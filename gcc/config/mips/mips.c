@@ -75,23 +75,6 @@ extern tree   lookup_name ();
 extern void   pfatal_with_name ();
 extern void   warning ();
 
-extern rtx    gen_addsi3 ();
-extern rtx    gen_andsi3 ();
-extern rtx    gen_beq ();
-extern rtx    gen_bne ();
-extern rtx    gen_cmpsi ();
-extern rtx    gen_indirect_jump ();
-extern rtx    gen_iorsi3 ();
-extern rtx    gen_jump ();
-extern rtx    gen_movhi ();
-extern rtx    gen_movqi ();
-extern rtx    gen_movsi ();
-extern rtx    gen_movsi_ulw ();
-extern rtx    gen_movsi_usw ();
-extern rtx    gen_movstrsi_internal ();
-extern rtx    gen_return_internal ();
-extern rtx    gen_subsi3 ();
-
 extern tree   current_function_decl;
 extern FILE  *asm_out_file;
 
@@ -4561,8 +4544,8 @@ function_epilogue (file, size)
   num_refs[2]	     = 0;
   mips_load_reg      = (rtx)0;
   mips_load_reg2     = (rtx)0;
-  number_functions_processed++;
   current_frame_info = zero_frame_info;
+  number_functions_processed++;
 
   /* Restore the output file if optimizing the GP (optimizing the GP causes
      the text to be diverted to a tempfile, so that data decls come before
