@@ -1,5 +1,3 @@
-C++ template friend functions (mmitchell@usa.net)
-
 Haifa scheduler (haifa-sched.c, loop.[ch], unroll.[ch], genattrtab.c):
 (contact law@cygnus.com before starting any serious haifa work)
 

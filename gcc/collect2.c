@@ -1783,7 +1783,6 @@ sort_ids (head_ptr)
      element to insert.  id_ptr iterates through the already sorted elements
      looking for the place to insert id.  */
   struct id *id, *id_next, **id_ptr;
-  int i;
 
   id = head_ptr->first;
 

@@ -7591,12 +7591,11 @@ You need only define this macro if the target holds values larger than
 @code{word_mode} in general purpose registers.  Most targets should not define
 this macro.
 
-@findex NEED_MATH_LIBRARY
-@item NEED_MATH_LIBRARY
-Define this macro as a C expression that is nonzero if @code{g++} should
-automatically link in the math library or to zero if @code{g++} should not
-automatically link in the math library.
+@findex MATH_LIBRARY
+@item MATH_LIBRARY
+Define this macro as a C string constant for the linker argument to link
+in the system math library, or @samp{""} if the target does not have a
+separate math library.
 
-You need only define this macro if the target does not always need the math
-library linked into C++ programs.
+You need only define this macro if the default of @samp{"-lm"} is wrong.
 @end table

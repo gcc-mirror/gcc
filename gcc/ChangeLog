@@ -1,5 +1,12 @@
 Sat Oct  3 14:42:19 1998  Jason Merrill  <jason@yorick.cygnus.com>
 
+	* PROJECTS: Remove template friends.
+
+	* collect2.c (sort_ids): Remove unused variable.
+
+	* tm.texi (MATH_LIBRARY): Document.
+	(NEED_MATH_LIBRARY): Remove.
+
 	* varasm.c (assemble_start_function, assemble_variable, weak_finish,
 	assemble_alias): Do ASM_GLOBALIZE_LABEL for weak symbols, too.
 
