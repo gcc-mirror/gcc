@@ -2458,6 +2458,9 @@ Symbolic address
 @item a
 Address register (general purpose register except r0)
 
+@item c
+Condition code register
+
 @item d
 Data register (arbitrary general purpose register)
 

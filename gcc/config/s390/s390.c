@@ -1355,7 +1355,7 @@ const enum reg_class regclass_map[FIRST_PSEUDO_REGISTER] =
   FP_REGS,      FP_REGS,   FP_REGS,   FP_REGS,
   FP_REGS,      FP_REGS,   FP_REGS,   FP_REGS,
   FP_REGS,      FP_REGS,   FP_REGS,   FP_REGS,
-  ADDR_REGS,    NO_REGS,   ADDR_REGS, ADDR_REGS
+  ADDR_REGS,    CC_REGS,   ADDR_REGS, ADDR_REGS
 };
 
 /* Return attribute type of insn.  */
@@ -2276,6 +2276,9 @@ s390_secondary_input_reload_class (enum reg_class class ATTRIBUTE_UNUSED,
   if (s390_plus_operand (in, mode))
     return ADDR_REGS;
 
+  if (GET_MODE_CLASS (mode) == MODE_CC)
+    return GENERAL_REGS;
+
   return NO_REGS;
 }
 
@@ -2296,6 +2299,9 @@ s390_secondary_output_reload_class (enum reg_class class,
       && !offsettable_memref_p (out)
       && !s_operand (out, VOIDmode))
     return ADDR_REGS;
+
+  if (GET_MODE_CLASS (mode) == MODE_CC)
+    return GENERAL_REGS;
 
   return NO_REGS;
 }
@@ -3579,16 +3585,11 @@ s390_expand_cmpmem (rtx target, rtx op0, rtx op1, rtx len)
       else
         emit_move_insn (target, const0_rtx);
     }
-
-  else /* if (TARGET_MVCLE) */
+  else if (TARGET_MVCLE)
     {
       emit_insn (gen_cmpmem_long (op0, op1, convert_to_mode (Pmode, len, 1)));
       emit_move_insn (target, result);
     }
-
-#if 0
-  /* Deactivate for now as profile code cannot cope with
-     CC being live across basic block boundaries.  */
   else
     {
       rtx addr0, addr1, count, blocks, temp;
@@ -3656,7 +3657,6 @@ s390_expand_cmpmem (rtx target, rtx op0, rtx op1, rtx len)
 
       emit_move_insn (target, result);
     }
-#endif
 }
 
 
