@@ -79,7 +79,7 @@ override_options ()
       pa_cpu_string = "7100";
       pa_cpu = PROCESSOR_7100;
     }
-  else if (! strncmp (pa_cpu_string, "7100LC"))
+  else if (! strcmp (pa_cpu_string, "7100LC"))
     {
       pa_cpu_string = "7100LC";
       pa_cpu = PROCESSOR_7100LC;
