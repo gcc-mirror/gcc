@@ -1,3 +1,10 @@
+Thu Jul 11 11:31:12 2002  J"orn Rennecke <joern.rennecke@superh.com>
+
+	* rtl.h (gen_rtx_CONST_VECTOR): Declare.
+	* gengenrtl.c (special_rtx): Check for CONST_VECTOR.
+	* emit-rtl.c (gen_rtx_CONST_VECTOR): New function.
+	(gen_const_vector_0): Use it.
+
 2002-07-11  John David Anglin  <dave@hiauly1.hia.nrc.ca>
 
 	* pa.md (adddi3): For 32-bit targets, force constants to a register
