@@ -366,7 +366,7 @@ trim_filename (const char *name)
     p++, q++;
 
   /* Now go backwards until the previous directory separator.  */
-  while (p > name && IS_DIR_SEPARATOR (p[-1]))
+  while (p > name && !IS_DIR_SEPARATOR (p[-1]))
     p--;
 
   return p;
