@@ -1,3 +1,21 @@
+1999-10-24  Mark Mitchell  <mark@codesourcery.com>
+
+	* decl.c (push_overloaded_decl_1): Use pushdecl.
+	
+	* decl.c (auto_function): Replace #ifdef'd __inline with just
+	plain inline.
+	* lex.c (my_get_run_time): Likeise.
+	(yyprint): Likewise.
+	(identifier_type): Likewise.
+	* method.c (start_squangling): Likewise.
+	(end_squangling): Likewise.
+	(icat): Likewise.
+	(old_backref_index): Likewise.
+	(flush_repeats): Likewise.
+	(issue_ktype): Likewise.
+	* parse.y (empty_parms): Likewise.
+	* parse.c: Regenerated.
+	
 1999-10-21  Mark Mitchell  <mark@codesourcery.com>
 
 	* dump.c (dequeue_and_dump): Replace several uses of

@@ -390,10 +390,7 @@ get_time_identifier (name)
   return time_identifier;
 }
 
-#ifdef __GNUC__
-__inline
-#endif
-static int
+static inline int
 my_get_run_time ()
 {
   int old_quiet_flag = quiet_flag;
@@ -954,10 +951,7 @@ reinit_parse_for_function ()
   current_member_init_list = NULL_TREE;
 }
 
-#ifdef __GNUC__
-__inline
-#endif
-void
+inline void
 yyprint (file, yychar, yylval)
      FILE *file;
      int yychar;
@@ -2983,10 +2977,7 @@ yyerror (string)
    Value is 0 if we treat this name in a default fashion.  */
 int looking_for_typename;
 
-#ifdef __GNUC__
-__inline
-#endif
-int
+inline int
 identifier_type (decl)
      tree decl;
 {
