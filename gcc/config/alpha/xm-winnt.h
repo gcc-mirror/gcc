@@ -30,3 +30,5 @@ Boston, MA 02111-1307, USA.  */
 #define open _open
 #define read _read
 #define write _write
+
+#undef HAS_INIT_SECTION
