@@ -1,3 +1,12 @@
+1999-08-07  Andreas Schwab  <schwab@suse.de>
+
+	* iostream.cc: Add missing calls to isfx and setup a cleanup
+	region for the locked stream.
+	* iostream.h: Likewise.
+	* isgetline.cc: Likewise.
+	* isgetsb.cc: Likewise.
+	* isscan.cc: Likewise.
+
 Wed Jul 28 21:39:31 PDT 1999 Jeff Law  (law@cygnus.com)
 
 	* gcc-2.95 Released.

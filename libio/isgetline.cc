@@ -37,6 +37,8 @@ istream& istream::getline(char* buf, int len, char delim)
   int ch;
   if (ipfx1())
     {
+      _IO_cleanup_region_start ((void (*) __P ((void *))) _IO_funlockfile,
+				_strbuf);
       streambuf *sb = rdbuf();
       _gcount = _IO_getline_info(sb, buf, len - 1, delim, -1, &ch);
       if (ch != EOF)
@@ -48,6 +50,8 @@ istream& istream::getline(char* buf, int len, char delim)
 	  set(ios::failbit);
 	  sb->sungetc(); // Leave delimiter unread.
 	}
+      isfx();
+      _IO_cleanup_region_end (0);
     }
   else
     ch = EOF;
@@ -67,11 +71,15 @@ istream& istream::get(char* buf, int len, char delim)
     }
   if (ipfx1())
     {
+      _IO_cleanup_region_start ((void (*) __P ((void *))) _IO_funlockfile,
+				_strbuf);
       streambuf *sbuf = rdbuf();
       int ch;
       _gcount = _IO_getline_info(sbuf, buf, len - 1, delim, -1, &ch);
       if (_gcount == 0 && ch == EOF)
 	set(ios::failbit|ios::eofbit);
+      isfx();
+      _IO_cleanup_region_end (0);
     }
   buf[_gcount] = '\0';
   return *this;
@@ -123,6 +131,8 @@ char *_sb_readline (streambuf *sb, long& total, char terminator)
 istream& istream::gets(char **s, char delim /* = '\n' */)
 {
     if (ipfx1()) {
+	_IO_cleanup_region_start ((void (*) __P ((void *))) _IO_funlockfile,
+				  _strbuf);
 	long size = 0;
 	streambuf *sb = rdbuf();
 	*s = _sb_readline (sb, size, delim);
@@ -132,6 +142,8 @@ istream& istream::gets(char **s, char delim /* = '\n' */)
 	    if (_gcount == 0)
 		set(ios::failbit);
 	}
+	isfx();
+	_IO_cleanup_region_end (0);
     }
     else {
 	_gcount = 0;
