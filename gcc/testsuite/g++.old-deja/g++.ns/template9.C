@@ -32,7 +32,7 @@ namespace matrix {
 
 }
 
-main(void)
+int main(void)
 {
   // sample
   double **m=matrix::alloc<double>(10,20);
