@@ -1373,8 +1373,9 @@ put_var_into_stack (decl, rescan)
       if (function->decl == context)
 	break;
 
-  /* If this is a variable-size object with a pseudo to address it,
-     put that pseudo into the stack, if the var is nonlocal.  */
+  /* If this is a variable-sized object or a structure passed by invisible
+     reference, with a pseudo to address it, put that pseudo into the stack
+     if the var is non-local.  */
   if (TREE_CODE (decl) != SAVE_EXPR && DECL_NONLOCAL (decl)
       && GET_CODE (reg) == MEM
       && GET_CODE (XEXP (reg, 0)) == REG
@@ -1384,8 +1385,12 @@ put_var_into_stack (decl, rescan)
       decl_mode = promoted_mode = GET_MODE (reg);
     }
 
+  /* If this variable lives in the current function and we don't need to put it
+     in the stack for the sake of setjmp or the non-locality, try to keep it in
+     a register until we know we actually need the address.  */
   can_use_addressof
     = (function == 0
+       && ! (TREE_CODE (decl) != SAVE_EXPR && DECL_NONLOCAL (decl))
        && optimize > 0
        /* FIXME make it work for promoted modes too */
        && decl_mode == promoted_mode
@@ -1404,9 +1409,6 @@ put_var_into_stack (decl, rescan)
 
   if (GET_CODE (reg) == REG)
     {
-      /* If this variable lives in the current function and we don't need
-	 to put things in the stack for the sake of setjmp, try to keep it
-	 in a register until we know we actually need the address.  */
       if (can_use_addressof)
 	gen_mem_addressof (reg, decl, rescan);
       else
