@@ -2582,7 +2582,7 @@ finish_vtable_vardecl (t, data)
       if (flag_weak)
 	comdat_linkage (vars);
 
-      rest_of_decl_compilation (vars, NULL_PTR, 1, 1);
+      rest_of_decl_compilation (vars, NULL, 1, 1);
 
       if (flag_vtable_gc)
 	output_vtable_inherit (vars);

@@ -750,7 +750,7 @@ emit_base_init (mem_init_list, base_init_list)
 	{
 	  member = convert_pointer_to_real (base_binfo, current_class_ptr);
 	  expand_aggr_init_1 (base_binfo, NULL_TREE,
-			      build_indirect_ref (member, NULL_PTR), init,
+			      build_indirect_ref (member, NULL), init,
 			      LOOKUP_NORMAL);
 	}
 
@@ -880,7 +880,7 @@ expand_virtual_init (binfo, decl)
 
   /* Compute the location of the vtpr.  */
   decl = convert_pointer_to_real (vtype_binfo, decl);
-  vtbl_ptr = build_vfield_ref (build_indirect_ref (decl, NULL_PTR), vtype);
+  vtbl_ptr = build_vfield_ref (build_indirect_ref (decl, NULL), vtype);
   if (vtbl_ptr == error_mark_node)
     return;
 
@@ -925,7 +925,7 @@ expand_aggr_vbase_init_1 (binfo, exp, addr, init_list)
      tree binfo, exp, addr, init_list;
 {
   tree init = purpose_member (binfo, init_list);
-  tree ref = build_indirect_ref (addr, NULL_PTR);
+  tree ref = build_indirect_ref (addr, NULL);
 
   if (init)
     init = TREE_VALUE (init);
@@ -1593,7 +1593,7 @@ build_member_call (type, name, parmlist)
 	{
 	  tree newtype = build_qualified_type (type, TYPE_QUALS (oldtype));
 	  decl = convert_force (build_pointer_type (newtype), olddecl, 0);
-	  decl = build_indirect_ref (decl, NULL_PTR);
+	  decl = build_indirect_ref (decl, NULL);
 	}
     }
 
@@ -1926,7 +1926,7 @@ resolve_offset_ref (exp)
 	return error_mark_node;
 
       expr = build (COMPONENT_REF, TREE_TYPE (member),
-		    build_indirect_ref (addr, NULL_PTR), member);
+		    build_indirect_ref (addr, NULL), member);
       return convert_from_reference (expr);
     }
 
@@ -2237,7 +2237,7 @@ build_java_class_ref (type)
       DECL_ARTIFICIAL (class_decl) = 1;
       DECL_IGNORED_P (class_decl) = 1;
       pushdecl_top_level (class_decl);
-      make_decl_rtl (class_decl, NULL_PTR);
+      make_decl_rtl (class_decl, NULL);
     }
   return class_decl;
 }
@@ -2464,7 +2464,7 @@ build_new_1 (exp)
 	 elements.  */
       cookie = build (MINUS_EXPR, build_pointer_type (sizetype),
 		      alloc_node, size_in_bytes (sizetype));
-      cookie = build_indirect_ref (cookie, NULL_PTR);
+      cookie = build_indirect_ref (cookie, NULL);
 
       cookie_expr = build (MODIFY_EXPR, void_type_node, cookie, nelts);
       TREE_SIDE_EFFECTS (cookie_expr) = 1;
@@ -2476,7 +2476,7 @@ build_new_1 (exp)
   init_expr = NULL_TREE;
   if (TYPE_NEEDS_CONSTRUCTING (type) || init)
     {
-      init_expr = build_indirect_ref (alloc_node, NULL_PTR);
+      init_expr = build_indirect_ref (alloc_node, NULL);
 
       if (init == void_zero_node)
 	init = build_default_init (full_type);
@@ -3261,7 +3261,7 @@ build_delete (type, addr, auto_delete, flags, use_global_delete)
 	  auto_delete = sfk_complete_destructor;
 	}
 
-      expr = build_dtor_call (build_indirect_ref (addr, NULL_PTR),
+      expr = build_dtor_call (build_indirect_ref (addr, NULL),
 			      auto_delete, flags);
       if (do_delete)
 	expr = build (COMPOUND_EXPR, void_type_node, expr, do_delete);
@@ -3286,7 +3286,7 @@ build_delete (type, addr, auto_delete, flags, use_global_delete)
       int i, n_baseclasses = CLASSTYPE_N_BASECLASSES (type);
       tree base_binfo = n_baseclasses > 0 ? TREE_VEC_ELT (binfos, 0) : NULL_TREE;
       tree exprstmt = NULL_TREE;
-      tree ref = build_indirect_ref (addr, NULL_PTR);
+      tree ref = build_indirect_ref (addr, NULL);
 
       /* Set this again before we call anything, as we might get called
 	 recursively.  */
@@ -3404,7 +3404,7 @@ build_vec_delete (base, maxindex, auto_delete_vec, use_global_delete)
 			   build_pointer_type (sizetype),
 			   base,
 			   TYPE_SIZE_UNIT (sizetype));
-      maxindex = build_indirect_ref (cookie_addr, NULL_PTR);
+      maxindex = build_indirect_ref (cookie_addr, NULL);
     }
   else if (TREE_CODE (type) == ARRAY_TYPE)
     {

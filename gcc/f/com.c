@@ -13493,7 +13493,7 @@ builtin_function (const char *name, tree type, int function_code,
   TREE_PUBLIC (decl) = 1;
   if (library_name)
     SET_DECL_ASSEMBLER_NAME (decl, get_identifier (library_name));
-  make_decl_rtl (decl, NULL_PTR);
+  make_decl_rtl (decl, NULL);
   pushdecl (decl);
   DECL_BUILT_IN_CLASS (decl) = class;
   DECL_FUNCTION_CODE (decl) = function_code;
@@ -13871,7 +13871,7 @@ finish_decl (tree decl, tree init, bool is_top_level)
     }
   else if (TREE_CODE (decl) == TYPE_DECL)
     {
-      rest_of_decl_compilation (decl, NULL_PTR,
+      rest_of_decl_compilation (decl, NULL,
 				DECL_CONTEXT (decl) == 0,
 				0);
     }
@@ -16110,7 +16110,7 @@ ffecom_open_include_ (char *name, ffewhereLine l, ffewhereColumn c)
     {
       strncpy (fname, (char *) fbeg, flen);
       fname[flen] = 0;
-      f = open_include_file (fname, NULL_PTR);
+      f = open_include_file (fname, NULL);
     }
   else
     {

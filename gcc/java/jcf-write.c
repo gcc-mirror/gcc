@@ -1406,7 +1406,7 @@ generate_bytecode_return (exp, state)
   if (returns_void)
     {
       op = OPCODE_return;
-      call_cleanups (NULL_PTR, state);
+      call_cleanups (NULL, state);
     }
   else
     {
@@ -1420,7 +1420,7 @@ generate_bytecode_return (exp, state)
 	      localvar_alloc (state->return_value_decl, state);
 	    }
 	  emit_store (state->return_value_decl, state);
-	  call_cleanups (NULL_PTR, state);
+	  call_cleanups (NULL, state);
 	  emit_load (state->return_value_decl, state);
 	  /* If we call localvar_free (state->return_value_decl, state),
 	     then we risk the save decl erroneously re-used in the

@@ -394,7 +394,7 @@ expand_start_catch_block (decl)
 	  init = build1 (NOP_EXPR, build_pointer_type (type), init);
 	  init = build (MINUS_EXPR, TREE_TYPE (init), init,
 			TYPE_SIZE_UNIT (TREE_TYPE (init)));
-	  init = build_indirect_ref (init, NULL_PTR);
+	  init = build_indirect_ref (init, NULL);
 	  is_java = true;
 	}
       else
@@ -643,7 +643,7 @@ build_throw (exp)
       finish_expr_stmt (tmp);
 
       object = build1 (NOP_EXPR, build_pointer_type (TREE_TYPE (exp)), ptr);
-      object = build_indirect_ref (object, NULL_PTR);
+      object = build_indirect_ref (object, NULL);
 
       exp = build_modify_expr (object, INIT_EXPR, exp);
       if (exp == error_mark_node)

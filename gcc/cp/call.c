@@ -147,7 +147,7 @@ build_field_call (basetype_path, instance_ptr, name, parms)
     {
       /* If it's a field, try overloading operator (),
 	 or calling if the field is a pointer-to-function.  */
-      instance = build_indirect_ref (instance_ptr, NULL_PTR);
+      instance = build_indirect_ref (instance_ptr, NULL);
       instance = build_component_ref_1 (instance, field, 0);
 
       if (instance == error_mark_node)
@@ -309,7 +309,7 @@ build_scoped_method_call (exp, basetype, name, parms)
       if (TREE_CODE (exp) == INDIRECT_REF)
 	decl = build_indirect_ref
 	  (convert_pointer_to_real
-	   (binfo, build_unary_op (ADDR_EXPR, exp, 0)), NULL_PTR);
+	   (binfo, build_unary_op (ADDR_EXPR, exp, 0)), NULL);
       else
 	decl = build_scoped_ref (exp, basetype);
 
@@ -3520,7 +3520,7 @@ builtin:
 
     case MEMBER_REF:
       return build_m_component_ref
-	(build_indirect_ref (arg1, NULL_PTR), arg2);
+	(build_indirect_ref (arg1, NULL), arg2);
 
       /* The caller will deal with these.  */
     case ADDR_EXPR:
@@ -4340,7 +4340,7 @@ build_java_interface_fn_ref (fn, instance)
       java_iface_lookup_fn 
 	= builtin_function ("_Jv_LookupInterfaceMethodIdx",
 			    build_function_type (ptr_type_node, t),
-			    0, NOT_BUILT_IN, NULL_PTR);
+			    0, NOT_BUILT_IN, NULL);
       ggc_add_tree_root (&java_iface_lookup_fn, 1);
     }
 
@@ -5112,7 +5112,7 @@ static void
 add_warning (winner, loser)
      struct z_candidate *winner, *loser;
 {
-  winner->warnings = tree_cons (NULL_PTR,
+  winner->warnings = tree_cons (NULL_TREE,
 				build_ptr_wrapper (loser),
 				winner->warnings);
 }

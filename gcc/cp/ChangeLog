@@ -1,3 +1,18 @@
+2001-05-02  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* call.c: NULL_PTR -> NULL.
+	* class.c: Likewise.
+	* cvt.c: Likewise.
+	* decl.c: Likewise.
+	* decl2.c: Likewise.
+	* except.c: Likewise.
+	* init.c: Likewise.
+	* rtti.c: Likewise.
+	* search.c: Likewise.
+	* tree.c: Likewise.
+	* typeck.c: Likewise.
+	* typeck2.c: Likewise.
+
 2001-05-02  Mark Mitchell  <mark@codesourcery.com>
 
 	* decl2.c (do_using_directive): Revert previous patch.

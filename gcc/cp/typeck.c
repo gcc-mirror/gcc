@@ -117,7 +117,7 @@ require_complete_type (value)
       my_friendly_assert (TREE_CODE (member) == FIELD_DECL, 305);
       base = convert_pointer_to (basetype, current_class_ptr);
       value = build (COMPONENT_REF, TREE_TYPE (member),
-		     build_indirect_ref (base, NULL_PTR), member);
+		     build_indirect_ref (base, NULL), member);
       return require_complete_type (value);
     }
 
@@ -2245,7 +2245,7 @@ build_component_ref (datum, component, basetype_path, protect)
 	    }
 	  else
 	    addr = convert_pointer_to (base, addr);
-	  datum = build_indirect_ref (addr, NULL_PTR);
+	  datum = build_indirect_ref (addr, NULL);
 	  if (datum == error_mark_node)
 	    return error_mark_node;
 	}
@@ -2924,7 +2924,7 @@ get_member_function_from_ptrfunc (instance_ptrptr, function)
 	(PLUS_EXPR,
 	 build_pointer_type (build_pointer_type (vtable_entry_type)),
 	 vtbl, cp_convert (ptrdiff_type_node, delta2));
-      vtbl = build_indirect_ref (vtbl, NULL_PTR);
+      vtbl = build_indirect_ref (vtbl, NULL);
       aref = build_array_ref (vtbl, idx);
 
       if (! flag_vtable_thunks)

@@ -2355,7 +2355,7 @@ dfs_init_vbase_pointers (binfo, data)
   while (fields && DECL_NAME (fields) && VBASE_NAME_P (DECL_NAME (fields)))
     {
       tree ref = build (COMPONENT_REF, TREE_TYPE (fields),
-			build_indirect_ref (this_vbase_ptr, NULL_PTR), fields);
+			build_indirect_ref (this_vbase_ptr, NULL), fields);
       tree init;
       tree vbase_type;
       tree vbase_binfo;
@@ -2558,7 +2558,7 @@ expand_upcast_fixups (binfo, addr, orig_addr, vbase, vbase_addr, t,
 	      finish_expr_stmt (init);
 	      /* Update the vtable pointers as necessary.  */
 	      ref = build_vfield_ref
-		(build_indirect_ref (addr, NULL_PTR),
+		(build_indirect_ref (addr, NULL),
 		 DECL_CONTEXT (TYPE_VFIELD (BINFO_TYPE (binfo))));
 	      finish_expr_stmt
 		(build_modify_expr (ref, NOP_EXPR, nvtbl));

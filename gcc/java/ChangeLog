@@ -1,3 +1,8 @@
+2001-05-02  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* decl.c: NULL_PTR -> NULL.
+	* jcf-write.c: Likewise.
+
 2001-05-01  Tom Tromey  <tromey@redhat.com>
 
 	* Make-lang.in ($(srcdir)/java/gcj.info): Added `-I..'.

@@ -594,7 +594,7 @@ convert_from_reference (val)
   if (TREE_CODE (type) == OFFSET_TYPE)
     type = TREE_TYPE (type);
   if (TREE_CODE (type) == REFERENCE_TYPE)
-    return build_indirect_ref (val, NULL_PTR);
+    return build_indirect_ref (val, NULL);
   return val;
 }
 
