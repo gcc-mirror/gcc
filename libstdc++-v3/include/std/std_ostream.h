@@ -1,6 +1,6 @@
 // Output streams -*- C++ -*-
 
-// Copyright (C) 1997, 1998, 1999, 2000, 2001, 2002
+// Copyright (C) 1997, 1998, 1999, 2000, 2001, 2002, 2003
 // Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
@@ -260,6 +260,15 @@ namespace std
       */
       __ostream_type& 
       put(char_type __c);
+
+      // Core write functionality, without sentry.
+      void
+      _M_write(const char_type* __s, streamsize __n)
+      {
+	streamsize __put = this->rdbuf()->sputn(__s, __n);
+	if (__put != __n)
+	  this->setstate(ios_base::badbit);
+      }
 
       /**
        *  @brief  Character string insertion.
