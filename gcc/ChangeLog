@@ -1,3 +1,8 @@
+2003-01-25  Andreas Jaeger  <aj@suse.de>
+
+	* config/i386/i386.c (x86_output_mi_thunk): Correct test for
+	TARGET_MACHO.
+
 2003-01-25  Roger Sayle  <roger@eyesopen.com>
 
 	* gcse.c (bypass_last_basic_block): New global variable.
@@ -322,7 +327,7 @@ Fri Jan 24 23:03:32 CET 2003  Jan Hubicka  <jh@suse.cz>
 	(TARGET_STRIP_NAME_ENCODING): Define.
 
 	(get_thread_pointer): New function.
-	(legitimize_tls_address): New function.	
+	(legitimize_tls_address): New function.
 	(legitimize_address): Call it.
 	(emit_pic_move): Remove, replace by ...
 	(emit_symbolic_move): ... this new function.
@@ -352,7 +357,7 @@ Fri Jan 24 23:03:32 CET 2003  Jan Hubicka  <jh@suse.cz>
 	("get_tp_64", "get_tp_31", "set_tp_64", "set_tp_31"): New insns.
 	("*tls_load_64", "*tls_load_31"): New insns.
 	("call_value_tls", "call_value_tls_exp"): New expanders.
-	("brasl_tls", "bras_tls", "basr_tls_64", "basr_tls_31", 
+	("brasl_tls", "bras_tls", "basr_tls_64", "basr_tls_31",
 	"bas_tls_64", "bas_tls_31"): New insns.
 
 2003-01-24  Nathan Sidwell  <nathan@codesourcery.com>
@@ -576,7 +581,7 @@ Fri Jan 24 23:03:32 CET 2003  Jan Hubicka  <jh@suse.cz>
 	* config/s390/s390.md (floatdfdi2): Insn has type 'itof'.
 	* config/s390/2064.md (define_bypass): Correct 'Load' and
 	'Load-address' bypass values.
-	
+
 2003-01-22  Andreas Schwab  <schwab@suse.de>
 
 	* config/ia64/t-ia64 (insn-attrtab.o-warn): Define as -Wno-error.
@@ -1406,7 +1411,7 @@ Fri Jan 10 22:05:35 CET 2003  Jan Hubicka  <jh@suse.cz>
 
 2003-01-10  Hartmut Penner  <hpenner@de.ibm.com>
 
-       	* doc/invoke.texi: Document -mtune, delete -mcpu
+	* doc/invoke.texi: Document -mtune, delete -mcpu
 	option for S/390 and zSeries.
 	* config/s390/s390.c (s390_tune_string) New variable.
 	(s390_cpu_string) Delete variable.
@@ -3591,7 +3596,7 @@ Sun Dec 22 18:23:44 CET 2002  Jan Hubicka  <jh@suse.cz>
 
 2002-12-20  Hartmut Penner  <hpenner@de.ibm.com>
 
-       	* doc/invoke.texi: Document -mzarch, -mesa, -mcpu= and -march=
+	* doc/invoke.texi: Document -mzarch, -mesa, -mcpu= and -march=
 	option for S/390 and zSeries.
 	* config/s390/s390.c (s390_cpu, s390_cpu_string, s390_arch,
 	s390_arch_string): New variables.
