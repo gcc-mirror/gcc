@@ -1,3 +1,29 @@
+2005-04-01  Richard Guenther <rguenth@tat.physik.uni-tuebingen.de>
+	    Jan Hubicka  <jh@suse.cz>
+	    Steven Bosscher <stevenb@suse.de>
+
+	* cgraphunit.c (cgraph_estimate_size_after_inlining): Compute
+	call cost based on argument sizes.
+	(cgraph_mark_inline_edge): Avoid inline unit from shrinking by
+	inlining.
+	* params.def: (max-inline-inssn-single): Set to 450.
+	(max-inline-insns-auto): Set to 90.
+	(max-inline-insns-recursive): Set to 450
+	(max-inline-insns-recursive-auto): Set to 450.
+	(large-function-insns): Set to 2700.
+	(inline-call-cost): New parameter.
+	* tree-inline.c (estimate_move_cost): New function.
+	(estimate_num_insns_1): Compute move sizes costs by estimate_move_cost
+	for non-gimple-regs, set cost to 0 for gimple-regs.  Compute call size
+	based on arguments.
+	* tree-inline.h (estimate_move_cost): Declare.
+	* invoke.texi: (max-inline-inssn-single): Change default to 450.
+	(max-inline-insns-auto): Change default to 90.
+	(max-inline-insns-recursive): Change default to 450
+	(max-inline-insns-recursive-auto): Change default to 450.
+	(large-function-insns): Change default to 2700.
+	(inline-call-cost): Document new parameter.
+
 2005-04-01  Paul Brook  <paul@codesourcery.com>
 
 	* config/arm/arm.c (thumb_call_via_label): Include space for SP.

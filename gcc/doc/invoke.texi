@@ -5443,7 +5443,7 @@ This number sets the maximum number of instructions (counted in GCC's
 internal representation) in a single function that the tree inliner
 will consider for inlining.  This only affects functions declared
 inline and methods implemented in a class declaration (C++).
-The default value is 500.
+The default value is 450.
 
 @item max-inline-insns-auto
 When you use @option{-finline-functions} (included in @option{-O3}),
@@ -5451,7 +5451,7 @@ a lot of functions that would otherwise not be considered for inlining
 by the compiler will be investigated.  To those functions, a different
 (more restrictive) limit compared to functions declared inline can
 be applied.
-The default value is 120.
+The default value is 90.
 
 @item large-function-insns
 The limit specifying really large functions.  For functions larger than this
@@ -5460,7 +5460,7 @@ limit after inlining inlining is constrained by
 to avoid extreme compilation time caused by non-linear algorithms used by the
 backend.
 This parameter is ignored when @option{-funit-at-a-time} is not used.
-The default value is 3000.
+The default value is 2700.
 
 @item large-function-growth
 Specifies maximal growth of large function caused by inlining in percents.
@@ -5483,7 +5483,7 @@ For functions declared inline @option{--param max-inline-insns-recursive} is
 taken into acount.  For function not declared inline, recursive inlining
 happens only when @option{-finline-functions} (included in @option{-O3}) is
 enabled and @option{--param max-inline-insns-recursive-auto} is used.  The
-default value is 500.
+default value is 450.
 
 @item max-inline-recursive-depth
 @itemx max-inline-recursive-depth-auto
@@ -5493,7 +5493,16 @@ For functions declared inline @option{--param max-inline-recursive-depth} is
 taken into acount.  For function not declared inline, recursive inlining
 happens only when @option{-finline-functions} (included in @option{-O3}) is
 enabled and @option{--param max-inline-recursive-depth-auto} is used.  The
-default value is 500.
+default value is 450.
+
+@item inline-call-cost
+Specify cost of call instruction relative to simple arithmetics operations
+(having cost of 1).  Increasing this cost disqualify inlinining of non-leaf
+functions and at same time increase size of leaf function that is believed to
+reduce function size by being inlined.  In effect it increase amount of
+inlining for code having large abstraction penalty (many functions that just
+pass the argumetns to other functions) and decrease inlining for code with low
+abstraction penalty.  Default value is 16.
 
 @item max-unrolled-insns
 The maximum number of instructions that a loop should have if that loop

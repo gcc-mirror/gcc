@@ -58,10 +58,9 @@ DEFPARAM (PARAM_SRA_FIELD_STRUCTURE_RATIO,
    of a function counted in internal gcc instructions (not in
    real machine instructions) that is eligible for inlining
    by the tree inliner.
-   The default value is 500.
+   The default value is 450.
    Only functions marked inline (or methods defined in the class
-   definition for C++) are affected by this, unless you set the
-   -finline-functions (included in -O3) compiler option.
+   definition for C++) are affected by this.
    There are more restrictions to inlining: If inlined functions
    call other functions, the already inlined instructions are
    counted and once the recursive inline limit (see 
@@ -70,7 +69,7 @@ DEFPARAM (PARAM_SRA_FIELD_STRUCTURE_RATIO,
 DEFPARAM (PARAM_MAX_INLINE_INSNS_SINGLE,
 	  "max-inline-insns-single",
 	  "The maximum number of instructions in a single function eligible for inlining",
-	  500, 0, 0)
+	  450, 0, 0)
 
 /* The single function inlining limit for functions that are
    inlined by virtue of -finline-functions (-O3).
@@ -78,21 +77,21 @@ DEFPARAM (PARAM_MAX_INLINE_INSNS_SINGLE,
    that is applied to functions marked inlined (or defined in the
    class declaration in C++) given by the "max-inline-insns-single"
    parameter.
-   The default value is 150.  */
+   The default value is 90.  */
 DEFPARAM (PARAM_MAX_INLINE_INSNS_AUTO,
 	  "max-inline-insns-auto",
 	  "The maximum number of instructions when automatically inlining",
-	  120, 0, 0)
+	  90, 0, 0)
 
 DEFPARAM (PARAM_MAX_INLINE_INSNS_RECURSIVE,
 	  "max-inline-insns-recursive",
 	  "The maximum number of instructions inline function can grow to via recursive inlining",
-	  500, 0, 0)
+	  450, 0, 0)
 
 DEFPARAM (PARAM_MAX_INLINE_INSNS_RECURSIVE_AUTO,
 	  "max-inline-insns-recursive-auto",
 	  "The maximum number of instructions non-inline function can grow to via recursive inlining",
-	  500, 0, 0)
+	  450, 0, 0)
 
 DEFPARAM (PARAM_MAX_INLINE_RECURSIVE_DEPTH,
 	  "max-inline-recursive-depth",
@@ -148,7 +147,7 @@ DEFPARAM(PARAM_MAX_PENDING_LIST_LENGTH,
 DEFPARAM(PARAM_LARGE_FUNCTION_INSNS,
 	 "large-function-insns",
 	 "The size of function body to be considered large",
-	 3000, 0, 0)
+	 2700, 0, 0)
 DEFPARAM(PARAM_LARGE_FUNCTION_GROWTH,
 	 "large-function-growth",
 	 "Maximal growth due to inlining of large function (in percent)",
@@ -157,6 +156,10 @@ DEFPARAM(PARAM_INLINE_UNIT_GROWTH,
 	 "inline-unit-growth",
 	 "how much can given compilation unit grow because of the inlining (in percent)",
 	 50, 0, 0)
+DEFPARAM(PARAM_INLINE_CALL_COST,
+	 "inline-call-cost",
+	 "expense of call operation relative to ordinary aritmetic operations",
+	 16, 0, 0)
 
 /* The GCSE optimization will be disabled if it would require
    significantly more memory than this value.  */

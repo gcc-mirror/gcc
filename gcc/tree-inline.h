@@ -29,6 +29,7 @@ bool tree_inlinable_function_p (tree);
 tree copy_tree_r (tree *, int *, void *);
 void clone_body (tree, tree, void *);
 tree save_body (tree, tree *, tree *);
+int estimate_move_cost (tree type);
 int estimate_num_insns (tree expr);
 
 /* 0 if we should not perform inlining.

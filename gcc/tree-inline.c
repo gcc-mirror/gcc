@@ -1165,6 +1165,23 @@ inlinable_function_p (tree fn)
   return inlinable;
 }
 
+/* Estimate the cost of a memory move.  Use machine dependent
+   word size and take possible memcpy call into account.  */
+
+int
+estimate_move_cost (tree type)
+{
+  HOST_WIDE_INT size;
+
+  size = int_size_in_bytes (type);
+
+  if (size < 0 || size > MOVE_MAX_PIECES * MOVE_RATIO)
+    /* Cost of a memcpy call, 3 arguments and the call.  */
+    return 4;
+  else
+    return ((size + MOVE_MAX_PIECES - 1) / MOVE_MAX_PIECES);
+}
+
 /* Used by estimate_num_insns.  Estimate number of instructions seen
    by given statement.  */
 
@@ -1243,28 +1260,50 @@ estimate_num_insns_1 (tree *tp, int *walk_subtrees, void *data)
       *walk_subtrees = 0;
       return NULL;
 
-    /* Recognize assignments of large structures and constructors of
-       big arrays.  */
+    /* Try to estimate the cost of assignments.  We have three cases to
+       deal with:
+	1) Simple assignments to registers;
+	2) Stores to things that must live in memory.  This includes
+	   "normal" stores to scalars, but also assignments of large
+	   structures, or constructors of big arrays;
+	3) TARGET_EXPRs.
+
+       Let us look at the first two cases, assuming we have "a = b + C":
+       <modify_expr <var_decl "a"> <plus_expr <var_decl "b"> <constant C>>
+       If "a" is a GIMPLE register, the assignment to it is free on almost
+       any target, because "a" usually ends up in a real register.  Hence
+       the only cost of this expression comes from the PLUS_EXPR, and we
+       can ignore the MODIFY_EXPR.
+       If "a" is not a GIMPLE register, the assignment to "a" will most
+       likely be a real store, so the cost of the MODIFY_EXPR is the cost
+       of moving something into "a", which we compute using the function
+       estimate_move_cost.
+
+       The third case deals with TARGET_EXPRs, for which the semantics are
+       that a temporary is assigned, unless the TARGET_EXPR itself is being
+       assigned to something else.  In the latter case we do not need the
+       temporary.  E.g. in <modify_expr <var_decl "a"> <target_expr>>, the
+       MODIFY_EXPR is free.  */
     case INIT_EXPR:
     case MODIFY_EXPR:
-      x = TREE_OPERAND (x, 0);
-      /* FALLTHRU */
+      /* Is the right and side a TARGET_EXPR?  */
+      if (TREE_CODE (TREE_OPERAND (x, 1)) == TARGET_EXPR)
+	break;
+      /* ... fall through ...  */
+
     case TARGET_EXPR:
+      x = TREE_OPERAND (x, 0);
+      /* Is this an assignments to a register?  */
+      if (is_gimple_reg (x))
+	break;
+      /* Otherwise it's a store, so fall through to compute the move cost.  */
+      
     case CONSTRUCTOR:
-      {
-	HOST_WIDE_INT size;
-
-	size = int_size_in_bytes (TREE_TYPE (x));
-
-	if (size < 0 || size > MOVE_MAX_PIECES * MOVE_RATIO)
-	  *count += 10;
-	else
-	  *count += ((size + MOVE_MAX_PIECES - 1) / MOVE_MAX_PIECES);
-      }
+      *count += estimate_move_cost (TREE_TYPE (x));
       break;
 
-      /* Assign cost of 1 to usual operations.
-	 ??? We may consider mapping RTL costs to this.  */
+    /* Assign cost of 1 to usual operations.
+       ??? We may consider mapping RTL costs to this.  */
     case COND_EXPR:
 
     case PLUS_EXPR:
@@ -1351,6 +1390,7 @@ estimate_num_insns_1 (tree *tp, int *walk_subtrees, void *data)
     case CALL_EXPR:
       {
 	tree decl = get_callee_fndecl (x);
+	tree arg;
 
 	if (decl && DECL_BUILT_IN_CLASS (decl) == BUILT_IN_NORMAL)
 	  switch (DECL_FUNCTION_CODE (decl))
@@ -1363,7 +1403,21 @@ estimate_num_insns_1 (tree *tp, int *walk_subtrees, void *data)
 	    default:
 	      break;
 	    }
-	*count += 10;
+
+	/* Our cost must be kept in sync with cgraph_estimate_size_after_inlining
+	   that does use function declaration to figure out the arguments.  */
+	if (!decl)
+	  {
+	    for (arg = TREE_OPERAND (x, 1); arg; arg = TREE_CHAIN (arg))
+	      *count += estimate_move_cost (TREE_TYPE (TREE_VALUE (arg)));
+	  }
+	else
+	  {
+	    for (arg = DECL_ARGUMENTS (decl); arg; arg = TREE_CHAIN (arg))
+	      *count += estimate_move_cost (TREE_TYPE (arg));
+	  }
+
+	*count += PARAM_VALUE (PARAM_INLINE_CALL_COST);
 	break;
       }
     default:
