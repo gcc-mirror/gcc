@@ -156,8 +156,6 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 
 #undef TARGET_VERSION
 #undef REGISTER_NAMES
-#undef FUNCTION_PROLOGUE
-#undef FUNCTION_EPILOGUE
 #undef ASM_OUTPUT_REG_PUSH
 #undef ASM_OUTPUT_REG_POP
 #undef ASM_FILE_START
@@ -184,6 +182,8 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #undef FUNCTION_PROFILER
 #undef ASM_OUTPUT_INTERNAL_LABEL
 #undef GLOBAL_ASM_OP
+#undef IMMEDIATE_PREFIX
+#undef REGISTER_PREFIX
 
 #define TARGET_VERSION fprintf (stderr, " (68k, SGS/hpux syntax)");
 
@@ -192,99 +192,11 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
  "%a0", "%a1", "%a2", "%a3", "%a4", "%a5", "%fp", "%sp",	\
  "%fp0", "%fp1", "%fp2", "%fp3", "%fp4", "%fp5", "%fp6", "%fp7"}
 
-#define FUNCTION_PROLOGUE(FILE, SIZE)     \
-{ register int regno;						\
-  register int mask = 0;					\
-  extern char call_used_regs[];					\
-  int fsize = (SIZE);						\
-  if (frame_pointer_needed)					\
-    { if (fsize < 0x8000)					\
-        fprintf (FILE, "\tlink.w %%a6,&%d\n", -fsize);		\
-      else if (TARGET_68020)					\
-        fprintf (FILE, "\tlink.l %%a6,&%d\n", -fsize);		\
-      else							\
-	fprintf (FILE, "\tlink.w %%a6,&0\n\tsub.l &%d,%%sp\n", fsize); }  \
-  for (regno = 16; regno < FIRST_PSEUDO_REGISTER; regno++)	\
-    if (regs_ever_live[regno] && ! call_used_regs[regno])	\
-       mask |= 1 << (regno - 16);				\
-  if (mask != 0)						\
-    fprintf (FILE, "\tfmovem &0x%x,-(%%sp)\n", mask & 0xff);       \
-  mask = 0;							\
-  for (regno = 0; regno < 16; regno++)				\
-    if (regs_ever_live[regno] && ! call_used_regs[regno])	\
-       mask |= 1 << (15 - regno);				\
-  if (frame_pointer_needed)					\
-    mask &= ~ (1 << (15-FRAME_POINTER_REGNUM));			\
-  if (exact_log2 (mask) >= 0)					\
-    fprintf (FILE, "\tmov.l %s,-(%%sp)\n", reg_names[15 - exact_log2 (mask)]);  \
-  else if (mask) fprintf (FILE, "\tmovm.l &0x%x,-(%%sp)\n", mask); }\
-  if (flag_pic && current_function_uses_pic_offset_table)       \
-    {                                                           \
-      fprintf (FILE, "\tmov.l &DLT, %s\n",\
-		   reg_names[PIC_OFFSET_TABLE_REGNUM]);         \
-      fprintf (FILE, "\tlea.l -0x6(%%pc,%s.l),%s\n",          \
-		   reg_names[PIC_OFFSET_TABLE_REGNUM],          \
-		   reg_names[PIC_OFFSET_TABLE_REGNUM]);         \
-    }
+#define IMMEDIATE_PREFIX        "&"
+#define REGISTER_PREFIX         "%"
 
 #define FUNCTION_PROFILER(FILE, LABEL_NO) \
    fprintf (FILE, "\tmov.l &LP%d,%%a0\n\tjsr mcount\n", (LABEL_NO));
-
-#define FUNCTION_EPILOGUE(FILE, SIZE) \
-{ register int regno;						\
-  register int mask, fmask;					\
-  register int nregs;						\
-  int offset, foffset;						\
-  extern char call_used_regs[];					\
-  int fsize = (SIZE);						\
-  int big = 0;							\
-  nregs = 0;  fmask = 0;					\
-  for (regno = 16; regno < FIRST_PSEUDO_REGISTER; regno++)	\
-    if (regs_ever_live[regno] && ! call_used_regs[regno])	\
-      { nregs++; fmask |= 1 << (23 - regno); }			\
-  foffset = nregs * 12;						\
-  nregs = 0;  mask = 0;						\
-  if (frame_pointer_needed) regs_ever_live[FRAME_POINTER_REGNUM] = 0; \
-  for (regno = 0; regno < 16; regno++)				\
-    if (regs_ever_live[regno] && ! call_used_regs[regno])	\
-      { nregs++; mask |= 1 << regno; }				\
-  offset = foffset + nregs * 4;					\
-  if (offset + fsize >= 0x8000 && frame_pointer_needed)		\
-    { fprintf (FILE, "\tmov.l &%d,%%a0\n", -fsize);		\
-      fsize = 0, big = 1; }					\
-  if (exact_log2 (mask) >= 0) {					\
-    if (big)							\
-      fprintf (FILE, "\tmov.l -%d(%%a6,%%a0.l),%s\n",		\
-	       offset + fsize, reg_names[exact_log2 (mask)]);	\
-    else if (! frame_pointer_needed)				\
-      fprintf (FILE, "\tmov.l (%%sp)+,%s\n",			\
-	       reg_names[exact_log2 (mask)]);			\
-    else							\
-      fprintf (FILE, "\tmov.l -%d(%%a6),%s\n",			\
-	       offset + fsize, reg_names[exact_log2 (mask)]); }	\
-  else if (mask) {						\
-    if (big)							\
-      fprintf (FILE, "\tmovm.l -%d(%%a6,%%a0.l),&0x%x\n",	\
-	       offset + fsize, mask);				\
-    else if (! frame_pointer_needed)				\
-      fprintf (FILE, "\tmovm.l (%%sp)+,&0x%x\n", mask);		\
-    else							\
-      fprintf (FILE, "\tmovm.l -%d(%%a6),&0x%x\n",		\
-	       offset + fsize, mask); }				\
-  if (fmask) {							\
-    if (big)							\
-      fprintf (FILE, "\tfmovem -%d(%%a6,%%a0.l),&0x%x\n",	\
-	       foffset + fsize, fmask);				\
-    else if (! frame_pointer_needed)				\
-      fprintf (FILE, "\tfmovem (%%sp)+,&0x%x\n", fmask);	\
-    else							\
-      fprintf (FILE, "\tfmovem -%d(%%a6),&0x%x\n",		\
-	       foffset + fsize, fmask); }			\
-  if (frame_pointer_needed)					\
-    fprintf (FILE, "\tunlk %%a6\n");				\
-  if (current_function_pops_args)				\
-    fprintf (FILE, "\trtd &%d\n", current_function_pops_args);	\
-  else fprintf (FILE, "\trts\n"); }
 
 /* This is how to output an insn to push a register on the stack.
    It need not be very fast code.  */
