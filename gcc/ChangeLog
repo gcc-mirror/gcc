@@ -1,3 +1,9 @@
+Sun Nov 18 16:47:00 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	* expr.c (expand_expr, case VAR_DECL): Update alignment of DECL_RTL
+	after re-laying out decl in incomplete case.
+	(expand_expr, case ADDR_EXPR): Fix typo in copy case.
+
 2001-11-18  Joseph S. Myers  <jsm28@cam.ac.uk>
 
 	* doc/install-old.texi: Move some sections out to ...
