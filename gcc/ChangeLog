@@ -1,5 +1,11 @@
 2004-10-03  Kazu Hirata  <kazu@cs.umass.edu>
 
+	* fold-const.c (fold) [EQ_EXPR]: When seeing if D & ~C != 0 to
+	fold (A & C) == D into 0, fold ~C.  Similarly, for the case
+	where | is used instead of &.
+
+2004-10-03  Kazu Hirata  <kazu@cs.umass.edu>
+
 	* ginclude/stddef.h: Fix a comment typo.
 
 2004-10-03  Eric Botcazou  <ebotcazou@libertysurf.fr>
