@@ -335,6 +335,12 @@ pp_c_primary_expression (ppi, e)
 	}
       pp_c_right_paren (ppi);
 
+    case STMT_EXPR:
+      pp_c_left_paren (ppi);
+      pp_statement (ppi, STMT_EXPR_STMT (e));
+      pp_c_right_paren (ppi);
+      break;
+
     default:
       /*  Make sure this call won't cause any infinite loop. */
       pp_c_left_paren (ppi);
@@ -416,6 +422,11 @@ pp_c_postfix_expression (ppi, e)
       pp_postfix_expression (ppi, TREE_OPERAND (e, 0));
       pp_identifier (ppi, code == POSTINCREMENT_EXPR ? "++" : "--");
       break;
+      
+    case ARROW_EXPR:
+      pp_postfix_expression (ppi, TREE_OPERAND (e, 0));
+      pp_arrow (ppi);
+      break;
 
     case ARRAY_REF:
       pp_postfix_expression (ppi, TREE_OPERAND (e, 0));
@@ -432,7 +443,9 @@ pp_c_postfix_expression (ppi, e)
       break;
 
     case ABS_EXPR:
-      pp_c_identifier (ppi, "abs");
+    case FFS_EXPR:
+      pp_c_identifier (ppi, 
+		       code == ABS_EXPR ? "__builtin_abs" : "__builtin_ffs");
       pp_c_left_paren (ppi);
       pp_c_expression (ppi, TREE_OPERAND (e, 0));
       pp_c_right_paren (ppi);
@@ -481,8 +494,20 @@ pp_c_postfix_expression (ppi, e)
       pp_right_brace (ppi);
       break;
 
+    case COMPOUND_LITERAL_EXPR:
+      e = DECL_INITIAL (e);
+      /* Fall through.  */
     case CONSTRUCTOR:
       pp_initializer (ppi, e);
+      break;
+      
+    case VA_ARG_EXPR:
+      pp_c_identifier (ppi, "__builtin_va_arg");
+      pp_c_left_paren (ppi);
+      pp_assignment_expression (ppi, TREE_OPERAND (e, 0));
+      pp_separate_with (ppi, ',');
+      pp_type_id (ppi, TREE_TYPE (e));
+      pp_c_right_paren (ppi);
       break;
 
     default:
@@ -868,19 +893,24 @@ pp_c_expression (ppi, e)
     case LABEL_DECL:
     case ERROR_MARK:
     case TARGET_EXPR:
+    case STMT_EXPR:
       pp_c_primary_expression (ppi, e);
       break;
 
     case POSTINCREMENT_EXPR:
     case POSTDECREMENT_EXPR:
+    case ARROW_EXPR:
     case ARRAY_REF:
     case CALL_EXPR:
     case COMPONENT_REF:
     case COMPLEX_CST:
     case VECTOR_CST:
     case ABS_EXPR:
+    case FFS_EXPR:
     case CONSTRUCTOR:
+    case COMPOUND_LITERAL_EXPR:
     case COMPLEX_EXPR:
+    case VA_ARG_EXPR:
       pp_c_postfix_expression (ppi, e);
       break;
 
