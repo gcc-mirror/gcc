@@ -1,3 +1,24 @@
+2004-07-01  Joseph S. Myers  <jsm@polyomino.org.uk>
+
+	PR c/1027
+	* c-lang.c (c_initialize_diagnostics): Move from here ...
+	* c-objc-common.c: ... to here.  Include "c-pretty-print.h".
+	(c_tree_printer): Use pretty-printer to format %T.
+	* c-pretty-print.c (pp_c_specifier_qualifier_list): Include space
+	before '*' if not C++.
+	(pp_c_direct_abstract_declarator): Don't try to print array upper
+	bound for flexible array members.
+	* c-tree.h: Include "diagnostic.h".
+	(c_initialize_diagnostics): Declare.
+	* objc/objc-lang.c (LANG_HOOKS_INITIALIZE_DIAGNOSTICS): Define.
+	* c-format.c (format_type_warning): New function.  Improve
+	diagnostics for incorrect format argument types.
+	(check_format_types): Use it.  Add two parameters.  Use the
+	TYPE_MAIN_VARIANT of wanted_type.
+	(check_format_info_main): Pass new parameters to
+	check_format_types.
+	(struct format_wanted_type): Update comment.
+
 2004-07-01  Nick Clifton  <nickc@redhat.com>
 
 	* target.h (struct gcc_target): Add new field to struct cxx:

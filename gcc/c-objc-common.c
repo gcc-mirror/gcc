@@ -27,6 +27,7 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include "insn-config.h"
 #include "integrate.h"
 #include "c-tree.h"
+#include "c-pretty-print.h"
 #include "function.h"
 #include "flags.h"
 #include "toplev.h"
@@ -242,7 +243,10 @@ static bool
 c_tree_printer (pretty_printer *pp, text_info *text)
 {
   tree t = va_arg (*text->args_ptr, tree);
+  tree name;
   const char *n = "({anonymous})";
+  c_pretty_printer *cpp = (c_pretty_printer *) pp;
+  pp->padding = pp_none;
 
   switch (*text->format_spec)
     {
@@ -254,14 +258,22 @@ c_tree_printer (pretty_printer *pp, text_info *text)
 
     case 'T':
       if (TYPE_P (t))
-	t = TYPE_NAME (t);
-      if (t && TREE_CODE (t) == TYPE_DECL)
+	name = TYPE_NAME (t);
+      else
+	abort ();
+      if (name && TREE_CODE (name) == TYPE_DECL)
 	{
-	  if (DECL_NAME (t))
-	    n = lang_hooks.decl_printable_name (t, 2);
+	  if (DECL_NAME (name))
+	    pp_string (cpp, lang_hooks.decl_printable_name (name, 2));
+	  else
+	    pp_type_id (cpp, t);
+	  return true;
 	}
-      else if (t)
-	n = IDENTIFIER_POINTER (t);
+      else
+	{
+	  pp_type_id (cpp, t);
+	  return true;
+	}
       break;
 
     case 'E':
@@ -275,7 +287,7 @@ c_tree_printer (pretty_printer *pp, text_info *text)
       return false;
     }
 
-  pp_string (pp, n);
+  pp_string (cpp, n);
   return true;
 }
 
@@ -312,4 +324,17 @@ bool
 has_c_linkage (tree decl ATTRIBUTE_UNUSED)
 {
   return true;
+}
+
+void
+c_initialize_diagnostics (diagnostic_context *context)
+{
+  pretty_printer *base = context->printer;
+  c_pretty_printer *pp = xmalloc (sizeof (c_pretty_printer));
+  memcpy (pp_base (pp), base, sizeof (pretty_printer));
+  pp_c_pretty_printer_init (pp);
+  context->printer = (pretty_printer *) pp;
+
+  /* It is safe to free this object because it was previously malloc()'d.  */
+  free (base);
 }

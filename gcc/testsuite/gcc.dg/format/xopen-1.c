@@ -89,7 +89,7 @@ foo (int i, unsigned int u, wint_t lc, wchar_t *ls, int *ip, double d,
   /* The use of operand number $ formats is an X/Open extension.  */
   scanf ("%1$d", ip);
   printf ("%1$d", i);
-  printf ("%1$d", l); /* { dg-warning "arg 2" "mismatched args with $ format" } */
+  printf ("%1$d", l); /* { dg-warning "arg 2|argument 2" "mismatched args with $ format" } */
   printf ("%3$*2$.*1$ld", i2, i, l);
   printf ("%4$ld%7$ld%5$d%6$d%3$d%1$d%2$d", i, i, i, l, i, i, l);
   scanf ("%4$ld%7$ld%5$d%6$d%3$d%1$d%2$d", ip, ip, ip, lp, ip, ip, lp);

@@ -1,3 +1,12 @@
+2004-07-01  Joseph S. Myers  <jsm@polyomino.org.uk>
+
+	PR c/1027
+	* gcc.dg/Wswitch-enum.c, gcc.dg/Wswitch.c,
+	gcc.dg/format/branch-1.c, gcc.dg/format/diag-1.c,
+	gcc.dg/format/multattr-3.c, gcc.dg/format/xopen-1.c: Update
+	expected warning text.
+	* gcc.dg/format/diag-2.c: New test.
+
 2004-07-01  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
 	* gcc.c-torture/compile/20040323-1.c: XFAIL on Solaris 2.

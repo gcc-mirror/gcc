@@ -384,6 +384,8 @@ pp_c_specifier_qualifier_list (c_pretty_printer *pp, tree t)
             pp_c_whitespace (pp);
             pp_c_left_paren (pp);
           }
+	else if (!c_dialect_cxx ())
+	  pp_c_whitespace (pp);
         pp_ptr_operator (pp, t);
       }
       break;
@@ -487,7 +489,7 @@ pp_c_direct_abstract_declarator (c_pretty_printer *pp, tree t)
 
     case ARRAY_TYPE:
       pp_c_left_bracket (pp);
-      if (TYPE_DOMAIN (t))
+      if (TYPE_DOMAIN (t) && TYPE_MAX_VALUE (TYPE_DOMAIN (t)))
         pp_expression (pp, TYPE_MAX_VALUE (TYPE_DOMAIN (t)));
       pp_c_right_bracket (pp);
       pp_direct_abstract_declarator (pp, TREE_TYPE (t));
