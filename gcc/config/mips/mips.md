@@ -1817,8 +1817,8 @@ move\\t%0,%z4\\n\\
 ;; in FP registers (off by default, use -mdebugh to enable).
 
 (define_insn "movsi_internal1"
-  [(set (match_operand:SI 0 "nonimmediate_operand" "=d,d,d,d,d,d,R,m,*d,*fz,*f,*f,*f,*R,*m,*x,*d")
-	(match_operand:SI 1 "general_operand" "d,S,IKL,Mnis,R,m,dJ,dJ,*fz,*d,*f,*R,*m,*f,*f,*d,*x"))]
+  [(set (match_operand:SI 0 "nonimmediate_operand" "=d,d,d,d,d,d,R,m,*d,*f*z,*f,*f,*f,*R,*m,*x,*d")
+	(match_operand:SI 1 "general_operand" "d,S,IKL,Mnis,R,m,dJ,dJ,*f*z,*d,*f,*R,*m,*f,*f,*d,*x"))]
   "TARGET_DEBUG_H_MODE"
   "* return mips_move_1word (operands, insn, TRUE);"
   [(set_attr "type"	"move,load,arith,arith,load,load,store,store,xfer,xfer,move,load,load,store,store,hilo,hilo")
@@ -1852,8 +1852,8 @@ move\\t%0,%z4\\n\\
 ;; in FP registers (off by default, use -mdebugh to enable).
 
 (define_insn "movhi_internal1"
-  [(set (match_operand:HI 0 "nonimmediate_operand" "=d,d,d,d,R,m,*d,*f,*fz,*x,*d")
-	(match_operand:HI 1 "general_operand"       "d,IK,R,m,dJ,dJ,*fz,*d,*f,*d,*x"))]
+  [(set (match_operand:HI 0 "nonimmediate_operand" "=d,d,d,d,R,m,*d,*f,*f*z,*x,*d")
+	(match_operand:HI 1 "general_operand"       "d,IK,R,m,dJ,dJ,*f*z,*d,*f,*d,*x"))]
   "TARGET_DEBUG_H_MODE"
   "* return mips_move_1word (operands, insn, TRUE);"
   [(set_attr "type"	"move,arith,load,load,store,store,xfer,xfer,move,hilo,hilo")
@@ -1887,8 +1887,8 @@ move\\t%0,%z4\\n\\
 ;; in FP registers (off by default, use -mdebugh to enable).
 
 (define_insn "movqi_internal1"
-  [(set (match_operand:QI 0 "nonimmediate_operand" "=d,d,d,d,R,m,*d,*fz,*f,*x,*d")
-	(match_operand:QI 1 "general_operand"       "d,IK,R,m,dJ,dJ,*fz,*d,*f,*d,*x"))]
+  [(set (match_operand:QI 0 "nonimmediate_operand" "=d,d,d,d,R,m,*d,*f*z,*f,*x,*d")
+	(match_operand:QI 1 "general_operand"       "d,IK,R,m,dJ,dJ,*f*z,*d,*f,*d,*x"))]
   "TARGET_DEBUG_H_MODE"
   "* return mips_move_1word (operands, insn, TRUE);"
   [(set_attr "type"	"move,arith,load,load,store,store,xfer,xfer,move,hilo,hilo")
@@ -1909,7 +1909,7 @@ move\\t%0,%z4\\n\\
 
 (define_insn "movsf"
   [(set (match_operand:SF 0 "nonimmediate_operand" "=f,f,f,f,R,m,*f,*d,*d,*d,*d,*R,*m")
-	(match_operand:SF 1 "general_operand" "f,G,R,Em,fG,fG,*d,*f,*Gd,*R,*Em,*d,*d"))]
+	(match_operand:SF 1 "general_operand" "f,G,R,Em,fG,fG,*d,*f,*G*d,*R,*E*m,*d,*d"))]
   ""
   "* return mips_move_1word (operands, insn, FALSE);"
   [(set_attr "type"	"move,xfer,load,load,store,store,xfer,xfer,move,load,load,store,store")
@@ -1920,7 +1920,7 @@ move\\t%0,%z4\\n\\
 
 (define_insn "movdf"
   [(set (match_operand:DF 0 "nonimmediate_operand" "=f,f,f,R,o,f,*f,*d,*d,*d,*d,*R,*o")
-	(match_operand:DF 1 "general_operand" "f,R,o,fG,fG,E,*d,*f,*dG,*R,*oE,*d,*d"))]
+	(match_operand:DF 1 "general_operand" "f,R,o,fG,fG,E,*d,*f,*d*G,*R,*o*E,*d,*d"))]
   ""
   "* return mips_move_2words (operands, insn); "
   [(set_attr "type"	"move,load,load,store,store,load,xfer,xfer,move,load,load,store,store")
