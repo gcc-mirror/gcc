@@ -1,3 +1,8 @@
+1998-03-18  Dave Love  <d.love@dl.ac.uk>
+
+	* Makefile.in ($(CONFIGURE_TARGET_MODULES)): Set CONFIG_SITE to a
+	non-existent file since /dev/null loses with bash 2.0/autoconf 2.12.
+
 Tue Mar 17 10:33:28 1998  Manfred Hollstein  <manfred@s-direktnet.de>
 
 	* config-ml.in: After building symlink tree call make distclean
