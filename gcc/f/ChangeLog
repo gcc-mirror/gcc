@@ -1,3 +1,8 @@
+Tue Sep  1 10:00:21 1998  Craig Burley  <burley@gnu.org>
+
+	* bugs.texi, g77.1, g77.texi, intdoc.in, news.texi: Doc updates
+	from Craig.
+
 1998-08-23  Dave Love  <d.love@dl.ac.uk>
 
 	* g77.texi: Increment `version-g77' and fix a few typos.
