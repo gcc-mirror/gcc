@@ -242,9 +242,6 @@ public class EventHandler implements InvocationHandler
     Object val = v[0];
     Class propertyType = (Class) v[1];
 
-    System.out.println("ptype="+propertyType.getName());
-    System.out.println(" val="+((val==null)?"null":val.toString()));
-    
     // Find the actual method of target to invoke.  We can't do this in the
     // constructor since we don't know the type of the property we extracted
     // from the event then.
