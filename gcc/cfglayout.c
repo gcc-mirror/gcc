@@ -357,7 +357,7 @@ scope_to_insns_finalize ()
 static void
 fixup_reorder_chain ()
 {
-  basic_block bb;
+  basic_block bb, prev_bb;
   int index;
   rtx insn = NULL;
 
@@ -541,11 +541,20 @@ fixup_reorder_chain ()
 	}
     }
 
-  for (bb = BASIC_BLOCK (0), index = 0; bb; bb = RBI (bb)->next, index ++)
+  prev_bb = ENTRY_BLOCK_PTR;
+  bb = BASIC_BLOCK (0);
+  index = 0;
+
+  for (; bb; prev_bb = bb, bb = RBI (bb)->next, index ++)
     {
       bb->index = index;
       BASIC_BLOCK (index) = bb;
+
+      bb->prev_bb = prev_bb;
+      prev_bb->next_bb = bb;
     }
+  prev_bb->next_bb = EXIT_BLOCK_PTR;
+  EXIT_BLOCK_PTR->prev_bb = prev_bb;
 }
 
 /* Perform sanity checks on the insn chain.
@@ -871,8 +880,9 @@ cfg_layout_duplicate_bb (bb, e)
 #endif
 
   insn = duplicate_insn_chain (bb->head, bb->end);
-  new_bb = create_basic_block (n_basic_blocks, insn,
-		 	       insn ? get_last_insn () : NULL);
+  new_bb = create_basic_block (insn,
+		 	       insn ? get_last_insn () : NULL,
+			       EXIT_BLOCK_PTR->prev_bb);
   alloc_aux_for_block (new_bb, sizeof (struct reorder_block_def));
 
   if (RBI (bb)->header)

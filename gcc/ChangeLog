@@ -1,3 +1,22 @@
+2002-05-20  Zdenek Dvorak  <rakdver@atrey.karlin.mff.cuni.cz>
+
+	* basic_block.h (struct basic_block_def): Added prev_bb and next_bb
+	fields.
+	(FOR_BB_BETWEEN, FOR_ALL_BB, FOR_ALL_BB_REVERSE): New macros for
+	traversing basic block chain.
+	(create_basic_block_structure, create_basic_block): Declaration changed.
+	(link_block, unlink_block): Declare.
+	* cfg.c (entry_exit_blocks): Initialize new fields.
+	(link_block, unlink_block): New.
+	(expunge_block_nocompact): Unlink basic block.
+	(dump_flow_info): Print prev_bb/next_bb fields.
+	* cfgbuild.c (find_basic_blocks_1, find_basic_blocks): Modified.
+	* cfgcleanup.c (merge_blocks_move_predecessor_nojumps): Modified.
+	* cfglayout.c (fixup_reorder_chain, cfg_layout_duplicate_bb): Modified.
+	* cfgrtl.c (create_basic_block_structure, create_basic_block,
+	split_block, force_nonfallthru_and_redirect, split_edge): Modified.
+	(verify_flow_info): Check that list agrees with numbering.
+
 2002-05-19  Neil Booth  <neil@daikokuya.demon.co.uk>
 
 	* c-common.c (preprocessing_asm): New macro.

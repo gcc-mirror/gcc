@@ -206,6 +206,9 @@ typedef struct basic_block_def {
   /* The index of this block.  */
   int index;
 
+  /* Previous and next blocks in the chain.  */
+  struct basic_block_def *prev_bb, *next_bb;
+
   /* The loop depth of this block.  */
   int loop_depth;
 
@@ -239,6 +242,16 @@ extern int n_edges;
 extern varray_type basic_block_info;
 
 #define BASIC_BLOCK(N)  (VARRAY_BB (basic_block_info, (N)))
+
+/* For iterating over basic blocks.  */
+#define FOR_BB_BETWEEN(BB, FROM, TO, DIR) \
+  for (BB = FROM; BB != TO; BB = BB->DIR)
+
+#define FOR_EACH_BB(BB) \
+  FOR_BB_BETWEEN (BB, ENTRY_BLOCK_PTR->next_bb, EXIT_BLOCK_PTR, next_bb)
+
+#define FOR_EACH_BB_REVERSE(BB) \
+  FOR_BB_BETWEEN (BB, EXIT_BLOCK_PTR->prev_bb, ENTRY_BLOCK_PTR, prev_bb)
 
 /* What registers are live at the setjmp call.  */
 
@@ -314,8 +327,8 @@ extern void remove_edge			PARAMS ((edge));
 extern void redirect_edge_succ		PARAMS ((edge, basic_block));
 extern edge redirect_edge_succ_nodup	PARAMS ((edge, basic_block));
 extern void redirect_edge_pred		PARAMS ((edge, basic_block));
-extern basic_block create_basic_block_structure PARAMS ((int, rtx, rtx, rtx));
-extern basic_block create_basic_block	PARAMS ((int, rtx, rtx));
+extern basic_block create_basic_block_structure PARAMS ((int, rtx, rtx, rtx, basic_block));
+extern basic_block create_basic_block	PARAMS ((rtx, rtx, basic_block));
 extern int flow_delete_block		PARAMS ((basic_block));
 extern int flow_delete_block_noexpunge	PARAMS ((basic_block));
 extern void clear_bb_flags		PARAMS ((void));
@@ -644,6 +657,8 @@ extern void debug_regset		PARAMS ((regset));
 extern void allocate_reg_life_data      PARAMS ((void));
 extern void allocate_bb_life_data	PARAMS ((void));
 extern void expunge_block		PARAMS ((basic_block));
+extern void link_block			PARAMS ((basic_block, basic_block));
+extern void unlink_block		PARAMS ((basic_block));
 extern void expunge_block_nocompact	PARAMS ((basic_block));
 extern basic_block alloc_block		PARAMS ((void));
 extern void find_unreachable_blocks	PARAMS ((void));
