@@ -32,7 +32,8 @@ public class Handler extends URLStreamHandler
   {
     // If a hostname is set, then we need to switch protocols to ftp
     // in order to transfer this from the remote host.
-    if (! url.getHost().equals(""))
+    String host = url.getHost();
+    if ((host != null) && (! host.equals("")))
       {
 	// Reset the protocol (and implicitly the handler) for this URL.
 	// Then have the URL attempt the connection again, as it will

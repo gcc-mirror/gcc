@@ -1,3 +1,8 @@
+2001-09-19  Anthony Green  <green@redhat.com>
+
+	* gnu/gcj/protocol/file/Handler.java: Avoid NullPointerException
+	when host is null.
+
 2001-09-17  Andreas Jaeger  <aj@suse.de>
 
 	* jni.cc (array_from_valist): Use promoted types for va_arg.
