@@ -5002,16 +5002,12 @@ digest_init (type, init, require_constant, constructor_constant)
   if (code == INTEGER_TYPE || code == REAL_TYPE || code == POINTER_TYPE
       || code == ENUMERAL_TYPE || code == COMPLEX_TYPE)
     {
-      SAVE_SPELLING_DEPTH
-	({
-	  /* Note that convert_for_assignment calls default_conversion
-	     for arrays and functions.  We must not call it in the
-	     case where inside_init is a null pointer constant.  */
-	  inside_init
-	    = convert_for_assignment (type, init, 
-				      &initialization_message,
-				      NULL_TREE, NULL_TREE, 0);
-	});
+      /* Note that convert_for_assignment calls default_conversion
+	 for arrays and functions.  We must not call it in the
+	 case where inside_init is a null pointer constant.  */
+      inside_init
+	= convert_for_assignment (type, init, "initialization",
+				  NULL_TREE, NULL_TREE, 0);
 
       if (require_constant && ! TREE_CONSTANT (inside_init))
 	{
