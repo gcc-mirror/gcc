@@ -1,3 +1,8 @@
+2004-11-24  Mark Mitchell  <mark@codesourcery.com>
+
+	* config/i386/sol2.h (X86_FILE_START_VERSION_DIRECTIVE): 
+	Define to false.
+
 2004-11-24  Joseph Myers  <joseph@codesourcery.com>
 
 	* config/i386/t-sol2-10 (MULTILIB_DIRNAMES, MULTILIB_OSDIRNAMES):
