@@ -26,7 +26,7 @@ details.  */
 #include <java/lang/Throwable.h>
 #include <java/lang/ArrayIndexOutOfBoundsException.h>
 #include <java/lang/StringIndexOutOfBoundsException.h>
-#include <java/lang/AbstractMethodError.h>
+#include <java/lang/UnsatisfiedLinkError.h>
 #include <java/lang/InstantiationException.h>
 #include <java/lang/NoSuchFieldError.h>
 #include <java/lang/NoSuchMethodError.h>
@@ -2014,7 +2014,7 @@ _Jv_LookupJNIMethod (jclass klass, _Jv_Utf8Const *name,
       if (function == NULL)
 	{
 	  jstring str = JvNewStringUTF (name->data);
-	  throw new java::lang::AbstractMethodError (str);
+	  throw new java::lang::UnsatisfiedLinkError (str);
 	}
     }
 
