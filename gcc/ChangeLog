@@ -1,3 +1,8 @@
+Thu Feb  1 07:22:41 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	* config/i386/i386.c (ix86_compute_frame_size): Allow
+	stack_alignment_needed to be non-default even if size is zero.
+
 2001-01-31  Alan Modra <alan@linuxcare.com.au>
 
 	* (hppa_init_pic_save): Emit the pic offset table

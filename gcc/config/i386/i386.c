@@ -1886,12 +1886,11 @@ ix86_compute_frame_size (size, nregs_on_stack, rpadding1, rpadding2)
 
   offset = frame_pointer_needed ? 8 : 4;
 
-  /* Do some sanity checking of stack_alignment_needed and preferred_alignment,
-     since i386 port is the only using those features that may break easilly.  */
+  /* Do some sanity checking of stack_alignment_needed and
+     preferred_alignment, since i386 port is the only using those features
+     that may break easilly.  */
 
   if (size && !stack_alignment_needed)
-    abort ();
-  if (!size && stack_alignment_needed != STACK_BOUNDARY / BITS_PER_UNIT)
     abort ();
   if (preferred_alignment < STACK_BOUNDARY / BITS_PER_UNIT)
     abort ();
