@@ -67,6 +67,9 @@ std::type_info::
 ~type_info ()
 { }
 
+#if !defined(__GXX_ABI_VERSION) || __GXX_ABI_VERSION < 100
+// original (old) abi
+
 // We can't rely on common symbols being shared between shared objects.
 bool std::type_info::
 operator== (const std::type_info& arg) const
@@ -539,3 +542,602 @@ do_find_public_subobj (int boff, const type_info &subtype, void *objptr, void *s
   
   return not_contained;
 }
+#else
+// new abi
+
+namespace std {
+
+// return true if this is a type_info for a pointer type
+bool type_info::
+is_pointer_p () const
+{
+  return false;
+}
+
+// return true if this is a type_info for a function type
+bool type_info::
+is_function_p () const
+{
+  return false;
+}
+
+// try and catch a thrown object.
+bool type_info::
+do_catch (const type_info *thr_type, void **, unsigned) const
+{
+  return *this == *thr_type;
+}
+
+// upcast from this type to the target. __class_type_info will override
+bool type_info::
+do_upcast (const __class_type_info *, void **) const
+{
+  return false;
+}
+
+};
+
+namespace {
+
+using namespace std;
+
+// initial part of a vtable, this structure is used with offsetof, so we don't
+// have to keep alignments consistent manually.
+struct vtable_prefix {
+  ptrdiff_t whole_object;           // offset to most derived object
+  const __class_type_info *whole_type;  // pointer to most derived type_info
+  const void *origin;               // what a class's vptr points to
+};
+
+template <typename T>
+inline const T *
+adjust_pointer (const void *base, ptrdiff_t offset)
+{
+  return reinterpret_cast <const T *>
+    (reinterpret_cast <const char *> (base) + offset);
+}
+
+// some predicate functions for __class_type_info::sub_kind
+inline bool contained_p (__class_type_info::sub_kind access_path)
+{
+  return access_path >= __class_type_info::contained_mask;
+}
+inline bool public_p (__class_type_info::sub_kind access_path)
+{
+  return access_path & __class_type_info::contained_public_mask;
+}
+inline bool virtual_p (__class_type_info::sub_kind access_path)
+{
+  return (access_path & __class_type_info::contained_virtual_mask);
+}
+inline bool contained_public_p (__class_type_info::sub_kind access_path)
+{
+  return (access_path & __class_type_info::contained_public) == __class_type_info::contained_public;
+}
+inline bool contained_nonpublic_p (__class_type_info::sub_kind access_path)
+{
+  return (access_path & __class_type_info::contained_public) == __class_type_info::contained_mask;
+}
+inline bool contained_nonvirtual_p (__class_type_info::sub_kind access_path)
+{
+  return (access_path & (__class_type_info::contained_mask | __class_type_info::contained_virtual_mask))
+         == __class_type_info::contained_mask;
+}
+
+static const __class_type_info *const nonvirtual_base_type =
+    static_cast <const __class_type_info *> (0) + 1;
+
+}; // namespace
+
+namespace std {
+
+__class_type_info::
+~__class_type_info ()
+{}
+
+__si_class_type_info::
+~__si_class_type_info ()
+{}
+
+__vmi_class_type_info::
+~__vmi_class_type_info ()
+{}
+
+bool __class_type_info::
+do_catch (const type_info *thr_type, void **thr_obj,
+          unsigned outer) const
+{
+  if (*this == *thr_type)
+    return true;
+  if (outer >= 4)
+    // Neither `A' nor `A *'.
+    return false;
+  return thr_type->do_upcast (this, thr_obj);
+}
+
+bool __class_type_info::
+do_upcast (const __class_type_info *dst_type, void **obj_ptr) const
+{
+  upcast_result result (details);
+  
+  if (do_upcast (contained_public, dst_type, *obj_ptr, result))
+    return false;
+  *obj_ptr = const_cast <void *> (result.dst_ptr);
+  return contained_public_p (result.whole2dst);
+}
+
+inline __class_type_info::sub_kind __class_type_info::
+find_public_src (ptrdiff_t src2dst,
+                 const void *obj_ptr,
+                 const __class_type_info *src_type,
+                 const void *src_ptr) const
+{
+  if (src2dst >= 0)
+    return adjust_pointer <void> (obj_ptr, src2dst) == src_ptr
+            ? contained_public : not_contained;
+  if (src2dst == -2)
+    return not_contained;
+  return do_find_public_src (src2dst, obj_ptr, src_type, src_ptr);
+}
+
+__class_type_info::sub_kind __class_type_info::
+do_find_public_src (ptrdiff_t,
+                    const void *obj_ptr,
+                    const __class_type_info *,
+                    const void *src_ptr) const
+{
+  if (src_ptr == obj_ptr)
+    // Must be our type, as the pointers match.
+    return contained_public;
+  return not_contained;
+}
+
+__class_type_info::sub_kind __si_class_type_info::
+do_find_public_src (ptrdiff_t src2dst,
+                    const void *obj_ptr,
+                    const __class_type_info *src_type,
+                    const void *src_ptr) const
+{
+  if (src_ptr == obj_ptr && *this == *src_type)
+    return contained_public;
+  return base->do_find_public_src (src2dst, obj_ptr, src_type, src_ptr);
+}
+
+__class_type_info::sub_kind __vmi_class_type_info::
+do_find_public_src (ptrdiff_t src2dst,
+                    const void *obj_ptr,
+                    const __class_type_info *src_type,
+                    const void *src_ptr) const
+{
+  if (obj_ptr == src_ptr && *this == *src_type)
+    return contained_public;
+  
+  for (size_t i = n_bases; i--;)
+    {
+      if (!base_list[i].is_public_p ())
+        continue; // Not public, can't be here.
+      
+      const void *base = obj_ptr;
+      ptrdiff_t offset = base_list[i].offset;
+      
+      if (base_list[i].is_virtual_p ())
+        {
+          if (src2dst == -3)
+            continue; // Not a virtual base, so can't be here.
+  	  const ptrdiff_t *vtable = *static_cast <const ptrdiff_t *const *> (base);
+          
+	  offset = vtable[offset];
+        }
+      base = adjust_pointer <void> (base, offset);
+      
+      sub_kind base_kind = base_list[i].type->do_find_public_src
+                              (src2dst, base, src_type, src_ptr);
+      if (contained_p (base_kind))
+        {
+          if (base_list[i].is_virtual_p ())
+            base_kind = sub_kind (base_kind | contained_virtual_mask);
+          return base_kind;
+        }
+    }
+  
+  return not_contained;
+}
+
+bool __class_type_info::
+do_dyncast (ptrdiff_t,
+            sub_kind access_path,
+            const __class_type_info *dst_type,
+            const void *obj_ptr,
+            const __class_type_info *src_type,
+            const void *src_ptr,
+            dyncast_result &__restrict result) const
+{
+  if (obj_ptr == src_ptr && *this == *src_type)
+    {
+      // The src object we started from. Indicate how we are accessible from
+      // the most derived object.
+      result.whole2src = access_path;
+      return false;
+    }
+  if (*this == *dst_type)
+    {
+      result.dst_ptr = obj_ptr;
+      result.whole2dst = access_path;
+      result.dst2src = not_contained;
+      return false;
+    }
+  return false;
+}
+
+bool __si_class_type_info::
+do_dyncast (ptrdiff_t src2dst,
+            sub_kind access_path,
+            const __class_type_info *dst_type,
+            const void *obj_ptr,
+            const __class_type_info *src_type,
+            const void *src_ptr,
+            dyncast_result &__restrict result) const
+{
+  if (*this == *dst_type)
+    {
+      result.dst_ptr = obj_ptr;
+      result.whole2dst = access_path;
+      if (src2dst >= 0)
+        result.dst2src = adjust_pointer <void> (obj_ptr, src2dst) == src_ptr
+              ? contained_public : not_contained;
+      else if (src2dst == -2)
+        result.dst2src = not_contained;
+      return false;
+    }
+  if (obj_ptr == src_ptr && *this == *src_type)
+    {
+      // The src object we started from. Indicate how we are accessible from
+      // the most derived object.
+      result.whole2src = access_path;
+      return false;
+    }
+  return base->do_dyncast (src2dst, access_path, dst_type, obj_ptr,
+                           src_type, src_ptr, result);
+}
+
+// This is a big hairy function. Although the run-time behaviour of
+// dynamic_cast is simple to describe, it gives rise to some non-obvious
+// behaviour. We also desire to determine as early as possible any definite
+// answer we can get. Because it is unknown what the run-time ratio of
+// succeeding to failing dynamic casts is, we do not know in which direction
+// to bias any optimizations. To that end we make no particular effort towards
+// early fail answers or early success answers. Instead we try to minimize
+// work by filling in things lazily (when we know we need the information),
+// and opportunisticly take early success or failure results.
+bool __vmi_class_type_info::
+do_dyncast (ptrdiff_t src2dst,
+            sub_kind access_path,
+            const __class_type_info *dst_type,
+            const void *obj_ptr,
+            const __class_type_info *src_type,
+            const void *src_ptr,
+            dyncast_result &__restrict result) const
+{
+  if (obj_ptr == src_ptr && *this == *src_type)
+    {
+      // The src object we started from. Indicate how we are accessible from
+      // the most derived object.
+      result.whole2src = access_path;
+      return false;
+    }
+  if (*this == *dst_type)
+    {
+      result.dst_ptr = obj_ptr;
+      result.whole2dst = access_path;
+      if (src2dst >= 0)
+        result.dst2src = adjust_pointer <void> (obj_ptr, src2dst) == src_ptr
+              ? contained_public : not_contained;
+      else if (src2dst == -2)
+        result.dst2src = not_contained;
+      return false;
+    }
+  bool result_ambig = false;
+  for (size_t i = n_bases; i--;)
+    {
+      dyncast_result result2;
+      void const *base = obj_ptr;
+      sub_kind base_access = access_path;
+      ptrdiff_t offset = base_list[i].offset;
+      
+      if (base_list[i].is_virtual_p ())
+        {
+          base_access = sub_kind (base_access | contained_virtual_mask);
+  	  const ptrdiff_t *vtable = *static_cast <const ptrdiff_t *const *> (base);
+          
+	  offset = vtable[offset];
+	}
+      base = adjust_pointer <void> (base, offset);
+
+      if (!base_list[i].is_public_p ())
+        base_access = sub_kind (base_access & ~contained_public_mask);
+      
+      bool result2_ambig
+          = base_list[i].type->do_dyncast (src2dst, base_access,
+                                           dst_type, base,
+                                           src_type, src_ptr, result2);
+      result.whole2src = sub_kind (result.whole2src | result2.whole2src);
+      if (result2.dst2src == contained_public
+          || result2.dst2src == contained_ambig)
+        {
+          result.dst_ptr = result2.dst_ptr;
+          result.whole2dst = result2.whole2dst;
+          result.dst2src = result2.dst2src;
+          // Found a downcast which can't be bettered or an ambiguous downcast
+          // which can't be disambiguated
+          return result2_ambig;
+        }
+      
+      if (!result_ambig && !result.dst_ptr)
+        {
+          // Not found anything yet.
+          result.dst_ptr = result2.dst_ptr;
+          result.whole2dst = result2.whole2dst;
+          result_ambig = result2_ambig;
+        }
+      else if (result.dst_ptr && result.dst_ptr == result2.dst_ptr)
+        {
+          // Found at same address, must be via virtual.  Pick the most
+          // accessible path.
+          result.whole2dst =
+              sub_kind (result.whole2dst | result2.whole2dst);
+        }
+      else if ((result.dst_ptr && result2.dst_ptr)
+               || (result_ambig && result2.dst_ptr)
+               || (result2_ambig && result.dst_ptr))
+        {
+          // Found two different DST_TYPE bases, or a valid one and a set of
+          // ambiguous ones, must disambiguate. See whether SRC_PTR is
+          // contained publicly within one of the non-ambiguous choices. If it
+          // is in only one, then that's the choice. If it is in both, then
+          // we're ambiguous and fail. If it is in neither, we're ambiguous,
+          // but don't yet fail as we might later find a third base which does
+          // contain SRC_PTR.
+        
+          sub_kind new_sub_kind = result2.dst2src;
+          sub_kind old_sub_kind = result.dst2src;
+          
+          if (contained_nonvirtual_p (result.whole2src))
+            {
+              // We already found SRC_PTR as a non-virtual base of most
+              // derived. Therefore if it is in either choice, it can only be
+              // in one of them, and we will already know.
+              if (old_sub_kind == unknown)
+                old_sub_kind = not_contained;
+              if (new_sub_kind == unknown)
+                new_sub_kind = not_contained;
+            }
+          else
+            {
+              if (old_sub_kind >= not_contained)
+                ;// already calculated
+              else if (contained_nonvirtual_p (new_sub_kind))
+                // Already found non-virtually inside the other choice,
+                // cannot be in this.
+                old_sub_kind = not_contained;
+              else
+                old_sub_kind = dst_type->find_public_src
+                                (src2dst, result.dst_ptr, src_type, src_ptr);
+          
+              if (new_sub_kind >= not_contained)
+                ;// already calculated
+              else if (contained_nonvirtual_p (old_sub_kind))
+                // Already found non-virtually inside the other choice,
+                // cannot be in this.
+                new_sub_kind = not_contained;
+              else
+                new_sub_kind = dst_type->find_public_src
+                                (src2dst, result2.dst_ptr, src_type, src_ptr);
+            }
+          
+          // Neither sub_kind can be contained_ambig -- we bail out early
+          // when we find those.
+          if (contained_p (sub_kind (new_sub_kind ^ old_sub_kind)))
+            {
+              // Only on one choice, not ambiguous.
+              if (contained_p (new_sub_kind))
+                {
+                  // Only in new.
+                  result.dst_ptr = result2.dst_ptr;
+                  result.whole2dst = result2.whole2dst;
+                  result_ambig = false;
+                  old_sub_kind = new_sub_kind;
+                }
+              result.dst2src = old_sub_kind;
+              if (public_p (result.dst2src))
+                return false; // Can't be an ambiguating downcast for later discovery.
+              if (!virtual_p (result.dst2src))
+                return false; // Found non-virtually can't be bettered
+            }
+          else if (contained_p (sub_kind (new_sub_kind & old_sub_kind)))
+            {
+              // In both.
+              result.dst_ptr = NULL;
+              result.dst2src = contained_ambig;
+              return true;  // Fail.
+            }
+          else
+            {
+              // In neither publicly, ambiguous for the moment, but keep
+              // looking. It is possible that it was private in one or
+              // both and therefore we should fail, but that's just tough.
+              result.dst_ptr = NULL;
+              result.dst2src = not_contained;
+              result_ambig = true;
+            }
+        }
+      
+      if (result.whole2src == contained_private)
+        // We found SRC_PTR as a private non-virtual base, therefore all
+        // cross casts will fail. We have already found a down cast, if
+        // there is one.
+        return result_ambig;
+    }
+
+  return result_ambig;
+}
+
+bool __class_type_info::
+do_upcast (sub_kind access_path,
+           const __class_type_info *dst, const void *obj,
+           upcast_result &__restrict result) const
+{
+  if (*this == *dst)
+    {
+      result.dst_ptr = obj;
+      result.base_type = nonvirtual_base_type;
+      result.whole2dst = access_path;
+      return contained_nonpublic_p (access_path);
+    }
+  return false;
+}
+
+bool __si_class_type_info::
+do_upcast (sub_kind access_path,
+           const __class_type_info *dst, const void *obj_ptr,
+           upcast_result &__restrict result) const
+{
+  if (*this == *dst)
+    {
+      result.dst_ptr = obj_ptr;
+      result.base_type = nonvirtual_base_type;
+      result.whole2dst = access_path;
+      return contained_nonpublic_p (access_path);
+    }
+  return base->do_upcast (access_path, dst, obj_ptr, result);
+}
+
+bool __vmi_class_type_info::
+do_upcast (sub_kind access_path,
+           const __class_type_info *dst, const void *obj_ptr,
+           upcast_result &__restrict result) const
+{
+  if (*this == *dst)
+    {
+      result.dst_ptr = obj_ptr;
+      result.base_type = nonvirtual_base_type;
+      result.whole2dst = access_path;
+      return contained_nonpublic_p (access_path);
+    }
+  
+  for (size_t i = n_bases; i--;)
+    {
+      upcast_result result2 (result.src_details);
+      const void *base = obj_ptr;
+      sub_kind sub_access = access_path;
+      ptrdiff_t offset = base_list[i].offset;
+      
+      if (!base_list[i].is_public_p ())
+        {
+          if (!(result.src_details & multiple_base_mask))
+            // original cannot have an ambiguous base
+            continue;
+          sub_access = sub_kind (sub_access & ~contained_public_mask);
+        }
+      if (base_list[i].is_virtual_p ())
+        {
+      	  sub_access = sub_kind (sub_access | contained_virtual_mask);
+          
+          if (base)
+            {
+    	      const ptrdiff_t *vtable = *static_cast <const ptrdiff_t *const *> (base);
+	      offset = vtable[offset];
+	    }
+        }
+      if (base)
+        base = adjust_pointer <void> (base, offset);
+      
+      if (base_list[i].type->do_upcast (sub_access, dst, base, result2))
+        return true; // must fail
+      if (result2.base_type)
+        {
+          if (result2.base_type == nonvirtual_base_type
+              && base_list[i].is_virtual_p ())
+            result2.base_type = base_list[i].type;
+          if (!result.base_type)
+            {
+              result = result2;
+              if (!(details & multiple_base_mask))
+                // cannot have an ambiguous other base
+                return false;
+            }
+          else if (result.dst_ptr != result2.dst_ptr)
+            {
+              // Found an ambiguity.
+	      result.dst_ptr = NULL;
+	      result.whole2dst = contained_ambig;
+	      return true;
+            }
+          else if (result.dst_ptr)
+            {
+              // Ok, found real object via a virtual path.
+              result.whole2dst
+                  = sub_kind (result.whole2dst | result2.whole2dst);
+            }
+          else
+            {
+              // Dealing with a null pointer, need to check vbase
+              // containing each of the two choices.
+              if (result2.base_type == nonvirtual_base_type
+                  || result.base_type == nonvirtual_base_type
+                  || !(*result2.base_type == *result.base_type))
+                {
+                  // Already ambiguous, not virtual or via different virtuals.
+                  // Cannot match.
+                  result.whole2dst = contained_ambig;
+                  return true;
+                }
+            }
+        }
+    }
+  return false;
+}
+
+// this is the external interface to the dynamic cast machinery
+void *
+__dynamic_cast (const void *src_ptr,    // object started from
+                const __class_type_info *src_type, // type of the starting object
+                const __class_type_info *dst_type, // desired target type
+                ptrdiff_t src2dst) // how src and dst are related
+{
+  const void *vtable = *static_cast <const void *const *> (src_ptr);
+  const vtable_prefix *prefix =
+      adjust_pointer <vtable_prefix> (vtable, 0);
+  // FIXME: the above offset should be -offsetof (vtable_prefix, origin));
+  // but we don't currently layout vtables correctly.
+  const void *whole_ptr =
+      adjust_pointer <void> (src_ptr, prefix->whole_object);
+  const __class_type_info *whole_type = prefix->whole_type;
+  __class_type_info::dyncast_result result;
+  
+  whole_type->do_dyncast (src2dst, __class_type_info::contained_public,
+                          dst_type, whole_ptr, src_type, src_ptr, result);
+  if (!result.dst_ptr)
+    return NULL;
+  if (contained_public_p (result.dst2src))
+    return const_cast <void *> (result.dst_ptr);
+  if (contained_public_p (__class_type_info::sub_kind (result.whole2src & result.whole2dst)))
+    // Found a valid cross cast
+    return const_cast <void *> (result.dst_ptr);
+  if (contained_nonvirtual_p (result.whole2src))
+    // Found an invalid cross cast, which cannot also be a down cast
+    return NULL;
+  if (!(whole_type->details & __class_type_info::private_base_mask))
+    // whole type has no private bases
+    return const_cast <void *> (result.dst_ptr);
+  if (result.dst2src == __class_type_info::unknown)
+    result.dst2src = dst_type->find_public_src (src2dst, result.dst_ptr,
+                                                src_type, src_ptr);
+  if (contained_public_p (result.dst2src))
+    // Found a valid down cast
+    return const_cast <void *> (result.dst_ptr);
+  // Must be an invalid down cast, or the cross cast wasn't bettered
+  return NULL;
+}
+
+}; // namespace std
+#endif

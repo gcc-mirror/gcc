@@ -31,6 +31,7 @@
 
 using std::type_info;
 
+#if !defined(__GXX_ABI_VERSION) || __GXX_ABI_VERSION < 100
 bool
 type_info::before (const type_info &arg) const
 {
@@ -88,6 +89,248 @@ struct __array_type_info : public type_info {
   __array_type_info (const char *n): type_info (n) {}
 };
 
+#else
+
+namespace std {
+  
+// type information for int, float etc
+class __fundamental_type_info : public type_info {
+public:
+  virtual ~__fundamental_type_info ();
+public:
+  explicit __fundamental_type_info (const char *n)
+    : type_info (n)
+    { }
+};
+
+// type information for pointer to data or function, but not pointer to member
+class __pointer_type_info : public type_info {
+public:
+  virtual ~__pointer_type_info ();
+// external parts
+  int quals;                // qualification of the target object
+  const type_info *target;  // type of object being pointed to
+
+// internal parts
+  enum quals_masks {
+    const_mask = 0x1,
+    volatile_mask = 0x2
+  };
+  
+public:
+  explicit __pointer_type_info (const char *n,
+                                int quals_,
+                                const type_info *target_)
+    : type_info (n), quals (quals_), target (target_)
+    { }
+
+protected:
+  virtual bool is_pointer_p () const;
+  virtual bool do_catch (const type_info *thr_type, void **thr_obj,
+                         unsigned outer) const;
+};
+
+// type information for reference to data
+class __reference_type_info : public type_info {
+public:
+  virtual ~__reference_type_info ();
+  int quals;                // qualification of the target object
+  const type_info *target;  // type of object being referenced
+
+// internal parts
+  enum quals_masks {
+    const_mask = 0x1,
+    volatile_mask = 0x2
+  };
+  
+public:
+  explicit __reference_type_info (const char *n,
+                                  int quals_,
+                                  const type_info *target_)
+    : type_info (n), quals (quals_), target (target_)
+    { }
+};
+
+// type information for array objects
+class __array_type_info : public type_info {
+public:
+  virtual ~__array_type_info ();
+public:
+  explicit __array_type_info (const char *n)
+    : type_info (n)
+    { }
+};
+
+// type information for functions (both member and non-member)
+class __function_type_info : public type_info {
+public:
+  virtual ~__function_type_info ();
+public:
+  explicit __function_type_info (const char *n)
+    : type_info (n)
+    { }
+protected:
+  virtual bool is_function_p () const;
+};
+
+// type information for enumerations
+class __enum_type_info : public type_info {
+public:
+  virtual ~__enum_type_info ();
+public:
+  explicit __enum_type_info (const char *n)
+    : type_info (n)
+    { }
+};
+
+// type information for a pointer to member variable (not function)
+class __ptr_to_member_type_info : public type_info {
+public:
+  virtual ~__ptr_to_member_type_info ();
+// external parts
+  const __class_type_info *klass;   // class of the member
+  const type_info *type;            // type of the member
+  int quals;                        // qualifications of the pointed to type
+
+// internal parts
+  enum quals_masks {
+    const_mask = 0x1,
+    volatile_mask = 0x2
+  };
+
+public:
+  explicit __ptr_to_member_type_info (const char *n,
+                                      const __class_type_info *klass_,
+                                      const type_info *type_,
+                                      int quals_)
+    : type_info (n), klass (klass_), type (type_), quals (quals_)
+    { }
+
+protected:
+  virtual bool do_catch (const type_info *thr_type, void **thr_obj,
+                         unsigned outer) const;
+};
+
+}; // namespace std
+
+#endif
+
+#if defined(__GXX_ABI_VERSION) && __GXX_ABI_VERSION >= 100
+namespace std {
+
+// This has special meaning to the compiler, and will cause it
+// to emit the type_info structures for the fundamental types which are
+// mandated to exist in the runtime.
+__fundamental_type_info::
+~__fundamental_type_info ()
+{}
+
+__pointer_type_info::
+~__pointer_type_info ()
+{}
+
+__reference_type_info::
+~__reference_type_info ()
+{}
+
+__array_type_info::
+~__array_type_info ()
+{}
+
+__function_type_info::
+~__function_type_info ()
+{}
+
+__enum_type_info::
+~__enum_type_info ()
+{}
+
+__ptr_to_member_type_info::
+~__ptr_to_member_type_info ()
+{}
+
+bool __pointer_type_info::
+is_pointer_p () const
+{
+  return true;
+}
+
+bool __function_type_info::
+is_function_p () const
+{
+  return true;
+}
+
+bool __pointer_type_info::
+do_catch (const type_info *thr_type,
+          void **thr_obj,
+          unsigned outer) const
+{
+  if (*this == *thr_type)
+    return true;      // same type
+  if (typeid (*this) != typeid (*thr_type))
+    return false;     // not both pointers
+  
+  if (!(outer & 1))
+    // We're not the same and our outer pointers are not all const qualified
+    // Therefore there must at least be a qualification conversion involved
+    // But for that to be valid, our outer pointers must be const qualified.
+    return false;
+  
+  const __pointer_type_info *thrown_type =
+    static_cast <const __pointer_type_info *> (thr_type);
+  
+  if (thrown_type->quals & ~quals)
+    // We're less qualified.
+    return false;
+  
+  if (!(quals & const_mask))
+    outer &= ~1;
+  
+  if (outer < 2 && *target == typeid (void))
+    {
+      // conversion to void
+      return !thrown_type->is_function_p ();
+    }
+  
+  return target->do_catch (thrown_type->target, thr_obj, outer + 2);
+}
+
+bool __ptr_to_member_type_info::
+do_catch (const type_info *thr_type,
+          void **thr_obj,
+          unsigned outer) const
+{
+  if (*this == *thr_type)
+    return true;      // same type
+  if (typeid (*this) != typeid (*thr_type))
+    return false;     // not both pointers to member
+  
+  if (!(outer & 1))
+    // We're not the same and our outer pointers are not all const qualified
+    // Therefore there must at least be a qualification conversion involved.
+    // But for that to be valid, our outer pointers must be const qualified.
+    return false;
+  
+  const __ptr_to_member_type_info *thrown_type =
+    static_cast <const __ptr_to_member_type_info *> (thr_type);
+  
+  if (thrown_type->quals & ~quals)
+    // We're less qualified.
+    return false;
+  
+  if (!(quals & const_mask))
+    outer &= ~1;
+  
+  if (*klass != *thrown_type->klass)
+    return false;     // not pointers to member of same class
+  
+  return type->do_catch (thrown_type->type, thr_obj, outer + 2);
+}
+
+} // namespace std
+#endif
+
 // Entry points for the compiler.
 
 /* Low level match routine used by compiler to match types of catch
@@ -102,6 +345,8 @@ __throw_type_match_rtti_2 (const void *catch_type_r, const void *throw_type_r,
 
   *valp = objptr;
 
+#if !defined(__GXX_ABI_VERSION) || __GXX_ABI_VERSION < 100
+// old abi
   if (catch_type == throw_type)
     return 1;
   
@@ -213,10 +458,15 @@ __throw_type_match_rtti_2 (const void *catch_type_r, const void *throw_type_r,
 	    }
 	}
     }
-
+#else
+// new abi
+  
+  return catch_type.do_catch (&throw_type, valp, 1);
+#endif
   return 0;
 }
 
+#if !defined(__GXX_ABI_VERSION) || __GXX_ABI_VERSION < 100
 /* Backward compatibility wrapper.  */
 
 extern "C" void*
@@ -228,6 +478,7 @@ __throw_type_match_rtti (const void *catch_type_r, const void *throw_type_r,
     return ret;
   return NULL;
 }
+#endif
 
 /* Called from __cp_pop_exception.  Is P the type_info node for a pointer
    of some kind?  */
@@ -236,10 +487,19 @@ bool
 __is_pointer (void *p)
 {
   const type_info *t = reinterpret_cast <const type_info *>(p);
+#if !defined(__GXX_ABI_VERSION) || __GXX_ABI_VERSION < 100
+// old abi
   const __pointer_type_info *pt =
     dynamic_cast <const __pointer_type_info *> (t);
   return pt != 0;
+#else
+// new abi
+  return t->is_pointer_p ();
+#endif
 }
+
+#if !defined(__GXX_ABI_VERSION) || __GXX_ABI_VERSION < 100
+// old abi
 
 extern "C" void
 __rtti_ptr (void *addr, const char *n, const type_info *ti)
@@ -302,3 +562,10 @@ BUILTIN (v); BUILTIN (x); BUILTIN (l); BUILTIN (i); BUILTIN (s); BUILTIN (b);
 BUILTIN (c); BUILTIN (w); BUILTIN (r); BUILTIN (d); BUILTIN (f);
 BUILTIN (Ui); BUILTIN (Ul); BUILTIN (Ux); BUILTIN (Us); BUILTIN (Uc);
 BUILTIN (Sc);
+#else
+// new abi
+
+// we need to define the fundamental type type_info's, but the name mangling is
+// not yet defined.
+
+#endif

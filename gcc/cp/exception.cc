@@ -184,7 +184,11 @@ __cplus_type_matcher (__eh_info *info_, void *match_info,
 
   /* we don't worry about version info yet, there is only one version! */
   
-  void *match_type = ((void *(*)())match_info) ();
+  void *match_type = match_info;
+  
+#if !defined (__GXX_ABI_VERSION) || __GXX_ABI_VERSION < 100
+  match_type  = ((void *(*)())match_type) ();
+#endif
 
   if (__throw_type_match_rtti_2 (match_type, info->type,
 				 info->original_value, &info->value))
