@@ -2686,9 +2686,16 @@ assign_parms (fndecl, second_time)
 	 to indicate there is no preallocated stack slot for the parm.  */
 
       if (entry_parm == stack_parm
-#ifdef REG_PARM_STACK_SPACE
+#if defined (REG_PARM_STACK_SPACE) && ! defined (MAYBE_REG_PARM_STACK_SPACE)
 	  /* On some machines, even if a parm value arrives in a register
-	     there is still an (uninitialized) stack slot allocated for it.  */
+	     there is still an (uninitialized) stack slot allocated for it.
+
+	     ??? When MAYBE_REG_PARM_STACK_SPACE is defined, we can't tell
+	     whether this parameter already has a stack slot allocated,
+	     because an arg block exists only if current_function_args_size
+	     is larger than some threshhold, and we haven't calculated that
+	     yet.  So, for now, we just assume that stack slots never exist
+	     in this case.  */
 	  || REG_PARM_STACK_SPACE (fndecl) > 0
 #endif
 	  )

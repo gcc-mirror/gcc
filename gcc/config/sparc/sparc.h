@@ -38,6 +38,12 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 
 #define CC1_SPEC "%{sun4:} %{target:}"
 
+#if 0
+/* Sparc ABI says that long double is 4 words.
+   ??? This doesn't work yet.  */
+#define LONG_DOUBLE_TYPE_SIZE 128
+#endif
+
 #define PTRDIFF_TYPE "int"
 #define SIZE_TYPE "int"
 #define WCHAR_TYPE "short unsigned int"
@@ -239,11 +245,10 @@ extern int target_flags;
    and are not available for the register allocator.
    0 is used for the condition code and not to represent %g0, which is
    hardwired to 0, so reg 0 is *not* fixed.
-   2 and 3 are free to use as temporaries.
-   4 through 7 are expected to become usefully defined in the future.
-   Your milage may vary.  */
+   g1 through g4 are free to use as temporaries.
+   g5 through g7 are reserved for the operating system.  */
 #define FIXED_REGISTERS  \
- {0, 0, 0, 0, 1, 1, 1, 1,	\
+ {0, 0, 0, 0, 0, 1, 1, 1,	\
   0, 0, 0, 0, 0, 0, 1, 0,	\
   0, 0, 0, 0, 0, 0, 0, 0,	\
   0, 0, 0, 0, 0, 0, 1, 1,	\
@@ -360,6 +365,12 @@ extern int leaf_function;
 
 #define INITIALIZE_PIC initialize_pic ()
 #define FINALIZE_PIC finalize_pic ()
+
+/* Sparc ABI says that quad-precision floats and all structures are returned
+   in memory.  */
+#define RETURN_IN_MEMORY(TYPE)	\
+  (TREE_CODE (TYPE) == RECORD_TYPE || TREE_CODE (TYPE) == UNION_TYPE	\
+   || TYPE_MODE (TYPE) == TFmode)
 
 /* Functions which return large structures get the address
    to place the wanted value at offset 64 from the frame.
@@ -726,10 +737,12 @@ extern char leaf_reg_backmap[];
    ? (NPARM_REGS - ROUND_REG ((CUM), (MODE)))				\
    : 0)
 
-/* The SPARC ABI stipulates passing struct arguments (of any size)
-   by invisible reference.  */
+/* The SPARC ABI stipulates passing struct arguments (of any size) and
+   quad-precision floats by invisible reference.  */
 #define FUNCTION_ARG_PASS_BY_REFERENCE(CUM, MODE, TYPE, NAMED)		\
-  (TYPE && (TREE_CODE (TYPE) == RECORD_TYPE || TREE_CODE (TYPE) == UNION_TYPE))
+  ((TYPE && (TREE_CODE (TYPE) == RECORD_TYPE				\
+	    || TREE_CODE (TYPE) == UNION_TYPE))				\
+   || (MODE == TFmode))
 
 /* If defined, a C expression that gives the alignment boundary, in
    bits, of an argument with the specified mode and type.  If it is
