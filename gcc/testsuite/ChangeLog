@@ -1,3 +1,8 @@
+2005-02-15  Joseph S. Myers  <joseph@codesourcery.com>
+
+	* gcc.dg/overflow-warn-1.c, gcc.dg/overflow-warn-2.c,
+	gcc.dg/overflow-warn-3.c, gcc.dg/overflow-warn-4.c: New tests.
+
 2005-02-15  Andreas Schwab  <schwab@suse.de>
 
 	* ada/acats/tests/cxb/cxb30131.c: Include <stdlib.h> to properly
