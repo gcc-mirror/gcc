@@ -53,6 +53,7 @@ static tree build_eh_type_type_ref PARAMS ((tree));
 static tree build_terminate_handler PARAMS ((void));
 static tree alloc_eh_object PARAMS ((tree));
 static int complete_ptr_ref_or_void_ptr_p PARAMS ((tree, tree));
+static bool is_admissible_throw_operand PARAMS ((tree));
 static int can_convert_eh PARAMS ((tree, tree));
 static void check_handlers_1 PARAMS ((tree, tree));
 static void initialize_handler_parm PARAMS ((tree));
@@ -1027,7 +1028,7 @@ build_throw (e)
   
   if (e != NULL_TREE)
     {
-      if (!complete_ptr_ref_or_void_ptr_p (TREE_TYPE (e), e))
+      if (!is_admissible_throw_operand (e))
         return error_mark_node;
     }
 
@@ -1068,6 +1069,38 @@ complete_ptr_ref_or_void_ptr_p (type, from)
         return 0;
     }
   return 1;
+}
+
+/* Return truth-value if EXPRESSION is admissible in throw-expression,
+   i.e. if it is not of incomplete type or a pointer/reference to such
+   a type or of an abstract class type.  */
+
+static bool
+is_admissible_throw_operand (expr)
+     tree expr;
+{
+  tree type = TREE_TYPE (expr);
+
+  /* 15.1/4 [...] The type of the throw-expression shall not be an
+            incomplete type, or a pointer or a reference to an incomplete
+            type, other than void*, const void*, volatile void*, or
+            const volatile void*.  Except for these restriction and the
+            restrictions on type matching mentioned in 15.3, the operand
+            of throw is treated exactly as a function argument in a call
+            (5.2.2) or the operand of a return statement.  */
+  if (!complete_ptr_ref_or_void_ptr_p (type, expr))
+    return false;
+
+  /* 10.4/3 An abstract class shall not be used as a parameter type,
+            as a function return type or as type of an explicit
+            conversion.  */
+  else if (CLASS_TYPE_P (type) && CLASSTYPE_PURE_VIRTUALS (type))
+    {
+      cp_error ("Expression '%E' of abstract class type '%T' cannot be used in throw-expression", expr, type);
+      return false;
+    }
+
+  return true;
 }
 
 /* Returns nonzero if FN is a declaration of a standard C library
