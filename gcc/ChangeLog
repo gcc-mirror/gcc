@@ -1,3 +1,8 @@
+2004-04-14  Andreas Tobler  <a.tobler@schweiz.ch>
+
+	* bb-reorder.c (fix_crossing_conditional_branches): Adjust the
+	previous fix to check HAVE_return at runtime too.
+
 2004-04-14  Nick Clifton  <nickc@redhat.com>
 
 	* config/arm/arm.c (arm_override_options): If the user has not
