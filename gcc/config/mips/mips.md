@@ -5953,7 +5953,7 @@ move\\t%0,%z4\\n\\
   [(set (pc)
 	(plus:DI (match_operand:DI 0 "register_operand" "d")
 		 (label_ref:DI (match_operand:SI 1 "" ""))))]
-  "!TARGET_LONG64 && next_active_insn (insn) != 0
+  "TARGET_LONG64 && next_active_insn (insn) != 0
    && GET_CODE (PATTERN (next_active_insn (insn))) == ADDR_DIFF_VEC
    && PREV_INSN (next_active_insn (insn)) == operands[1]"
   "%*j\\t%0"
