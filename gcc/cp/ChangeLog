@@ -1,3 +1,8 @@
+2003-06-17  Mark Mitchell  <mark@codesourcery.com>
+
+	* mangle.c (mangle_conv_op_name_for_type): Correct sprintf format
+	string.
+
 2003-06-17  Jason Merrill  <jason@redhat.com>
 
 	PR c++/10929
