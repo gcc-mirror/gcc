@@ -3251,7 +3251,7 @@ users use @code{g77}.
 such changes to @code{g77}.
 
 To find out about existing bugs and ongoing plans for GNU
-Fortran, retrieve @uref{ftp://alpha.gnu.ai.mit.edu/g77.plan}
+Fortran, retrieve @code{ftp://alpha.gnu.ai.mit.edu/g77.plan}
 or, if you cannot do that, email
 @email{fortran@@gnu.ai.mit.edu} asking for a recent copy of the
 GNU Fortran @file{.plan} file.
@@ -3699,8 +3699,8 @@ way through the compilation process instead of being lost.
 GNU Fortran supports a variety of extensions to, and dialects
 of, the Fortran language.
 Its primary base is the ANSI FORTRAN 77 standard, currently available on
-the network at @uref{http://kumo.swcp.com/fortran/F77_std/f77_std.html}
-or in @uref{ftp://ftp.ast.cam.ac.uk/pub/michael/}.
+the network at @code{http://kumo.swcp.com/fortran/F77_std/f77_std.html}
+or in @code{ftp://ftp.ast.cam.ac.uk/pub/michael/}.
 It offers some extensions that are popular among users
 of UNIX @code{f77} and @code{f2c} compilers, some that
 are popular among users of other compilers (such as Digital
@@ -3711,7 +3711,7 @@ by GNU Fortran.
 @cindex textbooks
 (If you need a text on Fortran,
 a few freely available electronic references have pointers from
-@uref{http://www.fortran.com/fortran/Books/}.)
+@code{http://www.fortran.com/fortran/Books/}.)
 
 Part of what defines a particular implementation of a Fortran
 system, such as @code{g77}, is the particular characteristics
@@ -7867,7 +7867,7 @@ options @code{g77} passes by running @samp{g77 -v}.
 @cindex cfortran.h
 @cindex Netlib
 Even if you don't actually use it as a compiler, @samp{f2c} from
-@uref{ftp://ftp.netlib.org/f2c/src}, can be a useful tool when you're
+@code{ftp://ftp.netlib.org/f2c/src}, can be a useful tool when you're
 interfacing (linking) Fortran and C@.
 @xref{f2c Skeletons and Prototypes,,Generating Skeletons and Prototypes with @code{f2c}}.
 
@@ -7877,7 +7877,7 @@ build the @file{src} directory from the distribution, consult the
 @code{f2c} program on your path.
 
 Something else that might be useful is @samp{cfortran.h} from
-@uref{ftp://zebra/desy.de/cfortran}.
+@code{ftp://zebra/desy.de/cfortran}.
 This is a fairly general tool which
 can be used to generate interfaces for calling in both directions
 between Fortran and C@.
@@ -7921,8 +7921,8 @@ the return type of a @code{REAL} @code{FUNCTION}.)
 @samp{-P} option to generate C prototypes appropriate for calling the
 Fortran.@footnote{The files generated like this can also be used for
 inter-unit consistency checking of dummy and actual arguments, although
-the @samp{ftnchek} tool from @uref{ftp://ftp.netlib.org/fortran}
-or @uref{ftp://ftp.dsm.fordham.edu} is
+the @samp{ftnchek} tool from @code{ftp://ftp.netlib.org/fortran}
+or @code{ftp://ftp.dsm.fordham.edu} is
 probably better for this purpose.}
 If the Fortran code containing any
 routines to be called from C is in file @file{joe.f}, use the command
@@ -10164,7 +10164,7 @@ or installing @code{g77} is not provided here.
 
 To find out about major bugs discovered in the current release and
 possible workarounds for them, retrieve
-@uref{ftp://alpha.gnu.ai.mit.edu/g77.plan}.
+@code{ftp://alpha.gnu.ai.mit.edu/g77.plan}.
 
 (Note that some of this portion of the manual is lifted
 directly from the @code{gcc} manual, with minor modifications
@@ -10270,7 +10270,7 @@ How to cope with such problems is well beyond the scope
 of this manual.
 
 However, users of Linux-based systems (such as GNU/Linux)
-should review @uref{http://www.bitwizard.nl/sig11}, a source
+should review @code{http://www.bitwizard.nl/sig11}, a source
 of detailed information on diagnosing hardware problems,
 by recognizing their common symptoms.
 
@@ -12272,8 +12272,8 @@ their use into selective changes in your own code.
 @pindex ftncheck
 Validate your code with @code{ftnchek} or a similar code-checking
 tool.
-@code{ftncheck} can be found at @uref{ftp://ftp.netlib.org/fortran}
-or @uref{ftp://ftp.dsm.fordham.edu}.
+@code{ftncheck} can be found at @code{ftp://ftp.netlib.org/fortran}
+or @code{ftp://ftp.dsm.fordham.edu}.
 
 @item
 Try your code out using other Fortran compilers, such as @code{f2c}.
