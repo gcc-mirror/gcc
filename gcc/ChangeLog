@@ -1,3 +1,8 @@
+2002-12-19  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* config/h8300/h8300.md (output_a_shift): Clean up the code to
+	output shifts using rotation.
+
 2002-12-20  Zdenek Dvorak  <rakdver@atrey.karlin.mff.cuni.cz>
 
 	* flow.c (allocate_reg_life_data): Reset REG_FREQ.

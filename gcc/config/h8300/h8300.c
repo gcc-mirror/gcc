@@ -3026,30 +3026,28 @@ output_a_shift (operands)
 	      output_asm_insn (info.shift1, operands);
 
 	    /* Now mask off the high bits.  */
-	    if (TARGET_H8300)
+	    switch (mode)
 	      {
-		switch (mode)
-		  {
-		  case QImode:
-		    sprintf (insn_buf, "and\t#%d,%%X0", mask);
-		    cc_status.value1 = operands[0];
-		    cc_status.flags |= CC_NO_CARRY;
-		    break;
-		  case HImode:
-		    sprintf (insn_buf, "and\t#%d,%%s0\n\tand\t#%d,%%t0",
-			     mask & 255, mask >> 8);
-		    break;
-		  default:
-		    abort ();
-		  }
-	      }
-	    else
-	      {
-		sprintf (insn_buf, "and.%c\t#%d,%%%c0",
-			 "bwl"[shift_mode], mask,
-			 mode == QImode ? 'X' : mode == HImode ? 'T' : 'S');
+	      case QImode:
+		sprintf (insn_buf, "and\t#%d,%%X0", mask);
 		cc_status.value1 = operands[0];
 		cc_status.flags |= CC_NO_CARRY;
+		break;
+	      case HImode:
+		if (TARGET_H8300)
+		  {
+		    sprintf (insn_buf, "and\t#%d,%%s0\n\tand\t#%d,%%t0",
+			     mask & 255, mask >> 8);
+		  }
+		else
+		  {
+		    sprintf (insn_buf, "and.w\t#%d,%%T0", mask);
+		    cc_status.value1 = operands[0];
+		    cc_status.flags |= CC_NO_CARRY;
+		  }
+		break;
+	      default:
+		abort ();
 	      }
 	    output_asm_insn (insn_buf, operands);
 	    return "";
