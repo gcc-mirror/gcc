@@ -1,3 +1,10 @@
+2003-02-18  Matt Austern <austern@apple.com>
+	
+	* cp/cp-lang.c: Change lang hooks so that final_write_globals does
+	nothing for C++.
+	* cp/decl.c (wrapup_globals_for_namespace): Remove special
+	handling of global namespace.
+	
 2003-02-18  Geoffrey Keating  <geoffk@apple.com>
 
 	* cp-tree.h (rid_to_yy): Delete.
