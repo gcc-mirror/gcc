@@ -112,6 +112,7 @@ libgcj			Bryce McKinlay		bryce@gcc.gnu.org
 mercury			Fergus Henderson	fjh@cs.mu.oz.au
 objective-c		Stan Shebs		shebs@apple.com
 objective-c		Ovidiu Predescu		ovidiu@cup.hp.com
+objective-c		Ziemowit Laski		zlaski@apple.com
 alias analysis		John Carr		jfc@mit.edu
 loop unrolling		Jim Wilson		wilson@specifixinc.com
 loop discovery		Michael Hayes		m.hayes@elec.canterbury.ac.nz
@@ -210,7 +211,6 @@ Matthias Klose					doko@debian.org
 Jeff Knaggs					jknaggs@redhat.com
 Paul Koning					ni1d@arrl.net
 Matt Kraai					kraai@alumni.cmu.edu
-Ziemowit Laski					zlaski@apple.com
 Marc Lehmann					pcg@goof.com
 Alan Lehotsky					apl@alum.mit.edu
 Kriang Lerdsuwanakij				lerdsuwa@users.sourceforge.net
