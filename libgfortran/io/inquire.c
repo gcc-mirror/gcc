@@ -46,7 +46,12 @@ inquire_via_unit (gfc_unit * u)
   const char *p;
 
   if (ioparm.exist != NULL)
-    *ioparm.exist = (u != NULL);
+  {
+    if (ioparm.unit >= 0)
+      *ioparm.exist = 1;
+    else
+      *ioparm.exist = 0;
+  }
 
   if (ioparm.opened != NULL)
     *ioparm.opened = (u != NULL);
