@@ -1,3 +1,7 @@
+Fri Feb  6 21:32:25 1998  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	* config-lang.in (diff_excludes): Use basename only.
+
 Sun Jan 25 13:20:00 1998  Jason Merrill  <jason@rhino.cygnus.com>
 
 	* decl.c (cp_finish_decl): When bailing on a comdat variable, also
