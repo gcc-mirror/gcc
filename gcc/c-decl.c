@@ -4438,7 +4438,20 @@ grokparms (parms_info, funcdef_flag)
 	      typelt = TREE_CHAIN (typelt);
 	    }
 
-      return first_parm;
+      /* Allocate the list of types the way we allocate a type.  */
+      if (allocation_temporary_p ())
+	{
+	  /* Construct a copy of the list of types
+	     on the saveable obstack.  */
+	  tree result = NULL;
+	  for (typelt = first_parm; typelt; typelt = TREE_CHAIN (typelt))
+	    result = saveable_tree_cons (NULL_TREE, TREE_VALUE (typelt),
+					 result);
+	  return nreverse (result);
+	}
+      else
+	/* The list we have is permanent already.  */
+	return first_parm;
     }
 }
 
