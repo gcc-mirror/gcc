@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                            $Revision: 1.402 $
+--                            $Revision$
 --                                                                          --
 --          Copyright (C) 1992-2001 Free Software Foundation, Inc.          --
 --                                                                          --
@@ -2708,10 +2708,21 @@ package body Sem_Ch10 is
    -------------------------
 
    procedure Install_Withed_Unit (With_Clause : Node_Id) is
-      Uname : constant Entity_Id := Entity (Name (With_Clause));
+      Uname : Entity_Id := Entity (Name (With_Clause));
       P     : constant Entity_Id := Scope (Uname);
 
    begin
+      --  If the unit is a package instantiation, its body may have been
+      --  generated for an inner instance, and the instance now denotes the
+      --  body entity. For visibility purposes we need the instance in the
+      --  specification.
+
+      if Ekind (Uname) = E_Package_Body
+        and then Is_Generic_Instance (Uname)
+      then
+         Uname := Spec_Entity (Uname);
+      end if;
+
       --  We do not apply the restrictions to an internal unit unless
       --  we are compiling the internal unit as a main unit. This check
       --  is also skipped for dummy units (for missing packages).
