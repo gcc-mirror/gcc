@@ -954,6 +954,8 @@ bc_emit_instruction VPROTO((enum bytecode_opcode opcode, ...))
 	}
     }
 
+  va_end (arguments);
+
 #ifdef BCDEBUG_PRINT_CODE
   fputc ('\n', stderr);
 #endif
