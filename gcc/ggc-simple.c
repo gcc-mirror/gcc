@@ -36,6 +36,18 @@
    really really lot of data.  */
 #undef GGC_DUMP
 
+/* Some magic tags for strings and anonymous memory, hoping to catch
+   certain errors wrt marking memory.  */
+
+#define IS_MARKED(X)		((X) & 1)
+#define IGNORE_MARK(X)		((X) & -2)
+
+#define GGC_STRING_MAGIC	((unsigned int)0xa1b2c3d4)
+#define GGC_STRING_MAGIC_MARK	((unsigned int)0xa1b2c3d4 | 1)
+
+#define GGC_ANY_MAGIC		((unsigned int)0xa9bacbdc)
+#define GGC_ANY_MAGIC_MARK	((unsigned int)0xa9bacbdc | 1)
+
 /* Global lists of roots, rtxs, and trees.  */
 
 struct ggc_root
@@ -70,7 +82,7 @@ struct ggc_tree
 struct ggc_string
 {
   struct ggc_string *chain;
-  int magic_mark;
+  unsigned int magic_mark;
   char string[1];
 };
 
@@ -79,7 +91,7 @@ struct ggc_string
 struct ggc_any
 {
   struct ggc_any *chain;
-  char mark;
+  unsigned int magic_mark;
 
   /* Make sure the data is reasonably aligned.  */
   union {
@@ -88,8 +100,6 @@ struct ggc_any
     long double d;
   } u;
 };
-
-#define GGC_STRING_MAGIC	((unsigned int)0xa1b2c3d4)
 
 struct ggc_status
 {
@@ -122,7 +132,11 @@ static FILE *dump;
 /* Local function prototypes.  */
 
 static void ggc_free_rtx PROTO ((struct ggc_rtx *r));
+static void ggc_free_rtvec PROTO ((struct ggc_rtvec *v));
 static void ggc_free_tree PROTO ((struct ggc_tree *t));
+static void ggc_free_string PROTO ((struct ggc_string *s));
+static void ggc_free_any PROTO ((struct ggc_any *a));
+
 static void ggc_mark_rtx_ptr PROTO ((void *elt));
 static void ggc_mark_tree_ptr PROTO ((void *elt));
 static void ggc_mark_string_ptr PROTO ((void *elt));
@@ -290,13 +304,14 @@ ggc_alloc_string (contents, length)
     }
 
   size = (s->string - (char *)s) + length + 1;
-  s = (struct ggc_string *) xmalloc(size);
+  s = (struct ggc_string *) xmalloc (size);
   s->chain = ggc_chain->strings;
   s->magic_mark = GGC_STRING_MAGIC;
-  if (contents)
-    bcopy (contents, s->string, length);
-  s->string[length] = 0;
   ggc_chain->strings = s;
+
+  if (contents)
+    memcpy (s->string, contents, length);
+  s->string[length] = 0;
 
 #ifdef GGC_DUMP
   fprintf(dump, "alloc string %p\n", &s->string);
@@ -321,14 +336,17 @@ ggc_alloc (bytes)
 
   a = (struct ggc_any *) xmalloc (bytes);
   a->chain = ggc_chain->anys;
+  a->magic_mark = GGC_ANY_MAGIC;
   ggc_chain->anys = a;
+
+  ggc_chain->bytes_alloced_since_gc += bytes;
 
   return &a->u;
 }
 
 /* Freeing a bit of rtl is as simple as calling free.  */
 
-static void
+static inline void 
 ggc_free_rtx (r)
      struct ggc_rtx *r;
 {
@@ -345,7 +363,7 @@ ggc_free_rtx (r)
 
 /* Freeing an rtvec is as simple as calling free.  */
 
-static void
+static inline void
 ggc_free_rtvec (v)
      struct ggc_rtvec *v;
 {
@@ -363,7 +381,7 @@ ggc_free_rtvec (v)
 /* Freeing a tree node is almost, but not quite, as simple as calling free.
    Mostly we need to let the language clean up its lang_specific bits.  */
 
-static void
+static inline void
 ggc_free_tree (t)
      struct ggc_tree *t;
 {
@@ -387,7 +405,7 @@ ggc_free_tree (t)
 
 /* Freeing a string is as simple as calling free.  */
 
-static void
+static inline void
 ggc_free_string (s)
      struct ggc_string *s;
 {
@@ -400,6 +418,22 @@ ggc_free_string (s)
 #endif
 
   free (s);
+}
+
+/* Freeing anonymous memory is as simple as calling free.  */
+
+static inline void
+ggc_free_any (a)
+     struct ggc_any *a;
+{
+#ifdef GGC_DUMP
+  fprintf(dump, "collect mem %p\n", &a->u);
+#endif
+#ifdef GGC_POISON
+  a->magic_mark = 0xEEEEEEEE;
+#endif
+
+  free (a);
 }
 
 /* Mark a node.  */
@@ -656,14 +690,16 @@ void
 ggc_mark_string (s)
      char *s;
 {
-  unsigned int *magic = (unsigned int *)s - 1;
+  const ptrdiff_t d = (((struct ggc_string *) 0)->string - (char *) 0);
+  struct ggc_string *gs;
 
   if (s == NULL)
     return;
 
-  if ((*magic & ~(unsigned)1) != GGC_STRING_MAGIC)
+  gs = (struct ggc_string *)(s - d);
+  if (IGNORE_MARK (gs->magic_mark) != GGC_STRING_MAGIC)
     return;   /* abort? */
-  *magic = GGC_STRING_MAGIC | 1;
+  gs->magic_mark = GGC_STRING_MAGIC_MARK;
 }
 
 /* Mark P, allocated with ggc_alloc.  */
@@ -672,10 +708,16 @@ void
 ggc_mark (p)
      void *p;
 {
+  const ptrdiff_t d = (&((struct ggc_any *) 0)->u.c - (char *) 0);
   struct ggc_any *a;
-  ptrdiff_t d = (&((struct ggc_any *) 0)->u.c - (char *) 0);
+
+  if (p == NULL)
+    return;
+
   a = (struct ggc_any *) (((char*) p) - d);
-  a->mark = 1;
+  if (IGNORE_MARK (a->magic_mark) != GGC_ANY_MAGIC)
+    abort ();
+  a->magic_mark = GGC_ANY_MAGIC_MARK;
 }
 
 /* The top level mark-and-sweep routine.  */
@@ -692,7 +734,7 @@ ggc_collect ()
   struct ggc_any *a, **ap;
   int time, n_rtxs, n_trees, n_vecs, n_strings, n_anys;
 
-#if 0
+#ifndef ENABLE_CHECKING
   /* See if it's even worth our while.  */
   if (ggc_chain->bytes_alloced_since_gc < 64*1024)
     return;
@@ -715,7 +757,7 @@ ggc_collect ()
       for (s = gs->strings; s != NULL; s = s->chain)
 	s->magic_mark = GGC_STRING_MAGIC;
       for (a = gs->anys; a != NULL; a = a->chain)
-	a->mark = 0;
+	a->magic_mark = GGC_ANY_MAGIC;
     }
 
   /* Mark through all the roots.  */
@@ -803,7 +845,7 @@ ggc_collect ()
   while (s != NULL)
     {
       struct ggc_string *chain = s->chain;
-      if (!(s->magic_mark & 1))
+      if (! IS_MARKED (s->magic_mark))
         {
 	  ggc_free_string (s);
 	  *sp = chain;
@@ -824,9 +866,9 @@ ggc_collect ()
   while (a != NULL)
     {
       struct ggc_any *chain = a->chain;
-      if (!a->mark)
+      if (! IS_MARKED (a->magic_mark))
 	{
-	  free (a);
+	  ggc_free_any (a);
 	  *ap = chain;
 	  n_anys++;
 	}

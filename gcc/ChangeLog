@@ -1,3 +1,17 @@
+Thu Sep  9 03:37:31 1999  Richard Henderson  <rth@cygnus.com>
+
+	* ggc-simple.c (IS_MARKED, IGNORE_MARK): New.
+	(GGC_ANY_MAGIC, GGC_ANY_MAGIC_MARK): New.
+	(struct ggc_any): Replace `mark' with `magic_mark'.
+	(ggc_alloc_string): Use memcpy, not bcopy.
+	(ggc_alloc_any): Set magic_mark.  Update bytes_alloced_since_gc.
+	(ggc_free_{rtx,rtvec,tree,string}): Mark inline.
+	(ggc_free_any): New.
+	(ggc_mark_string): Use IGNORE_MARK.  Calc back to struct gcc_string.
+	(ggc_mark): Use IGNORE_MARK.  Abort if magic doesn't match.
+	(ggc_collect): Re-enable collection avoidance.  Use GGC_ANY_MARK.
+	Use IS_MARKED. Use ggc_free_any.
+
 1999-09-09  Scott Bambrough <scottb@netwinder.org>
  
 	* config/arm/linux-elf.h: define NO_IMPLICIT_EXTERN_C
