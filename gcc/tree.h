@@ -725,13 +725,27 @@ struct tree_type
 /* Every ..._DECL node gets a unique number.  */
 #define DECL_UID(NODE) ((NODE)->decl.uid)
 
-/* Nonzero in a VAR_DECL or PARM_DECL means this decl was made by inlining;
+/* For any sort of a ..._DECL node, this points to the original (abstract)
+   decl node which this decl is an instance of, or else it is NULL indicating
+   that this decl is not an instance of some other decl.  */
+#define DECL_ABSTRACT_ORIGIN(NODE) ((NODE)->decl.abstract_origin)
+
+/* Nonzero for any sort of ..._DECL node means this decl node represents
+   an inline instance of some original (abstract) decl from an inline function;
    suppress any warnings about shadowing some other variable.  */
-#define DECL_FROM_INLINE(NODE) ((NODE)->decl.from_inline_flag)
+#define DECL_FROM_INLINE(NODE) (DECL_ABSTRACT_ORIGIN (NODE) != (tree) 0)
 
 /* Nonzero if a _DECL means that the name of this decl should be ignored
    for symbolic debug purposes.  */
 #define DECL_IGNORED_P(NODE) ((NODE)->decl.ignored_flag)
+
+/* Nonzero for a given ..._DECL node means that this node represents an
+   "abstract instance" of the given declaration (e.g. in the original
+   declaration of an inline function).  When generating symbolic debugging
+   information, we musn't try to generate any address information for nodes
+   marked as "abstract instances" because we don't actually generate
+   any code or allocate any data space for such instances.  */
+#define DECL_ABSTRACT(NODE) ((NODE)->decl.abstract_flag)
 
 /* Nonzero if a _DECL means that no warnings should be generated just
    because this decl is unused.  */
@@ -812,8 +826,8 @@ struct tree_decl
   unsigned inline_flag : 1;
   unsigned bit_field_flag : 1;
   unsigned virtual_flag : 1;
-  unsigned from_inline_flag : 1;
   unsigned ignored_flag : 1;
+  unsigned abstract_flag : 1;
 
   unsigned in_system_header_flag : 1;
   /* room for seven more */
@@ -832,6 +846,7 @@ struct tree_decl
   union tree_node *arguments;
   union tree_node *result;
   union tree_node *initial;
+  union tree_node *abstract_origin;
   /* The PRINT_NAME field is marked for death.  */
   char *print_name;
   union tree_node *assembler_name;
