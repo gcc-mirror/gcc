@@ -1,3 +1,13 @@
+1999-12-09  Mark Mitchell  <mark@codesourcery.com>
+
+	* dump.c (dequeue_and_dump): Abbreviate `class' as `cls', not
+	`csl'.
+
+	* semantics.c (finish_switch_cond): Do conversions here, not ...
+	* typeck.c (c_expand_start_case): Here.
+
+	* semantics.c (do_poplevel): Remove unused variable.
+	
 1999-12-06  Mark Mitchell  <mark@codesourcery.com>
 
 	* tree.c (walk_tree): Don't recurse into DECL_INITIAL or DECL_SIZE

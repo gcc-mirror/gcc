@@ -592,7 +592,37 @@ finish_switch_cond (cond, switch_stmt)
      tree switch_stmt;
 {
   if (building_stmt_tree ())
-    FINISH_COND (cond, switch_stmt, SWITCH_COND (switch_stmt));
+    {
+      if (!processing_template_decl)
+	{
+	  /* Convert the condition to an integer or enumeration type.  */
+	  cond = build_expr_type_conversion (WANT_INT | WANT_ENUM, cond, 1);
+	  if (cond == NULL_TREE)
+	    {
+	      error ("switch quantity not an integer");
+	      cond = error_mark_node;
+	    }
+	  if (cond != error_mark_node)
+	    {
+	      tree idx;
+	      tree type;
+	      
+	      cond = default_conversion (cond);
+	      type = TREE_TYPE (cond);
+	      idx = get_unwidened (cond, 0);
+	      /* We can't strip a conversion from a signed type to an unsigned,
+		 because if we did, int_fits_type_p would do the wrong thing
+		 when checking case values for being in range,
+		 and it's too hard to do the right thing.  */
+	      if (TREE_UNSIGNED (TREE_TYPE (cond)) 
+		  == TREE_UNSIGNED (TREE_TYPE (idx)))
+		cond = idx;
+
+	      cond = fold (build1 (CLEANUP_POINT_EXPR, type, cond));
+	    }
+	}
+      FINISH_COND (cond, switch_stmt, SWITCH_COND (switch_stmt));
+    }
   else if (cond != error_mark_node)
     {
       emit_line_note (input_filename, lineno);
@@ -1337,7 +1367,6 @@ do_poplevel ()
   if (stmts_are_full_exprs_p)
     {
       tree scope_stmts;
-      int keep = kept_level_p ();
 
       if (building_stmt_tree () && !processing_template_decl)
 	scope_stmts = add_scope_stmt (/*begin_p=*/0, /*partial_p=*/0);
