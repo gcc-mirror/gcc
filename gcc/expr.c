@@ -293,7 +293,7 @@ init_expr_once ()
   rtx mem1 = gen_rtx (MEM, VOIDmode, frame_pointer_rtx);
 
   start_sequence ();
-  insn = emit_insn (gen_rtx (SET, 0, 0));
+  insn = emit_insn (gen_rtx (SET, 0, NULL_RTX, NULL_RTX));
   pat = PATTERN (insn);
 
   for (mode = VOIDmode; (int) mode < NUM_MACHINE_MODES;
