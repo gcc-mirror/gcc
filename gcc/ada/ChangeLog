@@ -1,3 +1,7 @@
+2002-12-15   Geert Bosch <bosch@gnat.com>
+
+	* sem_ch6.adb (Analyze_Subprogram_Body): Fix typo and formatting
+
 2002-12-14   Geert Bosch <bosch@gnat.com>
 
 	* sem_ch6.adb (Analyze_Subprogram_Body): Recognize additional 
