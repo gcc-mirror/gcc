@@ -1,3 +1,21 @@
+Mon May 11 09:33:10 1998  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+        * genattr.c: Include stdarg.h/varargs.h.  Change function
+	`fatal' to use variable arguments instead of faking it with
+	integer parameters.  Provide a prototype which also
+        checks the format specifiers using ATTRIBUTE_PRINTF_1.
+
+        * genattrtab.c: Likewise.
+        * gencodes.c: Likewise.
+        * genconfig.c: Likewise.
+        * genemit.c: Likewise.
+        * genextract.c: Likewise.
+        * genflags.c: Likewise.
+        * genopinit.c: Likewise.
+        * genpeep.c: Likewise.
+        * genrecog.c: Likewise.
+        * genoutput.c: Likewise.  Similarly for function `error'.
+
 Sun May 10 02:27:03 1998  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* acconfig.h (HAVE_VOLATILE): Insert stub for autoconf.

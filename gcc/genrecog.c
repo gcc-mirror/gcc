@@ -47,6 +47,11 @@ Boston, MA 02111-1307, USA.  */
    it returns the split rtl in a SEQUENCE.  */
 
 #include "hconfig.h"
+#ifdef __STDC__
+#include <stdarg.h>
+#else
+#include <varargs.h>
+#endif
 #include "system.h"
 #include "rtl.h"
 #include "obstack.h"
@@ -191,7 +196,7 @@ static void change_state	PROTO((char *, char *, int));
 static char *copystr		PROTO((char *));
 static void mybzero		PROTO((char *, unsigned));
 static void mybcopy		PROTO((char *, char *, unsigned));
-static void fatal		PROTO((char *));
+static void fatal		PVPROTO((char *, ...)) ATTRIBUTE_PRINTF_1;
 char *xrealloc			PROTO((char *, unsigned));
 char *xmalloc			PROTO((unsigned));
 void fancy_abort		PROTO((void));
@@ -1669,11 +1674,22 @@ xmalloc (size)
 }
 
 static void
-fatal (s)
-     char *s;
+fatal VPROTO ((char *format, ...))
 {
+#ifndef __STDC__
+  char *format;
+#endif
+  va_list ap;
+
+  VA_START (ap, format);
+
+#ifndef __STDC__
+  format = va_arg (ap, char *);
+#endif
+
   fprintf (stderr, "genrecog: ");
-  fprintf (stderr, s);
+  vfprintf (stderr, format, ap);
+  va_end (ap);
   fprintf (stderr, "\n");
   fprintf (stderr, "after %d definitions\n", next_index);
   exit (FATAL_EXIT_CODE);

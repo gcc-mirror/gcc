@@ -96,7 +96,7 @@ Boston, MA 02111-1307, USA.  */
 
 
 #include "hconfig.h"
-/* varargs must always be included after *config.h.  */
+/* varargs must always be included after *config.h, but before stdio.h.  */
 #ifdef __STDC__
 #include <stdarg.h>
 #else
@@ -125,7 +125,7 @@ struct obstack *temp_obstack = &obstack2;
 /* Define this so we can link with print-rtl.o to get debug_rtx function.  */
 char **insn_name_ptr = 0;
 
-static void fatal ();
+static void fatal PVPROTO ((char *, ...)) ATTRIBUTE_PRINTF_1;
 void fancy_abort PROTO((void));
 
 /* enough space to reserve for printing out ints */
@@ -5769,12 +5769,22 @@ copy_rtx_unchanging (orig)
 }
 
 static void
-fatal (s, a1, a2)
-     char *s;
-     char *a1, *a2;
+fatal VPROTO ((char *format, ...))
 {
+#ifndef __STDC__
+  char *format;
+#endif
+  va_list ap;
+
+  VA_START (ap, format);
+
+#ifndef __STDC__
+  format = va_arg (ap, char *);
+#endif
+
   fprintf (stderr, "genattrtab: ");
-  fprintf (stderr, s, a1, a2);
+  vfprintf (stderr, format, ap);
+  va_end (ap);
   fprintf (stderr, "\n");
   exit (FATAL_EXIT_CODE);
 }

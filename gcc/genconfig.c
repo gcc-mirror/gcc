@@ -21,6 +21,11 @@ Boston, MA 02111-1307, USA.  */
 
 
 #include "hconfig.h"
+#ifdef __STDC__
+#include <stdarg.h>
+#else
+#include <varargs.h>
+#endif
 #include "system.h"
 #include "rtl.h"
 #include "obstack.h"
@@ -50,7 +55,7 @@ static int clobbers_seen_this_insn;
 static int dup_operands_seen_this_insn;
 
 char *xmalloc PROTO((unsigned));
-static void fatal ();
+static void fatal PVPROTO ((char *, ...)) ATTRIBUTE_PRINTF_1;
 void fancy_abort PROTO((void));
 
 static void walk_insn_part PROTO((rtx, int, int));
@@ -268,11 +273,22 @@ xrealloc (ptr, size)
 }
 
 static void
-fatal (s, a1, a2)
-     char *s;
+fatal VPROTO ((char *format, ...))
 {
+#ifndef __STDC__
+  char *format;
+#endif
+  va_list ap;
+
+  VA_START (ap, format);
+
+#ifndef __STDC__
+  format = va_arg (ap, char *);
+#endif
+
   fprintf (stderr, "genconfig: ");
-  fprintf (stderr, s, a1, a2);
+  vfprintf (stderr, format, ap);
+  va_end (ap);
   fprintf (stderr, "\n");
   exit (FATAL_EXIT_CODE);
 }
