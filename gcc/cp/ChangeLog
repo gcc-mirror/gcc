@@ -1,3 +1,9 @@
+2004-02-24  Jason Merrill  <jason@redhat.com>
+
+	PR c++/13944
+	* except.c (do_free_exception): Remove #if 0 wrapper.
+	(build_throw): Use it if we elide a copy into the exception object.
+
 2004-03-01  Gabriel Dos Reis  <gdr@integrable-solutions.net>
 
 	* decl.c (current_binding_level): Define as an lvalue.
