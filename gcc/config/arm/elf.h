@@ -335,4 +335,7 @@ do {						\
   do { fputs ("\t.weak\t", FILE); assemble_name (FILE, NAME); \
        fputc ('\n', FILE); } while (0)
 
+/* For PIC code we need to explicitly specify (PLT) and (GOT) relocs.  */
+#define NEED_PLT_GOT	flag_pic
+
 #include "arm/aout.h"

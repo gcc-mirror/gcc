@@ -4246,7 +4246,10 @@
 	 (match_operand:SI 1 "general_operand" "g"))
    (clobber (reg:SI 14))]
   "GET_CODE (operands[0]) == SYMBOL_REF"
-  "bl%?\\t%a0"
+  "*
+  {
+    return NEED_PLT_GOT ? \"bl%?\\t%a0(PLT)\" : \"bl%?\\t%a0\";
+  }"
 [(set_attr "type" "call")])
 
 (define_insn "*call_value_symbol"
@@ -4255,7 +4258,10 @@
 	(match_operand:SI 2 "general_operand" "g")))
    (clobber (reg:SI 14))]
   "GET_CODE(operands[1]) == SYMBOL_REF"
-  "bl%?\\t%a1"
+  "*
+  {
+    return NEED_PLT_GOT ? \"bl%?\\t%a1(PLT)\" : \"bl%?\\t%a1\";
+  }"
 [(set_attr "type" "call")])
 
 ;; Often the return insn will be the same as loading from memory, so set attr
@@ -5993,7 +5999,7 @@
   }
 
   output_return_instruction (NULL, FALSE, FALSE);
-  return \"b%?\\t%a0\";
+  return NEED_PLT_GOT ? \"b%?\\t%a0(PLT)\" : \"b%?\\t%a0\";
 }"
 [(set_attr "type" "call")
  (set_attr "length" "8")])
@@ -6021,7 +6027,7 @@
   }
 
   output_return_instruction (NULL, FALSE, FALSE);
-  return \"b%?\\t%a1\";
+  return NEED_PLT_GOT ? \"b%?\\t%a1(PLT)\" : \"b%?\\t%a1\";
 }"
 [(set_attr "type" "call")
  (set_attr "length" "8")])
