@@ -2315,23 +2315,6 @@ symbol_ref_operand (rtx op, enum machine_mode mode)
   if (mode != VOIDmode && GET_MODE (op) != mode)
     return 0;
 
-#if TARGET_MACHO
-  if (GET_CODE (op) == SYMBOL_REF && TARGET_MACHO && MACHOPIC_INDIRECT)
-    {
-      /* Macho says it has to go through a stub or be local 
-         when indirect mode.  Stubs are considered local.  */
-      const char *t = XSTR (op, 0);
-      /* "&" means that it is it a local defined symbol
-          so it is okay to call to.  */
-      if (t[0] == '&')
-        return true;
-     
-      /* "!T" means that the function is local defined.  */ 
-      return (t[0] == '!' && t[1] == 'T');
-    }
-#endif
-
-
   return (GET_CODE (op) == SYMBOL_REF
 	  && (DEFAULT_ABI != ABI_AIX || SYMBOL_REF_FUNCTION_P (op)));
 }
@@ -9507,7 +9490,17 @@ print_operand (FILE *file, rtx x, int code)
 	      break;
 	    }
 	}
-      if (TARGET_AIX)
+      /* For macho, we need to check it see if we need a stub.  */
+      if (TARGET_MACHO)
+	{
+	  const char *name = XSTR (x, 0);
+#ifdef TARGET_MACHO
+	  if (machopic_classify_name (name) == MACHOPIC_UNDEFINED_FUNCTION)
+	    name = machopic_stub_name (name);
+#endif
+	  assemble_name (file, name);
+	}
+     else if (TARGET_AIX)
 	RS6000_OUTPUT_BASENAME (file, XSTR (x, 0));
       else
 	assemble_name (file, XSTR (x, 0));
