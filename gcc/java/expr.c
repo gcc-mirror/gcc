@@ -532,6 +532,32 @@ decode_newarray_type  (int atype)
     }
 }
 
+/* Map primitive type to the code used by OPCODE_newarray. */
+
+int
+encode_newarray_type (type)
+     tree type;
+{
+  if (type == boolean_type_node)
+    return 4;
+  else if (type == char_type_node)
+    return 5;
+  else if (type == float_type_node)
+    return 6;
+  else if (type == double_type_node)
+    return 7;
+  else if (type == byte_type_node)
+    return 8;
+  else if (type == short_type_node)
+    return 9;
+  else if (type == int_type_node)
+    return 10;
+  else if (type == long_type_node)
+    return 11;
+  else
+    fatal ("Can't compute type code - patch_newarray");
+}
+
 /* Build a call to _Jv_ThrowBadArrayIndex(), the
    ArrayIndexOfBoundsException exception handler.  */
 
@@ -707,7 +733,7 @@ build_newarray (atype_value, length)
 
 /* Generates anewarray from a given CLASS_TYPE. Gets from the stack the size
    of the dimension. */
-/* Merge with build_newarray.  FIXME. */
+
 tree
 build_anewarray (class_type, length)
     tree class_type;
@@ -724,6 +750,19 @@ build_anewarray (class_type, length)
 				      build_tree_list (NULL_TREE,
 						       null_pointer_node))),
 		NULL_TREE);
+}
+
+/* Return a node the evaluates 'new TYPE[LENGTH]'. */
+
+tree
+build_new_array (type, length)
+     tree type;
+     tree length;
+{
+  if (JPRIMITIVE_TYPE_P (type))
+    return build_newarray (encode_newarray_type (type), length);
+  else
+    return build_anewarray (TREE_TYPE (type), length);
 }
 
 /* Generates a call to _Jv_NewMultiArray. multianewarray expects a
@@ -1717,6 +1756,39 @@ java_lang_expand_expr (exp, target, tmode, modifier)
 
   switch (TREE_CODE (exp))
     {
+    case NEW_ARRAY_INIT:
+      {
+	rtx tmp, elements;
+	tree array_type = TREE_TYPE (TREE_TYPE (exp));
+	tree element_type = TYPE_ARRAY_ELEMENT (array_type);
+	tree data_fld = TREE_CHAIN (TREE_CHAIN (TYPE_FIELDS (array_type)));
+	HOST_WIDE_INT ilength = java_array_type_length (array_type);
+	tree length = build_int_2 (ilength, 0);
+	tree init = TREE_OPERAND (exp, 0);
+	tree array_decl = build_decl (VAR_DECL, NULL_TREE, TREE_TYPE (exp));
+	expand_decl (array_decl);
+	tmp = expand_assignment (array_decl,
+				 build_new_array (element_type, length),
+				 1, 0);
+	if (TREE_CONSTANT (init)
+	    && ilength >= 10 && JPRIMITIVE_TYPE_P (element_type))
+	  {
+	    tree init_decl = build_decl (VAR_DECL, generate_name (),
+					 TREE_TYPE (init));
+	    pushdecl_top_level (init_decl);
+	    TREE_STATIC (init_decl) = 1;
+	    DECL_INITIAL (init_decl) = init;
+	    DECL_IGNORED_P (init_decl) = 1;
+	    TREE_READONLY (init_decl) = 1;
+	    make_decl_rtl (init_decl, NULL, 1);
+	    init = init_decl;
+	  }
+	expand_assignment (build (COMPONENT_REF, TREE_TYPE (data_fld),
+				  build1 (INDIRECT_REF, array_type, array_decl),
+				  data_fld),
+			   init, 0, 0);
+	return tmp;
+      }
     case BLOCK:
       if (BLOCK_EXPR_BODY (exp))
 	{

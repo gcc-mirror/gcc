@@ -538,6 +538,7 @@ extern tree binary_numeric_promotion PROTO ((tree, tree, tree *, tree *));
 extern tree build_java_arrayaccess PROTO ((tree, tree, tree));
 extern tree build_newarray PROTO ((int, tree));
 extern tree build_anewarray PROTO ((tree, tree));
+extern tree build_new_array PROTO ((tree, tree));
 extern tree build_java_array_length_access PROTO ((tree));
 extern tree build_java_arraynull_check PROTO ((tree, tree, tree));
 extern tree create_label_decl PROTO ((tree));
