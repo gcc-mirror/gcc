@@ -1108,6 +1108,8 @@ replace_immediate_uses (tree var, tree repl)
 	  if (tmp != stmt)
 	    {
 	      block_stmt_iterator si = bsi_for_stmt (stmt);
+	      mark_new_vars_to_rename (tmp, vars_to_rename);
+	      redirect_immediate_uses (stmt, tmp);
 	      bsi_replace (&si, tmp, true);
 	      stmt = bsi_stmt (si);
 	    }

@@ -1,3 +1,9 @@
+2005-02-03  Andrew Pinski  <pinskia@physics.uc.edu>
+
+	PR tree-opt/19736
+	* tree-ssa.c (replace_immediate_uses): Update the immediate_uses
+	information for the new statement.
+
 2005-02-03  Joseph S. Myers  <joseph@codesourcery.com>
 
 	PR driver/19117
