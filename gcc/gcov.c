@@ -349,7 +349,7 @@ print_usage (error_p)
   fnotice (file, "  -o, --object-directory DIR|FILE Search for object files in DIR or called FILE\n");
   fnotice (file, "  -p, --preserve-paths            Preserve all pathname components\n");
   fnotice (file, "\nFor bug reporting instructions, please see:\n%s.\n",
-	   GCCBUGURL);
+	   bug_report_url);
   exit (status);
 }
 

@@ -2925,7 +2925,7 @@ Internal error: %s (program %s)\n\
 Please submit a full bug report.\n\
 See %s for instructions.",
 			   strsignal (WTERMSIG (status)), commands[j].prog,
-			   GCCBUGURL);
+			   bug_report_url);
 		  signal_count++;
 		  ret_code = -1;
 		}
@@ -6111,7 +6111,7 @@ main (argc, argv)
       if (! verbose_flag)
 	{
 	  printf (_("\nFor bug reporting instructions, please see:\n"));
-	  printf ("%s.\n", GCCBUGURL);
+	  printf ("%s.\n", bug_report_url);
 
 	  return (0);
 	}
@@ -6286,7 +6286,7 @@ main (argc, argv)
   if (print_help_list)
     {
       printf (("\nFor bug reporting instructions, please see:\n"));
-      printf ("%s\n", GCCBUGURL);
+      printf ("%s\n", bug_report_url);
     }
 
   return (signal_count != 0 ? 2
