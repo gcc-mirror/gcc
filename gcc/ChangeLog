@@ -1,3 +1,16 @@
+2001-01-22 Herman A.J. ten Brugge <Haj.Ten.Brugge@net.HCC.nl>
+
+	* c4x.c (c4x_check_legit_addr): Only check CONST.  Not if CONST
+	contains SYMBOL_REF, LABEL_REF and CONST_INT.
+	(c4x_U_constraint, symbolic_address_operand): Likewise.
+	(c4x_immed_float_constant): Do not check if CONST_DOUBLE is in
+	memory.
+	(c4x_r11_set_p, c4x_check_laj_p): New functions.
+	* c4x-protos.h (c4x_check_laj_p): Add prototype.
+	* c4x.md (in_annul_slot_3): Do not allow auto-increment in last 
+	anulling slot because of silicon bug.
+	(laj, lajv): Call c4x_check_laj_p to check for silicon bug.
+
 2001-01-22  Alan Modra <alan@linuxcare.com.au>
 
         * cppexp.c (parse_charconst):  Change `mask' type to agree
