@@ -17,7 +17,7 @@ search for the string TBD.
 If you want to help by working on one or more of these items,
 email @email{gcc@@gcc.gnu.org}.
 If you're planning to do more than just research issues and offer comments,
-see @uref{http://www.gnu.org/software/gcc/contribute.html} for steps you might
+see @uref{http://gcc.gnu.org/contribute.html} for steps you might
 need to take first.
 
 @menu
