@@ -1,3 +1,8 @@
+2003-07-24  Richard Henderson  <rth@redhat.com>
+
+	* libgcc-std.ver (GCC_3.3.1): Export __gcc_personality_sj0,
+	__gcc_personality_v0.
+	
 2003-07-24  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
 
 	* Makefile.in: Replace pwd by ${PWD_COMMAND}.
