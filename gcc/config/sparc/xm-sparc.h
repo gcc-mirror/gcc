@@ -29,8 +29,3 @@ Boston, MA 02111-1307, USA.  */
 /* Doubles are stored in memory with the high order word first.  This
    matters when cross-compiling.  */
 #define HOST_WORDS_BIG_ENDIAN 1
-
-/* If compiled with Sun CC, the use of alloca requires this #include.  */
-#ifndef __GNUC__
-#include "alloca.h"
-#endif

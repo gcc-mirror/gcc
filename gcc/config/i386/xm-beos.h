@@ -47,3 +47,10 @@ Boston, MA 02111-1307, USA.  */
 #define HAVE_PUTENV
 #endif
 #define HAVE_RENAME
+
+/* This is a temporary hack until the wimpy default 64k stack
+   limit in BeOS is either increased or made user settable somehow.
+   This probably won't happen until after the DR9 release.  */
+#undef USE_C_ALLOCA
+#define USE_C_ALLOCA 1
+

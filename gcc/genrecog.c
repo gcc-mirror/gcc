@@ -766,7 +766,7 @@ add_to_sequence (pattern, last, position, insn_type, top)
   if (depth > max_depth)
     max_depth = depth;
 
-  subpos = (char *) alloca (depth + 2);
+  subpos = (char *) xmalloc (depth + 2);
   strcpy (subpos, position);
   subpos[depth + 1] = 0;
 
@@ -796,7 +796,7 @@ add_to_sequence (pattern, last, position, insn_type, top)
 				     last, subpos, insn_type, 0);
 	      last = &sub->success;
 	    }
-	  return sub;
+	  goto ret;
 	}
 
       /* Else nothing special.  */
@@ -1027,6 +1027,8 @@ add_to_sequence (pattern, last, position, insn_type, top)
   if (this->tests == NULL)
     abort ();
 
+ ret:
+  free (subpos);
   return sub;
 }
 

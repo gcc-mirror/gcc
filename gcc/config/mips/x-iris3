@@ -25,6 +25,3 @@
 # -lmld is so we can link collect2 running native.
 # -lmalloc is supposed to be faster than the normal malloc
 CLIB		= -lmld -lmalloc
-
-# Show we need to use the C version of ALLOCA
-ALLOCA		= alloca.o

@@ -1,5 +1,5 @@
 /* Configuration for GCC for SPARC running Linux-based GNU systems.
-   Copyright (C) 1996, 1997 Free Software Foundation, Inc.
+   Copyright (C) 1996, 1997, 2001 Free Software Foundation, Inc.
    Contributed by Eddie C. Dost (ecd@skynet.be)
 
 This file is part of GNU CC.
@@ -20,7 +20,6 @@ the Free Software Foundation, 59 Temple Place - Suite 330,
 Boston, MA 02111-1307, USA.  */
 
 #ifndef inhibit_libc
-#include <alloca.h>
 #include <stdlib.h>
 #include <string.h>
 #endif

@@ -48,7 +48,6 @@ extern char *strdup ();		/* Duplicate a string */
 
 #endif	/* __STDC__ */
 
-#include "alloca-conf.h"
 
 #ifndef NULL
 #define NULL 0

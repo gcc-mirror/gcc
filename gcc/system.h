@@ -112,11 +112,6 @@ extern int errno;
 
 #ifdef HAVE_STDLIB_H
 # include <stdlib.h>
-# ifdef USE_C_ALLOCA
-/* Note that systems that use glibc have a <stdlib.h> that includes
-   <alloca.h> that defines alloca, so let USE_C_ALLOCA override this. */
-# undef alloca
-#endif
 #endif
 
 /* If we don't have an overriding definition, set SUCCESS_EXIT_CODE and
@@ -550,11 +545,6 @@ extern void abort PARAMS ((void));
 #define UNION_INIT_ZERO , {0}
 #else
 #define UNION_INIT_ZERO
-#endif
-
-/* GCC now gives implicit declaration warnings for undeclared builtins.  */
-#if defined(__GNUC__) && defined (__SIZE_TYPE__)
-extern void *alloca (__SIZE_TYPE__);
 #endif
 
 /* Various error reporting routines want to use __FUNCTION__.  */

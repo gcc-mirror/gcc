@@ -1,5 +1,3 @@
-ALLOCA=alloca.o
-
 # This disables the long/short jump optimization.
 # I use sysV68 R3V7.1 RM04 (phdm@info.ucl.ac.be)
 # Since ss-950318, with jump optimization enabled, "as" issues a warning

@@ -116,7 +116,6 @@ Boston, MA 02111-1307, USA.  */
 /* Customizations/kludges for building with DEC's VAX C compiler
    rather than GCC.  */
 
-#define USE_C_ALLOCA		/* using alloca.c */
 #define QSORT_WORKAROUND	/* do not use VAXCRTL's qsort */
 
 /* use ANSI/SYSV style byte manipulation routines instead of BSD ones */
@@ -170,15 +169,6 @@ Boston, MA 02111-1307, USA.  */
 #include <string.h>
 /* this is for genopinit.c */
  #pragma message disable (undefescap)
-#endif
-
-#if defined(USE_C_ALLOCA) && !defined(alloca)
-/* Declare alloca() using similar logic to that in alloca.c.  */
-#ifdef __STDC__
-extern void *alloca(unsigned);
-#else
-extern char *alloca();
-#endif
 #endif
 
 #define OBJECT_SUFFIX ".obj"

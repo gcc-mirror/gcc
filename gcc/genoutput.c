@@ -241,13 +241,14 @@ output_prologue ()
 /* We need to define all predicates used.  Keep a list of those we
    have defined so far.  There normally aren't very many predicates
    used, so a linked list should be fast enough.  */
+struct predicate { const char *name; struct predicate *next; };
 
 static void
 output_predicate_decls ()
 {
-  struct predicate { const char *name; struct predicate *next; } *predicates = 0;
+  struct predicate *predicates = 0;
   register struct operand_data *d;
-  struct predicate *p;
+  struct predicate *p, *next;
 
   for (d = odata; d; d = d->next)
     if (d->predicate && d->predicate[0])
@@ -260,7 +261,7 @@ output_predicate_decls ()
 	  {
 	    printf ("extern int %s PARAMS ((rtx, enum machine_mode));\n",
 		    d->predicate);
-	    p = (struct predicate *) alloca (sizeof (struct predicate));
+	    p = (struct predicate *) xmalloc (sizeof (struct predicate));
 	    p->name = d->predicate;
 	    p->next = predicates;
 	    predicates = p;
@@ -268,6 +269,11 @@ output_predicate_decls ()
       }
 
   printf ("\n\n");
+  for (p = predicates; p; p = next)
+    {
+      next = p->next;
+      free (p);
+    }
 }
 
 static void

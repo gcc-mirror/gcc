@@ -31,11 +31,6 @@ Boston, MA 02111-1307, USA.  */
 #endif
 #endif
 
-/* If not compiled with GNU C, use the portable alloca.  */
-#ifndef __GNUC__
-#define USE_C_ALLOCA 1
-#endif
-
 /* Our strategy for finding global constructors is a bit different, although
    not a lot. */
 #define DO_GLOBAL_CTORS_BODY						\

@@ -27,8 +27,3 @@ Boston, MA 02111-1307, USA.  */
    problems that may occur with gcc's interpretation.  */
 #undef POSIX
 #define POSIX
-
-/* Ensure we get gnu C's defaults.  */
-#ifdef __GNUC__
-#define alloca __builtin_alloca
-#endif

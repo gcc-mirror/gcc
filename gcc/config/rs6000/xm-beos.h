@@ -31,10 +31,7 @@ Boston, MA 02111-1307, USA.  */
 
 #define	HOST_WORDS_BIG_ENDIAN
 
-/* Use the C alloca and use only int bitfields.  */
-
-#define USE_C_ALLOCA
-extern void *alloca ();
+/* Use only int bitfields.  */
 #define	ONLY_INT_FIELDS
 
 /* use ANSI/SYSV style byte manipulation routines instead of BSD ones */
@@ -65,3 +62,9 @@ extern void *alloca ();
 /* SYSTEM_INCLUDE_DIR is the location for system specific, non-POSIX headers. */
 
 #define SYSTEM_INCLUDE_DIR	"/boot/develop/headers/be"
+
+/* This is a temporary hack until the wimpy default 64k stack
+   limit in BeOS is either increased or made user settable somehow.
+   This probably won't happen until after the DR9 release.  */
+#undef USE_C_ALLOCA
+#define USE_C_ALLOCA 1

@@ -206,6 +206,20 @@ extern int vasprintf PARAMS ((char **, const char *, va_list))
 
 #define ARRAY_SIZE(a) (sizeof (a) / sizeof ((a)[0]))
 
+/* Drastically simplified alloca configurator.  If we're using GCC,
+   we use __builtin_alloca; otherwise we use the C alloca.  The C
+   alloca is always available.  You can override GCC by defining
+   USE_C_ALLOCA yourself.  */
+extern PTR C_alloca PARAMS((size_t));
+#undef alloca
+#if GCC_VERSION >= 2000 && !defined USE_C_ALLOCA
+# define alloca(x) __builtin_alloca(x)
+#else
+# define alloca(x) C_alloca(x)
+# undef USE_C_ALLOCA
+# define USE_C_ALLOCA 1
+#endif
+
 #ifdef __cplusplus
 }
 #endif

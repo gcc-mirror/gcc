@@ -120,7 +120,7 @@ gen_insn (insn)
   else
     for (i = XVECLEN (insn, 1) - 1; i >= 0; i--)
       {
-	char *path = (char *) alloca (2);
+	char path[2];
 
 	path[0] = 'a' + i;
 	path[1] = 0;
@@ -221,7 +221,7 @@ walk_rtx (x, path)
       dupnums[dup_count] = XINT (x, 0);
       dup_count++;
       
-      newpath = (char *) alloca (depth + 2);
+      newpath = (char *) xmalloc (depth + 2);
       strcpy (newpath, path);
       newpath[depth + 1] = 0;
       
@@ -230,13 +230,14 @@ walk_rtx (x, path)
 	  newpath[depth] = '0' + i;
 	  walk_rtx (XVECEXP (x, 1, i), newpath);
         }
+      free (newpath);
       return;
       
     case MATCH_OPERATOR:
       oplocs[XINT (x, 0)] = xstrdup (path);
       op_count = MAX (op_count, XINT (x, 0) + 1);
 
-      newpath = (char *) alloca (depth + 2);
+      newpath = (char *) xmalloc (depth + 2);
       strcpy (newpath, path);
       newpath[depth + 1] = 0;
 
@@ -245,13 +246,14 @@ walk_rtx (x, path)
 	  newpath[depth] = '0' + i;
 	  walk_rtx (XVECEXP (x, 2, i), newpath);
 	}
+      free (newpath);
       return;
 
     case MATCH_PARALLEL:
       oplocs[XINT (x, 0)] = xstrdup (path);
       op_count = MAX (op_count, XINT (x, 0) + 1);
 
-      newpath = (char *) alloca (depth + 2);
+      newpath = (char *) xmalloc (depth + 2);
       strcpy (newpath, path);
       newpath[depth + 1] = 0;
 
@@ -260,6 +262,7 @@ walk_rtx (x, path)
 	  newpath[depth] = 'a' + i;
 	  walk_rtx (XVECEXP (x, 2, i), newpath);
 	}
+      free (newpath);
       return;
 
     case ADDRESS:
@@ -270,7 +273,7 @@ walk_rtx (x, path)
       break;
     }
 
-  newpath = (char *) alloca (depth + 2);
+  newpath = (char *) xmalloc (depth + 2);
   strcpy (newpath, path);
   newpath[depth + 1] = 0;
 
@@ -293,6 +296,7 @@ walk_rtx (x, path)
 	    }
 	}
     }
+  free (newpath);
 }
 
 /* Given a PATH, representing a path down the instruction's

@@ -279,11 +279,9 @@ from the machine description file `md'.  */\n\n");
 
 	  if (unit == 0)
 	    {
-	      int len = strlen (name) + 1;
 	      unit = (struct function_unit *)
-		alloca (sizeof (struct function_unit));
-	      unit->name = (char *) alloca (len);
-	      memcpy (unit->name, name, len);
+		xmalloc (sizeof (struct function_unit));
+	      unit->name = xstrdup (name);
 	      unit->multiplicity = multiplicity;
 	      unit->simultaneity = simultaneity;
 	      unit->ready_cost.min = unit->ready_cost.max = ready_cost;

@@ -36,11 +36,6 @@ Boston, MA 02111-1307, USA.  */
 
 #define HOST_FLOAT_WORDS_BIG_ENDIAN 1
 
-/* If not compiled with GNU C, use C alloca.  */
-#ifndef __GNUC__
-#define USE_C_ALLOCA
-#endif
-
 /* If we have defined POSIX, but are compiling in the BSD environment, then
    we need to define getcwd in terms of getwd.  */
 #if defined (POSIX) && defined (_BSD_C)

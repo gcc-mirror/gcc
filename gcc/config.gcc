@@ -610,7 +610,6 @@ c4x-*)
 clipper-intergraph-clix*)
 	tm_file="${tm_file} svr3.h clipper/clix.h"
 	xm_file=clipper/xm-clix.h
-	xmake_file=clipper/x-clix
 	extra_headers=va-clipper.h
 	extra_parts="crtbegin.o crtend.o"
 	install_headers_dir=install-headers-cpio
@@ -945,7 +944,7 @@ i370-*-linux*)
 	fi
 	;;
 i[34567]86-*-chorusos*)
-	xm_file="${xm_file} xm-svr4.h i386/xm-sysv4.h"
+	xm_file="${xm_file} xm-svr4.h"
 	tm_file="i386/i386.h i386/att.h elfos.h i386/i386afe.h i386/i386elf.h i386/chorus.h"
 	tmake_file=i386/t-i386elf
 	xmake_file=x-svr4
@@ -956,7 +955,7 @@ i[34567]86-*-chorusos*)
 	esac
 	;;
 i[34567]86-*-elf*)
-	xm_file="${xm_file} xm-svr4.h i386/xm-sysv4.h"
+	xm_file="${xm_file} xm-svr4.h"
 	tm_file="i386/i386.h i386/att.h elfos.h i386/i386afe.h i386/i386elf.h"
 	tmake_file=i386/t-i386elf
 	xmake_file=x-svr4
@@ -971,12 +970,10 @@ i[34567]86-ibm-aix*)		# IBM PS/2 running AIX
 		tm_file=i386/aix386ng.h
 		use_collect2=yes
 	fi
-	xm_file="xm-alloca.h ${xm_file}"
 	xm_defines=USG
 	xmake_file=i386/x-aix
 	;;
 i[34567]86-ncr-sysv4*)		# NCR 3000 - ix86 running system V.4
-	xm_file="xm-alloca.h ${xm_file}"
 	xm_defines="USG POSIX SMALL_ARG_MAX"
 	xmake_file=i386/x-ncr3000
 	if test x$stabs = xyes -a x$gas = xyes
@@ -1029,7 +1026,6 @@ i[34567]86-sequent-ptx2* | i[34567]86-sequent-sysv3*)
 	install_headers_dir=install-headers-cpio
 	;;
 i[34567]86-sequent-ptx4* | i[34567]86-sequent-sysv4*)
-	xm_file="xm-alloca.h ${xm_file}"
 	if test x$gas = xyes
 	then
 		tm_file="${tm_file} usegas.h"
@@ -1251,7 +1247,7 @@ i[34567]86-*-rtems*|i[34567]86-*-rtemself*)
 	fi
 	;;
 i[34567]86-*-sco3.2v5*)	# 80386 running SCO Open Server 5
-	xm_file="xm-alloca.h ${xm_file} i386/xm-sco5.h"
+	xm_file="${xm_file} i386/xm-sco5.h"
 	xm_defines="USG SVR3"
 	xmake_file=i386/x-sco5
 	install_headers_dir=install-headers-cpio
@@ -1305,7 +1301,6 @@ i[34567]86-*-sco*)	 	# 80386 running SCO system
 	truncate_target=yes
 	;;
 i[34567]86-*-solaris2*)
-	xm_file="xm-alloca.h ${xm_file}"
 	xm_defines="USG POSIX SMALL_ARG_MAX"
 	tm_file=i386/sol2.h
 	if test x$gas = xyes; then
@@ -1330,7 +1325,6 @@ i[34567]86-*-solaris2*)
 	fi
 	;;
 i[34567]86-*-sysv5*)           # Intel x86 on System V Release 5
-       xm_file="xm-alloca.h ${xm_file}"
        xm_defines="USG POSIX"
        tm_file=i386/sysv5.h
        if test x$stabs = xyes
@@ -1345,7 +1339,6 @@ i[34567]86-*-sysv5*)           # Intel x86 on System V Release 5
        fi
        ;;
 i[34567]86-*-sysv4*)		# Intel 80386's running system V.4
-	xm_file="xm-alloca.h ${xm_file}"
 	xm_defines="USG POSIX SMALL_ARG_MAX"
 	tm_file=i386/sysv4.h
 	if test x$stabs = xyes
@@ -1357,7 +1350,6 @@ i[34567]86-*-sysv4*)		# Intel 80386's running system V.4
 	extra_parts="crtbegin.o crtend.o"
 	;;
 i[34567]86-*-udk*)      # Intel x86 on SCO UW/OSR5 Dev Kit
-	xm_file="xm-alloca.h ${xm_file}"
 	xm_defines="USG POSIX"
 	tm_file=i386/udk.h
 	tmake_file="i386/t-i386bare i386/t-crtpic i386/t-udk"
@@ -1367,7 +1359,7 @@ i[34567]86-*-udk*)      # Intel x86 on SCO UW/OSR5 Dev Kit
 	;;
 i[34567]86-*-osf1*)		# Intel 80386's running OSF/1 1.3+
 	cpu_type=i386
-	xm_file="${xm_file} xm-svr4.h i386/xm-sysv4.h i386/xm-osf1elf.h"
+	xm_file="${xm_file} xm-svr4.h i386/xm-osf1elf.h"
 	xm_defines="USE_C_ALLOCA SMALL_ARG_MAX"
 	if test x$stabs = xyes
 	then
@@ -1475,7 +1467,6 @@ i[34567]86-*-interix*)
 	fi
 	;;
 i[34567]86-dg-dgux*)
-	xm_file="xm-alloca.h ${xm_file}"
 	xm_defines="USG POSIX"
 	out_file=i386/dgux.c
 	tm_file=i386/dgux.h
@@ -1486,7 +1477,6 @@ i[34567]86-dg-dgux*)
 i860-alliant-*)		# Alliant FX/2800
 	tm_file="${tm_file} svr4.h i860/sysv4.h i860/fx2800.h"
 	xm_file="${xm_file}"
-	xmake_file=i860/x-fx2800
 	tmake_file=i860/t-fx2800
 	extra_parts="crtbegin.o crtend.o"
 	;;
@@ -1509,7 +1499,6 @@ i860-*-osf*)			# Intel Paragon XP/S, OSF/1AD
 i860-*-sysv3*)
 	tm_file="${tm_file} svr3.h i860/sysv3.h"
 	xm_defines="USG SVR3"
-	xmake_file=i860/x-sysv3
 	extra_parts="crtbegin.o crtend.o"
 	;;
 i860-*-sysv4*)
@@ -1609,7 +1598,6 @@ m68000-hp-bsd*)			# HP 9000/200 running BSD
 	extra_headers=math-68881.h
 	;;
 m68000-hp-hpux*)		# HP 9000 series 300
-	xm_file="xm-alloca.h ${xm_file}"
 	xm_defines="USG"
 	if test x$gas = xyes
 	then
@@ -1696,7 +1684,6 @@ m68k-bull-sysv*)		# Bull DPX/2
 	else
 		tm_file=m68k/dpx2.h
 	fi
-	xm_file="xm-alloca.h ${xm_file}"
 	xm_defines=USG
 	xmake_file=m68k/x-dpx2
 	use_collect2=yes
@@ -1704,7 +1691,6 @@ m68k-bull-sysv*)		# Bull DPX/2
 	;;
 m68k-atari-sysv4*)              # Atari variant of V.4.
 	tm_file=m68k/atari.h
-	xm_file="xm-alloca.h ${xm_file}"
 	xm_defines=USG
 	tmake_file=t-svr4
 	extra_parts="crtbegin.o crtend.o"
@@ -1713,7 +1699,7 @@ m68k-atari-sysv4*)              # Atari variant of V.4.
 	;;
 m68k-motorola-sysv*)
 	tm_file=m68k/mot3300.h
-	xm_file="xm-alloca.h m68k/xm-mot3300.h ${xm_file}"
+	xm_file="m68k/xm-mot3300.h ${xm_file}"
 	if test x$gas = xyes
 	then
 		xmake_file=m68k/x-mot3300-gas
@@ -1748,19 +1734,17 @@ m68k-ncr-sysv*)			# NCR Tower 32 SVR3
 	;;
 m68k-plexus-sysv*)
 	tm_file=m68k/plexus.h
-	xm_file="xm-alloca.h m68k/xm-plexus.h ${xm_file}"
+	xm_file="m68k/xm-plexus.h ${xm_file}"
 	xm_defines=USG
 	use_collect2=yes
 	extra_headers=math-68881.h
 	;;
 m68k-tti-*)
 	tm_file=m68k/pbb.h
-	xm_file="xm-alloca.h ${xm_file}"
 	xm_defines=USG
 	extra_headers=math-68881.h
 	;;
 m68k-crds-unos*)
-	xm_file="xm-alloca.h ${xm_file}"
 	xm_defines="USG unos"
 	xmake_file=m68k/x-crds
 	tm_file=m68k/crds.h
@@ -1769,7 +1753,6 @@ m68k-crds-unos*)
 	;;
 m68k-cbm-sysv4*)		# Commodore variant of V.4.
 	tm_file=m68k/amix.h
-	xm_file="xm-alloca.h ${xm_file}"
 	xm_defines=USG
 	xmake_file=m68k/x-amix
 	tmake_file=t-svr4
@@ -1808,7 +1791,6 @@ m68k-isi-bsd*)
 	extra_headers=math-68881.h
 	;;
 m68k-hp-hpux7*)	# HP 9000 series 300 running HPUX version 7.
-	xm_file="xm-alloca.h ${xm_file}"
 	xm_defines="USG"
 	if test x$gas = xyes
 	then
@@ -1824,7 +1806,6 @@ m68k-hp-hpux7*)	# HP 9000 series 300 running HPUX version 7.
 	float_format=m68k
 	;;
 m68k-hp-hpux*)	# HP 9000 series 300
-	xm_file="xm-alloca.h ${xm_file}"
 	xm_defines="USG"
 	if test x$gas = xyes
 	then
@@ -1962,7 +1943,6 @@ m68k*-*-openbsd*)
 	use_collect2=yes
 	;;
 m68k-*-sysv3*)			# Motorola m68k's running system V.3
-	xm_file="xm-alloca.h ${xm_file}"
 	xm_defines=USG
 	extra_parts="crtbegin.o crtend.o"
 	extra_headers=math-68881.h
@@ -1970,7 +1950,6 @@ m68k-*-sysv3*)			# Motorola m68k's running system V.3
 	;;
 m68k-*-sysv4*)			# Motorola m68k's running system V.4
 	tm_file=m68k/m68kv4.h
-	xm_file="xm-alloca.h ${xm_file}"
 	xm_defines=USG
 	tmake_file=t-svr4
 	extra_parts="crtbegin.o crtend.o"
@@ -2096,7 +2075,6 @@ m88k-*-openbsd*)
 m88k-*-sysv3*)
 	tm_file=m88k/sysv3.h
 	extra_parts="crtbegin.o crtend.o"
-	xmake_file=m88k/x-sysv3
 	if test x$gas = xyes
 	then
 		tmake_file=m88k/t-m88k-gas
@@ -2903,7 +2881,6 @@ sh-*-*)
 	;;
 sparc-tti-*)
 	tm_file=sparc/pbd.h
-	xm_file="xm-alloca.h ${xm_file}"
 	xm_defines=USG
 	;;
 sparc64-wrs-vxworks*)
@@ -3013,7 +2990,7 @@ sparcv9-*-solaris2*)
 	else
 		tm_file=sparc/sol2-sld-64.h
 	fi
-	xm_file="sparc/xm-sysv4-64.h sparc/xm-sol2.h"
+	xm_file="sparc/xm-sysv4-64.h"
 	xm_defines="USG POSIX"
 	tmake_file="sparc/t-sol2 sparc/t-sol2-64"
 	if test x$gnu_ld = xyes; then
@@ -3039,7 +3016,7 @@ sparcv9-*-solaris2*)
 	fi
 	;;
 sparc-hal-solaris2*)
-        xm_file="sparc/xm-sysv4.h sparc/xm-sol2.h"
+        xm_file="sparc/xm-sysv4.h"
         xm_defines="USG POSIX"
         tm_file="sparc/sol2.h sparc/hal.h"
         tmake_file="sparc/t-halos sparc/t-sol2"
@@ -3067,7 +3044,7 @@ sparc-*-solaris2*)
 	else
 		tm_file=sparc/sol2-sld.h
 	fi
-	xm_file="sparc/xm-sysv4.h sparc/xm-sol2.h"
+	xm_file="sparc/xm-sysv4.h"
 	xm_defines="USG POSIX"
 	tmake_file=sparc/t-sol2
 	if test x$gnu_ld = xyes; then
@@ -3138,7 +3115,7 @@ sparc-*-sysv4*)
 	extra_parts="crtbegin.o crtend.o"
 	;;
 sparc-*-vxsim*)
-	xm_file="sparc/xm-sysv4.h sparc/xm-sol2.h"
+	xm_file="sparc/xm-sysv4.h"
 	xm_defines="USG POSIX"
 	tm_file=sparc/vxsim.h
 	tmake_file=sparc/t-vxsparc

@@ -37,11 +37,6 @@ Boston, MA 02111-1307, USA.  */
 #endif
 #endif
 
-/* If not compiled with GNU C, use the C alloca */
-#ifndef __GNUC__
-#define USE_C_ALLOCA
-#endif
-
 /* For DG/UX, the best size is different.  */
 #ifdef __DGUX__
 #define OBSTACK_CHUNK_SIZE (8192-16)
