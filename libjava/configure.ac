@@ -5,6 +5,8 @@ AC_INIT([libjava], [version-unused],, [libjava])
 
 AC_CONFIG_SRCDIR(java/lang/System.java)
 
+GCC_TOPLEV_SUBDIRS
+
 # We use these options to decide which functions to include.
 AC_ARG_WITH(target-subdir,
   AS_HELP_STRING([--with-target-subdir=SUBDIR],
@@ -161,13 +163,6 @@ AC_PROG_LIBTOOL
 AM_PROG_GCJ
 AM_PROG_CC_C_O
 AC_CONFIG_SUBDIRS(libltdl)
-
-if test -z "$with_target_subdir" || test "$with_target_subdir" = "."; then
-   COMPPATH=.
-else
-   COMPPATH=..
-fi
-AC_SUBST(COMPPATH)
 
 # The -no-testsuite modules omit the test subdir.
 AM_CONDITIONAL(TESTSUBDIR, test -d $srcdir/testsuite)
@@ -1039,7 +1034,7 @@ NATIVE=yes
 
 # Which gcj do we use?
 which_gcj=default
-built_gcc_dir="`cd ${builddotdot}/../../gcc && ${PWDCMD-pwd}`"
+built_gcc_dir="`cd ${builddotdot}/../../${host_subdir}/gcc && ${PWDCMD-pwd}`"
 if test -n "${with_cross_host}"; then
   # We are being configured with a cross compiler. We can't
   # use ac_exeext, because that is for the target platform.
@@ -1078,8 +1073,8 @@ fi
 case "${which_gcj}" in
    built)
       GCJ="$built_gcc_dir/gcj -B`${PWDCMD-pwd}`/ -B$built_gcc_dir/"
-      GCJH='$(MULTIBUILDTOP)../$(COMPPATH)/gcc/gcjh'
-      ZIP='$(MULTIBUILDTOP)../$(COMPPATH)/fastjar/fastjar'
+      GCJH='$(MULTIBUILDTOP)../../$(host_subdir)/gcc/gcjh'
+      ZIP='$(MULTIBUILDTOP)../../$(host_subdir)/fastjar/fastjar'
    ;;
    cross)
       if test "x${with_newlib}" = "xyes"; then

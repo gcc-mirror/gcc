@@ -1,3 +1,15 @@
+2005-02-28  Paolo Bonzini  <bonzini@gnu.org>
+
+	PR bootstrap/17383
+	* configure.ac: Call GCC_TOPLEV_SUBDIRS.
+	(COMPPATH): Removed.
+	(ZIP, GCJH): Replace it with ../$(host_subdir).
+	(built_gcc_dir): Add $(host_subdir).
+	* configure: Regenerate.
+	* Makefile.in, include/Makefile.in, testsuite/Makefile.in,
+	gcj/Makefile.in, external/Makefile.in, external/sax/Makefile.in,
+	external/w3c_dom/Makefile.in: Regenerate.
+
 2005-02-24  David Gilbert  <david.gilbert@object-refinery.com>
 
 	* java/awt/font/TextAttribute.java: changed names to lower case;

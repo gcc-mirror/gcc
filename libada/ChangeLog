@@ -1,3 +1,8 @@
+2005-02-28  Paolo Bonzini  <bonzini@gnu.org>
+
+	PR bootstrap/17383
+	* Makefile.in (GCC_DIR): Add $(HOST_SUBDIR) to the definition.
+
 2004-12-03  Nathanael Nerode  <neroden@gcc.gnu.org>
 
 	* Makefile.in: Add stamp file for building libada, to avoid
