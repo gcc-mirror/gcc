@@ -190,7 +190,7 @@ public interface List extends Collection
    * @see Object#equals(Object)
    * @see #hashCode()
    */
-  boolean equals(Object o);
+ /* boolean equals(Object o);*/
 
   /**
    * Get the element at a given index in this list.
@@ -288,7 +288,7 @@ public interface List extends Collection
   Object remove(int index);
 
   /**
-   * Remove the first occurrence of an object from this list (optional
+   * Remove the first occurence of an object from this list (optional
    * operation). That is, remove the first element e such that
    * <code>o == null ? e == null : o.equals(e)</code>.
    *

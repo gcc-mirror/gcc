@@ -25,10 +25,6 @@ This exception does not however invalidate any other reasons why the
 executable file might be covered by the GNU General Public License. */
 
 
-// TO DO:
-// ~ Serialization is very much broken. Blame Sun for not specifying it.
-// ~ The synchronized* and unmodifiable* methods don't have doc-comments.
-
 package java.util;
 
 import java.io.Serializable;
@@ -40,9 +36,54 @@ import java.io.Serializable;
  * are unaware of collections, a method to return a list which consists of
  * multiple copies of one element, and methods which "wrap" collections to give
  * them extra properties, such as thread-safety and unmodifiability.
+ * <p>
+ *
+ * All methods which take a collection throw a {@link NullPointerException} if
+ * that collection is null. Algorithms which can change a collection may, but
+ * are not required, to throw the {@link UnsupportedOperationException} that
+ * the underlying collection would throw during an attempt at modification.
+ * For example,
+ * <code>Collections.singleton("").addAll(Collections.EMPTY_SET)<code>
+ * does not throw a exception, even though addAll is an unsupported operation
+ * on a singleton; the reason for this is that addAll did not attempt to
+ * modify the set.
+ *
+ * @author Original author unknown
+ * @author Bryce McKinlay
+ * @author Eric Blake <ebb9@email.byu.edu>
+ * @see Collection
+ * @see Set
+ * @see List
+ * @see Map
+ * @see Arrays
+ * @since 1.2
+ * @status updated to 1.4
  */
 public class Collections
 {
+  /**
+   * Constant used to decide cutoff for when a non-RandomAccess list should
+   * be treated as sequential-access. Basically, quadratic behavior is
+   * acceptible for small lists when the overhead is so small in the first
+   * place. I arbitrarily set it to 16, so it may need some tuning.
+   */
+  private static final int LARGE_LIST_SIZE = 16;
+
+  /**
+   * Determines if a list should be treated as a sequential-access one.
+   * Rather than the old method of JDK 1.3 of assuming only instanceof
+   * AbstractSequentialList should be sequential, this uses the new method
+   * of JDK 1.4 of assuming anything that does NOT implement RandomAccess
+   * and exceeds a large (unspecified) size should be sequential.
+   *
+   * @param l the list to check
+   * @return true if it should be treated as sequential-access
+   */
+  private static boolean isSequential(List l)
+  {
+    return ! (l instanceof RandomAccess) && l.size() > LARGE_LIST_SIZE;
+  }
+
   /**
    * This class is non-instantiable.
    */
@@ -51,141 +92,283 @@ public class Collections
   }
 
   /**
-   * An immutable, empty Set.
-   * Note: This implementation isn't Serializable, although it should be by the
-   * spec.
+   * An immutable, serializable, empty Set.
+   * @see Serializable
    */
-  public static final Set EMPTY_SET = new AbstractSet()
-  {
-    public int size()
+  public static final Set EMPTY_SET = new EmptySet();
+
+  private static final Iterator EMPTY_ITERATOR = new Iterator()
     {
-      return 0;
-    }
+      public boolean hasNext()
+      {
+	return false;
+      }
 
-    // This is really cheating! I think it's perfectly valid, though - the
-    // more conventional code is here, commented out, in case anyone disagrees.
-    public Iterator iterator()
-    {
-      return EMPTY_LIST.iterator();
-    }
+      public Object next()
+      {
+	throw new NoSuchElementException();
+      }
 
-    // public Iterator iterator() {
-    //   return new Iterator() {
-    // 
-    //     public boolean hasNext() {
-    //       return false;
-    //     }
-    // 
-    //     public Object next() {
-    //       throw new NoSuchElementException();
-    //     }
-    // 
-    //     public void remove() {
-    //       throw new UnsupportedOperationException();
-    //     }
-    //   };
-    // }
-
-  };
+      public void remove()
+      {
+	throw new UnsupportedOperationException();
+      }
+    };
 
   /**
-   * An immutable, empty List.
-   * Note: This implementation isn't serializable, although it should be by the
-   * spec.
+   * The implementation of {@link #EMPTY_SET}. This class name is required
+   * for compatibility with Sun's JDK serializability.
+   *
+   * @author Eric Blake <ebb9@email.byu.edu>
    */
-  public static final List EMPTY_LIST = new AbstractList()
+  private static final class EmptySet extends AbstractSet
+    implements Serializable
   {
+    /**
+     * Compatible with JDK 1.4.
+     */
+    private static final long serialVersionUID = 1582296315990362920L;
+
+    /**
+     * A private constructor adds overhead.
+     */
+    EmptySet()
+    {
+    }
+
+    /**
+     * The size: always 0!
+     */
     public int size()
     {
       return 0;
     }
 
+    /**
+     * Returns an iterator that does not iterate.
+     */
+    public Iterator iterator()
+    {
+      return EMPTY_ITERATOR;
+    }
+  } // class EmptySet
+
+  /**
+   * An immutable, serializable, empty List, which implements RandomAccess.
+   * @see Serializable
+   * @see RandomAccess
+   */
+  public static final List EMPTY_LIST = new EmptyList();
+
+  /**
+   * The implementation of {@link #EMPTY_LIST}. This class name is required
+   * for compatibility with Sun's JDK serializability.
+   *
+   * @author Eric Blake <ebb9@email.byu.edu>
+   */
+  private static final class EmptyList extends AbstractList
+    implements Serializable, RandomAccess
+  {
+    /**
+     * Compatible with JDK 1.4.
+     */
+    private static final long serialVersionUID = 8842843931221139166L;
+
+    /**
+     * A private constructor adds overhead.
+     */
+    EmptyList()
+    {
+    }
+
+    /**
+     * The size is always 0.
+     */
+    public int size()
+    {
+      return 0;
+    }
+
+    /**
+     * No matter the index, it is out of bounds.
+     */
     public Object get(int index)
     {
       throw new IndexOutOfBoundsException();
     }
-  };
+    
+    /**
+     * Returns an iterator that does not iterate. Optional, but avoids 
+     * allocation of an iterator in AbstractList.
+     */
+    public Iterator iterator()
+    {
+      return EMPTY_ITERATOR;
+    }    
+  } // class EmptyList
 
   /**
-   * An immutable, empty Map.
-   * Note: This implementation isn't serializable, although it should be by the
-   * spec.
+   * An immutable, serializable, empty Map.
+   * @see Serializable
    */
-  public static final Map EMPTY_MAP = new AbstractMap()
+  public static final Map EMPTY_MAP = new EmptyMap();
+
+  /**
+   * The implementation of {@link #EMPTY_MAP}. This class name is required
+   * for compatibility with Sun's JDK serializability.
+   *
+   * @author Eric Blake <ebb9@email.byu.edu>
+   */
+  private static final class EmptyMap extends AbstractMap
+    implements Serializable
   {
+    /**
+     * Compatible with JDK 1.4.
+     */
+    private static final long serialVersionUID = 6428348081105594320L;
+
+    /**
+     * A private constructor adds overhead.
+     */
+    EmptyMap()
+    {
+    }
+
+    /**
+     * There are no entries.
+     */
     public Set entrySet()
     {
       return EMPTY_SET;
     }
-  };
+
+    /**
+     * Size is always 0.
+     */
+    public int size()
+    {
+      return 0;
+    }
+
+    /**
+     * No entries. Technically, EMPTY_SET, while more specific than a general
+     * Collection, will work. Besides, that's what the JDK uses!
+     */
+    public Collection values()
+    {
+      return EMPTY_SET;
+    }
+  } // class EmptyMap
 
   /**
    * Compare two objects with or without a Comparator. If c is null, uses the
    * natural ordering. Slightly slower than doing it inline if the JVM isn't
    * clever, but worth it for removing a duplicate of the search code.
-   * Note: This same code is used in Arrays (for sort as well as search)
+   * Note: This code is also used in Arrays (for sort as well as search).
    */
-  private static int compare(Object o1, Object o2, Comparator c)
+  static final int compare(Object o1, Object o2, Comparator c)
   {
-    if (c == null)
-      {
-	return ((Comparable) o1).compareTo(o2);
-      }
-    else
-      {
-	return c.compare(o1, o2);
-      }
+    return c == null ? ((Comparable) o1).compareTo(o2) : c.compare(o1, o2);
   }
 
   /**
-   * The hard work for the search routines. If the Comparator given is null,
-   * uses the natural ordering of the elements.
+   * Perform a binary search of a List for a key, using the natural ordering of
+   * the elements. The list must be sorted (as by the sort() method) - if it is
+   * not, the behavior of this method is undefined, and may be an infinite
+   * loop. Further, the key must be comparable with every item in the list. If
+   * the list contains the key more than once, any one of them may be found.
+   * <p>
+   *
+   * This algorithm behaves in log(n) time for {@link RandomAccess} lists,
+   * and uses a linear search with O(n) link traversals and log(n) comparisons
+   * with {@link AbstractSequentialList} lists. Note: although the
+   * specification allows for an infinite loop if the list is unsorted, it will
+   * not happen in this (Classpath) implementation.
+   *
+   * @param l the list to search (must be sorted)
+   * @param key the value to search for
+   * @return the index at which the key was found, or -n-1 if it was not
+   *         found, where n is the index of the first value higher than key or
+   *         a.length if there is no such value
+   * @throws ClassCastException if key could not be compared with one of the
+   *         elements of l
+   * @throws NullPointerException if a null element has compareTo called
+   * @see #sort(List)
    */
-  private static int search(List l, Object key, final Comparator c)
+  public static int binarySearch(List l, Object key)
+  {
+    return binarySearch(l, key, null);
+  }
+
+  /**
+   * Perform a binary search of a List for a key, using a supplied Comparator.
+   * The list must be sorted (as by the sort() method with the same Comparator)
+   * - if it is not, the behavior of this method is undefined, and may be an
+   * infinite loop. Further, the key must be comparable with every item in the
+   * list. If the list contains the key more than once, any one of them may be
+   * found. If the comparator is null, the elements' natural ordering is used.
+   * <p>
+   *
+   * This algorithm behaves in log(n) time for {@link RandomAccess} lists,
+   * and uses a linear search with O(n) link traversals and log(n) comparisons
+   * with {@link AbstractSequentialList} lists. Note: although the
+   * specification allows for an infinite loop if the list is unsorted, it will
+   * not happen in this (Classpath) implementation.
+   *
+   * @param l the list to search (must be sorted)
+   * @param key the value to search for
+   * @param c the comparator by which the list is sorted
+   * @return the index at which the key was found, or -n-1 if it was not
+   *         found, where n is the index of the first value higher than key or
+   *         a.length if there is no such value
+   * @throws ClassCastException if key could not be compared with one of the
+   *         elements of l
+   * @throws NullPointerException if a null element is compared with natural
+   *         ordering (only possible when c is null)
+   * @see #sort(List, Comparator)
+   */
+  public static int binarySearch(List l, Object key, Comparator c)
   {
     int pos = 0;
+    int low = 0;
+    int hi = l.size() - 1;
 
-    // We use a linear search using an iterator if we can guess that the list
-    // is sequential-access.
-    if (l instanceof AbstractSequentialList)
+    // We use a linear search with log(n) comparisons using an iterator
+    // if the list is sequential-access.
+    if (isSequential(l))
       {
 	ListIterator itr = l.listIterator();
-    	for (int i = l.size() - 1; i >= 0; --i)
-	  {
+        int i = 0;
+        while (low <= hi)
+          {
+            pos = (low + hi) >> 1;
+            if (i < pos)
+              for ( ; i != pos; i++, itr.next());
+            else
+              for ( ; i != pos; i--, itr.previous());
 	    final int d = compare(key, itr.next(), c);
 	    if (d == 0)
-	      {
-		return pos;
-	      }
+              return pos;
 	    else if (d < 0)
-	      {
-		return -pos - 1;
-	      }
-	    pos++;
-	  }
-
-	// We assume the list is random-access, and use a binary search
+              hi = pos - 1;
+	    else
+              // This gets the insertion point right on the last loop
+              low = ++pos;
+          }
       }
     else
       {
-	int low = 0;
-	int hi = l.size() - 1;
 	while (low <= hi)
 	  {
 	    pos = (low + hi) >> 1;
 	    final int d = compare(key, l.get(pos), c);
 	    if (d == 0)
-	      {
-		return pos;
-	      }
+              return pos;
 	    else if (d < 0)
-	      {
-		hi = pos - 1;
-	      }
+              hi = pos - 1;
 	    else
-	      {
-		low = ++pos;	// This gets the insertion point right on the last loop
-	      }
+              // This gets the insertion point right on the last loop
+              low = ++pos;
 	  }
       }
 
@@ -194,88 +377,30 @@ public class Collections
   }
 
   /**
-   * Perform a binary search of a List for a key, using the natural ordering of
-   * the elements. The list must be sorted (as by the sort() method) - if it is
-   * not, the behaviour of this method is undefined, and may be an infinite
-   * loop. Further, the key must be comparable with every item in the list. If
-   * the list contains the key more than once, any one of them may be found. To
-   * avoid pathological behaviour on sequential-access lists, a linear search
-   * is used if (l instanceof AbstractSequentialList). Note: although the
-   * specification allows for an infinite loop if the list is unsorted, it will
-   * not happen in this (Classpath) implementation.
-   *
-   * @param l the list to search (must be sorted)
-   * @param key the value to search for
-   * @returns the index at which the key was found, or -n-1 if it was not
-   *   found, where n is the index of the first value higher than key or
-   *   a.length if there is no such value.
-   * @exception ClassCastException if key could not be compared with one of the
-   *   elements of l
-   * @exception NullPointerException if a null element has compareTo called
-   */
-  public static int binarySearch(List l, Object key)
-  {
-    return search(l, key, null);
-  }
-
-  /**
-   * Perform a binary search of a List for a key, using a supplied Comparator.
-   * The list must be sorted (as by the sort() method with the same Comparator)
-   * - if it is not, the behaviour of this method is undefined, and may be an
-   * infinite loop. Further, the key must be comparable with every item in the
-   * list. If the list contains the key more than once, any one of them may be
-   * found. To avoid pathological behaviour on sequential-access lists, a
-   * linear search is used if (l instanceof AbstractSequentialList). Note:
-   * although the specification allows for an infinite loop if the list is
-   * unsorted, it will not happen in this (Classpath) implementation.
-   *
-   * @param l the list to search (must be sorted)
-   * @param key the value to search for
-   * @param c the comparator by which the list is sorted
-   * @returns the index at which the key was found, or -n-1 if it was not
-   *   found, where n is the index of the first value higher than key or
-   *   a.length if there is no such value.
-   * @exception ClassCastException if key could not be compared with one of the
-   *   elements of l
-   */
-  public static int binarySearch(List l, Object key, Comparator c)
-  {
-    if (c == null)
-      {
-	throw new NullPointerException();
-      }
-    return search(l, key, c);
-  }
-
-  /**
    * Copy one list to another. If the destination list is longer than the
    * source list, the remaining elements are unaffected. This method runs in
    * linear time.
    *
-   * @param dest the destination list.
-   * @param source the source list.
-   * @exception IndexOutOfBoundsException if the destination list is shorter
-   *   than the source list (the elements that can be copied will be, prior to
-   *   the exception being thrown).
-   * @exception UnsupportedOperationException if dest.listIterator() does not
-   *   support the set operation.
+   * @param dest the destination list
+   * @param source the source list
+   * @throws IndexOutOfBoundsException if the destination list is shorter
+   *         than the source list (the destination will be unmodified)
+   * @throws UnsupportedOperationException if dest.listIterator() does not
+   *         support the set operation
    */
   public static void copy(List dest, List source)
   {
+    int pos = source.size();
+    if (dest.size() < pos)
+      throw new IndexOutOfBoundsException("Source does not fit in dest");
+
     Iterator i1 = source.iterator();
     ListIterator i2 = dest.listIterator();
 
-    try
+    while (--pos >= 0)
       {
-	for (int i = source.size() - 1; i >= 0; --i)
-	  {
-	    i2.next();
-	    i2.set(i1.next());
-	  }
-      }
-    catch (NoSuchElementException x)
-      {
-	throw new IndexOutOfBoundsException("Source doesn't fit in dest.");      
+        i2.next();
+        i2.set(i1.next());
       }
   }
 
@@ -284,7 +409,7 @@ public class Collections
    * with legacy APIs that require an Enumeration as input.
    *
    * @param c the Collection to iterate over
-   * @returns an Enumeration backed by an Iterator over c
+   * @return an Enumeration backed by an Iterator over c
    */
   public static Enumeration enumeration(Collection c)
   {
@@ -308,8 +433,8 @@ public class Collections
    *
    * @param l the list to fill.
    * @param val the object to vill the list with.
-   * @exception UnsupportedOperationException if l.listIterator() does not
-   *   support the set operation.
+   * @throws UnsupportedOperationException if l.listIterator() does not
+   *         support the set operation.
    */
   public static void fill(List l, Object val)
   {
@@ -322,30 +447,81 @@ public class Collections
   }
 
   /**
+   * Returns the starting index where the specified sublist first occurs
+   * in a larger list, or -1 if there is no matching position. If
+   * <code>target.size() &gt; source.size()</code>, this returns -1,
+   * otherwise this implementation uses brute force, checking for
+   * <code>source.sublist(i, i + target.size()).equals(target)</code>
+   * for all possible i.
+   *
+   * @param source the list to search
+   * @param target the sublist to search for
+   * @return the index where found, or -1
+   * @since 1.4
+   */
+  public static int indexOfSubList(List source, List target)
+  {
+    int ssize = source.size();
+    for (int i = 0, j = target.size(); j <= ssize; i++, j++)
+      if (source.subList(i, j).equals(target))
+        return i;
+    return -1;
+  }
+
+  /**
+   * Returns the starting index where the specified sublist last occurs
+   * in a larger list, or -1 if there is no matching position. If
+   * <code>target.size() &gt; source.size()</code>, this returns -1,
+   * otherwise this implementation uses brute force, checking for
+   * <code>source.sublist(i, i + target.size()).equals(target)</code>
+   * for all possible i.
+   *
+   * @param source the list to search
+   * @param target the sublist to search for
+   * @return the index where found, or -1
+   * @since 1.4
+   */
+  public static int lastIndexOfSubList(List source, List target)
+  {
+    int ssize = source.size();
+    for (int i = ssize - target.size(), j = ssize; i >= 0; i--, j--)
+      if (source.subList(i, j).equals(target))
+        return i;
+    return -1;
+  }
+
+  /**
+   * Returns an array list holding the elements visited by a given
+   * Enumeration. This method exists for interoperability between legacy
+   * APIs and the new Collection API.
+   *
+   * @param e the enumeration to put in a list
+   * @return a list containing the enumeration elements
+   * @see ArrayList
+   * @since 1.4
+   */
+  public static List list(Enumeration e)
+  {
+    List l = new ArrayList();
+    while (e.hasMoreElements())
+      l.add(e.nextElement());
+    return l;
+  }
+
+  /**
    * Find the maximum element in a Collection, according to the natural
    * ordering of the elements. This implementation iterates over the
    * Collection, so it works in linear time.
    *
    * @param c the Collection to find the maximum element of
-   * @returns the maximum element of c
+   * @return the maximum element of c
    * @exception NoSuchElementException if c is empty
    * @exception ClassCastException if elements in c are not mutually comparable
    * @exception NullPointerException if null.compareTo is called
    */
   public static Object max(Collection c)
   {
-    Iterator itr = c.iterator();
-    Comparable max = (Comparable) itr.next();	// throws NoSuchElementException
-    int csize = c.size();
-    for (int i = 1; i < csize; i++)
-      {
-	Object o = itr.next();
-	if (max.compareTo(o) < 0)
-	  {
-	    max = (Comparable) o;
-	  }
-      }
-    return max;
+    return max(c, null);
   }
 
   /**
@@ -354,20 +530,23 @@ public class Collections
    * works in linear time.
    *
    * @param c the Collection to find the maximum element of
-   * @param order the Comparator to order the elements by
-   * @returns the maximum element of c
-   * @exception NoSuchElementException if c is empty
-   * @exception ClassCastException if elements in c are not mutually comparable
+   * @param order the Comparator to order the elements by, or null for natural
+   *        ordering
+   * @return the maximum element of c
+   * @throws NoSuchElementException if c is empty
+   * @throws ClassCastException if elements in c are not mutually comparable
+   * @throws NullPointerException if null is compared by natural ordering
+   *        (only possible when order is null)
    */
   public static Object max(Collection c, Comparator order)
   {
     Iterator itr = c.iterator();
-    Object max = itr.next();	// throws NoSuchElementException
+    Object max = itr.next(); // throws NoSuchElementException
     int csize = c.size();
     for (int i = 1; i < csize; i++)
       {
 	Object o = itr.next();
-	if (order.compare(max, o) < 0)
+	if (compare(max, o, order) < 0)
 	  max = o;
       }
     return max;
@@ -379,23 +558,14 @@ public class Collections
    * Collection, so it works in linear time.
    *
    * @param c the Collection to find the minimum element of
-   * @returns the minimum element of c
-   * @exception NoSuchElementException if c is empty
-   * @exception ClassCastException if elements in c are not mutually comparable
-   * @exception NullPointerException if null.compareTo is called
+   * @return the minimum element of c
+   * @throws NoSuchElementException if c is empty
+   * @throws ClassCastException if elements in c are not mutually comparable
+   * @throws NullPointerException if null.compareTo is called
    */
   public static Object min(Collection c)
   {
-    Iterator itr = c.iterator();
-    Comparable min = (Comparable) itr.next();	// throws NoSuchElementException
-    int csize = c.size();
-    for (int i = 1; i < csize; i++)
-      {
-	Object o = itr.next();
-	if (min.compareTo(o) > 0)
-	  min = (Comparable) o;
-      }
-    return min;
+    return min(c, null);
   }
 
   /**
@@ -404,10 +574,13 @@ public class Collections
    * works in linear time.
    *
    * @param c the Collection to find the minimum element of
-   * @param order the Comparator to order the elements by
-   * @returns the minimum element of c
-   * @exception NoSuchElementException if c is empty
-   * @exception ClassCastException if elements in c are not mutually comparable
+   * @param order the Comparator to order the elements by, or null for natural
+   *        ordering
+   * @return the minimum element of c
+   * @throws NoSuchElementException if c is empty
+   * @throws ClassCastException if elements in c are not mutually comparable
+   * @throws NullPointerException if null is compared by natural ordering
+   *        (only possible when order is null)
    */
   public static Object min(Collection c, Comparator order)
   {
@@ -417,7 +590,7 @@ public class Collections
     for (int i = 1; i < csize; i++)
       {
 	Object o = itr.next();
-	if (order.compare(min, o) > 0)
+	if (compare(min, o, order) > 0)
 	  min = o;
       }
     return min;
@@ -426,54 +599,182 @@ public class Collections
   /**
    * Creates an immutable list consisting of the same object repeated n times.
    * The returned object is tiny, consisting of only a single reference to the
-   * object and a count of the number of elements. It is Serializable.
+   * object and a count of the number of elements. It is Serializable, and
+   * implements RandomAccess. You can use it in tandem with List.addAll for
+   * fast list construction.
    *
    * @param n the number of times to repeat the object
    * @param o the object to repeat
-   * @returns a List consisting of n copies of o
-   * @throws IllegalArgumentException if n < 0
+   * @return a List consisting of n copies of o
+   * @throws IllegalArgumentException if n &lt; 0
+   * @see List#addAll(Collection)
+   * @see Serializable
+   * @see RandomAccess
    */
-  // It's not Serializable, because the serialized form is unspecced.
-  // Also I'm only assuming that it should be because I don't think it's
-  // stated - I just would be amazed if it isn't...
   public static List nCopies(final int n, final Object o)
   {
-    // Check for insane arguments
-    if (n < 0)
-      {
-	throw new IllegalArgumentException();
-      }
+    return new CopiesList(n, o);
+  }
 
-    // Create a minimal implementation of List
-    return new AbstractList()
+  /**
+   * The implementation of {@link #nCopies(int, Object)}. This class name
+   * is required for compatibility with Sun's JDK serializability.
+   *
+   * @author Eric Blake <ebb9@email.byu.edu>
+   */
+  private static final class CopiesList extends AbstractList
+    implements Serializable, RandomAccess
+  {
+    /**
+     * Compatible with JDK 1.4.
+     */
+    private static final long serialVersionUID = 2739099268398711800L;
+
+    /**
+     * The count of elements in this list.
+     * @serial the list size
+     */
+    private final int n;
+
+    /**
+     * The repeated list element.
+     * @serial the list contents
+     */
+    private final Object element;
+
+    /**
+     * Constructs the list.
+     *
+     * @param n the count
+     * @param o the object
+     * @throws IllegalArgumentException if n &lt; 0
+     */
+    CopiesList(int n, Object o)
     {
-      public int size()
-      {
-	return n;
-      }
+      if (n < 0)
+	throw new IllegalArgumentException();
+      this.n = n;
+      element = o;
+    }
 
-      public Object get(int index)
-      {
-	if (index < 0 || index >= n)
-	  {
-	    throw new IndexOutOfBoundsException();
-	  }
-	return o;
-      }
-    };
+    /**
+     * The size is fixed.
+     */
+    public int size()
+    {
+      return n;
+    }
+
+    /**
+     * The same element is returned.
+     */
+    public Object get(int index)
+    {
+      if (index < 0 || index >= n)
+        throw new IndexOutOfBoundsException();
+      return element;
+    }
+
+    // The remaining methods are optional, but provide a performance
+    // advantage by not allocating unnecessary iterators in AbstractList.
+    /**
+     * This list only contains one element.
+     */
+    public boolean contains(Object o)
+    {
+      return n > 0 && equals(o, element);
+    }
+
+    /**
+     * The index is either 0 or -1.
+     */
+    public int indexOf(Object o)
+    {
+      return (n > 0 && equals(o, element)) ? 0 : -1;
+    }
+
+    /**
+     * The index is either n-1 or -1.
+     */
+    public int lastIndexOf(Object o)
+    {
+      return equals(o, element) ? n - 1 : -1;
+    }
+
+    /**
+     * A subList is just another CopiesList.
+     */
+    public List subList(int from, int to)
+    {
+      if (from < 0 || to > n)
+        throw new IndexOutOfBoundsException();
+      return new CopiesList(to - from, element);
+    }
+
+    /**
+     * The array is easy.
+     */
+    public Object[] toArray()
+    {
+      Object[] a = new Object[n];
+      Arrays.fill(a, element);
+      return a;
+    }
+
+    /**
+     * The string is easy to generate.
+     */
+    public String toString()
+    {
+      StringBuffer r = new StringBuffer("{");
+      for (int i = n - 1; --i > 0; )
+        r.append(element).append(", ");
+      r.append(element).append("}");
+      return r.toString();
+    }
+  } // class CopiesList
+
+  /**
+   * Replace all instances of one object with another in the specified list.
+   * The list does not change size. An element e is replaced if
+   * <code>oldval == null ? e == null : oldval.equals(e)</code>.
+   *
+   * @param list the list to iterate over
+   * @param oldval the element to replace
+   * @param newval the new value for the element
+   * @return true if a replacement occurred
+   * @throws UnsupportedOperationException if the list iterator does not allow
+   *         for the set operation
+   * @throws ClassCastException newval is of a type which cannot be added
+   *         to the list
+   * @throws IllegalArgumentException some other aspect of newval stops
+   *         it being added to the list
+   * @since 1.4
+   */
+  public static boolean replaceAll(List list, Object oldval, Object newval)
+  {
+    ListIterator itr = list.listIterator();
+    boolean replace_occured = false;
+    for (int i = list.size(); --i >= 0; )
+      if (AbstractCollection.equals(oldval, itr.next()))
+        {
+          itr.set(newval);
+          replace_occured = true;
+        }
+    return replace_occured;
   }
 
   /**
    * Reverse a given list. This method works in linear time.
    *
-   * @param l the list to reverse.
-   * @exception UnsupportedOperationException if l.listIterator() does not
-   *   support the set operation.
+   * @param l the list to reverse
+   * @throws UnsupportedOperationException if l.listIterator() does not
+   *         support the set operation
    */
   public static void reverse(List l)
   {
     ListIterator i1 = l.listIterator();
-    int pos1 = 0;
+    int pos1 = 1;
     int pos2 = l.size();
     ListIterator i2 = l.listIterator(pos2);
     while (pos1 < pos2)
@@ -486,21 +787,16 @@ public class Collections
       }
   }
 
-  static class ReverseComparator implements Comparator, Serializable
-  {
-    public int compare(Object a, Object b)
-    {
-      return -((Comparable) a).compareTo(b);
-    }
-  }
-  
-  static ReverseComparator rcInstance = new ReverseComparator();
-  
   /**
-   * Get a comparator that implements the reverse of natural ordering. This is
-   * intended to make it easy to sort into reverse order, by simply passing
-   * Collections.reverseOrder() to the sort method. The return value of this
-   * method is Serializable.
+   * Get a comparator that implements the reverse of natural ordering. In
+   * other words, this sorts Comparable objects opposite of how their
+   * compareTo method would sort. This makes it easy to sort into reverse
+   * order, by simply passing Collections.reverseOrder() to the sort method.
+   * The return value of this method is Serializable.
+   *
+   * @return a comparator that imposes reverse natural ordering
+   * @see Comparable
+   * @see Serializable
    */
   public static Comparator reverseOrder()
   {
@@ -508,20 +804,135 @@ public class Collections
   }
 
   /**
-   * Shuffle a list according to a default source of randomness. The algorithm
-   * used would result in a perfectly fair shuffle (that is, each element would
-   * have an equal chance of ending up in any position) with a perfect source
-   * of randomness; in practice the results are merely very close to perfect.
-   * <p>
-   * This method operates in linear time on a random-access list, but may take
-   * quadratic time on a sequential-access list.
-   * Note: this (classpath) implementation will never take quadratic time, but
-   * it does make a copy of the list. This is in line with the behaviour of the
-   * sort methods and seems preferable.
+   * The object for {@link #reverseOrder()}.
+   */
+  static private final ReverseComparator rcInstance = new ReverseComparator();
+
+  /**
+   * The implementation of {@link #reverseOrder()}. This class name
+   * is required for compatibility with Sun's JDK serializability.
    *
-   * @param l the list to shuffle.
-   * @exception UnsupportedOperationException if l.listIterator() does not
-   *   support the set operation.
+   * @author Eric Blake <ebb9@email.byu.edu>
+   */
+  private static final class ReverseComparator
+    implements Comparator, Serializable
+  {
+    /**
+     * Compatible with JDK 1.4.
+     */
+    static private final long serialVersionUID = 7207038068494060240L;
+
+    /**
+     * A private constructor adds overhead.
+     */
+    ReverseComparator()
+    {
+    }
+
+    /**
+     * Compare two objects in reverse natural order.
+     *
+     * @param a the first object
+     * @param b the second object
+     * @return &lt;, ==, or &gt; 0 according to b.compareTo(a)
+     */
+    public int compare(Object a, Object b)
+    {
+      return ((Comparable) b).compareTo(a);
+    }
+  }
+
+  /**
+   * Rotate the elements in a list by a specified distance. After calling this
+   * method, the element now at index <code>i</code> was formerly at index
+   * <code>(i - distance) mod list.size()</code>. The list size is unchanged.
+   * <p>
+   *
+   * For example, suppose a list contains <code>[t, a, n, k, s]</code>. After
+   * either <code>Collections.rotate(l, 4)</code> or
+   * <code>Collections.rotate(l, -1)</code>, the new contents are
+   * <code>[s, t, a, n, k]</code>. This can be applied to sublists to rotate
+   * just a portion of the list. For example, to move element <code>a</code>
+   * forward two positions in the original example, use
+   * <code>Collections.rotate(l.subList(1, 3+1), -1)</code>, which will
+   * result in <code>[t, n, k, a, s]</code>.
+   * <p>
+   *
+   * If the list is small or implements {@link RandomAccess}, the
+   * implementation exchanges the first element to its destination, then the
+   * displaced element, and so on until a circuit has been completed. The
+   * process is repeated if needed on the second element, and so forth, until
+   * all elements have been swapped.  For large non-random lists, the
+   * implementation breaks the list into two sublists at index
+   * <code>-distance mod size</code>, calls {@link #reverse(List)} on the
+   * pieces, then reverses the overall list.
+   *
+   * @param list the list to rotate
+   * @param distance the distance to rotate by; unrestricted in value
+   * @throws UnsupportedOperationException if the list does not support set
+   * @since 1.4
+   */
+  public static void rotate(List list, int distance)
+  {
+    int size = list.size();
+    distance %= size;
+    if (distance == 0)
+      return;
+    if (distance < 0)
+      distance += size;
+
+    if (isSequential(list))
+      {
+        reverse(list);
+        reverse(list.subList(0, distance));
+        reverse(list.subList(distance, size));
+      }
+    else
+      {
+        // Determine the least common multiple of distance and size, as there
+        // are (distance / LCM) loops to cycle through.
+        int a = size;
+        int lcm = distance;
+        int b = a % lcm;
+        while (b != 0)
+          {
+            a = lcm;
+            lcm = b;
+            b = a % lcm;
+          }
+
+        // Now, make the swaps. We must take the remainder every time through
+        // the inner loop so that we don't overflow i to negative values.
+        while (--lcm >= 0)
+          {
+            Object o = list.get(lcm);
+            for (int i = lcm + distance; i != lcm; i = (i + distance) % size)
+              o = list.set(i, o);
+            list.set(lcm, o);
+          }
+      }
+  }
+
+  /**
+   * Shuffle a list according to a default source of randomness. The algorithm
+   * used iterates backwards over the list, swapping each element with an
+   * element randomly selected from the elements in positions less than or
+   * equal to it (using r.nextInt(int)).
+   * <p>
+   *
+   * This algorithm would result in a perfectly fair shuffle (that is, each
+   * element would have an equal chance of ending up in any position) if r were
+   * a perfect source of randomness. In practice the results are merely very
+   * close to perfect.
+   * <p>
+   *
+   * This method operates in linear time. To do this on large lists which do
+   * not implement {@link RandomAccess}, a temporary array is used to acheive
+   * this speed, since it would be quadratic access otherwise.
+   *
+   * @param l the list to shuffle
+   * @throws UnsupportedOperationException if l.listIterator() does not
+   *         support the set operation
    */
   public static void shuffle(List l)
   {
@@ -536,11 +947,12 @@ public class Collections
     shuffle(l, defaultRandom);
   }
 
-  /** Cache a single Random object for use by shuffle(List). This improves
-    * performance as well as ensuring that sequential calls to shuffle() will
-    * not result in the same shuffle order occurring: the resolution of 
-    * System.currentTimeMillis() is not sufficient to guarantee a unique seed.
-    */
+  /**
+   * Cache a single Random object for use by shuffle(List). This improves
+   * performance as well as ensuring that sequential calls to shuffle() will
+   * not result in the same shuffle order occurring: the resolution of
+   * System.currentTimeMillis() is not sufficient to guarantee a unique seed.
+   */
   private static Random defaultRandom = null;
 
   /**
@@ -549,147 +961,468 @@ public class Collections
    * element randomly selected from the elements in positions less than or
    * equal to it (using r.nextInt(int)).
    * <p>
+   *
    * This algorithm would result in a perfectly fair shuffle (that is, each
    * element would have an equal chance of ending up in any position) if r were
    * a perfect source of randomness. In practise (eg if r = new Random()) the
    * results are merely very close to perfect.
    * <p>
-   * This method operates in linear time on a random-access list, but may take
-   * quadratic time on a sequential-access list.
-   * Note: this (classpath) implementation will never take quadratic time, but
-   * it does make a copy of the list. This is in line with the behaviour of the
-   * sort methods and seems preferable.
    *
-   * @param l the list to shuffle.
-   * @param r the source of randomness to use for the shuffle.
-   * @exception UnsupportedOperationException if l.listIterator() does not
-   *   support the set operation.
+   * This method operates in linear time. To do this on large lists which do
+   * not implement {@link RandomAccess}, a temporary array is used to acheive
+   * this speed, since it would be quadratic access otherwise.
+   *
+   * @param l the list to shuffle
+   * @param r the source of randomness to use for the shuffle
+   * @throws UnsupportedOperationException if l.listIterator() does not
+   *         support the set operation
    */
   public static void shuffle(List l, Random r)
   {
-    Object[] a = l.toArray();	// Dump l into an array
     int lsize = l.size();
     ListIterator i = l.listIterator(lsize);
+    boolean sequential = isSequential(l);
+    Object[] a = null; // stores a copy of the list for the sequential case
 
-    // Iterate backwards over l
-    for (int pos = lsize - 1; pos >= 0; --pos)
+    if (sequential)
+      a = l.toArray();
+
+    for (int pos = lsize - 1; pos > 0; --pos)
       {
 	// Obtain a random position to swap with. pos + 1 is used so that the
 	// range of the random number includes the current position.
 	int swap = r.nextInt(pos + 1);
 
-	// Swap the swapth element of the array with the next element of the
-	// list.
-	Object o = a[swap];
-	a[swap] = a[pos];
-	a[pos] = o;
+	// Swap the desired element.
+	Object o;
+        if (sequential)
+          {
+            o = a[swap];
+            a[swap] = i.previous();
+          }
+        else
+          o = l.set(swap, i.previous());
 
-	// Set the element in the original list accordingly.
-	i.previous();
 	i.set(o);
       }
   }
 
+
   /**
    * Obtain an immutable Set consisting of a single element. The return value
    * of this method is Serializable.
    *
-   * @param o the single element.
-   * @return an immutable Set containing only o.
+   * @param o the single element
+   * @return an immutable Set containing only o
+   * @see Serializable
    */
-  // It's not serializable because the spec is broken.
-  public static Set singleton(final Object o)
+  public static Set singleton(Object o)
   {
-    return new AbstractSet()
-    {
-      public int size()
-      {
-	return 1;
-      }
-
-      public Iterator iterator()
-      {
-	return new Iterator()
-	{
-	  private boolean hasNext = true;
-
-	  public boolean hasNext()
-	  {
-	    return hasNext;
-	  }
-
-	  public Object next()
-	  {
-	    if (hasNext)
-	      {
-		hasNext = false;
-		return o;
-	      }
-	    else
-	      {
-		throw new NoSuchElementException();
-	      }
-	  }
-
-	  public void remove()
-	  {
-	    throw new UnsupportedOperationException();
-	  }
-	};
-      }
-    };
+    return new SingletonSet(o);
   }
+
+  /**
+   * The implementation of {@link #singleton(Object)}. This class name
+   * is required for compatibility with Sun's JDK serializability.
+   *
+   * @author Eric Blake <ebb9@email.byu.edu>
+   */
+  private static final class SingletonSet extends AbstractSet
+    implements Serializable
+  {
+    /**
+     * Compatible with JDK 1.4.
+     */
+    private static final long serialVersionUID = 3193687207550431679L;
+
+
+    /**
+     * The single element; package visible for use in nested class.
+     * @serial the singleton
+     */
+    final Object element;
+
+    /**
+     * Construct a singleton.
+     * @param o the element
+     */
+    SingletonSet(Object o)
+    {
+      element = o;
+    }
+
+    /**
+     * The size: always 1!
+     */
+    public int size()
+    {
+      return 1;
+    }
+
+    /**
+     * Returns an iterator over the lone element.
+     */
+    public Iterator iterator()
+    {
+      return new Iterator()
+      {
+        private boolean hasNext = true;
+
+        public boolean hasNext()
+        {
+          return hasNext;
+        }
+
+        public Object next()
+        {
+          if (hasNext)
+          {
+            hasNext = false;
+            return element;
+          }
+          else
+            throw new NoSuchElementException();
+        }
+
+        public void remove()
+        {
+          throw new UnsupportedOperationException();
+        }
+      };
+    }
+
+    // The remaining methods are optional, but provide a performance
+    // advantage by not allocating unnecessary iterators in AbstractSet.
+    /**
+     * The set only contains one element.
+     */
+    public boolean contains(Object o)
+    {
+      return equals(o, element);
+    }
+
+    /**
+     * This is true if the other collection only contains the element.
+     */
+    public boolean containsAll(Collection c)
+    {
+      Iterator i = c.iterator();
+      int pos = c.size();
+      while (--pos >= 0)
+        if (! equals(i.next(), element))
+          return false;
+      return true;
+    }
+
+    /**
+     * The hash is just that of the element.
+     */
+    public int hashCode()
+    {
+      return hashCode(element);
+    }
+
+    /**
+     * Returning an array is simple.
+     */
+    public Object[] toArray()
+    {
+      return new Object[] {element};
+    }
+
+    /**
+     * Obvious string.
+     */
+    public String toString()
+    {
+      return "[" + element + "]";
+    }
+  } // class SingletonSet
 
   /**
    * Obtain an immutable List consisting of a single element. The return value
-   * of this method is Serializable.
+   * of this method is Serializable, and implements RandomAccess.
    *
-   * @param o the single element.
-   * @return an immutable List containing only o.
+   * @param o the single element
+   * @return an immutable List containing only o
+   * @see Serializable
+   * @see RandomAccess
+   * @since 1.3
    */
-  // It's not serializable because the spec is broken.
-  public static List singletonList(final Object o)
+  public static List singletonList(Object o)
   {
-    return new AbstractList()
-    {
-      public int size()
-      {
-	return 1;
-      }
-
-      public Object get(int index)
-      {
-	if (index == 0)
-	  {
-	    throw new IndexOutOfBoundsException();
-	  }
-	else
-	  {
-	    return o;
-	  }
-      }
-    };
+    return new SingletonList(o);
   }
 
   /**
-   * Obtain an immutable Map consisting of a single key value pair.
+   * The implementation of {@link #singletonList(Object)}. This class name
+   * is required for compatibility with Sun's JDK serializability.
+   *
+   * @author Eric Blake <ebb9@email.byu.edu>
+   */
+  private static final class SingletonList extends AbstractList
+    implements Serializable, RandomAccess
+  {
+    /**
+     * Compatible with JDK 1.4.
+     */
+    private static final long serialVersionUID = 3093736618740652951L;
+
+    /**
+     * The single element.
+     * @serial the singleton
+     */
+    private final Object element;
+
+    /**
+     * Construct a singleton.
+     * @param o the element
+     */
+    SingletonList(Object o)
+    {
+      element = o;
+    }
+
+    /**
+     * The size: always 1!
+     */
+    public int size()
+    {
+      return 1;
+    }
+
+    /**
+     * Only index 0 is valid.
+     */
+    public Object get(int index)
+    {
+      if (index == 0)
+        return element;
+      throw new IndexOutOfBoundsException();
+    }
+
+    // The remaining methods are optional, but provide a performance
+    // advantage by not allocating unnecessary iterators in AbstractList.
+    /**
+     * The set only contains one element.
+     */
+    public boolean contains(Object o)
+    {
+      return equals(o, element);
+    }
+
+    /**
+     * This is true if the other collection only contains the element.
+     */
+    public boolean containsAll(Collection c)
+    {
+      Iterator i = c.iterator();
+      int pos = c.size();
+      while (--pos >= 0)
+        if (! equals(i.next(), element))
+          return false;
+      return true;
+    }
+
+    /**
+     * Speed up the hashcode computation.
+     */
+    public int hashCode()
+    {
+      return 31 + hashCode(element);
+    }
+
+    /**
+     * Either the list has it or not.
+     */
+    public int indexOf(Object o)
+    {
+      return equals(o, element) ? 0 : -1;
+    }
+
+    /**
+     * Either the list has it or not.
+     */
+    public int lastIndexOf(Object o)
+    {
+      return equals(o, element) ? 0 : -1;
+    }
+
+    /**
+     * Sublists are limited in scope.
+     */
+    public List subList(int from, int to)
+    {
+      if (from == to && (to == 0 || to == 1))
+        return EMPTY_LIST;
+      if (from == 0 && to == 1)
+        return this;
+      if (from > to)
+        throw new IllegalArgumentException();
+      throw new IndexOutOfBoundsException();
+    }
+
+    /**
+     * Returning an array is simple.
+     */
+    public Object[] toArray()
+    {
+      return new Object[] {element};
+    }
+
+    /**
+     * Obvious string.
+     */
+    public String toString()
+    {
+      return "[" + element + "]";
+    }
+  } // class SingletonList
+
+  /**
+   * Obtain an immutable Map consisting of a single key-value pair.
    * The return value of this method is Serializable.
    *
-   * @param key the single key.
-   * @param value the single value.
-   * @return an immutable Map containing only the single key value pair.
+   * @param key the single key
+   * @param value the single value
+   * @return an immutable Map containing only the single key-value pair
+   * @see Serializable
+   * @since 1.3
    */
-  // It's not serializable because the spec is broken.
-  public static Map singletonMap(final Object key, final Object value)
+  public static Map singletonMap(Object key, Object value)
   {
-    return new AbstractMap()
-    {
-      public Set entrySet()
-      {
-	return singleton(new BasicMapEntry(key, value));
-      }
-    };
+    return new SingletonMap(key, value);
   }
+
+  /**
+   * The implementation of {@link #singletonMap(Object)}. This class name
+   * is required for compatibility with Sun's JDK serializability.
+   *
+   * @author Eric Blake <ebb9@email.byu.edu>
+   */
+  private static final class SingletonMap extends AbstractMap
+    implements Serializable
+  {
+    /**
+     * Compatible with JDK 1.4.
+     */
+    private static final long serialVersionUID = -6979724477215052911L;
+
+    /**
+     * The single key.
+     * @serial the singleton key
+     */
+    private final Object k;
+
+    /**
+     * The corresponding value.
+     * @serial the singleton value
+     */
+    private final Object v;
+
+    /**
+     * Cache the entry set.
+     */
+    private transient Set entries;
+
+    /**
+     * Construct a singleton.
+     * @param key the key
+     * @param value the value
+     */
+    SingletonMap(Object key, Object value)
+    {
+      k = key;
+      v = value;
+    }
+
+    /**
+     * There is a single immutable entry.
+     */
+    public Set entrySet()
+    {
+      if (entries == null)
+        entries = singleton(new BasicMapEntry(k, v)
+        {
+          public Object setValue(Object o)
+          {
+            throw new UnsupportedOperationException();
+          }
+        });
+      return entries;
+    }
+
+    // The remaining methods are optional, but provide a performance
+    // advantage by not allocating unnecessary iterators in AbstractMap.
+    /**
+     * Single entry.
+     */
+    public boolean containsKey(Object key)
+    {
+      return equals(key, k);
+    }
+
+    /**
+     * Single entry.
+     */
+    public boolean containsValue(Object value)
+    {
+      return equals(value, v);
+    }
+
+    /**
+     * Single entry.
+     */
+    public Object get(Object key)
+    {
+      return equals(key, k) ? v : null;
+    }
+
+    /**
+     * Calculate the hashcode directly.
+     */
+    public int hashCode()
+    {
+      return hashCode(k) ^ hashCode(v);
+    }
+
+    /**
+     * Return the keyset.
+     */
+    public Set keySet()
+    {
+      if (keys == null)
+        keys = singleton(k);
+      return keys;
+    }
+
+    /**
+     * The size: always 1!
+     */
+    public int size()
+    {
+      return 1;
+    }
+
+    /**
+     * Return the values. Technically, a singleton, while more specific than
+     * a general Collection, will work. Besides, that's what the JDK uses!
+     */
+    public Collection values()
+    {
+      if (values == null)
+        values = singleton(v);
+      return values;
+    }
+
+    /**
+     * Obvious string.
+     */
+    public String toString()
+    {
+      return "{" + k + "=" + v + "}";
+    }
+  } // class SingletonMap
 
   /**
    * Sort a list according to the natural ordering of its elements. The list
@@ -700,19 +1433,14 @@ public class Collections
    * the array.
    *
    * @param l the List to sort
-   * @exception ClassCastException if some items are not mutually comparable
-   * @exception UnsupportedOperationException if the List is not modifiable
+   * @throws ClassCastException if some items are not mutually comparable
+   * @throws UnsupportedOperationException if the List is not modifiable
+   * @throws NullPointerException if some element is null
+   * @see Arrays#sort(Object[])
    */
   public static void sort(List l)
   {
-    Object[] a = l.toArray();
-    Arrays.sort(a);
-    ListIterator i = l.listIterator();
-    for (int pos = 0; pos < a.length; pos++)
-      {
-	i.next();
-	i.set(a[pos]);
-      }
+    sort(l, null);
   }
 
   /**
@@ -724,87 +1452,1368 @@ public class Collections
    * the array.
    *
    * @param l the List to sort
-   * @param c the Comparator specifying the ordering for the elements
-   * @exception ClassCastException if c will not compare some pair of items
-   * @exception UnsupportedOperationException if the List is not modifiable
+   * @param c the Comparator specifying the ordering for the elements, or
+   *        null for natural ordering
+   * @throws ClassCastException if c will not compare some pair of items
+   * @throws UnsupportedOperationException if the List is not modifiable
+   * @throws NullPointerException if null is compared by natural ordering
+   *        (only possible when c is null)
+   * @see Arrays#sort(Object[], Comparator)
    */
   public static void sort(List l, Comparator c)
   {
     Object[] a = l.toArray();
     Arrays.sort(a, c);
-    ListIterator i = l.listIterator();
-    for (int pos = 0; pos < a.length; pos++)
+    ListIterator i = l.listIterator(a.length);
+    for (int pos = a.length; --pos >= 0; )
       {
-	i.next();
+	i.previous();
 	i.set(a[pos]);
       }
   }
 
-  // All the methods from here on in require doc-comments.
+  /**
+   * Swaps the elements at the specified positions within the list. Equal
+   * positions have no effect.
+   *
+   * @param l the list to work on
+   * @param i the first index to swap
+   * @param j the second index
+   * @throws UnsupportedOperationException if list.set is not supported
+   * @throws IndexOutOfBoundsException if either i or j is &lt; 0 or &gt;=
+   *         list.size()
+   * @since 1.4
+   */
+  public static void swap(List l, int i, int j)
+  {
+    l.set(i, l.set(j, l.get(i)));
+  }
 
+  /**
+   * Returns a synchronized (thread-safe) collection wrapper backed by the
+   * given collection. Notice that element access through the iterators
+   * is thread-safe, but if the collection can be structurally modified
+   * (adding or removing elements) then you should synchronize around the
+   * iteration to avoid non-deterministic behavior:<br>
+   * <pre>
+   * Collection c = Collections.synchronizedCollection(new Collection(...));
+   * ...
+   * synchronized (c)
+   *   {
+   *     Iterator i = c.iterator();
+   *     while (i.hasNext())
+   *       foo(i.next());
+   *   }
+   * </pre><p>
+   *
+   * Since the collection might be a List or a Set, and those have incompatible
+   * equals and hashCode requirements, this relies on Object's implementation
+   * rather than passing those calls on to the wrapped collection. The returned
+   * Collection implements Serializable, but can only be serialized if
+   * the collection it wraps is likewise Serializable.
+   *
+   * @param c the collection to wrap
+   * @return a synchronized view of the collection
+   * @see Serializable
+   */
   public static Collection synchronizedCollection(Collection c)
   {
     return new SynchronizedCollection(c);
   }
+
+  /**
+   * The implementation of {@link #synchronizedCollection(Collection)}. This
+   * class name is required for compatibility with Sun's JDK serializability.
+   * Package visible, so that collections such as the one for
+   * Hashtable.values() can specify which object to synchronize on.
+   *
+   * @author Eric Blake <ebb9@email.byu.edu>
+   */
+  static class SynchronizedCollection
+    implements Collection, Serializable
+  {
+    /**
+     * Compatible with JDK 1.4.
+     */
+    private static final long serialVersionUID = 3053995032091335093L;
+
+    /**
+     * The wrapped collection. Package visible for use by subclasses.
+     * @serial the real collection
+     */
+    final Collection c;
+
+    /**
+     * The object to synchronize on.  When an instance is created via public
+     * methods, it will be this; but other uses like SynchronizedMap.values()
+     * must specify another mutex. Package visible for use by subclasses.
+     * @serial the lock
+     */
+    final Object mutex;
+
+    /**
+     * Wrap a given collection.
+     * @param c the collection to wrap
+     * @throws NullPointerException if c is null
+     */
+    SynchronizedCollection(Collection c)
+    {
+      this.c = c;
+      mutex = this;
+      if (c == null)
+        throw new NullPointerException();
+    }
+
+    /**
+     * Called only by trusted code to specify the mutex as well as the
+     * collection.
+     * @param sync the mutex
+     * @param c the collection
+     */
+    SynchronizedCollection(Object sync, Collection c)
+    {
+      this.c = c;
+      mutex = sync;
+    }
+
+    public boolean add(Object o)
+    {
+      synchronized (mutex)
+        {
+          return c.add(o);
+        }
+    }
+
+    public boolean addAll(Collection col)
+    {
+      synchronized (mutex)
+        {
+          return c.addAll(col);
+        }
+    }
+
+    public void clear()
+    {
+      synchronized (mutex)
+        {
+          c.clear();
+        }
+    }
+
+    public boolean contains(Object o)
+    {
+      synchronized (mutex)
+        {
+          return c.contains(o);
+        }
+    }
+
+    public boolean containsAll(Collection c1)
+    {
+      synchronized (mutex)
+        {
+          return c.containsAll(c1);
+        }
+    }
+
+    public boolean isEmpty()
+    {
+      synchronized (mutex)
+        {
+          return c.isEmpty();
+        }
+    }
+
+    public Iterator iterator()
+    {
+      synchronized (mutex)
+        {
+          return new SynchronizedIterator(mutex, c.iterator());
+        }
+    }
+
+    public boolean remove(Object o)
+    {
+      synchronized (mutex)
+        {
+          return c.remove(o);
+        }
+    }
+
+    public boolean removeAll(Collection col)
+    {
+      synchronized (mutex)
+        {
+          return c.removeAll(col);
+        }
+    }
+
+    public boolean retainAll(Collection col)
+    {
+      synchronized (mutex)
+        {
+          return c.retainAll(col);
+        }
+    }
+
+    public int size()
+    {
+      synchronized (mutex)
+        {
+          return c.size();
+        }
+    }
+
+    public Object[] toArray()
+    {
+      synchronized (mutex)
+        {
+          return c.toArray();
+        }
+    }
+
+    public Object[] toArray(Object[] a)
+    {
+      synchronized (mutex)
+        {
+          return c.toArray(a);
+        }
+    }
+
+    public String toString()
+    {
+      synchronized (mutex)
+        {
+          return c.toString();
+        }
+    }
+  } // class SynchronizedCollection
+
+  /**
+   * The implementation of the various iterator methods in the
+   * synchronized classes. These iterators must "sync" on the same object
+   * as the collection they iterate over.
+   *
+   * @author Eric Blake <ebb9@email.byu.edu>
+   */
+  private static class SynchronizedIterator implements Iterator
+  {
+    /**
+     * The object to synchronize on. Package visible for use by subclass.
+     */
+    final Object mutex;
+
+    /**
+     * The wrapped iterator.
+     */
+    private final Iterator i;
+
+    /**
+     * Only trusted code creates a wrapper, with the specified sync.
+     * @param sync the mutex
+     * @param i the wrapped iterator
+     */
+    SynchronizedIterator(Object sync, Iterator i)
+    {
+      this.i = i;
+      mutex = sync;
+    }
+
+    public Object next()
+    {
+      synchronized (mutex)
+        {
+          return i.next();
+        }
+    }
+
+    public boolean hasNext()
+    {
+      synchronized (mutex)
+        {
+          return i.hasNext();
+        }
+    }
+
+    public void remove()
+    {
+      synchronized (mutex)
+        {
+          i.remove();
+        }
+    }
+  } // class SynchronizedIterator
+
+  /**
+   * Returns a synchronized (thread-safe) list wrapper backed by the
+   * given list. Notice that element access through the iterators
+   * is thread-safe, but if the list can be structurally modified
+   * (adding or removing elements) then you should synchronize around the
+   * iteration to avoid non-deterministic behavior:<br>
+   * <pre>
+   * List l = Collections.synchronizedList(new List(...));
+   * ...
+   * synchronized (l)
+   *   {
+   *     Iterator i = l.iterator();
+   *     while (i.hasNext())
+   *       foo(i.next());
+   *   }
+   * </pre><p>
+   *
+   * The returned List implements Serializable, but can only be serialized if
+   * the list it wraps is likewise Serializable. In addition, if the wrapped
+   * list implements RandomAccess, this does too.
+   *
+   * @param l the list to wrap
+   * @return a synchronized view of the list
+   * @see Serializable
+   * @see RandomAccess
+   */
   public static List synchronizedList(List l)
   {
+    if (l instanceof RandomAccess)
+      return new SynchronizedRandomAccessList(l);
     return new SynchronizedList(l);
   }
+
+  /**
+   * The implementation of {@link #synchronizedList(List)} for sequential
+   * lists. This class name is required for compatibility with Sun's JDK
+   * serializability. Package visible, so that lists such as Vector.subList()
+   * can specify which object to synchronize on.
+   *
+   * @author Eric Blake <ebb9@email.byu.edu>
+   */
+  static class SynchronizedList extends SynchronizedCollection
+    implements List
+  {
+    /**
+     * Compatible with JDK 1.4.
+     */
+    private static final long serialVersionUID = -7754090372962971524L;
+
+    /**
+     * The wrapped list; stored both here and in the superclass to avoid
+     * excessive casting. Package visible for use by subclass.
+     * @serial the wrapped list
+     */
+    final List list;
+
+    /**
+     * Wrap a given list.
+     * @param l the list to wrap
+     * @throws NullPointerException if l is null
+     */
+    SynchronizedList(List l)
+    {
+      super(l);
+      list = l;
+    }
+
+    /**
+     * Called only by trusted code to specify the mutex as well as the list.
+     * @param sync the mutex
+     * @param l the list
+     */
+    SynchronizedList(Object sync, List l)
+    {
+      super(sync, l);
+      list = l;
+    }
+
+    public void add(int index, Object o)
+    {
+      synchronized (mutex)
+        {
+          list.add(index, o);
+        }
+    }
+
+    public boolean addAll(int index, Collection c)
+    {
+      synchronized (mutex)
+        {
+          return list.addAll(index, c);
+        }
+    }
+
+    public boolean equals(Object o)
+    {
+      synchronized (mutex)
+        {
+          return list.equals(o);
+        }
+    }
+
+    public Object get(int index)
+    {
+      synchronized (mutex)
+        {
+          return list.get(index);
+        }
+    }
+
+    public int hashCode()
+    {
+      synchronized (mutex)
+        {
+          return list.hashCode();
+        }
+    }
+
+    public int indexOf(Object o)
+    {
+      synchronized (mutex)
+        {
+          return list.indexOf(o);
+        }
+    }
+
+    public int lastIndexOf(Object o)
+    {
+      synchronized (mutex)
+        {
+          return list.lastIndexOf(o);
+        }
+    }
+
+    public ListIterator listIterator()
+    {
+      synchronized (mutex)
+        {
+          return new SynchronizedListIterator(mutex, list.listIterator());
+        }
+    }
+
+    public ListIterator listIterator(int index)
+    {
+      synchronized (mutex)
+        {
+          return new SynchronizedListIterator(mutex, list.listIterator(index));
+        }
+    }
+
+    public Object remove(int index)
+    {
+      synchronized (mutex)
+        {
+          return list.remove(index);
+        }
+    }
+
+    public Object set(int index, Object o)
+    {
+      synchronized (mutex)
+        {
+          return list.set(index, o);
+        }
+    }
+
+    public List subList(int fromIndex, int toIndex)
+    {
+      synchronized (mutex)
+        {
+          return new SynchronizedList(mutex, list.subList(fromIndex, toIndex));
+        }
+    }
+  } // class SynchronizedList
+
+  /**
+   * The implementation of {@link #synchronizedList(List)} for random-access
+   * lists. This class name is required for compatibility with Sun's JDK
+   * serializability.
+   *
+   * @author Eric Blake <ebb9@email.byu.edu>
+   */
+  private static final class SynchronizedRandomAccessList
+    extends SynchronizedList implements RandomAccess
+  {
+    /**
+     * Compatible with JDK 1.4.
+     */
+    private static final long serialVersionUID = 1530674583602358482L;
+
+    /**
+     * Wrap a given list.
+     * @param l the list to wrap
+     * @throws NullPointerException if l is null
+     */
+    SynchronizedRandomAccessList(List l)
+    {
+      super(l);
+    }
+
+    /**
+     * Called only by trusted code to specify the mutex as well as the
+     * collection.
+     * @param sync the mutex
+     * @param l the list
+     */
+    SynchronizedRandomAccessList(Object sync, List l)
+    {
+      super(sync, l);
+    }
+
+    public List subList(int fromIndex, int toIndex)
+    {
+      synchronized (mutex)
+        {
+          return new SynchronizedRandomAccessList(mutex,
+                                                  list.subList(fromIndex,
+                                                               toIndex));
+        }
+    }
+  } // class SynchronizedRandomAccessList
+
+  /**
+   * The implementation of {@link SynchronizedList#listIterator()}. This
+   * iterator must "sync" on the same object as the list it iterates over.
+   *
+   * @author Eric Blake <ebb9@email.byu.edu>
+   */
+  private static final class SynchronizedListIterator
+    extends SynchronizedIterator implements ListIterator
+  {
+    /**
+     * The wrapped iterator, stored both here and in the superclass to
+     * avoid excessive casting.
+     */
+    private final ListIterator li;
+
+    /**
+     * Only trusted code creates a wrapper, with the specified sync.
+     * @param sync the mutex
+     * @param li the wrapped iterator
+     */
+    SynchronizedListIterator(Object sync, ListIterator li)
+    {
+      super(sync, li);
+      this.li = li;
+    }
+
+    public void add(Object o)
+    {
+      synchronized (mutex)
+        {
+          li.add(o);
+        }
+    }
+    public boolean hasPrevious()
+    {
+      synchronized (mutex)
+        {
+          return li.hasPrevious();
+        }
+    }
+
+    public int nextIndex()
+    {
+      synchronized (mutex)
+        {
+          return li.nextIndex();
+        }
+    }
+
+    public Object previous()
+    {
+      synchronized (mutex)
+        {
+          return li.previous();
+        }
+    }
+
+    public int previousIndex()
+    {
+      synchronized (mutex)
+        {
+          return li.previousIndex();
+        }
+    }
+
+    public void set(Object o)
+    {
+      synchronized (mutex)
+        {
+          li.set(o);
+        }
+    }
+  } // class SynchronizedListIterator
+
+  /**
+   * Returns a synchronized (thread-safe) map wrapper backed by the given
+   * map. Notice that element access through the collection views and their
+   * iterators are thread-safe, but if the map can be structurally modified
+   * (adding or removing elements) then you should synchronize around the
+   * iteration to avoid non-deterministic behavior:<br>
+   * <pre>
+   * Map m = Collections.synchronizedMap(new Map(...));
+   * ...
+   * Set s = m.keySet(); // safe outside a synchronized block
+   * synchronized (m) // synch on m, not s
+   *   {
+   *     Iterator i = s.iterator();
+   *     while (i.hasNext())
+   *       foo(i.next());
+   *   }
+   * </pre><p>
+   *
+   * The returned Map implements Serializable, but can only be serialized if
+   * the map it wraps is likewise Serializable.
+   *
+   * @param m the map to wrap
+   * @return a synchronized view of the map
+   * @see Serializable
+   */
   public static Map synchronizedMap(Map m)
   {
     return new SynchronizedMap(m);
   }
+
+  /**
+   * The implementation of {@link #synchronizedMap(Map)}. This
+   * class name is required for compatibility with Sun's JDK serializability.
+   *
+   * @author Eric Blake <ebb9@email.byu.edu>
+   */
+  private static class SynchronizedMap implements Map, Serializable
+  {
+    /**
+     * Compatible with JDK 1.4.
+     */
+    private static final long serialVersionUID = 1978198479659022715L;
+
+    /**
+     * The wrapped map.
+     * @serial the real map
+     */
+    private final Map m;
+
+    /**
+     * The object to synchronize on.  When an instance is created via public
+     * methods, it will be this; but other uses like
+     * SynchronizedSortedMap.subMap() must specify another mutex. Package
+     * visible for use by subclass.
+     * @serial the lock
+     */
+    final Object mutex;
+
+    /**
+     * Cache the entry set.
+     */
+    private transient Set entries;
+
+    /**
+     * Cache the key set.
+     */
+    private transient Set keys;
+
+    /**
+     * Cache the value collection.
+     */
+    private transient Collection values;
+
+    /**
+     * Wrap a given map.
+     * @param m the map to wrap
+     * @throws NullPointerException if m is null
+     */
+    SynchronizedMap(Map m)
+    {
+      this.m = m;
+      mutex = this;
+      if (m == null)
+        throw new NullPointerException();
+    }
+
+    /**
+     * Called only by trusted code to specify the mutex as well as the map.
+     * @param sync the mutex
+     * @param m the map
+     */
+    SynchronizedMap(Object sync, Map m)
+    {
+      this.m = m;
+      mutex = sync;
+    }
+
+    public void clear()
+    {
+      synchronized (mutex)
+        {
+          m.clear();
+        }
+    }
+
+    public boolean containsKey(Object key)
+    {
+      synchronized (mutex)
+        {
+          return m.containsKey(key);
+        }
+    }
+
+    public boolean containsValue(Object value)
+    {
+      synchronized (mutex)
+        {
+          return m.containsValue(value);
+        }
+    }
+
+    // This is one of the ickiest cases of nesting I've ever seen. It just
+    // means "return a SynchronizedSet, except that the iterator() method
+    // returns an SynchronizedIterator whose next() method returns a
+    // synchronized wrapper around its normal return value".
+    public Set entrySet()
+    {
+      // Define this here to spare some nesting.
+      class SynchronizedMapEntry implements Map.Entry
+      {
+        final Map.Entry e;
+        SynchronizedMapEntry(Object o)
+        {
+          e = (Map.Entry) o;
+        }
+        public boolean equals(Object o)
+        {
+          synchronized (mutex)
+            {
+              return e.equals(o);
+            }
+        }
+        public Object getKey()
+        {
+          synchronized (mutex)
+            {
+              return e.getKey();
+            }
+        }
+        public Object getValue()
+        {
+          synchronized (mutex)
+            {
+              return e.getValue();
+            }
+        }
+        public int hashCode()
+        {
+          synchronized (mutex)
+            {
+              return e.hashCode();
+            }
+        }
+        public Object setValue(Object value)
+        {
+          synchronized (mutex)
+            {
+              return e.setValue(value);
+            }
+        }
+        public String toString()
+        {
+          synchronized (mutex)
+            {
+              return e.toString();
+            }
+        }
+      } // class SynchronizedMapEntry
+
+      // Now the actual code.
+      if (entries == null)
+        synchronized (mutex)
+          {
+            entries = new SynchronizedSet(mutex, m.entrySet())
+            {
+              public Iterator iterator()
+              {
+                synchronized (super.mutex)
+                  {
+                    return new SynchronizedIterator(super.mutex, c.iterator())
+                    {
+                      public Object next()
+                      {
+                        synchronized (super.mutex)
+                          {
+                            return new SynchronizedMapEntry(super.next());
+                          }
+                      }
+                    };
+                  }
+              }
+            };
+          }
+      return entries;
+    }
+
+    public boolean equals(Object o)
+    {
+      synchronized (mutex)
+        {
+          return m.equals(o);
+        }
+    }
+
+    public Object get(Object key)
+    {
+      synchronized (mutex)
+        {
+          return m.get(key);
+        }
+    }
+
+    public int hashCode()
+    {
+      synchronized (mutex)
+        {
+          return m.hashCode();
+        }
+    }
+
+    public boolean isEmpty()
+    {
+      synchronized (mutex)
+        {
+          return m.isEmpty();
+        }
+    }
+
+    public Set keySet()
+    {
+      if (keys == null)
+        synchronized (mutex)
+          {
+            keys = new SynchronizedSet(mutex, m.keySet());
+          }
+      return keys;
+    }
+
+    public Object put(Object key, Object value)
+    {
+      synchronized (mutex)
+        {
+          return m.put(key, value);
+        }
+    }
+
+    public void putAll(Map map)
+    {
+      synchronized (mutex)
+        {
+          m.putAll(map);
+        }
+    }
+
+    public Object remove(Object o)
+    {
+      synchronized (mutex)
+        {
+          return m.remove(o);
+        }
+    }
+
+    public int size()
+    {
+      synchronized (mutex)
+        {
+          return m.size();
+        }
+    }
+
+    public String toString()
+    {
+      synchronized (mutex)
+        {
+          return m.toString();
+        }
+    }
+
+    public Collection values()
+    {
+      if (values == null)
+        synchronized (mutex)
+          {
+            values = new SynchronizedCollection(mutex, m.values());
+          }
+      return values;
+    }
+  } // class SynchronizedMap
+
+  /**
+   * Returns a synchronized (thread-safe) set wrapper backed by the given
+   * set. Notice that element access through the iterator is thread-safe, but
+   * if the set can be structurally modified (adding or removing elements)
+   * then you should synchronize around the iteration to avoid
+   * non-deterministic behavior:<br>
+   * <pre>
+   * Set s = Collections.synchronizedSet(new Set(...));
+   * ...
+   * synchronized (s)
+   *   {
+   *     Iterator i = s.iterator();
+   *     while (i.hasNext())
+   *       foo(i.next());
+   *   }
+   * </pre><p>
+   *
+   * The returned Set implements Serializable, but can only be serialized if
+   * the set it wraps is likewise Serializable.
+   *
+   * @param s the set to wrap
+   * @return a synchronized view of the set
+   * @see Serializable
+   */
   public static Set synchronizedSet(Set s)
   {
     return new SynchronizedSet(s);
   }
+
+  /**
+   * The implementation of {@link #synchronizedSet(Set)}. This class
+   * name is required for compatibility with Sun's JDK serializability.
+   * Package visible, so that sets such as Hashtable.keySet()
+   * can specify which object to synchronize on.
+   *
+   * @author Eric Blake <ebb9@email.byu.edu>
+   */
+  static class SynchronizedSet extends SynchronizedCollection
+    implements Set
+  {
+    /**
+     * Compatible with JDK 1.4.
+     */
+    private static final long serialVersionUID = 487447009682186044L;
+
+    /**
+     * Wrap a given set.
+     * @param s the set to wrap
+     * @throws NullPointerException if s is null
+     */
+    SynchronizedSet(Set s)
+    {
+      super(s);
+    }
+
+    /**
+     * Called only by trusted code to specify the mutex as well as the set.
+     * @param sync the mutex
+     * @param s the set
+     */
+    SynchronizedSet(Object sync, Set s)
+    {
+      super(sync, s);
+    }
+
+    public boolean equals(Object o)
+    {
+      synchronized (mutex)
+        {
+          return c.equals(o);
+        }
+    }
+
+    public int hashCode()
+    {
+      synchronized (mutex)
+        {
+          return c.hashCode();
+        }
+    }
+  } // class SynchronizedSet
+
+  /**
+   * Returns a synchronized (thread-safe) sorted map wrapper backed by the
+   * given map. Notice that element access through the collection views,
+   * subviews, and their iterators are thread-safe, but if the map can be
+   * structurally modified (adding or removing elements) then you should
+   * synchronize around the iteration to avoid non-deterministic behavior:<br>
+   * <pre>
+   * SortedMap m = Collections.synchronizedSortedMap(new SortedMap(...));
+   * ...
+   * Set s = m.keySet(); // safe outside a synchronized block
+   * SortedMap m2 = m.headMap(foo); // safe outside a synchronized block
+   * Set s2 = m2.keySet(); // safe outside a synchronized block
+   * synchronized (m) // synch on m, not m2, s or s2
+   *   {
+   *     Iterator i = s.iterator();
+   *     while (i.hasNext())
+   *       foo(i.next());
+   *     i = s2.iterator();
+   *     while (i.hasNext())
+   *       bar(i.next());
+   *   }
+   * </pre><p>
+   *
+   * The returned SortedMap implements Serializable, but can only be
+   * serialized if the map it wraps is likewise Serializable.
+   *
+   * @param m the sorted map to wrap
+   * @return a synchronized view of the sorted map
+   * @see Serializable
+   */
   public static SortedMap synchronizedSortedMap(SortedMap m)
   {
     return new SynchronizedSortedMap(m);
   }
+
+  /**
+   * The implementation of {@link #synchronizedSortedMap(SortedMap)}. This
+   * class name is required for compatibility with Sun's JDK serializability.
+   *
+   * @author Eric Blake <ebb9@email.byu.edu>
+   */
+  private static final class SynchronizedSortedMap extends SynchronizedMap
+    implements SortedMap
+  {
+    /**
+     * Compatible with JDK 1.4.
+     */
+    private static final long serialVersionUID = -8798146769416483793L;
+
+    /**
+     * The wrapped map; stored both here and in the superclass to avoid
+     * excessive casting.
+     * @serial the wrapped map
+     */
+    private final SortedMap sm;
+
+    /**
+     * Wrap a given map.
+     * @param sm the map to wrap
+     * @throws NullPointerException if sm is null
+     */
+    SynchronizedSortedMap(SortedMap sm)
+    {
+      super(sm);
+      this.sm = sm;
+    }
+
+    /**
+     * Called only by trusted code to specify the mutex as well as the map.
+     * @param sync the mutex
+     * @param sm the map
+     */
+    SynchronizedSortedMap(Object sync, SortedMap sm)
+    {
+      super(sync, sm);
+      this.sm = sm;
+    }
+
+    public Comparator comparator()
+    {
+      synchronized (mutex)
+        {
+          return sm.comparator();
+        }
+    }
+
+    public Object firstKey()
+    {
+      synchronized (mutex)
+        {
+          return sm.firstKey();
+        }
+    }
+
+    public SortedMap headMap(Object toKey)
+    {
+      synchronized (mutex)
+        {
+          return new SynchronizedSortedMap(mutex, sm.headMap(toKey));
+        }
+    }
+
+    public Object lastKey()
+    {
+      synchronized (mutex)
+        {
+          return sm.lastKey();
+        }
+    }
+
+    public SortedMap subMap(Object fromKey, Object toKey)
+    {
+      synchronized (mutex)
+        {
+          return new SynchronizedSortedMap(mutex, sm.subMap(fromKey, toKey));
+        }
+    }
+
+    public SortedMap tailMap(Object fromKey)
+    {
+      synchronized (mutex)
+        {
+          return new SynchronizedSortedMap(mutex, sm.tailMap(fromKey));
+        }
+    }
+  } // class SynchronizedSortedMap
+
+  /**
+   * Returns a synchronized (thread-safe) sorted set wrapper backed by the
+   * given set. Notice that element access through the iterator and through
+   * subviews are thread-safe, but if the set can be structurally modified
+   * (adding or removing elements) then you should synchronize around the
+   * iteration to avoid non-deterministic behavior:<br>
+   * <pre>
+   * SortedSet s = Collections.synchronizedSortedSet(new SortedSet(...));
+   * ...
+   * SortedSet s2 = s.headSet(foo); // safe outside a synchronized block
+   * synchronized (s) // synch on s, not s2
+   *   {
+   *     Iterator i = s2.iterator();
+   *     while (i.hasNext())
+   *       foo(i.next());
+   *   }
+   * </pre><p>
+   *
+   * The returned SortedSet implements Serializable, but can only be
+   * serialized if the set it wraps is likewise Serializable.
+   *
+   * @param s the sorted set to wrap
+   * @return a synchronized view of the sorted set
+   * @see Serializable
+   */
   public static SortedSet synchronizedSortedSet(SortedSet s)
   {
     return new SynchronizedSortedSet(s);
   }
+
+  /**
+   * The implementation of {@link #synchronizedSortedSet(SortedSet)}. This
+   * class name is required for compatibility with Sun's JDK serializability.
+   *
+   * @author Eric Blake <ebb9@email.byu.edu>
+   */
+  private static final class SynchronizedSortedSet extends SynchronizedSet
+    implements SortedSet
+  {
+    /**
+     * Compatible with JDK 1.4.
+     */
+    private static final long serialVersionUID = 8695801310862127406L;
+
+    /**
+     * The wrapped set; stored both here and in the superclass to avoid
+     * excessive casting.
+     * @serial the wrapped set
+     */
+    private final SortedSet ss;
+
+    /**
+     * Wrap a given set.
+     * @param ss the set to wrap
+     * @throws NullPointerException if ss is null
+     */
+    SynchronizedSortedSet(SortedSet ss)
+    {
+      super(ss);
+      this.ss = ss;
+    }
+
+    /**
+     * Called only by trusted code to specify the mutex as well as the set.
+     * @param sync the mutex
+     * @param l the list
+     */
+    SynchronizedSortedSet(Object sync, SortedSet ss)
+    {
+      super(sync, ss);
+      this.ss = ss;
+    }
+
+    public Comparator comparator()
+    {
+      synchronized (mutex)
+        {
+          return ss.comparator();
+        }
+    }
+
+    public Object first()
+    {
+      synchronized (mutex)
+        {
+          return ss.first();
+        }
+    }
+
+    public SortedSet headSet(Object toElement)
+    {
+      synchronized (mutex)
+        {
+          return new SynchronizedSortedSet(mutex, ss.headSet(toElement));
+        }
+    }
+
+    public Object last()
+    {
+      synchronized (mutex)
+        {
+          return ss.last();
+        }
+    }
+
+    public SortedSet subSet(Object fromElement, Object toElement)
+    {
+      synchronized (mutex)
+        {
+          return new SynchronizedSortedSet(mutex,
+                                           ss.subSet(fromElement, toElement));
+        }
+    }
+
+    public SortedSet tailSet(Object fromElement)
+    {
+      synchronized (mutex)
+        {
+          return new SynchronizedSortedSet(mutex, ss.tailSet(fromElement));
+        }
+    }
+  } // class SynchronizedSortedSet
+
+  /**
+   * Returns an unmodifiable view of the given collection. This allows
+   * "read-only" access, although changes in the backing collection show up
+   * in this view. Attempts to modify the collection directly or via iterators
+   * will fail with {@link UnsupportedOperationException}.
+   * <p>
+   *
+   * Since the collection might be a List or a Set, and those have incompatible
+   * equals and hashCode requirements, this relies on Object's implementation
+   * rather than passing those calls on to the wrapped collection. The returned
+   * Collection implements Serializable, but can only be serialized if
+   * the collection it wraps is likewise Serializable.
+   *
+   * @param c the collection to wrap
+   * @return a read-only view of the collection
+   * @see Serializable
+   */
   public static Collection unmodifiableCollection(Collection c)
   {
     return new UnmodifiableCollection(c);
   }
-  public static List unmodifiableList(List l)
-  {
-    return new UnmodifiableList(l);
-  }
-  public static Map unmodifiableMap(Map m)
-  {
-    return new UnmodifiableMap(m);
-  }
-  public static Set unmodifiableSet(Set s)
-  {
-    return new UnmodifiableSet(s);
-  }
-  public static SortedMap unmodifiableSortedMap(SortedMap m)
-  {
-    return new UnmodifiableSortedMap(m);
-  }
-  public static SortedSet unmodifiableSortedSet(SortedSet s)
-  {
-    return new UnmodifiableSortedSet(s);
-  }
 
-  // Sun's spec will need to be checked for the precise names of these
-  // classes, for serializability's sake. However, from what I understand,
-  // serialization is broken for these classes anyway.
+  /**
+   * The implementation of {@link #unmodifiableCollection(Collection)}. This
+   * class name is required for compatibility with Sun's JDK serializability.
+   *
+   * @author Eric Blake <ebb9@email.byu.edu>
+   */
+  private static class UnmodifiableCollection
+    implements Collection, Serializable
+  {
+    /**
+     * Compatible with JDK 1.4.
+     */
+    private static final long serialVersionUID = 1820017752578914078L;
 
-  // Note: although this code is largely uncommented, it is all very
-  // mechanical and there's nothing really worth commenting.
-  // When serialization of these classes works, we'll need doc-comments on
-  // them to document the serialized form.
+    /**
+     * The wrapped collection. Package visible for use by subclasses.
+     * @serial the real collection
+     */
+    final Collection c;
 
+    /**
+     * Wrap a given collection.
+     * @param c the collection to wrap
+     * @throws NullPointerException if c is null
+     */
+    UnmodifiableCollection(Collection c)
+    {
+      this.c = c;
+      if (c == null)
+        throw new NullPointerException();
+    }
+
+    public boolean add(Object o)
+    {
+      throw new UnsupportedOperationException();
+    }
+
+    public boolean addAll(Collection c)
+    {
+      throw new UnsupportedOperationException();
+    }
+
+    public void clear()
+    {
+      throw new UnsupportedOperationException();
+    }
+
+    public boolean contains(Object o)
+    {
+      return c.contains(o);
+    }
+
+    public boolean containsAll(Collection c1)
+    {
+      return c.containsAll(c1);
+    }
+
+    public boolean isEmpty()
+    {
+      return c.isEmpty();
+    }
+
+    public Iterator iterator()
+    {
+      return new UnmodifiableIterator(c.iterator());
+    }
+
+    public boolean remove(Object o)
+    {
+      throw new UnsupportedOperationException();
+    }
+
+    public boolean removeAll(Collection c)
+    {
+      throw new UnsupportedOperationException();
+    }
+
+    public boolean retainAll(Collection c)
+    {
+      throw new UnsupportedOperationException();
+    }
+
+    public int size()
+    {
+      return c.size();
+    }
+
+    public Object[] toArray()
+    {
+      return c.toArray();
+    }
+
+    public Object[] toArray(Object[] a)
+    {
+      return c.toArray(a);
+    }
+
+    public String toString()
+    {
+      return c.toString();
+    }
+  } // class UnmodifiableCollection
+
+  /**
+   * The implementation of the various iterator methods in the
+   * unmodifiable classes.
+   *
+   * @author Eric Blake <ebb9@email.byu.edu>
+   */
   private static class UnmodifiableIterator implements Iterator
   {
-    private Iterator i;
+    /**
+     * The wrapped iterator.
+     */
+    private final Iterator i;
 
-    public UnmodifiableIterator(Iterator i)
+    /**
+     * Only trusted code creates a wrapper.
+     * @param i the wrapped iterator
+     */
+    UnmodifiableIterator(Iterator i)
     {
       this.i = i;
     }
@@ -813,361 +2822,527 @@ public class Collections
     {
       return i.next();
     }
+
     public boolean hasNext()
     {
       return i.hasNext();
     }
+
     public void remove()
     {
       throw new UnsupportedOperationException();
     }
-  }
+  } // class UnmodifiableIterator
 
-  private static class UnmodifiableListIterator extends UnmodifiableIterator
-    implements ListIterator
+  /**
+   * Returns an unmodifiable view of the given list. This allows
+   * "read-only" access, although changes in the backing list show up
+   * in this view. Attempts to modify the list directly, via iterators, or
+   * via sublists, will fail with {@link UnsupportedOperationException}.
+   * <p>
+   *
+   * The returned List implements Serializable, but can only be serialized if
+   * the list it wraps is likewise Serializable. In addition, if the wrapped
+   * list implements RandomAccess, this does too.
+   *
+   * @param l the list to wrap
+   * @return a read-only view of the list
+   * @see Serializable
+   * @see RandomAccess
+   */
+  public static List unmodifiableList(List l)
   {
-    // This is stored both here and in the superclass, to avoid excessive
-    // casting.
-    private ListIterator li;
-
-    public UnmodifiableListIterator(ListIterator li)
-    {
-      super(li);
-      this.li = li;
-    }
-
-    public boolean hasPrevious()
-    {
-      return li.hasPrevious();
-    }
-    public Object previous()
-    {
-      return li.previous();
-    }
-    public int nextIndex()
-    {
-      return li.nextIndex();
-    }
-    public int previousIndex()
-    {
-      return li.previousIndex();
-    }
-    public void add(Object o)
-    {
-      throw new UnsupportedOperationException();
-    }
-    public void set(Object o)
-    {
-      throw new UnsupportedOperationException();
-    }
+    if (l instanceof RandomAccess)
+      return new UnmodifiableRandomAccessList(l);
+    return new UnmodifiableList(l);
   }
 
-  private static class UnmodifiableCollection implements Collection,
-    Serializable
-  {
-    Collection c;
-
-    public UnmodifiableCollection(Collection c)
-    {
-      this.c = c;
-    }
-
-    public boolean add(Object o)
-    {
-      throw new UnsupportedOperationException();
-    }
-    public boolean addAll(Collection c)
-    {
-      throw new UnsupportedOperationException();
-    }
-    public void clear()
-    {
-      throw new UnsupportedOperationException();
-    }
-    public boolean contains(Object o)
-    {
-      return c.contains(o);
-    }
-    public boolean containsAll(Collection c1)
-    {
-      return c.containsAll(c1);
-    }
-    public boolean isEmpty()
-    {
-      return c.isEmpty();
-    }
-    public Iterator iterator()
-    {
-      return new UnmodifiableIterator(c.iterator());
-    }
-    public boolean remove(Object o)
-    {
-      throw new UnsupportedOperationException();
-    }
-    public boolean removeAll(Collection c)
-    {
-      throw new UnsupportedOperationException();
-    }
-    public boolean retainAll(Collection c)
-    {
-      throw new UnsupportedOperationException();
-    }
-    public int size()
-    {
-      return c.size();
-    }
-    public Object[] toArray()
-    {
-      return c.toArray();
-    }
-    public Object[] toArray(Object[]a)
-    {
-      return c.toArray(a);
-    }
-    public String toString()
-    {
-      return c.toString();
-    }
-  }
-
+  /**
+   * The implementation of {@link #unmodifiableList(List)} for sequential
+   * lists. This class name is required for compatibility with Sun's JDK
+   * serializability.
+   *
+   * @author Eric Blake <ebb9@email.byu.edu>
+   */
   private static class UnmodifiableList extends UnmodifiableCollection
     implements List
   {
-    // This is stored both here and in the superclass, to avoid excessive
-    // casting.
-    List l;
+    /**
+     * Compatible with JDK 1.4.
+     */
+    private static final long serialVersionUID = -283967356065247728L;
 
-    public UnmodifiableList(List l)
+
+    /**
+     * The wrapped list; stored both here and in the superclass to avoid
+     * excessive casting. Package visible for use by subclass.
+     * @serial the wrapped list
+     */
+    final List list;
+
+    /**
+     * Wrap a given list.
+     * @param l the list to wrap
+     * @throws NullPointerException if l is null
+     */
+    UnmodifiableList(List l)
     {
       super(l);
-      this.l = l;
+      list = l;
     }
 
     public void add(int index, Object o)
     {
       throw new UnsupportedOperationException();
     }
+
     public boolean addAll(int index, Collection c)
     {
       throw new UnsupportedOperationException();
     }
+
     public boolean equals(Object o)
     {
-      return l.equals(o);
+      return list.equals(o);
     }
+
     public Object get(int index)
     {
-      return l.get(index);
+      return list.get(index);
     }
+
     public int hashCode()
     {
-      return l.hashCode();
+      return list.hashCode();
     }
+
     public int indexOf(Object o)
     {
-      return l.indexOf(o);
+      return list.indexOf(o);
     }
+
     public int lastIndexOf(Object o)
     {
-      return l.lastIndexOf(o);
+      return list.lastIndexOf(o);
     }
+
     public ListIterator listIterator()
     {
-      return new UnmodifiableListIterator(l.listIterator());
+      return new UnmodifiableListIterator(list.listIterator());
     }
+
     public ListIterator listIterator(int index)
     {
-      return new UnmodifiableListIterator(l.listIterator(index));
+      return new UnmodifiableListIterator(list.listIterator(index));
     }
+
     public Object remove(int index)
     {
       throw new UnsupportedOperationException();
     }
+
     public Object set(int index, Object o)
     {
       throw new UnsupportedOperationException();
     }
+
     public List subList(int fromIndex, int toIndex)
     {
-      return new UnmodifiableList(l.subList(fromIndex, toIndex));
+      return unmodifiableList(list.subList(fromIndex, toIndex));
     }
-  }
+  } // class UnmodifiableList
 
-  private static class UnmodifiableSet extends UnmodifiableCollection
-    implements Set
+  /**
+   * The implementation of {@link #unmodifiableList(List)} for random-access
+   * lists. This class name is required for compatibility with Sun's JDK
+   * serializability.
+   *
+   * @author Eric Blake <ebb9@email.byu.edu>
+   */
+  private static final class UnmodifiableRandomAccessList
+    extends UnmodifiableList implements RandomAccess
   {
-    public UnmodifiableSet(Set s)
-    {
-      super(s);
-    }
-    public boolean equals(Object o)
-    {
-      return c.equals(o);
-    }
-    public int hashCode()
-    {
-      return c.hashCode();
-    }
-  }
+    /**
+     * Compatible with JDK 1.4.
+     */
+    private static final long serialVersionUID = -2542308836966382001L;
 
-  private static class UnmodifiableSortedSet extends UnmodifiableSet
-    implements SortedSet
+    /**
+     * Wrap a given list.
+     * @param l the list to wrap
+     * @throws NullPointerException if l is null
+     */
+    UnmodifiableRandomAccessList(List l)
+    {
+      super(l);
+    }
+  } // class UnmodifiableRandomAccessList
+
+  /**
+   * The implementation of {@link UnmodifiableList#listIterator()}.
+   *
+   * @author Eric Blake <ebb9@email.byu.edu>
+   */
+  private static final class UnmodifiableListIterator
+    extends UnmodifiableIterator implements ListIterator
   {
-    // This is stored both here and in the superclass, to avoid excessive
-    // casting.
-    private SortedSet ss;
+    /**
+     * The wrapped iterator, stored both here and in the superclass to
+     * avoid excessive casting.
+     */
+    private final ListIterator li;
 
-    public UnmodifiableSortedSet(SortedSet ss)
+    /**
+     * Only trusted code creates a wrapper.
+     * @param li the wrapped iterator
+     */
+    UnmodifiableListIterator(ListIterator li)
     {
-      super(ss);
-      this.ss = ss;
+      super(li);
+      this.li = li;
     }
 
-    public Comparator comparator()
+    public void add(Object o)
     {
-      return ss.comparator();
+      throw new UnsupportedOperationException();
     }
-    public Object first()
+
+    public boolean hasPrevious()
     {
-      return ss.first();
+      return li.hasPrevious();
     }
-    public Object last()
+
+    public int nextIndex()
     {
-      return ss.last();
+      return li.nextIndex();
     }
-    public SortedSet headSet(Object toElement)
+
+    public Object previous()
     {
-      return new UnmodifiableSortedSet(ss.headSet(toElement));
+      return li.previous();
     }
-    public SortedSet tailSet(Object fromElement)
+
+    public int previousIndex()
     {
-      return new UnmodifiableSortedSet(ss.tailSet(fromElement));
+      return li.previousIndex();
     }
-    public SortedSet subSet(Object fromElement, Object toElement)
+
+    public void set(Object o)
     {
-      return new UnmodifiableSortedSet(ss.subSet(fromElement, toElement));
+      throw new UnsupportedOperationException();
     }
+  } // class UnmodifiableListIterator
+
+  /**
+   * Returns an unmodifiable view of the given map. This allows "read-only"
+   * access, although changes in the backing map show up in this view.
+   * Attempts to modify the map directly, or via collection views or their
+   * iterators will fail with {@link UnsupportedOperationException}.
+   * <p>
+   *
+   * The returned Map implements Serializable, but can only be serialized if
+   * the map it wraps is likewise Serializable.
+   *
+   * @param m the map to wrap
+   * @return a read-only view of the map
+   * @see Serializable
+   */
+  public static Map unmodifiableMap(Map m)
+  {
+    return new UnmodifiableMap(m);
   }
 
+  /**
+   * The implementation of {@link #unmodifiableMap(Map)}. This
+   * class name is required for compatibility with Sun's JDK serializability.
+   *
+   * @author Eric Blake <ebb9@email.byu.edu>
+   */
   private static class UnmodifiableMap implements Map, Serializable
   {
-    Map m;
+    /**
+     * Compatible with JDK 1.4.
+     */
+    private static final long serialVersionUID = -1034234728574286014L;
 
-    public UnmodifiableMap(Map m)
+    /**
+     * The wrapped map.
+     * @serial the real map
+     */
+    private final Map m;
+
+    /**
+     * Cache the entry set.
+     */
+    private transient Set entries;
+
+    /**
+     * Cache the key set.
+     */
+    private transient Set keys;
+
+    /**
+     * Cache the value collection.
+     */
+    private transient Collection values;
+
+    /**
+     * Wrap a given map.
+     * @param m the map to wrap
+     * @throws NullPointerException if m is null
+     */
+    UnmodifiableMap(Map m)
     {
       this.m = m;
+      if (m == null)
+        throw new NullPointerException();
     }
 
     public void clear()
     {
       throw new UnsupportedOperationException();
     }
+
     public boolean containsKey(Object key)
     {
       return m.containsKey(key);
     }
+
     public boolean containsValue(Object value)
     {
       return m.containsValue(value);
     }
 
-    // This is one of the ickiest cases of nesting I've ever seen. It just
-    // means "return an UnmodifiableSet, except that the iterator() method
-    // returns an UnmodifiableIterator whos next() method returns an
-    // unmodifiable wrapper around its normal return value".
     public Set entrySet()
     {
-      return new UnmodifiableSet(m.entrySet())
-      {
-	public Iterator iterator()
-	{
-	  return new UnmodifiableIterator(c.iterator())
-	  {
-	    public Object next()
-	    {
-	      final Map.Entry e = (Map.Entry) super.next();
-	      return new Map.Entry()
-	      {
-		public Object getKey()
-		{
-		  return e.getKey();
-		}
-		public Object getValue()
-		{
-		  return e.getValue();
-		}
-		public Object setValue(Object value)
-		{
-		  throw new UnsupportedOperationException();
-		}
-		public int hashCode()
-		{
-		  return e.hashCode();
-		}
-		public boolean equals(Object o)
-		{
-		  return e.equals(o);
-		}
-	      };
-	    }
-	  };
-	}
-      };
+      if (entries == null)
+        entries = new UnmodifiableEntrySet(m.entrySet());
+      return entries;
     }
+
+    /**
+     * The implementation of {@link UnmodifiableMap#entrySet()}. This class
+     * name is required for compatibility with Sun's JDK serializability.
+     *
+     * @author Eric Blake <ebb9@email.byu.edu>
+     */
+    private static final class UnmodifiableEntrySet extends UnmodifiableSet
+      implements Serializable
+    {
+      /**
+       * Compatible with JDK 1.4.
+       */
+      private static final long serialVersionUID = 7854390611657943733L;
+
+      /**
+       * Wrap a given set.
+       * @param s the set to wrap
+       */
+      UnmodifiableEntrySet(Set s)
+      {
+        super(s);
+      }
+
+      // The iterator must return unmodifiable map entries.
+      public Iterator iterator()
+      {
+        return new UnmodifiableIterator(c.iterator())
+	{
+          public Object next()
+          {
+            final Map.Entry e = (Map.Entry) super.next();
+            return new Map.Entry()
+	    {
+              public boolean equals(Object o)
+              {
+                return e.equals(o);
+              }
+              public Object getKey()
+              {
+                return e.getKey();
+              }
+              public Object getValue()
+              {
+                return e.getValue();
+              }
+              public int hashCode()
+              {
+                return e.hashCode();
+              }
+              public Object setValue(Object value)
+              {
+                throw new UnsupportedOperationException();
+              }
+              public String toString()
+              {
+                return e.toString();
+              }
+	    };
+          }
+	};
+      }
+    } // class UnmodifiableEntrySet
+
     public boolean equals(Object o)
     {
       return m.equals(o);
     }
+
     public Object get(Object key)
     {
       return m.get(key);
     }
+
     public Object put(Object key, Object value)
     {
       throw new UnsupportedOperationException();
     }
+
     public int hashCode()
     {
       return m.hashCode();
     }
+
     public boolean isEmpty()
     {
       return m.isEmpty();
     }
+
     public Set keySet()
     {
-      return new UnmodifiableSet(m.keySet());
+      if (keys == null)
+        keys = new UnmodifiableSet(m.keySet());
+      return keys;
     }
+
     public void putAll(Map m)
     {
       throw new UnsupportedOperationException();
     }
+
     public Object remove(Object o)
     {
       throw new UnsupportedOperationException();
     }
+
     public int size()
     {
       return m.size();
     }
-    public Collection values()
-    {
-      return new UnmodifiableCollection(m.values());
-    }
+
     public String toString()
     {
       return m.toString();
     }
+
+    public Collection values()
+    {
+      if (values == null)
+        values = new UnmodifiableCollection(m.values());
+      return values;
+    }
+  } // class UnmodifiableMap
+
+  /**
+   * Returns an unmodifiable view of the given set. This allows
+   * "read-only" access, although changes in the backing set show up
+   * in this view. Attempts to modify the set directly or via iterators
+   * will fail with {@link UnsupportedOperationException}.
+   * <p>
+   *
+   * The returned Set implements Serializable, but can only be serialized if
+   * the set it wraps is likewise Serializable.
+   *
+   * @param s the set to wrap
+   * @return a read-only view of the set
+   * @see Serializable
+   */
+  public static Set unmodifiableSet(Set s)
+  {
+    return new UnmodifiableSet(s);
   }
 
+  /**
+   * The implementation of {@link #unmodifiableSet(Set)}. This class
+   * name is required for compatibility with Sun's JDK serializability.
+   *
+   * @author Eric Blake <ebb9@email.byu.edu>
+   */
+  private static class UnmodifiableSet extends UnmodifiableCollection
+    implements Set
+  {
+    /**
+     * Compatible with JDK 1.4.
+     */
+    private static final long serialVersionUID = -9215047833775013803L;
+
+    /**
+     * Wrap a given set.
+     * @param s the set to wrap
+     * @throws NullPointerException if s is null
+     */
+    UnmodifiableSet(Set s)
+    {
+      super(s);
+    }
+
+    public boolean equals(Object o)
+    {
+      return c.equals(o);
+    }
+
+    public int hashCode()
+    {
+      return c.hashCode();
+    }
+  } // class UnmodifiableSet
+
+  /**
+   * Returns an unmodifiable view of the given sorted map. This allows
+   * "read-only" access, although changes in the backing map show up in this
+   * view. Attempts to modify the map directly, via subviews, via collection
+   * views, or iterators, will fail with {@link UnsupportedOperationException}.
+   * <p>
+   *
+   * The returned SortedMap implements Serializable, but can only be
+   * serialized if the map it wraps is likewise Serializable.
+   *
+   * @param m the map to wrap
+   * @return a read-only view of the map
+   * @see Serializable
+   */
+  public static SortedMap unmodifiableSortedMap(SortedMap m)
+  {
+    return new UnmodifiableSortedMap(m);
+  }
+
+  /**
+   * The implementation of {@link #unmodifiableSortedMap(SortedMap)}. This
+   * class name is required for compatibility with Sun's JDK serializability.
+   *
+   * @author Eric Blake <ebb9@email.byu.edu>
+   */
   private static class UnmodifiableSortedMap extends UnmodifiableMap
     implements SortedMap
   {
-    // This is stored both here and in the superclass, to avoid excessive
-    // casting.
-    private SortedMap sm;
+    /**
+     * Compatible with JDK 1.4.
+     */
+    private static final long serialVersionUID = -8806743815996713206L;
 
-    public UnmodifiableSortedMap(SortedMap sm)
+    /**
+     * The wrapped map; stored both here and in the superclass to avoid
+     * excessive casting.
+     * @serial the wrapped map
+     */
+    private final SortedMap sm;
+
+    /**
+     * Wrap a given map.
+     * @param sm the map to wrap
+     * @throws NullPointerException if sm is null
+     */
+    UnmodifiableSortedMap(SortedMap sm)
     {
       super(sm);
       this.sm = sm;
@@ -1177,400 +3352,79 @@ public class Collections
     {
       return sm.comparator();
     }
+
     public Object firstKey()
     {
       return sm.firstKey();
     }
-    public Object lastKey()
-    {
-      return sm.lastKey();
-    }
+
     public SortedMap headMap(Object toKey)
     {
       return new UnmodifiableSortedMap(sm.headMap(toKey));
     }
-    public SortedMap tailMap(Object fromKey)
+
+    public Object lastKey()
     {
-      return new UnmodifiableSortedMap(sm.tailMap(fromKey));
+      return sm.lastKey();
     }
+
     public SortedMap subMap(Object fromKey, Object toKey)
     {
       return new UnmodifiableSortedMap(sm.subMap(fromKey, toKey));
     }
-  }
 
-  // All the "Synchronized" wrapper objects include a "sync" field which
-  // specifies what object to synchronize on. That way, nested wrappers such as
-  // UnmodifiableMap.keySet synchronize on the right things.
+    public SortedMap tailMap(Object fromKey)
+    {
+      return new UnmodifiableSortedMap(sm.tailMap(fromKey));
+    }
+  } // class UnmodifiableSortedMap
 
-  private static class SynchronizedIterator implements Iterator
+  /**
+   * Returns an unmodifiable view of the given sorted set. This allows
+   * "read-only" access, although changes in the backing set show up
+   * in this view. Attempts to modify the set directly, via subsets, or via
+   * iterators, will fail with {@link UnsupportedOperationException}.
+   * <p>
+   *
+   * The returns SortedSet implements Serializable, but can only be
+   * serialized if the set it wraps is likewise Serializable.
+   *
+   * @param s the set to wrap
+   * @return a read-only view of the set
+   * @see Serializable
+   */
+  public static SortedSet unmodifiableSortedSet(SortedSet s)
   {
-    Object sync;
-    private Iterator i;
-
-    public SynchronizedIterator(Object sync, Iterator i)
-    {
-      this.sync = sync;
-      this.i = i;
-    }
-
-    public Object next()
-    {
-      synchronized(sync)
-      {
-	return i.next();
-      }
-    }
-    public boolean hasNext()
-    {
-      synchronized(sync)
-      {
-	return i.hasNext();
-      }
-    }
-    public void remove()
-    {
-      synchronized(sync)
-      {
-	i.remove();
-      }
-    }
-  }
-
-  private static class SynchronizedListIterator extends SynchronizedIterator
-    implements ListIterator
-  {
-    // This is stored both here and in the superclass, to avoid excessive
-    // casting.
-    private ListIterator li;
-
-    public SynchronizedListIterator(Object sync, ListIterator li)
-    {
-      super(sync, li);
-      this.li = li;
-    }
-
-    public boolean hasPrevious()
-    {
-      synchronized(sync)
-      {
-	return li.hasPrevious();
-      }
-    }
-    public Object previous()
-    {
-      synchronized(sync)
-      {
-	return li.previous();
-      }
-    }
-    public int nextIndex()
-    {
-      synchronized(sync)
-      {
-	return li.nextIndex();
-      }
-    }
-    public int previousIndex()
-    {
-      synchronized(sync)
-      {
-	return li.previousIndex();
-      }
-    }
-    public void add(Object o)
-    {
-      synchronized(sync)
-      {
-	li.add(o);
-      }
-    }
-    public void set(Object o)
-    {
-      synchronized(sync)
-      {
-	li.set(o);
-      }
-    }
+    return new UnmodifiableSortedSet(s);
   }
 
   /**
-   * Package visible, so that collections such as the one for
-   * Hashtable.values() can specify which object to synchronize on.
+   * The implementation of {@link #synchronizedSortedMap(SortedMap)}. This
+   * class name is required for compatibility with Sun's JDK serializability.
+   *
+   * @author Eric Blake <ebb9@email.byu.edu>
    */
-  static class SynchronizedCollection implements Collection,
-    Serializable
-  {
-    Object sync;
-    Collection c;
-
-    public SynchronizedCollection(Collection c)
-    {
-      this.sync = this;
-      this.c = c;
-    }
-    public SynchronizedCollection(Object sync, Collection c)
-    {
-      this.c = c;
-      this.sync = sync;
-    }
-
-    public boolean add(Object o)
-    {
-      synchronized(sync)
-      {
-	return c.add(o);
-      }
-    }
-    public boolean addAll(Collection col)
-    {
-      synchronized(sync)
-      {
-	return c.addAll(col);
-      }
-    }
-    public void clear()
-    {
-      synchronized(sync)
-      {
-	c.clear();
-      }
-    }
-    public boolean contains(Object o)
-    {
-      synchronized(sync)
-      {
-	return c.contains(o);
-      }
-    }
-    public boolean containsAll(Collection c1)
-    {
-      synchronized(sync)
-      {
-	return c.containsAll(c1);
-      }
-    }
-    public boolean isEmpty()
-    {
-      synchronized(sync)
-      {
-	return c.isEmpty();
-      }
-    }
-    public Iterator iterator()
-    {
-      synchronized(sync)
-      {
-	return new SynchronizedIterator(sync, c.iterator());
-      }
-    }
-    public boolean remove(Object o)
-    {
-      synchronized(sync)
-      {
-	return c.remove(o);
-      }
-    }
-    public boolean removeAll(Collection col)
-    {
-      synchronized(sync)
-      {
-	return c.removeAll(col);
-      }
-    }
-    public boolean retainAll(Collection col)
-    {
-      synchronized(sync)
-      {
-	return c.retainAll(col);
-      }
-    }
-    public int size()
-    {
-      synchronized(sync)
-      {
-	return c.size();
-      }
-    }
-    public Object[] toArray()
-    {
-      synchronized(sync)
-      {
-	return c.toArray();
-      }
-    }
-    public Object[] toArray(Object[]a)
-    {
-      synchronized(sync)
-      {
-	return c.toArray(a);
-      }
-    }
-    public String toString()
-    {
-      synchronized(sync)
-      {
-	return c.toString();
-      }
-    }
-  }
-
-  private static class SynchronizedList extends SynchronizedCollection
-    implements List
-  {
-    // This is stored both here and in the superclass, to avoid excessive
-    // casting.
-    List l;
-
-    public SynchronizedList(Object sync, List l)
-    {
-      super(sync, l);
-      this.l = l;
-    }
-    public SynchronizedList(List l)
-    {
-      super(l);
-      this.l = l;
-    }
-
-    public void add(int index, Object o)
-    {
-      synchronized(sync)
-      {
-	l.add(index, o);
-      }
-    }
-    public boolean addAll(int index, Collection c)
-    {
-      synchronized(sync)
-      {
-	return l.addAll(index, c);
-      }
-    }
-    public boolean equals(Object o)
-    {
-      synchronized(sync)
-      {
-	return l.equals(o);
-      }
-    }
-    public Object get(int index)
-    {
-      synchronized(sync)
-      {
-	return l.get(index);
-      }
-    }
-    public int hashCode()
-    {
-      synchronized(sync)
-      {
-	return l.hashCode();
-      }
-    }
-    public int indexOf(Object o)
-    {
-      synchronized(sync)
-      {
-	return l.indexOf(o);
-      }
-    }
-    public int lastIndexOf(Object o)
-    {
-      synchronized(sync)
-      {
-	return l.lastIndexOf(o);
-      }
-    }
-    public ListIterator listIterator()
-    {
-      synchronized(sync)
-      {
-	return new SynchronizedListIterator(sync, l.listIterator());
-      }
-    }
-    public ListIterator listIterator(int index)
-    {
-      synchronized(sync)
-      {
-	return new SynchronizedListIterator(sync, l.listIterator(index));
-      }
-    }
-    public Object remove(int index)
-    {
-      synchronized(sync)
-      {
-	return l.remove(index);
-      }
-    }
-    public boolean remove(Object o)
-    {
-      synchronized(sync)
-      {
-	return l.remove(o);
-      }
-    }
-    public Object set(int index, Object o)
-    {
-      synchronized(sync)
-      {
-	return l.set(index, o);
-      }
-    }
-    public List subList(int fromIndex, int toIndex)
-    {
-      synchronized(sync)
-      {
-	return new SynchronizedList(l.subList(fromIndex, toIndex));
-      }
-    }
-  }
-
-  /**
-   * Package visible, so that sets such as the one for Hashtable.keySet()
-   * can specify which object to synchronize on.
-   */
-  static class SynchronizedSet extends SynchronizedCollection
-    implements Set
-  {
-    public SynchronizedSet(Object sync, Set s)
-    {
-      super(sync, s);
-    }
-    public SynchronizedSet(Set s)
-    {
-      super(s);
-    }
-
-    public boolean equals(Object o)
-    {
-      synchronized(sync)
-      {
-	return c.equals(o);
-      }
-    }
-    public int hashCode()
-    {
-      synchronized(sync)
-      {
-	return c.hashCode();
-      }
-    }
-  }
-
-  private static class SynchronizedSortedSet extends SynchronizedSet
+  private static class UnmodifiableSortedSet extends UnmodifiableSet
     implements SortedSet
   {
-    // This is stored both here and in the superclass, to avoid excessive
-    // casting.
+    /**
+     * Compatible with JDK 1.4.
+     */
+    private static final long serialVersionUID = -4929149591599911165L;
+
+    /**
+     * The wrapped set; stored both here and in the superclass to avoid
+     * excessive casting.
+     * @serial the wrapped set
+     */
     private SortedSet ss;
 
-    public SynchronizedSortedSet(Object sync, SortedSet ss)
-    {
-      super(sync, ss);
-      this.ss = ss;
-    }
-    public SynchronizedSortedSet(SortedSet ss)
+    /**
+     * Wrap a given set.
+     * @param ss the set to wrap
+     * @throws NullPointerException if ss is null
+     */
+    UnmodifiableSortedSet(SortedSet ss)
     {
       super(ss);
       this.ss = ss;
@@ -1578,285 +3432,32 @@ public class Collections
 
     public Comparator comparator()
     {
-      synchronized(sync)
-      {
-	return ss.comparator();
-      }
+      return ss.comparator();
     }
+
     public Object first()
     {
-      synchronized(sync)
-      {
-	return ss.first();
-      }
+      return ss.first();
     }
-    public Object last()
-    {
-      synchronized(sync)
-      {
-	return ss.last();
-      }
-    }
+
     public SortedSet headSet(Object toElement)
     {
-      synchronized(sync)
-      {
-	return new SynchronizedSortedSet(sync, ss.headSet(toElement));
-      }
+      return new UnmodifiableSortedSet(ss.headSet(toElement));
     }
-    public SortedSet tailSet(Object fromElement)
+
+    public Object last()
     {
-      synchronized(sync)
-      {
-	return new SynchronizedSortedSet(sync, ss.tailSet(fromElement));
-      }
+      return ss.last();
     }
+
     public SortedSet subSet(Object fromElement, Object toElement)
     {
-      synchronized(sync)
-      {
-	return new SynchronizedSortedSet(sync,
-					 ss.subSet(fromElement, toElement));
-      }
-    }
-  }
-
-  private static class SynchronizedMap implements Map, Serializable
-  {
-    Object sync;
-    Map m;
-
-    public SynchronizedMap(Object sync, Map m)
-    {
-      this.sync = sync;
-      this.m = m;
-    }
-    public SynchronizedMap(Map m)
-    {
-      this.m = m;
-      this.sync = this;
+      return new UnmodifiableSortedSet(ss.subSet(fromElement, toElement));
     }
 
-    public void clear()
+    public SortedSet tailSet(Object fromElement)
     {
-      synchronized(sync)
-      {
-	m.clear();
-      }
+      return new UnmodifiableSortedSet(ss.tailSet(fromElement));
     }
-    public boolean containsKey(Object key)
-    {
-      synchronized(sync)
-      {
-	return m.containsKey(key);
-      }
-    }
-    public boolean containsValue(Object value)
-    {
-      synchronized(sync)
-      {
-	return m.containsValue(value);
-      }
-    }
-
-    // This is one of the ickiest cases of nesting I've ever seen. It just
-    // means "return a SynchronizedSet, except that the iterator() method
-    // returns an SynchronizedIterator whos next() method returns a
-    // synchronized wrapper around its normal return value".
-    public Set entrySet()
-    {
-      synchronized(sync)
-      {
-	return new SynchronizedSet(sync, m.entrySet())
-	{
-	  public Iterator iterator()
-	  {
-	    synchronized(SynchronizedMap.this.sync)
-	    {
-	      return new SynchronizedIterator(SynchronizedMap.this.sync,
-					      c.iterator())
-	      {
-		public Object next()
-		{
-		  synchronized(SynchronizedMap.this.sync)
-		  {
-		    final Map.Entry e = (Map.Entry) super.next();
-		    return new Map.Entry()
-		    {
-		      public Object getKey()
-		      {
-			synchronized(SynchronizedMap.this.sync)
-			{
-			  return e.getKey();
-			}
-		      }
-		      public Object getValue()
-		      {
-			synchronized(SynchronizedMap.this.sync)
-			{
-			  return e.getValue();
-			}
-		      }
-		      public Object setValue(Object value)
-		      {
-			synchronized(SynchronizedMap.this.sync)
-			{
-			  return e.setValue(value);
-			}
-		      }
-		      public int hashCode()
-		      {
-			synchronized(SynchronizedMap.this.sync)
-			{
-			  return e.hashCode();
-			}
-		      }
-		      public boolean equals(Object o)
-		      {
-			synchronized(SynchronizedMap.this.sync)
-			{
-			  return e.equals(o);
-			}
-		      }
-		    };
-		  }
-		}
-	      };
-	    }
-	  }
-	};
-      }
-    }
-    public boolean equals(Object o)
-    {
-      synchronized(sync)
-      {
-	return m.equals(o);
-      }
-    }
-    public Object get(Object key)
-    {
-      synchronized(sync)
-      {
-	return m.get(key);
-      }
-    }
-    public Object put(Object key, Object value)
-    {
-      synchronized(sync)
-      {
-	return m.put(key, value);
-      }
-    }
-    public int hashCode()
-    {
-      synchronized(sync)
-      {
-	return m.hashCode();
-      }
-    }
-    public boolean isEmpty()
-    {
-      synchronized(sync)
-      {
-	return m.isEmpty();
-      }
-    }
-    public Set keySet()
-    {
-      synchronized(sync)
-      {
-	return new SynchronizedSet(sync, m.keySet());
-      }
-    }
-    public void putAll(Map map)
-    {
-      synchronized(sync)
-      {
-	m.putAll(map);
-      }
-    }
-    public Object remove(Object o)
-    {
-      synchronized(sync)
-      {
-	return m.remove(o);
-      }
-    }
-
-    public int size()
-    {
-      synchronized(sync)
-      {
-	return m.size();
-      }
-    }
-    public Collection values()
-    {
-      synchronized(sync)
-      {
-	return new SynchronizedCollection(sync, m.values());
-      }
-    }
-    public String toString()
-    {
-      synchronized(sync)
-      {
-	return m.toString();
-      }
-    }
-  }
-
-  private static class SynchronizedSortedMap extends SynchronizedMap
-    implements SortedMap
-  {
-    // This is stored both here and in the superclass, to avoid excessive
-    // casting.
-    private SortedMap sm;
-
-    public SynchronizedSortedMap(Object sync, SortedMap sm)
-    {
-      super(sync, sm);
-      this.sm = sm;
-    }
-    public SynchronizedSortedMap(SortedMap sm)
-    {
-      super(sm);
-      this.sm = sm;
-    }
-
-    public Comparator comparator()
-    {
-      synchronized(sync)
-      {
-	return sm.comparator();
-      }
-    }
-    public Object firstKey()
-    {
-      synchronized(sync)
-      {
-	return sm.firstKey();
-      }
-    }
-    public Object lastKey()
-    {
-      synchronized(sync)
-      {
-	return sm.lastKey();
-      }
-    }
-    public SortedMap headMap(Object toKey)
-    {
-      return new SynchronizedSortedMap(sync, sm.headMap(toKey));
-    }
-    public SortedMap tailMap(Object fromKey)
-    {
-      return new SynchronizedSortedMap(sync, sm.tailMap(fromKey));
-    }
-    public SortedMap subMap(Object fromKey, Object toKey)
-    {
-      return new SynchronizedSortedMap(sync, sm.subMap(fromKey, toKey));
-    }
-  }
-}
+  } // class UnmodifiableSortedSet
+} // class Collections

@@ -1,6 +1,6 @@
 /* Dictionary.java -- an abstract (and essentially worthless) 
    class which is Hashtable's superclass
-   Copyright (C) 1998 Free Software Foundation, Inc.
+   Copyright (C) 1998, 2001 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -35,49 +35,88 @@ package java.util;
  * This is an abstract class which has really gone by the wayside.
  * People at Javasoft are probably embarrassed by it.  At this point,
  * it might as well be an interface rather than a class, but it remains
- * this poor, laugable skeleton for the sake of backwards compatibility.
+ * this poor, laughable skeleton for the sake of backwards compatibility.
  * At any rate, this was what came before the <pre>Map</pre> interface 
  * in the Collections framework.
  *
- * @author      Jon Zeppieri
+ * @author Jon Zeppieri
+ * @author Eric Blake <ebb9@email.byu.edu>
+ * @see Map
+ * @see Hashtable
+ * @since 1.0
+ * @status updated to 1.4
  */
 public abstract class Dictionary extends Object
 {
-  /** returns an Enumeration of the values in this Dictionary */
+  /**
+   * Sole constructor (often called implicitly).
+   */
+  public Dictionary()
+  {
+  }
+
+  /**
+   * Returns an Enumeration of the values in this Dictionary.
+   *
+   * @return an Enumeration of the values
+   * @see #keys()
+   */
   public abstract Enumeration elements();
 
   /** 
-   * returns the value associated with the supplied key, or null
-   * if no such value exists
+   * Returns the value associated with the supplied key, or null
+   * if no such value exists. Since Dictionaries are not allowed null keys
+   * or elements, a null result always means the key is not present.
    *
-   * @param    key      the key to use to fetch the value
+   * @param key the key to use to fetch the value
+   * @return the mapped value
+   * @throws NullPointerException if key is null
+   * @see #put(Object, Object)
    */
   public abstract Object get(Object key);
 
-  /** returns true IFF there are no elements in this Dictionary (size() == 0) */
+  /**
+   * Returns true when there are no elements in this Dictionary.
+   *
+   * @return <code>size() == 0</code>
+   */
   public abstract boolean isEmpty();
 
-  /** returns an Enumeration of the keys in this Dictionary */
+  /**
+   * Returns an Enumeration of the keys in this Dictionary
+   *
+   * @return an Enumeration of the keys
+   * @see #elements()
+   */
   public abstract Enumeration keys();
 
   /**
-   * inserts a new value into this Dictionary, located by the
-   * supllied key; note: Dictionary's subclasses (all 1 of them)
-   * do not support null keys or values (I can only assume this
-   * would have been more general) 
+   * Inserts a new value into this Dictionary, located by the
+   * supplied key. Dictionary does not support null keys or values, so
+   * a null return can safely be interpreted as adding a new key.
    *
-   * @param      key      the key which locates the value
-   * @param      value    the value to put into the Dictionary
+   * @param key the key which locates the value
+   * @param value the value to put into the Dictionary
+   * @return the previous value of the key, or null if there was none
+   * @throws NullPointerException if key or value is null
+   * @see #get(Object)
    */
   public abstract Object put(Object key, Object value);
 
   /**
-   * removes fro the Dictionary the value located by the given key
+   * Removes from the Dictionary the value located by the given key. A null
+   * return safely means that the key was not mapped in the Dictionary.
    *
-   * @param       key      the key used to locate the value to be removed
+   * @param key the key used to locate the value to be removed
+   * @return the value associated with the removed key
+   * @throws NullPointerException if key is null
    */
   public abstract Object remove(Object key);
 
-  /** returns the number of values currently in this Dictionary */
+  /**
+   * Returns the number of values currently in this Dictionary.
+   *
+   * @return the number of keys in the Dictionary
+   */
   public abstract int size();
 }

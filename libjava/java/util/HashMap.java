@@ -53,14 +53,16 @@ import java.io.ObjectOutputStream;
  * <p>
  *
  * Under ideal circumstances (no collisions), HashMap offers O(1)
- * performance on most operations (<pre>containsValue()</pre> is,
+ * performance on most operations (<code>containsValue()</code> is,
  * of course, O(n)).  In the worst case (all keys map to the same
  * hash code -- very unlikely), most operations are O(n).
  * <p>
  *
  * HashMap is part of the JDK1.2 Collections API.  It differs from
  * Hashtable in that it accepts the null key and null values, and it
- * does not support "Enumeration views."
+ * does not support "Enumeration views." Also, it is not synchronized;
+ * if you plan to use it in multiple threads, consider using:<br>
+ * <code>Map m = Collections.synchronizedMap(new HashMap(...));</code>
  * <p>
  *
  * The iterators are <i>fail-fast</i>, meaning that any structural
@@ -81,6 +83,7 @@ import java.io.ObjectOutputStream;
  * @see IdentityHashMap
  * @see Hashtable
  * @since 1.2
+ * @status updated to 1.4
  */
 public class HashMap extends AbstractMap
   implements Map, Cloneable, Serializable
@@ -88,18 +91,15 @@ public class HashMap extends AbstractMap
   /**
    * Default number of buckets. This is the value the JDK 1.3 uses. Some
    * early documentation specified this value as 101. That is incorrect.
+   * Package visible for use by HashSet.
    */
   static final int DEFAULT_CAPACITY = 11;
 
   /**
    * The default load factor; this is explicitly specified by the spec.
+   * Package visible for use by HashSet.
    */
   static final float DEFAULT_LOAD_FACTOR = 0.75f;
-
-  /** "enum" of iterator types. */
-  static final int KEYS = 0,
-                   VALUES = 1,
-                   ENTRIES = 2;
 
   /**
    * Compatible with JDK 1.2.
@@ -108,41 +108,54 @@ public class HashMap extends AbstractMap
 
   /**
    * The rounded product of the capacity and the load factor; when the number
-   * of elements exceeds the threshold, the HashMap calls <pre>rehash()</pre>.
-   * @serial
+   * of elements exceeds the threshold, the HashMap calls
+   * <code>rehash()</code>.
+   * @serial the threshold for rehashing
    */
-  int threshold;
+  private int threshold;
 
   /**
    * Load factor of this HashMap:  used in computing the threshold.
-   * @serial
+   * Package visible for use by HashSet.
+   * @serial the load factor
    */
   final float loadFactor;
 
   /**
    * Array containing the actual key-value mappings.
+   * Package visible for use by nested and subclasses.
    */
   transient HashEntry[] buckets;
 
   /**
    * Counts the number of modifications this HashMap has undergone, used
    * by Iterators to know when to throw ConcurrentModificationExceptions.
+   * Package visible for use by nested and subclasses.
    */
   transient int modCount;
 
   /**
    * The size of this HashMap:  denotes the number of key-value pairs.
+   * Package visible for use by nested and subclasses.
    */
   transient int size;
 
   /**
-   * Class to represent an entry in the hash table. Holds a single key-value
-   * pair.  This is extended again in LinkedHashMap.  See {@link clone()}
-   * for why this must be Cloneable.
+   * The cache for {@link #entrySet()}.
    */
-  static class HashEntry extends BasicMapEntry implements Cloneable
+  private transient Set entries;
+
+  /**
+   * Class to represent an entry in the hash table. Holds a single key-value
+   * pair. Package visible for use by subclass.
+   *
+   * @author Eric Blake <ebb9@email.byu.edu>
+   */
+  static class HashEntry extends BasicMapEntry
   {
-    /** The next entry in the linked list. */
+    /**
+     * The next entry in the linked list. Package visible for use by subclass.
+     */
     HashEntry next;
 
     /**
@@ -158,7 +171,8 @@ public class HashMap extends AbstractMap
     /**
      * Called when this entry is removed from the map. This version simply
      * returns the value, but in LinkedHashMap, it must also do bookkeeping.
-     * @return the value of this key as it is removed.
+     *
+     * @return the value of this key as it is removed
      */
     Object cleanup()
     {
@@ -182,9 +196,8 @@ public class HashMap extends AbstractMap
    *
    * Every element in Map m will be put into this new HashMap.
    *
-   * @param m a Map whose key / value pairs will be put into
-   *          the new HashMap.  <b>NOTE: key / value pairs
-   *          are not cloned in this constructor.</b>
+   * @param m a Map whose key / value pairs will be put into the new HashMap.
+   *        <b>NOTE: key / value pairs are not cloned in this constructor.</b>
    * @throws NullPointerException if m is null
    */
   public HashMap(Map m)
@@ -197,8 +210,8 @@ public class HashMap extends AbstractMap
    * Construct a new HashMap with a specific inital capacity and
    * default load factor of 0.75.
    *
-   * @param initialCapacity the initial capacity of this HashMap (>=0)
-   * @throws IllegalArgumentException if (initialCapacity < 0)
+   * @param initialCapacity the initial capacity of this HashMap (&gt;=0)
+   * @throws IllegalArgumentException if (initialCapacity &lt; 0)
    */
   public HashMap(int initialCapacity)
   {
@@ -208,10 +221,10 @@ public class HashMap extends AbstractMap
   /**
    * Construct a new HashMap with a specific inital capacity and load factor.
    *
-   * @param initialCapacity the initial capacity (>=0)
-   * @param loadFactor the load factor (>0, not NaN)
-   * @throws IllegalArgumentException if (initialCapacity < 0) ||
-   *                                     ! (loadFactor > 0.0)
+   * @param initialCapacity the initial capacity (&gt;=0)
+   * @param loadFactor the load factor (&gt; 0, not NaN)
+   * @throws IllegalArgumentException if (initialCapacity &lt; 0) ||
+   *                                     ! (loadFactor &gt; 0.0)
    */
   public HashMap(int initialCapacity, float loadFactor)
   {
@@ -229,7 +242,8 @@ public class HashMap extends AbstractMap
   }
 
   /**
-   * Returns the number of kay-value mappings currently in this Map
+   * Returns the number of kay-value mappings currently in this Map.
+   *
    * @return the size
    */
   public int size()
@@ -238,7 +252,8 @@ public class HashMap extends AbstractMap
   }
 
   /**
-   * Returns true if there are no key-value mappings currently in this Map
+   * Returns true if there are no key-value mappings currently in this Map.
+   *
    * @return <code>size() == 0</code>
    */
   public boolean isEmpty()
@@ -247,51 +262,8 @@ public class HashMap extends AbstractMap
   }
 
   /**
-   * Returns true if this HashMap contains a value <pre>o</pre>, such that
-   * <pre>o.equals(value)</pre>.
-   *
-   * @param value the value to search for in this HashMap
-   * @return true if at least one key maps to the value
-   */
-  public boolean containsValue(Object value)
-  {
-    for (int i = buckets.length - 1; i >= 0; i--)
-      {
-        HashEntry e = buckets[i];
-        while (e != null)
-          {
-            if (value == null ? e.value == null : value.equals(e.value))
-              return true;
-            e = e.next;
-          }
-      }
-    return false;
-  }
-
-  /**
-   * Returns true if the supplied object <pre>equals()</pre> a key
-   * in this HashMap.
-   *
-   * @param key the key to search for in this HashMap
-   * @return true if the key is in the table
-   * @see #containsValue(Object)
-   */
-  public boolean containsKey(Object key)
-  {
-    int idx = hash(key);
-    HashEntry e = buckets[idx];
-    while (e != null)
-      {
-        if (key == null ? e.key == null : key.equals(e.key))
-          return true;
-        e = e.next;
-      }
-    return false;
-  }
-
-  /**
    * Return the value in this HashMap associated with the supplied key,
-   * or <pre>null</pre> if the key maps to nothing.  NOTE: Since the value
+   * or <code>null</code> if the key maps to nothing.  NOTE: Since the value
    * could also be null, you must use containsKey to see if this key
    * actually maps to something.
    *
@@ -306,11 +278,32 @@ public class HashMap extends AbstractMap
     HashEntry e = buckets[idx];
     while (e != null)
       {
-        if (key == null ? e.key == null : key.equals(e.key))
+        if (equals(key, e.key))
           return e.value;
         e = e.next;
       }
     return null;
+  }
+
+  /**
+   * Returns true if the supplied object <code>equals()</code> a key
+   * in this HashMap.
+   *
+   * @param key the key to search for in this HashMap
+   * @return true if the key is in the table
+   * @see #containsValue(Object)
+   */
+  public boolean containsKey(Object key)
+  {
+    int idx = hash(key);
+    HashEntry e = buckets[idx];
+    while (e != null)
+      {
+        if (equals(key, e.key))
+          return true;
+        e = e.next;
+      }
+    return false;
   }
 
   /**
@@ -328,13 +321,12 @@ public class HashMap extends AbstractMap
    */
   public Object put(Object key, Object value)
   {
-    modCount++;
     int idx = hash(key);
     HashEntry e = buckets[idx];
 
     while (e != null)
       {
-        if (key == null ? e.key == null : key.equals(e.key))
+        if (equals(key, e.key))
           // Must use this method for necessary bookkeeping in LinkedHashMap.
           return e.setValue(value);
         else
@@ -342,6 +334,7 @@ public class HashMap extends AbstractMap
       }
 
     // At this point, we know we need to add a new entry.
+    modCount++;
     if (++size > threshold)
       {
         rehash();
@@ -351,59 +344,6 @@ public class HashMap extends AbstractMap
 
     // LinkedHashMap cannot override put(), hence this call.
     addEntry(key, value, idx, true);
-    return null;
-  }
-
-  /**
-   * Helper method for put, that creates and adds a new Entry.  This is
-   * overridden in LinkedHashMap for bookkeeping purposes.
-   *
-   * @param key the key of the new Entry
-   * @param value the value
-   * @param idx the index in buckets where the new Entry belongs
-   * @param callRemove Whether to call the removeEldestEntry method.
-   * @see #put(Object, Object)
-   */
-  void addEntry(Object key, Object value, int idx, boolean callRemove)
-  {
-    HashEntry e = new HashEntry(key, value);
-
-    e.next = buckets[idx];
-    buckets[idx] = e;
-  }
-
-  /**
-   * Removes from the HashMap and returns the value which is mapped by the
-   * supplied key. If the key maps to nothing, then the HashMap remains
-   * unchanged, and <pre>null</pre> is returned. NOTE: Since the value
-   * could also be null, you must use containsKey to see if you are
-   * actually removing a mapping.
-   *
-   * @param key the key used to locate the value to remove
-   * @return whatever the key mapped to, if present
-   */
-  public Object remove(Object key)
-  {
-    modCount++;
-    int idx = hash(key);
-    HashEntry e = buckets[idx];
-    HashEntry last = null;
-
-    while (e != null)
-      {
-        if (key == null ? e.key == null : key.equals(e.key))
-          {
-            if (last == null)
-              buckets[idx] = e.next;
-            else
-              last.next = e.next;
-            size--;
-            // Method call necessary for LinkedHashMap to work correctly.
-            return e.cleanup();
-          }
-        last = e;
-        e = e.next;
-      }
     return null;
   }
 
@@ -435,13 +375,74 @@ public class HashMap extends AbstractMap
   }
   
   /**
+   * Removes from the HashMap and returns the value which is mapped by the
+   * supplied key. If the key maps to nothing, then the HashMap remains
+   * unchanged, and <code>null</code> is returned. NOTE: Since the value
+   * could also be null, you must use containsKey to see if you are
+   * actually removing a mapping.
+   *
+   * @param key the key used to locate the value to remove
+   * @return whatever the key mapped to, if present
+   */
+  public Object remove(Object key)
+  {
+    int idx = hash(key);
+    HashEntry e = buckets[idx];
+    HashEntry last = null;
+
+    while (e != null)
+      {
+        if (equals(key, e.key))
+          {
+            modCount++;
+            if (last == null)
+              buckets[idx] = e.next;
+            else
+              last.next = e.next;
+            size--;
+            // Method call necessary for LinkedHashMap to work correctly.
+            return e.cleanup();
+          }
+        last = e;
+        e = e.next;
+      }
+    return null;
+  }
+
+  /**
    * Clears the Map so it has no keys. This is O(1).
    */
   public void clear()
   {
-    modCount++;
-    Arrays.fill(buckets, null);
-    size = 0;
+    if (size != 0)
+      {
+        modCount++;
+        Arrays.fill(buckets, null);
+        size = 0;
+      }
+  }
+
+  /**
+   * Returns true if this HashMap contains a value <code>o</code>, such that
+   * <code>o.equals(value)</code>.
+   *
+   * @param value the value to search for in this HashMap
+   * @return true if at least one key maps to the value
+   * @see containsKey(Object)
+   */
+  public boolean containsValue(Object value)
+  {
+    for (int i = buckets.length - 1; i >= 0; i--)
+      {
+        HashEntry e = buckets[i];
+        while (e != null)
+          {
+            if (equals(value, e.value))
+              return true;
+            e = e.next;
+          }
+      }
+    return false;
   }
 
   /**
@@ -463,6 +464,8 @@ public class HashMap extends AbstractMap
       }
     copy.buckets = new HashEntry[buckets.length];
     copy.putAllInternal(this);
+    // Clear the entry cache. AbstractMap.clone() does the others.
+    copy.entries = null;
     return copy;
   }
 
@@ -477,41 +480,43 @@ public class HashMap extends AbstractMap
    */
   public Set keySet()
   {
-    // Create an AbstractSet with custom implementations of those methods that
-    // can be overridden easily and efficiently.
-    return new AbstractSet()
-    {
-      public int size()
+    if (keys == null)
+      // Create an AbstractSet with custom implementations of those methods
+      // that can be overridden easily and efficiently.
+      keys = new AbstractSet()
       {
-        return size;
-      }
+        public int size()
+        {
+          return size;
+        }
 
-      public Iterator iterator()
-      {
-        // Cannot create the iterator directly, because of LinkedHashMap.
-        return HashMap.this.iterator(KEYS);
-      }
+        public Iterator iterator()
+        {
+          // Cannot create the iterator directly, because of LinkedHashMap.
+          return HashMap.this.iterator(KEYS);
+        }
 
-      public void clear()
-      {
-        HashMap.this.clear();
-      }
+        public void clear()
+        {
+          HashMap.this.clear();
+        }
 
-      public boolean contains(Object o)
-      {
-        return HashMap.this.containsKey(o);
-      }
+        public boolean contains(Object o)
+        {
+          return containsKey(o);
+        }
 
-      public boolean remove(Object o)
-      {
-        // Test against the size of the HashMap to determine if anything
-        // really got removed. This is necessary because the return value of
-        // HashMap.remove() is ambiguous in the null case.
-        int oldsize = size;
-        HashMap.this.remove(o);
-        return (oldsize != size);
-      }
-    };
+        public boolean remove(Object o)
+        {
+          // Test against the size of the HashMap to determine if anything
+          // really got removed. This is neccessary because the return value
+          // of HashMap.remove() is ambiguous in the null case.
+          int oldsize = size;
+          HashMap.this.remove(o);
+          return oldsize != size;
+        }
+      };
+    return keys;
   }
 
   /**
@@ -526,33 +531,34 @@ public class HashMap extends AbstractMap
    */
   public Collection values()
   {
-    // We don't bother overriding many of the optional methods, as doing so
-    // wouldn't provide any significant performance advantage.
-    return new AbstractCollection()
-    {
-      public int size()
+    if (values == null)
+      // We don't bother overriding many of the optional methods, as doing so
+      // wouldn't provide any significant performance advantage.
+      values = new AbstractCollection()
       {
-        return size;
-      }
+        public int size()
+        {
+          return size;
+        }
 
-      public Iterator iterator()
-      {
-        // Cannot create the iterator directly, because of LinkedHashMap.
-        return HashMap.this.iterator(VALUES);
-      }
+        public Iterator iterator()
+        {
+          // Cannot create the iterator directly, because of LinkedHashMap.
+          return HashMap.this.iterator(VALUES);
+        }
 
-      public void clear()
-      {
-        HashMap.this.clear();
-      }
-    };
+        public void clear()
+        {
+          HashMap.this.clear();
+        }
+      };
+    return values;
   }
 
   /**
    * Returns a "set view" of this HashMap's entries. The set is backed by
    * the HashMap, so changes in one show up in the other.  The set supports
-   * element removal, but not element addition.
-   * <p>
+   * element removal, but not element addition.<p>
    *
    * Note that the iterators for all three views, from keySet(), entrySet(),
    * and values(), traverse the HashMap in the same sequence.
@@ -564,53 +570,62 @@ public class HashMap extends AbstractMap
    */
   public Set entrySet()
   {
-    // Create an AbstractSet with custom implementations of those methods that
-    // can be overridden easily and efficiently.
-    return new AbstractSet()
-    {
-      public int size()
+    if (entries == null)
+      // Create an AbstractSet with custom implementations of those methods
+      // that can be overridden easily and efficiently.
+      entries = new AbstractSet()
       {
-        return size;
-      }
+        public int size()
+        {
+          return size;
+        }
 
-      public Iterator iterator()
-      {
-        // Cannot create the iterator directly, because of LinkedHashMap.
-        return HashMap.this.iterator(ENTRIES);
-      }
+        public Iterator iterator()
+        {
+          // Cannot create the iterator directly, because of LinkedHashMap.
+          return HashMap.this.iterator(ENTRIES);
+        }
 
-      public void clear()
-      {
-        HashMap.this.clear();
-      }
+        public void clear()
+        {
+          HashMap.this.clear();
+        }
 
-      public boolean contains(Object o)
-      {
-        return getEntry(o) != null;
-      }
+        public boolean contains(Object o)
+        {
+          return getEntry(o) != null;
+        }
 
-      public boolean remove(Object o)
-      {
-        HashEntry e = getEntry(o);
-        if (e != null)
-          {
-            HashMap.this.remove(e.key);
-            return true;
-          }
-        return false;
-      }
-    };
+        public boolean remove(Object o)
+        {
+          HashEntry e = getEntry(o);
+          if (e != null)
+            {
+              HashMap.this.remove(e.key);
+              return true;
+            }
+          return false;
+        }
+      };
+    return entries;
   }
 
-  /** Helper method that returns an index in the buckets array for `key;
-   * based on its hashCode().
+  /**
+   * Helper method for put, that creates and adds a new Entry.  This is
+   * overridden in LinkedHashMap for bookkeeping purposes.
    *
-   * @param key the key
-   * @return the bucket number
+   * @param key the key of the new Entry
+   * @param value the value
+   * @param idx the index in buckets where the new Entry belongs
+   * @param callRemove whether to call the removeEldestEntry method
+   * @see #put(Object, Object)
    */
-  int hash(Object key)
+  void addEntry(Object key, Object value, int idx, boolean callRemove)
   {
-    return (key == null) ? 0 : Math.abs(key.hashCode() % buckets.length);
+    HashEntry e = new HashEntry(key, value);
+
+    e.next = buckets[idx];
+    buckets[idx] = e;
   }
 
   /**
@@ -635,6 +650,52 @@ public class HashMap extends AbstractMap
         e = e.next;
       }
     return null;
+  }
+
+  /**
+   * Helper method that returns an index in the buckets array for `key'
+   * based on its hashCode().  Package visible for use by subclasses.
+   *
+   * @param key the key
+   * @return the bucket number
+   */
+  final int hash(Object key)
+  {
+    return key == null ? 0 : Math.abs(key.hashCode() % buckets.length);
+  }
+
+  /**
+   * Generates a parameterized iterator.  Must be overrideable, since
+   * LinkedHashMap iterates in a different order.
+   *
+   * @param type {@link #KEYS}, {@link #VALUES}, or {@link #ENTRIES}
+   * @return the appropriate iterator
+   */
+  Iterator iterator(int type)
+  {
+    return new HashIterator(type);
+  }
+
+  /**
+   * A simplified, more efficient internal implementation of putAll(). The 
+   * Map constructor and clone() should not call putAll or put, in order to 
+   * be compatible with the JDK implementation with respect to subclasses.
+   *
+   * @param m the map to initialize this from
+   */
+  void putAllInternal(Map m)
+  {
+    Iterator itr = m.entrySet().iterator();
+    int msize = m.size();
+    this.size = msize;
+
+    for (; msize > 0; msize--)
+      {
+	Map.Entry e = (Map.Entry) itr.next();
+	Object key = e.getKey();
+	int idx = hash(key);
+	addEntry(key, e.getValue(), idx, false);
+      }
   }
 
   /**
@@ -678,35 +739,6 @@ public class HashMap extends AbstractMap
             e.next = null;
             e = next;
           }
-      }
-  }
-
-  /**
-   * Generates a parameterized iterator.  Must be overrideable, since
-   * LinkedHashMap iterates in a different order.
-   * @param type {@link #KEYS}, {@link #VALUES}, or {@link #ENTRIES}
-   * @return the appropriate iterator
-   */
-  Iterator iterator(int type)
-  {
-    return new HashIterator(type);
-  }
-
-  /**
-   * A simplified, more efficient internal implementation of putAll(). The 
-   * Map constructor and clone() should not call putAll or put, in order to 
-   * be compatible with the JDK implementation with respect to subclasses.
-   */
-  void putAllInternal(Map m)
-  {
-    Iterator itr = m.entrySet().iterator();
-
-    for (int msize = m.size(); msize > 0; msize--)
-      {
-	Map.Entry e = (Map.Entry) itr.next();
-	Object key = e.getKey();
-	int idx = hash(key);
-	addEntry(key, e.getValue(), idx, false);
       }
   }
 
@@ -757,9 +789,6 @@ public class HashMap extends AbstractMap
     // Read and use capacity.
     buckets = new HashEntry[s.readInt()];
     int len = s.readInt();
-    // Already happens automatically.
-    // size = 0;
-    // modCount = 0;
 
     // Read and use key/value pairs.
     for ( ; len > 0; len--)
@@ -773,29 +802,29 @@ public class HashMap extends AbstractMap
    *
    * @author Jon Zeppieri
    */
-  class HashIterator implements Iterator
+  private final class HashIterator implements Iterator
   {
     /**
      * The type of this Iterator: {@link #KEYS}, {@link #VALUES},
      * or {@link #ENTRIES}.
      */
-    final int type;
+    private final int type;
     /**
      * The number of modifications to the backing HashMap that we know about.
      */
-    int knownMod = modCount;
+    private int knownMod = modCount;
     /** The number of elements remaining to be returned by next(). */
-    int count = size;
+    private int count = size;
     /** Current index in the physical hash table. */
-    int idx = buckets.length;
+    private int idx = buckets.length;
     /** The last Entry returned by a next() call. */
-    HashEntry last;
+    private HashEntry last;
     /**
      * The next entry that should be returned by next(). It is set to something
      * if we're iterating through a bucket that contains multiple linked
      * entries. It is null if next() needs to find a new bucket.
      */
-    HashEntry next;
+    private HashEntry next;
 
     /**
      * Construct a new HashIterator with the supplied type.
@@ -840,14 +869,14 @@ public class HashMap extends AbstractMap
       last = e;
       if (type == VALUES)
         return e.value;
-      else if (type == KEYS)
+      if (type == KEYS)
         return e.key;
       return e;
     }
 
     /**
      * Removes from the backing HashMap the last element which was fetched
-     * with the <pre>next()</pre> method.
+     * with the <code>next()</code> method.
      * @throws ConcurrentModificationException if the HashMap was modified
      * @throws IllegalStateException if called when there is no last element
      */
@@ -859,8 +888,8 @@ public class HashMap extends AbstractMap
         throw new IllegalStateException();
 
       HashMap.this.remove(last.key);
-      knownMod++;
       last = null;
+      knownMod++;
     }
   }
 }

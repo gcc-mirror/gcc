@@ -1,5 +1,5 @@
 /* AbstractSet.java -- Abstract implementation of most of Set
-   Copyright (C) 1998, 2000 Free Software Foundation, Inc.
+   Copyright (C) 1998, 2000, 2001 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -35,9 +35,27 @@ package java.util;
  * on them - specifically, no element may be in the set more than once). This
  * class simply provides implementations of equals() and hashCode() to fulfil
  * the requirements placed on them by the Set interface.
+ *
+ * @author Original author unknown
+ * @author Eric Blake <ebb9@email.byu.edu>
+ * @see Collection
+ * @see AbstractCollection
+ * @see Set
+ * @see HashSet
+ * @see TreeSet
+ * @see LinkedHashSet
+ * @since 1.2
+ * @status updated to 1.4
  */
 public abstract class AbstractSet extends AbstractCollection implements Set
 {
+  /**
+   * The main constructor, for use by subclasses.
+   */
+  protected AbstractSet()
+  {
+  }
+
   /**
    * Tests whether the given object is equal to this Set. This implementation
    * first checks whether this set <em>is</em> the given object, and returns
@@ -50,12 +68,9 @@ public abstract class AbstractSet extends AbstractCollection implements Set
    */
   public boolean equals(Object o)
   {
-    if (o == this)
-      return true;
-    else if (o instanceof Set && ((Set) o).size() == size())
-      return containsAll((Collection) o);
-    else
-      return false;
+    return (o == this ||
+            (o instanceof Set && ((Set) o).size() == size()
+             && containsAll((Collection) o)));
   }
 
   /**
@@ -69,14 +84,45 @@ public abstract class AbstractSet extends AbstractCollection implements Set
   public int hashCode()
   {
     Iterator itr = iterator();
-    int size = size();
     int hash = 0;
-    for (int pos = 0; pos < size; pos++)
-      {
-	Object obj = itr.next();
-	if (obj != null)
-	  hash += obj.hashCode();
-      }
+    int pos = size();
+    while (--pos >= 0)
+      hash += hashCode(itr.next());
     return hash;
   }
+
+  /**
+   * Removes from this set all elements in the given collection (optional
+   * operation). This implementation uses <code>size()</code> to determine
+   * the smaller collection.  Then, if this set is smaller, it iterates
+   * over the set, calling Iterator.remove if the collection contains
+   * the element.  If this set is larger, it iterates over the collection,
+   * calling Set.remove for all elements in the collection. Note that
+   * this operation will fail if a remove methods is not supported.
+   *
+   * @param c the collection of elements to remove
+   * @return true if the set was modified as a result
+   * @throws UnsupportedOperationException if remove is not supported
+   * @throws NullPointerException if the collection is null
+   * @see AbstractCollection#remove(Object)
+   * @see Collection#contains(Object)
+   * @see Iterator#remove()
+   */
+  public boolean removeAll(Collection c)
+  {
+    int oldsize = size();
+    int count = c.size();
+    Iterator i;
+    if (oldsize < count)
+      {
+	for (i = iterator(), count = oldsize; count > 0; count--)
+          if (c.contains(i.next()))
+            i.remove();
+      }
+    else
+      for (i = c.iterator(); count > 0; count--)
+        remove(i.next());
+    return oldsize != size();
+  }
+
 }

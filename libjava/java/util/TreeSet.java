@@ -1,4 +1,4 @@
-/* TreeSet.java -- a class providing a TreeMap-backet SortedSet
+/* TreeSet.java -- a class providing a TreeMap-backed SortedSet
    Copyright (C) 1999, 2000, 2001 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -33,54 +33,91 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 
 /**
- * This class provides a TreeMap-backed implementation of the 
- * SortedSet interface.
+ * This class provides a TreeMap-backed implementation of the SortedSet
+ * interface. The elements will be sorted according to their <i>natural
+ * order</i>, or according to the provided <code>Comparator</code>.<p>
  *
- * Each element in the Set is a key in the backing TreeMap; each key
- * maps to a static token, denoting that the key does, in fact, exist.
+ * Most operations are O(log n), but there is so much overhead that this
+ * makes small sets expensive. Note that the ordering must be <i>consistent
+ * with equals</i> to correctly implement the Set interface. If this
+ * condition is violated, the set is still well-behaved, but you may have
+ * suprising results when comparing it to other sets.<p>
  *
- * Most operations are O(log n).
+ * This implementation is not synchronized. If you need to share this between
+ * multiple threads, do something like:<br>
+ * <code>SortedSet s
+ *       = Collections.synchronizedSortedSet(new TreeSet(...));</code><p>
  *
- * TreeSet is a part of the JDK1.2 Collections API.
+ * The iterators are <i>fail-fast</i>, meaning that any structural
+ * modification, except for <code>remove()</code> called on the iterator
+ * itself, cause the iterator to throw a
+ * <code>ConcurrentModificationException</code> rather than exhibit
+ * non-deterministic behavior.
  *
- * @author      Jon Zeppieri
+ * @author Jon Zeppieri
+ * @author Bryce McKinlay
+ * @author Eric Blake <ebb9@email.byu.edu>
+ * @see Collection
+ * @see Set
+ * @see HashSet
+ * @see LinkedHashSet
+ * @see Comparable
+ * @see Comparator
+ * @see Collections#synchronizedSortedSet(SortedSet)
+ * @see TreeMap
+ * @since 1.2
+ * @status updated to 1.4
  */
-
 public class TreeSet extends AbstractSet
   implements SortedSet, Cloneable, Serializable
 {
-  /** The TreeMap which backs this Set */
-  transient SortedMap map;
-
-  static final long serialVersionUID = -2479143000061671589L;
+  /**
+   * Compatible with JDK 1.2.
+   */
+  private static final long serialVersionUID = -2479143000061671589L;
 
   /**
-   * Construct a new TreeSet whose backing TreeMap using the "natural" 
-   * ordering of keys.
+   * The SortedMap which backs this Set.
+   */
+  // Not final because of readObject. This will always be one of TreeMap or
+  // TreeMap.SubMap, which both extend AbstractMap.
+  private transient SortedMap map;
+
+  /**
+   * Construct a new TreeSet whose backing TreeMap using the "natural"
+   * ordering of keys. Elements that are not mutually comparable will cause
+   * ClassCastExceptions down the road.
+   *
+   * @see Comparable
    */
   public TreeSet()
   {
     map = new TreeMap();
   }
 
-  /** 
-   * Construct a new TreeSet whose backing TreeMap uses the supplied 
-   * Comparator.
+  /**
+   * Construct a new TreeSet whose backing TreeMap uses the supplied
+   * Comparator. Elements that are not mutually comparable will cause
+   * ClassCastExceptions down the road.
    *
-   * @param     oComparator      the Comparator this Set will use
+   * @param comparator the Comparator this Set will use
    */
   public TreeSet(Comparator comparator)
   {
     map = new TreeMap(comparator);
   }
 
-  /** 
+  /**
    * Construct a new TreeSet whose backing TreeMap uses the "natural"
    * orering of the keys and which contains all of the elements in the
-   * supplied Collection.
+   * supplied Collection. This runs in n*log(n) time.
    *
-   * @param     oCollection      the new Set will be initialized with all
-   *                             of the elements in this Collection
+   * @param collection the new Set will be initialized with all
+   *        of the elements in this Collection
+   * @throws ClassCastException if the elements of the collection are not
+   *         comparable
+   * @throws NullPointerException if the collection is null
+   * @see Comparable
    */
   public TreeSet(Collection collection)
   {
@@ -93,54 +130,57 @@ public class TreeSet extends AbstractSet
    * SortedSet and containing all of the elements in the supplied SortedSet.
    * This constructor runs in linear time.
    *
-   * @param     sortedSet       the new TreeSet will use this SortedSet's
-   *                            comparator and will initialize itself
-   *                            with all of the elements in this SortedSet
+   * @param sortedSet the new TreeSet will use this SortedSet's comparator
+   *        and will initialize itself with all its elements
+   * @throws NullPointerException if sortedSet is null
    */
   public TreeSet(SortedSet sortedSet)
   {
-    TreeMap map = new TreeMap(sortedSet.comparator());
-    int i = 0;
+    map = new TreeMap(sortedSet.comparator());
     Iterator itr = sortedSet.iterator();
-    map.putKeysLinear(itr, sortedSet.size());
-    this.map = map;
+    ((TreeMap) map).putKeysLinear(itr, sortedSet.size());
   }
-  
-  /* This private constructor is used to implement the subSet() calls around
-    a backing TreeMap.SubMap. */
-  TreeSet(SortedMap backingMap)
+
+  /**
+   * This private constructor is used to implement the subSet() calls around
+   * a backing TreeMap.SubMap.
+   *
+   * @param backingMap the submap
+   */
+  private TreeSet(SortedMap backingMap)
   {
     map = backingMap;
   }
 
-  /** 
+  /**
    * Adds the spplied Object to the Set if it is not already in the Set;
-   * returns true if the element is added, false otherwise
+   * returns true if the element is added, false otherwise.
    *
-   * @param       obj       the Object to be added to this Set
+   * @param obj the Object to be added to this Set
+   * @throws ClassCastException if the element cannot be compared with objects
+   *         already in the set
    */
   public boolean add(Object obj)
   {
-    return (map.put(obj, Boolean.TRUE) == null);
+    return map.put(obj, "") == null;
   }
 
   /**
    * Adds all of the elements in the supplied Collection to this TreeSet.
    *
-   * @param        c         All of the elements in this Collection
-   *                         will be added to the Set.
-   *
-   * @return       true if the Set is altered, false otherwise
+   * @param c The collection to add
+   * @return true if the Set is altered, false otherwise
+   * @throws NullPointerException if c is null
+   * @throws ClassCastException if an element in c cannot be compared with
+   *         objects already in the set
    */
   public boolean addAll(Collection c)
   {
     boolean result = false;
-    int size = c.size();
+    int pos = c.size();
     Iterator itr = c.iterator();
-
-    for (int i = 0; i < size; i++)
-      result |= (map.put(itr.next(), Boolean.TRUE) == null);
-
+    while (--pos >= 0)
+      result |= (map.put(itr.next(), "") == null);
     return result;
   }
 
@@ -152,94 +192,75 @@ public class TreeSet extends AbstractSet
     map.clear();
   }
 
-  /** Returns a shallow copy of this Set. */
+  /**
+   * Returns a shallow copy of this Set. The elements are not cloned.
+   *
+   * @return the cloned set
+   */
   public Object clone()
   {
     TreeSet copy = null;
     try
       {
         copy = (TreeSet) super.clone();
+        // Map may be either TreeMap or TreeMap.SubMap, hence the ugly casts.
+        copy.map = (SortedMap) ((AbstractMap) map).clone();
       }
     catch (CloneNotSupportedException x)
-      {      
+      {
+        // Impossible result.
       }
-    copy.map = (SortedMap) ((TreeMap) map).clone();
     return copy;
   }
 
-  /** Returns this Set's comparator */
+  /**
+   * Returns this Set's comparator.
+   *
+   * @return the comparator, or null if the set uses natural ordering
+   */
   public Comparator comparator()
   {
     return map.comparator();
   }
 
-  /** 
-   * Returns true if this Set contains the supplied Object, 
-   * false otherwise 
+  /**
+   * Returns true if this Set contains the supplied Object, false otherwise.
    *
-   * @param       oObject        the Object whose existence in the Set is
-   *                             being tested
+   * @param obj the Object to check for
+   * @return true if it is in the set
+   * @throws ClassCastException if obj cannot be compared with objects
+   *         already in the set
    */
   public boolean contains(Object obj)
   {
     return map.containsKey(obj);
   }
 
-  /** Returns true if this Set has size 0, false otherwise */
-  public boolean isEmpty()
-  {
-    return map.isEmpty();
-  }
-
-  /** Returns the number of elements in this Set */
-  public int size()
-  {
-    return map.size();
-  }
-
-  /** 
-   * If the supplied Object is in this Set, it is removed, and true is
-   * returned; otherwise, false is returned.
+  /**
+   * Returns the first (by order) element in this Set.
    *
-   * @param         obj        the Object we are attempting to remove
-   *                           from this Set
+   * @return the first element
+   * @throws NoSuchElementException if the set is empty
    */
-  public boolean remove(Object obj)
-  {
-    return (map.remove(obj) != null);
-  }
-
-  /** Returns the first (by order) element in this Set */
   public Object first()
   {
     return map.firstKey();
   }
 
-  /** Returns the last (by order) element in this Set */
-  public Object last()
-  {
-    return map.lastKey();
-  }
-
   /**
-   * Returns a view of this Set including all elements in the interval
-   * [oFromElement, oToElement).
+   * Returns a view of this Set including all elements less than
+   * <code>to</code>. The returned set is backed by the original, so changes
+   * in one appear in the other. The subset will throw an
+   * {@link IllegalArgumentException} for any attempt to access or add an
+   * element beyond the specified cutoff. The returned set does not include
+   * the endpoint; if you want inclusion, pass the successor element.
    *
-   * @param       from  the resultant view will contain all
-   *                    elements greater than or equal to this element
-   * @param       to    the resultant view will contain all
-   *                    elements less than this element
-   */
-  public SortedSet subSet(Object from, Object to)
-  {
-    return new TreeSet(map.subMap(from, to));
-  }
-
-  /**
-   * Returns a view of this Set including all elements less than oToElement
-   *
-   * @param       toElement    the resultant view will contain all
-   *                            elements less than this element
+   * @param to the (exclusive) cutoff point
+   * @return a view of the set less than the cutoff
+   * @throws ClassCastException if <code>to</code> is not compatible with
+   *         the comparator (or is not Comparable, for natural ordering)
+   * @throws NullPointerException if to is null, but the comparator does not
+   *         tolerate null elements
    */
   public SortedSet headSet(Object to)
   {
@@ -247,42 +268,138 @@ public class TreeSet extends AbstractSet
   }
 
   /**
-   * Returns a view of this Set including all elements greater than or
-   * equal to oFromElement.
+   * Returns true if this Set has size 0, false otherwise.
    *
-   * @param       from  the resultant view will contain all
-   *              elements greater than or equal to this element
+   * @return true if the set is empty
+   */
+  public boolean isEmpty()
+  {
+    return map.isEmpty();
+  }
+
+  /**
+   * Returns in Iterator over the elements in this TreeSet, which traverses
+   * in ascending order.
+   *
+   * @return an iterator
+   */
+  public Iterator iterator()
+  {
+    return map.keySet().iterator();
+  }
+
+  /**
+   * Returns the last (by order) element in this Set.
+   *
+   * @return the last element
+   * @throws NoSuchElementException if the set is empty
+   */
+  public Object last()
+  {
+    return map.lastKey();
+  }
+
+  /**
+   * If the supplied Object is in this Set, it is removed, and true is
+   * returned; otherwise, false is returned.
+   *
+   * @param obj the Object to remove from this Set
+   * @return true if the set was modified
+   * @throws ClassCastException if obj cannot be compared to set elements
+   */
+  public boolean remove(Object obj)
+  {
+    return map.remove(obj) != null;
+  }
+
+  /**
+   * Returns the number of elements in this Set
+   *
+   * @return the set size
+   */
+  public int size()
+  {
+    return map.size();
+  }
+
+  /**
+   * Returns a view of this Set including all elements greater or equal to
+   * <code>from</code> and less than <code>to</code> (a half-open interval).
+   * The returned set is backed by the original, so changes in one appear in
+   * the other. The subset will throw an {@link IllegalArgumentException}
+   * for any attempt to access or add an element beyond the specified cutoffs.
+   * The returned set includes the low endpoint but not the high; if you want
+   * to reverse this behavior on either end, pass in the successor element.
+   *
+   * @param from the (inclusive) low cutoff point
+   * @param to the (exclusive) high cutoff point
+   * @return a view of the set between the cutoffs
+   * @throws ClassCastException if either cutoff is not compatible with
+   *         the comparator (or is not Comparable, for natural ordering)
+   * @throws NullPointerException if from or to is null, but the comparator
+   *         does not tolerate null elements
+   * @throws IllegalArgumentException if from is greater than to
+   */
+  public SortedSet subSet(Object from, Object to)
+  {
+    return new TreeSet(map.subMap(from, to));
+  }
+
+  /**
+   * Returns a view of this Set including all elements greater or equal to
+   * <code>from</code>. The returned set is backed by the original, so
+   * changes in one appear in the other. The subset will throw an
+   * {@link IllegalArgumentException} for any attempt to access or add an
+   * element beyond the specified cutoff. The returned set includes the
+   * endpoint; if you want to exclude it, pass in the successor element.
+   *
+   * @param from the (inclusive) low cutoff point
+   * @return a view of the set above the cutoff
+   * @throws ClassCastException if <code>from</code> is not compatible with
+   *         the comparator (or is not Comparable, for natural ordering)
+   * @throws NullPointerException if from is null, but the comparator
+   *         does not tolerate null elements
    */
   public SortedSet tailSet(Object from)
   {
     return new TreeSet(map.tailMap(from));
   }
 
-  /** Returns in Iterator over the elements in this TreeSet */
-  public Iterator iterator()
+  /**
+   * Serializes this object to the given stream.
+   *
+   * @param s the stream to write to
+   * @throws IOException if the underlying stream fails
+   * @serialData the <i>comparator</i> (Object), followed by the set size
+   *             (int), the the elements in sorted order (Object)
+   */
+  private void writeObject(ObjectOutputStream s) throws IOException
   {
-    return map.keySet().iterator();
-  }
-
-  private void writeObject(ObjectOutputStream out) throws IOException
-  {
+    s.defaultWriteObject();
     Iterator itr = map.keySet().iterator();
-    int size = map.size();
-
-    out.writeObject(map.comparator());
-    out.writeInt(size);
-
-    for (int i = 0; i < size; i++)
-      out.writeObject(itr.next());
+    int pos = map.size();
+    s.writeObject(map.comparator());
+    s.writeInt(pos);
+    while (--pos >= 0)
+      s.writeObject(itr.next());
   }
 
-  private void readObject(ObjectInputStream in)
+  /**
+   * Deserializes this object from the given stream.
+   *
+   * @param s the stream to read from
+   * @throws ClassNotFoundException if the underlying stream fails
+   * @throws IOException if the underlying stream fails
+   * @serialData the <i>comparator</i> (Object), followed by the set size
+   *             (int), the the elements in sorted order (Object)
+   */
+  private void readObject(ObjectInputStream s)
     throws IOException, ClassNotFoundException
   {
-    Comparator comparator = (Comparator) in.readObject();
-    int size = in.readInt();
-    TreeMap map = new TreeMap(comparator);    
-    map.putFromObjStream(in, size, false);
-    this.map = map;
+    s.defaultReadObject();
+    Comparator comparator = (Comparator) s.readObject();
+    int size = s.readInt();
+    map = new TreeMap(comparator);
+    ((TreeMap) map).putFromObjStream(s, size, false);
   }
 }

@@ -1,4 +1,236 @@
+2001-12-15  Bryce McKinlay  <bryce@waitaki.otago.ac.nz>
+
+	* java/util/BitSet.java (and): Fix off-by-one bug, don't skip part of
+	the bitset.
+	(andNot): Likewise.
+	(xor): Likewise.
+
+2001-12-15  Bryce McKinlay  <bryce@waitaki.otago.ac.nz>
+
+	* java/util/LinkedList.java (LinkedListItr.add): Don't skip the next
+	entry.
+
+2001-12-15  Eric Blake  <ebb9@email.byu.edu>
+
+	* java/util/TreeMap.java (removeNode): Fix bug in node removal.
+
+2001-12-15  Bryce McKinlay  <bryce@waitaki.otago.ac.nz>
+
+	* java/util/AbstractCollection.java (containsAll): Use size of the
+	correct collection for loop bound.
+	* java/util/AbstractList.java (iterator.next): Increment pos after
+	calling get on backing list.
+	(listIterator.next): Likewise.
+	* java/util/LinkedList.java (addLastEntry): Don't increment size before
+	checking for size == 0.
+	(addFirstEntry): Rearrange to match addLastEntry.
+	(add): Do not increment size before inserting the new entry.
+
+	* java/util/AbstractCollection.java (addAll): Use size of the
+	correct collection for loop bound.
+
+2001-12-15  Bryce McKinlay  <bryce@waitaki.otago.ac.nz>
+
+	* java/util/AbstractSet.java (removeAll): Fix scoping thinko.
+	* java/util/HashMap.java (putAllInternal): Set size here.
+	* java/util/Hashtable.java (putAllInternal): New method. Copy contents
+	of a map efficiently without calling put() or putAll().
+	(Hashtable (map)): Use putAllInternal.
+	(clone): Likewise.
+
+2001-12-15  Eric Blake  <ebb9@email.byu.edu>
+
+	* java/util/Collections.java:
+	* java/util/Vector.java:
+	* java/util/WeakHashMap.java: Fix spelling errors.
+
+2001-12-15  Eric Blake  <ebb9@email.byu.edu>
+
+	* java/util/AbstractCollection.java (removeAllInternal),
+	(retainAllInternal): Add hooks for use by ArrayList.
+	* java/util/AbstractList.java: Minor code updates. Fix some
+	scoping.
+	* java/util/AbstractMap.java: ditto
+	* java/util/ArrayList.java (readObject, writeObject): ditto
+	(removeAllInternal, retainAllInternal): Optimize.
+	* java/util/Arrays.java: ditto
+	* java/util/Collections.java: ditto. Change order of parameters
+	to equals(Object, Object) to match specs.
+	* java/util/Dictionary.java: Improve javadoc.
+	(Dictionary): Add explicit constructor.
+	* java/util/HashMap.java: Improve javadoc. Rearrange methods to
+	follow order in JDK. Cleanups related to recent code migration to
+	AbstractMap. Fix some scoping.
+	(entrySet): Cache the result.
+	(modCount): Ensure that this is updated correctly.
+	* java/util/HashSet.java: Improve javadoc. Fix some scoping.
+	(init): Add hooks for LinkedHashSet.
+	(map): Use "" instead of Boolean.TRUE in backing map. Use
+	package-private API where possible for less overhead.
+	(readObject, writeObject): Fix serialization.
+	* java/util/Hashtable.java: Improve javadoc. Fix some scoping.
+	(entrySet, keySet, values): Cache the result.
+	(modCount): Ensure that this is updated correctly.
+	(contains, remove): Fix NullPointer checking to match specs.
+	(class Enumeration): Make more like HashIterator.
+	* java/util/IdentityHashMap.java: Minor code updates.
+	(modCount): Ensure that this is updated correctly.
+	(readObject, writeObject): Fix serialization.
+	* java/util/LinkedHashMap.java: Minor code updates. Cleanups
+	related to recent code migration to AbstractMap.
+	* java/util/LinkedHashSet.java: New file.
+	* java/util/LinkedList.java:
+	(readObject, writeObject): Fix serialization.
+	* java/util/Makefile.am: List recently added files.
+	* java/util/Stack.java: Minor code updates.
+	* java/util/TreeMap.java: Improve javadoc. Overhaul the class to
+	be more efficient. Fix some scoping. Rearrange the methods.
+	(nil): Ensure that this can be thread-safe, and make it a static
+	final. Initialize it to be more useful as a sentinal node.
+	(Node): Specify color in constructor.
+	(deleteFixup, insertFixup): Improve comments and algorithm.
+	(fabricateTree): Redesign with less overhead.
+	(lowestGreaterThan): Add parameter first to make SubMap easier.
+	(removeNode): Patch hole where nil was being modified. Choose
+	predecessor instead of successor so in-place swap works.
+	(class VerifyResult, verifyTree, verifySub, verifyError): Remove
+	this dead code after verifying the class works.
+	(class SubMap): Rewrite several algorithms to avoid problems with
+	comparing nil.
+	* java/util/TreeSet.java: Improve javadoc. Fix some scoping.
+	(clone): Fix ClassCastException when cloning subSet().
+	(readObject, writeObject): Fix serialization.
+	* java/util/WeakHashMap.java: Improve javadoc. Fix some scoping.
+	(NULL_KEY): Make it compare as null, for ease elsewhere.
+	(Class WeakEntry): Rename from Entry, to avoid shadowing
+	Map.Entry. Add missing toString.
+	(modCount): Ensure that this is updated correctly.
+	(clear, containsValue, keySet, putAll, values, WeakHashMap(Map)):
+	Add missing methods and constructor.
+
+2001-12-15  Eric Blake  <ebb9@email.byu.edu>
+
+	* java/util/ArrayList.java (checkBoundExclusive),
+	(checkBoundInclusive): Rename from range??clusive, to match
+	AbstractList.
+	* java/util/LinkedList.java (checkBoundsExclusive),
+	(checkBoundsInclusive): ditto
+	* java/util/Vector.java (checkBoundExclusive),
+	(checkBoundInclusive): Move bounds checking into common methods.
+
+2001-12-15  Eric Blake  <ebb9@email.byu.edu>
+
+	* java/util/AbstractList.java:
+	(modCount): Make sure it is updated in all needed places.
+	* java/util/ArrayList.java: Improve javadoc. Implements
+	RandomAccess. Add serialVersionUID. Reorder methods.
+	(modCount): Make sure it is updated in all needed places.
+	(rangeExclusive, rangeInclusive): Add common methods for bounds
+	check.
+	(isEmpty): Add missing method.
+	* java/util/Collections.java: (class SynchronizedList): Make
+	package visible.
+	* java/util/ConcurrentModificationException.java: Improve
+	javadoc.
+	* java/util/EmptyStackException.java: Improve javadoc.
+	* java/util/LinkedList.java: Improve javadoc.
+	(modCount): Make sure it is updated in all needed places.
+	(rangeExclusive, rangeInclusive): Add common methods for bounds
+	check.
+	* java/util/NoSuchElementException.java: Improve javadoc.
+	* java/util/Stack.java: Improve javadoc. Fix synchronization
+	issues.
+	(modCount): Make sure it is updated in all needed places.
+	* java/util/Vector.java: Improve javadoc. Fix synchronization
+	issues. Implements RandomAccess. Reorder methods.
+	(modCount): Make sure it is updated in all needed places.
+	(setSize): Fix according to specifications: this does not dictate
+	the backing array size.
+	(removeAll, retainAll): Faster implementations.
+
+2001-12-15  Eric Blake  <ebb9@email.byu.edu>
+
+	* java/util/BitSet.java: Improve javadoc.
+	(cardinality(), clear(), clear(int, int), flip(int)),
+	(flip(int, int), get(int, int), intersects(BitSet), isEmpty()),
+	(nextClearBit(int), nextSetBit(int), set(int, boolean)),
+	(set(int, int), set(int, int, boolean)): Add new JDK 1.4 methods.
+	(clone): Fix so subclasses clone correctly.
+
+2001-12-15  Eric Blake  <ebb9@email.byu.edu>
+
+	* java/util/AbstractCollection.java: Improve javadoc.
+	(AbstractCollection()): Make constructor protected.
+	(equals(Object, Object), hashCode(Object)): Add utility methods.
+	* java/util/AbstractList.java: Improve javadoc.
+	(AbstractList()): Make constructor protected.
+	(indexOf(Object)): Call listIterator(), not listIterator(int).
+	(iterator()): Follow Sun's requirement to not use listIterator(0).
+	(listIterator(int)): Make AbstractListItr anonymous.
+	(subList(int, int)): Add support for RandomAccess.
+	(SubList.add(int, Object), SubList.remove(Object)): Fix bug with
+	modCount tracking.
+	(SubList.addAll(Collection)): Add missing method.
+	(SubList.listIterator(int)): Fix bugs in indexing, modCount
+	tracking.
+	(class RandomAccessSubList): Add new class.
+	* java/util/AbstractMap.java: Improve javadoc.
+	(keys, values, KEYS, VALUES, ENTRIES): Consolidate common map
+	fields.
+	(AbstractMap()): Make constructor protected.
+	(equals(Object, Object), hashCode(Object)): Add utility methods.
+	(equals(Object)): Change algorithm to
+	entrySet().equals(m.entrySet()), as documented by Sun.
+	(keySet(), values()): Cache the collections.
+	* java/util/AbstractSequentialList.java: Improve javadoc.
+	(AbstractSequentialList()): Make constructor protected.
+	* java/util/AbstractSet.java: Improve javadoc.
+	(AbstractSet()): Make constructor protected.
+	(removeAll(Collection)): Add missing method.
+	* java/util/Arrays.java: Improve javadoc, rearrange method orders.
+	(defaultComparator): Remove, in favor of
+	Collections.compare(Object, Object, Comparator).
+	(binarySearch, equals, sort): Fix natural order comparison of
+	floats and doubles. Also improve Object comparison - when
+	comparator is null, use natural order.
+	(fill, sort): Add missing checks for IllegalArgumentException.
+	(sort, qsort): Fix sorting bugs, rework the code for more
+	legibility.
+	(mergeSort): Inline into sort(Object[], int, int, Comparator).
+	(class ArrayList): Rename from ListImpl, and make compatible with
+	JDK serialization. Add methods which more efficiently override
+	those of AbstractList.
+	* java/util/Collections: Improve javadoc.
+	(isSequential(List)): Add and use a method for deciding between
+	RandomAccess and sequential algorithms on lists.
+	(class Empty*, class Synchronized*, class Unmodifiable*): Make
+	compliant with JDK serializability.
+	(class Singleton*, class CopiesList, class RevereseComparator),
+	(class UnmodifiableMap.UnmodifiableEntrySet),
+	(class *RandomAccessList): New classes for serial compatibility.
+	(class Empty*, class Singleton*, class CopiesList): Add methods
+	which more efficiently override those of Abstract*.
+	(search): Inline into binarySearch(List, Object, Comparator).
+	(binarySearch): Make sequential search only do log(n) comparisons,
+	instead of n.
+	(copy(List, List)): Do bounds checking before starting.
+	(indexOfSubList, lastIndexOfSubList, list, replaceAll, rotate),
+	(swap):	Add new JDK 1.4 methods.
+	(binarySearch, max, min, sort): Allow null comparator to represent
+	natural ordering.
+	(reverse(List)): Avoid unnecessary swap.
+	(shuffle(List, Random)): Do shuffle in-place for RandomAccess
+	lists.
+	(SingletonList.get): Fix logic bug.
+	(SingletonMap.entrySet): Make the entry immutable, and cache the
+	returned set.
+	(SynchronizedCollection, SynchronizedMap, UnmodifiableCollection),
+	(UnmodifiableMap): Detect null pointer in construction.
+	(SynchronizedMap, UnmodifiableMap): Cache collection views.
+	* java/util/BasicMapEntry: Improve javadoc.
+
 2001-12-14  Hans Boehm  <Hans_Boehm@hp.com>
+
 	* libjava/prims.cc: Some old cleanups.  The collector now
 	handles test for out of memory.
 
