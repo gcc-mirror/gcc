@@ -3546,16 +3546,16 @@ assign_parms (fndecl, second_time)
 
 	      if (stack_parm != 0)
 		{
-		  parm_reg_stack_loc[REGNO (gen_lowpart (submode, parmreg))]
-		    = gen_lowpart (submode, stack_parm);
-		  parm_reg_stack_loc[REGNO (gen_highpart (submode, parmreg))]
-		    = gen_highpart (submode, stack_parm);
+		  parm_reg_stack_loc[REGNO (gen_realpart (submode, parmreg))]
+		    = gen_realpart (submode, stack_parm);
+		  parm_reg_stack_loc[REGNO (gen_imagpart (submode, parmreg))]
+		    = gen_imagpart (submode, stack_parm);
 		}
 	      else
 		{
-		  parm_reg_stack_loc[REGNO (gen_lowpart (submode, parmreg))]
+		  parm_reg_stack_loc[REGNO (gen_realpart (submode, parmreg))]
 		    = 0;
-		  parm_reg_stack_loc[REGNO (gen_highpart (submode, parmreg))]
+		  parm_reg_stack_loc[REGNO (gen_imagpart (submode, parmreg))]
 		    = 0;
 		}
 	    }
