@@ -2713,7 +2713,7 @@ do {									\
   {"reg_or_neg_short_operand", {SUBREG, REG, CONST_INT}},	\
   {"reg_or_u_short_operand", {SUBREG, REG, CONST_INT}}, 	\
   {"reg_or_cint_operand", {SUBREG, REG, CONST_INT}}, 		\
-  {"reg_or_u_cint_operand", {SUBREG, REG, CONST_INT, CONST_DOUBLE}}, \
+  {"reg_or_logical_cint_operand", {SUBREG, REG, CONST_INT, CONST_DOUBLE}}, \
   {"got_operand", {SYMBOL_REF, CONST, LABEL_REF}},		\
   {"got_no_const_operand", {SYMBOL_REF, LABEL_REF}},		\
   {"easy_fp_constant", {CONST_DOUBLE}},				\
@@ -2747,7 +2747,8 @@ do {									\
 			       GT, LEU, LTU, GEU, GTU}},	\
   {"trap_comparison_operator", {EQ, NE, LE, LT, GE,		\
 				GT, LEU, LTU, GEU, GTU}},	\
-  {"boolean_operator", {AND, IOR, XOR}},
+  {"boolean_operator", {AND, IOR, XOR}},			\
+  {"boolean_or_operator", {IOR, XOR}},
 
 /* uncomment for disabling the corresponding default options */
 /* #define  MACHINE_no_sched_interblock */

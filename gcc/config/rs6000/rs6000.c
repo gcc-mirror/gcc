@@ -658,21 +658,34 @@ reg_or_cint_operand (op, mode)
    32-bit unsigned constant integer.  */
 
 int
-reg_or_u_cint_operand (op, mode)
+reg_or_logical_cint_operand (op, mode)
     register rtx op;
     enum machine_mode mode;
 {
-     return (gpc_reg_operand (op, mode)
-	     || (GET_CODE (op) == CONST_INT
-#if HOST_BITS_PER_WIDE_INT != 32
-		 && INTVAL (op) < ((HOST_WIDE_INT) 1 << 32)
-#endif
-		 && INTVAL (op) > 0)
-#if HOST_BITS_PER_WIDE_INT == 32
-	     || (GET_CODE (op) == CONST_DOUBLE
-		 && CONST_DOUBLE_HIGH (op) == 0)
-#endif
-	 );
+  if (GET_CODE (op) == CONST_INT)
+    {
+      if (GET_MODE_BITSIZE (mode) > HOST_BITS_PER_WIDE_INT)
+	{
+	  if (GET_MODE_BITSIZE (mode) <= 32)
+	    abort();
+
+	  if (INTVAL (op) < 0)
+	    return 0;
+	}
+
+      return ((INTVAL (op) & GET_MODE_MASK (mode)
+	       & (~ (unsigned HOST_WIDE_INT) 0xffffffffu)) == 0);
+    }
+  else if (GET_CODE (op) == CONST_DOUBLE)
+    {
+      if (GET_MODE_BITSIZE (mode) <= HOST_BITS_PER_WIDE_INT
+	  || mode != DImode)
+	abort();
+
+      return CONST_DOUBLE_HIGH (op) == 0;
+    }
+  else 
+    return gpc_reg_operand (op, mode);
 }
 
 /* Return 1 if the operand is an operand that can be loaded via the GOT */
@@ -949,26 +962,38 @@ logical_operand (op, mode)
      register rtx op;
      enum machine_mode mode;
 {
+  /* an unsigned representation of 'op'.  */
+  unsigned HOST_WIDE_INT opl, oph;
+
   if (gpc_reg_operand (op, mode))
     return 1;
+
   if (GET_CODE (op) == CONST_INT)
     {
-      unsigned HOST_WIDE_INT cval = INTVAL (op) & GET_MODE_MASK (mode);
-      return ((cval & (~ (HOST_WIDE_INT) 0xffff)) == 0
-	      || (cval & (~ (HOST_WIDE_INT) 0xffff0000u)) == 0);
+      opl = INTVAL (op) & GET_MODE_MASK (mode);
+      if (GET_MODE_BITSIZE (mode) <= HOST_BITS_PER_WIDE_INT)
+	oph = 0;
+      else
+	oph = INTVAL (op) >> (HOST_BITS_PER_WIDE_INT - 1);
     }
   else if (GET_CODE (op) == CONST_DOUBLE)
     {
-      return (CONST_DOUBLE_HIGH (op) == 0
-	      && ((CONST_DOUBLE_LOW (op)
-		   & (~ (unsigned HOST_WIDE_INT) 0xffff0000u)) == 0));
+      if (GET_MODE_BITSIZE (mode) <= HOST_BITS_PER_WIDE_INT)
+	abort();
+
+      opl = CONST_DOUBLE_LOW (op);
+      oph = CONST_DOUBLE_HIGH (op);
     }
   else
     return 0;
+
+  return (oph == 0
+	  && ((opl & ~ (unsigned HOST_WIDE_INT) 0xffff) == 0
+	      || (opl & ~ (unsigned HOST_WIDE_INT) 0xffff0000u) == 0));
 }
 
 /* Return 1 if C is a constant that is not a logical operand (as
-   above).  */
+   above), but could be split into one.  */
 
 int
 non_logical_cint_operand (op, mode)
@@ -976,7 +1001,8 @@ non_logical_cint_operand (op, mode)
      enum machine_mode mode;
 {
   return ((GET_CODE (op) == CONST_INT || GET_CODE (op) == CONST_DOUBLE)
-	  && ! logical_operand (op, mode));
+	  && ! logical_operand (op, mode)
+	  && reg_or_logical_cint_operand (op, mode));
 }
 
 /* Return 1 if C is a constant that can be encoded in a 32-bit mask on the
@@ -2931,6 +2957,15 @@ boolean_operator (op, mode)
 {
   enum rtx_code code = GET_CODE (op);
   return (code == AND || code == IOR || code == XOR);
+}
+
+int
+boolean_or_operator (op, mode)
+    rtx op;
+    enum machine_mode mode ATTRIBUTE_UNUSED;
+{
+  enum rtx_code code = GET_CODE (op);
+  return (code == IOR || code == XOR);
 }
 
 /* Return 1 if ANDOP is a mask that has no bits on that are not in the

@@ -1,3 +1,26 @@
+2000-05-26  Geoffrey Keating  <geoffk@cygnus.com>
+
+	* config/rs6000/rs6000.md: Correct order of operands for DImode
+	boolean patterns.
+
+	* config/rs6000/rs6000.c (boolean_or_operator): New function.
+	* config/rs6000/rs6000-protos.h (boolean_or_operator): Prototype it.
+	* config/rs6000/rs6000.h (PREDICATE_CODES): Add boolean_or_operator.
+	* config/rs6000/rs6000.md: Use boolean_or_operator instead of
+	boolean_operator for the boolean patterns without NOTs.
+
+	* config/rs6000/rs6000.c (reg_or_logical_cint_operand): Rename
+	from reg_or_u_cint_operand.  Change comment and behaviour.
+	(logical_operand): Clean up, add assertion.
+	(non_logical_cint_operand): Also check for
+	reg_or_logical_cint_operand.
+	* config/rs6000/rs6000.h (PREDICATE_CODES): Update.
+	* config/rs6000/rs6000.md (iorsi3): Use reg_or_logical_cint_operand
+	in the expander.
+	(xorsi3): Likewise.
+	(iordi3): Likewise.
+	(xordi3): Likewise.
+
 2000-05-26  Mark Mitchell  <mark@codesourcery.com>
 
 	* tree.h (struct record_layout_info): Rename to (struct
