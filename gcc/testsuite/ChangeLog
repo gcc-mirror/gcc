@@ -1,3 +1,7 @@
+1998-07-12  Dave Love  <d.love@dl.ac.uk>
+
+	* g77.f-torture/execute/970816-3.f:  New test from Craig.
+
 Fri Jul 10 23:43:33 1998 Martin von Loewis <martin@mira.isdn.cs.tu-berlin.de>
 	
 	*  g++.other/singleton.C: Return error value instead of taking
