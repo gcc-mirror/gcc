@@ -1,3 +1,18 @@
+2004-04-27  Wu Yongwei  <adah@sh163.net>
+
+	* gthr-win32.h (__gthread_mutex_t): Change typedef to new structure.
+	(__GTHREAD_MUTEX_INIT_DEFAULT): Adjust.
+	(__gthread_mutex_init_function): Replace CreateMutex with
+	initialization of custom mutex using CreateSemaphore.
+	(__gthread_mutex_lock): Use InterlockedIncrement.
+	(__gthread_mutex_trylock): Use InterlockedCompareExchange.
+	(__gthread_mutex_unlock): Use InterlockedDecrement and
+	ReleaseSemaphore to unlock
+	* config/i386/gthr-win32.c (__gthread_mutex_init_function,
+	__gthread_mutex_lock, __gthread_mutex_trylock,
+	__gthread_mutex_unlock): Adjust to match inline versions in
+	gthr-win32.h.
+
 2004-04-27  Paul Brook  <paul@codesourcery.com>
 
 	* config/arm/arm.c (arm_promote_prototypes): New function.
