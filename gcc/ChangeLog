@@ -1,3 +1,31 @@
+Thu Feb 19 22:36:53 1998  Andrey Slepuhin  <pooh@msu.net>
+                          David Edelsohn  <edelsohn@mhpcc.edu>
+
+	* collect2.c (XCOFF_SCAN_LIBS): Remove.
+	(export_flag): New variable.
+	(export_file): #ifdef COLLECT_EXPORT_LIST.
+	(import_file, exports, imports, undefined): New variables.
+	(libs, cmdline_lib_dirs, libpath_lib_dirs, libpath, libexts): Same.
+	(dump_list, dump_prefix_list, is_in_list): New functions.
+	(write_export_file): $ifdef COLLECT_EXPORT_LIST.
+	(write_import_file, resolve_lib_name): New functions.
+	(use_import_list, ignore_library): Same.
+	(collect_exit): maybe_unlink import_file and #ifdef.
+	(handler): Same.
+	(main): New variable importf, #ifdef exportf.  Move parsing of
+	-shared before general argument parsing.  Resolve AIX library
+	paths and import libgcc.a symbols.  Treat .so shared libraries the
+	same as objects and .a libraries.  Create alias for object_lst and
+	increment it instead of original pointer.  Scan AIX libraries as
+	objects earlier instead of using scan_libraries.  Perform AIX
+	tlink later to resolve templates instead of forking ld.
+	(GCC_OK_SYMBOL): Ensure symbol not in undef section.
+	(GCC_UNDEF_SYMBOL): New macro.
+	(scan_prog_file): Loop for members of AIX libraries.  Handle
+	export/import of ctors/dtors.
+	(aix_std_libs): New variable.
+	(scan_libraries, XCOFF): Delete.
+
 1998-02-19  Mike Stump  <mrs@wrs.com>
 
 	* Makefile.in: Use $tooldir for sys-include to match toplevel

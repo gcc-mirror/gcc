@@ -1,6 +1,6 @@
 /* Collect static initialization info into data structures that can be
    traversed by C++ initialization and finalization routines.
-   Copyright (C) 1992, 93, 94, 95, 96, 1997 Free Software Foundation, Inc.
+   Copyright (C) 1992, 93-7, 1998 Free Software Foundation, Inc.
    Contributed by Chris Smith (csmith@convex.com).
    Heavily modified by Michael Meissner (meissner@cygnus.com),
    Per Bothner (bothner@cygnus.com), and John Gilmore (gnu@cygnus.com).
@@ -83,7 +83,7 @@ extern char *choose_temp_base ();
 /* On certain systems, we have code that works by scanning the object file
    directly.  But this code uses system-specific header files and library
    functions, so turn it off in a cross-compiler.  Likewise, the names of
-   the utilities aren't correct for a cross-compiler; we have to hope that
+   the utilities are not correct for a cross-compiler; we have to hope that
    cross-versions are in the proper directories.  */
 
 #ifdef CROSS_COMPILE
@@ -96,10 +96,10 @@ extern char *choose_temp_base ();
 #undef REAL_STRIP_FILE_NAME
 #endif
 
-/* If we can't use a special method, use the ordinary one:
+/* If we cannot use a special method, use the ordinary one:
    run nm to find what symbols are present.
    In a cross-compiler, this means you need a cross nm,
-   but that isn't quite as unpleasant as special headers.  */
+   but that is not quite as unpleasant as special headers.  */
 
 #if !defined (OBJECT_FORMAT_COFF) && !defined (OBJECT_FORMAT_ROSE)
 #define OBJECT_FORMAT_NONE
@@ -129,10 +129,6 @@ extern char *choose_temp_base ();
 
 #ifndef MY_ISCOFF
 #define MY_ISCOFF(X) ISCOFF (X)
-#endif
-
-#ifdef XCOFF_DEBUGGING_INFO
-#define XCOFF_SCAN_LIBS
 #endif
 
 #endif /* OBJECT_FORMAT_COFF */
@@ -173,7 +169,7 @@ extern char *choose_temp_base ();
 #define SYMBOL__MAIN __main
 #endif
 
-#if defined (LDD_SUFFIX) || SUNOS4_SHARED_LIBRARIES || defined(XCOFF_SCAN_LIBS)
+#if defined (LDD_SUFFIX) || SUNOS4_SHARED_LIBRARIES
 #define SCAN_LIBRARIES
 #endif
 
@@ -218,6 +214,9 @@ extern char *version_string;
 int vflag;				/* true if -v */
 static int rflag;			/* true if -r */
 static int strip_flag;			/* true if -s */
+#ifdef COLLECT_EXPORT_LIST
+static int export_flag;                 /* true if -bE */
+#endif
 
 int debug;				/* true if -debug */
 
@@ -227,7 +226,10 @@ static int   temp_filename_length;	/* Length of temp_filename */
 static char *temp_filename;		/* Base of temp filenames */
 static char *c_file;			/* <xxx>.c for constructor/destructor list.  */
 static char *o_file;			/* <xxx>.o for constructor/destructor list.  */
+#ifdef COLLECT_EXPORT_LIST
 static char *export_file;	        /* <xxx>.x for AIX export list.  */
+static char *import_file;	        /* <xxx>.p for AIX import list.  */
+#endif
 char *ldout;				/* File for ld errors.  */
 static char *output_file;		/* Output file for ld.  */
 static char *nm_file_name;		/* pathname of nm */
@@ -238,7 +240,11 @@ static char *initname, *fininame;	/* names of init and fini funcs */
 
 static struct head constructors;	/* list of constructors found */
 static struct head destructors;		/* list of destructors found */
+#ifdef COLLECT_EXPORT_LIST
 static struct head exports;		/* list of exported symbols */
+static struct head imports;		/* list of imported symbols */
+static struct head undefined;		/* list of undefined symbols */
+#endif
 static struct head frame_tables;	/* list of frame unwind info tables */
 
 struct obstack temporary_obstack;
@@ -268,6 +274,16 @@ struct path_prefix
   char *name;                 /* Name of this list (used in config stuff) */
 };
 
+#ifdef COLLECT_EXPORT_LIST
+/* Lists to keep libraries to be scanned for global constructors/destructors. */
+static struct head libs;                    /* list of libraries */
+static struct path_prefix cmdline_lib_dirs; /* directories specified with -L */
+static struct path_prefix libpath_lib_dirs; /* directories in LIBPATH */
+static struct path_prefix *libpaths[3] = {&cmdline_lib_dirs,
+					  &libpath_lib_dirs, NULL};
+static char *libexts[3] = {"a", "so", NULL};  /* possible library extentions */
+#endif
+
 void collect_exit		PROTO((int));
 void collect_execute		PROTO((char *, char **, char *));
 void dump_file			PROTO((char *));
@@ -283,11 +299,21 @@ static void fork_execute	PROTO((char *, char **));
 static void maybe_unlink	PROTO((char *));
 static void add_to_list		PROTO((struct head *, char *));
 static void write_list		PROTO((FILE *, char *, struct id *));
+static void dump_list		PROTO((FILE *, char *, struct id *));
+static void dump_prefix_list	PROTO((FILE *, char *, struct prefix_list *));
+static int is_in_list		PROTO((char *, struct id *));
 static void write_list_with_asm PROTO((FILE *, char *, struct id *));
 static void write_c_file	PROTO((FILE *, char *));
-static void write_export_file	PROTO((FILE *));
 static void scan_prog_file	PROTO((char *, enum pass));
 static void scan_libraries	PROTO((char *));
+#ifdef COLLECT_EXPORT_LIST
+static void write_export_file PROTO((FILE *));
+static void write_import_file PROTO((FILE *));
+static char *resolve_lib_name PROTO((char *));
+static int use_import_list    PROTO((char *));
+static int ignore_library     PROTO((char *));
+#endif
+
 
 char *xcalloc ();
 char *xmalloc ();
@@ -352,8 +378,13 @@ collect_exit (status)
   if (o_file != 0 && o_file[0])
     maybe_unlink (o_file);
 
+#ifdef COLLECT_EXPORT_LIST
   if (export_file != 0 && export_file[0])
     maybe_unlink (export_file);
+
+  if (import_file != 0 && import_file[0])
+    maybe_unlink (import_file);
+#endif
 
   if (ldout != 0 && ldout[0])
     {
@@ -428,8 +459,13 @@ handler (signo)
   if (ldout != 0 && ldout[0])
     maybe_unlink (ldout);
 
+#ifdef COLLECT_EXPORT_LIST
   if (export_file != 0 && export_file[0])
     maybe_unlink (export_file);
+
+  if (import_file != 0 && import_file[0])
+    maybe_unlink (import_file);
+#endif
 
   signal (signo, SIG_DFL);
   kill (getpid (), signo);
@@ -613,7 +649,7 @@ is_ctor_dtor (s)
 #endif
     { "GLOBAL__FI_", sizeof ("GLOBAL__FI_")-1, 3, 0 },
     { "GLOBAL__FD_", sizeof ("GLOBAL__FD_")-1, 4, 0 },
-#ifdef CFRONT_LOSSAGE /* Don't collect cfront initialization functions.
+#ifdef CFRONT_LOSSAGE /* Do not collect cfront initialization functions.
 			 cfront has its own linker procedure to collect them;
 			 if collect2 gets them too, they get collected twice
 			 when the cfront procedure is run and the compiler used
@@ -899,7 +935,9 @@ main (argc, argv)
   char *ld_suffix	= "ld";
   char *full_ld_suffix	= ld_suffix;
   char *real_ld_suffix	= "real-ld";
+#ifdef CROSS_COMPILE
   char *full_real_ld_suffix = real_ld_suffix;
+#endif
   char *collect_ld_suffix = "collect-ld";
   char *nm_suffix	= "nm";
   char *full_nm_suffix	= nm_suffix;
@@ -914,7 +952,11 @@ main (argc, argv)
   char *gstrip_suffix	= "gstrip";
   char *full_gstrip_suffix = gstrip_suffix;
   char *arg;
-  FILE *outf, *exportf;
+  FILE *outf;
+#ifdef COLLECT_EXPORT_LIST
+  FILE *exportf;
+  FILE *importf;
+#endif
   char *ld_file_name;
   char *collect_name;
   char *collect_names;
@@ -952,12 +994,12 @@ main (argc, argv)
 
      In practice, collect will rarely invoke itself.  This can happen now
      that we are no longer called gld.  A perfect example is when running
-     gcc in a build directory that has been installed.  When looking for 
-     ld's, we'll find our installed version and believe that's the real ld.  */
+     gcc in a build directory that has been installed.  When looking for
+     ld, we will find our installed version and believe that's the real ld.  */
 
   /* We must also append COLLECT_NAME to COLLECT_NAMES to watch for the
      previous version of collect (the one that used COLLECT_NAME and only
-     handled two levels of recursion).  If we don't we may mutually recurse
+     handled two levels of recursion).  If we do not we may mutually recurse
      forever.  This can happen (I think) when bootstrapping the old version
      and a new one is installed (rare, but we should handle it).
      ??? Hopefully references to COLLECT_NAME can be removed at some point.  */
@@ -980,7 +1022,7 @@ main (argc, argv)
   prefix_from_env ("COLLECT_NAMES", &our_file_names);
 
   /* Set environment variable COLLECT_NAME to our name so the previous version
-     of collect won't find us.  If it does we'll mutually recurse forever.
+     of collect will not find us.  If it does we will mutually recurse forever.
      This can happen when bootstrapping the new version and an old version is
      installed.
      ??? Hopefully this bit of code can be removed at some point.  */
@@ -1181,16 +1223,48 @@ main (argc, argv)
   temp_filename_length = strlen (temp_filename);
   c_file = xcalloc (temp_filename_length + sizeof (".c"), 1);
   o_file = xcalloc (temp_filename_length + sizeof (".o"), 1);
+#ifdef COLLECT_EXPORT_LIST
   export_file = xmalloc (temp_filename_length + sizeof (".x"));
+  import_file = xmalloc (temp_filename_length + sizeof (".p"));
+#endif
   ldout = xmalloc (temp_filename_length + sizeof (".ld"));
   sprintf (ldout, "%s.ld", temp_filename);
   sprintf (c_file, "%s.c", temp_filename);
   sprintf (o_file, "%s.o", temp_filename);
+#ifdef COLLECT_EXPORT_LIST
   sprintf (export_file, "%s.x", temp_filename);
+  sprintf (import_file, "%s.p", temp_filename);
+#endif
   *c_ptr++ = c_file_name;
   *c_ptr++ = "-c";
   *c_ptr++ = "-o";
   *c_ptr++ = o_file;
+
+#ifdef COLLECT_EXPORT_LIST
+  /* Generate a list of directories from LIBPATH.  */
+  prefix_from_env ("LIBPATH", &libpath_lib_dirs);
+  /* Add to this list also two standard directories where
+     AIX loader always searches for libraries.  */
+  add_prefix (&libpath_lib_dirs, "/lib");
+  add_prefix (&libpath_lib_dirs, "/usr/lib");
+#endif
+
+  /* Get any options that the upper GCC wants to pass to the sub-GCC.  
+
+     AIX support needs to know if -shared has been specified before
+     parsing commandline arguments.  */
+
+  p = (char *) getenv ("COLLECT_GCC_OPTIONS");
+  while (p && *p)
+    {
+      char *q = extract_string (&p);
+      if (*q == '-' && (q[1] == 'm' || q[1] == 'f'))
+	*c_ptr++ = obstack_copy0 (&permanent_obstack, q, strlen (q));
+      if (strncmp (q, "-shared", sizeof ("-shared") - 1) == 0)
+	shared_obj = 1;
+    }
+  obstack_free (&temporary_obstack, temporary_firstobj);
+  *c_ptr++ = "-fno-exceptions";
 
   /* !!! When GCC calls collect2,
      it does not know whether it is calling collect2 or ld.
@@ -1211,6 +1285,15 @@ main (argc, argv)
 	{
 	  switch (arg[1])
 	    {
+#ifdef COLLECT_EXPORT_LIST
+	    /* We want to disable automatic exports on AIX when user
+	       explicitly puts an export list in command line */
+	    case 'b':
+	      if (arg[2] == 'E' || strncmp (&arg[2], "export", 6) == 0)
+                export_flag = 1;
+	      break;
+#endif
+
 	    case 'd':
 	      if (!strcmp (arg, "-debug"))
 		{
@@ -1230,7 +1313,31 @@ main (argc, argv)
 		  *ld2++ = o_file;
 		  *ld2++ = arg;
 		}
+#ifdef COLLECT_EXPORT_LIST
+	      {
+	        /* Resolving full library name.  */
+		char *s = resolve_lib_name (arg+2);
+
+		/* If we will use an import list for this library,
+		   we should exclude it from ld args.  */
+		if (use_import_list (s))
+		  {
+		    ld1--;
+		    ld2--;
+		  }
+
+		/* Saving a full library name.  */
+		add_to_list (&libs, s);
+	      }
+#endif
 	      break;
+
+#ifdef COLLECT_EXPORT_LIST
+	    /* Saving directories where to search for libraries.  */
+       	    case 'L':
+	      add_prefix (&cmdline_lib_dirs, arg+2);
+	      break;
+#endif
 
 	    case 'o':
 	      if (arg[2] == '\0')
@@ -1248,7 +1355,7 @@ main (argc, argv)
 	      if (arg[2] == '\0' && do_collecting)
 		{
 		  /* We must strip after the nm run, otherwise C++ linking
-		     won't work.  Thus we strip in the second ld run, or
+		     will not work.  Thus we strip in the second ld run, or
 		     else with strip if there is no second ld run.  */
 		  strip_flag = 1;
 		  ld1--;
@@ -1262,7 +1369,8 @@ main (argc, argv)
 	    }
 	}
       else if ((p = rindex (arg, '.')) != (char *) 0
-	       && (strcmp (p, ".o") == 0 || strcmp (p, ".a") == 0))
+	       && (strcmp (p, ".o") == 0 || strcmp (p, ".a") == 0
+		   || strcmp (p, ".so") == 0))
 	{
 	  if (first_file)
 	    {
@@ -1279,39 +1387,66 @@ main (argc, argv)
 	    }
 	  if (p[1] == 'o')
 	    *object++ = arg;
+#ifdef COLLECT_EXPORT_LIST
+	  /* libraries can be specified directly, i.e. without -l flag.  */
+       	  else
+       	    { 
+	      /* If we will use an import list for this library,
+		 we should exclude it from ld args.  */
+	      if (use_import_list (arg))
+	        {
+		  ld1--;
+		  ld2--;
+		}
+
+	      /* Saving a full library name.  */
+              add_to_list (&libs, arg);
+            }
+#endif
 	}
     }
 
-  /* Get any options that the upper GCC wants to pass to the sub-GCC.  */
-  p = (char *) getenv ("COLLECT_GCC_OPTIONS");
-  while (p && *p)
-    {
-      char *q = extract_string (&p);
-      if (*q == '-' && (q[1] == 'm' || q[1] == 'f'))
-	*c_ptr++ = obstack_copy0 (&permanent_obstack, q, strlen (q));
-      if (strncmp (q, "-shared", sizeof ("shared") - 1) == 0)
-	shared_obj = 1;
-    }
-  obstack_free (&temporary_obstack, temporary_firstobj);
-  *c_ptr++ = "-fno-exceptions";
-
 #ifdef COLLECT_EXPORT_LIST
+  /* This is added only for debugging purposes.  */
+  if (debug)
+    {
+      fprintf (stderr, "List of libraries:\n");
+      dump_list (stderr, "\t", libs.first);
+    }
+
   /* The AIX linker will discard static constructors in object files if
      nothing else in the file is referenced, so look at them first.  */
-  while (object_lst < object)
-    scan_prog_file (*object_lst++, PASS_OBJ);
-
   {
-    char *buf = alloca (strlen (export_file) + 5);
-    sprintf (buf, "-bE:%s", export_file);
-    *ld1++ = buf;
-    *ld2++ = buf;
+      char **export_object_lst = object_lst;
+      while (export_object_lst < object)
+	scan_prog_file (*export_object_lst++, PASS_OBJ);
+  }
+  {
+    struct id *list = libs.first;
+    for (; list; list = list->next)
+      scan_prog_file (list->name, PASS_FIRST);
+  }
+  {
+    char *buf1 = alloca (strlen (export_file) + 5);
+    char *buf2 = alloca (strlen (import_file) + 5);
+    sprintf (buf1, "-bE:%s", export_file);
+    sprintf (buf2, "-bI:%s", import_file);
+    *ld1++ = buf1;
+    *ld2++ = buf1;
+    *ld1++ = buf2;
+    *ld2++ = buf2;
     exportf = fopen (export_file, "w");
     if (exportf == (FILE *) 0)
       fatal_perror ("%s", export_file);
     write_export_file (exportf);
     if (fclose (exportf))
       fatal_perror ("closing %s", export_file);
+    importf = fopen (import_file, "w");
+    if (importf == (FILE *) 0)
+      fatal_perror ("%s", import_file);
+    write_import_file (importf);
+    if (fclose (importf))
+      fatal_perror ("closing %s", import_file);
   }
 #endif
 
@@ -1373,23 +1508,32 @@ main (argc, argv)
   /* Load the program, searching all libraries and attempting to provide
      undefined symbols from repository information.  */
 
-  do_tlink (ld1_argv, object_lst);
+  /* On AIX we do this later.  */
+#ifndef COLLECT_EXPORT_LIST
+  do_tlink (ld1_argv, object_lst); 
+#else
 
-  /* If -r or they'll be run via some other method, don't build the
+  /* If -r or they will be run via some other method, do not build the
      constructor or destructor list, just return now.  */
   if (rflag || ! do_collecting)
     {
       /* But make sure we delete the export file we may have created.  */
       if (export_file != 0 && export_file[0])
 	maybe_unlink (export_file);
+      if (import_file != 0 && import_file[0])
+	maybe_unlink (import_file);
       return 0;
     }
+#endif
 
   /* Examine the namelist with nm and search it for static constructors
      and destructors to call.
      Write the constructor and destructor tables to a .s file and reload.  */
 
+  /* On AIX we already done scanning for global constructors/destructors.  */
+#ifndef COLLECT_EXPORT_LIST
   scan_prog_file (output_file, PASS_FIRST);
+#endif
 
 #ifdef SCAN_LIBRARIES
   scan_libraries (output_file);
@@ -1403,14 +1547,18 @@ main (argc, argv)
 
   if (constructors.number == 0 && destructors.number == 0
       && frame_tables.number == 0
-#ifdef SCAN_LIBRARIES
+#if defined (SCAN_LIBRARIES) || defined (COLLECT_EXPORT_LIST)
       /* If we will be running these functions ourselves, we want to emit
-	 stubs into the shared library so that we don't have to relink
+	 stubs into the shared library so that we do not have to relink
 	 dependent programs when we add static objects.  */
       && ! shared_obj
 #endif
       )
     {
+#ifdef COLLECT_EXPORT_LIST
+      /* Doing tlink without additional code generation */
+      do_tlink (ld1_argv, object_lst);
+#endif
       /* Strip now if it was requested on the command line.  */
       if (strip_flag)
 	{
@@ -1423,6 +1571,7 @@ main (argc, argv)
 
 #ifdef COLLECT_EXPORT_LIST
       maybe_unlink (export_file);
+      maybe_unlink (import_file);
 #endif
       return 0;
     }
@@ -1479,15 +1628,26 @@ main (argc, argv)
      Link the tables in with the rest of the program.  */
 
   fork_execute ("gcc",  c_argv);
+#ifdef COLLECT_EXPORT_LIST
+  /* On AIX we must call tlink because of possible templates resolution */
+  do_tlink (ld2_argv, object_lst);
+#else
+  /* Otherwise, simply call ld because tlink is already done */
   fork_execute ("ld", ld2_argv);
 
   /* Let scan_prog_file do any final mods (OSF/rose needs this for
      constructors/destructors in shared libraries.  */
   scan_prog_file (output_file, PASS_SECOND);
+#endif 
 
   maybe_unlink (c_file);
   maybe_unlink (o_file);
+
+#ifdef COLLECT_EXPORT_LIST
   maybe_unlink (export_file);
+  maybe_unlink (import_file);
+#endif
+
   return 0;
 }
 
@@ -1570,8 +1730,8 @@ collect_execute (prog, argv, redir)
   fflush (stdout);
   fflush (stderr);
 
-  /* If we can't find a program we need, complain error.  Do this here
-     since we might not end up needing something that we couldn't find.  */
+  /* If we cannot find a program we need, complain error.  Do this here
+     since we might not end up needing something that we could not find.  */
 
   if (argv[0] == 0)
     fatal ("cannot find `%s'", prog);
@@ -1670,6 +1830,47 @@ write_list (stream, prefix, list)
   while (list)
     {
       fprintf (stream, "%sx%d,\n", prefix, list->sequence);
+      list = list->next;
+    }
+}
+
+/* This function is really used only on AIX, but may be useful.  */
+static int
+is_in_list (prefix, list)
+     char *prefix;
+     struct id *list;
+{
+  while (list)
+    {
+      if (!strcmp (prefix, list->name)) return 1;
+      list = list->next;
+    }
+    return 0;
+}
+
+/* Added for debugging purpose.  */
+static void
+dump_list (stream, prefix, list)
+     FILE *stream;
+     char *prefix;
+     struct id *list;
+{
+  while (list)
+    {
+      fprintf (stream, "%s%s,\n", prefix, list->name);
+      list = list->next;
+    }
+}
+
+static void
+dump_prefix_list (stream, prefix, list)
+     FILE *stream;
+     char *prefix;
+     struct prefix_list *list;
+{
+  while (list)
+    {
+      fprintf (stream, "%s%s,\n", prefix, list->prefix);
       list = list->next;
     }
 }
@@ -1904,6 +2105,7 @@ write_c_file (stream, name)
   fprintf (stream, "#ifdef __cplusplus\n}\n#endif\n");
 }
 
+#ifdef COLLECT_EXPORT_LIST
 static void
 write_export_file (stream)
      FILE *stream;
@@ -1912,6 +2114,17 @@ write_export_file (stream)
   for (; list; list = list->next)
     fprintf (stream, "%s\n", list->name);
 }
+
+static void
+write_import_file (stream)
+     FILE *stream;
+{
+  struct id *list = imports.first;
+  fprintf (stream, "%s\n", "#! .");
+  for (; list; list = list->next)
+    fprintf (stream, "%s\n", list->name);
+}
+#endif
 
 #ifdef OBJECT_FORMAT_NONE
 
@@ -1941,7 +2154,7 @@ scan_prog_file (prog_name, which_pass)
   if (which_pass == PASS_SECOND)
     return;
 
-  /* If we don't have an `nm', complain.  */
+  /* If we do not have an `nm', complain.  */
   if (nm_file_name == 0)
     fatal ("cannot find `nm'");
 
@@ -2031,7 +2244,7 @@ scan_prog_file (prog_name, which_pass)
   
       name = p;
       /* Find the end of the symbol name.
-	 Don't include `|', because Encore nm can tack that on the end.  */
+	 Do not include `|', because Encore nm can tack that on the end.  */
       for (end = p; (ch2 = *end) != '\0' && !isspace (ch2) && ch2 != '|';
 	   end++)
 	continue;
@@ -2155,7 +2368,7 @@ libselect (d)
 
    We must verify that the extension is numeric, because Sun saves the
    original versions of patched libraries with a .FCS extension.  Files with
-   invalid extensions must go last in the sort, so that they won't be used.  */
+   invalid extensions must go last in the sort, so that they will not be used.  */
 
 static int
 libcompare (d1, d2)
@@ -2383,7 +2596,7 @@ scan_libraries (prog_name)
   char buf[1024];
   FILE *inf;
 
-  /* If we don't have an `ldd', complain.  */
+  /* If we do not have an `ldd', complain.  */
   if (ldd_file_name == 0)
     {
       error ("cannot find `ldd'");
@@ -2528,8 +2741,11 @@ scan_libraries (prog_name)
 #   define GCC_SYMENT		SYMENT
 #   define GCC_OK_SYMBOL(X) \
      (((X).n_sclass == C_EXT) && \
-        (((X).n_type & N_TMASK) == (DT_NON << N_BTSHFT) || \
-         ((X).n_type & N_TMASK) == (DT_FCN << N_BTSHFT)))
+      ((X).n_scnum > N_UNDEF) && \
+      (((X).n_type & N_TMASK) == (DT_NON << N_BTSHFT) || \
+       ((X).n_type & N_TMASK) == (DT_FCN << N_BTSHFT)))
+#   define GCC_UNDEF_SYMBOL(X) \
+     (((X).n_sclass == C_EXT) && ((X).n_scnum == N_UNDEF))
 #   define GCC_SYMINC(X)	((X).n_numaux+1)
 #   define GCC_SYMZERO(X)	0
 #   define GCC_CHECK_HDR(X)	(1)
@@ -2553,246 +2769,264 @@ scan_prog_file (prog_name, which_pass)
 {
   LDFILE *ldptr = NULL;
   int sym_index, sym_count;
+  int is_shared = 0;
+#ifdef COLLECT_EXPORT_LIST
+  /* Should we generate an import list for given prog_name?  */
+  int import_flag = (which_pass == PASS_OBJ ? 0 : use_import_list (prog_name));
+#endif
 
   if (which_pass != PASS_FIRST && which_pass != PASS_OBJ)
     return;
 
-  if ((ldptr = ldopen (prog_name, ldptr)) == NULL)
-    fatal ("%s: can't open as COFF file", prog_name);
-      
-  if (!MY_ISCOFF (HEADER (ldptr).f_magic))
-    fatal ("%s: not a COFF file", prog_name);
+#ifdef COLLECT_EXPORT_LIST
+  /* We do not need scanning for some standard C libraries.  */
+  if (which_pass == PASS_FIRST && ignore_library (prog_name))
+    return;
 
-  if (GCC_CHECK_HDR (ldptr))
+  /* On AIX we have a loop, because there is not much difference
+     between an object and an archive. This trick allows us to
+     eliminate scan_libraries() function.  */
+  do
     {
-      sym_count = GCC_SYMBOLS (ldptr);
-      sym_index = GCC_SYMZERO (ldptr);
-      while (sym_index < sym_count)
+#endif
+      if ((ldptr = ldopen (prog_name, ldptr)) != NULL)
 	{
-	  GCC_SYMENT symbol;
 
-	  if (ldtbread (ldptr, sym_index, &symbol) <= 0)
-	    break;
-	  sym_index += GCC_SYMINC (symbol);
+	  if (!MY_ISCOFF (HEADER (ldptr).f_magic))
+	    fatal ("%s: not a COFF file", prog_name);
 
-	  if (GCC_OK_SYMBOL (symbol))
+#ifdef COLLECT_EXPORT_LIST
+	  /* Is current archive member a shared object?  */
+	  is_shared = HEADER (ldptr).f_flags & F_SHROBJ;
+#endif
+	  if (GCC_CHECK_HDR (ldptr))
 	    {
-	      char *name;
+	      sym_count = GCC_SYMBOLS (ldptr);
+	      sym_index = GCC_SYMZERO (ldptr);
+	      while (sym_index < sym_count)
+		{
+		  GCC_SYMENT symbol;
 
-	      if ((name = ldgetname (ldptr, &symbol)) == NULL)
-		continue;		/* should never happen */
+		  if (ldtbread (ldptr, sym_index, &symbol) <= 0)
+		    break;
+		  sym_index += GCC_SYMINC (symbol);
+
+		  if (GCC_OK_SYMBOL (symbol))
+		    {
+		      char *name;
+
+		      if ((name = ldgetname (ldptr, &symbol)) == NULL)
+			continue;		/* should never happen */
 
 #ifdef XCOFF_DEBUGGING_INFO
-	      /* All AIX function names have a duplicate entry beginning
-		 with a dot.  */
-	      if (*name == '.')
-		++name;
+		      /* All AIX function names have a duplicate entry
+			 beginning with a dot.  */
+		      if (*name == '.')
+			++name;
 #endif
 
-	      switch (is_ctor_dtor (name))
-		{
-		case 1:
-		  add_to_list (&constructors, name);
-		  if (which_pass == PASS_OBJ)
-		    add_to_list (&exports, name);
-		  break;
+		      switch (is_ctor_dtor (name))
+			{
+			case 1:
+			  if (! is_shared) add_to_list (&constructors, name);
+			  if (which_pass == PASS_OBJ)
+			    add_to_list (&exports, name);
+#ifdef COLLECT_EXPORT_LIST
+			  /* If this symbol was undefined and we are building
+			     an import list, we should add a symbol to this
+			     list.  */
+			  else
+			    if (import_flag
+				&& is_in_list (name, undefined.first))
+			      add_to_list (&imports, name);
+#endif
+			  break;
 
-		case 2:
-		  add_to_list (&destructors, name);
-		  if (which_pass == PASS_OBJ)
-		    add_to_list (&exports, name);
-		  break;
+			case 2:
+			  if (! is_shared) add_to_list (&destructors, name);
+			  if (which_pass == PASS_OBJ)
+			    add_to_list (&exports, name);
+#ifdef COLLECT_EXPORT_LIST
+			  /* If this symbol was undefined and we are building
+			     an import list, we should add a symbol to this
+			     list.  */
+			  else
+			    if (import_flag
+				&& is_in_list (name, undefined.first))
+			      add_to_list (&imports, name);
+#endif
+			  break;
 
-		default:		/* not a constructor or destructor */
-		  continue;
-		}
+#ifdef COLLECT_EXPORT_LIST
+			case 3:
+			  if (is_shared)
+			    add_to_list (&constructors, name);
+			  break;
+
+			case 4:
+			  if (is_shared)
+			    add_to_list (&destructors, name);
+			  break;
+#endif
+
+			default:	/* not a constructor or destructor */
+#ifdef COLLECT_EXPORT_LIST
+			  /* If we are building a shared object on AIX we need
+			     to explicitly export all global symbols or add
+			     them to import list.  */
+			  if (shared_obj) 
+			    if (which_pass == PASS_OBJ && (! export_flag))
+			      add_to_list (&exports, name);
+			    else if (! is_shared && which_pass == PASS_FIRST
+				     && import_flag
+				     && is_in_list(name, undefined.first))
+			      add_to_list (&imports, name);
+#endif
+			  continue;
+			}
 
 #if !defined(EXTENDED_COFF)
-	      if (debug)
-		fprintf (stderr, "\tsec=%d class=%d type=%s%o %s\n",
-			 symbol.n_scnum, symbol.n_sclass,
-			 (symbol.n_type ? "0" : ""), symbol.n_type,
-			 name);
+		      if (debug)
+			fprintf (stderr, "\tsec=%d class=%d type=%s%o %s\n",
+				 symbol.n_scnum, symbol.n_sclass,
+				 (symbol.n_type ? "0" : ""), symbol.n_type,
+				 name);
 #else
-	      if (debug)
-		fprintf (stderr, "\tiss = %5d, value = %5d, index = %5d, name = %s\n",
-			 symbol.iss, symbol.value, symbol.index, name);
+		      if (debug)
+			fprintf (stderr,
+				 "\tiss = %5d, value = %5d, index = %5d, name = %s\n",
+				 symbol.iss, symbol.value, symbol.index, name);
 #endif
+		    }
+#ifdef COLLECT_EXPORT_LIST
+		  /* If we are building a shared object we should collect
+		     information about undefined symbols for later
+		     import list generation.  */
+		  else if (shared_obj && GCC_UNDEF_SYMBOL (symbol))
+		    {
+		      char *name;
+
+		      if ((name = ldgetname (ldptr, &symbol)) == NULL)
+			continue;		/* should never happen */
+
+		      /* All AIX function names have a duplicate entry
+			 beginning with a dot.  */
+		      if (*name == '.')
+			++name;
+		      add_to_list (&undefined, name);
+		    }
+#endif
+		}
 	    }
 	}
+      else
+	{
+	  fatal ("%s: cannot open as COFF file", prog_name);
+	}
+#ifdef COLLECT_EXPORT_LIST
+      /* On AIX loop continues while there are more members in archive.  */
     }
-
+  while (ldclose (ldptr) == FAILURE);
+#else
+  /* Otherwise we simply close ldptr.  */
   (void) ldclose(ldptr);
+#endif
 }
 
-#ifdef XCOFF_SCAN_LIBS
-/* Scan imported AIX libraries for GCC static ctors and dtors.
-   FIXME: it is possible to link an executable without the actual import
-	  library by using an "import file" - a text file listing symbols
-	  exported by a library.  To support this, we would have to scan
-	  import files as well as actual shared binaries to find GCC ctors.
-   TODO: use memory mapping instead of 'ld' routines, files are already
-	 memory mapped, but we could eliminate the extra in-memory copies.
-	 Is it worth the effort?  */
 
-static void
-scan_libraries (prog_name)
+#ifdef COLLECT_EXPORT_LIST
+
+/* This new function is used to decide whether we should
+   generate import list for an object or to use it directly.  */
+static int
+use_import_list (prog_name)
      char *prog_name;
 {
-  LDFILE *ldptr;
-  SCNHDR ldsh;
-  static struct path_prefix libpath; /* we should only do this once */
+  char *p;
 
-  if ((ldptr = ldopen (prog_name, ldptr)) == NULL)
-    fatal ("%s: can't open as COFF file", prog_name);
-      
-  if (!MY_ISCOFF (HEADER (ldptr).f_magic))
-    fatal ("%s: not a COFF file", prog_name);
+  /* If we do not build a shared object then import list should not be used.  */
+  if (! shared_obj) return 0;
 
-  /* find and read loader section */
-  if (ldnshread (ldptr, _LOADER, &ldsh))
+  /* Currently we check only for libgcc, but this can be changed in future.  */
+  p = strstr (prog_name, "libgcc.a");
+  if (p != 0 && (strlen (p) == sizeof ("libgcc.a") - 1))
+    return 1;
+  return 0;
+}
+
+/* Given a library name without "lib" prefix, this function
+   returns a full library name including a path.  */
+static char *
+resolve_lib_name (name)
+     char *name;
+{
+  char *lib_buf;
+  int i, j, l = 0;
+
+  for (i = 0; libpaths[i]; i++)
+    if (libpaths[i]->max_len > l)
+      l = libpaths[i]->max_len;
+
+  lib_buf = xmalloc (l + strlen(name) + 10);
+
+  for (i = 0; libpaths[i]; i++)
     {
-      LDHDR ldh;
-      char *impbuf;
-      int entry;
-
-      FSEEK (ldptr, ldsh.s_scnptr, BEGINNING);
-      FREAD (&ldh, sizeof (ldh), 1, ldptr);
-      /* read import library list */
-      impbuf = alloca (ldh.l_istlen);
-      FSEEK (ldptr, ldh.l_impoff + ldsh.s_scnptr, BEGINNING);
-      FREAD (impbuf, ldh.l_istlen, 1, ldptr);
-
-      if (debug)
-	fprintf (stderr, "LIBPATH=%s\n", impbuf);
-      prefix_from_string (impbuf, &libpath);
-
-      /* skip LIBPATH and empty base and member fields */
-      impbuf += strlen (impbuf) + 3;
-      for (entry = 1; entry < ldh.l_nimpid; ++entry)
+      struct prefix_list *list = libpaths[i]->plist;
+      for (; list; list = list->next)
 	{
-	  char *impath = impbuf;
-	  char *implib = impath + strlen (impath) + 1;
-	  char *impmem = implib + strlen (implib) + 1;
-	  char *soname = NULL;
-	  char *trial;
-	  int pathlen;
-	  LDFILE *libptr = NULL;
-	  struct prefix_list *pl;
-	  ARCHDR ah;
-
-	  impbuf = impmem + strlen (impmem) + 1;
-	  if (debug)
-	    fprintf (stderr, "PATH+BASE=%s%s\n", impath, implib);
-	  /* Skip AIX kernel exports */
-	  if (*impath == '/' && *(impath+1) == '\0'
-	      && strcmp (implib, "unix") == 0)
-	    continue;
-	  pathlen = strlen (impath);
-          trial = alloca (MAX (pathlen + 1, libpath.max_len)
-			  + strlen (implib) + 1);
-	  if (*impath)
+	  for (j = 0; libexts[j]; j++)
 	    {
-	      strcpy (trial, impath);
-	      if (impath[pathlen - 1] != '/')
-		trial[pathlen++] = '/';
-	      strcpy (trial + pathlen, implib);
-	      if (access (trial, R_OK) == 0)
-		soname = trial;
-	    }
-	  else
-	    for (pl = libpath.plist; pl; pl = pl->next)
-	      {
-		strcpy (trial, pl->prefix);
-		strcat (trial, implib);
-		if (access (trial, R_OK) == 0)
-		  {
-		    soname = trial;
-		    break;
-		  }
-	      }
-
-	  if (! soname)
-	    fatal ("%s: library not found", implib);
-	  if (debug)
-	    if (*impmem)
-	      fprintf (stderr, "%s (%s)\n", soname, impmem);
-	    else
-	      fprintf (stderr, "%s\n", soname);
-
-	  do
-	    {
-	      /* scan imported shared objects for GCC GLOBAL ctors */
-	      short type;
-	      if ((libptr = ldopen (soname, libptr)) == NULL)
-		fatal ("%s: can't open import library", soname);
-	      if (TYPE (libptr) == ARTYPE)
+              /* The following lines are needed because path_prefix list
+                 may contain directories both with trailing '/' and
+                 without it.  */
+              char *p = "";
+              if (list->prefix[strlen(list->prefix)-1] != '/')
+                p = "/";
+       	      sprintf (lib_buf, "%s%slib%s.%s",
+		       list->prefix, p, name, libexts[j]);
+if (debug) fprintf (stderr, "searching for: %s\n", lib_buf);
+	      if (file_exists (lib_buf))
 		{
-		  LDFILE *memptr;
-		  if (! *impmem)
-		    fatal ("%s: no archive member specified", soname);
-		  ldahread (libptr, &ah);
-		  if (strcmp (ah.ar_name, impmem))
-		    continue;
+if (debug) fprintf (stderr, "found: %s\n", lib_buf);
+		  return (lib_buf);
 		}
-	      type = HEADER (libptr).f_magic;
-	      if (HEADER (libptr).f_flags & F_SHROBJ)
-		{
-		  SCNHDR soldsh;
-		  LDHDR soldh;
-		  long symcnt, i;
-		  char *ldstrings;
-		  LDSYM *lsyms;
-		  if (!ldnshread (libptr, _LOADER, &soldsh))
-		    fatal ("%s: not an import library", soname);
-		  FSEEK (libptr, soldsh.s_scnptr, BEGINNING);
-		  if (FREAD (&soldh, sizeof (soldh), 1, libptr) != 1)
-		    fatal ("%s: can't read loader section", soname);
-		  /*fprintf (stderr, "\tscanning %s\n", soname);*/
-		  symcnt = soldh.l_nsyms;
-		  lsyms = (LDSYM *) alloca (symcnt * sizeof (*lsyms));
-		  symcnt = FREAD (lsyms, sizeof (*lsyms), symcnt, libptr);
-		  ldstrings = alloca (soldh.l_stlen);
-		  FSEEK (libptr, soldsh.s_scnptr+soldh.l_stoff, BEGINNING);
-		  FREAD (ldstrings, soldh.l_stlen, 1, libptr);
-		  for (i = 0; i < symcnt; ++i)
-		    {
-		      LDSYM *l = lsyms + i;
-		      if (LDR_EXPORT (*l))
-			{
-			  char *expname = 0;
-			  if (l->l_zeroes)
-			    expname = l->l_name;
-			  else if (l->l_offset < soldh.l_stlen)
-			    expname = ldstrings + l->l_offset;
-			  switch (is_ctor_dtor (expname))
-			    {
-			    case 3:
-			      if (debug)
-				fprintf (stderr, "\t%s\n", expname);
-			      add_to_list (&constructors, expname);
-			      break;
-
-			    case 4:
-			      add_to_list (&destructors, expname);
-			      break;
-
-			    default: /* not a constructor or destructor */
-			      continue;
-			    }
-			}
-		    }
-		}
-	      else
-		fprintf (stderr, "%s: type = %04X flags = %04X\n", 
-			 ah.ar_name, type, HEADER (libptr).f_flags);
 	    }
-	  while (ldclose (libptr) == FAILURE);
-	  /* printf (stderr, "closed %s\n", soname); */
 	}
     }
+  if (debug)
+    fprintf (stderr, "not found\n");
+  else
+    fatal ("Library lib%s not found", name);
+  return (NULL);
 }
-#endif /* XCOFF_SCAN_LIBS */
+
+/* Array of standard AIX libraries which should not
+   be scanned for ctors/dtors.  */
+static char* aix_std_libs[] = {
+  "/unix",
+  "/lib/libc.a",
+  "/lib/libc_r.a",
+  "/usr/lib/libc.a",
+  "/usr/lib/libc_r.a",
+  "/usr/lib/threads/libc.a",
+  "/usr/ccs/lib/libc.a",
+  "/usr/ccs/lib/libc_r.a",
+  NULL
+};
+
+/* This function checks the filename and returns 1
+   if this name matches the location of a standard AIX library. */
+static int
+ignore_library (name)
+     char *name;
+{
+  char **p = &aix_std_libs[0];
+  while (*p++ != NULL)
+    if (! strcmp (name, *p)) return 1;
+  return 0;
+}
+
+#endif
 
 #endif /* OBJECT_FORMAT_COFF */
 
@@ -2886,7 +3120,7 @@ scan_prog_file (prog_name, which_pass)
 
   prog_fd = open (prog_name, (rw) ? O_RDWR : O_RDONLY);
   if (prog_fd < 0)
-    fatal_perror ("can't read %s", prog_name);
+    fatal_perror ("cannot read %s", prog_name);
 
   obj_file = read_file (prog_name, prog_fd, rw);
   obj = obj_file->start;
@@ -3058,7 +3292,7 @@ scan_prog_file (prog_name, which_pass)
 	fatal ("no cmd_strings found");
 
       /* Add __main to initializer list.
-	 If we are building a program instead of a shared library, don't
+	 If we are building a program instead of a shared library, do not
 	 do anything, since in the current version, you cannot do mallocs
 	 and such in the constructors.  */
 
