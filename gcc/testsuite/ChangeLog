@@ -1,3 +1,7 @@
+2001-04-29  Mark Mitchell  <mark@codesourcery.com>
+
+	* g++.old-deja/g++.other/crash31.C: XFAIL it.
+
 2001-04-29  Joseph S. Myers  <jsm28@cam.ac.uk>
 
 	* g++.old-deja/g++.other/crash14.C: Remove -fnew-abi.
