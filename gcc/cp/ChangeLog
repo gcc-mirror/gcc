@@ -1,3 +1,12 @@
+2002-04-11  Andrew Haley  <aph@redhat.com>
+
+        * typeck.c (type_after_usual_arithmetic_conversions):
+        If two types have the same variant, return immediately.
+        When two floating-point operands are the same precision: 
+          convert to float if one of the operands is float;
+          if neither operand is one of the standard types, return the type
+          of the first operand.
+ 
 2002-04-12  Richard Sandiford  <rsandifo@redhat.com>
 
 	* decl.c (duplicate_decls): Don't try to unify an implicit typedef

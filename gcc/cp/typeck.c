@@ -381,6 +381,10 @@ type_after_usual_arithmetic_conversions (t1, t2)
   else if (TYPE_PRECISION (t2) > TYPE_PRECISION (t1))
     return build_type_attribute_variant (t2, attributes);
 
+  /* The types are the same; no need to do anything fancy.  */
+  if (TYPE_MAIN_VARIANT (t1) == TYPE_MAIN_VARIANT (t2))
+    return build_type_attribute_variant (t1, attributes);
+
   if (code1 != REAL_TYPE)
     {
       /* If one is a sizetype, use it so size_binop doesn't blow up.  */
@@ -442,9 +446,17 @@ type_after_usual_arithmetic_conversions (t1, t2)
 	  || same_type_p (TYPE_MAIN_VARIANT (t2), double_type_node))
 	return build_type_attribute_variant (double_type_node,
 					     attributes);
-      else 
+      if (same_type_p (TYPE_MAIN_VARIANT (t1), float_type_node)
+	  || same_type_p (TYPE_MAIN_VARIANT (t2), float_type_node))
 	return build_type_attribute_variant (float_type_node,
 					     attributes);
+      
+      /* Two floating-point types whose TYPE_MAIN_VARIANTs are none of
+         the standard C++ floating-point types.  Logic earlier in this
+         function has already eliminated the possibility that
+         TYPE_PRECISION (t2) != TYPE_PRECISION (t1), so there's no
+         compelling reason to choose one or the other.  */
+      return build_type_attribute_variant (t1, attributes);
     }
 }
 
