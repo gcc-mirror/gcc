@@ -1,3 +1,7 @@
+2002-07-05  Tony Kimball  <alk@pobox.com>
+
+	* java/lang/natRuntime.cc (nativeGetLibname): Added missing `#'.
+
 2002-07-04  Tom Tromey  <tromey@redhat.com>
             Jeff Sturm  <jsturm@one-point.com>
 
