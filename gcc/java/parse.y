@@ -13773,8 +13773,19 @@ merge_string_cste (op1, op2, after)
 	string = null_pointer;
       else if (TREE_TYPE (op2) == char_type_node)
 	{
-	  ch[0] = (char )TREE_INT_CST_LOW (op2);
-	  ch[1] = '\0';
+	  /* Convert the character into UTF-8.	*/
+	  unsigned char c = (unsigned char) TREE_INT_CST_LOW (op2);
+	  unsigned char *p = (unsigned char *) ch;
+	  if (0x01 <= c
+	      && c <= 0x7f)
+	    *p++ = c;
+	  else
+	    {
+	      *p++ = c >> 6 | 0xc0;
+	      *p++ = c & 0x3f | 0x80;
+	    }
+	  *p = '\0';
+ 
 	  string = ch;
 	}
       else
