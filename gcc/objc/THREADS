@@ -12,7 +12,7 @@ Objective-C runtime you can reach Galen at:
 Any questions, comments, bug reports, etc. should send email either to the
 GCC bug account or to:
 
-	Scott Christley <scottc@ocbi.com>
+	Scott Christley <scottc@net-community.com>
 
 * Sarray Threading:
 
@@ -87,16 +87,38 @@ Notes:
 2) Initialized value will always be same, guaranteed by lock on selector 
    hash table.
 
+
 ******************************************************************************
-* Linking:
+* Frontend/Backend design:
 
-On Solaris, you must link with -lthread to include the system
-thread library.  We use its low level thread and mutex implementations.
+The design of the Objective-C runtime thread and mutex functions utilizes a
+frontend/backend implementation.
 
-On OSF/1, you must link with -lpthreads to include the pthreads library.
+The frontend, as characterized by the files thr.h and thr.c, is a set
+of platform independent structures and functions which represent the
+user interface.  Objective-C programs should use these structures and
+functions for their thread and mutex work if they wish to maintain a
+high degree of portability across platforms.
 
-On WIN32, thread support is built-in to the WIN32 API; refer to your
-compiler documentation for the appropriate library.
+The backend is composed of a file with the necessary code to map the ObjC
+thread and mutex to a platform specific implementation.  For example, the
+file thr-solaris.c contains the implementation for Solaris.  When you 
+configure GCC, it attempts to pick an appropriate backend file for the
+target platform; however, you can override this choice by assign the
+OBJC_THREAD_FILE make variable to the basename of the backend file.  This
+is especially useful on platforms which have multiple thread libraries.
+For example:
+
+	make OBJC_THREAD_FILE=thr-posix
+
+would indicate that the generic posix backend file, thr-posix.c, should be
+compiled with the ObjC runtime library.  If your platform does not support
+threads then you should specify the OBJC_THREAD_FILE=thr-single backend file
+to compile the ObjC runtime library without thread or mutex support; note
+that programs which rely upon the ObjC thread and mutex functions will
+compile and link correctly but attempting to create a thread or mutex will
+result in an error.
+
 
 ******************************************************************************
 * Threads:
@@ -108,19 +130,17 @@ that the system implementation of malloc and free must be thread safe.
 If a system has multiple processors, the threads are configured for
 full parallel processing.
 
-__objc_init_thread_system(void), int
-	Initialize the thread subsystem.  Call once by __objc_exec_class.
+*****
+* Frontend thread functions
+* User programs should use these thread functions.
 
-__objc_fini_thread_system(void), int
-	Closes the thread subsystem.
-
-objc_thread_detach(SEL selector, id object, id argument), int
+objc_thread_detach(SEL selector, id object, id argument), objc_thread_t
 	Creates and detaches a new thread.  The new thread starts by
 	sending the given selector with a single argument to the
 	given object.
 
 objc_thread_set_priority(int priority), int
-	Sets a threads relative priority within the program.  Valid
+	Sets a thread's relative priority within the program.  Valid
 	options are:
 	
 	OBJC_THREAD_INTERACTIVE_PRIORITY
@@ -128,7 +148,7 @@ objc_thread_set_priority(int priority), int
 	OBJC_THREAD_LOW_PRIORITY
 
 objc_thread_get_priority(void), int
-	Query a threads priority.
+	Query a thread's priority.
 
 objc_thread_yield(void), void
 	Yields processor to another thread with equal or higher
@@ -149,52 +169,168 @@ objc_thread_set_data(void *value), int
 objc_thread_get_data(void), void *
 	Returns the pointer to the thread's local storage.
 
+*****
+* Backend thread functions
+* User programs should *NOT* directly call these functions.
+
+__objc_init_thread_system(void), int
+	Initialize the thread subsystem.  Called once by __objc_exec_class.
+	Return -1 if error otherwise return 0.
+
+__objc_fini_thread_system(void), int
+	Closes the thread subsystem, not currently guaranteed to be called.
+	Return -1 if error otherwise return 0.
+
+__objc_thread_create(void (*func)(void *arg), void *arg), objc_thread_t
+	Spawns a new thread executing func, called by objc_thread_detach.
+	Return NULL if error otherwise return thread id.
+
+__objc_thread_set_priority(int priority), int
+	Set the thread's priority, called by objc_thread_set_priority.
+	Return -1 if error otherwise return 0.
+
+__objc_thread_get_priority(void), int
+	Query a thread's priority, called by objc_thread_get_priority.
+	Return -1 if error otherwise return the priority.
+
+__objc_thread_yield(void), void
+	Yields the processor, called by objc_thread_yield.
+
+__objc_thread_exit(void), int
+	Terminates the thread, called by objc_thread_exit.
+	Return -1 if error otherwise function does not return.
+
+__objc_thread_id(void), objc_thread_t
+	Returns the current thread's id, called by objc_thread_id.
+	Return -1 if error otherwise return thread id.
+
+__objc_thread_set_data(void *value), int
+	Set pointer for thread local storage, called by objc_thread_set_data.
+	Returns -1 if error otherwise return 0.
+
+__objc_thread_get_data(void), void *
+	Returns the pointer to the thread's local storage.
+	Returns NULL if error, called by objc_thread_get_data.
+
+
 ******************************************************************************
 * Mutexs:
 
-Mutexs can be locked recursively.  Each mutex locked mutex remembers
+Mutexs can be locked recursively.  Each locked mutex remembers
 its owner (by thread id) and how many times it has been locked.  The
 last unlock on a mutex removes the system lock and allows other
 threads to access the mutex.
 
-objc_mutex_allocate(void), Mutex_t
+*****
+* Frontend thread functions
+* User programs should use these thread functions.
+
+objc_mutex_allocate(void), objc_mutex_t
 	Allocates a new mutex.  Mutex is initially unlocked.
 
-objc_mutex_deallocate(Mutex_t mutex), int
+objc_mutex_deallocate(objc_mutex_t mutex), int
 	Free a mutex.  Before freeing the mutex, makes sure that no
 	one else is using it.
 
-objc_mutex_lock(Mutex_t mutex), int
+objc_mutex_lock(objc_mutex_t mutex), int
 	Locks a mutex.  As mentioned earlier, the same thread may call
 	this routine repeatedly.
 	
-objc_mutex_trylock(Mutex_t mutex), int
+objc_mutex_trylock(objc_mutex_t mutex), int
 	Attempts to lock a mutex.  Returns -1 if failed.  If lock on
 	mutex can be acquired then function operates exactly as
 	objc_mutex_lock.
 
-objc_mutex_unlock(Mutex_t mutex), int
+objc_mutex_unlock(objc_mutex_t mutex), int
 	Unlocks the mutex by one level.  Other threads may not acquire
 	the mutex until this thread has released all locks on it.
 
+*****
+* Backend thread functions
+* User programs should *NOT* directly call these functions.
+
+__objc_mutex_allocate(void), objc_mutex_t
+	Allocates a new mutex, called by objc_mutex_allocate.
+	Return NULL if error otherwise return mutex pointer.
+
+__objc_mutex_deallocate(objc_mutex_t mutex), int
+	Free a mutex, called by objc_mutex_deallocate.
+	Return -1 if error otherwise return 0.
+
+__objc_mutex_lock(objc_mutex_t mutex), int
+	Locks a mutex, called by objc_mutex_lock.
+	Return -1 if error otherwise return 0.
+	
+__objc_mutex_trylock(objc_mutex_t mutex), int
+	Attempts to lock a mutex, called by objc_mutex_trylock.
+	Return -1 if failed to acquire lock or error otherwise return 0.
+
+__objc_mutex_unlock(objc_mutex_t mutex), int
+	Unlocks the mutex, called by objc_mutex_unlock.
+	Return -1 if error otherwise return 0.
+
 ******************************************************************************
-* Sample run of thread-test/checks/test01.m
+* Condition Mutexs:
 
-<< program started >>				-- Program started
-__objc_exec_class(Object.m)			-- Initialize once 
-__objc_init_mutex_system
-__objc_init_thread_system
-__objc_init_selector_tables()  
-__objc_init_class_tables()  
-__objc_init_dispatch_tables() 
-__objc_exec_class(Protocol.m)			-- Called repeatedly
-__objc_init_protocols(0x000746d4) 		-- Called repeatedly
-class_add_method_list(0x74718, 0x74208) 	-- Called repeatedly
-<< main called >>				-- Main called
-__objc_init_install_dtable(0x6d980, 0x6d5c0)    -- Called repeatedly
-<< delegatePool filled, count=10 >>		-- Code in secondary function
-__objc_init_install_dtable(0x76268, 0x70614)    -- Called repeatedly
-Array: count=1					-- More secondary code.
-EltNodeCollector: count=1
-<< end of program >>				-- End of program
+Mutexs can be locked recursively.  Each locked mutex remembers
+its owner (by thread id) and how many times it has been locked.  The
+last unlock on a mutex removes the system lock and allows other
+threads to access the mutex.
 
+*****
+* Frontend thread functions
+* User programs should use these thread functions.
+
+objc_condition_allocate(void), objc_condition_t 
+	Allocate a condition mutex.
+	Return NULL if error otherwise return condition pointer.
+
+objc_condition_deallocate(objc_condition_t condition), int
+	Deallocate a condition. Note that this includes an implicit
+	condition_broadcast to insure that waiting threads have the 
+	opportunity to wake.  It is legal to dealloc a condition only
+	if no other thread is/will be using it. Does NOT check for
+	other threads waiting but just wakes them up.
+
+objc_condition_wait(objc_condition_t condition, objc_mutex_t mutex), int
+	Wait on the condition unlocking the mutex until objc_condition_signal()
+	or objc_condition_broadcast() are called for the same condition. The
+	given mutex *must* have the depth 1 so that it can be unlocked
+	here, for someone else can lock it and signal/broadcast the condition.
+	The mutex is used to lock access to the shared data that make up the
+	"condition" predicate.
+	
+objc_condition_broadcast(objc_condition_t condition), int
+	Wake up all threads waiting on this condition. It is recommended that 
+	the called would lock the same mutex as the threads in
+	objc_condition_wait before changing the "condition predicate"
+	and make this call and unlock it right away after this call.
+
+objc_condition_signal(objc_condition_t condition), int
+	Wake up one thread waiting on this condition.
+
+*****
+* Backend thread functions
+* User programs should *NOT* directly call these functions.
+
+__objc_condition_allocate(void), objc_condition_t 
+	Allocate a condition mutex, called by objc_condition_allocate.
+	Return NULL if error otherwise return condition pointer.
+
+__objc_condition_deallocate(objc_condition_t condition), int
+	Deallocate a condition, called by objc_condition_deallocate.
+	Return -1 if error otherwise return 0.
+
+__objc_condition_wait(objc_condition_t condition, objc_mutex_t mutex), int
+	Wait on the condition, called by objc_condition_wait.
+	Return -1 if error otherwise return 0 when condition is met.
+	
+__objc_condition_broadcast(objc_condition_t condition), int
+	Wake up all threads waiting on this condition.
+	Called by objc_condition_broadcast.
+	Return -1 if error otherwise return 0.
+
+__objc_condition_signal(objc_condition_t condition), int
+	Wake up one thread waiting on this condition.
+	Called by objc_condition_signal.
+	Return -1 if error otherwise return 0.
