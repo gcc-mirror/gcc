@@ -2207,6 +2207,22 @@
   "TARGET_HAS_XFLOATING_LIBS"
   "alpha_emit_xfloating_cvt (FLOAT_TRUNCATE, operands); DONE;")
 
+;; ??? This isn't quite right, as rounding isn't correct.  But it's
+;; extremely tortureous to do this correctly with the functionality
+;; availible in the library.
+
+(define_expand "trunctfsf2"
+  [(use (match_operand:SF 0 "register_operand" ""))
+   (use (match_operand:TF 1 "general_operand" ""))]
+  "TARGET_HAS_XFLOATING_LIBS"
+  "
+{
+  rtx tmp = gen_reg_rtx (DFmode);
+  emit_insn (gen_trunctfdf2 (tmp, operands[1]));
+  emit_insn (gen_truncdfsf2 (operands[0], tmp));
+  DONE;
+}")
+
 (define_insn ""
   [(set (match_operand:SF 0 "register_operand" "=&f")
 	(div:SF (match_operand:SF 1 "reg_or_fp0_operand" "fG")
