@@ -93,19 +93,6 @@ Boston, MA 02111-1307, USA.  */
     }						\
   while (0)
 
-/* Support A5 relative data seperate from text.
- * This option implies -fPIC, however it inhibits the generation of the
- * A5 save/restore in functions and the loading of a5 with a got pointer.
- */
-#define MASK_SEP_DATA	0x100000
-#define TARGET_SEP_DATA (target_flags & MASK_SEP_DATA)
-
-/* Compile using library ID based shared libraries.
- * Set a specific ID using the -mshared-library-id=xxx option.
- */
-#define MASK_ID_SHARED_LIBRARY	0x200000
-#define TARGET_ID_SHARED_LIBRARY	(target_flags & MASK_ID_SHARED_LIBRARY)
-
 /* Classify the groups of pseudo-ops used to assemble QI, HI and SI
    quantities.  */
 #define INT_OP_STANDARD	0	/* .byte, .short, .long */
@@ -220,6 +207,19 @@ extern int target_flags;
    for all functions that can take varying numbers of args.  */
 #define MASK_RTD	(1<<16)
 #define TARGET_RTD	(target_flags & MASK_RTD)
+
+/* Support A5 relative data seperate from text.
+ * This option implies -fPIC, however it inhibits the generation of the
+ * A5 save/restore in functions and the loading of a5 with a got pointer.
+ */
+#define MASK_SEP_DATA	(1<<17)
+#define TARGET_SEP_DATA (target_flags & MASK_SEP_DATA)
+
+/* Compile using library ID based shared libraries.
+ * Set a specific ID using the -mshared-library-id=xxx option.
+ */
+#define MASK_ID_SHARED_LIBRARY	(1<<18)
+#define TARGET_ID_SHARED_LIBRARY	(target_flags & MASK_ID_SHARED_LIBRARY)
 
 /* Compile for a CPU32.  A 68020 without bitfields is a good
    heuristic for a CPU32.  */
