@@ -283,7 +283,9 @@ public class MessageFormat extends Format
       }
     catch (NumberFormatException nfx)
       {
-	throw new IllegalArgumentException("Failed to parse integer string");
+	IllegalArgumentException iae = new IllegalArgumentException(pat);
+	iae.initCause(nfx);
+	throw iae;
       }
 
     // Extract the element format.

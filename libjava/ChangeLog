@@ -1,3 +1,7 @@
+2004-12-07  Mark Wielaard  <mark@klomp.org>
+
+	* java/text/MessageFormat.java (scanFormat): Chain thrown exception.
+
 2005-01-15  Michael Koch  <konqueror@gmx.de>
 
 	PR libgcj/19444
