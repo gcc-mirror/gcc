@@ -1,3 +1,9 @@
+Thu Sep 24 21:48:51 1998  J"orn Rennecke <amylaar@cygnus.co.uk>
+
+	* reload1.c (choose_reload_regs): Also try inheritance when
+	reload_in is a stack slot of a pseudo, even if we already got a
+	reload reg.
+
 Thu Sep 24 21:22:39 1998  J"orn Rennecke <amylaar@cygnus.co.uk>
 
 	* reload1.c (reload_cse_regs_1): Renamed from reload_cse_regs.
