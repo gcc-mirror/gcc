@@ -1,3 +1,8 @@
+2005-01-04  Paolo Bonzini  <bonzini@gnu.org>
+
+	PR tree-optimization/18308
+	* gcc.dg/vect/pr18308.c: New testcase.
+
 2005-01-04  Andreas Jaeger  <aj@suse.de>
 
 	* gcc.target/i386/amd64-abi-1.c: Only run as 64-bit tests.

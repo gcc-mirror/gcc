@@ -1,3 +1,13 @@
+2005-01-04  Paolo Bonzini  <bonzini@gnu.org>
+	    Devang Patel  <dpatel@apple.com>
+
+	PR tree-optimization/18308
+
+	* tree-if-conv.c (add_to_dst_predicate_list): Gimplify
+	the operands before creating a new expression.
+	* dojump.c (do_jump): Make drop_through_label available
+	for all cases.  Add expansion of COND_EXPR.
+
 2005-01-04  Ira Rosen  <irar@il.ibm.com>
 
 	* tree-vectorizer.c (vect_analyze_offset_expr): Test for
