@@ -4360,6 +4360,7 @@ is_zeros_p (exp)
     case CONVERT_EXPR:
     case NOP_EXPR:
     case NON_LVALUE_EXPR:
+    case VIEW_CONVERT_EXPR:
       return is_zeros_p (TREE_OPERAND (exp, 0));
 
     case INTEGER_CST:
@@ -5151,7 +5152,6 @@ store_field (target, bitsize, bitpos, mode, exp, value_mode, unsignedp, type,
       rtx blk_object = copy_rtx (object);
 
       PUT_MODE (blk_object, BLKmode);
-      MEM_COPY_ATTRIBUTES (blk_object, object);
 
       if (bitsize != (HOST_WIDE_INT) GET_MODE_BITSIZE (GET_MODE (target)))
 	emit_move_insn (object, target);
@@ -5451,6 +5451,7 @@ get_inner_reference (exp, pbitsize, pbitpos, poffset, pmode,
 	  continue;
 	}
       else if (TREE_CODE (exp) != NON_LVALUE_EXPR
+	       && TREE_CODE (exp) != VIEW_CONVERT_EXPR
 	       && ! ((TREE_CODE (exp) == NOP_EXPR
 		      || TREE_CODE (exp) == CONVERT_EXPR)
 		     && (TYPE_MODE (TREE_TYPE (exp))
@@ -5477,6 +5478,32 @@ get_inner_reference (exp, pbitsize, pbitpos, poffset, pmode,
 
   *pmode = mode;
   return exp;
+}
+
+/* Return 1 if T is an expression that get_inner_reference handles.  */
+
+int
+handled_component_p (t)
+     tree t;
+{
+  switch (TREE_CODE (t))
+    {
+    case BIT_FIELD_REF:
+    case COMPONENT_REF:
+    case ARRAY_REF:
+    case ARRAY_RANGE_REF:
+    case NON_LVALUE_EXPR:
+    case VIEW_CONVERT_EXPR:
+      return 1;
+
+    case NOP_EXPR:
+    case CONVERT_EXPR:
+      return (TYPE_MODE (TREE_TYPE (t))
+	      == TYPE_MODE (TREE_TYPE (TREE_OPERAND (t, 0))));
+
+    default:
+      return 0;
+    }
 }
 
 /* Subroutine of expand_exp: compute memory_usage from modifier.  */
@@ -6287,9 +6314,19 @@ expand_expr (exp, target, tmode, modifier)
       if (DECL_SIZE (exp) == 0 && COMPLETE_TYPE_P (TREE_TYPE (exp))
 	  && (TREE_STATIC (exp) || DECL_EXTERNAL (exp)))
 	{
+	  rtx value = DECL_RTL_IF_SET (exp);
+
 	  layout_decl (exp, 0);
-	  PUT_MODE (DECL_RTL (exp), DECL_MODE (exp));
-	  set_mem_align (DECL_RTL (exp), DECL_ALIGN (exp));
+
+	  /* If the RTL was already set, update its mode and memory
+	     attributes.  */
+	  if (value != 0)
+	    {
+	      PUT_MODE (value, DECL_MODE (exp));
+	      SET_DECL_RTL (exp, 0);
+	      set_mem_attributes (value, exp, 1);
+	      SET_DECL_RTL (exp, value);
+	    }
 	}
 
       /* Although static-storage variables start off initialized, according to
@@ -7500,6 +7537,79 @@ expand_expr (exp, target, tmode, modifier)
 		      TREE_UNSIGNED (TREE_TYPE (TREE_OPERAND (exp, 0))));
       return target;
 
+    case VIEW_CONVERT_EXPR:
+      op0 = expand_expr (TREE_OPERAND (exp, 0), NULL_RTX, mode, 0);
+
+      /* If the input and output modes are both the same, we are done.
+	 Otherwise, if neither mode is BLKmode and both are within a word, we
+	 can use gen_lowpart.  If neither is true, store the operand into
+	 memory and convert the MEM to the new mode.  */
+      if (TYPE_MODE (type) == GET_MODE (op0))
+	;
+      else if (TYPE_MODE (type) != BLKmode && GET_MODE (op0) != BLKmode
+	       && GET_MODE_SIZE (TYPE_MODE (type)) <= UNITS_PER_WORD
+	       && GET_MODE_SIZE (GET_MODE (op0)) <= UNITS_PER_WORD)
+	op0 = gen_lowpart (TYPE_MODE (type), op0);
+      else
+	{
+	  tree inner_type = TREE_TYPE (TREE_OPERAND (exp, 0));
+	  enum machine_mode non_blkmode
+	    = GET_MODE (op0) == BLKmode ? TYPE_MODE (type) : GET_MODE (op0);
+
+	  if (CONSTANT_P (op0))
+	    op0 = validize_mem (force_const_mem (TYPE_MODE (inner_type), op0));
+	  else
+	    {
+	      if (target == 0 || GET_MODE (target) != TYPE_MODE (inner_type))
+		target
+		  = assign_stack_temp_for_type (TYPE_MODE (inner_type),
+						GET_MODE_SIZE (non_blkmode),
+						0, inner_type);
+
+	      if (GET_MODE (target) == BLKmode)
+		emit_block_move (target, op0,
+				 expr_size (TREE_OPERAND (exp, 0)));
+	      else
+		emit_move_insn (target, op0);
+
+	      op0 = target;
+	    }
+	}
+
+      if (GET_CODE (op0) == MEM)
+	{
+	  op0 = copy_rtx (op0);
+
+	  /* If the output type is such that the operand is known to be
+	     aligned, indicate that it is.  Otherwise, we need only be
+	     concerned about alignment for non-BLKmode results.  */
+	  if (TYPE_ALIGN_OK (type))
+	    set_mem_align (op0, MAX (MEM_ALIGN (op0), TYPE_ALIGN (type)));
+	  else if (TYPE_MODE (type) != BLKmode && STRICT_ALIGNMENT
+		   && MEM_ALIGN (op0) < GET_MODE_ALIGNMENT (TYPE_MODE (type)))
+	    {
+	      tree inner_type = TREE_TYPE (TREE_OPERAND (exp, 0));
+	      HOST_WIDE_INT temp_size = MAX (int_size_in_bytes (inner_type),
+					     GET_MODE_SIZE (TYPE_MODE (type)));
+	      rtx new = assign_stack_temp_for_type (TYPE_MODE (type),
+						    temp_size, 0, type);
+	      rtx new_with_op0_mode = copy_rtx (new);
+
+	      PUT_MODE (new_with_op0_mode, GET_MODE (op0));
+	      if (GET_MODE (op0) == BLKmode)
+		emit_block_move (new_with_op0_mode, op0,
+				 GEN_INT (GET_MODE_SIZE (TYPE_MODE (type))));
+	      else
+		emit_move_insn (new_with_op0_mode, op0);
+
+	      op0 = new;
+	    }
+      
+	  PUT_MODE (op0, TYPE_MODE (type));
+	}
+
+      return op0;
+
     case PLUS_EXPR:
       /* We come here from MINUS_EXPR when the second operand is a
          constant.  */
@@ -8668,7 +8778,8 @@ expand_expr (exp, target, tmode, modifier)
 	     strict alignment.  */
 	  if (STRICT_ALIGNMENT && GET_MODE (op0) == BLKmode
 	      && (TYPE_ALIGN (TREE_TYPE (TREE_OPERAND (exp, 0)))
-		  > MEM_ALIGN (op0)))
+		  > MEM_ALIGN (op0))
+	      && MEM_ALIGN (op0) < BIGGEST_ALIGNMENT)
 	    {
 	      tree inner_type = TREE_TYPE (TREE_OPERAND (exp, 0));
 	      rtx new

@@ -691,6 +691,13 @@ DEFTREECODE (NOP_EXPR, "nop_expr", '1', 1)
 /* Value is same as argument, but guaranteed not an lvalue.  */
 DEFTREECODE (NON_LVALUE_EXPR, "non_lvalue_expr", '1', 1)
 
+/* Represents viewing something of one type as being of a second type.
+   This corresponds to an "Unchecked Conversion" in Ada and roughly to
+   the idiom *(type2 *)&X in C.  The only operand is the value to be
+   viewed as being of another type.  It is undefined if the type of the
+   input and of the expression have different sizes.  */
+DEFTREECODE (VIEW_CONVERT_EXPR, "view_convert_expr", '1', 1)
+
 /* Represents something we computed once and will use multiple times.
    First operand is that expression.  Second is the function decl
    in which the SAVE_EXPR was created.  The third operand is the RTL,
