@@ -1,3 +1,8 @@
+2001-07-19  Peter Schmid  <schmid@snake.iap.physik.tu-darmstadt.de>
+
+        * include/bits/stl_algo.h : Fix typos.
+	* testsuite/25_algorithms/unique.cc: New file.
+	
 2001-07-19  Phil Edwards  <pme@sources.redhat.com>
             Mark Mitchell <mark@codesourcery.com>
 

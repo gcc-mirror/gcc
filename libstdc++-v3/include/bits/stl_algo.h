@@ -837,7 +837,7 @@ namespace std
       __glibcpp_function_requires(_EqualityComparableConcept<
 	    typename iterator_traits<_InputIter>::value_type>);
     
-      typedef typename iterator_traits<_OutputIter>::iterator_catgeory _IterType;
+      typedef typename iterator_traits<_OutputIter>::iterator_category _IterType;
 
       if (__first == __last) return __result;
       return __unique_copy(__first, __last, __result, _IterType());
@@ -894,10 +894,11 @@ namespace std
       __glibcpp_function_requires(_OutputIteratorConcept<_OutputIter,
 	    typename iterator_traits<_InputIter>::value_type>);
     
-      typedef typename iterator_traits<_OutputIter>::iterator_catgeory _IterType;
+      typedef typename iterator_traits<_OutputIter>::iterator_category _IterType;
 
       if (__first == __last) return __result;
-      return __unique_copy(__first, __last, __result, __binary_pred, _IterType());
+      return __unique_copy(__first, __last, 
+__result, __binary_pred, _IterType());
     }
 
   template<typename _ForwardIter>
