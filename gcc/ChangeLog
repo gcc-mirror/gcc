@@ -1,3 +1,12 @@
+2004-10-27  David Edelsohn  <edelsohn@gnu.org>
+
+	PR target/17956
+	* config/rs6000/rs6000.md (maxsf3): Add !flag_trapping_math to
+	final condition.
+	(minsf3): Same.
+	(maxdf3): Same.
+	(mindf3): Same.
+
 2004-10-27  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* tree-cfg.c (thread_jumps): Speed up by reordering the two
