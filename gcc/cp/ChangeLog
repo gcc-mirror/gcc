@@ -1,3 +1,16 @@
+Wed Jan  7 23:47:13 1998  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* exception.cc (__eh_alloc, __eh_free): New fns.
+	(__cp_push_exception, __cp_pop_exception): Use them.
+	(__uncatch_exception): Call terminate here if no exception.
+	* except.c (build_terminate_handler): New fn.
+	(expand_start_catch_block): Use it.
+	(expand_exception_blocks): Likewise.
+	(alloc_eh_object): New fn.
+	(expand_throw): Use it.  Protect exception init with terminate.
+	* typeck.c (build_modify_expr): Remove code that ignores trivial 
+	methods.
+
 Mon Dec 22 11:36:27 1997  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
  
 	* call.c (add_builtin_candidate): Add default case in enumeration
