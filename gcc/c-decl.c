@@ -4494,27 +4494,41 @@ grokdeclarator (declarator, declspecs, decl_context, initialized)
 		    }
 		}
 
-	      /* Convert size to index_type, so that if it is a variable
-		 the computations will be done in the proper mode.  */
-	      itype = fold (build (MINUS_EXPR, index_type,
-				   convert (index_type, size),
-				   convert (index_type, size_one_node)));
-
-	      /* If that overflowed, the array is too big.
-		 ??? While a size of INT_MAX+1 technically shouldn't cause
-		 an overflow (because we subtract 1), the overflow is recorded
-		 during the conversion to index_type, before the subtraction.
-		 Handling this case seems like an unnecessary complication.  */
-	      if (TREE_OVERFLOW (itype))
+	      if (integer_zerop (size))
 		{
-		  error ("size of array `%s' is too large", name);
-		  type = error_mark_node;
-		  continue;
+		  /* A zero-length array cannot be represented with an
+		     unsigned index type, which is what we'll get with
+		     build_index_type.  Create a signed range instead.  */
+		  itype = build_range_type (index_type, size,
+					    build_int_2 (-1, -1));
 		}
+	      else
+		{
+		  /* Compute the maximum valid index, that is, size - 1.
+		     Do the calculation in index_type, so that if it is
+		     a variable the computations will be done in the
+		     proper mode.  */
+	          itype = fold (build (MINUS_EXPR, index_type,
+				       convert (index_type, size),
+				       convert (index_type, size_one_node)));
 
-	      if (size_varies)
-		itype = variable_size (itype);
-	      itype = build_index_type (itype);
+	          /* If that overflowed, the array is too big.
+		     ??? While a size of INT_MAX+1 technically shouldn't
+		     cause an overflow (because we subtract 1), the overflow
+		     is recorded during the conversion to index_type, before
+		     the subtraction.  Handling this case seems like an
+		     unnecessary complication.  */
+		  if (TREE_OVERFLOW (itype))
+		    {
+		      error ("size of array `%s' is too large", name);
+		      type = error_mark_node;
+		      continue;
+		    }
+
+		  if (size_varies)
+		    itype = variable_size (itype);
+		  itype = build_index_type (itype);
+		}
 	    }
 
 #if 0

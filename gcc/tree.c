@@ -3676,33 +3676,18 @@ build_index_type (maxval)
      tree maxval;
 {
   register tree itype = make_node (INTEGER_TYPE);
-  int no_hash = 0;
 
   TREE_TYPE (itype) = sizetype;
   TYPE_PRECISION (itype) = TYPE_PRECISION (sizetype);
-
-  /* If sizetype is unsigned and the upper bound is negative, use a
-     lower bound of one and an upper bound of zero.  */
-  if (TREE_UNSIGNED (sizetype) && TREE_CODE (maxval) == INTEGER_CST
-      && tree_int_cst_sgn (maxval) < 0)
-    {
-      TYPE_MIN_VALUE (itype) = size_one_node;
-      TYPE_MAX_VALUE (itype) = size_zero_node;
-      no_hash = 1;
-    }
-  else
-    {
-      TYPE_MIN_VALUE (itype) = size_zero_node;
-      TYPE_MAX_VALUE (itype) = convert (sizetype, maxval);
-    }
-
+  TYPE_MIN_VALUE (itype) = size_zero_node;
+  TYPE_MAX_VALUE (itype) = convert (sizetype, maxval);
   TYPE_MODE (itype) = TYPE_MODE (sizetype);
   TYPE_SIZE (itype) = TYPE_SIZE (sizetype);
   TYPE_SIZE_UNIT (itype) = TYPE_SIZE_UNIT (sizetype);
   TYPE_ALIGN (itype) = TYPE_ALIGN (sizetype);
   TYPE_USER_ALIGN (itype) = TYPE_USER_ALIGN (sizetype);
 
-  if (!no_hash && host_integerp (maxval, 1))
+  if (host_integerp (maxval, 1))
     return type_hash_canon (tree_low_cst (maxval, 1), itype);
   else
     return itype;

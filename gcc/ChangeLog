@@ -1,3 +1,9 @@
+2000-11-18  Richard Henderson  <rth@redhat.com>
+
+	* c-decl.c (grokdeclarator): Special case the creation of an
+	index for a zero-length array.
+	* tree.c (build_index_type): Revert Oct 20 change.
+
 2000-11-18  Marek Michalkiewicz  <marekm@linux.org.pl>
 
 	* config/avr/avr-protos.h (avr_output_addr_vec_elt): Prototype.
