@@ -445,10 +445,33 @@ public class Date implements java.io.Serializable, Cloneable
 	      + cal.get(Calendar.DST_OFFSET)/(60*1000));
   }
 
-  public native String toString ();
+  public String toString ()
+  {
+    // This is slow, but does it matter?  There is no particularly
+    // fast way to do it, because we need the timezone offset, which
+    // we don't store.  Unix ctime() doesn't provide this information.
+    SimpleDateFormat fmt = new SimpleDateFormat ("E MMM dd HH:mm:ss z yyyy",
+						 Locale.US);
+    fmt.setTimeZone(TimeZone.getDefault());
+    return fmt.format(this);
+  }
 
-  // TODO: toLocaleString
-  // TODO: toGMTString
+  public String toGMTString ()
+  {
+    // This method is deprecated.  We don't care if it is very slow.
+    SimpleDateFormat fmt = new SimpleDateFormat ("d MMM yyyy HH:mm:ss 'GMT'",
+						 Locale.US);
+    fmt.setTimeZone(TimeZone.zoneGMT);
+    return fmt.format(this);
+  }
+
+  public String toLocaleString ()
+  {
+    // This method is deprecated.  We don't care if it is very slow.
+    DateFormat fmt = DateFormat.getDateTimeInstance();
+    fmt.setTimeZone(TimeZone.getDefault());
+    return fmt.format(this);
+  }
 
   public static long UTC (int year, int month, int date,
 			  int hours, int minutes, int seconds)

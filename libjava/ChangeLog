@@ -1,3 +1,19 @@
+1999-09-24  Tom Tromey  <tromey@cygnus.com>
+
+	Fix for PR java.util/47:
+	* configure, include/config.h: Rebuilt.
+	* configure.in: Don't look for ctime or ctime_r.
+	* Makefile.in: Rebuilt.
+	* Makefile.am (nat_source_files): Don't mention natDate.cc.
+	* java/util/natDate.cc: Removed.
+	* java/util/TimeZone.java (tzIDs, rawOffsets, timeZones): New
+	static fields.
+	(getAvailableIDs): Rewrote.
+	(getTimeZone): Rewrote.
+	* java/util/Date.java (toGMTString): New method.
+	(toLocaleString): New method.
+	(toString): Rewrote.
+
 1999-09-23  Tom Tromey  <tromey@cygnus.com>
 
 	* configure: Rebuilt.
