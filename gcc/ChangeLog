@@ -1,3 +1,7 @@
+2001-03-28  Bernd Schmidt  <bernds@redhat.com>
+
+	* cselib.c (hash_rtx): Don't do tail recursion elimination by hand.
+
 2001-03-28  Richard Henderson  <rth@redhat.com>
 
 	* config/rs6000/rs6000.h (EPILOGUE_USES): Use TARGET_AIX,

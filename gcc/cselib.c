@@ -566,8 +566,6 @@ hash_rtx (x, mode, create)
   const char *fmt;
   unsigned int hash = 0;
 
-  /* repeat is used to turn tail-recursion into iteration.  */
- repeat:
   code = GET_CODE (x);
   hash += (unsigned) code + (unsigned) GET_MODE (x);
 
@@ -637,18 +635,8 @@ hash_rtx (x, mode, create)
       if (fmt[i] == 'e')
 	{
 	  rtx tem = XEXP (x, i);
-	  unsigned int tem_hash;
+	  unsigned int tem_hash = hash_rtx (tem, 0, create);
 
-	  /* If we are about to do the last recursive call
-	     needed at this level, change it into iteration.
-	     This function  is called enough to be worth it.  */
-	  if (i == 0)
-	    {
-	      x = tem;
-	      goto repeat;
-	    }
-
-	  tem_hash = hash_rtx (tem, 0, create);
 	  if (tem_hash == 0)
 	    return 0;
 
