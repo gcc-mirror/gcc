@@ -273,8 +273,8 @@ bugs.  It corresponds to GCC version 2.97.
 Several versions of the compiler (C, C++, Objective C, Fortran, Java
 and CHILL) are integrated; this is why we use the name 
 ``GNU Compiler Collection''. GCC can compile programs written in any of these
-languages. The Fortran and CHILL compilers are described in 
-separate manuals. The Java compiler currently has no manual documenting it.
+languages. The Fortran, CHILL, and Java compilers are described in 
+separate manuals.
 
 @cindex GCC
 ``GCC'' is a common shorthand term for the GNU Compiler Collection.  This is both
@@ -470,6 +470,9 @@ information concerning the history of C that is available online, see
 
 @xref{Language,,The GNU Fortran Language, g77, Using and Porting GNU
 Fortran}, for details of the Fortran language supported by GCC.
+
+@xref{Compatibility,,Compatibility with the Java Platform, gcj, GNU gcj},
+for details of compatibility between @code{gcj} and the Java Platform.
 
 @xref{References,,Language Definition References, chill, GNU Chill},
 for details of the CHILL standard.
