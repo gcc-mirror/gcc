@@ -1,3 +1,7 @@
+2004-01-07  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
+
+	* link.c [sgi] (shared_libgnat_default): Change to STATIC.
+
 2004-01-05  Kelley Cook  <kcook@gcc.gnu.org>
 
 	* Make-lang.in: Revert stamp-xgnatug change from 2003-12-18. 
