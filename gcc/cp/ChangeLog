@@ -1,6 +1,12 @@
+2004-02-23  Giovanni Bajo  <giovannibajo@gcc.gnu.org>
+
+	PR c++/14143
+	* name-lookup.c	(arg_assoc_class): Don't look into template 
+	arguments if it is not a primary template.
+
 2004-02-20  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
-        PR c++/12007
+	PR c++/12007
 	* method.c (use_thunk): Always clone function argument tree.
 
 2004-02-20  Mark Mitchell  <mark@codesourcery.com>
