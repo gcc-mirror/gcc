@@ -1769,9 +1769,7 @@ extern struct mips_frame_info current_frame_info;
    to give us MIPS cc compatibility.  */
 
 #define RETURN_IN_MEMORY(TYPE)	\
-  ((TYPE_MODE (TYPE) == BLKmode) \
-   || (TREE_CODE (TYPE) == RECORD_TYPE) || (TREE_CODE (TYPE) == UNION_TYPE))
-
+  (TYPE_MODE (TYPE) == BLKmode)
 
 /* A code distinguishing the floating point format of the target
    machine.  There are three defined values: IEEE_FLOAT_FORMAT,
