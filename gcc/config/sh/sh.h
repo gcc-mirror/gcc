@@ -2406,7 +2406,8 @@ do {									\
 #define NORMAL_MODE(ENTITY) \
    (TARGET_FPU_SINGLE ? FP_MODE_SINGLE : FP_MODE_DOUBLE) 
 
-#define EPILOGUE_USES(REGNO)       (TARGET_SH4 && (REGNO) == FPSCR_REG)
+#define EPILOGUE_USES(REGNO)       ((TARGET_SH3E || TARGET_SH4)		\
+				    && (REGNO) == FPSCR_REG)
 
 #define MODE_NEEDED(ENTITY, INSN)					\
   (recog_memoized (INSN) >= 0						\

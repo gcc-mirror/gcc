@@ -1,3 +1,8 @@
+2000-01-04  Matthew Hiller  <hiller@redhat.com>
+
+	* config/sh/sh.h (EPILOGUE_USES): Recognize fpscr as epilogue-used
+	for TARGET_SH3E.
+
 2001-01-04  Joseph S. Myers  <jsm28@cam.ac.uk>
 
 	* fold-const.c (fold): When folding a CONJ_EXPR of a COMPLEX_CST,
